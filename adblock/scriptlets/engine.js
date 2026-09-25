@@ -342,6 +342,47 @@
       };
     },
 
+    // no-xhr-if(cond): the XMLHttpRequest twin of no-fetch-if — a matching request
+    // (URL needle / "method:X" / "*") is never sent and completes as an empty 200,
+    // which is what anti-adblock probes ("can I load ads.js?") are told.
+    "no-xhr-if": function (rawCond) {
+      var conds = rawCond ? String(rawCond).split(/\s+/).filter(Boolean) : [];
+      var X = window.XMLHttpRequest;
+      if (typeof X !== "function" || !X.prototype) return;
+      var P = X.prototype, origOpen = P.open, origSend = P.send;
+      var held = new WeakMap();
+      P.open = function (method, url) {
+        try {
+          var u = String(url);
+          var match = conds.length === 0 || conds.every(function (c) {
+            if (c === "*") return true;
+            if (c.indexOf("method:") === 0) return String(method).toLowerCase() === c.slice(7).toLowerCase();
+            var re = toReg(c);
+            return re ? re.test(u) : u.indexOf(c) >= 0;
+          });
+          if (match) held.set(this, u); else held.delete(this);
+        } catch (e) {}
+        return origOpen.apply(this, arguments);
+      };
+      P.send = function () {
+        if (!held.has(this)) return origSend.apply(this, arguments);
+        var xhr = this, u = held.get(this);
+        try {
+          var fixed = { readyState: 4, status: 200, statusText: "OK", response: "", responseText: "", responseURL: u };
+          for (var k in fixed) Object.defineProperty(xhr, k, { value: fixed[k], configurable: true });
+          setTimeout(function () {
+            try {
+              xhr.dispatchEvent(new Event("readystatechange"));
+              xhr.dispatchEvent(new ProgressEvent("load"));
+              xhr.dispatchEvent(new ProgressEvent("loadend"));
+            } catch (e) {}
+          }, 1);
+        } catch (e) {
+          return origSend.apply(this, arguments);
+        }
+      };
+    },
+
     // no-window-open-if(search): block window.open() for matching URLs (leading
     // "!" inverts). Neutralises pop-under / pop-up ad launchers.
     "no-window-open-if": function (rawSearch) {
@@ -508,6 +549,18 @@
   // Shape: { "": [[name, ...args]], "host.tld": [[name, ...args]] }. The ""
   // key holds global directives that run on every page.
   var MAP = /*__SCRIPTLET_MAP__*/{};
+  // uBlock Origin directives for THIS site come from a chunk script (scriptlets/
+  // ubo/cNN.js, DATA baked and validated at build time) that the service worker
+  // registers just before this file for that chunk's hosts — same registration,
+  // guaranteed order. Picked up and removed in this tick, before any page script
+  // exists; each entry is re-checked against the build profile of the policy.
+  var EXTRA = null;
+  try {
+    var chunkKey = "__tbabScriptletChunk";
+    var chunkDesc = Object.getOwnPropertyDescriptor(document, chunkKey);
+    if (chunkDesc && chunkDesc.value && typeof chunkDesc.value === "object") EXTRA = chunkDesc.value;
+    delete document[chunkKey];
+  } catch (e) {}
   // EasyList $popup domains (baked by the build): popunder/popup launchers.
   var POPUP_HOSTS = /*__POPUP_HOSTS__*/[];
 
@@ -596,9 +649,26 @@
   // IMPL but assigned later would be undefined here). Same synchronous tick.
   try {
     var chain = hostChain();
+    // uBO exceptions (["#@", name, …args]) anywhere on the host chain cancel that
+    // directive for this page, including one inherited from a parent domain.
+    var skip = Object.create(null);
+    for (var k = 0; EXTRA && k < chain.length; k++) {
+      var ex = chain[k] && EXTRA[chain[k]];
+      if (ex && nativeIsArray(ex)) for (var y = 0; y < ex.length; y++) {
+        if (nativeIsArray(ex[y]) && ex[y][0] === "#@") skip[nativeSlice.call(ex[y], 1).join("\u0001")] = 1;
+      }
+    }
     for (var i = 0; i < chain.length; i++) {
       var list = MAP[chain[i]];
       if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
+      var extra = EXTRA && chain[i] && EXTRA[chain[i]];
+      if (extra && nativeIsArray(extra)) {
+        for (var x = 0; x < extra.length; x++) {
+          var ed = extra[x];
+          if (!nativeIsArray(ed) || !ed.length || ed[0] === "#@" || skip[ed.join("\u0001")]) continue;
+          if (SA_POLICY.validateDirective(ed[0], nativeSlice.call(ed, 1), false)) runDirective(ed);
+        }
+      }
     }
   } catch (e) {}
   // ---- popup / popunder blocker ------------------------------------------

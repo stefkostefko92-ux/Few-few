@@ -54,6 +54,8 @@ const PAGES = {
       <button class="iubenda-cs-reject-btn" onclick="__clicks.push('pay')">Rifiuta e abbonati</button>
       <button class="iubenda-cs-accept-btn" onclick="__clicks.push('accept')">Accetta</button></div>
   </body></html>`,
+  "/pause": `<!doctype html><html><body><script>window.__loaded=false;</script><script src="/pausetest.js"></script></body></html>`,
+  "/focus": `<!doctype html><html><body><ytd-reel-shelf-renderer id="shorts">shorts shelf</ytd-reel-shelf-renderer><ytd-video-renderer id="video">a normal video</ytd-video-renderer></body></html>`,
   "/cookie": `<!doctype html><html><body style="min-height:2000px">
     <script>window.__clicks=[];</script>
     <div id="onetrust-consent-sdk" style="position:fixed;left:0;right:0;bottom:0;background:#fff"><div id="onetrust-banner-sdk"><p>We use cookies</p>
@@ -61,6 +63,7 @@ const PAGES = {
   </body></html>`,
 };
 const server = http.createServer((req, res) => {
+  if (req.url.startsWith("/pausetest.js")) { res.setHeader("content-type", "text/javascript"); return res.end("window.__loaded=true;"); }
   const html = PAGES[req.url.split("?")[0]];
   if (!html) { res.statusCode = 404; return res.end(); }
   res.setHeader("content-type", "text/html"); res.end(html);
@@ -192,6 +195,56 @@ try {
   ok("late: cookie banner revealed by a style change → rejected", lt.clicks === "reject");
   await p6.close();
 
+  // ---- Focus mode (built-in selectors) + the cookie-rejection counter ----
+  {
+    await sw.evaluate(async () => { await chrome.storage.local.set({ lists: { "focus-shorts": true } }); await applyState(); });
+    const f = await ctx.newPage();
+    await f.goto(origin + "/focus");
+    await f.waitForTimeout(1200);
+    const fr = await f.evaluate(() => ({ shorts: getComputedStyle(document.getElementById("shorts")).display, video: getComputedStyle(document.getElementById("video")).display }));
+    ok("Focus mode: YouTube Shorts shelf hidden, a normal video stays", fr.shorts === "none" && fr.video !== "none");
+    await sw.evaluate(async () => { await chrome.storage.local.set({ lists: {}, cookieRejections: 0 }); await applyState(); });
+    await f.goto(origin + "/cookie");
+    await f.waitForTimeout(2500);
+    ok("cookie banner rejected → counter +1 (a number, no site list)", (await sw.evaluate(async () => (await chrome.storage.local.get("cookieRejections")).cookieRejections)) === 1);
+    await f.close();
+  }
+
+  // ---- "Site broken?" report page: fixes first, nothing sent by the extension ----
+  {
+    const site = await ctx.newPage();
+    await site.goto(origin + "/cosmetic?secret=1");
+    const tabId = await sw.evaluate(async () => (await chrome.tabs.query({ url: "http://127.0.0.1/*" }))[0].id);
+    const extId = sw.url().split("/")[2];
+    const rep = await ctx.newPage();
+    await rep.goto(`chrome-extension://${extId}/report/report.html?tab=${tabId}`);
+    await rep.waitForTimeout(1200);
+    const r = await rep.evaluate(() => ({ host: document.getElementById("host").textContent, preview: document.getElementById("preview").textContent, mail: document.getElementById("sendMail").href }));
+    ok("report: shows the site of the tab it was opened for", r.host === "127.0.0.1");
+    ok("report: by default only the site name — never the full address (query strings can be private)", r.preview.includes("Site: 127.0.0.1") && !r.preview.includes("secret=1"));
+    ok("report: sent through the user's own mail app (mailto), not by the extension", r.mail.startsWith("mailto:info@carbonstealth.eu?subject="));
+    await rep.click("#fullUrl");
+    ok("report: the full address only when the user ticks it", (await rep.evaluate(() => document.getElementById("preview").textContent)).includes("secret=1"));
+    await rep.click("#fixCosm");
+    await rep.waitForTimeout(800);
+    ok("report: 'turn off element hiding here' applies to that site", (await sw.evaluate(async () => (await chrome.storage.local.get("noCosmetics")).noCosmetics || [])).includes("127.0.0.1"));
+    await sw.evaluate(async () => chrome.storage.local.set({ noCosmetics: [] }));
+    await rep.close(); await site.close();
+  }
+
+  // ---- a pause pauses EVERYTHING, dynamic rules included (they kept blocking) ----
+  {
+    const loaded = async () => { const pp = await ctx.newPage(); await pp.goto(origin + "/pause"); await pp.waitForTimeout(400); const v = await pp.evaluate(() => window.__loaded); await pp.close(); return v; };
+    await sw.evaluate(() => chrome.declarativeNetRequest.updateDynamicRules({ addRules: [{ id: 80999, priority: 1, action: { type: "block" }, condition: { urlFilter: "/pausetest.js", resourceTypes: ["script"] } }] }));
+    const before = await loaded();
+    await sw.evaluate(() => pauseFor(1));
+    const during = await loaded();
+    await sw.evaluate(() => resumeNow());
+    const after = await loaded();
+    await sw.evaluate(() => chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [80999] }));
+    ok(`pause: a dynamic block rule stops blocking while paused and blocks again after (before ${before}, paused ${during}, after ${after})`, before === false && during === true && after === false);
+  }
+
   // ---- cookies.js honours the allowlist (it used to ignore it) ----
   await setStore({ allowlist: ["127.0.0.1"] });
   const p2 = await ctx.newPage();
@@ -199,6 +252,11 @@ try {
   await p2.waitForTimeout(2500);
   const c1 = await p2.evaluate(() => ({ clicks: window.__clicks.slice(), cloak: document.documentElement.classList.contains("tbab-cookies") }));
   ok("allowlisted site: cookie banner NOT touched (no click, no cloak)", c1.clicks.length === 0 && !c1.cloak);
+  {
+    const pa = await ctx.newPage(); await pa.goto(origin + "/cosmetic"); await pa.waitForTimeout(800);
+    ok("allowlisted site: the static content.css ad classes (.ad-container) are shown too", await pa.evaluate(() => getComputedStyle(document.getElementById("ad")).display) !== "none");
+    await pa.close();
+  }
   await setStore({ allowlist: [] });
   await p2.waitForTimeout(2500);
   const c2 = await p2.evaluate(() => window.__clicks.slice());

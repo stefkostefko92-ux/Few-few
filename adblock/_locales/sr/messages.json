@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Блокира рекламе свуда: видео рекламе на YouTube-у, банере, искачуће прозоре, трекере и анти-адблок зидове. Бесплатно и приватно."
+  },
+  "byCarbon": {
+    "message": "од Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Укључи/искључи заштиту"
+  },
+  "protected": {
+    "message": "Заштићено"
+  },
+  "paused": {
+    "message": "Паузирано"
+  },
+  "blockingHere": {
+    "message": "Блокира рекламе на овој страници"
+  },
+  "protectionOff": {
+    "message": "Заштита је искључена"
+  },
+  "pause30": {
+    "message": "Пауза од 30 минута"
+  },
+  "pausedResume": {
+    "message": "Паузирано, настави сада (још $1 мин)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Блокирано"
+  },
+  "dataSaved": {
+    "message": "Уштеда података"
+  },
+  "timeSaved": {
+    "message": "Уштеда времена"
+  },
+  "thisSite": {
+    "message": "овај сајт"
+  },
+  "thisPage": {
+    "message": "ова страница"
+  },
+  "blockOnSite": {
+    "message": "Блокирај рекламе на овом сајту"
+  },
+  "blocking": {
+    "message": "Блокира"
+  },
+  "allowed": {
+    "message": "Дозвољено"
+  },
+  "cosmetics": {
+    "message": "Сакриј рекламе овде"
+  },
+  "cosmeticsTitle": {
+    "message": "Сакриј рекламе на овом сајту (искључите ако се распоред странице поквари)"
+  },
+  "on": {
+    "message": "Укљ."
+  },
+  "off": {
+    "message": "Искљ."
+  },
+  "blockedHere": {
+    "message": "Блокирано на овој страници"
+  },
+  "logEmpty": {
+    "message": "Овде још ништа није блокирано."
+  },
+  "logUnavailable": {
+    "message": "Дневник тренутно није доступан (квота прегледача) — покушајте поново за минут."
+  },
+  "logCore": {
+    "message": "Основна правила"
+  },
+  "logYouTube": {
+    "message": "Рекламе на YouTube-у"
+  },
+  "logParams": {
+    "message": "Параметри праћења"
+  },
+  "logMalware": {
+    "message": "Злонамерни домени"
+  },
+  "logSurrogates": {
+    "message": "Неутралисане рекламне скрипте"
+  },
+  "logPrivacy": {
+    "message": "Заштита приватности"
+  },
+  "logUser": {
+    "message": "Моји филтери"
+  },
+  "logLive": {
+    "message": "Ажурирања уживо"
+  },
+  "hideElement": {
+    "message": "Сакриј елемент"
+  },
+  "settings": {
+    "message": "Подешавања"
+  },
+  "promoSub": {
+    "message": "Опрема и алати, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Реклама"
+  },
+  "support": {
+    "message": "Подржите"
+  },
+  "filtersCount": {
+    "message": "$1+ филтера",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Изглед"
+  },
+  "opt_extra_protection": {
+    "message": "Додатна заштита"
+  },
+  "opt_smart_detection_log": {
+    "message": "Дневник Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Сајтови на листи дозвољених"
+  },
+  "opt_my_filters": {
+    "message": "Моји филтери"
+  },
+  "opt_hidden_elements": {
+    "message": "Скривени елементи"
+  },
+  "opt_filter_updates": {
+    "message": "Ажурирање филтера"
+  },
+  "opt_engine_health": {
+    "message": "Стање језгра"
+  },
+  "opt_backup": {
+    "message": "Резервна копија"
+  },
+  "opt_support_development": {
+    "message": "Подржите развој"
+  },
+  "opt_theme": {
+    "message": "Тема"
+  },
+  "opt_sync_across_devices": {
+    "message": "Синхронизација између уређаја"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Блокирање реклама на YouTube-у"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Банери за колачиће / сагласност"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Заобилажење анти-адблок зидова"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Спонзорисане објаве (Meta)"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Уклањање параметара праћења"
+  },
+  "opt_malware_protection": {
+    "message": "Заштита од злонамерног софтвера"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Блокирање API-ја прегледача за циљано оглашавање"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Блокирање сигнала за праћење и криптоминера"
+  },
+  "opt_auto_update_filters": {
+    "message": "Аутоматско ажурирање филтера"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (тамна) или светла"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Одржава подешавања, листу дозвољених и филтере синхронизованим у сваком Chrome-у у који сте пријављени"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Уклања видео рекламе на YouTube-у. Искључите ако се видео снимци не покрећу."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Аутоматски затвара упите „Прихвати колачиће“"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Скрива зидове „искључите блокатор реклама“ и враћа страницу"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Скрива објаве „Спонзорисано“ на Facebook-у и Instagram-у"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Уклања utm_*, fbclid, gclid и друге идентификаторе кликова из линкова које отварате"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Блокира познате злонамерне домене (листа URLhaus од abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Искључује рекламне API-је Google Topics, FLoC и Protected Audience на сваком сајту"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Зауставља пингове за ревизију хиперлинкова и сигнале праћења трећих страна, уклања колачиће за праћење из познатих ad-tech одговора и блокира скрипте за рударење криптовалута у прегледачу. Искључите ако нека функција сајта која зависи од аналитике не ради исправно."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Преузима нова правила блокирања и исправке за YouTube са adblock.carbonstealth.eu отприлике два пута дневно. Само подаци, без кода; захтев не садржи идентификаторе ни податке о прегледању."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Дневник уживо реклама откривених хеуристички (без листе филтера), најновије прво."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Претплаћене листе се преузимају као текст (никада као код), ажурирају се свакодневно и налазе се у управљаним блоковима изнад. Уклоните листу да бисте одбацили њена правила."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Елементи које сте ручно сакрили алатом за бирање, груписани по сајту."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Дијагностика уживо — све се израчунава локално. Ако је нешто црвено, „Ажурирај сада“ или поновно учитавање додатка обично помаже."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock је бесплатан за све. Ако желите да помогнете у његовом одржавању, донације су добродошле, али никада обавезне."
+  },
+  "opt_reset_statistics": {
+    "message": "Ресетуј статистику"
+  },
+  "opt_add": {
+    "message": "Додај"
+  },
+  "opt_save_filters": {
+    "message": "Сачувај филтере"
+  },
+  "opt_subscribe": {
+    "message": "Претплати се"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Освежи претплате сада"
+  },
+  "opt_update_now": {
+    "message": "Ажурирај сада"
+  },
+  "opt_refresh": {
+    "message": "Освежи"
+  },
+  "opt_export_settings": {
+    "message": "Извези подешавања"
+  },
+  "opt_import_settings": {
+    "message": "Увези подешавања"
+  },
+  "opt_e_g_example_com": {
+    "message": "нпр. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! пример\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Претплатите се на URL листе филтера (нпр. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Подешавања за Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Подешавања"
+  },
+  "opt_theme_light": {
+    "message": "Светла"
+  },
+  "opt_badge_unique": {
+    "message": "јединствено"
+  },
+  "opt_smart_desc": {
+    "message": "Хвата рекламе које ниједна листа филтера још не познаје: оквири са других домена величине стандардних рекламних места одмах се скривају, без правила."
+  },
+  "opt_caught_so_far": {
+    "message": "ухваћено до сада."
+  },
+  "opt_allow_desc": {
+    "message": "На овим доменима рекламе се не блокирају."
+  },
+  "opt_fh_one": {
+    "message": "Једно правило по реду."
+  },
+  "opt_fh_blocks": {
+    "message": "блокира домен;"
+  },
+  "opt_fh_everywhere": {
+    "message": "скрива елемент свуда;"
+  },
+  "opt_fh_site": {
+    "message": "га скрива само на том сајту."
+  },
+  "opt_fh_comments": {
+    "message": "Редови који почињу са"
+  },
+  "opt_fh_comments2": {
+    "message": "су коментари."
+  },
+  "opt_donate": {
+    "message": "Донирајте преко Revolut-а"
+  },
+  "opt_made_by": {
+    "message": "направио Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Још ништа није ухваћено хеуристички."
+  },
+  "opt_empty_allow": {
+    "message": "Још нема сајтова на листи дозвољених."
+  },
+  "opt_empty_hidden": {
+    "message": "Још ништа није ручно сакривено."
+  },
+  "opt_empty_subs": {
+    "message": "Још нема претплаћених листа."
+  },
+  "opt_no_sw": {
+    "message": "Нема одговора од service worker-а."
+  },
+  "opt_remove": {
+    "message": "Уклони"
+  },
+  "opt_filter_status": {
+    "message": "Скуп филтера v$1, ажуриран $2. Само подаци, ништа о вама се не шаље."
+  },
+  "opt_updating": {
+    "message": "Ажурирање…"
+  },
+  "opt_updated": {
+    "message": "Ажурирано (v$1, $2 додатних правила)"
+  },
+  "opt_update_failed": {
+    "message": "Ажурирање није успело ($1)"
+  },
+  "opt_saved": {
+    "message": "Сачувано ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 правила"
+  },
+  "opt_updated_ago": {
+    "message": "ажурирано $1"
+  },
+  "opt_not_fetched": {
+    "message": "још није преузето"
+  },
+  "opt_failed_colon": {
+    "message": "грешка: $1"
+  },
+  "opt_enter_https": {
+    "message": "Унесите исправан https:// URL"
+  },
+  "opt_fetching": {
+    "message": "Преузимање…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Претплаћено: $1 правила ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Неуспешно ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Освежавање…"
+  },
+  "opt_refreshed": {
+    "message": "Освежено ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Неважећа датотека са подешавањима."
+  },
+  "opt_no_response": {
+    "message": "нема одговора"
+  },
+  "opt_h_engine": {
+    "message": "Анти-адблок механизам"
+  },
+  "opt_h_rulesets": {
+    "message": "Укључени статички скупови правила"
+  },
+  "opt_h_live": {
+    "message": "Домени из филтера уживо"
+  },
+  "opt_h_last": {
+    "message": "Последње ажурирање"
+  },
+  "opt_h_sig": {
+    "message": "Потписи ажурирања"
+  },
+  "opt_h_user": {
+    "message": "Моји филтери / правила за дозвољене"
+  },
+  "opt_h_popup": {
+    "message": "Уграђени хостови искачућих реклама"
+  },
+  "opt_h_yt": {
+    "message": "Заобилажење на YouTube-у"
+  },
+  "opt_reason_frame": {
+    "message": "Оквир са другог домена величине рекламе"
+  },
+  "opt_reason_sticky": {
+    "message": "Лепљиви рекламни банер"
+  },
+  "logRegional": {
+    "message": "Регионалне листе"
+  },
+  "logFocus": {
+    "message": "Режим фокуса"
+  },
+  "opt_filter_lists": {
+    "message": "Листе филтера"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList и EasyPrivacy су увек укључене. Листе испод имају отворену лиценцу и уграђене су у додатак, па њихово укључивање ништа не преузима, осим листе означене да долази од свог аутора."
+  },
+  "opt_lists_core": {
+    "message": "Основне"
+  },
+  "opt_lists_regional": {
+    "message": "Регионалне"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Листа за језик вашег прегледача укључује се сама. Додајте друге ако често читате сајтове на другим језицима."
+  },
+  "opt_focus_mode": {
+    "message": "Режим фокуса"
+  },
+  "opt_focus_desc": {
+    "message": "Скрива оно што није реклама, али ипак смета. Све овде је искључено док га не укључите."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin филтери"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Рекламе, трекери, исправке за анти-адблок и поправке сајтова од тима uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Листа Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Дугогодишња листа рекламних сервера и сервера за праћење."
+  },
+  "opt_focus_social": {
+    "message": "Дугмад и виџети друштвених мрежа"
+  },
+  "opt_focus_social_desc": {
+    "message": "Дугмад за дељење, оквири „Свиђа ми се“ и уграђени фидови."
+  },
+  "opt_focus_chat": {
+    "message": "Виџети за ћаскање и подршку"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Плутајући облачићи за ћаскање у углу странице."
+  },
+  "opt_focus_newsletters": {
+    "message": "Искачући прозори за билтене и пријаву"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Оквири и слојеви „Претплатите се на наш билтен“."
+  },
+  "opt_focus_notifications": {
+    "message": "Упити за обавештења"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Оквири „Дозволити обавештења?“ које сајтови приказују пре него што прегледач пита."
+  },
+  "opt_focus_ai": {
+    "message": "Искачући AI асистенти"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Облачићи четботова и панели са AI предлозима додати на странице."
+  },
+  "opt_focus_other": {
+    "message": "Остали досадни елементи"
+  },
+  "opt_focus_other_desc": {
+    "message": "Лепљиве траке, банери „Отвори у апликацији“ и сличан неред."
+  },
+  "opt_badge_lang": {
+    "message": "ваш језик"
+  },
+  "opt_badge_remote": {
+    "message": "од аутора"
+  },
+  "opt_remote_hint": {
+    "message": "Није уграђена (нема лиценцу за редистрибуцију): прегледач је преузима са $1 када је укључите."
+  },
+  "opt_downloaded_from": {
+    "message": "Преузима се са $1 када је укључите"
+  },
+  "opt_lists_error": {
+    "message": "Chrome је одбио ову комбинацију листа ($1). Искључите неке."
+  },
+  "opt_badge_recommended": {
+    "message": "препоручено за ваш језик"
+  },
+  "reportBroken": {
+    "message": "Сајт не ради? Поправите га или нам јавите"
+  },
+  "rep_title": {
+    "message": "Нешто не ради на овом сајту?"
+  },
+  "rep_fix_first": {
+    "message": "Поправите одмах"
+  },
+  "rep_site": {
+    "message": "Сајт:"
+  },
+  "rep_fix_desc": {
+    "message": "Већина проблема нестаје уз једну од ових опција. Свака важи само за овај сајт; картица се поново учитава."
+  },
+  "rep_fix_cosm": {
+    "message": "Искључи скривање елемената овде"
+  },
+  "rep_fix_allow": {
+    "message": "Дозволи рекламе на овом сајту"
+  },
+  "rep_fix_pause": {
+    "message": "Пауза свуда на 30 минута"
+  },
+  "rep_tell_us": {
+    "message": "Јавите нам"
+  },
+  "rep_tell_desc": {
+    "message": "Поправљамо неисправне сајтове за све кроз потписано ажурирање филтера, обично у року од једног дана. Додатак не шаље ништа: пријава се отвара у вашој апликацији за е-пошту и прво видите сваку њену реч."
+  },
+  "rep_what": {
+    "message": "Шта није у реду? (опционо)"
+  },
+  "rep_what_ph": {
+    "message": "нпр. видео се не покреће, бели оквир прекрива чланак…"
+  },
+  "rep_full_url": {
+    "message": "Укључи пуну адресу странице (иначе само назив сајта)"
+  },
+  "rep_preview": {
+    "message": "Шта ће бити послато"
+  },
+  "rep_send_mail": {
+    "message": "Пошаљи е-поштом"
+  },
+  "rep_copy": {
+    "message": "Копирај пријаву"
+  },
+  "rep_privacy": {
+    "message": "Како се поступа са овим извештајем: политика приватности"
+  },
+  "rep_copied": {
+    "message": "Копирано."
+  },
+  "rep_done_cosm": {
+    "message": "Скривање елемената је искључено на овом сајту. Поново учитано — да ли је решено?"
+  },
+  "rep_done_allow": {
+    "message": "Рекламе су дозвољене на овом сајту. Поново учитано — да ли је решено?"
+  },
+  "rep_done_pause": {
+    "message": "Паузирано на 30 минута. Ако сајт сада ради, молимо вас да нам јавите испод."
+  },
+  "cookieRejections": {
+    "message": "Одбијени банери за колачиће уместо вас: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shorts полице, картица и предлози на YouTube-у."
+  },
+  "opt_focus_onetap": {
+    "message": "Искачући прозори „Пријавите се преко Google-а“"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Бирач налога који се појављује у углу многих сајтова. Дугмад за пријаву и даље раде."
+  },
+  "pickTip": {
+    "message": "Кликните на елемент да бисте га сакрили"
+  },
+  "pickZapTip": {
+    "message": "Кликните да уклоните овај елемент (једном)"
+  },
+  "pickEscCancel": {
+    "message": "за отказивање"
+  },
+  "opt_notices": {
+    "message": "Лиценце листа филтера"
+  }
+}

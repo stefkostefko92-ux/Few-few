@@ -29,6 +29,9 @@ const SECS = Number(arg("secs", 6));
 const ROUNDS = Number(arg("rounds", 1));
 const MODES = arg("modes", "ws").split(",");
 const OLD = arg("old", "");
+// --ext "Name=/path/to/unpacked" (repeatable): other blockers, same test.
+const EXTS = [];
+for (let i = 0; i < process.argv.length; i++) if (process.argv[i] === "--ext") { const [n, p] = process.argv[i + 1].split("="); EXTS.push([n, p]); }
 const require = createRequire(join(process.env.PW_ROOT || join(ROOT, "node_modules"), "/"));
 let chromium;
 try { ({ chromium } = require("playwright")); } catch { console.error("Няма playwright (задай PW_ROOT=$(npm root -g))."); process.exit(2); }
@@ -90,7 +93,7 @@ async function measure(label, ext) {
   if (ext) args.push(`--disable-extensions-except=${ext}`, `--load-extension=${ext}`);
   const ctx = await chromium.launchPersistentContext(dir, { channel: "chromium", headless: true, args });
   try {
-    if (ext) { if (!ctx.serviceWorkers()[0]) await ctx.waitForEvent("serviceworker", { timeout: 20000 }); await new Promise((r) => setTimeout(r, 1500)); }
+    if (ext) { try { if (!ctx.serviceWorkers()[0]) await ctx.waitForEvent("serviceworker", { timeout: 20000 }); } catch {} await new Promise((r) => setTimeout(r, Number(arg("settle", 3)) * 1000)); }
     const out = [];
     for (const mode of MODES) {
       const p = await ctx.newPage();
@@ -116,5 +119,6 @@ for (let i = 0; i < ROUNDS; i++) {
   await measure("без разширение", null);
   if (OLD) await measure("стара версия", resolve(OLD));
   await measure("това разширение", ROOT);
+  for (const [n, p] of EXTS) await measure(n, resolve(p));
 }
 server.close();

@@ -11,8 +11,32 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   hasSource, tailHasSource, jaccard, sectionBullets, extractBalancedObject,
-  daysSince, lessonDate, norm, MERGE_THRESHOLD, yamlPlainCut,
+  daysSince, lessonDate, norm, MERGE_THRESHOLD, plainScalarHazard, repeatsLearnProtocol, yamlPlainCut,
 } from "./oversee-lib.mjs";
+
+test("repeatsLearnProtocol: секцията „самообучаващ се цикъл“ се хваща, един ред с доменен гейт — не", () => {
+  const old = "## v6.0 — самообучаващ се цикъл (наложен от hooks)\n- **Запиши:** завърши **всеки** отговор с блок ```learn (схема в `_memory/PROTOCOL.md`):";
+  assert.equal(repeatsLearnProtocol(old), true);
+  assert.equal(repeatsLearnProtocol("## Памет и самообучаващ се цикъл (v4.0–v6.0, наложен от hooks)\n- **Чети:** …"), true, "друго заглавие, същата секция");
+  assert.equal(repeatsLearnProtocol("- **Запиши:** завърши всеки отговор с блок ```learn (схема в `_memory/PROTOCOL.md`)"), true, "схемата без заглавие");
+  assert.equal(repeatsLearnProtocol("- **Памет:** поука е `verified` само след реален гейт (docs / реален ран / eval); иначе Карантина."), false);
+  assert.equal(repeatsLearnProtocol("Завършвай с ```learn блок (виж `_memory/PROTOCOL.md`) само с ново проверено знание."), false, "препратка без схема е наред");
+});
+
+test("plainScalarHazard: „ #“ отрязва описанието (реалният случай на Социалджията), „: “ чупи YAML", () => {
+  const old = "Социалджията — експерт Social Media Manager, чиято работа #1 е МАКСИМАЛНА видимост/обхват (reach)";
+  assert.match(plainScalarHazard(old), /коментар/, "„ #1“ → всичко след него се губи");
+  assert.match(plainScalarHazard("свързаните технически артефакти: политика"), /невалиден YAML/);
+  assert.match(plainScalarHazard("[списък] в началото"), /индикатор/);
+  assert.match(plainScalarHazard("- тире в началото"), /индикатор/);
+  assert.match(plainScalarHazard("завършва с двоеточие:"), /завършва/);
+  assert.equal(plainScalarHazard("празно"), null);
+  assert.equal(plainScalarHazard(""), "празно");
+  assert.equal(plainScalarHazard("Сийдъра — регистрира ги в db:seed:all и пише файл:ред, Lua и C#"), null, "двоеточие/диез без интервал пред тях са безопасни");
+  assert.match(plainScalarHazard("и #hashtag"), /коментар/, "интервал + диез е коментар дори без цифра");
+  assert.equal(plainScalarHazard('"в кавички: може # всичко"'), null, "кавичките го пазят");
+  assert.equal(plainScalarHazard(">-"), null, "блоков скалар");
+});
 
 test("tailHasSource: последният ;-сегмент е източникът", () => {
   assert.equal(tailHasSource("scope; verified; https://a.bg/x"), true);

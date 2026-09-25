@@ -1,0 +1,10 @@
+Supreme AdBlock blokeerib reklaamid kõikjal — YouTube'i videoreklaamid, bännerid, hüpikaknad ja jälgijad — ilma teie tegevust jälgimata.
+
+• YouTube'i reklaamid peatatakse juba allikas, nii et videod lihtsalt mängivad.
+• Sisse on ehitatud EasyList, EasyPrivacy ja uBlock Origini filtrid ning teie keele loend (31 piirkondlikku loendit).
+• Küpsisebännerid: vajutab teie eest „Keeldu“, eemaldab järelejäänud hägususe ja kerimislukustuse ega vajuta kunagi sisselogimis-, OAuth- ega maksenuppu.
+• Fookusrežiim: peidab vestlusmullid, uudiskirjahüpikud, teavituste päringud, sotsiaalmeedia vidinad, AI-hüpikud ja YouTube Shortsi.
+• Anti-adblock seinad ja pop-under aknad neutraliseeritakse.
+• Sait ei tööta? Üks klõps parandab selle — või andke meile teada; midagi ei saadeta enne, kui olete seda näinud.
+• Allkirjastatud filtrivärskendused kaks korda päevas: uued reklaamivõrgud kaetakse tundidega, ilma kaugkoodita.
+• Ilma kontota, ilma telemeetriata, ilma andmekogumiseta. Tasuta, vabatahtliku annetusega; hüpikaknas on üks väike kaart sildiga „Reklaam“, mis tutvustab laienduse tegijat Carbon Stealthi.

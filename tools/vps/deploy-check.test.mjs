@@ -261,3 +261,29 @@ test("блокът КОНФИГУРАЦИЯ оцелява без /etc/vizitka/v
   const out = execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
   assert.match(out, /__CONFIG_OK__/);
 });
+
+// ─── secret-echo: група `{ … } > file` (фалшива аларма в vizitka/server-setup.sh) ─
+test("echo на тайна в `{ … } > file` е ЗАПИС, не лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "PRINT_API_SECRET=$s"\n  echo "SMTP_PASS=$p"\n} > "$ENV_FILE"', "setup.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+test("същото в `( … ) >> file` subshell", () => {
+  const f = lintShell('set -euo pipefail\n(\n  echo "TOKEN=$t"\n) >> "$d/.env"', "setup.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+test("група, пренасочена към stderr, ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s"\n} >&2', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test("група БЕЗ пренасочване ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s"\n}', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test(">&2 вътре във файлова група ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s" >&2\n} > "$f"', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test("функция `f() {` с тайна след нея не се освобождава", () => {
+  const f = lintShell('set -euo pipefail\nf() {\n  echo "SECRET=$s"\n} > "$log"', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});

@@ -1,5 +1,7 @@
 # Инструменти за tools/3d/clean_and_validate.py
 trimesh>=4.0          # задължително (I/O, repair, watertight/manifold, deviation)
+networkx>=3.0         # trimesh.repair.fill_holes и body_count (голият trimesh не го носи)
+rtree>=1.0            # trimesh.proximity (deviation) — triangles_tree е R-дърво
 numpy>=1.26
 # По избор — по-силно почистване и реконструкция:
 #   pip install pymeshlab     # quadric decimation, close holes, Screened Poisson

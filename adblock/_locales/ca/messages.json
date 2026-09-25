@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Bloqueja anuncis (també a YouTube), bàners, finestres emergents, rastrejadors, avisos de galetes i murs anti-adblock. Gratuït."
+  },
+  "byCarbon": {
+    "message": "per Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Activa/desactiva la protecció"
+  },
+  "protected": {
+    "message": "Protegit"
+  },
+  "paused": {
+    "message": "En pausa"
+  },
+  "blockingHere": {
+    "message": "Bloquejant anuncis en aquesta pàgina"
+  },
+  "protectionOff": {
+    "message": "La protecció està desactivada"
+  },
+  "pause30": {
+    "message": "Pausa de 30 minuts"
+  },
+  "pausedResume": {
+    "message": "En pausa; reprèn ara (queden $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Bloquejats"
+  },
+  "dataSaved": {
+    "message": "Dades estalviades"
+  },
+  "timeSaved": {
+    "message": "Temps estalviat"
+  },
+  "thisSite": {
+    "message": "aquest lloc"
+  },
+  "thisPage": {
+    "message": "aquesta pàgina"
+  },
+  "blockOnSite": {
+    "message": "Bloqueja els anuncis en aquest lloc"
+  },
+  "blocking": {
+    "message": "Bloquejant"
+  },
+  "allowed": {
+    "message": "Permès"
+  },
+  "cosmetics": {
+    "message": "Amaga els anuncis aquí"
+  },
+  "cosmeticsTitle": {
+    "message": "Amaga els anuncis en aquest lloc (desactiveu-ho si la pàgina es desquadra)"
+  },
+  "on": {
+    "message": "Sí"
+  },
+  "off": {
+    "message": "No"
+  },
+  "blockedHere": {
+    "message": "Bloquejats en aquesta pàgina"
+  },
+  "logEmpty": {
+    "message": "Encara no s’ha bloquejat res aquí."
+  },
+  "logUnavailable": {
+    "message": "El registre no està disponible ara mateix (quota del navegador). Torneu-ho a provar d’aquí a un minut."
+  },
+  "logCore": {
+    "message": "Regles bàsiques Supreme"
+  },
+  "logYouTube": {
+    "message": "Anuncis de YouTube"
+  },
+  "logParams": {
+    "message": "Paràmetres de seguiment"
+  },
+  "logMalware": {
+    "message": "Dominis maliciosos"
+  },
+  "logSurrogates": {
+    "message": "Scripts d’anuncis neutralitzats"
+  },
+  "logPrivacy": {
+    "message": "Protecció de la privadesa"
+  },
+  "logUser": {
+    "message": "Els meus filtres"
+  },
+  "logLive": {
+    "message": "Filtres en directe"
+  },
+  "hideElement": {
+    "message": "Amaga un element"
+  },
+  "settings": {
+    "message": "Configuració"
+  },
+  "promoSub": {
+    "message": "Equipament i eines, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Anunci"
+  },
+  "support": {
+    "message": "Col·labora"
+  },
+  "filtersCount": {
+    "message": "$1+ filtres",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Aparença"
+  },
+  "opt_extra_protection": {
+    "message": "Protecció addicional"
+  },
+  "opt_smart_detection_log": {
+    "message": "Registre de Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Llocs permesos"
+  },
+  "opt_my_filters": {
+    "message": "Els meus filtres"
+  },
+  "opt_hidden_elements": {
+    "message": "Elements amagats"
+  },
+  "opt_filter_updates": {
+    "message": "Actualitzacions dels filtres"
+  },
+  "opt_engine_health": {
+    "message": "Estat del motor"
+  },
+  "opt_backup": {
+    "message": "Còpia de seguretat"
+  },
+  "opt_support_development": {
+    "message": "Suport al desenvolupament"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sincronització entre dispositius"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Bloqueig d’anuncis de YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Bàners de galetes / consentiment"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Esquivar els murs anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Publicacions patrocinades de Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Elimina els paràmetres de seguiment"
+  },
+  "opt_malware_protection": {
+    "message": "Protecció contra programari maliciós"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Bloqueja les API del navegador per a publicitat segmentada"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Bloqueja les balises de seguiment i els criptominers"
+  },
+  "opt_auto_update_filters": {
+    "message": "Actualitza els filtres automàticament"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (fosc) o clar"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Manté sincronitzats la configuració, la llista de llocs permesos i els filtres a tots els Chrome on hàgiu iniciat la sessió"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Elimina els anuncis de vídeo a YouTube. Desactiveu-ho si els vídeos no es reprodueixen."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Tanca automàticament els avisos «Accepta les galetes»"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Amaga els murs «desactiveu el blocador d’anuncis» i restaura la pàgina"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Amaga les publicacions «Patrocinat» a Facebook i Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Elimina utm_*, fbclid, gclid i altres identificadors de clic dels enllaços que obriu"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Bloqueja dominis maliciosos coneguts (llista URLhaus d’abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Desactiva les API publicitàries Google Topics, FLoC i Protected Audience a tots els llocs"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Atura els pings d’auditoria d’enllaços i les balises de tercers, elimina les galetes de seguiment de les respostes d’ad-tech conegudes i bloqueja els scripts de criptomineria al navegador. Desactiveu-ho si alguna funció d’un lloc que depèn de l’analítica no funciona bé."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Baixa regles de bloqueig noves i correccions per a YouTube des d’adblock.carbonstealth.eu unes dues vegades al dia. Només dades, cap codi; la sol·licitud no porta identificadors ni dades de navegació."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Registre en directe dels anuncis detectats heurísticament (sense llista de filtres), primer els més recents."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Les llistes subscrites es baixen com a text (mai com a codi), s’actualitzen cada dia i es desen als blocs gestionats de dalt. Elimineu una llista per descartar-ne les regles."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elements que heu amagat manualment amb el selector, agrupats per lloc."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Diagnòstic en directe: tot es calcula localment. Si hi ha alguna cosa en vermell, «Actualitza ara» o tornar a carregar l’extensió sol solucionar-ho."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock és gratuït per a tothom. Si voleu ajudar a mantenir-lo, les donacions són benvingudes, però mai obligatòries."
+  },
+  "opt_reset_statistics": {
+    "message": "Reinicia les estadístiques"
+  },
+  "opt_add": {
+    "message": "Afegeix"
+  },
+  "opt_save_filters": {
+    "message": "Desa els filtres"
+  },
+  "opt_subscribe": {
+    "message": "Subscriu-m’hi"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Actualitza les subscripcions ara"
+  },
+  "opt_update_now": {
+    "message": "Actualitza ara"
+  },
+  "opt_refresh": {
+    "message": "Actualitza"
+  },
+  "opt_export_settings": {
+    "message": "Exporta la configuració"
+  },
+  "opt_import_settings": {
+    "message": "Importa la configuració"
+  },
+  "opt_e_g_example_com": {
+    "message": "p. ex., example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! exemple\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Subscriviu-vos a l’URL d’una llista de filtres (p. ex., https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Configuració de Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Configuració"
+  },
+  "opt_theme_light": {
+    "message": "Clar"
+  },
+  "opt_badge_unique": {
+    "message": "exclusiu"
+  },
+  "opt_smart_desc": {
+    "message": "Detecta anuncis que cap llista de filtres no coneix encara: els marcs d’altres orígens amb la mida d’un espai publicitari estàndard s’amaguen a l’instant, sense regles."
+  },
+  "opt_caught_so_far": {
+    "message": "detectats fins ara."
+  },
+  "opt_allow_desc": {
+    "message": "En aquests dominis no es bloquegen els anuncis."
+  },
+  "opt_fh_one": {
+    "message": "Una regla per línia."
+  },
+  "opt_fh_blocks": {
+    "message": "bloqueja un domini;"
+  },
+  "opt_fh_everywhere": {
+    "message": "amaga un element a tot arreu;"
+  },
+  "opt_fh_site": {
+    "message": "l’amaga només en aquell lloc."
+  },
+  "opt_fh_comments": {
+    "message": "Les línies que comencen per"
+  },
+  "opt_fh_comments2": {
+    "message": "són comentaris."
+  },
+  "opt_donate": {
+    "message": "Feu un donatiu amb Revolut"
+  },
+  "opt_made_by": {
+    "message": "fet per Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Encara no s’ha detectat res heurísticament."
+  },
+  "opt_empty_allow": {
+    "message": "Encara no hi ha cap lloc permès."
+  },
+  "opt_empty_hidden": {
+    "message": "Encara no heu amagat res manualment."
+  },
+  "opt_empty_subs": {
+    "message": "Encara no hi ha cap llista subscrita."
+  },
+  "opt_no_sw": {
+    "message": "No hi ha resposta del service worker."
+  },
+  "opt_remove": {
+    "message": "Elimina"
+  },
+  "opt_filter_status": {
+    "message": "Filtres v$1, actualitzats $2. Només dades: no s’envia res sobre vós."
+  },
+  "opt_updating": {
+    "message": "S’està actualitzant…"
+  },
+  "opt_updated": {
+    "message": "Actualitzat (v$1, $2 regles addicionals)"
+  },
+  "opt_update_failed": {
+    "message": "No s’ha pogut actualitzar ($1)"
+  },
+  "opt_saved": {
+    "message": "Desat ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 regles"
+  },
+  "opt_updated_ago": {
+    "message": "actualitzada $1"
+  },
+  "opt_not_fetched": {
+    "message": "encara no baixada"
+  },
+  "opt_failed_colon": {
+    "message": "error: $1"
+  },
+  "opt_enter_https": {
+    "message": "Introduïu un URL https:// vàlid"
+  },
+  "opt_fetching": {
+    "message": "S’està baixant…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Subscrita: $1 regles ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Error ($1)"
+  },
+  "opt_refreshing": {
+    "message": "S’està actualitzant…"
+  },
+  "opt_refreshed": {
+    "message": "Actualitzat ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Fitxer de configuració no vàlid."
+  },
+  "opt_no_response": {
+    "message": "sense resposta"
+  },
+  "opt_h_engine": {
+    "message": "Motor anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Conjunts de regles estàtiques actius"
+  },
+  "opt_h_live": {
+    "message": "Dominis dels filtres en directe"
+  },
+  "opt_h_last": {
+    "message": "Darrera actualització"
+  },
+  "opt_h_sig": {
+    "message": "Signatures de les actualitzacions"
+  },
+  "opt_h_user": {
+    "message": "Els meus filtres / regles de permís"
+  },
+  "opt_h_popup": {
+    "message": "Amfitrions d’anuncis emergents integrats"
+  },
+  "opt_h_yt": {
+    "message": "Bypass de YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Marc d’un altre origen amb mida d’anunci"
+  },
+  "opt_reason_sticky": {
+    "message": "Bàner publicitari fix"
+  },
+  "logRegional": {
+    "message": "Llistes regionals"
+  },
+  "logFocus": {
+    "message": "Mode Focus"
+  },
+  "opt_filter_lists": {
+    "message": "Llistes de filtres"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList i EasyPrivacy estan sempre activades. Les llistes següents tenen llicència oberta i estan integrades a l’extensió, de manera que activar-ne una no baixa res, excepte si la llista està marcada com a provinent del seu autor."
+  },
+  "opt_lists_core": {
+    "message": "Bàsiques"
+  },
+  "opt_lists_regional": {
+    "message": "Regionals"
+  },
+  "opt_lists_regional_desc": {
+    "message": "La llista de la llengua del vostre navegador s’activa sola. Afegiu-ne d’altres si sovint llegiu llocs en altres llengües."
+  },
+  "opt_focus_mode": {
+    "message": "Mode Focus"
+  },
+  "opt_focus_desc": {
+    "message": "Amaga allò que no és publicitat però igualment molesta. Tot el que hi ha aquí està desactivat fins que ho activeu."
+  },
+  "opt_list_ubo": {
+    "message": "Filtres d’uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Anuncis, rastrejadors, correccions anti-adblock i reparacions de llocs de l’equip d’uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Llista de Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Una llista veterana de servidors de publicitat i de seguiment."
+  },
+  "opt_focus_social": {
+    "message": "Botons i ginys de xarxes socials"
+  },
+  "opt_focus_social_desc": {
+    "message": "Botons per compartir, quadres «M’agrada» i canals incrustats."
+  },
+  "opt_focus_chat": {
+    "message": "Ginys de xat i assistència"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Les bombolles de xat flotants a la cantonada de la pàgina."
+  },
+  "opt_focus_newsletters": {
+    "message": "Finestres de butlletins i registre"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Quadres i capes «Subscriviu-vos al nostre butlletí»."
+  },
+  "opt_focus_notifications": {
+    "message": "Sol·licituds de notificacions"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Quadres «Voleu permetre les notificacions?» que els llocs mostren abans que ho pregunti el navegador."
+  },
+  "opt_focus_ai": {
+    "message": "Finestres d’assistents d’IA"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Bombolles de xatbot i panells de suggeriments d’IA afegits a les pàgines."
+  },
+  "opt_focus_other": {
+    "message": "Altres molèsties"
+  },
+  "opt_focus_other_desc": {
+    "message": "Barres fixes, bàners «Obre a l’aplicació» i elements semblants."
+  },
+  "opt_badge_lang": {
+    "message": "la vostra llengua"
+  },
+  "opt_badge_remote": {
+    "message": "del seu autor"
+  },
+  "opt_remote_hint": {
+    "message": "No inclosa (sense llicència per redistribuir-la): el navegador la baixa de $1 quan l’activeu."
+  },
+  "opt_downloaded_from": {
+    "message": "Es baixa de $1 quan l’activeu"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ha rebutjat aquesta combinació de llistes ($1). Desactiveu-ne algunes."
+  },
+  "opt_badge_recommended": {
+    "message": "recomanada per a la vostra llengua"
+  },
+  "reportBroken": {
+    "message": "El lloc no funciona? Arregleu-lo o feu-nos-ho saber"
+  },
+  "rep_title": {
+    "message": "Hi ha alguna cosa que no funciona en aquest lloc?"
+  },
+  "rep_fix_first": {
+    "message": "Arregla-ho ara"
+  },
+  "rep_site": {
+    "message": "Lloc:"
+  },
+  "rep_fix_desc": {
+    "message": "La majoria de problemes desapareixen amb una d’aquestes opcions. Cadascuna s’aplica només a aquest lloc; la pestanya es torna a carregar."
+  },
+  "rep_fix_cosm": {
+    "message": "Desactiva aquí l’ocultació d’elements"
+  },
+  "rep_fix_allow": {
+    "message": "Permet els anuncis en aquest lloc"
+  },
+  "rep_fix_pause": {
+    "message": "Posa en pausa a tot arreu durant 30 minuts"
+  },
+  "rep_tell_us": {
+    "message": "Feu-nos-ho saber"
+  },
+  "rep_tell_desc": {
+    "message": "Arreglem els llocs que no funcionen per a tothom amb l’actualització signada dels filtres, normalment en menys d’un dia. L’extensió no envia res: l’informe s’obre a la vostra aplicació de correu i en veieu cada paraula abans."
+  },
+  "rep_what": {
+    "message": "Què no funciona? (opcional)"
+  },
+  "rep_what_ph": {
+    "message": "p. ex., el vídeo no s’inicia, un quadre blanc tapa l’article…"
+  },
+  "rep_full_url": {
+    "message": "Inclou l’adreça completa de la pàgina (si no, només el nom del lloc)"
+  },
+  "rep_preview": {
+    "message": "Què s’enviarà"
+  },
+  "rep_send_mail": {
+    "message": "Envia per correu electrònic"
+  },
+  "rep_copy": {
+    "message": "Copia l’informe"
+  },
+  "rep_privacy": {
+    "message": "Com es tracta aquest informe: política de privadesa"
+  },
+  "rep_copied": {
+    "message": "S’ha copiat."
+  },
+  "rep_done_cosm": {
+    "message": "L’ocultació d’elements està desactivada en aquest lloc. S’ha tornat a carregar: s’ha solucionat?"
+  },
+  "rep_done_allow": {
+    "message": "Els anuncis estan permesos en aquest lloc. S’ha tornat a carregar: s’ha solucionat?"
+  },
+  "rep_done_pause": {
+    "message": "En pausa durant 30 minuts. Si ara el lloc funciona, feu-nos-ho saber a sota."
+  },
+  "cookieRejections": {
+    "message": "Bàners de galetes rebutjats en nom vostre: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Els prestatges, la pestanya i els suggeriments de Shorts a YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Finestres «Inicia la sessió amb Google»"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "El selector de comptes que apareix a la cantonada de molts llocs. Els botons d’inici de sessió continuen funcionant."
+  },
+  "pickTip": {
+    "message": "Feu clic en un element per amagar-lo"
+  },
+  "pickZapTip": {
+    "message": "Feu clic per eliminar aquest element (una vegada)"
+  },
+  "pickEscCancel": {
+    "message": "per cancel·lar"
+  },
+  "opt_notices": {
+    "message": "Llicències de les llistes de filtres"
+  }
+}

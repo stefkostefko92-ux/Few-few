@@ -98,9 +98,14 @@
     box.id = "tbab-picker-box";
     tip = document.createElement("div");
     tip.id = "tbab-picker-tip";
-    tip.innerHTML = (mode === "zap"
-      ? "Click to remove this element (once) &nbsp;•&nbsp; <b>Esc</b> to cancel"
-      : "Click an element to hide it &nbsp;•&nbsp; <b>Esc</b> to cancel");
+    // Built from nodes (no innerHTML) and in the user's language.
+    const msg = (k, f) => { try { return chrome.i18n.getMessage(k) || f; } catch { return f; } };
+    const esc = document.createElement("b");
+    esc.textContent = "Esc";
+    tip.append(
+      (mode === "zap" ? msg("pickZapTip", "Click to remove this element (once)") : msg("pickTip", "Click an element to hide it")) + "  •  ",
+      esc, " " + msg("pickEscCancel", "to cancel"),
+    );
     document.body.append(box, tip);
 
     document.addEventListener("mousemove", onMove, true);

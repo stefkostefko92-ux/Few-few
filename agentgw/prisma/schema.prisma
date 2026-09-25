@@ -1,0 +1,65 @@
+// Агентски шлюз — данни. Само ключове (като HMAC хеш), броячи на разход и одит.
+// Разговорите НЕ се пазят (GDPR минимизация).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum KeyKind {
+  PUBLIC // cs_pk_… — уиджет в браузъра, само от позволените Origin-и
+  SECRET // cs_sk_… — сървър-към-сървър
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  kind        KeyKind
+  /// HMAC-SHA256(KEY_PEPPER, пълния ключ) в hex — самият ключ никога не се пази.
+  hash        String    @unique
+  /// Първите знаци за разпознаване в списъка (напр. „cs_pk_Ab12…“) — не стигат за достъп.
+  prefix      String
+  site        String
+  agents      String[]
+  origins     String[]
+  /// Месечен таван в микро-USD (1 USD = 1 000 000) по list цените.
+  capMicroUsd BigInt
+  ratePerMin  Int       @default(20)
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  revokedAt   DateTime?
+
+  usage UsageMonthly[]
+}
+
+model UsageMonthly {
+  id               String @id @default(cuid())
+  keyId            String
+  /// „ГГГГ-ММ“ по UTC.
+  month            String
+  requests         Int    @default(0)
+  inputTokens      BigInt @default(0)
+  outputTokens     BigInt @default(0)
+  cacheReadTokens  BigInt @default(0)
+  cacheWriteTokens BigInt @default(0)
+  costMicroUsd     BigInt @default(0)
+
+  key ApiKey @relation(fields: [keyId], references: [id], onDelete: Cascade)
+
+  @@unique([keyId, month])
+}
+
+/// Верига, устойчива на подправяне: hash = SHA-256(prevHash | at | action | keyId | detail).
+model AuditLog {
+  id       Int      @id @default(autoincrement())
+  at       DateTime @default(now())
+  actor    String
+  action   String
+  keyId    String?
+  detail   Json?
+  prevHash String
+  hash     String   @unique
+}

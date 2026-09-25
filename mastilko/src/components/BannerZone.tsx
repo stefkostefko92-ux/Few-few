@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 interface Banner {
   id: string;
@@ -18,6 +19,7 @@ interface Banner {
 // проследяване и без чужди скриптове. Затварянето се помни в localStorage
 // (функционално, не проследяване), за да не досажда.
 export default function BannerZone({ placement }: { placement: "all" | "home" }) {
+  const pathname = usePathname();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
@@ -48,7 +50,8 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
   }
 
   const visible = banners.filter((b) => !dismissed.has(b.id));
-  if (visible.length === 0) return null;
+  // Админ панелът не е място за реклама (и собственикът я вижда в таблото).
+  if (visible.length === 0 || pathname?.startsWith("/admin")) return null;
 
   return (
     // `aside` + етикет, а не гол `div`: лентата стои МЕЖДУ хедъра и `main`,
@@ -73,7 +76,7 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
               className="relative block min-w-0 flex-1"
               aria-label={b.imageAlt || b.title || "Реклама"}
             >
-              <span className="absolute left-2 top-2 rounded bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+              <span className="absolute left-2 top-2 rounded bg-black/40 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
                 Реклама
               </span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -89,7 +92,7 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
                   съобщение трябва да е разпознаваемо като такова (Дир. 2000/31
                   чл. 6, б. „а“ / ЗЕТ). Досега стоеше само във варианта с
                   изображение. */}
-              <span className="mr-2 rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+              <span className="mr-2 rounded bg-black/20 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
                 Реклама
               </span>
               <span className="font-semibold">{b.title}</span>

@@ -7,6 +7,7 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-09-25:** Google Play target API — срокът 31.08.2026 е ИЗМИНАЛ: нови апс и ъпдейти ≥ API 36 (Android 16); Wear OS и Android Automotive ≥ 35; Android TV и Android XR ≥ 34. Съществуващи апс ≥ API 35, иначе губят видимост за нови потребители на по-нови устройства. Отсрочка до 01.11.2026 чрез форма в Play Console. Проверявай target на zabobovdol TWA преди следващ submit. _(google-play-target-api, zabobovdol/android; verified; https://developer.android.com/google/play/requirements/target-sdk; re-verify: 2026-11-24)_
 
 - **2026-07-28 (пресверена 2026-08-04):** Apple номерацията на iOS вече е годишна — 'iOS 18/19' в момента съответства на iOS 26 (Liquid Glass дизайн, 2025-2026 цикъл). Не откри конкретни WKWebView API поведенчески промени в основно търсене — при нужда от точна разлика провери release notes на конкретен Xcode/iOS ъпдейт директно, не предполагай. _(global; verified; https://support.apple.com/en-us/123075)_
 - **2026-07-25 (пресверена 2026-08-04):** Apple временно премахна и после (01.03.2024) върна Home Screen PWA поддръжка в EU заради DMA спор при iOS 17.4 — статусът е политически нестабилен, провери на живо преди да разчиташ на EU PWA push. _(general; verified; https://9to5mac.com/2024/03/01/apple-home-screen-web-apps-ios-17-eu/)_

@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Արգելափակում է գովազդն ամենուր՝ YouTube-ի տեսագովազդներ, բաններներ, ելնող պատուհաններ, հետագծիչներ, քուքիների հարցումներ։"
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth-ից"
+  },
+  "toggleProtection": {
+    "message": "Միացնել/անջատել պաշտպանությունը"
+  },
+  "protected": {
+    "message": "Պաշտպանված"
+  },
+  "paused": {
+    "message": "Դադարած"
+  },
+  "blockingHere": {
+    "message": "Այս էջում գովազդն արգելափակվում է"
+  },
+  "protectionOff": {
+    "message": "Պաշտպանությունն անջատված է"
+  },
+  "pause30": {
+    "message": "Դադար 30 րոպեով"
+  },
+  "pausedResume": {
+    "message": "Դադարած է, վերսկսել հիմա (մնաց $1 րոպե)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Արգելված"
+  },
+  "dataSaved": {
+    "message": "Խնայված թրաֆիկ"
+  },
+  "timeSaved": {
+    "message": "Խնայված ժամանակ"
+  },
+  "thisSite": {
+    "message": "այս կայքը"
+  },
+  "thisPage": {
+    "message": "այս էջը"
+  },
+  "blockOnSite": {
+    "message": "Արգելափակել գովազդն այս կայքում"
+  },
+  "blocking": {
+    "message": "Արգելափակում"
+  },
+  "allowed": {
+    "message": "Թույլատրված"
+  },
+  "cosmetics": {
+    "message": "Թաքցնել գովազդն այստեղ"
+  },
+  "cosmeticsTitle": {
+    "message": "Թաքցնել գովազդն այս կայքում (անջատեք, եթե էջի դասավորությունը խախտվում է)"
+  },
+  "on": {
+    "message": "Միաց."
+  },
+  "off": {
+    "message": "Անջատ."
+  },
+  "blockedHere": {
+    "message": "Արգելափակված այս էջում"
+  },
+  "logEmpty": {
+    "message": "Այստեղ դեռ ոչինչ արգելափակված չէ։"
+  },
+  "logUnavailable": {
+    "message": "Մատյանն այս պահին հասանելի չէ (դիտարկչի քվոտա) — նորից փորձեք մեկ րոպե անց։"
+  },
+  "logCore": {
+    "message": "Supreme-ի հիմնական կանոններ"
+  },
+  "logYouTube": {
+    "message": "YouTube-ի գովազդներ"
+  },
+  "logParams": {
+    "message": "Հետագծման պարամետրեր"
+  },
+  "logMalware": {
+    "message": "Վնասակար տիրույթներ"
+  },
+  "logSurrogates": {
+    "message": "Չեզոքացված գովազդային սկրիպտներ"
+  },
+  "logPrivacy": {
+    "message": "Գաղտնիության պաշտպանություն"
+  },
+  "logUser": {
+    "message": "Իմ զտիչները"
+  },
+  "logLive": {
+    "message": "Առցանց թարմացում"
+  },
+  "hideElement": {
+    "message": "Թաքցնել տարրը"
+  },
+  "settings": {
+    "message": "Կարգավորումներ"
+  },
+  "promoSub": {
+    "message": "Սարքեր և գործիքներ, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Գովազդ"
+  },
+  "support": {
+    "message": "Աջակցել"
+  },
+  "filtersCount": {
+    "message": "$1+ զտիչ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Արտաքին տեսք"
+  },
+  "opt_extra_protection": {
+    "message": "Լրացուցիչ պաշտպանություն"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection-ի մատյան"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Թույլատրված կայքեր"
+  },
+  "opt_my_filters": {
+    "message": "Իմ զտիչները"
+  },
+  "opt_hidden_elements": {
+    "message": "Թաքցված տարրեր"
+  },
+  "opt_filter_updates": {
+    "message": "Զտիչների թարմացումներ"
+  },
+  "opt_engine_health": {
+    "message": "Շարժիչի վիճակը"
+  },
+  "opt_backup": {
+    "message": "Պահուստային պատճեն"
+  },
+  "opt_support_development": {
+    "message": "Աջակցել մշակմանը"
+  },
+  "opt_theme": {
+    "message": "Թեմա"
+  },
+  "opt_sync_across_devices": {
+    "message": "Համաժամացում սարքերի միջև"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube-ի գովազդի արգելափակում"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Քուքիների / համաձայնության բաններներ"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Հակա-ադբլոկ պատերի շրջանցում"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta-ի հովանավորվող գրառումներ"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Հեռացնել հետագծման պարամետրերը"
+  },
+  "opt_malware_protection": {
+    "message": "Պաշտպանություն վնասաբեր ծրագրերից"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Արգելափակել գովազդային թիրախավորման դիտարկչի API-ները"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Արգելափակել հետագծման փարոսներն ու կրիպտոմայներները"
+  },
+  "opt_auto_update_filters": {
+    "message": "Ավտոմատ թարմացնել զտիչները"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (մուգ) կամ բաց"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Համաժամեցնել կարգավորումները, թույլատրված կայքերի ցուցակը և զտիչները բոլոր Chrome-երում, որտեղ մուտք եք գործել"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Հեռացնում է տեսագովազդները YouTube-ում։ Անջատեք, եթե տեսանյութերը չեն նվագարկվում։"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Ավտոմատ փակում է «Ընդունել քուքիները» հարցումները"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Թաքցնում է «անջատեք գովազդի արգելափակիչը» պատերը և վերականգնում էջը"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Թաքցնում է «Հովանավորվող» գրառումները Facebook-ում և Instagram-ում"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Հեռացնում է utm_*, fbclid, gclid և սեղմումների այլ նույնացուցիչներ ձեր բացած հղումներից"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Արգելափակում է հայտնի վնասակար տիրույթները (abuse.ch-ի URLhaus ցուցակ)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Անջատում է Google Topics, FLoC և Protected Audience գովազդային API-ները բոլոր կայքերում"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Կանգնեցնում է երրորդ կողմի հղումների աուդիտի / beacon պինգերը, հեռացնում հետագծող քուքիները հայտնի գովազդային տեխնոլոգիաների պատասխաններից և արգելափակում դիտարկչում կրիպտոմայնինգի սկրիպտները։ Անջատեք, եթե կայքի՝ անալիտիկայից կախված գործառույթը սխալ է աշխատում։"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Օրական մոտ երկու անգամ adblock.carbonstealth.eu-ից ներբեռնում է արգելափակման նոր կանոններ և YouTube-ի շտկումներ։ Միայն տվյալներ, առանց կոդի, և հարցումը չի պարունակում նույնացուցիչներ կամ դիտարկման տվյալներ։"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Էվրիստիկ եղանակով (առանց զտիչների ցուցակի) բռնված գովազդների կենդանի մատյան, նորերը՝ վերևում։"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Բաժանորդագրված ցուցակները ներբեռնվում են որպես տեքստ (երբեք որպես կոդ), թարմացվում են ամեն օր և պահվում վերևի կառավարվող բլոկներում։ Ցուցակի կանոններից ազատվելու համար հեռացրեք այն։"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Ընտրիչով ձեռքով թաքցրած տարրերը՝ խմբավորված ըստ կայքի։"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Կենդանի ախտորոշում — ամեն ինչ հաշվարկվում է տեղում։ Եթե ինչ-որ բան կարմիր է, «Թարմացնել հիմա»-ն կամ ընդլայնման վերաբեռնումը սովորաբար լուծում է խնդիրը։"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock-ն անվճար է բոլորի համար։ Եթե ցանկանում եք օգնել դրա սպասարկմանը, նվիրատվությունները ողջունելի են, բայց երբեք պարտադիր չեն։"
+  },
+  "opt_reset_statistics": {
+    "message": "Զրոյացնել վիճակագրությունը"
+  },
+  "opt_add": {
+    "message": "Ավելացնել"
+  },
+  "opt_save_filters": {
+    "message": "Պահել զտիչները"
+  },
+  "opt_subscribe": {
+    "message": "Բաժանորդագրվել"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Թարմացնել բաժանորդագրությունները հիմա"
+  },
+  "opt_update_now": {
+    "message": "Թարմացնել հիմա"
+  },
+  "opt_refresh": {
+    "message": "Թարմացնել"
+  },
+  "opt_export_settings": {
+    "message": "Արտահանել կարգավորումները"
+  },
+  "opt_import_settings": {
+    "message": "Ներմուծել կարգավորումները"
+  },
+  "opt_e_g_example_com": {
+    "message": "օր.՝ example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! օրինակ\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Բաժանորդագրվել զտիչների ցուցակի URL-ին (օր.՝ https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock-ի կարգավորումներ"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Կարգավորումներ"
+  },
+  "opt_theme_light": {
+    "message": "Բաց"
+  },
+  "opt_badge_unique": {
+    "message": "եզակի"
+  },
+  "opt_smart_desc": {
+    "message": "Բռնում է գովազդներ, որոնք դեռ ոչ մի զտիչների ցուցակ չգիտի. ստանդարտ գովազդային տեղի չափ ունեցող այլ աղբյուրի շրջանակներն անմիջապես թաքցվում են՝ առանց կանոնների։"
+  },
+  "opt_caught_so_far": {
+    "message": "բռնված մինչ այժմ։"
+  },
+  "opt_allow_desc": {
+    "message": "Այս տիրույթներում գովազդը չի արգելափակվում։"
+  },
+  "opt_fh_one": {
+    "message": "Մեկ կանոն յուրաքանչյուր տողում։"
+  },
+  "opt_fh_blocks": {
+    "message": "արգելափակում է տիրույթը,"
+  },
+  "opt_fh_everywhere": {
+    "message": "թաքցնում է տարրն ամենուր,"
+  },
+  "opt_fh_site": {
+    "message": "թաքցնում է այն միայն այդ կայքում։"
+  },
+  "opt_fh_comments": {
+    "message": "Մեկնաբանության տողերը սկսվում են"
+  },
+  "opt_fh_comments2": {
+    "message": "նշանով։"
+  },
+  "opt_donate": {
+    "message": "Նվիրաբերել Revolut-ով"
+  },
+  "opt_made_by": {
+    "message": "ստեղծել է Carbon Stealth-ը"
+  },
+  "opt_empty_smart": {
+    "message": "Էվրիստիկ եղանակով դեռ ոչինչ չի բռնվել։"
+  },
+  "opt_empty_allow": {
+    "message": "Թույլատրված կայքեր դեռ չկան։"
+  },
+  "opt_empty_hidden": {
+    "message": "Ձեռքով դեռ ոչինչ թաքցված չէ։"
+  },
+  "opt_empty_subs": {
+    "message": "Բաժանորդագրված ցուցակներ դեռ չկան։"
+  },
+  "opt_no_sw": {
+    "message": "Service worker-ը չի պատասխանում։"
+  },
+  "opt_remove": {
+    "message": "Հեռացնել"
+  },
+  "opt_filter_status": {
+    "message": "Զտիչների հավաքածու v$1, թարմացվել է $2։ Միայն տվյալներ — ձեր մասին ոչինչ չի ուղարկվում։"
+  },
+  "opt_updating": {
+    "message": "Թարմացվում է…"
+  },
+  "opt_updated": {
+    "message": "Թարմացվեց (v$1, $2 լրացուցիչ կանոն)"
+  },
+  "opt_update_failed": {
+    "message": "Թարմացումը ձախողվեց ($1)"
+  },
+  "opt_saved": {
+    "message": "Պահված է ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 կանոն"
+  },
+  "opt_updated_ago": {
+    "message": "թարմացվել է $1"
+  },
+  "opt_not_fetched": {
+    "message": "դեռ չի ներբեռնվել"
+  },
+  "opt_failed_colon": {
+    "message": "սխալ՝ $1"
+  },
+  "opt_enter_https": {
+    "message": "Մուտքագրեք վավեր https:// URL"
+  },
+  "opt_fetching": {
+    "message": "Ներբեռնվում է…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Բաժանորդագրված է՝ $1 կանոն ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Ձախողվեց ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Թարմացվում է…"
+  },
+  "opt_refreshed": {
+    "message": "Թարմացվեց ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Կարգավորումների ֆայլն անվավեր է։"
+  },
+  "opt_no_response": {
+    "message": "պատասխան չկա"
+  },
+  "opt_h_engine": {
+    "message": "Հակա-ադբլոկ շարժիչ"
+  },
+  "opt_h_rulesets": {
+    "message": "Միացված ստատիկ կանոնների հավաքածուներ"
+  },
+  "opt_h_live": {
+    "message": "Կենդանի զտիչների տիրույթներ"
+  },
+  "opt_h_last": {
+    "message": "Վերջին թարմացումը"
+  },
+  "opt_h_sig": {
+    "message": "Թարմացումների ստորագրություններ"
+  },
+  "opt_h_user": {
+    "message": "Իմ զտիչները / թույլատրման կանոններ"
+  },
+  "opt_h_popup": {
+    "message": "Ներկառուցված ելնող գովազդի հոսթեր"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-ի շրջանցում"
+  },
+  "opt_reason_frame": {
+    "message": "Գովազդի չափի այլ աղբյուրի շրջանակ"
+  },
+  "opt_reason_sticky": {
+    "message": "Կպչուն գովազդային բաններ"
+  },
+  "logRegional": {
+    "message": "Տարածքային ցուցակներ"
+  },
+  "logFocus": {
+    "message": "Ֆոկուս ռեժիմ"
+  },
+  "opt_filter_lists": {
+    "message": "Զտիչների ցուցակներ"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList-ը և EasyPrivacy-ն միշտ միացված են։ Ստորև բերված ցուցակները բաց լիցենզիայով են և ներառված են ընդլայնման մեջ, ուստի դրանցից որևէ մեկը միացնելիս ոչինչ չի ներբեռնվում՝ բացառությամբ այն ցուցակի, որը նշված է որպես իր հեղինակից եկող։"
+  },
+  "opt_lists_core": {
+    "message": "Հիմնական"
+  },
+  "opt_lists_regional": {
+    "message": "Տարածքային"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Ձեր դիտարկչի լեզվի ցուցակն ինքնաբերաբար միանում է։ Ավելացրեք այլ ցուցակներ, եթե հաճախ եք կարդում այլ լեզուներով կայքեր։"
+  },
+  "opt_focus_mode": {
+    "message": "Ֆոկուս ռեժիմ"
+  },
+  "opt_focus_desc": {
+    "message": "Թաքցրեք այն, ինչը գովազդ չէ, բայց միևնույն է խանգարում է։ Այստեղ ամեն ինչ անջատված է, մինչև ինքներդ չմիացնեք։"
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin-ի զտիչներ"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Գովազդներ, հետագծիչներ, հակա-ադբլոկ շտկումներ և կայքերի ուղղումներ uBlock Origin թիմից։"
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe-ի ցուցակը"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Գովազդային և հետագծող սերվերների երկարամյա ցուցակ։"
+  },
+  "opt_focus_social": {
+    "message": "Սոցիալական ցանցերի կոճակներ և վիջեթներ"
+  },
+  "opt_focus_social_desc": {
+    "message": "Կիսվելու կոճակներ, հավանելու բլոկներ և ներկառուցված լրահոսեր։"
+  },
+  "opt_focus_chat": {
+    "message": "Չաթի և աջակցության վիջեթներ"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Էջի անկյունում լողացող չաթի պղպջակները։"
+  },
+  "opt_focus_newsletters": {
+    "message": "Տեղեկագրի և գրանցման ելնող պատուհաններ"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "«Բաժանորդագրվեք մեր տեղեկագրին» բլոկներ և շերտեր։"
+  },
+  "opt_focus_notifications": {
+    "message": "Ծանուցումների հարցումներ"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "«Թույլատրե՞լ ծանուցումները» բլոկները, որոնք կայքերը ցույց են տալիս, մինչ դիտարկիչը կհարցնի։"
+  },
+  "opt_focus_ai": {
+    "message": "Արհեստական բանականության օգնականների պատուհաններ"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Էջերին ավելացված չաթբոտի պղպջակներ և արհեստական բանականության առաջարկների վահանակներ։"
+  },
+  "opt_focus_other": {
+    "message": "Այլ նյարդայնացնող տարրեր"
+  },
+  "opt_focus_other_desc": {
+    "message": "Կպչուն գոտիներ, «Բացել հավելվածում» բաններներ և նմանատիպ խառնաշփոթ։"
+  },
+  "opt_badge_lang": {
+    "message": "ձեր լեզուն"
+  },
+  "opt_badge_remote": {
+    "message": "հեղինակից"
+  },
+  "opt_remote_hint": {
+    "message": "Ներառված չէ (վերատարածման լիցենզիա չկա). միացնելիս ձեր դիտարկիչն այն ներբեռնում է այստեղից՝ $1։"
+  },
+  "opt_downloaded_from": {
+    "message": "Միացնելիս ներբեռնվում է այստեղից՝ $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome-ը մերժեց ցուցակների այս համադրությունը ($1)։ Անջատեք դրանցից մի քանիսը։"
+  },
+  "opt_badge_recommended": {
+    "message": "խորհուրդ է տրվում ձեր լեզվի համար"
+  },
+  "reportBroken": {
+    "message": "Կայքը փչացե՞լ է։ Շտկեք կամ տեղեկացրեք մեզ"
+  },
+  "rep_title": {
+    "message": "Ինչ-որ բան չի՞ աշխատում այս կայքում"
+  },
+  "rep_fix_first": {
+    "message": "Շտկել հիմա"
+  },
+  "rep_site": {
+    "message": "Կայք՝"
+  },
+  "rep_fix_desc": {
+    "message": "Խնդիրների մեծ մասը վերանում է սրանցից մեկով։ Յուրաքանչյուրը վերաբերում է միայն այս կայքին, և ներդիրը վերաբեռնվում է։"
+  },
+  "rep_fix_cosm": {
+    "message": "Անջատել տարրերի թաքցումն այստեղ"
+  },
+  "rep_fix_allow": {
+    "message": "Թույլատրել գովազդն այս կայքում"
+  },
+  "rep_fix_pause": {
+    "message": "Դադար ամենուր 30 րոպեով"
+  },
+  "rep_tell_us": {
+    "message": "Տեղեկացրեք մեզ"
+  },
+  "rep_tell_desc": {
+    "message": "Մենք շտկում ենք փչացած կայքերը բոլորի համար ստորագրված զտիչների թարմացման միջոցով, սովորաբար մեկ օրվա ընթացքում։ Ընդլայնումը ոչինչ չի ուղարկում. զեկույցը բացվում է ձեր էլփոստի հավելվածում, և դուք նախապես տեսնում եք դրա յուրաքանչյուր բառը։"
+  },
+  "rep_what": {
+    "message": "Ի՞նչն է սխալ (ըստ ցանկության)"
+  },
+  "rep_what_ph": {
+    "message": "օր.՝ տեսանյութը չի սկսվում, սպիտակ վանդակը ծածկում է հոդվածը…"
+  },
+  "rep_full_url": {
+    "message": "Ներառել էջի ամբողջական հասցեն (հակառակ դեպքում՝ միայն կայքի անունը)"
+  },
+  "rep_preview": {
+    "message": "Ինչ կուղարկվի"
+  },
+  "rep_send_mail": {
+    "message": "Ուղարկել էլփոստով"
+  },
+  "rep_copy": {
+    "message": "Պատճենել զեկույցը"
+  },
+  "rep_privacy": {
+    "message": "Ինչպես է մշակվում այս հաղորդումը՝ գաղտնիության քաղաքականություն"
+  },
+  "rep_copied": {
+    "message": "Պատճենվեց։"
+  },
+  "rep_done_cosm": {
+    "message": "Տարրերի թաքցումն այս կայքում անջատված է։ Վերաբեռնվեց — շտկվե՞ց"
+  },
+  "rep_done_allow": {
+    "message": "Գովազդն այս կայքում թույլատրված է։ Վերաբեռնվեց — շտկվե՞ց"
+  },
+  "rep_done_pause": {
+    "message": "Դադար 30 րոպեով։ Եթե կայքն այժմ աշխատում է, խնդրում ենք տեղեկացնել մեզ ստորև։"
+  },
+  "cookieRejections": {
+    "message": "Ձեր փոխարեն մերժված քուքիների բաններներ՝ $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shorts-ի դարակները, ներդիրը և առաջարկները YouTube-ում։"
+  },
+  "opt_focus_onetap": {
+    "message": "«Մուտք գործել Google-ով» պատուհաններ"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Հաշվի ընտրիչը, որը հայտնվում է շատ կայքերի անկյունում։ Մուտքի կոճակները շարունակում են աշխատել։"
+  },
+  "pickTip": {
+    "message": "Սեղմեք տարրի վրա՝ այն թաքցնելու համար"
+  },
+  "pickZapTip": {
+    "message": "Սեղմեք՝ այս տարրը հեռացնելու համար (մեկ անգամ)"
+  },
+  "pickEscCancel": {
+    "message": "— չեղարկել"
+  },
+  "opt_notices": {
+    "message": "Զտիչների ցուցակների լիցենզիաները"
+  }
+}

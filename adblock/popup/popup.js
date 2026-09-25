@@ -53,6 +53,10 @@ function load() {
       if (!res) return;
       toggle.checked = res.enabled;
       blockedTotal.textContent = res.blockedTotal.toLocaleString(UI_LANG);
+      if (res.cookieRejections > 0) {
+        $("rejText").textContent = t("cookieRejections", [res.cookieRejections.toLocaleString(UI_LANG)]);
+        $("rejLine").hidden = false;
+      }
       savedData.textContent = fmtData(res.saved.mb);
       savedTime.textContent = fmtTime(res.saved.seconds);
       setStatus(res.enabled);
@@ -61,6 +65,7 @@ function load() {
       renderPause(res.pausedUntil || 0);
 
       currentHost = res.host;
+      $("reportBtn").hidden = !currentHost;
       if (currentHost) {
         siteHost.textContent = currentHost;
         allowToggle.checked = !res.allowed;
@@ -87,6 +92,7 @@ function loadLog() {
   if (currentTabId == null) return;
   chrome.runtime.sendMessage({ type: "getTabLog", tabId: currentTabId }, (res) => {
     list.innerHTML = "";
+    if (res && res.reason === "unsupported") { $("logBox").hidden = true; return; } // Firefox: no getMatchedRules
     if (!res || !res.ok) {
       empty.textContent = res && res.reason === "quota" ? t("logUnavailable") : empty.textContent;
       empty.hidden = false;
@@ -102,6 +108,8 @@ function loadLog() {
       core: () => t("logCore"), youtube: () => t("logYouTube"), params: () => t("logParams"),
       malware: () => t("logMalware"), surrogates: () => t("logSurrogates"), privacy: () => t("logPrivacy"),
       user: () => t("logUser"), live: () => t("logLive"),
+      ubo: () => "uBlock Origin", plowe: () => "Peter Lowe", regional: () => t("logRegional"),
+      focus: () => t("logFocus"), lists: () => t("logRegional"),
     };
     for (const it of res.items) {
       const li = document.createElement("li");
@@ -183,3 +191,8 @@ $("pickBtn").addEventListener("click", () => {
 $("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
 
 document.addEventListener("DOMContentLoaded", load);
+
+$("reportBtn").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("report/report.html?tab=" + currentTabId) });
+  window.close();
+});

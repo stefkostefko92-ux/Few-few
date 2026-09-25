@@ -31,9 +31,19 @@ youtube.css             скрива рекламните UI елементи н
 rules/                  DNR статични правила: ad_rules + youtube_rules +
                         easylist/easyprivacy/urlhaus/removeparam (билднати от
                         tools/build_filters.mjs) + козметичен bundle + counts
-popup/ · options/       UI (popup + настройки)
+lib/abp2dnr.js          ЕДИНСТВЕН ABP/uBO → DNR конвертор (класически скрипт, root.ABP2DNR):
+                        билдът го ползва през vm, SW през importScripts (листите от автора)
+popup/ · options/       UI (popup + настройки; карти „Филтър-листи" и „Фокус")
+report/                 „Сайтът е счупен?" — бързи поправки + mailto доклад (нищо не се праща само)
 icons/ · _locales/      икони · локализация
-tools/                  build_filters.mjs (EasyList→DNR) + build_scriptlets.mjs + генератори + package.sh
+tools/                  build_filters.mjs (EasyList→DNR + каталога tools/lists.json → rules/list_<id>.json,
+                        rules/cosmetic_<id>.json, rules/lists.json, THIRD_PARTY_NOTICES.txt; синхронизира
+                        rule_resources в manifest-а) + build_scriptlets.mjs (+ uBO scriptlet-и на 64 парчета
+                        по хост в scriptlets/ubo/) + генератори + package.sh (Chrome + Firefox zip)
+                        + compare_blockers.mjs (публични тестове срещу конкурентите — числата за landing-а)
+                        + promo/ (промо клип 1080p за YouTube/CWS в стила на boy/: film.html + timeline.json —
+                        бурята идва от server/index.html, popup/панелите от store генератора, звукът е
+                        генериран; `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> node tools/promo/render.mjs`)
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
 tests/                  npm test — engine/live канал/билд/DNR/паритет на политиката (нула зависимости)
@@ -90,5 +100,13 @@ bash tools/package.sh                         # билд + самопровер�
   сканират целия документ при всяка промяна: само добавените поддървета, промени само на
   текст не струват нищо, една `querySelectorAll` на списък, не на селектор.
 - **Content script ≠ страница на разширението:** SW приема от content script само
-  `smartHit`, `getCosmetic`, `saveCustomSelector`, `ytBypass`; всичко друго — само от
-  popup/options (`sender.url` на разширението).
+  `smartHit`, `getCosmetic`, `saveCustomSelector`, `ytBypass`, `cookieRejected`; всичко
+  друго — само от popup/options/report (`sender.url` на разширението).
+- **Листи: в пакета само ясно лицензирани.** Лист без лиценз за разпространение (BG, PL NC,
+  Dandelicence) никога не влиза в пакета — сваля се от автора САМО при включване от
+  потребителя, конвертира се локално като данни (динамични правила ≥ 200000). Един
+  невалиден `urlFilter` проваля ЦЕЛИЯ ruleset в Chrome — `tests/rules.test.mjs` и
+  реалното зареждане в browser теста го пазят.
+- **Езици:** ≥54 (днес 70), всеки с пълни ключове и същите `$1` плейсхолдъри
+  (`tests/i18n.test.mjs`). Нов ключ → във ВСИЧКИ `_locales`. CSS — логически свойства
+  (`margin-inline-start`, `inset-inline-*`), за да работи RTL.

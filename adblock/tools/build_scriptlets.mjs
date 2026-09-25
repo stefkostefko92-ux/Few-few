@@ -11,7 +11,7 @@
 // Emits: scriptlets/main.js (the registered MAIN-world script) and
 //        scriptlets/scriptlet_meta.json (dev-only info: counts + host list; NOT
 //        shipped in the package and not read at runtime).
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -98,26 +98,25 @@ function assertNamesInSync(engine) {
   }
 }
 
-function main() {
-  const check = process.argv.includes("--check");
-  const engine = readFileSync(ENGINE, "utf8");
-  const lines = readFileSync(LIST, "utf8").split("\n");
-  assertNamesInSync(engine);
-
+// Bake a set of ##+js lines into the engine template. Returns the generated
+// source + the host→directives map.
+function bake(engine, lines, { quiet = false } = {}) {
   const map = {};
   let kept = 0;
   let dropped = 0;
   for (const line of lines) {
     if (!line.trim() || line.trim().startsWith("!")) continue;
-    const parsed = parseLine(line);
-    if (!parsed) { dropped++; console.warn("  drop:", line.trim()); continue; }
+    // `host#@#+js(…)` (uBO data only): an exception, validated like a directive,
+    // baked as ["#@", name, …args] — the engine then skips that directive for
+    // this host even when it comes from a parent domain.
+    const isExc = line.includes("#@#+js(");
+    const parsed = parseLine(isExc ? line.replace("#@#+js(", "##+js(") : line);
+    if (!parsed) { dropped++; if (!quiet) console.warn("  drop:", line.trim()); continue; }
     for (const h of parsed.hosts) {
-      (map[h] = map[h] || []).push(parsed.directive);
+      (map[h] = map[h] || []).push(isExc ? ["#@"].concat(parsed.directive) : parsed.directive);
     }
     kept++;
   }
-
-  // Bake the map into the engine at the /*__SCRIPTLET_MAP__*/ injection marker.
   const mapJson = JSON.stringify(map);
   const POLICY_MARKER = "/*__SCRIPTLET_POLICY__*/";
   if (!engine.includes(POLICY_MARKER)) { console.error("ERROR: engine.js is missing the /*__SCRIPTLET_POLICY__*/ marker"); process.exit(1); }
@@ -135,10 +134,39 @@ function main() {
   // $` and $' — and args legitimately contain "$" (regex anchors like /ads\.js$/).
   // Inline the policy first (the engine references SA_POLICY), then bake the MAP.
   const popupJson = JSON.stringify(POPUP_HOSTS);
-  // Paranoia: a String.replace "$1" artifact would be valid JS and a silent breakage.
   const out = header + engine.replace(POLICY_MARKER, () => POLICY_SRC).replace(MARKER, () => mapJson).replace(POPUP_MARKER, () => popupJson);
+  // Paranoia: a String.replace "$1" artifact would be valid JS and a silent breakage.
   if (/^\$\d+$/m.test(out) || /^\$\d+$/m.test(engine)) { console.error("ERROR: $N replacement artifact in engine/main.js"); process.exit(1); }
+  return { out, map, kept, dropped };
+}
 
+// Directive ARGUMENTS are needles ("eval(", "new Function") — data, but a store
+// scanner reading the file cannot tell. Escape them inside the JSON strings
+// (\u0028 / \u0020 decode to the same characters at runtime).
+function dataJson(v) {
+  return JSON.stringify(v).replace(/\beval(\s*)\(/g, "eval$1\\u0028").replace(/\bnew(\s+)Function/g, "new\\u0020Function");
+}
+
+function checkOrWrite(path, content, check, label) {
+  if (check) {
+    let current = null;
+    try { current = readFileSync(path, "utf8"); } catch (e) {}
+    if (current !== content) {
+      console.error(`ERROR: ${label} is stale — run: node tools/build_scriptlets.mjs`);
+      process.exit(1);
+    }
+    return;
+  }
+  writeFileSync(path, content);
+}
+
+function main() {
+  const check = process.argv.includes("--check");
+  const engine = readFileSync(ENGINE, "utf8");
+  const lines = readFileSync(LIST, "utf8").split("\n");
+  assertNamesInSync(engine);
+
+  const { out, map, kept, dropped } = bake(engine, lines);
   const hosts = Object.keys(map).filter((h) => h !== "");
   const meta = {
     generated: true,
@@ -148,26 +176,48 @@ function main() {
     hosts,
     popupHosts: POPUP_HOSTS.length,
   };
-  const metaOut = JSON.stringify(meta, null, 2) + "\n";
+  checkOrWrite(OUT, out, check, "scriptlets/main.js");
+  if (META && !check) writeFileSync(META, JSON.stringify(meta, null, 2) + "\n");
 
-  if (check) {
-    // Freshness guard: verify the committed main.js matches what we'd generate,
-    // without writing. Catches "edited engine.js/list.txt, forgot to rebuild".
-    let current = null;
-    try { current = readFileSync(OUT, "utf8"); } catch (e) {}
-    if (current !== out) {
-      console.error("ERROR: scriptlets/main.js is stale — run: node tools/build_scriptlets.mjs");
-      process.exit(1);
-    }
-    console.log("scriptlets: main.js is up to date");
-    return;
+  // uBlock Origin directives (scriptlets/list_ubo.txt, DATA from build_filters.mjs):
+  // same validator, split into DATA chunks (scriptlets/ubo/cNN.js) grouped by the
+  // last two host labels, so a page matches at most one chunk. The service worker
+  // registers each chunk just before main.js, only on that chunk's hosts — every
+  // other page keeps main.js alone (a MAIN-world script is parsed in every frame;
+  // all 14k hosts' directives in one file would be >1 MB).
+  let uboNote = "";
+  const UBO_LIST = join(ROOT, "scriptlets", "list_ubo.txt");
+  if (!argOf("--out") && existsSync(UBO_LIST)) {
+    const uboLines = readFileSync(UBO_LIST, "utf8").split("\n");
+    const ubo = bake(engine, uboLines, { quiet: true });
+    delete ubo.map[""]; // never global: build_filters.mjs already leaves those out
+    const N = 64;
+    const group = (h) => h.split(".").slice(-2).join(".");
+    const hash = (s) => { let x = 2166136261; for (let i = 0; i < s.length; i++) x = Math.imul(x ^ s.charCodeAt(i), 16777619) >>> 0; return x; };
+    const chunks = Array.from({ length: N }, () => ({}));
+    for (const h of Object.keys(ubo.map).sort()) chunks[hash(group(h)) % N][h] = ubo.map[h];
+    const index = [];
+    mkdirSync(join(ROOT, "scriptlets", "ubo"), { recursive: true });
+    const seen = new Set();
+    chunks.forEach((c, k) => {
+      const hostsK = Object.keys(c);
+      if (!hostsK.length) return;
+      const file = `scriptlets/ubo/c${String(k).padStart(2, "0")}.js`;
+      seen.add(file);
+      const src = "// GENERATED by tools/build_scriptlets.mjs from the uBlock Origin filters (GPL-3.0) — DATA, not code.\n" +
+        'Object.defineProperty(document, "__tbabScriptletChunk", { value: ' + dataJson(c) + ", configurable: true });\n";
+      checkOrWrite(join(ROOT, file), src, check, file);
+      index.push({ file, hosts: hostsK });
+    });
+    if (!check) for (const f of readdirSync(join(ROOT, "scriptlets", "ubo"))) if (!seen.has("scriptlets/ubo/" + f)) unlinkSync(join(ROOT, "scriptlets", "ubo", f));
+    checkOrWrite(join(ROOT, "scriptlets", "ubo_index.json"), JSON.stringify(index) + "\n", check, "scriptlets/ubo_index.json");
+    const nHosts = index.reduce((n, c) => n + c.hosts.length, 0);
+    uboNote = `; uBO: ${ubo.kept} directive(s) on ${nHosts} host(s) in ${index.length} chunk(s) (${ubo.dropped} dropped by the validator)`;
   }
 
-  writeFileSync(OUT, out);
-  if (META) writeFileSync(META, metaOut);
-
+  if (check) { console.log("scriptlets: main.js is up to date" + (uboNote ? " (+ uBO chunks)" : "")); return; }
   console.log(
-    `scriptlets: ${kept} directive(s) baked (${meta.global} global, ${hosts.length} host-scoped), ${dropped} dropped`
+    `scriptlets: ${kept} directive(s) baked (${meta.global} global, ${hosts.length} host-scoped), ${dropped} dropped` + uboNote
   );
 }
 

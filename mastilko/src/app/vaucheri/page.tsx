@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     "купон за отстъпка",
     "gift voucher българия",
     "ваучер за салон",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/vaucheri" },
   ...pageMeta(TITLE, DESC, "/vaucheri"),

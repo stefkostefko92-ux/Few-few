@@ -4,7 +4,7 @@
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Blocca la pubblicità ovunque: video ad di YouTube, banner, pop-up, tracker, avvisi cookie e muri anti-adblock. Gratis.",
+    "message": "Blocca la pubblicità ovunque: annunci video su YouTube, banner, pop-up, tracker, avvisi cookie e muri anti-adblock. Gratis.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -64,7 +64,7 @@
     "message": "Nascondi annunci qui"
   },
   "cosmeticsTitle": {
-    "message": "Filtro cosmetico su questo sito (da disattivare se l'impaginazione si rompe)"
+    "message": "Nascondi annunci su questo sito (disattivalo se l'impaginazione si rompe)"
   },
   "on": {
     "message": "Attivo"
@@ -79,7 +79,7 @@
     "message": "Qui non è ancora stato bloccato nulla."
   },
   "logUnavailable": {
-    "message": "Registro non disponibile al momento (quota del browser) — riprovi tra un minuto."
+    "message": "Registro non disponibile al momento (quota del browser) — riprova tra un minuto."
   },
   "logCore": {
     "message": "Regole di base"
@@ -115,7 +115,7 @@
     "message": "Attrezzatura e strumenti, carbonstealth.eu"
   },
   "adLabel": {
-    "message": "Ann."
+    "message": "Annuncio"
   },
   "support": {
     "message": "Sostieni"
@@ -195,7 +195,7 @@
     "message": "Carbon Stealth (scuro) o chiaro"
   },
   "opt_keep_settings_allowlist_and_filters_in_s": {
-    "message": "Mantiene impostazioni, elenco dei consentiti e filtri sincronizzati su ogni Chrome in cui ha effettuato l'accesso"
+    "message": "Mantiene impostazioni, elenco dei consentiti e filtri sincronizzati su ogni Chrome in cui hai effettuato l'accesso"
   },
   "opt_remove_video_ads_on_youtube_turn_off_if_": {
     "message": "Rimuove gli annunci video su YouTube. Da disattivare se i video non partono."
@@ -210,7 +210,7 @@
     "message": "Nasconde i post «Sponsorizzato» su Facebook e Instagram"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
-    "message": "Rimuove utm_*, fbclid, gclid e altri identificatori di clic dai link che apre"
+    "message": "Rimuove utm_*, fbclid, gclid e altri identificatori di clic dai link che apri"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
     "message": "Blocca i domini malware noti (elenco URLhaus di abuse.ch)"
@@ -228,16 +228,16 @@
     "message": "Registro in tempo reale della pubblicità individuata in modo euristico (senza lista di filtri), dalla più recente."
   },
   "opt_subscribed_lists_are_fetched_as_text_nev": {
-    "message": "Le liste sottoscritte vengono scaricate come testo (mai come codice), aggiornate ogni giorno e restano nei blocchi gestiti qui sopra. Rimuova una lista per eliminarne le regole."
+    "message": "Le liste a cui sei iscritto vengono scaricate come testo (mai come codice), aggiornate ogni giorno e restano nei blocchi gestiti qui sopra. Rimuovi una lista per eliminarne le regole."
   },
   "opt_elements_you_hid_manually_with_the_picke": {
-    "message": "Elementi che ha nascosto manualmente con il selettore, raggruppati per sito."
+    "message": "Elementi che hai nascosto manualmente con il selettore, raggruppati per sito."
   },
   "opt_live_diagnostics_everything_is_computed_": {
     "message": "Diagnostica in tempo reale — tutto viene calcolato in locale. Se qualcosa è rosso, di solito basta «Aggiorna ora» o ricaricare l'estensione."
   },
   "opt_supreme_adblock_is_free_for_everyone_if_": {
-    "message": "Supreme AdBlock è gratuito per tutti. Se desidera contribuire alla sua manutenzione, le donazioni sono benvenute, mai obbligatorie."
+    "message": "Supreme AdBlock è gratuito per tutti. Se vuoi contribuire alla sua manutenzione, le donazioni sono benvenute, mai obbligatorie."
   },
   "opt_reset_statistics": {
     "message": "Azzera le statistiche"
@@ -324,13 +324,13 @@
     "message": "Ancora nulla individuato in modo euristico."
   },
   "opt_empty_allow": {
-    "message": "Nessun sito nella lista consentita."
+    "message": "Nessun sito nell'elenco dei consentiti."
   },
   "opt_empty_hidden": {
     "message": "Ancora nulla nascosto manualmente."
   },
   "opt_empty_subs": {
-    "message": "Nessuna lista in abbonamento."
+    "message": "Nessuna iscrizione a liste."
   },
   "opt_no_sw": {
     "message": "Nessuna risposta dal service worker."
@@ -405,10 +405,10 @@
     "message": "Firme degli aggiornamenti"
   },
   "opt_h_user": {
-    "message": "I miei filtri / regole consentite"
+    "message": "I miei filtri / regole dell'elenco dei consentiti"
   },
   "opt_h_popup": {
-    "message": "Host pop-up integrati"
+    "message": "Host di pop-up pubblicitari integrati"
   },
   "opt_h_yt": {
     "message": "Bypass di YouTube"
@@ -418,5 +418,188 @@
   },
   "opt_reason_sticky": {
     "message": "Banner pubblicitario fisso"
+  },
+  "logRegional": {
+    "message": "Liste regionali"
+  },
+  "logFocus": {
+    "message": "Modalità Focus"
+  },
+  "opt_filter_lists": {
+    "message": "Liste di filtri"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList ed EasyPrivacy sono sempre attive. Le liste qui sotto hanno una licenza aperta e sono incluse nell'estensione: attivarle non scarica nulla, tranne le liste indicate come fornite dal loro autore."
+  },
+  "opt_lists_core": {
+    "message": "Principali"
+  },
+  "opt_lists_regional": {
+    "message": "Regionali"
+  },
+  "opt_lists_regional_desc": {
+    "message": "La lista per la lingua del browser si attiva da sola. Aggiungine altre se leggi spesso siti in altre lingue."
+  },
+  "opt_focus_mode": {
+    "message": "Modalità Focus"
+  },
+  "opt_focus_desc": {
+    "message": "Nasconde ciò che non è pubblicità ma dà comunque fastidio. Tutto è disattivato finché non lo attivi."
+  },
+  "opt_list_ubo": {
+    "message": "Filtri di uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Annunci, tracker, correzioni anti-adblock e riparazioni dei siti dal team di uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Lista di Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Una lista storica di server pubblicitari e di tracciamento."
+  },
+  "opt_focus_social": {
+    "message": "Pulsanti e widget dei social"
+  },
+  "opt_focus_social_desc": {
+    "message": "Pulsanti di condivisione, riquadri «Mi piace» e feed incorporati."
+  },
+  "opt_focus_chat": {
+    "message": "Chat e widget di assistenza"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Le bolle di chat fluttuanti nell'angolo della pagina."
+  },
+  "opt_focus_newsletters": {
+    "message": "Pop-up di newsletter e iscrizione"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Riquadri e sovrapposizioni «Iscriviti alla newsletter»."
+  },
+  "opt_focus_notifications": {
+    "message": "Richieste di notifiche"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "I riquadri «Consentire le notifiche?» che i siti mostrano prima della richiesta del browser."
+  },
+  "opt_focus_ai": {
+    "message": "Pop-up di assistenti IA"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Bolle di chatbot e pannelli di suggerimenti IA aggiunti alle pagine."
+  },
+  "opt_focus_other": {
+    "message": "Altri elementi fastidiosi"
+  },
+  "opt_focus_other_desc": {
+    "message": "Barre fisse, banner «apri nell'app» e simili."
+  },
+  "opt_badge_lang": {
+    "message": "la tua lingua"
+  },
+  "opt_badge_remote": {
+    "message": "dall'autore"
+  },
+  "opt_remote_hint": {
+    "message": "Non inclusa (nessuna licenza di ridistribuzione): il browser la scarica da $1 quando la attivi."
+  },
+  "opt_downloaded_from": {
+    "message": "Si scarica da $1 quando la attivi"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ha rifiutato questa combinazione di liste ($1). Disattivane alcune."
+  },
+  "opt_badge_recommended": {
+    "message": "consigliata per la tua lingua"
+  },
+  "reportBroken": {
+    "message": "Sito rotto? Risolvi o segnalacelo"
+  },
+  "rep_title": {
+    "message": "Qualcosa non funziona su questo sito?"
+  },
+  "rep_fix_first": {
+    "message": "Risolvi subito"
+  },
+  "rep_site": {
+    "message": "Sito:"
+  },
+  "rep_fix_desc": {
+    "message": "La maggior parte dei problemi si risolve con una di queste opzioni. Ognuna vale solo per questo sito; la scheda si ricarica."
+  },
+  "rep_fix_cosm": {
+    "message": "Disattiva qui l'occultamento degli elementi"
+  },
+  "rep_fix_allow": {
+    "message": "Consenti gli annunci su questo sito"
+  },
+  "rep_fix_pause": {
+    "message": "Pausa ovunque per 30 minuti"
+  },
+  "rep_tell_us": {
+    "message": "Segnalacelo"
+  },
+  "rep_tell_desc": {
+    "message": "Ripariamo i siti rotti per tutti tramite l'aggiornamento firmato dei filtri, di solito entro un giorno. L'estensione non invia nulla: la segnalazione si apre nella tua app di posta e ne vedi ogni parola prima."
+  },
+  "rep_what": {
+    "message": "Cosa non va? (facoltativo)"
+  },
+  "rep_what_ph": {
+    "message": "es. il video non parte, un riquadro bianco copre l'articolo…"
+  },
+  "rep_full_url": {
+    "message": "Includi l'indirizzo completo della pagina (altrimenti solo il nome del sito)"
+  },
+  "rep_preview": {
+    "message": "Cosa verrà inviato"
+  },
+  "rep_send_mail": {
+    "message": "Invia per email"
+  },
+  "rep_copy": {
+    "message": "Copia la segnalazione"
+  },
+  "rep_privacy": {
+    "message": "Come viene gestita questa segnalazione: informativa sulla privacy"
+  },
+  "rep_copied": {
+    "message": "Copiato."
+  },
+  "rep_done_cosm": {
+    "message": "L'occultamento degli elementi è disattivato su questo sito. Ricaricato: è risolto?"
+  },
+  "rep_done_allow": {
+    "message": "Gli annunci sono consentiti su questo sito. Ricaricato: è risolto?"
+  },
+  "rep_done_pause": {
+    "message": "In pausa per 30 minuti. Se ora il sito funziona, segnalacelo qui sotto."
+  },
+  "cookieRejections": {
+    "message": "Banner dei cookie rifiutati per te: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Gli scaffali, la scheda e i suggerimenti Shorts su YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Pop-up «Accedi con Google»"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Il selettore di account che compare nell'angolo di molti siti. I pulsanti di accesso continuano a funzionare."
+  },
+  "pickTip": {
+    "message": "Fai clic su un elemento per nasconderlo"
+  },
+  "pickZapTip": {
+    "message": "Fai clic per rimuovere l'elemento (una volta)"
+  },
+  "pickEscCancel": {
+    "message": "per annullare"
+  },
+  "opt_notices": {
+    "message": "Licenze delle liste di filtri"
   }
 }

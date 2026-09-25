@@ -1,0 +1,10 @@
+O Supreme AdBlock bloqueia anúncios em todo lugar — anúncios em vídeo do YouTube, banners, pop-ups e rastreadores — sem monitorar o que você faz.
+
+• Os anúncios do YouTube são barrados na origem, então os vídeos simplesmente são reproduzidos.
+• EasyList, EasyPrivacy e os filtros do uBlock Origin já vêm integrados, além da lista do seu idioma (31 listas regionais).
+• Avisos de cookies: ele clica em “Recusar” por você, remove o desfoque e o bloqueio de rolagem que sobram e nunca clica em botões de login, OAuth ou pagamento.
+• Modo Foco: oculte bolhas de chat, pop-ups de newsletter, pedidos de notificação, widgets sociais, pop-ups de IA e YouTube Shorts.
+• Barreiras antiadblock e pop-unders são neutralizados.
+• Site com problemas? Um clique resolve, ou nos avise — nada é enviado sem que você veja antes.
+• Atualizações de filtros assinadas duas vezes por dia: novas redes de anúncios são tratadas em poucas horas, sem código remoto.
+• Sem conta, sem telemetria, sem coleta de dados. Grátis, com doação opcional; o pop-up mostra um pequeno cartão, marcado como “Anúncio”, da Carbon Stealth, a criadora.

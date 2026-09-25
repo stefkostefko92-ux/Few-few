@@ -69,9 +69,25 @@ export function lintShell(src, rel) {
   };
   const REDIRECT_TO_FILE = />>?\s*("?\$?\{?[A-Za-z_./][^\n|&]*)/;
   const REDIRECT_TO_STD = />>?\s*("?\/dev\/(stdout|stderr|fd\/[12])"?|&[12])/;
-  const secretToLog = lines.some((l) => {
+  // Група `{ … } > file` / `( … ) > file`: пренасочването стои на ЗАТВАРЯЩИЯ ред,
+  // а echo-тата вътре пишат във файла, не в лога (vizitka/deploy/server-setup.sh
+  // ражда vizitka.env точно така). Отварящият ред трябва да е гола скоба — функции
+  // (`f() {`) и subshell с команда (`( cd … `) не се броят.
+  const inFileGroup = new Set();
+  const open = [];
+  lines.forEach((l, i) => {
+    if (/^\s*[{(]\s*(#.*)?$/.test(l)) open.push(i);
+    else if (open.length && /^\s*[})]/.test(l)) {
+      const start = open.pop();
+      const tail = l.replace(/^\s*[})]\s*/, "");
+      if (REDIRECT_TO_FILE.test(tail) && !REDIRECT_TO_STD.test(tail))
+        for (let j = start + 1; j < i; j++) inFileGroup.add(j);
+    }
+  });
+  const secretToLog = lines.some((l, i) => {
     if (!LOGS_A_SECRET.test(l)) return false;
-    if (REDIRECT_TO_STD.test(l)) return true;        // /dev/stdout е ЛОГ
+    if (REDIRECT_TO_STD.test(l)) return true;        // /dev/stdout е ЛОГ (и вътре в група)
+    if (inFileGroup.has(i)) return false;            // тялото на `{ … } > file` е ЗАПИС
     return !REDIRECT_TO_FILE.test(l);                // без пренасочване → ЛОГ
   });
   if (secretToLog)

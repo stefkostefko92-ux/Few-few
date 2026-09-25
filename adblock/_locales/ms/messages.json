@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Sekat semua iklan: video YouTube, sepanduk, pop-up, penjejak, gesaan kuki, dinding anti-adblock. Percuma, pantas, peribadi."
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Hidupkan/matikan perlindungan"
+  },
+  "protected": {
+    "message": "Dilindungi"
+  },
+  "paused": {
+    "message": "Dijeda"
+  },
+  "blockingHere": {
+    "message": "Menyekat iklan pada halaman ini"
+  },
+  "protectionOff": {
+    "message": "Perlindungan dimatikan"
+  },
+  "pause30": {
+    "message": "Jeda selama 30 minit"
+  },
+  "pausedResume": {
+    "message": "Dijeda, sambung sekarang (tinggal $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Disekat"
+  },
+  "dataSaved": {
+    "message": "Data dijimat"
+  },
+  "timeSaved": {
+    "message": "Masa dijimat"
+  },
+  "thisSite": {
+    "message": "tapak ini"
+  },
+  "thisPage": {
+    "message": "halaman ini"
+  },
+  "blockOnSite": {
+    "message": "Sekat iklan pada tapak ini"
+  },
+  "blocking": {
+    "message": "Menyekat"
+  },
+  "allowed": {
+    "message": "Dibenarkan"
+  },
+  "cosmetics": {
+    "message": "Sembunyikan iklan di sini"
+  },
+  "cosmeticsTitle": {
+    "message": "Sembunyikan iklan di tapak ini (matikan jika susun atur halaman rosak)"
+  },
+  "on": {
+    "message": "Hidup"
+  },
+  "off": {
+    "message": "Mati"
+  },
+  "blockedHere": {
+    "message": "Disekat pada halaman ini"
+  },
+  "logEmpty": {
+    "message": "Belum ada apa-apa yang disekat di sini."
+  },
+  "logUnavailable": {
+    "message": "Log tidak tersedia sekarang (kuota penyemak imbas) — cuba lagi dalam seminit."
+  },
+  "logCore": {
+    "message": "Peraturan teras Supreme"
+  },
+  "logYouTube": {
+    "message": "Peraturan iklan YouTube"
+  },
+  "logParams": {
+    "message": "Parameter penjejakan"
+  },
+  "logMalware": {
+    "message": "Domain perisian hasad"
+  },
+  "logSurrogates": {
+    "message": "Skrip iklan dineutralkan"
+  },
+  "logPrivacy": {
+    "message": "Perlindungan privasi"
+  },
+  "logUser": {
+    "message": "Penapis saya"
+  },
+  "logLive": {
+    "message": "Kemas kini semasa"
+  },
+  "hideElement": {
+    "message": "Sembunyikan elemen"
+  },
+  "settings": {
+    "message": "Tetapan"
+  },
+  "promoSub": {
+    "message": "Peralatan & alat, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Iklan"
+  },
+  "support": {
+    "message": "Sokong"
+  },
+  "filtersCount": {
+    "message": "$1+ penapis",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Penampilan"
+  },
+  "opt_extra_protection": {
+    "message": "Perlindungan tambahan"
+  },
+  "opt_smart_detection_log": {
+    "message": "Log Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Tapak dalam senarai dibenarkan"
+  },
+  "opt_my_filters": {
+    "message": "Penapis saya"
+  },
+  "opt_hidden_elements": {
+    "message": "Elemen tersembunyi"
+  },
+  "opt_filter_updates": {
+    "message": "Kemas kini penapis"
+  },
+  "opt_engine_health": {
+    "message": "Kesihatan enjin"
+  },
+  "opt_backup": {
+    "message": "Sandaran"
+  },
+  "opt_support_development": {
+    "message": "Sokong pembangunan"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Segerakkan merentas peranti"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Penyekatan iklan YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Sepanduk kuki / persetujuan"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Pintasan anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Siaran ditaja Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Alih keluar parameter penjejakan"
+  },
+  "opt_malware_protection": {
+    "message": "Perlindungan perisian hasad"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Sekat API penyemak imbas untuk penyasaran iklan"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Sekat suar penjejakan & pelombong kripto"
+  },
+  "opt_auto_update_filters": {
+    "message": "Kemas kini penapis secara automatik"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (gelap) atau cerah"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Segerakkan tetapan, senarai dibenarkan dan penapis pada setiap Chrome yang anda log masuk"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Alih keluar iklan video pada YouTube. Matikan jika video tidak dapat dimainkan."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Tutup gesaan “Terima kuki” secara automatik"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Sembunyikan dinding “lumpuhkan penyekat iklan anda” dan pulihkan halaman"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Sembunyikan siaran “Ditaja” pada Facebook & Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Buang utm_*, fbclid, gclid dan pengecam klik lain daripada pautan yang anda buka"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Sekat domain perisian hasad yang diketahui (senarai URLhaus oleh abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Lumpuhkan API iklan Google Topics, FLoC dan Protected Audience pada setiap tapak"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Hentikan ping pengauditan hiperpautan / suar pihak ketiga, buang kuki penjejakan daripada respons pelayan teknologi iklan yang diketahui dan sekat skrip perlombongan kripto dalam penyemak imbas. Matikan jika ciri tapak yang bergantung pada analitis tidak berfungsi dengan betul."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Mengambil peraturan sekatan baharu dan pembetulan YouTube daripada adblock.carbonstealth.eu kira-kira dua kali sehari. Data sahaja, tiada kod; permintaan tidak membawa sebarang pengecam atau data penyemakan imbas."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Log langsung iklan yang ditangkap secara heuristik (tanpa senarai penapis), yang terbaharu dahulu."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Senarai yang dilanggan diambil sebagai teks (tidak sekali-kali sebagai kod), dikemas kini setiap hari dan disimpan dalam blok terurus di atas. Alih keluar senarai untuk membuang peraturannya."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elemen yang anda sembunyikan secara manual dengan pemilih, dikumpulkan mengikut tapak."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Diagnostik langsung — semuanya dikira secara setempat. Jika ada yang berwarna merah, “Kemas kini sekarang” atau memuatkan semula sambungan biasanya dapat membetulkannya."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock percuma untuk semua orang. Jika anda ingin membantu memastikannya terus diselenggara, derma dialu-alukan, tetapi tidak sekali-kali diwajibkan."
+  },
+  "opt_reset_statistics": {
+    "message": "Tetapkan semula statistik"
+  },
+  "opt_add": {
+    "message": "Tambah"
+  },
+  "opt_save_filters": {
+    "message": "Simpan penapis"
+  },
+  "opt_subscribe": {
+    "message": "Langgan"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Muat semula langganan sekarang"
+  },
+  "opt_update_now": {
+    "message": "Kemas kini sekarang"
+  },
+  "opt_refresh": {
+    "message": "Muat semula"
+  },
+  "opt_export_settings": {
+    "message": "Eksport tetapan"
+  },
+  "opt_import_settings": {
+    "message": "Import tetapan"
+  },
+  "opt_e_g_example_com": {
+    "message": "cth. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Langgan URL senarai penapis (cth. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Tetapan Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Tetapan"
+  },
+  "opt_theme_light": {
+    "message": "Cerah"
+  },
+  "opt_badge_unique": {
+    "message": "unik"
+  },
+  "opt_smart_desc": {
+    "message": "Menangkap iklan yang belum diketahui oleh mana-mana senarai penapis: bingkai rentas asal yang bersaiz seperti slot iklan standard disembunyikan serta-merta, tanpa memerlukan peraturan."
+  },
+  "opt_caught_so_far": {
+    "message": "ditangkap setakat ini."
+  },
+  "opt_allow_desc": {
+    "message": "Iklan tidak disekat pada domain ini."
+  },
+  "opt_fh_one": {
+    "message": "Satu peraturan bagi setiap baris."
+  },
+  "opt_fh_blocks": {
+    "message": "menyekat domain;"
+  },
+  "opt_fh_everywhere": {
+    "message": "menyembunyikan elemen di mana-mana;"
+  },
+  "opt_fh_site": {
+    "message": "menyembunyikannya hanya pada tapak itu."
+  },
+  "opt_fh_comments": {
+    "message": "Baris yang bermula dengan"
+  },
+  "opt_fh_comments2": {
+    "message": "ialah ulasan."
+  },
+  "opt_donate": {
+    "message": "Derma melalui Revolut"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Belum ada apa-apa yang ditangkap secara heuristik."
+  },
+  "opt_empty_allow": {
+    "message": "Belum ada tapak dalam senarai dibenarkan."
+  },
+  "opt_empty_hidden": {
+    "message": "Belum ada apa-apa yang disembunyikan secara manual."
+  },
+  "opt_empty_subs": {
+    "message": "Belum ada senarai yang dilanggan."
+  },
+  "opt_no_sw": {
+    "message": "Tiada respons daripada service worker."
+  },
+  "opt_remove": {
+    "message": "Alih keluar"
+  },
+  "opt_filter_status": {
+    "message": "Set penapis v$1, dikemas kini $2. Data sahaja, tiada maklumat tentang anda yang dihantar."
+  },
+  "opt_updating": {
+    "message": "Mengemas kini…"
+  },
+  "opt_updated": {
+    "message": "Dikemas kini (v$1, $2 peraturan tambahan)"
+  },
+  "opt_update_failed": {
+    "message": "Kemas kini gagal ($1)"
+  },
+  "opt_saved": {
+    "message": "Disimpan ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 peraturan"
+  },
+  "opt_updated_ago": {
+    "message": "dikemas kini $1"
+  },
+  "opt_not_fetched": {
+    "message": "belum diambil"
+  },
+  "opt_failed_colon": {
+    "message": "gagal: $1"
+  },
+  "opt_enter_https": {
+    "message": "Masukkan URL https:// yang sah"
+  },
+  "opt_fetching": {
+    "message": "Mengambil…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Dilanggan: $1 peraturan ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Gagal ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Memuat semula…"
+  },
+  "opt_refreshed": {
+    "message": "Dimuat semula ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Fail tetapan tidak sah."
+  },
+  "opt_no_response": {
+    "message": "tiada respons"
+  },
+  "opt_h_engine": {
+    "message": "Enjin anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Set peraturan statik yang aktif"
+  },
+  "opt_h_live": {
+    "message": "Domain penapis langsung"
+  },
+  "opt_h_last": {
+    "message": "Kemas kini terakhir"
+  },
+  "opt_h_sig": {
+    "message": "Tandatangan kemas kini"
+  },
+  "opt_h_user": {
+    "message": "Penapis saya / peraturan senarai dibenarkan"
+  },
+  "opt_h_popup": {
+    "message": "Hos iklan timbul terbina dalam"
+  },
+  "opt_h_yt": {
+    "message": "Pintasan YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Bingkai rentas asal bersaiz iklan"
+  },
+  "opt_reason_sticky": {
+    "message": "Iklan sepanduk melekit"
+  },
+  "logRegional": {
+    "message": "Senarai serantau"
+  },
+  "logFocus": {
+    "message": "Mod fokus"
+  },
+  "opt_filter_lists": {
+    "message": "Senarai penapis"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList dan EasyPrivacy sentiasa dihidupkan. Senarai di bawah ialah senarai berlesen terbuka yang telah disusun ke dalam sambungan, jadi menghidupkannya tidak memuat turun apa-apa, kecuali senarai yang ditandakan sebagai datang daripada pengarangnya."
+  },
+  "opt_lists_core": {
+    "message": "Teras"
+  },
+  "opt_lists_regional": {
+    "message": "Serantau"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Senarai untuk bahasa penyemak imbas anda dihidupkan dengan sendirinya. Tambah yang lain jika anda kerap membaca tapak dalam bahasa lain."
+  },
+  "opt_focus_mode": {
+    "message": "Mod fokus"
+  },
+  "opt_focus_desc": {
+    "message": "Sembunyikan perkara yang bukan iklan tetapi masih mengganggu. Semua di sini dimatikan sehingga anda menghidupkannya."
+  },
+  "opt_list_ubo": {
+    "message": "Penapis uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Iklan, penjejak, pembetulan anti-adblock dan pembaikan tapak daripada pasukan uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Senarai Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Senarai pelayan iklan dan penjejakan yang telah lama diselenggara."
+  },
+  "opt_focus_social": {
+    "message": "Butang dan widget media sosial"
+  },
+  "opt_focus_social_desc": {
+    "message": "Butang kongsi, kotak suka dan suapan terbenam."
+  },
+  "opt_focus_chat": {
+    "message": "Widget sembang dan sokongan"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Gelembung sembang terapung di penjuru halaman."
+  },
+  "opt_focus_newsletters": {
+    "message": "Tetingkap timbul surat berita dan pendaftaran"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Kotak dan tindanan “Langgan surat berita kami”."
+  },
+  "opt_focus_notifications": {
+    "message": "Gesaan pemberitahuan"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Kotak “Benarkan pemberitahuan?” yang dipaparkan oleh tapak sebelum penyemak imbas bertanya."
+  },
+  "opt_focus_ai": {
+    "message": "Tetingkap timbul pembantu AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Gelembung chatbot dan panel cadangan AI yang ditambahkan pada halaman."
+  },
+  "opt_focus_other": {
+    "message": "Gangguan lain"
+  },
+  "opt_focus_other_desc": {
+    "message": "Bar melekit, sepanduk “buka dalam apl” dan kekusutan yang serupa."
+  },
+  "opt_badge_lang": {
+    "message": "bahasa anda"
+  },
+  "opt_badge_remote": {
+    "message": "daripada pengarangnya"
+  },
+  "opt_remote_hint": {
+    "message": "Tidak disertakan (tiada lesen untuk mengedarkannya semula): penyemak imbas anda memuat turunnya daripada $1 apabila anda menghidupkannya."
+  },
+  "opt_downloaded_from": {
+    "message": "Dimuat turun daripada $1 apabila anda menghidupkannya"
+  },
+  "opt_lists_error": {
+    "message": "Chrome menolak gabungan senarai ini ($1). Matikan sebahagian daripadanya."
+  },
+  "opt_badge_recommended": {
+    "message": "disyorkan untuk bahasa anda"
+  },
+  "reportBroken": {
+    "message": "Tapak rosak? Baiki atau beritahu kami"
+  },
+  "rep_title": {
+    "message": "Ada yang rosak pada tapak ini?"
+  },
+  "rep_fix_first": {
+    "message": "Baiki sekarang"
+  },
+  "rep_site": {
+    "message": "Tapak:"
+  },
+  "rep_fix_desc": {
+    "message": "Kebanyakan masalah hilang dengan salah satu daripada ini. Setiap satu hanya digunakan pada tapak ini; tab akan dimuat semula."
+  },
+  "rep_fix_cosm": {
+    "message": "Matikan penyembunyian elemen di sini"
+  },
+  "rep_fix_allow": {
+    "message": "Benarkan iklan pada tapak ini"
+  },
+  "rep_fix_pause": {
+    "message": "Jeda di semua tapak selama 30 minit"
+  },
+  "rep_tell_us": {
+    "message": "Beritahu kami"
+  },
+  "rep_tell_desc": {
+    "message": "Kami membaiki tapak yang rosak untuk semua orang melalui kemas kini penapis bertandatangan, biasanya dalam masa sehari. Sambungan tidak menghantar apa-apa: laporan dibuka dalam apl e-mel anda sendiri, dan anda dapat melihat setiap perkataannya terlebih dahulu."
+  },
+  "rep_what": {
+    "message": "Apakah masalahnya? (pilihan)"
+  },
+  "rep_what_ph": {
+    "message": "cth. video tidak bermula, kotak putih menutupi artikel…"
+  },
+  "rep_full_url": {
+    "message": "Sertakan alamat halaman penuh (jika tidak, hanya nama tapak)"
+  },
+  "rep_preview": {
+    "message": "Perkara yang akan dihantar"
+  },
+  "rep_send_mail": {
+    "message": "Hantar melalui e-mel"
+  },
+  "rep_copy": {
+    "message": "Salin laporan"
+  },
+  "rep_privacy": {
+    "message": "Cara laporan ini dikendalikan: dasar privasi"
+  },
+  "rep_copied": {
+    "message": "Disalin."
+  },
+  "rep_done_cosm": {
+    "message": "Penyembunyian elemen dimatikan pada tapak ini. Sudah dimuat semula — adakah ia sudah betul?"
+  },
+  "rep_done_allow": {
+    "message": "Iklan dibenarkan pada tapak ini. Sudah dimuat semula — adakah ia sudah betul?"
+  },
+  "rep_done_pause": {
+    "message": "Dijeda selama 30 minit. Jika tapak berfungsi sekarang, sila beritahu kami di bawah."
+  },
+  "cookieRejections": {
+    "message": "Sepanduk kuki yang ditolak untuk anda: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Rak, tab dan cadangan Shorts pada YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Tetingkap timbul “Log masuk dengan Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Pemilih akaun yang muncul di penjuru banyak tapak. Butang log masuk tetap berfungsi."
+  },
+  "pickTip": {
+    "message": "Klik elemen untuk menyembunyikannya"
+  },
+  "pickZapTip": {
+    "message": "Klik untuk mengalih keluar elemen ini (sekali)"
+  },
+  "pickEscCancel": {
+    "message": "untuk membatalkan"
+  },
+  "opt_notices": {
+    "message": "Lesen senarai penapis"
+  }
+}
