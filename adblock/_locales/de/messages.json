@@ -81,6 +81,30 @@
   "logUnavailable": {
     "message": "Protokoll derzeit nicht verfügbar (Browser-Kontingent) — versuchen Sie es in einer Minute erneut."
   },
+  "logCore": {
+    "message": "Kernregeln"
+  },
+  "logYouTube": {
+    "message": "YouTube-Werbung"
+  },
+  "logParams": {
+    "message": "Tracking-Parameter"
+  },
+  "logMalware": {
+    "message": "Schadsoftware-Domains"
+  },
+  "logSurrogates": {
+    "message": "Neutralisierte Werbeskripte"
+  },
+  "logPrivacy": {
+    "message": "Datenschutz"
+  },
+  "logUser": {
+    "message": "Meine Filter"
+  },
+  "logLive": {
+    "message": "Live-Updates"
+  },
   "hideElement": {
     "message": "Element ausblenden"
   },
@@ -198,7 +222,7 @@
     "message": "Stoppt Hyperlink-Auditing- und Beacon-Pings von Drittanbietern, entfernt Tracking-Cookies aus bekannten Ad-Tech-Antworten und blockiert Cryptomining-Skripte im Browser. Schalten Sie es aus, wenn eine analyseabhängige Funktion einer Website nicht richtig arbeitet."
   },
   "opt_fetches_new_block_rules_and_youtube_fixe": {
-    "message": "Lädt neue Blockierregeln und YouTube-Korrekturen von adblock.carbonstealth.eu. Nur Daten, kein Code; nichts über Sie wird gesendet."
+    "message": "Lädt etwa zweimal täglich neue Blockierregeln und YouTube-Korrekturen von adblock.carbonstealth.eu. Nur Daten, kein Code; die Anfrage enthält keine Kennungen und keine Browsing-Daten."
   },
   "opt_live_log_of_ads_caught_heuristically_no_": {
     "message": "Live-Protokoll heuristisch erkannter Werbung (ohne Filterliste), neueste zuerst."

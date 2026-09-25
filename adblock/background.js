@@ -146,7 +146,18 @@ const DEFAULTS = {
 };
 
 // Settings mirrored to chrome.storage.sync when cross-device sync is on.
-const SYNC_KEYS = ["enabled", "features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics"];
+// NOT `enabled`: on/off and a timed pause are per device — the pause's resume
+// alarm lives on the device that paused, so a synced `enabled:false` left the
+// OTHER device switched off with nothing to turn it back on.
+const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics"];
+
+// Hosts as Chrome/DNR see them: lowercase ASCII (IDN as punycode), IPv4 or a
+// single label (localhost). One malformed entry used to make the WHOLE
+// allowlist rule update fail (updateDynamicRules is atomic), so every later
+// allowlist change silently stopped reaching the network layer.
+const HOST_RE = /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+const isHost = (d) => typeof d === "string" && HOST_RE.test(d);
+const isIPv4 = (d) => /^\d{1,3}(\.\d{1,3}){3}$/.test(d);
 
 chrome.runtime.onInstalled.addListener(async () => {
   const stored = await chrome.storage.local.get(Object.keys(DEFAULTS));
@@ -155,6 +166,9 @@ chrome.runtime.onInstalled.addListener(async () => {
     if (stored[k] === undefined) patch[k] = v;
   }
   if (Object.keys(patch).length) await chrome.storage.local.set(patch);
+  // An update wipes alarms: without this a pause in progress lost its resume
+  // alarm and protection stayed OFF until the next browser restart.
+  await restorePause();
   await applyState();
   await syncAllowRules();
   await syncUserRules();
@@ -177,12 +191,7 @@ chrome.runtime.onStartup.addListener(async () => {
     "liveConfig",
   ]);
   if (sync) await pullFromSync();
-  // Restore or expire a pending pause.
-  if (pausedUntil && pausedUntil > Date.now()) {
-    chrome.alarms.create("resume", { when: pausedUntil });
-  } else if (pausedUntil) {
-    await chrome.storage.local.set({ enabled: true, pausedUntil: 0 });
-  }
+  await restorePause(pausedUntil);
   await applyState();
   await syncAllowRules();
   await syncUserRules();
@@ -240,7 +249,13 @@ chrome.storage.local.get("sync", (d) => (syncOn = !!d.sync));
 
 chrome.storage.onChanged.addListener(async (changes, area) => {
   if (area === "local" && changes.sync) syncOn = !!changes.sync.newValue;
-  if (!syncOn) return;
+  if (!SYNC_KEYS.some((k) => k in changes)) return; // stats counter & co.: nothing to mirror
+  if (!syncOn) {
+    // A cold service worker (woken BY this very event) has not loaded the
+    // cached flag yet — ask storage instead of dropping the change.
+    try { syncOn = !!(await chrome.storage.local.get("sync")).sync; } catch {}
+    if (!syncOn) return;
+  }
 
   if (area === "local") {
     const patch = {};
@@ -264,6 +279,17 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
     }
   }
 });
+
+// Restore or expire a pending pause (install/update AND browser start: alarms
+// do not survive either).
+async function restorePause(pausedUntil) {
+  if (pausedUntil === undefined) ({ pausedUntil } = await chrome.storage.local.get("pausedUntil"));
+  if (pausedUntil && pausedUntil > Date.now()) {
+    chrome.alarms.create("resume", { when: pausedUntil });
+  } else if (pausedUntil) {
+    await chrome.storage.local.set({ enabled: true, pausedUntil: 0 });
+  }
+}
 
 // temporary pause, auto-resumes via alarm
 async function pauseFor(minutes) {
@@ -357,8 +383,9 @@ async function doSyncScriptlets(on) {
   const { allowlist = [] } = await chrome.storage.local.get("allowlist");
   const excludeMatches = [];
   for (const d of allowlist) {
-    if (typeof d !== "string" || !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d)) continue;
-    excludeMatches.push(`*://${d}/*`, `*://*.${d}/*`);
+    if (!isHost(d)) continue; // an invalid match pattern would fail the whole registration
+    excludeMatches.push(`*://${d}/*`);
+    if (!isIPv4(d) && d.includes(".")) excludeMatches.push(`*://*.${d}/*`);
   }
 
   const script = {
@@ -488,7 +515,9 @@ function sanitizeScriptlets(x) {
 function sanitizeConfig(cfg) {
   const yt = cfg && typeof cfg.youtube === "object" ? cfg.youtube : {};
   return {
-    version: Number.isFinite(cfg?.version) ? cfg.version : 0,
+    // A safe, bounded integer: Number.MAX_VALUE would pin the anti-rollback
+    // check and lock out every legitimate update after it.
+    version: Number.isSafeInteger(cfg?.version) && cfg.version >= 0 && cfg.version <= 9999999999 ? cfg.version : 0,
     blockDomains: strArr(cfg?.blockDomains, LIVE_RULE_MAX)
       .map((d) => d.toLowerCase().replace(/^\|\|/, "").replace(/[\^/].*$/, ""))
       .filter((d) => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d) && !isProtected(d)),
@@ -545,6 +574,7 @@ async function fetchLiveConfigInner(force) {
   const { autoUpdate } = await chrome.storage.local.get("autoUpdate");
   if (!force && autoUpdate === false) return { ok: false, reason: "off" };
   let raw;
+  let verified = false; // Ed25519 signature checked and valid
   try {
     const res = await fetch(CONFIG_URL, { cache: "no-cache" });
     if (!res.ok) return { ok: false, reason: "http " + res.status };
@@ -555,6 +585,7 @@ async function fetchLiveConfigInner(force) {
     // отхвърля ъпдейта (спира downgrade при компрометиран сървър). На стар
     // браузър без Ed25519 приемаме best-effort, за да не спрем live ъпдейтите.
     if (SIG_PUBKEYS_B64.length && (await canVerifyEd25519())) {
+      verified = true;
       let sigText = null;
       try {
         const sres = await fetch(SIG_URL, { cache: "no-cache" });
@@ -570,11 +601,15 @@ async function fetchLiveConfigInner(force) {
     return { ok: false, reason: "network" };
   }
   const cfg = sanitizeConfig(raw);
+  cfg.verified = verified;
   // Anti-rollback: подписът доказва автентичност, не свежест. Отхвърляме стар
   // (валидно подписан) config — компрометиран сървър да не може да replay-не
   // остаряла версия. version-ът трябва да е монотонен.
+  // САМО между подписани версии: без подпис (браузър без Ed25519) „най-високата
+  // видяна версия" би била капан — MITM с огромна версия заключва всички бъдещи
+  // легитимни ъпдейти. Там anti-rollback няма смисъл (няма автентичност).
   const { liveConfig: prev } = await chrome.storage.local.get("liveConfig");
-  if (prev && Number.isFinite(prev.version) && cfg.version < prev.version) {
+  if (verified && prev && prev.verified && Number.isFinite(prev.version) && cfg.version < prev.version) {
     return { ok: false, reason: "stale version" };
   }
   await chrome.storage.local.set({ liveConfig: cfg, liveUpdated: Date.now() });
@@ -590,7 +625,7 @@ async function syncAllowRules() {
     .filter((r) => r.id >= ALLOW_RULE_BASE && r.id < LIVE_RULE_BASE)
     .map((r) => r.id);
 
-  const addRules = allowlist.slice(0, ALLOW_RULE_MAX).map((domain, i) => ({
+  const addRules = allowlist.filter(isHost).slice(0, ALLOW_RULE_MAX).map((domain, i) => ({
     id: ALLOW_RULE_BASE + i,
     priority: 10000,
     action: { type: "allowAllRequests" },
@@ -880,6 +915,20 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 chrome.tabs.onActivated.addListener(({ tabId }) => refreshBadge(tabId));
 chrome.tabs.onRemoved.addListener((tabId) => tabMatched.delete(tabId));
 
+// Which list a matched rule belongs to (the popup localises the key).
+function logListKey(rule) {
+  const rs = rule.rulesetId, id = rule.ruleId;
+  if (rs === "_dynamic") {
+    if (id === YT_BYPASS_RULE_ID || (id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE)) return null;
+    if (id >= LIVE_RULE_BASE) return "live";
+    if (id >= USER_BLOCK_BASE) return "user";
+    return "user";
+  }
+  if (rs === "_session") return "user";
+  return ({ ad_rules: "core", youtube_rules: "youtube", easylist: "easylist", easyprivacy: "easyprivacy",
+    removeparam: "params", urlhaus: "malware", surrogates: "surrogates", headers: "privacy", privacy: "privacy" })[rs] || "core";
+}
+
 // helpers
 function hostFromUrl(url) {
   try {
@@ -904,10 +953,21 @@ function savedStats(bytes, count) {
 }
 
 // messages from popup / options / content
+// What a CONTENT script may ask for. Everything else (toggle, allowlist,
+// subscriptions, filters, import, logs of other tabs, …) only from our own
+// extension pages (popup / options): Chrome's threat model treats content-script
+// messages as untrusted — a compromised renderer of any site can send them.
+const CONTENT_MESSAGES = new Set(["smartHit", "getCosmetic", "saveCustomSelector", "ytBypass"]);
+const EXT_ORIGIN = chrome.runtime.getURL("");
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // Приемаме съобщения само от собствените ни скриптове (defense-in-depth;
   // няма externally_connectable, така че уеб страници и без това не достигат тук).
-  if (sender.id !== chrome.runtime.id) return;
+  if (sender.id !== chrome.runtime.id || !msg || typeof msg.type !== "string") return;
+  const fromExtensionPage = typeof sender.url === "string" && sender.url.startsWith(EXT_ORIGIN);
+  if (!fromExtensionPage && !CONTENT_MESSAGES.has(msg.type)) return;
+  // A content script speaks for its own page only — never trust msg.host from it.
+  const senderHost = fromExtensionPage ? null : hostFromUrl(sender.url || "");
   switch (msg.type) {
     case "toggle":
       // A manual toggle cancels any active timed pause.
@@ -939,18 +999,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Chrome, so a refusal is reported, not thrown.
       (async () => {
         try {
+          // getMatchedRules says WHICH RULE matched (ruleset + id), never the
+          // request URL — that exists only in unpacked builds. So the honest
+          // log is per list: "EasyPrivacy ×12, EasyList ×7, YouTube ×3…".
           const info = await chrome.declarativeNetRequest.getMatchedRules({ tabId: msg.tabId });
           const agg = new Map();
+          let total = 0;
           for (const m of info.rulesMatchedInfo || []) {
-            const rid = m.rule && m.rule.ruleId;
-            if (rid === YT_BYPASS_RULE_ID || (rid >= ALLOW_RULE_BASE && rid < LIVE_RULE_BASE)) continue; // allow rules aren't blocks
-            const h = hostFromUrl(m.request && m.request.url) || "?";
-            const k = h + "|" + ((m.request && m.request.type) || "other");
-            const cur = agg.get(k) || { host: h, type: (m.request && m.request.type) || "other", n: 0, t: 0 };
-            cur.n++; cur.t = Math.max(cur.t, m.timeStamp || 0); agg.set(k, cur);
+            const key = logListKey(m.rule || {});
+            if (!key) continue; // allow rules (allowlist, YouTube bypass) are not blocks
+            total++;
+            const cur = agg.get(key) || { list: key, n: 0, t: 0 };
+            cur.n++; cur.t = Math.max(cur.t, m.timeStamp || 0); agg.set(key, cur);
           }
-          const items = [...agg.values()].sort((a, b) => b.t - a.t).slice(0, 40);
-          sendResponse({ ok: true, total: (info.rulesMatchedInfo || []).length, items });
+          const items = [...agg.values()].sort((a, b) => b.n - a.n || b.t - a.t);
+          sendResponse({ ok: true, total, items });
         } catch (e) {
           sendResponse({ ok: false, reason: /quota|MAX_GETMATCHEDRULES/i.test(String(e)) ? "quota" : "unavailable" });
         }
@@ -961,8 +1024,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case "setNoCosmetics":
       chrome.storage.local.get("noCosmetics", async (data) => {
         let list = Array.isArray(data.noCosmetics) ? data.noCosmetics : [];
-        const host = typeof msg.host === "string" ? msg.host.toLowerCase() : "";
-        if (!host || !/^[a-z0-9.-]+\.[a-z0-9-]{2,}$/.test(host)) return sendResponse({ ok: false });
+        const host = typeof msg.host === "string" ? msg.host.trim().toLowerCase() : "";
+        if (!isHost(host)) return sendResponse({ ok: false });
         list = list.filter((d) => d !== host);
         if (msg.off && list.length < 5000) list.push(host);
         await chrome.storage.local.set({ noCosmetics: list });
@@ -1083,7 +1146,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case "setAllow":
       chrome.storage.local.get("allowlist", async (data) => {
         let list = data.allowlist || [];
-        if (!msg.host) return sendResponse({ ok: false });
+        const h = typeof msg.host === "string" ? msg.host.trim().toLowerCase() : "";
+        if (!isHost(h)) return sendResponse({ ok: false, reason: "invalid host", allowlist: list });
+        msg.host = h;
         if (msg.allow) {
           if (!list.includes(msg.host)) {
             if (list.length >= ALLOW_RULE_MAX) return sendResponse({ ok: false, reason: "allowlist full", allowlist: list });
@@ -1120,9 +1185,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case "saveCustomSelector":
       chrome.storage.local.get("customHidden", async (data) => {
         const map = data.customHidden || {};
-        if (!msg.host || !msg.selector) return sendResponse({ ok: false });
-        map[msg.host] = map[msg.host] || [];
-        if (!map[msg.host].includes(msg.selector)) map[msg.host].push(msg.selector);
+        // The picker's own page decides the host (not msg.host), and the
+        // selector passes the same policy as imports and the live channel.
+        const host = senderHost || (typeof msg.host === "string" ? msg.host.toLowerCase() : "");
+        const selector = typeof msg.selector === "string" ? msg.selector.trim() : "";
+        if (!isHost(host) || !safeSelector(selector)) return sendResponse({ ok: false });
+        map[host] = map[host] || [];
+        if (!map[host].includes(selector) && map[host].length < 500) map[host].push(selector);
         await chrome.storage.local.set({ customHidden: map });
         sendResponse({ ok: true });
       });
@@ -1140,7 +1209,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (SKIP_IMPORT.has(k) || !(k in d)) continue;
         const v = d[k];
         if (k === "allowlist" || k === "noCosmetics") {
-          if (Array.isArray(v)) clean[k] = v.filter((x) => typeof x === "string" && /^[a-z0-9.-]+\.[a-z0-9-]{2,}$/i.test(x)).slice(0, 5000);
+          if (Array.isArray(v)) clean[k] = v.map((x) => (typeof x === "string" ? x.trim().toLowerCase() : "")).filter(isHost).slice(0, 5000);
         } else if (k === "subscriptions") {
           if (Array.isArray(v)) clean[k] = v.filter((s) => s && isSubUrl(s.url)).map((s) => ({ url: s.url, added: Number(s.added) || Date.now(), fetched: 0, count: 0, error: "" })).slice(0, SUB_MAX);
         } else if (k === "userFilters") {
@@ -1173,12 +1242,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "smartHit": {
       const items = Array.isArray(msg.items) ? msg.items : [];
-      if (items.length) recordSmart(msg.host || "", items);
+      if (items.length) recordSmart(senderHost || msg.host || "", items);
       return false;
     }
 
     case "getCosmetic":
-      cosmeticFor(msg.host || "").then((r) => sendResponse(r));
+      cosmeticFor(senderHost || msg.host || "").then((r) => sendResponse(r));
       return true;
 
     case "setUserFilters":

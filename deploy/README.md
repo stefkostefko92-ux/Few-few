@@ -77,9 +77,14 @@ ZIP отпреди месец.
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
   `docker-startup.sh`; идемпотентен seed; Nginx + certbot с auto-reload hook). Health на
   `127.0.0.1:4300/healthz`; app + postgres слушат само на localhost зад Nginx.
-- **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира само
-  трите обслужвани файла (`adblock/server/{index.html,privacy.html,filters.json}`) в
-  `/var/www/adblock`, инсталира/обновява Caddy сайт-блока (`adblock/server/Caddyfile` →
+- **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира
+  обслужваните файлове (`adblock/server/{index.html,privacy.html,robots.txt,sitemap.xml,
+  llms.txt,*.png,*.webp}`) в `/var/www/adblock`. `filters.json` се публикува САМО заедно с
+  валидния си Ed25519 подпис (подписва се в staging, после `mv` на двойката); без ключ
+  (`/etc/caddy/adblock-signing.key`) старата подписана двойка остава и деплоят
+  сигнализира — Chrome 137+ иначе отхвърля всички live ъпдейти. Без access логове (Caddy
+  без `log`, nginx `access_log off`) — това обещава политиката за поверителност.
+  Инсталира/обновява Caddy сайт-блока (`adblock/server/Caddyfile` →
   `/etc/caddy/sites/adblock.caddy` + `import sites/*.caddy` в главния Caddyfile),
   `caddy validate` **преди** reload (нула downtime; при невалиден конфиг — връща стария
   блок и не презарежда). Разширението тегли `filters.json`; `index.html` е витрина, а
@@ -87,6 +92,9 @@ ZIP отпреди месец.
   Health-ът е best-effort HTTPS на публичния адрес — минава едва след като **DNS A/AAAA
   за `adblock.carbonstealth.eu` сочи VPS-а** (ръчна стъпка) и Caddy издаде TLS; провал тук
   е предупреждение, не блокира деплоя. Няма тайни (чисто статично).
+  Само adblock: `sudo bash deploy/adblock-site.sh` — обвивка, която вика същия път с
+  `PROJECTS="adblock"` (през `fetch-deploy.sh`, или `autodeploy.sh` при подаден `ARCHIVE=`);
+  втора реализация вече няма, защото старата изостана от тази.
 - **ospedali** (Ospedali Trasparenti): systemd модел като medqr/vizitka, **но БЕЗ
   `npm ci` и БЕЗ билд** — лек Node сервиз с нула зависимости обслужва предбилднатия
   статичен сайт от `site/` (вече в git). `rsync ospedalitrasparenti/ → /opt/ospedali` (изключва

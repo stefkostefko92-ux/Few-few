@@ -144,12 +144,12 @@ def popup(blocked="1,204", data="68 MB", time="14 min", host="nytimes.com", log=
     $("siteHost").textContent = {json.dumps(host)};
     $("listDot").textContent = "40,000+ filters";
     var items = {json.dumps(log)};
-    $("logCount").textContent = String(items.reduce(function (a, it) {{ return a + (it[2] || 1); }}, 0));
+    $("logCount").textContent = String(items.reduce(function (a, it) {{ return a + (it[1] || 0); }}, 0));
     $("logEmpty").hidden = items.length > 0;
     items.forEach(function (it) {{
       var li = document.createElement("li"), h = document.createElement("span"), t = document.createElement("span");
       h.className = "host"; h.textContent = it[0];
-      t.className = "type"; t.textContent = it[1] + (it[2] > 1 ? " ×" + it[2] : "");
+      t.className = "type"; t.textContent = "×" + it[1];
       li.append(h, t); $("logList").appendChild(li);
     }});
     if (items.length) $("logBox").open = true;
@@ -242,11 +242,10 @@ SLIDES = [
      features_panel()),
     ("Private by design",
      '100% free. <span class="c">Zero tracking.</span>',
-     "No account, no telemetry, no data collection. Everything runs on your device — and the popup shows exactly what was blocked.",
-     ["See every blocked request, per page", "Nothing about you is sent", "MIT licensed · no account needed"],
+     "No account, no telemetry, no data collection. Everything runs on your device — and the popup shows what each filter list blocked on the page.",
+     ["See what each list blocked, per page", "Your browsing data never leaves the device", "MIT licensed · no account needed"],
      popup(blocked="9,140", data="4.6 GB", time="2.3 h", host="facebook.com",
-           log=[["connect.facebook.net", "script", 3], ["www.facebook.com", "beacon", 7],
-                ["static.xx.fbcdn.net", "image", 12], ["an.facebook.com", "xhr", 2]])),
+           log=[["EasyPrivacy", 12], ["EasyList", 7], ["Supreme core rules", 3], ["Tracking parameters", 2]])),
 ]
 
 for i, s in enumerate(SLIDES, 1) if __name__ == "__main__" else []:

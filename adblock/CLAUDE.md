@@ -20,8 +20,9 @@ cookies.js / .css       затваряне на cookie/consent банери (в�
 antiadblock.js / .css   махане на "disable adblocker" стени
 picker.js / .css        element picker (ръчно скриване) + zapper (еднократно)
 scriptlets/             scriptlet engine (##+js): policy.js (ЕДИНСТВЕН източник на
-                        политиката — инлайнва се в engine-а, importScripts в SW, vm в
-                        билда) + engine.js (clean-room код) + list.txt (данни) → main.js
+                        политиката — инлайнва се в engine-а, importScripts в SW, content
+                        script ПРЕДИ content.js в изолирания свят, vm в билда) + engine.js
+                        (clean-room код) + list.txt (данни) → main.js
                         (пече се от build_scriptlets.mjs; MAIN world при document_start)
 youtube_loader.js       инжектира youtube_main в MAIN world (с bypass fallback)
 youtube_main.js         MAIN world — маха рекламните полета от player отговора
@@ -45,7 +46,8 @@ store/ · docs/          store графики + листинг/submission тек
 node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички скриптове
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
 npm test                                      # tests/: engine + live канал + билд + DNR правила + YouTube + cookies
-PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js върху CMP фикстури (не е в CI — иска Playwright)
+PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение (не е в CI — иска Playwright)
+PW_ROOT=$(npm root -g) npm run landing:assets # server/*.webp: бранд щитът + РЕАЛНИЯТ popup (след промяна на popup/версия)
 node tools/build_scriptlets.mjs --check       # scriptlets/main.js свеж спрямо list.txt
 bash tools/package.sh                         # билд + самопроверка на пакета
 ```
@@ -77,3 +79,10 @@ bash tools/package.sh                         # билд + самопровер�
   service worker-а.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —
   консервативно, за да няма false positives.
+- **cookies.js кликва само CMP-специфични бутони глобално**; всичко генерично (текст,
+  aria-label, test-id) — само вътре в контейнер, който говори за бисквитки, никога бутон,
+  който изпраща форма, никога линк навън, нищо генерично на страници за вход/OAuth/плащане.
+  Нов генеричен селектор НИКОГА в глобалния слой (гейтнато от `tests/cookies.test.mjs`).
+- **Content script ≠ страница на разширението:** SW приема от content script само
+  `smartHit`, `getCosmetic`, `saveCustomSelector`, `ytBypass`; всичко друго — само от
+  popup/options (`sender.url` на разширението).

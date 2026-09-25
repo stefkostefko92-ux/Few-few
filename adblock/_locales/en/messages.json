@@ -81,6 +81,30 @@
   "logUnavailable": {
     "message": "Log unavailable right now (browser quota) — try again in a minute."
   },
+  "logCore": {
+    "message": "Supreme core rules"
+  },
+  "logYouTube": {
+    "message": "YouTube ad rules"
+  },
+  "logParams": {
+    "message": "Tracking parameters"
+  },
+  "logMalware": {
+    "message": "Malware domains"
+  },
+  "logSurrogates": {
+    "message": "Neutralised ad scripts"
+  },
+  "logPrivacy": {
+    "message": "Privacy protection"
+  },
+  "logUser": {
+    "message": "My filters"
+  },
+  "logLive": {
+    "message": "Live updates"
+  },
   "hideElement": {
     "message": "Hide element"
   },
@@ -198,7 +222,7 @@
     "message": "Stop third-party hyperlink-auditing / beacon pings, strip tracking cookies from known ad-tech responses, and block browser cryptomining scripts. Turn off if a site's analytics-dependent feature misbehaves."
   },
   "opt_fetches_new_block_rules_and_youtube_fixe": {
-    "message": "Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent."
+    "message": "Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu about twice a day. Data only, no code; the request carries no identifiers or browsing data."
   },
   "opt_live_log_of_ads_caught_heuristically_no_": {
     "message": "Live log of ads caught heuristically (no filter list), newest first."
