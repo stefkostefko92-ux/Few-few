@@ -96,9 +96,7 @@
   flex-wrap: wrap;
   gap: 0.35rem 1.6rem;
   margin-top: 1.75rem;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.06em;
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   color: var(--muted);
 }
 .hall__table {
@@ -130,10 +128,6 @@
   font-weight: 500;
   border-bottom: 1px solid var(--brass);
   padding-bottom: 2px;
-}
-.link-arrow::after {
-  content: " →";
-  color: var(--brass);
 }
 .link-arrow:hover {
   color: var(--brass-soft);
@@ -181,9 +175,7 @@
 }
 .roster__filter button {
   font: inherit;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.08em;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--muted);
   background: none;
   border: 0;
@@ -204,12 +196,10 @@
   gap: 2.5rem clamp(2rem, 5vw, 4rem);
 }
 .roster__group h3 {
-  font-family: var(--font-body);
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.12em;
-  font-size: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
   font-weight: 700;
-  color: var(--brass);
+  color: var(--brass-soft);
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--line);
 }
@@ -435,9 +425,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 1.6rem;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.06em;
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   color: var(--muted);
 }
 
