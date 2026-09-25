@@ -10,74 +10,23 @@
   <title>Carbon Stealth VCC | Web Agency: Siti Web, E-commerce, ERP e SEO</title>
   <meta name="description" content="Agenzia digitale per Italia e Bulgaria: sviluppo siti web da €658 + IVA, e-commerce, software ERP, app mobile e SEO/AEO. Preventivo gratuito in 24 ore." />
 <meta name="keywords" content="web agency, realizzazione siti web, sviluppo siti web, creazione siti internet, agenzia web, e-commerce, negozio online, software gestionale, ERP, app mobile, SEO, Italia, Bulgaria, Carbon Stealth">
-  <meta name="theme-color" content="#00e5ff" />
+  <meta name="theme-color" content="#16191C" />
   <link rel="canonical" href="https://carbonstealth.eu/" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="alternate" hreflang="it" href="https://carbonstealth.eu/" />
   <link rel="alternate" hreflang="en" href="https://carbonstealth.eu/en/" />
   <link rel="alternate" hreflang="bg" href="https://carbonstealth.eu/bg/" />
   <link rel="alternate" hreflang="x-default" href="https://carbonstealth.eu/" />
-    <!-- nav logo is in the first viewport: fetch it with the document, not after JS -->
+  <!-- Carbon & Chrome (docs/DESIGN-CARBON-CHROME.md). home.css is render-blocking on purpose:
+       the instant-paint hero below and the React hero share it, so the handover never shifts. -->
   <link rel="preload" as="image" href="/logo-nav.webp" fetchpriority="high" />
-  <!-- hero mark (likely LCP on desktop): start it with the document too -->
-  <link rel="preload" as="image" href="/brand/cs-scene-800.webp" imagesrcset="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" imagesizes="(max-width:860px) 72vw, 34vw" fetchpriority="high" />
-  <!-- Fonts are self-hosted (public/fonts/, no request to Google — GDPR). The CSS is
-       tiny and same-origin; the hero face is preloaded so the H1 swaps early. -->
-  <link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk-latin-ecea81.woff2" crossorigin />
+  <link rel="preload" as="image" href="/work/panev-ascensori.webp" imagesrcset="/work/panev-ascensori-480.webp 480w, /work/panev-ascensori.webp 960w" imagesizes="(max-width:900px) 92vw, 680px" fetchpriority="high" />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/geologica-latin-f6c73d.woff2" crossorigin />
   <link rel="stylesheet" href="/fonts/fonts.css" />
+  <link rel="stylesheet" href="/home.css" />
   <style>
-    /* skip link: its React-injected CSS arrives with the bundle; until then it sat in the flow
-       and pushed the hero down 17px → a 0.43 layout shift on slow phones */
-    .cs-skip{position:fixed;top:-60px;left:8px;z-index:100000}.cs-skip:focus{top:8px}
-    /* Metric-matched fallbacks: while Space Grotesk / Space Mono are still
-       loading, text is laid out at nearly the same size, so the webfont
-       swap doesn't reflow the hero (this was the site's CLS source). */
-    @font-face { font-family: 'SG-fallback'; src: local('Arial'); size-adjust: 96%;
-      ascent-override: 98%; descent-override: 24%; line-gap-override: 0%; }
-    @font-face { font-family: 'SM-fallback'; src: local('Courier New'); size-adjust: 108%;
-      ascent-override: 100%; descent-override: 26%; line-gap-override: 0%; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body, #root { width: 100%; min-height: 100vh; background: #000; }
-    body { overflow-x: hidden; }
-    /* ── Critical hero: painted from HTML so FCP/LCP never wait for the JS
-       bundle. React renders the real hero over it and #cs-boot is removed. ── */
-    /* Geometry mirrors the React hero (same paddings, same 1180px centred
-       column, same type scale) so swapping them causes no layout shift. */
-    /* fixed, not absolute: the boot layer sits outside document flow entirely,
-       so React mounting underneath it can never be recorded as a layout shift. */
-    #cs-boot { position: fixed; top: 0; left: 0; width: 100%; z-index: 2;
-      /* identical box to <section id="hero">: bottom-aligned, same paddings */
-      height: 100vh; overflow: hidden;
-      display: flex; flex-direction: column; justify-content: flex-end;
-      padding: 0 clamp(20px,5vw,64px) clamp(40px,6vh,72px);
-      background: #0A0C0E; color: #C9D1D6;
-      font-family: 'Space Mono', 'SM-fallback', ui-monospace, monospace; }
-    #cs-boot > * { max-width: 1180px; width: 100%; margin-left: auto; margin-right: auto; }
-    #cs-boot .navpad { position: fixed; top: 0; left: 0; width: 100%; height: 59px;
-      max-width: none; background: rgba(0,0,0,.85);
-      border-bottom: 1px solid rgba(245,245,240,.08); }
-    #cs-boot .eb { display: flex; align-items: center; gap: 14px; font-size: 10px;
-      letter-spacing: .4em; color: #7C868D; margin-bottom: clamp(20px,4vh,40px); }
-    #cs-boot .eb i { width: 24px; height: 1px; background: #00e5ff; display: block; }
-    #cs-boot h1 { font-family: 'Space Grotesk', 'Onest', 'SG-fallback', 'Inter Tight', system-ui, sans-serif;
-      font-weight: 600; font-size: clamp(2.4rem,6vw,5.4rem); line-height: .98;
-      letter-spacing: -.03em; color: #C9D1D6; margin: 0; max-width: 16ch;
-      /* three lines reserved: the localized titles differ in length, so pin the
-         box height and the swap to React can't move anything below it */
-      min-height: calc(clamp(2.4rem,6vw,5.4rem) * .98 * 3); }
-    /* same width cap as the React hero H1 (it stops before the logo art) */
-    @media (min-width: 861px) { #cs-boot h1 { max-width: min(16ch, calc(100vw - min(28vw,380px) - 2*clamp(20px,5vw,64px) - max(0px,(100vw - 2*clamp(20px,5vw,64px) - 1180px)/2) - 40px)); } }
-    #cs-boot .sub { font-size: 11px; letter-spacing: .2em; color: #7C868D;
-      margin-top: 24px; text-transform: uppercase; }
-    /* The moment React paints anything into #root, the boot layer is gone in the
-       SAME frame — the browser never composites both, so the handover can't be
-       recorded as a layout shift. main.jsx then removes the node entirely. */
-    /* the hero mark, same box as React's .cs-hero-art (App.jsx) — it is the mobile LCP
-       image, so it must paint with the document, not after the bundle (was 4.6s) */
-    #cs-boot .art { position: absolute; right: clamp(16px,4vw,60px); top: clamp(72px,9vh,96px); width: min(28vw,380px); height: auto; max-width: none; margin: 0;
-      pointer-events: none; mix-blend-mode: screen; opacity: .95; filter: saturate(1.05);
-      -webkit-mask-image: radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%); mask-image: radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%); }
-    @media (max-width: 860px) { #cs-boot .art { right: auto; left: 50%; transform: translateX(-50%); top: 64px; width: min(74vw,340px); opacity: .85; } }
+    /* The moment React paints into #root, the boot copy is gone in the same frame;
+       main.jsx then removes the node. Until then it IS the page (same markup as Home.jsx). */
     #root:not(:empty) ~ #cs-boot { display: none !important; }
   </style>
   <!-- Open Graph -->
@@ -126,14 +75,27 @@
   <!-- Instant-paint hero (removed by src/main.jsx as soon as React mounts).
        Italian default matches the SPA's default locale; React swaps in the
        user's language. This is the LCP element on a cold visit. -->
+  <!-- Instant-paint copy of the Italian header + hero from src/Home.jsx (keep them in sync).
+       It is the LCP on a cold visit; React replaces it without moving a pixel. -->
   <div id="cs-boot" aria-hidden="true">
-    <!-- Reserves the exact height of the fixed nav React mounts (12px padding
-         + 34px logo + 12px + 1px border) so its arrival shifts nothing. -->
-    <div class="navpad"></div>
-    <img class="art" src="/brand/cs-scene-800.webp" srcset="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" sizes="(max-width:860px) 72vw, 34vw" alt="" width="800" height="800" fetchpriority="high" />
-    <div class="eb"><i></i>WEB &amp; SOFTWARE AGENCY — ITALY · BULGARIA</div>
-    <h1>Siti Web, E-commerce &amp; Software ERP</h1>
-    <div class="sub">SITI WEB · E-COMMERCE · APP · ERP · SEO/AEO · REVERSE ENGINEERING</div>
+    <header class="h-nav"><div class="wrap">
+      <span class="h-logo"><img src="/logo-nav.webp" alt="" width="80" height="34" /></span>
+      <ul class="h-links"><li><a tabindex="-1">Lavori</a></li><li><a tabindex="-1">Servizi</a></li><li><a tabindex="-1">Prezzi</a></li><li><a tabindex="-1">Chi siamo</a></li><li><a tabindex="-1">Contatti</a></li></ul>
+      <div class="h-end"><div class="h-lang"><button tabindex="-1" aria-pressed="true">IT</button><button tabindex="-1">EN</button><button tabindex="-1">BG</button></div><span class="btn btn-primary">Chiedi un preventivo</span><span class="h-burger"><span></span><span></span><span></span></span></div>
+    </div></header>
+    <section class="h-hero"><div class="wrap">
+      <div>
+        <h1 class="h-h1">Siti web, <span class="nobr">e-commerce</span> e software per aziende in Italia e Bulgaria</h1>
+        <p class="h-lede">Progettiamo, sviluppiamo e gestiamo il tuo sito o il tuo gestionale. Prezzo fisso, codice di tua proprietà, assistenza in italiano.</p>
+        <div class="h-actions"><span class="btn btn-primary">Chiedi un preventivo</span><span class="btn btn-quiet">Vedi i prezzi</span></div>
+        <p class="h-fact">Siti da <span class="num">658</span><span class="cur">&nbsp;€</span> + IVA, online in 5-7 giorni lavorativi.</p>
+      </div>
+      <figure class="h-stage" style="margin:0">
+        <span class="bezel" style="display:block"><img class="h-screen" src="/work/panev-ascensori.webp" srcset="/work/panev-ascensori-480.webp 480w, /work/panev-ascensori.webp 960w" sizes="(max-width:900px) 92vw, 680px" width="960" height="600" alt="" fetchpriority="high" /></span>
+        <figcaption><span><b>Panev Ascensori</b>, staffe brevettate per ascensori</span><span>panevascensori.it</span></figcaption>
+        <div class="h-thumbs"><button type="button" aria-pressed="true" tabindex="-1"><img src="/work/panev-ascensori-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/erp-ascensori-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/evanita-sport-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/treti-mart-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/eternal-touch-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/ou-vaptsarov-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/ospedali-trasparenti-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/nexus-dominion-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/vizitka-480.webp" alt="" width="76" height="48" /></button><button type="button" aria-pressed="false" tabindex="-1"><img src="/work/mastilko-480.webp" alt="" width="76" height="48" /></button></div>
+      </figure>
+    </div></section>
   </div>
   <noscript>
     <div style="background:#000;color:#ccc;font-family:monospace;padding:40px;max-width:900px;margin:0 auto">
