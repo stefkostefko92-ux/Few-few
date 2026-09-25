@@ -11768,7 +11768,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 172
+        "lessons": 175
       },
       "evolution": [
         {
@@ -12130,6 +12130,12 @@
           "date": "2026-09-25",
           "event": "v15.4 — учене",
           "detail": "Научи: Chrome declarativeNetRequest (Chrome 121+): safe dynamic rules (block/allow/allowAllReq…"
+        },
+        {
+          "version": "15.5.0",
+          "date": "2026-09-25",
+          "event": "v15.5 — учене",
+          "detail": "Научи: Chrome DNR (потвърдено developer.chrome.com): MAX_NUMBER_OF_STATIC_RULESETS=100 деклари… (+2 още)"
         }
       ],
       "activity": [
@@ -12137,6 +12143,11 @@
           "date": "2026-09-25",
           "type": "learning",
           "summary": "Научи: „Chrome declarativeNetRequest (Chrome 121+): safe dynamic rules (block/allow/allowAllReq…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Chrome DNR (потвърдено developer.chrome.com): MAX_NUMBER_OF_STATIC_RULESETS=100 деклари…\" (+2 още) · 1 в карантина"
         },
         {
           "date": "2026-09-25",
