@@ -1,6 +1,6 @@
 # Privacy Policy, Supreme AdBlock
 
-_Last updated: 24 September 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
+_Last updated: 25 September 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
 
 <!-- Keep in sync with server/privacy.html (the Privacy Policy URL in the Chrome Web Store). -->
 
@@ -24,13 +24,14 @@ servers, under your account, not ours. Turn sync off and they stay local only.
 
 - Your allowlisted sites *(sync)*
 - Feature toggles and theme (cookie banners, anti-adblock, Meta posts, YouTube, …) *(sync)*
+- Which filter lists and Focus-mode items you turned on or off *(sync)*
 - Your own filter rules, including filter lists you subscribed to by URL, and the list of those URLs *(sync)*
 - Sites where you switched off element hiding *(sync)*
 - Whether protection is on, off or paused — per device, never synced
 - Elements you hid with the picker
-- Counters of how many requests were blocked (and the estimated data and time saved)
+- Counters of how many requests were blocked (and the estimated data and time saved), and how many cookie banners were rejected for you — numbers only, no list of sites
 - A short log (last 50 entries) of sites where Smart Detection hid an ad-sized frame, shown in Settings so you can see why
-- The latest downloaded filter data (see below)
+- The latest downloaded filter data, and the regional lists you downloaded from their authors (see below)
 
 The popup's "Blocked on this page" view is built on the spot from which of our
 filter lists matched in that tab; it is not stored and never sent anywhere. You
@@ -54,8 +55,27 @@ extension.
    The site hosting the list sees an ordinary request from your browser (IP
    address and user agent), exactly as if you opened that URL yourself. We are
    not involved in that request.
+3. **Regional lists from their authors (only if you turn one on).** Most filter
+   lists are built into the extension, so turning them on downloads nothing. A
+   few lists that we may not redistribute — the Bulgarian list (stanev.org), the
+   Polish, Nordic and Serbo-Croatian lists (raw.githubusercontent.com) — are
+   downloaded by your browser from their author's address when you turn one on,
+   and then about once a day while it stays on. That server sees an ordinary
+   request (IP address and user agent), as if you opened the list yourself. We
+   are not involved in that request. Settings marks these lists "from its author".
 
 There are no other requests: no analytics, no crash reports, no "phone home".
+
+## Reporting a broken site
+
+The "Site broken?" page first offers fixes that stay on your device. If you
+choose to tell us, the extension sends nothing: it opens a message in **your own
+email app**, and you see every word before you send it — the site name (the full
+address only if you tick it), your description, the extension and browser
+version, and which lists and features are on. What you send reaches
+info@carbonstealth.eu with your email address; we use it only to fix the site
+and answer you, and delete it within 12 months. Legal basis: our legitimate
+interest in keeping the extension working, Art. 6(1)(f) GDPR.
 
 ## This website
 
@@ -103,9 +123,10 @@ You can also complain to the Bulgarian Commission for Personal Data Protection
 - `storage` — keep your settings and counters on your device.
 - `alarms` — schedule filter updates and the pause timer.
 - `contextMenus` — the right-click "Block an element here" entry.
-- `scripting` — register one script that ships in the package and neutralises
-  anti-adblock detectors; it fetches and executes no remote code, reads no
-  personal data and sends nothing.
+- `scripting` — register the scripts that ship in the package and neutralise
+  anti-adblock detectors, and insert the element-hiding style sheets of the
+  filter lists you turned on; nothing is fetched or executed from the network,
+  no personal data is read and nothing is sent.
 - host access (`<all_urls>`) — block ads and apply cosmetic filtering on the
   pages you visit; page content is processed on your device and never sent
   anywhere.

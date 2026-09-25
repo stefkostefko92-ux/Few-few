@@ -44,6 +44,9 @@ if (m.options_ui?.page) refs.add(m.options_ui.page);
 // explicitly — otherwise a forgotten `build_scriptlets.mjs` ships without it.
 refs.add("scriptlets/main.js");
 refs.add("scriptlets/policy.js"); // importScripts() in the service worker
+refs.add("lib/abp2dnr.js");       // importScripts() — author-hosted lists
+refs.add("report/report.html");   // opened from the popup
+refs.add("THIRD_PARTY_NOTICES.txt"); // linked from Settings; list licences ask for it
 const zipFiles = zip.split("\n").filter(Boolean);
 const has = (f) => f.endsWith("/*")
   ? zipFiles.some(z => z.startsWith(f.slice(0, -1)) && z !== f.slice(0, -1)) // glob: поне 1 файл с този префикс

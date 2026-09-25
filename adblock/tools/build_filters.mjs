@@ -262,6 +262,28 @@ for (const entry of CATALOG) {
 }
 writeFileSync(join(OUT, "rules", "lists.json"), JSON.stringify(listCatalog, null, 1) + "\n");
 
+// THIRD_PARTY_NOTICES.txt (ships in the package): attribution + licence of every
+// list whose rules we redistribute — CC BY-SA / GPL / MIT / MPL ask for it.
+if (OUT === ROOT) {
+  const bundled = CATALOG.filter((e) => e.delivery === "bundled" && !e.selectors);
+  const lines = [
+    "Supreme AdBlock — third-party filter lists",
+    "",
+    "The extension's rules are compiled from these lists (converted to Chrome's",
+    "declarativeNetRequest format and CSS; content otherwise unchanged). Each list",
+    "keeps its own licence; the extension's code is MIT (see LICENSE).",
+    "",
+    "EasyList, EasyPrivacy — © The EasyList authors — GPL-3.0 or CC BY-SA 3.0 — https://easylist.to/",
+    "URLhaus (abuse.ch) — CC0 — https://urlhaus.abuse.ch/",
+    ...bundled.map((e) => `${e.title} — ${e.license} — ${e.homepage}`),
+    "",
+    "Not bundled (downloaded from their author only when you turn them on):",
+    ...CATALOG.filter((e) => e.delivery === "remote").map((e) => `${e.title} — ${e.license} — ${e.homepage}`),
+    "",
+  ];
+  writeFileSync(join(ROOT, "THIRD_PARTY_NOTICES.txt"), lines.join("\n"));
+}
+
 // manifest.json: рулсетовете на листите са НАШ изход — синхронизираме ги (само в
 // репото; тестовете с --out не пипат manifest-а). Ръчните рулсети остават първи.
 if (OUT === ROOT) {

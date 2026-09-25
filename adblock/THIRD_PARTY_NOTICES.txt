@@ -1,0 +1,53 @@
+Supreme AdBlock — third-party filter lists
+
+The extension's rules are compiled from these lists (converted to Chrome's
+declarativeNetRequest format and CSS; content otherwise unchanged). Each list
+keeps its own licence; the extension's code is MIT (see LICENSE).
+
+EasyList, EasyPrivacy — © The EasyList authors — GPL-3.0 or CC BY-SA 3.0 — https://easylist.to/
+URLhaus (abuse.ch) — CC0 — https://urlhaus.abuse.ch/
+uBlock Origin filters — GPL-3.0 — https://github.com/uBlockOrigin/uAssets
+Peter Lowe's ad and tracking server list — © Peter Lowe (redistribution permitted) — https://pgl.yoyo.org/adservers/
+Social media buttons and widgets — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+Chat and support widgets — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+Newsletter and sign-up pop-ups — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+Notification permission prompts — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+AI assistant pop-ups and suggestions — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+Other annoyances (sticky bars, app banners) — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+Albanian — Unlicense — https://github.com/AnXh3L0/blocklist
+Liste AR (Arabic) — CC BY-SA 3.0 — https://forums.lanik.us/viewforum.php?f=98
+AdGuard Chinese — GPL-3.0 — https://github.com/AdguardTeam/AdguardFilters
+EasyList Czech and Slovak — CC BY-SA 4.0 — https://github.com/tomasko126/easylistczechandslovak
+EasyList Germany — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+Estonian — CC0 1.0 — https://ubo-et.lepik.io/
+Finnish — Unlicense — https://github.com/finnish-easylist-addition/finnish-easylist-addition
+AdGuard French — GPL-3.0 — https://github.com/AdguardTeam/AdguardFilters
+Greek AdBlock — CC BY-SA 4.0 — https://github.com/kargig/greek-adblockplus-filter
+hufilter (Hungarian) — CC BY 4.0 — https://github.com/hufilter/hufilter
+ABPindo (Indonesian) — GPL-3.0 / CC BY-SA 3.0 — https://github.com/ABPindo/indonesianadblockrules
+IndianList — GPL-3.0 / CC BY-SA 3.0 — https://github.com/mediumkreation/IndianList
+PersianBlocker — AGPL-3.0 — https://codeberg.org/KhodeKiaa/PersianBlocker
+Icelandic (Brave) — MPL-2.0 — https://github.com/brave/adblock-lists
+EasyList Hebrew — GPL-3.0 / CC BY-SA 3.0 — https://github.com/easylist/EasyListHebrew
+EasyList Italy — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+AdGuard Japanese — GPL-3.0 — https://github.com/AdguardTeam/AdguardFilters
+List-KR (Korean) — GPL-3.0 — https://github.com/FilteringDev/filterslists-KO
+EasyList Lithuania — GPL-3.0 — https://github.com/EasyList-Lithuania/easylist_lithuania
+Latvian List — CC BY-SA 4.0 — https://github.com/Latvian-List/adblock-latvian
+Macedonian — MIT — https://github.com/DeepSpaceHarbor/Macedonian-adBlock-Filters
+AdGuard Dutch — GPL-3.0 — https://github.com/AdguardTeam/AdguardFilters
+ROad-Block (Romanian) — MIT — https://github.com/tcptomato/ROad-Block
+AdGuard Russian — GPL-3.0 — https://github.com/AdguardTeam/AdguardFilters
+EasyList Spanish + AdGuard Spanish/Portuguese — GPL-3.0 / CC BY-SA 3.0 — https://easylist.to/
+Slovenian List — Unlicense — https://github.com/betterwebleon/slovenian-list
+Frellwit's Swedish list — GPL-3.0 — https://github.com/lassekongo83/Frellwits-filter-lists
+EasyList Thailand — Apache-2.0 — https://github.com/easylist-thailand/easylist-thailand
+AdGuard Turkish — GPL-3.0 — https://github.com/AdguardTeam/AdguardFilters
+AdGuard Ukrainian — GPL-3.0 — https://github.com/AdguardTeam/AdguardFilters
+ABPVN (Vietnamese) — GPL-3.0 — https://github.com/abpvn/abpvn
+
+Not bundled (downloaded from their author only when you turn them on):
+Bulgarian Adblock list — no licence stated — https://stanev.org/abp/
+Polish Filters (Oficjalne Polskie Filtry) — CC BY-NC-SA 4.0 — https://github.com/MajkiIT/polish-ads-filter
+Dandelion Sprout's Nordic filters — Dandelicence — https://github.com/DandelionSprout/adfilt
+Dandelion Sprout's Serbo-Croatian filters — Dandelicence — https://github.com/DandelionSprout/adfilt

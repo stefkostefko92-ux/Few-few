@@ -8,7 +8,7 @@
 - Maker: Carbon Stealth VCC, Bulgaria (EU) — carbonstealth.eu, info@carbonstealth.eu
 - Platform: Chrome Manifest V3 extension; Chrome, Edge, Brave and other Chromium browsers, version 121+
 - Price: free, no account, no paid tier; optional donations
-- Current version: 5.0.6 (25 September 2026)
+- Current version: 5.1.0 (25 September 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
 - Privacy policy: https://adblock.carbonstealth.eu/privacy
@@ -17,14 +17,17 @@
 ## What it does
 
 - YouTube: the player request itself is flagged ad-free (isInlinePlaybackNoAd) and remaining ad fields are removed from responses; feed and search ads are removed too. It never blocks YouTube's video servers. If YouTube refuses playback on a flagged account, the extension steps aside for that session so videos still play.
-- Filter lists: EasyList and EasyPrivacy compiled in (40,000+ network and cosmetic rules) plus an in-house set; tracking-parameter stripping (utm_*, fbclid, gclid); optional URLhaus malware-domain protection; third-party tracking cookies and beacons blocked.
+- Filter lists: EasyList and EasyPrivacy compiled in (40,000+ network and cosmetic rules) plus an in-house set, uBlock filters (on by default) and Peter Lowe's list — 60,000+ rules on by default; tracking-parameter stripping (utm_*, fbclid, gclid); optional URLhaus malware-domain protection; third-party tracking cookies and beacons blocked.
+- Regional lists: 33 language and country lists ship in the package and the ones matching the browser language turn on automatically; 4 more (Bulgarian, Polish, Nordic, Croatian) have no redistribution licence and are downloaded from their authors only when the user turns them on — data, never code.
+- Focus mode: optional switches hide social widgets, chat pop-ups, newsletter and notification prompts, AI assistant pop-ups, "sign in with Google" prompts and short-video shelves (YouTube Shorts, Reels).
 - Signed updates: filter data (domains, CSS selectors, scriptlet directives) refreshes about twice a day, Ed25519-signed and version-locked. Only data is downloaded, never code.
-- Anti-adblock: a scriptlet engine with 18 named routines (set-constant, abort-on-property-read, no-setTimeout-if, json-prune, no-fetch-if, …) runs before page scripts.
+- Anti-adblock: a scriptlet engine with 19 named routines (set-constant, abort-on-property-read, no-setTimeout-if, json-prune, no-fetch-if, …) runs before page scripts.
 - Pop-unders: 2,700+ known pop-up ad hosts are refused at window.open.
 - Cookie banners: presses the banner's own Reject button when there is one (Accept only as a last resort), then clears leftover blur, backdrops and scroll locks. It only presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never one that submits a form.
 - Smart Detection: a list-free heuristic that hides cross-origin frames sized like ad slots.
-- Controls: per-site allowlist, per-site switch for element hiding, element picker, procedural selectors, filter-list subscriptions by URL, a per-page breakdown of what each list blocked, an engine health card.
-- Interface: English, Bulgarian, Italian, German.
+- Broken site? A repair page offers one-click fixes (turn off element hiding for the site, allow the site, pause) and prepares a report e-mail the user reviews and sends themselves — the extension never sends it.
+- Controls: per-site allowlist, per-site switch for element hiding, element picker, procedural selectors, filter-list subscriptions by URL, a per-page breakdown of what each list blocked, an engine health card, a count of cookie banners rejected.
+- Interface: 70 languages, including right-to-left Arabic, Hebrew, Persian and Urdu; translations other than English, Bulgarian, Italian and German are machine-assisted.
 
 ## Privacy
 
@@ -42,4 +45,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 25 September 2026 (version 5.0.6)._
+_Last updated: 25 September 2026 (version 5.1.0)._
