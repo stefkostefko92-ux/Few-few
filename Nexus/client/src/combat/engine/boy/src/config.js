@@ -1,10 +1,14 @@
 // World layout and look constants shared by the scene, shaders and the director.
 import * as THREE from 'three';
 
+// 4a.3-fix: пуснати ~40% по-навън спрямо оригиналния (стационарен, широкоекранен) boy демо —
+// генерираните ракурси (shot-builder.js) орбитират по-близо до бойците (MIN_DIST 4.2m) от
+// оригиналните фиксирани кадри, и мангалът в (1.4,5.8) редовно влизаше право в обектива на
+// мобилен портрет (реален бъг, докладван при преглед).
 export const BRAZIERS = [
-  new THREE.Vector3(-5.2, 0, -4.2),
-  new THREE.Vector3(5.4, 0, -3.6),
-  new THREE.Vector3(1.4, 0, 5.8),
+  new THREE.Vector3(-7.3, 0, -5.9),
+  new THREE.Vector3(7.6, 0, -5.0),
+  new THREE.Vector3(2.0, 0, 8.1),
 ];
 export const FLAME_Y = 1.36;
 export const GATE_FIRE = new THREE.Vector3(0, 2.4, -19.5);

@@ -177,18 +177,26 @@ export default function CombatScene(props: Props): React.ReactElement {
         </div>
       </div>
 
+      {/* Билет с ПОСЛЕДНОТО събитие, не история — виж 4a.3-fix бележката в combat.css.
+          key=index го превключва (retrigger на log-line-in) при всеки нов рунд. */}
       <div className="combat-log">
-        {logVisible.slice(-8).map((r, i) => (
-          <div key={`${r.index}-${i}`} className={`line ${r.action}`}>
-            <div className="round-num">{r.index}</div>
-            <div>{r.text}</div>
-          </div>
-        ))}
-        {logVisible.length === 0 && !showIntro && (
-          <div className="line" style={{ color: 'var(--text-3)', fontStyle: 'italic' }}>
-            <div className="round-num">…</div>
-            <div>The combatants size each other up.</div>
-          </div>
+        {logVisible.length > 0 ? (
+          (() => {
+            const r = logVisible[logVisible.length - 1];
+            return (
+              <div key={r.index} className={`line ${r.action}`}>
+                <div className="round-num">{r.index}</div>
+                <div>{r.text}</div>
+              </div>
+            );
+          })()
+        ) : (
+          !showIntro && (
+            <div className="line" style={{ color: 'var(--text-3)', fontStyle: 'italic' }}>
+              <div className="round-num">…</div>
+              <div>The combatants size each other up.</div>
+            </div>
+          )
         )}
       </div>
 

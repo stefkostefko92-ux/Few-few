@@ -3,9 +3,8 @@
 // resolution, not by cutting effects.
 //
 // 4a.2/4a.3 (Nexus порт): main() → export async function bootDuel(canvas, opts), приема
-// opts.choreography (choreo-gen.js) и връща { dispose(), togglePlay, setSpeed, toggleSound,
-// skip } — реалните битки карат СВОЯ дуел през същия конвейер. Долният auto-run пази старото
-// поведение на гол `import('./main.js')`.
+// opts.choreography (choreo-gen.js) и връща { dispose(), togglePlay, setSpeed, toggleSound, skip }
+// — реалните битки карат СВОЯ дуел през същия конвейер; auto-run долу пази `import('./main.js')`.
 import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, animateWorld } from './world.js';
@@ -22,6 +21,7 @@ import { DURATION, MOON_DIR, setDuration } from './config.js';
 import { reportFrame } from './hud-report.js';
 import { acceptIdentitySwizzle } from './gpu-compat.js';
 import { installDevHooks } from './dev-hooks.js';
+import { mobileGrade } from './mobile-grade.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
@@ -204,8 +204,7 @@ export async function bootDuel(canvas, opts = {}) {
     fx.update(dT, THREE.MathUtils.clamp(dT * 1.2, 0.012, 0.03), dtReal);
 
     center.addVectors(A.root.pos, B.root.pos).multiplyScalar(0.5);
-    let focusDist;
-    let coc;
+    let focusDist, coc;
     if (!free) {
       director.update(T, dtReal, A, B);
       focusDist = director.state.focusDist;
@@ -226,15 +225,16 @@ export async function bootDuel(canvas, opts = {}) {
     const since = now / 1000 - lightning.at;
     const flash = since >= 0 && since < 1.4 ? (Math.exp(-since / 0.07) + (since > 0.16 ? 0.7 * Math.exp(-(since - 0.16) / 0.09) : 0)) * lightning.power * (reducedMotion ? 0.2 : 1) : 0;
     U.flash.value = flash;
-    W.hemi.intensity = 0.3 + flash * 2.2;
-    W.rim.intensity = 0.45 + flash * 2.5;
+    const aspect = (canvas.clientWidth || window.innerWidth) / (canvas.clientHeight || window.innerHeight);
+    const mg = mobileGrade(aspect);
+    W.hemi.intensity = 0.3 + flash * 2.2 + mg.hemi;
+    W.rim.intensity = 0.45 + flash * 2.5 + mg.rim;
     scene.environmentIntensity = 0.5 + flash * 0.4;
     W.moon.target.position.copy(center);
     W.moon.position.copy(center).addScaledVector(MOON_DIR, 40);
     W.rim.target.position.copy(center).setY(1.3);
     W.rim.position.copy(W.rim.target.position).add(tmp.subVectors(W.rim.target.position, camera.position).setY(0).normalize().multiplyScalar(6)).addScaledVector(UP, 9);
 
-    const aspect = (canvas.clientWidth || window.innerWidth) / (canvas.clientHeight || window.innerHeight);
     const fadeIn = Math.max(0, 1 - (now / 1000 - startReal) / 1.2);
     pipe.render({
       focus: focusDist,
@@ -242,7 +242,8 @@ export async function bootDuel(canvas, opts = {}) {
       maxBlur: Math.min(22, internal.y / 50),
       bloom: 0.42 + (ts < 0.5 ? 0.12 : 0),
       streak: 0.35,
-      exposure: 1.15,
+      exposure: mg.exposure,
+      vignette: mg.vignette,
       time: now / 1000,
       grain: 0.04,
       aspect,
