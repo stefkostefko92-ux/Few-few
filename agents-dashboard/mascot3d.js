@@ -566,9 +566,9 @@ function createMaterials(T, palette) {
       name: "jelly",
       color: 15989732,
       transmission: 1,
-      thickness: 1.1,
-      ior: 1.34,
-      roughness: 0.09,
+      thickness: 0.85,
+      ior: 1.42,
+      roughness: 0.055,
       specularIntensity: 1,
       clearcoat: 1,
       clearcoatRoughness: 0.32,
@@ -577,11 +577,15 @@ function createMaterials(T, palette) {
       normalScale: v2(0.09),
       // barely visible weave + skin micro-imperfections — sealed inside, not printed on top
       attenuationColor: new THREE6.Color(p.olive),
-      attenuationDistance: 2.2,
-      // almost no self-absorption — the gradient tint carries the color now
+      attenuationDistance: 2.6,
+      // almost no self-absorption — the gradient tint carries the color, but a
+      // thinner/clearer body (lower thickness+roughness, higher ior above) lets the desk set behind it
+      // — the lamp glow, the window — actually bend through and read, instead of the transmission
+      // sampling drowning under a near-opaque, high-self-absorption body (2026-09-25 review: "плътна
+      // зелена пластмаса").
       emissive: new THREE6.Color(p.olive),
-      emissiveIntensity: 0.075,
-      // faint constant inner glow, evenly across the body — no discrete core mesh
+      emissiveIntensity: 0.05,
+      // faint constant inner glow — dialled down further so it stops masking transmission
       envMapIntensity: 0.85,
       side: THREE6.DoubleSide
     }),
@@ -663,29 +667,33 @@ function createMaterials(T, palette) {
   const ground = new THREE6.ShadowMaterial({ opacity: 0.48 });
   const glow = new THREE6.MeshBasicMaterial({ color: p.olive, map: T.radial, transparent: true, opacity: 0.4, depthWrite: false });
   const caustic = causticMaterial(p);
-  for (const m of [T.wood.albedoMap, T.wood.normalMap, T.wood.roughnessMap]) m.repeat.set(5, 3);
   const wood = new THREE6.MeshStandardMaterial({
     name: "wood",
     color: 13081192,
     map: T.wood.albedoMap,
     normalMap: T.wood.normalMap,
-    normalScale: v2(0.3),
+    normalScale: v2(0.14),
     roughnessMap: T.wood.roughnessMap,
-    roughness: 0.8,
+    roughness: 0.92,
     metalness: 0,
-    envMapIntensity: 0.18
+    envMapIntensity: 0.05
   });
-  const bookLeather = (hex) => new THREE6.MeshPhysicalMaterial({
-    name: "bookLeather",
-    color: hex,
-    roughness: 0.62,
-    clearcoat: 0.18,
-    clearcoatRoughness: 0.5,
-    normalMap: T.leather.normalMap,
-    normalScale: v2(0.6),
-    roughnessMap: T.leather.roughnessMap,
-    envMapIntensity: 0.4
-  });
+  const bookLeatherInstances = [];
+  const bookLeather = (hex) => {
+    const m = new THREE6.MeshPhysicalMaterial({
+      name: "bookLeather",
+      color: hex,
+      roughness: 0.62,
+      clearcoat: 0.18,
+      clearcoatRoughness: 0.5,
+      normalMap: T.leather.normalMap,
+      normalScale: v2(0.6),
+      roughnessMap: T.leather.roughnessMap,
+      envMapIntensity: 0.4
+    });
+    bookLeatherInstances.push(m);
+    return m;
+  };
   const paper = new THREE6.MeshStandardMaterial({ name: "paper", color: 14207914, roughness: 0.95, envMapIntensity: 0.2 });
   const brass = new THREE6.MeshPhysicalMaterial({ name: "brass", color: 14197322, metalness: 1, roughness: 0.3, clearcoat: 0.25, clearcoatRoughness: 0.28, envMapIntensity: 1.4 });
   const bulb = new THREE6.MeshBasicMaterial({ name: "bulb", color: 16774872, toneMapped: false });
@@ -718,6 +726,7 @@ function createMaterials(T, palette) {
     caustic,
     wood,
     bookLeather,
+    bookLeatherInstances,
     paper,
     brass,
     bulb,
@@ -1051,27 +1060,51 @@ function radialTextures(size = 128) {
   }
   return dataTexture(A, size, size, false);
 }
-function woodTextures(size = 256) {
+
+// src/desk-textures.js
+function woodTextures(size = 512, planks = 6) {
   const n = size * size;
   const H = new Float32Array(n);
   const R = new Float32Array(n);
   const Al = new Uint8Array(n * 4);
-  const nz = new Noise2(41);
-  const ring = new Noise2(9);
-  const base = [107, 68, 36];
-  const dark = [58, 34, 16];
+  const grainNz = new Noise2(41);
+  const toneRand = rng(41);
+  const tones = Array.from({ length: planks }, () => [
+    92 + toneRand() * 26 - 13,
+    56 + toneRand() * 16 - 8,
+    28 + toneRand() * 10 - 5
+  ]);
+  const dark = [30, 16, 8];
+  const scratchRand = rng(205);
+  const scratches = Array.from({ length: 26 }, () => ({ x: scratchRand(), y: scratchRand(), len: 6e-3 + scratchRand() * 0.018, ang: scratchRand() * Math.PI, w: 6e-4 + scratchRand() * 7e-4 }));
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = y * size + x;
       const u = x / size;
       const v = y / size;
-      const warp = ring.fbm(u * 3 + 4, v * 0.6, 8, 2) * 0.6;
-      const rings = Math.sin((v + warp) * 42) * 0.5 + 0.5;
-      const grain = nz.fbm(u * 30, v * 2, 32, 4);
-      const streak = Math.pow(rings, 3) * 0.7 + grain * 0.3;
-      H[i] = streak * 0.45 + grain * 0.15;
-      R[i] = 0.34 + 0.22 * streak;
-      const t = Math.min(1, streak * 0.9 + grain * 0.2);
+      const plankF = u * planks;
+      const plankI = Math.min(planks - 1, Math.floor(plankF));
+      const pu = plankF - plankI;
+      const seam = Math.min(pu, 1 - pu) * planks;
+      const seamShade = smooth(0, 0.06, seam);
+      const warp = grainNz.fbm(pu * 2 + plankI * 7, v * 1.1, 6, 3) * 1.6;
+      const bandPhase = (v * 7 + warp + plankI * 3.1) % 1;
+      const band = Math.pow(Math.abs(Math.sin(bandPhase * Math.PI)), 4);
+      const streakPresence = smooth(0.25, 0.85, grainNz.fbm(pu * 3 + plankI * 5, v * 0.8 + 9, 5, 2));
+      const fiber = grainNz.fbm(pu * 40 + plankI * 11, v * 40, 40, 3);
+      const grain = band * streakPresence * 0.75 + fiber * 0.25;
+      let scratch = 0;
+      for (const s of scratches) {
+        const dx = u - s.x;
+        const dy = v - s.y;
+        const along = dx * Math.cos(s.ang) + dy * Math.sin(s.ang);
+        const across = -dx * Math.sin(s.ang) + dy * Math.cos(s.ang);
+        if (Math.abs(along) < s.len && Math.abs(across) < s.w) scratch = Math.max(scratch, 1 - Math.abs(across) / s.w);
+      }
+      H[i] = grain * 0.4 + fiber * 0.08 - seamShade * -0.5 - (1 - seamShade) * 0.35;
+      R[i] = 0.16 + 0.08 * fiber + (1 - seamShade) * 0.3 + scratch * 0.1;
+      const t = Math.min(1, grain * 0.85 + (1 - seamShade) * 0.9);
+      const base = tones[plankI];
       Al[i * 4] = base[0] + (dark[0] - base[0]) * t;
       Al[i * 4 + 1] = base[1] + (dark[1] - base[1]) * t;
       Al[i * 4 + 2] = base[2] + (dark[2] - base[2]) * t;
@@ -1080,7 +1113,7 @@ function woodTextures(size = 256) {
   }
   return {
     albedoMap: dataTexture(Al, size, size, true),
-    normalMap: dataTexture(heightToNormal(H, size, size, 1), size, size, false),
+    normalMap: dataTexture(heightToNormal(H, size, size, 1.3), size, size, false),
     roughnessMap: dataTexture(grayToRGBA(R), size, size, false)
   };
 }
@@ -1563,9 +1596,12 @@ function book(materials, w, h, d, color, x, y, z, ry) {
   const cover = new THREE11.Mesh(new THREE11.BoxGeometry(w, h, d), materials.bookLeather(color));
   cover.castShadow = cover.receiveShadow = true;
   group.add(cover);
-  const pages = new THREE11.Mesh(new THREE11.BoxGeometry(w * 0.94, h * 0.72, d * 0.94), materials.paper);
-  pages.position.y = h * 0.02;
+  const pages = new THREE11.Mesh(new THREE11.BoxGeometry(w * 0.86, h * 0.66, d * 0.9), materials.paper);
+  pages.position.set(w * 0.05, h * 0.03, 0);
   group.add(pages);
+  const spine = new THREE11.Mesh(new THREE11.BoxGeometry(w * 1.002, h * 0.14, d * 1.002), materials.brass);
+  spine.position.y = h * 0.22;
+  group.add(spine);
   group.position.set(x, y, z);
   group.rotation.y = ry;
   return group;
@@ -1576,9 +1612,9 @@ function bookStack(materials) {
   const z = -0.05;
   const top = DESK_Y + DESK_TOP_H / 2;
   const specs = [
-    [0.64, 0.12, 0.48, 2888463, 0.02],
-    [0.58, 0.1, 0.44, 1191960, -0.03],
-    [0.5, 0.09, 0.37, 3943186, 0.05]
+    [0.64, 0.12, 0.48, 6033952, 0.02],
+    [0.58, 0.1, 0.44, 997924, -0.03],
+    [0.5, 0.09, 0.37, 5911575, 0.05]
   ];
   let y = top;
   for (const [w, h, d, color, ry] of specs) {
@@ -1611,7 +1647,7 @@ function lamp(materials) {
   bulb.position.copy(LAMP_POS);
   bulb.position.y -= 0.05;
   group.add(bulb);
-  const light = new THREE11.PointLight(16756838, 7.5, 5, 2);
+  const light = new THREE11.PointLight(16751172, 3.4, 5, 2);
   light.position.copy(LAMP_POS);
   light.position.y -= 0.05;
   group.add(light);
@@ -1685,23 +1721,22 @@ var PALETTE = {
   gold: "#D9A521"
 };
 function addLights(scene, p) {
-  const key = new THREE12.DirectionalLight(16764830, 1.85);
+  const key = new THREE12.SpotLight(16754784, 38, 7, 0.95, 0.85, 2);
   key.position.set(1.35, 2, -0.1);
+  key.target.position.set(-0.2, 0, 0.2);
+  scene.add(key.target);
   key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.mapSize.set(2048, 2048);
   key.shadow.camera.near = 1;
   key.shadow.camera.far = 10;
-  key.shadow.camera.left = -2;
-  key.shadow.camera.right = 2;
-  key.shadow.camera.top = 2;
-  key.shadow.camera.bottom = -2;
-  key.shadow.bias = -18e-4;
+  key.shadow.bias = -55e-5;
+  key.shadow.normalBias = 0.02;
   scene.add(key);
-  const fill = new THREE12.DirectionalLight(10466559, 0.28);
+  const fill = new THREE12.DirectionalLight(10466559, 0.12);
   fill.position.set(-2.6, 1.9, -3.4);
   scene.add(fill);
-  const rim = new THREE12.DirectionalLight(11452415, 0.4);
-  rim.position.set(0.4, 1.3, -3.4);
+  const rim = new THREE12.DirectionalLight(11452415, 0.28);
+  rim.position.set(0.4, 3.4, -2.6);
   scene.add(rim);
   const underFill = new THREE12.PointLight(new THREE12.Color(p.pale), 0.45, 5, 1.7);
   underFill.position.set(0, -0.85, 2.1);
@@ -1731,7 +1766,7 @@ function softStudioEnvironment(renderer, p) {
     envScene.add(m);
   };
   panel(-4, 5, 3, Math.PI * 0.15, 6, 6, 16774104, 0.7);
-  panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 10466559, 0.32);
+  panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 10466559, 0.08);
   panel(0, -1.5, -5, Math.PI, 6, 4, new THREE12.Color(7311323), 0.45);
   const pmrem = new THREE12.PMREMGenerator(renderer);
   const env = pmrem.fromScene(envScene, 0.35).texture;

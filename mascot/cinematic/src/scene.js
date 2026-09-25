@@ -3,7 +3,8 @@
 // body.js/face.js/accessories.js — this module only places and moves what they build.
 import * as THREE from 'three';
 import { createMaterials, jellyMotion } from './materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures, scratchTextures, woodTextures, leatherTextures, windowSkyTexture } from './textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures, scratchTextures } from './textures.js';
+import { woodTextures, leatherTextures, windowSkyTexture } from './desk-textures.js';
 import { buildBody, GROUND_Y } from './body.js';
 import { buildFace } from './face.js';
 import { buildHat, buildBow, BOW_Y, BOW_Z } from './accessories.js';
@@ -19,28 +20,32 @@ export function addLights(scene, p) {
   // shadow lines up with the lit brass fixture instead of an invisible studio softbox — this is
   // the directional stand-in that actually casts the shadow; the lamp's own PointLight (desk.js)
   // supplies the local bulb highlight without the cost of a second shadow map.
-  const key = new THREE.DirectionalLight(0xffcf9e, 1.85);
+  // SpotLight, не DirectionalLight: насочената светлина осветяваше цялото бюро равномерно (без
+  // затихване) — изкуствено сиво-лилаво петно вместо топъл конус от лампата (преглед 2026-09-25).
+  const key = new THREE.SpotLight(0xffa860, 38, 7, 0.95, 0.85, 2);
   key.position.set(1.35, 2.0, -0.1);
+  key.target.position.set(-0.2, 0, 0.2);
+  scene.add(key.target);
   key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.mapSize.set(2048, 2048);
   key.shadow.camera.near = 1;
   key.shadow.camera.far = 10;
-  key.shadow.camera.left = -2;
-  key.shadow.camera.right = 2;
-  key.shadow.camera.top = 2;
-  key.shadow.camera.bottom = -2;
-  key.shadow.bias = -0.0018;
+  key.shadow.bias = -0.00055;
+  key.shadow.normalBias = 0.02;
   scene.add(key);
 
   // Cool moonlight through the window behind, opposite the lamp — kept deliberately weak (a thin
   // rim only) so the warm lamp stays the dominant read and the desk does not wash out cyan-white
   // (2026-09-25 review regression: the moonlight was overpowering the practical key).
-  const fill = new THREE.DirectionalLight(0x9fb4ff, 0.28);
+  const fill = new THREE.DirectionalLight(0x9fb4ff, 0.12); // слаб: синият fill оцветяваше топлото петно на бюрото в лилаво
   fill.position.set(-2.6, 1.9, -3.4);
   scene.add(fill);
 
-  const rim = new THREE.DirectionalLight(0xaebfff, 0.4);
-  rim.position.set(0.4, 1.3, -3.4);
+  // Висок и слаб: нисък rim отзад (y=1.3) се огледаше в лака на бюрото право в камерата — голямо
+  // лилаво-сиво петно с ярки шевове (намерено с бисекция по обектите, 2026-09-25). Отгоре хваща
+  // само ръба на маскота, а огледалният му ъгъл в бюрото минава под камерата.
+  const rim = new THREE.DirectionalLight(0xaebfff, 0.28);
+  rim.position.set(0.4, 3.4, -2.6);
   scene.add(rim);
 
   // No point light lives under the bow tie. An earlier version had one here (`underglow`,
@@ -96,7 +101,7 @@ function softStudioEnvironment(renderer, p) {
     envScene.add(m);
   };
   panel(-4, 5, 3, Math.PI * 0.15, 6, 6, 0xfff3d8, 0.7); // lamp key, warm, upper-left
-  panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 0x9fb4ff, 0.32); // moonlight fill, cool, frontal
+  panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 0x9fb4ff, 0.08); // moonlight fill, cool, frontal — слаб: лакът на бюрото го отразяваше под скосен ъгъл като лилаво петно
   panel(0, -1.5, -5, Math.PI, 6, 4, new THREE.Color(0x6f8fdb), 0.45); // window rim/contra, cool blue
   // A higher blur sigma than the three.js default keeps this a soft studio glow instead of a sharp
   // mirror of the three flat panels — a crisp panel edge reflected in the lens/iris/jelly reads as

@@ -29,14 +29,21 @@ function desktop(materials) {
   return group;
 }
 
+// A closed book on the desk: leather cover, a thin gold band across the spine (the one flash of
+// metal a real bound volume actually has) and pages that peek out along ONE edge only — the edge
+// opposite the spine, never all four sides at once, or it reads as a solid tinted block instead of
+// bound leaves.
 function book(materials, w, h, d, color, x, y, z, ry) {
   const group = new THREE.Group();
   const cover = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), materials.bookLeather(color));
   cover.castShadow = cover.receiveShadow = true;
   group.add(cover);
-  const pages = new THREE.Mesh(new THREE.BoxGeometry(w * 0.94, h * 0.72, d * 0.94), materials.paper);
-  pages.position.y = h * 0.02;
+  const pages = new THREE.Mesh(new THREE.BoxGeometry(w * 0.86, h * 0.66, d * 0.9), materials.paper);
+  pages.position.set(w * 0.05, h * 0.03, 0);
   group.add(pages);
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(w * 1.002, h * 0.14, d * 1.002), materials.brass);
+  spine.position.y = h * 0.22;
+  group.add(spine);
   group.position.set(x, y, z);
   group.rotation.y = ry;
   return group;
@@ -47,10 +54,12 @@ function bookStack(materials) {
   const x = -1.4;
   const z = -0.05;
   const top = DESK_Y + DESK_TOP_H / 2;
+  // Saturated jewel-tone leather, not near-black boxes — a shelf of old volumes reads by its
+  // colour variety (oxblood/forest/chestnut), not by silhouette alone.
   const specs = [
-    [0.64, 0.12, 0.48, 0x2c130f, 0.02],
-    [0.58, 0.1, 0.44, 0x123018, -0.03],
-    [0.5, 0.09, 0.37, 0x3c2b12, 0.05],
+    [0.64, 0.12, 0.48, 0x5c1220, 0.02],
+    [0.58, 0.1, 0.44, 0x0f3a24, -0.03],
+    [0.5, 0.09, 0.37, 0x5a3417, 0.05],
   ];
   let y = top;
   for (const [w, h, d, color, ry] of specs) {
@@ -89,7 +98,7 @@ function lamp(materials) {
   bulb.position.y -= 0.05;
   group.add(bulb);
 
-  const light = new THREE.PointLight(0xffb066, 7.5, 5, 2);
+  const light = new THREE.PointLight(0xff9a44, 3.4, 5, 2); // ~2500 K, по-слаба: иначе лакът под нея прегаря до синкаво-бяло
   light.position.copy(LAMP_POS);
   light.position.y -= 0.05;
   group.add(light);

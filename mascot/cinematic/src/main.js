@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { Post } from './post.js';
 import { QUALITY, initialTier, createGovernor } from './quality.js';
 import { buildScene } from './scene.js';
+import { upgradeDeskTextures } from './baked.js';
 
 const stageWrap = document.getElementById('stage-wrap');
 const canvas = document.getElementById('stage');
@@ -45,7 +46,10 @@ function init() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const { scene, materials, animate, impulse } = buildScene(renderer);
-  void materials;
+  // Procedural desk textures are already live (instant, no network); this only upgrades them to
+  // the offline-baked hero-resolution set (bake/index.mjs) when dist/tex/ is deployed alongside
+  // the page — non-blocking, silent no-op otherwise (src/baked.js).
+  upgradeDeskTextures(materials, renderer.capabilities.getMaxAnisotropy());
 
   const CAM_DIST = 11.0;
   const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 40);

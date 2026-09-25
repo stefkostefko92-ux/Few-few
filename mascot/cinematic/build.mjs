@@ -7,6 +7,17 @@
 //                                  agents-dashboard profile card). No HTML wrapper: it is a library.
 import { build } from 'esbuild';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+
+// Offline-bake the desk set (dist/tex/*.webp) before bundling, exactly like boy/build.mjs. Wrapped
+// in try/catch on purpose: `sharp` is a native addon and a CI image without a matching prebuilt
+// binary must not hard-fail the whole showcase build — the page already falls back to the runtime
+// procedural textures (src/desk-textures.js) when dist/tex/manifest.json is missing (src/baked.js).
+try {
+  execFileSync(process.execPath, ['bake/index.mjs'], { stdio: 'inherit' });
+} catch (err) {
+  process.stderr.write(`bake skipped (falling back to runtime procedural textures): ${err?.message ?? err}\n`);
+}
 
 async function bundle(entryPoint) {
   const result = await build({

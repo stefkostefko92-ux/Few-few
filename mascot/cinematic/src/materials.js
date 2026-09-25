@@ -70,18 +70,22 @@ export function createMaterials(T, palette) {
       name: 'jelly',
       color: 0xf3fbe4,
       transmission: 1,
-      thickness: 1.1,
-      ior: 1.34,
-      roughness: 0.09,
+      thickness: 0.85,
+      ior: 1.42,
+      roughness: 0.055,
       specularIntensity: 1,
       clearcoat: 1,
       clearcoatRoughness: 0.32, // spreads the specular so one key light does not become a hard hotspot
       normalMap: T.carbon.normalMap,
       normalScale: v2(0.09), // barely visible weave + skin micro-imperfections — sealed inside, not printed on top
       attenuationColor: new THREE.Color(p.olive),
-      attenuationDistance: 2.2, // almost no self-absorption — the gradient tint carries the color now
+      attenuationDistance: 2.6, // almost no self-absorption — the gradient tint carries the color, but a
+      // thinner/clearer body (lower thickness+roughness, higher ior above) lets the desk set behind it
+      // — the lamp glow, the window — actually bend through and read, instead of the transmission
+      // sampling drowning under a near-opaque, high-self-absorption body (2026-09-25 review: "плътна
+      // зелена пластмаса").
       emissive: new THREE.Color(p.olive),
-      emissiveIntensity: 0.075, // faint constant inner glow, evenly across the body — no discrete core mesh
+      emissiveIntensity: 0.05, // faint constant inner glow — dialled down further so it stops masking transmission
       envMapIntensity: 0.85,
       side: THREE.DoubleSide,
     }),
@@ -171,18 +175,25 @@ export function createMaterials(T, palette) {
   // like the mascot's own jelly/felt/satin above — no external images, tileable procedural maps
   // from textures.js (defect this fixes: the mascot used to sit in a black void, which read as
   // "rendered", not "photographed" — see mascot/CLAUDE.md cinematic/ 2026-09-25).
-  // The desktop is much bigger than one bake tile — repeat the grain plank-scale (5x3) instead of
-  // stretching one 42-ring sine sweep across the whole slab, which read as flat horizontal bands
-  // (2026-09-25 review regression, not real grain).
-  for (const m of [T.wood.albedoMap, T.wood.normalMap, T.wood.roughnessMap]) m.repeat.set(5, 3);
+  // One tile already IS the whole desktop (desk-textures.js `woodTextures` draws all six planks
+  // across its own 0..1 U range) — repeating it would just tile the same six planks side by side
+  // again, an obvious seam every repeat. No repeat: the single bake maps 1:1 onto the desk mesh.
   const wood = new THREE.MeshStandardMaterial({
-    name: 'wood', color: 0xc79a68, map: T.wood.albedoMap, normalMap: T.wood.normalMap, normalScale: v2(0.3),
-    roughnessMap: T.wood.roughnessMap, roughness: 0.8, metalness: 0, envMapIntensity: 0.18,
+    name: 'wood', color: 0xc79a68, map: T.wood.albedoMap, normalMap: T.wood.normalMap, normalScale: v2(0.14),
+    roughnessMap: T.wood.roughnessMap, roughness: 0.92, metalness: 0, envMapIntensity: 0.05,
   });
-  const bookLeather = (hex) => new THREE.MeshPhysicalMaterial({
-    name: 'bookLeather', color: hex, roughness: 0.62, clearcoat: 0.18, clearcoatRoughness: 0.5,
-    normalMap: T.leather.normalMap, normalScale: v2(0.6), roughnessMap: T.leather.roughnessMap, envMapIntensity: 0.4,
-  });
+  // Every book on the desk gets its own clone (only `color` differs); `bookLeatherInstances`
+  // tracks them so src/baked.js can patch the shared normal/roughness maps in place once the
+  // offline bake loads, without buildScene needing to know how many books desk.js built.
+  const bookLeatherInstances = [];
+  const bookLeather = (hex) => {
+    const m = new THREE.MeshPhysicalMaterial({
+      name: 'bookLeather', color: hex, roughness: 0.62, clearcoat: 0.18, clearcoatRoughness: 0.5,
+      normalMap: T.leather.normalMap, normalScale: v2(0.6), roughnessMap: T.leather.roughnessMap, envMapIntensity: 0.4,
+    });
+    bookLeatherInstances.push(m);
+    return m;
+  };
   const paper = new THREE.MeshStandardMaterial({ name: 'paper', color: 0xd8cbaa, roughness: 0.95, envMapIntensity: 0.2 });
   const brass = new THREE.MeshPhysicalMaterial({ name: 'brass', color: 0xd8a24a, metalness: 1, roughness: 0.3, clearcoat: 0.25, clearcoatRoughness: 0.28, envMapIntensity: 1.4 });
   const bulb = new THREE.MeshBasicMaterial({ name: 'bulb', color: 0xfff6d8, toneMapped: false });
@@ -194,7 +205,7 @@ export function createMaterials(T, palette) {
 
   return {
     jelly, limb, fabric, acetate, lens, catchlight, sclera, iris, inkPaint, pupil, sparkle, browFuzz, felt, feltTop, gold, satin, satinKnot, bubble, ground, glow, caustic,
-    wood, bookLeather, paper, brass, bulb, shade, windowGlass, windowFrame, dust, dustSprite,
+    wood, bookLeather, bookLeatherInstances, paper, brass, bulb, shade, windowGlass, windowFrame, dust, dustSprite,
   };
 }
 
