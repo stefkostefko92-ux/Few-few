@@ -1,5 +1,6 @@
 // frontend/src/pages/PrivacyPage.jsx
 import Seo from "../components/Seo";
+import { LegalPage, S, Th, Td, Tr } from "../site/LegalShell";
 
 export default function PrivacyPage() {
   const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/support";
@@ -8,7 +9,7 @@ export default function PrivacyPage() {
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Privacy Policy" updated="19 September 2026">
+    <LegalPage wide title="Privacy Policy" updated="19 September 2026">
       <Seo
         title="Privacy Policy — Supreme Bot"
         description="Privacy Policy for Supreme Bot: what data we process, EU data residency, GDPR rights, subprocessors, and retention periods."
@@ -451,37 +452,4 @@ export default function PrivacyPage() {
   );
 }
 
-function LegalPage({ title, updated, children }) {
-  return (
-    <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        <div className="mb-2">
-          <a href="/" className="text-sm text-cs-muted hover:text-cs-text transition-colors">← Back to home</a>
-        </div>
-        <h1 className="text-3xl font-bold text-cs-text mb-2 mt-4">{title}</h1>
-        <p className="text-cs-muted text-sm mb-12">Last updated: {updated}</p>
-        <div>{children}</div>
-      </div>
-    </div>
-  );
-}
 
-function S({ title, children }) {
-  return (
-    <section className="mb-10">
-      <h2 className="text-base font-semibold text-cs-text mb-3 pb-1 border-b border-white/5">{title}</h2>
-      <div className="text-sm text-cs-muted leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-cs-muted">
-        {children}
-      </div>
-    </section>
-  );
-}
-function Th({ children }) {
-  return <th className="text-left py-2 px-3 text-cs-muted font-semibold border-b border-white/5">{children}</th>;
-}
-function Td({ children }) {
-  return <td className="py-2 px-3 border-b border-white/5 align-top">{children}</td>;
-}
-function Tr({ children }) {
-  return <tr className="hover:bg-white/[0.02] transition-colors">{children}</tr>;
-}

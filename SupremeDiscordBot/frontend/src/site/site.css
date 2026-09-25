@@ -72,3 +72,42 @@
   .site-msg-in, .site-typing span { animation: none !important; }
   .site-btn { transition: none; }
 }
+
+/* ─── Страниците със съдържание (функции, сравнения, ръководства, статус,
+   команди, 404) още ползват cs-* класовете на таблото. В рамките на .site ги
+   пребоядисваме към системата на сайта — таблото извън .site остава същото.
+   Зеленото тук НЕ е акцент: cyan (= неоновото зелено) става хром; зеленото
+   остава само за основния бутон. */
+.site h1, .site h2 { font-family: Tektur, "Inter Tight", system-ui, sans-serif; letter-spacing: -0.01em; }
+.site .text-cs-text { color: #dce1e8; }
+.site .text-cs-muted { color: #aab2bf; }
+.site .text-cs-dim { color: #8c96a8; }
+.site .text-cs-cyan { color: #dce1e8; }
+.site .hover\:text-cs-cyan:hover { color: #ffffff; }
+.site .bg-cs-bg { background-color: #16171b; }
+.site .bg-cs-surface { background-color: #1e1f22; }
+.site .border-cs-border, .site .border-cs-border\/50 { border-color: #2f3238; }
+.site .border-cs-cyan { border-color: #8c96a8; }
+.site .font-display { font-family: Tektur, "Inter Tight", system-ui, sans-serif; }
+.site .cs-card {
+  background: #1e1f22; border: 1px solid #2f3238; border-radius: 12px; box-shadow: none;
+}
+.site .cs-card:hover { border-color: #3a3e46; box-shadow: none; }
+/* Етикети с главни букви в моно — клишето; истинският код (команди) остава моно. */
+.site .font-mono.uppercase { font-family: Onest, system-ui, sans-serif; text-transform: none; letter-spacing: 0; }
+.site .cs-btn-primary {
+  background: #8fe600; color: #111215; border-radius: 10px; box-shadow: none;
+  text-transform: none; letter-spacing: 0; font-weight: 600;
+}
+.site .cs-btn-primary:hover { background: #a3f21a; box-shadow: none; }
+.site .cs-btn-secondary {
+  background: transparent; color: #dce1e8; border: 1px solid #2f3238; border-radius: 10px;
+  text-transform: none; letter-spacing: 0; font-weight: 600; box-shadow: none;
+}
+.site .cs-btn-secondary:hover { border-color: #8c96a8; background: transparent; }
+.site .cs-table th { color: #8c96a8; border-color: #2f3238; text-transform: none; letter-spacing: 0; font-family: Onest, system-ui, sans-serif; }
+.site .cs-table td { color: #c3c9d3; border-color: #2f3238; }
+.site .cs-badge-premium { background: rgba(240,194,76,.15); color: #f0c24c; border-color: transparent; }
+.site .cs-table thead, .site .cs-table thead tr, .site .cs-table thead th { background: #1e1f22; }
+/* Малки етикети с главни букви — клишето; в сайта остават в нормален регистър. */
+.site .uppercase { text-transform: none; letter-spacing: normal; }

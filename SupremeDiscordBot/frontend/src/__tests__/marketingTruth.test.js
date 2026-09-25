@@ -38,8 +38,9 @@ const read = (...p) => readFileSync(join(SRC, ...p), "utf8");
 // Визуален одит 25.09.2026: FeaturePage.jsx (13 feature страници) още казваше
 // „Nothing is deleted when a subscription ends.“ — гейтът не го четеше. Сега чете
 // всяка публична маркетинг страница и данните ѝ, не списък по памет.
-// StatusPage е изключена нарочно: „All systems operational“ там е етикетът на
-// ЖИВО измерване (забранено е само статичното твърдение).
+// StatusPage е в текста, но твърдението „All systems operational“ се проверява
+// БЕЗ нея (skipStatus): там то е етикетът на ЖИВО измерване. Всичко друго на
+// статус страницата важи (одит 25.09.2026: „EU-only data residency“ седеше там).
 const MARKETING = readdirSync(join(SRC, "pages"))
   .filter((f) => /^(Feature|Compare|.*Guide|Landing|Commands).*\.jsx$/.test(f))
   .map((f) => read("pages", f));
@@ -62,6 +63,7 @@ const ALL_TEXT = [
   // Текстът за AI двигателите (25.09.2026).
   readFileSync(join(SRC, "..", "public", "llms.txt"), "utf8"),
 ].join("\n");
+const STATUS_TEXT = read("pages", "StatusPage.jsx");
 
 // Таблото НЕ е маркетинг (там „Agency 5“ е легитимен етикет за заварени
 // клиенти), но описва плановете на 8 езика — затова само избрани твърдения
@@ -76,6 +78,7 @@ const FORBIDDEN = [
     /без\s+трансфери\s+извън/i,
     /never\s+leaves?\s+the\s+EU/i,
     /no\s+transfers?\s+outside/i,
+    /EU-only\s+data\s+residency/i,
     /verlassen\s+die\s+Union\s+nicht/i,
     /keine\s+Übertragungen\s+außerhalb/i,
     /no\s+salen\s+de\s+la\s+Unión/i,
@@ -163,7 +166,7 @@ const FORBIDDEN = [
   ]},
 
   // ── Статус „всичко работи“ без измерване ─────────────────────────────────
-  { claim: "статично „All systems operational“", contradicts: "/status (живото измерване)", patterns: [
+  { claim: "статично „All systems operational“", contradicts: "/status (живото измерване)", skipStatus: true, patterns: [
     /All\s+systems\s+operational/i,
   ]},
 
@@ -175,8 +178,8 @@ const FORBIDDEN = [
 ];
 
 describe("нито едно обещание не противоречи на собствените ни документи", () => {
-  it.each(FORBIDDEN)("$claim — опровергано от $contradicts", ({ patterns, alsoDashboard }) => {
-    const text = alsoDashboard ? `${ALL_TEXT}\n${DASHBOARD_TEXT}` : ALL_TEXT;
+  it.each(FORBIDDEN)("$claim — опровергано от $contradicts", ({ patterns, alsoDashboard, skipStatus }) => {
+    const text = [ALL_TEXT, skipStatus ? "" : STATUS_TEXT, alsoDashboard ? DASHBOARD_TEXT : ""].join("\n");
     const hits = patterns.filter((re) => re.test(text)).map(String);
     expect(hits, `върнато подвеждащо твърдение: ${hits.join(", ")}`).toEqual([]);
   });

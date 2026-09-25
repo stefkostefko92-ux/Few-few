@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, XCircle, AlertTriangle, Server, Database, Bot } from "lucide-react";
 import { getStatus } from "../api";
-import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
+import PublicPageLayout from "../components/PublicPageLayout";
 
 export default function StatusPage() {
   const { data, isLoading, refetch } = useQuery({
@@ -23,23 +23,16 @@ export default function StatusPage() {
   const OverallIcon = overallConfig.icon;
 
   return (
-    <div className="min-h-screen bg-transparent flex flex-col">
+    <PublicPageLayout crumb="Status" maxWidth="max-w-3xl">
       <Seo
         title="Service Status — Supreme Bot"
         description="Real-time service status for Supreme Bot: uptime and component health for the database, Discord bot, API, and web dashboard."
         path="/status"
       />
-      <div className="max-w-3xl mx-auto py-12 px-6 w-full flex-1">
-        <div className="flex items-center justify-between mb-8">
-          <a href="/" className="flex items-center gap-3 group">
-            <SupremeLogo size={36} />
-            <div className="flex flex-col leading-tight">
-              <SupremeWordmark className="text-base" />
-              <span className="text-cs-dim text-[10px] font-mono uppercase tracking-[0.2em]">/ status</span>
-            </div>
-          </a>
-          <button onClick={() => refetch()} className="text-cs-muted hover:text-white text-xs font-mono">
-            REFRESH
+      <div>
+        <div className="flex items-center justify-end mb-6">
+          <button type="button" onClick={() => refetch()} className="text-sm text-site-steel hover:text-site-chrome underline underline-offset-4 decoration-site-line">
+            Refresh
           </button>
         </div>
 
@@ -113,7 +106,7 @@ export default function StatusPage() {
               практика (Дир. 2005/29/ЕО) — и първият клиент, поискал кредит, го
               открива. Текстът вече казва каквото е вярно: цел, не гаранция. */}
           <p>Uptime target: 99.9% — monitored continuously. No contractual SLA is included by default; Premium subscribers may negotiate one (EULA §12.1).</p>
-          <p>Infrastructure: Hetzner (Germany) · EU-only data residency</p>
+          <p>Infrastructure: Hetzner (Germany); Discord, Google and Sentry act as US sub-processors under SCCs (Privacy Policy §5–6)</p>
           <p>Status checks refresh every 30 seconds · Cache: 30s</p>
           <p className="pt-2">
             Report an issue: <a href="https://discord.gg/wpCRpy8B" className="text-cs-cyan underline">Discord support</a>
@@ -121,36 +114,7 @@ export default function StatusPage() {
         </div>
       </div>
 
-      {/* ═══ Supreme footer ═══ */}
-      <footer className="border-t border-cs-border bg-cs-bg mt-12">
-        <div className="max-w-3xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <SupremeLogo size={28} />
-            <div className="flex flex-col leading-tight">
-              <SupremeWordmark className="text-sm" />
-              <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
-                Created and Designed by{" "}
-                <a
-                  href="https://carbonstealth.eu"
-                  target="_blank"
-                  rel="noopener"
-                  className="text-cs-cyan underline"
-                >
-                  Carbon Stealth VCC
-                </a>
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-cs-dim">
-            <a href="/"        className="hover:text-cs-cyan transition-colors">Home</a>
-            <a href="/commands" className="hover:text-cs-cyan transition-colors">Commands</a>
-            <a href="/terms"   className="hover:text-cs-cyan transition-colors">Terms</a>
-            <a href="/privacy" className="hover:text-cs-cyan transition-colors">Privacy</a>
-            <a href="/accessibility" className="hover:text-cs-cyan transition-colors">Accessibility</a>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PublicPageLayout>
   );
 }
 

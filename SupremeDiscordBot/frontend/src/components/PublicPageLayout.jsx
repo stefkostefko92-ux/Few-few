@@ -1,66 +1,29 @@
 // frontend/src/components/PublicPageLayout.jsx
-// Shared chrome for the public, unauthenticated content pages under /compare
-// and /guides (Level-2 growth pages — PRODUCT_ROADMAP.md). Same header/footer
-// pattern as StatusPage.jsx and PublicCommandsPage.jsx (logo + breadcrumb,
-// footer with the Carbon Stealth attribution and legal links), pulled into
-// one place so it does not drift across four near-identical pages.
-import SupremeLogo, { SupremeWordmark } from "./SupremeLogo";
-
-const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
+// Обвивката на публичните страници със съдържание: /features/*, /compare/*,
+// /guides/*, /commands, /status и 404. От редизайна (25.09.2026) — същият хедър
+// и футър като лендинга (site/SiteChrome.jsx), така че сайтът е един, не две
+// визии. Вътрешните cs-* класове на тези страници се пребоядисват в рамките на
+// .site (site/site.css) — таблото, което ги ползва, остава непокътнато.
+import { SiteHeader, SiteFooter, BOT_INVITE_URL } from "../site/SiteChrome";
+import { SITE_STRINGS } from "../i18n/siteStrings";
 
 export default function PublicPageLayout({ crumb, children, maxWidth = "max-w-4xl" }) {
   return (
-    <div className="min-h-screen bg-transparent flex flex-col">
-      <div className={`${maxWidth} mx-auto py-12 px-6 w-full flex-1`}>
-        <div className="flex items-center justify-between mb-8">
-          <a href="/" className="flex items-center gap-3 group">
-            <SupremeLogo size={36} />
-            <div className="flex flex-col leading-tight">
-              <SupremeWordmark className="text-base" />
-              {crumb && (
-                <span className="text-cs-dim text-[10px] font-mono uppercase tracking-[0.2em]">
-                  / {crumb}
-                </span>
-              )}
-            </div>
-          </a>
-          <div className="flex items-center gap-4 font-mono text-xs text-cs-dim">
-            <a href={BOT_INVITE_URL} className="hover:text-cs-cyan transition-colors">INVITE</a>
-            <a href="/dashboard" className="hover:text-cs-cyan transition-colors">DASHBOARD</a>
-          </div>
+    <div className="site min-h-screen flex flex-col">
+      <SiteHeader nav={SITE_STRINGS.en.nav} home="/" />
+      <main id="main" className="site-main flex-1">
+        <div className={`${maxWidth} mx-auto px-4 sm:px-6 pt-6 pb-20 w-full`}>
+          {crumb && (
+            <nav aria-label="Breadcrumb" className="mb-6 text-sm text-site-steel">
+              <a href="/" className="hover:text-site-chrome">Supreme Bot</a>
+              <span aria-hidden="true" className="mx-2">/</span>
+              <span className="text-site-chrome">{crumb}</span>
+            </nav>
+          )}
+          {children}
         </div>
-
-        {children}
-      </div>
-
-      <footer className="border-t border-cs-border bg-cs-bg mt-12">
-        <div className={`${maxWidth} mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4`}>
-          <div className="flex items-center gap-3">
-            <SupremeLogo size={28} />
-            <div className="flex flex-col leading-tight">
-              <SupremeWordmark className="text-sm" />
-              <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
-                Created and Designed by{" "}
-                <a
-                  href="https://carbonstealth.eu"
-                  target="_blank"
-                  rel="noopener"
-                  className="text-cs-cyan underline"
-                >
-                  Carbon Stealth VCC
-                </a>
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-cs-dim">
-            <a href="/"          className="hover:text-cs-cyan transition-colors">Home</a>
-            <a href="/features"  className="hover:text-cs-cyan transition-colors">Features</a>
-            <a href="/commands"  className="hover:text-cs-cyan transition-colors">Commands</a>
-            <a href="/terms"     className="hover:text-cs-cyan transition-colors">Terms</a>
-            <a href="/privacy"   className="hover:text-cs-cyan transition-colors">Privacy</a>
-          </div>
-        </div>
-      </footer>
+      </main>
+      <SiteFooter locale="en" />
     </div>
   );
 }

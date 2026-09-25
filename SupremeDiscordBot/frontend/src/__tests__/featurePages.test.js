@@ -137,7 +137,9 @@ describe("страниците са свързани навсякъде, къд�
     expect(read("site", "Landing.jsx")).toContain("<SiteFooter");
     expect(read("site", "SiteChrome.jsx")).toContain("FEATURE_PAGES.map(");
     expect(read("site", "SiteChrome.jsx")).not.toMatch(/FEATURE_PAGES\.slice\(/);
-    expect(read("components", "PublicPageLayout.jsx")).toContain('href="/features"');
+    // Общият футър (site/SiteChrome.jsx) води към /features от всяка публична страница.
+    expect(read("components", "PublicPageLayout.jsx")).toContain("<SiteFooter");
+    expect(read("site", "SiteChrome.jsx")).toContain("FEATURES_HUB.path");
   });
 
   it("етикетът Features съществува на всички локала", () => {

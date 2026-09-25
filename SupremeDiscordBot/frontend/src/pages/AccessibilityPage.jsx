@@ -2,19 +2,14 @@
 // Accessibility Statement — required by the EU European Accessibility Act
 // (Directive 2019/882, in force 28 June 2025) and EN 301 549 / WCAG 2.1 AA.
 import Seo from "../components/Seo";
+import { LegalPage, S } from "../site/LegalShell";
 
 export default function AccessibilityPage() {
   const COMPANY = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
   const EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
 
   return (
-    <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <div className="mb-2">
-          <a href="/" className="text-sm text-cs-muted hover:text-cs-text transition-colors">← Back to home</a>
-        </div>
-        <h1 className="text-3xl font-bold text-cs-text mb-2 mt-4">Accessibility Statement</h1>
-        <p className="text-cs-muted text-sm mb-12">Last updated: 23 June 2026</p>
+    <LegalPage title="Accessibility Statement" updated="23 June 2026">
 
         <Seo
           title="Accessibility Statement — Supreme Bot"
@@ -23,7 +18,7 @@ export default function AccessibilityPage() {
         />
 
         <div className="space-y-8">
-          <Section title="Our commitment">
+          <S title="Our commitment">
             <p>
               {COMPANY} is committed to making Supreme Bot accessible to the widest
               possible audience, regardless of ability or technology. We conform to the{" "}
@@ -32,9 +27,9 @@ export default function AccessibilityPage() {
               Accessibility Act (Directive 2019/882), and we are progressively adopting the
               newer <strong>WCAG 2.2 Level AA</strong> success criteria.
             </p>
-          </Section>
+          </S>
 
-          <Section title="Conformance status">
+          <S title="Conformance status">
             <p>
               Supreme Bot is <strong>partially conformant</strong> with WCAG 2.1 Level
               AA. "Partially conformant" means that some parts of the content do not
@@ -42,9 +37,9 @@ export default function AccessibilityPage() {
               items. The dashboard, marketing site, and legal pages are tested with
               keyboard-only navigation, screen readers, and automated tooling.
             </p>
-          </Section>
+          </S>
 
-          <Section title="Measures we take">
+          <S title="Measures we take">
             <ul>
               <li>Accessibility is included in our design and development review process.</li>
               <li>Colour contrast targets WCAG AA ratios across the dark theme.</li>
@@ -52,9 +47,9 @@ export default function AccessibilityPage() {
               <li>Motion respects the operating-system "reduce motion" preference.</li>
               <li>Pages provide semantic landmarks, headings, and form labels.</li>
             </ul>
-          </Section>
+          </S>
 
-          <Section title="Known limitations">
+          <S title="Known limitations">
             <p>
               Despite our efforts, the following non-conformances are known. We are working
               to resolve them, and each is referenced to the WCAG success criterion it affects:
@@ -76,9 +71,9 @@ export default function AccessibilityPage() {
               </li>
             </ul>
             <p>If you encounter a barrier not listed here, please tell us — see below.</p>
-          </Section>
+          </S>
 
-          <Section title="Feedback and contact">
+          <S title="Feedback and contact">
             <p>
               We welcome your feedback on the accessibility of Supreme Bot. If you
               experience difficulty accessing any part of the service, contact us and
@@ -94,9 +89,9 @@ export default function AccessibilityPage() {
               Commission for Consumer Protection (Комисия за защита на потребителите); in other
               EU member states, your national market-surveillance authority for the Act.
             </p>
-          </Section>
+          </S>
 
-          <Section title="Preparation of this statement">
+          <S title="Preparation of this statement">
             <p>
               This statement was prepared on 23 June 2026 and last reviewed on 27 June 2026.
               It is reviewed when the service changes materially and at least annually. The
@@ -107,20 +102,9 @@ export default function AccessibilityPage() {
               checks</strong>, evaluated against WCAG 2.1 Level AA (with WCAG 2.2 AA criteria
               progressively included).
             </p>
-          </Section>
+          </S>
         </div>
-      </div>
-    </div>
+    </LegalPage>
   );
 }
 
-function Section({ title, children }) {
-  return (
-    <section>
-      <h2 className="text-base font-semibold text-cs-text mb-3">{title}</h2>
-      <div className="text-sm text-cs-muted leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2">
-        {children}
-      </div>
-    </section>
-  );
-}

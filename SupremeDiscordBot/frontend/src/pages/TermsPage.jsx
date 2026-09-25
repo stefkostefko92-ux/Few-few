@@ -1,5 +1,6 @@
 // frontend/src/pages/TermsPage.jsx
 import Seo from "../components/Seo";
+import { LegalPage, S } from "../site/LegalShell";
 
 export default function TermsPage() {
   const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/support";
@@ -448,28 +449,4 @@ export default function TermsPage() {
   );
 }
 
-function LegalPage({ title, updated, children }) {
-  return (
-    <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <div className="mb-2">
-          <a href="/" className="text-sm text-cs-muted hover:text-cs-text transition-colors">← Back to home</a>
-        </div>
-        <h1 className="text-3xl font-bold text-cs-text mb-2 mt-4">{title}</h1>
-        <p className="text-cs-muted text-sm mb-12">Last updated: {updated}</p>
-        <div className="space-y-0">{children}</div>
-      </div>
-    </div>
-  );
-}
 
-function S({ title, children }) {
-  return (
-    <section className="mb-8">
-      <h2 className="text-base font-semibold text-cs-text mb-3 mt-6">{title}</h2>
-      <div className="text-sm text-cs-muted leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-cs-muted">
-        {children}
-      </div>
-    </section>
-  );
-}

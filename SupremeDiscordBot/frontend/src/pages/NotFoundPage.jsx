@@ -5,28 +5,20 @@
 // indicates "not found" status to the user.
 
 import { Home, AlertCircle, Compass } from "lucide-react";
-import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
+import PublicPageLayout from "../components/PublicPageLayout";
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-transparent flex flex-col">
+    <PublicPageLayout crumb="404" maxWidth="max-w-4xl">
       <Seo
         title="Page Not Found — Supreme Bot"
         description="The page you are looking for does not exist."
         path={window.location.pathname}
         noindex
       />
-      <header className="border-b border-cs-border">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
-          <a href="/" className="flex items-center gap-3">
-            <SupremeLogo size={36} />
-            <SupremeWordmark className="text-base" />
-          </a>
-        </div>
-      </header>
 
-      <main className="flex-1 flex items-center justify-center px-6 py-16">
+      <div className="flex items-center justify-center py-10">
         <div className="max-w-xl text-center">
           <AlertCircle className="w-16 h-16 text-cs-cyan mx-auto mb-6" />
           <h1 className="text-5xl font-display font-black text-cs-text mb-4">
@@ -66,26 +58,8 @@ export default function NotFoundPage() {
             .
           </div>
         </div>
-      </main>
+      </div>
 
-      <footer className="border-t border-cs-border bg-cs-bg">
-        <div className="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <SupremeLogo size={24} />
-            <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
-              Created and Designed by{" "}
-              <a
-                href="https://carbonstealth.eu"
-                target="_blank"
-                rel="noopener"
-                className="text-cs-cyan underline"
-              >
-                Carbon Stealth VCC
-              </a>
-            </span>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PublicPageLayout>
   );
 }

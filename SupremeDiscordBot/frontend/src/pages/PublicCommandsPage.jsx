@@ -8,8 +8,8 @@
 // fed by the API). This page renders the catalog directly — no auth, no fetch.
 import { Terminal, LayoutDashboard, BookOpen } from "lucide-react";
 import { COMMAND_CATALOG } from "../data/commandsCatalog";
-import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
+import PublicPageLayout from "../components/PublicPageLayout";
 
 const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
 
@@ -27,26 +27,13 @@ function splitPremium(label) {
 
 export default function PublicCommandsPage() {
   return (
-    <div className="min-h-screen bg-transparent flex flex-col">
+    <PublicPageLayout crumb="Commands" maxWidth="max-w-4xl">
       <Seo
         title="Supreme Bot Commands — Full Reference"
         description={`Every Supreme Bot slash command and dashboard feature: ${totalCommands} commands across ${totalCategories} categories — tickets, forms, verification, polls, giveaways, automation, and more.`}
         path="/commands"
       />
-      <div className="max-w-4xl mx-auto py-12 px-6 w-full flex-1">
-        <div className="flex items-center justify-between mb-8">
-          <a href="/" className="flex items-center gap-3 group">
-            <SupremeLogo size={36} />
-            <div className="flex flex-col leading-tight">
-              <SupremeWordmark className="text-base" />
-              <span className="text-cs-dim text-[10px] font-mono uppercase tracking-[0.2em]">/ commands</span>
-            </div>
-          </a>
-          <div className="flex items-center gap-4 font-mono text-xs text-cs-dim">
-            <a href={BOT_INVITE_URL} className="hover:text-cs-cyan transition-colors">INVITE</a>
-            <a href="/dashboard" className="hover:text-cs-cyan transition-colors">DASHBOARD</a>
-          </div>
-        </div>
+      <div>
 
         {/* ═══ Answer-first intro (AEO) ═══ */}
         <div className="cs-card mb-8">
@@ -137,34 +124,6 @@ export default function PublicCommandsPage() {
         </div>
       </div>
 
-      {/* ═══ Footer ═══ */}
-      <footer className="border-t border-cs-border bg-cs-bg mt-12">
-        <div className="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <SupremeLogo size={28} />
-            <div className="flex flex-col leading-tight">
-              <SupremeWordmark className="text-sm" />
-              <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-cs-dim">
-                Created and Designed by{" "}
-                <a
-                  href="https://carbonstealth.eu"
-                  target="_blank"
-                  rel="noopener"
-                  className="text-cs-cyan underline"
-                >
-                  Carbon Stealth VCC
-                </a>
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-widest text-cs-dim">
-            <a href="/"        className="hover:text-cs-cyan transition-colors">Home</a>
-            <a href="/status"  className="hover:text-cs-cyan transition-colors">Status</a>
-            <a href="/terms"   className="hover:text-cs-cyan transition-colors">Terms</a>
-            <a href="/privacy" className="hover:text-cs-cyan transition-colors">Privacy</a>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </PublicPageLayout>
   );
 }
