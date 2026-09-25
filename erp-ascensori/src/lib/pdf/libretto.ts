@@ -100,8 +100,12 @@ export async function caricaLibretto(
     include: {
       condominio: true,
       amministratore: true,
-      verifiche: { orderBy: { data: "desc" } },
+      // ВТОРА ЛИНИЯ: и връзките се филтрират по фирмата. Досието отива при
+      // контролния орган — чужд отчет в него (вписан през подменен
+      // `impiantoId`) е невярна декларация на името на тази фирма.
+      verifiche: { where: { tenantId }, orderBy: { data: "desc" } },
       rapportini: {
+        where: { tenantId },
         orderBy: { dataOra: "desc" },
         // Досието е за преглед, не архив: последните две години покриват
         // двугодишния цикъл на проверката, а по-старото се вади от списъка.

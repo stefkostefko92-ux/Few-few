@@ -35,6 +35,7 @@ export async function cercaSoggetti(
     prisma.user.findMany({
       where: {
         ...dove,
+        ...soloNonMaster(vedeTutti),
         OR: [{ nome: contiene }, { cognome: contiene }, { email: contiene }],
       },
       select: { id: true, nome: true, cognome: true, email: true },
@@ -93,10 +94,26 @@ export async function cercaSoggetti(
 }
 
 /** Намира субекта В ОБХВАТА на заявителя. Извън обхвата = не съществува. */
-async function trova(tipo: TipoSoggetto, id: string, dove: object) {
+/**
+ * Потребител на ниво доставчик (MASTER) е извън обхвата на всеки, който не е
+ * MASTER. Без това филтърът по фирма не стигаше: в еднофирмената инсталация и
+ * ADMIN, и MASTER са с `tenantId` NULL — ADMIN намираше MASTER, анонимизираше
+ * го необратимо (заключва доставчика навън завинаги) и изнасяше IP-тата му.
+ * Обикновеният маршрут `/api/utenti/[id]` вече пазеше това; GDPR пътят — не.
+ */
+function soloNonMaster(vedeTutti: boolean): object {
+  return vedeTutti ? {} : { ruolo: { not: "MASTER" as const } };
+}
+
+async function trova(
+  tipo: TipoSoggetto,
+  id: string,
+  dove: object,
+  vedeTutti: boolean,
+) {
   if (tipo === "utente")
     return prisma.user.findFirst({
-      where: { id, ...dove },
+      where: { id, ...dove, ...soloNonMaster(vedeTutti) },
       // Хешът на паролата и тайната на втория фактор НЕ излизат в износа:
       // правото на достъп е върху личните данни, не върху удостоверенията.
       select: {
@@ -143,7 +160,7 @@ export async function esporta(
   vedeTutti: boolean,
 ): Promise<EsportazioneGdpr | null> {
   const dove = vedeTutti ? {} : { tenantId };
-  const soggetto = await trova(tipo, id, dove);
+  const soggetto = await trova(tipo, id, dove, vedeTutti);
   if (!soggetto) return null;
 
   const collegati: Record<string, unknown[]> = {};
@@ -257,7 +274,7 @@ export async function anonimizza(
   attore: { sub: string; tenantId: string | null },
 ): Promise<EsitoAnonimizzazione | null> {
   const dove = vedeTutti ? {} : { tenantId };
-  const esistente = await trova(tipo, id, dove);
+  const esistente = await trova(tipo, id, dove, vedeTutti);
   if (!esistente) return null;
 
   const piano = pianoAnonimizzazione(tipo, id);

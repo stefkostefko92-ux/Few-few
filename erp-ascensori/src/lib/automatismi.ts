@@ -12,6 +12,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { log, descriviErrore } from "@/lib/log";
+import { richiedeRuolo, ErroreHttp, type Sessione } from "@/lib/auth";
 
 export interface OpzioniTracciato {
   /**
@@ -70,4 +71,24 @@ export async function eseguiTracciato<T extends object>(
     log.error(`automatismo ${nome} fallito`, { ...err, esito: "ERRORE" });
     throw e;
   }
+}
+
+/**
+ * Кой може да пусне автоматизъм РЪЧНО.
+ *
+ * Автоматизмите минават през ВСИЧКИ фирми на инсталацията (така ги пуска и
+ * cron-ът). В еднофирмената инсталация — нашия модел — потребителите са без
+ * фирма и бутонът е работа на RESPONSABILE. Потребител, който ПРИНАДЛЕЖИ на
+ * фирма, би обработил и чуждите и би видял общите им броячи: за него — само
+ * MASTER (нивото на доставчика). Правилото е по сесията, не по броя фирми в
+ * базата: второто зависи от данните и се мени между две заявки.
+ */
+export async function richiedeAvvioManuale(): Promise<Sessione> {
+  const s = await richiedeRuolo("RESPONSABILE");
+  if (s.ruolo !== "MASTER" && s.tenantId !== null)
+    throw new ErroreHttp(
+      403,
+      "Con più aziende l'avvio manuale è riservato al livello MASTER",
+    );
+  return s;
 }

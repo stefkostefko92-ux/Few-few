@@ -2,6 +2,7 @@
 // Икономическите данни са видими от DIREZIONE нагоре (гл. Controlli).
 
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
@@ -67,6 +68,7 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("DIREZIONE");
   const data = await corpoValidato(req, fatturaSchema);
+  await verificaRiferimenti(s, data);
   const prefisso =
     data.tipo === "RICEVUTA"
       ? PREFISSI.fatturaRicevuta

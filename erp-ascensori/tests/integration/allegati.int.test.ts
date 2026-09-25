@@ -241,10 +241,7 @@ describe("снимки: показване вместо сваляне", () => {
     assert.equal(res.headers.get("content-type"), "image/png");
     // Предпазителите ОСТАВАТ и в режим на показване.
     assert.equal(res.headers.get("x-content-type-options"), "nosniff");
-    assert.match(
-      String(res.headers.get("content-security-policy")),
-      /sandbox/,
-    );
+    assert.match(String(res.headers.get("content-security-policy")), /sandbox/);
     assert.equal(
       res.headers.get("cross-origin-resource-policy"),
       "same-origin",
@@ -269,10 +266,7 @@ describe("снимки: показване вместо сваляне", () => {
     const foto = await carica(tecnico, PNG, "cabina.png");
     const d = await scarica(tecnico, String(foto.dati.id));
     assert.equal(d.status, 200);
-    assert.match(
-      String(d.headers.get("content-disposition")),
-      /^attachment;/,
-    );
+    assert.match(String(d.headers.get("content-disposition")), /^attachment;/);
     assert.deepEqual(new Uint8Array(d.corpo), PNG);
   });
 
@@ -284,5 +278,43 @@ describe("снимки: показване вместо сваляне", () => {
       { headers: {} },
     );
     assert.equal(res.status, 401);
+  });
+});
+
+// Находка от прегледа: модулът за фактури е DIREZIONE+, а прикачените им файлове
+// се виждаха и сваляха от OPERATORE — id-тата на фактурите излизат от договора.
+describe("файловете на фактурите следват правата на фактурите", () => {
+  test("OPERATORE не вижда, не сваля и не качва файл на фактура", async () => {
+    const direzione = await comeRuolo("DIREZIONE");
+    const operatore = await comeRuolo("OPERATORE");
+    const f = await direzione.get<{ righe: { id: string }[] }>(
+      "/api/fatture?size=1",
+    );
+    const fatturaId = f.dati.righe[0]?.id;
+    assert.ok(fatturaId, "il seed non ha fatture");
+
+    const su = await carica(
+      direzione,
+      PDF,
+      "fattura.pdf",
+      "fatture",
+      fatturaId,
+    );
+    assert.equal(su.status, 201, JSON.stringify(su.dati));
+    const allegatoId = String(su.dati.id);
+
+    const lista = await operatore.get(
+      `/api/allegati?entita=fatture&entitaId=${fatturaId}`,
+    );
+    assert.equal(lista.status, 403);
+    // 404, не 403: за ниската роля файлът просто не съществува.
+    assert.equal((await scarica(operatore, allegatoId)).status, 404);
+    const tec = await comeRuolo("TECNICO");
+    assert.equal(
+      (await carica(tec, PDF, "x.pdf", "fatture", fatturaId)).status,
+      403,
+    );
+    // DIREZIONE продължава да работи нормално.
+    assert.equal((await scarica(direzione, allegatoId)).status, 200);
   });
 });

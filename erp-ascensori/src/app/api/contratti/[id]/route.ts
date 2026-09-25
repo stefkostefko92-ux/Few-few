@@ -5,6 +5,7 @@
 // документи необясними при проверка.
 
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
@@ -68,6 +69,7 @@ export const PUT = gestito(async (req, ctx) => {
     req,
     conPeriodoValido(contrattoBase.partial()),
   );
+  await verificaRiferimenti(s, { ...data, impiantiIds });
 
   const prima = await prisma.contratto.findFirst({
     where: { id, ...filtroTenant(s) },

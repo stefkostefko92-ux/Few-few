@@ -4,6 +4,7 @@
 // това е неговият документ и неговите часове.
 
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
@@ -37,6 +38,7 @@ export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("TECNICO");
   const { id } = await ctx.params;
   const data = await corpoValidato(req, rapportinoSchema);
+  await verificaRiferimenti(s, data);
 
   // Ордин на друга фирма не приема отчети.
   const ordine = await prisma.ordineLavoro.findFirst({

@@ -12,6 +12,10 @@
 import { prisma } from "@/lib/prisma";
 import { ok, gestito, errore } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import {
+  puoLeggereAllegati,
+  puoScrivereAllegati,
+} from "@/lib/allegati/accesso";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import {
@@ -66,6 +70,8 @@ export const GET = gestito(async (req) => {
   const entita = url.searchParams.get("entita") ?? "";
   const entitaId = url.searchParams.get("entitaId") ?? "";
   if (!entitaValida(entita)) throw new ErroreHttp(400, "Entità non ammessa");
+  if (!puoLeggereAllegati(s.ruolo, entita))
+    throw new ErroreHttp(403, "Permessi insufficienti");
   if (!/^[0-9a-f-]{36}$/i.test(entitaId))
     throw new ErroreHttp(400, "Identificativo non valido");
   if (!(await proprietarioValido(entita, entitaId, s)))
@@ -100,6 +106,8 @@ export const POST = gestito(async (req) => {
 
   if (!(file instanceof File)) return errore(400, "Nessun file caricato");
   if (!entitaValida(entita)) return errore(400, "Entità non ammessa");
+  if (!puoScrivereAllegati(s.ruolo, entita, "TECNICO"))
+    return errore(403, "Permessi insufficienti");
   if (!/^[0-9a-f-]{36}$/i.test(entitaId))
     return errore(400, "Identificativo non valido");
   if (!(await proprietarioValido(entita, entitaId, s)))

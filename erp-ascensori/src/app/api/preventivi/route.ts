@@ -1,5 +1,6 @@
 // Preventivi: списък + създаване с прогресивен номер PRV-ГГГГ-NNNN.
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
@@ -55,6 +56,7 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const data = await corpoValidato(req, preventivoSchema);
+  await verificaRiferimenti(s, data);
   const creato = await conNumero(
     "preventivo",
     PREFISSI.preventivo,

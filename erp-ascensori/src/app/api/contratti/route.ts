@@ -6,6 +6,7 @@
 // но нищо не се случва.
 
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
@@ -61,6 +62,7 @@ export const POST = gestito(async (req) => {
   // Договорът обвързва фирмата финансово за години напред → RESPONSABILE+.
   const s = await richiedeRuolo("RESPONSABILE");
   const { impiantiIds, ...data } = await corpoValidato(req, contrattoSchema);
+  await verificaRiferimenti(s, { ...data, impiantiIds });
 
   const creato = await conNumero("contratto", "CTR", s.tenantId, (numero) =>
     prisma.contratto.create({

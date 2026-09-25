@@ -243,3 +243,42 @@ describe("права на субекта (GDPR)", () => {
     );
   });
 });
+
+// Находка от прегледа: в еднофирмената инсталация и ADMIN, и MASTER са с
+// `tenantId` NULL — ADMIN намираше MASTER, изнасяше IP-тата му и можеше да го
+// анонимизира НЕОБРАТИМО (доставчикът остава заключен навън завинаги).
+describe("ADMIN не стига до MASTER през GDPR", () => {
+  test("търсене, износ и анонимизация на MASTER са невидими за ADMIN", async () => {
+    // Отделен MASTER за теста: ако защитата някога падне, пострадва той, не
+    // споделеният акаунт на целия пакет.
+    const email = `${unico("gdpr-master").toLowerCase()}@test.local`;
+    const creato = await master.post<{ id: string }>("/api/utenti", {
+      email,
+      password: PASSWORD,
+      nome: "Fornitore",
+      cognome: "Master",
+      ruolo: "MASTER",
+    });
+    assert.equal(creato.status, 201, JSON.stringify(creato.dati));
+    const id = creato.dati.id;
+
+    const cerca = await admin.get<{ righe: { id: string }[] }>(
+      `/api/gdpr?q=${encodeURIComponent(email.split("@")[0])}`,
+    );
+    assert.equal(cerca.status, 200);
+    assert.ok(!cerca.dati.righe.some((r) => r.id === id), "MASTER trovato");
+    assert.equal(
+      (await scarica(admin, `/api/gdpr/utente/${id}/esporta`)).status,
+      404,
+    );
+    const anon = await admin.post(`/api/gdpr/utente/${id}/anonimizza`, {
+      conferma: true,
+    });
+    assert.equal(anon.status, 404);
+    // MASTER вижда и може — правото на субекта не изчезва.
+    assert.equal(
+      (await scarica(master, `/api/gdpr/utente/${id}/esporta`)).status,
+      200,
+    );
+  });
+});

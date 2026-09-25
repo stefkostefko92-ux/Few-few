@@ -1,5 +1,6 @@
 // Отчет по id: четене и промяна ДО подписването.
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
@@ -26,6 +27,7 @@ export const PUT = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("TECNICO");
   const { id } = await ctx.params;
   const data = await corpoValidato(req, rapportinoSchema.partial());
+  await verificaRiferimenti(s, data);
 
   const prima = await prisma.rapportino.findFirst({
     where: { id, ...filtroTenant(s) },

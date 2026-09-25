@@ -7,6 +7,7 @@
 // отрицателна, а уредбата още е „ATTIVO“.
 
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
@@ -38,6 +39,7 @@ export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("RESPONSABILE");
   const { id } = await ctx.params;
   const data = await corpoValidato(req, verificaImpiantoSchema);
+  await verificaRiferimenti(s, data);
 
   const esito = await prisma.$transaction(async (tx) => {
     const i = await tx.impianto.findFirst({

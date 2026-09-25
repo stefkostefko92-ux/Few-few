@@ -221,7 +221,8 @@ describe("изолация в маршрутите извън CRUD фабрик�
       tipo: "ENTRATA",
       quantita: 10,
     });
-    assert.equal(mov.status, 404, "фирма А не бива да движи склада на фирма Б");
+    // 422 — същият отговор като за несъществуващ артикул (`riferimenti.ts`).
+    assert.equal(mov.status, 422, "фирма А не бива да движи склада на фирма Б");
   });
 
   test("администраторът на фирма А не вижда потребителите на фирма Б", async () => {
@@ -398,5 +399,81 @@ describe("изолация: табло, импорт, одит, номераци
     });
     assert.equal(b.status, 201);
     assert.equal(b.dati.numero, `PRV-${anno}-0001`);
+  });
+});
+
+// Находка от прегледа: FK ограничението в базата проверява само, че редът
+// СЪЩЕСТВУВА, и минава покрай RLS. С чужд UUID фирма А закачаше записите си за
+// данните на фирма Б — и ги получаваше обратно през `include`.
+describe("външните ключове не прескачат между фирми", () => {
+  let amministratoreB: string;
+  before(async () => {
+    const a = await aziendaB.post<{ id: string }>("/api/amministratori", {
+      nome: unico("AmmB"),
+    });
+    assert.equal(a.status, 201, JSON.stringify(a.dati));
+    amministratoreB = a.dati.id;
+  });
+
+  test("CRUD фабриката: кондоминиум на А с администратор на Б → 422", async () => {
+    const r = await aziendaA.post<{ error: string }>("/api/condomini", {
+      nome: unico("CondA-fk"),
+      indirizzo: "Via A 1",
+      citta: "Milano",
+      amministratoreId: amministratoreB,
+    });
+    assert.equal(r.status, 422, JSON.stringify(r.dati));
+    assert.match(r.dati.error, /amministratoreId/);
+  });
+
+  test("отговорът е същият за чужд и за несъществуващ ключ", async () => {
+    const chi = await aziendaA.post<{ error: string }>("/api/condomini", {
+      nome: unico("CondA-fk2"),
+      indirizzo: "Via A 2",
+      citta: "Milano",
+      amministratoreId: "00000000-0000-4000-8000-000000000000",
+    });
+    const altrui = await aziendaA.post<{ error: string }>("/api/condomini", {
+      nome: unico("CondA-fk3"),
+      indirizzo: "Via A 3",
+      citta: "Milano",
+      amministratoreId: amministratoreB,
+    });
+    assert.equal(chi.status, altrui.status);
+    assert.equal(chi.dati.error, altrui.dati.error);
+  });
+
+  test("собствен маршрут: договор на А с администратор на Б → 422", async () => {
+    const r = await aziendaA.post("/api/contratti", {
+      oggetto: unico("Ctr-fk"),
+      canone: "100",
+      dataInizio: "2026-01-01",
+      dataFine: "2026-12-31",
+      amministratoreId: amministratoreB,
+    });
+    assert.equal(r.status, 422, JSON.stringify(r.dati));
+  });
+
+  test("промяна през PUT също се проверява", async () => {
+    const c = await aziendaA.post<{ id: string }>("/api/condomini", {
+      nome: unico("CondA-put"),
+      indirizzo: "Via A 4",
+      citta: "Milano",
+    });
+    assert.equal(c.status, 201);
+    const r = await aziendaA.put(`/api/condomini/${c.dati.id}`, {
+      amministratoreId: amministratoreB,
+    });
+    assert.equal(r.status, 422, JSON.stringify(r.dati));
+  });
+
+  test("ADMIN на фирма НЕ пуска автоматизмите за цялата инсталация", async () => {
+    // Автоматизмът минава през ВСИЧКИ фирми и връща общите броячи.
+    assert.equal((await aziendaA.post("/api/scadenze/check", {})).status, 403);
+    assert.equal(
+      (await aziendaA.post("/api/contratti/elabora", {})).status,
+      403,
+    );
+    assert.equal((await master.post("/api/scadenze/check", {})).status, 200);
   });
 });

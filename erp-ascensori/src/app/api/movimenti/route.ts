@@ -2,6 +2,7 @@
 // ENTRATA добавя, USCITA вади (не под нула), RETTIFICA е подписана корекция.
 
 import { z } from "zod";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
@@ -43,6 +44,7 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const data = await corpoValidato(req, schema);
+  await verificaRiferimenti(s, data);
 
   if (data.tipo !== "RETTIFICA" && data.quantita <= 0)
     throw new ErroreHttp(400, "La quantità deve essere positiva");

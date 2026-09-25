@@ -15,6 +15,10 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { ok, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import {
+  puoLeggereAllegati,
+  puoScrivereAllegati,
+} from "@/lib/allegati/accesso";
 import { filtroTenant } from "@/lib/tenant";
 import { scriviAudit } from "@/lib/audit";
 import { leggi, elimina } from "@/lib/allegati/archivio";
@@ -57,7 +61,10 @@ export const GET = gestito(async (req, ctx) => {
   const a = await prisma.allegato.findFirst({
     where: { id, ...filtroTenant(s) },
   });
-  if (!a) throw new ErroreHttp(404, "Allegato non trovato");
+  // 404, не 403: за ниската роля файлът на фактура просто не съществува —
+  // иначе отговорът потвърждава, че под това id има документ.
+  if (!a || !puoLeggereAllegati(s.ruolo, a.entita))
+    throw new ErroreHttp(404, "Allegato non trovato");
 
   let dati: Buffer;
   try {
@@ -96,7 +103,10 @@ export const DELETE = gestito(async (_req, ctx) => {
   const a = await prisma.allegato.findFirst({
     where: { id, ...filtroTenant(s) },
   });
-  if (!a) throw new ErroreHttp(404, "Allegato non trovato");
+  if (!a || !puoLeggereAllegati(s.ruolo, a.entita))
+    throw new ErroreHttp(404, "Allegato non trovato");
+  if (!puoScrivereAllegati(s.ruolo, a.entita, "RESPONSABILE"))
+    throw new ErroreHttp(403, "Permessi insufficienti");
 
   // Редът пада ПРЪВ: ако файлът не се изтрие, остава сирак — заема място, но е
   // невидим. Обратният ред би оставил ред, сочещ към нищо.

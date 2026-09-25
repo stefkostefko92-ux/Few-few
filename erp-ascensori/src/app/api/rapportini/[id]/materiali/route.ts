@@ -12,6 +12,7 @@
 // проверява СЕГА, когато корекцията още е възможна.
 
 import { z } from "zod";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
@@ -50,6 +51,7 @@ export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("TECNICO");
   const { id } = await ctx.params;
   const dati = await corpoValidato(req, schema);
+  await verificaRiferimenti(s, dati);
 
   const riga = await prisma.$transaction(async (tx) => {
     // Проверката за подпис е В транзакцията: отвън между нея и вписването се

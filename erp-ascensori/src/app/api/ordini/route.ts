@@ -2,6 +2,7 @@
 // Създаването пише и първата редица в storico_stati (statoPrecedente = NULL).
 
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
@@ -58,6 +59,7 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const data = await corpoValidato(req, ordineSchema);
+  await verificaRiferimenti(s, data);
   const creato = await conNumero(
     "ordineLavoro",
     PREFISSI.ordineLavoro,

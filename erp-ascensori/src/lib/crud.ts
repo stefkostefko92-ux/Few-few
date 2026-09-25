@@ -6,6 +6,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { conRls } from "@/lib/rls";
 import { ok, corpoValidato, gestito } from "@/lib/api";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import {
@@ -133,16 +134,18 @@ export function rottaCollezione(cfg: CrudConfig) {
   const POST = gestito(async (req) => {
     const s = await richiedeRuolo(cfg.ruoloScrittura ?? "OPERATORE");
     const data = await corpoValidato(req, cfg.schemaCreate);
-    const creato = await conRls(s, (tx) =>
-      delegate(cfg.model, tx).create({
+    // Външните ключове — по фирмата на сесията, ПРЕДИ записа (`riferimenti.ts`).
+    const creato = await conRls(s, async (tx) => {
+      await verificaRiferimenti(s, data, tx);
+      return delegate(cfg.model, tx).create({
         data: {
           ...(data as object),
           ...(cfg.senzaTenant ? {} : tenantDiCreazione(s)),
           ...(cfg.campiSessione?.(s) ?? {}),
         },
         include: cfg.include,
-      }),
-    );
+      });
+    });
     const id = idRecord(creato);
     if (cfg.afterWrite) await cfg.afterWrite(id);
     await scriviAudit({
@@ -188,6 +191,7 @@ export function rottaElemento(cfg: CrudConfig) {
       if (!prima) throw new ErroreHttp(404, "Record non trovato");
       const vietato = cfg.vincoloModifica?.(prima, data);
       if (vietato) throw new ErroreHttp(409, vietato);
+      await verificaRiferimenti(s, data, tx);
       const dopo = await d.update({
         where: { id },
         data: data as object,

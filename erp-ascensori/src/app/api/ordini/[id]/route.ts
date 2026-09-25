@@ -1,5 +1,6 @@
 // Ordine di lavoro: детайл (със storico) / промяна на полетата (не статуса!) / изтриване.
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
@@ -33,6 +34,7 @@ export const PUT = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("TECNICO");
   const { id } = await ctx.params;
   const data = await corpoValidato(req, ordineSchema.partial());
+  await verificaRiferimenti(s, data);
   const prima = await prisma.ordineLavoro.findFirst({
     where: { id, ...filtroTenant(s) },
   });

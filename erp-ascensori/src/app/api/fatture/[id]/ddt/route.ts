@@ -10,6 +10,7 @@
 // подадената фактура вече носи типа, с който е издадена.
 
 import { z } from "zod";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp, type Sessione } from "@/lib/auth";
@@ -67,6 +68,7 @@ export const PUT = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("OPERATORE");
   const { id } = await ctx.params;
   const { ddtIds } = await corpoValidato(req, schema);
+  await verificaRiferimenti(s, { ddtIds });
   const fattura = await fatturaModificabile(id, s);
 
   await prisma.$transaction(async (tx) => {

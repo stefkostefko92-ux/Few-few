@@ -1,5 +1,6 @@
 // DDT (D.P.R. 472/1996): списък + създаване с номер DDT-ГГГГ-NNNN.
 import { prisma } from "@/lib/prisma";
+import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo } from "@/lib/auth";
 import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
@@ -49,6 +50,7 @@ export const GET = gestito(async (req) => {
 export const POST = gestito(async (req) => {
   const s = await richiedeRuolo("OPERATORE");
   const data = await corpoValidato(req, ddtSchema.base);
+  await verificaRiferimenti(s, data);
   const creato = await conNumero("ddt", PREFISSI.ddt, s.tenantId, (numero) =>
     prisma.ddt.create({
       data: {
