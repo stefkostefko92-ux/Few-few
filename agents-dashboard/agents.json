@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-24",
+    "updated": "2026-09-25",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 255
+        "lessons": 263
       },
       "evolution": [
         {
@@ -1118,7 +1118,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 371
+        "lessons": 382
       },
       "evolution": [
         {
@@ -1906,9 +1906,31 @@
           "date": "2026-09-24",
           "event": "v26.1 — учене",
           "detail": "Научи: ПРЕДАВАНЕ: handoff.mjs чете `Находки:` само от СЪЩИЯ ред (regex ^…Находки…:(.*)$); нахо…"
+        },
+        {
+          "version": "26.3.0",
+          "date": "2026-09-25",
+          "event": "v26.3 — учене",
+          "detail": "Научи: Проверка на съединен CSS селектор с querySelector(list.join(', ')) НЕ хваща незатворен … (+1 още)"
+        },
+        {
+          "version": "26.4.0",
+          "date": "2026-09-25",
+          "event": "v26.4 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ се валидира по точното име на полето „Следваща стъпка:“ — „Следващата …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ се валидира по точното име на полето „Следваща стъпка:“ — „Следващата …\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Проверка на съединен CSS селектор с querySelector(list.join(', ')) НЕ хваща незатворен …\" (+1 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
@@ -3617,7 +3639,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 169
+        "lessons": 175
       },
       "evolution": [
         {
@@ -10707,7 +10729,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 163
+        "lessons": 166
       },
       "evolution": [
         {
@@ -11587,7 +11609,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 167
+        "lessons": 170
       },
       "evolution": [
         {
@@ -11931,9 +11953,20 @@
           "date": "2026-09-09",
           "event": "v14.9 — учене",
           "detail": "Научи: web_accessible_resources за surrogate/anti-adblock ресурси (gpt.js, ga.js, ima3.js и др…"
+        },
+        {
+          "version": "15.2.0",
+          "date": "2026-09-25",
+          "event": "v15.2 — учене",
+          "detail": "Научи: Relaxed CSS Nesting (nested selector starting directly with a type/tag selector, no lea… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Relaxed CSS Nesting (nested selector starting directly with a type/tag selector, no lea…\" (+2 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "quarantine",

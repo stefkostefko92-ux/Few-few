@@ -20,7 +20,7 @@ node tools/build_scriptlets.mjs --check
 #     has refused such archives with "access denied to the compressed folder";
 # -D: no directory entries — nothing for an extractor to trip on, Chrome does not need them.
 zip -r -X -D "$out" . \
-  -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
+  -x '.git/*' '_metadata/*' 'node_modules/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
      'scriptlets/engine.js' 'scriptlets/list.txt' 'scriptlets/scriptlet_meta.json' 'rules/popup_hosts.json' 'tests/*' \
      '*.md' 'package.json' '.gitignore' '*/.DS_Store' '.DS_Store' \
   >/dev/null
@@ -51,7 +51,11 @@ const has = (f) => f.endsWith("/*")
 const missing = [...refs].filter(f => !has(f));
 if (missing.length) { console.error("MISSING from package:", missing); process.exit(1); }
 // Dev-only trees must never ship, and packaged JS must be eval-free (Web Store: no remote code).
-const devLeak = zipFiles.filter(z => /^(tests|tools|docs|store|server|dist)\//.test(z));
+const devLeak = zipFiles.filter(z => /^(tests|tools|docs|store|server|dist|node_modules)\//.test(z));
+// „_" в началото е запазено за Chrome: _metadata/ е локалният DNR кеш, който Chrome пише
+// при „Load unpacked" (тестовете) — 4+ MB бинарни файлове, които не бива да се качват.
+const reserved = zipFiles.filter(z => /^_/.test(z) && !z.startsWith("_locales/"));
+if (reserved.length) { console.error("Reserved _ paths leaked into package:", reserved.slice(0, 5)); process.exit(1); }
 if (devLeak.length) { console.error("DEV files leaked into package:", devLeak); process.exit(1); }
 const evalHits = zipFiles.filter(z => z.endsWith(".js")).filter(z => /\beval\s*\(|new\s+Function\s*\(/.test(execSync(`unzip -p "${process.argv[2]}" "${z}"`).toString()));
 if (evalHits.length) { console.error("eval/new Function in package:", evalHits); process.exit(1); }

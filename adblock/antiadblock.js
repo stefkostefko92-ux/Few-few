@@ -9,11 +9,25 @@
     "whitelist",
     "disable your ad",
     "turn off your ad",
+    // the same wall in the languages of our users (Funding Choices, Admiral… localise it)
+    "blocco degli annunci", "blocco della pubblicità", "blocco pubblicità",
+    "werbeblocker", "bloqueur de pub", "bloqueador de anuncios",
+    "блокер на реклами", "блокиране на реклами",
   ];
 
+  // Reads at most 600 characters of text (a bigger element is not a modal) — never
+  // the whole text of a large container, which an attribute watcher would otherwise
+  // do on every animation frame.
   function isWall(el) {
-    const t = (el.textContent || "").toLowerCase();
-    if (t.length > 600) return false; // too big to be a modal
+    let t = "";
+    try {
+      const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n = w.nextNode(); n; n = w.nextNode()) {
+        t += n.nodeValue;
+        if (t.length > 600) return false; // too big to be a modal
+      }
+    } catch { return false; }
+    t = t.toLowerCase();
     return HINTS.some((h) => t.includes(h));
   }
 
@@ -34,6 +48,7 @@
     // Only touch the page's scroll/layout after we actually removed a wall,
     // so we never force overflow/position on ordinary sites.
     if (!removed) return;
+    document.documentElement.classList.add("tbab-aab-unlocked");
     for (const n of [document.documentElement, document.body]) {
       if (!n) continue;
       n.style.setProperty("overflow", "auto", "important");
@@ -49,16 +64,28 @@
     cleanup();
     if (wired) return; // observers / timers only once per page
     wired = true;
-    // Throttle: scanning every element is costly, so cap it on busy pages.
+    // Throttle: scanning every element is costly, so cap it on busy pages. Only
+    // added elements can bring a wall — text-only churn (a clock, a speed gauge)
+    // must not trigger a scan of the whole page.
     let queued = false;
-    new MutationObserver(() => {
-      if (queued) return;
+    // …or text that turns an existing element into a wall (`wall.textContent =
+    // "disable your adblocker"`) — isWall() reads one element and gives up past
+    // 600 characters, so a ticking clock or a speed gauge stays free.
+    // Also a wall revealed by an attribute change (style/class/hidden) on an
+    // element that already carries the text.
+    const bringsElements = (r) => {
+      if (r.type === "attributes") return r.target.nodeType === 1 && isWall(r.target);
+      for (const n of r.addedNodes) if (n.nodeType === 1) return true;
+      return !!r.target && r.target.nodeType === 1 && r.addedNodes.length > 0 && isWall(r.target);
+    };
+    new MutationObserver((records) => {
+      if (queued || !records.some(bringsElements)) return;
       queued = true;
       setTimeout(() => {
         queued = false;
         cleanup();
       }, 500);
-    }).observe(document.documentElement, { childList: true, subtree: true });
+    }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class", "hidden"] });
     let n = 0;
     const t = setInterval(() => {
       if (!active || n++ > 10) return clearInterval(t);

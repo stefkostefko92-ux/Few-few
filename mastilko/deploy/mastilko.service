@@ -42,11 +42,14 @@ ProtectControlGroups=true
 RestrictSUIDSGID=true
 RestrictNamespaces=true
 RestrictRealtime=true
-# AF_UNIX е нужен на Node (вътрешни IPC/DNS); БЕЗ IPAddressDeny — /api/ai
-# вика Gemini навън.
-RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
-SystemCallFilter=@system-service
-SystemCallFilter=~@mount @swap @reboot @obsolete
+# AF_UNIX е нужен на Node (вътрешни IPC/DNS); AF_NETLINK — libuv чете мрежовите
+# интерфейси през netlink (без него seccomp убива процеса с SIGSYS). БЕЗ
+# IPAddressDeny — /api/ai вика Gemini навън.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+# САМО денилист (без @system-service allowlist): allowlist-ът убиваше Node с
+# SIGSYS на прод ядрото (V8/libuv ползват syscalls извън списъка, напр. clone3).
+# Денилистът пак блокира опасните групи, без да чупи Node.
+SystemCallFilter=~@mount @swap @reboot @obsolete @module @raw-io @debug
 SystemCallArchitectures=native
 LockPersonality=true
 MemoryDenyWriteExecute=false

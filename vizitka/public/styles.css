@@ -459,43 +459,81 @@ legend {
   padding: 2.2rem 1.5rem 1.7rem;
   position: relative;
 }
+/* Страницата на визитката носи темата и ИЗВЪН картата. Изискването беше темата да
+   оцветява ЦЯЛАТА страница: на телефон картата заема екрана и разликата не личи, но на
+   таблет и лаптоп ~60% от екрана оставаше неутрално сив, а бутонът в менюто — в синьото
+   на сайта при всяка тема. Променливите (--t-*) идват от body.theme-* / body.custom-accent
+   (виж по-долу и personalize.js), тоест нула inline стилове — CSP остава непокътнат.
+   color-mix е наличен във всички актуални браузъри; фонът отдолу е резервата. */
+body.card-theme {
+  background-color: var(--t-soft, var(--bg));
+  background-image:
+    radial-gradient(
+      1100px 520px at 50% -140px,
+      color-mix(in srgb, var(--t-a) 46%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(180deg, var(--t-soft) 0%, color-mix(in srgb, var(--t-soft) 55%, var(--bg)) 100%);
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+body.card-theme .nav {
+  background: color-mix(in srgb, #fff 82%, transparent);
+  backdrop-filter: saturate(1.2) blur(6px);
+}
+body.card-theme .nav .btn {
+  background: var(--t-accent);
+}
+body.card-theme .nav .btn:hover {
+  background: var(--t-b);
+}
+body.card-theme .footer a {
+  color: var(--t-accent);
+}
+
 /* Цветови теми — задават палитрата на цялата карта (src/themes.js) */
-.vcard.theme-blue {
+.vcard.theme-blue,
+body.theme-blue {
   --t-a: #2563eb;
   --t-b: #7c3aed;
   --t-accent: #4f46e5;
   --t-soft: #eef2ff;
   --t-ring: #c7d2fe;
 }
-.vcard.theme-emerald {
+.vcard.theme-emerald,
+body.theme-emerald {
   --t-a: #059669;
   --t-b: #0d9488;
   --t-accent: #0f766e;
   --t-soft: #ecfdf5;
   --t-ring: #a7f3d0;
 }
-.vcard.theme-sunset {
+.vcard.theme-sunset,
+body.theme-sunset {
   --t-a: #ea580c;
   --t-b: #db2777;
   --t-accent: #db2777;
   --t-soft: #fff1f2;
   --t-ring: #fecdd3;
 }
-.vcard.theme-ocean {
+.vcard.theme-ocean,
+body.theme-ocean {
   --t-a: #0284c7;
   --t-b: #0891b2;
   --t-accent: #0e7490;
   --t-soft: #ecfeff;
   --t-ring: #a5f3fc;
 }
-.vcard.theme-graphite {
+.vcard.theme-graphite,
+body.theme-graphite {
   --t-a: #1f2937;
   --t-b: #4b5563;
   --t-accent: #334155;
   --t-soft: #f1f5f9;
   --t-ring: #cbd5e1;
 }
-.vcard.theme-rose {
+.vcard.theme-rose,
+body.theme-rose {
   --t-a: #e11d48;
   --t-b: #9d174d;
   --t-accent: #be123c;
@@ -1221,6 +1259,32 @@ legend {
 }
 .legal li {
   margin: 0.3rem 0;
+}
+
+/* Секцията за MCP конектора на началната. Преизползва .how и .link-box. */
+.ai-connector h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ai-connector .link-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+.ai-connector .link-box label {
+  flex-basis: 100%;
+}
+.ai-connector .link-box input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.ai-connector .ai-steps {
+  padding-left: 1.2rem;
+  line-height: 1.6;
 }
 
 /* Наръчник (съдържателните страници) — ляга върху .legal контейнера. */

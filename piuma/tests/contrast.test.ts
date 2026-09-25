@@ -152,3 +152,27 @@ test('мастилото на първичния бутон държи 4.5:1 н�
     assert.ok(ratio >= 4.5, `--accent-ink върху ${stop}: ${ratio.toFixed(2)}:1 < 4.5`);
   }
 });
+
+test('витрината: мастилата, акцентът и бутонът държат контраста върху листа', () => {
+  const papers = ['lp-paper', 'lp-paper-2'].map((name) => parseHex(token(name)));
+  // Акцентът е и текст (курсивът в заглавието, стрелките) — затова 4.5:1, не 3:1.
+  for (const ink of ['lp-ink', 'lp-ink-2', 'lp-mute', 'lp-accent']) {
+    const ratio = worstOn(parseHex(token(ink)), papers);
+    assert.ok(ratio >= 4.5, `--${ink} върху листа: ${ratio.toFixed(2)}:1 < 4.5`);
+  }
+  const buttonInk = parseHex(token('lp-accent-ink'));
+  for (const fill of ['lp-accent', 'lp-accent-hover']) {
+    const ratio = contrast(buttonInk, parseHex(token(fill)));
+    assert.ok(ratio >= 4.5, `бутонът върху --${fill}: ${ratio.toFixed(2)}:1 < 4.5`);
+  }
+  // Единственият чип на витрината (изводът „готово“) стои върху повдигнатия лист.
+  const chip = CSS.match(/\.lp \.chip\.good\s*\{([\s\S]*?)\}/)?.[1];
+  assert.ok(chip, 'чипът на витрината липсва — регексът е изостанал от CSS-а');
+  const tint = colorOf(chip.match(/(?:^|[\s;{])background:\s*([^;]+);/)?.[1] ?? '');
+  const ink = parseHex(token('good'));
+  const ratio = worstOn(
+    ink,
+    papers.map((paper) => composite(tint.rgb, paper, tint.alpha)),
+  );
+  assert.ok(ratio >= 4.5, `.lp .chip.good: ${ratio.toFixed(2)}:1 < 4.5`);
+});

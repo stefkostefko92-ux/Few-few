@@ -18,7 +18,10 @@ import http from "node:http";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const require = createRequire(join(process.env.PW_ROOT || join(ROOT, "node_modules"), "/"));
 let chromium;
-try { ({ chromium } = require("playwright")); } catch { console.log("SKIP: playwright not available (PW_ROOT)"); process.exit(0); }
+try { ({ chromium } = require("playwright")); } catch {
+  // CI sets PW_REQUIRED=1: a missing browser there must fail, never pass as "skipped".
+  console.log("SKIP: playwright not available (PW_ROOT)"); process.exit(process.env.PW_REQUIRED ? 1 : 0);
+}
 
 const css = readFileSync(join(ROOT, "cookies.css"), "utf8");
 const js = readFileSync(join(ROOT, "cookies.js"), "utf8");

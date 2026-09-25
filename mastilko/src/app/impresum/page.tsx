@@ -27,7 +27,7 @@ export default function ImpresumPage() {
         (Директива 2000/31/ЕО).
       </p>
 
-      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink">
+      <section className="mt-8 space-y-6 text-ink-soft [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-ink dark:[&_h2]:text-paper vivid:[&_h2]:text-paper">
         <div>
           <h2>Издател на Мастилко</h2>
           <div className="mt-3 space-y-2">
@@ -98,13 +98,13 @@ export default function ImpresumPage() {
             <a className="text-tera-dark underline" href="https://kzp.bg" rel="noopener noreferrer">
               kzp.bg
             </a>
-            . Онлайн решаване на спорове (ОРС) на ЕК:{" "}
+            . Помирителни комисии за извънсъдебно решаване на спорове — при КЗП:{" "}
             <a
               className="text-tera-dark underline"
-              href="https://ec.europa.eu/consumers/odr"
+              href="https://kzp.bg/pomiritelna-komisiya"
               rel="noopener noreferrer"
             >
-              ec.europa.eu/consumers/odr
+              kzp.bg/pomiritelna-komisiya
             </a>
             .
           </p>
