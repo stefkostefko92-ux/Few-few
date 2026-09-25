@@ -57,8 +57,8 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 > (private support channels or threads with an HTML transcript for the server
 > owner), application forms, member verification (captcha / account-age gate),
 > reaction roles, autoroles and welcome messages, scheduled messages, an optional
-> server activity log, and an optional AI-suggested first reply for support
-> tickets. Server administrators configure everything from a web dashboard
+> server activity log, and an optional automatic AI first reply (labelled as AI)
+> for support tickets. Server administrators configure everything from a web dashboard
 > (Discord OAuth2 login). Premium features are sold only through Discord Premium
 > Apps (monthly guild subscriptions). Operated by Carbon Stealth VCC (Bulgaria, EU);
 > data is hosted in the EU. Privacy Policy: https://supremebot.carbonstealth.eu/privacy —
@@ -82,10 +82,11 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 >    record of the support case. The bot resolves whether a channel is a ticket
 >    before reading anything; messages in all other channels are never processed
 >    or stored (`bot/src/events/messageCreate.js`, `ticketChannelCache`).
-> 2. **AI-suggested first reply (opt-in, Premium).** If — and only if — the server
+> 2. **Automatic AI first reply (opt-in, Premium).** If — and only if — the server
 >    administrator enables it in the dashboard, the *first* message of a new
->    ticket is sent to an LLM provider to draft a suggested answer for staff. The
->    feature is disabled platform-wide unless the operator attests a paid provider
+>    ticket is sent to an LLM provider and its answer is posted in the ticket
+>    automatically, labelled as an AI reply (EU AI Act Art. 50); staff take over
+>    after it. The feature is disabled platform-wide unless the operator attests a paid provider
 >    tier that does not train on the content (`AI_REPLY_TRAINING_ATTESTED`,
 >    `backend/src/services/aiReply.js`) — Developer Policy §21.
 > 3. **Server activity log, "messages" category (opt-in).** When an administrator

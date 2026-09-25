@@ -458,7 +458,7 @@ export default {
   "premium.feat.prem3": "Claim · escalate · round-robin assignment",
   "premium.feat.prem4": "Sticky + scheduled + recurring messages",
   "premium.feat.prem5": "Giveaways, polls & advanced analytics",
-  "premium.feat.prem6": "AI auto-replies — human in the loop",
+  "premium.feat.prem6": "AI auto-reply to the first message — labelled as AI",
   "premium.feat.prem7": "Webhooks (HMAC) + public REST API",
   "premium.feat.prem8": "Unlimited transcript retention + CSV/PDF export",
   "premium.feat.wl1": "Everything in Premium",

@@ -55,7 +55,15 @@ const ALL_TEXT = [
   ...MARKETING_DATA,
   // Статичният HTML за търсачките — там също седеше „nothing is deleted“.
   readFileSync(join(SRC, "..", "scripts", "prerender.mjs"), "utf8"),
+  // Текстът за AI двигателите (25.09.2026).
+  readFileSync(join(SRC, "..", "public", "llms.txt"), "utf8"),
 ].join("\n");
+
+// Таблото НЕ е маркетинг (там „Agency 5“ е легитимен етикет за заварени
+// клиенти), но описва плановете на 8 езика — затова само избрани твърдения
+// (`alsoDashboard`) се проверяват и в него.
+const DASHBOARD_TEXT = readdirSync(join(SRC, "i18n", "dashboard"))
+  .filter((f) => f.endsWith(".js")).map((f) => read("i18n", "dashboard", f)).join("\n");
 
 const FORBIDDEN = [
   // ── Абсолютно отрицание на трансфери извън ЕС ────────────────────────────
@@ -128,6 +136,27 @@ const FORBIDDEN = [
     /€\s?5\s*[–-]\s*20/, /5\s*[–-]\s*20\s*€/, /5\s*à\s*20\s*€/, /Webhook\.io/, /Stickyboard/,
   ]},
 
+  // ── AI „с човек в процеса“, а ботът публикува сам (25.09.2026) ────────────
+  // backend/src/routes/bot.js праща AI_REPLY → ботът публикува отговора
+  // автоматично (с етикет по AI Act чл. 50). Решение на собственика: текстът
+  // казва истината навсякъде, вместо да обещава преглед от човек.
+  { claim: "AI отговорите минават през преглед от човек", contradicts: "backend/src/routes/bot.js (AI_REPLY → автоматично публикуване)", alsoDashboard: true, patterns: [
+    /human[- ]in[- ]the[- ]loop/i,
+    /staff (?:member )?reviews?,? (?:edits )?(?:and )?sends?/i,
+    /AI never replies on its own/i,
+    /reviewed by staff/i,
+    /човек в процеса/i,
+    /Mensch(?:en)? im Prozess/i,
+    /supervisión humana/i,
+    /humain dans la boucle/i,
+    /intervention humaine/i,
+    /persona nel processo/i,
+    /supervisione umana/i,
+    /mens in de lus/i,
+    /człowiekiem w procesie/i,
+    /z udziałem człowieka/i,
+  ]},
+
   // ── Статус „всичко работи“ без измерване ─────────────────────────────────
   { claim: "статично „All systems operational“", contradicts: "/status (живото измерване)", patterns: [
     /All\s+systems\s+operational/i,
@@ -141,8 +170,9 @@ const FORBIDDEN = [
 ];
 
 describe("нито едно обещание не противоречи на собствените ни документи", () => {
-  it.each(FORBIDDEN)("$claim — опровергано от $contradicts", ({ patterns }) => {
-    const hits = patterns.filter((re) => re.test(ALL_TEXT)).map(String);
+  it.each(FORBIDDEN)("$claim — опровергано от $contradicts", ({ patterns, alsoDashboard }) => {
+    const text = alsoDashboard ? `${ALL_TEXT}\n${DASHBOARD_TEXT}` : ALL_TEXT;
+    const hits = patterns.filter((re) => re.test(text)).map(String);
     expect(hits, `върнато подвеждащо твърдение: ${hits.join(", ")}`).toEqual([]);
   });
 });

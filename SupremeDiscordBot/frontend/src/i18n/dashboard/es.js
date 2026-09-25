@@ -469,7 +469,7 @@ export default {
   "premium.feat.prem3": "Reclamación · escalado · asignación round-robin",
   "premium.feat.prem4": "Mensajes fijados + programados + recurrentes",
   "premium.feat.prem5": "Sorteos, encuestas y analíticas avanzadas",
-  "premium.feat.prem6": "Respuestas automáticas con IA — con supervisión humana",
+  "premium.feat.prem6": "Respuesta automática con IA al primer mensaje — marcada como IA",
   "premium.feat.prem7": "Webhooks (HMAC) + REST API pública",
   "premium.feat.prem8": "Retención ilimitada de transcripciones + exportación CSV/PDF",
   "premium.feat.wl1": "Todo lo de Premium",

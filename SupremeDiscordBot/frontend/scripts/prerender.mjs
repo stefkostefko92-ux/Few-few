@@ -249,7 +249,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["Verification & anti-bot", "One-click button or math captcha, account-age requirements and brute-force protection."],
     ["Polls & giveaways", "Live polls (up to 9 options) and giveaways with role requirements, scheduled end and re-roll."],
     ["Automation", "Sticky messages and one-off or recurring (daily/weekly/monthly) scheduled messages."],
-    ["AI auto-replies", "Optional AI-drafted first response, with an EU AI Act Art. 50 disclosure."],
+    ["AI auto-replies", "Optional automatic AI first reply to a new ticket, labelled as AI (EU AI Act Art. 50)."],
     ["Webhooks & API", "HMAC-signed webhook events and a public REST API with scoped bearer keys."],
     ["White-label bot", "White-label & Agency servers run their own branded bot with a custom token, encrypted with AES-256-GCM."],
   ];
@@ -267,7 +267,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["Form logic", "—", "Conditional branching + regex validation"],
     ["Verification", "Button", "Button + math captcha + account-age gates"],
     ["Ticket workflow", "Basic", "Claim · escalate · rename · round-robin"],
-    ["AI auto-replies", "—", "AI-powered (assistive, human-in-the-loop)"],
+    ["AI auto-replies", "—", "Automatic first reply, labelled as AI"],
     ["White-label bot", "—", "Separate tier (White-label)"],
     ["Webhooks", "—", "20 HMAC-signed integrations"],
     ["Transcript retention", "30 days", "Unlimited"],

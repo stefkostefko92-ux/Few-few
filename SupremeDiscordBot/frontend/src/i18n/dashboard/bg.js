@@ -469,7 +469,7 @@ export default {
   "premium.feat.prem3": "Поемане · ескалация · round-robin разпределяне",
   "premium.feat.prem4": "Закачени + планирани + повтарящи се съобщения",
   "premium.feat.prem5": "Томболи, анкети и разширена аналитика",
-  "premium.feat.prem6": "AI автоматични отговори — с човек в процеса",
+  "premium.feat.prem6": "AI автоматичен първи отговор — отбелязан като AI",
   "premium.feat.prem7": "Webhooks (HMAC) + публичен REST API",
   "premium.feat.prem8": "Неограничено съхранение на транскрипти + CSV/PDF експорт",
   "premium.feat.wl1": "Всичко от Premium",

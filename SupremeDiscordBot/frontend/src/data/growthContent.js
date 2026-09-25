@@ -49,7 +49,7 @@ export const TICKET_TOOL_COMPARE = {
     ["Standalone application forms", "Yes, all tiers — up to 50 forms / 50 questions on Premium, approve/deny workflow", "Ticket intake fields (dropdowns/priority) only — no separate application/approval module found"],
     ["Member verification", "Button or math captcha + account-age gate, all tiers", "Not listed as a feature on their site"],
     ["Giveaways", "Unlimited, all tiers (role-gated, scheduled end, re-roll)", "Not listed as a feature on their site"],
-    ["AI features", "AI-drafted first-response suggestions, Premium tier, human-in-the-loop, EU AI Act Art. 50 disclosure", "AI ticket assist (draft replies/summaries) + AI flow nodes, Pro tier only, 5M tokens/month included"],
+    ["AI features", "Automatic AI first reply to a new ticket, Premium tier, opt-in, labelled as AI (EU AI Act Art. 50)", "AI ticket assist (draft replies/summaries) + AI flow nodes, Pro tier only, 5M tokens/month included"],
     ["Public REST API", "Included from Premium (€4.99/mo)", "Included from Pro ($12/mo)"],
     ["Webhooks", "20 HMAC-signed integrations, Premium", "10 webhook nodes (Community) · unlimited (Pro)"],
     ["White-label custom bot", "€9.99 / server / month (own Discord token, own brand)", "Enterprise tier only — custom pricing"],
@@ -83,7 +83,7 @@ export const APPY_COMPARE = {
     ["Ticket system", "Full: panels, claim, escalate, rename, round-robin, HTML transcripts", "Ticket panels + templates; no claim/escalate/round-robin stated"],
     ["Verification / anti-bot", "Button or math captcha + account-age gate, all tiers", "Website captcha (Free) · + in-Discord verification (Premium)"],
     ["Giveaways", "Unlimited, all tiers, role-gated + scheduled + re-roll", "Included, tier/limits not specified on their site"],
-    ["AI auto-replies", "Premium tier, human-in-the-loop, EU AI Act Art. 50 disclosure", "Not stated on their site"],
+    ["AI auto-replies", "Premium tier, opt-in, automatic first reply labelled as AI (EU AI Act Art. 50)", "Not stated on their site"],
     ["Public REST API / webhooks", "Public REST API + 20 HMAC webhooks, Premium", "Not stated on their site"],
     ["Custom-branded bot", "White-label tier, €9.99/mo — own Discord token, fully own brand", "Custom Bot tier, £9.99/mo — custom avatar, username & status (their bot)"],
     ["Multi-server discount", "None — each server subscribes on its own (€4.99 Premium or €9.99 White-label per month, in the Discord store)", "Premium x3: £8.99/mo for 3 servers (40% off)"],
@@ -134,7 +134,7 @@ export const BEST_TICKET_BOT_GUIDE = {
     {
       title: "6. AI features — and whether they're disclosed",
       body: "Several ticket bots now offer AI-drafted replies or summaries. Check whether it's assistive (staff reviews before sending) or fully automated, and whether the vendor discloses AI use — the EU AI Act (Art. 50) requires disclosure when users interact with an AI system.",
-      supreme: "Supreme Bot's AI auto-replies are assistive (staff reviews and sends), Premium-tier, and carry an explicit AI Act Art. 50 disclosure in the product.",
+      supreme: "Supreme Bot's AI auto-replies are fully automated but limited to the first message of a new ticket; they are Premium-tier, opt-in per server, and every AI reply carries an explicit AI Act Art. 50 label. Staff take over after it.",
     },
     {
       title: "7. Data hosting region and GDPR documentation",

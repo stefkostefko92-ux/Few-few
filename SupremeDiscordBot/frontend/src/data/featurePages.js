@@ -357,26 +357,26 @@ export const FEATURE_PAGES = [
     nav: "AI support & knowledge base",
     title: "Discord Support Bot with AI Replies, Knowledge Base, Canned Responses & SLA",
     description:
-      "Turn tickets into a support desk: AI-drafted first replies reviewed by staff, a knowledge base the bot suggests when a ticket opens, saved replies with /tag, SLA timers and staff performance stats. Premium features on top of the free ticket system.",
+      "Turn tickets into a support desk: an instant AI first reply clearly labelled as AI, a knowledge base the bot suggests when a ticket opens, saved replies with /tag, SLA timers and staff performance stats. Premium features on top of the free ticket system.",
     keywords: ["discord support bot", "discord ai support bot", "discord knowledge base bot", "discord canned responses", "discord ticket sla", "discord support bot features", "supreme bot", "carbon stealth"],
     h1: "AI-assisted support desk",
     answer:
-      "On top of the free ticket system, Supreme Bot adds the tools a support team actually uses: a knowledge base whose best-matching article the bot suggests the moment a ticket opens (3 articles on Free, 50 on Premium), canned responses posted with /tag use, first-response and resolution SLA timers that flag a ticket before it goes stale, /stats for staff performance, and AI auto-replies that draft a first answer for staff to review and send. The AI never replies on its own: a human approves every message, the feature is opt-in per server, and it is disclosed to members as required by the EU AI Act.",
+      "On top of the free ticket system, Supreme Bot adds the tools a support team actually uses: a knowledge base whose best-matching article the bot suggests the moment a ticket opens (3 articles on Free, 50 on Premium), canned responses posted with /tag use, first-response and resolution SLA timers that flag a ticket before it goes stale, /stats for staff performance, and AI auto-replies that answer the first message of a new ticket straight away, before staff arrive. Each AI reply is posted automatically and clearly labelled as an AI reply, as the EU AI Act requires; staff take the ticket over from there. The feature is opt-in per server.",
     steps: [
       { title: "Write the knowledge base", body: "Dashboard → your server → Knowledge base. Each article has a title, body and keywords. When a ticket opens, the bot matches the articles against what it knows about the ticket (the quoted message, the form answers or the panel name), posts the best match in the ticket and asks whether it helped." },
       { title: "Save canned responses", body: "/tag add <name> <content> stores a reply (up to 50 per server, 1500 characters each). Staff post one with /tag use <name> or the “Reply with tag” message context menu; /tag list shows usage counts." },
-      { title: "Enable AI replies (Premium, opt-in)", body: "Turn on AI auto-replies for the server. The first message of a new ticket is sent to the model (Google Gemini) and a suggested reply appears for staff; staff edit, send or discard it. The platform operator must attest a paid provider tier that does not train on your data before the feature can run at all." },
+      { title: "Enable AI replies (Premium, opt-in)", body: "Turn on AI auto-replies for the server. The first message of a new ticket is sent to the model (Google Gemini) and its answer is posted in the ticket automatically, labelled as an AI reply in the server's language; staff continue the conversation from there. The platform operator must attest a paid provider tier that does not train on your data before the feature can run at all." },
       { title: "Set SLA timers and watch stats", body: "Premium panels can define first-response and resolution targets; tickets that breach them are flagged. /stats gives open/closed counts for 7 and 30 days, the top staff by tickets closed and the average feedback rating." },
     ],
     tiers: [
       ["Knowledge base articles", "3", "50"],
       ["Canned responses (/tag)", "50", "50"],
-      ["AI auto-replies (human-in-the-loop)", "—", "Included"],
+      ["AI auto-replies (labelled as AI)", "—", "Included"],
       ["SLA timers, feedback ratings", "—", "Included"],
       ["Round-robin assignment", "—", "Included"],
     ],
     faq: [
-      { q: "Does the AI answer members directly?", a: "No. It drafts a suggested first reply that a staff member reviews, edits and sends, or discards. Members are told when AI assisted the reply." },
+      { q: "Does the AI answer members directly?", a: "Yes — only the first message of a new ticket, and only on servers where an administrator has turned the feature on. The reply is posted automatically and clearly labelled as an AI reply; staff take over the ticket after that. Turn it off at any time in the dashboard." },
       { q: "Which AI model is used and is my data used for training?", a: "Google Gemini (Flash). The feature only runs when the platform operator has attested a paid provider tier that does not use the content for model training, in line with Discord's Developer Policy; otherwise it is disabled." },
       { q: "Is the knowledge base free?", a: "Three articles are free; Premium allows 50. Canned responses (up to 50 per server) are available on every tier." },
       { q: "What do SLA timers do?", a: "A Premium panel can set a first-response target and a resolution target. When a ticket exceeds either, it is flagged in the dashboard so the team notices before the member does." },

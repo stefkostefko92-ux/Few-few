@@ -469,7 +469,7 @@ export default {
   "premium.feat.prem3": "Claimen · escaleren · round-robin-toewijzing",
   "premium.feat.prem4": "Vastgezette + geplande + terugkerende berichten",
   "premium.feat.prem5": "Weggeefacties, polls en geavanceerde analyses",
-  "premium.feat.prem6": "AI-autoreacties — met mens in de lus",
+  "premium.feat.prem6": "Automatisch AI-antwoord op het eerste bericht — gemarkeerd als AI",
   "premium.feat.prem7": "Webhooks (HMAC) + openbare REST API",
   "premium.feat.prem8": "Onbeperkte transcriptiebewaring + CSV/PDF-export",
   "premium.feat.wl1": "Alles uit Premium",

@@ -469,7 +469,7 @@ export default {
   "premium.feat.prem3": "Übernehmen · Eskalieren · Round-Robin-Zuweisung",
   "premium.feat.prem4": "Angeheftete + geplante + wiederkehrende Nachrichten",
   "premium.feat.prem5": "Gewinnspiele, Umfragen & erweiterte Analysen",
-  "premium.feat.prem6": "KI-Auto-Antworten — mit Mensch im Prozess",
+  "premium.feat.prem6": "KI-Auto-Antwort auf die erste Nachricht — als KI gekennzeichnet",
   "premium.feat.prem7": "Webhooks (HMAC) + öffentliche REST API",
   "premium.feat.prem8": "Unbegrenzte Transkript-Aufbewahrung + CSV/PDF-Export",
   "premium.feat.wl1": "Alles aus Premium",

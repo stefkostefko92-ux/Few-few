@@ -469,7 +469,7 @@ export default {
   "premium.feat.prem3": "Przejęcie · eskalacja · przydział round-robin",
   "premium.feat.prem4": "Przypięte + zaplanowane + cykliczne wiadomości",
   "premium.feat.prem5": "Konkursy, ankiety i zaawansowana analityka",
-  "premium.feat.prem6": "Automatyczne odpowiedzi AI — z udziałem człowieka",
+  "premium.feat.prem6": "Automatyczna odpowiedź AI na pierwszą wiadomość — oznaczona jako AI",
   "premium.feat.prem7": "Webhooks (HMAC) + publiczne REST API",
   "premium.feat.prem8": "Nieograniczone przechowywanie transkrypcji + eksport CSV/PDF",
   "premium.feat.wl1": "Wszystko z Premium",

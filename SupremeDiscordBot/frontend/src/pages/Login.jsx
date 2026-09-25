@@ -193,7 +193,7 @@ export default function Login() {
                 HMAC-signed event delivery for tickets, applications, giveaways, verification — plug into your stack.
               </FeatureCard>
               <FeatureCard icon={Sparkles} title="AI Auto-Replies">
-                The AI drafts the first reply to common questions; your staff review and send — assistive, with a human in the loop.
+                The AI replies instantly to the first message in a ticket, clearly labelled as an AI reply; your staff take over from there. Opt-in.
               </FeatureCard>
               <FeatureCard icon={ScrollText} title="Server Activity Logging" badge="Free">
                 Voice, member, moderation and message events relayed to your own log channel — including edited and deleted messages, with the original text kept.
@@ -279,7 +279,7 @@ export default function Login() {
                   <CompareRow label="Form logic"              free="—"                    premium="Branching + regex" />
                   <CompareRow label="Verification"            free="Button only"          premium="+ Math captcha + age gate" />
                   <CompareRow label="Ticket workflow"         free="Basic open/close"     premium="Claim · escalate · round-robin" />
-                  <CompareRow label="AI replies"              free="—"                    premium="AI-powered (assistive)" />
+                  <CompareRow label="AI replies"              free="—"                    premium="Automatic first reply, labelled as AI" />
                   <CompareRow label="Webhooks"                free="—"                    premium="20 integrations" />
                   <CompareRow label="Transcript retention"    free="30 days"              premium="Unlimited" />
                   <CompareRow label="Server Season game"      free="5 level roles · 5 shop items · 1 companion · 1 quest" premium="100 roles · 50 items · every companion · 3 quests" />
@@ -480,7 +480,7 @@ export default function Login() {
                   "Claim · escalate · round-robin",
                   "Sticky + scheduled + recurring messages",
                   "Advanced analytics",
-                  "AI auto-replies (assistive, human-in-the-loop)",
+                  "AI auto-replies (labelled as AI)",
                   "Webhooks (HMAC) + public REST API",
                   "Unlimited transcript retention",
                   "Full game: every companion, 3 quests, daily trivia",
