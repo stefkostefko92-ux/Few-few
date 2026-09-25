@@ -10800,7 +10800,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 167
+        "lessons": 168
       },
       "evolution": [
         {
@@ -11225,6 +11225,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „cs-revolution: статичните Python-генерирани страници (servizi/portfolio/bg hub) визуалн…\" · 2 в карантина"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
