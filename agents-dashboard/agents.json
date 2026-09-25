@@ -1162,7 +1162,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 411
+        "lessons": 413
       },
       "evolution": [
         {
@@ -1998,9 +1998,20 @@
           "date": "2026-09-25",
           "event": "v27.3 — учене",
           "detail": "Научи: Изходът на Кодаджията трябва да завършва с блок „## ПРЕДАВАНЕ“ (От/Към/Статус/Находки/И…"
+        },
+        {
+          "version": "27.5.0",
+          "date": "2026-09-25",
+          "event": "v27.5 — учене",
+          "detail": "Научи: Gaming backgammon: lookahead-симулацията (simulate) трябва да прилага удара като реални… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming backgammon: lookahead-симулацията (simulate) трябва да прилага удара като реални…\" (+1 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
