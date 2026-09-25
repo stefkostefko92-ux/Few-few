@@ -134,3 +134,48 @@ test("layoutLabels: единичен етикет извън viewport-а по и
   assert.ok(solved[0].x - 40 >= -0.01 && solved[0].x + 40 <= viewport.width + 0.01);
   assert.ok(solved[0].y - 10 >= -0.01 && solved[0].y + 10 <= viewport.height + 0.01);
 });
+
+// РЕГРЕСИЯ (собственика, 2026-09-25, кръг 3): index.html вече разтяга звездите елиптично по вертикала
+// на портрет телефон (nodeRy, "галактиката е малка в средата с много празно място"), за да запълни
+// повече от височината. Собственика провери на живо и хвана "спагети" водещи линии, върнали се на
+// "Летописецът"/"Касаджията"/"Мобилджията" — MOBILE_HIDE_DIST=48 трябваше да ги скрие, но disp се
+// смяташе спрямо ИДЕАЛНАТА (пред-layout) позиция, не спрямо реалната котва на звездата (index.html
+// поправка: `disp = Math.hypot(p.x - q.ax, p.y - q.ay)`). Този тест симулира точно същата геометрия —
+// котви (anchor=идеална позиция, реалистично за index.html, ax===x) разпръснати по ЦЯЛАТА височина
+// (елиптичен spread, някои на <20px от горния/долния ръб — точно както прави новия nodeRy) — и
+// възпроизвежда hide-правилото на index.html: провери, че НИТО ЕДИН показан (недокоснат) етикет не
+// остава на >MOBILE_HIDE_DIST от котвата си. Важи еднакво за RM (layoutLabels самò няма RM клон —
+// геометрията на анкорите е идентична, само canvas анимацията спира).
+const MOBILE_HIDE_DIST = 48;
+function simulateMobileHide(items, solved) {
+  // огледало на index.html drawLabels(): реалната котва е (ax,ay); prez/focused винаги се показват.
+  return items.map((it, i) => {
+    const p = solved[i];
+    const disp = Math.hypot(p.x - it.ax, p.y - it.ay);
+    return { shown: !(disp > MOBILE_HIDE_DIST && !it.prez && !it.focused), disp };
+  });
+}
+for (const [width, height] of [[390, 844], [360, 740]]) {
+  test(`layoutLabels + mobile hide: елиптичен spread (nodeRy) на ${width}px — показаните етикети остават ≤${MOBILE_HIDE_DIST}px от котвата си`, () => {
+    const viewport = { width, height };
+    const N = 28;
+    const cx = width / 2, cy = height * 0.5;
+    const Rx = Math.min(width, height) * 0.46;
+    const Ry = Math.min(Rx * 1.8, height * 0.5 - 96); // точната формула от index.html (nodeRy)
+    const items = Array.from({ length: N }, (_, i) => {
+      const ang = (i / N) * 6.28 + i * 0.91;
+      const f = 0.34 + Math.sqrt((i + 0.6) / N) * 0.6; // същата "f" крива като buildNodes() в index.html
+      const ax = cx + Math.cos(ang) * f * Rx, ay = cy + Math.sin(ang) * f * Ry;
+      const w = 40 + (i % 6) * 8, h = 19;
+      return { ax, ay, x: ax, y: ay + 15, w, h, weight: i === 0 ? 8 : 1 + (i % 4), prez: i === 0, focused: false };
+    });
+    const solved = layoutLabels(items, viewport, undefined, undefined, []);
+    const results = simulateMobileHide(items, solved);
+    for (let i = 0; i < N; i++) {
+      if (items[i].prez) continue; // президентът винаги видим по правило, дори >48px
+      if (results[i].shown) {
+        assert.ok(results[i].disp <= MOBILE_HIDE_DIST + 0.01, `етикет ${i} се показва, но е на ${results[i].disp.toFixed(1)}px от звездата си (>${MOBILE_HIDE_DIST}) — "спагети" линия`);
+      }
+    }
+  });
+}

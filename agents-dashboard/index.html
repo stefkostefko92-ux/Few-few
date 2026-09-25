@@ -167,7 +167,14 @@
   .ptraits .en { position: relative; font-family: ui-monospace,monospace; font-size: 10.5px; letter-spacing: .08em; color: var(--mut); text-transform: uppercase; padding-bottom: 7px; min-width: 130px; font-variant-numeric: tabular-nums; }
   .ptraits .en i { position: absolute; left: 0; bottom: 0; height: 2px; border-radius: 2px; }
   body.altview .brand, body.altview .live, body.altview .hint, body.altview .credit { display: none; }
-  @media (max-width: 640px) { .brand p { display: none; } .hint { display: none; } .search input { width: 104px; } .hud { padding: 12px; } .live { left: 12px; bottom: 14px; } .credit { font-size: 9.5px; } }
+  /* НАХОДКА (собственика, 2026-09-25, кръг 3): .hud е flex-wrap:nowrap ВИНАГИ — .tools (търсачка +
+     превключвателят Галактика/Списък/Docs, 303px широк с пълен текст) остава на same row до дясно
+     от .brand, но на телефон има място само за ~150px там → #seg буквално излиза извън viewport-а
+     (getBoundingClientRect: right=538px на 390px viewport). "Списък" и "Docs" бяха напълно
+     непипваеми с пръст/мишка (само G/L/D клавишните преки пътища работеха) — счупена навигация,
+     не козметика. Поправка: .hud се пренася на 2 реда на телефон (.tools взима пълната ширина на
+     ред 2), а #seg пести текста (само икони, aria-label пази достъпното име) — сега се събира. */
+  @media (max-width: 640px) { .brand p { display: none; } .hint { display: none; } .search input { width: 104px; } .hud { padding: 12px; flex-wrap: wrap; } .tools { width: 100%; } .seg-label { display: none; } .seg button { padding: 7px 11px; } .live { left: 12px; bottom: 14px; } .credit { font-size: 9.5px; } }
   /* Телефон (собственика, 2026-09-25, кръг 2): заглавната кутия НЕ бива да заема половин екран —
      един ред, съкратен с елипсис (не JS-съкращаване на текста — SEO/четците на екрана продължават
      да виждат пълното заглавие). Статистиката „Флотилия" — един компактен ред от 4 чипа, не 3+1. */
@@ -178,6 +185,12 @@
     .chip { padding: 6px 8px; min-width: 0; border-radius: 9px; }
     .chip b { font-size: 14px; }
     .chip span { font-size: 7.5px; letter-spacing: .4px; }
+    /* Собственика, 2026-09-25, кръг 3: чиповете на "Флотилия" (bottom:10px, ~52.6px високи,
+       измерено с getBoundingClientRect) покриваха .credit ("Фон: NASA · ESA · …") — и двете
+       седяха в същия долен диапазон, .live отгоре (z-index 5 > 4). Вдигаме .credit над реда с
+       чипове вместо да го центрираме зад тях; 70px = 10 (bottom на .live) + ~52.6 (височина) + 7
+       (луфт). */
+    .credit { bottom: 70px; font-size: 8.5px; max-width: 92vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   }
   @media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
 </style>
@@ -202,9 +215,9 @@
   <div class="tools">
     <label class="search glass"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.5-4.5"/></svg><input id="q" type="search" placeholder="търси агент…" autocomplete="off" /></label>
     <div class="seg glass" id="seg">
-      <button data-v="sky" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="2.2"/><path d="M12 4a8 8 0 0 1 7 12M12 20a8 8 0 0 1-7-12"/></svg>Галактика</button>
-      <button data-v="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>Списък</button>
-      <button data-v="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 5.5A2 2 0 0 1 6 4h6v16H6a2 2 0 0 1-2-2zM12 4h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/></svg>Docs</button>
+      <button data-v="sky" class="on" aria-label="Галактика"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="2.2"/><path d="M12 4a8 8 0 0 1 7 12M12 20a8 8 0 0 1-7-12"/></svg><span class="seg-label">Галактика</span></button>
+      <button data-v="list" aria-label="Списък"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span class="seg-label">Списък</span></button>
+      <button data-v="docs" aria-label="Docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 5.5A2 2 0 0 1 6 4h6v16H6a2 2 0 0 1-2-2zM12 4h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/></svg><span class="seg-label">Docs</span></button>
     </div>
   </div>
 </div>
@@ -15402,12 +15415,18 @@ function buildNodes() {
   const total = nodes.reduce((s, nd) => s + nd.orbit.length, 0);
   if (total > 400) { const scale = 400 / total; for (const nd of nodes) nd.orbit.length = Math.max(2, Math.round(nd.orbit.length * scale)); }
 }
-function nodePos(nd, cx, cy, R) {
+// nodePos приема ОТДЕЛЕН вертикален радиус (Ry) за самите звезди — на тесен портрет телефон R
+// (хоризонтално ограничено от ширината, min(W,H)*0.46) оставя огромна празна зона горе/долу
+// (собственика, 2026-09-25, кръг 3: "галактиката е малка в средата с много празно място"). Ry
+// разтяга орбитата в елипса само вертикално; хоризонталният радиус (R) остава непроменен, значи
+// звездите пак не излизат извън ширината. На desktop/landscape Ry===R (кръг, без промяна).
+function nodePos(nd, cx, cy, R, Ry) {
   if (nd.prez) return [cx + (RM ? 0 : Math.sin(t * 0.5) * 2), cy + (RM ? 0 : Math.cos(t * 0.4) * 2)];
+  const ry = Ry || R;
   const bob = RM ? 0 : Math.sin(t * 0.7 + nd.bobph) * 4;
   const ang = nd.ang0 + gal + (RM ? 0 : t * nd.osp);
-  const rad = nd.f * R * zoom + bob;
-  return [cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad];
+  const rx = nd.f * R * zoom + bob, radY = nd.f * ry * zoom + bob;
+  return [cx + Math.cos(ang) * rx, cy + Math.sin(ang) * radY];
 }
 
 function drawGalaxy(cx, cy, R) {
@@ -15541,7 +15560,13 @@ function loop(ts) {
   drawNebulae(cx, cy, R);
   drawMeteors();
 
-  for (const nd of nodes) { const [x, y] = nodePos(nd, cx, cy, R); nd.x = x; nd.y = y; }
+  // портрет телефон (H значително > W): фонът/мъглявините остават на R непроменени (drawGalaxy и
+  // др. по-горе), но самите звезди-агенти получават по-голям вертикален радиус (elliptical orbit) —
+  // капнат до наличната височина между HUD зоните (заглавие/инструменти горе ~100px, статистика
+  // "Флотилия" долу ~96px), за да запълни видимата празнота, без да бута етикетите извън HUD
+  // капсулите (тях пази labelObstacles()/layoutLabels() отделно, непроменено).
+  const nodeRy = H > W * 1.2 ? Math.min(R * 1.8, H * 0.5 - 96) : R;
+  for (const nd of nodes) { const [x, y] = nodePos(nd, cx, cy, R, nodeRy); nd.x = x; nd.y = y; }
   const prez = nodes[0];
   drawTethers(prez);
   updatePulses(prez);
@@ -15687,11 +15712,15 @@ function drawStar(nd) {
 // трябват на потребителя в момента) — showLabel() вече ги маркира с prez/focused.
 const MOBILE_HIDE_DIST = 48;
 // непреместваеми препятствия за подредбата: заглавната кутия, лентата с търсачка+превключвател
-// (.tools) и статистиката „Флотилия" (#live) стоят фиксирани НАД канваса (виж CSS .hud/.live) —
-// етикетите не бива да свършват зад тях (контраст/четимост). 3× getBoundingClientRect, нищо скъпо.
+// (.tools), статистиката „Флотилия" (#live) И снимковият кредит (.credit) стоят фиксирани НАД
+// канваса (виж CSS .hud/.live/.credit) — етикетите не бива да свършват зад тях (контраст/четимост).
+// .credit добавен кръг 3 (собственика, 2026-09-25): на desktop wide етикет ("…джъра") се вписа
+// точно върху "Фон: NASA · ESA · Hubble Heritage…" — и двата текста нечетими един върху друг,
+// защото .credit не беше пречка за layoutLabels (само .brand/.tools/#live бяха). 4×
+// getBoundingClientRect, нищо скъпо.
 function labelObstacles() {
   const out = [];
-  for (const el of [document.querySelector(".hud .brand"), document.querySelector(".hud .tools"), document.getElementById("live")]) {
+  for (const el of [document.querySelector(".hud .brand"), document.querySelector(".hud .tools"), document.getElementById("live"), document.querySelector(".credit")]) {
     if (!el) continue;
     const r = el.getBoundingClientRect();
     if (r.width <= 0 || r.height <= 0) continue;
@@ -15706,7 +15735,13 @@ function drawLabels() {
   const solved = (window.Galaxy && window.Galaxy.layoutLabels) ? window.Galaxy.layoutLabels(items, { width: W, height: H }, undefined, undefined, labelObstacles()) : items;
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   for (let i = 0; i < labelQueue.length; i++) {
-    const q = labelQueue[i], p = solved[i], disp = Math.hypot(p.x - q.x, p.y - q.y);
+    // РЕГРЕСИЯ (собственика, 2026-09-25, кръг 3): disp се смяташе спрямо ИДЕАЛНАТА позиция (q.x/q.y,
+    // близка до звездата, но не идентична — включва offset-а ly), не спрямо РЕАЛНАТА котва (q.ax/q.ay)
+    // на звездата. След елиптичното разтягане на вертикалния радиус (nodeRy) разминаването между
+    // "идеална" и "котва" стана достатъчно голямо, че водещи линии >48px CSS отново минаваха прага —
+    // точно "спагетите", които MOBILE_HIDE_DIST=48 трябваше да елиминира. Сега мерим РЕАЛНОТО
+    // разстояние етикет→звезда (точно това, което се рисува като линия), не прокси за него.
+    const q = labelQueue[i], p = solved[i], disp = Math.hypot(p.x - q.ax, p.y - q.ay);
     if (mobileUI && disp > MOBILE_HIDE_DIST && !q.prez && !q.focused) continue;
     if (disp > q.h * 0.5) {
       ctx.save(); ctx.strokeStyle = "rgba(210,224,244,.4)"; ctx.lineWidth = 1;
@@ -16248,7 +16283,11 @@ function renderDocs() {
   if (typeof docs === "undefined" || !docs || !docs.files) { wrap.innerHTML = "<p style='color:var(--mut)'>Документите се зареждат от <code>docs.js</code> при деплой.</p>"; return; }
   document.getElementById("docsgen").textContent = docs.generated || "—";
   const tabs = document.getElementById("docstabs"); if (tabs.dataset.done) return; tabs.dataset.done = "1";
-  docs.files.forEach((f, i) => { const b = document.createElement("button"); b.textContent = f.name; if (!i) b.classList.add("on"); b.onclick = () => { [...tabs.children].forEach(x => x.classList.remove("on")); b.classList.add("on"); wrap.innerHTML = md(f.content); }; tabs.appendChild(b); });
+  // НАХОДКА (собственика, 2026-09-25, кръг 3): табовете за Docs бяха напълно ПРАЗНИ пили (нула
+  // видим текст, вкл. активния) — четяха f.name, а генераторът (tools/docs/collect-claude-md.mjs,
+  // docs.js) произвежда f.path/f.title, не f.name. Docs навигацията беше нечетима/непозната кой е
+  // кой таб. path е по-компактен от title (25 таба на екран) — CLAUDE.md, adblock/CLAUDE.md и т.н.
+  docs.files.forEach((f, i) => { const b = document.createElement("button"); b.textContent = f.path || f.title || "—"; b.title = f.title || f.path || ""; if (!i) b.classList.add("on"); b.onclick = () => { [...tabs.children].forEach(x => x.classList.remove("on")); b.classList.add("on"); wrap.innerHTML = md(f.content); }; tabs.appendChild(b); });
   if (docs.files[0]) wrap.innerHTML = md(docs.files[0].content);
 }
 function mdInline(s) { return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>"); }
