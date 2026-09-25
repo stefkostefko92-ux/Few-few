@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 
 const errors = [];
 const list = (dir, ext) => readdirSync(dir).filter((f) => f.endsWith(ext)).map((f) => `${dir}/${f}`);
-const modules = list('src', '.js');
+const modules = [...list('src', '.js'), ...list('bake', '.mjs'), ...list('bake/sets', '.mjs')];
 const all = [...modules, ...list('test', '.js'), ...list('scripts', '.mjs'), 'build.mjs', 'check.mjs'];
 
 for (const f of all) {
@@ -25,7 +25,9 @@ for (const f of modules) {
 const tpl = readFileSync('template.html', 'utf8');
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 const three = pkg.devDependencies.three;
-if (!tpl.includes(`three@${three}/build/three.module.js`) || !tpl.includes(`three@${three}/examples/jsm/`)) {
+const pins = ['build/three.webgpu.js', 'build/three.tsl.js', 'examples/jsm/'].map((f) => `three@${three}/${f}`);
+const versions = [...tpl.matchAll(/three@(\d+\.\d+\.\d+)/g)].map((m) => m[1]);
+if (!pins.every((p) => tpl.includes(p)) || versions.some((v) => v !== three)) {
   errors.push(`template.html: the import map must pin three@${three}, the version the tests run against`);
 }
 const kw = tpl.match(/<meta name="keywords" content="([^"]+)">/);

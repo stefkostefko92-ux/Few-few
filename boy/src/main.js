@@ -1,11 +1,13 @@
-// Duel at Ravenhold: boots the renderer, runs the story clock, the camera and the frame loop.
-// A frame-time governor holds 60 fps by moving the internal resolution, not by cutting effects.
-import * as THREE from 'three';
+// Duel at Ravenhold: boots the renderer (WebGPU, WebGL 2 as fallback), runs the story clock, the
+// camera and the frame loop. A frame-time governor holds 60 fps by moving the internal
+// resolution, not by cutting effects.
+import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, animateWorld } from './world.js';
 import { QUALITY, initialTier, createGovernor } from './quality.js';
 import { createDirector, realTimeOf, storyTimeAtReal, REAL_DURATION, SHOT_COUNT } from './director.js';
-import { Post } from './post.js';
+import { createPipeline } from './pipeline.js';
+import { U } from './tsl.js';
 import { createAudio } from './audio.js';
 import { createHud } from './hud.js';
 import { createEvents } from './events.js';
@@ -14,6 +16,20 @@ import { CAPTIONS, CHAPTERS } from './choreo.js';
 import { DURATION, MOON_DIR } from './config.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
+
+// Older Chromium builds type GPUTextureViewDescriptor.swizzle as a dictionary and reject the
+// identity string 'rgba' that three.js always passes. Dropping an identity swizzle changes nothing.
+function acceptIdentitySwizzle() {
+  const proto = globalThis.GPUTexture?.prototype;
+  if (!proto) return;
+  const createView = proto.createView;
+  proto.createView = function view(desc) {
+    if (desc?.swizzle !== 'rgba') return createView.call(this, desc);
+    const { swizzle, ...rest } = desc;
+    return createView.call(this, swizzle === 'rgba' ? rest : desc);
+  };
+}
+
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
 async function main() {
@@ -29,14 +45,20 @@ async function main() {
 
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('view'), antialias: false, powerPreference: 'high-performance', stencil: false });
+    const forceWebGL = new URLSearchParams(location.search).has('webgl');
+    acceptIdentitySwizzle();
+    renderer = new THREE.WebGPURenderer({ canvas: document.getElementById('view'), antialias: false, alpha: false, powerPreference: 'high-performance', forceWebGL });
+    await renderer.init();
   } catch {
     hud.fatal();
     return;
   }
+  const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
   const W = await buildWorld(renderer, hud, quality);
   const { scene, camera, A, B, fx } = W;
-  const post = new Post(renderer, quality);
+  const pipe = createPipeline(renderer, W);
+  pipe.setQuality(quality);
+  const csm = W.moon.shadow.shadowNode;
   const director = createDirector(camera, { reducedMotion });
   const audio = createAudio();
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -59,7 +81,8 @@ async function main() {
     };
   }
 
-  // The canvas matches the display; the scene renders at a governed fraction of it.
+  // The canvas is laid out at display size; its drawing buffer (where every pass renders) is a
+  // governed fraction of the device resolution, and the browser scales it up to the display.
   const governor = createGovernor();
   const out = new THREE.Vector2();
   const internal = new THREE.Vector2();
@@ -67,15 +90,13 @@ async function main() {
     const w = window.innerWidth;
     const hh = window.innerHeight;
     const dpr = window.devicePixelRatio || 1;
-    renderer.setPixelRatio(Math.min(dpr, 2));
+    renderer.setPixelRatio(Math.max(0.25, Math.min(dpr, quality.maxDPR) * governor.scale));
     renderer.setSize(w, hh, false);
-    renderer.getDrawingBufferSize(out);
-    const s = Math.min(dpr, quality.maxDPR) * governor.scale;
-    internal.set(Math.max(2, Math.round(w * s)), Math.max(2, Math.round(hh * s)));
-    post.setSize(internal.x, internal.y, out.x, out.y);
-    W.ground.setSize(internal.x, internal.y);
+    renderer.getDrawingBufferSize(internal);
+    out.set(Math.round(w * dpr), Math.round(hh * dpr));
     camera.aspect = w / hh;
     camera.updateProjectionMatrix();
+    if (csm?.camera) csm.updateFrustums();
   }
   window.addEventListener('resize', resize);
   resize();
@@ -111,10 +132,11 @@ async function main() {
       tier = mode === 'auto' ? tier : mode;
       quality = QUALITY[tier];
       governor.reset(performance.now());
-      post.setQuality(quality);
       W.ground.setReflections(quality.reflections);
       W.rain.setCount(quality.rain);
       W.brazierShadow.castShadow = quality.shadow;
+      W.gateLight.castShadow = quality.godrays;
+      pipe.setQuality(quality);
       resize();
       hud.setQuality(mode);
     },
@@ -130,11 +152,11 @@ async function main() {
   hud.setQuality(qualityMode);
   hud.setTicks(CHAPTERS.map((c, i) => [realTimeOf(c.t) / REAL_DURATION, ['I', 'II', 'III'][i]]));
 
-  // Warm up every shader before the curtain rises.
+  // Warm up every shader and pipeline before the curtain rises.
   animateWorld(W, 0, 0);
   director.update(0, 0, A, B);
   await renderer.compileAsync(scene, camera);
-  post.render(scene, camera, { focus: 5, coc: 4, maxBlur: 8, ao: 0.6, bloom: 0.42, streak: 0.35, exposure: 1.15, time: 0, grain: 0.04, bars: 0, fade: 1 });
+  pipe.render({ focus: 5, coc: 4, maxBlur: 8, time: 0, bars: 0, fade: 1 });
   hud.loading('load_ready', 1);
   await nextFrame();
   hud.ready();
@@ -146,9 +168,8 @@ async function main() {
   let startReal = perf.last / 1000;
   governor.reset(perf.last);
 
+  let lastFov = 0;
   function frame(now) {
-    requestAnimationFrame(frame);
-    renderer.info.reset();
     const dtMs = now - perf.last;
     const dtReal = Math.min(0.05, Math.max(0, dtMs / 1000));
     perf.last = now;
@@ -191,15 +212,14 @@ async function main() {
       camera.updateProjectionMatrix();
       coc = internal.y * 0.004;
     }
-    W.fires.uniforms.uPxScale.value = internal.y / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
-    W.rain.uniforms.uCenter.value.copy(camera.position);
-    W.rain.uniforms.uStreak.value = 0.32 * THREE.MathUtils.clamp(clock.playing ? ts * clock.speed : 0.05, 0.05, 1);
+    if (csm?.camera && camera.fov !== lastFov) csm.updateFrustums();
+    lastFov = camera.fov;
+    W.rain.streak.value = 0.32 * THREE.MathUtils.clamp(clock.playing ? ts * clock.speed : 0.05, 0.05, 1);
 
     // Lightning: two quick pulses, never a strobe; reduced motion keeps only a faint glow.
     const since = now / 1000 - lightning.at;
     const flash = since >= 0 && since < 1.4 ? (Math.exp(-since / 0.07) + (since > 0.16 ? 0.7 * Math.exp(-(since - 0.16) / 0.09) : 0)) * lightning.power * (reducedMotion ? 0.2 : 1) : 0;
-    W.sky.uniforms.uFlash.value = flash;
-    W.rain.uniforms.uFlash.value = flash * 0.5;
+    U.flash.value = flash;
     W.hemi.intensity = 0.3 + flash * 2.2;
     W.rim.intensity = 0.45 + flash * 2.5;
     scene.environmentIntensity = 0.5 + flash * 0.4;
@@ -210,16 +230,17 @@ async function main() {
 
     const aspect = window.innerWidth / window.innerHeight;
     const fadeIn = Math.max(0, 1 - (now / 1000 - startReal) / 1.2);
-    post.render(scene, camera, {
+    pipe.render({
       focus: focusDist,
       coc,
-      maxBlur: quality.dofTaps ? Math.min(22, internal.y / 50) : 0,
-      ao: 0.65,
+      maxBlur: Math.min(22, internal.y / 50),
       bloom: 0.42 + (ts < 0.5 ? 0.12 : 0),
       streak: 0.35,
       exposure: 1.15,
       time: now / 1000,
       grain: 0.04,
+      aspect,
+      sharp: internal.x < out.x * 0.98 ? 0.35 : 0.9,
       bars: aspect > 1.35 ? Math.max(0, (1 - aspect / 2.39) / 2) : 0,
       fade: Math.max(fadeIn, THREE.MathUtils.smoothstep(T, DURATION - 1.0, DURATION - 0.1)),
     });
@@ -241,7 +262,7 @@ async function main() {
     if (showStats && now - perf.statsAt > 250) {
       perf.statsAt = now;
       const r = renderer.info.render;
-      hud.stats({ fps: perf.fps, ms: perf.ms, w: internal.x, h: internal.y, pct: Math.round((internal.x / out.x) * 100), calls: r.calls, tris: r.triangles, tier: qualityMode === 'auto' ? `auto · ${tier}` : tier });
+      hud.stats({ fps: perf.fps, ms: perf.ms, w: internal.x, h: internal.y, pct: Math.round((internal.x / out.x) * 100), calls: r.drawCalls, tris: r.triangles, tier: qualityMode === 'auto' ? `auto · ${tier}` : tier, backend });
     }
     const cap = CAPTIONS.find((c) => T >= c.t && T < c.t + c.d);
     let chapter = CHAPTERS[0].k;
@@ -261,7 +282,7 @@ async function main() {
       end: T > 24.0 && T < DURATION - 0.15,
     });
   }
-  requestAnimationFrame(frame);
+  renderer.setAnimationLoop(frame);
 }
 
 main().catch((err) => {

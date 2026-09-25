@@ -1,6 +1,8 @@
 // Ravenhold's inner ward: curtain walls, gatehouse and portcullis, corner towers, the keep, props.
 // Masonry is merged per wall or tower so the camera and shadow frusta can cull whole chunks.
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
+import { positionLocal, vec3, sin, clamp } from 'three/tsl';
+import { U } from './tsl.js';
 import { merge, xf, worldUV, cylUV, mesh, lathe, ring, flatten } from './geo.js';
 
 const box = (cx, cy, cz, sx, sy, sz) => new THREE.BoxGeometry(sx, sy, sz).translate(cx, cy, cz);
@@ -131,23 +133,15 @@ export function createCastle(M) {
   return { group };
 }
 
-// Heraldic banners with a wind ripple done in the vertex shader.
-export function createBanners(M, uTime) {
+// Heraldic banners with a wind ripple done in the vertex shader (story time).
+export function createBanners(M) {
   const group = new THREE.Group();
   const mat = M.banner;
-  mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uTime = uTime;
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nuniform float uTime;')
-      .replace(
-        '#include <begin_vertex>',
-        `#include <begin_vertex>
-        float hang = clamp((1.5 - position.y) / 3.0, 0.0, 1.0);
-        transformed.z += (sin(position.x * 2.2 + uTime * 2.4 + position.y * 1.4) * 0.1 + sin(uTime * 1.2 + position.y * 0.8) * 0.12) * hang;
-        transformed.x += sin(uTime * 1.7 + position.y * 1.1) * 0.05 * hang;`,
-      );
-  };
-  mat.customProgramCacheKey = () => 'banner';
+  const p = positionLocal;
+  const t = U.time;
+  const hang = clamp(p.y.negate().add(1.5).div(3), 0, 1);
+  const dz = sin(p.x.mul(2.2).add(t.mul(2.4)).add(p.y.mul(1.4))).mul(0.1).add(sin(t.mul(1.2).add(p.y.mul(0.8))).mul(0.12)).mul(hang);
+  mat.positionNode = p.add(vec3(sin(t.mul(1.7).add(p.y.mul(1.1))).mul(0.05).mul(hang), 0, dz));
   const geo = new THREE.PlaneGeometry(1.4, 3.0, 10, 20);
   for (const [x, z, ry] of [[-10.8, -14.85, 0], [10.8, -14.85, 0], [-15.85, 9.5, Math.PI / 2], [15.85, -2.2, -Math.PI / 2]]) {
     const b = mesh(geo, mat);

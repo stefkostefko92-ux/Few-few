@@ -1,5 +1,6 @@
 // Blade trails: a faint ribbon standing in for a film camera's motion blur on fast swings.
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
+import { attribute, uniform } from 'three/tsl';
 
 // Faint ribbon behind a fast blade, standing in for a film camera's motion blur.
 export class Trail {
@@ -18,19 +19,10 @@ export class Trail {
     this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
     this.geo.setAttribute('aAlpha', new THREE.BufferAttribute(this.alpha, 1).setUsage(THREE.DynamicDrawUsage));
     this.geo.setIndex(idx);
-    this.mesh = new THREE.Mesh(
-      this.geo,
-      new THREE.ShaderMaterial({
-        uniforms: { uColor: { value: new THREE.Color(color) } },
-        vertexShader: 'attribute float aAlpha; varying float vA; void main(){ vA = aAlpha; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-        fragmentShader: 'uniform vec3 uColor; varying float vA; void main(){ gl_FragColor = vec4(uColor, vA); }',
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        fog: false,
-      }),
-    );
+    const mat = new THREE.MeshBasicNodeMaterial({ name: 'trail', transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false });
+    mat.colorNode = uniform(new THREE.Color(color));
+    mat.opacityNode = attribute('aAlpha', 'float');
+    this.mesh = new THREE.Mesh(this.geo, mat);
     this.mesh.frustumCulled = false;
     this.mesh.renderOrder = 10;
   }

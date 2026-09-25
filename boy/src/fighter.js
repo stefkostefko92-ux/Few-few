@@ -5,6 +5,8 @@ import { Rig, DIM } from './rig.js';
 import { FootPlanner } from './feet.js';
 import { rootOf, toWorld, dirToWorld, weaponAt, shieldAt, track1, DYNAMIC_AIMS, TARGETS } from './timeline.js';
 import { SHIELD_WRIST } from './weapons.js';
+import { captureFor, layerBody } from './mocap-body.js';
+import { DISARM_T, launchFlight, flightPose } from './flight.js';
 import * as C from './choreo.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -31,7 +33,7 @@ class Spring {
 
 const perp = (v, axis, out) => out.copy(v).addScaledVector(axis, -v.dot(axis)).normalize();
 
-export const DISARM_T = 21.6;
+export { DISARM_T };
 
 export class Fighter {
   constructor(who, knight, weapon, cape, shield) {
@@ -61,7 +63,11 @@ export class Fighter {
     this.vel = new THREE.Vector3();
     this.handR = { grip: new THREE.Vector3(), x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0) };
     this.handL = { grip: new THREE.Vector3(), x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0) };
-    this.P = { root: this.root.pos, yaw: 0, hipY: 0.9, pelvisYaw: 0, pelvisPitch: 0, pelvisRoll: 0, twist: 0, lean: 0, side: 0, breath: 0, headTarget: this.headTarget, headYaw: 0, headPitch: 0, headRoll: 0, handR: this.handR, handL: this.handL, feet: null, kneel: 0, elbowOut: 0 };
+    this.P = { root: this.root.pos, shift: new THREE.Vector3(), yaw: 0, hipY: 0.9, pelvisYaw: 0, pelvisPitch: 0, pelvisRoll: 0, twist: 0, lean: 0, side: 0, breath: 0, headTarget: this.headTarget, headYaw: 0, headPitch: 0, headRoll: 0, handR: this.handR, handL: this.handL, feet: null, kneel: 0, elbowOut: 0 };
+    // Captured body motion; the Warden moves as the actor's mirror image.
+    this.body = captureFor(who);
+    this.drives = {};
+    this.mo = {};
     this.seed = who === 'A' ? 0.3 : 2.1;
     this.lastT = -1;
     this.flight = null;
@@ -152,19 +158,23 @@ export class Fighter {
     const breathAmp = track1(C.BREATH, T);
     P.breath = Math.sin(t * 2.1) * breathAmp;
     const pelvisBlade = (leadL ? -0.32 : 0.32) * fight;
-    P.pelvisYaw = pelvisBlade;
     const autoTwist = THREE.MathUtils.clamp(-Math.atan2(W.p.x, W.p.z + 0.35) * 0.55, -0.7, 0.7);
-    P.twist = W.tw + autoTwist - pelvisBlade * 0.75 + this.spr.twist.x + Math.sin(t * 0.7) * 0.03;
-    P.lean = W.lean + THREE.MathUtils.clamp((W.p.z - 0.3) * 0.45, -0.08, 0.2) + this.spr.lean.x + kneel * 0.25;
-    P.side = this.spr.side.x + Math.sin(t * 0.53) * 0.02;
-    P.pelvisPitch = 0.08 * fight;
-    P.pelvisRoll = Math.sin(t * 0.9) * 0.015 * fight;
-    P.hipY = 0.935 - W.crouch - kneel * 0.37 - this.feet.swing * 0.012 + Math.sin(t * 2.1) * 0.004 * breathAmp;
+    // Authored drives; the motion-captured layer is added on top once the hands are known.
+    Object.assign(this.drives, {
+      pelvisYaw: pelvisBlade,
+      twist: W.tw + autoTwist - pelvisBlade * 0.75 + this.spr.twist.x,
+      lean: W.lean + THREE.MathUtils.clamp((W.p.z - 0.3) * 0.45, -0.08, 0.2) + this.spr.lean.x + kneel * 0.25,
+      side: this.spr.side.x,
+      pelvisPitch: 0.08 * fight,
+      pelvisRoll: 0,
+      hipY: 0.935 - W.crouch - kneel * 0.37 - this.feet.swing * 0.012 + Math.sin(t * 2.1) * 0.004 * breathAmp,
+      headRoll: this.spr.headRoll.x,
+      headYaw: this.spr.headYaw.x,
+      headPitch: 0,
+    });
+    this.body.sample(T, this.mo);
     P.yaw = root.yaw;
     P.kneel = kneel;
-    P.headRoll = this.spr.headRoll.x;
-    P.headYaw = this.spr.headYaw.x;
-    P.headPitch = 0;
     this.headTarget.copy(other.rig.w.head);
     if (who === 'B') {
       const down = track1(C.B_LOOK_DOWN, T);
@@ -207,11 +217,31 @@ export class Fighter {
       this.handL.grip.copy(wrist).addScaledVector(fore, DIM.grip);
       P.elbowOut = 0.9;
     }
+    // The captured motion yields where it would pull a shoulder out of reach of its hand.
+    const k = 1 - kneel;
+    layerBody(P, this.drives, this.mo, k, root.yaw);
     this.rig.update(P);
+    const gap = this.reachGap();
+    if (gap > 0.012) {
+      layerBody(P, this.drives, this.mo, k * Math.max(0, 1 - (gap - 0.012) / 0.03), root.yaw);
+      this.rig.update(P);
+      if (this.reachGap() > 0.012) {
+        layerBody(P, this.drives, this.mo, 0, root.yaw);
+        this.rig.update(P);
+      }
+    }
     if (who === 'B') this.placeShield(root);
     this.placeWeapon(T);
     this.bladeBase.copy(this.grip).addScaledVector(this.dir, this.weapon.bladeBase);
     this.bladeTip.copy(this.grip).addScaledVector(this.dir, this.weapon.bladeBase + this.weapon.bladeLen);
+  }
+
+  // How far the IK wrists fall short of their targets (the larger of the two hands).
+  reachGap() {
+    const w = this.rig.w;
+    const r = this._v.copy(this.handR.grip).addScaledVector(this.handR.x, -DIM.grip).distanceTo(w.wristR);
+    const l = this._v.copy(this.handL.grip).addScaledVector(this.handL.x, -DIM.grip).distanceTo(w.wristL);
+    return Math.max(r, l);
   }
 
   placeShield(root) {
@@ -229,52 +259,13 @@ export class Fighter {
   placeWeapon(T) {
     const m = this.weapon.part.matrix;
     if (this.who === 'B' && T > DISARM_T) {
-      this.flightPose(T, m);
+      this.flight ??= launchFlight();
+      flightPose(this.flight, T - DISARM_T, m, this.grip, this.dir);
     } else {
       const z = this._v.crossVectors(this.edge, this.dir);
       m.makeBasis(this.edge, this.dir, z);
       m.setPosition(this.grip);
     }
-  }
-
-  // The Warden's sword is struck from his hand: a ballistic tumble, a bounce, then it lies flat.
-  flightPose(T, m) {
-    if (!this.flight) {
-      const r0 = rootOf('B', DISARM_T);
-      const w0 = weaponAt('B', DISARM_T, { p: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Vector3() });
-      const g0 = toWorld(r0, [w0.p.x, w0.p.y, w0.p.z]);
-      const d0 = dirToWorld(r0, [w0.d.x, w0.d.y, w0.d.z]);
-      const e0 = dirToWorld(r0, [w0.e.x, w0.e.y, w0.e.z]);
-      const away = dirToWorld(r0, [0.9, 0, -0.35]);
-      const v0 = away.multiplyScalar(2.1).addScaledVector(UP, 2.6);
-      const axis = new THREE.Vector3().crossVectors(d0, v0).normalize();
-      const q0 = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(e0, d0, new THREE.Vector3().crossVectors(e0, d0)));
-      const tl = (v0.y + Math.sqrt(v0.y * v0.y + 2 * 9.81 * (g0.y - 0.06))) / 9.81;
-      const land = g0.clone().addScaledVector(v0, tl);
-      land.y = 0.016;
-      const flatD = new THREE.Vector3(v0.x, 0, v0.z).normalize().applyAxisAngle(UP, 1.1);
-      const flatE = new THREE.Vector3().crossVectors(UP, flatD).normalize();
-      const qFlat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(flatE, flatD, UP.clone()));
-      this.flight = { g0, v0, axis, q0, tl, land, qFlat, spin: 10.5 };
-    }
-    const F = this.flight;
-    const tau = T - DISARM_T;
-    const pos = this._v;
-    const q = new THREE.Quaternion();
-    if (tau < F.tl) {
-      pos.copy(F.g0).addScaledVector(F.v0, tau);
-      pos.y -= 4.905 * tau * tau;
-      q.setFromAxisAngle(F.axis, F.spin * tau).multiply(F.q0);
-    } else {
-      const s = Math.min(1, (tau - F.tl) / 0.35);
-      const qLand = new THREE.Quaternion().setFromAxisAngle(F.axis, F.spin * F.tl).multiply(F.q0);
-      q.copy(qLand).slerp(F.qFlat, 1 - (1 - s) * (1 - s));
-      pos.copy(F.land).addScaledVector(F.v0.clone().setY(0).normalize(), 0.25 * (1 - (1 - s) ** 2));
-      pos.y = 0.016 + Math.sin(Math.PI * s) * 0.09 * (1 - s);
-    }
-    m.compose(pos, q, new THREE.Vector3(1, 1, 1));
-    this.grip.copy(pos);
-    this.dir.set(0, 1, 0).applyQuaternion(q);
   }
 
   landingTime() {

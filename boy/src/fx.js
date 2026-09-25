@@ -1,6 +1,7 @@
 // Impact effects: spark streaks (hot steel) and water droplets on a CPU pool drawn as GPU
 // instances, a flash light, cross-shaped lens glints and faint motion trails behind the blades.
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
+import { Fn, attribute, varying, uniform, vec3, vec4, float, normalize, cross, length, max, mix, select, smoothstep, abs, exp, dot, uv, positionGeometry, cameraPosition, cameraProjectionMatrix, cameraViewMatrix, modelWorldMatrix } from 'three/tsl';
 import { Trail } from './trails.js';
 
 const MAX = 2600;
@@ -24,47 +25,29 @@ function sparkSystem() {
   geo.setAttribute('iVel', iVel);
   geo.setAttribute('iData', iData);
   geo.instanceCount = 0;
-  const uniforms = { uStreak: { value: 0.02 } };
-  const mat = new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: /* glsl */ `
-      attribute vec3 iPos;
-      attribute vec3 iVel;
-      attribute vec2 iData;
-      uniform float uStreak;
-      varying float vLife;
-      varying float vKind;
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        vLife = iData.x;
-        vKind = iData.y;
-        vec3 tail = iPos - iVel * uStreak * (vKind > 0.5 ? 0.5 : 1.0);
-        vec3 axis = iPos - tail;
-        float len = length(axis);
-        vec3 dir = len > 1e-5 ? axis / len : vec3(0.0, 1.0, 0.0);
-        vec3 mid = (iPos + tail) * 0.5;
-        vec3 side = normalize(cross(dir, normalize(cameraPosition - mid)) + vec3(1e-5));
-        float w = (vKind > 0.5 ? 0.007 : 0.0042) * (0.55 + 0.45 * vLife);
-        vec3 p = mid + dir * position.y * max(len, w * 2.5) + side * position.x * w;
-        gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
-      }`,
-    fragmentShader: /* glsl */ `
-      varying float vLife;
-      varying float vKind;
-      varying vec2 vUv;
-      void main() {
-        float a = (1.0 - abs(vUv.x - 0.5) * 2.0) * mix(0.25, 1.0, vUv.y);
-        vec3 hot = mix(vec3(1.0, 0.22, 0.03), vec3(1.0, 0.72, 0.32), smoothstep(0.25, 0.75, vLife));
-        hot = mix(hot, vec3(1.0, 0.95, 0.85), smoothstep(0.85, 1.0, vLife));
-        vec3 col = vKind > 0.5 ? vec3(0.5, 0.55, 0.62) * 0.7 : hot * (1.6 + 9.0 * vLife * vLife);
-        gl_FragColor = vec4(col, a * (vKind > 0.5 ? 0.6 * vLife : 1.0));
-      }`,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    fog: false,
-  });
+  const streak = uniform(0.02);
+  const mat = new THREE.MeshBasicNodeMaterial({ name: 'sparks', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+  const data = varying(attribute('iData', 'vec2'), 'vSpark');
+  mat.vertexNode = Fn(() => {
+    const pos = attribute('iPos', 'vec3');
+    const vel = attribute('iVel', 'vec3');
+    const water = data.y.greaterThan(0.5);
+    const tail = pos.sub(vel.mul(streak).mul(select(water, 0.5, 1)));
+    const axis = pos.sub(tail);
+    const len = length(axis).toVar();
+    const dir = select(len.greaterThan(1e-5), axis.div(len), vec3(0, 1, 0));
+    const mid = pos.add(tail).mul(0.5);
+    const side = normalize(cross(dir, normalize(cameraPosition.sub(mid))).add(vec3(1e-5)));
+    const w = select(water, 0.007, 0.0042).mul(data.x.mul(0.45).add(0.55));
+    const p = mid.add(dir.mul(positionGeometry.y).mul(max(len, w.mul(2.5)))).add(side.mul(positionGeometry.x).mul(w));
+    return cameraProjectionMatrix.mul(cameraViewMatrix).mul(vec4(p, 1));
+  })();
+  mat.colorNode = Fn(() => {
+    const life = data.x;
+    const hot = mix(mix(vec3(1.0, 0.22, 0.03), vec3(1.0, 0.72, 0.32), smoothstep(0.25, 0.75, life)), vec3(1.0, 0.95, 0.85), smoothstep(0.85, 1.0, life));
+    return select(data.y.greaterThan(0.5), vec3(0.35, 0.385, 0.434), hot.mul(life.mul(life).mul(9).add(1.6)));
+  })();
+  mat.opacityNode = abs(uv().x.sub(0.5)).mul(2).oneMinus().mul(mix(float(0.25), float(1), uv().y)).mul(select(data.y.greaterThan(0.5), data.x.mul(0.6), 1));
   const meshObj = new THREE.Mesh(geo, mat);
   meshObj.frustumCulled = false;
   meshObj.renderOrder = 9;
@@ -138,56 +121,44 @@ function sparkSystem() {
     geo.instanceCount = count;
   }
 
-  return { mesh: meshObj, spawn, update, uniforms, clear: () => (count = 0) };
+  return { mesh: meshObj, spawn, update, streak, clear: () => (count = 0) };
 }
 
+// Cross-shaped lens glints on hard blocks, drawn over everything as screen-facing sprites.
 function glints() {
   const pool = [];
   const group = new THREE.Group();
   const quad = new THREE.PlaneGeometry(1, 1);
+  const age = uniform(1).onObjectUpdate(({ object }) => object.userData.age);
+  const size = uniform(0.5).onObjectUpdate(({ object }) => object.userData.size);
+  const mat = new THREE.MeshBasicNodeMaterial({ name: 'glint', transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false });
+  mat.vertexNode = Fn(() => {
+    const mv = cameraViewMatrix.mul(modelWorldMatrix.mul(vec4(0, 0, 0, 1)));
+    return cameraProjectionMatrix.mul(vec4(mv.xy.add(positionGeometry.xy.mul(size)), mv.z, 1));
+  })();
+  mat.colorNode = Fn(() => {
+    const q = uv().sub(0.5).mul(2);
+    const core = exp(dot(q, q).mul(-40));
+    const rays = exp(abs(q.y).mul(-70)).mul(exp(abs(q.x).mul(-3.5))).add(exp(abs(q.x).mul(-70)).mul(exp(abs(q.y).mul(-3.5))).mul(0.6));
+    const k = age.oneMinus().mul(age.oneMinus());
+    return vec3(1.0, 0.8, 0.55).mul(core.mul(7).add(rays.mul(2.6))).mul(k);
+  })();
   for (let k = 0; k < 6; k++) {
-    const mat = new THREE.ShaderMaterial({
-      uniforms: { uAge: { value: 1 }, uSize: { value: 0.5 } },
-      vertexShader: /* glsl */ `
-        uniform float uSize;
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          vec3 c = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-          vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
-          vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-          gl_Position = projectionMatrix * viewMatrix * vec4(c + (right * position.x + up * position.y) * uSize, 1.0);
-        }`,
-      fragmentShader: /* glsl */ `
-        uniform float uAge;
-        varying vec2 vUv;
-        void main() {
-          vec2 q = (vUv - 0.5) * 2.0;
-          float core = exp(-dot(q, q) * 40.0);
-          float rays = exp(-abs(q.y) * 70.0) * exp(-abs(q.x) * 3.5) + exp(-abs(q.x) * 70.0) * exp(-abs(q.y) * 3.5) * 0.6;
-          float k = (1.0 - uAge) * (1.0 - uAge);
-          gl_FragColor = vec4(vec3(1.0, 0.8, 0.55) * (core * 7.0 + rays * 2.6) * k, 1.0);
-        }`,
-      transparent: true,
-      depthWrite: false,
-      depthTest: false,
-      blending: THREE.AdditiveBlending,
-      fog: false,
-    });
     const m = new THREE.Mesh(quad, mat);
     m.visible = false;
     m.frustumCulled = false;
     m.renderOrder = 20;
+    m.userData = { age: 1, size: 0.5 };
     group.add(m);
     pool.push({ m, age: 1, dur: 0.18 });
   }
   let next = 0;
   return {
     group,
-    fire(p, size, dur) {
+    fire(p, sz, dur) {
       const g = pool[next++ % pool.length];
       g.m.position.copy(p);
-      g.m.material.uniforms.uSize.value = size;
+      g.m.userData.size = sz;
       g.age = 0;
       g.dur = dur;
       g.m.visible = true;
@@ -196,7 +167,7 @@ function glints() {
       for (const g of pool) {
         if (!g.m.visible) continue;
         g.age += dt / g.dur;
-        g.m.material.uniforms.uAge.value = Math.min(1, g.age);
+        g.m.userData.age = Math.min(1, g.age);
         if (g.age >= 1) g.m.visible = false;
       }
     },
@@ -235,7 +206,7 @@ export function createFX() {
       }
     },
     update(dt, frameStreak, dtReal) {
-      sparks.uniforms.uStreak.value = frameStreak;
+      sparks.streak.value = frameStreak;
       sparks.update(dt);
       glint.update(dtReal);
       flashE *= Math.exp(-dtReal * 18);

@@ -40,5 +40,5 @@ test('the scale never drops below half resolution', () => {
 test('phones start on the light tier, desktops on high', () => {
   assert.equal(initialTier(true, 1080), 'low');
   assert.equal(initialTier(false, 1440), 'high');
-  assert.ok(QUALITY.low.dofTaps === 0 && !QUALITY.low.reflections);
+  assert.ok(!QUALITY.low.ssgi && !QUALITY.low.reflections && QUALITY.ultra.texHero >= QUALITY.high.texHero);
 });

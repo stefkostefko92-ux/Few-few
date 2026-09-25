@@ -1,5 +1,5 @@
-// Bundles src/ into one self-contained page, dist/ravenhold.html.
-// three.js is not bundled: the page loads the exact pinned version through its import map.
+// Bundles src/ into dist/ravenhold.html (baked textures live next to it in dist/tex/).
+// three.js is not bundled: the page loads the exact pinned WebGPU/TSL builds through its import map.
 import { build } from 'esbuild';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
@@ -8,7 +8,7 @@ const result = await build({
   bundle: true,
   format: 'esm',
   write: false,
-  external: ['three', 'three/addons/*'],
+  external: ['three', 'three/webgpu', 'three/tsl', 'three/addons/*'],
   target: 'es2020',
   legalComments: 'none',
 });

@@ -1,10 +1,10 @@
 // Builds the courtyard, the two knights and every light and effect, then advances them per frame.
-import * as THREE from 'three';
-import { installHeightFog } from './shaders.js';
-import { setMaxAnisotropy, cobbleTextures, wallTextures, metalTextures, fabricTextures, mailTextures, leatherTextures, woodTextures, dropletTextures } from './textures.js';
+import * as THREE from 'three/webgpu';
+import { CSMShadowNode } from 'three/addons/csm/CSMShadowNode.js';
 import { noiseTexture, rippleTexture, puddleTexture } from './fields.js';
 import { capeTextureAzure, capeTextureCrimson, shieldTextures, bannerTexture } from './heraldry.js';
-import { createMaterials, applyGrime } from './materials.js';
+import { loadBakedSets } from './baked.js';
+import { createMaterials } from './materials.js';
 import { buildKnight } from './armor.js';
 import { longsword, armingSword, heaterShield } from './weapons.js';
 import { RigidBatcher } from './batcher.js';
@@ -17,29 +17,15 @@ import { createFires } from './fire.js';
 import { createRain } from './rain.js';
 import { createFX } from './fx.js';
 import { createBreath } from './atmos.js';
+import { installFog } from './fog.js';
+import { setNoise, U } from './tsl.js';
 import { QUALITY } from './quality.js';
-import { FOG } from './config.js';
 
 export const FX_LAYER = 1;
 const UP = new THREE.Vector3(0, 1, 0);
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
-async function makeTextures(hud) {
-  const T0 = {};
-  const steps = [
-    ['load_forge', () => Object.assign(T0, { metal: metalTextures(), drops: dropletTextures(), mail: mailTextures(), leather: leatherTextures(), fabric: fabricTextures(), noise: noiseTexture() })],
-    ['load_cobbles', () => Object.assign(T0, { cobble: cobbleTextures(1024), ripple: rippleTexture(), puddle: puddleTexture() })],
-    ['load_walls', () => Object.assign(T0, { wall: wallTextures(1024), wood: woodTextures(), capeA: capeTextureAzure(), capeB: capeTextureCrimson(), shield: shieldTextures(), banner: bannerTexture() })],
-  ];
-  for (let i = 0; i < steps.length; i++) {
-    hud.loading(steps[i][0], i / 5);
-    await nextFrame();
-    steps[i][1]();
-  }
-  return T0;
-}
-
-function makeLights(scene) {
+function makeLights(scene, quality) {
   const moon = new THREE.DirectionalLight(0xa9bbff, 1.25);
   moon.castShadow = true;
   moon.shadow.mapSize.set(2048, 2048);
@@ -47,6 +33,8 @@ function makeLights(scene) {
   moon.shadow.bias = -0.0004;
   moon.shadow.normalBias = 0.025;
   moon.shadow.radius = 3;
+  // Cascades cover the whole courtyard in wide shots and stay crisp at the fighters' feet.
+  if (quality.csm) moon.shadow.shadowNode = new CSMShadowNode(moon, { cascades: 3, maxFar: 70, mode: 'practical', lightMargin: 30 });
   // Cool back light that follows the camera and draws a rim along armour silhouettes.
   const rim = new THREE.DirectionalLight(0x9db4ff, 0.45);
   const hemi = new THREE.HemisphereLight(0x223149, 0x0b0907, 0.3);
@@ -54,32 +42,42 @@ function makeLights(scene) {
   return { moon, rim, hemi };
 }
 
+// Budget per set: the courtyard floor and walls fill the frame and get the hero resolution.
+const textureBudget = (q) => ({ default: q.texSize, cobble: q.texHero, wall: q.texHero });
+
 export async function buildWorld(renderer, hud, quality) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.NoToneMapping;
-  renderer.info.autoReset = false;
-  setMaxAnisotropy(renderer.capabilities.getMaxAnisotropy());
-  installHeightFog();
-  const T0 = await makeTextures(hud);
-  hud.loading('load_fire', 3 / 5);
+  const aniso = renderer.backend.isWebGPUBackend ? 16 : 8;
+  hud.loading('load_forge', 0.02);
   await nextFrame();
+  const noise = noiseTexture();
+  setNoise(noise);
+  const S = await loadBakedSets('tex/', textureBudget(quality), aniso, (k, n) => hud.loading(k < n * 0.5 ? 'load_forge' : 'load_cobbles', 0.05 + (k / n) * 0.45));
+  hud.loading('load_walls', 0.55);
+  await nextFrame();
+  const T0 = { capeA: capeTextureAzure(), capeB: capeTextureCrimson(), shield: shieldTextures(), banner: bannerTexture(), ripple: rippleTexture(), puddle: puddleTexture() };
 
-  const M = createMaterials(T0);
-  applyGrime([M.steelA, M.steelB, M.mail, M.leather], T0.noise);
+  const M = createMaterials(S, T0);
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(FOG.color.clone(), 0, 1);
+  installFog(scene);
   const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.05, 300);
   camera.position.set(6, 9, 14);
   camera.layers.enable(FX_LAYER);
 
-  const sky = createSky(T0.noise);
-  const ground = createGround(T0, { reflections: quality.reflections, noise: T0.noise, ripple: T0.ripple, puddle: T0.puddle });
-  const bannerTime = { value: 0 };
-  scene.add(sky.mesh, ground.mesh, createCastle(M).group, createBanners(M, bannerTime));
-  const fires = createFires(M, { shadowBrazier: 1, noise: T0.noise });
+  hud.loading('load_fire', 0.65);
+  await nextFrame();
+  const sky = createSky();
+  const ground = createGround(S, { ripple: T0.ripple, puddle: T0.puddle, camera, reflections: quality.reflections });
+  scene.add(sky.mesh, ground.mesh, createCastle(M).group, createBanners(M));
+  const fires = createFires(M, { shadowBrazier: 1 });
   const brazierShadow = fires.lights[1].light;
   brazierShadow.castShadow = quality.shadow;
+  // The burning gate casts the portcullis into the fog as god rays (ultra tier).
+  const gateLight = fires.lights[fires.lights.length - 1].light;
+  gateLight.shadow.camera.far = 40;
+  gateLight.castShadow = quality.godrays;
   fires.particles[1].layers.set(FX_LAYER);
   fires.particles[2].layers.set(FX_LAYER);
   const rain = createRain(QUALITY.ultra.rain);
@@ -87,10 +85,10 @@ export async function buildWorld(renderer, hud, quality) {
   rain.group.traverse((o) => o.layers.set(FX_LAYER));
   const fx = createFX();
   for (const o of fx.overlays) o.traverse((c) => c.layers.set(FX_LAYER));
-  const breath = createBreath(T0.noise);
+  const breath = createBreath();
   breath.mesh.layers.set(FX_LAYER);
   scene.add(fires.group, rain.group, fx.group, breath.mesh);
-  const lights = makeLights(scene);
+  const lights = makeLights(scene, quality);
 
   const knightA = buildKnight(M, 'A');
   const knightB = buildKnight(M, 'B');
@@ -111,11 +109,13 @@ export async function buildWorld(renderer, hud, quality) {
   const B = new Fighter('B', knightB, swordB, capeB, shieldB);
 
   // Image-based lighting captured from the courtyard itself, so the armour reflects real fires.
-  hud.loading('load_shaders', 4 / 5);
+  hud.loading('load_shaders', 0.75);
   await nextFrame();
+  // The moon's cascades must bind to the story camera, not the capture's cube camera.
   const hidden = [...batches, capeA.mesh, capeB.mesh, rain.group, fx.group, breath.mesh];
   hidden.forEach((o) => (o.visible = false));
   ground.setReflections(false);
+  lights.moon.castShadow = false;
   fires.update(0);
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(scene, 0, 0.1, 200, { size: 256, position: new THREE.Vector3(0.2, 1.6, 0.6) }).texture;
@@ -123,9 +123,10 @@ export async function buildWorld(renderer, hud, quality) {
   pmrem.dispose();
   hidden.forEach((o) => (o.visible = true));
   ground.setReflections(quality.reflections);
+  lights.moon.castShadow = true;
 
   return {
-    scene, camera, sky, ground, fires, brazierShadow, rain, fx, breath, batcher, A, B, bannerTime, ...lights,
+    scene, camera, sky, ground, fires, brazierShadow, gateLight, rain, fx, breath, batcher, A, B, ...lights,
     wind: { x: 1.2, y: 0, z: 0.5, phase: 0 },
     prevBreath: [0, 0],
   };
@@ -151,17 +152,12 @@ function splashOnArmour(W, f, dT) {
 // Story-time animation of everything except camera, lights and post-processing.
 export function animateWorld(W, T, dT) {
   const { wind, A, B } = W;
-  W.scene.fog.near = T;
+  U.time.value = T;
   W.fires.update(T);
-  W.sky.uniforms.uTime.value = T;
-  W.ground.uniforms.uTime.value = T;
-  W.rain.uniforms.uTime.value = T;
-  W.bannerTime.value = T;
   wind.x = 1.4 + Math.sin(T * 0.7) * 1.1 + Math.sin(T * 2.3) * 0.5;
   wind.z = 0.6 + Math.sin(T * 0.5 + 1) * 0.5;
   wind.phase = T;
-  W.fires.uniforms.uWind.value.set(wind.x * 0.4, 0, wind.z * 0.4);
-  W.rain.uniforms.uWind.value.set(wind.x * 0.8, 0, wind.z * 0.8);
+  U.wind.value.set(wind.x * 0.4, 0, wind.z * 0.4);
 
   A.update(T, dT, B);
   B.update(T, dT, A);

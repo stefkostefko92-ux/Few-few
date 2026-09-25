@@ -1,10 +1,13 @@
 // Quality tiers and the frame-time governor that holds the frame rate at 60 fps or better
 // by moving the internal render resolution instead of switching effects off.
 
+// Every tier keeps temporal AA (TRAA), bloom and the film grade; the screen-space passes stack on
+// top. csm: cascaded moon shadows (chosen at load). texSize/texHero cap the baked texture
+// resolution (VRAM budget, chosen at load).
 export const QUALITY = {
-  low: { msaa: 0, dofTaps: 0, ao: false, reflections: false, streaks: false, rain: 7000, maxDPR: 1.0, shadow: false },
-  high: { msaa: 2, dofTaps: 24, ao: true, reflections: true, streaks: false, rain: 14000, maxDPR: 1.25, shadow: true },
-  ultra: { msaa: 4, dofTaps: 40, ao: true, reflections: true, streaks: true, rain: 22000, maxDPR: 1.75, shadow: true },
+  low: { gtao: false, ssgi: false, ssr: false, contact: false, godrays: false, csm: false, motionBlur: 0, dof: false, streaks: false, reflections: false, rain: 7000, maxDPR: 1.0, shadow: false, texSize: 1024, texHero: 2048 },
+  high: { gtao: true, ssgi: false, ssr: true, contact: false, godrays: false, csm: true, motionBlur: 8, dof: true, streaks: true, reflections: true, rain: 14000, maxDPR: 1.25, shadow: true, texSize: 1024, texHero: 2048 },
+  ultra: { gtao: false, ssgi: true, ssr: true, contact: true, godrays: true, csm: true, motionBlur: 16, dof: true, streaks: true, reflections: true, rain: 22000, maxDPR: 1.5, shadow: true, texSize: 2048, texHero: 4096 },
 };
 
 // Phones and small screens start on the light tier; the governor refines from there.

@@ -82,6 +82,7 @@ export class Rig {
     w.qPelvis.multiply(qa.setFromAxisAngle(AX, P.lean * 0.25 + P.pelvisPitch));
     w.qPelvis.multiply(qa.setFromAxisAngle(AZ, P.pelvisRoll));
     w.pelvis.set(P.root.x, P.root.y + P.hipY, P.root.z);
+    if (P.shift) w.pelvis.add(P.shift);
     setPose(parts.pelvis, w.pelvis, w.qPelvis);
 
     const qSpine = qb.copy(w.qPelvis);

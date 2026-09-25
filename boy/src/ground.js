@@ -1,124 +1,71 @@
-// Wet cobblestones: puddles with planar reflections, rain ripples and blurred wet sheen.
-// Puddle layout and ripple impacts come from precomputed textures, so the floor costs a few
-// texture reads per pixel instead of procedural noise.
-import * as THREE from 'three';
-import { Reflector } from 'three/addons/objects/Reflector.js';
+// Wet cobblestones: water fills the joints first and drowns whole stones in the puddles (the
+// baked height decides where), rain rings on standing water, and a planar mirror reflection that
+// replaces the specular of the water surface. Puddle layout and ripple impacts are textures.
+import * as THREE from 'three/webgpu';
+import { Fn, reflector, texture, textureBicubic, uv, vec2, vec3, vec4, float, mix, smoothstep, normalize, length, max, abs, fract, sin, pow, dot, clamp, normalMap, positionWorld, positionView, cameraViewMatrix, positionViewDirection } from 'three/tsl';
+import { sampleSet } from './surface.js';
+import { noise, U } from './tsl.js';
 
 const SIZE = 44;
 
-export function createGround(T, { reflections, noise, ripple, puddle }) {
-  const rep = SIZE / 3;
-  const tiled = (tex) => {
-    const t = tex.clone();
-    t.repeat.set(rep, rep);
-    t.needsUpdate = true;
-    return t;
-  };
-  const geo = new THREE.PlaneGeometry(SIZE, SIZE, 1, 1);
-  const reflector = new Reflector(geo, { textureWidth: 512, textureHeight: 512, clipBias: 0.004, multisample: 0 });
-  const texMatrix = reflector.material.uniforms.textureMatrix.value;
-  const rt = reflector.getRenderTarget();
-  rt.texture.generateMipmaps = true;
-  rt.texture.minFilter = THREE.LinearMipmapLinearFilter;
+const rippleLayer = Fn(([tex, p, t]) => {
+  const r = texture(tex, p);
+  const d = r.xy.mul(2).sub(1);
+  const dist = length(d);
+  const life = fract(t.add(r.z));
+  const ring = dist.sub(life);
+  const amp = r.w.mul(pow(life.oneMinus(), 2)).mul(smoothstep(0, 0.3, abs(ring)).oneMinus());
+  return d.div(max(dist, 1e-3)).mul(sin(ring.mul(15.7))).mul(amp);
+});
+
+// One material per mode: with the mirror (the reflector renders the scene each frame) or without.
+function groundMaterial(S, ripple, puddle, reflection) {
+  const mat = new THREE.MeshPhysicalNodeMaterial({ name: reflection ? 'cobbles+mirror' : 'cobbles', roughness: 1, metalness: 0 });
+  const w = positionWorld;
+  const s = sampleSet(S.cobble, uv().mul(SIZE / S.cobble.tile));
+  // Standing water: a level rising with the puddle map, compared with the baked stone height.
+  const pud = smoothstep(0.12, 0.8, texture(puddle, w.xz.div(SIZE).add(0.5)).r.add(noise(w.xz.mul(0.45)).b.sub(0.5).mul(0.35)));
+  const water = smoothstep(0, 0.07, mix(float(0.22), float(1.06), pud).sub(s.normal.a)).toVar();
+
+  mat.colorNode = s.albedo.rgb.mul(mix(float(0.7), float(0.34), water));
+  mat.aoNode = s.orm.r;
+  mat.roughnessNode = mix(s.orm.g.mul(0.72), float(0.03), water);
+
+  // Rain rings on water; flattened normals under standing water.
+  const fade = smoothstep(7, 26, length(positionView)).oneMinus();
+  const rip = rippleLayer(ripple, w.xz, U.time.mul(1.1)).add(rippleLayer(ripple, w.xz.mul(1.37).add(0.5), U.time.mul(0.93).add(0.37))).mul(water.mul(0.8).add(0.2)).mul(fade).toVar();
+  const flatN = normalize(cameraViewMatrix.mul(vec4(0, 1, 0, 0)).xyz);
+  const ripV = normalize(cameraViewMatrix.mul(vec4(normalize(vec3(rip.x.mul(-0.6), 1, rip.y.mul(-0.6))), 0)).xyz);
+  const n = normalize(mix(normalMap(s.normal, vec2(1.1)), flatN, water.mul(0.9)).add(ripV.sub(flatN).mul(water.mul(0.65).add(0.35)))).toVar();
+  mat.normalNode = n;
+  if (!reflection) return mat;
+
+  // The mirror, shifted by the ripples and blurred with the surface roughness, stands in for
+  // the specular of the water it covers (no double reflection from the environment map).
+  reflection.uvNode = reflection.uvNode.add(rip.mul(0.012)).add(n.xy.sub(flatN.xy).mul(0.03));
+  const refl = textureBicubic(reflection, clamp(mat.roughnessNode.mul(1.6), 0, 1));
+  const F = pow(clamp(dot(n, positionViewDirection), 0, 1).oneMinus(), 5).mul(0.98).add(0.02);
+  mat.specularIntensityNode = water.oneMinus();
+  mat.emissiveNode = refl.rgb.mul(F).mul(mix(float(0.35), float(1), water));
+  return mat;
+}
+
+export function createGround(S, { ripple, puddle, camera, reflections }) {
+  const reflection = reflector({ resolutionScale: 0.4, generateMipmaps: true, bounces: false });
   // The mirrored camera sees only layer 0: rain, embers and smoke are skipped in the reflection.
-  const baseCamera = reflector.getReflectionCamera;
-  reflector.getReflectionCamera = function reflectionCamera(camera) {
-    const c = baseCamera.call(this, camera);
-    c.layers.set(0);
-    return c;
-  };
-  const uniforms = {
-    tReflect: { value: rt.texture },
-    uTexMatrix: { value: texMatrix },
-    uTime: { value: 0 },
-    uReflect: { value: reflections ? 1 : 0 },
-    tNoise: { value: noise },
-    tRipple: { value: ripple },
-    tPuddle: { value: puddle },
-  };
-  const mat = new THREE.MeshStandardMaterial({
-    name: 'cobbles',
-    map: tiled(T.cobble.map),
-    normalMap: tiled(T.cobble.normalMap),
-    normalScale: new THREE.Vector2(1.1, 1.1),
-    roughnessMap: tiled(T.cobble.roughnessMap),
-    roughness: 1,
-    metalness: 0,
-  });
-  mat.onBeforeCompile = (shader) => {
-    Object.assign(shader.uniforms, uniforms);
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nuniform mat4 uTexMatrix;\nvarying vec4 vReflUv;\nvarying vec3 vGroundW;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvReflUv = uTexMatrix * vec4(position, 1.0);\nvGroundW = (modelMatrix * vec4(position, 1.0)).xyz;');
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        '#include <common>',
-        `#include <common>
-        uniform sampler2D tReflect;
-        uniform sampler2D tNoise;
-        uniform sampler2D tRipple;
-        uniform sampler2D tPuddle;
-        uniform float uTime;
-        uniform float uReflect;
-        varying vec4 vReflUv;
-        varying vec3 vGroundW;
-        vec2 rippleLayer(vec2 p, float t) {
-          vec4 r = texture2D(tRipple, p);
-          vec2 d = r.xy * 2.0 - 1.0;
-          float dist = length(d);
-          float life = fract(t + r.z);
-          float ring = dist - life;
-          float amp = r.w * (1.0 - life) * (1.0 - life) * smoothstep(0.3, 0.0, abs(ring));
-          return d / max(dist, 1e-3) * sin(ring * 15.7) * amp;
-        }`,
-      )
-      .replace(
-        '#include <map_fragment>',
-        `#include <map_fragment>
-        float pud = texture2D(tPuddle, vGroundW.xz / ${SIZE.toFixed(1)} + 0.5).r;
-        pud = smoothstep(0.12, 0.8, pud + (texture2D(tNoise, vGroundW.xz * 0.45).b - 0.5) * 0.35);
-        diffuseColor.rgb *= mix(0.82, 0.38, pud);`,
-      )
-      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor * 0.8, 0.035, pud);')
-      .replace(
-        '#include <normal_fragment_maps>',
-        `#include <normal_fragment_maps>
-        float ripFade = smoothstep(26.0, 7.0, length(vViewPosition));
-        vec2 rip = (rippleLayer(vGroundW.xz, uTime * 1.1) + rippleLayer(vGroundW.xz * 1.37 + 0.5, uTime * 0.93 + 0.37)) * (0.3 + 0.7 * pud) * ripFade;
-        vec3 flatN = normalize((viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
-        normal = normalize(mix(normal, flatN, pud * 0.85));
-        vec3 ripW = normalize(vec3(-rip.x * 0.6, 1.0, -rip.y * 0.6));
-        vec3 ripV = normalize((viewMatrix * vec4(ripW, 0.0)).xyz);
-        normal = normalize(normal + (ripV - flatN) * (0.35 + 0.65 * pud));`,
-      )
-      .replace(
-        '#include <opaque_fragment>',
-        `{
-          vec2 ruv = vReflUv.xy / vReflUv.w + rip * 0.012 + (normal.xy - flatN.xy) * 0.03;
-          vec3 refl = texture2D(tReflect, ruv, roughnessFactor * 9.0).rgb;
-          float F = 0.02 + 0.98 * pow(1.0 - saturate(dot(normal, geometryViewDir)), 5.0);
-          float amt = F * mix(0.35, 1.0, pud) * uReflect;
-          outgoingLight = outgoingLight * (1.0 - amt * 0.6) + refl * amt;
-        }
-        #include <opaque_fragment>`,
-      );
-  };
-  mat.customProgramCacheKey = () => 'wetCobbles2';
-  reflector.material = mat;
-  reflector.rotation.x = -Math.PI / 2;
-  reflector.receiveShadow = true;
-  reflector.renderOrder = -1;
-  const reflectRender = reflector.onBeforeRender;
-  const noop = () => {};
+  reflection.reflector.getVirtualCamera(camera).layers.set(0);
+  const plain = groundMaterial(S, ripple, puddle, null);
+  const mirror = groundMaterial(S, ripple, puddle, reflection);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(SIZE, SIZE), reflections ? mirror : plain);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.receiveShadow = true;
+  mesh.renderOrder = -1;
+  mesh.add(reflection.target);
   return {
-    mesh: reflector,
-    uniforms,
+    mesh,
+    materials: [plain, mirror],
     setReflections(on) {
-      uniforms.uReflect.value = on ? 1 : 0;
-      reflector.onBeforeRender = on ? reflectRender : noop;
-    },
-    setSize(w, h) {
-      rt.setSize(Math.max(64, Math.floor(w * 0.4)), Math.max(64, Math.floor(h * 0.4)));
+      mesh.material = on ? mirror : plain;
     },
   };
 }

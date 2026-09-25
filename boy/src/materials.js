@@ -1,161 +1,75 @@
-// Physically based material library: wet polished steel, blackened plate, mail, cloth, stone.
-import * as THREE from 'three';
+// Physically based material library on the baked texture sets: wet polished steel, blackened
+// plate, mail, cloth, leather, stone and wood. Rain beads and runs on steel and stone.
+import * as THREE from 'three/webgpu';
+import { uv, vec2, normalMap, texture, sin, materialEmissive, positionWorld } from 'three/tsl';
+import { applySet, applyGrime, rainOnSteel, wetStone } from './surface.js';
+import { noise, U } from './tsl.js';
 
-const v2 = (x, y = x) => new THREE.Vector2(x, y);
+const Physical = (p) => new THREE.MeshPhysicalNodeMaterial(p);
+const Standard = (p) => new THREE.MeshStandardNodeMaterial(p);
 
-function repeated(tex, x, y) {
-  const t = tex.clone();
-  t.repeat.set(x, y);
-  t.needsUpdate = true;
-  return t;
+// Plate steel: baked hammered metal, grime at the feet, rain on a clear coat of water.
+function steel(S, name, color, { metalness = 1, roughness, clearcoat, clearcoatRoughness = 0.08, normal = 0.6, wear = 1, grime = true, rain = 1, uvScale = [1, 1], anisotropy = 0 }) {
+  const m = Physical({ name, color, metalness, roughness, clearcoat, clearcoatRoughness, anisotropy, side: THREE.DoubleSide });
+  applySet(m, S.metal, { uvNode: uv().mul(vec2(...uvScale)), normalScale: normal, wear });
+  if (grime) applyGrime(m);
+  if (rain > 0) m.clearcoatNormalNode = rainOnSteel(S.drops, { scale: 0.55 * rain });
+  return m;
 }
 
-// Darker, glossier stone within splash height of the wet ground.
-function wetBase(mat, height = 1.4) {
-  mat.onBeforeCompile = (shader) => {
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying float vWetY;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWetY = (modelMatrix * vec4(transformed, 1.0)).y;');
-    shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying float vWetY;')
-      .replace('#include <map_fragment>', `#include <map_fragment>\nfloat wetK = 1.0 - smoothstep(0.0, ${height.toFixed(2)}, vWetY);\ndiffuseColor.rgb *= 1.0 - 0.5 * wetK;`)
-      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor *= 1.0 - 0.55 * wetK;');
-  };
-  mat.customProgramCacheKey = () => `wetBase${height}`;
-  return mat;
+// Glowing coals: slow heat waves crawl through the bed, story-time driven.
+function coals() {
+  const m = Standard({ name: 'coal', color: 0x120b08, roughness: 0.9, emissive: new THREE.Color(1.0, 0.28, 0.05), emissiveIntensity: 1.3 });
+  const w = positionWorld;
+  const heat = noise(w.xz.mul(1.9).add(vec2(U.time.mul(0.05), U.time.mul(-0.03)))).r.mul(1.6).sub(0.3).clamp(0.08, 1.2);
+  const pulse = sin(U.time.mul(2.3).add(w.x.mul(7))).mul(0.12).add(0.88);
+  m.emissiveNode = materialEmissive.mul(heat).mul(pulse);
+  return m;
 }
 
-export function createMaterials(T) {
-  const drops = T.drops.normalMap;
-  const steelA = new THREE.MeshPhysicalMaterial({
-    name: 'steelA',
-    color: 0xc6cad0,
-    metalness: 1,
-    roughness: 0.3,
-    roughnessMap: T.metal.roughnessMap,
-    normalMap: T.metal.normalMap,
-    normalScale: v2(0.3),
-    clearcoat: 0.6,
-    clearcoatRoughness: 0.06,
-    clearcoatNormalMap: drops,
-    clearcoatNormalScale: v2(0.55),
-    side: THREE.DoubleSide,
-  });
-  const steelB = new THREE.MeshPhysicalMaterial({
-    name: 'steelB',
-    color: 0x1f1e22,
-    metalness: 0.92,
-    roughness: 0.52,
-    roughnessMap: T.metal.roughnessMap,
-    normalMap: T.metal.normalMap,
-    normalScale: v2(0.45),
-    clearcoat: 0.5,
-    clearcoatRoughness: 0.1,
-    clearcoatNormalMap: drops,
-    clearcoatNormalScale: v2(0.55),
-    side: THREE.DoubleSide,
-  });
-  const brass = new THREE.MeshPhysicalMaterial({ name: 'brass', color: 0xc9a25a, metalness: 1, roughness: 0.3, roughnessMap: T.metal.roughnessMap, clearcoat: 0.4, clearcoatRoughness: 0.1, side: THREE.DoubleSide });
-  const goldB = new THREE.MeshPhysicalMaterial({ name: 'goldB', color: 0xa77a30, metalness: 1, roughness: 0.34, roughnessMap: T.metal.roughnessMap, clearcoat: 0.4, clearcoatRoughness: 0.1, side: THREE.DoubleSide });
-  const mail = new THREE.MeshStandardMaterial({
-    name: 'mail',
-    color: 0x8e949c,
-    map: T.mail.map,
-    normalMap: T.mail.normalMap,
-    normalScale: v2(1.1),
-    metalness: 1,
-    roughness: 0.44,
-    side: THREE.DoubleSide,
-  });
-  const gambeson = new THREE.MeshPhysicalMaterial({ name: 'gambeson', color: 0x3c3226, roughness: 0.95, sheen: 0.6, sheenColor: 0x7a6a50, sheenRoughness: 0.6, normalMap: repeated(T.fabric.normalMap, 6, 6) });
-  const leather = new THREE.MeshStandardMaterial({ name: 'leather', color: 0x3a2417, roughness: 0.62, roughnessMap: T.leather.roughnessMap, normalMap: T.leather.normalMap, normalScale: v2(0.8) });
-  const slit = new THREE.MeshBasicMaterial({ name: 'slit', color: 0x010101, side: THREE.DoubleSide });
-  const blade = new THREE.MeshPhysicalMaterial({
-    name: 'blade',
-    color: 0xd9dde2,
-    metalness: 1,
-    roughness: 0.24,
-    roughnessMap: repeated(T.metal.roughnessMap, 1, 5),
-    anisotropy: 0.55,
-    clearcoat: 0.15,
-    clearcoatRoughness: 0.05,
-    clearcoatNormalMap: drops,
-    side: THREE.DoubleSide,
-  });
-  const bladeDark = blade.clone();
-  bladeDark.color.set(0x9da1a8);
-  bladeDark.roughness = 0.24;
-  const capeA = new THREE.MeshPhysicalMaterial({
-    name: 'capeA',
-    map: T.capeA,
-    roughness: 0.86,
-    sheen: 1,
-    sheenColor: 0x5b78c8,
-    sheenRoughness: 0.45,
-    normalMap: repeated(T.fabric.normalMap, 8, 12),
-    normalScale: v2(0.6),
-    side: THREE.DoubleSide,
-  });
-  const capeB = new THREE.MeshPhysicalMaterial({
-    name: 'capeB',
-    map: T.capeB,
-    alphaTest: 0.5,
-    roughness: 0.88,
-    sheen: 1,
-    sheenColor: 0xa22a34,
-    sheenRoughness: 0.5,
-    normalMap: repeated(T.fabric.normalMap, 8, 12),
-    normalScale: v2(0.6),
-    side: THREE.DoubleSide,
-  });
-  const shieldFace = new THREE.MeshPhysicalMaterial({
-    name: 'shieldFace',
-    map: T.shield.map,
-    roughness: 0.9,
-    roughnessMap: T.shield.roughnessMap,
-    clearcoat: 0.55,
-    clearcoatRoughness: 0.14,
-    clearcoatNormalMap: drops,
-    clearcoatNormalScale: v2(0.5),
-    side: THREE.DoubleSide,
-  });
-  const wood = new THREE.MeshStandardMaterial({ name: 'wood', map: T.wood.map, normalMap: T.wood.normalMap, roughnessMap: T.wood.roughnessMap, roughness: 1, side: THREE.DoubleSide });
-  const iron = new THREE.MeshStandardMaterial({ name: 'iron', color: 0x2b2724, metalness: 0.85, roughness: 0.6, roughnessMap: T.metal.roughnessMap, normalMap: T.metal.normalMap });
-  const stone = wetBase(new THREE.MeshStandardMaterial({ name: 'stone', map: T.wall.map, normalMap: T.wall.normalMap, normalScale: v2(1.2), roughnessMap: T.wall.roughnessMap, roughness: 1 }));
-  const roof = new THREE.MeshStandardMaterial({ name: 'roof', color: 0x2a2d33, roughness: 0.55, metalness: 0.1, normalMap: repeated(T.wall.normalMap, 3, 3) });
-  const banner = new THREE.MeshPhysicalMaterial({ name: 'banner', map: T.banner, alphaTest: 0.5, roughness: 0.85, sheen: 1, sheenColor: 0xa22a34, side: THREE.DoubleSide });
-  const coal = new THREE.MeshStandardMaterial({ name: 'coal', color: 0x120b08, roughness: 0.9, emissive: new THREE.Color(1.0, 0.28, 0.05), emissiveIntensity: 1.3 });
-  const windowGlow = new THREE.MeshBasicMaterial({ name: 'window', color: new THREE.Color(1.5, 0.66, 0.2) });
-  return { steelA, steelB, brass, goldB, mail, gambeson, leather, slit, blade, bladeDark, capeA, capeB, shieldFace, wood, iron, stone, roof, banner, coal, windowGlow };
+export function createMaterials(S, T) {
+  const steelA = steel(S, 'steelA', 0xc6cad0, { roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.06, normal: 0.5, wear: 0.3 });
+  const steelB = steel(S, 'steelB', 0x1f1e22, { metalness: 0.92, roughness: 0.52, clearcoat: 0.5, clearcoatRoughness: 0.1, normal: 0.8 });
+  const brass = steel(S, 'brass', 0xc9a25a, { roughness: 0.3, clearcoat: 0.4, clearcoatRoughness: 0.1, normal: 0.3, wear: 0.45, grime: false, rain: 0.6 });
+  const goldB = steel(S, 'goldB', 0xa77a30, { roughness: 0.34, clearcoat: 0.4, clearcoatRoughness: 0.1, normal: 0.3, wear: 0.6, grime: false, rain: 0.6 });
+  const blade = steel(S, 'blade', 0xd9dde2, { roughness: 0.24, clearcoat: 0.15, clearcoatRoughness: 0.05, normal: 0.25, wear: 0.15, grime: false, rain: 0.5, uvScale: [1, 5], anisotropy: 0.55 });
+  const bladeDark = steel(S, 'bladeDark', 0x9da1a8, { roughness: 0.24, clearcoat: 0.15, clearcoatRoughness: 0.05, normal: 0.25, wear: 0.4, grime: false, rain: 0.5, uvScale: [1, 5], anisotropy: 0.55 });
+  const iron = steel(S, 'iron', 0x2b2724, { metalness: 0.85, roughness: 0.6, clearcoat: 0.25, normal: 1, grime: false, rain: 0.8 });
+
+  const mail = Standard({ name: 'mail', color: 0x8e949c, metalness: 1, roughness: 1, side: THREE.DoubleSide });
+  applySet(mail, S.mail, { normalScale: 1.1 });
+  applyGrime(mail);
+
+  const leather = Standard({ name: 'leather', color: 0xffffff, roughness: 1 });
+  applySet(leather, S.leather, { tint: false, normalScale: 0.8 });
+  applyGrime(leather);
+
+  const gambeson = Physical({ name: 'gambeson', color: 0x4a3e2f, roughness: 1, sheen: 0.6, sheenColor: 0x7a6a50, sheenRoughness: 0.6 });
+  applySet(gambeson, S.fabric, { uvNode: uv().mul(6), normalScale: 1 });
+
+  const fabricNormal = (x, y, s) => normalMap(texture(S.fabric.normal, uv().mul(vec2(x, y))), vec2(s));
+  const capeA = Physical({ name: 'capeA', map: T.capeA, roughness: 0.86, sheen: 1, sheenColor: 0x5b78c8, sheenRoughness: 0.45, side: THREE.DoubleSide });
+  capeA.normalNode = fabricNormal(8, 12, 0.8);
+  const capeB = Physical({ name: 'capeB', map: T.capeB, alphaTest: 0.5, roughness: 0.88, sheen: 1, sheenColor: 0xa22a34, sheenRoughness: 0.5, side: THREE.DoubleSide });
+  capeB.normalNode = fabricNormal(8, 12, 0.8);
+  const banner = Physical({ name: 'banner', map: T.banner, alphaTest: 0.5, roughness: 0.85, sheen: 1, sheenColor: 0xa22a34, side: THREE.DoubleSide });
+  banner.normalNode = fabricNormal(10, 20, 0.6);
+
+  const shieldFace = Physical({ name: 'shieldFace', map: T.shield.map, roughness: 0.9, roughnessMap: T.shield.roughnessMap, clearcoat: 0.55, clearcoatRoughness: 0.14, side: THREE.DoubleSide });
+  shieldFace.clearcoatNormalNode = rainOnSteel(S.drops, { scale: 0.5, flow: 0.6 });
+
+  const wood = Standard({ name: 'wood', roughness: 1, side: THREE.DoubleSide });
+  applySet(wood, S.wood, { tint: false, normalScale: 1 });
+
+  const stone = Standard({ name: 'stone', roughness: 1 });
+  applySet(stone, S.wall, { tint: false, normalScale: 1.2 });
+  wetStone(stone, S.drops);
+
+  const roof = Standard({ name: 'roof', color: 0x2a2d33, roughness: 0.55, metalness: 0.1 });
+  roof.normalNode = normalMap(texture(S.wall.normal, uv().mul(3)), vec2(0.8));
+
+  const slit = new THREE.MeshBasicNodeMaterial({ name: 'slit', color: 0x010101, side: THREE.DoubleSide });
+  const windowGlow = new THREE.MeshBasicNodeMaterial({ name: 'window', color: new THREE.Color(1.5, 0.66, 0.2) });
+  return { steelA, steelB, brass, goldB, mail, gambeson, leather, slit, blade, bladeDark, capeA, capeB, shieldFace, wood, iron, stone, roof, banner, coal: coals(), windowGlow };
 }
 
-// Wet mud splashed up the greaves and sabatons: darker, rougher, no longer bare metal.
-export function applyGrime(materials, noise) {
-  for (const mat of materials) {
-    mat.onBeforeCompile = (shader) => {
-      shader.uniforms.tGrimeNoise = { value: noise };
-      shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', '#include <common>\nvarying vec3 vGrimeW;')
-        .replace(
-          '#include <begin_vertex>',
-          `#include <begin_vertex>
-          vec4 grimeW = vec4(transformed, 1.0);
-          #ifdef USE_BATCHING
-            grimeW = batchingMatrix * grimeW;
-          #endif
-          vGrimeW = (modelMatrix * grimeW).xyz;`,
-        );
-      shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform sampler2D tGrimeNoise;\nvarying vec3 vGrimeW;')
-        .replace(
-          '#include <map_fragment>',
-          `#include <map_fragment>
-          float grime = (1.0 - smoothstep(0.03, 0.55, vGrimeW.y)) * smoothstep(0.35, 0.75, texture2D(tGrimeNoise, vGrimeW.xz * 1.7 + vGrimeW.y * 2.3).a + 0.25);
-          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.045, 0.034, 0.024), grime * 0.85);`,
-        )
-        .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.8, grime * 0.7);')
-        .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor *= 1.0 - grime * 0.85;');
-    };
-    mat.customProgramCacheKey = () => `grime-${mat.name}`;
-  }
-}
