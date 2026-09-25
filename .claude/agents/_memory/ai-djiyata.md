@@ -7,6 +7,9 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-09-25:** Claude конектори: auth тип none се поддържа; egress 160.79.104.0/21; таван на резултата ~150k знака, 240 с на извикване. ChatGPT Developer mode: SSE и streaming HTTP; OAuth, No Authentication, Mixed; не изисква search/fetch. _(публични MCP конектори за Claude/ChatGPT; verified; https://claude.com/docs/connectors/building/authentication)_
+- **2026-09-25:** TS SDK v1.x клиентът валидира structuredContent срещу outputSchema дори при isError:true → при грешка на инструмент пропускай structuredContent, иначе клиентът хвърля -32602. _(MCP сървъри с outputSchema; verified; https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/v1.x/src/client/index.ts)_
+- **2026-09-25:** MCP 2026-07-28: server/discover е MUST за сървъри; резултатите на server/discover и */list MUST носят ttlMs (>=0) + cacheScope; липсващо задължително _meta поле → -32602/400, не -32021. _(MCP сървъри (vizitka и всеки бъдещ конектор); verified; https://modelcontextprotocol.io/specification/2026-07-28/server/discover)_
 
 - **2026-07-16 (пресверена 2026-08-04):** В agents-dashboard/agents.json полето knowledge.sources е ЧИСЛО (напр. 100), не масив — важи и за нови (konveyera) и за стари (seo=21) агенти; проверка чрез .length дава undefined и е фалшива тревога. _("схема на таблото"; verified; agents-dashboard/agents.json:3212)_
 - **2026-07-30 (пресверена 2026-08-04):** Кандидат за цена-таван per агент: frontmatter `maxTurns` (макс. agentic ходове преди subagent да спре) — би дал твърд таван на разхода на скъпите opus/high агенти. Ръководството го описва, но НЕ е тестван в нашия харнес (Claude Code subagent) — провери на живо дали се уважава от нашата версия, преди да го сложиш на agents.json/дефинициите. _("maxTurns като разходен таван"; verified; https://code.claude.com/docs/en/sub-agents)_
