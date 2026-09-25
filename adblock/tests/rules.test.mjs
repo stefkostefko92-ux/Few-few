@@ -119,4 +119,20 @@ ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "script
     !bg.remoteRuleSafe(r("block", { resourceTypes: ["main_frame"] })) && !bg.remoteRuleSafe(r("block", { excludedResourceTypes: ["image"] })));
 }
 
+// Anti-adblock bait: the global uBO XHR redirects to ad networks keep working only for
+// real ad resources (what detectors fetch); anything else to those networks is blocked.
+{
+  const ubo = JSON.parse(readFileSync(join(ROOT, "rules", "list_ubo.json"), "utf8"));
+  const nets = /(^|\.)(doubleclick\.net|googlesyndication\.com)$/;
+  const global = ubo.filter((r) => r.action.type === "redirect" && !r.condition.initiatorDomains && (r.condition.requestDomains || []).some((d) => nets.test(d)));
+  const re = global.length ? new RegExp(global[0].condition.regexFilter || "$^") : null;
+  ok("ubo: global ad-network XHR redirects are narrowed to bait paths (adsbygoogle.js, gpt.js, /pagead/id)",
+    global.length > 0 && global.every((r) => r.condition.regexFilter && r.condition.requestDomains.every((d) => nets.test(d))) &&
+    re.test("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js") && re.test("https://securepubads.g.doubleclick.net/tag/js/gpt.js") &&
+    !re.test("https://stats.g.doubleclick.net/fakepage.html"));
+  const ad = JSON.parse(readFileSync(join(ROOT, "rules", "ad_rules.json"), "utf8")).find((r) => r.id === 238);
+  ok("ad_rules: third-party tracker rule covers ads.youtube.com, Yahoo/Yandex/X/Huawei ad hosts — never first-party",
+    ad.condition.domainType === "thirdParty" && ["ads.youtube.com", "gemini.yahoo.com", "adtech.yahooinc.com", "metrika.yandex.ru", "ads-api.twitter.com", "grs.hicloud.com"].every((d) => ad.condition.requestDomains.includes(d)));
+}
+
 done();

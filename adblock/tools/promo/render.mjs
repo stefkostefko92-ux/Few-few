@@ -47,7 +47,8 @@ patch("preserveDrawingBuffer: false", "preserveDrawingBuffer: true");
 patch("var dt = Math.min(0.05, now - (frame.p || now));", "F = Math.max(F, window.__amb || 0);\n      var dt = Math.min(0.05, now - (frame.p || now));");
 patch("if (!strikes.length && !sparks.length) {", "if (!strikes.length && !sparks.length && !(window.__amb > 0)) {");
 patch("      el: cv,\n", "      el: cv,\n      kick: function () { if (!running) { running = true; requestAnimationFrame(frame); } },\n");
-const film = readFileSync(join(HERE, "film.html"), "utf8").replace("/*__STORM__*/", () => "window.PROMO_TIMELINE = " + JSON.stringify(TL) + ";\n" + storm);
+const film = readFileSync(join(HERE, "film.html"), "utf8").replace("/*__STORM__*/", () => "window.PROMO_TIMELINE = " + JSON.stringify(TL) + ";\n" + storm)
+  .replace('<b id="ver" style="font-weight:300">5.1</b>', () => `<b id="ver" style="font-weight:300">${ver}</b>`);
 
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".webp": "image/webp", ".png": "image/png", ".woff2": "font/woff2" };
 const srv = http.createServer((q, r) => {
