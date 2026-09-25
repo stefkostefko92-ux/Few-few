@@ -160,3 +160,5 @@
 {"t":"handoff","ts":"2026-09-25T14:50:30.576Z","id":"r3ab5826b","from":"izpitatelya","to":"kodadjiyata","status":"наред","run":"8afe70a7"}
 {"t":"handoff","ts":"2026-09-25T14:51:55.870Z","id":"r3ab5826b","from":"vps-adjiyata","to":"kodadjiyata","status":"блокер","run":"d4db3b61"}
 {"t":"handoff","ts":"2026-09-25T14:51:59.222Z","id":"r3ab5826b","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"3209952d"}
+{"t":"start","ts":"2026-09-25T17:03:31.467Z","id":"r796a7eae","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-09-25T17:03:31.467Z","id":"r796a7eae","from":"kodadjiyata","to":"човек","status":"има бележки","run":"44a1cc5b"}
