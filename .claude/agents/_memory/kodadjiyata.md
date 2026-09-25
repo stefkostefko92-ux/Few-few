@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-25:** Изходът на Кодаджията трябва да завършва с блок „## ПРЕДАВАНЕ“ (От/Към/Статус/Находки/Изход/Следваща стъпка); валидира се с node tools/agents/handoff.mjs <файл>, иначе dod-check Stop hook блокира _(.claude/agents (всички агенти); verified; "node tools/agents/handoff.mjs scratchpad/out.md → exit 0; dod-check Stop hook съобщение")_
 - **2026-09-25:** Gaming realtime room валидира всеки ход срещу legalActions (stable-равенство) → пропуски само в reduce не са достижими от клиент _(Gaming; verified; "Gaming/apps/realtime/src/room.ts:188-196")_
 - **2026-09-25:** Gaming правилата в GameHelp идват от packages/shared/src/gameRules.ts (GAME_RULES), не от i18n common.json; RUMMY текстът описва класическо реми, двигателят е Gin _(Gaming; verified; "Gaming/apps/web/src/features/game/GameHelp.tsx:22 rulesForGame; gameRules.ts:113-121")_
 - **2026-09-25:** Gaming rummy.ts layoffSplit е алчен (bestMeldSplit без оглед на долагане + grown.find първа цел, сетовете първи) → грешен победител при knock; репро с фиксирани ръце A/B _(Gaming/packages/game-core/src/engines/draw-discard/rummy.ts:509-529; verified; "node /tmp/kodaudit/rummy_layoff.mjs срещу Gaming/packages/game-core/dist/index.js")_
