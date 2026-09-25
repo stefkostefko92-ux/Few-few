@@ -139,7 +139,7 @@ function guideAssembly(supItem, sgItem, M) {
       railOn(moving, M, new THREE.Vector3(xf, 0, D), X, new THREE.Vector3(0, 0, 1));
     }
   };
-  const value = sc ? arm.L / 2 : range[1];
+  const value = sc ? arm.L / 2 : Math.round((range[0] + range[1]) / 2);
   set(value);
   return { group, set, range, value, step: 1, unit: 'mm', kind: sc ? 'slide' : 'reach' };
 }

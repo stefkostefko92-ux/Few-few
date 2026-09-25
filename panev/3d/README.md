@@ -57,7 +57,7 @@ xvfb-run -a npm run render -- --codes=A-65-170-7,SU-220-160 --size=1600x1200 --f
   - Всеки каталожен комплект в монтаж: `<код>+<код>.webp`.
   - Обзорни листове `catalogo-3d.webp` и `montaggi-3d.webp` (`npm run sheet`).
 - **Как са направени.** С `scripts/render.mjs` под `xvfb-run -a` (WebGPU), 48 кадъра на снимка:
-  `--out=renders` за детайлите, `--mode=assembly --out=renders` за комплектите.
+  `--out=renders --png=dist/renders` за детайлите, същото с `--mode=assembly` за комплектите.
 - **PNG без загуби.** Остават в `dist/renders/` и не се комитват.
 
 ## Точност и какво не съвпада в каталога

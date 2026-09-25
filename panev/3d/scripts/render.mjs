@@ -1,6 +1,7 @@
 // Batch stills through the page's photo mode in Chromium, written as PNG + WebP.
 //   node scripts/render.mjs [--codes=A-65-170-7,SU-220-160] [--mode=assembly] [--adjust=<value>]
-//     [--size=1600x1200] [--frames=48] [--out=dist/renders] [--hand=DX] [--look=studio] [--webgl]
+//     [--size=1600x1200] [--frames=48] [--out=dist/renders] [--png=<dir>] [--hand=DX] [--look=studio]
+//     [--webgl]
 // Parts are named by their id; assemblies "<first>+<second>" (A before B, support before SG), and
 // without --codes every catalogue pairing is rendered once.
 // WebGPU needs a display (xvfb-run -a); without one the WebGL 2 backend renders the same image.
@@ -16,9 +17,11 @@ const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/
 const [W, H] = String(args.size || '1600x1200').split('x').map(Number);
 const frames = Number(args.frames || 48);
 const out = path.resolve(ROOT, args.out || 'dist/renders');
+const pngOut = path.resolve(ROOT, args.png || args.out || 'dist/renders');
 const assembly = args.mode === 'assembly';
 const webgl = Boolean(args.webgl) || !process.env.DISPLAY;
 mkdirSync(out, { recursive: true });
+mkdirSync(pngOut, { recursive: true });
 
 // Assembly name and the unique catalogue pairings.
 const pairName = (item) => {
@@ -69,10 +72,10 @@ try {
     let img = sharp(Buffer.from(shot.data), { raw: { width: shot.width, height: shot.height, channels: 4 } });
     if (backend !== 'WebGPU') img = img.flip();
     const hand = args.hand === 'SX' ? '-SX' : '';
-    const name = path.join(out, `${assembly ? pairName(item) : item.id}${hand}`);
-    await img.clone().removeAlpha().png({ compressionLevel: 9 }).toFile(`${name}.png`);
-    await img.clone().removeAlpha().webp({ quality: 88, effort: 6 }).toFile(`${name}.webp`);
-    process.stdout.write(`${path.basename(name)} ${((Date.now() - t0) / 1000).toFixed(1)} s\n`);
+    const name = `${assembly ? pairName(item) : item.id}${hand}`;
+    await img.clone().removeAlpha().png({ compressionLevel: 9 }).toFile(path.join(pngOut, `${name}.png`));
+    await img.clone().removeAlpha().webp({ quality: 88, effort: 6 }).toFile(path.join(out, `${name}.webp`));
+    process.stdout.write(`${name} ${((Date.now() - t0) / 1000).toFixed(1)} s\n`);
   }
 } finally {
   await browser.close();

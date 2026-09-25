@@ -1,5 +1,5 @@
-// Product framing: places a long-lens camera along a view direction so the part's bounding box
-// fills the frame with a margin, centred on its projected extent (like a packshot).
+// Product framing: places a long-lens camera along a view direction so the part's bounding box (or
+// points) fills the frame with a margin, centred on its projected extent (like a packshot).
 import * as THREE from 'three/webgpu';
 
 const corners = (box) => {
@@ -8,8 +8,22 @@ const corners = (box) => {
   return out;
 };
 
-// dir: vector from the part towards the camera. fill: fraction of the frame height/width used.
-export function frame(camera, box, dir, { fill = 0.78, aspect = camera.aspect } = {}) {
+// Points that bound an object tighter than its box: the corners of every mesh's world box (an
+// L-shaped assembly leaves most of its overall box empty).
+export function silhouette(object) {
+  const pts = [];
+  const b = new THREE.Box3();
+  object.updateMatrixWorld(true);
+  object.traverse((o) => {
+    if (o.isMesh) pts.push(...corners(b.setFromObject(o)));
+  });
+  return pts;
+}
+
+// shape: a Box3 or bounding points. dir: vector from the part towards the camera. fill: fraction
+// of the frame height/width used.
+export function frame(camera, shape, dir, { fill = 0.78, aspect = camera.aspect } = {}) {
+  const box = shape.isBox3 ? shape : new THREE.Box3().setFromPoints(shape);
   const d = dir.clone().normalize();
   const up = Math.abs(d.y) > 0.98 ? new THREE.Vector3(0, 0, -1) : new THREE.Vector3(0, 1, 0);
   const right = new THREE.Vector3().crossVectors(up, d).normalize();
@@ -17,7 +31,7 @@ export function frame(camera, box, dir, { fill = 0.78, aspect = camera.aspect } 
   const tv = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * fill;
   const th = tv * aspect;
   const target = box.getCenter(new THREE.Vector3());
-  const pts = corners(box).map((p) => p.sub(target)); // relative to the current target
+  const pts = (shape.isBox3 ? corners(box) : shape.map((p) => p.clone())).map((p) => p.sub(target)); // relative to the target
   let dist = 0;
   for (let pass = 0; pass < 3; pass++) {
     dist = 0;

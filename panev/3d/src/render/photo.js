@@ -2,7 +2,7 @@
 // jittered frames (sub-pixel camera offsets, key light moved across its softbox for soft shadows,
 // rotating AO noise) averaged into display-ready RGBA8 pixels.
 import * as THREE from 'three/webgpu';
-import { frame } from './framing.js';
+import { frame, silhouette } from './framing.js';
 import { createPhoto } from './pipeline.js';
 import { aimKey, aimRoom } from './studio.js';
 import { halton } from './sampling.js';
@@ -14,7 +14,10 @@ export function createStills(ctx) {
   return async function photo({ width = 1600, height = 1200, frames = 48, softness = 0.4 } = {}) {
     const resume = ctx.pause();
     const keep = { pr: renderer.getPixelRatio(), size: renderer.getSize(new THREE.Vector2()), aspect: camera.aspect, pos: camera.position.clone(), room: scene.environmentRotation.clone() };
-    const center = state.box.getCenter(new THREE.Vector3());
+    // Framed on the pose on show: an assembly's live box excludes the rest of its adjustment range.
+    const box = new THREE.Box3().setFromObject(state.object);
+    const center = box.getCenter(new THREE.Vector3());
+    const radius = box.getBoundingSphere(new THREE.Sphere()).radius;
     const dir = camera.position.clone().sub(controls.target);
     const az = aimRoom(scene, dir);
     let shot = null;
@@ -22,19 +25,19 @@ export function createStills(ctx) {
       renderer.setPixelRatio(1);
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
-      frame(camera, state.box, dir, { fill: 0.8 });
+      frame(camera, silhouette(state.object), dir, { fill: 0.8 });
       shot = createPhoto(renderer, scene, camera, P);
       return await shot.shoot(frames, async (i) => {
         const [jx, jy] = halton(i + 1);
         camera.setViewOffset(width, height, jx - 0.5, jy - 0.5, width, height);
         const [lx, ly] = halton(i + 7, 5, 7);
-        aimKey(studio.key, center, state.radius, az, [(lx - 0.5) * softness * 2, (ly - 0.5) * softness]);
+        aimKey(studio.key, center, radius, az, [(lx - 0.5) * softness * 2, (ly - 0.5) * softness]);
       });
     } finally {
       shot?.dispose();
       camera.clearViewOffset();
       scene.environmentRotation.copy(keep.room);
-      aimKey(studio.key, center, state.radius, state.azimuth);
+      aimKey(studio.key, state.box.getCenter(new THREE.Vector3()), state.radius, state.azimuth);
       renderer.setPixelRatio(keep.pr);
       renderer.setSize(keep.size.x, keep.size.y, false);
       camera.aspect = keep.aspect;

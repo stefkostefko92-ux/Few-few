@@ -114,7 +114,10 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
   }
 
   let interactive = createInteractive(renderer, scene, camera, P);
+  let paused = false;
+  // A resize during a photo waits for it: the photo owns the drawing buffer while it shoots.
   function resize() {
+    if (paused) return;
     const w = canvas.clientWidth || window.innerWidth;
     const h = canvas.clientHeight || window.innerHeight;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -127,7 +130,6 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
   resize();
   show(params.get('code') || CATALOG[0].id, { hand: params.get('hand') || 'DX', mode: params.get('mode') || 'part' });
 
-  let paused = false;
   renderer.setAnimationLoop(() => {
     if (paused || (settle <= 0 && !controls.autoRotate)) return;
     settle--;
@@ -146,9 +148,10 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
     pause() {
       paused = true;
       return () => {
+        paused = false;
+        resize();
         interactive.dispose();
         interactive = createInteractive(renderer, scene, camera, P);
-        paused = false;
         wake();
       };
     },
