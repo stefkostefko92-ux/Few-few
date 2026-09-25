@@ -593,6 +593,9 @@
         clickSelectorsIn([document], REJECT_CMP, deep, false, true) ||
         clickSelectorsIn(roots, REJECT_GENERIC, deep, true, true) ||
         clickTextIn(roots, REJECT_TEXT, deep, true));
+      if (rejectedNow && !rejected) {
+        try { chrome.runtime.sendMessage({ type: "cookieRejected" }); } catch {}
+      }
       if (rejectedNow) rejected = true;
       // Once we said no on this page, never yes: a banner still on screen a moment
       // after our Reject (a closing animation, a "confirm your choice" step) used to

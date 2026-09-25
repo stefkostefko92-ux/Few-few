@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "あらゆる広告をブロック。YouTube の動画広告、バナー、ポップアップ、トラッカー、Cookie の同意画面、広告ブロック検出の壁も。無料・高速・プライバシー重視。"
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "保護のオン/オフ"
+  },
+  "protected": {
+    "message": "保護中"
+  },
+  "paused": {
+    "message": "一時停止中"
+  },
+  "blockingHere": {
+    "message": "このページの広告をブロック中"
+  },
+  "protectionOff": {
+    "message": "保護はオフです"
+  },
+  "pause30": {
+    "message": "30 分間一時停止"
+  },
+  "pausedResume": {
+    "message": "一時停止中、今すぐ再開（残り $1 分）",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "ブロック済み"
+  },
+  "dataSaved": {
+    "message": "節約したデータ"
+  },
+  "timeSaved": {
+    "message": "節約した時間"
+  },
+  "thisSite": {
+    "message": "このサイト"
+  },
+  "thisPage": {
+    "message": "このページ"
+  },
+  "blockOnSite": {
+    "message": "このサイトで広告をブロック"
+  },
+  "blocking": {
+    "message": "ブロック中"
+  },
+  "allowed": {
+    "message": "許可"
+  },
+  "cosmetics": {
+    "message": "ここで広告枠を非表示"
+  },
+  "cosmeticsTitle": {
+    "message": "このサイトの要素非表示フィルタ（レイアウトが崩れる場合はオフにしてください）"
+  },
+  "on": {
+    "message": "オン"
+  },
+  "off": {
+    "message": "オフ"
+  },
+  "blockedHere": {
+    "message": "このページでブロックしたもの"
+  },
+  "logEmpty": {
+    "message": "このページではまだ何もブロックしていません。"
+  },
+  "logUnavailable": {
+    "message": "現在ログを表示できません（ブラウザの割り当て上限）。1 分後にもう一度お試しください。"
+  },
+  "logCore": {
+    "message": "Supreme 基本ルール"
+  },
+  "logYouTube": {
+    "message": "YouTube 広告ルール"
+  },
+  "logParams": {
+    "message": "トラッキング パラメータ"
+  },
+  "logMalware": {
+    "message": "マルウェア ドメイン"
+  },
+  "logSurrogates": {
+    "message": "無効化した広告スクリプト"
+  },
+  "logPrivacy": {
+    "message": "プライバシー保護"
+  },
+  "logUser": {
+    "message": "マイフィルタ"
+  },
+  "logLive": {
+    "message": "ライブ更新"
+  },
+  "hideElement": {
+    "message": "要素を非表示"
+  },
+  "settings": {
+    "message": "設定"
+  },
+  "promoSub": {
+    "message": "ギアとツール、carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "広告"
+  },
+  "support": {
+    "message": "支援する"
+  },
+  "filtersCount": {
+    "message": "$1+ 件のフィルタ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "外観"
+  },
+  "opt_extra_protection": {
+    "message": "追加の保護"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection のログ"
+  },
+  "opt_allowlisted_sites": {
+    "message": "許可リストのサイト"
+  },
+  "opt_my_filters": {
+    "message": "マイフィルタ"
+  },
+  "opt_hidden_elements": {
+    "message": "非表示にした要素"
+  },
+  "opt_filter_updates": {
+    "message": "フィルタの更新"
+  },
+  "opt_engine_health": {
+    "message": "エンジンの状態"
+  },
+  "opt_backup": {
+    "message": "バックアップ"
+  },
+  "opt_support_development": {
+    "message": "開発を支援"
+  },
+  "opt_theme": {
+    "message": "テーマ"
+  },
+  "opt_sync_across_devices": {
+    "message": "デバイス間で同期"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube の広告ブロック"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie / 同意バナー"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "広告ブロック検出の回避"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta のスポンサー投稿"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "トラッキング パラメータを削除"
+  },
+  "opt_malware_protection": {
+    "message": "マルウェア対策"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "広告ターゲティング用のブラウザ API をブロック"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "トラッキング ビーコンと暗号通貨マイニングをブロック"
+  },
+  "opt_auto_update_filters": {
+    "message": "フィルタを自動更新"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth（ダーク）またはライト"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "ログインしているすべての Chrome で、設定・許可リスト・フィルタを同期します"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube の動画広告を削除します。動画が再生されない場合はオフにしてください。"
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "「Cookie を受け入れる」の確認画面を自動で閉じます"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "「広告ブロッカーを無効にしてください」の壁を隠し、ページを元に戻します"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook と Instagram の「スポンサー」投稿を非表示にします"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "開くリンクから utm_*、fbclid、gclid などのクリック識別子を取り除きます"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "既知のマルウェア ドメインをブロックします（abuse.ch の URLhaus リスト）"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "すべてのサイトで Google の Topics、FLoC、Protected Audience 広告 API を無効にします"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "サードパーティのハイパーリンク監査やビーコン通信を止め、既知の広告配信サーバーの応答からトラッキング Cookie を取り除き、ブラウザ上の暗号通貨マイニング スクリプトをブロックします。アクセス解析に依存するサイトの機能がおかしくなる場合はオフにしてください。"
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu から新しいブロック ルールと YouTube 向けの修正を 1 日に約 2 回取得します。取得するのはデータのみでコードは含まれず、リクエストには識別子や閲覧データは一切含まれません。"
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "ヒューリスティックに検出した広告（フィルタリストを使わない検出）のリアルタイム ログです。新しい順に表示されます。"
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "登録したリストはテキストとして取得され（コードとしては取得しません）、毎日更新され、上の管理ブロックに反映されます。リストを削除すると、そのルールも削除されます。"
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "要素ピッカーで手動で非表示にした要素（サイトごと）。"
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "リアルタイム診断です。すべてローカルで計算されます。赤い項目がある場合は、「今すぐ更新」を押すか拡張機能を再読み込みすると、たいてい解決します。"
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock はどなたでも無料でご利用いただけます。開発の継続を応援していただける場合は寄付を歓迎しますが、必須ではありません。"
+  },
+  "opt_reset_statistics": {
+    "message": "統計をリセット"
+  },
+  "opt_add": {
+    "message": "追加"
+  },
+  "opt_save_filters": {
+    "message": "フィルタを保存"
+  },
+  "opt_subscribe": {
+    "message": "登録"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "登録リストを今すぐ更新"
+  },
+  "opt_update_now": {
+    "message": "今すぐ更新"
+  },
+  "opt_refresh": {
+    "message": "再読み込み"
+  },
+  "opt_export_settings": {
+    "message": "設定をエクスポート"
+  },
+  "opt_import_settings": {
+    "message": "設定をインポート"
+  },
+  "opt_e_g_example_com": {
+    "message": "例: example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "フィルタリストの URL を登録（例: https://…/list.txt）"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock の設定"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · 設定"
+  },
+  "opt_theme_light": {
+    "message": "ライト"
+  },
+  "opt_badge_unique": {
+    "message": "独自機能"
+  },
+  "opt_smart_desc": {
+    "message": "どのフィルタリストにもまだ載っていない広告を検出します。標準的な広告枠のサイズのクロスオリジン フレームを、ルールなしで即座に非表示にします。"
+  },
+  "opt_caught_so_far": {
+    "message": "件を検出済み。"
+  },
+  "opt_allow_desc": {
+    "message": "これらのドメインでは広告をブロックしません。"
+  },
+  "opt_fh_one": {
+    "message": "1 行に 1 ルール。"
+  },
+  "opt_fh_blocks": {
+    "message": "でドメインをブロック。"
+  },
+  "opt_fh_everywhere": {
+    "message": "ですべてのサイトの要素を非表示。"
+  },
+  "opt_fh_site": {
+    "message": "でそのサイトだけ非表示。"
+  },
+  "opt_fh_comments": {
+    "message": "行頭が"
+  },
+  "opt_fh_comments2": {
+    "message": "の行はコメントです。"
+  },
+  "opt_donate": {
+    "message": "Revolut で寄付する"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "ヒューリスティックに検出した広告はまだありません。"
+  },
+  "opt_empty_allow": {
+    "message": "許可リストのサイトはまだありません。"
+  },
+  "opt_empty_hidden": {
+    "message": "手動で非表示にした要素はまだありません。"
+  },
+  "opt_empty_subs": {
+    "message": "登録したリストはまだありません。"
+  },
+  "opt_no_sw": {
+    "message": "サービス ワーカーから応答がありません。"
+  },
+  "opt_remove": {
+    "message": "削除"
+  },
+  "opt_filter_status": {
+    "message": "フィルタセット v$1、$2に更新。データのみで、あなたに関する情報は一切送信されません。"
+  },
+  "opt_updating": {
+    "message": "更新中…"
+  },
+  "opt_updated": {
+    "message": "更新しました（v$1、追加ルール $2 件）"
+  },
+  "opt_update_failed": {
+    "message": "更新に失敗しました（$1）"
+  },
+  "opt_saved": {
+    "message": "保存しました ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 件のルール"
+  },
+  "opt_updated_ago": {
+    "message": "$1に更新"
+  },
+  "opt_not_fetched": {
+    "message": "未取得"
+  },
+  "opt_failed_colon": {
+    "message": "失敗: $1"
+  },
+  "opt_enter_https": {
+    "message": "有効な https:// URL を入力してください"
+  },
+  "opt_fetching": {
+    "message": "取得中…"
+  },
+  "opt_subscribed_ok": {
+    "message": "登録しました: $1 件のルール ✓"
+  },
+  "opt_failed_paren": {
+    "message": "失敗しました（$1）"
+  },
+  "opt_refreshing": {
+    "message": "更新中…"
+  },
+  "opt_refreshed": {
+    "message": "更新しました ✓"
+  },
+  "opt_invalid_file": {
+    "message": "設定ファイルが無効です。"
+  },
+  "opt_no_response": {
+    "message": "応答なし"
+  },
+  "opt_h_engine": {
+    "message": "広告ブロック検出回避エンジン"
+  },
+  "opt_h_rulesets": {
+    "message": "有効な静的ルールセット"
+  },
+  "opt_h_live": {
+    "message": "ライブ フィルタのドメイン"
+  },
+  "opt_h_last": {
+    "message": "最終更新"
+  },
+  "opt_h_sig": {
+    "message": "更新の署名"
+  },
+  "opt_h_user": {
+    "message": "マイフィルタ / 許可リストのルール"
+  },
+  "opt_h_popup": {
+    "message": "組み込みのポップアップ広告ホスト"
+  },
+  "opt_h_yt": {
+    "message": "YouTube の回避"
+  },
+  "opt_reason_frame": {
+    "message": "広告サイズのクロスオリジン フレーム"
+  },
+  "opt_reason_sticky": {
+    "message": "追従型のバナー広告"
+  },
+  "logRegional": {
+    "message": "地域別リスト"
+  },
+  "logFocus": {
+    "message": "集中モード"
+  },
+  "opt_filter_lists": {
+    "message": "フィルタリスト"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList と EasyPrivacy は常にオンです。以下のリストはオープン ライセンスのリストで、拡張機能に組み込まれています。そのため、オンにしても何もダウンロードされません。ただし、作成者から取得すると表示されているリストは除きます。"
+  },
+  "opt_lists_core": {
+    "message": "基本"
+  },
+  "opt_lists_regional": {
+    "message": "地域別"
+  },
+  "opt_lists_regional_desc": {
+    "message": "ブラウザの言語に合ったリストは自動的にオンになります。他の言語のサイトをよく見る場合は、そのリストも追加してください。"
+  },
+  "opt_focus_mode": {
+    "message": "集中モード"
+  },
+  "opt_focus_desc": {
+    "message": "広告ではないものの邪魔になる要素を非表示にします。ここにある項目は、オンにするまですべてオフです。"
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin フィルタ"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin チームによる広告・トラッカー対策、広告ブロック検出の回避、サイトの表示修正。"
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe のリスト"
+  },
+  "opt_list_plowe_desc": {
+    "message": "広告サーバーとトラッキング サーバーの長年続くリスト。"
+  },
+  "opt_focus_social": {
+    "message": "ソーシャル メディアのボタンとウィジェット"
+  },
+  "opt_focus_social_desc": {
+    "message": "共有ボタン、「いいね」ボックス、埋め込みフィード。"
+  },
+  "opt_focus_chat": {
+    "message": "チャット・サポートのウィジェット"
+  },
+  "opt_focus_chat_desc": {
+    "message": "ページの隅に浮かぶチャットの吹き出し。"
+  },
+  "opt_focus_newsletters": {
+    "message": "ニュースレター・登録のポップアップ"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "「ニュースレターに登録」のボックスやオーバーレイ。"
+  },
+  "opt_focus_notifications": {
+    "message": "通知の許可を求める表示"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "ブラウザが確認する前にサイトが表示する「通知を許可しますか？」のボックス。"
+  },
+  "opt_focus_ai": {
+    "message": "AI アシスタントのポップアップ"
+  },
+  "opt_focus_ai_desc": {
+    "message": "ページに追加されるチャットボットの吹き出しや AI の提案パネル。"
+  },
+  "opt_focus_other": {
+    "message": "その他の迷惑な要素"
+  },
+  "opt_focus_other_desc": {
+    "message": "追従バー、「アプリで開く」バナーなどの邪魔な表示。"
+  },
+  "opt_badge_lang": {
+    "message": "あなたの言語"
+  },
+  "opt_badge_remote": {
+    "message": "作成者から取得"
+  },
+  "opt_remote_hint": {
+    "message": "同梱されていません（再配布のライセンスがないため）。オンにすると、ブラウザが $1 からダウンロードします。"
+  },
+  "opt_downloaded_from": {
+    "message": "$1 からダウンロード"
+  },
+  "opt_lists_error": {
+    "message": "Chrome がこのリストの組み合わせを拒否しました（$1）。いくつかオフにしてください。"
+  },
+  "opt_badge_recommended": {
+    "message": "あなたの言語におすすめ"
+  },
+  "reportBroken": {
+    "message": "サイトの不具合？ 修正またはお知らせ"
+  },
+  "rep_title": {
+    "message": "このサイトで問題がありますか？"
+  },
+  "rep_fix_first": {
+    "message": "今すぐ修正"
+  },
+  "rep_site": {
+    "message": "サイト:"
+  },
+  "rep_fix_desc": {
+    "message": "ほとんどの問題は、次のいずれかで解決します。どれもこのサイトにのみ適用され、タブが再読み込みされます。"
+  },
+  "rep_fix_cosm": {
+    "message": "ここでの要素の非表示をオフにする"
+  },
+  "rep_fix_allow": {
+    "message": "このサイトで広告を許可する"
+  },
+  "rep_fix_pause": {
+    "message": "すべてのサイトで 30 分間一時停止する"
+  },
+  "rep_tell_us": {
+    "message": "お知らせください"
+  },
+  "rep_tell_desc": {
+    "message": "表示が崩れるサイトは、署名付きのフィルタ更新で全員向けに修正します。通常 1 日以内です。拡張機能からは何も送信されません。報告はお使いのメールアプリで開くので、送信前にすべての内容をご確認いただけます。"
+  },
+  "rep_what": {
+    "message": "どのような問題ですか？（任意）"
+  },
+  "rep_what_ph": {
+    "message": "例: 動画が再生されない、記事が白いボックスで隠れる…"
+  },
+  "rep_full_url": {
+    "message": "ページの完全なアドレスを含める（含めない場合はサイト名のみ）"
+  },
+  "rep_preview": {
+    "message": "送信される内容"
+  },
+  "rep_send_mail": {
+    "message": "メールで送信"
+  },
+  "rep_copy": {
+    "message": "報告をコピー"
+  },
+  "rep_copied": {
+    "message": "コピーしました。"
+  },
+  "rep_done_cosm": {
+    "message": "このサイトでの要素の非表示をオフにし、再読み込みしました。直りましたか？"
+  },
+  "rep_done_allow": {
+    "message": "このサイトで広告を許可し、再読み込みしました。直りましたか？"
+  },
+  "rep_done_pause": {
+    "message": "30 分間一時停止しました。サイトが正常に動作するようになったら、下からお知らせください。"
+  },
+  "cookieRejections": {
+    "message": "代わりに拒否した Cookie バナー: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube の Shorts の棚、タブ、おすすめ。"
+  },
+  "opt_focus_onetap": {
+    "message": "「Google でログイン」のポップアップ"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "多くのサイトの隅に表示されるアカウント選択画面です。ログイン ボタンはそのまま使えます。"
+  },
+  "pickTip": {
+    "message": "非表示にする要素をクリックしてください"
+  },
+  "pickZapTip": {
+    "message": "クリックしてこの要素を削除（1 回のみ）"
+  },
+  "pickEscCancel": {
+    "message": "でキャンセル"
+  },
+  "opt_notices": {
+    "message": "フィルターリストのライセンス"
+  }
+}

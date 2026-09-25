@@ -39,6 +39,7 @@ var SA_POLICY = (function () {
     "href-sanitizer": "href-sanitizer",
     "remove-node-text": "remove-node-text", "rmnt": "remove-node-text",
     "nowebrtc": "nowebrtc",
+    "no-xhr-if": "no-xhr-if", "prevent-xhr": "no-xhr-if",
     "set-cookie": "set-cookie",
     "remove-cookie": "remove-cookie",
   };
@@ -47,7 +48,9 @@ var SA_POLICY = (function () {
 
   var ARG_MAX = 400;                 // max length of one directive argument / live string
   var LIVE_SCRIPTLET_MAX = 500;      // max live directives per filters.json (SW and engine agree)
-  var NAME_RE = /^[a-zA-Z][\w.-]{0,60}$/;                  // dotted property chain
+  // dotted property chain; may start with "_" or "$" (`_sp_`, jQuery `$`) —
+  // __proto__/constructor/prototype stay out via argSafe().
+  var NAME_RE = /^[a-zA-Z_$][\w.$-]{0,60}$/;
 
   // set-constant values: fixed dictionary or a plain integer — never code.
   var SETCONST_VALUES = ["false", "true", "null", "undefined", "noopFunc", "trueFunc",
@@ -212,8 +215,11 @@ var SA_POLICY = (function () {
       case "no-setInterval-if":
         return n >= 1 && n <= 2 && (n < 2 || /^\d{1,7}$/.test(args[1]));
       case "no-fetch-if":
-      case "no-window-open-if":
+      case "no-xhr-if":
         return n === 1;
+      case "no-window-open-if":
+        // No argument = every window.open on that site (uBO): baked lists only.
+        return n === 1 || (!live && n === 0);
       case "addEventListener-defuser":
       case "json-prune":
         return n >= 1 && n <= 2;

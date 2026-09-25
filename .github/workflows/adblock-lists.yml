@@ -1,6 +1,7 @@
 name: adblock-lists
 
-# Седмичен ребилд на EasyList/EasyPrivacy/URLhaus → DNR правила + popup hosts +
+# Седмичен ребилд на EasyList/EasyPrivacy/URLhaus + листите от tools/lists.json (uBO, регионални,
+# Фокус) → DNR правила, козметика, uBO scriptlet чънкове, manifest рулсетове + popup hosts +
 # scriptlets/main.js, гейт (npm test, --check, mv3-lint), и PR ако има промяна.
 # Листите гниеха на ръка (бяха 2 месеца стари); сега свежестта е автоматична, а
 # човек само одобрява PR-а (нищо не се пуска в main без преглед).
@@ -42,14 +43,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if git diff --quiet -- adblock/rules adblock/cosmetic_generic.css adblock/scriptlets/main.js; then
+          if git diff --quiet -- adblock/rules adblock/cosmetic_generic.css adblock/scriptlets adblock/manifest.json && [ -z "$(git ls-files --others --exclude-standard adblock/rules adblock/scriptlets)" ]; then
             echo "Няма промяна в листите — нищо за PR."; exit 0
           fi
           git config user.name "adblock-lists[bot]"
           git config user.email "noreply@carbonstealth.eu"
           branch="chore/adblock-lists-$(date -u +%Y%m%d)"
           git checkout -B "$branch"
-          git add adblock/rules adblock/cosmetic_generic.css adblock/scriptlets/main.js adblock/scriptlets/scriptlet_meta.json
+          git add -A adblock/rules adblock/cosmetic_generic.css adblock/scriptlets adblock/manifest.json
           git commit -m "chore(adblock): седмичен ребилд на EasyList/EasyPrivacy/URLhaus ($(date -u +%Y-%m-%d))" \
             -m "Автоматичен ребилд (adblock-lists workflow). Гейт зелен: 0 block правила към main_frame, бюджет <30k, npm test, mv3-lint."
           git push -f -u origin "$branch"

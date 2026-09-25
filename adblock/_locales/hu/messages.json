@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokkolja a hirdetéseket mindenhol: YouTube-videóreklámok, bannerek, felugró ablakok, nyomkövetők, cookie-sávok és adblock-falak."
+  },
+  "byCarbon": {
+    "message": "készítette: Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Védelem be/ki"
+  },
+  "protected": {
+    "message": "Védve"
+  },
+  "paused": {
+    "message": "Szünetel"
+  },
+  "blockingHere": {
+    "message": "Hirdetések blokkolása ezen az oldalon"
+  },
+  "protectionOff": {
+    "message": "A védelem ki van kapcsolva"
+  },
+  "pause30": {
+    "message": "Szünet 30 percre"
+  },
+  "pausedResume": {
+    "message": "Szünetel, folytatás most (még $1 perc)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blokkolt"
+  },
+  "dataSaved": {
+    "message": "Megspórolt adat"
+  },
+  "timeSaved": {
+    "message": "Megspórolt idő"
+  },
+  "thisSite": {
+    "message": "ez a webhely"
+  },
+  "thisPage": {
+    "message": "ez az oldal"
+  },
+  "blockOnSite": {
+    "message": "Hirdetések blokkolása ezen a webhelyen"
+  },
+  "blocking": {
+    "message": "Blokkolva"
+  },
+  "allowed": {
+    "message": "Megengedve"
+  },
+  "cosmetics": {
+    "message": "Hirdetések elrejtése itt"
+  },
+  "cosmeticsTitle": {
+    "message": "Kozmetikai szűrés ezen a webhelyen (kapcsolja ki, ha az elrendezés szétesik)"
+  },
+  "on": {
+    "message": "Be"
+  },
+  "off": {
+    "message": "Ki"
+  },
+  "blockedHere": {
+    "message": "Blokkolva ezen az oldalon"
+  },
+  "logEmpty": {
+    "message": "Itt még semmi sincs blokkolva."
+  },
+  "logUnavailable": {
+    "message": "A napló most nem érhető el (böngészőkvóta) – próbálja újra egy perc múlva."
+  },
+  "logCore": {
+    "message": "Supreme alapszabályok"
+  },
+  "logYouTube": {
+    "message": "YouTube-reklámszabályok"
+  },
+  "logParams": {
+    "message": "Követési paraméterek"
+  },
+  "logMalware": {
+    "message": "Kártevő domainek"
+  },
+  "logSurrogates": {
+    "message": "Semlegesített reklámszkriptek"
+  },
+  "logPrivacy": {
+    "message": "Adatvédelem"
+  },
+  "logUser": {
+    "message": "Saját szűrők"
+  },
+  "logLive": {
+    "message": "Élő frissítések"
+  },
+  "hideElement": {
+    "message": "Elem elrejtése"
+  },
+  "settings": {
+    "message": "Beállítások"
+  },
+  "promoSub": {
+    "message": "Felszerelés és eszközök, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reklám"
+  },
+  "support": {
+    "message": "Támogatás"
+  },
+  "filtersCount": {
+    "message": "$1+ szűrő",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Megjelenés"
+  },
+  "opt_extra_protection": {
+    "message": "További védelem"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection napló"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Engedélyezett webhelyek"
+  },
+  "opt_my_filters": {
+    "message": "Saját szűrők"
+  },
+  "opt_hidden_elements": {
+    "message": "Elrejtett elemek"
+  },
+  "opt_filter_updates": {
+    "message": "Szűrőfrissítések"
+  },
+  "opt_engine_health": {
+    "message": "A motor állapota"
+  },
+  "opt_backup": {
+    "message": "Biztonsági mentés"
+  },
+  "opt_support_development": {
+    "message": "A fejlesztés támogatása"
+  },
+  "opt_theme": {
+    "message": "Téma"
+  },
+  "opt_sync_across_devices": {
+    "message": "Szinkronizálás az eszközök között"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube-reklámok blokkolása"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie- és hozzájárulási sávok"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock falak megkerülése"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta szponzorált bejegyzések"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Követési paraméterek eltávolítása"
+  },
+  "opt_malware_protection": {
+    "message": "Védelem a kártevők ellen"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Hirdetéscélzó böngésző-API-k blokkolása"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Követő jeladók és kriptobányászok blokkolása"
+  },
+  "opt_auto_update_filters": {
+    "message": "Szűrők automatikus frissítése"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (sötét) vagy világos"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "A beállítások, az engedélyezési lista és a szűrők szinkronban tartása minden Chrome-ban, ahol be van jelentkezve"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Eltávolítja a videóreklámokat a YouTube-on. Kapcsolja ki, ha a videók nem indulnak el."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Automatikusan bezárja a „Cookie-k elfogadása” kérdéseket"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Elrejti a „kapcsolja ki a reklámblokkolót” falakat, és helyreállítja az oldalt"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Elrejti a „Szponzorált” bejegyzéseket a Facebookon és az Instagramon"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Eltávolítja az utm_*, fbclid, gclid és más kattintásazonosítókat a megnyitott linkekből"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokkolja az ismert kártevő domaineket (az abuse.ch URLhaus listája)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Letiltja a Google Topics, FLoC és Protected Audience hirdetési API-kat minden webhelyen"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Leállítja a harmadik féltől származó hivatkozáskövető (hyperlink auditing / beacon) pingeket, eltávolítja a követő cookie-kat az ismert hirdetéstechnológiai válaszokból, és blokkolja a böngészőben futó kriptobányász szkripteket. Kapcsolja ki, ha egy webhely analitikától függő funkciója hibásan működik."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Naponta nagyjából kétszer letölti az új blokkolási szabályokat és YouTube-javításokat az adblock.carbonstealth.eu címről. Csak adat, nincs kód; a kérés nem tartalmaz azonosítókat vagy böngészési adatokat."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Heurisztikusan (szűrőlista nélkül) elkapott hirdetések élő naplója, a legújabbak elöl."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "A feliratkozott listák szövegként töltődnek le (soha nem kódként), naponta frissülnek, és a fenti kezelt blokkokban találhatók. Egy lista eltávolításával a szabályai is törlődnek."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "A kiválasztóval kézzel elrejtett elemek, webhelyenként csoportosítva."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Élő diagnosztika – minden helyben számítódik. Ha valami piros, a „Frissítés most” vagy a bővítmény újratöltése általában megoldja."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "A Supreme AdBlock mindenkinek ingyenes. Ha szeretne hozzájárulni a karbantartásához, az adományokat szívesen fogadjuk, de soha nem kötelezőek."
+  },
+  "opt_reset_statistics": {
+    "message": "Statisztika nullázása"
+  },
+  "opt_add": {
+    "message": "Hozzáadás"
+  },
+  "opt_save_filters": {
+    "message": "Szűrők mentése"
+  },
+  "opt_subscribe": {
+    "message": "Feliratkozás"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Feliratkozások frissítése most"
+  },
+  "opt_update_now": {
+    "message": "Frissítés most"
+  },
+  "opt_refresh": {
+    "message": "Frissítés"
+  },
+  "opt_export_settings": {
+    "message": "Beállítások exportálása"
+  },
+  "opt_import_settings": {
+    "message": "Beállítások importálása"
+  },
+  "opt_e_g_example_com": {
+    "message": "pl. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! példa\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Feliratkozás szűrőlista URL-címre (pl. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock – Beállítások"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Beállítások"
+  },
+  "opt_theme_light": {
+    "message": "Világos"
+  },
+  "opt_badge_unique": {
+    "message": "egyedi"
+  },
+  "opt_smart_desc": {
+    "message": "Elkapja azokat a hirdetéseket, amelyeket még egyetlen szűrőlista sem ismer: a szabványos hirdetési hely méretű, más eredetű keretek azonnal elrejtődnek, szabályok nélkül."
+  },
+  "opt_caught_so_far": {
+    "message": "eddig elkapva."
+  },
+  "opt_allow_desc": {
+    "message": "Ezeken a domaineken a hirdetések nincsenek blokkolva."
+  },
+  "opt_fh_one": {
+    "message": "Soronként egy szabály."
+  },
+  "opt_fh_blocks": {
+    "message": "blokkol egy domaint;"
+  },
+  "opt_fh_everywhere": {
+    "message": "mindenhol elrejt egy elemet;"
+  },
+  "opt_fh_site": {
+    "message": "csak azon a webhelyen rejti el."
+  },
+  "opt_fh_comments": {
+    "message": "A"
+  },
+  "opt_fh_comments2": {
+    "message": "jellel kezdődő sorok megjegyzések."
+  },
+  "opt_donate": {
+    "message": "Adományozás Revoluttal"
+  },
+  "opt_made_by": {
+    "message": "készítette: Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Heurisztikusan még semmi sincs elkapva."
+  },
+  "opt_empty_allow": {
+    "message": "Még nincsenek engedélyezett webhelyek."
+  },
+  "opt_empty_hidden": {
+    "message": "Kézzel még semmi sincs elrejtve."
+  },
+  "opt_empty_subs": {
+    "message": "Még nincs feliratkozott lista."
+  },
+  "opt_no_sw": {
+    "message": "A service worker nem válaszol."
+  },
+  "opt_remove": {
+    "message": "Eltávolítás"
+  },
+  "opt_filter_status": {
+    "message": "Szűrőkészlet: v$1, frissítve: $2. Csak adat, Önről semmi nem kerül elküldésre."
+  },
+  "opt_updating": {
+    "message": "Frissítés…"
+  },
+  "opt_updated": {
+    "message": "Frissítve (v$1, $2 további szabály)"
+  },
+  "opt_update_failed": {
+    "message": "A frissítés sikertelen ($1)"
+  },
+  "opt_saved": {
+    "message": "Mentve ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 szabály"
+  },
+  "opt_updated_ago": {
+    "message": "frissítve $1"
+  },
+  "opt_not_fetched": {
+    "message": "még nincs letöltve"
+  },
+  "opt_failed_colon": {
+    "message": "sikertelen: $1"
+  },
+  "opt_enter_https": {
+    "message": "Adjon meg érvényes https:// URL-t"
+  },
+  "opt_fetching": {
+    "message": "Letöltés…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Feliratkozva: $1 szabály ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Sikertelen ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Frissítés…"
+  },
+  "opt_refreshed": {
+    "message": "Frissítve ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Érvénytelen beállításfájl."
+  },
+  "opt_no_response": {
+    "message": "nincs válasz"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock motor"
+  },
+  "opt_h_rulesets": {
+    "message": "Bekapcsolt statikus szabálykészletek"
+  },
+  "opt_h_live": {
+    "message": "Élő szűrő domainek"
+  },
+  "opt_h_last": {
+    "message": "Utolsó frissítés"
+  },
+  "opt_h_sig": {
+    "message": "Frissítések aláírása"
+  },
+  "opt_h_user": {
+    "message": "Saját szűrők / engedélyezési szabályok"
+  },
+  "opt_h_popup": {
+    "message": "Beépített pop-up reklámhosztok"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-megkerülés"
+  },
+  "opt_reason_frame": {
+    "message": "Hirdetés méretű, más eredetű keret"
+  },
+  "opt_reason_sticky": {
+    "message": "Rögzített reklámsáv"
+  },
+  "logRegional": {
+    "message": "Regionális listák"
+  },
+  "logFocus": {
+    "message": "Fókusz mód"
+  },
+  "opt_filter_lists": {
+    "message": "Szűrőlisták"
+  },
+  "opt_lists_intro": {
+    "message": "Az EasyList és az EasyPrivacy mindig be van kapcsolva. Az alábbi listák nyílt licencűek és a bővítménybe vannak építve, így bekapcsolásuk semmit sem tölt le – kivéve a szerzőjétől származóként jelölt listát."
+  },
+  "opt_lists_core": {
+    "message": "Alap"
+  },
+  "opt_lists_regional": {
+    "message": "Regionális"
+  },
+  "opt_lists_regional_desc": {
+    "message": "A böngésző nyelvének listája magától bekapcsol. Adjon hozzá másokat, ha gyakran olvas más nyelvű webhelyeket."
+  },
+  "opt_focus_mode": {
+    "message": "Fókusz mód"
+  },
+  "opt_focus_desc": {
+    "message": "Elrejti azt, ami nem hirdetés, de mégis útban van. Itt minden ki van kapcsolva, amíg be nem kapcsolja."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin szűrők"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Hirdetések, nyomkövetők, anti-adblock javítások és webhelyjavítások az uBlock Origin csapatától."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe listája"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Régóta vezetett lista a hirdetési és nyomkövető szerverekről."
+  },
+  "opt_focus_social": {
+    "message": "Közösségimédia-gombok és widgetek"
+  },
+  "opt_focus_social_desc": {
+    "message": "Megosztás gombok, lájkdobozok és beágyazott hírfolyamok."
+  },
+  "opt_focus_chat": {
+    "message": "Csevegő- és ügyfélszolgálati widgetek"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Az oldal sarkában lebegő csevegőbuborékok."
+  },
+  "opt_focus_newsletters": {
+    "message": "Hírlevél- és feliratkozási felugrók"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "„Iratkozzon fel hírlevelünkre” dobozok és rétegek."
+  },
+  "opt_focus_notifications": {
+    "message": "Értesítési kérések"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "„Engedélyezi az értesítéseket?” dobozok, amelyeket a webhelyek még azelőtt mutatnak, hogy a böngésző rákérdezne."
+  },
+  "opt_focus_ai": {
+    "message": "MI-asszisztens felugrók"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Az oldalakhoz adott csevegőrobot-buborékok és MI-javaslatpanelek."
+  },
+  "opt_focus_other": {
+    "message": "Egyéb zavaró elemek"
+  },
+  "opt_focus_other_desc": {
+    "message": "Rögzített sávok, „Megnyitás az alkalmazásban” bannerek és hasonló zsúfoltság."
+  },
+  "opt_badge_lang": {
+    "message": "az Ön nyelve"
+  },
+  "opt_badge_remote": {
+    "message": "a szerzőtől"
+  },
+  "opt_remote_hint": {
+    "message": "Nincs beépítve (nincs licenc a továbbterjesztéséhez): bekapcsoláskor a böngésző innen tölti le: $1."
+  },
+  "opt_downloaded_from": {
+    "message": "Letöltve innen: $1"
+  },
+  "opt_lists_error": {
+    "message": "A Chrome elutasította ezt a listakombinációt ($1). Kapcsoljon ki néhányat."
+  },
+  "opt_badge_recommended": {
+    "message": "ajánlott az Ön nyelvéhez"
+  },
+  "reportBroken": {
+    "message": "Hibás a webhely? Javítsa ki, vagy szóljon nekünk"
+  },
+  "rep_title": {
+    "message": "Valami nem működik ezen a webhelyen?"
+  },
+  "rep_fix_first": {
+    "message": "Javítás most"
+  },
+  "rep_site": {
+    "message": "Webhely:"
+  },
+  "rep_fix_desc": {
+    "message": "A legtöbb probléma megszűnik ezek egyikével. Mindegyik csak erre a webhelyre vonatkozik; a lap újratöltődik."
+  },
+  "rep_fix_cosm": {
+    "message": "Elemek elrejtésének kikapcsolása itt"
+  },
+  "rep_fix_allow": {
+    "message": "Hirdetések engedélyezése ezen a webhelyen"
+  },
+  "rep_fix_pause": {
+    "message": "Szünet mindenhol 30 percre"
+  },
+  "rep_tell_us": {
+    "message": "Szóljon nekünk"
+  },
+  "rep_tell_desc": {
+    "message": "A hibás webhelyeket mindenki számára javítjuk az aláírt szűrőfrissítéssel, általában egy napon belül. A bővítmény semmit sem küld el: a jelentés az Ön saját levelezőprogramjában nyílik meg, és minden szavát előre láthatja."
+  },
+  "rep_what": {
+    "message": "Mi a probléma? (nem kötelező)"
+  },
+  "rep_what_ph": {
+    "message": "pl. nem indul el a videó, egy fehér doboz takarja a cikket…"
+  },
+  "rep_full_url": {
+    "message": "A teljes oldalcím csatolása (egyébként csak a webhely neve)"
+  },
+  "rep_preview": {
+    "message": "Mi lesz elküldve"
+  },
+  "rep_send_mail": {
+    "message": "Küldés e-mailben"
+  },
+  "rep_copy": {
+    "message": "Jelentés másolása"
+  },
+  "rep_copied": {
+    "message": "Másolva."
+  },
+  "rep_done_cosm": {
+    "message": "Az elemek elrejtése ki van kapcsolva ezen a webhelyen. Újratöltve – megjavult?"
+  },
+  "rep_done_allow": {
+    "message": "A hirdetések engedélyezve vannak ezen a webhelyen. Újratöltve – megjavult?"
+  },
+  "rep_done_pause": {
+    "message": "Szünet 30 percre. Ha a webhely most működik, kérjük, jelezze nekünk lent."
+  },
+  "cookieRejections": {
+    "message": "Az Ön helyett elutasított cookie-sávok: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "A Shorts-polcok, -lap és -javaslatok a YouTube-on."
+  },
+  "opt_focus_onetap": {
+    "message": "„Bejelentkezés Google-fiókkal” felugrók"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "A fiókválasztó, amely sok webhely sarkában megjelenik. A bejelentkezési gombok továbbra is működnek."
+  },
+  "pickTip": {
+    "message": "Kattintson egy elemre az elrejtéséhez"
+  },
+  "pickZapTip": {
+    "message": "Kattintson az elem eltávolításához (egyszer)"
+  },
+  "pickEscCancel": {
+    "message": "a megszakításhoz"
+  },
+  "opt_notices": {
+    "message": "A szűrőlisták licencei"
+  }
+}

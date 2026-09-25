@@ -101,6 +101,109 @@ function renderHealth() {
   });
 }
 
+// ---- Filter lists / Focus mode ----
+// Rows come from rules/lists.json via the service worker. Language names are the
+// browser's own (Intl.DisplayNames), list names are proper names (not translated).
+const LIST_TEXT = {
+  ubo: ["opt_list_ubo", "uBlock Origin filters", "opt_list_ubo_desc", "Ads, trackers, anti-adblock fixes and site repairs from the uBlock Origin team."],
+  plowe: ["opt_list_plowe", "Peter Lowe's list", "opt_list_plowe_desc", "A long-running list of ad and tracking servers."],
+  "focus-social": ["opt_focus_social", "Social media buttons and widgets", "opt_focus_social_desc", "Share buttons, like boxes and embedded feeds."],
+  "focus-chat": ["opt_focus_chat", "Chat and support widgets", "opt_focus_chat_desc", "The floating chat bubbles in the corner of the page."],
+  "focus-newsletters": ["opt_focus_newsletters", "Newsletter and sign-up pop-ups", "opt_focus_newsletters_desc", "“Subscribe to our newsletter” boxes and overlays."],
+  "focus-notifications": ["opt_focus_notifications", "Notification prompts", "opt_focus_notifications_desc", "“Allow notifications?” boxes that sites show before the browser asks."],
+  "focus-ai": ["opt_focus_ai", "AI assistant pop-ups", "opt_focus_ai_desc", "Chatbot bubbles and AI suggestion panels added to pages."],
+  "focus-shorts": ["opt_focus_shorts", "YouTube Shorts", "opt_focus_shorts_desc", "The Shorts shelves, tab and suggestions on YouTube."],
+  "focus-onetap": ["opt_focus_onetap", "“Sign in with Google” pop-ups", "opt_focus_onetap_desc", "The account picker that appears in the corner of many sites. The sign-in buttons keep working."],
+  "focus-other": ["opt_focus_other", "Other annoyances", "opt_focus_other_desc", "Sticky bars, “open in app” banners and similar clutter."],
+};
+let langNames = null;
+try { langNames = new Intl.DisplayNames([UI_LANG], { type: "language" }); } catch {}
+const langName = (code) => { try { return (langNames && langNames.of(code)) || code; } catch { return code; } };
+
+function listRow(e) {
+  const row = document.createElement("label");
+  row.className = "row";
+  const left = document.createElement("div");
+  const title = document.createElement("div");
+  title.className = "row-title";
+  const sub = document.createElement("div");
+  sub.className = "row-sub";
+  const txt = LIST_TEXT[e.id];
+  if (txt) {
+    title.textContent = L(txt[0], txt[1]);
+    sub.textContent = L(txt[2], txt[3]);
+  } else {
+    const names = (e.langs || []).slice(0, 4).map(langName);
+    const t = names.join(", ") + ((e.langs || []).length > 4 ? "…" : "");
+    title.textContent = t.charAt(0).toLocaleUpperCase(UI_LANG) + t.slice(1);
+    sub.textContent = e.title;
+  }
+  if (e.group === "regional" && (e.defaultOn || e.langMatch)) {
+    const b = document.createElement("span");
+    b.className = "badge-lang";
+    b.textContent = e.defaultOn ? L("opt_badge_lang", "your language") : L("opt_badge_recommended", "recommended for your language");
+    title.appendChild(b);
+  }
+  const meta = [];
+  if (e.delivery === "remote") {
+    const b = document.createElement("span");
+    b.className = "badge-remote";
+    let host = "";
+    try { host = new URL(e.url).hostname; } catch {}
+    b.textContent = L("opt_badge_remote", "from its author");
+    b.title = L("opt_remote_hint", "Not bundled (no licence to redistribute it): your browser downloads it from " + host + " when you turn it on.", [host]);
+    title.appendChild(b);
+    if (e.on && e.remoteError) meta.push(L("opt_failed_colon", "failed: " + e.remoteError, [e.remoteError]));
+    else if (e.on && e.fetched) meta.push(L("opt_rules_count", e.remoteRules + " rules", [e.remoteRules.toLocaleString(UI_LANG)]) + " · " + L("opt_updated_ago", "updated " + ago(e.fetched), [ago(e.fetched)]));
+    else meta.push(L("opt_downloaded_from", "Downloaded from " + host, [host]));
+  } else if (typeof e.network === "number") {
+    meta.push(L("opt_rules_count", e.network + " rules", [e.network.toLocaleString(UI_LANG)]));
+  }
+  const lic = document.createElement("a");
+  lic.href = e.homepage;
+  lic.target = "_blank";
+  lic.rel = "noopener";
+  lic.textContent = e.license;
+  const metaEl = document.createElement("div");
+  metaEl.className = "row-sub";
+  metaEl.append(meta.join(" · ") + (meta.length ? " · " : ""), lic);
+  left.append(title, sub, metaEl);
+  const sw = document.createElement("label");
+  sw.className = "switch";
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.checked = !!e.on;
+  input.setAttribute("aria-label", title.textContent);
+  input.addEventListener("change", () => {
+    input.disabled = true;
+    chrome.runtime.sendMessage({ type: "setList", id: e.id, on: input.checked }, () => renderLists());
+  });
+  const slider = document.createElement("span");
+  slider.className = "slider";
+  sw.append(input, slider);
+  row.append(left, sw);
+  return row;
+}
+
+function renderLists() {
+  chrome.runtime.sendMessage({ type: "getLists" }, (res) => {
+    if (!res) return;
+    const err = $("listsError");
+    err.hidden = !res.error;
+    err.textContent = res.error ? L("opt_lists_error", "Chrome refused this combination of lists (" + res.error + "). Turn some off.", [res.error]) : "";
+    const byGroup = { core: [], regional: [], focus: [] };
+    for (const e of res.lists) (byGroup[e.group] || []).push(e);
+    const rank = (e) => (e.defaultOn || e.langMatch ? 1 : 0);
+    byGroup.regional.sort((a, b) => (rank(b) - rank(a)) || langName(a.langs[0]).localeCompare(langName(b.langs[0]), UI_LANG));
+    for (const [g, id] of [["core", "listsCore"], ["regional", "listsRegional"], ["focus", "listsFocus"]]) {
+      const box = $(id);
+      box.textContent = "";
+      for (const e of byGroup[g]) box.appendChild(listRow(e));
+    }
+  });
+}
+renderLists();
+
 function renderUpdateStatus(version, updated) {
   if (!updated) return;
   $("updateStatus").textContent = L("opt_filter_status", `Filter set v${version}, updated ${ago(updated)}. Data only, nothing about you is sent.`, [String(version), ago(updated)]);

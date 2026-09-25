@@ -1,0 +1,15 @@
+/* The report page reuses the settings styles (options.css); only its own bits here. */
+main { max-width: 720px; }
+.fixes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.fixes .btn { text-decoration: none; display: inline-flex; align-items: center; }
+.field { display: block; margin-top: 12px; font-size: 13px; }
+.field textarea {
+  display: block; width: 100%; margin-top: 6px; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--text); font: inherit; resize: vertical;
+}
+.check { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 13px; }
+.preview {
+  margin-top: 6px; padding: 12px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--muted); font-size: 12px; white-space: pre-wrap; word-break: break-word;
+}
+.hint { min-height: 1.4em; margin-top: 8px; font-size: 12.5px; color: var(--accent-2); }
