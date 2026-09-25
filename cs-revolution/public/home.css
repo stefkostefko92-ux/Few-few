@@ -176,7 +176,7 @@ a { color: inherit; }
 .h-plan li { font-size: .92rem; line-height: 1.45; padding: 5px 0 5px 20px; position: relative; }
 .h-plan li::before { content: ""; position: absolute; left: 2px; top: .85em; width: 8px; height: 1px; background: var(--steel); }
 .h-plan .h-days { font-size: .9rem; color: var(--steel); margin: 0 0 16px; }
-.h-plan .btn { width: 100%; }
+.h-plan .btn { width: 100%; text-align: center; line-height: 1.25; padding: 10px 14px; }
 .h-addons { margin: 48px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; }
 .h-addons h3 { grid-column: 1 / -1; margin-bottom: 8px; }
 .h-addon { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--hair); font-size: .95rem; }
