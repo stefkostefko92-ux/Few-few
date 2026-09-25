@@ -2427,6 +2427,9 @@ export default function App(){
   const[lang,setLang]=useState(function(){return detectLang()});
   // IP geolocation overrides timezone detection (IT/BG/other→EN) — but never an explicit user choice
   useEffect(function(){if(explicitLang())return;detectLangByIP(function(l){setLang(l)})},[]);
+  // <html lang> follows the visible language: screen readers pronounce it right, and Bulgarian text
+  // gets the Bulgarian letterforms of Geologica (locl), the same as on the static /bg/ pages
+  useEffect(function(){try{document.documentElement.lang=lang}catch(e){}},[lang]);
   const[showAdmin,setShowAdmin]=useState(false);
   const[mobileMenu,setMobileMenu]=useState(false);
   const[cookieOk,setCookieOk]=useState(function(){try{return localStorage.getItem("cs_cookie")!==null}catch(e){return false}});

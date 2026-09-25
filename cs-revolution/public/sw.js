@@ -1,5 +1,5 @@
 /* Carbon Stealth VCC — service worker (offline + fast repeat visits, PWA installable) */
-const VERSION = 'cs-v3'; // v3: site-wide theme + self-hosted fonts — drop old cached pages
+const VERSION = 'cs-v4'; // v4: Carbon & Chrome redesign — drop old cached pages and styles
 const CORE = ['/', '/manifest.webmanifest', '/logo.png', '/favicon.svg', '/offline.html'];
 
 self.addEventListener('install', (e) => {
