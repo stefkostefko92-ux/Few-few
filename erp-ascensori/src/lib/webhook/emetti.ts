@@ -7,6 +7,7 @@
 // решава дали фактурата ни ще се издаде.
 
 import { prisma } from "@/lib/prisma";
+import { eseguiTracciato } from "@/lib/automatismi";
 import type { Prisma } from "@prisma/client";
 import { log, descriviErrore } from "@/lib/log";
 import { postEsterno } from "@/lib/rete";
@@ -80,34 +81,7 @@ export interface EsitoConsegne {
 export async function consegnaInAttesaTracciato(
   limite = 100,
 ): Promise<EsitoConsegne> {
-  const run = await prisma.automatismoRun.create({ data: { nome: "webhook" } });
-  const inizio = Date.now();
-  try {
-    const esito = await consegnaInAttesa(limite);
-    await prisma.automatismoRun.update({
-      where: { id: run.id },
-      data: {
-        terminatoAt: new Date(),
-        esito: "OK",
-        durataMs: Date.now() - inizio,
-        dettagli: { ...esito },
-      },
-    });
-    return esito;
-  } catch (e) {
-    const err = descriviErrore(e);
-    await prisma.automatismoRun.update({
-      where: { id: run.id },
-      data: {
-        terminatoAt: new Date(),
-        esito: "ERRORE",
-        durataMs: Date.now() - inizio,
-        errore: `${err.err_tipo}:${err.err_codice}`,
-      },
-    });
-    log.error("automatismo webhook fallito", { ...err, esito: "ERRORE" });
-    throw e;
-  }
+  return eseguiTracciato("webhook", () => consegnaInAttesa(limite));
 }
 
 /**

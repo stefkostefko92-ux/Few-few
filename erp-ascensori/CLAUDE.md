@@ -115,7 +115,10 @@ npm run verifica:backup -- <файл>               # РЕАЛНО възста�
   (бял списък `ENTITA_CONTABILI`, чл. 2220 c.c.), 24 месеца за всичко останало
   (чл. 5(1)(д) GDPR), 90 дни за телеметрията. Непознат ентитет получава
   КРАТКИЯ срок — за данните безопасната посока е обратната на фискалната.
-  И двата автоматизма пишат следа в `automatismi_run` (dead-man я чете).
+  Всичките пет автоматизма (scadenze, contratti, retention, webhook, notifiche)
+  пишат следа в `automatismi_run` през ЕДНА функция — `eseguiTracciato`
+  (`src/lib/automatismi.ts`); dead-man проверката и метриките я четат, форматът
+  (`OK`/`ERRORE`, `errore: "<тип>:<код>"`) е договор с алармите.
 - **RLS е ВТОРАТА линия на изолацията, не първата.** Политиките `tenant_isolation`
   (32 таблици, `FORCE ROW LEVEL SECURITY`) се задават с `SET LOCAL app.tenant_id`
   през `conRls` (`src/lib/rls.ts`) — Prisma не връзва връзка за цялата HTTP

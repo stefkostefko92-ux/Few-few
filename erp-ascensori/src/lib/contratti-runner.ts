@@ -7,6 +7,7 @@
 // пропуснатите периоди вместо да ги прескочи (виж `periodiScaduti`).
 
 import { prisma } from "@/lib/prisma";
+import { eseguiTracciato } from "@/lib/automatismi";
 import {
   prossimaScadenza,
   periodiScaduti,
@@ -17,7 +18,6 @@ import {
 import { prossimoNumero } from "@/lib/numerazione";
 import { ricalcolaFattura } from "@/lib/totali-db";
 import { scriviAudit } from "@/lib/audit";
-import { log, descriviErrore } from "@/lib/log";
 
 export interface EsitoContratti {
   ordiniCreati: number;
@@ -30,41 +30,9 @@ export interface EsitoContratti {
 export async function elaboraContrattiTracciato(
   oggi = new Date(),
 ): Promise<EsitoContratti> {
-  const run = await prisma.automatismoRun.create({
-    data: { nome: "contratti" },
+  return eseguiTracciato("contratti", () => elaboraContratti(oggi), {
+    logSuccesso: "completo",
   });
-  const inizio = Date.now();
-  try {
-    const esito = await elaboraContratti(oggi);
-    await prisma.automatismoRun.update({
-      where: { id: run.id },
-      data: {
-        terminatoAt: new Date(),
-        esito: "OK",
-        durataMs: Date.now() - inizio,
-        dettagli: { ...esito },
-      },
-    });
-    log.info("automatismo contratti", {
-      esito: "OK",
-      durata_ms: Date.now() - inizio,
-      ...esito,
-    });
-    return esito;
-  } catch (e) {
-    const err = descriviErrore(e);
-    await prisma.automatismoRun.update({
-      where: { id: run.id },
-      data: {
-        terminatoAt: new Date(),
-        esito: "ERRORE",
-        durataMs: Date.now() - inizio,
-        errore: `${err.err_tipo}:${err.err_codice}`,
-      },
-    });
-    log.error("automatismo contratti fallito", { ...err, esito: "ERRORE" });
-    throw e;
-  }
 }
 
 export async function elaboraContratti(

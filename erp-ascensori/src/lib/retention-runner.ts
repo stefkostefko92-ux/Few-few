@@ -8,12 +8,12 @@
 // на партиди, със следа от самото прочистване.
 
 import { prisma } from "@/lib/prisma";
+import { eseguiTracciato } from "@/lib/automatismi";
 import {
   soglie,
   AZIONI_ACCESSO,
   ENTITA_CONTABILI,
 } from "@/lib/retention-logic";
-import { log, descriviErrore } from "@/lib/log";
 
 /** Максимален брой редове, изтривани в една партида (пази дългите заключвания). */
 const PARTIDA = 5_000;
@@ -30,41 +30,9 @@ export interface EsitoRetention {
 export async function applicaRetentionTracciato(
   oggi = new Date(),
 ): Promise<EsitoRetention> {
-  const run = await prisma.automatismoRun.create({
-    data: { nome: "retention" },
+  return eseguiTracciato("retention", () => applicaRetention(oggi), {
+    logSuccesso: "completo",
   });
-  const inizio = Date.now();
-  try {
-    const esito = await applicaRetention(oggi);
-    await prisma.automatismoRun.update({
-      where: { id: run.id },
-      data: {
-        terminatoAt: new Date(),
-        esito: "OK",
-        durataMs: Date.now() - inizio,
-        dettagli: { ...esito },
-      },
-    });
-    log.info("automatismo retention", {
-      esito: "OK",
-      durata_ms: Date.now() - inizio,
-      ...esito,
-    });
-    return esito;
-  } catch (e) {
-    const err = descriviErrore(e);
-    await prisma.automatismoRun.update({
-      where: { id: run.id },
-      data: {
-        terminatoAt: new Date(),
-        esito: "ERRORE",
-        durataMs: Date.now() - inizio,
-        errore: `${err.err_tipo}:${err.err_codice}`,
-      },
-    });
-    log.error("automatismo retention fallito", { ...err, esito: "ERRORE" });
-    throw e;
-  }
 }
 
 /** Изтрива на партиди, докато не остане нищо над прага. */

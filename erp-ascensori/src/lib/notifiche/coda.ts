@@ -6,6 +6,7 @@
 // чл. 13 D.P.R. 162/1999 ще бъде забелязан.
 
 import { prisma } from "@/lib/prisma";
+import { eseguiTracciato } from "@/lib/automatismi";
 import type { Prisma, Notifica } from "@prisma/client";
 import { log, descriviErrore } from "@/lib/log";
 import { invia } from "@/lib/posta/smtp";
@@ -225,34 +226,5 @@ export async function inviaInAttesa(
  * доставката на webhook-ите е проследена.
  */
 export async function inviaInAttesaTracciato(limite = 50): Promise<EsitoInvii> {
-  const run = await prisma.automatismoRun.create({
-    data: { nome: "notifiche" },
-  });
-  const inizio = Date.now();
-  try {
-    const esito = await inviaInAttesa(limite);
-    await prisma.automatismoRun.update({
-      where: { id: run.id },
-      data: {
-        terminatoAt: new Date(),
-        esito: "OK",
-        durataMs: Date.now() - inizio,
-        dettagli: { ...esito },
-      },
-    });
-    return esito;
-  } catch (e) {
-    const err = descriviErrore(e);
-    await prisma.automatismoRun.update({
-      where: { id: run.id },
-      data: {
-        terminatoAt: new Date(),
-        esito: "ERRORE",
-        durataMs: Date.now() - inizio,
-        errore: `${err.err_tipo}:${err.err_codice}`,
-      },
-    });
-    log.error("automatismo notifiche fallito", { ...err, esito: "ERRORE" });
-    throw e;
-  }
+  return eseguiTracciato("notifiche", () => inviaInAttesa(limite));
 }
