@@ -1,5 +1,5 @@
 import type { Character, CombatActor, Item, InventoryEntry, CharacterClass } from '../types/domain';
-import { ITEM_SETS, type SetBonus, type SetDef } from '../seed/sets';
+import { ITEM_SETS, setMembers, type SetBonus, type SetDef } from '../seed/sets';
 import { loadGuildBuffsForCharacter } from './guild';
 
 export interface SetBonusSummary {
@@ -43,14 +43,17 @@ export function classWeaponSkill(cls: CharacterClass, sub: string, ch: Character
   return 0;
 }
 
-/** Count equipped pieces per set, picking the set with the most matches for any shared slug. */
+/** Count equipped pieces per set. Броят се уникалните части И legacy_pieces
+ *  (общите предмети, които бяха части ПРЕДИ преработката на сетовете) — така
+ *  никой, който ги носи, не губи бонус. Таван = броя уникални части. */
 function computeSetCounts(equipped: { item: Item }[]): Map<string, number> {
   const counts = new Map<string, number>();
   // For each equipped item, find sets it belongs to.
   const equippedSlugs = new Set(equipped.map((e) => e.item.slug));
   for (const set of ITEM_SETS) {
     let matched = 0;
-    for (const slug of set.pieces) if (equippedSlugs.has(slug)) matched++;
+    for (const slug of setMembers(set)) if (equippedSlugs.has(slug)) matched++;
+    matched = Math.min(matched, set.pieces.length);
     if (matched > 0) counts.set(set.slug, matched);
   }
   return counts;

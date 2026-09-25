@@ -1,3 +1,5 @@
+import { SET_PIECE_SEED } from './setPieces';
+
 export const ITEM_SEED = [
   // ===== STARTER WEAPONS =====
   { slug: 'iron_sword', name: 'Iron Sword', category: 'weapon', sub_type: 'sword', tier: 1, rarity: 'common', level_req: 1, class_req: '', atk_min: 4, atk_max: 8, defense: 0, hp_bonus: 0, mp_bonus: 0, str_bonus: 1, dex_bonus: 0, con_bonus: 0, int_bonus: 0, cha_bonus: 0, wis_bonus: 0, buy_price: 25, sell_price: 8, icon: 'sword', description: 'A serviceable iron blade. Common, but it cuts.' },
@@ -316,4 +318,8 @@ export const ITEM_SEED = [
   { slug: 'kalyndra_hammer', name: "Kalyndra's World-Anvil Hammer", category: 'weapon', sub_type: 'axe', tier: 12, rarity: 'legendary', level_req: 440, class_req: '', atk_min: 1420, atk_max: 2050, defense: 0, hp_bonus: 900, mp_bonus: 0, str_bonus: 62, dex_bonus: 0, con_bonus: 38, int_bonus: 0, cha_bonus: 0, wis_bonus: 0, buy_price: 0, sell_price: 1800000, icon: 'mace', description: "Every world so far has been a draft. She keeps the hammer close for the next one." },
   { slug: 'sarghul_crown', name: 'The Unlit Crown of Sarghul', category: 'helm', sub_type: '', tier: 12, rarity: 'legendary', level_req: 470, class_req: '', atk_min: 0, atk_max: 0, defense: 470, hp_bonus: 1000, mp_bonus: 0, str_bonus: 30, dex_bonus: 0, con_bonus: 50, int_bonus: 0, cha_bonus: 26, wis_bonus: 0, buy_price: 0, sell_price: 2200000, icon: 'helm', description: "A crown that swallows light. Whoever wears it rules everything the light forgets." },
   { slug: 'aurelion_dawnblade', name: 'Dawnbreak, the First Light Drawn', category: 'weapon', sub_type: 'sword', tier: 12, rarity: 'legendary', level_req: 500, class_req: '', atk_min: 1750, atk_max: 2600, defense: 30, hp_bonus: 1200, mp_bonus: 0, str_bonus: 66, dex_bonus: 40, con_bonus: 42, int_bonus: 0, cha_bonus: 30, wis_bonus: 0, buy_price: 0, sell_price: 3000000, icon: 'sword', description: "Before the first word, there was the first light — and it was already a blade." },
+
+  // ===== СОБСТВЕНИ ЧАСТИ НА СЕТОВЕТЕ — генерирани от seed/sets.ts (kit) по
+  // кривата в seed/setPieces.ts. Носят set_slug; нищо от горните не е пипано. =====
+  ...SET_PIECE_SEED,
 ];

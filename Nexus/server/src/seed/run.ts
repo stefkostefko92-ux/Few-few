@@ -22,12 +22,12 @@ function seed(): void {
       slug, name, category, sub_type, tier, rarity, level_req, class_req,
       atk_min, atk_max, defense, hp_bonus, mp_bonus,
       str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus,
-      heal_hp, heal_mp, buy_price, sell_price, icon, description
+      heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug
     ) VALUES (
       @slug, @name, @category, @sub_type, @tier, @rarity, @level_req, @class_req,
       @atk_min, @atk_max, @defense, @hp_bonus, @mp_bonus,
       @str_bonus, @dex_bonus, @con_bonus, @int_bonus, @cha_bonus, @wis_bonus,
-      @heal_hp, @heal_mp, @buy_price, @sell_price, @icon, @description
+      @heal_hp, @heal_mp, @buy_price, @sell_price, @icon, @description, @set_slug
     )
     ON CONFLICT(slug) DO UPDATE SET
       name = excluded.name, category = excluded.category, sub_type = excluded.sub_type, tier = excluded.tier,
@@ -37,13 +37,17 @@ function seed(): void {
       str_bonus = excluded.str_bonus, dex_bonus = excluded.dex_bonus, con_bonus = excluded.con_bonus,
       int_bonus = excluded.int_bonus, cha_bonus = excluded.cha_bonus, wis_bonus = excluded.wis_bonus,
       heal_hp = excluded.heal_hp, heal_mp = excluded.heal_mp, buy_price = excluded.buy_price,
-      sell_price = excluded.sell_price, icon = excluded.icon, description = excluded.description
+      sell_price = excluded.sell_price, icon = excluded.icon, description = excluded.description,
+      set_slug = excluded.set_slug
   `);
   const txItem = db.transaction((items: any[]) => {
     for (const it of items) {
       insertItem.run({
         heal_hp: 0,
         heal_mp: 0,
+        // set_slug = собствена част от сет (seed/sets.ts → kit). Общите
+        // предмети остават '' — вкл. legacy частите на старите сетове.
+        set_slug: '',
         ...it,
       });
     }
@@ -318,7 +322,10 @@ function seed(): void {
       WHERE tier IN (6,7,8,9,10)
         AND category IN ('weapon','armor','helm','shield','gloves','boots','amulet','ring','cloak')
         AND sell_price > 0
+        AND set_slug = ''
     `).all() as any[];
+    // Собствените части на сетовете НЕ се пускат от вендора — печелят се
+    // (дроп/подземия/Mythic+). Аукционът остава какъвто беше преди сетовете.
     let posted = 0;
     // Идемпотентно: ре-сийдът не бива да трупа нови обяви/инвентар при
     // вендора всеки път (преди +85 обяви на всяко пускане).

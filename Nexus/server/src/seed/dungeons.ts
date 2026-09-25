@@ -3,6 +3,7 @@
 import { MONSTER_SEED } from './monsters';
 import { tierForEffectiveLevel } from '../game/drops';
 import { paceXpForKill } from '../game/progression';
+import { kitPiecesForTier } from './sets';
 
 /** Дневният XP бонус на band подземие = толкова pace-убийства на средното му ниво. */
 export const DUNGEON_XP_PACE_KILLS = 24;
@@ -75,6 +76,10 @@ function generateBandDungeons(): DungeonDef[] {
     // up with hunt/tower/arena drops at the same level. Floor at T4 —
     // the prefixed gear sets start there.
     const tier = Math.max(4, tierForEffectiveLevel(midLevel));
+    // Сетове: собствените части (класови + универсални) на РЕАЛНИЯ tier на
+    // средното ниво (без пода T4 — Emberreach/Hammerhand са T3 зона). Дават
+    // подземието и Mythic+ milestone-а като източник на сет части T3–T10.
+    const setTier = tierForEffectiveLevel(midLevel);
     out.push({
       slug: `${b.region}_descent`,
       name: `${b.name} — Descent`,
@@ -98,7 +103,7 @@ function generateBandDungeons(): DungeonDef[] {
       // относителна стойност на всяко ниво.
       xp_bonus: Math.round(DUNGEON_XP_PACE_KILLS * paceXpForKill(midLevel)),
       gold_bonus: Math.round(800 * Math.pow(midLevel / 25, 1.25)),
-      loot_pool: lootByTier(tier),
+      loot_pool: [...lootByTier(tier), ...kitPiecesForTier(setTier)],
     });
   }
   return out;

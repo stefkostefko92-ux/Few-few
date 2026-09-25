@@ -39,6 +39,34 @@ export interface DropResult {
   itemId?: number;
 }
 
+/** Дял на дроповете, които са СОБСТВЕНА част от сет (seed/sets.ts → kit).
+ *  Останалите 75% теглят от общия пул точно както преди преработката на
+ *  сетовете — разпределението на generic дропа не се променя. Частите са
+ *  класово филтрирани (class_req), затова героят получава своя сет (или
+ *  универсален). Честотата на дропа (DROP_RATES) е същата → няма нов
+ *  източник на злато; дубликатът се авто-продава на 20% както всичко. */
+export const SET_DROP_SHARE = 0.25;
+
+export type DropBranch = 'generic' | 'set';
+
+const DROP_CATEGORIES = "('weapon','armor','helm','shield','gloves','boots','amulet','ring','cloak')";
+/** WHERE клаузата на дроп пула (обща за grantDrop и тестовете/източниците). */
+function dropWhere(branch: DropBranch): string {
+  return `tier = ?
+       AND category IN ${DROP_CATEGORIES}
+       AND level_req <= ?
+       AND (class_req = '' OR class_req = ?)
+       AND ${branch === 'set' ? "set_slug != ''" : "set_slug = ''"}`;
+}
+
+/** Всички slug-ове, които даден клон може да изтегли (за тестове/източници). */
+export function dropPoolSlugs(
+  db: ReturnType<typeof getDb>, tier: number, charLevel: number, charClass: string, branch: DropBranch,
+): string[] {
+  return (db.prepare(`SELECT slug FROM items WHERE ${dropWhere(branch)} ORDER BY slug`)
+    .all(tier, charLevel, charClass || '') as { slug: string }[]).map((r) => r.slug);
+}
+
 /** Roll a single drop. The CALLER is expected to have already decided
  *  the drop fires (rolled the probability gate). This helper just
  *  picks the right item, grants it (or auto-vendors a duplicate), and
@@ -56,13 +84,9 @@ export function grantDrop(
 ): DropResult {
   const db = getDb();
   const cls = charClass || '';
-  const pick = (tier: number, whereExtra: string) => db.prepare(
+  const pick = (tier: number, branch: DropBranch) => db.prepare(
     `SELECT id, slug, sell_price FROM items
-     WHERE tier = ?
-       AND category IN ('weapon','armor','helm','shield','gloves','boots','amulet','ring','cloak')
-       AND level_req <= ?
-       AND (class_req = '' OR class_req = ?)
-       ${whereExtra}
+     WHERE ${dropWhere(branch)}
      ORDER BY RANDOM() LIMIT 1`,
   ).get(tier, charLevel, cls) as { id: number; slug: string; sell_price: number } | undefined;
   // Tier fallback: бой НАД нивото на героя (кула етаж 320 с герой 300,
@@ -71,9 +95,13 @@ export function grantDrop(
   // мъртви нива при eff = ниво+30). Падаме tier по tier надолу, докато
   // намерим предмет за нивото — наградата се запазва, без over-reward
   // (level_req гейтът пази високите tier-ове недостижими за ниски герои).
+  // Сет клон: ако в tier-а няма допустима част (напр. герой lv 60–69 и
+  // T4 части с level_req 70), падаме към generic пула на СЪЩИЯ tier.
+  const wantSet = Math.random() < SET_DROP_SHARE;
   let picked: { id: number; slug: string; sell_price: number } | undefined;
   for (let tier = tierForEffectiveLevel(effLevel); tier >= 1 && !picked; tier--) {
-    picked = pick(tier, '') || pick(tier, "AND class_req = ''");
+    if (wantSet) picked = pick(tier, 'set');
+    if (!picked) picked = pick(tier, 'generic');
   }
   if (!picked) return { slug: null, duplicate: false, refundGold: 0 };
   // Duplicate gate — match the hunting.ts dedup behaviour exactly.

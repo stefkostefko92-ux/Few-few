@@ -52,3 +52,25 @@ for (const L of [10, 25, 50, 100, 200, 300]) {
   console.log(`| ${L} | ${e.map((x) => k(x.xpHr)).join(' | ')} | ${(xs[0] / Math.max(1, xs[1])).toFixed(1)}× | ${e.map((x) => k(x.goldHr)).join(' | ')} | ${(gs[0] / Math.max(1, gs[1])).toFixed(1)}× | ${dd.levels.toFixed(1)} |`);
   console.error(`  L${L} notes: ` + e.map((x) => `${x.lane}:${x.note ?? ''} w${pct(x.win)}`).join(' · '));
 }
+
+// ─── Класови сетове (режим „sets"): всеки клас носи пълния си класов сет на
+// най-високия достъпен тир + общи предмети в останалите слотове. Мери дали
+// сетовете правят някой клас доминиращ (цел: 44–56% на lv 50–500).
+console.log('\n## Класови сетове: клас срещу клас (режим „sets", 300 боя × 2)');
+console.log('| ниво | сетове (war/ran/mag/rog) | ' + pairs.map(([a, b]) => `${a.slice(0, 3)}-${b.slice(0, 3)}`).join(' | ') + ' | макс отклонение |');
+for (const L of [10, 25, 50, 100, 150, 200, 250, 300, 350, 420, 500]) {
+  const v = pairs.map(([a, b]) => H.duel(a, b, L, 300, 1, 'sets'));
+  const sets = H.CLASSES.map((c) => H.classSetFor(c, L)?.slug ?? '—').join('/');
+  console.log(`| ${L} | ${sets} | ${v.map(pct).join(' | ')} | ${pct(Math.max(...v.map((x) => Math.abs(x - 0.5))))} |`);
+}
+console.log('\n## Сила на сета: пълен класов сет срещу пълния 6-частов УНИВЕРСАЛЕН сет от общите предмети (победи на класовия)');
+console.log('На входа на всеки тир (60, 130, 180 …) класовият сет е от ПРЕДИШНИЯ тир → „не доминира следващия тир"; в средата (150, 200 …) двата са от един тир.');
+console.log('| ниво | класов сет | универсален | warrior | ranger | mage | rogue |');
+for (const L of [60, 130, 150, 180, 200, 230, 250, 280, 300, 320, 350, 380, 420, 440, 500]) {
+  const v = H.CLASSES.map((c) => H.gearDuel(c, L, 'sets', 'shop6'));
+  const uni = H.gearFor('warrior', L, 'shop6').find((i: any) => i.category === 'helm')?.slug ?? '—';
+  console.log(`| ${L} | T${H.classSetFor('warrior', L)?.tier} | ${uni} | ${v.map(pct).join(' | ')} |`);
+}
+console.log('\n## Класови сетове: вход в регион (режим „sets")');
+console.log('| регион | вход | победа | рундове | HP остатък |');
+for (const r of H.regionEntry(60, 11, 'sets')) console.log(`| ${r.region} | ${r.gate} | ${pct(r.win)} | ${r.rounds.toFixed(0)} | ${pct(r.hpLeft)} |`);

@@ -18,6 +18,7 @@ import { deriveStats, buildHeroActor } from '../stats';
 import { simulateCombat } from '../combat';
 import { paceXpForKill } from '../progression';
 import { ITEM_SEED } from '../../seed/items';
+import { ITEM_SETS, type SetDef } from '../../seed/sets';
 import { MONSTER_SEED } from '../../seed/monsters';
 import type { Character, CharacterClass, CombatActor, Item, InventoryEntry } from '../../types/domain';
 import { REGION_ORDER, REGION_GATES, huntEncounterPools, isApexSlug, APEX_ENCOUNTER_CHANCE } from '../regions';
@@ -93,8 +94,13 @@ const BASE: Record<CharacterClass, Partial<Record<StatKey, number>>> = {
 
 /* ───────────── екипировка ───────────── */
 type SeedItem = (typeof ITEM_SEED)[number] & Record<string, any>;
-const GEAR = (ITEM_SEED as SeedItem[]).filter((i) => i.buy_price > 0);
+/** Режим „shop" (по подразбиране): най-добрият ОБЩ магазинен предмет — без
+ *  собствените части на сетовете (set_slug), за да остане базовата линия
+ *  сравнима преди/след преработката на сетовете. Сетовете се мерят отделно
+ *  в режим „sets" (gearFor(..., 'sets')). */
+const GEAR = (ITEM_SEED as SeedItem[]).filter((i) => i.buy_price > 0 && !i.set_slug);
 const ARMOR_SLOTS = ['helm', 'armor', 'gloves', 'boots', 'shield', 'ring', 'amulet'] as const; // cloak: не се екипира (виж доклада)
+const classOk = (cls: CharacterClass, i: SeedItem) => !i.class_req || i.class_req === cls;
 
 function weaponOk(cls: CharacterClass, it: SeedItem): boolean {
   if (it.category !== 'weapon') return false;
@@ -110,13 +116,44 @@ const PRIMARY_BONUS: Record<CharacterClass, 'str_bonus' | 'dex_bonus' | 'int_bon
 const armorScore = (cls: CharacterClass, i: SeedItem) =>
   i.defense + i.hp_bonus / 4 + (i[PRIMARY_BONUS[cls]] * 3 + i.con_bonus * 1.5 + i.wis_bonus + i.cha_bonus * 0.5) * 2;
 
-export function gearFor(cls: CharacterClass, level: number): SeedItem[] {
+/** shop — базовата линия (без наметало, както преди); shop6 — общите
+ *  магазинни предмети + наметало (пълен 6-частов универсален сет на тира);
+ *  sets — пълният класов сет + общи предмети в останалите слотове. */
+export type GearMode = 'shop' | 'shop6' | 'sets';
+
+/** Класовият сет, който герой от клас `cls` на ниво L носи в режим „sets":
+ *  най-високият тир, чиито части са достъпни (level_req ≤ L). */
+export function classSetFor(cls: CharacterClass, level: number): SetDef | undefined {
+  return ITEM_SETS
+    .filter((s) => s.kit && s.class_focus === cls && (s.level_req ?? 1) <= level)
+    .sort((a, b) => b.tier - a.tier)[0];
+}
+
+export function gearFor(cls: CharacterClass, level: number, mode: GearMode = 'shop'): SeedItem[] {
   const out: SeedItem[] = [];
-  const w = GEAR.filter((i) => weaponOk(cls, i) && i.level_req <= level)
-    .sort((a, b) => (b.atk_min + b.atk_max) - (a.atk_min + a.atk_max))[0];
-  if (w) out.push(w);
-  for (const slot of ARMOR_SLOTS) {
-    const best = GEAR.filter((i) => i.category === slot && i.level_req <= level)
+  const taken = new Set<string>();
+  if (mode === 'sets') {
+    // Пълният класов сет (6 части) + най-добрият общ предмет в останалите
+    // слотове. Симетрично за всички класове: 9 слота (оръжие, шлем, броня,
+    // ръкавици, ботуши, щит, наметало, пръстен, амулет).
+    const set = classSetFor(cls, level);
+    if (set) {
+      for (const slug of set.pieces) {
+        const it = (ITEM_SEED as SeedItem[]).find((i) => i.slug === slug)!;
+        out.push(it);
+        taken.add(it.category);
+      }
+    }
+  }
+  if (!taken.has('weapon')) {
+    const w = GEAR.filter((i) => weaponOk(cls, i) && classOk(cls, i) && i.level_req <= level)
+      .sort((a, b) => (b.atk_min + b.atk_max) - (a.atk_min + a.atk_max))[0];
+    if (w) out.push(w);
+  }
+  const slots: readonly string[] = mode === 'shop' ? ARMOR_SLOTS : [...ARMOR_SLOTS, 'cloak'];
+  for (const slot of slots) {
+    if (taken.has(slot)) continue;
+    const best = GEAR.filter((i) => i.category === slot && classOk(cls, i) && i.level_req <= level)
       .sort((a, b) => armorScore(cls, b) - armorScore(cls, a))[0];
     if (best) out.push(best);
   }
@@ -124,7 +161,7 @@ export function gearFor(cls: CharacterClass, level: number): SeedItem[] {
 }
 
 /* ───────────── референтен герой ───────────── */
-export interface HeroOpts { budgetMul?: number; alloc?: Partial<Record<StatKey, number>> }
+export interface HeroOpts { budgetMul?: number; alloc?: Partial<Record<StatKey, number>>; gear?: GearMode }
 
 export function refCharacter(cls: CharacterClass, level: number, o: HeroOpts = {}): Character {
   const budget = cumulativeGold(level) * STAT_SHARE * (o.budgetMul ?? 1);
@@ -143,7 +180,7 @@ export function refCharacter(cls: CharacterClass, level: number, o: HeroOpts = {
 
 export function refHero(cls: CharacterClass, level: number, o: HeroOpts = {}): CombatActor {
   const ch = refCharacter(cls, level, o);
-  const eq = gearFor(cls, level).map((it, idx) => ({
+  const eq = gearFor(cls, level, o.gear ?? 'shop').map((it, idx) => ({
     item: { id: idx + 1, ...it } as unknown as Item,
     entry: { id: idx + 1, character_id: 1, item_id: idx + 1, quantity: 1, equipped: 1, slot: '' } as InventoryEntry,
     enchant_bonuses: {},
@@ -189,8 +226,16 @@ export function fight(a: () => CombatActor, b: () => CombatActor, n: number, see
 }
 
 /** Клас срещу клас — двата реда на страните (елиминира hero-bias на инициативата). */
-export function duel(c1: CharacterClass, c2: CharacterClass, level: number, n = 400, seed = 1): number {
-  const A = refHero(c1, level); const B = refHero(c2, level);
+export function duel(c1: CharacterClass, c2: CharacterClass, level: number, n = 400, seed = 1, gear: GearMode = 'shop'): number {
+  const A = refHero(c1, level, { gear }); const B = refHero(c2, level, { gear });
+  const one = fight(() => ({ ...A }), () => ({ ...B }), n, seed).win;
+  const two = 1 - fight(() => ({ ...B }), () => ({ ...A }), n, seed + 7).win;
+  return (one + two) / 2;
+}
+
+/** Един и същ клас/ниво, различна екипировка (двата реда на инициатива) — победи на `a`. */
+export function gearDuel(cls: CharacterClass, level: number, a: GearMode, b: GearMode, n = 300, seed = 21): number {
+  const A = refHero(cls, level, { gear: a }); const B = refHero(cls, level, { gear: b });
   const one = fight(() => ({ ...A }), () => ({ ...B }), n, seed).win;
   const two = 1 - fight(() => ({ ...B }), () => ({ ...A }), n, seed + 7).win;
   return (one + two) / 2;
@@ -202,12 +247,12 @@ export const REGION_LIST: { region: string; gate: number }[] = REGION_ORDER.map(
 export interface RegionRow { region: string; gate: number; win: number; rounds: number; hpLeft: number; poolSize: number; xpPerKill: number; goldPerKill: number }
 
 /** Вход в регион: среден клас на ниво gate срещу пула на лова (APEX изключен — той е целта на региона). */
-export function regionEntry(n = 120, seed = 11): RegionRow[] {
+export function regionEntry(n = 120, seed = 11, gear: GearMode = 'shop'): RegionRow[] {
   return REGION_LIST.map(({ region, gate }, idx) => {
     const usePool = huntPool(region, gate);
     let win = 0, rounds = 0, hpLeft = 0;
     for (const cls of CLASSES) {
-      const H = refHero(cls, gate);
+      const H = refHero(cls, gate, { gear });
       let k = 0;
       for (const m of usePool) {
         const f = fight(() => ({ ...H }), () => monsterActor(m), n, seed + idx * 101 + k++);
