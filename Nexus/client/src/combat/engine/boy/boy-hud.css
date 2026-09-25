@@ -1,0 +1,92 @@
+/* Порт на boy/template.html <style> — CSS на HUD-а на "Двубой в Рейвънхолд".
+   Скопирано буквално, но всеки селектор е скопиран под `.boy-duel-root`,
+   за да не изтече върху останалия Nexus UI (той също ползва .btn/.title/
+   .controls/.group/.label/.stats/.hint/.credit класове). #view/#hud/#loader
+   остават без скоп — уникални id-та, монтирани само вътре в .boy-duel-root. */
+.boy-duel-root {
+  color-scheme: dark;
+  --ink: #07070a;
+  --parch: #ebe2ce;
+  --parch-dim: rgba(235, 226, 206, 0.62);
+  --hair: rgba(235, 226, 206, 0.2);
+  --ember: #ff8a3d;
+  --gold: #c9a24a;
+  --display: 'Grenze Gotisch', 'UnifrakturMaguntia', Georgia, 'Times New Roman', serif;
+  --body: 'Alegreya Sans SC', 'Alegreya Sans', 'Gill Sans', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Martian Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  position: fixed;
+  inset: 0;
+  background: var(--ink);
+  color: var(--parch);
+  overflow: hidden;
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+.boy-duel-root [hidden] { display: none !important; }
+.boy-duel-root #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; background: #000; touch-action: none; }
+.boy-duel-root #hud { position: fixed; inset: 0; pointer-events: none; }
+.boy-duel-root .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.boy-duel-root .eyebrow { margin: 0; font: 400 10.5px/1.2 var(--mono); letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); }
+.boy-duel-root .title { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 16px; max-width: calc(100vw - 32px); text-shadow: 0 2px 22px rgba(0, 0, 0, 0.7); }
+.boy-duel-root h1 { margin: 6px 0 4px; font-family: var(--display); font-weight: 700; font-size: clamp(30px, 4.6vw, 58px); line-height: 0.92; letter-spacing: 0.01em; text-wrap: balance; }
+.boy-duel-root .chapter { margin: 0; font: 500 14px/1.3 var(--body); letter-spacing: 0.12em; color: var(--parch-dim); }
+.boy-duel-root .slate { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 20px); right: 16px; display: grid; justify-items: end; gap: 5px; font: 300 10px/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--parch-dim); font-variant-numeric: tabular-nums; text-shadow: 0 1px 8px #000; }
+.boy-duel-root .slate .rec { color: var(--parch); }
+.boy-duel-root .slate .rec::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--ember); box-shadow: 0 0 10px var(--ember); vertical-align: 1px; }
+.boy-duel-root .caption { position: absolute; left: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 148px); display: grid; gap: 6px; max-width: min(560px, calc(100vw - 32px)); opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; text-shadow: 0 2px 18px #000; }
+.boy-duel-root .caption.on { opacity: 1; transform: none; }
+.boy-duel-root .caption .term { font-family: var(--display); font-weight: 500; font-size: clamp(28px, 4.2vw, 48px); line-height: 1; }
+.boy-duel-root .caption .rule { width: 64px; height: 1px; background: var(--gold); }
+.boy-duel-root .caption .gloss { font: 500 14px/1.3 var(--body); letter-spacing: 0.16em; color: var(--ember); }
+.boy-duel-root .endcard { position: absolute; inset: 0; display: grid; place-items: center; padding-inline: 16px; text-align: center; opacity: 0; transition: opacity 1.4s ease; text-shadow: 0 2px 26px #000; }
+.boy-duel-root .endcard.on { opacity: 1; }
+.boy-duel-root .endcard h2 { margin: 10px 0 12px; font-family: var(--display); font-weight: 700; font-size: clamp(44px, 8vw, 104px); line-height: 0.9; text-wrap: balance; }
+.boy-duel-root .endcard .fighters { margin: 0 0 8px; font: 500 15px/1.4 var(--body); letter-spacing: 0.16em; }
+.boy-duel-root .endcard .endline { margin: 0 auto; max-width: 46ch; font: 300 10.5px/1.7 var(--mono); letter-spacing: 0.08em; color: var(--parch-dim); }
+.boy-duel-root .stats { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 86px); right: 16px; display: grid; justify-items: end; gap: 4px; padding: 8px 10px; font: 300 10px/1.2 var(--mono); letter-spacing: 0.1em; color: var(--parch); background: rgba(7, 7, 10, 0.62); border: 1px solid var(--hair); font-variant-numeric: tabular-nums; }
+.boy-duel-root .stats #st-fps { color: var(--ember); }
+.boy-duel-root .hint { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 18px); transform: translateX(-50%); margin: 0; padding: 7px 12px; font: 300 10px/1.2 var(--mono); letter-spacing: 0.12em; color: var(--parch); background: rgba(7, 7, 10, 0.6); border: 1px solid var(--hair); white-space: nowrap; }
+.boy-duel-root .controls { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 10px); background: linear-gradient(to top, rgba(4, 4, 6, 0.9) 0%, rgba(4, 4, 6, 0.55) 60%, rgba(4, 4, 6, 0)); pointer-events: auto; }
+.boy-duel-root .btn { appearance: none; display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 7px 10px; border: 1px solid var(--hair); border-radius: 2px; background: rgba(7, 7, 10, 0.35); color: var(--parch); font: 400 10.5px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+.boy-duel-root .btn:hover { border-color: rgba(235, 226, 206, 0.5); }
+.boy-duel-root .btn[aria-pressed='true'] { border-color: var(--gold); color: var(--gold); }
+.boy-duel-root .btn:focus-visible, .boy-duel-root select:focus-visible, .boy-duel-root input:focus-visible, .boy-duel-root a:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+.boy-duel-root .play { width: 42px; height: 42px; padding: 0; justify-content: center; border-radius: 50%; border-color: rgba(235, 226, 206, 0.45); }
+.boy-duel-root .play svg { width: 14px; height: 14px; fill: var(--parch); }
+.boy-duel-root .play .i-play { display: none; }
+.boy-duel-root .play[data-state='paused'] .i-play { display: block; }
+.boy-duel-root .play[data-state='paused'] .i-pause { display: none; }
+.boy-duel-root .timecode { min-width: 84px; font: 300 11px/1 var(--mono); letter-spacing: 0.08em; color: var(--parch-dim); font-variant-numeric: tabular-nums; }
+.boy-duel-root .scrub { position: relative; flex: 1 1 240px; min-width: 0; padding-top: 12px; }
+.boy-duel-root .scrub input { --p: 0%; width: 100%; height: 22px; margin: 0; background: transparent; appearance: none; -webkit-appearance: none; cursor: pointer; }
+.boy-duel-root .scrub input::-webkit-slider-runnable-track { height: 2px; background: linear-gradient(to right, var(--gold) var(--p), var(--hair) var(--p)); }
+.boy-duel-root .scrub input::-moz-range-track { height: 2px; background: var(--hair); }
+.boy-duel-root .scrub input::-moz-range-progress { height: 2px; background: var(--gold); }
+.boy-duel-root .scrub input::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -5px; border-radius: 50%; background: var(--ember); box-shadow: 0 0 12px var(--ember); }
+.boy-duel-root .scrub input::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--ember); box-shadow: 0 0 12px var(--ember); }
+.boy-duel-root .ticks { position: absolute; left: 0; right: 0; top: 0; height: 12px; }
+.boy-duel-root .ticks i { position: absolute; top: 0; transform: translateX(-50%); font: normal 400 9px/1 var(--mono); letter-spacing: 0.1em; color: var(--parch-dim); }
+.boy-duel-root .group { display: inline-flex; align-items: center; gap: 6px; }
+.boy-duel-root .label { font: 300 9.5px/1 var(--mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--parch-dim); }
+.boy-duel-root select { min-height: 32px; padding: 6px 8px; border: 1px solid var(--hair); border-radius: 2px; background: #0d0d11; color: var(--parch); font: 400 10.5px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.boy-duel-root .credit { flex: 1 0 100%; margin: 0; font: 300 9.5px/1.5 var(--mono); letter-spacing: 0.12em; color: var(--parch-dim); text-align: right; }
+.boy-duel-root .credit a { color: var(--parch); text-decoration: none; border-bottom: 1px solid var(--hair); }
+.boy-duel-root #loader { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding-inline: 16px; background: radial-gradient(ellipse at 50% 65%, #1d1109 0%, #0a0808 45%, #050507 100%); transition: opacity 0.9s ease; }
+.boy-duel-root #loader.done { opacity: 0; pointer-events: none; }
+.boy-duel-root .loader-inner { width: min(460px, 100%); }
+.boy-duel-root .loader-title { margin: 8px 0 10px; font-family: var(--display); font-weight: 700; font-size: clamp(38px, 7vw, 64px); line-height: 0.92; }
+.boy-duel-root .tagline { margin: 0; font: 400 16px/1.45 var(--body); letter-spacing: 0.04em; color: var(--parch-dim); max-width: 42ch; }
+.boy-duel-root .loader-bar { height: 1px; margin: 26px 0 12px; background: var(--hair); overflow: hidden; }
+.boy-duel-root .loader-bar i { display: block; width: 0; height: 100%; background: var(--ember); box-shadow: 0 0 14px var(--ember); transition: width 0.35s ease; }
+.boy-duel-root .load-step { margin: 0; font: 300 10.5px/1.5 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--parch-dim); }
+@media (max-width: 720px) {
+  .boy-duel-root .slate { display: none; }
+  .boy-duel-root .caption { bottom: calc(env(safe-area-inset-bottom, 0px) + 214px); }
+  .boy-duel-root .controls { gap: 8px 10px; }
+  .boy-duel-root .timecode { min-width: 0; }
+  .boy-duel-root .scrub { flex-basis: calc(100% - 140px); }
+  .boy-duel-root .credit { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .boy-duel-root .caption, .boy-duel-root .endcard, .boy-duel-root #loader, .boy-duel-root .loader-bar i { transition: none; }
+}
