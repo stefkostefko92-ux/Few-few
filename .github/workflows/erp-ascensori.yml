@@ -42,6 +42,7 @@ jobs:
   quality:
     name: Lint · typecheck · unit · build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: erp-ascensori
@@ -79,6 +80,7 @@ jobs:
   migrazioni:
     name: Дрейф между схема и миграции
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: erp-ascensori
@@ -117,6 +119,7 @@ jobs:
   integrazione:
     name: Интеграционен пакет (реална база)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: erp-ascensori
@@ -162,6 +165,7 @@ jobs:
   e2e:
     name: E2E през браузър
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: erp-ascensori
@@ -223,6 +227,7 @@ jobs:
   fornitura:
     name: Верига на доставка (SBOM + одит)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: erp-ascensori

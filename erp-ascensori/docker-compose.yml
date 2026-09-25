@@ -32,6 +32,12 @@ services:
       - db-data:/var/lib/postgresql/data
       # Пуска се ВЕДНЪЖ, при първото вдигане на празен том.
       - ./deploy/postgres-init:/docker-entrypoint-initdb.d:ro
+    # ЗАПИСИ НА ДОСТЪПА ДО БАЗАТА (Provv. Garante 27.11.2008, т. 4.5). Одитът
+    # на гестионала пази операциите В приложението; администраторът с достъп до
+    # сървъра минава ПОД него. Връзките и прекъсванията отиват в дневника на
+    # контейнера — оттам се препращат към архив, който администраторът не може
+    # да промени (къде — решение на собственика, `docs/legale/nomine.md` § 3).
+    command: ["postgres", "-c", "log_connections=on", "-c", "log_disconnections=on"]
     # БЕЗ публикуван порт: базата се вижда само от вътрешната мрежа на стека.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${APP_DB_USER} -d $${POSTGRES_DB:-erp_ascensori}"]
@@ -145,40 +151,46 @@ services:
       NODE_ENV: production
       TZ: ${TZ:-Europe/Rome}
     entrypoint: ["/bin/sh", "-c"]
-    # Сроковете — дневно в 06:00; прочистването — в неделя в 04:00.
-    # Изчислява се спрямо стенния часовник, за да не се измества след рестарт.
+    # КАТО ПРЕДИ — ПО ЧАСОВНИК, НО БЕЗ ТОЧНО СЪВПАДЕНИЕ НА МИНУТАТА.
+    #
+    # Първата версия питаше „часът ли е точно 06:00?". Една итерация е `sleep 60`
+    # ПЛЮС времето на стъпките; щом `contratti` в 05:00 работи три минути или
+    # webhook-ите се бавят, цикълът прескача минута — и сроковете по чл. 13
+    # D.P.R. 162/1999 не се вдигат ТОЗИ ДЕН, без нито един ред в лога. Сега:
+    #   • дневните питат „минал ли е часът И не е ли пускано ДНЕС" (белег в /tmp);
+    #   • честите — „минали ли са N секунди от последния пуск";
+    #   • всяка стъпка е с `timeout`: увиснал пуск не спира останалите.
+    # Белегът е в /tmp нарочно: рестарт след 06:00 ДОГОНВА пропуснатия пуск
+    # (контейнерът е бил долу точно в шест). Трите стъпки са идемпотентни —
+    # повторен пуск в същия ден не вдига прага втори път и не праща ново писмо.
     command:
       - |
         echo "→ автоматизмите са активни (webhook 5 мин · notifiche 15 мин · contratti 05:00 · scadenze 06:00 · retention неделя 04:00)"
+        U_WEBHOOK=0; U_NOTIFICHE=0
+        fatto() { [ "$$(cat "/tmp/fatto-$$1" 2>/dev/null)" = "$$2" ]; }
+        segna() { echo "$$2" > "/tmp/fatto-$$1"; }
         while true; do
-          ORA=$$(date +%H%M); GIORNO=$$(date +%u); MIN=$$(date +%M)
+          ORA=$$(date +%H%M); GIORNO=$$(date +%u); OGGI=$$(date +%F); SETTIMANA=$$(date +%G-%V); ORA_S=$$(date +%s)
           # Доставките са ЧЕСТИ: външната система чака известие, а не отчет.
-          case "$$MIN" in 00|05|10|15|20|25|30|35|40|45|50|55)
-            npm run webhook || echo "✖ webhook" ;;
-          esac
+          if [ $$((ORA_S - U_WEBHOOK)) -ge 300 ]; then
+            U_WEBHOOK=$$ORA_S; timeout 240 npm run webhook || echo "✖ webhook"
+          fi
           # Пощата е по-рядко от webhook-ите: получателят е човек, който
           # проверява кутията си, не система, която чака отговор.
-          case "$$MIN" in 07|22|37|52)
-            npm run notifiche || echo "✖ notifiche" ;;
-          esac
-          if [ "$$ORA" = "0500" ]; then npm run contratti || echo "✖ contratti"; fi
-          if [ "$$ORA" = "0600" ]; then npm run scadenze:check || echo "✖ scadenze"; fi
-          if [ "$$GIORNO" = "7" ] && [ "$$ORA" = "0400" ]; then npm run retention || echo "✖ retention"; fi
+          if [ $$((ORA_S - U_NOTIFICHE)) -ge 900 ]; then
+            U_NOTIFICHE=$$ORA_S; timeout 840 npm run notifiche || echo "✖ notifiche"
+          fi
+          if [ "$$ORA" -ge 500 ] && ! fatto contratti "$$OGGI"; then
+            segna contratti "$$OGGI"; timeout 1800 npm run contratti || echo "✖ contratti"
+          fi
+          if [ "$$ORA" -ge 600 ] && ! fatto scadenze "$$OGGI"; then
+            segna scadenze "$$OGGI"; timeout 1800 npm run scadenze:check || echo "✖ scadenze"
+          fi
+          if [ "$$GIORNO" = "7" ] && [ "$$ORA" -ge 400 ] && ! fatto retention "$$SETTIMANA"; then
+            segna retention "$$SETTIMANA"; timeout 3600 npm run retention || echo "✖ retention"
+          fi
           sleep 60
         done
-    # СИГНАЛ, А НЕ ТИШИНА. Без това единственият знак за спрял бекъп е ръчен
-    # поглед в `docker compose ps`: crashloop-ът при липсващ `age` и мълчаливо
-    # неуспяла нощ изглеждат еднакво отвън. 26 часа: един пропуснат пуск.
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "[ -f /backup/.ultimo-ok ] && [ $(( $(date +%s) - $(cat /backup/.ultimo-ok) )) -lt 93600 ]",
-        ]
-      interval: 30m
-      timeout: 10s
-      retries: 2
-      start_period: 24h
 
   # Дневен криптиран дъмп. Частният ключ на age НЕ е на този сървър.
   backup:
@@ -200,6 +212,22 @@ services:
       # Само за четене: задачата на тази услуга е да ЗАПАЗВА файловете, не да
       # ги мени. Компрометиран бекъп контейнер не бива да може да ги изтрие.
       - allegati:/allegati:ro
+    # СИГНАЛ, А НЕ ТИШИНА. Без това единственият знак за спрял бекъп е ръчен
+    # поглед в `docker compose ps`: crashloop-ът при липсващ `age` и мълчаливо
+    # неуспяла нощ изглеждат еднакво отвън. 26 часа: един пропуснат пуск.
+    # ТУК, А НЕ ПРИ `automatismi`: там стоеше преди, а онзи контейнер НЕ
+    # монтира `/backup` — проверката виждаше вечно липсващ файл и след 24 ч
+    # обявяваше за болна услуга, която няма нищо общо с бекъпа.
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "[ -f /backup/.ultimo-ok ] && [ $$(( $$(date +%s) - $$(cat /backup/.ultimo-ok) )) -lt 93600 ]",
+        ]
+      interval: 30m
+      timeout: 10s
+      retries: 2
+      start_period: 24h
     entrypoint: ["/bin/sh", "-c"]
     # ДВЕТЕ добавки при pg_dump не са по избор, откакто има RLS:
     #   • `--enable-row-security` — иначе pg_dump ОТКАЗВА да дъмпне таблица с
@@ -222,8 +250,11 @@ services:
         # го ВИЖДА в лога при всеки старт.
         [ -n "$$BACKUP_AGE_RECIPIENT" ] \
           || echo "⚠ BACKUP_AGE_RECIPIENT е празен: дъмповете остават НЕкриптирани (лични данни в чист вид)."
+        # Същото правило като при автоматизмите: „минал ли е часът и не е ли
+        # правено днес", не „точно ли е 03:00" — пропусната минута е пропусната нощ.
         while true; do
-          if [ "$$(date +%H%M)" = "0300" ]; then
+          if [ "$$(date +%H%M)" -ge 300 ] && [ "$$(cat /tmp/fatto-backup 2>/dev/null)" != "$$(date +%F)" ]; then
+            date +%F > /tmp/fatto-backup
             F=/backup/erp-$$(date +%Y%m%d).dump
             A=/backup/allegati-$$(date +%Y%m%d).tar.gz
             PGOPTIONS="-c app.tenant_id=*" pg_dump --enable-row-security \
