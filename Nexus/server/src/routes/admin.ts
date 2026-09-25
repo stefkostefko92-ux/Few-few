@@ -1,89 +1,150 @@
-import { Router } from 'express';
+/**
+ * Админ API — /api/admin/*.
+ *
+ * Инварианти (гейтвани от src/game/__tests__/admin.test.ts):
+ *  - ВСЕКИ ендпойнт минава през authRequired + adminRequired (router.use по-долу);
+ *    не-админ → 403, без токен → 401.
+ *  - ВСЕКИ вход е валидиран със zod (id-та, тела, query; пагинацията е с таван).
+ *  - ВСЯКО мутиращо действие оставя одит ред „кой · какво · кога · от → към"
+ *    (lib/adminKit.audit); предпазна мрежа логва и пропуснатите.
+ *  - Многостъпковите промени са в транзакция.
+ *  - Липсващ обект → 404, конфликт със състоянието → 409, лош вход → 400.
+ *  - Отговорите никога не съдържат password_hash или тайни на webhook-и.
+ */
+import { Router, type Request, type Response, type NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { adminRequired } from '../middleware/admin';
-import { logFromRequest, logEvent, isSafeWebhookUrl } from '../lib/logger';
+import { logFromRequest, isSafeWebhookUrl, deliver } from '../lib/logger';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
-import { banUser, unbanUser } from '../lib/bans';
+import { banUser, unbanUser, clientIp, clientHwid } from '../lib/bans';
 import { eraseUser } from '../lib/erasure';
+import { getAllSettings, setSetting, findSetting } from '../game/settings';
+import {
+  audit, parseId, parseQuery, pageQuery, pageMeta, escapeLike, ipIsShielded,
+} from '../lib/adminKit';
+import { deliverStatement, type Ground } from '../lib/adminModeration';
 
 const router = Router();
 router.use(authRequired, adminRequired);
 
-// Audit every mutating admin call — POST/PUT/PATCH/DELETE.
-// Logs the route, body keys, and target id (when /:id appears in the path).
-router.use((req, _res, next) => {
+type Db = ReturnType<typeof getDb>;
+
+/* ---------------------------------------------------------------
+   Rate limit за разрушителни действия (бан, изтриване, разпращане,
+   сваляне, повишаване). Общият admin limiter в server.ts е 60/мин —
+   изтекъл админ токен не бива да трие/банва на едро.
+   --------------------------------------------------------------- */
+const destructiveLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `admin:${req.auth?.uid ?? 'anon'}`,
+  message: { error: 'Too many destructive admin actions — wait a minute and try again.' },
+});
+
+/* ---------------------------------------------------------------
+   Предпазна мрежа на одита: всяка УСПЕШНА мутация, която хендлърът не е
+   одитирал изрично, пак оставя ред (warn), за да няма тих пропуск.
+   --------------------------------------------------------------- */
+router.use((req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
-  // /webhooks endpoints have their own webhook category — skip to avoid an infinite loop.
-  if (req.path.startsWith('/webhooks')) return next();
-  const bodyKeys = req.body && typeof req.body === 'object' ? Object.keys(req.body).filter((k) => k !== 'password') : [];
-  const idMatch = req.path.match(/\/(\d+)(?:\b|$)/);
-  logFromRequest(req, {
-    category: 'admin',
-    action: `${req.method.toLowerCase()}_${req.path.replace(/^\//, '').split('/')[0] || 'root'}`,
-    level: req.method === 'DELETE' ? 'warn' : 'info',
-    target_id: idMatch ? Number(idMatch[1]) : null,
-    target_type: req.path.replace(/^\//, '').split('/')[0] || '',
-    message: `Admin ${req.method} ${req.path}`,
-    meta: { body_keys: bodyKeys },
+  const path = req.path;
+  const method = req.method;
+  res.on('finish', () => {
+    if (res.locals.audited || res.statusCode >= 400) return;
+    logFromRequest(req, {
+      category: 'admin',
+      action: `${method.toLowerCase()}_${path.replace(/^\//, '').split('/')[0] || 'root'}`,
+      level: 'warn',
+      target_type: path.replace(/^\//, '').split('/')[0] || '',
+      message: `Unaudited admin ${method} ${path}`,
+      meta: { admin_id: req.auth?.uid ?? null, status: res.statusCode },
+    });
   });
   next();
 });
 
+/** SQLite грешка → коректен HTTP код без изтичане на вътрешни детайли. */
+function sqliteError(res: Response, e: unknown, what: string): void {
+  const msg = e instanceof Error ? e.message : '';
+  if (/UNIQUE constraint failed/i.test(msg)) {
+    const col = msg.split('.').pop() || 'value';
+    res.status(409).json({ error: `${what}: ${col} already exists.` });
+  } else if (/FOREIGN KEY constraint failed/i.test(msg)) {
+    res.status(409).json({ error: `${what} is still referenced and cannot be changed/removed.` });
+  } else {
+    res.status(500).json({ error: `${what} failed.` });
+  }
+}
+
+const pick = (row: Record<string, unknown>, keys: string[]) =>
+  Object.fromEntries(keys.map((k) => [k, row[k]]));
+
 /* =========================================================
    Dashboard / overview
    ========================================================= */
+function count(db: Db, sql: string, ...params: unknown[]): number {
+  try { return (db.prepare(sql).get(...params) as { c: number }).c; } catch { return 0; }
+}
+
 router.get('/overview', (_req, res) => {
   const db = getDb();
   const counts = {
-    users: (db.prepare('SELECT COUNT(*) AS c FROM users').get() as { c: number }).c,
-    admins: (db.prepare('SELECT COUNT(*) AS c FROM users WHERE is_admin = 1').get() as { c: number }).c,
-    characters: (db.prepare('SELECT COUNT(*) AS c FROM characters WHERE is_npc = 0').get() as { c: number }).c,
-    npcs: (db.prepare('SELECT COUNT(*) AS c FROM characters WHERE is_npc = 1').get() as { c: number }).c,
-    items: (db.prepare('SELECT COUNT(*) AS c FROM items').get() as { c: number }).c,
-    monsters: (db.prepare('SELECT COUNT(*) AS c FROM monsters').get() as { c: number }).c,
-    quests: (db.prepare('SELECT COUNT(*) AS c FROM quests').get() as { c: number }).c,
-    battles: (db.prepare('SELECT COUNT(*) AS c FROM combat_log').get() as { c: number }).c,
-    guilds: (db.prepare('SELECT COUNT(*) AS c FROM guilds').get() as { c: number }).c,
-    tower_climbs: (db.prepare("SELECT COUNT(*) AS c FROM event_log WHERE action IN ('tower_clear','tower_wipe')").get() as { c: number }).c,
-    bounty_claims: (db.prepare("SELECT COUNT(*) AS c FROM event_log WHERE action = 'bounty_claim'").get() as { c: number }).c,
-    forge_enchants: (db.prepare("SELECT COUNT(*) AS c FROM event_log WHERE action = 'forge_enchant'").get() as { c: number }).c,
-    forge_shatters: (db.prepare("SELECT COUNT(*) AS c FROM event_log WHERE action = 'forge_shatter'").get() as { c: number }).c,
-    market_sales: (db.prepare("SELECT COUNT(*) AS c FROM marketplace_listings WHERE status = 'sold'").get() as { c: number }).c,
-    market_listings_active: (db.prepare("SELECT COUNT(*) AS c FROM marketplace_listings WHERE status = 'active'").get() as { c: number }).c,
-    trial_tokens_spent: (db.prepare("SELECT COUNT(*) AS c FROM trial_purchases").get() as { c: number }).c,
-    battle_pass_passes: (db.prepare("SELECT COUNT(*) AS c FROM battle_pass").get() as { c: number }).c,
-    battle_pass_premium: (db.prepare("SELECT COUNT(*) AS c FROM battle_pass WHERE premium_unlocked = 1").get() as { c: number }).c,
+    users: count(db, 'SELECT COUNT(*) AS c FROM users'),
+    admins: count(db, 'SELECT COUNT(*) AS c FROM users WHERE is_admin = 1'),
+    banned: count(db, 'SELECT COUNT(*) AS c FROM users WHERE banned = 1 AND (banned_until = 0 OR banned_until > ?)', Date.now()),
+    characters: count(db, 'SELECT COUNT(*) AS c FROM characters WHERE is_npc = 0'),
+    npcs: count(db, 'SELECT COUNT(*) AS c FROM characters WHERE is_npc = 1'),
+    items: count(db, 'SELECT COUNT(*) AS c FROM items'),
+    monsters: count(db, 'SELECT COUNT(*) AS c FROM monsters'),
+    quests: count(db, 'SELECT COUNT(*) AS c FROM quests'),
+    battles: count(db, 'SELECT COUNT(*) AS c FROM combat_log'),
+    guilds: count(db, 'SELECT COUNT(*) AS c FROM guilds'),
+    open_notices: count(db, "SELECT COUNT(*) AS c FROM dsa_notices WHERE status = 'open'"),
+    purchases_completed: count(db, "SELECT COUNT(*) AS c FROM purchases WHERE status = 'completed'"),
+    market_sales: count(db, "SELECT COUNT(*) AS c FROM marketplace_listings WHERE status = 'sold'"),
+    market_listings_active: count(db, "SELECT COUNT(*) AS c FROM marketplace_listings WHERE status = 'active'"),
+    tower_climbs: count(db, "SELECT COUNT(*) AS c FROM event_log WHERE action IN ('tower_clear','tower_wipe')"),
+    bounty_claims: count(db, "SELECT COUNT(*) AS c FROM event_log WHERE action = 'bounty_claim'"),
+    trial_tokens_spent: count(db, 'SELECT COUNT(*) AS c FROM trial_purchases'),
+    battle_pass_passes: count(db, 'SELECT COUNT(*) AS c FROM battle_pass'),
+    battle_pass_premium: count(db, 'SELECT COUNT(*) AS c FROM battle_pass WHERE premium_unlocked = 1'),
   };
   const recentUsers = db
-    .prepare('SELECT id, username, email, created_at, last_seen_at, is_admin FROM users ORDER BY created_at DESC LIMIT 12')
+    .prepare('SELECT id, username, email, created_at, last_seen_at, is_admin FROM users ORDER BY created_at DESC LIMIT 10')
     .all();
   const topChars = db
-    .prepare("SELECT name, class, level, arena_rating, gold, tower_best_floor, trial_tokens, is_npc FROM characters ORDER BY level DESC, arena_rating DESC LIMIT 10")
+    .prepare('SELECT id, name, class, level, arena_rating, gold, is_npc FROM characters WHERE is_npc = 0 ORDER BY level DESC, arena_rating DESC LIMIT 10')
     .all();
   res.json({ counts, recentUsers, topChars });
 });
 
 /* =========================================================
-   Tower of Trials — leaderboard, force-reset run, edit best
+   Tower of Trials — leaderboard, force-reset run
    ========================================================= */
 router.get('/tower', (_req, res) => {
-  const db = getDb();
-  const climbers = db
+  const climbers = getDb()
     .prepare(
       `SELECT id, name, class, level, tower_best_floor, tower_current_floor, trial_tokens, forge_guarantees
        FROM characters WHERE is_npc = 0 AND tower_best_floor > 0
-       ORDER BY tower_best_floor DESC LIMIT 50`,
+       ORDER BY tower_best_floor DESC LIMIT 100`,
     )
     .all();
   res.json({ climbers });
 });
 
 router.post('/tower/reset/:id', (req, res) => {
-  const id = Number(req.params.id);
-  getDb().prepare('UPDATE characters SET tower_current_floor = 0, tower_run_seed = 0 WHERE id = ?').run(id);
+  const id = parseId(req, res); if (id === null) return;
+  const db = getDb();
+  const before = db.prepare('SELECT name, tower_current_floor FROM characters WHERE id = ?').get(id) as { name: string; tower_current_floor: number } | undefined;
+  if (!before) { res.status(404).json({ error: 'Character not found' }); return; }
+  db.prepare('UPDATE characters SET tower_current_floor = 0, tower_run_seed = 0 WHERE id = ?').run(id);
+  audit(req, res, { action: 'tower_reset', targetType: 'character', targetId: id, before: { tower_current_floor: before.tower_current_floor }, after: { tower_current_floor: 0 }, message: `Tower run reset for ${before.name}` });
   res.json({ ok: true });
 });
 
@@ -102,42 +163,49 @@ router.get('/bounties', (_req, res) => {
 });
 
 router.post('/bounties/clear/:id', (req, res) => {
-  const id = Number(req.params.id);
-  getDb().prepare('DELETE FROM character_bounties WHERE character_id = ?').run(id);
-  res.json({ ok: true });
+  const id = parseId(req, res); if (id === null) return;
+  const info = getDb().prepare('DELETE FROM character_bounties WHERE character_id = ?').run(id);
+  if (info.changes === 0) { res.status(404).json({ error: 'No stored bounties for this character' }); return; }
+  audit(req, res, { action: 'bounties_clear', targetType: 'character', targetId: id, before: { boards: info.changes }, after: { boards: 0 } });
+  res.json({ ok: true, cleared: info.changes });
 });
 
 /* =========================================================
    Battle Pass — view subscriptions, force-unlock premium
    ========================================================= */
+const monthKey = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Month must be YYYY-MM');
+
 router.get('/battlepass', (req, res) => {
-  const month = (req.query.month as string) || '';
-  const where = month ? 'WHERE bp.month_key = ?' : '';
-  const params = month ? [month] : [];
+  const q = parseQuery(z.object({ month: monthKey.optional().or(z.literal('')) }), req, res); if (!q) return;
+  const month = q.month || '';
   const rows = getDb()
     .prepare(
       `SELECT bp.character_id, c.name AS character_name, bp.month_key,
               bp.premium_unlocked, bp.generated_at,
-              json(bp.progress_json) AS progress_json,
-              json(bp.claimed_json) AS claimed_json
+              json(bp.progress_json) AS progress_json
        FROM battle_pass bp JOIN characters c ON c.id = bp.character_id
-       ${where}
+       ${month ? 'WHERE bp.month_key = ?' : ''}
        ORDER BY bp.month_key DESC, c.id LIMIT 200`,
     )
-    .all(...params);
+    .all(...(month ? [month] : []));
   res.json({ rows });
 });
 
 router.post('/battlepass/unlock-premium/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const month = String((req.body && req.body.month) || '');
-  if (!month) { res.status(400).json({ error: 'month_key required' }); return; }
-  getDb().prepare('UPDATE battle_pass SET premium_unlocked = 1 WHERE character_id = ? AND month_key = ?').run(id, month);
+  const id = parseId(req, res); if (id === null) return;
+  const parse = z.object({ month: monthKey }).safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const db = getDb();
+  const row = db.prepare('SELECT premium_unlocked FROM battle_pass WHERE character_id = ? AND month_key = ?').get(id, parse.data.month) as { premium_unlocked: number } | undefined;
+  if (!row) { res.status(404).json({ error: 'No battle pass for this character and month' }); return; }
+  if (row.premium_unlocked === 1) { res.status(409).json({ error: 'Premium is already unlocked' }); return; }
+  db.prepare('UPDATE battle_pass SET premium_unlocked = 1 WHERE character_id = ? AND month_key = ?').run(id, parse.data.month);
+  audit(req, res, { action: 'battlepass_unlock_premium', targetType: 'character', targetId: id, before: { premium_unlocked: 0 }, after: { premium_unlocked: 1 }, meta: { month: parse.data.month } });
   res.json({ ok: true });
 });
 
 /* =========================================================
-   Trial Cache purchases (audit)
+   Trial Cache purchases (read-only)
    ========================================================= */
 router.get('/trial-purchases', (_req, res) => {
   const rows = getDb()
@@ -151,22 +219,26 @@ router.get('/trial-purchases', (_req, res) => {
 });
 
 /* =========================================================
-   Guilds — admin overview + per-track level editing
+   Guilds — overview + per-track level editing
    ========================================================= */
 router.get('/guilds', (_req, res) => {
   const guilds = getDb()
     .prepare(
-      `SELECT g.id, g.name, g.tag, g.level AS slots_tier, g.xp, g.gold,
+      `SELECT g.id, g.name, g.tag, g.level AS slots_tier, g.member_slots, g.xp, g.gold,
               g.attr_level, g.power_level, g.defence_level,
               g.exp_bonus_level, g.gold_bonus_level, g.gold_level,
-              (SELECT COUNT(*) FROM guild_members gm WHERE gm.guild_id = g.id) AS member_count
+              COUNT(gm.character_id) AS member_count
        FROM guilds g
-       ORDER BY g.xp DESC`,
+       LEFT JOIN guild_members gm ON gm.guild_id = g.id
+       GROUP BY g.id
+       ORDER BY g.xp DESC
+       LIMIT 500`,
     )
     .all();
   res.json({ guilds });
 });
 
+const GUILD_FIELDS = ['attr_level', 'power_level', 'defence_level', 'exp_bonus_level', 'gold_bonus_level', 'gold_level', 'xp', 'gold'] as const;
 const guildTrackPatchSchema = z.object({
   attr_level: z.number().int().min(0).max(100).optional(),
   power_level: z.number().int().min(0).max(100).optional(),
@@ -174,317 +246,362 @@ const guildTrackPatchSchema = z.object({
   exp_bonus_level: z.number().int().min(0).max(100).optional(),
   gold_bonus_level: z.number().int().min(0).max(100).optional(),
   gold_level: z.number().int().min(0).max(100).optional(),
-  xp: z.number().int().min(0).optional(),
-  gold: z.number().int().min(0).optional(),
-});
+  xp: z.number().int().min(0).max(1e12).optional(),
+  gold: z.number().int().min(0).max(1e12).optional(),
+}).strict();
+
 router.put('/guilds/:id', (req, res) => {
-  const id = Number(req.params.id);
+  const id = parseId(req, res); if (id === null) return;
   const parse = guildTrackPatchSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const sets: string[] = [];
-  const params: any[] = [];
-  for (const [k, v] of Object.entries(parse.data)) {
-    if (typeof v === 'number') { sets.push(`${k} = ?`); params.push(v); }
-  }
-  if (!sets.length) { res.status(400).json({ error: 'No fields to update' }); return; }
-  params.push(id);
-  const info = getDb().prepare(`UPDATE guilds SET ${sets.join(', ')} WHERE id = ?`).run(...params);
-  if (info.changes !== 1) { res.status(404).json({ error: 'Guild not found' }); return; }
+  const keys = Object.keys(parse.data).filter((k) => (GUILD_FIELDS as readonly string[]).includes(k));
+  if (!keys.length) { res.status(400).json({ error: 'No fields to update' }); return; }
+  const db = getDb();
+  const before = db.prepare(`SELECT name, ${GUILD_FIELDS.join(', ')} FROM guilds WHERE id = ?`).get(id) as Record<string, unknown> | undefined;
+  if (!before) { res.status(404).json({ error: 'Guild not found' }); return; }
+  db.prepare(`UPDATE guilds SET ${keys.map((k) => `${k} = @${k}`).join(', ')} WHERE id = @id`).run({ ...parse.data, id });
+  audit(req, res, { action: 'guild_update', targetType: 'guild', targetId: id, before: pick(before, keys), after: pick(parse.data, keys), message: `Guild ${before.name} updated` });
   res.json({ ok: true });
 });
 
 /* =========================================================
-   Items CRUD
+   Каталог: предмети / чудовища / куестове — общ CRUD
    ========================================================= */
+const bonus = z.number().int().min(-100_000).max(100_000).default(0);
+const price = z.number().int().min(0).max(1_000_000_000).default(0);
+
 const itemSchema = z.object({
-  slug: z.string().min(2).max(60),
-  name: z.string().min(2).max(80),
+  slug: z.string().trim().min(2).max(60).regex(/^[a-z0-9_]+$/, 'Slug: lowercase letters, digits, underscores'),
+  name: z.string().trim().min(2).max(80),
   category: z.enum(['weapon', 'helm', 'armor', 'gloves', 'boots', 'shield', 'ring', 'amulet', 'potion', 'misc']),
   sub_type: z.string().max(20).default(''),
   tier: z.number().int().min(1).max(10).default(1),
   rarity: z.enum(['common', 'uncommon', 'rare', 'epic', 'legendary']).default('common'),
-  level_req: z.number().int().min(1).max(100).default(1),
+  level_req: z.number().int().min(1).max(500).default(1),
   class_req: z.string().max(20).default(''),
-  atk_min: z.number().int().min(0).default(0),
-  atk_max: z.number().int().min(0).default(0),
-  defense: z.number().int().min(0).default(0),
-  hp_bonus: z.number().int().default(0),
-  mp_bonus: z.number().int().default(0),
-  str_bonus: z.number().int().default(0),
-  dex_bonus: z.number().int().default(0),
-  con_bonus: z.number().int().default(0),
-  int_bonus: z.number().int().default(0),
-  cha_bonus: z.number().int().default(0),
-  wis_bonus: z.number().int().default(0),
-  heal_hp: z.number().int().min(0).default(0),
-  heal_mp: z.number().int().min(0).default(0),
-  buy_price: z.number().int().min(0).default(0),
-  sell_price: z.number().int().min(0).default(0),
+  atk_min: z.number().int().min(0).max(1_000_000).default(0),
+  atk_max: z.number().int().min(0).max(1_000_000).default(0),
+  defense: z.number().int().min(0).max(1_000_000).default(0),
+  hp_bonus: bonus, mp_bonus: bonus, str_bonus: bonus, dex_bonus: bonus,
+  con_bonus: bonus, int_bonus: bonus, cha_bonus: bonus, wis_bonus: bonus,
+  heal_hp: z.number().int().min(0).max(1_000_000).default(0),
+  heal_mp: z.number().int().min(0).max(1_000_000).default(0),
+  buy_price: price,
+  sell_price: price,
   icon: z.string().max(40).default('sword'),
   description: z.string().max(500).default(''),
 });
 
-router.get('/items', (_req, res) => {
-  const items = getDb().prepare('SELECT * FROM items ORDER BY tier, category, level_req, name').all();
-  res.json({ items });
-});
-
-router.post('/items', (req, res) => {
-  const parse = itemSchema.safeParse(req.body);
-  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const i = parse.data;
-  try {
-    getDb().prepare(`INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-      atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus,
-      heal_hp, heal_mp, buy_price, sell_price, icon, description) VALUES
-      (@slug, @name, @category, @sub_type, @tier, @rarity, @level_req, @class_req,
-       @atk_min, @atk_max, @defense, @hp_bonus, @mp_bonus, @str_bonus, @dex_bonus, @con_bonus, @int_bonus, @cha_bonus, @wis_bonus,
-       @heal_hp, @heal_mp, @buy_price, @sell_price, @icon, @description)`).run(i);
-    res.json({ ok: true });
-  } catch (e: any) { res.status(400).json({ error: e.message }); }
-});
-
-router.put('/items/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const parse = itemSchema.partial().safeParse(req.body);
-  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const fields = Object.keys(parse.data);
-  if (fields.length === 0) { res.status(400).json({ error: 'No fields' }); return; }
-  const set = fields.map((f) => `${f} = @${f}`).join(', ');
-  getDb().prepare(`UPDATE items SET ${set} WHERE id = @id`).run({ ...parse.data, id });
-  res.json({ ok: true });
-});
-
-router.delete('/items/:id', (req, res) => {
-  const id = Number(req.params.id);
-  try {
-    const info = getDb().prepare('DELETE FROM items WHERE id = ?').run(id);
-    if (info.changes !== 1) { res.status(404).json({ error: 'Item not found' }); return; }
-    res.json({ ok: true });
-  } catch {
-    // FK RESTRICT — предметът е в нечий инвентар или обява (schema.ts:96/510).
-    res.status(409).json({ error: 'Item is in use (owned or listed) and cannot be deleted.' });
-  }
-});
-
-/* =========================================================
-   Monsters CRUD
-   ========================================================= */
 const monsterSchema = z.object({
-  slug: z.string().min(2).max(60),
-  name: z.string().min(2).max(80),
-  level: z.number().int().min(1).max(100),
-  hp: z.number().int().min(1),
-  atk_min: z.number().int().min(0),
-  atk_max: z.number().int().min(0),
-  defense: z.number().int().min(0),
+  slug: z.string().trim().min(2).max(60).regex(/^[a-z0-9_]+$/, 'Slug: lowercase letters, digits, underscores'),
+  name: z.string().trim().min(2).max(80),
+  level: z.number().int().min(1).max(500),
+  hp: z.number().int().min(1).max(100_000_000),
+  atk_min: z.number().int().min(0).max(1_000_000),
+  atk_max: z.number().int().min(0).max(1_000_000),
+  defense: z.number().int().min(0).max(1_000_000),
   speed: z.number().int().min(1).max(50).default(5),
-  xp_reward: z.number().int().min(0),
-  gold_min: z.number().int().min(0),
-  gold_max: z.number().int().min(0),
+  xp_reward: z.number().int().min(0).max(1_000_000_000),
+  gold_min: z.number().int().min(0).max(1_000_000_000),
+  gold_max: z.number().int().min(0).max(1_000_000_000),
   sprite: z.string().max(40).default('goblin'),
   family: z.string().max(20).default('beast'),
   region: z.string().max(40).default('whispering_woods'),
 });
 
-router.get('/monsters', (_req, res) => {
-  const monsters = getDb().prepare('SELECT * FROM monsters ORDER BY level, name').all();
-  res.json({ monsters });
-});
-
-router.post('/monsters', (req, res) => {
-  const parse = monsterSchema.safeParse(req.body);
-  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  try {
-    getDb().prepare(`INSERT INTO monsters (slug, name, level, hp, atk_min, atk_max, defense, speed, xp_reward, gold_min, gold_max, sprite, family, region)
-      VALUES (@slug, @name, @level, @hp, @atk_min, @atk_max, @defense, @speed, @xp_reward, @gold_min, @gold_max, @sprite, @family, @region)`).run(parse.data);
-    res.json({ ok: true });
-  } catch (e: any) { res.status(400).json({ error: e.message }); }
-});
-
-router.put('/monsters/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const parse = monsterSchema.partial().safeParse(req.body);
-  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const fields = Object.keys(parse.data);
-  if (fields.length === 0) { res.status(400).json({ error: 'No fields' }); return; }
-  const set = fields.map((f) => `${f} = @${f}`).join(', ');
-  getDb().prepare(`UPDATE monsters SET ${set} WHERE id = @id`).run({ ...parse.data, id });
-  res.json({ ok: true });
-});
-
-router.delete('/monsters/:id', (req, res) => {
-  const id = Number(req.params.id);
-  getDb().prepare('DELETE FROM monsters WHERE id = ?').run(id);
-  res.json({ ok: true });
-});
-
-/* =========================================================
-   Quests CRUD
-   ========================================================= */
 const questSchema = z.object({
-  slug: z.string().min(2).max(60),
-  title: z.string().min(2).max(120),
+  slug: z.string().trim().min(2).max(60).regex(/^[a-z0-9_]+$/, 'Slug: lowercase letters, digits, underscores'),
+  title: z.string().trim().min(2).max(120),
   region: z.string().max(40),
-  level_req: z.number().int().min(1).max(100),
+  level_req: z.number().int().min(1).max(500),
   energy_cost: z.number().int().min(0).max(99),
-  duration_sec: z.number().int().min(0).default(0),
+  duration_sec: z.number().int().min(0).max(86_400).default(0),
   intro: z.string().max(800),
   narrative: z.string().max(2000),
   monster_slug: z.string().max(60).default(''),
-  xp_reward: z.number().int().min(0),
-  gold_reward: z.number().int().min(0),
+  xp_reward: z.number().int().min(0).max(1_000_000_000),
+  gold_reward: z.number().int().min(0).max(1_000_000_000),
   item_reward: z.string().max(60).default(''),
   success_text: z.string().max(800).default(''),
   failure_text: z.string().max(800).default(''),
 });
 
-router.get('/quests', (_req, res) => {
-  const quests = getDb().prepare('SELECT * FROM quests ORDER BY level_req, region, title').all();
-  res.json({ quests });
-});
+type Row = Record<string, any>;
 
-router.post('/quests', (req, res) => {
-  const parse = questSchema.safeParse(req.body);
-  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  try {
-    getDb().prepare(`INSERT INTO quests (slug, title, region, level_req, energy_cost, duration_sec, intro, narrative,
-       monster_slug, xp_reward, gold_reward, item_reward, success_text, failure_text)
-      VALUES (@slug, @title, @region, @level_req, @energy_cost, @duration_sec, @intro, @narrative,
-       @monster_slug, @xp_reward, @gold_reward, @item_reward, @success_text, @failure_text)`).run(parse.data);
+/** Инварианти между полета — проверяват се върху СЛЕТИЯ ред (и при частичен PUT). */
+function checkItem(r: Row): string | null {
+  if (r.atk_min > r.atk_max) return 'ATK min cannot exceed ATK max.';
+  // Иначе: купи от магазина → продай → безкрайно злато.
+  if (r.buy_price > 0 && r.sell_price > r.buy_price) return 'Sell price cannot exceed buy price (gold exploit).';
+  return null;
+}
+function checkMonster(r: Row): string | null {
+  if (r.atk_min > r.atk_max) return 'ATK min cannot exceed ATK max.';
+  if (r.gold_min > r.gold_max) return 'Gold min cannot exceed gold max.';
+  return null;
+}
+function checkQuest(r: Row, db: Db): string | null {
+  if (r.monster_slug && !db.prepare('SELECT 1 FROM monsters WHERE slug = ?').get(r.monster_slug)) return `Unknown monster slug: ${r.monster_slug}`;
+  if (r.item_reward && !db.prepare('SELECT 1 FROM items WHERE slug = ?').get(r.item_reward)) return `Unknown item slug: ${r.item_reward}`;
+  return null;
+}
+
+interface CatalogDef {
+  path: string;
+  table: 'items' | 'monsters' | 'quests';
+  listKey: string;
+  label: string;
+  orderBy: string;
+  schema: z.AnyZodObject;
+  check: (r: Row, db: Db) => string | null;
+  /** Връща съобщение за 409, ако обектът е в употреба (преди DELETE). */
+  inUse?: (r: Row, db: Db) => string | null;
+}
+
+function catalogCrud(d: CatalogDef): void {
+  const cols = Object.keys(d.schema.shape);
+
+  router.get(`/${d.path}`, (_req, res) => {
+    const rows = getDb().prepare(`SELECT * FROM ${d.table} ORDER BY ${d.orderBy} LIMIT 5000`).all();
+    res.json({ [d.listKey]: rows });
+  });
+
+  router.post(`/${d.path}`, (req, res) => {
+    const parse = d.schema.safeParse(req.body);
+    if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+    const db = getDb();
+    const err = d.check(parse.data, db);
+    if (err) { res.status(400).json({ error: err }); return; }
+    try {
+      const info = db.prepare(`INSERT INTO ${d.table} (${cols.join(', ')}) VALUES (${cols.map((c) => `@${c}`).join(', ')})`).run(parse.data);
+      const id = Number(info.lastInsertRowid);
+      audit(req, res, { action: `${d.path}_create`, targetType: d.path, targetId: id, after: { slug: parse.data.slug, name: parse.data.name ?? parse.data.title } });
+      res.status(201).json({ ok: true, id });
+    } catch (e) { sqliteError(res, e, d.label); }
+  });
+
+  router.put(`/${d.path}/:id`, (req, res) => {
+    const id = parseId(req, res); if (id === null) return;
+    const parse = d.schema.partial().strict().safeParse(req.body);
+    if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+    const keys = Object.keys(parse.data).filter((k) => cols.includes(k));
+    if (!keys.length) { res.status(400).json({ error: 'No fields to update' }); return; }
+    const db = getDb();
+    try {
+      const outcome = db.transaction(() => {
+        const before = db.prepare(`SELECT * FROM ${d.table} WHERE id = ?`).get(id) as Row | undefined;
+        if (!before) return { status: 404, error: `${d.label} not found` } as const;
+        const err = d.check({ ...before, ...parse.data }, db);
+        if (err) return { status: 400, error: err } as const;
+        db.prepare(`UPDATE ${d.table} SET ${keys.map((k) => `${k} = @${k}`).join(', ')} WHERE id = @id`).run({ ...parse.data, id });
+        return { status: 200, before: pick(before, keys) } as const;
+      })();
+      if (outcome.status !== 200) { res.status(outcome.status).json({ error: outcome.error }); return; }
+      audit(req, res, { action: `${d.path}_update`, targetType: d.path, targetId: id, before: outcome.before, after: pick(parse.data, keys) });
+      res.json({ ok: true });
+    } catch (e) { sqliteError(res, e, d.label); }
+  });
+
+  router.delete(`/${d.path}/:id`, destructiveLimiter, (req, res) => {
+    const id = parseId(req, res); if (id === null) return;
+    const db = getDb();
+    const before = db.prepare(`SELECT * FROM ${d.table} WHERE id = ?`).get(id) as Row | undefined;
+    if (!before) { res.status(404).json({ error: `${d.label} not found` }); return; }
+    const busy = d.inUse?.(before, db);
+    if (busy) { res.status(409).json({ error: busy }); return; }
+    try {
+      db.prepare(`DELETE FROM ${d.table} WHERE id = ?`).run(id);
+    } catch {
+      // FK RESTRICT — в нечий инвентар/обява/дневник (schema.ts).
+      res.status(409).json({ error: `${d.label} is in use by players and cannot be deleted.` });
+      return;
+    }
+    audit(req, res, { action: `${d.path}_delete`, targetType: d.path, targetId: id, level: 'warn', before: { slug: before.slug, name: before.name ?? before.title } });
     res.json({ ok: true });
-  } catch (e: any) { res.status(400).json({ error: e.message }); }
-});
+  });
+}
 
-router.put('/quests/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const parse = questSchema.partial().safeParse(req.body);
-  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const fields = Object.keys(parse.data);
-  if (fields.length === 0) { res.status(400).json({ error: 'No fields' }); return; }
-  const set = fields.map((f) => `${f} = @${f}`).join(', ');
-  getDb().prepare(`UPDATE quests SET ${set} WHERE id = @id`).run({ ...parse.data, id });
-  res.json({ ok: true });
+catalogCrud({ path: 'items', table: 'items', listKey: 'items', label: 'Item', orderBy: 'tier, category, level_req, name', schema: itemSchema, check: checkItem });
+catalogCrud({
+  path: 'monsters', table: 'monsters', listKey: 'monsters', label: 'Monster', orderBy: 'level, name', schema: monsterSchema, check: checkMonster,
+  inUse: (r, db) => {
+    const n = (db.prepare('SELECT COUNT(*) AS c FROM quests WHERE monster_slug = ?').get(r.slug) as { c: number }).c;
+    return n > 0 ? `Monster is used by ${n} quest(s) — reassign them first.` : null;
+  },
 });
-
-router.delete('/quests/:id', (req, res) => {
-  const id = Number(req.params.id);
-  try {
-    const info = getDb().prepare('DELETE FROM quests WHERE id = ?').run(id);
-    if (info.changes !== 1) { res.status(404).json({ error: 'Quest not found' }); return; }
-    res.json({ ok: true });
-  } catch {
-    // FK RESTRICT — куестът е в нечий quest_log/progress (schema.ts:144).
-    res.status(409).json({ error: 'Quest is in use by players and cannot be deleted.' });
-  }
-});
+catalogCrud({ path: 'quests', table: 'quests', listKey: 'quests', label: 'Quest', orderBy: 'level_req, region, title', schema: questSchema, check: checkQuest });
 
 /* =========================================================
    Users management
    ========================================================= */
+const usersQuery = pageQuery.extend({
+  filter: z.enum(['all', 'admins', 'banned']).default('all'),
+});
+
 router.get('/users', (req, res) => {
-  const q = (req.query.q as string | undefined)?.trim() || '';
-  const params: any[] = [];
-  let where = '';
-  if (q) {
-    where = 'WHERE u.username LIKE ? OR u.email LIKE ?';
-    params.push(`%${q}%`, `%${q}%`);
+  const q = parseQuery(usersQuery, req, res); if (!q) return;
+  const where: string[] = [];
+  const params: unknown[] = [];
+  if (q.q) {
+    const like = `%${escapeLike(q.q)}%`;
+    where.push(`(u.username LIKE ? ESCAPE '\\' OR u.email LIKE ? ESCAPE '\\' OR c.name LIKE ? ESCAPE '\\' OR u.id = ?)`);
+    params.push(like, like, like, /^\d+$/.test(q.q) ? Number(q.q) : -1);
   }
-  const users = getDb().prepare(`
+  if (q.filter === 'admins') where.push('u.is_admin = 1');
+  if (q.filter === 'banned') {
+    where.push('u.banned = 1 AND (u.banned_until = 0 OR u.banned_until > ?)');
+    params.push(Date.now());
+  }
+  const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const db = getDb();
+  const total = (db.prepare(`SELECT COUNT(*) AS c FROM users u LEFT JOIN characters c ON c.user_id = u.id ${w}`).get(...params) as { c: number }).c;
+  const rows = db.prepare(`
     SELECT u.id, u.username, u.email, u.is_admin, u.created_at, u.last_seen_at,
-           u.last_ip, u.last_country, u.last_user_agent,
+           u.last_ip, u.last_country, u.country,
+           u.banned, u.banned_until, u.banned_reason,
            c.id AS char_id, c.name AS char_name, c.class AS char_class, c.level AS char_level,
            c.gold, c.gems, c.arena_rating,
            c.hp, c.hp_max, c.mp, c.mp_max, c.stat_points, c.skill_points,
            c.energy, c.energy_max, c.current_title
-    FROM users u LEFT JOIN characters c ON c.user_id = u.id ${where}
-    ORDER BY u.last_seen_at DESC LIMIT 200
-  `).all(...params);
-  res.json({ users });
+    FROM users u LEFT JOIN characters c ON c.user_id = u.id ${w}
+    ORDER BY u.last_seen_at DESC, u.id DESC
+    LIMIT ? OFFSET ?
+  `).all(...params, q.pageSize, (q.page - 1) * q.pageSize);
+  res.json({ ...pageMeta(total, q), users: rows });
 });
 
-router.post('/users/:id/admin', (req, res) => {
-  const id = Number(req.params.id);
-  const { admin } = req.body || {};
-  if (id === req.auth!.uid && admin === false) {
-    res.status(400).json({ error: 'You cannot demote yourself.' });
-    return;
-  }
-  getDb().prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(admin ? 1 : 0, id);
-  res.json({ ok: true });
+/** Детайл на потребител — акаунт, герой, плащания, последни събития. */
+router.get('/users/:id', (req, res) => {
+  const id = parseId(req, res); if (id === null) return;
+  const db = getDb();
+  const user = db.prepare(`
+    SELECT id, username, email, is_admin, created_at, last_seen_at, last_ip, last_country,
+           last_user_agent, country, banned, banned_reason, banned_at, banned_until
+    FROM users WHERE id = ?`).get(id) as Row | undefined;
+  if (!user) { res.status(404).json({ error: 'User not found' }); return; }
+  const character = db.prepare('SELECT id, name, class, level, xp, gold, gems, arena_rating, created_at FROM characters WHERE user_id = ?').get(id) ?? null;
+  const purchases = db.prepare(`
+    SELECT COUNT(*) AS n, COALESCE(SUM(CASE WHEN status = 'completed' THEN amount_cents END), 0) AS paid_cents
+    FROM purchases WHERE character_id = ?`).get((character as Row | null)?.id ?? -1);
+  const events = db.prepare(`
+    SELECT id, ts, category, action, level, message FROM event_log
+    WHERE user_id = ? OR (target_type = 'user' AND target_id = ?)
+    ORDER BY id DESC LIMIT 20`).all(id, id);
+  res.json({ user, character, purchases, events });
 });
 
-/* Grant (or remove, with a negative amount) gems to a user's character. */
-const gemsSchema = z.object({ amount: z.number().int() });
+router.post('/users/:id/admin', destructiveLimiter, (req, res) => {
+  const id = parseId(req, res); if (id === null) return;
+  // Строго boolean — преди `{admin:"false"}` беше truthy и ПОВИШАВАШЕ.
+  const parse = z.object({ admin: z.boolean() }).strict().safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const want = parse.data.admin ? 1 : 0;
+  const db = getDb();
+  const outcome = db.transaction(() => {
+    const u = db.prepare('SELECT username, is_admin FROM users WHERE id = ?').get(id) as { username: string; is_admin: number } | undefined;
+    if (!u) return { status: 404, error: 'User not found' };
+    if (u.is_admin === want) return { status: 409, error: want ? 'User is already an administrator.' : 'User is not an administrator.' };
+    if (!want && id === req.auth!.uid) return { status: 409, error: 'You cannot demote yourself.' };
+    if (!want) {
+      const admins = (db.prepare('SELECT COUNT(*) AS c FROM users WHERE is_admin = 1').get() as { c: number }).c;
+      if (admins <= 1) return { status: 409, error: 'Cannot remove the last administrator.' };
+    }
+    db.prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(want, id);
+    return { status: 200, username: u.username };
+  })();
+  if (outcome.status !== 200) { res.status(outcome.status).json({ error: outcome.error }); return; }
+  audit(req, res, { action: want ? 'admin_promote' : 'admin_demote', targetType: 'user', targetId: id, level: 'warn', before: { is_admin: 1 - want }, after: { is_admin: want }, message: `${outcome.username} ${want ? 'promoted to' : 'demoted from'} admin` });
+  res.json({ ok: true, is_admin: want });
+});
+
+/* Грант (или отнемане с отрицателна сума) на диаманти. */
+const gemsSchema = z.object({ amount: z.number().int().min(-1_000_000).max(1_000_000).refine((n) => n !== 0, 'Amount must be non-zero') }).strict();
 router.post('/users/:id/gems', (req, res) => {
+  const userId = parseId(req, res); if (userId === null) return;
   const parse = gemsSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const userId = Number(req.params.id);
-  const db = getDb();
-  const char = db.prepare('SELECT id, name, gems FROM characters WHERE user_id = ?').get(userId) as any;
-  if (!char) { res.status(404).json({ error: 'That user has no character.' }); return; }
   const delta = parse.data.amount;
-  const newGems = Math.max(0, (char.gems || 0) + delta);
-  db.prepare('UPDATE characters SET gems = ?, total_gems_earned = total_gems_earned + ? WHERE id = ?')
-    .run(newGems, Math.max(0, delta), char.id);
-  res.json({ ok: true, name: char.name, gems: newGems });
+  const db = getDb();
+  const out = db.transaction(() => {
+    const ch = db.prepare('SELECT id, name, gems FROM characters WHERE user_id = ?').get(userId) as { id: number; name: string; gems: number } | undefined;
+    if (!ch) return null;
+    const next = Math.max(0, (ch.gems || 0) + delta);
+    db.prepare('UPDATE characters SET gems = ?, total_gems_earned = total_gems_earned + ? WHERE id = ?').run(next, Math.max(0, delta), ch.id);
+    return { ch, next };
+  })();
+  if (!out) { res.status(404).json({ error: 'That user has no character.' }); return; }
+  audit(req, res, { action: 'gems_grant', targetType: 'character', targetId: out.ch.id, level: 'warn', before: { gems: out.ch.gems }, after: { gems: out.next }, meta: { delta, user_id: userId } });
+  res.json({ ok: true, name: out.ch.name, gems: out.next });
 });
 
+const CHAR_FIELDS = ['level', 'gold', 'hp', 'hp_max', 'mp', 'mp_max', 'energy', 'energy_max', 'arena_rating', 'stat_points', 'skill_points', 'current_title'] as const;
 const charPatchSchema = z.object({
-  level: z.number().int().min(1).optional(),
-  gold: z.number().int().min(0).optional(),
-  hp: z.number().int().min(1).optional(),
-  hp_max: z.number().int().min(1).optional(),
-  mp: z.number().int().min(0).optional(),
-  mp_max: z.number().int().min(0).optional(),
-  energy: z.number().int().min(0).optional(),
+  level: z.number().int().min(1).max(500).optional(),
+  gold: z.number().int().min(0).max(1e12).optional(),
+  hp: z.number().int().min(1).max(10_000_000).optional(),
+  hp_max: z.number().int().min(1).max(10_000_000).optional(),
+  mp: z.number().int().min(0).max(10_000_000).optional(),
+  mp_max: z.number().int().min(0).max(10_000_000).optional(),
+  energy: z.number().int().min(0).max(999).optional(),
   energy_max: z.number().int().min(1).max(999).optional(),
-  arena_rating: z.number().int().min(0).optional(),
-  stat_points: z.number().int().min(0).optional(),
-  skill_points: z.number().int().min(0).optional(),
-  current_title: z.string().max(40).optional(),
-});
+  arena_rating: z.number().int().min(0).max(100_000).optional(),
+  stat_points: z.number().int().min(0).max(100_000).optional(),
+  skill_points: z.number().int().min(0).max(100_000).optional(),
+  current_title: z.string().trim().max(40).optional(),
+}).strict();
 
 router.put('/characters/:id', (req, res) => {
-  const id = Number(req.params.id);
+  const id = parseId(req, res); if (id === null) return;
   const parse = charPatchSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const fields = Object.keys(parse.data);
-  if (fields.length === 0) { res.status(400).json({ error: 'No fields' }); return; }
-  const set = fields.map((f) => `${f} = @${f}`).join(', ');
-  const info = getDb().prepare(`UPDATE characters SET ${set} WHERE id = @id`).run({ ...parse.data, id });
-  if (info.changes !== 1) { res.status(404).json({ error: 'Character not found' }); return; }
-  res.json({ ok: true });
-});
-
-router.delete('/users/:id', (req, res) => {
-  const id = Number(req.params.id);
-  if (id === req.auth!.uid) {
-    res.status(400).json({ error: 'You cannot delete your own account.' });
-    return;
-  }
+  const keys = Object.keys(parse.data);
+  if (!keys.length) { res.status(400).json({ error: 'No fields to update' }); return; }
   const db = getDb();
-  const target = db.prepare('SELECT id FROM users WHERE id = ?').get(id);
-  if (!target) { res.status(404).json({ error: 'User not found' }); return; }
-  // Споделен erasure — разпуска водени гилдии (иначе FK RESTRICT крах),
-  // чисти event_log PII и отменя обявите (изравнено с account.ts self-delete).
-  db.transaction((uid: number) => eraseUser(db, uid))(id);
+  const outcome = db.transaction(() => {
+    const before = db.prepare(`SELECT name, ${CHAR_FIELDS.join(', ')} FROM characters WHERE id = ?`).get(id) as Row | undefined;
+    if (!before) return { status: 404, error: 'Character not found' } as const;
+    const m: Row = { ...before, ...parse.data };
+    if (m.hp > m.hp_max) return { status: 400, error: 'HP cannot exceed HP max.' } as const;
+    if (m.mp > m.mp_max) return { status: 400, error: 'MP cannot exceed MP max.' } as const;
+    if (m.energy > m.energy_max) return { status: 400, error: 'Energy cannot exceed energy max.' } as const;
+    db.prepare(`UPDATE characters SET ${keys.map((k) => `${k} = @${k}`).join(', ')} WHERE id = @id`).run({ ...parse.data, id });
+    return { status: 200, before } as const;
+  })();
+  if (outcome.status !== 200) { res.status(outcome.status).json({ error: outcome.error }); return; }
+  audit(req, res, { action: 'character_update', targetType: 'character', targetId: id, before: pick(outcome.before, keys), after: pick(parse.data, keys), message: `Character ${outcome.before.name} edited` });
   res.json({ ok: true });
 });
 
-// Audit (security round H1): admin-minted accounts used to allow
-// 6-character passwords with no common-word block — an attacker who
-// phished an admin could create a backdoor account with `password1`
-// and walk in via the front door. Now uses the same passwordRule +
-// bcrypt 12 rounds as the public /register endpoint.
+/**
+ * GDPR чл. 17 — изтриване на акаунт от админ. Необратимо, затова изисква
+ * `?confirm=<потребителско име>` (двойна защита освен UI диалога) и НЕ
+ * позволява изтриване на себе си или на друг администратор.
+ */
+router.delete('/users/:id', destructiveLimiter, (req, res) => {
+  const id = parseId(req, res); if (id === null) return;
+  const confirm = typeof req.query.confirm === 'string' ? req.query.confirm : '';
+  if (id === req.auth!.uid) { res.status(409).json({ error: 'You cannot delete your own account here.' }); return; }
+  const db = getDb();
+  const target = db.prepare('SELECT id, username, is_admin FROM users WHERE id = ?').get(id) as { id: number; username: string; is_admin: number } | undefined;
+  if (!target) { res.status(404).json({ error: 'User not found' }); return; }
+  if (target.is_admin === 1) { res.status(409).json({ error: 'Cannot delete an administrator. Demote them first.' }); return; }
+  if (confirm !== target.username) { res.status(400).json({ error: 'Confirmation does not match the username.' }); return; }
+  // Споделен erasure — разпуска водени гилдии, чисти event_log PII, отменя обявите.
+  db.transaction((uid: number) => eraseUser(db, uid))(id);
+  // Одитът пази само id (минимизация — останалото е изтрито по чл. 17).
+  audit(req, res, { action: 'user_erase', targetType: 'user', targetId: id, level: 'warn', before: { exists: true }, after: { exists: false }, message: `User #${id} erased (GDPR Art. 17)` });
+  res.json({ ok: true });
+});
+
+// Админ-създадени акаунти: същото passwordRule + bcrypt 12 като /register.
 const createUserSchema = z.object({
   username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/, 'Use letters, numbers, underscores only'),
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email().max(200),
   password: passwordRule,
   is_admin: z.boolean().optional(),
-});
+}).strict();
 
-router.post('/users', async (req, res) => {
+router.post('/users', destructiveLimiter, async (req, res) => {
   const parse = createUserSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const { username, email, password, is_admin } = parse.data;
@@ -493,47 +610,92 @@ router.post('/users', async (req, res) => {
   if (ex) { res.status(409).json({ error: 'Username or email already in use' }); return; }
   const hash = await bcrypt.hash(password, PASSWORD_BCRYPT_ROUNDS);
   const now = Date.now();
-  db.prepare('INSERT INTO users (username, email, password_hash, created_at, last_seen_at, is_admin) VALUES (?, ?, ?, ?, ?, ?)').run(username, email, hash, now, now, is_admin ? 1 : 0);
-  res.json({ ok: true });
+  try {
+    const info = db.prepare('INSERT INTO users (username, email, password_hash, created_at, last_seen_at, is_admin) VALUES (?, ?, ?, ?, ?, ?)').run(username, email, hash, now, now, is_admin ? 1 : 0);
+    const id = Number(info.lastInsertRowid);
+    audit(req, res, { action: 'user_create', targetType: 'user', targetId: id, level: is_admin ? 'warn' : 'info', after: { username, is_admin: is_admin ? 1 : 0 } });
+    res.status(201).json({ ok: true, id });
+  } catch (e) { sqliteError(res, e, 'User'); }
+});
+
+/* =========================================================
+   Поръчки (Stripe покупки) — само четене, с търсене/пагинация
+   ========================================================= */
+const purchasesQuery = pageQuery.extend({
+  status: z.enum(['all', 'pending', 'completed', 'failed', 'refunded', 'disputed']).default('all'),
+});
+router.get('/purchases', (req, res) => {
+  const q = parseQuery(purchasesQuery, req, res); if (!q) return;
+  const where: string[] = [];
+  const params: unknown[] = [];
+  if (q.status !== 'all') { where.push('p.status = ?'); params.push(q.status); }
+  if (q.q) {
+    const like = `%${escapeLike(q.q)}%`;
+    where.push(`(c.name LIKE ? ESCAPE '\\' OR p.kind LIKE ? ESCAPE '\\' OR p.stripe_session_id = ? OR p.id = ?)`);
+    params.push(like, like, q.q, /^\d+$/.test(q.q) ? Number(q.q) : -1);
+  }
+  const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const db = getDb();
+  const total = (db.prepare(`SELECT COUNT(*) AS c FROM purchases p LEFT JOIN characters c ON c.id = p.character_id ${w}`).get(...params) as { c: number }).c;
+  const rows = db.prepare(`
+    SELECT p.id, p.character_id, c.name AS character_name, p.kind, p.amount_cents, p.currency,
+           p.gems_granted, p.status, p.mode, p.stripe_session_id, p.created_at, p.completed_at
+    FROM purchases p LEFT JOIN characters c ON c.id = p.character_id ${w}
+    ORDER BY p.id DESC LIMIT ? OFFSET ?`).all(...params, q.pageSize, (q.page - 1) * q.pageSize);
+  res.json({ ...pageMeta(total, q), purchases: rows });
 });
 
 /* =========================================================
    Mail broadcast
    ========================================================= */
 const broadcastSchema = z.object({
-  subject: z.string().min(1).max(120),
-  body: z.string().min(1).max(2000),
-  from_name: z.string().max(40).default('Heralds of the Crown'),
-});
+  subject: z.string().trim().min(1).max(120),
+  body: z.string().trim().min(1).max(2000),
+  from_name: z.string().trim().min(1).max(40).default('Heralds of the Crown'),
+}).strict();
 
-router.post('/broadcast', (req, res) => {
+router.post('/broadcast', destructiveLimiter, (req, res) => {
   const parse = broadcastSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const db = getDb();
-  const chars = db.prepare('SELECT id FROM characters WHERE is_npc = 0').all() as { id: number }[];
   const now = Date.now();
-  const stmt = db.prepare('INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)');
-  const tx = db.transaction((cs: { id: number }[]) => {
-    for (const c of cs) stmt.run(c.id, parse.data.from_name, parse.data.subject, parse.data.body, now);
-  });
-  tx(chars);
-  res.json({ ok: true, sent: chars.length });
+  const sent = db.transaction(() => {
+    const info = db.prepare(
+      `INSERT INTO mail (character_id, from_name, subject, body, created_at)
+       SELECT id, ?, ?, ?, ? FROM characters WHERE is_npc = 0`,
+    ).run(parse.data.from_name, parse.data.subject, parse.data.body, now);
+    return info.changes;
+  })();
+  audit(req, res, { action: 'broadcast', targetType: 'mail', level: 'warn', after: { from_name: parse.data.from_name, subject: parse.data.subject, recipients: sent } });
+  res.json({ ok: true, sent });
 });
 
 /* =========================================================
-   Server info
+   Game settings (runtime knobs) — с граници по ключ
    ========================================================= */
-/* =========================================================
-   Game settings (runtime-tunable knobs)
-   ========================================================= */
-import { SETTINGS_CATALOG, getAllSettings, setSetting, findSetting } from '../game/settings';
+const SETTING_BOUNDS: Record<string, [number, number]> = {
+  stat_upgrade_base_cost: [0, 1_000_000],
+  rename_cost_gold: [0, 1_000_000_000],
+  rename_cooldown_hours: [0, 8760],
+  guild_create_cost_gold: [0, 1_000_000_000],
+  market_fee_pct: [0, 50],
+  market_max_price: [1, 1e12],
+  energy_regen_minutes: [1, 1440],
+  energy_max_default: [1, 999],
+  xp_curve_multiplier: [0.1, 10],
+  crit_multiplier: [1, 10],
+  base_miss_chance: [0, 1],
+  block_chance: [0, 1],
+  block_damage_pct: [0, 1],
+  login_rate_max_per_min: [1, 1000],
+};
 
 router.get('/settings', (_req, res) => {
-  const list = getAllSettings();
-  res.json({ settings: list });
+  const settings = getAllSettings().map((s) => ({ ...s, bounds: SETTING_BOUNDS[s.def.key] ?? null }));
+  res.json({ settings });
 });
 
-const settingPutSchema = z.object({ value: z.union([z.string(), z.number(), z.boolean()]) });
+const settingPutSchema = z.object({ value: z.union([z.string().max(500), z.number(), z.boolean()]) }).strict();
 
 router.put('/settings/:key', (req, res) => {
   const key = req.params.key;
@@ -541,80 +703,144 @@ router.put('/settings/:key', (req, res) => {
   if (!def) { res.status(404).json({ error: 'Unknown setting' }); return; }
   const parse = settingPutSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  // Coerce + validate
-  let v = parse.data.value;
-  if (def.type === 'int') {
-    const n = Number(v);
-    if (!Number.isFinite(n) || !Number.isInteger(n)) { res.status(400).json({ error: 'Integer required' }); return; }
-    v = n;
-  } else if (def.type === 'float') {
-    const n = Number(v);
-    if (!Number.isFinite(n)) { res.status(400).json({ error: 'Number required' }); return; }
+  let v: string | number | boolean = parse.data.value;
+  if (def.type === 'int' || def.type === 'float') {
+    const n = typeof v === 'string' && v.trim() === '' ? NaN : Number(v);
+    if (!Number.isFinite(n) || (def.type === 'int' && !Number.isInteger(n))) {
+      res.status(400).json({ error: def.type === 'int' ? 'Integer required' : 'Number required' }); return;
+    }
+    const b = SETTING_BOUNDS[key];
+    if (b && (n < b[0] || n > b[1])) { res.status(400).json({ error: `Value must be between ${b[0]} and ${b[1]}` }); return; }
     v = n;
   } else if (def.type === 'bool') {
+    if (![true, false, 'true', 'false', 1, 0, '1', '0'].includes(v as never)) { res.status(400).json({ error: 'Boolean required' }); return; }
     v = v === true || v === 'true' || v === 1 || v === '1';
+  } else {
+    v = String(v).trim();
+    if (key === 'allowed_countries') {
+      v = v.toUpperCase().replace(/\s+/g, '');
+      if (!/^[A-Z]{2}(,[A-Z]{2})*$/.test(v)) { res.status(400).json({ error: 'Use comma-separated ISO-2 codes, e.g. BG,IT' }); return; }
+    }
   }
+  const before = getAllSettings().find((s) => s.def.key === key)?.value;
   setSetting(key, v, req.auth!.uid);
+  audit(req, res, { action: 'setting_update', targetType: 'setting', level: def.group === 'security' ? 'warn' : 'info', before: { [key]: before }, after: { [key]: v }, message: `Setting ${key} changed` });
   res.json({ ok: true, key, value: v });
 });
 
-/* ===== Marketplace admin ===== */
-router.get('/marketplace', (_req, res) => {
-  const rows = getDb()
-    .prepare(
-      `SELECT m.*, items.name AS item_name, items.rarity, s.name AS seller_name, b.name AS buyer_name
-       FROM marketplace_listings m
+/* =========================================================
+   Marketplace admin — списък + отмяна (DSA чл. 17 към продавача)
+   ========================================================= */
+const marketQuery = pageQuery.extend({
+  status: z.enum(['all', 'active', 'sold', 'cancelled']).default('all'),
+});
+router.get('/marketplace', (req, res) => {
+  const q = parseQuery(marketQuery, req, res); if (!q) return;
+  const where: string[] = [];
+  const params: unknown[] = [];
+  if (q.status !== 'all') { where.push('m.status = ?'); params.push(q.status); }
+  if (q.q) {
+    const like = `%${escapeLike(q.q)}%`;
+    where.push(`(items.name LIKE ? ESCAPE '\\' OR s.name LIKE ? ESCAPE '\\' OR b.name LIKE ? ESCAPE '\\')`);
+    params.push(like, like, like);
+  }
+  const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const from = `FROM marketplace_listings m
        JOIN items ON items.id = m.item_id
        JOIN characters s ON s.id = m.seller_id
-       LEFT JOIN characters b ON b.id = m.buyer_id
-       ORDER BY m.listed_at DESC LIMIT 200`,
-    )
-    .all();
-  res.json({ listings: rows });
+       LEFT JOIN characters b ON b.id = m.buyer_id ${w}`;
+  const db = getDb();
+  const total = (db.prepare(`SELECT COUNT(*) AS c ${from}`).get(...params) as { c: number }).c;
+  const rows = db.prepare(`
+    SELECT m.id, m.item_id, m.seller_id, m.buyer_id, m.price_gold, m.status, m.listed_at, m.sold_at,
+           items.name AS item_name, items.rarity, s.name AS seller_name, b.name AS buyer_name
+    ${from} ORDER BY m.listed_at DESC LIMIT ? OFFSET ?`).all(...params, q.pageSize, (q.page - 1) * q.pageSize);
+  res.json({ ...pageMeta(total, q), listings: rows });
 });
 
-router.delete('/marketplace/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const db = getDb();
-  const row = db.prepare('SELECT inventory_id, status FROM marketplace_listings WHERE id = ?').get(id) as any;
-  if (!row) { res.status(404).json({ error: 'Listing not found' }); return; }
+const cancelSchema = z.object({
+  reason: z.string().trim().min(3).max(300),
+  ground: z.enum(['terms', 'illegal']).default('terms'),
+  notify: z.boolean().default(true),
+}).strict();
+
+/** Отменя АКТИВНА обява (в транзакция) и по избор праща обосновка. */
+function cancelListing(db: Db, id: number, o: { reason: string; ground: Ground; notify: boolean; fromNotice: boolean }) {
+  const row = db.prepare('SELECT id, inventory_id, seller_id, status, price_gold FROM marketplace_listings WHERE id = ?').get(id) as
+    | { id: number; inventory_id: number; seller_id: number; status: string; price_gold: number } | undefined;
+  if (!row) return { status: 404 as const, error: 'Listing not found' };
+  if (row.status !== 'active') return { status: 409 as const, error: `Only active listings can be cancelled (this one is ${row.status}).` };
   db.prepare(`UPDATE marketplace_listings SET status = 'cancelled' WHERE id = ?`).run(id);
   if (row.inventory_id) db.prepare('UPDATE inventory SET listed = 0 WHERE id = ?').run(row.inventory_id);
-  res.json({ ok: true });
+  if (o.notify) deliverStatement(db, row.seller_id, { kind: 'market_listing', reason: o.reason, ground: o.ground, fromNotice: o.fromNotice });
+  return { status: 200 as const, row };
+}
+
+router.post('/marketplace/:id/cancel', destructiveLimiter, (req, res) => {
+  const id = parseId(req, res); if (id === null) return;
+  const parse = cancelSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const db = getDb();
+  const out = db.transaction(() => cancelListing(db, id, { ...parse.data, fromNotice: false }))();
+  if (out.status !== 200) { res.status(out.status).json({ error: out.error }); return; }
+  audit(req, res, { category: 'moderation', action: 'listing_cancel', targetType: 'market_listing', targetId: id, level: 'warn', before: { status: 'active' }, after: { status: 'cancelled' }, meta: { reason: parse.data.reason, ground: parse.data.ground, notified: parse.data.notify, seller_id: out.row.seller_id } });
+  res.json({ ok: true, notified: parse.data.notify });
 });
 
-/* ===== Event logs ===== */
+/* =========================================================
+   Event logs — филтри + курсорна пагинация (по id)
+   ========================================================= */
+const logsQuery = z.object({
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+  before_id: z.coerce.number().int().positive().optional(),
+  category: z.string().regex(/^[a-z_]{0,24}$/).optional().default(''),
+  level: z.enum(['', 'debug', 'info', 'warn', 'error']).optional().default(''),
+  q: z.string().trim().max(80).optional().default(''),
+  user_id: z.coerce.number().int().positive().optional(),
+});
 router.get('/logs', (req, res) => {
-  const limit = Math.min(500, Number(req.query.limit) || 100);
-  const before = Number(req.query.before) || Date.now() + 1;
-  const category = (req.query.category as string) || '';
-  const level = (req.query.level as string) || '';
-  const params: any[] = [before];
-  let where = 'WHERE ts < ?';
-  if (category) { where += ' AND category = ?'; params.push(category); }
-  if (level)    { where += ' AND level = ?';    params.push(level); }
+  // Преди: `?limit=-1` → `LIMIT -1` в SQLite = БЕЗ таван (целият дневник).
+  const q = parseQuery(logsQuery, req, res); if (!q) return;
+  const where: string[] = [];
+  const params: unknown[] = [];
+  if (q.before_id) { where.push('id < ?'); params.push(q.before_id); }
+  // 'audit' = пълният одит на админите: админ действия + модерация.
+  if (q.category === 'audit') where.push("category IN ('admin', 'moderation')");
+  else if (q.category) { where.push('category = ?'); params.push(q.category); }
+  if (q.level) { where.push('level = ?'); params.push(q.level); }
+  if (q.user_id) { where.push('user_id = ?'); params.push(q.user_id); }
+  if (q.q) {
+    const like = `%${escapeLike(q.q)}%`;
+    where.push(`(action LIKE ? ESCAPE '\\' OR message LIKE ? ESCAPE '\\')`);
+    params.push(like, like);
+  }
   const rows = getDb()
-    .prepare(`SELECT id, ts, category, action, level, user_id, character_id, ip, country, route, message, meta_json, webhook_sent
-              FROM event_log ${where} ORDER BY ts DESC LIMIT ?`)
-    .all(...params, limit);
-  res.json({ logs: rows });
+    .prepare(`SELECT id, ts, category, action, level, user_id, character_id, target_id, target_type, ip, country, route, message, meta_json, webhook_sent
+              FROM event_log ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY id DESC LIMIT ?`)
+    .all(...params, q.limit) as { id: number }[];
+  res.json({ logs: rows, next_before_id: rows.length === q.limit ? rows[rows.length - 1].id : null });
 });
 
-/* ===== Webhook endpoints ===== */
+/* =========================================================
+   Webhook endpoints — тайните НЕ се връщат към клиента
+   ========================================================= */
+const categoryFilter = z.string().trim().max(120).regex(/^(\*|[a-z_]+(,[a-z_]+)*)$/, 'Use * or a comma-separated list of categories');
+
 router.get('/webhooks', (_req, res) => {
-  const rows = getDb().prepare('SELECT * FROM webhook_endpoints ORDER BY created_at DESC').all();
+  const rows = getDb().prepare(`
+    SELECT id, url, category_filter, enabled, created_at, last_called_at, last_status, failures,
+           (secret <> '') AS has_secret
+    FROM webhook_endpoints ORDER BY created_at DESC`).all();
   res.json({ webhooks: rows });
 });
 
 const webhookSchema = z.object({
-  // Audit (security round): reject loopback / RFC1918 / link-local URLs
-  // at registration time so a compromised admin cannot point a webhook
-  // at internal cloud metadata or internal services.
-  url: z.string().url().refine(isSafeWebhookUrl, 'URL must be a public http(s) endpoint — loopback, private, and link-local addresses are blocked'),
+  // Отхвърля loopback / RFC1918 / link-local още при регистрация (SSRF).
+  url: z.string().trim().url().max(500).refine(isSafeWebhookUrl, 'URL must be a public http(s) endpoint — loopback, private, and link-local addresses are blocked'),
   secret: z.string().max(120).default(''),
-  category_filter: z.string().max(120).default('*'),
+  category_filter: categoryFilter.default('*'),
   enabled: z.boolean().default(true),
-});
+}).strict();
 
 router.post('/webhooks', (req, res) => {
   const parse = webhookSchema.safeParse(req.body);
@@ -622,53 +848,66 @@ router.post('/webhooks', (req, res) => {
   const info = getDb()
     .prepare('INSERT INTO webhook_endpoints (url, secret, category_filter, enabled, created_at) VALUES (?, ?, ?, ?, ?)')
     .run(parse.data.url, parse.data.secret, parse.data.category_filter, parse.data.enabled ? 1 : 0, Date.now());
-  // Явен audit — генеричният middleware пропуска /webhooks (за да няма
-  // рекурсия), а SSRF/ексфилтрационната повърхност трябва да оставя следа.
-  logFromRequest(req, { category: 'admin', action: 'webhook_create', level: 'warn', target_id: Number(info.lastInsertRowid), target_type: 'webhook', message: `Webhook added: ${parse.data.url}` });
-  res.json({ ok: true });
+  const id = Number(info.lastInsertRowid);
+  audit(req, res, { action: 'webhook_create', targetType: 'webhook', targetId: id, level: 'warn', after: { url: parse.data.url, category_filter: parse.data.category_filter, enabled: parse.data.enabled, secret: parse.data.secret } });
+  res.status(201).json({ ok: true, id });
 });
 
-router.delete('/webhooks/:id', (req, res) => {
-  const id = Number(req.params.id);
-  getDb().prepare('DELETE FROM webhook_endpoints WHERE id = ?').run(id);
-  logFromRequest(req, { category: 'admin', action: 'webhook_delete', level: 'warn', target_id: id, target_type: 'webhook', message: `Webhook ${id} deleted` });
-  res.json({ ok: true });
-});
+const webhookPatchSchema = z.object({
+  enabled: z.boolean().optional(),
+  category_filter: categoryFilter.optional(),
+  secret: z.string().max(120).optional(),
+}).strict();
 
-// Toggle a webhook on/off without deleting it.
 router.patch('/webhooks/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const fields: string[] = [];
-  const params: any[] = [];
-  if (typeof req.body?.enabled === 'boolean') { fields.push('enabled = ?'); params.push(req.body.enabled ? 1 : 0); }
-  if (typeof req.body?.category_filter === 'string') { fields.push('category_filter = ?'); params.push(req.body.category_filter); }
-  if (typeof req.body?.secret === 'string') { fields.push('secret = ?'); params.push(req.body.secret); }
-  if (fields.length === 0) { res.status(400).json({ error: 'No fields to update.' }); return; }
-  params.push(id);
-  getDb().prepare(`UPDATE webhook_endpoints SET ${fields.join(', ')} WHERE id = ?`).run(...params);
-  logFromRequest(req, { category: 'admin', action: 'webhook_update', level: 'warn', target_id: id, target_type: 'webhook', message: `Webhook ${id} updated`, meta: { fields: Object.keys(req.body || {}) } });
+  const id = parseId(req, res); if (id === null) return;
+  const parse = webhookPatchSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const keys = Object.keys(parse.data);
+  if (!keys.length) { res.status(400).json({ error: 'No fields to update.' }); return; }
+  const db = getDb();
+  const before = db.prepare('SELECT enabled, category_filter, secret FROM webhook_endpoints WHERE id = ?').get(id) as Row | undefined;
+  if (!before) { res.status(404).json({ error: 'Webhook not found' }); return; }
+  const vals: Row = { ...parse.data, id };
+  if (typeof vals.enabled === 'boolean') vals.enabled = vals.enabled ? 1 : 0;
+  db.prepare(`UPDATE webhook_endpoints SET ${keys.map((k) => `${k} = @${k}`).join(', ')} WHERE id = @id`).run(vals);
+  audit(req, res, { action: 'webhook_update', targetType: 'webhook', targetId: id, level: 'warn', before: pick(before, keys), after: pick(vals, keys) });
   res.json({ ok: true });
 });
 
-// Fire a test event through a single webhook so the admin can confirm
-// it actually arrives in Discord (or wherever) without waiting for a
-// real game event. Picks the webhook by id, builds a sample payload
-// tagged `system.webhook_test`, and resets the failures counter on
-// success.
+router.delete('/webhooks/:id', destructiveLimiter, (req, res) => {
+  const id = parseId(req, res); if (id === null) return;
+  const db = getDb();
+  const before = db.prepare('SELECT url, category_filter FROM webhook_endpoints WHERE id = ?').get(id) as Row | undefined;
+  if (!before) { res.status(404).json({ error: 'Webhook not found' }); return; }
+  db.prepare('DELETE FROM webhook_endpoints WHERE id = ?').run(id);
+  audit(req, res, { action: 'webhook_delete', targetType: 'webhook', targetId: id, level: 'warn', before });
+  res.json({ ok: true });
+});
+
+/**
+ * Тестово събитие КЪМ ТОЗИ webhook (преди: logEvent към ВСИЧКИ webhook-и с
+ * филтър 'system' — избраният изобщо не получаваше нищо, ако филтърът му не
+ * включваше system). Минава през същия deliver() със SSRF/DNS-rebinding защита.
+ */
 router.post('/webhooks/:id/test', async (req, res) => {
-  const id = Number(req.params.id);
-  const row = getDb().prepare('SELECT * FROM webhook_endpoints WHERE id = ?').get(id) as { id: number; url: string; secret: string } | undefined;
+  const id = parseId(req, res); if (id === null) return;
+  const db = getDb();
+  const row = db.prepare('SELECT id, url, secret FROM webhook_endpoints WHERE id = ?').get(id) as { id: number; url: string; secret: string } | undefined;
   if (!row) { res.status(404).json({ error: 'Webhook not found' }); return; }
-  // Reuse the public log path so the test payload follows the same
-  // discord-formatting and SSRF-guard codepath as a real event.
-  logEvent({
-    category: 'system',
-    action: 'webhook_test',
-    level: 'info',
-    message: 'Webhook test fired from admin panel.',
-    meta: { triggered_by_admin_id: req.auth?.uid, webhook_id: id, ts: Date.now() },
-  });
-  res.json({ ok: true, message: 'Test event queued. Check the destination for delivery.' });
+  const payload = {
+    id: 0, ts: Date.now(), category: 'system', action: 'webhook_test', level: 'info',
+    message: 'Webhook test fired from the Nexus Dominion admin panel.',
+    meta: { webhook_id: id },
+  };
+  await Promise.race([
+    deliver(row, payload).catch(() => undefined),
+    new Promise((r) => setTimeout(r, 8000)),
+  ]);
+  const after = db.prepare('SELECT last_status, last_called_at FROM webhook_endpoints WHERE id = ?').get(id) as { last_status: number | null; last_called_at: number | null };
+  const delivered = typeof after.last_status === 'number' && after.last_status >= 200 && after.last_status < 300;
+  audit(req, res, { action: 'webhook_test', targetType: 'webhook', targetId: id, after: { last_status: after.last_status }, meta: { delivered } });
+  res.json({ ok: true, delivered, status: after.last_status });
 });
 
 router.get('/server', (_req, res) => {
@@ -682,44 +921,138 @@ router.get('/server', (_req, res) => {
 });
 
 /* =========================================================
-   Moderation (DSA чл. 16(6)/17 — targeted takedown + бан)
+   Moderation (DSA чл. 16/17 — таргетирано сваляне + бан)
 
-   Одиторът (Правния Разбирач) отбеляза, че dsa.ts приема сигнали, но
-   нямаше начин да се СВАЛИ конкретно съдържание (само триене на цял
-   акаунт). Тези endpoint-и дават таргетирано действие + доставка на
-   обосновка (statement of reasons) към ЗАСЕГНАТИЯ автор. Обжалване по
-   чл. 20 не се строи — освободено за микро-предприятия (Раздел 3, чл. 19).
+   Поток: сигнал (dsa.ts) → „Разреши" (resolve: какво реално сочи сигналът,
+   с преглед на съдържанието и автора) → сваляне с основание → обосновка по
+   чл. 17 в пощата на засегнатия, в СЪЩАТА транзакция, в която се затваря
+   сигналът. Обжалване по чл. 20 не се строи — освободено за микро-
+   предприятия (чл. 19); обосновката сочи извънсъдебен (чл. 21) и съдебен път.
    ========================================================= */
+const TAKEDOWN_KINDS = ['character_name', 'bio', 'guild_name', 'guild_tag', 'guild_motto', 'guild_chat_message', 'global_chat_message', 'market_listing'] as const;
+type TakedownKind = (typeof TAKEDOWN_KINDS)[number];
 
-/** Доставя обосновка (чл. 17) до засегнатия герой чрез вътрешната поща. */
-function notifyAffected(characterId: number, reason: string): void {
-  try {
-    getDb().prepare(
-      `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,
-    ).run(
-      characterId,
-      'Trust & Safety',
-      'Content moderation notice',
-      `Some of your content was removed or reset by our moderation team.\n\nReason: ${reason}\n\n`
-        + 'This action was taken under our Terms and the EU Digital Services Act (Art. 17). '
-        + 'If you believe this was a mistake, reply to this message to contact us.',
-      Date.now(),
-    );
-  } catch { /* mail table present in all deploys; ignore mid-migration */ }
+interface TargetInfo {
+  kind: TakedownKind;
+  targetId: number;
+  /** Кратък контекст за админа (име на герой/гилдия, статус на обява); празно за чат. */
+  label: string;
+  preview: string;
+  authorCharId: number | null;
+  authorName: string | null;
 }
 
-const takedownSchema = z.object({
-  kind: z.enum(['character_name', 'guild_name', 'guild_tag', 'guild_motto', 'bio', 'chat_message']),
-  targetId: z.number().int().positive(),
-  reason: z.string().min(3).max(300),
-  notify: z.boolean().default(true),
-  noticeId: z.number().int().positive().optional(), // ако идва от DSA сигнал → резолвни го
+/** Какво реално има зад (kind, id) — за преглед преди сваляне и за одит „от". */
+function describeTarget(db: Db, kind: TakedownKind, id: number): TargetInfo | null {
+  const charName = (cid: number | null) => (cid ? (db.prepare('SELECT name FROM characters WHERE id = ?').get(cid) as { name: string } | undefined)?.name ?? null : null);
+  switch (kind) {
+    case 'character_name':
+    case 'bio': {
+      const c = db.prepare('SELECT id, name, bio FROM characters WHERE id = ?').get(id) as { id: number; name: string; bio: string } | undefined;
+      if (!c) return null;
+      return { kind, targetId: id, label: c.name, preview: kind === 'bio' ? c.bio || '' : c.name, authorCharId: c.id, authorName: c.name };
+    }
+    case 'guild_name':
+    case 'guild_tag':
+    case 'guild_motto': {
+      const g = db.prepare('SELECT id, name, tag, motto, leader_id FROM guilds WHERE id = ?').get(id) as { id: number; name: string; tag: string; motto: string; leader_id: number } | undefined;
+      if (!g) return null;
+      const preview = kind === 'guild_name' ? g.name : kind === 'guild_tag' ? g.tag : g.motto || '';
+      return { kind, targetId: id, label: `${g.name} [${g.tag}]`, preview, authorCharId: g.leader_id, authorName: charName(g.leader_id) };
+    }
+    case 'guild_chat_message':
+    case 'global_chat_message': {
+      const table = kind === 'guild_chat_message' ? 'guild_chat' : 'global_chat';
+      const m = db.prepare(`SELECT id, character_id, message FROM ${table} WHERE id = ?`).get(id) as { id: number; character_id: number; message: string } | undefined;
+      if (!m) return null;
+      return { kind, targetId: id, label: '', preview: m.message, authorCharId: m.character_id, authorName: charName(m.character_id) };
+    }
+    case 'market_listing': {
+      const l = db.prepare(`SELECT m.id, m.seller_id, m.status, m.price_gold, i.name AS item FROM marketplace_listings m JOIN items i ON i.id = m.item_id WHERE m.id = ?`).get(id) as { id: number; seller_id: number; status: string; price_gold: number; item: string } | undefined;
+      if (!l) return null;
+      return { kind, targetId: id, label: l.status, preview: `${l.item} — ${l.price_gold}g`, authorCharId: l.seller_id, authorName: charName(l.seller_id) };
+    }
+  }
+}
+
+/** Всички възможни цели на сигнал. „chat:N" е двусмислен (глобален и гилдийски
+ *  чат ползват един и същ префикс) → връщаме и двата кандидата с преглед,
+ *  вместо да трием на сляпо грешното съобщение. */
+function resolveNotice(db: Db, n: { content_kind: string; content_ref: string }): TargetInfo[] {
+  const ref = String(n.content_ref || '').trim();
+  const out: TargetInfo[] = [];
+  const push = (t: TargetInfo | null) => { if (t) out.push(t); };
+  let m: RegExpMatchArray | null;
+  if ((m = ref.match(/^(?:chat|gchat|global):(\d+)$/i))) {
+    push(describeTarget(db, 'global_chat_message', Number(m[1])));
+    if (!/^(gchat|global):/i.test(ref)) push(describeTarget(db, 'guild_chat_message', Number(m[1])));
+  } else if ((m = ref.match(/^guildchat:(\d+)$/i))) {
+    push(describeTarget(db, 'guild_chat_message', Number(m[1])));
+  } else if ((m = ref.match(/^char(?:acter)?:(.+)$/i))) {
+    const key = m[1].trim();
+    const c = (/^\d+$/.test(key)
+      ? db.prepare('SELECT id FROM characters WHERE id = ?').get(Number(key))
+      : db.prepare('SELECT id FROM characters WHERE name = ? COLLATE NOCASE').get(key)) as { id: number } | undefined;
+    if (c) { push(describeTarget(db, 'character_name', c.id)); push(describeTarget(db, 'bio', c.id)); }
+  } else if ((m = ref.match(/^guild:(.+)$/i))) {
+    const key = m[1].trim();
+    const g = (/^\d+$/.test(key)
+      ? db.prepare('SELECT id FROM guilds WHERE id = ?').get(Number(key))
+      : db.prepare('SELECT id FROM guilds WHERE name = ? COLLATE NOCASE OR tag = ? COLLATE NOCASE').get(key, key)) as { id: number } | undefined;
+    if (g) (['guild_name', 'guild_tag', 'guild_motto'] as const).forEach((k) => push(describeTarget(db, k, g.id)));
+  } else if ((m = ref.match(/^(?:market|listing):(\d+)$/i))) {
+    push(describeTarget(db, 'market_listing', Number(m[1])));
+  }
+  return out;
+}
+
+const noticesQuery = pageQuery.extend({
+  status: z.enum(['open', 'actioned', 'rejected', 'all']).default('open'),
+});
+/** Списък DSA сигнали (open най-горе), с броячи по статус. */
+router.get('/moderation/notices', (req, res) => {
+  const q = parseQuery(noticesQuery, req, res); if (!q) return;
+  const db = getDb();
+  const w = q.status === 'all' ? '' : 'WHERE status = ?';
+  const p = q.status === 'all' ? [] : [q.status];
+  const total = (db.prepare(`SELECT COUNT(*) AS c FROM dsa_notices ${w}`).get(...p) as { c: number }).c;
+  const rows = db.prepare(`
+    SELECT id, content_kind, content_ref, reason, description, notifier_name, notifier_email,
+           status, decision, decided_at, created_at
+    FROM dsa_notices ${w}
+    ORDER BY (status = 'open') DESC, created_at DESC LIMIT ? OFFSET ?`).all(...p, q.pageSize, (q.page - 1) * q.pageSize);
+  const byStatus = Object.fromEntries((db.prepare('SELECT status, COUNT(*) AS c FROM dsa_notices GROUP BY status').all() as { status: string; c: number }[]).map((r) => [r.status, r.c]));
+  res.json({ ...pageMeta(total, q), notices: rows, counts: byStatus });
 });
 
-// Гарантирано-уникална стойност за UNIQUE колона — иначе squat-нато
-// „Reclaimed<id>"/„Guild <id>" би хвърлило UNIQUE и провалило takedown-а
-// (500 + недоставена обосновка). Проверява и добавя случаен суфикс.
-function uniqueValue(db: ReturnType<typeof getDb>, table: string, col: string, candidate: (i: number) => string): string {
+router.get('/moderation/notices/:id/resolve', (req, res) => {
+  const id = parseId(req, res); if (id === null) return;
+  const db = getDb();
+  const notice = db.prepare('SELECT id, content_kind, content_ref, reason, description, status, created_at FROM dsa_notices WHERE id = ?').get(id) as Row | undefined;
+  if (!notice) { res.status(404).json({ error: 'Notice not found' }); return; }
+  res.json({ notice, candidates: resolveNotice(db, notice as { content_kind: string; content_ref: string }) });
+});
+
+/** Преглед на цел по (kind, id) — ръчно въведени цели също се виждат преди сваляне. */
+router.get('/moderation/target', (req, res) => {
+  const q = parseQuery(z.object({ kind: z.enum(TAKEDOWN_KINDS), id: z.coerce.number().int().positive() }), req, res); if (!q) return;
+  const t = describeTarget(getDb(), q.kind, q.id);
+  if (!t) { res.status(404).json({ error: 'Target not found' }); return; }
+  res.json({ target: t });
+});
+
+const takedownSchema = z.object({
+  // 'chat_message' = стар псевдоним за guild_chat_message (обратна съвместимост).
+  kind: z.union([z.enum(TAKEDOWN_KINDS), z.literal('chat_message')]),
+  targetId: z.number().int().positive(),
+  reason: z.string().trim().min(3).max(300),
+  ground: z.enum(['terms', 'illegal']).default('terms'),
+  notify: z.boolean().default(true),
+  noticeId: z.number().int().positive().optional(), // идва от DSA сигнал → затвори го
+}).strict();
+
+// Гарантирано-уникална стойност за UNIQUE колона (squat-нато „Reclaimed<id>").
+function uniqueValue(db: Db, table: 'characters' | 'guilds', col: 'name' | 'tag', candidate: (i: number) => string): string {
   for (let i = 0; i < 30; i++) {
     const v = candidate(i);
     if (!db.prepare(`SELECT 1 FROM ${table} WHERE ${col} = ? LIMIT 1`).get(v)) return v;
@@ -729,146 +1062,174 @@ function uniqueValue(db: ReturnType<typeof getDb>, table: string, col: string, c
 const rnd = (n: number) => Math.random().toString(36).slice(2, 2 + n);
 const rndTag = () => Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
 
-router.post('/moderation/takedown', (req, res) => {
+router.post('/moderation/takedown', destructiveLimiter, (req, res) => {
   const parse = takedownSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const { kind, targetId, reason, notify, noticeId } = parse.data;
+  const kind: TakedownKind = parse.data.kind === 'chat_message' ? 'guild_chat_message' : parse.data.kind;
+  const { targetId, reason, ground, notify, noticeId } = parse.data;
   const db = getDb();
-  let affectedChar: number | undefined;
-  let detail = '';
 
-  const tx = db.transaction(() => {
-    switch (kind) {
-      case 'character_name': {
-        const row = db.prepare('SELECT id FROM characters WHERE id = ?').get(targetId) as { id: number } | undefined;
-        if (!row) return 'not_found';
-        const name = uniqueValue(db, 'characters', 'name', (i) => (i === 0 ? `Reclaimed${targetId}` : `Reclaimed${targetId}_${rnd(4)}`).slice(0, 20));
-        db.prepare('UPDATE characters SET name = ? WHERE id = ?').run(name, targetId);
-        affectedChar = targetId; detail = `character name → ${name}`;
-        return 'ok';
-      }
-      case 'bio': {
-        const row = db.prepare('SELECT id FROM characters WHERE id = ?').get(targetId) as { id: number } | undefined;
-        if (!row) return 'not_found';
-        db.prepare("UPDATE characters SET bio = '' WHERE id = ?").run(targetId);
-        affectedChar = targetId; detail = 'bio cleared';
-        return 'ok';
-      }
-      case 'guild_name':
-      case 'guild_tag':
-      case 'guild_motto': {
-        const g = db.prepare('SELECT id, leader_id FROM guilds WHERE id = ?').get(targetId) as { id: number; leader_id: number } | undefined;
-        if (!g) return 'not_found';
-        if (kind === 'guild_name') {
-          const gn = uniqueValue(db, 'guilds', 'name', (i) => (i === 0 ? `Guild ${targetId}` : `Guild ${targetId} ${rnd(4)}`).slice(0, 30));
-          db.prepare('UPDATE guilds SET name = ? WHERE id = ?').run(gn, targetId); detail = 'guild name reset';
-        } else if (kind === 'guild_tag') {
-          const tag = uniqueValue(db, 'guilds', 'tag', () => rndTag());
-          db.prepare('UPDATE guilds SET tag = ? WHERE id = ?').run(tag, targetId); detail = 'guild tag reset';
-        } else {
-          db.prepare("UPDATE guilds SET motto = '' WHERE id = ?").run(targetId); detail = 'guild motto cleared';
-        }
-        affectedChar = g.leader_id;
-        return 'ok';
-      }
-      case 'chat_message': {
-        const msg = db.prepare('SELECT character_id FROM guild_chat WHERE id = ?').get(targetId) as { character_id: number } | undefined;
-        if (!msg) return 'not_found';
-        db.prepare('DELETE FROM guild_chat WHERE id = ?').run(targetId);
-        affectedChar = msg.character_id; detail = 'chat message removed';
-        return 'ok';
-      }
-    }
-    return 'not_found';
-  });
-
-  let outcome: string;
+  type Outcome = { status: number; error?: string; detail?: string; before?: TargetInfo; notified?: boolean };
+  let outcome: Outcome;
   try {
-    outcome = tx() as string;
-  } catch (e: any) {
-    // Предпазна мрежа — при неочаквана колизия/грешка не хвърляй 500 голо.
+    outcome = db.transaction((): Outcome => {
+      if (noticeId) {
+        const n = db.prepare('SELECT status FROM dsa_notices WHERE id = ?').get(noticeId) as { status: string } | undefined;
+        if (!n) return { status: 404, error: 'Notice not found' };
+        if (n.status !== 'open') return { status: 409, error: 'Notice was already decided' };
+      }
+      const before = describeTarget(db, kind, targetId);
+      if (!before) return { status: 404, error: 'Target not found' };
+      let detail = '';
+      switch (kind) {
+        case 'character_name': {
+          const name = uniqueValue(db, 'characters', 'name', (i) => (i === 0 ? `Reclaimed${targetId}` : `Reclaimed${targetId}_${rnd(4)}`).slice(0, 20));
+          db.prepare('UPDATE characters SET name = ? WHERE id = ?').run(name, targetId);
+          detail = `character name → ${name}`;
+          break;
+        }
+        case 'bio':
+          db.prepare("UPDATE characters SET bio = '' WHERE id = ?").run(targetId);
+          detail = 'bio cleared';
+          break;
+        case 'guild_name': {
+          const gn = uniqueValue(db, 'guilds', 'name', (i) => (i === 0 ? `Guild ${targetId}` : `Guild ${targetId} ${rnd(4)}`).slice(0, 30));
+          db.prepare('UPDATE guilds SET name = ? WHERE id = ?').run(gn, targetId);
+          detail = `guild name → ${gn}`;
+          break;
+        }
+        case 'guild_tag': {
+          const tag = uniqueValue(db, 'guilds', 'tag', () => rndTag());
+          db.prepare('UPDATE guilds SET tag = ? WHERE id = ?').run(tag, targetId);
+          detail = `guild tag → ${tag}`;
+          break;
+        }
+        case 'guild_motto':
+          db.prepare("UPDATE guilds SET motto = '' WHERE id = ?").run(targetId);
+          detail = 'guild motto cleared';
+          break;
+        case 'guild_chat_message':
+          db.prepare('DELETE FROM guild_chat WHERE id = ?').run(targetId);
+          detail = 'guild chat message removed';
+          break;
+        case 'global_chat_message':
+          db.prepare('DELETE FROM global_chat WHERE id = ?').run(targetId);
+          detail = 'public chat message removed';
+          break;
+        case 'market_listing': {
+          const r = cancelListing(db, targetId, { reason, ground, notify: false, fromNotice: !!noticeId });
+          if (r.status !== 200) return { status: r.status, error: r.error };
+          detail = 'listing cancelled';
+          break;
+        }
+      }
+      let notified = false;
+      if (notify && before.authorCharId) {
+        deliverStatement(db, before.authorCharId, { kind, reason, ground, fromNotice: !!noticeId });
+        notified = true;
+      }
+      if (noticeId) {
+        db.prepare(`UPDATE dsa_notices SET status = 'actioned', decision = ?, decided_at = ? WHERE id = ?`)
+          .run(`${detail} — ${reason}`.slice(0, 500), Date.now(), noticeId);
+      }
+      return { status: 200, detail, before, notified };
+    })();
+  } catch {
+    // Неочаквана колизия/грешка — без голо 500 с вътрешен текст.
     res.status(409).json({ error: 'Takedown failed (conflict) — try again.' });
     return;
   }
-  if (outcome === 'not_found') { res.status(404).json({ error: 'Target not found' }); return; }
-
-  if (notify && affectedChar) notifyAffected(affectedChar, reason);
-  if (noticeId) {
-    db.prepare(`UPDATE dsa_notices SET status = 'actioned', decision = ?, decided_at = ? WHERE id = ?`)
-      .run(reason, Date.now(), noticeId);
-  }
-  logEvent({
-    category: 'moderation', action: 'takedown', level: 'warn',
-    user_id: req.auth!.uid, target_id: targetId, target_type: kind,
-    message: `Takedown: ${detail}`, meta: { reason, notified: notify && !!affectedChar, noticeId: noticeId ?? null },
+  if (outcome.status !== 200) { res.status(outcome.status).json({ error: outcome.error }); return; }
+  audit(req, res, {
+    category: 'moderation', action: 'takedown', level: 'warn', targetType: kind, targetId,
+    before: { content: outcome.before!.preview }, after: { result: outcome.detail },
+    message: `Takedown: ${outcome.detail}`,
+    meta: { reason, ground, notified: outcome.notified, noticeId: noticeId ?? null, author_character_id: outcome.before!.authorCharId },
   });
-  res.json({ ok: true, kind, targetId, detail, notified: notify && !!affectedChar });
+  res.json({ ok: true, kind, targetId, detail: outcome.detail, notified: outcome.notified });
 });
 
 /**
  * Ръчен бан (chargeback банът минава през webhook-а автоматично).
- * `durationMs` по избор: 0/липсва = ПОСТОЯНЕН; >0 = временен (изтича).
+ * `durationMs`: 0/липсва = ПОСТОЯНЕН; >0 = временен.
+ * IP/устройство се банват САМО ако не са непублични и не съвпадат с
+ * админски IP/устройство — иначе банът заключва и администраторите.
  */
 const banSchema = z.object({
   userId: z.number().int().positive(),
-  reason: z.string().min(3).max(300),
-  durationMs: z.number().int().nonnegative().max(3153600000000).optional(), // ≤ ~100г
-});
-router.post('/moderation/ban', (req, res) => {
+  reason: z.string().trim().min(3).max(300),
+  durationMs: z.number().int().nonnegative().max(3_153_600_000_000).optional(), // ≤ ~100г
+  banIp: z.boolean().default(true),
+  banDevice: z.boolean().default(true),
+}).strict();
+
+router.post('/moderation/ban', destructiveLimiter, (req, res) => {
   const parse = banSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  const { userId, reason, durationMs } = parse.data;
-  if (userId === req.auth!.uid) { res.status(400).json({ error: 'You cannot ban your own account.' }); return; }
+  const { userId, reason, durationMs, banIp, banDevice } = parse.data;
+  if (userId === req.auth!.uid) { res.status(409).json({ error: 'You cannot ban your own account.' }); return; }
   const db = getDb();
-  const u = db.prepare('SELECT id, last_ip, last_hwid, is_admin FROM users WHERE id = ?').get(userId) as
-    | { id: number; last_ip: string; last_hwid: string; is_admin: number } | undefined;
+  const u = db.prepare('SELECT id, username, last_ip, last_hwid, is_admin, banned, banned_until FROM users WHERE id = ?').get(userId) as
+    | { id: number; username: string; last_ip: string; last_hwid: string; is_admin: number; banned: number; banned_until: number } | undefined;
   if (!u) { res.status(404).json({ error: 'User not found' }); return; }
-  // Не банвай друг администратор (footgun / ескалация при компрометиран акаунт).
-  if (u.is_admin === 1) { res.status(400).json({ error: 'Cannot ban an administrator. Demote them first.' }); return; }
-  banUser({ userId, ip: u.last_ip, hwid: u.last_hwid, reason, durationMs });
+  // Не банвай друг администратор (ескалация при компрометиран акаунт).
+  if (u.is_admin === 1) { res.status(409).json({ error: 'Cannot ban an administrator. Demote them first.' }); return; }
+  const admins = db.prepare('SELECT last_ip, last_hwid FROM users WHERE is_admin = 1').all() as { last_ip: string; last_hwid: string }[];
+  const adminIps = [clientIp(req), ...admins.map((a) => a.last_ip)];
+  const adminDevices = new Set([clientHwid(req), ...admins.map((a) => a.last_hwid)].filter(Boolean));
+  const ip = banIp && u.last_ip && !ipIsShielded(u.last_ip, adminIps) ? u.last_ip : '';
+  const hwid = banDevice && u.last_hwid && !adminDevices.has(u.last_hwid) ? u.last_hwid : '';
+  const skipped = {
+    ip: banIp && !!u.last_ip && !ip ? 'shielded' : null,
+    device: banDevice && !!u.last_hwid && !hwid ? 'shielded' : null,
+  };
+  banUser({ userId, ip, hwid, reason, durationMs });
   const until = durationMs && durationMs > 0 ? Date.now() + durationMs : 0;
-  logEvent({ category: 'moderation', action: 'manual_ban', level: 'warn', user_id: req.auth!.uid, target_id: userId, target_type: 'user', message: `Manual ban (user ${userId})`, meta: { reason, until } });
-  res.json({ ok: true, userId, until, banned_ip: u.last_ip || null, banned_hwid: u.last_hwid || null });
+  audit(req, res, {
+    category: 'moderation', action: 'manual_ban', level: 'warn', targetType: 'user', targetId: userId,
+    before: { banned: u.banned, banned_until: u.banned_until }, after: { banned: 1, banned_until: until },
+    message: `Manual ban (user ${userId})`, meta: { reason, ip_banned: !!ip, device_banned: !!hwid, skipped },
+  });
+  res.json({ ok: true, userId, until, ip_banned: !!ip, device_banned: !!hwid, skipped });
 });
 
-const unbanSchema = z.object({ userId: z.number().int().positive() });
+const unbanSchema = z.object({ userId: z.number().int().positive() }).strict();
 router.post('/moderation/unban', (req, res) => {
   const parse = unbanSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  unbanUser(parse.data.userId);
-  logEvent({ category: 'moderation', action: 'unban', level: 'info', user_id: req.auth!.uid, target_id: parse.data.userId, target_type: 'user', message: `Unban (user ${parse.data.userId})` });
-  res.json({ ok: true, userId: parse.data.userId });
-});
-
-/** Списък DSA сигнали за модерационния панел (open най-горе). */
-router.get('/moderation/notices', (req, res) => {
-  const status = typeof req.query.status === 'string' ? req.query.status : 'open';
+  const { userId } = parse.data;
   const db = getDb();
-  const rows = status === 'all'
-    ? db.prepare('SELECT * FROM dsa_notices ORDER BY (status = \'open\') DESC, created_at DESC LIMIT 200').all()
-    : db.prepare('SELECT * FROM dsa_notices WHERE status = ? ORDER BY created_at DESC LIMIT 200').all(status);
-  res.json({ notices: rows });
+  const u = db.prepare('SELECT banned, banned_until FROM users WHERE id = ?').get(userId) as { banned: number; banned_until: number } | undefined;
+  if (!u) { res.status(404).json({ error: 'User not found' }); return; }
+  const residual = (db.prepare('SELECT (SELECT COUNT(*) FROM banned_ips WHERE user_id = ?) + (SELECT COUNT(*) FROM banned_devices WHERE user_id = ?) AS c').get(userId, userId) as { c: number }).c;
+  if (u.banned !== 1 && residual === 0) { res.status(409).json({ error: 'User is not banned' }); return; }
+  unbanUser(userId);
+  audit(req, res, { category: 'moderation', action: 'unban', targetType: 'user', targetId: userId, before: { banned: u.banned, banned_until: u.banned_until }, after: { banned: 0, banned_until: 0 }, message: `Unban (user ${userId})` });
+  res.json({ ok: true, userId });
 });
 
 router.get('/moderation/bans', (_req, res) => {
   const db = getDb();
   res.json({
     users: db.prepare('SELECT id, username, banned_reason, banned_at, banned_until FROM users WHERE banned = 1 ORDER BY banned_at DESC LIMIT 200').all(),
-    ips: db.prepare('SELECT ip, reason, user_id, created_at FROM banned_ips ORDER BY created_at DESC LIMIT 200').all(),
-    devices: db.prepare('SELECT hwid, reason, user_id, created_at FROM banned_devices ORDER BY created_at DESC LIMIT 200').all(),
+    ips: db.prepare('SELECT ip, reason, user_id, created_at, expires_at FROM banned_ips ORDER BY created_at DESC LIMIT 200').all(),
+    devices: db.prepare('SELECT hwid, reason, user_id, created_at, expires_at FROM banned_devices ORDER BY created_at DESC LIMIT 200').all(),
   });
 });
 
 /** Отхвърляне на DSA сигнал без действие (напр. неоснователен). */
-const rejectSchema = z.object({ decision: z.string().min(3).max(300) });
+const rejectSchema = z.object({ decision: z.string().trim().min(3).max(300) }).strict();
 router.post('/moderation/dsa/:id/reject', (req, res) => {
-  const id = Number(req.params.id);
+  const id = parseId(req, res); if (id === null) return;
   const parse = rejectSchema.safeParse(req.body);
-  if (!Number.isInteger(id) || !parse.success) { res.status(400).json({ error: 'Invalid request' }); return; }
-  const info = getDb().prepare(`UPDATE dsa_notices SET status = 'rejected', decision = ?, decided_at = ? WHERE id = ? AND status = 'open'`)
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const db = getDb();
+  const n = db.prepare('SELECT status FROM dsa_notices WHERE id = ?').get(id) as { status: string } | undefined;
+  if (!n) { res.status(404).json({ error: 'Notice not found' }); return; }
+  if (n.status !== 'open') { res.status(409).json({ error: 'Notice was already decided' }); return; }
+  db.prepare(`UPDATE dsa_notices SET status = 'rejected', decision = ?, decided_at = ? WHERE id = ? AND status = 'open'`)
     .run(parse.data.decision, Date.now(), id);
-  if (info.changes !== 1) { res.status(404).json({ error: 'Notice not found or already decided' }); return; }
-  logEvent({ category: 'moderation', action: 'dsa_reject', level: 'info', user_id: req.auth!.uid, target_id: id, target_type: 'dsa_notice', message: `DSA notice ${id} rejected` });
+  audit(req, res, { category: 'moderation', action: 'dsa_reject', targetType: 'dsa_notice', targetId: id, before: { status: 'open' }, after: { status: 'rejected', decision: parse.data.decision } });
   res.json({ ok: true, id });
 });
 
