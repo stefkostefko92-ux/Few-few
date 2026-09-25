@@ -103,7 +103,7 @@ export default function PrivacyPage() {
               </Tr>
               <Tr>
                 <Td>Server activity events (optional, off by default)</Td>
-                <Td>Member actions the server operator chooses to log — voice mute/deaf/join, role &amp; nickname changes, timeouts, bans/kicks (no message content)</Td>
+                <Td>Member actions the server operator chooses to log — voice mute/deaf/join, role &amp; nickname changes, timeouts, bans/kicks, channel changes; and, only if the operator enables the <em>Messages</em> category, the text of edited and deleted messages</Td>
                 <Td>Server moderation and audit trail, enabled and configured by the server operator</Td>
                 <Td>Processed on behalf of the server operator (controller) under Art. 28 — the operator enables the feature and determines the legal basis and member notice</Td>
                 <Td>Relayed in real time to the operator's chosen Discord channel only — not stored in our database</Td>
@@ -141,7 +141,7 @@ export default function PrivacyPage() {
                 <Td>Stack traces, request context (anonymised), error messages</Td>
                 <Td>Debug and improve the Service (Sentry)</Td>
                 <Td>Art. 6(1)(f) — legitimate interest (service quality)</Td>
-                <Td>30 days (Sentry default)</Td>
+                <Td>Up to 90 days (Sentry retention)</Td>
               </Tr>
             </tbody>
           </table>

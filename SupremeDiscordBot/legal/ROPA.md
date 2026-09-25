@@ -147,7 +147,7 @@ Target: handled promptly, ≤72 h. Staff accounts and accounts with active paid 
 | **Data subjects** | Dashboard users; Discord members whose identifiers appear in a failing request |
 | **Recipients** | Functional Software, Inc. (Sentry) |
 | **3rd country transfers** | USA — Standard Contractual Clauses (EU region selected where available) |
-| **Retention period** | 90 days (Sentry default retention) |
+| **Retention period** | Up to 90 days (Sentry retention). Request bodies, cookies and authentication headers are removed in `beforeSend` (`backend/src/instrument.js`) before transmission |
 
 ---
 

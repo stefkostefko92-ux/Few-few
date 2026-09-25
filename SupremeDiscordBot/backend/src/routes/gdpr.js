@@ -418,8 +418,8 @@ router.post("/report-abuse", async (req, res, next) => {
     if (!allowedTypes.includes(targetType)) {
       return res.status(400).json({ error: `targetType must be: ${allowedTypes.join(", ")}` });
     }
-    if (!reason || reason.length < 10) {
-      return res.status(400).json({ error: "reason must be at least 10 characters" });
+    if (typeof reason !== "string" || reason.length < 10 || reason.length > 2000) {
+      return res.status(400).json({ error: "reason must be 10–2000 characters" });
     }
 
     // Store as audit log entry with ABUSE_REPORT action
@@ -449,7 +449,10 @@ router.post("/report-abuse", async (req, res, next) => {
         Sentry.captureMessage(`DSA abuse report: ${targetType}`, {
           level: "warning",
           tags: { kind: "abuse_report" },
-          extra: { reportId: report.id, targetId, reason },
+          // Само идентификатори: свободният текст на подателя (reason/details)
+          // остава в базата в ЕС и се чете от админ конзолата — Privacy Policy
+          // обещава анонимизирани данни към Sentry (Правният Разбирач 25.09.2026).
+          extra: { reportId: report.id, targetType },
         });
       } catch { /* monitoring is best-effort — never block the response */ }
     }
