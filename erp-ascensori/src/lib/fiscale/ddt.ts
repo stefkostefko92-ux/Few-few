@@ -2,7 +2,10 @@
 //
 // Основанието е чл. 1, ал. 3 D.P.R. 472/1996: документът трябва да носи датата,
 // данните на прехвърлителя, на приобретателя и на евентуалния превозвач,
-// естеството/качеството/количеството на стоките и основанието за превоза.
+// естеството/качеството/количеството на стоките. ОСНОВАНИЕТО ЗА ПРЕВОЗА
+// (causale) идва от ДРУГА норма — чл. 1, ал. 3, б. „а" D.P.R. 441/1997: без
+// него стоката, предадена на трето лице, се ПРЕЗЮМИРА продадена. Затова се
+// цитира отделно, а не под 472/1996 (прегледът на Правния хвана смесването).
 //
 // ЧИСТА ФУНКЦИЯ, БЕЗ БАЗА. Оттам и тестовете: правилото се проверява без сървър,
 // а маршрутът, интерфейсът и PDF-ът ползват ЕДНА истина. Две проверки за едни и
@@ -31,6 +34,17 @@ function vuoto(v: string | null | undefined): boolean {
   return !String(v ?? "").trim();
 }
 
+/** „1 riga" / „3 righe" — не „riga/e": документът се чете от клиента. */
+function righe(n: number): string {
+  return n === 1 ? "1 riga" : `${n} righe`;
+}
+
+/** Decimal от Prisma, число или низ — положително крайно число ли е. */
+function quantitaPositiva(v: unknown): boolean {
+  const n = Number(String(v ?? "").replace(",", "."));
+  return Number.isFinite(n) && n > 0;
+}
+
 function dataValida(v: Date | string | null): boolean {
   if (!v) return false;
   const d = typeof v === "string" ? new Date(v) : v;
@@ -54,14 +68,17 @@ export function controllaDdt(d: DdtDaControllare): EsitoDdt {
 
   if (vuoto(d.numero))
     problemi.push("Manca il numero progressivo del documento.");
-  if (!dataValida(d.data)) problemi.push("Manca la data del documento.");
+  if (!dataValida(d.data))
+    problemi.push(
+      "Manca la data del documento (art. 1, comma 3, D.P.R. 472/1996).",
+    );
   if (vuoto(d.destinatario))
     problemi.push(
       "Mancano i dati del destinatario (art. 1, comma 3, D.P.R. 472/1996).",
     );
   if (vuoto(d.causale))
     problemi.push(
-      "Manca la causale del trasporto (art. 1, comma 3, D.P.R. 472/1996).",
+      "Manca la causale del trasporto: senza di essa i beni consegnati a terzi si presumono ceduti (art. 1, comma 3, lett. a), D.P.R. 441/1997).",
     );
 
   if (!d.righe.length)
@@ -69,24 +86,33 @@ export function controllaDdt(d: DdtDaControllare): EsitoDdt {
   const senzaDescrizione = d.righe.filter((r) => vuoto(r.descrizione)).length;
   if (senzaDescrizione)
     problemi.push(
-      `${senzaDescrizione} riga/e senza descrizione: natura, qualità e quantità dei beni sono obbligatorie.`,
+      `${righe(senzaDescrizione)} senza descrizione: natura, qualità e quantità dei beni sono obbligatorie.`,
+    );
+  // Количеството е реквизит САМ ПО СЕБЕ СИ, не само „има ли число": нула или
+  // отрицателно на товарителница значи, че документът не казва какво пътува.
+  const senzaQuantita = d.righe.filter(
+    (r) => !quantitaPositiva(r.quantita),
+  ).length;
+  if (senzaQuantita)
+    problemi.push(
+      `${righe(senzaQuantita)} con quantità mancante o non positiva: la quantità dei beni è obbligatoria.`,
     );
   const senzaUm = d.righe.filter((r) => vuoto(r.um)).length;
   if (senzaUm)
     avvisi.push(
-      `${senzaUm} riga/e senza unità di misura: la quantità resta ambigua.`,
+      `${righe(senzaUm)} senza unità di misura: la quantità resta ambigua.`,
     );
 
   if (!dataValida(d.inizioTrasporto))
     avvisi.push(
-      "Manca la data e ora di inizio del trasporto: senza di essa il documento non si lega al singolo viaggio in caso di controllo su strada.",
+      "Mancano la data e l'ora di inizio del trasporto: senza di esse, in caso di controllo su strada, il documento non si collega al singolo viaggio.",
     );
 
   // Превоз от трето лице: адресът на доставка е това, което превозвачът
   // изпълнява. Без него на товарителницата пише „занеси го някъде".
   if (!vuoto(d.vettore) && vuoto(d.indirizzoConsegna))
     avvisi.push(
-      "Trasporto affidato a un vettore senza indirizzo di consegna indicato.",
+      "Il trasporto è affidato a un vettore, ma manca l'indirizzo di consegna.",
     );
 
   return { problemi, avvisi };

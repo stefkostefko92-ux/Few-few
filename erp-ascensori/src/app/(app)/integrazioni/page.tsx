@@ -280,7 +280,11 @@ export default function Pagina() {
                     ) : (
                       <span className="inline-flex items-center gap-1 text-danger-text">
                         <IcoAttenzione />
-                        disattivato ({w.fallimenti} fallimenti)
+                        disattivato ({w.fallimenti}{" "}
+                        {w.fallimenti === 1
+                          ? "consegna non riuscita"
+                          : "consegne non riuscite"}
+                        )
                       </span>
                     )}
                   </td>

@@ -112,8 +112,10 @@ export default function Pagina() {
       </div>
 
       {/* Разкриването на AI функцията стои ТУК, при правата на субекта, а не в
-          настройките: чл. 13, ал. 1, б. „д“ иска получателите на личните данни
-          да са известни на лицето, а получател е и доставчикът на модела. */}
+          настройките: получателите на личните данни трябва да са известни на
+          лицето, а получател е и доставчикът на модела. Чл. 14, ал. 1, б. „д“,
+          не чл. 13: данните в документите (кооператори, доставчици) не са
+          събрани от самото лице — въвежда ги операторът. */}
       <TrattamentoAi />
 
       <form
@@ -209,7 +211,7 @@ export default function Pagina() {
       {scelto && piano && (
         <div className="card border-danger/30 p-5">
           <h2 className="text-lg font-semibold text-text-1">
-            Anonimizzazione di „{scelto.etichetta}“
+            Anonimizzazione di «{scelto.etichetta}»
           </h2>
           <p className="mt-1 text-sm text-danger-text">
             Operazione irreversibile. Non è una cancellazione: i dati che la
@@ -334,6 +336,14 @@ function TrattamentoAi() {
               Il fornitore agisce come responsabile del trattamento (art. 28
               GDPR): l&apos;accordo con lui e l&apos;informativa ai clienti sono
               a carico del titolare.
+            </li>
+            <li>
+              Se il fornitore ha sede fuori dallo Spazio economico europeo —
+              come i tre previsti di serie (Google, Anthropic, OpenAI), con sede
+              negli Stati Uniti — il trasferimento richiede una delle garanzie
+              del Capo V GDPR (ad esempio l&apos;adesione al EU-U.S. Data
+              Privacy Framework o clausole contrattuali tipo), che il titolare
+              verifica nel proprio contratto con il fornitore.
             </li>
           </ul>
           {/* Втората функция е РАЗЛИЧНО обработване и се обявява отделно:

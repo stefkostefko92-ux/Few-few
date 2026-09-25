@@ -13,6 +13,7 @@ import {
   IcoNota,
 } from "@/components/icone";
 import { dataIt, dataOraIt } from "@/lib/format";
+import { TIPO_MOVIMENTO } from "@/lib/enum-labels";
 
 interface DdtDettaglio {
   id: string;
@@ -74,7 +75,7 @@ export default function Pagina() {
           <p className="mt-1 text-xs text-text-3">
             {dataIt(d.data)} · {d.causale ?? "—"} · {d.destinatario ?? "—"}
             {d.indirizzoConsegna ? ` · ${d.indirizzoConsegna}` : ""} · vettore:{" "}
-            {d.vettore ?? "mittente"}
+            {d.vettore ?? "a cura del mittente"}
             {d.ordineLavoro ? ` · ordine ${d.ordineLavoro.numero}` : ""}
           </p>
           <p className="mt-0.5 text-xs text-text-3">
@@ -105,9 +106,12 @@ export default function Pagina() {
         >
           <IcoAttenzione />
           <div>
+            {/* Без обща норма в заглавието: реквизитите идват от ДВА акта
+                (D.P.R. 472/1996 и, за causale, D.P.R. 441/1997) и всеки ред
+                носи своя. Обща цитата правеше липсващата causale нарушение на
+                грешния закон. */}
             <p className="font-medium">
-              Documento incompleto rispetto all&apos;art. 1, comma 3, D.P.R.
-              472/1996.
+              Documento di trasporto incompleto: mancano requisiti obbligatori.
             </p>
             <ul className="mt-1.5 list-disc space-y-0.5 pl-5">
               {d.controllo.problemi.map((p) => (
@@ -154,7 +158,8 @@ export default function Pagina() {
             {d.movimenti.map((m) => (
               <li key={m.id}>
                 <span className="font-mono">{m.articolo.codice}</span> ·{" "}
-                {m.articolo.nome} — {m.tipo} {m.quantita}
+                {m.articolo.nome} — {TIPO_MOVIMENTO[m.tipo] ?? m.tipo}{" "}
+                {Number(m.quantita).toLocaleString("it-IT")}
               </li>
             ))}
           </ul>

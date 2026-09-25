@@ -23,11 +23,11 @@ const config: EntityConfig = {
     {
       chiave: "vettore",
       label: "Vettore",
-      render: (r) => String(r.vettore ?? "mittente"),
+      render: (r) => String(r.vettore ?? "a cura del mittente"),
     },
     {
       chiave: "inizioTrasporto",
-      label: "Inizio trasporto",
+      label: "Inizio del trasporto",
       render: (r) => dataOraIt(r.inizioTrasporto as string | null),
     },
     {
@@ -55,7 +55,11 @@ const config: EntityConfig = {
     },
     { name: "destinatario", label: "Destinatario", tipo: "text" },
     { name: "indirizzoConsegna", label: "Indirizzo di consegna", tipo: "text" },
-    { name: "vettore", label: "Vettore (vuoto = mittente)", tipo: "text" },
+    {
+      name: "vettore",
+      label: "Vettore (vuoto = a cura del mittente)",
+      tipo: "text",
+    },
     {
       name: "inizioTrasporto",
       label: "Inizio del trasporto (data e ora)",

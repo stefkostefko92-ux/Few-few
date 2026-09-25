@@ -14,6 +14,12 @@ export const TIPO_MAGAZZINO: Record<string, string> = {
   VENDITA: "Vendita",
 };
 
+export const TIPO_MOVIMENTO: Record<string, string> = {
+  ENTRATA: "Entrata",
+  USCITA: "Uscita",
+  RETTIFICA: "Rettifica",
+};
+
 export const TIPO_FATTURA: Record<string, string> = {
   EMESSA: "Emessa",
   RICEVUTA: "Ricevuta",

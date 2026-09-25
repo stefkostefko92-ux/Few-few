@@ -88,7 +88,7 @@ export default function VociEditor({
         body: JSON.stringify(corpo()),
       });
       if (!ok) {
-        setErrore(dati.error ?? "Errore di salvataggio");
+        setErrore(dati.error ?? "Errore di salvataggio.");
         return;
       }
       setForm(vuoto);

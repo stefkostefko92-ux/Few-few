@@ -301,7 +301,7 @@ export default function Pagina() {
             ) : (
               <>
                 <p className="font-medium">
-                  Non esportabile allo SDI. Finché non è trasmessa, la fattura
+                  Non esportabile allo SdI. Finché non è trasmessa, la fattura
                   si considera non emessa (art. 6 D.Lgs. 471/1997).
                 </p>
                 <ul className="mt-1.5 list-disc space-y-0.5 pl-5">

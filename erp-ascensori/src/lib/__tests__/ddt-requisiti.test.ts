@@ -49,7 +49,7 @@ test("ред без описание е блокиращ, ред без мерн
     ],
   });
   assert.equal(e.problemi.length, 1);
-  assert.ok(e.problemi[0].includes("1 riga/e senza descrizione"));
+  assert.ok(e.problemi[0].includes("1 riga senza descrizione"));
   assert.equal(e.avvisi.length, 1);
   assert.ok(e.avvisi[0].includes("unità di misura"));
 });
@@ -124,4 +124,35 @@ test("perInputDataOra връща празно за липсваща и за не
   assert.equal(perInputDataOra(undefined), "");
   assert.equal(perInputDataOra(""), "");
   assert.equal(perInputDataOra("non è una data"), "");
+});
+
+test("количество нула, отрицателно или липсващо е проблем; десетичното с запетая минава", () => {
+  for (const quantita of [0, -2, null, "", "abc"]) {
+    const d = completo();
+    d.righe = [{ descrizione: "Fune", quantita, um: "m" }];
+    assert.ok(
+      controllaDdt(d).problemi.some((x) => x.includes("1 riga con quantità")),
+      `quantita=${JSON.stringify(quantita)}`,
+    );
+  }
+  const d = completo();
+  d.righe = [
+    { descrizione: "Olio", quantita: "1,5", um: "l" },
+    { descrizione: "Fune", quantita: "12.00", um: "m" },
+  ];
+  assert.deepEqual(controllaDdt(d).problemi, []);
+});
+
+test("множественото число е италианско, не „riga/e“", () => {
+  const d = completo();
+  d.righe = [
+    { descrizione: "", quantita: 1, um: "pz" },
+    { descrizione: "", quantita: 1, um: "pz" },
+  ];
+  assert.ok(
+    controllaDdt(d).problemi.some((x) =>
+      x.startsWith("2 righe senza descrizione"),
+    ),
+  );
+  assert.ok(!controllaDdt(d).problemi.some((x) => x.includes("riga/e")));
 });

@@ -112,7 +112,7 @@ export default function Rapportini({ ordineId }: { ordineId: string }) {
         },
       );
       if (!ok) {
-        setErrore(dati.error ?? "Errore di salvataggio");
+        setErrore(dati.error ?? "Errore di salvataggio.");
         return;
       }
       setForm(vuoto);
