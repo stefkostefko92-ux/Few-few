@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Bitter } from "next/font/google";
+import { Sofia_Sans, Sofia_Sans_Condensed } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/site";
 import { JsonLd } from "@/components/JsonLd";
@@ -12,15 +12,16 @@ import { ChatWidget } from "@/components/ChatWidget";
 import { IntroSplash } from "@/components/IntroSplash";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
-const sans = Inter({
+// Шрифтовете имат българските форми на буквите (виж tailwind.config.ts).
+const sans = Sofia_Sans({
   subsets: ["latin", "cyrillic"],
   variable: "--font-sans",
   display: "swap",
 });
-const serif = Bitter({
+const cond = Sofia_Sans_Condensed({
   subsets: ["latin", "cyrillic"],
   weight: ["600", "700", "800"],
-  variable: "--font-serif",
+  variable: "--font-cond",
   display: "swap",
 });
 
@@ -75,7 +76,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#212f8a",
+  themeColor: "#1a2a6c",
 };
 
 export default async function RootLayout({
@@ -88,7 +89,7 @@ export default async function RootLayout({
     getSeoVerification(),
   ]);
   return (
-    <html lang="bg" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html lang="bg" className={`${sans.variable} ${cond.variable}`} suppressHydrationWarning>
       <head>
         {seoVer.google && (
           <meta name="google-site-verification" content={seoVer.google} />

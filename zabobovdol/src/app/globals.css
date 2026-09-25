@@ -27,28 +27,37 @@ html {
   }
 }
 
+/* Дизайн „Табела и указател“: сайтът е за ориентиране, затова езикът му е
+   този на градските указателни табели — синият емайл с бял кант и указателят
+   във фоайето на общината. Смелостта е само в табелите; всичко друго е тихо:
+   студено бял фон, тънки линии, текст. Червеното значи САМО „спешно/опасно“. */
 body {
-  /* Леко топъл, „хартиен“ фон вместо стандартно сиво — по-човешко усещане. */
-  background-color: #faf8f3;
-  @apply text-slate-900 antialiased;
+  /* Студено бяло като емайл — не кремаво „хартиено“. */
+  background-color: #f6f7f9;
+  color: #141a33; /* мастило: синкаво черно от герба */
+  @apply antialiased;
   font-size: 1.125rem; /* по-едър базов текст за по-добра четимост (възрастни) */
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
-/* Заглавията са със серифен шрифт — дава характер и тежест на сайта. */
+/* Заглавията са със сбитата ширина — буквите на табелите. */
 h1,
 h2,
 h3,
 h4,
 .font-display {
-  font-family: var(--font-serif), Georgia, serif;
-  letter-spacing: -0.01em;
+  font-family: var(--font-cond), var(--font-sans), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.15;
 }
 
+/* Двуцветен фокус: син пръстен + житен ореол — вижда се и върху бяло, и върху
+   синята табела, без да разчитаме на един-единствен цвят. */
 :focus-visible {
-  outline: 3px solid theme("colors.brand.500");
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 3px solid #1a2a6c;
+  outline-offset: 0;
+  box-shadow: 0 0 0 6px #e3a21a;
 }
 
 .skip-link {
@@ -64,45 +73,84 @@ h4,
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition focus-visible:outline focus-visible:outline-2;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-md px-5 py-3 text-base font-semibold transition-colors;
   }
   .btn-primary {
-    @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-800 hover:shadow;
+    @apply btn bg-brand-800 text-white hover:bg-brand-900;
   }
   .btn-secondary {
-    @apply btn border border-slate-300 bg-white text-slate-800 hover:border-brand-300 hover:bg-brand-50;
+    @apply btn border-2 border-brand-800 bg-white text-brand-800 hover:bg-brand-50;
   }
   .btn-gold {
-    @apply btn bg-gold-400 text-slate-900 shadow-sm hover:bg-gold-300;
+    @apply btn bg-gold-400 text-slate-900 hover:bg-gold-300;
   }
 
+  /* Плоска повърхност: без сянка и без „подскачане“ — рамката потъмнява при
+     посочване, за да е ясно, че е връзка. */
   .card {
-    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg;
+    @apply rounded-md border border-slate-300 bg-white p-5 transition-colors hover:border-brand-800;
   }
 
   .input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand-500;
+    @apply w-full rounded-md border border-slate-400 bg-white px-4 py-3 text-base text-slate-900 placeholder:text-slate-500 focus:border-brand-800;
   }
   .label {
     @apply mb-1 block text-sm font-medium text-slate-700;
   }
   .badge {
-    @apply inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-medium text-brand-800;
+    @apply inline-flex items-center rounded bg-brand-50 px-2 py-0.5 text-sm font-medium text-brand-800;
   }
 
-  /* Малък надпис над заглавие — „дизайнерски“ детайл. */
+  /* Кратко пояснение над заглавие — обикновен текст, без главни букви. */
   .eyebrow {
-    @apply text-xs font-bold uppercase tracking-[0.14em] text-gold-700;
-    font-family: var(--font-sans);
+    @apply text-base font-semibold text-slate-600;
   }
 
-  /* Заглавие на секция с декоративна златна чертичка отдолу. */
+  /* Заглавие на секция. Линията под целия ред (виж .section-head) казва
+     „тук започва нова група“ — като рубриките в указателя. */
   .section-title {
-    @apply relative inline-block text-2xl font-bold text-slate-900;
+    @apply text-2xl font-bold text-slate-900 sm:text-3xl;
   }
-  .section-title::after {
-    content: "";
-    @apply mt-2 block h-1 w-12 rounded-full bg-gold-400;
+  .section-head {
+    @apply mb-5 flex items-end justify-between gap-4 border-b-2 border-slate-900 pb-2;
+  }
+  .more-link {
+    @apply shrink-0 text-base font-semibold text-brand-800 underline decoration-brand-300 decoration-2 underline-offset-4 hover:decoration-brand-800;
+  }
+
+  /* Емайлирана табела: син емайл, бял кант навътре, заоблени ъгли — като
+     уличните табели. Единственият „смел“ елемент на сайта; ползвай пестеливо. */
+  .sign {
+    @apply rounded-[10px] bg-brand-800 text-white;
+    box-shadow:
+      inset 0 0 0 4px #1a2a6c,
+      inset 0 0 0 6px #ffffff;
+  }
+  a.sign {
+    @apply transition-colors hover:bg-brand-900;
+  }
+  a.sign:hover {
+    box-shadow:
+      inset 0 0 0 4px #141f52,
+      inset 0 0 0 6px #ffffff;
+  }
+  /* Червената табела е САМО за спешност (112) и измами. */
+  .sign-alert {
+    @apply rounded-[10px] bg-crimson-700 text-white;
+    box-shadow:
+      inset 0 0 0 3px #921616,
+      inset 0 0 0 5px #ffffff;
+  }
+
+  /* Ред в указател: име на раздела + какво има там, разделени с тънка линия. */
+  .dir-row {
+    @apply block border-b border-slate-300 py-3;
+  }
+  .dir-row-title {
+    @apply text-lg font-semibold text-brand-800 underline decoration-transparent decoration-2 underline-offset-4;
+  }
+  .dir-row:hover .dir-row-title {
+    @apply decoration-brand-800;
   }
 }
 
@@ -126,10 +174,10 @@ h4,
   @apply mt-3 list-decimal space-y-1 pl-6;
 }
 .prose-content :where(a) {
-  @apply font-medium text-brand-700 underline decoration-gold-400 decoration-2 underline-offset-2 hover:text-brand-800;
+  @apply font-medium text-brand-800 underline decoration-brand-300 decoration-2 underline-offset-2 hover:decoration-brand-800;
 }
 .prose-content :where(blockquote) {
-  @apply mt-4 border-l-4 border-gold-300 bg-gold-50 py-2 pl-4 italic text-slate-700;
+  @apply mt-4 border-l-4 border-brand-800 bg-white py-2 pl-4 text-slate-700;
 }
 .prose-content :where(strong) {
   @apply font-semibold;
@@ -336,6 +384,8 @@ html.dark header .text-brand-800,
 html.dark header .text-brand-600 { color: #212f8a; }
 html.dark header .border-slate-200,
 html.dark header .border-slate-300 { border-color: #cbd5e1; }
+html.dark header .border-slate-900 { border-color: #141a33; }
+html.dark header .border-slate-300 { border-color: #cbd5e1; }
 html.dark header .input {
   background-color: #ffffff;
   border-color: #cbd5e1;
@@ -353,7 +403,27 @@ html.dark header .btn-secondary {
    ставаше светъл върху светло. В тъмен режим я затъмняваме като тялото —
    текстът вече е светъл (от общите правила) и става четим. */
 html.dark .page-hero {
-  background-image: linear-gradient(to bottom right, #1c2742, #0f172a 60%, #0f172a);
+  background-color: #0f172a;
+}
+/* Тъмен режим: мастилото и линиите на указателя стават светли. */
+html.dark .section-head,
+html.dark .border-slate-900 {
+  border-color: #cbd5e1;
+}
+html.dark .dir-row,
+html.dark .border-slate-400 {
+  border-color: #334155;
+}
+html.dark .dir-row-title,
+html.dark .more-link,
+html.dark .btn-secondary {
+  color: #bcd0ff;
+}
+html.dark .btn-secondary {
+  border-color: #bcd0ff;
+}
+html.dark :focus-visible {
+  outline-color: #bcd0ff;
 }
 
 /* Класове с прозрачност (bg-x/50) и hover: варианти са ДРУГИ имена на класове,

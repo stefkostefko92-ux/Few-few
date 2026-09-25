@@ -5,6 +5,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { SITE, PRIMARY_NAV } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
+import { Search } from "@/components/icons";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -14,48 +15,70 @@ export function SiteHeader() {
   if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="h-1 w-full bg-gradient-to-r from-brand-700 via-gold-400 to-crimson-500" />
+    <header className="sticky top-0 z-40 border-b border-slate-300 bg-[#fff]">
+      {/* Фонът е `bg-[#fff]`, НЕ `bg-white`: общото тъмно правило
+          `html.dark .bg-white` е по-силно от `html.dark header` и потъмняваше
+          лентата, която по желание остава светла и в тъмен режим. */}
       <div className="container-content">
-        <div className="flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 font-bold">
+        <div className="flex h-[72px] items-center justify-between gap-3">
+          {/* Логото е табела: синият емайл с бял кант, като табелата на града. */}
+          <Link
+            href="/"
+            className="sign flex shrink-0 items-center gap-2.5 py-2 pl-2.5 pr-4"
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/bobov-dol-grb.png"
               alt="Герб на Бобов дол"
               width={34}
               height={49}
-              className="h-11 w-auto"
+              className="h-10 w-auto"
             />
-            <span className="text-lg leading-tight">
+            <span className="font-cond text-xl font-bold leading-none sm:text-2xl">
               {SITE.name}
-              <span className="block text-xs font-normal text-slate-600">
-                {SITE.slogan}
-              </span>
             </span>
           </Link>
 
-          <div className="hidden min-w-0 flex-1 px-4 lg:flex">
-            <div className="w-full max-w-md">
-              <SearchBar compact />
-            </div>
-          </div>
+          {/* Полето за търсене е едро на началната страница и в /tarsene; тук
+              има място само за ясен бутон с надпис, не за смачкано поле. */}
+          <Link
+            href="/tarsene"
+            className="ml-auto hidden min-h-[44px] shrink-0 items-center gap-2 rounded-md border-2 border-brand-800 px-3 py-2 text-base font-semibold text-brand-800 hover:bg-brand-50 lg:inline-flex"
+          >
+            <Search className="h-5 w-5" aria-hidden />
+            Търсене
+          </Link>
 
           <nav className="hidden shrink-0 items-center gap-1 lg:flex" aria-label="Основно меню">
             {PRIMARY_NAV.slice(0, 3).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="inline-flex min-h-[44px] items-center rounded-md px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100"
+                aria-current={pathname?.startsWith(item.href) ? "page" : undefined}
+                className="inline-flex min-h-[44px] items-center rounded-md px-3 py-2 text-base font-semibold text-slate-900 hover:bg-brand-50 aria-[current=page]:underline aria-[current=page]:decoration-gold-500 aria-[current=page]:decoration-[3px] aria-[current=page]:underline-offset-8"
               >
                 {item.label}
               </Link>
             ))}
+            <Link
+              href="/#ukazatel"
+              className="inline-flex min-h-[44px] items-center rounded-md px-3 py-2 text-base font-semibold text-slate-900 hover:bg-brand-50"
+            >
+              Всички раздели
+            </Link>
           </nav>
+
+          {/* 112 е винаги пред очите — червената табела е само за спешност. */}
+          <a
+            href="tel:112"
+            className="sign-alert inline-flex min-h-[44px] shrink-0 items-center gap-1.5 px-3.5 py-2 font-cond text-lg font-bold leading-none"
+          >
+            <span className="hidden sm:inline">Спешност</span> 112
+          </a>
 
           <button
             type="button"
-            className="rounded-md border border-slate-300 p-2 lg:hidden"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-md border-2 border-slate-900 lg:hidden"
             aria-label="Меню"
             aria-expanded={open}
             aria-controls="mobile-nav"
@@ -82,7 +105,7 @@ export function SiteHeader() {
         </div>
 
         {open && (
-          <div id="mobile-nav" className="animate-fade-in border-t border-slate-200 py-3 lg:hidden">
+          <div id="mobile-nav" className="border-t border-slate-300 py-3 lg:hidden">
             <div className="mb-3">
               <SearchBar />
             </div>
@@ -92,11 +115,11 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="block rounded-md px-3 py-3 text-base font-semibold text-slate-900 hover:bg-slate-100"
+                  className="block border-b border-slate-200 px-1 py-3 text-lg font-semibold text-brand-800 hover:bg-brand-50"
                 >
                   {item.label}
                   {item.description && (
-                    <span className="block text-xs font-normal text-slate-600">
+                    <span className="block text-base font-normal text-slate-600">
                       {item.description}
                     </span>
                   )}

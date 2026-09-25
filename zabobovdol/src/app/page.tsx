@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { SITE, PRIMARY_NAV } from "@/lib/site";
+import { PRIMARY_NAV, MAIN_SIGNS, DIRECTORY } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
 import { Section, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
@@ -11,82 +11,14 @@ import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
 import { ScamBanner } from "@/components/ScamBanner";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { TodayCalendar } from "@/components/TodayCalendar";
-import {
-  HelpCircle,
-  Phone,
-  Store,
-  CalendarDays,
-  CalendarClock,
-  Megaphone,
-  Bus,
-  Newspaper,
-  AlertTriangle,
-  Landmark,
-  HeartHandshake,
-  Users,
-  Images,
-  ShieldAlert,
-  Cross,
-  Coins,
-  Trash2,
-  Euro,
-  BookOpen,
-  Camera,
-  Zap,
-  Banknote,
-  type LucideIcon,
-} from "@/components/icons";
+import { HelpCircle, Phone, ShieldAlert, type LucideIcon } from "@/components/icons";
 
-const NAV_ICONS: Record<string, LucideIcon> = {
-  "/kak-da": HelpCircle,
+const SIGN_ICONS: Record<string, LucideIcon> = {
   "/uslugi": Phone,
+  "/kak-da": HelpCircle,
   "/izmami": ShieldAlert,
-  "/dezhurna-apteka": Cross,
-  "/pomoshti": Coins,
-  "/evroto": Euro,
-  "/biznes": Store,
-  "/sabitiya": CalendarDays,
-  "/imen-den": CalendarDays,
-  "/danaci-srokove": CalendarClock,
-  "/grafik-smetosabirane": Trash2,
-  "/obyavi": Megaphone,
-  "/transport": Bus,
-  "/novini": Newspaper,
-  "/signali": AlertTriangle,
-  "/prozrachnost": Banknote,
-  "/prekysvaniya": Zap,
-  "/smetishta": Trash2,
-  "/grada": BookOpen,
-  "/istoriya": Landmark,
-  "/zov-za-pomosht": HeartHandshake,
-  "/dobrovolci": Users,
-  "/spomeni": Images,
-  "/galeriya": Camera,
 };
-
-// Цветова тема за всяка категория — за по-лесно разпознаване и по-жив вид.
-// Ползваме нюанси -100/-700, които НЕ се променят в тъмен режим (остават
-// като цветни „значки" на тъмните карти).
-const NAV_COLOR: Record<string, string> = {
-  "/kak-da": "blue", "/uslugi": "sky", "/novini": "blue",
-  "/izmami": "rose", "/signali": "rose", "/zov-za-pomosht": "rose", "/sabitiya": "rose",
-  "/dezhurna-apteka": "green", "/smetishta": "green", "/grafik-smetosabirane": "green",
-  "/pomoshti": "amber", "/evroto": "amber", "/prekysvaniya": "amber", "/istoriya": "amber", "/danaci-srokove": "orange",
-  "/biznes": "purple", "/spomeni": "purple", "/galeriya": "purple", "/imen-den": "purple",
-  "/obyavi": "orange",
-  "/transport": "sky",
-  "/prozrachnost": "teal", "/grada": "teal", "/dobrovolci": "teal",
-};
-const COLOR: Record<string, { chip: string; title: string }> = {
-  blue: { chip: "bg-blue-100 text-blue-700 group-hover:bg-blue-600 group-hover:text-white", title: "group-hover:text-blue-700" },
-  sky: { chip: "bg-sky-100 text-sky-700 group-hover:bg-sky-600 group-hover:text-white", title: "group-hover:text-sky-700" },
-  green: { chip: "bg-green-100 text-green-700 group-hover:bg-green-600 group-hover:text-white", title: "group-hover:text-green-700" },
-  amber: { chip: "bg-amber-100 text-amber-700 group-hover:bg-amber-600 group-hover:text-white", title: "group-hover:text-amber-700" },
-  rose: { chip: "bg-rose-100 text-rose-700 group-hover:bg-rose-600 group-hover:text-white", title: "group-hover:text-rose-700" },
-  purple: { chip: "bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white", title: "group-hover:text-purple-700" },
-  orange: { chip: "bg-orange-100 text-orange-700 group-hover:bg-orange-600 group-hover:text-white", title: "group-hover:text-orange-700" },
-  teal: { chip: "bg-teal-100 text-teal-700 group-hover:bg-teal-600 group-hover:text-white", title: "group-hover:text-teal-700" },
-};
+const NAV_BY_HREF = new Map(PRIMARY_NAV.map((n) => [n.href, n]));
 
 export const dynamic = "force-dynamic";
 
@@ -155,78 +87,64 @@ export default async function HomePage() {
       {/* Лента с предупреждение за актуална измама (ако има закачена) */}
       <ScamBanner />
 
-      {/* Заглавна секция */}
-      <section className="relative overflow-hidden bg-brand-800 text-white">
-        {/* Декоративен релеф на долината (намек за „долината с форма на боб“). */}
-        <svg
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 w-full text-brand-900/60"
-          viewBox="0 0 1440 200"
-          preserveAspectRatio="none"
-        >
-          <path d="M0 200 L0 120 C 180 70 320 150 520 110 C 720 70 820 160 1040 120 C 1240 84 1320 150 1440 110 L1440 200 Z" fill="currentColor" />
-          <path d="M0 200 L0 160 C 240 120 420 180 640 150 C 900 116 1060 184 1440 150 L1440 200 Z" className="text-brand-900" fill="currentColor" />
-        </svg>
-        {/* Герб като воден знак */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/bobov-dol-grb.png"
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 opacity-[0.07] md:block"
-          width={320}
-          height={460}
-        />
-
-        <div className="container-content relative py-14 sm:py-20">
-          <p className="eyebrow text-gold-300">
-            {SITE.geo.city} · {SITE.geo.region}
-          </p>
-          <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-[1.1] sm:text-5xl">
-            Всичко за{" "}
-            <span className="text-gold-300">Бобов дол</span> — на едно място
+      {/* Начало: въпросът, търсачката и трите посоки. Това е единственото
+          „смело“ място на сайта — табелите; всичко по-долу е тих указател. */}
+      <section className="border-b border-slate-300 bg-white">
+        <div className="container-content py-10 sm:py-14">
+          <h1 className="max-w-3xl text-4xl text-slate-900 sm:text-6xl">
+            Какво търсите в Бобов дол?
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-brand-50">
-            Направено от местни хора за местни хора: важни телефони и услуги,
-            обяснения стъпка по стъпка, събития, обяви и взаимопомощ. Лесно и
-            разбираемо, за всички възрасти.
+          <p className="mt-4 max-w-[60ch] text-lg text-slate-700">
+            Телефони и услуги, обяснения стъпка по стъпка, събития, обяви и
+            взаимопомощ. Направено от местни хора, на разбираем език.
           </p>
-          <div className="mt-7 max-w-xl rounded-xl bg-white p-2 shadow-xl ring-1 ring-black/5">
+          <div className="mt-6 max-w-2xl">
             <SearchBar />
           </div>
           <Link
             href="/kak-da-polzvam-sayta"
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gold-200 underline-offset-2 hover:underline"
+            className="more-link mt-3 inline-block"
           >
-            Нов тук? Вижте как да ползвате сайта →
+            Нов тук? Вижте как да ползвате сайта
           </Link>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {PRIMARY_NAV.slice(0, 5).map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
+
+          <ul className="mt-9 grid gap-4 md:grid-cols-3">
+            {MAIN_SIGNS.map((href) => {
+              const item = NAV_BY_HREF.get(href);
+              if (!item) return null;
+              const Icon = SIGN_ICONS[href] ?? HelpCircle;
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="sign flex h-full min-h-[9.5rem] flex-col justify-between gap-4 p-6"
+                  >
+                    <Icon className="h-9 w-9" aria-hidden />
+                    <span>
+                      <span className="block font-cond text-3xl font-bold leading-tight">
+                        {item.label}
+                      </span>
+                      <span className="mt-1 block text-base text-brand-100">
+                        {item.description}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </section>
 
-      {/* Спешни телефони */}
-      <section className="border-b border-amber-200 bg-amber-50">
-        <div className="container-content flex flex-wrap items-center gap-x-5 gap-y-3 py-3.5">
-          <span className="flex items-center gap-2 font-bold text-amber-900">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-amber-200 text-amber-900">
-              <Phone className="h-5 w-5" aria-hidden />
-            </span>
+      {/* Спешни телефони — червеното е само тук и в табелата 112 горе. */}
+      <section className="border-b border-slate-300" aria-labelledby="speshni">
+        <div className="container-content flex flex-wrap items-center gap-x-5 gap-y-3 py-4">
+          <h2 id="speshni" className="text-xl text-slate-900">
             Спешни телефони
-          </span>
-          {/* 112 е най-важният номер — затова е бутон, а не ред в списък. */}
+          </h2>
           <a
             href="tel:112"
-            className="a11y-btn inline-flex items-center gap-2 rounded-lg bg-crimson-600 px-4 py-2 text-base font-bold text-white shadow-sm transition hover:bg-crimson-700"
+            className="sign-alert a11y-btn inline-flex items-center px-4 py-2 font-cond text-xl font-bold"
           >
             Спешност 112
           </a>
@@ -236,7 +154,7 @@ export default async function HomePage() {
               <a
                 key={s.id}
                 href={`tel:${s.phone}`}
-                className="a11y-btn inline-flex items-center rounded-lg px-2 text-base font-medium text-amber-900 underline decoration-amber-400 underline-offset-4 transition hover:decoration-amber-700"
+                className="a11y-btn inline-flex items-center text-lg font-semibold text-slate-900 underline decoration-slate-400 decoration-2 underline-offset-4 hover:decoration-slate-900"
               >
                 {s.name.includes(s.phone) ? s.name : `${s.name} ${s.phone}`}
               </a>
@@ -244,69 +162,48 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Време и календар (днешен имен ден/празник) */}
-      <div className="container-content grid gap-4 pt-6 md:grid-cols-2">
+      {/* Днес: време и календар (имен ден/празник) */}
+      <div className="container-content grid gap-4 pt-8 md:grid-cols-2">
         <WeatherWidget />
         <TodayCalendar />
       </div>
 
-      {/* Бързи раздели. PRIMARY_NAV е подреден по важност, затова първите шест
-          са едри („това търсят хората най-често“), а останалите — компактни.
-          21 еднакви карти са твърде много за сканиране от възрастен човек. */}
-      <Section title="Какво търсите днес?">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {PRIMARY_NAV.slice(0, 6).map((item) => {
-            const Icon = NAV_ICONS[item.href] ?? HelpCircle;
-            const c = COLOR[NAV_COLOR[item.href] ?? "blue"];
-            return (
-              <Link key={item.href} href={item.href} className="card group flex items-start gap-4">
-                <span className={"grid h-16 w-16 shrink-0 place-items-center rounded-2xl transition duration-200 group-hover:scale-110 " + c.chip}>
-                  <Icon className="h-9 w-9" aria-hidden />
-                </span>
-                <span>
-                  <span className={"block font-display text-xl font-bold text-slate-900 " + c.title}>
-                    {item.label}
-                  </span>
-                  <span className="mt-1 block text-base text-slate-600">{item.description}</span>
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-
-        <h3 className="mb-4 mt-10 font-display text-lg font-bold text-slate-700">
-          Всички раздели
-        </h3>
-        {/* Под 360px две колони оставят ~123px за текста и дълги думи като
-            „сметосъбиране“ не се побират — там минаваме на една колона. */}
-        <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-          {PRIMARY_NAV.slice(6).map((item) => {
-            const Icon = NAV_ICONS[item.href] ?? HelpCircle;
-            const c = COLOR[NAV_COLOR[item.href] ?? "blue"];
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                /* На телефон иконата е отгоре, а надписът заема цялата ширина на
-                   картата — при две колони на 390px за хоризонтален ред остават
-                   ~95px и дълги имена („Транспорт“) се чупеха по средата на
-                   думата. От sm нагоре има място и редът е хоризонтален. */
-                className="group flex min-w-0 flex-col items-start gap-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md sm:flex-row sm:items-center sm:gap-3"
-              >
-                <span className={"grid h-10 w-10 shrink-0 place-items-center rounded-lg transition " + c.chip}>
-                  <Icon className="h-6 w-6" aria-hidden />
-                </span>
-                <span className={"min-w-0 font-semibold leading-snug text-slate-900 " + c.title}>
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </Section>
+      {/* Указател: всички раздели в групи, като указателя във фоайето на
+          общината — име и какво има там, без плочки с икони. */}
+      <div id="ukazatel" className="scroll-mt-24">
+        <Section title="Указател">
+          <div className="columns-1 gap-x-12 md:columns-2 lg:columns-3">
+            {DIRECTORY.map((group) => (
+              <section key={group.title} className="mb-8 break-inside-avoid">
+                <h3 className="border-b-2 border-slate-900 pb-1 text-xl text-slate-900">
+                  {group.title}
+                </h3>
+                <ul>
+                  {group.hrefs.map((href) => {
+                    const item = NAV_BY_HREF.get(href);
+                    if (!item) return null;
+                    return (
+                      <li key={href}>
+                        <Link href={href} className="dir-row">
+                          <span className="dir-row-title">{item.label}</span>
+                          {item.description && (
+                            <span className="mt-0.5 block text-base text-slate-600">
+                              {item.description}
+                            </span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </Section>
+      </div>
 
       {/* Рекламни банери (4 слота) */}
-      <Section title="Реклама" href="/reklama" hrefLabel="Рекламирайте при нас" tone="muted">
+      <Section title="Реклама" href="/reklama" hrefLabel="Рекламирайте при нас">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {bannerSlots.map((b, i) =>
             b ? (
@@ -331,127 +228,128 @@ export default async function HomePage() {
       </Section>
 
       {/* Популярни „Как да“ */}
-      <Section title="Популярни въпроси „Как да…“" href="/kak-da">
+      <Section title="Най-търсени обяснения" href="/kak-da" hrefLabel="Всички обяснения">
         {topFaqs.length === 0 ? (
           <EmptyState title="Скоро тук ще има полезни въпроси и отговори." />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <ul className="grid gap-x-12 md:grid-cols-2">
             {topFaqs.map((f) => (
-              <Link key={f.id} href={`/kak-da/${f.slug}`} className="card">
-                <div className="badge">{f.category}</div>
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">
-                  {f.question}
-                </h3>
-                <p className="mt-1 text-sm text-slate-600">
-                  {plainText(f.answer, 120)}
-                </p>
-              </Link>
+              <li key={f.id}>
+                <Link href={`/kak-da/${f.slug}`} className="dir-row">
+                  <span className="block text-sm font-medium text-slate-600">
+                    {f.category}
+                  </span>
+                  <span className="dir-row-title">{f.question}</span>
+                  <span className="mt-0.5 block text-base text-slate-600">
+                    {plainText(f.answer, 110)}
+                  </span>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </Section>
 
       {/* Събития и обяви */}
-      <div className="bg-white">
+      <div className="border-y border-slate-300 bg-white">
         <div className="container-content grid gap-10 py-10 lg:grid-cols-2">
-          <div>
-            <div className="mb-5 flex items-end justify-between">
-              <h2 className="text-2xl font-bold">Предстоящи събития</h2>
-              <Link href="/sabitiya" className="text-sm font-medium text-brand-700">
-                Всички →
+          <section>
+            <div className="section-head">
+              <h2 className="section-title">Предстоящи събития</h2>
+              <Link href="/sabitiya" className="more-link">
+                Всички събития
               </Link>
             </div>
             {events.length === 0 ? (
               <EmptyState title="Няма обявени събития в момента." />
             ) : (
-              <ul className="space-y-3">
+              <ul>
                 {events.map((e) => (
                   <li key={e.id}>
-                    <Link
-                      href={`/sabitiya/${e.slug}`}
-                      className="card block"
-                    >
-                      <div className="text-sm font-medium text-brand-700">
+                    <Link href={`/sabitiya/${e.slug}`} className="dir-row">
+                      <span className="block text-base font-semibold text-slate-700">
                         {formatDate(e.startAt)}
-                      </div>
-                      <div className="text-lg font-semibold">{e.title}</div>
+                      </span>
+                      <span className="dir-row-title">{e.title}</span>
                       {e.location && (
-                        <div className="text-sm text-slate-600">{e.location}</div>
+                        <span className="block text-base text-slate-600">{e.location}</span>
                       )}
                     </Link>
                   </li>
                 ))}
               </ul>
             )}
-          </div>
+          </section>
 
-          <div>
-            <div className="mb-5 flex items-end justify-between">
-              <h2 className="text-2xl font-bold">Последни обяви</h2>
-              <Link href="/obyavi" className="text-sm font-medium text-brand-700">
-                Всички →
+          <section>
+            <div className="section-head">
+              <h2 className="section-title">Последни обяви</h2>
+              <Link href="/obyavi" className="more-link">
+                Всички обяви
               </Link>
             </div>
             {listings.length === 0 ? (
               <EmptyState
                 title="Още няма обяви."
-                hint="Бъдете първите — публикувайте безплатна обява."
+                hint="Публикувайте първата — обявите са безплатни."
               />
             ) : (
-              <ul className="space-y-3">
+              <ul>
                 {listings.map((l) => (
                   <li key={l.id}>
-                    <Link href={`/obyavi/${l.slug}`} className="card block">
-                      <div className="text-lg font-semibold">{l.title}</div>
-                      <p className="text-sm text-slate-600">
+                    <Link href={`/obyavi/${l.slug}`} className="dir-row">
+                      <span className="dir-row-title">{l.title}</span>
+                      <span className="block text-base text-slate-600">
                         {plainText(l.description, 100)}
-                      </p>
+                      </span>
                       {l.price && (
-                        <div className="mt-1 font-semibold text-brand-700">
+                        <span className="mt-1 block font-semibold text-slate-900">
                           {l.price}
-                        </div>
+                        </span>
                       )}
                     </Link>
                   </li>
                 ))}
               </ul>
             )}
-          </div>
+          </section>
         </div>
       </div>
 
       {/* Местен бизнес */}
       {businesses.length > 0 && (
-        <Section title="Местен бизнес" href="/biznes" tone="muted">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Section title="Местен бизнес" href="/biznes" hrefLabel="Целият каталог">
+          <ul className="grid gap-x-12 sm:grid-cols-2">
             {businesses.map((b) => (
-              <Link key={b.id} href={`/biznes/${b.slug}`} className="card">
-                <div className="text-lg font-semibold text-slate-900">{b.name}</div>
-                {b.address && (
-                  <div className="mt-1 text-sm text-slate-600">{b.address}</div>
-                )}
-              </Link>
+              <li key={b.id}>
+                <Link href={`/biznes/${b.slug}`} className="dir-row">
+                  <span className="dir-row-title">{b.name}</span>
+                  {b.address && (
+                    <span className="block text-base text-slate-600">{b.address}</span>
+                  )}
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         </Section>
       )}
 
       {/* Помощ онлайн + взаимопомощ */}
-      <section className="bg-brand-50">
-        <div className="container-content grid items-center gap-6 py-12 sm:grid-cols-[2fr,1fr]">
+      <section className="border-y border-slate-300 bg-white">
+        <div className="container-content grid items-center gap-6 py-10 sm:grid-cols-[2fr,1fr]">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
               Не се справяте онлайн? Помагаме безплатно.
             </h2>
             <p className="mt-2 max-w-2xl text-slate-700">
-              Питайте дигиталния помощник долу вдясно или вижте обясненията{" "}
-              „Как да…“ — стъпка по стъпка, на разбираем език, за всички възрасти.
-              А ако възрастен човек се нуждае от подкрепа, вижте „Зов за помощ“.
+              Питайте помощника долу вдясно или отворете обясненията „Как да…“ —
+              стъпка по стъпка, на разбираем език. Ако възрастен човек има нужда
+              от помощ у дома, вижте „Зов за помощ“.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
             <Link href="/kak-da" className="btn-primary">
-              Вижте „Как да…“
+              Отворете „Как да…“
             </Link>
             <Link href="/zov-za-pomosht" className="btn-secondary">
               Зов за помощ
@@ -461,13 +359,13 @@ export default async function HomePage() {
       </section>
 
       {/* Бърз достъп до категории услуги (помага за GEO/AEO) */}
-      <Section title="Услуги по категории" href="/uslugi">
+      <Section title="Услуги по категории" href="/uslugi" hrefLabel="Всички услуги">
         <div className="flex flex-wrap gap-2">
           {Object.entries(SERVICE_CATEGORY_LABELS).map(([key, label]) => (
             <Link
               key={key}
               href={`/uslugi?cat=${key}`}
-              className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-brand-400 hover:text-brand-700"
+              className="inline-flex min-h-[44px] items-center rounded-md border border-slate-400 bg-white px-4 py-2 text-base font-medium text-slate-900 hover:border-brand-800 hover:text-brand-800"
             >
               {label}
             </Link>

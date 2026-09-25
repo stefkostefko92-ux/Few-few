@@ -56,12 +56,12 @@ export function WeatherWidget() {
   const { label, Icon } = describe(data.code);
 
   return (
-    <div className="no-print flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <Icon className="h-9 w-9 shrink-0 text-brand-600" aria-hidden />
+    <div className="no-print flex items-center gap-3 rounded-md border border-slate-300 bg-white px-5 py-4">
+      <Icon className="h-9 w-9 shrink-0 text-brand-800" aria-hidden />
       <div className="leading-tight">
         <div className="flex items-baseline gap-2">
           <span className="text-2xl font-bold text-slate-900">{Math.round(data.temp)}°</span>
-          <span className="text-sm text-slate-600">{label}</span>
+          <span className="text-base text-slate-700">{label}</span>
         </div>
         <div className="text-xs text-slate-600">
           {SITE.geo.city}

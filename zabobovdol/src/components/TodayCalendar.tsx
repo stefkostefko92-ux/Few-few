@@ -11,25 +11,23 @@ export function TodayCalendar() {
   return (
     <Link
       href="/imen-den"
-      className="card flex items-start gap-3 hover:border-brand-300"
+      className="card flex items-start gap-3"
       aria-label="Календар: именни дни и празници"
     >
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-100 text-brand-700">
-        <CalendarDays className="h-6 w-6" aria-hidden />
-      </span>
+      <CalendarDays className="mt-0.5 h-8 w-8 shrink-0 text-brand-800" aria-hidden />
       <span className="min-w-0">
-        <span className="block text-sm text-slate-600">
+        <span className="block text-base text-slate-700">
           Днес е {formatDateBg(today.month, today.day, today.weekday)}
         </span>
         {info.feasts.length > 0 && (
-          <span className="block font-semibold text-crimson-700">{info.feasts.join(" · ")}</span>
+          <span className="block font-semibold text-crimson-700">{info.feasts.join(", ")}</span>
         )}
         {info.names.length > 0 ? (
           <span className="block truncate font-semibold text-slate-900">
             Имен ден: {info.names.join(", ")}
           </span>
         ) : (
-          <span className="block font-semibold text-slate-900">Именни дни и църковен календар →</span>
+          <span className="block font-semibold text-brand-800">Именни дни и църковен календар</span>
         )}
       </span>
     </Link>

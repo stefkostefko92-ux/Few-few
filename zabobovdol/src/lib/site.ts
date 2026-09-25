@@ -93,6 +93,24 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/galeriya", label: "Галерия", description: "Снимки на града от хората" },
 ];
 
+/** Трите „посоки“ — едрите табели на началната страница. Това търсят най-често. */
+export const MAIN_SIGNS = ["/uslugi", "/kak-da", "/izmami"] as const;
+
+/** Указателят на началната страница: всички останали раздели, подредени в
+ *  групи като указателя във фоайето на общината. Групите са истински (по какво
+ *  търси човек), не украса. Тест пази, че всеки раздел от PRIMARY_NAV е или
+ *  табела, или точно в една група. */
+export const DIRECTORY: { title: string; hrefs: string[] }[] = [
+  { title: "Здраве и помощ", hrefs: ["/dezhurna-apteka", "/zov-za-pomosht", "/dobrovolci"] },
+  { title: "Пари и документи", hrefs: ["/pomoshti", "/danaci-srokove", "/evroto", "/prozrachnost"] },
+  { title: "Всекидневие", hrefs: ["/prekysvaniya", "/grafik-smetosabirane", "/transport", "/imen-den"] },
+  { title: "Кажете на общината", hrefs: ["/signali", "/smetishta"] },
+  {
+    title: "Градът и хората",
+    hrefs: ["/sabitiya", "/novini", "/obyavi", "/biznes", "/grada", "/istoriya", "/spomeni", "/galeriya"],
+  },
+];
+
 export const FOOTER_NAV: NavItem[] = [
   { href: "/za-nas", label: "За проекта" },
   { href: "/kak-da-polzvam-sayta", label: "Как да ползвам сайта" },

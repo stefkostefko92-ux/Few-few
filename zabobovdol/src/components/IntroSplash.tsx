@@ -109,7 +109,7 @@ export function IntroSplash() {
       aria-modal="true"
       aria-label="Добре дошли"
       className={
-        "no-print fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-b from-brand-800 to-brand-900 px-6 text-center text-white transition-opacity duration-500 " +
+        "no-print fixed inset-0 z-[100] flex flex-col items-center justify-center bg-brand-800 px-6 text-center text-white transition-opacity duration-500 " +
         (leaving ? "pointer-events-none opacity-0" : "opacity-100")
       }
     >
@@ -119,15 +119,15 @@ export function IntroSplash() {
         alt="Герб на Бобов дол"
         width={150}
         height={216}
-        className="splash-crest h-36 w-auto rounded-2xl bg-white p-3 shadow-2xl sm:h-44"
+        className="splash-crest h-36 w-auto rounded-[10px] bg-white p-3 sm:h-44"
       />
       {/* Не е <h1> нарочно: това е временен надпис, а истинският <h1> е на
           страницата отдолу — иначе на началната страница биха станали два. */}
-      <p className="splash-text mt-7 max-w-2xl text-4xl font-extrabold leading-tight sm:text-5xl">
+      <p className="splash-text mt-7 max-w-2xl font-cond text-5xl font-bold leading-tight sm:text-6xl">
         {SITE.intro.headline}
       </p>
       <p className="splash-text mt-3 text-base text-brand-100">
-        {SITE.name} · {SITE.geo.city}
+        {SITE.geo.city}, {SITE.geo.region}
       </p>
 
       {/* Брояч на посещенията. Брои ВСЯКО зареждане (и презарежданията),
@@ -159,9 +159,9 @@ export function IntroSplash() {
         ref={skipRef}
         type="button"
         onClick={skip}
-        className="mt-6 inline-flex min-h-[44px] items-center rounded-full border-2 border-white/60 px-6 py-2.5 text-base font-semibold text-white transition hover:bg-white/15"
+        className="mt-6 inline-flex min-h-[44px] items-center rounded-md border-2 border-white px-6 py-2.5 text-lg font-semibold text-white transition-colors hover:bg-white hover:text-brand-800"
       >
-        Прескочи →
+        Прескочи
       </button>
     </div>
   );

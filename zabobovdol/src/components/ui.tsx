@@ -7,26 +7,18 @@ export function PageHero({
   title,
   intro,
   crumbs,
-  eyebrow,
 }: {
   title: string;
   intro?: string;
   crumbs?: { name: string; path: string }[];
+  /** Не се показва: трохите вече казват къде сте (надпис над заглавие е шум). */
   eyebrow?: string;
 }) {
+  // Тиха лента: смелостта е само в табелите на началната страница. Тук —
+  // трохи, едро заглавие и уводен текст, отделени с линия.
   return (
-    <div className="page-hero relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
-      {/* Герб като дискретен воден знак */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/brand/bobov-dol-grb.png"
-        alt=""
-        aria-hidden
-        className="pointer-events-none absolute -right-4 -top-6 hidden h-44 w-auto opacity-[0.06] sm:block"
-        width={140}
-        height={200}
-      />
-      <div className="container-content relative py-9 sm:py-11">
+    <div className="page-hero border-b border-slate-300 bg-white">
+      <div className="container-content py-8 sm:py-10">
         {crumbs && crumbs.length > 0 && (
           <>
             <Breadcrumbs crumbs={[{ name: "Начало", path: "/" }, ...crumbs]} />
@@ -35,13 +27,11 @@ export function PageHero({
             />
           </>
         )}
-        {eyebrow && <p className="eyebrow mt-3">{eyebrow}</p>}
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="mt-3 max-w-4xl text-4xl text-slate-900 sm:text-5xl">
           {title}
         </h1>
-        <div className="mt-3 h-1 w-14 rounded-full bg-gold-400" />
         {intro && (
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-600">
+          <p className="mt-4 max-w-[65ch] text-lg leading-relaxed text-slate-700">
             {intro}
           </p>
         )}
@@ -64,7 +54,7 @@ export function Breadcrumbs({
             {i < crumbs.length - 1 ? (
               <Link
                 href={c.path}
-                className="underline decoration-slate-300 underline-offset-2 hover:text-brand-700"
+                className="text-brand-800 underline decoration-brand-300 underline-offset-2 hover:decoration-brand-800"
               >
                 {c.name}
               </Link>
@@ -80,12 +70,14 @@ export function Breadcrumbs({
 
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-300 bg-gradient-to-b from-brand-50/60 to-white p-8 text-center sm:p-10">
-      <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-full bg-brand-100 text-brand-600 shadow-inner">
-        <Inbox className="h-8 w-8" aria-hidden />
+    <div className="rounded-md border border-dashed border-slate-400 bg-white p-6 sm:p-8">
+      <div className="flex items-start gap-3">
+        <Inbox className="mt-0.5 h-6 w-6 shrink-0 text-slate-500" aria-hidden />
+        <div>
+          <p className="font-semibold text-slate-800">{title}</p>
+          {hint && <p className="mt-1 max-w-md text-base text-slate-600">{hint}</p>}
+        </div>
       </div>
-      <p className="font-display text-lg font-bold text-slate-800">{title}</p>
-      {hint && <p className="mx-auto mt-2 max-w-md text-base text-slate-600">{hint}</p>}
     </div>
   );
 }
@@ -116,14 +108,11 @@ export function Section({
 }) {
   const inner = (
     <section className="container-content py-10">
-      <div className="mb-6 flex items-end justify-between gap-4">
+      <div className="section-head">
         <h2 className="section-title">{title}</h2>
         {href && (
-          <Link
-            href={href}
-            className="shrink-0 text-sm font-semibold text-brand-700 hover:text-brand-800 hover:underline"
-          >
-            {hrefLabel} →
+          <Link href={href} className="more-link">
+            {hrefLabel}
           </Link>
         )}
       </div>
@@ -132,7 +121,7 @@ export function Section({
   );
 
   if (tone === "muted") {
-    return <div className="border-y border-slate-200/70 bg-slate-50">{inner}</div>;
+    return <div className="border-y border-slate-300 bg-white">{inner}</div>;
   }
   return inner;
 }

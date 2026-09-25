@@ -31,7 +31,7 @@ export async function SiteFooter() {
     getPlayStoreUrl(),
   ]);
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-slate-50">
+    <footer className="mt-16 border-t-2 border-slate-900 bg-white">
       <div className="container-content py-10">
         <div className="grid gap-8 md:grid-cols-4">
           <div>
@@ -44,18 +44,18 @@ export async function SiteFooter() {
                 height={40}
                 className="h-10 w-auto"
               />
-              <span className="text-lg font-bold">{SITE.name}</span>
+              <span className="font-cond text-2xl font-bold">{SITE.name}</span>
             </div>
-            <p className="mt-2 text-sm text-slate-600">{SITE.description}</p>
+            <p className="mt-2 text-base text-slate-700">{SITE.description}</p>
           </div>
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+            <h2 className="border-b border-slate-300 pb-1 text-xl text-slate-900">
               Раздели
             </h2>
             <ul className="mt-4 space-y-2.5 text-base">
               {PRIMARY_NAV.map((i) => (
                 <li key={i.href}>
-                  <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
+                  <Link href={i.href} className="text-brand-800 underline decoration-transparent decoration-2 underline-offset-4 hover:decoration-brand-800">
                     {i.label}
                   </Link>
                 </li>
@@ -63,13 +63,13 @@ export async function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+            <h2 className="border-b border-slate-300 pb-1 text-xl text-slate-900">
               Информация
             </h2>
             <ul className="mt-4 space-y-2.5 text-base">
               {FOOTER_NAV.map((i) => (
                 <li key={i.href}>
-                  <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
+                  <Link href={i.href} className="text-brand-800 underline decoration-transparent decoration-2 underline-offset-4 hover:decoration-brand-800">
                     {i.label}
                   </Link>
                 </li>
@@ -77,7 +77,7 @@ export async function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+            <h2 className="border-b border-slate-300 pb-1 text-xl text-slate-900">
               Спешни телефони
             </h2>
             <ul className="mt-4 space-y-2.5 text-base">
@@ -136,7 +136,7 @@ export async function SiteFooter() {
             )}
           </div>
         </div>
-        <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-600 sm:flex-row sm:items-center">
+        <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-slate-300 pt-6 text-sm text-slate-600 sm:flex-row sm:items-center">
           <div className="space-y-1">
             <p>
               © {year} {SITE.name}. Гражданска инициатива в полза на жителите на{" "}
@@ -153,7 +153,7 @@ export async function SiteFooter() {
               href={SITE.company.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-slate-700 underline decoration-gold-400 decoration-2 underline-offset-2 hover:text-brand-700"
+              className="font-semibold text-slate-900 underline decoration-slate-400 decoration-2 underline-offset-2 hover:decoration-slate-900"
             >
               {SITE.company.tradeName}
             </a>
