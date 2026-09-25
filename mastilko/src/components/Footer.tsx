@@ -30,9 +30,10 @@ export default function Footer() {
             <li><Link className="hover:text-tera-dark" href="/dokumentni-snimki">Снимки за документи</Link></li>
           </ul>
         </nav>
-        <nav aria-label="Правна информация" className="text-sm">
+        <nav aria-label="Информация" className="text-sm">
           <p className="mb-2 font-semibold text-ink">Информация</p>
           <ul className="space-y-1.5 text-ink-soft">
+            <li><Link className="hover:text-tera-dark" href="/konektor">Конектор за ChatGPT и Claude</Link></li>
             <li><Link className="hover:text-tera-dark" href="/impresum">Импресум и контакти</Link></li>
             <li><Link className="hover:text-tera-dark" href="/poveritelnost">Поверителност</Link></li>
             <li><Link className="hover:text-tera-dark" href="/usloviya">Условия за ползване</Link></li>

@@ -29,6 +29,7 @@ const LAST_MODIFIED: Record<string, string> = {
   "/kalendar": "2026-09-18",
   "/menu": "2026-09-18",
   "/dokumentni-snimki": "2026-09-18",
+  "/konektor": "2026-09-25",
   "/impresum": "2026-09-14",
   "/poveritelnost": "2026-09-14",
   "/usloviya": "2026-07-12",
@@ -39,18 +40,20 @@ const TOOLS = [
   "/wifi", "/badzhove", "/obyava", "/vaucheri", "/kalendar", "/menu",
   "/dokumentni-snimki",
 ];
+/** Информационни страници — не са инструменти, но си струва да се индексират. */
+const INFO = ["/konektor"];
 const LEGAL = ["/impresum", "/poveritelnost", "/usloviya"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const build = new Date();
-  return ["", ...TOOLS, ...LEGAL].map((path) => {
+  return ["", ...TOOLS, ...INFO, ...LEGAL].map((path) => {
     const date = LAST_MODIFIED[path];
     return {
       url: `${BASE}${path}`,
       // Липсваща дата в картата → падаме на билда (по-добре груба, отколкото никаква).
       lastModified: date ? new Date(`${date}T00:00:00Z`) : build,
       changeFrequency: path === "" ? "weekly" : LEGAL.includes(path) ? "yearly" : "monthly",
-      priority: path === "" ? 1 : LEGAL.includes(path) ? 0.3 : 0.9,
+      priority: path === "" ? 1 : LEGAL.includes(path) ? 0.3 : INFO.includes(path) ? 0.7 : 0.9,
     };
   });
 }

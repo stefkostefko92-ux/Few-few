@@ -129,7 +129,8 @@ export default function PoveritelnostPage() {
           <h2>Конектор за ChatGPT и Claude (по избор)</h2>
           <p className="mt-2">
             Мастилко предлага <strong>конектор</strong>, който можеш сам да
-            добавиш в ChatGPT или Claude. Ако го направиш, асистентът може да
+            добавиш в ChatGPT или Claude (как —{" "}
+            <a className="text-tera-dark underline" href="/konektor">виж тук</a>). Ако го направиш, асистентът може да
             сглоби етикет, визитка, CV или меню вместо теб и да ти върне готов
             линк към сайта.
           </p>

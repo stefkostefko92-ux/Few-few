@@ -287,6 +287,22 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Конектор за ChatGPT и Claude */}
+      <section className="mx-auto mt-8 max-w-6xl px-4">
+        <div className="card-warm flex flex-col gap-4 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10">
+          <div>
+            <h2 className="font-display text-2xl font-bold">Ползвай Мастилко направо от ChatGPT и Claude</h2>
+            <p className="mt-2 max-w-2xl text-ink-soft">
+              Добави Мастилко като MCP конектор и кажи на асистента „направи ми
+              етикети за буркани“ — той сглобява листа и ти връща готов линк за печат.
+            </p>
+          </div>
+          <Link href="/konektor" className="btn-primary shrink-0 justify-center">
+            Как се добавя →
+          </Link>
+        </div>
+      </section>
+
       {/* Въпроси */}
       <section className="mx-auto max-w-3xl px-4 py-16">
         <h2 className="font-display text-center text-3xl font-bold">
