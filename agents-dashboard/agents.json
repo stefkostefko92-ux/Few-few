@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-18",
+    "updated": "2026-09-25",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1557,9 +1557,20 @@
           "date": "2026-09-14",
           "event": "v14.4 — учене",
           "detail": "Научи: Двустепенен rate limit (per-IP + глобален) става self-DoS, ако глобалният брояч се увел… (+3 още)"
+        },
+        {
+          "version": "14.5.0",
+          "date": "2026-09-25",
+          "event": "v14.5 — учене",
+          "detail": "Научи: Публичен MCP endpoint с per-IP лимит: всички MCP tool calls на Claude излизат от 160.79… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Публичен MCP endpoint с per-IP лимит: всички MCP tool calls на Claude излизат от 160.79…\" (+3 още) · 1 в карантина"
+        },
         {
           "date": "2026-09-14",
           "type": "learning",
