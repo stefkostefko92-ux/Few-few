@@ -7,7 +7,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { rlsAttiva } from "@/lib/rls";
+import { rlsAttiva, unicitaAttiva } from "@/lib/rls";
 import { archivioScrivibile } from "@/lib/allegati/archivio";
 import { log, descriviErrore } from "@/lib/log";
 
@@ -23,6 +23,11 @@ interface Esito {
    *  ВИЖДА: суперпотребителска роля прави политиките украса, без нищо в лога. */
   rls: boolean;
   rlsMotivo?: string;
+  /** Уникалните индекси отказват дубликат и при `tenantId` NULL. Без това две
+   *  едновременни заявки получават ЕДИН И СЪЩ номер на фактура — а в
+   *  еднофирмената инсталация (нашият модел) `tenantId` е NULL на всеки ред. */
+  unicita: boolean;
+  unicitaMotivo?: string;
   /** Хранилището на прикачените файлове — записваемо ли е.
    *
    *  НЕ ВЛИЗА В `pronto`, И ТОВА Е ОБМИСЛЕНО. Пълен диск в три през нощта би
@@ -58,6 +63,7 @@ async function controlla(): Promise<Esito> {
     schema: false,
     chiavi: chiaviValide(),
     rls: false,
+    unicita: false,
     archivio: false,
     rilascio: false,
   };
@@ -70,6 +76,9 @@ async function controlla(): Promise<Esito> {
     const r = await rlsAttiva();
     esito.rls = r.attiva;
     if (r.motivo) esito.rlsMotivo = r.motivo;
+    const u = await unicitaAttiva();
+    esito.unicita = u.attiva;
+    if (u.motivo) esito.unicitaMotivo = u.motivo;
   } catch (e) {
     log.warn("readyz: controllo fallito", descriviErrore(e));
   }
@@ -82,14 +91,19 @@ async function controlla(): Promise<Esito> {
     );
   if (!esito.rls)
     log.warn(`readyz: RLS non attiva — ${esito.rlsMotivo ?? "motivo ignoto"}`);
+  if (!esito.unicita)
+    log.warn(
+      `readyz: unicità per azienda non garantita — ${esito.unicitaMotivo ?? "motivo ignoto"}`,
+    );
   // ТРАФИК: базата, схемата и ключовете. Всичко останало е влошаване, което
   // приложението преживява — а readiness, който пада при влошаване, изключва
   // работеща система.
   esito.pronto = esito.db && esito.schema && esito.chiavi;
-  // ИЗДАНИЕ: и хранилището, и втората линия на изолацията. Тук отказът е
-  // евтин (връщане назад на релийза), а пропускът — скъп: непримонтиран том
-  // значи изчезващи документи, а суперпотребителска роля прави RLS украса.
-  esito.rilascio = esito.pronto && esito.archivio && esito.rls;
+  // ИЗДАНИЕ: хранилището, втората линия на изолацията и уникалността на
+  // номерацията. Тук отказът е евтин (връщане назад на релийза), а пропускът —
+  // скъп: непримонтиран том значи изчезващи документи, суперпотребителска роля
+  // прави RLS украса, а база, вдигната с `db push`, дава дублирани номера.
+  esito.rilascio = esito.pronto && esito.archivio && esito.rls && esito.unicita;
   return esito;
 }
 

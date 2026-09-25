@@ -48,21 +48,38 @@ export async function prossimoNumero(
   return `${base}${String(n + 1).padStart(4, "0")}`;
 }
 
-/** Изпълнява fn с ново numero; при дубликат (P2002) опитва до 3 пъти. */
+/**
+ * Колко пъти опитваме при дубликат.
+ *
+ * ГРАНИЦАТА Е ДЕТЕРМИНИРАНА, не статистическа: при N едновременни заявки във
+ * всеки кръг поне една печели (записът, който се потвърди пръв), тоест
+ * последната има нужда от най-много N опита. Пет покрива пет души, които
+ * натискат „Salva" в един и същ миг — повече от реалното за една фирма.
+ */
+const TENTATIVI_NUMERO = 5;
+
+/** Изпълнява fn с ново numero; при дубликат (P2002) опитва отново. */
 export async function conNumero<T>(
   model: ModelloNumerato,
   prefisso: string,
   tenantId: string | null,
   fn: (numero: string) => Promise<T>,
 ): Promise<T> {
+  // ЗАВИСИ ОТ ИНДЕКСА. Целият механизъм е „опитай, и ако базата откаже —
+  // опитай пак“. До миграция `20260925090000_unici_nulls_not_distinct` базата
+  // НЕ отказваше при `tenantId` NULL и две заявки получаваха един и същ номер
+  // без нито една грешка. `/api/readyz` (`unicita`) пази тази предпоставка.
   let ultimo: unknown;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < TENTATIVI_NUMERO; i++) {
     try {
       return await fn(await prossimoNumero(model, prefisso, tenantId));
     } catch (e) {
       ultimo = e;
       const codice = (e as { code?: string }).code;
       if (codice !== "P2002") throw e;
+      // Разсейване: без него загубилите тръгват пак в една и съща милисекунда
+      // и се сблъскват отново.
+      await new Promise((r) => setTimeout(r, 5 + Math.random() * 20));
     }
   }
   throw ultimo;

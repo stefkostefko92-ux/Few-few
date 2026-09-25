@@ -10,7 +10,7 @@ import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { comeRuolo, Sessione, PASSWORD, unico } from "./_client";
 import { prisma } from "../../src/lib/prisma";
-import { rlsAttiva, OBHVAT_TUTTI } from "../../src/lib/rls";
+import { rlsAttiva, unicitaAttiva, OBHVAT_TUTTI } from "../../src/lib/rls";
 
 let master: Sessione;
 let aziendaA: { sessione: Sessione; tenantId: string };
@@ -186,5 +186,54 @@ describe("верижен подпис на одита", () => {
     assert.deepEqual(v.dati.corrotte, []);
     assert.ok(v.dati.catenaRotta.length >= 1, "изтритият ред не се видя");
     assert.equal(v.dati.integro, false);
+  });
+});
+
+// ── Уникалност при `tenantId` NULL ─────────────────────────────────────────
+//
+// Еднофирмената инсталация е НАШИЯТ модел на продажба: `tenantId` е NULL на
+// всеки ред. В Postgres два NULL-а в уникален индекс по подразбиране са
+// РАЗЛИЧНИ стойности, тоест `@@unique([tenantId, numero])` не пазеше нищо —
+// а `conNumero` разчита изцяло на този отказ, за да хване състезание.
+// Възпроизведено преди поправката: два реда `DDT-2026-0001`, нула грешки.
+
+describe("уникалност при tenantId NULL", () => {
+  test("всичките 12 индекса носят NULLS NOT DISTINCT", async () => {
+    const u = await unicitaAttiva();
+    assert.equal(u.attiva, true, u.motivo);
+  });
+
+  test("базата отказва дублиран номер, когато фирмата е NULL", async () => {
+    // Мимо приложението: доказва ИНДЕКСА, не `conNumero`.
+    const numero = `DDT-1999-${String(Date.now()).slice(-4)}`;
+    await prisma.ddt.create({ data: { numero, tenantId: null } });
+    await assert.rejects(
+      () => prisma.ddt.create({ data: { numero, tenantId: null } }),
+      (e: unknown) => (e as { code?: string }).code === "P2002",
+    );
+    await prisma.ddt.deleteMany({ where: { numero } });
+  });
+
+  test("пет едновременни DDT получават пет РАЗЛИЧНИ номера", async () => {
+    // Същото, което се случва, когато петима в офиса натиснат „Salva" заедно.
+    // Преди поправката всичките пет можеха да излязат с един номер.
+    const s = await comeRuolo("RESPONSABILE");
+    const risposte = await Promise.all(
+      Array.from({ length: 5 }, (_, i) =>
+        s.post<{ id: string; numero: string }>("/api/ddt", {
+          causale: "vendita",
+          destinatario: unico(`Concorrenza ${i}`),
+        }),
+      ),
+    );
+    for (const r of risposte)
+      assert.equal(r.status, 201, JSON.stringify(r.dati));
+    const numeri = risposte.map((r) => r.dati.numero);
+    assert.equal(
+      new Set(numeri).size,
+      5,
+      `numeri ripetuti: ${numeri.join(", ")}`,
+    );
+    for (const r of risposte) await s.del(`/api/ddt/${r.dati.id}`);
   });
 });

@@ -166,6 +166,72 @@ async function misuraRls(): Promise<EsitoRls> {
   return { attiva: true };
 }
 
+/**
+ * Уникалните индекси, които трябва да отказват дубликат и при `tenantId` NULL.
+ *
+ * ЗАЩО Е ТУК, ДО RLS. И двете са структурни гаранции на базата, които Prisma
+ * не вижда: схемата не може да изрази `NULLS NOT DISTINCT`, а `prisma db push`
+ * вдига индекса без него — и тогава `conNumero` мълчаливо дава един и същ
+ * номер на фактура на две едновременни заявки (миграция
+ * `20260925090000_unici_nulls_not_distinct`). Затова, както при политиките,
+ * гейтът на изданието проверява, че защитата е РЕАЛНО налице.
+ */
+export const INDICI_UNICI_PER_AZIENDA = [
+  "articoli_magazzino_tenantId_codice_key",
+  "automezzi_tenantId_targa_key",
+  "contatori_sdi_tenantId_key",
+  "contratti_tenantId_numero_key",
+  "dati_azienda_tenantId_key",
+  "ddt_tenantId_numero_key",
+  "fatture_tenantId_numero_key",
+  "impianti_tenantId_matricola_key",
+  "notifiche_tenantId_chiave_destinatario_key",
+  "ordini_lavoro_tenantId_numero_key",
+  "preventivi_tenantId_numero_key",
+  "rapportini_tenantId_numero_key",
+] as const;
+
+let cacheUnicita: { esito: EsitoRls; scadenza: number } | null = null;
+
+/** Само за тестовете: следващото повикване пак пита базата. */
+export function azzeraCacheUnicita(): void {
+  cacheUnicita = null;
+}
+
+/**
+ * Налице ли е `NULLS NOT DISTINCT` на всеки от изброените индекси.
+ *
+ * Кешира се като RLS — отговорът се мени само при миграция.
+ */
+export async function unicitaAttiva(): Promise<EsitoRls> {
+  const ora = Date.now();
+  if (cacheUnicita && cacheUnicita.scadenza > ora) return cacheUnicita.esito;
+  // Сверява се СРЕЩУ СПИСЪКА, както покритието на RLS: липсващ индекс или
+  // индекс без защитата се назовава по име, не се брои.
+  const mancanti = await prisma.$queryRaw<{ i: string }[]>`
+    SELECT x.indice AS i
+    FROM unnest(${[...INDICI_UNICI_PER_AZIENDA]}::text[]) AS x(indice)
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM pg_index ix
+      JOIN pg_class c ON c.oid = ix.indexrelid
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE c.relname = x.indice
+        AND n.nspname = 'public'
+        AND ix.indisunique
+        AND ix.indnullsnotdistinct
+    )
+  `;
+  const esito: EsitoRls = mancanti.length
+    ? {
+        attiva: false,
+        motivo: `NULLS NOT DISTINCT assente su: ${mancanti.map((x) => x.i).join(", ")}`,
+      }
+    : { attiva: true };
+  cacheUnicita = { esito, scadenza: ora + TTL_RLS_MS };
+  return esito;
+}
+
 /** SQL-ът, който включва политиките. Ползва се и от миграцията, и от теста. */
 export function sqlAbilitaRls(): string {
   const parti: string[] = [];
