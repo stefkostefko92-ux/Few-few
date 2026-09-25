@@ -2264,3 +2264,25 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 @media (max-width: 500px) {
   .grid-cards { grid-template-columns: minmax(0, 1fr) !important; }
 }
+/* CharacterPage (/app/character) hero header — виж коментара в
+   CharacterPage.tsx. Под 480px стакваме (аватар над текста) вместо да
+   свиваме текстовата колона до нечетимо тясно; !important е нужен, защото
+   inline gridTemplateColumns бие клас-селектор по специфичност. */
+@media (max-width: 480px) {
+  .hero-header-grid { grid-template-columns: 1fr !important; justify-items: center; text-align: center; }
+}
+
+/* .nav-profile на много тесен телефон (≤360px) — потвърден overflow (виж
+   PLAN.md „втори проход"): аватар + име + шеврон не се свиват под flex по
+   подразбиране (min-width:auto на flex детето), .nav-meta изтичаше ~31px.
+   Тясна max-width + ellipsis на името решава без да крие информация изцяло
+   (за разлика от --sub, който вече е скрит на ≤700px). */
+@media (max-width: 400px) {
+  .nav-profile { gap: 6px; padding: 5px 8px 5px 5px; }
+  .nav-profile-info { min-width: 0; }
+  .nav-profile-info .name { max-width: 66px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-meta { gap: 3px; padding: 3px 4px; }
+  .lang-selector--compact { gap: 0; }
+  .lang-selector--compact .lang-btn { padding: 5px 5px; }
+  .navbar { padding: 0 8px; }
+}

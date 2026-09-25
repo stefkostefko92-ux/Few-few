@@ -26,6 +26,7 @@ import bestiaryRoutes from './routes/bestiary';
 import statsRoutes from './routes/stats';
 import adminRoutes from './routes/admin';
 import setsRoutes from './routes/sets';
+import publicSetsRoutes from './routes/publicSets';
 import profileRoutes from './routes/profile';
 import guildRoutes from './routes/guild';
 import socialRoutes from './routes/social';
@@ -187,6 +188,9 @@ app.use('/api/bestiary', bestiaryRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sets', setsRoutes);
+// Без authRequired — виж бележката в routes/publicSets.ts (само статично
+// игрово съдържание, за 3D витрината на публичния лендинг).
+app.use('/api/public/sets', publicSetsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/guild', guildRoutes);
 app.use('/api/social', socialRoutes);

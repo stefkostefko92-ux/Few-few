@@ -180,6 +180,13 @@
 [data-reveal-stagger].revealed > *:nth-child(10) { opacity: 1; transform: translateY(0); transition-delay: .45s; }
 [data-reveal-stagger].revealed > *:nth-child(11) { opacity: 1; transform: translateY(0); transition-delay: .50s; }
 [data-reveal-stagger].revealed > *:nth-child(12) { opacity: 1; transform: translateY(0); transition-delay: .55s; }
+/* БЪГ (уловен при преглед на 21-те региона, втори проход): само 12 nth-child
+   правила съществуваха — .region-row вече носи 21 карти (виж Landing.tsx
+   „World"), картите от 13 нататък оставаха opacity:0 завинаги (revealed
+   стигаше до родителя, децата отвъд 12 никога не получаваха собствено
+   правило). Catch-all за всичко отвъд 12 — появяват се веднага след
+   последния изчислен delay, без нов стъпков ритъм до безкрайност. */
+[data-reveal-stagger].revealed > *:nth-child(n+13) { opacity: 1; transform: translateY(0); transition-delay: .55s; }
 
 /* ===== 3D tilt + glare ===== */
 [data-tilt] {
@@ -1473,4 +1480,167 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .forge-band-bg { animation: none; }
+}
+
+/* =====================================================================
+   ВТОРИ ПРОХОД — асиметрични заглавия, ритъм-групи, жив двубой, 3D сетове.
+   Виж scratchpad/design/PLAN.md „Втори проход" за пълния разбор.
+   ===================================================================== */
+
+/* Ляво подравнен заглавен блок (title + lead на две колони) — вариация
+   спрямо центрирания .section-title/.section-lead stack навсякъде другаде. */
+.section-asym { text-align: left; }
+.section-head-split {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 40px;
+  align-items: end;
+  margin-bottom: 56px;
+  max-width: none;
+}
+.section-head-split .section-title { text-align: left; margin: 0; }
+.section-head-split .section-lead { text-align: left; margin: 0; max-width: 46ch; }
+@media (max-width: 900px) {
+  .section-head-split { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* ===== Loop groups (Features) — заменя 12 еднакви карти 3×4 =====
+   Всяка група: 1 водеща FeatureCard (лявo, по-едра) + 3 компактни реда
+   (дясно). Три групи вместо еднородна мрежа. */
+.loop-groups { display: flex; flex-direction: column; gap: 48px; }
+.loop-group-when {
+  font-family: var(--font-read);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--gold-2);
+  margin-bottom: 16px;
+}
+.loop-group-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 22px;
+  align-items: stretch;
+}
+.feature-card-lead { padding: 32px; }
+.feature-card-lead .feature-icon { width: 68px; height: 68px; }
+.feature-card-lead .feature-title { font-size: 23px; }
+.feature-card-lead .feature-desc { font-size: 15.5px; }
+.loop-compact-list { display: flex; flex-direction: column; gap: 12px; }
+.loop-compact {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.02);
+  transition: border-color .2s, background .2s;
+}
+.loop-compact:hover { border-color: var(--gold-3); background: rgba(255,255,255,.035); }
+.loop-compact-icon {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  filter: saturate(.9);
+}
+.loop-compact-body h4 { font-family: var(--font-display); font-size: 14.5px; color: var(--gold-1); margin: 0 0 4px; font-weight: 600; }
+.loop-compact-body p { font-family: var(--font-read); font-size: 13px; color: var(--text-2); margin: 0; line-height: 1.55; }
+@media (max-width: 900px) {
+  .loop-group-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== Живият двубой ===== */
+.duel-section { text-align: left; }
+.duel-embed { position: relative; }
+.duel-poster {
+  position: relative;
+  min-height: 420px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  /* Регион-тонирания фон от combat.css (steel/ember), без да зареждаме
+     самата сцена — чист CSS градиент, нулево влияние върху LCP. */
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(198,60,26,.22), transparent 60%),
+    linear-gradient(180deg, #0c0a10 0%, #1a1008 55%, #200a06 100%);
+}
+.duel-poster-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 100%, rgba(255,177,89,.18), transparent 55%);
+}
+.duel-play {
+  position: relative;
+  z-index: 1;
+}
+.duel-caption {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-read);
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(244,228,186,.6);
+}
+.duel-loading {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  font-size: 14px;
+}
+
+/* ===== 3D sets showcase ===== */
+.sets-showcase {
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 40px;
+  background: linear-gradient(180deg, rgba(22,26,35,.7), rgba(11,13,18,.7));
+}
+.sets-showcase-head { margin-bottom: 18px; }
+.sets-showcase-title { font-family: var(--font-display); font-size: 24px; color: var(--gold-1); margin: 0 0 6px; }
+.sets-showcase-lead { font-family: var(--font-read); font-size: 15px; color: var(--text-2); margin: 0; max-width: 60ch; }
+.sets-showcase-loading { color: var(--text-3); font-size: 14px; padding: 20px 0; }
+.sets-showcase-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.sets-showcase-tab {
+  padding: 8px 14px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.02);
+  color: var(--text-2);
+  font-size: 13px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.sets-showcase-tab:hover { border-color: var(--gold-3); color: var(--text-1); }
+.sets-showcase-tab.active {
+  border-color: var(--gold-2);
+  background: rgba(214,161,61,.12);
+  color: var(--gold-1);
+}
+.sets-showcase-panel {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-1);
+  padding-top: 18px;
+}
+.sets-showcase-panel-name { font-family: var(--font-display); font-size: 19px; color: var(--gold-1); }
+.sets-showcase-panel-tier { font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; }
+
+/* Вторичен (стар) set-grid — по-тих, radius-md вместо -lg, без легендарния
+   pulse-декор навсякъде (само тук, показно, вече не е единствената 3D точка). */
+.set-grid-secondary .set-card { border-radius: var(--radius-md); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sets-showcase-tab, .loop-compact { transition: none; }
 }

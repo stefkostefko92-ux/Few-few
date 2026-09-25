@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Logo from '../components/Logo';
+import LandingDuel from '../components/LandingDuel';
+import LandingSetShowcase from '../components/LandingSetShowcase';
 import LandingEffects from '../components/LandingEffects';
 import CinematicIntro from '../components/CinematicIntro';
 import LanguageSelector from '../components/LanguageSelector';
@@ -125,9 +127,12 @@ export default function Landing(): React.ReactElement {
             тежко WebGL (CSS/SVG само, нулево влияние върху LCP). */}
         <div className="hero-mist" aria-hidden />
         <div className="hero-grain" aria-hidden />
+        {/* Скъсено — „Scene I · The Call" беше измислен филмов реквизит
+            (среднa точка + произволен номер на сцена, нищо реално). Единственият
+            останал ред е буквално вярно твърдение (сървърът наистина работи),
+            не декорация. */}
         <div className="hero-slate" aria-hidden>
           <span className="rec">{t('landing.slateLive')}</span>
-          <span>{t('landing.slateShot')}</span>
         </div>
 
         <div className="hero-content">
@@ -158,58 +163,75 @@ export default function Landing(): React.ReactElement {
       {/* Stats strip */}
       <section className="stats-strip" data-reveal data-reveal-stagger>
         <Stat num="4" label={t('landing.statClasses')} />
-        <Stat num="8" label={t('landing.statSets')} />
+        <Stat num="58" label={t('landing.statSets')} />
         <Stat num="12+12" label={t('landing.statCosmetics')} />
         <Stat num="∞" label={t('landing.statGuildWars')} />
         <Stat num="3" label={t('landing.statRaidBosses')} />
         <Stat num="27" label={t('landing.statAchievements')} />
       </section>
 
-      {/* Features */}
-      <section id="features" className="section">
-        <h2 className="section-title" data-reveal>{t('landing.featuresTitle')}</h2>
-        <p className="section-lead" data-reveal>
-          {t('landing.featuresLead')}
-        </p>
-        <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard iconSrc="/assets/icons/sword-t6.jpg" title={t('landing.featCombatTitle')}>
-            {t('landing.featCombatBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/shield-t6.jpg" title={t('landing.featGuildsTitle')}>
-            {t('landing.featGuildsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/dagger-t4.jpg" title={t('landing.featQuestsTitle')}>
-            {t('landing.featQuestsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/mace-t6.jpg" title={t('landing.featDungeonsTitle')}>
-            {t('landing.featDungeonsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/cloak-t8.jpg" title={t('landing.featCosmeticsTitle')}>
-            {t('landing.featCosmeticsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/helm-t6.jpg" title={t('landing.featProfilesTitle')}>
-            {t('landing.featProfilesBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/bow-t6.jpg" title={t('landing.featHuntingTitle')}>
-            {t('landing.featHuntingBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.featArenaTitle')}>
-            {t('landing.featArenaBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/potion-green.jpg" title={t('landing.featDailyTitle')}>
-            {t('landing.featDailyBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/potion-purple.jpg" title={t('landing.featWheelTitle')}>
-            {t('landing.featWheelBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.featAchievementsTitle')}>
-            {t('landing.featAchievementsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/ring-t8.jpg" title={t('landing.featSetsTitle')}>
-            {t('landing.featSetsBody')}
-          </FeatureCard>
+      {/* Features — прегрупирани по ритъм на деня (не 12 еднакви карти 3×4,
+          виж PLAN.md „Twelve loops"): всяка група има ЕДНА водеща карта
+          (по-тежка) + 3 компактни реда, вместо еднаква тежест навсякъде.
+          Заглавният блок е ляво подравнен (асиметрия), не поредният
+          центриран stack. */}
+      <section id="features" className="section section-asym">
+        <div className="section-head-split" data-reveal>
+          <h2 className="section-title">{t('landing.featuresTitle')}</h2>
+          <p className="section-lead">{t('landing.featuresLead')}</p>
+        </div>
+        <div className="loop-groups" data-reveal-stagger>
+          <LoopGroup when={t('landing.loopQuick')}>
+            <FeatureCard lead iconSrc="/assets/icons/sword-t6.jpg" title={t('landing.featCombatTitle')}>
+              {t('landing.featCombatBody')}
+            </FeatureCard>
+            <CompactFeature iconSrc="/assets/icons/bow-t6.jpg" title={t('landing.featHuntingTitle')}>
+              {t('landing.featHuntingBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/potion-green.jpg" title={t('landing.featDailyTitle')}>
+              {t('landing.featDailyBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/potion-purple.jpg" title={t('landing.featWheelTitle')}>
+              {t('landing.featWheelBody')}
+            </CompactFeature>
+          </LoopGroup>
+
+          <LoopGroup when={t('landing.loopSession')}>
+            <FeatureCard lead iconSrc="/assets/icons/mace-t6.jpg" title={t('landing.featDungeonsTitle')}>
+              {t('landing.featDungeonsBody')}
+            </FeatureCard>
+            <CompactFeature iconSrc="/assets/icons/dagger-t4.jpg" title={t('landing.featQuestsTitle')}>
+              {t('landing.featQuestsBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.featArenaTitle')}>
+              {t('landing.featArenaBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/helm-t6.jpg" title={t('landing.featProfilesTitle')}>
+              {t('landing.featProfilesBody')}
+            </CompactFeature>
+          </LoopGroup>
+
+          <LoopGroup when={t('landing.loopLong')}>
+            <FeatureCard lead iconSrc="/assets/icons/shield-t6.jpg" title={t('landing.featGuildsTitle')}>
+              {t('landing.featGuildsBody')}
+            </FeatureCard>
+            <CompactFeature iconSrc="/assets/icons/cloak-t8.jpg" title={t('landing.featCosmeticsTitle')}>
+              {t('landing.featCosmeticsBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.featAchievementsTitle')}>
+              {t('landing.featAchievementsBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/ring-t8.jpg" title={t('landing.featSetsTitle')}>
+              {t('landing.featSetsBody')}
+            </CompactFeature>
+          </LoopGroup>
         </div>
       </section>
+
+      {/* Живият двубой — най-запомнящото се нещо в играта (новият боен
+          двигател, boy-езикът). Мързеливо: нищо тежко се качва преди клик,
+          виж LandingDuel.tsx (IntersectionObserver + постер + бутон). */}
+      <LandingDuel />
 
       {/* Classes */}
       <section id="classes" className="section">
@@ -231,7 +253,12 @@ export default function Landing(): React.ReactElement {
         <p className="section-lead" data-reveal>
           {t('landing.setsLead')}
         </p>
-        <div className="set-grid" data-reveal-stagger>
+        {/* Втора 3D точка — „завърти рицаря" (виж LandingSetShowcase.tsx),
+            бутонът, не картата, е тежкото тук. Old set-grid по-долу става
+            тих вторичен списък (radius-md вместо -lg), а не повторение на
+            същото внимание. */}
+        <LandingSetShowcase />
+        <div className="set-grid set-grid-secondary" data-reveal-stagger>
           <SetCard rarity="common"    name="Wayfarer's Garb"     tier={t('landing.setWayfarerTier')}  iconSrc="/assets/icons/boots-t1.jpg"  lore={t('landing.setWayfarerLore')} bonuses={[['2', '+8 HP, +1 DEX'], ['4', '+18 HP, +2 DEX, +2 DEF']]} />
           <SetCard rarity="uncommon"  name="Ironguard Plate"     tier={t('landing.setIronguardTier')} iconSrc="/assets/icons/armor-t2.jpg"  lore={t('landing.setIronguardLore')} bonuses={[['2', '+25 HP, +2 STR'], ['4', '+55 HP, +6 DEF, +3 STR'], ['6', '+100 HP, +12 DEF, +5 STR, +4 ATK']]} />
           <SetCard rarity="uncommon"  name="Sylvan Marshal"      tier={t('landing.setSylvanTier')}    iconSrc="/assets/icons/bow-t2.jpg"    lore={t('landing.setSylvanLore')} bonuses={[['2', '+3 DEX, +3% Crit'], ['4', '+5 DEX, +4% Dodge, +3 ATK']]} />
@@ -357,7 +384,15 @@ export default function Landing(): React.ReactElement {
           <RegionCard color="#a0b8d0" art="/assets/regions/crystal_caverns.jpg"  name="Mooncradle"        range="Lv 261 – 290">{t('landing.regionMooncradleBody')}</RegionCard>
           <RegionCard color="#8a6a3a" art="/assets/regions/ashen_wastes.jpg"     name="The Worldspine"    range="Lv 291 – 320">{t('landing.regionWorldspineBody')}</RegionCard>
           <RegionCard color="#1a1a1a" art="/assets/regions/shadowfell.jpg"       name="The Eternal Throne" range="Lv 321 – 350">{t('landing.regionEternalBody')}</RegionCard>
-          <RegionCard color="#fff1b8" art="/assets/regions/shadowfell.jpg"       name="Beyond the End"     range="Lv 351 – 500">{t('landing.regionBeyondBody')}</RegionCard>
+          {/* Последните 5 от 21-те реални региона (server/src/seed/monsters.ts
+              REGION_BANDS) — заместват старата измислена сборна карта „Beyond
+              the End“ (Lv 351–500), която не отговаряше на нито едно истинско
+              владение. Виж PLAN.md „Факти" (втори проход). */}
+          <RegionCard color="#5a4a5a" art="/assets/regions/shadowfell.jpg"       name="The Ashen Veil"    range="Lv 351 – 381">{t('landing.regionAshenVeilBody')}</RegionCard>
+          <RegionCard color="#4a2a7a" art="/assets/regions/crystal_caverns.jpg"  name="Starfall Abyss"    range="Lv 381 – 411">{t('landing.regionStarfallBody')}</RegionCard>
+          <RegionCard color="#c78a2a" art="/assets/regions/ashen_wastes.jpg"     name="The Forge of Dawn" range="Lv 411 – 441">{t('landing.regionForgeOfDawnBody')}</RegionCard>
+          <RegionCard color="#3a0a14" art="/assets/regions/shadowfell.jpg"       name="Crown of Night"    range="Lv 441 – 471">{t('landing.regionCrownOfNightBody')}</RegionCard>
+          <RegionCard color="#f0e2b6" art="/assets/regions/crystal_caverns.jpg"  name="The First Light"   range="Lv 471 – 501">{t('landing.regionFirstLightBody')}</RegionCard>
         </div>
       </section>
 
@@ -454,15 +489,46 @@ function Stat({ num, label }: { num: string; label: string }) {
   );
 }
 
-function FeatureCard({ iconSrc, title, children }: { iconSrc: string; title: string; children: React.ReactNode }) {
+function FeatureCard({ iconSrc, title, children, lead }: { iconSrc: string; title: string; children: React.ReactNode; lead?: boolean }) {
   const { t } = useTranslation();
   return (
-    <div className="feature-card" data-tilt>
+    <div className={`feature-card${lead ? ' feature-card-lead' : ''}`} data-tilt>
       <div className="feature-icon feature-icon-img">
         <img src={iconSrc} alt={t('landing.iconAlt', { title })} loading="lazy" />
       </div>
       <h3 className="feature-title">{title}</h3>
       <p className="feature-desc">{children}</p>
+    </div>
+  );
+}
+
+/** Компактен ред за вторичните 3 в група (виж LoopGroup) — една снимка+ред
+    текст, не пълна карта; носи тежестта надолу от водещата FeatureCard. */
+function CompactFeature({ iconSrc, title, children }: { iconSrc: string; title: string; children: React.ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <div className="loop-compact">
+      <img className="loop-compact-icon" src={iconSrc} alt={t('landing.iconAlt', { title })} loading="lazy" />
+      <div className="loop-compact-body">
+        <h4>{title}</h4>
+        <p>{children}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Група по ритъм на деня — първото дете е водещата (по-тежка) карта,
+    останалите се редят като компактен списък до нея. Виж PLAN.md
+    „Twelve loops" (втори проход) — не 12 еднакви карти 3×4. */
+function LoopGroup({ when, children }: { when: string; children: React.ReactNode }) {
+  const items = React.Children.toArray(children);
+  return (
+    <div className="loop-group">
+      <div className="loop-group-when">{when}</div>
+      <div className="loop-group-grid">
+        {items[0]}
+        <div className="loop-compact-list">{items.slice(1)}</div>
+      </div>
     </div>
   );
 }
