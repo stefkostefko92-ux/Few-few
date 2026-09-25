@@ -22,13 +22,26 @@
       rgba(255, 220, 160, 0.04) 2px 5px,
       transparent 5px 11px
     ),
-    radial-gradient(120% 140% at 50% -20%, #5a3d22 0%, #3a2616 38%, var(--wood-800) 66%, #150c06 100%);
+    radial-gradient(120% 140% at 50% -20%, #4a3019 0%, #2c1b0f 38%, #1c1108 66%, #0c0704 100%);
   padding: 20px;
   box-shadow:
     0 34px 80px -22px rgba(0, 0, 0, 0.8),
     0 4px 0 rgba(0, 0, 0, 0.5),
     inset 0 2px 1px rgba(255, 226, 170, 0.3),
     inset 0 -3px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* Рейвънхолд: hand-forged iron studs along the oak rail (top and bottom). */
+.aso-table::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%, #8d9094 0 1.4px, #3a3c40 2px, #0b0b0c 2.8px, transparent 3.4px) 24px 7px / 56px 8px repeat-x,
+    radial-gradient(circle at 50% 50%, #8d9094 0 1.4px, #3a3c40 2px, #0b0b0c 2.8px, transparent 3.4px) 24px calc(100% - 7px) / 56px 8px repeat-x;
+  opacity: 0.85;
 }
 
 /* Double brass rail: a milled metallic ring around the felt. */
@@ -96,28 +109,45 @@
   mix-blend-mode: overlay;
 }
 
-/* Warm corner ambient (tungsten lamp glow). */
+/* Рейвънхолд light on the cloth: torch fire spilling in from both sides of
+   the hall, a cold moon sheen from the high windows (top-left), and the
+   table's own dark rim. Static (no flicker on the cloth — the hall behind
+   carries the motion), so nothing here can strobe. */
 .aso-table__felt::after {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(42% 52% at 8% 6%, rgba(231, 200, 123, 0.14), transparent 70%),
-    radial-gradient(42% 52% at 92% 94%, rgba(231, 200, 123, 0.08), transparent 70%);
+    radial-gradient(38% 70% at -4% 50%, rgba(255, 140, 50, 0.16), transparent 72%),
+    radial-gradient(38% 70% at 104% 50%, rgba(255, 140, 50, 0.16), transparent 72%),
+    radial-gradient(55% 45% at 12% -6%, rgba(150, 180, 235, 0.1), transparent 70%),
+    radial-gradient(120% 110% at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.35) 100%);
   pointer-events: none;
 }
 
-/* Center brass medallion / logo watermark. */
+/* The house arms: a small embossed heraldic shield in the lower-left corner of
+   the cloth (it used to be a large watermark in the dead centre, where it
+   showed through dice, buttons and prompts). */
 .aso-table__crest {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  left: 22px;
+  bottom: 22px;
+  width: 44px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  clip-path: polygon(0 0, 100% 0, 100% 58%, 50% 100%, 0 58%);
+  background: linear-gradient(160deg, rgba(231, 200, 123, 0.16), rgba(120, 90, 40, 0.1));
+  box-shadow: inset 0 0 0 1px rgba(217, 178, 95, 0.25);
   font-family: var(--font-display, serif);
-  font-size: clamp(3rem, 12vw, 7rem);
+  font-size: 1.35rem;
   font-weight: 700;
-  color: rgba(217, 178, 95, 0.07);
-  letter-spacing: 0.1em;
+  line-height: 1;
+  padding-bottom: 8px;
+  color: rgba(231, 200, 123, 0.32);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+  /* colour emoji crests (🐟 🁫) become a gilded monochrome charge */
+  filter: grayscale(1) sepia(0.7) brightness(0.95);
   pointer-events: none;
   user-select: none;
   z-index: 0;

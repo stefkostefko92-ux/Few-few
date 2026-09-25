@@ -45,11 +45,17 @@
   cursor: crosshair;
 }
 
-/* WebGL canvas table (hybrid renderer) — rails are drawn inside the canvas. */
+/* WebGL canvas table (hybrid renderer) — rails are drawn inside the canvas.
+   The board canvas is transparent (Рейвънхолд), so this is the room around
+   the table: the hall's dark flagstone floor under a warm pool from the lamp
+   over the table. Without it the brass rim's gradient filled the whole view. */
 .aso-cue__gl {
   border-radius: 11px;
   overflow: hidden;
   line-height: 0;
+  background:
+    radial-gradient(60% 55% at 50% 52%, rgba(255, 176, 96, 0.16), transparent 72%),
+    radial-gradient(120% 100% at 50% 50%, #16130f 0%, #0b0d12 70%, #07080b 100%);
 }
 .aso-cue__gl canvas {
   touch-action: none;

@@ -82,5 +82,6 @@
   border-radius: 16px;
   overflow: hidden;
   line-height: 0;
-  box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+  /* no box-shadow: the canvas is transparent (the hall shows through) and the
+     scene casts its own shadows — a CSS shadow outlined an invisible box. */
 }
