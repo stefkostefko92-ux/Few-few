@@ -43,3 +43,5 @@
 {"t":"handoff","ts":"2026-09-25T07:59:32.287Z","id":"auto","from":"seo","to":"човека","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:02:18.638Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"блокер (само Piuma — пускане и Meta App Review); Мастилко, Визитка и AdBlock — има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:02:22.932Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"блокер"}
+{"t":"handoff","ts":"2026-09-25T08:00:18.030Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T08:01:44.913Z","id":"auto","from":"tayniyat-agent","to":"prevodach","status":"блокер"}
