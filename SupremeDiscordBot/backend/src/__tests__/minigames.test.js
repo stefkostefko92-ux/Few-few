@@ -156,11 +156,18 @@ describe("Counting", () => {
   });
   it("грешно число → рестарт (условен по видяното) и WRONG_NUMBER; същият човек → SAME_USER", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce(settings());
+    prismaMock.gameSettings.updateMany.mockResolvedValueOnce({ count: 1 });
     const w = await counting.applyCount(SID, UID, 7);
     expect(w).toMatchObject({ ok: false, code: "WRONG_NUMBER", expected: 5, reached: 4, high: 10 });
     expect(prismaMock.gameSettings.updateMany).toHaveBeenCalledWith({ where: { serverId: SID, countingCurrent: 4 }, data: { countingCurrent: 0, countingLastUserId: null } });
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce(settings());
+    prismaMock.gameSettings.updateMany.mockResolvedValueOnce({ count: 1 });
     expect((await counting.applyCount(SID, UID2, 5)).code).toBe("SAME_USER");
+  });
+  it("остаряла гледна точка: нулирането не хваща реда (друг вече е броил) → тихо RACE, без обвинение (одит 25.09.2026)", async () => {
+    prismaMock.gameSettings.findUnique.mockResolvedValueOnce(settings()); // видяхме 4, а A вече записа 5
+    prismaMock.gameSettings.updateMany.mockResolvedValueOnce({ count: 0 });
+    expect(await counting.applyCount(SID, UID, 6)).toEqual({ ok: false, code: "RACE" });
   });
   it("вярно число → условен update (надпревара: 0 реда = RACE, без рестарт); рекорд; етап на 100 дава XP", async () => {
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce(settings());
@@ -281,6 +288,7 @@ describe("маршрути", () => {
   it("POST /api/bot/game/counting — валидация 400; WRONG_NUMBER → 409 с очакваното число", async () => {
     expect((await request(app).post("/api/bot/game/counting").send({ serverId: SID, userId: UID, number: "5" })).status).toBe(400);
     prismaMock.gameSettings.findUnique.mockResolvedValueOnce(settings());
+    prismaMock.gameSettings.updateMany.mockResolvedValueOnce({ count: 1 });
     const r = await request(app).post("/api/bot/game/counting").send({ serverId: SID, userId: UID, number: 9 });
     expect(r.status).toBe(409); expect(r.body).toMatchObject({ error: "WRONG_NUMBER", expected: 5 });
   });

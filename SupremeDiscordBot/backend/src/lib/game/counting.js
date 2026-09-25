@@ -33,10 +33,14 @@ export async function applyCount(serverId, userId, number) {
   const expected = s.countingCurrent + 1;
   if (number !== expected || (s.countingLastUserId && s.countingLastUserId === userId)) {
     // Рестарт — но само ако редът е още там, където го видяхме (иначе друг вече е броил/рестартирал).
-    await prisma.gameSettings.updateMany({
+    const reset = await prisma.gameSettings.updateMany({
       where: { serverId, countingCurrent: s.countingCurrent },
       data: { countingCurrent: 0, countingLastUserId: null },
     });
+    // Редът вече не е там, където го видяхме: друг е броил междувременно и
+    // „грешката“ е остаряла гледна точка, не грешка на играча — тихо RACE, без
+    // публично обвинение (одит на Кодаджията 25.09.2026).
+    if (reset.count !== 1) return { ok: false, code: "RACE" };
     return { ok: false, code: number !== expected ? "WRONG_NUMBER" : "SAME_USER", expected, reached: s.countingCurrent, high: s.countingHigh };
   }
   const moved = await prisma.gameSettings.updateMany({

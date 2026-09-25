@@ -42,6 +42,21 @@ describe("Counting", () => {
     expect(await mg.onCounting(msg("hello"), settings())).toBeNull();
     expect(apiPost).not.toHaveBeenCalled();
   });
+  it("едновременни числа в един сървър стигат до backend-а ПО РЕД — второто чака първото (одит 25.09.2026)", async () => {
+    const order = [];
+    let release;
+    apiPost
+      .mockImplementationOnce(async (_u, body) => { order.push(`start ${body.number}`); await new Promise((r) => { release = r; }); order.push(`end ${body.number}`); return { data: { ok: true, number: 5 } }; })
+      .mockImplementationOnce(async (_u, body) => { order.push(`start ${body.number}`); return { data: { ok: true, number: 6 } }; });
+    const a = mg.onCounting(msg("5"), settings());
+    const b = mg.onCounting(msg("6"), settings());
+    await vi.waitFor(() => expect(order).toContain("start 5"));
+    await new Promise((r) => setTimeout(r, 150)); // достатъчно, за да тръгне „6“, ако нямаше опашка
+    expect(order).toEqual(["start 5"]); // „6“ НЕ е тръгнало, докато „5“ виси
+    release();
+    await Promise.all([a, b]);
+    expect(order).toEqual(["start 5", "end 5", "start 6"]);
+  });
   it("вярно → ✅ (🥇 при рекорд), етап → съобщение; грешно → ❌ + обяснение с очакваното и рекорда", async () => {
     apiPost.mockResolvedValueOnce({ data: { ok: true, number: 5, record: false, milestone: false } });
     const m = msg("5");

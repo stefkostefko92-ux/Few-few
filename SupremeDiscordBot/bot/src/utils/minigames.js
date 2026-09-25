@@ -26,10 +26,24 @@ export function parseCount(content) {
  * Извиква се от messageCreate за ВСЯКО съобщение; чете `message.content` само
  * ако каналът е countingChannelId на сървъра. Връща какво е направил (за тестове).
  */
-export async function onCounting(message, settings) {
-  if (!settings?.enabled || !settings.countingChannelId || settings.countingChannelId !== message.channelId) return null;
+// Опашка по сървър: messageCreate идва по реда на Discord, но заявките към
+// backend-а тръгваха паралелно — „6“ можеше да стигне преди „5“ и да бъде
+// обявено за грешка, а бройката — нулирана (одит на Кодаджията 25.09.2026).
+const countingQueue = new Map(); // guildId → последната обещана обработка
+
+export function onCounting(message, settings) {
+  if (!settings?.enabled || !settings.countingChannelId || settings.countingChannelId !== message.channelId) return Promise.resolve(null);
   const number = parseCount(message.content);
-  if (number === null) return null; // чат в канала е позволен — не се брои и не се трие
+  if (number === null) return Promise.resolve(null); // чат в канала е позволен — не се брои и не се трие
+  const gid = message.guildId;
+  const run = (countingQueue.get(gid) || Promise.resolve()).then(() => applyCountMessage(message, number), () => applyCountMessage(message, number));
+  const tail = run.catch(() => {});
+  countingQueue.set(gid, tail);
+  tail.then(() => { if (countingQueue.get(gid) === tail) countingQueue.delete(gid); });
+  return run;
+}
+
+async function applyCountMessage(message, number) {
   const lang = await resolveLangForGuild(message.guildId).catch(() => "en");
   let out;
   try {
