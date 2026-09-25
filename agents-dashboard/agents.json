@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 263
+        "lessons": 266
       },
       "evolution": [
         {
@@ -578,9 +578,20 @@
           "date": "2026-09-24",
           "event": "v18.3 — учене",
           "detail": "Научи: Caddy v2 НЕ пише HTTP access логове без директива `log` в сайт-блока; при включен лог ф…"
+        },
+        {
+          "version": "18.6.0",
+          "date": "2026-09-25",
+          "event": "v18.6 — учене",
+          "detail": "Научи: Регламент (ЕС) 2026/1744 (Digital Omnibus on AI) е обнародван в ОВ на 24.07.2026, в сил… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Регламент (ЕС) 2026/1744 (Digital Omnibus on AI) е обнародван в ОВ на 24.07.2026, в сил…\" (+2 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
