@@ -130,21 +130,21 @@ for lang,(t,d,intro,h2a,pa,h2b,pb,h2c,applypre,applymail,applypost) in car_txt.i
 # ============ IMPRINT / LEGAL NOTICE ============
 imp_txt={
  'it':("Note Legali","Dati legali e societari di Carbon Stealth VCC: ragione sociale, EIK, partita IVA, sede, contatti e responsabile dei contenuti.",
-   "Dati Societari","Ragione sociale","Carbon Stealth VCC","EIK (Registro Imprese Bulgaria)","208725180","Partita IVA","BG208725180","Sede legale","ul. Samuil 3, Bobov Dol 2670, Bulgaria","Email","info@carbonstealth.eu","Telefono","+39 379 296 9699 / +359 877 414 874","Responsabile dei contenuti","Stefan Kostadinov (CEO e Fondatore)",
+   "Dati Societari","Ragione sociale","Carbon Stealth VCC","Forma giuridica","ЕДПК — società unipersonale a capitale variabile di diritto bulgaro (Variable Capital Company, VCC)","EIK (Registro Imprese Bulgaria)","208725180","Partita IVA","BG208725180","Sede legale","ul. Samuil 3, Bobov Dol 2670, Bulgaria","Email","info@carbonstealth.eu","Telefono","+39 379 296 9699 / +359 877 414 874","Responsabile dei contenuti","Stefan Kostadinov (CEO e Fondatore)",
    "Responsabilità","I contenuti di questo sito sono redatti con la massima cura. Carbon Stealth VCC non risponde di eventuali errori o omissioni. I link a siti esterni sono forniti per comodità; non abbiamo controllo sui loro contenuti.",
    "Foro competente","Per le controversie con clienti professionali è competente il foro di Kyustendil, Bulgaria. Se sei un consumatore, resta competente il giudice del luogo in cui risiedi (Reg. (UE) 1215/2012, art. 18; Codice del Consumo, art. 66-bis)."),
  'en':("Legal Notice","Legal and company information for Carbon Stealth VCC: legal name, EIK, VAT, registered office, contacts and person responsible for content.",
-   "Company Details","Legal name","Carbon Stealth VCC","EIK (Bulgarian Commercial Register)","208725180","VAT number","BG208725180","Registered office","ul. Samuil 3, Bobov Dol 2670, Bulgaria","Email","info@carbonstealth.eu","Phone","+39 379 296 9699 / +359 877 414 874","Responsible for content","Stefan Kostadinov (CEO & Founder)",
+   "Company Details","Legal name","Carbon Stealth VCC","Legal form","EDPK (ЕДПК) — single-member variable capital company under Bulgarian law (VCC)","EIK (Bulgarian Commercial Register)","208725180","VAT number","BG208725180","Registered office","ul. Samuil 3, Bobov Dol 2670, Bulgaria","Email","info@carbonstealth.eu","Phone","+39 379 296 9699 / +359 877 414 874","Responsible for content","Stefan Kostadinov (CEO & Founder)",
    "Liability","The content of this website is prepared with the utmost care. Carbon Stealth VCC is not liable for any errors or omissions. Links to external sites are provided for convenience; we have no control over their content.",
    "Jurisdiction","Disputes with business clients are subject to the jurisdiction of Kyustendil, Bulgaria. If you are a consumer, the courts of your country of residence remain competent (Reg. (EU) 1215/2012, Art. 18)."),
  'bg':("Правни Данни","Правна и фирмена информация за Carbon Stealth VCC: наименование, ЕИК, ДДС номер, седалище, контакти и отговорник за съдържанието.",
-   "Фирмени Данни","Наименование","Carbon Stealth VCC","ЕИК (Търговски регистър)","BG208725180","ДДС номер","BG208725180","Седалище","ул. Самуил 3, Бобов дол 2670, България","Имейл","info@carbonstealth.eu","Телефон","+39 379 296 9699 / +359 877 414 874","Отговорник за съдържанието","Стефан Костадинов (CEO и Основател)",
+   "Фирмени Данни","Наименование","Carbon Stealth VCC","Правна форма","ЕДПК — еднолично дружество с променлив капитал","ЕИК (Търговски регистър)","208725180","ДДС номер","BG208725180","Седалище","ул. Самуил 3, Бобов дол 2670, България","Имейл","info@carbonstealth.eu","Телефон","+39 379 296 9699 / +359 877 414 874","Отговорник за съдържанието","Стефан Костадинов (CEO и Основател)",
    "Отговорност","Съдържанието на този сайт е изготвено с максимално внимание. Carbon Stealth VCC не носи отговорност за евентуални грешки или пропуски. Връзките към външни сайтове са предоставени за удобство; нямаме контрол върху тяхното съдържание.",
-   "Подсъдност","Всеки спор е подсъден на съда в Кюстендил, България, освен ако законът не предвижда друго."),
+   "Подсъдност","Споровете с бизнес клиенти са подсъдни на съда в Кюстендил, България. Ако сте потребител, компетентен остава съдът по вашето местоживеене (Регл. (ЕС) 1215/2012, чл. 18)."),
 }
 for lang,vals in imp_txt.items():
     t,d=vals[0],vals[1]
-    h2a=vals[2]; rows=vals[3:17]; h2b,pb,h2c,pc=vals[17],vals[18],vals[19],vals[20]
+    h2a=vals[2]; rows=vals[3:19]; h2b,pb,h2c,pc=vals[19],vals[20],vals[21],vals[22]
     schema={"@context":"https://schema.org","@graph":[
         {"@type":"WebPage","@id":BASE+IMPRINT[lang]+"#page","url":BASE+IMPRINT[lang],"name":t,"inLanguage":lang,"about":{"@id":BASE+"/#organization"}},
         breadcrumb(lang,t,IMPRINT[lang])]}
