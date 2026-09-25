@@ -227,7 +227,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
 
 export default function App(): React.ReactElement {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Bootstrapper>
         <CookieBanner />
         <BanScreen />
