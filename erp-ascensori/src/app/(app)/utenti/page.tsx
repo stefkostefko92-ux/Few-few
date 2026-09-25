@@ -729,7 +729,7 @@ function FormUtente({
               value={form.tenantId}
               onChange={(e) => setForm({ ...form, tenantId: e.target.value })}
             >
-              <option value="">Nessuna (livello fornitore)</option>
+              <option value="">Nessuna (tutta l&apos;installazione)</option>
               {aziende.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.ragioneSociale}

@@ -66,7 +66,7 @@ export async function richiedeChiave(
   return { chiaveId: riga.id, tenantId: riga.tenantId, ambiti: riga.ambiti };
 }
 
-/** Филтърът по фирма за ключ. Ключът НИКОГА не е на ниво доставчик. */
+/** Филтърът по фирма за ключ. Ключът НИКОГА не е с обхвата на MASTER. */
 export function filtroChiave(c: ContestoApi): { tenantId: string | null } {
   return { tenantId: c.tenantId ?? null };
 }

@@ -38,7 +38,10 @@ pervenute all'apertura successiva.
 
 3.2 In entrambi i casi:
 
-- l'accesso avviene con **utenza nominativa**, mai condivisa;
+- l'accesso avviene con **utenza nominativa**, mai condivisa, **creata dal
+  Cliente** con il livello di accesso minimo necessario e disattivata al
+  termine: il livello `MASTER` appartiene all'amministrazione del Cliente e il
+  Fornitore non ne detiene alcuno in modo permanente;
 - è **tracciato** nel registro immodificabile delle operazioni, che il Cliente
   può consultare in ogni momento dall'interfaccia;
 - è limitato a quanto necessario alla richiesta;

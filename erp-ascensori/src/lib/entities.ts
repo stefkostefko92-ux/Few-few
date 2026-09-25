@@ -501,7 +501,7 @@ export const tenants: CrudConfig = {
   // САМО MASTER. `senzaTenant` изключва филтъра по фирма (crud.ts), затова с
   // ниво ADMIN администраторът на един клиент четеше търговския списък с всички
   // фирми, удължаваше собствения си абонамент (`scadenzaAbbonamento`) и можеше
-  // да деактивира конкурент. Служебна таблица = ниво на доставчика.
+  // да деактивира конкурент. Служебна таблица = само MASTER.
   ruoloLettura: "MASTER",
   ruoloScrittura: "MASTER",
   ruoloCancellazione: "MASTER",

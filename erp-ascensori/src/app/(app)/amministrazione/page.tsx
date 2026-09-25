@@ -354,10 +354,10 @@ function SezioneAzienda() {
         Azienda di lavoro
       </h2>
       <p className="mt-1 text-sm text-text-3">
-        Il livello MASTER non appartiene a nessuna azienda. Per intervenire nei
-        dati di un cliente (assistenza, correzioni, migrazione) si entra nella
-        sua azienda: ogni ingresso e uscita resta nel registro operazioni di
-        quell&apos;azienda.
+        Il livello MASTER opera su tutta l&apos;installazione. Se questa
+        gestisce più aziende (ad esempio le società di un gruppo), per lavorare
+        nei dati di una di esse si entra nella sua azienda: ogni ingresso e
+        uscita resta nel registro operazioni di quell&apos;azienda.
       </p>
       {aziende.length === 0 ? (
         <p className="mt-3 text-sm text-text-2">
@@ -375,7 +375,7 @@ function SezioneAzienda() {
               value={scelta}
               onChange={(e) => setScelta(e.target.value)}
             >
-              <option value="">Nessuna (livello fornitore)</option>
+              <option value="">Nessuna (tutta l&apos;installazione)</option>
               {aziende.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.ragioneSociale}

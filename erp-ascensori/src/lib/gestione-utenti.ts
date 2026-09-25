@@ -21,7 +21,10 @@ export async function utenteGestibile(
   const u = await prisma.user.findFirst({ where: { id, ...filtroUtenti(s) } });
   if (!u) throw new ErroreHttp(404, "Utente non trovato");
   if (u.ruolo === "MASTER" && s.ruolo !== "MASTER")
-    throw new ErroreHttp(403, "Solo il livello MASTER può gestire utenti MASTER");
+    throw new ErroreHttp(
+      403,
+      "Solo il livello MASTER può gestire utenti MASTER",
+    );
   if (opz.privilegiato && mfaObbligatorio(u.ruolo) && s.ruolo !== "MASTER")
     throw new ErroreHttp(
       403,

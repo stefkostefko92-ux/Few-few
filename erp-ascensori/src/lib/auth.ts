@@ -187,8 +187,8 @@ export async function richiedeRuolo(minimo: Ruolo): Promise<Sessione> {
   if (!haPermesso(ruolo, minimo))
     throw new ErroreHttp(403, "Permessi insufficienti");
   // мулти-фирма: изтекъл абонамент → 402 (проверка при наличен tenant).
-  // Не и за MASTER: доставчикът трябва да влезе точно в спряната фирма —
-  // да поднови абонамента или да изнесе данните ѝ.
+  // Не и за MASTER: върховният администратор трябва да влезе точно в спряната
+  // фирма — да я активира отново или да изнесе данните ѝ.
   if (s.tenantId && ruolo !== "MASTER") {
     const t = await prisma.tenant.findUnique({ where: { id: s.tenantId } });
     if (!t || !t.attivo) throw new ErroreHttp(403, "Azienda disattivata");

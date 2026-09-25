@@ -10,6 +10,14 @@
 
 ---
 
+> **Сменено (решение на собственика):** MASTER в гестионала е върхът на
+> администрацията НА КЛИЕНТА, не наше ниво. Нашият системен администратор
+> държи сървъра и базата; в приложението влиза само с поименен акаунт, който
+> клиентът създава за конкретната заявка (Condizioni di assistenza, § 3).
+> Носителите на MASTER/ADMIN при клиента са НЕГОВИ amministratori di sistema —
+> назначава ги той (Scheda tecnica, § 5, т. 6). Юристът да потвърди, че това
+> не изисква промяна в DPA (чл. 28(3)(h) — списъкът с наши хора с достъп).
+
 ## § 0. Кой какво държи днес
 
 | Роля | Кой | Основание |
@@ -124,8 +132,7 @@ Data «…» · Il responsabile «…» · Per accettazione, l'autorizzato «…
 rappresentante,
 
 quale **amministratore di sistema** con riferimento a: server di produzione
-(VPS Hetzner Online GmbH, Germania) · base dati PostgreSQL · gestionale ERP
-Ascensori, livello MASTER.
+(VPS Hetzner Online GmbH, Germania) · base dati PostgreSQL.
 
 **È l'unica persona con tali privilegi.** L'elenco comunicabile al cliente ex
 art. 28 par. 3 lett. h GDPR (§ 5) contiene oggi un solo nome.
@@ -146,7 +153,7 @@ atto apertamente qui anziché farla passare per un giudizio di terzi.
 |---|---|---|
 | Server di produzione | accesso amministrativo | manutenzione, aggiornamenti, ripristino |
 | Base dati | ruolo applicativo, **non superutente** | il superutente aggira le policy di isolamento tra aziende |
-| Gestionale, livello MASTER | livello del fornitore | assistenza e configurazione |
+| Gestionale | **nessuna utenza permanente**: utenza nominativa creata dal Cliente per la singola richiesta di assistenza, con il livello minimo necessario (Condizioni di assistenza, § 3) | assistenza |
 
 **Il ruolo applicativo della base dati non deve essere superutente.** Un
 superutente scavalca incondizionatamente la row-level security, anche con

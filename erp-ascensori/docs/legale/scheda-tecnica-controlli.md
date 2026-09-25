@@ -177,7 +177,7 @@ nell'interfaccia non è una misura di sicurezza e non viene considerato tale.
 
 | Livello | Accesso al registro |
 |---|---|
-| `MASTER` (fornitore) | tutte le aziende dell'installazione |
+| `MASTER` (vertice dell'amministrazione del Cliente) | tutte le aziende dell'installazione |
 | `ADMIN` | solo la propria azienda |
 | `DIREZIONE` e inferiori | **nessun accesso** |
 
