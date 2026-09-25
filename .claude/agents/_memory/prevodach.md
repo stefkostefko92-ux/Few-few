@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-25:** adblock options: $2 в opt_filter_status и $1 в opt_updated_ago идват от Intl.RelativeTimeFormat (вече локализирано „преди X“) — не добавяй 'преди/ago' в превода. _(adblock i18n; verified; adblock/options/options.js:212)_
+- **2026-09-25:** adblock options: помощният текст за филтрите (opt_fh_*) се сглобява от отделни span-ове около <code> в фиксиран ред; за SOV езици (ja/ko) формулирай фрагментите като следлози/с тире, не като самостоятелни изречения. _(adblock i18n; verified; adblock/options/options.html:161)_
 - **2026-09-25:** adblock options: $2 в opt_filter_status и $1 в opt_updated_ago идват от Intl.RelativeTimeFormat (напр. '3 hours ago' вече локализирано) — не добавяй 'преди/ago' в превода. _(adblock i18n; verified; adblock/options/options.js:212)_
 - **2026-09-25:** adblock options: помощният текст за филтрите (opt_fh_*) се сглобява от отделни span-ове около <code> в фиксиран ред (options.html:161-164); за SOV езици (ja/ko) формулирай фрагментите като следлози/с тире, не като самостоятелни изречения. _(adblock i18n; verified; adblock/options/options.html:161)_
 - **2026-09-09:** Типографски кавички („ “ BG/DE, « » IT) вместо ASCII \" в JSON локали премахват нуждата от \\\" escaping — en източникът имаше 4 екранирани кавички, преводите нула, без риск от счупен JSON. _(global; verified; "/home/user/Few-few/adblock/_locales/en/messages.json:180,183,186,213 срещу bg/it/de еквивалентите")_
