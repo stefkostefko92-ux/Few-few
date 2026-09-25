@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-24",
+    "updated": "2026-09-25",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -11587,7 +11587,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 167
+        "lessons": 170
       },
       "evolution": [
         {
@@ -11931,9 +11931,20 @@
           "date": "2026-09-09",
           "event": "v14.9 — учене",
           "detail": "Научи: web_accessible_resources за surrogate/anti-adblock ресурси (gpt.js, ga.js, ima3.js и др…"
+        },
+        {
+          "version": "15.2.0",
+          "date": "2026-09-25",
+          "event": "v15.2 — учене",
+          "detail": "Научи: Relaxed CSS Nesting (nested selector starting directly with a type/tag selector, no lea… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Relaxed CSS Nesting (nested selector starting directly with a type/tag selector, no lea…\" (+2 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "quarantine",
