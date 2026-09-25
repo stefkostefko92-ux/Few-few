@@ -2,6 +2,7 @@ import type { Server } from "socket.io";
 import { getEngine, SeededRng, type AnyEngine, type SeatScore } from "@aso/game-core";
 import {
   GAME_ENGINE,
+  isBettingGame,
   SOCKET_EVENTS,
   type GameKey,
   type MatchFoundMsg,
@@ -14,6 +15,7 @@ import { notifyMatchResult } from "./progression.js";
 import { STARTING_MMR } from "@aso/shared";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
+import { actionShapeOk } from "./actionGuard.js";
 
 const TURN_MS = env.TURN_SECONDS * 1000;
 const DISCONNECT_GRACE_MS = env.DISCONNECT_GRACE_SECONDS * 1000;
@@ -180,12 +182,22 @@ export class GameRoom {
       this.emitPresence(seat.seat, true);
     }
     // Free-form engines (e.g. cue sports) validate continuous actions directly;
-    // everyone else matches against the enumerated legal set.
-    const legal = this.engine.validate
-      ? this.engine.validate(this.state, seat.seat, action)
-      : this.engine
-          .legalActions(this.state, seat.seat)
-          .some((l) => stable(l) === stable(action));
+    // everyone else matches against the enumerated legal set. The action is
+    // untrusted client input: bound its shape first, and never let a throwing
+    // validator escape — a synchronous throw here would kill the whole node.
+    let legal = false;
+    if (actionShapeOk(action)) {
+      try {
+        legal = this.engine.validate
+          ? this.engine.validate(this.state, seat.seat, action)
+          : this.engine
+              .legalActions(this.state, seat.seat)
+              .some((l) => stable(l) === stable(action));
+      } catch (err) {
+        logger.warn({ err, matchId: this.matchId }, "action validation threw; rejecting");
+        legal = false;
+      }
+    }
     if (!legal) {
       this.io.to(userRoom(userId)).emit(SOCKET_EVENTS.ERROR, {
         code: "illegal_action",
@@ -296,6 +308,29 @@ export class GameRoom {
     }
   }
 
+  /**
+   * A forfeit / resign / shutdown ends the match with an OVERRIDE result that
+   * carries no `points`. For betting tables (Свара) the wallet settles from
+   * points, and `points ?? 0` read as "busted" → every seat, the winner too,
+   * lost the full buy-in (a deploy restart alone charged everyone 200). Attach
+   * each seat's live stack from the engine so the table settles on its real
+   * state. Non-betting games keep their result-only rewards untouched.
+   */
+  private withLivePoints(score: SeatScore[]): SeatScore[] {
+    if (!isBettingGame(this.game)) return score;
+    let live: SeatScore[] = [];
+    try {
+      live = this.engine.score(this.state);
+    } catch (err) {
+      logger.warn({ err, matchId: this.matchId }, "live score unavailable for override settlement");
+    }
+    const points = new Map(live.map((s) => [s.seat, s.points]));
+    return score.map((s) => {
+      const p = points.get(s.seat);
+      return p === undefined ? s : { ...s, points: p };
+    });
+  }
+
   private onGrace(seat: number): void {
     if (this.done || !this.disconnected.has(seat)) return;
     logger.info({ matchId: this.matchId, seat }, "seat abandoned — forfeiting");
@@ -303,7 +338,7 @@ export class GameRoom {
       seat: s.seat,
       result: s.seat === seat ? "loss" : "win",
     }));
-    void this.finish(score);
+    void this.finish(this.withLivePoints(score));
   }
 
   /** Explicit abandon (the player queued for a new match while seated here):
@@ -316,7 +351,7 @@ export class GameRoom {
       seat: s.seat,
       result: s.seat === seat.seat ? "loss" : "win",
     }));
-    void this.finish(score);
+    void this.finish(this.withLivePoints(score));
   }
 
   private applyReduce(action: unknown): void {
@@ -471,6 +506,6 @@ export class GameRoom {
   async abortForShutdown(): Promise<void> {
     if (this.done) return;
     const score: SeatScore[] = this.seats.map((s) => ({ seat: s.seat, result: "draw" }));
-    await this.finish(score);
+    await this.finish(this.withLivePoints(score));
   }
 }
