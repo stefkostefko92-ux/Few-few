@@ -31,6 +31,7 @@ export const metadata: Metadata = {
     "тексас холдем",
     "браузърни игри",
     "безплатни игри",
+    "Carbon Stealth",
   ],
   authors: [{ name: SITE.org.legalName, url: SITE.org.url }],
   creator: SITE.org.legalName,
