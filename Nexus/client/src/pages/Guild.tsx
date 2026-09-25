@@ -485,7 +485,7 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
                 className="chat-report"
                 title={t('guild.chat.report', { defaultValue: 'Report message' })}
                 aria-label={t('guild.chat.report', { defaultValue: 'Report message' })}
-                onClick={() => setReport({ contentKind: 'chat', contentRef: `guildchat:${m.id}`, label: `Message from ${m.name}` })}
+                onClick={() => setReport({ contentKind: 'chat', contentRef: `guildchat:${m.id}`, label: t('report.messageFrom', { defaultValue: 'Message from {{name}}', name: m.name }) })}
                 style={{ background: 'none', border: 'none', color: 'var(--text-3, #7a7f8c)', cursor: 'pointer', fontSize: 13, padding: 4, alignSelf: 'center' }}
               >⚑</button>
             )}
@@ -914,7 +914,7 @@ function VaultTab({ onRefreshChar }: { onRefreshChar: () => Promise<any> }): Rea
                   <div style={{ flex: 1 }}>
                     <div className={`rarity-${v.rarity}`} style={{ fontWeight: 700 }}>{v.name}</div>
                     <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>
-                      {v.category} · {t('common.lv')} {v.level_req} · {t(`common.rarity.${v.rarity}`, { defaultValue: v.rarity })}
+                      {t(`market.categories.${v.category}`, { defaultValue: v.category })} · {t('common.lv')} {v.level_req} · {t(`common.rarity.${v.rarity}`, { defaultValue: v.rarity })}
                     </div>
                     <div className="muted text-sm" style={{ marginTop: 4 }}>
                       {t('guild.vault.donatedBy', { name: v.depositor_name })} · {new Date(v.deposited_at).toLocaleDateString()}

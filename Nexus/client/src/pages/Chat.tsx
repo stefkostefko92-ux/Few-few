@@ -104,15 +104,18 @@ export default function Chat(): React.ReactElement {
       setText('');
       load(false);
     } catch (e: any) {
-      setErr(e.message || 'Failed to send.');
+      setErr(e.message || t('chat.sendFailed', { defaultValue: 'Failed to send.' }));
     }
   }
 
   if (!character) return <div className="muted" style={{ padding: 24 }}>{t('chat.needChar', { defaultValue: 'Create a character to chat.' })}</div>;
 
-  const title = sel.kind === 'channel'
-    ? (sel.channel === 'global' ? t('chat.global', { defaultValue: 'Global' }) : REGION_LABEL[sel.channel] || sel.channel)
-    : sel.name;
+  // Имената на регионите идват от картата (world.regions.*) — същите като в „Карта на света“.
+  const channelLabel = (ch: string) => ch === 'global'
+    ? t('chat.global', { defaultValue: 'Global' })
+    : t(`world.regions.${ch}.name`, { defaultValue: REGION_LABEL[ch] || ch });
+
+  const title = sel.kind === 'channel' ? channelLabel(sel.channel) : sel.name;
 
   return (
     <div>
@@ -128,7 +131,7 @@ export default function Chat(): React.ReactElement {
               onClick={() => setSel({ kind: 'channel', channel: ch })}
               style={navStyle(sel.kind === 'channel' && sel.channel === ch)}
             >
-              # {ch === 'global' ? t('chat.global', { defaultValue: 'Global' }) : (REGION_LABEL[ch] || ch)}
+              # {channelLabel(ch)}
             </button>
           ))}
           <div className="muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, padding: '12px 8px 6px' }}>{t('chat.direct', { defaultValue: 'Messages' })}</div>
@@ -165,7 +168,7 @@ export default function Chat(): React.ReactElement {
                     <button
                       title={t('chat.report', { defaultValue: 'Report message' })}
                       aria-label={t('chat.report', { defaultValue: 'Report message' })}
-                      onClick={() => setReport({ contentKind: 'chat', contentRef: `gchat:${m.id}`, label: `Message from ${who}` })}
+                      onClick={() => setReport({ contentKind: 'chat', contentRef: `gchat:${m.id}`, label: t('report.messageFrom', { defaultValue: 'Message from {{name}}', name: who }) })}
                       style={{ background: 'none', border: 'none', color: 'var(--text-3,#7a7f8c)', cursor: 'pointer', fontSize: 12, padding: 2 }}
                     >⚑</button>
                   )}

@@ -147,7 +147,7 @@ export default function Landing(): React.ReactElement {
             <a href="#features" className="btn btn-hero">{t('landing.heroCtaHow')}</a>
           </div>
           <div className="hero-credit">
-            {t('landing.artBy', { author: 'John Martin · Yale Center for British Art' })} · <a href="/assets/bg/CREDITS.md" target="_blank" rel="noreferrer">Public domain</a>
+            {t('landing.artBy', { author: 'John Martin · Yale Center for British Art' })} · <a href="/assets/bg/CREDITS.md" target="_blank" rel="noreferrer">{t('landing.publicDomain', { defaultValue: 'Public domain' })}</a>
           </div>
         </div>
       </section>
@@ -302,7 +302,7 @@ export default function Landing(): React.ReactElement {
             {t('landing.forgeLead')}
           </p>
           <div className="forge-band-credit">
-            {t('landing.artBy', { author: 'Diego Velázquez · Museo del Prado' })} · <a href="https://commons.wikimedia.org/wiki/Category:La_Fragua_de_Vulcano" target="_blank" rel="noreferrer">Public domain</a>
+            {t('landing.artBy', { author: 'Diego Velázquez · Museo del Prado' })} · <a href="https://commons.wikimedia.org/wiki/Category:La_Fragua_de_Vulcano" target="_blank" rel="noreferrer">{t('landing.publicDomain', { defaultValue: 'Public domain' })}</a>
           </div>
         </div>
       </section>

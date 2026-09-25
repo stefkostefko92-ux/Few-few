@@ -162,6 +162,7 @@
     "legendary": "leggendario"
   },
   "login": {
+    "forgotPassword": "Hai dimenticato la password?",
     "tagline": "Entra nel reame. Forgia la tua leggenda.",
     "usernameOrEmail": "Nome utente o email",
     "signingIn": "Accesso in corso…",
@@ -283,6 +284,7 @@
     "tipHistory": "I combattimenti passati si possono rivedere nella <historyLink>Cronologia battaglie</historyLink>."
   },
   "landing": {
+    "publicDomain": "Pubblico dominio",
     "navFeatures": "Caratteristiche",
     "navClasses": "Classi",
     "navSets": "Set di oggetti",
@@ -1069,6 +1071,13 @@
     "claimedToast": "Ricompensa collezione: +{{gold}}g, +{{gems}} gemme!"
   },
   "common": {
+    "back": "Indietro",
+    "report": "Segnala",
+    "wins": "Vittorie",
+    "losses": "Sconfitte",
+    "slain": "Mostri uccisi",
+    "dungeons": "Dungeon",
+    "language": "Lingua",
     "loading": "Caricamento…",
     "cancel": "Annulla",
     "close": "Chiudi",
@@ -1272,6 +1281,7 @@
     "invite": "Invita",
     "kick": "Espelli",
     "chat": {
+      "report": "Segnala il messaggio",
       "empty": "Sii il primo a scrivere in chat.",
       "placeholder": "Parla con la tua gilda…",
       "send": "Invia"
@@ -1372,9 +1382,11 @@
     "locked": "Bloccato"
   },
   "leaderboard": {
+    "rating": "Arena",
     "title": "Sala della Fama",
     "subtitle": "I più grandi di Nexus Dominion, classificati per valore nell'arena.",
     "th": {
+      "points": "Punti",
       "name": "Nome",
       "class": "Classe",
       "level": "Livello",
@@ -1436,6 +1448,9 @@
     "achievementsEarned": "Imprese ottenute"
   },
   "settings": {
+    "sound": "Audio",
+    "soundEnabled": "Effetti sonori",
+    "volume": "Volume",
     "pwMismatch": "Le password non coincidono.",
     "pwTooShort": "Usa almeno 6 caratteri.",
     "pwUpdated": "Password aggiornata.",
@@ -1540,6 +1555,8 @@
     }
   },
   "intro": {
+    "dialogAria": "Narrazione introduttiva",
+    "skip": "Salta",
     "line1": "La strada verso nord è di nuovo aperta.",
     "line2": "Sei regni l’hanno pagata. Nessuno dirà con cosa.",
     "line3": "Inizi ad Aedric, con una spada in prestito dalla guardia e un nome che nessuno conosce ancora.",
@@ -1547,7 +1564,126 @@
     "line5": "Benvenuto a Nexus.",
     "skipAria": "Salta l’introduzione"
   },
+  "notif": {
+    "title": "Notifiche",
+    "empty": "Nessuna novità."
+  },
+  "trade": {
+    "title": "Scambio",
+    "trade": "Scambia",
+    "sent": "Proposta di scambio inviata",
+    "done": "Scambio completato!",
+    "cancelled": "Scambio annullato",
+    "startHint": "Avvia uno scambio con un altro giocatore indicandone il nome (oppure usa il pulsante «Scambia» nel suo profilo).",
+    "playerName": "Nome del giocatore…",
+    "offer": "Proponi scambio",
+    "you": "Tu",
+    "ready": "Pronto",
+    "notReady": "Non pronto",
+    "nothing": "(nulla offerto)",
+    "cancel": "Annulla",
+    "gold": "Il tuo oro",
+    "yourItems": "I tuoi oggetti scambiabili",
+    "noItems": "Nessun oggetto scambiabile.",
+    "unready": "Non sono pronto",
+    "markReady": "Sono pronto",
+    "executing": "Completamento…",
+    "bothReady": "Lo scambio si completa automaticamente quando entrambe le parti sono pronte. Qualsiasi modifica azzera la conferma.",
+    "goldOffered": "+ {{amount}} oro",
+    "netAfterFee": "Al netto della commissione del {{pct}}%: {{net}} oro"
+  },
+  "social": {
+    "title": "Amici",
+    "addPlaceholder": "Nome del giocatore…",
+    "addFriend": "Aggiungi amico",
+    "requestSent": "Richiesta inviata",
+    "incoming": "Richieste di amicizia",
+    "accepted": "Richiesta accettata",
+    "accept": "Accetta",
+    "decline": "Rifiuta",
+    "friends": "Amici",
+    "noFriends": "Ancora nessun amico — aggiungine uno qui sopra.",
+    "remove": "Rimuovi",
+    "outgoing": "Richieste inviate",
+    "cancel": "Annulla",
+    "blocked": "Bloccati",
+    "unblock": "Sblocca",
+    "block": "Blocca",
+    "blockedOk": "Giocatore bloccato",
+    "playerNotFound": "Giocatore non trovato."
+  },
+  "chat": {
+    "title": "Chat",
+    "needChar": "Crea un personaggio per usare la chat.",
+    "global": "Globale",
+    "channels": "Canali",
+    "direct": "Messaggi privati",
+    "noFriends": "Aggiungi degli amici per scrivere loro in privato.",
+    "empty": "Ancora nessun messaggio. Saluta per primo!",
+    "report": "Segnala il messaggio",
+    "placeholder": "Messaggio…",
+    "send": "Invia",
+    "sendFailed": "Invio non riuscito."
+  },
+  "weekly": {
+    "title": "Prova settimanale del reame",
+    "subtitle": "Sconfiggi mostri questa settimana per ottenere una ricompensa bonus.",
+    "claimed": "Riscosso! +{{gold}} oro, +{{gems}} gemme",
+    "done": "Ricompensa riscossa — si azzera lunedì.",
+    "claim": "Riscuoti la ricompensa",
+    "locked": "Continua a cacciare"
+  },
+  "forgot": {
+    "title": "Reimposta la password",
+    "tagline": "Ti invieremo via email un link per reimpostarla.",
+    "sent": "Se esiste un account corrispondente, il link per reimpostare la password è in arrivo. Controlla la posta in arrivo (e lo spam).",
+    "backToLogin": "Torna all'accesso",
+    "send": "Invia il link"
+  },
+  "reset": {
+    "title": "Scegli una nuova password",
+    "tagline": "Inserisci una nuova password per il tuo account.",
+    "mismatch": "Le password non coincidono.",
+    "failed": "Reimpostazione non riuscita. Il link potrebbe essere scaduto.",
+    "noToken": "Link di reimpostazione mancante o non valido.",
+    "requestNew": "Richiedi un nuovo link",
+    "done": "Password aggiornata. Ti stiamo reindirizzando all'accesso…",
+    "newPassword": "Nuova password",
+    "confirm": "Conferma la password",
+    "submit": "Aggiorna la password"
+  },
+  "report": {
+    "title": "Segnala un contenuto",
+    "messageFrom": "Messaggio di {{name}}",
+    "player": "Giocatore {{name}}",
+    "reason": "Motivo",
+    "reasons": {
+      "illegal_hate": "Incitamento all'odio / contenuto illegale",
+      "illegal_csam": "Contenuti sessuali che coinvolgono minori",
+      "impersonation": "Sostituzione di persona",
+      "spam": "Spam / truffa",
+      "copyright": "Diritto d'autore",
+      "other": "Altro"
+    },
+    "details": "Qual è il problema?",
+    "detailsPlaceholder": "Descrivi il problema (almeno 20 caratteri)…",
+    "email": "La tua email",
+    "emailHint": "(facoltativa, per gli aggiornamenti)",
+    "goodFaith": "Confermo in buona fede che le informazioni fornite sono esatte e complete.",
+    "submit": "Invia la segnalazione",
+    "tooShort": "Descrivi il problema (almeno 20 caratteri).",
+    "needGoodFaith": "Conferma di agire in buona fede.",
+    "submitted": "Segnalazione inviata. Grazie: il nostro team la esaminerà."
+  },
+  "ban": {
+    "title": "Accesso sospeso",
+    "titleTemporary": "Accesso temporaneamente sospeso",
+    "restoredOn": "L'accesso sarà ripristinato il {{date}}.",
+    "contact": "Se ritieni che si tratti di un errore, scrivi a <mail>{{email}}</mail>. L'eventuale motivazione ti è stata inviata anche nella posta di gioco (art. 17 del regolamento UE sui servizi digitali).",
+    "returnToStart": "Torna all'inizio"
+  },
   "boot": {
+    "awakening": "Nexus Dominion si risveglia…",
     "offlineTitle": "Il regno non risponde",
     "offlineBody": "Il server è occupato o si sta riavviando. I tuoi progressi sono al sicuro.",
     "retry": "Riprova"
