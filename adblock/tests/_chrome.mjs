@@ -67,7 +67,9 @@ export function makeChrome(opts = {}) {
 }
 
 // Изпраща съобщение през записания onMessage listener както popup/options го правят.
-export function sendMessage(listeners, msg, sender = { id: "test-ext" }) {
+// Подразбиране: страница на разширението (popup/options). Content script се
+// симулира с изричен sender с URL на уеб страница.
+export function sendMessage(listeners, msg, sender = { id: "test-ext", url: "chrome-extension://test-ext/options/options.html" }) {
   return new Promise((resolve) => {
     for (const fn of listeners.message) {
       const keep = fn(msg, sender, resolve);

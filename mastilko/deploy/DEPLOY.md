@@ -5,6 +5,13 @@
 и пускаш скрипта. Този файл описва само **еднократната** настройка на сървъра
 и какво прави автоматиката.
 
+> **На кой сървър.** Мастилко живее на **отделен VPS** (Hetzner nbg1) — не на
+> машината с останалите продукти. `autodeploy.sh` (с `PROJECTS="mastilko"`) се
+> пуска **ТАМ**. Ако го пуснеш на грешния сървър, кодът се билдва и тръгва на
+> 3200, но `mastilko-bg.com` не се променя (Nginx на онази машина не сочи натам)
+> — деплоят „не се вижда". Провери, че си на правилния сървър:
+> `curl -s http://127.0.0.1:3200/vizitki | grep -q sp-clip && echo нов || echo стар`.
+
 ## Какво прави autodeploy.sh за mastilko (при всяко пускане)
 
 1. Създава системен потребител `mastilko` (ако липсва) — `nologin`, без права.
@@ -27,26 +34,49 @@
 ```bash
 # 1) DNS: A запис mastilko-bg.com → IP на сървъра (в панела на DNS).
 
-# 2) Nginx vhost + TLS
+# 2) Сертификат ПЪРВО (vhost-ът по-долу вече включва 443 блок, който иска cert).
+#    Издай го, докато домейнът сочи насам:
+certbot certonly --nginx -d mastilko-bg.com
+#    (при първи път без работещ vhost: `certbot certonly --standalone -d mastilko-bg.com`,
+#     след като спреш каквото слуша на 80 за момент.)
+
+# 3) Nginx vhost (пълен: 80 → 443 + прокси към :3200)
 cp /opt/few-few/current/mastilko/deploy/nginx-mastilko.conf /etc/nginx/sites-available/mastilko
 ln -sfn /etc/nginx/sites-available/mastilko /etc/nginx/sites-enabled/mastilko
 nginx -t && systemctl reload nginx
-certbot --nginx -d mastilko-bg.com --redirect
+#    ⚠ НЕ припокривай жив vhost с по-стара/по-къса версия — губиш 443 блока и TLS.
+#    Възстановяване след повреда: същият `cp` + reload (файлът е пълният конфиг).
 
-# 3) Тайните
+# 4) Тайните
 #    - GEMINI_API_KEY: по желание, само за AI подсказките.
 #    - SESSION_SECRET: за подписване на админ сесията (base64, без „$“).
 cat > /opt/mastilko/.env <<'EOF'
 GEMINI_API_KEY=постави-ключа-тук
-GEMINI_MODEL=gemini-2.5-flash
+# „…-latest" alias — фиксираните версии (gemini-2.5-flash) Google спира за нови
+# проекти с 404 и AI-ът мълчи с 502. Виж src/app/api/ai/route.ts.
+GEMINI_MODEL=gemini-flash-latest
 SESSION_SECRET=дълъг-случаен-низ-openssl-rand-base64-48
 EOF
 chmod 600 /opt/mastilko/.env && chown mastilko:mastilko /opt/mastilko/.env
 
-# 4) Създай админ за панела на банерите (bcrypt хеш → data/admins.json).
-#    Пусни от папката на приложението, като насочиш към data/ на сървъра:
+# 4б) Срокът на логовете. Политиката за поверителност обещава изтриване „до
+#     30 дни" — закрепи го, иначе обявеният срок не е гарантиран от нищо:
+mkdir -p /etc/systemd/journald.conf.d
+printf '[Journal]\nMaxRetentionSec=30day\n' > /etc/systemd/journald.conf.d/retention.conf
+systemctl restart systemd-journald
+#     Nginx: vhost-ът пише в /var/log/nginx/mastilko.{access,error}.log, които
+#     попадат под глобалното въртене /var/log/nginx/*.log. Провери, че `rotate`
+#     × интервалът не надхвърля 30 дни (в Ubuntu по подразбиране: daily × 14):
+grep -A10 '/var/log/nginx' /etc/logrotate.d/nginx | grep -E 'daily|weekly|rotate'
+#     И че никой глобален log_format не записва тялото на заявките (иначе
+#     обещанието за MCP конектора в /poveritelnost пада) — трябва да е празно:
+grep -rn 'request_body' /etc/nginx/ || echo "OK: тялото на заявките не се логва"
+
+# 5) Създай админ за панела на банерите (bcrypt хеш → data/admins.json, mode 600).
+#    Скриптът ПИТА за паролата — умишлено не е аргумент на командния ред (там
+#    влиза в историята на шела и се вижда в `ps`):
 sudo -u mastilko env MASTILKO_DATA_DIR=/opt/mastilko/data \
-  node /opt/mastilko/scripts/hash-admin.mjs stefan МОЯТА-ПАРОЛА
+  node /opt/mastilko/scripts/hash-admin.mjs stefan
 
 systemctl restart mastilko
 ```
@@ -63,13 +93,16 @@ systemctl restart mastilko
 
 - **Sitemap:** `https://mastilko-bg.com/sitemap.xml` (автоматичен, всички
   страници). **robots.txt** сочи към него.
-- **Bing (IndexNow):** ключът се сервира на
+- **Bing (IndexNow) — напълно автоматично, без акаунт:** ключът се сервира на
   `https://mastilko-bg.com/a7165a3a38349feabee2f8ce359f4002.txt`
-  (`public/`-файл). autodeploy пингва IndexNow при всеки успешен деплой; можеш и
-  ръчно: `sudo -u mastilko node /opt/mastilko/scripts/indexnow.mjs`.
-  Еднократно регистрирай сайта в **Bing Webmaster Tools**
-  (bing.com/webmasters) и подай sitemap-а — IndexNow ускорява само
-  преоткриването.
+  (`public/`-файл) и доказва собствеността — **не е нужен Bing Webmaster
+  акаунт**. autodeploy пингва IndexNow при **всеки успешен деплой**, като
+  URL-ите се четат от **живия sitemap** (единствен източник — нова страница се
+  подава автоматично, без ръчна синхронизация). Ръчно при нужда:
+  `sudo -u mastilko node /opt/mastilko/scripts/indexnow.mjs`.
+  Регистрацията в **Bing Webmaster Tools** (bing.com/webmasters) е
+  **по избор** — само за табло/статистики; индексирането не я изисква, а
+  sitemap-ът се и авто-открива през robots.txt.
 - **Google:** добави имота в **Google Search Console**
   (search.google.com/search-console), потвърди собствеността (DNS TXT или
   HTML), подай sitemap-а. Google не ползва IndexNow — разчита на sitemap +

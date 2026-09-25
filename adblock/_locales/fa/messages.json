@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "تبلیغات را همه‌جا مسدود می‌کند: تبلیغات ویدیویی YouTube، بنرها، پنجره‌های بازشو، ردیاب‌ها و دیوارهای ضد مسدودساز. رایگان و سریع."
+  },
+  "byCarbon": {
+    "message": "از Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "روشن/خاموش کردن محافظت"
+  },
+  "protected": {
+    "message": "محافظت‌شده"
+  },
+  "paused": {
+    "message": "متوقف"
+  },
+  "blockingHere": {
+    "message": "تبلیغات این صفحه مسدود می‌شود"
+  },
+  "protectionOff": {
+    "message": "محافظت خاموش است"
+  },
+  "pause30": {
+    "message": "توقف به مدت ۳۰ دقیقه"
+  },
+  "pausedResume": {
+    "message": "متوقف است، همین حالا ادامه دهید ($1 دقیقه مانده)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "مسدودشده"
+  },
+  "dataSaved": {
+    "message": "صرفه‌جویی داده"
+  },
+  "timeSaved": {
+    "message": "صرفه‌جویی زمان"
+  },
+  "thisSite": {
+    "message": "این سایت"
+  },
+  "thisPage": {
+    "message": "این صفحه"
+  },
+  "blockOnSite": {
+    "message": "مسدود کردن تبلیغات در این سایت"
+  },
+  "blocking": {
+    "message": "مسدودسازی"
+  },
+  "allowed": {
+    "message": "مجاز"
+  },
+  "cosmetics": {
+    "message": "پنهان کردن کادرهای تبلیغ"
+  },
+  "cosmeticsTitle": {
+    "message": "فیلتر ظاهری در این سایت (اگر چیدمان صفحه به هم ریخت، خاموشش کنید)"
+  },
+  "on": {
+    "message": "روشن"
+  },
+  "off": {
+    "message": "خاموش"
+  },
+  "blockedHere": {
+    "message": "مسدودشده در این صفحه"
+  },
+  "logEmpty": {
+    "message": "هنوز چیزی اینجا مسدود نشده است."
+  },
+  "logUnavailable": {
+    "message": "گزارش در حال حاضر در دسترس نیست (سهمیه مرورگر) — یک دقیقه دیگر دوباره امتحان کنید."
+  },
+  "logCore": {
+    "message": "قوانین اصلی Supreme"
+  },
+  "logYouTube": {
+    "message": "قوانین تبلیغات YouTube"
+  },
+  "logParams": {
+    "message": "پارامترهای ردیابی"
+  },
+  "logMalware": {
+    "message": "دامنه‌های بدافزار"
+  },
+  "logSurrogates": {
+    "message": "اسکریپت‌های تبلیغاتی خنثی‌شده"
+  },
+  "logPrivacy": {
+    "message": "حفاظت از حریم خصوصی"
+  },
+  "logUser": {
+    "message": "فیلترهای من"
+  },
+  "logLive": {
+    "message": "به‌روزرسانی زنده"
+  },
+  "hideElement": {
+    "message": "پنهان کردن عنصر"
+  },
+  "settings": {
+    "message": "تنظیمات"
+  },
+  "promoSub": {
+    "message": "ابزار و تجهیزات، carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "تبلیغ"
+  },
+  "support": {
+    "message": "حمایت"
+  },
+  "filtersCount": {
+    "message": "$1+ فیلتر",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "ظاهر"
+  },
+  "opt_extra_protection": {
+    "message": "محافظت بیشتر"
+  },
+  "opt_smart_detection_log": {
+    "message": "گزارش Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "سایت‌های مجاز"
+  },
+  "opt_my_filters": {
+    "message": "فیلترهای من"
+  },
+  "opt_hidden_elements": {
+    "message": "عناصر پنهان‌شده"
+  },
+  "opt_filter_updates": {
+    "message": "به‌روزرسانی فیلترها"
+  },
+  "opt_engine_health": {
+    "message": "سلامت موتور"
+  },
+  "opt_backup": {
+    "message": "پشتیبان‌گیری"
+  },
+  "opt_support_development": {
+    "message": "حمایت از توسعه"
+  },
+  "opt_theme": {
+    "message": "زمینه"
+  },
+  "opt_sync_across_devices": {
+    "message": "همگام‌سازی بین دستگاه‌ها"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "مسدود کردن تبلیغات YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "بنرهای کوکی / رضایت"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "دور زدن دیوارهای ضد مسدودساز"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "پست‌های اسپانسری Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "حذف پارامترهای ردیابی"
+  },
+  "opt_malware_protection": {
+    "message": "محافظت در برابر بدافزار"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "مسدود کردن APIهای مرورگر برای هدف‌گیری تبلیغات"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "مسدود کردن سیگنال‌های ردیابی و استخراج‌کننده‌های رمزارز"
+  },
+  "opt_auto_update_filters": {
+    "message": "به‌روزرسانی خودکار فیلترها"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (تیره) یا روشن"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "تنظیمات، فهرست مجاز و فیلترها در هر Chrome که با حساب خود وارد آن شده‌اید همگام می‌مانند"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "تبلیغات ویدیویی YouTube را حذف می‌کند. اگر ویدیوها پخش نشدند، آن را خاموش کنید."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "بستن خودکار درخواست‌های «پذیرش کوکی‌ها»"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "پنهان کردن دیوارهای «مسدودساز تبلیغات را غیرفعال کنید» و بازگرداندن صفحه"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "پنهان کردن پست‌های «اسپانسری» در Facebook و Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "حذف utm_*، fbclid، gclid و دیگر شناسه‌های کلیک از پیوندهایی که باز می‌کنید"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "مسدود کردن دامنه‌های بدافزار شناخته‌شده (فهرست URLhaus از abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "غیرفعال کردن APIهای تبلیغاتی Google Topics، FLoC و Protected Audience در همه سایت‌ها"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "پینگ‌های ممیزی پیوند و beacon شخص ثالث را متوقف می‌کند، کوکی‌های ردیابی را از پاسخ‌های شناخته‌شده فناوری تبلیغات حذف می‌کند و اسکریپت‌های استخراج رمزارز در مرورگر را مسدود می‌کند. اگر قابلیتی از یک سایت که به تحلیل آماری وابسته است درست کار نکرد، آن را خاموش کنید."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "حدود دو بار در روز قوانین مسدودسازی جدید و اصلاحات YouTube را از adblock.carbonstealth.eu دریافت می‌کند. فقط داده، بدون کد؛ درخواست هیچ شناسه یا داده مرور را با خود ندارد."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "گزارش زنده تبلیغاتی که به‌صورت اکتشافی شناسایی شده‌اند (بدون فهرست فیلتر)، جدیدترین‌ها اول."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "فهرست‌های مشترک‌شده به‌صورت متن دریافت می‌شوند (هرگز به‌صورت کد)، هر روز به‌روز می‌شوند و در بلوک‌های مدیریت‌شده بالا قرار دارند. برای حذف قوانین یک فهرست، آن را حذف کنید."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "عناصری که با ابزار انتخاب به‌صورت دستی پنهان کرده‌اید، به تفکیک سایت."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "عیب‌یابی زنده — همه‌چیز به‌صورت محلی محاسبه می‌شود. اگر چیزی قرمز است، معمولاً «اکنون به‌روزرسانی شود» یا بارگیری مجدد افزونه مشکل را حل می‌کند."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock برای همه رایگان است. اگر مایلید به نگهداری آن کمک کنید، کمک‌های مالی با کمال میل پذیرفته می‌شود، اما هرگز الزامی نیست."
+  },
+  "opt_reset_statistics": {
+    "message": "بازنشانی آمار"
+  },
+  "opt_add": {
+    "message": "افزودن"
+  },
+  "opt_save_filters": {
+    "message": "ذخیره فیلترها"
+  },
+  "opt_subscribe": {
+    "message": "اشتراک"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "تازه‌سازی فوری اشتراک‌ها"
+  },
+  "opt_update_now": {
+    "message": "اکنون به‌روزرسانی شود"
+  },
+  "opt_refresh": {
+    "message": "تازه‌سازی"
+  },
+  "opt_export_settings": {
+    "message": "صدور تنظیمات"
+  },
+  "opt_import_settings": {
+    "message": "وارد کردن تنظیمات"
+  },
+  "opt_e_g_example_com": {
+    "message": "مثلاً example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! نمونه\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "اشتراک در نشانی فهرست فیلتر (مثلاً https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "تنظیمات Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · تنظیمات"
+  },
+  "opt_theme_light": {
+    "message": "روشن"
+  },
+  "opt_badge_unique": {
+    "message": "منحصربه‌فرد"
+  },
+  "opt_smart_desc": {
+    "message": "تبلیغاتی را می‌گیرد که هنوز هیچ فهرست فیلتری آن‌ها را نمی‌شناسد: قاب‌هایی از دامنه‌های دیگر که اندازه‌شان با جایگاه‌های استاندارد تبلیغ یکی است، بی‌درنگ پنهان می‌شوند، بدون نیاز به قانون."
+  },
+  "opt_caught_so_far": {
+    "message": "تا اینجا شناسایی شده."
+  },
+  "opt_allow_desc": {
+    "message": "تبلیغات در این دامنه‌ها مسدود نمی‌شوند."
+  },
+  "opt_fh_one": {
+    "message": "در هر خط یک قانون."
+  },
+  "opt_fh_blocks": {
+    "message": "یک دامنه را مسدود می‌کند؛"
+  },
+  "opt_fh_everywhere": {
+    "message": "یک عنصر را همه‌جا پنهان می‌کند؛"
+  },
+  "opt_fh_site": {
+    "message": "آن را فقط در همان سایت پنهان می‌کند."
+  },
+  "opt_fh_comments": {
+    "message": "خط‌هایی که با"
+  },
+  "opt_fh_comments2": {
+    "message": "شروع می‌شوند، توضیح هستند."
+  },
+  "opt_donate": {
+    "message": "کمک مالی از طریق Revolut"
+  },
+  "opt_made_by": {
+    "message": "ساخته‌شده توسط Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "هنوز چیزی به‌صورت اکتشافی شناسایی نشده است."
+  },
+  "opt_empty_allow": {
+    "message": "هنوز سایت مجازی وجود ندارد."
+  },
+  "opt_empty_hidden": {
+    "message": "هنوز چیزی به‌صورت دستی پنهان نشده است."
+  },
+  "opt_empty_subs": {
+    "message": "هنوز در هیچ فهرستی مشترک نشده‌اید."
+  },
+  "opt_no_sw": {
+    "message": "پاسخی از service worker دریافت نشد."
+  },
+  "opt_remove": {
+    "message": "حذف"
+  },
+  "opt_filter_status": {
+    "message": "مجموعه فیلتر v$1، به‌روزشده $2. فقط داده؛ هیچ اطلاعاتی درباره شما ارسال نمی‌شود."
+  },
+  "opt_updating": {
+    "message": "در حال به‌روزرسانی…"
+  },
+  "opt_updated": {
+    "message": "به‌روز شد (v$1، $2 قانون اضافی)"
+  },
+  "opt_update_failed": {
+    "message": "به‌روزرسانی ناموفق بود ($1)"
+  },
+  "opt_saved": {
+    "message": "ذخیره شد ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 قانون"
+  },
+  "opt_updated_ago": {
+    "message": "به‌روزشده $1"
+  },
+  "opt_not_fetched": {
+    "message": "هنوز دریافت نشده"
+  },
+  "opt_failed_colon": {
+    "message": "ناموفق: $1"
+  },
+  "opt_enter_https": {
+    "message": "یک نشانی https:// معتبر وارد کنید"
+  },
+  "opt_fetching": {
+    "message": "در حال دریافت…"
+  },
+  "opt_subscribed_ok": {
+    "message": "مشترک شدید: $1 قانون ✓"
+  },
+  "opt_failed_paren": {
+    "message": "ناموفق ($1)"
+  },
+  "opt_refreshing": {
+    "message": "در حال تازه‌سازی…"
+  },
+  "opt_refreshed": {
+    "message": "تازه شد ✓"
+  },
+  "opt_invalid_file": {
+    "message": "فایل تنظیمات نامعتبر است."
+  },
+  "opt_no_response": {
+    "message": "بدون پاسخ"
+  },
+  "opt_h_engine": {
+    "message": "موتور ضد مسدودساز"
+  },
+  "opt_h_rulesets": {
+    "message": "مجموعه‌قوانین ایستای فعال"
+  },
+  "opt_h_live": {
+    "message": "دامنه‌های فیلتر زنده"
+  },
+  "opt_h_last": {
+    "message": "آخرین به‌روزرسانی"
+  },
+  "opt_h_sig": {
+    "message": "امضای به‌روزرسانی‌ها"
+  },
+  "opt_h_user": {
+    "message": "فیلترهای من / قوانین فهرست مجاز"
+  },
+  "opt_h_popup": {
+    "message": "میزبان‌های تبلیغ بازشوی داخلی"
+  },
+  "opt_h_yt": {
+    "message": "دور زدن YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "قاب دامنه دیگر به اندازه تبلیغ"
+  },
+  "opt_reason_sticky": {
+    "message": "بنر تبلیغاتی چسبان"
+  },
+  "logRegional": {
+    "message": "فهرست‌های منطقه‌ای"
+  },
+  "logFocus": {
+    "message": "حالت تمرکز"
+  },
+  "opt_filter_lists": {
+    "message": "فهرست‌های فیلتر"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList و EasyPrivacy همیشه روشن‌اند. فهرست‌های زیر مجوز باز دارند و درون افزونه گنجانده شده‌اند، پس روشن کردن آن‌ها چیزی دانلود نمی‌کند، مگر فهرستی که با علامت «از سازنده‌اش» مشخص شده باشد."
+  },
+  "opt_lists_core": {
+    "message": "اصلی"
+  },
+  "opt_lists_regional": {
+    "message": "منطقه‌ای"
+  },
+  "opt_lists_regional_desc": {
+    "message": "فهرست مربوط به زبان مرورگرتان خودکار روشن می‌شود. اگر اغلب سایت‌هایی به زبان‌های دیگر می‌خوانید، فهرست‌های دیگری هم اضافه کنید."
+  },
+  "opt_focus_mode": {
+    "message": "حالت تمرکز"
+  },
+  "opt_focus_desc": {
+    "message": "چیزهایی را پنهان می‌کند که تبلیغ نیستند ولی باز هم مزاحم‌اند. همه موارد اینجا خاموش‌اند تا زمانی که روشنشان کنید."
+  },
+  "opt_list_ubo": {
+    "message": "فیلترهای uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "تبلیغات، ردیاب‌ها، اصلاحات ضد مسدودساز و ترمیم سایت‌ها از تیم uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "فهرست Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "فهرستی قدیمی و پابرجا از سرورهای تبلیغاتی و ردیابی."
+  },
+  "opt_focus_social": {
+    "message": "دکمه‌ها و ابزارک‌های شبکه‌های اجتماعی"
+  },
+  "opt_focus_social_desc": {
+    "message": "دکمه‌های اشتراک‌گذاری، کادرهای لایک و فیدهای جاسازی‌شده."
+  },
+  "opt_focus_chat": {
+    "message": "ابزارک‌های گفتگو و پشتیبانی"
+  },
+  "opt_focus_chat_desc": {
+    "message": "حباب‌های گفتگوی شناور در گوشه صفحه."
+  },
+  "opt_focus_newsletters": {
+    "message": "پنجره‌های بازشوی خبرنامه و ثبت‌نام"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "کادرها و لایه‌های «در خبرنامه ما عضو شوید»."
+  },
+  "opt_focus_notifications": {
+    "message": "درخواست‌های اعلان"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "کادرهای «اعلان‌ها مجاز شود؟» که سایت‌ها پیش از پرسش مرورگر نشان می‌دهند."
+  },
+  "opt_focus_ai": {
+    "message": "پنجره‌های بازشوی دستیار هوش مصنوعی"
+  },
+  "opt_focus_ai_desc": {
+    "message": "حباب‌های چت‌بات و پنل‌های پیشنهاد هوش مصنوعی که به صفحه‌ها افزوده شده‌اند."
+  },
+  "opt_focus_other": {
+    "message": "مزاحمت‌های دیگر"
+  },
+  "opt_focus_other_desc": {
+    "message": "نوارهای چسبان، بنرهای «باز کردن در برنامه» و شلوغی‌های مشابه."
+  },
+  "opt_badge_lang": {
+    "message": "زبان شما"
+  },
+  "opt_badge_remote": {
+    "message": "از سازنده‌اش"
+  },
+  "opt_remote_hint": {
+    "message": "درون افزونه نیست (مجوز بازتوزیع ندارد): وقتی آن را روشن کنید، مرورگرتان آن را از $1 دانلود می‌کند."
+  },
+  "opt_downloaded_from": {
+    "message": "دانلودشده از $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome این ترکیب فهرست‌ها را نپذیرفت ($1). برخی را خاموش کنید."
+  },
+  "opt_badge_recommended": {
+    "message": "پیشنهادی برای زبان شما"
+  },
+  "reportBroken": {
+    "message": "سایت خراب است؟ درستش کنید یا به ما بگویید"
+  },
+  "rep_title": {
+    "message": "چیزی در این سایت خراب است؟"
+  },
+  "rep_fix_first": {
+    "message": "همین حالا درستش کنید"
+  },
+  "rep_site": {
+    "message": "سایت:"
+  },
+  "rep_fix_desc": {
+    "message": "بیشتر مشکلات با یکی از این‌ها برطرف می‌شود. هر کدام فقط روی همین سایت اعمال می‌شود؛ زبانه دوباره بارگیری می‌شود."
+  },
+  "rep_fix_cosm": {
+    "message": "خاموش کردن پنهان‌سازی عناصر در اینجا"
+  },
+  "rep_fix_allow": {
+    "message": "مجاز کردن تبلیغات در این سایت"
+  },
+  "rep_fix_pause": {
+    "message": "توقف همه‌جا به مدت ۳۰ دقیقه"
+  },
+  "rep_tell_us": {
+    "message": "به ما بگویید"
+  },
+  "rep_tell_desc": {
+    "message": "ما سایت‌های خراب را برای همه از طریق به‌روزرسانی امضاشده فیلترها درست می‌کنیم، معمولاً ظرف یک روز. افزونه چیزی ارسال نمی‌کند: گزارش در برنامه ایمیل خودتان باز می‌شود و پیش از ارسال تک‌تک کلماتش را می‌بینید."
+  },
+  "rep_what": {
+    "message": "مشکل چیست؟ (اختیاری)"
+  },
+  "rep_what_ph": {
+    "message": "مثلاً ویدیو شروع نمی‌شود، یک کادر سفید روی مقاله را پوشانده…"
+  },
+  "rep_full_url": {
+    "message": "درج نشانی کامل صفحه (در غیر این صورت فقط نام سایت)"
+  },
+  "rep_preview": {
+    "message": "آنچه ارسال خواهد شد"
+  },
+  "rep_send_mail": {
+    "message": "ارسال با ایمیل"
+  },
+  "rep_copy": {
+    "message": "کپی گزارش"
+  },
+  "rep_copied": {
+    "message": "کپی شد."
+  },
+  "rep_done_cosm": {
+    "message": "پنهان‌سازی عناصر در این سایت خاموش است. صفحه دوباره بارگیری شد — مشکل حل شد؟"
+  },
+  "rep_done_allow": {
+    "message": "تبلیغات در این سایت مجاز است. صفحه دوباره بارگیری شد — مشکل حل شد؟"
+  },
+  "rep_done_pause": {
+    "message": "به مدت ۳۰ دقیقه متوقف شد. اگر سایت اکنون کار می‌کند، لطفاً در پایین به ما بگویید."
+  },
+  "cookieRejections": {
+    "message": "بنرهای کوکی که از طرف شما رد شدند: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "قفسه‌ها، زبانه و پیشنهادهای Shorts در YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "پنجره‌های بازشوی «ورود با Google»"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "انتخابگر حسابی که در گوشه بسیاری از سایت‌ها ظاهر می‌شود. دکمه‌های ورود همچنان کار می‌کنند."
+  },
+  "pickTip": {
+    "message": "روی یک عنصر کلیک کنید تا پنهان شود"
+  },
+  "pickZapTip": {
+    "message": "برای حذف این عنصر کلیک کنید (یک‌بار)"
+  },
+  "pickEscCancel": {
+    "message": "برای لغو"
+  },
+  "opt_notices": {
+    "message": "مجوزهای فهرست‌های فیلتر"
+  }
+}

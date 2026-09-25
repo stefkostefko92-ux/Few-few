@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "YouTube వీడియో ప్రకటనలు, బ్యానర్‌లు, పాప్-అప్‌లు, ట్రాకర్‌లు, కుక్కీ ప్రాంప్ట్‌లను బ్లాక్ చేస్తుంది. ఉచితం, గోప్యమైనది."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth రూపొందించినది"
+  },
+  "toggleProtection": {
+    "message": "రక్షణను ఆన్/ఆఫ్ చేయండి"
+  },
+  "protected": {
+    "message": "రక్షించబడింది"
+  },
+  "paused": {
+    "message": "పాజ్ అయింది"
+  },
+  "blockingHere": {
+    "message": "ఈ పేజీలో ప్రకటనలను బ్లాక్ చేస్తోంది"
+  },
+  "protectionOff": {
+    "message": "రక్షణ ఆఫ్‌లో ఉంది"
+  },
+  "pause30": {
+    "message": "30 నిమిషాలు పాజ్ చేయండి"
+  },
+  "pausedResume": {
+    "message": "పాజ్ అయింది, ఇప్పుడే కొనసాగించండి ($1 ని. మిగిలి ఉంది)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "బ్లాక్ చేసినవి"
+  },
+  "dataSaved": {
+    "message": "ఆదా అయిన డేటా"
+  },
+  "timeSaved": {
+    "message": "ఆదా అయిన సమయం"
+  },
+  "thisSite": {
+    "message": "ఈ సైట్"
+  },
+  "thisPage": {
+    "message": "ఈ పేజీ"
+  },
+  "blockOnSite": {
+    "message": "ఈ సైట్‌లో ప్రకటనలను బ్లాక్ చేయండి"
+  },
+  "blocking": {
+    "message": "బ్లాక్ చేస్తోంది"
+  },
+  "allowed": {
+    "message": "అనుమతించబడింది"
+  },
+  "cosmetics": {
+    "message": "ప్రకటన బాక్సులు దాచండి"
+  },
+  "cosmeticsTitle": {
+    "message": "ఈ సైట్‌లో కాస్మెటిక్ ఫిల్టరింగ్ (లేఅవుట్ చెడిపోతే ఆఫ్ చేయండి)"
+  },
+  "on": {
+    "message": "ఆన్"
+  },
+  "off": {
+    "message": "ఆఫ్"
+  },
+  "blockedHere": {
+    "message": "ఈ పేజీలో బ్లాక్ చేసినవి"
+  },
+  "logEmpty": {
+    "message": "ఇక్కడ ఇంకా ఏదీ బ్లాక్ కాలేదు."
+  },
+  "logUnavailable": {
+    "message": "లాగ్ ప్రస్తుతం అందుబాటులో లేదు (బ్రౌజర్ కోటా) — ఒక నిమిషం తర్వాత మళ్లీ ప్రయత్నించండి."
+  },
+  "logCore": {
+    "message": "ప్రధాన నియమాలు"
+  },
+  "logYouTube": {
+    "message": "YouTube ప్రకటన నియమాలు"
+  },
+  "logParams": {
+    "message": "ట్రాకింగ్ పారామీటర్‌లు"
+  },
+  "logMalware": {
+    "message": "మాల్‌వేర్ డొమైన్‌లు"
+  },
+  "logSurrogates": {
+    "message": "నిర్వీర్యం చేసిన ప్రకటన స్క్రిప్ట్‌లు"
+  },
+  "logPrivacy": {
+    "message": "గోప్యతా రక్షణ"
+  },
+  "logUser": {
+    "message": "నా ఫిల్టర్‌లు"
+  },
+  "logLive": {
+    "message": "లైవ్ అప్‌డేట్‌లు"
+  },
+  "hideElement": {
+    "message": "ఎలిమెంట్‌ను దాచండి"
+  },
+  "settings": {
+    "message": "సెట్టింగ్‌లు"
+  },
+  "promoSub": {
+    "message": "గేర్ & టూల్స్, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "ప్రకటన"
+  },
+  "support": {
+    "message": "మద్దతివ్వండి"
+  },
+  "filtersCount": {
+    "message": "$1+ ఫిల్టర్‌లు",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "రూపం"
+  },
+  "opt_extra_protection": {
+    "message": "అదనపు రక్షణ"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection లాగ్"
+  },
+  "opt_allowlisted_sites": {
+    "message": "అనుమతి జాబితాలోని సైట్‌లు"
+  },
+  "opt_my_filters": {
+    "message": "నా ఫిల్టర్‌లు"
+  },
+  "opt_hidden_elements": {
+    "message": "దాచిన ఎలిమెంట్‌లు"
+  },
+  "opt_filter_updates": {
+    "message": "ఫిల్టర్ అప్‌డేట్‌లు"
+  },
+  "opt_engine_health": {
+    "message": "ఇంజిన్ స్థితి"
+  },
+  "opt_backup": {
+    "message": "బ్యాకప్"
+  },
+  "opt_support_development": {
+    "message": "అభివృద్ధికి మద్దతివ్వండి"
+  },
+  "opt_theme": {
+    "message": "థీమ్"
+  },
+  "opt_sync_across_devices": {
+    "message": "పరికరాల మధ్య సింక్"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube ప్రకటనల బ్లాకింగ్"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "కుక్కీ / సమ్మతి బ్యానర్‌లు"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "యాంటీ-యాడ్‌బ్లాక్ బైపాస్"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta స్పాన్సర్ చేసిన పోస్ట్‌లు"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "ట్రాకింగ్ పారామీటర్‌లను తీసివేయండి"
+  },
+  "opt_malware_protection": {
+    "message": "మాల్‌వేర్ రక్షణ"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "ప్రకటన టార్గెటింగ్ బ్రౌజర్ APIలను బ్లాక్ చేయండి"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "ట్రాకింగ్ బీకాన్‌లు & క్రిప్టోమైనర్‌లను బ్లాక్ చేయండి"
+  },
+  "opt_auto_update_filters": {
+    "message": "ఫిల్టర్‌లను ఆటోమేటిక్‌గా అప్‌డేట్ చేయండి"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (డార్క్) లేదా లైట్"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "మీరు సైన్ ఇన్ చేసిన ప్రతి Chromeలో సెట్టింగ్‌లు, అనుమతి జాబితా, ఫిల్టర్‌లను సింక్‌లో ఉంచుతుంది"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTubeలో వీడియో ప్రకటనలను తీసివేస్తుంది. వీడియోలు ప్లే కాకపోతే ఆఫ్ చేయండి."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“కుక్కీలను అంగీకరించండి” ప్రాంప్ట్‌లను ఆటోమేటిక్‌గా మూసివేస్తుంది"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“మీ యాడ్‌బ్లాకర్‌ను ఆఫ్ చేయండి” గోడలను దాచి, పేజీని పునరుద్ధరిస్తుంది"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook & Instagramలో “స్పాన్సర్ చేయబడింది” పోస్ట్‌లను దాచుతుంది"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "మీరు తెరిచే లింక్‌ల నుండి utm_*, fbclid, gclid, ఇతర క్లిక్ ఐడెంటిఫైయర్‌లను తొలగిస్తుంది"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "తెలిసిన మాల్‌వేర్ డొమైన్‌లను బ్లాక్ చేస్తుంది (abuse.ch అందించే URLhaus జాబితా)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "ప్రతి సైట్‌లో Google Topics, FLoC, Protected Audience ప్రకటన APIలను నిలిపివేస్తుంది"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "థర్డ్-పార్టీ హైపర్‌లింక్ ఆడిటింగ్ / బీకాన్ పింగ్‌లను ఆపుతుంది, తెలిసిన యాడ్-టెక్ ప్రతిస్పందనల నుండి ట్రాకింగ్ కుక్కీలను తొలగిస్తుంది, బ్రౌజర్ క్రిప్టోమైనింగ్ స్క్రిప్ట్‌లను బ్లాక్ చేస్తుంది. అనలిటిక్స్‌పై ఆధారపడే సైట్ ఫీచర్ సరిగా పనిచేయకపోతే ఆఫ్ చేయండి."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu నుండి కొత్త బ్లాక్ నియమాలను, YouTube పరిష్కారాలను రోజుకు సుమారు రెండుసార్లు పొందుతుంది. డేటా మాత్రమే, కోడ్ కాదు; అభ్యర్థనలో ఎలాంటి ఐడెంటిఫైయర్‌లు లేదా బ్రౌజింగ్ డేటా ఉండవు."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "హ్యూరిస్టిక్‌గా (ఫిల్టర్ జాబితా లేకుండా) పట్టుకున్న ప్రకటనల లైవ్ లాగ్, కొత్తవి ముందు."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "సబ్‌స్క్రైబ్ చేసిన జాబితాలు టెక్స్ట్‌గా పొందబడతాయి (ఎప్పుడూ కోడ్‌గా కాదు), ప్రతిరోజూ అప్‌డేట్ అవుతాయి, పైన ఉన్న నిర్వహించే బ్లాక్‌లలో ఉంటాయి. జాబితా నియమాలను తొలగించడానికి ఆ జాబితాను తీసివేయండి."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "పికర్‌తో మీరు మాన్యువల్‌గా దాచిన ఎలిమెంట్‌లు, సైట్ వారీగా సమూహపరచబడ్డాయి."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "లైవ్ డయాగ్నస్టిక్స్ — అంతా స్థానికంగానే లెక్కించబడుతుంది. ఏదైనా ఎరుపులో ఉంటే, “ఇప్పుడే అప్‌డేట్ చేయండి” లేదా ఎక్స్‌టెన్షన్‌ను రీలోడ్ చేయడం సాధారణంగా సరిచేస్తుంది."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock అందరికీ ఉచితం. దీని నిర్వహణకు సహాయం చేయాలనుకుంటే, విరాళాలు స్వాగతం, కానీ ఎప్పుడూ తప్పనిసరి కాదు."
+  },
+  "opt_reset_statistics": {
+    "message": "గణాంకాలను రీసెట్ చేయండి"
+  },
+  "opt_add": {
+    "message": "జోడించండి"
+  },
+  "opt_save_filters": {
+    "message": "ఫిల్టర్‌లను సేవ్ చేయండి"
+  },
+  "opt_subscribe": {
+    "message": "సబ్‌స్క్రైబ్ చేయండి"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "సబ్‌స్క్రిప్షన్‌లను ఇప్పుడే రిఫ్రెష్ చేయండి"
+  },
+  "opt_update_now": {
+    "message": "ఇప్పుడే అప్‌డేట్ చేయండి"
+  },
+  "opt_refresh": {
+    "message": "రిఫ్రెష్ చేయండి"
+  },
+  "opt_export_settings": {
+    "message": "సెట్టింగ్‌లను ఎగుమతి చేయండి"
+  },
+  "opt_import_settings": {
+    "message": "సెట్టింగ్‌లను దిగుమతి చేయండి"
+  },
+  "opt_e_g_example_com": {
+    "message": "ఉదా. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! ఉదాహరణ\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "ఫిల్టర్ జాబితా URLకు సబ్‌స్క్రైబ్ చేయండి (ఉదా. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock సెట్టింగ్‌లు"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · సెట్టింగ్‌లు"
+  },
+  "opt_theme_light": {
+    "message": "లైట్"
+  },
+  "opt_badge_unique": {
+    "message": "ప్రత్యేకం"
+  },
+  "opt_smart_desc": {
+    "message": "ఏ ఫిల్టర్ జాబితాకూ ఇంకా తెలియని ప్రకటనలను పట్టుకుంటుంది: ప్రామాణిక ప్రకటన స్లాట్ పరిమాణంలో ఉండే క్రాస్-ఆరిజిన్ ఫ్రేమ్‌లు వెంటనే దాచబడతాయి, నియమాలు అవసరం లేదు."
+  },
+  "opt_caught_so_far": {
+    "message": "ఇప్పటివరకు పట్టుబడ్డాయి."
+  },
+  "opt_allow_desc": {
+    "message": "ఈ డొమైన్‌లలో ప్రకటనలు బ్లాక్ చేయబడవు."
+  },
+  "opt_fh_one": {
+    "message": "ఒక పంక్తికి ఒక నియమం."
+  },
+  "opt_fh_blocks": {
+    "message": "ఒక డొమైన్‌ను బ్లాక్ చేస్తుంది;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ఒక ఎలిమెంట్‌ను అన్ని చోట్లా దాచుతుంది;"
+  },
+  "opt_fh_site": {
+    "message": "దాన్ని ఆ సైట్‌లో మాత్రమే దాచుతుంది."
+  },
+  "opt_fh_comments": {
+    "message": "పంక్తి ప్రారంభంలో"
+  },
+  "opt_fh_comments2": {
+    "message": "ఉంటే, ఆ పంక్తి వ్యాఖ్య."
+  },
+  "opt_donate": {
+    "message": "Revolut ద్వారా విరాళం ఇవ్వండి"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth రూపొందించింది"
+  },
+  "opt_empty_smart": {
+    "message": "హ్యూరిస్టిక్‌గా ఇంకా ఏదీ పట్టుబడలేదు."
+  },
+  "opt_empty_allow": {
+    "message": "అనుమతి జాబితాలో ఇంకా సైట్‌లు లేవు."
+  },
+  "opt_empty_hidden": {
+    "message": "మాన్యువల్‌గా ఇంకా ఏదీ దాచలేదు."
+  },
+  "opt_empty_subs": {
+    "message": "ఇంకా సబ్‌స్క్రైబ్ చేసిన జాబితాలు లేవు."
+  },
+  "opt_no_sw": {
+    "message": "service worker నుండి ప్రతిస్పందన లేదు."
+  },
+  "opt_remove": {
+    "message": "తీసివేయండి"
+  },
+  "opt_filter_status": {
+    "message": "ఫిల్టర్ సెట్ v$1, $2 అప్‌డేట్ అయింది. డేటా మాత్రమే, మీ గురించి ఏదీ పంపబడదు."
+  },
+  "opt_updating": {
+    "message": "అప్‌డేట్ అవుతోంది…"
+  },
+  "opt_updated": {
+    "message": "అప్‌డేట్ అయింది (v$1, $2 అదనపు నియమాలు)"
+  },
+  "opt_update_failed": {
+    "message": "అప్‌డేట్ విఫలమైంది ($1)"
+  },
+  "opt_saved": {
+    "message": "సేవ్ అయింది ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 నియమాలు"
+  },
+  "opt_updated_ago": {
+    "message": "$1 అప్‌డేట్ అయింది"
+  },
+  "opt_not_fetched": {
+    "message": "ఇంకా పొందలేదు"
+  },
+  "opt_failed_colon": {
+    "message": "విఫలమైంది: $1"
+  },
+  "opt_enter_https": {
+    "message": "చెల్లుబాటు అయ్యే https:// URLను నమోదు చేయండి"
+  },
+  "opt_fetching": {
+    "message": "పొందుతోంది…"
+  },
+  "opt_subscribed_ok": {
+    "message": "సబ్‌స్క్రైబ్ అయింది: $1 నియమాలు ✓"
+  },
+  "opt_failed_paren": {
+    "message": "విఫలమైంది ($1)"
+  },
+  "opt_refreshing": {
+    "message": "రిఫ్రెష్ అవుతోంది…"
+  },
+  "opt_refreshed": {
+    "message": "రిఫ్రెష్ అయింది ✓"
+  },
+  "opt_invalid_file": {
+    "message": "చెల్లని సెట్టింగ్‌ల ఫైల్."
+  },
+  "opt_no_response": {
+    "message": "ప్రతిస్పందన లేదు"
+  },
+  "opt_h_engine": {
+    "message": "యాంటీ-యాడ్‌బ్లాక్ ఇంజిన్"
+  },
+  "opt_h_rulesets": {
+    "message": "ఆన్‌లో ఉన్న స్టాటిక్ నియమ సెట్‌లు"
+  },
+  "opt_h_live": {
+    "message": "లైవ్ ఫిల్టర్ డొమైన్‌లు"
+  },
+  "opt_h_last": {
+    "message": "చివరి అప్‌డేట్"
+  },
+  "opt_h_sig": {
+    "message": "అప్‌డేట్ సంతకాలు"
+  },
+  "opt_h_user": {
+    "message": "నా ఫిల్టర్‌లు / అనుమతి జాబితా నియమాలు"
+  },
+  "opt_h_popup": {
+    "message": "అంతర్నిర్మిత పాప్-అప్ ప్రకటన హోస్ట్‌లు"
+  },
+  "opt_h_yt": {
+    "message": "YouTube బైపాస్"
+  },
+  "opt_reason_frame": {
+    "message": "ప్రకటన పరిమాణంలోని క్రాస్-ఆరిజిన్ ఫ్రేమ్"
+  },
+  "opt_reason_sticky": {
+    "message": "స్టిక్కీ బ్యానర్ ప్రకటన"
+  },
+  "logRegional": {
+    "message": "ప్రాంతీయ జాబితాలు"
+  },
+  "logFocus": {
+    "message": "ఫోకస్ మోడ్"
+  },
+  "opt_filter_lists": {
+    "message": "ఫిల్టర్ జాబితాలు"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList, EasyPrivacy ఎల్లప్పుడూ ఆన్‌లో ఉంటాయి. కింది జాబితాలు ఓపెన్-లైసెన్స్ జాబితాలు, ఎక్స్‌టెన్షన్‌లోనే చేర్చబడ్డాయి, కాబట్టి ఒకదాన్ని ఆన్ చేస్తే ఏదీ డౌన్‌లోడ్ కాదు — దాని రచయిత నుండి వస్తుందని గుర్తించిన జాబితా తప్ప."
+  },
+  "opt_lists_core": {
+    "message": "ప్రధాన"
+  },
+  "opt_lists_regional": {
+    "message": "ప్రాంతీయ"
+  },
+  "opt_lists_regional_desc": {
+    "message": "మీ బ్రౌజర్ భాష జాబితా దానంతట అదే ఆన్ అవుతుంది. మీరు తరచుగా ఇతర భాషల సైట్‌లు చదివితే, ఇతర జాబితాలను జోడించండి."
+  },
+  "opt_focus_mode": {
+    "message": "ఫోకస్ మోడ్"
+  },
+  "opt_focus_desc": {
+    "message": "ప్రకటన కాకపోయినా అడ్డుపడే వాటిని దాచండి. మీరు ఆన్ చేసే వరకు ఇక్కడ ఉన్నవన్నీ ఆఫ్‌లో ఉంటాయి."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin ఫిల్టర్‌లు"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin బృందం నుండి ప్రకటనలు, ట్రాకర్‌లు, యాంటీ-యాడ్‌బ్లాక్ పరిష్కారాలు, సైట్ మరమ్మతులు."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe జాబితా"
+  },
+  "opt_list_plowe_desc": {
+    "message": "ప్రకటన, ట్రాకింగ్ సర్వర్‌ల దీర్ఘకాల జాబితా."
+  },
+  "opt_focus_social": {
+    "message": "సోషల్ మీడియా బటన్‌లు, విడ్జెట్‌లు"
+  },
+  "opt_focus_social_desc": {
+    "message": "షేర్ బటన్‌లు, లైక్ బాక్స్‌లు, ఎంబెడ్ చేసిన ఫీడ్‌లు."
+  },
+  "opt_focus_chat": {
+    "message": "చాట్, సపోర్ట్ విడ్జెట్‌లు"
+  },
+  "opt_focus_chat_desc": {
+    "message": "పేజీ మూలలో తేలియాడే చాట్ బబుల్‌లు."
+  },
+  "opt_focus_newsletters": {
+    "message": "న్యూస్‌లెటర్, సైన్-అప్ పాప్-అప్‌లు"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“మా న్యూస్‌లెటర్‌కు సబ్‌స్క్రైబ్ చేయండి” బాక్స్‌లు, ఓవర్‌లేలు."
+  },
+  "opt_focus_notifications": {
+    "message": "నోటిఫికేషన్ ప్రాంప్ట్‌లు"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "బ్రౌజర్ అడగకముందే సైట్‌లు చూపే “నోటిఫికేషన్‌లను అనుమతించాలా?” బాక్స్‌లు."
+  },
+  "opt_focus_ai": {
+    "message": "AI అసిస్టెంట్ పాప్-అప్‌లు"
+  },
+  "opt_focus_ai_desc": {
+    "message": "పేజీలకు జోడించిన చాట్‌బాట్ బబుల్‌లు, AI సూచనల ప్యానెల్‌లు."
+  },
+  "opt_focus_other": {
+    "message": "ఇతర చికాకులు"
+  },
+  "opt_focus_other_desc": {
+    "message": "స్టిక్కీ బార్‌లు, “యాప్‌లో తెరవండి” బ్యానర్‌లు, ఇలాంటి గందరగోళం."
+  },
+  "opt_badge_lang": {
+    "message": "మీ భాష"
+  },
+  "opt_badge_remote": {
+    "message": "రచయిత నుండి"
+  },
+  "opt_remote_hint": {
+    "message": "ప్యాకేజీలో చేర్చలేదు (పునఃపంపిణీ లైసెన్స్ లేదు): మీరు ఆన్ చేసినప్పుడు మీ బ్రౌజర్ దాన్ని $1 నుండి డౌన్‌లోడ్ చేస్తుంది."
+  },
+  "opt_downloaded_from": {
+    "message": "$1 నుండి డౌన్‌లోడ్ అవుతుంది"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ఈ జాబితాల కలయికను తిరస్కరించింది ($1). కొన్నింటిని ఆఫ్ చేయండి."
+  },
+  "opt_badge_recommended": {
+    "message": "మీ భాషకు సిఫార్సు చేయబడింది"
+  },
+  "reportBroken": {
+    "message": "సైట్ పనిచేయడం లేదా? సరిచేయండి లేదా మాకు చెప్పండి"
+  },
+  "rep_title": {
+    "message": "ఈ సైట్‌లో ఏదైనా పనిచేయడం లేదా?"
+  },
+  "rep_fix_first": {
+    "message": "ఇప్పుడే సరిచేయండి"
+  },
+  "rep_site": {
+    "message": "సైట్:"
+  },
+  "rep_fix_desc": {
+    "message": "చాలా సమస్యలు వీటిలో ఒకదానితో తొలగిపోతాయి. ప్రతిదీ ఈ సైట్‌కు మాత్రమే వర్తిస్తుంది; ట్యాబ్ రీలోడ్ అవుతుంది."
+  },
+  "rep_fix_cosm": {
+    "message": "ఇక్కడ ఎలిమెంట్‌లను దాచడం ఆఫ్ చేయండి"
+  },
+  "rep_fix_allow": {
+    "message": "ఈ సైట్‌లో ప్రకటనలను అనుమతించండి"
+  },
+  "rep_fix_pause": {
+    "message": "అన్ని చోట్లా 30 నిమిషాలు పాజ్ చేయండి"
+  },
+  "rep_tell_us": {
+    "message": "మాకు చెప్పండి"
+  },
+  "rep_tell_desc": {
+    "message": "సంతకం చేసిన ఫిల్టర్ అప్‌డేట్ ద్వారా పనిచేయని సైట్‌లను అందరి కోసం సరిచేస్తాము, సాధారణంగా ఒక రోజులోపు. ఎక్స్‌టెన్షన్ ఏదీ పంపదు: రిపోర్ట్ మీ సొంత ఇమెయిల్ యాప్‌లో తెరుచుకుంటుంది, అందులోని ప్రతి పదాన్ని మీరు ముందుగా చూస్తారు."
+  },
+  "rep_what": {
+    "message": "సమస్య ఏమిటి? (ఐచ్ఛికం)"
+  },
+  "rep_what_ph": {
+    "message": "ఉదా. వీడియో ప్రారంభం కావడం లేదు, ఒక తెల్లని బాక్స్ ఆర్టికల్‌ను కప్పేస్తోంది…"
+  },
+  "rep_full_url": {
+    "message": "పేజీ పూర్తి చిరునామాను చేర్చండి (లేకపోతే సైట్ పేరు మాత్రమే)"
+  },
+  "rep_preview": {
+    "message": "ఏమి పంపబడుతుంది"
+  },
+  "rep_send_mail": {
+    "message": "ఇమెయిల్ ద్వారా పంపండి"
+  },
+  "rep_copy": {
+    "message": "రిపోర్ట్‌ను కాపీ చేయండి"
+  },
+  "rep_copied": {
+    "message": "కాపీ అయింది."
+  },
+  "rep_done_cosm": {
+    "message": "ఈ సైట్‌లో ఎలిమెంట్‌లను దాచడం ఆఫ్ అయింది. రీలోడ్ అయింది — సమస్య తీరిందా?"
+  },
+  "rep_done_allow": {
+    "message": "ఈ సైట్‌లో ప్రకటనలు అనుమతించబడ్డాయి. రీలోడ్ అయింది — సమస్య తీరిందా?"
+  },
+  "rep_done_pause": {
+    "message": "30 నిమిషాలు పాజ్ అయింది. ఇప్పుడు సైట్ పనిచేస్తే, దయచేసి కింద మాకు చెప్పండి."
+  },
+  "cookieRejections": {
+    "message": "మీ కోసం తిరస్కరించిన కుక్కీ బ్యానర్‌లు: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTubeలో Shorts వరుసలు, ట్యాబ్, సూచనలు."
+  },
+  "opt_focus_onetap": {
+    "message": "“Googleతో సైన్ ఇన్ చేయండి” పాప్-అప్‌లు"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "చాలా సైట్‌ల మూలలో కనిపించే ఖాతా ఎంపిక సాధనం. సైన్-ఇన్ బటన్‌లు పనిచేస్తూనే ఉంటాయి."
+  },
+  "pickTip": {
+    "message": "దాచడానికి ఒక ఎలిమెంట్‌పై క్లిక్ చేయండి"
+  },
+  "pickZapTip": {
+    "message": "ఈ ఎలిమెంట్‌ను తీసివేయడానికి క్లిక్ చేయండి (ఒకసారి)"
+  },
+  "pickEscCancel": {
+    "message": "రద్దు చేయడానికి"
+  },
+  "opt_notices": {
+    "message": "ఫిల్టర్ జాబితాల లైసెన్స్‌లు"
+  }
+}

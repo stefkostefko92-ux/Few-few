@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Rhwystro hysbysebion ym mhobman: fideo YouTube, baneri, llamlenni, tracwyr, negeseuon cwcis a waliau anti-adblock. Am ddim."
+  },
+  "byCarbon": {
+    "message": "gan Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Diogelu ymlaen/i ffwrdd"
+  },
+  "protected": {
+    "message": "Diogel"
+  },
+  "paused": {
+    "message": "Oedi"
+  },
+  "blockingHere": {
+    "message": "Rhwystro hysbysebion ar y dudalen hon"
+  },
+  "protectionOff": {
+    "message": "Mae’r diogelu i ffwrdd"
+  },
+  "pause30": {
+    "message": "Oedi am 30 munud"
+  },
+  "pausedResume": {
+    "message": "Wedi oedi, ailddechrau nawr ($1 mun ar ôl)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Rhwystrwyd"
+  },
+  "dataSaved": {
+    "message": "Arbedion data"
+  },
+  "timeSaved": {
+    "message": "Arbedion amser"
+  },
+  "thisSite": {
+    "message": "y wefan hon"
+  },
+  "thisPage": {
+    "message": "y dudalen hon"
+  },
+  "blockOnSite": {
+    "message": "Rhwystro hysbysebion ar y wefan hon"
+  },
+  "blocking": {
+    "message": "Rhwystro"
+  },
+  "allowed": {
+    "message": "Caniateir"
+  },
+  "cosmetics": {
+    "message": "Cuddio hysbysebion yma"
+  },
+  "cosmeticsTitle": {
+    "message": "Hidlo cosmetig ar y wefan hon (diffoddwch os yw’r cynllun yn torri)"
+  },
+  "on": {
+    "message": "Ymlaen"
+  },
+  "off": {
+    "message": "I ffwrdd"
+  },
+  "blockedHere": {
+    "message": "Rhwystrwyd ar y dudalen hon"
+  },
+  "logEmpty": {
+    "message": "Dim byd wedi’i rwystro yma eto."
+  },
+  "logUnavailable": {
+    "message": "Nid yw’r log ar gael ar hyn o bryd (cwota’r porwr) — rhowch gynnig arall ymhen munud."
+  },
+  "logCore": {
+    "message": "Rheolau craidd Supreme"
+  },
+  "logYouTube": {
+    "message": "Hysbysebion YouTube"
+  },
+  "logParams": {
+    "message": "Paramedrau tracio"
+  },
+  "logMalware": {
+    "message": "Parthau maleisus"
+  },
+  "logSurrogates": {
+    "message": "Sgriptiau wedi’u niwtraleiddio"
+  },
+  "logPrivacy": {
+    "message": "Diogelu preifatrwydd"
+  },
+  "logUser": {
+    "message": "Fy hidlyddion"
+  },
+  "logLive": {
+    "message": "Diweddariadau byw"
+  },
+  "hideElement": {
+    "message": "Cuddio elfen"
+  },
+  "settings": {
+    "message": "Gosodiadau"
+  },
+  "promoSub": {
+    "message": "Offer a chyfarpar, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Hysb."
+  },
+  "support": {
+    "message": "Cefnogi"
+  },
+  "filtersCount": {
+    "message": "$1+ o hidlyddion",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Golwg"
+  },
+  "opt_extra_protection": {
+    "message": "Diogelu ychwanegol"
+  },
+  "opt_smart_detection_log": {
+    "message": "Log Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Gwefannau a ganiateir"
+  },
+  "opt_my_filters": {
+    "message": "Fy hidlyddion"
+  },
+  "opt_hidden_elements": {
+    "message": "Elfennau cudd"
+  },
+  "opt_filter_updates": {
+    "message": "Diweddariadau hidlyddion"
+  },
+  "opt_engine_health": {
+    "message": "Iechyd yr injan"
+  },
+  "opt_backup": {
+    "message": "Copi wrth gefn"
+  },
+  "opt_support_development": {
+    "message": "Cefnogi’r datblygu"
+  },
+  "opt_theme": {
+    "message": "Thema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Cydweddu ar draws dyfeisiau"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Rhwystro hysbysebion YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Baneri cwcis / caniatâd"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Osgoi anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Postiadau noddedig Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Tynnu paramedrau tracio"
+  },
+  "opt_malware_protection": {
+    "message": "Diogelu rhag maleiswedd"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Rhwystro APIs porwr ar gyfer targedu hysbysebion"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Rhwystro bannau tracio a chloddwyr cripto"
+  },
+  "opt_auto_update_filters": {
+    "message": "Diweddaru hidlyddion yn awtomatig"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (tywyll) neu olau"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Cadw gosodiadau, gwefannau a ganiateir a hidlyddion wedi’u cydweddu ar bob Chrome rydych wedi mewngofnodi iddo"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Tynnu hysbysebion fideo ar YouTube. Diffoddwch os nad yw fideos yn chwarae."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Cau negeseuon “Derbyn cwcis” yn awtomatig"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Cuddio waliau “diffoddwch eich atalydd hysbysebion” ac adfer y dudalen"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Cuddio postiadau “Noddedig” ar Facebook ac Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Tynnu utm_*, fbclid, gclid a dynodwyr clicio eraill o’r dolenni rydych yn eu hagor"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Rhwystro parthau maleisus hysbys (rhestr URLhaus gan abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Analluogi APIs hysbysebu Google Topics, FLoC a Protected Audience ar bob gwefan"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Atal pings archwilio hyperddolenni / bannau gan drydydd partïon, tynnu cwcis tracio o ymatebion technoleg hysbysebu hysbys, a rhwystro sgriptiau cloddio cripto yn y porwr. Diffoddwch os yw nodwedd ar wefan sy’n dibynnu ar ddadansoddeg yn camymddwyn."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Yn llwytho rheolau rhwystro newydd a thrwsiadau YouTube o adblock.carbonstealth.eu tua dwywaith y dydd. Data yn unig, dim cod; nid yw’r cais yn cario unrhyw ddynodwyr na data pori."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Log byw o hysbysebion a ddaliwyd yn hewristig (heb restr hidlo), y diweddaraf yn gyntaf."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Mae rhestrau tanysgrifio’n cael eu llwytho fel testun (byth fel cod), eu diweddaru bob dydd, ac maen nhw’n byw yn y blociau a reolir uchod. Tynnwch restr i ollwng ei rheolau."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elfennau rydych wedi’u cuddio â llaw gyda’r dewisydd, wedi’u grwpio fesul gwefan."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Diagnosteg fyw — mae popeth yn cael ei gyfrifo’n lleol. Os oes rhywbeth yn goch, mae “Diweddaru nawr” neu ail-lwytho’r estyniad fel arfer yn ei drwsio."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Mae Supreme AdBlock am ddim i bawb. Os hoffech chi helpu i’w gynnal, mae croeso i roddion, ond does dim rhaid byth."
+  },
+  "opt_reset_statistics": {
+    "message": "Ailosod ystadegau"
+  },
+  "opt_add": {
+    "message": "Ychwanegu"
+  },
+  "opt_save_filters": {
+    "message": "Cadw hidlyddion"
+  },
+  "opt_subscribe": {
+    "message": "Tanysgrifio"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Adnewyddu tanysgrifiadau nawr"
+  },
+  "opt_update_now": {
+    "message": "Diweddaru nawr"
+  },
+  "opt_refresh": {
+    "message": "Adnewyddu"
+  },
+  "opt_export_settings": {
+    "message": "Allforio gosodiadau"
+  },
+  "opt_import_settings": {
+    "message": "Mewnforio gosodiadau"
+  },
+  "opt_e_g_example_com": {
+    "message": "e.e. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! enghraifft\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Tanysgrifio i URL rhestr hidlo (e.e. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Gosodiadau Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Gosodiadau"
+  },
+  "opt_theme_light": {
+    "message": "Golau"
+  },
+  "opt_badge_unique": {
+    "message": "unigryw"
+  },
+  "opt_smart_desc": {
+    "message": "Yn dal hysbysebion nad oes unrhyw restr hidlo yn eu hadnabod eto: mae fframiau o barthau eraill o faint slotiau hysbysebu safonol yn cael eu cuddio ar unwaith, heb reolau."
+  },
+  "opt_caught_so_far": {
+    "message": "wedi’u dal hyd yma."
+  },
+  "opt_allow_desc": {
+    "message": "Nid yw hysbysebion yn cael eu rhwystro ar y parthau hyn."
+  },
+  "opt_fh_one": {
+    "message": "Un rheol i bob llinell."
+  },
+  "opt_fh_blocks": {
+    "message": "yn rhwystro parth;"
+  },
+  "opt_fh_everywhere": {
+    "message": "yn cuddio elfen ym mhobman;"
+  },
+  "opt_fh_site": {
+    "message": "yn ei chuddio ar y wefan honno’n unig."
+  },
+  "opt_fh_comments": {
+    "message": "Mae llinellau sy’n dechrau gyda"
+  },
+  "opt_fh_comments2": {
+    "message": "yn sylwadau."
+  },
+  "opt_donate": {
+    "message": "Rhoi drwy Revolut"
+  },
+  "opt_made_by": {
+    "message": "gwnaed gan Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Dim wedi’i ddal yn hewristig eto."
+  },
+  "opt_empty_allow": {
+    "message": "Dim gwefannau wedi’u caniatáu eto."
+  },
+  "opt_empty_hidden": {
+    "message": "Dim wedi’i guddio â llaw eto."
+  },
+  "opt_empty_subs": {
+    "message": "Dim rhestrau tanysgrifio eto."
+  },
+  "opt_no_sw": {
+    "message": "Dim ymateb gan y service worker."
+  },
+  "opt_remove": {
+    "message": "Tynnu"
+  },
+  "opt_filter_status": {
+    "message": "Set hidlo v$1, diweddarwyd $2. Data yn unig — does dim amdanoch chi’n cael ei anfon."
+  },
+  "opt_updating": {
+    "message": "Wrthi’n diweddaru…"
+  },
+  "opt_updated": {
+    "message": "Diweddarwyd (v$1, $2 rheol ychwanegol)"
+  },
+  "opt_update_failed": {
+    "message": "Methodd y diweddariad ($1)"
+  },
+  "opt_saved": {
+    "message": "Cadwyd ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 rheol"
+  },
+  "opt_updated_ago": {
+    "message": "diweddarwyd $1"
+  },
+  "opt_not_fetched": {
+    "message": "heb ei llwytho eto"
+  },
+  "opt_failed_colon": {
+    "message": "methodd: $1"
+  },
+  "opt_enter_https": {
+    "message": "Rhowch URL https:// dilys"
+  },
+  "opt_fetching": {
+    "message": "Wrthi’n llwytho…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Tanysgrifiwyd: $1 rheol ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Methodd ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Wrthi’n adnewyddu…"
+  },
+  "opt_refreshed": {
+    "message": "Adnewyddwyd ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Ffeil gosodiadau annilys."
+  },
+  "opt_no_response": {
+    "message": "dim ymateb"
+  },
+  "opt_h_engine": {
+    "message": "Injan anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Setiau rheolau statig ymlaen"
+  },
+  "opt_h_live": {
+    "message": "Parthau hidlo byw"
+  },
+  "opt_h_last": {
+    "message": "Diweddariad diwethaf"
+  },
+  "opt_h_sig": {
+    "message": "Llofnodion diweddariadau"
+  },
+  "opt_h_user": {
+    "message": "Fy hidlyddion / rheolau gwefannau a ganiateir"
+  },
+  "opt_h_popup": {
+    "message": "Gwesteiwyr hysbysebion llamlen wedi’u cynnwys"
+  },
+  "opt_h_yt": {
+    "message": "Ffordd osgoi YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Ffrâm o barth arall o faint hysbyseb"
+  },
+  "opt_reason_sticky": {
+    "message": "Baner hysbyseb sefydlog"
+  },
+  "logRegional": {
+    "message": "Rhestrau rhanbarthol"
+  },
+  "logFocus": {
+    "message": "Modd ffocws"
+  },
+  "opt_filter_lists": {
+    "message": "Rhestrau hidlo"
+  },
+  "opt_lists_intro": {
+    "message": "Mae EasyList ac EasyPrivacy ymlaen bob amser. Mae gan y rhestrau isod drwyddedau agored ac maen nhw wedi’u cynnwys yn yr estyniad, felly nid yw troi un ymlaen yn llwytho dim i lawr, ac eithrio rhestr sydd wedi’i marcio fel un sy’n dod gan ei hawdur."
+  },
+  "opt_lists_core": {
+    "message": "Craidd"
+  },
+  "opt_lists_regional": {
+    "message": "Rhanbarthol"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Mae’r rhestr ar gyfer iaith eich porwr yn troi ymlaen ohoni’i hun. Ychwanegwch eraill os ydych yn aml yn darllen gwefannau mewn ieithoedd eraill."
+  },
+  "opt_focus_mode": {
+    "message": "Modd ffocws"
+  },
+  "opt_focus_desc": {
+    "message": "Cuddio’r hyn nad yw’n hysbyseb ond sy’n dal i fod yn y ffordd. Mae popeth yma i ffwrdd nes i chi ei droi ymlaen."
+  },
+  "opt_list_ubo": {
+    "message": "Hidlyddion uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Hysbysebion, tracwyr, trwsiadau anti-adblock ac atgyweiriadau gwefannau gan dîm uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Rhestr Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Rhestr hirsefydlog o weinyddion hysbysebu a thracio."
+  },
+  "opt_focus_social": {
+    "message": "Botymau a theclynnau cyfryngau cymdeithasol"
+  },
+  "opt_focus_social_desc": {
+    "message": "Botymau rhannu, blychau hoffi a ffrydiau wedi’u mewnblannu."
+  },
+  "opt_focus_chat": {
+    "message": "Teclynnau sgwrsio a chymorth"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Y swigod sgwrsio sy’n arnofio yng nghornel y dudalen."
+  },
+  "opt_focus_newsletters": {
+    "message": "Llamlenni cylchlythyrau a chofrestru"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Blychau a throshaenau “Tanysgrifiwch i’n cylchlythyr”."
+  },
+  "opt_focus_notifications": {
+    "message": "Ceisiadau hysbysiadau"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Blychau “Caniatáu hysbysiadau?” y mae gwefannau’n eu dangos cyn i’r porwr ofyn."
+  },
+  "opt_focus_ai": {
+    "message": "Llamlenni cynorthwywyr AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Swigod sgwrsfot a phaneli awgrymiadau AI sydd wedi’u hychwanegu at dudalennau."
+  },
+  "opt_focus_other": {
+    "message": "Pethau blino eraill"
+  },
+  "opt_focus_other_desc": {
+    "message": "Barrau sefydlog, baneri “Agor yn yr ap” ac annibendod tebyg."
+  },
+  "opt_badge_lang": {
+    "message": "eich iaith"
+  },
+  "opt_badge_remote": {
+    "message": "gan ei hawdur"
+  },
+  "opt_remote_hint": {
+    "message": "Heb ei chynnwys (dim trwydded i’w hailddosbarthu): mae eich porwr yn ei llwytho i lawr o $1 pan fyddwch yn ei throi ymlaen."
+  },
+  "opt_downloaded_from": {
+    "message": "Wedi’i llwytho i lawr o $1"
+  },
+  "opt_lists_error": {
+    "message": "Gwrthododd Chrome y cyfuniad hwn o restrau ($1). Diffoddwch rai."
+  },
+  "opt_badge_recommended": {
+    "message": "argymhellir ar gyfer eich iaith"
+  },
+  "reportBroken": {
+    "message": "Gwefan wedi torri? Trwsiwch hi neu dywedwch wrthym"
+  },
+  "rep_title": {
+    "message": "Rhywbeth wedi torri ar y wefan hon?"
+  },
+  "rep_fix_first": {
+    "message": "Trwsio nawr"
+  },
+  "rep_site": {
+    "message": "Gwefan:"
+  },
+  "rep_fix_desc": {
+    "message": "Mae’r rhan fwyaf o broblemau’n diflannu gydag un o’r rhain. Mae pob un yn berthnasol i’r wefan hon yn unig; bydd y tab yn ail-lwytho."
+  },
+  "rep_fix_cosm": {
+    "message": "Diffodd cuddio elfennau yma"
+  },
+  "rep_fix_allow": {
+    "message": "Caniatáu hysbysebion ar y wefan hon"
+  },
+  "rep_fix_pause": {
+    "message": "Oedi ym mhobman am 30 munud"
+  },
+  "rep_tell_us": {
+    "message": "Dywedwch wrthym"
+  },
+  "rep_tell_desc": {
+    "message": "Rydym yn trwsio gwefannau sydd wedi torri i bawb drwy’r diweddariad hidlo wedi’i lofnodi, fel arfer o fewn diwrnod. Nid yw’r estyniad yn anfon dim: mae’r adroddiad yn agor yn eich rhaglen e-bost eich hun, ac rydych yn gweld pob gair ohono’n gyntaf."
+  },
+  "rep_what": {
+    "message": "Beth sydd o’i le? (dewisol)"
+  },
+  "rep_what_ph": {
+    "message": "e.e. nid yw’r fideo’n dechrau, mae blwch gwyn yn cuddio’r erthygl…"
+  },
+  "rep_full_url": {
+    "message": "Cynnwys cyfeiriad llawn y dudalen (fel arall enw’r wefan yn unig)"
+  },
+  "rep_preview": {
+    "message": "Beth fydd yn cael ei anfon"
+  },
+  "rep_send_mail": {
+    "message": "Anfon drwy e-bost"
+  },
+  "rep_copy": {
+    "message": "Copïo’r adroddiad"
+  },
+  "rep_copied": {
+    "message": "Copïwyd."
+  },
+  "rep_done_cosm": {
+    "message": "Mae cuddio elfennau i ffwrdd ar y wefan hon. Ail-lwythwyd — ydy e wedi’i drwsio?"
+  },
+  "rep_done_allow": {
+    "message": "Mae hysbysebion yn cael eu caniatáu ar y wefan hon. Ail-lwythwyd — ydy e wedi’i drwsio?"
+  },
+  "rep_done_pause": {
+    "message": "Wedi oedi am 30 munud. Os yw’r wefan yn gweithio nawr, dywedwch wrthym isod."
+  },
+  "cookieRejections": {
+    "message": "Baneri cwcis a wrthodwyd ar eich rhan: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Silffoedd, tab ac awgrymiadau Shorts ar YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Llamlenni “Mewngofnodi gyda Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Y dewisydd cyfrifon sy’n ymddangos yng nghornel llawer o wefannau. Mae’r botymau mewngofnodi’n dal i weithio."
+  },
+  "pickTip": {
+    "message": "Cliciwch ar elfen i’w chuddio"
+  },
+  "pickZapTip": {
+    "message": "Cliciwch i dynnu’r elfen hon (unwaith)"
+  },
+  "pickEscCancel": {
+    "message": "i ddiddymu"
+  },
+  "opt_notices": {
+    "message": "Trwyddedau'r rhestrau hidlo"
+  }
+}

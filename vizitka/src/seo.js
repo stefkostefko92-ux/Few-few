@@ -49,6 +49,7 @@ export function robotsTxt(base) {
     'Disallow: /p/*/print', // печатни страници (нямат SEO стойност)
     'Disallow: /p/*/wallet', // портфейл файлове (лични, не за индексиране)
     'Disallow: /v1/', // Apple Wallet update web service
+    'Disallow: /mcp', // конекторът за AI асистенти — крайна точка, не страница
   ];
   return [
     'User-agent: *',
@@ -90,6 +91,14 @@ ${GUIDES.map((g) => `- [${g.h1}](${base}/${g.slug}): ${g.description}`).join('\n
   собственика и е публично по негово решение.
 - Всяка визитка предлага vCard (.vcf) файл и QR код (PNG) на същия адрес.
 
+## Конектор за AI асистенти (MCP)
+
+- Vizitka е MCP сървър: ${base}/mcp (Streamable HTTP, само POST, без автентикация).
+- Добавя се като собствен конектор в Claude и в ChatGPT; дава два инструмента само за
+  четене — \`search\` и \`fetch\` — върху наръчника и визитките, чиито собственици изрично
+  са разрешили да бъдат намирани от AI асистенти.
+- Как се добавя: ${base}/konektor-chatgpt-claude
+
 ## Терминология (едно и също нещо, различни думи)
 
 - „дигитална визитка“ = „електронна визитка“ = „виртуална визитка“ = „онлайн визитка“
@@ -99,7 +108,8 @@ ${GUIDES.map((g) => `- [${g.h1}](${base}/${g.slug}): ${g.description}`).join('\n
 ## Какво Vizitka НЕ прави (за да не се цитира погрешно)
 
 - Не е CRM и не събира контактите на сканиращите — брои се само общият брой преглеждания.
-- Не поддържа NFC чипове.
+- Не продава и не програмира NFC чипове: таблото дава постоянния адрес за запис в NFC
+  чип (NTAG213/215), а записът е от потребителя.
 - Един акаунт носи една визитка.
 - Не продава печат: печатните визитки се оформят и печатат от самия потребител през Мастилко.
 
@@ -247,6 +257,16 @@ export function siteJsonLd(base) {
         description:
           'Безплатна дигитална визитка с постоянен QR код — професионален профил (личен или фирмен), който винаги е актуален.',
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+        // Само функции, които работят БЕЗ допълнителна настройка на сървъра. Портфейлите
+        // (Apple/Google) са зад ключове и затова НЕ са тук — схемата не бива да обещава
+        // нещо, което посетителят може да не види.
+        featureList: [
+          'Дигитална визитка с постоянен QR код',
+          'Запазване на контакта като vCard (.vcf)',
+          'Постоянен адрес за запис в NFC чип',
+          'Личен или фирмен профил',
+          'MCP конектор за Claude и ChatGPT',
+        ],
         areaServed: { '@type': 'Country', name: 'Bulgaria' },
         provider: { '@id': `${base}/#organization` },
         publisher: { '@id': `${base}/#organization` },
@@ -338,7 +358,7 @@ export function cardJsonLd(profile, publicUrl, base) {
   const data = {
     '@type': isCompany ? 'Organization' : 'Person',
     '@id': `${publicUrl}#${isCompany ? 'org' : 'person'}`,
-    mainEntityOfPage: publicUrl,
+    mainEntityOfPage: { '@id': `${publicUrl}#page` },
     name: profile.display_name,
     url: publicUrl,
   };
@@ -354,12 +374,33 @@ export function cardJsonLd(profile, publicUrl, base) {
     Boolean
   );
   if (sameAs.length) data.sameAs = sameAs;
+  // SQLite datetime('now') е UTC без зона — ISO 8601 иска я изрично.
+  const modified = profile.updated_at
+    ? `${String(profile.updated_at).replace(' ', 'T')}Z`
+    : undefined;
   return jsonLdSafe({
     '@context': 'https://schema.org',
     '@graph': [
+      // ProfilePage: визитката Е профилна страница — лицето/фирмата вече не „плува“
+      // без страница, към която да принадлежи, а търсачките и AI асистентите виждат
+      // кой е основният обект и кога е обновен.
+      {
+        '@type': 'ProfilePage',
+        '@id': `${publicUrl}#page`,
+        url: publicUrl,
+        name: profile.display_name,
+        inLanguage: 'bg',
+        mainEntity: { '@id': data['@id'] },
+        isPartOf: { '@id': `${base}/#website` },
+        breadcrumb: { '@id': `${publicUrl}#breadcrumb` },
+        ...(modified ? { dateModified: modified } : {}),
+      },
       data,
+      // Сайтът — пълен възел, не само препратка: страницата се чете и самостоятелно.
+      { '@type': 'WebSite', '@id': `${base}/#website`, name: 'Vizitka', url: `${base}/` },
       {
         '@type': 'BreadcrumbList',
+        '@id': `${publicUrl}#breadcrumb`,
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Начало', item: `${base}/` },
           { '@type': 'ListItem', position: 2, name: profile.display_name, item: publicUrl },

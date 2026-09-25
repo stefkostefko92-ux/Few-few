@@ -39,8 +39,32 @@ test('всяка снимка на панела съществува и за т�
       assert.ok(existsSync(file), `липсва ${file}`);
       // Празен или почти празен файл значи неуспяло снимане, не изображение.
       assert.ok(statSync(file).size > 8_000, `${file} е подозрително малък`);
+      // Лекият вариант за телефон (`srcset`) трябва да съществува и да е наистина по-лек —
+      // иначе телефонът пак тегли 1600 px. Прави се от `npm run landing:variants`.
+      const light = `public/${base}-${locale}-800.webp`;
+      assert.ok(existsSync(light), `липсва ${light} — пусни npm run landing:variants`);
+      assert.ok(statSync(light).size > 4_000, `${light} е подозрително малък`);
+      assert.ok(statSync(light).size < statSync(file).size, `${light} не е по-лек от оригинала`);
     }
   }
+});
+
+test('всяка снимка на панела дава лек вариант на телефона', () => {
+  const images = [...VIEW.matchAll(/<img\b(?:<%[\s\S]*?%>|[^>])*>/g)].map((m) => m[0]);
+  const shots = images.filter((tag) => tag.includes('/static/landing/panel-'));
+  assert.ok(shots.length >= 4);
+  for (const tag of shots) {
+    assert.match(tag, /\ssrcset="[^"]*-800\.webp 800w/, `без лек вариант: ${tag.slice(0, 90)}`);
+    assert.match(tag, /\ssizes="/, `srcset без sizes: ${tag.slice(0, 90)}`);
+  }
+});
+
+test('декоративното перо не се тегли на телефон', () => {
+  // Скрит `<img>` се сваля въпреки `display: none`; скрит CSS фон — не.
+  assert.doesNotMatch(VIEW, /<img[^>]+plume\.webp/, 'перото пак е <img> — телефонът ще го тегли');
+  const css = readFileSync('public/landing.css', 'utf8');
+  assert.match(css, /\.lp-hero-art\s*\{[^}]*url\('\/static\/landing\/plume\.webp'\)/);
+  assert.match(css, /@media \(max-width: 1000px\)\s*\{[^@]*\.lp-hero-art\s*\{\s*display: none;/);
 });
 
 test('страницата има точно едно H1', () => {
@@ -119,7 +143,7 @@ test('всеки въпрос има отговор на трите езика',
  * правоъгълник. Затова файлът трябва да носи алфа, а не просто да съществува.
  */
 test('логото и перото са с прозрачен фон', () => {
-  for (const name of ['logo', 'plume']) {
+  for (const name of ['logo', 'logo-160', 'plume']) {
     const file = `public/landing/${name}.webp`;
     assert.ok(existsSync(file), `липсва ${file}`);
     const header = readFileSync(file).subarray(0, 32);
@@ -166,4 +190,35 @@ test('текстът не обещава автоматично публикув
       assert.doesNotMatch(copy, pattern, `${locale}: обещание, което продуктът не спазва`);
     }
   }
+});
+
+test('витрината не носи униформата на генерираните страници', () => {
+  const css = readFileSync('public/landing.css', 'utf8');
+  // Преливащ текст, стъкло и неонови ореоли бяха махнати нарочно — да не се върнат тихо.
+  assert.doesNotMatch(css, /background-clip:\s*text/, 'преливащ текст във витрината');
+  assert.doesNotMatch(css, /backdrop-filter/, 'стъкло (backdrop-filter) във витрината');
+  assert.doesNotMatch(css, /drop-shadow|text-shadow/, 'ореол около марка или текст');
+  assert.match(
+    css,
+    /body\.lp::before,\s*body\.lp::after\s*\{\s*content: none;/,
+    'аврората е изключена',
+  );
+});
+
+test('шрифтът на заглавията е наш, лек и с лиценза си', () => {
+  const css = readFileSync('public/landing.css', 'utf8');
+  const fonts = [...css.matchAll(/url\('\/static\/(fonts\/[\w-]+\.woff2)'\)/g)].map((m) => m[1]!);
+  assert.ok(fonts.length >= 2, 'няма @font-face за заглавията');
+  for (const font of fonts) {
+    const file = `public/${font}`;
+    assert.ok(existsSync(file), `липсва ${file}`);
+    assert.ok(statSync(file).size < 30_000, `${file} е над 30 KB — вземи подмножество`);
+  }
+  assert.match(css, /font-display:\s*swap/);
+  assert.ok(existsSync('public/fonts/OFL-Literata.txt'), 'OFL лицензът трябва да пътува с шрифта');
+  // Заглавието е LCP: шрифтът му се тегли предварително, иначе `swap` мига.
+  assert.match(
+    VIEW,
+    /rel="preload" href="\/static\/fonts\/literata-latin-600-normal\.woff2" as="font"/,
+  );
 });

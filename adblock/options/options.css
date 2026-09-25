@@ -149,7 +149,7 @@ main {
   background: linear-gradient(135deg, #00e5ff, #00b8d4);
   border-radius: 4px;
   padding: 1px 6px;
-  margin-left: 6px;
+  margin-inline-start: 6px;
   vertical-align: middle;
 }
 .row-sub {
@@ -241,6 +241,17 @@ main {
   font-size: 12px;
   word-break: break-all;
 }
+.list li > div {
+  min-width: 0;
+}
+/* OK / ! в „Състояние на ядрото" — никога пренесено на две реда. */
+.list .status {
+  flex-shrink: 0;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
 .list .remove {
   background: none;
   border: none;
@@ -282,7 +293,7 @@ main {
   position: absolute;
   height: 20px;
   width: 20px;
-  left: 3px;
+  inset-inline-start: 3px;
   bottom: 2px;
   background: #cfd2d6;
   transition: 0.3s;
@@ -304,7 +315,9 @@ input:checked + .slider::before {
   justify-content: space-between;
   gap: 12px;
   text-decoration: none;
-  color: var(--text);
+  /* Картата е винаги тъмна (бранд) — текстът е фиксирано светъл и в светлата тема,
+     иначе там заглавието беше черно върху черно. */
+  color: #f5f5f0;
   padding: 16px 18px;
   border-radius: 14px;
   border: 1px solid var(--line);
@@ -332,7 +345,7 @@ input:checked + .slider::before {
 }
 .promo-text span {
   font-size: 12px;
-  color: var(--muted);
+  color: #9aa3ad;
 }
 .promo-go {
   font-size: 22px;
@@ -375,7 +388,7 @@ input:checked + .slider::before {
   padding: 0 4px;
   font-size: 11.5px;
 }
-.saved-hint { margin-left: 10px; font-size: 12px; color: var(--good); }
+.saved-hint { margin-inline-start: 10px; font-size: 12px; color: var(--good); }
 
 footer {
   text-align: center;
@@ -383,3 +396,45 @@ footer {
   font-size: 12px;
   padding-bottom: 20px;
 }
+
+/* Filter lists / Focus mode */
+.sub-h {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 18px 0 4px;
+}
+.lists-error {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ff5a5a;
+  color: #ff5a5a;
+  font-size: 12.5px;
+}
+.badge-lang,
+.badge-remote {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  vertical-align: 1px;
+}
+.badge-lang {
+  background: var(--accent);
+  color: #001a1f;
+}
+.badge-remote {
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.row-sub a {
+  color: var(--accent-2);
+}
+
+[hidden] { display: none !important; }
+[dir="rtl"] input:checked + .slider::before { transform: translateX(-20px); }

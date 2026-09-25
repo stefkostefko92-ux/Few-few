@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Chặn mọi quảng cáo: video YouTube, biểu ngữ, pop-up, trình theo dõi, hộp cookie, tường anti-adblock. Miễn phí, nhanh, riêng tư."
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Bật/tắt bảo vệ"
+  },
+  "protected": {
+    "message": "Đang bảo vệ"
+  },
+  "paused": {
+    "message": "Tạm dừng"
+  },
+  "blockingHere": {
+    "message": "Đang chặn quảng cáo trên trang này"
+  },
+  "protectionOff": {
+    "message": "Tính năng bảo vệ đang tắt"
+  },
+  "pause30": {
+    "message": "Tạm dừng 30 phút"
+  },
+  "pausedResume": {
+    "message": "Đã tạm dừng, tiếp tục ngay (còn $1 phút)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Đã chặn"
+  },
+  "dataSaved": {
+    "message": "Dữ liệu tiết kiệm"
+  },
+  "timeSaved": {
+    "message": "Thời gian tiết kiệm"
+  },
+  "thisSite": {
+    "message": "trang web này"
+  },
+  "thisPage": {
+    "message": "trang này"
+  },
+  "blockOnSite": {
+    "message": "Chặn quảng cáo trên trang web này"
+  },
+  "blocking": {
+    "message": "Đang chặn"
+  },
+  "allowed": {
+    "message": "Cho phép"
+  },
+  "cosmetics": {
+    "message": "Ẩn khung quảng cáo ở đây"
+  },
+  "cosmeticsTitle": {
+    "message": "Lọc giao diện trên trang web này (hãy tắt nếu bố cục bị vỡ)"
+  },
+  "on": {
+    "message": "Bật"
+  },
+  "off": {
+    "message": "Tắt"
+  },
+  "blockedHere": {
+    "message": "Đã chặn trên trang này"
+  },
+  "logEmpty": {
+    "message": "Chưa chặn gì trên trang này."
+  },
+  "logUnavailable": {
+    "message": "Hiện không xem được nhật ký (giới hạn của trình duyệt) — vui lòng thử lại sau một phút."
+  },
+  "logCore": {
+    "message": "Quy tắc lõi Supreme"
+  },
+  "logYouTube": {
+    "message": "Luật quảng cáo YouTube"
+  },
+  "logParams": {
+    "message": "Tham số theo dõi"
+  },
+  "logMalware": {
+    "message": "Tên miền độc hại"
+  },
+  "logSurrogates": {
+    "message": "Script quảng cáo đã vô hiệu"
+  },
+  "logPrivacy": {
+    "message": "Bảo vệ quyền riêng tư"
+  },
+  "logUser": {
+    "message": "Bộ lọc của tôi"
+  },
+  "logLive": {
+    "message": "Cập nhật trực tiếp"
+  },
+  "hideElement": {
+    "message": "Ẩn phần tử"
+  },
+  "settings": {
+    "message": "Cài đặt"
+  },
+  "promoSub": {
+    "message": "Thiết bị & công cụ, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Quảng cáo"
+  },
+  "support": {
+    "message": "Ủng hộ"
+  },
+  "filtersCount": {
+    "message": "$1+ bộ lọc",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Giao diện"
+  },
+  "opt_extra_protection": {
+    "message": "Bảo vệ bổ sung"
+  },
+  "opt_smart_detection_log": {
+    "message": "Nhật ký Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Trang web trong danh sách cho phép"
+  },
+  "opt_my_filters": {
+    "message": "Bộ lọc của tôi"
+  },
+  "opt_hidden_elements": {
+    "message": "Phần tử đã ẩn"
+  },
+  "opt_filter_updates": {
+    "message": "Cập nhật bộ lọc"
+  },
+  "opt_engine_health": {
+    "message": "Tình trạng bộ máy"
+  },
+  "opt_backup": {
+    "message": "Sao lưu"
+  },
+  "opt_support_development": {
+    "message": "Ủng hộ phát triển"
+  },
+  "opt_theme": {
+    "message": "Chủ đề"
+  },
+  "opt_sync_across_devices": {
+    "message": "Đồng bộ giữa các thiết bị"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Chặn quảng cáo YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Biểu ngữ cookie / đồng ý"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Vượt qua chống chặn quảng cáo"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Bài viết được tài trợ của Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Xóa tham số theo dõi"
+  },
+  "opt_malware_protection": {
+    "message": "Bảo vệ khỏi phần mềm độc hại"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Chặn API trình duyệt dùng để nhắm mục tiêu quảng cáo"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Chặn beacon theo dõi và trình đào tiền mã hóa"
+  },
+  "opt_auto_update_filters": {
+    "message": "Tự động cập nhật bộ lọc"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (tối) hoặc sáng"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Đồng bộ cài đặt, danh sách cho phép và bộ lọc trên mọi Chrome mà bạn đã đăng nhập"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Xóa quảng cáo video trên YouTube. Hãy tắt nếu video không phát được."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Tự động đóng các thông báo “Chấp nhận cookie”"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Ẩn tường “hãy tắt trình chặn quảng cáo” và khôi phục trang"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Ẩn bài viết “Được tài trợ” trên Facebook và Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Loại bỏ utm_*, fbclid, gclid và các mã nhận dạng lượt nhấp khác khỏi các đường liên kết bạn mở"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Chặn các tên miền phần mềm độc hại đã biết (danh sách URLhaus của abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Tắt các API quảng cáo Google Topics, FLoC và Protected Audience trên mọi trang web"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Chặn ping kiểm tra siêu liên kết / beacon của bên thứ ba, loại bỏ cookie theo dõi khỏi phản hồi của các máy chủ quảng cáo đã biết và chặn các script đào tiền mã hóa trong trình duyệt. Hãy tắt nếu một tính năng phụ thuộc vào phân tích của trang web hoạt động không đúng."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Tải quy tắc chặn mới và bản sửa lỗi cho YouTube từ adblock.carbonstealth.eu khoảng hai lần mỗi ngày. Chỉ là dữ liệu, không có mã; yêu cầu không chứa mã nhận dạng hay dữ liệu duyệt web nào."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Nhật ký trực tiếp các quảng cáo được phát hiện bằng phương pháp phỏng đoán (không dùng danh sách bộ lọc), mới nhất ở trên cùng."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Danh sách đã đăng ký được tải về dưới dạng văn bản (không bao giờ là mã), được cập nhật hằng ngày và nằm trong các khối được quản lý ở trên. Xóa một danh sách để bỏ các quy tắc của danh sách đó."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Các phần tử bạn đã ẩn thủ công bằng công cụ chọn, được nhóm theo trang web."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Chẩn đoán trực tiếp — mọi thứ đều được tính toán trên máy của bạn. Nếu có mục màu đỏ, thường chỉ cần nhấn “Cập nhật ngay” hoặc tải lại tiện ích là khắc phục được."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock miễn phí cho tất cả mọi người. Nếu bạn muốn giúp duy trì tiện ích, chúng tôi hoan nghênh mọi khoản ủng hộ, nhưng không bao giờ bắt buộc."
+  },
+  "opt_reset_statistics": {
+    "message": "Đặt lại thống kê"
+  },
+  "opt_add": {
+    "message": "Thêm"
+  },
+  "opt_save_filters": {
+    "message": "Lưu bộ lọc"
+  },
+  "opt_subscribe": {
+    "message": "Đăng ký"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Làm mới danh sách đăng ký ngay"
+  },
+  "opt_update_now": {
+    "message": "Cập nhật ngay"
+  },
+  "opt_refresh": {
+    "message": "Làm mới"
+  },
+  "opt_export_settings": {
+    "message": "Xuất cài đặt"
+  },
+  "opt_import_settings": {
+    "message": "Nhập cài đặt"
+  },
+  "opt_e_g_example_com": {
+    "message": "ví dụ: example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Đăng ký URL danh sách bộ lọc (ví dụ: https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Cài đặt Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Cài đặt"
+  },
+  "opt_theme_light": {
+    "message": "Sáng"
+  },
+  "opt_badge_unique": {
+    "message": "độc quyền"
+  },
+  "opt_smart_desc": {
+    "message": "Bắt những quảng cáo mà chưa danh sách bộ lọc nào biết: khung khác nguồn gốc có kích thước giống vị trí quảng cáo tiêu chuẩn sẽ bị ẩn ngay lập tức, không cần quy tắc."
+  },
+  "opt_caught_so_far": {
+    "message": "quảng cáo đã bị bắt."
+  },
+  "opt_allow_desc": {
+    "message": "Quảng cáo không bị chặn trên các tên miền này."
+  },
+  "opt_fh_one": {
+    "message": "Mỗi dòng một quy tắc."
+  },
+  "opt_fh_blocks": {
+    "message": "chặn một tên miền;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ẩn một phần tử ở mọi nơi;"
+  },
+  "opt_fh_site": {
+    "message": "chỉ ẩn trên trang web đó."
+  },
+  "opt_fh_comments": {
+    "message": "Các dòng bắt đầu bằng"
+  },
+  "opt_fh_comments2": {
+    "message": "là chú thích."
+  },
+  "opt_donate": {
+    "message": "Ủng hộ qua Revolut"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Chưa phát hiện quảng cáo nào bằng phương pháp phỏng đoán."
+  },
+  "opt_empty_allow": {
+    "message": "Chưa có trang web nào trong danh sách cho phép."
+  },
+  "opt_empty_hidden": {
+    "message": "Chưa có gì bị ẩn thủ công."
+  },
+  "opt_empty_subs": {
+    "message": "Chưa đăng ký danh sách nào."
+  },
+  "opt_no_sw": {
+    "message": "Không có phản hồi từ service worker."
+  },
+  "opt_remove": {
+    "message": "Xóa"
+  },
+  "opt_filter_status": {
+    "message": "Bộ lọc phiên bản v$1, cập nhật $2. Chỉ là dữ liệu, không có thông tin nào về bạn được gửi đi."
+  },
+  "opt_updating": {
+    "message": "Đang cập nhật…"
+  },
+  "opt_updated": {
+    "message": "Đã cập nhật (v$1, $2 quy tắc bổ sung)"
+  },
+  "opt_update_failed": {
+    "message": "Cập nhật thất bại ($1)"
+  },
+  "opt_saved": {
+    "message": "Đã lưu ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 quy tắc"
+  },
+  "opt_updated_ago": {
+    "message": "cập nhật $1"
+  },
+  "opt_not_fetched": {
+    "message": "chưa tải về"
+  },
+  "opt_failed_colon": {
+    "message": "thất bại: $1"
+  },
+  "opt_enter_https": {
+    "message": "Nhập URL https:// hợp lệ"
+  },
+  "opt_fetching": {
+    "message": "Đang tải…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Đã đăng ký: $1 quy tắc ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Thất bại ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Đang làm mới…"
+  },
+  "opt_refreshed": {
+    "message": "Đã làm mới ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Tệp cài đặt không hợp lệ."
+  },
+  "opt_no_response": {
+    "message": "không có phản hồi"
+  },
+  "opt_h_engine": {
+    "message": "Bộ máy vượt anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Bộ quy tắc tĩnh đang bật"
+  },
+  "opt_h_live": {
+    "message": "Tên miền bộ lọc trực tiếp"
+  },
+  "opt_h_last": {
+    "message": "Lần cập nhật cuối"
+  },
+  "opt_h_sig": {
+    "message": "Chữ ký cập nhật"
+  },
+  "opt_h_user": {
+    "message": "Quy tắc bộ lọc của tôi / danh sách cho phép"
+  },
+  "opt_h_popup": {
+    "message": "Máy chủ quảng cáo bật lên tích hợp sẵn"
+  },
+  "opt_h_yt": {
+    "message": "Cơ chế vượt YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Khung khác nguồn gốc có kích thước quảng cáo"
+  },
+  "opt_reason_sticky": {
+    "message": "Biểu ngữ quảng cáo cố định"
+  },
+  "logRegional": {
+    "message": "Danh sách khu vực"
+  },
+  "logFocus": {
+    "message": "Tập trung"
+  },
+  "opt_filter_lists": {
+    "message": "Danh sách bộ lọc"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList và EasyPrivacy luôn bật. Các danh sách bên dưới là danh sách giấy phép mở được tích hợp sẵn trong tiện ích, vì vậy bật chúng không tải về gì cả, trừ danh sách được đánh dấu là lấy từ tác giả."
+  },
+  "opt_lists_core": {
+    "message": "Cốt lõi"
+  },
+  "opt_lists_regional": {
+    "message": "Khu vực"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Danh sách cho ngôn ngữ trình duyệt của bạn sẽ tự động bật. Hãy thêm danh sách khác nếu bạn thường đọc trang web bằng ngôn ngữ khác."
+  },
+  "opt_focus_mode": {
+    "message": "Chế độ tập trung"
+  },
+  "opt_focus_desc": {
+    "message": "Ẩn những thứ không phải quảng cáo nhưng vẫn gây vướng víu. Mọi mục ở đây đều tắt cho đến khi bạn bật."
+  },
+  "opt_list_ubo": {
+    "message": "Bộ lọc uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Chặn quảng cáo, trình theo dõi, xử lý chống chặn quảng cáo và sửa lỗi trang web từ nhóm uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Danh sách của Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Danh sách lâu năm về các máy chủ quảng cáo và theo dõi."
+  },
+  "opt_focus_social": {
+    "message": "Nút và tiện ích mạng xã hội"
+  },
+  "opt_focus_social_desc": {
+    "message": "Nút chia sẻ, hộp thích và nguồn cấp dữ liệu nhúng."
+  },
+  "opt_focus_chat": {
+    "message": "Tiện ích trò chuyện và hỗ trợ"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Bong bóng trò chuyện nổi ở góc trang."
+  },
+  "opt_focus_newsletters": {
+    "message": "Cửa sổ bật lên bản tin và đăng ký"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Các hộp và lớp phủ “Đăng ký nhận bản tin của chúng tôi”."
+  },
+  "opt_focus_notifications": {
+    "message": "Lời nhắc thông báo"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Các hộp “Cho phép thông báo?” mà trang web hiển thị trước khi trình duyệt hỏi."
+  },
+  "opt_focus_ai": {
+    "message": "Cửa sổ bật lên trợ lý AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Bong bóng chatbot và bảng gợi ý AI được thêm vào trang."
+  },
+  "opt_focus_other": {
+    "message": "Phiền toái khác"
+  },
+  "opt_focus_other_desc": {
+    "message": "Thanh cố định, biểu ngữ “mở trong ứng dụng” và những thứ lộn xộn tương tự."
+  },
+  "opt_badge_lang": {
+    "message": "ngôn ngữ của bạn"
+  },
+  "opt_badge_remote": {
+    "message": "từ tác giả"
+  },
+  "opt_remote_hint": {
+    "message": "Không đi kèm (không có giấy phép phân phối lại): trình duyệt của bạn sẽ tải về từ $1 khi bạn bật."
+  },
+  "opt_downloaded_from": {
+    "message": "Tải về từ $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome đã từ chối tổ hợp danh sách này ($1). Hãy tắt bớt một số danh sách."
+  },
+  "opt_badge_recommended": {
+    "message": "đề xuất cho ngôn ngữ của bạn"
+  },
+  "reportBroken": {
+    "message": "Trang bị lỗi? Sửa hoặc báo cho chúng tôi"
+  },
+  "rep_title": {
+    "message": "Trang web này có gì bị lỗi?"
+  },
+  "rep_fix_first": {
+    "message": "Sửa ngay"
+  },
+  "rep_site": {
+    "message": "Trang web:"
+  },
+  "rep_fix_desc": {
+    "message": "Hầu hết sự cố sẽ hết với một trong các cách sau. Mỗi cách chỉ áp dụng cho trang web này; thẻ sẽ tải lại."
+  },
+  "rep_fix_cosm": {
+    "message": "Tắt ẩn phần tử tại đây"
+  },
+  "rep_fix_allow": {
+    "message": "Cho phép quảng cáo trên trang web này"
+  },
+  "rep_fix_pause": {
+    "message": "Tạm dừng ở mọi nơi trong 30 phút"
+  },
+  "rep_tell_us": {
+    "message": "Báo cho chúng tôi"
+  },
+  "rep_tell_desc": {
+    "message": "Chúng tôi sửa các trang web bị lỗi cho mọi người qua bản cập nhật bộ lọc có chữ ký, thường trong vòng một ngày. Tiện ích không gửi gì cả: báo cáo sẽ mở trong ứng dụng email của chính bạn và bạn được xem từng chữ trước."
+  },
+  "rep_what": {
+    "message": "Có vấn đề gì? (không bắt buộc)"
+  },
+  "rep_what_ph": {
+    "message": "ví dụ: video không chạy, một ô trắng che bài viết…"
+  },
+  "rep_full_url": {
+    "message": "Bao gồm địa chỉ trang đầy đủ (nếu không thì chỉ có tên trang web)"
+  },
+  "rep_preview": {
+    "message": "Nội dung sẽ được gửi"
+  },
+  "rep_send_mail": {
+    "message": "Gửi qua email"
+  },
+  "rep_copy": {
+    "message": "Sao chép báo cáo"
+  },
+  "rep_copied": {
+    "message": "Đã sao chép."
+  },
+  "rep_done_cosm": {
+    "message": "Đã tắt ẩn phần tử trên trang web này. Đã tải lại — lỗi đã được khắc phục chưa?"
+  },
+  "rep_done_allow": {
+    "message": "Đã cho phép quảng cáo trên trang web này. Đã tải lại — lỗi đã được khắc phục chưa?"
+  },
+  "rep_done_pause": {
+    "message": "Đã tạm dừng 30 phút. Nếu trang web hoạt động bình thường, vui lòng báo cho chúng tôi bên dưới."
+  },
+  "cookieRejections": {
+    "message": "Biểu ngữ cookie đã từ chối thay bạn: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Kệ Shorts, thẻ Shorts và các đề xuất Shorts trên YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Cửa sổ bật lên “Đăng nhập bằng Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Hộp chọn tài khoản xuất hiện ở góc của nhiều trang web. Các nút đăng nhập vẫn hoạt động bình thường."
+  },
+  "pickTip": {
+    "message": "Nhấp vào một phần tử để ẩn"
+  },
+  "pickZapTip": {
+    "message": "Nhấp để xóa phần tử này (một lần)"
+  },
+  "pickEscCancel": {
+    "message": "để hủy"
+  },
+  "opt_notices": {
+    "message": "Giấy phép của các danh sách bộ lọc"
+  }
+}

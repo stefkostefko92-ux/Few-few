@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Жарнаманы барлық жерде бұғаттайды: YouTube бейнежарнамалары, баннерлер, қалқымалы терезелер, трекерлер, cookie сұраулары. Тегін."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth әзірлеген"
+  },
+  "toggleProtection": {
+    "message": "Қорғауды қосу/өшіру"
+  },
+  "protected": {
+    "message": "Қорғалған"
+  },
+  "paused": {
+    "message": "Үзілісте"
+  },
+  "blockingHere": {
+    "message": "Бұл беттегі жарнама бұғатталуда"
+  },
+  "protectionOff": {
+    "message": "Қорғау өшірулі"
+  },
+  "pause30": {
+    "message": "30 минутқа кідірту"
+  },
+  "pausedResume": {
+    "message": "Кідіртілді, қазір жалғастыру ($1 мин қалды)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Бұғатталған"
+  },
+  "dataSaved": {
+    "message": "Трафик үнемі"
+  },
+  "timeSaved": {
+    "message": "Уақыт үнемі"
+  },
+  "thisSite": {
+    "message": "осы сайт"
+  },
+  "thisPage": {
+    "message": "осы бет"
+  },
+  "blockOnSite": {
+    "message": "Осы сайтта жарнаманы бұғаттау"
+  },
+  "blocking": {
+    "message": "Бұғатталуда"
+  },
+  "allowed": {
+    "message": "Рұқсат"
+  },
+  "cosmetics": {
+    "message": "Мұнда жарнаманы жасыру"
+  },
+  "cosmeticsTitle": {
+    "message": "Осы сайттағы косметикалық сүзгілеу (бет құрылымы бұзылса, өшіріңіз)"
+  },
+  "on": {
+    "message": "Қосулы"
+  },
+  "off": {
+    "message": "Өшірулі"
+  },
+  "blockedHere": {
+    "message": "Осы бетте бұғатталғандар"
+  },
+  "logEmpty": {
+    "message": "Мұнда әзірге ештеңе бұғатталмады."
+  },
+  "logUnavailable": {
+    "message": "Журнал қазір қолжетімсіз (браузер квотасы) — бір минуттан кейін қайталап көріңіз."
+  },
+  "logCore": {
+    "message": "Supreme негізгі ережелері"
+  },
+  "logYouTube": {
+    "message": "YouTube жарнамалары"
+  },
+  "logParams": {
+    "message": "Бақылау параметрлері"
+  },
+  "logMalware": {
+    "message": "Зиянды домендер"
+  },
+  "logSurrogates": {
+    "message": "Өшірілген жарнама скрипттері"
+  },
+  "logPrivacy": {
+    "message": "Құпиялылықты қорғау"
+  },
+  "logUser": {
+    "message": "Өз сүзгілерім"
+  },
+  "logLive": {
+    "message": "Жедел жаңартулар"
+  },
+  "hideElement": {
+    "message": "Элементті жасыру"
+  },
+  "settings": {
+    "message": "Параметрлер"
+  },
+  "promoSub": {
+    "message": "Құрал-жабдықтар, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Жарнама"
+  },
+  "support": {
+    "message": "Қолдау"
+  },
+  "filtersCount": {
+    "message": "$1+ сүзгі",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Сыртқы түр"
+  },
+  "opt_extra_protection": {
+    "message": "Қосымша қорғау"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection журналы"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Рұқсат етілген сайттар"
+  },
+  "opt_my_filters": {
+    "message": "Өз сүзгілерім"
+  },
+  "opt_hidden_elements": {
+    "message": "Жасырылған элементтер"
+  },
+  "opt_filter_updates": {
+    "message": "Сүзгі жаңартулары"
+  },
+  "opt_engine_health": {
+    "message": "Қозғалтқыш күйі"
+  },
+  "opt_backup": {
+    "message": "Сақтық көшірме"
+  },
+  "opt_support_development": {
+    "message": "Әзірлеуге қолдау көрсету"
+  },
+  "opt_theme": {
+    "message": "Тақырып"
+  },
+  "opt_sync_across_devices": {
+    "message": "Құрылғылар арасында синхрондау"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube жарнамасын бұғаттау"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie / келісім баннерлері"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Анти-адблок қабырғаларын айналып өту"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta демеушілік жазбалары"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Бақылау параметрлерін жою"
+  },
+  "opt_malware_protection": {
+    "message": "Зиянды бағдарламалардан қорғау"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Жарнамалық таргеттеудің браузер API-ларын бұғаттау"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Бақылау маяктары мен криптомайнерлерді бұғаттау"
+  },
+  "opt_auto_update_filters": {
+    "message": "Сүзгілерді автоматты жаңарту"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (қараңғы) немесе ашық"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Параметрлерді, рұқсат етілгендер тізімін және сүзгілерді аккаунтыңызбен кірген әрбір Chrome-да синхрондау"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube-тағы бейнежарнаманы жояды. Бейнелер ойнатылмаса, өшіріңіз."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "«Cookie файлдарын қабылдау» сұрауларын автоматты түрде жабады"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "«Жарнама блокаторын өшіріңіз» қабырғаларын жасырып, бетті қалпына келтіреді"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook пен Instagram-дағы «Демеушілік» жазбаларын жасырады"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Ашқан сілтемелеріңізден utm_*, fbclid, gclid және басқа басу идентификаторларын алып тастайды"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Белгілі зиянды домендерді бұғаттайды (abuse.ch ұсынған URLhaus тізімі)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Барлық сайтта Google Topics, FLoC және Protected Audience жарнамалық API-ларын өшіреді"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Үшінші тарап сілтемелерін аудиттеу / beacon пингтерін тоқтатады, белгілі жарнамалық технология жауаптарынан бақылау cookie файлдарын алып тастайды және браузердегі криптомайнинг скрипттерін бұғаттайды. Сайттың аналитикаға тәуелді функциясы дұрыс істемесе, өшіріңіз."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Жаңа бұғаттау ережелері мен YouTube түзетулерін adblock.carbonstealth.eu сайтынан күніне шамамен екі рет жүктейді. Тек деректер, код жоқ; сұрауда ешқандай идентификатор немесе шолу деректері болмайды."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Эвристикалық жолмен (сүзгілер тізімінсіз) ұсталған жарнаманың жедел журналы, ең жаңалары басында."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Жазылған тізімдер мәтін ретінде жүктеледі (ешқашан код ретінде емес), күн сайын жаңартылады және жоғарыдағы басқарылатын блоктарда сақталады. Тізімнің ережелерін алып тастау үшін тізімді жойыңыз."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Таңдау құралымен қолмен жасырған элементтеріңіз, сайт бойынша топтастырылған."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Жедел диагностика — бәрі жергілікті түрде есептеледі. Бірдеңе қызыл болса, «Қазір жаңарту» немесе кеңейтімді қайта жүктеу әдетте мәселені шешеді."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock бәріне тегін. Оны қолдап отыруға көмектескіңіз келсе, қайырымдылыққа қуаныштымыз, бірақ ол ешқашан міндетті емес."
+  },
+  "opt_reset_statistics": {
+    "message": "Статистиканы нөлдеу"
+  },
+  "opt_add": {
+    "message": "Қосу"
+  },
+  "opt_save_filters": {
+    "message": "Сүзгілерді сақтау"
+  },
+  "opt_subscribe": {
+    "message": "Жазылу"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Жазылымдарды қазір жаңарту"
+  },
+  "opt_update_now": {
+    "message": "Қазір жаңарту"
+  },
+  "opt_refresh": {
+    "message": "Жаңарту"
+  },
+  "opt_export_settings": {
+    "message": "Параметрлерді экспорттау"
+  },
+  "opt_import_settings": {
+    "message": "Параметрлерді импорттау"
+  },
+  "opt_e_g_example_com": {
+    "message": "мыс. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! мысал\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Сүзгілер тізімінің URL мекенжайына жазылу (мыс. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock параметрлері"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Параметрлер"
+  },
+  "opt_theme_light": {
+    "message": "Ашық"
+  },
+  "opt_badge_unique": {
+    "message": "бірегей"
+  },
+  "opt_smart_desc": {
+    "message": "Әлі ешбір сүзгілер тізімі білмейтін жарнаманы ұстайды: стандартты жарнама орнының өлшеміндегі басқа дереккөзден келген фреймдер ережесіз-ақ бірден жасырылады."
+  },
+  "opt_caught_so_far": {
+    "message": "осы уақытқа дейін ұсталды."
+  },
+  "opt_allow_desc": {
+    "message": "Бұл домендерде жарнама бұғатталмайды."
+  },
+  "opt_fh_one": {
+    "message": "Әр жолға бір ереже."
+  },
+  "opt_fh_blocks": {
+    "message": "доменді бұғаттайды;"
+  },
+  "opt_fh_everywhere": {
+    "message": "элементті барлық жерде жасырады;"
+  },
+  "opt_fh_site": {
+    "message": "оны тек сол сайтта жасырады."
+  },
+  "opt_fh_comments": {
+    "message": "Түсініктеме жолдары"
+  },
+  "opt_fh_comments2": {
+    "message": "таңбасынан басталады."
+  },
+  "opt_donate": {
+    "message": "Revolut арқылы қайырымдылық жасау"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth жасаған"
+  },
+  "opt_empty_smart": {
+    "message": "Эвристикалық жолмен әзірге ештеңе ұсталмады."
+  },
+  "opt_empty_allow": {
+    "message": "Рұқсат етілген сайттар әзірге жоқ."
+  },
+  "opt_empty_hidden": {
+    "message": "Қолмен әзірге ештеңе жасырылмады."
+  },
+  "opt_empty_subs": {
+    "message": "Жазылған тізімдер әзірге жоқ."
+  },
+  "opt_no_sw": {
+    "message": "Service worker жауап бермейді."
+  },
+  "opt_remove": {
+    "message": "Жою"
+  },
+  "opt_filter_status": {
+    "message": "Сүзгілер жинағы v$1, жаңартылды: $2. Тек деректер, сіз туралы ештеңе жіберілмейді."
+  },
+  "opt_updating": {
+    "message": "Жаңартылуда…"
+  },
+  "opt_updated": {
+    "message": "Жаңартылды (v$1, $2 қосымша ереже)"
+  },
+  "opt_update_failed": {
+    "message": "Жаңарту сәтсіз аяқталды ($1)"
+  },
+  "opt_saved": {
+    "message": "Сақталды ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 ереже"
+  },
+  "opt_updated_ago": {
+    "message": "жаңартылды: $1"
+  },
+  "opt_not_fetched": {
+    "message": "әлі жүктелмеген"
+  },
+  "opt_failed_colon": {
+    "message": "қате: $1"
+  },
+  "opt_enter_https": {
+    "message": "Жарамды https:// URL мекенжайын енгізіңіз"
+  },
+  "opt_fetching": {
+    "message": "Жүктелуде…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Жазылды: $1 ереже ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Сәтсіз ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Жаңартылуда…"
+  },
+  "opt_refreshed": {
+    "message": "Жаңартылды ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Параметрлер файлы жарамсыз."
+  },
+  "opt_no_response": {
+    "message": "жауап жоқ"
+  },
+  "opt_h_engine": {
+    "message": "Анти-адблок қозғалтқышы"
+  },
+  "opt_h_rulesets": {
+    "message": "Қосулы статикалық ереже жинақтары"
+  },
+  "opt_h_live": {
+    "message": "Жедел сүзгі домендері"
+  },
+  "opt_h_last": {
+    "message": "Соңғы жаңарту"
+  },
+  "opt_h_sig": {
+    "message": "Жаңарту қолтаңбалары"
+  },
+  "opt_h_user": {
+    "message": "Өз сүзгілерім / рұқсат ережелері"
+  },
+  "opt_h_popup": {
+    "message": "Кірістірілген қалқымалы жарнама хосттары"
+  },
+  "opt_h_yt": {
+    "message": "YouTube айналып өтуі"
+  },
+  "opt_reason_frame": {
+    "message": "Жарнама өлшеміндегі басқа дереккөз фреймі"
+  },
+  "opt_reason_sticky": {
+    "message": "Жабысқақ жарнама баннері"
+  },
+  "logRegional": {
+    "message": "Аймақтық тізімдер"
+  },
+  "logFocus": {
+    "message": "Фокус режимі"
+  },
+  "opt_filter_lists": {
+    "message": "Сүзгілер тізімдері"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList пен EasyPrivacy әрқашан қосулы. Төмендегі тізімдер ашық лицензиялы және кеңейтімге енгізілген, сондықтан біреуін қосу ештеңе жүктемейді — авторынан келетіні белгіленген тізімнен басқа."
+  },
+  "opt_lists_core": {
+    "message": "Негізгі"
+  },
+  "opt_lists_regional": {
+    "message": "Аймақтық"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Браузеріңіздің тіліне арналған тізім өздігінен қосылады. Басқа тілдердегі сайттарды жиі оқысаңыз, басқаларын да қосыңыз."
+  },
+  "opt_focus_mode": {
+    "message": "Фокус режимі"
+  },
+  "opt_focus_desc": {
+    "message": "Жарнама емес, бірақ бәрібір кедергі келтіретін нәрселерді жасырыңыз. Мұндағының бәрі сіз қоспайынша өшірулі тұрады."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin сүзгілері"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin командасынан жарнама, трекерлер, анти-адблок түзетулері және сайт жөндеулері."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe тізімі"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Жарнама және бақылау серверлерінің ұзақ жылдан бері жүргізіліп келе жатқан тізімі."
+  },
+  "opt_focus_social": {
+    "message": "Әлеуметтік желі түймелері мен виджеттері"
+  },
+  "opt_focus_social_desc": {
+    "message": "Бөлісу түймелері, лайк блоктары және кірістірілген ленталар."
+  },
+  "opt_focus_chat": {
+    "message": "Чат және қолдау виджеттері"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Беттің бұрышында қалқып тұратын чат көпіршіктері."
+  },
+  "opt_focus_newsletters": {
+    "message": "Жаңалықтар таратылымы мен тіркелу терезелері"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "«Жаңалықтарымызға жазылыңыз» блоктары мен қабаттары."
+  },
+  "opt_focus_notifications": {
+    "message": "Хабарландыру сұраулары"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Браузер сұрамай тұрып сайттар көрсететін «Хабарландыруларға рұқсат бересіз бе?» блоктары."
+  },
+  "opt_focus_ai": {
+    "message": "ЖИ көмекшісінің қалқымалы терезелері"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Беттерге қосылған чатбот көпіршіктері мен ЖИ ұсыныстары панельдері."
+  },
+  "opt_focus_other": {
+    "message": "Басқа мазалайтын элементтер"
+  },
+  "opt_focus_other_desc": {
+    "message": "Жабысқақ жолақтар, «Қолданбада ашу» баннерлері және сол сияқты артық элементтер."
+  },
+  "opt_badge_lang": {
+    "message": "сіздің тіліңіз"
+  },
+  "opt_badge_remote": {
+    "message": "авторынан"
+  },
+  "opt_remote_hint": {
+    "message": "Кеңейтімге енгізілмеген (қайта таратуға лицензия жоқ): қосқан кезде браузеріңіз оны $1 сайтынан жүктейді."
+  },
+  "opt_downloaded_from": {
+    "message": "Жүктелу көзі: $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome бұл тізімдер тіркесімін қабылдамады ($1). Кейбірін өшіріңіз."
+  },
+  "opt_badge_recommended": {
+    "message": "тіліңізге ұсынылады"
+  },
+  "reportBroken": {
+    "message": "Сайт бұзылды ма? Түзетіңіз немесе бізге хабарлаңыз"
+  },
+  "rep_title": {
+    "message": "Бұл сайтта бірдеңе дұрыс жұмыс істемей ме?"
+  },
+  "rep_fix_first": {
+    "message": "Қазір түзету"
+  },
+  "rep_site": {
+    "message": "Сайт:"
+  },
+  "rep_fix_desc": {
+    "message": "Көп мәселе осылардың бірімен шешіледі. Әрқайсысы тек осы сайтқа қатысты; қойынды қайта жүктеледі."
+  },
+  "rep_fix_cosm": {
+    "message": "Мұнда элементтерді жасыруды өшіру"
+  },
+  "rep_fix_allow": {
+    "message": "Осы сайтта жарнамаға рұқсат беру"
+  },
+  "rep_fix_pause": {
+    "message": "Барлық жерде 30 минутқа кідірту"
+  },
+  "rep_tell_us": {
+    "message": "Бізге хабарлаңыз"
+  },
+  "rep_tell_desc": {
+    "message": "Бұзылған сайттарды қолтаңбаланған сүзгі жаңартуы арқылы бәрі үшін түзетеміз, әдетте бір күн ішінде. Кеңейтім ештеңе жібермейді: есеп өзіңіздің пошта қолданбаңызда ашылады және оның әр сөзін алдымен өзіңіз көресіз."
+  },
+  "rep_what": {
+    "message": "Не дұрыс емес? (міндетті емес)"
+  },
+  "rep_what_ph": {
+    "message": "мыс. бейне басталмайды, мақаланы ақ блок жауып тұр…"
+  },
+  "rep_full_url": {
+    "message": "Беттің толық мекенжайын қосу (әйтпесе тек сайт атауы)"
+  },
+  "rep_preview": {
+    "message": "Не жіберіледі"
+  },
+  "rep_send_mail": {
+    "message": "Электрондық пошта арқылы жіберу"
+  },
+  "rep_copy": {
+    "message": "Есепті көшіру"
+  },
+  "rep_copied": {
+    "message": "Көшірілді."
+  },
+  "rep_done_cosm": {
+    "message": "Бұл сайтта элементтерді жасыру өшірілді. Қайта жүктелді — түзелді ме?"
+  },
+  "rep_done_allow": {
+    "message": "Бұл сайтта жарнамаға рұқсат берілді. Қайта жүктелді — түзелді ме?"
+  },
+  "rep_done_pause": {
+    "message": "30 минутқа кідіртілді. Сайт енді жұмыс істесе, төменде бізге хабарлаңыз."
+  },
+  "cookieRejections": {
+    "message": "Сіздің атыңыздан бас тартылған cookie баннерлері: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube-тағы Shorts сөрелері, қойындысы және ұсыныстары."
+  },
+  "opt_focus_onetap": {
+    "message": "«Google арқылы кіру» терезелері"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Көп сайттың бұрышында шығатын аккаунт таңдағышы. Кіру түймелері жұмысын жалғастырады."
+  },
+  "pickTip": {
+    "message": "Жасыру үшін элементті басыңыз"
+  },
+  "pickZapTip": {
+    "message": "Бұл элементті жою үшін басыңыз (бір рет)"
+  },
+  "pickEscCancel": {
+    "message": "— бас тарту"
+  },
+  "opt_notices": {
+    "message": "Сүзгі тізімдерінің лицензиялары"
+  }
+}

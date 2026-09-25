@@ -14,6 +14,8 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BannerZone from "@/components/BannerZone";
+import VividFx from "@/components/VividFx";
+import PwaRegister from "@/components/PwaRegister";
 import "./globals.css";
 
 // Всички шрифтове са с кирилица И латиница. Само основните два се preload-ват;
@@ -75,7 +77,9 @@ const underdog = Underdog({ subsets: ["cyrillic", "latin"], display: "swap", pre
 const seymour = Seymour_One({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-seymour" });
 
 // Ръкописни
-const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-pacifico" });
+// Pacifico е и брандовият шрифт на надписа „Мастилко" (като в логото) — ползва
+// се в хедъра/футъра на всяка страница, затова се preload-ва.
+const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], display: "swap", weight: "400", variable: "--font-pacifico" });
 const caveat = Caveat({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-caveat" });
 const marck = Marck_Script({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-marck" });
 const badscript = Bad_Script({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-badscript" });
@@ -113,7 +117,7 @@ export const metadata: Metadata = {
     template: "%s · Мастилко",
   },
   description:
-    "Създай безплатно етикети, визитки и автобиография (CV) на български — направо в браузъра, без регистрация, готови за принтиране на А4.",
+    "14 безплатни образеца за печат на български: етикети, визитки, CV, грамоти, покани, ваучери, календар, меню и още — в браузъра, без регистрация, готови за А4.",
   keywords: [
     "етикети за печат",
     "безплатни етикети",
@@ -123,6 +127,17 @@ export const metadata: Metadata = {
     "автобиография шаблон",
     "мотивационно писмо",
     "визитки с QR код",
+    "грамоти за печат",
+    "покани за печат",
+    "табелки и надписи",
+    "WiFi QR стикер",
+    "баджове за събития",
+    "обява с ресни",
+    "подаръчен ваучер",
+    "календар за печат",
+    "меню за печат",
+    "снимки за документи",
+    "шаблони за печат безплатно",
     "принтиране А4",
     "Мастилко",
     "Carbon Stealth",
@@ -136,7 +151,7 @@ export const metadata: Metadata = {
     siteName: "Мастилко",
     title: "Мастилко — безплатни етикети, визитки и CV за печат",
     description:
-      "Етикети, визитки и CV на български — безплатно, без регистрация, готови за принтиране.",
+      "14 образеца за печат на български — етикети, визитки, CV, грамоти, покани, ваучери, календар, меню. Безплатно, без регистрация.",
     images: [{ url: "/og.png", width: 1200, height: 630, alt: "Мастилко — дизайн и печат: визитки, етикети, CV" }],
   },
   twitter: {
@@ -153,15 +168,16 @@ export default function RootLayout({
   return (
     <html lang="bg" className={FONT_VARS}>
       <head>
-        {/* Прилага тъмната тема преди рисуване, за да няма трепване. */}
+        {/* Прилага темата (тъмна/жива) преди рисуване, за да няма трепване. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{if(localStorage.getItem('mastilko-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}",
+              "try{var t=localStorage.getItem('mastilko-theme');if(t==='dark')document.documentElement.classList.add('dark');else if(t==='light'){}else document.documentElement.classList.add('vivid')}catch(e){document.documentElement.classList.add('vivid')}",
           }}
         />
       </head>
       <body className="flex min-h-screen flex-col">
+        <VividFx />
         <a
           href="#glavno"
           className="no-print sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
@@ -172,6 +188,7 @@ export default function RootLayout({
         <BannerZone placement="all" />
         <main id="glavno" className="flex-1">{children}</main>
         <Footer />
+        <PwaRegister />
       </body>
     </html>
   );

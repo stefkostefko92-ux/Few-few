@@ -19,7 +19,7 @@ npm run dev                     # node --watch auto-reload
 # Quality gates:
 npm run lint                    # ESLint (flat config)
 npm run format:check            # Prettier
-npm test                        # node test/smoke.test.js (full-flow smoke test)
+npm test                        # smoke.test.js (пълен поток) + mcp.test.js (конекторът)
 ```
 
 Node ≥20 required. Prod env: `NODE_ENV=production`, `PUBLIC_BASE_URL` (HTTPS —
@@ -64,6 +64,12 @@ src/routes/admin.js  /admin (requireAdmin) — визитки: списък+тъ
                      снимка/корица; реклами на /admin/reklami — CRUD (multer), toggle, move, delete
 src/profiles.js      обща логика за редакция на профил (collect/validate/save) —
                      ползва се и от таблото, и от админ панела
+src/routes/mcp.js    POST /mcp — конекторът за ChatGPT/Claude (GET/DELETE → 405, Origin гард,
+                     таван на честотата и размера)
+src/mcp/             MCP сървърът (нула зависимости): protocol.js (JSON-RPC, двете ери на
+                     протокола, сверяване на огледалните хедъри), tools.js (search/fetch по
+                     договора на ChatGPT), corpus.js (какво вижда конекторът — тук е границата
+                     на поверителността)
 src/routes/wallet.js /p/:slug/wallet/apple.pkpass + /wallet/google + Apple update web service (/v1/…)
 src/wallet/          портфейли (без нови зависимости): apple.js (.pkpass билд+openssl подпис),
                      google.js (save JWT + PATCH auto-update), apns.js (ES256 пуш), binary.js
@@ -73,6 +79,8 @@ src/views/           EJS (home, register, login, dashboard, card, admin, guide, 
 public/              styles.css (вкл. теми), app.js (CSP-safe клиентска логика)
 test/smoke.test.js   пълен поток: регистрация→редакция→тема→views→визитка→QR→vCard→
                      CSRF→правни/SEO→смяна на парола
+test/mcp.test.js     конекторът: протокол (двете ери, хедъри, 405/403/-32700) + границата
+                     на поверителността (визитка без съгласие е невидима)
 deploy/              systemd unit (hardened), nginx conf, DEPLOY.md (autodeploy модел)
 ```
 
@@ -104,8 +112,23 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   думи — това цитират AI асистентите), ≥5 ключови думи с „Carbon Stealth“, уникални
   `title`/`description`, canonical и JSON-LD (`WebPage`+`Article` · `BreadcrumbList` ·
   `FAQPage` · `HowTo` при стъпкова · пълен възел на организацията, не препратка).
-  **Пиши само каквото приложението прави** — няма NFC → не се обещава NFC; няма отзиви →
-  няма `aggregateRating`. Гейтнато от `npm test`.
+  **Пиши само каквото приложението прави — и го СВЕРИ с таблото, не по памет**: веднъж
+  наръчникът твърдеше „не поддържаме NFC“, а таблото има блок за запис в NFC чип (грешката
+  стигна и до `llms.txt`, и до корпуса на конектора). Няма отзиви → няма `aggregateRating`.
+  Гейтнато от `npm test`.
+- **MCP конектор (`/mcp`)** — Vizitka е MCP сървър за ChatGPT и Claude. Ревизия **2026-07-28**
+  (без сесии, само `POST`, задължителни огледални хедъри `MCP-Protocol-Version`/`Mcp-Method`/
+  `Mcp-Name`, които СЕ СВЕРЯВАТ с тялото) **плюс съвместимост назад** до 2025-03-26 с
+  ръкостискане `initialize` — живите клиенти още говорят старите ери, тоест само новата
+  спецификация значи конектор, който не тръгва. Два инструмента, **само за четене**:
+  `search` и `fetch` — имената и формата им ги диктува ChatGPT (`{results:[{id,title,url}]}`,
+  `{id,title,text,url,metadata}`), Claude приема същите. Отговорът е двоен
+  (`structuredContent` + същият JSON като текст). Без OAuth: отдава се само публично
+  съдържание. **Границата на поверителността е в `src/mcp/corpus.js`** — визитка влиза само
+  при `is_public=1 AND ai_discoverable=1 AND hidden_by_admin=0`; съгласието (`ai_discoverable`)
+  е по подразбиране **0**, дава се САМО от таблото на потребителя, а админът може да го
+  оттегли, но не и да го даде вместо него. Не добавяй инструмент, който пише, и не добавяй
+  „свободен ли е този адрес“ — то издава съществуването на СКРИТИ визитки.
 - **Правни страници** (`/privacy`, `/terms`) са обвързани с реалното поведение на
   приложението — промениш ли какви данни се пазят/бисквитки, обнови и тях.
 - **Privacy-by-default (чл. 25(2) ОРЗД):** новият профил е СКРИТ (`is_public=0`) и
@@ -137,6 +160,13 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   връща 404 (спира обновяването). `.pkpass` се кешира по (id, updated_at) и публичните
   портфейл маршрути са rate-limited (openssl spawn е скъп). Бутоните са локални SVG
   (`public/badge-*-wallet.svg`) — сменяй само с официалните артове при нужда.
+  **Google:** класът е с `multipleDevicesAndHoldersAllowedStatus: MULTIPLE_HOLDERS` (обектът е
+  ЕДИН на визитка, запазват го МНОГО посетители; полето е само на класа) и се създава
+  предварително с `npm run wallet:google-class` (Google го иска преди право за публикуване).
+  Логото на картата е квадратното `public/wallet-logo.png` (Google го изрязва в кръг) и
+  **никога** личната снимка. Правата на service account-а се дават с покана „Developer“ в
+  Pay & Wallet Console, не с IAM роля. **Apple:** безплатен път няма (платен Developer
+  Program; освобождаването е само за нефинансови/учебни/държавни) — виж `DEPLOY.md §7`.
 - **Реклами:** банерите се показват само на началната страница (`placement='home'`),
   НЕ върху потребителските визитки. First-party (без чужди тракери → без консент
   банер); всеки носи етикет „Реклама“ и `rel="sponsored"`. Управляват се от `/admin`
@@ -147,4 +177,4 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   сесии. Без изтичане на акаунти (еднакъв отговор), rate-limited. Таблица
   `password_resets`.
 - Roadmap (не е имплементирано): изтриване на акаунт от UI (сега — по заявка на
-  privacy@), NFC, няколко визитки на акаунт, дневна разбивка на статистиката.
+  privacy@), няколко визитки на акаунт, дневна разбивка на статистиката.

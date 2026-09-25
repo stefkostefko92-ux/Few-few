@@ -20,6 +20,8 @@
       if (m) el.setAttribute("placeholder", m);
     });
     try { document.documentElement.lang = chrome.i18n.getUILanguage().slice(0, 2); } catch (e) {}
+    // Arabic, Hebrew, Persian, Urdu: right-to-left (Chrome's own @@bidi_dir).
+    try { document.documentElement.dir = chrome.i18n.getMessage("@@bidi_dir") || "ltr"; } catch (e) {}
   }
   window.saI18n = { t: t, apply: apply };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { apply(document); });

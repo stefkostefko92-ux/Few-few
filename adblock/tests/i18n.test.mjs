@@ -39,4 +39,37 @@ ok("popup.js FALLBACK table found", !!FALLBACK && Object.keys(FALLBACK).length >
 const drift = Object.keys(FALLBACK || {}).filter((k) => !(k in en) || en[k].message !== FALLBACK[k]);
 ok(`popup.js FALLBACK == en for every key (drift: ${drift.join(",") || "none"})`, drift.length === 0);
 
+// Every locale (70 languages): same keys as en, every $n placeholder kept, the
+// store limits, the brand name untouched, and a store description per language.
+{
+  const { readdirSync, existsSync } = await import("node:fs");
+  const locales = readdirSync(join(ROOT, "_locales")).filter((l) => l !== "en");
+  const langs = new Set(locales.map((l) => l.split("_")[0]).concat("en"));
+  ok(`at least 54 languages (${langs.size} languages, ${locales.length + 1} locale folders)`, langs.size >= 54);
+  const bullets = (t) => (t.match(/•/g) || []).length;
+  const enListing = existsSync(join(ROOT, "docs", "listing", "en.txt")) ? read("docs", "listing", "en.txt") : "";
+  const bad = [];
+  for (const L of locales) {
+    let d;
+    try { d = JSON.parse(read("_locales", L, "messages.json")); } catch (e) { bad.push(`${L}: invalid JSON`); continue; }
+    const missingK = Object.keys(en).filter((k) => !d[k] || typeof d[k].message !== "string" || !d[k].message.trim());
+    const extra = Object.keys(d).filter((k) => !(k in en));
+    if (missingK.length) bad.push(`${L}: missing ${missingK.slice(0, 5).join(",")}`);
+    if (extra.length) bad.push(`${L}: unknown keys ${extra.slice(0, 5).join(",")}`);
+    for (const k of Object.keys(en)) {
+      if (!d[k]) continue;
+      for (const ph of en[k].message.match(/\$\d|\$[A-Z_]+\$/g) || []) {
+        if (d[k].message.split(ph).length !== en[k].message.split(ph).length) bad.push(`${L}: ${k} placeholder ${ph}`);
+      }
+      if (en[k].placeholders && JSON.stringify(d[k].placeholders) !== JSON.stringify(en[k].placeholders)) bad.push(`${L}: ${k} placeholders object`);
+    }
+    if (d.extName && d.extName.message !== "Supreme AdBlock") bad.push(`${L}: extName translated`);
+    if (d.extDescription && d.extDescription.message.length > 132) bad.push(`${L}: extDescription ${d.extDescription.message.length} > 132`);
+    const lp = join(ROOT, "docs", "listing", L + ".txt");
+    if (!existsSync(lp)) bad.push(`${L}: no docs/listing/${L}.txt`);
+    else if (bullets(read("docs", "listing", L + ".txt")) !== bullets(enListing)) bad.push(`${L}: store description bullets`);
+  }
+  ok(`every locale complete and consistent with en (${bad.length ? bad.slice(0, 8).join(" | ") : "ok"})`, bad.length === 0);
+}
+
 done();

@@ -26,18 +26,23 @@ const listDot = $("listDot");
 let currentHost = null;
 let currentTabId = null;
 
+// Numbers and units in the browser's language: "55 мин.", "4,6 GB", "43 709+".
+const UI_LANG = (() => { try { return chrome.i18n.getUILanguage(); } catch { return "en"; } })();
+function unit(v, u, digits = 0) {
+  try { return new Intl.NumberFormat(UI_LANG, { style: "unit", unit: u, unitDisplay: "short", maximumFractionDigits: digits }).format(v); }
+  catch { return v.toFixed(digits) + " " + u; }
+}
 function fmtData(mb) {
-  if (mb >= 1024) return (mb / 1024).toFixed(1) + " GB";
-  if (mb >= 1) return Math.round(mb) + " MB";
-  return Math.round(mb * 1024) + " KB";
+  if (mb >= 1024) return unit(mb / 1024, "gigabyte", 1);
+  if (mb >= 1) return unit(Math.round(mb), "megabyte");
+  return unit(Math.round(mb * 1024), "kilobyte");
 }
 
 function fmtTime(sec) {
-  if (sec >= 3600) return (sec / 3600).toFixed(1) + " h";
-  if (sec >= 60) return Math.round(sec / 60) + " min";
-  if (sec >= 10) return Math.round(sec) + " s";
-  if (sec > 0) return sec.toFixed(1) + " s";
-  return "0 s";
+  if (sec >= 3600) return unit(sec / 3600, "hour", 1);
+  if (sec >= 60) return unit(Math.round(sec / 60), "minute");
+  if (sec >= 10) return unit(Math.round(sec), "second");
+  return unit(sec > 0 ? sec : 0, "second", 1);
 }
 
 function load() {
@@ -47,15 +52,20 @@ function load() {
     chrome.runtime.sendMessage({ type: "getStats", tabUrl }, (res) => {
       if (!res) return;
       toggle.checked = res.enabled;
-      blockedTotal.textContent = res.blockedTotal.toLocaleString();
+      blockedTotal.textContent = res.blockedTotal.toLocaleString(UI_LANG);
+      if (res.cookieRejections > 0) {
+        $("rejText").textContent = t("cookieRejections", [res.cookieRejections.toLocaleString(UI_LANG)]);
+        $("rejLine").hidden = false;
+      }
       savedData.textContent = fmtData(res.saved.mb);
       savedTime.textContent = fmtTime(res.saved.seconds);
       setStatus(res.enabled);
 
-      listDot.textContent = t("filtersCount", [String(res.filterCount || 0)]);
+      listDot.textContent = t("filtersCount", [(res.filterCount || 0).toLocaleString(UI_LANG)]);
       renderPause(res.pausedUntil || 0);
 
       currentHost = res.host;
+      $("reportBtn").hidden = !currentHost;
       if (currentHost) {
         siteHost.textContent = currentHost;
         allowToggle.checked = !res.allowed;
@@ -73,8 +83,8 @@ function load() {
   });
 }
 
-// "What was blocked on this page": our own matched rules for this tab, from
-// declarativeNetRequestFeedback (local, nothing leaves the device).
+// "What was blocked on this page": how many requests each filter list stopped
+// in this tab, from declarativeNetRequestFeedback (local, nothing leaves the device).
 function loadLog() {
   const list = $("logList");
   const empty = $("logEmpty");
@@ -82,6 +92,7 @@ function loadLog() {
   if (currentTabId == null) return;
   chrome.runtime.sendMessage({ type: "getTabLog", tabId: currentTabId }, (res) => {
     list.innerHTML = "";
+    if (res && res.reason === "unsupported") { $("logBox").hidden = true; return; } // Firefox: no getMatchedRules
     if (!res || !res.ok) {
       empty.textContent = res && res.reason === "quota" ? t("logUnavailable") : empty.textContent;
       empty.hidden = false;
@@ -90,15 +101,25 @@ function loadLog() {
     }
     count.textContent = String(res.total);
     empty.hidden = res.items.length > 0;
+    // Chrome reports WHICH rule matched, not the request URL (that exists only
+    // for unpacked builds) — so the log is an honest per-list breakdown.
+    const LIST_LABEL = {
+      easylist: () => "EasyList", easyprivacy: () => "EasyPrivacy",
+      core: () => t("logCore"), youtube: () => t("logYouTube"), params: () => t("logParams"),
+      malware: () => t("logMalware"), surrogates: () => t("logSurrogates"), privacy: () => t("logPrivacy"),
+      user: () => t("logUser"), live: () => t("logLive"),
+      ubo: () => "uBlock Origin", plowe: () => "Peter Lowe", regional: () => t("logRegional"),
+      focus: () => t("logFocus"), lists: () => t("logRegional"),
+    };
     for (const it of res.items) {
       const li = document.createElement("li");
-      const host = document.createElement("span");
-      host.className = "host";
-      host.textContent = it.host;
-      const type = document.createElement("span");
-      type.className = "type";
-      type.textContent = it.type + (it.n > 1 ? " ×" + it.n : "");
-      li.append(host, type);
+      const name = document.createElement("span");
+      name.className = "host";
+      name.textContent = (LIST_LABEL[it.list] || LIST_LABEL.core)();
+      const n = document.createElement("span");
+      n.className = "type";
+      n.textContent = "×" + it.n;
+      li.append(name, n);
       list.appendChild(li);
     }
   });
@@ -170,3 +191,8 @@ $("pickBtn").addEventListener("click", () => {
 $("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
 
 document.addEventListener("DOMContentLoaded", load);
+
+$("reportBtn").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("report/report.html?tab=" + currentTabId) });
+  window.close();
+});

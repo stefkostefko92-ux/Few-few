@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FONTS, fontCss } from "@/lib/style";
 
 interface Props {
@@ -17,11 +17,28 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
   const [open, setOpen] = useState(false);
   const current = FONTS.find((f) => f.id === value);
   const cats = [...new Set(FONTS.map((f) => f.cat))];
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Escape затваря списъка и връща фокуса на бутона (както менюто в хедъра).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
-    <div className="relative">
+    // Когато менюто е отворено, вдигаме контейнера в собствен stacking context
+    // (z-30), за да не се скрива падащото зад следващата карта (card-warm във
+    // „жива" тема прави backdrop-filter → нов stacking context).
+    <div className={`relative ${open ? "z-30" : ""}`}>
       {label && <span className="field-label">{label}</span>}
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
@@ -46,7 +63,7 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
                   role="option"
                   aria-selected={!value}
                   onClick={() => { onChange(""); setOpen(false); }}
-                  className="w-full rounded-lg px-3 py-1.5 text-left text-sm hover:bg-tera-pale dark:hover:bg-white/10"
+                  className="w-full rounded-lg px-3 py-1.5 text-left text-sm hover:bg-tera-pale dark:hover:bg-white/10 vivid:hover:bg-white/10"
                 >
                   По подразбиране
                 </button>
@@ -64,7 +81,7 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
                     role="option"
                     aria-selected={value === f.id}
                     onClick={() => { onChange(f.id); setOpen(false); }}
-                    className={`w-full rounded-lg px-3 py-1.5 text-left text-base hover:bg-tera-pale dark:hover:bg-white/10 ${value === f.id ? "bg-tera-pale dark:bg-white/10" : ""}`}
+                    className={`w-full rounded-lg px-3 py-1.5 text-left text-base hover:bg-tera-pale dark:hover:bg-white/10 vivid:hover:bg-white/10 ${value === f.id ? "bg-tera-pale dark:bg-white/10 vivid:bg-white/10" : ""}`}
                     style={{ fontFamily: fontCss(f.id) }}
                   >
                     {f.name}
