@@ -24,6 +24,8 @@ import { scriviAudit } from "@/lib/audit";
 import { validaAllegato } from "@/lib/allegati/tipi";
 import { impronta } from "@/lib/allegati/archivio";
 import { configAi } from "@/lib/ai/config";
+import { verificaAi } from "@/lib/ai/politica-db";
+import { statoHttpAi } from "@/lib/ai/politica";
 import { chiedi, estraiJson, ErroreAi } from "@/lib/ai/fornitore";
 import { MODULI_AI, moduloValido, istruzione } from "@/lib/ai/moduli";
 import { validaEstrazione, campiPerForm } from "@/lib/ai/valida";
@@ -45,10 +47,14 @@ export const GET = gestito(async () => {
   // Интерфейсът пита „има ли изобщо AI“, за да не показва бутон, който само
   // ще даде грешка. Отговорът НЕ съдържа ключа — само дали работи и кой е
   // доставчикът, защото това е информация, която потребителят има право да знае.
-  await richiedeRuolo("OPERATORE");
+  const s = await richiedeRuolo("OPERATORE");
   const c = configAi();
+  // Бутонът се показва само ако ТОЗИ човек може да го ползва сега: доставчик,
+  // глобално, функция, роля, акаунт (`politica.ts`).
+  const esito = await verificaAi(s, "estrai");
   return ok({
-    attiva: c.effettivo !== "off",
+    attiva: esito.consentita,
+    motivo: esito.motivo ?? null,
     fornitore: c.etichettaFornitore,
     moduli: Object.fromEntries(
       Object.entries(MODULI_AI).map(([k, m]) => [
@@ -78,11 +84,12 @@ export const POST = gestito(async (req) => {
   const esitoFile = validaAllegato(dati, dati.byteLength);
   if ("errore" in esitoFile) return errore(422, esitoFile.errore);
 
+  const politica = await verificaAi(s, "estrai");
   const c = configAi();
-  if (c.effettivo === "off")
+  if (!politica.consentita)
     return errore(
-      503,
-      "Assistente AI non configurato. Va abilitato dall'amministratore di sistema (variabili AI_PROVIDER e AI_API_KEY).",
+      statoHttpAi(politica),
+      politica.messaggio ?? "AI non disponibile",
     );
 
   if (!consenti(`ai:${s.sub}`, LIMITE_ORARIO, 60 * 60_000))

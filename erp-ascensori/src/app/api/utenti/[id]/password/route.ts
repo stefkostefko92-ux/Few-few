@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
-import { filtroUtenti } from "@/lib/tenant";
+import { utenteGestibile } from "@/lib/gestione-utenti";
 import { validaPassword, mfaObbligatorio } from "@/lib/password-policy";
 import { revocaTutte } from "@/lib/sessioni";
 
@@ -17,15 +17,9 @@ export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
   const { id } = await ctx.params;
   const { password } = await corpoValidato(req, schema);
-  const utente = await prisma.user.findFirst({
-    where: { id, ...filtroUtenti(s) },
-  });
-  if (!utente) throw new ErroreHttp(404, "Utente non trovato");
-  if (utente.ruolo === "MASTER" && s.ruolo !== "MASTER")
-    throw new ErroreHttp(
-      403,
-      "Solo il livello MASTER può gestire utenti MASTER",
-    );
+  // Паролата на ДРУГ администратор — само MASTER: иначе единият ADMIN
+  // заключва колегата си навън и влиза вместо него.
+  const utente = await utenteGestibile(s, id, { privilegiato: id !== s.sub });
 
   // Политиката е ТУК, а не в Zod: зависи от ролята и от собствените данни на
   // потребителя, които схемата не вижда.

@@ -79,6 +79,8 @@ for (const [nome, percorso] of [
   ["пратката за счетоводителя", "/conservazione"],
   ["правата на субекта", "/privacy"],
   ["сигурността на акаунта", "/sicurezza"],
+  ["панелът за администриране", "/amministrazione"],
+  ["потребителите", "/utenti"],
 ] as const) {
   test(`${nome} е достъпна`, async ({ page }) => {
     await entra(page, UTENTI.ADMIN);
@@ -100,6 +102,30 @@ test("формата с отворен диалог е достъпна", async 
     .getByRole("button", { name: /Nuovo|Aggiungi/i })
     .first()
     .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  const v = await analizza(page);
+  expect(v.length, `нарушения в диалога:${descrivi(v)}`).toBe(0);
+});
+
+test("панелът на MASTER (ИИ, фирма, автоматизми) е достъпен", async ({
+  page,
+}) => {
+  // ADMIN не вижда MASTER секциите — тоест формата с отметките и таблицата с
+  // автоматизмите остават непроверени, ако не влезем като MASTER.
+  await entra(page, UTENTI.MASTER);
+  await page.goto("/amministrazione");
+  await expect(
+    page.getByRole("heading", { name: "Automatismi" }),
+  ).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  const v = await analizza(page);
+  expect(v.length, `нарушения на панела MASTER:${descrivi(v)}`).toBe(0);
+});
+
+test("диалогът „Sicurezza“ на потребител е достъпен", async ({ page }) => {
+  await entra(page, UTENTI.ADMIN);
+  await page.goto("/utenti");
+  await page.getByRole("button", { name: "Sicurezza" }).first().click();
   await expect(page.getByRole("dialog")).toBeVisible();
   const v = await analizza(page);
   expect(v.length, `нарушения в диалога:${descrivi(v)}`).toBe(0);

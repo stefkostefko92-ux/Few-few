@@ -6,7 +6,7 @@
 
 import { test, describe, before } from "node:test";
 import assert from "node:assert/strict";
-import { comeRuolo, Sessione, BASE } from "./_client";
+import { comeRuolo, Sessione, BASE, PASSWORD } from "./_client";
 
 let operatore: Sessione;
 let cliente: Sessione;
@@ -105,5 +105,127 @@ describe("проверки на входа", () => {
       body: form,
     });
     assert.equal(res.status, 400);
+  });
+});
+
+// Управлението от администратора. Настройката е ЕДНА за инсталацията, затова
+// всичко, което я пипа, е тук — в един файл тестовете вървят последователно,
+// а останалите файлове не зависят от нея (проверяват входа, който е ПРЕДИ нея).
+describe("управление на ИИ от MASTER", () => {
+  interface StatoAi {
+    attiva: boolean;
+    estraiAttiva: boolean;
+    testoAttiva: boolean;
+    ruoliAmmessi: string[];
+    provider: { configurato: boolean; etichetta: string };
+  }
+  let master: Sessione;
+  let predefinito: StatoAi;
+
+  before(async () => {
+    master = await comeRuolo("MASTER");
+    const r = await master.get<StatoAi>("/api/amministrazione/ai");
+    assert.equal(r.status, 200);
+    predefinito = r.dati;
+  });
+
+  const ripristina = () =>
+    master.put("/api/amministrazione/ai", {
+      attiva: predefinito.attiva,
+      estraiAttiva: predefinito.estraiAttiva,
+      testoAttiva: predefinito.testoAttiva,
+      ruoliAmmessi: predefinito.ruoliAmmessi,
+    });
+
+  test("настройката е САМО на MASTER — ADMIN не я чете и не я пипа", async () => {
+    const admin = await comeRuolo("ADMIN");
+    assert.equal((await admin.get("/api/amministrazione/ai")).status, 403);
+    assert.equal(
+      (await admin.put("/api/amministrazione/ai", { attiva: false })).status,
+      403,
+    );
+    // и доставчикът се вижда, ключът — не
+    assert.equal(/AI_API_KEY|sk-/.test(JSON.stringify(predefinito)), false);
+  });
+
+  test("глобално изключено: 403 с причината, а не 503 за доставчика", async () => {
+    try {
+      assert.equal(
+        (await master.put("/api/amministrazione/ai", { attiva: false })).status,
+        200,
+      );
+      const stato = await operatore.get<{ attiva: boolean; motivo: string }>(
+        "/api/ai/testo",
+      );
+      assert.equal(stato.dati.attiva, false);
+      assert.equal(stato.dati.motivo, "globale");
+      const r = await estrai(operatore, PDF, "condomini");
+      assert.equal(r.status, 403, JSON.stringify(r.dati));
+      assert.match(String(r.dati.error), /tutta l'installazione/);
+    } finally {
+      await ripristina();
+    }
+  });
+
+  test("по функция: изключено писане не спира четенето", async () => {
+    try {
+      await master.put("/api/amministrazione/ai", { testoAttiva: false });
+      const testo = await operatore.get<{ motivo: string }>("/api/ai/testo");
+      assert.equal(testo.dati.motivo, "funzione");
+      const estraiStato = await operatore.get<{ motivo: string | null }>(
+        "/api/ai/estrai",
+      );
+      assert.notEqual(estraiStato.dati.motivo, "funzione");
+    } finally {
+      await ripristina();
+    }
+  });
+
+  test("по роля: извън списъка = 403", async () => {
+    try {
+      await master.put("/api/amministrazione/ai", {
+        ruoliAmmessi: ["MASTER", "ADMIN"],
+      });
+      const r = await estrai(operatore, PDF, "condomini");
+      assert.equal(r.status, 403);
+      assert.match(String(r.dati.error), /livello di accesso/);
+    } finally {
+      await ripristina();
+    }
+  });
+
+  test("по акаунт: изключен човек получава 403, колегата му — не", async () => {
+    const email = `ai-${Date.now().toString(36)}@test.local`;
+    const u = await master.post<{ id: string }>("/api/utenti", {
+      email,
+      password: PASSWORD,
+      nome: "Ai",
+      cognome: "Spento",
+      ruolo: "OPERATORE",
+    });
+    assert.equal(u.status, 201);
+    assert.equal(
+      (await master.put(`/api/utenti/${u.dati.id}`, { aiConsentita: false }))
+        .status,
+      200,
+    );
+    const s = new Sessione();
+    assert.equal(await s.entra(email), 200);
+    const r = await estrai(s, PDF, "condomini");
+    assert.equal(r.status, 403);
+    assert.match(String(r.dati.error), /questo account/);
+    // колегата стига до следващата проверка (липсващия доставчик)
+    assert.notEqual((await estrai(operatore, PDF, "condomini")).status, 403);
+  });
+
+  test("непозната роля в списъка е 400", async () => {
+    assert.equal(
+      (
+        await master.put("/api/amministrazione/ai", {
+          ruoliAmmessi: ["SUPERUOMO"],
+        })
+      ).status,
+      400,
+    );
   });
 });

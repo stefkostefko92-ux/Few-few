@@ -1,6 +1,12 @@
 "use client";
 
 // Управление на потребители — ADMIN+. Изтриване: само MASTER (сървърно наложено).
+//
+// Действията по сигурността на чужд акаунт (отключване, нулиране на втория
+// фактор, прекратяване на сесиите, ИИ за акаунта) са в отделен диалог, не в
+// реда: таблицата остава четима на телефон, а всяко действие носи обяснение
+// какво ще се случи. Кой какво може да направи решава СЪРВЪРЪТ
+// (`utenteGestibile`); бутоните тук само не предлагат очевидно невъзможното.
 
 import { useCallback, useEffect, useState } from "react";
 import { Modale, Vuoto } from "@/components/ui";
@@ -17,14 +23,51 @@ interface Utente {
   attivo: boolean;
   tentativi: number;
   bloccatoFino: string | null;
+  totpAttivo: boolean;
+  aiConsentita: boolean;
   ultimoAccesso: string | null;
+  tenantId: string | null;
+}
+
+interface Io {
+  id: string;
+  ruolo: Ruolo;
+  aziendaContesto: { id: string } | null;
+}
+
+interface Azienda {
+  id: string;
+  ragioneSociale: string;
+}
+
+const PRIVILEGIATI: Ruolo[] = ["MASTER", "ADMIN"];
+
+function bloccato(u: Utente): boolean {
+  return Boolean(u.bloccatoFino && new Date(u.bloccatoFino) > new Date());
+}
+
+async function chiama(
+  url: string,
+  init: RequestInit,
+): Promise<{ ok: boolean; errore?: string }> {
+  const res = await fetch(url, {
+    ...init,
+    headers: { "Content-Type": "application/json" },
+  });
+  if (res.ok) return { ok: true };
+  const d = await res.json().catch(() => ({}));
+  return { ok: false, errore: d.error ?? "Errore" };
 }
 
 export default function Pagina() {
   const [righe, setRighe] = useState<Utente[]>([]);
+  const [io, setIo] = useState<Io | null>(null);
+  const [aziende, setAziende] = useState<Azienda[]>([]);
   const [errore, setErrore] = useState<string | null>(null);
   const [modale, setModale] = useState<"crea" | Utente | null>(null);
   const [reset, setReset] = useState<Utente | null>(null);
+  const [sicurezza, setSicurezza] = useState<Utente | null>(null);
+  const [cerca, setCerca] = useState("");
 
   const carica = useCallback(async () => {
     const res = await fetch("/api/utenti");
@@ -34,39 +77,45 @@ export default function Pagina() {
       return;
     }
     setRighe(d.righe);
+    setSicurezza((prec) =>
+      prec ? (d.righe.find((u: Utente) => u.id === prec.id) ?? null) : null,
+    );
   }, []);
 
   useEffect(() => {
     void carica();
+    void (async () => {
+      const r = await fetch("/api/me");
+      if (!r.ok) return;
+      const me: Io = await r.json();
+      setIo(me);
+      // Фирмите са служебна таблица — само MASTER ги вижда (и му трябват:
+      // той управлява потребителите на всички).
+      if (me.ruolo === "MASTER") {
+        const t = await fetch("/api/tenants?size=100");
+        if (t.ok) setAziende((await t.json()).righe ?? []);
+      }
+    })();
   }, [carica]);
 
-  async function cambiaAttivo(u: Utente) {
-    const res = await fetch(`/api/utenti/${u.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ attivo: !u.attivo }),
-    });
-    if (!res.ok) alert((await res.json()).error ?? "Errore");
-    void carica();
-  }
+  const master = io?.ruolo === "MASTER";
+  const nomeAzienda = (id: string | null) =>
+    id === null
+      ? "—"
+      : (aziende.find((a) => a.id === id)?.ragioneSociale ?? "—");
 
-  async function elimina(u: Utente) {
-    if (
-      !confirm(
-        `Eliminare DEFINITIVAMENTE ${u.email}? Operazione riservata al MASTER.`,
+  const filtro = cerca.trim().toLowerCase();
+  const visibili = filtro
+    ? righe.filter((u) =>
+        `${u.cognome} ${u.nome} ${u.email}`.toLowerCase().includes(filtro),
       )
-    )
-      return;
-    const res = await fetch(`/api/utenti/${u.id}`, { method: "DELETE" });
-    if (!res.ok) alert((await res.json()).error ?? "Errore");
-    void carica();
-  }
+    : righe;
 
   if (errore) return <Vuoto messaggio={errore} />;
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-text-1">
             Utenti
@@ -84,6 +133,20 @@ export default function Pagina() {
         </button>
       </div>
 
+      <div className="mb-4">
+        <label className="sr-only" htmlFor="cerca-utenti">
+          Cerca utente
+        </label>
+        <input
+          id="cerca-utenti"
+          type="search"
+          className="input max-w-sm"
+          placeholder="Cerca per nome o email"
+          value={cerca}
+          onChange={(e) => setCerca(e.target.value)}
+        />
+      </div>
+
       <div className="card relative overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -91,24 +154,37 @@ export default function Pagina() {
               <th className="px-3 py-2.5">Nominativo</th>
               <th className="px-3 py-2.5">Email</th>
               <th className="px-3 py-2.5">Ruolo</th>
+              {master && <th className="px-3 py-2.5">Azienda</th>}
               <th className="px-3 py-2.5">Stato</th>
+              <th className="px-3 py-2.5">2FA</th>
+              <th className="px-3 py-2.5">AI</th>
               <th className="px-3 py-2.5">Ultimo accesso</th>
               <th className="px-3 py-2.5 text-right">Azioni</th>
             </tr>
           </thead>
           <tbody>
-            {righe.map((u) => (
+            {visibili.map((u) => (
               <tr
                 key={u.id}
                 className="border-b border-border last:border-0 hover:bg-surface-2"
               >
                 <td className="px-3 py-2.5 font-medium">
                   {u.cognome} {u.nome}
+                  {u.id === io?.id && (
+                    <span className="ml-2 text-xs font-normal text-text-3">
+                      (tu)
+                    </span>
+                  )}
                 </td>
                 <td className="px-3 py-2.5 text-text-2">{u.email}</td>
                 <td className="px-3 py-2.5">{RUOLO_LABEL[u.ruolo]}</td>
+                {master && (
+                  <td className="px-3 py-2.5 text-text-2">
+                    {nomeAzienda(u.tenantId)}
+                  </td>
+                )}
                 <td className="px-3 py-2.5">
-                  {u.bloccatoFino && new Date(u.bloccatoFino) > new Date() ? (
+                  {bloccato(u) ? (
                     <span className="rounded-sm bg-danger-subtle px-2 py-0.5 text-xs font-medium text-danger-text">
                       Bloccato
                     </span>
@@ -122,10 +198,26 @@ export default function Pagina() {
                     </span>
                   )}
                 </td>
+                <td className="px-3 py-2.5">
+                  {u.totpAttivo ? (
+                    <span className="text-success-text">Attiva</span>
+                  ) : PRIVILEGIATI.includes(u.ruolo) ? (
+                    <span className="text-danger-text">Da attivare</span>
+                  ) : (
+                    <span className="text-text-3">No</span>
+                  )}
+                </td>
+                <td className="px-3 py-2.5">
+                  {u.aiConsentita ? (
+                    <span className="text-text-2">Consentita</span>
+                  ) : (
+                    <span className="text-text-3">Disattivata</span>
+                  )}
+                </td>
                 <td className="px-3 py-2.5 text-text-2">
                   {dataOraIt(u.ultimoAccesso)}
                 </td>
-                <td className="px-3 py-2.5 text-right">
+                <td className="whitespace-nowrap px-3 py-2.5 text-right">
                   <button
                     className="btn-ghost h-7 px-2 text-xs"
                     onClick={() => setModale(u)}
@@ -140,26 +232,28 @@ export default function Pagina() {
                   </button>
                   <button
                     className="btn-ghost h-7 px-2 text-xs"
-                    onClick={() => void cambiaAttivo(u)}
+                    onClick={() => setSicurezza(u)}
                   >
-                    {u.attivo ? "Sospendi" : "Riattiva"}
-                  </button>
-                  <button
-                    className="btn-ghost h-7 px-2 text-xs text-danger-text"
-                    onClick={() => void elimina(u)}
-                  >
-                    Elimina
+                    Sicurezza
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {visibili.length === 0 && (
+          <p className="px-3 py-6 text-center text-sm text-text-3">
+            Nessun utente corrisponde alla ricerca.
+          </p>
+        )}
       </div>
 
       {modale && (
         <FormUtente
           utente={modale === "crea" ? null : modale}
+          master={master}
+          aziende={aziende}
+          contesto={io?.aziendaContesto?.id ?? null}
           onChiudi={() => setModale(null)}
           onSalvato={() => {
             setModale(null);
@@ -174,16 +268,282 @@ export default function Pagina() {
           onSalvato={() => setReset(null)}
         />
       )}
+      {sicurezza && (
+        <SicurezzaUtente
+          utente={sicurezza}
+          io={io}
+          onChiudi={() => setSicurezza(null)}
+          onCambiato={() => void carica()}
+        />
+      )}
     </div>
+  );
+}
+
+function SicurezzaUtente({
+  utente,
+  io,
+  onChiudi,
+  onCambiato,
+}: {
+  utente: Utente;
+  io: Io | null;
+  onChiudi: () => void;
+  onCambiato: () => void;
+}) {
+  const [esito, setEsito] = useState<{ ok: boolean; testo: string } | null>(
+    null,
+  );
+  const [inCorso, setInCorso] = useState(false);
+  const se = utente.id === io?.id;
+  // ADMIN над ADMIN: сървърът отказва нулирането на втория фактор (403) —
+  // тук само не го предлагаме, за да не изглежда като грешка на екрана.
+  const puoAzzerare2fa =
+    !se && (io?.ruolo === "MASTER" || !PRIVILEGIATI.includes(utente.ruolo));
+
+  async function azione(
+    url: string,
+    init: RequestInit,
+    riuscita: string,
+    conferma?: string,
+  ) {
+    if (conferma && !confirm(conferma)) return;
+    setInCorso(true);
+    setEsito(null);
+    const r = await chiama(url, init);
+    setInCorso(false);
+    setEsito(
+      r.ok
+        ? { ok: true, testo: riuscita }
+        : { ok: false, testo: r.errore ?? "Errore" },
+    );
+    if (r.ok) onCambiato();
+  }
+
+  const base = `/api/utenti/${utente.id}`;
+
+  return (
+    <Modale
+      titolo={`Sicurezza — ${utente.cognome} ${utente.nome}`}
+      aperto
+      onChiudi={onChiudi}
+    >
+      <dl className="mb-5 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <dt className="text-text-3">Email</dt>
+        <dd className="break-all text-text-1">{utente.email}</dd>
+        <dt className="text-text-3">Tentativi falliti</dt>
+        <dd className="text-text-1">{utente.tentativi}</dd>
+        <dt className="text-text-3">Blocco</dt>
+        <dd className="text-text-1">
+          {bloccato(utente)
+            ? `fino alle ${dataOraIt(utente.bloccatoFino)}`
+            : "nessuno"}
+        </dd>
+        <dt className="text-text-3">Verifica in due passaggi</dt>
+        <dd className="text-text-1">
+          {utente.totpAttivo ? "attiva" : "non attiva"}
+        </dd>
+      </dl>
+
+      <ul className="divide-y divide-border">
+        <Riga
+          titolo="Sblocca l'accesso"
+          testo="Azzera i tentativi falliti e rimuove il blocco temporaneo."
+        >
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={inCorso || (!bloccato(utente) && utente.tentativi === 0)}
+            onClick={() =>
+              void azione(
+                `${base}/sblocca`,
+                { method: "POST" },
+                "Accesso sbloccato.",
+              )
+            }
+          >
+            Sblocca
+          </button>
+        </Riga>
+        <Riga
+          titolo="Termina tutte le sessioni"
+          testo="Chiude l'accesso su ogni dispositivo: servirà un nuovo login."
+        >
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={inCorso || se}
+            onClick={() =>
+              void azione(
+                `${base}/sessioni`,
+                { method: "DELETE" },
+                "Sessioni terminate.",
+              )
+            }
+          >
+            Termina
+          </button>
+        </Riga>
+        {puoAzzerare2fa && utente.totpAttivo && (
+          <Riga
+            titolo="Azzera la verifica in due passaggi"
+            testo="Per un telefono perso senza codici di recupero. Al prossimo accesso andrà configurata di nuovo."
+          >
+            <button
+              type="button"
+              className="btn-secondary text-danger-text"
+              disabled={inCorso}
+              onClick={() =>
+                void azione(
+                  `${base}/mfa`,
+                  { method: "DELETE" },
+                  "Verifica in due passaggi azzerata; sessioni terminate.",
+                  `Azzerare la verifica in due passaggi di ${utente.email}? Tutte le sue sessioni verranno chiuse.`,
+                )
+              }
+            >
+              Azzera
+            </button>
+          </Riga>
+        )}
+        <Riga
+          titolo="Assistente AI"
+          testo={
+            utente.aiConsentita
+              ? "Consentito per questo account (se attivo a livello globale e per il ruolo)."
+              : "Disattivato per questo account, qualunque sia l'impostazione globale."
+          }
+        >
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={inCorso}
+            onClick={() =>
+              void azione(
+                base,
+                {
+                  method: "PUT",
+                  body: JSON.stringify({ aiConsentita: !utente.aiConsentita }),
+                },
+                utente.aiConsentita
+                  ? "AI disattivata per l'account."
+                  : "AI consentita per l'account.",
+              )
+            }
+          >
+            {utente.aiConsentita ? "Disattiva" : "Consenti"}
+          </button>
+        </Riga>
+        {!se && (
+          <Riga
+            titolo={utente.attivo ? "Sospendi l'account" : "Riattiva l'account"}
+            testo={
+              utente.attivo
+                ? "Blocca l'accesso senza perdere lo storico; le sessioni si chiudono subito."
+                : "L'utente potrà accedere di nuovo con la sua password."
+            }
+          >
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={inCorso}
+              onClick={() =>
+                void azione(
+                  base,
+                  {
+                    method: "PUT",
+                    body: JSON.stringify({ attivo: !utente.attivo }),
+                  },
+                  utente.attivo ? "Account sospeso." : "Account riattivato.",
+                )
+              }
+            >
+              {utente.attivo ? "Sospendi" : "Riattiva"}
+            </button>
+          </Riga>
+        )}
+        {io?.ruolo === "MASTER" && !se && (
+          <Riga
+            titolo="Elimina definitivamente"
+            testo="Solo MASTER. Se l'utente compare in documenti o interventi l'eliminazione è rifiutata: va sospeso."
+          >
+            <button
+              type="button"
+              className="btn-secondary text-danger-text"
+              disabled={inCorso}
+              onClick={() =>
+                void (async () => {
+                  if (
+                    !confirm(
+                      `Eliminare DEFINITIVAMENTE ${utente.email}? L'operazione non è reversibile.`,
+                    )
+                  )
+                    return;
+                  const r = await chiama(base, { method: "DELETE" });
+                  if (!r.ok) {
+                    setEsito({ ok: false, testo: r.errore ?? "Errore" });
+                    return;
+                  }
+                  onCambiato();
+                  onChiudi();
+                })()
+              }
+            >
+              Elimina
+            </button>
+          </Riga>
+        )}
+      </ul>
+
+      {esito && (
+        <p
+          role={esito.ok ? "status" : "alert"}
+          className={`mt-4 rounded-md px-3 py-2 text-sm ${
+            esito.ok
+              ? "bg-success-subtle text-success-text"
+              : "bg-danger-subtle text-danger-text"
+          }`}
+        >
+          {esito.testo}
+        </p>
+      )}
+    </Modale>
+  );
+}
+
+function Riga({
+  titolo,
+  testo,
+  children,
+}: {
+  titolo: string;
+  testo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-3 py-3">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-text-1">{titolo}</p>
+        <p className="text-xs text-text-3">{testo}</p>
+      </div>
+      {children}
+    </li>
   );
 }
 
 function FormUtente({
   utente,
+  master,
+  aziende,
+  contesto,
   onChiudi,
   onSalvato,
 }: {
   utente: Utente | null;
+  master: boolean;
+  aziende: Azienda[];
+  /** Фирмата, в която MASTER работи — по подразбиране за нов потребител. */
+  contesto: string | null;
   onChiudi: () => void;
   onSalvato: () => void;
 }) {
@@ -193,6 +553,7 @@ function FormUtente({
     nome: utente?.nome ?? "",
     cognome: utente?.cognome ?? "",
     ruolo: utente?.ruolo ?? "OPERATORE",
+    tenantId: (utente ? utente.tenantId : contesto) ?? "",
   });
   const [errore, setErrore] = useState<string | null>(null);
 
@@ -200,9 +561,15 @@ function FormUtente({
     e.preventDefault();
     setErrore(null);
     const url = utente ? `/api/utenti/${utente.id}` : "/api/utenti";
-    const corpo = utente
-      ? { nome: form.nome, cognome: form.cognome, ruolo: form.ruolo }
-      : form;
+    const comune = {
+      email: form.email,
+      nome: form.nome,
+      cognome: form.cognome,
+      ruolo: form.ruolo,
+      // Фирмата се праща само от MASTER — на ADMIN сървърът я налага сам.
+      ...(master ? { tenantId: form.tenantId || null } : {}),
+    };
+    const corpo = utente ? comune : { ...comune, password: form.password };
     const res = await fetch(url, {
       method: utente ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
@@ -223,20 +590,24 @@ function FormUtente({
       onChiudi={onChiudi}
     >
       <form onSubmit={salva}>
+        <label className="label" htmlFor="utente-email">
+          Email *
+        </label>
+        <input
+          id="utente-email"
+          type="email"
+          className="input mb-4"
+          required
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+        />
         {!utente && (
           <>
-            <label className="label">Email *</label>
-            <input
-              type="email"
-              className="input mb-4"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
-            <label className="label">
+            <label className="label" htmlFor="utente-password">
               Password iniziale (min. 10 caratteri) *
             </label>
             <input
+              id="utente-password"
               type="password"
               className="input mb-4"
               required
@@ -248,8 +619,11 @@ function FormUtente({
         )}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="label">Nome *</label>
+            <label className="label" htmlFor="utente-nome">
+              Nome *
+            </label>
             <input
+              id="utente-nome"
               className="input"
               required
               value={form.nome}
@@ -257,8 +631,11 @@ function FormUtente({
             />
           </div>
           <div>
-            <label className="label">Cognome *</label>
+            <label className="label" htmlFor="utente-cognome">
+              Cognome *
+            </label>
             <input
+              id="utente-cognome"
               className="input"
               required
               value={form.cognome}
@@ -266,8 +643,11 @@ function FormUtente({
             />
           </div>
         </div>
-        <label className="label mt-4">Livello di accesso</label>
+        <label className="label mt-4" htmlFor="utente-ruolo">
+          Livello di accesso
+        </label>
         <select
+          id="utente-ruolo"
           className="input mb-4"
           value={form.ruolo}
           onChange={(e) => setForm({ ...form, ruolo: e.target.value as Ruolo })}
@@ -278,6 +658,26 @@ function FormUtente({
             </option>
           ))}
         </select>
+        {master && (
+          <>
+            <label className="label" htmlFor="utente-azienda">
+              Azienda
+            </label>
+            <select
+              id="utente-azienda"
+              className="input mb-4"
+              value={form.tenantId}
+              onChange={(e) => setForm({ ...form, tenantId: e.target.value })}
+            >
+              <option value="">Nessuna (livello fornitore)</option>
+              {aziende.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.ragioneSociale}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
         {errore && (
           <p
             role="alert"
@@ -337,10 +737,11 @@ function FormPassword({
           Nessuno può leggere la password attuale: è possibile solo assegnarne
           una nuova. Le sessioni attive dell&apos;utente verranno chiuse.
         </p>
-        <label className="label">
+        <label className="label" htmlFor="nuova-password">
           Nuova password temporanea (min. 10 caratteri)
         </label>
         <input
+          id="nuova-password"
           type="password"
           className="input mb-4"
           required

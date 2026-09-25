@@ -7,6 +7,7 @@ import { randomBytes, createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { haPermesso, isRuolo, type Ruolo } from "@/lib/roles";
 import { accessoBloccatoSenzaMfa } from "@/lib/password-policy";
+import { CONTESTO_COOKIE, leggiValoreContesto } from "@/lib/contesto-firma";
 
 export const SESSION_COOKIE = "ea_session";
 export const REFRESH_COOKIE = "ea_refresh";
@@ -30,6 +31,9 @@ export interface Sessione {
    *  „прекрати всички сесии" и смяна на парола спират и access token-а — иначе
    *  той живееше до изтичането си (15 мин) след всяко от трите. */
   sid?: string;
+  /** MASTER работи в избрана фирма (`ea_azienda`): `tenantId` е нейният, а
+   *  собственият (обикновено `null`) стои тук. Липсва извън този режим. */
+  tenantIdProprio?: string | null;
 }
 
 export async function creaAccessToken(s: Sessione): Promise<string> {
@@ -106,6 +110,8 @@ export async function scriviCookieSessione(
 export async function cancellaCookieSessione(): Promise<void> {
   const jar = await cookies();
   jar.delete(SESSION_COOKIE);
+  // изборът на фирма на MASTER пада с изхода — и без това е вързан за сесията
+  jar.delete(CONTESTO_COOKIE);
   jar.set(REFRESH_COOKIE, "", { ...COOKIE_BASE, maxAge: 0, path: "/api/auth" });
 }
 
@@ -138,6 +144,18 @@ export async function richiedeSessione(): Promise<Sessione> {
     select: { id: true },
   });
   if (!viva) throw new ErroreHttp(401, "Sessione terminata");
+  // MASTER в избрана фирма: всичко надолу (филтри, RLS, одит, номерация) вижда
+  // нейния `tenantId`, без нито един маршрут да знае за режима. Бисквитката е
+  // подписана за ТОЗИ потребител и ТАЗИ сесия (`contesto-firma.ts`).
+  if (s.ruolo === "MASTER") {
+    const scelto = leggiValoreContesto(
+      process.env.SESSION_SECRET ?? "",
+      s.sub,
+      s.sid,
+      (await cookies()).get(CONTESTO_COOKIE)?.value,
+    );
+    if (scelto) return { ...s, tenantId: scelto, tenantIdProprio: s.tenantId };
+  }
   return s;
 }
 
@@ -152,6 +170,11 @@ export async function richiedeRuolo(minimo: Ruolo): Promise<Sessione> {
   });
   if (!u || !u.attivo) throw new ErroreHttp(401, "Utente non attivo");
   const ruolo = u.ruolo as Ruolo;
+  // Понижен MASTER губи режима веднага — ролята в токена още е старата.
+  if (s.tenantIdProprio !== undefined && ruolo !== "MASTER") {
+    s.tenantId = s.tenantIdProprio;
+    delete s.tenantIdProprio;
+  }
   // Задължителният втори фактор се НАЛАГА, не се препоръчва: без него
   // MASTER/ADMIN не стига до нито един маршрут с роля. Остават отворени само
   // тези със `richiedeSessione` — `/api/me`, `/api/auth/mfa`, сесиите, изходът —
@@ -163,8 +186,10 @@ export async function richiedeRuolo(minimo: Ruolo): Promise<Sessione> {
     );
   if (!haPermesso(ruolo, minimo))
     throw new ErroreHttp(403, "Permessi insufficienti");
-  // мулти-фирма: изтекъл абонамент → 402 (проверка при наличен tenant)
-  if (s.tenantId) {
+  // мулти-фирма: изтекъл абонамент → 402 (проверка при наличен tenant).
+  // Не и за MASTER: доставчикът трябва да влезе точно в спряната фирма —
+  // да поднови абонамента или да изнесе данните ѝ.
+  if (s.tenantId && ruolo !== "MASTER") {
     const t = await prisma.tenant.findUnique({ where: { id: s.tenantId } });
     if (!t || !t.attivo) throw new ErroreHttp(403, "Azienda disattivata");
     if (t.scadenzaAbbonamento && t.scadenzaAbbonamento < new Date())

@@ -9,6 +9,8 @@ import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import { RUOLI } from "@/lib/roles";
 import { filtroUtenti } from "@/lib/tenant";
+import { revocaTutte } from "@/lib/sessioni";
+import { mfaObbligatorio } from "@/lib/password-policy";
 
 const SELEZIONE_SICURA = {
   id: true,
@@ -19,16 +21,22 @@ const SELEZIONE_SICURA = {
   attivo: true,
   tentativi: true,
   bloccatoFino: true,
+  totpAttivo: true,
+  aiConsentita: true,
   ultimoAccesso: true,
   tenantId: true,
   createdAt: true,
 } as const;
 
 const schemaUpdate = z.object({
+  // Минуски — както при създаването: входът търси без оглед на регистъра.
+  email: z.string().trim().toLowerCase().email().max(200).optional(),
   nome: z.string().trim().min(1).max(100).optional(),
   cognome: z.string().trim().min(1).max(100).optional(),
   ruolo: z.enum(RUOLI).optional(),
   attivo: z.boolean().optional(),
+  /** ИИ асистентът за ТОЗИ акаунт (`politica.ts`, ключ 5). */
+  aiConsentita: z.boolean().optional(),
   tenantId: z.string().uuid().nullish(),
 });
 
@@ -71,6 +79,29 @@ export const PUT = gestito(async (req, ctx) => {
       403,
       "Impossibile assegnare l'utente a un'altra azienda",
     );
+  // Имейлът е входът: сменен на друг администратор, той е превземане на
+  // акаунта — затова, както паролата и вторият фактор, само от MASTER.
+  if (
+    data.email !== undefined &&
+    data.email !== prima.email &&
+    id !== s.sub &&
+    mfaObbligatorio(prima.ruolo) &&
+    s.ruolo !== "MASTER"
+  )
+    throw new ErroreHttp(
+      403,
+      "Solo il livello MASTER può intervenire sulla sicurezza di un amministratore",
+    );
+  // Собственият акаунт не се спира и не се понижава оттук: последният
+  // администратор на фирмата би се заключил навън без път обратно.
+  if (
+    id === s.sub &&
+    (data.attivo === false || (data.ruolo && data.ruolo !== prima.ruolo))
+  )
+    throw new ErroreHttp(
+      409,
+      "Impossibile disattivare o cambiare il livello del proprio account",
+    );
   const dopo = await prisma.user.update({
     where: { id },
     data: {
@@ -81,6 +112,9 @@ export const PUT = gestito(async (req, ctx) => {
     },
     select: SELEZIONE_SICURA,
   });
+  // Спрян акаунт → живите сесии падат (и refresh-ът с тях). Сменено ниво не
+  // иска това: ролята се чете от базата на всяка заявка.
+  if (data.attivo === false) await revocaTutte(id);
   await scriviAudit({
     azione: "UPDATE",
     entita: "users",

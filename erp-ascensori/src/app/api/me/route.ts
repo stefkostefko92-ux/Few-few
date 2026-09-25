@@ -16,6 +16,14 @@ export const GET = gestito(async () => {
     where: { id: s.sub },
     select: { ruolo: true, totpAttivo: true },
   });
+  // Фирмата, в която MASTER работи — за лентата отгоре на всяка страница.
+  const azienda =
+    s.tenantIdProprio !== undefined && s.tenantId
+      ? await prisma.tenant.findUnique({
+          where: { id: s.tenantId },
+          select: { id: true, ragioneSociale: true },
+        })
+      : null;
   const ruolo = u?.ruolo ?? s.ruolo;
   const totpAttivo = Boolean(u?.totpAttivo);
   return ok({
@@ -26,5 +34,6 @@ export const GET = gestito(async () => {
     mfaObbligatoria: mfaObbligatorio(ruolo),
     /** Дължи ли го СЕГА: интерфейсът води към „Sicurezza", докато е вярно. */
     mfaRichiesto: accessoBloccatoSenzaMfa(ruolo, totpAttivo),
+    aziendaContesto: azienda,
   });
 });

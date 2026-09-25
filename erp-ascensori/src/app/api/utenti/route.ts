@@ -20,6 +20,8 @@ const SELEZIONE_SICURA = {
   attivo: true,
   tentativi: true,
   bloccatoFino: true,
+  totpAttivo: true,
+  aiConsentita: true,
   ultimoAccesso: true,
   tenantId: true,
   createdAt: true,
@@ -72,9 +74,12 @@ export const POST = gestito(async (req) => {
     );
   // Само MASTER присвоява фирма свободно. ADMIN създава ЕДИНСТВЕНО в своята —
   // иначе си слага потребител в чужда фирма и оттам чете всичките ѝ данни.
+  // MASTER в избрана фирма създава в нея, освен ако не посочи друга изрично.
   const tenantId =
     s.ruolo === "MASTER"
-      ? (data.tenantId ?? undefined)
+      ? data.tenantId !== undefined
+        ? (data.tenantId ?? undefined)
+        : (s.tenantId ?? undefined)
       : (s.tenantId ?? undefined);
   if (
     s.ruolo !== "MASTER" &&

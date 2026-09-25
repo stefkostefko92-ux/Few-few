@@ -384,6 +384,9 @@ model User {
   /// стара стъпка се отказва: иначе подслушан или надникнат код върши работа
   /// още до 90 s (прозорецът ±1) — повторна употреба, не втори фактор.
   totpUltimoPasso    Int?
+  /// ИИ асистентът за ТОЗИ акаунт. Изключен тук — изключен, каквото и да казват
+  /// ролята и глобалната настройка (`src/lib/ai/politica.ts`).
+  aiConsentita       Boolean   @default(true)
   /// Резервни кодове (bcrypt хешове). Без тях загубен телефон = загубен акаунт,
   /// а единственият изход би бил администраторска вратичка около мярката.
   codiciRecupero     String[]  @default([])
@@ -443,6 +446,28 @@ model SessioneAttiva {
 /// може да се пренапише към по-ранен ред. Обновява се в СЪЩАТА транзакция и под
 /// същата ключалка като вписването; сменя я само прочистването по срок, и то
 /// само за редове, изтрити от самото него.
+/// Управлението на ИИ асистента за ЦЯЛАТА инсталация. Един ред (id = 1).
+///
+/// Доставчикът и ключът са в средата на сървъра (`AI_PROVIDER`, `AI_API_KEY`) —
+/// тайните не влизат в базата. Тук е РЕШЕНИЕТО кой го ползва: MASTER го сменя
+/// от „Amministrazione", без рестарт. Редът липсва → подразбирането в
+/// `politica.ts` (всичко включено за вътрешните роли, нищо за CLIENTE).
+model ConfigurazioneAi {
+  id           Int        @id @default(1)
+  /// Глобалният ключ. Изключен → никой, никъде.
+  attiva       Boolean    @default(true)
+  /// „Compila da un documento" — документ към доставчика.
+  estraiAttiva Boolean    @default(true)
+  /// „Scrivi con l'AI" — бележка към доставчика.
+  testoAttiva  Boolean    @default(true)
+  /// Кои нива на достъп го ползват.
+  ruoliAmmessi UserRole[] @default([MASTER, ADMIN, DIREZIONE, RESPONSABILE, TECNICO, OPERATORE])
+  aggiornataDa String?    @db.Uuid
+  aggiornataAt DateTime   @updatedAt
+
+  @@map("configurazione_ai")
+}
+
 model AuditAncora {
   /// `tenantId` или "" за еднофирмената инсталация (NULL не е ключ).
   chiave       String   @id

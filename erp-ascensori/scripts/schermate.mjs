@@ -74,6 +74,7 @@ const PAGINE = [
   ["28-privacy", "/privacy"],
   ["29-aziende", "/aziende"],
   ["30-sicurezza", "/sicurezza"],
+  ["31-amministrazione", "/amministrazione"],
 ];
 
 let server;
@@ -241,6 +242,8 @@ async function main() {
     ["m7-fattura-dettaglio", null, { primo: "/fatture" }],
     ["m8-magazzino", "/magazzino"],
     ["m9-sicurezza", "/sicurezza"],
+    ["m10-amministrazione", "/amministrazione"],
+    ["m11-utenti", "/utenti"],
   ])
     await scatta(tel, nome, percorso, opzioni);
   await mobile.close();
@@ -274,6 +277,8 @@ async function main() {
     ["d06-ddt-dettaglio", null, { primo: "/ddt" }],
     ["d07-impostazioni", "/impostazioni"],
     ["d08-integrazioni", "/integrazioni"],
+    ["d09-amministrazione", "/amministrazione"],
+    ["d10-utenti", "/utenti"],
   ])
     await scatta(buio, nome, percorso, opzioni);
   await scuro.close();

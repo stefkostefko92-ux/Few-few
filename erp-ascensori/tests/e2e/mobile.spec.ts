@@ -1,6 +1,6 @@
 // Потокът на ТЕХНИКА — от телефон, както го прави в машинното помещение.
 
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { entra, UTENTI } from "./_aiuto";
 
 test("QR стикерът отваря точно този импиант след вход", async ({ page }) => {
@@ -54,6 +54,33 @@ const DETTAGLI_TELEFONO = [
   "/ddt",
 ];
 
+const prelivato = (page: Page) =>
+  page.evaluate(() => {
+    const d = document.documentElement;
+    const m = document.querySelector("main");
+    const largo = [...document.querySelectorAll<HTMLElement>("main *")]
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.right <= d.clientWidth + 1) return false;
+        // Вътре в собствен скрол (таблица) е позволено.
+        for (let p = el.parentElement; p && p !== m; p = p.parentElement) {
+          const ox = getComputedStyle(p).overflowX;
+          if (ox === "auto" || ox === "scroll") return false;
+        }
+        return true;
+      })
+      .slice(0, 3)
+      .map(
+        (el) =>
+          `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 3).join(".")}`,
+      );
+    return {
+      documento: d.scrollWidth > d.clientWidth + 1,
+      main: m ? m.scrollWidth > m.clientWidth + 1 : false,
+      largo,
+    };
+  });
+
 test("нито една страница не се разлива хоризонтално на телефон", async ({
   page,
 }) => {
@@ -63,39 +90,12 @@ test("нито една страница не се разлива хоризон
   // `main` е `overflow-y-auto`, тоест прелялото съдържание скролва ВЪТРЕ в него
   // и документът изглежда чист. Таблиците имат своя обвивка със скрол — те не
   // разпъват `main` и не падат тук.
-  const prelivato = () =>
-    page.evaluate(() => {
-      const d = document.documentElement;
-      const m = document.querySelector("main");
-      const largo = [...document.querySelectorAll<HTMLElement>("main *")]
-        .filter((el) => {
-          const r = el.getBoundingClientRect();
-          if (r.width === 0 || r.right <= d.clientWidth + 1) return false;
-          // Вътре в собствен скрол (таблица) е позволено.
-          for (let p = el.parentElement; p && p !== m; p = p.parentElement) {
-            const ox = getComputedStyle(p).overflowX;
-            if (ox === "auto" || ox === "scroll") return false;
-          }
-          return true;
-        })
-        .slice(0, 3)
-        .map(
-          (el) =>
-            `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 3).join(".")}`,
-        );
-      return {
-        documento: d.scrollWidth > d.clientWidth + 1,
-        main: m ? m.scrollWidth > m.clientWidth + 1 : false,
-        largo,
-      };
-    });
-
   const visitate: string[] = [];
   for (const percorso of PAGINE_TELEFONO) {
     await page.goto(percorso);
     await page.waitForLoadState("networkidle");
     visitate.push(percorso);
-    expect(await prelivato(), percorso).toEqual({
+    expect(await prelivato(page), percorso).toEqual({
       documento: false,
       main: false,
       largo: [],
@@ -108,13 +108,41 @@ test("нито една страница не се разлива хоризон
     if ((await link.count()) === 0) continue;
     await link.click();
     await page.waitForLoadState("networkidle");
-    expect(await prelivato(), `${lista}/<id>`).toEqual({
+    expect(await prelivato(page), `${lista}/<id>`).toEqual({
       documento: false,
       main: false,
       largo: [],
     });
   }
   expect(visitate.length).toBe(PAGINE_TELEFONO.length);
+});
+
+// Административните страници — отделно, с MASTER: той вижда всички секции
+// (ИИ, фирмата, автоматизмите), тоест най-широкото съдържание.
+const PAGINE_AMMINISTRAZIONE = [
+  "/amministrazione",
+  "/utenti",
+  "/audit",
+  "/integrazioni",
+  "/impostazioni",
+  "/privacy",
+  "/aziende",
+  "/sicurezza",
+];
+
+test("административните страници не се разливат на телефон", async ({
+  page,
+}) => {
+  await entra(page, UTENTI.MASTER);
+  for (const percorso of PAGINE_AMMINISTRAZIONE) {
+    await page.goto(percorso);
+    await page.waitForLoadState("networkidle");
+    expect(await prelivato(page), percorso).toEqual({
+      documento: false,
+      main: false,
+      largo: [],
+    });
+  }
 });
 
 // ТЕСТЪТ ГОРЕ СИ МИНАВАШЕ ПРИ СЧУПЕН ТЕЛЕФОНЕН ИЗГЛЕД. Менюто стоеше постоянно

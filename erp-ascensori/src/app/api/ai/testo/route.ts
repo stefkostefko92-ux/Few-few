@@ -21,6 +21,8 @@ import { ok, gestito, errore } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import { configAi } from "@/lib/ai/config";
+import { verificaAi } from "@/lib/ai/politica-db";
+import { statoHttpAi } from "@/lib/ai/politica";
 import { chiedi, ErroreAi } from "@/lib/ai/fornitore";
 import {
   COMPITI_TESTO,
@@ -44,10 +46,14 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export const GET = gestito(async () => {
-  await richiedeRuolo("OPERATORE");
+  const s = await richiedeRuolo("OPERATORE");
   const c = configAi();
+  // Бутонът се показва само ако ТОЗИ човек може да го ползва сега: доставчик,
+  // глобално, функция, роля, акаунт (`politica.ts`).
+  const esito = await verificaAi(s, "testo");
   return ok({
-    attiva: c.effettivo !== "off",
+    attiva: esito.consentita,
+    motivo: esito.motivo ?? null,
     fornitore: c.etichettaFornitore,
     compiti: Object.fromEntries(
       Object.entries(COMPITI_TESTO).map(([k, v]) => [
@@ -86,11 +92,12 @@ export const POST = gestito(async (req) => {
       `Appunti troppo lunghi: massimo ${MAX_INGRESSO} caratteri.`,
     );
 
+  const politica = await verificaAi(s, "testo");
   const c = configAi();
-  if (c.effettivo === "off")
+  if (!politica.consentita)
     return errore(
-      503,
-      "Assistente AI non configurato. Va abilitato dall'amministratore di sistema (variabili AI_PROVIDER e AI_API_KEY).",
+      statoHttpAi(politica),
+      politica.messaggio ?? "AI non disponibile",
     );
 
   if (!consenti(`ai:${s.sub}`, LIMITE_ORARIO, 60 * 60_000))

@@ -49,6 +49,7 @@ import {
   CalendarBlank,
   List,
   X,
+  SlidersHorizontal,
 } from "@phosphor-icons/react";
 import { DIM } from "@/components/icone";
 import { haPermesso, type Ruolo, RUOLO_LABEL, isRuolo } from "@/lib/roles";
@@ -209,6 +210,12 @@ const GRUPPI: Gruppo[] = [
   {
     label: "Sistema",
     voci: [
+      {
+        href: "/amministrazione",
+        label: "Amministrazione",
+        icona: <SlidersHorizontal size={DIM.navigazione} />,
+        minimo: "ADMIN",
+      },
       {
         href: "/utenti",
         label: "Utenti",
