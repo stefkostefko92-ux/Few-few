@@ -1,0 +1,17 @@
+<!doctype html>
+<!--
+  Офлайн харнес за изпичане на 3D икони (scripts/bake-item-icons.mjs).
+  Само `npx vite dev` го обслужва — НЕ е част от production build-а (client/vite.config.ts
+  не го изброява в rollupOptions.input), нула тежест за реалния сайт.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>bake</title>
+    <style>html,body{margin:0;background:transparent;overflow:hidden}#c{display:block}</style>
+  </head>
+  <body>
+    <canvas id="c" width="512" height="512"></canvas>
+    <script type="module" src="/src/dev/bake-entry.ts"></script>
+  </body>
+</html>

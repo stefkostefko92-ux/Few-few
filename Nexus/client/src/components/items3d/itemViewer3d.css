@@ -1,0 +1,65 @@
+.item3d-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(6, 4, 2, 0.78);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+/* Затворено = скрито, не размонтирано (виж ItemViewer3DHost.tsx — canvas-ът вътре пази
+   единствения GPU контекст на прегледа за целия живот на приложението). */
+.item3d-overlay.item3d-hidden { display: none; }
+
+.item3d-dialog {
+  position: relative;
+  width: min(560px, 96vw);
+  max-height: 92vh;
+  background: linear-gradient(180deg, rgba(24, 16, 8, 0.97), rgba(10, 6, 3, 0.98));
+  border: 1px solid var(--border-1, #5a4322);
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.item3d-close {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 18px; line-height: 1; cursor: pointer;
+}
+.item3d-close:focus-visible { outline: 2px solid #ffd34d; outline-offset: 2px; }
+
+.item3d-canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(circle at 50% 40%, rgba(60, 44, 20, 0.4), rgba(0, 0, 0, 0.85));
+  touch-action: none;
+}
+.item3d-canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+.item3d-canvas:active { cursor: grabbing; }
+
+.item3d-status {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #cfae6a; font-size: 13px; pointer-events: none;
+}
+
+.item3d-info { padding: 12px 16px 16px; }
+.item3d-name { font-family: var(--font-display, serif); font-size: 16px; color: var(--gold-1, #ffd34d); }
+.item3d-meta { display: flex; gap: 10px; font-size: 12px; color: #b8a888; margin-top: 4px; }
+.item3d-hint { font-size: 11px; color: #786a52; margin-top: 8px; }
+
+.item3d-rarity.rarity-common { color: #c7c8d6; }
+.item3d-rarity.rarity-uncommon { color: #6ad8a4; }
+.item3d-rarity.rarity-rare { color: #6aa7ff; }
+.item3d-rarity.rarity-epic { color: #c294ff; }
+.item3d-rarity.rarity-legendary { color: #ffd34d; }
+
+.set3d-dialog { width: min(680px, 96vw); }
+.set3d-pieces { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.set3d-piece-btn {
+  font-size: 11px; padding: 5px 9px; border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-1, #5a4322);
+  color: #cbb98a; cursor: pointer;
+}
+.set3d-piece-btn.active { background: rgba(255, 211, 77, 0.18); color: #ffd34d; border-color: #ffd34d; }
+.set3d-piece-btn:focus-visible { outline: 2px solid #ffd34d; outline-offset: 1px; }

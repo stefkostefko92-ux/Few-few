@@ -126,7 +126,8 @@
     "account": "Account",
     "help": "Come si gioca",
     "settings": "Impostazioni",
-    "vitals": "Parametri vitali"
+    "vitals": "Parametri vitali",
+    "sets": "Set"
   },
   "onboarding": {
     "step1Title": "Benvenuto, eroe",
@@ -989,7 +990,8 @@
       "equip": "Equipaggia",
       "list": "Metti in vendita sul mercato",
       "sell": "Vendi al mercante ({{price}}g)",
-      "cancel": "Annulla"
+      "cancel": "Annulla",
+      "view3d": "Anteprima 3D"
     },
     "toasts": {
       "unequipped": "Rimosso",
@@ -1542,5 +1544,29 @@
     "line4": "C’è una torre alla fine della strada. Scalala, e il reame imparerà il tuo nome.",
     "line5": "Benvenuto a Nexus.",
     "skipAria": "Salta l’introduzione"
+  },
+  "items3d": {
+    "viewerLabel": "Anteprima 3D di {{name}}",
+    "close": "Chiudi",
+    "loading": "Caricamento…",
+    "unavailable": "Anteprima 3D non disponibile",
+    "tier": "Livello {{tier}}",
+    "dragHint": "Trascina per ruotare · rotella per zoomare",
+    "rarity": {
+      "common": "Comune",
+      "uncommon": "Non comune",
+      "rare": "Raro",
+      "epic": "Epico",
+      "legendary": "Leggendario"
+    },
+    "setViewerLabel": "Vetrina 3D di {{name}}",
+    "setViewer": {
+      "all": "Set completo"
+    }
+  },
+  "sets": {
+    "title": "Set di equipaggiamento",
+    "subtitle": "Bonus set completi — 2/4/6 pezzi indossati insieme. Apri una vetrina 3D per ogni set.",
+    "showcase": "Vetrina 3D"
   }
 }

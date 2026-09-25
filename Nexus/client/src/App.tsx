@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Toasts from './components/Toasts';
 import CookieBanner from './components/CookieBanner';
+import ItemViewer3DHost from './components/items3d/ItemViewer3DHost';
 
 // Eager: routes a first-time visitor (or someone deep-linking the
 // auth flow) hits before they ever reach the in-app shell. Keeping
@@ -50,6 +51,7 @@ const Premium = React.lazy(() => import('./pages/Premium'));
 const Market = React.lazy(() => import('./pages/Market'));
 const Camp = React.lazy(() => import('./pages/Camp'));
 const Forge = React.lazy(() => import('./pages/Forge'));
+const Sets = React.lazy(() => import('./pages/Sets'));
 const Tower = React.lazy(() => import('./pages/Tower'));
 const Bounties = React.lazy(() => import('./pages/Bounties'));
 const TrialCache = React.lazy(() => import('./pages/TrialCache'));
@@ -214,6 +216,7 @@ export default function App(): React.ReactElement {
       <Bootstrapper>
         <CookieBanner />
         <BanScreen />
+        <ItemViewer3DHost />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
@@ -263,6 +266,7 @@ export default function App(): React.ReactElement {
             <Route path="market" element={<Market />} />
             <Route path="camp" element={<Camp />} />
             <Route path="forge" element={<Forge />} />
+            <Route path="sets" element={<Sets />} />
             <Route path="tower" element={<Tower />} />
             <Route path="bounties" element={<Bounties />} />
             <Route path="trial-cache" element={<TrialCache />} />

@@ -1,4 +1,6 @@
 import React from 'react';
+import { hasBakedIcon } from './items3d/catalogClient';
+import { openItemViewer3D } from './items3d/viewerStore';
 
 /**
  * Renders a CC-BY-3.0 SVG sprite from /public/sprites/ as a CSS mask.
@@ -65,6 +67,15 @@ const ENCHANT_STYLE: Record<number, { color: string; shadow: string }> = {
   5: { color: 'rgba(255,232,138,1)',   shadow: '0 0 22px rgba(255,232,138,1), 0 0 40px rgba(255,177,89,.6)' }, // mythic
 };
 
+export interface Sprite3DRaw {
+  slug: string;
+  name: string;
+  category: string;
+  sub_type?: string;
+  tier: number;
+  rarity: string;
+}
+
 interface Props {
   name?: string;
   category?: string;
@@ -76,6 +87,9 @@ interface Props {
   size?: number;
   title?: string;
   className?: string;
+  /** Суровият предмет (slug + метаданни) — включва изпечена 3D икона, ако има такава, и прави
+   *  плочката кликаема за жив 3D преглед (виж items3d/ItemViewer3DHost.tsx). */
+  raw?: Sprite3DRaw;
 }
 
 /** Resolve a base slug (without -tN suffix) into a tier-aware slug, falling
@@ -118,7 +132,7 @@ const RARITY_FRAME: Record<Rarity, { border: string; glow: string }> = {
 };
 
 export default function Sprite({
-  name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className,
+  name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className, raw,
 }: Props): React.ReactElement {
   const slug = resolveSlug(name, category, subType, tier);
   const e = enchant > 0 ? ENCHANT_STYLE[Math.min(5, enchant)] : null;
@@ -130,6 +144,15 @@ export default function Sprite({
     tone && TONE_GRADIENT[tone] ? TONE_GRADIENT[tone] :
     category && TONE_GRADIENT[category] ? TONE_GRADIENT[category] :
     TONE_GRADIENT.weapon;
+
+  // Изпечена 3D икона (viждай задачата „нарисувай предметите в 3D") взима предимство пред
+  // старата HD снимка, когато manifest-ът потвърди наличие по slug.
+  const baked3d = raw?.slug && hasBakedIcon(raw.slug) ? `/assets/items3d/${raw.slug}.webp` : null;
+  const clickable = Boolean(raw?.slug && raw.category !== 'potion');
+  const openViewer = () => {
+    if (!raw) return;
+    openItemViewer3D({ kind: 'item', slug: raw.slug, name: raw.name, category: raw.category, sub_type: raw.sub_type, tier: raw.tier, rarity: raw.rarity });
+  };
 
   return (
     <span
@@ -144,9 +167,14 @@ export default function Sprite({
           `0 0 ${Math.max(6, size * 0.25)}px ${frame.glow}, ` +
           (e ? e.shadow : '0 2px 4px rgba(0,0,0,.45)'),
         background: 'linear-gradient(180deg, rgba(20,12,4,.55), rgba(8,4,2,.85))',
+        cursor: clickable ? 'zoom-in' : undefined,
       }}
       title={title}
       aria-label={title}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={clickable ? openViewer : undefined}
+      onKeyDown={clickable ? (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openViewer(); } } : undefined}
     >
       {e && (
         <span
@@ -158,26 +186,37 @@ export default function Sprite({
           }}
         />
       )}
+      {/* Изпечена 3D икона — виж bake-item-icons.mjs; приоритетна пред снимката. */}
+      {baked3d && (
+        <img
+          src={baked3d}
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 1 }}
+          loading="lazy"
+        />
+      )}
       {/* HD photo of the actual item / class / monster. If the photo is
           not present we fall through to the SVG silhouette so the icon
           system degrades gracefully. */}
-      <img
-        src={`/assets/icons/${slug}.jpg`}
-        alt=""
-        style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover', objectPosition: 'center',
-          filter: 'saturate(.95) contrast(1.06)',
-          zIndex: 1,
-        }}
-        onError={(ev) => {
-          const img = ev.currentTarget as HTMLImageElement;
-          img.style.display = 'none';
-          const fb = img.nextElementSibling as HTMLElement | null;
-          if (fb) fb.style.display = 'block';
-        }}
-        loading="lazy"
-      />
+      {!baked3d && (
+        <img
+          src={`/assets/icons/${slug}.jpg`}
+          alt=""
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            objectFit: 'cover', objectPosition: 'center',
+            filter: 'saturate(.95) contrast(1.06)',
+            zIndex: 1,
+          }}
+          onError={(ev) => {
+            const img = ev.currentTarget as HTMLImageElement;
+            img.style.display = 'none';
+            const fb = img.nextElementSibling as HTMLElement | null;
+            if (fb) fb.style.display = 'block';
+          }}
+          loading="lazy"
+        />
+      )}
       <span
         className="sprite-shape"
         style={{
@@ -194,15 +233,19 @@ export default function Sprite({
   );
 }
 
-/** Pick sprite props for an item record. */
+/** Pick sprite props for an item record. Includes `raw` when the item carries a `slug` — this
+ *  is what unlocks the baked 3D icon + the click-to-open live 3D preview (see Sprite props). */
 export function spriteForItem(
-  item: { icon?: string; category?: string; sub_type?: string; tier?: number; rarity?: string }
-): { name?: string; category?: string; subType?: string; tier?: number; rarity?: Rarity } {
+  item: { slug?: string; name?: string; icon?: string; category?: string; sub_type?: string; tier?: number; rarity?: string }
+): { name?: string; category?: string; subType?: string; tier?: number; rarity?: Rarity; raw?: Sprite3DRaw } {
   return {
     name: item.icon && item.icon.startsWith('potion_') ? `potion-${item.icon.slice(7)}` : undefined,
     category: item.category,
     subType: item.sub_type,
     tier: item.tier,
     rarity: (item.rarity as Rarity) || 'common',
+    raw: item.slug && item.category
+      ? { slug: item.slug, name: item.name || item.slug, category: item.category, sub_type: item.sub_type, tier: item.tier || 1, rarity: item.rarity || 'common' }
+      : undefined,
   };
 }

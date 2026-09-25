@@ -126,7 +126,8 @@
     "account": "Account",
     "help": "How to Play",
     "settings": "Settings",
-    "vitals": "Vitals"
+    "vitals": "Vitals",
+    "sets": "Sets"
   },
   "onboarding": {
     "step1Title": "Welcome, Hero",
@@ -989,7 +990,8 @@
       "equip": "Equip",
       "list": "List on Marketplace",
       "sell": "Sell to Merchant ({{price}}g)",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "view3d": "3D preview"
     },
     "toasts": {
       "unequipped": "Unequipped",
@@ -1542,5 +1544,29 @@
     "line4": "There is a tower at the end of the road. Climb it, and the realm learns your name.",
     "line5": "Welcome to Nexus.",
     "skipAria": "Skip intro narration"
+  },
+  "items3d": {
+    "viewerLabel": "3D preview of {{name}}",
+    "close": "Close",
+    "loading": "Loading…",
+    "unavailable": "3D preview unavailable",
+    "tier": "Tier {{tier}}",
+    "dragHint": "Drag to rotate · scroll to zoom",
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    },
+    "setViewerLabel": "3D showcase of {{name}}",
+    "setViewer": {
+      "all": "Whole set"
+    }
+  },
+  "sets": {
+    "title": "Equipment Sets",
+    "subtitle": "Full bonus sets — 2/4/6 pieces equipped together. Open a 3D showcase for any set.",
+    "showcase": "3D showcase"
   }
 }
