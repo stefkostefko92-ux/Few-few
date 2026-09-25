@@ -3,7 +3,7 @@
 // body.js/face.js/accessories.js — this module only places and moves what they build.
 import * as THREE from 'three';
 import { createMaterials, jellyMotion } from './materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, coreGlowTexture } from './textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, coreGlowTexture, irisTextures } from './textures.js';
 import { buildBody, GROUND_Y } from './body.js';
 import { buildFace } from './face.js';
 import { buildHat, buildBow, BOW_Y, BOW_Z } from './accessories.js';
@@ -87,8 +87,11 @@ function softStudioEnvironment(renderer, p) {
   panel(-4, 5, 3, Math.PI * 0.15, 6, 6, 0xfff3d8, 0.7); // key, warm, upper-left
   panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 0xdfeee0, 0.3); // fill, frontal
   panel(0, -1.5, -5, Math.PI, 6, 4, new THREE.Color(p.neon), 0.5); // rim/contra, tinted to the accent
+  // A higher blur sigma than the three.js default keeps this a soft studio glow instead of a sharp
+  // mirror of the three flat panels — a crisp panel edge reflected in the lens/iris/jelly reads as
+  // a stray dark diamond floating in the eye, not a photographed softbox.
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const env = pmrem.fromScene(envScene, 0.03).texture;
+  const env = pmrem.fromScene(envScene, 0.35).texture;
   sky.geometry.dispose();
   sky.material.dispose();
   return env;
@@ -106,6 +109,7 @@ export function buildScene(renderer, palette = PALETTE) {
     felt: feltTextures(),
     radial: radialTextures(),
     core: coreGlowTexture(),
+    iris: irisTextures(),
   };
   const materials = createMaterials(textures, p);
 
@@ -130,6 +134,14 @@ export function buildScene(renderer, palette = PALETTE) {
   glow.rotation.x = -Math.PI / 2;
   glow.position.y = GROUND_Y + 0.002;
   scene.add(glow);
+
+  // The pool of light the transmissive jelly itself throws on the floor (brief: "каустики/цветен
+  // отблясък на пода от пречупената светлина") — drifts on the shared jellyMotion clock, so it
+  // never reads as a static decal.
+  const caustic = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 2.0), materials.caustic);
+  caustic.rotation.x = -Math.PI / 2;
+  caustic.position.y = GROUND_Y + 0.004;
+  scene.add(caustic);
 
   // Three small twinkle accents in the scene air, as in the flat brief's sparkle marks — not on
   // the body itself, so they read as studio dust/glints rather than a light source on the jelly.

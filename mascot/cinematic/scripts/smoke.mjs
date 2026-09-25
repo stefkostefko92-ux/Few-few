@@ -30,6 +30,10 @@ const browser = await chromium.launch({ executablePath, args: ['--use-angle=swif
 const problems = [];
 try {
   const page = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  // Software (swiftshader) rendering of the 'ultra' tier's full post pipeline is far slower per
+  // frame than any real GPU — Playwright's 30s default action timeout is tuned for that reality,
+  // not for a screenshot capture that has to wait behind dozens of unaccelerated fragment passes.
+  page.setDefaultTimeout(90000);
   page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
   page.on('console', (m) => {
     if (m.type() === 'error' && !m.text().includes('ERR_FAILED')) problems.push(`console error: ${m.text()}`);

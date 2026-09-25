@@ -80,9 +80,12 @@ export function buildBody(materials, textures) {
   fabric.position.set(0, -0.02, 0.02);
   group.add(fabric);
 
+  // Sits deep enough (well behind the front surface, in -z) and dim enough to read as an ambient
+  // inner glow filtering through the jelly — pushed forward and too bright it instead punched
+  // through the translucent front as a hard, "burnt" green dot, worst right under the bow tie.
   const core = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 16), materials.coreGlow);
-  core.scale.set(0.85, 1.05, 0.68);
-  core.position.set(0, -0.3, -0.02);
+  core.scale.set(0.8, 1.0, 0.6);
+  core.position.set(0, -0.22, -0.22);
   group.add(core);
 
   const bubbleGeo = new THREE.SphereGeometry(1, 10, 8);

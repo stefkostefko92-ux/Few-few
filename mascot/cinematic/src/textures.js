@@ -79,6 +79,34 @@ export function feltTextures(size = 192) {
   };
 }
 
+// Radial iris fiber pattern: fine spokes from the pupil to the limbus plus a soft dark ring at the
+// rim, so the eye reads as a real iris under a close-up instead of a flat painted disc — the
+// catchlights themselves stay separate sparkle meshes (face.js), this only supplies the fiber detail.
+export function irisTextures(size = 128) {
+  const n = size * size;
+  const H = new Float32Array(n);
+  const R = new Float32Array(n);
+  const nz = new Noise2(71);
+  const cx = size / 2;
+  const cy = size / 2;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const i = y * size + x;
+      const dx = (x - cx) / (size / 2);
+      const dy = (y - cy) / (size / 2);
+      const r = Math.min(1, Math.hypot(dx, dy));
+      const a = Math.atan2(dy, dx);
+      const spokes = Math.sin(a * 24 + nz.fbm(r * 4, a, 8, 2) * 3) * 0.5 + 0.5;
+      H[i] = spokes * (0.15 + r * 0.35) + nz.fbm(dx * 6 + 8, dy * 6 + 8, 12, 3) * 0.12;
+      R[i] = 0.28 + 0.22 * spokes - 0.12 * smooth(0.72, 1, r); // glossy limbus ring
+    }
+  }
+  return {
+    normalMap: dataTexture(heightToNormal(H, size, size, 1.6), size, size, false),
+    roughnessMap: dataTexture(grayToRGBA(R), size, size, false),
+  };
+}
+
 // Soft radial falloff, used for the floor contact glow and the fake AO disc under the mascot.
 export function radialTextures(size = 128) {
   const n = size * size;

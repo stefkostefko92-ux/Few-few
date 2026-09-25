@@ -4,16 +4,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { createMaterials } from '../src/materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, coreGlowTexture } from '../src/textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, coreGlowTexture, irisTextures } from '../src/textures.js';
 import { bodyRadiusAtY, TOP_OF_HEAD_Y } from '../src/profile.js';
 import { buildBody, GROUND_Y } from '../src/body.js';
-import { buildFace, layout, EYE_Y } from '../src/face.js';
-import { buildHat, HAT_BOTTOM_Y } from '../src/accessories.js';
+import { buildFace, layout, EYE_Y, BROW_Y } from '../src/face.js';
+import { buildHat, HAT_BOTTOM_Y, WING_W, WING_DEPTH } from '../src/accessories.js';
 
 const palette = { neon: '#5AB60D', olive: '#99E72A', pale: '#C8DDA6', softOlive: '#848D68', ink: '#0A0C0A', inkSoft: '#2A2E24', eye: '#F4FAEA', gold: '#D9A521' };
 
 function materials() {
-  const T = { carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), core: coreGlowTexture(16) };
+  const T = { carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), core: coreGlowTexture(16), iris: irisTextures(32) };
   return createMaterials(T, palette);
 }
 
@@ -56,6 +56,21 @@ test('defect #6: the hat band seats flush against the head — no visible gap to
   const band = hat.getObjectByName('hatBand');
   const box = new THREE.Box3().setFromObject(band);
   assert.ok(box.min.y <= TOP_OF_HEAD_Y + 0.01, 'hat band must not float above the crown');
+});
+
+test('brows hug the forehead surface — they do not float above the silhouette like a wire loop', () => {
+  // The regression this guards: a TorusGeometry semicircle held one fixed z-depth across a curve
+  // that keeps receding as y rises, so the arc stood proud of the head, reading as an antenna
+  // rather than a mark on the skin. The fix samples the actual body radius AT the brow's own
+  // height and clears it by only a hair, exactly like the mouth already does at its own height.
+  const z0 = bodyRadiusAtY(BROW_Y) * 1.012;
+  assert.ok(z0 > bodyRadiusAtY(BROW_Y), 'brow must clear the body surface it sits on');
+  assert.ok(z0 < bodyRadiusAtY(BROW_Y) * 1.05, 'brow must hug the surface, not float far in front of it');
+  assert.ok(BROW_Y > EYE_Y + 0.3, 'brow must clear the top of the glasses rim (EYE_Y + RING_R + TUBE_R)');
+});
+
+test('defect: the bow tie wings are pillowed satin, not a flat wafer plate', () => {
+  assert.ok(WING_DEPTH / WING_W >= 0.15, `wing thickness (${WING_DEPTH}) must be at least 15% of its width (${WING_W})`);
 });
 
 test('defect #5: every foot rests exactly on the ground plane', () => {

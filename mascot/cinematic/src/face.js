@@ -73,6 +73,22 @@ function eye(sign, materials) {
   return g;
 }
 
+// A soft, low-opacity cast shadow along the top of the sclera — what an upper eyelid actually
+// leaves behind on a rounded eyeball even fully open — separate from the animated `eyelid` mesh
+// below (that one is the blink itself; this one never moves).
+function lidShadow(sign, materials) {
+  const L = layout();
+  const mat = materials.inkPaint.clone();
+  mat.transparent = true;
+  mat.opacity = 0.32;
+  mat.depthWrite = false;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(SCLERA_R * 0.9, 0.024, 8, 20, Math.PI * 0.6), mat);
+  ring.rotation.z = Math.PI * 0.2; // centers the arc at the top of the circle
+  ring.scale.set(1, 0.62, 0.4); // pressed flat against the eyeball's curve
+  ring.position.set(sign * EYE_X, EYE_Y + 0.008, L.scleraZ + 0.03);
+  return ring;
+}
+
 function eyelid(sign, materials) {
   const L = layout();
   const lid = new THREE.Mesh(new THREE.SphereGeometry(SCLERA_R * 1.08, 16, 12), materials.jelly);
@@ -82,13 +98,27 @@ function eyelid(sign, materials) {
   return lid;
 }
 
-// Thicker brows, sitting above the rim of the glasses — a thin arc read as a hairline, not an
-// expression.
+// Bold, expressive brows — a shallow painted band that HUGS the forehead's own curve (built the
+// same way as the mouth: a flat local arc, then dropped onto the body's actual surface z at that
+// height) sitting just above the glasses rim. A TorusGeometry semicircle stood proud of the head
+// entirely — same z-depth for every point on a curve that keeps receding — so from any angle off
+// dead-on it read as a wire loop floating over the scalp like an antenna, not a mark on the skin.
+export const BROW_Y = EYE_Y + 0.315; // clears the glasses rim (EYE_Y + RING_R + TUBE_R ≈ EYE_Y + 0.30)
 function brow(sign, materials) {
-  const L = layout();
-  const b = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.02, 8, 16, Math.PI), materials.iris);
-  b.position.set(sign * EYE_X, EYE_Y + 0.4, L.bodyR * 1.03);
-  b.rotation.set(0, 0, 0.24 * -sign);
+  const z0 = bodyRadiusAtY(BROW_Y) * 1.012; // hugs the surface, like the mouth does at its own height
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-0.1, -0.004, 0),
+    new THREE.Vector3(-0.045, 0.02, 0.003),
+    new THREE.Vector3(0, 0.026, 0.004),
+    new THREE.Vector3(0.045, 0.016, 0.002),
+    new THREE.Vector3(0.1, -0.012, 0),
+  ]);
+  const geo = new THREE.TubeGeometry(curve, 20, 0.03, 10, false);
+  const b = new THREE.Mesh(geo, materials.acetate);
+  b.scale.set(1, 0.58, 1); // flattens the round tube into a painted band with soft rounded caps
+  b.position.set(sign * EYE_X, BROW_Y, z0);
+  b.rotation.y = -sign * 0.16; // slight inward cant toward the nose bridge, like a lifted brow
+  b.castShadow = true;
   return b;
 }
 
@@ -97,6 +127,7 @@ export function buildFace(materials) {
   for (const sign of [-1, 1]) {
     group.add(glassesRing(sign, materials));
     group.add(eye(sign, materials));
+    group.add(lidShadow(sign, materials));
     group.add(eyelid(sign, materials));
     group.add(brow(sign, materials));
   }
@@ -116,7 +147,7 @@ export function buildFace(materials) {
     new THREE.Vector3(0.08, -0.014, 0.004),
     new THREE.Vector3(0.17, 0.018, 0),
   ]);
-  const mouth = new THREE.Mesh(new THREE.TubeGeometry(mouthCurve, 24, 0.013, 8, false), materials.iris);
+  const mouth = new THREE.Mesh(new THREE.TubeGeometry(mouthCurve, 24, 0.013, 8, false), materials.inkPaint);
   mouth.position.set(0, mouthY, mouthZ);
   group.add(mouth);
 

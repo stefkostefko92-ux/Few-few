@@ -570,7 +570,7 @@ function createMaterials(T, palette) {
       clearcoatRoughness: 0.32,
       // spreads the specular so one key light does not become a hard hotspot
       normalMap: T.carbon.normalMap,
-      normalScale: v2(0.035),
+      normalScale: v2(0.05),
       // barely visible — sealed inside, not printed on top
       attenuationColor: new THREE6.Color(p.olive),
       attenuationDistance: 2.2,
@@ -591,22 +591,61 @@ function createMaterials(T, palette) {
   limb.normalMap = T.carbon.normalMap;
   limb.onBeforeCompile = jelly.onBeforeCompile;
   const fabric = new THREE6.MeshStandardMaterial({ name: "fabric", color: 658442, roughnessMap: T.carbon.roughnessMap, normalMap: T.carbon.normalMap, normalScale: v2(0.4), roughness: 1, metalness: 0.04 });
-  const coreGlow = new THREE6.MeshBasicMaterial({ name: "core", color: p.olive, map: T.core, toneMapped: false, transparent: true, opacity: 0.85 });
+  const coreGlow = new THREE6.MeshBasicMaterial({ name: "core", color: p.olive, map: T.core, toneMapped: false, transparent: true, opacity: 0.4 });
   const acetate = new THREE6.MeshPhysicalMaterial({ name: "acetate", color: p.ink, roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.35, envMapIntensity: 0.5, specularIntensity: 0.4 });
-  const lens = new THREE6.MeshPhysicalMaterial({ name: "lens", color: 16777215, transmission: 0.95, roughness: 0.1, ior: 1.5, thickness: 0.05, envMapIntensity: 0.16, clearcoat: 0.1, clearcoatRoughness: 0.25 });
-  const sclera = new THREE6.MeshStandardMaterial({ name: "sclera", color: p.eye, roughness: 0.42, envMapIntensity: 0.16 });
-  const iris = new THREE6.MeshStandardMaterial({ name: "iris", color: p.inkSoft, roughness: 0.4, envMapIntensity: 0.35 });
+  const lens = new THREE6.MeshPhysicalMaterial({ name: "lens", color: 16777215, transmission: 0.95, roughness: 0.1, ior: 1.5, thickness: 0.05, envMapIntensity: 0.16, clearcoat: 0.5, clearcoatRoughness: 0.1 });
+  const sclera = new THREE6.MeshPhysicalMaterial({ name: "sclera", color: p.eye, roughness: 0.32, envMapIntensity: 0.2, clearcoat: 0.7, clearcoatRoughness: 0.12 });
+  const iris = new THREE6.MeshStandardMaterial({
+    name: "iris",
+    color: p.inkSoft,
+    roughness: 0.4,
+    envMapIntensity: 0.22,
+    normalMap: T.iris.normalMap,
+    normalScale: v2(0.6),
+    roughnessMap: T.iris.roughnessMap
+  });
+  const inkPaint = new THREE6.MeshStandardMaterial({ name: "inkPaint", color: p.inkSoft, roughness: 0.4, envMapIntensity: 0.35 });
   const pupil = new THREE6.MeshStandardMaterial({ name: "pupil", color: 0, roughness: 0.06, envMapIntensity: 0.55 });
   const sparkle = new THREE6.MeshBasicMaterial({ name: "sparkle", color: 16777215, toneMapped: false });
   const felt = new THREE6.MeshStandardMaterial({ name: "felt", color: p.ink, roughness: 0.66, normalMap: T.felt.normalMap, roughnessMap: T.felt.roughnessMap, envMapIntensity: 0.5 });
   const feltTop = new THREE6.MeshStandardMaterial({ name: "feltTop", color: p.inkSoft, roughness: 0.72, normalMap: T.felt.normalMap, roughnessMap: T.felt.roughnessMap, envMapIntensity: 0.6 });
   const gold = new THREE6.MeshPhysicalMaterial({ name: "gold", color: p.gold, metalness: 1, roughness: 0.28, envMapIntensity: 1.5, clearcoat: 0.25 });
-  const satin = new THREE6.MeshPhysicalMaterial({ name: "satin", color: p.inkSoft, roughness: 0.36, sheen: 1, sheenRoughness: 0.28, sheenColor: new THREE6.Color(p.pale), normalMap: T.satin.normalMap, normalScale: v2(0.5), envMapIntensity: 1.1 });
+  const satin = new THREE6.MeshPhysicalMaterial({ name: "satin", color: p.inkSoft, roughness: 0.3, sheen: 1, sheenRoughness: 0.2, sheenColor: new THREE6.Color(p.pale), normalMap: T.satin.normalMap, normalScale: v2(0.6), envMapIntensity: 1.3, clearcoat: 0.15, clearcoatRoughness: 0.4 });
   const satinKnot = satin.clone();
   satinKnot.color = new THREE6.Color(p.inkSoft);
   const ground = new THREE6.ShadowMaterial({ opacity: 0.48 });
   const glow = new THREE6.MeshBasicMaterial({ color: p.olive, map: T.radial, transparent: true, opacity: 0.4, depthWrite: false });
-  return { jelly, limb, fabric, coreGlow, acetate, lens, sclera, iris, pupil, sparkle, felt, feltTop, gold, satin, satinKnot, ground, glow };
+  const caustic = causticMaterial(p);
+  return { jelly, limb, fabric, coreGlow, acetate, lens, sclera, iris, inkPaint, pupil, sparkle, felt, feltTop, gold, satin, satinKnot, ground, glow, caustic };
+}
+function causticMaterial(p) {
+  return new THREE6.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE6.AdditiveBlending,
+    uniforms: { uTime: jellyMotion.uTime, uColor: { value: new THREE6.Color(p.neon) }, uColor2: { value: new THREE6.Color(p.pale) } },
+    vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: (
+      /* glsl */
+      `
+      uniform float uTime;
+      uniform vec3 uColor;
+      uniform vec3 uColor2;
+      varying vec2 vUv;
+      float ring(vec2 uv, float t) {
+        float d = length(uv);
+        return abs(sin((d * 9.0 - t * 1.1) + sin(uv.x * 5.0 + t * 0.7) * 1.4));
+      }
+      void main() {
+        vec2 uv = vUv * 2.0 - 1.0;
+        float fall = 1.0 - smoothstep(0.15, 1.0, length(uv));
+        float r1 = pow(ring(uv, uTime), 5.0);
+        float r2 = pow(ring(uv * 1.4 + 0.3, uTime * 0.8 + 2.0), 5.0);
+        vec3 col = mix(uColor, uColor2, r2) * (r1 * 0.6 + r2 * 0.4);
+        gl_FragColor = vec4(col * fall, (r1 + r2) * fall * 0.5);
+      }`
+    )
+  });
 }
 
 // src/noise.js
@@ -790,6 +829,30 @@ function feltTextures(size = 192) {
     roughnessMap: dataTexture(grayToRGBA(R), size, size, false)
   };
 }
+function irisTextures(size = 128) {
+  const n = size * size;
+  const H = new Float32Array(n);
+  const R = new Float32Array(n);
+  const nz = new Noise2(71);
+  const cx = size / 2;
+  const cy = size / 2;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const i = y * size + x;
+      const dx = (x - cx) / (size / 2);
+      const dy = (y - cy) / (size / 2);
+      const r = Math.min(1, Math.hypot(dx, dy));
+      const a = Math.atan2(dy, dx);
+      const spokes = Math.sin(a * 24 + nz.fbm(r * 4, a, 8, 2) * 3) * 0.5 + 0.5;
+      H[i] = spokes * (0.15 + r * 0.35) + nz.fbm(dx * 6 + 8, dy * 6 + 8, 12, 3) * 0.12;
+      R[i] = 0.28 + 0.22 * spokes - 0.12 * smooth(0.72, 1, r);
+    }
+  }
+  return {
+    normalMap: dataTexture(heightToNormal(H, size, size, 1.6), size, size, false),
+    roughnessMap: dataTexture(grayToRGBA(R), size, size, false)
+  };
+}
 function radialTextures(size = 128) {
   const n = size * size;
   const A = new Uint8Array(n * 4);
@@ -932,8 +995,8 @@ function buildBody(materials, textures) {
   fabric.position.set(0, -0.02, 0.02);
   group.add(fabric);
   const core = new THREE8.Mesh(new THREE8.SphereGeometry(0.42, 20, 16), materials.coreGlow);
-  core.scale.set(0.85, 1.05, 0.68);
-  core.position.set(0, -0.3, -0.02);
+  core.scale.set(0.8, 1, 0.6);
+  core.position.set(0, -0.22, -0.22);
   group.add(core);
   const bubbleGeo = new THREE8.SphereGeometry(1, 10, 8);
   const rand = rng(42);
@@ -1021,6 +1084,18 @@ function eye(sign, materials) {
   g.position.set(sign * EYE_X, EYE_Y, 0);
   return g;
 }
+function lidShadow(sign, materials) {
+  const L = layout();
+  const mat = materials.inkPaint.clone();
+  mat.transparent = true;
+  mat.opacity = 0.32;
+  mat.depthWrite = false;
+  const ring = new THREE9.Mesh(new THREE9.TorusGeometry(SCLERA_R * 0.9, 0.024, 8, 20, Math.PI * 0.6), mat);
+  ring.rotation.z = Math.PI * 0.2;
+  ring.scale.set(1, 0.62, 0.4);
+  ring.position.set(sign * EYE_X, EYE_Y + 8e-3, L.scleraZ + 0.03);
+  return ring;
+}
 function eyelid(sign, materials) {
   const L = layout();
   const lid = new THREE9.Mesh(new THREE9.SphereGeometry(SCLERA_R * 1.08, 16, 12), materials.jelly);
@@ -1029,11 +1104,22 @@ function eyelid(sign, materials) {
   lid.name = `eyelid${sign > 0 ? "R" : "L"}`;
   return lid;
 }
+var BROW_Y = EYE_Y + 0.315;
 function brow(sign, materials) {
-  const L = layout();
-  const b = new THREE9.Mesh(new THREE9.TorusGeometry(0.11, 0.02, 8, 16, Math.PI), materials.iris);
-  b.position.set(sign * EYE_X, EYE_Y + 0.4, L.bodyR * 1.03);
-  b.rotation.set(0, 0, 0.24 * -sign);
+  const z0 = bodyRadiusAtY(BROW_Y) * 1.012;
+  const curve = new THREE9.CatmullRomCurve3([
+    new THREE9.Vector3(-0.1, -4e-3, 0),
+    new THREE9.Vector3(-0.045, 0.02, 3e-3),
+    new THREE9.Vector3(0, 0.026, 4e-3),
+    new THREE9.Vector3(0.045, 0.016, 2e-3),
+    new THREE9.Vector3(0.1, -0.012, 0)
+  ]);
+  const geo = new THREE9.TubeGeometry(curve, 20, 0.03, 10, false);
+  const b = new THREE9.Mesh(geo, materials.acetate);
+  b.scale.set(1, 0.58, 1);
+  b.position.set(sign * EYE_X, BROW_Y, z0);
+  b.rotation.y = -sign * 0.16;
+  b.castShadow = true;
   return b;
 }
 function buildFace(materials) {
@@ -1041,6 +1127,7 @@ function buildFace(materials) {
   for (const sign of [-1, 1]) {
     group.add(glassesRing(sign, materials));
     group.add(eye(sign, materials));
+    group.add(lidShadow(sign, materials));
     group.add(eyelid(sign, materials));
     group.add(brow(sign, materials));
   }
@@ -1057,7 +1144,7 @@ function buildFace(materials) {
     new THREE9.Vector3(0.08, -0.014, 4e-3),
     new THREE9.Vector3(0.17, 0.018, 0)
   ]);
-  const mouth = new THREE9.Mesh(new THREE9.TubeGeometry(mouthCurve, 24, 0.013, 8, false), materials.iris);
+  const mouth = new THREE9.Mesh(new THREE9.TubeGeometry(mouthCurve, 24, 0.013, 8, false), materials.inkPaint);
   mouth.position.set(0, mouthY, mouthZ);
   group.add(mouth);
   return group;
@@ -1077,12 +1164,29 @@ function findHatBottomY() {
   return y - EMBED;
 }
 var HAT_BOTTOM_Y = findHatBottomY();
+function boardGeometry(size, thickness, radius, bevel) {
+  const s = size / 2;
+  const shape = new THREE10.Shape();
+  shape.moveTo(-s + radius, -s);
+  shape.lineTo(s - radius, -s);
+  shape.quadraticCurveTo(s, -s, s, -s + radius);
+  shape.lineTo(s, s - radius);
+  shape.quadraticCurveTo(s, s, s - radius, s);
+  shape.lineTo(-s + radius, s);
+  shape.quadraticCurveTo(-s, s, -s, s - radius);
+  shape.lineTo(-s, -s + radius);
+  shape.quadraticCurveTo(-s, -s, -s + radius, -s);
+  const geo = new THREE10.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 2, curveSegments: 6 });
+  geo.rotateX(-Math.PI / 2);
+  geo.translate(0, -thickness / 2, 0);
+  return geo;
+}
 function buildHat(materials) {
   const hat = new THREE10.Group();
   const band = new THREE10.Mesh(new THREE10.CylinderGeometry(0.38, 0.44, BAND_H, 28), materials.felt);
   band.position.y = HAT_BOTTOM_Y + BAND_H / 2;
   band.name = "hatBand";
-  const board = new THREE10.Mesh(new THREE10.BoxGeometry(0.94, 0.05, 0.94), materials.feltTop);
+  const board = new THREE10.Mesh(boardGeometry(0.94, 0.05, 0.03, 8e-3), materials.feltTop);
   board.position.y = HAT_BOTTOM_Y + BAND_H + 0.025;
   const button = new THREE10.Mesh(new THREE10.SphereGeometry(0.035, 10, 8), materials.gold);
   button.position.y = board.position.y + 0.045;
@@ -1132,31 +1236,34 @@ function puffWing(geo, sign, amount) {
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i);
     const y = pos.getY(i);
-    const xt = THREE10.MathUtils.clamp(x / (sign * 0.34), 0, 1);
+    const xt = THREE10.MathUtils.clamp(x / (sign * WING_W), 0, 1);
     const yt = 1 - Math.min(1, Math.abs(y) / 0.15);
     pos.setZ(i, pos.getZ(i) + Math.sin(xt * Math.PI) * yt * amount);
   }
   geo.computeVertexNormals();
 }
+var WING_W = 0.34;
+var WING_DEPTH = 0.062;
 function bowWing(sign, materials) {
   const shape = new THREE10.Shape();
-  shape.moveTo(0, 0.03);
-  shape.lineTo(sign * 0.34, 0.15);
-  shape.lineTo(sign * 0.34, -0.15);
-  shape.lineTo(0, -0.03);
+  shape.moveTo(0, 0.035);
+  shape.quadraticCurveTo(sign * 0.16, 0.1, sign * (WING_W - 0.05), 0.15);
+  shape.quadraticCurveTo(sign * (WING_W + 0.03), 0.17, sign * (WING_W + 0.03), 0);
+  shape.quadraticCurveTo(sign * (WING_W + 0.03), -0.17, sign * (WING_W - 0.05), -0.15);
+  shape.quadraticCurveTo(sign * 0.16, -0.1, 0, -0.035);
   shape.closePath();
-  const geo = new THREE10.ExtrudeGeometry(shape, { depth: 0.018, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.01, bevelSegments: 2, curveSegments: 8 });
-  puffWing(geo, sign, 0.055);
+  const geo = new THREE10.ExtrudeGeometry(shape, { depth: WING_DEPTH, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.018, bevelSegments: 4, curveSegments: 12 });
+  puffWing(geo, sign, 0.12);
   const wing = new THREE10.Mesh(geo, materials.satin);
-  wing.rotation.y = sign * -0.3;
+  wing.rotation.y = sign * -0.36;
   wing.castShadow = true;
   const group = new THREE10.Group();
   group.add(wing);
-  for (const t of [0.4, 0.72]) {
-    const crease = new THREE10.Mesh(new THREE10.CylinderGeometry(6e-3, 6e-3, 0.24, 6), materials.satinKnot);
+  for (const t of [0.32, 0.56, 0.82]) {
+    const crease = new THREE10.Mesh(new THREE10.CylinderGeometry(7e-3, 7e-3, 0.26, 6), materials.satinKnot);
     crease.rotation.z = Math.PI / 2;
-    crease.rotation.y = sign * -0.3;
-    crease.position.set(sign * 0.34 * t, 0, 0.02 + Math.sin(t * Math.PI) * 0.05);
+    crease.rotation.y = sign * -0.32;
+    crease.position.set(sign * WING_W * t, 0, 0.026 + Math.sin(t * Math.PI) * 0.06);
     group.add(crease);
   }
   return group;
@@ -1243,7 +1350,7 @@ function softStudioEnvironment(renderer, p) {
   panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 14675680, 0.3);
   panel(0, -1.5, -5, Math.PI, 6, 4, new THREE11.Color(p.neon), 0.5);
   const pmrem = new THREE11.PMREMGenerator(renderer);
-  const env = pmrem.fromScene(envScene, 0.03).texture;
+  const env = pmrem.fromScene(envScene, 0.35).texture;
   sky.geometry.dispose();
   sky.material.dispose();
   return env;
@@ -1258,7 +1365,8 @@ function buildScene(renderer, palette = PALETTE) {
     satin: satinTextures(),
     felt: feltTextures(),
     radial: radialTextures(),
-    core: coreGlowTexture()
+    core: coreGlowTexture(),
+    iris: irisTextures()
   };
   const materials = createMaterials(textures, p);
   const mascot = new THREE11.Group();
@@ -1278,6 +1386,10 @@ function buildScene(renderer, palette = PALETTE) {
   glow.rotation.x = -Math.PI / 2;
   glow.position.y = GROUND_Y + 2e-3;
   scene.add(glow);
+  const caustic = new THREE11.Mesh(new THREE11.PlaneGeometry(2, 2), materials.caustic);
+  caustic.rotation.x = -Math.PI / 2;
+  caustic.position.y = GROUND_Y + 4e-3;
+  scene.add(caustic);
   const sparkleGeo = new THREE11.PlaneGeometry(1, 1);
   for (const [x, y, z, s] of [[-1.55, 0.75, 0.6, 0.05], [1.5, -0.15, 0.9, 0.035], [-1.15, -0.85, 1.1, 0.03]]) {
     const spark = new THREE11.Mesh(sparkleGeo, materials.sparkle);

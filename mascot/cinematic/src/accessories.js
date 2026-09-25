@@ -24,12 +24,33 @@ function findHatBottomY() {
 }
 export const HAT_BOTTOM_Y = findHatBottomY();
 
+// Rounded-rect board with a small bevel, instead of a raw box — a hairline edge highlight along
+// the rim is what actually sells "felted board with a seam" under a soft studio light; a razor
+// box edge either disappears or draws a hard aliased line depending on angle.
+function boardGeometry(size, thickness, radius, bevel) {
+  const s = size / 2;
+  const shape = new THREE.Shape();
+  shape.moveTo(-s + radius, -s);
+  shape.lineTo(s - radius, -s);
+  shape.quadraticCurveTo(s, -s, s, -s + radius);
+  shape.lineTo(s, s - radius);
+  shape.quadraticCurveTo(s, s, s - radius, s);
+  shape.lineTo(-s + radius, s);
+  shape.quadraticCurveTo(-s, s, -s, s - radius);
+  shape.lineTo(-s, -s + radius);
+  shape.quadraticCurveTo(-s, -s, -s + radius, -s);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 2, curveSegments: 6 });
+  geo.rotateX(-Math.PI / 2);
+  geo.translate(0, -thickness / 2, 0); // center on Y like the BoxGeometry it replaces
+  return geo;
+}
+
 export function buildHat(materials) {
   const hat = new THREE.Group();
   const band = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.44, BAND_H, 28), materials.felt);
   band.position.y = HAT_BOTTOM_Y + BAND_H / 2;
   band.name = 'hatBand';
-  const board = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.05, 0.94), materials.feltTop);
+  const board = new THREE.Mesh(boardGeometry(0.94, 0.05, 0.03, 0.008), materials.feltTop);
   board.position.y = HAT_BOTTOM_Y + BAND_H + 0.025;
   const button = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), materials.gold);
   button.position.y = board.position.y + 0.045;
@@ -88,36 +109,41 @@ function puffWing(geo, sign, amount) {
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i);
     const y = pos.getY(i);
-    const xt = THREE.MathUtils.clamp(x / (sign * 0.34), 0, 1);
+    const xt = THREE.MathUtils.clamp(x / (sign * WING_W), 0, 1);
     const yt = 1 - Math.min(1, Math.abs(y) / 0.15);
     pos.setZ(i, pos.getZ(i) + Math.sin(xt * Math.PI) * yt * amount);
   }
   geo.computeVertexNormals();
 }
 
-// One folded wing: a puffed triangle from the knot to a wide outer edge, with two crease lines
-// pinched near the knot — reads as gathered fabric, not a flat plate (defect: "the bow tie is a
-// flat plate"), and not the sphere "drop" an earlier version used.
+export const WING_W = 0.34;
+export const WING_DEPTH = 0.062; // ~18% of WING_W — a real gathered-fabric wing, not a wafer
+
+// One folded wing: a puffed shape from the knot to a wide, ROUNDED outer edge (no sharp plate
+// corners), with three crease lines pinched near the knot — reads as gathered satin, not a flat
+// plate (defect: "the bow tie is a flat plate"), and not the sphere "drop" an earlier version used.
 function bowWing(sign, materials) {
   const shape = new THREE.Shape();
-  shape.moveTo(0, 0.03);
-  shape.lineTo(sign * 0.34, 0.15);
-  shape.lineTo(sign * 0.34, -0.15);
-  shape.lineTo(0, -0.03);
+  shape.moveTo(0, 0.035);
+  shape.quadraticCurveTo(sign * 0.16, 0.1, sign * (WING_W - 0.05), 0.15);
+  shape.quadraticCurveTo(sign * (WING_W + 0.03), 0.17, sign * (WING_W + 0.03), 0);
+  shape.quadraticCurveTo(sign * (WING_W + 0.03), -0.17, sign * (WING_W - 0.05), -0.15);
+  shape.quadraticCurveTo(sign * 0.16, -0.1, 0, -0.035);
   shape.closePath();
-  const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.018, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.01, bevelSegments: 2, curveSegments: 8 });
-  puffWing(geo, sign, 0.055);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: WING_DEPTH, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.018, bevelSegments: 4, curveSegments: 12 });
+  puffWing(geo, sign, 0.12); // deep gathered-fabric puff so the wing reads as pillowed satin
   const wing = new THREE.Mesh(geo, materials.satin);
-  wing.rotation.y = sign * -0.3; // fold outward from the knot, catches the key light as a crease
+  wing.rotation.y = sign * -0.36; // fold outward from the knot, catches the key light as a crease
   wing.castShadow = true;
   const group = new THREE.Group();
   group.add(wing);
-  // Two pinched creases gathered toward the knot, echoing a real bow tie's folds.
-  for (const t of [0.4, 0.72]) {
-    const crease = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.24, 6), materials.satinKnot);
+  // Three pinched creases gathered toward the knot, echoing a real bow tie's folds — closer
+  // together near the knot (where fabric bunches most), spreading out toward the wing's belly.
+  for (const t of [0.32, 0.56, 0.82]) {
+    const crease = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.26, 6), materials.satinKnot);
     crease.rotation.z = Math.PI / 2;
-    crease.rotation.y = sign * -0.3;
-    crease.position.set(sign * 0.34 * t, 0, 0.02 + Math.sin(t * Math.PI) * 0.05);
+    crease.rotation.y = sign * -0.32;
+    crease.position.set(sign * WING_W * t, 0, 0.026 + Math.sin(t * Math.PI) * 0.06);
     group.add(crease);
   }
   return group;
