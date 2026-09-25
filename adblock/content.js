@@ -352,15 +352,39 @@
   // were a measurable share of the main thread on busy pages. A list from the
   // filter lists / My filters may hold a selector the browser rejects; then (and
   // only then) that list is queried selector by selector.
-  const joinedLists = new WeakMap(); // list → { n, sel } (sel null = has an invalid one)
-  function listSel(list) {
+  const joinedLists = new WeakMap(); // list → { n, sel } (sel null = query one by one)
+  // A selector the parser silently "repairs" (`.a[title="x`, `:has(` without its
+  // `)`, a trailing `\`) is valid on its own but, joined, swallows every selector
+  // after it — so each one must prove it is self-contained: joined with a probe
+  // id it must still match the probe.
+  const probe = document.createElement("i");
+  probe.id = "tbab-probe";
+  const selfContained = (s) => { try { return probe.matches(s + ", #tbab-probe"); } catch { return false; } };
+  function listEntry(list) {
     let j = joinedLists.get(list);
     if (!j || j.n !== list.length) {
-      j = { n: list.length, sel: list.join(", ") };
-      try { document.querySelector(j.sel); } catch { j.sel = null; }
+      j = { n: list.length, sel: list.every(selfContained) ? list.join(", ") : null };
       joinedLists.set(list, j);
     }
-    return j.sel;
+    return j;
+  }
+  function listSel(list) {
+    return listEntry(list).sel;
+  }
+  // Rules can match an ANCESTOR of what the page just added: `:has()` (EasyList has
+  // ~800), a class put on an existing ad slot before its content arrives,
+  // `[data-google-query-id]` set on the container. 5.0.4 caught those with a
+  // whole-document pass per change; one closest() walk up from each added node
+  // does the same for a fraction of the cost.
+  function hideAncestors(n, list) {
+    const sel = listSel(list);
+    const walk = (one) => {
+      try {
+        for (let a = n.parentElement && n.parentElement.closest(one); a; a = a.parentElement && a.parentElement.closest(one)) hideEl(a);
+      } catch {}
+    };
+    if (sel !== null) walk(sel);
+    else for (const one of list) walk(one);
   }
   function queryList(root, list) {
     if (!list.length) return [];
@@ -386,14 +410,19 @@
   // Only the subtrees the page just added (a new ad can only be in there). The
   // whole-document hide() stays for start-up, the timed passes and filter
   // changes; procedural and #@# rules need the whole page, so they fall back to it.
-  function hideAdded(nodes) {
+  // `attrOnly`: elements whose class/id changed (not added) — the element itself
+  // and its ancestors only, never its subtree: a class toggled on a big container
+  // every frame must not turn into a whole-subtree query.
+  let attrTargets = new WeakSet();
+  function hideAdded(nodes, attrOnly = new WeakSet()) {
     if (!enabled || allowed || cosmeticsOff) return;
     if (procSelectors.length || unhideSelectors.length) return hide();
     for (const n of nodes) {
       if (!n.isConnected) continue;
       for (const list of genericHideHost ? [customSelectors] : [AD_SELECTORS, customSelectors]) {
         if (matchesList(n, list)) hideEl(n);
-        for (const el of queryList(n, list)) hideEl(el);
+        if (!attrOnly.has(n)) for (const el of queryList(n, list)) hideEl(el);
+        hideAncestors(n, list);
       }
     }
   }
@@ -725,9 +754,19 @@
       if (!enabled) return;
       let added = false;
       for (const r of records) {
+        if (r.type === "attributes") {
+          // an existing element that just became an ad slot (`el.className = "ad-slot"`)
+          const t = r.target;
+          if (t.nodeType === 1 && t !== document.documentElement && t !== document.body && !t.dataset.tbabHidden) {
+            added = true;
+            if (!pending.has(t)) { attrTargets.add(t); if (pending.size < 300) pending.add(t); else fullPass = true; }
+          }
+          continue;
+        }
         for (const n of r.addedNodes) {
           if (n.nodeType !== 1) continue;
           added = true;
+          attrTargets.delete(n);
           if (pending.size < 300) pending.add(n);
           else fullPass = true; // a big re-render: one whole-page pass is cheaper
         }
@@ -744,11 +783,13 @@
         const full = fullPass;
         pending = new Set();
         fullPass = false;
+        const attrs = attrTargets;
+        attrTargets = new WeakSet();
         if (full) hide();
-        else hideAdded(nodes);
+        else hideAdded(nodes, attrs);
         smartSoon();
       });
-    }).observe(document.documentElement, { childList: true, subtree: true });
+    }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "id"] });
 
     // A few delayed passes catch lazily injected ads.
     let runs = 0;

@@ -12,8 +12,11 @@
 // в общите списъци влизат само селектори, чиято граматика доказваме тук; всичко друго
 // (псевдо-класове, escape-и, не-ASCII) е отделно правило — невалидното пада само.
 const CSS_IDENT = "-?[_a-zA-Z][\\w-]*";
-const CSS_ATTR = `\\[${CSS_IDENT}(?:[\\^$*|~]?=(?:"[^"\\\\\\n]*"|'[^'\\\\\\n]*'|${CSS_IDENT}))?(?:\\s+[is])?\\]`;
-const CSS_COMPOUND = `(?:${CSS_IDENT}|\\*)?(?:#${CSS_IDENT}|\\.${CSS_IDENT}|${CSS_ATTR})*`;
+const CSS_ATTR = `\\[${CSS_IDENT}(?:[\\^$*|~]?=(?:"[^"\\\\\\n]*"|'[^'\\\\\\n]*'|${CSS_IDENT}))?(?:\\s+i)?\\]`;
+// Непразен compound: иначе `div.promo >`, `a > > b`, `.x ~` минаваха за „доказани" и
+// един такъв изпускаше цял чънк от 500 (Кодаджията, 5.0.5).
+const CSS_SIMPLE = `(?:#${CSS_IDENT}|\\.${CSS_IDENT}|${CSS_ATTR})`;
+const CSS_COMPOUND = `(?:(?:${CSS_IDENT}|\\*)${CSS_SIMPLE}*|${CSS_SIMPLE}+)`;
 export const SAFE_CSS_SELECTOR = new RegExp(`^${CSS_COMPOUND}(?:\\s*[>+~]\\s*${CSS_COMPOUND}|\\s+${CSS_COMPOUND})*$`);
 export function genericCss(selectors, chunk = 500) {
   const HIDE = "{display:none!important}\n";

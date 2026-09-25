@@ -26,18 +26,23 @@ const listDot = $("listDot");
 let currentHost = null;
 let currentTabId = null;
 
+// Numbers and units in the browser's language: "55 мин.", "4,6 GB", "43 709+".
+const UI_LANG = (() => { try { return chrome.i18n.getUILanguage(); } catch { return "en"; } })();
+function unit(v, u, digits = 0) {
+  try { return new Intl.NumberFormat(UI_LANG, { style: "unit", unit: u, unitDisplay: "short", maximumFractionDigits: digits }).format(v); }
+  catch { return v.toFixed(digits) + " " + u; }
+}
 function fmtData(mb) {
-  if (mb >= 1024) return (mb / 1024).toFixed(1) + " GB";
-  if (mb >= 1) return Math.round(mb) + " MB";
-  return Math.round(mb * 1024) + " KB";
+  if (mb >= 1024) return unit(mb / 1024, "gigabyte", 1);
+  if (mb >= 1) return unit(Math.round(mb), "megabyte");
+  return unit(Math.round(mb * 1024), "kilobyte");
 }
 
 function fmtTime(sec) {
-  if (sec >= 3600) return (sec / 3600).toFixed(1) + " h";
-  if (sec >= 60) return Math.round(sec / 60) + " min";
-  if (sec >= 10) return Math.round(sec) + " s";
-  if (sec > 0) return sec.toFixed(1) + " s";
-  return "0 s";
+  if (sec >= 3600) return unit(sec / 3600, "hour", 1);
+  if (sec >= 60) return unit(Math.round(sec / 60), "minute");
+  if (sec >= 10) return unit(Math.round(sec), "second");
+  return unit(sec > 0 ? sec : 0, "second", 1);
 }
 
 function load() {
@@ -47,12 +52,12 @@ function load() {
     chrome.runtime.sendMessage({ type: "getStats", tabUrl }, (res) => {
       if (!res) return;
       toggle.checked = res.enabled;
-      blockedTotal.textContent = res.blockedTotal.toLocaleString();
+      blockedTotal.textContent = res.blockedTotal.toLocaleString(UI_LANG);
       savedData.textContent = fmtData(res.saved.mb);
       savedTime.textContent = fmtTime(res.saved.seconds);
       setStatus(res.enabled);
 
-      listDot.textContent = t("filtersCount", [String(res.filterCount || 0)]);
+      listDot.textContent = t("filtersCount", [(res.filterCount || 0).toLocaleString(UI_LANG)]);
       renderPause(res.pausedUntil || 0);
 
       currentHost = res.host;

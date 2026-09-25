@@ -17,7 +17,10 @@ import { readFileSync } from "node:fs";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const require = createRequire(join(process.env.PW_ROOT || join(ROOT, "node_modules"), "/"));
 let chromium;
-try { ({ chromium } = require("playwright")); } catch { console.log("SKIP: playwright not available (PW_ROOT)"); process.exit(0); }
+try { ({ chromium } = require("playwright")); } catch {
+  // CI sets PW_REQUIRED=1: a missing browser there must fail, never pass as "skipped".
+  console.log("SKIP: playwright not available (PW_ROOT)"); process.exit(process.env.PW_REQUIRED ? 1 : 0);
+}
 
 const PAGES = {
   "/cosmetic": `<!doctype html><html><body style="min-height:2000px">
@@ -33,6 +36,23 @@ const PAGES = {
     <script>window.__clicks=[];</script>
     <div id="root"><main class="app"><div class="wrap"><div id="feed"></div><span id="clock">0</span></div></main></div>
     <div id="AdTop">generic EasyList id</div>
+  </body></html>`,
+  "/late": `<!doctype html><html><head><style>.mdl{display:none}.mdl.open{display:block;position:fixed;top:0;left:0;right:0;z-index:99999;background:#fff}</style></head>
+    <body style="min-height:2000px"><script>window.__clicks=[];</script>
+    <div id="root"><main><div id="slot">loading</div><div class="card" id="card">post</div></main></div>
+    <div class="qqzz-hideme" id="u">user-hidden</div>
+    <div id="wall" style="position:fixed;top:0;left:0;right:0;height:120px;z-index:99999;background:#fff"></div>
+    <div id="wall2" class="mdl">Please disable your ad blocker to continue reading.</div>
+    <div id="cb" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff"><p>We use cookies to improve your experience on this website.</p>
+      <button onclick="__clicks.push('reject')">Reject all</button></div>
+  </body></html>`,
+  "/layout": `<!doctype html><html><head><style>html,body{height:100%;margin:0;overflow:hidden}#map{height:100%}</style></head>
+    <body><div id="map"></div><div class="head-block" id="hb">header</div><div class="thread-block" id="tb">thread</div><div class="adblock-detected" id="ab">wall</div></body></html>`,
+  "/paywall": `<!doctype html><html><body style="min-height:2000px"><script>window.__clicks=[];</script>
+    <div id="iubenda-cs-banner" style="position:fixed;left:0;right:0;bottom:0;background:#fff"><p>Usiamo i cookie per la pubblicità personalizzata.</p>
+      <button class="iubenda-cs-close-btn" onclick="__clicks.push('free')">Continua senza accettare</button>
+      <button class="iubenda-cs-reject-btn" onclick="__clicks.push('pay')">Rifiuta e abbonati</button>
+      <button class="iubenda-cs-accept-btn" onclick="__clicks.push('accept')">Accetta</button></div>
   </body></html>`,
   "/cookie": `<!doctype html><html><body style="min-height:2000px">
     <script>window.__clicks=[];</script>
@@ -122,6 +142,55 @@ try {
   ok("ad added deep in an app later is hidden (observer scans the added subtree)", late.ad === "none" && late.ok !== "none");
   ok("CMP banner added deep in an app later is still rejected", late.clicks.join() === "reject");
   await p3.close();
+
+
+  // ---- regressions found in the 5.0.5 audit (red team + code review) ----
+  const p4 = await ctx.newPage();
+  await p4.goto(origin + "/layout");
+  await p4.waitForTimeout(1500);
+  const lay = await p4.evaluate(() => ({
+    map: document.getElementById("map").offsetHeight,
+    hb: getComputedStyle(document.getElementById("hb")).display, tb: getComputedStyle(document.getElementById("tb")).display,
+    ab: getComputedStyle(document.getElementById("ab")).display,
+  }));
+  ok("full-height app layout intact (html,body{height:100%} map was collapsed to 0 px)", lay.map > 0);
+  ok("head-block / thread-block not hidden (whole-token anti-adblock selectors)", lay.hb !== "none" && lay.tb !== "none");
+  ok("…a real .adblock-detected wall still is", lay.ab === "none");
+  await p4.close();
+
+  const p5 = await ctx.newPage();
+  await p5.goto(origin + "/paywall");
+  await p5.waitForTimeout(2500);
+  const pw = await p5.evaluate(() => window.__clicks.join());
+  ok(`'Reject and subscribe' (pay-or-accept wall) skipped for the free 'continue without accepting' (got: ${pw || "none"})`, pw === "free");
+  await p5.close();
+
+  await setStore({
+    userFilters: ["127.0.0.1##.qqzz-late", "127.0.0.1##.card:has(> .sp-label)", '127.0.0.1##.foo[title="x', "127.0.0.1##.qqzz-hideme"].join("\n"),
+  });
+  const p6 = await ctx.newPage();
+  await p6.goto(origin + "/late");
+  await p6.waitForTimeout(1500);
+  ok("a self-'repaired' selector (.foo[title=\"x) does not swallow the filters after it", await p6.evaluate(() => getComputedStyle(document.getElementById("u")).display) === "none");
+  await p6.waitForTimeout(11500); // start-up passes over — only the observers are left
+  await p6.evaluate(() => {
+    const slot = document.getElementById("slot"); slot.className = "qqzz-late"; slot.innerHTML = "<span>ad</span>";
+    const s = document.createElement("span"); s.className = "sp-label"; s.textContent = "Sponsored"; document.getElementById("card").appendChild(s);
+    document.getElementById("wall").textContent = "We noticed you use an ad blocker. Please disable your adblocker to continue.";
+    document.getElementById("wall2").classList.add("open");
+    document.getElementById("cb").style.display = "block";
+  });
+  await p6.waitForTimeout(1500);
+  const lt = await p6.evaluate(() => ({
+    slot: getComputedStyle(document.getElementById("slot")).display, card: getComputedStyle(document.getElementById("card")).display,
+    wall: !!document.getElementById("wall"), wall2: !!document.getElementById("wall2"), clicks: window.__clicks.join(),
+  }));
+  ok("late: class put on an existing slot → hidden", lt.slot === "none");
+  ok("late: :has() rule matching the ANCESTOR of added content → hidden", lt.card === "none");
+  ok("late: wall made by a text change → removed", !lt.wall);
+  ok("late: wall revealed by a class change → removed", !lt.wall2);
+  ok("late: cookie banner revealed by a style change → rejected", lt.clicks === "reject");
+  await p6.close();
 
   // ---- cookies.js honours the allowlist (it used to ignore it) ----
   await setStore({ allowlist: ["127.0.0.1"] });

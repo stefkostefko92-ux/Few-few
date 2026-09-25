@@ -61,7 +61,7 @@
     "message": "Разрешен"
   },
   "cosmetics": {
-    "message": "Скрий рекламните полета тук"
+    "message": "Скрий рекламите тук"
   },
   "cosmeticsTitle": {
     "message": "Козметично филтриране на този сайт (изключете го, ако оформлението се чупи)"
@@ -274,5 +274,149 @@
   },
   "opt_subscribe_to_a_filter_list_url_e_g_https": {
     "message": "Абониране за URL на списък с филтри (напр. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Настройки на Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Настройки"
+  },
+  "opt_theme_light": {
+    "message": "Светла"
+  },
+  "opt_badge_unique": {
+    "message": "уникално"
+  },
+  "opt_smart_desc": {
+    "message": "Хваща реклами, които още никой филтър-лист не познава: рамки от други домейни с размер на стандартно рекламно поле се скриват веднага, без правила."
+  },
+  "opt_caught_so_far": {
+    "message": "хванати досега."
+  },
+  "opt_allow_desc": {
+    "message": "На тези домейни рекламите не се блокират."
+  },
+  "opt_fh_one": {
+    "message": "По едно правило на ред."
+  },
+  "opt_fh_blocks": {
+    "message": "блокира домейн;"
+  },
+  "opt_fh_everywhere": {
+    "message": "скрива елемент навсякъде;"
+  },
+  "opt_fh_site": {
+    "message": "го скрива само на този сайт."
+  },
+  "opt_fh_comments": {
+    "message": "Редовете, започващи с"
+  },
+  "opt_fh_comments2": {
+    "message": "са коментари."
+  },
+  "opt_donate": {
+    "message": "Дарение през Revolut"
+  },
+  "opt_made_by": {
+    "message": "създадено от Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Още нищо не е хванато евристично."
+  },
+  "opt_empty_allow": {
+    "message": "Още няма сайтове в списъка с разрешени."
+  },
+  "opt_empty_hidden": {
+    "message": "Още нищо не е скрито ръчно."
+  },
+  "opt_empty_subs": {
+    "message": "Още няма абонаменти за списъци."
+  },
+  "opt_no_sw": {
+    "message": "Няма отговор от service worker-а."
+  },
+  "opt_remove": {
+    "message": "Премахни"
+  },
+  "opt_filter_status": {
+    "message": "Филтри v$1, обновени $2. Само данни — нищо за вас не се изпраща."
+  },
+  "opt_updating": {
+    "message": "Обновяване…"
+  },
+  "opt_updated": {
+    "message": "Обновено (v$1, $2 допълнителни правила)"
+  },
+  "opt_update_failed": {
+    "message": "Обновяването не успя ($1)"
+  },
+  "opt_saved": {
+    "message": "Запазено ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 правила"
+  },
+  "opt_updated_ago": {
+    "message": "обновен $1"
+  },
+  "opt_not_fetched": {
+    "message": "още не е изтеглен"
+  },
+  "opt_failed_colon": {
+    "message": "грешка: $1"
+  },
+  "opt_enter_https": {
+    "message": "Въведете валиден https:// адрес"
+  },
+  "opt_fetching": {
+    "message": "Изтегляне…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Абониран: $1 правила ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Неуспешно ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Опресняване…"
+  },
+  "opt_refreshed": {
+    "message": "Опреснено ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Невалиден файл с настройки."
+  },
+  "opt_no_response": {
+    "message": "няма отговор"
+  },
+  "opt_h_engine": {
+    "message": "Анти-адблок двигател"
+  },
+  "opt_h_rulesets": {
+    "message": "Включени статични набори правила"
+  },
+  "opt_h_live": {
+    "message": "Домейни от живите филтри"
+  },
+  "opt_h_last": {
+    "message": "Последно обновяване"
+  },
+  "opt_h_sig": {
+    "message": "Подписи на обновяванията"
+  },
+  "opt_h_user": {
+    "message": "Мои филтри / правила за разрешени"
+  },
+  "opt_h_popup": {
+    "message": "Вградени хостове на pop-up реклами"
+  },
+  "opt_h_yt": {
+    "message": "YouTube bypass"
+  },
+  "opt_reason_frame": {
+    "message": "Рамка от друг домейн с размер на реклама"
+  },
+  "opt_reason_sticky": {
+    "message": "Залепнал рекламен банер"
   }
 }

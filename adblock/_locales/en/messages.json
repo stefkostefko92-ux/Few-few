@@ -274,5 +274,149 @@
   },
   "opt_subscribe_to_a_filter_list_url_e_g_https": {
     "message": "Subscribe to a filter list URL (e.g. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock Settings"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Settings"
+  },
+  "opt_theme_light": {
+    "message": "Light"
+  },
+  "opt_badge_unique": {
+    "message": "unique"
+  },
+  "opt_smart_desc": {
+    "message": "Catches ads no filter list knows yet: cross-origin frames sized like standard ad slots are hidden on sight, no rules needed."
+  },
+  "opt_caught_so_far": {
+    "message": "caught so far."
+  },
+  "opt_allow_desc": {
+    "message": "Ads are not blocked on these domains."
+  },
+  "opt_fh_one": {
+    "message": "One rule per line."
+  },
+  "opt_fh_blocks": {
+    "message": "blocks a domain;"
+  },
+  "opt_fh_everywhere": {
+    "message": "hides an element everywhere;"
+  },
+  "opt_fh_site": {
+    "message": "hides it only on that site."
+  },
+  "opt_fh_comments": {
+    "message": "Lines starting with"
+  },
+  "opt_fh_comments2": {
+    "message": "are comments."
+  },
+  "opt_donate": {
+    "message": "Donate via Revolut"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Nothing caught heuristically yet."
+  },
+  "opt_empty_allow": {
+    "message": "No allowlisted sites yet."
+  },
+  "opt_empty_hidden": {
+    "message": "Nothing hidden manually yet."
+  },
+  "opt_empty_subs": {
+    "message": "No subscribed lists yet."
+  },
+  "opt_no_sw": {
+    "message": "No response from the service worker."
+  },
+  "opt_remove": {
+    "message": "Remove"
+  },
+  "opt_filter_status": {
+    "message": "Filter set v$1, updated $2. Data only, nothing about you is sent."
+  },
+  "opt_updating": {
+    "message": "Updating…"
+  },
+  "opt_updated": {
+    "message": "Updated (v$1, $2 extra rules)"
+  },
+  "opt_update_failed": {
+    "message": "Update failed ($1)"
+  },
+  "opt_saved": {
+    "message": "Saved ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 rules"
+  },
+  "opt_updated_ago": {
+    "message": "updated $1"
+  },
+  "opt_not_fetched": {
+    "message": "not fetched yet"
+  },
+  "opt_failed_colon": {
+    "message": "failed: $1"
+  },
+  "opt_enter_https": {
+    "message": "Enter a valid https:// URL"
+  },
+  "opt_fetching": {
+    "message": "Fetching…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Subscribed: $1 rules ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Failed ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Refreshing…"
+  },
+  "opt_refreshed": {
+    "message": "Refreshed ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Invalid settings file."
+  },
+  "opt_no_response": {
+    "message": "no response"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock engine"
+  },
+  "opt_h_rulesets": {
+    "message": "Static rulesets on"
+  },
+  "opt_h_live": {
+    "message": "Live filter domains"
+  },
+  "opt_h_last": {
+    "message": "Last update"
+  },
+  "opt_h_sig": {
+    "message": "Update signatures"
+  },
+  "opt_h_user": {
+    "message": "My filters / allowlist rules"
+  },
+  "opt_h_popup": {
+    "message": "Popup-ad hosts baked"
+  },
+  "opt_h_yt": {
+    "message": "YouTube bypass"
+  },
+  "opt_reason_frame": {
+    "message": "Ad-sized cross-origin frame"
+  },
+  "opt_reason_sticky": {
+    "message": "Sticky banner ad"
   }
 }

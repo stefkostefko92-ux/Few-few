@@ -274,5 +274,149 @@
   },
   "opt_subscribe_to_a_filter_list_url_e_g_https": {
     "message": "URL einer Filterliste abonnieren (z. B. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock – Einstellungen"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Einstellungen"
+  },
+  "opt_theme_light": {
+    "message": "Hell"
+  },
+  "opt_badge_unique": {
+    "message": "einzigartig"
+  },
+  "opt_smart_desc": {
+    "message": "Erkennt Werbung, die noch keine Filterliste kennt: Frames fremder Domains in Standard-Werbegrößen werden sofort ausgeblendet, ganz ohne Regeln."
+  },
+  "opt_caught_so_far": {
+    "message": "bisher erkannt."
+  },
+  "opt_allow_desc": {
+    "message": "Auf diesen Domains wird Werbung nicht blockiert."
+  },
+  "opt_fh_one": {
+    "message": "Eine Regel pro Zeile."
+  },
+  "opt_fh_blocks": {
+    "message": "blockiert eine Domain;"
+  },
+  "opt_fh_everywhere": {
+    "message": "blendet ein Element überall aus;"
+  },
+  "opt_fh_site": {
+    "message": "blendet es nur auf dieser Website aus."
+  },
+  "opt_fh_comments": {
+    "message": "Zeilen, die mit"
+  },
+  "opt_fh_comments2": {
+    "message": "beginnen, sind Kommentare."
+  },
+  "opt_donate": {
+    "message": "Über Revolut spenden"
+  },
+  "opt_made_by": {
+    "message": "von Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Noch nichts heuristisch erkannt."
+  },
+  "opt_empty_allow": {
+    "message": "Noch keine Websites auf der Positivliste."
+  },
+  "opt_empty_hidden": {
+    "message": "Noch nichts manuell ausgeblendet."
+  },
+  "opt_empty_subs": {
+    "message": "Noch keine abonnierten Listen."
+  },
+  "opt_no_sw": {
+    "message": "Keine Antwort vom Service Worker."
+  },
+  "opt_remove": {
+    "message": "Entfernen"
+  },
+  "opt_filter_status": {
+    "message": "Filtersatz v$1, aktualisiert $2. Nur Daten – nichts über Sie wird gesendet."
+  },
+  "opt_updating": {
+    "message": "Wird aktualisiert…"
+  },
+  "opt_updated": {
+    "message": "Aktualisiert (v$1, $2 zusätzliche Regeln)"
+  },
+  "opt_update_failed": {
+    "message": "Aktualisierung fehlgeschlagen ($1)"
+  },
+  "opt_saved": {
+    "message": "Gespeichert ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 Regeln"
+  },
+  "opt_updated_ago": {
+    "message": "aktualisiert $1"
+  },
+  "opt_not_fetched": {
+    "message": "noch nicht abgerufen"
+  },
+  "opt_failed_colon": {
+    "message": "Fehler: $1"
+  },
+  "opt_enter_https": {
+    "message": "Gültige https://-URL eingeben"
+  },
+  "opt_fetching": {
+    "message": "Wird abgerufen…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Abonniert: $1 Regeln ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Fehlgeschlagen ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Wird aktualisiert…"
+  },
+  "opt_refreshed": {
+    "message": "Aktualisiert ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Ungültige Einstellungsdatei."
+  },
+  "opt_no_response": {
+    "message": "keine Antwort"
+  },
+  "opt_h_engine": {
+    "message": "Anti-Adblock-Engine"
+  },
+  "opt_h_rulesets": {
+    "message": "Aktive statische Regelsätze"
+  },
+  "opt_h_live": {
+    "message": "Domains aus Live-Filtern"
+  },
+  "opt_h_last": {
+    "message": "Letzte Aktualisierung"
+  },
+  "opt_h_sig": {
+    "message": "Signaturen der Updates"
+  },
+  "opt_h_user": {
+    "message": "Eigene Filter / Positivliste-Regeln"
+  },
+  "opt_h_popup": {
+    "message": "Integrierte Pop-up-Hosts"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-Umgehung"
+  },
+  "opt_reason_frame": {
+    "message": "Frame einer fremden Domain in Werbegröße"
+  },
+  "opt_reason_sticky": {
+    "message": "Fixiertes Werbebanner"
   }
 }
