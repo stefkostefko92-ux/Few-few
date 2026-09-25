@@ -8,5 +8,12 @@ import type { BoyMaterials } from '../boy-materials';
 
 export function buildHelm(M: BoyMaterials, rand: Rand): THREE.Object3D {
   const style = rand() < 0.5 ? 'A' : 'B';
-  return buildHelmet(M, style) as THREE.Object3D;
+  const helm = buildHelmet(M, style) as THREE.Group;
+  // Хундскул бацинета (стил 'B') носи авентайл — мрежеста плоча, драпираща от шлема надолу върху
+  // раменете на рицаря (helmets.js). Изолирана без тяло под нея, лате-геометрията се разгъва в
+  // солиден сив КОНУС ("стойка" под шлема — обратна връзка от прегледа). Маха се само за
+  // самостоятелната икона; в живия бой аvентайлът си стои (пада върху раменете).
+  const aventail = helm.children.find((c) => (c as THREE.Mesh).material && ((c as THREE.Mesh).material as THREE.Material).name === 'mail');
+  if (aventail) helm.remove(aventail);
+  return helm;
 }

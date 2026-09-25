@@ -1,10 +1,10 @@
-// Клиентски кеш на /assets/items3d/{catalog,manifest}.json — зареждат се веднъж, споделят се
-// между Sprite (кой предмет има изпечена икона), ItemViewer3D и SetViewer3D.
+// Клиентски кеш на /assets/items3d/catalog.json — зарежда се веднъж, споделя се между
+// ItemViewer3D и SetViewer3D (само те строят живо 3D; решетката вече е изцяло на старата
+// рисувана икона, виж Sprite.tsx — там вече не влиза catalogClient).
 import type { CatalogEntry } from '../../combat/engine/items/theme';
 import { fallbackTheme } from '../../combat/engine/items/theme';
 
 let catalogPromise: Promise<Map<string, CatalogEntry>> | null = null;
-let manifestPromise: Promise<Set<string>> | null = null;
 
 function loadCatalog(): Promise<Map<string, CatalogEntry>> {
   if (!catalogPromise) {
@@ -14,25 +14,6 @@ function loadCatalog(): Promise<Map<string, CatalogEntry>> {
       .catch(() => new Map());
   }
   return catalogPromise;
-}
-
-function loadManifest(): Promise<Set<string>> {
-  if (!manifestPromise) {
-    manifestPromise = fetch('/assets/items3d/manifest.json')
-      .then((r) => (r.ok ? r.json() : { slugs: [] }))
-      .then((m: { slugs?: string[] }) => new Set(m.slugs || []))
-      .catch(() => new Set<string>());
-  }
-  return manifestPromise;
-}
-
-/** Синхронен, best-effort кеш за Sprite (не иска да чака Promise на всеки рендер на списък). */
-let manifestCache: Set<string> | null = null;
-loadManifest().then((s) => { manifestCache = s; });
-
-export function hasBakedIcon(slug: string | undefined): boolean {
-  if (!slug || !manifestCache) return false;
-  return manifestCache.has(slug);
 }
 
 export async function getCatalogEntry(slug: string, fallback: { tier: number; rarity: string; category: string; sub_type?: string }): Promise<CatalogEntry> {

@@ -1,9 +1,8 @@
-// Споделена рендер сцена за предмети — еднакво студийно осветление/кадриране за (1) изпечените
-// икони (bake-item-icons.mjs) и (2) живия 3D преглед (ItemViewer3D). WebGPU + WebGL2 fallback,
-// както main.js на boy (`new THREE.WebGPURenderer({..., forceWebGL})`). Environment map (PMREM
-// от RoomEnvironment — същия рецепта като world.js на boy: `new THREE.PMREMGenerator(renderer)`)
-// е задължителна за metalness/roughness материалите да имат реални отражения — без нея плочата/
-// ризницата изглеждат мъртви, плоски цветове.
+// Споделена рендер сцена за живия 3D преглед (ItemViewer3D/SetViewer3D). WebGPU + WebGL2
+// fallback, както main.js на boy (`new THREE.WebGPURenderer({..., forceWebGL})`). Environment
+// map (PMREM от RoomEnvironment — същия рецепта като world.js на boy: `new
+// THREE.PMREMGenerator(renderer)`) е задължителна за metalness/roughness материалите да имат
+// реални отражения — без нея плочата/ризницата изглеждат мъртви, плоски цветове.
 import * as THREE from 'three/webgpu';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
@@ -11,15 +10,29 @@ export interface StudioScene {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   pivot: THREE.Group;
+  /** Точката, в която камерата гледа (frameCamera-изчисленият център) — mountInteractiveViewer
+   *  ИНИЦИАЛИЗИРА орбитата около нея, не около world origin. Предметите не седят на (0,0,0)
+   *  (виж buildItem.ts group.position.y=1.35 — вдигане над grime зоната), затова орбита около
+   *  origin гледаше в празно пространство и предметът никога не се появяваше на екрана. */
+  target: THREE.Vector3;
 }
 
 const RARITY_RIM: Record<string, string> = {
   common: '#c7c8d6', uncommon: '#6ad8a4', rare: '#6aa7ff', epic: '#c294ff', legendary: '#ffd34d',
 };
 
+/** Фиксираният 3/4 ракурс на студийната камера — общ, за да го споделят frameCamera() (кадриране)
+ *  и всяко въртене „по диагонал" (roll около точно тази ос е чиста screen-space диагонал,
+ *  независимо от позицията на камерата — вижте tiltDeg в buildStudioScene). */
+export const VIEW_DIR = new THREE.Vector3(0.62, 0.5, 0.9).normalize();
+
 /** Топла ключова светлина + хладна контра + rim (тониран по редкост, замества старото плътно
- *  „кръгче" ореол зад предмета — виж buildItem.ts) + мека контактна сянка под предмета. */
-export function buildStudioScene(object: THREE.Object3D, opts: { envMap?: THREE.Texture | null; rarity?: string } = {}): StudioScene {
+ *  „кръгче" ореол зад предмета) + мека контактна сянка под предмета.
+ *  `tiltDeg`: завърта pivot-а около VIEW_DIR (screen-space диагонал) — оръжията (тънки
+ *  вертикални линии) иначе губят кадъра; помага и на лъка/жезъла. `focusOnly`: сянката пак пада
+ *  по ЦЕЛИЯ обект (мустакат манекен), но камерата вече е кадрирана само по частта с
+ *  `userData.excludeFromFraming` маркирана извън фокуса (виж mannequin.ts). */
+export function buildStudioScene(object: THREE.Object3D, opts: { envMap?: THREE.Texture | null; rarity?: string; tiltDeg?: number } = {}): StudioScene {
   const scene = new THREE.Scene();
   scene.background = null;
   if (opts.envMap) {
@@ -30,6 +43,18 @@ export function buildStudioScene(object: THREE.Object3D, opts: { envMap?: THREE.
   const pivot = new THREE.Group();
   pivot.add(object);
   scene.add(pivot);
+
+  if (opts.tiltDeg) {
+    // Ротацията е около ОСТА на камерата (VIEW_DIR), не около произволна world ос — това е
+    // чист "roll" в екранното пространство (изображението се завърта, независимо от 3/4 позата
+    // на камерата), затова диагоналът излиза предвидим за всеки предмет.
+    const box = new THREE.Box3().setFromObject(object);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    object.position.sub(center);
+    pivot.position.copy(center);
+    pivot.quaternion.setFromAxisAngle(VIEW_DIR, THREE.MathUtils.degToRad(opts.tiltDeg));
+  }
 
   const key = new THREE.DirectionalLight(0xffdfb0, 1.7);
   key.position.set(2.2, 2.6, 1.8);
@@ -49,26 +74,53 @@ export function buildStudioScene(object: THREE.Object3D, opts: { envMap?: THREE.
   scene.add(hemi);
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 20);
-  frameCamera(camera, object);
-  scene.add(contactShadow(object));
+  const target = frameCamera(camera, pivot);
+  scene.add(contactShadow(pivot));
 
-  return { scene, camera, pivot };
+  return { scene, camera, pivot, target };
 }
 
-/** Мека, приплесната елипса под предмета (multiply blend) — евтин „contact shadow" trick, без
- *  реален shadow-map pass (незначителна цена, стабилно под софтуерен WebGL). */
+let cachedShadowTex: THREE.Texture | null = null;
+/** 128×128 радиален градиент (плътно в центъра → напълно прозрачно на ръба) — заменя старото
+ *  плътно кръгче „стойка" под предмета (обратна връзка от прегледа: реещ се предмет с мека сянка
+ *  е по-добре от твърд диск, който на ъгъл чете се като поставка/пиедестал). */
+function softShadowTexture(): THREE.Texture {
+  if (cachedShadowTex) return cachedShadowTex;
+  if (typeof document === 'undefined') {
+    cachedShadowTex = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1, THREE.RGBAFormat);
+    cachedShadowTex.needsUpdate = true;
+    return cachedShadowTex;
+  }
+  const size = 128;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0, 'rgba(0,0,0,0.5)');
+  g.addColorStop(0.55, 'rgba(0,0,0,0.22)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  cachedShadowTex = new THREE.CanvasTexture(c);
+  return cachedShadowTex;
+}
+
+/** Мека, приплесната сянка под предмета (не твърд диск) — евтин trick, без реален shadow-map
+ *  pass. Винаги смятана по ЦЯЛОТО тяло (не по фокус-под-множеството), за да не се свие до
+ *  нелепо малко петно, когато камерата е кадрирана само по една част от манекен. */
 function contactShadow(object: THREE.Object3D): THREE.Mesh {
-  const box = boundingBoxForFraming(object);
+  const box = boundingBox(object, false);
   const size = new THREE.Vector3();
   box.getSize(size);
   const center = new THREE.Vector3();
   box.getCenter(center);
-  const r = Math.max(size.x, size.z, 0.05) * 0.55;
-  const geo = new THREE.CircleGeometry(r, 24);
-  const mat = new THREE.MeshBasicNodeMaterial({ color: 0x000000, transparent: true, opacity: 0.35, depthWrite: false });
+  const r = Math.max(size.x, size.z, 0.05) * 0.75;
+  const geo = new THREE.PlaneGeometry(r * 2, r * 2);
+  const mat = new THREE.MeshBasicNodeMaterial({ color: 0x000000, map: softShadowTexture(), transparent: true, depthWrite: false });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(center.x, box.min.y + 0.0005, center.z);
+  mesh.userData.excludeFromFraming = true;
   return mesh;
 }
 
@@ -83,36 +135,59 @@ export function buildEnvironmentMap(renderer: THREE.WebGPURenderer): THREE.Textu
   return cachedPmrem;
 }
 
-/** Box3 по видимите мрежи, БЕЗ тези маркирани `userData.excludeFromFraming` (ореолът на
- *  редкостта е нарочно по-голям от предмета — иначе бута камерата назад и предметът се губи). */
-function boundingBoxForFraming(object: THREE.Object3D): THREE.Box3 {
+/** Box3 по видимите мрежи. `respectExclude=true` пропуска `userData.excludeFromFraming` (за
+ *  манекен-фокус кадриране И за собствената си сянка-равнина); `false` брои всичко (сянката пада
+ *  под целия манекен, не само фокус-частта). */
+function boundingBox(objectOrList: THREE.Object3D | THREE.Object3D[], respectExclude = true): THREE.Box3 {
+  const roots = Array.isArray(objectOrList) ? objectOrList : [objectOrList];
   const box = new THREE.Box3();
   const childBox = new THREE.Box3();
-  object.updateWorldMatrix(true, true);
-  object.traverse((o) => {
-    const mesh = o as THREE.Mesh;
-    if (!mesh.isMesh || !mesh.geometry || mesh.userData.excludeFromFraming) return;
-    childBox.setFromObject(mesh);
-    box.union(childBox);
-  });
-  if (box.isEmpty()) box.setFromObject(object);
+  for (const object of roots) {
+    object.updateWorldMatrix(true, true);
+    object.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.geometry) return;
+      if (respectExclude && mesh.userData.excludeFromFraming) return;
+      childBox.setFromObject(mesh);
+      box.union(childBox);
+    });
+  }
+  if (box.isEmpty() && roots[0]) box.setFromObject(roots[0]);
   return box;
 }
 
-/** Позиционира камерата на 3/4 ракурс, кадрирана точно по bounding sphere на предмета. */
-export function frameCamera(camera: THREE.PerspectiveCamera, object: THREE.Object3D, margin = 1.02): void {
-  const box = boundingBoxForFraming(object);
-  const sphere = new THREE.Sphere();
-  box.getBoundingSphere(sphere);
-  const r = Math.max(sphere.radius, 0.02);
-  const fov = (camera.fov * Math.PI) / 180;
-  const dist = (r * margin) / Math.sin(fov / 2);
-  const dir = new THREE.Vector3(0.62, 0.5, 0.9).normalize();
-  camera.position.copy(sphere.center).addScaledVector(dir, dist);
+/** Позиционира камерата на фиксирания 3/4 ракурс (VIEW_DIR), кадрирана по ПРОЕКТИРАНИЯ
+ *  правоъгълник на bounding box-а върху равнината на камерата — не по bounding sphere. Тънки
+ *  обекти (меч, лък, жезъл) под сферично кадриране оставят огромно празно поле отляво/дясно;
+ *  правоъгълното кадриране ги напасва плътно и по двете оси. */
+export function frameCamera(camera: THREE.PerspectiveCamera, object: THREE.Object3D | THREE.Object3D[], margin = 1.08): THREE.Vector3 {
+  const box = boundingBox(object, true);
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  const dir = VIEW_DIR;
+  const worldUp = Math.abs(dir.y) > 0.98 ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0);
+  const right = new THREE.Vector3().crossVectors(dir, worldUp).normalize();
+  const up = new THREE.Vector3().crossVectors(right, dir).normalize();
+  let maxR = 0;
+  let maxU = 0;
+  const corner = new THREE.Vector3();
+  for (let i = 0; i < 8; i++) {
+    corner.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).sub(center);
+    maxR = Math.max(maxR, Math.abs(corner.dot(right)));
+    maxU = Math.max(maxU, Math.abs(corner.dot(up)));
+  }
+  maxR = Math.max(maxR, 0.02);
+  maxU = Math.max(maxU, 0.02);
+  const fovY = (camera.fov * Math.PI) / 180;
+  const fovX = 2 * Math.atan(Math.tan(fovY / 2) * camera.aspect);
+  const dist = Math.max(maxU / Math.tan(fovY / 2), maxR / Math.tan(fovX / 2)) * margin;
+  const r = Math.max(maxR, maxU);
+  camera.position.copy(center).addScaledVector(dir, dist);
   camera.near = Math.max(0.01, dist - r * 3);
   camera.far = dist + r * 6;
-  camera.lookAt(sphere.center);
+  camera.lookAt(center);
   camera.updateProjectionMatrix();
+  return center;
 }
 
 export interface RendererHandle {
@@ -156,7 +231,7 @@ export interface ViewerHandle {
   resize(): void;
   /** Прекадрира орбитата около нов обект (напр. „изолирай парче" в SetViewer3D) без да губи
    *  влаченето/зума на потребителя за следващия жест. */
-  refit(object: THREE.Object3D, margin?: number): void;
+  refit(object: THREE.Object3D | THREE.Object3D[], margin?: number): void;
 }
 
 /**
@@ -165,7 +240,7 @@ export interface ViewerHandle {
  * а пряка интеракция). Пълно почистване при dispose(): GPU памет, слушатели, rAF.
  */
 export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THREE.WebGPURenderer, studio: StudioScene, opts: { autoRotate?: boolean; dprCap?: number; maxRenderSize?: number } = {}): ViewerHandle {
-  const { scene, camera, pivot } = studio;
+  const { scene, camera, target: studioTarget } = studio;
   const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let autoRotate = (opts.autoRotate ?? true) && !reducedMotion;
   const dprCap = opts.dprCap ?? 2;
@@ -180,10 +255,13 @@ export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THRE
   let lastY = 0;
   let theta = 0.7;
   let phi = 1.15;
-  let radius = camera.position.distanceTo(pivot.position);
-  // Орбита около `target`, не винаги (0,0,0) — SetViewer3D подрежда парчетата в кръг ИЗВЪН
-  // произхода, а „изолирай парче" пре-центрира орбитата към именно това парче (виж refit()).
-  const target = new THREE.Vector3();
+  let radius = camera.position.distanceTo(studioTarget);
+  // Орбита около `target`, ИНИЦИАЛИЗИРАН от studio.target (frameCamera-изчисленият център),
+  // НЕ world origin — предметите не седят на (0,0,0) (buildItem.ts вдига group.position.y=1.35
+  // над grime зоната), а SetViewer3D подрежда парчетата в кръг ИЗВЪН произхода; орбита около
+  // origin гледаше в празно пространство и обектът никога не се появяваше на екрана. „Изолирай
+  // парче" пре-центрира орбитата към конкретно парче (виж refit()).
+  const target = studioTarget.clone();
   const applyOrbit = () => {
     phi = THREE.MathUtils.clamp(phi, 0.35, Math.PI - 0.35);
     camera.position.setFromSphericalCoords(radius, phi, theta).add(target);
@@ -262,8 +340,8 @@ export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THRE
     },
     setAutoRotate(on: boolean): void { autoRotate = on && !reducedMotion; },
     resize,
-    refit(object: THREE.Object3D, margin = 1.35): void {
-      const box = boundingBoxForFraming(object);
+    refit(object: THREE.Object3D | THREE.Object3D[], margin = 1.35): void {
+      const box = boundingBox(object, true);
       const sphere = new THREE.Sphere();
       box.getBoundingSphere(sphere);
       const r = Math.max(sphere.radius, 0.02);

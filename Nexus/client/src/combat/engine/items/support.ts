@@ -1,35 +1,54 @@
-// Кои слотове реално се бият от новата 3D геометрия на boy (виж buildItem.ts). Всичко останало
-// СЪЗНАТЕЛНО остава на старата HD снимка (client/public/assets/icons/) — boy не рисува пръстени/
-// амулети изобщо, а брадвата/копието нямат боен силует в него (само меч/кама/жезъл/лък/боздуган).
-// Пазено в синхрон РЪЧНО с bake-item-icons.mjs (Node скрипт, не може да internal import-не .ts) —
-// buildItem.test.js гейтва двете чрез `всеки слот строи/скача коректно` тестовете.
+// Решава КАК изглежда предметът във въртящия се преглед (ItemViewer3DHost) — решетката
+// (инвентар/пазар/сетове) вече е изцяло на старата рисувана икона за всеки слот (виж Sprite.tsx),
+// смесването на два стила в една решетка изглеждаше разнородно. 3D живее само тук, в прегледа:
+//
+//   'standalone' — самостоятелен предмет (шлем/ръкавица/щит/оръжие), както преди.
+//   'mannequin'  — облечен на рицарски манекен (нагръдник+наплечници/наколенник+сабатон/наметало
+//                  сами по себе си четяха се като „делва"/двусмислено извън тяло — виж историята
+//                  в git log-а на този файл).
+//   'icon'       — boy няма геометрия ЗА ТОЗИ КОНКРЕТЕН предмет → голяма стара икона в прегледа,
+//                  честно, без 3D.
+//
+// Пазено в синхрон само тук (един файл, четен от buildItem.ts/mannequin.ts/ItemViewer3DHost.tsx).
 import type { CatalogEntry } from './theme';
 
-const SUPPORTED_WEAPON_ICONS = new Set(['sword', 'dagger', 'staff', 'bow', 'mace']);
+export type PreviewMode = 'standalone' | 'mannequin' | 'icon';
 
-export function supports3DIcon(entry: Pick<CatalogEntry, 'category' | 'icon' | 'sub_type'>): boolean {
+const STANDALONE_WEAPON_ICONS = new Set(['sword', 'dagger', 'staff', 'bow', 'mace']);
+/** Тонки боздугани/жезли (`staff`/`bow`) също се диагонализират в прегледа — вижте
+ *  ItemViewer3DHost.tsx tiltDeg. */
+export const DIAGONAL_WEAPON_ICONS = STANDALONE_WEAPON_ICONS;
+
+// boy моделира само ДВА затворени стоманени шлема (great helm / hounskull bascinet) — качулка,
+// маска, диадема, качулка-качулка, корона, шапка нямат представяне там. Имената в каталога
+// разграничават: „Cloth Hood“, „Nightveil Cowl“, „Trial Crown“, „Cutpurse Mask“ и т.н. не са
+// затворени бойни шлемове — слагането им на greatHelm/hounskull геометрия е подвеждащо (вижте
+// прегледа: „cloth_hood“ излизаше като метален рицарски шлем).
+const NOT_A_CLOSED_HELM = /\b(hood|cowl|circlet|crown|cap|veil|mask|diadem|coif)\b/i;
+
+export function previewMode(entry: Pick<CatalogEntry, 'category' | 'icon' | 'sub_type' | 'name'>): PreviewMode {
   switch (entry.category) {
     case 'ring':
     case 'amulet':
-      // boy не моделира бижута изобщо — старият процедурен генератор ги рисуваше като „кръг от
-      // халки" (отхвърлено при преглед); няма по-добра 3D алтернатива, стария JPG остава.
-      return false;
-    case 'armor':
-      // Нагръдник+наплечници (buildChest+buildPauldron) стои изолирано без тяло вътре и чете се
-      // като „делва/урна", не като броня — виж бележката в ВРАТА ЗА КАЧЕСТВО (задачата).
-      // Старата JPG икона остава по-четлива на малък размер; boy пак се използва за живата битка.
-      return false;
-    case 'boots':
-      // Наколенник+сабатон (buildShin+buildFoot) изолирано чете се двусмислено (коляното прилича
-      // на глава/уши, стъпалото се губи под камерата) — старата JPG икона е по-ясен ботуш.
-      return false;
-    case 'cloak':
-      // Cape (cloth.js) settle-ната симулация ляга плоско/усукано — четлива като плат, но НЕ
-      // недвусмислено като „наметало" на 256px; старата драпирана JPG икона печели.
-      return false;
+      return 'icon';
     case 'weapon':
-      return SUPPORTED_WEAPON_ICONS.has(entry.icon || entry.sub_type || 'sword');
+      return STANDALONE_WEAPON_ICONS.has(entry.icon || entry.sub_type || 'sword') ? 'standalone' : 'icon';
+    case 'helm':
+      return NOT_A_CLOSED_HELM.test(entry.name) ? 'icon' : 'standalone';
+    case 'gloves':
+    case 'shield':
+      return 'standalone';
+    case 'armor':
+    case 'boots':
+    case 'cloak':
+      return 'mannequin';
     default:
-      return true; // shield, helm, gloves
+      return 'icon';
   }
+}
+
+/** Обратно съвместим булев гейт (bake скриптове/тестове преди искаха само да/не) — сега значи
+ *  „има ли изобщо 3D тук, независимо дали standalone или mannequin". */
+export function supports3DIcon(entry: Pick<CatalogEntry, 'category' | 'icon' | 'sub_type' | 'name'>): boolean {
+  return previewMode(entry) !== 'icon';
 }

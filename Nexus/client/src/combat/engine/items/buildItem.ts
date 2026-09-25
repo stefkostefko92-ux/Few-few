@@ -1,28 +1,24 @@
-// Обща библиотека — предметите се обличат в СЪЩАТА геометрия/материя, с която боят облича
-// рицарите (boy/src/{helmets,armor,weapons,weapons-ranged,heraldry,cloth,materials}.js), само
-// тонирана по темата на предмета (catalog.json → theme.primary/secondary/trim, през
-// loadout.js tintedMaterials). Използва се за: (1) изпечени икони (bake-item-icons.mjs),
-// (2) живия 3D преглед (ItemViewer3D). Връща чист THREE.Object3D + dispose(), без React/DOM.
-//
-// НЕ всеки слот се бие от boy — вижте support.ts: boy не моделира пръстени/амулети изобщо, а
-// брадва/копие нямат боен силует в него (само меч/кама/жезъл/лък/боздуган). За тези
-// supports3DIcon() връща false и buildItem() връща null — извикващият (Sprite/bake скрипта)
-// пада обратно на старата HD снимка (client/public/assets/icons/), точно както задачата иска.
+// Самостоятелен предмет (шлем/ръкавица/щит/оръжие — виж support.ts previewMode: 'standalone')
+// в СЪЩАТА геометрия/материя, с която боят облича рицарите (boy/src/{helmets,armor,weapons,
+// weapons-ranged,materials}.js), тонирана по темата на предмета през loadout.js tintedMaterials.
+// Останалите режими на преглед живеят другаде: 'mannequin' (нагръдник/наколенник/наметало,
+// изолирани сами четяха се зле — виж mannequin.ts) и 'icon' (boy няма геометрия — голяма стара
+// снимка в прегледа, viz ItemViewer3DHost.tsx). Връща чист THREE.Object3D + dispose(), без DOM.
 import * as THREE from 'three/webgpu';
 import { getBoyMaterials, tintForItem, type BoyMaterials } from './boy-materials';
 import { decalMaterial } from './materials';
 import { buildMotifTexture } from './motifTexture';
+import { pickTint } from './tint';
 import { rngFor } from './rng';
 import { buildHelm } from './slots/helm';
-import { buildGloves, buildBoots } from './slots/hands';
-import { buildCloak } from './slots/cloak';
+import { buildGloves } from './slots/hands';
 import { buildShield } from './slots/shield';
 import { buildWeapon } from './slots/weapons';
-import { supports3DIcon } from './support';
+import { previewMode } from './support';
 import type { CatalogEntry } from './theme';
 
 export interface BuildItemOpts {
-  /** Слага мотив-декал на видима плоча (гърди/чело); по подразбиране true. */
+  /** Слага мотив-декал на видима плоча (чело); по подразбиране true. */
   decal?: boolean;
 }
 
@@ -32,10 +28,10 @@ export interface BuiltItem {
 }
 
 /** Disposeва САМО геометриите (винаги уникални за предмета) — материалите на boy СПОДЕЛЕНИ
- *  (mail/leather/wood/gambeson/slit/capeA/capeB/banner живеят за целия живот на приложението,
- *  точно като PMREM env картата в renderScene.ts); disposeването им тук би счупило следващия
- *  предмет, построен след този. Собствените клонинги (тонирани plate/trim/blade, shieldFace,
- *  декал) се disposeват отделно, изрично — виж `owned` по-долу. */
+ *  (mail/leather/wood/gambeson/slit живеят за целия живот на приложението, точно като PMREM env
+ *  картата в renderScene.ts); disposeването им тук би счупило следващия предмет, построен след
+ *  този. Собствените клонинги (тонирани plate/trim/blade, shieldFace, декал) се disposeват
+ *  отделно, изрично — виж `owned` по-долу. */
 function disposeGeometries(root: THREE.Object3D): void {
   root.traverse((o) => {
     const mesh = o as THREE.Mesh;
@@ -68,16 +64,12 @@ function normalizePivot(obj: THREE.Object3D): void {
   obj.updateMatrixWorld(true);
 }
 
-function pickTint(entry: CatalogEntry): { plate: string; trim: string; blade: string } {
-  return { plate: entry.theme.primary, trim: entry.theme.trim, blade: entry.theme.secondary };
-}
-
 export async function buildItem(entry: CatalogEntry, opts: BuildItemOpts = {}): Promise<BuiltItem | null> {
-  if (!supports3DIcon(entry)) return null;
+  if (previewMode(entry) !== 'standalone') return null;
   const { decal = true } = opts;
   const rand = rngFor(entry.slug);
   const base: BoyMaterials = await getBoyMaterials();
-  const tinted = tintForItem(base, pickTint(entry));
+  const tinted = tintForItem(base, pickTint(entry.theme));
   const M = tinted.M;
   const owned: Array<{ dispose(): void }> = [{ dispose: () => tinted.dispose() }];
 
@@ -99,17 +91,10 @@ export async function buildItem(entry: CatalogEntry, opts: BuildItemOpts = {}): 
     }
     case 'helm': piece = buildHelm(M, rand); break;
     case 'gloves': piece = buildGloves(M, rand); break;
-    case 'boots': piece = buildBoots(M, rand); break;
-    case 'cloak': {
-      const built = buildCloak(M, entry.theme.primary, rand);
-      owned.push(built);
-      piece = built.object;
-      break;
-    }
     default: piece = null;
   }
   if (!piece) {
-    // supports3DIcon вече би трябвало да е спряло дотук — защитен изход, не гнило състояние.
+    // previewMode вече би трябвало да е спряло дотук — защитен изход, не гнило състояние.
     tinted.dispose();
     return null;
   }
@@ -121,11 +106,11 @@ export async function buildItem(entry: CatalogEntry, opts: BuildItemOpts = {}): 
 
   normalizePivot(group);
   // boy/surface.js applyGrime() reads WORLD-space Y assuming a full knight standing in mud (fades
-  // out above y≈0.55m) — an icon's own local geometry sits near y≈0 (helm/boots/etc. all built
+  // out above y≈0.55m) — an icon's own local geometry sits near y≈0 (helm/gloves/etc. all built
   // around their own joint origin), which reads as "ankle-deep". An item on a shop shelf isn't
   // standing in a battlefield puddle, so we deliberately lift it above the grime band instead of
   // simulating mud on a floating icon. frameCamera()/contactShadow() in renderScene.ts both
-  // re-center on the object's own bounding sphere, so this is invisible to the camera framing.
+  // re-center on the object's own bounding box, so this is invisible to the camera framing.
   group.position.y = 1.35;
 
   return {

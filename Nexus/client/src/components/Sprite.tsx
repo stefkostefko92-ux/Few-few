@@ -1,6 +1,6 @@
 import React from 'react';
-import { hasBakedIcon } from './items3d/catalogClient';
 import { openItemViewer3D } from './items3d/viewerStore';
+import { resolveIconSlug } from './items3d/iconSlug';
 
 /**
  * Renders a CC-BY-3.0 SVG sprite from /public/sprites/ as a CSS mask.
@@ -92,35 +92,6 @@ interface Props {
   raw?: Sprite3DRaw;
 }
 
-/** Resolve a base slug (without -tN suffix) into a tier-aware slug, falling
- *  back gracefully when the asset isn't available. */
-function resolveSlug(name?: string, category?: string, subType?: string, tier?: number): string {
-  if (name && !name.match(/^(sword|dagger|bow|staff|axe|mace|shield|helm|armor|gloves|boots|ring|amulet|gem)$/)) {
-    return name; // already specific (e.g. "monster-wolf", "camp-fish")
-  }
-  const base =
-    name ||
-    (category === 'weapon' ? (subType || 'sword') :
-     category && CATEGORY_BASES[category] ? CATEGORY_BASES[category] : 'sword');
-  const t = Math.min(10, Math.max(1, tier || 1));
-  if (TIERED_BASES.has(base)) return `${base}-t${t}`;
-  return base;
-}
-
-const CATEGORY_BASES: Record<string, string> = {
-  shield: 'shield', helm: 'helm', armor: 'armor', gloves: 'gloves', boots: 'boots',
-  ring: 'ring', amulet: 'amulet', potion: 'potion-red', cloak: 'cloak', gem: 'gem',
-};
-/* Equipment slots that ship 10 tier variants per slot (T1 crude iron →
-   T10 divine radiance). Sprite resolves `${base}-t${tier}.jpg` when a
-   tier is supplied; missing tier files fall through to the bare
-   `${base}.jpg` thanks to the onError handler below. */
-const TIERED_BASES = new Set<string>([
-  'sword', 'axe', 'bow', 'dagger', 'mace', 'staff', 'spear',
-  'armor', 'helm', 'boots', 'gloves', 'shield', 'cloak',
-  'amulet', 'ring', 'gem',
-]);
-
 /** Rarity → frame border colour. Photos are shown un-tinted; the badge
  *  frame around them communicates rarity instead of recolouring the art. */
 const RARITY_FRAME: Record<Rarity, { border: string; glow: string }> = {
@@ -134,7 +105,7 @@ const RARITY_FRAME: Record<Rarity, { border: string; glow: string }> = {
 export default function Sprite({
   name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className, raw,
 }: Props): React.ReactElement {
-  const slug = resolveSlug(name, category, subType, tier);
+  const slug = resolveIconSlug(name, category, subType, tier);
   const e = enchant > 0 ? ENCHANT_STYLE[Math.min(5, enchant)] : null;
   const frame = rarity ? RARITY_FRAME[rarity] : RARITY_FRAME.common;
   // SVG tint gradient kept as a fallback for slugs where we don't yet
@@ -145,14 +116,12 @@ export default function Sprite({
     category && TONE_GRADIENT[category] ? TONE_GRADIENT[category] :
     TONE_GRADIENT.weapon;
 
-  // Изпечена 3D икона (viждай задачата „нарисувай предметите в 3D") взима предимство пред
-  // старата HD снимка, когато manifest-ът потвърди наличие по slug.
-  // manifest.json съдържа САМО слуговете, за които boy реално има 3D геометрия (виж
-  // support.ts/bake-item-icons.mjs) — пръстен/амулет/брадва/копие никога няма да са в него,
-  // остават на старата HD снимка, без клик за 3D преглед.
-  const hasBaked = Boolean(raw?.slug && hasBakedIcon(raw.slug));
-  const baked3d = hasBaked ? `/assets/items3d/${raw!.slug}.webp` : null;
-  const clickable = hasBaked;
+  // Решетката (инвентар/пазар/сетове) остава ИЗЦЯЛО на старата рисувана икона за всеки слот —
+  // смесване на рисуван стил с реалистичен 3D метал в една решетка изглежда разнородно (решение
+  // след преглед на contact sheet-овете, виж CLAUDE.md/handoff бележката). 3D-то живее само във
+  // въртящия се преглед (ItemViewer3DHost), който играчът отваря с клик — вижте buildItem.ts за
+  // кой слот реално получава 3D там (останалите показват голяма стара икона, честно).
+  const clickable = Boolean(raw?.slug && raw.category !== 'potion');
   const openViewer = () => {
     if (!raw) return;
     openItemViewer3D({ kind: 'item', slug: raw.slug, name: raw.name, category: raw.category, sub_type: raw.sub_type, tier: raw.tier, rarity: raw.rarity });
@@ -190,37 +159,26 @@ export default function Sprite({
           }}
         />
       )}
-      {/* Изпечена 3D икона — виж bake-item-icons.mjs; приоритетна пред снимката. */}
-      {baked3d && (
-        <img
-          src={baked3d}
-          alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', zIndex: 1 }}
-          loading="lazy"
-        />
-      )}
       {/* HD photo of the actual item / class / monster. If the photo is
           not present we fall through to the SVG silhouette so the icon
           system degrades gracefully. */}
-      {!baked3d && (
-        <img
-          src={`/assets/icons/${slug}.jpg`}
-          alt=""
-          style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'cover', objectPosition: 'center',
-            filter: 'saturate(.95) contrast(1.06)',
-            zIndex: 1,
-          }}
-          onError={(ev) => {
-            const img = ev.currentTarget as HTMLImageElement;
-            img.style.display = 'none';
-            const fb = img.nextElementSibling as HTMLElement | null;
-            if (fb) fb.style.display = 'block';
-          }}
-          loading="lazy"
-        />
-      )}
+      <img
+        src={`/assets/icons/${slug}.jpg`}
+        alt=""
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center',
+          filter: 'saturate(.95) contrast(1.06)',
+          zIndex: 1,
+        }}
+        onError={(ev) => {
+          const img = ev.currentTarget as HTMLImageElement;
+          img.style.display = 'none';
+          const fb = img.nextElementSibling as HTMLElement | null;
+          if (fb) fb.style.display = 'block';
+        }}
+        loading="lazy"
+      />
       <span
         className="sprite-shape"
         style={{
