@@ -30,3 +30,6 @@
 {"t":"handoff","ts":"2026-09-24T15:54:45.668Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"блокер"}
 {"t":"handoff","ts":"2026-09-24T15:56:33.848Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-24T16:00:18.720Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T05:31:58.772Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T05:32:56.300Z","id":"auto","from":"kodadjiyata","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T05:33:20.843Z","id":"auto","from":"razbivacha","to":"kodadjiyata","status":"има бележки"}
