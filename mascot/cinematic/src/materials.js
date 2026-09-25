@@ -47,8 +47,12 @@ function withRimGlow(mat, color, strength, gradient) {
     shader.fragmentShader = frag.replace(
       '#include <dithering_fragment>',
       `#include <dithering_fragment>
-        float rimFres = pow(1.0 - max(dot(normalize(vViewPosition), normalize(vNormal)), 0.0), 2.6);
-        gl_FragColor.rgb += uRimColor * rimFres * uRimStrength;${gradLine}`,
+        // Rim fresnel, split a hair per channel (blue falls off fastest, red slowest) so the very
+        // edge of the jelly carries a thin warm-to-cool dispersion fringe instead of a flat-tinted
+        // rim — the same read a real refractive edge gives under a studio key light.
+        float ndv = max(dot(normalize(vViewPosition), normalize(vNormal)), 0.0);
+        vec3 dispersion = vec3(pow(1.0 - ndv, 2.3), pow(1.0 - ndv, 2.6), pow(1.0 - ndv, 3.1));
+        gl_FragColor.rgb += uRimColor * dispersion * uRimStrength;${gradLine}`,
     );
   };
   mat.customProgramCacheKey = () => `rim-${color}-${strength}-${gradient ? gradient.top + gradient.bottom : ''}`;
@@ -73,7 +77,7 @@ export function createMaterials(T, palette) {
       clearcoat: 1,
       clearcoatRoughness: 0.32, // spreads the specular so one key light does not become a hard hotspot
       normalMap: T.carbon.normalMap,
-      normalScale: v2(0.05), // barely visible — sealed inside, not printed on top
+      normalScale: v2(0.09), // barely visible weave + skin micro-imperfections — sealed inside, not printed on top
       attenuationColor: new THREE.Color(p.olive),
       attenuationDistance: 2.2, // almost no self-absorption — the gradient tint carries the color now
       emissive: new THREE.Color(p.olive),
@@ -95,11 +99,14 @@ export function createMaterials(T, palette) {
 
   // Lacquered acetate: soft, distributed specular instead of a razor clearcoat, so a bright key
   // light does not blow the rim into a single white triangle (the old "broken glasses" look).
-  const acetate = new THREE.MeshPhysicalMaterial({ name: 'acetate', color: p.ink, roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.35, envMapIntensity: 0.5, specularIntensity: 0.4 });
+  const acetate = new THREE.MeshPhysicalMaterial({
+    name: 'acetate', color: p.ink, roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.35, envMapIntensity: 0.5, specularIntensity: 0.4,
+    normalMap: T.scratch.normalMap, normalScale: v2(0.12), roughnessMap: T.scratch.roughnessMap,
+  });
   const lens = lensGlassMaterial(p);
   // A painted-on softbox catchlight for the lens (face.js): a controllable soft rounded highlight
   // instead of whatever hard-edged shape our 3-flat-panel environment happens to reflect there.
-  const catchlight = new THREE.MeshBasicMaterial({ name: 'catchlight', map: T.radial, color: 0xffffff, transparent: true, opacity: 0.4, depthWrite: false, blending: THREE.AdditiveBlending });
+  const catchlight = new THREE.MeshBasicMaterial({ name: 'catchlight', map: T.radial, color: 0xffffff, transparent: true, opacity: 0.3, depthWrite: false, blending: THREE.AdditiveBlending });
 
   // Wet-eye read: a real clearcoat layer over the sclera, not just a rougher diffuse — a moist eye
   // has its own thin, glossy tear-film highlight separate from the lens' own reflection.
@@ -114,19 +121,53 @@ export function createMaterials(T, palette) {
   const pupil = new THREE.MeshStandardMaterial({ name: 'pupil', color: 0x000000, roughness: 0.06, envMapIntensity: 0.55 });
   const sparkle = new THREE.MeshBasicMaterial({ name: 'sparkle', color: 0xffffff, toneMapped: false });
 
+  // Brows: matte and lightly fibrous (the felt normal map, at a much finer scale, reads as short
+  // fine hairs rather than woven fabric) instead of the glossy acetate the plastic frames use —
+  // a lacquered-plastic brow was the "too CG-perfect" tell the brief called out (defect: thin,
+  // flat, plastic-looking brows).
+  const browFuzz = new THREE.MeshStandardMaterial({ name: 'browFuzz', color: p.ink, roughness: 0.82, normalMap: T.felt.normalMap, normalScale: v2(0.35), envMapIntensity: 0.25 });
+
   const felt = new THREE.MeshStandardMaterial({ name: 'felt', color: p.ink, roughness: 0.66, normalMap: T.felt.normalMap, roughnessMap: T.felt.roughnessMap, envMapIntensity: 0.5 });
   const feltTop = new THREE.MeshStandardMaterial({ name: 'feltTop', color: p.inkSoft, roughness: 0.72, normalMap: T.felt.normalMap, roughnessMap: T.felt.roughnessMap, envMapIntensity: 0.6 });
   const gold = new THREE.MeshPhysicalMaterial({ name: 'gold', color: p.gold, metalness: 1, roughness: 0.28, envMapIntensity: 1.5, clearcoat: 0.25 });
 
-  const satin = new THREE.MeshPhysicalMaterial({ name: 'satin', color: p.inkSoft, roughness: 0.3, sheen: 1, sheenRoughness: 0.2, sheenColor: new THREE.Color(p.pale), normalMap: T.satin.normalMap, normalScale: v2(0.6), envMapIntensity: 1.3, clearcoat: 0.15, clearcoatRoughness: 0.4 });
+  // Soft satin/silk-twill, not lacquered plastic: the earlier version's high envMapIntensity plus a
+  // tight clearcoat mirrored our three flat softbox panels almost verbatim off the wing's bevelled
+  // facets — sharp rectangular highlights that read as faceted black metal (2026-09-25 review defect).
+  // Dropping the clearcoat and the reflection strength, and painting the actual weave into roughness
+  // (not just normal), is what turns that same geometry back into cloth: the highlight softens into a
+  // sheen bloom instead of a mirror facet, and a close-up shows fine fiber, not a smooth plastic sheet.
+  const satin = new THREE.MeshPhysicalMaterial({
+    name: 'satin', color: p.inkSoft, roughness: 0.46, sheen: 1, sheenRoughness: 0.35, sheenColor: new THREE.Color(p.pale),
+    normalMap: T.satin.normalMap, normalScale: v2(0.5), roughnessMap: T.satin.roughnessMap, envMapIntensity: 0.35, clearcoat: 0,
+  });
   const satinKnot = satin.clone();
   satinKnot.color = new THREE.Color(p.inkSoft);
+
+  // Internal bubbles get their own, slightly more present fresnel shell than the big flat glasses
+  // lens (`lensGlassMaterial` below is tuned to stay near-invisible dead-on so the iris reads through
+  // it) — a small sphere is all rim, no flat face, so it needs a higher base alpha to read as a real
+  // trapped bubble refracting light inside the jelly rather than vanish (brief: "мехурчетата вътре —
+  // да се четат").
+  const bubble = new THREE.ShaderMaterial({
+    name: 'bubble',
+    transparent: true,
+    depthWrite: false,
+    uniforms: { uColor: { value: new THREE.Color(0xf3fbe8) }, uRim: { value: new THREE.Color(p.pale) } },
+    vertexShader: /* glsl */ `varying vec3 vN; varying vec3 vV; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor; uniform vec3 uRim; varying vec3 vN; varying vec3 vV;
+      void main() {
+        float fres = pow(1.0 - max(dot(vV, normalize(vN)), 0.0), 2.0);
+        gl_FragColor = vec4(uColor + uRim * fres, 0.16 + fres * 0.6);
+      }`,
+  });
 
   const ground = new THREE.ShadowMaterial({ opacity: 0.48 });
   const glow = new THREE.MeshBasicMaterial({ color: p.olive, map: T.radial, transparent: true, opacity: 0.4, depthWrite: false });
   const caustic = causticMaterial(p);
 
-  return { jelly, limb, fabric, acetate, lens, catchlight, sclera, iris, inkPaint, pupil, sparkle, felt, feltTop, gold, satin, satinKnot, ground, glow, caustic };
+  return { jelly, limb, fabric, acetate, lens, catchlight, sclera, iris, inkPaint, pupil, sparkle, browFuzz, felt, feltTop, gold, satin, satinKnot, bubble, ground, glow, caustic };
 }
 
 // The lens: a small unlit fresnel shader instead of a lit `transparent`/`transmission` material —

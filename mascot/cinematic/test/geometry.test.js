@@ -4,16 +4,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { createMaterials } from '../src/materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures } from '../src/textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures, scratchTextures } from '../src/textures.js';
 import { bodyRadiusAtY, TOP_OF_HEAD_Y } from '../src/profile.js';
 import { buildBody, GROUND_Y } from '../src/body.js';
-import { buildFace, layout, EYE_Y, BROW_Y } from '../src/face.js';
-import { buildHat, HAT_BOTTOM_Y, WING_W, WING_DEPTH } from '../src/accessories.js';
+import { buildFace, layout, EYE_Y, EYE_X, BROW_Y, BROW_TUBE_R, RING_R } from '../src/face.js';
+import { buildHat, buildBow, HAT_BOTTOM_Y, BOW_Y, WING_W, WING_DEPTH } from '../src/accessories.js';
+import { addLights } from '../src/scene.js';
 
 const palette = { neon: '#5AB60D', olive: '#99E72A', pale: '#C8DDA6', softOlive: '#848D68', ink: '#0A0C0A', inkSoft: '#2A2E24', eye: '#F4FAEA', gold: '#D9A521' };
 
 function materials() {
-  const T = { carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), iris: irisTextures(32) };
+  const T = { carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), iris: irisTextures(32), scratch: scratchTextures(32) };
   return createMaterials(T, palette);
 }
 
@@ -32,6 +33,25 @@ test('defect #2: the sclera sits in front of the body and behind the lens', () =
   // The regression this guards: iris/pupil are flat discs behind the sclera sphere's own opaque
   // front pole are invisible, hidden by the sphere itself — reads as a blank white eye.
   assert.ok(L.irisZ > L.sclerePoleZ, 'iris must clear the sclera sphere\'s own front pole to be visible');
+});
+
+test('defect: the pupil projects near the lens center under the studio camera, not off to one side', () => {
+  // 2026-09-25 review regression: the eyes read as blown-out white discs with the iris/pupil pushed
+  // out of frame. That was a lighting/exposure defect (materials.js/scene.js), not a geometric one —
+  // this test pins the geometric half of the guarantee: a pinhole camera at the same distance/target
+  // main.js and embed.js both use (CAM_DIST=8, looking at the origin) must still project the pupil
+  // within 10% of the lens' own radius from the lens center, so a future depth change cannot push it
+  // out from behind the glass even if nobody notices in a screenshot.
+  const CAM_DIST = 8; // must match main.js/embed.js CAM_DIST
+  const L = layout();
+  for (const sign of [-1, 1]) {
+    const x = sign * EYE_X;
+    const projLens = x / (CAM_DIST - L.lensZ);
+    const projPupil = x / (CAM_DIST - L.pupilZ);
+    const lensRadiusProj = RING_R / (CAM_DIST - L.lensZ);
+    const drift = Math.abs(projPupil - projLens) / lensRadiusProj;
+    assert.ok(drift < 0.1, `pupil parallax drift (${drift}) must stay under 10% of the lens radius`);
+  }
 });
 
 test('defect #2: the built face exposes readable sclera/iris/pupil/sparkle meshes per eye', () => {
@@ -69,6 +89,13 @@ test('brows hug the forehead surface — they do not float above the silhouette 
   assert.ok(BROW_Y > EYE_Y + 0.3, 'brow must clear the top of the glasses rim (EYE_Y + RING_R + TUBE_R)');
 });
 
+test('brows are volumetric, not a thin painted line (2026-09-25 brief: "веждите са тънки")', () => {
+  assert.ok(BROW_TUBE_R >= 0.045, `brow tube radius (${BROW_TUBE_R}) must stay thick enough to read as a full brow`);
+  const face = buildFace(materials());
+  const browL = face.children.find((c) => c.material && c.material.name === 'browFuzz');
+  assert.ok(browL, 'a brow mesh must use the matte browFuzz material, not glossy acetate');
+});
+
 test('defect: the bow tie wings are pillowed satin, not a flat wafer plate', () => {
   assert.ok(WING_DEPTH / WING_W >= 0.15, `wing thickness (${WING_DEPTH}) must be at least 15% of its width (${WING_W})`);
 });
@@ -82,6 +109,42 @@ test('defect: no discrete "glow core" mesh — any alpha-cutoff sphere reads as 
   body.traverse((o) => o.name && names.push(o.name));
   assert.ok(!names.includes('core'), 'body must not contain a mesh named "core"');
   assert.ok(!Object.keys(materials()).includes('coreGlow'), 'materials must not expose a coreGlow material');
+});
+
+test('defect: no light source glows directly under the bow tie', () => {
+  // The regression this guards (2026-09-25 brief: "слабо зелено сияние под папийонката"): a
+  // PointLight sitting close behind the bow bakes a soft colored disc onto the transmissive
+  // jelly right at the bow. Every PointLight in the scene must sit clear of the bow's own
+  // vertical band (BOW_Y +/- 0.3).
+  const scene = new THREE.Scene();
+  addLights(scene, palette);
+  const lights = [];
+  scene.traverse((o) => o.isPointLight && lights.push(o));
+  for (const l of lights) {
+    assert.ok(Math.abs(l.position.y - BOW_Y) > 0.3, `PointLight at y=${l.position.y} sits in the bow's band (BOW_Y=${BOW_Y})`);
+  }
+});
+
+test('defect: the bow tie has no stray wire loop ("жица") around the knot', () => {
+  // The regression this guards (2026-09-25 review): a thin TorusGeometry "cinch" ring at each side
+  // of the knot read as bare metal wire on a fabric bow tie. The knot is a plain cylinder; nothing
+  // in the bow's geometry should be a torus.
+  const bow = buildBow(materials());
+  let torus = false;
+  bow.traverse((o) => { if (o.geometry && o.geometry.type === 'TorusGeometry') torus = true; });
+  assert.ok(!torus, 'the bow tie must not contain a TorusGeometry (the old wire loop)');
+});
+
+test('defect: the bow tie itself never carries an emissive/glow material', () => {
+  const bow = buildBow(materials());
+  bow.traverse((o) => {
+    if (!o.material) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of mats) {
+      if (!m.emissive) continue;
+      assert.ok(m.emissive.getHex() === 0, `${m.name || 'material'} on the bow must not be emissive`);
+    }
+  });
 });
 
 test('defect #5: every foot rests exactly on the ground plane', () => {

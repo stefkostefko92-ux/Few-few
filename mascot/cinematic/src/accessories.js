@@ -130,7 +130,10 @@ function bowWing(sign, materials) {
   shape.quadraticCurveTo(sign * (WING_W + 0.03), -0.17, sign * (WING_W - 0.05), -0.15);
   shape.quadraticCurveTo(sign * 0.16, -0.1, 0, -0.035);
   shape.closePath();
-  const geo = new THREE.ExtrudeGeometry(shape, { depth: WING_DEPTH, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.018, bevelSegments: 4, curveSegments: 12 });
+  // Higher bevel/curve segment counts than the extrude default — a coarse bevel facets visibly on a
+  // fabric wing lit by a hard key light (2026-09-25 review: "фасетиран черен метал"); this plus the
+  // softened satin material (materials.js) is what turns the same silhouette back into cloth.
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: WING_DEPTH, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.018, bevelSegments: 8, curveSegments: 24 });
   puffWing(geo, sign, 0.12); // deep gathered-fabric puff so the wing reads as pillowed satin
   const wing = new THREE.Mesh(geo, materials.satin);
   wing.rotation.y = sign * -0.36; // fold outward from the knot, catches the key light as a crease
@@ -150,16 +153,14 @@ function bowWing(sign, materials) {
 }
 
 export function buildBow(materials) {
+  // No side "cinch" wire rings — an earlier version's thin torus loops around the wing bases read
+  // as stray metal wire on a fabric bow tie (2026-09-25 review). The center knot cylinder alone
+  // (plus its own gathered folds) is what a real bow tie's cinch actually looks like from outside.
   const bow = new THREE.Group();
   bow.add(bowWing(-1, materials), bowWing(1, materials));
-  const knot = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.055, 0.1, 14), materials.satinKnot);
+  const knot = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.055, 0.1, 20), materials.satinKnot);
   knot.rotation.z = Math.PI / 2;
-  const cinchL = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.01, 8, 16), materials.satinKnot);
-  cinchL.rotation.y = Math.PI / 2;
-  cinchL.position.x = -0.13;
-  const cinchR = cinchL.clone();
-  cinchR.position.x = 0.13;
-  bow.add(knot, cinchL, cinchR);
+  bow.add(knot);
   bow.name = 'bow';
   return bow;
 }

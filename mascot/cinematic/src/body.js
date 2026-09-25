@@ -94,7 +94,7 @@ export function buildBody(materials, textures) {
     const u = rand() * 2 - 1;
     const rad = 0.3 + rand() * 0.55;
     const py = -0.7 + rand() * 1.6;
-    const b = new THREE.Mesh(bubbleGeo, materials.lens);
+    const b = new THREE.Mesh(bubbleGeo, materials.bubble);
     b.scale.setScalar(r);
     b.position.set(Math.cos(theta) * rad * Math.sqrt(1 - u * u) * 0.9, py, Math.sin(theta) * rad * Math.sqrt(1 - u * u) * 0.9);
     group.add(b);

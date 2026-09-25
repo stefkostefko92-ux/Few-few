@@ -8,11 +8,19 @@ export { setMaxAnisotropy } from './texture-util.js';
 
 // 2x2 diagonal twill, barely-there height so the weave reads as a material under the transmissive
 // jelly rather than a printed pattern (defect #3: the body was a flat matte olive before).
+// Also carries the jelly's own skin micro-imperfections (2026-09-25 brief: "прекалено гладък, без
+// несъвършенства") — a sparse field of shallow dimples and a handful of soft smudge blobs, layered
+// on top of the weave at a much higher frequency, so the surface reads as a real molded/handled
+// object rather than a mathematically perfect shell.
 export function carbonTwillTextures(size = 256, cells = 18) {
   const n = size * size;
   const H = new Float32Array(n);
   const R = new Float32Array(n);
   const nz = new Noise2(31);
+  const grime = new Noise2(97);
+  const speckRand = rng(19);
+  // A dozen faint smudge centers (fingerprint/handling marks) at random tileable positions.
+  const specks = Array.from({ length: 10 }, () => [speckRand(), speckRand(), 0.05 + speckRand() * 0.06]);
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = y * size + x;
@@ -23,8 +31,20 @@ export function carbonTwillTextures(size = 256, cells = 18) {
       const fy = gy - Math.floor(gy);
       const strand = diag < 2 ? Math.sin(fx * Math.PI) : Math.sin(fy * Math.PI);
       const fiber = nz.fbm(gx * 3, gy * 3, cells * 3, 3);
-      H[i] = strand * 0.35 + fiber * 0.1;
-      R[i] = 0.32 + 0.14 * strand + 0.06 * fiber;
+      // High-frequency pore/dimple noise: much finer period than the weave, tiny amplitude — a
+      // near-imperceptible skin texture, not a pattern of its own.
+      const pores = grime.fbm(gx * 9 + 4, gy * 9 + 4, cells * 9, 2) - 0.5;
+      const u = x / size;
+      const v = y / size;
+      let smudge = 0;
+      for (const [sx, sy, sr] of specks) {
+        const dx = Math.min(Math.abs(u - sx), 1 - Math.abs(u - sx));
+        const dy = Math.min(Math.abs(v - sy), 1 - Math.abs(v - sy));
+        smudge += Math.max(0, 1 - Math.hypot(dx, dy) / sr);
+      }
+      smudge = Math.min(1, smudge);
+      H[i] = strand * 0.35 + fiber * 0.1 + pores * 0.1;
+      R[i] = 0.32 + 0.14 * strand + 0.06 * fiber + pores * 0.09 + smudge * 0.16;
     }
   }
   return {
@@ -103,6 +123,36 @@ export function irisTextures(size = 128) {
   }
   return {
     normalMap: dataTexture(heightToNormal(H, size, size, 1.6), size, size, false),
+    roughnessMap: dataTexture(grayToRGBA(R), size, size, false),
+  };
+}
+
+// Fine directional micro-scratches for the lacquered acetate frames (brief: "микро драскотини") —
+// thin, mostly-one-direction streaks at a low amplitude, the kind of handling wear real acetate
+// picks up, not a pattern that reads as deliberate engraving.
+export function scratchTextures(size = 128, streaks = 40) {
+  const n = size * size;
+  const H = new Float32Array(n);
+  const R = new Float32Array(n);
+  const rand = rng(83);
+  const lines = Array.from({ length: streaks }, () => ({ y: rand(), depth: 0.15 + rand() * 0.5, width: 0.004 + rand() * 0.01, slope: (rand() - 0.5) * 0.3 }));
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const i = y * size + x;
+      const u = x / size;
+      const v = y / size;
+      let h = 0;
+      for (const l of lines) {
+        const yy = (l.y + u * l.slope) % 1;
+        const d = Math.min(Math.abs(v - yy), 1 - Math.abs(v - yy));
+        h += Math.max(0, 1 - d / l.width) * l.depth;
+      }
+      H[i] = Math.min(1, h) * 0.4;
+      R[i] = 0.4 + Math.min(1, h) * 0.25;
+    }
+  }
+  return {
+    normalMap: dataTexture(heightToNormal(H, size, size, 0.7), size, size, false),
     roughnessMap: dataTexture(grayToRGBA(R), size, size, false),
   };
 }

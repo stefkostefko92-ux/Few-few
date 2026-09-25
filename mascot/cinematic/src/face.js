@@ -8,7 +8,7 @@ import { bodyRadiusAtY, forwardZFor } from './profile.js';
 export const EYE_Y = 0.32;
 export const EYE_X = 0.32;
 const TUBE_R = 0.032;
-const RING_R = 0.27;
+export const RING_R = 0.27;
 const SCLERA_R = 0.14;
 // Extra clearance beyond profile.FACE_CLEARANCE: the eyeball (sclera + iris + pupil, stacked
 // nose-to-lens) needs real depth between the face and the glass, not just a hair of margin —
@@ -110,20 +110,26 @@ function eyelid(sign, materials) {
 // entirely — same z-depth for every point on a curve that keeps receding — so from any angle off
 // dead-on it read as a wire loop floating over the scalp like an antenna, not a mark on the skin.
 export const BROW_Y = EYE_Y + 0.315; // clears the glasses rim (EYE_Y + RING_R + TUBE_R ≈ EYE_Y + 0.30)
+// Tube radius and flattening: wide enough, and flattened little enough, that the brow reads as a
+// full, slightly domed brush of brow rather than a thin painted line — the brief's "веждите са
+// тънки" defect.
+export const BROW_TUBE_R = 0.052;
+const BROW_FLATTEN_Y = 0.74;
 function brow(sign, materials) {
   const z0 = bodyRadiusAtY(BROW_Y) * 1.012; // hugs the surface, like the mouth does at its own height
   const curve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-0.1, -0.004, 0),
-    new THREE.Vector3(-0.045, 0.02, 0.003),
-    new THREE.Vector3(0, 0.026, 0.004),
-    new THREE.Vector3(0.045, 0.016, 0.002),
-    new THREE.Vector3(0.1, -0.012, 0),
+    new THREE.Vector3(-0.115, -0.006, 0),
+    new THREE.Vector3(-0.05, 0.024, 0.003),
+    new THREE.Vector3(0, 0.03, 0.004),
+    new THREE.Vector3(0.05, 0.019, 0.002),
+    new THREE.Vector3(0.115, -0.014, 0),
   ]);
-  const geo = new THREE.TubeGeometry(curve, 20, 0.037, 10, false);
-  const b = new THREE.Mesh(geo, materials.acetate);
-  b.scale.set(1, 0.62, 1); // flattens the round tube into a painted band with soft rounded caps
+  const geo = new THREE.TubeGeometry(curve, 24, BROW_TUBE_R, 12, false);
+  const b = new THREE.Mesh(geo, materials.browFuzz);
+  b.scale.set(1, BROW_FLATTEN_Y, 0.82); // flattens/thins the round tube into a domed brush, not a wire
   b.position.set(sign * EYE_X, BROW_Y, z0);
   b.rotation.y = -sign * 0.16; // slight inward cant toward the nose bridge, like a lifted brow
+  b.rotation.z = sign * 0.02;
   b.castShadow = true;
   return b;
 }

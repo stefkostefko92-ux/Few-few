@@ -3,7 +3,7 @@
 // body.js/face.js/accessories.js — this module only places and moves what they build.
 import * as THREE from 'three';
 import { createMaterials, jellyMotion } from './materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures } from './textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures, scratchTextures } from './textures.js';
 import { buildBody, GROUND_Y } from './body.js';
 import { buildFace } from './face.js';
 import { buildHat, buildBow, BOW_Y, BOW_Z } from './accessories.js';
@@ -13,7 +13,7 @@ export const PALETTE = {
   softOlive: '#848D68', pale: '#C8DDA6', ink: '#0A0C0A', inkSoft: '#2A2E24', eye: '#F4FAEA', gold: '#D9A521',
 };
 
-function addLights(scene, p) {
+export function addLights(scene, p) {
   // Softer, off-axis key: the previous steep top-down angle plus a tight clearcoat was exactly
   // what burned a hard white disc into the crown under the hat. Lower angle, a touch less
   // intensity, and a much rougher clearcoat (materials.js) spread that highlight into a soft glint.
@@ -38,17 +38,20 @@ function addLights(scene, p) {
   rim.position.set(0.4, 1.3, -3.4);
   scene.add(rim);
 
-  // These four carry the accent: they are what makes the jelly itself glow, as opposed to the key/
-  // fill/rim above which stay neutral studio light. p.olive is the tinted body hue, p.pale its
-  // lightest stop, p.bottle its darkest — see palette.js.
-  const underglow = new THREE.PointLight(new THREE.Color(p.olive), 0.9, 4, 2);
-  underglow.position.set(0, -0.9, 1.1);
-  scene.add(underglow);
+  // No point light lives under the bow tie. An earlier version had one here (`underglow`,
+  // positioned right behind the bow at y=-0.9) — through the jelly's transmission=1 material any
+  // point source that close to the surface bakes a soft green disc straight onto the belly, read
+  // as a stray "glow under the bow tie" (2026-09-25 brief). The jelly's own body-wide emissive
+  // gradient (materials.js `withRimGlow`) already carries the inner-light read; this light is
+  // guarded absent by `test/geometry.test.js` (no PointLight within the bow's own vertical band).
 
   // Soft fill lifting the lower-front half from underneath/in front — the brief's "мек вътрешен
-  // fill отдолу-отпред" — so the belly/chin do not fall into shadow relative to the bright crown.
-  const underFill = new THREE.PointLight(new THREE.Color(p.pale), 0.7, 5, 1.6);
-  underFill.position.set(0, -0.4, 2.4);
+  // fill отдолу-отпред" — so the belly/legs do not fall into shadow relative to the bright crown.
+  // Low and only lightly forward (NOT pulled up toward eye height — an earlier revision moved this
+  // too close to the face and washed the eyes/lens out to a flat white disc, a real regression
+  // caught in review) and clear of the bow's own band (test/geometry.test.js pins that distance).
+  const underFill = new THREE.PointLight(new THREE.Color(p.pale), 0.45, 5, 1.7);
+  underFill.position.set(0, -0.85, 2.1);
   scene.add(underFill);
 
   // Bright overhead top light so the crown/shoulders read the accent, not olive-black.
@@ -109,6 +112,7 @@ export function buildScene(renderer, palette = PALETTE) {
     felt: feltTextures(),
     radial: radialTextures(),
     iris: irisTextures(),
+    scratch: scratchTextures(),
   };
   const materials = createMaterials(textures, p);
 
