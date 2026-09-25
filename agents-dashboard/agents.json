@@ -1162,7 +1162,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 405
+        "lessons": 407
       },
       "evolution": [
         {
@@ -1980,9 +1980,20 @@
           "date": "2026-09-25",
           "event": "v26.7 — учене",
           "detail": "Научи: adblock: uBO `host#@#+js(...)` изключенията в build_filters.mjs махат директивата само …"
+        },
+        {
+          "version": "26.9.0",
+          "date": "2026-09-25",
+          "event": "v26.9 — учене",
+          "detail": "Научи: Gaming/game-core: краят на мача при равенство дава победа на място/отбор 0 (`>=`/`?? 0`… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gaming/game-core: краят на мача при равенство дава победа на място/отбор 0 (`>=`/`?? 0`…\" (+1 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
