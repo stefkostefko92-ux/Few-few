@@ -69,8 +69,53 @@ cd "$DEPLOY_DIR"
 # ── 2) гарантирай .env (истински тайни при първо пускане; после ги пази) ─────
 # Жива legacy база без .env тук? НИКОГА не генерирай тайни на сляпо — pg обемът
 # пази СТАРАТА парола и нови тайни биха заключили базата (и "изгубили" акаунтите).
-if [ ! -f .env ] && docker volume inspect infra_aso_pgdata >/dev/null 2>&1; then
-  step "Жива legacy база (infra_aso_pgdata) без .env — търся старите тайни"
+# Възстановява .env от СТАРИТЕ контейнери на проекта „infra“ (пуснати или
+# спрени): паролата на базата живее в средата на postgres контейнера, а JWT/
+# вътрешните тайни — в средата на api контейнера. Нищо не се печата; файлът е
+# 600. Липсващите JWT/вътрешни тайни се генерират наново (това само изписва
+# влезлите потребители — акаунтите и базата остават). Връща 1, ако няма стар
+# postgres контейнер (тогава паролата е неизвестна и не гадаем).
+harvest_legacy_env() {
+  local pg="" api="" out="$1" proj
+  # първо „infra“ (легаси), после самия $PROJECT (изгубен .env в $DEPLOY_DIR)
+  for proj in infra "$PROJECT"; do
+    pg="$(docker ps -aq --filter label=com.docker.compose.project="$proj" --filter label=com.docker.compose.service=postgres | head -1)"
+    [ -n "$pg" ] || continue
+    api="$(docker ps -aq --filter label=com.docker.compose.project="$proj" --filter label=com.docker.compose.service=api | head -1)"
+    break
+  done
+  [ -n "$pg" ] || return 1
+  local old_umask; old_umask="$(umask)"
+  umask 077
+  {
+    echo "# АСО .env — възстановен от старите контейнери от autodeploy.sh $(date -u +%F)"
+    docker inspect "$pg" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^POSTGRES_(USER|PASSWORD|DB)=' || true
+    if [ -n "$api" ]; then
+      docker inspect "$api" --format '{{range .Config.Env}}{{println .}}{{end}}' |
+        grep -E '^(JWT_SECRET|JWT_REFRESH_SECRET|INTERNAL_API_SECRET|CORS_ORIGINS|PUBLIC_WEB_URL|PUBLIC_API_URL|COOKIE_DOMAIN|BOOTSTRAP_OWNER_EMAIL|STRIPE_[A-Z_]+|SMTP_[A-Z_]+|GOOGLE_CLIENT_[A-Z]+|FACEBOOK_APP_[A-Z]+|DISCORD_WEBHOOK_URL|SENTRY_DSN)=' || true
+    fi
+  } > "$out"
+  umask "$old_umask"
+  grep -q '^POSTGRES_PASSWORD=' "$out" || { rm -f "$out"; return 1; }
+  # попълни липсващото (никога не пипа наличните стойности)
+  for kv in "POSTGRES_USER=aso" "POSTGRES_DB=aso" \
+            "JWT_SECRET=$(openssl rand -hex 32)" "JWT_REFRESH_SECRET=$(openssl rand -hex 32)" \
+            "INTERNAL_API_SECRET=$(openssl rand -hex 24)" \
+            "CORS_ORIGINS=https://${DOMAIN}" "PUBLIC_WEB_URL=https://${DOMAIN}/app" \
+            "PUBLIC_API_URL=https://${DOMAIN}" "BOOTSTRAP_OWNER_EMAIL=${OWNER_EMAIL}" \
+            "STRIPE_TOS_CONFIGURED=false"; do
+    grep -q "^${kv%%=*}=" "$out" || echo "$kv" >> "$out"
+  done
+  chmod 600 "$out"
+  return 0
+}
+
+LIVE_VOL=""
+for v in infra_aso_pgdata "${PROJECT}_aso_pgdata"; do
+  docker volume inspect "$v" >/dev/null 2>&1 && { LIVE_VOL="$v"; break; }
+done
+if [ ! -f .env ] && [ -n "$LIVE_VOL" ]; then
+  step "Жива база ($LIVE_VOL) без .env — търся старите тайни"
   for cand in "${LEGACY_ENV:-}" "$SRC_DIR/.env" /root/Few-few-main/Gaming/.env; do
     if [ -n "$cand" ] && [ -f "$cand" ] && grep -q '^POSTGRES_PASSWORD=' "$cand"; then
       cp "$cand" .env && chmod 600 .env
@@ -78,7 +123,10 @@ if [ ! -f .env ] && docker volume inspect infra_aso_pgdata >/dev/null 2>&1; then
       break
     fi
   done
-  [ -f .env ] || die "Жива база без .env! Копирай стария: cp <стар-архив>/Gaming/.env $DEPLOY_DIR/.env (или LEGACY_ENV=/path/to/.env bash infra/autodeploy.sh). Нови тайни = изоставена база и изчезнали акаунти."
+  if [ ! -f .env ] && harvest_legacy_env .env; then
+    ok "възстанових .env от старите контейнери (паролата на базата е запазена; липсващите тайни са генерирани)"
+  fi
+  [ -f .env ] || die "Жива база без .env и без стари контейнери, от които да се възстанови! Копирай стария: cp <стар-архив>/Gaming/.env $DEPLOY_DIR/.env (или LEGACY_ENV=/path/to/.env bash infra/autodeploy.sh). Нови тайни = изоставена база и изчезнали акаунти."
 fi
 if [ -f .env ]; then
   step ".env вече съществува — пазя тайните (базата остава)"
