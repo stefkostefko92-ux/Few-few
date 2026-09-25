@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 264
+        "lessons": 268
       },
       "evolution": [
         {
@@ -584,9 +584,20 @@
           "date": "2026-09-25",
           "event": "v18.4 — учене",
           "detail": "Научи: AI Act чл. 50 — пресверено срещу FAQ на Комисията: прилага се от 02.08.2026; отсрочка д…"
+        },
+        {
+          "version": "18.8.0",
+          "date": "2026-09-25",
+          "event": "v18.8 — учене",
+          "detail": "Научи: Gemini API Additional Terms: 'You may use only Paid Services when making API Clients av… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gemini API Additional Terms: 'You may use only Paid Services when making API Clients av…\" (+3 още) · 1 в карантина"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
