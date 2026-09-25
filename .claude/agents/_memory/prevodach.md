@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-25:** dod-check.mjs отхвърля ПРЕДАВАНЕ, ако която и да е находка е без `файл:ред` (или URL) — всяка находка, включително „не е пуснат гейт“ или „нужно е ревю“, трябва да е закотвена към конкретен ред. _(global; verified; "Stop hook feedback от .claude/hooks/dod-check.mjs в тази сесия")_
 - **2026-09-25:** dod-check.mjs не разпознава находки, вложени под удебелено „- **Находки:**“ — полетата на ПРЕДАВАНЕ трябва да са неудебелени („Находки:“), а всяка находка отделен ред „- `файл:ред`: … (Сигурно|Вероятно|Несигурно)“. _(global; verified; "Stop hook feedback от .claude/hooks/dod-check.mjs в тази сесия (два пъти отхвърлен блок)")_
 - **2026-09-25:** adblock tests/i18n.test.mjs:67 гейтва extDescription ≤132 знака за всеки локал — промяна на описанието се проверява от npm test. _(adblock; verified; "/home/user/Few-few/adblock/tests/i18n.test.mjs:67")_
 - **2026-09-25:** adblock: 35 регионални листи в tools/lists.json, 4 с delivery=remote (bg, pl, nordic, hr) — вградените са 31; маркетинг текстовете с „33“ са били грешни. _(adblock; verified; "/home/user/Few-few/adblock/tools/lists.json (grep group=regional → 35, delivery=remote → 4)")_
