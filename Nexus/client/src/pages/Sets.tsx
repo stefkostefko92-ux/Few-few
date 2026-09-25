@@ -1,12 +1,10 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite, { spriteForItem } from '../components/Sprite';
-import type { SetTarget } from '../components/items3d/SetViewer3DModal';
+import { openSetViewer3D } from '../components/items3d/viewerStore';
 import '../styles/sets.css';
-
-const SetViewer3DModal = lazy(() => import('../components/items3d/SetViewer3DModal'));
 
 interface SetBonus {
   hp_bonus?: number; mp_bonus?: number; str_bonus?: number; dex_bonus?: number;
@@ -26,7 +24,6 @@ export default function Sets(): React.ReactElement {
   const toast = useStore((s) => s.toast);
   const [sets, setSets] = useState<SetDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewer, setViewer] = useState<SetTarget | null>(null);
 
   useEffect(() => {
     api.get('/sets').then((r) => setSets(r.sets || [])).catch((e) => toast(e.message, 'error')).finally(() => setLoading(false));
@@ -58,18 +55,13 @@ export default function Sets(): React.ReactElement {
             <p className="set-card-lore">{s.lore}</p>
             <button
               className="btn btn-primary btn-sm"
-              onClick={() => setViewer({ kind: 'set', slug: s.slug, name: s.name, tier: s.tier, pieces: s.pieces })}
+              onClick={() => openSetViewer3D({ kind: 'set', slug: s.slug, name: s.name, tier: s.tier, pieces: s.pieces })}
             >
               {t('sets.showcase')}
             </button>
           </div>
         ))}
       </div>
-      {viewer && (
-        <Suspense fallback={null}>
-          <SetViewer3DModal target={viewer} onClose={() => setViewer(null)} />
-        </Suspense>
-      )}
     </div>
   );
 }

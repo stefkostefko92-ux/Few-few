@@ -4,6 +4,9 @@
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
 }
+/* Затворено = скрито, не размонтирано (виж ItemViewer3DHost.tsx — canvas-ът вътре пази
+   единствения GPU контекст на прегледа за целия живот на приложението). */
+.item3d-overlay.item3d-hidden { display: none; }
 
 .item3d-dialog {
   position: relative;

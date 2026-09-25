@@ -27,9 +27,14 @@ export interface CatalogEntry {
   name: string;
   category: Category;
   sub_type?: string;
+  /** Реалният силует на оръжието (sword/axe/bow/staff/dagger/mace/spear) — данни агентът маркира
+   *  тук, защото легаси `sub_type` кодира грешно (кама=sword, чук=axe, копие=bow). За weapon
+   *  ГЕОМЕТРИЯТА винаги чете `icon`, а не `sub_type` (виж buildItem.ts). */
+  icon?: string;
   tier: number;
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   class_req?: string;
+  level_req?: number;
   set_slug?: string | null;
   theme: ItemTheme;
 }

@@ -40,7 +40,7 @@ export function buildStudioScene(object: THREE.Object3D): StudioScene {
 }
 
 /** Позиционира камерата на 3/4 ракурс, кадрирана точно по bounding sphere на предмета. */
-export function frameCamera(camera: THREE.PerspectiveCamera, object: THREE.Object3D, margin = 1.35): void {
+export function frameCamera(camera: THREE.PerspectiveCamera, object: THREE.Object3D, margin = 1.12): void {
   const box = new THREE.Box3().setFromObject(object);
   const sphere = new THREE.Sphere();
   box.getBoundingSphere(sphere);
@@ -58,6 +58,16 @@ export function frameCamera(camera: THREE.PerspectiveCamera, object: THREE.Objec
 export interface RendererHandle {
   renderer: THREE.WebGPURenderer;
   backend: 'WebGPU' | 'WebGL2';
+  canvas: HTMLCanvasElement;
+}
+
+/** Браузърите ограничават успоредните WebGL контексти (обичайно ~16) — `renderer.dispose()`
+ *  освобождава GPU ресурси, но НЕ винаги връща самия контекст веднага. Отваряне/затваряне на
+ *  модала многократно (виж buildItem-a на всеки клик) иначе изтича контексти → „WebGL Device
+ *  Lost" след ~8-10 отваряния. `WEBGL_lose_context` го връща веднага, детерминистично. */
+function forceLoseWebGLContext(canvas: HTMLCanvasElement): void {
+  const gl = (canvas.getContext('webgl2') || canvas.getContext('webgl')) as WebGLRenderingContext | WebGL2RenderingContext | null;
+  gl?.getExtension('WEBGL_lose_context')?.loseContext();
 }
 
 /** Общ boot — гейт съгласно boy: WebGPU по подразбиране, `forceWebGL`/провал → WebGL2 fallback. */
@@ -68,11 +78,14 @@ export async function createRenderer(canvas: HTMLCanvasElement, opts: { forceWeb
   await renderer.init();
   const isWebGPU = Boolean((renderer as unknown as { backend?: { isWebGPUBackend?: boolean } }).backend?.isWebGPUBackend);
   renderer.setClearColor(0x000000, 0);
-  return { renderer, backend: isWebGPU ? 'WebGPU' : 'WebGL2' };
+  return { renderer, backend: isWebGPU ? 'WebGPU' : 'WebGL2', canvas };
 }
 
 export interface ViewerHandle {
-  dispose(): void;
+  /** `keepRenderer: true` спира само rAF цикъла/слушателите (за преизползване на СЪЩИЯ GPU
+   *  контекст — виж ItemViewer3DHost, който държи един renderer за целия живот на приложението,
+   *  вместо нов WebGL контекст на всеки клик; браузърите капват успоредните контексти). */
+  dispose(opts?: { keepRenderer?: boolean }): void;
   setAutoRotate(on: boolean): void;
   resize(): void;
   /** Прекадрира орбитата около нов обект (напр. „изолирай парче" в SetViewer3D) без да губи
@@ -85,11 +98,16 @@ export interface ViewerHandle {
  * Авто-въртенето спира под `prefers-reduced-motion: reduce` (влаченето остава — не е анимация,
  * а пряка интеракция). Пълно почистване при dispose(): GPU памет, слушатели, rAF.
  */
-export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THREE.WebGPURenderer, studio: StudioScene, opts: { autoRotate?: boolean; dprCap?: number } = {}): ViewerHandle {
+export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THREE.WebGPURenderer, studio: StudioScene, opts: { autoRotate?: boolean; dprCap?: number; maxRenderSize?: number } = {}): ViewerHandle {
   const { scene, camera, pivot } = studio;
   const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let autoRotate = (opts.autoRotate ?? true) && !reducedMotion;
   const dprCap = opts.dprCap ?? 2;
+  // Таван на вътрешния рендер буфер (px/страна), независимо от CSS кутията — CSS-ът пак разпъва
+  // canvas-а на пълна ширина (GPU ъпскейлва), но под софтуерен WebGL голяма непрекъсната сцена
+  // на голяма резолюция (напр. витрина на цял сет, 678×678 CSS × DPR2 = 1356px²) е забелязано да
+  // чупи WebGL backend-а („Device Lost") — по-малък буфер го пази стабилен.
+  const maxRenderSize = opts.maxRenderSize ?? 480;
 
   let dragging = false;
   let lastX = 0;
@@ -97,10 +115,13 @@ export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THRE
   let theta = 0.7;
   let phi = 1.15;
   let radius = camera.position.distanceTo(pivot.position);
+  // Орбита около `target`, не винаги (0,0,0) — SetViewer3D подрежда парчетата в кръг ИЗВЪН
+  // произхода, а „изолирай парче" пре-центрира орбитата към именно това парче (виж refit()).
+  const target = new THREE.Vector3();
   const applyOrbit = () => {
     phi = THREE.MathUtils.clamp(phi, 0.35, Math.PI - 0.35);
-    camera.position.setFromSphericalCoords(radius, phi, theta);
-    camera.lookAt(0, 0, 0);
+    camera.position.setFromSphericalCoords(radius, phi, theta).add(target);
+    camera.lookAt(target);
   };
   applyOrbit();
 
@@ -128,28 +149,38 @@ export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THRE
   ro.observe(canvas);
 
   function resize(): void {
-    const w = canvas.clientWidth || 1;
-    const h = canvas.clientHeight || 1;
+    const cssW = canvas.clientWidth || 1;
+    const cssH = canvas.clientHeight || 1;
     const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
-    renderer.setPixelRatio(dpr);
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
+    const scale = Math.min(1, maxRenderSize / (Math.max(cssW, cssH) * dpr));
+    renderer.setPixelRatio(dpr * scale);
+    renderer.setSize(cssW, cssH, false);
+    camera.aspect = cssW / cssH;
     camera.updateProjectionMatrix();
   }
   resize();
 
   let rafId = 0;
   let disposed = false;
+  // Пази ОДИН `renderAsync` наведнъж — под софтуерен WebGL (SwiftShader/llvmpipe) сцена с много
+  // обекти може да отнеме >16ms/кадър; застъпващи се извиквания на renderAsync към СЪЩИЯ
+  // renderer чупят WebGL-backend-а му („WebGL Device Lost") — виждано директно при SetViewer3D
+  // (5+ предмета в една сцена). Пропускаме нов рендер, докато предишният still работи, вместо
+  // да ги трупаме един върху друг.
+  let rendering = false;
   const loop = () => {
     if (disposed) return;
     if (autoRotate) { theta += 0.006; applyOrbit(); }
-    renderer.renderAsync(scene, camera);
+    if (!rendering) {
+      rendering = true;
+      Promise.resolve(renderer.renderAsync(scene, camera)).finally(() => { rendering = false; });
+    }
     rafId = requestAnimationFrame(loop);
   };
   rafId = requestAnimationFrame(loop);
 
   return {
-    dispose(): void {
+    dispose(opts: { keepRenderer?: boolean } = {}): void {
       disposed = true;
       cancelAnimationFrame(rafId);
       ro.disconnect();
@@ -158,7 +189,10 @@ export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THRE
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('pointercancel', onUp);
       canvas.removeEventListener('wheel', onWheel);
-      renderer.dispose();
+      if (!opts.keepRenderer) {
+        renderer.dispose();
+        forceLoseWebGLContext(canvas);
+      }
     },
     setAutoRotate(on: boolean): void { autoRotate = on && !reducedMotion; },
     resize,
@@ -169,6 +203,7 @@ export function mountInteractiveViewer(canvas: HTMLCanvasElement, renderer: THRE
       const r = Math.max(sphere.radius, 0.02);
       const fov = (camera.fov * Math.PI) / 180;
       radius = (r * margin) / Math.sin(fov / 2);
+      target.copy(sphere.center);
       applyOrbit();
     },
   };

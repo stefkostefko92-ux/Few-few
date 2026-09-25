@@ -76,7 +76,7 @@ export function buildItem(entry: CatalogEntry, opts: BuildItemOpts = {}): BuiltI
 
   let piece: THREE.Object3D;
   switch (entry.category) {
-    case 'weapon': piece = buildWeapon(M, entry.theme, entry.sub_type || 'sword', entry.tier, rand); break;
+    case 'weapon': piece = buildWeapon(M, entry.theme, entry.icon || entry.sub_type || 'sword', entry.tier, rand); break;
     case 'shield': piece = buildShield(M, entry.theme, entry.tier, rand); break;
     case 'helm': piece = buildHelm(M, entry.theme, entry.tier, rand); break;
     case 'armor': piece = buildTorso(M, entry.theme, entry.tier); break;

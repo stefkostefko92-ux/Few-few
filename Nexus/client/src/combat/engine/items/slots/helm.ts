@@ -14,11 +14,22 @@ function silhouette(theme: ItemTheme, tier: number, rand: Rand): 'hood' | 'open'
   return 'open';
 }
 
+// Т-образен визьор (две вертикални цепки + хоризонтална лента) — единственият надежден сигнал
+// „това е шлем" при малък размер на иконата; винаги в M.trim (контрастен спрямо купола).
+function visor(M: Record<Role, THREE.Material>, z: number): THREE.Object3D {
+  return mesh(merge([
+    xf(new THREE.BoxGeometry(0.01, 0.045, 0.014), [-0.024, 0.085, z]),
+    xf(new THREE.BoxGeometry(0.01, 0.045, 0.014), [0.024, 0.085, z]),
+    xf(new THREE.BoxGeometry(0.1, 0.014, 0.014), [0, 0.1, z]),
+  ]), M.trim, { cast: false });
+}
+
 function openHelm(M: Record<Role, THREE.Material>): THREE.Object3D {
   const g = new THREE.Group();
   const P = [[0.1, -0.02], [0.108, 0.03], [0.105, 0.09], [0.09, 0.15], [0.06, 0.19], [0.0, 0.2]];
   g.add(mesh(lathe(P as [number, number][], 32, -0.9, TAU - 1.8), M.primary));
   g.add(mesh(xf(new THREE.TorusGeometry(0.1, 0.008, 8, 32, 1.9), [0, -0.02, 0], [Math.PI / 2, 0, -0.45]), M.trim));
+  g.add(visor(M, 0.098));
   return g;
 }
 
@@ -30,10 +41,7 @@ function closedHelm(M: Record<Role, THREE.Material>): THREE.Object3D {
     lathe([[0.1305, 0.06], [0.1308, 0.079]] as [number, number][], 28, -1.55, 3.1),
     lathe([[0.1255, 0.128], [0.12, 0.15]] as [number, number][], 40),
   ]), M.trim));
-  g.add(mesh(merge([
-    xf(new THREE.BoxGeometry(0.006, 0.03, 0.01), [-0.02, 0.09, 0.115]),
-    xf(new THREE.BoxGeometry(0.006, 0.03, 0.01), [0.02, 0.09, 0.115]),
-  ]), M.secondary, { cast: false }));
+  g.add(visor(M, 0.121));
   return g;
 }
 
