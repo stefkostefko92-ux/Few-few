@@ -671,6 +671,7 @@
       "group": "regional",
       "default": "off",
       "delivery": "remote",
+      "slot": 0,
       "format": "abp",
       "langs": [
         "bg"
@@ -687,6 +688,7 @@
       "group": "regional",
       "default": "off",
       "delivery": "remote",
+      "slot": 1,
       "format": "abp",
       "langs": [
         "pl"
@@ -703,6 +705,7 @@
       "group": "regional",
       "default": "off",
       "delivery": "remote",
+      "slot": 2,
       "format": "abp",
       "langs": [
         "no",
@@ -722,6 +725,7 @@
       "group": "regional",
       "default": "off",
       "delivery": "remote",
+      "slot": 3,
       "format": "abp",
       "langs": [
         "hr",

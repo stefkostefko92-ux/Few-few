@@ -626,7 +626,8 @@
   "title": "Bulgarian Adblock list",
   "license": "no licence stated",
   "homepage": "https://stanev.org/abp/",
-  "url": "https://stanev.org/abp/adblock_bg.txt"
+  "url": "https://stanev.org/abp/adblock_bg.txt",
+  "slot": 0
  },
  {
   "id": "reg-pl",
@@ -639,7 +640,8 @@
   "title": "Polish Filters (Oficjalne Polskie Filtry)",
   "license": "CC BY-NC-SA 4.0",
   "homepage": "https://github.com/MajkiIT/polish-ads-filter",
-  "url": "https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-adblock-filters/adblock.txt"
+  "url": "https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-adblock-filters/adblock.txt",
+  "slot": 1
  },
  {
   "id": "reg-nordic",
@@ -655,7 +657,8 @@
   "title": "Dandelion Sprout's Nordic filters",
   "license": "Dandelicence",
   "homepage": "https://github.com/DandelionSprout/adfilt",
-  "url": "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/NorwegianList.txt"
+  "url": "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/NorwegianList.txt",
+  "slot": 2
  },
  {
   "id": "reg-hr",
@@ -670,6 +673,7 @@
   "title": "Dandelion Sprout's Serbo-Croatian filters",
   "license": "Dandelicence",
   "homepage": "https://github.com/DandelionSprout/adfilt",
-  "url": "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/SerboCroatianList.txt"
+  "url": "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/SerboCroatianList.txt",
+  "slot": 3
  }
 ]

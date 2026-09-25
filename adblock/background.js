@@ -355,9 +355,18 @@ async function applyState() {
     await chrome.storage.local.set({ listsError: "" });
   } catch (e) {
     // Atomic: nothing changed. The usual cause is Chrome's static-rule quota
-    // (too many lists on at once) — shown in Settings, never silent.
+    // (too many lists on at once) — shown in Settings, never silent. Retry
+    // without the optional lists so protection never drops below the core
+    // rulesets (otherwise a resume after a pause left EasyList & co. off).
     console.warn("ruleset toggle failed", e);
     try { await chrome.storage.local.set({ listsError: String((e && e.message) || e) }); } catch {}
+    const listIds = all.filter((id) => id.startsWith("list_"));
+    try {
+      await chrome.declarativeNetRequest.updateEnabledRulesets({
+        enableRulesetIds: enable.filter((id) => !id.startsWith("list_")),
+        disableRulesetIds: disable.filter((id) => !id.startsWith("list_")).concat(listIds),
+      });
+    } catch (e2) { console.warn("core ruleset toggle failed", e2); }
   }
   await setPauseRule(!on);
   syncRemoteLists(on).catch(() => {});
@@ -661,6 +670,10 @@ async function fetchLiveConfigInner(force) {
   }
   const cfg = sanitizeConfig(raw);
   cfg.verified = verified;
+  // Scriptlet directives run in the page: only from a file whose Ed25519
+  // signature we checked. A browser without Ed25519 (Chrome < 137) still gets
+  // the signed-or-not DATA (domains, selectors), never live scriptlets.
+  if (!verified) cfg.scriptlets = [];
   // Anti-rollback: подписът доказва автентичност, не свежест. Отхвърляме стар
   // (валидно подписан) config — компрометиран сървър да не може да replay-не
   // остаряла версия. version-ът трябва да е монотонен.
@@ -940,6 +953,7 @@ async function listState() {
 const REMOTE_RULE_BASE = 200000;
 const REMOTE_SLOT = 6000;          // ids per remote list
 const REMOTE_RULE_MAX = 5000;      // rules per remote list (dynamic budget: 30k)
+const REMOTE_MAX_SLOTS = 4;        // 4 × 5000 + allowlist ≤5000 + a few chunked live/user rules < 30 000 dynamic
 // An author-hosted list is unsigned third-party DATA: from it we take only plain
 // block/allow rules. No redirect/modifyHeaders (they share Chrome's 5 000 "unsafe"
 // dynamic budget and could rewrite requests), no allowAllRequests (would switch
@@ -964,11 +978,27 @@ async function doSyncRemoteLists(enabled, force) {
   const remote = catalog.filter((e) => e.delivery === "remote");
   if (enabled === undefined) enabled = (await chrome.storage.local.get("enabled")).enabled !== false;
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
-  for (let slot = 0; slot < remote.length; slot++) {
-    const e = remote[slot];
+  // Each list owns a FIXED slot (rules/lists.json "slot"), not its position in
+  // the catalogue: reordering or removing a list must never hand its rules to
+  // another list, and rules in a slot nobody owns any more are removed.
+  const owned = new Set(remote.map((e) => e.slot).filter((n) => Number.isInteger(n) && n >= 0 && n < REMOTE_MAX_SLOTS));
+  const orphans = existing.filter((r) => r.id >= REMOTE_RULE_BASE && !owned.has(Math.floor((r.id - REMOTE_RULE_BASE) / REMOTE_SLOT))).map((r) => r.id);
+  if (orphans.length) await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: orphans });
+  const { remoteSlots = {} } = await chrome.storage.local.get("remoteSlots");
+  for (const e of remote) {
+    const slot = e.slot;
+    if (!owned.has(slot)) continue;
     const base = REMOTE_RULE_BASE + slot * REMOTE_SLOT;
     const key = "remoteList_" + e.id;
     const mine = existing.filter((r) => r.id >= base && r.id < base + REMOTE_SLOT).map((r) => r.id);
+    if (remoteSlots[slot] !== e.id) {
+      // the slot held another list's rules (or none): start clean
+      if (mine.length) await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: mine });
+      mine.length = 0;
+      await chrome.storage.local.remove(key);
+      remoteSlots[slot] = e.id;
+      await chrome.storage.local.set({ remoteSlots });
+    }
     if (!on.has(e.id)) {
       if (mine.length) await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: mine });
       await chrome.storage.local.remove(key);
@@ -1427,11 +1457,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         const catalog = await getListCatalog();
         if (!catalog.some((e) => e.id === msg.id) || typeof msg.on !== "boolean") return sendResponse({ ok: false });
         const { lists = {} } = await chrome.storage.local.get("lists");
+        const prev = lists[msg.id];
         lists[msg.id] = msg.on;
         await chrome.storage.local.set({ lists });
         await applyState();
         await remoteChain; // a remote list is downloaded before we answer
         const { listsError = "" } = await chrome.storage.local.get("listsError");
+        if (listsError && msg.on) {
+          // Chrome refused the combination: undo the choice so the saved state
+          // matches what actually runs, and re-apply the last working set.
+          if (typeof prev === "boolean") lists[msg.id] = prev; else delete lists[msg.id];
+          await chrome.storage.local.set({ lists });
+          await applyState();
+          await chrome.storage.local.set({ listsError });
+        }
         sendResponse({ ok: !listsError, error: listsError });
       })();
       return true;
@@ -1533,8 +1572,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse(r);
         // Lists' generic CSS: a user stylesheet (page CSP cannot block it), main
         // frame only — the same scope as the bundled cosmetic_generic.css.
+        // Not on a site where the user turned element hiding off or allowed ads:
+        // the html[data-tbab-on] gate covers it too, this keeps it out entirely.
         if (css.length && sender.tab && sender.tab.id >= 0 && !sender.frameId) {
-          chrome.scripting.insertCSS({ target: { tabId: sender.tab.id, frameIds: [0] }, css: css.join("\n"), origin: "USER" }).catch(() => {});
+          chrome.storage.local.get(["noCosmetics", "allowlist"], (st) => {
+            const chain = domainChain(senderHost || "");
+            const off = [].concat(st.noCosmetics || [], st.allowlist || []).some((d) => chain.includes(d));
+            if (!off) chrome.scripting.insertCSS({ target: { tabId: sender.tab.id, frameIds: [0] }, css: css.join("\n"), origin: "USER" }).catch(() => {});
+          });
         }
       });
       return true;

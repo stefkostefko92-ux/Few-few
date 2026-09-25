@@ -94,7 +94,10 @@ async function fetchText(url, depth = 0) {
     for (const line of text.split("\n")) {
       const m = /^!#include\s+(\S+)\s*$/.exec(line.trim());
       if (!m || /^[a-z]+:/i.test(m[1]) || m[1].includes("..")) { parts.push(line); continue; }
-      parts.push(await fetchText(new URL(m[1], url).href, depth + 1));
+      const inc = new URL(m[1], url);
+      // `//other.host/x` or `\\other.host` resolve to ANOTHER host — whose licence we never checked
+      if (inc.origin !== new URL(url).origin) { parts.push(line); continue; }
+      parts.push(await fetchText(inc.href, depth + 1));
     }
     text = parts.join("\n");
   }
@@ -207,6 +210,7 @@ for (const entry of CATALOG) {
   };
   if (entry.delivery === "remote") {
     meta.url = entry.urls[0];
+    meta.slot = entry.slot; // fixed dynamic-rule slot: never reuse one for another list
     listCatalog.push(meta);
     continue;
   }

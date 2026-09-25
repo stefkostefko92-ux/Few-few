@@ -27,7 +27,8 @@
   // extension is off / the site is allowlisted the engine isn't registered, so
   // the event simply has no listener.
   function deliverScriptlets(cfg) {
-    const list = cfg && Array.isArray(cfg.scriptlets) ? cfg.scriptlets : [];
+    // only from a signature-checked file (an older stored config may predate the check)
+    const list = cfg && cfg.verified === true && Array.isArray(cfg.scriptlets) ? cfg.scriptlets : [];
     if (!list.length) return;
     try {
       document.dispatchEvent(new CustomEvent("sa-scriptlets", { detail: JSON.stringify(list) }));

@@ -149,7 +149,7 @@ var SA_POLICY = (function () {
     // Selectors end up inside a stylesheet block (`html[data-tbab-on]{…}`): a
     // brace, semicolon or comment would let list data write declarations of its
     // own (`url()` beacons) or swallow the rules after it.
-    if (/[{};]|\/\*|\*\//.test(s)) return false;
+    if (/[{};]|\/\*|\*\/|\\$/.test(s)) return false; // a trailing \ escapes the next brace
     if (PAGE_TARGET.test(s)) return false;
     if (!proceduralOk(s)) return false;
     return true;

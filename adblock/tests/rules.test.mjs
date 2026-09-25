@@ -54,6 +54,10 @@ const noticesPath = join(ROOT, "THIRD_PARTY_NOTICES.txt");
 const notices = existsSync(noticesPath) ? readFileSync(noticesPath, "utf8") : "";
 ok("notices: THIRD_PARTY_NOTICES.txt names every bundled list with its licence",
   !!notices && JSON.parse(readFileSync(join(ROOT, "tools", "lists.json"), "utf8")).lists.filter((e) => e.delivery === "bundled" && !e.selectors).every((e) => notices.includes(`${e.title} — ${e.license}`)));
+{
+  const slots = catalog.filter((e) => e.delivery === "remote").map((e) => e.slot);
+  ok("rules: every author-hosted list owns a fixed, unique dynamic-rule slot (0..3)", slots.every((n) => Number.isInteger(n) && n >= 0 && n < 4) && new Set(slots).size === slots.length);
+}
 ok("rules: remote lists carry an https URL and are never bundled", catalog.filter((e) => e.delivery === "remote").every((e) => /^https:\/\//.test(e.url) && !manIds.includes("list_" + e.id)));
 ok("manifest: MV3, CSP strict, scripting present, no externally_connectable",
   manifest.manifest_version === 3 && /script-src 'self'/.test(manifest.content_security_policy?.extension_pages || "") &&
@@ -75,7 +79,7 @@ const names = cfg.scriptlets.map((s) => s.h + ":" + s.d.join(","));
 ok("bg: scriptlets — aliases canonicalised, global/remove-cookie/bad-cookie/protected/proto/trusted dropped",
   names.length === 2 && names.includes("example.com:abort-on-property-read,adBlock") && names.includes("s.com:set-cookie,c,accepted"));
 ok("bg: safeSelector refuses stylesheet escapes and the page itself as target",
-  [".x{background:url(//t.example/b)}", ".y;", ".a /* c", "body.x", ".a, body", "html > body:not(.a)", "body:has(.x)", ":root.x"].every((x) => !bg.safeSelector(x)) &&
+  [".x{background:url(//t.example/b)}", ".y;", ".ad\\", ".a /* c", "body.x", ".a, body", "html > body:not(.a)", "body:has(.x)", ":root.x"].every((x) => !bg.safeSelector(x)) &&
   ["body.x .ad", ".ad-body", "html .ad", "#bodyx", ".tbody-ad"].every((x) => bg.safeSelector(x)));
 ok("bg: safeSelector policy", bg.safeSelector(".ad-slot") && !bg.safeSelector("[type^=pass]") && !bg.safeSelector("div") && !bg.safeSelector(":not(#x)"));
 ok("bg: parseUserDomains never blocks protected hosts", bg.parseUserDomains("||ads.x.com^\nyoutube.com\n! c\nnot a domain").join() === "ads.x.com");
