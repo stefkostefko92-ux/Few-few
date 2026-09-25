@@ -1,6 +1,6 @@
 <%- include('../partials/head') %>
-<div class="login">
-  <div class="brand"><%- icon('shield', { class: 'ic-lg' }) %><span class="wordmark"><%= t('auth.twoFactor') %></span></div>
+<main class="login">
+  <div class="brand"><%- icon('shield', { class: 'ic-lg' }) %><h1 class="wordmark"><%= t('auth.twoFactor') %></h1></div>
   <p class="sub center mb-2"><%= t('auth.twoFactorHint') %></p>
   <% if (error) { %><div class="flash error"><%- icon('status-failed') %><span><%= error %></span></div><% } %>
   <form method="post" action="/admin/2fa" class="stack">
@@ -8,5 +8,5 @@
     <button class="btn primary w-full" type="submit"><%- icon('approve') %> <%= t('auth.confirm') %></button>
   </form>
   <form method="post" action="/admin/logout" class="inline block mt-1"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('logout', { class: 'ic-sm' }) %> <%= t('nav.logout') %></button></form>
-</div>
+</main>
 <%- include('../partials/foot') %>

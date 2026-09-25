@@ -97,3 +97,52 @@ test('прегледът на поста пази мястото си и не п
     'скритата медия не заема рамката',
   );
 });
+
+test('всяко падащо меню има име за екранен четец', () => {
+  const offenders: string[] = [];
+  for (const { name, source } of views) {
+    // Меню вътре в <label>…</label> е етикетирано; иначе иска aria-label.
+    const unlabeled = source
+      .replace(/<label\b[\s\S]*?<\/label>/g, '')
+      .match(/<select\b(?![^>]*aria-label)[^>]*>/g);
+    if (unlabeled) offenders.push(`${name}: ${unlabeled.length}`);
+  }
+  assert.deepEqual(offenders, []);
+});
+
+test('няма празно заглавие на колона', () => {
+  const offenders = views
+    .filter(({ source }) => /<th(\s[^>]*)?><\/th>/.test(source))
+    .map(({ name }) => name);
+  assert.deepEqual(offenders, [], 'колоната с действия носи .sr-only надпис');
+});
+
+test('самостоятелните страници имат главна зона и H1', () => {
+  for (const name of ['login.ejs', 'error.ejs', '2fa.ejs']) {
+    const source = readFileSync(join(VIEWS, name), 'utf8');
+    assert.match(source, /<main\b/, `${name}: без <main>`);
+    assert.match(source, /<h1\b/, `${name}: без <h1>`);
+  }
+});
+
+test('шаблонът за валидация е валиден и в режим v на браузъра', () => {
+  // Chrome компилира `pattern` с флага v: тире в края на клас без „\\“ е синтактична грешка
+  // и браузърът тихо спира да проверява полето.
+  const offenders: string[] = [];
+  for (const { name, source } of views) {
+    for (const [, pattern] of source.matchAll(/pattern="([^"]+)"/g)) {
+      if (/\[[^\]]*[^\\]-\]/.test(pattern!)) offenders.push(`${name}: ${pattern}`);
+    }
+  }
+  assert.deepEqual(offenders, []);
+});
+
+test('иконата в прегледа на поста не се разпъва до размера на медията', () => {
+  const css = readFileSync('public/admin-views.css', 'utf8');
+  assert.doesNotMatch(
+    css,
+    /\.ig-media img\s*\{/,
+    'общото `img` хваща и иконата — тя е <img> в спрайта',
+  );
+  assert.match(css, /\.ig-media img\[data-fallback\]\s*\{[^}]*inset: 0/);
+});

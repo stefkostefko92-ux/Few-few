@@ -28,7 +28,7 @@
 <% if (managed.length) { %>
 <h2><%- icon('autopilot') %> <%= t('dash.managedPages') %></h2>
 <div class="table-wrap to-cards">
-<table><thead><tr><th><%= t('common.brand') %></th><th><%= t('dash.plan') %></th><th class="num"><%= t('dash.assets') %></th><th><%= t('dash.lastCycle') %></th><th class="num"><%= t('dash.drafts') %></th><th></th></tr></thead><tbody>
+<table><thead><tr><th><%= t('common.brand') %></th><th><%= t('dash.plan') %></th><th class="num"><%= t('dash.assets') %></th><th><%= t('dash.lastCycle') %></th><th class="num"><%= t('dash.drafts') %></th><th><span class="sr-only"><%= t('common.actions') %></span></th></tr></thead><tbody>
 <% managed.forEach((b) => { %>
   <% const pl = b.plan && typeof b.plan === 'object' ? b.plan : null; %>
   <tr>
@@ -70,9 +70,9 @@
 <% if (failed.length) { %>
 <h2><%- icon('status-failed') %> <%= t('dash.failedTitle') %></h2>
 <div class="table-wrap to-cards">
-<table><thead><tr><th><%= t('common.brand') %></th><th><%= t('common.error') %></th><th class="num"><%= t('common.attempts') %></th><th></th></tr></thead><tbody>
+<table><thead><tr><th><%= t('common.brand') %></th><th><%= t('common.error') %></th><th class="num"><%= t('common.attempts') %></th><th><span class="sr-only"><%= t('common.actions') %></span></th></tr></thead><tbody>
 <% failed.forEach((p) => { %>
-  <tr><td class="lead"><%= p.brand.name %></td><td class="mono full"><%= (p.lastError || '').slice(0, 110) %></td><td class="num" data-label="<%= t('common.attempts') %>"><%= p.attempts %></td><td><a class="btn ghost small" href="/admin/posts/<%= p.id %>"><%= t('common.open') %></a></td></tr>
+  <tr><td class="lead"><%= p.brand.name %></td><td class="mono full wrap"><%= (p.lastError || '').slice(0, 110) %></td><td class="num" data-label="<%= t('common.attempts') %>"><%= p.attempts %></td><td><a class="btn ghost small" href="/admin/posts/<%= p.id %>"><%= t('common.open') %></a></td></tr>
 <% }) %></tbody></table>
 </div>
 <% } %>

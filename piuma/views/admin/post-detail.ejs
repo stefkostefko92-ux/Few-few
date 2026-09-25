@@ -128,7 +128,7 @@
       <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= t('post.logEmpty') %></strong><%= t('post.logEmptyHint') %></div></div>
     <% } else { %>
     <div class="table-wrap"><table><thead><tr><th><%= t('common.when') %></th><th><%= t('common.step') %></th><th><%= t('common.result') %></th><th><%= t('common.detail') %></th></tr></thead><tbody>
-    <% post.logs.forEach((l) => { %><tr><td class="muted when"><%= ui.dateTime(l.createdAt) %></td><td class="mono"><%= l.step %></td><td><% if (l.ok) { %><span class="chip good"><%- icon('approve', { class: 'ic-sm' }) %> <%= t('post.logOk') %></span><% } else { %><span class="chip critical"><%- icon('reject', { class: 'ic-sm' }) %> <%= t('post.logFail') %></span><% } %></td><td class="mono"><%= l.detail ? JSON.stringify(l.detail) : '' %></td></tr><% }) %>
+    <% post.logs.forEach((l) => { %><tr><td class="muted when"><%= ui.dateTime(l.createdAt) %></td><td class="mono"><%= l.step %></td><td><% if (l.ok) { %><span class="chip good"><%- icon('approve', { class: 'ic-sm' }) %> <%= t('post.logOk') %></span><% } else { %><span class="chip critical"><%- icon('reject', { class: 'ic-sm' }) %> <%= t('post.logFail') %></span><% } %></td><td class="mono wrap"><%= l.detail ? JSON.stringify(l.detail) : '' %></td></tr><% }) %>
     </tbody></table></div><% } %>
   </section>
 
@@ -153,7 +153,7 @@
 
     <h2><%- icon('severity-info') %> <%= t('common.details') %></h2>
     <div class="table-wrap"><table><tbody>
-      <tr><td class="muted">ID</td><td class="mono"><%= post.id %></td></tr>
+      <tr><td class="muted">ID</td><td class="mono wrap"><%= post.id %></td></tr>
       <tr><td class="muted"><%= t('common.account') %></td><td><%= post.account ? '@' + post.account.username : '—' %></td></tr>
       <tr><td class="muted"><%= t('post.container') %></td><td class="mono"><%= post.containerId || '—' %></td></tr>
       <tr><td class="muted"><%= t('post.mediaId') %></td><td class="mono"><%= post.igMediaId || '—' %></td></tr>

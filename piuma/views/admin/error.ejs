@@ -1,7 +1,7 @@
 <%- include('../partials/head') %>
-<div class="login">
+<main class="login">
   <div class="brand"><%- icon('piuma', { class: 'ic-lg' }) %><span class="wordmark">Piuma</span></div>
-  <div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= title %></strong><%= message %></div>
+  <div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><h1 class="empty-title"><%= title %></h1><%= message %></div>
   <a class="btn primary w-full" href="/admin"><%- icon('dashboard') %> <%= t('error.toDashboard') %></a>
-</div>
+</main>
 <%- include('../partials/foot') %>

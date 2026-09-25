@@ -7,7 +7,7 @@
   <% if (can('brands:manage')) { %><a class="btn primary" href="/admin/brands/new"><%- icon('plus') %> <%= t('brands.new') %></a><% } %>
 </div>
 <div class="table-wrap to-cards">
-<table><thead><tr><th><%= t('common.brand') %></th><th><%= t('brands.language') %></th><th><%= t('brands.management') %></th><th class="num"><%= t('brands.accounts') %></th><th class="num"><%= t('brands.posts') %></th><th></th></tr></thead><tbody>
+<table><thead><tr><th><%= t('common.brand') %></th><th><%= t('brands.language') %></th><th><%= t('brands.management') %></th><th class="num"><%= t('brands.accounts') %></th><th class="num"><%= t('brands.posts') %></th><th><span class="sr-only"><%= t('common.actions') %></span></th></tr></thead><tbody>
 <% brands.forEach((b) => { %>
   <tr>
     <td class="lead"><strong><%= b.name %></strong><span class="sub-line mono"><%= b.slug %></span></td>
