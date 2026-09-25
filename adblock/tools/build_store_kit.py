@@ -81,7 +81,7 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 
 ## 2b. Store listing → Promo video (YouTube)
 
-Качи `supreme-adblock-promo-{ver}.mp4` в YouTube (Public или Unlisted), заглавие „Supreme AdBlock — free ad blocker for Chrome · Carbon Stealth“, миниатюра `supreme-adblock-promo-{ver}-thumb.png`. После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 43 s, 1080p, със звук; числата в него са измерените на 25.09.2026 (adblock.turtlecute.org).
+Качи `supreme-adblock-promo-{ver}-web.mp4` (идва отделно от кита) в YouTube (Public или Unlisted), заглавие „Supreme AdBlock — free ad blocker for Chrome · Carbon Stealth“, миниатюра `supreme-adblock-promo-{ver}-thumb.png`. После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 43 s, 1080p, със звук; числата в него са измерените на 25.09.2026 (adblock.turtlecute.org).
 
 ## 3. Store listing → Additional languages
 
@@ -165,7 +165,7 @@ for i in range(1, 6):
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}.zip", KIT / f"supreme-adblock-{ver}.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-firefox.zip", KIT / f"supreme-adblock-{ver}-firefox.zip")
 shutil.copy2(A / "dist" / f"supreme-adblock-{ver}-source.zip", KIT / f"supreme-adblock-{ver}-source.zip")
-for extra in (f"supreme-adblock-promo-{ver}.mp4", f"supreme-adblock-promo-{ver}-thumb.png"):
+for extra in (f"supreme-adblock-promo-{ver}-thumb.png",):  # the video itself travels separately (size)
     if (A / "dist" / extra).exists():
         shutil.copy2(A / "dist" / extra, KIT / extra)
 shutil.rmtree(KIT / "listing", ignore_errors=True)
