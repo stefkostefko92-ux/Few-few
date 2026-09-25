@@ -1,0 +1,675 @@
+[
+ {
+  "id": "ubo",
+  "group": "core",
+  "default": "on",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "uBlock Origin filters",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/uBlockOrigin/uAssets",
+  "ruleset": true,
+  "network": 6901,
+  "cosmetic": 10172
+ },
+ {
+  "id": "plowe",
+  "group": "core",
+  "default": "on",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "Peter Lowe's ad and tracking server list",
+  "license": "© Peter Lowe (redistribution permitted)",
+  "homepage": "https://pgl.yoyo.org/adservers/",
+  "ruleset": true,
+  "network": 4,
+  "cosmetic": 0
+ },
+ {
+  "id": "focus-social",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "Social media buttons and widgets",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 592,
+  "cosmetic": 17115
+ },
+ {
+  "id": "focus-chat",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "Chat and support widgets",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 67,
+  "cosmetic": 36
+ },
+ {
+  "id": "focus-newsletters",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "Newsletter and sign-up pop-ups",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 165,
+  "cosmetic": 9112
+ },
+ {
+  "id": "focus-notifications",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "Notification permission prompts",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 290,
+  "cosmetic": 1961
+ },
+ {
+  "id": "focus-ai",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "AI assistant pop-ups and suggestions",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 10,
+  "cosmetic": 297
+ },
+ {
+  "id": "focus-other",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "Other annoyances (sticky bars, app banners)",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 425,
+  "cosmetic": 4249
+ },
+ {
+  "id": "focus-shorts",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "YouTube Shorts",
+  "license": "Supreme AdBlock (MIT)",
+  "homepage": "https://adblock.carbonstealth.eu/",
+  "ruleset": false,
+  "network": 0,
+  "cosmetic": 12
+ },
+ {
+  "id": "focus-onetap",
+  "group": "focus",
+  "default": "off",
+  "delivery": "bundled",
+  "langs": [],
+  "title": "“Sign in with Google” pop-ups",
+  "license": "Supreme AdBlock (MIT)",
+  "homepage": "https://adblock.carbonstealth.eu/",
+  "ruleset": false,
+  "network": 0,
+  "cosmetic": 3
+ },
+ {
+  "id": "reg-sq",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "sq"
+  ],
+  "title": "Albanian",
+  "license": "Unlicense",
+  "homepage": "https://github.com/AnXh3L0/blocklist",
+  "ruleset": true,
+  "network": 28,
+  "cosmetic": 253
+ },
+ {
+  "id": "reg-ar",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "ar"
+  ],
+  "title": "Liste AR (Arabic)",
+  "license": "CC BY-SA 3.0",
+  "homepage": "https://forums.lanik.us/viewforum.php?f=98",
+  "ruleset": true,
+  "network": 885,
+  "cosmetic": 665
+ },
+ {
+  "id": "reg-zh",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "zh"
+  ],
+  "title": "AdGuard Chinese",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
+  "network": 6823,
+  "cosmetic": 10555
+ },
+ {
+  "id": "reg-cs",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "cs",
+   "sk"
+  ],
+  "title": "EasyList Czech and Slovak",
+  "license": "CC BY-SA 4.0",
+  "homepage": "https://github.com/tomasko126/easylistczechandslovak",
+  "ruleset": true,
+  "network": 140,
+  "cosmetic": 454
+ },
+ {
+  "id": "reg-de",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "de"
+  ],
+  "title": "EasyList Germany",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 1835,
+  "cosmetic": 6002
+ },
+ {
+  "id": "reg-et",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "et"
+  ],
+  "title": "Estonian",
+  "license": "CC0 1.0",
+  "homepage": "https://ubo-et.lepik.io/",
+  "ruleset": true,
+  "network": 70,
+  "cosmetic": 193
+ },
+ {
+  "id": "reg-fi",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "fi"
+  ],
+  "title": "Finnish",
+  "license": "Unlicense",
+  "homepage": "https://github.com/finnish-easylist-addition/finnish-easylist-addition",
+  "ruleset": true,
+  "network": 175,
+  "cosmetic": 1515
+ },
+ {
+  "id": "reg-fr",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "fr"
+  ],
+  "title": "AdGuard French",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
+  "network": 4917,
+  "cosmetic": 5169
+ },
+ {
+  "id": "reg-el",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "el"
+  ],
+  "title": "Greek AdBlock",
+  "license": "CC BY-SA 4.0",
+  "homepage": "https://github.com/kargig/greek-adblockplus-filter",
+  "ruleset": true,
+  "network": 443,
+  "cosmetic": 765
+ },
+ {
+  "id": "reg-hu",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "hu"
+  ],
+  "title": "hufilter (Hungarian)",
+  "license": "CC BY 4.0",
+  "homepage": "https://github.com/hufilter/hufilter",
+  "ruleset": true,
+  "network": 240,
+  "cosmetic": 1778
+ },
+ {
+  "id": "reg-id",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "id",
+   "ms"
+  ],
+  "title": "ABPindo (Indonesian)",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://github.com/ABPindo/indonesianadblockrules",
+  "ruleset": true,
+  "network": 3216,
+  "cosmetic": 6490
+ },
+ {
+  "id": "reg-in",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "hi",
+   "bn",
+   "gu",
+   "kn",
+   "ml",
+   "mr",
+   "ne",
+   "pa",
+   "si",
+   "ta",
+   "te"
+  ],
+  "title": "IndianList",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://github.com/mediumkreation/IndianList",
+  "ruleset": true,
+  "network": 5281,
+  "cosmetic": 11074
+ },
+ {
+  "id": "reg-fa",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "fa"
+  ],
+  "title": "PersianBlocker",
+  "license": "AGPL-3.0",
+  "homepage": "https://codeberg.org/KhodeKiaa/PersianBlocker",
+  "ruleset": true,
+  "network": 714,
+  "cosmetic": 1098
+ },
+ {
+  "id": "reg-is",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "is"
+  ],
+  "title": "Icelandic (Brave)",
+  "license": "MPL-2.0",
+  "homepage": "https://github.com/brave/adblock-lists",
+  "ruleset": true,
+  "network": 11,
+  "cosmetic": 69
+ },
+ {
+  "id": "reg-he",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "he"
+  ],
+  "title": "EasyList Hebrew",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://github.com/easylist/EasyListHebrew",
+  "ruleset": true,
+  "network": 289,
+  "cosmetic": 1307
+ },
+ {
+  "id": "reg-it",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "it"
+  ],
+  "title": "EasyList Italy",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 1055,
+  "cosmetic": 5188
+ },
+ {
+  "id": "reg-ja",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "ja"
+  ],
+  "title": "AdGuard Japanese",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
+  "network": 1935,
+  "cosmetic": 13794
+ },
+ {
+  "id": "reg-ko",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "ko"
+  ],
+  "title": "List-KR (Korean)",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/FilteringDev/filterslists-KO",
+  "ruleset": true,
+  "network": 974,
+  "cosmetic": 2287
+ },
+ {
+  "id": "reg-lt",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "lt"
+  ],
+  "title": "EasyList Lithuania",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/EasyList-Lithuania/easylist_lithuania",
+  "ruleset": true,
+  "network": 521,
+  "cosmetic": 664
+ },
+ {
+  "id": "reg-lv",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "lv"
+  ],
+  "title": "Latvian List",
+  "license": "CC BY-SA 4.0",
+  "homepage": "https://github.com/Latvian-List/adblock-latvian",
+  "ruleset": true,
+  "network": 156,
+  "cosmetic": 234
+ },
+ {
+  "id": "reg-mk",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "mk"
+  ],
+  "title": "Macedonian",
+  "license": "MIT",
+  "homepage": "https://github.com/DeepSpaceHarbor/Macedonian-adBlock-Filters",
+  "ruleset": true,
+  "network": 142,
+  "cosmetic": 502
+ },
+ {
+  "id": "reg-nl",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "nl",
+   "af",
+   "fy"
+  ],
+  "title": "AdGuard Dutch",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
+  "network": 528,
+  "cosmetic": 2068
+ },
+ {
+  "id": "reg-ro",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "ro"
+  ],
+  "title": "ROad-Block (Romanian)",
+  "license": "MIT",
+  "homepage": "https://github.com/tcptomato/ROad-Block",
+  "ruleset": true,
+  "network": 469,
+  "cosmetic": 1364
+ },
+ {
+  "id": "reg-ru",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "ru",
+   "be",
+   "kk",
+   "uz"
+  ],
+  "title": "AdGuard Russian",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
+  "network": 5451,
+  "cosmetic": 14271
+ },
+ {
+  "id": "reg-es",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "es",
+   "pt",
+   "ca",
+   "gl",
+   "eu"
+  ],
+  "title": "EasyList Spanish + AdGuard Spanish/Portuguese",
+  "license": "GPL-3.0 / CC BY-SA 3.0",
+  "homepage": "https://easylist.to/",
+  "ruleset": true,
+  "network": 1670,
+  "cosmetic": 7704
+ },
+ {
+  "id": "reg-sl",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "sl"
+  ],
+  "title": "Slovenian List",
+  "license": "Unlicense",
+  "homepage": "https://github.com/betterwebleon/slovenian-list",
+  "ruleset": true,
+  "network": 80,
+  "cosmetic": 441
+ },
+ {
+  "id": "reg-sv",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "sv"
+  ],
+  "title": "Frellwit's Swedish list",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/lassekongo83/Frellwits-filter-lists",
+  "ruleset": true,
+  "network": 1421,
+  "cosmetic": 3350
+ },
+ {
+  "id": "reg-th",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "th"
+  ],
+  "title": "EasyList Thailand",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/easylist-thailand/easylist-thailand",
+  "ruleset": true,
+  "network": 151,
+  "cosmetic": 716
+ },
+ {
+  "id": "reg-tr",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "tr"
+  ],
+  "title": "AdGuard Turkish",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
+  "network": 1481,
+  "cosmetic": 9901
+ },
+ {
+  "id": "reg-uk",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "uk"
+  ],
+  "title": "AdGuard Ukrainian",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/AdguardTeam/AdguardFilters",
+  "ruleset": true,
+  "network": 2816,
+  "cosmetic": 3388
+ },
+ {
+  "id": "reg-vi",
+  "group": "regional",
+  "default": "lang",
+  "delivery": "bundled",
+  "langs": [
+   "vi"
+  ],
+  "title": "ABPVN (Vietnamese)",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/abpvn/abpvn",
+  "ruleset": true,
+  "network": 298,
+  "cosmetic": 824
+ },
+ {
+  "id": "reg-bg",
+  "group": "regional",
+  "default": "off",
+  "delivery": "remote",
+  "langs": [
+   "bg"
+  ],
+  "title": "Bulgarian Adblock list",
+  "license": "no licence stated",
+  "homepage": "https://stanev.org/abp/",
+  "url": "https://stanev.org/abp/adblock_bg.txt"
+ },
+ {
+  "id": "reg-pl",
+  "group": "regional",
+  "default": "off",
+  "delivery": "remote",
+  "langs": [
+   "pl"
+  ],
+  "title": "Polish Filters (Oficjalne Polskie Filtry)",
+  "license": "CC BY-NC-SA 4.0",
+  "homepage": "https://github.com/MajkiIT/polish-ads-filter",
+  "url": "https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-adblock-filters/adblock.txt"
+ },
+ {
+  "id": "reg-nordic",
+  "group": "regional",
+  "default": "off",
+  "delivery": "remote",
+  "langs": [
+   "no",
+   "nb",
+   "nn",
+   "da"
+  ],
+  "title": "Dandelion Sprout's Nordic filters",
+  "license": "Dandelicence",
+  "homepage": "https://github.com/DandelionSprout/adfilt",
+  "url": "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/NorwegianList.txt"
+ },
+ {
+  "id": "reg-hr",
+  "group": "regional",
+  "default": "off",
+  "delivery": "remote",
+  "langs": [
+   "hr",
+   "sr",
+   "bs"
+  ],
+  "title": "Dandelion Sprout's Serbo-Croatian filters",
+  "license": "Dandelicence",
+  "homepage": "https://github.com/DandelionSprout/adfilt",
+  "url": "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/SerboCroatianList.txt"
+ }
+]

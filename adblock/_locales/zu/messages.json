@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Ivimba izikhangiso zevidiyo ze-YouTube, amabhena, ama-pop-up, abalandeleli nezindonga ze-anti-adblock yonke indawo. Mahhala."
+  },
+  "byCarbon": {
+    "message": "ngu-Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Vula noma vala ukuvikela"
+  },
+  "protected": {
+    "message": "Kuvikelekile"
+  },
+  "paused": {
+    "message": "Kumisiwe"
+  },
+  "blockingHere": {
+    "message": "Ivimba izikhangiso kuleli khasi"
+  },
+  "protectionOff": {
+    "message": "Ukuvikela kuvaliwe"
+  },
+  "pause30": {
+    "message": "Misa imizuzu engu-30"
+  },
+  "pausedResume": {
+    "message": "Kumisiwe, qhubeka manje (kusele imizuzu engu-$1)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Kuvinjiwe"
+  },
+  "dataSaved": {
+    "message": "Idatha eyongiwe"
+  },
+  "timeSaved": {
+    "message": "Isikhathi esongiwe"
+  },
+  "thisSite": {
+    "message": "le sayithi"
+  },
+  "thisPage": {
+    "message": "leli khasi"
+  },
+  "blockOnSite": {
+    "message": "Vimba izikhangiso kule sayithi"
+  },
+  "blocking": {
+    "message": "Iyavimba"
+  },
+  "allowed": {
+    "message": "Kuvunyelwe"
+  },
+  "cosmetics": {
+    "message": "Fihla izikhangiso lapha"
+  },
+  "cosmeticsTitle": {
+    "message": "Ukuhlunga kokubukeka kule sayithi (kuvale uma isakhiwo sekhasi siphuka)"
+  },
+  "on": {
+    "message": "Vuliwe"
+  },
+  "off": {
+    "message": "Valiwe"
+  },
+  "blockedHere": {
+    "message": "Okuvinjwe kuleli khasi"
+  },
+  "logEmpty": {
+    "message": "Akukho okuvinjiwe lapha okwamanje."
+  },
+  "logUnavailable": {
+    "message": "Irekhodi alitholakali manje (umkhawulo wesiphequluli) — zama futhi ngemva komzuzu."
+  },
+  "logCore": {
+    "message": "Imithetho eyinhloko ye-Supreme"
+  },
+  "logYouTube": {
+    "message": "Izikhangiso ze-YouTube"
+  },
+  "logParams": {
+    "message": "Amapharamitha okulandelela"
+  },
+  "logMalware": {
+    "message": "Izizinda ze-malware"
+  },
+  "logSurrogates": {
+    "message": "Amaskripthi ezikhangiso akhutshaziwe"
+  },
+  "logPrivacy": {
+    "message": "Ukuvikelwa kobumfihlo"
+  },
+  "logUser": {
+    "message": "Izihlungi zami"
+  },
+  "logLive": {
+    "message": "Izibuyekezo ezibukhoma"
+  },
+  "hideElement": {
+    "message": "Fihla i-elementi"
+  },
+  "settings": {
+    "message": "Izilungiselelo"
+  },
+  "promoSub": {
+    "message": "Imishini namathuluzi, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Isikhangiso"
+  },
+  "support": {
+    "message": "Sekela"
+  },
+  "filtersCount": {
+    "message": "Izihlungi ezingu-$1+",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Ukubukeka"
+  },
+  "opt_extra_protection": {
+    "message": "Ukuvikela okwengeziwe"
+  },
+  "opt_smart_detection_log": {
+    "message": "Irekhodi le-Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Amasayithi avunyelwe"
+  },
+  "opt_my_filters": {
+    "message": "Izihlungi zami"
+  },
+  "opt_hidden_elements": {
+    "message": "Ama-elementi afihliwe"
+  },
+  "opt_filter_updates": {
+    "message": "Izibuyekezo zezihlungi"
+  },
+  "opt_engine_health": {
+    "message": "Isimo senjini"
+  },
+  "opt_backup": {
+    "message": "Isipele"
+  },
+  "opt_support_development": {
+    "message": "Sekela ukuthuthukiswa"
+  },
+  "opt_theme": {
+    "message": "Itimu"
+  },
+  "opt_sync_across_devices": {
+    "message": "Vumelanisa kuwo wonke amadivayisi"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Ukuvimba izikhangiso ze-YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Amabhena amakhukhi / emvume"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Ukudlula izindonga ze-anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Okuthunyelwe okuxhasiwe kwe-Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Susa amapharamitha okulandelela"
+  },
+  "opt_malware_protection": {
+    "message": "Ukuvikelwa ku-malware"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Vimba ama-API esiphequluli okuqondisa izikhangiso"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Vimba amasiginali okulandelela nezinhlelo zokumba i-crypto"
+  },
+  "opt_auto_update_filters": {
+    "message": "Buyekeza izihlungi ngokuzenzakalela"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (emnyama) noma ekhanyayo"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Gcina izilungiselelo, uhlu lwabavunyelwe nezihlungi kuvumelanisiwe kuyo yonke i-Chrome ongene ngayo ku-akhawunti"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Isusa izikhangiso zevidiyo ku-YouTube. Kuvale uma amavidiyo engadlali."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Vala ngokuzenzakalela izicelo ezithi “Yamukela amakhukhi”"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Fihla izindonga ezithi “vala i-adblocker yakho” futhi ubuyisele ikhasi"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Fihla okuthunyelwe okuthi “Kuxhasiwe” ku-Facebook naku-Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Susa i-utm_*, i-fbclid, i-gclid nezinye izihlonzi zokuchofoza kumalinki owavulayo"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Vimba izizinda ze-malware ezaziwayo (uhlu lwe-URLhaus lwe-abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Khubaza ama-API ezikhangiso e-Google Topics, FLoC ne-Protected Audience kuyo yonke isayithi"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Imisa ama-ping okuhlola amalinki / ama-beacon ezinkampani zangaphandle, isuse amakhukhi okulandelela ezimpendulweni ezaziwayo zobuchwepheshe bezikhangiso, futhi ivimbe amaskripthi okumba i-crypto esiphequluli. Kuvale uma isici sesayithi esincike kuma-analytics singasebenzi kahle."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Ilanda imithetho emisha yokuvimba nokulungiswa kwe-YouTube kusuka ku-adblock.carbonstealth.eu cishe kabili ngosuku. Idatha kuphela, ayikho ikhodi; isicelo asiphathi izihlonzi noma idatha yokuphequlula."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Irekhodi elibukhoma lezikhangiso ezibanjwe ngokuqagela (ngaphandle kohlu lwezihlungi), ezintsha kuqala."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Izinhlu obhalisele kuzo zilandwa njengombhalo (hhayi neze njengekhodi), zibuyekezwa nsuku zonke, futhi zihlala emabhulokini aphethwe ngenhla. Susa uhlu ukuze ulahle imithetho yalo."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Ama-elementi owafihle ngesandla ngesikhethi, ahlelwe ngesayithi."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Ukuhlola okubukhoma — konke kubalwa kule divayisi. Uma okuthile kubomvu, “Buyekeza manje” noma ukulayisha kabusha isandiso kuvame ukukulungisa."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "I-Supreme AdBlock imahhala kuwo wonke umuntu. Uma ungathanda ukusiza ukuthi iqhubeke inakekelwa, iminikelo yamukelekile, kodwa ayidingeki neze."
+  },
+  "opt_reset_statistics": {
+    "message": "Setha kabusha izibalo"
+  },
+  "opt_add": {
+    "message": "Engeza"
+  },
+  "opt_save_filters": {
+    "message": "Londoloza izihlungi"
+  },
+  "opt_subscribe": {
+    "message": "Bhalisa"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Vuselela okubhalisiwe manje"
+  },
+  "opt_update_now": {
+    "message": "Buyekeza manje"
+  },
+  "opt_refresh": {
+    "message": "Vuselela"
+  },
+  "opt_export_settings": {
+    "message": "Thumela ngaphandle izilungiselelo"
+  },
+  "opt_import_settings": {
+    "message": "Ngenisa izilungiselelo"
+  },
+  "opt_e_g_example_com": {
+    "message": "isb. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! isibonelo\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Bhalisela i-URL yohlu lwezihlungi (isb. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Izilungiselelo ze-Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Izilungiselelo"
+  },
+  "opt_theme_light": {
+    "message": "Ekhanyayo"
+  },
+  "opt_badge_unique": {
+    "message": "okuhlukile"
+  },
+  "opt_smart_desc": {
+    "message": "Ibamba izikhangiso okungakabikho uhlu lwezihlungi oluzaziyo: amafreyimu avela kwezinye izizinda anosayizi wezikhala ezijwayelekile zezikhangiso afihlwa ngokushesha, akudingeki mithetho."
+  },
+  "opt_caught_so_far": {
+    "message": "kubanjwe kuze kube manje."
+  },
+  "opt_allow_desc": {
+    "message": "Izikhangiso azivinjwa kulezi zizinda."
+  },
+  "opt_fh_one": {
+    "message": "Umthetho owodwa emgqeni ngamunye."
+  },
+  "opt_fh_blocks": {
+    "message": "ivimba isizinda;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ifihla i-elementi yonke indawo;"
+  },
+  "opt_fh_site": {
+    "message": "iyifihla kuleyo sayithi kuphela."
+  },
+  "opt_fh_comments": {
+    "message": "Imigqa eqala ngo-"
+  },
+  "opt_fh_comments2": {
+    "message": "ingamazwana."
+  },
+  "opt_donate": {
+    "message": "Nikela nge-Revolut"
+  },
+  "opt_made_by": {
+    "message": "yenziwe ngu-Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Akukho okubanjwe ngokuqagela okwamanje."
+  },
+  "opt_empty_allow": {
+    "message": "Awekho amasayithi avunyelwe okwamanje."
+  },
+  "opt_empty_hidden": {
+    "message": "Akukho okufihliwe ngesandla okwamanje."
+  },
+  "opt_empty_subs": {
+    "message": "Azikho izinhlu obhalisele kuzo okwamanje."
+  },
+  "opt_no_sw": {
+    "message": "Ayikho impendulo evela ku-service worker."
+  },
+  "opt_remove": {
+    "message": "Susa"
+  },
+  "opt_filter_status": {
+    "message": "Isethi yezihlungi v$1, ibuyekezwe $2. Idatha kuphela, akukho lutho ngawe oluthunyelwayo."
+  },
+  "opt_updating": {
+    "message": "Iyabuyekeza…"
+  },
+  "opt_updated": {
+    "message": "Kubuyekeziwe (v$1, imithetho eyengeziwe engu-$2)"
+  },
+  "opt_update_failed": {
+    "message": "Ukubuyekeza kuhlulekile ($1)"
+  },
+  "opt_saved": {
+    "message": "Kulondoloziwe ✓"
+  },
+  "opt_rules_count": {
+    "message": "imithetho engu-$1"
+  },
+  "opt_updated_ago": {
+    "message": "ibuyekezwe $1"
+  },
+  "opt_not_fetched": {
+    "message": "akukalandwa"
+  },
+  "opt_failed_colon": {
+    "message": "kuhlulekile: $1"
+  },
+  "opt_enter_https": {
+    "message": "Faka i-URL evumelekile ye-https://"
+  },
+  "opt_fetching": {
+    "message": "Iyalanda…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Ubhalisile: imithetho engu-$1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Kuhlulekile ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Iyavuselela…"
+  },
+  "opt_refreshed": {
+    "message": "Kuvuselelwe ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Ifayela lezilungiselelo elingavumelekile."
+  },
+  "opt_no_response": {
+    "message": "ayikho impendulo"
+  },
+  "opt_h_engine": {
+    "message": "Injini yokudlula i-anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Amasethi emithetho engashintshi avuliwe"
+  },
+  "opt_h_live": {
+    "message": "Izizinda zezihlungi ezibukhoma"
+  },
+  "opt_h_last": {
+    "message": "Isibuyekezo sokugcina"
+  },
+  "opt_h_sig": {
+    "message": "Amasignesha ezibuyekezo"
+  },
+  "opt_h_user": {
+    "message": "Izihlungi zami / imithetho yabavunyelwe"
+  },
+  "opt_h_popup": {
+    "message": "Abasingathi bezikhangiso ze-pop-up abakhelwe ngaphakathi"
+  },
+  "opt_h_yt": {
+    "message": "Ukudlula kwe-YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Ifreyimu yesinye isizinda enosayizi wesikhangiso"
+  },
+  "opt_reason_sticky": {
+    "message": "Ibhena lesikhangiso elinamathelayo"
+  },
+  "logRegional": {
+    "message": "Izinhlu zesifunda"
+  },
+  "logFocus": {
+    "message": "Imodi yokugxila"
+  },
+  "opt_filter_lists": {
+    "message": "Izinhlu zezihlungi"
+  },
+  "opt_lists_intro": {
+    "message": "I-EasyList ne-EasyPrivacy zihlala zivuliwe. Izinhlu ezingezansi zinelayisensi evulekile futhi zakhelwe ngaphakathi kwesandiso, ngakho ukuvula olulodwa akulandi lutho, ngaphandle kohlu olumakwe njengoluvela kumbhali walo."
+  },
+  "opt_lists_core": {
+    "message": "Okuyinhloko"
+  },
+  "opt_lists_regional": {
+    "message": "Okwesifunda"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Uhlu lolimi lwesiphequluli sakho luzivulela lona. Engeza ezinye uma uvame ukufunda amasayithi ngezinye izilimi."
+  },
+  "opt_focus_mode": {
+    "message": "Imodi yokugxila"
+  },
+  "opt_focus_desc": {
+    "message": "Fihla okungesona isikhangiso kodwa okusaphazamisa. Konke lapha kuvaliwe uze ukuvule."
+  },
+  "opt_list_ubo": {
+    "message": "Izihlungi ze-uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Izikhangiso, abalandeleli, ukulungiswa kwe-anti-adblock nokulungiswa kwamasayithi okuvela eqenjini le-uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Uhlu luka-Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Uhlu oludala oluqhubekayo lwamaseva ezikhangiso nawokulandelela."
+  },
+  "opt_focus_social": {
+    "message": "Izinkinobho namawijethi ezinkundla zokuxhumana"
+  },
+  "opt_focus_social_desc": {
+    "message": "Izinkinobho zokwabelana, amabhokisi okuthanda nokuphakelwayo okushumekiwe."
+  },
+  "opt_focus_chat": {
+    "message": "Amawijethi engxoxo nosizo"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Amabhamuza engxoxo antantayo ekhoneni lekhasi."
+  },
+  "opt_focus_newsletters": {
+    "message": "Ama-pop-up ezincwadi zezindaba nokubhalisa"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Amabhokisi nezimbozo ezithi “Bhalisela incwadi yethu yezindaba”."
+  },
+  "opt_focus_notifications": {
+    "message": "Izicelo zezaziso"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Amabhokisi athi “Vumela izaziso?” amasayithi awabonisa ngaphambi kokuthi isiphequluli sibuze."
+  },
+  "opt_focus_ai": {
+    "message": "Ama-pop-up abasizi be-AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Amabhamuza e-chatbot namaphaneli eziphakamiso ze-AI engezwe emakhasini."
+  },
+  "opt_focus_other": {
+    "message": "Ezinye izinto ezicasulayo"
+  },
+  "opt_focus_other_desc": {
+    "message": "Imigoqo enamathelayo, amabhena athi “vula ku-app” nezinye iziphazamiso ezifanayo."
+  },
+  "opt_badge_lang": {
+    "message": "ulimi lwakho"
+  },
+  "opt_badge_remote": {
+    "message": "kusuka kumbhali"
+  },
+  "opt_remote_hint": {
+    "message": "Akufakiwe (ayikho ilayisensi yokuluphinda lusakazwe): isiphequluli sakho silulanda ku-$1 uma uluvula."
+  },
+  "opt_downloaded_from": {
+    "message": "Kulandwe ku-$1"
+  },
+  "opt_lists_error": {
+    "message": "I-Chrome yenqabe lokhu kuhlanganiswa kwezinhlu ($1). Vala ezinye."
+  },
+  "opt_badge_recommended": {
+    "message": "kunconyelwa ulimi lwakho"
+  },
+  "reportBroken": {
+    "message": "Isayithi yonakele? Yilungise noma usitshele"
+  },
+  "rep_title": {
+    "message": "Kukhona okonakele kule sayithi?"
+  },
+  "rep_fix_first": {
+    "message": "Kulungise manje"
+  },
+  "rep_site": {
+    "message": "Isayithi:"
+  },
+  "rep_fix_desc": {
+    "message": "Izinkinga eziningi ziyanyamalala ngokukodwa kwalokhu. Ngakunye kusebenza kule sayithi kuphela; ithebhu iyalayisha kabusha."
+  },
+  "rep_fix_cosm": {
+    "message": "Vala ukufihla ama-elementi lapha"
+  },
+  "rep_fix_allow": {
+    "message": "Vumela izikhangiso kule sayithi"
+  },
+  "rep_fix_pause": {
+    "message": "Misa yonke indawo imizuzu engu-30"
+  },
+  "rep_tell_us": {
+    "message": "Sitshele"
+  },
+  "rep_tell_desc": {
+    "message": "Silungisa amasayithi onakele kuwo wonke umuntu ngesibuyekezo sezihlungi esisayiniwe, ngokuvamile phakathi nosuku. Isandiso asithumeli lutho: umbiko uvuleka ku-app yakho ye-imeyili, futhi ubona wonke amagama awo kuqala."
+  },
+  "rep_what": {
+    "message": "Yini engalungile? (kuyazikhethela)"
+  },
+  "rep_what_ph": {
+    "message": "isb. ividiyo ayiqali, ibhokisi elimhlophe limboza i-athikili…"
+  },
+  "rep_full_url": {
+    "message": "Faka ikheli eliphelele lekhasi (uma kungenjalo igama lesayithi kuphela)"
+  },
+  "rep_preview": {
+    "message": "Okuzothunyelwa"
+  },
+  "rep_send_mail": {
+    "message": "Thumela nge-imeyili"
+  },
+  "rep_copy": {
+    "message": "Kopisha umbiko"
+  },
+  "rep_copied": {
+    "message": "Kukopishiwe."
+  },
+  "rep_done_cosm": {
+    "message": "Ukufihla ama-elementi kuvaliwe kule sayithi. Kulayishwe kabusha — kulungile manje?"
+  },
+  "rep_done_allow": {
+    "message": "Izikhangiso zivunyelwe kule sayithi. Kulayishwe kabusha — kulungile manje?"
+  },
+  "rep_done_pause": {
+    "message": "Kumisiwe imizuzu engu-30. Uma isayithi isebenza manje, sicela usitshele ngezansi."
+  },
+  "cookieRejections": {
+    "message": "Amabhena amakhukhi enqatshelwe egameni lakho: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Amashalofu, ithebhu neziphakamiso ze-Shorts ku-YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Ama-pop-up athi “Ngena nge-Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Isikhethi se-akhawunti esivela ekhoneni lamasayithi amaningi. Izinkinobho zokungena ziyaqhubeka nokusebenza."
+  },
+  "pickTip": {
+    "message": "Chofoza i-elementi ukuze uyifihle"
+  },
+  "pickZapTip": {
+    "message": "Chofoza ukuze ususe le elementi (kanye)"
+  },
+  "pickEscCancel": {
+    "message": "ukukhansela"
+  },
+  "opt_notices": {
+    "message": "Amalayisense wezinhlu zezihlungi"
+  }
+}

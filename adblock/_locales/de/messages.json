@@ -61,7 +61,7 @@
     "message": "Erlaubt"
   },
   "cosmetics": {
-    "message": "Werbeflächen hier ausblenden"
+    "message": "Werbung hier ausblenden"
   },
   "cosmeticsTitle": {
     "message": "Kosmetische Filterung auf dieser Website (ausschalten, wenn das Layout kaputtgeht)"
@@ -418,5 +418,185 @@
   },
   "opt_reason_sticky": {
     "message": "Fixiertes Werbebanner"
+  },
+  "logRegional": {
+    "message": "Regionale Listen"
+  },
+  "logFocus": {
+    "message": "Fokusmodus"
+  },
+  "opt_filter_lists": {
+    "message": "Filterlisten"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList und EasyPrivacy sind immer aktiv. Die Listen unten stehen unter offenen Lizenzen und sind in die Erweiterung eingebaut – beim Einschalten wird nichts heruntergeladen, außer bei Listen, die als „vom Autor“ gekennzeichnet sind."
+  },
+  "opt_lists_core": {
+    "message": "Basis"
+  },
+  "opt_lists_regional": {
+    "message": "Regional"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Die Liste für die Sprache Ihres Browsers schaltet sich selbst ein. Fügen Sie weitere hinzu, wenn Sie oft Seiten in anderen Sprachen lesen."
+  },
+  "opt_focus_mode": {
+    "message": "Fokusmodus"
+  },
+  "opt_focus_desc": {
+    "message": "Blendet aus, was keine Werbung ist, aber trotzdem stört. Alles hier ist aus, bis Sie es einschalten."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock-Origin-Filter"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Werbung, Tracker, Anti-Adblock-Korrekturen und Website-Reparaturen vom uBlock-Origin-Team."
+  },
+  "opt_list_plowe": {
+    "message": "Liste von Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Eine langjährige Liste von Werbe- und Tracking-Servern."
+  },
+  "opt_focus_social": {
+    "message": "Social-Media-Buttons und -Widgets"
+  },
+  "opt_focus_social_desc": {
+    "message": "Teilen-Buttons, Like-Boxen und eingebettete Feeds."
+  },
+  "opt_focus_chat": {
+    "message": "Chat- und Support-Widgets"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Die schwebenden Chat-Blasen in der Ecke der Seite."
+  },
+  "opt_focus_newsletters": {
+    "message": "Newsletter- und Anmelde-Pop-ups"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "„Abonnieren Sie unseren Newsletter“-Boxen und Overlays."
+  },
+  "opt_focus_notifications": {
+    "message": "Benachrichtigungs-Aufforderungen"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "„Benachrichtigungen erlauben?“-Boxen, die Seiten zeigen, bevor der Browser fragt."
+  },
+  "opt_focus_ai": {
+    "message": "KI-Assistenten-Pop-ups"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Chatbot-Blasen und KI-Vorschlagsfelder auf Webseiten."
+  },
+  "opt_focus_other": {
+    "message": "Sonstige Störungen"
+  },
+  "opt_focus_other_desc": {
+    "message": "Klebende Leisten, „In der App öffnen“-Banner und Ähnliches."
+  },
+  "opt_badge_lang": {
+    "message": "Ihre Sprache"
+  },
+  "opt_badge_remote": {
+    "message": "vom Autor"
+  },
+  "opt_remote_hint": {
+    "message": "Nicht eingebaut (keine Lizenz zur Weitergabe): Ihr Browser lädt sie von $1, wenn Sie sie einschalten."
+  },
+  "opt_downloaded_from": {
+    "message": "Wird von $1 geladen"
+  },
+  "opt_lists_error": {
+    "message": "Chrome hat diese Kombination von Listen abgelehnt ($1). Schalten Sie einige aus."
+  },
+  "opt_badge_recommended": {
+    "message": "empfohlen für Ihre Sprache"
+  },
+  "reportBroken": {
+    "message": "Seite kaputt? Beheben oder melden"
+  },
+  "rep_title": {
+    "message": "Funktioniert etwas auf dieser Seite nicht?"
+  },
+  "rep_fix_first": {
+    "message": "Jetzt beheben"
+  },
+  "rep_site": {
+    "message": "Seite:"
+  },
+  "rep_fix_desc": {
+    "message": "Die meisten Probleme verschwinden mit einer dieser Optionen. Jede gilt nur für diese Seite; der Tab wird neu geladen."
+  },
+  "rep_fix_cosm": {
+    "message": "Element-Ausblendung hier ausschalten"
+  },
+  "rep_fix_allow": {
+    "message": "Werbung auf dieser Seite erlauben"
+  },
+  "rep_fix_pause": {
+    "message": "Überall 30 Minuten pausieren"
+  },
+  "rep_tell_us": {
+    "message": "Melden Sie es uns"
+  },
+  "rep_tell_desc": {
+    "message": "Wir reparieren kaputte Seiten für alle über das signierte Filter-Update, meist innerhalb eines Tages. Die Erweiterung sendet nichts: Der Bericht öffnet sich in Ihrem eigenen E-Mail-Programm, und Sie sehen vorher jedes Wort."
+  },
+  "rep_what": {
+    "message": "Was stimmt nicht? (optional)"
+  },
+  "rep_what_ph": {
+    "message": "z. B. das Video startet nicht, ein weißer Kasten verdeckt den Artikel…"
+  },
+  "rep_full_url": {
+    "message": "Vollständige Seitenadresse mitsenden (sonst nur der Name der Website)"
+  },
+  "rep_preview": {
+    "message": "Was gesendet wird"
+  },
+  "rep_send_mail": {
+    "message": "Per E-Mail senden"
+  },
+  "rep_copy": {
+    "message": "Bericht kopieren"
+  },
+  "rep_copied": {
+    "message": "Kopiert."
+  },
+  "rep_done_cosm": {
+    "message": "Element-Ausblendung ist auf dieser Seite aus. Neu geladen – ist es behoben?"
+  },
+  "rep_done_allow": {
+    "message": "Werbung ist auf dieser Seite erlaubt. Neu geladen – ist es behoben?"
+  },
+  "rep_done_pause": {
+    "message": "30 Minuten pausiert. Wenn die Seite jetzt funktioniert, melden Sie es uns bitte unten."
+  },
+  "cookieRejections": {
+    "message": "Für Sie abgelehnte Cookie-Banner: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Die Shorts-Regale, der Tab und die Vorschläge auf YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "„Mit Google anmelden“-Pop-ups"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Die Kontoauswahl, die in der Ecke vieler Seiten erscheint. Die Anmelde-Buttons funktionieren weiter."
+  },
+  "pickTip": {
+    "message": "Klicken Sie auf ein Element, um es auszublenden"
+  },
+  "pickZapTip": {
+    "message": "Klicken, um das Element (einmalig) zu entfernen"
+  },
+  "pickEscCancel": {
+    "message": "zum Abbrechen"
+  },
+  "opt_notices": {
+    "message": "Lizenzen der Filterlisten"
   }
 }

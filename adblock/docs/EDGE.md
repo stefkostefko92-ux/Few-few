@@ -43,7 +43,7 @@ Paste as-is:
 > can disable it (Settings → auto-update off). The single MAIN-world content
 > script `scriptlets/main.js` ships in the package, unminified; the same data
 > file may only add rows (hostname, routine name, arguments) to its fixed table
-> of 18 named routines — see the reviewer note in `docs/SUBMISSION.md` §5.
+> of 19 named routines — see the reviewer note in `docs/SUBMISSION.md` §5.
 
 ## Ъпдейти
 

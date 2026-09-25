@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "YouTube व्हिडिओ जाहिराती, बॅनर, पॉप-अप, ट्रॅकर, कुकी संदेश आणि अँटी-ॲडब्लॉक भिंती सर्वत्र ब्लॉक करा. विनामूल्य, जलद आणि खाजगी."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth कडून"
+  },
+  "toggleProtection": {
+    "message": "संरक्षण चालू/बंद करा"
+  },
+  "protected": {
+    "message": "संरक्षित"
+  },
+  "paused": {
+    "message": "थांबवले"
+  },
+  "blockingHere": {
+    "message": "या पेजवर जाहिराती ब्लॉक होत आहेत"
+  },
+  "protectionOff": {
+    "message": "संरक्षण बंद आहे"
+  },
+  "pause30": {
+    "message": "30 मिनिटांसाठी थांबवा"
+  },
+  "pausedResume": {
+    "message": "थांबवले आहे, आता पुन्हा सुरू करा ($1 मिनिटे शिल्लक)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "ब्लॉक केले"
+  },
+  "dataSaved": {
+    "message": "डेटा वाचला"
+  },
+  "timeSaved": {
+    "message": "वेळ वाचला"
+  },
+  "thisSite": {
+    "message": "ही साइट"
+  },
+  "thisPage": {
+    "message": "हे पेज"
+  },
+  "blockOnSite": {
+    "message": "या साइटवर जाहिराती ब्लॉक करा"
+  },
+  "blocking": {
+    "message": "ब्लॉकिंग"
+  },
+  "allowed": {
+    "message": "परवानगी"
+  },
+  "cosmetics": {
+    "message": "येथे जाहिराती लपवा"
+  },
+  "cosmeticsTitle": {
+    "message": "या साइटवर कॉस्मेटिक फिल्टरिंग (लेआउट बिघडल्यास बंद करा)"
+  },
+  "on": {
+    "message": "चालू"
+  },
+  "off": {
+    "message": "बंद"
+  },
+  "blockedHere": {
+    "message": "या पेजवर ब्लॉक केलेले"
+  },
+  "logEmpty": {
+    "message": "येथे अद्याप काहीही ब्लॉक झालेले नाही."
+  },
+  "logUnavailable": {
+    "message": "लॉग आत्ता उपलब्ध नाही (ब्राउझर कोटा) — एका मिनिटाने पुन्हा प्रयत्न करा."
+  },
+  "logCore": {
+    "message": "Supreme मुख्य नियम"
+  },
+  "logYouTube": {
+    "message": "YouTube जाहिरात नियम"
+  },
+  "logParams": {
+    "message": "ट्रॅकिंग पॅरामीटर"
+  },
+  "logMalware": {
+    "message": "मालवेअर डोमेन"
+  },
+  "logSurrogates": {
+    "message": "निष्क्रिय जाहिरात स्क्रिप्ट"
+  },
+  "logPrivacy": {
+    "message": "गोपनीयता संरक्षण"
+  },
+  "logUser": {
+    "message": "माझे फिल्टर"
+  },
+  "logLive": {
+    "message": "लाइव्ह अपडेट"
+  },
+  "hideElement": {
+    "message": "घटक लपवा"
+  },
+  "settings": {
+    "message": "सेटिंग्ज"
+  },
+  "promoSub": {
+    "message": "गॅजेट आणि टूल, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "जाहिरात"
+  },
+  "support": {
+    "message": "सहाय्य करा"
+  },
+  "filtersCount": {
+    "message": "$1+ फिल्टर",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "स्वरूप"
+  },
+  "opt_extra_protection": {
+    "message": "अतिरिक्त संरक्षण"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection लॉग"
+  },
+  "opt_allowlisted_sites": {
+    "message": "परवानगी सूचीतील साइट"
+  },
+  "opt_my_filters": {
+    "message": "माझे फिल्टर"
+  },
+  "opt_hidden_elements": {
+    "message": "लपवलेले घटक"
+  },
+  "opt_filter_updates": {
+    "message": "फिल्टर अपडेट"
+  },
+  "opt_engine_health": {
+    "message": "इंजिनची स्थिती"
+  },
+  "opt_backup": {
+    "message": "बॅकअप"
+  },
+  "opt_support_development": {
+    "message": "विकासाला पाठिंबा द्या"
+  },
+  "opt_theme": {
+    "message": "थीम"
+  },
+  "opt_sync_across_devices": {
+    "message": "सर्व डिव्हाइसवर सिंक करा"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube जाहिरात ब्लॉकिंग"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "कुकी / संमती बॅनर"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "अँटी-ॲडब्लॉक बायपास"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta च्या प्रायोजित पोस्ट"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "ट्रॅकिंग पॅरामीटर काढून टाका"
+  },
+  "opt_malware_protection": {
+    "message": "मालवेअरपासून संरक्षण"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "जाहिरात-टार्गेटिंग ब्राउझर API ब्लॉक करा"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "ट्रॅकिंग बीकन आणि क्रिप्टोमायनर ब्लॉक करा"
+  },
+  "opt_auto_update_filters": {
+    "message": "फिल्टर आपोआप अपडेट करा"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (डार्क) किंवा लाइट"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "तुम्ही साइन इन केलेल्या प्रत्येक Chrome मध्ये सेटिंग्ज, परवानगी सूची आणि फिल्टर सिंक ठेवा"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube वरील व्हिडिओ जाहिराती काढून टाका. व्हिडिओ सुरू होत नसल्यास हे बंद करा."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“कुकी स्वीकारा” संदेश आपोआप बंद करा"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“तुमचा ॲडब्लॉकर बंद करा” भिंती लपवा आणि पेज पूर्ववत करा"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook आणि Instagram वरील “प्रायोजित” पोस्ट लपवा"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "तुम्ही उघडता त्या लिंकमधून utm_*, fbclid, gclid आणि इतर क्लिक ओळखकर्ते काढून टाका"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "ज्ञात मालवेअर डोमेन ब्लॉक करा (abuse.ch ची URLhaus सूची)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "प्रत्येक साइटवर Google Topics, FLoC आणि Protected Audience जाहिरात API बंद करा"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "तृतीय पक्षाचे हायपरलिंक-ऑडिटिंग / बीकन पिंग थांबवा, ज्ञात ॲड-टेक प्रतिसादांमधून ट्रॅकिंग कुकी काढून टाका आणि ब्राउझरमधील क्रिप्टोमायनिंग स्क्रिप्ट ब्लॉक करा. एखाद्या साइटचे ॲनालिटिक्सवर अवलंबून असलेले वैशिष्ट्य नीट चालत नसल्यास हे बंद करा."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu वरून दिवसातून साधारण दोनदा नवीन ब्लॉक नियम आणि YouTube सुधारणा आणते. फक्त डेटा, कोणताही कोड नाही; विनंतीमध्ये कोणतेही ओळखकर्ते किंवा ब्राउझिंग डेटा नसतो."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "ह्युरिस्टिक पद्धतीने पकडलेल्या जाहिरातींचा लाइव्ह लॉग (फिल्टर सूचीशिवाय), नवीन सर्वात वर."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "सदस्यता घेतलेल्या सूची मजकूर म्हणून आणल्या जातात (कधीही कोड नाही), दररोज अपडेट होतात आणि वरील व्यवस्थापित ब्लॉकमध्ये राहतात. एखाद्या सूचीचे नियम काढण्यासाठी ती सूची काढून टाका."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "तुम्ही पिकरने स्वतः लपवलेले घटक, साइटनुसार गटबद्ध."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "लाइव्ह निदान — सर्व काही स्थानिक पातळीवर मोजले जाते. काही लाल दिसल्यास “आता अपडेट करा” किंवा एक्स्टेंशन पुन्हा लोड केल्याने सहसा ठीक होते."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock सर्वांसाठी विनामूल्य आहे. त्याच्या देखभालीसाठी मदत करायची असल्यास देणग्यांचे स्वागत आहे, पण त्या कधीही बंधनकारक नाहीत."
+  },
+  "opt_reset_statistics": {
+    "message": "आकडेवारी रीसेट करा"
+  },
+  "opt_add": {
+    "message": "जोडा"
+  },
+  "opt_save_filters": {
+    "message": "फिल्टर सेव्ह करा"
+  },
+  "opt_subscribe": {
+    "message": "सदस्यता घ्या"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "सदस्यता आता रिफ्रेश करा"
+  },
+  "opt_update_now": {
+    "message": "आता अपडेट करा"
+  },
+  "opt_refresh": {
+    "message": "रिफ्रेश करा"
+  },
+  "opt_export_settings": {
+    "message": "सेटिंग्ज एक्सपोर्ट करा"
+  },
+  "opt_import_settings": {
+    "message": "सेटिंग्ज इंपोर्ट करा"
+  },
+  "opt_e_g_example_com": {
+    "message": "उदा. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! उदाहरण\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "फिल्टर सूचीच्या URL ची सदस्यता घ्या (उदा. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock सेटिंग्ज"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · सेटिंग्ज"
+  },
+  "opt_theme_light": {
+    "message": "लाइट"
+  },
+  "opt_badge_unique": {
+    "message": "अनोखे"
+  },
+  "opt_smart_desc": {
+    "message": "ज्या जाहिराती अद्याप कोणत्याही फिल्टर सूचीला माहीत नाहीत, त्याही पकडते: मानक जाहिरात स्लॉटच्या आकाराच्या इतर डोमेनवरील फ्रेम दिसताक्षणी लपवल्या जातात, नियमांची गरज नाही."
+  },
+  "opt_caught_so_far": {
+    "message": "आतापर्यंत पकडल्या."
+  },
+  "opt_allow_desc": {
+    "message": "या डोमेनवर जाहिराती ब्लॉक केल्या जात नाहीत."
+  },
+  "opt_fh_one": {
+    "message": "प्रत्येक ओळीत एक नियम."
+  },
+  "opt_fh_blocks": {
+    "message": "एक डोमेन ब्लॉक करतो;"
+  },
+  "opt_fh_everywhere": {
+    "message": "घटक सर्वत्र लपवतो;"
+  },
+  "opt_fh_site": {
+    "message": "तो फक्त त्या साइटवर लपवतो."
+  },
+  "opt_fh_comments": {
+    "message": "ज्या ओळी"
+  },
+  "opt_fh_comments2": {
+    "message": "ने सुरू होतात, त्या टिप्पण्या आहेत."
+  },
+  "opt_donate": {
+    "message": "Revolut द्वारे देणगी द्या"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth ने बनवलेले"
+  },
+  "opt_empty_smart": {
+    "message": "ह्युरिस्टिक पद्धतीने अद्याप काहीही पकडले नाही."
+  },
+  "opt_empty_allow": {
+    "message": "परवानगी सूचीत अद्याप कोणतीही साइट नाही."
+  },
+  "opt_empty_hidden": {
+    "message": "अद्याप स्वतः काहीही लपवलेले नाही."
+  },
+  "opt_empty_subs": {
+    "message": "अद्याप कोणत्याही सूचीची सदस्यता घेतलेली नाही."
+  },
+  "opt_no_sw": {
+    "message": "सर्व्हिस वर्करकडून प्रतिसाद नाही."
+  },
+  "opt_remove": {
+    "message": "काढून टाका"
+  },
+  "opt_filter_status": {
+    "message": "फिल्टर संच v$1, अपडेट: $2. फक्त डेटा — तुमच्याबद्दल काहीही पाठवले जात नाही."
+  },
+  "opt_updating": {
+    "message": "अपडेट होत आहे…"
+  },
+  "opt_updated": {
+    "message": "अपडेट झाले (v$1, $2 अतिरिक्त नियम)"
+  },
+  "opt_update_failed": {
+    "message": "अपडेट अयशस्वी ($1)"
+  },
+  "opt_saved": {
+    "message": "सेव्ह केले ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 नियम"
+  },
+  "opt_updated_ago": {
+    "message": "अपडेट: $1"
+  },
+  "opt_not_fetched": {
+    "message": "अद्याप आणलेले नाही"
+  },
+  "opt_failed_colon": {
+    "message": "अयशस्वी: $1"
+  },
+  "opt_enter_https": {
+    "message": "वैध https:// URL टाका"
+  },
+  "opt_fetching": {
+    "message": "आणत आहे…"
+  },
+  "opt_subscribed_ok": {
+    "message": "सदस्यता घेतली: $1 नियम ✓"
+  },
+  "opt_failed_paren": {
+    "message": "अयशस्वी ($1)"
+  },
+  "opt_refreshing": {
+    "message": "रिफ्रेश होत आहे…"
+  },
+  "opt_refreshed": {
+    "message": "रिफ्रेश झाले ✓"
+  },
+  "opt_invalid_file": {
+    "message": "सेटिंग्ज फाइल अवैध आहे."
+  },
+  "opt_no_response": {
+    "message": "प्रतिसाद नाही"
+  },
+  "opt_h_engine": {
+    "message": "अँटी-ॲडब्लॉक इंजिन"
+  },
+  "opt_h_rulesets": {
+    "message": "चालू स्टॅटिक नियम-संच"
+  },
+  "opt_h_live": {
+    "message": "लाइव्ह फिल्टर डोमेन"
+  },
+  "opt_h_last": {
+    "message": "शेवटचे अपडेट"
+  },
+  "opt_h_sig": {
+    "message": "अपडेट स्वाक्षऱ्या"
+  },
+  "opt_h_user": {
+    "message": "माझे फिल्टर / परवानगी सूचीचे नियम"
+  },
+  "opt_h_popup": {
+    "message": "अंगभूत पॉप-अप जाहिरात होस्ट"
+  },
+  "opt_h_yt": {
+    "message": "YouTube बायपास"
+  },
+  "opt_reason_frame": {
+    "message": "जाहिरातीच्या आकाराची इतर डोमेनवरील फ्रेम"
+  },
+  "opt_reason_sticky": {
+    "message": "चिकटलेले जाहिरात बॅनर"
+  },
+  "logRegional": {
+    "message": "प्रादेशिक सूची"
+  },
+  "logFocus": {
+    "message": "फोकस मोड"
+  },
+  "opt_filter_lists": {
+    "message": "फिल्टर सूची"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList आणि EasyPrivacy नेहमी चालू असतात. खालील सूची मुक्त परवान्याच्या आहेत आणि एक्स्टेंशनमध्येच समाविष्ट आहेत, त्यामुळे त्यापैकी एखादी चालू केल्याने काहीही डाउनलोड होत नाही — “लेखकाकडून” असे चिन्हांकित सूची वगळता."
+  },
+  "opt_lists_core": {
+    "message": "मुख्य"
+  },
+  "opt_lists_regional": {
+    "message": "प्रादेशिक"
+  },
+  "opt_lists_regional_desc": {
+    "message": "तुमच्या ब्राउझरच्या भाषेची सूची आपोआप चालू होते. तुम्ही अनेकदा इतर भाषांतील साइट वाचत असल्यास आणखी सूची जोडा."
+  },
+  "opt_focus_mode": {
+    "message": "फोकस मोड"
+  },
+  "opt_focus_desc": {
+    "message": "जे जाहिरात नाही पण तरीही अडथळा आणते, ते लपवा. तुम्ही चालू करेपर्यंत येथील सर्व काही बंद असते."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin फिल्टर"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin टीमकडून जाहिराती, ट्रॅकर, अँटी-ॲडब्लॉक सुधारणा आणि साइट दुरुस्त्या."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe ची सूची"
+  },
+  "opt_list_plowe_desc": {
+    "message": "जाहिरात आणि ट्रॅकिंग सर्व्हरची दीर्घकाळ चालत आलेली सूची."
+  },
+  "opt_focus_social": {
+    "message": "सोशल मीडिया बटणे आणि विजेट"
+  },
+  "opt_focus_social_desc": {
+    "message": "शेअर बटणे, लाइक बॉक्स आणि एम्बेड केलेले फीड."
+  },
+  "opt_focus_chat": {
+    "message": "चॅट आणि सपोर्ट विजेट"
+  },
+  "opt_focus_chat_desc": {
+    "message": "पेजच्या कोपऱ्यात तरंगणारे चॅट बबल."
+  },
+  "opt_focus_newsletters": {
+    "message": "न्यूजलेटर आणि साइन-अप पॉप-अप"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“आमच्या न्यूजलेटरची सदस्यता घ्या” बॉक्स आणि ओव्हरले."
+  },
+  "opt_focus_notifications": {
+    "message": "सूचनांसाठी विनंत्या"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "ब्राउझर विचारण्यापूर्वी साइट दाखवतात ते “सूचनांना परवानगी द्यायची?” बॉक्स."
+  },
+  "opt_focus_ai": {
+    "message": "AI सहाय्यक पॉप-अप"
+  },
+  "opt_focus_ai_desc": {
+    "message": "पेजमध्ये जोडलेले चॅटबॉट बबल आणि AI सुचवण्यांचे पॅनल."
+  },
+  "opt_focus_other": {
+    "message": "इतर त्रासदायक गोष्टी"
+  },
+  "opt_focus_other_desc": {
+    "message": "चिकटलेल्या पट्ट्या, “ॲपमध्ये उघडा” बॅनर आणि तसाच इतर पसारा."
+  },
+  "opt_badge_lang": {
+    "message": "तुमची भाषा"
+  },
+  "opt_badge_remote": {
+    "message": "लेखकाकडून"
+  },
+  "opt_remote_hint": {
+    "message": "समाविष्ट नाही (पुनर्वितरणाचा परवाना नाही): तुम्ही चालू केल्यावर तुमचा ब्राउझर ती $1 वरून डाउनलोड करतो."
+  },
+  "opt_downloaded_from": {
+    "message": "$1 वरून डाउनलोड केले"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ने सूचींचे हे संयोजन नाकारले ($1). काही बंद करा."
+  },
+  "opt_badge_recommended": {
+    "message": "तुमच्या भाषेसाठी शिफारस केलेली"
+  },
+  "reportBroken": {
+    "message": "साइट नीट चालत नाही? दुरुस्त करा किंवा आम्हाला कळवा"
+  },
+  "rep_title": {
+    "message": "या साइटवर काही बिघडले आहे?"
+  },
+  "rep_fix_first": {
+    "message": "आता दुरुस्त करा"
+  },
+  "rep_site": {
+    "message": "साइट:"
+  },
+  "rep_fix_desc": {
+    "message": "बहुतेक समस्या यांपैकी एकाने दूर होतात. प्रत्येक पर्याय फक्त या साइटला लागू होतो; टॅब पुन्हा लोड होतो."
+  },
+  "rep_fix_cosm": {
+    "message": "येथे घटक लपवणे बंद करा"
+  },
+  "rep_fix_allow": {
+    "message": "या साइटवर जाहिरातींना परवानगी द्या"
+  },
+  "rep_fix_pause": {
+    "message": "सर्वत्र 30 मिनिटांसाठी थांबवा"
+  },
+  "rep_tell_us": {
+    "message": "आम्हाला कळवा"
+  },
+  "rep_tell_desc": {
+    "message": "आम्ही स्वाक्षरी केलेल्या फिल्टर अपडेटद्वारे सर्वांसाठी बिघडलेल्या साइट दुरुस्त करतो, सहसा एका दिवसात. एक्स्टेंशन काहीही पाठवत नाही: अहवाल तुमच्या स्वतःच्या ईमेल ॲपमध्ये उघडतो आणि तुम्ही त्यातील प्रत्येक शब्द आधी पाहता."
+  },
+  "rep_what": {
+    "message": "काय चुकले आहे? (ऐच्छिक)"
+  },
+  "rep_what_ph": {
+    "message": "उदा. व्हिडिओ सुरू होत नाही, पांढरा बॉक्स लेख झाकतो…"
+  },
+  "rep_full_url": {
+    "message": "पेजचा पूर्ण पत्ता समाविष्ट करा (अन्यथा फक्त साइटचे नाव)"
+  },
+  "rep_preview": {
+    "message": "काय पाठवले जाईल"
+  },
+  "rep_send_mail": {
+    "message": "ईमेलने पाठवा"
+  },
+  "rep_copy": {
+    "message": "अहवाल कॉपी करा"
+  },
+  "rep_copied": {
+    "message": "कॉपी केले."
+  },
+  "rep_done_cosm": {
+    "message": "या साइटवर घटक लपवणे बंद आहे. पुन्हा लोड केले — आता ठीक झाले का?"
+  },
+  "rep_done_allow": {
+    "message": "या साइटवर जाहिरातींना परवानगी आहे. पुन्हा लोड केले — आता ठीक झाले का?"
+  },
+  "rep_done_pause": {
+    "message": "30 मिनिटांसाठी थांबवले. साइट आता चालत असल्यास कृपया खाली आम्हाला कळवा."
+  },
+  "cookieRejections": {
+    "message": "तुमच्या वतीने नाकारलेले कुकी बॅनर: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube वरील Shorts च्या रांगा, टॅब आणि सुचवण्या."
+  },
+  "opt_focus_onetap": {
+    "message": "“Google सह साइन इन करा” पॉप-अप"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "अनेक साइटच्या कोपऱ्यात दिसणारा खाते निवडण्याचा बॉक्स. साइन-इन बटणे काम करत राहतात."
+  },
+  "pickTip": {
+    "message": "घटक लपवण्यासाठी त्यावर क्लिक करा"
+  },
+  "pickZapTip": {
+    "message": "हा घटक काढण्यासाठी क्लिक करा (एकदाच)"
+  },
+  "pickEscCancel": {
+    "message": "दाबून रद्द करा"
+  },
+  "opt_notices": {
+    "message": "फिल्टर सूचींचे परवाने"
+  }
+}

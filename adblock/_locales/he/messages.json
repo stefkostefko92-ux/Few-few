@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "חוסם פרסומות בכל מקום: פרסומות וידאו ב-YouTube, באנרים, חלונות קופצים, רכיבי מעקב, הודעות עוגיות וחומות אנטי-חוסם. חינמי ומהיר."
+  },
+  "byCarbon": {
+    "message": "מאת Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "הפעלה או כיבוי של ההגנה"
+  },
+  "protected": {
+    "message": "מוגן"
+  },
+  "paused": {
+    "message": "מושהה"
+  },
+  "blockingHere": {
+    "message": "חוסם פרסומות בדף הזה"
+  },
+  "protectionOff": {
+    "message": "ההגנה כבויה"
+  },
+  "pause30": {
+    "message": "השהיה ל-30 דקות"
+  },
+  "pausedResume": {
+    "message": "מושהה, להמשיך עכשיו (נותרו $1 דק׳)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "נחסמו"
+  },
+  "dataSaved": {
+    "message": "נתונים שנחסכו"
+  },
+  "timeSaved": {
+    "message": "זמן שנחסך"
+  },
+  "thisSite": {
+    "message": "האתר הזה"
+  },
+  "thisPage": {
+    "message": "הדף הזה"
+  },
+  "blockOnSite": {
+    "message": "חסימת פרסומות באתר הזה"
+  },
+  "blocking": {
+    "message": "חוסם"
+  },
+  "allowed": {
+    "message": "מותר"
+  },
+  "cosmetics": {
+    "message": "הסתרת משבצות פרסום כאן"
+  },
+  "cosmeticsTitle": {
+    "message": "סינון קוסמטי באתר הזה (כדאי לכבות אם פריסת הדף נשברת)"
+  },
+  "on": {
+    "message": "פועל"
+  },
+  "off": {
+    "message": "כבוי"
+  },
+  "blockedHere": {
+    "message": "נחסמו בדף הזה"
+  },
+  "logEmpty": {
+    "message": "עדיין לא נחסם כאן דבר."
+  },
+  "logUnavailable": {
+    "message": "היומן לא זמין כרגע (מכסת הדפדפן) — נסו שוב בעוד דקה."
+  },
+  "logCore": {
+    "message": "כללי הליבה של Supreme"
+  },
+  "logYouTube": {
+    "message": "כללי פרסומות YouTube"
+  },
+  "logParams": {
+    "message": "פרמטרי מעקב"
+  },
+  "logMalware": {
+    "message": "דומיינים זדוניים"
+  },
+  "logSurrogates": {
+    "message": "סקריפטי פרסום מנוטרלים"
+  },
+  "logPrivacy": {
+    "message": "הגנת פרטיות"
+  },
+  "logUser": {
+    "message": "המסננים שלי"
+  },
+  "logLive": {
+    "message": "עדכונים חיים"
+  },
+  "hideElement": {
+    "message": "הסתרת רכיב"
+  },
+  "settings": {
+    "message": "הגדרות"
+  },
+  "promoSub": {
+    "message": "ציוד וכלים, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "מודעה"
+  },
+  "support": {
+    "message": "תמיכה"
+  },
+  "filtersCount": {
+    "message": "$1+ מסננים",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "מראה"
+  },
+  "opt_extra_protection": {
+    "message": "הגנה נוספת"
+  },
+  "opt_smart_detection_log": {
+    "message": "יומן Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "אתרים ברשימת ההיתרים"
+  },
+  "opt_my_filters": {
+    "message": "המסננים שלי"
+  },
+  "opt_hidden_elements": {
+    "message": "רכיבים מוסתרים"
+  },
+  "opt_filter_updates": {
+    "message": "עדכוני מסננים"
+  },
+  "opt_engine_health": {
+    "message": "תקינות המנוע"
+  },
+  "opt_backup": {
+    "message": "גיבוי"
+  },
+  "opt_support_development": {
+    "message": "תמיכה בפיתוח"
+  },
+  "opt_theme": {
+    "message": "ערכת נושא"
+  },
+  "opt_sync_across_devices": {
+    "message": "סנכרון בין מכשירים"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "חסימת פרסומות ב-YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "באנרים של עוגיות / הסכמה"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "עקיפת חומות אנטי-חוסם"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "פוסטים ממומנים של Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "הסרת פרמטרי מעקב"
+  },
+  "opt_malware_protection": {
+    "message": "הגנה מפני תוכנות זדוניות"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "חסימת ממשקי API של הדפדפן לטירגוט פרסומות"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "חסימת משואות מעקב וכורי מטבעות קריפטו"
+  },
+  "opt_auto_update_filters": {
+    "message": "עדכון אוטומטי של מסננים"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (כהה) או בהיר"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "סנכרון ההגדרות, רשימת ההיתרים והמסננים בכל Chrome שאתם מחוברים אליו"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "הסרת פרסומות וידאו ב-YouTube. כדאי לכבות אם סרטונים לא מתנגנים."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "סגירה אוטומטית של הודעות \"אישור עוגיות\""
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "הסתרת חומות \"השביתו את חוסם הפרסומות\" ושחזור הדף"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "הסתרת פוסטים \"ממומנים\" ב-Facebook וב-Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "הסרת utm_*, fbclid, gclid ומזהי קליקים נוספים מהקישורים שאתם פותחים"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "חסימת דומיינים זדוניים ידועים (רשימת URLhaus של abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "השבתת ממשקי הפרסום Google Topics, FLoC ו-Protected Audience בכל אתר"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "עצירת פינגים של ביקורת היפר-קישורים / משואות מצד שלישי, הסרת עוגיות מעקב מתגובות ידועות של טכנולוגיות פרסום, וחסימת סקריפטים לכריית מטבעות קריפטו בדפדפן. כדאי לכבות אם תכונה באתר שתלויה בניתוח נתונים לא מתפקדת כראוי."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "מוריד כללי חסימה חדשים ותיקונים ל-YouTube מ-adblock.carbonstealth.eu בערך פעמיים ביום. נתונים בלבד, ללא קוד; הבקשה לא כוללת מזהים או נתוני גלישה."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "יומן חי של פרסומות שזוהו באופן היוריסטי (ללא רשימת מסננים), החדשות ביותר קודם."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "רשימות שנרשמתם אליהן מורדות כטקסט (אף פעם לא כקוד), מתעדכנות מדי יום ונמצאות בבלוקים המנוהלים שלמעלה. הסירו רשימה כדי לבטל את הכללים שלה."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "רכיבים שהסתרתם ידנית בעזרת הבורר, מקובצים לפי אתר."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "אבחון חי — הכול מחושב באופן מקומי. אם משהו מסומן באדום, \"עדכון עכשיו\" או טעינה מחדש של התוסף בדרך כלל פותרים את הבעיה."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock חינמי לכולם. אם תרצו לעזור לתחזק אותו, תרומות יתקבלו בברכה, אך הן לעולם אינן חובה."
+  },
+  "opt_reset_statistics": {
+    "message": "איפוס הסטטיסטיקה"
+  },
+  "opt_add": {
+    "message": "הוספה"
+  },
+  "opt_save_filters": {
+    "message": "שמירת המסננים"
+  },
+  "opt_subscribe": {
+    "message": "הרשמה"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "רענון המינויים עכשיו"
+  },
+  "opt_update_now": {
+    "message": "עדכון עכשיו"
+  },
+  "opt_refresh": {
+    "message": "רענון"
+  },
+  "opt_export_settings": {
+    "message": "ייצוא הגדרות"
+  },
+  "opt_import_settings": {
+    "message": "ייבוא הגדרות"
+  },
+  "opt_e_g_example_com": {
+    "message": "לדוגמה example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! דוגמה\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "הרשמה לכתובת URL של רשימת מסננים (לדוגמה https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "הגדרות Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · הגדרות"
+  },
+  "opt_theme_light": {
+    "message": "בהיר"
+  },
+  "opt_badge_unique": {
+    "message": "ייחודי"
+  },
+  "opt_smart_desc": {
+    "message": "תופס פרסומות שאף רשימת מסננים עוד לא מכירה: מסגרות מדומיין אחר בגודל של משבצת פרסום סטנדרטית מוסתרות מיד, בלי צורך בכללים."
+  },
+  "opt_caught_so_far": {
+    "message": "נתפסו עד כה."
+  },
+  "opt_allow_desc": {
+    "message": "בדומיינים האלה פרסומות לא נחסמות."
+  },
+  "opt_fh_one": {
+    "message": "כלל אחד בכל שורה."
+  },
+  "opt_fh_blocks": {
+    "message": "חוסם דומיין;"
+  },
+  "opt_fh_everywhere": {
+    "message": "מסתיר רכיב בכל מקום;"
+  },
+  "opt_fh_site": {
+    "message": "מסתיר אותו רק באתר הזה."
+  },
+  "opt_fh_comments": {
+    "message": "שורות שמתחילות ב-"
+  },
+  "opt_fh_comments2": {
+    "message": "הן הערות."
+  },
+  "opt_donate": {
+    "message": "תרומה דרך Revolut"
+  },
+  "opt_made_by": {
+    "message": "נוצר על ידי Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "עדיין לא נתפס דבר באופן היוריסטי."
+  },
+  "opt_empty_allow": {
+    "message": "עדיין אין אתרים ברשימת ההיתרים."
+  },
+  "opt_empty_hidden": {
+    "message": "עדיין לא הוסתר דבר ידנית."
+  },
+  "opt_empty_subs": {
+    "message": "עדיין אין רשימות שנרשמתם אליהן."
+  },
+  "opt_no_sw": {
+    "message": "אין תגובה מה-service worker."
+  },
+  "opt_remove": {
+    "message": "הסרה"
+  },
+  "opt_filter_status": {
+    "message": "ערכת מסננים v$1, עודכנה $2. נתונים בלבד, שום דבר עליכם לא נשלח."
+  },
+  "opt_updating": {
+    "message": "מעדכן…"
+  },
+  "opt_updated": {
+    "message": "עודכן (v$1, $2 כללים נוספים)"
+  },
+  "opt_update_failed": {
+    "message": "העדכון נכשל ($1)"
+  },
+  "opt_saved": {
+    "message": "נשמר ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 כללים"
+  },
+  "opt_updated_ago": {
+    "message": "עודכן $1"
+  },
+  "opt_not_fetched": {
+    "message": "עדיין לא הורד"
+  },
+  "opt_failed_colon": {
+    "message": "נכשל: $1"
+  },
+  "opt_enter_https": {
+    "message": "הזינו כתובת https:// תקינה"
+  },
+  "opt_fetching": {
+    "message": "מוריד…"
+  },
+  "opt_subscribed_ok": {
+    "message": "נרשמתם: $1 כללים ✓"
+  },
+  "opt_failed_paren": {
+    "message": "נכשל ($1)"
+  },
+  "opt_refreshing": {
+    "message": "מרענן…"
+  },
+  "opt_refreshed": {
+    "message": "רוענן ✓"
+  },
+  "opt_invalid_file": {
+    "message": "קובץ הגדרות לא תקין."
+  },
+  "opt_no_response": {
+    "message": "אין תגובה"
+  },
+  "opt_h_engine": {
+    "message": "מנוע עקיפת אנטי-חוסם"
+  },
+  "opt_h_rulesets": {
+    "message": "ערכות כללים סטטיות פעילות"
+  },
+  "opt_h_live": {
+    "message": "דומיינים של מסננים חיים"
+  },
+  "opt_h_last": {
+    "message": "עדכון אחרון"
+  },
+  "opt_h_sig": {
+    "message": "חתימות עדכונים"
+  },
+  "opt_h_user": {
+    "message": "המסננים שלי / כללי רשימת ההיתרים"
+  },
+  "opt_h_popup": {
+    "message": "שרתי פרסומות קופצות מובנים"
+  },
+  "opt_h_yt": {
+    "message": "עקיפת YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "מסגרת מדומיין אחר בגודל פרסומת"
+  },
+  "opt_reason_sticky": {
+    "message": "באנר פרסומת נצמד"
+  },
+  "logRegional": {
+    "message": "רשימות אזוריות"
+  },
+  "logFocus": {
+    "message": "מצב מיקוד"
+  },
+  "opt_filter_lists": {
+    "message": "רשימות מסננים"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList ו-EasyPrivacy פועלות תמיד. הרשימות שלהלן הן רשימות ברישיון פתוח שמשולבות בתוסף, כך שהפעלת רשימה לא מורידה דבר, מלבד רשימה שמסומנת כמגיעה מהמחבר שלה."
+  },
+  "opt_lists_core": {
+    "message": "ליבה"
+  },
+  "opt_lists_regional": {
+    "message": "אזוריות"
+  },
+  "opt_lists_regional_desc": {
+    "message": "הרשימה של שפת הדפדפן שלכם מופעלת מעצמה. הוסיפו אחרות אם אתם קוראים לעיתים קרובות אתרים בשפות אחרות."
+  },
+  "opt_focus_mode": {
+    "message": "מצב מיקוד"
+  },
+  "opt_focus_desc": {
+    "message": "הסתרת מה שאינו פרסומת אבל עדיין מפריע. כל מה שכאן כבוי עד שתפעילו אותו."
+  },
+  "opt_list_ubo": {
+    "message": "המסננים של uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "פרסומות, רכיבי מעקב, תיקוני אנטי-חוסם ותיקוני אתרים מצוות uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "הרשימה של Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "רשימה ותיקה של שרתי פרסום ומעקב."
+  },
+  "opt_focus_social": {
+    "message": "לחצנים ווידג׳טים של רשתות חברתיות"
+  },
+  "opt_focus_social_desc": {
+    "message": "לחצני שיתוף, תיבות לייק ופידים מוטמעים."
+  },
+  "opt_focus_chat": {
+    "message": "וידג׳טים של צ׳אט ותמיכה"
+  },
+  "opt_focus_chat_desc": {
+    "message": "בועות הצ׳אט הצפות בפינת הדף."
+  },
+  "opt_focus_newsletters": {
+    "message": "חלונות קופצים של ניוזלטר והרשמה"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "תיבות ושכבות \"הירשמו לניוזלטר שלנו\"."
+  },
+  "opt_focus_notifications": {
+    "message": "בקשות להתראות"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "תיבות \"לאפשר התראות?\" שאתרים מציגים לפני שהדפדפן שואל."
+  },
+  "opt_focus_ai": {
+    "message": "חלונות קופצים של עוזרי AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "בועות צ׳אטבוט וחלוניות הצעות AI שנוספו לדפים."
+  },
+  "opt_focus_other": {
+    "message": "מטרדים אחרים"
+  },
+  "opt_focus_other_desc": {
+    "message": "פסים נצמדים, באנרים של \"פתיחה באפליקציה\" ועומס דומה."
+  },
+  "opt_badge_lang": {
+    "message": "השפה שלכם"
+  },
+  "opt_badge_remote": {
+    "message": "מהמחבר שלה"
+  },
+  "opt_remote_hint": {
+    "message": "לא כלולה בתוסף (אין רישיון להפיץ אותה מחדש): הדפדפן שלכם מוריד אותה מ-$1 כשאתם מפעילים אותה."
+  },
+  "opt_downloaded_from": {
+    "message": "מורדת מ-$1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome דחה את שילוב הרשימות הזה ($1). כבו חלק מהן."
+  },
+  "opt_badge_recommended": {
+    "message": "מומלצת לשפה שלכם"
+  },
+  "reportBroken": {
+    "message": "האתר שבור? תקנו או ספרו לנו"
+  },
+  "rep_title": {
+    "message": "משהו לא עובד באתר הזה?"
+  },
+  "rep_fix_first": {
+    "message": "לתקן עכשיו"
+  },
+  "rep_site": {
+    "message": "אתר:"
+  },
+  "rep_fix_desc": {
+    "message": "רוב הבעיות נעלמות עם אחת מהאפשרויות האלה. כל אחת חלה על האתר הזה בלבד; הכרטיסייה נטענת מחדש."
+  },
+  "rep_fix_cosm": {
+    "message": "כיבוי הסתרת רכיבים כאן"
+  },
+  "rep_fix_allow": {
+    "message": "התרת פרסומות באתר הזה"
+  },
+  "rep_fix_pause": {
+    "message": "השהיה בכל מקום ל-30 דקות"
+  },
+  "rep_tell_us": {
+    "message": "ספרו לנו"
+  },
+  "rep_tell_desc": {
+    "message": "אנחנו מתקנים אתרים שבורים עבור כולם באמצעות עדכון המסננים החתום, בדרך כלל תוך יום. התוסף לא שולח דבר: הדיווח נפתח באפליקציית הדוא״ל שלכם, ואתם רואים כל מילה בו קודם."
+  },
+  "rep_what": {
+    "message": "מה לא תקין? (לא חובה)"
+  },
+  "rep_what_ph": {
+    "message": "לדוגמה: הסרטון לא מתחיל, תיבה לבנה מכסה את הכתבה…"
+  },
+  "rep_full_url": {
+    "message": "לכלול את הכתובת המלאה של הדף (אחרת רק את שם האתר)"
+  },
+  "rep_preview": {
+    "message": "מה יישלח"
+  },
+  "rep_send_mail": {
+    "message": "שליחה בדוא״ל"
+  },
+  "rep_copy": {
+    "message": "העתקת הדיווח"
+  },
+  "rep_copied": {
+    "message": "הועתק."
+  },
+  "rep_done_cosm": {
+    "message": "הסתרת הרכיבים כבויה באתר הזה. הדף נטען מחדש — זה תוקן?"
+  },
+  "rep_done_allow": {
+    "message": "פרסומות מותרות באתר הזה. הדף נטען מחדש — זה תוקן?"
+  },
+  "rep_done_pause": {
+    "message": "מושהה ל-30 דקות. אם האתר עובד עכשיו, נשמח שתספרו לנו למטה."
+  },
+  "cookieRejections": {
+    "message": "באנרים של עוגיות שנדחו בשבילכם: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "המדפים, הכרטיסייה וההצעות של Shorts ב-YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "חלונות קופצים של \"כניסה באמצעות Google\""
+  },
+  "opt_focus_onetap_desc": {
+    "message": "בורר החשבונות שמופיע בפינה של אתרים רבים. לחצני הכניסה ממשיכים לעבוד."
+  },
+  "pickTip": {
+    "message": "לחצו על רכיב כדי להסתיר אותו"
+  },
+  "pickZapTip": {
+    "message": "לחצו כדי להסיר את הרכיב הזה (פעם אחת)"
+  },
+  "pickEscCancel": {
+    "message": "לביטול"
+  },
+  "opt_notices": {
+    "message": "רישיונות רשימות הסינון"
+  }
+}

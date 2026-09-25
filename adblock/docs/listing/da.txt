@@ -1,0 +1,10 @@
+Supreme AdBlock blokerer annoncer overalt — YouTube-videoannoncer, bannere, pop op-vinduer og trackere — uden at holde øje med, hvad du laver.
+
+• YouTube-annoncer stoppes ved kilden, så videoer bare afspilles.
+• EasyList, EasyPrivacy og uBlock Origin-filtrene er indbygget, plus listen til dit sprog (33 regionale lister).
+• Cookiebannere: den trykker på Afvis for dig, fjerner den efterladte sløring og scrollelås og trykker aldrig på en login-, OAuth- eller betalingsknap.
+• Fokustilstand: skjul chatbobler, pop op-vinduer til nyhedsbreve, anmodninger om notifikationer, sociale widgets, AI-pop op-vinduer og YouTube Shorts.
+• Anti-adblock-mure og pop-unders neutraliseres.
+• Virker webstedet ikke? Ét klik retter det, eller giv os besked — intet sendes, uden at du ser det først.
+• Signerede filteropdateringer to gange om dagen: nye annoncenetværk håndteres inden for få timer, uden fjernkode.
+• Ingen konto, ingen telemetri, ingen dataindsamling. Gratis, med mulighed for en frivillig donation.

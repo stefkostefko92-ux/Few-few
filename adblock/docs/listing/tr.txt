@@ -1,0 +1,10 @@
+Supreme AdBlock, ne yaptığınızı izlemeden reklamları her yerde engeller — YouTube video reklamları, banner'lar, pop-up'lar ve izleyiciler.
+
+• YouTube reklamları kaynağında durdurulur, böylece videolar doğrudan oynar.
+• EasyList, EasyPrivacy ve uBlock Origin filtreleri yerleşiktir; ayrıca dilinize uygun liste de vardır (33 bölgesel liste).
+• Çerez banner'ları: sizin yerinize “Reddet”e basar, kalan bulanıklığı ve kaydırma kilidini temizler; oturum açma, OAuth veya ödeme düğmelerine asla basmaz.
+• Odak modu: sohbet baloncuklarını, bülten pop-up'larını, bildirim isteklerini, sosyal medya widget'larını, yapay zekâ pop-up'larını ve YouTube Shorts'u gizleyin.
+• Anti-adblock duvarları ve pop-under'lar etkisiz hâle getirilir.
+• Site bozuk mu? Tek tıklama düzeltir ya da bize bildirin — siz görmeden hiçbir şey gönderilmez.
+• Günde iki kez imzalı filtre güncellemeleri: yeni reklam ağları saatler içinde ele alınır, uzaktan kod olmadan.
+• Hesap yok, telemetri yok, veri toplama yok. Ücretsiz, isteğe bağlı bağış seçeneğiyle.

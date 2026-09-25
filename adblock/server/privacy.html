@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Privacy Policy — Supreme AdBlock</title>
-<meta name="description" content="Supreme AdBlock privacy policy: your browsing data never leaves your device. No account, no analytics, no telemetry. Who we are, what the extension stores, the requests it makes and your rights under the GDPR." />
+<meta name="description" content="Supreme AdBlock privacy policy: your browsing data stays on your device. No account, no analytics, no telemetry — what it stores, what it requests, your GDPR rights." />
 <meta name="keywords" content="Supreme AdBlock privacy policy, Carbon Stealth, ad blocker privacy, GDPR, no telemetry, Chrome extension privacy" />
 <meta name="robots" content="index, follow" />
 <link rel="canonical" href="https://adblock.carbonstealth.eu/privacy" />
@@ -38,7 +38,7 @@
 <body>
 <main>
   <header><img src="/shield-96.webp" alt="" width="30" height="30" /><h1>Supreme AdBlock — Privacy Policy</h1></header>
-  <div class="sub">Last updated: 24 September 2026 · applies to the Supreme AdBlock browser extension and to this website</div>
+  <div class="sub">Last updated: 25 September 2026 · applies to the Supreme AdBlock browser extension and to this website</div>
 
   <div class="tldr"><p><strong>In short:</strong> your browsing data never leaves your device. The extension has no account, no analytics and no telemetry. The only automatic network request is a filter update about twice a day; like any download it reaches our server with your IP address, and we do not log it.</p></div>
 
@@ -50,20 +50,25 @@
   <ul>
     <li>Your allowlisted sites <i>(sync)</i></li>
     <li>Feature toggles and theme (cookie banners, anti-adblock, Meta posts, YouTube, …) <i>(sync)</i></li>
+    <li>Which filter lists and Focus-mode items you turned on or off <i>(sync)</i></li>
     <li>Your own filter rules, including filter lists you subscribed to by URL, and the list of those URLs <i>(sync)</i></li>
     <li>Sites where you switched off element hiding <i>(sync)</i></li>
     <li>Whether protection is on, off or paused — per device, never synced</li>
     <li>Elements you hid with the picker</li>
-    <li>Counters of how many requests were blocked (and the estimated data and time saved)</li>
+    <li>Counters of how many requests were blocked (and the estimated data and time saved), and how many cookie banners were rejected for you — numbers only, no list of sites</li>
     <li>A short log (last 50 entries) of sites where Smart Detection hid an ad-sized frame, shown in Settings so you can see why</li>
-    <li>The latest downloaded filter data (see below)</li>
+    <li>The latest downloaded filter data, and the regional lists you downloaded from their authors (see below)</li>
   </ul>
   <p>The popup's "Blocked on this page" view is built on the spot from which of our filter lists matched in that tab; it is not stored and never sent anywhere. You can clear everything from the extension's Settings, or by removing the extension.</p>
 
   <h2 id="requests">Network requests the extension makes</h2>
   <p><strong>1. Filter updates (automatic, about twice a day).</strong> The extension downloads <code>filters.json</code> and its signature <code>filters.json.sig</code> from <code>adblock.carbonstealth.eu</code> so blocking keeps up with new ad networks. The request carries no identifier, no cookie and no browsing data. As with any download, our server necessarily sees your IP address and browser user agent to answer it; <strong>these requests are not logged</strong>. The file is data only — domain names, CSS selectors and scriptlet directives from a fixed allowlist — and no downloaded code is ever executed. You can turn auto-update off in Settings.</p>
   <p><strong>2. Filter lists you add yourself (only if you do).</strong> If you subscribe to a filter list by URL, the extension downloads it as plain text from the address you gave — once when you add it, then about once a day until you remove it. The site hosting the list sees an ordinary request from your browser (IP address and user agent), exactly as if you opened that URL yourself. We are not involved in that request.</p>
+  <p><strong>3. Regional lists from their authors (only if you turn one on).</strong> Most filter lists are built into the extension, so turning them on downloads nothing. A few lists that we may not redistribute — the Bulgarian list (stanev.org), the Polish, Nordic and Serbo-Croatian lists (raw.githubusercontent.com) — are downloaded by your browser from their author's address when you turn one on, and then about once a day while it stays on. That server sees an ordinary request (IP address and user agent), as if you opened the list yourself. We are not involved in that request. Settings marks these lists "from its author".</p>
   <p>There are no other requests: no analytics, no crash reports, no "phone home".</p>
+
+  <h2 id="report">Reporting a broken site</h2>
+  <p>The "Site broken?" page first offers fixes that stay on your device. If you choose to tell us, the extension sends nothing: it opens a message in <strong>your own email app</strong>, and you see every word before you send it — the site name (the full address only if you tick it), your description, the extension and browser version, and which lists and features are on. What you send reaches <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a> with your email address; we use it only to fix the site and answer you, and delete it within 12 months. Legal basis: our legitimate interest in keeping the extension working, Art. 6(1)(f) GDPR.</p>
 
   <h2 id="website">This website</h2>
   <p>adblock.carbonstealth.eu sets no cookies, uses no analytics and loads nothing from third parties (no external fonts, scripts or trackers). The server does not keep access logs for this site or for filter updates. Error logging is limited to critical server errors; if such an entry ever includes an IP address, it is kept only as long as needed to fix the problem and then deleted.</p>
@@ -85,7 +90,7 @@
     <li><code>storage</code> — keep your settings and counters on your device.</li>
     <li><code>alarms</code> — schedule filter updates and the pause timer.</li>
     <li><code>contextMenus</code> — the right-click "Block an element here" entry.</li>
-    <li><code>scripting</code> — register one script that ships in the package and neutralises anti-adblock detectors; it fetches and executes no remote code, reads no personal data and sends nothing.</li>
+    <li><code>scripting</code> — register the scripts that ship in the package and neutralise anti-adblock detectors, and insert the element-hiding style sheets of the filter lists you turned on; nothing is fetched or executed from the network, no personal data is read and nothing is sent.</li>
     <li>host access (<code>&lt;all_urls&gt;</code>) — block ads and apply cosmetic filtering on the pages you visit; page content is processed on your device and never sent anywhere.</li>
   </ul>
 
