@@ -130,7 +130,7 @@ test("снимки: без public/img демото пада на генерат�
   assert.ok(/data-widget="booking"/.test(html) && /<select name="service"/.test(html), "hero формата за резервация е реална форма");
 });
 
-test("логото на Carbon Stealth VCC е навсякъде: lockup в nav/footer, знак в boot/демо лентата/root, favicon.ico + icon-192 + apple-touch, og.png, Organization.logo — всички файлове съществуват", () => {
+test("логото на Carbon Stealth VCC е навсякъде: lockup в nav/footer, знак в демо лентата/root, favicon.ico + icon-192 + apple-touch, og.png, Organization.logo — всички файлове съществуват", () => {
   const dist = OUT;
   for (const f of ["logo.png", "logo.webp", "logo-square.png", "logo-square.webp", "mark.png", "mark.webp", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "favicon.ico", "og.png"]) assert.ok(existsSync(join(dist, f)), f);
   assert.ok(!existsSync(join(dist, "favicon.svg")), "favicon.svg е заменен от favicon.ico");
@@ -142,7 +142,6 @@ test("логото на Carbon Stealth VCC е навсякъде: lockup в nav/
     assert.ok(!html.includes("favicon.svg"));
   }
   assert.strictEqual((hub.match(/src="\/logo\.png" alt="Carbon Stealth VCC" width="673" height="160"/g) || []).length, 2, "nav + footer lockup");
-  assert.ok(hub.includes('<picture class="boot-cs"><source srcset="/mark.webp"'), "boot знак");
   assert.ok(demo.includes('<a class="cs-mark" href="/bg/" aria-label="Carbon Stealth VCC"><picture><source srcset="/mark.webp"'), "cs-bar знак");
   assert.ok(root.includes('src="/mark.png" alt="Carbon Stealth VCC"'), "root знак");
   assert.ok(hub.includes('"logo":{"@type":"ImageObject","url":"https://portfolio.carbonstealth.eu/logo-square.png","width":1024,"height":1024}'), "Organization.logo");
@@ -165,7 +164,7 @@ test("производителност: статични превюта за в�
   assert.ok(!siteCss.includes("will-change:transform,opacity"), "reveal без will-change (стотици композитни слоеве)");
   // hero (boy/): непрозрачна WebGL2 канва на ≤0.75 резолюция с регулатор, старт след load (LCP/TBT), 30 fps, пауза извън екрана
   for (const needle of ["alpha: false", "R.createGovernor", "R.initialPixelCap", 'addEventListener("load"', "FRAME_MS = 1000 / 30", "IntersectionObserver", "visibilitychange"]) assert.ok(heroJs.includes(needle), `hero: ${needle}`);
-  assert.ok(siteCss.includes(".lite .hero-scan i") && rd("assets/premium.css").includes(".lite .hero-bg picture{animation:none"), "LITE режим в CSS");
+  assert.ok(siteCss.includes(".lite .hero .wrap>*") && siteCss.includes(".lite body.hub::after") && rd("assets/premium.css").includes(".lite .hero-bg picture{animation:none"), "LITE режим в CSS");
 });
 
 test("реални проекти: 10-те от carbonstealth.eu ×3 езика, 6 в хъба, снимка или типографска обложка, външни линкове с noopener, в llms.txt и sitemap", () => {
@@ -174,8 +173,8 @@ test("реални проекти: 10-те от carbonstealth.eu ×3 езика,
   for (const pr of PROJECTS) { for (const l of LANGS) { const t = pr.t[l]; assert.ok(t.name && t.category && t.desc && t.facts.length >= 3, `${pr.id}/${l}`); } assert.ok(/^https:\/\//.test(pr.url)); if (pr.shot) assert.ok(existsSync(join(OUT, "img", "projects", `${pr.id}.webp`)), `${pr.id}.webp`); }
   for (const l of LANGS) {
     const page = rd(`${l}/${{ bg: "proekti", en: "projects", it: "progetti" }[l]}/index.html`), hub = rd(`${l}/index.html`);
-    assert.strictEqual((page.match(/class="cell pj reveal"/g) || []).length, 10, `${l}: 10 карти`);
-    assert.strictEqual((hub.match(/class="cell pj reveal"/g) || []).length, 6, `${l}: 6 в хъба`);
+    assert.strictEqual((page.match(/class="cell pj"/g) || []).length, 10, `${l}: 10 карти`);
+    assert.strictEqual((hub.match(/class="cell pj"/g) || []).length, 6, `${l}: 6 в хъба`);
     assert.strictEqual((page.match(/class="pj-shot"/g) || []).length, PROJECTS.filter((p) => p.shot).length);
     assert.strictEqual((page.match(/class="pj-type"/g) || []).length, PROJECTS.filter((p) => !p.shot).length);
     for (const pr of PROJECTS) assert.ok(page.includes(`href="${pr.url}" target="_blank" rel="noopener"`), `${l}: ${pr.url}`);
@@ -283,11 +282,11 @@ test("SEO вертикали: страница „сайт за <бизнес>�
   assert.ok(sm.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"') && (sm.match(/<image:image>/g) || []).length >= DEMOS.length * LANGS.length * 2, "sitemap с image:image за демота и вертикали");
   for (const lang of LANGS) {
     const idx = readFileSync(join(OUT, PATHS.vertical[lang].slice(1), "index.html"), "utf8");
-    assert.equal((idx.match(/class="cell reveal" href="/g) || []).length, DEMOS.length, `${lang}: индексът листва всички вертикали`);
+    assert.equal((idx.match(/class="cell" href="/g) || []).length, DEMOS.length, `${lang}: индексът листва всички вертикали`);
     for (const d of DEMOS) {
       const v = VERTICALS[lang][d.id], path = verticalPath(lang, d);
       const html = readFileSync(join(OUT, path.slice(1), "index.html"), "utf8");
-      assert.ok(html.includes(`<h1 class="h2 reveal">${v.h1}</h1>`), `${path}: H1`);
+      assert.ok(html.includes(`<h1 class="h2">${v.h1}</h1>`), `${path}: H1`);
       for (const needle of ['"@type":"Service"', '"@type":"FAQPage"', '"@type":"BreadcrumbList"', '"@type":"SpeakableSpecification"', `href="${demoPath(lang, d)}"`, `href="${PATHS.quote[lang]}?demo=${d.id}"`, `href="${PATHS.pricing[lang]}"`, 'class="v-includes"', `/img/previews/${lang}/${d.id}.webp`]) assert.ok(html.includes(needle), `${path}: ${needle}`);
       assert.ok((html.match(/<details class="faq"/g) || []).length === 5, `${path}: 5 въпроса (3 уникални + 2 общи)`);
       assert.ok(!/\{(business|start|ecommerce|business_price|n)\}/.test(html), `${path}: незаменен плейсхолдър`);
@@ -301,10 +300,18 @@ test("SEO вертикали: страница „сайт за <бизнес>�
   }
 });
 
-test("хъбът носи бранд компонентите: boot, canvas hero, тикер, ghost заглавия, живи прегледи, лого", () => {
+test("хъбът във визията на Рейвънхолд: бурята в hero-то, римски глави, ценоразпис, живи прегледи, лого; без HUD остатъци", () => {
   const html = readFileSync(join(OUT, "bg/index.html"), "utf8");
-  for (const needle of ['id="boot"', 'id="hero-canvas"', 'class="ticker"', 'class="ghost ghost-5"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
+  for (const needle of ['id="hero-canvas"', 'class="reel"', 'class="chapters"', 'class="mini"', 'data-preview="/bg/demo/', 'src="/logo.png"', "/assets/hero.js", "/assets/fonts/brand.css"]) assert.ok(html.includes(needle), needle);
   assert.equal((html.match(/data-preview=/g) || []).length, DEMOS.length);
+  // Отказаното с новата визия не се връща тихо: boot екран, тикер, ехо заглавия, „// ТАГ“, scramble/магнити, reveal.
+  for (const gone of ['id="boot"', 'class="ticker"', 'class="ghost', ">// ", "data-scramble", "data-magnetic", 'class="reveal', " reveal\""]) assert.ok(!html.includes(gone), `върнато: ${gone}`);
+  // Бранд шрифтовете са семейството на boy/ с кирилица; Inter Tight остава само като резерв на демотата.
+  const brand = readFileSync(join(ROOT_DIR, "src/assets/fonts/brand.css"), "utf8");
+  for (const fam of ["'Alegreya'", "'Alegreya Sans'", "'Alegreya Sans SC'"]) assert.ok(brand.includes(`font-family: ${fam}`), fam);
+  assert.ok(/U\+0400-045F/.test(brand), "brand.css носи кирилица");
+  assert.ok(!brand.includes("Inter Tight") && !brand.includes("Space Mono"), "старите бранд шрифтове ги няма");
+  assert.ok(readFileSync(join(OUT, "bg/demo/avtoservis/index.html"), "utf8").includes("/assets/fonts/inter-tight.css"), "демотата пазят кирилския резерв");
 });
 
 test("служебни файлове: sitemap с всички URL и hreflang, robots сочи sitemap, llms.txt съдържа цените, security.txt", () => {

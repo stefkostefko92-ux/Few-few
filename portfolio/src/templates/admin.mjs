@@ -6,7 +6,7 @@ import { esc, join, head, jsonLd, ICON, ORG, PATHS, SITE, LANGS, demoPath } from
 import { I18N } from "../i18n/index.mjs";
 import { DEMOS } from "../demos/index.mjs";
 import { photosOf } from "./photos.mjs";
-import { siteNav, siteFooter, boot, HUB_FONTS, BRAND_BG } from "./hub.mjs";
+import { siteNav, siteFooter, HUB_FONTS, BRAND_BG } from "./hub.mjs";
 
 const SRC = DEMOS.find((d) => d.id === "avtoservis");
 
@@ -34,8 +34,8 @@ export function renderAdmin(lang) {
   ] });
   return join([
     head({ lang, title: a.title, description: a.desc, keywords: a.keywords, path, paths: PATHS.admin, fonts: [...HUB_FONTS, "Inter:wght@400;500;600"], css: ["/assets/site.css", "/assets/admin.css"], themeColor: BRAND_BG, extra: schema }),
-    `<body class="hub admin-page">`, boot(ui), siteNav(lang, ui, PATHS.admin),
-    `<main id="main"><section class="section" style="padding-top:140px;padding-bottom:40px"><div class="wrap"><div class="tag reveal">// ${esc(a.eyebrow)}</div><h1 class="h2 reveal">${a.h1}</h1><p class="lede reveal">${esc(a.lede)}</p></div></section>`,
+    `<body class="hub admin-page">`, siteNav(lang, ui, PATHS.admin),
+    `<main id="main"><section class="section" style="padding-top:140px;padding-bottom:40px"><div class="wrap"><div class="tag">${esc(a.eyebrow)}</div><h1 class="h2">${a.h1}</h1><p class="lede">${esc(a.lede)}</p></div></section>`,
     `<section class="wrap cms-wrap"><div class="cms-app" data-admin="${esc(JSON.stringify({ saved: a.actions.saved, changed: a.actions.changed, none: a.actions.none }))}"><aside class="cms-side"><div class="cms-brand">${ICON.layers}<span>${esc(a.brand)}</span></div><nav class="cms-nav" aria-label="${esc(a.eyebrow)}">${Object.entries(a.nav).map(([k, v], i) => `<button type="button" class="${i === 0 ? "on" : ""}" data-pane="${k}">${esc(v)}</button>`).join("")}</nav><div class="cms-history"><h2 class="cms-h">${esc(a.actions.history)}</h2><ul data-history><li class="cms-none">${esc(a.actions.none)}</li></ul></div></aside><div class="cms-main"><div class="cms-top"><span class="cms-dirty" data-dirty hidden></span><button type="button" class="cms-undo" data-undo>${esc(a.actions.undo)}</button><button type="button" class="cms-save" data-save>${esc(a.actions.save)}</button></div>${Object.entries(panes).map(([k, html], i) => `<div class="cms-pane" data-pane-body="${k}"${i ? " hidden" : ""}>${html}</div>`).join("")}</div><div class="cms-preview"><div class="cms-pv-head"><span class="hud">${esc(a.actions.preview)}</span><a href="${demoPath(lang, SRC)}" target="_blank" rel="noopener">${esc(a.actions.openDemo)}</a></div>${preview}</div></div><p class="cms-note">${esc(a.note)}</p><p class="cms-note"><strong>${esc(a.included)}</strong> <a href="${PATHS.pricing[lang]}">${esc(ui.nav.pricing)} →</a></p></section><div class="cms-toast" data-toast hidden></div></main>`,
     siteFooter(lang, ui), `<script src="/assets/site.js" defer></script><script src="/assets/admin.js" defer></script>`, `</body></html>`,
   ]);

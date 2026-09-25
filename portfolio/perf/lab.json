@@ -4,26 +4,26 @@
       "path": "/bg/",
       "mobile": {
         "score": 98,
-        "FCP": 1856,
-        "LCP": 1904,
-        "TBT": 28,
+        "FCP": 1944,
+        "LCP": 1944,
+        "TBT": 44,
         "CLS": 0,
-        "requests": 14,
+        "requests": 15,
         "spread": {
-          "LCP": 72,
-          "TBT": 7,
+          "LCP": 308,
+          "TBT": 39,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 236,
-        "LCP": 236,
+        "FCP": 276,
+        "LCP": 276,
         "TBT": 0,
         "CLS": 0,
-        "requests": 18,
+        "requests": 19,
         "spread": {
-          "LCP": 68,
+          "LCP": 88,
           "TBT": 0,
           "CLS": 0
         }
@@ -33,26 +33,26 @@
       "path": "/bg/demo/avtoservis/",
       "mobile": {
         "score": 100,
-        "FCP": 1388,
-        "LCP": 1388,
-        "TBT": 0,
+        "FCP": 1408,
+        "LCP": 1408,
+        "TBT": 34,
         "CLS": 0,
-        "requests": 17,
+        "requests": 20,
         "spread": {
-          "LCP": 20,
-          "TBT": 1,
+          "LCP": 136,
+          "TBT": 24,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 192,
-        "LCP": 192,
+        "FCP": 308,
+        "LCP": 308,
         "TBT": 0,
         "CLS": 0,
-        "requests": 17,
+        "requests": 21,
         "spread": {
-          "LCP": 12,
+          "LCP": 104,
           "TBT": 0,
           "CLS": 0
         }
@@ -62,26 +62,26 @@
       "path": "/bg/demo/fitnes/",
       "mobile": {
         "score": 99,
-        "FCP": 1776,
-        "LCP": 1776,
-        "TBT": 0,
+        "FCP": 1548,
+        "LCP": 1548,
+        "TBT": 43,
         "CLS": 0,
-        "requests": 19,
+        "requests": 22,
         "spread": {
-          "LCP": 204,
-          "TBT": 15,
+          "LCP": 456,
+          "TBT": 68,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 216,
-        "LCP": 216,
+        "FCP": 296,
+        "LCP": 296,
         "TBT": 0,
         "CLS": 0,
-        "requests": 19,
+        "requests": 23,
         "spread": {
-          "LCP": 52,
+          "LCP": 40,
           "TBT": 0,
           "CLS": 0
         }
@@ -90,27 +90,27 @@
     "mebeli": {
       "path": "/bg/demo/mebelen-magazin/",
       "mobile": {
-        "score": 95,
-        "FCP": 1536,
-        "LCP": 2756,
-        "TBT": 2,
+        "score": 96,
+        "FCP": 1900,
+        "LCP": 2024,
+        "TBT": 133,
         "CLS": 0.017,
-        "requests": 26,
+        "requests": 29,
         "spread": {
-          "LCP": 28,
-          "TBT": 6,
+          "LCP": 912,
+          "TBT": 43,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 244,
-        "LCP": 244,
+        "FCP": 368,
+        "LCP": 396,
         "TBT": 0,
         "CLS": 0,
-        "requests": 25,
+        "requests": 29,
         "spread": {
-          "LCP": 8,
+          "LCP": 84,
           "TBT": 0,
           "CLS": 0
         }
@@ -120,24 +120,24 @@
       "path": "/bg/demo/advokatska-kantora/",
       "mobile": {
         "score": 97,
-        "FCP": 1456,
-        "LCP": 2452,
-        "TBT": 0,
+        "FCP": 1796,
+        "LCP": 2404,
+        "TBT": 6,
         "CLS": 0,
-        "requests": 21,
+        "requests": 24,
         "spread": {
-          "LCP": 1452,
-          "TBT": 18,
+          "LCP": 1272,
+          "TBT": 40,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 228,
-        "LCP": 228,
+        "FCP": 316,
+        "LCP": 316,
         "TBT": 0,
         "CLS": 0,
-        "requests": 21,
+        "requests": 25,
         "spread": {
           "LCP": 48,
           "TBT": 0,
@@ -149,26 +149,26 @@
       "path": "/bg/demo/salon-za-krasota/",
       "mobile": {
         "score": 99,
-        "FCP": 1628,
-        "LCP": 1628,
-        "TBT": 2,
+        "FCP": 1768,
+        "LCP": 1768,
+        "TBT": 39,
         "CLS": 0,
-        "requests": 27,
+        "requests": 28,
         "spread": {
-          "LCP": 192,
-          "TBT": 5,
+          "LCP": 492,
+          "TBT": 67,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 244,
-        "LCP": 244,
+        "FCP": 328,
+        "LCP": 328,
         "TBT": 0,
         "CLS": 0,
-        "requests": 25,
+        "requests": 29,
         "spread": {
-          "LCP": 4,
+          "LCP": 28,
           "TBT": 0,
           "CLS": 0
         }
@@ -177,27 +177,27 @@
     "hotel": {
       "path": "/bg/demo/hotel-kashta-za-gosti/",
       "mobile": {
-        "score": 96,
-        "FCP": 1628,
-        "LCP": 2564,
-        "TBT": 5,
+        "score": 95,
+        "FCP": 1560,
+        "LCP": 2812,
+        "TBT": 57,
         "CLS": 0,
-        "requests": 17,
+        "requests": 20,
         "spread": {
-          "LCP": 820,
-          "TBT": 15,
+          "LCP": 940,
+          "TBT": 104,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 352,
-        "LCP": 352,
+        "FCP": 276,
+        "LCP": 308,
         "TBT": 0,
         "CLS": 0,
-        "requests": 17,
+        "requests": 21,
         "spread": {
-          "LCP": 156,
+          "LCP": 92,
           "TBT": 0,
           "CLS": 0
         }
@@ -207,26 +207,26 @@
       "path": "/bg/demo/schetovodna-kashta/",
       "mobile": {
         "score": 99,
-        "FCP": 1520,
-        "LCP": 1520,
-        "TBT": 49,
+        "FCP": 1620,
+        "LCP": 1620,
+        "TBT": 1,
         "CLS": 0,
-        "requests": 21,
+        "requests": 24,
         "spread": {
-          "LCP": 448,
-          "TBT": 29,
+          "LCP": 336,
+          "TBT": 69,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 364,
-        "LCP": 364,
+        "FCP": 256,
+        "LCP": 264,
         "TBT": 0,
         "CLS": 0,
-        "requests": 21,
+        "requests": 25,
         "spread": {
-          "LCP": 100,
+          "LCP": 52,
           "TBT": 0,
           "CLS": 0
         }
@@ -235,27 +235,27 @@
     "avtokashta": {
       "path": "/bg/demo/avtokashta/",
       "mobile": {
-        "score": 100,
-        "FCP": 1448,
-        "LCP": 1448,
-        "TBT": 3,
+        "score": 99,
+        "FCP": 1608,
+        "LCP": 1608,
+        "TBT": 15,
         "CLS": 0,
-        "requests": 26,
+        "requests": 29,
         "spread": {
-          "LCP": 376,
-          "TBT": 2,
+          "LCP": 504,
+          "TBT": 93,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 220,
-        "LCP": 220,
+        "FCP": 328,
+        "LCP": 328,
         "TBT": 0,
         "CLS": 0,
-        "requests": 26,
+        "requests": 30,
         "spread": {
-          "LCP": 56,
+          "LCP": 100,
           "TBT": 0,
           "CLS": 0
         }
@@ -264,27 +264,27 @@
     "drehi": {
       "path": "/bg/demo/magazin-za-drehi/",
       "mobile": {
-        "score": 98,
-        "FCP": 1488,
-        "LCP": 2216,
-        "TBT": 2,
+        "score": 99,
+        "FCP": 1644,
+        "LCP": 1644,
+        "TBT": 0,
         "CLS": 0,
-        "requests": 20,
+        "requests": 23,
         "spread": {
-          "LCP": 96,
-          "TBT": 4,
+          "LCP": 180,
+          "TBT": 0,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 200,
-        "LCP": 200,
+        "FCP": 304,
+        "LCP": 304,
         "TBT": 0,
         "CLS": 0,
-        "requests": 20,
+        "requests": 24,
         "spread": {
-          "LCP": 24,
+          "LCP": 92,
           "TBT": 0,
           "CLS": 0
         }
@@ -294,26 +294,26 @@
       "path": "/bg/demo/barzo-hranene/",
       "mobile": {
         "score": 99,
-        "FCP": 1740,
-        "LCP": 1740,
-        "TBT": 0,
+        "FCP": 1716,
+        "LCP": 1716,
+        "TBT": 37,
         "CLS": 0,
-        "requests": 24,
+        "requests": 27,
         "spread": {
-          "LCP": 144,
-          "TBT": 0,
+          "LCP": 296,
+          "TBT": 30,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 204,
-        "LCP": 204,
+        "FCP": 272,
+        "LCP": 272,
         "TBT": 0,
         "CLS": 0,
-        "requests": 24,
+        "requests": 28,
         "spread": {
-          "LCP": 28,
+          "LCP": 64,
           "TBT": 0,
           "CLS": 0
         }
@@ -323,26 +323,26 @@
       "path": "/bg/demo/onlain-magazin/",
       "mobile": {
         "score": 99,
-        "FCP": 1724,
-        "LCP": 1724,
-        "TBT": 7,
+        "FCP": 1480,
+        "LCP": 1480,
+        "TBT": 32,
         "CLS": 0,
-        "requests": 25,
+        "requests": 28,
         "spread": {
-          "LCP": 300,
-          "TBT": 18,
+          "LCP": 404,
+          "TBT": 16,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 280,
-        "LCP": 280,
+        "FCP": 348,
+        "LCP": 348,
         "TBT": 0,
         "CLS": 0,
-        "requests": 26,
+        "requests": 30,
         "spread": {
-          "LCP": 12,
+          "LCP": 48,
           "TBT": 0,
           "CLS": 0
         }
@@ -352,24 +352,24 @@
       "path": "/bg/demo/medicinski-centar/",
       "mobile": {
         "score": 100,
-        "FCP": 1368,
-        "LCP": 1368,
-        "TBT": 0,
+        "FCP": 1444,
+        "LCP": 1444,
+        "TBT": 2,
         "CLS": 0.001,
-        "requests": 20,
+        "requests": 23,
         "spread": {
-          "LCP": 164,
-          "TBT": 0,
+          "LCP": 152,
+          "TBT": 15,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 192,
-        "LCP": 192,
+        "FCP": 260,
+        "LCP": 260,
         "TBT": 0,
         "CLS": 0,
-        "requests": 20,
+        "requests": 24,
         "spread": {
           "LCP": 36,
           "TBT": 0,
@@ -381,26 +381,26 @@
       "path": "/bg/demo/restorant/",
       "mobile": {
         "score": 99,
-        "FCP": 1628,
-        "LCP": 1628,
-        "TBT": 0,
+        "FCP": 1772,
+        "LCP": 1772,
+        "TBT": 12,
         "CLS": 0,
-        "requests": 25,
+        "requests": 28,
         "spread": {
-          "LCP": 128,
-          "TBT": 4,
+          "LCP": 264,
+          "TBT": 84,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 240,
-        "LCP": 240,
+        "FCP": 328,
+        "LCP": 328,
         "TBT": 0,
         "CLS": 0,
-        "requests": 24,
+        "requests": 28,
         "spread": {
-          "LCP": 44,
+          "LCP": 64,
           "TBT": 0,
           "CLS": 0
         }
@@ -410,24 +410,24 @@
       "path": "/bg/demo/agencia-za-imoti/",
       "mobile": {
         "score": 99,
-        "FCP": 1788,
-        "LCP": 1788,
-        "TBT": 6,
+        "FCP": 1680,
+        "LCP": 1680,
+        "TBT": 35,
         "CLS": 0,
-        "requests": 19,
+        "requests": 22,
         "spread": {
-          "LCP": 48,
-          "TBT": 16,
+          "LCP": 276,
+          "TBT": 51,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 216,
-        "LCP": 216,
+        "FCP": 348,
+        "LCP": 348,
         "TBT": 0,
         "CLS": 0,
-        "requests": 19,
+        "requests": 23,
         "spread": {
           "LCP": 72,
           "TBT": 0,
@@ -439,26 +439,26 @@
       "path": "/bg/demo/stroitelstvo-i-remonti/",
       "mobile": {
         "score": 100,
-        "FCP": 1332,
-        "LCP": 1364,
-        "TBT": 0,
+        "FCP": 1436,
+        "LCP": 1436,
+        "TBT": 3,
         "CLS": 0,
-        "requests": 17,
+        "requests": 20,
         "spread": {
-          "LCP": 768,
-          "TBT": 0,
+          "LCP": 872,
+          "TBT": 4,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
         "FCP": 264,
-        "LCP": 264,
+        "LCP": 312,
         "TBT": 0,
         "CLS": 0,
-        "requests": 17,
+        "requests": 21,
         "spread": {
-          "LCP": 32,
+          "LCP": 68,
           "TBT": 0,
           "CLS": 0
         }

@@ -3,8 +3,9 @@
 // Чете семействата от хъба и демотата, взима CSS-а на Google Fonts с модерен UA (woff2 +
 // unicode-range), сваля само нужните подмножества (latin · latin-ext · cyrillic · cyrillic-ext) в
 // public/fonts/ и пише по един CSS файл на семейство в src/assets/fonts/. Пуска се РЪЧНО при смяна
-// на шрифт; резултатът е проследен в git. Inter Tight + Space Mono идват от сайта carbonstealth.
-//   node tools/fonts.mjs
+// на шрифт; резултатът е проследен в git.
+//   node tools/fonts.mjs            # семействата на демотата
+//   node tools/fonts.mjs --brand    # бранд шрифтовете → src/assets/fonts/brand.css
 import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,7 +19,12 @@ const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Geck
 const SUBSETS = new Set(["latin", "latin-ext", "cyrillic", "cyrillic-ext"]);
 
 import { fontSlug as slug } from "../src/lib/html.mjs";
-const families = [...new Set(DEMOS.flatMap((d) => d.theme.fonts))];
+// Бранд семействата (хъб · цени · правна · лентата на демотата) → ЕДИН файл brand.css: езикът на
+// „Двубой в Рейвънхолд“ (boy/template.html) — Alegreya за заглавия, Alegreya Sans за текст, Alegreya Sans SC
+// за етикети. Grenze Gotisch на boy няма кирилица, затова заглавията са в калиграфската Alegreya.
+const BRAND = ["Alegreya:wght@500..800", "Alegreya+Sans:wght@400", "Alegreya+Sans+SC:wght@500"];
+const families = process.argv.includes("--brand") ? BRAND : [...new Set(DEMOS.flatMap((d) => d.theme.fonts))];
+let brandCss = "/* brand.css — генерирано от tools/fonts.mjs --brand (Google Fonts, OFL): Alegreya · Alegreya Sans · Alegreya Sans SC */\n";
 
 for (const fam of families) {
   const url = `https://fonts.googleapis.com/css2?family=${fam}&display=optional`; // optional: без смяна на шрифта след първия рендер → нула CLS от текст (Lighthouse съвет)
@@ -39,6 +45,8 @@ for (const fam of families) {
     n++;
   }
   if (!n) throw new Error(`нула подмножества за ${fam}`);
-  writeFileSync(join(OUT_CSS, `${slug(fam)}.css`), out);
+  if (families === BRAND) brandCss += out.split("\n").slice(1).join("\n");
+  else writeFileSync(join(OUT_CSS, `${slug(fam)}.css`), out);
   console.log(`✓ ${fam.split(":")[0].replace(/\+/g, " ")} — ${n} файла`);
 }
+if (families === BRAND) writeFileSync(join(OUT_CSS, "brand.css"), brandCss);

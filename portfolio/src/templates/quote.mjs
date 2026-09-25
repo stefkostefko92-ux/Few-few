@@ -4,7 +4,7 @@
 import { esc, join, head, jsonLd, ICON, ORG, PATHS, SITE, BRAND_EMAIL } from "../lib/html.mjs";
 import { I18N } from "../i18n/index.mjs";
 import { TIERS, ADDONS, net, money, shown, tx } from "../pricing.mjs";
-import { siteNav, siteFooter, boot, HUB_FONTS, BRAND_BG } from "./hub.mjs";
+import { siteNav, siteFooter, HUB_FONTS, BRAND_BG } from "./hub.mjs";
 
 export function renderQuote(lang) {
   const ui = I18N[lang], q = ui.quote, p = ui.pricing, path = PATHS.quote[lang];
@@ -24,9 +24,9 @@ export function renderQuote(lang) {
   ] });
   return join([
     head({ lang, title: q.title, description: q.desc, keywords: q.keywords, path, paths: PATHS.quote, fonts: HUB_FONTS, css: ["/assets/site.css"], themeColor: BRAND_BG, extra: schema }),
-    `<body class="hub">`, boot(ui), siteNav(lang, ui, PATHS.quote),
-    `<main id="main"><section class="section" style="padding-top:140px;padding-bottom:32px"><div class="wrap"><div class="tag reveal">// ${esc(q.eyebrow)}</div><h1 class="h2 reveal">${q.h1}</h1><p class="lede reveal">${esc(q.lede)}</p></div></section>`,
-    `<section class="wrap q-wrap"><form class="q-form" id="quote" data-quote="${esc(JSON.stringify(cfg))}" novalidate><div class="q-steps"><fieldset class="q-step"><legend class="tag">// ${esc(q.stepTier)}</legend><div class="q-tiers">${tiers}</div></fieldset><fieldset class="q-step"><legend class="tag">// ${esc(q.stepAddons)}</legend><div class="q-addons">${addons}</div></fieldset><fieldset class="q-step"><legend class="tag">// ${esc(q.stepClient)}</legend><div class="q-clients">${clients}</div><p class="q-vatnote tiny" data-vatnote></p></fieldset></div><aside class="q-summary"><div class="tag">// ${esc(q.summary)}</div><ul class="q-lines" data-lines></ul><dl class="q-totals"><div><dt>${esc(q.lines.net)}</dt><dd data-net></dd></div><div data-vatrow><dt>${esc(q.lines.vat)}</dt><dd data-vat></dd></div><div class="q-total"><dt>${esc(q.lines.total)}</dt><dd data-total></dd></div><div class="q-total q-monthly" data-monthlyrow hidden><dt>${esc(q.lines.totalMonthly)}</dt><dd data-monthly></dd></div></dl><p class="tiny" data-delivery></p><div class="q-actions"><a class="btn btn-solid" data-mail href="mailto:${BRAND_EMAIL}">${esc(q.actions.email)} ${ICON.arrow}</a><button type="button" class="btn" data-print>${esc(q.actions.print)}</button><button type="reset" class="btn q-reset">${esc(q.actions.reset)}</button></div><p class="tiny">${esc(q.disclaimer)}</p></aside></form></section></main>`,
+    `<body class="hub">`, siteNav(lang, ui, PATHS.quote),
+    `<main id="main"><section class="section" style="padding-top:140px;padding-bottom:32px"><div class="wrap"><div class="tag">${esc(q.eyebrow)}</div><h1 class="h2">${q.h1}</h1><p class="lede">${esc(q.lede)}</p></div></section>`,
+    `<section class="wrap q-wrap"><form class="q-form" id="quote" data-quote="${esc(JSON.stringify(cfg))}" novalidate><div class="q-steps"><fieldset class="q-step"><legend class="tag">${esc(q.stepTier)}</legend><div class="q-tiers">${tiers}</div></fieldset><fieldset class="q-step"><legend class="tag">${esc(q.stepAddons)}</legend><div class="q-addons">${addons}</div></fieldset><fieldset class="q-step"><legend class="tag">${esc(q.stepClient)}</legend><div class="q-clients">${clients}</div><p class="q-vatnote tiny" data-vatnote></p></fieldset></div><aside class="q-summary"><div class="tag">${esc(q.summary)}</div><ul class="q-lines" data-lines></ul><dl class="q-totals"><div><dt>${esc(q.lines.net)}</dt><dd data-net></dd></div><div data-vatrow><dt>${esc(q.lines.vat)}</dt><dd data-vat></dd></div><div class="q-total"><dt>${esc(q.lines.total)}</dt><dd data-total></dd></div><div class="q-total q-monthly" data-monthlyrow hidden><dt>${esc(q.lines.totalMonthly)}</dt><dd data-monthly></dd></div></dl><p class="tiny" data-delivery></p><div class="q-actions"><a class="btn btn-solid" data-mail href="mailto:${BRAND_EMAIL}">${esc(q.actions.email)}</a><button type="button" class="btn" data-print>${esc(q.actions.print)}</button><button type="reset" class="btn q-reset">${esc(q.actions.reset)}</button></div><p class="tiny">${esc(q.disclaimer)}</p></aside></form></section></main>`,
     siteFooter(lang, ui), `<script src="/assets/site.js" defer></script><script src="/assets/quote.js" defer></script>`, `</body></html>`,
   ]);
 }
