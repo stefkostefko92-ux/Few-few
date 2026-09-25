@@ -155,12 +155,12 @@ const bg: Dict = {
         { title: "Играй и се изкачвай", text: "Трупай нива, постижения и място в класацията." },
       ],
     },
-    games: { heading: "Игрите", sub: "Всяка с пълни правила и собствена премиум маса.", minutesShort: "мин", viewAll: "Виж всички игри" },
+    games: { heading: "Игрите", sub: "21 игри с пълните им правила. Избери маса и играй направо в браузъра.", minutesShort: "мин", viewAll: "Виж всички игри" },
     faq: { heading: "Често задавани въпроси", sub: "Бързи отговори, преди да седнеш на масата.", allQuestions: "Всички въпроси" },
     final: {
       heading: "Масата те чака.",
       trust: ["Без изтегляне", "Телефон, таблет или компютър", "Само за 18+"],
-      cta: "Влез и играй",
+      cta: "Играй сега",
     },
     breadcrumbHome: "Начало",
     hero: {
@@ -171,7 +171,7 @@ const bg: Dict = {
     cats: { all: "Всички", cards: "Карти", board: "Настолни", cue: "Билярд", party: "Бързи" },
     showcase: {
       eyebrow: "Изработено с внимание",
-      heading: "Маси, в които искаш да седнеш",
+      heading: "Как изглеждат масите",
       text: "Всяка игра се играе в залата на замък под светлината на факли. Орехът, сукното, месингът и камъкът са истински материали, изпечени за сцената, не картинки.",
       points: [
         { title: "3D маси", text: "Шах, Табла, Дама, Не се сърди човече, билярд и Магнат в пълно 3D." },
@@ -275,12 +275,12 @@ const en: Dict = {
         { title: "Play and climb", text: "Earn levels, achievements and a place on the leaderboard." },
       ],
     },
-    games: { heading: "The games", sub: "Each with full rules and its own premium table.", minutesShort: "min", viewAll: "See all games" },
+    games: { heading: "The games", sub: "21 games with their full rules. Pick a table and play right in your browser.", minutesShort: "min", viewAll: "See all games" },
     faq: { heading: "Frequently asked questions", sub: "Quick answers before you take a seat.", allQuestions: "All questions" },
     final: {
       heading: "The table is waiting.",
       trust: ["No download", "Phone, tablet or computer", "18+ only"],
-      cta: "Sign in and play",
+      cta: "Play now",
     },
     breadcrumbHome: "Home",
     hero: {
@@ -291,7 +291,7 @@ const en: Dict = {
     cats: { all: "All", cards: "Cards", board: "Board", cue: "Cue sports", party: "Quick" },
     showcase: {
       eyebrow: "Crafted with care",
-      heading: "Tables you want to sit at",
+      heading: "What the tables look like",
       text: "Every game is played in a torch-lit castle hall. The walnut, felt, brass and stone are real baked materials, not flat pictures.",
       points: [
         { title: "3D tables", text: "Chess, Backgammon, Draughts, Ludo, pool and Magnat in full 3D." },
@@ -395,12 +395,12 @@ const it: Dict = {
         { title: "Gioca e scala la classifica", text: "Ottieni livelli, obiettivi e un posto in classifica." },
       ],
     },
-    games: { heading: "I giochi", sub: "Ognuno con regole complete e il proprio tavolo premium.", minutesShort: "min", viewAll: "Vedi tutti i giochi" },
+    games: { heading: "I giochi", sub: "21 giochi con le regole complete. Scegli un tavolo e gioca direttamente nel browser.", minutesShort: "min", viewAll: "Vedi tutti i giochi" },
     faq: { heading: "Domande frequenti", sub: "Risposte rapide prima di sederti al tavolo.", allQuestions: "Tutte le domande" },
     final: {
       heading: "Il tavolo ti aspetta.",
       trust: ["Senza download", "Telefono, tablet o computer", "Solo 18+"],
-      cta: "Entra e gioca",
+      cta: "Gioca ora",
     },
     breadcrumbHome: "Home",
     hero: {
@@ -411,7 +411,7 @@ const it: Dict = {
     cats: { all: "Tutti", cards: "Carte", board: "Da tavolo", cue: "Biliardo", party: "Veloci" },
     showcase: {
       eyebrow: "Fatto con cura",
-      heading: "Tavoli a cui vuoi sederti",
+      heading: "Come sono i tavoli",
       text: "Ogni gioco si gioca nella sala di un castello illuminata dalle torce. Noce, panno, ottone e pietra sono materiali reali preparati per la scena, non immagini piatte.",
       points: [
         { title: "Tavoli 3D", text: "Scacchi, Backgammon, Dama, Ludo, biliardo e Magnat in pieno 3D." },

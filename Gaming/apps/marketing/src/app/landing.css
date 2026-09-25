@@ -4,6 +4,15 @@
    една и съща карта навсякъде. Токени — в globals.css. Един свят (тъмна зала)
    по избор; фонът и цветовете са зададени изрично. */
 
+:root {
+  --t-meta: 0.875rem; /* 14 */
+  --t-body: 1.125rem; /* 18 */
+  --t-lead: 1.3125rem; /* 21 */
+  --t-h3: 1.5rem; /* 24 */
+  --t-h2: 2.25rem; /* 36 */
+  --t-display: clamp(4.5rem, 12vw, 7.5rem); /* 72 → 120 */
+}
+
 .hall,
 .roster,
 .craft,
@@ -67,7 +76,7 @@
 .ace__word {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(4.6rem, 13vw, 8.6rem);
+  font-size: var(--t-display);
   line-height: 0.86;
   letter-spacing: 0.02em;
 }
@@ -75,14 +84,14 @@
   margin-top: 1rem;
   font-family: var(--font-display);
   font-style: italic;
-  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+  font-size: var(--t-h3);
   color: var(--brass-soft);
 }
 .hall__lead {
   margin-top: 1rem;
   max-width: 34rem;
   color: var(--muted);
-  font-size: 1.08rem;
+  font-size: var(--t-body);
 }
 .hall__actions {
   display: flex;
@@ -90,14 +99,6 @@
   align-items: center;
   gap: 1rem 1.75rem;
   margin-top: 2rem;
-}
-.hall__facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem 1.6rem;
-  margin-top: 1.75rem;
-  font-size: 0.98rem;
-  color: var(--muted);
 }
 .hall__table {
   margin: 0;
@@ -149,7 +150,7 @@
 .steps h2,
 .questions h2,
 .last-call h2 {
-  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-size: var(--t-h2);
   font-weight: 700;
   text-wrap: balance;
 }
@@ -197,7 +198,7 @@
 }
 .roster__group h3 {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: var(--t-h3);
   font-weight: 700;
   color: var(--brass-soft);
   padding-bottom: 0.5rem;
@@ -221,28 +222,22 @@
   height: 60px;
   object-fit: cover;
   border-radius: 3px;
-  filter: saturate(0.9);
-  transition: filter 0.2s ease;
 }
 .seat:hover {
   color: var(--parchment);
-}
-.seat:hover img {
-  filter: saturate(1.1) brightness(1.08);
 }
 .seat:hover .seat__name {
   color: var(--brass-soft);
 }
 .seat__name {
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: var(--t-lead);
   font-weight: 700;
-  transition: color 0.2s ease;
 }
 .seat__meta {
   display: grid;
   justify-items: end;
-  font-size: 0.88rem;
+  font-size: var(--t-meta);
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -288,7 +283,7 @@
 }
 .reasons dt {
   font-family: var(--font-display);
-  font-size: 1.3rem;
+  font-size: var(--t-h3);
   font-weight: 700;
   color: var(--parchment);
 }
@@ -358,7 +353,7 @@
 }
 .steps strong {
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: var(--t-h3);
   color: var(--parchment);
 }
 .steps span {
@@ -386,7 +381,7 @@
   position: relative;
   padding: 1rem 2rem 1rem 0;
   font-weight: 500;
-  font-size: 1.08rem;
+  font-size: var(--t-body);
   color: var(--parchment);
 }
 .questions summary::-webkit-details-marker {
@@ -425,24 +420,19 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 1.6rem;
-  font-size: 0.98rem;
+  font-size: var(--t-meta);
   color: var(--muted);
 }
 
-/* ── Движение: само влизането на залата, еднократно ────────────────────── */
-@keyframes hall-in {
-  from { opacity: 0; translate: 0 14px; }
-  to { opacity: 1; translate: 0 0; }
+/* ── Движение: един момент — кадърът от масата се „раздава“ веднъж и сяда на
+   мястото си като карта, сложена на масата. Текстът е в покой от първия кадър. */
+@keyframes deal {
+  from { opacity: 0; transform: translate(6%, -5%) rotate(5deg); }
+  to { opacity: 1; transform: none; }
 }
-.hall__copy > *,
-.hall__table {
-  animation: hall-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+.hall__table img {
+  animation: deal 0.9s cubic-bezier(0.2, 0.8, 0.25, 1) 0.1s both;
 }
-.hall__copy > :nth-child(2) { animation-delay: 0.06s; }
-.hall__copy > :nth-child(3) { animation-delay: 0.12s; }
-.hall__copy > :nth-child(4) { animation-delay: 0.18s; }
-.hall__copy > :nth-child(5) { animation-delay: 0.24s; }
-.hall__table { animation-delay: 0.15s; }
 
 /* ── Отзивчивост ───────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
@@ -477,8 +467,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hall__copy > *,
-  .hall__table {
+  .hall__table img {
     animation: none;
   }
 }

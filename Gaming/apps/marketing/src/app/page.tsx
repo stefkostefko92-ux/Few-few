@@ -94,11 +94,6 @@ export default function Home() {
                 {t.home.browseGames}
               </Link>
             </div>
-            <p className="hall__facts">
-              {t.home.facts.map((f) => (
-                <span key={f}>{f}</span>
-              ))}
-            </p>
           </div>
 
           <figure className="hall__table">
