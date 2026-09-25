@@ -56,13 +56,13 @@
     "message": "ブロック中"
   },
   "allowed": {
-    "message": "許可"
+    "message": "許可中"
   },
   "cosmetics": {
     "message": "ここで広告枠を非表示"
   },
   "cosmeticsTitle": {
-    "message": "このサイトの要素非表示フィルタ（レイアウトが崩れる場合はオフにしてください）"
+    "message": "このサイトで広告枠を非表示（ページのレイアウトが崩れる場合はオフにしてください）"
   },
   "on": {
     "message": "オン"
@@ -502,7 +502,7 @@
     "message": "同梱されていません（再配布のライセンスがないため）。オンにすると、ブラウザが $1 からダウンロードします。"
   },
   "opt_downloaded_from": {
-    "message": "$1 からダウンロード"
+    "message": "オンにすると $1 からダウンロードされます"
   },
   "opt_lists_error": {
     "message": "Chrome がこのリストの組み合わせを拒否しました（$1）。いくつかオフにしてください。"
@@ -558,6 +558,9 @@
   "rep_copy": {
     "message": "報告をコピー"
   },
+  "rep_privacy": {
+    "message": "この報告の取り扱い: プライバシー ポリシー"
+  },
   "rep_copied": {
     "message": "コピーしました。"
   },
@@ -595,6 +598,6 @@
     "message": "でキャンセル"
   },
   "opt_notices": {
-    "message": "フィルターリストのライセンス"
+    "message": "フィルタリストのライセンス"
   }
 }

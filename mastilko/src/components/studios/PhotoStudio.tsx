@@ -67,7 +67,7 @@ export default function PhotoStudio() {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
           <ImageUpload label="Твоята снимка" value={s.image} onChange={(image) => set({ image })} maxSide={1200} />
@@ -159,6 +159,25 @@ export default function PhotoStudio() {
               }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={s.image} alt="" style={imgStyle} />
+              </div>
+            );
+          })}
+          {/* Без снимка листът беше напълно бял — изглеждаше като счупен.
+              Показваме рамките с размера (само на екрана, no-print). */}
+          {!s.image && Array.from({ length: total }).map((_, i) => {
+            const col = i % grid.cols;
+            const row = Math.floor(i / grid.cols);
+            return (
+              <div key={i} className="no-print" style={{
+                position: "absolute",
+                left: `${grid.offsetX + col * (size.w + grid.gapX)}mm`,
+                top: `${grid.offsetY + row * (size.h + grid.gapY)}mm`,
+                width: `${size.w}mm`, height: `${size.h}mm`,
+                border: "0.4mm dashed #8a7f76", borderRadius: "1mm",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                textAlign: "center", fontSize: "3mm", color: "#5f554d", padding: "2mm",
+              }}>
+                {i === 0 ? "Качи снимка, за да започнеш" : `${size.w}×${size.h} mm`}
               </div>
             );
           })}

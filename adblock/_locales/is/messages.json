@@ -62,7 +62,7 @@
     "message": "Fela auglýsingareiti hér"
   },
   "cosmeticsTitle": {
-    "message": "Útlitssíun á þessu vefsvæði (slökktu á henni ef útlit síðunnar raskast)"
+    "message": "Fela auglýsingareiti á þessu vefsvæði (slökktu á þessu ef útlit síðunnar raskast)"
   },
   "on": {
     "message": "Á"
@@ -502,7 +502,7 @@
     "message": "Ekki innifalinn (ekkert leyfi til endurdreifingar): vafrinn þinn sækir hann frá $1 þegar þú kveikir á honum."
   },
   "opt_downloaded_from": {
-    "message": "Sótt frá $1"
+    "message": "Sótt frá $1 þegar þú kveikir á honum"
   },
   "opt_lists_error": {
     "message": "Chrome hafnaði þessari samsetningu lista ($1). Slökktu á einhverjum þeirra."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Afrita skýrslu"
+  },
+  "rep_privacy": {
+    "message": "Hvernig farið er með þessa skýrslu: persónuverndarstefna"
   },
   "rep_copied": {
     "message": "Afritað."

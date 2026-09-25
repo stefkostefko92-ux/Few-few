@@ -62,7 +62,7 @@
     "message": "Ocultar anúncios aqui"
   },
   "cosmeticsTitle": {
-    "message": "Filtragem cosmética neste site (desative se a página ficar desformatada)"
+    "message": "Ocultar anúncios neste site (desative se a página ficar desformatada)"
   },
   "on": {
     "message": "Sim"
@@ -502,7 +502,7 @@
     "message": "Não incluída (sem licença para a redistribuir): o seu navegador transfere-a de $1 quando a ativar."
   },
   "opt_downloaded_from": {
-    "message": "Transferida de $1"
+    "message": "É transferida de $1 quando a ativar"
   },
   "opt_lists_error": {
     "message": "O Chrome recusou esta combinação de listas ($1). Desative algumas."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Copiar relatório"
+  },
+  "rep_privacy": {
+    "message": "Como é tratado este relatório: política de privacidade"
   },
   "rep_copied": {
     "message": "Copiado."

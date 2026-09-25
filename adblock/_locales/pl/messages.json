@@ -62,7 +62,7 @@
     "message": "Ukrywaj tu reklamy"
   },
   "cosmeticsTitle": {
-    "message": "Filtrowanie kosmetyczne w tej witrynie (wyłącz, jeśli układ strony się psuje)"
+    "message": "Ukrywaj reklamy w tej witrynie (wyłącz, jeśli układ strony się psuje)"
   },
   "on": {
     "message": "Wł."
@@ -451,7 +451,7 @@
     "message": "Reklamy, trackery, obejścia blokad adblocka i naprawy witryn od zespołu uBlock Origin."
   },
   "opt_list_plowe": {
-    "message": "Lista Peter Lowe"
+    "message": "Lista Petera Lowe’a"
   },
   "opt_list_plowe_desc": {
     "message": "Wieloletnia lista serwerów reklamowych i śledzących."
@@ -502,7 +502,7 @@
     "message": "Nie jest wbudowana (brak licencji na rozpowszechnianie): przeglądarka pobierze ją z $1 po włączeniu."
   },
   "opt_downloaded_from": {
-    "message": "Pobierana z $1"
+    "message": "Pobierana z $1 po włączeniu"
   },
   "opt_lists_error": {
     "message": "Chrome odrzucił tę kombinację list ($1). Wyłącz niektóre."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopiuj zgłoszenie"
+  },
+  "rep_privacy": {
+    "message": "Jak postępujemy z tym zgłoszeniem: polityka prywatności"
   },
   "rep_copied": {
     "message": "Skopiowano."

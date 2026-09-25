@@ -1,10 +1,10 @@
 Supreme AdBlock blokira oglase povsod — videooglase na YouTubu, pasice, pojavna okna in sledilnike — ne da bi spremljal, kaj počnete.
 
 • Oglasi na YouTubu so ustavljeni že pri viru, zato se videoposnetki preprosto predvajajo.
-• Vgrajeni so EasyList, EasyPrivacy in filtri uBlock Origin ter seznam za vaš jezik (33 regionalnih seznamov).
+• Vgrajeni so EasyList, EasyPrivacy in filtri uBlock Origin ter seznam za vaš jezik (31 regionalnih seznamov).
 • Obvestila o piškotkih: namesto vas pritisne „Zavrni“, odstrani preostalo zameglitev in zaklep drsenja ter nikoli ne pritisne gumba za prijavo, OAuth ali plačilo.
 • Način zbranosti: skrije oblačke klepeta, pojavna okna za e-novice, pozive za obvestila, pripomočke družbenih omrežij, pojavne pomočnike UI in YouTube Shorts.
 • Zidovi anti-adblock in okna pop-under so onesposobljeni.
 • Spletno mesto ne deluje? En klik ga popravi — ali nam sporočite; nič ni poslano, dokler tega sami ne vidite.
 • Podpisane posodobitve filtrov dvakrat na dan: nova oglaševalska omrežja so obravnavana v nekaj urah, brez oddaljene kode.
-• Brez računa, brez telemetrije, brez zbiranja podatkov. Brezplačno, z neobvezno donacijo.
+• Brez računa, brez telemetrije, brez zbiranja podatkov. Brezplačno, z neobvezno donacijo; pojavno okno prikaže eno majhno kartico z oznako »Oglas« za Carbon Stealth, avtorja razširitve.

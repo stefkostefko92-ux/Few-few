@@ -1,10 +1,10 @@
 Supreme AdBlock bloque les publicités partout — pubs vidéo YouTube, bannières, pop-ups et traqueurs — sans surveiller ce que vous faites.
 
 • Les pubs YouTube sont stoppées à la source : les vidéos se lancent tout simplement.
-• EasyList, EasyPrivacy et les filtres uBlock Origin sont intégrés, ainsi que la liste de votre langue (33 listes régionales).
+• EasyList, EasyPrivacy et les filtres uBlock Origin sont intégrés, ainsi que la liste de votre langue (31 listes régionales).
 • Bandeaux cookies : il clique sur « Refuser » à votre place, supprime le flou et le blocage du défilement restants, et ne clique jamais sur un bouton de connexion, OAuth ou paiement.
 • Mode Focus : masquez les bulles de chat, pop-ups de newsletter, demandes de notifications, widgets sociaux, pop-ups d’IA et YouTube Shorts.
 • Les murs anti-adblock et les pop-unders sont neutralisés.
 • Site cassé ? Un clic le corrige, ou prévenez-nous — rien n’est envoyé sans que vous l’ayez vu d’abord.
 • Mises à jour des filtres signées deux fois par jour : les nouvelles régies publicitaires sont prises en charge en quelques heures, sans code distant.
-• Pas de compte, pas de télémétrie, aucune collecte de données. Gratuit, avec un don facultatif.
+• Pas de compte, pas de télémétrie, aucune collecte de données. Gratuit, avec un don facultatif. La fenêtre contextuelle affiche une seule petite carte, marquée Pub, pour Carbon Stealth, le créateur.

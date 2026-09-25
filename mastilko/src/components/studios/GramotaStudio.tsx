@@ -251,7 +251,7 @@ export default function GramotaStudio() {
                 : "Остави празно за една грамота. Всеки ред става отделна грамота с това име."}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-2">
             <FontPicker label="Шрифт: заглавие" value={s.fonts?.kind} allowDefault
               onChange={(id) => set({ fonts: { ...s.fonts, kind: id } })} />
             <FontPicker label="Шрифт: име" value={s.fonts?.recipient} allowDefault

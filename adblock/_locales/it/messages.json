@@ -4,7 +4,7 @@
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Blocca la pubblicità ovunque: video ad di YouTube, banner, pop-up, tracker, avvisi cookie e muri anti-adblock. Gratis.",
+    "message": "Blocca la pubblicità ovunque: annunci video su YouTube, banner, pop-up, tracker, avvisi cookie e muri anti-adblock. Gratis.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -64,7 +64,7 @@
     "message": "Nascondi annunci qui"
   },
   "cosmeticsTitle": {
-    "message": "Filtro cosmetico su questo sito (da disattivare se l'impaginazione si rompe)"
+    "message": "Nascondi annunci su questo sito (disattivalo se l'impaginazione si rompe)"
   },
   "on": {
     "message": "Attivo"
@@ -79,7 +79,7 @@
     "message": "Qui non è ancora stato bloccato nulla."
   },
   "logUnavailable": {
-    "message": "Registro non disponibile al momento (quota del browser) — riprovi tra un minuto."
+    "message": "Registro non disponibile al momento (quota del browser) — riprova tra un minuto."
   },
   "logCore": {
     "message": "Regole di base"
@@ -115,7 +115,7 @@
     "message": "Attrezzatura e strumenti, carbonstealth.eu"
   },
   "adLabel": {
-    "message": "Ann."
+    "message": "Annuncio"
   },
   "support": {
     "message": "Sostieni"
@@ -195,7 +195,7 @@
     "message": "Carbon Stealth (scuro) o chiaro"
   },
   "opt_keep_settings_allowlist_and_filters_in_s": {
-    "message": "Mantiene impostazioni, elenco dei consentiti e filtri sincronizzati su ogni Chrome in cui ha effettuato l'accesso"
+    "message": "Mantiene impostazioni, elenco dei consentiti e filtri sincronizzati su ogni Chrome in cui hai effettuato l'accesso"
   },
   "opt_remove_video_ads_on_youtube_turn_off_if_": {
     "message": "Rimuove gli annunci video su YouTube. Da disattivare se i video non partono."
@@ -210,7 +210,7 @@
     "message": "Nasconde i post «Sponsorizzato» su Facebook e Instagram"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
-    "message": "Rimuove utm_*, fbclid, gclid e altri identificatori di clic dai link che apre"
+    "message": "Rimuove utm_*, fbclid, gclid e altri identificatori di clic dai link che apri"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
     "message": "Blocca i domini malware noti (elenco URLhaus di abuse.ch)"
@@ -228,16 +228,16 @@
     "message": "Registro in tempo reale della pubblicità individuata in modo euristico (senza lista di filtri), dalla più recente."
   },
   "opt_subscribed_lists_are_fetched_as_text_nev": {
-    "message": "Le liste sottoscritte vengono scaricate come testo (mai come codice), aggiornate ogni giorno e restano nei blocchi gestiti qui sopra. Rimuova una lista per eliminarne le regole."
+    "message": "Le liste a cui sei iscritto vengono scaricate come testo (mai come codice), aggiornate ogni giorno e restano nei blocchi gestiti qui sopra. Rimuovi una lista per eliminarne le regole."
   },
   "opt_elements_you_hid_manually_with_the_picke": {
-    "message": "Elementi che ha nascosto manualmente con il selettore, raggruppati per sito."
+    "message": "Elementi che hai nascosto manualmente con il selettore, raggruppati per sito."
   },
   "opt_live_diagnostics_everything_is_computed_": {
     "message": "Diagnostica in tempo reale — tutto viene calcolato in locale. Se qualcosa è rosso, di solito basta «Aggiorna ora» o ricaricare l'estensione."
   },
   "opt_supreme_adblock_is_free_for_everyone_if_": {
-    "message": "Supreme AdBlock è gratuito per tutti. Se desidera contribuire alla sua manutenzione, le donazioni sono benvenute, mai obbligatorie."
+    "message": "Supreme AdBlock è gratuito per tutti. Se vuoi contribuire alla sua manutenzione, le donazioni sono benvenute, mai obbligatorie."
   },
   "opt_reset_statistics": {
     "message": "Azzera le statistiche"
@@ -324,13 +324,13 @@
     "message": "Ancora nulla individuato in modo euristico."
   },
   "opt_empty_allow": {
-    "message": "Nessun sito nella lista consentita."
+    "message": "Nessun sito nell'elenco dei consentiti."
   },
   "opt_empty_hidden": {
     "message": "Ancora nulla nascosto manualmente."
   },
   "opt_empty_subs": {
-    "message": "Nessuna lista in abbonamento."
+    "message": "Nessuna iscrizione a liste."
   },
   "opt_no_sw": {
     "message": "Nessuna risposta dal service worker."
@@ -405,10 +405,10 @@
     "message": "Firme degli aggiornamenti"
   },
   "opt_h_user": {
-    "message": "I miei filtri / regole consentite"
+    "message": "I miei filtri / regole dell'elenco dei consentiti"
   },
   "opt_h_popup": {
-    "message": "Host pop-up integrati"
+    "message": "Host di pop-up pubblicitari integrati"
   },
   "opt_h_yt": {
     "message": "Bypass di YouTube"
@@ -501,10 +501,10 @@
     "message": "dall'autore"
   },
   "opt_remote_hint": {
-    "message": "Non incluso (nessuna licenza di ridistribuzione): il browser lo scarica da $1 quando lo attivi."
+    "message": "Non inclusa (nessuna licenza di ridistribuzione): il browser la scarica da $1 quando la attivi."
   },
   "opt_downloaded_from": {
-    "message": "Scaricata da $1"
+    "message": "Si scarica da $1 quando la attivi"
   },
   "opt_lists_error": {
     "message": "Chrome ha rifiutato questa combinazione di liste ($1). Disattivane alcune."
@@ -559,6 +559,9 @@
   },
   "rep_copy": {
     "message": "Copia la segnalazione"
+  },
+  "rep_privacy": {
+    "message": "Come viene gestita questa segnalazione: informativa sulla privacy"
   },
   "rep_copied": {
     "message": "Copiato."

@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 265
+        "lessons": 273
       },
       "evolution": [
         {
@@ -580,17 +580,50 @@
           "detail": "Научи: Caddy v2 НЕ пише HTTP access логове без директива `log` в сайт-блока; при включен лог ф…"
         },
         {
-          "version": "18.5.0",
+          "version": "18.4.0",
           "date": "2026-09-25",
-          "event": "v18.5 — учене",
-          "detail": "Научи: За потребители от ЕИП администратор на ChatGPT е OpenAI Ireland Limited (от 15.02.2024)… (+1 още)"
+          "event": "v18.4 — учене",
+          "detail": "Научи: AI Act чл. 50 — пресверено срещу FAQ на Комисията: прилага се от 02.08.2026; отсрочка д…"
+        },
+        {
+          "version": "18.8.0",
+          "date": "2026-09-25",
+          "event": "v18.8 — учене",
+          "detail": "Научи: Gemini API Additional Terms: 'You may use only Paid Services when making API Clients av… (+3 още)"
+        },
+        {
+          "version": "19.0.0",
+          "date": "2026-09-25",
+          "event": "v19.0 — учене",
+          "detail": "Научи: uBlock Origin Lite: built-in rulesets update only with extension releases, BUT a June 2… (+1 още)"
+        },
+        {
+          "version": "19.1.0",
+          "date": "2026-09-25",
+          "event": "v19.1 — учене",
+          "detail": "Научи: HANDOFF валидаторът (tools/agents/handoff.mjs:55) чете само ЕДИН ред „Находки: …“ — нах…"
         }
       ],
       "activity": [
         {
           "date": "2026-09-25",
           "type": "learning",
-          "summary": "Научи: „За потребители от ЕИП администратор на ChatGPT е OpenAI Ireland Limited (от 15.02.2024)…\" (+1 още) · 1 в карантина"
+          "summary": "Научи: „HANDOFF валидаторът (tools/agents/handoff.mjs:55) чете само ЕДИН ред „Находки: …“ — нах…\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „uBlock Origin Lite: built-in rulesets update only with extension releases, BUT a June 2…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Gemini API Additional Terms: 'You may use only Paid Services when making API Clients av…\" (+3 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „AI Act чл. 50 — пресверено срещу FAQ на Комисията: прилага се от 02.08.2026; отсрочка д…\""
         },
         {
           "date": "2026-09-24",
@@ -1129,7 +1162,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 385
+        "lessons": 388
       },
       "evolution": [
         {
@@ -1931,28 +1964,39 @@
           "detail": "Научи: Блокът ПРЕДАВАНЕ се валидира по точното име на полето „Следваща стъпка:“ — „Следващата …"
         },
         {
+          "version": "26.5.0",
+          "date": "2026-09-25",
+          "event": "v26.5 — учене",
+          "detail": "Научи: BullMQ attempts>1 е мъртво, ако процесорът сменя статуса на FAILED преди rethrow, а сле…"
+        },
+        {
           "version": "26.6.0",
           "date": "2026-09-25",
           "event": "v26.6 — учене",
-          "detail": "Научи: vizitka: DATA_DIR = resolve(process.env.DATA_DIR || 'data') е спрямо текущата папка; вс… (+1 още)"
+          "detail": "Научи: handoff.mjs чете всяко поле само до края на реда — „Находки:“ последвано от списък на н…"
         },
         {
           "version": "26.7.0",
           "date": "2026-09-25",
           "event": "v26.7 — учене",
-          "detail": "Научи: Блокът ПРЕДАВАНЕ: Статус е само „наред | има бележки | блокер“ и задължително има „Изхо…"
+          "detail": "Научи: adblock: uBO `host#@#+js(...)` изключенията в build_filters.mjs махат директивата само …"
         }
       ],
       "activity": [
         {
           "date": "2026-09-25",
           "type": "learning",
-          "summary": "Научи: „Блокът ПРЕДАВАНЕ: Статус е само „наред | има бележки | блокер“ и задължително има „Изхо…\""
+          "summary": "Научи: „adblock: uBO `host#@#+js(...)` изключенията в build_filters.mjs махат директивата само …\" · 2 в карантина"
         },
         {
           "date": "2026-09-25",
           "type": "learning",
-          "summary": "Научи: „vizitka: DATA_DIR = resolve(process.env.DATA_DIR || 'data') е спрямо текущата папка; вс…\" (+1 още)"
+          "summary": "Научи: „handoff.mjs чете всяко поле само до края на реда — „Находки:“ последвано от списък на н…\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „BullMQ attempts>1 е мъртво, ако процесорът сменя статуса на FAILED преди rethrow, а сле…\" · 2 в карантина"
         },
         {
           "date": "2026-09-25",
@@ -3672,7 +3716,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 177
+        "lessons": 181
       },
       "evolution": [
         {
@@ -4105,14 +4149,14 @@
           "version": "15.4.0",
           "date": "2026-09-25",
           "event": "v15.4 — учене",
-          "detail": "Научи: vizitka/src/seo.js organizationNode() няма параметър sameAs (за разлика от zabobovdol/M… (+1 още)"
+          "detail": "Научи: На Supreme AdBlock landing (adblock/server/index.html) FAQ JSON-LD/видим текст твърдят … (+1 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-09-25",
           "type": "learning",
-          "summary": "Научи: „vizitka/src/seo.js organizationNode() няма параметър sameAs (за разлика от zabobovdol/M…\" (+1 още)"
+          "summary": "Научи: „На Supreme AdBlock landing (adblock/server/index.html) FAQ JSON-LD/видим текст твърдят …\" (+1 още)"
         },
         {
           "date": "2026-09-24",
@@ -4785,7 +4829,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 164
+        "lessons": 174
       },
       "evolution": [
         {
@@ -5243,9 +5287,69 @@
           "date": "2026-09-25",
           "event": "v18.7 — учене",
           "detail": "Научи: В блока ПРЕДАВАНЕ полето „Към“ трябва да е id на агент от agents-dashboard/agents.json …"
+        },
+        {
+          "version": "19.1.0",
+          "date": "2026-09-25",
+          "event": "v19.1 — учене",
+          "detail": "Научи: adblock: opt_downloaded_from („Downloaded from $1“) се показва, когато листът е ИЗКЛЮЧЕ… (+3 още)"
+        },
+        {
+          "version": "19.2.0",
+          "date": "2026-09-25",
+          "event": "v19.2 — учене",
+          "detail": "Научи: Блокът ПРЕДАВАНЕ се гейтва от dod-check.mjs: Статус е само „наред | има бележки | блоке…"
+        },
+        {
+          "version": "19.5.0",
+          "date": "2026-09-25",
+          "event": "v19.5 — учене",
+          "detail": "Научи: Edit/Write инструментът нормализира U+202F/U+00A0, написани в new_string, до обикновен … (+2 още)"
+        },
+        {
+          "version": "19.6.0",
+          "date": "2026-09-25",
+          "event": "v19.6 — учене",
+          "detail": "Научи: dod-check.mjs не разпознава находки, вложени под удебелено „- **Находки:**“ — полетата …"
+        },
+        {
+          "version": "19.7.0",
+          "date": "2026-09-25",
+          "event": "v19.7 — учене",
+          "detail": "Научи: dod-check.mjs отхвърля ПРЕДАВАНЕ, ако която и да е находка е без `файл:ред` (или URL) —…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „dod-check.mjs отхвърля ПРЕДАВАНЕ, ако която и да е находка е без `файл:ред` (или URL) —…\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В chrome.i18n messages.json тесен неразделящ интервал (FR типография) се вписва като JS…\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „dod-check.mjs не разпознава находки, вложени под удебелено „- **Находки:**“ — полетата …\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Edit/Write инструментът нормализира U+202F/U+00A0, написани в new_string, до обикновен …\" (+2 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Блокът ПРЕДАВАНЕ се гейтва от dod-check.mjs: Статус е само „наред | има бележки | блоке…\""
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „adblock: opt_downloaded_from („Downloaded from $1“) се показва, когато листът е ИЗКЛЮЧЕ…\" (+3 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
@@ -6456,7 +6560,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 195
+        "lessons": 198
       },
       "evolution": [
         {
@@ -6854,20 +6958,9 @@
           "date": "2026-08-07",
           "event": "v16.5 — учене",
           "detail": "Научи: Одитът предполага дърво в ПОКОЙ. Ако друг агент/процес пише в същото работно дърво по в…"
-        },
-        {
-          "version": "16.8.0",
-          "date": "2026-09-25",
-          "event": "v16.8 — учене",
-          "detail": "Научи: Успешен autodeploy на ЕДИН продукт (PROJECTS=\\\"x\\\") мести /opt/few-few/current към rele… (+2 още)"
         }
       ],
       "activity": [
-        {
-          "date": "2026-09-25",
-          "type": "learning",
-          "summary": "Научи: „Успешен autodeploy на ЕДИН продукт (PROJECTS=\\\"x\\\") мести /opt/few-few/current към rele…\" (+2 още)"
-        },
         {
           "date": "2026-08-07",
           "type": "learning",
@@ -8106,7 +8199,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 113
+        "lessons": 114
       },
       "evolution": [
         {
@@ -8468,9 +8561,20 @@
           "date": "2026-09-09",
           "event": "v8.0 — Управлявани страници",
           "detail": "Автопилот по план на бранда (стълбове, медийна библиотека, часове, дял Reels, варианти за други платформи) допълва черновите до седмичния план; Instagram Insights (views/reach/interactions, дневен тренд) се синхронизират и влизат в промпта и в CLI-то (insights). Само чернови — човекът пуска."
+        },
+        {
+          "version": "16.1.0",
+          "date": "2026-09-25",
+          "event": "v16.1 — учене",
+          "detail": "Научи: AI Act чл. 50 се прилага от 02.08.2026 и НЕ е отложен. Единствената отсрочка (Digital O…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „AI Act чл. 50 се прилага от 02.08.2026 и НЕ е отложен. Единствената отсрочка (Digital O…\""
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -9604,7 +9708,7 @@
           "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
           "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
         ],
-        "lessons": 130
+        "lessons": 131
       },
       "evolution": [
         {
@@ -9912,9 +10016,20 @@
           "date": "2026-07-28",
           "event": "v13.8 — учене",
           "detail": "Научи: medqr/mobile/package.json е на @capacitor/core|android|ios ^6.2.0 — не Capacitor 7/8; ъ… (+6 още)"
+        },
+        {
+          "version": "13.9.0",
+          "date": "2026-09-25",
+          "event": "v13.9 — учене",
+          "detail": "Научи: Google Play target API — срокът 31.08.2026 е ИЗМИНАЛ: нови апс и ъпдейти ≥ API 36 (Andr…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Google Play target API — срокът 31.08.2026 е ИЗМИНАЛ: нови апс и ъпдейти ≥ API 36 (Andr…\""
+        },
         {
           "date": "2026-07-28",
           "type": "learning",
@@ -11779,7 +11894,7 @@
           "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
           "chromestatus.com — наличност на API по Chrome milestone"
         ],
-        "lessons": 170
+        "lessons": 175
       },
       "evolution": [
         {
@@ -12129,9 +12244,42 @@
           "date": "2026-09-25",
           "event": "v15.2 — учене",
           "detail": "Научи: Relaxed CSS Nesting (nested selector starting directly with a type/tag selector, no lea… (+2 още)"
+        },
+        {
+          "version": "15.3.0",
+          "date": "2026-09-25",
+          "event": "v15.3 — учене",
+          "detail": "Научи: Manifest V2 — СЛУЧИЛО СЕ, не предстоящо: на 31.08.2026 всички останали MV2 разширения с…"
+        },
+        {
+          "version": "15.4.0",
+          "date": "2026-09-25",
+          "event": "v15.4 — учене",
+          "detail": "Научи: Chrome declarativeNetRequest (Chrome 121+): safe dynamic rules (block/allow/allowAllReq…"
+        },
+        {
+          "version": "15.5.0",
+          "date": "2026-09-25",
+          "event": "v15.5 — учене",
+          "detail": "Научи: Chrome DNR (потвърдено developer.chrome.com): MAX_NUMBER_OF_STATIC_RULESETS=100 деклари… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Chrome declarativeNetRequest (Chrome 121+): safe dynamic rules (block/allow/allowAllReq…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Chrome DNR (потвърдено developer.chrome.com): MAX_NUMBER_OF_STATIC_RULESETS=100 деклари…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Manifest V2 — СЛУЧИЛО СЕ, не предстоящо: на 31.08.2026 всички останали MV2 разширения с…\""
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
@@ -13488,7 +13636,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 182
+        "lessons": 183
       },
       "evolution": [
         {
@@ -13546,17 +13694,17 @@
           "detail": "Научи: Агент може да е 100% зелен по oversee/gate и пак да носи неизпълним договор: pravniyat-… (+7 още)"
         },
         {
-          "version": "17.4.0",
+          "version": "17.2.0",
           "date": "2026-09-25",
-          "event": "v17.4 — учене",
-          "detail": "Научи: MCP 2026-07-28: server/discover е MUST за сървъри; резултатите на server/discover и */l… (+2 още)"
+          "event": "v17.2 — учене",
+          "detail": "Научи: Claude Code хуковите събития са 33 (не 31): добавени PreModelSwitch и PostModelSwitch с…"
         }
       ],
       "activity": [
         {
           "date": "2026-09-25",
           "type": "learning",
-          "summary": "Научи: „MCP 2026-07-28: server/discover е MUST за сървъри; резултатите на server/discover и */l…\" (+2 още)"
+          "summary": "Научи: „Claude Code хуковите събития са 33 (не 31): добавени PreModelSwitch и PostModelSwitch с…\""
         },
         {
           "date": "2026-07-30",
@@ -13895,7 +14043,7 @@
           "Meta Advertising Standards + Conversions API + Platform Terms/Developer Policies",
           "OWASP ASVS/MASVS (via CASA/MASA), fastlane precheck (metadata lint модел)"
         ],
-        "lessons": 165
+        "lessons": 180
       },
       "evolution": [
         {
@@ -13971,17 +14119,39 @@
           "detail": "Научи: Edge 1.5.2 изисква privacy policy-то „should primarily refer to the Microsoft Edge brow… (+1 още)"
         },
         {
-          "version": "16.0.0",
+          "version": "15.6.0",
           "date": "2026-09-25",
-          "event": "v16.0 — учене",
-          "detail": "Научи: Google Wallet save линк (https://pay.google.com/gp/v/save/<JWT>): безопасната дължина н… (+4 още)"
+          "event": "v15.6 — учене",
+          "detail": "Научи: Два платформени срока от 31.08.2026 вече са ИЗМИНАЛИ: (1) Chrome Web Store премахна вси…"
+        },
+        {
+          "version": "16.2.0",
+          "date": "2026-09-25",
+          "event": "v16.2 — учене",
+          "detail": "Научи: CWS MV3 изискванията забраняват 'Building an interpreter to run complex commands fetche… (+5 още)"
+        },
+        {
+          "version": "16.3.0",
+          "date": "2026-09-25",
+          "event": "v16.3 — учене",
+          "detail": "Научи: CWS MV3 remote code забранява и „interpreter to run complex commands fetched from a rem… (+6 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-09-25",
           "type": "learning",
-          "summary": "Научи: „Google Wallet save линк (https://pay.google.com/gp/v/save/<JWT>): безопасната дължина н…\" (+4 още)"
+          "summary": "Научи: „CWS MV3 изискванията забраняват 'Building an interpreter to run complex commands fetche…\" (+5 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „CWS MV3 remote code забранява и „interpreter to run complex commands fetched from a rem…\" (+6 още)"
+        },
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Два платформени срока от 31.08.2026 вече са ИЗМИНАЛИ: (1) Chrome Web Store премахна вси…\""
         },
         {
           "date": "2026-09-09",
@@ -14313,7 +14483,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 169
+        "lessons": 171
       },
       "evolution": [
         {
@@ -14389,17 +14559,17 @@
           "detail": "Научи: SupremeDiscordBot bot команди: авторизацията е РЪЧНА проверка вътре в execute() (не set… (+1 още)"
         },
         {
-          "version": "16.7.0",
+          "version": "16.6.0",
           "date": "2026-09-25",
-          "event": "v16.7 — учене",
-          "detail": "Научи: vizitka/: `src/routes/admin.js:154,170` (i&= защита за ai_discoverable, огледална на is… (+2 още)"
+          "event": "v16.6 — учене",
+          "detail": "Научи: adblock/content.css е статично manifest content_scripts CSS (matches <all_urls>, без ru… (+1 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-09-25",
           "type": "learning",
-          "summary": "Научи: „vizitka/: `src/routes/admin.js:154,170` (i&= защита за ai_discoverable, огледална на is…\" (+2 още)"
+          "summary": "Научи: „adblock/content.css е статично manifest content_scripts CSS (matches <all_urls>, без ru…\" (+1 още) · 1 в карантина"
         },
         {
           "date": "2026-08-07",

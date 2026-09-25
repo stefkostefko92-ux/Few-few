@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { z } from "zod";
 import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
@@ -7,6 +8,7 @@ import BackgroundDecor from "@/components/BackgroundDecor";
 import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
+import FitHeight from "@/components/FitHeight";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
 
@@ -67,12 +69,13 @@ function parseMenu(body: string): Section[] {
 
 export default function MenuStudio() {
   const [s, setS] = useLocalState<MenuState>("mastilko-menu", INITIAL, (r) => ProjectSchema.parse(r));
+  const [tooLong, setTooLong] = useState(false);
   const theme = resolveTheme(s);
   const set = (patch: Partial<MenuState>) => setS({ ...s, ...patch });
   const sections = parseMenu(s.body);
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
           <div>
@@ -110,13 +113,20 @@ export default function MenuStudio() {
       </div>
 
       <div className="space-y-4">
-        <PrintBar summary="Меню / ценоразпис на лист А4" />
-        <SheetPreview fixedHeight={false} style={fontVars(s)}>
+        <PrintBar summary={tooLong
+          ? "⚠ Менюто не се побира на един лист А4 дори с по-дребен шрифт — съкрати го или го раздели на две менюта."
+          : "Меню / ценоразпис на лист А4"} />
+        <SheetPreview style={fontVars(s)}>
           <div style={{
-            position: "absolute", inset: 0, minHeight: "297mm", background: sheetBg(s, theme), color: theme.fg,
+            position: "absolute", inset: 0, background: sheetBg(s, theme), color: theme.fg,
             padding: "18mm 16mm", display: "flex", flexDirection: "column",
           }}>
             <BackgroundDecor decor={s.decor} color={theme.accent} />
+            {/* Един лист А4: при дълго меню текстът се смалява (FitHeight),
+                вместо да излиза от листа и да се печата на втора страница без
+                фон. Ако и така не стига — предупреждение в PrintBar. */}
+            <FitHeight watch={s} scale={s.textScale ?? 1} min={0.55} onOverflow={setTooLong}
+              style={{ flex: 1, position: "relative", zIndex: 1 }}>
             <div style={{ textAlign: "center", marginBottom: "8mm", position: "relative", zIndex: 1 }}>
               {s.logo && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -157,6 +167,7 @@ export default function MenuStudio() {
                 </div>
               ))}
             </div>
+            </FitHeight>
           </div>
         </SheetPreview>
       </div>

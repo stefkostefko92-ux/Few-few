@@ -6,7 +6,7 @@
     "message": "Blokir semua iklan: iklan video YouTube, banner, pop-up, pelacak, notifikasi cookie, dinding anti-adblock. Gratis, cepat, privat."
   },
   "byCarbon": {
-    "message": "by Carbon Stealth"
+    "message": "oleh Carbon Stealth"
   },
   "toggleProtection": {
     "message": "Aktifkan/nonaktifkan perlindungan"
@@ -62,13 +62,13 @@
     "message": "Sembunyikan iklan di sini"
   },
   "cosmeticsTitle": {
-    "message": "Pemfilteran kosmetik di situs ini (nonaktifkan jika tata letak rusak)"
+    "message": "Sembunyikan iklan di situs ini (nonaktifkan jika tata letak halaman rusak)"
   },
   "on": {
-    "message": "Nyala"
+    "message": "Aktif"
   },
   "off": {
-    "message": "Mati"
+    "message": "Nonaktif"
   },
   "blockedHere": {
     "message": "Diblokir di halaman ini"
@@ -268,7 +268,7 @@
     "message": "mis. example.com"
   },
   "opt_example_10_ads_example_com_10_sticky_ad_": {
-    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+    "message": "! contoh\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
   },
   "opt_subscribe_to_a_filter_list_url_e_g_https": {
     "message": "Berlangganan URL daftar filter (mis. https://…/list.txt)"
@@ -316,7 +316,7 @@
     "message": "Donasi via Revolut"
   },
   "opt_made_by": {
-    "message": "made by Carbon Stealth"
+    "message": "dibuat oleh Carbon Stealth"
   },
   "opt_empty_smart": {
     "message": "Belum ada yang tertangkap secara heuristik."
@@ -502,7 +502,7 @@
     "message": "Tidak disertakan (tidak ada lisensi untuk mendistribusikannya ulang): browser Anda mengunduhnya dari $1 saat Anda mengaktifkannya."
   },
   "opt_downloaded_from": {
-    "message": "Diunduh dari $1"
+    "message": "Diunduh dari $1 saat Anda mengaktifkannya"
   },
   "opt_lists_error": {
     "message": "Chrome menolak kombinasi daftar ini ($1). Nonaktifkan beberapa di antaranya."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Salin laporan"
+  },
+  "rep_privacy": {
+    "message": "Cara laporan ini ditangani: kebijakan privasi"
   },
   "rep_copied": {
     "message": "Disalin."

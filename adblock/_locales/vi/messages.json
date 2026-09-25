@@ -62,7 +62,7 @@
     "message": "Ẩn khung quảng cáo ở đây"
   },
   "cosmeticsTitle": {
-    "message": "Lọc giao diện trên trang web này (hãy tắt nếu bố cục bị vỡ)"
+    "message": "Ẩn khung quảng cáo trên trang web này (hãy tắt nếu bố cục trang bị vỡ)"
   },
   "on": {
     "message": "Bật"
@@ -502,7 +502,7 @@
     "message": "Không đi kèm (không có giấy phép phân phối lại): trình duyệt của bạn sẽ tải về từ $1 khi bạn bật."
   },
   "opt_downloaded_from": {
-    "message": "Tải về từ $1"
+    "message": "Tải về từ $1 khi bạn bật"
   },
   "opt_lists_error": {
     "message": "Chrome đã từ chối tổ hợp danh sách này ($1). Hãy tắt bớt một số danh sách."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Sao chép báo cáo"
+  },
+  "rep_privacy": {
+    "message": "Cách xử lý báo cáo này: chính sách quyền riêng tư"
   },
   "rep_copied": {
     "message": "Đã sao chép."

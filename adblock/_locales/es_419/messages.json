@@ -62,7 +62,7 @@
     "message": "Ocultar anuncios aquí"
   },
   "cosmeticsTitle": {
-    "message": "Filtrado cosmético en este sitio (desactívelo si el diseño se desarma)"
+    "message": "Ocultar anuncios en este sitio (desactívelo si el diseño de la página se desarma)"
   },
   "on": {
     "message": "Sí"
@@ -502,7 +502,7 @@
     "message": "No incluida (sin licencia para redistribuirla): su navegador la descarga de $1 cuando la activa."
   },
   "opt_downloaded_from": {
-    "message": "Descargada de $1"
+    "message": "Se descarga de $1 cuando la activa"
   },
   "opt_lists_error": {
     "message": "Chrome rechazó esta combinación de listas ($1). Desactive algunas."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Copiar informe"
+  },
+  "rep_privacy": {
+    "message": "Cómo se maneja este informe: política de privacidad"
   },
   "rep_copied": {
     "message": "Copiado."

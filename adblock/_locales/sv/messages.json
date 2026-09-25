@@ -62,7 +62,7 @@
     "message": "Dölj annonsrutor här"
   },
   "cosmeticsTitle": {
-    "message": "Kosmetisk filtrering på den här webbplatsen (stäng av om layouten går sönder)"
+    "message": "Dölj annonsrutor på den här webbplatsen (stäng av om sidans layout går sönder)"
   },
   "on": {
     "message": "På"
@@ -502,7 +502,7 @@
     "message": "Ingår inte (ingen licens för vidaredistribution): webbläsaren laddar ned den från $1 när du slår på den."
   },
   "opt_downloaded_from": {
-    "message": "Nedladdad från $1"
+    "message": "Laddas ned från $1 när du slår på den"
   },
   "opt_lists_error": {
     "message": "Chrome avvisade den här kombinationen av listor ($1). Stäng av några."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopiera rapport"
+  },
+  "rep_privacy": {
+    "message": "Så hanteras den här rapporten: integritetspolicy"
   },
   "rep_copied": {
     "message": "Kopierat."

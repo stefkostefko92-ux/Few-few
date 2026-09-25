@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.1.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.1.1.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -47,7 +47,9 @@ via headless Chromium; see that script's header).
 ## 4. Privacy tab (exact answers)
 
 - **Single purpose:**
-  `Block advertisements and trackers on the pages you visit.`
+  `Content blocker: blocks ads, trackers and page annoyances (pop-ups, cookie prompts, distracting widgets) on the pages you visit.`
+  (Covers every feature: cookie banners and the opt-in Focus switches are annoyances,
+  not a second purpose — all Focus switches are off by default.)
 - **Privacy Policy URL:** `https://adblock.carbonstealth.eu/privacy`
 - **Data collection:** select **does NOT collect** for every category
   (no personally identifiable info, no health, no financial, no location, no
@@ -140,7 +142,7 @@ via headless Chromium; see that script's header).
 The listing is **already live** (`chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk`),
 so this is an **update of the existing item**, not a new one:
 
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.0.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.1.zip`.
 2. Refresh the listing (§3: description + the new feature bullets), replace the
    5 screenshots + promo tiles (§2).
 3. Re-check the **Privacy practices** tab (§4) and paste the permission
@@ -153,7 +155,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.1.0)
+- [ ] `manifest.json` and `package.json` versions match (5.1.1)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work
@@ -172,11 +174,16 @@ The **same zip** as Chrome (`dist/supreme-adblock-<version>.zip`) — Edge runs 
 1. Partner Center → <https://partner.microsoft.com/dashboard/microsoftedge/> → **Create new extension** → upload the zip.
 2. Availability: Public, all markets.
 3. Properties: category *Productivity*; privacy policy URL `https://adblock.carbonstealth.eu/privacy`; website `https://adblock.carbonstealth.eu`; support `https://adblock.carbonstealth.eu/#faq`.
-4. Store listings: Edge asks for a listing **per language packaged in `_locales`**. Use the
-   per-language descriptions in `docs/STORE_LISTING.md`; the English one where a language
-   has none yet. Screenshots: the same 1280×800 files as Chrome.
+4. Store listings: Edge asks for a listing **per language packaged in `_locales`**. Use
+   `docs/listing/<lang>.txt` for every language — they never mention another browser
+   (Edge policy 1.1.2 forbids it; the long texts in `docs/STORE_LISTING.md` do mention
+   Chrome, so do NOT paste those into Edge). Screenshots: the same 1280×800 files.
+   Search terms (≤7, ≤30 chars each): `ad blocker`, `block ads`, `youtube ad blocker`,
+   `tracker blocker`, `cookie banner blocker`, `popup blocker`, `Carbon Stealth`.
 5. Notes for certification: paste the reviewer note from §5 (MAIN-world scriptlets, remote
-   rules = data) — Edge reviews the same things Chrome does.
+   rules = data) — Edge reviews the same things Chrome does. Edge policy 1.2 asks why DNR
+   rules come from the network: ad networks rotate domains daily; the remote file holds
+   domain names only, is Ed25519-signed, and the author-hosted lists are opt-in.
 
 ## 9. Firefox Add-ons (AMO)
 
@@ -191,7 +198,15 @@ log there) and "coin miner" hits in EasyPrivacy/AdGuard French (they are **block
 miner domains — say so in the reviewer notes).
 
 1. <https://addons.mozilla.org/developers/> → **Submit a New Add-on** → On this site.
-2. Upload the Firefox zip. Source code: AMO may ask for it because `scriptlets/main.js` and
-   `scriptlets/ubo/*` are generated — upload the repository's `adblock/` folder and point to
-   `node tools/build_scriptlets.mjs` (no minification, no bundler).
+2. Upload the Firefox zip. **Source code is required** (AMO policy: machine-generated
+   files need their source): `scriptlets/main.js` and `scriptlets/ubo/*` are generated.
+   Upload `dist/supreme-adblock-<version>-source.zip` (built by `tools/package.sh` with
+   `git archive` from the committed tree — not the working folder, which holds `dist/` and
+   `_metadata/`). Reviewer note: `node tools/build_scriptlets.mjs` reproduces `main.js` and
+   `ubo/*` byte for byte; `rules/*.json`, `cosmetic_*.json` and `scriptlets/list_ubo.txt`
+   are a recorded snapshot of the upstream lists (sources, dates and SHA-256 in
+   `THIRD_PARTY_NOTICES.txt`) — a fresh `build_filters.mjs` downloads today's lists and so
+   gives different bytes. No minification, no bundler.
+   Description: for AMO drop the Manifest V3 history paragraph (it is about Chrome) and any
+   mention of Chrome — use the text of `docs/listing/<lang>.txt`.
 3. Privacy policy, homepage, support: as above. Data collection: none.
