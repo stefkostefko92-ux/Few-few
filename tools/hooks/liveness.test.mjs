@@ -79,6 +79,9 @@ const PAYLOADS = {
   "guard-secrets.mjs": { tool_name: "Write", tool_input: { file_path: "src/app.ts", content: "export const x = 1;" } },
   "precompact-save.mjs": { transcript_path: "", trigger: "auto" },
   "session-dod.mjs": {},
+  "artifact-sync.mjs": {},
+  "usage-capture.mjs": { hook_event_name: "SubagentStop", agent_type: "kodadjiyata", agent_transcript_path: "" },
+  "agent-return.mjs": { tool_name: "Agent", tool_input: { subagent_type: "kodadjiyata" }, tool_response: { status: "completed", agentType: "kodadjiyata", content: [{ type: "text", text: "готово" }] } },
 };
 
 const hooks = registeredHooks();
@@ -94,9 +97,16 @@ const REGISTRATION = {
   "guard-prompt.mjs": { event: "UserPromptSubmit" },
   "precompact-save.mjs": { event: "PreCompact" },
   "session-dod.mjs": { event: "Stop" },
+  "artifact-sync.mjs": { event: "Stop" },
+  // След ВСЯКО пускане на агент: предаването стига до главната сесия (не тъне в текста).
+  "agent-return.mjs": { event: "PostToolUse", matcher: /Agent/ },
+  // Реалната употреба: записва при край на ВСЕКИ агент (без matcher), доставя при край на хода.
+  "usage-capture.mjs": { event: "SubagentStop" },
   // PreToolUse = ПРЕДИ действието. Ако тези паднат на PostToolUse, блокировката е безсмислена.
   "guard-dangerous.mjs": { event: "PreToolUse", matcher: /Bash/ },
-  "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/WebFetch/, /WebSearch/] },
+  // 2026-09-21: MCP инструментите (mcp__github__*, mcp__Gmail__* …) са СЪЩО изходен канал — без
+  // `mcp__.*` в matcher-а тайна в тяло на коментар/чернова на имейл напускаше без пазач (3/3 на живо).
+  "guard-exfil.mjs": { event: "PreToolUse", matcher: /Bash/, alsoMatcher: [/WebFetch/, /WebSearch/, /mcp__/] },
   "guard-secrets.mjs": { event: "PostToolUse", matcher: /Write/, alsoMatcher: [/Edit/] },
 };
 

@@ -6,24 +6,27 @@
 // Изричен байпас: ако промптът съдържа „[секрет-ок]", пропуска (нарочно поставена примерна тайна).
 //
 // Exit 2 → промптът се блокира, потребителят вижда защо (ключът НЕ влиза в историята).
+//
+// Red-team 2026-09-08: ТРИ файла (secret-patterns.mjs · secret-parity.test.mjs · guard-secrets.mjs)
+// твърдяха, че „трите рънтайм предпазителя импортират същия SECRET_RE" — а този носеше СОБСТВЕН,
+// ръчно преписан списък от 7 шаблона (срещу 17 в CREDENTIAL) и не санитизираше. Живо доказано
+// с проби през CLI-то: AWS ключ, SendGrid, GitHub fine-grained PAT, Google OAuth secret, Twilio,
+// Slack webhook и `sk_live_` с вмъкнат U+200B — всичките с изход 0 (РАЗРЕШЕНО). Parity тестът
+// пазеше guard-secrets и secret-scan, но НЕ и този файл — „зелено по слепота": документ, който
+// описва състояние, което не съществува. Сега импортира и се пази от същия тест.
 
 import { readFileSync } from "node:fs";
+import { SECRET_RE, sanitize } from "./guard-secrets.mjs"; // единствен източник + санитизация
 
-// Високо-доверителни шаблони (подмножество на tools/security/secret-scan.mjs — дръж ги в синхрон).
-export const SECRET_RES = [
-  ["Anthropic/OpenAI ключ", /\bsk-(?:ant-|proj-)?[0-9A-Za-z_-]{24,}\b/],
-  ["GitHub token", /\b(?:ghp|gho|ghu|ghs|ghr)_[0-9A-Za-z]{36}\b/],
-  ["Google API ключ", /\bAIza[0-9A-Za-z\-_]{35}\b/],
-  ["Slack token", /\bxox[baprs]-[0-9A-Za-z-]{10,}\b/],
-  ["Stripe ключ", /\b[sr]k_live_[0-9A-Za-z]{20,}\b/],
-  ["PEM частен ключ", /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
-  ["Discord bot token", /\b[MNO][A-Za-z0-9_-]{23,26}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,}\b/],
-];
+// [name, re] кортежи (запазен формат за консуматорите) — от CREDENTIAL, никога преписани.
+export const SECRET_RES = SECRET_RE.map((p) => [p.name, p.re]);
 
 // Чиста логика — тестваема: {hits:[имена], ok}.
 export function scanPrompt(text) {
-  if (String(text).includes("[секрет-ок]")) return { hits: [], ok: true, bypass: true };
-  const hits = SECRET_RES.filter(([, re]) => re.test(text)).map(([name]) => name);
+  const raw = String(text ?? "");
+  if (raw.includes("[секрет-ок]")) return { hits: [], ok: true, bypass: true };
+  const s = sanitize(raw); // невидими знаци (U+200B, Unicode Tags…) не крият payload
+  const hits = SECRET_RES.filter(([, re]) => re.test(s)).map(([name]) => name);
   return { hits, ok: hits.length === 0, bypass: false };
 }
 

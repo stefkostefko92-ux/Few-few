@@ -15,6 +15,8 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 - **Източник:** `site/` — `site/build.mjs` (генератор), `site/data/products.mjs`
   (всички кодове/цени от каталога — единствен източник на истината),
   `site/data/i18n/{it,en,bg}.mjs` (пълните текстове), `site/templates/*.mjs`.
+  ⚠ `site/data/` **не е в git** (никога не е комитнат, сверено 2026-09-24) → `build:site` пада с
+  `ERR_MODULE_NOT_FOUND`; докато не се върне, генерираните HTML са единственият източник.
 - **Изход:** статични страници в корена (`index.html`, `prodotti.html`,
   `catalogo.html`, `contatti.html`, `privacy.html`, `condizioni.html`) + `en/`
   + `bg/` + `sitemap.xml` + `404.html`. **Не редактирай генерираните файлове

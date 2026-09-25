@@ -13,6 +13,10 @@ concurrency:
   group: cspos-${{ github.ref }}
   cancel-in-progress: true
 
+# Най-малко права по подразбиране; само job-ът за Release вдига contents: write при себе си.
+permissions:
+  contents: read
+
 jobs:
   # ── Качествена порта (Linux) ──────────────────────────────────────────────
   quality:

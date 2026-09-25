@@ -22,6 +22,8 @@ export interface LintablePost {
 
 /** Твърдият лимит на Instagram за caption. */
 export const CAPTION_MAX = 2200;
+/** Лимит на alt_text в Instagram Content Publishing API (Социалджията, 2026-09-24). */
+export const ALT_TEXT_MAX = 1000;
 /** Твърдият лимит на Instagram за хаштагове в един пост. */
 export const HASHTAG_MAX = 30;
 /** Над това хаштаговете спират да помагат — social SEO бие хаштаг спама. */
@@ -44,11 +46,14 @@ export function lintPost(post: LintablePost): LintFinding[] {
   if (caption.length === 0) {
     findings.push({ severity: 'HIGH', rule: 'caption-empty', message: 'Празен caption.' });
   }
-  if (caption.length > CAPTION_MAX) {
+  // Към Instagram отива caption + хаштаговете (services/publish.ts) — лимитът важи за целия низ,
+  // иначе черновата минава линта и пада едва при публикуване (Социалджията, 2026-09-24).
+  const sent = [post.caption, post.hashtags.join(' ')].filter(Boolean).join('\n\n');
+  if (sent.length > CAPTION_MAX) {
     findings.push({
       severity: 'HIGH',
       rule: 'caption-too-long',
-      message: `Caption е ${caption.length} знака при лимит ${CAPTION_MAX}.`,
+      message: `Caption с хаштаговете е ${sent.length} знака при лимит ${CAPTION_MAX}.`,
     });
   }
 
@@ -105,6 +110,13 @@ export function lintPost(post: LintablePost): LintFinding[] {
       severity: 'MEDIUM',
       rule: 'alt-missing',
       message: 'Липсва alt текст (достъпност по EAA/WCAG + social SEO).',
+    });
+  }
+  if (post.altText.length > ALT_TEXT_MAX) {
+    findings.push({
+      severity: 'HIGH',
+      rule: 'alt-too-long',
+      message: `Alt текстът е ${post.altText.length} знака при лимит ${ALT_TEXT_MAX}.`,
     });
   }
 
