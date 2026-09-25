@@ -23,6 +23,7 @@
 // Никога не хвърля заради липсващ модел (Promise.resolve().then), за да не може
 // едно ново поле да счупи правото на изтриване (урок от routes/gdpr.js).
 
+import { gameEraseSteps } from "./game/privacy.js";
 import { prisma } from "./prisma.js";
 import { writeAudit } from "./auditLog.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
@@ -139,18 +140,9 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
     await c("roleSnapshots", () => tx.memberRoleSnapshot.deleteMany({ where: { userId: uid } }));
     await c("verificationAttempts", () => tx.verificationAttempt.deleteMany({ where: { userId: uid } }));
     await c("memberships", () => tx.serverMember.deleteMany({ where: { userId: uid } }));
-    // v50 — Server Season: напредък, награди, спътници, покупки, приноси, отговори;
-    // уловените появи остават като събитие на сървъра, но без идентификатора.
-    await c("gameProfiles", () => tx.memberProgress.deleteMany({ where: { userId: uid } }));
-    await c("gameXpGrants", () => tx.gameXpGrant.deleteMany({ where: { userId: uid } }));
-    await c("companions", () => tx.memberCompanion.deleteMany({ where: { userId: uid } }));
-    await c("purchases", () => tx.shopPurchase.deleteMany({ where: { userId: uid } }));
-    await c("questContributions", () => tx.questContribution.deleteMany({ where: { userId: uid } }));
-    await c("triviaAnswers", () => tx.triviaAnswer.deleteMany({ where: { userId: uid } }));
-    await c("triviaWinsAnonymized", () => tx.triviaRound.updateMany({ where: { winnerId: uid }, data: { winnerId: null } }));
-    await c("countingLastAnonymized", () => tx.gameSettings.updateMany({ where: { countingLastUserId: uid }, data: { countingLastUserId: null } }));
-    await c("trades", () => tx.companionTrade.deleteMany({ where: { OR: [{ fromUserId: uid }, { toUserId: uid }] } }));
-    await c("spawnsAnonymized", () => tx.companionSpawn.updateMany({ where: { caughtById: uid }, data: { caughtById: null } }));
+    // v50 — Server Season: общите стъпки (lib/game/privacy.js) — същите и за
+    // изтриването от таблото (routes/gdpr.js).
+    for (const [name, step] of gameEraseSteps(tx, uid)) await c(name, step);
 
     if (scope === "full") {
       await c("messageContent", () => tx.ticketMessage.updateMany({
