@@ -11014,7 +11014,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 168
+        "lessons": 171
       },
       "evolution": [
         {
@@ -11436,9 +11436,20 @@
           "date": "2026-09-25",
           "event": "v14.6 — учене",
           "detail": "Научи: IntersectionObserver-базиран scroll-reveal с [data-reveal-stagger] контейнер трябва obs… (+1 още)"
+        },
+        {
+          "version": "14.9.0",
+          "date": "2026-09-25",
+          "event": "v14.9 — учене",
+          "detail": "Научи: background-clip:text + filter:drop-shadow на родител + overflow:hidden на inline-block … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „background-clip:text + filter:drop-shadow на родител + overflow:hidden на inline-block …\" (+2 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
