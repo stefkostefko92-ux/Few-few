@@ -30,7 +30,9 @@ function simulate(gen, onFrame) {
   setChoreography(gen);
   setDuration(gen.duration);
   recompileTimeline();
-  const { A, B } = buildFighters();
+  // 4a.4 (кръг 2): gen.kitA/kitB (buildChoreography ги връща) — симулацията пасва оръжието на
+  // хореографията, която точно то е построило (по подразбиране двете 'sword' — оригиналния вид).
+  const { A, B } = buildFighters({ kitA: gen.kitA, kitB: gen.kitB });
   for (let T = 0; T < gen.duration; T += STEP) {
     const dT = T === 0 ? 0 : STEP;
     A.update(T, dT, B);

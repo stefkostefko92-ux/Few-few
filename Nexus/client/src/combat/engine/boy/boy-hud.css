@@ -14,7 +14,11 @@
   --display: 'Grenze Gotisch', 'UnifrakturMaguntia', Georgia, 'Times New Roman', serif;
   --body: 'Alegreya Sans SC', 'Alegreya Sans', 'Gill Sans', 'Segoe UI', system-ui, sans-serif;
   --mono: 'Martian Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-  position: fixed;
+  /* 4a.3: absolute (не fixed) — CombatScene.tsx монтира .boy-duel-root ВЪТРЕ в
+     .combat-stage (position:relative, ограничена карта в страницата, не цял viewport);
+     fixed би пробил границата ѝ и би покрил цялата страница. Всеки консуматор е длъжен да
+     подаде position:relative + реален размер родител (виж CombatScene.tsx/CombatDemo.tsx). */
+  position: absolute;
   inset: 0;
   background: var(--ink);
   color: var(--parch);
@@ -23,8 +27,8 @@
   -webkit-font-smoothing: antialiased;
 }
 .boy-duel-root [hidden] { display: none !important; }
-.boy-duel-root #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; background: #000; touch-action: none; }
-.boy-duel-root #hud { position: fixed; inset: 0; pointer-events: none; }
+.boy-duel-root #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: #000; touch-action: none; }
+.boy-duel-root #hud { position: absolute; inset: 0; pointer-events: none; }
 .boy-duel-root .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .boy-duel-root .eyebrow { margin: 0; font: 400 10.5px/1.2 var(--mono); letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); }
 .boy-duel-root .title { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 16px; max-width: calc(100vw - 32px); text-shadow: 0 2px 22px rgba(0, 0, 0, 0.7); }
@@ -71,7 +75,7 @@
 .boy-duel-root select { min-height: 32px; padding: 6px 8px; border: 1px solid var(--hair); border-radius: 2px; background: #0d0d11; color: var(--parch); font: 400 10.5px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
 .boy-duel-root .credit { flex: 1 0 100%; margin: 0; font: 300 9.5px/1.5 var(--mono); letter-spacing: 0.12em; color: var(--parch-dim); text-align: right; }
 .boy-duel-root .credit a { color: var(--parch); text-decoration: none; border-bottom: 1px solid var(--hair); }
-.boy-duel-root #loader { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding-inline: 16px; background: radial-gradient(ellipse at 50% 65%, #1d1109 0%, #0a0808 45%, #050507 100%); transition: opacity 0.9s ease; }
+.boy-duel-root #loader { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding-inline: 16px; background: radial-gradient(ellipse at 50% 65%, #1d1109 0%, #0a0808 45%, #050507 100%); transition: opacity 0.9s ease; }
 .boy-duel-root #loader.done { opacity: 0; pointer-events: none; }
 .boy-duel-root .loader-inner { width: min(460px, 100%); }
 .boy-duel-root .loader-title { margin: 8px 0 10px; font-family: var(--display); font-weight: 700; font-size: clamp(38px, 7vw, 64px); line-height: 0.92; }
@@ -89,4 +93,17 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .boy-duel-root .caption, .boy-duel-root .endcard, .boy-duel-root #loader, .boy-duel-root .loader-bar i { transition: none; }
+}
+
+/* 4a.3: вградено в CombatScene.tsx (Hunting/Arena/Dungeons/...) — Nexus доставя собствен
+   intro/лог/HP-ленти/контроли/резултатен екран; авторският chrome на boy (заглавие, снимачна
+   информация, caption, долна лента, endcard) би дублирал/объркал. Канвасът и loader-ът остават. */
+.boy-duel-root.embedded .title,
+.boy-duel-root.embedded .slate,
+.boy-duel-root.embedded .caption,
+.boy-duel-root.embedded .stats,
+.boy-duel-root.embedded .hint,
+.boy-duel-root.embedded .controls,
+.boy-duel-root.embedded .endcard {
+  display: none;
 }

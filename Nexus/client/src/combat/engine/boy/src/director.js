@@ -133,6 +133,8 @@ export function createDirector(camera, { reducedMotion, shots = DEFAULT_SHOTS } 
       S.v.set(-S.u.z, 0, S.u.x);
       S.C.addVectors(A.root.pos, B.root.pos).multiplyScalar(0.5);
       S.fwdA.copy(S.u);
+      S.aspect = camera.aspect; // 4a.3-fix: генерираните кадри трябва да знаят портрет/пейзаж.
+      S.sep = A.root.pos.distanceTo(B.root.pos);
       let i = shots.findIndex((s) => T >= s.t0 && T < s.t1);
       if (i < 0) i = shots.length - 1;
       const shot = shots[i];

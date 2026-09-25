@@ -20,10 +20,25 @@ const SH_GUARD = { w: [-0.02, 1.22, 0.36], n: [0.15, 0.05, 1] };
 const SH_TAUNT = { w: [-0.06, 1.24, 0.36], n: [0.55, 0.05, 0.85] };
 const SH_BASH = { w: [0.02, 1.3, 0.6], n: [0, 0, 1] };
 
+// 4a.4 (кръг 2): пози за далечните китове (жезъл/лък) — ЧИСТО локални (p/d/e в собствената
+// рамка на бойеца), НЕ минават през aim/resolveAim reach системата (за разлика от AIM.* в
+// choreo-gen-attack.js) — далечният контакт е момент на попадение на снаряд (ranged.js), не
+// геометрична близост до опонента. Затова стойностите не са "прицелени" към никого, само
+// анатомично разумни в собствения ръст на рицаря (сравними с A_VOMTAG/B_GUARD диапазона).
+const STAFF_REST = { p: [0.06, 1.1, 0.32], d: [0, 1, -0.04], e: [1, 0, 0.05] };
+const STAFF_CHANNEL = { p: [0.12, 1.58, 0.2], d: [0.18, 0.82, -0.32], e: [1, -0.12, 0.22] };
+const STAFF_CAST = { p: [0.16, 1.48, 0.5], d: [0.12, 0.28, 0.94], e: [1, 0, -0.1] };
+const BOW_REST = { p: [0.08, 1.0, 0.3], d: [0, 1, 0.05], e: [1, 0, 0] };
+const BOW_DRAW = { p: [-0.04, 1.42, 0.14], d: [-0.38, 0.16, 0.9], e: [0, 1, 0.1] };
+const BOW_LOOSE = { p: [0.18, 1.4, 0.42], d: [0.05, 0.1, 0.99], e: [0, 1, -0.05] };
+
 // 4a.2: каноничните пози изнесени за choreo-gen.js — генераторът строи всеки рунд между тях
 // (aim/parry/block се решават геометрично от timeline.js, затова сглобяването е безопасно
 // независимо от реда), вместо да измисля нови сурови p/d/e вектори.
-export const GUARD_POSES = { A_REST, A_VOMTAG, A_OCHS, A_PFLUG, A_POINT_DOWN, B_REST, B_GUARD, B_HIGH, SH_REST, SH_GUARD };
+export const GUARD_POSES = {
+  A_REST, A_VOMTAG, A_OCHS, A_PFLUG, A_POINT_DOWN, B_REST, B_GUARD, B_HIGH, SH_REST, SH_GUARD,
+  STAFF_REST, STAFF_CHANNEL, STAFF_CAST, BOW_REST, BOW_DRAW, BOW_LOOSE,
+};
 
 const DEFAULT_A_KEYS = [
   { t: 0.0, pose: A_REST, crouch: 0, lead: 'L' },

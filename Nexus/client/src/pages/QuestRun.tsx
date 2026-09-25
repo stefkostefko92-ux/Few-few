@@ -14,6 +14,8 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
   const [stage, setStage] = useState<'intro' | 'fetching' | 'combat' | 'story' | 'error'>('intro');
   const [result, setResult] = useState<QuestResult | null>(null);
   const [err, setErr] = useState('');
+  // 4a.3-fix: резултатният текст под боя трябва да чака анимацията да свърши (виж Hunting.tsx).
+  const [animDone, setAnimDone] = useState(false);
 
   async function begin() {
     setStage('fetching');
@@ -96,12 +98,15 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
           victory={result.success}
           reward={{ xp: result.xp, gold: result.gold, itemReward: result.itemReward }}
           onClose={onDone}
+          onDone={() => setAnimDone(true)}
           introTitle={t('questRun.vsTitle', { hero: result.hero.name, foe: result.foe.name })}
           region={quest.region}
         />
-        <div className="panel" style={{ padding: 18 }}>
-          <p>{result.resultText}</p>
-        </div>
+        {animDone && (
+          <div className="panel" style={{ padding: 18 }}>
+            <p>{result.resultText}</p>
+          </div>
+        )}
       </div>
     );
   }
