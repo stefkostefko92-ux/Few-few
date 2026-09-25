@@ -49,10 +49,16 @@
     cleanup();
     if (wired) return; // observers / timers only once per page
     wired = true;
-    // Throttle: scanning every element is costly, so cap it on busy pages.
+    // Throttle: scanning every element is costly, so cap it on busy pages. Only
+    // added elements can bring a wall — text-only churn (a clock, a speed gauge)
+    // must not trigger a scan of the whole page.
     let queued = false;
-    new MutationObserver(() => {
-      if (queued) return;
+    const bringsElements = (r) => {
+      for (const n of r.addedNodes) if (n.nodeType === 1) return true;
+      return false;
+    };
+    new MutationObserver((records) => {
+      if (queued || !records.some(bringsElements)) return;
       queued = true;
       setTimeout(() => {
         queued = false;

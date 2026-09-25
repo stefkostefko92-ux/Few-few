@@ -48,6 +48,7 @@ python3 -c "import json; json.load(...)"     # валиден manifest/rules/loc
 npm test                                      # tests/: engine + live канал + билд + DNR правила + YouTube + cookies
 PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение (не е в CI — иска Playwright)
 PW_ROOT=$(npm root -g) npm run landing:assets # server/*.webp: бранд щитът + РЕАЛНИЯТ popup (след промяна на popup/версия)
+PW_ROOT=$(npm root -g) node tools/perf_speedtest.mjs [--old <разархивиран zip>]  # цена на главната нишка (Speedtest-подобно); след промяна в content scripts/CSS
 node tools/build_scriptlets.mjs --check       # scriptlets/main.js свеж спрямо list.txt
 bash tools/package.sh                         # билд + самопроверка на пакета
 ```
@@ -83,6 +84,11 @@ bash tools/package.sh                         # билд + самопровер�
   aria-label, test-id) — само вътре в контейнер, който говори за бисквитки, никога бутон,
   който изпраща форма, никога линк навън, нищо генерично на страници за вход/OAuth/плащане.
   Нов генеричен селектор НИКОГА в глобалния слой (гейтнато от `tests/cookies.test.mjs`).
+- **Главната нишка на страницата е чужда.** `cosmetic_generic.css` — само индексируеми
+  правила (вложен блок, генерира го `tools/generic_css.mjs`), НИКОГА голям `:is()` списък
+  (~47× по-скъп style recalc; докладвано Speedtest 900 → 150 Mbps). MutationObserver-ите не
+  сканират целия документ при всяка промяна: само добавените поддървета, промени само на
+  текст не струват нищо, една `querySelectorAll` на списък, не на селектор.
 - **Content script ≠ страница на разширението:** SW приема от content script само
   `smartHit`, `getCosmetic`, `saveCustomSelector`, `ytBypass`; всичко друго — само от
   popup/options (`sender.url` на разширението).

@@ -173,21 +173,55 @@
   const LOCK_CLASS_RE = /(^|[-_])(no|lock|locked|prevent|disable)[-_]?scroll(ing)?($|[-_])|scroll[-_]?(lock|locked|disabled|frozen)|modal[-_]?open|overflow[-_]?hidden|is[-_]?locked|body[-_]?lock(ed)?|(consent|cookie|cookies|gdpr|privacy|cmp|didomi|sp|cc|tp|ot|onetrust|uc|usercentrics|cky|osano|iubenda|cmplz|termly)[-_]?(popup|modal|message|dialog|banner|notice|wall)?[-_]?(open|active|shown|visible|showing)$|^(sp-message-open|didomi-popup-open|ot-overflow-hidden|onetrust-pc-open|cmp-modal-open|cc-modal-open|tp-modal-open|cky-modal-open|is-blurred|blurred|blur)$/i;
   const OVERLAY_NAME_RE = /overlay|backdrop|veil|scrim|dimmer|dim-layer|mask|curtain|blur|shade|dark-filter|darkfilter|cookie|consent|gdpr|cmp/i;
 
+  // One query per LIST, not per selector: a pass used to run ~150 full-document
+  // querySelectorAll calls, which on a page that changes every frame (Speedtest's
+  // gauge) ate the main thread and lowered the measured speed. All lists are our
+  // own static, valid selectors (a bad one would also break the cookies.css block).
+  const BANNERS_SEL = BANNERS.join(", ");
+  const BACKDROPS_SEL = BACKDROPS.join(", ");
+  const CMP_SEL = REJECT_CMP.concat(ACCEPT_CMP).join(", ");
+
   // ---- DOM helpers -----------------------------------------------------------
+  // Open shadow roots are collected ONCE per pass (passRoots), not once per
+  // selector: walking querySelectorAll("*") for every selector made a deep pass
+  // O(selectors × DOM).
+  let passRoots = null;
+  function rootsOf(root, deep) {
+    if (!deep) return root.shadowRoot ? [root.shadowRoot, root] : [root];
+    const cached = passRoots && passRoots.get(root);
+    if (cached) return cached;
+    const out = [];
+    const walk = (r) => {
+      out.push(r);
+      try { for (const el of r.querySelectorAll("*")) if (el.shadowRoot) walk(el.shadowRoot); } catch {}
+    };
+    if (root.shadowRoot) walk(root.shadowRoot);
+    walk(root);
+    if (passRoots) passRoots.set(root, out);
+    return out;
+  }
+  function inPass(fn) {
+    const outer = passRoots;
+    passRoots = outer || new Map();
+    try { return fn(); } finally { passRoots = outer; }
+  }
   // Query across the document and any open shadow roots.
   function deepQuery(selector, deep) {
     return queryIn(document, selector, deep);
   }
   function queryIn(root, selector, deep) {
     const out = [];
-    const collect = (r) => {
-      try { for (const el of r.querySelectorAll(selector)) out.push(el); } catch { return; }
-      if (!deep) return;
-      try { for (const el of r.querySelectorAll("*")) if (el.shadowRoot) collect(el.shadowRoot); } catch {}
-    };
-    if (root.shadowRoot) collect(root.shadowRoot);
-    collect(root);
+    for (const r of rootsOf(root, deep)) {
+      try { for (const el of r.querySelectorAll(selector)) out.push(el); } catch { return out; }
+    }
     return out;
+  }
+  // A CMP control anywhere? Unknown (a throw) counts as yes — never skip a click on doubt.
+  function anyIn(root, selector, deep) {
+    for (const r of rootsOf(root, deep)) {
+      try { if (r.querySelector(selector)) return true; } catch { return true; }
+    }
+    return false;
   }
   // "Rendered" = has boxes (true for a banner cloaked with visibility:hidden,
   // false once it is display:none). offsetParent is useless here: it is null
@@ -247,9 +281,7 @@
     if (authPage()) return roots; // never generic-click on a sign-in / OAuth page
     // A BANNERS match alone is not enough (`[aria-label*="consent" i][role="dialog"]`
     // is also how OAuth consent dialogs are labelled): it must talk about cookies.
-    for (const sel of BANNERS) {
-      for (const el of deepQuery(sel, deep)) if (rendered(el) && talksAboutCookies(el)) add(el);
-    }
+    for (const el of deepQuery(BANNERS_SEL, deep)) if (rendered(el) && talksAboutCookies(el)) add(el);
 
     let cands = [];
     try {
@@ -327,21 +359,19 @@
   // HARD_MS later (nothing we could click) is removed from layout.
   function trackBanners(now, deep) {
     let any = false;
-    for (const sel of BANNERS) {
-      for (const el of deepQuery(sel, deep)) {
-        if (el.dataset && el.dataset.tbabCookieHard) continue;
-        if (!rendered(el)) continue;
-        any = true;
-        const t0 = firstSeen.get(el);
-        if (t0 === undefined) {
-          firstSeen.set(el, now);
-          setTimeout(() => dismiss(true), HARD_MS + 60);
-        } else if (now - t0 >= HARD_MS) {
-          try {
-            el.style.setProperty("display", "none", "important");
-            el.dataset.tbabCookieHard = "1";
-          } catch {}
-        }
+    for (const el of deepQuery(BANNERS_SEL, deep)) {
+      if (el.dataset && el.dataset.tbabCookieHard) continue;
+      if (!rendered(el)) continue;
+      any = true;
+      const t0 = firstSeen.get(el);
+      if (t0 === undefined) {
+        firstSeen.set(el, now);
+        setTimeout(() => dismiss(true), HARD_MS + 60);
+      } else if (now - t0 >= HARD_MS) {
+        try {
+          el.style.setProperty("display", "none", "important");
+          el.dataset.tbabCookieHard = "1";
+        } catch {}
       }
     }
     return any;
@@ -493,37 +523,57 @@
       return;
     }
     unlock(true);
-    for (const sel of BACKDROPS) {
-      for (const el of deepQuery(sel, false)) {
-        try {
-          el.style.setProperty("display", "none", "important");
-          el.dataset.tbabVeil = "1";
-        } catch {}
-      }
+    for (const el of deepQuery(BACKDROPS_SEL, false)) {
+      try {
+        el.style.setProperty("display", "none", "important");
+        el.dataset.tbabVeil = "1";
+      } catch {}
     }
     try { document.documentElement.classList.remove("tbab-cookies-seen"); } catch {}
     forceScrollIfLocked();
   }
 
+  // Can this mutation bring a banner? html/body attribute changes (lock classes,
+  // inert) always count. An added element counts when it is, or contains, a known
+  // banner / CMP control / dialog, or sits where consentRoots() looks for unknown
+  // banners (body > *, body > * > *). Text-only churn and deep app re-renders —
+  // Speedtest's gauge, a clock, a chat — no longer cost a whole-page pass.
+  const RELEVANT_SEL = BANNERS_SEL + ", " + CMP_SEL + ", [role='dialog'], [role='alertdialog'], [aria-modal='true'], dialog";
+  function mayBringBanner(n) {
+    const p = n.parentElement;
+    if (!p || p === document.body || p === document.documentElement || p.parentElement === document.body) return true;
+    try { return n.matches(RELEVANT_SEL) || !!n.querySelector(RELEVANT_SEL) || !!n.shadowRoot; } catch { return true; }
+  }
+  function bringsElements(r) {
+    if (r.type !== "childList") return true;
+    for (const n of r.addedNodes) if (n.nodeType === 1 && mayBringBanner(n)) return true;
+    return false;
+  }
+
   function dismiss(deep) {
     if (!active) return;
-    const now = Date.now();
-    if (trackBanners(now, deep)) openWindow(now);
-    const roots = consentRoots(deep);
-    const clicked =
-      clickSelectorsIn([document], REJECT_CMP, deep, false) ||
-      clickSelectorsIn(roots, REJECT_GENERIC, deep, true) ||
-      clickTextIn(roots, REJECT_TEXT, deep) ||
-      clickSelectorsIn([document], ACCEPT_CMP, deep, false) ||
-      clickSelectorsIn(roots, ACCEPT_GENERIC, deep, true) ||
-      clickTextIn(roots, ACCEPT_TEXT, deep);
-    if (clicked) {
-      openWindow(now);
-      // Let the CMP finish its own teardown, then sweep what it left behind.
-      setTimeout(() => unlock(false), 350);
-      setTimeout(() => unlock(false), 1500);
-    }
-    unlock(false);
+    inPass(() => {
+      const now = Date.now();
+      if (trackBanners(now, deep)) openWindow(now);
+      const roots = consentRoots(deep);
+      // No consent root and no CMP control on the page → nothing can be clicked;
+      // skip the ~60 per-selector queries of the click tiers.
+      const clickable = roots.length > 0 || anyIn(document, CMP_SEL, deep);
+      const clicked = clickable && (
+        clickSelectorsIn([document], REJECT_CMP, deep, false) ||
+        clickSelectorsIn(roots, REJECT_GENERIC, deep, true) ||
+        clickTextIn(roots, REJECT_TEXT, deep) ||
+        clickSelectorsIn([document], ACCEPT_CMP, deep, false) ||
+        clickSelectorsIn(roots, ACCEPT_GENERIC, deep, true) ||
+        clickTextIn(roots, ACCEPT_TEXT, deep));
+      if (clicked) {
+        openWindow(now);
+        // Let the CMP finish its own teardown, then sweep what it left behind.
+        setTimeout(() => unlock(false), 350);
+        setTimeout(() => unlock(false), 1500);
+      }
+      unlock(false);
+    });
   }
 
   let wired = false;
@@ -536,10 +586,11 @@
 
     // Light passes on DOM changes, throttled so busy pages stay smooth. A pass
     // goes deep (shadow roots) at most once a second, and only while a banner
-    // is around — shallow otherwise.
+    // is around — shallow otherwise. Only mutations that can bring a banner
+    // (bringsElements) wake it up.
     let queued = false;
-    const onMutation = () => {
-      if (queued) return;
+    const onMutation = (records) => {
+      if (queued || !records.some(bringsElements)) return;
       queued = true;
       setTimeout(() => {
         queued = false;

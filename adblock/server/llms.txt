@@ -8,7 +8,7 @@
 - Maker: Carbon Stealth VCC, Bulgaria (EU) — carbonstealth.eu, info@carbonstealth.eu
 - Platform: Chrome Manifest V3 extension; Chrome, Edge, Brave and other Chromium browsers, version 121+
 - Price: free, no account, no paid tier; optional donations
-- Current version: 5.0.4 (24 September 2026)
+- Current version: 5.0.5 (25 September 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
 - Privacy policy: https://adblock.carbonstealth.eu/privacy
@@ -42,4 +42,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 24 September 2026 (version 5.0.4)._
+_Last updated: 25 September 2026 (version 5.0.5)._

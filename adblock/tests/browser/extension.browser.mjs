@@ -1,7 +1,9 @@
 // Истинското разширение (unpacked) в истински Chromium — поведение, което unit
 // тестовете не виждат: manifest-ът зарежда scriptlets/policy.js преди content.js
 // в изолирания свят, procedural правилата минават политиката, вградените рекламни
-// селектори не хващат „thread-container", allowlist-ът спира cookies.js.
+// селектори не хващат „thread-container", allowlist-ът спира cookies.js, генеричният
+// CSS е евтин за style engine-а, а наблюдателите виждат реклама/банер, добавени дълбоко
+// в приложение (те вече сканират само добавените поддървета — Speedtest падаше с 45%).
 // Не е в `npm test` (CI няма Playwright): `npm run test:browser`, с
 // PW_ROOT=$(npm root -g), когато Playwright е глобален.
 import { createRequire } from "node:module";
@@ -10,6 +12,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import http from "node:http";
+import { readFileSync } from "node:fs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const require = createRequire(join(process.env.PW_ROOT || join(ROOT, "node_modules"), "/"));
@@ -25,6 +28,11 @@ const PAGES = {
     <p class="beacon" id="beacon">beacon</p>
     <iframe class="boxed" id="box" sandbox="allow-scripts" srcdoc="<p>x</p>"></iframe>
     <iframe class="boxed2" id="box2" sandbox="allow-scripts" data-x="1" srcdoc="<p>y</p>"></iframe>
+  </body></html>`,
+  "/app": `<!doctype html><html><body style="min-height:2000px">
+    <script>window.__clicks=[];</script>
+    <div id="root"><main class="app"><div class="wrap"><div id="feed"></div><span id="clock">0</span></div></main></div>
+    <div id="AdTop">generic EasyList id</div>
   </body></html>`,
   "/cookie": `<!doctype html><html><body style="min-height:2000px">
     <script>window.__clicks=[];</script>
@@ -88,6 +96,33 @@ try {
   ok("no page errors from our content scripts", errors.length === 0);
   await page.close();
 
+  // ---- after the start-up passes: only the MutationObservers are left ----
+  const p3 = await ctx.newPage();
+  await p3.goto(origin + "/app");
+  await p3.waitForTimeout(1500);
+  ok("generic EasyList CSS (nested, indexable) still hides #AdTop", await p3.evaluate(() => getComputedStyle(document.getElementById("AdTop")).display) === "none");
+  await p3.waitForTimeout(11500); // content.js: 11 passes × 1 s; cookies.js: 11 × 0.7 s — all over
+  await p3.evaluate(() => {
+    const clock = document.getElementById("clock");
+    window.__tick = setInterval(() => { clock.textContent = String(Date.now()); }, 16); // text-only churn
+    const card = document.createElement("section");
+    card.innerHTML = '<div class="ad-slot" id="late-ad">late ad</div><div class="card-body" id="late-ok">content</div>';
+    document.getElementById("feed").appendChild(card);
+    const cmp = document.createElement("div");
+    cmp.innerHTML = '<div id="onetrust-consent-sdk" style="position:fixed;left:0;right:0;bottom:0;background:#fff"><div id="onetrust-banner-sdk"><p>We use cookies</p>' +
+      '<button id="onetrust-reject-all-handler" onclick="__clicks.push(\'reject\')">Reject all</button></div></div>';
+    document.querySelector("#root .wrap").appendChild(cmp);
+  });
+  await p3.waitForTimeout(1500);
+  const late = await p3.evaluate(() => ({
+    ad: getComputedStyle(document.getElementById("late-ad")).display,
+    ok: getComputedStyle(document.getElementById("late-ok")).display,
+    clicks: window.__clicks.slice(),
+  }));
+  ok("ad added deep in an app later is hidden (observer scans the added subtree)", late.ad === "none" && late.ok !== "none");
+  ok("CMP banner added deep in an app later is still rejected", late.clicks.join() === "reject");
+  await p3.close();
+
   // ---- cookies.js honours the allowlist (it used to ignore it) ----
   await setStore({ allowlist: ["127.0.0.1"] });
   const p2 = await ctx.newPage();
@@ -102,8 +137,36 @@ try {
   await p2.close();
 } finally {
   await ctx.close();
-  server.close();
-  rmSync(userDir, { recursive: true, force: true });
 }
+
+// ---- style engine cost of cosmetic_generic.css (no extension needed) ----
+// The old `html[data-tbab-on] :is(<500 selectors>)` form could not be indexed, so
+// every style recalc checked every element against ~13 600 selectors: ~47× the
+// cost of a page without it. Indexed rules stay within a small factor.
+{
+  const browser = await chromium.launch({ channel: "chromium", headless: true, args: ["--no-sandbox"] });
+  const css = readFileSync(join(ROOT, "cosmetic_generic.css"), "utf8");
+  let body = "";
+  for (let i = 0; i < 300; i++) body += `<section class="card row-${i % 7} css-${i}"><header class="flex items-center"><h3 class="title">T${i}</h3><span class="badge">x</span></header><ul class="list">` + '<li class="item"><a href="#" class="link">L</a></li>'.repeat(5) + "</ul></section>";
+  const cost = async (withCss) => {
+    const p = await browser.newPage();
+    await p.setContent(`<!doctype html><html data-tbab-on><head><style>.tick *{outline-color:red}</style><style>${withCss ? css : ""}</style></head><body><div id=app>${body}</div></body></html>`);
+    const cdp = await p.context().newCDPSession(p);
+    await cdp.send("Performance.enable");
+    const m = async () => Object.fromEntries((await cdp.send("Performance.getMetrics")).metrics.map((x) => [x.name, x.value]));
+    const a = await m();
+    await p.evaluate(() => { const app = document.getElementById("app"); for (let i = 0; i < 100; i++) { app.classList.toggle("tick"); void document.body.offsetHeight; } });
+    const b = await m();
+    await p.close();
+    return b.RecalcStyleDuration - a.RecalcStyleDuration; // every toggle restyles all ~3000 descendants
+  };
+  const base = Math.min(await cost(false), await cost(false));
+  const withCss = Math.min(await cost(true), await cost(true));
+  const ratio = withCss / base;
+  ok(`generic CSS keeps style recalc cheap (${ratio.toFixed(1)}× a page without it; the old :is() form measured ~47×)`, ratio < 4);
+  await browser.close();
+}
+server.close();
+rmSync(userDir, { recursive: true, force: true });
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

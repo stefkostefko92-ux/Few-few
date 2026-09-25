@@ -7,6 +7,19 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ROOT, ok, done } from "./_harness.mjs";
+import { genericCss, SAFE_CSS_SELECTOR } from "../tools/generic_css.mjs";
+
+// generic_css.mjs: индексируеми списъци само от доказано валидни селектори; всичко
+// друго — отделно правило (невалидното пада само, не повлича 500 други).
+{
+  const css = genericCss(["#a", ".b-c", "div.x > span[data-y=\"1;2\"]", "a:not(.z)", ".\\[x\\]", ".щ", "#e{x}", "[style=\"a{b}\"]", "ins.adsbygoogle[data-ad-slot]"], 3);
+  ok("genericCss: one nested block gated by html[data-tbab-on]", css.includes("html[data-tbab-on]{\n") && css.trimEnd().endsWith("}"));
+  ok("genericCss: provably valid selectors share a list", css.includes("#a,\n.b-c,\ndiv.x > span[data-y=\"1;2\"]{display:none!important}"));
+  ok("genericCss: pseudo-class / escape / non-ASCII each get their own rule", ["a:not(.z){", ".\\[x\\]{", ".щ{"].every((r) => css.includes(r)));
+  ok("genericCss: a brace outside quotes never enters (cannot close the rule)", !css.includes("#e{x}"));
+  ok("genericCss: braces inside a quoted value are fine", css.includes("[style=\"a{b}\"]"));
+  ok("SAFE_CSS_SELECTOR rejects what it cannot prove", !SAFE_CSS_SELECTOR.test("a:hover") && !SAFE_CSS_SELECTOR.test(".1x") && !SAFE_CSS_SELECTOR.test("[x=\"a\\\"b\"]") && SAFE_CSS_SELECTOR.test("div[id^=\"ad-\"] > .x"));
+}
 
 const fx = mkdtempSync(join(tmpdir(), "sa-bf-fx-"));
 const out = mkdtempSync(join(tmpdir(), "sa-bf-out-"));
@@ -64,7 +77,10 @@ if (ran) {
   const counts = read("rules", "counts.json");
   ok("counts.json written with popupHosts", counts.popupHosts === read("rules", "popup_hosts.json").length && counts.easylist === el.length);
   const css = readFileSync(join(out, "cosmetic_generic.css"), "utf8");
-  ok("generic cosmetic CSS gated behind html[data-tbab-on]", /html\[data-tbab-on\] :is\([^)]*\.ad-banner/.test(css));
+  ok("generic cosmetic CSS gated behind html[data-tbab-on] (nested block)", /^html\[data-tbab-on\]\{$/m.test(css) && /(^|,\n)\.ad-banner(,\n|\{display:none!important\})/m.test(css));
+  // Производителност: голям :is() списък не може да се индексира по id/клас → всеки
+  // елемент при всеки style recalc срещу хиляди селектори (Speedtest падаше 45%).
+  ok("generic cosmetic CSS has no :is() mega-list (unindexable by the style engine)", !/(^|[\s>+~,]):is\(/m.test(css));
   const spec = read("rules", "cosmetic_specific.json");
   ok("specific cosmetic + generichide collected", (spec.specific["example.com"] || []).includes(".sponsored-box") && spec.genericHide.includes("gh.example"));
   ok("--report prints the skip histogram", /skip reasons/.test(stdout));
