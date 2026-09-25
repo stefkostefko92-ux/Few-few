@@ -4741,7 +4741,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 152
+        "lessons": 153
       },
       "evolution": [
         {
@@ -5145,9 +5145,20 @@
           "date": "2026-09-25",
           "event": "v17.5 — учене",
           "detail": "Научи: adblock options: помощният текст за филтрите (opt_fh_*) се сглобява от отделни span-ове… (+1 още)"
+        },
+        {
+          "version": "17.6.0",
+          "date": "2026-09-25",
+          "event": "v17.6 — учене",
+          "detail": "Научи: Write tool: literal U+00A0/U+202F typed directly into content were saved as plain space…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Write tool: literal U+00A0/U+202F typed directly into content were saved as plain space…\""
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
