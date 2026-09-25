@@ -37,7 +37,7 @@ function closestOnSegment(a, b, p, out) {
   return out.copy(a).addScaledVector(ab, t);
 }
 
-export function createEvents({ A, B, fx, audio, director, camera, onLightning }) {
+export function createEvents({ A, B, fx, audio, director, camera, onLightning, onImpact }) {
   const scrapes = [];
   const pa = new THREE.Vector3();
   const pb = new THREE.Vector3();
@@ -77,6 +77,12 @@ export function createEvents({ A, B, fx, audio, director, camera, onLightning })
     const p = ev.power ?? 1;
     if (ev.type === 'lightning') {
       onLightning(p);
+      return;
+    }
+    // 4a.3: чист "белег" за React слоя (число на щетата и т.н.) — генерира се за ВСЕКИ рунд
+    // на choreo-gen.js (вкл. dodge/miss, които нямат физическо fx събитие тук).
+    if (ev.type === 'roundmark') {
+      onImpact?.(ev);
       return;
     }
     if (ev.type === 'clash') {

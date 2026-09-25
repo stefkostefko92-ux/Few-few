@@ -117,6 +117,9 @@ export function buildChoreography(rounds, victory, opts = {}) {
       EVENTS.push({ t: apexT, type: 'strike', target, by: attackerSlot, against: defenderSlot, power: crit ? 1.6 : 1.0 });
       if (crit) EVENTS.push({ t: windT + 0.02, type: 'lightning', power: 0.4 });
     }
+    // 4a.3: белег за React слоя (число на щетата) — ТОЧНО в кадъра на удара, за всеки рунд
+    // (вкл. dodge/miss, които нямат физическо fx събитие по-горе).
+    EVENTS.push({ t: apexT, type: 'roundmark', roundIndex: ti, by: attackerSlot, against: defenderSlot });
 
     push(attackerKeys, returnT, { pose: GUARD_OF[attackerSlot], ease: 'out', crouch: 0.08 });
     if (defenderKeys[defenderKeys.length - 1]?.t < returnT - 0.05) {
@@ -176,6 +179,8 @@ export function buildChoreography(rounds, victory, opts = {}) {
   for (const k of loserSlump) push(loserKeys, k.t, { pose: k.pose, lean: k.lean, crouch: k.crouch });
 
   EVENTS.push({ t: finishT0, type: 'helm', by: winnerSlot, against: loserSlot, power: 1.6 });
+  // roundIndex извън [0, rounds.length) сигнализира "финален удар" на React слоя.
+  EVENTS.push({ t: finishT0, type: 'roundmark', roundIndex: rounds.length, by: winnerSlot, against: loserSlot });
   EVENTS.push({ t: finishT0 + 0.05, type: 'disarm', against: loserSlot });
   EVENTS.push({ t: finishT0 + 1.0, type: 'kneel', power: 0.6, against: loserSlot });
   CAPTIONS.push({ t: finishT0 - 0.15, d: 1.3, k: 'final' });

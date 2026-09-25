@@ -8,10 +8,18 @@ export interface BootOpts {
   /** false спира на последния кадър вместо да зацикля (реални битки не зацикляй). */
   loop?: boolean;
   onEnd?: () => void;
+  /** Извиква се ТОЧНО в кадъра на всеки контактен/roundmark EVENTS запис (choreo-gen.js). */
+  onImpact?: (ev: { type: string; roundIndex?: number; by?: 'A' | 'B'; against?: 'A' | 'B' }) => void;
+  /** Прекъсва РАНО (преди buildWorld/compileAsync), ако React StrictMode вече е cleanup-нал. */
+  signal?: AbortSignal;
 }
 
 export interface BootHandle {
   dispose(): void;
+  togglePlay?(): void;
+  setSpeed?(v: number): void;
+  toggleSound?(): void;
+  skip?(): void;
 }
 
 export function bootDuel(canvas: HTMLCanvasElement, opts?: BootOpts): Promise<BootHandle>;

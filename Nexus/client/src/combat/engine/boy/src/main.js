@@ -2,11 +2,10 @@
 // camera and the frame loop. A frame-time governor holds 60 fps by moving the internal
 // resolution, not by cutting effects.
 //
-// 4a.2 (Nexus порт): main() стана export async function bootDuel(canvas, opts) — приема
-// незадължителна `opts.choreography` (виж choreo-gen.js) и връща { dispose() }, за да могат
-// реалните битки от сървъра (и повторното монтиране на /demo/combat) да карат СВОЯ дуел през
-// същия рендер конвейер, вместо фиксирания филм на boy. Долният auto-run пази старото
-// поведение (гол `import('./main.js')` продължава да пуска демото без промяна).
+// 4a.2/4a.3 (Nexus порт): main() → export async function bootDuel(canvas, opts), приема
+// opts.choreography (choreo-gen.js) и връща { dispose(), togglePlay, setSpeed, toggleSound,
+// skip } — реалните битки карат СВОЯ дуел през същия конвейер. Долният auto-run пази старото
+// поведение на гол `import('./main.js')`.
 import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, animateWorld } from './world.js';
@@ -20,22 +19,10 @@ import { createEvents } from './events.js';
 import { timeScaleAt, recompileTimeline } from './timeline.js';
 import { CAPTIONS, CHAPTERS, setChoreography, resetChoreography } from './choreo.js';
 import { DURATION, MOON_DIR, setDuration } from './config.js';
+import { reportFrame } from './hud-report.js';
+import { acceptIdentitySwizzle } from './gpu-compat.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
-
-// Older Chromium builds type GPUTextureViewDescriptor.swizzle as a dictionary and reject the
-// identity string 'rgba' that three.js always passes. Dropping an identity swizzle changes nothing.
-function acceptIdentitySwizzle() {
-  const proto = globalThis.GPUTexture?.prototype;
-  if (!proto) return;
-  const createView = proto.createView;
-  proto.createView = function view(desc) {
-    if (desc?.swizzle !== 'rgba') return createView.call(this, desc);
-    const { swizzle, ...rest } = desc;
-    return createView.call(this, swizzle === 'rgba' ? rest : desc);
-  };
-}
-
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
 /**
@@ -45,12 +32,8 @@ const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
  * многократни последователни битки без растеж на ресурсите.
  */
 export async function bootDuel(canvas, opts = {}) {
-  if (opts.choreography) {
-    setChoreography(opts.choreography);
-    setDuration(opts.choreography.duration);
-  } else {
-    resetChoreography();
-  }
+  if (opts.choreography) { setChoreography(opts.choreography); setDuration(opts.choreography.duration); }
+  else resetChoreography();
   recompileTimeline();
   recompileDirector();
 
@@ -65,6 +48,14 @@ export async function bootDuel(canvas, opts = {}) {
   const hud = createHud(h);
   let disposed = false;
 
+  // Абортира РАНО (преди buildWorld()/compileAsync), ако StrictMode вече е размонтирал —
+  // без това двете double-invoke копия се борят за GPU едновременно под софтуерен рендер.
+  function bailIfAborted() {
+    if (!opts.signal?.aborted) return false;
+    try { renderer?.dispose(); } catch { /* backend already gone */ }
+    return true;
+  }
+
   let renderer;
   try {
     const forceWebGL = new URLSearchParams(location.search).has('webgl');
@@ -75,8 +66,10 @@ export async function bootDuel(canvas, opts = {}) {
     hud.fatal();
     return { dispose() {} };
   }
+  if (bailIfAborted()) return { dispose() {} };
   const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
   const W = await buildWorld(renderer, hud, quality);
+  if (bailIfAborted()) return { dispose() {} };
   const { scene, camera, A, B, fx } = W;
   const pipe = createPipeline(renderer, W);
   pipe.setQuality(quality);
@@ -94,6 +87,7 @@ export async function bootDuel(canvas, opts = {}) {
       lightning.power = p;
       setTimeout(() => { if (!disposed) audio.play('thunder', p); }, 1100);
     },
+    onImpact: opts.onImpact, // 4a.3: React се синхронизира ТОЧНО в кадъра, не по отделен таймер.
   });
   for (const f of [A, B]) {
     f.feet.onStep = (pos, dist) => {
@@ -124,31 +118,20 @@ export async function bootDuel(canvas, opts = {}) {
   resize();
 
   Object.assign(h, {
-    togglePlay() {
-      clock.playing = !clock.playing;
-      hud.setPlaying(clock.playing);
-    },
+    togglePlay() { clock.playing = !clock.playing; hud.setPlaying(clock.playing); },
     seek(frac) {
       clock.T = Math.min(DURATION - 0.01, storyTimeAtReal(frac * director.realDuration));
       clock.jumped = true;
     },
-    setSpeed(v) {
-      clock.speed = v;
-      hud.setSpeed(v);
-    },
+    setSpeed(v) { clock.speed = v; hud.setSpeed(v); },
     toggleCamera() {
       free = !free;
       controls.enabled = free;
       if (free) controls.target.copy(A.root.pos).add(B.root.pos).multiplyScalar(0.5).setY(1.2);
       hud.setCamera(free);
     },
-    toggleSound() {
-      hud.setSound(audio.toggle());
-    },
-    toggleStats() {
-      showStats = !showStats;
-      hud.setStats(showStats);
-    },
+    toggleSound() { hud.setSound(audio.toggle()); },
+    toggleStats() { showStats = !showStats; hud.setStats(showStats); },
     setQuality(mode) {
       qualityMode = mode;
       tier = mode === 'auto' ? tier : mode;
@@ -162,12 +145,7 @@ export async function bootDuel(canvas, opts = {}) {
       resize();
       hud.setQuality(mode);
     },
-    onLang() {
-      hud.setPlaying(clock.playing);
-      hud.setCamera(free);
-      hud.setSound(audio.enabled);
-      hud.setStats(showStats);
-    },
+    onLang() { hud.setPlaying(clock.playing); hud.setCamera(free); hud.setSound(audio.enabled); hud.setStats(showStats); },
   });
   h.onLang();
   hud.setSpeed(clock.speed);
@@ -180,10 +158,11 @@ export async function bootDuel(canvas, opts = {}) {
   animateWorld(W, 0, 0);
   director.update(0, 0, A, B);
   await renderer.compileAsync(scene, camera);
+  if (bailIfAborted()) return { dispose() {} };
   pipe.render({ focus: 5, coc: 4, maxBlur: 8, time: 0, bars: 0, fade: 1 });
   hud.loading('load_ready', 1);
   await nextFrame();
-  if (disposed) return { dispose() {} };
+  if (bailIfAborted()) return { dispose() {} };
   hud.ready();
 
   const prevTip = [new THREE.Vector3(), new THREE.Vector3()];
@@ -277,35 +256,9 @@ export async function bootDuel(canvas, opts = {}) {
       return jump ? 0 : s;
     });
     audio.update(dtReal, tipSpeeds, [-0.6, 0.6]);
-    report(now, dtMs, T, ts);
-  }
-
-  function report(now, dtMs, T, ts) {
-    if (dtMs > 0 && dtMs < 250) {
-      perf.fps = perf.fps * 0.94 + (1000 / dtMs) * 0.06;
-      perf.ms = perf.ms * 0.94 + dtMs * 0.06;
-    }
-    if (showStats && now - perf.statsAt > 250) {
-      perf.statsAt = now;
-      const r = renderer.info.render;
-      hud.stats({ fps: perf.fps, ms: perf.ms, w: internal.x, h: internal.y, pct: Math.round((internal.x / out.x) * 100), calls: r.drawCalls, tris: r.triangles, tier: qualityMode === 'auto' ? `auto · ${tier}` : tier, backend });
-    }
-    const cap = CAPTIONS.find((c) => T >= c.t && T < c.t + c.d);
-    let chapter = CHAPTERS[0].k;
-    for (const c of CHAPTERS) if (T >= c.t) chapter = c.k;
-    hud.update({
-      progress: realTimeOf(T) / realDuration,
-      realTime: realTimeOf(T),
-      shot: free ? 0 : director.state.shot,
-      shotCount: director.shotCount,
-      lens: free ? 35 : director.state.lensMM,
-      fstop: free ? 4 : director.state.fstop,
-      timeScale: clock.playing ? ts : 0,
-      speed: clock.speed,
-      fps: perf.fps,
-      caption: cap ? cap.k : '',
-      chapter,
-      end: T > DURATION - 4.5 && T < DURATION - 0.15,
+    reportFrame({
+      hud, showStats, perf, now, dtMs, internal, out, qualityMode, tier, backend, renderer,
+      CAPTIONS, CHAPTERS, T, realDuration, free, director, clock, ts, DURATION, realTimeOf,
     });
   }
   renderer.setAnimationLoop(frame);
@@ -322,13 +275,20 @@ export async function bootDuel(canvas, opts = {}) {
       const ext = gl?.getExtension?.('WEBGL_lose_context');
       ext?.loseContext?.();
     },
+    // 4a.3: CombatScene.tsx кара собствените си бутони вместо вградените на boy (скрити —
+    // виж boy-hud.css .embedded), затова трябват handle-и към същия clock.
+    togglePlay: h.togglePlay,
+    setSpeed: h.setSpeed,
+    toggleSound: h.toggleSound,
+    skip() {
+      clock.T = Math.max(0, DURATION - 0.05);
+      clock.jumped = true;
+    },
   };
 }
 
-// Guard: авто-run само за голия <script type="module"> демо път (index.html / boy-demo без
-// choreography). BoyDuelStage.tsx извиква bootDuel() програмно за генерирани битки и НЕ разчита
-// на този страничен ефект — но когато main.js се import-не директно (както в 4a.1), поведението
-// остава непроменено: пуска фиксирания филм в #view.
+// Guard: авто-run само за голия <script type="module"> демо път (без choreography).
+// BoyDuelStage.tsx вика bootDuel() програмно и не разчита на този страничен ефект.
 if (typeof document !== 'undefined' && document.getElementById('view') && !window.__boyNoAutoboot) {
   bootDuel(document.getElementById('view')).catch((err) => {
     const el = document.getElementById('load-step');
