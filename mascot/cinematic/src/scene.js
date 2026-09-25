@@ -3,10 +3,11 @@
 // body.js/face.js/accessories.js — this module only places and moves what they build.
 import * as THREE from 'three';
 import { createMaterials, jellyMotion } from './materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures, scratchTextures } from './textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures, scratchTextures, woodTextures, leatherTextures, windowSkyTexture } from './textures.js';
 import { buildBody, GROUND_Y } from './body.js';
 import { buildFace } from './face.js';
 import { buildHat, buildBow, BOW_Y, BOW_Z } from './accessories.js';
+import { buildDesk, animateDust } from './desk.js';
 
 export const PALETTE = {
   bg: '#050706', deep: '#0D4A02', bottle: '#297F04', neon: '#5AB60D', olive: '#99E72A',
@@ -14,11 +15,12 @@ export const PALETTE = {
 };
 
 export function addLights(scene, p) {
-  // Softer, off-axis key: the previous steep top-down angle plus a tight clearcoat was exactly
-  // what burned a hard white disc into the crown under the hat. Lower angle, a touch less
-  // intensity, and a much rougher clearcoat (materials.js) spread that highlight into a soft glint.
-  const key = new THREE.DirectionalLight(0xfff2d6, 1.5);
-  key.position.set(-2.8, 2.2, 4.6);
+  // Warm practical key, aimed from the desk lamp's own position (desk.js LAMP_POS) so the cast
+  // shadow lines up with the lit brass fixture instead of an invisible studio softbox — this is
+  // the directional stand-in that actually casts the shadow; the lamp's own PointLight (desk.js)
+  // supplies the local bulb highlight without the cost of a second shadow map.
+  const key = new THREE.DirectionalLight(0xffcf9e, 1.85);
+  key.position.set(1.35, 2.0, -0.1);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
   key.shadow.camera.near = 1;
@@ -30,11 +32,14 @@ export function addLights(scene, p) {
   key.shadow.bias = -0.0018;
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xdfeee0, 1.0);
-  fill.position.set(3, 1.6, 3.2);
+  // Cool moonlight through the window behind, opposite the lamp — kept deliberately weak (a thin
+  // rim only) so the warm lamp stays the dominant read and the desk does not wash out cyan-white
+  // (2026-09-25 review regression: the moonlight was overpowering the practical key).
+  const fill = new THREE.DirectionalLight(0x9fb4ff, 0.28);
+  fill.position.set(-2.6, 1.9, -3.4);
   scene.add(fill);
 
-  const rim = new THREE.DirectionalLight(0xc8dda6, 1.1);
+  const rim = new THREE.DirectionalLight(0xaebfff, 0.4);
   rim.position.set(0.4, 1.3, -3.4);
   scene.add(rim);
 
@@ -54,12 +59,15 @@ export function addLights(scene, p) {
   underFill.position.set(0, -0.85, 2.1);
   scene.add(underFill);
 
-  // Bright overhead top light so the crown/shoulders read the accent, not olive-black.
-  const overhead = new THREE.DirectionalLight(new THREE.Color(p.pale), 0.75);
-  overhead.position.set(0, 5, 1.2);
+  // Bright overhead top light so the crown/shoulders read the accent, warm-leaning to match the
+  // lamp rather than the cool window.
+  const overhead = new THREE.DirectionalLight(new THREE.Color(p.gold), 0.6);
+  overhead.position.set(0.6, 5, 0.6);
   scene.add(overhead);
 
-  scene.add(new THREE.HemisphereLight(new THREE.Color(p.bottle), 0x0a1206, 0.6));
+  // Sky side cool (window), ground side warm (wood/lamp bounce) — the ambient half of the
+  // warm/cool split.
+  scene.add(new THREE.HemisphereLight(0x1c2740, 0x2a1706, 0.55));
 }
 
 // A hand-authored soft studio environment instead of three/addons' RoomEnvironment: that preset's
@@ -87,9 +95,9 @@ function softStudioEnvironment(renderer, p) {
     m.rotation.y = ry;
     envScene.add(m);
   };
-  panel(-4, 5, 3, Math.PI * 0.15, 6, 6, 0xfff3d8, 0.7); // key, warm, upper-left
-  panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 0xdfeee0, 0.3); // fill, frontal
-  panel(0, -1.5, -5, Math.PI, 6, 4, new THREE.Color(p.neon), 0.5); // rim/contra, tinted to the accent
+  panel(-4, 5, 3, Math.PI * 0.15, 6, 6, 0xfff3d8, 0.7); // lamp key, warm, upper-left
+  panel(4, 1.5, 4, -Math.PI * 0.2, 5, 5, 0x9fb4ff, 0.32); // moonlight fill, cool, frontal
+  panel(0, -1.5, -5, Math.PI, 6, 4, new THREE.Color(0x6f8fdb), 0.45); // window rim/contra, cool blue
   // A higher blur sigma than the three.js default keeps this a soft studio glow instead of a sharp
   // mirror of the three flat panels — a crisp panel edge reflected in the lens/iris/jelly reads as
   // a stray dark diamond floating in the eye, not a photographed softbox.
@@ -113,6 +121,9 @@ export function buildScene(renderer, palette = PALETTE) {
     radial: radialTextures(),
     iris: irisTextures(),
     scratch: scratchTextures(),
+    wood: woodTextures(),
+    leather: leatherTextures(),
+    windowSky: windowSkyTexture(),
   };
   const materials = createMaterials(textures, p);
 
@@ -125,13 +136,12 @@ export function buildScene(renderer, palette = PALETTE) {
   mascot.add(body, face, hat, bow);
   scene.add(mascot);
 
-  // Contact shadow + a soft radial glow instead of the stray beam/blob the previous version had
-  // in the top-left corner (defect #7): both sit flush on the ground, centered under the mascot.
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), materials.ground);
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.y = GROUND_Y;
-  ground.receiveShadow = true;
-  scene.add(ground);
+  // The desk: lacquered oak top, a stack of old books, a brass lamp (the warm practical key) and
+  // a night window behind (desk.js) — replaces the old flat ShadowMaterial catcher in a black
+  // void. The desk's own top sits exactly at GROUND_Y, so the mascot's feet read as standing on
+  // it, and it receives the mascot's contact shadow directly (a real lit surface, not a cutout).
+  const desk = buildDesk(materials);
+  scene.add(desk.group);
 
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), materials.glow);
   glow.rotation.x = -Math.PI / 2;
@@ -145,17 +155,6 @@ export function buildScene(renderer, palette = PALETTE) {
   caustic.rotation.x = -Math.PI / 2;
   caustic.position.y = GROUND_Y + 0.004;
   scene.add(caustic);
-
-  // Three small twinkle accents in the scene air, as in the flat brief's sparkle marks — not on
-  // the body itself, so they read as studio dust/glints rather than a light source on the jelly.
-  const sparkleGeo = new THREE.PlaneGeometry(1, 1);
-  for (const [x, y, z, s] of [[-1.55, 0.75, 0.6, 0.05], [1.5, -0.15, 0.9, 0.035], [-1.15, -0.85, 1.1, 0.03]]) {
-    const spark = new THREE.Mesh(sparkleGeo, materials.sparkle);
-    spark.position.set(x, y, z);
-    spark.scale.setScalar(s);
-    spark.rotation.z = Math.PI / 4;
-    scene.add(spark);
-  }
 
   addLights(scene, p);
 
@@ -183,6 +182,7 @@ export function buildScene(renderer, palette = PALETTE) {
     state.jiggle *= 0.92;
     jellyMotion.uTime.value = t;
     jellyMotion.uJiggle.value = 0.07 + state.jiggle * 0.85;
+    animateDust(desk.dust, t);
 
     if (tassel) {
       tassel.rotation.z = Math.sin(t * 1.6) * 0.05;

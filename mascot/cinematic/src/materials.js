@@ -167,7 +167,35 @@ export function createMaterials(T, palette) {
   const glow = new THREE.MeshBasicMaterial({ color: p.olive, map: T.radial, transparent: true, opacity: 0.4, depthWrite: false });
   const caustic = causticMaterial(p);
 
-  return { jelly, limb, fabric, acetate, lens, catchlight, sclera, iris, inkPaint, pupil, sparkle, browFuzz, felt, feltTop, gold, satin, satinKnot, bubble, ground, glow, caustic };
+  // The desk set: everything the mascot now sits inside of. Baked once here, at load, exactly
+  // like the mascot's own jelly/felt/satin above — no external images, tileable procedural maps
+  // from textures.js (defect this fixes: the mascot used to sit in a black void, which read as
+  // "rendered", not "photographed" — see mascot/CLAUDE.md cinematic/ 2026-09-25).
+  // The desktop is much bigger than one bake tile — repeat the grain plank-scale (5x3) instead of
+  // stretching one 42-ring sine sweep across the whole slab, which read as flat horizontal bands
+  // (2026-09-25 review regression, not real grain).
+  for (const m of [T.wood.albedoMap, T.wood.normalMap, T.wood.roughnessMap]) m.repeat.set(5, 3);
+  const wood = new THREE.MeshStandardMaterial({
+    name: 'wood', color: 0xc79a68, map: T.wood.albedoMap, normalMap: T.wood.normalMap, normalScale: v2(0.3),
+    roughnessMap: T.wood.roughnessMap, roughness: 0.8, metalness: 0, envMapIntensity: 0.18,
+  });
+  const bookLeather = (hex) => new THREE.MeshPhysicalMaterial({
+    name: 'bookLeather', color: hex, roughness: 0.62, clearcoat: 0.18, clearcoatRoughness: 0.5,
+    normalMap: T.leather.normalMap, normalScale: v2(0.6), roughnessMap: T.leather.roughnessMap, envMapIntensity: 0.4,
+  });
+  const paper = new THREE.MeshStandardMaterial({ name: 'paper', color: 0xd8cbaa, roughness: 0.95, envMapIntensity: 0.2 });
+  const brass = new THREE.MeshPhysicalMaterial({ name: 'brass', color: 0xd8a24a, metalness: 1, roughness: 0.3, clearcoat: 0.25, clearcoatRoughness: 0.28, envMapIntensity: 1.4 });
+  const bulb = new THREE.MeshBasicMaterial({ name: 'bulb', color: 0xfff6d8, toneMapped: false });
+  const shade = new THREE.MeshPhysicalMaterial({ name: 'shade', color: 0x4a3418, roughness: 0.5, side: THREE.DoubleSide, transmission: 0.65, thickness: 0.25, ior: 1.3, envMapIntensity: 0.4, emissive: 0x3a2410, emissiveIntensity: 0.3 });
+  const windowGlass = new THREE.MeshBasicMaterial({ name: 'windowGlass', map: T.windowSky, toneMapped: false });
+  const windowFrame = new THREE.MeshStandardMaterial({ name: 'windowFrame', color: 0x160f0a, roughness: 0.7, envMapIntensity: 0.3 });
+  const dust = new THREE.MeshBasicMaterial({ name: 'dust', color: 0xf2e6c0, map: T.radial, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending });
+  const dustSprite = new THREE.SpriteMaterial({ color: 0xf2e6c0, map: T.radial, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending });
+
+  return {
+    jelly, limb, fabric, acetate, lens, catchlight, sclera, iris, inkPaint, pupil, sparkle, browFuzz, felt, feltTop, gold, satin, satinKnot, bubble, ground, glow, caustic,
+    wood, bookLeather, paper, brass, bulb, shade, windowGlass, windowFrame, dust, dustSprite,
+  };
 }
 
 // The lens: a small unlit fresnel shader instead of a lit `transparent`/`transmission` material —

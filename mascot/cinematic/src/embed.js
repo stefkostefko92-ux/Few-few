@@ -59,7 +59,7 @@ export function mount(el, opts = {}) {
   const { scene, animate } = buildScene(renderer, palette);
   scene.background = null; // the host card paints its own backdrop behind the canvas
 
-  const CAM_DIST = 8.0;
+  const CAM_DIST = 11.0;
   const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 40);
   camera.position.set(0, 0.3, CAM_DIST);
   camera.lookAt(0, -0.05, 0);

@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { createMaterials } from '../src/materials.js';
-import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures, scratchTextures } from '../src/textures.js';
+import { carbonTwillTextures, satinTextures, feltTextures, radialTextures, irisTextures, scratchTextures, woodTextures, leatherTextures, windowSkyTexture } from '../src/textures.js';
 import { bodyRadiusAtY, TOP_OF_HEAD_Y } from '../src/profile.js';
 import { buildBody, GROUND_Y } from '../src/body.js';
 import { buildFace, layout, EYE_Y, EYE_X, BROW_Y, BROW_TUBE_R, RING_R } from '../src/face.js';
@@ -14,7 +14,10 @@ import { addLights } from '../src/scene.js';
 const palette = { neon: '#5AB60D', olive: '#99E72A', pale: '#C8DDA6', softOlive: '#848D68', ink: '#0A0C0A', inkSoft: '#2A2E24', eye: '#F4FAEA', gold: '#D9A521' };
 
 function materials() {
-  const T = { carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), iris: irisTextures(32), scratch: scratchTextures(32) };
+  const T = {
+    carbon: carbonTwillTextures(64), satin: satinTextures(64), felt: feltTextures(64), radial: radialTextures(32), iris: irisTextures(32), scratch: scratchTextures(32),
+    wood: woodTextures(32), leather: leatherTextures(32), windowSky: windowSkyTexture(32),
+  };
   return createMaterials(T, palette);
 }
 
@@ -42,7 +45,7 @@ test('defect: the pupil projects near the lens center under the studio camera, n
   // main.js and embed.js both use (CAM_DIST=8, looking at the origin) must still project the pupil
   // within 10% of the lens' own radius from the lens center, so a future depth change cannot push it
   // out from behind the glass even if nobody notices in a screenshot.
-  const CAM_DIST = 8; // must match main.js/embed.js CAM_DIST
+  const CAM_DIST = 11; // must match main.js/embed.js CAM_DIST
   const L = layout();
   for (const sign of [-1, 1]) {
     const x = sign * EYE_X;
