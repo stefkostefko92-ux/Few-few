@@ -1565,10 +1565,12 @@
   justify-content: center;
   gap: 18px;
   text-align: center;
-  /* Регион-тонирания фон от combat.css (steel/ember), без да зареждаме
-     самата сцена — чист CSS градиент, нулево влияние върху LCP. */
+  /* Истински кадър от двубоя (20 KB webp) под тъмна завеса — без него на телефон
+     секцията беше празен градиент с бутон. Фон в CSS, не <img>: не се състезава
+     за LCP с hero-а и се тегли чак когато секцията се рендерира. */
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(198,60,26,.22), transparent 60%),
+    linear-gradient(180deg, rgba(7,8,12,.35) 0%, rgba(7,8,12,.55) 60%, rgba(7,8,12,.85) 100%),
+    url('/assets/landing/duel-poster.webp') center / cover no-repeat,
     linear-gradient(180deg, #0c0a10 0%, #1a1008 55%, #200a06 100%);
 }
 .duel-poster-glow {
