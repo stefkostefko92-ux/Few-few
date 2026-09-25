@@ -1,0 +1,3825 @@
+[
+  {
+    "slug": "iron_sword",
+    "name": "Iron Sword",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": null,
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "rusty_dagger",
+    "name": "Rusty Dagger",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "nightveil",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "short_bow",
+    "name": "Short Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": null,
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "novice_staff",
+    "name": "Novice Staff",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": null,
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "wooden_shield",
+    "name": "Wooden Shield",
+    "category": "shield",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": null,
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "steel_longsword",
+    "name": "Steel Longsword",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": "ironguard",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warhammer",
+    "name": "Warhammer",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "elven_bow",
+    "name": "Elven Longbow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": "sylvan_marshal",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "sapphire_staff",
+    "name": "Sapphire Staff",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": "arcane_conclave",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "flameblade",
+    "name": "Flameblade of Valor",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": "sunforged",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "shadowfang_bow",
+    "name": "Shadowfang Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "archmage_staff",
+    "name": "Archmage Staff",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": "voidshard",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "dragonbane",
+    "name": "Dragonbane",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 5,
+    "rarity": "legendary",
+    "set_slug": "mythwoven",
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#e0a83f",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "voidwhisper",
+    "name": "Voidwhisper",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 5,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#e0a83f",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "khalad_fang",
+    "name": "Wyrmtouch, the Fang of Khalad",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 5,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#e0a83f",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "gorvak_mace",
+    "name": "Hammerhand's Reach",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 6,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#e0a83f",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "vex_staff",
+    "name": "Archlector's Theorem",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 6,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#e0a83f",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "sunken_king_trident",
+    "name": "Sunkengold Trident",
+    "category": "weapon",
+    "sub_type": "spear",
+    "tier": 7,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#e0a83f",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "snowtooth_axe",
+    "name": "Frostbite, the Jarl-Axe",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 8,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#e0a83f",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "azhtek_armor",
+    "name": "Hellbinder Cuirass",
+    "category": "armor",
+    "tier": 8,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#e0a83f",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "karna_blade",
+    "name": "Stormcaller, the Skyfather Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 8,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#e0a83f",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "caethra_crown",
+    "name": "Hollow Crown of Caethra",
+    "category": "helm",
+    "tier": 9,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#e0a83f",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "selan_mantle",
+    "name": "Moonglass Mantle of Selan",
+    "category": "cloak",
+    "tier": 9,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#e0a83f",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "vhastar_ring",
+    "name": "Marrow-Eye Band of Vhastar",
+    "category": "ring",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "unname_blade",
+    "name": "World-Ender, the Final Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "leather_helm",
+    "name": "Leather Helm",
+    "category": "helm",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "nightveil",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "leather_armor",
+    "name": "Leather Armor",
+    "category": "armor",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "nightveil",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "leather_gloves",
+    "name": "Leather Gloves",
+    "category": "gloves",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "nightveil",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "leather_boots",
+    "name": "Leather Boots",
+    "category": "boots",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "nightveil",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "cloth_hood",
+    "name": "Cloth Hood",
+    "category": "helm",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "voidshard",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "cloth_robe",
+    "name": "Cloth Robe",
+    "category": "armor",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "arcane_conclave",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "cloth_gloves",
+    "name": "Cloth Gloves",
+    "category": "gloves",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "voidshard",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "cloth_shoes",
+    "name": "Cloth Shoes",
+    "category": "boots",
+    "tier": 1,
+    "rarity": "common",
+    "set_slug": "voidshard",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#8a8f98",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "chain_helm",
+    "name": "Chainmail Coif",
+    "category": "helm",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": "ironguard",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "chain_armor",
+    "name": "Chainmail Armor",
+    "category": "armor",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": "ironguard",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "chain_gloves",
+    "name": "Chainmail Gauntlets",
+    "category": "gloves",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": "mythwoven",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "chain_boots",
+    "name": "Chainmail Boots",
+    "category": "boots",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": "mythwoven",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "kite_shield",
+    "name": "Kite Shield",
+    "category": "shield",
+    "tier": 2,
+    "rarity": "uncommon",
+    "set_slug": "ironguard",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "plate_helm",
+    "name": "Plate Greathelm",
+    "category": "helm",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": "mythwoven",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "plate_armor",
+    "name": "Plate Cuirass",
+    "category": "armor",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": "mythwoven",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "mage_robe",
+    "name": "Mage's Greater Robe",
+    "category": "armor",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": "voidshard",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "silver_ring",
+    "name": "Silver Ring",
+    "category": "ring",
+    "tier": 1,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#4fae6c",
+      "motif": "plain",
+      "finish": "matte"
+    }
+  },
+  {
+    "slug": "amulet_of_warding",
+    "name": "Amulet of Warding",
+    "category": "amulet",
+    "tier": 2,
+    "rarity": "rare",
+    "set_slug": "voidshard",
+    "theme": {
+      "family": "leather",
+      "primary": "#6b4a30",
+      "secondary": "#4a3320",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "ring_of_power",
+    "name": "Ring of Power",
+    "category": "ring",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": "mythwoven",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "elite_sword_4",
+    "name": "Elite Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_axe_4",
+    "name": "Elite Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_bow_4",
+    "name": "Elite Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_dagger_4",
+    "name": "Elite Kris",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_mace_4",
+    "name": "Elite Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_staff_4",
+    "name": "Elite Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_spear_4",
+    "name": "Elite Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_armor_4",
+    "name": "Elite Hauberk",
+    "category": "armor",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": "elite",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_helm_4",
+    "name": "Elite Helm",
+    "category": "helm",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": "elite",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_boots_4",
+    "name": "Elite Greaves",
+    "category": "boots",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": "elite",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_gloves_4",
+    "name": "Elite Gauntlets",
+    "category": "gloves",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": "elite",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_shield_4",
+    "name": "Elite Aegis",
+    "category": "shield",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": "elite",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_cloak_4",
+    "name": "Elite Mantle",
+    "category": "cloak",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": "elite",
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_amulet_4",
+    "name": "Elite Talisman",
+    "category": "amulet",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "elite_ring_4",
+    "name": "Elite Signet",
+    "category": "ring",
+    "tier": 4,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#4fae6c",
+      "motif": "scales",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_sword_5",
+    "name": "Adept Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_axe_5",
+    "name": "Adept Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_bow_5",
+    "name": "Adept Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_dagger_5",
+    "name": "Adept Kris",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_staff_5",
+    "name": "Adept Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_armor_5",
+    "name": "Adept Hauberk",
+    "category": "armor",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_helm_5",
+    "name": "Adept Helm",
+    "category": "helm",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_boots_5",
+    "name": "Adept Greaves",
+    "category": "boots",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_gloves_5",
+    "name": "Adept Gauntlets",
+    "category": "gloves",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_shield_5",
+    "name": "Adept Aegis",
+    "category": "shield",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_cloak_5",
+    "name": "Adept Mantle",
+    "category": "cloak",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_amulet_5",
+    "name": "Adept Talisman",
+    "category": "amulet",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "adept_ring_5",
+    "name": "Adept Signet",
+    "category": "ring",
+    "tier": 5,
+    "rarity": "uncommon",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#4fae6c",
+      "motif": "filigree",
+      "finish": "polished"
+    }
+  },
+  {
+    "slug": "mythic_sword_6",
+    "name": "Mythic Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_axe_6",
+    "name": "Mythic Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_bow_6",
+    "name": "Mythic Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_dagger_6",
+    "name": "Mythic Kris",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_mace_6",
+    "name": "Mythic Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_staff_6",
+    "name": "Mythic Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_spear_6",
+    "name": "Mythic Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_armor_6",
+    "name": "Mythic Hauberk",
+    "category": "armor",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": "mythic",
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_helm_6",
+    "name": "Mythic Helm",
+    "category": "helm",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": "mythic",
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_boots_6",
+    "name": "Mythic Greaves",
+    "category": "boots",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": "mythic",
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_gloves_6",
+    "name": "Mythic Gauntlets",
+    "category": "gloves",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": "mythic",
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_shield_6",
+    "name": "Mythic Aegis",
+    "category": "shield",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": "mythic",
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_cloak_6",
+    "name": "Mythic Mantle",
+    "category": "cloak",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": "mythic",
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_amulet_6",
+    "name": "Mythic Talisman",
+    "category": "amulet",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "mythic_ring_6",
+    "name": "Mythic Signet",
+    "category": "ring",
+    "tier": 6,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "plate",
+      "primary": "#c6cad0",
+      "secondary": "#3a3d42",
+      "trim": "#3f7fe0",
+      "motif": "spikes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_sword_7",
+    "name": "Ascendant Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_axe_7",
+    "name": "Ascendant Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_bow_7",
+    "name": "Ascendant Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_dagger_7",
+    "name": "Ascendant Kris",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_mace_7",
+    "name": "Ascendant Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_staff_7",
+    "name": "Ascendant Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_spear_7",
+    "name": "Ascendant Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_armor_7",
+    "name": "Ascendant Hauberk",
+    "category": "armor",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": "ascendant",
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_helm_7",
+    "name": "Ascendant Helm",
+    "category": "helm",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": "ascendant",
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_boots_7",
+    "name": "Ascendant Greaves",
+    "category": "boots",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": "ascendant",
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_gloves_7",
+    "name": "Ascendant Gauntlets",
+    "category": "gloves",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": "ascendant",
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_shield_7",
+    "name": "Ascendant Aegis",
+    "category": "shield",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": "ascendant",
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_cloak_7",
+    "name": "Ascendant Mantle",
+    "category": "cloak",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": "ascendant",
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_amulet_7",
+    "name": "Ascendant Talisman",
+    "category": "amulet",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "ascendant_ring_7",
+    "name": "Ascendant Signet",
+    "category": "ring",
+    "tier": 7,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "storm",
+      "primary": "#2f4f7a",
+      "secondary": "#16283f",
+      "trim": "#3f7fe0",
+      "motif": "runes",
+      "finish": "enameled"
+    }
+  },
+  {
+    "slug": "cosmic_sword_8",
+    "name": "Cosmic Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_axe_8",
+    "name": "Cosmic Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_bow_8",
+    "name": "Cosmic Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_dagger_8",
+    "name": "Cosmic Kris",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_mace_8",
+    "name": "Cosmic Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_staff_8",
+    "name": "Cosmic Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_spear_8",
+    "name": "Cosmic Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_armor_8",
+    "name": "Cosmic Hauberk",
+    "category": "armor",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": "cosmic",
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_helm_8",
+    "name": "Cosmic Helm",
+    "category": "helm",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": "cosmic",
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_boots_8",
+    "name": "Cosmic Greaves",
+    "category": "boots",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": "cosmic",
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_gloves_8",
+    "name": "Cosmic Gauntlets",
+    "category": "gloves",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": "cosmic",
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_shield_8",
+    "name": "Cosmic Aegis",
+    "category": "shield",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": "cosmic",
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_cloak_8",
+    "name": "Cosmic Mantle",
+    "category": "cloak",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": "cosmic",
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_amulet_8",
+    "name": "Cosmic Talisman",
+    "category": "amulet",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "cosmic_ring_8",
+    "name": "Cosmic Signet",
+    "category": "ring",
+    "tier": 8,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "frost",
+      "primary": "#bfe6f0",
+      "secondary": "#5a94a8",
+      "trim": "#a860e6",
+      "emissive": "#d8f8ff",
+      "motif": "thorns",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_sword_9",
+    "name": "Eldritch Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_axe_9",
+    "name": "Eldritch Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_bow_9",
+    "name": "Eldritch Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_dagger_9",
+    "name": "Eldritch Kris",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_mace_9",
+    "name": "Eldritch Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_staff_9",
+    "name": "Eldritch Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_spear_9",
+    "name": "Eldritch Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_armor_9",
+    "name": "Eldritch Hauberk",
+    "category": "armor",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": "eldritch",
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_helm_9",
+    "name": "Eldritch Helm",
+    "category": "helm",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": "eldritch",
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_boots_9",
+    "name": "Eldritch Greaves",
+    "category": "boots",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": "eldritch",
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_gloves_9",
+    "name": "Eldritch Gauntlets",
+    "category": "gloves",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": "eldritch",
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_shield_9",
+    "name": "Eldritch Aegis",
+    "category": "shield",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": "eldritch",
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_cloak_9",
+    "name": "Eldritch Mantle",
+    "category": "cloak",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": "eldritch",
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_amulet_9",
+    "name": "Eldritch Talisman",
+    "category": "amulet",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "eldritch_ring_9",
+    "name": "Eldritch Signet",
+    "category": "ring",
+    "tier": 9,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "arcane",
+      "primary": "#5a2f8a",
+      "secondary": "#2a1450",
+      "trim": "#a860e6",
+      "emissive": "#c294ff",
+      "motif": "stars",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_sword_10",
+    "name": "Divine Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_axe_10",
+    "name": "Divine Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_bow_10",
+    "name": "Divine Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_dagger_10",
+    "name": "Divine Kris",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_mace_10",
+    "name": "Divine Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_staff_10",
+    "name": "Divine Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_spear_10",
+    "name": "Divine Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_armor_10",
+    "name": "Divine Hauberk",
+    "category": "armor",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": "divine",
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_helm_10",
+    "name": "Divine Helm",
+    "category": "helm",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": "divine",
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_boots_10",
+    "name": "Divine Greaves",
+    "category": "boots",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": "divine",
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_gloves_10",
+    "name": "Divine Gauntlets",
+    "category": "gloves",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": "divine",
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_shield_10",
+    "name": "Divine Aegis",
+    "category": "shield",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": "divine",
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_cloak_10",
+    "name": "Divine Mantle",
+    "category": "cloak",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": "divine",
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_amulet_10",
+    "name": "Divine Talisman",
+    "category": "amulet",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "divine_ring_10",
+    "name": "Divine Signet",
+    "category": "ring",
+    "tier": 10,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "celestial",
+      "primary": "#f0e6c0",
+      "secondary": "#c9a25a",
+      "trim": "#e0a83f",
+      "emissive": "#fff3c0",
+      "motif": "flames",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veteran_sword_25",
+    "name": "Veteran Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_axe_25",
+    "name": "Veteran Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_bow_25",
+    "name": "Veteran Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_dagger_25",
+    "name": "Veteran Dirk",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_mace_25",
+    "name": "Veteran Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_staff_25",
+    "name": "Veteran Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_spear_25",
+    "name": "Veteran Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_armor_25",
+    "name": "Veteran Hauberk",
+    "category": "armor",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_helm_25",
+    "name": "Veteran Helm",
+    "category": "helm",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_boots_25",
+    "name": "Veteran Greaves",
+    "category": "boots",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_gloves_25",
+    "name": "Veteran Gauntlets",
+    "category": "gloves",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_shield_25",
+    "name": "Veteran Aegis",
+    "category": "shield",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_cloak_25",
+    "name": "Veteran Mantle",
+    "category": "cloak",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_amulet_25",
+    "name": "Veteran Pendant",
+    "category": "amulet",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veteran_ring_25",
+    "name": "Veteran Signet",
+    "category": "ring",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_sword_35",
+    "name": "Champion Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_axe_35",
+    "name": "Champion Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_bow_35",
+    "name": "Champion Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_dagger_35",
+    "name": "Champion Dirk",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_mace_35",
+    "name": "Champion Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_staff_35",
+    "name": "Champion Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_spear_35",
+    "name": "Champion Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_armor_35",
+    "name": "Champion Hauberk",
+    "category": "armor",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_helm_35",
+    "name": "Champion Helm",
+    "category": "helm",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_boots_35",
+    "name": "Champion Greaves",
+    "category": "boots",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_gloves_35",
+    "name": "Champion Gauntlets",
+    "category": "gloves",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_shield_35",
+    "name": "Champion Aegis",
+    "category": "shield",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_cloak_35",
+    "name": "Champion Mantle",
+    "category": "cloak",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_amulet_35",
+    "name": "Champion Pendant",
+    "category": "amulet",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "champion_ring_35",
+    "name": "Champion Signet",
+    "category": "ring",
+    "tier": 3,
+    "rarity": "rare",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#3f7fe0",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_sword_45",
+    "name": "Warlord Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_axe_45",
+    "name": "Warlord Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_bow_45",
+    "name": "Warlord Bow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_dagger_45",
+    "name": "Warlord Dirk",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_mace_45",
+    "name": "Warlord Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_staff_45",
+    "name": "Warlord Scepter",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_spear_45",
+    "name": "Warlord Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_armor_45",
+    "name": "Warlord Hauberk",
+    "category": "armor",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_helm_45",
+    "name": "Warlord Helm",
+    "category": "helm",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_boots_45",
+    "name": "Warlord Greaves",
+    "category": "boots",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_gloves_45",
+    "name": "Warlord Gauntlets",
+    "category": "gloves",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_shield_45",
+    "name": "Warlord Aegis",
+    "category": "shield",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_cloak_45",
+    "name": "Warlord Mantle",
+    "category": "cloak",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_amulet_45",
+    "name": "Warlord Pendant",
+    "category": "amulet",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "warlord_ring_45",
+    "name": "Warlord Signet",
+    "category": "ring",
+    "tier": 3,
+    "rarity": "epic",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#8e949c",
+      "secondary": "#565a60",
+      "trim": "#a860e6",
+      "motif": "rivets",
+      "finish": "worn"
+    }
+  },
+  {
+    "slug": "veilforged_sword_11",
+    "name": "Veilforged Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_axe_11",
+    "name": "Veilforged Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_bow_11",
+    "name": "Veilforged Longbow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_dagger_11",
+    "name": "Veilforged Fang",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_mace_11",
+    "name": "Veilforged Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_staff_11",
+    "name": "Veilforged Staff",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_spear_11",
+    "name": "Veilforged Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_armor_11",
+    "name": "Veilforged Plate",
+    "category": "armor",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": "veilforged",
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_helm_11",
+    "name": "Veilforged Crown",
+    "category": "helm",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": "veilforged",
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_boots_11",
+    "name": "Veilforged Striders",
+    "category": "boots",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": "veilforged",
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_gloves_11",
+    "name": "Veilforged Grips",
+    "category": "gloves",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": "veilforged",
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_shield_11",
+    "name": "Veilforged Aegis",
+    "category": "shield",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": "veilforged",
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_cloak_11",
+    "name": "Veilforged Mantle",
+    "category": "cloak",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": "veilforged",
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_amulet_11",
+    "name": "Veilforged Sigil",
+    "category": "amulet",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "veilforged_ring_11",
+    "name": "Veilforged Band",
+    "category": "ring",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_sword_12",
+    "name": "Primordial Blade",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_axe_12",
+    "name": "Primordial Cleaver",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_bow_12",
+    "name": "Primordial Longbow",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_dagger_12",
+    "name": "Primordial Fang",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_mace_12",
+    "name": "Primordial Maul",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_staff_12",
+    "name": "Primordial Staff",
+    "category": "weapon",
+    "sub_type": "staff",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_spear_12",
+    "name": "Primordial Pike",
+    "category": "weapon",
+    "sub_type": "bow",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_armor_12",
+    "name": "Primordial Plate",
+    "category": "armor",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": "primordial",
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_helm_12",
+    "name": "Primordial Crown",
+    "category": "helm",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": "primordial",
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_boots_12",
+    "name": "Primordial Striders",
+    "category": "boots",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": "primordial",
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_gloves_12",
+    "name": "Primordial Grips",
+    "category": "gloves",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": "primordial",
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_shield_12",
+    "name": "Primordial Aegis",
+    "category": "shield",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": "primordial",
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_cloak_12",
+    "name": "Primordial Mantle",
+    "category": "cloak",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": "primordial",
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_amulet_12",
+    "name": "Primordial Sigil",
+    "category": "amulet",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "primordial_ring_12",
+    "name": "Primordial Band",
+    "category": "ring",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "morvaen_shroud",
+    "name": "Morvaen's Shroud of the Quiet Ash",
+    "category": "cloak",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "ylthar_eye",
+    "name": "The Unblinking Eye of Ylthar",
+    "category": "amulet",
+    "tier": 11,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "void",
+      "primary": "#241a30",
+      "secondary": "#0c0814",
+      "trim": "#e0a83f",
+      "emissive": "#8a2fff",
+      "motif": "feathers",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "kalyndra_hammer",
+    "name": "Kalyndra's World-Anvil Hammer",
+    "category": "weapon",
+    "sub_type": "axe",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "sarghul_crown",
+    "name": "The Unlit Crown of Sarghul",
+    "category": "helm",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  },
+  {
+    "slug": "aurelion_dawnblade",
+    "name": "Dawnbreak, the First Light Drawn",
+    "category": "weapon",
+    "sub_type": "sword",
+    "tier": 12,
+    "rarity": "legendary",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5c1010",
+      "secondary": "#1a0505",
+      "trim": "#e0a83f",
+      "emissive": "#ff5a1a",
+      "motif": "runes",
+      "finish": "glowing"
+    }
+  }
+]
