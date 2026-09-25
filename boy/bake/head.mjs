@@ -211,7 +211,8 @@ async function cleanAlbedo(file) {
 
 export const SOURCES = ['LeePerrySmith.glb', 'Map-COL.jpg', 'Infinite-Level_02_Tangent_SmoothUV.jpg', 'Map-SPEC.jpg'];
 
-// Writes head.bin and the maps into outDir; returns the manifest entry.
+// Writes head.json (the packed arrays as base64: JSON is served correctly by any static host)
+// and the maps into outDir; returns the manifest entry.
 export async function bakeHead(assetsDir, outDir) {
   const albedo = await cleanAlbedo(join(assetsDir, 'Map-COL.jpg'));
   const sample = (u, v) => {
@@ -222,8 +223,8 @@ export async function bakeHead(assetsDir, outDir) {
   };
   const head = processHead(readFileSync(join(assetsDir, 'LeePerrySmith.glb')), sample);
   const { buf, sections } = pack(head);
-  writeFileSync(join(outDir, 'head.bin'), buf);
-  const files = { albedo: 'head_albedo.webp', normal: 'head_normal.webp', spec: 'head_spec.webp', bin: 'head.bin' };
+  writeFileSync(join(outDir, 'head.json'), JSON.stringify({ base64: Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength).toString('base64') }));
+  const files = { albedo: 'head_albedo.webp', normal: 'head_normal.webp', spec: 'head_spec.webp', data: 'head.json' };
   await sharp(albedo.data, { raw: { width: albedo.w, height: albedo.h, channels: albedo.c } }).webp({ quality: 92, smartSubsample: true }).toFile(join(outDir, files.albedo));
   await sharp(join(assetsDir, 'Infinite-Level_02_Tangent_SmoothUV.jpg')).webp({ quality: 95 }).toFile(join(outDir, files.normal));
   await sharp(join(assetsDir, 'Map-SPEC.jpg')).greyscale().webp({ quality: 90 }).toFile(join(outDir, files.spec));

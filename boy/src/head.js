@@ -1,4 +1,4 @@
-// The knights' bare heads: the processed scan (tex/head.bin from bake/head.mjs) with its
+// The knights' bare heads: the processed scan (tex/head.json from bake/head.mjs) with its
 // expression targets, eyeballs, teeth, cropped hair and the Warden's beard, following the rig's
 // head joint. Without the files (a page opened from disk) the knights keep their helmets.
 import * as THREE from 'three/webgpu';
@@ -23,10 +23,11 @@ export async function loadHeadAsset(base, anisotropy) {
     const res = await fetch(`${base}manifest.json`);
     const meta = res.ok ? (await res.json()).head : null;
     if (!meta || meta.morphs.join() !== EXPRESSIONS.join()) return null;
-    const binary = await fetch(`${base}${meta.files.bin}`).then((r) => {
+    const packed = await fetch(`${base}${meta.files.data}`).then((r) => {
       if (!r.ok) throw new Error(`head: HTTP ${r.status}`);
-      return r.arrayBuffer();
+      return r.json();
     });
+    const binary = Uint8Array.from(atob(packed.base64), (c) => c.charCodeAt(0)).buffer;
     const [albedo, normal, spec] = await Promise.all(['albedo', 'normal', 'spec'].map((k) => decode(`${base}${meta.files[k]}`, 2048)));
     const maps = { albedo: configure(new THREE.Texture(albedo), true, anisotropy), normal: configure(new THREE.Texture(normal), false, anisotropy), spec: configure(new THREE.Texture(spec), false, anisotropy) };
     return { meta, binary, maps, lut: skinLUT() };
