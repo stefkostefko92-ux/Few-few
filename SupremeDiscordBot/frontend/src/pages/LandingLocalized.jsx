@@ -110,14 +110,14 @@ export default function LandingLocalized({ locale }) {
             <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
-              <div className="font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
+              <div className="hidden sm:block font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
                 by {COMPANY_NAME}
               </div>
             </div>
           </a>
           <div className="flex items-center gap-4">
             <LanguageSwitcher current={locale} />
-            <button onClick={handleLogin} className="cs-btn-primary text-xs">SIGN IN →</button>
+            <button onClick={handleLogin} className="cs-btn-primary text-xs whitespace-nowrap">SIGN IN →</button>
           </div>
         </header>
 

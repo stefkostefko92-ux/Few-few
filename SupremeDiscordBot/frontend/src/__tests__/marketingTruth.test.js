@@ -17,7 +17,7 @@
 // напълно легитимна дума (хостингът наистина е в ЕС); забранено е само
 // абсолютното отрицание на трансфери.
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../i18n/landing.js";
@@ -35,10 +35,26 @@ const read = (...p) => readFileSync(join(SRC, ...p), "utf8");
  * Структурирани данни, които противоречат на видимата страница, са и SEO риск,
  * и същата подвеждаща практика. Гейт, който гледа две от три места, не е гейт.
  */
+// Визуален одит 25.09.2026: FeaturePage.jsx (13 feature страници) още казваше
+// „Nothing is deleted when a subscription ends.“ — гейтът не го четеше. Сега чете
+// всяка публична маркетинг страница и данните ѝ, не списък по памет.
+// StatusPage е изключена нарочно: „All systems operational“ там е етикетът на
+// ЖИВО измерване (забранено е само статичното твърдение).
+const MARKETING = readdirSync(join(SRC, "pages"))
+  .filter((f) => /^(Feature|Compare|.*Guide|Landing|Commands).*\.jsx$/.test(f))
+  .map((f) => read("pages", f));
+const MARKETING_DATA = existsSync(join(SRC, "data"))
+  ? readdirSync(join(SRC, "data")).filter((f) => /\.(js|jsx|json)$/.test(f)).map((f) => read("data", f))
+  : [];
+
 const ALL_TEXT = [
   JSON.stringify(LANDING_TRANSLATIONS),
   read("pages", "Login.jsx"),
   readFileSync(join(SRC, "..", "index.html"), "utf8"),   // JSON-LD + мета
+  ...MARKETING,
+  ...MARKETING_DATA,
+  // Статичният HTML за търсачките — там също седеше „nothing is deleted“.
+  readFileSync(join(SRC, "..", "scripts", "prerender.mjs"), "utf8"),
 ].join("\n");
 
 const FORBIDDEN = [

@@ -32,10 +32,14 @@ const ago = (d) => {
 };
 
 function Tile({ label, value, sub, ok }) {
+  // Думи като „configured“/„connected“/„v49_user_mfa“ в text-4xl излизаха извън
+  // картата на телефон (визуален одит 25.09.2026) — дългите стойности са по-малки
+  // и се пренасят, числата остават големи.
+  const long = String(value ?? "").length > 6;
   return (
-    <div className="cs-stat">
+    <div className="cs-stat min-w-0">
       <div className="cs-stat-label">{label}</div>
-      <div className={`cs-stat-value ${ok === true ? "text-success" : ok === false ? "text-danger" : ""}`}>{value}</div>
+      <div className={`cs-stat-value break-words ${long ? "!text-2xl sm:!text-3xl" : ""} ${ok === true ? "text-success" : ok === false ? "text-danger" : ""}`}>{value}</div>
       {sub && <div className="font-mono text-[10px] text-cs-dim mt-1 break-all">{sub}</div>}
     </div>
   );

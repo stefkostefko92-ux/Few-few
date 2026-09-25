@@ -22,10 +22,10 @@ export const CHECKED_DATE = "August 2026";
 // EN pricing block. Do not restate numbers by hand elsewhere; import this.
 export const SUPREME_TIERS = {
   free: { name: "Free", price: "€0", per: "/ month, forever" },
-  premium: { name: "Premium", price: "€4.99", per: "/ month", priceYearly: "€49", perYear: "/ year" },
-  whitelabel: { name: "White-label", price: "€9.99", per: "/ month", priceYearly: "€99", perYear: "/ year" },
-  agency5: { name: "Agency 5", price: "€19.99", per: "/ month", priceYearly: "€199", perYear: "/ year" },
-  agency10: { name: "Agency 10", price: "€39.99", per: "/ month", priceYearly: "€399", perYear: "/ year" },
+  // Само месечно, само през Discord (lib/billing.js): годишните цени и Agency
+  // пакетите не се продават от 12.09.2026 (визуален одит 25.09.2026).
+  premium: { name: "Premium", price: "€4.99", per: "/ month" },
+  whitelabel: { name: "White-label", price: "€9.99", per: "/ month" },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -53,7 +53,7 @@ export const TICKET_TOOL_COMPARE = {
     ["Public REST API", "Included from Premium (€4.99/mo)", "Included from Pro ($12/mo)"],
     ["Webhooks", "20 HMAC-signed integrations, Premium", "10 webhook nodes (Community) · unlimited (Pro)"],
     ["White-label custom bot", "€9.99 / server / month (own Discord token, own brand)", "Enterprise tier only — custom pricing"],
-    ["Multi-server / agency plan", "Agency 5: €19.99/mo · Agency 10: €39.99/mo", "Team: $25/mo for 3 servers (+$8/extra server)"],
+    ["Multi-server / agency plan", "No bundle — each server subscribes on its own (€4.99 Premium or €9.99 White-label per month, in the Discord store)", "Team: $25/mo for 3 servers (+$8/extra server)"],
     ["EU hosting / GDPR", "Hetzner (Germany), GDPR-native, DPA available, self-service export/delete", "Not stated on their site"],
   ],
   faq: [
@@ -86,7 +86,7 @@ export const APPY_COMPARE = {
     ["AI auto-replies", "Premium tier, human-in-the-loop, EU AI Act Art. 50 disclosure", "Not stated on their site"],
     ["Public REST API / webhooks", "Public REST API + 20 HMAC webhooks, Premium", "Not stated on their site"],
     ["Custom-branded bot", "White-label tier, €9.99/mo — own Discord token, fully own brand", "Custom Bot tier, £9.99/mo — custom avatar, username & status (their bot)"],
-    ["Multi-server discount", "Agency 5: €19.99/mo · Agency 10: €39.99/mo", "Premium x3: £8.99/mo for 3 servers (40% off)"],
+    ["Multi-server discount", "None — each server subscribes on its own (€4.99 Premium or €9.99 White-label per month, in the Discord store)", "Premium x3: £8.99/mo for 3 servers (40% off)"],
     ["EU hosting / GDPR", "Hetzner (Germany), GDPR-native, DPA available, self-service export/delete", "Not stated on their site"],
   ],
   faq: [
@@ -129,7 +129,7 @@ export const BEST_TICKET_BOT_GUIDE = {
     {
       title: "5. Pricing model — per server, per feature, or per team",
       body: "Bots price themselves differently: flat per-server tiers, per-feature add-ons (AI, API access locked behind a higher tier), or per-team multi-server bundles. Model your actual server count and feature needs against the real price, not the headline number.",
-      supreme: "Supreme Bot is a flat per-server tier (Free / €4.99 Premium / €9.99 White-label), plus Agency 5 (€19.99/mo) and Agency 10 (€39.99/mo) multi-server bundles for agencies managing several communities under one subscription.",
+      supreme: "Supreme Bot is a flat per-server tier (Free / €4.99 Premium / €9.99 White-label per month), sold monthly in the Discord store. There is no multi-server bundle: every server that needs Premium subscribes on its own.",
     },
     {
       title: "6. AI features — and whether they're disclosed",
@@ -220,7 +220,7 @@ export const GDPR_GUIDE = {
     },
     {
       title: "What Supreme Bot does",
-      body: "Supreme Bot's infrastructure runs on Hetzner servers in Germany — EU-only data residency, no transfer outside the EU/EEA for the core service. Carbon Stealth VCC (the company behind Supreme Bot) publishes a Data Processing Agreement (DPA) under GDPR Art. 28 for server owners acting as controllers, lists its sub-processors (e.g. hosting, payment, email) in its Privacy Policy, and gives server owners self-service tools in the dashboard: data export (Art. 15 access, Art. 20 portability), account and data deletion (Art. 17 erasure), and consent withdrawal (Art. 7(3)) for AI-feature opt-ins.",
+      body: "Supreme Bot's own infrastructure (servers, database, backups) runs on Hetzner in Germany. Some sub-processors are in the USA — Discord itself (sign-in, bot operation and billing), Google Gemini (optional AI replies) and Sentry (error monitoring) — and those transfers rely on Standard Contractual Clauses, as the Privacy Policy lists. Carbon Stealth VCC (the company behind Supreme Bot) publishes a Data Processing Agreement (DPA) under GDPR Art. 28 for server owners acting as controllers, lists its sub-processors (e.g. hosting, payment, email) in its Privacy Policy, and gives server owners self-service tools in the dashboard: data export (Art. 15 access, Art. 20 portability), account and data deletion (Art. 17 erasure), and consent withdrawal (Art. 7(3)) for AI-feature opt-ins.",
     },
     {
       title: "Article 28 — why the DPA matters, not just a privacy policy",

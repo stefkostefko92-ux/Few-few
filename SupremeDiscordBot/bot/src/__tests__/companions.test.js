@@ -79,3 +79,17 @@ describe("Улови", () => {
     expect(i.reply).toHaveBeenCalled();
   });
 });
+
+describe("/companion list в Premium спазва лимита на Discord (одит 25.09.2026)", () => {
+  it("300 спътника → описание ≤ 4096 знака и бележка „още N“", async () => {
+    const companions = Array.from({ length: 300 }, (_, i) => ({ id: `own_${i}`, index: i + 1, name: `Companion ${i}`, nickname: null, rarityEmoji: "⚪", stage: 1 }));
+    apiGet.mockResolvedValueOnce({ data: { sparks: 5, activeId: "own_0", companions } });
+    const editReply = vi.fn();
+    const i = { guildId: "222222222222222222", user: { id: "333333333333333333" }, locale: "en", deferReply: vi.fn(), editReply, options: { getSubcommand: () => "list", getInteger: () => null } };
+    await companion.execute(i);
+    const d = editReply.mock.calls[0][0].embeds[0].toJSON().description;
+    expect(d.length).toBeLessThanOrEqual(4096);
+    expect(d).toMatch(/and \d+ more/);
+    expect(d).toContain("**#1**");
+  });
+});

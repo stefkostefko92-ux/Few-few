@@ -172,6 +172,7 @@ export default {
   "game.companion.none": "Още нямаш спътници. Появяват се в активните канали — натисни **Улови**, когато се покаже!",
   "game.companion.active": "активен",
   "game.companion.listTitle": "🧬 Твоите спътници ({{n}})",
+  "game.companion.more": "…и още {{n}} — ползвай /companion info <номер> за всеки от тях.",
   "game.companion.evolved": "🌟 {{name}} еволюира до форма {{stage}}!",
   "game.companion.fedTitle": "✨ {{name}} хареса искрите",
   "game.companion.fedBody": "Нахрани с **✨ {{sparks}}** · общо {{fed}} · баланс ✨ {{left}}",

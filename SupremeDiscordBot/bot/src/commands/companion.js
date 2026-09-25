@@ -70,7 +70,18 @@ export default {
         const mine = await owned(interaction);
         if (!mine.companions.length) return interaction.editReply({ content: t("game.companion.none", lang) });
         const lines = mine.companions.map((c) => `**#${c.index}** ${c.rarityEmoji} ${c.nickname || c.name} · ${STAGE_EMOJI[c.stage]} ${t("game.profile.stage", lang, { stage: c.stage })}${mine.activeId === c.id ? ` · ${t("game.companion.active", lang)}` : ""}`);
-        const e = new EmbedBuilder().setColor(BRAND).setTitle(t("game.companion.listTitle", lang, { n: mine.companions.length })).setDescription(lines.join("\n")).setFooter({ text: t("game.shop.balance", lang, { sparks: mine.sparks }) });
+        // Лимит на Discord: описание ≤ 4096 знака. Premium има до 1000 слота — над ~80
+        // спътника списъкът чупеше командата (одит 25.09.2026). Показваме колкото
+        // влизат; номерата остават валидни за /companion info|feed|… <номер>.
+        let text = "";
+        let shown = 0;
+        for (const l of lines) {
+          const next = text ? `${text}\n${l}` : l;
+          if (next.length > 3900) break;
+          text = next; shown++;
+        }
+        if (shown < lines.length) text += `\n${t("game.companion.more", lang, { n: lines.length - shown })}`;
+        const e = new EmbedBuilder().setColor(BRAND).setTitle(t("game.companion.listTitle", lang, { n: mine.companions.length })).setDescription(text).setFooter({ text: t("game.shop.balance", lang, { sparks: mine.sparks }) });
         return interaction.editReply({ embeds: [e] });
       }
       const n = interaction.options.getInteger("number") ?? interaction.options.getInteger("mine");

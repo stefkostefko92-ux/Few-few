@@ -174,6 +174,7 @@ export default {
   "game.companion.none": "Je hebt nog geen metgezellen. Ze verschijnen in actieve kanalen — druk op **Vangen** als er een opduikt!",
   "game.companion.active": "actief",
   "game.companion.listTitle": "🧬 Je metgezellen ({{n}})",
+  "game.companion.more": "…en nog {{n}} — gebruik /companion info <nummer> voor elk ervan.",
   "game.companion.evolved": "🌟 {{name}} is geëvolueerd naar fase {{stage}}!",
   "game.companion.fedTitle": "✨ {{name}} genoot van de vonken",
   "game.companion.fedBody": "Je voerde **✨ {{sparks}}** · totaal {{fed}} · saldo ✨ {{left}}",

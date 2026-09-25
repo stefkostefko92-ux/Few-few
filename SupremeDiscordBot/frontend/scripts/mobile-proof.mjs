@@ -150,6 +150,9 @@ const FIX = {
   ],
   [`GET /api/tickets/${SID}`]: { tickets: [], total: 0 },
   [`GET /api/reactionroles/${SID}`]: [],
+  // Истинският каталог на бекенда (същият, който /help ползва) — без него
+  // страницата „Commands“ в таблото се снимаше празна (визуален одит 25.09.2026).
+  "GET /api/automation/commands-catalog": (await import("../../backend/src/data/commandsCatalog.js")).COMMAND_CATALOG,
   [`GET /api/billing/config`]: { provider: "discord", discord: { enabled: true, configured: true, applicationId: "app", storeUrl: "https://discord.com/application-directory/app/store", plans: { premium: { label: "Premium", monthlyEur: "4.99", skuId: "s1", url: "https://discord.com/application-directory/app/store/s1" }, whitelabel: { label: "White-label", monthlyEur: "9.99", skuId: "s2", url: "https://discord.com/application-directory/app/store/s2" } } }, stripe: { purchasesEnabled: false, legacyManagement: false } },
   [`GET /api/billing/${SID}`]: { provider: "discord", isPremium: true, plan: "agency10", source: "agency", agencyCovered: true, agencyOwnedByMe: true, discord: {}, stripe: { legacy: false, portalAvailable: false } },
 };
@@ -181,6 +184,13 @@ const PAGES = [
   { path: `/dashboard/${SID}/panels`, name: "panels" },
   { path: `/dashboard/${SID}/automation`, name: "automation" },
   { path: `/dashboard/${SID}/game`, name: "game" },
+  // Останалите пет раздела на играта — дотогава проверката виждаше само „Обзор“
+  // (одит 25.09.2026). `tab` = видимото име; кликът е като на потребител.
+  { path: `/dashboard/${SID}/game`, name: "game-levels", tab: "Level roles" },
+  { path: `/dashboard/${SID}/game`, name: "game-shop", tab: "Shop" },
+  { path: `/dashboard/${SID}/game`, name: "game-leaderboard", tab: "Leaderboard" },
+  { path: `/dashboard/${SID}/game`, name: "game-companions", tab: "Companions" },
+  { path: `/dashboard/${SID}/game`, name: "game-quests", tab: "Quests & mini-games" },
   { path: `/dashboard/${SID}/tickets`, name: "tickets" },
   { path: `/dashboard/${SID}/premium`, name: "premium" },
   { path: `/dashboard/${SID}/verification`, name: "verification" },
@@ -257,7 +267,7 @@ for (const view of [
   console.log(`\n── ${view.tag} ${view.viewport.width}×${view.viewport.height} ──`);
   // MP_ONLY=overview,game — само тези страници (диагностика; пълният гейт е без него).
   const ONLY = (process.env.MP_ONLY || "").split(",").filter(Boolean);
-  for (const { path, name } of PAGES.filter((x) => !ONLY.length || ONLY.includes(x.name))) {
+  for (const { path, name, tab } of PAGES.filter((x) => !ONLY.length || ONLY.includes(x.name))) {
     // НЕ networkidle: refetchInterval-ите на React Query държат мрежата будна
     // и „idle" никога не идва — таймаут, който изглежда като счупена страница.
     // domcontentloaded + ограничено чакане на `load`: проверката мери оформлението и
@@ -267,6 +277,12 @@ for (const view of [
     const nav = await page.goto(base + path, { waitUntil: "domcontentloaded" }).catch((e) => { note(false, `${name}: не зареди (${e.message.split("\n")[0]})`); return null; });
     if (nav) await page.waitForLoadState("load", { timeout: 10_000 }).catch(() => {});
     await page.waitForTimeout(900); // данните от мока + анимациите на влизане
+    if (tab) {
+      const t = page.getByRole("tab", { name: tab, exact: true });
+      const found = await t.count();
+      note(found > 0, `${name}: разделът „${tab}“ съществува`);
+      if (found) { await t.first().click(); await page.waitForTimeout(900); }
+    }
     // Резервният екран на ErrorBoundary = страницата НЕ работи, каквото и да казва прелива.
     const crashed = await page.evaluate(() => /Something went wrong/i.test(document.body?.innerText || ""));
     note(!crashed, `${name}: страницата рендерира (не екрана на ErrorBoundary)`);
@@ -340,6 +356,27 @@ for (const view of [
     });
     note(sticking.length === 0,
       `${name}: нула хоризонтални преливи в контейнерите${sticking.length ? " → " + sticking.join(" · ") : ""}`);
+
+    // Сляпо петно на горното (визуален одит 25.09.2026): картите са
+    // overflow:visible — текстът не скролва, просто ИЗЛИЗА през рамката
+    // („configured“ в text-4xl на телефон). Затова всяка карта (cs-card/cs-stat)
+    // със съдържание по-широко от нея е дефект, независимо от overflow.
+    const spilling = await page.evaluate(() => {
+      const bad = [];
+      for (const el of document.querySelectorAll(".cs-card, .cs-stat")) {
+        if (el.scrollWidth <= el.clientWidth + 1) continue;
+        // Карта, която сама скролва/реже (overflow-x-auto на таблиците), не
+        // изтича навън — тя е нарочен скрол; само „visible“ пуска текста през ръба.
+        if (getComputedStyle(el).overflowX !== "visible") continue;
+        if (el.closest('[aria-hidden="true"]')) continue;
+        const text = (el.innerText || "").trim().split("\n")[0].slice(0, 40);
+        bad.push(`<${el.tagName.toLowerCase()} „${text}“> ${el.scrollWidth}>${el.clientWidth}`);
+        if (bad.length >= 5) break;
+      }
+      return bad;
+    });
+    note(spilling.length === 0,
+      `${name}: нищо не излиза през рамката на карта${spilling.length ? " → " + spilling.join(" · ") : ""}`);
     await shot(page, join(SHOTS, `${view.tag}-${name}.png`));
   }
 

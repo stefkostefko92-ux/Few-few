@@ -185,6 +185,7 @@ export default {
   "game.companion.none": "You have no companions yet. They appear in active channels — press **Catch** when one shows up!",
   "game.companion.active": "active",
   "game.companion.listTitle": "🧬 Your companions ({{n}})",
+  "game.companion.more": "…and {{n}} more — use /companion info <number> for any of them.",
   "game.companion.evolved": "🌟 {{name}} evolved to stage {{stage}}!",
   "game.companion.fedTitle": "✨ {{name}} enjoyed the sparks",
   "game.companion.fedBody": "You fed **✨ {{sparks}}** · total fed {{fed}} · balance ✨ {{left}}",

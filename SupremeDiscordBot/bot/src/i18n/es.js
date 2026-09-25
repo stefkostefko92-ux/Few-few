@@ -174,6 +174,7 @@ export default {
   "game.companion.none": "Aún no tienes compañeros. Aparecen en los canales activos — ¡pulsa **Atrapar** cuando salga uno!",
   "game.companion.active": "activo",
   "game.companion.listTitle": "🧬 Tus compañeros ({{n}})",
+  "game.companion.more": "…y {{n}} más — usa /companion info <número> para cualquiera de ellos.",
   "game.companion.evolved": "🌟 ¡{{name}} evolucionó a la etapa {{stage}}!",
   "game.companion.fedTitle": "✨ A {{name}} le gustaron las chispas",
   "game.companion.fedBody": "Alimentaste con **✨ {{sparks}}** · total {{fed}} · saldo ✨ {{left}}",

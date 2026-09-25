@@ -118,7 +118,7 @@ export default function FeaturePage() {
       <section className="cs-card mb-8">
         <h2 className="text-lg font-semibold text-cs-text mb-4">Free vs Premium</h2>
         <TierTable rows={page.tiers} />
-        <p className="text-xs text-cs-dim mt-3">Premium is €4.99 per server per month, VAT included, sold as a monthly subscription in the Discord store. Nothing is deleted when a subscription ends.</p>
+        <p className="text-xs text-cs-dim mt-3">Premium is €4.99 per server per month, VAT included, sold as a monthly subscription in the Discord store. When a subscription ends the server reverts to Free: panels, forms and settings are kept, transcripts of tickets closed more than 30 days ago are deleted.</p>
       </section>
 
       <section className="cs-card mb-8">

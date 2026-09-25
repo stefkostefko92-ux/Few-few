@@ -174,6 +174,7 @@ export default {
   "game.companion.none": "Du hast noch keine Begleiter. Sie erscheinen in aktiven Kanälen — drück **Fangen**, wenn einer auftaucht!",
   "game.companion.active": "aktiv",
   "game.companion.listTitle": "🧬 Deine Begleiter ({{n}})",
+  "game.companion.more": "…und {{n}} weitere — nutze /companion info <Nummer> für jeden davon.",
   "game.companion.evolved": "🌟 {{name}} hat sich zu Stufe {{stage}} entwickelt!",
   "game.companion.fedTitle": "✨ {{name}} mochte die Funken",
   "game.companion.fedBody": "Du hast **✨ {{sparks}}** gefüttert · insgesamt {{fed}} · Guthaben ✨ {{left}}",

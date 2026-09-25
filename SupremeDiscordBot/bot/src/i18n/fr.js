@@ -174,6 +174,7 @@ export default {
   "game.companion.none": "Tu n'as pas encore de compagnon. Ils apparaissent dans les salons actifs — appuie sur **Attraper** quand l'un d'eux se montre !",
   "game.companion.active": "actif",
   "game.companion.listTitle": "🧬 Tes compagnons ({{n}})",
+  "game.companion.more": "…et {{n}} de plus — utilise /companion info <numéro> pour chacun d'eux.",
   "game.companion.evolved": "🌟 {{name}} a évolué au stade {{stage}} !",
   "game.companion.fedTitle": "✨ {{name}} a aimé les étincelles",
   "game.companion.fedBody": "Tu as donné **✨ {{sparks}}** · total {{fed}} · solde ✨ {{left}}",
