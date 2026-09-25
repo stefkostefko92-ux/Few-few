@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import HeroSignature from "./HeroSignature.jsx";
+import ReverseLabShowcase from "./ReverseLabShowcase.jsx";
+import CoverageMap from "./CoverageMap.jsx";
+import ScrollInstrument from "./ScrollInstrument.jsx";
 // Ценоразписът: генерира се от scripts/generate-pricing.py заедно със
 // страниците /prezzi/, /en/pricing/, /bg/ceni/ — една таблица, две места.
 import PRICING from "./pricing.json";
-import Home from "./Home.jsx";
 // THREE.js is lazy loaded inside Scene3D via dynamic import()
 // This removes 465KB from the initial bundle and improves LCP/FCP significantly
 
@@ -132,9 +135,9 @@ var LANGS = {
   },
   // ── COOKIE BANNER ──
   cookie_text: {
-    it: "Usiamo solo cookie tecnici propri. Il sito mostra annunci Google (AdSense): con «Accetta» possono essere personalizzati, con «Rifiuta» restano non personalizzati. Puoi cambiare scelta in qualsiasi momento dalla Politica Cookie.",
-    en: "We only use our own technical cookies. The site shows Google ads (AdSense): “Accept” allows personalised ads, “Reject” keeps them non-personalised. You can change your choice at any time from the Cookie Policy.",
-    bg: "\u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u043C\u0435 \u0441\u0430\u043C\u043E \u0441\u043E\u0431\u0441\u0442\u0432\u0435\u043D\u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438. \u0421\u0430\u0439\u0442\u044A\u0442 \u043F\u043E\u043A\u0430\u0437\u0432\u0430 \u0440\u0435\u043A\u043B\u0430\u043C\u0438 \u043D\u0430 Google (AdSense): \u0441 \u201E\u041F\u0440\u0438\u0435\u043C\u0438\u201C \u043C\u043E\u0436\u0435 \u0434\u0430 \u0441\u0430 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438, \u0441 \u201E\u041E\u0442\u043A\u0430\u0436\u0438\u201C \u043E\u0441\u0442\u0430\u0432\u0430\u0442 \u043D\u0435\u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438. \u041C\u043E\u0436\u0435\u0442\u0435 \u0434\u0430 \u043F\u0440\u043E\u043C\u0435\u043D\u0438\u0442\u0435 \u0438\u0437\u0431\u043E\u0440\u0430 \u0441\u0438 \u043F\u043E \u0432\u0441\u044F\u043A\u043E \u0432\u0440\u0435\u043C\u0435 \u043E\u0442 \u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430\u0442\u0430 \u0437\u0430 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438."
+    it: "Usiamo solo cookie tecnici propri. Il sito mostra annunci Google (AdSense): con ACCETTA possono essere personalizzati, con RIFIUTA restano non personalizzati. Puoi cambiare scelta in qualsiasi momento dalla Politica Cookie.",
+    en: "We only use our own technical cookies. The site shows Google ads (AdSense): ACCEPT allows personalised ads, REJECT keeps them non-personalised. You can change your choice at any time from the Cookie Policy.",
+    bg: "\u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u043C\u0435 \u0441\u0430\u043C\u043E \u0441\u043E\u0431\u0441\u0442\u0432\u0435\u043D\u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438. \u0421\u0430\u0439\u0442\u044A\u0442 \u043F\u043E\u043A\u0430\u0437\u0432\u0430 \u0440\u0435\u043A\u043B\u0430\u043C\u0438 \u043D\u0430 Google (AdSense): \u0441 \u041F\u0420\u0418\u0415\u041C\u0418 \u043C\u043E\u0436\u0435 \u0434\u0430 \u0441\u0430 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438, \u0441 \u041E\u0422\u041A\u0410\u0416\u0418 \u043E\u0441\u0442\u0430\u0432\u0430\u0442 \u043D\u0435\u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438. \u041C\u043E\u0436\u0435\u0442\u0435 \u0434\u0430 \u043F\u0440\u043E\u043C\u0435\u043D\u0438\u0442\u0435 \u0438\u0437\u0431\u043E\u0440\u0430 \u0441\u0438 \u043F\u043E \u0432\u0441\u044F\u043A\u043E \u0432\u0440\u0435\u043C\u0435 \u043E\u0442 \u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430\u0442\u0430 \u0437\u0430 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438."
   },
   cookie_accept: { it: "ACCETTA", en: "ACCEPT", bg: "\u041F\u0420\u0418\u0415\u041C\u0418" },
   cookie_reject: { it: "RIFIUTA", en: "REJECT", bg: "\u041E\u0422\u041A\u0410\u0416\u0418" },
@@ -1146,8 +1149,119 @@ function SEOInjector() {
     });
 
 
-    // (the custom cursor and the old responsive CSS were removed with the Carbon & Chrome redesign;
-    //  the homepage styles now live in public/home.css)
+    // ── Apple cursor ──
+    var cursorStyle = document.createElement("style");
+    cursorStyle.textContent = "*, *::before, *::after { cursor: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI0IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMCwyMjksMjU1LDAuNykiIHN0cm9rZS13aWR0aD0iMS41Ii8+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMSIgZmlsbD0icmdiYSgwLDIyOSwyNTUsMC45KSIvPjwvc3ZnPg==) 10 10, auto !important; } a, button, [onclick], select, input, textarea { cursor: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI2IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMCwyMjksMjU1LDAuOCkiIHN0cm9rZS13aWR0aD0iMS41Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMiIgZmlsbD0icmdiYSgwLDIyOSwyNTUsMSkiLz48L3N2Zz4=) 12 12, pointer !important; }";
+    document.head.appendChild(cursorStyle);
+
+
+    // ── Responsive CSS ──
+    var respStyle = document.createElement("style");
+    respStyle.textContent = `
+      /* ═══ MOBILE FIRST RESPONSIVE ═══ */
+      
+      /* Hamburger button */
+      .cs-hamburger { display:none; width:32px; height:32px; flex-direction:column; justify-content:center; align-items:center; gap:5px; background:none; border:1px solid rgba(0,229,255,.2); padding:6px; }
+      .cs-hamburger span { display:block; width:16px; height:1.5px; background:#00e5ff; transition:all .3s; }
+      
+      /* Mobile menu overlay */
+      .cs-mobile-menu { display:none; position:fixed; top:0; left:0; width:100%; height:100vh; background:rgba(0,0,0,.97); z-index:99999; flex-direction:column; align-items:center; justify-content:center; gap:24px; }
+      .cs-mobile-menu.open { display:flex; }
+      .cs-mobile-menu-item { font-size:14px; letter-spacing:.3em; color:#ccc; padding:12px 24px; border:1px solid rgba(245,245,240,.06); min-width:200px; text-align:center; }
+      .cs-mobile-menu-close { position:absolute; top:16px; right:16px; width:40px; height:40px; border:1px solid rgba(0,229,255,.2); display:flex; align-items:center; justify-content:center; color:#00e5ff; font-size:18px; }
+      
+      /* PHONE: < 768px */
+      @media(max-width:767px) {
+        /* Navbar */
+        .cs-hamburger { display:flex !important; }
+        .cs-nav-links { display:none !important; }
+        .cs-nav-meta { display:none !important; }
+        .cs-nav-lang { margin-left:auto; }
+        
+        /* About: stack columns */
+        #about { grid-template-columns:1fr !important; gap:32px !important; padding:60px 16px !important; }
+        
+        /* Services: stack number + text */
+        #services { padding:60px 16px !important; }
+        #services > div > div[style*="grid"] { grid-template-columns:1fr !important; }
+        
+        /* Products: single column */
+        #products > div[style*="grid"] { grid-template-columns:1fr !important; }
+        #products { padding:40px 16px 60px !important; }
+        
+        /* Portfolio: simplify */
+        #portfolio { padding:40px 16px 60px !important; }
+        #portfolio a[style*="grid"] { grid-template-columns:40px 1fr !important; }
+        #portfolio a span:last-child { display:none; }
+        
+        /* Reverse Lab */
+        #lab { padding:40px 16px 60px !important; }
+        
+        /* Contact form: stack inputs */
+        #contact { padding:60px 16px !important; }
+        #contact div[style*="1fr 1fr"] { grid-template-columns:1fr !important; }
+        
+        /* FAQ */
+        #faq { padding:60px 16px !important; }
+        
+        /* Footer: single column */
+        footer > div[style*="grid"] { grid-template-columns:1fr !important; gap:24px !important; padding:40px 16px 24px !important; }
+        
+        /* Hero padding */
+        #hero { padding:12px !important; }
+        
+        /* Cookie banner stack */
+        .cs-cookie { flex-direction:column !important; text-align:center; }
+        
+        /* Hide decorative elements */
+        .cs-scroll-indicator { display:none !important; }
+        
+        /* Diagonal dividers smaller */
+        div[style*="linear-gradient(170deg"] { height:40px !important; }
+        div[style*="linear-gradient(10deg"] { height:40px !important; }
+      }
+      
+      /* TABLET: 768px - 1024px */
+      @media(min-width:768px) and (max-width:1024px) {
+        .cs-hamburger { display:none; }
+        .cs-nav-links > div { gap:12px !important; }
+        
+        #about { gap:40px !important; padding:80px 20px !important; }
+        footer > div[style*="grid"] { grid-template-columns:1fr 1fr !important; gap:24px !important; }
+      }
+      
+      /* Touch-friendly targets */
+      @media(pointer:coarse) {
+        a, button, [onclick], div[style*="cursor"] { min-height:44px; min-width:44px; }
+        input, textarea, select { font-size:16px !important; } /* prevents iOS zoom */
+      }
+      
+      /* Safe area for notch phones */
+      @supports(padding: env(safe-area-inset-top)) {
+        nav { padding-top:max(12px, env(safe-area-inset-top)) !important; }
+        footer { padding-bottom:max(20px, env(safe-area-inset-bottom)) !important; }
+      }
+
+      /* ── Accessibility (WCAG 2.2 AA) ── */
+      /* Visible keyboard focus on every interactive element */
+      a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible,
+      select:focus-visible, [role="button"]:focus-visible, [tabindex]:focus-visible {
+        outline: 2px solid #00e5ff !important; outline-offset: 2px !important;
+        border-radius: 2px;
+      }
+      /* Skip-to-content link, visible only when focused */
+      .cs-skip { position:fixed; top:-60px; left:8px; z-index:100000; background:#00e5ff; color:#000;
+        padding:10px 18px; font-weight:700; letter-spacing:.1em; transition:top .15s; }
+      .cs-skip:focus { top:8px; }
+      /* Respect reduced-motion: stop the heavy animation for users who ask for it */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.001ms !important; animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+        }
+      }
+    `;
+    document.head.appendChild(respStyle);
 
     // Canonical, hreflang and the Organization/WebSite/FAQ schema live in the
     // static index.html <head> — do NOT inject them again here: the runtime
@@ -2427,9 +2541,6 @@ export default function App(){
   const[lang,setLang]=useState(function(){return detectLang()});
   // IP geolocation overrides timezone detection (IT/BG/other→EN) — but never an explicit user choice
   useEffect(function(){if(explicitLang())return;detectLangByIP(function(l){setLang(l)})},[]);
-  // <html lang> follows the visible language: screen readers pronounce it right, and Bulgarian text
-  // gets the Bulgarian letterforms of Geologica (locl), the same as on the static /bg/ pages
-  useEffect(function(){try{document.documentElement.lang=lang}catch(e){}},[lang]);
   const[showAdmin,setShowAdmin]=useState(false);
   const[mobileMenu,setMobileMenu]=useState(false);
   const[cookieOk,setCookieOk]=useState(function(){try{return localStorage.getItem("cs_cookie")!==null}catch(e){return false}});
@@ -2447,6 +2558,21 @@ export default function App(){
   useEffect(function(){function h(e){if(e.ctrlKey&&e.shiftKey&&e.key==="A"){e.preventDefault();setShowAdmin(function(v){return!v});}if(e.key==="Escape")setShowAdmin(false)}function adminEvt(){setShowAdmin(function(v){return!v})}window.addEventListener("keydown",h);window.addEventListener("cs-admin-toggle",adminEvt);return function(){window.removeEventListener("keydown",h);window.removeEventListener("cs-admin-toggle",adminEvt)}},[]);
   useEffect(function(){function h(){setScrollPx(window.scrollY)}window.addEventListener("scroll",h,{passive:true});return function(){window.removeEventListener("scroll",h)}},[]);
 
+  // Scroll re-measures: a cyan line sweeps each section once on entry and its
+  // content resolves from blueprint to finished. The single signature motif,
+  // applied site-wide via one observer (no per-section markup).
+  useEffect(function(){
+    if(!loaded) return;
+    try{ if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches) return; }catch(e){}
+    if(!("IntersectionObserver" in window)) return;
+    // Skip the hero: it is above the fold and holds the LCP element (H1) —
+    // hiding it until the observer fires would delay LCP. It paints instantly.
+    var secs=[].slice.call(document.querySelectorAll("#main section")).filter(function(s){return s.id!=="hero";});
+    secs.forEach(function(s){s.classList.add("cs-prep");});
+    var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("cs-seen");io.unobserve(en.target);}});},{threshold:0.12,rootMargin:"0px 0px -8% 0px"});
+    secs.forEach(function(s){io.observe(s);});
+    return function(){io.disconnect();};
+  },[loaded,lang]);
 
   // ── Collect REAL system info for boot sequence ──
   var [sysInfo, setSysInfo] = useState({});
@@ -2760,16 +2886,533 @@ export default function App(){
   var parallaxFast = -scrollPx * 0.15;
   var parallaxSlow = -scrollPx * 0.05;
 
-  function setLangSaved(l){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}
   return(
-    <>
+    <div className="cs-root" style={{background:BASE,color:INK,fontFamily:MONO,fontSize:12,letterSpacing:".02em",position:"relative",overflowX:"hidden"}}>
+      <a href="#main" className="cs-skip">{lang==="it"?"Salta al contenuto":lang==="bg"?"Към съдържанието":"Skip to content"}</a>
       {showAdmin && <AdminPanel onClose={function(){setShowAdmin(false)}} />}
       <SEOInjector />
-      <Home lang={lang} setLang={setLangSaved} t={t} PRICING={PRICING} fmtEur={fmtEur}
-        mobileMenu={mobileMenu} setMobileMenu={setMobileMenu}
-        formName={formName} setFormName={setFormName} formEmail={formEmail} setFormEmail={setFormEmail}
-        formPhone={formPhone} setFormPhone={setFormPhone} formMsg={formMsg} setFormMsg={setFormMsg}
-        formSent={formSent} onSubmit={handleFormSubmit}
-        cookieOk={cookieOk} acceptCookies={acceptCookies} rejectCookies={rejectCookies} />
-    </>);
+      <CaliperCursor />
+      <div className="cs-scroll-instr"><ScrollInstrument /></div>
+      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweep .7s "+EASE+" forwards}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}.cs-brand-img{mix-blend-mode:screen}.cs-hero-art{position:absolute;right:clamp(16px,4vw,60px);top:clamp(72px,9vh,96px);width:min(28vw,380px);height:auto;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.95;filter:saturate(1.05);-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%);mask-image:radial-gradient(ellipse at 50% 50%,#000 52%,transparent 74%)}@media(min-width:861px){.cs-hero-h1{max-width:min(16ch,calc(100vw - min(28vw,380px) - 2*clamp(20px,5vw,64px) - max(0px,(100vw - 2*clamp(20px,5vw,64px) - 1180px)/2) - 40px))!important}}@media(max-width:860px){.cs-hero-art{right:auto;left:50%;transform:translateX(-50%);top:64px;width:min(74vw,340px);opacity:.85}.cs-hero-coords{display:none}}.cs-glowline{height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.7),transparent);box-shadow:0 0 12px rgba(0,229,255,.35)}.cs-cta{transition:box-shadow .35s "+EASE+",background .35s "+EASE+"}.cs-cta:hover{background:rgba(0,229,255,.1)!important;box-shadow:0 0 34px rgba(0,229,255,.42), inset 0 0 18px rgba(0,229,255,.1)!important}#footer a{min-height:24px;align-items:center}.cs-work-card{transition:border-color .25s}.cs-work-card:hover,.cs-work-card:focus-visible{border-color:rgba(0,229,255,.55)!important}.cs-srv-row:hover .cs-srv-t,.cs-srv-row:focus-visible .cs-srv-t{color:"+C+"}@media(max-width:768px){.cs-scroll-instr{display:none}.cs-contactbar{flex-direction:column;gap:10px!important}}@media(max-width:1100px){.cs-price-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:600px){.cs-price-grid{grid-template-columns:1fr!important}}"}</style>
+
+      {/* Engineering-drawing grid over a faint carbon weave — the logo's
+          twill texture as the page ground, kept far below legibility noise */}
+      <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",backgroundImage:"linear-gradient("+LINE+" 1px,transparent 1px),linear-gradient(90deg,"+LINE+" 1px,transparent 1px),repeating-linear-gradient(45deg,rgba(255,255,255,.016) 0 3px,transparent 3px 8px),repeating-linear-gradient(-45deg,rgba(255,255,255,.016) 0 3px,transparent 3px 8px)",backgroundSize:"96px 96px,96px 96px,16px 16px,16px 16px",maskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)",WebkitMaskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)"}}/>
+
+      {/* NAV */}
+      <nav style={{position:"fixed",top:0,left:0,width:"100%",zIndex:10000,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba("+CR+",.16)",boxShadow:"0 1px 18px rgba("+CR+",.10)",background:"rgba(0,0,0,.92)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo-nav.webp" alt="Carbon Stealth VCC" width={80} height={34} fetchPriority="high" decoding="async" style={{height:34,width:80,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
+        <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em"}}/></div>})}<a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none"}}><Scr text={t("nav_test")} style={{fontSize:9,letterSpacing:".2em",cursor:"none",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}/></a></div>
+        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <div className="cs-nav-lang" style={{display:"flex",gap:2,marginLeft:8}}>
+            {["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:8,padding:"3px 6px",letterSpacing:".1em",cursor:"none",background:lang===l?"rgba("+CR+",.15)":"transparent",color:lang===l?C:"#ccc",border:"1px solid "+(lang===l?"rgba("+CR+",.3)":"rgba(245,245,240,.06)"),fontWeight:lang===l?700:400,textTransform:"uppercase"}}>{l}</span>})}
+          </div>
+          <div className="cs-hamburger" {...kb(function(){setMobileMenu(true)},lang==="bg"?"\u041E\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Open menu":"Apri il menu")}><span/><span/><span/></div>
+        </div>
+      </nav>
+
+      {/* MOBILE MENU OVERLAY */}
+      <div className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}>
+        <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},lang==="bg"?"\u0417\u0430\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Close menu":"Chiudi il menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>{"\u2715"}</div>
+        <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={140} height={140} decoding="async" style={{height:140,width:140,marginBottom:4}}/>
+        {[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} className="cs-mobile-menu-item" {...kb(function(){scrollToId(item.id);setMobileMenu(false)},item.txt)} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{item.txt}</div>})}
+        <a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} className="cs-mobile-menu-item" style={{fontSize:13,letterSpacing:".3em",color:C,padding:"14px 32px",border:"1px solid rgba("+CR+",.3)",minWidth:220,textAlign:"center",textDecoration:"none"}}>{t("nav_test")}</a>
+        <div style={{display:"flex",gap:6,marginTop:12}}>{["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:10,padding:"6px 12px",border:"1px solid "+(lang===l?"rgba("+CR+",.4)":"rgba(245,245,240,.08)"),background:lang===l?"rgba("+CR+",.12)":"transparent",color:lang===l?C:"#ccc"}}>{l.toUpperCase()}</span>})}</div>
+      </div>
+
+      <main id="main">
+      {/* ═══════════════════════════════════════════
+          HERO — Viewport-spanning typography + 3D
+          ═══════════════════════════════════════════ */}
+      <section id="hero" aria-label={t("hero_eyebrow")} style={{position:"relative",minHeight:"100vh",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"0 clamp(20px,5vw,64px) clamp(40px,6vh,72px)"}}>
+        {/* Signature: live measured-carbon shader field — grid, fresnel edge, radar
+            sweep, caliper ring that tracks the pointer. Replaces the old
+            MeasuredSurface points/wireframe mount as the hero's single WebGL moment. */}
+        <HeroSignature />
+
+        {/* The mark itself, rendered in its own scene — sits over the shader
+            with screen blending so its black ground disappears and only the
+            carbon, chrome and cyan ring remain. Static image: zero runtime cost. */}
+        <img className="cs-hero-art" src="/brand/cs-scene-800.webp" srcSet="/brand/cs-scene-800.webp 800w, /brand/cs-scene.webp 1254w" sizes="(max-width:860px) 72vw, 34vw" alt="" aria-hidden="true" width={800} height={800} fetchPriority="high" decoding="async"/>
+
+        {/* Blueprint furniture - measured coordinates + tolerance callout */}
+        <div className="cs-hero-coords" aria-hidden="true" style={{position:"absolute",top:96,right:"clamp(20px,5vw,64px)",fontFamily:MONO,fontSize:9,letterSpacing:".22em",color:INK2,textAlign:"right",lineHeight:2.1,zIndex:5}}>
+          42.3482{"°"}N {"·"} 23.0017{"°"}E<br/>BOBOV DOL {"·"} ALT 550M<br/><span style={{color:C}}>{"±"}0.02 TOL</span> {"·"} <span style={{color:C}}>{"◦"} MEASURING</span>
+        </div>
+
+        <div style={{position:"relative",zIndex:10,maxWidth:1180,width:"100%",margin:"0 auto"}}>
+          <div style={{display:"flex",alignItems:"center",gap:14,fontSize:10,letterSpacing:".4em",color:INK2,marginBottom:"clamp(20px,4vh,40px)"}}>
+            <span style={{width:24,height:1,background:C}}/>{t("hero_eyebrow")}
+          </div>
+
+          {/* Type is the hero - the single H1, keyword-forward, few words */}
+          <h1 className="cs-hero-h1" style={Object.assign({fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.4rem,6vw,5.4rem)",lineHeight:.98,letterSpacing:"-.03em",margin:0,maxWidth:"16ch"},CHROME)}>
+            {t("hero_title")}
+          </h1>
+
+          {/* Mono spec line - the instruments */}
+          <div style={{fontFamily:MONO,fontSize:11,letterSpacing:".2em",color:INK2,marginTop:24,textTransform:"uppercase"}}>{t("hero_sub")}</div>
+
+          <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:28,borderTop:"1px solid "+LINE,paddingTop:22,marginTop:"clamp(28px,5vh,44px)"}}>
+            <p style={{maxWidth:380,fontSize:12,lineHeight:1.95,color:INK2}}>{t("hero_desc")}</p>
+            <div className="cs-cta" onClick={function(){scrollToId("contact")}} {...kb(function(){scrollToId("contact")},t("cta_btn"))} style={Object.assign({display:"inline-block"},CTA_GLOW)}>
+              <MagneticRepel text={t("cta_btn")+"  →"} style={{display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase"}}/>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          ABOUT — Scroll-decode text
+          ═══════════════════════════════════════════ */}
+      <section id="about" style={{position:"relative",zIndex:5,padding:"120px 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:80}}>
+        <Constellation />
+        <div>
+          <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("about_tag")}</div>
+          <ScrollDecode
+            text={t("about_scroll")}
+            style={Object.assign({fontFamily:HEAD,fontWeight:800,fontSize:"clamp(1.6rem,3.5vw,2.8rem)",lineHeight:1.2,letterSpacing:"-.02em",textTransform:"uppercase"},CHROME)}
+          />
+          <p style={{fontSize:12,lineHeight:2,color:"#ccc",maxWidth:420,marginTop:28}}>{t("about_body")}</p>
+        </div>
+        <div style={{paddingTop:40}}>
+          {/* Brand plate — the third render (mark + the three promises) */}
+          <div style={{maxWidth:420,marginBottom:32,border:"1px solid rgba("+CR+",.14)",boxShadow:"0 0 32px rgba("+CR+",.08)",background:"#000",overflow:"hidden"}}>
+            <img src="/brand/cs-poster.webp" alt="Carbon Stealth VCC — design, development, performance" width={1024} height={1024} loading="lazy" decoding="async" style={{display:"block",width:"100%",height:"auto"}}/>
+          </div>
+          {[[t("stat_1"),"50+"],[t("stat_2"),"10"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
+            return <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"14px 0",borderBottom:"1px solid rgba(245,245,240,.08)"}}>
+              <span style={{fontSize:9,letterSpacing:".25em",textTransform:"uppercase",color:"#ddd"}}>{item[0]}</span>
+              <span style={{fontFamily:HEAD,fontWeight:900,fontSize:i===3?"2rem":"1.4rem",letterSpacing:"-.02em",color:i===3?C:"#C9D1D6"}}>{item[1]}</span></div>})}
+        </div>
+      </section>
+
+      {/* ═══ BLUEPRINT DIVIDER — dimension line with tolerance callout ═══ */}
+      <div style={{position:"relative",zIndex:5,padding:"32px clamp(20px,5vw,64px)"}}>
+        <Dim flex label="SEC.02 / SERVICES · ±0.02MM" style={{maxWidth:1180,margin:"0 auto"}}/>
+      </div>
+
+      {/* ═══════════════════════════════════════════
+          SERVICES — Oversized index numbers
+          ═══════════════════════════════════════════ */}
+      <section id="services" style={{position:"relative",zIndex:5,padding:"120px 20px"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("srv_tag")}</div>
+        <ProximityText text={t("srv_title")} style={Object.assign({fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:48,fontWeight:700},CHROME)}/>
+
+        {(SRV_DATA[lang]||SRV_DATA.en).map(function(s,i){
+          var href=(SRV_LINKS[lang]||SRV_LINKS.it)[i]||"#contact";
+          return <a key={i} href={href} className="cs-srv-row" style={{display:"grid",gridTemplateColumns:"100px 1fr",gap:20,padding:"28px 0",borderBottom:"1px solid rgba(245,245,240,.08)",position:"relative",textDecoration:"none",color:"inherit",cursor:"none"}}>
+            <div style={{fontFamily:HEAD,fontWeight:900,fontSize:"3.5rem",color:"rgba("+CR+",.06)",lineHeight:1,letterSpacing:"-.03em"}}>{s.n}</div>
+            <div>
+              <div className="cs-srv-t" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:6,transition:"color .2s"}}>{s.t} <span aria-hidden="true" style={{color:C}}>{"\u2192"}</span></div>
+              <div style={{fontSize:10,color:"#ddd",lineHeight:1.8,marginBottom:8}}>{s.d}</div>
+              <div style={{fontSize:8,letterSpacing:".2em",color:C}}>{s.tags}</div>
+            </div>
+          </a>})}
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          PRICING — the portfolio price list, verbatim (src/pricing.json)
+          ═══════════════════════════════════════════ */}
+      <section id="pricing" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{PRICING.ui[lang].eyebrow}</div>
+        <ProximityText text={PRICING.ui[lang].h1} style={Object.assign({fontFamily:HEAD,fontSize:"clamp(1.6rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:16,fontWeight:700,maxWidth:900},CHROME)}/>
+        <p style={{fontSize:12,lineHeight:1.95,color:INK2,maxWidth:640,marginBottom:12}}>{PRICING.ui[lang].lede}</p>
+        <div style={{fontFamily:MONO,fontSize:10,letterSpacing:".15em",color:C,marginBottom:40}}>{PRICING.ui[lang].hud}</div>
+
+        <div className="cs-price-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16}}>
+          {PRICING.tiers.map(function(tier){
+            var ui=PRICING.ui[lang];
+            return <div key={tier.id} style={{position:"relative",display:"flex",flexDirection:"column",padding:"24px 22px",border:"1px solid rgba("+CR+(tier.popular?",.6)":",.18)"),background:"rgba("+CR+",.02)",boxShadow:tier.popular?"0 0 28px rgba("+CR+",.12)":"none"}}>
+              {tier.popular && <span style={{position:"absolute",top:-10,left:18,background:C,color:BASE,fontSize:9,letterSpacing:".2em",padding:"3px 10px",fontWeight:700}}>{ui.popular}</span>}
+              <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:6,textTransform:"uppercase",minHeight:"3.2em"}}>{tier.tag[lang]}</div>
+              <div style={{fontFamily:HEAD,fontWeight:800,fontSize:"1.5rem",letterSpacing:"-.02em",color:INK,marginBottom:8}}>{tier.name[lang]}</div>
+              <p style={{fontSize:11,lineHeight:1.7,color:INK2,minHeight:"6.8em"}}>{tier.desc[lang]}</p>
+              <div style={Object.assign({fontFamily:HEAD,fontWeight:900,fontSize:"2.1rem",letterSpacing:"-.03em",lineHeight:1,margin:"14px 0 4px"},CHROME)}>{fmtEur(tier.price[lang],lang)}</div>
+              <div style={{fontSize:10,color:INK2,lineHeight:1.6,marginBottom:14}}><s style={{color:"#8A949B"}}>{fmtEur(tier.market[lang],lang)}</s> {ui.market} {"·"} <b style={{color:C}}>{"−"}{tier.discount}% {ui.saving}</b></div>
+              <ul style={{listStyle:"none",padding:0,margin:"0 0 14px",flex:1}}>{tier.features[lang].map(function(f){return <li key={f} style={{fontSize:11,lineHeight:1.6,paddingLeft:16,position:"relative",marginBottom:6,color:"#ccc"}}><span aria-hidden="true" style={{position:"absolute",left:0,color:C}}>{"✓"}</span>{f}</li>})}</ul>
+              <div style={{fontSize:10,color:INK2,marginBottom:12}}>{ui.delivery}: {tier.days[0]}{"–"}{tier.days[1]} {ui.days}</div>
+              <div className="cs-cta" {...kb(function(){scrollToId("contact")},ui.choose)} style={Object.assign({textAlign:"center",fontFamily:MONO,fontSize:10,letterSpacing:".14em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"12px 12px",textTransform:"uppercase",cursor:"none"},CTA_GLOW)}>{ui.choose} {"→"}</div>
+            </div>})}
+        </div>
+
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,margin:"48px 0 16px"}}>{"// "+PRICING.ui[lang].addonsTitle.toUpperCase()}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:10}}>
+          {PRICING.addons.map(function(a){var ui=PRICING.ui[lang];return <div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,border:"1px solid rgba(245,245,240,.08)",padding:"12px 14px",fontSize:11,lineHeight:1.6,color:"#ccc"}}><span>{a.name[lang]}</span><span style={{whiteSpace:"nowrap",textAlign:"right"}}><b style={{color:INK,fontSize:13}}>{fmtEur(a.price[lang],lang)}</b><br/><span style={{fontSize:9,color:INK2}}>{a.kind==="monthly"?ui.monthly:ui.once} {"·"} <span style={{color:C}}>{"−"}{a.discount}%</span></span></span></div>})}
+        </div>
+
+        <div style={{display:"flex",flexWrap:"wrap",gap:20,alignItems:"center",marginTop:40}}>
+          <a href={PRICING.ui[lang].path} className="cs-cta" style={Object.assign({display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase",textDecoration:"none",cursor:"none"},CTA_GLOW)}>{t("pricing_all")+"  →"}</a>
+          <span style={{fontSize:10,lineHeight:1.8,color:INK2,maxWidth:520}}>{t("pricing_note")}</span>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          WORK — Split layout with massive type
+          ═══════════════════════════════════════════ */}
+      <section id="portfolio" style={{position:"relative",zIndex:5,padding:"80px 20px 120px"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("work_tag")}</div>
+        <EchoText fontFamily={HEAD} fontSize="clamp(2rem,5vw,4rem)" letterSpacing="-.03em" style={CHROME}>{t("work_title")}</EchoText>
+        <div style={{height:48}}/>
+
+        {/* Real screenshots of each live project (public/work/, captured from the live sites) */}
+        <div className="cs-work-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+        {[["001","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu","nexus-dominion"],["002","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com","ou-vaptsarov"],["003","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu","erp-ascensori"],["004","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu","treti-mart"],["005","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com","evanita-sport"],["006","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it","eternal-touch"],["007","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it","ospedali-trasparenti"],["008","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com","vizitka"],["009","MASTILKO","PRINT TOOLS","https://mastilko-bg.com","mastilko"],["010","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it","panev-ascensori"]].map(function(w){
+          return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" className="cs-work-card" style={{display:"flex",flexDirection:"column",border:"1px solid rgba("+CR+",.14)",background:"rgba("+CR+",.015)",cursor:"none",textDecoration:"none",color:"inherit",overflow:"hidden"}}>
+            <img src={"/work/"+w[4]+"-480.webp"} srcSet={"/work/"+w[4]+"-480.webp 480w, /work/"+w[4]+".webp 960w"} sizes="(max-width:640px) 100vw, 33vw" width={480} height={300} loading="lazy" decoding="async" alt={w[1]+" \u2014 "+w[2]} style={{display:"block",width:"100%",height:"auto",aspectRatio:"16/10",objectFit:"cover",objectPosition:"top",borderBottom:"1px solid rgba("+CR+",.14)"}}/>
+            <div style={{display:"flex",flexDirection:"column",gap:6,padding:"14px 16px 16px"}}>
+              <span style={{fontFamily:MONO,fontSize:9,color:INK2,letterSpacing:".2em"}}>{w[0]} {"\u00b7"} {w[2]}</span>
+              <span style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.05rem",textTransform:"uppercase",letterSpacing:"-.01em",color:INK}}>{w[1]} <span aria-hidden="true" style={{color:C}}>{"\u2197"}</span></span>
+            </div></a>})}
+        </div>
+
+        {/* The full portfolio lives on its own subdomain — send people there */}
+        <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:24,marginTop:40}}>
+          <p style={{maxWidth:520,fontSize:12,lineHeight:1.95,color:INK2}}>{t("work_all_sub")}</p>
+          <a href="https://portfolio.carbonstealth.eu/" target="_blank" rel="noopener" className="cs-cta" style={Object.assign({display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase",textDecoration:"none",cursor:"none"},CTA_GLOW)}>{t("work_all")+"  →"}</a>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          PRODUCTS — Live platforms
+          ═══════════════════════════════════════════ */}
+      <section id="products" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("prod_tag")}</div>
+        <ProximityText text={t("prod_title")} style={Object.assign({fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,fontWeight:700},CHROME)}/>
+
+        {/* ── LATEST — most recent shipped products ── */}
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:18}}>
+          <span style={{fontFamily:MONO,fontSize:9,letterSpacing:".3em",color:C}}>{lang==="it"?"// ULTIMI RILASCI · 2026":lang==="bg"?"// НАЙ-НОВИ · 2026":"// LATEST RELEASES · 2026"}</span>
+          <span style={{flex:1,height:1,background:LINE}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:2,marginBottom:2}}>
+          {[
+            {name:"Supreme Bot",url:"https://supremebot.carbonstealth.eu",tag:"SAAS · DISCORD",desc:{it:"Bot Discord per ticket e piattaforma SaaS multi-tenant: ticket, moduli di candidatura, pannelli, bot white-label e AI.",en:"Discord ticket bot and multi-tenant SaaS platform: tickets, application forms, panels, white-label bots and AI.",bg:"Discord бот за тикети и multi-tenant SaaS платформа: тикети, формуляри за кандидатстване, панели, white-label ботове и AI."}},
+            {name:"FiveM Bulgaria",url:"https://fivembulgaria.carbonstealth.eu",tag:"GAMING · BG",desc:{it:"Tutti i server FiveM RP bulgari in un posto: stato online, giocatori, framework (ESX, QBCore, Qbox), whitelist e Discord. Aggiornamento automatico.",en:"Every Bulgarian FiveM RP server in one place: online status, player count, framework (ESX, QBCore, Qbox), whitelist and Discord. Auto-updating.",bg:"Всички български FiveM RP сървъри на едно място: онлайн статус, брой играчи, рамка (ESX, QBCore, Qbox), whitelist и Discord. Обновява се автоматично."}},
+            {name:"Panev Ascensori",url:"https://panevascensori.it",tag:"ASCENSORI · IT",desc:{it:"Staffe brevettate per ascensori: fissaggio regolabile di porte di piano e guide del contrappeso su murature irregolari. Brevetto UIBM, made in Italy.",en:"Patented elevator brackets: adjustable fixing of landing doors and counterweight guides on irregular masonry. UIBM patent, made in Italy.",bg:"Патентовани скоби за асансьори: регулируем монтаж на етажни врати и водачи на противотежестта върху неравна зидария. Патент UIBM, made in Italy."}},
+            {name:"За Бобов дол",url:"https://zabobovdol.carbonstealth.eu",tag:"CIVIC · BG",desc:{it:"Portale civico per la città di Bobov Dol: servizi, segnalazioni, trasparenza e informazioni per i cittadini.",en:"Civic portal for the town of Bobov Dol: services, citizen reports, transparency and local information.",bg:"Граждански портал за град Бобов дол: услуги, сигнали, прозрачност и информация за жителите."}},
+            {name:"Ospedali Trasparenti",url:"https://ospedalitrasparenti.it",tag:"CIVIC · IT",desc:{it:"Portale civico per la trasparenza degli ospedali italiani: dati pubblici, accessibili e confrontabili per i cittadini.",en:"Civic portal for the transparency of Italian hospitals: public, comparable data made accessible to citizens.",bg:"Граждански портал за прозрачност на италианските болници: публични и сравними данни, достъпни за гражданите."}},
+            {name:"Supreme AdBlock",url:"https://adblock.carbonstealth.eu",tag:"PRIVACY · CHROME",desc:{it:"Estensione Chrome (MV3) che blocca ogni pubblicità — annunci video YouTube, sponsorizzati FB/IG, tracker e muri anti-adblock. Nessuna telemetria.",en:"Chrome extension (MV3) that blocks every ad — YouTube video ads, FB/IG sponsored posts, trackers and anti-adblock walls. Zero telemetry.",bg:"Chrome разширение (MV3), което блокира всяка реклама — вкл. видео реклами в YouTube, спонсорирани във FB/IG, тракери и anti-adblock стени. Без телеметрия."}},
+            {name:"Мастилко",url:"https://mastilko-bg.com",tag:"PRINT · TOOLS",desc:{it:"Etichette, biglietti da visita e CV gratuiti, pronti per la stampa. Anteprima dal vivo su un vero foglio A4, senza registrazione.",en:"Free labels, business cards and CVs, print-ready. Live preview on a real A4 sheet, no signup.",bg:"Безплатни етикети, визитки и CV, готови за печат. Преглед на живо върху истински А4 лист, без регистрация."}},
+            {name:"Vizitka",url:"https://vizitka-bg.com",tag:"QR · PROFILE",desc:{it:"Biglietto da visita digitale con QR permanente. Cambi lavoro o numero — tutti i biglietti già distribuiti si aggiornano da soli.",en:"Digital business card with a permanent QR. Change your job or number — every card you already handed out updates itself.",bg:"Дигитална визитка с постоянен QR код. Смениш ли телефон или длъжност — всички вече раздадени визитки се обновяват сами."}},
+          ].map(function(p,i){
+            return <a key={i} href={p.url} target="_blank" rel="noopener" style={{border:"1px solid rgba("+CR+",.14)",padding:"22px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:190,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.015)"}}>
+              <div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,gap:8}}>
+                  <span style={{fontFamily:MONO,fontSize:8,letterSpacing:".25em",color:INK2}}>{p.tag}</span>
+                  <span style={{fontFamily:MONO,fontSize:7,letterSpacing:".2em",color:C,border:"1px solid rgba("+CR+",.35)",padding:"2px 6px"}}>NEW</span>
+                </div>
+                <div style={{fontFamily:HEAD,fontWeight:600,fontSize:"1.15rem",letterSpacing:"-.02em",marginBottom:8,color:INK}}>{p.name}</div>
+                <div style={{fontSize:10,color:INK2,lineHeight:1.85}}>{p.desc[lang]||p.desc.en}</div>
+              </div>
+              <div style={{fontFamily:MONO,fontSize:8,letterSpacing:".15em",color:C,marginTop:14,paddingTop:10,borderTop:"1px solid rgba("+CR+",.1)"}}>{p.url.replace("https://","")} {"→"}</div>
+            </a>
+          })}
+        </div>
+
+        {/* ── The live platforms ── */}
+        <div style={{display:"flex",alignItems:"center",gap:12,margin:"34px 0 18px"}}>
+          <span style={{fontFamily:MONO,fontSize:9,letterSpacing:".3em",color:INK2}}>{lang==="it"?"// PIATTAFORME LIVE":lang==="bg"?"// ЖИВИ ПЛАТФОРМИ":"// LIVE PLATFORMS"}</span>
+          <span style={{flex:1,height:1,background:LINE}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2}}>
+          {[
+            {name:"Nexus Dominion",desc:{it:"MMO browser dark fantasy medievale. Gilde, dungeon, battaglie PvP ed economia gestita dai giocatori.",en:"Medieval dark-fantasy browser MMO. Guilds, dungeons, PvP battles and a player-driven economy.",bg:"Средновековна dark fantasy браузър MMO игра. Гилдии, подземия, PvP битки и икономика, управлявана от играчите."},url:"https://nexus.carbonstealth.eu",tag:"GAMING"},
+            {name:"Treti Mart",desc:{it:"Il marketplace bulgaro. Compra e vendi prodotti in Bulgaria con annunci gratuiti e pagamenti sicuri.",en:"The Bulgarian marketplace. Buy and sell in Bulgaria with free listings and secure payments.",bg:"Българският маркетплейс. Купувай и продавай в България с безплатни обяви и сигурни плащания."},url:"https://tretimart.carbonstealth.eu",tag:"MARKETPLACE"},
+            {name:"CS ERP Demo",desc:{it:"Demo live del sistema ERP. Prova i moduli CRM, magazzino, contabilità e dashboard BI.",en:"Live demo of the ERP system. Try the CRM, warehouse, accounting and BI dashboard modules.",bg:"Демо на живо на ERP системата. Пробвай модулите CRM, склад, счетоводство и BI табло."},url:"https://erp.carbonstealth.eu",tag:"ERP"},
+          ].map(function(p,i){
+            return <a key={i} href={p.url} target="_blank" rel="noopener" style={{border:"1px solid rgba(245,245,240,.06)",padding:"24px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.01)"}}>
+              <div>
+                <div style={{fontSize:8,letterSpacing:".3em",color:C,marginBottom:8}}>{p.tag}</div>
+                <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",marginBottom:8,color:"#C9D1D6"}}>{p.name}</div>
+                <div style={{fontSize:10,color:"#ccc",lineHeight:1.8}}>{p.desc[lang]||p.desc.it}</div>
+              </div>
+              <div style={{fontSize:8,letterSpacing:".15em",color:C,marginTop:14,paddingTop:10,borderTop:"1px solid rgba(245,245,240,.06)"}}>{p.url.replace("https://","")} {"\u2192"}</div>
+            </a>
+          })}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          REVERSE LAB — reverse engineering + 3D printing
+          ═══════════════════════════════════════════ */}
+      <section id="lab" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("lab_tag")}</div>
+        <ProximityText text={t("lab_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
+        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("lab_desc")}</p>
+        <div className="cs-lab-grid" style={{display:"grid",gridTemplateColumns:"minmax(280px,1fr) minmax(280px,1fr)",gap:2,alignItems:"stretch"}}>
+          <div style={{border:"1px solid rgba("+CR+",.15)",background:"rgba("+CR+",.02)",minHeight:340,position:"relative"}}>
+            <ReverseLabShowcase/>
+          </div>
+          <div style={{border:"1px solid rgba(245,245,240,.06)",padding:"28px 24px",display:"flex",flexDirection:"column",justifyContent:"center",gap:18}}>
+            {[t("lab_b1"),t("lab_b2"),t("lab_b3")].map(function(b,i){
+              return <div key={i} style={{display:"flex",gap:14,alignItems:"baseline"}}>
+                <span style={{color:C,fontSize:10,letterSpacing:".2em",flexShrink:0}}>{"0"+(i+1)}</span>
+                <span style={{fontSize:11,color:"#ddd",lineHeight:1.8,letterSpacing:".05em"}}>{b}</span>
+              </div>
+            })}
+            <div onClick={function(){scrollToId("contact")}} style={{marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"none",alignSelf:"flex-start"}}>{t("lab_cta")}</div>
+          </div>
+        </div>
+
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          THE MONUMENT — permanent visitor-built crystal
+          ═══════════════════════════════════════════ */}
+      <section id="monument" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("mon_tag")}</div>
+        <ProximityText text={t("mon_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
+        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("mon_desc")}</p>
+        <div style={{border:"1px solid rgba("+CR+",.15)",background:"radial-gradient(circle at 50% 50%, rgba("+CR+",.04), transparent 70%)",height:"min(72vh,560px)",position:"relative"}}>
+          <Monument lang={lang}/>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          COVERAGE — Milano ⇄ Bulgaria, measured not mapped
+          ═══════════════════════════════════════════ */}
+      <section id="coverage" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("cov_tag")}</div>
+        <ProximityText text={t("cov_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
+        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("cov_desc")}</p>
+        <div style={{border:"1px solid rgba("+CR+",.15)",position:"relative"}}>
+          <CoverageMap/>
+        </div>
+      </section>
+
+      {/* ═══ CTA ═══ */}
+      <section id="contact" style={{position:"relative",zIndex:5,padding:"100px 20px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{maxWidth:700,margin:"0 auto"}}>
+          <EchoText fontFamily={HEAD} fontSize="clamp(2rem,6vw,5rem)" lineHeight=".9" letterSpacing="-.04em" color={C} style={CYAN_GLOW}>{t("cta_title")}</EchoText>
+          <div style={{height:24}}/>
+          <MagneticRepel text={t("cta_sub")} style={{fontSize:10,letterSpacing:".15em",color:"#ccc",marginBottom:32}}/>
+
+          {/* ═══ CONTACT FORM ═══ */}
+          {formSent==="ok"||formSent==="sending" ? (
+            <div style={{padding:"40px 20px",border:"1px solid rgba(0,255,136,.3)",textAlign:"center"}}>
+              <div style={{fontFamily:HEAD,fontWeight:900,fontSize:18,color:"#00ff88",marginBottom:8}}>{formSent==="sending"?(lang==="it"?"INVIO IN CORSO...":lang==="bg"?"\u0418\u0417\u041F\u0420\u0410\u0429\u0410\u041D\u0415...":"SENDING..."):(lang==="it"?"INVIATO!":lang==="bg"?"\u0418\u0417\u041F\u0420\u0410\u0422\u0415\u041D\u041E!":"SENT!")}</div>
+              <p style={{fontSize:11,color:"#ccc"}}>{t("form_sent")}</p>
+            </div>
+          ) : (
+            <form onSubmit={function(e){e.preventDefault();handleFormSubmit()}} style={{display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                <input value={formName} onChange={function(e){setFormName(e.target.value)}} placeholder={t("form_name")} aria-label={t("form_name")} required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+                <input value={formEmail} onChange={function(e){setFormEmail(e.target.value)}} placeholder={t("form_email")} aria-label={t("form_email")} type="email" required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+              </div>
+              <input value={formPhone} onChange={function(e){setFormPhone(e.target.value)}} placeholder={t("form_phone")} aria-label={t("form_phone")} type="tel" style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+              <textarea value={formMsg} onChange={function(e){setFormMsg(e.target.value)}} placeholder={t("form_msg")} aria-label={t("form_msg")} required rows={5} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",resize:"vertical"}}/>
+              <p style={{fontSize:9,color:"#999",lineHeight:1.6}}>{t("form_gdpr")} <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} style={{color:C,textDecoration:"none"}}>{lang==="it"?"Informativa Privacy":lang==="bg"?"\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy Policy"}</a>.</p>
+              {formSent==="error" && <div role="alert" style={{padding:"12px 16px",border:"1px solid rgba(255,51,102,.4)",background:"rgba(255,51,102,.06)",color:"#ff6688",fontSize:11,lineHeight:1.6}}>{lang==="it"?"Invio non riuscito. Riprova o scrivici direttamente a info@carbonstealth.eu":lang==="bg"?"\u0418\u0437\u043F\u0440\u0430\u0449\u0430\u043D\u0435\u0442\u043E \u0435 \u043D\u0435\u0443\u0441\u043F\u0435\u0448\u043D\u043E. \u041E\u043F\u0438\u0442\u0430\u0439\u0442\u0435 \u043E\u0442\u043D\u043E\u0432\u043E \u0438\u043B\u0438 \u043D\u0438 \u043F\u0438\u0448\u0435\u0442\u0435 \u043D\u0430 info@carbonstealth.eu":"Send failed. Please try again or email us at info@carbonstealth.eu"}</div>}
+              <button type="submit" className="cs-cta" style={Object.assign({display:"inline-block",padding:"14px 36px",border:"1px solid "+C,fontSize:10,letterSpacing:".3em",textTransform:"uppercase",cursor:"pointer",color:C,textAlign:"center",marginTop:8,fontFamily:"'Space Mono',monospace"},CTA_GLOW)}>{t("form_send")}</button>
+            </form>
+          )}
+
+          {/* Direct contacts */}
+          <div style={{display:"flex",flexWrap:"wrap",gap:20,marginTop:32,paddingTop:20,borderTop:"1px solid rgba(245,245,240,.06)"}}>
+            <a href="https://wa.me/393792969699" style={{fontSize:10,color:"#ccc",textDecoration:"none"}}>WhatsApp: +39 379 296 9699</a>
+            <a href="tel:+359877414874" style={{fontSize:10,color:"#ccc",textDecoration:"none"}}>BG: +359 877 414 874</a>
+            <a href="mailto:info@carbonstealth.eu" style={{fontSize:10,color:C,textDecoration:"none"}}>info@carbonstealth.eu</a>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      {/* ═══════════════════════════════════════════
+          FAQ — AEO Optimized for AI Answer Engines
+          ═══════════════════════════════════════════ */}
+      <section id="faq" style={{position:"relative",zIndex:5,padding:"100px 20px",borderTop:"1px solid rgba(245,245,240,.08)"}} itemScope itemType="https://schema.org/FAQPage">
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("faq_tag")}</div>
+        <ProximityText text={t("faq_title")} style={{fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,color:"#C9D1D6",fontWeight:700}}/>
+        {({
+          it: [
+            ["Quali servizi offre Carbon Stealth VCC?", "Carbon Stealth offre sviluppo web (React, Node.js, PostgreSQL), sviluppo giochi (FiveM, browser MMO), sistemi embedded e IoT (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), branding e design, e consulenza tecnica."],
+            ["Dove si trova Carbon Stealth?", "Sede legale a Bobov Dol, Bulgaria (EIK: 208725180, indirizzo: ul. Samuil 3, 2670). Serviamo clienti da remoto in tutta Europa e nel mondo."],
+            ["Cos'\u00e8 Nexus Dominion?", "Un MMO browser dark fantasy medievale costruito con React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO e Docker. Include 52+ modelli database, 27 pagine di gioco e combattimento PvP in tempo reale."],
+            ["Carbon Stealth sviluppa risorse FiveM?", "S\u00ec. Sviluppiamo risorse FiveM: sistemi anti-cheat con euristiche comportamentali, tablet meccanico, script e risorse racing. Supporto multi-framework QBCore e ESX."],
+            ["Con quali sistemi embedded e IoT lavorate?", "Controller forni Eurotherm EPC3004 via Modbus RTU/TCP, PLC WAGO PFC200 con CODESYS, schede controllo ascensori con 102 punti I/O e macchine a 14 stati, dispositivi IoT Arduino/ESP32."],
+            ["Qual \u00e8 lo stack tecnologico?", "React, Node.js, TypeScript, Python, Prisma ORM, PostgreSQL, Redis, Docker, Nginx, Three.js, WebGL, GSAP, Socket.IO. Infrastruttura: Hetzner VPS, Ubuntu 24.04, Let's Encrypt SSL."],
+          ],
+          en: [
+            ["What services does Carbon Stealth VCC offer?", "Carbon Stealth offers web development (React, Node.js, PostgreSQL), game development (FiveM, browser MMOs), embedded systems (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), branding, and code rescue consulting."],
+            ["Where is Carbon Stealth located?", "Based in Bobov Dol, Bulgaria (EIK: 208725180, address: ul. Samuil 3, 2670). Serving clients remotely across Europe and worldwide."],
+            ["What is Nexus Dominion?", "A medieval dark fantasy browser MMO built with React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO, and Docker. Features 52+ database models, 27 game pages, and real-time PvP combat."],
+            ["Does Carbon Stealth build FiveM resources?", "Yes. We build FiveM resources: anti-cheat systems with behavioral heuristics, mechanic tablet systems, scripts and racing resources. Multi-framework QBCore and ESX support."],
+            ["What embedded and IoT systems does Carbon Stealth work with?", "Eurotherm EPC3004 oven controllers via Modbus RTU/TCP, WAGO PFC200 PLCs with CODESYS, elevator control boards with 102 I/O points and 14-state state machines, Arduino/ESP32 IoT devices."],
+            ["What is the tech stack?", "React, Node.js, TypeScript, Python, Prisma ORM, PostgreSQL, Redis, Docker, Nginx, Three.js, WebGL, GSAP, Socket.IO. Infrastructure: Hetzner VPS, Ubuntu 24.04, Let's Encrypt SSL."],
+          ],
+          bg: [
+            ["\u041A\u0430\u043A\u0432\u0438 \u0443\u0441\u043B\u0443\u0433\u0438 \u043F\u0440\u0435\u0434\u043B\u0430\u0433\u0430 Carbon Stealth VCC?", "Carbon Stealth \u043F\u0440\u0435\u0434\u043B\u0430\u0433\u0430 \u0443\u0435\u0431 \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430 (React, Node.js, PostgreSQL), \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043D\u0430 \u0438\u0433\u0440\u0438 (FiveM, \u0431\u0440\u0430\u0443\u0437\u044A\u0440 MMO), \u0432\u0433\u0440\u0430\u0434\u0435\u043D\u0438 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0438 IoT (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), \u0431\u0440\u0430\u043D\u0434\u0438\u043D\u0433 \u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u043A\u043E\u043D\u0441\u0443\u043B\u0442\u0430\u0446\u0438\u0438."],
+            ["\u041A\u044A\u0434\u0435 \u0441\u0435 \u043D\u0430\u043C\u0438\u0440\u0430 Carbon Stealth?", "\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435 \u0432 \u0411\u043E\u0431\u043E\u0432 \u0434\u043E\u043B, \u0411\u044A\u043B\u0433\u0430\u0440\u0438\u044F (\u0415\u0418\u041A: 208725180, \u0430\u0434\u0440\u0435\u0441: \u0443\u043B. \u0421\u0430\u043C\u0443\u0438\u043B 3, 2670). \u041E\u0431\u0441\u043B\u0443\u0436\u0432\u0430\u043C\u0435 \u043A\u043B\u0438\u0435\u043D\u0442\u0438 \u0434\u0438\u0441\u0442\u0430\u043D\u0446\u0438\u043E\u043D\u043D\u043E \u0432 \u0446\u044F\u043B\u0430 \u0415\u0432\u0440\u043E\u043F\u0430 \u0438 \u0441\u0432\u0435\u0442\u0430."],
+            ["\u041A\u0430\u043A\u0432\u043E \u0435 Nexus Dominion?", "\u0421\u0440\u0435\u0434\u043D\u043E\u0432\u0435\u043A\u043E\u0432\u043D\u043E dark fantasy \u0431\u0440\u0430\u0443\u0437\u044A\u0440 MMO, \u0438\u0437\u0433\u0440\u0430\u0434\u0435\u043D\u043E \u0441 React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO \u0438 Docker. \u0412\u043A\u043B\u044E\u0447\u0432\u0430 52+ \u043C\u043E\u0434\u0435\u043B\u0430 \u0432 \u0431\u0430\u0437\u0430\u0442\u0430 \u0434\u0430\u043D\u043D\u0438, 27 \u0438\u0433\u0440\u043E\u0432\u0438 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0438 \u0438 PvP \u0431\u0438\u0442\u043A\u0438 \u0432 \u0440\u0435\u0430\u043B\u043D\u043E \u0432\u0440\u0435\u043C\u0435."],
+            ["Carbon Stealth \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0432\u0430 \u043B\u0438 FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438?", "\u0414\u0430. \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0432\u0430\u043C\u0435 FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438: \u0430\u043D\u0442\u0438\u0447\u0438\u0439\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0441 \u043F\u043E\u0432\u0435\u0434\u0435\u043D\u0447\u0435\u0441\u043A\u0438 \u0435\u0432\u0440\u0438\u0441\u0442\u0438\u043A\u0438, \u0442\u0430\u0431\u043B\u0435\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0437\u0430 \u043C\u0435\u0445\u0430\u043D\u0438\u0446\u0438, \u0441\u043A\u0440\u0438\u043F\u0442\u043E\u0432\u0435 \u0438 \u0441\u044A\u0441\u0442\u0435\u0437\u0430\u0442\u0435\u043B\u043D\u0438 \u0440\u0435\u0441\u0443\u0440\u0441\u0438. \u041F\u043E\u0434\u0434\u0440\u044A\u0436\u043A\u0430 \u043D\u0430 QBCore \u0438 ESX."],
+            ["\u0421 \u043A\u0430\u043A\u0432\u0438 \u0432\u0433\u0440\u0430\u0434\u0435\u043D\u0438 \u0438 IoT \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0440\u0430\u0431\u043E\u0442\u0438 Carbon Stealth?", "\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u0435\u0440\u0438 \u0437\u0430 \u043F\u0435\u0449\u0438 Eurotherm EPC3004 \u0447\u0440\u0435\u0437 Modbus RTU/TCP, PLC WAGO PFC200 \u0441 CODESYS, \u043F\u043B\u0430\u0442\u043A\u0438 \u0437\u0430 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043D\u0430 \u0430\u0441\u0430\u043D\u0441\u044C\u043E\u0440\u0438 \u0441\u044A\u0441 102 I/O \u0442\u043E\u0447\u043A\u0438 \u0438 14 \u0441\u044A\u0441\u0442\u043E\u044F\u043D\u0438\u044F, IoT \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u0430 Arduino/ESP32."],
+            ["\u041A\u0430\u043A\u044A\u0432 \u0435 \u0442\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u043D\u0438\u044F\u0442 \u0441\u0442\u0435\u043A?", "React, Node.js, TypeScript, Python, Prisma ORM, PostgreSQL, Redis, Docker, Nginx, Three.js, WebGL, GSAP, Socket.IO. \u0418\u043D\u0444\u0440\u0430\u0441\u0442\u0440\u0443\u043A\u0442\u0443\u0440\u0430: Hetzner VPS, Ubuntu 24.04, Let's Encrypt SSL."],
+          ],
+        }[lang] || []).map(function(pair, i) {
+          return <div key={i} itemScope itemProp="mainEntity" itemType="https://schema.org/Question" style={{borderBottom:"1px solid rgba(245,245,240,.08)",padding:"20px 0"}}>
+            <h3 itemProp="name" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:8,color:"#C9D1D6",textShadow:"0 1px 10px rgba(0,0,0,0.5)"}}>{pair[0]}</h3>
+            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+              <p itemProp="text" className="about-answer" style={{fontSize:11,lineHeight:1.9,color:"#ccc",maxWidth:600}}>{pair[1]}</p>
+            </div>
+          </div>;
+        })}
+      </section>
+
+      </main>
+      {/* ═══════════════════════════════════════════════════
+          FULL FOOTER — from carbonstealth.eu
+          ═══════════════════════════════════════════════════ */}
+      <footer id="footer" style={{borderTop:"1px solid rgba("+CR+",.22)",boxShadow:"0 -1px 28px rgba("+CR+",.10)",position:"relative",zIndex:5,background:"radial-gradient(ellipse at 50% 100%,rgba("+CR+",.10),transparent 55%),rgba(0,0,0,.5)"}}>
+
+        {/* TOP FOOTER — 4 columns */}
+        <div style={{padding:"60px 20px 40px",display:"grid",gridTemplateColumns:"1.5fr 1fr 1fr 1fr",gap:40,borderBottom:"1px solid rgba(245,245,240,.08)"}}>
+
+          {/* Brand column */}
+          <div>
+            <div style={{marginBottom:16}}>
+              <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={168} height={168} loading="lazy" decoding="async" style={{height:168,width:168,display:"block"}}/>
+            </div>
+            <p style={{fontSize:10,lineHeight:1.9,color:"#ddd",maxWidth:280,marginBottom:16}}>{t("ft_desc")}</p>
+            <div style={{display:"flex",gap:10}}>
+              <a href="https://wa.me/393792969699" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="WhatsApp">WA</a>
+              <a href="mailto:info@carbonstealth.eu" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="Email">EM</a>
+              <a href="https://www.linkedin.com/company/carbonstealth.vcc" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="LinkedIn">LI</a>
+              <a href="https://share.google/0XLOlO0r1ETbGpUkZ" target="_blank" rel="noopener" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",color:"#C9D1D6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,cursor:"none"}} title={lang==="it"?"Profilo Google — lascia una recensione":lang==="bg"?"Google профил — остави отзив":"Google Business Profile — leave a review"}>G</a>
+            </div>
+          </div>
+
+          {/* Servizi column */}
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:16,fontWeight:700}}>{t("ft_servizi")}</div>
+            {({it:[
+              ["Sviluppo Siti Web","/servizi/sviluppo-siti-web/"],["E-Commerce","/servizi/ecommerce/"],["Software Custom","/servizi/sviluppo-software/"],["ERP Professionale","/servizi/erp/"],["App Mobile","/servizi/app-mobile/"],["SEO / GEO / AEO","/servizi/seo/"],["Hosting Cloud","/servizi/hosting/"],["Cybersecurity","services"]
+            ],en:[
+              ["Web Development","/en/services/web-development/"],["E-Commerce","/en/services/ecommerce/"],["Custom Software","/en/services/software-development/"],["Professional ERP","/en/services/erp/"],["Mobile Apps","/en/services/mobile-apps/"],["SEO / GEO / AEO","/en/services/seo/"],["Cloud Hosting","/en/services/hosting/"],["Cybersecurity","services"]
+            ],bg:[
+              ["\u0423\u0435\u0431 \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430","/bg/uslugi/web-razrabotka/"],["\u0415\u043B\u0435\u043A\u0442\u0440\u043E\u043D\u043D\u0430 \u0422\u044A\u0440\u0433\u043E\u0432\u0438\u044F","/bg/uslugi/ecommerce/"],["\u0421\u043E\u0444\u0442\u0443\u0435\u0440 \u043F\u043E \u041F\u043E\u0440\u044A\u0447\u043A\u0430","/bg/uslugi/softuer/"],["\u041F\u0440\u043E\u0444\u0435\u0441\u0438\u043E\u043D\u0430\u043B\u0435\u043D ERP","/bg/uslugi/erp/"],["\u041C\u043E\u0431\u0438\u043B\u043D\u0438 \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F","/bg/uslugi/mobilni-prilozheniya/"],["SEO / GEO / AEO","/bg/uslugi/seo/"],["\u0425\u043E\u0441\u0442\u0438\u043D\u0433","/bg/uslugi/hosting/"],["\u041A\u0438\u0431\u0435\u0440\u0441\u0438\u0433\u0443\u0440\u043D\u043E\u0441\u0442","services"]
+            ]}[lang]||[]).map(function(s){
+              var ext=s[1].startsWith("http");var internal=s[1].charAt(0)==="/";return (ext||internal)?<a key={s[0]} href={s[1]} {...(ext?{target:"_blank",rel:"noopener"}:{})} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>:<div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none"}}>{s[0]}</div>;
+            })}
+          </div>
+
+          {/* Azienda column */}
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:16,fontWeight:700}}>{t("ft_azienda")}</div>
+            {({it:[
+              ["Chi Siamo","about"],["Portfolio","portfolio"],["Prezzi","/prezzi/"],["Blog & Risorse","/blog/"],["Aree Servite","/geo/"],["Carriere","contact"],["Contatti","contact"]
+            ],en:[
+              ["About Us","about"],["Portfolio","portfolio"],["Pricing","/en/pricing/"],["Blog & Resources","/en/blog/"],["Service Areas","/en/geo/"],["Careers","contact"],["Contact","contact"]
+            ],bg:[
+              ["\u0417\u0430 \u041D\u0430\u0441","about"],["\u041F\u043E\u0440\u0442\u0444\u043E\u043B\u0438\u043E","portfolio"],["\u0426\u0435\u043D\u0438","/bg/ceni/"],["\u0411\u043B\u043E\u0433 \u0438 \u0420\u0435\u0441\u0443\u0440\u0441\u0438","/bg/blog/"],["\u041E\u0431\u0441\u043B\u0443\u0436\u0432\u0430\u043D\u0438 \u0420\u0430\u0439\u043E\u043D\u0438","/bg/geo/"],["\u041A\u0430\u0440\u0438\u0435\u0440\u0438","contact"],["\u041A\u043E\u043D\u0442\u0430\u043A\u0442\u0438","contact"]
+            ]}[lang]||[]).map(function(s){
+              return s[1].charAt(0)==="/"
+                ? <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>
+                : <div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none"}}>{s[0]}</div>;
+            })}
+          </div>
+
+          {/* Legale column */}
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:16,fontWeight:700}}>{t("ft_legale")}</div>
+            {({it:[
+              ["Informativa Privacy","/privacy/"],["Politica Cookie","/cookie/"],["Termini di Servizio","/termini/"],["Sitemap XML","/sitemap.xml"]
+            ],en:[
+              ["Privacy Policy","/en/privacy/"],["Cookie Policy","/en/cookie/"],["Terms of Service","/en/termini/"],["Sitemap XML","/sitemap.xml"]
+            ],bg:[
+              ["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442","/bg/privacy/"],["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438","/bg/cookie/"],["\u041E\u0431\u0449\u0438 \u0423\u0441\u043B\u043E\u0432\u0438\u044F","/bg/termini/"],["Sitemap XML","/sitemap.xml"]
+            ]}[lang]||[]).map(function(s){
+              return <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>;
+            })}
+            <div style={{marginTop:16,display:"flex",gap:12}}>
+              <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>SSL {lang==="it"?"PROTETTO":lang==="bg"?"\u0417\u0410\u0429\u0418\u0422\u0415\u041D":"SECURED"}</span>
+              <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>99.9% UPTIME</span>
+              <a href="/status/" style={{fontSize:8,color:C,letterSpacing:".15em",textDecoration:"none",cursor:"none"}}>{"\u25CF"} {lang==="it"?"STATO LIVE":lang==="bg"?"\u0421\u0422\u0410\u0422\u0423\u0421 \u041D\u0410 \u0416\u0418\u0412\u041E":"LIVE STATUS"} {"\u2192"}</a>
+            </div>
+          </div>
+        </div>
+
+        {/* SERVICE AREAS + RESOURCES — internal link equity to geo + blog */}
+        <div style={{padding:"24px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:32,maxWidth:1100,margin:"0 auto",width:"100%"}} className="cs-lab-grid">
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"AREE SERVITE":lang==="bg"?"ОБСЛУЖВАНИ РАЙОНИ":"SERVICE AREAS"}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:"4px 14px"}}>
+              {(lang==="bg"
+                ? [["София","/bg/geo/sofia/"],["Пловдив","/bg/geo/plovdiv/"],["Варна","/bg/geo/varna/"],["Бургас","/bg/geo/burgas/"],["Русе","/bg/geo/ruse/"],["Милано","/bg/geo/milano/"],["Рим","/bg/geo/roma/"]]
+                : lang==="en"
+                ? [["Milan","/en/geo/milano/"],["Rome","/en/geo/roma/"],["Turin","/en/geo/torino/"],["Florence","/en/geo/firenze/"],["Sofia","/en/geo/sofia/"],["Plovdiv","/en/geo/plovdiv/"],["Varna","/en/geo/varna/"]]
+                : [["Milano","/geo/milano/"],["Roma","/geo/roma/"],["Torino","/geo/torino/"],["Firenze","/geo/firenze/"],["Napoli","/geo/napoli/"],["Bologna","/geo/bologna/"],["Sofia","/geo/sofia/"]]
+              ).map(function(c){return <a key={c[0]} href={c[1]} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none"}}>{c[0]}</a>})}
+              <a href={lang==="it"?"/geo/":lang==="en"?"/en/geo/":"/bg/geo/"} style={{fontSize:10,color:C,textDecoration:"none",cursor:"none"}}>{lang==="it"?"tutte →":lang==="bg"?"всички →":"all →"}</a>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"DAL BLOG":lang==="bg"?"ОТ БЛОГА":"FROM THE BLOG"}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {(function(){var b=lang==="it"?"/blog/":lang==="en"?"/en/blog/":"/bg/blog/";return (lang==="it"
+                ? [["Quanto costa un sito web nel 2026","quanto-costa-sito-web"],["WooCommerce vs Shopify","woocommerce-vs-shopify"],["Cos'è un ERP e come funziona","cos-e-un-erp"],["SEO per piccole imprese","seo-per-piccole-imprese"]]
+                : lang==="en"
+                ? [["How much does a website cost in 2026","quanto-costa-sito-web"],["WooCommerce vs Shopify","woocommerce-vs-shopify"],["What is an ERP and how it works","cos-e-un-erp"],["SEO for small businesses","seo-per-piccole-imprese"]]
+                : [["Колко струва изработката на сайт","quanto-costa-sito-web"],["WooCommerce срещу Shopify","woocommerce-vs-shopify"],["Какво е ERP система","cos-e-un-erp"],["SEO за малкия бизнес","seo-per-piccole-imprese"]]
+              ).map(function(a){return <a key={a[1]} href={b+a[1]+"/"} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none",lineHeight:1.6}}>→ {a[0]}</a>})})()}
+              <a href={lang==="it"?"/blog/":lang==="en"?"/en/blog/":"/bg/blog/"} style={{fontSize:10,color:C,textDecoration:"none",cursor:"none",marginTop:2}}>{lang==="it"?"tutti gli articoli →":lang==="bg"?"всички статии →":"all articles →"}</a>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:12,fontWeight:700}}>{lang==="it"?"GUIDE & RISORSE":lang==="bg"?"ГИДОВЕ & РЕСУРСИ":"GUIDES & RESOURCES"}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {(lang==="bg"
+                ? [["Кейс студии","/bg/keys-studii/"],["Речник (какво е…)","/bg/rechnik/"],["Сравнения (X срещу Y)","/bg/sravneniya/"],["Решения по бранш","/bg/branshove/"],["Локални услуги","/bg/uslugi-lokalni/"],["Безплатни инструменти","/bg/instrumenti/"]]
+                : lang==="en"
+                ? [["Case studies","/en/case-studies/"],["Glossary (what is…)","/en/glossary/"],["Comparisons (X vs Y)","/en/comparisons/"],["Solutions by industry","/en/industries/"],["Local services","/en/local-services/"],["Free tools","/en/tools/"]]
+                : [["Case study","/case-study/"],["Glossario (cos'è…)","/glossario/"],["Confronti (X vs Y)","/confronti/"],["Soluzioni per settore","/settori/"],["Servizi locali","/servizi-locali/"],["Strumenti gratis","/strumenti/"]]
+              ).map(function(g){return <a key={g[1]} href={g[1]} style={{fontSize:10,color:"#ccc",textDecoration:"none",cursor:"none",lineHeight:1.6}}>→ {g[0]}</a>})}
+            </div>
+          </div>
+        </div>
+
+        {/* CONTACT BAR */}
+        <div className="cs-contactbar" style={{padding:"16px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"flex",flexWrap:"wrap",justifyContent:"center",gap:24,alignItems:"center"}}>
+          <span style={{fontSize:9,color:"#ccc",letterSpacing:".1em"}}>{lang==="it"?"Sede Legale:":lang==="bg"?"\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435:":"Registered Office:"} ul. Samuil 3, Bobov Dol 2670, Bulgaria</span>
+          <span style={{fontSize:9,color:"#ccc"}}>EIK 208725180</span>
+          <a href="tel:+393792969699" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>IT +39 379 296 9699</a>
+          <a href="tel:+359877414874" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>BG +359 877 414 874</a>
+          <a href="mailto:info@carbonstealth.eu" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>info@carbonstealth.eu</a>
+        </div>
+
+        {/* BOTTOM BAR */}
+        <div style={{padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+          <span style={{fontSize:8,color:"#ccc",letterSpacing:".1em"}}>{"\u00a9"} 2025-2026 Carbon Stealth VCC {"\u00b7"} EIK 208725180 {"\u00b7"} Bobov Dol, Bulgaria</span>
+          <div style={{display:"flex",gap:16}}>
+            <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Privacy":lang==="bg"?"\u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy"}</a>
+            <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Cookie":lang==="bg"?"\u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438":"Cookies"}</a>
+            <a href={lang==="bg"?"/bg/usloviya/":lang==="en"?"/en/terms/":"/termini/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Termini":lang==="bg"?"\u0423\u0441\u043B\u043E\u0432\u0438\u044F":"Terms"}</a>
+          </div>
+        </div>
+
+        {/* POWERED BY */}
+        <div style={{padding:"10px 20px",textAlign:"center",borderTop:"1px solid rgba(245,245,240,.02)"}}>
+          <span style={{fontSize:7,color:"#7C868D",letterSpacing:".3em"}}>{lang==="it"?"CREATO E PROGETTATO DA CARBON STEALTH":lang==="bg"?"\u0421\u042A\u0417\u0414\u0410\u0414\u0415\u041D\u041E \u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418\u0420\u0410\u041D\u041E \u041E\u0422 CARBON STEALTH":"CREATED AND DESIGNED BY CARBON STEALTH"} {"\u00b7"} WEBGL {"\u00b7"} REVERSE ENGINEERING {"\u00b7"} 3D PRINTING {"\u00b7"} {"\u00b1"}0.02MM</span>
+        </div>
+      </footer>
+
+      {/* ═══ FLOATING WHATSAPP CTA (conversion) ═══ */}
+      <a href="https://wa.me/393792969699" target="_blank" rel="noopener" aria-label="WhatsApp"
+        style={{position:"fixed",right:"clamp(16px,3vw,28px)",bottom:cookieOk?"clamp(16px,3vw,28px)":"92px",zIndex:99998,width:56,height:56,borderRadius:"50%",background:"#25D366",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 24px rgba(37,211,102,.35)",transition:"transform .18s "+EASE}}
+        onMouseEnter={function(e){e.currentTarget.style.transform="scale(1.08)"}} onMouseLeave={function(e){e.currentTarget.style.transform="scale(1)"}}>
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="#fff" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.1 1.6 5.9L4 29l8.3-1.6c1.7.9 3.6 1.4 5.7 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7.7.7-3.6-.2-.4c-1-1.6-1.5-3.4-1.5-5.3 0-5.5 4.5-9.9 10-9.9s10 4.4 10 9.9-4.5 10.2-9.9 10.2zm5.5-7.4c-.3-.2-1.8-.9-2-.9-.3-.1-.5-.2-.7.2-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.2-.2.2-.3.3-.5.1-.2.1-.4 0-.5-.1-.2-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.2-.6-.4z"/></svg>
+      </a>
+
+      {/* ═══ COOKIE CONSENT BANNER — GDPR ═══ */}
+      {!cookieOk && <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99999,background:"rgba(0,0,0,.97)",borderTop:"1px solid rgba("+CR+",.2)",padding:"16px 20px",display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{flex:1,minWidth:280}}>
+          <p style={{fontSize:12,color:"#ccc",lineHeight:1.7,margin:0}}>{t("cookie_text")} <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} style={{color:C,textDecoration:"none"}}>{t("cookie_more")}</a></p>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <div {...kb(rejectCookies,t("cookie_reject"))} style={{padding:"8px 20px",border:"1px solid rgba(245,245,240,.2)",color:"#ccc",fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_reject")}</div>
+          <div {...kb(acceptCookies,t("cookie_accept"))} style={{padding:"8px 20px",border:"1px solid rgba("+CR+",.4)",background:"rgba("+CR+",.1)",color:C,fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_accept")}</div>
+        </div>
+      </div>}
+
+    </div>);
 }

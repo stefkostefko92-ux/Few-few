@@ -5,15 +5,10 @@ Guidance for any agent working on this repo. Read this first.
 ## What this is
 Vite + React SPA (`src/App.jsx`, mostly `React.createElement`, no JSX build step for
 most of it) plus Python-generated multilingual static pages (it/en/bg) under `public/`,
-built to `dist/`. PHP-FPM backend in `api/`. Design system = **"Carbon & Chrome"**
-(2026-09-25, owner's choice; full spec in `docs/DESIGN-CARBON-CHROME.md`, built with the
-`frontend-design` skill): graphite `#16191C`, carbon `#1D2125`, chrome `#D3D9DD`, steel `#8F9AA1`,
-cyan `#2EC9DD` ONLY for the primary action and focus; Geologica (full Cyrillic, SHRP axis) for all
-text + Bodoni Moda for numerals (prices, facts). Sentence case everywhere — no ALL-CAPS eyebrows,
-no monospace labels, no "A · B · C" strings, no "→" on links/buttons. The one bold object is the
-chrome-edged bezel around real project screenshots. Homepage = `src/Home.jsx` + `public/home.css`
-(the instant-paint hero in `index.html` mirrors it — keep them in sync); static pages get the same
-system from `scripts/static-theme.py`.
+built to `dist/`. PHP-FPM backend in `api/`. Design system = "Tolerance" (carbon base
+`#0A0C0E`, INK `#C9D1D6`, cyan `#00e5ff` as the accent, Space Mono / Space Grotesk),
+re-tuned to the 2026 logo: brushed-chrome display type (`CHROME` in `App.jsx`), cyan
+ring glow on primary CTAs (`CTA_GLOW`), faint carbon-weave page ground.
 
 ## Brand assets — `public/brand/` + root icons
 All generated from the three logo renders (never hand-edit the PNGs):
