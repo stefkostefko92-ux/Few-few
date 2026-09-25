@@ -5,6 +5,7 @@ import { type WarmTheme } from "@/lib/themes";
 import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderWith, titleFx, readableAccent, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { MAX_SHEETS } from "@/lib/print";
 import { useLocalState } from "@/lib/use-local-state";
+import { useFitWidth } from "@/lib/use-fit-width";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import FontPicker from "@/components/FontPicker";
 import PrintBar from "@/components/PrintBar";
@@ -112,7 +113,9 @@ export default function PokanaStudio() {
   const theme = resolveTheme(s);
   const set = (patch: Partial<PokanaState>) => setS({ ...s, ...patch });
   const mm = (v: number) => `${v}mm`;
-  const px = (v: number) => `${v * 3.1}px`;
+  // Преглед отблизо: до 3.1 px/mm, но не по-широк от картата (телефон).
+  const [zoomRef, perMm] = useFitWidth<HTMLDivElement>(200, 3.1);
+  const px = (v: number) => `${v * perMm}px`;
   // Поканите са 2 на лист → таванът е в ЛИСТОВЕ (виж MAX_SHEETS в print.ts),
   // за да не рендира дълъг поставен списък стотици листове наведнъж.
   const allNames = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
@@ -193,7 +196,7 @@ export default function PokanaStudio() {
       <div className="space-y-4">
         <div className="no-print card-warm p-5">
           <p className="field-label">Преглед отблизо</p>
-          <div className="overflow-x-auto">
+          <div ref={zoomRef}>
             <div className="w-fit shadow-lift" style={{ borderRadius: 8 }}>
               <Card s={s} theme={theme} u={px} />
             </div>

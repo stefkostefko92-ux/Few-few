@@ -5,6 +5,7 @@ import { CARD, cardGrid } from "@/lib/print";
 import { type WarmTheme } from "@/lib/themes";
 import { resolveTheme, fontVars, sheetBg, photoFilterCss, qrSafeColor, accentTextOn, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
+import { useFitWidth } from "@/lib/use-fit-width";
 import { vCard } from "@/lib/vcard";
 import { vizitkaRegisterUrl } from "@/lib/vizitka-import";
 import AiAssist from "@/components/AiAssist";
@@ -559,7 +560,9 @@ export default function CardStudio() {
   const [s, setS] = useLocalState<CardState>("mastilko-cards", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = resolveTheme(s);
   const grid = cardGrid();
-  const px: Unit = (v) => `${v * 3.4}px`;
+  // Преглед отблизо: до 3.4 px/mm, но не по-широк от картата (телефон).
+  const [zoomRef, perMm] = useFitWidth<HTMLDivElement>(CARD.w, 3.4);
+  const px: Unit = (v) => `${v * perMm}px`;
   const mm: Unit = (v) => `${v}mm`;
 
   const set = (patch: Partial<CardState>) => setS({ ...s, ...patch });
@@ -771,7 +774,7 @@ export default function CardStudio() {
       <div className="space-y-4">
         <div className="no-print card-warm p-5">
           <p className="field-label">Преглед отблизо</p>
-          <div className="overflow-x-auto rounded-xl">
+          <div ref={zoomRef} className="rounded-xl">
             <div className="w-fit shadow-lift" style={{ borderRadius: 6 }}>
               <CardFace s={s} theme={theme} u={px} qrSrc={qrSrc} />
             </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { z } from "zod";
 import { resolveTheme, fontVars, elementFont, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
@@ -7,6 +8,7 @@ import BackgroundDecor from "@/components/BackgroundDecor";
 import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
+import FitHeight from "@/components/FitHeight";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
 
@@ -44,11 +46,16 @@ const ProjectSchema = z
 
 export default function ObyavaStudio() {
   const [s, setS] = useLocalState<ObyavaState>("mastilko-obyava", INITIAL, (r) => ProjectSchema.parse(r));
+  const [tooLong, setTooLong] = useState(false);
   const theme = resolveTheme(s);
   const set = (patch: Partial<ObyavaState>) => setS({ ...s, ...patch });
 
   const tabW = 210 / s.tabs;
   const fringeH = 78;
+  // Телефонът на лентата е завъртян на 90° → дължината му трябва да се
+  // побере във височината на лентата (~0.62 em на знак с резерв). При
+  // 40 знака с фиксирани 3.6 mm излизаше отдолу от листа.
+  const tabCapMm = ((fringeH - 6) / (Math.max(1, s.contact.length) * 0.62)).toFixed(2);
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
@@ -84,7 +91,9 @@ export default function ObyavaStudio() {
       </div>
 
       <div className="space-y-4">
-        <PrintBar summary={`Обява с ${s.tabs} откъсващи се телефона на лист А4`} />
+        <PrintBar summary={tooLong
+          ? "⚠ Текстът на обявата не се побира над лентите дори с по-дребен шрифт — съкрати го."
+          : `Обява с ${s.tabs} откъсващи се телефона на лист А4`} />
         <SheetPreview style={fontVars(s)}>
           <div style={{
             position: "absolute", inset: 0, background: sheetBg(s, theme), color: theme.fg,
@@ -92,7 +101,8 @@ export default function ObyavaStudio() {
           }}>
             <BackgroundDecor decor={s.decor} color={theme.accent} />
             {/* Горна част: заглавие + текст + снимка */}
-            <div style={{
+            {/* FitHeight: дълъг текст се смалява, вместо да застъпва лентите. */}
+            <FitHeight watch={s} scale={s.textScale ?? 1} onOverflow={setTooLong} style={{
               flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
               justifyContent: "center", textAlign: "center", padding: "18mm 16mm", gap: "6mm",
               position: "relative", zIndex: 1,
@@ -108,7 +118,7 @@ export default function ObyavaStudio() {
                 {s.body}
               </div>
               <div style={{ fontSize: fs(6), fontWeight: 700, marginTop: "2mm" }}>{s.contact}</div>
-            </div>
+            </FitHeight>
             {/* Долна лента с откъсващи се телефончета */}
             <div style={{
               height: `${fringeH}mm`, display: "flex", position: "relative", zIndex: 1,
@@ -123,7 +133,7 @@ export default function ObyavaStudio() {
                     position: "absolute", top: "50%", left: "50%",
                     transform: "translate(-50%, -50%) rotate(-90deg)",
                     transformOrigin: "center", whiteSpace: "nowrap",
-                    fontSize: fs(3.6), fontWeight: 700,
+                    fontSize: `min(${fs(3.6)}, ${tabCapMm}mm)`, fontWeight: 700,
                   }}>
                     {s.contact}
                   </div>
