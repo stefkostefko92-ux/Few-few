@@ -47,7 +47,8 @@
   .list button { width: 100%; text-align: left; border: 1px solid var(--line); background: transparent; border-radius: 6px; padding: 5px 8px; cursor: pointer; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .list button:hover { border-color: var(--muted); }
   .list button[aria-current="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
-  .stage { grid-area: stage; position: relative; min-height: 0; background: var(--stage); }
+  .stage { grid-area: stage; position: relative; min-height: 0; }
+  .viewport { position: absolute; inset: 0; background: var(--stage); }
   #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
   .info { position: absolute; left: 16px; top: 14px; max-width: min(420px, calc(100% - 32px)); background: var(--card); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
   .info p { margin: 0; }
@@ -71,11 +72,11 @@
   .overlay { position: absolute; inset: 0; display: grid; place-items: center; padding-inline: 16px; text-align: center; background: color-mix(in srgb, var(--stage) 70%, transparent); font-weight: 600; }
   [hidden] { display: none !important; }
   @media (max-width: 860px) {
-    .app { grid-template: "top" auto "stage" 62vh "tools" auto "list" auto "foot" auto / 100%; height: auto; }
-    .stage { height: 62vh; height: 62svh; }
+    .app { grid-template: "top" auto "stage" auto "tools" auto "list" auto "foot" auto / 100%; height: auto; }
+    .viewport { position: relative; height: 62vh; height: 62svh; }
     .list { border-right: 0; border-top: 1px solid var(--line); overflow: visible; }
     .hint { display: none; }
-    .info { left: 10px; top: 10px; padding: 8px 10px; }
+    .info { position: static; max-width: none; border-width: 0 0 1px; border-radius: 0; background: var(--paper); backdrop-filter: none; padding: 10px 16px; }
     .code { font-size: 17px; }
     .adj input { width: 130px; }
   }
@@ -90,7 +91,13 @@
   </header>
   <nav class="list" id="list" aria-label="Catalogo 2026"></nav>
   <main class="stage">
-    <canvas id="view" tabindex="0" aria-label="Modello 3D"></canvas>
+    <div class="viewport">
+      <canvas id="view" tabindex="0" aria-label="Modello 3D"></canvas>
+      <p class="hint" id="hint"></p>
+      <div class="overlay" id="loading" role="status">Caricamento del modello 3D…</div>
+      <div class="overlay" id="busy" role="status" hidden></div>
+      <div class="overlay" id="fatal" role="alert" hidden><p></p></div>
+    </div>
     <section class="info" id="info" aria-live="polite">
       <p class="code" id="code"></p>
       <p class="name" id="name"></p>
@@ -98,10 +105,6 @@
       <p class="partner" id="partner" hidden><span></span> <button type="button"></button></p>
       <p class="warn" id="warn" hidden></p>
     </section>
-    <p class="hint" id="hint"></p>
-    <div class="overlay" id="loading" role="status">Caricamento del modello 3D…</div>
-    <div class="overlay" id="busy" role="status" hidden></div>
-    <div class="overlay" id="fatal" role="alert" hidden><p></p></div>
   </main>
   <div class="tools" id="tools" role="toolbar" aria-label="Controlli"></div>
   <footer class="foot">
