@@ -1,0 +1,40 @@
+name: panev-3d
+
+# 3D каталогът на планките (panev/3d) е отделен пакет със собствени зависимости: гейтът му тича
+# само когато се пипа неговата папка. Smoke тестът (Chromium + SwiftShader) остава локален —
+# `xvfb-run -a npm run smoke` — защото браузърът не се тегли в CI.
+on:
+  push:
+    paths:
+      - 'panev/3d/**'
+      - '.github/workflows/panev-3d.yml'
+  pull_request:
+    paths:
+      - 'panev/3d/**'
+      - '.github/workflows/panev-3d.yml'
+
+concurrency:
+  group: panev-3d-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: panev/3d
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: panev/3d/package-lock.json
+      - name: Зависимости
+        run: npm ci --no-audit --no-fund
+      - name: Гейт (синтаксис и правила, i18n паритет, геометрични тестове на 48-те планки, изпичане + билд)
+        run: npm run gate

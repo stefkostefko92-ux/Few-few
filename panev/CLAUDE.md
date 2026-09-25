@@ -30,6 +30,16 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   редиректи от стария сайт, static + admin + contact API. Stripe кодът е
   спрян с kill-switch (`PAYMENTS_ENABLED`) и фронтът не го ползва.
 
+## 3D каталог (`3d/`)
+
+Отделен пакет със собствени зависимости и гейт. Той съдържа параметрични модели от ламарина за
+всичките 48 артикула от каталога, сглобки A+B и опора+SG+водач, фотореалистичен WebGPU рендер и
+интерфейс IT/EN/BG. Страницата е статична и самостоятелна: `dist/staffe-3d.html` + `.js` +
+`tex/`, без CDN. Рендерите са в `3d/renders/`.
+
+Детайлите са в `3d/CLAUDE.md` и `3d/README.md`. Гейт: `cd 3d && npm run gate`. CI:
+`.github/workflows/panev-3d.yml`.
+
 ## Команди (в `panev/`)
 
 ```bash

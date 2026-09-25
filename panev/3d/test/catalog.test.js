@@ -1,0 +1,61 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { CATALOG, byId } from '../src/catalog.js';
+import { analyse } from '../src/geo/check.js';
+import { loopGap, segDist } from '../src/geo/path.js';
+
+// Overall dimensions each drawing states (mm); every one must be an extent of the model.
+const STATED = {
+  'A 65 170 7': [170, 75], 'A 45 170 7': [170, 70], 'A 45 175 2': [175, 60], 'A 37 150 7': [150, 70], 'A 37 170 2': [170, 60],
+  'SG 225 50': [225, 150, 50], 'SN 60 65': [65, 65, 60], 'SN 65 200': [200, 65, 65], 'BRACCIO 160 190': [190, 30, 5],
+};
+function stated(code) {
+  if (STATED[code]) return STATED[code];
+  const [fam, a, b] = code.split(' ');
+  const n = [Number(a), Number(b)];
+  if (fam === 'B') return [n[1], n[0], n[0] === 65 ? 65 : 60];
+  if (fam === 'SU' || fam === 'SD') return [...n, 65];
+  if (fam === 'SC') return [n[1], n[0], 65];
+  if (fam === 'SG') return [n[1], n[0], 50];
+  throw new Error(`no stated size for ${code}`);
+}
+
+test('the catalogue lists all 48 articles once', () => {
+  assert.equal(CATALOG.length, 48);
+  assert.equal(new Set(CATALOG.map((i) => i.code)).size, 48);
+  assert.equal(byId('SU-220-160').code, 'SU 220 160');
+});
+
+for (const item of CATALOG) {
+  test(`${item.code}: closed solid with the catalogue's dimensions`, () => {
+    const mb = item.build().build();
+    const a = analyse(mb);
+    assert.equal(a.open, 0, 'open edges');
+    assert.equal(a.nonManifold, 0, 'non-manifold edges');
+    assert.equal(a.degenerate, 0, 'degenerate triangles');
+    assert.ok(a.volume > 0, 'outward-facing surfaces');
+    const extents = a.size.map((v) => Math.round(v * 100) / 100);
+    for (const d of stated(item.code)) assert.ok(extents.some((e) => Math.abs(e - d) < 0.01), `${d} mm not among extents ${extents}`);
+    // Mass sanity: steel at 7.85 g/cm³, between 0.15 and 1.5 kg for every bracket in the book.
+    const kg = a.volume * 7.85e-6;
+    assert.ok(kg > 0.15 && kg < 1.5, `mass ${kg.toFixed(3)} kg`);
+  });
+
+  test(`${item.code}: holes clear of each other, of the outline and of the bends`, () => {
+    const mb = item.build().build();
+    for (const f of mb.faces) {
+      const n = f.loop.length;
+      for (const [i, h] of f.holes.entries()) {
+        for (const h2 of f.holes.slice(i + 1)) assert.ok(loopGap(h, h2) >= 3, `${f.name}: holes ${loopGap(h, h2).toFixed(2)} mm apart`);
+        for (let e = 0; e < n; e++) {
+          const a = f.loop[e];
+          const b = f.loop[(e + 1) % n];
+          const gap = Math.min(...h.map((p) => segDist(p, a, b)));
+          // A bend edge is the tangent line: the hole must stay out of the bend itself.
+          const need = f.flags[e] == null ? 3 : 1.2;
+          assert.ok(gap >= need, `${f.name}: hole ${gap.toFixed(2)} mm from ${f.flags[e] == null ? 'edge' : 'bend'}`);
+        }
+      }
+    }
+  });
+}
