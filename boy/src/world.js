@@ -39,11 +39,9 @@ function makeLights(scene, quality) {
   // Cool back light that follows the camera and draws a rim along armour silhouettes.
   const rim = new THREE.DirectionalLight(0x9db4ff, 0.45);
   const hemi = new THREE.HemisphereLight(0x223149, 0x0b0907, 0.3);
-  // A soft warm light off the camera for close-ups, as a crew would add (firelight bounce):
-  // it lifts the faces and puts a catchlight in the eyes. Short range, no shadows.
-  const face = new THREE.PointLight(0xffd6b4, 0, 2.8, 2);
-  scene.add(moon, moon.target, rim, rim.target, hemi, face);
-  return { moon, rim, hemi, face };
+  // The faces' own key light lives in the head materials (face-light.js), not in the scene.
+  scene.add(moon, moon.target, rim, rim.target, hemi);
+  return { moon, rim, hemi };
 }
 
 // Budget per set: the courtyard floor and walls fill the frame and get the hero resolution.

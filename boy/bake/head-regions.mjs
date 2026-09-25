@@ -59,12 +59,13 @@ export function regionMasks(P, N, uv, albedo, L, { lining, bag, curv, thick }) {
     const inner = lining(i) || bag(i);
     const ragged = jitter(p[0], p[1], p[2]) * 0.006;
     const hair = inner ? 0 : smooth(-0.003, 0.007, p[1] - lerpTable(HAIRLINE, az) + ragged) * (1 - ear);
-    // Beard: below the cheek line, above the throat, in front of the ears, off the lips.
+    // Beard: below the cheek line, above the throat, in front of the ears, off the lips. It thins
+    // out over ~1.5 cm up the cheek, wider than a triangle, so its edge never follows the mesh.
     const lipY = L.lipY(Math.max(-0.02, Math.min(0.02, p[0])));
     const lips = inner ? 0 : smooth(0.035, 0.012, Math.abs(p[0])) * smooth(0.02, 0.04, r - (g + bl) / 2) * (1 - smooth(0.006, 0.012, Math.abs(p[1] - lipY))) * smooth(0.09, 0.1, p[2]);
     const cheek = lerpTable(CHEEK_LINE, Math.abs(p[0]));
     const throat = lerpTable([[0, -0.028], [0.03, -0.018], [0.05, 0.004], [0.065, 0.03]], Math.abs(p[0]));
-    let beard = smooth(0.004, -0.004, p[1] - cheek + ragged) * smooth(-0.004, 0.004, p[1] - throat - ragged) * smooth(-0.002, 0.012, p[2]) * (1 - ear);
+    let beard = smooth(0.007, -0.008, p[1] - cheek + ragged) * smooth(-0.004, 0.004, p[1] - throat - ragged) * smooth(-0.002, 0.012, p[2]) * (1 - ear);
     beard *= (1 - smooth(0.15, 0.5, lips)) * (inner ? 0 : 1);
     // Brows: the scan's dark brow hairs inside a band above each eye.
     let brow = 0;

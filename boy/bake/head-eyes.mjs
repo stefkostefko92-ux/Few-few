@@ -191,7 +191,8 @@ function mix(a, b, t) {
 
 // Triangles that bridge the slit from the upper to the lower margin (a skin film across the eye
 // once the lids part). Near the canthi, where the lids barely part, the film stays and keeps the
-// corners closed. Returns the set of triangle starts in `mesh.index` to drop.
+// corners closed. Returns the triangle starts in `mesh.index` to drop (`tris`) and the welded
+// vertices of the two margins they joined (`upper`, `lower`).
 export function slitBridges(mesh, normal, rep, eye, slit, { medial = 1, corner = 0.2 } = {}) {
   const P = mesh.position;
   const c = eye.centre;
@@ -204,12 +205,16 @@ export function slitBridges(mesh, normal, rep, eye, slit, { medial = 1, corner =
     if (Math.hypot(...d) > 0.02 || P[v * 3 + 2] - eye.pocket[2] < 0.008 || Math.min(almond(tm, 0.42), almond(tm, 0.58)) < corner) return 0;
     return Math.atan2(d[1], Math.hypot(d[0], d[2])) > slit.phi(th) ? 1 : -1;
   };
-  const cut = new Set();
+  const tris = new Set();
+  const upper = new Set();
+  const lower = new Set();
   for (let t = 0; t < mesh.index.length; t += 3) {
     const vs = [mesh.index[t], mesh.index[t + 1], mesh.index[t + 2]];
     if (vs.some((v) => lining(rep[v]))) continue;
     const s = vs.map((v) => side(rep[v]));
-    if (s.includes(1) && s.includes(-1)) cut.add(t);
+    if (!s.includes(1) || !s.includes(-1)) continue;
+    tris.add(t);
+    vs.forEach((v, k) => s[k] && (s[k] > 0 ? upper : lower).add(rep[v]));
   }
-  return cut;
+  return { tris, upper, lower };
 }

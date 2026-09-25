@@ -1,7 +1,8 @@
 // Head bake: turns the scan ("Infinite" by Lee Perry-Smith, CC BY 3.0 — see assets/head/) into
 // the two knights' heads. Opens the eyes around eyeballs and the lips over a mouth bag, builds the
 // expression targets and the Warden's own face, measures the skin, writes one binary with both
-// identities plus WebP maps, and returns the manifest entry.
+// identities plus WebP maps, and returns the manifest entry. Eyelashes follow the lid margins
+// (head-lashes.mjs) and ride along as the mesh's second group.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import sharp from 'sharp';
@@ -10,6 +11,7 @@ import { EYE, locateEye, findSlit, shapeLids, slitBridges } from './head-eyes.mj
 import { findLips, lipBridges, jawWeights, turnJaw, bagTest } from './head-mouth.mjs';
 import { browDown, browUp, snarl, cheekRaise, wardenFace } from './head-face.mjs';
 import { regionMasks } from './head-regions.mjs';
+import { planLashes, lashStrips } from './head-lashes.mjs';
 
 // Scan units → metres, with the rig's head joint (top of the neck, chin level) at the origin.
 export const FRAME = { origin: [-0.08, -0.6, -0.05], scale: 0.0485 };
@@ -45,8 +47,10 @@ export function processHead(glb, albedo) {
   const lids = eyes.map((eye, k) => {
     const medial = k === 0 ? 1 : -1;
     const slit = findSlit(scan, N0, adj, rep, eye);
-    for (const t of slitBridges(scan, N0, rep, eye, slit, { medial })) cut.add(t);
-    return { open: shape(eye, slit, medial, LIDS), closed: shape(eye, slit, medial, { open: 0 }), squint: shape(eye, slit, medial, SQUINT) };
+    const bridges = slitBridges(scan, N0, rep, eye, slit, { medial });
+    for (const t of bridges.tris) cut.add(t);
+    const margins = { upper: bridges.upper, lower: bridges.lower };
+    return { medial, margins, open: shape(eye, slit, medial, LIDS), closed: shape(eye, slit, medial, { open: 0 }), squint: shape(eye, slit, medial, SQUINT) };
   });
   let base = add(add(P0, lids[0].open), lids[1].open);
 
@@ -105,14 +109,33 @@ export function processHead(glb, albedo) {
   const thick = thickness(base, NB, index);
   const regions = regionMasks(base, NB, scan.uv, albedo, L, { lining: (i) => lining(rep[i]), bag: (i) => bag(rep[i]), curv, thick });
 
+  // Lashes for each face and each expression, as extra vertices after the skin's.
+  const plans = planLashes(eyes.map((e, k) => ({ centre: e.centre, medial: lids[k].medial, margins: lids[k].margins })), base);
+  const lashA = lashStrips(plans, base);
+  const lashB = lashStrips(plans, baseB);
+  const lashMorphs = Object.fromEntries(MORPHS.map((name) => {
+    const s = lashStrips(plans, add(base, deltas[name]));
+    return [name, { position: add(s.position, lashA.position, -1), normal: add(s.normal, lashA.normal, -1) }];
+  }));
+
   const keep = compact(index, n);
+  const cat = (a, b) => {
+    const out = new a.constructor(a.length + b.length);
+    out.set(a);
+    out.set(b, a.length);
+    return out;
+  };
   return {
-    count: keep.count,
-    index: keep.remapIndex,
-    uv: keep.pick(scan.uv, 2),
-    regions: keep.pick(regions, 12),
-    identities: { A: { position: keep.pick(base, 3), normal: keep.pick(NB, 3) }, B: { position: keep.pick(baseB, 3), normal: keep.pick(NBB, 3) } },
-    morphs: MORPHS.map((name) => ({ name, position: keep.pick(deltas[name], 3), normal: keep.pick(normalDeltas[name], 3) })),
+    count: keep.count + lashA.count,
+    index: cat(keep.remapIndex, Uint16Array.from(lashA.index, (v) => v + keep.count)),
+    uv: cat(keep.pick(scan.uv, 2), lashA.uv),
+    regions: cat(keep.pick(regions, 12), new Uint8Array(lashA.count * 12)),
+    identities: {
+      A: { position: cat(keep.pick(base, 3), lashA.position), normal: cat(keep.pick(NB, 3), lashA.normal) },
+      B: { position: cat(keep.pick(baseB, 3), lashB.position), normal: cat(keep.pick(NBB, 3), lashB.normal) },
+    },
+    morphs: MORPHS.map((name) => ({ name, position: cat(keep.pick(deltas[name], 3), lashMorphs[name].position), normal: cat(keep.pick(normalDeltas[name], 3), lashMorphs[name].normal) })),
+    lashes: { start: keep.remapIndex.length, count: lashA.index.length },
     eyes: eyes.map((e) => ({ centre: e.centre })),
     mouth: { pivot: MOUTH.pivot, angle: MOUTH.angle, rest: MOUTH.rest, lipY: lips.y(0), lipZ: lips.z(0), corners: [lips.lo, lips.hi] },
   };
@@ -228,5 +251,5 @@ export async function bakeHead(assetsDir, outDir) {
   await sharp(albedo.data, { raw: { width: albedo.w, height: albedo.h, channels: albedo.c } }).webp({ quality: 92, smartSubsample: true }).toFile(join(outDir, files.albedo));
   await sharp(join(assetsDir, 'Infinite-Level_02_Tangent_SmoothUV.jpg')).webp({ quality: 95 }).toFile(join(outDir, files.normal));
   await sharp(join(assetsDir, 'Map-SPEC.jpg')).greyscale().webp({ quality: 90 }).toFile(join(outDir, files.spec));
-  return { files, count: head.count, indexCount: head.index.length, sections, morphs: MORPHS, eyes: head.eyes, eyeRadius: EYE.radius, mouth: head.mouth };
+  return { files, count: head.count, indexCount: head.index.length, lashes: head.lashes, sections, morphs: MORPHS, eyes: head.eyes, eyeRadius: EYE.radius, mouth: head.mouth };
 }

@@ -1,10 +1,12 @@
 // Skin: the scan's albedo, normals and specular map on a physical material whose diffuse light is
 // pre-integrated subsurface scattering (Penner 2011) — light bleeds red past the terminator where
 // the surface curves tightly (nose, lips, ears), while flat skin stays crisp — plus light shining
-// through thin parts (ears and nostrils glow in front of the fires), and rain on the face.
+// through thin parts (ears and nostrils glow in front of the fires), a fine sheen of vellus hair
+// that rims the face against back light, and rain on the face.
 import * as THREE from 'three/webgpu';
 import { attribute, texture, uv, vec2, vec3, vec4, float, mix, normalize, dot, pow, exp, max, smoothstep, normalMap, normalView, normalViewGeometry, normalWorldGeometry, positionViewDirection, positionWorld, cameraViewMatrix, diffuseContribution, BRDF_Lambert, uniform } from 'three/tsl';
 import { noise } from './tsl.js';
+import { faceLit, inPlace } from './face-light.js';
 
 // d'Eon & Luebke's six-Gaussian skin diffusion profile: variance (mm²) and RGB weights.
 const PROFILE = [
@@ -55,9 +57,9 @@ export function skinLUT() {
 // Per-vertex skin data from the bake: x curvature (2 mm / radius), y thickness (/30 mm).
 const skinData = () => attribute('skinData', 'vec4');
 
-class SkinLighting extends THREE.PhysicalLightingModel {
+class SkinLighting extends faceLit(THREE.PhysicalLightingModel) {
   constructor(lut) {
-    super(true);
+    super(true, true);
     this.lut = lut;
   }
 
@@ -104,8 +106,9 @@ function rainOnSkin(drops) {
 // maps: { albedo, normal, spec }; look: { tint, root (hair colour at the scalp), beard (0..1),
 // scar (0..1) }; drops: baked droplet set. Returns the material and its live uniforms.
 export function createSkin(maps, look, drops, lut) {
-  const m = new SkinNodeMaterial({ name: `skin${look.id}`, roughness: 0.55, ior: 1.4, clearcoat: 1, clearcoatRoughness: 0.12 });
+  const m = new SkinNodeMaterial({ name: `skin${look.id}`, roughness: 0.55, ior: 1.4, clearcoat: 1, clearcoatRoughness: 0.12, sheen: 1, sheenColor: new THREE.Color(0.3, 0.25, 0.21), sheenRoughness: 0.45 });
   m.lut = lut;
+  m.positionNode = inPlace();
   const live = { effort: uniform(0), wet: uniform(0.55) };
   const a = attribute('regionA', 'vec4');
   const b = attribute('regionB', 'vec4');
@@ -114,6 +117,8 @@ export function createSkin(maps, look, drops, lut) {
   const albedo = texture(maps.albedo, uv()).rgb.mul(vec3(...look.tint));
   let c = mix(albedo, vec3(...look.root), a.x.mul(0.62));
   c = mix(c, vec3(...look.root).mul(0.8), a.y.mul(look.beard * 0.7));
+  // The brows are mostly the skin's own colour: the short hairs on top only add their texture.
+  c = mix(c, c.mul(0.45).add(vec3(...look.root).mul(0.25)), a.z.mul(0.6));
   c = mix(c, c.mul(vec3(1.14, 0.9, 0.88)), b.z.mul(live.effort));
   c = mix(c, vec3(0.6, 0.36, 0.33), b.w.mul(look.scar * 0.75));
   c = mix(c, vec3(0.3, 0.12, 0.1), lining);

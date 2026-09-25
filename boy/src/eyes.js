@@ -5,6 +5,7 @@ import * as THREE from 'three/webgpu';
 import { Fn, positionLocal, normalWorld, modelWorldMatrixInverse, cameraPosition, vec2, vec3, vec4, float, normalize, refract, length, atan, smoothstep, mix, min, max, uniform, PI } from 'three/tsl';
 import { EYE, eyeFront, CORNEA_Z, LIMBUS_Z, LIMBUS_ANGLE } from './eye-shape.js';
 import { noise } from './tsl.js';
+import { FaceLitMaterial } from './face-light.js';
 
 // Iris plane just behind the limbus; the anterior chamber in front of it is ~3 mm deep.
 const IRIS_Z = LIMBUS_Z - 0.0004;
@@ -29,7 +30,7 @@ export function eyeGeometry() {
 
 // iris: linear RGB of the iris; pupil: pupil radius as a share of the iris radius.
 export function eyeMaterial(id, iris) {
-  const m = new THREE.MeshPhysicalNodeMaterial({ name: `eye${id}`, roughness: 0.22, ior: 1.376, clearcoat: 1, clearcoatRoughness: 0.03 });
+  const m = new FaceLitMaterial({ name: `eye${id}`, roughness: 0.22, ior: 1.376, clearcoat: 1, clearcoatRoughness: 0.03 });
   const live = { pupil: uniform(0.5) };
   const shade = Fn(() => {
     const p = positionLocal;

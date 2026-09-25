@@ -5,9 +5,10 @@ import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, animateWorld } from './world.js';
 import { QUALITY, initialTier, createGovernor } from './quality.js';
-import { createDirector, realTimeOf, storyTimeAtReal, REAL_DURATION, SHOT_COUNT } from './director.js';
+import { createDirector, realTimeOf, storyTimeAtReal, REAL_DURATION, SHOT_COUNT, FRAME_ASPECT } from './director.js';
 import { createPipeline } from './pipeline.js';
 import { U } from './tsl.js';
+import { FACE_LIGHT } from './face-light.js';
 import { createAudio } from './audio.js';
 import { createHud } from './hud.js';
 import { createEvents } from './events.js';
@@ -84,13 +85,17 @@ async function main() {
   // The canvas is laid out at display size; its drawing buffer (where every pass renders) is a
   // governed fraction of the device resolution, and the browser scales it up to the display.
   const governor = createGovernor();
+  const MIN_SHORT_SIDE = 600;
   const out = new THREE.Vector2();
   const internal = new THREE.Vector2();
   function resize() {
     const w = window.innerWidth;
     const hh = window.innerHeight;
     const dpr = window.devicePixelRatio || 1;
-    renderer.setPixelRatio(Math.max(0.25, Math.min(dpr, quality.maxDPR) * governor.scale));
+    // A phone's short side is ~400 CSS px: at the tier's ratio a face would be a dozen pixels,
+    // so small screens render at least 600 px across it when the display has them.
+    const ratio = Math.max(Math.min(dpr, quality.maxDPR), Math.min(dpr, MIN_SHORT_SIDE / Math.min(w, hh)));
+    renderer.setPixelRatio(Math.max(0.25, ratio * governor.scale));
     renderer.setSize(w, hh, false);
     renderer.getDrawingBufferSize(internal);
     out.set(Math.round(w * dpr), Math.round(hh * dpr));
@@ -203,11 +208,8 @@ async function main() {
     if (!free) {
       director.update(T, dtReal, A, B);
       focusDist = director.state.focusDist;
-      coc = director.cocScale(internal.y);
-      W.face.position.copy(camera.position).add(tmp.set(-0.95, 0.55, 0.25).applyQuaternion(camera.quaternion));
-      W.face.intensity = director.state.key * 1.1;
+      coc = director.cocScale(Math.min(internal.y, internal.x / FRAME_ASPECT));
     } else {
-      W.face.intensity = 0;
       controls.target.lerp(tmp.copy(center).setY(1.2), 1 - Math.exp(-dtReal * 2));
       controls.update();
       focusDist = camera.position.distanceTo(controls.target);
@@ -215,6 +217,9 @@ async function main() {
       camera.updateProjectionMatrix();
       coc = internal.y * 0.004;
     }
+    // The face light: always enough for the faces to read, more in close-ups, with the
+    // fires' slow breathing.
+    FACE_LIGHT.level.value = (0.5 + 0.6 * (free ? 0 : director.state.key)) * (0.95 + 0.05 * Math.sin(T * 9.1) * Math.sin(T * 3.7));
     if (csm?.camera && camera.fov !== lastFov) csm.updateFrustums();
     lastFov = camera.fov;
     W.rain.streak.value = 0.32 * THREE.MathUtils.clamp(clock.playing ? ts * clock.speed : 0.05, 0.05, 1);

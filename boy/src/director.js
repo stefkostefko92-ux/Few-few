@@ -102,6 +102,14 @@ const SHOTS = [
 ];
 export const SHOT_COUNT = SHOTS.length;
 
+// The shots are framed for 16:9. A narrower screen (a phone held upright) keeps the frame's width
+// and sees more above and below, so both fighters stay in the picture.
+export const FRAME_ASPECT = 16 / 9;
+export function fitFov(fov, aspect) {
+  if (aspect >= FRAME_ASPECT) return fov;
+  return THREE.MathUtils.radToDeg(2 * Math.atan((Math.tan(THREE.MathUtils.degToRad(fov) / 2) * FRAME_ASPECT) / aspect));
+}
+
 export function createDirector(camera, { reducedMotion }) {
   const S = { u: new THREE.Vector3(), v: new THREE.Vector3(), C: new THREE.Vector3(), fwdA: new THREE.Vector3(), EA: new THREE.Vector3(), EB: new THREE.Vector3(), A: null, B: null };
   S.P = (a, b, h) => S.C.clone().addScaledVector(S.u, a).addScaledVector(S.v, b).add(V(0, h, 0));
@@ -145,7 +153,7 @@ export function createDirector(camera, { reducedMotion }) {
       const shake = state.trauma * state.trauma;
       e.set(noise(rt * 0.9, 3) * 0.006 * hand + noise(rt * 22, 4) * 0.03 * shake, noise(rt * 0.7, 5) * 0.008 * hand + noise(rt * 21, 6) * 0.03 * shake, noise(rt * 19, 7) * 0.02 * shake);
       camera.quaternion.copy(q).multiply(new THREE.Quaternion().setFromEuler(e));
-      camera.fov = s.fov;
+      camera.fov = fitFov(s.fov, camera.aspect);
       camera.updateProjectionMatrix();
       // Close-ups hold focus on the eyes.
       const fp = s.focus === 'A' ? S.EA : s.focus === 'B' ? S.EB : s.focus === 'C' ? S.C.clone().add(V(0, 1.3, 0)) : s.focus;
@@ -156,11 +164,12 @@ export function createDirector(camera, { reducedMotion }) {
       state.lensMM = (SENSOR_H / 2 / Math.tan(THREE.MathUtils.degToRad(s.fov) / 2)) * 1000;
       return cut;
     },
-    // Circle-of-confusion scale in pixels for the post pass (thin-lens model).
-    cocScale(screenH) {
+    // Circle-of-confusion scale in pixels for the post pass (thin-lens model); frameH is the
+    // height of the 16:9 frame the lens covers.
+    cocScale(frameH) {
       const f = state.lensMM / 1000;
       const s = Math.max(state.focusDist, f * 2);
-      return ((f * f) / (state.fstop * (s - f)) / SENSOR_H) * screenH * 0.5;
+      return ((f * f) / (state.fstop * (s - f)) / SENSOR_H) * frameH * 0.5;
     },
   };
 }

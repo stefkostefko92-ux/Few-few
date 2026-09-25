@@ -1,6 +1,7 @@
-// The head bake: open eyes that show the iris and close in a blink, lids that never cut into the
-// eyeballs, lips that meet at rest and part with the jaw, a Warden who differs from Ser Aldric
-// everywhere but around the eyes, and arrays the renderer can load as they are.
+// The head bake: open eyes that show the iris and close in a blink, lids (and lashes) that never
+// cut into the eyeballs, lashes that ride the lid margins, lips that meet at rest and part with
+// the jaw, a Warden who differs from Ser Aldric everywhere but around the eyes, and arrays the
+// renderer can load as they are.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -109,5 +110,35 @@ test('hair grows on the crown, the beard stays off the brow, wet lining only in 
       const near = head.eyes.some(({ centre: c }) => Math.hypot(x - c[0], y - c[1], z - c[2]) < 0.025) || Math.hypot(x, y - 0.045, z - 0.078) < 0.04;
       assert.ok(near, 'wet lining outside the eyes and mouth');
     }
+  }
+});
+
+test('the lashes grow from the lid margins, ride a blink down and point away from the eyes', () => {
+  const first = Math.min(...head.index.subarray(head.lashes.start));
+  assert.equal(head.lashes.start + head.lashes.count, head.index.length);
+  const roots = [];
+  for (let i = first; i < head.count; i++) if (head.uv[i * 2 + 1] === 0) roots.push(i);
+  assert.ok(roots.length >= 80, `${roots.length} lash roots`);
+  const eyeOf = (r) => (Math.abs(A[r * 3] - head.eyes[0].centre[0]) < Math.abs(A[r * 3] - head.eyes[1].centre[0]) ? 0 : 1);
+  for (const w of [{}, { blinkR: 1 }, { blinkL: 1 }, { squint: 1 }, { browDown: 1 }]) {
+    const P = posed(w);
+    for (const r of roots) {
+      let near = Infinity;
+      for (let i = 0; i < first; i++) near = Math.min(near, Math.hypot(P[i * 3] - P[r * 3], P[i * 3 + 1] - P[r * 3 + 1], P[i * 3 + 2] - P[r * 3 + 2]));
+      assert.ok(near < 0.0025, `${JSON.stringify(w)}: a lash root hangs ${(near * 1000).toFixed(2)} mm off the lid`);
+    }
+  }
+  head.eyes.forEach(({ centre: c }, k) => {
+    const P = posed({ [k ? 'blinkL' : 'blinkR']: 1 });
+    const upper = roots.filter((r) => eyeOf(r) === k && A[r * 3 + 1] > c[1]);
+    const drop = upper.reduce((sum, r) => sum + P[r * 3 + 1] - A[r * 3 + 1], 0) / upper.length;
+    assert.ok(drop < -0.003, `eye ${k}: the upper lashes drop ${(drop * 1000).toFixed(1)} mm in a blink`);
+  });
+  for (const r of roots) {
+    const c = head.eyes[eyeOf(r)].centre;
+    const dist = (i) => Math.hypot(A[i * 3] - c[0], A[i * 3 + 1] - c[1], A[i * 3 + 2] - c[2]);
+    let tip = r + 1;
+    while (head.uv[tip * 2 + 1] !== 1) tip++;
+    assert.ok(dist(tip) - dist(r) > 0.001, 'a lash grows into the eye');
   }
 });

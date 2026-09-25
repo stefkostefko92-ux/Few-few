@@ -1,28 +1,30 @@
 // The knights' bare heads: the processed scan (tex/head.json from bake/head.mjs) with its
-// expression targets, eyeballs, teeth, cropped hair and the Warden's beard, following the rig's
-// head joint. Without the files (a page opened from disk) the knights keep their helmets.
+// expression targets, eyeballs, lashes, teeth, cropped hair and the Warden's beard, following the
+// rig's head joint. Without the files (a page opened from disk) the knights keep their helmets.
 import * as THREE from 'three/webgpu';
 import { decode, configure } from './baked.js';
 import { createSkin, skinLUT } from './skin.js';
 import { eyeGeometry, eyeMaterial, aimEye } from './eyes.js';
 import { shellGeometry, hairMaterial } from './hair.js';
+import { lashMaterial } from './lashes.js';
 import { createTeeth } from './teeth.js';
 import { FaceDriver, EXPRESSIONS } from './face.js';
 import { EYES_LOCAL } from './config.js';
 
 // Ser Aldric: fair, grey-blue eyes, light-brown hair in the knights' bowl cut of the 1410s
 // (cropped on the crown, shaved below). The Warden: weathered, brown eyes, a shaved head and a
-// dark beard shot with grey, a scar through the left brow.
+// near-black beard shot with grey, a scar through the left brow. Light against dark, so the two
+// read apart even as a few pixels on a phone.
 const LOOK = {
-  A: { tint: [1.0, 0.97, 0.95], root: [0.075, 0.048, 0.026], beard: 0, scar: 0, iris: [0.2, 0.3, 0.38], hair: { crown: 0.017, sides: 0.0022, line: 0.166, beard: 0, brow: 0.005, colour: [0.2, 0.125, 0.065], grey: 0 } },
-  B: { tint: [0.9, 0.8, 0.72], root: [0.03, 0.022, 0.018], beard: 1, scar: 1, iris: [0.16, 0.09, 0.045], hair: { crown: 0.004, sides: 0.004, line: 0, beard: 0.017, brow: 0.0065, colour: [0.045, 0.032, 0.025], grey: 0.32 } },
+  A: { tint: [1.0, 0.97, 0.95], root: [0.13, 0.085, 0.045], beard: 0, scar: 0, iris: [0.2, 0.3, 0.38], lash: [0.05, 0.035, 0.022], hair: { crown: 0.017, sides: 0.0022, line: 0.166, beard: 0, brow: 0.0028, colour: [0.24, 0.15, 0.075], grey: 0 } },
+  B: { tint: [0.9, 0.8, 0.72], root: [0.03, 0.022, 0.018], beard: 1, scar: 1, iris: [0.16, 0.09, 0.045], lash: [0.025, 0.02, 0.017], hair: { crown: 0.004, sides: 0.004, line: 0, beard: 0.017, brow: 0.0038, colour: [0.04, 0.03, 0.024], grey: 0.3 } },
 };
 
 export async function loadHeadAsset(base, anisotropy) {
   try {
     const res = await fetch(`${base}manifest.json`);
     const meta = res.ok ? (await res.json()).head : null;
-    if (!meta || meta.morphs.join() !== EXPRESSIONS.join()) return null;
+    if (!meta || meta.morphs.join() !== EXPRESSIONS.join() || !meta.lashes) return null;
     const packed = await fetch(`${base}${meta.files.data}`).then((r) => {
       if (!r.ok) throw new Error(`head: HTTP ${r.status}`);
       return r.json();
@@ -59,6 +61,9 @@ function headGeometry({ meta, binary }, id) {
   g.morphAttributes.position = meta.morphs.map((m) => new THREE.BufferAttribute(get(`morph:${m}:position`), 3));
   g.morphAttributes.normal = meta.morphs.map((m) => new THREE.BufferAttribute(get(`morph:${m}:normal`), 3));
   g.morphTargetsRelative = true;
+  // The skin, then the lashes' strip.
+  g.addGroup(0, meta.lashes.start, 0);
+  g.addGroup(meta.lashes.start, meta.lashes.count, 1);
   g.computeBoundingSphere();
   return g;
 }
@@ -73,7 +78,8 @@ export function createHead(asset, id, drops) {
   const { meta } = asset;
   const geometry = headGeometry(asset, id);
   const skin = createSkin(asset.maps, { id, ...look }, drops, asset.lut);
-  const mesh = new THREE.Mesh(geometry, skin.material);
+  const lashes = lashMaterial(id, look.lash);
+  const mesh = new THREE.Mesh(geometry, [skin.material, lashes.material]);
   mesh.name = `head${id}`;
   mesh.morphTargetInfluences = new Array(EXPRESSIONS.length).fill(0);
   mesh.castShadow = mesh.receiveShadow = true;
@@ -100,7 +106,7 @@ export function createHead(asset, id, drops) {
   return {
     group,
     face,
-    materials: [skin.material, hair.material, eye.material, teeth.material],
+    materials: [skin.material, lashes.material, hair.material, eye.material, teeth.material],
     // head: the rig's head matrix; other: the opponent's; wet: rain on the skin (0..1).
     update(head, T, breath, other, wet) {
       group.matrix.copy(head);
@@ -124,6 +130,7 @@ export function createHead(asset, id, drops) {
       skin.live.effort.value = Math.min(1, 0.6 * o.snarl + 0.4 * o.jawOpen);
       skin.live.wet.value = wet;
       hair.live.wet.value = wet;
+      lashes.live.wet.value = wet;
       eye.live.pupil.value = face.pupil;
     },
   };
