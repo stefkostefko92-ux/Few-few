@@ -1,0 +1,37 @@
+name: boy
+
+on:
+  push:
+    paths:
+      - 'boy/**'
+      - '.github/workflows/boy.yml'
+  pull_request:
+    paths:
+      - 'boy/**'
+      - '.github/workflows/boy.yml'
+
+concurrency:
+  group: boy-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: boy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: boy/package-lock.json
+      - run: npm ci
+      # Синтаксис · правила на пакета · договор на страницата → тестове (вкл. симулация на двубоя) → билд.
+      - run: npm run gate
