@@ -72,6 +72,10 @@ export function dashReader(ref = null, cwd = ROOT) {
 }
 
 const DOCS_TAG = '<script src="./docs.js"></script>';
+// Кинематографичният галактически рендер (agents-dashboard/galaxy/, бъндвано от galaxy/build.mjs)
+// се вгражда точно като docs.js — по-стари върхове на паметта (преди 2026-09-25) нямат тага, значи
+// вграждането е УСЛОВНО (виж build(), огледално на m3d по-долу), за да не чупи стар артифакт-билд.
+const GALAXY_TAG = '<script src="./galaxy.js"></script>';
 const IMG_SRC = 'src="./mascots/${encodeURIComponent(id)}-icon3d.webp"';
 const IMG_SRC_INLINE = "src=\"${MASCOT_ICONS[id] || ''}\"";
 // 3D навсякъде (собственика, 2026-09-24): `mascot3d.js` е external-three ESM зареждан лениво с
@@ -197,6 +201,13 @@ export function build(dash = DASH, reader = null) {
   if (!html.includes(DOCS_TAG)) throw new Error(`не намирам ${DOCS_TAG} — таблото е сменено`);
   html = html.replace(DOCS_TAG, `<script>\n${docs}\n</script>`);
 
+  // Галактиката: условно (виж бележката при GALAXY_TAG) — по-стари върхове на паметта я нямат.
+  let galaxy = "";
+  if (html.includes(GALAXY_TAG)) {
+    galaxy = rd.read("galaxy.js").trim();
+    html = html.replace(GALAXY_TAG, `<script>\n${galaxy}\n</script>`);
+  }
+
   const icons = mascotDataUris(join(dash, "mascots"), reader);
   if (!html.includes(IMG_SRC)) throw new Error("не намирам <img src> към mascots/ — таблото е сменено");
   html = html.replace(IMG_SRC, IMG_SRC_INLINE);
@@ -215,7 +226,7 @@ export function build(dash = DASH, reader = null) {
     html = `${html.slice(0, at)}${mascot3dLoader(m3d)}\n${html.slice(at)}`.split(MASCOT3D_IMPORT).join(MASCOT3D_IMPORT_INLINE);
   }
 
-  assertPublishable(html, { "docs.js": docs, "маскоти": JSON.stringify(icons) });
+  assertPublishable(html, { "docs.js": docs, "galaxy.js": galaxy, "маскоти": JSON.stringify(icons) });
 
   const lessons = [...html.matchAll(/"lessons":\s*(\d+)/g)].map((m) => Number(m[1]));
   return { html, icons: Object.keys(icons).length, agents: lessons.length, lessons: lessons.reduce((a, b) => a + b, 0) };

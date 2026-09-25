@@ -39,6 +39,7 @@ const CHECKS = [
   { id: "def-freshness", desc: "свежест на дефинициите (без просрочени срокове)", cmd: ["tools/agents/def-freshness.mjs"] },
   { id: "consistency", desc: "противоречия/безизточникови verified в паметта", cmd: ["tools/agents/consistency-audit.mjs", "--check"] },
   { id: "mascots", desc: "всеки агент носи маскота от mascot/, пребоядисан в акцента си", cmd: ["tools/agents/mascot-theme.mjs", "--check"] },
+  { id: "galaxy", desc: "рендерът на галактиката (agents-dashboard/galaxy): check → тестове → билд, galaxy.js свеж", cmd: ["agents-dashboard/galaxy/gate.mjs"] },
   { id: "dashboard-sync", desc: "таблото не лъже за знанието (agents.json ↔ реалния брой поуки в _memory)", cmd: ["tools/agents/sync-dashboard.mjs", "--check"] },
   { id: "loop-audit", desc: "readiness на автоматизациите (автономия-стълба)", cmd: ["tools/agents/loops/loop-audit.mjs"] },
   { id: "recovery-audit", desc: "стълбата провал→възстановяване е цяла", cmd: ["tools/agents/recovery-audit.mjs"] },

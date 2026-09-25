@@ -207,6 +207,10 @@
 <div id="list"><div class="grid" id="grid"></div></div>
 <div id="docs"><div class="inner"><div class="doctabs" id="docstabs"></div><div style="color:var(--mut);font-size:12px;margin-bottom:10px">генерирано: <span id="docsgen">—</span> · източник: живите <code>CLAUDE.md</code> файлове</div><div class="md-doc" id="docsbody"></div></div></div>
 
+<!-- Кинематографичният галактически рендер (спираловидна структура, bloom/ACES/TAA) живее в
+     galaxy/src/*.js, бъндвано в galaxy.js от galaxy/build.mjs (window.Galaxy). Зарежда се ПРЕДИ
+     главния скрипт — build-artifact.mjs го вгражда инлайн точно като docs.js. -->
+<script src="./galaxy.js"></script>
 <script>
 // Вграден снимков фалбек — работи и при отваряне като файл (file://) или като Artifact.
 // Каноничният източник е agents.json; ако fetch успее, той надделява.
@@ -15287,255 +15291,40 @@ galaxyImg.onload = () => {
   galReady = true;
 };
 galaxyImg.src = GALAXY_SRC;
-
 /* ================= HDR галактически пайплайн (WebGL2) =========================
-   Сцена (MRT: HDR цвят + bright-extract) → 2 нива downsample+blur (физически bloom,
-   не постфилтър) → композит (ACES filmic tonemap + хроматична аберация само на
-   ярките ръбове + филмово зърно), screen-blend над 2D слоя (`#sky`: снимката +
-   звездите-агенти непроменени архитектурно). Виньетата ОСТАВА в 2D слоя
-   (`drawGalaxy` по-долу) — screen blend математически може само да ИЗСВЕТЛИ фона
-   (1-(1-a)(1-b) ≥ a), никога да го затъмни, значи виньета тук е невъзможна by design.
+   Живее в galaxy/src/pipeline.js+shaders.js (бъндвано в galaxy.js, window.Galaxy.createGalaxy) —
+   спираловидна структура + bulge + HII области + емисионни мъглявини + JWST-стил диафракционни
+   лъчи → 2 нива downsample+blur (физически bloom) → композит (по-мек bloom коляно + halation +
+   ACES filmic tonemap + хроматична аберация само на ярките ръбове + филмово зърно + TAA-подобно
+   натрупване), screen-blend над 2D слоя (`#sky`: снимката + звездите-агенти непроменени
+   архитектурно). Виньетата и тъмните прашни ленти ОСТАВАТ в 2D слоя (backdrop.drawPhoto/drawDust
+   по-долу) — screen blend математически може само да ИЗСВЕТЛИ фона (1-(1-a)(1-b) ≥ a), никога да
+   го затъмни, значи Beer–Lambert поглъщане тук е невъзможно by design.
    Зърното е независим шум на пиксел — няма голяма синхронна площ, която да „проблясва"
    (WCAG 2.3.1 говори за областен flash, не per-pixel dither), амплитудата е <10%.
-   Под prefers-reduced-motion: времето и зърното замръзват на фиксиран кадър — статика,
-   не луп. Без WebGL2 → nebOK остава false → 2D слоят носи целия рендер сам (резервът
-   е архитектурен, не added-on-top). Адаптивно качество: octaves/starLayers/резолюция
-   падат тихо при устойчиво бавен кадър (виж adaptQuality в loop()). */
+   Под prefers-reduced-motion: времето и зърното замръзват на фиксиран кадър — статика, не луп.
+   Без WebGL2 (window.Galaxy.createGalaxy връща {ready:false}) → 2D слоят носи целия рендер сам
+   (резервът е архитектурен, не added-on-top). */
 const nebCv = document.getElementById("neb");
-let nebOK = false;
-const NEB = { gl: null, progs: {}, quad: null, scene: null, bloomA: null, bloomB: null, skyTex: null, hasFloat: false, w: 0, h: 0, oct: 6, stars: 3, tier: 0, frame: 0 };
-(function initNeb() {
-  try {
-    const gl = nebCv.getContext("webgl2", { alpha: true, premultipliedAlpha: false, antialias: false, depth: false, powerPreference: "high-performance" });
-    if (!gl) return;
-    NEB.hasFloat = !!gl.getExtension("EXT_color_buffer_float");
-    const VS = `#version 300 es
-      in vec2 p; out vec2 vUv;
-      void main(){ vUv = p*0.5+0.5; gl_Position = vec4(p,0.,1.); }`;
-    const NOISE_LIB = `
-      // РЕАЛНАТА причина за бледите правоъгълни „плочки" във фона (собственикова бележка, кръг 4):
-      // класическият sin(dot(p,...))*43758.5453 hash губи прецизност при по-големи аргументи (p расте
-      // през fbm октавите ×2.02 всеки път + мащаб по време) — sin() на някои GPU/ANGLE/SwiftShader
-      // имплементации банди вместо да остане псевдослучаен, значи цели решетъчни клетки излизат с
-      // еднакъв тон. Fix: hash без тригонометрия (fract/dot верига, същият стил като hash21/hash22
-      // по-долу) — стабилен за произволно големи входове, доказано с изолация (starLayer→0, bloom→0,
-      // зърно→0 — плочките ОЦЕЛЯХА, значи причината е тук, не в bloom/starfield/grain).
-      float hash(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-      float hash21(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p,p+45.32); return fract(p.x*p.y); }
-      vec2 hash22(vec2 p){ return vec2(hash21(p), hash21(p+19.19)); }
-      float noise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f); float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1)); return mix(mix(a,b,f.x),mix(c,d,f.x),f.y); }
-      float fbm(vec2 p, int oct){ float v=0.,a=.5; for(int i=0;i<8;i++){ if(i>=oct) break; v+=a*noise(p); p=p*2.02+vec2(1.7,9.2); a*=.52; } return v; }
-      float ridge(vec2 p, int oct){ float v=0.,a=.5; for(int i=0;i<8;i++){ if(i>=oct) break; float n=1.0-abs(noise(p)*2.0-1.0); v+=a*n*n; p=p*2.05+vec2(3.1,-2.7); a*=.5; } return v; }
-      vec3 blackbody(float t){
-        vec3 warm=vec3(1.0,0.55,0.22), mid=vec3(1.0,0.93,0.82), hot=vec3(0.66,0.76,1.0);
-        vec3 c = mix(warm, mid, smoothstep(0.0,0.5,t));
-        return mix(c, hot, smoothstep(0.5,1.0,t));
-      }
-      vec3 starLayer(vec2 uv, float seed, float cells, float twT){
-        vec2 guv = uv*cells; vec2 id = floor(guv); vec2 gv = fract(guv)-0.5; vec3 col = vec3(0.0);
-        for (int y=-1;y<=1;y++) for (int x=-1;x<=1;x++) {
-          vec2 off = vec2(float(x),float(y)); vec2 cid = id+off; vec2 h = hash22(cid+seed);
-          float present = step(0.865, h.x);
-          vec2 jitter = (h-0.5)*0.86; vec2 d = gv - off - jitter;
-          float bMag = pow(hash21(cid+seed+7.7), 3.2);
-          float size = mix(0.018, 0.075, bMag);
-          float glow = pow(size/(length(d)+0.0018), 1.55) * present;
-          float tw = twT > -0.5 ? (0.78 + 0.22*sin(twT*6.0 + h.x*44.0)) : 1.0;
-          col += blackbody(hash21(cid+seed+3.3)) * glow * bMag * tw;
-        }
-        return col;
-      }`;
-    const SCENE_FS = `#version 300 es
-      precision highp float; in vec2 vUv;
-      uniform vec2 uRes; uniform float uT; uniform vec2 uPar; uniform int uOct; uniform int uStars; uniform sampler2D uSky;
-      layout(location=0) out vec4 outScene; layout(location=1) out vec4 outBright;
-      ${NOISE_LIB}
-      void main(){
-        vec2 ar = vec2(uRes.x/max(uRes.y,1.0), 1.0);
-        vec2 pc = (vUv-0.5)*ar;
-        vec2 par = uPar;
-        vec2 p1 = pc*2.6 + par*0.10 + vec2(0.0, uT*0.010);
-        vec2 q = vec2(fbm(p1+vec2(0.,uT*0.012), uOct), fbm(p1+vec2(5.2,1.3)-uT*0.010, uOct));
-        float f = fbm(p1 + q*2.1 + uT*0.03, uOct);
-        float dust = ridge(p1*1.7 + q*1.4, max(3, uOct-2));
-        vec3 nebCol = mix(vec3(0.015,0.02,0.05), vec3(0.34,0.10,0.46), smoothstep(0.15,0.85,f));
-        nebCol = mix(nebCol, vec3(0.02,0.42,0.55), pow(max(f,0.0),3.0)*0.75);
-        nebCol += vec3(0.30,0.10,0.42) * pow(max(f,0.0),4.0);
-        nebCol *= mix(1.0, 0.22, smoothstep(0.35,0.85,dust));
-        float nebA = smoothstep(0.30,0.92,f) * 0.85;
-        vec3 nebEmit = nebCol * nebA;
-        // фоновият звезден прах пази СОБСТВЕНИЯ си мек спад (starLayer вече е физически falloff) — НЕ
-        // минава през downsample+blur пирамидата на bloom-а. Изолирана 1-2-текселна точка, прекарана
-        // през half/quarter-res blur, resonates с решетката на hash-мрежата (Moire) и излиза като остър,
-        // ос-подравнен „+" (собственикова бележка, кръг 2) — не мек ореол. Раздалечени звезди на екрана
-        // не бива физически да имат толкова широк bloom радиус колкото ярко ядро на агент отпред.
-        vec3 starsEmit = starLayer(pc + par*0.02, 11.0, 46.0, uT) * 0.9;
-        starsEmit += starLayer(pc + par*0.05, 47.0, 90.0, uT) * 0.55;
-        if (uStars > 2) starsEmit += starLayer(pc + par*0.09, 91.0, 150.0, uT) * 0.32;
-        vec3 skyCol = texture(uSky, vUv).rgb;
-        float skyLum = dot(skyCol, vec3(0.299,0.587,0.114));
-        vec3 skyEmit = skyCol * smoothstep(0.76, 1.15, skyLum) * 0.9;
-        vec3 hdr = nebEmit + starsEmit + skyEmit;
-        outScene = vec4(hdr, 1.0);
-        vec3 bloomSrc = nebEmit + skyEmit;                      // само мъглявина + принос от таблото
-        float lum = dot(bloomSrc, vec3(0.2126,0.7152,0.0722));
-        outBright = vec4(bloomSrc * smoothstep(1.05, 3.0, lum) + starsEmit * 0.1, 1.0);
-      }`;
-    const BLUR_FS = `#version 300 es
-      precision highp float; in vec2 vUv; out vec4 o;
-      uniform sampler2D uTex; uniform vec2 uTexel; uniform vec2 uDir;
-      void main(){
-        vec2 d = uDir*uTexel;
-        vec3 c = texture(uTex, vUv).rgb*0.227027;
-        c += texture(uTex, vUv+d*1.384615).rgb*0.316216 + texture(uTex, vUv-d*1.384615).rgb*0.316216;
-        c += texture(uTex, vUv+d*3.230769).rgb*0.070270 + texture(uTex, vUv-d*3.230769).rgb*0.070270;
-        o = vec4(c, 1.0);
-      }`;
-    const COMPOSITE_FS = `#version 300 es
-      precision highp float; in vec2 vUv; out vec4 o;
-      uniform sampler2D uScene, uBloom0, uBloom1; uniform float uGrain;
-      vec3 aces(vec3 x){ float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14; return clamp((x*(a*x+b))/(x*(c*x+d)+e), 0.0, 1.0); }
-      float hash13(vec3 p3){ p3 = fract(p3*0.1031); p3 += dot(p3, p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
-      void main(){
-        vec2 dir = vUv - 0.5;
-        float ca = length(dir) * 0.0028;
-        vec3 scene = texture(uScene, vUv).rgb;
-        vec3 bloom;
-        bloom.r = texture(uBloom0, vUv+dir*ca).r + texture(uBloom1, vUv+dir*ca*1.6).r;
-        bloom.g = texture(uBloom0, vUv).g + texture(uBloom1, vUv).g;
-        bloom.b = texture(uBloom0, vUv-dir*ca).b + texture(uBloom1, vUv-dir*ca*1.6).b;
-        vec3 hdr = scene + bloom * 0.55;
-        vec3 col = aces(hdr * 0.92);
-        col = pow(max(col, 0.0), vec3(0.4545));
-        float g = (hash13(vec3(vUv*vec2(1920.,1080.), uGrain)) - 0.5) * 0.035;
-        o = vec4(max(col + g, 0.0), 1.0);
-      }`;
-    const mk = (ty, s) => { const sh = gl.createShader(ty); gl.shaderSource(sh, s); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
-    const link = (fs) => { const prog = gl.createProgram(); gl.attachShader(prog, mk(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog)); return prog; };
-    const scene = link(SCENE_FS), blur = link(BLUR_FS), comp = link(COMPOSITE_FS);
-    const quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const wireQuad = (prog) => { gl.useProgram(prog); const lc = gl.getAttribLocation(prog, "p"); gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.enableVertexAttribArray(lc); gl.vertexAttribPointer(lc, 2, gl.FLOAT, false, 0, 0); };
-    NEB.gl = gl; NEB.quad = quad;
-    NEB.progs.scene = { p: scene, res: gl.getUniformLocation(scene, "uRes"), t: gl.getUniformLocation(scene, "uT"), par: gl.getUniformLocation(scene, "uPar"), oct: gl.getUniformLocation(scene, "uOct"), stars: gl.getUniformLocation(scene, "uStars"), sky: gl.getUniformLocation(scene, "uSky") };
-    NEB.progs.blur = { p: blur, tex: gl.getUniformLocation(blur, "uTex"), texel: gl.getUniformLocation(blur, "uTexel"), dir: gl.getUniformLocation(blur, "uDir") };
-    NEB.progs.comp = { p: comp, scene: gl.getUniformLocation(comp, "uScene"), b0: gl.getUniformLocation(comp, "uBloom0"), b1: gl.getUniformLocation(comp, "uBloom1"), grain: gl.getUniformLocation(comp, "uGrain") };
-    wireQuad(scene); wireQuad(blur); wireQuad(comp);
-    NEB.skyTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, NEB.skyTex);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 2, 2, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(16));
-    nebOK = true; nebResize();
-  } catch (e) { nebOK = false; }
-})();
-function nebMakeFBO(gl, w, h, n, useFloat) {
-  const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-  const texs = [], atts = [];
-  for (let i = 0; i < n; i++) {
-    const tx = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tx);
-    if (useFloat) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
-    else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, tx, 0);
-    texs.push(tx); atts.push(gl.COLOR_ATTACHMENT0 + i);
-  }
-  gl.drawBuffers(atts);
-  const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  return { fb, texs, w, h, ok };
-}
-function nebResize() {
-  if (!nebOK) return;
-  const gl = NEB.gl;
-  const q = [1, 0.72, 0.5][NEB.tier] ?? 1, d = Math.min(2, window.devicePixelRatio || 1) * q;
-  const w = Math.max(1, Math.round(nebCv.clientWidth * d)), h = Math.max(1, Math.round(nebCv.clientHeight * d));
-  if (w < 1 || h < 1) return;
-  nebCv.width = w; nebCv.height = h;
-  NEB.w = w; NEB.h = h;
-  let scene = nebMakeFBO(gl, w, h, 2, NEB.hasFloat);
-  if (!scene.ok && NEB.hasFloat) { NEB.hasFloat = false; scene = nebMakeFBO(gl, w, h, 2, false); }
-  NEB.scene = scene;
-  const hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1), qw = Math.max(1, w >> 2), qh = Math.max(1, h >> 2);
-  NEB.half = [nebMakeFBO(gl, hw, hh, 1, NEB.hasFloat), nebMakeFBO(gl, hw, hh, 1, NEB.hasFloat)];
-  NEB.quarter = [nebMakeFBO(gl, qw, qh, 1, NEB.hasFloat), nebMakeFBO(gl, qw, qh, 1, NEB.hasFloat)];
-}
-// РЕАЛНАТА причина за „сивите кръстчета" (собственикова бележка, кръг 2): H-проходът сваляше
-// резолюция (пише в half/quarter FBO), но крачката на семплиране (uTexel) взимаше размера на
-// ЦЕЛТА (destination), не на ИЗТОЧНИКА, докато чете от still-пълноразмерния bright-extract.两X
-// разминаване в стъпката подбива честотата на семплиране под тази на източника (classic aliasing) —
-// изолирана ярка точка от снимката/звезда минава без правилно prefilter-иране и излиза като остър,
-// ос-подравнен „+" вместо мек кръг. Фиксът: H-проходът взема texel от ИЗТОЧНИКА (srcW/srcH), не целта;
-// V-проходът чете fboA, което вече Е на целевата резолюция — там texel(dest) е верен.
-function nebBlurPass(gl, srcTex, srcW, srcH, fboA, fboB, w, h) {
-  const pr = NEB.progs.blur; gl.useProgram(pr.p); gl.viewport(0, 0, w, h);
-  gl.uniform1i(pr.tex, 0); gl.activeTexture(gl.TEXTURE0);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, fboA.fb); gl.bindTexture(gl.TEXTURE_2D, srcTex);
-  gl.uniform2f(pr.texel, 1 / srcW, 1 / srcH); gl.uniform2f(pr.dir, 1, 0); gl.drawArrays(gl.TRIANGLES, 0, 3);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, fboB.fb); gl.bindTexture(gl.TEXTURE_2D, fboA.texs[0]);
-  gl.uniform2f(pr.texel, 1 / w, 1 / h); gl.uniform2f(pr.dir, 0, 1); gl.drawArrays(gl.TRIANGLES, 0, 3);
-  return fboB.texs[0];
-}
-let nebSkyFrame = 0;
+const galaxy = (window.Galaxy && nebCv) ? window.Galaxy.createGalaxy(nebCv) : { ready: false };
+const nebOK = !!galaxy.ready;
+window.__GALAXY_READY__ = true; // сигнал за smoke теста — вдига се и при 2D резерв (архитектурен, не грешка)
+let nebLastTs = 0;
+function nebResize() { if (nebOK) galaxy.resize(nebCv.clientWidth, nebCv.clientHeight, window.devicePixelRatio || 1); }
+function nebAdaptQuality(dt) { if (nebOK) galaxy.adaptQuality(dt, nebCv.clientWidth, nebCv.clientHeight, window.devicePixelRatio || 1); }
 function drawNeb(time) {
-  if (!nebOK || !NEB.scene) return;
-  const gl = NEB.gl, W_ = NEB.w, H_ = NEB.h;
-  if (NEB.tier < 2 || (nebSkyFrame++ % 2 === 0)) {
-    gl.bindTexture(gl.TEXTURE_2D, NEB.skyTex);
-    // РЕАЛНАТА причина за огледалния „AI-джията" и сивите „кръстчета" (собственикова бележка, кръг 3):
-    // texImage2D от <canvas> БЕЗ UNPACK_FLIP_Y_WEBGL качва реда 0 (горе в 2D платното) като ред 0 на
-    // текстурата — което при нормален vUv (v=0 долу) се показва ОБЪРНАТО по Y и разместено. Ярък текст/
-    // диафракционен връх на звезда от горната половина „изтича" през bloom-прага на огледалната си
-    // позиция долу — призрачен, без цветния му ореол (подпикселно разминаване чупи фина подредба на
-    // градиента). true оправя ориентацията при качване, не при семплиране (нулева цена в кадъра).
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cv);
-  }
-  // проход 1: сцена (мъглявина + звезден фон + принос от таблото) → HDR цвят + bright-extract
-  gl.bindFramebuffer(gl.FRAMEBUFFER, NEB.scene.fb); gl.viewport(0, 0, W_, H_);
-  const ps = NEB.progs.scene; gl.useProgram(ps.p);
-  gl.uniform2f(ps.res, W_, H_); gl.uniform1f(ps.t, time); gl.uniform2f(ps.par, RM ? 0 : gxN(), RM ? 0 : gyN());
-  gl.uniform1i(ps.oct, NEB.oct); gl.uniform1i(ps.stars, NEB.stars);
-  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, NEB.skyTex); gl.uniform1i(ps.sky, 0);
-  gl.drawArrays(gl.TRIANGLES, 0, 3);
-  // проход 2: 2 нива downsample+blur (bloom) от bright-extract
-  const b0 = nebBlurPass(gl, NEB.scene.texs[1], W_, H_, NEB.half[0], NEB.half[1], NEB.half[0].w, NEB.half[0].h);
-  const b1 = nebBlurPass(gl, b0, NEB.half[0].w, NEB.half[0].h, NEB.quarter[0], NEB.quarter[1], NEB.quarter[0].w, NEB.quarter[0].h);
-  // проход 3: композит → канава (ACES tonemap + хроматична аберация + зърно)
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, W_, H_);
-  const pc = NEB.progs.comp; gl.useProgram(pc.p);
-  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, NEB.scene.texs[0]); gl.uniform1i(pc.scene, 0);
-  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, b0); gl.uniform1i(pc.b0, 1);
-  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, b1); gl.uniform1i(pc.b1, 2);
-  gl.uniform1f(pc.grain, RM ? 7.0 : time);
-  gl.drawArrays(gl.TRIANGLES, 0, 3);
-}
-/* Адаптивно качество: EMA на кадровото време; устойчиво бавен кадър → по-малко октави/
-   звездни слоеве/резолюция на bloom-а (nebResize пресъздава FBO-тата на новия tier);
-   устойчиво добър кадър → тих ъпгрейд, с хистерезис срещу трептене между нива. */
-let nebFpsEma = 60, nebTierT = 0;
-function nebAdaptQuality(dt) {
   if (!nebOK) return;
-  nebFpsEma = nebFpsEma * 0.94 + (1000 / Math.max(1, dt)) * 0.06;
-  nebTierT += dt;
-  if (nebTierT < 1200) return; nebTierT = 0;
-  if (nebFpsEma < 42 && NEB.tier < 2) { NEB.tier++; NEB.oct = Math.max(3, NEB.oct - 1); NEB.stars = Math.max(2, NEB.stars - 1); nebResize(); }
-  else if (nebFpsEma > 56 && NEB.tier > 0) { NEB.tier--; NEB.oct = Math.min(6, NEB.oct + 1); NEB.stars = Math.min(3, NEB.stars + 1); nebResize(); }
+  galaxy.render({ time, gx: gxN(), gy: gyN(), reducedMotion: RM, captureFromCanvas: cv, bloomSkip: galaxy.quality.state.tier < 2 ? 1 : 2 });
 }
 let W = 0, H = 0, DPR = 1, nodes = [], particles = [];
 let gal = 0, spin = 0, zoom = 1, t = 0, hovered = null, dragging = false, dragMoved = false, locate = null;
 let lastX = 0, lastY = 0, mx = -1e5, my = -1e5, view = "sky", query = "", booted = false;
-const ARMS = 3, TWIST = 2.6;
-let dust = [], meteors = [], nebulae = [], meteorT = 2 + Math.random() * 3, warp = null;
-function initSky() {
-  dust = Array.from({ length: 320 }, () => ({ nx: Math.random() * 2 - 1, ny: Math.random() * 2 - 1, d: 0.25 + Math.random() * 0.9, r: 0.4 + Math.random() * 1.6, ph: Math.random() * 6.28, tw: 1.3 + Math.random() * 2.5, warm: Math.random() < 0.22 }));
-  nebulae = [
-    { nx: -.42, ny: -.30, r: .52, c: "#3a2b6e", ph: 0 },
-    { nx: .48, ny: .10, r: .60, c: "#0e3b52", ph: 1.7 },
-    { nx: .06, ny: .46, r: .46, c: "#5a2450", ph: 3.3 },
-    { nx: -.30, ny: .36, r: .42, c: "#123f39", ph: 4.9 },
-  ];
-  meteors = [];
-}
+let warp = null;
+// Фоновият 2D слой (снимка + тъмни прашни ленти + амбиентни мъглявини + фин прах + метеори) живее
+// в galaxy/src/backdrop-*.js + meteors.js (window.Galaxy.createBackdrop) — не пипа звездите-агенти/
+// нишките/warp-а, които остават тук, непроменени.
+const backdrop = window.Galaxy ? window.Galaxy.createBackdrop(1) : null;
+function initSky() {} // историческа кука — backdrop се гради веднъж по-горе, нищо повече не трябва тук
 function gxN() { return mx < -1e4 ? 0 : (mx - W / 2) / (W / 2); }
 function gyN() { return my < -1e4 ? 0 : (my - H / 2) / (H / 2); }
 
@@ -15551,7 +15340,6 @@ function boot() {
   document.getElementById("title").textContent = (DATA.meta && DATA.meta.title) || "Лаборатория на агентите";
   document.getElementById("subtitle").textContent = (DATA.meta && DATA.meta.subtitle) || "";
   resize(); buildNodes(); buildLive(); buildList();
-  if (!dust.length) initSky();
   if (!booted) { booted = true; requestAnimationFrame(loop); }
 }
 // орбитиращи „поуки" около всяка звезда — брой ЛОГАРИТМИЧЕН спрямо проверените поуки (3–14, роякът на
@@ -15600,23 +15388,15 @@ function nodePos(nd, cx, cy, R) {
 }
 
 function drawGalaxy(cx, cy, R) {
+  if (backdrop) { backdrop.drawPhoto(ctx, W, H, cx, cy, R, galaxyImg, galaxyClean, galReady, { zoom, gal, reducedMotion: RM, gx: gxN(), gy: gyN() }); return; }
   ctx.fillStyle = "#00020a"; ctx.fillRect(0, 0, W, H);
-  if (galReady) {
-    const src = galaxyClean || galaxyImg; // despiked копие (виж galaxyImg.onload) — резерв: суровата снимка
-    const iw = galaxyImg.naturalWidth, ih = galaxyImg.naturalHeight, diag = Math.hypot(W, H);
-    const scale = Math.max(diag / iw, diag / ih) * 1.02 * zoom, dw = iw * scale, dh = ih * scale;
-    ctx.save(); ctx.translate(cx - gxN() * R * 0.045, cy - gyN() * R * 0.045); if (!RM) ctx.rotate(gal * 0.9);
-    ctx.drawImage(src, -dw / 2, -dh / 2, dw, dh);
-    ctx.restore();
-  }
-  ctx.fillStyle = "rgba(0,2,10,.32)"; ctx.fillRect(0, 0, W, H);
-  const v = ctx.createRadialGradient(cx, cy, R * 0.14, cx, cy, Math.max(W, H) * 0.72);
-  v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,1,6,.74)"); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
 }
 
 // дифракционен лъч с ФИЗИЧЕСКИ спад: тесен и ярък до ядрото, широк размит корен + тънък дълъг връх
 // (canvas няма променлива дебелина на удара, значи го изграждаме от 3 наслоени щриха с падаща
 // дебелина/дължина), плюс лек хроматичен ръб (аберация) покрай главния лъч — само на осезаемо ярките.
+// Използва се от звездите-агенти (drawNodes по-долу) — НЕ от фоновия звезден прах (той има свой,
+// физически по-подходящ спад в WebGL шейдъра, виж galaxy/src/glsl-galaxy.js spikeGlow).
 function spike(x, y, len, ang, col, a) {
   const dx = Math.cos(ang), dy = Math.sin(ang);
   const line = (l, w, tint, ta, ox, oy) => {
@@ -15634,80 +15414,19 @@ function spike(x, y, len, ang, col, a) {
   }
 }
 
-function drawNebulae(cx, cy, R) {
-  ctx.globalCompositeOperation = "lighter";
-  for (const n of nebulae) {
-    const x = cx + n.nx * R * 1.3 + (RM ? 0 : Math.sin(t * 0.12 + n.ph) * R * 0.05);
-    const y = cy + n.ny * R * 1.3 + (RM ? 0 : Math.cos(t * 0.10 + n.ph) * R * 0.04);
-    const rr = n.r * R * (1 + (RM ? 0 : Math.sin(t * 0.18 + n.ph) * 0.06));
-    const g = ctx.createRadialGradient(x, y, 0, x, y, rr);
-    g.addColorStop(0, hex(n.c, 0.20)); g.addColorStop(0.5, hex(n.c, 0.08)); g.addColorStop(1, hex(n.c, 0));
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.28); ctx.fill();
-  }
-  ctx.globalCompositeOperation = "source-over";
-}
-function drawArms(cx, cy, R) {
-  ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
-  for (let k = 0; k < ARMS; k++) {
-    const base = k / ARMS * Math.PI * 2;
-    ctx.beginPath();
-    for (let s = 0; s <= 44; s++) {
-      const f = 0.15 + (s / 44) * 0.9, ang = base + f * TWIST + (RM ? 0 : gal), rad = f * R * zoom;
-      const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad;
-      s ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-    }
-    ctx.strokeStyle = "rgba(150,180,255,0.055)"; ctx.lineWidth = 9; ctx.stroke();
-    ctx.strokeStyle = "rgba(195,218,255,0.11)"; ctx.lineWidth = 1.8; ctx.stroke();
-    if (!RM) {
-      const f = 0.15 + ((t * 0.055 + k / ARMS) % 1) * 0.9, ang = base + f * TWIST + gal, rad = f * R * zoom;
-      const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad;
-      const g = ctx.createRadialGradient(x, y, 0, x, y, 10);
-      g.addColorStop(0, "rgba(225,238,255,0.85)"); g.addColorStop(1, "rgba(225,238,255,0)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 10, 0, 6.28); ctx.fill();
-    }
-  }
-  ctx.globalCompositeOperation = "source-over";
-}
-function drawDust(cx, cy, R) {
-  const gx = gxN(), gy = gyN();
-  ctx.globalCompositeOperation = "lighter";
-  for (const s of dust) {
-    const px = cx + s.nx * R * 1.5 + gx * s.d * 28 + (RM ? 0 : Math.sin(t * 0.05 * s.d + s.ph) * 3);
-    const py = cy + s.ny * R * 1.5 + gy * s.d * 28;
-    const tw = RM ? 0.8 : (0.5 + 0.5 * Math.sin(t * s.tw + s.ph));
-    const a = (0.22 + 0.62 * tw) * (0.4 + s.d * 0.6);
-    ctx.fillStyle = s.warm ? `rgba(255,226,180,${a})` : `rgba(202,226,255,${a})`;
-    ctx.beginPath(); ctx.arc(px, py, s.r * (0.7 + tw * 0.5), 0, 6.28); ctx.fill();
-  }
-  ctx.globalCompositeOperation = "source-over";
-}
-function spawnMeteor() {
-  const sp = 7 + Math.random() * 6, dir = (Math.random() < 0.5 ? 0.34 : 0.66) * Math.PI + (Math.random() - .5) * 0.28;
-  meteors.push({ x: Math.random() * W, y: -20 - Math.random() * H * 0.15, vx: Math.cos(dir) * sp, vy: Math.abs(Math.sin(dir)) * sp + 3, life: 1, len: 8 + Math.random() * 9 });
-}
-function drawMeteors() {
-  if (!RM) { meteorT -= 0.016; if (meteorT <= 0) { spawnMeteor(); meteorT = 2.4 + Math.random() * 4; } }
-  ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
-  for (let i = meteors.length - 1; i >= 0; i--) {
-    const m = meteors[i]; m.x += m.vx; m.y += m.vy; m.life -= 0.014;
-    if (m.life <= 0 || m.y > H + 60 || m.x < -60 || m.x > W + 60) { meteors.splice(i, 1); continue; }
-    const tx = m.x - m.vx * m.len, ty = m.y - m.vy * m.len, al = Math.min(1, m.life * 1.4);
-    const g = ctx.createLinearGradient(tx, ty, m.x, m.y);
-    g.addColorStop(0, "rgba(220,240,255,0)"); g.addColorStop(1, `rgba(225,242,255,${al})`);
-    ctx.strokeStyle = g; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(m.x, m.y); ctx.stroke();
-    const hg = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, 6);
-    hg.addColorStop(0, `rgba(255,255,255,${al})`); hg.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(m.x, m.y, 6, 0, 6.28); ctx.fill();
-  }
-  ctx.globalCompositeOperation = "source-over";
-}
+function drawDustLanesBg(cx, cy, R) { if (backdrop) backdrop.drawDust(ctx, cx, cy, R, { zoom, gal, reducedMotion: RM }); }
+function drawNebulae(cx, cy, R) { if (backdrop) backdrop.drawStructure(ctx, cx, cy, R, t, { zoom, gal, reducedMotion: RM, gx: gxN(), gy: gyN() }); }
+function drawDust() {}
+function drawMeteors() { if (backdrop) backdrop.stepMeteors(ctx, W, H, RM); }
 let pulses = [], nova = null, trail = [];
 function drawTethers(prez) {
   ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
-  // светлинни влакна, не плътни цветни линии: градиент от почти невидимо на звездата до по-топло към
-  // ядрото (посоката на знанието), тънки по подразбиране — дебелината/яркостта расте с поуките/hover
+  // светлинни влакна — САМО при hover (собственикова бележка: лъчите към всички звезди претрупваха
+  // кадъра); ≤8% непрозрачност дори тогава, нищо геометрично да не доминира гледката.
   for (let i = 1; i < nodes.length; i++) {
-    const nd = nodes[i], hv = nd === hovered ? 1 : 0, lr = Math.min(1, lessonsOf(nd.a) / 40), a = (0.05 + lr * 0.1 + hv * 0.3) * nd.dim;
+    const nd = nodes[i], hv = nd === hovered ? 1 : 0;
+    if (!hv) continue;
+    const lr = Math.min(1, lessonsOf(nd.a) / 40), a = Math.min(0.08, 0.03 + lr * 0.02 + hv * 0.05) * nd.dim;
     if (a < .008) continue;
     const g = ctx.createLinearGradient(nd.x, nd.y, prez.x, prez.y);
     g.addColorStop(0, hex(nd.a.accent, a * 0.3)); g.addColorStop(0.72, hex(nd.a.accent, a)); g.addColorStop(1, hex(lighten(nd.a.accent, 60), a * 1.3));
@@ -15785,7 +15504,6 @@ function drawWarp() {
   if (!warp.opened && t >= 0.5) { warp.opened = true; openDrawer(warp.a); }
   if (t >= 1) warp = null;
 }
-let nebLastTs = 0;
 function loop(ts) {
   requestAnimationFrame(loop);
   if (document.hidden) return;
@@ -15796,8 +15514,8 @@ function loop(ts) {
   drawNeb(RM ? 1.0 : t);
   const cx = W / 2, cy = H * 0.5, R = Math.min(W, H) * 0.46;
   drawGalaxy(cx, cy, R);
+  drawDustLanesBg(cx, cy, R);
   drawNebulae(cx, cy, R);
-  drawDust(cx, cy, R);
   drawMeteors();
 
   for (const nd of nodes) { const [x, y] = nodePos(nd, cx, cy, R); nd.x = x; nd.y = y; }
