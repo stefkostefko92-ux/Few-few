@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-25:** Полето „Находки:“ в ПРЕДАВАНЕ се чете само от един ред (FIELD regex в tools/agents/handoff.mjs:55); файл:ред и етикетът за увереност трябва да са на същия ред, иначе гейтът пада. _(all-agents; verified; "tools/agents/handoff.mjs:53-57, 121-125")_
 - **2026-09-25:** cs-revolution: EN/BG страниците за услуги (public/en/services/*, public/bg/uslugi/*) и /test/ са писани на ръка, без генератор — там има италиански CTA „Richiedi Preventivo“ и href /contatti/. _(cs-revolution; verified; "Grep: 14 файла, ред 92/129; няма съвпадение в scripts/")_
 - **2026-09-25:** cs-revolution: it-accents.py не хваща HTML-entity апострофи (Cos&#x27;e) и не обработва src/App.jsx, feed.xml, llms.txt; публикуваният HTML може да е остарял спрямо вече поправен генератор — провери и изхода, и генератора. _(cs-revolution; verified; "Grep: public/blog/cos-e-un-erp/index.html:2 срещу scripts/generate-blog.py:458; scripts/it-accents.py:50")_
 - **2026-09-09:** Типографски кавички („ “ BG/DE, « » IT) вместо ASCII \" в JSON локали премахват нуждата от \\\" escaping — en източникът имаше 4 екранирани кавички, преводите нула, без риск от счупен JSON. _(global; verified; "/home/user/Few-few/adblock/_locales/en/messages.json:180,183,186,213 срещу bg/it/de еквивалентите")_
