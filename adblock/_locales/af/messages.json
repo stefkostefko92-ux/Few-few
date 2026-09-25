@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokkeer oral advertensies, ook op YouTube, plus baniere, opspringers, spoorsnyers, koekiemeldings en anti-adblokmure. Gratis."
+  },
+  "byCarbon": {
+    "message": "deur Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Beskerming aan/af"
+  },
+  "protected": {
+    "message": "Beskerm"
+  },
+  "paused": {
+    "message": "Gepouseer"
+  },
+  "blockingHere": {
+    "message": "Blokkeer advertensies op dié bladsy"
+  },
+  "protectionOff": {
+    "message": "Beskerming is af"
+  },
+  "pause30": {
+    "message": "Pouseer 30 minute"
+  },
+  "pausedResume": {
+    "message": "Gepouseer, hervat nou ($1 min oor)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Geblokkeer"
+  },
+  "dataSaved": {
+    "message": "Data bespaar"
+  },
+  "timeSaved": {
+    "message": "Tyd bespaar"
+  },
+  "thisSite": {
+    "message": "hierdie werf"
+  },
+  "thisPage": {
+    "message": "dié bladsy"
+  },
+  "blockOnSite": {
+    "message": "Blokkeer advertensies op hierdie werf"
+  },
+  "blocking": {
+    "message": "Blokkeer"
+  },
+  "allowed": {
+    "message": "Toegelaat"
+  },
+  "cosmetics": {
+    "message": "Versteek advertensies hier"
+  },
+  "cosmeticsTitle": {
+    "message": "Kosmetiese filtrering op hierdie werf (skakel dit af as die uitleg breek)"
+  },
+  "on": {
+    "message": "Aan"
+  },
+  "off": {
+    "message": "Af"
+  },
+  "blockedHere": {
+    "message": "Geblokkeer op hierdie bladsy"
+  },
+  "logEmpty": {
+    "message": "Nog niks is hier geblokkeer nie."
+  },
+  "logUnavailable": {
+    "message": "Die logboek is nou nie beskikbaar nie (blaaierkwota) — probeer weer oor ’n minuut."
+  },
+  "logCore": {
+    "message": "Supreme-kernreëls"
+  },
+  "logYouTube": {
+    "message": "YouTube-advertensies"
+  },
+  "logParams": {
+    "message": "Spoorparameters"
+  },
+  "logMalware": {
+    "message": "Malware-domeine"
+  },
+  "logSurrogates": {
+    "message": "Ontlonte advertensieskripte"
+  },
+  "logPrivacy": {
+    "message": "Privaatheidsbeskerming"
+  },
+  "logUser": {
+    "message": "My filters"
+  },
+  "logLive": {
+    "message": "Live-bywerkings"
+  },
+  "hideElement": {
+    "message": "Versteek element"
+  },
+  "settings": {
+    "message": "Instellings"
+  },
+  "promoSub": {
+    "message": "Toerusting en gereedskap, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Adv."
+  },
+  "support": {
+    "message": "Ondersteun"
+  },
+  "filtersCount": {
+    "message": "$1+ filters",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Voorkoms"
+  },
+  "opt_extra_protection": {
+    "message": "Ekstra beskerming"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection-logboek"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Toegelate werwe"
+  },
+  "opt_my_filters": {
+    "message": "My filters"
+  },
+  "opt_hidden_elements": {
+    "message": "Versteekte elemente"
+  },
+  "opt_filter_updates": {
+    "message": "Filterbywerkings"
+  },
+  "opt_engine_health": {
+    "message": "Enjinstatus"
+  },
+  "opt_backup": {
+    "message": "Rugsteun"
+  },
+  "opt_support_development": {
+    "message": "Ondersteun die ontwikkeling"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sinkroniseer oor toestelle heen"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Blokkering van YouTube-advertensies"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Koekie- / toestemmingsbaniere"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Omseil anti-adblok"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Geborgde plasings van Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Verwyder spoorparameters"
+  },
+  "opt_malware_protection": {
+    "message": "Beskerming teen malware"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blokkeer blaaier-API’s vir advertensieteikening"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blokkeer spoorbakens en kriptomyners"
+  },
+  "opt_auto_update_filters": {
+    "message": "Werk filters outomaties by"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (donker) of lig"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Hou instellings, toegelate werwe en filters gesinkroniseer op elke Chrome waarby u aangemeld is"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Verwyder videoadvertensies op YouTube. Skakel dit af as video’s nie wil speel nie."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Maak “Aanvaar koekies”-versoeke outomaties toe"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Versteek “skakel u advertensieblokker af”-mure en herstel die bladsy"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Versteek “Geborg”-plasings op Facebook en Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Verwyder utm_*, fbclid, gclid en ander klik-identifiseerders uit die skakels wat u oopmaak"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokkeer bekende malware-domeine (URLhaus-lys van abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Deaktiveer die advertensie-API’s Google Topics, FLoC en Protected Audience op elke werf"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Keer derdeparty-skakelouditering en bakenpings, verwyder spoorkoekies uit bekende advertensietegnologie-antwoorde en blokkeer kriptomyn-skripte in die blaaier. Skakel dit af as ’n funksie van ’n werf wat van analise afhang, vreemd optree."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Haal ongeveer twee keer per dag nuwe blokkeerreëls en YouTube-regstellings van adblock.carbonstealth.eu af. Slegs data, geen kode nie; die versoek bevat geen identifiseerders of blaaidata nie."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Regstreekse logboek van advertensies wat heuristies gevang is (sonder filterlys), nuutste eerste."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Ingetekende lyste word as teks afgehaal (nooit as kode nie), daagliks bygewerk en staan in die bestuurde blokke hierbo. Verwyder ’n lys om sy reëls te laat val."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elemente wat u met die kieser handmatig versteek het, gegroepeer volgens werf."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Regstreekse diagnose — alles word plaaslik bereken. As iets rooi is, help “Werk nou by” of die herlaai van die uitbreiding gewoonlik."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock is gratis vir almal. As u wil help om dit in stand te hou, is skenkings welkom, maar nooit verpligtend nie."
+  },
+  "opt_reset_statistics": {
+    "message": "Stel statistieke terug"
+  },
+  "opt_add": {
+    "message": "Voeg by"
+  },
+  "opt_save_filters": {
+    "message": "Stoor filters"
+  },
+  "opt_subscribe": {
+    "message": "Teken in"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Verfris intekeninge nou"
+  },
+  "opt_update_now": {
+    "message": "Werk nou by"
+  },
+  "opt_refresh": {
+    "message": "Verfris"
+  },
+  "opt_export_settings": {
+    "message": "Voer instellings uit"
+  },
+  "opt_import_settings": {
+    "message": "Voer instellings in"
+  },
+  "opt_e_g_example_com": {
+    "message": "bv. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! voorbeeld\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Teken in op ’n filterlys-URL (bv. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock-instellings"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Instellings"
+  },
+  "opt_theme_light": {
+    "message": "Lig"
+  },
+  "opt_badge_unique": {
+    "message": "uniek"
+  },
+  "opt_smart_desc": {
+    "message": "Vang advertensies wat nog geen filterlys ken nie: rame van ander domeine met die grootte van standaard advertensievlakke word dadelik versteek, sonder reëls."
+  },
+  "opt_caught_so_far": {
+    "message": "tot dusver gevang."
+  },
+  "opt_allow_desc": {
+    "message": "Advertensies word nie op hierdie domeine geblokkeer nie."
+  },
+  "opt_fh_one": {
+    "message": "Een reël per lyn."
+  },
+  "opt_fh_blocks": {
+    "message": "blokkeer ’n domein;"
+  },
+  "opt_fh_everywhere": {
+    "message": "versteek ’n element oral;"
+  },
+  "opt_fh_site": {
+    "message": "versteek dit net op daardie werf."
+  },
+  "opt_fh_comments": {
+    "message": "Lyne wat begin met"
+  },
+  "opt_fh_comments2": {
+    "message": "is kommentaar."
+  },
+  "opt_donate": {
+    "message": "Skenk via Revolut"
+  },
+  "opt_made_by": {
+    "message": "gemaak deur Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Nog niks heuristies gevang nie."
+  },
+  "opt_empty_allow": {
+    "message": "Nog geen toegelate werwe nie."
+  },
+  "opt_empty_hidden": {
+    "message": "Nog niks handmatig versteek nie."
+  },
+  "opt_empty_subs": {
+    "message": "Nog geen ingetekende lyste nie."
+  },
+  "opt_no_sw": {
+    "message": "Geen antwoord van die service worker nie."
+  },
+  "opt_remove": {
+    "message": "Verwyder"
+  },
+  "opt_filter_status": {
+    "message": "Filterstel v$1, bygewerk $2. Slegs data; niks oor u word gestuur nie."
+  },
+  "opt_updating": {
+    "message": "Werk tans by…"
+  },
+  "opt_updated": {
+    "message": "Bygewerk (v$1, $2 ekstra reëls)"
+  },
+  "opt_update_failed": {
+    "message": "Bywerking het misluk ($1)"
+  },
+  "opt_saved": {
+    "message": "Gestoor ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 reëls"
+  },
+  "opt_updated_ago": {
+    "message": "bygewerk $1"
+  },
+  "opt_not_fetched": {
+    "message": "nog nie afgehaal nie"
+  },
+  "opt_failed_colon": {
+    "message": "misluk: $1"
+  },
+  "opt_enter_https": {
+    "message": "Voer ’n geldige https://-URL in"
+  },
+  "opt_fetching": {
+    "message": "Haal tans af…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Ingeteken: $1 reëls ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Misluk ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Verfris tans…"
+  },
+  "opt_refreshed": {
+    "message": "Verfris ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Ongeldige instellingslêer."
+  },
+  "opt_no_response": {
+    "message": "geen antwoord nie"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblok-enjin"
+  },
+  "opt_h_rulesets": {
+    "message": "Statiese reëlstelle aan"
+  },
+  "opt_h_live": {
+    "message": "Domeine in regstreekse filters"
+  },
+  "opt_h_last": {
+    "message": "Laaste bywerking"
+  },
+  "opt_h_sig": {
+    "message": "Handtekeninge van bywerkings"
+  },
+  "opt_h_user": {
+    "message": "My filters / reëls vir toegelate werwe"
+  },
+  "opt_h_popup": {
+    "message": "Ingeboude gashere van opspring-advertensies"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-omseiling"
+  },
+  "opt_reason_frame": {
+    "message": "Raam van ander domein met advertensiegrootte"
+  },
+  "opt_reason_sticky": {
+    "message": "Vaste advertensiebanier"
+  },
+  "logRegional": {
+    "message": "Streekslyste"
+  },
+  "logFocus": {
+    "message": "Fokusmodus"
+  },
+  "opt_filter_lists": {
+    "message": "Filterlyste"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList en EasyPrivacy is altyd aan. Die lyste hieronder het ’n oop lisensie en is in die uitbreiding ingebou, so as u een aanskakel, word niks afgelaai nie, behalwe ’n lys wat gemerk is as afkomstig van sy outeur."
+  },
+  "opt_lists_core": {
+    "message": "Kern"
+  },
+  "opt_lists_regional": {
+    "message": "Streeks"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Die lys vir u blaaier se taal skakel vanself aan. Voeg ander by as u gereeld werwe in ander tale lees."
+  },
+  "opt_focus_mode": {
+    "message": "Fokusmodus"
+  },
+  "opt_focus_desc": {
+    "message": "Versteek wat nie ’n advertensie is nie, maar tog in die pad staan. Alles hier is af totdat u dit aanskakel."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin-filters"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Advertensies, spoorsnyers, anti-adblok-regstellings en werfherstelwerk van die uBlock Origin-span."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe se lys"
+  },
+  "opt_list_plowe_desc": {
+    "message": "’n Gevestigde lys van advertensie- en spoorbedieners."
+  },
+  "opt_focus_social": {
+    "message": "Knoppies en legstukke van sosiale media"
+  },
+  "opt_focus_social_desc": {
+    "message": "Deelknoppies, “Hou van”-blokkies en ingebedde voere."
+  },
+  "opt_focus_chat": {
+    "message": "Klets- en ondersteuningslegstukke"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Die swewende kletsborrels in die hoek van die bladsy."
+  },
+  "opt_focus_newsletters": {
+    "message": "Opspringers vir nuusbriewe en inskrywing"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“Teken in op ons nuusbrief”-blokkies en oorleggers."
+  },
+  "opt_focus_notifications": {
+    "message": "Kennisgewingversoeke"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "“Laat kennisgewings toe?”-blokkies wat werwe wys voordat die blaaier vra."
+  },
+  "opt_focus_ai": {
+    "message": "Opspringers van KI-assistente"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Kletsbotborrels en KI-voorstelpanele wat by bladsye gevoeg is."
+  },
+  "opt_focus_other": {
+    "message": "Ander steurnisse"
+  },
+  "opt_focus_other_desc": {
+    "message": "Vaste stawe, “Maak oop in toep”-baniere en soortgelyke rommel."
+  },
+  "opt_badge_lang": {
+    "message": "u taal"
+  },
+  "opt_badge_remote": {
+    "message": "van sy outeur"
+  },
+  "opt_remote_hint": {
+    "message": "Nie ingesluit nie (geen lisensie om dit te herversprei nie): u blaaier laai dit van $1 af wanneer u dit aanskakel."
+  },
+  "opt_downloaded_from": {
+    "message": "Afgelaai van $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome het hierdie kombinasie van lyste geweier ($1). Skakel sommige af."
+  },
+  "opt_badge_recommended": {
+    "message": "aanbeveel vir u taal"
+  },
+  "reportBroken": {
+    "message": "Werf stukkend? Herstel dit of laat weet ons"
+  },
+  "rep_title": {
+    "message": "Is iets stukkend op hierdie werf?"
+  },
+  "rep_fix_first": {
+    "message": "Herstel dit nou"
+  },
+  "rep_site": {
+    "message": "Werf:"
+  },
+  "rep_fix_desc": {
+    "message": "Die meeste probleme verdwyn met een hiervan. Elkeen geld net vir hierdie werf; die oortjie herlaai."
+  },
+  "rep_fix_cosm": {
+    "message": "Skakel elementversteking hier af"
+  },
+  "rep_fix_allow": {
+    "message": "Laat advertensies op hierdie werf toe"
+  },
+  "rep_fix_pause": {
+    "message": "Pouseer oral vir 30 minute"
+  },
+  "rep_tell_us": {
+    "message": "Laat weet ons"
+  },
+  "rep_tell_desc": {
+    "message": "Ons herstel stukkende werwe vir almal deur die ondertekende filterbywerking, gewoonlik binne ’n dag. Die uitbreiding stuur niks nie: die verslag maak in u eie e-posprogram oop, en u sien eers elke woord daarvan."
+  },
+  "rep_what": {
+    "message": "Wat is fout? (opsioneel)"
+  },
+  "rep_what_ph": {
+    "message": "bv. die video begin nie, ’n wit blok bedek die artikel…"
+  },
+  "rep_full_url": {
+    "message": "Sluit die volledige bladsyadres in (anders net die werf se naam)"
+  },
+  "rep_preview": {
+    "message": "Wat gestuur sal word"
+  },
+  "rep_send_mail": {
+    "message": "Stuur per e-pos"
+  },
+  "rep_copy": {
+    "message": "Kopieer verslag"
+  },
+  "rep_copied": {
+    "message": "Gekopieer."
+  },
+  "rep_done_cosm": {
+    "message": "Elementversteking is af op hierdie werf. Herlaai — is dit reggestel?"
+  },
+  "rep_done_allow": {
+    "message": "Advertensies word op hierdie werf toegelaat. Herlaai — is dit reggestel?"
+  },
+  "rep_done_pause": {
+    "message": "Gepouseer vir 30 minute. As die werf nou werk, laat weet ons asseblief hieronder."
+  },
+  "cookieRejections": {
+    "message": "Koekiebaniere namens u geweier: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Die Shorts-rakke, -oortjie en -voorstelle op YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "“Meld aan met Google”-opspringers"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Die rekeningkieser wat in die hoek van baie werwe verskyn. Die aanmeldknoppies werk steeds."
+  },
+  "pickTip": {
+    "message": "Klik op ’n element om dit te versteek"
+  },
+  "pickZapTip": {
+    "message": "Klik om hierdie element te verwyder (eenmalig)"
+  },
+  "pickEscCancel": {
+    "message": "om te kanselleer"
+  },
+  "opt_notices": {
+    "message": "Lisensies van die filterlyste"
+  }
+}

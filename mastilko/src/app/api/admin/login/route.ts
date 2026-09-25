@@ -22,14 +22,25 @@ let globalHits: number[] = [];
 
 function limited(ip: string): boolean {
   const now = Date.now();
+  const list = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+
+  // Per-IP присъдата е ПЪРВА и вече блокираната заявка НЕ пипа глобалния
+  // брояч. Иначе един адрес пълнеше глобалния прозорец с отказите си и
+  // заключваше входа за всички — включително за истинския админ (self-DoS).
+  // Правилният ред е като в /api/ai (short-circuit).
+  if (list.length >= PER_IP_MAX) {
+    hits.set(ip, list);
+    return true;
+  }
+
   globalHits = globalHits.filter((t) => now - t < WINDOW_MS);
   if (globalHits.length >= GLOBAL_MAX) return true;
-  const list = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+
   list.push(now);
   globalHits.push(now);
   hits.set(ip, list);
   if (hits.size > 2000) pruneHits(hits, WINDOW_MS, now);
-  return list.length > PER_IP_MAX;
+  return false;
 }
 
 // Валиден 60-символен bcrypt hash за постоянно време при непознат потребител

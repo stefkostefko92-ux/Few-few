@@ -61,7 +61,7 @@
     "message": "Разрешен"
   },
   "cosmetics": {
-    "message": "Скрий рекламните полета тук"
+    "message": "Скрий рекламите тук"
   },
   "cosmeticsTitle": {
     "message": "Козметично филтриране на този сайт (изключете го, ако оформлението се чупи)"
@@ -80,6 +80,30 @@
   },
   "logUnavailable": {
     "message": "Дневникът не е достъпен в момента (квота на браузъра) — опитайте пак след минута."
+  },
+  "logCore": {
+    "message": "Основни правила"
+  },
+  "logYouTube": {
+    "message": "Реклами в YouTube"
+  },
+  "logParams": {
+    "message": "Проследяващи параметри"
+  },
+  "logMalware": {
+    "message": "Зловредни домейни"
+  },
+  "logSurrogates": {
+    "message": "Неутрализирани рекламни скриптове"
+  },
+  "logPrivacy": {
+    "message": "Защита на поверителността"
+  },
+  "logUser": {
+    "message": "Моите филтри"
+  },
+  "logLive": {
+    "message": "Обновления на живо"
   },
   "hideElement": {
     "message": "Скрий елемент"
@@ -198,7 +222,7 @@
     "message": "Спира проследяващите сигнали за отваряне на връзки от трети страни, премахва проследяващите бисквитки от известни ad-tech отговори и блокира скриптовете за криптомайнинг в браузъра. Изключете го, ако функция на сайт, зависеща от анализи, се държи странно."
   },
   "opt_fetches_new_block_rules_and_youtube_fixe": {
-    "message": "Изтегля нови правила за блокиране и корекции за YouTube от adblock.carbonstealth.eu. Само данни, без код; нищо за вас не се изпраща."
+    "message": "Изтегля нови правила за блокиране и корекции за YouTube от adblock.carbonstealth.eu около два пъти дневно. Само данни, без код; заявката не носи идентификатори или данни от сърфирането."
   },
   "opt_live_log_of_ads_caught_heuristically_no_": {
     "message": "Жив дневник на рекламите, хванати евристично (без списък с филтри), най-новите отгоре."
@@ -250,5 +274,329 @@
   },
   "opt_subscribe_to_a_filter_list_url_e_g_https": {
     "message": "Абониране за URL на списък с филтри (напр. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Настройки на Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Настройки"
+  },
+  "opt_theme_light": {
+    "message": "Светла"
+  },
+  "opt_badge_unique": {
+    "message": "уникално"
+  },
+  "opt_smart_desc": {
+    "message": "Хваща реклами, които още никой филтър-лист не познава: рамки от други домейни с размер на стандартно рекламно поле се скриват веднага, без правила."
+  },
+  "opt_caught_so_far": {
+    "message": "хванати досега."
+  },
+  "opt_allow_desc": {
+    "message": "На тези домейни рекламите не се блокират."
+  },
+  "opt_fh_one": {
+    "message": "По едно правило на ред."
+  },
+  "opt_fh_blocks": {
+    "message": "блокира домейн;"
+  },
+  "opt_fh_everywhere": {
+    "message": "скрива елемент навсякъде;"
+  },
+  "opt_fh_site": {
+    "message": "го скрива само на този сайт."
+  },
+  "opt_fh_comments": {
+    "message": "Редовете, започващи с"
+  },
+  "opt_fh_comments2": {
+    "message": "са коментари."
+  },
+  "opt_donate": {
+    "message": "Дарение през Revolut"
+  },
+  "opt_made_by": {
+    "message": "създадено от Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Още нищо не е хванато евристично."
+  },
+  "opt_empty_allow": {
+    "message": "Още няма сайтове в списъка с разрешени."
+  },
+  "opt_empty_hidden": {
+    "message": "Още нищо не е скрито ръчно."
+  },
+  "opt_empty_subs": {
+    "message": "Още няма абонаменти за списъци."
+  },
+  "opt_no_sw": {
+    "message": "Няма отговор от service worker-а."
+  },
+  "opt_remove": {
+    "message": "Премахни"
+  },
+  "opt_filter_status": {
+    "message": "Филтри v$1, обновени $2. Само данни — нищо за вас не се изпраща."
+  },
+  "opt_updating": {
+    "message": "Обновяване…"
+  },
+  "opt_updated": {
+    "message": "Обновено (v$1, $2 допълнителни правила)"
+  },
+  "opt_update_failed": {
+    "message": "Обновяването не успя ($1)"
+  },
+  "opt_saved": {
+    "message": "Запазено ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 правила"
+  },
+  "opt_updated_ago": {
+    "message": "обновен $1"
+  },
+  "opt_not_fetched": {
+    "message": "още не е изтеглен"
+  },
+  "opt_failed_colon": {
+    "message": "грешка: $1"
+  },
+  "opt_enter_https": {
+    "message": "Въведете валиден https:// адрес"
+  },
+  "opt_fetching": {
+    "message": "Изтегляне…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Абониран: $1 правила ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Неуспешно ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Опресняване…"
+  },
+  "opt_refreshed": {
+    "message": "Опреснено ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Невалиден файл с настройки."
+  },
+  "opt_no_response": {
+    "message": "няма отговор"
+  },
+  "opt_h_engine": {
+    "message": "Анти-адблок двигател"
+  },
+  "opt_h_rulesets": {
+    "message": "Включени статични набори правила"
+  },
+  "opt_h_live": {
+    "message": "Домейни от живите филтри"
+  },
+  "opt_h_last": {
+    "message": "Последно обновяване"
+  },
+  "opt_h_sig": {
+    "message": "Подписи на обновяванията"
+  },
+  "opt_h_user": {
+    "message": "Мои филтри / правила за разрешени"
+  },
+  "opt_h_popup": {
+    "message": "Вградени хостове на pop-up реклами"
+  },
+  "opt_h_yt": {
+    "message": "YouTube bypass"
+  },
+  "opt_reason_frame": {
+    "message": "Рамка от друг домейн с размер на реклама"
+  },
+  "opt_reason_sticky": {
+    "message": "Залепнал рекламен банер"
+  },
+  "logRegional": {
+    "message": "Регионални листи"
+  },
+  "logFocus": {
+    "message": "Режим „Фокус“"
+  },
+  "opt_filter_lists": {
+    "message": "Филтър-листи"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList и EasyPrivacy са винаги включени. Листите по-долу са с отворен лиценз и са вградени в разширението — включването им не сваля нищо, освен при лист, отбелязан като идващ от автора си."
+  },
+  "opt_lists_core": {
+    "message": "Основни"
+  },
+  "opt_lists_regional": {
+    "message": "Регионални"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Листът за езика на браузъра се включва сам. Добавете други, ако често четете сайтове на други езици."
+  },
+  "opt_focus_mode": {
+    "message": "Режим „Фокус“"
+  },
+  "opt_focus_desc": {
+    "message": "Скрива това, което не е реклама, но пак пречи. Всичко тук е изключено, докато не го включите."
+  },
+  "opt_list_ubo": {
+    "message": "Филтрите на uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Реклами, тракери, поправки срещу anti-adblock и поправки на сайтове от екипа на uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Листът на Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Дългогодишен списък с рекламни и проследяващи сървъри."
+  },
+  "opt_focus_social": {
+    "message": "Бутони и джаджи на социални мрежи"
+  },
+  "opt_focus_social_desc": {
+    "message": "Бутони за споделяне, кутии „Харесай“ и вградени потоци."
+  },
+  "opt_focus_chat": {
+    "message": "Чат и джаджи за поддръжка"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Плаващите чат балончета в ъгъла на страницата."
+  },
+  "opt_focus_newsletters": {
+    "message": "Прозорци за бюлетини и абонамент"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Кутии и наслагвания „Абонирайте се за бюлетина ни“."
+  },
+  "opt_focus_notifications": {
+    "message": "Покани за известия"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Кутиите „Разрешете известия?“, които сайтовете показват преди браузъра да попита."
+  },
+  "opt_focus_ai": {
+    "message": "Изскачащи AI асистенти"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Чатбот балончета и панели с AI предложения, добавени към страниците."
+  },
+  "opt_focus_other": {
+    "message": "Други досадни елементи"
+  },
+  "opt_focus_other_desc": {
+    "message": "Залепнали ленти, банери „Отвори в приложението“ и подобни."
+  },
+  "opt_badge_lang": {
+    "message": "вашият език"
+  },
+  "opt_badge_remote": {
+    "message": "от автора"
+  },
+  "opt_remote_hint": {
+    "message": "Не е вграден (няма лиценз за разпространение): браузърът ви го сваля от $1, когато го включите."
+  },
+  "opt_downloaded_from": {
+    "message": "Сваля се от $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome отказа тази комбинация от листи ($1). Изключете някои."
+  },
+  "opt_badge_recommended": {
+    "message": "препоръчан за вашия език"
+  },
+  "reportBroken": {
+    "message": "Сайтът е счупен? Поправете го или ни кажете"
+  },
+  "rep_title": {
+    "message": "Нещо не работи на този сайт?"
+  },
+  "rep_fix_first": {
+    "message": "Поправете го сега"
+  },
+  "rep_site": {
+    "message": "Сайт:"
+  },
+  "rep_fix_desc": {
+    "message": "Повечето проблеми изчезват с едно от тези. Всяко важи само за този сайт; разделът се презарежда."
+  },
+  "rep_fix_cosm": {
+    "message": "Изключи скриването на елементи тук"
+  },
+  "rep_fix_allow": {
+    "message": "Разреши рекламите на този сайт"
+  },
+  "rep_fix_pause": {
+    "message": "Пауза навсякъде за 30 минути"
+  },
+  "rep_tell_us": {
+    "message": "Кажете ни"
+  },
+  "rep_tell_desc": {
+    "message": "Поправяме счупените сайтове за всички чрез подписаното обновяване на филтрите, обикновено до ден. Разширението не изпраща нищо: докладът се отваря във вашата пощенска програма и виждате всяка дума предварително."
+  },
+  "rep_what": {
+    "message": "Какво не е наред? (по желание)"
+  },
+  "rep_what_ph": {
+    "message": "напр. видеото не тръгва, бяла кутия покрива статията…"
+  },
+  "rep_full_url": {
+    "message": "Включи пълния адрес на страницата (иначе само името на сайта)"
+  },
+  "rep_preview": {
+    "message": "Какво ще бъде изпратено"
+  },
+  "rep_send_mail": {
+    "message": "Изпрати по имейл"
+  },
+  "rep_copy": {
+    "message": "Копирай доклада"
+  },
+  "rep_copied": {
+    "message": "Копирано."
+  },
+  "rep_done_cosm": {
+    "message": "Скриването на елементи е изключено на този сайт. Презаредено — оправи ли се?"
+  },
+  "rep_done_allow": {
+    "message": "Рекламите са разрешени на този сайт. Презаредено — оправи ли се?"
+  },
+  "rep_done_pause": {
+    "message": "Пауза за 30 минути. Ако сайтът работи сега, моля, кажете ни по-долу."
+  },
+  "cookieRejections": {
+    "message": "Отказани вместо вас банери за бисквитки: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Рафтовете, раздела и предложенията за Shorts в YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Прозорци „Вход с Google“"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Изборът на акаунт, който изскача в ъгъла на много сайтове. Бутоните за вход продължават да работят."
+  },
+  "pickTip": {
+    "message": "Кликнете елемент, за да го скриете"
+  },
+  "pickZapTip": {
+    "message": "Кликнете, за да премахнете елемента (еднократно)"
+  },
+  "pickEscCancel": {
+    "message": "за отказ"
+  },
+  "opt_notices": {
+    "message": "Лицензи на филтър-листите"
   }
 }

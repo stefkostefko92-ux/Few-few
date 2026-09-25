@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Reklamani hamma joyda bloklaydi: YouTube reklamalari, bannerlar, qalqib chiquvchi oynalar, trekerlar, cookie soʻrovlari. Bepul."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth tomonidan"
+  },
+  "toggleProtection": {
+    "message": "Himoyani yoqish/oʻchirish"
+  },
+  "protected": {
+    "message": "Himoyalangan"
+  },
+  "paused": {
+    "message": "Pauzada"
+  },
+  "blockingHere": {
+    "message": "Bu sahifada reklama bloklanmoqda"
+  },
+  "protectionOff": {
+    "message": "Himoya oʻchirilgan"
+  },
+  "pause30": {
+    "message": "30 daqiqaga pauza"
+  },
+  "pausedResume": {
+    "message": "Pauzada, hozir davom ettirish ($1 daq qoldi)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Bloklangan"
+  },
+  "dataSaved": {
+    "message": "Tejalgan trafik"
+  },
+  "timeSaved": {
+    "message": "Tejalgan vaqt"
+  },
+  "thisSite": {
+    "message": "bu sayt"
+  },
+  "thisPage": {
+    "message": "bu sahifa"
+  },
+  "blockOnSite": {
+    "message": "Bu saytda reklamani bloklash"
+  },
+  "blocking": {
+    "message": "Bloklanmoqda"
+  },
+  "allowed": {
+    "message": "Ruxsat"
+  },
+  "cosmetics": {
+    "message": "Bu yerda reklama yashirish"
+  },
+  "cosmeticsTitle": {
+    "message": "Bu saytda kosmetik filtrlash (sahifa tuzilishi buzilsa, oʻchirib qoʻying)"
+  },
+  "on": {
+    "message": "Yoniq"
+  },
+  "off": {
+    "message": "Oʻchiq"
+  },
+  "blockedHere": {
+    "message": "Bu sahifada bloklanganlar"
+  },
+  "logEmpty": {
+    "message": "Bu yerda hali hech narsa bloklanmadi."
+  },
+  "logUnavailable": {
+    "message": "Jurnal hozir mavjud emas (brauzer kvotasi) — bir daqiqadan soʻng qayta urinib koʻring."
+  },
+  "logCore": {
+    "message": "Supreme asosiy qoidalari"
+  },
+  "logYouTube": {
+    "message": "YouTube reklamalari"
+  },
+  "logParams": {
+    "message": "Kuzatuv parametrlari"
+  },
+  "logMalware": {
+    "message": "Zararli domenlar"
+  },
+  "logSurrogates": {
+    "message": "Oʻchirilgan reklama skriptlari"
+  },
+  "logPrivacy": {
+    "message": "Maxfiylik himoyasi"
+  },
+  "logUser": {
+    "message": "Filtrlarim"
+  },
+  "logLive": {
+    "message": "Jonli yangilanish"
+  },
+  "hideElement": {
+    "message": "Element yashirish"
+  },
+  "settings": {
+    "message": "Sozlamalar"
+  },
+  "promoSub": {
+    "message": "Jihozlar va vositalar, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reklama"
+  },
+  "support": {
+    "message": "Homiylik"
+  },
+  "filtersCount": {
+    "message": "$1+ filtr",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Tashqi koʻrinish"
+  },
+  "opt_extra_protection": {
+    "message": "Qoʻshimcha himoya"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection jurnali"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Ruxsat berilgan saytlar"
+  },
+  "opt_my_filters": {
+    "message": "Filtrlarim"
+  },
+  "opt_hidden_elements": {
+    "message": "Yashirilgan elementlar"
+  },
+  "opt_filter_updates": {
+    "message": "Filtr yangilanishlari"
+  },
+  "opt_engine_health": {
+    "message": "Dvigatel holati"
+  },
+  "opt_backup": {
+    "message": "Zaxira nusxa"
+  },
+  "opt_support_development": {
+    "message": "Loyihani qoʻllab-quvvatlash"
+  },
+  "opt_theme": {
+    "message": "Mavzu"
+  },
+  "opt_sync_across_devices": {
+    "message": "Qurilmalararo sinxronlash"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube reklamalarini bloklash"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie / rozilik bannerlari"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock devorlarini chetlab oʻtish"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta homiylik postlari"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Kuzatuv parametrlarini olib tashlash"
+  },
+  "opt_malware_protection": {
+    "message": "Zararli dasturlardan himoya"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Reklama nishonlashga oid brauzer API interfeyslarini bloklash"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Kuzatuv mayoqlari va kriptomaynerlarni bloklash"
+  },
+  "opt_auto_update_filters": {
+    "message": "Filtrlarni avtomatik yangilash"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (qorongʻi) yoki yorugʻ"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Sozlamalar, ruxsat roʻyxati va filtrlarni hisobingizga kirgan barcha Chrome brauzerlarida sinxron saqlash"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube saytidagi video reklamalarni olib tashlaydi. Videolar ijro etilmasa, oʻchirib qoʻying."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“Cookie fayllarini qabul qilish” soʻrovlarini avtomatik yopadi"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“Reklama blokerini oʻchiring” devorlarini yashiradi va sahifani tiklaydi"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook va Instagram tarmoqlaridagi “Homiylik” belgili postlarni yashiradi"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Siz ochadigan havolalardan utm_*, fbclid, gclid va boshqa bosish identifikatorlarini olib tashlaydi"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Maʼlum zararli domenlarni bloklaydi (abuse.ch tomonidan URLhaus roʻyxati)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Har bir saytda Google Topics, FLoC va Protected Audience reklama API interfeyslarini oʻchiradi"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Uchinchi tomon havola auditi / beacon pinglarini toʻxtatadi, maʼlum reklama texnologiyalari javoblaridan kuzatuv cookie fayllarini olib tashlaydi va brauzerdagi kriptomayning skriptlarini bloklaydi. Saytning analitikaga bogʻliq funksiyasi notoʻgʻri ishlasa, oʻchirib qoʻying."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Yangi bloklash qoidalari va YouTube tuzatishlarini adblock.carbonstealth.eu manzilidan kuniga taxminan ikki marta yuklab oladi. Faqat maʼlumot, kod yoʻq; soʻrovda hech qanday identifikator yoki koʻrish maʼlumotlari boʻlmaydi."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Evristik usulda (filtr roʻyxatisiz) ushlangan reklamalarning jonli jurnali, eng yangilari tepada."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Obuna boʻlingan roʻyxatlar matn sifatida yuklanadi (hech qachon kod sifatida emas), har kuni yangilanadi va yuqoridagi boshqariladigan bloklarda saqlanadi. Roʻyxat qoidalarini bekor qilish uchun uni olib tashlang."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Tanlash vositasi bilan qoʻlda yashirgan elementlaringiz, saytlar boʻyicha guruhlangan."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Jonli diagnostika — hammasi mahalliy hisoblanadi. Biror narsa qizil boʻlsa, “Hozir yangilash” yoki kengaytmani qayta yuklash odatda muammoni hal qiladi."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock hamma uchun bepul. Uni qoʻllab-quvvatlashga yordam bermoqchi boʻlsangiz, xayriyalar mamnuniyat bilan qabul qilinadi, lekin hech qachon majburiy emas."
+  },
+  "opt_reset_statistics": {
+    "message": "Statistikani tozalash"
+  },
+  "opt_add": {
+    "message": "Qoʻshish"
+  },
+  "opt_save_filters": {
+    "message": "Filtrlarni saqlash"
+  },
+  "opt_subscribe": {
+    "message": "Obuna boʻlish"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Obunalarni hozir yangilash"
+  },
+  "opt_update_now": {
+    "message": "Hozir yangilash"
+  },
+  "opt_refresh": {
+    "message": "Yangilash"
+  },
+  "opt_export_settings": {
+    "message": "Sozlamalarni eksport qilish"
+  },
+  "opt_import_settings": {
+    "message": "Sozlamalarni import qilish"
+  },
+  "opt_e_g_example_com": {
+    "message": "masalan, example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! misol\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Filtr roʻyxati URL manziliga obuna boʻlish (masalan, https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock sozlamalari"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Sozlamalar"
+  },
+  "opt_theme_light": {
+    "message": "Yorugʻ"
+  },
+  "opt_badge_unique": {
+    "message": "noyob"
+  },
+  "opt_smart_desc": {
+    "message": "Hali hech bir filtr roʻyxati bilmaydigan reklamalarni ushlaydi: standart reklama joyi oʻlchamidagi boshqa manbadan kelgan freymlar qoidalarsiz darhol yashiriladi."
+  },
+  "opt_caught_so_far": {
+    "message": "hozirgacha ushlandi."
+  },
+  "opt_allow_desc": {
+    "message": "Bu domenlarda reklamalar bloklanmaydi."
+  },
+  "opt_fh_one": {
+    "message": "Har bir qatorda bitta qoida."
+  },
+  "opt_fh_blocks": {
+    "message": "domenni bloklaydi;"
+  },
+  "opt_fh_everywhere": {
+    "message": "elementni hamma joyda yashiradi;"
+  },
+  "opt_fh_site": {
+    "message": "uni faqat oʻsha saytda yashiradi."
+  },
+  "opt_fh_comments": {
+    "message": "Izoh qatorlari"
+  },
+  "opt_fh_comments2": {
+    "message": "belgisi bilan boshlanadi."
+  },
+  "opt_donate": {
+    "message": "Revolut orqali xayriya qilish"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth tomonidan yaratilgan"
+  },
+  "opt_empty_smart": {
+    "message": "Evristik usulda hali hech narsa ushlanmadi."
+  },
+  "opt_empty_allow": {
+    "message": "Hali ruxsat berilgan saytlar yoʻq."
+  },
+  "opt_empty_hidden": {
+    "message": "Hali qoʻlda hech narsa yashirilmagan."
+  },
+  "opt_empty_subs": {
+    "message": "Hali obuna boʻlingan roʻyxatlar yoʻq."
+  },
+  "opt_no_sw": {
+    "message": "Service worker javob bermayapti."
+  },
+  "opt_remove": {
+    "message": "Olib tashlash"
+  },
+  "opt_filter_status": {
+    "message": "Filtrlar toʻplami v$1, yangilangan: $2. Faqat maʼlumot, siz haqingizda hech narsa yuborilmaydi."
+  },
+  "opt_updating": {
+    "message": "Yangilanmoqda…"
+  },
+  "opt_updated": {
+    "message": "Yangilandi (v$1, $2 ta qoʻshimcha qoida)"
+  },
+  "opt_update_failed": {
+    "message": "Yangilab boʻlmadi ($1)"
+  },
+  "opt_saved": {
+    "message": "Saqlandi ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 ta qoida"
+  },
+  "opt_updated_ago": {
+    "message": "yangilangan: $1"
+  },
+  "opt_not_fetched": {
+    "message": "hali yuklanmagan"
+  },
+  "opt_failed_colon": {
+    "message": "xato: $1"
+  },
+  "opt_enter_https": {
+    "message": "Toʻgʻri https:// URL manzilini kiriting"
+  },
+  "opt_fetching": {
+    "message": "Yuklanmoqda…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Obuna boʻlindi: $1 ta qoida ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Xato ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Yangilanmoqda…"
+  },
+  "opt_refreshed": {
+    "message": "Yangilandi ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Sozlamalar fayli yaroqsiz."
+  },
+  "opt_no_response": {
+    "message": "javob yoʻq"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock dvigateli"
+  },
+  "opt_h_rulesets": {
+    "message": "Yoqilgan statik qoidalar toʻplamlari"
+  },
+  "opt_h_live": {
+    "message": "Jonli filtr domenlari"
+  },
+  "opt_h_last": {
+    "message": "Oxirgi yangilanish"
+  },
+  "opt_h_sig": {
+    "message": "Yangilanish imzolari"
+  },
+  "opt_h_user": {
+    "message": "Filtrlarim / ruxsat qoidalari"
+  },
+  "opt_h_popup": {
+    "message": "Ichki qalqib chiquvchi reklama xostlari"
+  },
+  "opt_h_yt": {
+    "message": "YouTube chetlab oʻtish"
+  },
+  "opt_reason_frame": {
+    "message": "Reklama oʻlchamidagi boshqa manba freymi"
+  },
+  "opt_reason_sticky": {
+    "message": "Yopishqoq reklama banneri"
+  },
+  "logRegional": {
+    "message": "Mintaqaviy roʻyxatlar"
+  },
+  "logFocus": {
+    "message": "Fokus rejimi"
+  },
+  "opt_filter_lists": {
+    "message": "Filtr roʻyxatlari"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList va EasyPrivacy doim yoqilgan. Quyidagi roʻyxatlar ochiq litsenziyali boʻlib, kengaytmaga kiritilgan, shuning uchun ularni yoqish hech narsa yuklab olmaydi — muallifidan keladi deb belgilangan roʻyxat bundan mustasno."
+  },
+  "opt_lists_core": {
+    "message": "Asosiy"
+  },
+  "opt_lists_regional": {
+    "message": "Mintaqaviy"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Brauzeringiz tili uchun roʻyxat oʻz-oʻzidan yoqiladi. Boshqa tillardagi saytlarni tez-tez oʻqisangiz, boshqalarini ham qoʻshing."
+  },
+  "opt_focus_mode": {
+    "message": "Fokus rejimi"
+  },
+  "opt_focus_desc": {
+    "message": "Reklama boʻlmasa ham xalaqit beradigan narsalarni yashiring. Bu yerdagi hamma narsa siz yoqmaguningizcha oʻchiq turadi."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin filtrlari"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin jamoasidan reklamalar, trekerlar, anti-adblock tuzatishlari va sayt tuzatishlari."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe roʻyxati"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Reklama va kuzatuv serverlarining uzoq yillik roʻyxati."
+  },
+  "opt_focus_social": {
+    "message": "Ijtimoiy tarmoq tugmalari va vidjetlari"
+  },
+  "opt_focus_social_desc": {
+    "message": "Ulashish tugmalari, layk bloklari va joylangan lentalar."
+  },
+  "opt_focus_chat": {
+    "message": "Chat va yordam vidjetlari"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Sahifa burchagida suzib yuruvchi chat pufakchalari."
+  },
+  "opt_focus_newsletters": {
+    "message": "Axborotnoma va roʻyxatdan oʻtish oynalari"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“Axborotnomamizga obuna boʻling” bloklari va qatlamlari."
+  },
+  "opt_focus_notifications": {
+    "message": "Bildirishnoma soʻrovlari"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Brauzer soʻrashidan oldin saytlar koʻrsatadigan “Bildirishnomalarga ruxsat berasizmi?” bloklari."
+  },
+  "opt_focus_ai": {
+    "message": "Sunʼiy intellekt yordamchisi oynalari"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Sahifalarga qoʻshilgan chatbot pufakchalari va sunʼiy intellekt tavsiyalari panellari."
+  },
+  "opt_focus_other": {
+    "message": "Boshqa bezovta qiluvchi elementlar"
+  },
+  "opt_focus_other_desc": {
+    "message": "Yopishqoq panellar, “Ilovada ochish” bannerlari va shunga oʻxshash ortiqcha narsalar."
+  },
+  "opt_badge_lang": {
+    "message": "sizning tilingiz"
+  },
+  "opt_badge_remote": {
+    "message": "muallifidan"
+  },
+  "opt_remote_hint": {
+    "message": "Kengaytmaga kiritilmagan (tarqatish litsenziyasi yoʻq): uni yoqqaningizda brauzeringiz $1 manzilidan yuklab oladi."
+  },
+  "opt_downloaded_from": {
+    "message": "Yuklab olish manbasi: $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome bu roʻyxatlar birikmasini rad etdi ($1). Ayrimlarini oʻchiring."
+  },
+  "opt_badge_recommended": {
+    "message": "tilingiz uchun tavsiya etiladi"
+  },
+  "reportBroken": {
+    "message": "Sayt buzildimi? Tuzating yoki bizga xabar bering"
+  },
+  "rep_title": {
+    "message": "Bu saytda nimadir ishlamayaptimi?"
+  },
+  "rep_fix_first": {
+    "message": "Hozir tuzatish"
+  },
+  "rep_site": {
+    "message": "Sayt:"
+  },
+  "rep_fix_desc": {
+    "message": "Aksariyat muammolar ulardan biri bilan hal boʻladi. Har biri faqat shu saytga taalluqli; varaq qayta yuklanadi."
+  },
+  "rep_fix_cosm": {
+    "message": "Bu yerda elementlarni yashirishni oʻchirish"
+  },
+  "rep_fix_allow": {
+    "message": "Bu saytda reklamaga ruxsat berish"
+  },
+  "rep_fix_pause": {
+    "message": "Hamma joyda 30 daqiqaga pauza"
+  },
+  "rep_tell_us": {
+    "message": "Bizga xabar bering"
+  },
+  "rep_tell_desc": {
+    "message": "Buzilgan saytlarni imzolangan filtr yangilanishi orqali hamma uchun tuzatamiz, odatda bir kun ichida. Kengaytma hech narsa yubormaydi: hisobot oʻzingizning pochta ilovangizda ochiladi va uning har bir soʻzini avval oʻzingiz koʻrasiz."
+  },
+  "rep_what": {
+    "message": "Muammo nimada? (ixtiyoriy)"
+  },
+  "rep_what_ph": {
+    "message": "masalan, video boshlanmayapti, maqolani oq blok yopib turibdi…"
+  },
+  "rep_full_url": {
+    "message": "Sahifaning toʻliq manzilini qoʻshish (aks holda faqat sayt nomi)"
+  },
+  "rep_preview": {
+    "message": "Nima yuboriladi"
+  },
+  "rep_send_mail": {
+    "message": "E-pochta orqali yuborish"
+  },
+  "rep_copy": {
+    "message": "Hisobotdan nusxa olish"
+  },
+  "rep_copied": {
+    "message": "Nusxa olindi."
+  },
+  "rep_done_cosm": {
+    "message": "Bu saytda elementlarni yashirish oʻchirildi. Qayta yuklandi — tuzaldimi?"
+  },
+  "rep_done_allow": {
+    "message": "Bu saytda reklamaga ruxsat berildi. Qayta yuklandi — tuzaldimi?"
+  },
+  "rep_done_pause": {
+    "message": "30 daqiqaga pauza qilindi. Sayt endi ishlasa, iltimos, quyida bizga xabar bering."
+  },
+  "cookieRejections": {
+    "message": "Siz uchun rad etilgan cookie bannerlari: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube saytidagi Shorts javonlari, boʻlimi va tavsiyalari."
+  },
+  "opt_focus_onetap": {
+    "message": "“Google bilan kirish” oynalari"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Koʻplab saytlar burchagida chiqadigan hisob tanlash oynasi. Kirish tugmalari ishlashda davom etadi."
+  },
+  "pickTip": {
+    "message": "Yashirish uchun elementni bosing"
+  },
+  "pickZapTip": {
+    "message": "Bu elementni olib tashlash uchun bosing (bir marta)"
+  },
+  "pickEscCancel": {
+    "message": "— bekor qilish"
+  },
+  "opt_notices": {
+    "message": "Filtr roʻyxatlarining litsenziyalari"
+  }
+}

@@ -1,0 +1,12 @@
+<%- include('../partials/head') %>
+<div class="login">
+  <div class="brand"><%- icon('shield', { class: 'ic-lg' }) %><span class="wordmark"><%= t('auth.twoFactor') %></span></div>
+  <p class="sub center mb-2"><%= t('auth.twoFactorHint') %></p>
+  <% if (error) { %><div class="flash error"><%- icon('status-failed') %><span><%= error %></span></div><% } %>
+  <form method="post" action="/admin/2fa" class="stack">
+    <label><%= t('auth.code') %><input type="text" name="code" inputmode="numeric" pattern="[0-9 ]{6,7}" required autocomplete="one-time-code" autofocus></label>
+    <button class="btn primary w-full" type="submit"><%- icon('approve') %> <%= t('auth.confirm') %></button>
+  </form>
+  <form method="post" action="/admin/logout" class="inline block mt-1"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn ghost small" type="submit"><%- icon('logout', { class: 'ic-sm' }) %> <%= t('nav.logout') %></button></form>
+</div>
+<%- include('../partials/foot') %>

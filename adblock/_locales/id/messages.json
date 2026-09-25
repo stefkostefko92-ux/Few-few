@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokir semua iklan: iklan video YouTube, banner, pop-up, pelacak, notifikasi cookie, dinding anti-adblock. Gratis, cepat, privat."
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Aktifkan/nonaktifkan perlindungan"
+  },
+  "protected": {
+    "message": "Terlindungi"
+  },
+  "paused": {
+    "message": "Dijeda"
+  },
+  "blockingHere": {
+    "message": "Memblokir iklan di halaman ini"
+  },
+  "protectionOff": {
+    "message": "Perlindungan nonaktif"
+  },
+  "pause30": {
+    "message": "Jeda selama 30 menit"
+  },
+  "pausedResume": {
+    "message": "Dijeda, lanjutkan sekarang (sisa $1 mnt)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Diblokir"
+  },
+  "dataSaved": {
+    "message": "Data dihemat"
+  },
+  "timeSaved": {
+    "message": "Waktu dihemat"
+  },
+  "thisSite": {
+    "message": "situs ini"
+  },
+  "thisPage": {
+    "message": "halaman ini"
+  },
+  "blockOnSite": {
+    "message": "Blokir iklan di situs ini"
+  },
+  "blocking": {
+    "message": "Memblokir"
+  },
+  "allowed": {
+    "message": "Diizinkan"
+  },
+  "cosmetics": {
+    "message": "Sembunyikan iklan di sini"
+  },
+  "cosmeticsTitle": {
+    "message": "Pemfilteran kosmetik di situs ini (nonaktifkan jika tata letak rusak)"
+  },
+  "on": {
+    "message": "Nyala"
+  },
+  "off": {
+    "message": "Mati"
+  },
+  "blockedHere": {
+    "message": "Diblokir di halaman ini"
+  },
+  "logEmpty": {
+    "message": "Belum ada yang diblokir di sini."
+  },
+  "logUnavailable": {
+    "message": "Log tidak tersedia saat ini (kuota browser) — coba lagi dalam satu menit."
+  },
+  "logCore": {
+    "message": "Aturan inti Supreme"
+  },
+  "logYouTube": {
+    "message": "Aturan iklan YouTube"
+  },
+  "logParams": {
+    "message": "Parameter pelacakan"
+  },
+  "logMalware": {
+    "message": "Domain malware"
+  },
+  "logSurrogates": {
+    "message": "Skrip iklan dinetralkan"
+  },
+  "logPrivacy": {
+    "message": "Perlindungan privasi"
+  },
+  "logUser": {
+    "message": "Filter saya"
+  },
+  "logLive": {
+    "message": "Pembaruan langsung"
+  },
+  "hideElement": {
+    "message": "Sembunyikan elemen"
+  },
+  "settings": {
+    "message": "Setelan"
+  },
+  "promoSub": {
+    "message": "Perlengkapan & alat, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Iklan"
+  },
+  "support": {
+    "message": "Dukung"
+  },
+  "filtersCount": {
+    "message": "$1+ filter",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Tampilan"
+  },
+  "opt_extra_protection": {
+    "message": "Perlindungan ekstra"
+  },
+  "opt_smart_detection_log": {
+    "message": "Log Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Situs yang diizinkan"
+  },
+  "opt_my_filters": {
+    "message": "Filter saya"
+  },
+  "opt_hidden_elements": {
+    "message": "Elemen tersembunyi"
+  },
+  "opt_filter_updates": {
+    "message": "Pembaruan filter"
+  },
+  "opt_engine_health": {
+    "message": "Kesehatan mesin"
+  },
+  "opt_backup": {
+    "message": "Cadangan"
+  },
+  "opt_support_development": {
+    "message": "Dukung pengembangan"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sinkronkan antarperangkat"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Pemblokiran iklan YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Banner cookie / persetujuan"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Lewati anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Postingan bersponsor Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Hapus parameter pelacakan"
+  },
+  "opt_malware_protection": {
+    "message": "Perlindungan malware"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blokir API browser untuk penargetan iklan"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blokir beacon pelacak & penambang kripto"
+  },
+  "opt_auto_update_filters": {
+    "message": "Perbarui filter otomatis"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (gelap) atau terang"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Sinkronkan setelan, daftar yang diizinkan, dan filter di setiap Chrome tempat Anda login"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Hapus iklan video di YouTube. Nonaktifkan jika video tidak mau diputar."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Tutup otomatis permintaan “Terima cookie”"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Sembunyikan dinding “nonaktifkan adblocker Anda” dan pulihkan halaman"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Sembunyikan postingan “Bersponsor” di Facebook & Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Hapus utm_*, fbclid, gclid, dan pengenal klik lainnya dari link yang Anda buka"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokir domain malware yang dikenal (daftar URLhaus dari abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Nonaktifkan API iklan Google Topics, FLoC, dan Protected Audience di setiap situs"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Hentikan ping audit hyperlink / beacon pihak ketiga, hapus cookie pelacak dari respons server teknologi iklan yang dikenal, dan blokir skrip penambangan kripto di browser. Nonaktifkan jika fitur situs yang bergantung pada analitik tidak berfungsi dengan benar."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Mengambil aturan blokir baru dan perbaikan YouTube dari adblock.carbonstealth.eu sekitar dua kali sehari. Hanya data, tanpa kode; permintaan tidak membawa pengenal atau data penjelajahan apa pun."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Log langsung iklan yang tertangkap secara heuristik (tanpa daftar filter), terbaru di atas."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Daftar langganan diambil sebagai teks (tidak pernah sebagai kode), diperbarui setiap hari, dan disimpan di blok terkelola di atas. Hapus daftar untuk membuang aturannya."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elemen yang Anda sembunyikan secara manual dengan pemilih, dikelompokkan per situs."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Diagnostik langsung — semuanya dihitung secara lokal. Jika ada yang merah, “Perbarui sekarang” atau memuat ulang ekstensi biasanya dapat memperbaikinya."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock gratis untuk semua orang. Jika Anda ingin membantu agar tetap terpelihara, donasi sangat kami hargai, tetapi tidak pernah diwajibkan."
+  },
+  "opt_reset_statistics": {
+    "message": "Reset statistik"
+  },
+  "opt_add": {
+    "message": "Tambah"
+  },
+  "opt_save_filters": {
+    "message": "Simpan filter"
+  },
+  "opt_subscribe": {
+    "message": "Berlangganan"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Segarkan langganan sekarang"
+  },
+  "opt_update_now": {
+    "message": "Perbarui sekarang"
+  },
+  "opt_refresh": {
+    "message": "Segarkan"
+  },
+  "opt_export_settings": {
+    "message": "Ekspor setelan"
+  },
+  "opt_import_settings": {
+    "message": "Impor setelan"
+  },
+  "opt_e_g_example_com": {
+    "message": "mis. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Berlangganan URL daftar filter (mis. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Setelan Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Setelan"
+  },
+  "opt_theme_light": {
+    "message": "Terang"
+  },
+  "opt_badge_unique": {
+    "message": "unik"
+  },
+  "opt_smart_desc": {
+    "message": "Menangkap iklan yang belum dikenal daftar filter mana pun: frame lintas origin berukuran seperti slot iklan standar langsung disembunyikan, tanpa perlu aturan."
+  },
+  "opt_caught_so_far": {
+    "message": "tertangkap sejauh ini."
+  },
+  "opt_allow_desc": {
+    "message": "Iklan tidak diblokir di domain ini."
+  },
+  "opt_fh_one": {
+    "message": "Satu aturan per baris."
+  },
+  "opt_fh_blocks": {
+    "message": "memblokir domain;"
+  },
+  "opt_fh_everywhere": {
+    "message": "menyembunyikan elemen di mana saja;"
+  },
+  "opt_fh_site": {
+    "message": "menyembunyikannya hanya di situs itu."
+  },
+  "opt_fh_comments": {
+    "message": "Baris yang diawali"
+  },
+  "opt_fh_comments2": {
+    "message": "adalah komentar."
+  },
+  "opt_donate": {
+    "message": "Donasi via Revolut"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Belum ada yang tertangkap secara heuristik."
+  },
+  "opt_empty_allow": {
+    "message": "Belum ada situs yang diizinkan."
+  },
+  "opt_empty_hidden": {
+    "message": "Belum ada yang disembunyikan secara manual."
+  },
+  "opt_empty_subs": {
+    "message": "Belum ada daftar langganan."
+  },
+  "opt_no_sw": {
+    "message": "Tidak ada respons dari service worker."
+  },
+  "opt_remove": {
+    "message": "Hapus"
+  },
+  "opt_filter_status": {
+    "message": "Set filter v$1, diperbarui $2. Hanya data, tidak ada informasi tentang Anda yang dikirim."
+  },
+  "opt_updating": {
+    "message": "Memperbarui…"
+  },
+  "opt_updated": {
+    "message": "Diperbarui (v$1, $2 aturan tambahan)"
+  },
+  "opt_update_failed": {
+    "message": "Pembaruan gagal ($1)"
+  },
+  "opt_saved": {
+    "message": "Tersimpan ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 aturan"
+  },
+  "opt_updated_ago": {
+    "message": "diperbarui $1"
+  },
+  "opt_not_fetched": {
+    "message": "belum diambil"
+  },
+  "opt_failed_colon": {
+    "message": "gagal: $1"
+  },
+  "opt_enter_https": {
+    "message": "Masukkan URL https:// yang valid"
+  },
+  "opt_fetching": {
+    "message": "Mengambil…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Berlangganan: $1 aturan ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Gagal ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Menyegarkan…"
+  },
+  "opt_refreshed": {
+    "message": "Disegarkan ✓"
+  },
+  "opt_invalid_file": {
+    "message": "File setelan tidak valid."
+  },
+  "opt_no_response": {
+    "message": "tidak ada respons"
+  },
+  "opt_h_engine": {
+    "message": "Mesin anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Set aturan statis aktif"
+  },
+  "opt_h_live": {
+    "message": "Domain filter langsung"
+  },
+  "opt_h_last": {
+    "message": "Pembaruan terakhir"
+  },
+  "opt_h_sig": {
+    "message": "Tanda tangan pembaruan"
+  },
+  "opt_h_user": {
+    "message": "Filter saya / aturan daftar yang diizinkan"
+  },
+  "opt_h_popup": {
+    "message": "Host iklan pop-up bawaan"
+  },
+  "opt_h_yt": {
+    "message": "Bypass YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Frame lintas origin berukuran iklan"
+  },
+  "opt_reason_sticky": {
+    "message": "Iklan banner melekat"
+  },
+  "logRegional": {
+    "message": "Daftar regional"
+  },
+  "logFocus": {
+    "message": "Mode fokus"
+  },
+  "opt_filter_lists": {
+    "message": "Daftar filter"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList dan EasyPrivacy selalu aktif. Daftar di bawah ini adalah daftar berlisensi terbuka yang sudah disertakan dalam ekstensi, jadi mengaktifkannya tidak mengunduh apa pun, kecuali daftar yang ditandai berasal dari pembuatnya."
+  },
+  "opt_lists_core": {
+    "message": "Inti"
+  },
+  "opt_lists_regional": {
+    "message": "Regional"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Daftar untuk bahasa browser Anda aktif dengan sendirinya. Tambahkan yang lain jika Anda sering membaca situs dalam bahasa lain."
+  },
+  "opt_focus_mode": {
+    "message": "Mode fokus"
+  },
+  "opt_focus_desc": {
+    "message": "Sembunyikan hal-hal yang bukan iklan tetapi tetap mengganggu. Semua di sini nonaktif sampai Anda mengaktifkannya."
+  },
+  "opt_list_ubo": {
+    "message": "Filter uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Iklan, pelacak, perbaikan anti-adblock, dan perbaikan situs dari tim uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Daftar Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Daftar lama server iklan dan pelacakan yang terus dikelola."
+  },
+  "opt_focus_social": {
+    "message": "Tombol dan widget media sosial"
+  },
+  "opt_focus_social_desc": {
+    "message": "Tombol bagikan, kotak suka, dan feed yang disematkan."
+  },
+  "opt_focus_chat": {
+    "message": "Widget chat dan dukungan"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Gelembung chat mengambang di sudut halaman."
+  },
+  "opt_focus_newsletters": {
+    "message": "Pop-up newsletter dan pendaftaran"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Kotak dan overlay “Berlangganan newsletter kami”."
+  },
+  "opt_focus_notifications": {
+    "message": "Permintaan notifikasi"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Kotak “Izinkan notifikasi?” yang ditampilkan situs sebelum browser bertanya."
+  },
+  "opt_focus_ai": {
+    "message": "Pop-up asisten AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Gelembung chatbot dan panel saran AI yang ditambahkan ke halaman."
+  },
+  "opt_focus_other": {
+    "message": "Gangguan lainnya"
+  },
+  "opt_focus_other_desc": {
+    "message": "Bilah melekat, banner “buka di aplikasi”, dan kekacauan serupa."
+  },
+  "opt_badge_lang": {
+    "message": "bahasa Anda"
+  },
+  "opt_badge_remote": {
+    "message": "dari pembuatnya"
+  },
+  "opt_remote_hint": {
+    "message": "Tidak disertakan (tidak ada lisensi untuk mendistribusikannya ulang): browser Anda mengunduhnya dari $1 saat Anda mengaktifkannya."
+  },
+  "opt_downloaded_from": {
+    "message": "Diunduh dari $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome menolak kombinasi daftar ini ($1). Nonaktifkan beberapa di antaranya."
+  },
+  "opt_badge_recommended": {
+    "message": "direkomendasikan untuk bahasa Anda"
+  },
+  "reportBroken": {
+    "message": "Situs rusak? Perbaiki atau beri tahu kami"
+  },
+  "rep_title": {
+    "message": "Ada yang rusak di situs ini?"
+  },
+  "rep_fix_first": {
+    "message": "Perbaiki sekarang"
+  },
+  "rep_site": {
+    "message": "Situs:"
+  },
+  "rep_fix_desc": {
+    "message": "Sebagian besar masalah hilang dengan salah satu langkah ini. Masing-masing hanya berlaku untuk situs ini; tab akan dimuat ulang."
+  },
+  "rep_fix_cosm": {
+    "message": "Nonaktifkan penyembunyian elemen di sini"
+  },
+  "rep_fix_allow": {
+    "message": "Izinkan iklan di situs ini"
+  },
+  "rep_fix_pause": {
+    "message": "Jeda di semua situs selama 30 menit"
+  },
+  "rep_tell_us": {
+    "message": "Beri tahu kami"
+  },
+  "rep_tell_desc": {
+    "message": "Kami memperbaiki situs yang rusak untuk semua orang melalui pembaruan filter bertanda tangan, biasanya dalam sehari. Ekstensi tidak mengirim apa pun: laporan terbuka di aplikasi email Anda sendiri, dan Anda dapat melihat setiap katanya terlebih dahulu."
+  },
+  "rep_what": {
+    "message": "Apa masalahnya? (opsional)"
+  },
+  "rep_what_ph": {
+    "message": "mis. video tidak mau diputar, kotak putih menutupi artikel…"
+  },
+  "rep_full_url": {
+    "message": "Sertakan alamat halaman lengkap (jika tidak, hanya nama situs)"
+  },
+  "rep_preview": {
+    "message": "Yang akan dikirim"
+  },
+  "rep_send_mail": {
+    "message": "Kirim lewat email"
+  },
+  "rep_copy": {
+    "message": "Salin laporan"
+  },
+  "rep_copied": {
+    "message": "Disalin."
+  },
+  "rep_done_cosm": {
+    "message": "Penyembunyian elemen dinonaktifkan di situs ini. Sudah dimuat ulang — apakah sudah beres?"
+  },
+  "rep_done_allow": {
+    "message": "Iklan diizinkan di situs ini. Sudah dimuat ulang — apakah sudah beres?"
+  },
+  "rep_done_pause": {
+    "message": "Dijeda selama 30 menit. Jika situs sekarang berfungsi, harap beri tahu kami di bawah."
+  },
+  "cookieRejections": {
+    "message": "Banner cookie yang ditolak untuk Anda: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Rak, tab, dan saran Shorts di YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Pop-up “Login dengan Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Pemilih akun yang muncul di sudut banyak situs. Tombol login tetap berfungsi."
+  },
+  "pickTip": {
+    "message": "Klik elemen untuk menyembunyikannya"
+  },
+  "pickZapTip": {
+    "message": "Klik untuk menghapus elemen ini (sekali)"
+  },
+  "pickEscCancel": {
+    "message": "untuk membatalkan"
+  },
+  "opt_notices": {
+    "message": "Lisensi daftar filter"
+  }
+}

@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokuoja reklamas visur: YouTube vaizdo reklamas, reklamjuostes, iššokančius langus, sekimą ir anti-adblock sienas. Nemokamai."
+  },
+  "byCarbon": {
+    "message": "sukūrė Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Įjungti / išjungti apsaugą"
+  },
+  "protected": {
+    "message": "Apsaugota"
+  },
+  "paused": {
+    "message": "Pauzė"
+  },
+  "blockingHere": {
+    "message": "Blokuojamos reklamos šiame puslapyje"
+  },
+  "protectionOff": {
+    "message": "Apsauga išjungta"
+  },
+  "pause30": {
+    "message": "Pristabdyti 30 minučių"
+  },
+  "pausedResume": {
+    "message": "Pristabdyta, tęsti dabar (liko $1 min.)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Užblokuota"
+  },
+  "dataSaved": {
+    "message": "Sutaupyta duomenų"
+  },
+  "timeSaved": {
+    "message": "Sutaupyta laiko"
+  },
+  "thisSite": {
+    "message": "ši svetainė"
+  },
+  "thisPage": {
+    "message": "šis puslapis"
+  },
+  "blockOnSite": {
+    "message": "Blokuoti reklamas šioje svetainėje"
+  },
+  "blocking": {
+    "message": "Blokuojama"
+  },
+  "allowed": {
+    "message": "Leidžiama"
+  },
+  "cosmetics": {
+    "message": "Slėpti reklamas čia"
+  },
+  "cosmeticsTitle": {
+    "message": "Kosmetinis filtravimas šioje svetainėje (išjunkite, jei sugenda išdėstymas)"
+  },
+  "on": {
+    "message": "Įj."
+  },
+  "off": {
+    "message": "Išj."
+  },
+  "blockedHere": {
+    "message": "Užblokuota šiame puslapyje"
+  },
+  "logEmpty": {
+    "message": "Čia dar nieko neužblokuota."
+  },
+  "logUnavailable": {
+    "message": "Žurnalas šiuo metu nepasiekiamas (naršyklės kvota) — bandykite dar kartą po minutės."
+  },
+  "logCore": {
+    "message": "Pagrindinės taisyklės"
+  },
+  "logYouTube": {
+    "message": "YouTube reklamos"
+  },
+  "logParams": {
+    "message": "Sekimo parametrai"
+  },
+  "logMalware": {
+    "message": "Kenkėjiški domenai"
+  },
+  "logSurrogates": {
+    "message": "Neutralizuoti reklamų scenarijai"
+  },
+  "logPrivacy": {
+    "message": "Privatumo apsauga"
+  },
+  "logUser": {
+    "message": "Mano filtrai"
+  },
+  "logLive": {
+    "message": "Tiesioginiai naujinimai"
+  },
+  "hideElement": {
+    "message": "Slėpti elementą"
+  },
+  "settings": {
+    "message": "Nustatymai"
+  },
+  "promoSub": {
+    "message": "Įranga ir įrankiai, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reklama"
+  },
+  "support": {
+    "message": "Paremti"
+  },
+  "filtersCount": {
+    "message": "$1+ filtrų",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Išvaizda"
+  },
+  "opt_extra_protection": {
+    "message": "Papildoma apsauga"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection žurnalas"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Leidžiamų svetainių sąrašas"
+  },
+  "opt_my_filters": {
+    "message": "Mano filtrai"
+  },
+  "opt_hidden_elements": {
+    "message": "Paslėpti elementai"
+  },
+  "opt_filter_updates": {
+    "message": "Filtrų naujinimai"
+  },
+  "opt_engine_health": {
+    "message": "Variklio būsena"
+  },
+  "opt_backup": {
+    "message": "Atsarginė kopija"
+  },
+  "opt_support_development": {
+    "message": "Paremti kūrimą"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sinchronizavimas tarp įrenginių"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube reklamų blokavimas"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Slapukų / sutikimo pranešimai"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock sienų apėjimas"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Remiami Meta įrašai"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Sekimo parametrų šalinimas"
+  },
+  "opt_malware_protection": {
+    "message": "Apsauga nuo kenkėjiškų programų"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blokuoti naršyklės API reklamų taikymui"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blokuoti sekimo signalus ir kriptovaliutų kasėjus"
+  },
+  "opt_auto_update_filters": {
+    "message": "Automatiškai naujinti filtrus"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (tamsi) arba šviesi"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Sinchronizuoja nustatymus, leidžiamų sąrašą ir filtrus kiekvienoje Chrome naršyklėje, kurioje esate prisijungę"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Pašalina vaizdo reklamas YouTube. Išjunkite, jei vaizdo įrašai nepasileidžia."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Automatiškai uždaro užklausas „Priimti slapukus“"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Paslepia sienas „išjunkite reklamų blokavimo priemonę“ ir atkuria puslapį"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Paslepia įrašus „Remiama“ Facebook ir Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Pašalina utm_*, fbclid, gclid ir kitus paspaudimų identifikatorius iš jūsų atidaromų nuorodų"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokuoja žinomus kenkėjiškus domenus (abuse.ch URLhaus sąrašas)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Išjungia Google Topics, FLoC ir Protected Audience reklamų API visose svetainėse"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Sustabdo trečiųjų šalių hipersaitų audito / signalų (beacon) užklausas, pašalina sekimo slapukus iš žinomų reklamos technologijų atsakymų ir blokuoja kriptovaliutų kasimo scenarijus naršyklėje. Išjunkite, jei svetainės funkcija, priklausanti nuo analitikos, veikia netinkamai."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Maždaug du kartus per dieną atsisiunčia naujas blokavimo taisykles ir YouTube pataisas iš adblock.carbonstealth.eu. Tik duomenys, jokio kodo; užklausoje nėra identifikatorių ar naršymo duomenų."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Tiesioginis heuristiškai aptiktų reklamų žurnalas (be filtrų sąrašo), naujausios viršuje."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Prenumeruojami sąrašai atsisiunčiami kaip tekstas (niekada kaip kodas), kasdien atnaujinami ir laikomi aukščiau esančiuose valdomuose blokuose. Pašalinkite sąrašą, kad atsisakytumėte jo taisyklių."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elementai, kuriuos paslėpėte rankiniu būdu parinkikliu, sugrupuoti pagal svetainę."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Tiesioginė diagnostika — viskas apskaičiuojama vietoje. Jei kas nors raudona, paprastai padeda „Atnaujinti dabar“ arba plėtinio įkėlimas iš naujo."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock nemokamas visiems. Jei norite padėti jį prižiūrėti, aukos laukiamos, bet niekada neprivalomos."
+  },
+  "opt_reset_statistics": {
+    "message": "Iš naujo nustatyti statistiką"
+  },
+  "opt_add": {
+    "message": "Pridėti"
+  },
+  "opt_save_filters": {
+    "message": "Išsaugoti filtrus"
+  },
+  "opt_subscribe": {
+    "message": "Prenumeruoti"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Atnaujinti prenumeratas dabar"
+  },
+  "opt_update_now": {
+    "message": "Atnaujinti dabar"
+  },
+  "opt_refresh": {
+    "message": "Atnaujinti"
+  },
+  "opt_export_settings": {
+    "message": "Eksportuoti nustatymus"
+  },
+  "opt_import_settings": {
+    "message": "Importuoti nustatymus"
+  },
+  "opt_e_g_example_com": {
+    "message": "pvz., example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! pavyzdys\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Prenumeruoti filtrų sąrašą pagal URL (pvz., https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock nustatymai"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Nustatymai"
+  },
+  "opt_theme_light": {
+    "message": "Šviesi"
+  },
+  "opt_badge_unique": {
+    "message": "unikalu"
+  },
+  "opt_smart_desc": {
+    "message": "Sugauna reklamas, kurių dar nežino joks filtrų sąrašas: kitų domenų rėmeliai, atitinkantys standartinių reklamos vietų dydžius, paslepiami iš karto, be jokių taisyklių."
+  },
+  "opt_caught_so_far": {
+    "message": "sugauta iki šiol."
+  },
+  "opt_allow_desc": {
+    "message": "Šiuose domenuose reklamos neblokuojamos."
+  },
+  "opt_fh_one": {
+    "message": "Viena taisyklė eilutėje."
+  },
+  "opt_fh_blocks": {
+    "message": "blokuoja domeną;"
+  },
+  "opt_fh_everywhere": {
+    "message": "paslepia elementą visur;"
+  },
+  "opt_fh_site": {
+    "message": "paslepia jį tik toje svetainėje."
+  },
+  "opt_fh_comments": {
+    "message": "Eilutės, prasidedančios simboliu"
+  },
+  "opt_fh_comments2": {
+    "message": "yra komentarai."
+  },
+  "opt_donate": {
+    "message": "Paaukoti per Revolut"
+  },
+  "opt_made_by": {
+    "message": "sukūrė Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Heuristiškai dar nieko nesugauta."
+  },
+  "opt_empty_allow": {
+    "message": "Leidžiamų svetainių dar nėra."
+  },
+  "opt_empty_hidden": {
+    "message": "Rankiniu būdu dar nieko nepaslėpta."
+  },
+  "opt_empty_subs": {
+    "message": "Prenumeruojamų sąrašų dar nėra."
+  },
+  "opt_no_sw": {
+    "message": "Nėra atsakymo iš service worker."
+  },
+  "opt_remove": {
+    "message": "Pašalinti"
+  },
+  "opt_filter_status": {
+    "message": "Filtrų rinkinys v$1, atnaujintas $2. Tik duomenys, apie jus nieko nesiunčiama."
+  },
+  "opt_updating": {
+    "message": "Atnaujinama…"
+  },
+  "opt_updated": {
+    "message": "Atnaujinta (v$1, papildomų taisyklių: $2)"
+  },
+  "opt_update_failed": {
+    "message": "Atnaujinti nepavyko ($1)"
+  },
+  "opt_saved": {
+    "message": "Išsaugota ✓"
+  },
+  "opt_rules_count": {
+    "message": "taisyklių: $1"
+  },
+  "opt_updated_ago": {
+    "message": "atnaujinta $1"
+  },
+  "opt_not_fetched": {
+    "message": "dar neatsisiųsta"
+  },
+  "opt_failed_colon": {
+    "message": "nepavyko: $1"
+  },
+  "opt_enter_https": {
+    "message": "Įveskite galiojantį https:// URL"
+  },
+  "opt_fetching": {
+    "message": "Atsisiunčiama…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Užprenumeruota, taisyklių: $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Nepavyko ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Atnaujinama…"
+  },
+  "opt_refreshed": {
+    "message": "Atnaujinta ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Netinkamas nustatymų failas."
+  },
+  "opt_no_response": {
+    "message": "nėra atsakymo"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock variklis"
+  },
+  "opt_h_rulesets": {
+    "message": "Įjungti statiniai taisyklių rinkiniai"
+  },
+  "opt_h_live": {
+    "message": "Tiesioginių filtrų domenai"
+  },
+  "opt_h_last": {
+    "message": "Paskutinis atnaujinimas"
+  },
+  "opt_h_sig": {
+    "message": "Atnaujinimų parašai"
+  },
+  "opt_h_user": {
+    "message": "Mano filtrai / leidimo taisyklės"
+  },
+  "opt_h_popup": {
+    "message": "Integruoti iššokančių reklamų serveriai"
+  },
+  "opt_h_yt": {
+    "message": "YouTube apėjimas"
+  },
+  "opt_reason_frame": {
+    "message": "Kito domeno reklamos dydžio rėmelis"
+  },
+  "opt_reason_sticky": {
+    "message": "Prilipusi reklamjuostė"
+  },
+  "logRegional": {
+    "message": "Regioniniai sąrašai"
+  },
+  "logFocus": {
+    "message": "Susitelkimas"
+  },
+  "opt_filter_lists": {
+    "message": "Filtrų sąrašai"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList ir EasyPrivacy visada įjungti. Toliau pateikti sąrašai turi atvirąją licenciją ir yra įtraukti į plėtinį, todėl juos įjungus nieko neatsisiunčiama, išskyrus sąrašą, pažymėtą kaip gaunamą iš jo autoriaus."
+  },
+  "opt_lists_core": {
+    "message": "Pagrindiniai"
+  },
+  "opt_lists_regional": {
+    "message": "Regioniniai"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Jūsų naršyklės kalbos sąrašas įsijungia savaime. Pridėkite kitų, jei dažnai skaitote svetaines kitomis kalbomis."
+  },
+  "opt_focus_mode": {
+    "message": "Susitelkimo režimas"
+  },
+  "opt_focus_desc": {
+    "message": "Slepia tai, kas nėra reklama, bet vis tiek trukdo. Viskas čia išjungta, kol neįjungsite."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin filtrai"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Reklamos, stebėjimo elementai, anti-adblock pataisos ir svetainių taisymai iš uBlock Origin komandos."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe sąrašas"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Ilgametis reklamos ir sekimo serverių sąrašas."
+  },
+  "opt_focus_social": {
+    "message": "Socialinių tinklų mygtukai ir valdikliai"
+  },
+  "opt_focus_social_desc": {
+    "message": "Bendrinimo mygtukai, „Patinka“ langeliai ir įterpti srautai."
+  },
+  "opt_focus_chat": {
+    "message": "Pokalbių ir pagalbos valdikliai"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Plūduriuojantys pokalbių burbulai puslapio kampe."
+  },
+  "opt_focus_newsletters": {
+    "message": "Naujienlaiškių ir registracijos iššokantys langai"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Langeliai ir perdangos „Prenumeruokite mūsų naujienlaiškį“."
+  },
+  "opt_focus_notifications": {
+    "message": "Pranešimų užklausos"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Langeliai „Leisti pranešimus?“, kuriuos svetainės rodo prieš naršyklei paklausiant."
+  },
+  "opt_focus_ai": {
+    "message": "Iššokantys AI asistentai"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Pokalbių robotų burbulai ir AI pasiūlymų skydeliai, pridėti prie puslapių."
+  },
+  "opt_focus_other": {
+    "message": "Kiti erzinantys elementai"
+  },
+  "opt_focus_other_desc": {
+    "message": "Prilipusios juostos, „Atidaryti programėlėje“ reklamjuostės ir panaši netvarka."
+  },
+  "opt_badge_lang": {
+    "message": "jūsų kalba"
+  },
+  "opt_badge_remote": {
+    "message": "iš autoriaus"
+  },
+  "opt_remote_hint": {
+    "message": "Neįtrauktas (nėra licencijos platinti): naršyklė jį atsisiunčia iš $1, kai jį įjungiate."
+  },
+  "opt_downloaded_from": {
+    "message": "Atsisiunčiama iš $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome atmetė šį sąrašų derinį ($1). Kai kuriuos išjunkite."
+  },
+  "opt_badge_recommended": {
+    "message": "rekomenduojama jūsų kalbai"
+  },
+  "reportBroken": {
+    "message": "Svetainė neveikia? Pataisykite arba praneškite mums"
+  },
+  "rep_title": {
+    "message": "Kažkas neveikia šioje svetainėje?"
+  },
+  "rep_fix_first": {
+    "message": "Pataisykite dabar"
+  },
+  "rep_site": {
+    "message": "Svetainė:"
+  },
+  "rep_fix_desc": {
+    "message": "Dauguma problemų išnyksta pasirinkus vieną iš šių. Kiekvienas taikomas tik šiai svetainei; skirtukas įkeliamas iš naujo."
+  },
+  "rep_fix_cosm": {
+    "message": "Išjungti elementų slėpimą čia"
+  },
+  "rep_fix_allow": {
+    "message": "Leisti reklamas šioje svetainėje"
+  },
+  "rep_fix_pause": {
+    "message": "Pristabdyti visur 30 minučių"
+  },
+  "rep_tell_us": {
+    "message": "Praneškite mums"
+  },
+  "rep_tell_desc": {
+    "message": "Neveikiančias svetaines taisome visiems per pasirašytą filtrų naujinimą, paprastai per dieną. Plėtinys nieko nesiunčia: pranešimas atsidaro jūsų el. pašto programoje, ir jūs pirmiausia matote kiekvieną jo žodį."
+  },
+  "rep_what": {
+    "message": "Kas negerai? (neprivaloma)"
+  },
+  "rep_what_ph": {
+    "message": "pvz., vaizdo įrašas nepasileidžia, baltas langelis uždengia straipsnį…"
+  },
+  "rep_full_url": {
+    "message": "Įtraukti visą puslapio adresą (kitaip tik svetainės pavadinimą)"
+  },
+  "rep_preview": {
+    "message": "Kas bus išsiųsta"
+  },
+  "rep_send_mail": {
+    "message": "Siųsti el. paštu"
+  },
+  "rep_copy": {
+    "message": "Kopijuoti pranešimą"
+  },
+  "rep_copied": {
+    "message": "Nukopijuota."
+  },
+  "rep_done_cosm": {
+    "message": "Elementų slėpimas šioje svetainėje išjungtas. Įkelta iš naujo — ar pataisyta?"
+  },
+  "rep_done_allow": {
+    "message": "Reklamos šioje svetainėje leidžiamos. Įkelta iš naujo — ar pataisyta?"
+  },
+  "rep_done_pause": {
+    "message": "Pristabdyta 30 minučių. Jei svetainė dabar veikia, prašome pranešti mums toliau."
+  },
+  "cookieRejections": {
+    "message": "Už jus atmesta slapukų pranešimų: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shorts lentynos, skirtukas ir pasiūlymai YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Iššokantys langai „Prisijungti naudojant Google“"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Paskyros parinkiklis, atsirandantis daugelio svetainių kampe. Prisijungimo mygtukai toliau veikia."
+  },
+  "pickTip": {
+    "message": "Spustelėkite elementą, kad jį paslėptumėte"
+  },
+  "pickZapTip": {
+    "message": "Spustelėkite, kad pašalintumėte šį elementą (vieną kartą)"
+  },
+  "pickEscCancel": {
+    "message": "– atšaukti"
+  },
+  "opt_notices": {
+    "message": "Filtrų sąrašų licencijos"
+  }
+}

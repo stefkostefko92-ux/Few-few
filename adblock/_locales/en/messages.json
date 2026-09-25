@@ -81,6 +81,30 @@
   "logUnavailable": {
     "message": "Log unavailable right now (browser quota) — try again in a minute."
   },
+  "logCore": {
+    "message": "Supreme core rules"
+  },
+  "logYouTube": {
+    "message": "YouTube ad rules"
+  },
+  "logParams": {
+    "message": "Tracking parameters"
+  },
+  "logMalware": {
+    "message": "Malware domains"
+  },
+  "logSurrogates": {
+    "message": "Neutralised ad scripts"
+  },
+  "logPrivacy": {
+    "message": "Privacy protection"
+  },
+  "logUser": {
+    "message": "My filters"
+  },
+  "logLive": {
+    "message": "Live updates"
+  },
   "hideElement": {
     "message": "Hide element"
   },
@@ -198,7 +222,7 @@
     "message": "Stop third-party hyperlink-auditing / beacon pings, strip tracking cookies from known ad-tech responses, and block browser cryptomining scripts. Turn off if a site's analytics-dependent feature misbehaves."
   },
   "opt_fetches_new_block_rules_and_youtube_fixe": {
-    "message": "Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu. Data only, no code, nothing about you is sent."
+    "message": "Fetches new block rules and YouTube fixes from adblock.carbonstealth.eu about twice a day. Data only, no code; the request carries no identifiers or browsing data."
   },
   "opt_live_log_of_ads_caught_heuristically_no_": {
     "message": "Live log of ads caught heuristically (no filter list), newest first."
@@ -250,5 +274,329 @@
   },
   "opt_subscribe_to_a_filter_list_url_e_g_https": {
     "message": "Subscribe to a filter list URL (e.g. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock Settings"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Settings"
+  },
+  "opt_theme_light": {
+    "message": "Light"
+  },
+  "opt_badge_unique": {
+    "message": "unique"
+  },
+  "opt_smart_desc": {
+    "message": "Catches ads no filter list knows yet: cross-origin frames sized like standard ad slots are hidden on sight, no rules needed."
+  },
+  "opt_caught_so_far": {
+    "message": "caught so far."
+  },
+  "opt_allow_desc": {
+    "message": "Ads are not blocked on these domains."
+  },
+  "opt_fh_one": {
+    "message": "One rule per line."
+  },
+  "opt_fh_blocks": {
+    "message": "blocks a domain;"
+  },
+  "opt_fh_everywhere": {
+    "message": "hides an element everywhere;"
+  },
+  "opt_fh_site": {
+    "message": "hides it only on that site."
+  },
+  "opt_fh_comments": {
+    "message": "Lines starting with"
+  },
+  "opt_fh_comments2": {
+    "message": "are comments."
+  },
+  "opt_donate": {
+    "message": "Donate via Revolut"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Nothing caught heuristically yet."
+  },
+  "opt_empty_allow": {
+    "message": "No allowlisted sites yet."
+  },
+  "opt_empty_hidden": {
+    "message": "Nothing hidden manually yet."
+  },
+  "opt_empty_subs": {
+    "message": "No subscribed lists yet."
+  },
+  "opt_no_sw": {
+    "message": "No response from the service worker."
+  },
+  "opt_remove": {
+    "message": "Remove"
+  },
+  "opt_filter_status": {
+    "message": "Filter set v$1, updated $2. Data only, nothing about you is sent."
+  },
+  "opt_updating": {
+    "message": "Updating…"
+  },
+  "opt_updated": {
+    "message": "Updated (v$1, $2 extra rules)"
+  },
+  "opt_update_failed": {
+    "message": "Update failed ($1)"
+  },
+  "opt_saved": {
+    "message": "Saved ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 rules"
+  },
+  "opt_updated_ago": {
+    "message": "updated $1"
+  },
+  "opt_not_fetched": {
+    "message": "not fetched yet"
+  },
+  "opt_failed_colon": {
+    "message": "failed: $1"
+  },
+  "opt_enter_https": {
+    "message": "Enter a valid https:// URL"
+  },
+  "opt_fetching": {
+    "message": "Fetching…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Subscribed: $1 rules ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Failed ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Refreshing…"
+  },
+  "opt_refreshed": {
+    "message": "Refreshed ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Invalid settings file."
+  },
+  "opt_no_response": {
+    "message": "no response"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock engine"
+  },
+  "opt_h_rulesets": {
+    "message": "Static rulesets on"
+  },
+  "opt_h_live": {
+    "message": "Live filter domains"
+  },
+  "opt_h_last": {
+    "message": "Last update"
+  },
+  "opt_h_sig": {
+    "message": "Update signatures"
+  },
+  "opt_h_user": {
+    "message": "My filters / allowlist rules"
+  },
+  "opt_h_popup": {
+    "message": "Popup-ad hosts baked"
+  },
+  "opt_h_yt": {
+    "message": "YouTube bypass"
+  },
+  "opt_reason_frame": {
+    "message": "Ad-sized cross-origin frame"
+  },
+  "opt_reason_sticky": {
+    "message": "Sticky banner ad"
+  },
+  "logRegional": {
+    "message": "Regional lists"
+  },
+  "logFocus": {
+    "message": "Focus mode"
+  },
+  "opt_filter_lists": {
+    "message": "Filter lists"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList and EasyPrivacy are always on. The lists below are open-licence lists compiled into the extension, so turning one on downloads nothing, except a list marked as coming from its author."
+  },
+  "opt_lists_core": {
+    "message": "Core"
+  },
+  "opt_lists_regional": {
+    "message": "Regional"
+  },
+  "opt_lists_regional_desc": {
+    "message": "The list for your browser's language turns on by itself. Add others if you often read sites in other languages."
+  },
+  "opt_focus_mode": {
+    "message": "Focus mode"
+  },
+  "opt_focus_desc": {
+    "message": "Hide what is not an ad but still gets in the way. Everything here is off until you turn it on."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin filters"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Ads, trackers, anti-adblock fixes and site repairs from the uBlock Origin team."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe's list"
+  },
+  "opt_list_plowe_desc": {
+    "message": "A long-running list of ad and tracking servers."
+  },
+  "opt_focus_social": {
+    "message": "Social media buttons and widgets"
+  },
+  "opt_focus_social_desc": {
+    "message": "Share buttons, like boxes and embedded feeds."
+  },
+  "opt_focus_chat": {
+    "message": "Chat and support widgets"
+  },
+  "opt_focus_chat_desc": {
+    "message": "The floating chat bubbles in the corner of the page."
+  },
+  "opt_focus_newsletters": {
+    "message": "Newsletter and sign-up pop-ups"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“Subscribe to our newsletter” boxes and overlays."
+  },
+  "opt_focus_notifications": {
+    "message": "Notification prompts"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "“Allow notifications?” boxes that sites show before the browser asks."
+  },
+  "opt_focus_ai": {
+    "message": "AI assistant pop-ups"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Chatbot bubbles and AI suggestion panels added to pages."
+  },
+  "opt_focus_other": {
+    "message": "Other annoyances"
+  },
+  "opt_focus_other_desc": {
+    "message": "Sticky bars, “open in app” banners and similar clutter."
+  },
+  "opt_badge_lang": {
+    "message": "your language"
+  },
+  "opt_badge_remote": {
+    "message": "from its author"
+  },
+  "opt_remote_hint": {
+    "message": "Not bundled (no licence to redistribute it): your browser downloads it from $1 when you turn it on."
+  },
+  "opt_downloaded_from": {
+    "message": "Downloaded from $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome refused this combination of lists ($1). Turn some off."
+  },
+  "opt_badge_recommended": {
+    "message": "recommended for your language"
+  },
+  "reportBroken": {
+    "message": "Site broken? Fix it or tell us"
+  },
+  "rep_title": {
+    "message": "Something broken on this site?"
+  },
+  "rep_fix_first": {
+    "message": "Fix it now"
+  },
+  "rep_site": {
+    "message": "Site:"
+  },
+  "rep_fix_desc": {
+    "message": "Most problems go away with one of these. Each one applies to this site only; the tab reloads."
+  },
+  "rep_fix_cosm": {
+    "message": "Turn off element hiding here"
+  },
+  "rep_fix_allow": {
+    "message": "Allow ads on this site"
+  },
+  "rep_fix_pause": {
+    "message": "Pause everywhere for 30 minutes"
+  },
+  "rep_tell_us": {
+    "message": "Tell us"
+  },
+  "rep_tell_desc": {
+    "message": "We fix broken sites for everyone through the signed filter update, usually within a day. Nothing is sent by the extension: the report opens in your own email app, and you see every word of it first."
+  },
+  "rep_what": {
+    "message": "What is wrong? (optional)"
+  },
+  "rep_what_ph": {
+    "message": "e.g. the video does not start, a white box covers the article…"
+  },
+  "rep_full_url": {
+    "message": "Include the full page address (only the site name otherwise)"
+  },
+  "rep_preview": {
+    "message": "What will be sent"
+  },
+  "rep_send_mail": {
+    "message": "Send by email"
+  },
+  "rep_copy": {
+    "message": "Copy report"
+  },
+  "rep_copied": {
+    "message": "Copied."
+  },
+  "rep_done_cosm": {
+    "message": "Element hiding is off on this site. Reloaded — is it fixed?"
+  },
+  "rep_done_allow": {
+    "message": "Ads are allowed on this site. Reloaded — is it fixed?"
+  },
+  "rep_done_pause": {
+    "message": "Paused for 30 minutes. If the site works now, please tell us below."
+  },
+  "cookieRejections": {
+    "message": "Cookie banners rejected for you: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "The Shorts shelves, tab and suggestions on YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "“Sign in with Google” pop-ups"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "The account picker that appears in the corner of many sites. The sign-in buttons keep working."
+  },
+  "pickTip": {
+    "message": "Click an element to hide it"
+  },
+  "pickZapTip": {
+    "message": "Click to remove this element (once)"
+  },
+  "pickEscCancel": {
+    "message": "to cancel"
+  },
+  "opt_notices": {
+    "message": "Licences of the filter lists"
   }
 }

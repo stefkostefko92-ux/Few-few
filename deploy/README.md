@@ -1,22 +1,50 @@
 # Автоматизиран деплой (`deploy/autodeploy.sh`)
 
-Деплой на монорепото от **ръчно качен GitHub архив** до жив сървър — едно действие.
+Деплой на монорепото до жив сървър — едно действие.
 
-## Работен поток
+## Работен поток (репото е публично — сървърът си взема архива сам)
 
-1. **Ръчно:** в GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
-2. **Ръчно:** качи архива в **root папката (`/root`)** на VPS-а (напр. през `scp`):
-   ```bash
-   scp Few-few.zip root@СЪРВЪР:/root/
-   ```
-3. **Автоматично:** влез в сървъра и пусни скрипта (той е и вътре в архива):
-   ```bash
-   ssh root@СЪРВЪР
+`deploy/fetch-deploy.sh` сваля **неизменяем архив за точен ref** и го подава на
+`autodeploy.sh`. Това НЕ е `git pull` на кутията (няма работно дърво, няма `.git` за
+поддържане) и НЕ е CI/CD push — пускаш го ти, когато решиш.
+
+Първият път скриптът го няма на сървъра, затова се взима от самото репо:
+
+```bash
+ssh root@СЪРВЪР
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo bash /root/deploy/fetch-deploy.sh
+```
+
+След първия успешен деплой той живее в текущия release:
+
+```bash
+sudo bash /opt/few-few/current/deploy/fetch-deploy.sh                 # main, всички продукти
+sudo PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo REF=claude/<клон> bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo REF=v1.4.0 bash /opt/few-few/current/deploy/fetch-deploy.sh      # таг
+sudo REF=09597af… bash /opt/few-few/current/deploy/fetch-deploy.sh    # точен комит
+```
+
+Оттук нататък всичко е автоматично: разопаковане в нов release → билд → миграции →
+сийд (само първия път) → health check → презареждане на прокси/TLS.
+
+`fetch-deploy.sh` проверява, че сваленото наистина е това репо, преди да пусне скрипт
+от него като root; пази последните два свалени архива (всеки е ~250 MB — без чистене
+дискът свършва мълчаливо); и подава `ARCHIVE=` изрично, за да не изпревари ръчно качен
+ZIP отпреди месец.
+
+## Работен поток (резервен — ръчно качен архив)
+
+Когато сървърът няма изходяща мрежа към GitHub:
+
+1. В GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
+2. Качи архива в **`/root`** (напр. `scp Few-few.zip root@СЪРВЪР:/root/`).
+3. ```bash
    cd /root && unzip -o Few-few.zip >/dev/null   # само за да стигнеш до скрипта
    sudo bash /root/few-few-*/deploy/autodeploy.sh
    ```
-   Оттук нататък всичко е автоматично: разопаковане в нов release → билд → миграции →
-   сийд (само първия път) → health check → презареждане на прокси/TLS.
 
 ## Какво прави
 
@@ -49,9 +77,14 @@
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
   `docker-startup.sh`; идемпотентен seed; Nginx + certbot с auto-reload hook). Health на
   `127.0.0.1:4300/healthz`; app + postgres слушат само на localhost зад Nginx.
-- **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира само
-  трите обслужвани файла (`adblock/server/{index.html,privacy.html,filters.json}`) в
-  `/var/www/adblock`, инсталира/обновява Caddy сайт-блока (`adblock/server/Caddyfile` →
+- **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира
+  обслужваните файлове (`adblock/server/{index.html,privacy.html,robots.txt,sitemap.xml,
+  llms.txt,*.png,*.webp}`) в `/var/www/adblock`. `filters.json` се публикува САМО заедно с
+  валидния си Ed25519 подпис (подписва се в staging, после `mv` на двойката); без ключ
+  (`/etc/caddy/adblock-signing.key`) старата подписана двойка остава и деплоят
+  сигнализира — Chrome 137+ иначе отхвърля всички live ъпдейти. Без access логове (Caddy
+  без `log`, nginx `access_log off`) — това обещава политиката за поверителност.
+  Инсталира/обновява Caddy сайт-блока (`adblock/server/Caddyfile` →
   `/etc/caddy/sites/adblock.caddy` + `import sites/*.caddy` в главния Caddyfile),
   `caddy validate` **преди** reload (нула downtime; при невалиден конфиг — връща стария
   блок и не презарежда). Разширението тегли `filters.json`; `index.html` е витрина, а
@@ -59,6 +92,9 @@
   Health-ът е best-effort HTTPS на публичния адрес — минава едва след като **DNS A/AAAA
   за `adblock.carbonstealth.eu` сочи VPS-а** (ръчна стъпка) и Caddy издаде TLS; провал тук
   е предупреждение, не блокира деплоя. Няма тайни (чисто статично).
+  Само adblock: `sudo bash deploy/adblock-site.sh` — обвивка, която вика същия път с
+  `PROJECTS="adblock"` (през `fetch-deploy.sh`, или `autodeploy.sh` при подаден `ARCHIVE=`);
+  втора реализация вече няма, защото старата изостана от тази.
 - **ospedali** (Ospedali Trasparenti): systemd модел като medqr/vizitka, **но БЕЗ
   `npm ci` и БЕЗ билд** — лек Node сервиз с нула зависимости обслужва предбилднатия
   статичен сайт от `site/` (вече в git). `rsync ospedalitrasparenti/ → /opt/ospedali` (изключва

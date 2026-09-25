@@ -2,7 +2,7 @@
 <% if (jsonLd) { %><script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script><% } %>
 <section class="hero">
   <img src="/logo.png" alt="" class="hero-logo" width="409" height="211">
-  <h1>Твоята визитка.<br>Винаги актуална.</h1>
+  <h1>Твоята дигитална визитка.<br>Винаги актуална.</h1>
   <p class="lead">
     Vizitka е безплатна дигитална визитка с постоянен QR код: създаваш професионален профил —
     личен или фирмен — със снимка и контакти, а всеки, който сканира кода, вижда винаги
@@ -52,6 +52,10 @@
     <h3><%- icon('building') %> Личен или фирмен профил</h3>
     <p>Работи еднакво добре за професионалисти на свободна практика и за фирми.</p>
   </div>
+  <div class="feature">
+    <h3><%- icon('plug') %> Работи с Claude и ChatGPT</h3>
+    <p>Vizitka има MCP конектор — добавяш един адрес и AI асистентът ти търси в наръчника и във визитките, които са го разрешили. <a href="#ai-konektor">Как</a></p>
+  </div>
 </section>
 
 <section class="how">
@@ -61,6 +65,42 @@
     <li>Получаваш личен адрес <code>vizitka…/p/твоето-име</code> и QR код за печат.</li>
     <li>Слагаш QR кода на визитката, витрината или подписа в имейла — готово.</li>
   </ol>
+</section>
+
+<%# Конекторът е на видно място, защото иначе никой няма да разбере, че го има: MCP
+    не се открива от само себе си — човекът трябва да постави адреса в Claude/ChatGPT. %>
+<section class="how ai-connector" id="ai-konektor">
+  <h2><%- icon('plug') %> Vizitka в Claude и ChatGPT (MCP)</h2>
+  <p>
+    Vizitka е <strong>MCP сървър</strong> — отворен стандарт, през който AI асистентите се свързват
+    с външни услуги. Добавиш ли адреса по-долу като конектор, Claude или ChatGPT може да търси
+    в наръчника ни и във визитките, чиито собственици изрично са го разрешили. Без акаунт, без
+    плащане и <strong>само за четене</strong> — асистентът не може да пише или променя нищо.
+  </p>
+  <div class="link-box">
+    <label class="small" for="mcp-url">Адрес на конектора</label>
+    <input type="text" readonly value="<%= siteBase %>/mcp" id="mcp-url">
+    <button type="button" class="btn btn-small" data-copy="#mcp-url">Копирай адреса</button>
+  </div>
+  <ul class="ai-steps">
+    <li><strong>Claude:</strong> Настройки → Конектори → „Добави собствен конектор“ → постави адреса.</li>
+    <li><strong>ChatGPT:</strong> Настройки → Конектори → собствен MCP сървър със същия адрес (зависи от плана).</li>
+  </ul>
+  <p class="muted small">
+    Твоята визитка <strong>не</strong> се вижда от асистентите по подразбиране — включваш го сам от
+    таблото и го изключваш по всяко време.
+    <a href="/konektor-chatgpt-claude">Подробно как работи конекторът</a>
+  </p>
+</section>
+
+<section class="how guide-index">
+  <h2>Наръчник</h2>
+  <p>Кратки отговори на въпросите, с които хората стигат дотук:</p>
+  <ul>
+    <% for (const g of guides) { %>
+      <li><a href="/<%= g.slug %>"><%= g.h1 %></a> — <%= g.description %></li>
+    <% } %>
+  </ul>
 </section>
 
 <section class="faq">

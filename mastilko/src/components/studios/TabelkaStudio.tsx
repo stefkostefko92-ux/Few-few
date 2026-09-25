@@ -1,37 +1,51 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import FitText from "@/components/FitText";
 import FontPicker from "@/components/FontPicker";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
+import SignIcon, { SIGN_ICONS } from "@/components/SignIcon";
 import StyleControls from "@/components/StyleControls";
+
+// Размер на текста с глобален мащаб (--sheet-scale); печатната математика в mm
+// не се влияе — само размерите на шрифта се умножават.
+const fs = (n: number) => `calc(var(--sheet-scale, 1) * ${n}mm)`;
 
 interface TabelkaState extends StyleState {
   emoji: string;
+  /** Монохромна икона (приоритет пред емоджи, ако е зададена). */
+  iconId: string;
   title: string;
   subtitle: string;
   landscape: boolean;
   themeId: string;
+  /** Централна линия за сгъване (палатка-табелка). */
+  foldLine: boolean;
 }
 
 const INITIAL: TabelkaState = {
   emoji: "🔔",
+  iconId: "none",
   title: "МОЛЯ, ЗВЪННЕТЕ",
   subtitle: "Заповядайте — ей сега идваме",
   landscape: false,
   themeId: "tera",
+  foldLine: false,
 };
 
 const ProjectSchema = z
   .object({
     emoji: z.string().max(8),
+    iconId: z.string().max(20),
     title: z.string().max(60),
     subtitle: z.string().max(120),
     landscape: z.boolean(),
+    foldLine: z.boolean(),
     ...StyleSchemaShape,
   })
   .partial();
@@ -50,8 +64,15 @@ export default function TabelkaStudio() {
   const theme = resolveTheme(s);
   const set = (patch: Partial<TabelkaState>) => setS({ ...s, ...patch });
 
+  // Размер на заглавието: по дължина на целия текст (20+ знака → по-дребно)
+  // и груба оценка по най-дългата дума (~0.8 em на главна буква) за първия
+  // кадър; точното напасване (избираем шрифт!) прави FitText след рендер.
+  const usable = (s.landscape ? 297 : 210) - 40; // mm, без padding 20 mm
+  const longestWord = Math.max(1, ...s.title.split(/\s+/).map((w) => w.length));
+  const titleMm = Math.min(s.title.length > 20 ? 18 : 26, usable / (longestWord * 0.8));
+
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-3 p-5">
           <span className="field-label">Готови табелки</span>
@@ -70,6 +91,13 @@ export default function TabelkaStudio() {
             <label htmlFor="t-emoji" className="field-label">Икона (емоджи)</label>
             <input id="t-emoji" className="field-input" maxLength={8} value={s.emoji}
               onChange={(e) => set({ emoji: e.target.value })} placeholder="напр. 🔔" />
+          </div>
+          <div>
+            <label htmlFor="t-icon" className="field-label">Или монохромна икона (по-надеждна за печат)</label>
+            <select id="t-icon" className="field-input" value={s.iconId}
+              onChange={(e) => set({ iconId: e.target.value })}>
+              {SIGN_ICONS.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
+            </select>
           </div>
           <div>
             <label htmlFor="t-title" className="field-label">Голям текст</label>
@@ -94,9 +122,14 @@ export default function TabelkaStudio() {
               onChange={(e) => set({ landscape: e.target.checked })} className="h-4 w-4 accent-tera" />
             Хоризонтално (пейзаж)
           </label>
-          <StyleControls value={s} onChange={set} />
+          <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+            <input type="checkbox" checked={s.foldLine}
+              onChange={(e) => set({ foldLine: e.target.checked })} className="h-4 w-4 accent-tera" />
+            Линия за сгъване (палатка-табелка)
+          </label>
+          <StyleControls value={s} onChange={set} showTitleFx />
         </div>
-        <ProjectFile state={s} filename="mastilko-tabelka"
+        <ProjectFile state={s} filename="mastilko-tabelka" storageKey="mastilko-tabelka"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 
@@ -104,25 +137,32 @@ export default function TabelkaStudio() {
         <PrintBar summary={`Табелка на ${s.landscape ? "хоризонтален" : "вертикален"} лист А4`} />
         <SheetPreview landscape={s.landscape} style={fontVars(s)}>
           <div style={{
-            position: "absolute", inset: 0, background: theme.bg, color: theme.fg,
+            position: "absolute", inset: 0, background: sheetBg(s, theme), color: theme.fg,
             display: "flex", flexDirection: "column", alignItems: "center",
             justifyContent: "center", textAlign: "center", padding: "20mm",
-            border: `4mm solid ${theme.accent}`, overflow: "hidden",
+            ...borderCss(s, { width: 4, style: "solid", color: theme.accent, radius: 0 }), overflow: "hidden",
           }}>
-            <BackgroundDecor decor={s.decor} color={theme.accent} />
+            <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
+            {s.foldLine && (
+              <div aria-hidden style={{
+                position: "absolute", left: 0, right: 0, top: "50%",
+                borderTop: "0.3mm dashed rgba(0,0,0,0.4)", zIndex: 3,
+              }} />
+            )}
             <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-              {s.emoji && <div style={{ fontSize: "60mm", lineHeight: 1 }}>{s.emoji}</div>}
-              <div style={{
+              {s.iconId && s.iconId !== "none" ? (
+                <SignIcon id={s.iconId} color={theme.accent} style={{ width: fs(60), height: fs(60) }} />
+              ) : (
+                s.emoji && <div style={{ fontSize: fs(60), lineHeight: 1 }}>{s.emoji}</div>
+              )}
+              <FitText text={s.title} fontSize={fs(titleMm)} watch={s.textScale} style={{
                 fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800,
-                fontSize: s.title.length > 20 ? "18mm" : "26mm", lineHeight: 1.05,
-                marginTop: "8mm",
-              }}>
-                {s.title}
-              </div>
+                lineHeight: 1.05, marginTop: "8mm", ...titleFx(s, theme),
+              }} />
               {s.subtitle && (
                 <div style={{
                   fontFamily: elementFont(s, "subtitle", "var(--font-sans)"),
-                  fontSize: "9mm", marginTop: "8mm", lineHeight: 1.3, whiteSpace: "pre-line",
+                  fontSize: fs(9), marginTop: "8mm", lineHeight: 1.3, whiteSpace: "pre-line",
                 }}>
                   {s.subtitle}
                 </div>

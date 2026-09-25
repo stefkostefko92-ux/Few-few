@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.0.3.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.1.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -61,10 +61,13 @@ via headless Chromium; see that script's header).
 > Note on network requests: the extension fetches a public `filters.json`
 > (block rules, CSS selectors and allowlisted scriptlet directives) about twice
 > a day. It sends **no user data** and executes **no remote code** — this is
-> filter data, the same model established ad blockers use. The only other
-> request is a user-initiated one: if the user pastes a filter-list URL into
-> *Import filter list*, that URL is fetched as text when added and then about
-> once a day until removed. Neither counts as data collection. Settings are
+> filter data, the same model established ad blockers use. The other requests
+> are user-initiated: a filter-list URL the user pastes into *Import filter list*,
+> and the four regional lists we may not redistribute (Bulgarian, Polish, Nordic,
+> Serbo-Croatian), which the browser downloads from their authors only when the
+> user turns one on — as text, then about once a day while on. None counts as data
+> collection. The "Site broken?" report opens the user's own email app (mailto:);
+> the extension sends nothing. Settings are
 > stored locally; if the user enables *Sync across devices*, the browser mirrors
 > settings to the user's own browser account via `storage.sync` (disclosed in
 > the privacy policy).
@@ -74,38 +77,43 @@ via headless Chromium; see that script's header).
 - **declarativeNetRequest** — block ad/tracker network requests using bundled
   filter rules.
 - **declarativeNetRequestFeedback** — `declarativeNetRequest.getMatchedRules()`
-  for the active tab only, to render the per-tab blocked count in the popup and
-  on the toolbar badge. No URL is stored, logged or transmitted; the aggregate
-  is discarded when the popup closes.
+  for the active tab only, to render the per-tab blocked count on the toolbar
+  badge and, in the popup, how many requests each of our filter lists blocked on
+  the page. No URL is read, stored, logged or transmitted; the breakdown is
+  built on demand and discarded when the popup closes.
 - **storage** — save the user's settings and counters locally.
 - **alarms** — schedule the filter-list updates and the temporary-pause timer.
 - **contextMenus** — the right-click "Block an element here" entry.
-- **scripting** — register one locally-bundled MAIN-world script
-  (`scriptlets/main.js`) that neutralises anti-adblock detectors (uBlock-style
-  `##+js` scriptlets). The directive map is baked at build time; optional
-  per-site directive DATA (host + name + arguments, never code) may also arrive
-  via our Ed25519-signed filters.json and is re-validated against the same
-  allowlist. No code is fetched or `eval`-ed at runtime, no personal data is
-  read, nothing is sent.
+- **scripting** — register locally-bundled MAIN-world scripts that neutralise
+  anti-adblock detectors (uBlock-style `##+js` scriptlets): `scriptlets/main.js`
+  everywhere, and on the sites the uBlock Origin filters target, a data chunk
+  (`scriptlets/ubo/cNN.js`: host → routine name + arguments) placed before it. All
+  directive maps are baked at build time; optional per-site directive DATA may also
+  arrive via our Ed25519-signed filters.json and is re-validated against the same
+  allowlist. `insertCSS` applies the element-hiding style sheets of the filter lists
+  the user turned on (bundled files). No code is fetched or `eval`-ed at runtime, no
+  personal data is read, nothing is sent.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
-> **Reviewer note (MAIN-world scriptlets).** The extension registers **one**
-> content script in the MAIN world: `scriptlets/main.js`, which ships in this
-> package and is plain, unminified, commented JavaScript. It neutralises
+> **Reviewer note (MAIN-world scriptlets).** The extension registers MAIN-world
+> content scripts from this package only: `scriptlets/main.js` (plain, unminified,
+> commented JavaScript) and, on the hosts the uBlock Origin filters target, a
+> data chunk `scriptlets/ubo/cNN.js` placed before it (host → routine name +
+> arguments; no functions). It neutralises
 > anti-adblock detectors — the same mechanism established ad blockers use for
 > `##+js(...)`.
-> `main.js` contains (a) a fixed set of **18 named routines** — `set-constant`,
+> `main.js` contains (a) a fixed set of **19 named routines** — `set-constant`,
 > `abort-on-property-read/write`, `abort-current-script`, `abort-on-stack-trace`,
 > `no-setTimeout-if`, `no-setInterval-if`, `addEventListener-defuser`,
 > `json-prune`, `no-fetch-if`, `no-window-open-if`, `remove-attr`, `remove-class`,
-> `href-sanitizer`, `remove-node-text`, `nowebrtc`, `set-cookie`, `remove-cookie`
+> `href-sanitizer`, `remove-node-text`, `nowebrtc`, `no-xhr-if`, `set-cookie`, `remove-cookie`
 > — and (b) a static table mapping hostnames to routine names plus arguments.
 > Arguments are restricted by grammar (property names, CSS selectors, text
 > needles; `set-constant` values come from a closed dictionary).
 > Our `filters.json` update is a **configuration file, not code**: it may add
 > rows to that table — hostname, routine name, arguments. It cannot add, name or
-> define a routine; anything not on the 18-name allowlist is discarded, twice
+> define a routine; anything not on the 19-name allowlist is discarded, twice
 > (service worker and again inside `main.js`). The file is Ed25519-signed and
 > version-monotonic, and the user can switch the update off in Settings.
 > There is no `eval`, no `Function()`, no `<script src>`, and no code path that
@@ -119,13 +127,20 @@ via headless Chromium; see that script's header).
 > into a DNR rule by code that ships in the package. Ad networks rotate domains
 > daily; without this the extension goes stale between releases. No rule JSON,
 > no code and no selector logic is executed from the network.
+>
+> **Author-hosted filter lists (opt-in).** Four regional lists (Bulgarian, Polish,
+> Nordic, Croatian) have no licence to redistribute, so they are not in the
+> package. Only if the user switches one on does the browser download that
+> list's text from its author (HTTPS URL fixed in `rules/lists.json`); the
+> packaged converter `lib/abp2dnr.js` turns it into dynamic block rules and CSS
+> selectors. Scriptlet lines in those lists are ignored. Data, never code.
 
 ## 6. Dashboard steps
 
 The listing is **already live** (`chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk`),
 so this is an **update of the existing item**, not a new one:
 
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.0.3.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.0.zip`.
 2. Refresh the listing (§3: description + the new feature bullets), replace the
    5 screenshots + promo tiles (§2).
 3. Re-check the **Privacy practices** tab (§4) and paste the permission
@@ -138,7 +153,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.0.3)
+- [ ] `manifest.json` and `package.json` versions match (5.1.0)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] Zip loads via `chrome://extensions → Load unpacked` with **no** console errors
 - [ ] Popup, settings, allowlist, picker, theme, pause, sync all work
@@ -149,3 +164,34 @@ so this is an **update of the existing item**, not a new one:
 Review usually takes a few days. To ship an update: bump the version in
 `manifest.json` + `package.json`, rebuild, upload. Day-to-day fixes (new ad
 networks, YouTube DOM changes) go into `filters.json` — no re-review needed.
+
+## 8. Microsoft Edge Add-ons
+
+The **same zip** as Chrome (`dist/supreme-adblock-<version>.zip`) — Edge runs Chromium MV3.
+
+1. Partner Center → <https://partner.microsoft.com/dashboard/microsoftedge/> → **Create new extension** → upload the zip.
+2. Availability: Public, all markets.
+3. Properties: category *Productivity*; privacy policy URL `https://adblock.carbonstealth.eu/privacy`; website `https://adblock.carbonstealth.eu`; support `https://adblock.carbonstealth.eu/#faq`.
+4. Store listings: Edge asks for a listing **per language packaged in `_locales`**. Use the
+   per-language descriptions in `docs/STORE_LISTING.md`; the English one where a language
+   has none yet. Screenshots: the same 1280×800 files as Chrome.
+5. Notes for certification: paste the reviewer note from §5 (MAIN-world scriptlets, remote
+   rules = data) — Edge reviews the same things Chrome does.
+
+## 9. Firefox Add-ons (AMO)
+
+`bash tools/package.sh` also builds `dist/supreme-adblock-<version>-firefox.zip`: the same
+files, only the manifest differs (event-page background with the two shared classic scripts
+listed first, Gecko id `supreme-adblock@carbonstealth.eu`, Firefox 128+ for MAIN-world
+scripting, `data_collection_permissions: none`).
+
+Check before upload: `npx web-ext@8 lint --source-dir <unzipped firefox zip>` — expected:
+0 errors; warnings only for `getMatchedRules` (not in Firefox: the popup hides the per-list
+log there) and "coin miner" hits in EasyPrivacy/AdGuard French (they are **block** rules for
+miner domains — say so in the reviewer notes).
+
+1. <https://addons.mozilla.org/developers/> → **Submit a New Add-on** → On this site.
+2. Upload the Firefox zip. Source code: AMO may ask for it because `scriptlets/main.js` and
+   `scriptlets/ubo/*` are generated — upload the repository's `adblock/` folder and point to
+   `node tools/build_scriptlets.mjs` (no minification, no bundler).
+3. Privacy policy, homepage, support: as above. Data collection: none.

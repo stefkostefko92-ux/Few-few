@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -118,6 +118,20 @@ SUPREME_ENV_FILES=".env backend/.env bot/.env frontend/.env"
 # сървъра (пренасят се при всеки деплой). Ако липсва .env при пръв деплой, генерираме
 # го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
 ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
+
+# piuma (Piuma — Instagram контент-двигател; Docker Compose модел). Пет услуги:
+# postgres · redis · app · worker · вътрешен nginx. Навън стърчи САМО вътрешният
+# nginx, и то на 127.0.0.1:${HTTP_PORT:-4310} — TLS-ът се пази от nginx-а на хоста.
+# Тайните живеят в piuma/.env на сървъра (mode 600) и се пренасят при всеки деплой;
+# БЕЗ .env compose отказва да тръгне (`${VAR:?}`) — това е нарочно, а не пропуск:
+# Piuma държи Instagram токени и агентски ключове, тоест да се вдигне с изфабрикувани
+# тайни е по-лошо от това да не се вдигне. Портът се чете от .env (HTTP_PORT).
+PIUMA_HEALTH_URL_SET="${PIUMA_HEALTH_URL:+1}"
+PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
+# Каноничният дом на тайните — СТАБИЛЕН път извън releases/. При пръв деплой `current`
+# сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
+# инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
+PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -645,6 +659,10 @@ deploy_mastilko() {
   rsync -a --delete \
     --exclude node_modules/ --exclude .next/ --exclude .env --exclude data/ \
     "$d"/ "$MASTILKO_DIR"/
+  # Версията в service worker-а = този релийз, иначе `activate` не чисти
+  # старите кешове (филтрира по неизменен литерал) и статичният кеш расте.
+  sed -i "s|^const VERSION = \".*\";|const VERSION = \"mastilko-$TS\";|" \
+    "$MASTILKO_DIR/public/sw.js" 2>/dev/null || warn "sw.js: версията не е пренаписана"
   chown -R mastilko:mastilko "$MASTILKO_DIR"
   # Билд на сървъра: пълни зависимости → next build → сваляне до продукционни.
   ( cd "$MASTILKO_DIR" \
@@ -1033,6 +1051,101 @@ EOF
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
 }
 
+# ── 3з) piuma — Docker Compose (app + worker + db + redis + вътрешен nginx) ───
+deploy_piuma() {
+  local d="$SRC/piuma"
+  [ -d "$d" ] || { warn "Няма piuma/ в архива — пропускам."; return; }
+  log "Разгръщам piuma (Docker Compose)…"
+  command -v docker >/dev/null || die "Липсва docker — инсталирай Docker Engine + compose plugin."
+
+  # Тайните живеят на СЪРВЪРА, не в архива. Ред: споделеният път (каноничен, оцелява
+  # всичко), после текущият release (за инсталация отпреди споделения път).
+  if [ ! -f "$d/.env" ]; then
+    if [ -f "$PIUMA_ENV" ]; then
+      cp -a "$PIUMA_ENV" "$d/.env"; ok "Пренесох piuma/.env от $PIUMA_ENV"
+    elif [ -f "$CURRENT_LINK/piuma/.env" ]; then
+      cp -a "$CURRENT_LINK/piuma/.env" "$d/.env"; ok "Пренесох piuma/.env от текущия release"
+    fi
+  fi
+  # За разлика от eternaltouch тук НЕ генерираме .env с случайни тайни. Piuma не може
+  # да работи с измислени IG_APP_ID/IG_APP_SECRET/IG_REDIRECT_URI — те идват от
+  # конзолата на Meta и няма как да се отгатнат. Полу-вдигнат панел, който държи
+  # токени, е по-лош изход от ясен отказ. Виж piuma/DEPLOY.md.
+  # Липсващ .env значи „този продукт още не е настроен на ТАЗИ машина" — пропускаме го
+  # като неразгърнат, не го обявяваме за провал: иначе добавянето на piuma в списъка по
+  # подразбиране би счупило `current` на всеки сървър, където още няма тайни.
+  if [ ! -f "$d/.env" ]; then
+    warn "Няма piuma/.env — пропускам piuma (не измислям тайни)."
+    warn "  Направи го веднъж по piuma/DEPLOY.md: install -m 600 … $PIUMA_ENV, после пусни скрипта пак."
+    return
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+
+  # Бекъп ПРЕДИ миграцията, щом базата вече върви (при пръв деплой няма какво). Стабилен
+  # път извън releases/ — до .env-а; пази последните 5. Провал на дъмпа спира piuma:
+  # миграция без бекъп е връщане назад без път назад.
+  local bk; bk="$(dirname "$PIUMA_ENV")/backups"
+  if [ -n "$( cd "$d" && docker compose ps -q db 2>/dev/null )" ]; then
+    mkdir -p "$bk"; chmod 700 "$bk"
+    if ( cd "$d" && docker compose exec -T db pg_dump -U piuma piuma | gzip > "$bk/pre-deploy-$TS.sql.gz" ); then
+      ok "piuma: бекъп преди миграция → $bk/pre-deploy-$TS.sql.gz ($(du -h "$bk/pre-deploy-$TS.sql.gz" | cut -f1))"
+      ls -t "$bk"/pre-deploy-*.sql.gz | tail -n +6 | xargs -r rm -f
+    else
+      rm -f "$bk/pre-deploy-$TS.sql.gz"
+      warn "piuma: бекъпът преди миграция се провали — не мигрирам без бекъп, пропускам piuma."
+      deploy_failed=1; return
+    fi
+  else
+    log "piuma: базата още не върви (пръв деплой) — няма какво да се бекъпва."
+  fi
+
+  # `( … ) || { … return; }` НЕ е украса — скриптът върви под `set -euo pipefail` и
+  # ненулев изход тук би убил ЦЕЛИЯ autodeploy, оставяйки следващите проекти неразгърнати.
+  ( cd "$d"
+    docker compose build
+    # Миграциите се прилагат от entrypoint-а (`prisma migrate deploy`, никога `db push`),
+    # затова тук няма отделна стъпка — app и worker тръгват само върху мигрирана схема.
+    docker compose up -d --remove-orphans
+  ) || { warn "piuma: docker compose се провали — старите контейнери остават както са."; deploy_failed=1; return; }
+
+  # Портът се чете от .env, освен ако PIUMA_HEALTH_URL не е зададен изрично.
+  local url="$PIUMA_HEALTH_URL"
+  if [ -z "${PIUMA_HEALTH_URL_SET:-}" ]; then
+    # `|| true` НЕ е украса: без реда HTTP_PORT grep връща 1, `pipefail` го изнася от
+    # тръбата и `set -e` убива целия autodeploy точно СЛЕД `compose up` — без health, без
+    # проверка на работника, без преместване на `current`, без следващите проекти.
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
+    [ -n "$p" ] && url="http://127.0.0.1:${p}/health"
+  fi
+  health "$url" "piuma" || deploy_failed=1
+
+  # Работникът е ОТДЕЛЕН процес: панелът може да е напълно жив, докато публикуването,
+  # подновяването на токени, Insights и автопилотът са мъртви. Без тази проверка
+  # провалът е невидим до мига, в който одобрен пост просто не излиза.
+  # `ps -q` + `docker inspect`, не `ps --format '{{.State}}'`: Go шаблон във `--format` на
+  # `compose ps` има едва от Compose v2.21 — по-стар плъгин на сървъра би дал грешка, която
+  # тук се чете като „работникът не тича“.
+  local worker_id worker_state
+  worker_id="$( cd "$d" && docker compose ps -q worker 2>/dev/null | head -1 )" || worker_id=""
+  worker_state="$( [ -n "$worker_id" ] && docker inspect -f '{{.State.Status}}' "$worker_id" 2>/dev/null )" || worker_state=""
+  if [ "$worker_state" = "running" ]; then
+    ok "piuma: работникът тича (публикуване · токени · Insights · автопилот)."
+  else
+    warn "piuma: работникът НЕ тича (състояние: ${worker_state:-няма}) — одобрените постове няма да излязат."
+    warn "  Виж: cd $d && docker compose logs worker"
+    deploy_failed=1
+  fi
+
+  # Пръв деплой: няма нито един потребител, тоест панелът не може да се отвори.
+  # Собственикът НЕ се създава автоматично — паролата е работа на човек, не на скрипт.
+  local users
+  users="$( cd "$d" && docker compose exec -T db psql -U piuma -d piuma -tAc 'SELECT count(*) FROM "User"' 2>/dev/null | tr -dc '0-9' )" || users=""
+  if [ "$users" = "0" ]; then
+    warn "piuma: няма нито един потребител — създай собственика веднъж:"
+    warn "  cd $d && docker compose exec app npm run owner:create"
+  fi
+}
+
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
 # Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
 # рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
@@ -1128,10 +1241,13 @@ deploy_adblock() {
   # 1) Обслужвани файлове → www root. Копираме избрани файлове (без README/конфиг),
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
-  for f in index.html privacy.html filters.json robots.txt sitemap.xml llms.txt \
-           og.png favicon.svg favicon-48.png apple-touch-icon.png icon-512.png; do
+  # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
+  for f in index.html privacy.html robots.txt sitemap.xml llms.txt \
+           og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
   done
+  # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
+  rm -f "$ADBLOCK_WWW/favicon.svg"
   # .well-known/ (security.txt и др.)
   if [ -d "$d/.well-known" ]; then
     mkdir -p "$ADBLOCK_WWW/.well-known"
@@ -1149,20 +1265,36 @@ deploy_adblock() {
   if id caddy >/dev/null 2>&1; then chown -R caddy:caddy "$ADBLOCK_WWW"; fi
   ok "adblock файлове → $ADBLOCK_WWW"
 
-  # 1а) Ed25519 подпис на filters.json (разширението го проверява при ъпдейт).
-  # Ключът живее САМО на сървъра (виж adblock/server/README.md); без ключ —
-  # без подпис, разширението приема ъпдейта както досега.
-  if [ -f "$ADBLOCK_SIGNING_KEY" ]; then
-    if openssl pkeyutl -sign -inkey "$ADBLOCK_SIGNING_KEY" -rawin \
-        -in "$ADBLOCK_WWW/filters.json" 2>/dev/null | base64 -w0 > "$ADBLOCK_WWW/filters.json.sig" \
-        && [ -s "$ADBLOCK_WWW/filters.json.sig" ]; then
-      chmod 644 "$ADBLOCK_WWW/filters.json.sig"
-      if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json.sig"; fi
-      ok "adblock: filters.json подписан (filters.json.sig)"
+  # 1а) filters.json + Ed25519 подпис, публикувани като ДВОЙКА.
+  # Разширението (Chrome 137+) ИЗИСКВА валиден подпис: липсващ .sig → „no
+  # signature", стар .sig към нов filters.json → „bad signature" — и в двата случая
+  # всички live ъпдейти се отхвърлят, включително аварийният стоп
+  # (disableRequestFlags). Затова: подписваме в staging и публикуваме двойката
+  # чак след успешен подпис; без ключ или при провал СТАРАТА (съвпадаща) двойка
+  # остава на място. Ключът живее САМО на сървъра (adblock/server/README.md).
+  if [ -f "$d/filters.json" ]; then
+    local stage; stage="$(mktemp -d)"
+    cp "$d/filters.json" "$stage/filters.json"
+    if [ -f "$ADBLOCK_SIGNING_KEY" ] \
+       && openssl pkeyutl -sign -inkey "$ADBLOCK_SIGNING_KEY" -rawin -in "$stage/filters.json" 2>/dev/null \
+            | base64 -w0 > "$stage/filters.json.sig" \
+       && [ -s "$stage/filters.json.sig" ]; then
+      install -m 644 "$stage/filters.json.sig" "$ADBLOCK_WWW/filters.json.sig.new"
+      install -m 644 "$stage/filters.json" "$ADBLOCK_WWW/filters.json.new"
+      mv -f "$ADBLOCK_WWW/filters.json.new" "$ADBLOCK_WWW/filters.json"
+      mv -f "$ADBLOCK_WWW/filters.json.sig.new" "$ADBLOCK_WWW/filters.json.sig"
+      if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json" "$ADBLOCK_WWW/filters.json.sig"; fi
+      ok "adblock: filters.json + filters.json.sig публикувани като подписана двойка"
+    elif [ -f "$ADBLOCK_WWW/filters.json" ] && [ -f "$ADBLOCK_WWW/filters.json.sig" ]; then
+      warn "adblock: НЯМА подпис (ключ: $ADBLOCK_SIGNING_KEY) — оставям предишната подписана двойка filters.json/.sig; новият filters.json НЕ е публикуван."
+      deploy_failed=1
     else
+      install -m 644 "$stage/filters.json" "$ADBLOCK_WWW/filters.json"
       rm -f "$ADBLOCK_WWW/filters.json.sig"
-      warn "adblock: подписването провали — премахнах .sig, ъпдейтите вървят неподписани."
+      warn "adblock: НЯМА ключ за подпис ($ADBLOCK_SIGNING_KEY) — filters.json е публикуван НЕПОДПИСАН; Chrome 137+ ще отхвърля live ъпдейтите, докато не сложиш ключа и не деплойнеш пак."
+      deploy_failed=1
     fi
+    rm -rf "$stage"
   fi
 
   # 2) Уеб сървър. Предпочитаме Caddy (авто-TLS); на сървъри с Nginx (моделът на
@@ -1316,6 +1448,7 @@ for p in $PROJECTS; do
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
+    piuma)      deploy_piuma ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;

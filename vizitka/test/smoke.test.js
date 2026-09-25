@@ -998,6 +998,26 @@ await test('SEO: JSON-LD екранира </script> (без HTML-инжекци�
   assert.doesNotMatch(siteJsonLd('https://vizitka-bg.com'), /<\/script>/i);
 });
 
+await test('SEO: визитката е ProfilePage със свързан граф, без висящи препратки', async () => {
+  const { cardJsonLd } = await import('../src/seo.js');
+  const url = 'https://vizitka-bg.com/p/ivan';
+  const graph = JSON.parse(
+    cardJsonLd(
+      { display_name: 'Иван', slug: 'ivan', type: 'personal', updated_at: '2026-09-25 10:00:00' },
+      url,
+      'https://vizitka-bg.com'
+    )
+  )['@graph'];
+  const byId = new Map(graph.filter((n) => n['@id']).map((n) => [n['@id'], n]));
+  const page = graph.find((n) => n['@type'] === 'ProfilePage');
+  assert.ok(page, 'липсва ProfilePage');
+  assert.equal(page.mainEntity['@id'], `${url}#person`);
+  assert.equal(page.dateModified, '2026-09-25T10:00:00Z', 'ISO 8601 с изрична зона');
+  // Всяка препратка трябва да сочи към възел, ОПРЕДЕЛЕН на същата страница.
+  for (const ref of [page.mainEntity, page.isPartOf, page.breadcrumb])
+    assert.ok(byId.has(ref['@id']), `висяща препратка: ${ref['@id']}`);
+});
+
 await test('IndexNow: publicUrls съдържа статичните + публичните визитки', async () => {
   const { publicUrls } = await import('../src/indexnow.js');
   const urls = publicUrls('https://vizitka-bg.com');
@@ -1117,6 +1137,64 @@ await test('портфейл (unit): Google save URL е подписан JWT с 
   const obj = payload.payload.genericObjects[0];
   assert.equal(obj.id, '3388000000000000000.999999'); // стабилен id, не слъг
   assert.equal(obj.barcode.value, `${base}/p/ivan-testov`);
+  // Един обект на визитка, много посетители го запазват → класът ТРЯБВА да
+  // позволява много притежатели. Полето е само на класа, не на обекта.
+  const cls = payload.payload.genericClasses[0];
+  assert.equal(cls.multipleDevicesAndHoldersAllowedStatus, 'MULTIPLE_HOLDERS');
+  assert.equal(obj.multipleDevicesAndHoldersAllowedStatus, undefined);
+  // Google изрязва логото в кръг — затова квадратното, не широкото.
+  assert.equal(obj.logo.sourceUri.uri, `${base}/wallet-logo.png`);
+  const png = fs.readFileSync(new URL('../public/wallet-logo.png', import.meta.url));
+  assert.equal(
+    png.readUInt32BE(16),
+    png.readUInt32BE(20),
+    'логото за портфейла трябва да е квадратно'
+  );
+  // Нула лични снимки на картата: Google Wallet не ги поддържа (правото на отказ
+  // от обработка на чувствителни данни). Снимката на профила не бива да стига дотук.
+  assert.ok(!JSON.stringify(obj).includes('/photo/'), 'личната снимка не бива да влиза в картата');
+});
+
+await test('портфейл (unit): класът на Google се създава предварително и идемпотентно', async () => {
+  // Подменяме fetch: тестът проверява РЕДА на заявките към Google, без мрежа.
+  const { ensureGoogleClass } = await import('../src/wallet/google.js');
+  const realFetch = globalThis.fetch;
+  const calls = [];
+  let classExists = false;
+  globalThis.fetch = async (url, opts = {}) => {
+    const method = opts.method || 'GET';
+    calls.push(`${method} ${String(url).replace(/^https:\/\/[^/]+/, '')}`);
+    const json = (status, body) =>
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { 'content-type': 'application/json' },
+      });
+    if (String(url).includes('oauth2.googleapis.com')) return json(200, { access_token: 'tok' });
+    if (method === 'GET') return classExists ? json(200, {}) : json(404, {});
+    if (method === 'POST') {
+      assert.equal(
+        JSON.parse(opts.body).multipleDevicesAndHoldersAllowedStatus,
+        'MULTIPLE_HOLDERS'
+      );
+      classExists = true;
+      return json(200, {});
+    }
+    if (method === 'PATCH') return json(200, {});
+    return json(500, {});
+  };
+  try {
+    assert.equal(await ensureGoogleClass(), 'created');
+    assert.equal(await ensureGoogleClass(), 'updated');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  const api = calls.filter((c) => !c.includes('/token'));
+  assert.deepEqual(api, [
+    'GET /walletobjects/v1/genericClass/3388000000000000000.vizitka_generic',
+    'POST /walletobjects/v1/genericClass',
+    'GET /walletobjects/v1/genericClass/3388000000000000000.vizitka_generic',
+    'PATCH /walletobjects/v1/genericClass/3388000000000000000.vizitka_generic',
+  ]);
 });
 
 await test('портфейл: с включен Google бутонът се показва и води към save линк', async () => {
@@ -1133,6 +1211,184 @@ await test('портфейл: с включен Google бутонът се по�
   const res = await request('/p/ivan-testov/wallet/google');
   assert.equal(res.status, 302);
   assert.match(res.headers.get('location'), /^https:\/\/pay\.google\.com\/gp\/v\/save\//);
+});
+
+await test('визитката носи ≥5 ключови думи, една от които „Carbon Stealth"', async () => {
+  const html = await (await request('/p/ivan-testov')).text();
+  const meta = html.match(/<meta name="keywords" content="([^"]+)"/);
+  assert.ok(meta, 'липсва meta keywords');
+  const kw = meta[1].split(',').map((s) => s.trim());
+  assert.ok(kw.length >= 5, `само ${kw.length} ключови думи`);
+  assert.ok(kw.includes('Carbon Stealth'), 'липсва бранд атрибуцията „Carbon Stealth"');
+  assert.match(html, /<meta name="description" content="[^"]{20,}"/);
+});
+
+await test('началната показва MCP конектора с адрес, който може да се копира', async () => {
+  const html = await (await request('/')).text();
+  assert.match(html, /id="ai-konektor"/, 'секцията за конектора липсва');
+  assert.ok(html.includes(`value="${base}/mcp"`), 'адресът на конектора трябва да е пълен URL');
+  assert.match(html, /data-copy="#mcp-url"/, 'бутонът за копиране липсва');
+  assert.match(html, /href="\/konektor-chatgpt-claude"/);
+  // AI асистентите четат llms.txt — там също трябва да разберат, че могат да ни свържат.
+  const llms = await (await request('/llms.txt')).text();
+  assert.ok(llms.includes(`${base}/mcp`), 'llms.txt не казва къде е конекторът');
+  // featureList обещава само работещото без настройка — портфейлите са зад ключове.
+  const ld = JSON.parse(
+    html.match(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/)[1]
+  );
+  const app = ld['@graph'].find((n) => n['@type'] === 'WebApplication');
+  assert.ok(app.featureList.some((f) => /MCP/.test(f)));
+  assert.ok(!app.featureList.some((f) => /Wallet|портфейл/i.test(f)));
+});
+
+// Регресия за РЕАЛНА грешка: наръчникът (и оттам llms.txt и корпусът на конектора)
+// твърдеше „не поддържаме NFC“, а таблото има блок за запис в NFC чип. Съдържание,
+// което лъже за продукта, е по-лошо от липсващо — особено когато го цитират AI асистенти.
+const GUIDES_FOR_CLAIMS = (await import('../src/guides.js')).GUIDES.map((g) => g.slug);
+await test('съдържанието не отрича NFC, щом таблото го предлага', async () => {
+  const dash = fs.readFileSync(new URL('../src/views/dashboard.ejs', import.meta.url), 'utf8');
+  assert.match(dash, /NFC карта/, 'предпоставката на теста: таблото предлага NFC');
+  const denial = /не поддържа(ме)? NFC|не, засега не/i;
+  const llms = await (await request('/llms.txt')).text();
+  assert.ok(!denial.test(llms), 'llms.txt отрича NFC');
+  for (const g of GUIDES_FOR_CLAIMS) {
+    const html = await (await request(`/${g}`)).text();
+    assert.ok(!denial.test(html), `/${g} отрича NFC`);
+  }
+  const { buildCorpus } = await import('../src/mcp/corpus.js');
+  for (const doc of buildCorpus(base))
+    assert.ok(!denial.test(doc.text), `корпусът на конектора (${doc.id}) отрича NFC`);
+});
+
+// Регресия за изискване на собственика: темата оцветява ЦЯЛАТА страница, не само
+// картата. На телефон картата заема екрана и пропускът не личи — на лаптоп ~60% от
+// екрана оставаше неутрално сив. Проверката е по класа на <body>, защото оттам
+// фонът и бутонът в менюто вземат цветовете на темата.
+await test('темата оцветява цялата страница (body носи темата), и със собствен цвят', async () => {
+  const before = db
+    .prepare(
+      "SELECT theme, accent, is_public, hidden_by_admin FROM profiles WHERE slug = 'ivan-testov'"
+    )
+    .get();
+  db.prepare("UPDATE profiles SET theme = 'emerald', accent = '' WHERE slug = 'ivan-testov'").run();
+  db.prepare(
+    "UPDATE profiles SET is_public = 1, hidden_by_admin = 0 WHERE slug = 'ivan-testov'"
+  ).run();
+  let html = await (await fetch(`${base}/p/ivan-testov`)).text();
+  assert.match(html, /<body class="card-theme theme-emerald">/, 'страницата не носи темата');
+  const css = fs.readFileSync(new URL('../public/styles.css', import.meta.url), 'utf8');
+  for (const id of ['blue', 'emerald', 'sunset', 'ocean', 'graphite', 'rose'])
+    assert.match(css, new RegExp(`body\\.theme-${id}\\s*\\{`), `липсва body.theme-${id}`);
+  assert.match(css, /body\.card-theme\s*\{/, 'липсва фонът на страницата по тема');
+
+  db.prepare("UPDATE profiles SET accent = '#b45309' WHERE slug = 'ivan-testov'").run();
+  html = await (await fetch(`${base}/p/ivan-testov`)).text();
+  assert.match(html, /<body class="card-theme custom-accent">/);
+  assert.match(html, /body\.custom-accent\{/, 'собственият цвят не стига до страницата');
+  // Другите страници НЕ носят тема — тя е само за визитката.
+  assert.doesNotMatch(await (await fetch(`${base}/`)).text(), /card-theme/);
+  // Връщаме състоянието — следващите тестове разчитат на него.
+  db.prepare(
+    "UPDATE profiles SET theme = @theme, accent = @accent, is_public = @is_public, hidden_by_admin = @hidden_by_admin WHERE slug = 'ivan-testov'"
+  ).run(before);
+});
+
+// ── Наръчник (SEO/GEO/AEO) ───────────────────────────────────────────────────
+// Съдържателните страници са отделен пазар за всяко намерение („дигитална визитка",
+// „визитка с QR код", „vCard"). Тестът пази това, което ги прави намираеми, и е
+// нарочно строг: страница без уникално заглавие/описание, без канонична връзка, с
+// по-малко от 5 ключови думи или без „Carbon Stealth" е нарушение на правило на
+// репото, не въпрос на вкус. Пази и от сираци — страница без връзка отникъде.
+const { GUIDES } = await import('../src/guides.js');
+
+await test('наръчник: всяка страница се отваря с уникално заглавие, описание и canonical', async () => {
+  assert.ok(GUIDES.length >= 5, 'наръчникът е под 5 страници');
+  const titles = new Set();
+  const descriptions = new Set();
+  for (const g of GUIDES) {
+    const res = await request(`/${g.slug}`);
+    assert.equal(res.status, 200, `/${g.slug} върна ${res.status}`);
+    const html = await res.text();
+    // Сравнение по низ, не по регулярен израз: заглавията носят скоби и точки
+    // („vCard (.vcf) …“), тоест като шаблон биха значели друго.
+    assert.ok(html.includes(`<h1>${g.h1}</h1>`), `/${g.slug}: липсва H1`);
+    assert.ok(
+      html.includes(`<link rel="canonical" href="${base}/${g.slug}">`),
+      `/${g.slug}: липсва/грешен canonical`
+    );
+    assert.match(html, /<meta name="robots" content="index,follow/, `/${g.slug}: не се индексира`);
+    // Отговор отпред (GEO/AEO): първият абзац е самият отговор, 40–60 думи.
+    const words = g.answer.split(/\s+/).length;
+    assert.ok(words >= 30 && words <= 70, `/${g.slug}: отговорът отпред е ${words} думи`);
+    assert.ok(html.includes(g.answer.slice(0, 60)), `/${g.slug}: отговорът не е в страницата`);
+    assert.ok(!titles.has(g.title), `/${g.slug}: повтарящо се заглавие`);
+    assert.ok(!descriptions.has(g.description), `/${g.slug}: повтарящо се описание`);
+    titles.add(g.title);
+    descriptions.add(g.description);
+    assert.ok(
+      g.description.length <= 200,
+      `/${g.slug}: описанието е ${g.description.length} знака`
+    );
+  }
+});
+
+await test('наръчник: ключови думи ≥5 и „Carbon Stealth" на всяка страница', async () => {
+  for (const g of GUIDES) {
+    assert.ok(g.keywords.length >= 5, `/${g.slug}: само ${g.keywords.length} ключови думи`);
+    assert.ok(g.keywords.includes('Carbon Stealth'), `/${g.slug}: липсва „Carbon Stealth"`);
+    const html = await (await request(`/${g.slug}`)).text();
+    const meta = html.match(/<meta name="keywords" content="([^"]+)"/);
+    assert.ok(meta, `/${g.slug}: липсва meta keywords`);
+    for (const kw of g.keywords) assert.ok(meta[1].includes(kw), `/${g.slug}: липсва „${kw}"`);
+  }
+});
+
+await test('наръчник: JSON-LD е валиден и свързан в графа (без висящи възли)', async () => {
+  for (const g of GUIDES) {
+    const html = await (await request(`/${g.slug}`)).text();
+    const block = html.match(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/);
+    assert.ok(block, `/${g.slug}: липсва JSON-LD`);
+    const data = JSON.parse(block[1]); // хвърля при счупен JSON — това е тестът
+    const types = data['@graph'].map((n) => [].concat(n['@type']).join('+'));
+    assert.ok(
+      types.some((t) => t.includes('WebPage')),
+      `/${g.slug}: липсва WebPage`
+    );
+    assert.ok(types.includes('BreadcrumbList'), `/${g.slug}: липсва троха`);
+    const page = data['@graph'][0];
+    assert.equal(page.isPartOf['@id'], `${base}/#website`); // свързан, не висящ
+    assert.equal(page.publisher['@id'], `${base}/#organization`);
+    // Издателят трябва да е ОПРЕДЕЛЕН на самата страница, не само посочен —
+    // иначе при четене на отделната страница препратката виси.
+    const org = data['@graph'].find((n) => n['@id'] === `${base}/#organization`);
+    assert.ok(org?.name, `/${g.slug}: висяща препратка към организацията`);
+    if (g.faq?.length) assert.ok(types.includes('FAQPage'), `/${g.slug}: липсва FAQPage`);
+    if (g.steps?.length) {
+      const howTo = data['@graph'].find((n) => n['@type'] === 'HowTo');
+      assert.ok(howTo, `/${g.slug}: липсва HowTo`);
+      assert.equal(howTo.step.length, g.steps.length);
+    }
+    // Нула измислена схема: рейтинг/ревю без реални отзиви е спам, не SEO.
+    assert.ok(!/aggregateRating|"Review"/.test(block[1]), `/${g.slug}: измислена схема`);
+  }
+});
+
+await test('наръчник: страниците са в sitemap, llms.txt, IndexNow и имат вътрешни връзки', async () => {
+  const sitemap = await (await request('/sitemap.xml')).text();
+  const llms = await (await request('/llms.txt')).text();
+  const home = await (await request('/')).text();
+  const { publicUrls } = await import('../src/indexnow.js');
+  const submitted = publicUrls(base);
+  for (const g of GUIDES) {
+    assert.ok(sitemap.includes(`<loc>${base}/${g.slug}</loc>`), `/${g.slug}: липсва в sitemap`);
+    assert.ok(sitemap.includes(`<lastmod>${g.updated}</lastmod>`), `/${g.slug}: липсва lastmod`);
+    assert.ok(llms.includes(`${base}/${g.slug}`), `/${g.slug}: липсва в llms.txt`);
+    assert.ok(submitted.includes(`${base}/${g.slug}`), `/${g.slug}: не се подава към IndexNow`);
+    assert.ok(home.includes(`href="/${g.slug}"`), `/${g.slug}: сирак — няма връзка от началната`);
+  }
+  // robots.txt не бива да ги спира.
+  const robots = await (await request('/robots.txt')).text();
+  for (const g of GUIDES) assert.ok(!robots.includes(`Disallow: /${g.slug}`));
 });
 
 // Регресия за реален провален деплой: в продукция принудителният редирект към

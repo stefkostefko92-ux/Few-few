@@ -123,9 +123,10 @@ python3 tools/generate_icons.py   # regenerate icons/ + store art from store/bra
 
 ## Privacy & license
 
-We collect nothing about you; no browsing data ever leaves your device. The
-only network request is the daily data-only filter update (see
-[PRIVACY.md](PRIVACY.md)). Released under the [MIT License](LICENSE).
+Your browsing data never leaves your device; there is no account, analytics or
+telemetry. The only automatic network request is the data-only filter update,
+about twice a day (see [PRIVACY.md](PRIVACY.md)). Released under the
+[MIT License](LICENSE).
 
 Made by [Carbon Stealth](https://carbonstealth.eu). Donations (optional):
 <https://revolut.me/vycanismajoris>.

@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Bloque les publicités (YouTube compris), les bannières, pop-ups, traqueurs, bandeaux cookies et murs anti-adblock. Gratuit."
+  },
+  "byCarbon": {
+    "message": "par Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Activer/désactiver la protection"
+  },
+  "protected": {
+    "message": "Protégé"
+  },
+  "paused": {
+    "message": "En pause"
+  },
+  "blockingHere": {
+    "message": "Blocage des pubs sur cette page"
+  },
+  "protectionOff": {
+    "message": "La protection est désactivée"
+  },
+  "pause30": {
+    "message": "Pause de 30 minutes"
+  },
+  "pausedResume": {
+    "message": "En pause, reprendre maintenant (encore $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Bloqués"
+  },
+  "dataSaved": {
+    "message": "Données économisées"
+  },
+  "timeSaved": {
+    "message": "Temps gagné"
+  },
+  "thisSite": {
+    "message": "ce site"
+  },
+  "thisPage": {
+    "message": "cette page"
+  },
+  "blockOnSite": {
+    "message": "Bloquer les pubs sur ce site"
+  },
+  "blocking": {
+    "message": "Blocage"
+  },
+  "allowed": {
+    "message": "Autorisé"
+  },
+  "cosmetics": {
+    "message": "Masquer les pubs ici"
+  },
+  "cosmeticsTitle": {
+    "message": "Filtrage cosmétique sur ce site (à désactiver si la mise en page se casse)"
+  },
+  "on": {
+    "message": "Oui"
+  },
+  "off": {
+    "message": "Non"
+  },
+  "blockedHere": {
+    "message": "Bloqués sur cette page"
+  },
+  "logEmpty": {
+    "message": "Rien n’a encore été bloqué ici."
+  },
+  "logUnavailable": {
+    "message": "Journal indisponible pour le moment (quota du navigateur) — réessayez dans une minute."
+  },
+  "logCore": {
+    "message": "Règles de base Supreme"
+  },
+  "logYouTube": {
+    "message": "Pubs YouTube"
+  },
+  "logParams": {
+    "message": "Paramètres de suivi"
+  },
+  "logMalware": {
+    "message": "Domaines malveillants"
+  },
+  "logSurrogates": {
+    "message": "Scripts pub neutralisés"
+  },
+  "logPrivacy": {
+    "message": "Protection de la vie privée"
+  },
+  "logUser": {
+    "message": "Mes filtres"
+  },
+  "logLive": {
+    "message": "Filtres en direct"
+  },
+  "hideElement": {
+    "message": "Masquer un élément"
+  },
+  "settings": {
+    "message": "Paramètres"
+  },
+  "promoSub": {
+    "message": "Équipement et outils, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Pub"
+  },
+  "support": {
+    "message": "Soutenir"
+  },
+  "filtersCount": {
+    "message": "$1+ filtres",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Apparence"
+  },
+  "opt_extra_protection": {
+    "message": "Protection supplémentaire"
+  },
+  "opt_smart_detection_log": {
+    "message": "Journal Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Sites autorisés"
+  },
+  "opt_my_filters": {
+    "message": "Mes filtres"
+  },
+  "opt_hidden_elements": {
+    "message": "Éléments masqués"
+  },
+  "opt_filter_updates": {
+    "message": "Mises à jour des filtres"
+  },
+  "opt_engine_health": {
+    "message": "État du moteur"
+  },
+  "opt_backup": {
+    "message": "Sauvegarde"
+  },
+  "opt_support_development": {
+    "message": "Soutenir le développement"
+  },
+  "opt_theme": {
+    "message": "Thème"
+  },
+  "opt_sync_across_devices": {
+    "message": "Synchroniser entre les appareils"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Blocage des pubs YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Bandeaux cookies / consentement"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Contournement des murs anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Publications sponsorisées Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Supprimer les paramètres de suivi"
+  },
+  "opt_malware_protection": {
+    "message": "Protection contre les logiciels malveillants"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Bloquer les API de ciblage publicitaire du navigateur"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Bloquer les balises de suivi et les cryptomineurs"
+  },
+  "opt_auto_update_filters": {
+    "message": "Mise à jour automatique des filtres"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (sombre) ou clair"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Synchronise les paramètres, la liste des sites autorisés et les filtres sur tous les Chrome où vous êtes connecté"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Supprime les pubs vidéo sur YouTube. Désactivez cette option si les vidéos ne se lancent pas."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Ferme automatiquement les invites « Accepter les cookies »"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Masque les murs « désactivez votre bloqueur de pubs » et rétablit la page"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Masque les publications « Sponsorisé » sur Facebook et Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Retire utm_*, fbclid, gclid et autres identifiants de clic des liens que vous ouvrez"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Bloque les domaines malveillants connus (liste URLhaus d’abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Désactive les API publicitaires Google Topics, FLoC et Protected Audience sur tous les sites"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Bloque les pings d’audit des liens et les balises tierces, retire les cookies de suivi des réponses ad-tech connues et bloque les scripts de minage de cryptomonnaie dans le navigateur. Désactivez cette option si une fonction d’un site qui dépend de l’analytique fonctionne mal."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Récupère de nouvelles règles de blocage et des correctifs YouTube depuis adblock.carbonstealth.eu environ deux fois par jour. Uniquement des données, aucun code ; la requête ne contient aucun identifiant ni aucune donnée de navigation."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Journal en direct des pubs détectées par heuristique (sans liste de filtres), les plus récentes en premier."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Les listes abonnées sont récupérées sous forme de texte (jamais de code), mises à jour chaque jour et placées dans les blocs gérés ci-dessus. Supprimez une liste pour retirer ses règles."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Éléments que vous avez masqués manuellement avec le sélecteur, regroupés par site."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Diagnostic en direct — tout est calculé localement. Si un élément est en rouge, « Mettre à jour maintenant » ou recharger l’extension règle généralement le problème."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock est gratuit pour tous. Si vous souhaitez contribuer à sa maintenance, les dons sont les bienvenus, mais jamais obligatoires."
+  },
+  "opt_reset_statistics": {
+    "message": "Réinitialiser les statistiques"
+  },
+  "opt_add": {
+    "message": "Ajouter"
+  },
+  "opt_save_filters": {
+    "message": "Enregistrer les filtres"
+  },
+  "opt_subscribe": {
+    "message": "S’abonner"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Actualiser les abonnements maintenant"
+  },
+  "opt_update_now": {
+    "message": "Mettre à jour maintenant"
+  },
+  "opt_refresh": {
+    "message": "Actualiser"
+  },
+  "opt_export_settings": {
+    "message": "Exporter les paramètres"
+  },
+  "opt_import_settings": {
+    "message": "Importer les paramètres"
+  },
+  "opt_e_g_example_com": {
+    "message": "ex. : example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! exemple\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "S’abonner à l’URL d’une liste de filtres (ex. : https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Paramètres de Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Paramètres"
+  },
+  "opt_theme_light": {
+    "message": "Clair"
+  },
+  "opt_badge_unique": {
+    "message": "exclusif"
+  },
+  "opt_smart_desc": {
+    "message": "Repère les pubs qu’aucune liste de filtres ne connaît encore : les cadres d’autres origines ayant la taille d’un emplacement publicitaire standard sont masqués d’emblée, sans aucune règle."
+  },
+  "opt_caught_so_far": {
+    "message": "détectées jusqu’ici."
+  },
+  "opt_allow_desc": {
+    "message": "Les pubs ne sont pas bloquées sur ces domaines."
+  },
+  "opt_fh_one": {
+    "message": "Une règle par ligne."
+  },
+  "opt_fh_blocks": {
+    "message": "bloque un domaine ;"
+  },
+  "opt_fh_everywhere": {
+    "message": "masque un élément partout ;"
+  },
+  "opt_fh_site": {
+    "message": "le masque uniquement sur ce site."
+  },
+  "opt_fh_comments": {
+    "message": "Les lignes commençant par"
+  },
+  "opt_fh_comments2": {
+    "message": "sont des commentaires."
+  },
+  "opt_donate": {
+    "message": "Faire un don via Revolut"
+  },
+  "opt_made_by": {
+    "message": "conçu par Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Rien n’a encore été détecté par heuristique."
+  },
+  "opt_empty_allow": {
+    "message": "Aucun site autorisé pour l’instant."
+  },
+  "opt_empty_hidden": {
+    "message": "Rien n’a encore été masqué manuellement."
+  },
+  "opt_empty_subs": {
+    "message": "Aucune liste abonnée pour l’instant."
+  },
+  "opt_no_sw": {
+    "message": "Aucune réponse du service worker."
+  },
+  "opt_remove": {
+    "message": "Supprimer"
+  },
+  "opt_filter_status": {
+    "message": "Filtres v$1, mis à jour $2. Uniquement des données : rien vous concernant n’est envoyé."
+  },
+  "opt_updating": {
+    "message": "Mise à jour…"
+  },
+  "opt_updated": {
+    "message": "Mis à jour (v$1, $2 règles supplémentaires)"
+  },
+  "opt_update_failed": {
+    "message": "Échec de la mise à jour ($1)"
+  },
+  "opt_saved": {
+    "message": "Enregistré ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 règles"
+  },
+  "opt_updated_ago": {
+    "message": "mise à jour $1"
+  },
+  "opt_not_fetched": {
+    "message": "pas encore récupérée"
+  },
+  "opt_failed_colon": {
+    "message": "échec : $1"
+  },
+  "opt_enter_https": {
+    "message": "Saisissez une URL https:// valide"
+  },
+  "opt_fetching": {
+    "message": "Récupération…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Abonné : $1 règles ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Échec ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Actualisation…"
+  },
+  "opt_refreshed": {
+    "message": "Actualisé ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Fichier de paramètres non valide."
+  },
+  "opt_no_response": {
+    "message": "aucune réponse"
+  },
+  "opt_h_engine": {
+    "message": "Moteur anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Ensembles de règles statiques actifs"
+  },
+  "opt_h_live": {
+    "message": "Domaines des filtres en direct"
+  },
+  "opt_h_last": {
+    "message": "Dernière mise à jour"
+  },
+  "opt_h_sig": {
+    "message": "Signatures des mises à jour"
+  },
+  "opt_h_user": {
+    "message": "Mes filtres / règles d’autorisation"
+  },
+  "opt_h_popup": {
+    "message": "Hôtes de pubs pop-up intégrés"
+  },
+  "opt_h_yt": {
+    "message": "Contournement YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Cadre d’une autre origine au format publicitaire"
+  },
+  "opt_reason_sticky": {
+    "message": "Bannière publicitaire fixe"
+  },
+  "logRegional": {
+    "message": "Listes régionales"
+  },
+  "logFocus": {
+    "message": "Mode Focus"
+  },
+  "opt_filter_lists": {
+    "message": "Listes de filtres"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList et EasyPrivacy sont toujours activées. Les listes ci-dessous, sous licence libre, sont intégrées à l’extension : en activer une ne télécharge rien, sauf pour une liste indiquée comme provenant de son auteur."
+  },
+  "opt_lists_core": {
+    "message": "Essentielles"
+  },
+  "opt_lists_regional": {
+    "message": "Régionales"
+  },
+  "opt_lists_regional_desc": {
+    "message": "La liste correspondant à la langue de votre navigateur s’active d’elle-même. Ajoutez-en d’autres si vous lisez souvent des sites dans d’autres langues."
+  },
+  "opt_focus_mode": {
+    "message": "Mode Focus"
+  },
+  "opt_focus_desc": {
+    "message": "Masque ce qui n’est pas une pub mais gêne quand même. Tout est désactivé ici jusqu’à ce que vous l’activiez."
+  },
+  "opt_list_ubo": {
+    "message": "Filtres uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Pubs, traqueurs, correctifs anti-adblock et réparations de sites par l’équipe uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Liste de Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Une liste de longue date de serveurs publicitaires et de suivi."
+  },
+  "opt_focus_social": {
+    "message": "Boutons et widgets de réseaux sociaux"
+  },
+  "opt_focus_social_desc": {
+    "message": "Boutons de partage, encadrés « J’aime » et fils intégrés."
+  },
+  "opt_focus_chat": {
+    "message": "Widgets de chat et d’assistance"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Les bulles de chat flottantes dans le coin de la page."
+  },
+  "opt_focus_newsletters": {
+    "message": "Pop-ups de newsletter et d’inscription"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Encadrés et superpositions « Abonnez-vous à notre newsletter »."
+  },
+  "opt_focus_notifications": {
+    "message": "Demandes de notifications"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Encadrés « Autoriser les notifications ? » que les sites affichent avant que le navigateur ne le demande."
+  },
+  "opt_focus_ai": {
+    "message": "Pop-ups d’assistants IA"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Bulles de chatbot et panneaux de suggestions IA ajoutés aux pages."
+  },
+  "opt_focus_other": {
+    "message": "Autres nuisances"
+  },
+  "opt_focus_other_desc": {
+    "message": "Barres fixes, bannières « Ouvrir dans l’application » et éléments similaires."
+  },
+  "opt_badge_lang": {
+    "message": "votre langue"
+  },
+  "opt_badge_remote": {
+    "message": "de son auteur"
+  },
+  "opt_remote_hint": {
+    "message": "Non intégrée (pas de licence pour la redistribuer) : votre navigateur la télécharge depuis $1 lorsque vous l’activez."
+  },
+  "opt_downloaded_from": {
+    "message": "Téléchargée depuis $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome a refusé cette combinaison de listes ($1). Désactivez-en quelques-unes."
+  },
+  "opt_badge_recommended": {
+    "message": "recommandée pour votre langue"
+  },
+  "reportBroken": {
+    "message": "Site cassé ? Corrigez-le ou prévenez-nous"
+  },
+  "rep_title": {
+    "message": "Quelque chose ne fonctionne pas sur ce site ?"
+  },
+  "rep_fix_first": {
+    "message": "Corriger maintenant"
+  },
+  "rep_site": {
+    "message": "Site :"
+  },
+  "rep_fix_desc": {
+    "message": "La plupart des problèmes disparaissent avec l’une de ces options. Chacune ne s’applique qu’à ce site ; l’onglet se recharge."
+  },
+  "rep_fix_cosm": {
+    "message": "Désactiver le masquage d’éléments ici"
+  },
+  "rep_fix_allow": {
+    "message": "Autoriser les pubs sur ce site"
+  },
+  "rep_fix_pause": {
+    "message": "Mettre en pause partout pendant 30 minutes"
+  },
+  "rep_tell_us": {
+    "message": "Prévenez-nous"
+  },
+  "rep_tell_desc": {
+    "message": "Nous réparons les sites cassés pour tout le monde via la mise à jour signée des filtres, généralement en moins d’une journée. L’extension n’envoie rien : le rapport s’ouvre dans votre propre application de messagerie et vous en voyez chaque mot avant."
+  },
+  "rep_what": {
+    "message": "Quel est le problème ? (facultatif)"
+  },
+  "rep_what_ph": {
+    "message": "ex. : la vidéo ne démarre pas, un cadre blanc recouvre l’article…"
+  },
+  "rep_full_url": {
+    "message": "Inclure l’adresse complète de la page (sinon, seulement le nom du site)"
+  },
+  "rep_preview": {
+    "message": "Ce qui sera envoyé"
+  },
+  "rep_send_mail": {
+    "message": "Envoyer par e-mail"
+  },
+  "rep_copy": {
+    "message": "Copier le rapport"
+  },
+  "rep_copied": {
+    "message": "Copié."
+  },
+  "rep_done_cosm": {
+    "message": "Le masquage d’éléments est désactivé sur ce site. Page rechargée — est-ce réglé ?"
+  },
+  "rep_done_allow": {
+    "message": "Les pubs sont autorisées sur ce site. Page rechargée — est-ce réglé ?"
+  },
+  "rep_done_pause": {
+    "message": "En pause pendant 30 minutes. Si le site fonctionne maintenant, dites-le-nous ci-dessous."
+  },
+  "cookieRejections": {
+    "message": "Bandeaux cookies refusés pour vous : $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Les étagères, l’onglet et les suggestions Shorts sur YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Pop-ups « Se connecter avec Google »"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Le sélecteur de compte qui apparaît dans le coin de nombreux sites. Les boutons de connexion continuent de fonctionner."
+  },
+  "pickTip": {
+    "message": "Cliquez sur un élément pour le masquer"
+  },
+  "pickZapTip": {
+    "message": "Cliquez pour supprimer cet élément (une fois)"
+  },
+  "pickEscCancel": {
+    "message": "pour annuler"
+  },
+  "opt_notices": {
+    "message": "Licences des listes de filtres"
+  }
+}

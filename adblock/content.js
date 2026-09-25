@@ -14,6 +14,7 @@
 (function () {
   let enabled = true;
   let cosmeticsOff = false; // per-site "no cosmetic filtering" (network blocking unaffected)
+  let allowed = false;       // site is on the allowlist: we do nothing here, on EVERY path
   let smartEnabled = true;
   let customSelectors = [];
   let procSelectors = [];
@@ -51,6 +52,9 @@
   };
   gate(true);
 
+  function classToken(t) {
+    return [`[class^='${t}']`, `[class*=' ${t}']`, `[class*='-${t}']`, `[class*='_${t}']`];
+  }
   const AD_SELECTORS = [
     "[id^='google_ads_']",
     "[id^='div-gpt-ad']",
@@ -58,19 +62,23 @@
     "[id*='banner-ad']",
     "[id*='adsense']",
     "[id*='dfp-']",
-    "[class*='ad-banner']",
-    "[class*='ad-container']",
-    "[class*='ad-wrapper']",
-    "[class*='ad-slot']",
-    "[class*='ad-unit']",
-    "[class*='ad-placeholder']",
-    "[class*='advertisement']",
-    "[class*='advert-']",
-    "[class*='sponsored']",
+    // Class names match as the START of a class token (or after "-"/"_"),
+    // never as a bare substring: `[class*='ad-container']` also hid
+    // thread-container, head-container, download-container, upload-container…
+    // on every site (forums, download pages), and `sponsored` hid "unsponsored".
+    ...classToken("ad-banner"),
+    ...classToken("ad-container"),
+    ...classToken("ad-wrapper"),
+    ...classToken("ad-slot"),
+    ...classToken("ad-unit"),
+    ...classToken("ad-placeholder"),
+    ...classToken("advertisement"),
+    ...classToken("advert-"),
+    ...classToken("sponsored"),
     "[class*='-sponsor']",
     "[class*='adsbygoogle']",
-    "[class*='dfp-']",
-    "[class*='gpt-ad']",
+    ...classToken("dfp-"),
+    ...classToken("gpt-ad"),
     "[class*='outbrain']",
     "[class*='taboola']",
     "[data-ad-slot]",
@@ -331,23 +339,101 @@
   }
 
   function hideEl(el) {
+    // Never the whole page: a picker click on empty space selects <body>/<html>
+    // (or an id on them), and hiding that blanks the site on every visit.
+    if (el === document.documentElement || el === document.body) return;
     if (el.dataset.tbabHidden || el.dataset.tbabUnhide) return;
     el.dataset.tbabHidden = "1";
     el.style.setProperty("display", "none", "important");
   }
 
-  function hide(root = document) {
-    if (!enabled || cosmeticsOff) return;
-    applyUnhide();
-    for (const sel of AD_SELECTORS.concat(customSelectors)) {
-      let nodes;
-      try {
-        nodes = root.querySelectorAll(sel);
-      } catch {
-        continue;
-      }
-      for (const el of nodes) hideEl(el);
+  // One querySelectorAll per LIST (one DOM walk) instead of one per selector —
+  // hide() runs on DOM changes, and ~40 separate full-document queries per frame
+  // were a measurable share of the main thread on busy pages. A list from the
+  // filter lists / My filters may hold a selector the browser rejects; then (and
+  // only then) that list is queried selector by selector.
+  const joinedLists = new WeakMap(); // list → { n, sel } (sel null = query one by one)
+  // A selector the parser silently "repairs" (`.a[title="x`, `:has(` without its
+  // `)`, a trailing `\`) is valid on its own but, joined, swallows every selector
+  // after it — so each one must prove it is self-contained: joined with a probe
+  // id it must still match the probe.
+  const probe = document.createElement("i");
+  probe.id = "tbab-probe";
+  const selfContained = (s) => { try { return probe.matches(s + ", #tbab-probe"); } catch { return false; } };
+  function listEntry(list) {
+    let j = joinedLists.get(list);
+    if (!j || j.n !== list.length) {
+      j = { n: list.length, sel: list.every(selfContained) ? list.join(", ") : null };
+      joinedLists.set(list, j);
     }
+    return j;
+  }
+  function listSel(list) {
+    return listEntry(list).sel;
+  }
+  // Rules can match an ANCESTOR of what the page just added: `:has()` (EasyList has
+  // ~800), a class put on an existing ad slot before its content arrives,
+  // `[data-google-query-id]` set on the container. 5.0.4 caught those with a
+  // whole-document pass per change; one closest() walk up from each added node
+  // does the same for a fraction of the cost.
+  function hideAncestors(n, list) {
+    const sel = listSel(list);
+    const walk = (one) => {
+      try {
+        for (let a = n.parentElement && n.parentElement.closest(one); a; a = a.parentElement && a.parentElement.closest(one)) hideEl(a);
+      } catch {}
+    };
+    if (sel !== null) walk(sel);
+    else for (const one of list) walk(one);
+  }
+  function queryList(root, list) {
+    if (!list.length) return [];
+    const sel = listSel(list);
+    if (sel !== null) {
+      try { return root.querySelectorAll(sel); } catch {}
+    }
+    const out = [];
+    for (const one of list) {
+      try { for (const el of root.querySelectorAll(one)) out.push(el); } catch {}
+    }
+    return out;
+  }
+  function matchesList(el, list) {
+    if (!list.length) return false;
+    const sel = listSel(list);
+    if (sel !== null) {
+      try { return el.matches(sel); } catch {}
+    }
+    return list.some((one) => { try { return el.matches(one); } catch { return false; } });
+  }
+
+  // Only the subtrees the page just added (a new ad can only be in there). The
+  // whole-document hide() stays for start-up, the timed passes and filter
+  // changes; procedural and #@# rules need the whole page, so they fall back to it.
+  // `attrOnly`: elements whose class/id changed (not added) — the element itself
+  // and its ancestors only, never its subtree: a class toggled on a big container
+  // every frame must not turn into a whole-subtree query.
+  let attrTargets = new WeakSet();
+  function hideAdded(nodes, attrOnly = new WeakSet()) {
+    if (!enabled || allowed || cosmeticsOff) return;
+    if (procSelectors.length || unhideSelectors.length) return hide();
+    for (const n of nodes) {
+      if (!n.isConnected) continue;
+      for (const list of genericHideHost ? [customSelectors] : [AD_SELECTORS, customSelectors]) {
+        if (matchesList(n, list)) hideEl(n);
+        if (!attrOnly.has(n)) for (const el of queryList(n, list)) hideEl(el);
+        hideAncestors(n, list);
+      }
+    }
+  }
+
+  function hide(root = document) {
+    if (!enabled || allowed || cosmeticsOff) return;
+    applyUnhide();
+    // $generichide (EasyList) for this host: no generic cosmetics at all — the
+    // bundled AD_SELECTORS are generic too (Google sign-in, Ads Manager…).
+    if (!genericHideHost) for (const el of queryList(root, AD_SELECTORS)) hideEl(el);
+    for (const el of queryList(root, customSelectors)) hideEl(el);
     for (const p of procSelectors) {
       const { els, action } = evalProcedural(p, root);
       for (const el of els) {
@@ -357,11 +443,14 @@
         } else if (action.op === "remove") {
           if (!el.dataset.tbabUnhide) el.remove();
         } else if (action.op === "style") {
-          applyStyle(el, action.arg);
+          // No url()/image-set()/attr()/escapes: a cosmetic rule must not beacon.
+          if (SA_POLICY.styleOk(action.arg)) applyStyle(el, action.arg);
         } else if (action.op === "remove-attr") {
+          // Security-relevant attributes (sandbox, src, href, integrity…) are
+          // never stripped, whatever the rule's source (lists, live, My filters).
           const re = toRegex(action.arg);
           for (const a of (el.getAttributeNames ? el.getAttributeNames() : []))
-            if (re ? re.test(a) : a === action.arg.toLowerCase()) { try { el.removeAttribute(a); } catch {} }
+            if ((re ? re.test(a) : a === action.arg.toLowerCase()) && !SA_POLICY.ATTR_DENY.test(a)) { try { el.removeAttribute(a); } catch {} }
         } else if (action.op === "remove-class") {
           const re = toRegex(action.arg);
           for (const c of [...el.classList])
@@ -373,7 +462,7 @@
 
   // Collapse wrappers left empty after their only (ad) child is hidden.
   function collapseEmpty() {
-    if (!enabled || cosmeticsOff) return;
+    if (!enabled || allowed || cosmeticsOff) return;
     document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
       const p = el.parentElement;
       if (!p || p.children.length !== 1 || p.offsetHeight >= 5) return;
@@ -472,7 +561,7 @@
   }
 
   function smartScan() {
-    if (!enabled || cosmeticsOff || !smartEnabled) return; // Smart Detection also hides → same per-site switch
+    if (!enabled || allowed || cosmeticsOff || !smartEnabled) return; // Smart Detection also hides → same per-site switch
     const items = [];
     scanFrames(items);
     scanSticky(items);
@@ -552,7 +641,7 @@
       recomputeCosmeticsOff();
       if (cosmeticsOff) gate(false);
       smartEnabled = (data.features || {}).smart !== false;
-      const allowed = (data.allowlist || []).some(hostMatches);
+      allowed = (data.allowlist || []).some(hostMatches);
       pickerMap = data.customHidden || {};
       userText = data.userFilters || "";
       liveCosmetic = (data.liveConfig && data.liveConfig.cosmetic) || [];
@@ -586,7 +675,7 @@
       // Пре-проверяваме allowlist-а: включване на защитата не бива да пусне
       // генеричната козметика на allowlist-нат сайт.
       chrome.storage.local.get("allowlist", (d) => {
-        const allowed = ((d && d.allowlist) || []).some(hostMatches);
+        allowed = ((d && d.allowlist) || []).some(hostMatches);
         // Гейтът зачита и $generichide хоста, за да не върне генеричния CSS
         // при повторно включване без reload.
         // …и per-site „без козметика" — иначе повторното включване връща
@@ -606,14 +695,21 @@
       }
       recomputeCosmeticsOff();
       chrome.storage.local.get("allowlist", (d) => {
-        const allowed = ((d && d.allowlist) || []).some(hostMatches);
+        allowed = ((d && d.allowlist) || []).some(hostMatches);
         gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);
         if (enabled && !allowed && !cosmeticsOff) hide();
       });
     }
+    if (changes.allowlist) {
+      const was = allowed;
+      allowed = (changes.allowlist.newValue || []).some(hostMatches);
+      gate(enabled && !allowed && !genericHideHost && !cosmeticsOff);
+      if (allowed && !was) revealHidden();              // just allowlisted: give the page back
+      else if (!allowed && was && enabled) { start(); hide(); }
+    }
     if (changes.features) {
       smartEnabled = (changes.features.newValue || {}).smart !== false;
-      if (enabled && smartEnabled) smartScan();
+      if (enabled && !allowed && smartEnabled) smartScan();
     }
     if (changes.customHidden || changes.userFilters || changes.liveConfig) {
       if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
@@ -623,7 +719,7 @@
         deliverScriptlets(changes.liveConfig.newValue);
       }
       rebuildSelectors();
-      if (enabled) hide();
+      if (enabled && !allowed) hide();
     }
   });
 
@@ -635,17 +731,65 @@
     smartScan();
     collapseEmpty();
 
-    // Coalesce DOM mutations into at most one scan per frame.
+    // Coalesce DOM mutations into at most one pass per frame, over the ADDED
+    // subtrees only. Text-only churn (a clock, Speedtest's gauge, a live score)
+    // used to cost a full-document scan every frame — and on a speed test that
+    // main-thread time came straight out of the measured speed. Text matters
+    // only to procedural :has-text() rules, so with those it triggers a full pass.
+    // Smart Detection (layout reads) runs at most every 500 ms, trailing.
     let scheduled = false;
-    new MutationObserver(() => {
-      if (!enabled || scheduled) return;
+    let pending = new Set();
+    let fullPass = false;
+    let smartTimer = 0;
+    let lastSmart = 0;
+    const smartSoon = () => {
+      if (smartTimer) return;
+      smartTimer = setTimeout(() => {
+        smartTimer = 0;
+        lastSmart = Date.now();
+        smartScan();
+      }, Math.max(0, 500 - (Date.now() - lastSmart)));
+    };
+    new MutationObserver((records) => {
+      if (!enabled) return;
+      let added = false;
+      for (const r of records) {
+        if (r.type === "attributes") {
+          // an existing element that just became an ad slot (`el.className = "ad-slot"`)
+          const t = r.target;
+          if (t.nodeType === 1 && t !== document.documentElement && t !== document.body && !t.dataset.tbabHidden) {
+            added = true;
+            if (!pending.has(t)) { attrTargets.add(t); if (pending.size < 300) pending.add(t); else fullPass = true; }
+          }
+          continue;
+        }
+        for (const n of r.addedNodes) {
+          if (n.nodeType !== 1) continue;
+          added = true;
+          attrTargets.delete(n);
+          if (pending.size < 300) pending.add(n);
+          else fullPass = true; // a big re-render: one whole-page pass is cheaper
+        }
+      }
+      if (!added) {
+        if (!procSelectors.length) return;
+        fullPass = true;
+      }
+      if (scheduled) return;
       scheduled = true;
       requestAnimationFrame(() => {
         scheduled = false;
-        hide();
-        smartScan();
+        const nodes = pending;
+        const full = fullPass;
+        pending = new Set();
+        fullPass = false;
+        const attrs = attrTargets;
+        attrTargets = new WeakSet();
+        if (full) hide();
+        else hideAdded(nodes, attrs);
+        smartSoon();
       });
-    }).observe(document.documentElement, { childList: true, subtree: true });
+    }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "id"] });
 
     // A few delayed passes catch lazily injected ads.
     let runs = 0;
