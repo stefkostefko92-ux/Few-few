@@ -1,38 +1,36 @@
-// Наметало — изви(та) плоскост с гънки, стеснена към раменете (не правоъгълник), яка + катарама.
+// Наметало — СЪЩАТА Verlet платно-симулация, с която боят люлее наметалото на Ser Aldric
+// (cloth.js Cape), не статична равнина. За една статична икона пускаме симулацията 1.5с под
+// гравитация без вятър/колизии, докато увисне естествено, после замразяваме кадъра — истинска
+// физика на плата, не имитация на гънки.
+//
+// capeA/capeB носят ФИКСИРАНА хералдика (синьо/аленочервено-Ser Aldric знаме, heraldry.js) — без
+// тониране 54-те наметала в каталога биха изглеждали само в два цвята, независимо от темата на
+// предмета. Клонираме и тонираме по theme.primary — платът остава истинска boy геометрия/платно
+// симулация, само цветът идва от предмета (същия компромис като shieldFace в shield.ts).
 import * as THREE from 'three/webgpu';
-import { mesh, xf } from '../geoHelpers';
-import type { Role } from '../materials';
+import { Cape } from '../../boy/src/cloth.js';
+import { chestCapeAnchors } from '../../boy/src/armor.js';
+import type { Rand } from '../rng';
+import type { BoyMaterials } from '../boy-materials';
 
-function foldedPlane(rand: () => number): THREE.BufferGeometry {
-  const wSeg = 22;
-  const hSeg = 26;
-  const g = new THREE.PlaneGeometry(0.42, 0.62, wSeg, hSeg);
-  const pos = g.attributes.position;
-  const amp = 0.022 + rand() * 0.016;
-  const freq = 3 + Math.floor(rand() * 3);
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i);
-    const y = pos.getY(i);
-    const t = (y + 0.31) / 0.62; // 0 top (яка) .. 1 hem (подгъв)
-    // Стеснено при раменете, разширява се към подгъва — силует на наметало, не лист хартия.
-    const taper = 0.5 + 0.5 * Math.pow(Math.max(0, Math.min(1, t)), 0.7);
-    const z = Math.sin(x * freq * Math.PI + 1.2) * amp * (0.3 + t);
-    const bow = -t * t * 0.14;
-    pos.setX(i, x * taper);
-    pos.setZ(i, z + bow);
-  }
-  g.computeVertexNormals();
-  return g;
+const SETTLE_STEPS = 34; // спира докато плата ВИСИ, преди да легне напълно плоско
+const DT = 1 / 60;
+const NO_WIND = { x: 0, y: 0, z: 0, phase: 0 };
+const NO_COLLIDERS: { c: THREE.Vector3; r: number }[] = [];
+
+export interface BuiltCloak {
+  object: THREE.Object3D;
+  dispose(): void;
 }
 
-export function buildCloak(M: Record<Role, THREE.Material>, rand: () => number): THREE.Object3D {
-  const g = new THREE.Group();
-  const plane = foldedPlane(rand);
-  g.add(mesh(plane, M.primary, { cast: true, receive: false }));
-  // Изправена яка (отворен цилиндър около врата).
-  g.add(mesh(xf(new THREE.CylinderGeometry(0.1, 0.11, 0.05, 20, 1, true, -0.5, Math.PI + 1), [0, 0.315, -0.01]), M.secondary));
-  g.add(mesh(xf(new THREE.TorusGeometry(0.048, 0.007, 8, 20, Math.PI), [0, 0.3, 0.012], [0, 0, Math.PI]), M.trim));
-  g.add(mesh(xf(new THREE.CircleGeometry(0.02, 12), [-0.06, 0.3, 0.014], [0, 0, 0]), M.trim));
-  g.add(mesh(xf(new THREE.CircleGeometry(0.02, 12), [0.06, 0.3, 0.014], [0, 0, 0]), M.trim));
-  return g;
+export function buildCloak(M: BoyMaterials, tint: string, rand: Rand): BuiltCloak {
+  const base = (rand() < 0.5 ? M.capeA : M.capeB) as THREE.MeshPhysicalNodeMaterial;
+  const material = base.clone();
+  material.color = new THREE.Color(tint);
+  const cape = new Cape(material, { cols: 9, rows: 15, length: 0.85, flare: 0.4 + rand() * 0.2 });
+  const anchors = chestCapeAnchors();
+  const back = new THREE.Vector3(0, 0, -1);
+  cape.reset(anchors, back);
+  for (let i = 0; i < SETTLE_STEPS; i++) cape.step(DT, anchors, NO_COLLIDERS, NO_WIND, back);
+  return { object: cape.mesh as THREE.Object3D, dispose: () => material.dispose() };
 }

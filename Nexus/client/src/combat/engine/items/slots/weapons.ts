@@ -1,157 +1,42 @@
-// Оръжия по sub_type: меч/брадва/боздуган/кама/лък/жезъл/копие. Остриета през ExtrudeGeometry
-// (плосък 2D профил → дебелина) — чист, различим силует за всеки тип, олекотен спрямо boy/weapons.js
-// (там острието следва цял скелет на боец; тук предметът стои сам, за икона/преглед/бъдещо обличане).
+// Оръжия — СЪЩИТЕ builders като бойния рицар: longsword/armingSword/heaterShield (weapons.js) и
+// shortSword/staff/bow/mace (weapons-ranged.js). Всеки връща `{pieces}` — масив от [geometry,
+// material] чифтове, вече сплетени в едно root-local пространство (boy/geo.js flatten()); тук
+// само ги превръщаме в мрежи. Брадва/копие boy НЕ моделира — виж support.ts, тези икони не се
+// стигат дотук.
 import * as THREE from 'three/webgpu';
-import { mesh, merge, xf } from '../geoHelpers';
-import type { ItemTheme } from '../theme';
+import { longsword, armingSword } from '../../boy/src/weapons.js';
+import { shortSword, staff, bow, mace } from '../../boy/src/weapons-ranged.js';
 import type { Rand } from '../rng';
-import type { Role } from '../materials';
+import type { BoyMaterials } from '../boy-materials';
 
-function bladeShape(len: number, baseW: number, tipW: number, taperFrom: number): THREE.Shape {
-  const s = new THREE.Shape();
-  s.moveTo(-baseW / 2, 0);
-  s.lineTo(baseW / 2, 0);
-  s.lineTo(baseW / 2, len * taperFrom);
-  s.lineTo(tipW / 2, len);
-  s.lineTo(-tipW / 2, len);
-  s.lineTo(-baseW / 2, len * taperFrom);
-  s.closePath();
-  return s;
-}
+type FlattenedPieces = [THREE.BufferGeometry, THREE.Material][];
 
-function extrudedBlade(shape: THREE.Shape, depth: number): THREE.BufferGeometry {
-  const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 8 });
-  g.translate(0, 0, -depth / 2);
-  return g;
-}
-
-function grip(len: number, r: number): THREE.BufferGeometry {
-  return new THREE.CylinderGeometry(r, r * 1.05, len, 12);
-}
-
-function sword(M: Record<Role, THREE.Material>, tier: number, rand: Rand): THREE.Object3D {
-  const long = tier >= 5;
-  const len = long ? 0.72 : 0.56;
-  const baseW = 0.038 + rand() * 0.014;
+function groupFromPieces(pieces: FlattenedPieces): THREE.Object3D {
   const g = new THREE.Group();
-  g.add(mesh(xf(extrudedBlade(bladeShape(len, baseW, 0.006, 0.75), 0.008), [0, 0.06, 0]), M.trim));
-  g.add(mesh(xf(new THREE.BoxGeometry(0.14 + rand() * 0.05, 0.022, 0.03), [0, 0.05, 0]), M.secondary));
-  g.add(mesh(xf(grip(0.13, 0.014), [0, -0.02, 0]), M.primary));
-  const pommel = rand() > 0.5
-    ? new THREE.SphereGeometry(0.024, 12, 10)
-    : new THREE.OctahedronGeometry(0.026, 0);
-  g.add(mesh(xf(pommel, [0, -0.09, 0]), M.secondary));
-  return g;
-}
-
-function dagger(M: Record<Role, THREE.Material>, rand: Rand): THREE.Object3D {
-  const g = new THREE.Group();
-  const baseW = 0.026 + rand() * 0.012;
-  g.add(mesh(xf(extrudedBlade(bladeShape(0.22, baseW, 0.004, 0.6), 0.006), [0, 0.03, 0]), M.trim));
-  g.add(mesh(xf(new THREE.BoxGeometry(0.06, 0.014, 0.02), [0, 0.02, 0]), M.secondary));
-  g.add(mesh(xf(grip(0.09, 0.011), [0, -0.03, 0]), M.primary));
-  return g;
-}
-
-// Класически брадвен профил: два „рога" (връх/пета) + изпъкнало острие навън, вдлъбната
-// вътрешна страна към дръжката — веднага се чете като брадва, не като знаменце.
-function axeHead(): THREE.Shape {
-  const head = new THREE.Shape();
-  head.moveTo(0.01, -0.11);
-  head.quadraticCurveTo(0.06, -0.135, 0.11, -0.105);
-  head.quadraticCurveTo(0.26, -0.045, 0.285, 0.045);
-  head.quadraticCurveTo(0.26, 0.135, 0.11, 0.16);
-  head.quadraticCurveTo(0.06, 0.185, 0.01, 0.15);
-  head.quadraticCurveTo(0.05, 0.02, 0.01, -0.11);
-  head.closePath();
-  return head;
-}
-
-function axe(M: Record<Role, THREE.Material>, tier: number, rand: Rand): THREE.Object3D {
-  const g = new THREE.Group();
-  const haftLen = 0.58 + (tier >= 6 ? 0.16 : 0);
-  g.add(mesh(grip(haftLen, 0.014), M.primary));
-  const headY = haftLen / 2 - 0.08;
-  g.add(mesh(xf(extrudedBlade(axeHead(), 0.032), [0, headY, 0]), M.trim));
-  if (rand() > 0.5) {
-    const back = new THREE.Shape();
-    back.moveTo(-0.01, -0.07);
-    back.quadraticCurveTo(-0.12, -0.03, -0.13, 0.02);
-    back.quadraticCurveTo(-0.1, 0.08, -0.01, 0.07);
-    back.closePath();
-    g.add(mesh(xf(extrudedBlade(back, 0.032), [0, headY, 0]), M.trim));
+  for (const [geo, mat] of pieces) {
+    const m = new THREE.Mesh(geo, mat);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    g.add(m);
   }
-  g.add(mesh(xf(new THREE.CylinderGeometry(0.017, 0.017, 0.05, 10), [0, headY, 0], [Math.PI / 2, 0, 0]), M.secondary));
-  g.add(mesh(xf(new THREE.SphereGeometry(0.02, 10, 8), [0, -haftLen / 2, 0]), M.secondary));
   return g;
 }
 
-function mace(M: Record<Role, THREE.Material>, tier: number, rand: Rand): THREE.Object3D {
-  const g = new THREE.Group();
-  const haftLen = 0.5;
-  g.add(mesh(grip(haftLen, 0.014), M.primary));
-  const headY = haftLen / 2 - 0.03;
-  const flangeN = 5 + Math.floor(Math.min(3, tier / 3));
-  const flanges: THREE.BufferGeometry[] = [];
-  for (let i = 0; i < flangeN; i++) {
-    const a = (i / flangeN) * Math.PI * 2;
-    flanges.push(xf(new THREE.BoxGeometry(0.012, 0.09, 0.03), [Math.cos(a) * 0.045, headY, Math.sin(a) * 0.045], [0, a, 0]));
-  }
-  g.add(mesh(merge(flanges), M.trim));
-  g.add(mesh(xf(new THREE.CylinderGeometry(0.03, 0.03, 0.09, 12), [0, headY, 0]), M.secondary));
-  if (rand() > 0.5) g.add(mesh(xf(new THREE.ConeGeometry(0.016, 0.03, 6), [0, headY + 0.06, 0]), M.trim));
-  return g;
-}
-
-function spear(M: Record<Role, THREE.Material>): THREE.Object3D {
-  const g = new THREE.Group();
-  const haftLen = 0.9;
-  g.add(mesh(grip(haftLen, 0.011), M.primary));
-  g.add(mesh(xf(extrudedBlade(bladeShape(0.22, 0.05, 0.004, 0.35), 0.01), [0, haftLen / 2, 0]), M.trim));
-  g.add(mesh(xf(new THREE.ConeGeometry(0.014, 0.03, 8), [0, -haftLen / 2, 0], [Math.PI, 0, 0]), M.secondary));
-  return g;
-}
-
-function bow(M: Record<Role, THREE.Material>): THREE.Object3D {
-  const g = new THREE.Group();
-  const curve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, -0.4, 0), new THREE.Vector3(0.08, -0.2, 0), new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(-0.08, 0.2, 0), new THREE.Vector3(0, 0.4, 0),
-  ]);
-  g.add(mesh(new THREE.TubeGeometry(curve, 48, 0.012, 8, false), M.primary));
-  const stringPts = [new THREE.Vector3(0, -0.4, 0), new THREE.Vector3(0, 0, 0.02), new THREE.Vector3(0, 0.4, 0)];
-  g.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(stringPts), 24, 0.002, 5, false), M.secondary));
-  g.add(mesh(xf(new THREE.SphereGeometry(0.016, 8, 6), [0, -0.4, 0]), M.trim));
-  g.add(mesh(xf(new THREE.SphereGeometry(0.016, 8, 6), [0, 0.4, 0]), M.trim));
-  return g;
-}
-
-function staff(M: Record<Role, THREE.Material>, theme: ItemTheme): THREE.Object3D {
-  const g = new THREE.Group();
-  const haftLen = 0.85;
-  g.add(mesh(grip(haftLen, 0.013), M.primary));
-  const gem = mesh(xf(new THREE.IcosahedronGeometry(0.05, 1), [0, haftLen / 2 + 0.03, 0]), M.trim);
-  g.add(gem);
-  const claws: THREE.BufferGeometry[] = [];
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2;
-    claws.push(xf(new THREE.ConeGeometry(0.006, 0.05, 6), [Math.cos(a) * 0.03, haftLen / 2 - 0.01, Math.sin(a) * 0.03], [0.5, a, 0]));
-  }
-  g.add(mesh(merge(claws), M.secondary));
-  void theme;
-  return g;
-}
-
-export function buildWeapon(M: Record<Role, THREE.Material>, theme: ItemTheme, subType: string, tier: number, rand: Rand): THREE.Object3D {
-  switch (subType) {
-    case 'axe': return axe(M, tier, rand);
-    case 'mace': return mace(M, tier, rand);
-    case 'dagger': return dagger(M, rand);
-    case 'bow': return bow(M);
-    case 'staff': return staff(M, theme);
-    case 'spear': return spear(M);
+/** `icon` идва от каталога (viж theme.ts бележката — за weapon ГЕОМЕТРИЯТА чете `icon`, не
+ *  `sub_type`). Само стойностите от support.ts SUPPORTED_WEAPON_ICONS стигат дотук. */
+export function buildWeapon(M: BoyMaterials, icon: string, rand: Rand): THREE.Object3D | null {
+  switch (icon) {
     case 'sword':
+      return groupFromPieces((rand() < 0.5 ? longsword(M) : armingSword(M)).pieces as FlattenedPieces);
+    case 'dagger':
+      return groupFromPieces(shortSword(M).pieces as FlattenedPieces);
+    case 'staff':
+      return groupFromPieces(staff(M).pieces as FlattenedPieces);
+    case 'bow':
+      return groupFromPieces(bow(M).pieces as FlattenedPieces);
+    case 'mace':
+      return groupFromPieces(mace(M).pieces as FlattenedPieces);
     default:
-      return sword(M, tier, rand);
+      return null;
   }
 }

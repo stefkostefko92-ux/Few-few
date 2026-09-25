@@ -96,7 +96,20 @@ function buildPelvis(M, st) {
   return { group: g, tassets };
 }
 
-function buildChest(M, st) {
+// Arming points where the cape is laced to the harness — pure closed-form, independent of the
+// cuirass shell shape. Exported so item icons (cloak slot) can drape a real boy Cape (cloth.js)
+// without building a throwaway chest mesh just to read these nine points.
+export function chestCapeAnchors() {
+  const pts = [];
+  for (let i = 0; i < 9; i++) {
+    const t = i / 8;
+    const a = (t - 0.5) * 2.3;
+    pts.push(new THREE.Vector3(Math.sin(a) * 0.185, 0.168 + 0.035 * Math.cos(a * 1.3), -0.118 - 0.02 * Math.cos(a)));
+  }
+  return pts;
+}
+
+export function buildChest(M, st) {
   const g = part('chest');
   const cuirassPoint = cuirass(st.fluted);
   const shell = new ParametricGeometry(cuirassPoint, st.fluted ? 120 : 64, 30);
@@ -122,19 +135,23 @@ function buildChest(M, st) {
   add(g, xf(ring(0.094, 0.005, TAU, 6, 40), [0, 0.302, -0.012], [0, 0, 0], [1, 1, 0.94]), st.trim);
   add(g, xf(new THREE.SphereGeometry(0.17, 24, 16), [0, 0.0, -0.005], [0, 0, 0], [1, 1.35, 0.78]), M.gambeson);
   add(g, scaleUV(tube(0.058, 0.064, 0.14, 16, 0, TAU, 0.32), 7, 2.5), M.mail);
-  // Arming points where the cape is laced to the harness.
-  const cape = [];
-  for (let i = 0; i < 9; i++) {
-    const t = i / 8;
-    const a = (t - 0.5) * 2.3;
-    cape.push(new THREE.Vector3(Math.sin(a) * 0.185, 0.168 + 0.035 * Math.cos(a * 1.3), -0.118 - 0.02 * Math.cos(a)));
-  }
-  return { group: g, capeAnchors: cape };
+  return { group: g, capeAnchors: chestCapeAnchors() };
 }
 
-function buildUpperArm(M, st) {
+export function buildUpperArm(M, st) {
   const g = part('upperArm');
   add(g, tube(0.056, 0.05, 0.17, 20, 0, TAU, -0.07), st.plate);
+  g.add(buildPauldron(M, st));
+  add(g, scaleUV(xf(new THREE.CapsuleGeometry(0.046, 0.2, 4, 12), [0, -0.13, 0]), 5, 4), M.mail);
+  return g;
+}
+
+// Just the shoulder cap+lames+rivets, no arm tube underneath — factored out of buildUpperArm so
+// the armor-slot item icon (torso.ts) can show a pauldron without the full sleeve (which read as
+// a long "vase neck" when framed alone, see task quality-gate notes). flatten() doesn't care
+// about the extra nesting level, so buildUpperArm's merged output is byte-identical to before.
+export function buildPauldron(M, st) {
+  const g = part('pauldron');
   const r = st.pauldron;
   add(g, xf(cap(r, 1.2, 28, 12), [0.012, 0.0, 0], [0, 0, -0.78]), st.plate);
   add(g, xf(xf(ring(r * Math.sin(1.2), 0.005, TAU, 6, 44), [0, r * Math.cos(1.2), 0]), [0.012, 0, 0], [0, 0, -0.78]), st.trim);
@@ -144,11 +161,10 @@ function buildUpperArm(M, st) {
   }
   add(g, merge(lames), st.plate);
   add(g, rivets([[0.07, 0.07, 0.03], [0.07, 0.07, -0.03], [0.1, 0.02, 0]], 0.006), st.rivet);
-  add(g, scaleUV(xf(new THREE.CapsuleGeometry(0.046, 0.2, 4, 12), [0, -0.13, 0]), 5, 4), M.mail);
   return g;
 }
 
-function buildForearm(M, st) {
+export function buildForearm(M, st) {
   const g = part('foreArm');
   add(g, xf(cap(0.058, 1.3, 20, 10), [0, 0, 0.004], [Math.PI / 2, 0, 0]), st.plate);
   add(g, xf(new THREE.SphereGeometry(0.05, 16, 10), [0.048, 0, 0.016], [0, 0.35, 0], [0.24, 1.1, 0.95]), st.plate);
@@ -159,7 +175,7 @@ function buildForearm(M, st) {
 }
 
 // Clenched gauntlet: +X towards the knuckles, +Y along the grip, +Z back of the hand.
-function buildHand(M, st) {
+export function buildHand(M, st) {
   const g = part('hand');
   const cuff = lathe([[0.058, -0.085], [0.05, -0.05], [0.043, -0.012], [0.044, 0.012]], 22);
   add(g, xf(cuff, [0, 0, 0], [0, 0, -Math.PI / 2]), st.plate);
@@ -185,7 +201,7 @@ function buildThigh(M, st) {
   return g;
 }
 
-function buildShin(M, st) {
+export function buildShin(M, st) {
   const g = part('shin');
   add(g, xf(cap(0.064, 1.25, 22, 10), [0, 0.0, 0.028], [Math.PI / 2, 0, 0]), st.plate);
   add(g, merge([tube(0.07, 0.072, 0.03, 16, -1.4, 2.8, 0.064), tube(0.066, 0.064, 0.028, 16, -1.3, 2.6, -0.048)]), st.plate);
@@ -197,7 +213,7 @@ function buildShin(M, st) {
   return g;
 }
 
-function buildFoot(M, st) {
+export function buildFoot(M, st) {
   const g = part('foot');
   const lames = [];
   for (let k = 0; k < 4; k++) {
@@ -213,10 +229,18 @@ function buildFoot(M, st) {
   return g;
 }
 
-export function buildKnight(M, style) {
-  const st = style === 'A'
+// Per-piece material/proportion recipe for the two knight styles — Ser Aldric's bright fluted
+// plate (A) vs. the Warden's blackened, unfluted harness (B). Exported so item icons (armor
+// slot) can build a lone breastplate+pauldrons in the exact same finish, without duplicating
+// the recipe.
+export function harnessStyle(M, style) {
+  return style === 'A'
     ? { plate: M.steelA, trim: M.steelA, rivet: M.brass, pauldron: 0.116, lanceRest: true, spurs: true, fluted: true }
     : { plate: M.steelB, trim: M.goldB, rivet: M.goldB, pauldron: 0.128, lanceRest: false, spurs: false, fluted: false };
+}
+
+export function buildKnight(M, style) {
+  const st = harnessStyle(M, style);
   const pelvis = buildPelvis(M, st);
   const chest = buildChest(M, st);
   const head = part('head');

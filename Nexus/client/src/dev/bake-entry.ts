@@ -7,6 +7,7 @@
 import * as THREE from 'three/webgpu';
 import { buildItem } from '../combat/engine/items/buildItem';
 import { fallbackTheme } from '../combat/engine/items/theme';
+import { supports3DIcon } from '../combat/engine/items/support';
 import { buildStudioScene, createRenderer } from '../combat/engine/items/renderScene';
 import type { CatalogEntry } from '../combat/engine/items/theme';
 
@@ -15,6 +16,9 @@ declare global {
     __bakeReady?: boolean;
     __bakeError?: string;
     __bakeWebp?: string;
+    /** true = слотът съзнателно НЯМА 3D геометрия в boy (пръстен/амулет/брадва/копие) —
+     *  скриптът трябва да пропусне (не грешка, не webp), стария JPG остава. */
+    __bakeSkip?: boolean;
   }
 }
 
@@ -26,6 +30,11 @@ async function main(): Promise<void> {
   const res = await fetch('/assets/items3d/catalog.json');
   const catalog: CatalogEntry[] = res.ok ? await res.json() : [];
 
+  if (slug) {
+    const entry = catalog.find((e) => e.slug === slug);
+    if (entry && !supports3DIcon(entry)) { window.__bakeSkip = true; window.__bakeReady = true; return; }
+  }
+
   // Renderer-ът пръв — студийната сцена иска envMap (PMREM) от него за реални отражения по
   // metalness/roughness материалите (иначе плочата/ризницата изглеждат мъртви, плоски цветове).
   const canvas = document.getElementById('c') as HTMLCanvasElement;
@@ -35,16 +44,17 @@ async function main(): Promise<void> {
   let target: THREE.Object3D;
   let rarity: string | undefined;
   if (params.has('multi')) {
-    const picks = catalog.filter((e) => e.set_slug).slice(0, 5);
+    const picks = catalog.filter((e) => e.set_slug && supports3DIcon(e)).slice(0, 5);
     const root = new THREE.Group();
-    picks.forEach((entry, i) => {
-      const built = buildItem(entry);
+    for (const [i, entry] of picks.entries()) {
+      const built = await buildItem(entry);
+      if (!built) continue;
       const holder = new THREE.Group();
       const a = (i / picks.length) * Math.PI * 2;
       holder.position.set(Math.cos(a) * 0.55, 0, Math.sin(a) * 0.55);
       holder.add(built.object);
       root.add(holder);
-    });
+    }
     target = root;
   } else {
     const entry = catalog.find((e) => e.slug === slug) ?? {
@@ -52,7 +62,9 @@ async function main(): Promise<void> {
       theme: fallbackTheme({ tier: 1, rarity: 'common', category: 'weapon' }),
     } as CatalogEntry;
     rarity = entry.rarity;
-    target = buildItem(entry).object;
+    const built = await buildItem(entry);
+    if (!built) { window.__bakeSkip = true; window.__bakeReady = true; return; }
+    target = built.object;
   }
 
   const studio = buildStudioScene(target, { envMap, rarity });

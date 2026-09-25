@@ -11,11 +11,21 @@
 //   node client/scripts/bake-item-icons.mjs [--force] [--only=slug1,slug2]
 import { chromium } from 'playwright-core';
 import { createHash } from 'node:crypto';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const GENERATOR_VERSION = 7; // ↑ при промяна на geometry/materials/motif — пресвежава всички икони
+const GENERATOR_VERSION = 8; // ↑ при промяна на geometry/materials/motif — пресвежава всички икони
+
+// Огледало на support.ts supports3DIcon() — Node скрипт не може да import-не .ts директно.
+// buildItem.test.js гейтва двете да не се разминат (весди слот/тип оръжие тест).
+const SUPPORTED_WEAPON_ICONS = new Set(['sword', 'dagger', 'staff', 'bow', 'mace']);
+const UNSUPPORTED_CATEGORIES = new Set(['ring', 'amulet', 'armor', 'boots', 'cloak']);
+function supports3DIcon(entry) {
+  if (UNSUPPORTED_CATEGORIES.has(entry.category)) return false;
+  if (entry.category === 'weapon') return SUPPORTED_WEAPON_ICONS.has(entry.icon || entry.sub_type || 'sword');
+  return true;
+}
 
 const ROOT = path.join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const CATALOG_PATH = path.join(ROOT, 'public', 'assets', 'items3d', 'catalog.json');
@@ -50,7 +60,17 @@ async function main() {
   const manifest = await loadManifest();
   await mkdir(OUT_DIR, { recursive: true });
 
-  const targets = only ? catalog.filter((e) => only.has(e.slug)) : catalog;
+  // Предмети без boy 3D геометрия (пръстен/амулет, брадва/копие) — никога не се изпичат;
+  // почисти стари webp/manifest записи от предишни (отхвърлени) генератори, старият JPG остава.
+  let cleaned = 0;
+  for (const entry of catalog) {
+    if (supports3DIcon(entry)) continue;
+    if (manifest.hashes[entry.slug] !== undefined) { delete manifest.hashes[entry.slug]; cleaned++; }
+    await rm(path.join(OUT_DIR, `${entry.slug}.webp`)).catch(() => {});
+  }
+  if (cleaned) console.log(`почистени ${cleaned} стари икони за слотове без boy геометрия (пръстен/амулет/брадва/копие)`);
+
+  const targets = (only ? catalog.filter((e) => only.has(e.slug)) : catalog).filter(supports3DIcon);
   const todo = [];
   for (const entry of targets) {
     const h = entryHash(entry);
@@ -61,6 +81,9 @@ async function main() {
 
   console.log(`каталог: ${catalog.length} предмета · за изпичане: ${todo.length} (кеш пропуска останалите)`);
   if (todo.length === 0) {
+    manifest.slugs = Object.keys(manifest.hashes);
+    manifest.generatedAt = new Date().toISOString();
+    await writeFile(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
     console.log('нищо за правене');
     return;
   }
@@ -75,6 +98,12 @@ async function main() {
       await page.waitForFunction(() => window.__bakeReady === true || window.__bakeError, { timeout: 20000 });
       const err = await page.evaluate(() => window.__bakeError || null);
       if (err) throw new Error(err);
+      const skip = await page.evaluate(() => window.__bakeSkip === true);
+      if (skip) {
+        delete manifest.hashes[entry.slug];
+        await rm(path.join(OUT_DIR, `${entry.slug}.webp`)).catch(() => {});
+        continue;
+      }
       const dataUrl = await page.evaluate(() => window.__bakeWebp);
       const buf = Buffer.from(dataUrl.split(',')[1], 'base64');
       await writeFile(path.join(OUT_DIR, `${entry.slug}.webp`), buf);

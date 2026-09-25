@@ -147,8 +147,12 @@ export default function Sprite({
 
   // Изпечена 3D икона (viждай задачата „нарисувай предметите в 3D") взима предимство пред
   // старата HD снимка, когато manifest-ът потвърди наличие по slug.
-  const baked3d = raw?.slug && hasBakedIcon(raw.slug) ? `/assets/items3d/${raw.slug}.webp` : null;
-  const clickable = Boolean(raw?.slug && raw.category !== 'potion');
+  // manifest.json съдържа САМО слуговете, за които boy реално има 3D геометрия (виж
+  // support.ts/bake-item-icons.mjs) — пръстен/амулет/брадва/копие никога няма да са в него,
+  // остават на старата HD снимка, без клик за 3D преглед.
+  const hasBaked = Boolean(raw?.slug && hasBakedIcon(raw.slug));
+  const baked3d = hasBaked ? `/assets/items3d/${raw!.slug}.webp` : null;
+  const clickable = hasBaked;
   const openViewer = () => {
     if (!raw) return;
     openItemViewer3D({ kind: 'item', slug: raw.slug, name: raw.name, category: raw.category, sub_type: raw.sub_type, tier: raw.tier, rarity: raw.rarity });

@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as THREE from 'three/webgpu';
 import { closeItemViewer3D, useItemViewer3DTarget } from './viewerStore';
+import { hasBakedIcon } from './catalogClient';
 import type { ViewerHandle, RendererHandle, StudioScene } from '../../combat/engine/items/renderScene';
 import './itemViewer3d.css';
 
@@ -54,18 +55,24 @@ export default function ItemViewer3DHost(): React.ReactElement {
       if (target.kind === 'item') {
         const entry = await getCatalogEntry(target.slug, target);
         if (cancelled) return;
-        const built = buildItem(entry);
+        const built = await buildItem(entry);
+        if (cancelled) return;
+        if (!built) { setStatus('error'); return; }
         builtRef.current.push(built);
         sceneRoot = built.object;
       } else {
         const root = new THREE.Group();
-        const usable = target.pieces.filter((p) => !p.missing);
+        // Само парчета с реална boy 3D геометрия (виж support.ts) влизат в пръстена —
+        // пръстен/амулет/брадва/копие остават невидими тук, старата снимка им стига.
+        const usable = target.pieces.filter((p) => !p.missing && hasBakedIcon(p.slug));
         const n = Math.max(1, usable.length);
         for (let i = 0; i < usable.length; i++) {
           const p = usable[i];
           const entry = await getCatalogEntry(p.slug, { tier: p.tier, rarity: p.rarity || 'common', category: p.category, sub_type: p.sub_type });
           if (cancelled) return;
-          const built = buildItem(entry);
+          const built = await buildItem(entry);
+          if (cancelled) return;
+          if (!built) continue;
           builtRef.current.push(built);
           const holder = new THREE.Group();
           const a = (i / n) * Math.PI * 2;
@@ -177,7 +184,7 @@ export default function ItemViewer3DHost(): React.ReactElement {
             <div className="item3d-name">{target.name}</div>
             <div className="set3d-pieces">
               <button className={`set3d-piece-btn ${!isolated ? 'active' : ''}`} onClick={() => setIsolated(null)}>{t('items3d.setViewer.all')}</button>
-              {target.pieces.filter((p) => !p.missing).map((p) => (
+              {target.pieces.filter((p) => !p.missing && hasBakedIcon(p.slug)).map((p) => (
                 <button key={p.slug} className={`set3d-piece-btn ${isolated === p.slug ? 'active' : ''}`} onClick={() => setIsolated(p.slug)}>
                   {p.name}
                 </button>
