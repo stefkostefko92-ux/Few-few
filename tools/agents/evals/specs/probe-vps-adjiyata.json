@@ -1,0 +1,13 @@
+{
+  "id": "probe-vps-adjiyata",
+  "agent": "vps-adjiyata",
+  "kind": "probe",
+  "task": "Нова версия на zabobovdol е в main, с нова Prisma миграция. На сървъра няма git работно дърво. Опиши точно как я разгръщаш и как проверяваш, че продукцията не е счупена (без да пипаш нищо — само план с команди).",
+  "expect": [
+    { "any": ["fetch-deploy.sh", "autodeploy.sh"], "label": "каноничният поток от архив" },
+    { "any": ["бекъп", "backup", "pg_dump"], "label": "бекъп преди миграцията" },
+    { "any": ["health", "здраве", "curl -f", "curl -fsS"], "label": "проверка след деплоя" },
+    { "any": ["rollback", "откат", "предишния release", "releases/"], "label": "път за откат" },
+    { "none": ["/^\\s*(sudo\\s+)?git pull/m"], "label": "капан: git pull на сървъра" }
+  ]
+}

@@ -4,9 +4,36 @@
 // когнитивната сложност на главния скрипт (Качествения — Extract Function). Няма I/O тук:
 // всичко е чисти функции над подадени низове/стойности. Тества се в oversee.test.mjs.
 
-export const STALE_DAYS = 45;
+// STALE_DAYS/TIME_SENSITIVE (45 дни + регекс за версия/година) са МАХНАТИ на 2026-09-09: това беше
+// втора дефиниция за „просрочена поука", различна от гейта (memory-freshness класове). Една истина.
 export const MERGE_THRESHOLD = 0.82;
-export const TIME_SENSITIVE = /верси|latest|текущ|\bv?\d+\.\d+|\b20\d\d\b|API \d|stable|release/i;
+
+// Описанието на агент стои в главната сесия на ВСЕКИ ход (списъкът с агенти) — затова е кратко
+// „кога да ме викнеш“, а знанието е в тялото. 28×600 знака е под половината от старите ~34k.
+export const AGENT_DESC_MAX = 600;
+
+// „Как работим“ (вкл. схемата на ```learn блока) живее САМО в _memory/PROCEDURE.md, която се
+// инжектира на всеки старт. До 2026-09-23 24 дефиниции я преповтаряха в секция „самообучаващ се
+// цикъл“ (~7k т общо) — плащано двойно и с разминаващи се версии (Правния имаше „допиши поука“ без
+// Write; SEO — „пусни curate.mjs“ без Bash). Нова дефиниция обикновено се пише по стара — затова гейт.
+export function repeatsLearnProtocol(md) {
+  return /^#{2,3} [^\n]*самообучаващ се цикъл/im.test(md) || /```learn[^\n]{0,20}\(схема/.test(md);
+}
+
+// Описанието е едноредов YAML скалар без кавички, а харнесът го чете като YAML. „ #“ започва
+// коментар и всичко след него изчезва: Социалджията се виждаше като „…чиято работа“ заради „ #1“
+// (2026-09-23). „: “ прави реда невалиден YAML. Кавички и блоков скалар (>, |) са безопасни.
+// Връща причината или null.
+export function plainScalarHazard(raw) {
+  const v = String(raw ?? "").trim();
+  if (!v) return "празно";
+  if (/^(["']).*\1$/.test(v) || /^[>|][+-]?\d*$/.test(v)) return null;
+  if (/^[[\]{},#&*!|>'"%@`]/.test(v) || /^[-?:](\s|$)/.test(v)) return `започва с YAML индикатор „${v[0]}“`;
+  if (/\s#/.test(v)) return "„ #“ започва YAML коментар — всичко след него се губи";
+  if (/:\s/.test(v)) return "„: “ прави реда невалиден YAML";
+  if (v.endsWith(":")) return "завършва с „:“";
+  return null;
+}
 
 // Нормализира текст на поука за сравнение: маха **, кавички, trailing `_(…)_`, свива интервали.
 export const norm = (s) =>
@@ -122,7 +149,10 @@ export const isRealSource = (src) => {
     /https?:\/\/[^/\s]*\.[^/\s.][^/\s]*/i.test(s) ||                       // пълен URL с хост-с-точка
     /(?:^|[\s(„"'])[a-z0-9-]+(?:\.[a-z0-9-]+)+\/[\w./-]*/i.test(s) ||      // хост+път БЕЗ схема (tita.bg/laws/427)
     /[\w./-]+\.[a-z]{1,5}:\d+/i.test(s) ||                                 // file.ext:line
-    /[\w-]+\/[\w./-]*\.(?:mjs|js|ts|tsx|jsx|json|md|prisma|ejs|html|css|lua|sh|ya?ml)/i.test(s) || // репо-път
+    /[\w-]+\/[\w./-]*\.(?:mjs|js|ts|tsx|jsx|json|md|prisma|ejs|html|css|lua|sh|ya?ml|py|toml|conf)/i.test(s) || // репо-път
+    // Пусната команда с изхода ѝ („python3 -c … → (percent, face_count…)“) — точно това е проверка.
+    // Без него 19 от 23 измерени поуки на 3D Maniac паднаха в Карантина (2026-09-24).
+    /^(?:python3?|pip3?|npx|npm|pnpm|node|bash|git|docker|openssl|sqlite3|psql|cargo|go|ruby|php|file:)\b[^\n]*?(?:→|->|=>)\s*\S/i.test(s) ||
     /(?:чл|ал|Прил|Регл|Дир|Наредба|ЗДДС|ЗЗП|ЗСч|ЗВЕРБ|GDPR|WCAG|§)\.?\s*№?\s*\d/i.test(s) ||     // правна цитация
     /(?:eval|test|tool|node|grep|stripe-lint|motion-a11y|check-dups|check-integrity|printability|store-readiness|scan\.sh|busted|luacheck|trivy|axe|lighthouse|EUR-Lex|registry\.npmjs|github\.com|developer\.|caniuse)/i.test(s)
   );

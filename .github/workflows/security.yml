@@ -64,6 +64,7 @@ jobs:
   dependencies:
     name: Уязвими зависимости (dependency-review)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
