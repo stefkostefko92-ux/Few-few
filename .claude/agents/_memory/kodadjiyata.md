@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-25:** Блокът ПРЕДАВАНЕ: Статус е само „наред | има бележки | блокер“ и задължително има „Изход/артефакт:“ и „Следваща стъпка:“; валидира се с node tools/agents/handoff.mjs <файл>. _(fleet; verified; "tools/agents/handoff.mjs:13-16,104-112; dod-check Stop hook")_
 - **2026-09-25:** vizitka MCP: findDoc вика buildCorpus({withLinks:true}) → getLinks за всяка визитка със съгласие; 2000 визитки = 2001 заявки на fetch (~89 ms синхронно). _(vizitka; verified; "vizitka/src/mcp/corpus.js:111; измерено с обвит db.prepare")_
 - **2026-09-25:** vizitka: DATA_DIR = resolve(process.env.DATA_DIR || 'data') е спрямо текущата папка; всеки скрипт, който косвено импортира db.js (напр. през links.js), създава/мигрира база в текущата папка — при sudo като root. _(vizitka; verified; "vizitka/src/db.js:6; възпроизведено с node scripts/wallet-google-class.mjs в празна папка")_
 - **2026-09-25:** mastilko use-local-state: `${key}-preshare` резервното копие се пише, но нищо не го чете (grep) — обещанието в confirm/poveritelnost е без път за възстановяване; невалиден споделен линк след „ОК“ записва INITIAL върху проекта. _(mastilko; verified; "mastilko/src/lib/use-local-state.ts:42,48,52-59; grep preshare в mastilko/src")_
