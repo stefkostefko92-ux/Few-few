@@ -17,6 +17,15 @@ Serve this file at `https://adblock.carbonstealth.eu/filters.json` with
 comes from the extension service worker, which has host access). Bump `version`
 on every change so you can tell installs are current.
 
+## Signing key rotation
+
+The extension embeds a LIST of Ed25519 public keys (`SIG_PUBKEYS_B64` in
+`background.js`) and accepts a signature from any of them. To rotate without a
+flag day: (1) ship a release with `[current, next]`; (2) once that release has
+rolled out, switch the server key (`/etc/caddy/adblock-signing.key`) to `next`
+and re-sign; (3) drop `current` in a later release. Never put a private key in
+the repo.
+
 ## Schema
 
 ```jsonc
@@ -29,6 +38,14 @@ on every change so you can tell installs are current.
   "cosmetic": [                 // extra CSS selectors hidden on all sites
     ".sneaky-ad-slot"
   ],
+  "scriptlets": [               // live uBO-style ##+js directives — DATA only
+    { "h": "example.com",       //   host ("" = every site); subdomains match;
+      "n": "set-constant",      //   scriptlet name or uBO alias (set, aopr, aopw,
+      "a": ["adBlockOn", "false"] }, // acs, nostif, nosiif, aeld, json-prune,
+    { "h": "",                  //   no-fetch-if, nowoif, ra, rc, href-sanitizer,
+      "n": "nowoif",            //   rmnt, nowebrtc) — nothing else is accepted,
+      "a": ["/popads/"] }       //   NO trusted-*; args validated twice (service
+  ],                            //   worker + engine); never on YouTube/core CDN
   "youtube": {
     "hide":  [ "ytd-new-ad-renderer" ],   // extra YT ad UI to hide
     "skip":  [ ".ytp-new-skip-button" ],  // extra skip buttons to click
@@ -62,7 +79,7 @@ enforcement dialog so we stop detecting it, add the new element name to
 ## Signing (Ed25519)
 
 The extension also fetches `filters.json.sig` and, when a public key is
-configured in `background.js` (`SIG_PUBKEY_B64`), verifies the signature before
+configured in `background.js` (`SIG_PUBKEYS_B64`), verifies the signature before
 applying an update. A bad signature is rejected and the last good config stays.
 While no key is configured the update works unsigned, exactly as before.
 
@@ -71,7 +88,7 @@ One-time key setup (the private key lives ONLY on the server, never in git):
 ```bash
 openssl genpkey -algorithm ed25519 -out /etc/caddy/adblock-signing.key
 chmod 600 /etc/caddy/adblock-signing.key
-# raw 32-byte public key, base64 — paste into SIG_PUBKEY_B64 in background.js
+# raw 32-byte public key, base64 — paste into SIG_PUBKEYS_B64 in background.js
 openssl pkey -in /etc/caddy/adblock-signing.key -pubout -outform DER | tail -c 32 | base64
 ```
 
@@ -83,8 +100,12 @@ openssl pkeyutl -sign -inkey /etc/caddy/adblock-signing.key -rawin \
   -in /var/www/adblock/filters.json | base64 -w0 > /var/www/adblock/filters.json.sig
 ```
 
-Once the key is set and a release ships with `SIG_PUBKEY_B64` filled in, flip
-`SIG_REQUIRED = true` in the next release to make signatures mandatory.
+The signature policy is automatic: once `SIG_PUBKEYS_B64` has a key (it does), any
+browser that supports Ed25519 in WebCrypto (Chrome 137+) **requires** a valid
+`.sig` — a missing or bad signature is rejected and the last good config stays.
+Older browsers accept best-effort so live updates keep working. Because of this,
+always keep `filters.json.sig` deployed next to `filters.json` (the deploy signs
+it automatically when the key file exists).
 
 ## SEO / GEO / AEO
 

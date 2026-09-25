@@ -58,13 +58,13 @@ export function TaxEstimator() {
           <p className="text-lg text-slate-800">
             Ориентировъчно годишно:{" "}
             <strong className="text-brand-800">{bgn(yearly)} лв.</strong>{" "}
-            <span className="text-slate-500">(≈ {bgn(yearly / 1.95583)} €)</span>
+            <span className="text-slate-600">(≈ {bgn(yearly / 1.95583)} €)</span>
           </p>
         ) : (
-          <p className="text-slate-500">Въведете данъчна оценка и ставка, за да видите резултат.</p>
+          <p className="text-slate-600">Въведете данъчна оценка и ставка, за да видите резултат.</p>
         )}
       </div>
-      <p className="mt-3 text-xs text-slate-500">
+      <p className="mt-3 text-xs text-slate-600">
         Това е приблизителна сметка. Точните ставки се определят от Общинския съвет и може да се
         различават; меродавно е съобщението от данъчната служба.
       </p>

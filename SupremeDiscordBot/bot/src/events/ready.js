@@ -2,8 +2,12 @@
 import { REST, Routes, Events } from "discord.js";
 import crypto from "crypto";
 import { readFileSync, writeFileSync, existsSync } from "fs";
+import { reportShardingPressure } from "../utils/shardingWatch.js";
 
-const COMMAND_HASH_FILE = "/tmp/supreme-bot-commands.hash";
+// Configurable so Docker Compose can bind-mount a volume here — a plain /tmp
+// path is lost on every container restart, which forces a needless global
+// command re-deploy (and its ~1h propagation delay) on every deploy.
+const COMMAND_HASH_FILE = process.env.COMMANDS_HASH_FILE || "/tmp/supreme-bot-commands.hash";
 
 export default {
   // Events.ClientReady (v15 преименува "ready" → "clientReady"); използваме
@@ -13,6 +17,29 @@ export default {
   async execute(client) {
     console.log(`✅ Logged in as ${client.user.tag}`);
     client.user.setActivity("Managing Tickets & Applications", { type: 3 });
+
+    // Растежът към прага за sharding (2500) е стена, не наклон — над него
+    // Discord отказва Identify и ботът НЕ тръгва. Викаме предварително, при
+    // всеки старт и веднъж дневно, за да не ни изненада.
+    reportShardingPressure(client.guilds.cache.size);
+    setInterval(() => reportShardingPressure(client.guilds.cache.size), 24 * 60 * 60 * 1000).unref?.();
+
+    // ─── Guild реконсилиация (регресия от 05.08.2026) ─────────────────────
+    // Регистрацията на сървър ставаше САМО на guildCreate — покана, получена
+    // докато ботът е бил долу (напр. crash loop), се губеше завинаги и
+    // сървърът оставаше невидим в dashboard-а. Затова на всеки старт
+    // upsert-ваме всички текущи guild-ове (registerServer е идемпотентен и
+    // чисти botRemovedAt). Fire-and-forget с малък наплив, за да не бавим
+    // ready пътя и да не удавим backend-а при много сървъри.
+    (async () => {
+      const { registerServer } = await import("../utils/api.js");
+      let ok = 0, fail = 0;
+      for (const guild of client.guilds.cache.values()) {
+        try { await registerServer(guild); ok++; }
+        catch { fail++; }
+      }
+      console.log(`[GuildSync] Реконсилирани ${ok} guild-а${fail ? `, ${fail} провала` : ""}`);
+    })().catch(() => {});
 
     // ─── Auto-deploy slash commands if they changed since last startup ─────
     try {

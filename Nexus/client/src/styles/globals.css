@@ -58,6 +58,12 @@
   --radius-lg: 16px;
   --nav-h: 68px;
   --sidebar-w: 264px;
+  /* iOS Safari safe-area (index.html има viewport-fit=cover). Fallback 0px за
+     всичко без notch → на десктоп/портретен браузър оформлението е непроменено. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 
   /* Motion */
   --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
@@ -85,6 +91,9 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  /* iOS Safari: махни сивия flash при tap; спри верижния bounce-скрол. */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }
 
 h1, h2, h3, h4 {
@@ -137,7 +146,8 @@ input:focus, textarea:focus, select:focus {
    ===================================================================== */
 
 .app {
-  min-height: 100vh;
+  min-height: 100vh;        /* fallback за стари браузъри */
+  min-height: 100dvh;       /* iOS Safari: динамична височина (адрес-барът се свива) */
   display: flex;
   flex-direction: column;
 }
@@ -145,8 +155,12 @@ input:focus, textarea:focus, select:focus {
 .app-shell {
   flex: 1;
   display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
+  /* minmax(0,1fr): без него grid track-ът има min-width:auto и се разширява до
+     min-content на съдържанието (широка таблица/ред) → изтича хоризонтално и реже
+     дясно. minmax(0,…) позволява на колоната да се свие под съдържанието. */
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   min-height: calc(100vh - var(--nav-h));
+  min-height: calc(100dvh - var(--nav-h) - var(--safe-top));
 }
 
 .app-main {
@@ -189,50 +203,10 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   z-index: 90;
 }
 
-@media (max-width: 900px) {
-  .app-shell { grid-template-columns: 1fr; }
-  .app-main { padding: 20px 16px; }
-  .nav-hamburger { display: flex; }
 
-  /* Sidebar becomes a slide-in drawer instead of disappearing. */
-  .sidebar {
-    display: block;
-    position: fixed;
-    top: var(--nav-h);
-    left: 0;
-    width: min(82vw, 320px);
-    height: calc(100vh - var(--nav-h));
-    z-index: 100;
-    background: var(--bg-2, #0e1118);
-    border-right: 1px solid var(--border-2);
-    overflow-y: auto;
-    transform: translateX(-105%);
-    transition: transform .28s cubic-bezier(.4,0,.2,1);
-    box-shadow: 6px 0 24px rgba(0,0,0,.45);
-  }
-  body.mobile-open .sidebar { transform: translateX(0); }
-  body.mobile-open .sidebar-backdrop { display: block; }
-
-  /* CooldownTicker — let chips wrap, shrink the skip button label. */
-  .cooldown-ticker { padding: 8px 10px; gap: 6px; }
-  .cooldown-ticker-label { font-size: 10px; letter-spacing: .08em; }
-  .cooldown-chip { font-size: 11px; padding: 4px 8px; }
-  .cooldown-skip { font-size: 11px; padding: 6px 10px; }
-
-  /* Hero tabs stay scrollable; tighten spacing. */
-  .hero-tabs { padding: 4px; }
-  .hero-tab { padding: 8px 12px; font-size: 13px; }
-
-  /* Card grids: avoid micro columns on tiny screens. */
-  .grid-cards { grid-template-columns: 1fr 1fr !important; }
-}
-@media (max-width: 500px) {
-  .grid-cards { grid-template-columns: 1fr !important; }
-}
-
-@media (max-width: 1100px) {
-  .nav-links { display: none; }
-}
+/* .nav-links се крие в МОБИЛНИЯ LAYOUT блок НАКРАЯ (≤900px, при hamburger-а):
+   тук е безсилно — по-късното `.nav-links{display:flex}` (секция NAVBAR) го
+   отменя при еднаква специфичност. Виж коментара „МОБИЛЕН LAYOUT". */
 @media (max-width: 700px) {
   .nav-meta .nav-stat { display: none; }
   .nav-brand span { display: none; }
@@ -254,14 +228,19 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: sticky;
   top: 0;
   z-index: 100;
-  height: var(--nav-h);
+  /* Порасни с горния safe-area (notch/Dynamic Island в PWA/landscape); в
+     портретен браузър insetът е 0 → без визуална промяна. */
+  height: calc(var(--nav-h) + var(--safe-top));
+  padding-top: var(--safe-top);
   background: linear-gradient(180deg, rgba(11,13,18,.96) 0%, rgba(7,8,12,.93) 100%);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   border-bottom: 1px solid var(--border-1);
   display: flex;
   align-items: center;
-  padding: 0 28px;
+  /* Хоризонтален notch (landscape) — не пускай съдържание под заобления ъгъл. */
+  padding-left: max(28px, var(--safe-left));
+  padding-right: max(28px, var(--safe-right));
   box-shadow: var(--shadow-2);
 }
 
@@ -741,7 +720,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   transform: translateX(0);
 }
 .sidebar-item:hover svg {
-  transform: translateX(2px) rotate(-3deg) scale(1.08);
+  transform: scale(1.08);
   color: var(--gold-2);
 }
 
@@ -762,16 +741,12 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   width: 3px;
   background: linear-gradient(180deg, var(--gold-1), var(--gold-3));
   border-radius: 3px;
-  box-shadow: 0 0 14px rgba(214,161,61,.6);
-  animation: sidebar-pill-in .35s var(--ease-back), sidebar-pill-breathe 3.6s ease-in-out 0.45s infinite;
+  box-shadow: 0 0 10px rgba(214,161,61,.45);
+  animation: sidebar-pill-in .3s var(--ease-back);
 }
 @keyframes sidebar-pill-in {
   0% { transform: scaleY(0); }
   100% { transform: scaleY(1); }
-}
-@keyframes sidebar-pill-breathe {
-  0%, 100% { box-shadow: 0 0 10px rgba(214,161,61,.45); }
-  50%      { box-shadow: 0 0 22px rgba(214,161,61,.85), 0 0 36px rgba(214,161,61,.3); }
 }
 
 /* Sidebar stagger-in: each nav item fades up with an index-derived delay.
@@ -788,26 +763,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Sweeping shimmer pass over the active item every few seconds — premium
-   "this is selected" cue without being noisy. */
-.sidebar-item.active {
-  background: linear-gradient(110deg, transparent 0%, rgba(214,161,61,.18) 50%, transparent 100%);
-  background-size: 220% 100%;
-  background-position: 200% 0;
-  animation: sidebar-item-shimmer 4.8s ease-in-out infinite;
-}
-@keyframes sidebar-item-shimmer {
-  0%, 70% { background-position: 200% 0; }
-  100%    { background-position: -100% 0; }
-}
-
-/* Hero card "rim breathe" — the avatar frame quietly pulses gold. */
-.sidebar-hero { animation: sidebar-hero-breathe 5.2s ease-in-out infinite; }
-@keyframes sidebar-hero-breathe {
-  0%, 100% { box-shadow: 0 0 0 0 transparent, inset 0 0 0 1px rgba(214,161,61,.18); }
-  50%      { box-shadow: 0 0 24px rgba(214,161,61,.18), inset 0 0 0 1px rgba(214,161,61,.45); }
-}
-.sidebar-item.active svg { color: var(--gold-1); filter: drop-shadow(0 0 8px rgba(214,161,61,.5)); }
+.sidebar-item.active svg { color: var(--gold-1); filter: drop-shadow(0 0 6px rgba(214,161,61,.4)); }
 
 .sidebar-item svg {
   width: 18px;
@@ -827,11 +783,6 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   padding: 2px 7px;
   border-radius: 999px;
   box-shadow: 0 4px 10px rgba(184,30,30,.45), inset 0 1px 0 rgba(255,255,255,.25);
-  animation: badge-bob 2.5s ease-in-out infinite;
-}
-@keyframes badge-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
 }
 
 /* Vitals card inside sidebar */
@@ -1475,6 +1426,10 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   vertical-align: middle;
 }
 .bp-table tbody tr:hover { background: rgba(255,255,255,.02); }
+
+/* Широки таблици на мобилен: хоризонтален скрол в контейнер вместо изтичане/рязане. */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+.table-scroll > table { min-width: max-content; }
 .bp-progress {
   height: 6px;
   background: var(--surface-2);
@@ -1589,7 +1544,20 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 6;
-  cursor: default;
+  cursor: pointer;
+  display: block;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+.realm-pin:hover,
+.realm-pin:focus-visible { z-index: 8; }
+.realm-pin:focus-visible .realm-pin-seal {
+  transform: scale(1.18);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, .9),
+    0 0 20px var(--pin-color, #ffd34d),
+    0 6px 14px rgba(0, 0, 0, .6);
 }
 .realm-pin-seal {
   position: relative;
@@ -1628,7 +1596,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .realm-pin.locked .realm-pin-seal {
   filter: grayscale(.8) brightness(.55);
 }
-.realm-pin:hover .realm-pin-seal {
+.realm-pin:hover .realm-pin-seal,
+.realm-pin:focus-visible .realm-pin-seal {
   transform: scale(1.18);
   filter: brightness(1.1);
 }
@@ -1664,7 +1633,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   border-left: 1px solid var(--pin-color, #ffd34d);
   border-top: 1px solid var(--pin-color, #ffd34d);
 }
-.realm-pin:hover .realm-pin-card {
+.realm-pin:hover .realm-pin-card,
+.realm-pin:focus-visible .realm-pin-card {
   opacity: 1;
   transform: translate(-50%, 0);
   pointer-events: auto;
@@ -1697,13 +1667,28 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   width: 100%;
   text-align: center;
   display: block;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #2a1a08;
+  background: linear-gradient(180deg, #ffe08a, #d6a13d);
+  border: 1px solid rgba(40, 22, 8, .5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .35);
+  transition: filter .18s;
 }
+.realm-pin:hover .realm-pin-cta:not(.locked),
+.realm-pin:focus-visible .realm-pin-cta:not(.locked) { filter: brightness(1.08); }
 .realm-pin-cta.locked {
   color: rgba(214, 161, 61, .55);
   border: 1px solid rgba(214, 161, 61, .3);
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 11px;
+  background: transparent;
+  box-shadow: none;
   text-transform: uppercase;
   letter-spacing: .1em;
   background: transparent;
@@ -2052,3 +2037,79 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 }
 .cooldown-skip-one:hover:not(:disabled) { background: rgba(232,193,90,.15); }
 .cooldown-skip-one:disabled { opacity: .4; cursor: default; }
+
+
+/* =====================================================================
+   МОБИЛЕН LAYOUT — този блок стои НАКРАЯ нарочно: при еднаква
+   специфичност по-късното правило печели, а базовите .sidebar стилове
+   по-горе иначе отменят drawer-а (position: fixed) и sidebar-ът остава
+   в grid потока → избутва цялото съдържание един viewport надолу.
+   ===================================================================== */
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: minmax(0, 1fr); }
+  .app-main { padding: 20px 16px; min-width: 0; }
+  .nav-hamburger { display: flex; }
+  /* Топ nav-links се заместват от hamburger + drawer → крий ги. Тук (НАКРАЯ,
+     след секция NAVBAR) правилото печели при еднаква специфичност. */
+  .nav-links { display: none; }
+
+  /* iOS Safari зуумва при фокус на input с font-size < 16px → форсирай 16px. */
+  input, textarea, select { font-size: 16px; }
+
+  /* Touch цели ≥44px (WCAG 2.1 AA / EN 301 549, Apple HIG). */
+  .nav-hamburger { width: 44px; height: 44px; }
+
+  /* Chat: двуколонният layout (inline grid) се стакира вертикално. !important
+     е нужен, защото inline стил бие клас-селектор. */
+  .chat-grid { grid-template-columns: 1fr !important; }
+
+  /* Guild header: crest + инфо + treasury карта в един ред изтича → стак. */
+  .guild-header { grid-template-columns: 1fr !important; text-align: center; justify-items: center; }
+  .guild-header .guild-crest { margin: 0 auto; }
+
+  /* Character-card: базовото `140px 1fr` (по-долу в source) отменя ранния
+     мобилен `1fr` при еднаква специфичност → картата не се стакира и инфо
+     колоната се смачква/изтича. Тук (НАКРАЯ) стакът печели. */
+  .character-card { grid-template-columns: 1fr; }
+  .character-card .portrait { width: 100%; }
+
+  /* Sidebar becomes a slide-in drawer instead of disappearing. */
+  .sidebar {
+    display: block;
+    position: fixed;
+    /* Изравнено с новата височина на navbar-а (nav-h + safe-top). */
+    top: calc(var(--nav-h) + var(--safe-top));
+    left: 0;
+    width: min(82vw, 320px);
+    height: calc(100vh - var(--nav-h));                       /* vh fallback */
+    height: calc(100dvh - var(--nav-h) - var(--safe-top));    /* iOS dvh */
+    z-index: 100;
+    background: var(--bg-2, #0e1118);
+    border-right: 1px solid var(--border-2);
+    overflow-y: auto;
+    overscroll-behavior: contain;   /* скролът в drawer-а не влачи страницата */
+    padding-bottom: var(--safe-bottom);
+    transform: translateX(-105%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow: 6px 0 24px rgba(0,0,0,.45);
+  }
+  body.mobile-open .sidebar { transform: translateX(0); }
+  body.mobile-open .sidebar-backdrop { display: block; }
+
+  /* CooldownTicker — let chips wrap, shrink the skip button label. */
+  .cooldown-ticker { padding: 8px 10px; gap: 6px; }
+  .cooldown-ticker-label { font-size: 10px; letter-spacing: .08em; }
+  .cooldown-chip { font-size: 11px; padding: 4px 8px; }
+  .cooldown-skip { font-size: 11px; padding: 6px 10px; }
+
+  /* Hero tabs stay scrollable; tighten spacing. */
+  .hero-tabs { padding: 4px; }
+  .hero-tab { padding: 8px 12px; font-size: 13px; }
+
+  /* Card grids: avoid micro columns on tiny screens. minmax(0,…) позволява на
+     колоните да се свият под min-content на картата (иначе картата изтича ~14px). */
+  .grid-cards { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
+}
+@media (max-width: 500px) {
+  .grid-cards { grid-template-columns: minmax(0, 1fr) !important; }
+}

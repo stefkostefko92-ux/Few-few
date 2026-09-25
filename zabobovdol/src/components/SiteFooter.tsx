@@ -136,7 +136,7 @@ export async function SiteFooter() {
             )}
           </div>
         </div>
-        <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center">
+        <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-600 sm:flex-row sm:items-center">
           <div className="space-y-1">
             <p>
               © {year} {SITE.name}. Гражданска инициатива в полза на жителите на{" "}
@@ -147,7 +147,7 @@ export async function SiteFooter() {
               {SITE.geo.city}.
             </p>
           </div>
-          <p className="text-slate-500">
+          <p className="text-slate-600">
             Изработка и поддръжка на сайта:{" "}
             <a
               href={SITE.company.website}

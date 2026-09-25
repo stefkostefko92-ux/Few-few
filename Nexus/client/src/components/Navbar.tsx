@@ -7,6 +7,7 @@ import Logo from './Logo';
 import Avatar from './Avatar';
 import AnimatedNumber from './AnimatedNumber';
 import LanguageSelector from './LanguageSelector';
+import NotificationBell from './NotificationBell';
 import {
   IconHome,
   IconScroll,
@@ -107,6 +108,8 @@ export default function Navbar(): React.ReactElement {
             </div>
           </>
         )}
+
+        <NotificationBell />
 
         <LanguageSelector compact />
 

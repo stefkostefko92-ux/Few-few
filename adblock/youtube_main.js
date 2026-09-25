@@ -187,6 +187,44 @@
     return JSON.stringify(body);
   }
 
+  // Fallback for a flagged request the server refuses. YouTube can answer a
+  // flagged /player request with a non-playable status (intermittently — a
+  // crackdown wave, an A/B bucket); the page then shows "An error occurred"
+  // and the clip never starts. If the flagged response is unplayable, retry
+  // ONCE without the flags; if THAT one plays, the flag was the cause: hand
+  // the plain response to the player (its ad fields are still pruned by the
+  // parse hooks above — the old, purely client-side behaviour) and stop
+  // sending flags for the rest of this page. A video that is unavailable
+  // either way keeps the original response and the flags stay on.
+  const badPlayability = (j) => {
+    try {
+      const s = j && j.playabilityStatus && j.playabilityStatus.status;
+      return s === "ERROR" || s === "UNPLAYABLE" || s === "LOGIN_REQUIRED";
+    } catch { return false; }
+  };
+  // Cheap pre-filter on the raw text: the happy path (playable) must not pay a
+  // second full JSON.parse + prune of a multi-megabyte player response.
+  const BAD_STATUS_RE = /"status"\s*:\s*"(ERROR|UNPLAYABLE|LOGIN_REQUIRED)"/;
+  const retryPlain = (plainFetch, res) =>
+    plainFetch().then((res2) => {
+      if (!res2 || !res2.ok || typeof res2.clone !== "function") return res;
+      return res2.clone().text().then((t2) => {
+        if (BAD_STATUS_RE.test(t2) && badPlayability(nativeParse(t2))) return res; // not the flag's fault
+        requestFlags = []; // proven: the flag broke playback on this page
+        return res2;
+      }).catch(() => res);
+    }).catch(() => res);
+  function withFallback(flaggedFetch, plainFetch) {
+    return flaggedFetch().then((res) => {
+      if (!res || typeof res.clone !== "function") return res;
+      if (!res.ok) return retryPlain(plainFetch, res); // flagged body rejected outright (4xx)
+      return res.clone().text().then((t) => {
+        if (!BAD_STATUS_RE.test(t) || !badPlayability(nativeParse(t))) return res;
+        return retryPlain(plainFetch, res);
+      }).catch(() => res);
+    });
+  }
+
   try {
     const nativeFetch = window.fetch;
     window.fetch = function (input, init) {
@@ -195,7 +233,12 @@
           const url = typeof input === "string" ? input : (input && input.url) || "";
           if (url.includes("/youtubei/v1/player")) {
             if (init && typeof init.body === "string" && init.body.charAt(0) === "{") {
-              init = Object.assign({}, init, { body: flagBody(init.body) });
+              const plainInit = init;
+              const flaggedInit = Object.assign({}, init, { body: flagBody(init.body) });
+              return withFallback(
+                () => nativeFetch.call(this, input, flaggedInit),
+                () => nativeFetch.call(this, input, plainInit)
+              );
             } else if (typeof Request !== "undefined" && input instanceof Request && !init) {
               const req = input;
               return req
@@ -204,7 +247,8 @@
                 .then((t) => {
                   try {
                     if (t && t.charAt(0) === "{") {
-                      return nativeFetch(new Request(req, { body: flagBody(t) }));
+                      const flagged = new Request(req, { body: flagBody(t) });
+                      return withFallback(() => nativeFetch(flagged), () => nativeFetch(req.clone()));
                     }
                   } catch {}
                   return nativeFetch(req);

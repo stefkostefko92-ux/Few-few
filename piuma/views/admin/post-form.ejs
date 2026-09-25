@@ -1,0 +1,49 @@
+<%- include('../partials/shell-start', { active: 'new' }) %>
+<div class="topbar">
+  <div>
+    <h1><%= t('form.composeTitle') %></h1>
+    <p class="sub"><%- t('form.composeSubtitle') %></p>
+  </div>
+  <a class="btn ghost" href="/admin/posts"><%- icon('posts') %> <%= t('posts.allPosts') %></a>
+</div>
+<div class="grid2">
+  <section class="panel">
+    <h2><%- icon('edit') %> <%= t('form.manual') %></h2>
+    <form method="post" action="/admin/posts" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label><%= t('form.brand') %><select name="brandId" required><option value=""><%= t('form.choose') %></option><% brands.forEach((b) => { %><option value="<%= b.id %>"><%= b.name %></option><% }) %></select></label>
+      <label><%= t('form.account') %><select name="accountId"><option value=""><%= t('form.later') %></option><% accounts.forEach((a) => { %><option value="<%= a.id %>">@<%= a.username %></option><% }) %></select></label>
+      <label><%= t('form.kind') %><select name="kind"><option value="IMAGE"><%= t('form.kindImage') %></option><option value="REELS"><%= t('form.kindReelsLong') %></option></select></label>
+      <label><%= t('form.mediaUrl') %> <span class="hint"><%= t('form.mediaUrlHint') %></span><input type="url" name="mediaUrl" required pattern="https://.*"></label>
+      <label><%= t('form.coverUrl') %> <span class="hint"><%= t('form.coverUrlHint') %></span><input type="url" name="coverUrl" pattern="https://.*"></label>
+      <label><%= t('form.topic') %> <span class="hint"><%= t('form.topicHint') %></span><input name="topic" maxlength="500"></label>
+      <label><%= t('form.caption') %> <span class="hint"><%= t('form.captionHint') %></span><textarea name="caption" required maxlength="2200" rows="7"></textarea></label>
+      <label><%= t('form.hashtags') %> <span class="hint"><%= t('form.hashtagsHint') %></span><input name="hashtags" placeholder="#дупница #kangoojumps"></label>
+      <label><%= t('form.alt') %> <span class="hint"><%= t('form.altHint') %></span><input name="altText" required></label>
+      <button class="btn primary" type="submit"><%- icon('approve') %> <%= t('form.saveDraft') %></button>
+    </form>
+  </section>
+  <section class="panel">
+    <h2><%- icon('sparkle') %> <%= t('form.fromModel') %></h2>
+    <% if (!generation) { %>
+      <div class="empty"><%- icon('severity-high', { class: 'ic-xl' }) %><strong><%= t('form.generationOff') %></strong><%= t('form.generationOffHint') %></div>
+    <% } else if (!can('posts:generate')) { %>
+      <div class="empty"><%- icon('shield', { class: 'ic-xl' }) %><strong><%= t('form.generationDenied') %></strong><%= t('form.generationDeniedHint') %></div>
+    <% } else { %>
+    <form method="post" action="/admin/posts/generate" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label><%= t('form.brand') %><select name="brandId" required><option value=""><%= t('form.choose') %></option><% brands.forEach((b) => { %><option value="<%= b.id %>"><%= b.name %></option><% }) %></select></label>
+      <label><%= t('form.account') %><select name="accountId"><option value=""><%= t('form.later') %></option><% accounts.forEach((a) => { %><option value="<%= a.id %>">@<%= a.username %></option><% }) %></select></label>
+      <label><%= t('form.kind') %><select name="kind"><option value="IMAGE"><%= t('form.kindImage') %></option><option value="REELS"><%= t('form.kindReels') %></option></select></label>
+      <label><%= t('form.topic') %><input name="topic" required minlength="3" maxlength="500"></label>
+      <label><%= t('form.mediaDescription') %> <span class="hint"><%= t('form.mediaDescriptionHint') %></span><input name="mediaDescription" maxlength="1000"></label>
+      <label><%= t('form.mediaUrl') %> <span class="hint"><%= t('form.mediaUrlHint') %></span><input type="url" name="mediaUrl" required pattern="https://.*"></label>
+      <label><%= t('form.coverUrl') %> <span class="hint"><%= t('form.coverUrlHint') %></span><input type="url" name="coverUrl" pattern="https://.*"></label>
+      <label><%= t('form.variantCount') %><select name="count"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+      <button class="btn" type="submit"><%- icon('sparkle') %> <%= t('form.generate') %></button>
+      <p class="sub"><%= t('form.generateHint') %></p>
+    </form>
+    <% } %>
+  </section>
+</div>
+<%- include('../partials/shell-end') %>

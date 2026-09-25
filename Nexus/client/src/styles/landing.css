@@ -1182,6 +1182,7 @@
 }
 .hero-content .hero-eyebrow {
   background: rgba(8,6,3,.55);
+  -webkit-backdrop-filter: blur(8px); /* iOS Safari иска префикса */
   backdrop-filter: blur(8px);
 }
 .hero-credit {

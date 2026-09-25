@@ -44,7 +44,7 @@ export default function BusPrintPage() {
             <div className="font-display text-2xl font-bold text-slate-900">
               Автобус Бобов дол ⇄ Дупница
             </div>
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-slate-600">
               Превозвач: {BUS.carrier} · {SITE.domain}
             </div>
           </div>

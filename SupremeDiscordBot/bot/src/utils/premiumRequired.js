@@ -15,6 +15,7 @@ import {
   ButtonStyle,
   MessageFlags,
 } from "discord.js";
+import { skuUrl, upgradeUrl } from "./discordStore.js";
 
 /**
  * Reply to (or follow up) an interaction with a native premium upsell button.
@@ -41,9 +42,12 @@ export async function sendPremiumRequired(interaction, skuId, content) {
 
   if (!skuId || isWhiteLabelClient) {
     // No SKU configured (monetization not enabled) or a white-label client →
-    // graceful text fallback so the interaction never fails silently.
+    // graceful text fallback so the interaction never fails silently. v3.3:
+    // плащанията са само през Discord, затова резервният път е МАГАЗИНЪТ на
+    // главното приложение (линк към SKU-то, ако го знаем), не таблото.
+    const target = skuUrl(interaction.client, skuId) || upgradeUrl(interaction.client);
     return send({
-      content: content || "⭐ This feature requires Premium. Upgrade at " + (process.env.FRONTEND_URL || "the dashboard") + ".",
+      content: (content ? content + "\n" : "⭐ This feature requires Premium.\n") + `🔗 Upgrade in the Discord store: ${target}`,
     });
   }
 

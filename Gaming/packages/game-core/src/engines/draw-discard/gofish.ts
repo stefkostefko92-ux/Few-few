@@ -139,6 +139,26 @@ export const goFishEngine: GameEngine<GoFishState, GoFishAction, GoFishEvent> = 
     const hands = state.hands.map((h, i) => (i === seat ? h.slice() : hiddenLike(h)));
     return { ...state, hands, ocean: hiddenLike(state.ocean) };
   },
+
+  /** Heuristic bot: ask for the rank it holds the MOST of (closest to a book),
+   *  targeting the opponent with the biggest hand (likeliest to hold it). */
+  bot(state, seat, rng) {
+    if (state.done || seat !== state.turn) return null;
+    const actions = goFishEngine.legalActions(state, seat) as GoFishAction[];
+    if (actions.length === 0) return null;
+    const held: Record<string, number> = {};
+    for (const c of state.hands[seat]!) held[rankOf(c)] = (held[rankOf(c)] ?? 0) + 1;
+    let best = actions[0]!;
+    let bestScore = -Infinity;
+    for (const a of actions) {
+      const score = (held[a.rank] ?? 1) * 10 + state.hands[a.target]!.length + rng.next();
+      if (score > bestScore) {
+        bestScore = score;
+        best = a;
+      }
+    }
+    return best;
+  },
 };
 
 /** Move any completed 4-of-a-kind from a seat's hand into its book count. */

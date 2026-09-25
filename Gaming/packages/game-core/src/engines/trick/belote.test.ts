@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
-import { beloteEngine, MATCH_TARGET, type BeloteAction, type BeloteState, type Contract } from "./belote.js";
+import { beloteEngine, MATCH_TARGET, type BeloteAction, type BeloteEvent, type BeloteState, type Contract } from "./belote.js";
 
 const init = (seed = "bel"): BeloteState => beloteEngine.init({ seats: 4 }, new SeededRng(seed));
 const rng = () => new SeededRng("r");
@@ -173,6 +173,78 @@ describe("belote engine — задължения при игра", () => {
     });
     const acts = beloteEngine.legalActions(s, 1) as Array<{ card: string }>;
     expect(acts.map((a) => a.card).sort()).toEqual(["7H", "9H"]);
+  });
+});
+
+describe("belote engine — belote-rebelote", () => {
+  it("зачита 20 едва при реалното изиграване на K и Q коз от същия играч", () => {
+    let s = craft({
+      hands: [
+        ["KS", "QS", "7C"],
+        ["7H", "8H", "9C"],
+        ["9H", "TH", "TC"],
+        ["7D", "8D", "JC"],
+      ],
+      contract: "S",
+      trump: "S",
+      declarer: 0,
+      turn: 0,
+      leader: 0,
+      trick: [],
+      belotePairs: [],
+      teamPoints: [0, 0],
+    });
+    const evs: BeloteEvent[] = [];
+    const play = (card: string) => {
+      const r = beloteEngine.reduce(s, { type: "PLAY", card } as BeloteAction, rng());
+      s = r.state;
+      evs.push(...r.events);
+    };
+    // Взятка 1: seat 0 води с KS (коз) → „белот"; още без начисляване.
+    play("KS");
+    expect(evs.some((e) => e.type === "BELOTE" && e.half === "belote")).toBe(true);
+    expect(s.belotePairs.find((p) => p.seat === 0 && p.suit === "S")?.played).toBe(1);
+    play("7H");
+    play("9H");
+    play("7D");
+    // seat 0 печели козовата взятка и води взятка 2 с QS → „ребелот" + 20.
+    play("QS");
+    expect(evs.some((e) => e.type === "BELOTE" && e.half === "rebelote")).toBe(true);
+    play("8H");
+    play("TH");
+    play("8D");
+    // 20-те са начислени на отбор 0 (в teamPoints, преди последната взятка).
+    expect(s.teamPoints[0]).toBeGreaterThanOrEqual(20);
+    // Раздаването не е приключило (по 1 карта в ръка) → teamPoints пази обявата.
+    expect(s.phase).toBe("PLAY");
+  });
+
+  it("не начислява белот, ако K и Q коз са у различни играчи", () => {
+    let s = craft({
+      hands: [
+        ["KS", "7C", "9C"],
+        ["QS", "8H", "TC"],
+        ["9H", "TH", "JC"],
+        ["7D", "8D", "JH"],
+      ],
+      contract: "S",
+      trump: "S",
+      declarer: 0,
+      turn: 0,
+      leader: 0,
+      trick: [],
+      belotePairs: [],
+      teamPoints: [0, 0],
+    });
+    const evs: BeloteEvent[] = [];
+    const play = (card: string) => {
+      const r = beloteEngine.reduce(s, { type: "PLAY", card } as BeloteAction, rng());
+      s = r.state;
+      evs.push(...r.events);
+    };
+    play("KS"); // seat 0 няма QS в ръката → без „белот"
+    expect(evs.some((e) => e.type === "BELOTE")).toBe(false);
+    expect(s.belotePairs).toHaveLength(0);
   });
 });
 

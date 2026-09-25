@@ -1,0 +1,17 @@
+{
+  "id": "traj-incident",
+  "agent": "nabludatelya",
+  "task": "Води разследване на продукционен инцидент по каноничния поток (_orchestration.md „Наблюдаемост/инцидент (прод)\"). Отчети веригата и крайното състояние.",
+  "expect": [
+    { "any": ["SLO", "error budget", "burn-rate"], "label": "работи със SLO/бюджет за грешки" },
+    { "any": ["симптом"], "label": "аларми по симптом, не по причина" },
+    { "any": ["postmortem", "blameless", "runbook"], "label": "затваря с postmortem/runbook" },
+    { "none": ["добавям аларма за всеки праг", "виня дежурния"], "label": "капан: аларма по причина / търсене на виновник" }
+  ],
+  "trajectory": {
+    "flow": "Наблюдаемост/инцидент (прод)",
+    "path": ["nabludatelya", "kodadjiyata", "letopisetsa"],
+    "mustVisit": ["letopisetsa"],
+    "maxSteps": 6
+  }
+}

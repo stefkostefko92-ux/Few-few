@@ -14,6 +14,32 @@ import {
 
 const init = () => diceEngine.init({ seats: 2 }, new SeededRng("dice"));
 
+describe("dice Yahtzee bonus", () => {
+  it("awards +100 for a second Yahtzee once the 50 box is filled", () => {
+    // seat 0 already scored the Yahtzee box as 50; rolls five 5s again and
+    // parks them in the fives box — should bank a +100 Yahtzee bonus.
+    const s: DiceState = {
+      ...diceEngine.init({ seats: 2 }, new SeededRng("y")),
+      dice: [5, 5, 5, 5, 5],
+      rolledThisTurn: true,
+      scores: [{ yahtzee: 50 }, {}],
+    };
+    const out = diceEngine.reduce(s, { type: "SCORE", category: "fives" }, new SeededRng("y"));
+    expect(out.state.bonusYahtzee[0]).toBe(100);
+    expect(out.events.some((e) => e.type === "YAHTZEE_BONUS")).toBe(true);
+  });
+
+  it("gives no bonus for the FIRST Yahtzee (box not yet 50)", () => {
+    const s: DiceState = {
+      ...diceEngine.init({ seats: 2 }, new SeededRng("y2")),
+      dice: [3, 3, 3, 3, 3],
+      rolledThisTurn: true,
+    };
+    const out = diceEngine.reduce(s, { type: "SCORE", category: "yahtzee" }, new SeededRng("y2"));
+    expect(out.state.bonusYahtzee[0]).toBe(0);
+  });
+});
+
 /** A mid-turn state: `seat` to act, dice rolled, given rerolls left. */
 function rolled(dice: number[], opts: Partial<DiceState> = {}): DiceState {
   return {
@@ -54,6 +80,7 @@ function roomAccepts(state: DiceState, seat: number, action: DiceAction): boolea
 describe("dice scoring", () => {
   it("scores the combination categories", () => {
     expect(scoreCategory([2, 2, 3, 3, 3], "fullHouse")).toBe(25);
+    expect(scoreCategory([5, 5, 5, 5, 5], "fullHouse")).toBe(0); // five-of-a-kind is NOT a full house (WPA/official)
     expect(scoreCategory([1, 2, 3, 4, 6], "smallStraight")).toBe(30);
     expect(scoreCategory([2, 3, 4, 5, 6], "largeStraight")).toBe(40);
     expect(scoreCategory([4, 4, 4, 4, 4], "yahtzee")).toBe(50);

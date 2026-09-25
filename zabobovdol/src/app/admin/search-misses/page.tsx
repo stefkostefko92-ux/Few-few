@@ -35,7 +35,7 @@ export default async function SearchMissesPage() {
           <tbody className="divide-y divide-slate-100">
             {misses.length === 0 ? (
               <tr>
-                <td colSpan={4} className="p-6 text-center text-slate-500">
+                <td colSpan={4} className="p-6 text-center text-slate-600">
                   Все още няма такива търсения.
                 </td>
               </tr>

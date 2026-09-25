@@ -95,7 +95,7 @@ router.post('/enchant', (req, res) => {
   const db = getDb();
   const row = db
     .prepare(
-      `SELECT inv.id AS inv_id, items.id AS item_id, items.tier, items.rarity, items.name, items.category,
+      `SELECT inv.id AS inv_id, inv.listed, inv.vaulted_guild_id, items.id AS item_id, items.tier, items.rarity, items.name, items.category,
               COALESCE(e.enchant_count, 0) AS enchant_count,
               COALESCE(e.bonuses_json, '{}') AS bonuses_json
        FROM inventory inv
@@ -105,6 +105,8 @@ router.post('/enchant', (req, res) => {
     )
     .get(parse.data.inventoryId, char.id) as any;
   if (!row) { res.status(404).json({ error: 'Item not in your bag' }); return; }
+  if (row.vaulted_guild_id) { res.status(400).json({ error: 'Withdraw the item from the guild vault first.' }); return; }
+  if (row.listed) { res.status(400).json({ error: 'Cancel the market listing first.' }); return; }
   if (row.category === 'potion') { res.status(400).json({ error: 'Potions cannot be enchanted.' }); return; }
   if (row.enchant_count >= 5) { res.status(400).json({ error: 'This item is fully enchanted.' }); return; }
   const cost = enchantCost(row.tier, row.enchant_count);

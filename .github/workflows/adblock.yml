@@ -1,0 +1,65 @@
+name: adblock
+
+on:
+  push:
+    paths:
+      - 'adblock/**'
+      - '.github/workflows/adblock.yml'
+  pull_request:
+    paths:
+      - 'adblock/**'
+      - '.github/workflows/adblock.yml'
+
+concurrency:
+  group: adblock-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Продуктът няма билд стъпка и няма зависимости (vanilla MV3). Реалният гейт е MV3 линтът
+      # (минимални права · без отдалечен код · валиден manifest) плюс синтаксисът на всички скриптове.
+      - name: MV3 линт
+        run: node tools/chrome/mv3-lint.mjs adblock
+      - name: Синтаксис на всички .js/.mjs в разширението
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            node --check "$f" || { echo "::error file=$f::синтактична грешка"; fail=1; }
+          done < <(find adblock -name '*.js' -o -name '*.mjs' | grep -v node_modules)
+          exit $fail
+      - name: Scriptlet bundle свеж (build --check)
+        run: node adblock/tools/build_scriptlets.mjs --check
+      - name: Тестове — engine/live канал/валидатори/DNR правила
+        run: node adblock/tests/run.mjs
+
+  # Истинското разширение в истински Chromium: cookie фикстури, козметика, наблюдатели,
+  # пазачът за цената на style recalc. Беше само ръчно — точно тези тестове щяха да хванат
+  # бавния генеричен CSS (Speedtest 900 → 150) и регресиите на 5.0.5.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Playwright + Chromium
+        run: |
+          npm install -g playwright@1.56.1
+          npx -y playwright@1.56.1 install --with-deps chromium
+      - name: Браузърни тестове (cookies фикстури + истинското разширение)
+        working-directory: adblock
+        env:
+          PW_REQUIRED: "1"
+        run: PW_ROOT="$(npm root -g)" npm run test:browser

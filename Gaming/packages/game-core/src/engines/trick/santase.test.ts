@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
 import { santaseEngine, type SantaseState } from "./santase.js";
+import type { Card } from "./cards.js";
 
 const init = (seed = "s66"): SantaseState =>
   santaseEngine.init({ seats: 2 }, new SeededRng(seed));
@@ -62,6 +63,68 @@ describe("santase engine", () => {
     const a = playRandom(santaseEngine, { seed: "x", botSeed: "y", seats: 2 });
     const b = playRandom(santaseEngine, { seed: "x", botSeed: "y", seats: 2 });
     expect(a.state).toEqual(b.state);
+  });
+
+  it("allows an opening marriage before any trick, held as conditional points", () => {
+    const base = init();
+    const s: SantaseState = {
+      ...base,
+      hands: [["KH", "QH", "9D"], base.hands[1]!],
+      trump: "S",
+      turn: 0,
+      leader: 0,
+      trick: [],
+      wonTrick: [false, false],
+      pendingMarriage: [0, 0],
+    };
+    // Обявата е позволена дори без спечелена взятка.
+    const acts = santaseEngine.legalActions(s, 0);
+    expect(acts.some((a) => a.type === "PLAY" && a.card === "KH" && a.marriage)).toBe(true);
+    // Точките са условни: влизат в pendingMarriage, не в points.
+    const after = santaseEngine.reduce(s, { type: "PLAY", card: "KH", marriage: true }, new SeededRng("m")).state;
+    expect(after.points[0]).toBe(0);
+    expect(after.pendingMarriage[0]).toBe(20);
+  });
+
+  it("realises a conditional marriage once the announcer wins a trick", () => {
+    const base = init();
+    let s: SantaseState = {
+      ...base,
+      hands: [["KH", "QH"], ["9C", "9D"]] as Card[][],
+      stock: [],
+      trump: "S",
+      trumpCard: null, // фаза 2 (тесте изчерпано)
+      turn: 0,
+      leader: 0,
+      trick: [],
+      points: [0, 0],
+      wonTrick: [false, false],
+      pendingMarriage: [0, 0],
+    };
+    const rng = new SeededRng("m");
+    s = santaseEngine.reduce(s, { type: "PLAY", card: "KH", marriage: true }, rng).state;
+    expect(s.pendingMarriage[0]).toBe(20);
+    // Опонентът играе; водачът печели взятката → условните 20 се реализират.
+    s = santaseEngine.reduce(s, { type: "PLAY", card: "9C" }, rng).state;
+    expect(s.pendingMarriage[0]).toBe(0);
+    expect(s.points[0]).toBe(24); // 20 женитба + 4 (K+9)
+  });
+
+  it("forbids exchanging the trump nine before winning a trick", () => {
+    const base = init();
+    const nine = `9${base.trump}` as Card;
+    const s: SantaseState = {
+      ...base,
+      hands: [[nine, "AC"], base.hands[1]!] as Card[][],
+      turn: 0,
+      leader: 0,
+      trick: [],
+      wonTrick: [false, false],
+    };
+    expect(santaseEngine.legalActions(s, 0).some((a) => a.type === "EXCHANGE")).toBe(false);
+    // Със спечелена взятка размяната става позволена.
+    const s2: SantaseState = { ...s, wonTrick: [true, false] };
+    expect(santaseEngine.legalActions(s2, 0).some((a) => a.type === "EXCHANGE")).toBe(true);
   });
 
   it("penalises a failed close: opponent wins 3 if closer had no trick", () => {

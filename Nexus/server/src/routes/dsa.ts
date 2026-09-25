@@ -93,12 +93,18 @@ router.post('/notice', (req, res) => {
     target_type: 'dsa_notice',
     message: `DSA notice ${ticketId} (${data.contentKind} / ${data.reason})`,
   });
+  // Забележка (DSA изрядност): не обещавай механизми, които не са внедрени
+  // или не се дължат. Чл. 17 (обосновка към ЗАСЕГНАТИЯ автор) се доставя
+  // при предприемане на действие. Чл. 20 (вътрешна жалба) е ОСВОБОДЕН за
+  // микро/малки платформи (Раздел 3, чл. 19) — предишният текст обещаваше
+  // 6-месечно обжалване, което нито е задължително, нито е внедрено →
+  // премахнато, за да няма невярно представяне (чл. 14 точност).
   res.status(201).json({
     ticketId,
     statementOfReasons:
       'Thank you. Your notice has been logged and will be reviewed by our trust & safety team. ' +
-      'Per DSA Art. 17 you will receive a statement of reasons by email if the content is acted on. ' +
-      'Per Art. 20 both you and the affected user may appeal any decision within 6 months.',
+      'If the reported content is acted on, the affected user receives a statement of reasons per DSA Art. 17. ' +
+      'You may contact us about this notice using the reference above.',
   });
 });
 

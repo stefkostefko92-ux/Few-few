@@ -1,0 +1,209 @@
+// Дълбок форензик слой върху обществените поръчки: свързва CIG-овете на здравните
+// възложители с ДВА големи ANAC датасета (поточно, без да ги пише на диска):
+//   – aggiudicatari  → КОЙ печели парите (изпълнители), концентрация, repeat-winner;
+//   – partecipanti   → колко кандидати е имало → ТЪРГОВЕ С ЕДИН ОФЕРЕНТ.
+//
+// Нужен е data/raw/anac/health-cig-cf.tsv (от fetch-appalti) с cig→cf/категория/сума.
+//
+// ВАЖНО: единствен оферент, концентрация и повтарящ се победител са ИНДИКАТОРИ за
+// проверка, не доказателства. Може да са законни (монопол, патент, малък пазар).
+//
+// Изход: data/aggiudicatari.json.
+
+// @ts-check
+import { join } from 'node:path';
+import { readFile, writeFile, stat } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { createInterface } from 'node:readline';
+import { RAW_DIR, DATA_DIR } from './lib/paths.js';
+
+const ANAC_DIR = join(RAW_DIR, 'anac');
+const OUT_FILE = join(DATA_DIR, 'aggiudicatari.json');
+const GARA_CATS = new Set(['competitiva', 'negoziata', 'negoziataSenza']);
+
+// Тези датасети ограждат всяко поле в кавички — махаме ги.
+/** @param {string|undefined} s @returns {string} */
+const unq = (s) => (s ? s.replace(/^"/, '').replace(/"$/, '').trim() : '');
+
+// GDPR: юридическо лице има 11-цифрен CF/P.IVA; личен codice fiscale е 16 буквено-
+// цифрен → физическо лице. Имената на физически лица НЕ се назовават публично.
+/** @param {string} cf @returns {boolean} */
+const isAzienda = (cf) => /^[0-9]{11}$/.test(cf);
+const OPERATORE_ANONIMO = 'Operatore individuale (persona fisica)';
+/** @param {string} cf @param {string} den @returns {string} */
+function nomePubblico(cf, den) {
+  return isAzienda(cf) ? den : OPERATORE_ANONIMO;
+}
+
+/** Поточно чете zip със system unzip -p и подава редовете (split по ';').
+ *  Reject-ва при ненулев изход на unzip (повреден/орязан/липсващ архив) — иначе
+ *  тихо празни/частични данни биха дали подвеждащи числа. */
+/** @param {string} zipPath @param {(cols: string[]) => void} onRow @returns {Promise<void>} */
+function streamZip(zipPath, onRow) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('unzip', ['-p', zipPath]);
+    child.on('error', reject);
+    const rl = createInterface({ input: child.stdout, crlfDelay: Infinity });
+    let first = true;
+    let closed = false;
+    /** @type {number|null} */
+    let code = null;
+    const done = () => {
+      if (closed && code !== null) {
+        code === 0 ? resolve(undefined) : reject(new Error(`unzip ${zipPath} излезе с код ${code}`));
+      }
+    };
+    rl.on('line', (/** @type {string} */ line) => {
+      if (first) {
+        first = false;
+        return;
+      } // заглавен ред
+      onRow(line.split(';'));
+    });
+    child.on('close', (/** @type {number|null} */ c) => {
+      code = c;
+      done();
+    });
+    rl.on('close', () => {
+      closed = true;
+      done();
+    });
+    child.stderr.resume();
+  });
+}
+
+async function main() {
+  // 1) cig → { cf, cat, importo } за здравните поръчки
+  const tsvPath = join(ANAC_DIR, 'health-cig-cf.tsv');
+  await stat(tsvPath).catch(() => {
+    throw new Error('няма health-cig-cf.tsv — пусни първо `npm run fetch:appalti`');
+  });
+  /** @type {Map<string, { cf: string, cat: string, importo: number }>} */
+  const cigInfo = new Map();
+  for (const line of (await readFile(tsvPath, 'utf8')).split('\n')) {
+    if (!line) continue;
+    const [cig, cf, cat, importo] = line.split('\t');
+    cigInfo.set(cig, { cf: cf ?? '', cat: cat ?? '', importo: Number(importo) || 0 });
+  }
+  console.log(`Заредени ${cigInfo.size} здравни CIG-а.`);
+
+  // 2) aggiudicatari → изпълнители по възложител (стойност веднъж на CIG)
+  /** @type {Map<string, { forn: Map<string, { den: string, valore: number, n: number, azienda: boolean }>, valore: number }>} */
+  const perAuth = new Map(); // cf_auth → { forn: Map(cfForn→{den,valore,n}), valore }
+  /** @type {Map<string, { den: string, valore: number, n: number, azienda: boolean }>} */
+  const fornNaz = new Map(); // cf_forn → { den, valore, n } (национално)
+  /** @type {Set<string>} */
+  const seenWinnerCig = new Set();
+  let aggRighe = 0;
+  await streamZip(join(ANAC_DIR, 'aggiudicatari.zip'), (c) => {
+    const cig = unq(c[0]);
+    const info = cigInfo.get(cig);
+    if (!info) return;
+    if (seenWinnerCig.has(cig)) return; // стойността на CIG се брои веднъж
+    seenWinnerCig.add(cig);
+    const cfForn = unq(c[2]);
+    const den = nomePubblico(cfForn, unq(c[3])); // физическите лица не се назовават
+    if (!cfForn) return;
+    aggRighe++;
+    let a = perAuth.get(info.cf);
+    if (!a) {
+      a = { forn: new Map(), valore: 0 };
+      perAuth.set(info.cf, a);
+    }
+    let f = a.forn.get(cfForn);
+    if (!f) {
+      f = { den, valore: 0, n: 0, azienda: isAzienda(cfForn) };
+      a.forn.set(cfForn, f);
+    }
+    f.valore += info.importo;
+    f.n++;
+    a.valore += info.importo;
+    let g = fornNaz.get(cfForn);
+    if (!g) {
+      g = { den, valore: 0, n: 0, azienda: isAzienda(cfForn) };
+      fornNaz.set(cfForn, g);
+    }
+    g.valore += info.importo;
+    g.n++;
+  });
+  console.log(`Aggiudicatari: ${aggRighe} връзки, ${perAuth.size} възложителя с изпълнители.`);
+
+  // 3) partecipanti → брой различни кандидати на CIG (само за „гара“ категориите)
+  /** @type {Map<string, { firstCf: string, multi: boolean }>} */
+  const cigPart = new Map(); // cig → { firstCf, multi }
+  await streamZip(join(ANAC_DIR, 'partecipanti.zip'), (c) => {
+    const cig = unq(c[0]);
+    const info = cigInfo.get(cig);
+    if (!info || !GARA_CATS.has(info.cat)) return;
+    const cf = unq(c[2]);
+    if (!cf) return;
+    let p = cigPart.get(cig);
+    if (!p) {
+      cigPart.set(cig, { firstCf: cf, multi: false });
+    } else if (!p.multi && cf !== p.firstCf) {
+      p.multi = true;
+    }
+  });
+  // единствен оферент на възложител
+  /** @type {Map<string, { gare: number, unico: number }>} */
+  const singleByAuth = new Map(); // cf_auth → { gare, unico }
+  for (const [cig, p] of cigPart) {
+    const info = cigInfo.get(cig);
+    if (!info) continue;
+    let s = singleByAuth.get(info.cf);
+    if (!s) {
+      s = { gare: 0, unico: 0 };
+      singleByAuth.set(info.cf, s);
+    }
+    s.gare++;
+    if (!p.multi) s.unico++;
+  }
+  console.log(`Partecipanti: ${cigPart.size} гари с кандидати.`);
+
+  // 4) сглобяване per възложител
+  /** @type {Record<string, any>} */
+  const perCf = {};
+  for (const [cf, a] of perAuth) {
+    const forn = [...a.forn.entries()]
+      .map(([cfForn, f]) => ({ cf: cfForn, den: f.den, valore: Math.round(f.valore), n: f.n }))
+      .sort((x, y) => y.valore - x.valore);
+    const top1 = forn[0];
+    const s = singleByAuth.get(cf);
+    perCf[cf] = {
+      valoreAggiudicato: Math.round(a.valore),
+      nFornitori: forn.length,
+      top1Quota: a.valore > 0 && top1 ? top1.valore / a.valore : null,
+      topFornitori: forn.slice(0, 5),
+      gareConPartecipanti: s ? s.gare : 0,
+      gareUnicoOfferente: s ? s.unico : 0,
+      quotaUnicoOfferente: s && s.gare > 0 ? s.unico / s.gare : null,
+    };
+  }
+
+  const fornitoriNazionali = [...fornNaz.entries()]
+    .map(([cf, f]) => ({ cf, den: f.den, valore: Math.round(f.valore), n: f.n }))
+    .sort((x, y) => y.valore - x.valore)
+    .slice(0, 40);
+
+  await writeFile(
+    OUT_FILE,
+    JSON.stringify(
+      {
+        generatoIl: new Date().toISOString(),
+        fonte: 'ANAC — aggiudicatari + partecipanti (dati.anticorruzione.it), incrociati con i CIG sanitari',
+        note: 'Unico offerente, concentrazione dei fornitori e vincitori ricorrenti sono indicatori, non prove.',
+        autoritaConDati: Object.keys(perCf).length,
+        fornitoriNazionali,
+        perCf,
+      },
+      null,
+      2
+    ) + '\n'
+  );
+  console.log(`Готово: изпълнители за ${Object.keys(perCf).length} възложителя → ${OUT_FILE}`);
+}
+
+main().catch((/** @type {unknown} */ err) => {
+  console.error('Грешка:', err);
+  process.exitCode = 1;
+});

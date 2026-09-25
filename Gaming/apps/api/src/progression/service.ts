@@ -1,7 +1,7 @@
 import { prisma } from "@aso/db";
 import {
   ACHIEVEMENT_DEFS,
-  QUEST_DEFS,
+  activeQuests,
   achievementMet,
   dailyReward,
   leaderboardKey,
@@ -63,7 +63,7 @@ export async function ensureQuests(userId: string): Promise<QuestView[]> {
   const periodKey = (p: QuestPeriod): string =>
     p === "daily" ? `d:${dayKey()}` : `w:${isoWeek()}`;
 
-  const defs = QUEST_DEFS;
+  const defs = activeQuests(dayKey());
   const views: QuestView[] = [];
   for (const def of defs) {
     const period = periodKey(def.period);
@@ -122,7 +122,7 @@ export async function recordMatchResult(opts: {
   await redis.zadd(leaderboardKey(game), rating, userId);
 
   await ensureQuests(userId);
-  for (const def of QUEST_DEFS) {
+  for (const def of activeQuests(dayKey())) {
     if (def.trigger === "win" && !won) continue;
     if (def.game && def.game !== game) continue;
     const period = def.period === "daily" ? `d:${dayKey()}` : `w:${isoWeek()}`;

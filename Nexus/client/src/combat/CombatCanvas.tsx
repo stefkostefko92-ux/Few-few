@@ -145,9 +145,14 @@ const CombatCanvas = React.forwardRef<CombatCanvasHandle, Props>(({ className },
     function size() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
       const rect = c!.getBoundingClientRect();
-      sizeRef.current = { w: rect.width, h: rect.height, dpr };
-      c!.width = Math.round(rect.width * dpr);
-      c!.height = Math.round(rect.height * dpr);
+      // Предпазен таван: дори при неочаквано огромен rect бекбуферът не бива да
+      // надхвърля лимита за <canvas> — иначе платното пада в БЯЛО + счупена
+      // картинка. Полето е ~стотици px; 8192 CSS px е предостатъчно.
+      const cw = Math.min(rect.width, 8192);
+      const ch = Math.min(rect.height, 8192);
+      sizeRef.current = { w: cw, h: ch, dpr };
+      c!.width = Math.round(cw * dpr);
+      c!.height = Math.round(ch * dpr);
       const ctx = c!.getContext('2d');
       if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
@@ -400,7 +405,13 @@ const CombatCanvas = React.forwardRef<CombatCanvasHandle, Props>(({ className },
     <canvas
       ref={canvasRef}
       className={className || 'combat-canvas'}
-      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 9 }}
+      // width/height:100% е ЗАДЪЛЖИТЕЛНО: <canvas> е replaced елемент — при
+      // position:absolute с width:auto използваната ширина пада към ВЪТРЕШНАТА
+      // (атрибутната) стойност, а не към inset:0. size() задава c.width =
+      // rect.width * dpr; при DPR>1 (мобилен, тук 2.5) това расте всеки цикъл на
+      // ResizeObserver (368→920→2300…) до лимита за canvas → БЯЛ екран + счупена
+      // картинка. Явните 100% отвързват CSS кутията от атрибутния размер → стабилно.
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 9 }}
       aria-hidden
     />
   );

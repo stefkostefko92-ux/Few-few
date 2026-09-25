@@ -178,17 +178,25 @@ router.post('/bid', (req, res) => {
   }
 
   const tx = db.transaction(() => {
-    // Refund previous bidder (if any).
-    if (listing.bidder_id && listing.bidder_id !== char.id) {
-      db.prepare('UPDATE characters SET gems = gems + ? WHERE id = ?').run(listing.current_bid, listing.bidder_id);
-    }
+    // Claim the top-bid slot atomically FIRST, gated on the listing still
+    // being in the state we read. This stops two concurrent higher bids
+    // from both refunding the same previous bidder (a gem-dup) — only the
+    // bid that wins the CAS proceeds to refund.
+    const claim = listing.bidder_id
+      ? db.prepare('UPDATE auction_listings SET current_bid = ?, bidder_id = ?, bidder_name = ? WHERE id = ? AND current_bid = ? AND bidder_id = ?')
+          .run(parse.data.amount, char.id, char.name, listing.id, listing.current_bid, listing.bidder_id)
+      : db.prepare('UPDATE auction_listings SET current_bid = ?, bidder_id = ?, bidder_name = ? WHERE id = ? AND current_bid = ? AND bidder_id IS NULL')
+          .run(parse.data.amount, char.id, char.name, listing.id, listing.current_bid);
+    if (claim.changes !== 1) throw new Error('Another bid landed first — retry.');
     // Debit current bidder atomically.
     const debit = db
       .prepare('UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?')
       .run(parse.data.amount, parse.data.amount, char.id, parse.data.amount);
     if (debit.changes !== 1) throw new Error('Gem balance changed — retry.');
-    db.prepare('UPDATE auction_listings SET current_bid = ?, bidder_id = ?, bidder_name = ? WHERE id = ?')
-      .run(parse.data.amount, char.id, char.name, listing.id);
+    // Refund the previous bidder — only reached once the CAS above won.
+    if (listing.bidder_id && listing.bidder_id !== char.id) {
+      db.prepare('UPDATE characters SET gems = gems + ? WHERE id = ?').run(listing.current_bid, listing.bidder_id);
+    }
   });
   try { tx(); } catch (e: any) { res.status(400).json({ error: e.message }); return; }
 

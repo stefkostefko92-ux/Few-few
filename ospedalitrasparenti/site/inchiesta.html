@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d131a">
+<title>Inchiesta: dove vanno i soldi — Ospedali Trasparenti</title>
+<meta name="description" content="La verità sul disavanzo degli ospedali pubblici italiani e le anomalie di spesa: consulenze, prestazioni da privati, affitti. Analisi sui dati ufficiali.">
+<link rel="canonical" href="https://ospedalitrasparenti.it/inchiesta.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Ospedali Trasparenti">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="Inchiesta: dove vanno i soldi — Ospedali Trasparenti">
+<meta property="og:description" content="La verità sul disavanzo degli ospedali pubblici italiani e le anomalie di spesa: consulenze, prestazioni da privati, affitti. Analisi sui dati ufficiali.">
+<meta property="og:url" content="https://ospedalitrasparenti.it/inchiesta.html">
+<meta property="og:image" content="https://ospedalitrasparenti.it/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Inchiesta: dove vanno i soldi — Ospedali Trasparenti">
+<meta name="twitter:description" content="La verità sul disavanzo degli ospedali pubblici italiani e le anomalie di spesa: consulenze, prestazioni da privati, affitti. Analisi sui dati ufficiali.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Inchiesta: dove vanno i soldi della sanità pubblica","description":"Il disavanzo «vero» del sistema sanitario e le anomalie di spesa, dai dati ufficiali.","inLanguage":"it","datePublished":"2026-07-13","dateModified":"2026-07-13","mainEntityOfPage":"https://ospedalitrasparenti.it/inchiesta.html","author":{"@type":"Organization","name":"Carbon Stealth VCC","url":"https://carbonstealth.eu"},"publisher":{"@id":"https://ospedalitrasparenti.it/#org"},"isBasedOn":["https://dati.anticorruzione.it/opendata","https://openbdap.rgs.mef.gov.it/it/SSN/Analizza","https://www.dati.salute.gov.it/"]}</script>
+<script>/* Анти-FOUC: слага записания ръчен избор ПРЕДИ първия paint, за да няма
+мигане на грешната тема. Единственият blocking script в head — само за темата. */
+try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')document.documentElement.dataset.theme=_t;}catch(e){}</script>
+<style>
+:root{
+  /* палитра — светла тема (институционална, сдържана) */
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#f8fafc;
+  --ink:#131c26; --ink-2:#33424f; --muted:#586878; --faint:#8595a4;
+  --line:#e2e8ee; --line-2:#eef2f6;
+  /* --line-strong: граница за интерактивни контроли (input/select/бутони-икони).
+     WCAG 1.4.11 иска ≥3:1 контраст за границите, които идентифицират контрола;
+     тънката декоративна --line не стига. #8595a4 дава ~3.1:1 спрямо бялата
+     повърхност (структурните/декоративните граници остават на --line/--line-2). */
+  --line-strong:#8595a4;
+  --brand:#0b5cad; --brand-ink:#08447f; --brand-tint:#eaf2fb;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  /* скала на разстоянията (4-точкова база) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* радиуси и релеф */
+  --radius:12px; --radius-sm:8px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(16,32,48,.06);
+  --shadow:0 1px 3px rgba(16,32,48,.07),0 10px 28px rgba(16,32,48,.05);
+  --maxw:1120px; --measure:70ch;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+/* Тъмни променливи — блокът е един и същ за двата случая:
+   1) изричен ръчен избор :root[data-theme="dark"] (печели винаги);
+   2) авто по системата, но САМО без ръчен избор :root:not([data-theme]).
+   Дублирането е нужно: media-guarded правилото не бива да важи при ръчно „light". */
+:root[data-theme="dark"]{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+  --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+  /* N4: старите тъмни граници (#26323f/#202b37) даваха ~1.3:1 спрямо surface —
+     под прага. Леко изсветлени за по-ясна структура на картите/таблиците; за
+     контролите отделно --line-strong (#5f6b7a ≈ 3.1:1 спрямо surface, WCAG 1.4.11). */
+  --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+  --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+  --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+  /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
+     държи WCAG AA контраст (alta ~4.5, media ~5.9, bassa ~5.2 : 1) */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]){ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+    --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+    /* същите стойности като :root[data-theme="dark"] — виж бележката там (N4) */
+    --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+    --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+  line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:3px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* ---------- Masthead / навигация ---------- */
+header.site{background:var(--surface);border-top:3px solid var(--brand);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:8px 24px;min-height:58px;flex-wrap:wrap}
+.brand{display:inline-flex;align-items:center;line-height:0}
+.brand-logo{height:36px;width:auto;display:block}
+/* тъмна тема: тъмносиният надпис не се чете на тъмния хедър → лека светла
+   подложка запазва пълноцветното лого четимо, без да губим детайла на иконата
+   (важи и при ръчен избор, и при авто — виж бележката при променливите) */
+:root[data-theme="dark"] .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]) .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+}
+nav.main{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto;font-size:14.5px}
+nav.main a{color:var(--muted);font-weight:500;padding:7px 11px;border-radius:8px;
+  line-height:1.2;white-space:nowrap;transition:background-color .15s,color .15s}
+nav.main a:hover{color:var(--brand-ink);background:var(--brand-tint);text-decoration:none}
+nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(--brand-tint)}
+/* Бутон-хамбургер — само за тесни екрани (виж @media по-долу); на desktop скрит.
+   44×44 таргет, две икони (open/close) се сменят чрез [aria-expanded]. */
+.nav-toggle{display:none;align-items:center;justify-content:center;
+  width:44px;height:44px;margin-left:auto;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.nav-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle svg{display:block;width:22px;height:22px;pointer-events:none}
+.nav-toggle .ico-close{display:none}
+.nav-toggle[aria-expanded="true"]{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle[aria-expanded="true"] .ico-open{display:none}
+.nav-toggle[aria-expanded="true"] .ico-close{display:block}
+/* Превключвател светла/тъмна тема — видим на ВСИЧКИ ширини (за разлика от
+   hamburger-а). Иконата (слънце/луна) следва ЕФЕКТИВНАТА тема през CSS,
+   независимо от JS-тайминга → без грешна икона при първия paint. */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.theme-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.theme-toggle svg{display:block;width:20px;height:20px;pointer-events:none}
+/* по подр. (светло/авто-светло) → луна („премини на тъмно"); тъмно → слънце */
+.theme-toggle .ico-sun{display:none}
+.theme-toggle .ico-moon{display:block}
+:root[data-theme="dark"] .theme-toggle .ico-moon{display:none}
+:root[data-theme="dark"] .theme-toggle .ico-sun{display:block}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme]) .theme-toggle .ico-moon{display:none}
+  :root:not([data-theme]) .theme-toggle .ico-sun{display:block}
+}
+/* desktop: двуетажен masthead. Ред 1: лого вляво + theme бутон в десния ръб
+   (margin-left:auto; DOM редът brand→theme→nav вече е правилният визуален ред).
+   Ред 2: навигацията на цял ред (flex-basis:100%) с тънка разделителна линия —
+   при 13 линка тя така или иначе не се побира до логото, затова редът е
+   умишлен, а не счупен fallback (преди: theme висеше сам на трети ред). */
+@media(min-width:901px){
+  header.site .wrap{padding-top:8px;row-gap:4px}
+  .theme-toggle{margin-left:auto}
+  nav.main{flex-basis:100%;margin-left:0;justify-content:center;
+    font-size:13px;border-top:1px solid var(--line);padding:4px 0 7px}
+  nav.main a{padding:6px 7px}
+}
+@media(max-width:900px){
+  header.site{position:static;border-top-width:3px}
+  /* Ред 1: лого вляво + тема + hamburger вдясно; менюто е на нов ред
+     (flex-basis:100%), скрито до отваряне. Без хоризонтален скрол. */
+  header.site .wrap{flex-wrap:wrap;align-items:center;gap:0;min-height:56px;
+    padding-top:8px;padding-bottom:8px}
+  .brand{margin-right:auto;margin-bottom:0}
+  .brand-logo{height:32px}
+  /* само brand носи auto-полето → тема и hamburger са слепени вдясно с малък луфт */
+  .theme-toggle{margin-left:0}
+  .nav-toggle{display:inline-flex;margin-left:8px}
+  nav.main{display:none;flex-basis:100%;width:100%;margin:8px 0 0;
+    flex-direction:column;flex-wrap:nowrap;gap:1px;font-size:16px;
+    border-top:1px solid var(--line);padding-top:5px}
+  nav.main.open{display:flex}
+  nav.main a{display:flex;align-items:center;min-height:44px;
+    padding:11px 12px;border-radius:8px;white-space:normal}
+}
+main{padding:var(--s7) 0 var(--s6)}
+
+/* ---------- Типографска скала ---------- */
+h1{font-size:clamp(28px,1.4rem + 1.6vw,38px);line-height:1.15;letter-spacing:-.02em;
+  margin:0 0 var(--s3);max-width:22ch;font-weight:700}
+/* тънка линия под h2 → ясно отделя секциите на дългите отчетни страници
+   (заглавие-документ). Разделена е с margin от следващото съдържание, затова
+   не се слива с горната граница на съседна .tablewrap/.card. */
+h2{font-size:clamp(20px,1.1rem + .5vw,24px);line-height:1.25;letter-spacing:-.01em;
+  margin:var(--s7) 0 var(--s4);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);font-weight:650}
+h3{font-size:17px;line-height:1.3;margin:var(--s5) 0 var(--s3);font-weight:650}
+p{max-width:var(--measure)}
+.lead{color:var(--ink-2);font-size:clamp(16.5px,1rem + .3vw,19px);line-height:1.55;
+  max-width:66ch;margin:0 0 var(--s3)}
+main>.wrap>h1:first-child + .lead{font-size:clamp(17px,1rem + .4vw,20px)}
+
+/* ---------- Карти / решетка ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);padding:var(--s5)}
+.grid{display:grid;gap:var(--s4)}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.kpi{display:flex;flex-direction:column;gap:6px;padding:18px 20px;
+  border-left:3px solid var(--line-2)}
+.kpi .n{font-size:clamp(24px,1.4rem + .7vw,30px);font-weight:700;letter-spacing:-.02em;
+  line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi .l{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+.kpi:has(.n.neg){border-left-color:var(--neg)} .kpi:has(.n.pos){border-left-color:var(--pos)}
+
+/* ---------- Таблици ---------- */
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);box-shadow:var(--shadow-sm)}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+th{background:var(--surface-2);font-size:11.5px;font-weight:650;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  position:sticky;top:0;white-space:nowrap;border-bottom:2px solid var(--line)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* zebra — леко по-отчетлив (3.5%) за проследяване на реда при 20+ реда; в
+   тъмна тема смесва светъл --ink в тъмен surface → също видим ред */
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 3.5%)}
+tbody tr:hover{background:var(--brand-tint)}
+/* връзки в клетки — траен, приглушен подчертан щрих ги различава от plain
+   текста дори при чисто числови/еднаквоцветни съседни клетки (не разчита само
+   на цвят). Значки/чипове в клетка запазват собствения си вид. */
+td a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;
+  text-decoration-color:color-mix(in srgb,var(--brand) 32%,transparent)}
+td a:hover{text-decoration-color:var(--brand)}
+td a.chip,td a.badge{text-decoration:none}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+
+/* ---------- Значки и чипове ---------- */
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650;
+  line-height:1.5;color:#fff;white-space:nowrap;letter-spacing:.01em}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;
+  font-size:13px;font-weight:500;color:var(--ink-2);background:var(--surface);
+  transition:border-color .15s,background-color .15s}
+.chip:hover{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-ink);text-decoration:none}
+
+/* ---------- Сигнали ---------- */
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:var(--radius-sm);
+  background:var(--surface);padding:13px 16px;margin:var(--s3) 0;box-shadow:var(--shadow-sm)}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:650;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:5px;max-width:var(--measure)}
+
+/* ---------- Форма / контроли ---------- */
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:var(--s5) 0}
+.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);min-width:0}
+.controls input:focus,.controls select:focus{outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px var(--brand-tint)}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:10px 18px;border:1px solid var(--brand);border-radius:var(--radius-sm);
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:650;transition:filter .15s}
+.controls button:hover{filter:brightness(1.08)}
+
+/* ---------- Карта на Италия ---------- */
+.mapfig{margin:var(--s6) 0}
+.mapfig svg.italia{display:block;width:100%;max-width:660px;height:auto;margin:0 auto}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a path{transition:stroke-width .12s}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.mapfig svg a:hover path{stroke:var(--ink);stroke-width:1.6}
+.mapfig svg a:focus{outline:none}
+.mapfig svg a:focus path{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:var(--s3) 0;justify-content:center}
+
+/* ---------- Помощни / бележки ---------- */
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 9%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 32%);
+  border-radius:var(--radius-sm);padding:13px 16px;font-size:14.5px;color:var(--ink);
+  max-width:var(--measure)}
+.note strong{color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:9px 16px;border-radius:0 0 8px 0;z-index:20;font-weight:600}
+.skip:focus{left:0}
+
+/* ---------- Графики ---------- */
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.4;max-width:var(--measure)}
+.hbars{display:flex;flex-direction:column;gap:9px;margin:var(--s2) 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:650}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+/* САМО за графиките (.chart) — глобален selector би презаписал атрибутите
+   на етикетите върху картата на Италия (CSS бие SVG presentation атрибути) */
+.chart svg .grid-line{stroke:var(--line)} .chart svg text{fill:var(--muted);font-size:11px}
+
+/* ---------- Footer ---------- */
+footer.site{border-top:1px solid var(--line);background:var(--surface-2);
+  color:var(--muted);font-size:13.5px;padding:var(--s6) 0 var(--s7);margin-top:var(--s6)}
+footer.site .wrap>p{max-width:82ch;margin:0 0 var(--s3)}
+footer.site strong{color:var(--ink-2)}
+footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+footer.site a:hover{color:var(--brand)}
+.backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
+
+/* ---------- Pagella: цветни точки-спии (verde/giallo/rosso/nd) ----------
+   Цветовете идват от темовите променливи → валидни и в светло, и в тъмно.
+   Не разчитаме само на цвят: всяка точка носи title + aria-label с текст. */
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;
+  vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.dot.verde{background:var(--pos)}
+.dot.giallo{background:var(--amber)}
+.dot.rosso{background:var(--neg)}
+.dot.nd{background:transparent;border:1.5px dashed var(--faint)}
+td.sem{white-space:nowrap}
+/* редът-семафор на страницата на структура: етикет + точка, hover показва детайла */
+.semrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;align-items:center}
+.semrow .semitem{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--muted)}
+
+/* ---------- Мобилно: touch таргети ≥44px ---------- */
+@media(max-width:640px){
+  .controls input,.controls select,.controls button{min-height:44px}
+  .chip{padding:9px 14px}
+  .backlink{padding:6px 0;display:inline-flex;align-items:center;min-height:44px}
+}
+
+/* ---------- Достъпност: намалено движение ---------- */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html" aria-label="Ospedali Trasparenti — home"><img class="brand-logo" src="logo.png" width="502" height="134" alt="Ospedali Trasparenti"></a>
+  <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambia tema chiaro o scuro" title="Tema chiaro / scuro">
+    <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/></svg>
+  </button>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-main" aria-label="Apri il menu di navigazione">
+    <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+  </button>
+  <nav class="main" id="nav-main" aria-label="Principale"><a href="index.html">Home</a><a href="inchiesta.html" aria-current="page">Inchiesta</a><a href="conflitti.html">Conflitti</a><a href="appalti.html">Appalti</a><a href="fornitori.html">Fornitori</a><a href="cerca.html">Cerca</a><a href="classifiche.html">Classifiche</a><a href="regioni.html">Regioni</a><a href="strutture.html">Strutture</a><a href="segnalazioni.html">Segnalazioni</a><a href="approfondimenti.html">Approfondimenti</a><a href="dati.html">Dati</a><a href="glossario.html">Glossario</a><a href="metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<h1>Inchiesta: dove vanno davvero i soldi</h1>
+<p class="lead">«Non è possibile che ogni ospedale sia in perdita.» È l’obiezione giusta — e i dati danno una risposta netta.
+Il disavanzo delle aziende è in larga parte <strong>coperto a livello regionale</strong>; e non tutte le aziende sono in rosso.
+Ma quando si scende nelle voci di spesa, emergono anomalie che meritano un occhio.</p>
+<p class="small muted">Dati aggiornati al 2026-07-13 · Fonti: ANAC, BDAP/RGS-MEF, Ministero della Salute.</p>
+
+<div class="note"><strong>La verità sul “rosso”.</strong> Le aziende sanitarie ricevono il Fondo Sanitario Regionale in parte
+tramite la <em>Gestione Sanitaria Accentrata</em> (GSA) della Regione. Il disavanzo delle singole aziende viene così
+in gran parte compensato dalla GSA: il risultato “di sistema” (aziende + GSA) è molto più vicino al pareggio del
+semplice rosso aziendale. <strong>Nel 2024, 56 aziende su 149 chiudono in utile o pareggio.</strong></div>
+
+<h2>Il conto vero del sistema</h2>
+<div class="card"><figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio aggregato per anno (€): il rosso delle aziende è in gran parte coperto dalla GSA regionale"><line class="grid-line" x1="56" y1="189.5" x2="666" y2="189.5"/><text x="50" y="192.5" text-anchor="end">-2 mld</text><line class="grid-line" x1="56" y1="147.7" x2="666" y2="147.7"/><text x="50" y="150.7" text-anchor="end">-1 mld</text><line class="grid-line" x1="56" y1="105.9" x2="666" y2="105.9"/><text x="50" y="108.9" text-anchor="end">0</text><line class="grid-line" x1="56" y1="64.1" x2="666" y2="64.1"/><text x="50" y="67.1" text-anchor="end">1 mld</text><line class="grid-line" x1="56" y1="22.4" x2="666" y2="22.4"/><text x="50" y="25.4" text-anchor="end">2 mld</text><line class="grid-line" x1="56" y1="105.9" x2="666" y2="105.9" stroke-width="1.5"/><text x="56.0" y="232" text-anchor="middle">2012</text><text x="157.7" y="232" text-anchor="middle">2014</text><text x="259.3" y="232" text-anchor="middle">2016</text><text x="361.0" y="232" text-anchor="middle">2018</text><text x="462.7" y="232" text-anchor="middle">2020</text><text x="564.3" y="232" text-anchor="middle">2022</text><text x="666.0" y="232" text-anchor="middle">2024</text><path d="M56.0,159.3 L106.8,151.6 L157.7,160.5 L208.5,169.9 L259.3,167.8 L310.2,143.0 L361.0,149.0 L411.8,153.1 L462.7,173.0 L513.5,168.3 L564.3,193.7 L615.2,169.8 L666.0,214.0" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="159.3" r="2.5" fill="var(--neg)"/><circle cx="106.8" cy="151.6" r="2.5" fill="var(--neg)"/><circle cx="157.7" cy="160.5" r="2.5" fill="var(--neg)"/><circle cx="208.5" cy="169.9" r="2.5" fill="var(--neg)"/><circle cx="259.3" cy="167.8" r="2.5" fill="var(--neg)"/><circle cx="310.2" cy="143.0" r="2.5" fill="var(--neg)"/><circle cx="361.0" cy="149.0" r="2.5" fill="var(--neg)"/><circle cx="411.8" cy="153.1" r="2.5" fill="var(--neg)"/><circle cx="462.7" cy="173.0" r="2.5" fill="var(--neg)"/><circle cx="513.5" cy="168.3" r="2.5" fill="var(--neg)"/><circle cx="564.3" cy="193.7" r="2.5" fill="var(--neg)"/><circle cx="615.2" cy="169.8" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="214.0" r="2.5" fill="var(--neg)"/><path d="M56.0,14.0 L106.8,46.5 L157.7,42.5 L208.5,51.0 L259.3,55.6 L310.2,68.1 L361.0,67.0 L411.8,63.6 L462.7,35.2 L513.5,43.6 L564.3,30.7 L615.2,44.8 L666.0,33.2" fill="none" stroke="var(--pos)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="14.0" r="2.5" fill="var(--pos)"/><circle cx="106.8" cy="46.5" r="2.5" fill="var(--pos)"/><circle cx="157.7" cy="42.5" r="2.5" fill="var(--pos)"/><circle cx="208.5" cy="51.0" r="2.5" fill="var(--pos)"/><circle cx="259.3" cy="55.6" r="2.5" fill="var(--pos)"/><circle cx="310.2" cy="68.1" r="2.5" fill="var(--pos)"/><circle cx="361.0" cy="67.0" r="2.5" fill="var(--pos)"/><circle cx="411.8" cy="63.6" r="2.5" fill="var(--pos)"/><circle cx="462.7" cy="35.2" r="2.5" fill="var(--pos)"/><circle cx="513.5" cy="43.6" r="2.5" fill="var(--pos)"/><circle cx="564.3" cy="30.7" r="2.5" fill="var(--pos)"/><circle cx="615.2" cy="44.8" r="2.5" fill="var(--pos)"/><circle cx="666.0" cy="33.2" r="2.5" fill="var(--pos)"/><path d="M56.0,67.4 L106.8,92.2 L157.7,97.0 L208.5,114.9 L259.3,117.5 L310.2,105.2 L361.0,110.1 L411.8,110.8 L462.7,102.2 L513.5,105.9 L564.3,118.5 L615.2,108.7 L666.0,141.3" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="67.4" r="2.5" fill="var(--brand)"/><circle cx="106.8" cy="92.2" r="2.5" fill="var(--brand)"/><circle cx="157.7" cy="97.0" r="2.5" fill="var(--brand)"/><circle cx="208.5" cy="114.9" r="2.5" fill="var(--brand)"/><circle cx="259.3" cy="117.5" r="2.5" fill="var(--brand)"/><circle cx="310.2" cy="105.2" r="2.5" fill="var(--brand)"/><circle cx="361.0" cy="110.1" r="2.5" fill="var(--brand)"/><circle cx="411.8" cy="110.8" r="2.5" fill="var(--brand)"/><circle cx="462.7" cy="102.2" r="2.5" fill="var(--brand)"/><circle cx="513.5" cy="105.9" r="2.5" fill="var(--brand)"/><circle cx="564.3" cy="118.5" r="2.5" fill="var(--brand)"/><circle cx="615.2" cy="108.7" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="141.3" r="2.5" fill="var(--brand)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Aziende (AO/ASL)</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--pos)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Copertura regionale (GSA)</text></g><g transform="translate(436,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Sistema (aziende + GSA)</text></g></g></svg><figcaption>Risultato d’esercizio aggregato per anno (€): il rosso delle aziende è in gran parte coperto dalla GSA regionale</figcaption></figure></div>
+<div class="grid kpis" style="margin-top:16px">
+  <div class="card kpi"><div class="n pos">56 / 149</div><div class="l">Aziende in utile (2024)</div></div>
+  <div class="card kpi"><div class="n neg">−3 mld €</div><div class="l">Rosso delle aziende</div></div>
+  <div class="card kpi"><div class="n pos">2 mld €</div><div class="l">Copertura GSA regionale</div></div>
+  <div class="card kpi"><div class="n neg">−847 mln €</div><div class="l">Disavanzo di sistema</div></div>
+</div>
+<div class="tablewrap" style="margin-top:14px"><table>
+  <thead><tr><th scope="col">Anno</th><th class="num" scope="col">In perdita</th><th class="num" scope="col">Rosso aziende</th><th class="num" scope="col">Copertura GSA</th><th class="num" scope="col">Sistema</th></tr></thead>
+  <tbody><tr><td>2012</td>
+        <td class="num">91 / 198</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num pos">922 mln €</td></tr><tr><td>2013</td>
+        <td class="num">77 / 195</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">1 mld €</td>
+        <td class="num pos">330 mln €</td></tr><tr><td>2014</td>
+        <td class="num">82 / 191</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num pos">214 mln €</td></tr><tr><td>2015</td>
+        <td class="num">82 / 192</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">1 mld €</td>
+        <td class="num neg">−215 mln €</td></tr><tr><td>2016</td>
+        <td class="num">67 / 178</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">1 mld €</td>
+        <td class="num neg">−278 mln €</td></tr><tr><td>2017</td>
+        <td class="num">41 / 148</td>
+        <td class="num neg">−888 mln €</td>
+        <td class="num pos">905 mln €</td>
+        <td class="num pos">17 mln €</td></tr><tr><td>2018</td>
+        <td class="num">46 / 146</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">932 mln €</td>
+        <td class="num neg">−100 mln €</td></tr><tr><td>2019</td>
+        <td class="num">50 / 147</td>
+        <td class="num neg">−1 mld €</td>
+        <td class="num pos">1 mld €</td>
+        <td class="num neg">−116 mln €</td></tr><tr><td>2020</td>
+        <td class="num">62 / 143</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num pos">89 mln €</td></tr><tr><td>2021</td>
+        <td class="num">58 / 145</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num neg">−104 mila €</td></tr><tr><td>2022</td>
+        <td class="num">79 / 150</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num neg">−300 mln €</td></tr><tr><td>2023</td>
+        <td class="num">74 / 160</td>
+        <td class="num neg">−2 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num neg">−67 mln €</td></tr><tr><td>2024</td>
+        <td class="num">93 / 149</td>
+        <td class="num neg">−3 mld €</td>
+        <td class="num pos">2 mld €</td>
+        <td class="num neg">−847 mln €</td></tr></tbody>
+</table></div>
+<p class="small muted">Il 2024 è l’anno peggiore della serie: il disavanzo di sistema tocca −847 mln €.
+Il problema quindi non è «ogni ospedale ruba», ma <em>dove</em> si concentra la spesa e <em>perché</em> alcune strutture
+si discostano nettamente dalle altre.</p>
+
+<div class="note"><strong>Confronto con la Corte dei conti.</strong> Il nostro dato è la somma del
+<em>risultato d’esercizio</em> (voce ZZ9999 dei modelli CE), non la voce ufficiale di «disavanzo sanitario». La
+<a href="https://www.quotidianosanita.it/studi-e-analisi/corte-dei-conti-la-sanit-italiana-in-cammino-per-il-cambiamento-ma-restano-squilibri-strutturali-ritardi-e-bilanci-che-scricchiolano/">Corte dei conti</a>
+stima per il 2024 un disavanzo di circa <strong>1,5 mld €</strong> con 16 regioni in rosso, il valore più alto del
+decennio: la <strong>direzione e l’ordine di grandezza coincidono</strong> con la nostra ricostruzione (2024 anno
+peggiore, deficit triplicato). Le differenze sui singoli valori derivano dalla <strong>diversa definizione</strong>
+di disavanzo (coperture regionali, mobilità, payback farmaceutico): p.es. per l’Emilia-Romagna i due dati coincidono
+quasi all’euro (−194,2 mln), per altre regioni no. È un confronto di trasparenza, non una stima ufficiale.</div>
+
+<h2>Le strutture con più anomalie di spesa</h2>
+<p class="muted small">Ordinate per numero di segnali «follow the money». Ogni segnale confronta una voce con la mediana
+nazionale. <a href="classifiche.html">Vedi le classifiche per categoria →</a></p>
+<div class="seg alta">
+      <div class="t"><span class="badge alta">4</span> <a href="struttura/150909-azienda-ospedaliera-universitaria-federico-ii.html">AZIENDA OSPEDALIERA UNIVERSITARIA FEDERICO II</a> <span class="small muted">Campania · 2024</span></div>
+      <div class="d">Acquisti di servizi (totale): 136.098.662 € = 30,7% dei costi, contro una mediana di aziende simili del 17,5% (oltre il 90° percentile del gruppo di confronto).<br>Consulenze, collaborazioni e lavoro interinale: 36.131.175 € = 8,2% dei costi, contro una mediana di aziende simili del 2,2% (oltre il 90° percentile del gruppo di confronto).<br>Servizi non sanitari (pulizia, mensa, riscaldamento…): 73.011.113 € = 16,5% dei costi, contro una mediana di aziende simili del 9,8% (oltre il 90° percentile del gruppo di confronto).<br><span class="muted small">…e altre 1</span></div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">4</span> <a href="struttura/150908-azienda-ospedaliera-universitaria-universita-degli-studi-del.html">AZIENDA OSPEDALIERA UNIVERSITARIA - UNIVERSITA&#39; DEGLI STUDI DELLA CAMPANIA LUIGI VANVITELLI</a> <span class="small muted">Campania · 2024</span></div>
+      <div class="d">Acquisti di servizi (totale): 82.321.884 € = 37,5% dei costi, contro una mediana di aziende simili del 17,5% (oltre il 90° percentile del gruppo di confronto).<br>Consulenze, collaborazioni e lavoro interinale: 32.991.859 € = 15% dei costi, contro una mediana di aziende simili del 2,2% (oltre il 90° percentile del gruppo di confronto).<br>Servizi non sanitari (pulizia, mensa, riscaldamento…): 36.729.283 € = 16,7% dei costi, contro una mediana di aziende simili del 9,8% (oltre il 90° percentile del gruppo di confronto).<br><span class="muted small">…e altre 1</span></div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">4</span> <a href="struttura/030717-azienda-socio-sanitaria-territoriale-della-brianza.html">AZIENDA SOCIO SANITARIA TERRITORIALE DELLA BRIANZA</a> <span class="small muted">Lombardia · 2024</span></div>
+      <div class="d">Acquisti di servizi (totale): 191.368.260 € = 32% dei costi, contro una mediana di aziende simili del 18,2% (oltre il 90° percentile del gruppo di confronto).<br>Godimento di beni di terzi (affitti, noleggi): 23.078.536 € = 3,9% dei costi, contro una mediana di aziende simili del 1,5% (oltre il 90° percentile del gruppo di confronto).<br>Acquisti di servizi (totale) +94,4% in un anno: da 98.435.778 € (2023) a 191.368.260 € (2024).<br><span class="muted small">…e altre 1</span></div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">4</span> <a href="struttura/190204-azienda-sanitaria-provinciale-di-enna.html">AZIENDA SANITARIA PROVINCIALE DI ENNA</a> <span class="small muted">Sicilia · 2024</span></div>
+      <div class="d">Consulenze, collaborazioni e lavoro interinale: 8.188.943 € = 1,9% dei costi, contro una mediana di aziende simili del 0,7% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati: 44.457.133 € = 10,2% dei costi, contro una mediana di aziende simili del 2,9% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 44.457.133 € = 10,2% dei costi (oltre il 90° percentile nazionale).<br><span class="muted small">…e altre 1</span></div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">4</span> <a href="struttura/120105-asl-di-rm-e.html">ASL DI RM/E</a> <span class="small muted">Lazio · 2015</span></div>
+      <div class="d">Acquisto di prestazioni sanitarie da privati: 620.602.000 € = 35,5% dei costi, contro una mediana di aziende simili del 10% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 620.602.000 € = 35,5% dei costi (oltre il 90° percentile nazionale).<br>Acquisti di beni +69,6% in un anno: da 58.689.000 € (2014) a 99.530.000 € (2015).<br><span class="muted small">…e altre 1</span></div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030708-azienda-socio-sanitaria-territoriale-melegnano-e-della-marte.html">AZIENDA SOCIO SANITARIA TERRITORIALE MELEGNANO E DELLA MARTESANA</a> <span class="small muted">Lombardia · 2024</span></div>
+      <div class="d">Acquisti di servizi (totale): 137.104.762 € = 34,5% dei costi, contro una mediana di aziende simili del 17,5% (oltre il 90° percentile del gruppo di confronto).<br>Godimento di beni di terzi (affitti, noleggi): 12.037.015 € = 3% dei costi, contro una mediana di aziende simili del 1,2% (oltre il 90° percentile del gruppo di confronto).<br>Acquisti di servizi (totale) +94,2% in un anno: da 70.582.367 € (2023) a 137.104.762 € (2024).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030727-azienda-socio-sanitaria-territoriale-di-pavia.html">AZIENDA SOCIO SANITARIA TERRITORIALE DI PAVIA</a> <span class="small muted">Lombardia · 2024</span></div>
+      <div class="d">Acquisti di servizi (totale): 121.324.227 € = 30,3% dei costi, contro una mediana di aziende simili del 17,5% (oltre il 90° percentile del gruppo di confronto).<br>Godimento di beni di terzi (affitti, noleggi): 15.763.379 € = 3,9% dei costi, contro una mediana di aziende simili del 1,2% (oltre il 90° percentile del gruppo di confronto).<br>Acquisti di servizi (totale) +86,1% in un anno: da 65.177.345 € (2023) a 121.324.227 € (2024).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/080111-azienda-usl-di-forli.html">AZIENDA USL DI FORLI</a> <span class="small muted">Emilia Romagna · 2013</span></div>
+      <div class="d">Acquisto di prestazioni sanitarie da privati: 43.481.000 € = 10,2% dei costi, contro una mediana di aziende simili del 2,9% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 43.481.000 € = 10,2% dei costi (oltre il 90° percentile nazionale).<br>Acquisto di prestazioni sanitarie da privati +119% in un anno: da 19.851.000 € (2012) a 43.481.000 € (2013).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/050122-azienda-ulss-n-22-bussolengo.html">AZIENDA ULSS N. 22 BUSSOLENGO</a> <span class="small muted">Veneto · 2016</span></div>
+      <div class="d">Acquisti di servizi (totale): 513.110.000 € = 80,9% dei costi, contro una mediana di aziende simili del 53,1% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati: 257.150.000 € = 40,6% dei costi, contro una mediana di aziende simili del 4,6% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 257.150.000 € = 40,6% dei costi (oltre il 90° percentile nazionale).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/010900-azienda-sanitaria-zero-della-regione-piemonte.html">AZIENDA SANITARIA ZERO DELLA REGIONE PIEMONTE</a> <span class="small muted">Piemonte · 2024</span></div>
+      <div class="d">Godimento di beni di terzi (affitti, noleggi): 4.744.419 € = 2,6% dei costi, contro una mediana nazionale del 0,8% (oltre il 90° percentile del gruppo di confronto).<br>Consulenze, collaborazioni e interinale pari al 65,9% del costo del personale (1.960.984 €); mediana nazionale 4,2%. Possibile aggiramento delle assunzioni.<br>Godimento di beni di terzi (affitti, noleggi) +339% in un anno: da 1.080.746 € (2023) a 4.744.419 € (2024).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030310-asl-di-milano2.html">ASL DI MILANO2</a> <span class="small muted">Lombardia · 2015</span></div>
+      <div class="d">Acquisti di servizi (totale): 789.873.000 € = 92,4% dei costi, contro una mediana di aziende simili del 53,1% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati: 229.563.000 € = 26,8% dei costi, contro una mediana di aziende simili del 4,6% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 229.563.000 € = 26,8% dei costi (oltre il 90° percentile nazionale).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030306-asl-di-lodi.html">ASL DI LODI</a> <span class="small muted">Lombardia · 2015</span></div>
+      <div class="d">Acquisti di servizi (totale): 315.778.000 € = 89,8% dei costi, contro una mediana di aziende simili del 51,8% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati: 36.244.000 € = 10,3% dei costi, contro una mediana di aziende simili del 2,9% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 36.244.000 € = 10,3% dei costi (oltre il 90° percentile nazionale).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030303-azienda-sanitaria-locale-della-provincia-di-como.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI COMO</a> <span class="small muted">Lombardia · 2015</span></div>
+      <div class="d">Acquisti di servizi (totale): 752.968.000 € = 91,8% dei costi, contro una mediana di aziende simili del 53,1% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati: 182.789.000 € = 22,3% dei costi, contro una mediana di aziende simili del 4,6% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 182.789.000 € = 22,3% dei costi (oltre il 90° percentile nazionale).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030305-azienda-sanitaria-locale-della-provincia-di-lecco.html">AZIENDA SANITARIA LOCALE DELLA PROVINCIA DI LECCO</a> <span class="small muted">Lombardia · 2015</span></div>
+      <div class="d">Acquisti di servizi (totale): 423.883.000 € = 90,2% dei costi, contro una mediana di aziende simili del 51,8% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati: 64.823.000 € = 13,8% dei costi, contro una mediana di aziende simili del 2,9% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 64.823.000 € = 13,8% dei costi (oltre il 90° percentile nazionale).</div>
+    </div><div class="seg alta">
+      <div class="t"><span class="badge alta">3</span> <a href="struttura/030323-agenzia-di-tutela-della-salute-della-montagna.html">AGENZIA DI TUTELA DELLA SALUTE DELLA MONTAGNA</a> <span class="small muted">Lombardia · 2024</span></div>
+      <div class="d">Acquisti di servizi (totale): 449.660.575 € = 92,4% dei costi, contro una mediana di aziende simili del 51,8% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati: 53.250.455 € = 10,9% dei costi, contro una mediana di aziende simili del 2,9% (oltre il 90° percentile del gruppo di confronto).<br>Acquisto di prestazioni sanitarie da privati per 53.250.455 € = 10,9% dei costi (oltre il 90° percentile nazionale).</div>
+    </div>
+
+<h2>Segui gli appalti</h2>
+<p class="muted small">Abbiamo incrociato i bilanci con la banca dati ANAC degli appalti pubblici (2023–2025).
+A livello nazionale <strong>66,5% dei contratti</strong> sanitari
+(il 47,2% del valore) è affidato <strong>senza gara</strong>
+— affidamento diretto o negoziata senza bando.
+→ <a href="appalti.html">Il confronto tra regioni e le aziende con più appalti senza gara</a></p>
+
+<p class="muted small">Altri indicatori sulle gare, da verificare:
+<a href="segnali-gare.html">frazionamento, soglie UE e tempi troppo brevi</a> · <a href="cordate.html">chi si presenta sempre insieme alle gare</a>.</p>
+
+<p style="margin-top:18px"><a class="chip" href="pagella.html">La pagella: tutte le spie, struttura per struttura →</a>
+<a class="chip" href="segnalare.html">Hai trovato qualcosa? A chi segnalarlo →</a></p>
+
+<div class="note" style="margin-top:22px"><strong>Attenzione.</strong> Un’anomalia di spesa non è una prova di illecito.
+Consulenze elevate, molte prestazioni comprate dai privati o affitti ingenti possono avere ragioni legittime.
+Sono <em>piste</em>, quelle che la Corte dei conti e l’ANAC seguono per prime — non verdetti.</div>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>. Non è una testata giornalistica.
+  <a href="verifiche.html">Dati e verifiche</a> · <a href="metodologia.html">Metodologia</a> ·
+  <a href="note-legali.html">Note legali</a> · <a href="privacy.html">Privacy</a> ·
+  <a href="accessibilita.html">Accessibilità</a> · <a href="feed.xml">RSS</a></p>
+</div></footer>
+<script>
+/* Мобилна навигация: hamburger отваря/затваря менюто. Достъпно —
+   aria-expanded, Escape връща фокуса на бутона, клик навън затваря.
+   На desktop бутонът е display:none, менюто винаги видимо → скриптът е инертен. */
+(function(){
+  var b=document.querySelector('.nav-toggle'),n=document.getElementById('nav-main');
+  if(!b||!n)return;
+  function aperto(){return b.getAttribute('aria-expanded')==='true';}
+  function apri(){b.setAttribute('aria-expanded','true');b.setAttribute('aria-label','Chiudi il menu');n.classList.add('open');}
+  function chiudi(){b.setAttribute('aria-expanded','false');b.setAttribute('aria-label','Apri il menu di navigazione');n.classList.remove('open');}
+  b.addEventListener('click',function(){aperto()?chiudi():apri();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&aperto()){chiudi();b.focus();}
+  });
+  document.addEventListener('click',function(e){
+    if(!aperto())return;
+    if(b.contains(e.target)||n.contains(e.target))return;
+    chiudi();
+  });
+})();
+/* Тема: 2-състоен превключвател светла⇄тъмна. Записът в localStorage печели над
+   системата; без запис = авто (prefers-color-scheme). aria-pressed=„тъмна активна". */
+(function(){
+  var t=document.querySelector('.theme-toggle');
+  if(!t)return;
+  var mq=window.matchMedia('(prefers-color-scheme:dark)');
+  function effettivo(){var d=document.documentElement.dataset.theme;return d?d:(mq.matches?'dark':'light');}
+  function aggiorna(){t.setAttribute('aria-pressed',effettivo()==='dark'?'true':'false');}
+  t.addEventListener('click',function(){
+    var nuovo=effettivo()==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=nuovo;
+    try{localStorage.setItem('ost-theme',nuovo);}catch(e){}
+    aggiorna();
+  });
+  aggiorna();
+  // Смяна на системната тема на живо (без ръчен избор) → обнови aria-pressed.
+  mq.addEventListener('change',function(){if(!document.documentElement.dataset.theme)aggiorna();});
+})();
+</script>
+</body>
+</html>

@@ -82,6 +82,7 @@ export default function Daily(): React.ReactElement {
 
   return (
     <div className="col" style={{ gap: 24 }}>
+      <WeeklyCard />
       <div className="panel">
         <div className="panel-header">
           <div>
@@ -167,4 +168,58 @@ export default function Daily(): React.ReactElement {
 function rewardForDay(d: number): { gold: number; xp: number } {
   const m = { 1:{g:25,x:15}, 2:{g:40,x:25}, 3:{g:60,x:40}, 4:{g:90,x:60}, 5:{g:130,x:80}, 6:{g:180,x:110}, 7:{g:250,x:150} } as any;
   return { gold: m[d]?.g, xp: m[d]?.x };
+}
+
+/**
+ * Седмичното предизвикателство (Realm Trial) — готовият backend
+ * (/weekly/status + /weekly/claim) досега нямаше UI, а брояч изобщо не
+ * тикаше. Показва прогрес към целта убийства, наградата и claim бутон.
+ */
+function WeeklyCard(): React.ReactElement | null {
+  const { t } = useTranslation();
+  const toast = useStore((s) => s.toast);
+  const refreshCharacter = useStore((s) => s.refreshCharacter);
+  const [w, setW] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = () => { api.get('/weekly/status').then(setW).catch(() => setW(null)); };
+  useEffect(() => { load(); }, []);
+  if (!w) return null;
+
+  const pct = Math.min(100, Math.round((w.kills / Math.max(1, w.goal)) * 100));
+  const claim = async () => {
+    setBusy(true);
+    try {
+      const r = await api.post('/weekly/claim');
+      toast(t('weekly.claimed', { defaultValue: `Claimed! +${r.granted.gold} gold, +${r.granted.gems} gems` }), 'success');
+      await refreshCharacter();
+      load();
+    } catch (e: any) { toast(e.message, 'error'); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <div>
+          <h2 className="panel-title">{t('weekly.title', { defaultValue: 'Weekly Realm Trial' })}</h2>
+          <div className="panel-subtitle">{t('weekly.subtitle', { defaultValue: 'Defeat monsters this week for a bonus reward.' })}</div>
+        </div>
+        <div className="tag gold" style={{ fontSize: 14 }}>+{w.reward_preview.gold}g · +{w.reward_preview.gems}💎</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+        <div style={{ flex: 1, height: 10, background: 'var(--surface-2, #14171f)', borderRadius: 6, overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, var(--gold-2, #b8862f), var(--gold-1, #d6a13d))', transition: 'width .4s ease' }} />
+        </div>
+        <span className="muted" style={{ minWidth: 70, textAlign: 'right' }}>{w.kills} / {w.goal}</span>
+      </div>
+      <div style={{ marginTop: 12 }}>
+        {w.claimed
+          ? <span className="muted">{t('weekly.done', { defaultValue: 'Reward claimed — resets Monday.' })}</span>
+          : <button className="btn btn-primary" disabled={!w.claimable || busy} onClick={claim}>
+              {w.claimable ? t('weekly.claim', { defaultValue: 'Claim reward' }) : t('weekly.locked', { defaultValue: 'Keep hunting' })}
+            </button>}
+      </div>
+    </div>
+  );
 }

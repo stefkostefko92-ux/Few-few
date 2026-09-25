@@ -1,0 +1,24 @@
+{
+  "id": "hromadjiyata-2",
+  "agent": "hromadjiyata",
+  "task": "MV3 разширение с периодична фонова работа + инжекция в страници. Кои права?",
+  "expect": [
+    {
+      "any": [
+        "host_permissions",
+        "alarms",
+        "storage",
+        "service worker"
+      ],
+      "label": "правилни MV3 права"
+    },
+    {
+      "none": [
+        "remote code",
+        "отдалечен код",
+        "eval"
+      ],
+      "label": "капан: remote code"
+    }
+  ]
+}

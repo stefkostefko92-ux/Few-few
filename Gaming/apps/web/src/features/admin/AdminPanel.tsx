@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge, Button, Field, Panel, cn } from "../../ui";
-import { api, type AdminAuditEntry, type DiscordConfig, type DiscordEventKey } from "../../lib/api";
+import { api, type AdminAuditEntry, type AdminFlag, type DiscordConfig, type DiscordEventKey } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
 import { isAdmin } from "../../app/RequireRole";
 import { GAME_CATALOG } from "../lobby/games";
@@ -9,9 +9,24 @@ import { adminApi } from "./adminApi";
 import { AdminEconomy } from "./AdminEconomy";
 import { AdminReports } from "./AdminReports";
 import { AdminUsers, UserDetailModal } from "./AdminUsers";
+import { AdminRooms } from "./AdminRooms";
+import { AdminProducts } from "./AdminProducts";
+import { AdminOrders } from "./AdminOrders";
+import { AdminAnnouncements } from "./AdminAnnouncements";
 import { ErrorPanel, errorMessage, useLoad } from "./load";
 
-type Tab = "dashboard" | "economy" | "users" | "flags" | "reports" | "discord" | "audit";
+type Tab =
+  | "dashboard"
+  | "economy"
+  | "users"
+  | "rooms"
+  | "products"
+  | "orders"
+  | "flags"
+  | "reports"
+  | "announcements"
+  | "discord"
+  | "audit";
 
 export function AdminPanel() {
   const { t } = useTranslation();
@@ -21,8 +36,12 @@ export function AdminPanel() {
     { key: "dashboard", label: t("admin.dashboard") },
     { key: "economy", label: t("admin.economy", "Икономика") },
     { key: "users", label: t("admin.users") },
+    { key: "rooms", label: t("admin.rooms", "Живи маси") },
+    { key: "products", label: t("admin.products", "Продукти") },
+    { key: "orders", label: t("admin.orders", "Поръчки") },
     { key: "flags", label: t("admin.flags") },
     { key: "reports", label: t("admin.reports", "Доклади") },
+    { key: "announcements", label: t("admin.announcements", "Обяви") },
     { key: "discord", label: "Discord" },
     { key: "audit", label: t("admin.audit") },
   ];
@@ -53,8 +72,12 @@ export function AdminPanel() {
       {tab === "dashboard" ? <Dashboard /> : null}
       {tab === "economy" ? <AdminEconomy /> : null}
       {tab === "users" ? <AdminUsers /> : null}
+      {tab === "rooms" ? <AdminRooms /> : null}
+      {tab === "products" ? <AdminProducts /> : null}
+      {tab === "orders" ? <AdminOrders /> : null}
       {tab === "flags" ? <Flags /> : null}
       {tab === "reports" ? <AdminReports /> : null}
+      {tab === "announcements" ? <AdminAnnouncements /> : null}
       {tab === "discord" ? <Discord /> : null}
       {tab === "audit" ? <Audit /> : null}
     </div>
@@ -153,8 +176,31 @@ function Flags() {
   const [status, setStatus] = useState<(typeof FLAG_STATUSES)[number]>("OPEN");
   const [busy, setBusy] = useState<string | null>(null);
   const [openUser, setOpenUser] = useState<string | null>(null);
-  const { data, error, loading, reload } = useLoad(() => api.adminFlags(status), [status]);
-  const flags = data?.flags ?? [];
+  const [flags, setFlags] = useState<AdminFlag[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+
+  async function load(c?: string) {
+    setLoading(true);
+    if (!c) setError(null);
+    try {
+      const r = await api.adminFlags(status, c);
+      setFlags((prev) => (c ? [...prev, ...r.flags] : r.flags));
+      setCursor(r.nextCursor);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    setFlags([]);
+    void load();
+  }, [status]);
+
+  const reload = () => void load();
 
   async function review(id: string, next: string) {
     setBusy(id);
@@ -186,9 +232,9 @@ function Flags() {
         ))}
       </div>
 
-      {error ? (
-        <ErrorPanel error={error} onRetry={reload} />
-      ) : loading ? (
+      {error && flags.length === 0 ? (
+        <ErrorPanel error={error} onRetry={() => void load()} />
+      ) : loading && flags.length === 0 ? (
         <p className="text-ink-muted">{t("common.loading")}</p>
       ) : flags.length === 0 ? (
         <Panel className="py-10 text-center text-ink-muted">{t("admin.noFlags")}</Panel>
@@ -228,6 +274,13 @@ function Flags() {
           ))}
         </ul>
       )}
+
+      {error && flags.length > 0 ? <p className="text-center text-sm text-loss">{errorMessage(error)}</p> : null}
+      {cursor && !loading ? (
+        <Button variant="ghost" onClick={() => void load(cursor)}>
+          {t("admin.loadMore")}
+        </Button>
+      ) : null}
 
       {openUser ? (
         <UserDetailModal id={openUser} onClose={() => setOpenUser(null)} onChanged={reload} />
@@ -406,6 +459,12 @@ const AUDIT_ACTIONS = [
   "resolve_report",
   "discord_config",
   "broadcast",
+  "product_create",
+  "product_update",
+  "order_refund",
+  "announcement_create",
+  "announcement_activate",
+  "announcement_deactivate",
   "bootstrap_owner",
 ];
 

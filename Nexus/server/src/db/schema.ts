@@ -172,6 +172,7 @@ export function applySchema(db: Database.Database): void {
       created_at   INTEGER NOT NULL,
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
+    CREATE INDEX IF NOT EXISTS idx_mail_char ON mail(character_id, created_at DESC);
 
     CREATE TABLE IF NOT EXISTS achievements (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -220,6 +221,18 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
 
+    -- Per-dungeon cooldown lock. Each dungeon defines its own cooldown_hours
+    -- (24/8/12/16/20) — the intended "daily-ish" gate. Previously that field
+    -- was dead and dungeons re-ran on the shared 7-10min action cooldown,
+    -- which turned the endgame dungeon into an XP/gold printing press.
+    CREATE TABLE IF NOT EXISTS dungeon_cooldowns (
+      character_id      INTEGER NOT NULL,
+      slug              TEXT NOT NULL,
+      next_available_at INTEGER NOT NULL,
+      PRIMARY KEY (character_id, slug),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS title_state (
       character_id    INTEGER PRIMARY KEY,
       current_title   TEXT NOT NULL DEFAULT '',
@@ -252,6 +265,10 @@ export function applySchema(db: Database.Database): void {
   addColumn('dungeons_cleared INTEGER NOT NULL DEFAULT 0');
   addColumn('current_title TEXT NOT NULL DEFAULT \'\'');
   addColumn('gems INTEGER NOT NULL DEFAULT 0');
+  // Momentum куки (game/momentum.ts): ловно комбо + първа победа за деня.
+  addColumn('hunt_streak INTEGER NOT NULL DEFAULT 0');
+  addColumn('hunt_streak_at INTEGER NOT NULL DEFAULT 0');
+  addColumn('first_win_day INTEGER NOT NULL DEFAULT 0');
 
   // ===== User IP tracking + tunable settings =====
   const userCols2 = db.prepare(`PRAGMA table_info(users)`).all() as { name: string }[];
@@ -262,6 +279,41 @@ export function applySchema(db: Database.Database): void {
   // token_version drives JWT invalidation: bump on password change /
   // reset and existing JWTs immediately fail authRequired (audit #6).
   if (!userHave.has('token_version')) db.exec(`ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`);
+  // ===== Ban infrastructure (chargeback → permanent IP+HWID ban;
+  // admin moderation). `last_hwid` е клиентски device-id (браузър няма
+  // истински HWID → стабилен fingerprint от localStorage, х-device-id). =====
+  if (!userHave.has('banned')) db.exec(`ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0`);
+  if (!userHave.has('banned_reason')) db.exec(`ALTER TABLE users ADD COLUMN banned_reason TEXT NOT NULL DEFAULT ''`);
+  if (!userHave.has('banned_at')) db.exec(`ALTER TABLE users ADD COLUMN banned_at INTEGER NOT NULL DEFAULT 0`);
+  // banned_until: 0 = ПОСТОЯНЕН (докато banned=1); >0 = временен, изтича на
+  // тази епоха. Проверките третират изтекъл бан като не-банат.
+  if (!userHave.has('banned_until')) db.exec(`ALTER TABLE users ADD COLUMN banned_until INTEGER NOT NULL DEFAULT 0`);
+  if (!userHave.has('last_hwid')) db.exec(`ALTER TABLE users ADD COLUMN last_hwid TEXT NOT NULL DEFAULT ''`);
+
+  // Ban списъци по IP и по устройство (device-id). Използват се и за
+  // спиране на ban-евейжън чрез нов акаунт (проверка при login/register).
+  // expires_at: 0 = постоянен; >0 = изтича на тази епоха.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS banned_ips (
+      ip         TEXT PRIMARY KEY,
+      reason     TEXT NOT NULL DEFAULT '',
+      user_id    INTEGER,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS banned_devices (
+      hwid       TEXT PRIMARY KEY,
+      reason     TEXT NOT NULL DEFAULT '',
+      user_id    INTEGER,
+      created_at INTEGER NOT NULL,
+      expires_at INTEGER NOT NULL DEFAULT 0
+    );
+  `);
+  // Forward-миграция за вече-съществуващи ban таблици (добави expires_at).
+  const ipCols = new Set((db.prepare(`PRAGMA table_info(banned_ips)`).all() as { name: string }[]).map((c) => c.name));
+  if (!ipCols.has('expires_at')) db.exec(`ALTER TABLE banned_ips ADD COLUMN expires_at INTEGER NOT NULL DEFAULT 0`);
+  const devCols = new Set((db.prepare(`PRAGMA table_info(banned_devices)`).all() as { name: string }[]).map((c) => c.name));
+  if (!devCols.has('expires_at')) db.exec(`ALTER TABLE banned_devices ADD COLUMN expires_at INTEGER NOT NULL DEFAULT 0`);
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS settings (
@@ -707,6 +759,137 @@ export function applySchema(db: Database.Database): void {
       consecutive_fails INTEGER NOT NULL DEFAULT 0,
       updated_at   INTEGER NOT NULL DEFAULT 0,
       PRIMARY KEY (character_id, dungeon_slug),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
+    /* ===== Social: приятели, block/mute ===== */
+    CREATE TABLE IF NOT EXISTS friend_requests (
+      from_id    INTEGER NOT NULL,
+      to_id      INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (from_id, to_id),
+      FOREIGN KEY (from_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (to_id)   REFERENCES characters(id) ON DELETE CASCADE
+    );
+    -- канонично a_id < b_id, за да е една двойка = един ред
+    CREATE TABLE IF NOT EXISTS friends (
+      a_id       INTEGER NOT NULL,
+      b_id       INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (a_id, b_id),
+      FOREIGN KEY (a_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (b_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS blocks (
+      blocker_id INTEGER NOT NULL,
+      blocked_id INTEGER NOT NULL,
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (blocker_id, blocked_id),
+      FOREIGN KEY (blocker_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (blocked_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
+    /* ===== Нотификации (in-app feed) ===== */
+    CREATE TABLE IF NOT EXISTS notifications (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      character_id INTEGER NOT NULL,
+      kind         TEXT NOT NULL,           -- friend_request | friend_accept | guild_invite | trade | system
+      message      TEXT NOT NULL,
+      ref          TEXT NOT NULL DEFAULT '', -- напр. "char:42" / "trade:7"
+      read_at      INTEGER NOT NULL DEFAULT 0,
+      created_at   INTEGER NOT NULL,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_notif_char ON notifications(character_id, created_at DESC);
+
+    /* ===== P2P trade (escrow) ===== */
+    CREATE TABLE IF NOT EXISTS trade_offers (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_id       INTEGER NOT NULL,
+      to_id         INTEGER NOT NULL,
+      -- escrow: JSON масив от inventory_id + злато от всяка страна
+      from_items    TEXT NOT NULL DEFAULT '[]',
+      to_items      TEXT NOT NULL DEFAULT '[]',
+      from_gold     INTEGER NOT NULL DEFAULT 0,
+      to_gold       INTEGER NOT NULL DEFAULT 0,
+      from_ready    INTEGER NOT NULL DEFAULT 0,
+      to_ready      INTEGER NOT NULL DEFAULT 0,
+      status        TEXT NOT NULL DEFAULT 'pending', -- pending | completed | cancelled | declined
+      created_at    INTEGER NOT NULL,
+      updated_at    INTEGER NOT NULL,
+      FOREIGN KEY (from_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (to_id)   REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_trade_parties ON trade_offers(from_id, to_id, status);
+
+    /* ===== Чат: глобален/регионален канал + лични съобщения (DM) ===== */
+    -- Публичен чат по канал: 'global' или slug на регион (whispering_woods…).
+    CREATE TABLE IF NOT EXISTS global_chat (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      channel      TEXT NOT NULL DEFAULT 'global',
+      character_id INTEGER NOT NULL,
+      message      TEXT NOT NULL,
+      created_at   INTEGER NOT NULL,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_global_chat_channel ON global_chat(channel, id);
+
+    -- Лични съобщения между приятели. thread_key = "min-max" за бърза извадка
+    -- на разговор в двете посоки.
+    CREATE TABLE IF NOT EXISTS direct_messages (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_key  TEXT NOT NULL,          -- "loId-hiId"
+      from_id     INTEGER NOT NULL,
+      to_id       INTEGER NOT NULL,
+      message     TEXT NOT NULL,
+      read_at     INTEGER NOT NULL DEFAULT 0,
+      created_at  INTEGER NOT NULL,
+      FOREIGN KEY (from_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (to_id)   REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_dm_thread ON direct_messages(thread_key, id);
+    CREATE INDEX IF NOT EXISTS idx_dm_to_unread ON direct_messages(to_id, read_at);
+
+    /* ===== Bestiary колекции: еднократни награди за пълен регион ===== */
+    CREATE TABLE IF NOT EXISTS bestiary_region_claims (
+      character_id INTEGER NOT NULL,
+      region       TEXT NOT NULL,
+      claimed_at   INTEGER NOT NULL,
+      PRIMARY KEY (character_id, region),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
+    /* ===== Гилдийни седмични мисии (кооперативен прогрес) ===== */
+    CREATE TABLE IF NOT EXISTS guild_mission_progress (
+      guild_id    INTEGER NOT NULL,
+      week_key    INTEGER NOT NULL,
+      mission_key TEXT NOT NULL,
+      progress    INTEGER NOT NULL DEFAULT 0,
+      rewarded    INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (guild_id, week_key, mission_key),
+      FOREIGN KEY (guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+    );
+
+    /* ===== Сезонни класации (месечен сезон, lazy финализация) ===== */
+    CREATE TABLE IF NOT EXISTS season_scores (
+      season_key   TEXT NOT NULL,            -- 'YYYY-MM' (UTC)
+      character_id INTEGER NOT NULL,
+      points       INTEGER NOT NULL DEFAULT 0,
+      updated_at   INTEGER NOT NULL,
+      PRIMARY KEY (season_key, character_id),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_season_scores ON season_scores(season_key, points DESC);
+    CREATE TABLE IF NOT EXISTS season_results (
+      season_key   TEXT NOT NULL,
+      character_id INTEGER NOT NULL,
+      rank         INTEGER NOT NULL,
+      points       INTEGER NOT NULL,
+      reward_gems  INTEGER NOT NULL DEFAULT 0,
+      reward_gold  INTEGER NOT NULL DEFAULT 0,
+      title        TEXT NOT NULL DEFAULT '',
+      created_at   INTEGER NOT NULL,
+      PRIMARY KEY (season_key, character_id),
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
   `);

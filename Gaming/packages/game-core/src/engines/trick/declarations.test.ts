@@ -43,7 +43,7 @@ describe("belote declarations — detection", () => {
 });
 
 describe("belote declarations — team resolution", () => {
-  it("only the team with the best sequence scores; belote always scores", () => {
+  it("only the team with the best sequence scores; belote is NOT scored here", () => {
     // Team A (seat 0) has a fifty; Team B (seat 1) has a tierce + belote in trump S.
     const hands = [
       ["7H", "8H", "9H", "TH", "AC", "2S".replace("2", "8"), "QD", "KD"], // seat 0: fifty in H
@@ -52,10 +52,11 @@ describe("belote declarations — team resolution", () => {
       ["2S".replace("2", "7"), "JS", "9S", "TS", "QH", "KH", "QC", "KC"], // seat 3
     ];
     const r = resolveDeclarations(hands, "S");
-    // Team A's fifty (50) beats Team B's tierce (20) -> A scores 50, B scores 0 sequences.
+    // Team A's fifty (50) beats Team B's tierce (20) -> A scores all its combos.
     expect(r.teamPoints[0]).toBeGreaterThanOrEqual(50);
-    // Belote (seat 1, team B) always scores 20.
-    expect(r.teamPoints[1]).toBe(20);
+    // Belote (seat 1, team B) е изключен тук — зачита се при игра (belote.ts).
+    expect(r.teamPoints[1]).toBe(0);
+    expect(r.scored.some((d) => d.kind === "belote")).toBe(false);
   });
 
   it("a carré outranks an equal-value sequence", () => {

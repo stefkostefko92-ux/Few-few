@@ -277,6 +277,90 @@ function magicCircleTexture(tint: string): THREE.CanvasTexture {
   return tex;
 }
 
+/**
+ * Soft round particle sprite — a radial white→transparent falloff.
+ * Без него THREE.PointsMaterial рисува голите точки като ТВЪРДИ КВАДРАТИ
+ * (виждаше се на всеки impact/defeat burst). С тази текстура като `map`
+ * (+ AdditiveBlending: src = SrcAlpha, dst = One) alpha-каналът модулира
+ * приноса → меки кръгли искри вместо квадратчета. Чист factory —
+ * извиква се веднъж на mount, кешира се per-mount (виж useEffect) и се
+ * disposва там. НЕ модул-левъл singleton: файлът поддържа конкурентни
+ * сцени (replay върху сцена, която още се демонтира), затова споделен
+ * реф, disposван в per-instance cleanup, би счупил другата инстанция.
+ */
+function softParticleTexture(): THREE.CanvasTexture {
+  const S = 64;
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+  // Плътно ядро, бърз, но мек спад към прозрачен ръб.
+  g.addColorStop(0.0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.25, 'rgba(255,255,255,0.85)');
+  g.addColorStop(0.55, 'rgba(255,255,255,0.28)');
+  g.addColorStop(1.0, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, S, S);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+}
+
+/**
+ * Вертикален градиент за лъча (beam column) при магия: ярко в основата
+ * (при магическия кръг), меко избледняващо към върха. Преди това лъчът
+ * беше плътен additive цилиндър с opacity 0.7 × DoubleSide → двойно
+ * събиране + bloom го изпичаше до чисто БЯЛО и заличаваше целта. Сега
+ * alpha-каналът дава форма на светлинен сноп, а не солиден стълб.
+ * Чист per-mount factory (виж softParticleTexture).
+ */
+function beamGradientTexture(): THREE.CanvasTexture {
+  const W = 8, H = 128;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d')!;
+  // CanvasTexture flipY=true → текстурно v=0 чете ДОЛНИЯ canvas ред.
+  // CylinderGeometry: v=0 е долната шапка (основата, при магическия кръг).
+  // За ярко в ОСНОВАТА → долният canvas ред плътен, горният прозрачен.
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0.0, 'rgba(255,255,255,0)');    // canvas връх → v=1 (връх на лъча) прозрачен
+  g.addColorStop(0.45, 'rgba(255,255,255,0.35)');
+  g.addColorStop(0.85, 'rgba(255,255,255,0.9)');
+  g.addColorStop(1.0, 'rgba(255,255,255,1)');    // canvas дъно → v=0 (основа) плътно
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+}
+
+/**
+ * Градиент за „god-ray“ конуса при impact. Конусът е завъртян на π (върхът
+ * сочи към земята при точката на удара, широката шапка е горе). Иска ярко
+ * при ВЪРХА (v=1, при земята) и разтваряне към широката горна шапка (v=0),
+ * иначе широкият additive диск горе се изпичаше до бяло. Обратна ориентация
+ * спрямо beamGradientTexture заради завъртането. Чист per-mount factory.
+ */
+function godRayGradientTexture(): THREE.CanvasTexture {
+  const W = 8, H = 128;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d')!;
+  // flipY: canvas връх (y=0) → v=1 (върхът на конуса, при земята) = плътно.
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0.0, 'rgba(255,255,255,0.95)'); // v=1 (при земята) — ярко
+  g.addColorStop(0.4, 'rgba(255,255,255,0.4)');
+  g.addColorStop(1.0, 'rgba(255,255,255,0)');    // v=0 (широка горна шапка) — прозрачно
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+}
+
 /** 0xRRGGBB int + alpha → `rgba(r,g,b,a)` string for canvas gradients. */
 function hexA(color: number, alpha: number): string {
   const r = (color >> 16) & 0xff, g = (color >> 8) & 0xff, b = color & 0xff;
@@ -1040,6 +1124,13 @@ function makeContactShadowTexture(): THREE.CanvasTexture {
  *  look that makes a low-poly character read as alive and three-
  *  dimensional. Cheap; runs in the existing standard shader. */
 function addFresnelRim(mat: THREE.MeshStandardMaterial, color: THREE.Color, power = 2.6, strength = 0.5): void {
+  // The injected vertex code reads `objectNormal` + `normalMatrix`, which only
+  // exist in lit (standard/physical) shaders. Some imported GLB rigs ship
+  // unlit MeshBasicMaterial slots (e.g. a baked "Wizard_Texture"); injecting
+  // the rim there produced "objectNormal: undeclared identifier" → the shader
+  // failed to compile and that mesh vanished. Skip any material without
+  // normals so the rig still renders (just without the rim glow).
+  if (!(mat as any).isMeshStandardMaterial && !(mat as any).isMeshPhysicalMaterial) return;
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uRimColor = { value: color };
     shader.uniforms.uRimPower = { value: power };
@@ -1122,7 +1213,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   const foeLightRef = useRef<THREE.PointLight | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const camAnchorRef = useRef({ x: 0, y: 1.9, z: 6.0, lx: 0, ly: 1.3, lz: 0, fov: 48 });
-  const shakeRef = useRef({ amount: 0, t: 0 });
+  // `dur` пази началната продължителност на всеки shake, за да нормализира
+  // trauma-обвивката (quadratic falloff) спрямо собствената ѝ дължина.
+  const shakeRef = useRef({ amount: 0, t: 0, dur: 0 });
   const timeScaleRef = useRef(1);
   const hitStopRef = useRef(0);
   const introRef = useRef({ t: 0, dur: 1.4, active: true });
@@ -1169,14 +1262,39 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /* ----- scene + camera ----- */
     const scene = new THREE.Scene();
+    if (import.meta.env.DEV) (window as any).__scene = scene;
     scene.background = new THREE.Color(pal.sky);
     // По-стегната мъгла = по-силна въздушна перспектива: задните скали се
     // разтварят към хоризонта и сцената получава дълбочина на план-слоеве.
     scene.fog = new THREE.Fog(pal.fog, 6, 18);
 
-    const camera = new THREE.PerspectiveCamera(42, mount.clientWidth / mount.clientHeight, 0.1, 100);
-    camera.position.set(0, 2.4, 8.0);
-    camera.lookAt(0, 1.4, 0);
+    const camera = new THREE.PerspectiveCamera(48, mount.clientWidth / mount.clientHeight, 0.1, 100);
+
+    /* ----- рамкиране, независимо от съотношението -----
+     * Двамата бойци стоят на x=±FIGHTER_HALF_SPAN, крака на y=0, глави
+     * ~y=1.8. Изчисляваме минималната отстояща z, при която ЦЕЛИЯТ им
+     * силует се събира и хоризонтално, и вертикално за дадено съотношение,
+     * и никога не пускаме камерата по-близо от базовата z (по-широкото
+     * съотношение → вертикалът лимитира → базовата z стига; тесен/портретен
+     * панел → хоризонталът лимитира → дърпаме камерата назад). Така бойците
+     * са в кадър при 2.5:1 (прод панел), 2.16:1 (демо) И 1.28:1 (тесен). */
+    const FRAME_FOV = 48;                 // резинг FOV (същият като anchor)
+    const FRAME_HALF_W = 3.2;             // half-span бойци + поле за HUD/оръжие
+    const FRAME_HALF_H = 1.7;             // half-height силует спрямо look-точката
+    const FRAME_BASE_Z = 6.0;             // базова (минимална) резинг дистанция
+    const framingZ = (aspect: number): number => {
+      const t = Math.tan((FRAME_FOV * Math.PI) / 180 / 2);
+      const zW = FRAME_HALF_W / (t * Math.max(0.3, aspect));
+      const zH = FRAME_HALF_H / t;
+      return Math.max(FRAME_BASE_Z, zW, zH);
+    };
+    const restZ0 = framingZ(camera.aspect);
+    camAnchorRef.current = { x: 0, y: 1.9, z: restZ0, lx: 0, ly: 1.3, lz: 0, fov: FRAME_FOV };
+    // Стартовата позиция вече е фронтално рамкираща (по-широк push-in
+    // отстъп), НЕ странично/ниско както преди — така при idle камерата
+    // никога не е вътре в скала/дърво.
+    camera.position.set(0, 3.2, restZ0 + 2.5);
+    camera.lookAt(0, 1.3, 0);
     cameraRef.current = camera;
 
     /* ----- photoreal backend (WebGPU → WebGL2 → lite) -----
@@ -1401,6 +1519,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       for (const t of [albedoTex, normalTex, roughTex]) {
         t.wrapS = t.wrapT = THREE.RepeatWrapping;
         t.repeat.set(5, 3);
+        // Анизотропно филтриране — подът е отдалечаваща се grazing-angle
+        // плоскост с 5×3 tile repeat: точно случаят, в който трилинейният
+        // mipmap размазва далечната половина. Анизотропията пази микро-
+        // релефа остър към хоризонта (най-евтиният „AAA под" трик). three
+        // клампва до хардуерния максимум при upload → 8 е безопасно навсякъде.
+        t.anisotropy = 8;
       }
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(34, 22, 1, 1),
@@ -1618,6 +1742,23 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
             if (!std || !std.isMaterial) continue;
             std.envMapIntensity = 1.15;
             if (std.roughness !== undefined) std.roughness = Math.min(1, std.roughness * 0.9 + 0.05);
+            // Анизотропно филтриране на всяка rig текстура — броня/оръжие
+            // албедо+нормал+roughness четат размазано при grazing ъглите,
+            // през които бойците се въртят по време на замах. three клампва
+            // до хардуерния максимум; 8 е безопасно на всеки път (само
+            // sampler state — без нови draw calls, ок и на lite).
+            for (const tex of [std.map, std.normalMap, std.roughnessMap, std.metalnessMap, std.emissiveMap, std.aoMap]) {
+              if (tex && tex.anisotropy < 8) { tex.anisotropy = 8; tex.needsUpdate = true; }
+            }
+            // Леко задълбочаване на нормал-мапнатия релеф, за да изрязва
+            // ключовата светлина детайла по плочи/кожа/метал — мек, capнат
+            // boost (повечето Mixamo/RPM default-и са 1.0 → 1.2).
+            if (std.normalMap && std.normalScale) {
+              std.normalScale.set(
+                Math.min(2, std.normalScale.x * 1.2),
+                Math.min(2, std.normalScale.y * 1.2),
+              );
+            }
             // Fresnel rim suits the flat-shaded low-poly silhouette; on a
             // realistic PBR skin it reads as an unnatural glow, so skip it.
             if (!isRealistic) addFresnelRim(std, rimColor, 2.8, 0.42);
@@ -1769,8 +1910,16 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     for (let i = 0; i < MAX_P; i++) lives[i] = 1; // life >= maxL == dead
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    // Per-mount VFX текстури (не модул-левъл singletons) — конкурентни
+    // сцени disposват собствените си без да чупят другата инстанция.
+    // Disposват се в unmount cleanup по-долу.
+    const softParticleTex = softParticleTexture();
+    const beamGradientTex = beamGradientTexture();
+    const godRayGradientTex = godRayGradientTexture();
     const pmat = new THREE.PointsMaterial({
-      size: 0.18, vertexColors: true, transparent: true,
+      size: 0.20, vertexColors: true, transparent: true,
+      // Мека кръгла спрайт-текстура — иначе точките са твърди квадрати.
+      map: softParticleTex, alphaTest: 0.01,
       blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
     });
     const pts = new THREE.Points(geo, pmat);
@@ -1841,11 +1990,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       m.userData = { kind: 'magicCircle', life: 0, max: 1.1 };
       fxGroup.add(m);
 
-      // Vertical beam column
+      // Vertical beam column — по-тесен светлинен сноп с вертикален
+      // градиент (ярко в основата, избледнява към върха). По-рано плътен
+      // additive цилиндър изпичаше целта до бяло.
       const beam = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.45, 0.7, 5.5, 24, 1, true),
+        new THREE.CylinderGeometry(0.30, 0.5, 5.5, 24, 1, true),
         new THREE.MeshBasicMaterial({
-          color, transparent: true, opacity: 0.55,
+          color, map: beamGradientTex, transparent: true, opacity: 0.34,
           blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
         }),
       );
@@ -2071,7 +2222,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     function godRay(x: number, z: number, color: number, height: number) {
       const geo = new THREE.ConeGeometry(0.8, height, 16, 1, true);
       const mat = new THREE.MeshBasicMaterial({
-        color, transparent: true, opacity: 0.35,
+        color, map: godRayGradientTex, transparent: true, opacity: 0.26,
         blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
       });
       const cone = new THREE.Mesh(geo, mat);
@@ -2150,6 +2301,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     // the recipe so Frostvale gets falling snow, Stormpeaks gets settling
     // mist, Emberreach gets rising embers, Conclave gets rising rune
     // motes, Voidshade gets violet aberration sparks, etc.
+    // emberSpec.color е константа за целия живот на сцената → пресметни
+    // базовия HSL веднъж, вместо `new THREE.Color` + `getHSL` на всеки
+    // ambient spawn (spawnAmbient се вика всеки кадър в rAF пътя).
+    const emberBaseHsl = { h: 0, s: 0, l: 0 };
+    new THREE.Color(emberSpec.color).getHSL(emberBaseHsl);
+
     function spawnAmbient(dt: number) {
       if (Math.random() > dt * emberSpec.rate) return;
       const p = particlesRef.current!;
@@ -2166,13 +2323,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         : -(0.4 + Math.random() * 0.4);
       p.velocities[idx + 2] = (Math.random() - 0.5) * 0.1;
       // Subtle hue jitter so the trail doesn't look monochromatic.
-      const baseColor = new THREE.Color(emberSpec.color);
-      const hsl = { h: 0, s: 0, l: 0 };
-      baseColor.getHSL(hsl);
       tmpColor.setHSL(
-        (hsl.h + (Math.random() - 0.5) * 0.08 + 1) % 1,
-        Math.min(1, hsl.s * (0.85 + Math.random() * 0.3)),
-        Math.min(1, hsl.l * (0.85 + Math.random() * 0.3)),
+        (emberBaseHsl.h + (Math.random() - 0.5) * 0.08 + 1) % 1,
+        Math.min(1, emberBaseHsl.s * (0.85 + Math.random() * 0.3)),
+        Math.min(1, emberBaseHsl.l * (0.85 + Math.random() * 0.3)),
       );
       p.colors[idx] = tmpColor.r; p.colors[idx + 1] = tmpColor.g; p.colors[idx + 2] = tmpColor.b;
       p.lives[slot] = 0;
@@ -2212,11 +2366,21 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /* ----- resize ----- */
     function resize() {
-      const w = mount.clientWidth, h = mount.clientHeight;
+      // ||1 пази от 0×0 колабирал панел: aspect=NaN се самозадържа в
+      // lerp-натата камера (lerp(NaN,x)=NaN) дори след връщане на размера.
+      const w = mount.clientWidth || 1, h = mount.clientHeight || 1;
       if (renderer) renderer.setSize(w, h, false);
       if (composer) composer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      // Пре-рамкиране при смяна на съотношението: обновяваме резинг
+      // дистанцията, за да останат бойците в кадър и на много широк
+      // (прод панел ~2.5:1) и на тесен/портретен viewport. Пипаме само
+      // когато не тече атака (иначе бихме се борили с камерния трак на
+      // хореографа); при idle това е доминиращият случай.
+      if (!choreoRef.current?.isPlaying()) {
+        camAnchorRef.current.z = framingZ(camera.aspect);
+      }
       // Invalidate the cached mount rect so the HUD projector re-reads it.
       mountRectDirty.flag = true;
     }
@@ -2305,7 +2469,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           renderer.toneMappingExposure = tuneables.exposure * (1 - amount * 0.20);
         }
       },
-      shake: (amount, time) => { shakeRef.current = { amount, t: time }; },
+      shake: (amount, time) => { shakeRef.current = { amount, t: time, dur: time }; },
       hitstop: (dur) => { hitStopRef.current = dur; },
       bloomKick: (delta, recover) => {
         // Stash on an animRef-like scratchpad; the post tick block below
@@ -2398,7 +2562,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     let last = performance.now();
     function tick(now: number) {
       const frameMs = now - last;          // real (uncapped) frame time
-      const rawDt = Math.min(0.05, frameMs / 1000);
+      // Флор при 0: rAF `now` може да е с различен произход спрямо
+      // performance.now() (записан в `last` при setup) → първи/рестартов
+      // кадър дава ОТРИЦАТЕЛЕН frameMs. Без този флор отрицателното dt
+      // прави lerp-а на камерата разходящ (пропада в геометрия / отлита) и
+      // кара intro.t да върви назад, тъй че intro никога не завършва.
+      const rawDt = Math.max(0, Math.min(0.05, frameMs / 1000));
       last = now;
       adaptiveResolution(frameMs > 0 && frameMs < 1000 ? frameMs : 16);
 
@@ -2462,7 +2631,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           obj.scale.set(s, s, s);
           mat.opacity = k < 0.3 ? k / 0.3 : 1 - (k - 0.3) / 0.7;
         } else if (ud.kind === 'beam') {
-          mat.opacity = k < 0.3 ? (k / 0.3) * 0.7 : (1 - (k - 0.3) / 0.7) * 0.7;
+          mat.opacity = k < 0.3 ? (k / 0.3) * 0.42 : (1 - (k - 0.3) / 0.7) * 0.42;
           obj.scale.x = 1 + Math.sin(now * 0.02) * 0.1;
           obj.scale.z = 1 + Math.cos(now * 0.02) * 0.1;
         } else if (ud.kind === 'arc' || ud.kind === 'streak') {
@@ -2499,7 +2668,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           mat.opacity = (1 - k) * 0.45;
         } else if (ud.kind === 'godRay') {
           // Flicker the opacity + slight rotation
-          mat.opacity = (1 - k) * 0.4 * (0.85 + Math.sin(now * 0.05) * 0.15);
+          mat.opacity = (1 - k) * 0.28 * (0.85 + Math.sin(now * 0.05) * 0.15);
           obj.rotation.y += dt * 1.8;
         }
         if (ud.life >= ud.max) {
@@ -2576,7 +2745,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       idleHandheldRef.current.x = Math.sin(now * 0.00041) * 0.018 + Math.sin(now * 0.00073) * 0.010;
       idleHandheldRef.current.y = Math.sin(now * 0.00033) * 0.013 + Math.sin(now * 0.00067) * 0.008;
 
-      // Intro orbital sweep — overrides camera anchor for the first 1.4s.
+      // Intro push-in — за първите 1.4s дърпаме камерата фронтално навътре
+      // и надолу към резинг anchor-а. СТАРО поведение: широк страничен
+      // орбитален замах, който стартираше камерата на z≈2.9 отстрани и
+      // ниско → пропадаше вътре в скали/дървета при idle. НОВОТО е чисто
+      // фронтално (x=0), винаги рамкиращо и двамата бойци при всеки кадър от
+      // интрото и при всяко съотношение, така че никога не е в геометрия.
       const intro = introRef.current;
       let camTargetX = camAnchorRef.current.x;
       let camTargetY = camAnchorRef.current.y;
@@ -2586,20 +2760,46 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         intro.t += rawDt;
         const k = Math.min(1, intro.t / intro.dur);
         const eased = 1 - Math.pow(1 - k, 3);
-        const ang = (1 - eased) * Math.PI * 0.6 + Math.PI / 2; // 162° → 90° (front)
-        const radius = 9.5 - eased * 3.0;
-        camTargetX = Math.cos(ang) * radius * 0.4;
-        camTargetY = 4.5 - eased * 2.3;
-        camTargetZ = Math.sin(ang) * radius;
-        camTargetFov = 52 - eased * 6;
+        camTargetX = 0;
+        camTargetY = 3.2 - eased * (3.2 - camAnchorRef.current.y);   // 3.2 → anchor.y
+        camTargetZ = (camAnchorRef.current.z + 2.5) - eased * 2.5;   // anchor.z+2.5 → anchor.z
+        camTargetFov = 54 - eased * (54 - camAnchorRef.current.fov); // 54 → anchor.fov
         if (k >= 1) intro.active = false;
+      }
+      // Предпазен clamp на камерната ЦЕЛ (point B): бойците са на z=0, крака
+      // на y=0; пропсовете/god-ray-ите са зад тях (z<0). Никога не пускаме
+      // целта под земята, зад бойците или прекалено настрани — така нито
+      // атака, нито intro може да вкара камерата в терен/пропс или да
+      // изхвърли бойците извън кадър.
+      camTargetX = Math.max(-4.5, Math.min(4.5, camTargetX));
+      camTargetY = Math.max(0.8, Math.min(6.0, camTargetY));
+      camTargetZ = Math.max(4.0, Math.min(12.0, camTargetZ));
+      // Aspect-осъзнат под на push-in разстоянието: по време на атака
+      // хореографът дърпа камерата навътре, а бойците лунжат до ~±2.6. На
+      // ТЕСЕН/портретен viewport (по-малко хоризонтално поле) същият push-in
+      // изхвърля лунжиращия боец извън кадър. Затова не пускаме камерата
+      // по-близо от дистанцията, при която полу-широчината (боец+lunge+поле)
+      // се събира хоризонтално за текущите fov/aspect. На широк панел това е
+      // малко число → push-in-ът остава свободен; на тесен → спира по-навън.
+      {
+        const camNow = cameraRef.current;
+        const tanH = Math.tan(((camNow ? camNow.fov : FRAME_FOV) * Math.PI) / 180 / 2);
+        const aspect = camNow ? camNow.aspect : 1.78;
+        const minZ = 3.5 / (tanH * Math.max(0.3, aspect));
+        camTargetZ = Math.max(camTargetZ, Math.min(minZ, 9.5));
       }
 
       const cam = cameraRef.current!;
       const s = shakeRef.current;
       s.t = Math.max(0, s.t - rawDt);
-      const shakeX = s.t > 0 ? (Math.random() - 0.5) * s.amount * 2 * (s.t / 0.35) : 0;
-      const shakeY = s.t > 0 ? (Math.random() - 0.5) * s.amount * (s.t / 0.35) : 0;
+      // Trauma-обвивка (Squirrel Eiserloh): shake ∝ trauma², където trauma
+      // спада линейно от 1 към 0 за собствената продължителност на удара.
+      // Квадратът дава ФРОНТ-НАТОВАРЕН punch — силен в момента на удара,
+      // бързо утихва вместо линейно „бръмчене". Дава тежест на попадението.
+      const trauma = s.t > 0 && s.dur > 0 ? s.t / s.dur : 0;
+      const shakeK = trauma * trauma;
+      const shakeX = shakeK > 0 ? (Math.random() - 0.5) * s.amount * 2 * shakeK : 0;
+      const shakeY = shakeK > 0 ? (Math.random() - 0.5) * s.amount * shakeK : 0;
 
       const lerpK = intro.active ? Math.min(1, rawDt * 8) : Math.min(1, rawDt * 6);
       const hh = idleHandheldRef.current;
@@ -2608,8 +2808,17 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       cam.position.z += (camTargetZ - cam.position.z) * Math.min(1, rawDt * 4);
       // Dolly-zoom FOV lerp
       cam.fov += (camTargetFov - cam.fov) * Math.min(1, rawDt * 5);
+      // Финален твърд clamp на позицията: дори натрупан shake/handheld не
+      // може да вкара камерата под земята или зад бойците (в god-ray-ите
+      // и пропсовете зад тях).
+      cam.position.y = Math.max(0.6, cam.position.y);
+      cam.position.z = Math.max(3.5, cam.position.z);
       cam.updateProjectionMatrix();
       cam.lookAt(camAnchorRef.current.lx, camAnchorRef.current.ly, camAnchorRef.current.lz);
+      if (import.meta.env.DEV) {
+        (window as any).__cam = cam;
+        (window as any).__camDbg = { p: [cam.position.x, cam.position.y, cam.position.z], fov: cam.fov, anchor: { ...camAnchorRef.current }, introActive: introRef.current.active, playing: choreoRef.current?.isPlaying(), aspect: cam.aspect, hero: heroRigRef.current ? [heroRigRef.current.position.x, heroRigRef.current.position.y, heroRigRef.current.position.z] : null, foe: foeRigRef.current ? [foeRigRef.current.position.x, foeRigRef.current.position.y, foeRigRef.current.position.z] : null };
+      }
 
       // Floating HUD projection — anchor each health bar above its rig's
       // head by projecting a world point to screen space. Runs every
@@ -2820,6 +3029,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           ref.current = null;
         }
       }
+      // КРИТИЧНО (fix _cacheIndex crash): нулираме и rig ref-овете + чистим
+      // кешираните combatActions. uncacheRoot по-горе разваля bindings-ите на
+      // тези action-и; ако при смяна на регион новият риг още се зарежда
+      // (async GLB), heroRigRef/foeRigRef иначе продължават да сочат СТАРИЯ,
+      // uncache-нат риг. Атака в този прозорец кара хореографа да извика
+      // action.play() върху счупените bindings → three хвърля
+      // „Cannot set properties of undefined (setting '_cacheIndex')". С
+      // нулиране rigCrossfade вижда rig=null и коректно нищо не прави, докато
+      // новият риг се появи.
+      for (const rigRef of [heroRigRef, foeRigRef]) {
+        const rig = rigRef.current as any;
+        if (rig?.userData) { rig.userData.combatActions = undefined; rig.userData.combatCurrent = undefined; }
+        rigRef.current = null;
+      }
       try { mount.contains(loadingBg) && mount.removeChild(loadingBg); } catch {}
       scene.traverse((obj) => {
         if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry?.dispose();
@@ -2850,6 +3073,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       }
       sigilCache.forEach((t) => t.dispose());
       sigilCache.clear();
+      // Per-mount VFX текстури (мека частица + градиенти за лъча/god-ray):
+      // всяка инстанция освобождава СОБСТВЕНИТЕ си, без да пипа чужди —
+      // безопасно при конкурентни/застъпващи се сцени.
+      softParticleTex.dispose();
+      beamGradientTex.dispose();
+      godRayGradientTex.dispose();
       // Renderer canvas removal is handled inside backend.dispose() now;
       // this used to be the direct unmount call back when renderer was
       // a non-null local. Kept as a no-op safety net for any leftover
@@ -2901,7 +3130,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         crit: !!crit,
         onImpact: spectacleImpact,
       });
-      if (missed || dodged) shakeRef.current = { amount: 0.05, t: 0.18 };
+      if (missed || dodged) shakeRef.current = { amount: 0.05, t: 0.18, dur: 0.18 };
     },
     defeat(side) {
       // Cinematic knee-buckle with timeScale ramp + camera tilt + push-in
@@ -2915,7 +3144,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       });
     },
     resetCamera() {
-      camAnchorRef.current = { x: 0, y: 1.9, z: 6.0, lx: 0, ly: 1.3, lz: 0, fov: 48 };
+      // Резинг дистанцията пак се смята спрямо съотношението, за да остане
+      // рамкирането коректно и на широк, и на тесен панел.
+      const asp = cameraRef.current?.aspect ?? 1.78;
+      const t = Math.tan((48 * Math.PI) / 180 / 2);
+      const z = Math.max(6.0, 3.2 / (t * Math.max(0.3, asp)), 1.7 / t);
+      camAnchorRef.current = { x: 0, y: 1.9, z, lx: 0, ly: 1.3, lz: 0, fov: 48 };
       introRef.current = { t: 0, dur: 1.4, active: true };
       choreoRef.current?.stop();
     },

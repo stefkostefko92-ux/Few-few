@@ -1,12 +1,18 @@
 // bot/src/commands/ticket.js
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
-import api, { closeTicketApi } from "../utils/api.js";
+import api from "../utils/api.js";
 import { buildStatusEmbed } from "../utils/embed.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { INFO, WARNING } from "../utils/colors.js";
+import { TICKET_PRIORITIES, priorityColor } from "../utils/priority.js";
+import { t, resolveLang } from "../i18n/index.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("ticket")
     .setDescription("Manage tickets")
+    .setDescriptionLocalizations(CMD_DESC_L10N.ticket)
     .addSubcommand((sub) =>
       sub.setName("add")
         .setDescription("Add a user to the current ticket")
@@ -29,6 +35,19 @@ export default {
       sub.setName("close")
         .setDescription("Close this ticket and generate an archive")
         .addStringOption((opt) => opt.setName("reason").setDescription("Reason for closing").setRequired(false))
+    )
+    .addSubcommand((sub) =>
+      sub.setName("priority")
+        .setDescription("Set this ticket's priority")
+        .addStringOption((opt) =>
+          opt.setName("level").setDescription("Priority level").setRequired(true)
+            .addChoices(
+              { name: "Low", value: "LOW" },
+              { name: "Normal", value: "NORMAL" },
+              { name: "High", value: "HIGH" },
+              { name: "Urgent", value: "URGENT" },
+            )
+        )
     ),
 
   async execute(interaction) {
@@ -41,7 +60,7 @@ export default {
       ticket = data;
     } catch {}
 
-    if (!ticket && ["add", "remove", "claim", "unclaim", "close"].includes(sub)) {
+    if (!ticket && ["add", "remove", "claim", "unclaim", "close", "priority"].includes(sub)) {
       return interaction.reply({ content: "❌ This channel is not a ticket.", flags: MessageFlags.Ephemeral });
     }
 
@@ -64,6 +83,12 @@ export default {
         flags: MessageFlags.Ephemeral,
       });
     }
+    if (sub === "priority" && !isStaff) {
+      return interaction.reply({
+        content: t("ticket.priorityStaffOnly", await resolveLang(interaction)),
+        flags: MessageFlags.Ephemeral,
+      });
+    }
     if (sub === "close" && !isStaff && !isCreator) {
       return interaction.reply({
         content: "❌ Only support team members or the ticket creator can close this ticket.",
@@ -71,9 +96,12 @@ export default {
       });
     }
 
-    await interaction.deferReply(
-      ["add", "remove"].includes(sub) ? { flags: MessageFlags.Ephemeral } : {}
-    );
+    // "close" defers itself (handleTicketCloseFinalize) — everything else defers here.
+    if (sub !== "close") {
+      await interaction.deferReply(
+        ["add", "remove"].includes(sub) ? { flags: MessageFlags.Ephemeral } : {}
+      );
+    }
 
     if (sub === "add") {
       const user = interaction.options.getUser("user");
@@ -90,7 +118,7 @@ export default {
         }
         await interaction.editReply(`✅ Added ${user} to the ticket.`);
       } catch (err) {
-        await interaction.editReply(`❌ Failed to add user: ${err.message}`);
+        await interaction.editReply(friendlyError(err, interaction, `Failed to add user: ${err.message}`));
       }
     }
 
@@ -104,7 +132,7 @@ export default {
         }
         await interaction.editReply(`✅ Removed ${user} from the ticket.`);
       } catch (err) {
-        await interaction.editReply(`❌ Failed to remove user: ${err.message}`);
+        await interaction.editReply(friendlyError(err, interaction, `Failed to remove user: ${err.message}`));
       }
     }
 
@@ -112,10 +140,27 @@ export default {
       try {
         await api.post(`/bot/ticket/${ticket.id}/claim`, { userId: interaction.user.id });
         await interaction.editReply({
-          embeds: [buildStatusEmbed("🛡️ Ticket Claimed", `This ticket has been claimed by ${interaction.user}`, 0x5865f2)],
+          embeds: [buildStatusEmbed("🛡️ Ticket Claimed", `This ticket has been claimed by ${interaction.user}`, INFO, { client: interaction.client })],
         });
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
+      }
+    }
+
+    else if (sub === "priority") {
+      const level = interaction.options.getString("level");
+      if (!TICKET_PRIORITIES.includes(level)) {
+        await interaction.editReply("❌ Invalid priority level.");
+      } else {
+        try {
+          await api.patch(`/bot/ticket/${ticket.id}/priority`, { priority: level, actorId: interaction.user.id });
+          const lang = await resolveLang(interaction);
+          await interaction.editReply({
+            embeds: [buildStatusEmbed("🎯 Ticket Priority", t("ticket.priorityUpdated", lang, { priority: level }), priorityColor(level), { client: interaction.client })],
+          });
+        } catch (err) {
+          await interaction.editReply(friendlyError(err, interaction));
+        }
       }
     }
 
@@ -123,33 +168,21 @@ export default {
       try {
         await api.post(`/bot/ticket/${ticket.id}/unclaim`);
         await interaction.editReply({
-          embeds: [buildStatusEmbed("🔓 Ticket Unclaimed", "This ticket is now open for any staff member.", 0xffd700)],
+          embeds: [buildStatusEmbed("🔓 Ticket Unclaimed", "This ticket is now open for any staff member.", WARNING, { client: interaction.client })],
         });
       } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+        await interaction.editReply(friendlyError(err, interaction));
       }
     }
 
     else if (sub === "close") {
-      const reason = interaction.options.getString("reason") || "No reason provided";
-      try {
-        const closed = await closeTicketApi(ticket.id, interaction.user.id, reason);
-        // Archive links require the unguessable token the backend returns —
-        // never build them from the raw ticket ID.
-        const archiveLink = closed?.fullArchiveUrl
-          || `${process.env.ARCHIVE_BASE_URL || process.env.FRONTEND_URL}${closed?.archiveUrl || ""}`;
-        await interaction.editReply({
-          embeds: [buildStatusEmbed(
-            "🔒 Ticket Closed",
-            `Closed by ${interaction.user}\n**Reason:** ${reason}${closed?.archiveUrl ? `\n\n[📄 View Archive](${archiveLink})` : ""}`,
-            0xed4245
-          )],
-        });
-        // Archive the Discord channel/thread
-        setTimeout(() => interaction.channel.delete().catch(() => {}), 5000);
-      } catch (err) {
-        await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
-      }
+      const reason = interaction.options.getString("reason") || null;
+      // Same code path as the Close button (handleTicketCloseFinalize) — archives
+      // + posts Reopen/Delete/Transcript buttons, never an outright channel delete.
+      // Deleting is now its own explicit (confirm-gated) action: the Delete button
+      // or `ticket:delete` — consistent behavior everywhere a ticket is closed.
+      const { handleTicketCloseFinalize } = await import("../events/interactionCreate.js");
+      await handleTicketCloseFinalize(interaction, ticket, panel, reason);
     }
   },
 };

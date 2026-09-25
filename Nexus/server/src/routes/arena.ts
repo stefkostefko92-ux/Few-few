@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { applyXp } from '../game/progression';
+import { applyXp, paceXpForKill } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
@@ -10,6 +10,8 @@ import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
+import { trackGuildMission } from '../game/guildMissions';
+import { addSeasonPoints } from '../game/seasons';
 import { grantDrop, DROP_RATES } from '../game/drops';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -67,6 +69,13 @@ router.post('/challenge', (req, res) => {
     res.status(404).json({ error: 'Opponent not found' });
     return;
   }
+  // Enforce the same ±3 level bracket the /opponents list is filtered to,
+  // so a client can't hand-pick a far weaker/AFK target to farm easy wins
+  // and drops, or grief a chosen player's rating, on every cooldown.
+  if ((opp as any).is_npc === 0 && (opp.level < char.level - 3 || opp.level > char.level + 3)) {
+    res.status(400).json({ error: 'That opponent is outside your challenge bracket.' });
+    return;
+  }
   // Arena is a duel of equals — both fighters enter at full HP. Previously
   // the hero entered with current HP (possibly fresh off a hunt at 11%)
   // while the opponent always entered at hp_max, handing the defender a
@@ -97,7 +106,10 @@ router.post('/challenge', (req, res) => {
     // Баланс: злато 10+2L беше ~5x под hunt на endgame (710 vs ~3 700 при
     // lv350) при сходен cooldown клас. 12+6L го носи до ~60% от hunt kill —
     // арената остава XP-фокусирана (25+5L), но вече не е златна пустиня.
-    const r = applyGuildMultipliers(char.id, 12 + opp.level * 6, 25 + opp.level * 5);
+    // Pace-clamp arena XP to the same ~8-kills/level target the other
+    // activities use, so it can't out-earn hunting on the shared curve.
+    const arenaXp = Math.min(Math.round(paceXpForKill(opp.level) * 1.8), 25 + opp.level * 5);
+    const r = applyGuildMultipliers(char.id, 12 + opp.level * 6, arenaXp);
     xpGain = r.xp;
     goldGain = r.gold;
     lvlRes = applyXp(char, xpGain);
@@ -158,7 +170,12 @@ router.post('/challenge', (req, res) => {
     goldGained: goldGain,
   });
 
-  if (result.winner === 'hero') trackBattlePass(char.id, 'arena_win', 1);
+  if (result.winner === 'hero') {
+    trackBattlePass(char.id, 'arena_win', 1);
+    // Гилдийна мисия + сезонни точки за PvP победа.
+    trackGuildMission(db, char.id, 'arena_wins');
+    addSeasonPoints(db, char.id, 20);
+  }
 
   logFromRequest(req, {
     category: 'combat',

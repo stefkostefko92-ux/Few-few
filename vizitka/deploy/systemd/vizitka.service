@@ -34,7 +34,9 @@ RestrictNamespaces=true
 RestrictRealtime=true
 RestrictSUIDSGID=true
 LockPersonality=true
-MemoryDenyWriteExecute=true
+# MemoryDenyWriteExecute е несъвместим с V8 JIT на Node — процесът иска изпълнима
+# памет и seccomp го убива със SIGSYS (status=31). Затова е изключен за Node услугата.
+MemoryDenyWriteExecute=false
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallFilter=~@privileged @resources

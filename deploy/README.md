@@ -1,22 +1,50 @@
 # Автоматизиран деплой (`deploy/autodeploy.sh`)
 
-Деплой на монорепото от **ръчно качен GitHub архив** до жив сървър — едно действие.
+Деплой на монорепото до жив сървър — едно действие.
 
-## Работен поток
+## Работен поток (репото е публично — сървърът си взема архива сам)
 
-1. **Ръчно:** в GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
-2. **Ръчно:** качи архива в **root папката (`/root`)** на VPS-а (напр. през `scp`):
-   ```bash
-   scp Few-few.zip root@СЪРВЪР:/root/
-   ```
-3. **Автоматично:** влез в сървъра и пусни скрипта (той е и вътре в архива):
-   ```bash
-   ssh root@СЪРВЪР
+`deploy/fetch-deploy.sh` сваля **неизменяем архив за точен ref** и го подава на
+`autodeploy.sh`. Това НЕ е `git pull` на кутията (няма работно дърво, няма `.git` за
+поддържане) и НЕ е CI/CD push — пускаш го ти, когато решиш.
+
+Първият път скриптът го няма на сървъра, затова се взима от самото репо:
+
+```bash
+ssh root@СЪРВЪР
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
+sudo bash /root/deploy/fetch-deploy.sh
+```
+
+След първия успешен деплой той живее в текущия release:
+
+```bash
+sudo bash /opt/few-few/current/deploy/fetch-deploy.sh                 # main, всички продукти
+sudo PROJECTS="piuma" bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo REF=claude/<клон> bash /opt/few-few/current/deploy/fetch-deploy.sh
+sudo REF=v1.4.0 bash /opt/few-few/current/deploy/fetch-deploy.sh      # таг
+sudo REF=09597af… bash /opt/few-few/current/deploy/fetch-deploy.sh    # точен комит
+```
+
+Оттук нататък всичко е автоматично: разопаковане в нов release → билд → миграции →
+сийд (само първия път) → health check → презареждане на прокси/TLS.
+
+`fetch-deploy.sh` проверява, че сваленото наистина е това репо, преди да пусне скрипт
+от него като root; пази последните два свалени архива (всеки е ~250 MB — без чистене
+дискът свършва мълчаливо); и подава `ARCHIVE=` изрично, за да не изпревари ръчно качен
+ZIP отпреди месец.
+
+## Работен поток (резервен — ръчно качен архив)
+
+Когато сървърът няма изходяща мрежа към GitHub:
+
+1. В GitHub → **Code → Download ZIP** (или `tar.gz` от Releases).
+2. Качи архива в **`/root`** (напр. `scp Few-few.zip root@СЪРВЪР:/root/`).
+3. ```bash
    cd /root && unzip -o Few-few.zip >/dev/null   # само за да стигнеш до скрипта
    sudo bash /root/few-few-*/deploy/autodeploy.sh
    ```
-   Оттук нататък всичко е автоматично: разопаковане в нов release → билд → миграции →
-   сийд (само първия път) → health check → презареждане на прокси/TLS.
 
 ## Какво прави
 
@@ -32,17 +60,31 @@
   `systemctl restart mastilko`; при провал — автоматичен rollback. Еднократно:
   Nginx vhost + TLS → `mastilko/deploy/DEPLOY.md`.
 - **SupremeDiscordBot** (Supreme Bot): пренася четирите `.env` файла (`SupremeDiscordBot/.env`,
-  `backend/.env`, `bot/.env`, `frontend/.env`), после `SupremeDiscordBot/deploy.sh` (Docker Compose
+  `backend/.env`, `bot/.env`, `frontend/.env`) — източникът се **търси**: `current` →
+  `/opt/few-few/shared/SupremeDiscordBot/` (стабилно огледало, 700/600, обновява се при всеки
+  пробег) → най-новият release, който ги има; липсват ли навсякъде, спира **преди** `pg_dump` с
+  инструкция за възстановяване (`SupremeDiscordBot/deploy/RELEASE-3.4.0.md` §6), никога
+  „`cp .env.example`". После `SupremeDiscordBot/deploy.sh` (Docker Compose
   билд + вдигане; миграциите се пускат от backend entrypoint-а; регистрира slash командите).
   Health на публичния frontend порт `127.0.0.1:8080`; останалите services са вътрешни.
+  **Бекъпи:** `pg_dump` ПРЕДИ миграциите в `/var/backups/supreme/pre-deploy-<TS>.dump`
+  (провал на дъмпа спира деплоя), а след успешен health се инсталира дневният
+  криптиран бекъп (`supreme-backup.timer`, 03:00 UTC, 30 дни задържане — DPA §5.1).
+  Еднократно ръчно: паролата `/root/.supreme-backup-pass` + първи тестов restore →
+  `SupremeDiscordBot/deploy/BACKUP.md`.
 - **eternaltouch** (Eternal Touch): пренася `eternaltouch/.env` (или го генерира с random
   secrets при пръв деплой — `SMTP_PASS` остава `CHANGE_ME` за ръчно попълване веднъж),
   после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
   `docker-startup.sh`; идемпотентен seed; Nginx + certbot с auto-reload hook). Health на
   `127.0.0.1:4300/healthz`; app + postgres слушат само на localhost зад Nginx.
-- **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира само
-  трите обслужвани файла (`adblock/server/{index.html,privacy.html,filters.json}`) в
-  `/var/www/adblock`, инсталира/обновява Caddy сайт-блока (`adblock/server/Caddyfile` →
+- **adblock** (Supreme AdBlock): ЧИСТ СТАТИЧЕН сайт — без билд, Node или база. Копира
+  обслужваните файлове (`adblock/server/{index.html,privacy.html,robots.txt,sitemap.xml,
+  llms.txt,*.png,*.webp}`) в `/var/www/adblock`. `filters.json` се публикува САМО заедно с
+  валидния си Ed25519 подпис (подписва се в staging, после `mv` на двойката); без ключ
+  (`/etc/caddy/adblock-signing.key`) старата подписана двойка остава и деплоят
+  сигнализира — Chrome 137+ иначе отхвърля всички live ъпдейти. Без access логове (Caddy
+  без `log`, nginx `access_log off`) — това обещава политиката за поверителност.
+  Инсталира/обновява Caddy сайт-блока (`adblock/server/Caddyfile` →
   `/etc/caddy/sites/adblock.caddy` + `import sites/*.caddy` в главния Caddyfile),
   `caddy validate` **преди** reload (нула downtime; при невалиден конфиг — връща стария
   блок и не презарежда). Разширението тегли `filters.json`; `index.html` е витрина, а
@@ -50,6 +92,28 @@
   Health-ът е best-effort HTTPS на публичния адрес — минава едва след като **DNS A/AAAA
   за `adblock.carbonstealth.eu` сочи VPS-а** (ръчна стъпка) и Caddy издаде TLS; провал тук
   е предупреждение, не блокира деплоя. Няма тайни (чисто статично).
+  Само adblock: `sudo bash deploy/adblock-site.sh` — обвивка, която вика същия път с
+  `PROJECTS="adblock"` (през `fetch-deploy.sh`, или `autodeploy.sh` при подаден `ARCHIVE=`);
+  втора реализация вече няма, защото старата изостана от тази.
+- **ospedali** (Ospedali Trasparenti): systemd модел като medqr/vizitka, **но БЕЗ
+  `npm ci` и БЕЗ билд** — лек Node сервиз с нула зависимости обслужва предбилднатия
+  статичен сайт от `site/` (вече в git). `rsync ospedalitrasparenti/ → /opt/ospedali` (изключва
+  `server/.env`, `server/.state/` — тайни + рънтайм състояние оцеляват), самоинсталиращ
+  се systemd unit (`ospedalitrasparenti/deploy/systemd/ospedali.service`, порт `127.0.0.1:8788`,
+  User=`www-data`), `systemctl restart ospedali`; при провал — автоматичен rollback.
+  Health на `127.0.0.1:8788/healthz`. Еднократно: DNS A запис, `.env` с
+  `OSPEDALI_ADMIN_PASSWORD`+`OSPEDALI_SESSION_SECRET`, Nginx vhost + certbot →
+  `ospedalitrasparenti/deploy/DEPLOY.md`.
+- **panev** (Panev Ascensori): systemd модел като medqr/vizitka. `rsync panev/ → /opt/panev`
+  (изключва `data/` — SQLite базата, `node_modules/`, `.env`), `npm ci --omit=dev`,
+  сийд **само при липсваща база** (админ + каталог за `/admin`), снимка на базата преди
+  рестарт, самоинсталиращ се systemd unit (`panev/deploy/systemd/panev.service`, порт
+  `127.0.0.1:4102`, User=`panev`), `systemctl restart panev`; при провал — автоматичен
+  rollback на кода **и** на базата. Health на `127.0.0.1:4102/api/health`. Тайните са в
+  `/etc/panev/panev.env` (systemd `EnvironmentFile`, права 600) — при пръв деплой се
+  генерира с random `JWT_SECRET` (без него приложението спира в продукция), `SMTP_PASS`
+  остава `CHANGE_ME`. Еднократно: DNS, nginx vhost (301 `www.` → каноничния non-www) +
+  certbot, ufw, бекъп cron → `panev/DEPLOY.md`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -58,7 +122,12 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali panev` | кои проекти да се разгръщат тук |
+| `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
+| `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
+| `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
+| `OSPEDALI_DIR` | `/opt/ospedali` | път на ospedali (systemd, без билд) |
+| `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
@@ -69,9 +138,15 @@
 ## Важно
 
 - **Тайните не са в архива.** `zabobovdol/.env`, `/etc/medqr/medqr.env`,
-  `/opt/mastilko/.env` (GEMINI_API_KEY, по желание) и четирите
+  `/etc/panev/panev.env` (JWT_SECRET + SMTP), `/opt/mastilko/.env` (GEMINI_API_KEY, по желание) и четирите
   `SupremeDiscordBot/*.env` (корен, `backend/`, `bot/`, `frontend/`) живеят на сървъра (права 600).
   Скриптът пренася съществуващите `.env` при всеки деплой.
+- **`current` е общ за всички продукти** — мести се при успешен деплой на който и да е от тях.
+  Тайни, които се пренасят „от `current`", остават назад в стар release при деплой на друг
+  продукт и падат под ножа на `KEEP_RELEASES`. Затова Supreme ги огледава в
+  `/opt/few-few/shared/SupremeDiscordBot/` (реален инцидент, 17.09.2026 — гейт
+  `tools/vps/autodeploy-env.test.mjs`). Нов продукт с `.env` в release папката трябва да
+  следва същия модел, не да пренася само от `current`.
 - Скриптът е **идемпотентен** и прави бекъп преди презапис на medqr.
 - Първоначалната настройка на сървъра (юзъри, `ufw`, systemd unit, Nginx/Caddy, TLS) се
   прави веднъж — виж `zabobovdol/DEPLOY.md` и `medqr/deploy/DEPLOY.md`.

@@ -1,0 +1,16 @@
+{
+  "fonte": "RGS/MEF — Monitoraggio dei tempi di pagamento delle pubbliche amministrazioni, «Dati di base ed indicatori dei tempi di pagamento — Enti del SSN» (dati PCC)",
+  "url": "https://www.rgs.mef.gov.it/VERSIONE-I/tempi_di_pagamento_e_debiti_commerciali_delle_pubbliche_amministrazioni/monitoraggio/monitoraggio_dei_tempi_di_pagamento/",
+  "estrazione": "Извлечено ръчно от официалния PDF (Enti-del-SSN.pdf) на 2026-07-13 — RGS не публикува тази таблица в машинно-четим формат. Проверимо 1:1 срещу PDF-а.",
+  "unita": "fatture в хиляди; importi в млн €; tempi в дни; квоти в %",
+  "perAnno": [
+    { "anno": 2019, "fattureMgl": 9676, "importoFatture": 64735, "importoDovuto": 61675, "importoPagato": 59794, "quotaPagato": 96.9, "tempoMedioPagamento": 45, "tempoMedioRitardo": -15, "fattureNeiTermini": 71.8, "importoNeiTermini": 77.6 },
+    { "anno": 2020, "fattureMgl": 9416, "importoFatture": 67015, "importoDovuto": 64893, "importoPagato": 62844, "quotaPagato": 96.8, "tempoMedioPagamento": 42, "tempoMedioRitardo": -17, "fattureNeiTermini": 75.9, "importoNeiTermini": 80.8 },
+    { "anno": 2021, "fattureMgl": 10160, "importoFatture": 69776, "importoDovuto": 67355, "importoPagato": 65440, "quotaPagato": 97.2, "tempoMedioPagamento": 41, "tempoMedioRitardo": -19, "fattureNeiTermini": 77.3, "importoNeiTermini": 82.8 },
+    { "anno": 2022, "fattureMgl": 10565, "importoFatture": 73220, "importoDovuto": 70585, "importoPagato": 69065, "quotaPagato": 97.8, "tempoMedioPagamento": 39, "tempoMedioRitardo": -19, "fattureNeiTermini": 76.7, "importoNeiTermini": 83.5 },
+    { "anno": 2023, "fattureMgl": 10885, "importoFatture": 76887, "importoDovuto": 74261, "importoPagato": 72952, "quotaPagato": 98.2, "tempoMedioPagamento": 39, "tempoMedioRitardo": -21, "fattureNeiTermini": 74.0, "importoNeiTermini": 84.4 },
+    { "anno": 2024, "fattureMgl": 11165, "importoFatture": 81116, "importoDovuto": 78385, "importoPagato": 77593, "quotaPagato": 99.0, "tempoMedioPagamento": 36, "tempoMedioRitardo": -23, "fattureNeiTermini": 79.7, "importoNeiTermini": 87.7 },
+    { "anno": 2025, "fattureMgl": 11495, "importoFatture": 86357, "importoDovuto": 84159, "importoPagato": 82919, "quotaPagato": 98.5, "tempoMedioPagamento": 34, "tempoMedioRitardo": -25, "fattureNeiTermini": 84.0, "importoNeiTermini": 89.9 }
+  ],
+  "termineLegale": "60 giorni per gli enti del SSN (30 per le altre PA)"
+}

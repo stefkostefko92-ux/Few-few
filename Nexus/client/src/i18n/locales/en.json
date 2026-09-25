@@ -110,6 +110,8 @@
     "mythicPlus": "Mythic+ Dungeons",
     "society": "Society",
     "guild": "Guild",
+    "friends": "Friends",
+    "chat": "Chat",
     "mail": "Mail",
     "leaderboard": "Hall of Fame",
     "town": "Town",
@@ -134,7 +136,7 @@
     "step2Body": "Items dropped during combat land in your bag. Click any equipment piece to equip it — hover to compare stats against what you wear now.",
     "step2Cta": "Open inventory",
     "step3Title": "Explore the Realm",
-    "step3Body": "Fifteen regions await, from Whispering Woods to the Eternal Throne at Lv 350. Each region drops gear from its tier.",
+    "step3Body": "Sixteen regions await, from Whispering Woods to the Eternal Throne at Lv 350. Each region drops gear from its tier.",
     "step3Cta": "View map",
     "step4Title": "Sharpen at the Forge",
     "step4Body": "Once you have a few pieces, pour gold into the Forge to enchant them — better odds at lower tiers.",
@@ -146,7 +148,7 @@
   },
   "levelUp": {
     "title": "— Level Up —",
-    "points": "+{{statPoints}} stat · +{{skillPoints}} skill points"
+    "grew": "Your power grows."
   },
   "lootDrop": {
     "acquired": "Loot Acquired",
@@ -291,7 +293,7 @@
     "playFree": "Play Free",
     "heroEyebrow": "A Browser MMORPG · Free to Play · No Download",
     "heroTagline": "A realm with a long memory.",
-    "heroSubtitle": "Four classes. Fifteen regions to push through. Ten tiers of gear, an ELO arena, an auction house that runs in real time, and a Tower of Trials whose leaderboard updates while you sleep. Free, browser-based, no installer. Sign up takes thirty seconds.",
+    "heroSubtitle": "Four classes. Sixteen regions to push through. Ten tiers of gear, an ELO arena, an auction house that runs in real time, and a Tower of Trials whose leaderboard updates while you sleep. Free, browser-based, no installer. Sign up takes thirty seconds.",
     "heroCtaPlay": "Take Up The Sword",
     "heroCtaHow": "See How It Plays",
     "footageBy": "Footage by {{author}}",
@@ -319,7 +321,7 @@
     "featHuntingTitle": "Hunting that fills the Bestiary",
     "featHuntingBody": "Pick a region, pick a window. Each kill rolls a 22% drop and counts toward bounty, battle pass, and weekly trial in one go.",
     "featArenaTitle": "ELO arena, real ladder",
-    "featArenaBody": "Matchmade duels against fifteen NPC trainers and every player at your rating band. K=32, so a streak shows up fast.",
+    "featArenaBody": "Matchmade duels against sixteen NPC trainers and every player at your rating band. K=32, so a streak shows up fast.",
     "featDailyTitle": "Daily tribute that rewards habit",
     "featDailyBody": "Seven-day streak cycle with gem milestones at day fourteen and thirty. Miss a day and the streak resets; nothing is sold back to you.",
     "featWheelTitle": "One spin a day, no shop",
@@ -330,7 +332,7 @@
     "featSetsBody": "From the Wayfarer's Garb to Solar Mythwoven. Two-, four-, and six-piece bonuses reshape a build; mixing tiers is encouraged.",
     "classesEyebrow": "Pick a kit",
     "classesTitle": "Four classes, with the math written down.",
-    "classesLead": "Each class has a stat ramp, a weapon skill tree, a damage type, and its own impact effects in combat. You re-allocate stat points every level; you re-spec the build whenever the season changes.",
+    "classesLead": "Each class has a stat ramp, a weapon skill tree, a damage type, and its own impact effects in combat. You re-spec the build whenever the season changes.",
     "classWarriorTagline": "Eats hits, returns them with interest. Sword and shield, plate, calm under pressure.",
     "classRangerTagline": "Hits first, harder than you expected, from where you weren't looking. Bow, leather, fast hands.",
     "classMageTagline": "Slow opener, large finisher. Burns mana fast, ends fights faster. Staff, robes, library card.",
@@ -440,7 +442,9 @@
     "footerMade": "Made with care for hero-class storytelling.",
     "iconAlt": "{{title}} icon",
     "portraitAlt": "{{name}} portrait",
-    "landscapeAlt": "{{name}} landscape"
+    "landscapeAlt": "{{name}} landscape",
+    "step3Body": "Twenty-one regions await, from Whispering Woods to The First Light at Lv 500. Each region drops gear from its tier.",
+    "regionBeyondBody": "Five realms past the world's ending — ash, fallen stars, the forge of the next dawn, the unlit court, and the first light itself. Lv 351–500."
   },
   "arena": {
     "title": "Arena of Nexus Dominion",
@@ -450,13 +454,13 @@
     "trainer": "Trainer",
     "elo": "{{n}} ELO",
     "winsLosses": "{{w}}W / {{l}}L",
-    "challenge": "Challenge (5 EN)",
+    "challenge": "Challenge",
     "noOpponents": "No worthy opponents nearby. Grow stronger.",
     "vsTitle": "{{hero}}  VS  {{foe}}"
   },
   "hunting": {
     "title": "Hunting Grounds",
-    "subtitle": "Repeatable encounters — random foe. Each hunt sets a random 1-20 min cooldown (reduced by mounts).",
+    "subtitle": "Repeatable encounters — random foe. Each hunt sets a random 3-6 min cooldown (reduced by mounts).",
     "wildEncounter": "Wild Encounter — {{name}}",
     "victoryText": "Foe down. The hunt continues.",
     "defeatText": "You stagger back, bruised.",
@@ -464,7 +468,9 @@
     "huntAgain": "Hunt Again",
     "regionInfo": "Lv {{min}}–{{max}} · {{count}} foes",
     "requiresLv": "Requires Lv {{n}}",
-    "huntHere": "Hunt Here"
+    "huntHere": "Hunt Here",
+    "firstWin": "First win of the day — ×2 XP & gold!",
+    "combo": "Combo ×{{n}} (+{{pct}}% XP & gold)"
   },
   "dungeons": {
     "title": "Dungeons",
@@ -505,29 +511,7 @@
     "requiresLv": "Requires Lv {{n}}",
     "tooTired": "Too Tired",
     "embark": "Embark",
-    "empty": "No quests here right now.",
-    "regions": {
-      "whisperingWoods": {
-        "name": "Whispering Woods",
-        "lore": "Moss-clad oaks, scampering creatures, the road from Oaken Hollow."
-      },
-      "mistmoorHills": {
-        "name": "Mistmoor Hills",
-        "lore": "Heather and fog. Orcs ride the high passes."
-      },
-      "crystalCaverns": {
-        "name": "Crystal Caverns",
-        "lore": "A labyrinth of glittering ore and ancient stone."
-      },
-      "ashenWastes": {
-        "name": "Ashen Wastes",
-        "lore": "Burned plains where revenants drift, and drakes wheel above."
-      },
-      "shadowfell": {
-        "name": "The Shadowfell",
-        "lore": "The Shadow Lord's domain. The realm's final test."
-      }
-    }
+    "empty": "No quests here right now."
   },
   "questRun": {
     "roadUnwinds": "The road unwinds before you…",
@@ -813,7 +797,10 @@
       "minutesAgo": "{{n}}m ago",
       "hoursAgo": "{{n}}h ago",
       "daysAgo": "{{n}}d ago"
-    }
+    },
+    "bestPrice": "best price",
+    "cheapest": "cheapest: {{n}}g",
+    "lastSold": "last sold: {{n}}g"
   },
   "auction": {
     "loading": "Loading auction…",
@@ -848,7 +835,9 @@
     "all": "All",
     "lv": "Lv {{n}}",
     "buy": "Buy",
-    "purchaseComplete": "Purchase complete."
+    "purchaseComplete": "Purchase complete.",
+    "dailyDeals": "Daily deals — 30% off",
+    "dealsExpire": "Rotates in {{hours}}h"
   },
   "mountShop": {
     "loading": "Loading…",
@@ -1069,7 +1058,11 @@
     "subtitle": "{{discovered}} / {{total}} creatures catalogued.",
     "all": "All",
     "lv": "Lv {{n}}",
-    "kills": "Kills:"
+    "kills": "Kills:",
+    "claim": "Claim",
+    "claimed": "Claimed ✓",
+    "slayAll": "Slay them all",
+    "claimedToast": "Collection reward: +{{gold}}g, +{{gems}} gems!"
   },
   "common": {
     "loading": "Loading…",
@@ -1126,7 +1119,7 @@
     "restToast": "Wounds tended.",
     "record": "{{wins}}W / {{losses}}L · Rating {{rating}}",
     "howTitle": "How upgrades work",
-    "howDesc": "Every level-up grants +3 stat points and +1 skill point for free. Beyond that, any stat can be pushed with gold — each next purchase costs more (5g, 14g, 25g, 40g, 57g…), and every stat has its own independent counter.",
+    "howDesc": "Attributes are raised with gold — each next purchase of a stat costs more on a simple 5-10-15-20-25… curve (5g, 10g, 15g, 20g, 25g…), and every stat has its own independent counter. Levelling up increases your HP and MP.",
     "attributes": "Attributes",
     "weaponSkills": "Weapon Skills",
     "upgradesCount": "({{count}} upgrades)",
@@ -1146,8 +1139,8 @@
       "dexterity": "Crit, dodge, ranged.",
       "constitution": "Health pool.",
       "intelligence": "Spell power, mana.",
-      "wisdom": "Mana, resistance.",
-      "charisma": "Quest reward bonuses."
+      "wisdom": "Mana, warding & dodge.",
+      "charisma": "Critical damage."
     },
     "skill": {
       "sword": "Sword",
@@ -1344,6 +1337,15 @@
       "depositTitle": "Deposit Item",
       "depositDesc": "Pick an unequipped, non-bound item. Consumables cannot be deposited.",
       "noItems": "No depositable items in your bag."
+    },
+    "missions": {
+      "title": "Weekly guild missions",
+      "resets": "Resets in {{days}}d",
+      "hunt_kills": "Slay monsters together",
+      "arena_wins": "Win arena duels",
+      "tower_floors": "Climb tower floors",
+      "perMember": "per member",
+      "done": "Complete ✓"
     }
   },
   "factions": {
@@ -1377,7 +1379,15 @@
       "losses": "Losses"
     },
     "npc": "NPC",
-    "empty": "The hall waits to be filled."
+    "empty": "The hall waits to be filled.",
+    "tabArena": "Arena",
+    "tabSeason": "Season",
+    "seasonTitle": "Season {{key}}",
+    "seasonMine": "Your points: {{points}} · rank #{{rank}}",
+    "seasonEnds": "Ends in {{days}} days",
+    "seasonRewards": "#1: 1000💎 +100k g + title · top 10: 200💎 · top 10%: 50💎",
+    "lastSeason": "Last season ({{key}}):",
+    "seasonEmpty": "No points yet this season. Go hunt!"
   },
   "achievements": {
     "title": "Achievements",
@@ -1455,69 +1465,73 @@
   },
   "world": {
     "title": "Map of Nexus",
-    "subtitle": "From Oaken Hollow to the Eternal Throne — fifteen realms charted on a relic of the last cartographer.",
+    "subtitle": "From Oaken Hollow to the Eternal Throne — sixteen realms charted on a relic of the last cartographer.",
     "enter": "Enter",
     "requiresLv": "Requires Lv {{level}}",
     "regions": {
       "whispering_woods": {
         "name": "Whispering Woods",
-        "lore": "A green wood near Oaken Hollow."
+        "lore": "A green wood near Oaken Hollow — every hero’s first road."
       },
       "mistmoor_hills": {
         "name": "Mistmoor Hills",
-        "lore": "Fog-laced highlands stalked by orcs."
+        "lore": "Fog-laced highlands where orcs ride the high passes."
       },
       "crystal_caverns": {
         "name": "Crystal Caverns",
-        "lore": "Glittering tunnels beneath the mountains."
+        "lore": "A labyrinth of glittering ore beneath the mountains."
       },
       "ashen_wastes": {
         "name": "Ashen Wastes",
-        "lore": "Burned plains roamed by drakes."
+        "lore": "Burned plains where revenants drift and drakes wheel above."
       },
       "shadowfell": {
         "name": "The Shadowfell",
-        "lore": "The Shadow Lord's domain. Bring everything."
+        "lore": "The Shadow Lord’s domain. Bring everything."
       },
       "emberreach": {
         "name": "Emberreach",
         "lore": "Smouldering canyons where dragonkind nest."
       },
-      "frostspire": {
-        "name": "Frostspire",
-        "lore": "Glacial peaks under a sky of perpetual aurora."
+      "hammerhand_pass": {
+        "name": "Hammerhand Pass",
+        "lore": "A dwarf-cut mountain road guarding the ore caravans."
       },
-      "drowned_coast": {
-        "name": "Drowned Coast",
-        "lore": "Sunken cities along a haunted shoreline."
+      "conclave_aedric": {
+        "name": "Conclave of Aedric",
+        "lore": "A cloistered city of mages and their unquiet apprentices."
+      },
+      "saltmarsh": {
+        "name": "Saltmarsh",
+        "lore": "Sunken cities along a haunted, brackish shoreline."
+      },
+      "frostvale": {
+        "name": "Frostvale",
+        "lore": "Glacial valleys under a sky of perpetual aurora."
+      },
+      "black_spire": {
+        "name": "Black Spire",
+        "lore": "A volcanic fortress-tower ruled by a fallen king."
       },
       "stormpeaks": {
-        "name": "Stormpeaks",
+        "name": "The Stormpeaks",
         "lore": "Lightning-wracked summits ruled by storm giants."
       },
-      "blighted_expanse": {
-        "name": "Blighted Expanse",
-        "lore": "A withered moor where the dead walk."
+      "voidshade_hollow": {
+        "name": "Voidshade Hollow",
+        "lore": "A bottomless chasm that devours its own gravity."
       },
-      "obsidian_dominion": {
-        "name": "Obsidian Dominion",
-        "lore": "A volcanic fortress-state ruled by a fallen king."
-      },
-      "astral_rift": {
-        "name": "Astral Rift",
+      "mooncradle": {
+        "name": "Mooncradle",
         "lore": "A tear in reality where stars bleed into the sky."
       },
-      "voidmaw": {
-        "name": "Voidmaw",
-        "lore": "A bottomless chasm devouring its own gravity."
-      },
-      "dragon_roost": {
-        "name": "Dragon Roost",
-        "lore": "The wyrm-king's mountain throne."
+      "worldspine": {
+        "name": "The Worldspine",
+        "lore": "The wyrm-king’s mountain throne, spine of the known world."
       },
       "eternal_throne": {
-        "name": "Eternal Throne",
-        "lore": "Where the Last Sovereign waits."
+        "name": "The Eternal Throne",
+        "lore": "Where the Last Sovereign waits at the end of all roads."
       }
     }
   },

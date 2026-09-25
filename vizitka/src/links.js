@@ -26,11 +26,12 @@ export function replaceLinks(profileId, links) {
 // Извлича връзките от индексираните полета на формата (link_url_0, link_label_0…).
 export function parseLinkFields(body) {
   const out = [];
+  let error = null;
   for (let i = 0; i < MAX_LINKS; i++) {
     const url = String(body[`link_url_${i}`] || '').trim();
     if (!url) continue;
-    if (!/^https?:\/\//i.test(url))
-      return { error: 'Връзките трябва да започват с http:// или https://.' };
+    if (!/^https?:\/\//i.test(url) && !error)
+      error = 'Връзките трябва да започват с http:// или https://.';
     out.push({
       icon: String(body[`link_icon_${i}`] || '')
         .trim()
@@ -42,5 +43,7 @@ export function parseLinkFields(body) {
       url: url.slice(0, 300),
     });
   }
-  return { links: out };
+  // Дори при грешка връщаме РЕДОВЕТЕ: формата ги показва обратно, вместо да
+  // подменя написаното със старите стойности от базата. `error` спира записа.
+  return { links: out, error };
 }

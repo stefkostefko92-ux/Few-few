@@ -39,6 +39,25 @@ test('cooldowns: винаги има какво да правиш — max чак
   assert.ok(avgGap <= 3.5 * 60_000, `среден интервал ${Math.round(avgGap / 1000)}s`);
 });
 
+test('reward parity: per-kill XP/час между дейностите е в лента', () => {
+  // След пълния ребаланс всяка per-kill дейност клампва XP на убийство към
+  // общ таван (~pace*1.8), затова XP/час зависи само от cooldown-а. Тук
+  // заключваме пропорционалността на стълбицата: най-бързата писта (hunt) не
+  // бива да бие най-бавната per-kill писта (quest) с повече от ~2.2× — иначе
+  // някоя дейност пак става „печатница" по per-kill пътя. (Dungeon е изваден:
+  // големият му бонус вече е зад per-dungeon daily lock, не per-hour.)
+  const L = 200;
+  const perKillCap = Math.round(paceXpForKill(L) * 1.8);
+  const perKillLanes = ['hunt', 'arena', 'quest'] as const;
+  const xpPerHour = perKillLanes.map((k) => {
+    const [lo, hi] = COOLDOWN_RANGES_MS[k];
+    const midMin = ((lo + hi) / 2) / 60_000;
+    return (60 / midMin) * perKillCap;
+  });
+  const ratio = Math.max(...xpPerHour) / Math.min(...xpPerHour);
+  assert.ok(ratio <= 2.2, `per-kill XP/час паритет: ${ratio.toFixed(2)}x`);
+});
+
 test('xp pacing: няма стена на lv26 (съседни нива в 2x лента)', () => {
   // Клампнат act-1 (900 XP @ lv25) срещу expansion (~105 XP @ lv26):
   const clamp = (level: number, seedXp: number) => {

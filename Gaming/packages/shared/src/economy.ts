@@ -55,6 +55,11 @@ export interface VipPerks {
   dailyChipMultiplier: number;
   matchmakingPriority: number; // lower = matched sooner
   questSlots: number;
+  /**
+   * Reserved flag: there is no ad system in the product, so this is NOT a perk
+   * we advertise or sell. Kept for forward-compatibility only — the shop must
+   * not surface it as a benefit (would be a misleading commercial practice).
+   */
   adsRemoved: boolean;
   /** Gems credited on each monthly subscription renewal (comfort/value). */
   monthlyGems: number;
@@ -66,9 +71,10 @@ export interface VipPerks {
 
 /**
  * Four paid tiers, each with a distinct feature set. BRONZE (€3.99) is the
- * entry tier: it removes ads and adds a VIP badge + small comfort boosts, but
- * no gem stipend or exclusive cosmetics — those begin at SILVER. Higher tiers
- * scale the multipliers, gem stipend, and quest slots.
+ * entry tier: a VIP badge + small comfort boosts, but no gem stipend or
+ * exclusive cosmetics — those begin at SILVER. Higher tiers scale the
+ * multipliers, gem stipend, and quest slots. (`adsRemoved` is a dormant flag,
+ * not a sold perk — the product has no ads.)
  */
 export const VIP_PERKS: Record<VipTier, VipPerks> = {
   NONE: {

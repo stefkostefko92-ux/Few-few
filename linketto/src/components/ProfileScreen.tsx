@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
+import { safeJsonLd } from '@/lib/jsonld';
 import {
   DIALECT_LOCALES,
   dirFor,
@@ -385,7 +386,7 @@ export async function ProfileScreen({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: safeJsonLd(
             productListJsonLd ? [personJsonLd, productListJsonLd] : personJsonLd,
           ),
         }}

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { applyXp, regenerateEnergy } from '../game/progression';
+import { applyXp, paceXpForKill } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
@@ -40,7 +40,6 @@ router.post('/start', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  regenerateEnergy(char);
 
   const quest = db.prepare('SELECT * FROM quests WHERE slug = ?').get(parse.data.questSlug) as Quest | undefined;
   if (!quest) {
@@ -134,7 +133,11 @@ router.post('/start', (req, res) => {
   let itemRewardSlug = '';
   let lvlRes = null as ReturnType<typeof applyXp> | null;
   if (result.winner === 'hero') {
-    const baseXp = quest.xp_reward + monster.xp_reward;
+    // Pace-clamp the monster's (act-1-inflated) raw xp_reward like hunting
+    // does, so a repeatable combat quest can't out-earn the pacing target.
+    // The quest's own xp_reward is a designed payout and stays intact.
+    const monsterXp = Math.min(Math.round(paceXpForKill(monster.level) * 1.8), monster.xp_reward);
+    const baseXp = quest.xp_reward + monsterXp;
     const baseGold = quest.gold_reward + Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
     const r = applyGuildMultipliers(char.id, baseGold, baseXp);
     xpGain = r.xp;

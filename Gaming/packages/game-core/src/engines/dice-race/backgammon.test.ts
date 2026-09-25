@@ -45,7 +45,8 @@ describe("backgammon engine", () => {
     expect(s.turn).toBe(starter === 0 ? 1 : 0);
     expect(s.phase).toBe("ROLL");
     expect(s.openingRoll).toBeUndefined();
-    expect(backgammonEngine.legalActions(s, s.turn)).toEqual([{ type: "ROLL" }]);
+    // A centered cube means ROLL is joined by a DOUBLE offer.
+    expect(backgammonEngine.legalActions(s, s.turn)).toEqual([{ type: "ROLL" }, { type: "DOUBLE" }]);
   });
 
   it("every advertised legal action is reducible without throwing", () => {
@@ -62,14 +63,15 @@ describe("backgammon engine", () => {
     }
   });
 
-  it("plays a full random game to a winner with 15 borne off", () => {
+  it("plays a full random game to a winner (bear-off or a dropped double)", () => {
     const { state, terminal } = playRandom(backgammonEngine, {
       seed: "match-7",
       botSeed: "bots-7",
       maxSteps: 200_000,
     });
     expect(terminal).toBe(true);
-    expect(state.off[0] === 15 || state.off[1] === 15).toBe(true);
+    // Either someone bore off all 15, or the game ended on a dropped double.
+    expect(state.off[0] === 15 || state.off[1] === 15 || state.winner !== null).toBe(true);
     const score = backgammonEngine.score(state);
     expect(score.find((x) => x.result === "win")).toBeDefined();
     expect(score.find((x) => x.result === "loss")).toBeDefined();
@@ -95,6 +97,9 @@ describe("backgammon engine", () => {
       phase: "MOVE",
       dice: [3, 5],
       remaining: [3, 5],
+      cube: 1,
+      cubeOwner: null,
+      winner: null,
     };
     s.points[21] = -2; // block white's die-3 entry (24-3)
     // point 19 (24-5) left open for die-5 entry
@@ -112,6 +117,9 @@ describe("backgammon engine", () => {
       phase: "ROLL",
       dice: [],
       remaining: [],
+      cube: 1,
+      cubeOwner: null,
+      winner: null,
     });
 
     it("scores a plain win as 1 point when the loser has borne off", () => {
@@ -151,12 +159,104 @@ describe("backgammon engine", () => {
         phase: "MOVE",
         dice: [1, 2],
         remaining: [1],
+        cube: 1,
+        cubeOwner: null,
+        winner: null,
       };
       s.points[0] = 1;
       s.points[10] = -15;
       const r = backgammonEngine.reduce(s, { type: "MOVE", from: 0, die: 1 }, new SeededRng("w"));
       expect(r.events).toContainEqual({ type: "WIN", seat: 0, points: 2 });
       expect(backgammonEngine.isTerminal(r.state)).toBe(true);
+    });
+  });
+
+  describe("doubling cube", () => {
+    const rng = new SeededRng("cube");
+    const rollState = (over: Partial<BackgammonState> = {}): BackgammonState => ({
+      points: new Array(24).fill(0),
+      bar: [0, 0],
+      off: [0, 0],
+      turn: 0,
+      phase: "ROLL",
+      dice: [],
+      remaining: [],
+      cube: 1,
+      cubeOwner: null,
+      winner: null,
+      ...over,
+    });
+
+    it("offers a DOUBLE in ROLL and hands TAKE/DROP to the opponent", () => {
+      const s = rollState();
+      expect(backgammonEngine.legalActions(s, 0)).toEqual([{ type: "ROLL" }, { type: "DOUBLE" }]);
+      const r = backgammonEngine.reduce(s, { type: "DOUBLE" }, rng);
+      expect(r.state.phase).toBe("DOUBLE");
+      expect(r.events).toContainEqual({ type: "DOUBLE", seat: 0, value: 2 });
+      expect(backgammonEngine.legalActions(r.state, 0)).toEqual([]); // offerer waits
+      expect(backgammonEngine.legalActions(r.state, 1)).toEqual([{ type: "TAKE" }, { type: "DROP" }]);
+    });
+
+    it("TAKE doubles the cube, passes ownership and returns the roll to the offerer", () => {
+      const doubled = backgammonEngine.reduce(rollState(), { type: "DOUBLE" }, rng).state;
+      const r = backgammonEngine.reduce(doubled, { type: "TAKE" }, rng);
+      expect(r.state.cube).toBe(2);
+      expect(r.state.cubeOwner).toBe(1);
+      expect(r.state.phase).toBe("ROLL");
+      expect(r.state.turn).toBe(0); // the offerer still owes their roll
+      expect(r.events).toContainEqual({ type: "TAKE", seat: 1, value: 2 });
+      // ownership moved to seat 1, so seat 0 can no longer re-double.
+      expect(backgammonEngine.legalActions(r.state, 0)).toEqual([{ type: "ROLL" }]);
+    });
+
+    it("DROP ends the game with the offerer winning the current cube stake", () => {
+      const doubled = backgammonEngine.reduce(rollState({ cube: 2, cubeOwner: 0 }), { type: "DOUBLE" }, rng).state;
+      const r = backgammonEngine.reduce(doubled, { type: "DROP" }, rng);
+      expect(r.state.winner).toBe(0);
+      expect(backgammonEngine.isTerminal(r.state)).toBe(true);
+      expect(r.events).toContainEqual({ type: "DROP", seat: 1 });
+      expect(r.events).toContainEqual({ type: "WIN", seat: 0, points: 2 }); // pre-double stake
+      expect(backgammonEngine.score(r.state)).toContainEqual({ seat: 0, result: "win", points: 2 });
+    });
+
+    it("multiplies a bear-off win (gammon ×2) by the cube", () => {
+      // White bears off the last checker for a gammon; cube sits at 4 → 2 × 4 = 8.
+      const s = rollState({ phase: "MOVE", off: [14, 0], dice: [1, 2], remaining: [1], cube: 4, cubeOwner: 0 });
+      s.points[0] = 1;
+      s.points[10] = -15; // black bore off none, none in white's home → gammon
+      const r = backgammonEngine.reduce(s, { type: "MOVE", from: 0, die: 1 }, rng);
+      expect(r.events).toContainEqual({ type: "WIN", seat: 0, points: 8 });
+      expect(backgammonEngine.score(r.state)).toContainEqual({ seat: 0, result: "win", points: 8 });
+    });
+
+    it("only the cube owner (or a centered cube) may double, and never past 64", () => {
+      expect(backgammonEngine.legalActions(rollState({ turn: 1, cube: 2, cubeOwner: 1 }), 1)).toEqual([
+        { type: "ROLL" },
+        { type: "DOUBLE" },
+      ]);
+      expect(backgammonEngine.legalActions(rollState({ turn: 1, cube: 2, cubeOwner: 0 }), 1)).toEqual([
+        { type: "ROLL" },
+      ]);
+      expect(backgammonEngine.legalActions(rollState({ cube: 64, cubeOwner: 0 }), 0)).toEqual([
+        { type: "ROLL" },
+      ]);
+    });
+
+    it("bot takes from an even position and rarely doubles without a clear lead", () => {
+      const doubled = backgammonEngine.reduce(rollState(), { type: "DOUBLE" }, rng).state;
+      // Even (empty) position → the responder (seat 1) accepts.
+      expect(backgammonEngine.bot!(doubled, 1, rng)).toEqual({ type: "TAKE" });
+      // Level pip counts in the opening → the bot just rolls, no speculative double.
+      const opening = backgammonEngine.init({ seats: 2 }, new SeededRng("bg"));
+      const afterOpen = (() => {
+        let st = opening;
+        const starter = st.turn;
+        for (let i = 0; i < 8 && st.turn === starter; i++) {
+          st = backgammonEngine.reduce(st, backgammonEngine.legalActions(st, starter)[0]!, rng).state;
+        }
+        return st;
+      })();
+      expect(backgammonEngine.bot!(afterOpen, afterOpen.turn, rng)).toEqual({ type: "ROLL" });
     });
   });
 });

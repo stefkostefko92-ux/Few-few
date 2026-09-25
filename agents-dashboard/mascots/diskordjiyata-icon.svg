@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="jm-title jm-desc">
+  <title>Дискорджията — Discord ботове, webhooks и всичко около Discord</title>
+  <desc id="diskordjiyata-icon-jm-desc">Микро-иконен вариант на маскота: плътни цветове, дебели рамки на очилата и опростена академична шапка, четим до 16 пиксела.</desc>
+
+  <!-- Ниво „икона": нула филтри, нула градиенти, нула мехурчета. Всичко, което изчезва под 24 px,
+       е махнато — остават силуетът, очилата, очите, устата, папийонката и шапката. Щрихите са
+       удебелени, защото при 16 px тънката линия става сива каша, а не линия.
+       Силуетът е СЪЩИЯТ път като при пълното ниво (гейтнато) — само мащабиран, за да запълни
+       кадъра: иконата е същият маскот отдалече, не негов роднина. -->
+  <defs>
+    <clipPath id="diskordjiyata-icon-jmi-clip">
+      <path d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z"/>
+    </clipPath>
+  </defs>
+
+  <g class="jm-root" transform="translate(254 289) scale(1.1) translate(-254 -289)">
+    <path class="jm-body" d="M252 126C332 126 394 190 402 268C408 328 396 374 366 408C342 436 302 452 254 452C206 452 168 434 144 406C116 372 106 328 112 268C120 190 172 126 252 126Z" fill="var(--jm-neon, #1c42da)"/>
+    <g clip-path="url(#diskordjiyata-icon-jmi-clip)">
+      <ellipse cx="254" cy="486" rx="190" ry="112" fill="var(--jm-bottle, #0f57a7)"/>
+      <ellipse cx="238" cy="118" rx="150" ry="86" fill="var(--jm-olive, #8f76f9)"/>
+    </g>
+
+    <!-- Крачета и тук: семейната прилика при 32–64 px се пази от силуета, не от детайла. -->
+    <g class="jm-feet" fill="var(--jm-bottle, #0f57a7)">
+      <ellipse cx="196" cy="458" rx="44" ry="22"/>
+      <ellipse cx="312" cy="458" rx="44" ry="22"/>
+    </g>
+
+    <g class="jm-face">
+      <g class="jm-eyes">
+        <circle cx="198" cy="272" r="40" fill="var(--jm-eye, #F4FAEA)"/>
+        <circle cx="314" cy="272" r="40" fill="var(--jm-eye, #F4FAEA)"/>
+        <circle cx="200" cy="274" r="27" fill="var(--jm-ink, #0A0C0A)"/>
+        <circle cx="316" cy="274" r="27" fill="var(--jm-ink, #0A0C0A)"/>
+        <circle cx="191" cy="265" r="8" fill="var(--jm-white, #FFFFFF)"/>
+        <circle cx="307" cy="265" r="8" fill="var(--jm-white, #FFFFFF)"/>
+      </g>
+      <g class="jm-glasses" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="20" stroke-linecap="round">
+        <circle cx="198" cy="272" r="50"/>
+        <circle cx="314" cy="272" r="50"/>
+        <path d="M248 268H264"/>
+        <path d="M148 258L114 252"/>
+        <path d="M364 258L398 252"/>
+      </g>
+      <path d="M232 336C242 354 268 354 278 336" fill="none" stroke="var(--jm-ink, #0A0C0A)" stroke-width="14" stroke-linecap="round"/>
+    </g>
+
+    <g class="jm-bowtie" fill="var(--jm-ink, #0A0C0A)">
+      <path d="M246 406L202 380V432L246 406Z"/>
+      <path d="M262 406L306 380V432L262 406Z"/>
+      <rect x="240" y="392" width="28" height="28" rx="9"/>
+    </g>
+
+    <g class="jm-cap" transform="translate(0 6) rotate(-6 254 104)">
+      <ellipse cx="254" cy="114" rx="70" ry="26" fill="var(--jm-ink, #0A0C0A)"/>
+      <path d="M254 54L398 98L254 142L110 98Z" fill="var(--jm-ink, #0A0C0A)"/>
+      <path d="M254 98C302 104 342 106 374 98C380 120 380 138 377 152" fill="none" stroke="var(--jm-gold, #D9A521)" stroke-width="12" stroke-linecap="round"/>
+      <rect x="365" y="150" width="24" height="40" rx="12" fill="var(--jm-gold, #D9A521)"/>
+    </g>
+  </g>
+</svg>

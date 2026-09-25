@@ -1,2 +1,14 @@
 node_modules/
 .DS_Store
+.oversee-snapshot.json
+*-mockup.html
+*-designs.html
+HANDOFF-*.md
+HANDOVER-*.md
+handoff.md
+.tmp/
+agents-dashboard/.git-sync.lock
+agents-dashboard/.sync.lock
+.claude/hooks/_state/
+agents-dashboard/metrics.json
+dist/

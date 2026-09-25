@@ -4,12 +4,14 @@ import { gameHasCosmetics } from "@aso/shared";
 import { Badge, Panel, cn } from "../../ui";
 import { useAuthStore, useCosmeticsModal } from "../../lib/store";
 import { DailyReward } from "../progression/DailyReward";
-import { GAME_CATALOG, type GameCard } from "./games";
+import { BotDifficultyPicker } from "./BotDifficultyPicker";
+import { GAME_CATALOG, gameTitle, type GameCard } from "./games";
 
 function GameTile({ game }: { game: GameCard }) {
   const { t } = useTranslation();
   const openCosmetics = useCosmeticsModal((s) => s.openCosmetics);
   const customizable = game.ready && gameHasCosmetics(game.key);
+  const title = gameTitle(t, game.key, game.title);
 
   return (
     <Panel
@@ -27,7 +29,7 @@ function GameTile({ game }: { game: GameCard }) {
         </Badge>
       </div>
       <div>
-        <h2 className="text-xl text-ink-100">{game.title}</h2>
+        <h2 className="text-xl text-ink-100">{title}</h2>
         {game.ready ? (
           <p className="mt-1 text-xs text-brass-300">{t("lobby.play")} →</p>
         ) : (
@@ -70,11 +72,13 @@ export function Lobby() {
 
       {user ? <DailyReward /> : null}
 
+      <BotDifficultyPicker />
+
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {GAME_CATALOG.map((game) => (
           <li key={game.key}>
             {game.ready ? (
-              <Link to={`/play/${game.key.toLowerCase()}`} aria-label={game.title}>
+              <Link to={`/play/${game.key.toLowerCase()}`} aria-label={gameTitle(t, game.key, game.title)}>
                 <GameTile game={game} />
               </Link>
             ) : (

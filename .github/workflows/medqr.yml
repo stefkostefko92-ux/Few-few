@@ -1,0 +1,41 @@
+name: medqr
+
+on:
+  push:
+    paths:
+      - 'medqr/**'
+      - '.github/workflows/medqr.yml'
+  pull_request:
+    paths:
+      - 'medqr/**'
+      - '.github/workflows/medqr.yml'
+
+concurrency:
+  group: medqr-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: medqr
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: medqr/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test

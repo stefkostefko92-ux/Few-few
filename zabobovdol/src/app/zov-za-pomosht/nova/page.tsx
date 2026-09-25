@@ -120,7 +120,7 @@ export default function NewHelpCausePage() {
 
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             Посочете поне телефон или имейл. Внимавайте при дарения — не превеждайте
             пари на непознати без проверка.
           </p>

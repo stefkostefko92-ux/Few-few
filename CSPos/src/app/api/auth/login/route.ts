@@ -38,6 +38,7 @@ export async function POST(req: Request) {
       name: user.name,
       role: user.role as RoleKey,
       operatorCode: user.operatorCode,
+      readOnly: user.readOnly,
     });
     await audit(user.id, "LOGIN");
 
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
     });
 
     return Response.json({
-      user: { name: user.name, role: user.role, operatorCode: user.operatorCode },
+      user: { name: user.name, role: user.role, operatorCode: user.operatorCode, readOnly: user.readOnly },
       hasOpenShift: Boolean(openShift),
     });
   });

@@ -1,0 +1,72 @@
+[
+  {
+    "scene": "forge",
+    "title": "Velázquez - La Fragua de Vulcano (Museo del Prado, 1630).jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Vel%C3%A1zquez_-_La_Fragua_de_Vulcano_%28Museo_del_Prado%2C_1630%29.jpg/1920px-Vel%C3%A1zquez_-_La_Fragua_de_Vulcano_%28Museo_del_Prado%2C_1630%29.jpg",
+    "file": "forge.jpg",
+    "bytes": 650498
+  },
+  {
+    "scene": "tower",
+    "title": "Pieter Bruegel the Elder - The Tower of Babel (Vienna) - Google Art Project - edited.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg/1920px-Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg",
+    "file": "tower.jpg",
+    "bytes": 977344
+  },
+  {
+    "scene": "camp",
+    "title": "Caspar David Friedrich - Wanderer above the sea of fog.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg/1920px-Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg",
+    "file": "camp.jpg",
+    "bytes": 975938
+  },
+  {
+    "scene": "auction",
+    "title": "Massysm Quentin — The Moneylender and his Wife — 1514.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/6/64/Massysm_Quentin_%E2%80%94_The_Moneylender_and_his_Wife_%E2%80%94_1514.jpg",
+    "file": "auction.jpg",
+    "bytes": 3540283
+  },
+  {
+    "scene": "bounty",
+    "title": "Albrecht Dürer, Knight, Death and Devil, 1513, NGA 6637.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Albrecht_D%C3%BCrer%2C_Knight%2C_Death_and_Devil%2C_1513%2C_NGA_6637.jpg/1920px-Albrecht_D%C3%BCrer%2C_Knight%2C_Death_and_Devil%2C_1513%2C_NGA_6637.jpg",
+    "file": "bounty.jpg",
+    "bytes": 2644200
+  },
+  {
+    "scene": "market",
+    "title": "Pieter Aertsen - Market Scene - Google Art Project.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Pieter_Aertsen_-_Market_Scene_-_Google_Art_Project.jpg/1920px-Pieter_Aertsen_-_Market_Scene_-_Google_Art_Project.jpg",
+    "file": "market.jpg",
+    "bytes": 915173
+  },
+  {
+    "scene": "stables",
+    "title": "Whistlejacket by George Stubbs.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Whistlejacket_by_George_Stubbs.jpg/1920px-Whistlejacket_by_George_Stubbs.jpg",
+    "file": "stables.jpg",
+    "bytes": 535972
+  },
+  {
+    "scene": "recipe",
+    "title": "Frans Snyders - Cook at a Kitchen Table with Dead Game.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Frans_Snyders_-_Cook_at_a_Kitchen_Table_with_Dead_Game.jpg/1920px-Frans_Snyders_-_Cook_at_a_Kitchen_Table_with_Dead_Game.jpg",
+    "file": "recipe.jpg",
+    "bytes": 607141
+  },
+  {
+    "scene": "trialcache",
+    "title": "Hubert Robert - Ruins of a Doric Temple.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Hubert_Robert_-_Ruins_of_a_Doric_Temple.jpg",
+    "file": "trialcache.jpg",
+    "bytes": 380207
+  },
+  {
+    "scene": "battlepass",
+    "title": "Albrecht Altdorfer - Schlacht bei Issus (Alte Pinakothek, München).jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Albrecht_Altdorfer_-_Schlacht_bei_Issus_%28Alte_Pinakothek%2C_M%C3%BCnchen%29_-_Google_Art_Project.jpg/1920px-Albrecht_Altdorfer_-_Schlacht_bei_Issus_%28Alte_Pinakothek%2C_M%C3%BCnchen%29_-_Google_Art_Project.jpg",
+    "file": "battlepass.jpg",
+    "bytes": 1577012
+  }
+]

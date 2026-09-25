@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "../../../components/LocaleLink";
 import { SITE } from "../../../lib/site";
 import { getGameContent } from "../../../content/games";
 import { useLocale, useT } from "../../../i18n/I18nProvider";

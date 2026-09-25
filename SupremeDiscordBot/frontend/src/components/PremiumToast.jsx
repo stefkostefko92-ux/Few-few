@@ -49,18 +49,18 @@ export default function PremiumToast() {
 
   return (
     <div className="fixed bottom-6 right-6 z-50 max-w-md animate-slide-up">
-      <div className={`cs-card border-2 shadow-2xl ${isPremium ? "border-amber-500/50 bg-amber-500/10" : "border-red-500/50 bg-red-500/10"}`}>
+      <div className={`cs-card border-2 shadow-2xl ${isPremium ? "border-cs-gold/50 bg-cs-gold/10" : "border-red-500/50 bg-red-500/10"}`}>
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 mt-0.5">
             {isPremium
-              ? <Star className="w-5 h-5 text-amber-400 fill-current" />
+              ? <Star className="w-5 h-5 text-cs-gold fill-current" />
               : <AlertTriangle className="w-5 h-5 text-danger" />}
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="text-cs-text font-bold text-sm">{toast.title}</h4>
             <p className="text-cs-muted text-xs mt-1">{toast.message}</p>
             {toast.feature && (
-              <p className="text-xs text-amber-300 mt-1">
+              <p className="text-xs text-cs-gold mt-1">
                 <strong>{toast.feature}</strong>
                 {toast.category && ` — ${toast.category}`}
               </p>
@@ -69,7 +69,7 @@ export default function PremiumToast() {
               <Link
                 to={upgradeHref}
                 onClick={() => setToast(null)}
-                className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-wider transition-colors"
+                className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold uppercase tracking-wider transition-colors"
               >
                 <Star className="w-3 h-3 fill-current" />
                 Upgrade Now

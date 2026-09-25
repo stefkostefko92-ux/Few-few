@@ -87,6 +87,10 @@ export interface BeloteState {
   tricksTaken: [number, number];
   declPoints: [number, number];
   declarations: Declaration[];
+  /** Belote-rebelote in progress: K+Q of a trump suit held by one seat. `played`
+   *  reaches 2 only once both trump figures have actually been played (§4.1).
+   *  Populated lazily on the first figure's play, so it never leaks hidden cards. */
+  belotePairs: { seat: Seat; suit: Suit; played: number }[];
   lastTrickWinner: Seat | null;
   // ── match ──
   matchPoints: [number, number];
@@ -115,6 +119,7 @@ export type BeloteEvent =
   | { type: "REDEAL" }
   | { type: "CONTRACT"; contract: Contract; declarer: Seat; doubling: number }
   | { type: "DECLARATIONS"; declarations: Declaration[]; teamPoints: [number, number] }
+  | { type: "BELOTE"; seat: Seat; suit: Suit; half: "belote" | "rebelote" }
   | { type: "PLAY"; seat: Seat; card: Card }
   | { type: "TRICK"; seat: Seat; points: number }
   | { type: "DEAL_END"; summary: DealSummary; matchPoints: [number, number] }
@@ -224,6 +229,7 @@ function freshDeal(state: BeloteState, rng: SeededRng): void {
   state.tricksTaken = [0, 0];
   state.declPoints = [0, 0];
   state.declarations = [];
+  state.belotePairs = [];
   state.lastTrickWinner = null;
   state.turn = next4(state.dealer);
   state.leader = next4(state.dealer);
@@ -375,6 +381,7 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
       tricksTaken: [0, 0],
       declPoints: [0, 0],
       declarations: [],
+      belotePairs: [],
       lastTrickWinner: null,
       matchPoints: [0, 0],
       hanging: 0,
@@ -425,6 +432,7 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
       trick: state.trick.slice(),
       teamPoints: [state.teamPoints[0], state.teamPoints[1]],
       tricksTaken: [state.tricksTaken[0], state.tricksTaken[1]],
+      belotePairs: state.belotePairs.map((p) => ({ ...p })),
       matchPoints: [state.matchPoints[0], state.matchPoints[1]],
     };
     const events: BeloteEvent[] = [];
@@ -477,6 +485,33 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
 
     // PLAY
     if (action.type !== "PLAY") throw new IllegalActionError("Expected play action");
+
+    // Belote-rebelote: „белот" при изиграване на ПЪРВАТА фигура (K или Q коз) от
+    // играч, който държи и двете; „ребелот" на втората → +20 за неговия отбор.
+    // Проверката става ПРЕДИ картата да напусне ръката и записва двойката едва
+    // след публичното изиграване на първата фигура (не издава скрити карти).
+    const figR = rankOf(action.card);
+    if (figR === "K" || figR === "Q") {
+      const fSuit = suitOf(action.card);
+      const c = next.contract!;
+      const isTrumpSuit = c === "AT" || (c !== "NT" && fSuit === c);
+      if (isTrumpSuit) {
+        const pair = next.belotePairs.find((p) => p.seat === seat && p.suit === fSuit);
+        if (pair) {
+          pair.played = 2;
+          const wt = team(seat);
+          next.teamPoints[wt] = at2(next.teamPoints, wt) + 20;
+          events.push({ type: "BELOTE", seat, suit: fSuit, half: "rebelote" });
+        } else {
+          const partner = `${figR === "K" ? "Q" : "K"}${fSuit}`;
+          if (next.hands[seat]!.includes(partner)) {
+            next.belotePairs.push({ seat, suit: fSuit, played: 1 });
+            events.push({ type: "BELOTE", seat, suit: fSuit, half: "belote" });
+          }
+        }
+      }
+    }
+
     next.hands[seat] = next.hands[seat]!.filter((c) => c !== action.card);
     next.trick.push({ seat, card: action.card });
     events.push({ type: "PLAY", seat, card: action.card });

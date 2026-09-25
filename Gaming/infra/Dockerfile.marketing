@@ -7,6 +7,18 @@ RUN corepack enable
 WORKDIR /app
 
 FROM base AS build
+# Optional, build-time-only public config (static export inlines NEXT_PUBLIC_*).
+# All empty by default → the build ships zero trackers and no verification tags.
+ARG NEXT_PUBLIC_PLAUSIBLE_DOMAIN=""
+ARG NEXT_PUBLIC_PLAUSIBLE_SRC=""
+ARG NEXT_PUBLIC_GA_ID=""
+ARG NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=""
+ARG NEXT_PUBLIC_BING_SITE_VERIFICATION=""
+ENV NEXT_PUBLIC_PLAUSIBLE_DOMAIN=$NEXT_PUBLIC_PLAUSIBLE_DOMAIN \
+    NEXT_PUBLIC_PLAUSIBLE_SRC=$NEXT_PUBLIC_PLAUSIBLE_SRC \
+    NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID \
+    NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=$NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION \
+    NEXT_PUBLIC_BING_SITE_VERIFICATION=$NEXT_PUBLIC_BING_SITE_VERIFICATION
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/config/package.json packages/config/
 COPY packages/shared/package.json packages/shared/

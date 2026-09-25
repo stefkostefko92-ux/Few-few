@@ -27,6 +27,13 @@ const HOME_COL = 4;
 const FINISH = MAIN + HOME_COL; // 44 (progress index meaning "home")
 /** Throws allowed in one turn while every unfinished token sits in the base. */
 const BASE_ATTEMPTS = 3;
+/**
+ * Safe cells (absolute main-loop indices) where a token can never be captured:
+ * the four coloured start squares (each seat enters at seat*10) and the four
+ * star squares eight cells further on. A token sharing a safe cell coexists.
+ */
+const SAFE_CELLS: ReadonlySet<number> = new Set([0, 10, 20, 30, 8, 18, 28, 38]);
+const isSafeCell = (abs: number): boolean => SAFE_CELLS.has(abs);
 
 export interface LudoState {
   // progress[seat][token]: -1 base, 0..39 steps on main path (seat-relative),
@@ -56,6 +63,32 @@ const entryOffset = (seat: Seat): number => seat * 10;
 function absCell(seat: Seat, prog: number): number | null {
   if (prog < 0 || prog >= MAIN) return null;
   return (entryOffset(seat) + prog) % MAIN;
+}
+
+/** True if any seat OTHER than `mover` parks ≥2 tokens on absolute cell `abs`
+ *  (a blockade the mover may neither land on nor pass through). */
+function blockadeAt(state: LudoState, abs: number, mover: Seat): boolean {
+  for (let s = 0; s < state.seats; s++) {
+    if (s === mover) continue; // own tokens never block the owner
+    let cnt = 0;
+    for (let tk = 0; tk < TOKENS; tk++) {
+      if (absCell(s, state.progress[s]![tk]!) === abs) cnt++;
+    }
+    if (cnt >= 2) return true;
+  }
+  return false;
+}
+
+/** Does moving `seat` from seat-relative `from` to `to` cross an enemy blockade?
+ *  Only main-track cells (0..39) can hold blockades; the home column is private. */
+function pathBlocked(state: LudoState, seat: Seat, from: number, to: number): boolean {
+  const start = from < 0 ? 0 : from + 1; // a token leaving base first lands on step 0
+  for (let p = start; p <= to; p++) {
+    if (p >= MAIN) break; // reached the home column — no blockades beyond the loop
+    const abs = (entryOffset(seat) + p) % MAIN;
+    if (blockadeAt(state, abs, seat)) return true;
+  }
+  return false;
 }
 
 export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
@@ -129,9 +162,10 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
     next.progress[seat]![action.token] = dest;
     events.push({ type: "MOVE", seat, token: action.token, to: dest });
 
-    // Capture: if we landed on a main cell occupied by a single opponent token.
+    // Capture: landing on a main cell sends opponents home — unless it's a safe
+    // cell (star / start square), where every token is immune.
     const abs = absCell(seat, dest);
-    if (abs !== null) {
+    if (abs !== null && !isSafeCell(abs)) {
       for (let s = 0; s < next.seats; s++) {
         if (s === seat) continue;
         for (let tk = 0; tk < TOKENS; tk++) {
@@ -176,7 +210,7 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
     };
     const captures = (t: number): boolean => {
       const abs = absCell(seat, destOf(t));
-      if (abs === null) return false;
+      if (abs === null || isSafeCell(abs)) return false; // no captures on safe cells
       for (let s = 0; s < state.seats; s++) {
         if (s === seat) continue;
         for (let tk = 0; tk < TOKENS; tk++) {
@@ -222,10 +256,12 @@ function movableTokens(state: LudoState, seat: Seat): number[] {
     const cur = state.progress[seat]![t]!;
     if (cur >= FINISH) continue; // already finished
     if (cur === -1) {
-      if (die === 6) out.push(t); // leave base only on a 6
+      // Leave base only on a 6, and only if the entry cell isn't blockaded.
+      if (die === 6 && !pathBlocked(state, seat, -1, 0)) out.push(t);
       continue;
     }
-    if (cur + die <= FINISH) out.push(t); // cannot overshoot the finish
+    // Cannot overshoot the finish, nor pass through / land on an enemy blockade.
+    if (cur + die <= FINISH && !pathBlocked(state, seat, cur, cur + die)) out.push(t);
   }
   return out;
 }

@@ -13,6 +13,8 @@ import {
   Partials,
   REST,
   Routes,
+  Events,
+  Guild,
 } from "discord.js";
 import { readdirSync } from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
@@ -21,6 +23,9 @@ import api from "../utils/api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
+
+// Ключалки срещу едновременни boot-ове за един и същ сървър.
+const bootLocks = new Map(); // serverId → Promise<Client|null>
 
 // Map: serverId → Discord.js Client instance
 const customClients = new Map();
@@ -45,6 +50,9 @@ const SHARED_INTENTS = [
   // (guildBanAdd/Remove). Без него white-label ботът не вижда GUILD_BAN_*.
   GatewayIntentBits.GuildModeration,
   GatewayIntentBits.DirectMessages,
+  // Непривилегирован intent (1<<10): Reaction Roles (v33) — без него
+  // white-label ботът не получава messageReactionAdd/Remove.
+  GatewayIntentBits.GuildMessageReactions,
 ];
 
 /**
@@ -77,10 +85,40 @@ async function loadEventModules() {
  * Create a Client, attach all event modules, copy command collection,
  * and return the still-unlogged-in instance.
  */
-async function createConfiguredClient(mainClient) {
+// ─── Обвързване с наетия guild (H1, решение на собственика 07.08.2026) ───────
+// White-label клиентът се вдига ЗА ЕДИН сървър — този, за който е платено. Но
+// event handler-ите се закачаха глобално и действаха по guild-а от самото
+// събитие. Значи собственикът на custom бота можеше да го покани навсякъде и
+// нашата инфраструктура обслужваше неограничено сървъри срещу един абонамент
+// (а guildCreate дори ги регистрираше като нови безплатни сървъри).
+//
+// Избраното поведение: клиентът работи САМО в обвързания guild; събития от
+// другаде се пропускат с еднократно предупреждение на guild.
+function guildIdFromArgs(args) {
+  for (const a of args) {
+    if (!a) continue;
+    if (a instanceof Guild) return a.id;
+    if (typeof a.guildId === "string") return a.guildId;
+    if (a.guild?.id) return a.guild.id;
+    if (a.message?.guild?.id) return a.message.guild.id;   // MessageReaction
+    if (typeof a.first === "function") {                   // Collection (bulk delete)
+      const f = a.first();
+      if (f?.guild?.id) return f.guild.id;
+      if (typeof f?.guildId === "string") return f.guildId;
+    }
+  }
+  return null; // DM / не може да се определи → не блокираме (form сесиите живеят в DM)
+}
+
+const warnedForeign = new Set(); // `${serverId}:${guildId}` — по едно предупреждение
+
+async function createConfiguredClient(mainClient, boundServerId) {
   const client = new Client({
     intents: SHARED_INTENTS,
-    partials: [Partials.Channel],
+    // Message + Reaction + User partials: Reaction Roles (v33) върху некеширани
+    // съобщения/потребители — виж същия коментар в bot/src/index.js
+    // (Partials.User е нужен, за да се емитва messageReactionRemove).
+    partials: [Partials.Channel, Partials.Message, Partials.Reaction, Partials.User],
   });
 
   // Share command collection (it's read-only after startup)
@@ -94,7 +132,20 @@ async function createConfiguredClient(mainClient) {
   // Attach every event handler the main client has
   const events = await loadEventModules();
   for (const ev of events) {
-    const fn = (...args) => ev.execute(...args);
+    const fn = (...args) => {
+      const gid = guildIdFromArgs(args);
+      if (boundServerId && gid && gid !== boundServerId) {
+        const key = `${boundServerId}:${gid}`;
+        if (!warnedForeign.has(key)) {
+          warnedForeign.add(key);
+          console.warn(
+            `[white-label] клиентът на ${boundServerId} получи събитие от НЕОБВЪРЗАН guild ${gid} — пропускам (лицензът покрива един сървър)`,
+          );
+        }
+        return undefined;
+      }
+      return ev.execute(...args);
+    };
     if (ev.once) client.once(ev.name, fn);
     else         client.on(ev.name, fn);
   }
@@ -115,23 +166,41 @@ async function createConfiguredClient(mainClient) {
  * Fetches the decrypted token from the backend, logs in, registers commands
  * under the white-label bot's own application ID.
  */
-export async function bootCustomClient(serverId, mainClient) {
-  // Already running — reuse
+export async function bootCustomClient(serverId, mainClient, { force = false } = {}) {
+  // Already running — reuse. ОСВЕН при force: рестартът след смяна на токена
+  // минаваше точно оттук и връщаше СТАРИЯ жив клиент, тоест новият токен
+  // никога не влизаше в сила, а таблото рапортуваше успех.
+  // (Качествения, 07.08.2026)
   const existing = customClients.get(serverId);
-  if (existing?.isReady()) return existing;
+  if (!force && existing?.isReady()) return existing;
 
+  // Ключалка срещу check-then-act: два едновременни boot-а (напр. ready
+  // реконсилиация + ръчен рестарт) създаваха ДВА клиента за един сървър —
+  // единият оставаше завинаги без референция и течеше gateway сесия.
+  const inFlight = bootLocks.get(serverId);
+  if (inFlight) return inFlight;
+
+  const promise = (async () => {
   try {
     // Fetch decrypted token via the bot-secret-protected endpoint
     const { data } = await api.get(`/bot/server/${serverId}/token`);
     if (!data?.token) {
-      console.log(`[ClientManager] No custom token for ${serverId} — skipping`);
+      // Няма токен — планът е спрян или админът го е изтрил. Работещият клиент
+      // трябва да СЛЕЗЕ, иначе white-label ботът продължава да обслужва сървър,
+      // за който вече не се плаща.
+      if (customClients.has(serverId)) {
+        console.log(`[ClientManager] токенът за ${serverId} вече го няма — свалям работещия клиент`);
+        await shutdownCustomClient(serverId);
+      } else {
+        console.log(`[ClientManager] No custom token for ${serverId} — skipping`);
+      }
       return null;
     }
 
-    const client = await createConfiguredClient(mainClient);
+    const client = await createConfiguredClient(mainClient, serverId);
 
     // Register slash commands once the client is ready
-    client.once("ready", async () => {
+    client.once(Events.ClientReady, async () => {
       console.log(`🤖 White-label ready for ${serverId}: ${client.user.tag}`);
 
       const commands = [...mainClient.commands.values()].map((c) => c.data.toJSON());
@@ -145,6 +214,10 @@ export async function bootCustomClient(serverId, mainClient) {
       } catch (err) {
         console.error(`[ClientManager] Command registration failed for ${serverId}:`, err?.message);
       }
+
+      // Брандиране: само името при вдигане. Аватарът иска изрична промяна —
+      // виж applyBranding защо (лимит ~2 смени/час и невъзможно сравнение).
+      await applyBranding(client, serverId, { withAvatar: false });
     });
 
     await client.login(data.token);
@@ -154,6 +227,71 @@ export async function bootCustomClient(serverId, mainClient) {
     // Common: Invalid token (revoked), Used token (bot already running elsewhere), DisallowedIntents
     console.error(`[ClientManager] boot failed for ${serverId}: ${err?.code || ""} ${err?.message}`);
     return null;
+  }
+  })();
+
+  bootLocks.set(serverId, promise);
+  try {
+    return await promise;
+  } finally {
+    bootLocks.delete(serverId);
+  }
+}
+
+/**
+ * Прилага брандирането (име + аватар) към ЖИВИЯ Discord бот.
+ *
+ * Дупката, която затваря (докладвана от собственика, 07.08.2026): полетата се
+ * записваха в базата и брандираха HTML транскрипта, но НИКОГА не стигаха до
+ * Discord — в целия бот единственото `client.user.*` извикване беше
+ * `setActivity`. Клиентът плаща White-label, попълва име и снимка, интерфейсът
+ * казва „запазено“, а ботът си остава със старото. Главното обещание на
+ * тарифата не работеше.
+ *
+ * Дисциплина:
+ *   • Името се сменя САМО ако наистина се различава. Discord дава на бота ~2
+ *     смени на час; сляпо прилагане при всеки boot изгаря лимита и после
+ *     истинската промяна не минава.
+ *   • Аватарът се праща само когато е поискан ИЗРИЧНО (`withAvatar`) — при
+ *     рестарт заради смяна на настройките, не при всяко вдигане: не можем да
+ *     сравним локален URL с хеша в Discord, значи всеки boot би пращал наново.
+ *   • Провалът НИКОГА не спира бота: без бранд той пак обслужва тикетите.
+ */
+export async function applyBranding(client, serverId, { withAvatar = false } = {}) {
+  let branding;
+  try {
+    const { data } = await api.get(`/bot/server/${serverId}/branding`);
+    branding = data;
+  } catch (err) {
+    console.warn(`[ClientManager] брандиране за ${serverId}: не се прочете — ${err?.message}`);
+    return;
+  }
+  if (!branding) return;
+
+  // ЕДНА заявка за име+аватар, не две.
+  //
+  // `setUsername()` и `setAvatar()` не са независими извиквания: и двете правят
+  // `this.edit()` вътрешно (discord.js v14 `ClientUser.js:83,97`), тоест един и
+  // същ `PATCH /users/@me` и един и същ bucket с лимит ~2/час. Клиент, който
+  // смени И името, И снимката наведнъж, харчеше ДВА опита вместо един — при
+  // втора такава промяна в същия час третата заявка увисва в опашката с часове
+  // и брандирането „не работи“ без нито един ред грешка. Точно оплакването,
+  // заради което този код беше написан. (Дискорджията, одит 07.08.2026)
+  const patch = {};
+  if (branding.name && client.user?.username !== branding.name) patch.username = branding.name;
+  if (withAvatar && branding.avatarDataUri) patch.avatar = branding.avatarDataUri;
+  if (Object.keys(patch).length === 0) return;
+
+  const what = Object.keys(patch).join("+");
+  try {
+    await client.user.edit(patch);
+    console.log(`[ClientManager] ${serverId}: брандирането е приложено (${what})`);
+  } catch (err) {
+    // 50035 = невалидно име (заето/забранена дума); 429 = изчерпан лимит.
+    const why = err?.code === 429 || err?.status === 429
+      ? "Discord ограничава смените на профил (~2/час) — ще мине по-късно"
+      : err?.message;
+    console.warn(`[ClientManager] ${serverId}: брандирането не се приложи (${what}) — ${why}`);
   }
 }
 
@@ -178,11 +316,30 @@ export async function shutdownCustomClient(serverId) {
 
 /**
  * Restart the client for a server — used when the admin updates the bot token.
- * Atomic: old client is destroyed only after the new one successfully logs in.
+ * НАИСТИНА атомарно: вдигаме НОВИЯ клиент пръв и сваляме стария ЕДВА след
+ * успешен login. Ако новият токен е невалиден (boot връща null), пазим стария
+ * работещ клиент — иначе грешен токен сваляше напълно работещ white-label бот
+ * офлайн (одит HIGH). bootCustomClient презаписва customClients при успех, а
+ * при провал картата остава на стария клиент.
  */
 export async function restartCustomClient(serverId, mainClient) {
-  await shutdownCustomClient(serverId);
-  return bootCustomClient(serverId, mainClient);
+  const old = customClients.get(serverId);
+  // force: без него boot-ът вижда живия клиент и връща него — новият токен
+  // никога не влизаше в сила.
+  const fresh = await bootCustomClient(serverId, mainClient, { force: true });
+  if (fresh) {
+    // Рестартът идва от ИЗРИЧНА промяна на настройките (WHITELABEL_UPDATE) —
+    // тук аватарът наистина трябва да се приложи.
+    await applyBranding(fresh, serverId, { withAvatar: true });
+    // Новият е онлайн → чак сега махаме стария (ако е различна инстанция).
+    if (old && old !== fresh) {
+      try { await old.destroy(); } catch (err) { console.error(`[ClientManager] old client destroy for ${serverId}:`, err?.message); }
+    }
+    return fresh;
+  }
+  // Новият токен не тръгна → НЕ оставяй сървъра без бот; старият продължава.
+  console.warn(`[ClientManager] restart за ${serverId}: новият токен не тръгна — пазя работещия стар клиент`);
+  return old || null;
 }
 
 /**
@@ -225,6 +382,68 @@ export async function bootAllCustomClients(mainClient) {
     // Non-fatal: main bot still works even if white-label boot fails
     console.error("[ClientManager] bootAll failed:", err?.message);
   }
+}
+
+/**
+ * Реконсилиация: приведи РАБОТЕЩИТЕ white-label клиенти в съответствие с това
+ * КОИ сървъри имат право на white-label бот СЕГА.
+ *
+ * ЗАЩО СЪЩЕСТВУВА (одит 07.08.2026): white-label клиентът се вдигаше при старт
+ * (`bootAllCustomClients`) и се сваляше само когато токенът се смени
+ * (`WHITELABEL_UPDATE` от servers.js). Но tier може да падне по НАПЪЛНО ДРУГИ
+ * пътища, които не пипат токена: махане на сървър от agency seat, отмяна/refund/
+ * chargeback на агенцията, дунинг деактивация, изтичане на grace. По всички тях
+ * `customBotToken` си остава в базата — сменя се само ЕФЕКТИВНИЯТ план. Резултат:
+ * бранд ботът продължаваше да обслужва сървър, който вече не плаща за него, до
+ * следващ рестарт на процеса (при стабилен контейнер — месеци).
+ *
+ * `/bot/servers/with-custom-tokens` е единственият източник на истина за „кой
+ * трябва да върви“ (гейтва на ефективния tier, не на суровата колона). Тук само
+ * караме работещото множество да съвпадне с него: вдигаме липсващите, сваляме
+ * излишните. Идемпотентно — безопасно е да се вика колкото често искаш.
+ *
+ * Огледало на `runEntitlementReconcile` за Discord монетизацията: Discord/Stripe
+ * не преизпращат всяко събитие, затова периодичната метла е това, което лови
+ * пропуснатото.
+ */
+export async function reconcileCustomClients(mainClient) {
+  let eligible;
+  try {
+    const { data } = await api.get("/bot/servers/with-custom-tokens");
+    eligible = new Set((data || []).map((s) => s.id));
+  } catch (err) {
+    // Fail-closed срещу ГРЕШНО сваляне: ако backend-ът е недостъпен, НЕ приемаме
+    // „нула права“ и не сваляме живи клиенти. По-добре временно надживял клиент,
+    // отколкото да свалим всички бранд ботове заради мрежов трепет.
+    console.error("[ClientManager] reconcile: backend недостъпен — пропускам:", err?.message);
+    return { booted: 0, shutDown: 0, skipped: true };
+  }
+
+  let shutDown = 0;
+  // 1) Свали работещи клиенти, които вече НЯМАТ право.
+  for (const serverId of [...customClients.keys()]) {
+    if (!eligible.has(serverId)) {
+      console.log(`[ClientManager] reconcile: ${serverId} вече няма white-label tier — свалям`);
+      await shutdownCustomClient(serverId);
+      shutDown++;
+    }
+  }
+
+  // 2) Вдигни имащи право, които не вървят (напр. seat закачен без смяна на токен).
+  let booted = 0;
+  const toBoot = [...eligible].filter((id) => !customClients.get(id)?.isReady());
+  const BATCH = 5;
+  for (let i = 0; i < toBoot.length; i += BATCH) {
+    const batch = toBoot.slice(i, i + BATCH);
+    const results = await Promise.allSettled(batch.map((id) => bootCustomClient(id, mainClient)));
+    booted += results.filter((r) => r.status === "fulfilled" && r.value).length;
+    if (i + BATCH < toBoot.length) await new Promise((r) => setTimeout(r, 2000));
+  }
+
+  if (shutDown || booted) {
+    console.log(`[ClientManager] reconcile: вдигнати ${booted}, свалени ${shutDown}`);
+  }
+  return { booted, shutDown, skipped: false };
 }
 
 /**

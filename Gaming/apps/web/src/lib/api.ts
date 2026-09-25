@@ -168,6 +168,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ id }),
     }),
+  equipCustomCosmetic: (id: string) =>
+    request<{ equipped: string[] }>("/cosmetics/equip-custom", {
+      method: "POST",
+      body: JSON.stringify({ id }),
+    }),
   equippedCosmetics: () => request<{ equipped: string[] }>("/cosmetics/equipped"),
 
   // Friends & social
@@ -184,6 +189,9 @@ export const api = {
   notifications: () => request<NotificationsResponse>("/notifications"),
   notificationsRead: () => request<{ ok: true }>("/notifications/read", { method: "POST" }),
 
+  // In-app announcements (player-facing banner)
+  announcements: () => request<{ items: AnnouncementItem[] }>("/announcements"),
+
   // Admin (staff only)
   adminStats: () => request<AdminStats>("/admin/stats"),
   adminUsers: (q: string) =>
@@ -194,8 +202,10 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify(patch),
     }),
-  adminFlags: (status: string) =>
-    request<{ flags: AdminFlag[] }>(`/admin/flags?status=${status}`),
+  adminFlags: (status: string, cursor?: string) =>
+    request<{ flags: AdminFlag[]; nextCursor: string | null }>(
+      `/admin/flags?status=${status}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
+    ),
   adminReviewFlag: (id: string, status: string) =>
     request<{ flag: AdminFlag }>(`/admin/flags/${id}`, {
       method: "PATCH",
@@ -262,6 +272,12 @@ export interface NotificationItem {
 export interface NotificationsResponse {
   items: NotificationItem[];
   unread: number;
+}
+export interface AnnouncementItem {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
 }
 
 // ── Admin DTOs ───────────────────────────────────────────────────────────────

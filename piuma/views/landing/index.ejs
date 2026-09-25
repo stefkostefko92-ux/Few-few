@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="<%= locale %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= t('landing.meta.title') %></title>
+<meta name="description" content="<%= t('landing.meta.description') %>">
+<meta name="keywords" content="<%= t('landing.meta.keywords') %>">
+<meta name="theme-color" content="#07060b">
+<link rel="canonical" href="<%= canonical %>">
+<% alternates.forEach((alt) => { %><link rel="alternate" hreflang="<%= alt.hreflang %>" href="<%= alt.href %>">
+<% }) %><meta property="og:type" content="website">
+<meta property="og:site_name" content="Piuma">
+<meta property="og:locale" content="<%= locale %>">
+<meta property="og:title" content="<%= t('landing.meta.title') %>">
+<meta property="og:description" content="<%= t('landing.meta.description') %>">
+<meta property="og:url" content="<%= canonical %>">
+<meta property="og:image" content="<%= ogImage %>">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="<%= t('landing.meta.ogAlt') %>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= t('landing.meta.title') %>">
+<meta name="twitter:description" content="<%= t('landing.meta.description') %>">
+<meta name="twitter:image" content="<%= ogImage %>">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/landing/apple-touch-icon.png">
+<link rel="stylesheet" href="/static/tokens.css">
+<link rel="stylesheet" href="/static/landing.css">
+<script type="application/ld+json" nonce="<%= cspNonce %>"><%- structuredData %></script>
+</head>
+<body class="lp">
+<%- sprite %>
+<a class="skip" href="#main"><%= t('landing.nav.skip') %></a>
+
+<header class="lp-top">
+  <div class="lp-wrap lp-top-in">
+    <a class="lp-brand" href="/"><img class="lp-logo" src="/static/landing/logo-160.webp" alt="" width="160" height="160" decoding="async"><span class="wordmark">Piuma</span></a>
+    <nav class="lp-nav" aria-label="<%= t('landing.meta.title') %>">
+      <a href="#who"><%= t('landing.nav.who') %></a>
+      <a href="#how"><%= t('landing.nav.how') %></a>
+      <a href="#learn"><%= t('landing.nav.learn') %></a>
+      <a href="#security"><%= t('landing.nav.security') %></a>
+      <a href="#faq"><%= t('landing.nav.faq') %></a>
+    </nav>
+    <div class="lp-top-right">
+      <%- include('../partials/lang') %>
+      <a class="btn ghost small" href="/admin"><%- icon(signedIn ? 'dashboard' : 'logout', { class: 'ic-sm' }) %> <%= signedIn ? t('landing.nav.toPanel') : t('landing.nav.signIn') %></a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="lp-hero">
+    <div class="lp-wrap lp-hero-in">
+      <div class="lp-hero-copy">
+        <p class="lp-eyebrow"><%- icon('instagram', { class: 'ic-sm' }) %> <%= t('landing.hero.eyebrow') %></p>
+        <h1><%= t('landing.hero.title') %> <span class="lp-accent"><%= t('landing.hero.titleAccent') %></span></h1>
+        <p class="lp-lead"><%= t('landing.hero.lead') %></p>
+        <div class="lp-actions">
+          <% if (signedIn) { %>
+          <a class="btn primary" href="/admin"><%- icon('dashboard', { class: 'ic-sm' }) %> <%= t('landing.nav.toPanel') %></a>
+          <% } else { %>
+          <a class="btn primary" href="<%= contactUrl %>"><%- icon('sparkle', { class: 'ic-sm' }) %> <%= t('landing.hero.ctaPrimary') %></a>
+          <% } %>
+          <a class="btn" href="#how"><%- icon('chevron-down', { class: 'ic-sm' }) %> <%= t('landing.hero.ctaSecondary') %></a>
+        </div>
+        <p class="lp-note"><%- icon('shield', { class: 'ic-sm' }) %> <span><%= t('landing.hero.note') %></span></p>
+      </div>
+      <div class="lp-hero-art" aria-hidden="true"></div>
+    </div>
+
+    <div class="lp-wrap">
+      <figure class="lp-shot lp-shot-hero">
+        <img src="/static/landing/panel-dashboard-<%= locale %>.webp" srcset="/static/landing/panel-dashboard-<%= locale %>-800.webp 800w, /static/landing/panel-dashboard-<%= locale %>.webp 1600w" sizes="(max-width: 1240px) calc(100vw - 32px), 1180px" width="1600" height="1059" alt="<%= t('landing.hero.shotAlt') %>" fetchpriority="high" decoding="async">
+      </figure>
+    </div>
+  </section>
+
+  <section class="lp-proof" aria-label="<%= t('landing.proof.label') %>">
+    <div class="lp-wrap lp-proof-in">
+      <div class="lp-proof-item">
+        <span class="chip good"><%- icon('approve', { class: 'ic-sm' }) %> <%= t('landing.proof.reviewTitle') %></span>
+        <p><%= t('landing.proof.reviewBody') %></p>
+      </div>
+      <div class="lp-proof-item">
+        <span class="chip info"><%- icon('trend-up', { class: 'ic-sm' }) %> <%= t('landing.proof.learnTitle') %></span>
+        <p><%= t('landing.proof.learnBody') %></p>
+      </div>
+      <div class="lp-proof-item">
+        <span class="chip accent"><%- icon('shield', { class: 'ic-sm' }) %> <%= t('landing.proof.euTitle') %></span>
+        <p><%= t('landing.proof.euBody') %></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-section" id="who">
+    <div class="lp-wrap">
+      <h2><%= t('landing.who.title') %></h2>
+      <p class="lp-section-lead"><%= t('landing.who.lead') %></p>
+      <div class="lp-who">
+        <article class="lp-cell">
+          <h3><%- icon('clock') %> <%= t('landing.who.smallTitle') %></h3>
+          <p><%= t('landing.who.smallBody') %></p>
+        </article>
+        <article class="lp-cell">
+          <h3><%- icon('brands') %> <%= t('landing.who.agencyTitle') %></h3>
+          <p><%= t('landing.who.agencyBody') %></p>
+        </article>
+        <article class="lp-cell">
+          <h3><%- icon('users') %> <%= t('landing.who.teamTitle') %></h3>
+          <p><%= t('landing.who.teamBody') %></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-section" id="how">
+    <div class="lp-wrap">
+      <h2><%= t('landing.how.title') %></h2>
+      <p class="lp-section-lead"><%= t('landing.how.lead') %></p>
+      <ol class="lp-steps">
+        <li class="lp-step">
+          <span class="lp-step-n" aria-hidden="true">1</span>
+          <h3><%- icon('compose') %> <%= t('landing.how.step1Title') %></h3>
+          <p><%= t('landing.how.step1Body') %></p>
+        </li>
+        <li class="lp-step">
+          <span class="lp-step-n" aria-hidden="true">2</span>
+          <h3><%- icon('approve') %> <%= t('landing.how.step2Title') %></h3>
+          <p><%= t('landing.how.step2Body') %></p>
+        </li>
+        <li class="lp-step">
+          <span class="lp-step-n" aria-hidden="true">3</span>
+          <h3><%- icon('publish') %> <%= t('landing.how.step3Title') %></h3>
+          <p><%= t('landing.how.step3Body') %></p>
+        </li>
+      </ol>
+      <aside class="lp-guard">
+        <h3><%- icon('shield') %> <%= t('landing.how.guardTitle') %></h3>
+        <p><%= t('landing.how.guardBody') %></p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="lp-section" id="learn">
+    <div class="lp-wrap lp-split">
+      <div class="lp-split-copy">
+        <h2><%= t('landing.autopilot.title') %></h2>
+        <p class="lp-section-lead"><%= t('landing.autopilot.lead') %></p>
+        <ul class="lp-list">
+          <li><%- icon('autopilot', { class: 'ic-sm' }) %><span><%= t('landing.autopilot.point1') %></span></li>
+          <li><%- icon('image', { class: 'ic-sm' }) %><span><%= t('landing.autopilot.point2') %></span></li>
+          <li><%- icon('trend-up', { class: 'ic-sm' }) %><span><%= t('landing.autopilot.point3') %></span></li>
+          <li><%- icon('posts', { class: 'ic-sm' }) %><span><%= t('landing.autopilot.point4') %></span></li>
+        </ul>
+      </div>
+      <figure class="lp-verdict">
+        <figcaption><%- icon('metric-engaged', { class: 'ic-sm' }) %> <%= t('landing.learn.caption') %></figcaption>
+        <dl>
+          <div class="lp-verdict-row is-ready">
+            <dt><%= t('landing.learn.whenLabel') %></dt>
+            <dd><strong><%= t('landing.learn.whenValue') %></strong> <span class="chip good"><%- icon('approve', { class: 'ic-sm' }) %> <%= t('landing.learn.ready') %></span></dd>
+          </div>
+          <div class="lp-verdict-row">
+            <dt><%= t('landing.learn.formatLabel') %></dt>
+            <dd><strong><%= t('landing.learn.early') %></strong> <span class="lp-verdict-why"><%= t('landing.learn.formatWhy') %></span></dd>
+          </div>
+          <div class="lp-verdict-row">
+            <dt><%= t('landing.learn.topicLabel') %></dt>
+            <dd><strong><%= t('landing.learn.early') %></strong> <span class="lp-verdict-why"><%= t('landing.learn.topicWhy') %></span></dd>
+          </div>
+        </dl>
+        <p class="lp-verdict-note"><%= t('landing.learn.note') %></p>
+      </figure>
+    </div>
+    <div class="lp-wrap">
+      <figure class="lp-shot lp-shot-wide">
+        <img src="/static/landing/panel-insights-<%= locale %>.webp" srcset="/static/landing/panel-insights-<%= locale %>-800.webp 800w, /static/landing/panel-insights-<%= locale %>.webp 1600w" sizes="(max-width: 1240px) calc(100vw - 32px), 1180px" width="1600" height="652" alt="<%= t('landing.autopilot.shotAlt') %>" loading="lazy" decoding="async">
+      </figure>
+    </div>
+  </section>
+
+  <section class="lp-section" id="panel">
+    <div class="lp-wrap lp-split lp-split-flip">
+      <div class="lp-split-copy">
+        <h2><%= t('landing.panel.title') %></h2>
+        <p class="lp-section-lead"><%= t('landing.panel.lead') %></p>
+        <ul class="lp-list">
+          <li><%- icon('status-approved', { class: 'ic-sm' }) %><span><%= t('landing.panel.point1') %></span></li>
+          <li><%- icon('users', { class: 'ic-sm' }) %><span><%= t('landing.panel.point2') %></span></li>
+          <li><%- icon('key', { class: 'ic-sm' }) %><span><%= t('landing.panel.point3') %></span></li>
+          <li><%- icon('human', { class: 'ic-sm' }) %><span><%= t('landing.panel.point4') %></span></li>
+        </ul>
+      </div>
+      <figure class="lp-shot">
+        <img src="/static/landing/panel-posts-<%= locale %>.webp" srcset="/static/landing/panel-posts-<%= locale %>-800.webp 800w, /static/landing/panel-posts-<%= locale %>.webp 1600w" sizes="(max-width: 1000px) calc(100vw - 32px), 580px" width="1600" height="1059" alt="<%= t('landing.panel.shotAlt') %>" loading="lazy" decoding="async">
+      </figure>
+    </div>
+    <div class="lp-wrap">
+      <figure class="lp-shot lp-shot-wide">
+        <img src="/static/landing/panel-compose-<%= locale %>.webp" srcset="/static/landing/panel-compose-<%= locale %>-800.webp 800w, /static/landing/panel-compose-<%= locale %>.webp 1600w" sizes="(max-width: 1240px) calc(100vw - 32px), 1180px" width="1600" height="1059" alt="<%= t('landing.panel.composeAlt') %>" loading="lazy" decoding="async">
+      </figure>
+    </div>
+  </section>
+
+  <section class="lp-section" id="security">
+    <div class="lp-wrap">
+      <h2><%= t('landing.security.title') %></h2>
+      <p class="lp-section-lead"><%= t('landing.security.lead') %></p>
+      <div class="lp-grid">
+        <article class="lp-cell">
+          <h3><%- icon('agent') %> <%= t('landing.security.item1Title') %></h3>
+          <p><%= t('landing.security.item1Body') %></p>
+        </article>
+        <article class="lp-cell">
+          <h3><%- icon('key') %> <%= t('landing.security.item2Title') %></h3>
+          <p><%= t('landing.security.item2Body') %></p>
+        </article>
+        <article class="lp-cell">
+          <h3><%- icon('audit') %> <%= t('landing.security.item3Title') %></h3>
+          <p><%= t('landing.security.item3Body') %></p>
+        </article>
+        <article class="lp-cell">
+          <h3><%- icon('shield') %> <%= t('landing.security.item4Title') %></h3>
+          <p><%= t('landing.security.item4Body') %></p>
+        </article>
+        <article class="lp-cell">
+          <h3><%- icon('users') %> <%= t('landing.security.item5Title') %></h3>
+          <p><%= t('landing.security.item5Body') %></p>
+        </article>
+        <article class="lp-cell">
+          <h3><%- icon('brands') %> <%= t('landing.security.item6Title') %></h3>
+          <p><%= t('landing.security.item6Body') %></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-section lp-langs">
+    <div class="lp-wrap lp-langs-in">
+      <div>
+        <h2><%= t('landing.langs.title') %></h2>
+        <p class="lp-section-lead"><%= t('landing.langs.body') %></p>
+      </div>
+      <%- include('../partials/lang') %>
+    </div>
+  </section>
+
+  <section class="lp-section" id="faq">
+    <div class="lp-wrap">
+      <h2><%= t('landing.faq.title') %></h2>
+      <div class="lp-faq">
+        <% faqKeys.forEach((key) => { %>
+        <article class="lp-qa">
+          <h3><%= t('landing.faq.' + key) %></h3>
+          <p><%= t('landing.faq.' + key.replace('q', 'a')) %></p>
+        </article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-cta">
+    <div class="lp-wrap lp-cta-in">
+      <h2><%= t('landing.cta.title') %></h2>
+      <p><%= t('landing.cta.body') %></p>
+      <div class="lp-actions lp-actions-center">
+        <% if (signedIn) { %>
+        <a class="btn primary" href="/admin"><%- icon('dashboard', { class: 'ic-sm' }) %> <%= t('landing.nav.toPanel') %></a>
+        <% } else { %>
+        <a class="btn primary" href="<%= contactUrl %>"><%- icon('sparkle', { class: 'ic-sm' }) %> <%= t('landing.cta.button') %></a>
+        <a class="btn ghost" href="/admin"><%- icon('logout', { class: 'ic-sm' }) %> <%= t('landing.cta.signIn') %></a>
+        <% } %>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lp-foot">
+  <div class="lp-wrap lp-foot-in">
+    <div class="lp-foot-brand">
+      <img class="lp-logo lp-logo-lg" src="/static/landing/logo-160.webp" alt="Piuma" width="160" height="160" loading="lazy" decoding="async">
+      <p><%= t('landing.footer.product') %></p>
+    </div>
+    <nav class="lp-foot-links" aria-label="<%= t('landing.footer.panel') %>">
+      <a href="<%= contactUrl %>"><%= t('landing.footer.contact') %></a>
+      <a href="/admin"><%= t('landing.footer.panel') %></a>
+      <a href="#faq"><%= t('landing.nav.faq') %></a>
+      <a href="#security"><%= t('landing.nav.security') %></a>
+    </nav>
+    <p class="lp-foot-made">
+      <a href="https://carbonstealth.eu" target="_blank" rel="noopener"><%= t('landing.footer.madeBy') %></a>
+    </p>
+  </div>
+</footer>
+</body>
+</html>

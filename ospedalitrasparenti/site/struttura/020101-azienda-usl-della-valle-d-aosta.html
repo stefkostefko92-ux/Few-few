@@ -1,0 +1,2099 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d131a">
+<title>AZIENDA USL DELLA VALLE D&#39;AOSTA — Ospedali Trasparenti</title>
+<meta name="description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA USL DELLA VALLE D&#39;AOSTA (Valle d&#39;Aosta).">
+<link rel="canonical" href="https://ospedalitrasparenti.it/struttura/020101-azienda-usl-della-valle-d-aosta.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ospedali Trasparenti">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="AZIENDA USL DELLA VALLE D&#39;AOSTA — Ospedali Trasparenti">
+<meta property="og:description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA USL DELLA VALLE D&#39;AOSTA (Valle d&#39;Aosta).">
+<meta property="og:url" content="https://ospedalitrasparenti.it/struttura/020101-azienda-usl-della-valle-d-aosta.html">
+<meta property="og:image" content="https://ospedalitrasparenti.it/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AZIENDA USL DELLA VALLE D&#39;AOSTA — Ospedali Trasparenti">
+<meta name="twitter:description" content="Bilancio, entrate, spese e segnalazioni contabili di AZIENDA USL DELLA VALLE D&#39;AOSTA (Valle d&#39;Aosta).">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ospedalitrasparenti.it/"},{"@type":"ListItem","position":2,"name":"Strutture","item":"https://ospedalitrasparenti.it/strutture.html"},{"@type":"ListItem","position":3,"name":"AZIENDA USL DELLA VALLE D'AOSTA","item":"https://ospedalitrasparenti.it/struttura/020101-azienda-usl-della-valle-d-aosta.html"}]},{"@type":"GovernmentOrganization","name":"AZIENDA USL DELLA VALLE D'AOSTA","address":{"@type":"PostalAddress","addressRegion":"Valle d'Aosta","addressCountry":"IT"},"subjectOf":{"@type":"Dataset","name":"Bilancio e appalti — AZIENDA USL DELLA VALLE D'AOSTA","description":"Bilanci ufficiali (modelli CE/SP inviati al MEF), indicatori contabili, segnalazioni automatiche e contratti pubblici ANAC di AZIENDA USL DELLA VALLE D'AOSTA (Valle d'Aosta), anno per anno. Elaborazione da open data ufficiali.","creator":{"@type":"Organization","name":"Carbon Stealth VCC","url":"https://carbonstealth.eu"},"temporalCoverage":"2012/2024","license":"https://creativecommons.org/licenses/by/4.0/","url":"https://ospedalitrasparenti.it/struttura/020101-azienda-usl-della-valle-d-aosta.html"}}]}</script>
+<script>/* Анти-FOUC: слага записания ръчен избор ПРЕДИ първия paint, за да няма
+мигане на грешната тема. Единственият blocking script в head — само за темата. */
+try{var _t=localStorage.getItem('ost-theme');if(_t==='dark'||_t==='light')document.documentElement.dataset.theme=_t;}catch(e){}</script>
+<style>
+:root{
+  /* палитра — светла тема (институционална, сдържана) */
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#f8fafc;
+  --ink:#131c26; --ink-2:#33424f; --muted:#586878; --faint:#8595a4;
+  --line:#e2e8ee; --line-2:#eef2f6;
+  /* --line-strong: граница за интерактивни контроли (input/select/бутони-икони).
+     WCAG 1.4.11 иска ≥3:1 контраст за границите, които идентифицират контрола;
+     тънката декоративна --line не стига. #8595a4 дава ~3.1:1 спрямо бялата
+     повърхност (структурните/декоративните граници остават на --line/--line-2). */
+  --line-strong:#8595a4;
+  --brand:#0b5cad; --brand-ink:#08447f; --brand-tint:#eaf2fb;
+  --pos:#1a7f4b; --neg:#c0392b; --amber:#b7791f;
+  --alta:#c0392b; --media:#8a5a12; --bassa:#566473;
+  /* скала на разстоянията (4-точкова база) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* радиуси и релеф */
+  --radius:12px; --radius-sm:8px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(16,32,48,.06);
+  --shadow:0 1px 3px rgba(16,32,48,.07),0 10px 28px rgba(16,32,48,.05);
+  --maxw:1120px; --measure:70ch;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+/* Тъмни променливи — блокът е един и същ за двата случая:
+   1) изричен ръчен избор :root[data-theme="dark"] (печели винаги);
+   2) авто по системата, но САМО без ръчен избор :root:not([data-theme]).
+   Дублирането е нужно: media-guarded правилото не бива да важи при ръчно „light". */
+:root[data-theme="dark"]{ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+  --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+  /* N4: старите тъмни граници (#26323f/#202b37) даваха ~1.3:1 спрямо surface —
+     под прага. Леко изсветлени за по-ясна структура на картите/таблиците; за
+     контролите отделно --line-strong (#5f6b7a ≈ 3.1:1 спрямо surface, WCAG 1.4.11). */
+  --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+  --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+  --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+  /* --alta/--media/--bassa НЕ се пипат: значките са с бял текст → тъмен фон
+     държи WCAG AA контраст (alta ~4.5, media ~5.9, bassa ~5.2 : 1) */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]){ --bg:#0d131a; --surface:#151e29; --surface-2:#1b2531;
+    --ink:#e8eef4; --ink-2:#c3d0dc; --muted:#9fb0c0; --faint:#7d8ea0;
+    /* същите стойности като :root[data-theme="dark"] — виж бележката там (N4) */
+    --line:#2f3c4a; --line-2:#242f3b; --line-strong:#5f6b7a;
+    --brand:#4d9be6; --brand-ink:#7db6ef; --brand-tint:#17293c;
+    --pos:#3ecf8e; --neg:#ef6b5e; --amber:#e0a83a;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+  line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:3px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* ---------- Masthead / навигация ---------- */
+header.site{background:var(--surface);border-top:3px solid var(--brand);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+header.site .wrap{display:flex;align-items:center;gap:8px 24px;min-height:58px;flex-wrap:wrap}
+.brand{display:inline-flex;align-items:center;line-height:0}
+.brand-logo{height:36px;width:auto;display:block}
+/* тъмна тема: тъмносиният надпис не се чете на тъмния хедър → лека светла
+   подложка запазва пълноцветното лого четимо, без да губим детайла на иконата
+   (важи и при ръчен избор, и при авто — виж бележката при променливите) */
+:root[data-theme="dark"] .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]) .brand{background:#eef3f9;border-radius:9px;padding:5px 10px}
+}
+nav.main{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto;font-size:14.5px}
+nav.main a{color:var(--muted);font-weight:500;padding:7px 11px;border-radius:8px;
+  line-height:1.2;white-space:nowrap;transition:background-color .15s,color .15s}
+nav.main a:hover{color:var(--brand-ink);background:var(--brand-tint);text-decoration:none}
+nav.main a[aria-current]{color:var(--brand-ink);font-weight:650;background:var(--brand-tint)}
+/* Бутон-хамбургер — само за тесни екрани (виж @media по-долу); на desktop скрит.
+   44×44 таргет, две икони (open/close) се сменят чрез [aria-expanded]. */
+.nav-toggle{display:none;align-items:center;justify-content:center;
+  width:44px;height:44px;margin-left:auto;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.nav-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle svg{display:block;width:22px;height:22px;pointer-events:none}
+.nav-toggle .ico-close{display:none}
+.nav-toggle[aria-expanded="true"]{background:var(--brand-tint);border-color:var(--brand)}
+.nav-toggle[aria-expanded="true"] .ico-open{display:none}
+.nav-toggle[aria-expanded="true"] .ico-close{display:block}
+/* Превключвател светла/тъмна тема — видим на ВСИЧКИ ширини (за разлика от
+   hamburger-а). Иконата (слънце/луна) следва ЕФЕКТИВНАТА тема през CSS,
+   независимо от JS-тайминга → без грешна икона при първия paint. */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;padding:0;flex:none;
+  background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-sm);
+  color:var(--ink);cursor:pointer;transition:background-color .15s,border-color .15s}
+.theme-toggle:hover{background:var(--brand-tint);border-color:var(--brand)}
+.theme-toggle svg{display:block;width:20px;height:20px;pointer-events:none}
+/* по подр. (светло/авто-светло) → луна („премини на тъмно"); тъмно → слънце */
+.theme-toggle .ico-sun{display:none}
+.theme-toggle .ico-moon{display:block}
+:root[data-theme="dark"] .theme-toggle .ico-moon{display:none}
+:root[data-theme="dark"] .theme-toggle .ico-sun{display:block}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme]) .theme-toggle .ico-moon{display:none}
+  :root:not([data-theme]) .theme-toggle .ico-sun{display:block}
+}
+/* desktop: двуетажен masthead. Ред 1: лого вляво + theme бутон в десния ръб
+   (margin-left:auto; DOM редът brand→theme→nav вече е правилният визуален ред).
+   Ред 2: навигацията на цял ред (flex-basis:100%) с тънка разделителна линия —
+   при 13 линка тя така или иначе не се побира до логото, затова редът е
+   умишлен, а не счупен fallback (преди: theme висеше сам на трети ред). */
+@media(min-width:901px){
+  header.site .wrap{padding-top:8px;row-gap:4px}
+  .theme-toggle{margin-left:auto}
+  nav.main{flex-basis:100%;margin-left:0;justify-content:center;
+    font-size:13px;border-top:1px solid var(--line);padding:4px 0 7px}
+  nav.main a{padding:6px 7px}
+}
+@media(max-width:900px){
+  header.site{position:static;border-top-width:3px}
+  /* Ред 1: лого вляво + тема + hamburger вдясно; менюто е на нов ред
+     (flex-basis:100%), скрито до отваряне. Без хоризонтален скрол. */
+  header.site .wrap{flex-wrap:wrap;align-items:center;gap:0;min-height:56px;
+    padding-top:8px;padding-bottom:8px}
+  .brand{margin-right:auto;margin-bottom:0}
+  .brand-logo{height:32px}
+  /* само brand носи auto-полето → тема и hamburger са слепени вдясно с малък луфт */
+  .theme-toggle{margin-left:0}
+  .nav-toggle{display:inline-flex;margin-left:8px}
+  nav.main{display:none;flex-basis:100%;width:100%;margin:8px 0 0;
+    flex-direction:column;flex-wrap:nowrap;gap:1px;font-size:16px;
+    border-top:1px solid var(--line);padding-top:5px}
+  nav.main.open{display:flex}
+  nav.main a{display:flex;align-items:center;min-height:44px;
+    padding:11px 12px;border-radius:8px;white-space:normal}
+}
+main{padding:var(--s7) 0 var(--s6)}
+
+/* ---------- Типографска скала ---------- */
+h1{font-size:clamp(28px,1.4rem + 1.6vw,38px);line-height:1.15;letter-spacing:-.02em;
+  margin:0 0 var(--s3);max-width:22ch;font-weight:700}
+/* тънка линия под h2 → ясно отделя секциите на дългите отчетни страници
+   (заглавие-документ). Разделена е с margin от следващото съдържание, затова
+   не се слива с горната граница на съседна .tablewrap/.card. */
+h2{font-size:clamp(20px,1.1rem + .5vw,24px);line-height:1.25;letter-spacing:-.01em;
+  margin:var(--s7) 0 var(--s4);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);font-weight:650}
+h3{font-size:17px;line-height:1.3;margin:var(--s5) 0 var(--s3);font-weight:650}
+p{max-width:var(--measure)}
+.lead{color:var(--ink-2);font-size:clamp(16.5px,1rem + .3vw,19px);line-height:1.55;
+  max-width:66ch;margin:0 0 var(--s3)}
+main>.wrap>h1:first-child + .lead{font-size:clamp(17px,1rem + .4vw,20px)}
+
+/* ---------- Карти / решетка ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);padding:var(--s5)}
+.grid{display:grid;gap:var(--s4)}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.kpi{display:flex;flex-direction:column;gap:6px;padding:18px 20px;
+  border-left:3px solid var(--line-2)}
+.kpi .n{font-size:clamp(24px,1.4rem + .7vw,30px);font-weight:700;letter-spacing:-.02em;
+  line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ink)}
+.kpi .l{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.kpi .n.neg{color:var(--neg)} .kpi .n.pos{color:var(--pos)}
+.kpi:has(.n.neg){border-left-color:var(--neg)} .kpi:has(.n.pos){border-left-color:var(--pos)}
+
+/* ---------- Таблици ---------- */
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);box-shadow:var(--shadow-sm)}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line-2);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+th{background:var(--surface-2);font-size:11.5px;font-weight:650;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  position:sticky;top:0;white-space:nowrap;border-bottom:2px solid var(--line)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* zebra — леко по-отчетлив (3.5%) за проследяване на реда при 20+ реда; в
+   тъмна тема смесва светъл --ink в тъмен surface → също видим ред */
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 100%,var(--ink) 3.5%)}
+tbody tr:hover{background:var(--brand-tint)}
+/* връзки в клетки — траен, приглушен подчертан щрих ги различава от plain
+   текста дори при чисто числови/еднаквоцветни съседни клетки (не разчита само
+   на цвят). Значки/чипове в клетка запазват собствения си вид. */
+td a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;
+  text-decoration-color:color-mix(in srgb,var(--brand) 32%,transparent)}
+td a:hover{text-decoration-color:var(--brand)}
+td a.chip,td a.badge{text-decoration:none}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+
+/* ---------- Значки и чипове ---------- */
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:650;
+  line-height:1.5;color:#fff;white-space:nowrap;letter-spacing:.01em}
+.badge.alta{background:var(--alta)} .badge.media{background:var(--media)} .badge.bassa{background:var(--bassa)}
+.chip{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;
+  font-size:13px;font-weight:500;color:var(--ink-2);background:var(--surface);
+  transition:border-color .15s,background-color .15s}
+.chip:hover{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-ink);text-decoration:none}
+
+/* ---------- Сигнали ---------- */
+.seg{border:1px solid var(--line);border-left:4px solid var(--bassa);border-radius:var(--radius-sm);
+  background:var(--surface);padding:13px 16px;margin:var(--s3) 0;box-shadow:var(--shadow-sm)}
+.seg.alta{border-left-color:var(--alta)} .seg.media{border-left-color:var(--media)}
+.seg .t{font-weight:650;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg .d{color:var(--muted);font-size:14.5px;margin-top:5px;max-width:var(--measure)}
+
+/* ---------- Форма / контроли ---------- */
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:var(--s5) 0}
+.controls input,.controls select{font:inherit;padding:10px 13px;border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);min-width:0}
+.controls input:focus,.controls select:focus{outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px var(--brand-tint)}
+.controls input[type=search]{flex:1;min-width:220px}
+.controls button{font:inherit;padding:10px 18px;border:1px solid var(--brand);border-radius:var(--radius-sm);
+  background:var(--brand);color:#fff;cursor:pointer;font-weight:650;transition:filter .15s}
+.controls button:hover{filter:brightness(1.08)}
+
+/* ---------- Карта на Италия ---------- */
+.mapfig{margin:var(--s6) 0}
+.mapfig svg.italia{display:block;width:100%;max-width:660px;height:auto;margin:0 auto}
+.mapfig svg a{cursor:pointer}
+.mapfig svg a path{transition:stroke-width .12s}
+.mapfig svg a:hover rect{stroke:var(--ink);stroke-width:2}
+.mapfig svg a:hover path{stroke:var(--ink);stroke-width:1.6}
+.mapfig svg a:focus{outline:none}
+.mapfig svg a:focus path{stroke:var(--ink);stroke-width:2}
+.maplegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:var(--s3) 0;justify-content:center}
+
+/* ---------- Помощни / бележки ---------- */
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.note{background:color-mix(in srgb,var(--surface) 100%,var(--amber) 9%);
+  border:1px solid color-mix(in srgb,var(--line) 100%,var(--amber) 32%);
+  border-radius:var(--radius-sm);padding:13px 16px;font-size:14.5px;color:var(--ink);
+  max-width:var(--measure)}
+.note strong{color:var(--ink)}
+.hidden{display:none!important}
+.skip{position:absolute;left:-9999px;top:0;background:var(--brand);color:#fff;padding:9px 16px;border-radius:0 0 8px 0;z-index:20;font-weight:600}
+.skip:focus{left:0}
+
+/* ---------- Графики ---------- */
+figure.chart{margin:0}
+figure.chart figcaption{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.4;max-width:var(--measure)}
+.hbars{display:flex;flex-direction:column;gap:9px;margin:var(--s2) 0}
+.hbar-row{display:grid;grid-template-columns:minmax(120px,1.4fr) 3fr minmax(120px,auto);gap:12px;align-items:center;font-size:13.5px}
+.hbar-l{color:var(--ink)} .hbar-row.flag .hbar-l{font-weight:650}
+.hbar-track{background:color-mix(in srgb,var(--surface) 100%,var(--ink) 8%);border-radius:6px;height:14px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:6px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.hbar-row{grid-template-columns:1fr;gap:2px}.hbar-v{text-align:left}}
+/* САМО за графиките (.chart) — глобален selector би презаписал атрибутите
+   на етикетите върху картата на Италия (CSS бие SVG presentation атрибути) */
+.chart svg .grid-line{stroke:var(--line)} .chart svg text{fill:var(--muted);font-size:11px}
+
+/* ---------- Footer ---------- */
+footer.site{border-top:1px solid var(--line);background:var(--surface-2);
+  color:var(--muted);font-size:13.5px;padding:var(--s6) 0 var(--s7);margin-top:var(--s6)}
+footer.site .wrap>p{max-width:82ch;margin:0 0 var(--s3)}
+footer.site strong{color:var(--ink-2)}
+footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+footer.site a:hover{color:var(--brand)}
+.backlink{display:inline-block;margin-bottom:var(--s3);font-size:14px;font-weight:500}
+
+/* ---------- Pagella: цветни точки-спии (verde/giallo/rosso/nd) ----------
+   Цветовете идват от темовите променливи → валидни и в светло, и в тъмно.
+   Не разчитаме само на цвят: всяка точка носи title + aria-label с текст. */
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;
+  vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+.dot.verde{background:var(--pos)}
+.dot.giallo{background:var(--amber)}
+.dot.rosso{background:var(--neg)}
+.dot.nd{background:transparent;border:1.5px dashed var(--faint)}
+td.sem{white-space:nowrap}
+/* редът-семафор на страницата на структура: етикет + точка, hover показва детайла */
+.semrow{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 0;align-items:center}
+.semrow .semitem{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;color:var(--muted)}
+
+/* ---------- Мобилно: touch таргети ≥44px ---------- */
+@media(max-width:640px){
+  .controls input,.controls select,.controls button{min-height:44px}
+  .chip{padding:9px 14px}
+  .backlink{padding:6px 0;display:inline-flex;align-items:center;min-height:44px}
+}
+
+/* ---------- Достъпност: намалено движение ---------- */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a href="#contenuto" class="skip">Salta al contenuto</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="../index.html" aria-label="Ospedali Trasparenti — home"><img class="brand-logo" src="../logo.png" width="502" height="134" alt="Ospedali Trasparenti"></a>
+  <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambia tema chiaro o scuro" title="Tema chiaro / scuro">
+    <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/></svg>
+  </button>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-main" aria-label="Apri il menu di navigazione">
+    <svg class="ico-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+  </button>
+  <nav class="main" id="nav-main" aria-label="Principale"><a href="../index.html">Home</a><a href="../inchiesta.html">Inchiesta</a><a href="../conflitti.html">Conflitti</a><a href="../appalti.html">Appalti</a><a href="../fornitori.html">Fornitori</a><a href="../cerca.html">Cerca</a><a href="../classifiche.html">Classifiche</a><a href="../regioni.html">Regioni</a><a href="../strutture.html" aria-current="page">Strutture</a><a href="../segnalazioni.html">Segnalazioni</a><a href="../approfondimenti.html">Approfondimenti</a><a href="../dati.html">Dati</a><a href="../glossario.html">Glossario</a><a href="../metodologia.html">Metodologia</a></nav>
+</div></header>
+<main id="contenuto"><div class="wrap">
+
+<a class="backlink" href="../strutture.html">← Tutte le strutture</a>
+<h1>AZIENDA USL DELLA VALLE D&#39;AOSTA</h1>
+<p><span class="chip">Valle d&#39;Aosta</span> <span class="chip">Azienda Sanitaria Locale (ASL) con presìdi ospedalieri</span> <span class="chip">codice 020101</span></p>
+
+<div class="semrow" role="list" aria-label="Le cinque spie di questa struttura">
+  <span class="semitem" role="listitem" title="nessuna segnalazione contabile automatica"><span class="dot verde"></span>Bilanci</span>
+  <span class="semitem" role="listitem" title="2 voci di spesa molto sopra le aziende simili"><span class="dot rosso"></span>Spesa anomala</span>
+  <span class="semitem" role="listitem" title="84% dei contratti senza gara (mediana nazionale 68%)"><span class="dot giallo"></span>Senza gara</span>
+  <span class="semitem" role="listitem" title="52% delle gare con un solo offerente (su dati parziali)"><span class="dot rosso"></span>Concorrenza</span>
+  <span class="semitem" role="listitem" title="146 affidamenti appena sotto le soglie di legge (3.4% dei contratti)"><span class="dot verde"></span>Sotto soglia</span>
+  <a class="small" href="../pagella.html#legenda">Cosa significano?</a>
+  
+</div>
+<div class="note" style="margin:14px 0 0"><strong>In sintesi.</strong>
+  AZIENDA USL DELLA VALLE D&#39;AOSTA è una struttura pubblica del SSN della regione Valle d&#39;Aosta — Azienda Sanitaria Locale (ASL) con presìdi ospedalieri. Nell’ultimo esercizio disponibile (2024) ha registrato un valore della produzione di 393 mln € e ha chiuso in perdita per 2 mln €. I controlli automatici sui bilanci non hanno rilevato anomalie sui dati disponibili. Sul fronte degli appalti, il 84,2% dei suoi 4291 contratti tracciati da ANAC è stato affidato senza gara (affidamento diretto o negoziata senza bando).
+  Ogni cifra di questa pagina è un <strong>indicatore da verificare, non una prova</strong> di irregolarità.</div>
+<details class="note" style="margin-top:14px">
+  <summary style="cursor:pointer;font-weight:650">Come leggere questa pagina</summary>
+  <p style="margin:10px 0 0">Questa pagina riunisce tre fonti ufficiali: i bilanci CE/SP trasmessi al MEF (BDAP),
+  l’anagrafe ospedaliera del Ministero della Salute e i contratti pubblici dell’ANAC. I costi «per posto letto» e
+  «per ricovero» sono confrontati con la <strong>mediana nazionale</strong>, mentre la sezione «Dove vanno i soldi»
+  confronta ogni voce di spesa con la mediana delle <strong>aziende simili (peer)</strong>: uno scostamento marcato
+  genera un segnale, che è un indicatore da verificare, non una prova. Negli appalti, «senza gara» significa
+  affidamento diretto o procedura negoziata senza pubblicazione; le adesioni ad accordi quadro e convenzioni
+  (es. Consip) <strong>non</strong> contano come «senza gara», perché la concorrenza c’è già stata a monte.
+  Gli importi dei contratti sono i <strong>valori messi a gara (base d’asta)</strong>, non la spesa effettivamente
+  pagata. Ogni contratto è verificabile alla fonte tramite il suo CIG sulla Banca Dati ANAC.
+  Termini nel <a href="../glossario.html">glossario</a>.</p>
+</details>
+<details class="note" style="margin-top:10px">
+  <summary style="cursor:pointer;font-weight:650">Verifica tu stesso: contratti, atti, accesso civico</summary>
+  <p style="margin:10px 0 6px">Tre passi, tutti gratuiti e legali (il percorso completo è nella
+  <a href="../guida-verifica.html">guida in 5 minuti</a>):</p>
+  <ol style="margin:0 0 10px;padding-left:22px">
+    <li><strong>I contratti alla fonte.</strong> Scarica <a href="../contratti/020101.csv" download>l’elenco completo dei contratti di questa struttura (CSV)</a> e verifica ogni CIG sulla <a href="https://dati.anticorruzione.it/opendata" target="_blank" rel="noopener">Banca Dati ANAC</a>.</li>
+    <li><strong>Gli atti.</strong> Cerca la sezione <a href="https://www.google.com/search?q=%22AZIENDA%20USL%20DELLA%20VALLE%20D'AOSTA%22%20amministrazione%20trasparente" target="_blank" rel="noopener">«Amministrazione Trasparente» di questa azienda</a>: determine, bandi, incarichi dirigenziali. L’indirizzo PEC ufficiale è su <a href="https://indicepa.gov.it/" target="_blank" rel="noopener">IndicePA</a>.</li>
+    <li><strong>Se un documento manca</strong>, chiedilo con l’accesso civico — copia il modello qui sotto, completalo e invialo via PEC (risposta dovuta entro 30 giorni):</li>
+  </ol>
+  <pre class="small" style="white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;user-select:all">Al Responsabile della prevenzione della corruzione e della trasparenza
+AZIENDA USL DELLA VALLE D&#39;AOSTA
+
+Oggetto: richiesta di accesso civico ai sensi dell&#39;art. 5 del d.lgs. 33/2013
+
+Il/La sottoscritto/a ________________________, ai sensi dell&#39;art. 5 del d.lgs.
+14 marzo 2013, n. 33, chiede l&#39;accesso al seguente documento/dato:
+
+  [descrivere il documento: es. determina di affidamento del contratto CIG ________]
+
+Chiede che il documento sia trasmesso all&#39;indirizzo indicato in calce.
+Ai sensi di legge, la richiesta non necessita di motivazione e la risposta è
+dovuta entro 30 giorni.
+
+Luogo e data: ________________
+Nome, cognome e recapito: ________________
+
+(In caso di accesso generalizzato, la richiesta può essere inviata anche
+all&#39;ufficio che detiene il documento o all&#39;URP.)</pre>
+  <p class="small muted" style="margin:8px 0 0">Hai trovato qualcosa che non torna? <a href="../segnalare.html">A chi segnalarlo →</a></p>
+</details>
+
+<div class="grid kpis">
+    <div class="card kpi"><div class="n ">393.225.202 €</div><div class="l">Valore produzione (2024)</div></div>
+    <div class="card kpi"><div class="n ">384.637.685 €</div><div class="l">Costi produzione</div></div>
+    <div class="card kpi"><div class="n neg">-1.870.774 €</div><div class="l">Risultato d’esercizio</div></div>
+    <div class="card kpi"><div class="n ">141.938.164 €</div><div class="l">Costo del personale</div></div>
+  </div>
+<h2>Quanto costa, in proporzione</h2>
+  <div class="grid kpis"><div class="card kpi"><div class="n ">989 mila € <span class="small muted">(mediana 710 mila €)</span></div><div class="l">Costi per posto letto</div></div><div class="card kpi"><div class="n ">34 mila € <span class="small muted">(mediana 25 mila €)</span></div><div class="l">Costi per ricovero</div></div></div>
+  <p class="small muted">Costi della produzione (2024) rapportati a posti letto e ricoveri dell'anagrafe ospedaliera,
+  confrontati con la mediana nazionale. Le ASL territoriali spendono anche fuori dagli ospedali (territorio, farmaceutica
+  convenzionata): il confronto è indicativo, più solido tra aziende dello stesso tipo.</p>
+<h2>Segnalazioni</h2><p class="note">Nessuna anomalia rilevata dai controlli automatici sui dati disponibili.</p>
+
+<h2>Come sono cambiati ricavi, costi e risultato</h2>
+<div class="grid" style="grid-template-columns:1fr">
+  <div class="card"><figure class="chart"><svg viewBox="0 0 680 240" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Ricavi e costi della produzione per anno (€)"><line class="grid-line" x1="56" y1="214.0" x2="666" y2="214.0"/><text x="50" y="217.0" text-anchor="end">0</text><line class="grid-line" x1="56" y1="163.1" x2="666" y2="163.1"/><text x="50" y="166.1" text-anchor="end">100 mln</text><line class="grid-line" x1="56" y1="112.3" x2="666" y2="112.3"/><text x="50" y="115.3" text-anchor="end">200 mln</text><line class="grid-line" x1="56" y1="61.4" x2="666" y2="61.4"/><text x="50" y="64.4" text-anchor="end">300 mln</text><text x="56.0" y="232" text-anchor="middle">2012</text><text x="157.7" y="232" text-anchor="middle">2014</text><text x="259.3" y="232" text-anchor="middle">2016</text><text x="361.0" y="232" text-anchor="middle">2018</text><text x="462.7" y="232" text-anchor="middle">2020</text><text x="564.3" y="232" text-anchor="middle">2022</text><text x="666.0" y="232" text-anchor="middle">2024</text><path d="M56.0,65.6 L106.8,51.2 L157.7,60.9 L208.5,63.8 L259.3,65.6 L310.2,67.6 L361.0,66.3 L411.8,65.2 L462.7,49.2 L513.5,40.5 L564.3,33.4 L615.2,26.9 L666.0,14.0" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="65.6" r="2.5" fill="var(--brand)"/><circle cx="106.8" cy="51.2" r="2.5" fill="var(--brand)"/><circle cx="157.7" cy="60.9" r="2.5" fill="var(--brand)"/><circle cx="208.5" cy="63.8" r="2.5" fill="var(--brand)"/><circle cx="259.3" cy="65.6" r="2.5" fill="var(--brand)"/><circle cx="310.2" cy="67.6" r="2.5" fill="var(--brand)"/><circle cx="361.0" cy="66.3" r="2.5" fill="var(--brand)"/><circle cx="411.8" cy="65.2" r="2.5" fill="var(--brand)"/><circle cx="462.7" cy="49.2" r="2.5" fill="var(--brand)"/><circle cx="513.5" cy="40.5" r="2.5" fill="var(--brand)"/><circle cx="564.3" cy="33.4" r="2.5" fill="var(--brand)"/><circle cx="615.2" cy="26.9" r="2.5" fill="var(--brand)"/><circle cx="666.0" cy="14.0" r="2.5" fill="var(--brand)"/><path d="M56.0,70.8 L106.8,58.4 L157.7,64.0 L208.5,67.6 L259.3,70.1 L310.2,71.4 L361.0,67.8 L411.8,69.7 L462.7,55.8 L513.5,44.9 L564.3,38.8 L615.2,27.8 L666.0,18.4" fill="none" stroke="var(--neg)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56.0" cy="70.8" r="2.5" fill="var(--neg)"/><circle cx="106.8" cy="58.4" r="2.5" fill="var(--neg)"/><circle cx="157.7" cy="64.0" r="2.5" fill="var(--neg)"/><circle cx="208.5" cy="67.6" r="2.5" fill="var(--neg)"/><circle cx="259.3" cy="70.1" r="2.5" fill="var(--neg)"/><circle cx="310.2" cy="71.4" r="2.5" fill="var(--neg)"/><circle cx="361.0" cy="67.8" r="2.5" fill="var(--neg)"/><circle cx="411.8" cy="69.7" r="2.5" fill="var(--neg)"/><circle cx="462.7" cy="55.8" r="2.5" fill="var(--neg)"/><circle cx="513.5" cy="44.9" r="2.5" fill="var(--neg)"/><circle cx="564.3" cy="38.8" r="2.5" fill="var(--neg)"/><circle cx="615.2" cy="27.8" r="2.5" fill="var(--neg)"/><circle cx="666.0" cy="18.4" r="2.5" fill="var(--neg)"/><g transform="translate(0,4)"><g transform="translate(56,14)"><rect width="11" height="11" y="-9" fill="var(--brand)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Valore della produzione</text></g><g transform="translate(246,14)"><rect width="11" height="11" y="-9" fill="var(--neg)" rx="2"/><text x="16" y="0" style="fill:var(--ink)">Costi della produzione</text></g></g></svg><figcaption>Ricavi e costi della produzione per anno (€)</figcaption></figure></div>
+  <div class="card"><figure class="chart"><svg viewBox="0 0 680 200" role="img" width="100%" preserveAspectRatio="xMidYMid meet" aria-label="Risultato d’esercizio per anno (€)"><line class="grid-line" x1="56" y1="132.3" x2="666" y2="132.3"/><text x="50" y="135.3" text-anchor="end">0</text><line class="grid-line" x1="56" y1="90.6" x2="666" y2="90.6"/><text x="50" y="93.6" text-anchor="end">2 mln</text><line class="grid-line" x1="56" y1="48.8" x2="666" y2="48.8"/><text x="50" y="51.8" text-anchor="end">4 mln</text><rect x="63.0" y="118.7" width="32.8" height="13.6" fill="var(--pos)" rx="2"/><text x="79.5" y="192" text-anchor="middle">2012</text><rect x="110.0" y="14.0" width="32.8" height="118.3" fill="var(--pos)" rx="2"/><text x="126.4" y="192" text-anchor="middle">2013</text><rect x="156.9" y="56.3" width="32.8" height="76.0" fill="var(--pos)" rx="2"/><text x="173.3" y="192" text-anchor="middle">2014</text><rect x="203.8" y="132.3" width="32.8" height="26.5" fill="var(--neg)" rx="2"/><text x="220.2" y="192" text-anchor="middle">2015</text><rect x="250.7" y="124.2" width="32.8" height="8.1" fill="var(--pos)" rx="2"/><text x="267.2" y="192" text-anchor="middle">2016</text><rect x="297.7" y="116.1" width="32.8" height="16.2" fill="var(--pos)" rx="2"/><text x="314.1" y="192" text-anchor="middle">2017</text><rect x="344.6" y="132.3" width="32.8" height="41.7" fill="var(--neg)" rx="2"/><text x="361.0" y="192" text-anchor="middle">2018</text><rect x="391.5" y="132.3" width="32.8" height="1.0" fill="var(--pos)" rx="2"/><text x="407.9" y="192" text-anchor="middle">2019</text><rect x="438.4" y="50.2" width="32.8" height="82.1" fill="var(--pos)" rx="2"/><text x="454.8" y="192" text-anchor="middle">2020</text><rect x="485.3" y="109.5" width="32.8" height="22.8" fill="var(--pos)" rx="2"/><text x="501.8" y="192" text-anchor="middle">2021</text><rect x="532.3" y="86.4" width="32.8" height="45.9" fill="var(--pos)" rx="2"/><text x="548.7" y="192" text-anchor="middle">2022</text><rect x="579.2" y="118.9" width="32.8" height="13.4" fill="var(--pos)" rx="2"/><text x="595.6" y="192" text-anchor="middle">2023</text><rect x="626.1" y="132.3" width="32.8" height="39.0" fill="var(--neg)" rx="2"/><text x="642.5" y="192" text-anchor="middle">2024</text></svg><figcaption>Risultato d’esercizio per anno (€)</figcaption></figure></div>
+</div>
+
+<h2>Dove vanno i soldi <span class="small muted">(2024, quota dei costi della produzione · confronto con aziende simili (territoriale, 100-500M))</span></h2>
+      <p class="small muted">Le categorie di spesa dove i numeri si discostano molto dalle aziende simili: dove vale
+      la pena guardare i contratti. Indicatori, non prove.</p>
+      <div class="card"><div class="hbars" role="group" aria-label="Composizione della spesa per categoria"><div class="hbar-row">
+        <div class="hbar-l">Acquisti di servizi (totale)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">131 mln €<span class="muted small"> · 34%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisti di beni</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:44.5%;background:var(--brand)"></div></div>
+        <div class="hbar-v">58 mln €<span class="muted small"> · 15,1%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Servizi non sanitari (pulizia, mensa, riscaldamento…)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:16.0%;background:var(--brand)"></div></div>
+        <div class="hbar-v">21 mln €<span class="muted small"> · 5,4%</span></div>
+      </div><div class="hbar-row flag">
+        <div class="hbar-l">Consulenze, collaborazioni e lavoro interinale <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:9.6%;background:var(--neg)"></div></div>
+        <div class="hbar-v">13 mln €<span class="muted small"> · 3,3%</span></div>
+      </div><div class="hbar-row flag">
+        <div class="hbar-l">Manutenzione e riparazione esternalizzata <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:8.6%;background:var(--neg)"></div></div>
+        <div class="hbar-v">11 mln €<span class="muted small"> · 2,9%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Acquisto di prestazioni sanitarie da privati</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:6.9%;background:var(--brand)"></div></div>
+        <div class="hbar-v">9 mln €<span class="muted small"> · 2,3%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Godimento di beni di terzi (affitti, noleggi)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:3.3%;background:var(--brand)"></div></div>
+        <div class="hbar-v">4 mln €<span class="muted small"> · 1,1%</span></div>
+      </div></div></div>
+      <h3>Segnali «follow the money» <span class="small muted">(2)</span></h3><div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Consulenze, collaborazioni e lavoro interinale</span></div>
+            <div class="d">Consulenze, collaborazioni e lavoro interinale: 12.555.809 € = 3,3% dei costi, contro una mediana di aziende simili del 0,7% (oltre il 90° percentile del gruppo di confronto).</div></div><div class="seg alta"><div class="t"><span class="badge alta">!</span> <span>Manutenzione e riparazione esternalizzata</span></div>
+            <div class="d">Manutenzione e riparazione esternalizzata: 11.218.122 € = 2,9% dei costi, contro una mediana di aziende simili del 1,4% (oltre il 90° percentile del gruppo di confronto).</div></div>
+<h2>Appalti pubblici <span class="small muted">(ANAC, VALLE D'AOSTA)</span></h2>
+    <div class="grid kpis">
+      <div class="card kpi"><div class="n ">84,2%</div><div class="l">Contratti senza gara</div></div>
+      <div class="card kpi"><div class="n neg">54,4%</div><div class="l">Senza gara sul valore</div></div>
+      <div class="card kpi"><div class="n ">350 mln €</div><div class="l">Valore appalti</div></div>
+      <div class="card kpi"><div class="n ">4291</div><div class="l">Contratti (lotti)</div></div>
+    </div>
+    
+    <div class="card" style="margin-top:12px"><div class="hbars" role="group" aria-label="Appalti per tipo di procedura"><div class="hbar-row flag">
+        <div class="hbar-l">Affidamento diretto (senza gara) <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100.0%;background:var(--neg)"></div></div>
+        <div class="hbar-v">152 mln €<span class="muted small"> · 43,4%</span></div>
+      </div><div class="hbar-row flag">
+        <div class="hbar-l">Negoziata senza pubblicazione <span class="badge alta" style="padding:0 6px">!</span></div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:25.4%;background:var(--neg)"></div></div>
+        <div class="hbar-v">39 mln €<span class="muted small"> · 11%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Accordo quadro / convenzione (pre-competuto)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:16.8%;background:var(--brand)"></div></div>
+        <div class="hbar-v">25 mln €<span class="muted small"> · 7,3%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Procedura competitiva (gara aperta/ristretta)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:81.7%;background:var(--brand)"></div></div>
+        <div class="hbar-v">124 mln €<span class="muted small"> · 35,4%</span></div>
+      </div><div class="hbar-row">
+        <div class="hbar-l">Negoziata con bando</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:6.7%;background:var(--brand)"></div></div>
+        <div class="hbar-v">10 mln €<span class="muted small"> · 2,9%</span></div>
+      </div></div></div>
+    <div class="grid kpis" style="margin-top:12px">
+        <div class="card kpi"><div class="n ">52,4%</div><div class="l">Gare a offerente unico</div></div>
+        <div class="card kpi"><div class="n ">17,4%</div><div class="l">Concentrazione (1° fornitore)</div></div>
+        <div class="card kpi"><div class="n ">750</div><div class="l">Fornitori distinti</div></div>
+      </div>
+      
+      
+      <h3>Principali fornitori</h3><div class="tablewrap"><table><thead><tr><th scope="col">Fornitore</th><th class="num" scope="col">Valore aggiudicato</th><th class="num" scope="col">Contratti</th></tr></thead><tbody><tr><td>SYNERGIE ITALIA - AGENZIA PER IL LAVORO - S.P.A.</td><td class="num">45 mln €</td><td class="num">1</td></tr><tr><td>RELYENS MUTUAL INSURANCE</td><td class="num">8 mln €</td><td class="num">1</td></tr><tr><td>MED ITALIA BIOMEDICA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td><td class="num">7 mln €</td><td class="num">3</td></tr><tr><td>ROCHE SOCIETA&#39; PER AZIONI</td><td class="num">5 mln €</td><td class="num">40</td></tr><tr><td>BAYER S.P.A.</td><td class="num">5 mln €</td><td class="num">50</td></tr></tbody></table></div><p class="small muted">Essere fornitore rilevante è legittimo; le persone fisiche non sono nominate.</p>
+    <p class="small muted" style="margin-top:10px"><strong>Altri segnali:</strong>
+         146 affidamenti diretti appena sotto le soglie di legge (35–40 mila € e 130–140 mila €, possibile
+         frazionamento); 33 contratti con oggetto di proroga/rinnovo.</p>
+    <h3>Contratti più grandi</h3><div class="tablewrap"><table><thead><tr><th scope="col">Oggetto</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>SERVIZIO DI FORNITURA DELL&#39;INCARICO DI SOMMINISTRAZIONE<div class="small muted">SERVIZI DI FORNITURA DI PERSONALE, COMPRESO PERSONALE TEMPORANEO</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">45 mln €</td></tr><tr><td>FORNITURA DI UN SERVICE PER LABORATORIO ANALISI<div class="small muted">SISTEMI DIAGNOSTICI</div></td>
+      <td>DIALOGO COMPETITIVO</td><td class="num">10 mln €</td></tr><tr><td>FORNITURA CHIAVI IN MANO DI UN SISTEMA INTEGRATO DI RADIOTERAPIA AD INTENSITA&#39; MODULATA (IMRT) E GUIDATA DA IMMAGINI (IGRT) E SERVIZI CONNESSI<div class="small muted"></div></td>
+      <td>PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE</td><td class="num">10 mln €</td></tr><tr><td>FORNITURA CHIAVI IN MANO DI UN SISTEMA INTEGRATO DI RADIOTERAPIA AD INTENSITA&#39; MODULATA (IMRT) E GUIDATA DA IMMAGINI (IGRT) E SERVIZI CONNESSI<div class="small muted"></div></td>
+      <td>PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE</td><td class="num">10 mln €</td></tr><tr><td>POLIZZA RCT/O<div class="small muted">SERVIZI ASSICURATIVI</div></td>
+      <td>PROCEDURA APERTA</td><td class="num">8 mln €</td></tr><tr><td>SERVICE DI CARDIOLOGIA E CHIRURGIA VASCOLARE. LOTTO 1.<div class="small muted"></div></td>
+      <td>AFFIDAMENTO DIRETTO</td><td class="num">6 mln €</td></tr><tr><td>FORNITURA ENERGIA ELETTRICA 2024 - 2026<div class="small muted"></div></td>
+      <td>AFFIDAMENTO DIRETTO</td><td class="num">4 mln €</td></tr><tr><td>ACQUISTO PC WORK STATION GRAFICHE<div class="small muted">COMPUTER MODELLO DESKTOP</div></td>
+      <td>AFFIDAMENTO DIRETTO</td><td class="num">3 mln €</td></tr></tbody></table></div>
+    <p class="small muted">Fonte: <a href="https://dati.anticorruzione.it/opendata">ANAC</a> (CIG, aggiudicatari, partecipanti), gare > 40.000 € pubblicate negli anni considerati.</p>
+<h2>Registro dei contratti <span class="small muted">(4291 contratti ANAC, 350 mln € messi a gara)</span></h2>
+<p class="muted small">Ogni contratto pubblico dell’azienda: <strong>cosa, a chi, quando, quanto e con quale procedura</strong>.
+Il <abbr title="Codice Identificativo di Gara: codice di 10 caratteri rilasciato dall’ANAC che identifica in modo univoco ogni procedura di affidamento pubblico">CIG</abbr>
+è il codice univoco verificabile su ANAC. Importi = valore messo a gara. Gli operatori persone fisiche non sono nominati.</p>
+<p><a class="chip" href="../contratti/020101.csv" download>⬇ Scarica l’elenco completo (CSV, 4291 contratti)</a></p>
+<div class="controls"><input type="search" id="cq" placeholder="Cerca oggetto o fornitore…" aria-label="Cerca nei contratti"></div>
+<p class="small muted" id="ccount"></p>
+<div class="tablewrap"><table>
+  <thead><tr><th scope="col">Data</th><th scope="col">Oggetto</th><th scope="col">Fornitore</th><th scope="col">Procedura</th><th class="num" scope="col">Importo</th></tr></thead>
+  <tbody id="crows"><tr data-t="servizio di fornitura dell&#39;incarico di somministrazione synergie italia - agenzia per il lavoro - s.p.a.">
+      <td class="small">2024-11-06</td>
+      <td>SERVIZIO DI FORNITURA DELL&#39;INCARICO DI SOMMINISTRAZIONE<div class="small muted">CIG B41DBB0F86 · SERVIZI DI FORNITURA DI PERSONALE, COMPRESO PERSONALE TEMPORANEO</div></td>
+      <td>SYNERGIE ITALIA - AGENZIA PER IL LAVORO - S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">45 mln €</td></tr><tr data-t="fornitura di un service per laboratorio analisi ">
+      <td class="small">2023-12-20</td>
+      <td>FORNITURA DI UN SERVICE PER LABORATORIO ANALISI<div class="small muted">CIG A03FA4E5B6 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">DIALOGO COMPETITIVO</td>
+      <td class="num">10 mln €</td></tr><tr data-t="fornitura chiavi in mano di un sistema integrato di radioterapia ad intensita&#39; modulata (imrt) e guidata da immagini (igrt) e servizi connessi ">
+      <td class="small">2025-12-02</td>
+      <td>FORNITURA CHIAVI IN MANO DI UN SISTEMA INTEGRATO DI RADIOTERAPIA AD INTENSITA&#39; MODULATA (IMRT) E GUIDATA DA IMMAGINI (IGRT) E SERVIZI CONNESSI<div class="small muted">CIG B95E213E4A</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">10 mln €</td></tr><tr data-t="fornitura chiavi in mano di un sistema integrato di radioterapia ad intensita&#39; modulata (imrt) e guidata da immagini (igrt) e servizi connessi ">
+      <td class="small">2025-12-01</td>
+      <td>FORNITURA CHIAVI IN MANO DI UN SISTEMA INTEGRATO DI RADIOTERAPIA AD INTENSITA&#39; MODULATA (IMRT) E GUIDATA DA IMMAGINI (IGRT) E SERVIZI CONNESSI<div class="small muted">CIG B9586C98C3</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">10 mln €</td></tr><tr data-t="polizza rct/o operatore individuale (persona fisica)">
+      <td class="small">2025-07-17</td>
+      <td>POLIZZA RCT/O<div class="small muted">CIG B73CB94934 · SERVIZI ASSICURATIVI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">8 mln €</td></tr><tr data-t="service di cardiologia e chirurgia vascolare. lotto 1. med italia biomedica societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-11-18</td>
+      <td>SERVICE DI CARDIOLOGIA E CHIRURGIA VASCOLARE. LOTTO 1.<div class="small muted">CIG B44E79AA86</div></td>
+      <td>MED ITALIA BIOMEDICA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">6 mln €</td></tr><tr data-t="fornitura energia elettrica 2024 - 2026 cva energie srl">
+      <td class="small">2024-12-02</td>
+      <td>FORNITURA ENERGIA ELETTRICA 2024 - 2026<div class="small muted">CIG B48E96E4CF</div></td>
+      <td>CVA ENERGIE SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">4 mln €</td></tr><tr data-t="acquisto pc work station grafiche italware - s.r.l.">
+      <td class="small">2024-09-19</td>
+      <td>ACQUISTO PC WORK STATION GRAFICHE<div class="small muted">CIG B31B79EB1A · COMPUTER MODELLO DESKTOP</div></td>
+      <td>ITALWARE - S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="gara sardegna – lotto 4 - microinfusori con sistema di gestione telecomandato (patch pump) associabile/integrabile con sistema cgm destinati ai pazienti della regione autonoma della valle d&#39;aosta biochemical systems international s.p.a.">
+      <td class="small">2024-10-09</td>
+      <td>GARA SARDEGNA – LOTTO 4 - MICROINFUSORI CON SISTEMA DI GESTIONE TELECOMANDATO (PATCH PUMP) ASSOCIABILE/INTEGRABILE CON SISTEMA CGM DESTINATI AI PAZIENTI DELLA REGIONE AUTONOMA DELLA VALLE D&#39;AOSTA<div class="small muted">CIG B36123EC6B · PRESIDI DIAGNOSTICI</div></td>
+      <td>BIOCHEMICAL SYSTEMS INTERNATIONAL S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">3 mln €</td></tr><tr data-t="missione 6, component 2, intevento 1.1 ammodernamento del parco tecnologico grandi apparecchiature (pnrr) - accordo quadro avente ad oggetto la fornitura di tomografi pet/ct, servizi connessi, dispositivi e servizi opzionali per le pubbliche amministrazioni - id2489 siemens healthcare s.r.l.">
+      <td class="small">2023-01-10</td>
+      <td>MISSIONE 6, COMPONENT 2, INTEVENTO 1.1 AMMODERNAMENTO DEL PARCO TECNOLOGICO GRANDI APPARECCHIATURE (PNRR) - ACCORDO QUADRO AVENTE AD OGGETTO LA FORNITURA DI TOMOGRAFI PET/CT, SERVIZI CONNESSI, DISPOSITIVI E SERVIZI OPZIONALI PER LE PUBBLICHE AMMINISTRAZIONI - ID2489<div class="small muted">CIG 9470010379 · APPARECCHI PER TOMOGRAFIA</div></td>
+      <td>SIEMENS HEALTHCARE S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">3 mln €</td></tr><tr data-t="fornitura di endoprotesi vascolari aortiche cutom made (impianto completo) cook italia s.r.l.">
+      <td class="small">2025-04-24</td>
+      <td>FORNITURA DI ENDOPROTESI VASCOLARI AORTICHE CUTOM MADE (IMPIANTO COMPLETO)<div class="small muted">CIG B698D22CF4 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>COOK ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fornitura di clip mitraliche e clip tricuspidaliche tramite la formula del conto visione abbott medical italia s.r.l.">
+      <td class="small">2025-04-24</td>
+      <td>FORNITURA DI CLIP MITRALICHE E CLIP TRICUSPIDALICHE TRAMITE LA FORMULA DEL CONTO VISIONE<div class="small muted">CIG B698D21C21 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>ABBOTT MEDICAL ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="sistema diagnostico per ematologia ">
+      <td class="small">2025-12-18</td>
+      <td>SISTEMA DIAGNOSTICO PER EMATOLOGIA<div class="small muted">CIG B9A60416D3 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="service endo digestiva medical concept lab - societa&#39; per azioni">
+      <td class="small">2025-05-12</td>
+      <td>SERVICE ENDO DIGESTIVA<div class="small muted">CIG B67A5F76E3 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDICAL CONCEPT LAB - SOCIETA&#39; PER AZIONI</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="energia elettrica 2024 ">
+      <td class="small">2023-12-04</td>
+      <td>ENERGIA ELETTRICA 2024<div class="small muted">CIG A0375068FE · EROGAZIONE DI ENERGIA ELETTRICA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">2 mln €</td></tr><tr data-t="gestione pronto soccorso ortopedico, bassa e media intensita&#39; e strke unit ">
+      <td class="small">2023-04-28</td>
+      <td>GESTIONE PRONTO SOCCORSO ORTOPEDICO, BASSA E MEDIA INTENSITA&#39; E STRKE UNIT<div class="small muted">CIG 977974982D · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="procedura negoziata senza previa pubblicazione del bando di gara, per la fornitura di un servizio di assistenza tecnica manutentiva full risk per la pet/ct siemens ">
+      <td class="small">2025-10-06</td>
+      <td>PROCEDURA NEGOZIATA SENZA PREVIA PUBBLICAZIONE DEL BANDO DI GARA, PER LA FORNITURA DI UN SERVIZIO DI ASSISTENZA TECNICA MANUTENTIVA FULL RISK PER LA PET/CT SIEMENS<div class="small muted">CIG B88169AADB</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">2 mln €</td></tr><tr data-t="piattaforma costituita da strumenti mo-dulari per la diagnosi rapida automatica per il monitoraggio delle infezioni respiratorie biomerieux italia spa">
+      <td class="small">2024-12-20</td>
+      <td>PIATTAFORMA COSTITUITA DA STRUMENTI MO-DULARI PER LA DIAGNOSI RAPIDA AUTOMATICA PER IL MONITORAGGIO DELLE INFEZIONI RESPIRATORIE<div class="small muted">CIG B4EB8276B0 · REATTIVI PER LABORATORIO</div></td>
+      <td>BIOMERIEUX ITALIA SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="pembrolizumab 100g/4ml ev - 1 fl merck sharp &amp; dohme italia s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>PEMBROLIZUMAB 100G/4ML EV - 1 FL<div class="small muted">CIG B0FB404DA0 · Cpv prevalente non disponibile</div></td>
+      <td>MERCK SHARP &amp; DOHME ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione all’accordo quadro denominato dialisi 4 fresenius medical care italia spa">
+      <td class="small">2024-02-12</td>
+      <td>ADESIONE ALL’ACCORDO QUADRO DENOMINATO DIALISI 4<div class="small muted">CIG B057AA3FB2 · Cpv prevalente non disponibile</div></td>
+      <td>FRESENIUS MEDICAL CARE ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fornitura di pluvicto novartis farma spa">
+      <td class="small">2025-11-20</td>
+      <td>FORNITURA DI PLUVICTO<div class="small muted">CIG B9347A59C5</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="adesione al rinnovo della convenzione stipulata da inva spa con la ditta santex spa di milano per la fornitura di ausili per incontinenza a minor impatto ambientale e la prestazione di servizi connessi per pazienti in regime di domicilio - lotto 2, per un periodo di mesi 24 santex s.p.a.">
+      <td class="small">2024-08-19</td>
+      <td>ADESIONE AL RINNOVO DELLA CONVENZIONE STIPULATA DA INVA SPA CON LA DITTA SANTEX SPA DI MILANO PER LA FORNITURA DI AUSILI PER INCONTINENZA A MINOR IMPATTO AMBIENTALE E LA PRESTAZIONE DI SERVIZI CONNESSI PER PAZIENTI IN REGIME DI DOMICILIO - LOTTO 2, PER UN PERIODO DI MESI 24<div class="small muted">CIG B2CB616D85</div></td>
+      <td>SANTEX S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="sistema di artrodesi occipito cervico - toraco- ileo - lombo sacrale johnson &amp; johnson medical s.p.a.">
+      <td class="small">2024-12-27</td>
+      <td>SISTEMA DI ARTRODESI OCCIPITO CERVICO - TORACO- ILEO - LOMBO SACRALE<div class="small muted">CIG B4FB15F01F · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="trattamenti di dialisi peritoneale manuale (apd) vantive - societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2025-09-17</td>
+      <td>TRATTAMENTI DI DIALISI PERITONEALE MANUALE (APD)<div class="small muted">CIG B84891F3F2 · APPARECCHI PER EMODIALISI</div></td>
+      <td>VANTIVE - SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">2 mln €</td></tr><tr data-t="fornitura in service di sistema di terapia a pressione negativa lohmann &amp; rauscher s.r.l.">
+      <td class="small">2024-06-03</td>
+      <td>FORNITURA IN SERVICE DI SISTEMA DI TERAPIA A PRESSIONE NEGATIVA<div class="small muted">CIG B1EC813970 · MATERIALI MEDICI</div></td>
+      <td>LOHMANN &amp; RAUSCHER S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">2 mln €</td></tr><tr data-t="bilevel st con controllo di volume - senza pila integrata - lotto 2 - medigas ">
+      <td class="small">2024-01-01</td>
+      <td>BILEVEL ST CON CONTROLLO DI VOLUME - SENZA PILA INTEGRATA - LOTTO 2 - MEDIGAS<div class="small muted">CIG A04D99BBC1 · APPARECCHI RESPIRATORI PER USO MEDICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura di una piattaforma strumentale e kit per analisi molecolari diagnostiche e predittive di risposta oncologiche diatech pharmacogenetics societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-10-23</td>
+      <td>FORNITURA DI UNA PIATTAFORMA STRUMENTALE E KIT PER ANALISI MOLECOLARI DIAGNOSTICHE E PREDITTIVE DI RISPOSTA ONCOLOGICHE<div class="small muted">CIG B3E81CFDD8 · SISTEMI DIAGNOSTICI</div></td>
+      <td>DIATECH PHARMACOGENETICS SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="service di radiologia e terapia del dolore. lotto 2. med italia biomedica societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-11-19</td>
+      <td>SERVICE DI RADIOLOGIA E TERAPIA DEL DOLORE. LOTTO 2.<div class="small muted">CIG B45485A1BC</div></td>
+      <td>MED ITALIA BIOMEDICA SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="rinnovo 24 mesi ">
+      <td class="small">2025-12-05</td>
+      <td>RINNOVO 24 MESI<div class="small muted">CIG B97642CC77</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura di sistemi analitici in grado di garantire al laboratorio un flusso di lavoro completo, dall&#39;estrazione degli acidi nucleici (dna, rna) alla ricerca qualitativa e quantitativa di dna e rna di microrganismi patogeni e geni per la valutazione della trombofilia mediante tecnologia pcr real-ti elitechgroup s.p.a.">
+      <td class="small">2025-04-11</td>
+      <td>FORNITURA DI SISTEMI ANALITICI IN GRADO DI GARANTIRE AL LABORATORIO UN FLUSSO DI LAVORO COMPLETO, DALL&#39;ESTRAZIONE DEGLI ACIDI NUCLEICI (DNA, RNA) ALLA RICERCA QUALITATIVA E QUANTITATIVA DI DNA E RNA DI MICRORGANISMI PATOGENI E GENI PER LA VALUTAZIONE DELLA TROMBOFILIA MEDIANTE TECNOLOGIA PCR REAL-TI<div class="small muted">CIG B671E3D595 · SISTEMI DIAGNOSTICI</div></td>
+      <td>ELITECHGROUP S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura e installazione di una apparecchiatura &#39;gamma camera&#39; spect/tc ">
+      <td class="small">2023-05-02</td>
+      <td>FORNITURA E INSTALLAZIONE DI UNA APPARECCHIATURA &#39;GAMMA CAMERA&#39; SPECT/TC<div class="small muted">CIG 9720017BC4 · APPARECCHI PER TOMOGRAFIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura aperta per la fornitura di sistemi diagnostici per allergologia e autoimmunita&#39; da destinare alla s.c. analisi cliniche dell&#39;azienda usl della valle d&#39;aosta.. thermo fisher diagnostics s.p.a.">
+      <td class="small">2023-06-21</td>
+      <td>PROCEDURA APERTA PER LA FORNITURA DI SISTEMI DIAGNOSTICI PER ALLERGOLOGIA E AUTOIMMUNITA&#39; DA DESTINARE ALLA S.C. ANALISI CLINICHE DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA..<div class="small muted">CIG 98381076B9 · SISTEMI DIAGNOSTICI</div></td>
+      <td>THERMO FISHER DIAGNOSTICS S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="gestione infermieristica pronto soccorso ortopedico di bassa-media intensita&#39; admission room e stroke unit gruppo san michele srl">
+      <td class="small">2023-06-05</td>
+      <td>GESTIONE INFERMIERISTICA PRONTO SOCCORSO ORTOPEDICO DI BASSA-MEDIA INTENSITA&#39; ADMISSION ROOM E STROKE UNIT<div class="small muted">CIG 98428619D8 · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>GRUPPO SAN MICHELE SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="servizi assistenziali infermieristici e socio sanitari per il reparto polmone 1 gruppo san michele srl">
+      <td class="small">2024-05-28</td>
+      <td>SERVIZI ASSISTENZIALI INFERMIERISTICI E SOCIO SANITARI PER IL REPARTO POLMONE 1<div class="small muted">CIG B1D7EC4867 · SERVIZI PRESTATI DA PERSONALE INFERMIERISTICO</div></td>
+      <td>GRUPPO SAN MICHELE SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="gara sardegna - lotto 5 - microinfusori con sistema di gestione telecomandato (patch pump) stand alone destinati ai pazienti della regione autonoma della valle d&#39;aosta roche diabetes care italy s.p.a.">
+      <td class="small">2024-10-10</td>
+      <td>GARA SARDEGNA - LOTTO 5 - MICROINFUSORI CON SISTEMA DI GESTIONE TELECOMANDATO (PATCH PUMP) STAND ALONE DESTINATI AI PAZIENTI DELLA REGIONE AUTONOMA DELLA VALLE D&#39;AOSTA<div class="small muted">CIG B3615EE770 · PRESIDI DIAGNOSTICI</div></td>
+      <td>ROCHE DIABETES CARE ITALY S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura biennale di sonde argon, comprensiva di numero 2 manutenzioni preventive programmate, da destinare alla s.s.d. gastroenterologia ed endoscopia digestiva dell&#39;azienda usl della valle d&#39;aosta polimed srl">
+      <td class="small">2024-09-17</td>
+      <td>FORNITURA BIENNALE DI SONDE ARGON, COMPRENSIVA DI NUMERO 2 MANUTENZIONI PREVENTIVE PROGRAMMATE, DA DESTINARE ALLA S.S.D. GASTROENTEROLOGIA ED ENDOSCOPIA DIGESTIVA DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA<div class="small muted">CIG B30CAC9A78 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>POLIMED SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="aflibercept (eylea) iniet intraocl. 40mg/ml- 1 flac bayer s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>AFLIBERCEPT (EYLEA) INIET INTRAOCL. 40MG/ML- 1 FLAC<div class="small muted">CIG B0FB0FCD40 · Cpv prevalente non disponibile</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="contratto ponte al 31.08.2026 ">
+      <td class="small">2025-12-05</td>
+      <td>CONTRATTO PONTE AL 31.08.2026<div class="small muted">CIG B976184B50</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="valore contratto ponte ">
+      <td class="small">2025-04-10</td>
+      <td>VALORE CONTRATTO PONTE<div class="small muted">CIG B673E25A06</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="fornitura di sistemi multifunzionali automatici per indagini immunoistochimiche, test di terget, anticorpi primari, sonde, kit, reagenti e materiali di consumo ">
+      <td class="small">2025-10-02</td>
+      <td>FORNITURA DI SISTEMI MULTIFUNZIONALI AUTOMATICI PER INDAGINI IMMUNOISTOCHIMICHE, TEST DI TERGET, ANTICORPI PRIMARI, SONDE, KIT, REAGENTI E MATERIALI DI CONSUMO<div class="small muted">CIG B872B6E8F2 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="adeguamento immobile sito in via gudio rey 5 aosta fida costruzioni s.r.l.">
+      <td class="small">2023-03-31</td>
+      <td>ADEGUAMENTO IMMOBILE SITO IN VIA GUDIO REY 5 AOSTA<div class="small muted">CIG 975198154D · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>FIDA COSTRUZIONI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="gestione medica del pronto soccorso ortopedico e di bassa media intensita ">
+      <td class="small">2023-06-05</td>
+      <td>GESTIONE MEDICA DEL PRONTO SOCCORSO ORTOPEDICO E DI BASSA MEDIA INTENSITA<div class="small muted">CIG 9842880986 · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="servizio di gestione medica pronto soccorso e pronto soccorso ortopedico med right s.r.l.">
+      <td class="small">2023-06-27</td>
+      <td>SERVIZIO DI GESTIONE MEDICA PRONTO SOCCORSO E PRONTO SOCCORSO ORTOPEDICO<div class="small muted">CIG 9913921A69 · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>MED RIGHT S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="procedura aperta per l&#39;affidamento della fornitura di sistemi diagnostici di immunoematologia per l&#39;azienda usl della valle d&#39;aosta ">
+      <td class="small">2023-05-10</td>
+      <td>PROCEDURA APERTA PER L&#39;AFFIDAMENTO DELLA FORNITURA DI SISTEMI DIAGNOSTICI DI IMMUNOEMATOLOGIA PER L&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA<div class="small muted">CIG 977535809E · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="contratto attuativo: fornitura di endoprotesi vascolari aortiche custom made. cook italia s.r.l.">
+      <td class="small">2025-10-14</td>
+      <td>CONTRATTO ATTUATIVO: FORNITURA DI ENDOPROTESI VASCOLARI AORTICHE CUSTOM MADE.<div class="small muted">CIG B8A196F530</div></td>
+      <td>COOK ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="realizzazione pma operatore individuale (persona fisica)">
+      <td class="small">2023-05-26</td>
+      <td>REALIZZAZIONE PMA<div class="small muted">CIG 98484183A2 · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">1 mln €</td></tr><tr data-t="emicizumab (hemlibra) 105mg sc - 150mg/ml 0,7ml roche societa&#39; per azioni">
+      <td class="small">2024-03-25</td>
+      <td>EMICIZUMAB (HEMLIBRA) 105MG SC - 150MG/ML 0,7ML<div class="small muted">CIG B0F822779F · Cpv prevalente non disponibile</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">1 mln €</td></tr><tr data-t="aggiornamento tecnologico e posa in opera del sistema di risonanza magnetica in dotazione alla s.c. radiologia - azienda usl valle d&#39;aosta ">
+      <td class="small">2023-04-20</td>
+      <td>AGGIORNAMENTO TECNOLOGICO E POSA IN OPERA DEL SISTEMA DI RISONANZA MAGNETICA IN DOTAZIONE ALLA S.C. RADIOLOGIA - AZIENDA USL VALLE D&#39;AOSTA<div class="small muted">CIG 978467051E · SCANNER A RISONANZA MAGNETICA NUCLEARE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="manutenzione robot chirurgico da vinci ">
+      <td class="small">2025-01-15</td>
+      <td>MANUTENZIONE ROBOT CHIRURGICO DA VINCI<div class="small muted">CIG B535AD7FC4</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">1 mln €</td></tr><tr data-t="sistema diagnostico per citofluorimetria ">
+      <td class="small">2025-12-18</td>
+      <td>SISTEMA DIAGNOSTICO PER CITOFLUORIMETRIA<div class="small muted">CIG B9A60427A6 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">1 mln €</td></tr><tr data-t="affidamento servizi tecnologici - nuovi perimetri anno 2025 inva spa">
+      <td class="small">2025-07-04</td>
+      <td>AFFIDAMENTO SERVIZI TECNOLOGICI - NUOVI PERIMETRI ANNO 2025<div class="small muted">CIG B783212590</div></td>
+      <td>INVA SPA</td>
+      <td class="small neg">Affidamento diretto A SOCIETA&#39; IN HOUSE</td>
+      <td class="num">1 mln €</td></tr><tr data-t="installato base, elettromedicali, esclusa alta tecnologia e letti elettrici di degenza ">
+      <td class="small">2025-02-13</td>
+      <td>INSTALLATO BASE, ELETTROMEDICALI, ESCLUSA ALTA TECNOLOGIA E LETTI ELETTRICI DI DEGENZA<div class="small muted">CIG B59D95D4F6 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">999 mila €</td></tr><tr data-t="pnrr casa comunita&#39; di donnas casale impianti s.r.l.">
+      <td class="small">2023-07-12</td>
+      <td>PNRR CASA COMUNITA&#39; DI DONNAS<div class="small muted">CIG 9936708ED5 · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>CASALE IMPIANTI S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">997 mila €</td></tr><tr data-t="fornitura di clip mitraliche e clip tricuspidaliche. lotto 1 abbott medical italia s.r.l.">
+      <td class="small">2025-09-26</td>
+      <td>FORNITURA DI CLIP MITRALICHE E CLIP TRICUSPIDALICHE. LOTTO 1<div class="small muted">CIG B868E25D36</div></td>
+      <td>ABBOTT MEDICAL ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">984 mila €</td></tr><tr data-t="valore contratto ponte vivenda s.p.a.">
+      <td class="small">2025-05-14</td>
+      <td>VALORE CONTRATTO PONTE<div class="small muted">CIG B6D9E8F65E</div></td>
+      <td>VIVENDA S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">970 mila €</td></tr><tr data-t="dialogo competitivo per il rinnovo dotazioni strumentali del laboratorio di ecocardiografia della s.c. cardiologia, ospedale regionale u. parini ed ospedale beauregard dell&#39;azienda usl della valle d&#39;aosta fase 3 ">
+      <td class="small">2025-11-27</td>
+      <td>DIALOGO COMPETITIVO PER IL RINNOVO DOTAZIONI STRUMENTALI DEL LABORATORIO DI ECOCARDIOGRAFIA DELLA S.C. CARDIOLOGIA, OSPEDALE REGIONALE U. PARINI ED OSPEDALE BEAUREGARD DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA FASE 3<div class="small muted">CIG B9427BF8FE</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">962 mila €</td></tr><tr data-t="dialogo competitivo per il rinnovo dotazioni strumentali del laboratorio di ecocardiografia della s.c. cardiologia, ospedale regionale u. parini ed ospedale beauregard dell&#39;azienda usl della valle d&#39;aosta fase 3 ">
+      <td class="small">2025-11-28</td>
+      <td>DIALOGO COMPETITIVO PER IL RINNOVO DOTAZIONI STRUMENTALI DEL LABORATORIO DI ECOCARDIOGRAFIA DELLA S.C. CARDIOLOGIA, OSPEDALE REGIONALE U. PARINI ED OSPEDALE BEAUREGARD DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA FASE 3<div class="small muted">CIG B9518EE0F0</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">962 mila €</td></tr><tr data-t="sistemi diagnostici per esami di coagulazione instrumentation laboratory s.p.a.">
+      <td class="small">2024-09-13</td>
+      <td>SISTEMI DIAGNOSTICI PER ESAMI DI COAGULAZIONE<div class="small muted">CIG B3042943AB · SISTEMI DIAGNOSTICI</div></td>
+      <td>INSTRUMENTATION LABORATORY S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">923 mila €</td></tr><tr data-t="fornitura di un sistema diagnostico per elettroforesi e quadri proteici da assegnare in dotazione alla s.c. medicina di laboratorio sebia italia - s.r.l.">
+      <td class="small">2025-06-17</td>
+      <td>FORNITURA DI UN SISTEMA DIAGNOSTICO PER ELETTROFORESI E QUADRI PROTEICI DA ASSEGNARE IN DOTAZIONE ALLA S.C. MEDICINA DI LABORATORIO<div class="small muted">CIG B7201A0EFD · SISTEMI DIAGNOSTICI</div></td>
+      <td>SEBIA ITALIA - S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">879 mila €</td></tr><tr data-t="pertuzumab 30mg/ml- 420 mg ev fl roche societa&#39; per azioni">
+      <td class="small">2024-03-25</td>
+      <td>PERTUZUMAB 30MG/ML- 420 MG EV FL<div class="small muted">CIG B0F61C6F50 · Cpv prevalente non disponibile</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">820 mila €</td></tr><tr data-t="servizi assistenziali infermieristici e socio sanitari per il reparto polmone 2 gruppo san michele srl">
+      <td class="small">2024-05-28</td>
+      <td>SERVIZI ASSISTENZIALI INFERMIERISTICI E SOCIO SANITARI PER IL REPARTO POLMONE 2<div class="small muted">CIG B1D7EC6A0D · SERVIZI PRESTATI DA PERSONALE INFERMIERISTICO</div></td>
+      <td>GRUPPO SAN MICHELE SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">820 mila €</td></tr><tr data-t="fornitura e consegna domiciliare ausili per incontinenti -lotto 2 santex s.p.a.">
+      <td class="small">2023-09-01</td>
+      <td>FORNITURA E CONSEGNA DOMICILIARE AUSILI PER INCONTINENTI -LOTTO 2<div class="small muted">CIG 9880573AC5 · CONSEGNA A DOMICILIO DI PRODOTTI PER INCONTINENTI</div></td>
+      <td>SANTEX S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">800 mila €</td></tr><tr data-t="lente da sacco iniettabile precaricata, monopezzo, acrilica, idrofobica, asferica, biconvessa, con filtro uv e luce blu, con piatto ottico da minimo 6,0 mm, lunghezza totale dell&#39;impianto di minimo 13,0 mm, range ottico da + 6 d a + 30 d alcon italia s.p.a.">
+      <td class="small">2024-10-24</td>
+      <td>LENTE DA SACCO INIETTABILE PRECARICATA, MONOPEZZO, ACRILICA, IDROFOBICA, ASFERICA, BICONVESSA, CON FILTRO UV E LUCE BLU, CON PIATTO OTTICO DA MINIMO 6,0 MM, LUNGHEZZA TOTALE DELL&#39;IMPIANTO DI MINIMO 13,0 MM, RANGE OTTICO DA + 6 D A + 30 D<div class="small muted">CIG B3F66693BD · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>ALCON ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">782 mila €</td></tr><tr data-t="pnrr casa comunita&#39; di chatillon i.e.f. leonardo s.r.l.">
+      <td class="small">2023-07-12</td>
+      <td>PNRR CASA COMUNITA&#39; DI CHATILLON<div class="small muted">CIG 99367766F5 · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>I.E.F. LEONARDO S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">780 mila €</td></tr><tr data-t="impianto fotovoltaico beauregard dimensione ingenierie s.r.l.">
+      <td class="small">2023-10-25</td>
+      <td>IMPIANTO FOTOVOLTAICO BEAUREGARD<div class="small muted">CIG A022E215F3 · LAVORI DI INSTALLAZIONE DI CABLAGGI</div></td>
+      <td>DIMENSIONE INGENIERIE S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">778 mila €</td></tr><tr data-t="canone annuale onnicomprensivo ">
+      <td class="small">2025-05-15</td>
+      <td>CANONE ANNUALE ONNICOMPRENSIVO<div class="small muted">CIG B6D9933A27</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">750 mila €</td></tr><tr data-t="gestione del personale infermieristico e tecnico per l&#39;attività di cardiologia interventistica ">
+      <td class="small">2023-06-30</td>
+      <td>GESTIONE DEL PERSONALE INFERMIERISTICO E TECNICO PER L&#39;ATTIVITÀ DI CARDIOLOGIA INTERVENTISTICA<div class="small muted">CIG 9936059745 · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">749 mila €</td></tr><tr data-t="affidamento dei servizi di assistenza e manutenzione sull&#39;applicativo areas amc per il biennio 2024-2025 engineering - ingegneria informatica - s.p.a.">
+      <td class="small">2023-12-05</td>
+      <td>AFFIDAMENTO DEI SERVIZI DI ASSISTENZA E MANUTENZIONE SULL&#39;APPLICATIVO AREAS AMC PER IL BIENNIO 2024-2025<div class="small muted">CIG A02E5DD549 · SERVIZI DI MANUTENZIONE DI SISTEMI E DI ASSISTENZA</div></td>
+      <td>ENGINEERING - INGEGNERIA INFORMATICA - S.P.A.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">740 mila €</td></tr><tr data-t="aflibercept (eylea) iniet intraocl. 114,3mg/ml 1 flac (8mg) bayer s.p.a.">
+      <td class="small">2025-07-29</td>
+      <td>AFLIBERCEPT (EYLEA) INIET INTRAOCL. 114,3MG/ML 1 FLAC (8MG)<div class="small muted">CIG B7D0ABDA72</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">729 mila €</td></tr><tr data-t="apalutamide *112cpr riv 60mg operatore individuale (persona fisica)">
+      <td class="small">2024-03-25</td>
+      <td>APALUTAMIDE *112CPR RIV 60MG<div class="small muted">CIG B0F5F5AFAC · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">723 mila €</td></tr><tr data-t="servizio guardia attiva medici pediatri ">
+      <td class="small">2023-12-12</td>
+      <td>SERVIZIO GUARDIA ATTIVA MEDICI PEDIATRI<div class="small muted">CIG A02B74FA3C · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">711 mila €</td></tr><tr data-t="fornitura triennale in service di un laser al tullio e relativo materiale di consumo d.i.m.e.d.  s.r.l.">
+      <td class="small">2024-08-29</td>
+      <td>FORNITURA TRIENNALE IN SERVICE DI UN LASER AL TULLIO E RELATIVO MATERIALE DI CONSUMO<div class="small muted">CIG B2DBFB1CC5 · MATERIALI MEDICI</div></td>
+      <td>D.I.M.E.D.  S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">709 mila €</td></tr><tr data-t="telemedicina - integrazione con piattaforma nazionale ed estensione proximity a nuove patologie b.c.s. - biomedical computering systems s.r.l.">
+      <td class="small">2024-03-13</td>
+      <td>TELEMEDICINA - INTEGRAZIONE CON PIATTAFORMA NAZIONALE ED ESTENSIONE PROXIMITY A NUOVE PATOLOGIE<div class="small muted">CIG B0C9B8C65D · Cpv prevalente non disponibile</div></td>
+      <td>B.C.S. - BIOMEDICAL COMPUTERING SYSTEMS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">703 mila €</td></tr><tr data-t="alte tecnologie, installato general elettric presso radiologia, medicina nucleare, sedi territoriali e centri traumatologici ">
+      <td class="small">2025-02-13</td>
+      <td>ALTE TECNOLOGIE, INSTALLATO GENERAL ELETTRIC PRESSO RADIOLOGIA, MEDICINA NUCLEARE, SEDI TERRITORIALI E CENTRI TRAUMATOLOGICI<div class="small muted">CIG B59D95E5C9 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">703 mila €</td></tr><tr data-t="servizio medico del centro traumatologico po parini med right s.r.l.">
+      <td class="small">2024-05-28</td>
+      <td>SERVIZIO MEDICO DEL CENTRO TRAUMATOLOGICO PO PARINI<div class="small muted">CIG B1D7EC593A · SERVIZI PRESTATI DA PERSONALE INFERMIERISTICO</div></td>
+      <td>MED RIGHT S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">694 mila €</td></tr><tr data-t="pnrr casa comunita&#39; di morgex operatore individuale (persona fisica)">
+      <td class="small">2023-07-12</td>
+      <td>PNRR CASA COMUNITA&#39; DI MORGEX<div class="small muted">CIG 9936882E6C · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">689 mila €</td></tr><tr data-t="canone per 8065 ore ">
+      <td class="small">2025-06-26</td>
+      <td>CANONE PER 8065 ORE<div class="small muted">CIG B76EB98ACF</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">686 mila €</td></tr><tr data-t="caplacizumab (cablivi) sc ev 1fl 10mg+1sir1ml sanofi s.r.l.">
+      <td class="small">2024-03-25</td>
+      <td>CAPLACIZUMAB (CABLIVI) SC EV 1FL 10MG+1SIR1ML<div class="small muted">CIG B0F5EA1704 · Cpv prevalente non disponibile</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">681 mila €</td></tr><tr data-t="lente da camera posteriore iniettabile precaricata idrofobica, acrilica, monopezzo, con angolazione degli apti a 0°, con piatto ottico da 6,0 mm, diametro totale dell&#39;impianto di 12,5 mm, con superficie posteriore asferica, range ottico da + 8 d a + 30 d (con incrementi di 0,5 d), con tendenza a man rayner italia s.r.l.">
+      <td class="small">2024-10-24</td>
+      <td>LENTE DA CAMERA POSTERIORE INIETTABILE PRECARICATA IDROFOBICA, ACRILICA, MONOPEZZO, CON ANGOLAZIONE DEGLI APTI A 0°, CON PIATTO OTTICO DA 6,0 MM, DIAMETRO TOTALE DELL&#39;IMPIANTO DI 12,5 MM, CON SUPERFICIE POSTERIORE ASFERICA, RANGE OTTICO DA + 8 D A + 30 D (CON INCREMENTI DI 0,5 D), CON TENDENZA A MAN<div class="small muted">CIG B3F666A490 · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>RAYNER ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">680 mila €</td></tr><tr data-t="apixaban 5 mg - 60cpr riv operatore individuale (persona fisica)">
+      <td class="small">2024-03-21</td>
+      <td>APIXABAN 5 MG - 60CPR RIV<div class="small muted">CIG B0ED0429FF · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">676 mila €</td></tr><tr data-t="ocrelizumab (ocrevus) ev 300mg/10ml- 1 fl roche societa&#39; per azioni">
+      <td class="small">2024-03-25</td>
+      <td>OCRELIZUMAB (OCREVUS) EV 300MG/10ML- 1 FL<div class="small muted">CIG B0F81B163F · Cpv prevalente non disponibile</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">656 mila €</td></tr><tr data-t="ivacaftor, tezacaftor,elexacaftor (kaftrio) 100+50+75mg 56cpr riv vertex pharmaceuticals (italy) s.r.l.">
+      <td class="small">2024-03-26</td>
+      <td>IVACAFTOR, TEZACAFTOR,ELEXACAFTOR (KAFTRIO) 100+50+75MG 56CPR RIV<div class="small muted">CIG B0FA4FD6FD · Cpv prevalente non disponibile</div></td>
+      <td>VERTEX PHARMACEUTICALS (ITALY) S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">648 mila €</td></tr><tr data-t="canakinumab (ilaris) 150mg sc operatore individuale (persona fisica)">
+      <td class="small">2024-03-27</td>
+      <td>CANAKINUMAB (ILARIS) 150MG SC<div class="small muted">CIG B100F569C4 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">643 mila €</td></tr><tr data-t="sistema di colorazione e montaggio vetrini e relativo materiale di consumo da assegnare in dotazione alla s.c. anatomia patologica leica microsystems s.r.l.">
+      <td class="small">2024-11-21</td>
+      <td>SISTEMA DI COLORAZIONE E MONTAGGIO VETRINI E RELATIVO MATERIALE DI CONSUMO DA ASSEGNARE IN DOTAZIONE ALLA S.C. ANATOMIA PATOLOGICA<div class="small muted">CIG B45924E8E8 · APPARECCHI DIAGNOSTICI</div></td>
+      <td>LEICA MICROSYSTEMS S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">642 mila €</td></tr><tr data-t="trastuzumab deruxtecan (enhertu) 1fl polv 100mg daiichi sankyo italia societa&#39; per azioni in forma abbreviata daiichi sankyo italia s.p.a.">
+      <td class="small">2024-11-22</td>
+      <td>TRASTUZUMAB DERUXTECAN (ENHERTU) 1FL POLV 100MG<div class="small muted">CIG B46B5D6D2D</div></td>
+      <td>DAIICHI SANKYO ITALIA SOCIETA&#39; PER AZIONI IN FORMA ABBREVIATA DAIICHI SANKYO ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">641 mila €</td></tr><tr data-t="sistema di stabilizzazione anteriore colonna cervicale johnson &amp; johnson medical s.p.a.">
+      <td class="small">2024-12-27</td>
+      <td>SISTEMA DI STABILIZZAZIONE ANTERIORE COLONNA CERVICALE<div class="small muted">CIG B4FB1600F2 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">617 mila €</td></tr><tr data-t="fluodeossiglucosio (18f) curium - 1mci - curium italy s.r.l.">
+      <td class="small">2025-11-28</td>
+      <td>FLUODEOSSIGLUCOSIO (18F) CURIUM - 1MCI -<div class="small muted">CIG B952149617</div></td>
+      <td>CURIUM ITALY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">612 mila €</td></tr><tr data-t="anti meningococco b dai 2 mesi fino ai 10 anni e soggetti a rischio ">
+      <td class="small">2023-12-07</td>
+      <td>ANTI MENINGOCOCCO B DAI 2 MESI FINO AI 10 ANNI E SOGGETTI A RISCHIO<div class="small muted">CIG A047D4F153 · VACCINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">607 mila €</td></tr><tr data-t="veklury*100mg polv. 1fl gilead sciences s.r.l.">
+      <td class="small">2024-03-27</td>
+      <td>VEKLURY*100MG POLV. 1FL<div class="small muted">CIG B100AC76BB · Cpv prevalente non disponibile</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">597 mila €</td></tr><tr data-t="fornitura di broncoscopi monouso e relativa piattaforma di videobroncoscopia ambu s.r.l.">
+      <td class="small">2025-05-30</td>
+      <td>FORNITURA DI BRONCOSCOPI MONOUSO E RELATIVA PIATTAFORMA DI VIDEOBRONCOSCOPIA<div class="small muted">CIG B70E073C54 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>AMBU S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">594 mila €</td></tr><tr data-t="visipaque 320 mg usb 1x500 ml ge healthcare s.r.l.">
+      <td class="small">2025-03-31</td>
+      <td>VISIPAQUE 320 MG USB 1X500 ML<div class="small muted">CIG B645CAF797</div></td>
+      <td>GE HEALTHCARE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">589 mila €</td></tr><tr data-t="rivaroxaban 20 mg - 28 cpr riv bayer s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>RIVAROXABAN 20 MG - 28 CPR RIV<div class="small muted">CIG B0FBDFD86F · Cpv prevalente non disponibile</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">588 mila €</td></tr><tr data-t="all risk property vdassicura di subet ennio s.r.l.">
+      <td class="small">2025-07-17</td>
+      <td>ALL RISK PROPERTY<div class="small muted">CIG B73CB9278E · SERVIZI ASSICURATIVI</div></td>
+      <td>VDASSICURA DI SUBET ENNIO S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">585 mila €</td></tr><tr data-t="servizio di radiologia di pronto soccorso e di urgenza ">
+      <td class="small">2023-04-28</td>
+      <td>SERVIZIO DI RADIOLOGIA DI PRONTO SOCCORSO E DI URGENZA<div class="small muted">CIG 9779774CCD · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">566 mila €</td></tr><tr data-t="nivolumab 240mg/24ml ev 1 fl operatore individuale (persona fisica)">
+      <td class="small">2024-03-21</td>
+      <td>NIVOLUMAB 240MG/24ML EV 1 FL<div class="small muted">CIG B0EDE6547F · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">565 mila €</td></tr><tr data-t="alectinib 150 mg - 224 cps roche societa&#39; per azioni">
+      <td class="small">2024-03-25</td>
+      <td>ALECTINIB 150 MG - 224 CPS<div class="small muted">CIG B0F75F4671 · Cpv prevalente non disponibile</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">560 mila €</td></tr><tr data-t="tavi non auto espandibili edwards lifesciences italia s.r.l.">
+      <td class="small">2024-10-22</td>
+      <td>TAVI NON AUTO ESPANDIBILI<div class="small muted">CIG B3ECD550C8 · VALVOLE CARDIACHE</div></td>
+      <td>EDWARDS LIFESCIENCES ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">558 mila €</td></tr><tr data-t="fornitura tavi valvole non autoespandibili edwards lifesciences italia s.r.l.">
+      <td class="small">2024-10-22</td>
+      <td>FORNITURA TAVI VALVOLE NON AUTOESPANDIBILI<div class="small muted">CIG B3F12C1AB0 · VALVOLE CARDIACHE</div></td>
+      <td>EDWARDS LIFESCIENCES ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">558 mila €</td></tr><tr data-t="antipapillomavirus umano tipo 6, 11, 16, 18, 31, 33, 45, 52 e 58 ">
+      <td class="small">2023-12-07</td>
+      <td>ANTIPAPILLOMAVIRUS UMANO TIPO 6, 11, 16, 18, 31, 33, 45, 52 E 58<div class="small muted">CIG A047E1116B · VACCINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">551 mila €</td></tr><tr data-t="adesione alla convenzione stipulata tra inva spa e il rti eco eridania spa - bivi srl servizio di raccolta, trasporto a smaltimento/recupero dei rifiuti sanitari prodotti dall&#39;azienda usl della valle d&#39;aosta eco eridania societa&#39; per azioni">
+      <td class="small">2025-04-02</td>
+      <td>ADESIONE ALLA CONVENZIONE STIPULATA TRA INVA SPA E IL RTI ECO ERIDANIA SPA - BIVI SRL SERVIZIO DI RACCOLTA, TRASPORTO A SMALTIMENTO/RECUPERO DEI RIFIUTI SANITARI PRODOTTI DALL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA<div class="small muted">CIG B6513CC3B8</div></td>
+      <td>ECO ERIDANIA SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">551 mila €</td></tr><tr data-t="avviso dialogo competitivo rinnovo dotazioni strumentali del laboratorio di ecocardiografia della sc cardiologia, ospedale regionale u. parini ed ospedale beauregard azienda usl valle d&#39;aosta ">
+      <td class="small">2024-06-12</td>
+      <td>AVVISO DIALOGO COMPETITIVO RINNOVO DOTAZIONI STRUMENTALI DEL LABORATORIO DI ECOCARDIOGRAFIA DELLA SC CARDIOLOGIA, OSPEDALE REGIONALE U. PARINI ED OSPEDALE BEAUREGARD AZIENDA USL VALLE D&#39;AOSTA<div class="small muted">CIG B20CD9BDFD · ECOCARDIOGRAFI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA RISTRETTA</td>
+      <td class="num">546 mila €</td></tr><tr data-t="libro matricola rca/cvt hdi assicurazioni s.p.a.">
+      <td class="small">2025-07-17</td>
+      <td>LIBRO MATRICOLA RCA/CVT<div class="small muted">CIG B73CB93861 · SERVIZI ASSICURATIVI</div></td>
+      <td>HDI ASSICURAZIONI S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">544 mila €</td></tr><tr data-t="lotto 9 - guanti non chirurgici non sterili in nitrile nacatur international import export s.r.l.">
+      <td class="small">2025-01-20</td>
+      <td>LOTTO 9 - GUANTI NON CHIRURGICI NON STERILI IN NITRILE<div class="small muted">CIG A0672809F3 · MATERIALI MEDICI</div></td>
+      <td>NACATUR INTERNATIONAL IMPORT EXPORT S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">542 mila €</td></tr><tr data-t="apixaban 2,5 mg - 60cpr riv operatore individuale (persona fisica)">
+      <td class="small">2024-03-21</td>
+      <td>APIXABAN 2,5 MG - 60CPR RIV<div class="small muted">CIG B0ECE2AFAB · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">532 mila €</td></tr><tr data-t="catetere venoso centrale ad inserzione periferica, impiantabile con accesso brachiale, power injection, 3-4-5 fr monolume e 5-6 fr bilume, completo di tutti gli accessori necessari al suo posizionamento seda s.p.a.">
+      <td class="small">2025-03-05</td>
+      <td>CATETERE VENOSO CENTRALE AD INSERZIONE PERIFERICA, IMPIANTABILE CON ACCESSO BRACHIALE, POWER INJECTION, 3-4-5 FR MONOLUME E 5-6 FR BILUME, COMPLETO DI TUTTI GLI ACCESSORI NECESSARI AL SUO POSIZIONAMENTO<div class="small muted">CIG B5E5C583B1 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SEDA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">521 mila €</td></tr><tr data-t="proroga tecnica semestrale manutenzione installato base elettromedicali ">
+      <td class="small">2023-12-28</td>
+      <td>PROROGA TECNICA SEMESTRALE MANUTENZIONE INSTALLATO BASE ELETTROMEDICALI<div class="small muted">CIG A0580454DC · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI APPARECCHIATURE DI MISURAZIONE, COLLAUDO E PROVA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">520 mila €</td></tr><tr data-t="gestionedel personale infermieristico e tecnico necessario per l&#39;attivita&#39; di cardiologia interventistica ">
+      <td class="small">2023-05-26</td>
+      <td>GESTIONEDEL PERSONALE INFERMIERISTICO E TECNICO NECESSARIO PER L&#39;ATTIVITA&#39; DI CARDIOLOGIA INTERVENTISTICA<div class="small muted">CIG 9821831F55 · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">519 mila €</td></tr><tr data-t="acquisto software assurance e licenze subscription tim s.p.a.">
+      <td class="small">2023-02-21</td>
+      <td>ACQUISTO SOFTWARE ASSURANCE E LICENZE SUBSCRIPTION<div class="small muted">CIG 96695984B3 · PACCHETTI SOFTWARE IT</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">519 mila €</td></tr><tr data-t="evolocumab sc 140mg/1ml- 2 pen amgen s.r.l.">
+      <td class="small">2024-03-22</td>
+      <td>EVOLOCUMAB SC 140MG/1ML- 2 PEN<div class="small muted">CIG B0F4257EB8 · Cpv prevalente non disponibile</div></td>
+      <td>AMGEN S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">516 mila €</td></tr><tr data-t="fornitura triennale in service di un sistema gestionale comprendente 82 glucometri palmari in connettività, relativi accessori e materiali di consumo, destinati a varie strutture dell&#39;azienda usl della valle d&#39;aosta ">
+      <td class="small">2023-05-15</td>
+      <td>FORNITURA TRIENNALE IN SERVICE DI UN SISTEMA GESTIONALE COMPRENDENTE 82 GLUCOMETRI PALMARI IN CONNETTIVITÀ, RELATIVI ACCESSORI E MATERIALI DI CONSUMO, DESTINATI A VARIE STRUTTURE DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA<div class="small muted">CIG 9770874C4A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">512 mila €</td></tr><tr data-t="gestione medica dei servizi radiologici di urgenza ">
+      <td class="small">2023-06-05</td>
+      <td>GESTIONE MEDICA DEI SERVIZI RADIOLOGICI DI URGENZA<div class="small muted">CIG 9842806C74 · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">511 mila €</td></tr><tr data-t="servizio di gestione medica radiologia di urgenza pediacoop societa&#39; cooperativa">
+      <td class="small">2023-06-27</td>
+      <td>SERVIZIO DI GESTIONE MEDICA RADIOLOGIA DI URGENZA<div class="small muted">CIG 991377304A · SERVIZI DI ASSISTENZA OSPEDALIERA</div></td>
+      <td>PEDIACOOP SOCIETA&#39; COOPERATIVA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">511 mila €</td></tr><tr data-t="tafamidis meglumine (vyndaqel) 61 mg - 30 cps pfizer s.r.l.">
+      <td class="small">2025-04-03</td>
+      <td>TAFAMIDIS MEGLUMINE (VYNDAQEL) 61 MG - 30 CPS<div class="small muted">CIG B656A7140F</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">502 mila €</td></tr><tr data-t="adesione convenzione metano agsm aim energia s.p.a.">
+      <td class="small">2025-10-17</td>
+      <td>ADESIONE CONVENZIONE METANO<div class="small muted">CIG B8B048441F · METANO</div></td>
+      <td>AGSM AIM ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">500 mila €</td></tr><tr data-t="metano agsm aim energia s.p.a.">
+      <td class="small">2025-10-15</td>
+      <td>METANO<div class="small muted">CIG B8A7BB7FDD · METANO</div></td>
+      <td>AGSM AIM ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">500 mila €</td></tr><tr data-t="adesione convenzione metano agsm aim energia s.p.a.">
+      <td class="small">2025-10-17</td>
+      <td>ADESIONE CONVENZIONE METANO<div class="small muted">CIG B8AFF8764E · METANO</div></td>
+      <td>AGSM AIM ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">500 mila €</td></tr><tr data-t="lotto 1gara neurochirurgia - sistema di artrodesi occipito-cervicale per via posteriore e sistema di artrodesi toraco-lombo-sacro-iliaco johnson &amp; johnson medical s.p.a.">
+      <td class="small">2025-06-10</td>
+      <td>LOTTO 1GARA NEUROCHIRURGIA - SISTEMA DI ARTRODESI OCCIPITO-CERVICALE PER VIA POSTERIORE E SISTEMA DI ARTRODESI TORACO-LOMBO-SACRO-ILIACO<div class="small muted">CIG B73844725C</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">498 mila €</td></tr><tr data-t="daratumumab 400mg ev 1fl 20ml 20mg/ml operatore individuale (persona fisica)">
+      <td class="small">2024-03-22</td>
+      <td>DARATUMUMAB 400MG EV 1FL 20ML 20MG/ML<div class="small muted">CIG B0F3AF463A · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">493 mila €</td></tr><tr data-t="tafamidis meglumine (vyndaqel) 61 mg - 30 cps pfizer s.r.l.">
+      <td class="small">2024-03-23</td>
+      <td>TAFAMIDIS MEGLUMINE (VYNDAQEL) 61 MG - 30 CPS<div class="small muted">CIG B0F4A011D4 · Cpv prevalente non disponibile</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">493 mila €</td></tr><tr data-t="fingolimod 0,5 mg - 28 cps operatore individuale (persona fisica)">
+      <td class="small">2024-03-26</td>
+      <td>FINGOLIMOD 0,5 MG - 28 CPS<div class="small muted">CIG B0FDE81D9C · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">490 mila €</td></tr><tr data-t="concessione bar spacci e rivendite giornali po parini e po beauregard sirio s.p.a.">
+      <td class="small">2023-09-19</td>
+      <td>CONCESSIONE BAR SPACCI E RIVENDITE GIORNALI PO PARINI E PO BEAUREGARD<div class="small muted">CIG A00512466A · SERVIZI DI GESTIONE BAR</div></td>
+      <td>SIRIO S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">480 mila €</td></tr><tr data-t="pnrr casa comunita&#39; di aosta verde mattone s.r.l.">
+      <td class="small">2023-07-12</td>
+      <td>PNRR CASA COMUNITA&#39; DI AOSTA<div class="small muted">CIG 9936958D24 · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>VERDE MATTONE S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">475 mila €</td></tr><tr data-t="ventilatore pressovolumetrico - lotto 4 - medigas ">
+      <td class="small">2024-01-01</td>
+      <td>VENTILATORE PRESSOVOLUMETRICO - LOTTO 4 - MEDIGAS<div class="small muted">CIG A04DA85CDB · APPARECCHI RESPIRATORI PER USO MEDICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">463 mila €</td></tr><tr data-t="trattamenti di dialisi peritoneale automatizzata (apd) fresenius medical care italia spa">
+      <td class="small">2025-09-17</td>
+      <td>TRATTAMENTI DI DIALISI PERITONEALE AUTOMATIZZATA (APD)<div class="small muted">CIG B848C58CBF · APPARECCHI PER EMODIALISI</div></td>
+      <td>FRESENIUS MEDICAL CARE ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">461 mila €</td></tr><tr data-t="ivacaftor (kalydeco) 150 mg - 28 cpr riv vertex pharmaceuticals (italy) s.r.l.">
+      <td class="small">2024-03-26</td>
+      <td>IVACAFTOR (KALYDECO) 150 MG - 28 CPR RIV<div class="small muted">CIG B0FA3C0166 · Cpv prevalente non disponibile</div></td>
+      <td>VERTEX PHARMACEUTICALS (ITALY) S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">460 mila €</td></tr><tr data-t="gara lenti intraoculari lotto 2 ">
+      <td class="small">2023-05-24</td>
+      <td>GARA LENTI INTRAOCULARI LOTTO 2<div class="small muted">CIG 9802338935 · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">459 mila €</td></tr><tr data-t="fornitura quadriennale del materiale di consumo kit attaccostacco fistola occorrente alla s.c. nefrologia dell&#39;azienda u.s.l. della valle d&#39;aosta emodial s.r.l.">
+      <td class="small">2023-06-07</td>
+      <td>FORNITURA QUADRIENNALE DEL MATERIALE DI CONSUMO KIT ATTACCOSTACCO FISTOLA OCCORRENTE ALLA S.C. NEFROLOGIA DELL&#39;AZIENDA U.S.L. DELLA VALLE D&#39;AOSTA<div class="small muted">CIG 9845433455 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>EMODIAL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">455 mila €</td></tr><tr data-t="affidamento del servizio di medico competente (medico competente coordinatore, medico competente e medico autorizzato) per un triennio ">
+      <td class="small">2023-10-09</td>
+      <td>AFFIDAMENTO DEL SERVIZIO DI MEDICO COMPETENTE (MEDICO COMPETENTE COORDINATORE, MEDICO COMPETENTE E MEDICO AUTORIZZATO) PER UN TRIENNIO<div class="small muted">CIG A01ADA3CF4 · SERVIZI DI FORNITURA DI PERSONALE MEDICO</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">450 mila €</td></tr><tr data-t="tenofovir af + emtricitabina + rilpivirina (odefsey) - 30 cpr gilead sciences s.r.l.">
+      <td class="small">2024-03-27</td>
+      <td>TENOFOVIR AF + EMTRICITABINA + RILPIVIRINA (ODEFSEY) - 30 CPR<div class="small muted">CIG B100521D72 · Cpv prevalente non disponibile</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">447 mila €</td></tr><tr data-t="lanadelumab 300 mg sc 1flac takeda italia s.p.a.">
+      <td class="small">2024-03-22</td>
+      <td>LANADELUMAB 300 MG SC 1FLAC<div class="small muted">CIG B0F392367F · Cpv prevalente non disponibile</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">439 mila €</td></tr><tr data-t="generatore di ge-68/ga-68 50 mci (1850 mbq) radius s.r.l.">
+      <td class="small">2025-03-21</td>
+      <td>GENERATORE DI GE-68/GA-68 50 MCI (1850 MBQ)<div class="small muted">CIG B629AF0330</div></td>
+      <td>RADIUS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">438 mila €</td></tr><tr data-t="test rapidi sars-cov-2 roche diagnostics s.p.a.">
+      <td class="small">2025-03-06</td>
+      <td>TEST RAPIDI SARS-COV-2<div class="small muted">CIG B5E6022429 · SISTEMI DIAGNOSTICI</div></td>
+      <td>ROCHE DIAGNOSTICS S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">433 mila €</td></tr><tr data-t="fornitura di n. 50 defibrillatori, relativi accessori e relativo materiale di consumo fornitura di n. 3 monitor trasportabili/ trasmettitori telemetrici, comprensivi di accessori ">
+      <td class="small">2025-10-28</td>
+      <td>FORNITURA DI N. 50 DEFIBRILLATORI, RELATIVI ACCESSORI E RELATIVO MATERIALE DI CONSUMO FORNITURA DI N. 3 MONITOR TRASPORTABILI/ TRASMETTITORI TELEMETRICI, COMPRENSIVI DI ACCESSORI<div class="small muted">CIG B8D0914C03 · DEFIBRILLATORE CARDIACO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">429 mila €</td></tr><tr data-t="ultravist 370 500 ml bayer s.p.a.">
+      <td class="small">2025-03-31</td>
+      <td>ULTRAVIST 370 500 ML<div class="small muted">CIG B645DBD667</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">424 mila €</td></tr><tr data-t="sistemi per il monitoraggio in continuo della glicemia (cgm) con/senza calibrazione ">
+      <td class="small">2023-01-05</td>
+      <td>SISTEMI PER IL MONITORAGGIO IN CONTINUO DELLA GLICEMIA (CGM) CON/SENZA CALIBRAZIONE<div class="small muted">CIG 9587750D95 · PRESIDI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">416 mila €</td></tr><tr data-t="enoxaparina rovi 4.000 ui rovi biotech, s.r.l.">
+      <td class="small">2023-04-27</td>
+      <td>ENOXAPARINA ROVI 4.000 UI<div class="small muted">CIG 970087681E · MEDICINALI VARI</div></td>
+      <td>ROVI BIOTECH, S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">415 mila €</td></tr><tr data-t="darunavir+cobicistat+emtricitabina+taf (symtuza) 800+150+200+10mg - 30 cpr operatore individuale (persona fisica)">
+      <td class="small">2024-03-25</td>
+      <td>DARUNAVIR+COBICISTAT+EMTRICITABINA+TAF (SYMTUZA) 800+150+200+10MG - 30 CPR<div class="small muted">CIG B0F5CBE86E · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">413 mila €</td></tr><tr data-t="lotto 1 - sistema sottovuoto per raccolta ematica e dispositivi per l&#39;accesso venoso ">
+      <td class="small">2025-03-16</td>
+      <td>LOTTO 1 - SISTEMA SOTTOVUOTO PER RACCOLTA EMATICA E DISPOSITIVI PER L&#39;ACCESSO VENOSO<div class="small muted">CIG A068C4A21A · APPARECCHI PER PUNTURA E PRELIEVO DI SANGUE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">408 mila €</td></tr><tr data-t="fornitura di un service comprendente generatore e relativi kit elettrodi per la stimolazione ad alta frequenza per il trattamento del dolore cronico x-med innovazioni medicali s.r.l.">
+      <td class="small">2024-05-14</td>
+      <td>FORNITURA DI UN SERVICE COMPRENDENTE GENERATORE E RELATIVI KIT ELETTRODI PER LA STIMOLAZIONE AD ALTA FREQUENZA PER IL TRATTAMENTO DEL DOLORE CRONICO<div class="small muted">CIG B1A1A944F4 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>X-MED INNOVAZIONI MEDICALI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">406 mila €</td></tr><tr data-t="om edili pp.oo 2023 ">
+      <td class="small">2023-01-25</td>
+      <td>OM EDILI PP.OO 2023<div class="small muted">CIG 9621218044 · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">403 mila €</td></tr><tr data-t="gara lenti intraoculari lotto 1 ">
+      <td class="small">2023-05-24</td>
+      <td>GARA LENTI INTRAOCULARI LOTTO 1<div class="small muted">CIG 9802151EE2 · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">403 mila €</td></tr><tr data-t="servizio di manutenzione preventiva periodica e riparazione ausili sanitari actem s.r.l.">
+      <td class="small">2024-05-15</td>
+      <td>SERVIZIO DI MANUTENZIONE PREVENTIVA PERIODICA E RIPARAZIONE AUSILI SANITARI<div class="small muted">CIG B1A7EC532E · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>ACTEM S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">401 mila €</td></tr><tr data-t="fornitura presidi incontinenza parte ospedaliera santex s.p.a.">
+      <td class="small">2024-06-18</td>
+      <td>FORNITURA PRESIDI INCONTINENZA PARTE OSPEDALIERA<div class="small muted">CIG B2231799BE · PRODOTTI PER L&#39;INCONTINENZA</div></td>
+      <td>SANTEX S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">400 mila €</td></tr><tr data-t="acalabrutinib 100mg 56 cpr astrazeneca s.p.a.">
+      <td class="small">2024-10-10</td>
+      <td>ACALABRUTINIB 100MG 56 CPR<div class="small muted">CIG B365BEB903 · MEDICINALI VARI</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">399 mila €</td></tr><tr data-t="lotto ">
+      <td class="small">2025-09-17</td>
+      <td>LOTTO<div class="small muted">CIG B845DBB555</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">391 mila €</td></tr><tr data-t="tebentafusp - kimmtrak*1 flaconcino ev 100 mcg 0,5 ml euromed pharma s.r.l.">
+      <td class="small">2024-05-24</td>
+      <td>TEBENTAFUSP - KIMMTRAK*1 FLACONCINO EV 100 MCG 0,5 ML<div class="small muted">CIG B1D6CB94B0 · Cpv prevalente non disponibile</div></td>
+      <td>EUROMED PHARMA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">385 mila €</td></tr><tr data-t="enzalutamide 40 mg - 112cps operatore individuale (persona fisica)">
+      <td class="small">2024-03-25</td>
+      <td>ENZALUTAMIDE 40 MG - 112CPS<div class="small muted">CIG B0F555D196 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">383 mila €</td></tr><tr data-t="gestione manutentiva e della logistica distributiva, della pulizia e igienizzazione degli ausili terapeutici ferrero med s.r.l.">
+      <td class="small">2024-06-24</td>
+      <td>GESTIONE MANUTENTIVA E DELLA LOGISTICA DISTRIBUTIVA, DELLA PULIZIA E IGIENIZZAZIONE DEGLI AUSILI TERAPEUTICI<div class="small muted">CIG B232571E0F · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>FERRERO MED S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">380 mila €</td></tr><tr data-t="ixekizumab (taltz) sc 80mg - 2 pen eli lilly italia - s.p.a.">
+      <td class="small">2024-03-27</td>
+      <td>IXEKIZUMAB (TALTZ) SC 80MG - 2 PEN<div class="small muted">CIG B104D2B048 · Cpv prevalente non disponibile</div></td>
+      <td>ELI LILLY ITALIA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">380 mila €</td></tr><tr data-t="bictegravir+emtricitabina+taf (biktarvy) 50+200+25mg fl 30cpr gilead sciences s.r.l.">
+      <td class="small">2024-03-27</td>
+      <td>BICTEGRAVIR+EMTRICITABINA+TAF (BIKTARVY) 50+200+25MG FL 30CPR<div class="small muted">CIG B100A0242A · Cpv prevalente non disponibile</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">379 mila €</td></tr><tr data-t="enhertu trastuzumab deruxtecan - ed. 2 daiichi sankyo italia societa&#39; per azioni in forma abbreviata daiichi sankyo italia s.p.a.">
+      <td class="small">2025-09-16</td>
+      <td>ENHERTU TRASTUZUMAB DERUXTECAN - ED. 2<div class="small muted">CIG B8427F0126</div></td>
+      <td>DAIICHI SANKYO ITALIA SOCIETA&#39; PER AZIONI IN FORMA ABBREVIATA DAIICHI SANKYO ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">377 mila €</td></tr><tr data-t="protesi fonatorie e altro materiale per la gestione della protesi atos medical s.r.l.">
+      <td class="small">2024-05-21</td>
+      <td>PROTESI FONATORIE E ALTRO MATERIALE PER LA GESTIONE DELLA PROTESI<div class="small muted">CIG B1B968810D · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>ATOS MEDICAL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">376 mila €</td></tr><tr data-t="dabrafenib 75 mg - 120cps operatore individuale (persona fisica)">
+      <td class="small">2024-03-26</td>
+      <td>DABRAFENIB 75 MG - 120CPS<div class="small muted">CIG B0FD99C39D · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">375 mila €</td></tr><tr data-t="fornitura defibrillatori e materiale di consumo so.e.m.*medical s.r.l.">
+      <td class="small">2024-10-15</td>
+      <td>FORNITURA DEFIBRILLATORI E MATERIALE DI CONSUMO<div class="small muted">CIG B36BD8A83D · APPARECCHI PER IL SOSTEGNO DELLE FUNZIONI CARDIACHE</div></td>
+      <td>SO.E.M.*MEDICAL S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">373 mila €</td></tr><tr data-t="adesione alla convenzione stipulata da inva spa per l&#39;affidamento del servizio di raccolta, trasporto rifiuti urbani e sanitari per l&#39;azienda usl della valle d&#39;aosta quendoz s.r.l.">
+      <td class="small">2025-01-03</td>
+      <td>ADESIONE ALLA CONVENZIONE STIPULATA DA INVA SPA PER L&#39;AFFIDAMENTO DEL SERVIZIO DI RACCOLTA, TRASPORTO RIFIUTI URBANI E SANITARI PER L&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA<div class="small muted">CIG B5161A37A2</div></td>
+      <td>QUENDOZ S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">372 mila €</td></tr><tr data-t="sutureless device - sistema di fissaggio e stabilizzazione sottocute privo di punti di sutura per cateteri venosi da 3 a 12 fr. seda s.p.a.">
+      <td class="small">2025-03-05</td>
+      <td>SUTURELESS DEVICE - SISTEMA DI FISSAGGIO E STABILIZZAZIONE SOTTOCUTE PRIVO DI PUNTI DI SUTURA PER CATETERI VENOSI DA 3 A 12 FR.<div class="small muted">CIG B5E5C680E6 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SEDA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">367 mila €</td></tr><tr data-t="fornitura aghi veress effebi hospital s.r.l.">
+      <td class="small">2024-10-30</td>
+      <td>FORNITURA AGHI VERESS<div class="small muted">CIG B41118E164 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>EFFEBI HOSPITAL S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">366 mila €</td></tr><tr data-t="offerta consorzio costruisce - societa&#39; consortile cooperativa artigiana in forma abbreviata consorzio costruisce - soc. cons. coop.">
+      <td class="small">2025-03-04</td>
+      <td>OFFERTA<div class="small muted">CIG B5DF42EE33</div></td>
+      <td>CONSORZIO COSTRUISCE - SOCIETA&#39; CONSORTILE COOPERATIVA ARTIGIANA IN FORMA ABBREVIATA CONSORZIO COSTRUISCE - SOC. CONS. COOP.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">365 mila €</td></tr><tr data-t="vaccino pneumococcico polisaccaridico coniugato 15-valente ">
+      <td class="small">2023-12-07</td>
+      <td>VACCINO PNEUMOCOCCICO POLISACCARIDICO CONIUGATO 15-VALENTE<div class="small muted">CIG A047E1DB4F · VACCINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">361 mila €</td></tr><tr data-t="piattaforma strumentale per analisi molecolari diatech pharmacogenetics societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-12-20</td>
+      <td>PIATTAFORMA STRUMENTALE PER ANALISI MOLECOLARI<div class="small muted">CIG B4ECEC6194 · SISTEMI DIAGNOSTICI</div></td>
+      <td>DIATECH PHARMACOGENETICS SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">360 mila €</td></tr><tr data-t="fornitura protesi peniena idraulica tricomponente dbi s.r.l.">
+      <td class="small">2024-05-22</td>
+      <td>FORNITURA PROTESI PENIENA IDRAULICA TRICOMPONENTE<div class="small muted">CIG B1C277BEB3 · PROTESI CHIRURGICHE</div></td>
+      <td>DBI S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">359 mila €</td></tr><tr data-t="fornitura di sistema da protesi da primo impianto e da revisione femoro rotulea ">
+      <td class="small">2023-05-23</td>
+      <td>FORNITURA DI SISTEMA DA PROTESI DA PRIMO IMPIANTO E DA REVISIONE FEMORO ROTULEA<div class="small muted">CIG 9846044C89 · PROTESI ORTOPEDICHE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">357 mila €</td></tr><tr data-t="lente intraoculare idrofilica monofocale con ottica asferica, con diametro di almeno 6 mm, diametro totale dell&#39;impianto di almeno 11 mm, angolazione ansa di almeno 5°, range ottico da -15 d a +74 d (con incrementi di 0,5 d), dotata di sistema di iniezione agevole, particolare stabilità e adatta anc ">
+      <td class="small">2024-10-24</td>
+      <td>LENTE INTRAOCULARE IDROFILICA MONOFOCALE CON OTTICA ASFERICA, CON DIAMETRO DI ALMENO 6 MM, DIAMETRO TOTALE DELL&#39;IMPIANTO DI ALMENO 11 MM, ANGOLAZIONE ANSA DI ALMENO 5°, RANGE OTTICO DA -15 D A +74 D (CON INCREMENTI DI 0,5 D), DOTATA DI SISTEMA DI INIEZIONE AGEVOLE, PARTICOLARE STABILITÀ E ADATTA ANC<div class="small muted">CIG B3F666C636 · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">357 mila €</td></tr><tr data-t="sacubitril + valsartan 24mg+26mg 28cpr riv operatore individuale (persona fisica)">
+      <td class="small">2024-03-27</td>
+      <td>SACUBITRIL + VALSARTAN 24MG+26MG 28CPR RIV<div class="small muted">CIG B1004C518A · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">354 mila €</td></tr><tr data-t="aripiprazolo im 400 mg fl depot otsuka pharmaceutical italy s.r.l.">
+      <td class="small">2024-03-27</td>
+      <td>ARIPIPRAZOLO IM 400 MG FL DEPOT<div class="small muted">CIG B1044771AD · Cpv prevalente non disponibile</div></td>
+      <td>OTSUKA PHARMACEUTICAL ITALY S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">352 mila €</td></tr><tr data-t="offerta ">
+      <td class="small">2025-01-10</td>
+      <td>OFFERTA<div class="small muted">CIG B5242B0F60</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">352 mila €</td></tr><tr data-t="rurioctocog alfa (adynovi) ev 2000ui takeda italia s.p.a.">
+      <td class="small">2024-03-22</td>
+      <td>RURIOCTOCOG ALFA (ADYNOVI) EV 2000UI<div class="small muted">CIG B0F3B31890 · Cpv prevalente non disponibile</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">351 mila €</td></tr><tr data-t="agalsidasi beta (fabrazyme) iv 35mg- 1 fl sanofi s.r.l.">
+      <td class="small">2024-03-22</td>
+      <td>AGALSIDASI BETA (FABRAZYME) IV 35MG- 1 FL<div class="small muted">CIG B0F4311838 · Cpv prevalente non disponibile</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">351 mila €</td></tr><tr data-t="gara lenti intraoculari lotto 3 ">
+      <td class="small">2023-05-24</td>
+      <td>GARA LENTI INTRAOCULARI LOTTO 3<div class="small muted">CIG 9802398AB8 · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">350 mila €</td></tr><tr data-t="adesione accordo quadro cybersicurezza 2 - id 2367 ">
+      <td class="small">2023-12-28</td>
+      <td>ADESIONE ACCORDO QUADRO CYBERSICUREZZA 2 - ID 2367<div class="small muted">CIG A04015D8E4 · PACCHETTI SOFTWARE DI SICUREZZA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">350 mila €</td></tr><tr data-t="sistema analitico per l&#39;esecuzione di esami emocoagulativi comprensivo di materiali di consumo haemonetics italia s.r.l.">
+      <td class="small">2025-08-12</td>
+      <td>SISTEMA ANALITICO PER L&#39;ESECUZIONE DI ESAMI EMOCOAGULATIVI COMPRENSIVO DI MATERIALI DI CONSUMO<div class="small muted">CIG B7F3A6C805 · REATTIVI PER L&#39;ANALISI DEL SANGUE</div></td>
+      <td>HAEMONETICS ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">342 mila €</td></tr><tr data-t="atezolizumab infus 1200mg/20ml flac roche societa&#39; per azioni">
+      <td class="small">2024-03-25</td>
+      <td>ATEZOLIZUMAB INFUS 1200MG/20ML FLAC<div class="small muted">CIG B0F74A0DDB · Cpv prevalente non disponibile</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">341 mila €</td></tr><tr data-t="evolocumab (repatha) sc 140mg/1ml - 2 pen amgen s.r.l.">
+      <td class="small">2025-07-24</td>
+      <td>EVOLOCUMAB (REPATHA) SC 140MG/1ML - 2 PEN<div class="small muted">CIG B7C33BAB86</div></td>
+      <td>AMGEN S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">340 mila €</td></tr><tr data-t="parnaparina 4250 ui/0,4ml -sc- 6 f-sir alfasigma s.p.a.">
+      <td class="small">2024-03-22</td>
+      <td>PARNAPARINA 4250 UI/0,4ML -SC- 6 F-SIR<div class="small muted">CIG B0F2BEF13D · Cpv prevalente non disponibile</div></td>
+      <td>ALFASIGMA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">338 mila €</td></tr><tr data-t="amfotericina b complesso lipidico (ambisome) iv 50mg - 10 fl gilead sciences s.r.l.">
+      <td class="small">2024-06-20</td>
+      <td>AMFOTERICINA B COMPLESSO LIPIDICO (AMBISOME) IV 50MG - 10 FL<div class="small muted">CIG B22DDFF8AE · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">338 mila €</td></tr><tr data-t="osimertinib 80 mg - 28 cpr riv astrazeneca s.p.a.">
+      <td class="small">2025-03-13</td>
+      <td>OSIMERTINIB 80 MG - 28 CPR RIV<div class="small muted">CIG B608C30319</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">333 mila €</td></tr><tr data-t="proroga tecnica semestrale manutenzione installato ge ">
+      <td class="small">2023-12-28</td>
+      <td>PROROGA TECNICA SEMESTRALE MANUTENZIONE INSTALLATO GE<div class="small muted">CIG A057FE6676 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICHE</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">330 mila €</td></tr><tr data-t="fornitura di test rapidi per la ricerca qualitativa antigene specifico delvirus sars-cov-2 necessario a varie s.s.c.c. dell&#39;azienda usl della valled&#39;aosta ">
+      <td class="small">2023-04-14</td>
+      <td>FORNITURA DI TEST RAPIDI PER LA RICERCA QUALITATIVA ANTIGENE SPECIFICO DELVIRUS SARS-COV-2 NECESSARIO A VARIE S.S.C.C. DELL&#39;AZIENDA USL DELLA VALLED&#39;AOSTA<div class="small muted">CIG 9729472649 · SISTEMI DIAGNOSTICI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">329 mila €</td></tr><tr data-t="migalastat 123 mg- 14 cps (galafold) amicus therapeutics s.r.l.">
+      <td class="small">2024-03-23</td>
+      <td>MIGALASTAT 123 MG- 14 CPS (GALAFOLD)<div class="small muted">CIG B0F4B4C2FA · Cpv prevalente non disponibile</div></td>
+      <td>AMICUS THERAPEUTICS S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">327 mila €</td></tr><tr data-t="protesi peniena idraulica tricomponente affidamento dbi dbi s.r.l.">
+      <td class="small">2025-01-02</td>
+      <td>PROTESI PENIENA IDRAULICA TRICOMPONENTE AFFIDAMENTO DBI<div class="small muted">CIG B514AF6134</div></td>
+      <td>DBI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">325 mila €</td></tr><tr data-t="anti morbillo - parotite - rosolia e varicella ">
+      <td class="small">2023-12-11</td>
+      <td>ANTI MORBILLO - PAROTITE - ROSOLIA E VARICELLA<div class="small muted">CIG A047D5CC0A · VACCINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">323 mila €</td></tr><tr data-t="aflibercept (eylea) iniet intraocl. 40mg/ml 1 flac (2mg) bayer s.p.a.">
+      <td class="small">2025-10-27</td>
+      <td>AFLIBERCEPT (EYLEA) INIET INTRAOCL. 40MG/ML 1 FLAC (2MG)<div class="small muted">CIG B8CF36CCF5</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">318 mila €</td></tr><tr data-t="osimertinib 80 mg - 28 cpr riv operatore individuale (persona fisica)">
+      <td class="small">2024-03-25</td>
+      <td>OSIMERTINIB 80 MG - 28 CPR RIV<div class="small muted">CIG B0F7F4BB8D · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">311 mila €</td></tr><tr data-t="fornitura di un service, di durata pari a 12 settimane, di noleggio compresa manutenzione e assistenza tecnica full risk all in on site di numero 1 mezzo mobile pet/ct, da destinare alla s.c. medicina nucleare dell&#39;azienda usl della valle d&#39;aosta, indicativamente dal 11 marzo 2024 al 2 giugno 2024. ">
+      <td class="small">2023-12-27</td>
+      <td>FORNITURA DI UN SERVICE, DI DURATA PARI A 12 SETTIMANE, DI NOLEGGIO COMPRESA MANUTENZIONE E ASSISTENZA TECNICA FULL RISK ALL IN ON SITE DI NUMERO 1 MEZZO MOBILE PET/CT, DA DESTINARE ALLA S.C. MEDICINA NUCLEARE DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA, INDICATIVAMENTE DAL 11 MARZO 2024 AL 2 GIUGNO 2024.<div class="small muted">CIG A04455C59B · APPARECCHI PER TOMOGRAFIA</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">309 mila €</td></tr><tr data-t="apalutamide 60mg 112cpr riv janssen cilag s.p.a.">
+      <td class="small">2025-08-28</td>
+      <td>APALUTAMIDE 60MG 112CPR RIV<div class="small muted">CIG B80E842E3E</div></td>
+      <td>JANSSEN CILAG S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">308 mila €</td></tr><tr data-t="canone per 300 turni previsti da 12 ore ciascuno pediacoop societa&#39; cooperativa">
+      <td class="small">2025-04-23</td>
+      <td>CANONE PER 300 TURNI PREVISTI DA 12 ORE CIASCUNO<div class="small muted">CIG B69B108CC8</div></td>
+      <td>PEDIACOOP SOCIETA&#39; COOPERATIVA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">306 mila €</td></tr><tr data-t="pavimenti pronto soccorso ">
+      <td class="small">2023-01-25</td>
+      <td>PAVIMENTI PRONTO SOCCORSO<div class="small muted">CIG 962124675D · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">303 mila €</td></tr><tr data-t="gara 2 operatore individuale (persona fisica)">
+      <td class="small">2025-04-03</td>
+      <td>GARA 2<div class="small muted">CIG B6563FAE4C</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">302 mila €</td></tr><tr data-t="gara 1 se.pi.an s.r.l.">
+      <td class="small">2025-04-03</td>
+      <td>GARA 1<div class="small muted">CIG B6563F9D79</div></td>
+      <td>SE.PI.AN S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">302 mila €</td></tr><tr data-t="offerta scotta srl">
+      <td class="small">2024-12-02</td>
+      <td>OFFERTA<div class="small muted">CIG B490E48DFB</div></td>
+      <td>SCOTTA SRL</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">301 mila €</td></tr><tr data-t="offerta peaquin s.r.l.">
+      <td class="small">2025-04-03</td>
+      <td>OFFERTA<div class="small muted">CIG B6561A2F29</div></td>
+      <td>PEAQUIN S.R.L.</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">301 mila €</td></tr><tr data-t="fornitura di un sistema di analisi del-le endotossine – lal test e relativo materiale di consumo per 650 test/annui ">
+      <td class="small">2024-11-05</td>
+      <td>FORNITURA DI UN SISTEMA DI ANALISI DEL-LE ENDOTOSSINE – LAL TEST E RELATIVO MATERIALE DI CONSUMO PER 650 TEST/ANNUI<div class="small muted">CIG B4181856D7 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">291 mila €</td></tr><tr data-t="bilevel st senza controllo di volume - lotto 1 - medigas ">
+      <td class="small">2024-01-01</td>
+      <td>BILEVEL ST SENZA CONTROLLO DI VOLUME - LOTTO 1 - MEDIGAS<div class="small muted">CIG A04D90A41B · APPARECCHI RESPIRATORI PER USO MEDICO</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">288 mila €</td></tr><tr data-t="sacche, sacchetti e buste ">
+      <td class="small">2023-10-18</td>
+      <td>SACCHE, SACCHETTI E BUSTE<div class="small muted">CIG A016D178EC · ARTICOLI DI VETRO PER LABORATORIO, USO IGIENICO O FARMACEUTICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">286 mila €</td></tr><tr data-t="sistemi per il controllo della glicemia a bassa tecnologia destinati ai pazienti della regione autonoma della valle d&#39;aosta-lotto n. 6-o.f. n. 1 abbott s.r.l.">
+      <td class="small">2025-02-18</td>
+      <td>SISTEMI PER IL CONTROLLO DELLA GLICEMIA A BASSA TECNOLOGIA DESTINATI AI PAZIENTI DELLA REGIONE AUTONOMA DELLA VALLE D&#39;AOSTA-LOTTO N. 6-O.F. N. 1<div class="small muted">CIG B5AF03B5DA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>ABBOTT S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">286 mila €</td></tr><tr data-t="kisqali 200 mg novartis farma spa">
+      <td class="small">2025-04-08</td>
+      <td>KISQALI 200 MG<div class="small muted">CIG B668B7CAA8</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">279 mila €</td></tr><tr data-t="ibrutinib 140 mg- 90 cps operatore individuale (persona fisica)">
+      <td class="small">2024-03-22</td>
+      <td>IBRUTINIB 140 MG- 90 CPS<div class="small muted">CIG B0F3CB58C0 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">279 mila €</td></tr><tr data-t="ago per anestesia iniezione retrobulbare / peribulbare optika s.r.l.">
+      <td class="small">2024-10-24</td>
+      <td>AGO PER ANESTESIA INIEZIONE RETROBULBARE / PERIBULBARE<div class="small muted">CIG B3F6670982 · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>OPTIKA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">277 mila €</td></tr><tr data-t="dapagliflozin 10mg 28cpr riv operatore individuale (persona fisica)">
+      <td class="small">2024-03-25</td>
+      <td>DAPAGLIFLOZIN 10MG 28CPR RIV<div class="small muted">CIG B0F57BE824 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">276 mila €</td></tr><tr data-t="alte tecnologie, installato general elettric presso radiologia, medicina nucleare, sedi territoriali e centri traumatologici sorat rappresentanze srl">
+      <td class="small">2024-07-29</td>
+      <td>ALTE TECNOLOGIE, INSTALLATO GENERAL ELETTRIC PRESSO RADIOLOGIA, MEDICINA NUCLEARE, SEDI TERRITORIALI E CENTRI TRAUMATOLOGICI<div class="small muted">CIG B29D6A7762 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI ATTREZZATURE MEDICO-CHIRURGICHE</div></td>
+      <td>SORAT RAPPRESENTANZE SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">271 mila €</td></tr><tr data-t="secukinumab sc 150 mg - soluz 2 pen operatore individuale (persona fisica)">
+      <td class="small">2024-03-27</td>
+      <td>SECUKINUMAB SC 150 MG - SOLUZ 2 PEN<div class="small muted">CIG B1007A61BB · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">260 mila €</td></tr><tr data-t="immunoglobulina umana normale (ig vena) ev - 5g/100 ml flac kedrion s.p.a.">
+      <td class="small">2025-03-12</td>
+      <td>IMMUNOGLOBULINA UMANA NORMALE (IG VENA) EV - 5G/100 ML FLAC<div class="small muted">CIG B602A5525C</div></td>
+      <td>KEDRION S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">259 mila €</td></tr><tr data-t="sacubitril + valsartan 24mg+26mg 28cpr riv novartis farma spa">
+      <td class="small">2025-06-06</td>
+      <td>SACUBITRIL + VALSARTAN 24MG+26MG 28CPR RIV<div class="small muted">CIG B72D7D8666</div></td>
+      <td>NOVARTIS FARMA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">259 mila €</td></tr><tr data-t="fornitura di materiale vario e accessori per ventilazione draeger italia s.p.a.">
+      <td class="small">2024-05-13</td>
+      <td>FORNITURA DI MATERIALE VARIO E ACCESSORI PER VENTILAZIONE<div class="small muted">CIG B19D8AF437 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>DRAEGER ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">259 mila €</td></tr><tr data-t="trastuzumab deruxtecan (enhertu) 1fl polv 100mg daiichi sankyo italia societa&#39; per azioni in forma abbreviata daiichi sankyo italia s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>TRASTUZUMAB DERUXTECAN (ENHERTU) 1FL POLV 100MG<div class="small muted">CIG B0FCCE87F9 · Cpv prevalente non disponibile</div></td>
+      <td>DAIICHI SANKYO ITALIA SOCIETA&#39; PER AZIONI IN FORMA ABBREVIATA DAIICHI SANKYO ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">259 mila €</td></tr><tr data-t="edoxaban 60 mg 28 cpr riv daiichi sankyo italia societa&#39; per azioni in forma abbreviata daiichi sankyo italia s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>EDOXABAN 60 MG 28 CPR RIV<div class="small muted">CIG B0FA739F02 · Cpv prevalente non disponibile</div></td>
+      <td>DAIICHI SANKYO ITALIA SOCIETA&#39; PER AZIONI IN FORMA ABBREVIATA DAIICHI SANKYO ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">258 mila €</td></tr><tr data-t="fornitura di un sistema completo per citologia vaginale ed extravaginale su strato sottile nell&#39;ambito del progetto di screening dei tumori femminili, da destinare al settore citologia della s.c. anatomia patologica dell&#39;azienda usl della valle d&#39;aosta becton, dickinson italia s.p.a.">
+      <td class="small">2023-06-22</td>
+      <td>FORNITURA DI UN SISTEMA COMPLETO PER CITOLOGIA VAGINALE ED EXTRAVAGINALE SU STRATO SOTTILE NELL&#39;AMBITO DEL PROGETTO DI SCREENING DEI TUMORI FEMMINILI, DA DESTINARE AL SETTORE CITOLOGIA DELLA S.C. ANATOMIA PATOLOGICA DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA<div class="small muted">CIG 98695881AC · SISTEMI DIAGNOSTICI</div></td>
+      <td>BECTON, DICKINSON ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">258 mila €</td></tr><tr data-t="soluz fisiologica 100 ml polietil. flac fresenius kabi italia s.r.l. in breve fki s.r.l.">
+      <td class="small">2024-11-04</td>
+      <td>SOLUZ FISIOLOGICA 100 ML POLIETIL. FLAC<div class="small muted">CIG B41A74804F · MEDICINALI VARI</div></td>
+      <td>FRESENIUS KABI ITALIA S.R.L. IN BREVE FKI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">256 mila €</td></tr><tr data-t="dispositivi e consumabili per fivet ">
+      <td class="small">2023-10-18</td>
+      <td>DISPOSITIVI E CONSUMABILI PER FIVET<div class="small muted">CIG A016D3E91B · ARTICOLI DI VETRO PER LABORATORIO, USO IGIENICO O FARMACEUTICO</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">252 mila €</td></tr><tr data-t="tirzepatide 5mg eli lilly italia - s.p.a.">
+      <td class="small">2025-04-24</td>
+      <td>TIRZEPATIDE 5MG<div class="small muted">CIG B69CDD83A9</div></td>
+      <td>ELI LILLY ITALIA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">252 mila €</td></tr><tr data-t="datscan iniet 185mbq/2,5ml fl ge healthcare s.r.l.">
+      <td class="small">2025-11-28</td>
+      <td>DATSCAN INIET 185MBQ/2,5ML FL<div class="small muted">CIG B950A55510</div></td>
+      <td>GE HEALTHCARE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">252 mila €</td></tr><tr data-t="offerta ">
+      <td class="small">2025-11-28</td>
+      <td>OFFERTA<div class="small muted">CIG B94C513DCB</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">250 mila €</td></tr><tr data-t="offerta ">
+      <td class="small">2025-11-27</td>
+      <td>OFFERTA<div class="small muted">CIG B9434A4D0F</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">250 mila €</td></tr><tr data-t="lotto 13 - fornitura di set per posizionamento di catetere per via periferica (mini midline) ">
+      <td class="small">2024-11-26</td>
+      <td>LOTTO 13 - FORNITURA DI SET PER POSIZIONAMENTO DI CATETERE PER VIA PERIFERICA (MINI MIDLINE)<div class="small muted">CIG A06B52DFBA · STRUMENTI PER ANESTESIA E RIANIMAZIONE</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">250 mila €</td></tr><tr data-t="ustekinumab sc 90 mg - 1 sir operatore individuale (persona fisica)">
+      <td class="small">2024-03-25</td>
+      <td>USTEKINUMAB SC 90 MG - 1 SIR<div class="small muted">CIG B0F5B54DB1 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">248 mila €</td></tr><tr data-t="dapagliflozin 10mg 28cpr riv astrazeneca s.p.a.">
+      <td class="small">2025-05-08</td>
+      <td>DAPAGLIFLOZIN 10MG 28CPR RIV<div class="small muted">CIG B6C5D8AC74</div></td>
+      <td>ASTRAZENECA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">242 mila €</td></tr><tr data-t="baricitinib 4 mg - 28 cpr riv eli lilly italia - s.p.a.">
+      <td class="small">2024-03-27</td>
+      <td>BARICITINIB 4 MG - 28 CPR RIV<div class="small muted">CIG B10448C301 · Cpv prevalente non disponibile</div></td>
+      <td>ELI LILLY ITALIA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">242 mila €</td></tr><tr data-t="rivaroxaban 15 mg - 42 cpr riv bayer s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>RIVAROXABAN 15 MG - 42 CPR RIV<div class="small muted">CIG B0FBB632D7 · Cpv prevalente non disponibile</div></td>
+      <td>BAYER S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">242 mila €</td></tr><tr data-t="perismofven 1448 ml - 4 sacche ternarie per infusione periferica fresenius kabi italia s.r.l. in breve fki s.r.l.">
+      <td class="small">2023-03-22</td>
+      <td>PERISMOFVEN 1448 ML - 4 SACCHE TERNARIE PER INFUSIONE PERIFERICA<div class="small muted">CIG 9741357619 · PRODOTTI PER ALIMENTAZIONE PARENTERALE</div></td>
+      <td>FRESENIUS KABI ITALIA S.R.L. IN BREVE FKI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">241 mila €</td></tr><tr data-t="dupilumab 300mg/2ml (derm. atopica adulti) sc - 2 pen sanofi s.r.l.">
+      <td class="small">2024-03-25</td>
+      <td>DUPILUMAB 300MG/2ML (DERM. ATOPICA ADULTI) SC - 2 PEN<div class="small muted">CIG B0F5DB4371 · Cpv prevalente non disponibile</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">241 mila €</td></tr><tr data-t="denosumab (prolia) 60mg/1ml sc - 1 sir amgen s.r.l.">
+      <td class="small">2024-03-22</td>
+      <td>DENOSUMAB (PROLIA) 60MG/1ML SC - 1 SIR<div class="small muted">CIG B0F40E6E36 · Cpv prevalente non disponibile</div></td>
+      <td>AMGEN S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">241 mila €</td></tr><tr data-t="nintedanib 150 mg - 60 cps molli boehringer ingelheim italia - s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>NINTEDANIB 150 MG - 60 CPS MOLLI<div class="small muted">CIG B0FE7B8853 · Cpv prevalente non disponibile</div></td>
+      <td>BOEHRINGER INGELHEIM ITALIA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">240 mila €</td></tr><tr data-t="licenze aggiuntive microsoft tim s.p.a.">
+      <td class="small">2023-12-20</td>
+      <td>LICENZE AGGIUNTIVE MICROSOFT<div class="small muted">CIG A0405473C6 · PACCHETTI SOFTWARE IT</div></td>
+      <td>TIM S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">240 mila €</td></tr><tr data-t="metano agsm aim energia s.p.a.">
+      <td class="small">2024-09-06</td>
+      <td>METANO<div class="small muted">CIG B2F5AA912C · ELETTRICITÀ, RISCALDAMENTO, ENERGIA SOLARE E NUCLEARE</div></td>
+      <td>AGSM AIM ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">240 mila €</td></tr><tr data-t="dupilumab 300mg/2ml (dupixent) sc - 2 sir sanofi s.r.l.">
+      <td class="small">2024-03-25</td>
+      <td>DUPILUMAB 300MG/2ML (DUPIXENT) SC - 2 SIR<div class="small muted">CIG B0F5CE589D · Cpv prevalente non disponibile</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">239 mila €</td></tr><tr data-t="dupilumab 300mg/2ml (derm. atopica adulti - rinite/poliposi) sc - 2 pen sanofi s.r.l.">
+      <td class="small">2025-03-12</td>
+      <td>DUPILUMAB 300MG/2ML (DERM. ATOPICA ADULTI - RINITE/POLIPOSI) SC - 2 PEN<div class="small muted">CIG B602DE9643</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">239 mila €</td></tr><tr data-t="dupilumab 300mg/2ml (derm/asma/rinite/esofag/prur) sc - 2 pen sanofi s.r.l.">
+      <td class="small">2025-08-04</td>
+      <td>DUPILUMAB 300MG/2ML (DERM/ASMA/RINITE/ESOFAG/PRUR) SC - 2 PEN<div class="small muted">CIG B7E20BD425</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">238 mila €</td></tr><tr data-t="palbociclib 125 mg - 21cps pfizer s.r.l.">
+      <td class="small">2024-03-22</td>
+      <td>PALBOCICLIB 125 MG - 21CPS<div class="small muted">CIG B0F3BDF827 · Cpv prevalente non disponibile</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">238 mila €</td></tr><tr data-t="fornitura quadriennale di sensori per ossimetria neonatale da destinare a strutture varie dell&#39;azienda usl della valle d&#39;aosta medtronic italia s.p.a.">
+      <td class="small">2023-06-09</td>
+      <td>FORNITURA QUADRIENNALE DI SENSORI PER OSSIMETRIA NEONATALE DA DESTINARE A STRUTTURE VARIE DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA<div class="small muted">CIG 978032210A · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>MEDTRONIC ITALIA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">237 mila €</td></tr><tr data-t="pnrr m6c2 i 1.3.1 (b) affidamento diretto ad inva spa del potenziamento dell&#39;infrastruttura fse cup b65f23000140006 finanziato dall&#39;ue nextgenerationeu inva spa">
+      <td class="small">2025-03-04</td>
+      <td>PNRR M6C2 I 1.3.1 (B) AFFIDAMENTO DIRETTO AD INVA SPA DEL POTENZIAMENTO DELL&#39;INFRASTRUTTURA FSE CUP B65F23000140006 FINANZIATO DALL&#39;UE NEXTGENERATIONEU<div class="small muted">CIG B5E0F7D75D</div></td>
+      <td>INVA SPA</td>
+      <td class="small neg">Affidamento diretto A SOCIETA&#39; IN HOUSE</td>
+      <td class="num">235 mila €</td></tr><tr data-t="service di un sistema diagnostico per cromatografia liquida ad alta prestazione (nplc) atto alla determinazione di hba1c, hbf, hba2 e varianti emoglobiniche tosoh bioscience srl">
+      <td class="small">2024-09-13</td>
+      <td>SERVICE DI UN SISTEMA DIAGNOSTICO PER CROMATOGRAFIA LIQUIDA AD ALTA PRESTAZIONE (NPLC) ATTO ALLA DETERMINAZIONE DI HBA1C, HBF, HBA2 E VARIANTI EMOGLOBINICHE<div class="small muted">CIG B304296551 · SISTEMI DIAGNOSTICI</div></td>
+      <td>TOSOH BIOSCIENCE SRL</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">234 mila €</td></tr><tr data-t="lanadelumab (takhzyro) 300 mg sc siringa preriempita takeda italia s.p.a.">
+      <td class="small">2025-07-24</td>
+      <td>LANADELUMAB (TAKHZYRO) 300 MG SC SIRINGA PRERIEMPITA<div class="small muted">CIG B7C39E1F40</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">234 mila €</td></tr><tr data-t="smofkabiven 1477ml c/el - sacca ternaria x vena centrale fresenius kabi italia s.r.l. in breve fki s.r.l.">
+      <td class="small">2023-03-22</td>
+      <td>SMOFKABIVEN 1477ML C/EL - SACCA TERNARIA X VENA CENTRALE<div class="small muted">CIG 9741453552 · PRODOTTI PER ALIMENTAZIONE PARENTERALE</div></td>
+      <td>FRESENIUS KABI ITALIA S.R.L. IN BREVE FKI S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">233 mila €</td></tr><tr data-t="pertuzumab + trastuzumab *sc 1f 10ml 600mg+600mg roche societa&#39; per azioni">
+      <td class="small">2024-03-25</td>
+      <td>PERTUZUMAB + TRASTUZUMAB *SC 1F 10ML 600MG+600MG<div class="small muted">CIG B0F83EDE44 · Cpv prevalente non disponibile</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">232 mila €</td></tr><tr data-t="edoxaban 30 mg 28 cpr riv daiichi sankyo italia societa&#39; per azioni in forma abbreviata daiichi sankyo italia s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>EDOXABAN 30 MG 28 CPR RIV<div class="small muted">CIG B0FA5AB694 · Cpv prevalente non disponibile</div></td>
+      <td>DAIICHI SANKYO ITALIA SOCIETA&#39; PER AZIONI IN FORMA ABBREVIATA DAIICHI SANKYO ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">231 mila €</td></tr><tr data-t="sistemi diagnostici per la ricerca del sangue occulto nelle feci dasit spa">
+      <td class="small">2024-09-13</td>
+      <td>SISTEMI DIAGNOSTICI PER LA RICERCA DEL SANGUE OCCULTO NELLE FECI<div class="small muted">CIG B30429547E · SISTEMI DIAGNOSTICI</div></td>
+      <td>DASIT SPA</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">227 mila €</td></tr><tr data-t="gara_inva_gas_medicinali_lotto_1_sico_spa sico societa&#39; italiana carburo ossigeno s.p.a.">
+      <td class="small">2025-09-16</td>
+      <td>GARA_INVA_GAS_MEDICINALI_LOTTO_1_SICO_SPA<div class="small muted">CIG B8417E866A</div></td>
+      <td>SICO SOCIETA&#39; ITALIANA CARBURO OSSIGENO S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">225 mila €</td></tr><tr data-t="lente intraoculare monopezzo idrofilica acrilica con diametro ottico di almeno 6,5 mm, diametro totale dell&#39;impianto di almeno 14,00 mm, con superficie anteriore convessa e posteriore concava, con range ottico da – 10 d a + 10 d (con incrementi di 0,5 d), rayner italia s.r.l.">
+      <td class="small">2024-10-24</td>
+      <td>LENTE INTRAOCULARE MONOPEZZO IDROFILICA ACRILICA CON DIAMETRO OTTICO DI ALMENO 6,5 MM, DIAMETRO TOTALE DELL&#39;IMPIANTO DI ALMENO 14,00 MM, CON SUPERFICIE ANTERIORE CONVESSA E POSTERIORE CONCAVA, CON RANGE OTTICO DA – 10 D A + 10 D (CON INCREMENTI DI 0,5 D),<div class="small muted">CIG B3F666D709 · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>RAYNER ITALIA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">224 mila €</td></tr><tr data-t="pertuzumab + trastuzumab *sc 1f 10ml 600mg+600mg (mantenimento) roche societa&#39; per azioni">
+      <td class="small">2025-03-21</td>
+      <td>PERTUZUMAB + TRASTUZUMAB *SC 1F 10ML 600MG+600MG (MANTENIMENTO)<div class="small muted">CIG B627A94F00</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">224 mila €</td></tr><tr data-t="eculizumab (soliris) 300mg/30ml ev flc amgen s.r.l.">
+      <td class="small">2024-03-23</td>
+      <td>ECULIZUMAB (SOLIRIS) 300MG/30ML EV FLC<div class="small muted">CIG B0F4A0DBB8 · Cpv prevalente non disponibile</div></td>
+      <td>AMGEN S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">224 mila €</td></tr><tr data-t="trattamenti di dialisi peritoneale automatizzata (capd) fresenius medical care italia spa">
+      <td class="small">2025-09-18</td>
+      <td>TRATTAMENTI DI DIALISI PERITONEALE AUTOMATIZZATA (CAPD)<div class="small muted">CIG B84CCC78DB · APPARECCHI PER EMODIALISI</div></td>
+      <td>FRESENIUS MEDICAL CARE ITALIA SPA</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">223 mila €</td></tr><tr data-t="secukinumab (cosentyx) sc 300 mg - 1 pen operatore individuale (persona fisica)">
+      <td class="small">2024-03-27</td>
+      <td>SECUKINUMAB (COSENTYX) SC 300 MG - 1 PEN<div class="small muted">CIG B101498088 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">223 mila €</td></tr><tr data-t="vacc. meningococco b dai 10 anni (bexsero) im 1sir glaxosmithkline s.p.a.">
+      <td class="small">2025-02-03</td>
+      <td>VACC. MENINGOCOCCO B DAI 10 ANNI (BEXSERO) IM 1SIR<div class="small muted">CIG B576F6C3F8 · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">222 mila €</td></tr><tr data-t="sistemi per il controllo della glicemia a bassa tecnologia destinati ai pazienti della regione autonoma della valle d&#39;aosta- lotto n. 6 - o.f. n. 2 roche diabetes care italy s.p.a.">
+      <td class="small">2025-02-26</td>
+      <td>SISTEMI PER IL CONTROLLO DELLA GLICEMIA A BASSA TECNOLOGIA DESTINATI AI PAZIENTI DELLA REGIONE AUTONOMA DELLA VALLE D&#39;AOSTA- LOTTO N. 6 - O.F. N. 2<div class="small muted">CIG B5D2FA2C20 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>ROCHE DIABETES CARE ITALY S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">220 mila €</td></tr><tr data-t="software farmaci antineoplastici ">
+      <td class="small">2025-05-23</td>
+      <td>SOFTWARE FARMACI ANTINEOPLASTICI<div class="small muted">CIG B6FA990F0E</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">219 mila €</td></tr><tr data-t="omalizumab 150 mg/1ml - sc (xolair) - 1 fiala-siringa operatore individuale (persona fisica)">
+      <td class="small">2024-03-26</td>
+      <td>OMALIZUMAB 150 MG/1ML - SC (XOLAIR) - 1 FIALA-SIRINGA<div class="small muted">CIG B0FDF4C524 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">219 mila €</td></tr><tr data-t="lotto 8 - guanti non chirurgici non sterili in vinile elasticizzato bericah s.p.a.">
+      <td class="small">2025-01-20</td>
+      <td>LOTTO 8 - GUANTI NON CHIRURGICI NON STERILI IN VINILE ELASTICIZZATO<div class="small muted">CIG A066E88387 · MATERIALI MEDICI</div></td>
+      <td>BERICAH S.P.A.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">218 mila €</td></tr><tr data-t="acquisto giornate di manutenzione evolutiva piattaforma trakcare intersystems italia srl">
+      <td class="small">2023-12-05</td>
+      <td>ACQUISTO GIORNATE DI MANUTENZIONE EVOLUTIVA PIATTAFORMA TRAKCARE<div class="small muted">CIG A0409B4ABF · SERVIZI DI ASSISTENZA INFORMATICA E DI SUPPORTO</div></td>
+      <td>INTERSYSTEMS ITALIA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">218 mila €</td></tr><tr data-t="cage intersomatiche lombari posteriori johnson &amp; johnson medical s.p.a.">
+      <td class="small">2024-12-27</td>
+      <td>CAGE INTERSOMATICHE LOMBARI POSTERIORI<div class="small muted">CIG B4FB1611C5 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>JOHNSON &amp; JOHNSON MEDICAL S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">216 mila €</td></tr><tr data-t="fornitura triennale di un service comprensivo di laser chirurgico modello olmio, manutenzione e assistenza tecnica full risk all in on site, e relativo materiale di consumo da destinare alla s.c. urologia dell&#39;azienda usl della valle d&#39;aosta. ">
+      <td class="small">2025-05-30</td>
+      <td>FORNITURA TRIENNALE DI UN SERVICE COMPRENSIVO DI LASER CHIRURGICO MODELLO OLMIO, MANUTENZIONE E ASSISTENZA TECNICA FULL RISK ALL IN ON SITE, E RELATIVO MATERIALE DI CONSUMO DA DESTINARE ALLA S.C. UROLOGIA DELL&#39;AZIENDA USL DELLA VALLE D&#39;AOSTA.<div class="small muted">CIG B7153230FB · APPARECCHI PER CONTROLLI UROLOGICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">216 mila €</td></tr><tr data-t="medicazione sterile in fibre gelificanti a base di cellulosa e argento senza alginato 10 x 10 cm circa convatec italia s.r.l.">
+      <td class="small">2024-05-06</td>
+      <td>MEDICAZIONE STERILE IN FIBRE GELIFICANTI A BASE DI CELLULOSA E ARGENTO SENZA ALGINATO 10 X 10 CM CIRCA<div class="small muted">CIG B186E03AEA · Cpv prevalente non disponibile</div></td>
+      <td>CONVATEC ITALIA S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">216 mila €</td></tr><tr data-t="dostarlimab (jemperli) 50mg/ml 10ml ev 1fl glaxosmithkline s.p.a.">
+      <td class="small">2024-10-21</td>
+      <td>DOSTARLIMAB (JEMPERLI) 50MG/ML 10ML EV 1FL<div class="small muted">CIG B3E5F1ED03 · MEDICINALI VARI</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">216 mila €</td></tr><tr data-t="iodixanolo (visipaque) 320 500ml 1flc ge healthcare s.r.l.">
+      <td class="small">2024-06-18</td>
+      <td>IODIXANOLO (VISIPAQUE) 320 500ML 1FLC<div class="small muted">CIG B223936C83 · MEDICINALI VARI</div></td>
+      <td>GE HEALTHCARE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">214 mila €</td></tr><tr data-t="sistema monouso di derivazione ecg universale per la verifica del posizionamento di cateteri venosi centrali seda s.p.a.">
+      <td class="small">2025-03-05</td>
+      <td>SISTEMA MONOUSO DI DERIVAZIONE ECG UNIVERSALE PER LA VERIFICA DEL POSIZIONAMENTO DI CATETERI VENOSI CENTRALI<div class="small muted">CIG B5E5C67013 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>SEDA S.P.A.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">211 mila €</td></tr><tr data-t="fornitura e servizio smaltimento consumabili di stampa eco laser informatica - s.r.l.">
+      <td class="small">2023-03-31</td>
+      <td>FORNITURA E SERVIZIO SMALTIMENTO CONSUMABILI DI STAMPA<div class="small muted">CIG 9711200FBE · TONER PER STAMPANTI LASER/APPARECCHI FAX</div></td>
+      <td>ECO LASER INFORMATICA - S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">210 mila €</td></tr><tr data-t="gara lenti intraoculari lotto 4 ">
+      <td class="small">2023-05-24</td>
+      <td>GARA LENTI INTRAOCULARI LOTTO 4<div class="small muted">CIG 980257197C · PRODOTTI PER LA CURA DEGLI OCCHI E LENTI CORRETTRICI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">210 mila €</td></tr><tr data-t="adesione convenzione consip per l&#39;affidamento dei servizi relativi alla gestione integrata della salute sui luoghi di lavoro ">
+      <td class="small">2023-09-25</td>
+      <td>ADESIONE CONVENZIONE CONSIP PER L&#39;AFFIDAMENTO DEI SERVIZI RELATIVI ALLA GESTIONE INTEGRATA DELLA SALUTE SUI LUOGHI DI LAVORO<div class="small muted">CIG A01E0A331E · SERVIZI DI CONSULENZA SANITARIA E DI SICUREZZA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">210 mila €</td></tr><tr data-t="canone annuale onnicomprensivo prt group s.p.a. o brevemente prt s.p.a.">
+      <td class="small">2024-12-31</td>
+      <td>CANONE ANNUALE ONNICOMPRENSIVO<div class="small muted">CIG B50EF37B1B</div></td>
+      <td>PRT GROUP S.P.A. O BREVEMENTE PRT S.P.A.</td>
+      <td class="small">PROCEDURA NEGOZIATA CON PREVIA INDIZIONE DI GARA (SETTORI SPECIALI)</td>
+      <td class="num">210 mila €</td></tr><tr data-t="fornitura triennale di ureterorenoscopi monouso flessibili digitali ">
+      <td class="small">2025-05-21</td>
+      <td>FORNITURA TRIENNALE DI URETERORENOSCOPI MONOUSO FLESSIBILI DIGITALI<div class="small muted">CIG B6F7A9493E</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">210 mila €</td></tr><tr data-t="prodotti per igiene e assistenza paziente ">
+      <td class="small">2025-12-19</td>
+      <td>PRODOTTI PER IGIENE E ASSISTENZA PAZIENTE<div class="small muted">CIG B9B0BFEFE1 · PROFUMI, ARTICOLI DI TOLETTA E PRESERVATIVI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">210 mila €</td></tr><tr data-t="faricimab 1fl 120mg/ml 0,24ml roche societa&#39; per azioni">
+      <td class="small">2025-05-05</td>
+      <td>FARICIMAB 1FL 120MG/ML 0,24ML<div class="small muted">CIG B6B6B0AE6A</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">210 mila €</td></tr><tr data-t="offerta ">
+      <td class="small">2025-03-29</td>
+      <td>OFFERTA<div class="small muted">CIG B643C3BF9A</div></td>
+      <td>—</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">209 mila €</td></tr><tr data-t="risdiplam (evrysdi) 0,75mg/ml 60mg/80ml flc+4sir roche societa&#39; per azioni">
+      <td class="small">2025-03-27</td>
+      <td>RISDIPLAM (EVRYSDI) 0,75MG/ML 60MG/80ML FLC+4SIR<div class="small muted">CIG B63C04DA7C</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">208 mila €</td></tr><tr data-t="manutenzione ascensori ">
+      <td class="small">2023-02-28</td>
+      <td>MANUTENZIONE ASCENSORI<div class="small muted">CIG 96821223D5 · SERVIZI DI MANUTENZIONE DI ASCENSORI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">208 mila €</td></tr><tr data-t="lavori vari sedi territoriali - fomdi fosmit ">
+      <td class="small">2023-02-21</td>
+      <td>LAVORI VARI SEDI TERRITORIALI - FOMDI FOSMIT<div class="small muted">CIG 9670788AB6 · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">204 mila €</td></tr><tr data-t="empagliflozin 10 mg 28cpr riv boehringer ingelheim italia - s.p.a.">
+      <td class="small">2024-11-11</td>
+      <td>EMPAGLIFLOZIN 10 MG 28CPR RIV<div class="small muted">CIG B4360D0D40 · MEDICINALI VARI</div></td>
+      <td>BOEHRINGER INGELHEIM ITALIA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">204 mila €</td></tr><tr data-t="fornitura di n. 1 angio oct da destinare alla s.c oclustica - azienda usl valle d&#39;aosta vedi vision - societa&#39; a responsabilita&#39; limitata">
+      <td class="small">2024-07-26</td>
+      <td>FORNITURA DI N. 1 ANGIO OCT DA DESTINARE ALLA S.C OCLUSTICA - AZIENDA USL VALLE D&#39;AOSTA<div class="small muted">CIG B29AFB430F</div></td>
+      <td>VEDI VISION - SOCIETA&#39; A RESPONSABILITA&#39; LIMITATA</td>
+      <td class="small neg">Negoziata senza bando</td>
+      <td class="num">204 mila €</td></tr><tr data-t="ausili per incontinenza fornitura ospedlaiera lotto 1 ">
+      <td class="small">2023-07-07</td>
+      <td>AUSILI PER INCONTINENZA FORNITURA OSPEDLAIERA LOTTO 1<div class="small muted">CIG 988053074A · PRODOTTI PER L&#39;INCONTINENZA</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">200 mila €</td></tr><tr data-t="comunicatori oculari - lotto 9/1c - vivisol ">
+      <td class="small">2024-04-19</td>
+      <td>COMUNICATORI OCULARI - LOTTO 9/1C - VIVISOL<div class="small muted">CIG A05A7858BA · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">200 mila €</td></tr><tr data-t="metano agsm aim energia s.p.a.">
+      <td class="small">2024-09-24</td>
+      <td>METANO<div class="small muted">CIG B328BE043F · EROGAZIONE DI GAS</div></td>
+      <td>AGSM AIM ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">200 mila €</td></tr><tr data-t="metano agsm aim energia s.p.a.">
+      <td class="small">2024-09-24</td>
+      <td>METANO<div class="small muted">CIG B327A9D592 · EROGAZIONE DI GAS</div></td>
+      <td>AGSM AIM ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">200 mila €</td></tr><tr data-t="metano agsm aim energia s.p.a.">
+      <td class="small">2024-09-02</td>
+      <td>METANO<div class="small muted">CIG B2E6C5EBE4 · GAS NATURALE</div></td>
+      <td>AGSM AIM ENERGIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">200 mila €</td></tr><tr data-t="prodotti per pulizia superfici ">
+      <td class="small">2025-12-19</td>
+      <td>PRODOTTI PER PULIZIA SUPERFICI<div class="small muted">CIG B9B0BFCE3B · PRODOTTI PER LA PULIZIA</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">200 mila €</td></tr><tr data-t="insulina glargine-toujeo 300ui/ml 1,5ml- 3 pen sanofi s.r.l.">
+      <td class="small">2024-03-22</td>
+      <td>INSULINA GLARGINE-TOUJEO 300UI/ML 1,5ML- 3 PEN<div class="small muted">CIG B0F446A4ED · Cpv prevalente non disponibile</div></td>
+      <td>SANOFI S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">199 mila €</td></tr><tr data-t="sacituzumab govitecan 200mg gilead sciences s.r.l.">
+      <td class="small">2025-01-27</td>
+      <td>SACITUZUMAB GOVITECAN 200MG<div class="small muted">CIG B55BE3C9B0 · MEDICINALI VARI</div></td>
+      <td>GILEAD SCIENCES S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">198 mila €</td></tr><tr data-t="acquisto postazioni di lavoro informatiche operatore individuale (persona fisica)">
+      <td class="small">2024-06-26</td>
+      <td>ACQUISTO POSTAZIONI DI LAVORO INFORMATICHE<div class="small muted">CIG B23E5D9568 · PARTI DI COMPUTER</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">198 mila €</td></tr><tr data-t="mepolizumab (nucala) sc 100mg 1 pen glaxosmithkline s.p.a.">
+      <td class="small">2024-03-27</td>
+      <td>MEPOLIZUMAB (NUCALA) SC 100MG 1 PEN<div class="small muted">CIG B1014EA432 · Cpv prevalente non disponibile</div></td>
+      <td>GLAXOSMITHKLINE S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">198 mila €</td></tr><tr data-t="esketamina 28mg/0,2ml spray nasale 1flc operatore individuale (persona fisica)">
+      <td class="small">2024-03-25</td>
+      <td>ESKETAMINA 28MG/0,2ML SPRAY NASALE 1FLC<div class="small muted">CIG B0F6026807 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">197 mila €</td></tr><tr data-t="alfa 1 antitripsina (prolastin) ev 1g/40ml - 1 flac grifols italia s.p.a.">
+      <td class="small">2024-03-27</td>
+      <td>ALFA 1 ANTITRIPSINA (PROLASTIN) EV 1G/40ML - 1 FLAC<div class="small muted">CIG B102A05EE1 · Cpv prevalente non disponibile</div></td>
+      <td>GRIFOLS ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">197 mila €</td></tr><tr data-t="dolutegravir + lamivudina (dovato) 50 + 300 mg - 30 cpr riv viiv healthcare s.r.l.">
+      <td class="small">2024-03-26</td>
+      <td>DOLUTEGRAVIR + LAMIVUDINA (DOVATO) 50 + 300 MG - 30 CPR RIV<div class="small muted">CIG B0FE89F6F4 · Cpv prevalente non disponibile</div></td>
+      <td>VIIV HEALTHCARE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">196 mila €</td></tr><tr data-t="iomeron 350_100ml bracco imaging s.p.a.">
+      <td class="small">2025-03-31</td>
+      <td>IOMERON 350_100ML<div class="small muted">CIG B645D45361</div></td>
+      <td>BRACCO IMAGING S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">195 mila €</td></tr><tr data-t="adesione gara sardegna – lotto 9 - microinfusore per insulina con catetere ypsomed italia srl">
+      <td class="small">2024-10-04</td>
+      <td>ADESIONE GARA SARDEGNA – LOTTO 9 - MICROINFUSORE PER INSULINA CON CATETERE<div class="small muted">CIG B351FCFC69 · PRESIDI DIAGNOSTICI</div></td>
+      <td>YPSOMED ITALIA SRL</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">195 mila €</td></tr><tr data-t="lavori di adeguamento antincendio delle scale protette immobiliare triolet srl">
+      <td class="small">2023-09-06</td>
+      <td>LAVORI DI ADEGUAMENTO ANTINCENDIO DELLE SCALE PROTETTE<div class="small muted">CIG A00B9E7A26 · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>IMMOBILIARE TRIOLET SRL</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">195 mila €</td></tr><tr data-t="luspatercept (reblozyl) - sc 75 mg - 1 fl polv bristol-myers squibb s.r.l.">
+      <td class="small">2024-04-17</td>
+      <td>LUSPATERCEPT (REBLOZYL) - SC 75 MG - 1 FL POLV<div class="small muted">CIG B14E56AB87 · Cpv prevalente non disponibile</div></td>
+      <td>BRISTOL-MYERS SQUIBB S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">194 mila €</td></tr><tr data-t="palbociclib 100 mg - 21cps pfizer s.r.l.">
+      <td class="small">2024-03-22</td>
+      <td>PALBOCICLIB 100 MG - 21CPS<div class="small muted">CIG B0F3B35BDC · Cpv prevalente non disponibile</div></td>
+      <td>PFIZER S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">193 mila €</td></tr><tr data-t="dabigatran 110 mg - 60 cps boehringer ingelheim italia - s.p.a.">
+      <td class="small">2024-03-26</td>
+      <td>DABIGATRAN 110 MG - 60 CPS<div class="small muted">CIG B0FE004CF9 · Cpv prevalente non disponibile</div></td>
+      <td>BOEHRINGER INGELHEIM ITALIA - S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">193 mila €</td></tr><tr data-t="ofatumumab (kesimpta) sc 1pen 20mg 0,4ml operatore individuale (persona fisica)">
+      <td class="small">2024-03-27</td>
+      <td>OFATUMUMAB (KESIMPTA) SC 1PEN 20MG 0,4ML<div class="small muted">CIG B1016B8174 · Cpv prevalente non disponibile</div></td>
+      <td>Operatore individuale (persona fisica)</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">192 mila €</td></tr><tr data-t="evrysdi 0,75 mg/ml polvere per soluzione orale 1 flacone da 60 mg roche societa&#39; per azioni">
+      <td class="small">2024-03-25</td>
+      <td>EVRYSDI 0,75 MG/ML POLVERE PER SOLUZIONE ORALE 1 FLACONE DA 60 MG<div class="small muted">CIG B0F846514F · Cpv prevalente non disponibile</div></td>
+      <td>ROCHE SOCIETA&#39; PER AZIONI</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">191 mila €</td></tr><tr data-t="vedolizumab (entyvio) iv 300mg - 1 fl takeda italia s.p.a.">
+      <td class="small">2024-03-22</td>
+      <td>VEDOLIZUMAB (ENTYVIO) IV 300MG - 1 FL<div class="small muted">CIG B0F384A36D · Cpv prevalente non disponibile</div></td>
+      <td>TAKEDA ITALIA S.P.A.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">191 mila €</td></tr><tr data-t="fornitura di un morcellatore completo di n. 2 set per morcellazione ed enucleazione e relativo materiale di consumo per 120 procedure da destinare alla struttura di urologia dell&#39;azienda u.s.l. della regione valle d&#39;aosta. ">
+      <td class="small">2023-05-03</td>
+      <td>FORNITURA DI UN MORCELLATORE COMPLETO DI N. 2 SET PER MORCELLAZIONE ED ENUCLEAZIONE E RELATIVO MATERIALE DI CONSUMO PER 120 PROCEDURE DA DESTINARE ALLA STRUTTURA DI UROLOGIA DELL&#39;AZIENDA U.S.L. DELLA REGIONE VALLE D&#39;AOSTA.<div class="small muted">CIG 974489099E · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">189 mila €</td></tr><tr data-t="risankizumab (skyrizi) 150 mg 1 sir abbvie s.r.l.">
+      <td class="small">2024-03-21</td>
+      <td>RISANKIZUMAB (SKYRIZI) 150 MG 1 SIR<div class="small muted">CIG B0ED66C037 · Cpv prevalente non disponibile</div></td>
+      <td>ABBVIE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">188 mila €</td></tr><tr data-t="vaccino pneumococcico polisaccaridico coniugato 20-valente ">
+      <td class="small">2023-12-07</td>
+      <td>VACCINO PNEUMOCOCCICO POLISACCARIDICO CONIUGATO 20-VALENTE<div class="small muted">CIG A047FFD76C · VACCINI</div></td>
+      <td>—</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">186 mila €</td></tr><tr data-t="acquisto pc small form factor italware - s.r.l.">
+      <td class="small">2023-07-04</td>
+      <td>ACQUISTO PC SMALL FORM FACTOR<div class="small muted">CIG 99292536C8 · COMPUTER MODELLO DESKTOP</div></td>
+      <td>ITALWARE - S.R.L.</td>
+      <td class="small">Affid. diretto (accordo quadro)</td>
+      <td class="num">186 mila €</td></tr><tr data-t="gestione manutentiva e logistica distributiva ausili per disabili actem s.r.l.">
+      <td class="small">2023-05-25</td>
+      <td>GESTIONE MANUTENTIVA E LOGISTICA DISTRIBUTIVA AUSILI PER DISABILI<div class="small muted">CIG 9862248881 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI APPARECCHIATURE DI MISURAZIONE, COLLAUDO E PROVA</div></td>
+      <td>ACTEM S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">186 mila €</td></tr><tr data-t="fornitura di protesi urogenitali dbi s.r.l.">
+      <td class="small">2023-02-07</td>
+      <td>FORNITURA DI PROTESI UROGENITALI<div class="small muted">CIG 9642347C74 · PROTESI CHIRURGICHE</div></td>
+      <td>DBI S.R.L.</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">186 mila €</td></tr><tr data-t="sistemi di colorazione vetrini e materiale di con-sumo da assegnare in dotazione alla s.c. analisi cliniche va.ni.ca s.r.l.">
+      <td class="small">2024-11-21</td>
+      <td>SISTEMI DI COLORAZIONE VETRINI E MATERIALE DI CON-SUMO DA ASSEGNARE IN DOTAZIONE ALLA S.C. ANALISI CLINICHE<div class="small muted">CIG B45924F9BB · APPARECCHI DIAGNOSTICI</div></td>
+      <td>VA.NI.CA S.R.L.</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">183 mila €</td></tr><tr data-t="lavori manutenzione verres ">
+      <td class="small">2023-04-13</td>
+      <td>LAVORI MANUTENZIONE VERRES<div class="small muted">CIG 97713851FE · ALTRI LAVORI DI COMPLETAMENTO DI EDIFICI</div></td>
+      <td>—</td>
+      <td class="small">PROCEDURA NEGOZIATA PER AFFIDAMENTI SOTTO SOGLIA</td>
+      <td class="num">182 mila €</td></tr><tr data-t="risankizumab (skyrizi) 150 mg 1 pen abbvie s.r.l.">
+      <td class="small">2024-10-10</td>
+      <td>RISANKIZUMAB (SKYRIZI) 150 MG 1 PEN<div class="small muted">CIG B36502D862 · MEDICINALI VARI</div></td>
+      <td>ABBVIE S.R.L.</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">181 mila €</td></tr><tr data-t="catetere venoso periferico, impiantabile con accesso brachiale, power injection, 2-3-4 fr monolume ">
+      <td class="small">2025-03-05</td>
+      <td>CATETERE VENOSO PERIFERICO, IMPIANTABILE CON ACCESSO BRACHIALE, POWER INJECTION, 2-3-4 FR MONOLUME<div class="small muted">CIG B5E5C59484 · DISPOSITIVI E PRODOTTI MEDICI VARI</div></td>
+      <td>—</td>
+      <td class="small">Procedura aperta</td>
+      <td class="num">181 mila €</td></tr><tr data-t="gestione manutenzione e logistica ausli per disabili ">
+      <td class="small">2023-12-22</td>
+      <td>GESTIONE MANUTENZIONE E LOGISTICA AUSLI PER DISABILI<div class="small muted">CIG A0447CA6E5 · SERVIZI DI RIPARAZIONE E MANUTENZIONE DI APPARECCHIATURE DI MISURAZIONE, COLLAUDO E PROVA</div></td>
+      <td>—</td>
+      <td class="small neg">Affidamento diretto</td>
+      <td class="num">180 mila €</td></tr></tbody>
+</table></div>
+<p class="small muted">Mostrati i 300 contratti di importo maggiore su 4291. L’elenco completo è nel <a href="../contratti/020101.csv" download>CSV</a>.</p>
+<script>
+(function(){
+  var q=document.getElementById('cq'),rows=[].slice.call(document.querySelectorAll('#crows tr')),cc=document.getElementById('ccount');
+  function apply(){var t=q.value.trim().toLowerCase(),n=0;rows.forEach(function(r){var ok=!t||r.dataset.t.indexOf(t)>=0;r.classList.toggle('hidden',!ok);if(ok)n++;});cc.textContent=n+' contratti mostrati';}
+  q.addEventListener('input',apply);apply();
+})();
+</script>
+<h2>Profilo operativo <span class="small muted">(anagrafe ospedaliera, 2022)</span></h2>
+       <div class="tablewrap"><table>
+       <thead><tr><th scope="col">Ospedale</th><th class="num" scope="col">Posti letto</th><th class="num" scope="col">Personale</th><th class="num" scope="col">di cui medici</th><th class="num" scope="col">Ricoveri</th><th class="num" scope="col">Giornate</th></tr></thead>
+       <tbody><tr><td>OSPEDALE REGIONALE UMBERTO PARINI<div class="small muted">AOSTA (AO)</div></td>
+           <td class="num">389</td><td class="num">1373</td>
+           <td class="num">277</td><td class="num">11.348</td><td class="num">106.822</td></tr></tbody></table></div>
+<h2>La regione: Valle d&#39;Aosta</h2>
+  <p class="small muted">Indicatori della regione a cui appartiene questa azienda (dato regionale, non della singola struttura). Approfondisci in <a href="regione/020.html">Valle d&#39;Aosta</a>.</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))"><a class="seg media" href="apparecchiature.html" style="text-decoration:none"><div class="t">Dotazione tecnologica</div><div class="d"><strong>65,3 TC/mln · 1 robot</strong></div></a><a class="seg media" href="sdo.html" style="text-decoration:none"><div class="t">Volumi di ricovero</div><div class="d"><strong>149,9 ric./1.000 ab.</strong></div></a><a class="seg media" href="siope.html" style="text-decoration:none"><div class="t">Cassa di dicembre</div><div class="d"><strong>1,18× il mese medio</strong></div></a><a class="seg media" href="pnrr-salute.html" style="text-decoration:none"><div class="t">PNRR Missione 6</div><div class="d"><strong>214 €/ab.</strong></div></a></div>
+<h2>Indicatori per anno</h2>
+    <p class="muted small">Ogni riga è un anno di bilancio (modelli CE/SP inviati al MEF). In rosso i risultati in
+    perdita, in verde quelli in utile.</p>
+    <div class="tablewrap"><table>
+    <thead><tr><th scope="col">Anno</th><th class="num" scope="col">Contributi in c/esercizio (A.1)</th><th class="num" scope="col">Valore della produzione (A)</th><th class="num" scope="col">Costi della produzione (B)</th><th class="num" scope="col">Costo del personale</th><th class="num" scope="col">Ammortamenti</th><th class="num" scope="col">Risultato di esercizio</th><th class="num" scope="col">Totale attivo</th><th class="num" scope="col">Patrimonio netto</th><th class="num" scope="col">Debiti</th></tr></thead>
+    <tbody><tr><td>2012</td><td class="num ">269.473.000 €</td><td class="num ">291.825.000 €</td><td class="num ">281.539.000 €</td><td class="num ">113.040.000 €</td><td class="num ">9.376.000 €</td><td class="num pos">654.000 €</td><td class="num ">159.679.000 €</td><td class="num ">77.746.000 €</td><td class="num ">58.018.000 €</td></tr><tr><td>2013</td><td class="num ">278.976.000 €</td><td class="num ">320.156.000 €</td><td class="num ">306.017.000 €</td><td class="num ">113.595.000 €</td><td class="num ">16.965.000 €</td><td class="num pos">5.669.000 €</td><td class="num ">159.076.000 €</td><td class="num ">82.225.000 €</td><td class="num ">59.125.000 €</td></tr><tr><td>2014</td><td class="num ">260.519.000 €</td><td class="num ">301.046.000 €</td><td class="num ">295.000.000 €</td><td class="num ">114.693.000 €</td><td class="num ">12.923.000 €</td><td class="num pos">3.642.000 €</td><td class="num ">140.603.000 €</td><td class="num ">75.618.000 €</td><td class="num ">49.058.000 €</td></tr><tr><td>2015</td><td class="num ">255.257.000 €</td><td class="num ">295.358.000 €</td><td class="num ">287.770.000 €</td><td class="num ">113.232.000 €</td><td class="num ">10.543.000 €</td><td class="num neg">-1.268.000 €</td><td class="num ">136.382.000 €</td><td class="num ">63.371.000 €</td><td class="num ">53.751.000 €</td></tr><tr><td>2016</td><td class="num ">253.248.000 €</td><td class="num ">291.692.000 €</td><td class="num ">283.023.000 €</td><td class="num ">114.145.000 €</td><td class="num ">10.577.000 €</td><td class="num pos">387.000 €</td><td class="num ">133.888.000 €</td><td class="num ">55.750.000 €</td><td class="num ">59.296.000 €</td></tr><tr><td>2017</td><td class="num ">251.028.000 €</td><td class="num ">287.910.000 €</td><td class="num ">280.456.000 €</td><td class="num ">112.162.000 €</td><td class="num ">8.842.000 €</td><td class="num pos">775.000 €</td><td class="num ">138.128.000 €</td><td class="num ">55.234.000 €</td><td class="num ">62.049.000 €</td></tr><tr><td>2018</td><td class="num ">249.168.000 €</td><td class="num ">290.493.000 €</td><td class="num ">287.487.000 €</td><td class="num ">113.444.000 €</td><td class="num ">9.221.000 €</td><td class="num neg">-1.998.000 €</td><td class="num ">126.641.000 €</td><td class="num ">49.618.000 €</td><td class="num ">52.933.000 €</td></tr><tr><td>2019</td><td class="num ">255.078.926 €</td><td class="num ">292.471.061 €</td><td class="num ">283.720.320 €</td><td class="num ">115.792.637 €</td><td class="num ">6.080.219 €</td><td class="num pos">1939 €</td><td class="num ">141.444.481 €</td><td class="num ">57.237.284 €</td><td class="num ">52.599.317 €</td></tr><tr><td>2020</td><td class="num ">288.293.343 €</td><td class="num ">323.981.329 €</td><td class="num ">311.100.325 €</td><td class="num ">125.495.356 €</td><td class="num ">6.576.002 €</td><td class="num pos">3.934.550 €</td><td class="num ">166.173.450 €</td><td class="num ">72.369.053 €</td><td class="num ">56.456.378 €</td></tr><tr><td>2021</td><td class="num ">299.018.491 €</td><td class="num ">341.155.458 €</td><td class="num ">332.430.851 €</td><td class="num ">125.240.424 €</td><td class="num ">7.449.312 €</td><td class="num pos">1.091.486 €</td><td class="num ">188.506.208 €</td><td class="num ">78.118.417 €</td><td class="num ">54.640.202 €</td></tr><tr><td>2022</td><td class="num ">300.057.450 €</td><td class="num ">355.165.905 €</td><td class="num ">344.545.339 €</td><td class="num ">131.771.284 €</td><td class="num ">6.016.020 €</td><td class="num pos">2.200.401 €</td><td class="num ">216.072.962 €</td><td class="num ">88.248.490 €</td><td class="num ">63.103.850 €</td></tr><tr><td>2023</td><td class="num ">319.952.534 €</td><td class="num ">367.857.644 €</td><td class="num ">366.006.700 €</td><td class="num ">132.703.309 €</td><td class="num ">5.601.085 €</td><td class="num pos">642.835 €</td><td class="num ">222.676.640 €</td><td class="num ">94.193.181 €</td><td class="num ">58.930.931 €</td></tr><tr><td>2024</td><td class="num ">323.994.676 €</td><td class="num ">393.225.202 €</td><td class="num ">384.637.685 €</td><td class="num ">141.938.164 €</td><td class="num ">6.925.771 €</td><td class="num neg">-1.870.774 €</td><td class="num ">216.774.922 €</td><td class="num ">103.137.827 €</td><td class="num ">58.264.036 €</td></tr></tbody></table></div>
+<h2>Conto economico dettagliato <span class="small muted">(2024)</span></h2>
+       <div class="tablewrap"><table><thead><tr><th scope="col">Voce</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>A.1) Contributi in c/esercizio</td><td class="num">323.994.676 €</td></tr><tr><td>A.1.A) Contributi da Regione o Prov. Aut. per quota F.S. regionale</td><td class="num">268.766.374 €</td></tr><tr><td>A.1.B) Contributi c/esercizio (extra fondo)</td><td class="num">55.228.302 €</td></tr><tr><td>A.2) Rettifica contributi c/esercizio per destinazione ad investimenti</td><td class="num">-346.846 €</td></tr><tr><td>A.2.B) Rettifica contributi in c/esercizio per destinazione ad investimenti - altri contributi</td><td class="num">-346.846 €</td></tr><tr><td>A.3) Utilizzo fondi per quote inutilizzate contributi finalizzati e vincolati di esercizi precedenti</td><td class="num">25.799.425 €</td></tr><tr><td>A.3.A) Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da Regione o Prov. Aut. per quota F.S. regionale indistinto finalizzato</td><td class="num">170.375 €</td></tr><tr><td>A.3.B) Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da Regione o Prov. Aut. per quota F.S. regionale vincolato</td><td class="num">54.364 €</td></tr><tr><td>A.3.C) Utilizzo fondi per quote inutilizzate contributi di esercizi precedenti da soggetti pubblici (extra fondo) vincolati</td><td class="num">25.574.686 €</td></tr><tr><td>A.4) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria</td><td class="num">23.242.471 €</td></tr><tr><td>A.4.A) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate a soggetti pubblici</td><td class="num">17.148.774 €</td></tr><tr><td>A.4.C) Ricavi per prestazioni sanitarie e sociosanitarie a rilevanza sanitaria erogate a privati</td><td class="num">1.633.955 €</td></tr><tr><td>A.4.D) Ricavi per prestazioni sanitarie erogate in regime di intramoenia</td><td class="num">4.459.742 €</td></tr><tr><td>A.5) Concorsi, recuperi e rimborsi</td><td class="num">4.417.874 €</td></tr><tr><td>A.5.B) Concorsi, recuperi e rimborsi da Regione</td><td class="num">170.434 €</td></tr><tr><td>A.5.E) Concorsi, recuperi e rimborsi da privati</td><td class="num">4.247.440 €</td></tr><tr><td>A.6) Compartecipazione alla spesa per prestazioni sanitarie (Ticket)</td><td class="num">8.027.984 €</td></tr><tr><td>A.6.A) Compartecipazione alla spesa per prestazioni sanitarie - Ticket sulle prestazioni di specialistica ambulatoriale e APA-PAC</td><td class="num">6.474.230 €</td></tr><tr><td>A.6.B) Compartecipazione alla spesa per prestazioni sanitarie - Ticket sul pronto soccorso</td><td class="num">46.818 €</td></tr><tr><td>A.6.C) Compartecipazione alla spesa per prestazioni sanitarie (Ticket) - Altro</td><td class="num">1.506.936 €</td></tr><tr><td>A.7) Quota contributi c/capitale imputata all&#39;esercizio</td><td class="num">6.973.343 €</td></tr><tr><td>A.7.B) Quota imputata all&#39;esercizio dei finanziamenti per investimenti da Regione</td><td class="num">6.973.343 €</td></tr><tr><td>A.9) Altri ricavi e proventi</td><td class="num">1.116.275 €</td></tr><tr><td>A.9.A) Ricavi per prestazioni non sanitarie</td><td class="num">320.174 €</td></tr><tr><td>A.9.B) Fitti attivi ed altri proventi da attivita&#39; immobiliari</td><td class="num">69.184 €</td></tr><tr><td>A.9.C) Altri proventi diversi</td><td class="num">726.917 €</td></tr><tr><td>Totale valore della produzione (A)</td><td class="num">393.225.202 €</td></tr><tr><td>B.1) Acquisti di beni</td><td class="num">58.169.937 €</td></tr><tr><td>B.1.A) Acquisti di beni sanitari</td><td class="num">56.887.888 €</td></tr><tr><td>B.1.B) Acquisti di beni non sanitari</td><td class="num">1.282.049 €</td></tr><tr><td>B.2) Acquisti di servizi</td><td class="num">130.863.736 €</td></tr><tr><td>B.2.A) Acquisti servizi sanitari</td><td class="num">109.908.610 €</td></tr><tr><td>B.2.B) Acquisti di servizi non sanitari</td><td class="num">20.955.126 €</td></tr><tr><td>B.3) Manutenzione e riparazione (ordinaria esternalizzata)</td><td class="num">11.218.122 €</td></tr><tr><td>B.3.A) Manutenzione e riparazione ai fabbricati e loro pertinenze</td><td class="num">3.906.002 €</td></tr><tr><td>B.3.B) Manutenzione e riparazione agli impianti e macchinari</td><td class="num">109.604 €</td></tr><tr><td>B.3.C) Manutenzione e riparazione alle attrezzature sanitarie e scientifiche</td><td class="num">3.918.492 €</td></tr><tr><td>B.3.E) Manutenzione e riparazione agli automezzi</td><td class="num">359.549 €</td></tr><tr><td>B.3.F) Altre manutenzioni e riparazioni</td><td class="num">2.924.475 €</td></tr><tr><td>B.4) Godimento di beni di terzi</td><td class="num">4.321.804 €</td></tr><tr><td>B.4.A) Fitti passivi</td><td class="num">853.809 €</td></tr><tr><td>B.4.B) Canoni di noleggio</td><td class="num">3.467.995 €</td></tr><tr><td>Totale Costo del personale</td><td class="num">141.938.164 €</td></tr><tr><td>B.5) Personale del ruolo sanitario</td><td class="num">107.781.653 €</td></tr><tr><td>B.5.A) Costo del personale dirigente ruolo sanitario</td><td class="num">57.489.305 €</td></tr><tr><td>B.5.B) Costo del personale comparto ruolo sanitario</td><td class="num">50.292.348 €</td></tr><tr><td>B.6) Personale del ruolo professionale</td><td class="num">587.396 €</td></tr><tr><td>B.6.A) Costo del personale dirigente ruolo professionale</td><td class="num">538.409 €</td></tr><tr><td>B.6.B) Costo del personale comparto ruolo professionale</td><td class="num">48.987 €</td></tr><tr><td>B.7) Personale del ruolo tecnico</td><td class="num">17.143.513 €</td></tr><tr><td>B.7.A) Costo del personale dirigente ruolo tecnico</td><td class="num">257.513 €</td></tr><tr><td>B.7.B) Costo del personale comparto ruolo tecnico</td><td class="num">16.886.000 €</td></tr><tr><td>B.8) Personale del ruolo amministrativo</td><td class="num">16.425.602 €</td></tr><tr><td>B.8.A) Costo del personale dirigente ruolo amministrativo</td><td class="num">1.146.444 €</td></tr><tr><td>B.8.B) Costo del personale comparto ruolo amministrativo</td><td class="num">15.279.158 €</td></tr><tr><td>B.9) Oneri diversi di gestione</td><td class="num">6.877.228 €</td></tr><tr><td>B.9.A) Imposte e tasse (escluso IRAP e IRES)</td><td class="num">330.963 €</td></tr><tr><td>B.9.C) Altri oneri diversi di gestione</td><td class="num">6.546.265 €</td></tr><tr><td>Totale Ammortamenti</td><td class="num">6.925.771 €</td></tr><tr><td>B.10) Ammortamenti delle immobilizzazioni immateriali</td><td class="num">1.203.663 €</td></tr><tr><td>B.11) Ammortamenti delle immobilizzazioni materiali</td><td class="num">5.722.108 €</td></tr><tr><td>B.11.A) Ammortamento dei fabbricati</td><td class="num">1.195.863 €</td></tr><tr><td>B.11.B) Ammortamenti delle altre immobilizzazioni materiali</td><td class="num">4.526.245 €</td></tr><tr><td>B.12) Svalutazione delle immobilizzazioni e dei crediti</td><td class="num">190.764 €</td></tr><tr><td>B.12.B) Svalutazione dei crediti</td><td class="num">190.764 €</td></tr><tr><td>B.13) Variazione delle rimanenze</td><td class="num">-681.597 €</td></tr><tr><td>B.13.A) Variazione rimanenze sanitarie</td><td class="num">-546.674 €</td></tr><tr><td>B.13.B) Variazione rimanenze non sanitarie</td><td class="num">-134.923 €</td></tr><tr><td>B.14) Accantonamenti dell&#39;esercizio</td><td class="num">24.813.756 €</td></tr><tr><td>B.14.A) Accantonamenti per rischi</td><td class="num">68.738 €</td></tr><tr><td>B.14.B) Accantonamenti per premio di operosita&#39; (SUMAI)</td><td class="num">165.277 €</td></tr><tr><td>B.14.C) Accantonamenti per quote inutilizzate di contributi finalizzati e vincolati</td><td class="num">19.252.881 €</td></tr><tr><td>B.14.D) Altri accantonamenti</td><td class="num">5.326.860 €</td></tr><tr><td>Totale costi della produzione (B)</td><td class="num">384.637.685 €</td></tr><tr><td>C.1) Interessi attivi</td><td class="num">5907 €</td></tr><tr><td>C.1.C) Altri interessi attivi</td><td class="num">5907 €</td></tr><tr><td>C.3) Interessi passivi</td><td class="num">2001 €</td></tr><tr><td>C.3.C) Altri interessi passivi</td><td class="num">2001 €</td></tr><tr><td>Totale proventi e oneri finanziari (C)</td><td class="num">3906 €</td></tr><tr><td>E.1) Proventi straordinari</td><td class="num">5.634.429 €</td></tr><tr><td>E.1.B) Altri proventi straordinari</td><td class="num">5.634.429 €</td></tr><tr><td>E.2) Oneri straordinari</td><td class="num">5.582.080 €</td></tr><tr><td>E.2.A) Minusvalenze</td><td class="num">47.572 €</td></tr><tr><td>E.2.B) Altri oneri straordinari</td><td class="num">5.534.508 €</td></tr><tr><td>Totale proventi e oneri straordinari (E)</td><td class="num">52.349 €</td></tr><tr><td>Risultato prima delle imposte (A - B +/- C +/- D +/- E)</td><td class="num">8.643.773 €</td></tr><tr><td>Y.1) IRAP</td><td class="num">10.413.564 €</td></tr><tr><td>Y.1.A) IRAP relativa a personale dipendente</td><td class="num">9.237.390 €</td></tr><tr><td>Y.1.B) IRAP relativa a collaboratori e personale assimilato a lavoro dipendente</td><td class="num">910.498 €</td></tr><tr><td>Y.1.C) IRAP relativa ad attivita&#39; di libera professione (intramoenia)</td><td class="num">265.676 €</td></tr><tr><td>Y.2) IRES</td><td class="num">100.983 €</td></tr><tr><td>Y.2.B) IRES su attivita&#39; commerciale</td><td class="num">100.983 €</td></tr><tr><td>Totale imposte e tasse (Y)</td><td class="num">10.514.547 €</td></tr><tr><td>RISULTATO DI ESERCIZIO</td><td class="num">-1.870.774 €</td></tr></tbody></table></div>
+<h2>Stato patrimoniale <span class="small muted">(2024)</span></h2>
+       <div class="tablewrap"><table><thead><tr><th scope="col">Voce</th><th class="num" scope="col">Importo</th></tr></thead><tbody><tr><td>A) IMMOBILIZZAZIONI</td><td class="num">64.666.696 €</td></tr><tr><td>B) ATTIVO CIRCOLANTE</td><td class="num">150.224.990 €</td></tr><tr><td>C) RATEI E RISCONTI ATTIVI</td><td class="num">1.883.236 €</td></tr><tr><td>E) CONTI D&#39;ORDINE</td><td class="num">7.292.776 €</td></tr><tr><td>D) TOTALE ATTIVO</td><td class="num">216.774.922 €</td></tr><tr><td>A) PATRIMONIO NETTO</td><td class="num">103.137.827 €</td></tr><tr><td>B) FONDI PER RISCHI E ONERI</td><td class="num">35.643.130 €</td></tr><tr><td>C) TRATTAMENTO FINE RAPPORTO</td><td class="num">906.235 €</td></tr><tr><td>D) DEBITI</td><td class="num">58.264.036 €</td></tr><tr><td>E) RATEI E RISCONTI PASSIVI</td><td class="num">18.823.694 €</td></tr><tr><td>G) CONTI D&#39;ORDINE</td><td class="num">7.292.776 €</td></tr><tr><td>F) TOTALE PASSIVO E PATRIMONIO NETTO</td><td class="num">216.774.922 €</td></tr></tbody></table></div>
+
+<p class="small muted" style="margin-top:26px">Fonte: <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>
+(modelli CE/SP del SSN) e <a href="https://www.dati.salute.gov.it/">dati.salute.gov.it</a>. Importi in euro dai consuntivi.</p>
+
+</div></main>
+<footer class="site"><div class="wrap">
+  <p><strong>Ospedali Trasparenti</strong> — dati contabili e appalti delle strutture sanitarie pubbliche italiane,
+  elaborati automaticamente da fonti ufficiali <em>open data</em>.</p>
+  <p class="small"><strong>Fonti e licenze.</strong> Elaborazione propria su:
+  <a href="https://dati.anticorruzione.it/opendata">ANAC — Banca Dati Nazionale dei Contratti Pubblici</a> (CC BY 4.0);
+  <a href="https://openbdap.rgs.mef.gov.it/it/SSN/Analizza">BDAP — RGS/MEF</a>, modelli CE/SP del SSN (IODL 2.0);
+  <a href="https://www.dati.salute.gov.it/">Ministero della Salute</a>. I dati sono stati aggregati, normalizzati ed
+  elaborati; eventuali errori di elaborazione non sono imputabili ai titolari delle fonti.</p>
+  <p class="small">Le segnalazioni e gli indicatori sono automatici, <strong>non accuse</strong>: richiedono verifica.
+  Progetto di trasparenza civica senza scopo di lucro — <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>. Non è una testata giornalistica.
+  <a href="../verifiche.html">Dati e verifiche</a> · <a href="../metodologia.html">Metodologia</a> ·
+  <a href="../note-legali.html">Note legali</a> · <a href="../privacy.html">Privacy</a> ·
+  <a href="../accessibilita.html">Accessibilità</a> · <a href="../feed.xml">RSS</a></p>
+</div></footer>
+<script>
+/* Мобилна навигация: hamburger отваря/затваря менюто. Достъпно —
+   aria-expanded, Escape връща фокуса на бутона, клик навън затваря.
+   На desktop бутонът е display:none, менюто винаги видимо → скриптът е инертен. */
+(function(){
+  var b=document.querySelector('.nav-toggle'),n=document.getElementById('nav-main');
+  if(!b||!n)return;
+  function aperto(){return b.getAttribute('aria-expanded')==='true';}
+  function apri(){b.setAttribute('aria-expanded','true');b.setAttribute('aria-label','Chiudi il menu');n.classList.add('open');}
+  function chiudi(){b.setAttribute('aria-expanded','false');b.setAttribute('aria-label','Apri il menu di navigazione');n.classList.remove('open');}
+  b.addEventListener('click',function(){aperto()?chiudi():apri();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&aperto()){chiudi();b.focus();}
+  });
+  document.addEventListener('click',function(e){
+    if(!aperto())return;
+    if(b.contains(e.target)||n.contains(e.target))return;
+    chiudi();
+  });
+})();
+/* Тема: 2-състоен превключвател светла⇄тъмна. Записът в localStorage печели над
+   системата; без запис = авто (prefers-color-scheme). aria-pressed=„тъмна активна". */
+(function(){
+  var t=document.querySelector('.theme-toggle');
+  if(!t)return;
+  var mq=window.matchMedia('(prefers-color-scheme:dark)');
+  function effettivo(){var d=document.documentElement.dataset.theme;return d?d:(mq.matches?'dark':'light');}
+  function aggiorna(){t.setAttribute('aria-pressed',effettivo()==='dark'?'true':'false');}
+  t.addEventListener('click',function(){
+    var nuovo=effettivo()==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=nuovo;
+    try{localStorage.setItem('ost-theme',nuovo);}catch(e){}
+    aggiorna();
+  });
+  aggiorna();
+  // Смяна на системната тема на живо (без ръчен избор) → обнови aria-pressed.
+  mq.addEventListener('change',function(){if(!document.documentElement.dataset.theme)aggiorna();});
+})();
+</script>
+</body>
+</html>

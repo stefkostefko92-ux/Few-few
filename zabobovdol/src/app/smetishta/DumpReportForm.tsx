@@ -79,7 +79,7 @@ export function DumpReportForm() {
           className="input"
           placeholder="https://… (ако сте качили снимка някъде)"
         />
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-slate-600">
           Не е задължително. Ако нямате линк, опишете мястото подробно.
         </p>
       </div>
@@ -120,7 +120,7 @@ export function DumpReportForm() {
         aria-hidden
       />
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-600">
         Сигналите се преглеждат, преди да се покажат публично. Вижте{" "}
         <Link href="/poveritelnost" className="underline">
           Политиката за поверителност

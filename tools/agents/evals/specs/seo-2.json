@@ -1,0 +1,26 @@
+{
+  "id": "seo-2",
+  "agent": "seo",
+  "task": "robots.txt има `User-agent: Bingbot` група + `User-agent: *` с Disallow /admin. Провери.",
+  "expect": [
+    {
+      "any": [
+        "наследява",
+        "не наследява",
+        "повтори",
+        "Disallow",
+        "група"
+      ],
+      "label": "UA група не наследява от '*'"
+    },
+    {
+      "any": [
+        "AI",
+        "GPTBot",
+        "извличащ",
+        "обучаващ"
+      ],
+      "label": "AI ботове разграничени"
+    }
+  ]
+}

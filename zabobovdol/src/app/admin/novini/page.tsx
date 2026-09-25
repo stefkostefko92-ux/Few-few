@@ -54,7 +54,7 @@ export default async function AdminNewsImportPage({
           Чакащи преглед ({drafts.length})
         </h2>
         {drafts.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
             Няма внесени чернови. Натиснете „Внеси новини“.
           </div>
         ) : (
@@ -64,7 +64,7 @@ export default async function AdminNewsImportPage({
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <div className="font-semibold text-slate-900">{d.title}</div>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 text-xs text-slate-600">
                       {d.source}
                       {d.sourceDate
                         ? " · " +
@@ -105,7 +105,7 @@ export default async function AdminNewsImportPage({
         )}
       </div>
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-600">
         Съвет: можете да настроите автоматично внасяне по график (cron) на VPS-а,
         който да извиква защитения адрес <code>/api/ingest-news?token=…</code>.
         Публикуването винаги остава ръчно.

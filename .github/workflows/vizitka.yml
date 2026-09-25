@@ -10,9 +10,18 @@ on:
       - 'vizitka/**'
       - '.github/workflows/vizitka.yml'
 
+concurrency:
+  group: vizitka-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
         node: [20, 22]

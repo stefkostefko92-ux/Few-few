@@ -18,6 +18,8 @@ import { getDb } from '../db';
 
 export function tierForEffectiveLevel(eff: number): number {
   return (
+    eff >= 440 ? 12 :
+    eff >= 380 ? 11 :
     eff >= 320 ? 10 :
     eff >= 280 ? 9  :
     eff >= 230 ? 8  :
@@ -53,9 +55,8 @@ export function grantDrop(
   effLevel: number,
 ): DropResult {
   const db = getDb();
-  const tier = tierForEffectiveLevel(effLevel);
   const cls = charClass || '';
-  const pick = (whereExtra: string) => db.prepare(
+  const pick = (tier: number, whereExtra: string) => db.prepare(
     `SELECT id, slug, sell_price FROM items
      WHERE tier = ?
        AND category IN ('weapon','armor','helm','shield','gloves','boots','amulet','ring','cloak')
@@ -64,7 +65,16 @@ export function grantDrop(
        ${whereExtra}
      ORDER BY RANDOM() LIMIT 1`,
   ).get(tier, charLevel, cls) as { id: number; slug: string; sell_price: number } | undefined;
-  const picked = pick('') || pick("AND class_req = ''");
+  // Tier fallback: бой НАД нивото на героя (кула етаж 320 с герой 300,
+  // върхът на регион) мапва към tier, чиито предмети имат level_req над
+  // героя → заявката е празна и дропът тихо се губеше (симулация: 81
+  // мъртви нива при eff = ниво+30). Падаме tier по tier надолу, докато
+  // намерим предмет за нивото — наградата се запазва, без over-reward
+  // (level_req гейтът пази високите tier-ове недостижими за ниски герои).
+  let picked: { id: number; slug: string; sell_price: number } | undefined;
+  for (let tier = tierForEffectiveLevel(effLevel); tier >= 1 && !picked; tier--) {
+    picked = pick(tier, '') || pick(tier, "AND class_req = ''");
+  }
   if (!picked) return { slug: null, duplicate: false, refundGold: 0 };
   // Duplicate gate — match the hunting.ts dedup behaviour exactly.
   const owned = db.prepare(
@@ -82,7 +92,7 @@ export function grantDrop(
 
 /** Unified drop probabilities by source. Tuned so the drop-per-hour
  *  rate is roughly comparable across all activities — hunting is the
- *  baseline (~22% per ~5-12min cooldown = ~1-2 drops/hr), tower and
+ *  baseline (~22% per ~3-6min hunt cooldown = ~2-4 drops/hr), tower and
  *  arena trade slower combat cadence for higher per-fight chance. */
 export const DROP_RATES = {
   hunt:    0.22,

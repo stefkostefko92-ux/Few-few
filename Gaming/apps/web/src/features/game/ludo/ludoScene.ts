@@ -102,9 +102,14 @@ export class LudoScene {
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.bias = -0.0006;
+    key.shadow.radius = 3; // soft PCF penumbra — premium contact shadows
     const sc = key.shadow.camera;
     sc.left = -span * 1.5; sc.right = span * 1.5; sc.top = span * 1.5; sc.bottom = -span * 1.5; sc.near = 1; sc.far = span * 8;
     this.scene.add(key);
+    // Cool back-rim edge light: gives the glossy pawns a defining highlight.
+    const rim = new DirectionalLight(0xbfe0f2, 0.32);
+    rim.position.set(-span, span * 1.4, -span);
+    this.scene.add(rim);
 
     this.scene.add(this.tokenLayer);
     this.build();

@@ -94,7 +94,7 @@ export default async function ReklamaPage() {
               </div>
               <div className="mt-2 text-4xl font-extrabold text-slate-900">
                 {ad.priceEur}€{" "}
-                <span className="text-base font-medium text-slate-500">/ месец</span>
+                <span className="text-base font-medium text-slate-600">/ месец</span>
               </div>
               <p className="mt-2 text-sm text-slate-600">
                 Един слот на началната страница. Без скрити такси.
@@ -137,7 +137,7 @@ export default async function ReklamaPage() {
           </div>
         </section>
 
-        <p className="mt-8 max-w-3xl text-sm text-slate-500">
+        <p className="mt-8 max-w-3xl text-sm text-slate-600">
           Запазваме си правото да не публикуваме реклами с невярно, обидно или
           незаконно съдържание. Рекламите не са препоръка от страна на проекта.
         </p>

@@ -63,7 +63,7 @@ export default function ContactsPage() {
               {SITE.geo.city}, {SITE.geo.region}, {SITE.geo.country}
             </div>
           </div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             Отговаряме в рамките на няколко работни дни.
           </p>
         </div>

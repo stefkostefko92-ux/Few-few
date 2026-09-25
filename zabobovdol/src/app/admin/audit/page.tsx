@@ -41,14 +41,14 @@ export default async function AuditPage({
           <tbody className="divide-y divide-slate-100">
             {logs.length === 0 ? (
               <tr>
-                <td colSpan={4} className="p-6 text-center text-slate-500">
+                <td colSpan={4} className="p-6 text-center text-slate-600">
                   Няма записи.
                 </td>
               </tr>
             ) : (
               logs.map((l) => (
                 <tr key={l.id}>
-                  <td className="whitespace-nowrap p-3 text-slate-500">
+                  <td className="whitespace-nowrap p-3 text-slate-600">
                     {new Intl.DateTimeFormat("bg-BG", {
                       day: "2-digit",
                       month: "2-digit",
@@ -63,7 +63,7 @@ export default async function AuditPage({
                     </span>
                   </td>
                   <td className="p-3 text-slate-700">{l.summary}</td>
-                  <td className="p-3 text-slate-500">{l.userEmail}</td>
+                  <td className="p-3 text-slate-600">{l.userEmail}</td>
                 </tr>
               ))
             )}

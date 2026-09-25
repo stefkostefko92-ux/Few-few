@@ -1,0 +1,22 @@
+[
+ {
+  "id": 1,
+  "priority": 1,
+  "action": {
+   "type": "modifyHeaders",
+   "responseHeaders": [
+    {
+     "header": "permissions-policy",
+     "operation": "append",
+     "value": "browsing-topics=(), interest-cohort=(), join-ad-interest-group=(), run-ad-auction=(), attribution-reporting=(), private-aggregation=()"
+    }
+   ]
+  },
+  "condition": {
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ }
+]

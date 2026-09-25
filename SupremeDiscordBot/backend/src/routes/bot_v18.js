@@ -7,6 +7,8 @@ import { requireBotSecret } from "../middleware/auth.js";
 import { fireWebhooks } from "../services/webhooks.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { pickRandom } from "../lib/shuffle.js";
+import { findBestMatch } from "../lib/kbMatch.js";
+import { getServerTier, planHasFeature } from "../lib/premium.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -94,7 +96,37 @@ async function recountPoll(pollId, optionCount) {
   return Array.from({ length: optionCount }, (_, i) => votes.filter((v) => v.option === i).length);
 }
 
+// GET /api/bot/guild/:guildId/applications/pending — за /form review autocomplete
+// (label = кандидат + форма, value = пълния cuid). Само PENDING — review-ва се
+// само каквото още не е решено.
+router.get("/guild/:guildId/applications/pending", async (req, res, next) => {
+  try {
+    const apps = await prisma.application.findMany({
+      where: { serverId: req.params.guildId, status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: { form: { select: { name: true } }, user: { select: { username: true } } },
+    });
+    res.json(apps.map((a) => ({ id: a.id, formName: a.form?.name, username: a.user?.username })));
+  } catch (err) { next(err); }
+});
+
 // ══════════════════════════════ GIVEAWAYS ══════════════════════════════
+
+// GET /api/bot/guild/:guildId/giveaways — за /giveaway end|reroll autocomplete
+// (label = резюме, value = пълния cuid). Скоупнато по serverId — bot-secret
+// пази endpoint-а, но пак не искаме кръстосан достъп между сървъри.
+router.get("/guild/:guildId/giveaways", async (req, res, next) => {
+  try {
+    const giveaways = await prisma.giveaway.findMany({
+      where: { serverId: req.params.guildId },
+      orderBy: { endsAt: "desc" },
+      take: 50,
+      select: { id: true, prize: true, endsAt: true, endedAt: true },
+    });
+    res.json(giveaways);
+  } catch (err) { next(err); }
+});
 
 router.post("/giveaway/create", async (req, res, next) => {
   const { serverId, creatorId, channelId, prize, description, winnerCount, endsAt, requiredRoleIds } = req.body;
@@ -215,6 +247,13 @@ router.post("/sticky", async (req, res, next) => {
   const { serverId, channelId, content, embedTitle, embedColor, createdBy } = req.body;
   if (!serverId || !channelId || !content) return res.status(400).json({ error: "Invalid payload" });
   try {
+    // Tier гейт (paritet с dashboard automation.js): sticky е premium. Слаш
+    // командата минаваше право към upsert без проверка → free сървър създаваше
+    // premium функция. (Одит 07.08.2026)
+    const tier = await getServerTier(serverId);
+    if (!planHasFeature(tier.plan, "automation.sticky")) {
+      return res.status(403).json({ error: "Sticky messages require Premium.", code: "PREMIUM_REQUIRED" });
+    }
     const sticky = await prisma.stickyMessage.upsert({
       where: { channelId },
       create: { serverId, channelId, content, embedTitle, embedColor, createdBy },
@@ -236,6 +275,13 @@ router.get("/sticky/channel/:channelId", async (req, res, next) => {
     const sticky = await prisma.stickyMessage.findUnique({
       where: { channelId: req.params.channelId },
     });
+    // Ботът препубликува sticky по този GET. Ако сървърът вече НЯМА premium
+    // (seat detach, отмяна, дунинг), връщаме null → репостът спира. Иначе
+    // премахната функция продължаваше да работи от запазения ред. (Одит 07.08.2026)
+    if (sticky) {
+      const tier = await getServerTier(sticky.serverId);
+      if (!planHasFeature(tier.plan, "automation.sticky")) return res.json(null);
+    }
     res.json(sticky);
   } catch (err) { next(err); }
 });
@@ -256,6 +302,15 @@ router.post("/schedule", async (req, res, next) => {
   const { serverId, channelId, content, embedTitle, embedDescription, embedColor, sendAt, recurrence, createdBy } = req.body;
   if (!serverId || !channelId || !content || !sendAt) return res.status(400).json({ error: "Invalid payload" });
   try {
+    // Tier гейт (paritet с dashboard): насрочените са premium, повтарящите се —
+    // само при план с `recurringScheduled`. Слаш командата минаваше без проверка.
+    const tier = await getServerTier(serverId);
+    if (!planHasFeature(tier.plan, "automation.scheduled")) {
+      return res.status(403).json({ error: "Scheduled messages require Premium.", code: "PREMIUM_REQUIRED" });
+    }
+    if (recurrence && !tier.limits.recurringScheduled) {
+      return res.status(403).json({ error: "Recurring messages require a higher plan.", code: "PREMIUM_REQUIRED" });
+    }
     const m = await prisma.scheduledMessage.create({
       data: {
         serverId, channelId, content,
@@ -297,19 +352,204 @@ router.delete("/schedule/:id", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ══════════════════════════════ CANNED RESPONSES (/tag) ══════════════════════
+// v2.9 — Ticket Tool parity, #1 staff request. Name is unique per server
+// (kebab-case, ≤32 chars) and content ≤1500 — the bot validates both before
+// calling here, but we re-validate server-side too (never trust the client).
+const TAG_NAME_MAX = 32;
+const TAG_CONTENT_MAX = 1500;
+const TAG_LIMIT_FREE = 50;
+const TAG_LIMIT_PREMIUM = 200;
+
+router.get("/tag/:serverId", async (req, res, next) => {
+  try {
+    const tags = await prisma.cannedResponse.findMany({
+      where: { serverId: req.params.serverId },
+      orderBy: { name: "asc" },
+    });
+    res.json(tags);
+  } catch (err) { next(err); }
+});
+
+router.post("/tag", async (req, res, next) => {
+  // Тарифата се резолвира ТУК, не се вярва на req.body (одит 09.08.2026).
+  // Маршрутът е зад requireBotSecret, но правилото е едно: правата идват от
+  // getServerTier — единствената дефиниция — не от полето на повикващия.
+  const { serverId, name, content, createdBy } = req.body;
+  if (!serverId || !name || !content || !createdBy) {
+    return res.status(400).json({ error: "Invalid payload" });
+  }
+  const cleanName = String(name).trim().toLowerCase().slice(0, TAG_NAME_MAX);
+  if (!/^[a-z0-9-]{1,32}$/.test(cleanName)) {
+    return res.status(400).json({ error: "Tag name must be kebab-case, ≤32 chars (a-z, 0-9, -)." });
+  }
+  const cleanContent = String(content).slice(0, TAG_CONTENT_MAX);
+  try {
+    const count = await prisma.cannedResponse.count({ where: { serverId } });
+    const { isPremium } = await getServerTier(serverId);
+    const limit = isPremium ? TAG_LIMIT_PREMIUM : TAG_LIMIT_FREE;
+    if (count >= limit) {
+      return res.status(400).json({ error: `Tag limit reached (${limit}). Delete an existing tag first.` });
+    }
+    const tag = await prisma.cannedResponse.create({
+      data: { serverId, name: cleanName, content: cleanContent, createdBy },
+    });
+    res.status(201).json(tag);
+  } catch (err) {
+    if (err?.code === "P2002") {
+      return res.status(409).json({ error: `A tag named "${cleanName}" already exists.` });
+    }
+    next(err);
+  }
+});
+
+router.delete("/tag/:serverId/:name", async (req, res, next) => {
+  try {
+    const result = await prisma.cannedResponse.deleteMany({
+      where: { serverId: req.params.serverId, name: req.params.name },
+    });
+    if (result.count === 0) return res.status(404).json({ error: "Tag not found" });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+router.post("/tag/:serverId/:name/use", async (req, res, next) => {
+  try {
+    const tag = await prisma.cannedResponse.findUnique({
+      where: { serverId_name: { serverId: req.params.serverId, name: req.params.name } },
+    });
+    if (!tag) return res.status(404).json({ error: "Tag not found" });
+    const updated = await prisma.cannedResponse.update({
+      where: { id: tag.id },
+      data: { usageCount: { increment: 1 } },
+    });
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+// ══════════════════════════════ KNOWLEDGE BASE (v32 — suggest + feedback) ═════
+// GET  /bot/kb/:serverId/suggest?q=... — best-match article for a new ticket's
+//      opening text. Read-only; increments usageCount on a hit so the "top
+//      article" stats stay meaningful. Fire-and-forget from the bot's
+//      createTicketFromPanel — never blocks ticket creation.
+// POST /bot/kb/:articleId/feedback — 👍/👎 button vote on a suggested article.
+
+router.get("/kb/:serverId/suggest", async (req, res, next) => {
+  const q = String(req.query.q || "").trim();
+  if (!q) return res.json({ article: null });
+  try {
+    const articles = await prisma.kbArticle.findMany({
+      where: { serverId: req.params.serverId, enabled: true },
+    });
+    const match = findBestMatch(articles, q);
+    if (!match) return res.json({ article: null });
+    const updated = await prisma.kbArticle.update({
+      where: { id: match.id },
+      data: { usageCount: { increment: 1 } },
+    });
+    res.json({ article: updated });
+  } catch (err) { next(err); }
+});
+
+router.post("/kb/:articleId/feedback", async (req, res, next) => {
+  const helpful = !!req.body.helpful;
+  try {
+    const article = await prisma.kbArticle.update({
+      where: { id: req.params.articleId },
+      data: helpful
+        ? { helpfulCount: { increment: 1 } }
+        : { notHelpfulCount: { increment: 1 } },
+    });
+    res.json(article);
+  } catch (err) {
+    if (err?.code === "P2025") return res.status(404).json({ error: "Article not found" });
+    next(err);
+  }
+});
+
+// ══════════════════════════════ /stats (bot-secret analytics read) ═══════════
+// v2.9 — analytics.js requires a dashboard session (requireAuth+loadUser), which
+// the bot doesn't have; this is a read-only, serverId-scoped mirror for the
+// /stats slash command (mirrors the leaderboard/overview queries in analytics.js).
+router.get("/stats/:serverId", async (req, res, next) => {
+  try {
+    const serverId = req.params.serverId;
+    const now = Date.now();
+    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+      open7d, closed7d, open30d, closed30d, openTotal,
+      closedForAvg, closedGrouped, openByPriorityGrouped,
+    ] = await Promise.all([
+      prisma.ticket.count({ where: { serverId, createdAt: { gte: sevenDaysAgo } } }),
+      prisma.ticket.count({ where: { serverId, status: "CLOSED", closedAt: { gte: sevenDaysAgo } } }),
+      prisma.ticket.count({ where: { serverId, createdAt: { gte: thirtyDaysAgo } } }),
+      prisma.ticket.count({ where: { serverId, status: "CLOSED", closedAt: { gte: thirtyDaysAgo } } }),
+      prisma.ticket.count({ where: { serverId, status: "OPEN" } }),
+      prisma.ticket.findMany({
+        where: { serverId, feedbackRating: { not: null }, closedAt: { gte: thirtyDaysAgo } },
+        select: { feedbackRating: true },
+      }),
+      prisma.ticket.groupBy({
+        by: ["assigneeId"],
+        where: { serverId, assigneeId: { not: null }, status: "CLOSED", closedAt: { gte: thirtyDaysAgo } },
+        _count: { _all: true },
+      }),
+      // v30 — open tickets (OPEN or CLAIMED) grouped by priority, for /stats.
+      prisma.ticket.groupBy({
+        by: ["priority"],
+        where: { serverId, status: { in: ["OPEN", "CLAIMED"] } },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const avgFeedback = closedForAvg.length
+      ? closedForAvg.reduce((sum, t) => sum + t.feedbackRating, 0) / closedForAvg.length
+      : null;
+
+    const topStaff = closedGrouped
+      .sort((a, b) => b._count._all - a._count._all)
+      .slice(0, 3)
+      .map((c) => ({ userId: c.assigneeId, closed: c._count._all }));
+
+    // v30 — always report all 4 buckets (0 for priorities with no open tickets)
+    // so the bot doesn't need to guess which keys are present.
+    const openByPriority = { LOW: 0, NORMAL: 0, HIGH: 0, URGENT: 0 };
+    for (const g of openByPriorityGrouped) openByPriority[g.priority] = g._count._all;
+
+    res.json({
+      open: { total: openTotal, byPriority: openByPriority },
+      tickets: {
+        opened7d: open7d, closed7d,
+        opened30d: open30d, closed30d,
+      },
+      topStaff30d: topStaff,
+      avgFeedback30d: avgFeedback !== null ? Math.round(avgFeedback * 10) / 10 : null,
+      feedbackCount30d: closedForAvg.length,
+    });
+  } catch (err) { next(err); }
+});
+
 // ══════════════════════════════ SERVER EVENT LOG ═════════════════════════════
 // Per-guild config the bot reads (cached) before deciding whether to log an event.
 router.get("/:serverId/eventlog-config", async (req, res, next) => {
   try {
     const s = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { eventLogEnabled: true, eventLogChannelId: true, eventLogCategories: true },
+      select: {
+        eventLogEnabled: true, eventLogChannelId: true, eventLogCategories: true,
+        eventLogChannels: true,
+      },
     });
-    if (!s) return res.json({ enabled: false, channelId: null, categories: [] });
+    if (!s) return res.json({ enabled: false, channelId: null, categories: [], channels: {} });
     res.json({
       enabled: s.eventLogEnabled,
       channelId: s.eventLogChannelId,
       categories: s.eventLogCategories || [],
+      // v37 — per-категория канали; ботът пада обратно към channelId, ако
+      // за дадена категория няма запис.
+      channels: s.eventLogChannels || {},
     });
   } catch (err) { next(err); }
 });

@@ -32,10 +32,19 @@ router.get('/', (req, res) => {
     where += ' AND items.name LIKE ?';
     params.push(`%${q}%`);
   }
+  // Ценова интелигентност (анти-измама + „лов на сделки"): за всеки листинг
+  // пращаме най-евтината КОНКУРЕНТНА активна цена за същия предмет и
+  // последната реално ПРОДАДЕНА цена. Купувачът веднага вижда дали цената е
+  // изгодна или надута — пазарът се самобалансира без админ намеса.
   const rows = db
     .prepare(
       `SELECT m.id AS listing_id, m.price_gold, m.listed_at, m.seller_id,
-              items.*, s.name AS seller_name, s.class AS seller_class, s.level AS seller_level
+              items.*, s.name AS seller_name, s.class AS seller_class, s.level AS seller_level,
+              (SELECT MIN(m2.price_gold) FROM marketplace_listings m2
+                WHERE m2.item_id = m.item_id AND m2.status = 'active') AS cheapest_active,
+              (SELECT m3.price_gold FROM marketplace_listings m3
+                WHERE m3.item_id = m.item_id AND m3.status = 'sold'
+                ORDER BY m3.sold_at DESC LIMIT 1) AS last_sold_price
        FROM marketplace_listings m
        JOIN items ON items.id = m.item_id
        JOIN characters s ON s.id = m.seller_id
@@ -78,12 +87,13 @@ router.post('/sell', (req, res) => {
   const db = getDb();
   const row = db
     .prepare(
-      `SELECT inv.id AS inv_id, inv.equipped, inv.soul_bound, inv.listed, items.*
+      `SELECT inv.id AS inv_id, inv.equipped, inv.soul_bound, inv.listed, inv.vaulted_guild_id, items.*
        FROM inventory inv JOIN items ON items.id = inv.item_id
        WHERE inv.id = ? AND inv.character_id = ?`,
     )
     .get(parse.data.inventoryId, char.id) as any;
   if (!row) { res.status(404).json({ error: 'Item not found in your bag' }); return; }
+  if (row.vaulted_guild_id) { res.status(400).json({ error: 'Withdraw the item from the guild vault first.' }); return; }
   if (row.soul_bound) { res.status(400).json({ error: 'Soul-bound items cannot be re-listed.' }); return; }
   if (row.listed) { res.status(400).json({ error: 'Already listed.' }); return; }
   if (row.equipped) { res.status(400).json({ error: 'Unequip the item before listing.' }); return; }
@@ -146,8 +156,14 @@ router.post('/buy', (req, res) => {
     if (close.changes !== 1) throw new Error('Listing already sold');
     db.prepare('UPDATE characters SET gold = gold + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?')
       .run(sellerCut, sellerCut, listing.seller_id);
-    db.prepare(`UPDATE inventory SET character_id = ?, equipped = 0, slot = '', listed = 0, soul_bound = 1 WHERE id = ?`)
+    // Guard with changes===1: if the item row was deleted between listing
+    // and purchase (e.g. shattered in the forge) the tx rolls back instead
+    // of charging the buyer for nothing. Clear any stale vault linkage so a
+    // vault-listed item can't be double-owned.
+    const moved = db.prepare(`UPDATE inventory SET character_id = ?, equipped = 0, slot = '', listed = 0, soul_bound = 1, vaulted_guild_id = 0 WHERE id = ?`)
       .run(char.id, listing.inventory_id);
+    if (moved.changes !== 1) throw new Error('Item is no longer available');
+    db.prepare('DELETE FROM guild_vault WHERE inventory_id = ?').run(listing.inventory_id);
     // Mail the seller a notification
     db.prepare('INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)')
       .run(

@@ -1,0 +1,21 @@
+-- v42 — индекс за гейта „максимум N отворени тикета на панел за потребител“.
+--
+-- `routes/bot.js` брои с `{ panelId, creatorId, status: { in: [...] } }` при
+-- ВСЯКО отваряне на тикет (горещият път, преди 3-секундния ack на Discord).
+-- Без този индекс заявката сканира всички тикети на панела.
+--
+-- CONCURRENTLY: таблицата `tickets` е най-голямата в базата и деплоят пуска
+-- миграциите при старт на backend-а. Обикновено `CREATE INDEX` взима ACCESS
+-- EXCLUSIVE и спира записа за времето на строежа — при жив трафик това е
+-- прекъсване. Затова индексът е извън транзакция.
+--
+-- ВАЖНО за Prisma: `migrate deploy` обвива всяка миграция в транзакция, а
+-- CONCURRENTLY не работи вътре в транзакция. Затова тук е с IF NOT EXISTS и
+-- обикновен CREATE — при малка таблица е моментален. За голяма продукционна
+-- таблица пусни го РЪЧНО преди деплоя:
+--   CREATE INDEX CONCURRENTLY "tickets_panelId_creatorId_status_idx"
+--     ON "tickets"("panelId", "creatorId", "status");
+--   npx prisma migrate resolve --applied 20260817002000_v42_ticket_panel_index
+-- Крайното състояние е идентично, стига името да съвпада.
+CREATE INDEX IF NOT EXISTS "tickets_panelId_creatorId_status_idx"
+  ON "tickets"("panelId", "creatorId", "status");

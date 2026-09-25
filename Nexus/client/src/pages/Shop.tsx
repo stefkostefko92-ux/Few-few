@@ -13,11 +13,18 @@ export default function Shop(): React.ReactElement {
   const toast = useStore((s) => s.toast);
   const [items, setItems] = useState<Item[]>([]);
   const [cat, setCat] = useState<string>('all');
+  // Дневни оферти: item_id → промо цена (сървърът е авторитетен за отстъпката).
+  const [deals, setDeals] = useState<Record<number, number>>({});
+  const [dealsExpireAt, setDealsExpireAt] = useState(0);
 
   async function load() {
     try {
       const r = await api.get('/shop');
       setItems(r.items);
+      const map: Record<number, number> = {};
+      for (const d of r.daily_deals || []) map[d.item_id] = d.deal_price;
+      setDeals(map);
+      setDealsExpireAt(r.deals_expire_at || 0);
     } catch (e: any) {
       toast(e.message, 'error');
     }
@@ -26,6 +33,9 @@ export default function Shop(): React.ReactElement {
 
   const categories = useMemo(() => Array.from(new Set(items.map((i) => i.category))).sort(), [items]);
   const filtered = items.filter((i) => cat === 'all' || i.category === cat);
+  const dealItems = items.filter((i) => deals[i.id] !== undefined);
+  const priceOf = (it: Item) => deals[it.id] ?? it.buy_price;
+  const hoursLeft = Math.max(0, Math.ceil((dealsExpireAt - Date.now()) / 3_600_000));
 
   async function buy(id: number) {
     try {
@@ -47,6 +57,36 @@ export default function Shop(): React.ReactElement {
           </div>
           <div className="tag gold" style={{ fontSize: 14 }}>{t('shop.goldAmount', { n: char?.gold.toLocaleString() || 0 })}</div>
         </div>
+        {dealItems.length > 0 && (
+          <div className="card" style={{ marginBottom: 18, borderColor: 'var(--gold-3)', background: 'rgba(214,161,61,.06)' }}>
+            <div className="flex between" style={{ marginBottom: 10 }}>
+              <strong style={{ color: 'var(--gold-1)' }}>⚡ {t('shop.dailyDeals', { defaultValue: 'Daily deals — 30% off' })}</strong>
+              <span className="muted text-sm">{t('shop.dealsExpire', { hours: hoursLeft, defaultValue: 'Rotates in {{hours}}h' })}</span>
+            </div>
+            <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
+              {dealItems.map((it) => (
+                <div key={it.id} className={`card rarity-border-${it.rarity}`} style={{ minWidth: 200, flex: '1 1 200px' }}>
+                  <div className="flex" style={{ gap: 8, alignItems: 'center' }}>
+                    <Sprite {...spriteForItem(it)} size={34} />
+                    <div>
+                      <div className={`rarity-${it.rarity}`} style={{ fontWeight: 700, fontSize: 13 }}>{it.name}</div>
+                      <div className="muted text-sm">{t('shop.lv', { n: it.level_req })}</div>
+                    </div>
+                  </div>
+                  <div className="flex between" style={{ marginTop: 8, alignItems: 'center' }}>
+                    <span>
+                      <span className="muted" style={{ textDecoration: 'line-through', fontSize: 12, marginRight: 6 }}>{it.buy_price.toLocaleString()}g</span>
+                      <span className="gold" style={{ fontWeight: 700 }}>{deals[it.id].toLocaleString()}g</span>
+                    </span>
+                    <button className="btn btn-primary btn-sm" disabled={!char || char.gold < deals[it.id] || it.level_req > (char?.level ?? 0)} onClick={() => buy(it.id)}>
+                      {t('shop.buy')}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="flex gap-sm" style={{ flexWrap: 'wrap', marginBottom: 18 }}>
           <Pill active={cat === 'all'} onClick={() => setCat('all')}>{t('shop.all')}</Pill>
           {categories.map((c) => (
@@ -71,8 +111,15 @@ export default function Shop(): React.ReactElement {
               <div className="muted text-sm" style={{ marginTop: 8 }}>{it.description}</div>
               <div style={{ marginTop: 10, fontSize: 13 }}>{itemSummary(it, t)}</div>
               <div className="flex between" style={{ marginTop: 12 }}>
-                <span className="gold">{t('shop.goldAmount', { n: it.buy_price })}</span>
-                <button className="btn btn-primary btn-sm" disabled={!char || char.gold < it.buy_price} onClick={() => buy(it.id)}>
+                {deals[it.id] !== undefined ? (
+                  <span>
+                    <span className="muted" style={{ textDecoration: 'line-through', fontSize: 12, marginRight: 6 }}>{it.buy_price.toLocaleString()}g</span>
+                    <span className="gold" style={{ fontWeight: 700 }}>{deals[it.id].toLocaleString()}g</span>
+                  </span>
+                ) : (
+                  <span className="gold">{t('shop.goldAmount', { n: it.buy_price })}</span>
+                )}
+                <button className="btn btn-primary btn-sm" disabled={!char || char.gold < priceOf(it)} onClick={() => buy(it.id)}>
                   {t('shop.buy')}
                 </button>
               </div>

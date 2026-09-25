@@ -6,6 +6,8 @@ import { authRequired } from '../middleware/auth';
 import { adminRequired } from '../middleware/admin';
 import { logFromRequest, logEvent, isSafeWebhookUrl } from '../lib/logger';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
+import { banUser, unbanUser } from '../lib/bans';
+import { eraseUser } from '../lib/erasure';
 
 const router = Router();
 router.use(authRequired, adminRequired);
@@ -186,7 +188,8 @@ router.put('/guilds/:id', (req, res) => {
   }
   if (!sets.length) { res.status(400).json({ error: 'No fields to update' }); return; }
   params.push(id);
-  getDb().prepare(`UPDATE guilds SET ${sets.join(', ')} WHERE id = ?`).run(...params);
+  const info = getDb().prepare(`UPDATE guilds SET ${sets.join(', ')} WHERE id = ?`).run(...params);
+  if (info.changes !== 1) { res.status(404).json({ error: 'Guild not found' }); return; }
   res.json({ ok: true });
 });
 
@@ -254,8 +257,14 @@ router.put('/items/:id', (req, res) => {
 
 router.delete('/items/:id', (req, res) => {
   const id = Number(req.params.id);
-  getDb().prepare('DELETE FROM items WHERE id = ?').run(id);
-  res.json({ ok: true });
+  try {
+    const info = getDb().prepare('DELETE FROM items WHERE id = ?').run(id);
+    if (info.changes !== 1) { res.status(404).json({ error: 'Item not found' }); return; }
+    res.json({ ok: true });
+  } catch {
+    // FK RESTRICT — предметът е в нечий инвентар или обява (schema.ts:96/510).
+    res.status(409).json({ error: 'Item is in use (owned or listed) and cannot be deleted.' });
+  }
 });
 
 /* =========================================================
@@ -360,8 +369,14 @@ router.put('/quests/:id', (req, res) => {
 
 router.delete('/quests/:id', (req, res) => {
   const id = Number(req.params.id);
-  getDb().prepare('DELETE FROM quests WHERE id = ?').run(id);
-  res.json({ ok: true });
+  try {
+    const info = getDb().prepare('DELETE FROM quests WHERE id = ?').run(id);
+    if (info.changes !== 1) { res.status(404).json({ error: 'Quest not found' }); return; }
+    res.json({ ok: true });
+  } catch {
+    // FK RESTRICT — куестът е в нечий quest_log/progress (schema.ts:144).
+    res.status(409).json({ error: 'Quest is in use by players and cannot be deleted.' });
+  }
 });
 
 /* =========================================================
@@ -379,7 +394,9 @@ router.get('/users', (req, res) => {
     SELECT u.id, u.username, u.email, u.is_admin, u.created_at, u.last_seen_at,
            u.last_ip, u.last_country, u.last_user_agent,
            c.id AS char_id, c.name AS char_name, c.class AS char_class, c.level AS char_level,
-           c.gold, c.gems, c.arena_rating
+           c.gold, c.gems, c.arena_rating,
+           c.hp, c.hp_max, c.mp, c.mp_max, c.stat_points, c.skill_points,
+           c.energy, c.energy_max, c.current_title
     FROM users u LEFT JOIN characters c ON c.user_id = u.id ${where}
     ORDER BY u.last_seen_at DESC LIMIT 200
   `).all(...params);
@@ -435,7 +452,8 @@ router.put('/characters/:id', (req, res) => {
   const fields = Object.keys(parse.data);
   if (fields.length === 0) { res.status(400).json({ error: 'No fields' }); return; }
   const set = fields.map((f) => `${f} = @${f}`).join(', ');
-  getDb().prepare(`UPDATE characters SET ${set} WHERE id = @id`).run({ ...parse.data, id });
+  const info = getDb().prepare(`UPDATE characters SET ${set} WHERE id = @id`).run({ ...parse.data, id });
+  if (info.changes !== 1) { res.status(404).json({ error: 'Character not found' }); return; }
   res.json({ ok: true });
 });
 
@@ -445,7 +463,12 @@ router.delete('/users/:id', (req, res) => {
     res.status(400).json({ error: 'You cannot delete your own account.' });
     return;
   }
-  getDb().prepare('DELETE FROM users WHERE id = ?').run(id);
+  const db = getDb();
+  const target = db.prepare('SELECT id FROM users WHERE id = ?').get(id);
+  if (!target) { res.status(404).json({ error: 'User not found' }); return; }
+  // Споделен erasure — разпуска водени гилдии (иначе FK RESTRICT крах),
+  // чисти event_log PII и отменя обявите (изравнено с account.ts self-delete).
+  db.transaction((uid: number) => eraseUser(db, uid))(id);
   res.json({ ok: true });
 });
 
@@ -596,14 +619,19 @@ const webhookSchema = z.object({
 router.post('/webhooks', (req, res) => {
   const parse = webhookSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
-  getDb()
+  const info = getDb()
     .prepare('INSERT INTO webhook_endpoints (url, secret, category_filter, enabled, created_at) VALUES (?, ?, ?, ?, ?)')
     .run(parse.data.url, parse.data.secret, parse.data.category_filter, parse.data.enabled ? 1 : 0, Date.now());
+  // Явен audit — генеричният middleware пропуска /webhooks (за да няма
+  // рекурсия), а SSRF/ексфилтрационната повърхност трябва да оставя следа.
+  logFromRequest(req, { category: 'admin', action: 'webhook_create', level: 'warn', target_id: Number(info.lastInsertRowid), target_type: 'webhook', message: `Webhook added: ${parse.data.url}` });
   res.json({ ok: true });
 });
 
 router.delete('/webhooks/:id', (req, res) => {
-  getDb().prepare('DELETE FROM webhook_endpoints WHERE id = ?').run(Number(req.params.id));
+  const id = Number(req.params.id);
+  getDb().prepare('DELETE FROM webhook_endpoints WHERE id = ?').run(id);
+  logFromRequest(req, { category: 'admin', action: 'webhook_delete', level: 'warn', target_id: id, target_type: 'webhook', message: `Webhook ${id} deleted` });
   res.json({ ok: true });
 });
 
@@ -618,6 +646,7 @@ router.patch('/webhooks/:id', (req, res) => {
   if (fields.length === 0) { res.status(400).json({ error: 'No fields to update.' }); return; }
   params.push(id);
   getDb().prepare(`UPDATE webhook_endpoints SET ${fields.join(', ')} WHERE id = ?`).run(...params);
+  logFromRequest(req, { category: 'admin', action: 'webhook_update', level: 'warn', target_id: id, target_type: 'webhook', message: `Webhook ${id} updated`, meta: { fields: Object.keys(req.body || {}) } });
   res.json({ ok: true });
 });
 
@@ -650,6 +679,197 @@ router.get('/server', (_req, res) => {
     env: process.env.NODE_ENV || 'development',
     pid: process.pid,
   });
+});
+
+/* =========================================================
+   Moderation (DSA чл. 16(6)/17 — targeted takedown + бан)
+
+   Одиторът (Правния Разбирач) отбеляза, че dsa.ts приема сигнали, но
+   нямаше начин да се СВАЛИ конкретно съдържание (само триене на цял
+   акаунт). Тези endpoint-и дават таргетирано действие + доставка на
+   обосновка (statement of reasons) към ЗАСЕГНАТИЯ автор. Обжалване по
+   чл. 20 не се строи — освободено за микро-предприятия (Раздел 3, чл. 19).
+   ========================================================= */
+
+/** Доставя обосновка (чл. 17) до засегнатия герой чрез вътрешната поща. */
+function notifyAffected(characterId: number, reason: string): void {
+  try {
+    getDb().prepare(
+      `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,
+    ).run(
+      characterId,
+      'Trust & Safety',
+      'Content moderation notice',
+      `Some of your content was removed or reset by our moderation team.\n\nReason: ${reason}\n\n`
+        + 'This action was taken under our Terms and the EU Digital Services Act (Art. 17). '
+        + 'If you believe this was a mistake, reply to this message to contact us.',
+      Date.now(),
+    );
+  } catch { /* mail table present in all deploys; ignore mid-migration */ }
+}
+
+const takedownSchema = z.object({
+  kind: z.enum(['character_name', 'guild_name', 'guild_tag', 'guild_motto', 'bio', 'chat_message']),
+  targetId: z.number().int().positive(),
+  reason: z.string().min(3).max(300),
+  notify: z.boolean().default(true),
+  noticeId: z.number().int().positive().optional(), // ако идва от DSA сигнал → резолвни го
+});
+
+// Гарантирано-уникална стойност за UNIQUE колона — иначе squat-нато
+// „Reclaimed<id>"/„Guild <id>" би хвърлило UNIQUE и провалило takedown-а
+// (500 + недоставена обосновка). Проверява и добавя случаен суфикс.
+function uniqueValue(db: ReturnType<typeof getDb>, table: string, col: string, candidate: (i: number) => string): string {
+  for (let i = 0; i < 30; i++) {
+    const v = candidate(i);
+    if (!db.prepare(`SELECT 1 FROM ${table} WHERE ${col} = ? LIMIT 1`).get(v)) return v;
+  }
+  return candidate(Math.floor(Math.random() * 1e9));
+}
+const rnd = (n: number) => Math.random().toString(36).slice(2, 2 + n);
+const rndTag = () => Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+
+router.post('/moderation/takedown', (req, res) => {
+  const parse = takedownSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const { kind, targetId, reason, notify, noticeId } = parse.data;
+  const db = getDb();
+  let affectedChar: number | undefined;
+  let detail = '';
+
+  const tx = db.transaction(() => {
+    switch (kind) {
+      case 'character_name': {
+        const row = db.prepare('SELECT id FROM characters WHERE id = ?').get(targetId) as { id: number } | undefined;
+        if (!row) return 'not_found';
+        const name = uniqueValue(db, 'characters', 'name', (i) => (i === 0 ? `Reclaimed${targetId}` : `Reclaimed${targetId}_${rnd(4)}`).slice(0, 20));
+        db.prepare('UPDATE characters SET name = ? WHERE id = ?').run(name, targetId);
+        affectedChar = targetId; detail = `character name → ${name}`;
+        return 'ok';
+      }
+      case 'bio': {
+        const row = db.prepare('SELECT id FROM characters WHERE id = ?').get(targetId) as { id: number } | undefined;
+        if (!row) return 'not_found';
+        db.prepare("UPDATE characters SET bio = '' WHERE id = ?").run(targetId);
+        affectedChar = targetId; detail = 'bio cleared';
+        return 'ok';
+      }
+      case 'guild_name':
+      case 'guild_tag':
+      case 'guild_motto': {
+        const g = db.prepare('SELECT id, leader_id FROM guilds WHERE id = ?').get(targetId) as { id: number; leader_id: number } | undefined;
+        if (!g) return 'not_found';
+        if (kind === 'guild_name') {
+          const gn = uniqueValue(db, 'guilds', 'name', (i) => (i === 0 ? `Guild ${targetId}` : `Guild ${targetId} ${rnd(4)}`).slice(0, 30));
+          db.prepare('UPDATE guilds SET name = ? WHERE id = ?').run(gn, targetId); detail = 'guild name reset';
+        } else if (kind === 'guild_tag') {
+          const tag = uniqueValue(db, 'guilds', 'tag', () => rndTag());
+          db.prepare('UPDATE guilds SET tag = ? WHERE id = ?').run(tag, targetId); detail = 'guild tag reset';
+        } else {
+          db.prepare("UPDATE guilds SET motto = '' WHERE id = ?").run(targetId); detail = 'guild motto cleared';
+        }
+        affectedChar = g.leader_id;
+        return 'ok';
+      }
+      case 'chat_message': {
+        const msg = db.prepare('SELECT character_id FROM guild_chat WHERE id = ?').get(targetId) as { character_id: number } | undefined;
+        if (!msg) return 'not_found';
+        db.prepare('DELETE FROM guild_chat WHERE id = ?').run(targetId);
+        affectedChar = msg.character_id; detail = 'chat message removed';
+        return 'ok';
+      }
+    }
+    return 'not_found';
+  });
+
+  let outcome: string;
+  try {
+    outcome = tx() as string;
+  } catch (e: any) {
+    // Предпазна мрежа — при неочаквана колизия/грешка не хвърляй 500 голо.
+    res.status(409).json({ error: 'Takedown failed (conflict) — try again.' });
+    return;
+  }
+  if (outcome === 'not_found') { res.status(404).json({ error: 'Target not found' }); return; }
+
+  if (notify && affectedChar) notifyAffected(affectedChar, reason);
+  if (noticeId) {
+    db.prepare(`UPDATE dsa_notices SET status = 'actioned', decision = ?, decided_at = ? WHERE id = ?`)
+      .run(reason, Date.now(), noticeId);
+  }
+  logEvent({
+    category: 'moderation', action: 'takedown', level: 'warn',
+    user_id: req.auth!.uid, target_id: targetId, target_type: kind,
+    message: `Takedown: ${detail}`, meta: { reason, notified: notify && !!affectedChar, noticeId: noticeId ?? null },
+  });
+  res.json({ ok: true, kind, targetId, detail, notified: notify && !!affectedChar });
+});
+
+/**
+ * Ръчен бан (chargeback банът минава през webhook-а автоматично).
+ * `durationMs` по избор: 0/липсва = ПОСТОЯНЕН; >0 = временен (изтича).
+ */
+const banSchema = z.object({
+  userId: z.number().int().positive(),
+  reason: z.string().min(3).max(300),
+  durationMs: z.number().int().nonnegative().max(3153600000000).optional(), // ≤ ~100г
+});
+router.post('/moderation/ban', (req, res) => {
+  const parse = banSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const { userId, reason, durationMs } = parse.data;
+  if (userId === req.auth!.uid) { res.status(400).json({ error: 'You cannot ban your own account.' }); return; }
+  const db = getDb();
+  const u = db.prepare('SELECT id, last_ip, last_hwid, is_admin FROM users WHERE id = ?').get(userId) as
+    | { id: number; last_ip: string; last_hwid: string; is_admin: number } | undefined;
+  if (!u) { res.status(404).json({ error: 'User not found' }); return; }
+  // Не банвай друг администратор (footgun / ескалация при компрометиран акаунт).
+  if (u.is_admin === 1) { res.status(400).json({ error: 'Cannot ban an administrator. Demote them first.' }); return; }
+  banUser({ userId, ip: u.last_ip, hwid: u.last_hwid, reason, durationMs });
+  const until = durationMs && durationMs > 0 ? Date.now() + durationMs : 0;
+  logEvent({ category: 'moderation', action: 'manual_ban', level: 'warn', user_id: req.auth!.uid, target_id: userId, target_type: 'user', message: `Manual ban (user ${userId})`, meta: { reason, until } });
+  res.json({ ok: true, userId, until, banned_ip: u.last_ip || null, banned_hwid: u.last_hwid || null });
+});
+
+const unbanSchema = z.object({ userId: z.number().int().positive() });
+router.post('/moderation/unban', (req, res) => {
+  const parse = unbanSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  unbanUser(parse.data.userId);
+  logEvent({ category: 'moderation', action: 'unban', level: 'info', user_id: req.auth!.uid, target_id: parse.data.userId, target_type: 'user', message: `Unban (user ${parse.data.userId})` });
+  res.json({ ok: true, userId: parse.data.userId });
+});
+
+/** Списък DSA сигнали за модерационния панел (open най-горе). */
+router.get('/moderation/notices', (req, res) => {
+  const status = typeof req.query.status === 'string' ? req.query.status : 'open';
+  const db = getDb();
+  const rows = status === 'all'
+    ? db.prepare('SELECT * FROM dsa_notices ORDER BY (status = \'open\') DESC, created_at DESC LIMIT 200').all()
+    : db.prepare('SELECT * FROM dsa_notices WHERE status = ? ORDER BY created_at DESC LIMIT 200').all(status);
+  res.json({ notices: rows });
+});
+
+router.get('/moderation/bans', (_req, res) => {
+  const db = getDb();
+  res.json({
+    users: db.prepare('SELECT id, username, banned_reason, banned_at, banned_until FROM users WHERE banned = 1 ORDER BY banned_at DESC LIMIT 200').all(),
+    ips: db.prepare('SELECT ip, reason, user_id, created_at FROM banned_ips ORDER BY created_at DESC LIMIT 200').all(),
+    devices: db.prepare('SELECT hwid, reason, user_id, created_at FROM banned_devices ORDER BY created_at DESC LIMIT 200').all(),
+  });
+});
+
+/** Отхвърляне на DSA сигнал без действие (напр. неоснователен). */
+const rejectSchema = z.object({ decision: z.string().min(3).max(300) });
+router.post('/moderation/dsa/:id/reject', (req, res) => {
+  const id = Number(req.params.id);
+  const parse = rejectSchema.safeParse(req.body);
+  if (!Number.isInteger(id) || !parse.success) { res.status(400).json({ error: 'Invalid request' }); return; }
+  const info = getDb().prepare(`UPDATE dsa_notices SET status = 'rejected', decision = ?, decided_at = ? WHERE id = ? AND status = 'open'`)
+    .run(parse.data.decision, Date.now(), id);
+  if (info.changes !== 1) { res.status(404).json({ error: 'Notice not found or already decided' }); return; }
+  logEvent({ category: 'moderation', action: 'dsa_reject', level: 'info', user_id: req.auth!.uid, target_id: id, target_type: 'dsa_notice', message: `DSA notice ${id} rejected` });
+  res.json({ ok: true, id });
 });
 
 export default router;

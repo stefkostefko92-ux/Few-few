@@ -15,7 +15,8 @@ const eur = formatDualPrice;
 /** Human-readable, distinguishing perks for a VIP tier. */
 function perkLines(p: VipPerks, t: (k: string, o?: Record<string, unknown>) => string): string[] {
   const lines: string[] = [];
-  if (p.adsRemoved) lines.push(t("shop.perk.noAds"));
+  // `adsRemoved` is intentionally not shown — there is no ad system, so listing
+  // "no ads" as a perk would be a misleading commercial practice.
   if (p.xpMultiplier > 1) lines.push(t("shop.perk.xp", { p: Math.round((p.xpMultiplier - 1) * 100) }));
   if (p.dailyChipMultiplier > 1)
     lines.push(t("shop.perk.daily", { p: Math.round((p.dailyChipMultiplier - 1) * 100) }));
@@ -34,6 +35,10 @@ export function Shop() {
   const [billingEnabled, setBillingEnabled] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // Per-SKU checkout consent (CRD art. 16): the buyer must agree before we
+  // create a Stripe session. One-off digital goods → immediate supply + loss of
+  // the 14-day withdrawal right; VIP → 14-day right with proportional deduction.
+  const [consented, setConsented] = useState<Record<string, boolean>>({});
   const [params] = useSearchParams();
 
   useEffect(() => {
@@ -59,6 +64,7 @@ export function Shop() {
   }, [params, t, setUser]);
 
   async function buy(sku: string) {
+    if (!consented[sku]) return; // gated by the consent checkbox below
     setBusy(sku);
     setNotice(null);
     try {
@@ -123,14 +129,36 @@ export function Shop() {
                       </ul>
                     ) : null}
                   </div>
-                  <Button
-                    loading={busy === p.sku}
-                    disabled={!billingEnabled}
-                    onClick={() => void buy(p.sku)}
-                    className="w-full"
-                  >
-                    {billingEnabled ? eur(p.priceCents) : `${eur(p.priceCents)} · ${t("shop.soon")}`}
-                  </Button>
+                  <div>
+                    <label className="mb-3 flex items-start gap-2 text-xs text-ink-300">
+                      <input
+                        type="checkbox"
+                        checked={consented[p.sku] ?? false}
+                        onChange={(e) =>
+                          setConsented((c) => ({ ...c, [p.sku]: e.target.checked }))
+                        }
+                        className="mt-0.5 size-4 shrink-0 accent-brass-300"
+                      />
+                      <span>
+                        {p.kind === "VIP_SUB"
+                          ? t("shop.consentSubscription")
+                          : t("shop.consentImmediate")}
+                      </span>
+                    </label>
+                    <Button
+                      loading={busy === p.sku}
+                      disabled={!billingEnabled || !(consented[p.sku] ?? false)}
+                      onClick={() => void buy(p.sku)}
+                      className="w-full"
+                    >
+                      {billingEnabled ? eur(p.priceCents) : `${eur(p.priceCents)} · ${t("shop.soon")}`}
+                    </Button>
+                    {!(consented[p.sku] ?? false) ? (
+                      <p className="mt-1.5 text-center text-[0.7rem] text-ink-muted">
+                        {t("shop.consentRequired")}
+                      </p>
+                    ) : null}
+                  </div>
                 </Panel>
               </li>
             ))}

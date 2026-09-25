@@ -5,11 +5,16 @@
 
 import { SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
+import { friendlyError } from "../utils/friendlyError.js";
+import { WARNING } from "../utils/colors.js";
+import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
+import { isStaffForAutocomplete } from "../utils/staffCheck.js";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("escalate")
     .setDescription("Move this ticket to a different panel / support team")
+    .setDescriptionLocalizations(CMD_DESC_L10N.escalate)
     .addStringOption((opt) =>
       opt.setName("panel").setDescription("Target panel").setRequired(true).setAutocomplete(true)
     )
@@ -18,6 +23,13 @@ export default {
     ),
 
   async autocomplete(interaction) {
+    // autocomplete е ОТДЕЛЕН тип взаимодействие — Discord го доставя, без да
+    // мине през проверката в execute(). Без този гард падащото меню показваше
+    // вътрешни имена на всеки член (Изпитателят, 07.08.2026). Staff-ът тук е по
+    // потребителски роли, не по Discord право, затова гейтът е runtime, не
+    // setDefaultMemberPermissions — иначе легитимен модератор без ManageGuild
+    // би загубил командата.
+    if (!(await isStaffForAutocomplete(interaction))) return interaction.respond([]);
     const focused = interaction.options.getFocused().toLowerCase();
     try {
       const { data: panels } = await api.get(`/bot/guild/${interaction.guildId}/panels`);
@@ -67,7 +79,7 @@ export default {
         reason,
       });
     } catch (err) {
-      return interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);
+      return interaction.editReply(friendlyError(err, interaction));
     }
 
     // Move channel to new open category + update permissions
@@ -102,7 +114,7 @@ export default {
           reason && `**Reason**: ${reason}`,
           (added.length || removed.length) && `_Support team updated._`,
         ].filter(Boolean).join("\n"),
-        color: 0xfbbf24,
+        color: WARNING,
         timestamp: new Date().toISOString(),
       }],
     });
