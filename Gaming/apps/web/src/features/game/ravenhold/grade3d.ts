@@ -10,6 +10,22 @@ import { GRADE_GLSL } from "./gradeGlsl";
  * passed through untouched so a transparent board canvas still reveals the
  * hall behind it.
  */
+/**
+ * Топла филмова халация (boy/src/post-lens.js): тесните мипове на bloom-а светят
+ * оранжево-розово като ореола около пламък на лента, широките остават неутрални.
+ * По един RGB множител на мип (UnrealBloomPass и BloomNode имат по пет).
+ */
+export const HALATION_TINTS: ReadonlyArray<readonly [number, number, number]> = [
+  [1.0, 0.7, 0.58],
+  [1.0, 0.84, 0.74],
+  [1.0, 0.95, 0.9],
+  [1.0, 1.0, 1.0],
+  [0.92, 0.96, 1.0],
+];
+
+/** Хроматична аберация на лещата в ъглите (boy: P.ca). 0 = изкл. */
+export const LENS_CA = 0.0025;
+
 export const RavenGradeShader = {
   uniforms: {
     tDiffuse: { value: null as unknown },
@@ -17,6 +33,7 @@ export const RavenGradeShader = {
     uGrain: { value: 0.035 },
     uVignette: { value: 0.35 },
     uAspect: { value: 1 },
+    uCA: { value: LENS_CA },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -30,17 +47,25 @@ export const RavenGradeShader = {
     uniform float uGrain;
     uniform float uVignette;
     uniform float uAspect;
+    uniform float uCA;
     varying vec2 vUv;
     ${GRADE_GLSL}
     void main() {
       vec4 texel = texture2D(tDiffuse, vUv);
+      vec2 d = (vUv - 0.5) * vec2(uAspect, 1.0);
+      float r2 = dot(d, d);
+      // Лещата разделя червено и синьо към ъглите (boy/src/post-grade.js). Само вътре в
+      // плътното: на силуета към прозрачната зала отместените проби биха оставили ресни.
+      vec2 off = (vUv - 0.5) * r2 * uCA * 4.0;
+      vec4 cr = texture2D(tDiffuse, vUv - off);
+      vec4 cb = texture2D(tDiffuse, vUv + off);
+      float solid = step(0.999, min(texel.a, min(cr.a, cb.a)));
+      texel.rgb = mix(texel.rgb, vec3(cr.r, texel.g, cb.b), solid);
       float a = texel.a;
       // The canvas composites premultiplied: grade the straight colour, then
       // premultiply again — otherwise the split tone lifts fully transparent
       // pixels and a faint blue box appears over the hall.
       vec3 col = a > 0.0001 ? texel.rgb / a : vec3(0.0);
-      vec2 d = (vUv - 0.5) * vec2(uAspect, 1.0);
-      float r2 = dot(d, d);
       col *= clamp(1.0 - uVignette * pow(r2 * 1.6, 1.3), 0.0, 1.0);
       gl_FragColor = vec4(ravenLook(col, uTime, uGrain) * a, a);
     }`,

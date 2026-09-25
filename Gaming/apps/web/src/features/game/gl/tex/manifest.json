@@ -1,0 +1,35 @@
+{
+ "brass": {
+  "key": "46f4e6426cb50f48:512",
+  "size": 512,
+  "tile": 1,
+  "heightRange": 0.0093904840759933,
+  "files": {
+   "albedo": "brass_albedo.webp",
+   "normal": "brass_normal.webp",
+   "orm": "brass_orm.webp"
+  }
+ },
+ "felt": {
+  "key": "46f4e6426cb50f48:512",
+  "size": 512,
+  "tile": 1,
+  "heightRange": 0.004293357138521969,
+  "files": {
+   "albedo": "felt_albedo.webp",
+   "normal": "felt_normal.webp",
+   "orm": "felt_orm.webp"
+  }
+ },
+ "walnut": {
+  "key": "46f4e6426cb50f48:1024",
+  "size": 1024,
+  "tile": 1,
+  "heightRange": 0.0006954701239010319,
+  "files": {
+   "albedo": "walnut_albedo.webp",
+   "normal": "walnut_normal.webp",
+   "orm": "walnut_orm.webp"
+  }
+ }
+}

@@ -25,11 +25,12 @@ import {
   PMREMGenerator,
   type Scene,
   Vector2,
+  Vector3,
   WebGLRenderer,
 } from "three";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { HallEnvironment } from "../ravenhold/hallEnvironment";
-import { RavenGradeShader, makeGradeTime, ravenGradeNode, vignetteStrength } from "../ravenhold/grade3d";
+import { HALATION_TINTS, RavenGradeShader, makeGradeTime, ravenGradeNode, vignetteStrength } from "../ravenhold/grade3d";
 
 type GradeUniforms = { uTime: { value: number }; uVignette: { value: number }; uAspect: { value: number } };
 import { useSettings } from "../../../lib/settings";
@@ -268,6 +269,8 @@ export class RenderCore implements GfxControllable {
       }
       if (params.bloom.enabled) {
         bloomPass = new UnrealBloomPass(new Vector2(w, h), params.bloom.strength, params.bloom.radius, params.bloom.threshold);
+        // Рейвънхолд: топла филмова халация около пламъците и месинга (boy/src/post-lens.js).
+        HALATION_TINTS.forEach(([r, g, b], i) => bloomPass!.bloomTintColors[i]?.set(r, g, b));
         add(bloomPass);
       }
       add(new OutputPass());
@@ -379,6 +382,7 @@ export class RenderCore implements GfxControllable {
       }
       if (params.bloom.enabled) {
         bloomNode = bloom(node, params.bloom.strength, params.bloom.radius, params.bloom.threshold);
+        (bloomNode as unknown as { bloomTintColors: Vector3[] }).bloomTintColors = HALATION_TINTS.map(([r, g, b]) => new Vector3(r, g, b));
         node = (node as { add: (x: unknown) => unknown }).add(bloomNode);
       }
       // Рейвънхолд grade in display space: tone-map + sRGB explicitly with

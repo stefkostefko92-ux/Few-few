@@ -46,6 +46,7 @@ export function disposeObject(root: Object3D): void {
       for (const v of Object.values(m)) {
         if (v && (v as Texture).isTexture) (v as Texture).dispose();
       }
+      m.__disposed = true; // късно пристигнали изпечени карти (baked.ts) не пипат мъртъв материал
       m.dispose();
     }
   });

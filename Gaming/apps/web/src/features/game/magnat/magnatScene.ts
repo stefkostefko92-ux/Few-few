@@ -8,6 +8,7 @@
  * The React view (MagnatView) owns the DOM HUD; this owns the pixels. Renders
  * on demand (rAF only while tokens move) so a static board costs no idle GPU.
  */
+import { upgradeMaterial } from "../gl/baked.js";
 import {
   AmbientLight,
   BoxGeometry,
@@ -50,6 +51,7 @@ function disposeObject(root: Object3D): void {
       for (const v of Object.values(m)) {
         if (v && (v as Texture).isTexture) (v as Texture).dispose();
       }
+      (m as { __disposed?: boolean }).__disposed = true; // късни изпечени карти (baked.ts) не го пипат
       m.dispose();
     }
   });
@@ -579,6 +581,7 @@ export class MagnatScene {
       normalMap: clothN,
       normalScale: new Vector2(0.45, 0.45),
     });
+    upgradeMaterial(this.baseMat, "felt", { repeat: [23, 23], normalScale: 0.6, onReady: () => this.core.invalidate() });
     const base = new Mesh(new BoxGeometry(2 * (outer + railW) + 0.6, 1, 2 * (outer + railW) + 0.6), this.baseMat);
     base.position.y = -0.5;
     base.receiveShadow = true;
@@ -596,6 +599,10 @@ export class MagnatScene {
       normalMap: woodN,
       normalScale: new Vector2(0.6, 0.6),
     });
+    upgradeMaterial(woodMat, "walnut", { repeat: [7, 1], albedo: true, roughness: 0.9, normalScale: 0.8, onReady: () => this.core.invalidate() });
+    // Страничните греди лежат по z: същият орех, завъртян, за да върви жилката по дължината им.
+    const sideMat = woodMat.clone();
+    upgradeMaterial(sideMat, "walnut", { repeat: [7, 1], rotate: true, albedo: true, roughness: 0.9, normalScale: 0.8, onReady: () => this.core.invalidate() });
     const e = outer + railW / 2;
     const len = 2 * e + railW;
     const beams: [number, number, number, number][] = [
@@ -605,7 +612,7 @@ export class MagnatScene {
       [-e, 0, railW, 2 * e],
     ];
     for (const [bx, bz, bw, bd] of beams) {
-      const beam = new Mesh(new BoxGeometry(bw, railH, bd), woodMat);
+      const beam = new Mesh(new BoxGeometry(bw, railH, bd), bw < bd ? sideMat : woodMat);
       beam.position.set(bx, railH / 2 - 0.05, bz);
       beam.castShadow = true;
       beam.receiveShadow = true;

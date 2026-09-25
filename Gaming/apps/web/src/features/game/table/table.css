@@ -13,16 +13,19 @@
   border-radius: 30px;
   overflow: hidden;
   isolation: isolate;
-  /* Polished walnut rail: layered grain + a top bevel sheen. */
+  /* Polished walnut rail: the same baked walnut as the 3D tables (gl/tex, изпечен
+     от bake/ на boy) under a top bevel sheen and a falloff toward the far edges. */
   background:
     linear-gradient(180deg, rgba(255, 226, 170, 0.22) 0%, transparent 7%),
-    repeating-linear-gradient(
-      96deg,
-      rgba(0, 0, 0, 0.16) 0 2px,
-      rgba(255, 220, 160, 0.04) 2px 5px,
-      transparent 5px 11px
+    radial-gradient(
+      120% 140% at 50% -20%,
+      rgba(255, 190, 120, 0.1) 0%,
+      rgba(0, 0, 0, 0.18) 38%,
+      rgba(0, 0, 0, 0.5) 66%,
+      rgba(0, 0, 0, 0.82) 100%
     ),
-    radial-gradient(120% 140% at 50% -20%, #4a3019 0%, #2c1b0f 38%, #1c1108 66%, #0c0704 100%);
+    url("../gl/tex/walnut_albedo.webp") 0 0 / 640px auto repeat,
+    #2c1b0f;
   padding: 20px;
   box-shadow:
     0 34px 80px -22px rgba(0, 0, 0, 0.8),
