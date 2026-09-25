@@ -158,7 +158,7 @@ export async function SiteFooter() {
               {SITE.company.tradeName}
             </a>
             <br />
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-600">
               {SITE.company.legalName} · ЕИК {SITE.company.eik} · ДДС №{" "}
               {SITE.company.vat}
             </span>

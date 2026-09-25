@@ -356,6 +356,39 @@ html.dark .page-hero {
   background-image: linear-gradient(to bottom right, #1c2742, #0f172a 60%, #0f172a);
 }
 
+/* Класове с прозрачност (bg-x/50) и hover: варианти са ДРУГИ имена на класове,
+   затова тъмните правила по-горе не ги хващат — светъл фон оставаше под светъл
+   текст (празният рекламен слот ~2.6:1, при hover ~1.1:1). */
+html.dark .bg-brand-50\/50,
+html.dark .hover\:bg-brand-50:hover {
+  background-color: #1c2742;
+}
+html.dark .hover\:bg-brand-100:hover {
+  background-color: #243044;
+}
+html.dark .border-slate-200\/70,
+html.dark .border-slate-200\/80 {
+  border-color: #334155;
+}
+
+/* Лента за достъпност — свита/разгъната без примигване. Класът `a11y-min` на
+   <html> се слага ПРЕДИ първото рисуване от вградения скрипт в layout.tsx
+   (на телефон — по подразбиране), затова лентата никога не се рисува
+   разгърната, за да се свие след хидратацията. */
+.a11y-when-min {
+  display: none;
+}
+html.a11y-min .a11y-when-min {
+  display: inline;
+}
+html.a11y-min .a11y-when-open,
+html.a11y-min .a11y-controls {
+  display: none;
+}
+html.a11y-min .a11y-chevron {
+  transform: none;
+}
+
 /* Минимални цели за докосване ПО ПОДРАЗБИРАНЕ (WCAG 2.5.5/2.5.8) — без да се
    разчита потребителят сам да открие и включи „по-лесно докосване“. Важно за
    възрастната аудитория с по-слаба моторика. */

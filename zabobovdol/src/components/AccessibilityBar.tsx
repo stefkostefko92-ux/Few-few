@@ -38,18 +38,15 @@ export function AccessibilityBar() {
       const c = localStorage.getItem("a11y-contrast") === "1";
       const t = localStorage.getItem("a11y-bigtouch") === "1";
       const d = localStorage.getItem("a11y-dark") === "1";
-      // На телефон разгърнатата лента изяждаше половин екран, преди човек да
-      // види сайта. Затова по подразбиране е СВИТА на тесен екран и отворена на
-      // широк. Изричният избор на човека има предимство и се помни.
-      const stored = localStorage.getItem("a11y-collapsed");
-      const narrow =
-        typeof window !== "undefined" &&
-        window.matchMedia?.("(max-width: 767px)").matches;
       setFont(f);
       setContrast(c);
       setBigTouch(t);
       setDark(d);
-      setCollapsed(stored === null ? Boolean(narrow) : stored === "1");
+      // Дали лентата е свита, се решава ПРЕДИ първото рисуване от вградения
+      // скрипт в layout.tsx (клас `a11y-min` на <html>) — иначе на телефон тя
+      // се рисуваше разгърната и после се свиваше, а страницата подскачаше.
+      // Тук само синхронизираме състоянието за aria-expanded.
+      setCollapsed(document.documentElement.classList.contains("a11y-min"));
       applyFont(f);
       applyContrast(c);
       applyBigTouch(t);
@@ -62,6 +59,8 @@ export function AccessibilityBar() {
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => {
       const next = !prev;
+      // С изрично true/false е идемпотентно — StrictMode вика тази функция два пъти.
+      document.documentElement.classList.toggle("a11y-min", next);
       try {
         localStorage.setItem("a11y-collapsed", next ? "1" : "0");
       } catch {
@@ -162,25 +161,30 @@ export function AccessibilityBar() {
           Достъпност:
         </span>
 
+        {/* Надписът и стрелката се управляват от CSS според класа `a11y-min`,
+            поставен преди първото рисуване — затова няма примигване. Скритата
+            половина на името е за екранните четци: достъпното име започва с
+            видимата дума (WCAG 2.5.3) и казва какво се показва (2.4.6). */}
         <button
           type="button"
           onClick={toggleCollapsed}
           aria-expanded={!collapsed}
           aria-controls="a11y-controls"
           className="a11y-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold text-brand-800 ring-1 ring-brand-200 transition hover:bg-brand-100"
-          title={collapsed ? "Покажи настройките за достъпност" : "Скрий настройките за достъпност"}
         >
-          <ChevronDown
-            className={"h-4 w-4 transition-transform " + (collapsed ? "" : "rotate-180")}
-            aria-hidden
-          />
-          {collapsed ? "Покажи" : "Скрий"}
+          <ChevronDown className="a11y-chevron h-4 w-4 rotate-180 transition-transform" aria-hidden />
+          <span className="a11y-when-open">
+            Скрий<span className="sr-only"> настройките за достъпност</span>
+          </span>
+          <span className="a11y-when-min">
+            Покажи<span className="sr-only"> настройките за достъпност</span>
+          </span>
         </button>
 
-        {!collapsed && (
-        <>
+        {/* Контролите стоят в DOM винаги (aria-controls трябва да сочи към
+            съществуващ елемент); CSS ги скрива, когато лентата е свита. */}
+        <div id="a11y-controls" className="a11y-controls contents">
         <div
-          id="a11y-controls"
           className="flex items-center gap-1.5"
           role="group"
           aria-label="Размер на текста"
@@ -247,8 +251,7 @@ export function AccessibilityBar() {
           <Info className="h-4 w-4" aria-hidden />
           Помощ за достъпността
         </Link>
-        </>
-        )}
+        </div>
       </div>
     </div>
   );

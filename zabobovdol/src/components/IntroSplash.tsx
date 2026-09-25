@@ -30,20 +30,19 @@ export function IntroSplash() {
   useEffect(() => {
     if (isAdmin) return;
     // В разработка StrictMode вика ефекта два пъти; пазачът спира двойното
-    // броене. В продукция така или иначе се изпълнява веднъж.
+    // броене. Флаг „отказано“ при cleanup тук НЕ бива да има: единствената
+    // заявка идва от първото изпълнение, чийто cleanup StrictMode вика веднага —
+    // отговорът щеше да се хвърли и номерът никога да не се покаже (в базата
+    // пак расте). setState след демонтиране е безвреден в React 18+.
     if (countedRef.current) return;
     countedRef.current = true;
-    let cancelled = false;
     fetch("/api/visit", { method: "POST" })
       .then((r) => r.json())
       .then((d) => {
-        if (cancelled || !d?.ok || typeof d.n !== "number") return;
+        if (!d?.ok || typeof d.n !== "number") return;
         setVisitorNo(d.n);
       })
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
   }, [isAdmin]);
 
   useEffect(() => {
@@ -131,10 +130,12 @@ export function IntroSplash() {
         {SITE.name} · {SITE.geo.city}
       </p>
 
-      {/* Истински брояч на посетителите */}
+      {/* Брояч на посещенията. Брои ВСЯКО зареждане (и презарежданията),
+          затова надписът е „посещение“, не „посетител“ — иначе числото
+          изглежда като брой хора, какъвто не е. */}
       {visitorNo !== null && (
         <p className="splash-text mt-6 text-lg text-brand-50">
-          Вие сте посетител номер{" "}
+          Посещение номер{" "}
           <span className="font-extrabold text-gold-300">
             {new Intl.NumberFormat("bg-BG").format(visitorNo)}
           </span>
