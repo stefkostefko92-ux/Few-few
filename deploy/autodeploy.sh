@@ -51,6 +51,10 @@ VIZITKA_PORT="${VIZITKA_PORT:-$(sed -n 's/^PORT=//p' /etc/vizitka/vizitka.env 2>
 VIZITKA_PORT="${VIZITKA_PORT:-3105}"
 # /healthz връща и ИМЕТО на приложението — само код 200 не доказва кой отговаря.
 VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:${VIZITKA_PORT}/healthz}"
+# node-ът, с който тръгва услугата (ExecStart в vizitka.service) — с него се проверява
+# нативният модул след npm ci.
+VIZITKA_NODE="${VIZITKA_NODE:-$(sed -n 's#^ExecStart=\([^ ]*node\) .*#\1#p' /etc/systemd/system/vizitka.service 2>/dev/null | head -1 || true)}"
+VIZITKA_NODE="${VIZITKA_NODE:-/usr/bin/node}"
 
 # panev (Panev Ascensori — systemd модел, като medqr/vizitka). Express сервира
 # предварително генерираните статични страници (корен + en/ + bg/) + /api/contact
@@ -379,7 +383,16 @@ deploy_vizitka() {
   # При провал на npm ci кодът на диска ВЕЧЕ е новият, а node_modules — полуподменени:
   # „старата услуга остава жива“ важеше само до следващия рестарт (ъпдейт, OOM, reboot),
   # който щеше да вдигне счупена комбинация. Затова връщаме и кода.
-  if ! ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev ); then
+  # `npm ls` след това НЕ е излишен: npm понякога се срива („Exit handler never called!“)
+  # с изход 0 и оставя node_modules непълни (хванато на генерална репетиция — рестартът
+  # вдигаше код без express, а само health проверката го връщаше, след секунди престой).
+  # Последната проверка зарежда нативния модул (better-sqlite3) със СЪЩИЯ node, с който
+  # тръгва услугата (ExecStart). npm ci компилира за node-а от PATH на sudo; ако на
+  # машината има две версии, модулът е за грешната (NODE_MODULE_VERSION) и услугата
+  # умира при старт — пак хванато на репетиция, пак с престой до отката.
+  if ! ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev \
+    && sudo -u vizitka npm ls --omit=dev --depth=0 >/dev/null \
+    && sudo -u vizitka "$VIZITKA_NODE" -e "new (require('better-sqlite3'))(':memory:').close()" ); then
     warn "vizitka: npm ci се провали — връщам предишния код; услугата не е рестартирана."
     vizitka_restore_code
     deploy_failed=1; return

@@ -71,6 +71,8 @@
   @keyframes drift{to{transform:translate(66px,66px)}}
   #flash{position:fixed;inset:0;z-index:60;pointer-events:none;background:#eaffff;opacity:0;mix-blend-mode:screen}
   #bolts{position:fixed;inset:0;z-index:61;pointer-events:none}
+  /* WebGL storm: black = no change (screen blend); hidden whenever no strike is alive */
+  #storm{position:fixed;inset:0;width:100%;height:100%;z-index:61;pointer-events:none;mix-blend-mode:screen;visibility:hidden}
 
   .wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:0 24px}
 
@@ -247,7 +249,7 @@
     html{scroll-behavior:auto}
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
     .reveal{opacity:1;transform:none}
-    #bolts,#flash{display:none}
+    #bolts,#flash,#storm{display:none}
   }
 </style>
 <noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
@@ -268,7 +270,7 @@
       "screenshot": "https://adblock.carbonstealth.eu/popup-shot.webp",
       "downloadUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
       "installUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
-      "softwareVersion": "5.1.1",
+      "softwareVersion": "5.1.2",
       "datePublished": "2026-06-15",
       "dateModified": "2026-09-25",
       "inLanguage": ["af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy", "da", "de", "el", "en", "es", "es-419", "et", "eu", "fa", "fi", "fil", "fr", "gl", "gu", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "ka", "kk", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mn", "mr", "ms", "ne", "nl", "no", "pa", "pl", "pt-BR", "pt-PT", "ro", "ru", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW", "zu"],
@@ -391,7 +393,7 @@
           <a class="btn ghost" href="#why">Why it's different</a>
         </div>
         <p class="storenote">Free on the Chrome Web Store · Chrome, Edge &amp; Brave</p>
-        <p class="updated">Version 5.1.1 · updated 25 September 2026 · by Carbon Stealth</p>
+        <p class="updated">Version 5.1.2 · updated 25 September 2026 · by Carbon Stealth</p>
       </div>
       <figure class="shot">
         <img class="ghost-shield" src="/shield-380.webp" alt="" width="300" height="300" aria-hidden="true" />
@@ -478,7 +480,7 @@
           </tr></thead>
           <tbody>
             <tr><th scope="row">No blocker</th><td>4 / 132</td><td>48</td></tr>
-            <tr class="usrow"><th scope="row">Supreme AdBlock 5.1</th><td>118 / 132</td><td>95</td></tr>
+            <tr class="usrow"><th scope="row">Supreme AdBlock 5.1.2</th><td>130 / 132</td><td>95</td></tr>
             <tr><th scope="row">uBlock Origin Lite</th><td>82 / 132</td><td>91</td></tr>
             <tr><th scope="row">Ghostery</th><td>98 / 132</td><td>96</td></tr>
             <tr><th scope="row">AdGuard</th><td>24–26 / 132</td><td>77</td></tr>
@@ -667,16 +669,263 @@
   syncMotion();
   if (still()) return;
 
-  // 3) The intro storm. No shadowBlur (a full-viewport Gaussian blur per stroke
-  //    cost 0.5–1.3 s per frame on a mid phone): the glow is a few wide, faint
-  //    strokes under a bright core, rasterised once per bolt. The frame loop
-  //    runs only while something is on screen. ≤2 flashes in any second (WCAG 2.3.1).
-  try {
+  // 3) The intro storm: WebGL 2 when the GPU can (3a), Canvas 2D otherwise (3b).
+  //    ≤ 3 flashes in any second (WCAG 2.3.1): a strike is two pulses 160 ms apart and
+  //    strikes are ≥ 1.2 s apart; the page-wide light stays far below the flash threshold.
+  // 3a) Cinematic storm on WebGL 2 — the recipe of our Ravenhold duel (boy/): a stepped
+  //     leader creeps down, then the return stroke fires as TWO pulses (70 ms, a second
+  //     one 160 ms later — never a strobe) and lights the storm clouds, the rain and the
+  //     impact from inside. Float HDR buffer → 5-level bloom + anamorphic streak → ACES →
+  //     film grain. The canvas is screen-blended (black = the page untouched) and renders
+  //     ONLY while a strike is alive; a slow GPU or a lost context falls back to 2D.
+  function glStorm(grid) {
+    var cv = document.createElement("canvas");
+    cv.id = "storm"; cv.setAttribute("aria-hidden", "true");
+    var gl = cv.getContext("webgl2", { alpha: false, antialias: false, depth: false, stencil: false, preserveDrawingBuffer: false, powerPreference: "high-performance" });
+    if (!gl || !gl.getExtension("EXT_color_buffer_float")) return null;
+    var H0 = "#version 300 es\nprecision highp float;\n";
+    var HASH = "float h(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}\n";
+    var VS = H0 + "layout(location=0) in vec2 p;out vec2 v;void main(){v=p*.5+.5;gl_Position=vec4(p,0.,1.);}";
+    var SKY = H0 + HASH + [
+      "in vec2 v;out vec4 o;uniform vec2 R,S,I;uniform float T,F,E,A,K;",
+      "float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+1.),f.x),f.y);}",
+      "float fb(vec2 p){float s=0.,a=.5;for(int i=0;i<5;i++){s+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return s;}",
+      "void main(){float as=R.x/R.y;vec2 q=vec2(v.x*as,1.-v.y);vec2 cp=q*vec2(2.4,4.6)+vec2(T*.035,0.);",
+      // storm cloud: two octaves bands of fBm, lit from inside (strongest right above the bolt)
+      "float c=smoothstep(.38,.82,fb(cp)+(fb(cp*2.7+3.1)-.5)*.32);",
+      // radii in CSS pixels (K = 1 / (700 · scale)), so a phone gets the same small lit area as a desktop
+      "float top=1.-smoothstep(.03,.62,q.y*R.y*K);",
+      "vec2 d=(vec2(v.x,q.y)-vec2(S.x,S.y))*R*K;float near=exp(-dot(d,d)*4.5);",
+      "float Fc=min(F,1.);",
+      // kept below the bloom threshold: only the channel glows, the cloud just lights up (and a large
+      // area never jumps in brightness — WCAG 2.3.1 general flash)
+      "vec3 col=vec3(.5,.74,1.)*Fc*(c*.7+.3)*top*(.05+.32*near);",
+      // silver lining: the cloud edge facing the channel catches more light
+      "col+=vec3(.75,.9,1.)*Fc*near*top*smoothstep(.45,.6,c)*(1.-smoothstep(.6,.9,c))*.4;",
+      "col+=vec3(.18,.5,.66)*Fc*A;",                                  // faint sheet light, below the WCAG flash threshold
+      "vec2 di=(vec2(v.x,q.y)-I)*R*K;float Ec=min(E,1.);col+=vec3(.75,.93,1.)*Ec*(exp(-dot(di,di)*300.)*2.2+exp(-dot(di,di)*18.)*.12);",
+      "o=vec4(col,1.);}"].join("\n");
+    var BVS = H0 + "layout(location=0) in vec2 p;layout(location=1) in vec3 a;uniform vec2 R;out vec3 w;void main(){w=a;vec2 c=p/R*2.-1.;gl_Position=vec4(c.x,-c.y,0.,1.);}";
+    var BFS = H0 + [
+      "in vec3 w;out vec4 o;uniform float L,E,G,Q;",
+      "void main(){float x=w.x,lv=w.y,ar=w.z;if(ar>L)discard;",
+      "float g=lv<.5?1.:(lv<1.5?.38:.16);float tip=smoothstep(L-.07,L,ar)*Q;",
+      "float i=g*(min(E,1.2)*8.+G*1.2)+Q*g*(.5+2.5*tip);",
+      "float core=exp(-x*x*28.),halo=exp(-x*x*3.2);",
+      "o=vec4(vec3(1.,.99,.97)*core*i+vec3(.35,.72,1.)*halo*i*.16,1.);}"].join("\n");
+    var RVS = H0 + "layout(location=0) in vec4 d;layout(location=1) in float e;uniform vec2 R;uniform float T;out float k;out float sx;void main(){k=e;float y=fract(d.y+T*d.w)*(R.y*1.1)-R.y*.05;float x=d.x*R.x+y*.18;vec2 p=vec2(x,y)-e*vec2(.18,1.)*d.z;sx=p.x/R.x;vec2 c=p/R*2.-1.;gl_Position=vec4(c.x,-c.y,0.,1.);}";
+    var RFS = H0 + "in float k;in float sx;out vec4 o;uniform float F;void main(){o=vec4(vec3(.62,.78,1.)*F*.11*(1.-k)*(.15+.85*smoothstep(.2,.75,sx)),1.);}"; // lighter over the text, the storm side is right
+    var PVS = H0 + "layout(location=0) in vec3 d;uniform vec2 R;out float k;void main(){k=d.z;vec2 c=d.xy/R*2.-1.;gl_Position=vec4(c.x,-c.y,0.,1.);}";
+    var PFS = H0 + "in float k;out vec4 o;void main(){o=vec4(mix(vec3(.4,.8,1.),vec3(1.,.97,.9),k)*k*3.,1.);}";
+    var DOWN = H0 + "in vec2 v;out vec4 o;uniform sampler2D t;uniform vec2 px;uniform float th;void main(){vec3 s=(texture(t,v+px*vec2(-1,-1)).rgb+texture(t,v+px*vec2(1,-1)).rgb+texture(t,v+px*vec2(-1,1)).rgb+texture(t,v+px*vec2(1,1)).rgb)*.25;if(th>0.){float b=max(s.r,max(s.g,s.b));s*=max(b-th,0.)/max(b,1e-4);}o=vec4(s,1.);}";
+    var UP = H0 + "in vec2 v;out vec4 o;uniform sampler2D t;uniform vec2 px;void main(){vec3 s=texture(t,v).rgb*4.;s+=(texture(t,v+vec2(px.x,0)).rgb+texture(t,v-vec2(px.x,0)).rgb+texture(t,v+vec2(0,px.y)).rgb+texture(t,v-vec2(0,px.y)).rgb)*2.;s+=texture(t,v+px).rgb+texture(t,v-px).rgb+texture(t,v+vec2(px.x,-px.y)).rgb+texture(t,v+vec2(-px.x,px.y)).rgb;o=vec4(s/16.,1.);}";
+    var STREAK = H0 + "in vec2 v;out vec4 o;uniform sampler2D t;uniform float st;void main(){vec3 s=vec3(0);for(int i=-24;i<=24;i++){float k=1.-abs(float(i))/24.;s+=texture(t,v+vec2(float(i)*st,0.)).rgb*k*k;}o=vec4(s/16.3,1.);}";
+    var COMP = H0 + HASH + [
+      "in vec2 v;out vec4 o;uniform sampler2D sc,bl,sk;uniform vec2 R;uniform float T;",
+      "vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}",
+      "void main(){vec3 c=texture(sc,v).rgb+texture(bl,v).rgb*vec3(.82,.94,1.)*.6+texture(sk,v).rgb*vec3(.4,.78,1.)*.45;",
+      "c=pow(aces(c*.85),vec3(1./2.2));float g=(h(v*R+fract(T)*61.)-.5)*.04*smoothstep(0.,.06,dot(c,vec3(.33)));",
+      "o=vec4(max(c+g,0.),1.);}"].join("\n");
+
+    function shader(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+    function program(fs, vs) {
+      var p = gl.createProgram();
+      gl.attachShader(p, shader(gl.VERTEX_SHADER, vs || VS)); gl.attachShader(p, shader(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error("storm shader");
+      var u = {}, n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+      for (var i = 0; i < n; i++) { var info = gl.getActiveUniform(p, i); u[info.name] = gl.getUniformLocation(p, info.name); }
+      return { p: p, u: u };
+    }
+    var P = { sky: program(SKY), bolt: program(BFS, BVS), rain: program(RFS, RVS), spark: program(PFS, PVS),
+      down: program(DOWN), up: program(UP), streak: program(STREAK), comp: program(COMP) };
+
+    function vao(setup) { var a = gl.createVertexArray(); gl.bindVertexArray(a); setup(); gl.bindVertexArray(null); return a; }
+    var triBuf, full = vao(function () {
+      triBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, triBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    });
+    // Rain: 700 streaks, invisible until the flash lights them.
+    var RAIN = 700, rd = new Float32Array(RAIN * 2 * 5);
+    for (var r = 0, j = 0; r < RAIN; r++) {
+      var rx = Math.random() * 1.1 - 0.15, ry = Math.random(), rl = 14 + Math.random() * 26, rs = 0.55 + Math.random() * 0.5;
+      rd.set([rx, ry, rl, rs, 0, rx, ry, rl, rs, 1], j); j += 10;
+    }
+    var rain = vao(function () {
+      var b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, rd, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 20, 0);
+      gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 1, gl.FLOAT, false, 20, 16);
+    });
+    var MAXP = 90, pd = new Float32Array(MAXP * 6), sparkBuf, sparkVao = vao(function () {
+      sparkBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, sparkBuf); gl.bufferData(gl.ARRAY_BUFFER, pd.byteLength, gl.DYNAMIC_DRAW);
+      gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    });
+
+    function target(w, h) {
+      var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      var f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+      return { t: t, f: f, w: w, h: h };
+    }
+    function drop(x) { if (x) { gl.deleteTexture(x.t); gl.deleteFramebuffer(x.f); } }
+    var W = 0, H = 0, sc = 1, scene = null, mips = [], streakT = null;
+    function size() {
+      sc = Math.min(window.devicePixelRatio || 1, 1.25);
+      var w = innerWidth * sc, hh = innerHeight * sc, cap = Math.sqrt(2.6e6 / Math.max(1, w * hh));
+      if (cap < 1) { sc *= cap; w *= cap; hh *= cap; }
+      w = Math.max(2, Math.round(w)); hh = Math.max(2, Math.round(hh));
+      if (w === W && hh === H) return;
+      W = cv.width = w; H = cv.height = hh;
+      drop(scene); mips.forEach(drop); drop(streakT); mips = [];
+      scene = target(W, H);
+      for (var m = 0, mw = W, mh = H; m < 5; m++) { mw = Math.max(1, mw >> 1); mh = Math.max(1, mh >> 1); mips.push(target(mw, mh)); }
+      streakT = target(mips[1].w, mips[1].h);
+      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("storm fbo");
+    }
+    size();
+
+    // Lightning channel: midpoint displacement with forks; every segment carries the
+    // "arrival" of the stepped leader (0 at the cloud, 1 at the ground).
+    function channel(x0, y0, x1, y1, disp) {
+      var total = Math.hypot(x1 - x0, y1 - y0), segs = [[x0, y0, x1, y1, 0, 0, 1]];
+      for (var i = 0; i < 7; i++) {
+        var next = [];
+        for (var s = 0; s < segs.length; s++) {
+          var a = segs[s], dx = a[2] - a[0], dy = a[3] - a[1], len = Math.hypot(dx, dy) || 1;
+          var off = (Math.random() - 0.5) * disp, mx = (a[0] + a[2]) / 2 - dy / len * off, my = (a[1] + a[3]) / 2 + dx / len * off, am = (a[5] + a[6]) / 2;
+          next.push([a[0], a[1], mx, my, a[4], a[5], am], [mx, my, a[2], a[3], a[4], am, a[6]]);
+          if (a[4] < 2 && disp > 12 * sc && Math.random() < (a[4] ? 0.22 : 0.5)) {
+            var ang = Math.atan2(dy, dx) + (Math.random() < 0.5 ? -1 : 1) * (0.35 + Math.random() * 0.7), fl = disp * (1.4 + Math.random() * 2.4);
+            next.push([mx, my, mx + Math.cos(ang) * fl, my + Math.sin(ang) * fl, a[4] + 1, am, am + fl / total * 1.3]);
+          }
+        }
+        segs = next; disp *= 0.56;
+      }
+      var HW = [11 * sc, 6 * sc, 3.5 * sc], out = new Float32Array(segs.length * 30), k = 0;
+      for (var q = 0; q < segs.length; q++) {
+        var g = segs[q], ex = g[2] - g[0], ey = g[3] - g[1], L = Math.hypot(ex, ey) || 1, hw = HW[g[4]];
+        var ux = ex / L, uy = ey / L, nx = -uy * hw, ny = ux * hw, ext = hw * 0.4;
+        var ax = g[0] - ux * ext, ay = g[1] - uy * ext, bx = g[2] + ux * ext, by = g[3] + uy * ext;
+        var V = [[ax + nx, ay + ny, 1, g[5]], [ax - nx, ay - ny, -1, g[5]], [bx + nx, by + ny, 1, g[6]], [bx + nx, by + ny, 1, g[6]], [ax - nx, ay - ny, -1, g[5]], [bx - nx, by - ny, -1, g[6]]];
+        for (var z = 0; z < 6; z++) { out[k++] = V[z][0]; out[k++] = V[z][1]; out[k++] = V[z][2]; out[k++] = g[4]; out[k++] = V[z][3]; }
+      }
+      return out;
+    }
+
+    var strikes = [], sparks = [], running = false, dead = false, slow = false, frames = 0, spent = 0, last = 0;
+    cv.addEventListener("webglcontextlost", function (e) { e.preventDefault(); dead = true; strikes.length = 0; cv.style.visibility = "hidden"; });
+
+    function envelope(t) { return t < 0 ? 0 : Math.exp(-t / 0.07) + (t > 0.16 ? 0.7 * Math.exp(-(t - 0.16) / 0.09) : 0); }
+    function pass(pr, dst) { gl.useProgram(pr.p); gl.bindFramebuffer(gl.FRAMEBUFFER, dst ? dst.f : null); gl.viewport(0, 0, dst ? dst.w : W, dst ? dst.h : H); return pr.u; }
+    function tex(unit, t) { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t.t); }
+    function tri() { gl.bindVertexArray(full); gl.drawArrays(gl.TRIANGLES, 0, 3); }
+
+    function frame(ms) {
+      if (dead) { running = false; return; }
+      var now = ms / 1000, u, i;
+      if (last) { frames++; spent += now - last; if (frames === 14 && spent / frames > 0.045) slow = true; }
+      last = now;
+      var F = 0, E = 0, top = null, lead = 0;
+      for (i = strikes.length - 1; i >= 0; i--) {
+        var s = strikes[i], t = now - s.t0, rt = t - s.L;
+        s.E = envelope(rt) * s.pow; s.G = rt < 0 ? 0 : Math.exp(-rt / 0.35) * s.pow;
+        s.lead = rt < 0 ? t / s.L : 9; s.Q = rt < 0 ? 1 : 0;
+        if (rt >= 0 && !s.hit) { s.hit = true; burst(s.ix, s.iy, s.pow); }
+        if (t > s.L + 1.5) { gl.deleteBuffer(s.buf); gl.deleteVertexArray(s.vao); strikes.splice(i, 1); continue; }
+        var f = s.E + s.Q * 0.12;
+        if (f >= F) { F = f; top = s; } E = Math.max(E, s.E); lead = Math.max(lead, s.Q);
+      }
+      var dt = Math.min(0.05, now - (frame.p || now)); frame.p = now;
+      var np = 0;
+      for (i = sparks.length - 1; i >= 0; i--) {
+        var p = sparks[i]; p.a -= dt * 1.25; if (p.a <= 0) { sparks.splice(i, 1); continue; }
+        p.vy += 900 * sc * dt; p.vx *= 1 - dt * 1.8; p.vy *= 1 - dt * 1.8; p.x += p.vx * dt; p.y += p.vy * dt;
+        if (np < MAXP) { pd.set([p.x, p.y, p.a, p.x - p.vx * 0.022, p.y - p.vy * 0.022, 0], np * 6); np++; }
+      }
+      if (!strikes.length && !sparks.length) { running = false; frame.p = 0; last = 0; gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT); cv.style.visibility = "hidden"; if (grid) grid.classList.remove("lit"); return; }
+      if (grid) grid.classList.toggle("lit", E > 0.05);
+
+      gl.disable(gl.BLEND);
+      u = pass(P.sky, scene);
+      gl.uniform2f(u.R, W, H); gl.uniform1f(u.T, now); gl.uniform1f(u.F, F); gl.uniform1f(u.E, E); gl.uniform1f(u.A, 0.035); gl.uniform1f(u.K, 1 / (700 * sc));
+      gl.uniform2f(u.S, top ? top.sx : 0.5, 0.02); gl.uniform2f(u.I, top ? top.ix / W : 0.5, top ? top.iy / H : 0.3);
+      tri();
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+      u = pass(P.rain, scene); gl.uniform2f(u.R, W, H); gl.uniform1f(u.T, now * 0.9); gl.uniform1f(u.F, F + lead * 0.3);
+      gl.bindVertexArray(rain); gl.drawArrays(gl.LINES, 0, RAIN * 2);
+      u = pass(P.bolt, scene); gl.uniform2f(u.R, W, H);
+      for (i = 0; i < strikes.length; i++) {
+        var b = strikes[i];
+        gl.uniform1f(u.L, b.lead); gl.uniform1f(u.E, b.E); gl.uniform1f(u.G, b.G); gl.uniform1f(u.Q, b.Q);
+        gl.bindVertexArray(b.vao); gl.drawArrays(gl.TRIANGLES, 0, b.n);
+      }
+      if (np) {
+        u = pass(P.spark, scene); gl.uniform2f(u.R, W, H);
+        gl.bindBuffer(gl.ARRAY_BUFFER, sparkBuf); gl.bufferSubData(gl.ARRAY_BUFFER, 0, pd.subarray(0, np * 6));
+        gl.bindVertexArray(sparkVao); gl.drawArrays(gl.LINES, 0, np * 2);
+      }
+      // bloom: bright pass + downsample chain, the streak from 1/4 res, then the upsample sum
+      gl.disable(gl.BLEND);
+      var src = scene;
+      for (i = 0; i < mips.length; i++) {
+        u = pass(P.down, mips[i]); tex(0, src); gl.uniform1i(u.t, 0);
+        gl.uniform2f(u.px, 1 / src.w, 1 / src.h); gl.uniform1f(u.th, i ? 0 : 1.6); tri(); src = mips[i];
+      }
+      u = pass(P.streak, streakT); tex(0, mips[1]); gl.uniform1i(u.t, 0); gl.uniform1f(u.st, 2.5 / mips[1].w); tri();
+      gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+      for (i = mips.length - 1; i > 0; i--) {
+        u = pass(P.up, mips[i - 1]); tex(0, mips[i]); gl.uniform1i(u.t, 0); gl.uniform2f(u.px, 1 / mips[i].w, 1 / mips[i].h); tri();
+      }
+      gl.disable(gl.BLEND);
+      u = pass(P.comp, null);
+      tex(0, scene); tex(1, mips[0]); tex(2, streakT);
+      gl.uniform1i(u.sc, 0); gl.uniform1i(u.bl, 1); gl.uniform1i(u.sk, 2); gl.uniform2f(u.R, W, H); gl.uniform1f(u.T, now);
+      tri();
+      requestAnimationFrame(frame);
+    }
+    function burst(x, y, pow) {
+      var m = Math.floor(26 + pow * 40);
+      for (var i = 0; i < m && sparks.length < MAXP; i++) {
+        var a = -Math.PI * (0.05 + Math.random() * 0.9), sp = (260 + Math.random() * 720) * pow * sc;
+        sparks.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a: 0.6 + Math.random() * 0.4 });
+      }
+    }
+    return {
+      el: cv,
+      ok: function () { return !dead && !slow; },
+      resize: function () { try { size(); } catch (e) { dead = true; } },
+      strike: function (power, tx, ty) {
+        if (dead || slow) return false;
+        var x0 = W * (0.3 + Math.random() * 0.55), ix = tx * sc, iy = ty * sc;
+        var data = channel(x0, -24 * sc, ix, iy, 70 * sc * (0.7 + power * 0.5));
+        var buf = gl.createBuffer(), va = vao(function () {
+          gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 20, 0);
+          gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 20, 8);
+        });
+        strikes.push({ t0: performance.now() / 1000, L: 0.09 + Math.random() * 0.06, pow: power, buf: buf, vao: va, n: data.length / 5, sx: x0 / W, ix: ix, iy: iy, hit: false });
+        cv.style.visibility = "visible";
+        if (!running) { running = true; requestAnimationFrame(frame); }
+        return true;
+      },
+      stop: function () {
+        strikes.forEach(function (s) { gl.deleteBuffer(s.buf); gl.deleteVertexArray(s.vao); });
+        strikes.length = 0; sparks.length = 0; cv.style.visibility = "hidden";
+      },
+    };
+  }
+
+  // 3b) Fallback: Canvas 2D. No shadowBlur (a full-viewport Gaussian blur per stroke
+  //     cost 0.5–1.3 s per frame on a mid phone): the glow is a few wide, faint strokes
+  //     under a bright core, rasterised once per bolt; the loop runs only while visible.
+  function canvasStorm(grid, flash) {
     var canvas = document.getElementById("bolts");
-    var flash = document.getElementById("flash");
-    var grid = document.getElementById("grid");
     var ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
     var W, H, dpr, running = false, timers = [], bolts = [], glows = [], sparks = [];
     var size = function () {
       dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -760,9 +1009,8 @@
       else { running = false; ctx.clearRect(0, 0, W, H); }
     };
     var kick = function () { if (!running) { running = true; requestAnimationFrame(frame); } };
-    var strike = function (power) {
-      if (still() || document.visibilityState === "hidden") return;
-      var tx = W * (0.55 + (Math.random() - 0.5) * 0.3), ty = H * (0.26 + Math.random() * 0.14);
+    var strike = function (power, cx, cy) {
+      var tx = cx * dpr, ty = cy * dpr;
       var n = power > 0.6 ? 2 : 1;
       for (var q = 0; q < n; q++) bolts.push({ r: renderBolt(makeBolt(W * (0.25 + Math.random() * 0.6), -20, tx + (Math.random() - 0.5) * 80 * dpr, ty, 60 * power)), a: 1 });
       glows.push({ x: tx, y: ty, r: 14 * dpr, a: 1 });
@@ -773,25 +1021,56 @@
       requestAnimationFrame(function () { flash.style.transition = "opacity .45s ease"; flash.style.opacity = "0"; });
       kick();
     };
-    // Intro: four strikes ≥ 550 ms apart. Then at most three distant ones while
-    // the hero is on screen — the page goes still after that.
-    [[150, 0.8], [720, 0.6], [1300, 0.9], [1900, 0.7]].forEach(function (s) { timers.push(setTimeout(function () { strike(s[1]); }, s[0])); });
-    var heroVisible = true, extra = 0;
-    var hero = document.querySelector("header.hero");
-    if (hero && "IntersectionObserver" in window) new IntersectionObserver(function (es) { heroVisible = es[0].isIntersecting; }).observe(hero);
-    var ambient = setInterval(function () {
-      if (extra >= 3) { clearInterval(ambient); return; }
-      if (heroVisible && Math.random() < 0.7) { extra++; strike(0.3 + Math.random() * 0.3); }
-    }, 9000);
-    timers.push(ambient);
-    storm = {
+    return {
+      strike: strike,
       stop: function () {
-        timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
         bolts.length = glows.length = sparks.length = 0;
         ctx.clearRect(0, 0, W, H); flash.style.opacity = "0";
         if (grid) grid.classList.remove("lit");
       },
     };
+  }
+
+  try {
+    var grid = document.getElementById("grid");
+    var flash = document.getElementById("flash");
+    var gls = null, c2d = null;
+    var two = function () { if (!c2d) c2d = canvasStorm(grid, flash); return c2d; };
+    var go = function () {
+      if (still()) return;
+      try { gls = glStorm(grid); if (gls) document.body.insertBefore(gls.el, document.getElementById("bolts")); } catch (e) { gls = null; }
+      var strike = function (power) {
+        if (still() || document.visibilityState === "hidden") return;
+        var cx = innerWidth * (0.55 + (Math.random() - 0.5) * 0.3), cy = innerHeight * (0.26 + Math.random() * 0.14);
+        if (gls && gls.ok() && gls.strike(power, cx, cy)) return;
+        var s2 = two(); if (s2) s2.strike(power, cx, cy);
+      };
+      var rz = 0;
+      addEventListener("resize", function () { cancelAnimationFrame(rz); rz = requestAnimationFrame(function () { if (gls) gls.resize(); }); });
+      // Intro: three strikes 1.2 s apart. Then at most three distant ones while the
+      // hero is on screen — the page goes still after that.
+      [[200, 0.85], [1450, 0.65], [2700, 1]].forEach(function (s) { timers.push(setTimeout(function () { strike(s[1]); }, s[0])); });
+      var heroVisible = true, extra = 0;
+      var hero = document.querySelector("header.hero");
+      if (hero && "IntersectionObserver" in window) new IntersectionObserver(function (es) { heroVisible = es[0].isIntersecting; }).observe(hero);
+      var ambient = setInterval(function () {
+        if (extra >= 3) { clearInterval(ambient); return; }
+        if (heroVisible && Math.random() < 0.7) { extra++; strike(0.35 + Math.random() * 0.3); }
+      }, 9000);
+      timers.push(ambient);
+    };
+    var timers = [];
+    storm = {
+      stop: function () {
+        timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
+        if (gls) gls.stop();
+        if (c2d) c2d.stop();
+        if (grid) grid.classList.remove("lit");
+      },
+    };
+    // After the page has painted (the LCP is the text, never the storm).
+    var idle = function () { if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 900 }); else setTimeout(go, 200); };
+    if (document.readyState === "complete") idle(); else addEventListener("load", idle);
   } catch (e) { /* decoration only — the page works without it */ }
 })();
 </script>
