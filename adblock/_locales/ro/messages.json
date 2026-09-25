@@ -62,7 +62,7 @@
     "message": "Ascundeți reclamele aici"
   },
   "cosmeticsTitle": {
-    "message": "Filtrare cosmetică pe acest site (dezactivați-o dacă aspectul paginii se strică)"
+    "message": "Ascundeți reclamele pe acest site (dezactivați dacă aspectul paginii se strică)"
   },
   "on": {
     "message": "Da"
@@ -502,7 +502,7 @@
     "message": "Nu este inclusă (fără licență de redistribuire): browserul dvs. o descarcă de pe $1 când o activați."
   },
   "opt_downloaded_from": {
-    "message": "Descărcată de pe $1"
+    "message": "Se descarcă de pe $1 când o activați"
   },
   "opt_lists_error": {
     "message": "Chrome a refuzat această combinație de liste ($1). Dezactivați câteva."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Copiați raportul"
+  },
+  "rep_privacy": {
+    "message": "Cum este tratat acest raport: politica de confidențialitate"
   },
   "rep_copied": {
     "message": "Copiat."

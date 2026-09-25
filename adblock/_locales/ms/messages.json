@@ -62,7 +62,7 @@
     "message": "Sembunyikan iklan di sini"
   },
   "cosmeticsTitle": {
-    "message": "Penapisan kosmetik pada tapak ini (matikan jika susun atur rosak)"
+    "message": "Sembunyikan iklan di tapak ini (matikan jika susun atur halaman rosak)"
   },
   "on": {
     "message": "Hidup"
@@ -502,7 +502,7 @@
     "message": "Tidak disertakan (tiada lesen untuk mengedarkannya semula): penyemak imbas anda memuat turunnya daripada $1 apabila anda menghidupkannya."
   },
   "opt_downloaded_from": {
-    "message": "Dimuat turun daripada $1"
+    "message": "Dimuat turun daripada $1 apabila anda menghidupkannya"
   },
   "opt_lists_error": {
     "message": "Chrome menolak gabungan senarai ini ($1). Matikan sebahagian daripadanya."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Salin laporan"
+  },
+  "rep_privacy": {
+    "message": "Cara laporan ini dikendalikan: dasar privasi"
   },
   "rep_copied": {
     "message": "Disalin."

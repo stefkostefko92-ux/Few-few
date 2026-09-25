@@ -62,7 +62,7 @@
     "message": "Versteek advertensies hier"
   },
   "cosmeticsTitle": {
-    "message": "Kosmetiese filtrering op hierdie werf (skakel dit af as die uitleg breek)"
+    "message": "Versteek advertensies op hierdie werf (skakel dit af as die bladuitleg breek)"
   },
   "on": {
     "message": "Aan"
@@ -502,7 +502,7 @@
     "message": "Nie ingesluit nie (geen lisensie om dit te herversprei nie): u blaaier laai dit van $1 af wanneer u dit aanskakel."
   },
   "opt_downloaded_from": {
-    "message": "Afgelaai van $1"
+    "message": "Word van $1 afgelaai wanneer u dit aanskakel"
   },
   "opt_lists_error": {
     "message": "Chrome het hierdie kombinasie van lyste geweier ($1). Skakel sommige af."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopieer verslag"
+  },
+  "rep_privacy": {
+    "message": "Hoe hierdie verslag hanteer word: privaatheidsbeleid"
   },
   "rep_copied": {
     "message": "Gekopieer."

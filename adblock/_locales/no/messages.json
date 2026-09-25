@@ -62,7 +62,7 @@
     "message": "Skjul annonsefelt her"
   },
   "cosmeticsTitle": {
-    "message": "Kosmetisk filtrering på dette nettstedet (slå av hvis oppsettet blir ødelagt)"
+    "message": "Skjul annonsefelt på dette nettstedet (slå av hvis sideoppsettet blir ødelagt)"
   },
   "on": {
     "message": "På"
@@ -502,7 +502,7 @@
     "message": "Ikke inkludert (ingen lisens til videredistribusjon): nettleseren din laster den ned fra $1 når du slår den på."
   },
   "opt_downloaded_from": {
-    "message": "Lastet ned fra $1"
+    "message": "Lastes ned fra $1 når du slår den på"
   },
   "opt_lists_error": {
     "message": "Chrome avviste denne kombinasjonen av lister ($1). Slå av noen."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopier rapport"
+  },
+  "rep_privacy": {
+    "message": "Slik behandles denne rapporten: personvernerklæring"
   },
   "rep_copied": {
     "message": "Kopiert."

@@ -62,7 +62,7 @@
     "message": "Skrij oglasna polja tukaj"
   },
   "cosmeticsTitle": {
-    "message": "Kozmetično filtriranje na tem spletnem mestu (izklopite ga, če se postavitev pokvari)"
+    "message": "Skrij oglasna polja na tem spletnem mestu (izklopite, če se postavitev strani pokvari)"
   },
   "on": {
     "message": "Vkl."
@@ -502,7 +502,7 @@
     "message": "Ni vgrajen (ni licence za razširjanje): brskalnik ga prenese z naslova $1, ko ga vklopite."
   },
   "opt_downloaded_from": {
-    "message": "Preneseno z naslova $1"
+    "message": "Prenese se z naslova $1, ko ga vklopite"
   },
   "opt_lists_error": {
     "message": "Chrome je zavrnil to kombinacijo seznamov ($1). Nekatere izklopite."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopiraj poročilo"
+  },
+  "rep_privacy": {
+    "message": "Kako obravnavamo to poročilo: pravilnik o zasebnosti"
   },
   "rep_copied": {
     "message": "Kopirano."

@@ -62,7 +62,7 @@
     "message": "Fshih reklamat këtu"
   },
   "cosmeticsTitle": {
-    "message": "Filtrim kozmetik në këtë sajt (çaktivizojeni nëse prishet struktura e faqes)"
+    "message": "Fshih reklamat në këtë sajt (çaktivizojeni nëse prishet struktura e faqes)"
   },
   "on": {
     "message": "Aktiv"
@@ -502,7 +502,7 @@
     "message": "Nuk është e integruar (pa licencë rishpërndarjeje): shfletuesi juaj e shkarkon nga $1 kur e aktivizoni."
   },
   "opt_downloaded_from": {
-    "message": "Shkarkohet nga $1"
+    "message": "Shkarkohet nga $1 kur e aktivizoni"
   },
   "opt_lists_error": {
     "message": "Chrome e refuzoi këtë kombinim listash ($1). Çaktivizoni disa."
@@ -557,6 +557,9 @@
   },
   "rep_copy": {
     "message": "Kopjo raportin"
+  },
+  "rep_privacy": {
+    "message": "Si trajtohet ky raport: politika e privatësisë"
   },
   "rep_copied": {
     "message": "U kopjua."
