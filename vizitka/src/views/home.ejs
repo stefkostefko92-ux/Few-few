@@ -21,14 +21,14 @@
       <span class="ad-label">Реклама</span>
       <% if (b.id && b.link_url) { %>
         <a href="/b/<%= b.id %>/click" target="_blank" rel="sponsored noopener nofollow">
-          <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy">
+          <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy" width="960" height="120">
         </a>
       <% } else if (b.link_url) { %>
         <a href="<%= b.link_url %>" target="_blank" rel="sponsored noopener nofollow">
-          <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy">
+          <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy" width="960" height="120">
         </a>
       <% } else { %>
-        <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy">
+        <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy" width="960" height="120">
       <% } %>
     </div>
   <% } %>
@@ -91,8 +91,9 @@
     <li><strong>ChatGPT:</strong> Настройки → Конектори → собствен MCP сървър със същия адрес (зависи от плана).</li>
   </ul>
   <p class="muted small">
-    Твоята визитка <strong>не</strong> се вижда от асистентите по подразбиране — включваш го сам от
-    таблото и го изключваш по всяко време.
+    Конекторът <strong>не</strong> подава твоята визитка по подразбиране — включваш го сам от
+    таблото и го изключваш по всяко време. (Публичната ти страница е видима в интернет като
+    всяка друга — това управляваш с „Визитката е публична“.)
     <a href="/konektor-chatgpt-claude">Подробно как работи конекторът</a>
   </p>
 </section>

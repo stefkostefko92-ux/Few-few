@@ -789,12 +789,6 @@ body.theme-rose {
   height: 48px;
   width: auto;
 }
-/* „Скоро“ състояние — приглушени бейджове, без действие */
-.vcard-wallet.is-soon .wallet-badges {
-  opacity: 0.45;
-  filter: grayscale(0.4);
-  pointer-events: none;
-}
 .soon-chip {
   display: inline-block;
   margin-left: 0.35rem;

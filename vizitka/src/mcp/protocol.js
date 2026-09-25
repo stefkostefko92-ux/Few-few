@@ -31,7 +31,6 @@ const META_SERVER_INFO = 'io.modelcontextprotocol/serverInfo';
 
 // Кодове от запазения за спецификацията поддиапазон (-32020..-32099).
 const ERR_HEADER_MISMATCH = -32020;
-const ERR_MISSING_CAPABILITY = -32021;
 const ERR_UNSUPPORTED_VERSION = -32022;
 const ERR_METHOD_NOT_FOUND = -32601;
 const ERR_INVALID_PARAMS = -32602;
@@ -70,14 +69,19 @@ const rpcResult = (id, result) => ({
 });
 
 function toolResult({ structured, isError }) {
-  return {
-    // Двоен формат: машинно четимото и същото като текст — клиент, който чете само
-    // `content`, иначе получава празно.
-    content: [{ type: 'text', text: JSON.stringify(structured) }],
-    structuredContent: structured,
-    ...(isError ? { isError: true } : { isError: false }),
-  };
+  // Двоен формат: машинно четимото и същото като текст — клиент, който чете само
+  // `content`, иначе получава празно. При грешка БЕЗ `structuredContent`: клиентите
+  // (напр. TS SDK) го валидират срещу `outputSchema` и тялото на грешката не пасва →
+  // вместо четима грешка моделът получава -32602.
+  const content = [{ type: 'text', text: JSON.stringify(structured) }];
+  if (isError) return { content, isError: true };
+  return { content, structuredContent: structured, isError: false };
 }
+
+// Подсказки за кеширане — задължителни (MUST) за server/discover и */list от
+// 2026-07-28. Списъците ни са статични до следващ деплой; публични, защото не
+// зависят от това кой пита.
+const CACHE_HINT = { ttlMs: 3_600_000, cacheScope: 'public' };
 
 const INSTRUCTIONS = [
   'Vizitka е безплатна българска услуга за дигитални визитки с постоянен QR код.',
@@ -93,8 +97,18 @@ function dispatch(method, params, base) {
   switch (method) {
     case 'ping':
       return {};
+    // Задължителен от 2026-07-28: версии, възможности и идентичност с една заявка.
+    // Носи и инструкциите — модерната ера няма `initialize`, иначе клиентът никога
+    // не би видял, че визитките са твърдения на собствениците, а не проверени факти.
+    case 'server/discover':
+      return {
+        supportedVersions: SUPPORTED_PROTOCOLS,
+        capabilities: { tools: { listChanged: false } },
+        instructions: INSTRUCTIONS,
+        ...CACHE_HINT,
+      };
     case 'tools/list':
-      return { tools: TOOLS };
+      return { tools: TOOLS, ...CACHE_HINT };
     case 'tools/call': {
       const name = params?.name;
       const out = callTool(name, params?.arguments || {}, base);
@@ -104,11 +118,11 @@ function dispatch(method, params, base) {
     // Нямаме ресурси и промптове (не ги обявяваме и в capabilities), но клиенти
     // ги питат наслуки. Празен списък е по-добър от грешка: не чупи интеграцията.
     case 'resources/list':
-      return { resources: [] };
+      return { resources: [], ...CACHE_HINT };
     case 'resources/templates/list':
-      return { resourceTemplates: [] };
+      return { resourceTemplates: [], ...CACHE_HINT };
     case 'prompts/list':
-      return { prompts: [] };
+      return { prompts: [], ...CACHE_HINT };
     default:
       return null; // непознат метод
   }
@@ -175,14 +189,31 @@ export function handleRpc(message, ctx) {
     };
   }
 
+  // Хедър и тяло, които казват различна версия, са разминаване в ВСЯКА ера — иначе
+  // стар хедър + модерно тяло минава по наследения път без никаква проверка.
+  if (headerVersion && metaVersion && headerVersion !== metaVersion)
+    return {
+      status: 400,
+      body: rpcError(
+        id,
+        ERR_HEADER_MISMATCH,
+        `MCP-Protocol-Version „${headerVersion}“ не съвпада с тялото „${metaVersion}“.`
+      ),
+    };
+
   if (isModern(version)) {
-    // 1) Тялото е източникът на истината; хедърът трябва да съвпада с него.
+    // 1) Тялото е източникът на истината; хедърът е ЗАДЪЛЖИТЕЛЕН и съвпада с него.
     if (!metaVersion)
       return {
         status: 400,
         body: rpcError(id, ERR_INVALID_PARAMS, `Липсва _meta["${META_VERSION}"].`),
       };
-    if (headerVersion && headerVersion !== metaVersion)
+    if (!headerVersion)
+      return {
+        status: 400,
+        body: rpcError(id, ERR_HEADER_MISMATCH, 'Липсва хедър MCP-Protocol-Version.'),
+      };
+    if (headerVersion !== metaVersion)
       return {
         status: 400,
         body: rpcError(
@@ -219,13 +250,13 @@ export function handleRpc(message, ctx) {
           ),
         };
     }
-    // 3) Възможностите на клиента са задължително поле в тази ера.
+    // 3) Възможностите на клиента са задължително поле в тази ера. Липсващо поле е
+    // невалидни параметри (-32602); -32021 е за КОНКРЕТНА възможност, която
+    // заявката иска, а ние не искаме нито една.
     if (params?._meta?.[META_CAPS] === undefined)
       return {
         status: 400,
-        body: rpcError(id, ERR_MISSING_CAPABILITY, `Липсва _meta["${META_CAPS}"].`, {
-          requiredCapabilities: [META_CAPS],
-        }),
+        body: rpcError(id, ERR_INVALID_PARAMS, `Липсва _meta["${META_CAPS}"].`),
       };
   } else if (method === 'initialize') {
     return { status: 200, body: handleInitialize(id, params) };
