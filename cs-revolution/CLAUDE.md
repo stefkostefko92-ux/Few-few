@@ -29,6 +29,9 @@ python3 scripts/rebrand-static.py  # nav/footer tweaks (logo size, pricing link,
 python3 scripts/seo-footer-links.py # "Risorse" row in every static footer (hubs are otherwise orphans)
 python3 scripts/seo-keywords.py    # <meta keywords> on every page that lacks one (≥5, "Carbon Stealth")
 python3 scripts/adsense-inject.py  # Google AdSense loader in every <head> (CSP in nginx allows it; ads.txt in public/)
+python3 scripts/it-accents.py      # Italian accents (perché, più, già…) on IT pages + generators, never inside URLs
+python3 scripts/work-images.py     # real project screenshots (public/work/*.webp) on portfolio + case studies
+python3 scripts/static-theme.py    # shared Carbon/Chrome theme, mobile nav toggle, legal footer — run LAST
 ```
 All post-processors are idempotent — run the whole chain after any regeneration. Never put
 content in `<noscript>`: it is invisible to people and mostly to Google (30 pages used to).
