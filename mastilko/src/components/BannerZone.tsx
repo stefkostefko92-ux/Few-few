@@ -23,6 +23,8 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
 
   useEffect(() => {
     try {
+      // Прочит от localStorage — достъпен чак в браузъра, веднъж при монтиране.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDismissed(
         new Set(JSON.parse(localStorage.getItem("mastilko-banners-x") || "[]")),
       );
@@ -49,11 +51,16 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
   if (visible.length === 0) return null;
 
   return (
-    <div className="no-print">
+    // `aside` + етикет, а не гол `div`: лентата стои МЕЖДУ хедъра и `main`,
+    // тоест извън всеки landmark — при екранен четец съдържанието ѝ увисва
+    // без ориентир (axe правило „region“).
+    <aside className="no-print" aria-label="Съобщения от Мастилко">
       {visible.map((b) => (
         <div
           key={b.id}
-          className="relative text-center text-sm"
+          // С картинка → ред „банер | ×“: на телефон абсолютният бутон падаше
+          // върху надписите на рекламата (самата картинка стига до ръба).
+          className={`relative text-center text-sm ${b.image ? "flex items-center" : ""}`}
           style={{ background: b.bg, color: b.fg }}
         >
           {b.image ? (
@@ -63,7 +70,7 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
             <a
               href={b.href || undefined}
               rel="noopener"
-              className="relative block"
+              className="relative block min-w-0 flex-1"
               aria-label={b.imageAlt || b.title || "Реклама"}
             >
               <span className="absolute left-2 top-2 rounded bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
@@ -77,7 +84,14 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
               />
             </a>
           ) : (
-            <div className="px-8 py-2.5">
+            <div className="px-10 py-2.5">
+              {/* Етикетът „Реклама“ важи и за текстовите съобщения — търговското
+                  съобщение трябва да е разпознаваемо като такова (Дир. 2000/31
+                  чл. 6, б. „а“ / ЗЕТ). Досега стоеше само във варианта с
+                  изображение. */}
+              <span className="mr-2 rounded bg-black/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                Реклама
+              </span>
               <span className="font-semibold">{b.title}</span>
               {b.text && <span className="ml-2 opacity-90">{b.text}</span>}
               {b.cta && b.href && (
@@ -96,12 +110,14 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
             type="button"
             aria-label="Скрий съобщението"
             onClick={() => dismiss(b.id)}
-            className="absolute right-2 top-2 rounded-full bg-black/30 px-2 text-lg leading-none text-white opacity-80 hover:opacity-100"
+            // 28 × 28 px (WCAG 2.5.8 иска поне 24) — преди беше 25 × 18 и
+            // трудно се улучваше с пръст.
+            className={`${b.image ? "mx-1 shrink-0" : "absolute right-2 top-2"} flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-lg leading-none text-white opacity-90 hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white`}
           >
             ×
           </button>
         </div>
       ))}
-    </div>
+    </aside>
   );
 }

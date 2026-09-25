@@ -53,11 +53,20 @@ router.get('/p/:slug', (req, res) => {
       path: `/p/${profile.slug}`,
     });
   }
-  const description = [profile.headline, profile.company, profile.phone]
-    .filter(Boolean)
-    .join(' · ');
+  // Описанието е това, което Google показва под заглавието. „Фотограф · +359…“ (24 знака)
+  // не казва какво има на страницата — затова: кой е, с какво се занимава и какво може
+  // посетителят да направи тук. Телефонът не влиза, за да остане място за това в
+  // ~160-те знака; на самата визитка е на един клик.
+  const who = [profile.headline, profile.company].filter(Boolean).join(', ');
+  const description =
+    `${profile.display_name}${who ? ` — ${who}` : ''}. Контакти в дигитална визитка с QR код: обади се, пиши или запази контакта в телефона с един бутон.`.slice(
+      0,
+      160
+    );
   res.render('card', {
     title: profile.display_name,
+    // Темата се носи и от <body>, за да оцвети страницата около картата.
+    bodyClass: `card-theme ${profile.accent ? 'custom-accent' : `theme-${profile.theme}`}`,
     profile,
     links: getLinks(profile.id),
     accentCss: accentCss(profile.accent),
@@ -66,9 +75,7 @@ router.get('/p/:slug', (req, res) => {
     wallet: walletLinks(profile),
     jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,
     pageMeta: {
-      description:
-        description ||
-        `Дигитална визитка на ${profile.display_name} — контакти с QR код, винаги актуални.`,
+      description,
       // Профилните думи са първи (те носят намерението „търся този човек/фирма“),
       // после общите за продукта. Правилото на репото иска ≥5 и задължително
       // „Carbon Stealth“ — при празен headline/company профилните са само един, затова

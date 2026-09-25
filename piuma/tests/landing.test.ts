@@ -191,3 +191,34 @@ test('текстът не обещава автоматично публикув
     }
   }
 });
+
+test('витрината не носи униформата на генерираните страници', () => {
+  const css = readFileSync('public/landing.css', 'utf8');
+  // Преливащ текст, стъкло и неонови ореоли бяха махнати нарочно — да не се върнат тихо.
+  assert.doesNotMatch(css, /background-clip:\s*text/, 'преливащ текст във витрината');
+  assert.doesNotMatch(css, /backdrop-filter/, 'стъкло (backdrop-filter) във витрината');
+  assert.doesNotMatch(css, /drop-shadow|text-shadow/, 'ореол около марка или текст');
+  assert.match(
+    css,
+    /body\.lp::before,\s*body\.lp::after\s*\{\s*content: none;/,
+    'аврората е изключена',
+  );
+});
+
+test('шрифтът на заглавията е наш, лек и с лиценза си', () => {
+  const css = readFileSync('public/landing.css', 'utf8');
+  const fonts = [...css.matchAll(/url\('\/static\/(fonts\/[\w-]+\.woff2)'\)/g)].map((m) => m[1]!);
+  assert.ok(fonts.length >= 2, 'няма @font-face за заглавията');
+  for (const font of fonts) {
+    const file = `public/${font}`;
+    assert.ok(existsSync(file), `липсва ${file}`);
+    assert.ok(statSync(file).size < 30_000, `${file} е над 30 KB — вземи подмножество`);
+  }
+  assert.match(css, /font-display:\s*swap/);
+  assert.ok(existsSync('public/fonts/OFL-Literata.txt'), 'OFL лицензът трябва да пътува с шрифта');
+  // Заглавието е LCP: шрифтът му се тегли предварително, иначе `swap` мига.
+  assert.match(
+    VIEW,
+    /rel="preload" href="\/static\/fonts\/literata-latin-600-normal\.woff2" as="font"/,
+  );
+});
