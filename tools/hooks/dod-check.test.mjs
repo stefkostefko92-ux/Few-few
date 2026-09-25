@@ -226,3 +226,12 @@ test("appendHandoffToLedger: валиден ПРЕДАВАНЕ блок → за
     for (const k of ["t", "ts", "id", "from", "to", "status"]) assert.ok(k in rec, `липсва поле ${k}`);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test("Разбивача, мисия 4: релативни Bash записи от /tmp (B/, L/) не са продукти; реална папка в корена — е", () => {
+  const ROOT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const bash = (command) => ({ name: "Bash", input: { command } });
+  const phantom = checkDoD([bash("cd /tmp/rb4/zbd && echo x > B/a && echo y > L/b && echo z > bin-up2/c")], ROOT_DIR);
+  assert.ok(!phantom.some((v) => /СПРИ — пишеш/.test(v.gate)), JSON.stringify(phantom));
+  const real = checkDoD([bash("echo x > medqr/a.txt && echo y > treydar/b.txt")], ROOT_DIR);
+  assert.ok(real.some((v) => /СПРИ — пишеш в 2 продукта/.test(v.gate)), JSON.stringify(real));
+});

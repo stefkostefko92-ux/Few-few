@@ -5317,31 +5317,9 @@
           "date": "2026-09-25",
           "event": "v19.7 — учене",
           "detail": "Научи: dod-check.mjs отхвърля ПРЕДАВАНЕ, ако която и да е находка е без `файл:ред` (или URL) —…"
-        },
-        {
-          "version": "20.1.0",
-          "date": "2026-09-25",
-          "event": "v20.1 — учене",
-          "detail": "Научи: Nexus клиентът пази избрания език в localStorage ключ 'nd_locale' (i18next detector: qu… (+3 още)"
-        },
-        {
-          "version": "20.3.0",
-          "date": "2026-09-25",
-          "event": "v20.3 — учене",
-          "detail": "Научи: Nexus: имената на регионите са преведени в world.regions.<slug>.name (bg/it); в UI, кой… (+1 още)"
         }
       ],
       "activity": [
-        {
-          "date": "2026-09-25",
-          "type": "learning",
-          "summary": "Научи: „Nexus: имената на регионите са преведени в world.regions.<slug>.name (bg/it); в UI, кой…\" (+1 още)"
-        },
-        {
-          "date": "2026-09-25",
-          "type": "learning",
-          "summary": "Научи: „Nexus клиентът пази избрания език в localStorage ключ 'nd_locale' (i18next detector: qu…\" (+3 още)"
-        },
         {
           "date": "2026-09-25",
           "type": "learning",
@@ -11454,71 +11432,17 @@
           "detail": "Научи: За визуален preview на MV3 popup извън браузъра стъбвай window.chrome (runtime.sendMess…"
         },
         {
-          "version": "14.6.0",
-          "date": "2026-09-25",
-          "event": "v14.6 — учене",
-          "detail": "Научи: IntersectionObserver-базиран scroll-reveal с [data-reveal-stagger] контейнер трябва obs… (+1 още)"
-        },
-        {
-          "version": "14.9.0",
-          "date": "2026-09-25",
-          "event": "v14.9 — учене",
-          "detail": "Научи: background-clip:text + filter:drop-shadow на родител + overflow:hidden на inline-block … (+2 още)"
-        },
-        {
-          "version": "15.1.0",
-          "date": "2026-09-25",
-          "event": "v15.1 — учене",
-          "detail": "Научи: boy/surface.js applyGrime()/rainOnSteel() четат глобална споделена noise текстура (tsl.… (+1 още)"
-        },
-        {
-          "version": "15.3.0",
-          "date": "2026-09-25",
-          "event": "v15.3 — учене",
-          "detail": "Научи: renderScene.ts::mountInteractiveViewer инициализираше орбита `target` на world origin в… (+1 още)"
-        },
-        {
-          "version": "15.5.0",
-          "date": "2026-09-25",
-          "event": "v15.5 — учене",
-          "detail": "Научи: boy loadout.js::tintedMaterials() тонира само .color (hue) на steelA/steelB/goldB/brass… (+1 още)"
+          "version": "14.5.0",
+          "date": "2026-09-23",
+          "event": "v14.5 — дефиниция ↔ памет",
+          "detail": "Дефиниция v1.1 „Граница“ поправена: 19 verified поуки в паметта доказват реален Chromium + Playwright (screenshot → сравни → поправи), а дефиницията твърдеше „не виждаш рендера“ — задължителна визуална проверка; невидимото остава FPS/GPU профилът и реалните устройства."
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
-          "type": "learning",
-          "summary": "Научи: „boy loadout.js::tintedMaterials() тонира само .color (hue) на steelA/steelB/goldB/brass…\" (+1 още)"
-        },
-        {
-          "date": "2026-09-25",
-          "type": "learning",
-          "summary": "Научи: „renderScene.ts::mountInteractiveViewer инициализираше орбита `target` на world origin в…\" (+1 още)"
-        },
-        {
-          "date": "2026-09-25",
-          "type": "learning",
-          "summary": "Научи: „boy/surface.js applyGrime()/rainOnSteel() четат глобална споделена noise текстура (tsl.…\" (+1 още)"
-        },
-        {
-          "date": "2026-09-25",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Физически-базирани материали (metalness/roughness) БЕЗ scene.environment (PMREM) изглеж…\" (+2)"
-        },
-        {
-          "date": "2026-09-25",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В тази sandboxed headless Chromium среда (SwiftShader/llvmpipe софтуерен WebGL), ВТОРИ …\" (+2)"
-        },
-        {
-          "date": "2026-09-25",
-          "type": "learning",
-          "summary": "Научи: „background-clip:text + filter:drop-shadow на родител + overflow:hidden на inline-block …\" (+2 още)"
-        },
-        {
-          "date": "2026-09-25",
-          "type": "learning",
-          "summary": "Научи: „IntersectionObserver-базиран scroll-reveal с [data-reveal-stagger] контейнер трябва obs…\" (+1 още)"
+          "date": "2026-09-23",
+          "type": "definition",
+          "summary": "Дефиницията вече казва истината за инструментите: вижда рендера (Chromium+Playwright), не вижда FPS/GPU."
         },
         {
           "date": "2026-09-10",
@@ -13723,7 +13647,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 183
+        "lessons": 184
       },
       "evolution": [
         {
@@ -14570,7 +14494,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 171
+        "lessons": 173
       },
       "evolution": [
         {
@@ -14806,7 +14730,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 142
+        "lessons": 143
       },
       "evolution": [
         {
@@ -14844,9 +14768,20 @@
           "date": "2026-07-24",
           "event": "v13.2 — учене",
           "detail": "Научи: JSDoc (jsdoc.app) пълен таг-списък групиран по употреба: документиране на функция — @pa… (+8 още)"
+        },
+        {
+          "version": "13.3.0",
+          "date": "2026-09-21",
+          "event": "v13.3 — учене",
+          "detail": "Научи: Техника 'draft-release-notes-from' (Prompt library, Anthropic) — диф между две версийни…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-21",
+          "type": "learning",
+          "summary": "Научи: „Техника 'draft-release-notes-from' (Prompt library, Anthropic) — диф между две версийни…\""
+        },
         {
           "date": "2026-07-28",
           "type": "quarantine",
@@ -14965,7 +14900,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 168
+        "lessons": 171
       },
       "evolution": [
         {
@@ -15009,9 +14944,20 @@
           "date": "2026-08-07",
           "event": "v15.7 — учене",
           "detail": "Научи: node-cron 4.x ХВАЩА грешката на задача, логва я през собствения си logger и emit-ва 'ex… (+4 още)"
+        },
+        {
+          "version": "16.0.0",
+          "date": "2026-09-21",
+          "event": "v16.0 — учене",
+          "detail": "Научи: Триажът на инцидент корелира ТРИ източника на доказателства, не един: логове + скорошни… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-21",
+          "type": "learning",
+          "summary": "Научи: „Триажът на инцидент корелира ТРИ източника на доказателства, не един: логове + скорошни…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",

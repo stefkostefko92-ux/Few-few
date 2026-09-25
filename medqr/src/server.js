@@ -84,6 +84,22 @@ app.use(
   })
 );
 
+// Здравна проверка за оркестратора и autodeploy — ПРЕДИ HTTPS пренасочването: сондата идва по
+// loopback без X-Forwarded-Proto и получаваше 308, а `curl -f` брои 3xx за успех → гейтът минаваше,
+// без да стигне до приложението, и rollback-ът никога не се задействаше (Наблюдателя, 2026-09-24).
+// Връща идентичност + реален SELECT 1; 503 при паднала база. Без кеширане, без лични данни.
+app.get(['/health', '/healthz'], (req, res) => {
+  let dbUp = false;
+  try {
+    db.prepare('SELECT 1').get();
+    dbUp = true;
+  } catch {
+    dbUp = false;
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(dbUp ? 200 : 503).json({ app: 'medqr', ok: dbUp });
+});
+
 // Принудителен HTTPS в продукция (зад прокси, по X-Forwarded-Proto).
 if (prod) {
   app.use((req, res, next) => {
@@ -108,8 +124,9 @@ app.use((req, res, next) => {
 app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 0 }));
 
 // Чувствителните (автентикирани и спешни) страници не се кешират никъде.
+// /i: Express рутира без значение от регистъра — /E/<token> показва същия профил (Разбивача).
 const NO_STORE =
-  /^\/(dashboard|profile|sos|login|register|2fa|forgot|reset|verify-email|e\/|card|qr\.png|logout)/;
+  /^\/(dashboard|profile|sos|login|register|2fa|forgot|reset|verify-email|e\/|card|qr\.png|logout)/i;
 app.use((req, res, next) => {
   if (NO_STORE.test(req.path)) res.setHeader('Cache-Control', 'no-store');
   next();
@@ -165,11 +182,6 @@ app.use((req, res, next) => {
 });
 
 app.use(csrf);
-
-// Здравна проверка за оркестратора (Render/Docker) — без кеширане, без данни.
-app.get(['/health', '/healthz'], (req, res) =>
-  res.type('text/plain').setHeader('Cache-Control', 'no-store').send('ok')
-);
 
 // ---- SEO / GEO / AEO ресурси ----
 // Публичните, нечувствителни ресурси се кешират за по-добра производителност.

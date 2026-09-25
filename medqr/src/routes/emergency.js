@@ -53,11 +53,11 @@ router.get('/e/:token', (req, res) => {
       locked: pinLocked(profile),
     });
   }
-  // Логваме и известяваме само при реално отваряне — не при link-preview ботове.
-  if (looksLikeRealVisit(req)) {
-    logAccess(profile.id, req);
-    notifyScan(profile);
-  }
+  // Всеки показ на данни (чл. 9 GDPR) се записва — и при бот-UA, защото User-Agent е в ръцете на клиента
+  // и зад него одитът се заобикаляше (Разбивача, 2026-09-24). UA се пази, та preview-тата се различават.
+  // Известието към близкия остава само за реално отваряне.
+  logAccess(profile.id, req);
+  if (looksLikeRealVisit(req)) notifyScan(profile);
   res.render('emergency', { profile, notifyActive: notifyActive(profile) });
 });
 
