@@ -11036,7 +11036,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 175
+        "lessons": 177
       },
       "evolution": [
         {
@@ -11476,9 +11476,20 @@
           "date": "2026-09-25",
           "event": "v15.3 — учене",
           "detail": "Научи: renderScene.ts::mountInteractiveViewer инициализираше орбита `target` на world origin в… (+1 още)"
+        },
+        {
+          "version": "15.5.0",
+          "date": "2026-09-25",
+          "event": "v15.5 — учене",
+          "detail": "Научи: boy loadout.js::tintedMaterials() тонира само .color (hue) на steelA/steelB/goldB/brass… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „boy loadout.js::tintedMaterials() тонира само .color (hue) на steelA/steelB/goldB/brass…\" (+1 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
