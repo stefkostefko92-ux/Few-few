@@ -1,38 +1,51 @@
 import { useEffect, useRef } from 'react';
+import type { CombatRound } from '../../lib/types';
 import { BOY_MARKUP } from './boy/markup';
+import { choreographyFromRounds } from './roundsToChoreo';
 import './boy/boy-hud.css';
 
+interface Props {
+  /** Без rounds → фиксираната демо-хореография на boy (28.5s филм на Ser Aldric). */
+  rounds?: CombatRound[];
+  victory?: boolean;
+  /** false спира на последния кадър, вместо да зацикля (реални битки). Демото зациклюва. */
+  loop?: boolean;
+  onEnd?: () => void;
+}
+
 /**
- * 4a.1 — фасада на новия боен двигател (порт на boy/, „Двубой в Рейвънхолд“).
- * Стъпка 4a.1: монтира ОРИГИНАЛНАТА фиксирана хореография на boy през
- * порт-нат renderer (WebGPU → WebGL2 fallback вграден в самия main.js).
- * Няма текстури на този етап → baked.js пада автоматично на плоски
- * материали (виж boy/src/baked.js: manifest.json липсва → flatSet()).
- *
- * ИЗВЕСТНО ОГРАНИЧЕНИЕ (за 4a.2/4a.3): main.js е самостоятелно изпълним
- * ES модул (стартира twice-import-safe само защото браузърът кешира ESM
- * модула) — не приема параметри и няма dispose(). Guard-ът по-долу пази
- * от двойния efect на React StrictMode, но НЕ поддържа повторно монтиране
- * след unmount (напр. напускане и връщане на /demo/combat в SPA без пълно
- * презареждане). Пълен рефактор на main.js в boot(canvas, opts)→dispose()
- * е предвиден в 4a.2 (data-driven хореография изисква точно това).
+ * Фасада на новия боен двигател (порт на boy/, „Двубой в Рейвънхолд“). 4a.1 монтираше boy през
+ * страничен ефект на import('./boy/src/main.js'); 4a.2 вика bootDuel() явно (main.js вече
+ * експортва boot API — виж main.d.ts) с генерирана от `rounds` хореография (choreo-gen.js) и
+ * пази истинско dispose() при unmount — двигателят вече поддържа повторно монтиране.
  */
-export default function BoyDuelStage(): React.ReactElement {
+export default function BoyDuelStage({ rounds, victory = true, loop, onEnd }: Props): React.ReactElement {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    // StrictMode double-invoke guard: main.js вече е изпълнен веднъж срещу
-    // първия набор DOM възли — втори innerHTML презапис би оставил
-    // renderer-а закачен за detach-нат canvas.
-    if (root.dataset.boyMounted === '1') return;
-    root.dataset.boyMounted = '1';
+    let disposed = false;
+    let handle: { dispose(): void } | undefined;
     root.innerHTML = BOY_MARKUP;
-    // Литерален relative specifier (не динамична променлива) — нужно е
-    // Vite/Rollup да го открие статично и да го изнесе в собствен lazy chunk.
-    void import('./boy/src/main.js');
-  }, []);
+    const canvas = root.querySelector<HTMLCanvasElement>('#view');
+    if (!canvas) return;
+    // Пречи на main.js да се самостартира срещу document.getElementById('view') — ние сме
+    // отговорни за boot-ването (виж guard-а в main.js).
+    (window as unknown as { __boyNoAutoboot?: boolean }).__boyNoAutoboot = true;
+    const choreography = rounds && rounds.length > 0 ? choreographyFromRounds(rounds, victory) : undefined;
+    // Литерален relative specifier (не динамична променлива) — нужно е Vite/Rollup да го
+    // открие статично и да го изнесе в собствен lazy chunk.
+    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd })).then((h) => {
+      if (disposed) { h.dispose(); return; }
+      handle = h;
+    });
+    return () => {
+      disposed = true;
+      handle?.dispose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rounds, victory, loop]);
 
   return <div className="boy-duel-root" ref={rootRef} />;
 }

@@ -109,20 +109,38 @@ export function createEvents({ A, B, fx, audio, director, camera, onLightning })
       director.addTrauma(0.6 * p);
       audio.play('bash', p, panOf(c), ts);
     } else if (ev.type === 'helm') {
-      const head = B.rig.w.head.clone().add(new THREE.Vector3(0, 0.1, 0));
-      const c = closestOnSegment(A.bladeBase, A.bladeTip, head, new THREE.Vector3());
+      // 4a.2: ev.by/ev.against (генерирани удари) — по подразбиране A удря, B пада (демото).
+      const att = ev.by === 'B' ? B : A;
+      const vic = att === A ? B : A;
+      const head = vic.rig.w.head.clone().add(new THREE.Vector3(0, 0.1, 0));
+      const c = closestOnSegment(att.bladeBase, att.bladeTip, head, new THREE.Vector3());
       c.lerp(head, 0.35);
       fx.impact(c, c.clone().sub(head).normalize().addScaledVector(UP, 0.4), p * 0.6);
-      fx.impact(c, away(A, B).addScaledVector(UP, 0.3), p * 0.35);
-      B.react('helm', p, away(A, B));
-      A.react('recoil', 0.6, away(B, A));
+      fx.impact(c, away(att, vic).addScaledVector(UP, 0.3), p * 0.35);
+      vic.react('helm', p, away(att, vic));
+      att.react('recoil', 0.6, away(vic, att));
       director.addTrauma(0.8);
       audio.play('helm', p, panOf(c), ts);
       audio.play('boom', 1, 0, ts);
+    } else if (ev.type === 'strike') {
+      // 4a.2: генерализиран удар от choreo-gen.js — ev.target сочи КЪДЕ по тялото, за разлика
+      // от 'helm' (винаги глава). Точката идва директно от rig.w, решен геометрично от aim.
+      const att = ev.by === 'B' ? B : A;
+      const vic = att === A ? B : A;
+      const spot = { head: vic.rig.w.head, headL: vic.rig.w.head, chest: vic.rig.w.chest, lshoulder: vic.rig.w.shoulderL }[ev.target] || vic.rig.w.chest;
+      const c = closestOnSegment(att.bladeBase, att.bladeTip, spot, new THREE.Vector3());
+      c.lerp(spot, 0.35);
+      fx.impact(c, c.clone().sub(spot).normalize().addScaledVector(UP, 0.3), p * 0.55);
+      vic.react('helm', p * 0.85, away(att, vic));
+      att.react('recoil', 0.45, away(vic, att));
+      director.addTrauma(0.4 * p);
+      audio.play('helm', p * 0.8, panOf(c), ts);
     } else if (ev.type === 'disarm') {
-      audio.play('tap', 0.5, panOf(B.grip), ts);
+      const vic = ev.against === 'A' ? A : B;
+      audio.play('tap', 0.5, panOf(vic.grip), ts);
     } else if (ev.type === 'kneel') {
-      const k = B.rig.w.kneeR.clone().setY(0.03);
+      const vic = ev.against === 'A' ? A : B;
+      const k = vic.rig.w.kneeR.clone().setY(0.03);
       fx.impact(k, UP, p, 'water');
       audio.play('bash', 0.45, panOf(k), ts);
     } else if (ev.type === 'scrape') {
@@ -137,12 +155,15 @@ export function createEvents({ A, B, fx, audio, director, camera, onLightning })
         return;
       }
       for (const ev of EVENTS) if (ev.t > prevT && ev.t <= T) fire(ev, ts);
-      const land = B.landingTime();
-      if (land > prevT && land <= T) {
-        const g = B.grip.clone().setY(0.03);
-        fx.impact(g, UP, 0.5, 'water');
-        fx.impact(g, UP, 0.25);
-        audio.play('clatter', 1, panOf(g), ts);
+      // 4a.2: разоръженият може да е и двамата (виж fighter.disarmInfo()) — провери и двата.
+      for (const f of [A, B]) {
+        const land = f.landingTime();
+        if (land > prevT && land <= T) {
+          const g = f.grip.clone().setY(0.03);
+          fx.impact(g, UP, 0.5, 'water');
+          fx.impact(g, UP, 0.25);
+          audio.play('clatter', 1, panOf(g), ts);
+        }
       }
       for (let i = scrapes.length - 1; i >= 0; i--) {
         const s = scrapes[i];

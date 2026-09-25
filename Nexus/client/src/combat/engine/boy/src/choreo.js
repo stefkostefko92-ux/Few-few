@@ -20,7 +20,12 @@ const SH_GUARD = { w: [-0.02, 1.22, 0.36], n: [0.15, 0.05, 1] };
 const SH_TAUNT = { w: [-0.06, 1.24, 0.36], n: [0.55, 0.05, 0.85] };
 const SH_BASH = { w: [0.02, 1.3, 0.6], n: [0, 0, 1] };
 
-export const A_KEYS = [
+// 4a.2: каноничните пози изнесени за choreo-gen.js — генераторът строи всеки рунд между тях
+// (aim/parry/block се решават геометрично от timeline.js, затова сглобяването е безопасно
+// независимо от реда), вместо да измисля нови сурови p/d/e вектори.
+export const GUARD_POSES = { A_REST, A_VOMTAG, A_OCHS, A_PFLUG, A_POINT_DOWN, B_REST, B_GUARD, B_HIGH, SH_REST, SH_GUARD };
+
+const DEFAULT_A_KEYS = [
   { t: 0.0, pose: A_REST, crouch: 0, lead: 'L' },
   { t: 3.5, pose: A_REST, crouch: 0 },
   { t: 4.1, pose: { p: [0.1, 1.3, 0.3], d: [0, 0.3, 1], e: [0, 1, -0.3] }, crouch: 0.04 },
@@ -59,7 +64,7 @@ export const A_KEYS = [
   { t: 28.5, pose: A_POINT_DOWN, tw: 0.05, lean: 0.08, crouch: 0.06 },
 ];
 
-export const B_KEYS = [
+const DEFAULT_B_KEYS = [
   { t: 0.0, pose: B_REST, crouch: 0.02, lead: 'L' },
   { t: 2.1, pose: B_REST, crouch: 0.02 },
   { t: 2.4, pose: B_TAP_UP, crouch: 0.04 },
@@ -93,7 +98,7 @@ export const B_KEYS = [
   { t: 28.5, pose: { p: [0.2, 0.8, 0.34], d: [0.1, -0.2, 1], e: [0, -1, 0] }, lean: 0.32, crouch: 0.0 },
 ];
 
-export const B_SHIELD = [
+const DEFAULT_B_SHIELD = [
   { t: 0.0, sh: SH_REST },
   { t: 2.15, sh: SH_REST },
   { t: 2.4, sh: SH_TAUNT },
@@ -117,7 +122,7 @@ export const B_SHIELD = [
 ];
 
 // [t, centreX, centreZ, separation, axis angle]
-export const ROOT_KEYS = [
+const DEFAULT_ROOT_KEYS = [
   [0.0, 0.0, 0.3, 7.0, 0.0],
   [3.7, 0.0, 0.3, 7.0, 0.0],
   [5.1, 0.05, 0.35, 5.3, 0.14],
@@ -136,15 +141,15 @@ export const ROOT_KEYS = [
   [28.5, 0.1, 0.45, 1.65, 2.08],
 ];
 
-export const A_ADV = [[0, 0], [8.05, 0], [8.45, 0.4], [8.8, 0.15], [9.05, -0.05], [9.6, 0.05], [9.85, 0.25], [10.2, 0.1], [10.55, 0.0], [10.95, -0.55], [11.7, -0.2], [12.5, 0], [14.8, 0], [15.1, 0.3], [15.6, 0.05], [16.3, 0], [20.6, 0], [20.85, 0.2], [21.3, 0.2], [21.55, 0.32], [22.3, 0.15], [23.4, 0.1], [28.5, 0.1]];
-export const B_ADV = [[0, 0], [8.6, 0], [8.75, -0.05], [9.05, 0.35], [9.4, 0.1], [9.9, 0], [10.25, -0.05], [10.55, 1.2], [10.95, 0.6], [11.7, 0], [12.5, 0], [12.95, 0.4], [13.6, 0.4], [14.4, 0.15], [15.4, -0.1], [16.3, 0], [19.85, 0], [20.25, 0.35], [20.6, 0.2], [21.55, 0.1], [22.0, -0.3], [22.6, -0.4], [23.7, -0.35], [28.5, -0.35]];
-export const B_KNEEL = [[0, 0], [22.7, 0], [23.8, 1], [28.5, 1]];
-export const BREATH = [[0, 1], [11, 1.6], [16.5, 2.6], [20, 1.3], [23, 2.8], [28.5, 2.2]];
-export const B_LOOK_DOWN = [[0, 0], [22.6, 0], [23.2, 1], [25.4, 1], [26.4, 0], [28.5, 0]];
+const DEFAULT_A_ADV = [[0, 0], [8.05, 0], [8.45, 0.4], [8.8, 0.15], [9.05, -0.05], [9.6, 0.05], [9.85, 0.25], [10.2, 0.1], [10.55, 0.0], [10.95, -0.55], [11.7, -0.2], [12.5, 0], [14.8, 0], [15.1, 0.3], [15.6, 0.05], [16.3, 0], [20.6, 0], [20.85, 0.2], [21.3, 0.2], [21.55, 0.32], [22.3, 0.15], [23.4, 0.1], [28.5, 0.1]];
+const DEFAULT_B_ADV = [[0, 0], [8.6, 0], [8.75, -0.05], [9.05, 0.35], [9.4, 0.1], [9.9, 0], [10.25, -0.05], [10.55, 1.2], [10.95, 0.6], [11.7, 0], [12.5, 0], [12.95, 0.4], [13.6, 0.4], [14.4, 0.15], [15.4, -0.1], [16.3, 0], [19.85, 0], [20.25, 0.35], [20.6, 0.2], [21.55, 0.1], [22.0, -0.3], [22.6, -0.4], [23.7, -0.35], [28.5, -0.35]];
+const DEFAULT_B_KNEEL = [[0, 0], [22.7, 0], [23.8, 1], [28.5, 1]];
+const DEFAULT_BREATH = [[0, 1], [11, 1.6], [16.5, 2.6], [20, 1.3], [23, 2.8], [28.5, 2.2]];
+const DEFAULT_B_LOOK_DOWN = [[0, 0], [22.6, 0], [23.2, 1], [25.4, 1], [26.4, 0], [28.5, 0]];
 
-export const TIME_SCALE = [[0, 1], [12.86, 1], [12.93, 0.12], [13.48, 0.12], [13.62, 1], [21.42, 1], [21.5, 0.15], [22.2, 0.15], [22.55, 1], [28.5, 1]];
+const DEFAULT_TIME_SCALE = [[0, 1], [12.86, 1], [12.93, 0.12], [13.48, 0.12], [13.62, 1], [21.42, 1], [21.5, 0.15], [22.2, 0.15], [22.55, 1], [28.5, 1]];
 
-export const EVENTS = [
+const DEFAULT_EVENTS = [
   { t: 0.9, type: 'lightning', power: 0.6 },
   { t: 2.6, type: 'tap', power: 0.35 },
   { t: 3.0, type: 'tap', power: 0.4 },
@@ -165,7 +170,7 @@ export const EVENTS = [
   { t: 23.55, type: 'kneel', power: 0.6 },
 ];
 
-export const CAPTIONS = [
+const DEFAULT_CAPTIONS = [
   { t: 3.6, d: 3.0, k: 'vomTag' },
   { t: 8.0, d: 1.4, k: 'zornhau' },
   { t: 9.55, d: 0.85, k: 'zwerch' },
@@ -177,8 +182,61 @@ export const CAPTIONS = [
   { t: 21.35, d: 1.3, k: 'final' },
 ];
 
-export const CHAPTERS = [
+const DEFAULT_CHAPTERS = [
   { t: 0.0, k: 'ch1' },
   { t: 7.8, k: 'ch2' },
   { t: 16.3, k: 'ch3' },
 ];
+
+// --- 4a.2: данни-задвижвана хореография (Nexus порт) --------------------------------------
+// В оригиналния boy тези 13 масива са фиксирани export const-и, решени еднократно при
+// зареждане на модула (виж CLAUDE.md закон #5). За реални битки от сървъра трябва да могат
+// да се подменят преди всяко изпълнение на дуела. Тук стават `let`, инициализирани с
+// оригиналната фиксирана хореография (демото продължава да работи непроменено), плюс
+// setChoreography()/resetChoreography() — всички консуматори (timeline.js/events.js/
+// fighter.js/main.js) четат тези имена през live ES-binding (namespace/named import), затова
+// не се налага да пипаме логиката им — просто трябва да презаредим кешираните производни
+// (timeline.recompileTimeline(), director.recompileDirector()) СЛЕД смяна.
+export let A_KEYS = DEFAULT_A_KEYS;
+export let B_KEYS = DEFAULT_B_KEYS;
+export let B_SHIELD = DEFAULT_B_SHIELD;
+export let ROOT_KEYS = DEFAULT_ROOT_KEYS;
+export let A_ADV = DEFAULT_A_ADV;
+export let B_ADV = DEFAULT_B_ADV;
+export let B_KNEEL = DEFAULT_B_KNEEL;
+export let BREATH = DEFAULT_BREATH;
+export let B_LOOK_DOWN = DEFAULT_B_LOOK_DOWN;
+export let TIME_SCALE = DEFAULT_TIME_SCALE;
+export let EVENTS = DEFAULT_EVENTS;
+export let CAPTIONS = DEFAULT_CAPTIONS;
+export let CHAPTERS = DEFAULT_CHAPTERS;
+
+/** Подменя цялата хореография (обект със същите 13 ключа). Извиква се от boot.js ПРЕДИ
+ * timeline.recompileTimeline()/director.recompileDirector(), иначе кешовете им остават стари. */
+export function setChoreography(next) {
+  A_KEYS = next.A_KEYS;
+  B_KEYS = next.B_KEYS;
+  B_SHIELD = next.B_SHIELD;
+  ROOT_KEYS = next.ROOT_KEYS;
+  A_ADV = next.A_ADV;
+  B_ADV = next.B_ADV;
+  B_KNEEL = next.B_KNEEL;
+  BREATH = next.BREATH;
+  B_LOOK_DOWN = next.B_LOOK_DOWN;
+  TIME_SCALE = next.TIME_SCALE;
+  EVENTS = next.EVENTS;
+  CAPTIONS = next.CAPTIONS;
+  CHAPTERS = next.CHAPTERS;
+}
+
+/** Връща оригиналната фиксирана хореография на boy (демо режим). */
+export function resetChoreography() {
+  setChoreography({
+    A_KEYS: DEFAULT_A_KEYS, B_KEYS: DEFAULT_B_KEYS, B_SHIELD: DEFAULT_B_SHIELD, ROOT_KEYS: DEFAULT_ROOT_KEYS,
+    A_ADV: DEFAULT_A_ADV, B_ADV: DEFAULT_B_ADV, B_KNEEL: DEFAULT_B_KNEEL, BREATH: DEFAULT_BREATH,
+    B_LOOK_DOWN: DEFAULT_B_LOOK_DOWN, TIME_SCALE: DEFAULT_TIME_SCALE, EVENTS: DEFAULT_EVENTS,
+    CAPTIONS: DEFAULT_CAPTIONS, CHAPTERS: DEFAULT_CHAPTERS,
+  });
+}
+
+export const DEFAULT_DURATION = 28.5;

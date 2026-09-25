@@ -2,14 +2,17 @@
 import * as THREE from 'three';
 import { rootOf, toWorld, dirToWorld, weaponAt } from './timeline.js';
 
+// Default за фиксираното демо на boy; 4a.2 подава кой слот/кога през EVENTS (виж fighter.js).
 export const DISARM_T = 21.6;
 const UP = new THREE.Vector3(0, 1, 0);
 const ONE = new THREE.Vector3(1, 1, 1);
 
-// Launch state from the choreographed grip at the moment of the disarm.
-export function launchFlight() {
-  const r0 = rootOf('B', DISARM_T);
-  const w0 = weaponAt('B', DISARM_T, { p: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Vector3() });
+// Launch state from the choreographed grip at the moment of the disarm. `who`/`disarmT` идват
+// от EVENTS ({type:'disarm', against}) на генерираната хореография — по подразбиране 'B'/21.6
+// (фиксираното демо на boy, където губещият винаги е Warden-ът).
+export function launchFlight(who = 'B', disarmT = DISARM_T) {
+  const r0 = rootOf(who, disarmT);
+  const w0 = weaponAt(who, disarmT, { p: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Vector3() });
   const g0 = toWorld(r0, [w0.p.x, w0.p.y, w0.p.z]);
   const d0 = dirToWorld(r0, [w0.d.x, w0.d.y, w0.d.z]);
   const e0 = dirToWorld(r0, [w0.e.x, w0.e.y, w0.e.z]);

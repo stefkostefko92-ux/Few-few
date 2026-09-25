@@ -1,19 +1,25 @@
 // Duel at Ravenhold: boots the renderer (WebGPU, WebGL 2 as fallback), runs the story clock, the
 // camera and the frame loop. A frame-time governor holds 60 fps by moving the internal
 // resolution, not by cutting effects.
+//
+// 4a.2 (Nexus порт): main() стана export async function bootDuel(canvas, opts) — приема
+// незадължителна `opts.choreography` (виж choreo-gen.js) и връща { dispose() }, за да могат
+// реалните битки от сървъра (и повторното монтиране на /demo/combat) да карат СВОЯ дуел през
+// същия рендер конвейер, вместо фиксирания филм на boy. Долният auto-run пази старото
+// поведение (гол `import('./main.js')` продължава да пуска демото без промяна).
 import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, animateWorld } from './world.js';
 import { QUALITY, initialTier, createGovernor } from './quality.js';
-import { createDirector, realTimeOf, storyTimeAtReal, REAL_DURATION, SHOT_COUNT } from './director.js';
+import { createDirector, realTimeOf, storyTimeAtReal, recompileDirector } from './director.js';
 import { createPipeline } from './pipeline.js';
 import { U } from './tsl.js';
 import { createAudio } from './audio.js';
 import { createHud } from './hud.js';
 import { createEvents } from './events.js';
-import { timeScaleAt } from './timeline.js';
-import { CAPTIONS, CHAPTERS } from './choreo.js';
-import { DURATION, MOON_DIR } from './config.js';
+import { timeScaleAt, recompileTimeline } from './timeline.js';
+import { CAPTIONS, CHAPTERS, setChoreography, resetChoreography } from './choreo.js';
+import { DURATION, MOON_DIR, setDuration } from './config.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -32,8 +38,23 @@ function acceptIdentitySwizzle() {
 
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
-async function main() {
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+/**
+ * Стартира дуела в дадения canvas. opts.choreography (от choreo-gen.js) подменя хореографията
+ * на boy преди построяването на света; без него тръгва фиксираният демо-филм. Връща
+ * { dispose() } за пълно почистване (GPU памет, слушатели, rAF, AudioContext) — 4a.5 гейтва
+ * многократни последователни битки без растеж на ресурсите.
+ */
+export async function bootDuel(canvas, opts = {}) {
+  if (opts.choreography) {
+    setChoreography(opts.choreography);
+    setDuration(opts.choreography.duration);
+  } else {
+    resetChoreography();
+  }
+  recompileTimeline();
+  recompileDirector();
+
+  const reducedMotion = opts.reducedMotion ?? matchMedia('(prefers-reduced-motion: reduce)').matches;
   let qualityMode = 'auto';
   let tier = initialTier(matchMedia('(pointer: coarse)').matches, Math.min(screen.width, screen.height));
   let quality = QUALITY[tier];
@@ -42,16 +63,17 @@ async function main() {
   let showStats = false;
   const h = {};
   const hud = createHud(h);
+  let disposed = false;
 
   let renderer;
   try {
     const forceWebGL = new URLSearchParams(location.search).has('webgl');
     acceptIdentitySwizzle();
-    renderer = new THREE.WebGPURenderer({ canvas: document.getElementById('view'), antialias: false, alpha: false, powerPreference: 'high-performance', forceWebGL });
+    renderer = new THREE.WebGPURenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance', forceWebGL });
     await renderer.init();
   } catch {
     hud.fatal();
-    return;
+    return { dispose() {} };
   }
   const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
   const W = await buildWorld(renderer, hud, quality);
@@ -59,7 +81,7 @@ async function main() {
   const pipe = createPipeline(renderer, W);
   pipe.setQuality(quality);
   const csm = W.moon.shadow.shadowNode;
-  const director = createDirector(camera, { reducedMotion });
+  const director = createDirector(camera, { reducedMotion, shots: opts.choreography?.shots });
   const audio = createAudio();
   const controls = new OrbitControls(camera, renderer.domElement);
   Object.assign(controls, { enabled: false, enableDamping: true, minDistance: 1.2, maxDistance: 22, maxPolarAngle: Math.PI * 0.495 });
@@ -70,7 +92,7 @@ async function main() {
     onLightning(p) {
       lightning.at = performance.now() / 1000;
       lightning.power = p;
-      setTimeout(() => audio.play('thunder', p), 1100);
+      setTimeout(() => { if (!disposed) audio.play('thunder', p); }, 1100);
     },
   });
   for (const f of [A, B]) {
@@ -87,8 +109,8 @@ async function main() {
   const out = new THREE.Vector2();
   const internal = new THREE.Vector2();
   function resize() {
-    const w = window.innerWidth;
-    const hh = window.innerHeight;
+    const w = canvas.clientWidth || window.innerWidth;
+    const hh = canvas.clientHeight || window.innerHeight;
     const dpr = window.devicePixelRatio || 1;
     renderer.setPixelRatio(Math.max(0.25, Math.min(dpr, quality.maxDPR) * governor.scale));
     renderer.setSize(w, hh, false);
@@ -107,7 +129,7 @@ async function main() {
       hud.setPlaying(clock.playing);
     },
     seek(frac) {
-      clock.T = Math.min(DURATION - 0.01, storyTimeAtReal(frac * REAL_DURATION));
+      clock.T = Math.min(DURATION - 0.01, storyTimeAtReal(frac * director.realDuration));
       clock.jumped = true;
     },
     setSpeed(v) {
@@ -150,7 +172,9 @@ async function main() {
   h.onLang();
   hud.setSpeed(clock.speed);
   hud.setQuality(qualityMode);
-  hud.setTicks(CHAPTERS.map((c, i) => [realTimeOf(c.t) / REAL_DURATION, ['I', 'II', 'III'][i]]));
+  const realDuration = realTimeOf(DURATION);
+  director.realDuration = realDuration;
+  hud.setTicks(CHAPTERS.map((c, i) => [realTimeOf(c.t) / realDuration, ['I', 'II', 'III'][i]]));
 
   // Warm up every shader and pipeline before the curtain rises.
   animateWorld(W, 0, 0);
@@ -159,6 +183,7 @@ async function main() {
   pipe.render({ focus: 5, coc: 4, maxBlur: 8, time: 0, bars: 0, fade: 1 });
   hud.loading('load_ready', 1);
   await nextFrame();
+  if (disposed) return { dispose() {} };
   hud.ready();
 
   const prevTip = [new THREE.Vector3(), new THREE.Vector3()];
@@ -180,9 +205,10 @@ async function main() {
     let jump = clock.jumped;
     clock.jumped = false;
     if (clock.T >= DURATION) {
-      clock.T = 0;
+      clock.T = opts.loop === false ? DURATION - 0.001 : 0;
       jump = true;
       startReal = now / 1000;
+      if (opts.loop === false) { clock.playing = false; opts.onEnd?.(); }
     }
     const T = clock.T;
     const dT = jump ? 0 : T - prevT;
@@ -228,7 +254,7 @@ async function main() {
     W.rim.target.position.copy(center).setY(1.3);
     W.rim.position.copy(W.rim.target.position).add(tmp.subVectors(W.rim.target.position, camera.position).setY(0).normalize().multiplyScalar(6)).addScaledVector(UP, 9);
 
-    const aspect = window.innerWidth / window.innerHeight;
+    const aspect = (canvas.clientWidth || window.innerWidth) / (canvas.clientHeight || window.innerHeight);
     const fadeIn = Math.max(0, 1 - (now / 1000 - startReal) / 1.2);
     pipe.render({
       focus: focusDist,
@@ -268,10 +294,10 @@ async function main() {
     let chapter = CHAPTERS[0].k;
     for (const c of CHAPTERS) if (T >= c.t) chapter = c.k;
     hud.update({
-      progress: realTimeOf(T) / REAL_DURATION,
+      progress: realTimeOf(T) / realDuration,
       realTime: realTimeOf(T),
       shot: free ? 0 : director.state.shot,
-      shotCount: SHOT_COUNT,
+      shotCount: director.shotCount,
       lens: free ? 35 : director.state.lensMM,
       fstop: free ? 4 : director.state.fstop,
       timeScale: clock.playing ? ts : 0,
@@ -279,13 +305,33 @@ async function main() {
       fps: perf.fps,
       caption: cap ? cap.k : '',
       chapter,
-      end: T > 24.0 && T < DURATION - 0.15,
+      end: T > DURATION - 4.5 && T < DURATION - 0.15,
     });
   }
   renderer.setAnimationLoop(frame);
+
+  return {
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      renderer.setAnimationLoop(null);
+      window.removeEventListener('resize', resize);
+      audio.dispose?.();
+      try { renderer.dispose(); } catch { /* backend already gone */ }
+      const gl = renderer.getContext?.();
+      const ext = gl?.getExtension?.('WEBGL_lose_context');
+      ext?.loseContext?.();
+    },
+  };
 }
 
-main().catch((err) => {
-  const el = document.getElementById('load-step');
-  if (el) el.textContent = `Rendering stopped: ${err && err.message ? err.message : String(err)}`;
-});
+// Guard: авто-run само за голия <script type="module"> демо път (index.html / boy-demo без
+// choreography). BoyDuelStage.tsx извиква bootDuel() програмно за генерирани битки и НЕ разчита
+// на този страничен ефект — но когато main.js се import-не директно (както в 4a.1), поведението
+// остава непроменено: пуска фиксирания филм в #view.
+if (typeof document !== 'undefined' && document.getElementById('view') && !window.__boyNoAutoboot) {
+  bootDuel(document.getElementById('view')).catch((err) => {
+    const el = document.getElementById('load-step');
+    if (el) el.textContent = `Rendering stopped: ${err && err.message ? err.message : String(err)}`;
+  });
+}

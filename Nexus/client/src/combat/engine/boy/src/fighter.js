@@ -256,11 +256,20 @@ export class Fighter {
     m.setPosition(o);
   }
 
+  // 4a.2: кой боец изпуска оръжието и кога вече идват от EVENTS ({type:'disarm', against}),
+  // не от фиксираните 'B'/DISARM_T на демото — генерираните двубои могат да разоръжат всяка
+  // от двете страни. Липсва ли такова събитие (все още), пада на оригиналното поведение.
+  disarmInfo() {
+    const ev = C.EVENTS.find((e) => e.type === 'disarm');
+    return { who: ev?.against ?? 'B', t: ev?.t ?? DISARM_T };
+  }
+
   placeWeapon(T) {
     const m = this.weapon.part.matrix;
-    if (this.who === 'B' && T > DISARM_T) {
-      this.flight ??= launchFlight();
-      flightPose(this.flight, T - DISARM_T, m, this.grip, this.dir);
+    const { who: disarmWho, t: disarmT } = this.disarmInfo();
+    if (this.who === disarmWho && T > disarmT) {
+      this.flight ??= launchFlight(disarmWho, disarmT);
+      flightPose(this.flight, T - disarmT, m, this.grip, this.dir);
     } else {
       const z = this._v.crossVectors(this.edge, this.dir);
       m.makeBasis(this.edge, this.dir, z);
@@ -269,6 +278,6 @@ export class Fighter {
   }
 
   landingTime() {
-    return this.flight ? DISARM_T + this.flight.tl : Infinity;
+    return this.flight ? this.disarmInfo().t + this.flight.tl : Infinity;
   }
 }

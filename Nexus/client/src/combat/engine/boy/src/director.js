@@ -10,19 +10,27 @@ const UP = new THREE.Vector3(0, 1, 0);
 
 // Screen seconds elapsed at story time T (integral of 1 / time scale).
 const STEP = 0.01;
-const REAL = (() => {
+// 4a.2: DURATION/TIME_SCALE вече са `let` (виж choreo.js/config.js) — тази таблица трябваше
+// да е фиксирана IIFE в оригиналния boy (закон #5). recompileDirector() я преизчислява СЛЕД
+// timeline.recompileTimeline() при смяна на хореографията.
+function computeReal() {
   const n = Math.ceil(DURATION / STEP) + 1;
   const a = new Float32Array(n);
   for (let i = 1; i < n; i++) a[i] = a[i - 1] + STEP / Math.max(0.05, timeScaleAt((i - 0.5) * STEP));
   return a;
-})();
+}
+let REAL = computeReal();
 export function realTimeOf(T) {
   const x = THREE.MathUtils.clamp(T / STEP, 0, REAL.length - 1);
   const i = Math.floor(x);
   const j = Math.min(i + 1, REAL.length - 1);
   return REAL[i] + (REAL[j] - REAL[i]) * (x - i);
 }
-export const REAL_DURATION = realTimeOf(DURATION);
+export let REAL_DURATION = realTimeOf(DURATION);
+export function recompileDirector() {
+  REAL = computeReal();
+  REAL_DURATION = realTimeOf(DURATION);
+}
 
 // Inverse of realTimeOf: the story time shown after r screen seconds (used by the scrubber).
 export function storyTimeAtReal(r) {
@@ -36,7 +44,7 @@ export function storyTimeAtReal(r) {
   return (lo + hi) / 2;
 }
 
-function contactAt(T, who, along) {
+export function contactAt(T, who, along) {
   const r = rootOf(who, T);
   const w = weaponAt(who, T, { p: new THREE.Vector3(), d: new THREE.Vector3(), e: new THREE.Vector3() });
   const g = toWorld(r, [w.p.x, w.p.y, w.p.z]);
@@ -49,7 +57,10 @@ const ease = (u) => u * u * (3 - 2 * u);
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
 // Each shot returns camera position, look target, vertical fov, focus point, f-stop, handheld amount.
-const SHOTS = [
+// 4a.2: преименувано от SHOTS — фиксираният кинематографичен списък на демото. Генерираните
+// двубои подават своя собствен `shots` (director-gen.js) на createDirector(), защото са
+// вързани за абсолютни секунди от ТАЗИ хореография (KRONE/BLOCK contactAt(12.95/20.85, ...)).
+const DEFAULT_SHOTS = [
   { t0: 0.0, t1: 3.6, fn: (u) => ({ pos: V(6.5, 9.8, 14).lerp(V(3.6, 2.4, 9.2), ease(u)), target: V(0, 2.4, -9).lerp(V(0.4, 1.3, 0), ease(u)), fov: 40, focus: 'B', fstop: 5.6, hand: 0.2 }) },
   { t0: 3.6, t1: 5.0, fn: (u, S) => ({ pos: S.A.rig.w.head.clone().addScaledVector(S.fwdA, 1.9 - 0.4 * u).addScaledVector(S.v, 0.55).add(V(0, -0.22, 0)), target: S.A.rig.w.head.clone().add(V(0, -0.12, 0)), fov: 32, focus: 'A', fstop: 1.8, hand: 0.35 }) },
   { t0: 5.0, t1: 7.8, fn: (u, S) => ({ pos: S.P(-0.9 + 1.4 * u, 5.6, 1.35), target: S.P(0, 0, 1.2), fov: 38, focus: 'C', fstop: 2.8, hand: 0.5 }) },
@@ -97,18 +108,20 @@ const SHOTS = [
     },
   },
 ];
-export const SHOT_COUNT = SHOTS.length;
+export const SHOT_COUNT = DEFAULT_SHOTS.length;
 
-export function createDirector(camera, { reducedMotion }) {
+export function createDirector(camera, { reducedMotion, shots = DEFAULT_SHOTS } = {}) {
   const S = { u: new THREE.Vector3(), v: new THREE.Vector3(), C: new THREE.Vector3(), fwdA: new THREE.Vector3(), A: null, B: null };
   S.P = (a, b, h) => S.C.clone().addScaledVector(S.u, a).addScaledVector(S.v, b).add(V(0, h, 0));
   const state = { shot: -1, focusDist: 5, fstop: 2.8, trauma: 0, cut: true, lensMM: 35 };
+  const shotCount = shots.length;
   const look = new THREE.Matrix4();
   const q = new THREE.Quaternion();
   const e = new THREE.Euler();
   const noise = (t, s) => Math.sin(t * 1.1 + s) * 0.6 + Math.sin(t * 2.3 + s * 2.1) * 0.3 + Math.sin(t * 5.7 + s * 0.7) * 0.1;
   return {
     state,
+    shotCount,
     addTrauma(x) {
       if (!reducedMotion) state.trauma = Math.min(1, state.trauma + x);
     },
@@ -120,9 +133,9 @@ export function createDirector(camera, { reducedMotion }) {
       S.v.set(-S.u.z, 0, S.u.x);
       S.C.addVectors(A.root.pos, B.root.pos).multiplyScalar(0.5);
       S.fwdA.copy(S.u);
-      let i = SHOTS.findIndex((s) => T >= s.t0 && T < s.t1);
-      if (i < 0) i = SHOTS.length - 1;
-      const shot = SHOTS[i];
+      let i = shots.findIndex((s) => T >= s.t0 && T < s.t1);
+      if (i < 0) i = shots.length - 1;
+      const shot = shots[i];
       const r0 = realTimeOf(shot.t0);
       const u = THREE.MathUtils.clamp((realTimeOf(T) - r0) / (realTimeOf(shot.t1) - r0), 0, 1);
       const s = shot.fn(u, S);

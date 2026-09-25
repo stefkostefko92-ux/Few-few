@@ -241,7 +241,16 @@ function resolveAll() {
   return { keysOf, shield };
 }
 
-export const RESOLVED = resolveAll();
+// 4a.2: resolveAll() решава геометрията (aim/parry/block) ЕДНОКРАТНО при зареждане на модула
+// в оригиналния boy (закон #5). За генерирани двубои трябва да се пререшава при всяка нова
+// C.A_KEYS/B_KEYS/B_SHIELD. RESOLVED е `let`; recompileTimeline() се вика от boot.js СЛЕД
+// choreo.setChoreography(), ПРЕДИ director.recompileDirector().
+export let RESOLVED = resolveAll();
+export function recompileTimeline() {
+  FRAME_CACHE.clear();
+  RESOLVED = resolveAll();
+  DYNAMIC_AIMS = computeDynamicAims();
+}
 
 function cr(p0, p1, p2, p3, u, out) {
   const u2 = u * u;
@@ -287,6 +296,9 @@ export function shieldAt(t, out) {
 }
 
 // Keys whose contact is re-aimed at the live target around their moment of impact.
-export const DYNAMIC_AIMS = ['A', 'B'].flatMap((who) =>
-  RESOLVED.keysOf[who].filter((k) => k.aim?.dynamic).map((k) => ({ who, t: k.t, target: k.aim.target, world: k.targetWorld })),
-);
+function computeDynamicAims() {
+  return ['A', 'B'].flatMap((who) =>
+    RESOLVED.keysOf[who].filter((k) => k.aim?.dynamic).map((k) => ({ who, t: k.t, target: k.aim.target, world: k.targetWorld })),
+  );
+}
+export let DYNAMIC_AIMS = computeDynamicAims();

@@ -22,4 +22,9 @@ export const FIRE_GLOWS = [
   { pos: GATE_FIRE.clone(), col: [0.17, 0.06, 0.016] },
 ];
 
-export const DURATION = 28.5;
+// 4a.2: DURATION е `let` — генерираните двубои имат различна дължина от EVENTS/CHAPTERS
+// на хореографията. setDuration() се вика от boot.js заедно с choreo.setChoreography().
+export let DURATION = 28.5;
+export function setDuration(seconds) {
+  DURATION = seconds;
+}
