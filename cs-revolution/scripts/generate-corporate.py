@@ -5,7 +5,7 @@ import os, html, json
 
 BASE="https://carbonstealth.eu"
 STYLE=open('/tmp/cs_style.txt').read()
-FONTS='<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">'
+FONTS='<link href="/fonts/fonts.css" rel="stylesheet">'
 
 NAV={
  'it':'<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/team/">TEAM</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav>',
@@ -13,9 +13,9 @@ NAV={
  'bg':'<nav class="nav"><a href="/bg/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/bg/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/ekip/">ЕКИП</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
 }
 FT={
- 'it':'<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Termini</a> &middot; <a href="/note-legali/">Note Legali</a></p></div>',
- 'en':'<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a> &middot; <a href="/en/legal-notice/">Legal Notice</a></p></div>',
- 'bg':'<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; ЕИК BG208725180 &middot; Бобов дол, България</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Поверителност</a> &middot; <a href="/bg/cookie/">Бисквитки</a> &middot; <a href="/bg/usloviya/">Условия</a> &middot; <a href="/bg/imprint/">Правни данни</a></p></div>',
+ 'it':'<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Termini</a> &middot; <a href="/note-legali/">Note Legali</a></p></div>',
+ 'en':'<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a> &middot; <a href="/en/legal-notice/">Legal Notice</a></p></div>',
+ 'bg':'<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; ЕИК 208725180 &middot; Бобов дол, България</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Поверителност</a> &middot; <a href="/bg/cookie/">Бисквитки</a> &middot; <a href="/bg/usloviya/">Условия</a> &middot; <a href="/bg/imprint/">Правни данни</a></p></div>',
 }
 LOC={'it':'it_IT','en':'en_US','bg':'bg_BG'}
 
@@ -130,13 +130,13 @@ for lang,(t,d,intro,h2a,pa,h2b,pb,h2c,applypre,applymail,applypost) in car_txt.i
 # ============ IMPRINT / LEGAL NOTICE ============
 imp_txt={
  'it':("Note Legali","Dati legali e societari di Carbon Stealth VCC: ragione sociale, EIK, partita IVA, sede, contatti e responsabile dei contenuti.",
-   "Dati Societari","Ragione sociale","Carbon Stealth VCC","EIK (Registro Imprese Bulgaria)","BG208725180","Partita IVA","BG208725180","Sede legale","ul. Samuil 3, Bobov Dol 2670, Bulgaria","Email","info@carbonstealth.eu","Telefono","+39 379 296 9699 / +359 877 414 874","Responsabile dei contenuti","Stefan Kostadinov (CEO e Fondatore)",
+   "Dati Societari","Ragione sociale","Carbon Stealth VCC","EIK (Registro Imprese Bulgaria)","208725180","Partita IVA","BG208725180","Sede legale","ul. Samuil 3, Bobov Dol 2670, Bulgaria","Email","info@carbonstealth.eu","Telefono","+39 379 296 9699 / +359 877 414 874","Responsabile dei contenuti","Stefan Kostadinov (CEO e Fondatore)",
    "Responsabilità","I contenuti di questo sito sono redatti con la massima cura. Carbon Stealth VCC non risponde di eventuali errori o omissioni. I link a siti esterni sono forniti per comodità; non abbiamo controllo sui loro contenuti.",
-   "Foro competente","Per qualsiasi controversia è competente il foro di Kyustendil, Bulgaria, salvo diversa disposizione di legge."),
+   "Foro competente","Per le controversie con clienti professionali è competente il foro di Kyustendil, Bulgaria. Se sei un consumatore, resta competente il giudice del luogo in cui risiedi (Reg. (UE) 1215/2012, art. 18; Codice del Consumo, art. 66-bis)."),
  'en':("Legal Notice","Legal and company information for Carbon Stealth VCC: legal name, EIK, VAT, registered office, contacts and person responsible for content.",
-   "Company Details","Legal name","Carbon Stealth VCC","EIK (Bulgarian Commercial Register)","BG208725180","VAT number","BG208725180","Registered office","ul. Samuil 3, Bobov Dol 2670, Bulgaria","Email","info@carbonstealth.eu","Phone","+39 379 296 9699 / +359 877 414 874","Responsible for content","Stefan Kostadinov (CEO & Founder)",
+   "Company Details","Legal name","Carbon Stealth VCC","EIK (Bulgarian Commercial Register)","208725180","VAT number","BG208725180","Registered office","ul. Samuil 3, Bobov Dol 2670, Bulgaria","Email","info@carbonstealth.eu","Phone","+39 379 296 9699 / +359 877 414 874","Responsible for content","Stefan Kostadinov (CEO & Founder)",
    "Liability","The content of this website is prepared with the utmost care. Carbon Stealth VCC is not liable for any errors or omissions. Links to external sites are provided for convenience; we have no control over their content.",
-   "Jurisdiction","Any dispute is subject to the jurisdiction of Kyustendil, Bulgaria, unless otherwise required by law."),
+   "Jurisdiction","Disputes with business clients are subject to the jurisdiction of Kyustendil, Bulgaria. If you are a consumer, the courts of your country of residence remain competent (Reg. (EU) 1215/2012, Art. 18)."),
  'bg':("Правни Данни","Правна и фирмена информация за Carbon Stealth VCC: наименование, ЕИК, ДДС номер, седалище, контакти и отговорник за съдържанието.",
    "Фирмени Данни","Наименование","Carbon Stealth VCC","ЕИК (Търговски регистър)","BG208725180","ДДС номер","BG208725180","Седалище","ул. Самуил 3, Бобов дол 2670, България","Имейл","info@carbonstealth.eu","Телефон","+39 379 296 9699 / +359 877 414 874","Отговорник за съдържанието","Стефан Костадинов (CEO и Основател)",
    "Отговорност","Съдържанието на този сайт е изготвено с максимално внимание. Carbon Stealth VCC не носи отговорност за евентуални грешки или пропуски. Връзките към външни сайтове са предоставени за удобство; нямаме контрол върху тяхното съдържание.",

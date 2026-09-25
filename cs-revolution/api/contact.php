@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'log') {
             }
         }
     }
-    echo json_encode(['ok'=>true,'entries'=>array_slice($entries, 0, 100)]);
+    echo json_encode(['ok'=>true,'entries'=>array_slice($entries, 0, 100)], JSON_INVALID_UTF8_SUBSTITUTE);
     exit;
 }
 
@@ -248,11 +248,21 @@ if (!$sent) {
 }
 
 // Attempt 3: Log to file (never lose a message)
-$logEntry = date('c')." | $name | $email | $phone | $langFlag | ".substr($message,0,200)."\n";
+// one line per entry: strip CR/LF and the " | " separator so a visitor cannot forge log rows;
+// mb_substr keeps Cyrillic intact (a split byte made json_encode fail in the admin view)
+$logClean = function ($v) { return str_replace(['|', "\r", "\n"], ['/', ' ', ' '], (string)$v); };
+$logEntry = date('c').' | '.$logClean($name).' | '.$logClean($email).' | '.$logClean($phone).' | '.$logClean($langFlag).' | '.$logClean(mb_substr($message,0,200,'UTF-8'))."\n";
 $cLog = cs_log_dir().'/contacts_'.date('Y-m').'.log';
 $cNew = !file_exists($cLog);
 @file_put_contents($cLog, $logEntry, FILE_APPEND|LOCK_EX);
 if ($cNew) @chmod($cLog, 0600);   // name/email/phone/message/IP — owner only
+// retention (privacy policy §5): contact logs older than 24 months are deleted
+if ($cNew) {
+    $cut = date('Y-m', strtotime('-24 months'));
+    foreach (glob(cs_log_dir().'/contacts_*.log') ?: [] as $old) {
+        if (preg_match('/contacts_(\d{4}-\d{2})\.log$/', $old, $mm) && $mm[1] < $cut) @unlink($old);
+    }
+}
 
 if ($sent) {
     echo json_encode(['ok'=>true,'message'=>'sent']);

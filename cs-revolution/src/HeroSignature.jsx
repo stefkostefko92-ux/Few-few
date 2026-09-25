@@ -177,7 +177,18 @@ export default function HeroSignature() {
       else idleTimer = setTimeout(fn, 1200);
     }
 
-    whenIdle(function () {
+    // Phones: the ~680 KB three.js parse is the whole mobile TBT budget, so it
+    // waits for the first touch/scroll; the poster carries the hero until then.
+    var coarse = false;
+    try { coarse = window.matchMedia("(pointer:coarse)").matches || window.innerWidth < 768; } catch (e) {}
+    var EV = ["pointerdown", "touchstart", "scroll", "keydown", "wheel"];
+    function onFirst() { EV.forEach(function (n) { window.removeEventListener(n, onFirst); }); whenIdle(start); }
+    function later(fn) {
+      if (!coarse) return whenIdle(fn);
+      EV.forEach(function (n) { window.addEventListener(n, onFirst, { passive: true }); });
+    }
+    var start;
+    later(start = function () {
     if (!mounted) return;
     import("three").then(function (THREE) {
       if (!mounted || !el) return;
@@ -351,6 +362,7 @@ export default function HeroSignature() {
       mounted = false;
       if (idleId && typeof cancelIdleCallback === "function") cancelIdleCallback(idleId);
       if (idleTimer) clearTimeout(idleTimer);
+      EV.forEach(function (n) { window.removeEventListener(n, onFirst); });
       if (cleanup) cleanup();
     };
   }, []);

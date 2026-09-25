@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import HeroSignature from "./HeroSignature.jsx";
 import ReverseLabShowcase from "./ReverseLabShowcase.jsx";
 import CoverageMap from "./CoverageMap.jsx";
@@ -129,15 +129,15 @@ var LANGS = {
   ft_azienda: { it: "AZIENDA", en: "COMPANY", bg: "\u041A\u041E\u041C\u041F\u0410\u041D\u0418\u042F" },
   ft_legale: { it: "LEGALE", en: "LEGAL", bg: "\u041F\u0420\u0410\u0412\u041D\u0410 \u0418\u041D\u0424\u041E\u0420\u041C\u0410\u0426\u0418\u042F" },
   ft_desc: {
-    it: "Sviluppo web, software ERP, app mobile e SEO/GEO/AEO per l'Europa. EIK BG208725180. Soluzioni digitali di eccellenza per imprese ambiziose.",
-    en: "Web development, ERP software, mobile apps and SEO/GEO/AEO across Europe. EIK BG208725180. Premium digital solutions for ambitious businesses.",
-    bg: "\u0423\u0435\u0431 \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430, ERP \u0441\u043E\u0444\u0442\u0443\u0435\u0440, \u043C\u043E\u0431\u0438\u043B\u043D\u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0438 SEO/GEO/AEO \u0437\u0430 \u0415\u0432\u0440\u043E\u043F\u0430. \u0415\u0418\u041A BG208725180. \u041F\u0440\u0435\u043C\u0438\u0443\u043C \u0434\u0438\u0433\u0438\u0442\u0430\u043B\u043D\u0438 \u0440\u0435\u0448\u0435\u043D\u0438\u044F \u0437\u0430 \u0430\u043C\u0431\u0438\u0446\u0438\u043E\u0437\u043D\u0438 \u0431\u0438\u0437\u043D\u0435\u0441\u0438."
+    it: "Sviluppo web, software ERP, app mobile e SEO/GEO/AEO per l'Europa. EIK 208725180. Soluzioni digitali di eccellenza per imprese ambiziose.",
+    en: "Web development, ERP software, mobile apps and SEO/GEO/AEO across Europe. EIK 208725180. Premium digital solutions for ambitious businesses.",
+    bg: "\u0423\u0435\u0431 \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430, ERP \u0441\u043E\u0444\u0442\u0443\u0435\u0440, \u043C\u043E\u0431\u0438\u043B\u043D\u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0438 SEO/GEO/AEO \u0437\u0430 \u0415\u0432\u0440\u043E\u043F\u0430. \u0415\u0418\u041A 208725180. \u041F\u0440\u0435\u043C\u0438\u0443\u043C \u0434\u0438\u0433\u0438\u0442\u0430\u043B\u043D\u0438 \u0440\u0435\u0448\u0435\u043D\u0438\u044F \u0437\u0430 \u0430\u043C\u0431\u0438\u0446\u0438\u043E\u0437\u043D\u0438 \u0431\u0438\u0437\u043D\u0435\u0441\u0438."
   },
   // ── COOKIE BANNER ──
   cookie_text: {
-    it: "Questo sito utilizza cookie tecnici e analitici per migliorare la tua esperienza. Puoi accettare o rifiutare i cookie non essenziali.",
-    en: "This website uses technical and analytics cookies to improve your experience. You can accept or reject non-essential cookies.",
-    bg: "\u0422\u043E\u0437\u0438 \u0441\u0430\u0439\u0442 \u0438\u0437\u043F\u043E\u043B\u0437\u0432\u0430 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u0438 \u0430\u043D\u0430\u043B\u0438\u0442\u0438\u0447\u043D\u0438 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438. \u041C\u043E\u0436\u0435\u0442\u0435 \u0434\u0430 \u043F\u0440\u0438\u0435\u043C\u0435\u0442\u0435 \u0438\u043B\u0438 \u043E\u0442\u043A\u0430\u0436\u0435\u0442\u0435 \u043D\u0435\u0441\u044A\u0449\u0435\u0441\u0442\u0432\u0435\u043D\u0438\u0442\u0435."
+    it: "Usiamo solo cookie tecnici propri. Il sito mostra annunci Google (AdSense): con ACCETTA possono essere personalizzati, con RIFIUTA restano non personalizzati. Puoi cambiare scelta in qualsiasi momento dalla Politica Cookie.",
+    en: "We only use our own technical cookies. The site shows Google ads (AdSense): ACCEPT allows personalised ads, REJECT keeps them non-personalised. You can change your choice at any time from the Cookie Policy.",
+    bg: "\u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u043C\u0435 \u0441\u0430\u043C\u043E \u0441\u043E\u0431\u0441\u0442\u0432\u0435\u043D\u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438. \u0421\u0430\u0439\u0442\u044A\u0442 \u043F\u043E\u043A\u0430\u0437\u0432\u0430 \u0440\u0435\u043A\u043B\u0430\u043C\u0438 \u043D\u0430 Google (AdSense): \u0441 \u041F\u0420\u0418\u0415\u041C\u0418 \u043C\u043E\u0436\u0435 \u0434\u0430 \u0441\u0430 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438, \u0441 \u041E\u0422\u041A\u0410\u0416\u0418 \u043E\u0441\u0442\u0430\u0432\u0430\u0442 \u043D\u0435\u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438. \u041C\u043E\u0436\u0435\u0442\u0435 \u0434\u0430 \u043F\u0440\u043E\u043C\u0435\u043D\u0438\u0442\u0435 \u0438\u0437\u0431\u043E\u0440\u0430 \u0441\u0438 \u043F\u043E \u0432\u0441\u044F\u043A\u043E \u0432\u0440\u0435\u043C\u0435 \u043E\u0442 \u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430\u0442\u0430 \u0437\u0430 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438."
   },
   cookie_accept: { it: "ACCETTA", en: "ACCEPT", bg: "\u041F\u0420\u0418\u0415\u041C\u0418" },
   cookie_reject: { it: "RIFIUTA", en: "REJECT", bg: "\u041E\u0422\u041A\u0410\u0416\u0418" },
@@ -254,7 +254,7 @@ var SRV_DATA = {
     {n:"05",t:"\u041C\u043E\u0431\u0438\u043B\u043D\u0438 \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F",d:"\u041D\u0430\u0442\u0438\u0432\u043D\u0438 \u0438 \u043A\u0440\u043E\u0441\u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0435\u043D\u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0437\u0430 iOS \u0438 Android. \u041E\u0442 UX \u0434\u0438\u0437\u0430\u0439\u043D \u0434\u043E \u043F\u0443\u0431\u043B\u0438\u043A\u0443\u0432\u0430\u043D\u0435 \u0432 App Store \u0438 Google Play.",tags:"REACT NATIVE / FLUTTER / SWIFT"},
     {n:"06",t:"\u0418\u0433\u0440\u0438 \u0438 Anti-Cheat",d:"\u0411\u0440\u0430\u0443\u0437\u044A\u0440 MMO \u0438\u0433\u0440\u0438, FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438, \u0430\u043D\u0442\u0438\u0447\u0438\u0439\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0441 \u043F\u043E\u0432\u0435\u0434\u0435\u043D\u0447\u0435\u0441\u043A\u0438 \u0435\u0432\u0440\u0438\u0441\u0442\u0438\u043A\u0438 \u0438 \u0430\u043D\u0430\u043B\u0438\u0437 \u0432 \u0440\u0435\u0430\u043B\u043D\u043E \u0432\u0440\u0435\u043C\u0435.",tags:"FIVEM / LUA / SOCKET.IO / REDIS"},
     {n:"07",t:"\u041F\u0440\u043E\u0444\u0435\u0441\u0438\u043E\u043D\u0430\u043B\u043D\u043E SEO \u0438 GEO",d:"\u041B\u043E\u043A\u0430\u043B\u043D\u0430 \u0438 \u043C\u0435\u0436\u0434\u0443\u043D\u0430\u0440\u043E\u0434\u043D\u0430 \u043E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F \u0437\u0430 \u0442\u044A\u0440\u0441\u0430\u0447\u043A\u0438. Google My Business, \u043B\u0438\u043D\u043A \u0431\u0438\u043B\u0434\u0438\u043D\u0433, \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u043E SEO.",tags:"SEO ON-PAGE / GEO SEO / LOCAL SEO"},
-    {n:"08",t:"AEO - Answer Engine \u041E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F",d:"\u041E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F \u0437\u0430 ChatGPT, Perplexity, Google SGE \u0438 Gemini. \u0411\u044A\u0434\u0435\u0449\u0435\u0442\u043E \u043D\u0430 \u043E\u043D\u043B\u0430\u0439\u043D \u0432\u0438\u0434\u0438\u043C\u043E\u0441\u0442\u0442\u0430 \u0435 \u0442\u0443\u043A.",tags:"CHATGPT / PERPLEXITY / SCHEMA FAQ"},
+    {n:"08",t:"AEO \u2014 \u043E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F \u0437\u0430 AI \u0442\u044A\u0440\u0441\u0430\u0447\u043A\u0438",d:"\u041E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F \u0437\u0430 ChatGPT, Perplexity, Google SGE \u0438 Gemini. \u0411\u044A\u0434\u0435\u0449\u0435\u0442\u043E \u043D\u0430 \u043E\u043D\u043B\u0430\u0439\u043D \u0432\u0438\u0434\u0438\u043C\u043E\u0441\u0442\u0442\u0430 \u0435 \u0442\u0443\u043A.",tags:"CHATGPT / PERPLEXITY / SCHEMA FAQ"},
     {n:"09",t:"SEO \u0410\u043D\u0430\u043B\u0438\u0442\u0438\u043A\u0430",d:"\u041C\u043E\u043D\u0438\u0442\u043E\u0440\u0438\u043D\u0433 \u043D\u0430 \u043F\u043E\u0437\u0438\u0446\u0438\u0438, \u0430\u043D\u0430\u043B\u0438\u0437 \u043D\u0430 \u043A\u043E\u043D\u043A\u0443\u0440\u0435\u043D\u0442\u0438, trust factor \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u0438 \u043C\u0435\u0441\u0435\u0447\u043D\u0438 \u043E\u0442\u0447\u0435\u0442\u0438 \u0431\u0430\u0437\u0438\u0440\u0430\u043D\u0438 \u043D\u0430 \u0434\u0430\u043D\u043D\u0438.",tags:"ANALYTICS / TRUST SCORE / COMPETITOR"},
     {n:"10",t:"\u0425\u043E\u0441\u0442\u0438\u043D\u0433 \u0438 Cloud",d:"\u0423\u043F\u0440\u0430\u0432\u043B\u044F\u0432\u0430\u043D \u0445\u043E\u0441\u0442\u0438\u043D\u0433 \u0441 \u0432\u0438\u0441\u043E\u043A\u0430 \u043F\u0440\u043E\u0438\u0437\u0432\u043E\u0434\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442, \u0431\u0435\u0437\u043F\u043B\u0430\u0442\u0435\u043D SSL, \u0433\u043B\u043E\u0431\u0430\u043B\u0435\u043D CDN \u0438 99.9% uptime \u0433\u0430\u0440\u0430\u043D\u0446\u0438\u044F.",tags:"SSL / CDN / 99.9% UPTIME"},
     {n:"11",t:"\u041A\u0438\u0431\u0435\u0440\u0441\u0438\u0433\u0443\u0440\u043D\u043E\u0441\u0442",d:"\u041E\u0434\u0438\u0442 \u043D\u0430 \u0441\u0438\u0433\u0443\u0440\u043D\u043E\u0441\u0442\u0442\u0430, penetration testing, DDoS \u0437\u0430\u0449\u0438\u0442\u0430 \u0438 \u043F\u0440\u0438\u043B\u0430\u0433\u0430\u043D\u0435 \u043D\u0430 OWASP \u043D\u0430\u0439-\u0434\u043E\u0431\u0440\u0438 \u043F\u0440\u0430\u043A\u0442\u0438\u043A\u0438.",tags:"PEN TEST / DDOS SHIELD / AES-256"},
@@ -1086,7 +1086,9 @@ function AdminPanel(props) {
 // Injects meta tags, JSON-LD, Open Graph, GeoMeta into document.head
 // ═══════════════════════════════════════════════════════════════
 function SEOInjector() {
-  useEffect(function() {
+  // layout effect: the responsive CSS below must be in place BEFORE the first paint,
+  // otherwise the mobile hero reflows ~60px when it lands (CLS 0.27 on slow phones)
+  useLayoutEffect(function() {
     // Title comes from the static index.html <head> (Italian, keyword-rich) —
     // overriding it here with an English string would undo the SEO title.
 
@@ -2535,8 +2537,6 @@ function CaliperCursor(){
 // ═══════════════════════════════════════════════════
 export default function App(){
   const[loaded,setLoaded]=useState(true);const[pct,setPct]=useState(100);
-  const[time,setTime]=useState("00:00:00");const[bat,setBat]=useState("N/A");
-  const[net,setNet]=useState("?");const[fps,setFps]=useState(60);
   const[scrollPx,setScrollPx]=useState(0);
   const[lang,setLang]=useState(function(){return detectLang()});
   // IP geolocation overrides timezone detection (IT/BG/other→EN) — but never an explicit user choice
@@ -2545,21 +2545,17 @@ export default function App(){
   const[mobileMenu,setMobileMenu]=useState(false);
   const[cookieOk,setCookieOk]=useState(function(){try{return localStorage.getItem("cs_cookie")!==null}catch(e){return false}});
   const[formName,setFormName]=useState("");const[formEmail,setFormEmail]=useState("");const[formPhone,setFormPhone]=useState("");const[formMsg,setFormMsg]=useState("");const[formSent,setFormSent]=useState(false);
-  const fpsF=useRef([]);
 
   // Translation helper
   function t(key){var entry=LANGS[key];if(!entry)return key;return entry[lang]||entry.en||key}
 
   function handleFormSubmit(){if(!formName.trim()||!formEmail.trim()||!formMsg.trim())return;setFormSent("sending");fetch("/api/contact.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:formName,email:formEmail,phone:formPhone,message:formMsg,lang:lang,_gotcha:""})}).then(function(r){return r.json()}).then(function(d){if(d.ok){setFormSent("ok");setTimeout(function(){setFormSent(false);setFormName("");setFormEmail("");setFormPhone("");setFormMsg("")},5000)}else{setFormSent("error")}}).catch(function(){setFormSent("error");setTimeout(function(){setFormSent(false)},4000)})}
+  useEffect(function(){if(!mobileMenu)return;function k(e){if(e.key==="Escape")setMobileMenu(false)}document.addEventListener("keydown",k);return function(){document.removeEventListener("keydown",k)}},[mobileMenu]);
   function acceptCookies(){setCookieOk(true);try{localStorage.setItem("cs_cookie","accepted")}catch(e){}}
   function rejectCookies(){setCookieOk(true);try{localStorage.setItem("cs_cookie","rejected")}catch(e){}}
 
   // Admin panel: Ctrl+Shift+A or type "admin" in terminal
   useEffect(function(){function h(e){if(e.ctrlKey&&e.shiftKey&&e.key==="A"){e.preventDefault();setShowAdmin(function(v){return!v});}if(e.key==="Escape")setShowAdmin(false)}function adminEvt(){setShowAdmin(function(v){return!v})}window.addEventListener("keydown",h);window.addEventListener("cs-admin-toggle",adminEvt);return function(){window.removeEventListener("keydown",h);window.removeEventListener("cs-admin-toggle",adminEvt)}},[]);
-  useEffect(function(){var iv=setInterval(function(){setTime(new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"}))},1000);return function(){clearInterval(iv)}},[]);
-  useEffect(function(){if(navigator.getBattery)navigator.getBattery().then(function(b){function u(){setBat(Math.round(b.level*100)+"%"+(b.charging?" CHG":""))}u();b.addEventListener("levelchange",u)})},[]);
-  useEffect(function(){var c=navigator.connection||navigator.mozConnection;if(c)setNet((c.effectiveType||"?").toUpperCase())},[]);
-  useEffect(function(){var raf;function loop(){fpsF.current.push(performance.now());var now=performance.now();fpsF.current=fpsF.current.filter(function(t){return now-t<1000});setFps(fpsF.current.length);raf=requestAnimationFrame(loop)}loop();return function(){cancelAnimationFrame(raf)}},[]);
   useEffect(function(){function h(){setScrollPx(window.scrollY)}window.addEventListener("scroll",h,{passive:true});return function(){window.removeEventListener("scroll",h)}},[]);
 
   // Scroll re-measures: a cyan line sweeps each section once on entry and its
@@ -2627,7 +2623,7 @@ export default function App(){
     if (loaded) return;
     var lines = [
       { delay: 100, text: "CARBON STEALTH BIOS v5.0.2026", color: C },
-      { delay: 300, text: "EIK: BG208725180 — UL. SAMUIL 3, BOBOV DOL 2670, BULGARIA", color: "#ccc" },
+      { delay: 300, text: "EIK: 208725180 — UL. SAMUIL 3, BOBOV DOL 2670, BULGARIA", color: "#ccc" },
       { delay: 500, text: "\u2500".repeat(52), color: "#ccc" },
       { delay: 700, text: "SCANNING HARDWARE...", color: "#C9D1D6" },
       { delay: 900, text: "  CPU THREADS:    " + (sysInfo.cores || "?") + " CORES DETECTED", color: C },
@@ -2911,13 +2907,13 @@ export default function App(){
           <div className="cs-nav-lang" style={{display:"flex",gap:2,marginLeft:8}}>
             {["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:8,padding:"3px 6px",letterSpacing:".1em",cursor:"none",background:lang===l?"rgba("+CR+",.15)":"transparent",color:lang===l?C:"#ccc",border:"1px solid "+(lang===l?"rgba("+CR+",.3)":"rgba(245,245,240,.06)"),fontWeight:lang===l?700:400,textTransform:"uppercase"}}>{l}</span>})}
           </div>
-          <div className="cs-hamburger" {...kb(function(){setMobileMenu(true)},"Open menu")}><span/><span/><span/></div>
+          <div className="cs-hamburger" {...kb(function(){setMobileMenu(true)},lang==="bg"?"\u041E\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Open menu":"Apri il menu")}><span/><span/><span/></div>
         </div>
       </nav>
 
       {/* MOBILE MENU OVERLAY */}
       <div className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}>
-        <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},"Close menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>{"\u2715"}</div>
+        <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},lang==="bg"?"\u0417\u0430\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Close menu":"Chiudi il menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>{"\u2715"}</div>
         <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={140} height={140} decoding="async" style={{height:140,width:140,marginBottom:4}}/>
         {[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} className="cs-mobile-menu-item" {...kb(function(){scrollToId(item.id);setMobileMenu(false)},item.txt)} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{item.txt}</div>})}
         <a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} className="cs-mobile-menu-item" style={{fontSize:13,letterSpacing:".3em",color:C,padding:"14px 32px",border:"1px solid rgba("+CR+",.3)",minWidth:220,textAlign:"center",textDecoration:"none"}}>{t("nav_test")}</a>
@@ -3231,7 +3227,7 @@ export default function App(){
         {({
           it: [
             ["Quali servizi offre Carbon Stealth VCC?", "Carbon Stealth offre sviluppo web (React, Node.js, PostgreSQL), sviluppo giochi (FiveM, browser MMO), sistemi embedded e IoT (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), branding e design, e consulenza tecnica."],
-            ["Dove si trova Carbon Stealth?", "Sede legale a Bobov Dol, Bulgaria (EIK: BG208725180, indirizzo: ul. Samuil 3, 2670). Serviamo clienti da remoto in tutta Europa e nel mondo."],
+            ["Dove si trova Carbon Stealth?", "Sede legale a Bobov Dol, Bulgaria (EIK: 208725180, indirizzo: ul. Samuil 3, 2670). Serviamo clienti da remoto in tutta Europa e nel mondo."],
             ["Cos'\u00e8 Nexus Dominion?", "Un MMO browser dark fantasy medievale costruito con React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO e Docker. Include 52+ modelli database, 27 pagine di gioco e combattimento PvP in tempo reale."],
             ["Carbon Stealth sviluppa risorse FiveM?", "S\u00ec. Sviluppiamo risorse FiveM: sistemi anti-cheat con euristiche comportamentali, tablet meccanico, script e risorse racing. Supporto multi-framework QBCore e ESX."],
             ["Con quali sistemi embedded e IoT lavorate?", "Controller forni Eurotherm EPC3004 via Modbus RTU/TCP, PLC WAGO PFC200 con CODESYS, schede controllo ascensori con 102 punti I/O e macchine a 14 stati, dispositivi IoT Arduino/ESP32."],
@@ -3239,7 +3235,7 @@ export default function App(){
           ],
           en: [
             ["What services does Carbon Stealth VCC offer?", "Carbon Stealth offers web development (React, Node.js, PostgreSQL), game development (FiveM, browser MMOs), embedded systems (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), branding, and code rescue consulting."],
-            ["Where is Carbon Stealth located?", "Based in Bobov Dol, Bulgaria (EIK: BG208725180, address: ul. Samuil 3, 2670). Serving clients remotely across Europe and worldwide."],
+            ["Where is Carbon Stealth located?", "Based in Bobov Dol, Bulgaria (EIK: 208725180, address: ul. Samuil 3, 2670). Serving clients remotely across Europe and worldwide."],
             ["What is Nexus Dominion?", "A medieval dark fantasy browser MMO built with React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO, and Docker. Features 52+ database models, 27 game pages, and real-time PvP combat."],
             ["Does Carbon Stealth build FiveM resources?", "Yes. We build FiveM resources: anti-cheat systems with behavioral heuristics, mechanic tablet systems, scripts and racing resources. Multi-framework QBCore and ESX support."],
             ["What embedded and IoT systems does Carbon Stealth work with?", "Eurotherm EPC3004 oven controllers via Modbus RTU/TCP, WAGO PFC200 PLCs with CODESYS, elevator control boards with 102 I/O points and 14-state state machines, Arduino/ESP32 IoT devices."],
@@ -3247,9 +3243,9 @@ export default function App(){
           ],
           bg: [
             ["\u041A\u0430\u043A\u0432\u0438 \u0443\u0441\u043B\u0443\u0433\u0438 \u043F\u0440\u0435\u0434\u043B\u0430\u0433\u0430 Carbon Stealth VCC?", "Carbon Stealth \u043F\u0440\u0435\u0434\u043B\u0430\u0433\u0430 \u0443\u0435\u0431 \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430 (React, Node.js, PostgreSQL), \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043D\u0430 \u0438\u0433\u0440\u0438 (FiveM, \u0431\u0440\u0430\u0443\u0437\u044A\u0440 MMO), \u0432\u0433\u0440\u0430\u0434\u0435\u043D\u0438 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0438 IoT (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), \u0431\u0440\u0430\u043D\u0434\u0438\u043D\u0433 \u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u043A\u043E\u043D\u0441\u0443\u043B\u0442\u0430\u0446\u0438\u0438."],
-            ["\u041A\u044A\u0434\u0435 \u0441\u0435 \u043D\u0430\u043C\u0438\u0440\u0430 Carbon Stealth?", "\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435 \u0432 \u0411\u043E\u0431\u043E\u0432 \u0434\u043E\u043B, \u0411\u044A\u043B\u0433\u0430\u0440\u0438\u044F (\u0415\u0418\u041A: BG208725180, \u0430\u0434\u0440\u0435\u0441: \u0443\u043B. \u0421\u0430\u043C\u0443\u0438\u043B 3, 2670). \u041E\u0431\u0441\u043B\u0443\u0436\u0432\u0430\u043C\u0435 \u043A\u043B\u0438\u0435\u043D\u0442\u0438 \u0434\u0438\u0441\u0442\u0430\u043D\u0446\u0438\u043E\u043D\u043D\u043E \u0432 \u0446\u044F\u043B\u0430 \u0415\u0432\u0440\u043E\u043F\u0430 \u0438 \u0441\u0432\u0435\u0442\u0430."],
+            ["\u041A\u044A\u0434\u0435 \u0441\u0435 \u043D\u0430\u043C\u0438\u0440\u0430 Carbon Stealth?", "\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435 \u0432 \u0411\u043E\u0431\u043E\u0432 \u0434\u043E\u043B, \u0411\u044A\u043B\u0433\u0430\u0440\u0438\u044F (\u0415\u0418\u041A: 208725180, \u0430\u0434\u0440\u0435\u0441: \u0443\u043B. \u0421\u0430\u043C\u0443\u0438\u043B 3, 2670). \u041E\u0431\u0441\u043B\u0443\u0436\u0432\u0430\u043C\u0435 \u043A\u043B\u0438\u0435\u043D\u0442\u0438 \u0434\u0438\u0441\u0442\u0430\u043D\u0446\u0438\u043E\u043D\u043D\u043E \u0432 \u0446\u044F\u043B\u0430 \u0415\u0432\u0440\u043E\u043F\u0430 \u0438 \u0441\u0432\u0435\u0442\u0430."],
             ["\u041A\u0430\u043A\u0432\u043E \u0435 Nexus Dominion?", "\u0421\u0440\u0435\u0434\u043D\u043E\u0432\u0435\u043A\u043E\u0432\u043D\u043E dark fantasy \u0431\u0440\u0430\u0443\u0437\u044A\u0440 MMO, \u0438\u0437\u0433\u0440\u0430\u0434\u0435\u043D\u043E \u0441 React, Vite, Node.js, TypeScript, Prisma, PostgreSQL, Redis, Socket.IO \u0438 Docker. \u0412\u043A\u043B\u044E\u0447\u0432\u0430 52+ \u043C\u043E\u0434\u0435\u043B\u0430 \u0432 \u0431\u0430\u0437\u0430\u0442\u0430 \u0434\u0430\u043D\u043D\u0438, 27 \u0438\u0433\u0440\u043E\u0432\u0438 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0438 \u0438 PvP \u0431\u0438\u0442\u043A\u0438 \u0432 \u0440\u0435\u0430\u043B\u043D\u043E \u0432\u0440\u0435\u043C\u0435."],
-            ["Carbon Stealth \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0432\u0430 \u043B\u0438 FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438?", "\u0414\u0430. \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0432\u0430\u043C\u0435 FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438: \u0430\u043D\u0442\u0438\u0447\u0438\u0439\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0441 \u043F\u043E\u0432\u0435\u0434\u0435\u043D\u0447\u0435\u0441\u043A\u0438 \u0435\u0432\u0440\u0438\u0441\u0442\u0438\u043A\u0438, \u043C\u0435\u0445\u0430\u043D\u0438\u0447\u043D\u0438 \u0442\u0430\u0431\u043B\u0435\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438, \u0441\u043A\u0440\u0438\u043F\u0442\u043E\u0432\u0435 \u0438 \u0441\u044A\u0441\u0442\u0435\u0437\u0430\u0442\u0435\u043B\u043D\u0438 \u0440\u0435\u0441\u0443\u0440\u0441\u0438. \u041F\u043E\u0434\u0434\u0440\u044A\u0436\u043A\u0430 \u043D\u0430 QBCore \u0438 ESX."],
+            ["Carbon Stealth \u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0432\u0430 \u043B\u0438 FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438?", "\u0414\u0430. \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0432\u0430\u043C\u0435 FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438: \u0430\u043D\u0442\u0438\u0447\u0438\u0439\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0441 \u043F\u043E\u0432\u0435\u0434\u0435\u043D\u0447\u0435\u0441\u043A\u0438 \u0435\u0432\u0440\u0438\u0441\u0442\u0438\u043A\u0438, \u0442\u0430\u0431\u043B\u0435\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0437\u0430 \u043C\u0435\u0445\u0430\u043D\u0438\u0446\u0438, \u0441\u043A\u0440\u0438\u043F\u0442\u043E\u0432\u0435 \u0438 \u0441\u044A\u0441\u0442\u0435\u0437\u0430\u0442\u0435\u043B\u043D\u0438 \u0440\u0435\u0441\u0443\u0440\u0441\u0438. \u041F\u043E\u0434\u0434\u0440\u044A\u0436\u043A\u0430 \u043D\u0430 QBCore \u0438 ESX."],
             ["\u0421 \u043A\u0430\u043A\u0432\u0438 \u0432\u0433\u0440\u0430\u0434\u0435\u043D\u0438 \u0438 IoT \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0440\u0430\u0431\u043E\u0442\u0438 Carbon Stealth?", "\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u0435\u0440\u0438 \u0437\u0430 \u043F\u0435\u0449\u0438 Eurotherm EPC3004 \u0447\u0440\u0435\u0437 Modbus RTU/TCP, PLC WAGO PFC200 \u0441 CODESYS, \u043F\u043B\u0430\u0442\u043A\u0438 \u0437\u0430 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043D\u0430 \u0430\u0441\u0430\u043D\u0441\u044C\u043E\u0440\u0438 \u0441\u044A\u0441 102 I/O \u0442\u043E\u0447\u043A\u0438 \u0438 14 \u0441\u044A\u0441\u0442\u043E\u044F\u043D\u0438\u044F, IoT \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u0430 Arduino/ESP32."],
             ["\u041A\u0430\u043A\u044A\u0432 \u0435 \u0442\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0447\u043D\u0438\u044F\u0442 \u0441\u0442\u0435\u043A?", "React, Node.js, TypeScript, Python, Prisma ORM, PostgreSQL, Redis, Docker, Nginx, Three.js, WebGL, GSAP, Socket.IO. \u0418\u043D\u0444\u0440\u0430\u0441\u0442\u0440\u0443\u043A\u0442\u0443\u0440\u0430: Hetzner VPS, Ubuntu 24.04, Let's Encrypt SSL."],
           ],
@@ -3378,7 +3374,7 @@ export default function App(){
         {/* CONTACT BAR */}
         <div className="cs-contactbar" style={{padding:"16px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"flex",flexWrap:"wrap",justifyContent:"center",gap:24,alignItems:"center"}}>
           <span style={{fontSize:9,color:"#ccc",letterSpacing:".1em"}}>{lang==="it"?"Sede Legale:":lang==="bg"?"\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435:":"Registered Office:"} ul. Samuil 3, Bobov Dol 2670, Bulgaria</span>
-          <span style={{fontSize:9,color:"#ccc"}}>EIK BG208725180</span>
+          <span style={{fontSize:9,color:"#ccc"}}>EIK 208725180</span>
           <a href="tel:+393792969699" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>IT +39 379 296 9699</a>
           <a href="tel:+359877414874" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>BG +359 877 414 874</a>
           <a href="mailto:info@carbonstealth.eu" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>info@carbonstealth.eu</a>
@@ -3386,7 +3382,7 @@ export default function App(){
 
         {/* BOTTOM BAR */}
         <div style={{padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
-          <span style={{fontSize:8,color:"#ccc",letterSpacing:".1em"}}>{"\u00a9"} 2025-2026 Carbon Stealth VCC {"\u00b7"} EIK BG208725180 {"\u00b7"} Bobov Dol, Bulgaria</span>
+          <span style={{fontSize:8,color:"#ccc",letterSpacing:".1em"}}>{"\u00a9"} 2025-2026 Carbon Stealth VCC {"\u00b7"} EIK 208725180 {"\u00b7"} Bobov Dol, Bulgaria</span>
           <div style={{display:"flex",gap:16}}>
             <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Privacy":lang==="bg"?"\u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy"}</a>
             <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Cookie":lang==="bg"?"\u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438":"Cookies"}</a>
@@ -3410,11 +3406,11 @@ export default function App(){
       {/* ═══ COOKIE CONSENT BANNER — GDPR ═══ */}
       {!cookieOk && <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99999,background:"rgba(0,0,0,.97)",borderTop:"1px solid rgba("+CR+",.2)",padding:"16px 20px",display:"flex",flexWrap:"wrap",gap:12,alignItems:"center",justifyContent:"space-between"}}>
         <div style={{flex:1,minWidth:280}}>
-          <p style={{fontSize:10,color:"#ccc",lineHeight:1.7,margin:0}}>{t("cookie_text")} <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} style={{color:C,textDecoration:"none"}}>{t("cookie_more")}</a></p>
+          <p style={{fontSize:12,color:"#ccc",lineHeight:1.7,margin:0}}>{t("cookie_text")} <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} style={{color:C,textDecoration:"none"}}>{t("cookie_more")}</a></p>
         </div>
         <div style={{display:"flex",gap:8}}>
-          <div {...kb(rejectCookies,t("cookie_reject"))} style={{padding:"8px 20px",border:"1px solid rgba(245,245,240,.2)",color:"#ccc",fontSize:9,letterSpacing:".15em",cursor:"pointer"}}>{t("cookie_reject")}</div>
-          <div {...kb(acceptCookies,t("cookie_accept"))} style={{padding:"8px 20px",border:"1px solid rgba("+CR+",.4)",background:"rgba("+CR+",.1)",color:C,fontSize:9,letterSpacing:".15em",cursor:"pointer"}}>{t("cookie_accept")}</div>
+          <div {...kb(rejectCookies,t("cookie_reject"))} style={{padding:"8px 20px",border:"1px solid rgba(245,245,240,.2)",color:"#ccc",fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_reject")}</div>
+          <div {...kb(acceptCookies,t("cookie_accept"))} style={{padding:"8px 20px",border:"1px solid rgba("+CR+",.4)",background:"rgba("+CR+",.1)",color:C,fontSize:11,letterSpacing:".15em",cursor:"pointer",minHeight:24}}>{t("cookie_accept")}</div>
         </div>
       </div>}
 

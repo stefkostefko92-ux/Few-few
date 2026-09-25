@@ -23,9 +23,7 @@ import glob
 import os
 import re
 
-FONTS = ('<link id="cs-theme-fonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?'
-         'family=Space+Grotesk:wght@500;600;700&family=Onest:wght@400;600;700'
-         '&family=JetBrains+Mono:wght@400;700&display=swap">')
+FONTS = '<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css">'  # self-hosted (scripts/self-host-fonts.py)
 JS_FLAG = '<script id="cs-js-flag">document.documentElement.classList.add("js")</script>'
 
 DISP = "'Space Grotesk','Onest','SG-fallback','Inter Tight',-apple-system,sans-serif"
@@ -59,6 +57,10 @@ a{{color:var(--cs-c)}}
 .nav{{background:rgba(10,12,14,.94)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
 .nav img{{height:34px!important;width:auto!important}}
 .nav>div a{{display:inline-block;padding:7px 0}}
+/* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
+@media(min-width:761px){{.nav>div a:last-child{{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}}.nav>div a:last-child:hover{{background:rgba(0,229,255,.08)}}}}
+/* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
+.w>.work-shot{{max-width:720px}}
 .nav-toggle{{display:none}}
 /* hero */
 .hero-s{{padding:104px 20px 36px!important;border-bottom:1px solid rgba(0,229,255,.1)}}
@@ -103,16 +105,17 @@ var bg=document.documentElement.lang==='bg',en=document.documentElement.lang==='
 d.id=d.id||'cs-nav-links';var b=document.createElement('button');b.type='button';b.className='nav-toggle';b.setAttribute('aria-controls',d.id);b.setAttribute('aria-expanded','false');b.setAttribute('aria-label',L.o);b.innerHTML='<span></span><span></span><span></span>';n.appendChild(b);
 function set(o){n.classList.toggle('open',o);b.setAttribute('aria-expanded',o?'true':'false');b.setAttribute('aria-label',o?L.c:L.o);document.body.style.overflow=o?'hidden':'';}
 b.addEventListener('click',function(){set(!n.classList.contains('open'))});document.addEventListener('keydown',function(e){if(e.key==='Escape'&&n.classList.contains('open')){set(false);b.focus();}});
-d.addEventListener('click',function(e){if(e.target.closest('a'))set(false)});})();</script>"""
+d.addEventListener('click',function(e){if(e.target.closest('a'))set(false)});
+var mq=window.matchMedia&&matchMedia('(min-width:761px)');if(mq){var f=function(){if(mq.matches&&n.classList.contains('open'))set(false)};mq.addEventListener?mq.addEventListener('change',f):mq.addListener(f);}})();</script>"""
 
 FOOT = {
-    "it": ('<div class="ft cs-legal-ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p>'
+    "it": ('<div class="ft cs-legal-ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p>'
            '<p><a href="/">Home</a> &middot; <a href="/prezzi/">Prezzi</a> &middot; <a href="/portfolio/">Portfolio</a> &middot; <a href="/privacy/">Privacy</a> &middot; '
            '<a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Termini</a> &middot; <a href="/contatti/">Contatti</a></p></div>'),
-    "en": ('<div class="ft cs-legal-ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p>'
+    "en": ('<div class="ft cs-legal-ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p>'
            '<p><a href="/en/">Home</a> &middot; <a href="/en/pricing/">Pricing</a> &middot; <a href="/en/portfolio/">Portfolio</a> &middot; <a href="/en/privacy/">Privacy</a> &middot; '
            '<a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a> &middot; <a href="/en/contact/">Contact</a></p></div>'),
-    "bg": ('<div class="ft cs-legal-ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Бобов дол, България</p>'
+    "bg": ('<div class="ft cs-legal-ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Бобов дол, България</p>'
            '<p><a href="/bg/">Начало</a> &middot; <a href="/bg/ceni/">Цени</a> &middot; <a href="/bg/portfolio/">Портфолио</a> &middot; <a href="/bg/privacy/">Поверителност</a> &middot; '
            '<a href="/bg/cookie/">Бисквитки</a> &middot; <a href="/bg/usloviya/">Условия</a> &middot; <a href="/bg/kontakti/">Контакти</a></p></div>'),
 }
@@ -145,6 +148,9 @@ def theme(path, html):
         html = html.replace("</body>", FOOT[lang_of(path, html)] + "</body>", 1)
     if 'class="nav"' in html:
         html = html.replace("</body>", NAV_JS + "</body>", 1)
+    # horizontally scrollable tables must be reachable by keyboard (axe scrollable-region-focusable)
+    label = {"it": "Tabella", "en": "Table", "bg": "Таблица"}[lang_of(path, html)]
+    html = re.sub(r'<div class="(ctbl|table-wrap)">', lambda m: f'<div class="{m.group(1)}" tabindex="0" role="region" aria-label="{label}">', html)
     return html
 
 

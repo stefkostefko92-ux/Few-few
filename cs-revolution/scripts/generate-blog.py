@@ -15,29 +15,29 @@ DATE_ISO = "2026-07-16T09:00:00+02:00"
 STYLE = ("*{margin:0;padding:0;box-sizing:border-box}body{background:#000;color:#ccc;font-family:'Space Mono',monospace;font-size:13px;line-height:2;padding:0}a{color:#00e5ff;text-decoration:none}.w{max-width:900px;margin:0 auto;padding:40px 20px}h1{font-family:'Inter Tight',sans-serif;font-weight:900;font-size:2.5rem;color:#f5f5f0;margin-bottom:16px;letter-spacing:-.03em;line-height:1.1}h2{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:1.2rem;color:#00e5ff;margin:32px 0 12px;text-transform:uppercase;letter-spacing:.05em}h3{color:#f5f5f0;font-size:1rem;margin:20px 0 8px}p,li{margin-bottom:10px;line-height:1.9}ul{padding-left:20px}.nav{position:fixed;top:0;width:100%;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);border-bottom:1px solid rgba(0,229,255,.22);box-shadow:0 1px 18px rgba(0,229,255,.1);padding:12px 20px;z-index:1000;display:flex;justify-content:space-between;align-items:center}.nav a{color:#ccc;font-size:10px;letter-spacing:.2em;margin:0 10px}.nav img{height:30px;filter:drop-shadow(0 0 6px rgba(0,229,255,.28))}.hero-s{padding:120px 20px 60px;border-bottom:1px solid rgba(0,229,255,.1)}.tag{font-size:9px;color:#00e5ff;letter-spacing:.4em;margin-bottom:12px}.cta{display:inline-block;padding:14px 32px;border:1px solid #00e5ff;color:#00e5ff;font-size:11px;letter-spacing:.25em;margin-top:24px}.ft a{text-decoration:underline}.ft{border-top:1px solid rgba(245,245,240,.06);padding:30px 20px;text-align:center;font-size:9px;color:#999;margin-top:60px}.price{display:inline-block;padding:4px 12px;border:1px solid rgba(0,229,255,.2);color:#00e5ff;font-size:11px;margin:8px 0}.tags{font-size:9px;color:#999;letter-spacing:.15em;margin-top:8px}.faq-item{border-bottom:1px solid rgba(245,245,240,.06);padding:16px 0}.faq-q{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:1rem;color:#f5f5f0;margin-bottom:6px}.faq-a{font-size:12px;color:#ccc}.blog-date{font-size:10px;color:#999;letter-spacing:.15em}"
          ".ctbl{overflow-x:auto;margin:16px 0}table{border-collapse:collapse;width:100%;font-size:12px;min-width:520px}th,td{border:1px solid rgba(0,229,255,.15);padding:8px 10px;text-align:left;vertical-align:top}th{color:#00e5ff;font-family:'Inter Tight',sans-serif;font-weight:700}")
 
-FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-         '<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">')
+FONTS = (''
+         '<link href="/fonts/fonts.css" rel="stylesheet">')
 
 # ── Per-language chrome ──────────────────────────────────────────
 L = {
  "it": dict(
    prefix="", og="og/og-blog.png", locale="it_IT",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/chi-siamo/">CHI SIAMO</a><a href="/servizi/sviluppo-siti-web/">SERVIZI</a><a href="/portfolio/">PORTFOLIO</a><a href="/prezzi/">PREZZI</a><a href="/contatti/">CONTATTI</a></div></nav>',
-   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/prezzi/">Prezzi</a> &middot; <a href="/portfolio/">Portfolio</a> &middot; <a href="/settori/">Settori</a> &middot; <a href="/geo/">Città</a> &middot; <a href="/servizi-locali/">Servizi locali</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="/glossario/">Glossario</a> &middot; <a href="/confronti/">Confronti</a> &middot; <a href="/case-study/">Case study</a> &middot; <a href="/strumenti/">Strumenti</a></p></div>',
+   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p><p>Tutti i diritti riservati &middot; <a href="/privacy/">Privacy</a> &middot; <a href="/cookie/">Cookie</a> &middot; <a href="/termini/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/prezzi/">Prezzi</a> &middot; <a href="/portfolio/">Portfolio</a> &middot; <a href="/settori/">Settori</a> &middot; <a href="/geo/">Città</a> &middot; <a href="/servizi-locali/">Servizi locali</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="/glossario/">Glossario</a> &middot; <a href="/confronti/">Confronti</a> &middot; <a href="/case-study/">Case study</a> &middot; <a href="/strumenti/">Strumenti</a></p></div>',
    home="/", blog="/blog/", contact="/contatti/", contact_name="Blog",
    date_label="16 Luglio 2026", read="min di lettura", faq_h2="Domande frequenti",
    cta="RICHIEDI UN PREVENTIVO GRATUITO"),
  "en": dict(
    prefix="/en", og="og/og-blog-en.png", locale="en_US",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">HOME</a><a href="/en/about/">ABOUT</a><a href="/en/services/web-development/">SERVICES</a><a href="/en/portfolio/">PORTFOLIO</a><a href="/en/pricing/">PRICING</a><a href="/en/contact/">CONTACT</a></div></nav>',
-   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/en/pricing/">Pricing</a> &middot; <a href="/en/portfolio/">Portfolio</a> &middot; <a href="/en/industries/">Industries</a> &middot; <a href="/en/geo/">Cities</a> &middot; <a href="/en/local-services/">Local services</a> &middot; <a href="/en/blog/">Blog</a> &middot; <a href="/en/glossary/">Glossary</a> &middot; <a href="/en/comparisons/">Comparisons</a> &middot; <a href="/en/case-studies/">Case studies</a> &middot; <a href="/en/tools/">Tools</a></p></div>',
+   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p><p>All rights reserved &middot; <a href="/en/privacy/">Privacy</a> &middot; <a href="/en/cookie/">Cookie</a> &middot; <a href="/en/terms/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/en/pricing/">Pricing</a> &middot; <a href="/en/portfolio/">Portfolio</a> &middot; <a href="/en/industries/">Industries</a> &middot; <a href="/en/geo/">Cities</a> &middot; <a href="/en/local-services/">Local services</a> &middot; <a href="/en/blog/">Blog</a> &middot; <a href="/en/glossary/">Glossary</a> &middot; <a href="/en/comparisons/">Comparisons</a> &middot; <a href="/en/case-studies/">Case studies</a> &middot; <a href="/en/tools/">Tools</a></p></div>',
    home="/en/", blog="/en/blog/", contact="/en/contact/", contact_name="Blog",
    date_label="July 16, 2026", read="min read", faq_h2="Frequently asked questions",
    cta="REQUEST A FREE QUOTE"),
  "bg": dict(
    prefix="/bg", og="og/og-blog-bg.png", locale="bg_BG",
    nav='<nav class="nav"><a href="/"><img src="/logo.png" alt="Carbon Stealth VCC" width="70" height="30" decoding="async"></a><div><a href="/">ГЛАВНА</a><a href="/bg/za-nas/">ЗА НАС</a><a href="/bg/uslugi/web-razrabotka/">УСЛУГИ</a><a href="/bg/portfolio/">ПОРТФОЛИО</a><a href="/bg/ceni/">ЦЕНИ</a><a href="/bg/kontakti/">КОНТАКТИ</a></div></nav>',
-   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/bg/ceni/">Цени</a> &middot; <a href="/bg/portfolio/">Портфолио</a> &middot; <a href="/bg/branshove/">Браншове</a> &middot; <a href="/bg/geo/">Градове</a> &middot; <a href="/bg/uslugi-lokalni/">Услуги по градове</a> &middot; <a href="/bg/blog/">Блог</a> &middot; <a href="/bg/rechnik/">Речник</a> &middot; <a href="/bg/sravneniya/">Сравнения</a> &middot; <a href="/bg/keys-studii/">Кейс стъдита</a> &middot; <a href="/bg/instrumenti/">Инструменти</a></p></div>',
+   ft='<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p><p>Всички права запазени &middot; <a href="/bg/privacy/">Privacy</a> &middot; <a href="/bg/cookie/">Cookie</a> &middot; <a href="/bg/usloviya/">Terms</a></p><p class="ft-links" style="margin-top:10px"><a href="/bg/ceni/">Цени</a> &middot; <a href="/bg/portfolio/">Портфолио</a> &middot; <a href="/bg/branshove/">Браншове</a> &middot; <a href="/bg/geo/">Градове</a> &middot; <a href="/bg/uslugi-lokalni/">Услуги по градове</a> &middot; <a href="/bg/blog/">Блог</a> &middot; <a href="/bg/rechnik/">Речник</a> &middot; <a href="/bg/sravneniya/">Сравнения</a> &middot; <a href="/bg/keys-studii/">Кейс стъдита</a> &middot; <a href="/bg/instrumenti/">Инструменти</a></p></div>',
    home="/bg/", blog="/bg/blog/", contact="/bg/kontakti/", contact_name="Блог",
    date_label="16 Юли 2026", read="мин четене", faq_h2="Често задавани въпроси",
    cta="ЗАЯВИ БЕЗПЛАТНА ОФЕРТА"),
@@ -61,7 +61,7 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 <div class="ctbl"><table><thead><tr><th>Tipo di sito</th><th>Prezzo indicativo</th><th>Tempi</th><th>Per chi</th></tr></thead><tbody>
 <tr><td>Landing page singola</td><td>da €658 + IVA</td><td>5-7 giorni lavorativi</td><td>Campagne, lancio prodotto</td></tr>
 <tr><td>Sito vetrina (5-8 pagine)</td><td>da €1.575 + IVA</td><td>2-3 settimane</td><td>Aziende, professionisti, studi</td></tr>
-<tr><td>E-commerce</td><td>da €1.825 + IVA</td><td>3-6 settimane</td><td>Chi vende online</td></tr>
+<tr><td>E-commerce</td><td>da €1.825 + IVA</td><td>3-5 settimane</td><td>Chi vende online</td></tr>
 <tr><td>Portale / software web</td><td>da €2.000</td><td>2-4 mesi</td><td>Gestionali, aree riservate, B2B</td></tr>
 </tbody></table></div>
 <h2>Cosa incide davvero sul prezzo</h2>
@@ -89,7 +89,7 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 <div class="ctbl"><table><thead><tr><th>Type of site</th><th>Typical price</th><th>Timeline</th><th>Best for</th></tr></thead><tbody>
 <tr><td>Single landing page</td><td>from €658 + VAT</td><td>5-7 working days</td><td>Campaigns, product launches</td></tr>
 <tr><td>Brochure site (5-8 pages)</td><td>from €1,575 + VAT</td><td>2-3 weeks</td><td>Companies, professionals, firms</td></tr>
-<tr><td>E-commerce</td><td>from €1,825 + VAT</td><td>3-6 weeks</td><td>Selling online</td></tr>
+<tr><td>E-commerce</td><td>from €1,825 + VAT</td><td>3-5 weeks</td><td>Selling online</td></tr>
 <tr><td>Portal / web software</td><td>from €2,000</td><td>2-4 months</td><td>Dashboards, member areas, B2B</td></tr>
 </tbody></table></div>
 <h2>What really drives the price</h2>
@@ -117,7 +117,7 @@ dict(slug="quanto-costa-sito-web", section="Web Development", read=7, lang=dict(
 <div class="ctbl"><table><thead><tr><th>Тип сайт</th><th>Ориентировъчна цена</th><th>Срок</th><th>За кого</th></tr></thead><tbody>
 <tr><td>Единична landing страница</td><td>от €790 с ДДС</td><td>5-7 работни дни</td><td>Кампании, старт на продукт</td></tr>
 <tr><td>Визитен сайт (5-8 страници)</td><td>от €1890 с ДДС</td><td>2-3 седмици</td><td>Фирми, специалисти, кантори</td></tr>
-<tr><td>Онлайн магазин</td><td>от €2190 с ДДС</td><td>3-6 седмици</td><td>Продажби онлайн</td></tr>
+<tr><td>Онлайн магазин</td><td>от €2190 с ДДС</td><td>3-5 седмици</td><td>Продажби онлайн</td></tr>
 <tr><td>Портал / уеб софтуер</td><td>от €2000</td><td>2-4 месеца</td><td>Табла, клиентски зони, B2B</td></tr>
 </tbody></table></div>
 <h2>Какво реално определя цената</h2>
@@ -165,7 +165,7 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
    ("Quanto costa aprire un e-commerce da zero?", "Un e-commerce professionale parte da €1.825 + IVA con WooCommerce. Per cataloghi ampi, integrazioni con il gestionale o funzioni B2B, un progetto su misura parte da €3.000."),
    ("Quali sono i costi mensili di un e-commerce?", "Hosting da €13/mese + IVA, commissioni di pagamento dell'1,5-3% per transazione, eventuale abbonamento alla piattaforma e budget di marketing. Il dominio costa circa €10-15 l'anno."),
    ("Meglio WooCommerce o Shopify per iniziare?", "Dipende. WooCommerce dà più controllo e nessun canone di piattaforma ma richiede manutenzione; Shopify è più semplice ma ha un abbonamento e commissioni. Ne parliamo nella nostra guida dedicata."),
-   ("In quanto tempo si realizza un e-commerce?", "Un negozio standard richiede 3-6 settimane, un progetto su misura anche 2-3 mesi. Dipende dal numero di prodotti e dalle integrazioni necessarie."),
+   ("In quanto tempo si realizza un e-commerce?", "Un negozio standard richiede 3-5 settimane, un progetto su misura anche 2-3 mesi. Dipende dal numero di prodotti e dalle integrazioni necessarie."),
   ]),
  en=dict(
   title="How Much Does an E-commerce Cost? 2026 Price Guide | Carbon Stealth",
@@ -191,7 +191,7 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
    ("How much does it cost to build an e-commerce from scratch?", "A professional e-commerce starts at €1,825 + VAT with WooCommerce. For large catalogs, ERP integrations or B2B features, a custom project starts at €3,000."),
    ("What are the monthly costs of an e-commerce?", "Hosting from €13/month + VAT, payment fees of 1.5-3% per transaction, any platform subscription and a marketing budget. The domain costs around €10-15 per year."),
    ("WooCommerce or Shopify to start?", "It depends. WooCommerce gives more control and no platform fee but needs maintenance; Shopify is simpler but has a subscription and fees. We compare them in our dedicated guide."),
-   ("How long does it take to build an e-commerce?", "A standard store takes 3-6 weeks, a custom project up to 2-3 months, depending on the number of products and the integrations required."),
+   ("How long does it take to build an e-commerce?", "A standard store takes 3-5 weeks, a custom project up to 2-3 months, depending on the number of products and the integrations required."),
   ]),
  bg=dict(
   title="Колко Струва Онлайн Магазин? Ценово Ръководство 2026 | Carbon Stealth",
@@ -217,7 +217,7 @@ dict(slug="quanto-costa-ecommerce", section="E-commerce", read=7, lang=dict(
    ("Колко струва онлайн магазин от нулата?", "Професионален онлайн магазин започва от €2190 с ДДС с WooCommerce. За голям каталог, интеграция с ERP или B2B функции, проект по поръчка започва от €3000."),
    ("Какви са месечните разходи на онлайн магазин?", "Хостинг от €15/месец с ДДС, такси за плащания 1.5-3% на транзакция, евентуален абонамент за платформа и бюджет за маркетинг. Домейнът струва около €10-15 годишно."),
    ("WooCommerce или Shopify за старт?", "Зависи. WooCommerce дава повече контрол и без такса за платформа, но изисква поддръжка; Shopify е по-лесен, но има абонамент и такси. Сравняваме ги в отделно ръководство."),
-   ("За колко време се прави онлайн магазин?", "Стандартен магазин отнема 3-6 седмици, проект по поръчка до 2-3 месеца, в зависимост от броя продукти и нужните интеграции."),
+   ("За колко време се прави онлайн магазин?", "Стандартен магазин отнема 3-5 седмици, проект по поръчка до 2-3 месеца, в зависимост от броя продукти и нужните интеграции."),
   ]),
 )),
 
@@ -317,7 +317,7 @@ dict(slug="sito-vetrina-o-ecommerce", section="Web Development", read=6, lang=di
 <p>Se vuoi incassare direttamente online, 24 ore su 24, ti serve un <a href="/servizi/ecommerce/">e-commerce</a> con catalogo, carrello e pagamenti. Richiede pi&ugrave; investimento iniziale e gestione continua (ordini, magazzino, spedizioni), ma apre un canale di vendita nuovo. Per orientarti sui numeri leggi <a href="/blog/quanto-costa-ecommerce/">quanto costa un e-commerce</a>.</p>
 <p>Una via di mezzo esiste: partire con un sito vetrina e aggiungere l'e-commerce in un secondo momento, quando il progetto &egrave; maturo. Se hai dubbi, <a href="/contatti/">raccontaci la tua attivit&agrave;</a> e ti diciamo onestamente cosa ti conviene.</p>""",
   faqs=[
-   ("Qual e la differenza tra sito vetrina ed e-commerce?", "Il sito vetrina presenta la tua attività e genera contatti, senza vendere online. L'e-commerce permette di vendere prodotti direttamente con carrello e pagamenti. Cambiano obiettivo, costo e gestione."),
+   ("Qual è la differenza tra sito vetrina ed e-commerce?", "Il sito vetrina presenta la tua attività e genera contatti, senza vendere online. L'e-commerce permette di vendere prodotti direttamente con carrello e pagamenti. Cambiano obiettivo, costo e gestione."),
    ("Costa di più un e-commerce o un sito vetrina?", "L'e-commerce costa di più: parte da €1.825 + IVA contro gli €1.575 + IVA di un sito vetrina, e ha una gestione continua di ordini e spedizioni. Il sito vetrina è più economico e quasi automatico."),
    ("Posso trasformare un sito vetrina in e-commerce?", "Sì. Molte attività partono con un sito vetrina e aggiungono la parte e-commerce quando sono pronte. Se il sito e costruito bene, l'estensione e semplice e non richiede di ripartire da zero."),
    ("Ho un negozio fisico: mi serve un e-commerce?", "Non per forza. Se il tuo obiettivo e farti trovare e portare clienti in negozio, un sito vetrina con SEO locale spesso basta. L'e-commerce serve se vuoi vendere anche a distanza."),
@@ -475,7 +475,7 @@ dict(slug="cos-e-un-erp", section="ERP", read=8, lang=dict(
   faqs=[
    ("Cosa significa ERP e a cosa serve?", "ERP sta per Enterprise Resource Planning. E un software che integra contabilità, magazzino, vendite, acquisti e produzione in un'unica piattaforma, così ogni reparto lavora sugli stessi dati aggiornati in tempo reale."),
    ("Quanto costa un sistema ERP?", "Un ERP su misura per una PMI parte da €5.000. Le soluzioni standard hanno canoni per utente, mentre un ERP custom ha un costo iniziale più alto ma nessun canone di licenza e processi disegnati sui tuoi."),
-   ("Qual e la differenza tra ERP e gestionale?", "Un gestionale copre di solito una singola area (per esempio la contabilità o il magazzino). Un ERP integra più aree collegate tra loro nello stesso sistema, evitando dati duplicati e disallineati."),
+   ("Qual è la differenza tra ERP e gestionale?", "Un gestionale copre di solito una singola area (per esempio la contabilità o il magazzino). Un ERP integra più aree collegate tra loro nello stesso sistema, evitando dati duplicati e disallineati."),
    ("La mia PMI e troppo piccola per un ERP?", "No: esistono ERP dimensionati anche per piccole imprese con 5-20 utenti. Il segnale che serve e quando gestisci troppi dati su fogli Excel separati e fai molto lavoro manuale ripetitivo."),
   ]),
  en=dict(
@@ -548,7 +548,7 @@ dict(slug="seo-per-piccole-imprese", section="SEO", read=8, lang=dict(
 <p>Puoi partire da solo con i fondamentali, oppure affidarti a chi lo fa di mestiere. Il nostro <a href="/servizi/seo/">servizio SEO</a> parte da €242/mese + IVA e include analisi, ottimizzazione e contenuti. Se stai anche costruendo il sito, leggi <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a> per pianificare l'investimento complessivo.</p>""",
   faqs=[
    ("Quanto costa la SEO per una piccola impresa?", "Un'attività SEO professionale parte da €242/mese + IVA e include analisi parole chiave, ottimizzazione on-page e contenuti. Molti fondamentali puoi curarli anche internamente, con costanza e metodo."),
-   ("In quanto tempo si vedono i risultati SEO?", "Di solito in 3-6 mesi per keyword competitive, prima per ricerche locali o di nicchia. La SEO e un investimento a medio termine: i risultati crescono e restano nel tempo, a differenza della pubblicità."),
+   ("In quanto tempo si vedono i risultati SEO?", "Di solito in 3-6 mesi per keyword competitive, prima per ricerche locali o di nicchia. La SEO è un investimento a medio termine: i risultati crescono e restano nel tempo, a differenza della pubblicità."),
    ("Cos'è la SEO locale e a chi serve?", "E l'ottimizzazione per le ricerche legate a un luogo (es. 'parrucchiere Torino'). Serve a chi ha clienti sul territorio: negozi, ristoranti, studi e artigiani. Si basa su Google Business, recensioni e pagine locali."),
    ("Posso fare SEO da solo?", "Si, i fondamentali (parole chiave, titoli, Google Business, contenuti utili) sono alla portata di tutti. Per la parte tecnica avanzata e la strategia continuativa conviene farsi affiancare da un professionista."),
   ]),
@@ -701,7 +701,7 @@ dict(slug="app-nativa-vs-pwa", section="Mobile Apps", read=7, lang=dict(
 <p>L'app nativa vale l'investimento in pi&ugrave; quando servono prestazioni elevate, un uso intenso dell'hardware (fotocamera, NFC, sensori di movimento), notifiche push affidabili anche su iOS o un funzionamento offline complesso. &Egrave; il caso di app di gaming, strumenti sul campo, applicazioni che gestiscono grandi volumi di dati locali o che devono comparire negli store per una questione di credibilit&agrave; del brand.</p>
 <p>Nel dubbio, il nostro consiglio &egrave; partire dalla PWA e passare al nativo solo se emerge un limite reale. Approfondisci i costi nella guida <a href="/blog/quanto-costa-app-mobile/">quanto costa sviluppare un'app</a>, scopri il nostro <a href="/servizi/app-mobile/">servizio di sviluppo app</a> e lo <a href="/servizi/sviluppo-software/">sviluppo software su misura</a>, oppure <a href="/contatti/">raccontaci il tuo progetto</a> per un consiglio onesto.</p>""",
   faqs=[
-   ("Qual e la differenza tra app nativa e PWA?", "L'app nativa si installa dallo store ed e sviluppata per iOS e Android con accesso completo al dispositivo. La PWA e un sito web installabile dal browser che funziona come un'app, anche offline, ma con accesso hardware più limitato."),
+   ("Qual è la differenza tra app nativa e PWA?", "L'app nativa si installa dallo store ed e sviluppata per iOS e Android con accesso completo al dispositivo. La PWA e un sito web installabile dal browser che funziona come un'app, anche offline, ma con accesso hardware più limitato."),
    ("Una PWA costa meno di un'app nativa?", "Di solito si. Una PWA parte da circa €1.500 perché usa un solo progetto per tutte le piattaforme, mentre un'app nativa parte da €3.000 e cresce se servono versioni separate per iOS e Android."),
    ("Le PWA funzionano su iPhone?", "Si, le PWA funzionano su iOS e si possono aggiungere alla schermata home. Alcune funzioni avanzate, come certe notifiche push, restano più limitate rispetto ad Android o a un'app nativa."),
    ("Meglio partire con una PWA o con un'app nativa?", "Per la maggior parte dei progetti conviene partire con una PWA: costa meno, raggiunge tutti subito e si aggiorna da sola. Si passa al nativo solo quando emerge un limite concreto di prestazioni o di hardware."),
@@ -925,12 +925,12 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
  it=dict(
   title="Quanto Tempo Serve per Fare un Sito Web? | Carbon Stealth",
   desc="Quanto tempo serve per realizzare un sito web nel 2026? Tempistiche reali per sito vetrina, e-commerce e portali, cosa allunga i tempi e come accelerare.",
-  body="""<p>In genere un <strong>sito vetrina</strong> richiede da <strong>1 a 2 settimane</strong>, un <strong>e-commerce</strong> da <strong>3 a 6 settimane</strong> e un <strong>portale su misura</strong> da <strong>2 a 4 mesi</strong>. La variabile che pesa di pi&ugrave; non &egrave; il codice ma i contenuti: testi, foto e materiali. Un progetto con contenuti pronti procede in fretta; uno in cui bisogna scrivere tutto da zero richiede pi&ugrave; tempo, indipendentemente dalla bravura di chi sviluppa.</p>
+  body="""<p>In genere un <strong>sito vetrina</strong> richiede da <strong>2 a 3 settimane</strong>, un <strong>e-commerce</strong> da <strong>3 a 5 settimane</strong> e un <strong>portale su misura</strong> da <strong>2 a 4 mesi</strong>. La variabile che pesa di pi&ugrave; non &egrave; il codice ma i contenuti: testi, foto e materiali. Un progetto con contenuti pronti procede in fretta; uno in cui bisogna scrivere tutto da zero richiede pi&ugrave; tempo, indipendentemente dalla bravura di chi sviluppa.</p>
 <h2>Tempistiche per tipo di progetto</h2>
 <div class="ctbl"><table><thead><tr><th>Progetto</th><th>Tempo indicativo</th><th>Cosa incide</th></tr></thead><tbody>
 <tr><td>Landing page</td><td>5-7 giorni lavorativi</td><td>Un solo obiettivo, poche sezioni</td></tr>
 <tr><td>Sito vetrina (5-8 pagine)</td><td>2-3 settimane</td><td>Numero di pagine e contenuti</td></tr>
-<tr><td>E-commerce</td><td>3-6 settimane</td><td>Catalogo, pagamenti, integrazioni</td></tr>
+<tr><td>E-commerce</td><td>3-5 settimane</td><td>Catalogo, pagamenti, integrazioni</td></tr>
 <tr><td>Portale / software web</td><td>2-4 mesi</td><td>Funzioni su misura, aree riservate</td></tr>
 </tbody></table></div>
 <h2>Le fasi di un progetto</h2>
@@ -953,12 +953,12 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
  en=dict(
   title="How Long Does It Take to Build a Website? | Carbon Stealth",
   desc="How long does it take to build a website in 2026? Real timelines for brochure sites, e-commerce and portals, what slows things down and how to speed up.",
-  body="""<p>As a rule a <strong>brochure site</strong> takes <strong>1 to 2 weeks</strong>, an <strong>e-commerce</strong> <strong>3 to 6 weeks</strong> and a <strong>custom portal</strong> <strong>2 to 4 months</strong>. The variable that weighs most isn't the code but the content: text, photos and materials. A project with content ready moves fast; one where everything has to be written from scratch takes longer, no matter how good the developer is.</p>
+  body="""<p>As a rule a <strong>brochure site</strong> takes <strong>2 to 3 weeks</strong>, an <strong>e-commerce</strong> <strong>3 to 5 weeks</strong> and a <strong>custom portal</strong> <strong>2 to 4 months</strong>. The variable that weighs most isn't the code but the content: text, photos and materials. A project with content ready moves fast; one where everything has to be written from scratch takes longer, no matter how good the developer is.</p>
 <h2>Timelines by type of project</h2>
 <div class="ctbl"><table><thead><tr><th>Project</th><th>Typical time</th><th>What drives it</th></tr></thead><tbody>
 <tr><td>Landing page</td><td>5-7 working days</td><td>A single goal, few sections</td></tr>
 <tr><td>Brochure site (5-8 pages)</td><td>2-3 weeks</td><td>Number of pages and content</td></tr>
-<tr><td>E-commerce</td><td>3-6 weeks</td><td>Catalog, payments, integrations</td></tr>
+<tr><td>E-commerce</td><td>3-5 weeks</td><td>Catalog, payments, integrations</td></tr>
 <tr><td>Portal / web software</td><td>2-4 months</td><td>Custom features, member areas</td></tr>
 </tbody></table></div>
 <h2>The phases of a project</h2>
@@ -981,12 +981,12 @@ dict(slug="quanto-tempo-per-un-sito", section="Web Development", read=6, lang=di
  bg=dict(
   title="Колко Време Отнема Изработката на Сайт? | Carbon Stealth",
   desc="Колко време отнема изработката на сайт през 2026? Реални срокове за визитен сайт, онлайн магазин и портал, какво ги удължава и как да ускорите процеса.",
-  body="""<p>По правило <strong>визитният сайт</strong> отнема <strong>1 до 2 седмици</strong>, <strong>онлайн магазинът</strong> <strong>3 до 6 седмици</strong>, а <strong>порталът по поръчка</strong> <strong>2 до 4 месеца</strong>. Факторът с най-голяма тежест не е кодът, а съдържанието: текстове, снимки и материали. Проект с готово съдържание върви бързо; такъв, при който всичко се пише от нулата, отнема повече време, независимо колко добър е разработчикът.</p>
+  body="""<p>По правило <strong>визитният сайт</strong> отнема <strong>2 до 3 седмици</strong>, <strong>онлайн магазинът</strong> <strong>3 до 5 седмици</strong>, а <strong>порталът по поръчка</strong> <strong>2 до 4 месеца</strong>. Факторът с най-голяма тежест не е кодът, а съдържанието: текстове, снимки и материали. Проект с готово съдържание върви бързо; такъв, при който всичко се пише от нулата, отнема повече време, независимо колко добър е разработчикът.</p>
 <h2>Срокове по тип проект</h2>
 <div class="ctbl"><table><thead><tr><th>Проект</th><th>Ориентировъчно време</th><th>Какво влияе</th></tr></thead><tbody>
 <tr><td>Landing страница</td><td>5-7 работни дни</td><td>Една цел, малко секции</td></tr>
 <tr><td>Визитен сайт (5-8 страници)</td><td>2-3 седмици</td><td>Брой страници и съдържание</td></tr>
-<tr><td>Онлайн магазин</td><td>3-6 седмици</td><td>Каталог, плащания, интеграции</td></tr>
+<tr><td>Онлайн магазин</td><td>3-5 седмици</td><td>Каталог, плащания, интеграции</td></tr>
 <tr><td>Портал / уеб софтуер</td><td>2-4 месеца</td><td>Функции по поръчка, клиентски зони</td></tr>
 </tbody></table></div>
 <h2>Фазите на един проект</h2>
@@ -1122,7 +1122,7 @@ dict(slug="erp-vs-gestionale", section="ERP", read=8, lang=dict(
 <p>Quando i reparti crescono e gli stessi dati vengono digitati in pi&ugrave; programmi diversi, un <a href="/servizi/erp/">ERP</a> elimina le duplicazioni e d&agrave; una visione unica di vendite, magazzino, acquisti e contabilit&agrave;. Il segnale tipico &egrave; questo: passi pi&ugrave; tempo a far &laquo;quadrare&raquo; i numeri tra un file e l'altro che a lavorare. Ne parliamo in dettaglio nelle guide <a href="/blog/cos-e-un-erp/">cos'&egrave; un ERP</a> e <a href="/blog/erp-per-pmi/">ERP per PMI</a>.</p>
 <p>La scelta giusta dipende dalla tua organizzazione, non da quale sia pi&ugrave; &laquo;avanzato&raquo;. Spesso conviene partire da un gestionale ben fatto ed evolverlo verso un ERP quando serve davvero. <a href="/contatti/">Raccontaci come lavori oggi</a> e ti diciamo cosa ha senso per te.</p>""",
   faqs=[
-   ("Qual e la differenza tra ERP e gestionale?", "Un gestionale copre un'area specifica come fatturazione o magazzino, con dati separati. Un ERP integra più aree in un unico sistema con dati condivisi, evitando doppie digitazioni e dando una visione d'insieme dell'azienda."),
+   ("Qual è la differenza tra ERP e gestionale?", "Un gestionale copre un'area specifica come fatturazione o magazzino, con dati separati. Un ERP integra più aree in un unico sistema con dati condivisi, evitando doppie digitazioni e dando una visione d'insieme dell'azienda."),
    ("Costa di più un ERP o un gestionale?", "Un ERP costa di più: parte da €5.000 contro i €2.000 di un software gestionale su misura. In cambio integra più reparti e cresce con l'azienda, mentre il gestionale resta limitato a un singolo processo."),
    ("Quando conviene passare da un gestionale a un ERP?", "Quando gli stessi dati vengono inseriti in più programmi diversi e si perde tempo a farli quadrare tra loro. E il segnale che i processi sono cresciuti e serve un sistema unico e integrato."),
    ("Posso partire da un gestionale ed evolvere verso un ERP?", "Si, ed e spesso la scelta più sensata. Si parte da un gestionale ben progettato che copre l'area più critica e si aggiungono moduli integrati man mano che l'azienda cresce, senza rifare tutto da zero."),
@@ -1343,9 +1343,9 @@ dict(slug="come-scegliere-agenzia-web", section="Web Development", read=8, lang=
 <p>Chiedi sempre: il codice sar&agrave; mio? Cosa &egrave; incluso nel prezzo e cosa si paga a parte? Chi si occupa di aggiornamenti e sicurezza? Cosa succede se voglio cambiare fornitore in futuro? Le risposte a queste domande dicono pi&ugrave; di qualsiasi presentazione. Se stai anche valutando un rifacimento, leggi come <a href="/blog/migrazione-sito-senza-perdere-seo/">rifare il sito senza perdere il posizionamento</a>, e per orientarti sui costi guarda <a href="/blog/quanto-costa-sito-web/">quanto costa un sito web</a>.</p>
 <p>Noi lavoriamo esattamente cos&igrave;: codice tuo, prezzi trasparenti, nessun vincolo. Scopri il nostro <a href="/servizi/sviluppo-siti-web/">servizio di sviluppo siti web</a> oppure <a href="/contatti/">raccontaci il tuo progetto</a> per un preventivo gratuito.</p>""",
   faqs=[
-   ("Come capisco se un'agenzia web e affidabile?", "Guarda tre cose: un portfolio di siti reali e verificabili online, la proprietà del codice a fine progetto e prezzi trasparenti senza canoni nascosti. Un'agenzia seria mostra i lavori, spiega cosa e incluso e mette tutto per iscritto."),
-   ("Il sito realizzato sara di mia proprietà?", "Con un'agenzia seria si. Il codice, il dominio e i contenuti restano tuoi, con accesso completo. Diffida di chi ti lega a un abbonamento obbligatorio solo per tenere online il tuo stesso sito."),
-   ("Un'agenzia può garantirmi il primo posto su Google?", "No. Nessuno può garantire una posizione precisa: dipende da concorrenza, contenuti e centinaia di fattori. La SEO e un lavoro continuo che migliora la visibilità nel tempo, non un risultato immediato garantito."),
+   ("Come capisco se un'agenzia web è affidabile?", "Guarda tre cose: un portfolio di siti reali e verificabili online, la proprietà del codice a fine progetto e prezzi trasparenti senza canoni nascosti. Un'agenzia seria mostra i lavori, spiega cosa e incluso e mette tutto per iscritto."),
+   ("Il sito realizzato sarà di mia proprietà?", "Con un'agenzia seria sì. Il codice, il dominio e i contenuti restano tuoi, con accesso completo. Diffida di chi ti lega a un abbonamento obbligatorio solo per tenere online il tuo stesso sito."),
+   ("Un'agenzia può garantirmi il primo posto su Google?", "No. Nessuno può garantire una posizione precisa: dipende da concorrenza, contenuti e centinaia di fattori. La SEO è un lavoro continuo che migliora la visibilità nel tempo, non un risultato immediato garantito."),
    ("Meglio un'agenzia o un freelance?", "Dipende dal progetto. Un freelance può bastare per un sito semplice; un'agenzia offre più competenze (design, sviluppo, SEO) e continuita nel tempo. Conta soprattutto la qualità del lavoro e la chiarezza degli accordi."),
   ]),
  en=dict(
@@ -1502,7 +1502,7 @@ dict(slug="manutenzione-sito-web", section="Web Development", read=7, lang=dict(
    ("Perché un sito web ha bisogno di manutenzione?", "Perché software non aggiornato, backup mancanti e prestazioni in calo espongono il sito a rischi di sicurezza, downtime e perdita di posizioni su Google. La manutenzione tiene il sito sicuro, veloce e funzionante nel tempo, come i tagliandi di un'auto."),
    ("Quanto costa la manutenzione di un sito web?", "Un piano in abbonamento parte in genere da circa €39/mese e include aggiornamenti, backup, controlli di sicurezza e un monte ore per piccole modifiche. In alternativa esistono interventi a consumo, pagati solo quando servono."),
    ("Cosa succede se non faccio manutenzione?", "Aumentano i rischi: plugin vulnerabili diventano porte per gli attacchi, un guasto senza backup può far perdere tutto e le prestazioni peggiorano danneggiando la SEO. Spesso il costo di rimettere a posto un sito trascurato supera quello della manutenzione."),
-   ("La manutenzione include anche le modifiche ai contenuti?", "Nei piani in abbonamento di solito e incluso un monte ore per piccole modifiche a testi, immagini e pagine. Interventi più grandi, come nuove sezioni o funzionalità, si valutano a parte con un preventivo dedicato."),
+   ("La manutenzione include anche le modifiche ai contenuti?", "Nei piani in abbonamento di solito è incluso un monte ore per piccole modifiche a testi, immagini e pagine. Interventi più grandi, come nuove sezioni o funzionalità, si valutano a parte con un preventivo dedicato."),
   ]),
  en=dict(
   title="Website Maintenance: Why It Matters and What It Costs | Carbon Stealth",
@@ -1745,7 +1745,7 @@ dict(slug="reverse-engineering-stampa-3d", section="3D Printing", read=7, lang=d
 <p>Realizziamo reverse engineering, modellazione CAD e stampa 3D di ricambi e prototipi. Se hai un pezzo introvabile o un'idea da prototipare, <a href="/contatti/">scrivici</a> con una foto e le misure: valutiamo insieme la fattibilit&agrave;. Trovi altri lavori nel nostro <a href="/portfolio/">portfolio</a>.</p>""",
   faqs=[
    ("Cos'è il reverse engineering di un ricambio?", "E il processo che ricostruisce un componente partendo dal pezzo originale, anche rotto: si misura o si scansiona, si crea un modello CAD preciso e lo si produce con stampa 3D o altre tecnologie. Serve quando il ricambio e fuori produzione o introvabile."),
-   ("Si può ricreare un pezzo se ho solo quello rotto?", "Spesso si. Anche da un pezzo danneggiato si possono ricavare misure e geometrie sufficienti a ricostruire il modello CAD, correggendo l'usura e i difetti. Più il pezzo e completo, più preciso sara il risultato."),
+   ("Si può ricreare un pezzo se ho solo quello rotto?", "Spesso sì. Anche da un pezzo danneggiato si possono ricavare misure e geometrie sufficienti a ricostruire il modello CAD, correggendo l'usura e i difetti. Più il pezzo e completo, più preciso sarà il risultato."),
    ("Quali materiali si possono usare?", "Dipende dalla funzione del pezzo: plastiche tecniche e resine per molti ricambi e prototipi, materiali più resistenti o metallo per componenti sotto sforzo. La scelta si fa in base a carico, temperatura e uso previsto."),
    ("La stampa 3D e adatta anche alla prototipazione?", "Si, e uno degli usi principali. Permette di passare rapidamente dal modello CAD a un pezzo fisico da testare, iterando il design a costi contenuti prima di una produzione più ampia, senza realizzare stampi costosi."),
   ]),

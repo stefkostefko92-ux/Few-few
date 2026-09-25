@@ -350,7 +350,7 @@ def head_common(lang, title, desc, canon, slugpath, og, locale, region, placenam
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="/fonts/fonts.css" rel="stylesheet">
 <style>{STYLE}</style>
 """
 
@@ -369,7 +369,7 @@ FT_ROW = {
 def footer_html(lang):
     s = L[lang]
     links = " &middot; ".join(f'<a href="{u}">{t}</a>' for u, t in s["ft_links"])
-    return f'<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK BG208725180 &middot; Bobov Dol, Bulgaria</p><p>{links}</p>{FT_ROW[lang]}</div>'
+    return f'<div class="ft"><p>&copy; 2025-2026 Carbon Stealth VCC &middot; EIK 208725180 &middot; Bobov Dol, Bulgaria</p><p>{links}</p>{FT_ROW[lang]}</div>'
 
 def city_page(city, lang):
     s = L[lang]

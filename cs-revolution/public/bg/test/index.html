@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="bg">
 <head>
-<meta charset="UTF-8"><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580994554261732" crossorigin="anonymous"></script>
+<meta charset="UTF-8"><script id="cs-ads-npa">(function(){var a=window.adsbygoogle=window.adsbygoogle||[];try{if(localStorage.getItem("cs_cookie")!=="accepted")a.requestNonPersonalizedAds=1}catch(e){a.requestNonPersonalizedAds=1}})()</script><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580994554261732" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Безплатен Анализ на Сайта | Carbon Stealth VCC</title>
 <meta name="description" content="Разбери дали сайтът ти губи клиенти. Безплатен анализ на скорост, SEO, Core Web Vitals и AI-готовност за 30 секунди.">
@@ -254,10 +254,8 @@ footer a:hover{color:#00e5ff}
 
 <!-- Umami Analytics (uncomment after deploying Umami) -->
 <!-- <script defer src="https://analytics.carbonstealth.eu/cs-track.js" data-website-id="UMAMI_SITE_ID"></script> -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link id="cs-theme-fonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Onest:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap"><script id="cs-js-flag">document.documentElement.classList.add("js")</script><style id="cs-theme">
+
+<link id="cs-theme-fonts" rel="stylesheet" href="/fonts/fonts.css"><script id="cs-js-flag">document.documentElement.classList.add("js")</script><style id="cs-theme">
 @font-face{font-family:'SG-fallback';src:local('Arial');size-adjust:96%;ascent-override:98%;descent-override:24%;line-gap-override:0%}
 @font-face{font-family:'SM-fallback';src:local('Courier New');size-adjust:108%;ascent-override:100%;descent-override:26%;line-gap-override:0%}
 :root{--cs-bg:#0A0C0E;--cs-ink:#C9D1D6;--cs-ink2:#9AA5AC;--cs-c:#00e5ff;--cs-line:rgba(201,209,214,.08)}
@@ -282,6 +280,10 @@ a{color:var(--cs-c)}
 .nav{background:rgba(10,12,14,.94)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 .nav img{height:34px!important;width:auto!important}
 .nav>div a{display:inline-block;padding:7px 0}
+/* last nav link (Contatti / Contact / Контакти) = the call to action, like the SPA's ring-glow CTA */
+@media(min-width:761px){.nav>div a:last-child{padding:7px 14px;border:1px solid rgba(0,229,255,.55);color:var(--cs-c)!important;box-shadow:0 0 16px rgba(0,229,255,.18);letter-spacing:.2em}.nav>div a:last-child:hover{background:rgba(0,229,255,.08)}}
+/* portfolio: screenshots were 860px wide one after another; tighter and paired with their text */
+.w>.work-shot{max-width:720px}
 .nav-toggle{display:none}
 /* hero */
 .hero-s{padding:104px 20px 36px!important;border-bottom:1px solid rgba(0,229,255,.1)}
@@ -389,7 +391,7 @@ a{color:var(--cs-c)}
 <section class="results" id="results"></section>
 
 <footer>
-  Carbon Stealth VCC · <a href="/">carbonstealth.eu</a> · EIK BG208725180 · Bobov Dol, Bulgaria<br>
+  Carbon Stealth VCC · <a href="/">carbonstealth.eu</a> · EIK 208725180 · Bobov Dol, Bulgaria<br>
   Powered by <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Google PageSpeed Insights</a>
 </footer>
 
@@ -592,9 +594,9 @@ function renderResults(d) {
     html_out += `<div style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.3);border-radius:12px;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:16px">
       <div style="font-size:28px">⚠️</div>
       <div>
-        <div style="color:#ffaa00;font-weight:700;font-size:14px;margin-bottom:4px">Google PageSpeed Insights non disponibile</div>
-        <div style="color:#999;font-size:13px">${psiErr.includes('429') ? "Limite giornaliero raggiunto. Riprova domani o contattaci per un&#39;analisi completa." : "Errore API: " + psiErr}</div>
-        <div style="color:#666;font-size:11px;margin-top:6px">I dati HTML, SEO on-page, Schema.org e sicurezza sono comunque analizzati correttamente.</div>
+        <div style="color:#ffaa00;font-weight:700;font-size:14px;margin-bottom:4px">Google PageSpeed Insights не е достъпен</div>
+        <div style="color:#999;font-size:13px">${psiErr.includes('429') ? "Дневният лимит е достигнат. Опитайте утре или се свържете с нас за пълен анализ." : "Грешка от API: " + psiErr}</div>
+        <div style="color:#666;font-size:11px;margin-top:6px">HTML данните, on-page SEO, Schema.org и сигурността са анализирани коректно.</div>
       </div>
     </div>`;
   }

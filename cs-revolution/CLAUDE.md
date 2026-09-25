@@ -32,6 +32,7 @@ python3 scripts/adsense-inject.py  # Google AdSense loader in every <head> (CSP 
 python3 scripts/it-accents.py      # Italian accents (perché, più, già…) on IT pages + generators, never inside URLs
 python3 scripts/work-images.py     # real project screenshots (public/work/*.webp) on portfolio + case studies
 python3 scripts/static-theme.py    # shared Carbon/Chrome theme, mobile nav toggle, legal footer — run LAST
+python3 scripts/self-host-fonts.py # every Google Fonts link → /fonts/fonts.css (self-hosted woff2; GDPR) — after the theme
 ```
 All post-processors are idempotent — run the whole chain after any regeneration. Never put
 content in `<noscript>`: it is invisible to people and mostly to Google (30 pages used to).
