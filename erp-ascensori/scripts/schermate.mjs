@@ -184,6 +184,10 @@ async function main() {
     executablePath:
       process.env.CHROMIUM_PATH ??
       "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    // `locale` на контекста не стига: форматът на родното поле за дата
+    // следва езика на ПРОЦЕСА. Без това снимката показва „mm/dd/yyyy" —
+    // нещо, което италианският оператор никога не вижда.
+    args: ["--lang=it-IT"],
   });
 
   console.log("\n▸ настолен изглед");
@@ -191,6 +195,7 @@ async function main() {
     viewport: { width: 1440, height: 900 },
     deviceScaleFactor: 2,
     locale: "it-IT",
+    timezoneId: "Europe/Rome",
   });
   const page = await desktop.newPage();
 
@@ -210,6 +215,7 @@ async function main() {
     isMobile: true,
     hasTouch: true,
     locale: "it-IT",
+    timezoneId: "Europe/Rome",
   });
   const tel = await mobile.newPage();
   await entra(tel);

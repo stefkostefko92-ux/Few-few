@@ -17,40 +17,55 @@ test("фактура: редовете дават тотала, а SDI пров�
   await page.getByLabel(/^Oggetto/).fill(oggetto);
   await page.getByRole("button", { name: "Salva", exact: true }).click();
 
-  // Списъкът не показва „oggetto" като колона — чакаме формата да се затвори и
-  // отваряме най-новата фактура. През ВРЪЗКАТА в първата клетка: същият път, по
-  // който минава и човек с клавиатура.
+  // Списъкът не показва „oggetto" като колона — затова го ТЪРСИМ: търсенето
+  // покрива предмета. Преди тук стоеше „първата връзка в таблицата": при
+  // паралелни тестове или стари данни това е чужда фактура, и тестът минава
+  // или пада по съвпадение. През ВРЪЗКАТА в клетката: същият път, по който
+  // минава и човек с клавиатура.
   await expect(
     page.getByRole("button", { name: "Salva", exact: true }),
   ).toHaveCount(0, {
     timeout: 15_000,
   });
-  // По ПОЗИЦИЯ, не по формат на номера: „FT-2026-0001" е решение на домейна и
-  // може да се смени; проверяваме потока, не номерацията (тя си има тестове).
+  await page.getByLabel(/^Cerca/).fill(oggetto);
+  await expect(page.locator("tbody tr")).toHaveCount(1, { timeout: 15_000 });
   await page.locator("tbody a").first().click();
   await expect(page).toHaveURL(/\/fatture\/[0-9a-f-]{36}/);
   await expect(page.getByText(oggetto)).toBeVisible();
+  const id = page.url().split("/fatture/")[1];
 
-  await page.getByLabel(/^Descrizione/).fill("Canone trimestrale");
-  await page.getByLabel(/^Qt/).fill("1");
-  await page.getByLabel(/^Prezzo/).fill("300,00");
-  await page
-    .getByRole("button", { name: /Aggiungi/i })
-    .first()
-    .click();
+  try {
+    await page.getByLabel(/^Descrizione/).fill("Canone trimestrale");
+    await page.getByLabel(/^Qt/).fill("1");
+    await page.getByLabel(/^Prezzo/).fill("300,00");
+    await page
+      .getByRole("button", { name: /Aggiungi/i })
+      .first()
+      .click();
 
-  // 300,00 + 22 % = 366,00 — тоталът се смята от сървъра, не се пише на ръка.
-  await expect(page.getByText("366,00", { exact: false }).first()).toBeVisible({
-    timeout: 15_000,
-  });
+    // 300,00 + 22 % = 366,00 — тоталът се смята от сървъра, не се пише на ръка.
+    await expect(
+      page.getByText("366,00", { exact: false }).first(),
+    ).toBeVisible({
+      timeout: 15_000,
+    });
 
-  // Проверката за SDI трябва да се вижда БЕЗ да се натиска нищо: фактура извън
-  // SDI се третира като неиздадена. Двата блока са ОТДЕЛНИ и наименувани:
-  // „липсва реквизит" и „приема се, но знай това" са различни съобщения и
-  // екранният четец трябва да ги различава.
-  await expect(
-    page.getByRole("status", { name: "Requisiti per lo SdI" }),
-  ).toBeVisible();
+    // Проверката за SDI трябва да се вижда БЕЗ да се натиска нищо: фактура извън
+    // SDI се третира като неиздадена. Двата блока са ОТДЕЛНИ и наименувани:
+    // „липсва реквизит" и „приема се, но знай това" са различни съобщения и
+    // екранният четец трябва да ги различава.
+    await expect(
+      page.getByRole("status", { name: "Requisiti per lo SdI" }),
+    ).toBeVisible();
+  } finally {
+    // Черновата се трие (само BOZZA може): иначе всеки пуск оставя фактура в
+    // демото и номерацията на следващите тестове пълзи. През браузъра, не през
+    // `page.request` — бисквитката на сесията е `secure` (виж mobile.spec.ts).
+    await page.evaluate(
+      (id) => fetch(`/api/fatture/${id}`, { method: "DELETE" }),
+      id,
+    );
+  }
 });
 
 test("рентабилността показва бележката, че не е печалба", async ({ page }) => {
@@ -92,7 +107,12 @@ test("DDT: часът на превоза се въвежда, а непълни
     page.getByRole("button", { name: "Salva", exact: true }),
   ).toHaveCount(0, { timeout: 15_000 });
 
-  await page.locator("tbody a").first().click();
+  // По РЕДА със собствения получател, не „първата връзка": виж фактурата горе.
+  await page
+    .getByRole("row", { name: new RegExp(destinatario) })
+    .getByRole("link")
+    .first()
+    .click();
   await expect(page).toHaveURL(/\/ddt\/[0-9a-f-]{36}/);
   await expect(page.getByText("12/05/2026", { exact: false })).toBeVisible();
 

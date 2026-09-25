@@ -45,6 +45,73 @@ test("интерфейсът не се разлива хоризонтално �
   expect(scorre).toBe(false);
 });
 
+// ТЕСТЪТ ГОРЕ СИ МИНАВАШЕ ПРИ СЧУПЕН ТЕЛЕФОНЕН ИЗГЛЕД. Менюто стоеше постоянно
+// отворено и взимаше 60 % от ширината; съдържанието не се СКРОЛВАШЕ, а се
+// РЕЖЕШЕ — тоест хоризонтален скрол нямаше. Долните два теста мерят това,
+// което човек вижда: колко място остава за работата и дали текстът се побира.
+
+test("на телефон съдържанието взима целия екран, менюто е чекмедже", async ({
+  page,
+}) => {
+  await entra(page, UTENTI.TECNICO);
+  await page.goto("/ordini");
+  await page.waitForLoadState("networkidle");
+
+  const larghezza = page.viewportSize()?.width ?? 0;
+  const main = await page.locator("main").boundingBox();
+  expect(main?.width ?? 0).toBeGreaterThanOrEqual(larghezza - 1);
+
+  // Затворено: връзките не са видими и не са в реда на табулация.
+  const voce = page.getByRole("link", { name: "Impianti" });
+  await expect(voce).toBeHidden();
+
+  const apri = page.getByRole("button", { name: "Apri il menu" });
+  await expect(apri).toHaveAttribute("aria-expanded", "false");
+  await apri.click();
+  await expect(voce).toBeVisible();
+  await expect(apri).toHaveAttribute("aria-expanded", "true");
+  // Фокусът е влязъл в чекмеджето (WCAG 2.4.3).
+  await expect(
+    page.getByRole("button", { name: "Chiudi il menu" }),
+  ).toBeFocused();
+
+  // Escape затваря и връща фокуса на бутона, който го е отворил.
+  await page.keyboard.press("Escape");
+  await expect(voce).toBeHidden();
+  await expect(apri).toBeFocused();
+
+  // Навигацията затваря чекмеджето — новата страница не се отваря под него.
+  await apri.click();
+  await voce.click();
+  await expect(page).toHaveURL(/\/impianti/);
+  await expect(voce).toBeHidden();
+});
+
+test("на телефон нито един бутон не реже текста си", async ({ page }) => {
+  await entra(page, UTENTI.TECNICO);
+  for (const percorso of ["/ordini", "/impianti", "/dashboard"]) {
+    await page.goto(percorso);
+    await page.waitForLoadState("networkidle");
+    // Бутон с фиксирана височина и пренесен текст изглежда наред в кода и
+    // отрязан на екрана — точно така излезе „Nuovo ordine di lavoro".
+    const tagliati = await page.evaluate(() =>
+      [
+        ...document.querySelectorAll<HTMLElement>(
+          "main button, main a.btn-primary, main a.btn-secondary",
+        ),
+      ]
+        .filter((b) => b.offsetParent !== null)
+        .filter(
+          (b) =>
+            b.scrollHeight > b.clientHeight + 1 ||
+            b.scrollWidth > b.clientWidth + 1,
+        )
+        .map((b) => b.textContent?.trim() ?? "?"),
+    );
+    expect(tagliati, `${percorso}: ${tagliati.join(" · ")}`).toEqual([]);
+  }
+});
+
 test("PWA обвивката е инсталируема", async ({ request }) => {
   const m = await request.get("/manifest.webmanifest");
   expect(m.status()).toBe(200);

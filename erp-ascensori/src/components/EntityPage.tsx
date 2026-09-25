@@ -205,8 +205,12 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
       <div className="card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-3">
           <div className="flex flex-wrap items-center gap-3">
+            {/* Етикет ИЗРИЧНО: плейсхолдърът изчезва при писане и не е име
+                на полето (WCAG 3.3.2). Ширината расте на по-широк екран —
+                „Cerca per nome, ragione sociale…" не се побираше в 256 px. */}
             <input
-              className="input w-64"
+              className="input w-full sm:w-80"
+              aria-label={config.cerca ?? "Cerca"}
               placeholder={config.cerca ?? "Cerca…"}
               value={q}
               onChange={(e) => {
@@ -471,7 +475,7 @@ export function FormEntity({
         body: JSON.stringify(corpo),
       });
       if (!ok) {
-        setErrore((dati.error as string) ?? "Errore di salvataggio");
+        setErrore((dati.error as string) ?? "Errore di salvataggio.");
         return;
       }
       onSalvato();
