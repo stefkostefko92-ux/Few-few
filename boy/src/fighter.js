@@ -63,7 +63,7 @@ export class Fighter {
     this.vel = new THREE.Vector3();
     this.handR = { grip: new THREE.Vector3(), x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0) };
     this.handL = { grip: new THREE.Vector3(), x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0) };
-    this.P = { root: this.root.pos, shift: new THREE.Vector3(), yaw: 0, hipY: 0.9, pelvisYaw: 0, pelvisPitch: 0, pelvisRoll: 0, twist: 0, lean: 0, side: 0, breath: 0, headTarget: this.headTarget, headYaw: 0, headPitch: 0, headRoll: 0, handR: this.handR, handL: this.handL, feet: null, kneel: 0, elbowOut: 0 };
+    this.P = { root: this.root.pos, shift: new THREE.Vector3(), yaw: 0, hipY: 0.9, pelvisYaw: 0, pelvisPitch: 0, pelvisRoll: 0, twist: 0, lean: 0, side: 0, breath: 0, breathPhase: 0, headTarget: this.headTarget, headYaw: 0, headPitch: 0, headRoll: 0, handR: this.handR, handL: this.handL, feet: null, kneel: 0, elbowOut: 0 };
     // Captured body motion; the Warden moves as the actor's mirror image.
     this.body = captureFor(who);
     this.drives = {};
@@ -84,11 +84,13 @@ export class Fighter {
       s.headRoll.v += 2.5 * power;
       s.push.v += 2.4 * power;
       this.pushDir.copy(dirWorld).setY(0).normalize();
-    } else if (kind === 'helm') {
-      s.lean.v -= 2.4 * power;
-      s.side.v += 1.8 * power;
-      s.headRoll.v -= 6 * power;
-      s.headYaw.v += 4 * power;
+    } else if (kind === 'pauldron') {
+      // The struck shoulder is driven down and back; the bare head whips with it.
+      s.lean.v -= 2.0 * power;
+      s.side.v += 2.4 * power;
+      s.twist.v -= 1.2 * power;
+      s.headRoll.v -= 4.5 * power;
+      s.headYaw.v += 2.5 * power;
       s.push.v += 1.4 * power;
       this.pushDir.copy(dirWorld).setY(0).normalize();
     } else if (kind === 'block') {
@@ -156,7 +158,8 @@ export class Fighter {
     // Body drives: authored offsets + automatic coupling to where the hands are + reactions.
     const t = T + this.seed * 10;
     const breathAmp = track1(C.BREATH, T);
-    P.breath = Math.sin(t * 2.1) * breathAmp;
+    P.breathPhase = Math.sin(t * 2.1);
+    P.breath = P.breathPhase * breathAmp;
     const pelvisBlade = (leadL ? -0.32 : 0.32) * fight;
     const autoTwist = THREE.MathUtils.clamp(-Math.atan2(W.p.x, W.p.z + 0.35) * 0.55, -0.7, 0.7);
     // Authored drives; the motion-captured layer is added on top once the hands are known.
@@ -195,7 +198,9 @@ export class Fighter {
       const wgt = Math.exp(-(((T - aim.t) / 0.2) ** 2));
       if (wgt < 0.01) continue;
       const live = toWorld(other.root, TARGETS[aim.target], this._v);
-      live.y += other.rig.w.head.y - (other.root.pos.y + 1.62);
+      // Follow the struck part's real height (the targets assume an upright stance).
+      const [joint, rest] = aim.target === 'lshoulder' ? [other.rig.w.shoulderL, 1.32] : [other.rig.w.head, 1.62];
+      live.y += joint.y - (other.root.pos.y + rest);
       this.grip.addScaledVector(live.sub(aim.world), wgt);
     }
     perp(this.edge, this.dir, this.edge);

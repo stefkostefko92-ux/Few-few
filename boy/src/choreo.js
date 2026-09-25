@@ -53,7 +53,8 @@ export const A_KEYS = [
   { t: 20.85, aim: { target: 'head', hand: [0.02, 1.55, 0.45], contact: 0.62 }, e: [0, -1, 0.3], ease: 'in', lean: 0.16, crouch: 0.13 },
   { t: 21.05, pose: { p: [0.08, 1.72, 0.25], d: [0.15, 0.9, 0.35], e: [0, -0.35, 1] }, ease: 'out', lean: 0.05 },
   { t: 21.3, pose: { p: [0.26, 1.64, 0.08], d: [0.18, 0.7, -0.69], e: [0.1, 0.69, 0.7] }, tw: -0.3, crouch: 0.08 },
-  { t: 21.55, aim: { target: 'headL', hand: [0.06, 1.45, 0.45], dynamic: true }, e: [0.4, -0.7, 0.3], ease: 'in', tw: 0.35, lean: 0.16, crouch: 0.12, lead: 'R' },
+  // The last Zornhau breaks through onto the Warden's left pauldron (no helms: not the head).
+  { t: 21.55, aim: { target: 'lshoulder', hand: [0.06, 1.42, 0.45], dynamic: true }, e: [0.4, -0.7, 0.3], ease: 'in', tw: 0.35, lean: 0.16, crouch: 0.12, lead: 'R' },
   { t: 21.85, pose: { p: [-0.12, 1.02, 0.4], d: [-0.62, -0.55, 0.55], e: [-0.5, 0.5, -0.3] }, ease: 'out', tw: 0.5, lean: 0.12, crouch: 0.1 },
   { t: 23.4, pose: A_POINT_DOWN, tw: 0.05, lean: 0.08, crouch: 0.06, lead: 'L' },
   { t: 28.5, pose: A_POINT_DOWN, tw: 0.05, lean: 0.08, crouch: 0.06 },
@@ -160,7 +161,7 @@ export const EVENTS = [
   { t: 17.6, type: 'lightning', power: 1.0 },
   { t: 20.25, type: 'clash', power: 1.0 },
   { t: 20.85, type: 'shield', by: 'A', power: 1.1 },
-  { t: 21.55, type: 'helm', power: 1.6 },
+  { t: 21.55, type: 'pauldron', power: 1.6 },
   { t: 21.6, type: 'disarm' },
   { t: 23.55, type: 'kneel', power: 0.6 },
 ];

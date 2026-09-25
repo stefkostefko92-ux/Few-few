@@ -1,4 +1,4 @@
-// Breath vapour: each exhale leaves a small warm-lit puff at the helmet's breaths.
+// Breath vapour: each exhale leaves a small warm-lit puff at the mouth.
 import * as THREE from 'three/webgpu';
 import { Fn, attribute, varying, vec3, vec4, float, length, smoothstep, uv, positionGeometry, cameraProjectionMatrix, cameraViewMatrix, Discard, If } from 'three/tsl';
 import { noise } from './tsl.js';

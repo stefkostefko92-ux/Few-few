@@ -3,7 +3,7 @@
 // so the bullet-time orbit keeps moving while the story clock nearly stops.
 import * as THREE from 'three';
 import { timeScaleAt, rootOf, weaponAt, toWorld, dirToWorld } from './timeline.js';
-import { DURATION } from './config.js';
+import { DURATION, EYES_LOCAL } from './config.js';
 
 const SENSOR_H = 0.024;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -48,14 +48,16 @@ const BLOCK = contactAt(20.85, 'A', 0.62);
 const ease = (u) => u * u * (3 - 2 * u);
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
-// Each shot returns camera position, look target, vertical fov, focus point, f-stop, handheld amount.
+// Each shot returns camera position, look target, vertical fov, focus point, f-stop, handheld
+// amount and, for close-ups, how much face light the camera crew adds (key, 0..1).
 const SHOTS = [
   { t0: 0.0, t1: 3.6, fn: (u) => ({ pos: V(6.5, 9.8, 14).lerp(V(3.6, 2.4, 9.2), ease(u)), target: V(0, 2.4, -9).lerp(V(0.4, 1.3, 0), ease(u)), fov: 40, focus: 'B', fstop: 5.6, hand: 0.2 }) },
-  { t0: 3.6, t1: 5.0, fn: (u, S) => ({ pos: S.A.rig.w.head.clone().addScaledVector(S.fwdA, 1.9 - 0.4 * u).addScaledVector(S.v, 0.55).add(V(0, -0.22, 0)), target: S.A.rig.w.head.clone().add(V(0, -0.12, 0)), fov: 32, focus: 'A', fstop: 1.8, hand: 0.35 }) },
+  // Ser Aldric's face as he raises the sword: a close-up just below his eye line.
+  { t0: 3.6, t1: 5.0, fn: (u, S) => ({ pos: S.EA.clone().addScaledVector(S.fwdA, 1.25 - 0.2 * u).addScaledVector(S.v, -0.42).add(V(0, -0.1, 0)), target: S.EA.clone().add(V(0, -0.09, 0)), fov: 30, focus: 'A', fstop: 1.8, hand: 0.35, key: 1 }) },
   { t0: 5.0, t1: 7.8, fn: (u, S) => ({ pos: S.P(-0.9 + 1.4 * u, 5.6, 1.35), target: S.P(0, 0, 1.2), fov: 38, focus: 'C', fstop: 2.8, hand: 0.5 }) },
-  { t0: 7.8, t1: 9.5, fn: (u, S) => ({ pos: S.A.root.pos.clone().addScaledVector(S.u, -1.3 + 0.2 * u).addScaledVector(S.v, 0.62).add(V(0, 1.82, 0)), target: S.B.rig.w.head.clone().add(V(0, -0.1, 0)), fov: 34, focus: 'B', fstop: 2.0, hand: 0.6 }) },
+  { t0: 7.8, t1: 9.5, fn: (u, S) => ({ pos: S.A.root.pos.clone().addScaledVector(S.u, -1.3 + 0.2 * u).addScaledVector(S.v, 0.62).add(V(0, 1.82, 0)), target: S.B.rig.w.head.clone().add(V(0, -0.1, 0)), fov: 34, focus: 'B', fstop: 2.0, hand: 0.6, key: 0.7 }) },
   { t0: 9.5, t1: 11.3, fn: (u, S) => ({ pos: S.P(1.1 - 0.5 * u, -3.3, 0.33), target: S.P(0.1, 0, 1.25), fov: 40, focus: 'C', fstop: 2.8, hand: 0.4 }) },
-  { t0: 11.3, t1: 12.8, fn: (u, S) => ({ pos: S.B.root.pos.clone().addScaledVector(S.u, 1.3 - 0.15 * u).addScaledVector(S.v, 0.66).add(V(0, 1.8, 0)), target: S.A.rig.w.head.clone().add(V(0, -0.1, 0)), fov: 34, focus: 'A', fstop: 2.0, hand: 0.6 }) },
+  { t0: 11.3, t1: 12.8, fn: (u, S) => ({ pos: S.B.root.pos.clone().addScaledVector(S.u, 1.3 - 0.15 * u).addScaledVector(S.v, 0.66).add(V(0, 1.8, 0)), target: S.A.rig.w.head.clone().add(V(0, -0.1, 0)), fov: 34, focus: 'A', fstop: 2.0, hand: 0.6, key: 0.7 }) },
   {
     t0: 12.8,
     t1: 13.75,
@@ -75,16 +77,17 @@ const SHOTS = [
       return { pos: S.C.clone().add(V(Math.cos(a) * r, 2.3 - 0.6 * u, Math.sin(a) * r)), target: S.P(0, 0, 1.2), fov: 36, focus: 'C', fstop: 4, hand: 0.35 };
     },
   },
-  { t0: 19.55, t1: 20.7, fn: (u, S) => ({ pos: S.A.root.pos.clone().addScaledVector(S.u, -1.7 + 0.4 * u).addScaledVector(S.v, -0.95).add(V(0, 1.45, 0)), target: S.B.rig.w.head.clone(), fov: 44, focus: 'B', fstop: 2.0, hand: 1.2 }) },
+  { t0: 19.55, t1: 20.7, fn: (u, S) => ({ pos: S.A.root.pos.clone().addScaledVector(S.u, -1.7 + 0.4 * u).addScaledVector(S.v, -0.95).add(V(0, 1.45, 0)), target: S.B.rig.w.head.clone(), fov: 44, focus: 'B', fstop: 2.0, hand: 1.2, key: 0.5 }) },
   { t0: 20.7, t1: 21.4, fn: (u, S) => ({ pos: BLOCK.clone().addScaledVector(S.v, 1.35).addScaledVector(S.u, 0.15 + 0.1 * u).add(V(0, 0.08, 0)), target: BLOCK, fov: 30, focus: BLOCK, fstop: 1.8, hand: 0.5 }) },
   {
+    // Bullet time on the Warden's face as the blade breaks onto his left pauldron.
     t0: 21.4,
     t1: 23.2,
     fn: (u, S) => {
-      const a = -0.5 + ease(u) * 0.8;
-      const h = S.B.rig.w.head;
-      const off = S.v.clone().multiplyScalar(-Math.cos(a) * 1.7).addScaledVector(S.u, -Math.sin(a) * 1.7 - 0.2);
-      return { pos: h.clone().add(off).add(V(0, -0.02, 0)), target: h.clone().add(V(0, -0.05, 0)), fov: 28 + 6 * u, focus: 'B', fstop: 1.4, hand: 0.15 };
+      // In front of the Warden and to his right: his raised shield covers the struck side.
+      const b = 0.8 - ease(u) * 0.35;
+      const off = S.u.clone().multiplyScalar(-Math.cos(b) * 1.5).addScaledVector(S.v, -Math.sin(b) * 1.5);
+      return { pos: S.EB.clone().add(off).add(V(0, -0.06, 0)), target: S.EB.clone().add(V(0, -0.14, 0)), fov: 30 + 5 * u, focus: 'B', fstop: 1.4, hand: 0.15, key: 1 };
     },
   },
   {
@@ -100,9 +103,9 @@ const SHOTS = [
 export const SHOT_COUNT = SHOTS.length;
 
 export function createDirector(camera, { reducedMotion }) {
-  const S = { u: new THREE.Vector3(), v: new THREE.Vector3(), C: new THREE.Vector3(), fwdA: new THREE.Vector3(), A: null, B: null };
+  const S = { u: new THREE.Vector3(), v: new THREE.Vector3(), C: new THREE.Vector3(), fwdA: new THREE.Vector3(), EA: new THREE.Vector3(), EB: new THREE.Vector3(), A: null, B: null };
   S.P = (a, b, h) => S.C.clone().addScaledVector(S.u, a).addScaledVector(S.v, b).add(V(0, h, 0));
-  const state = { shot: -1, focusDist: 5, fstop: 2.8, trauma: 0, cut: true, lensMM: 35 };
+  const state = { shot: -1, focusDist: 5, fstop: 2.8, trauma: 0, cut: true, lensMM: 35, key: 0 };
   const look = new THREE.Matrix4();
   const q = new THREE.Quaternion();
   const e = new THREE.Euler();
@@ -116,6 +119,8 @@ export function createDirector(camera, { reducedMotion }) {
     update(T, dtReal, A, B) {
       S.A = A;
       S.B = B;
+      S.EA.fromArray(EYES_LOCAL).applyMatrix4(A.knight.parts.head.matrix);
+      S.EB.fromArray(EYES_LOCAL).applyMatrix4(B.knight.parts.head.matrix);
       S.u.subVectors(B.root.pos, A.root.pos).setY(0).normalize();
       S.v.set(-S.u.z, 0, S.u.x);
       S.C.addVectors(A.root.pos, B.root.pos).multiplyScalar(0.5);
@@ -142,10 +147,12 @@ export function createDirector(camera, { reducedMotion }) {
       camera.quaternion.copy(q).multiply(new THREE.Quaternion().setFromEuler(e));
       camera.fov = s.fov;
       camera.updateProjectionMatrix();
-      const fp = s.focus === 'A' ? A.rig.w.head : s.focus === 'B' ? B.rig.w.head : s.focus === 'C' ? S.C.clone().add(V(0, 1.3, 0)) : s.focus;
+      // Close-ups hold focus on the eyes.
+      const fp = s.focus === 'A' ? S.EA : s.focus === 'B' ? S.EB : s.focus === 'C' ? S.C.clone().add(V(0, 1.3, 0)) : s.focus;
       const fd = camera.position.distanceTo(fp);
       state.focusDist = cut ? fd : THREE.MathUtils.lerp(state.focusDist, fd, 1 - Math.exp(-dtReal * 7));
       state.fstop = s.fstop;
+      state.key = s.key ?? 0;
       state.lensMM = (SENSOR_H / 2 / Math.tan(THREE.MathUtils.degToRad(s.fov) / 2)) * 1000;
       return cut;
     },

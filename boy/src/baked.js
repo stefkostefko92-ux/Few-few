@@ -8,7 +8,7 @@ const SETS = ['cobble', 'wall', 'metal', 'leather', 'fabric', 'wood', 'mail', 'd
 const FLAT_ALBEDO = { cobble: [30, 30, 29], wall: [52, 49, 44], wood: [40, 24, 13], leather: [26, 13, 7], fabric: [200, 200, 200], mail: [150, 150, 150], metal: [237, 237, 237], drops: [255, 255, 255] };
 const TILE = { cobble: 4, wall: 4, metal: 0.6, leather: 0.3, fabric: 0.12, wood: 1, mail: 0.08, drops: 0.2 };
 
-async function decode(url, maxSize) {
+export async function decode(url, maxSize) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   const blob = await res.blob();
@@ -21,7 +21,7 @@ async function decode(url, maxSize) {
   return scale >= 1 ? createImageBitmap(blob, opts) : createImageBitmap(blob, { ...opts, resizeWidth: w, resizeHeight: h, resizeQuality: 'high' });
 }
 
-function configure(t, srgb, anisotropy) {
+export function configure(t, srgb, anisotropy) {
   t.flipY = false;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;

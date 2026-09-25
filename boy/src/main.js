@@ -204,7 +204,10 @@ async function main() {
       director.update(T, dtReal, A, B);
       focusDist = director.state.focusDist;
       coc = director.cocScale(internal.y);
+      W.face.position.copy(camera.position).add(tmp.set(-0.95, 0.55, 0.25).applyQuaternion(camera.quaternion));
+      W.face.intensity = director.state.key * 1.1;
     } else {
+      W.face.intensity = 0;
       controls.target.lerp(tmp.copy(center).setY(1.2), 1 - Math.exp(-dtReal * 2));
       controls.update();
       focusDist = camera.position.distanceTo(controls.target);

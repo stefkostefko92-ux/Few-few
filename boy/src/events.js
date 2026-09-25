@@ -108,16 +108,16 @@ export function createEvents({ A, B, fx, audio, director, camera, onLightning })
       A.react('bash', p, away(B, A));
       director.addTrauma(0.6 * p);
       audio.play('bash', p, panOf(c), ts);
-    } else if (ev.type === 'helm') {
-      const head = B.rig.w.head.clone().add(new THREE.Vector3(0, 0.1, 0));
-      const c = closestOnSegment(A.bladeBase, A.bladeTip, head, new THREE.Vector3());
-      c.lerp(head, 0.35);
-      fx.impact(c, c.clone().sub(head).normalize().addScaledVector(UP, 0.4), p * 0.6);
+    } else if (ev.type === 'pauldron') {
+      const plate = B.rig.w.shoulderL.clone().add(new THREE.Vector3(0, 0.1, 0));
+      const c = closestOnSegment(A.bladeBase, A.bladeTip, plate, new THREE.Vector3());
+      c.lerp(plate, 0.3);
+      fx.impact(c, c.clone().sub(B.rig.w.shoulderL).normalize().addScaledVector(UP, 0.4), p * 0.6);
       fx.impact(c, away(A, B).addScaledVector(UP, 0.3), p * 0.35);
-      B.react('helm', p, away(A, B));
+      B.react('pauldron', p, away(A, B));
       A.react('recoil', 0.6, away(B, A));
       director.addTrauma(0.8);
-      audio.play('helm', p, panOf(c), ts);
+      audio.play('plate', p, panOf(c), ts);
       audio.play('boom', 1, 0, ts);
     } else if (ev.type === 'disarm') {
       audio.play('tap', 0.5, panOf(B.grip), ts);

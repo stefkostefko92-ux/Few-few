@@ -36,6 +36,10 @@ if (words.length < 5 || !words.includes('Carbon Stealth')) errors.push('template
 if ((pkg.keywords || []).length < 5 || !pkg.keywords.includes('Carbon Stealth')) errors.push('package.json: keywords need 5 or more, one of them "Carbon Stealth"');
 if (!tpl.includes('<a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>')) errors.push('template.html: the Carbon Stealth VCC credit link is missing');
 if (!/<title>[^<]+<\/title>/.test(tpl)) errors.push('template.html: <title> is missing');
+// The head scan's licence (CC BY 3.0) requires the credit wherever the faces are shown.
+const hud = readFileSync('src/hud.js', 'utf8');
+if (!tpl.includes('Lee Perry-Smith') || !tpl.includes('CC BY 3.0')) errors.push('template.html: the head scan credit (Lee Perry-Smith, CC BY 3.0) is missing');
+if ((hud.match(/Lee Perry-Smith[^']*CC BY 3\.0/g) || []).length < 3) errors.push('src/hud.js: the head scan credit must stay in every language (EN, BG, IT)');
 if (!tpl.includes('/*BUNDLE*/')) errors.push('template.html: the /*BUNDLE*/ placeholder is missing');
 
 if (errors.length) {

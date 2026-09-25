@@ -23,3 +23,7 @@ export const FIRE_GLOWS = [
 ];
 
 export const DURATION = 28.5;
+
+// A knight's eyes in his head frame (the head joint sits at the top of the neck): what the other
+// knight looks at and where the camera focuses.
+export const EYES_LOCAL = [0, 0.112, 0.085];

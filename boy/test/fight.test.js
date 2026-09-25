@@ -49,8 +49,8 @@ test('feet never sink into the cobbles', () => {
   assert.ok(lowest >= 0.085, `an ankle dips to ${lowest.toFixed(3)} m`);
 });
 
-test('every blow lands on steel: blades cross, shields catch, the helm is struck', () => {
-  const pending = EVENTS.filter((e) => ['clash', 'shield', 'helm', 'bash'].includes(e.type));
+test('every blow lands on steel: blades cross, shields catch, the pauldron is struck', () => {
+  const pending = EVENTS.filter((e) => ['clash', 'shield', 'pauldron', 'bash'].includes(e.type));
   const results = [];
   simulate((T, A, B) => {
     while (pending.length && T + STEP / 2 >= pending[0].t) {
@@ -65,11 +65,15 @@ test('every blow lands on steel: blades cross, shields catch, the helm is struck
         const off = A.bladeBase.clone().lerp(A.bladeTip, s).sub(o);
         off.addScaledVector(n, -off.dot(n));
         results.push([ev, off.length(), 0.26]);
-      } else if (ev.type === 'helm') {
-        const head = B.rig.w.head.clone().add(new THREE.Vector3(0, 0.1, 0));
+      } else if (ev.type === 'pauldron') {
+        const plate = B.rig.w.shoulderL.clone().add(new THREE.Vector3(0, 0.1, 0));
         const ab = A.bladeTip.clone().sub(A.bladeBase);
-        const t = THREE.MathUtils.clamp(head.clone().sub(A.bladeBase).dot(ab) / ab.lengthSq(), 0, 1);
-        results.push([ev, A.bladeBase.clone().addScaledVector(ab, t).distanceTo(head), 0.14]);
+        const t = THREE.MathUtils.clamp(plate.clone().sub(A.bladeBase).dot(ab) / ab.lengthSq(), 0, 1);
+        results.push([ev, A.bladeBase.clone().addScaledVector(ab, t).distanceTo(plate), 0.09]);
+        // Bare heads: the final blow must stay clear of the Warden's face.
+        const face = B.rig.w.head.clone().add(new THREE.Vector3(0, 0.1, 0));
+        const s = THREE.MathUtils.clamp(face.clone().sub(A.bladeBase).dot(ab) / ab.lengthSq(), 0, 1);
+        assert.ok(A.bladeBase.clone().addScaledVector(ab, s).distanceTo(face) > 0.12, 'the final blow cuts through the head');
       } else {
         results.push([ev, B.shieldCenter.distanceTo(A.rig.w.chest), 0.2]);
       }

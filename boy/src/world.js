@@ -6,6 +6,7 @@ import { capeTextureAzure, capeTextureCrimson, shieldTextures, bannerTexture } f
 import { loadBakedSets } from './baked.js';
 import { createMaterials } from './materials.js';
 import { buildKnight } from './armor.js';
+import { loadHeadAsset, createHead } from './head.js';
 import { longsword, armingSword, heaterShield } from './weapons.js';
 import { RigidBatcher } from './batcher.js';
 import { Cape } from './cloth.js';
@@ -38,8 +39,11 @@ function makeLights(scene, quality) {
   // Cool back light that follows the camera and draws a rim along armour silhouettes.
   const rim = new THREE.DirectionalLight(0x9db4ff, 0.45);
   const hemi = new THREE.HemisphereLight(0x223149, 0x0b0907, 0.3);
-  scene.add(moon, moon.target, rim, rim.target, hemi);
-  return { moon, rim, hemi };
+  // A soft warm light off the camera for close-ups, as a crew would add (firelight bounce):
+  // it lifts the faces and puts a catchlight in the eyes. Short range, no shadows.
+  const face = new THREE.PointLight(0xffd6b4, 0, 2.8, 2);
+  scene.add(moon, moon.target, rim, rim.target, hemi, face);
+  return { moon, rim, hemi, face };
 }
 
 // Budget per set: the courtyard floor and walls fill the frame and get the hero resolution.
@@ -54,7 +58,10 @@ export async function buildWorld(renderer, hud, quality) {
   await nextFrame();
   const noise = noiseTexture();
   setNoise(noise);
-  const S = await loadBakedSets('tex/', textureBudget(quality), aniso, (k, n) => hud.loading(k < n * 0.5 ? 'load_forge' : 'load_cobbles', 0.05 + (k / n) * 0.45));
+  const [S, headAsset] = await Promise.all([
+    loadBakedSets('tex/', textureBudget(quality), aniso, (k, n) => hud.loading(k < n * 0.5 ? 'load_forge' : 'load_cobbles', 0.05 + (k / n) * 0.45)),
+    loadHeadAsset('tex/', aniso),
+  ]);
   hud.loading('load_walls', 0.55);
   await nextFrame();
   const T0 = { capeA: capeTextureAzure(), capeB: capeTextureCrimson(), shield: shieldTextures(), banner: bannerTexture(), ripple: rippleTexture(), puddle: puddleTexture() };
@@ -90,8 +97,11 @@ export async function buildWorld(renderer, hud, quality) {
   scene.add(fires.group, rain.group, fx.group, breath.mesh);
   const lights = makeLights(scene, quality);
 
-  const knightA = buildKnight(M, 'A');
-  const knightB = buildKnight(M, 'B');
+  // Bare scanned heads; the helms come back only if the head files are missing.
+  const knightA = buildKnight(M, 'A', { helmet: !headAsset });
+  const knightB = buildKnight(M, 'B', { helmet: !headAsset });
+  const heads = headAsset ? ['A', 'B'].map((id) => createHead(headAsset, id, S.drops)) : [];
+  heads.forEach((h) => scene.add(h.group));
   const swordA = longsword(M);
   const swordB = armingSword(M);
   const shieldB = heaterShield(M);
@@ -112,7 +122,7 @@ export async function buildWorld(renderer, hud, quality) {
   hud.loading('load_shaders', 0.75);
   await nextFrame();
   // The moon's cascades must bind to the story camera, not the capture's cube camera.
-  const hidden = [...batches, capeA.mesh, capeB.mesh, rain.group, fx.group, breath.mesh];
+  const hidden = [...batches, capeA.mesh, capeB.mesh, rain.group, fx.group, breath.mesh, ...heads.map((h) => h.group)];
   hidden.forEach((o) => (o.visible = false));
   ground.setReflections(false);
   lights.moon.castShadow = false;
@@ -126,7 +136,7 @@ export async function buildWorld(renderer, hud, quality) {
   lights.moon.castShadow = true;
 
   return {
-    scene, camera, sky, ground, fires, brazierShadow, gateLight, rain, fx, breath, batcher, A, B, ...lights,
+    scene, camera, sky, ground, fires, brazierShadow, gateLight, rain, fx, breath, batcher, A, B, heads, ...lights,
     wind: { x: 1.2, y: 0, z: 0.5, phase: 0 },
     prevBreath: [0, 0],
   };
@@ -136,8 +146,10 @@ const back = new THREE.Vector3();
 const tmp = new THREE.Vector3();
 const jitter = new THREE.Vector3();
 const headFwd = new THREE.Vector3();
+const mouth = new THREE.Vector3();
+const rot = new THREE.Matrix3();
 
-// Rain drops bursting on helmets and pauldrons.
+// Rain drops bursting on heads and pauldrons.
 function splashOnArmour(W, f, dT) {
   const w = f.rig.w;
   for (let n = dT * 14; n > 0; n -= 1) {
@@ -162,6 +174,12 @@ export function animateWorld(W, T, dT) {
   A.update(T, dT, B);
   B.update(T, dT, A);
   W.batcher.update();
+  // Faces act on the story; rain soaks the skin and hair over the first seconds.
+  const wet = 0.4 + 0.35 * Math.min(1, T / 12);
+  W.heads.forEach((h, i) => {
+    const [f, o] = i ? [B, A] : [A, B];
+    h.update(f.knight.parts.head.matrix, T, f.P.breathPhase, o.knight.parts.head.matrix, wet);
+  });
   [A, B].forEach((f, i) => {
     back.set(-Math.sin(f.root.yaw), 0, -Math.cos(f.root.yaw));
     f.cape.step(dT, f.rig.capeAnchorsWorld, f.rig.colliders, wind, back);
@@ -169,8 +187,9 @@ export function animateWorld(W, T, dT) {
     splashOnArmour(W, f, dT);
     const br = f.P.breath;
     if (W.prevBreath[i] > 0 && br <= 0) {
-      headFwd.set(0, 0, 1).applyQuaternion(f.rig.w.qHead);
-      W.breath.emit(tmp.copy(f.rig.w.head).addScaledVector(headFwd, 0.17).addScaledVector(UP, 0.05), headFwd);
+      const head = f.knight.parts.head.matrix;
+      headFwd.set(0, 0, 1).applyMatrix3(rot.setFromMatrix4(head)).normalize();
+      W.breath.emit(mouth.set(0, 0.046, 0.118).applyMatrix4(head), headFwd);
     }
     W.prevBreath[i] = br;
   });

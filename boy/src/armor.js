@@ -96,6 +96,22 @@ function buildPelvis(M, st) {
   return { group: g, tassets };
 }
 
+// A padded arming collar (Ser Aldric) or a mail standard (the Warden) rolled over the gorget's
+// rim around the bare neck, dipping in front so the chin can drop. Hides where the head ends.
+function collar(material, height) {
+  const g = lathe([[0.1, 0.262], [0.097, 0.29], [0.092, 0.312], [0.086, 0.3 + height], [0.08, 0.305 + height], [0.074, 0.302 + height], [0.071, 0.29 + height], [0.071, 0.27], [0.074, 0.23]], 48);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i);
+    const z = p.getZ(i);
+    const front = Math.max(0, z / Math.hypot(x, z)) ** 2;
+    p.setY(i, p.getY(i) - 0.022 * front * sm(0.29, 0.3 + height, p.getY(i)));
+    p.setZ(i, z * 1.06 - 0.008);
+  }
+  g.computeVertexNormals();
+  return [xf(g, [0, 0, 0], [0, 0, 0], [0.97, 1, 1]), material];
+}
+
 function buildChest(M, st) {
   const g = part('chest');
   const cuirassPoint = cuirass(st.fluted);
@@ -121,7 +137,11 @@ function buildChest(M, st) {
   add(g, gorget, st.plate);
   add(g, xf(ring(0.094, 0.005, TAU, 6, 40), [0, 0.302, -0.012], [0, 0, 0], [1, 1, 0.94]), st.trim);
   add(g, xf(new THREE.SphereGeometry(0.17, 24, 16), [0, 0.0, -0.005], [0, 0, 0], [1, 1.35, 0.78]), M.gambeson);
-  add(g, scaleUV(tube(0.058, 0.064, 0.14, 16, 0, TAU, 0.32), 7, 2.5), M.mail);
+  if (st.helmet) add(g, scaleUV(tube(0.058, 0.064, 0.14, 16, 0, TAU, 0.32), 7, 2.5), M.mail);
+  else {
+    const [geo, mat] = collar(st.fluted ? M.gambeson : M.mail, st.fluted ? 0.03 : 0.036);
+    add(g, st.fluted ? scaleUV(geo, 10, 1.2) : scaleUV(geo, 26, 2.2), mat);
+  }
   // Arming points where the cape is laced to the harness.
   const cape = [];
   for (let i = 0; i < 9; i++) {
@@ -213,14 +233,15 @@ function buildFoot(M, st) {
   return g;
 }
 
-export function buildKnight(M, style) {
+// helmet: true when the scanned heads are missing (the knights then keep their helms).
+export function buildKnight(M, style, { helmet = false } = {}) {
   const st = style === 'A'
-    ? { plate: M.steelA, trim: M.steelA, rivet: M.brass, pauldron: 0.116, lanceRest: true, spurs: true, fluted: true }
-    : { plate: M.steelB, trim: M.goldB, rivet: M.goldB, pauldron: 0.128, lanceRest: false, spurs: false, fluted: false };
+    ? { plate: M.steelA, trim: M.steelA, rivet: M.brass, pauldron: 0.116, lanceRest: true, spurs: true, fluted: true, helmet }
+    : { plate: M.steelB, trim: M.goldB, rivet: M.goldB, pauldron: 0.128, lanceRest: false, spurs: false, fluted: false, helmet };
   const pelvis = buildPelvis(M, st);
   const chest = buildChest(M, st);
   const head = part('head');
-  head.add(buildHelmet(M, style));
+  if (helmet) head.add(buildHelmet(M, style));
   const upperArm = flatten(buildUpperArm(M, st));
   const foreArm = flatten(buildForearm(M, st));
   const hand = flatten(buildHand(M, st));

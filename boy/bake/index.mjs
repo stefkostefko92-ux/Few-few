@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import sharp from 'sharp';
 import { allocate, shadeAll } from './pool.mjs';
 import { normals, cavity, curvature, packAlbedo, packNormalHeight, packORM } from './maps.mjs';
+import { bakeHead, SOURCES as HEAD_SOURCES } from './head.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, '').split('=')).map(([k, v]) => [k, v ?? true]));
@@ -16,12 +17,23 @@ const only = args.only ? String(args.only).split(',') : null;
 const log = (s) => process.stdout.write(`${s}\n`);
 
 // The cache key covers every texture baker source file, so any generator change re-bakes
-// (the motion-capture converter lives here too but does not touch the textures).
+// (the motion-capture converter and the head bake live here too but do not touch the sets).
+const ownFile = (n) => n.endsWith('.mjs') && n !== 'mocap.mjs' && !n.startsWith('head');
 function sourceHash() {
   const h = createHash('sha256');
   for (const dir of [here, join(here, 'sets')]) {
-    for (const f of readdirSync(dir).filter((n) => n.endsWith('.mjs') && n !== 'mocap.mjs').sort()) h.update(readFileSync(join(dir, f)));
+    for (const f of readdirSync(dir).filter(ownFile).sort()) h.update(readFileSync(join(dir, f)));
   }
+  return h.digest('hex').slice(0, 16);
+}
+
+// The head bake has its own key: its sources plus the scan it reads.
+const headAssets = join(here, '..', 'assets', 'head');
+function headHash() {
+  const h = createHash('sha256');
+  for (const f of readdirSync(here).filter((n) => n.startsWith('head') && n.endsWith('.mjs')).sort()) h.update(readFileSync(join(here, f)));
+  for (const f of HEAD_SOURCES) h.update(readFileSync(join(headAssets, f)));
+  h.update(readFileSync(join(here, '..', 'src', 'eye-shape.js')));
   return h.digest('hex').slice(0, 16);
 }
 
@@ -70,7 +82,18 @@ async function main() {
     manifest[set.name] = { key, ...(await bakeSet(url, set, size, set.seed ?? 1)) };
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 1));
   }
-  log(`✓ bake: ${Object.keys(manifest).length} texture sets in ${outDir}`);
+  if (!only || only.includes('head')) {
+    const key = headHash();
+    const have = manifest.head;
+    const intact = have && Object.values(have.files).every((file) => existsSync(join(outDir, file)));
+    if (args.force || have?.key !== key || !intact) {
+      const t0 = Date.now();
+      manifest.head = { key, ...(await bakeHead(headAssets, outDir)) };
+      writeFileSync(manifestPath, JSON.stringify(manifest, null, 1));
+      log(`  head ${manifest.head.count} vertices in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+    }
+  }
+  log(`✓ bake: ${Object.keys(manifest).length - (manifest.head ? 1 : 0)} texture sets and ${manifest.head ? 'the heads' : 'no heads'} in ${outDir}`);
 }
 
 main().catch((err) => {

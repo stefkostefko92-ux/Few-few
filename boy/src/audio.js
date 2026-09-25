@@ -189,7 +189,7 @@ export function createAudio() {
       if (!enabled || !ctx) return;
       const slow = Math.max(0.12, timeScale);
       if (kind === 'clash') clang(power, 1, pan, slow);
-      else if (kind === 'helm') {
+      else if (kind === 'plate') {
         clang(power, 0.62, pan, slow);
         thump(power * 0.8, 70, pan, 0.6 / slow);
       } else if (kind === 'shield') {
