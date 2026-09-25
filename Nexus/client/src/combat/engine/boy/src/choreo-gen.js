@@ -1,38 +1,29 @@
-// 4a.2 (Nexus порт, НЕ част от оригиналния boy) — превръща реални сървърни рундове в
+// 4a.2/4a.4 (Nexus порт, НЕ част от оригиналния boy) — превръща реални сървърни рундове в
 // хореография със същата форма като choreo.js: {A_KEYS,B_KEYS,B_SHIELD,ROOT_KEYS,A_ADV,B_ADV,
 // B_KNEEL,BREATH,B_LOOK_DOWN,TIME_SCALE,EVENTS,CAPTIONS,CHAPTERS,duration,shots}.
 //
-// Безопасност: всеки рунд е guard → aim/parry/block → guard, само с каноничните пози от
+// Безопасност (близки рундове): guard → aim/parry/block → guard, само с каноничните пози от
 // choreo.js (GUARD_POSES) и aim/parry/block ключове, които timeline.js РЕШАВА ГЕОМЕТРИЧНО
-// (REACH клампове и т.н.) при всяко извикване — затова сглобяването на произволен брой
-// рундове в произволен ред е безопасно (виж fight-gen.test.js). Герой винаги е слот 'A'
-// (дългия меч, без щит), противник — слот 'B' (меч+щит); пълното класово огледаляне идва в
-// 4a.4/4a.5. Печелившият получава опашката от оригиналния A_KEYS (disarm/kneel на другия),
-// губещият — опашката от B_KEYS: двете локални рамки са симетрични по конструкция.
+// (REACH клампове и т.н.) — сглобяването на произволен брой рундове в произволен ред е
+// безопасно (виж fight-gen.test.js). Далечните рундове (жезъл/лък) изобщо не минават през тази
+// reach система — виж choreo-gen-attack.js/ranged.js. Герой винаги е слот 'A', противник —
+// слот 'B' (щит само ако кита го предвижда — виж loadout.js hasShieldKit). Печелившият получава
+// опашката от оригиналния A_KEYS (disarm/kneel на другия), губещият — опашката от B_KEYS:
+// двете локални рамки са симетрични по конструкция. Финалният удар остава винаги близък
+// (мелодраматично "затваряне на дистанцията" дори за далечни класове — съзнателно опростяване).
 import { GUARD_POSES } from './choreo.js';
+import { weaponKit, hasShieldKit } from './loadout.js';
 import { buildGeneratedShots } from './shot-builder.js';
+import { push, buildRound, buildTimeScale, guardPoseFor, AIM } from './choreo-gen-attack.js';
 
-const { A_REST, A_VOMTAG, A_OCHS, A_PFLUG, A_POINT_DOWN, B_REST, B_GUARD, B_HIGH, SH_REST, SH_GUARD } = GUARD_POSES;
+const { A_REST, B_REST, A_POINT_DOWN, SH_REST, SH_GUARD, STAFF_CHANNEL, BOW_DRAW } = GUARD_POSES;
 
-const AIM = {
-  A: {
-    head: { hand: [0.02, 1.5, 0.62], contact: 0.7 },
-    headL: { hand: [0.06, 1.45, 0.45], contact: 0.6 },
-    lshoulder: { hand: [0.1, 1.45, 0.42], contact: 0.78 },
-    chest: { hand: [0.05, 1.4, 0.5], contact: 0.6 },
-  },
-  B: {
-    head: { hand: [0.05, 1.6, 0.5], contact: 0.5 },
-    headL: { hand: [0.06, 1.42, 0.5], contact: 0.5 },
-    lshoulder: { hand: [0.06, 1.42, 0.5], contact: 0.5 },
-    chest: { hand: [0.12, 1.25, 0.62], contact: 0.45 },
-  },
-};
-const TARGET_CYCLE = ['head', 'lshoulder', 'chest', 'headL'];
-const PARRY_STYLES = ['up', 'flat', 'hang'];
-const GUARD_OF = { A: A_VOMTAG, B: B_GUARD };
-const BEAT = 1.7;
-const CRIT_HOLD = 0.55;
+// 4a.4 (кръг 2): финалният удар е ВИНАГИ близък (виж бележката горе) — REST позите на далечен
+// кит (STAFF_REST/BOW_REST, y≈1.1) стоят твърде далеч геометрично от мелодраматичния "en garde"
+// ръст, който финалната AIM ключ очаква 0.2s по-късно; Catmull-Rom (timeline.js) прескача това
+// разстояние гладко, но офхенд-огледалото (fighter.js `!this.shield`) вече не достига навреме
+// (измерено при 4×4 класовите тестове). CHANNEL/DRAW позата е близка по ръст до close-guard.
+const preFinishPoseFor = (slot, kit) => (kit === 'staff' ? STAFF_CHANNEL : kit === 'bow' ? BOW_DRAW : guardPoseFor(slot, kit));
 
 // Малка детерминистична PRNG (mulberry32) — seeded вариация без Math.random, за да могат
 // тестовете да пресъздават точно същия рунд-микс.
@@ -46,13 +37,15 @@ export function mulberry32(seed) {
   };
 }
 
-function push(list, t, entry) {
-  list.push({ t, ...entry });
-}
+const idlePoseFor = (slot, kit) => (kit === 'staff' || kit === 'bow' ? guardPoseFor(slot, kit) : slot === 'A' ? A_REST : B_REST);
 
-/** rounds: [{attacker:'hero'|'foe', result:'hit'|'crit'|'block'|'dodge'|'miss'}], victory: bool */
+/** rounds: [{attacker:'hero'|'foe', result:'hit'|'crit'|'block'|'dodge'|'miss'}], victory: bool
+ * opts.heroClass ('warrior'|'ranger'|'mage'|'rogue'), opts.foeName (свободен текст, за
+ * weaponKit() разпознаване — виж loadout.js) решават КАКВО оръжие държи всеки слот. */
 export function buildChoreography(rounds, victory, opts = {}) {
   const rnd = opts.rng || mulberry32(1);
+  const kitA = weaponKit(opts.heroClass);
+  const kitB = weaponKit(opts.foeName);
   const A_KEYS = [];
   const B_KEYS = [];
   const B_SHIELD = [];
@@ -62,14 +55,14 @@ export function buildChoreography(rounds, victory, opts = {}) {
   const EVENTS = [{ t: 0.9, type: 'lightning', power: 0.55 }];
   const CAPTIONS = [];
 
-  push(A_KEYS, 0, { pose: A_REST, crouch: 0, lead: 'L' });
-  push(B_KEYS, 0, { pose: B_REST, crouch: 0.02, lead: 'L' });
+  push(A_KEYS, 0, { pose: idlePoseFor('A', kitA), crouch: 0, lead: 'L' });
+  push(B_KEYS, 0, { pose: idlePoseFor('B', kitB), crouch: 0.02, lead: 'L' });
   push(B_SHIELD, 0, { sh: SH_REST });
   ROOT_KEYS.push([0, 0, 0.3, 7.0, 0.0]);
 
   const APPROACH = 3.6;
-  push(A_KEYS, APPROACH, { pose: A_VOMTAG });
-  push(B_KEYS, APPROACH, { pose: B_GUARD });
+  push(A_KEYS, APPROACH, { pose: guardPoseFor('A', kitA) });
+  push(B_KEYS, APPROACH, { pose: guardPoseFor('B', kitB) });
   push(B_SHIELD, APPROACH, { sh: SH_GUARD });
   ROOT_KEYS.push([APPROACH, 0.1, 0.42, 2.4, 0.15]);
   CAPTIONS.push({ t: APPROACH + 0.2, d: 2.2, k: 'vomTag' });
@@ -82,80 +75,31 @@ export function buildChoreography(rounds, victory, opts = {}) {
     const defenderSlot = attackerSlot === 'A' ? 'B' : 'A';
     const attackerKeys = attackerSlot === 'A' ? A_KEYS : B_KEYS;
     const defenderKeys = defenderSlot === 'A' ? A_KEYS : B_KEYS;
-    const crit = round.result === 'crit';
-    const dur = crit ? BEAT + CRIT_HOLD : BEAT;
-    const target = TARGET_CYCLE[ti % TARGET_CYCLE.length];
-    const aimTpl = AIM[attackerSlot][target];
-    const windT = t + dur * 0.28;
-    const apexT = t + dur * 0.55;
-    const returnT = t + dur;
-
-    // Нападателят: guard refresh → windup → aim → guard.
-    push(attackerKeys, windT, { pose: GUARD_OF[attackerSlot], ease: 'in', crouch: 0.1 });
-    push(attackerKeys, apexT, {
-      aim: { target, hand: aimTpl.hand, contact: aimTpl.contact },
-      e: [0, 1, 0],
-      ease: 'in',
-      lean: crit ? 0.14 : 0.1,
-      crouch: 0.1,
+    const attackerKit = attackerSlot === 'A' ? kitA : kitB;
+    const defenderKit = defenderSlot === 'A' ? kitA : kitB;
+    const returnT = buildRound({
+      round, ti, t, rnd, attackerSlot, defenderSlot, attackerKeys, defenderKeys, attackerKit, defenderKit,
+      B_SHIELD, EVENTS, ROOT_KEYS, A_ADV, B_ADV, shotBeats,
     });
-    if (crit) push(attackerKeys, apexT + CRIT_HOLD * 0.6, { hold: true, crouch: 0.1 });
-
-    // Защитникът: щитоносецът (B) блокира; безщитният (A) парира.
-    if (round.result === 'block') {
-      if (defenderSlot === 'B') {
-        push(B_SHIELD, apexT, { block: { vs: attackerSlot }, ease: 'out' });
-        EVENTS.push({ t: apexT, type: 'shield', by: attackerSlot, power: crit ? 1.1 : 0.85 });
-      } else {
-        push(defenderKeys, apexT, { parry: { vs: attackerSlot, style: PARRY_STYLES[ti % PARRY_STYLES.length] } });
-        EVENTS.push({ t: apexT, type: 'clash', power: crit ? 1.3 : 0.85 });
-        EVENTS.push({ t: apexT + 0.06, type: 'scrape', dur: 0.2, power: 0.5 });
-      }
-    } else if (round.result === 'dodge' || round.result === 'miss') {
-      // Чисто отбягване/пропуск — целта се решава геометрично, но не гърми контактно
-      // събитие, така че оръжието "просвирва" покрай защитника без реакция/искри.
-    } else {
-      // hit / crit — солиден контакт (искри + физическа реакция чрез events.js).
-      EVENTS.push({ t: apexT, type: 'strike', target, by: attackerSlot, against: defenderSlot, power: crit ? 1.6 : 1.0 });
-      if (crit) EVENTS.push({ t: windT + 0.02, type: 'lightning', power: 0.4 });
-    }
-    // 4a.3: белег за React слоя (число на щетата) — ТОЧНО в кадъра на удара, за всеки рунд
-    // (вкл. dodge/miss, които нямат физическо fx събитие по-горе).
-    EVENTS.push({ t: apexT, type: 'roundmark', roundIndex: ti, by: attackerSlot, against: defenderSlot });
-
-    push(attackerKeys, returnT, { pose: GUARD_OF[attackerSlot], ease: 'out', crouch: 0.08 });
+    // Guard-опресняване за защитника (независимо от вида рунд) — иначе сплайнът му интерполира
+    // от последния му ключ право до следващия си рунд (голям прозорец, вижда се като "плъзгане").
     if (defenderKeys[defenderKeys.length - 1]?.t < returnT - 0.05) {
-      push(defenderKeys, returnT, { pose: GUARD_OF[defenderSlot], ease: 'out', crouch: 0.08 });
+      push(defenderKeys, returnT, { pose: guardPoseFor(defenderSlot, defenderKit), ease: 'out', crouch: 0.08 });
     }
-
-    // Разстоянието МЕЖДУ реалните ROOT_KEYS точки се интерполира (smoothstep) — трябва да е
-    // достатъчно тясно ТОЧНО в apexT (мига на удара), иначе resolveAim() ще остави острието
-    // "недостигнало" целта (клампва по MAX_ALONG=1.0/0.84 м, виж timeline.js). ~1.6 м на
-    // удара е сигурно за двата бойеца; ~2.1 м между рундовете е нормална дистанция на пазене.
-    const axis = 0.15 + ti * 0.08;
-    ROOT_KEYS.push([apexT - 0.12, 0.1, 0.42, 2.1, axis]);
-    ROOT_KEYS.push([apexT, 0.1, 0.42, 1.35 + 0.1 * rnd(), axis]);
-    ROOT_KEYS.push([returnT, 0.1, 0.42, 2.1, axis]);
-    const advPulse = (attackerSlot === 'A' ? A_ADV : B_ADV);
-    advPulse.push([apexT, 0.18 + 0.1 * rnd()]);
-    advPulse.push([returnT, 0]);
-    if (!crit) B_SHIELD.push({ t: returnT, sh: SH_GUARD });
-
-    shotBeats.push({ t0: t, t1: returnT, crit });
     t = returnT;
     ti += 1;
   }
 
   // Финал: печелившият получава опашката на оригиналния A_KEYS (disarm удар), губещият —
-  // опашката на оригиналния B_KEYS (helm/disarm/kneel/pose_down). Стойностите са в собствената
-  // локална рамка на всеки боец, затова важат еднакво за който и да е слот.
+  // опашката на оригиналния B_KEYS (helm/disarm/kneel/pose_down). Винаги близък (виж бележката
+  // в началото на файла) — с КАКВОТО оръжие държи в момента (мрежата е кит-специфична, IK-то не).
   const winnerSlot = victory ? 'A' : 'B';
   const loserSlot = victory ? 'B' : 'A';
   const winnerKeys = winnerSlot === 'A' ? A_KEYS : B_KEYS;
   const loserKeys = loserSlot === 'A' ? A_KEYS : B_KEYS;
   const finishT0 = t + 0.35;
   const finishAim = winnerSlot === 'A' ? AIM.A.headL : AIM.B.headL;
-  push(winnerKeys, t + 0.15, { pose: GUARD_OF[winnerSlot], crouch: 0.1, lead: 'R' });
+  push(winnerKeys, t + 0.15, { pose: preFinishPoseFor(winnerSlot, winnerSlot === 'A' ? kitA : kitB), crouch: 0.1, lead: 'R' });
   push(winnerKeys, finishT0, {
     aim: { target: 'headL', hand: finishAim.hand, dynamic: true }, e: [0.4, -0.7, 0.3], ease: 'in', tw: 0.35, lean: 0.16, crouch: 0.12, lead: 'R',
   });
@@ -163,10 +107,8 @@ export function buildChoreography(rounds, victory, opts = {}) {
   push(winnerKeys, finishT0 + 1.85, { pose: A_POINT_DOWN, tw: 0.05, lean: 0.08, crouch: 0.06 });
 
   // Загубилият: ако е слот B (оригиналният случай — Warden), опашката е буквалните B_KEYS
-  // стойности на оригинала (авторски, едноръчни). Ако загуби слот A (герой с двуръчен меч —
-  // никога не се случва в оригиналния разказ), едноръчните стойности карат ЛЯВАТА китка да не
-  // достига (тя не съществува при B) — вместо това стоим близо до A_REST (позната валидна
-  // двуръчна поза), само по-ниско/отпуснато.
+  // стойности на оригинала (авторски, едноръчни). Ако загуби слот A (герой — никога в оригинала),
+  // едноръчните стойности карат ЛЯВАТА китка да не достига — вместо това стоим близо до A_REST.
   const loserSlump = loserSlot === 'A'
     ? [
         { t: finishT0 + 0.05, pose: { p: [0.02, 0.95, 0.28], d: [0, -0.9, 0.35], e: [0, 0.3, 1] }, lean: -0.15 },
@@ -178,7 +120,7 @@ export function buildChoreography(rounds, victory, opts = {}) {
         { t: finishT0 + 0.55, pose: { p: [0.2, 0.8, 0.34], d: [0.1, -0.2, 1], e: [0, -1, 0] }, lean: 0.32, crouch: 0.0 },
         { t: finishT0 + 1.85, pose: { p: [0.2, 0.8, 0.34], d: [0.1, -0.2, 1], e: [0, -1, 0] }, lean: 0.32, crouch: 0.0 },
       ];
-  push(loserKeys, t + 0.15, { pose: GUARD_OF[loserSlot], crouch: 0.1 });
+  push(loserKeys, t + 0.15, { pose: guardPoseFor(loserSlot, loserSlot === 'A' ? kitA : kitB), crouch: 0.1 });
   for (const k of loserSlump) push(loserKeys, k.t, { pose: k.pose, lean: k.lean, crouch: k.crouch });
 
   EVENTS.push({ t: finishT0, type: 'helm', by: winnerSlot, against: loserSlot, power: 1.6 });
@@ -190,20 +132,18 @@ export function buildChoreography(rounds, victory, opts = {}) {
 
   const duration = finishT0 + 1.9;
   const finishAxis = ROOT_KEYS[ROOT_KEYS.length - 1][4] + 0.1;
-  // Същият проблем като при рундовете (виж коментара по-горе): без тясна ROOT_KEYS точка ТОЧНО
-  // в finishT0 финалният удар би останал широк ~2.1 м (последният reset на предния рунд).
-  // B (щитоносец) има по-къс обхват (MAX_ALONG=0.84 срещу 1.0 за A) — иска по-тясно разстояние
-  // при финалния удар; A с двуръчния меч, обратно, се нуждае от малко повече пространство,
-  // иначе двуръчният IK се пренатоварва (двете китки твърде близо/кръстосани).
-  const finishSep = winnerSlot === 'B' ? 1.1 : 1.4;
+  // 4a.4 (кръг 2): по РЕАЛНО наличие на щит (слот И кит — A никога няма щит, дори с 'sword'
+  // кита си), не само по слот — едноръчен+щит финишър иска по-малко пространство; двуръчен
+  // (без щит — вкл. B сега, ако китът му е shortsword/staff/bow/heavy) иска СЪЩОТО пространство
+  // като оригиналния двуръчен A (1.4, доказано хиляди генерирани битки) — fighter.js `!this.shield`
+  // клона сега важи и за B, затова reach нуждите му вече съвпадат с A-случая, не с оригиналния B.
+  const winnerHasShield = winnerSlot === 'B' && hasShieldKit(kitB);
+  const finishSep = winnerHasShield ? 1.1 : 1.4;
   ROOT_KEYS.push([finishT0 - 0.1, 0.1, 0.42, 2.1, finishAxis]);
   ROOT_KEYS.push([finishT0, 0.1, 0.42, finishSep, finishAxis]);
   ROOT_KEYS.push([duration, 0.1, 0.42, 1.65, finishAxis]);
   A_ADV.push([duration, A_ADV[A_ADV.length - 1][1]]);
   B_ADV.push([duration, B_ADV[B_ADV.length - 1][1]]);
-  // Плътна котва точно във finishT0 — без нея щитът интерполира от последния reset на рунда
-  // право до финалната поза (голям прозорец), докато ОРЪЖИЕТО на B сменя позата рязко там —
-  // разминаването кара лявата (щитова) китка да изостава извън толеранса.
   push(B_SHIELD, finishT0, { sh: SH_GUARD });
   B_SHIELD.push({ t: duration, sh: { w: [-0.3, 0.7, 0.3], n: [-0.15, -0.25, 1] } });
 
@@ -214,7 +154,7 @@ export function buildChoreography(rounds, victory, opts = {}) {
   const B_LOOK_DOWN = loserSlot === 'B'
     ? [[0, 0], [finishT0 + 0.8, 0], [finishT0 + 1.2, 1], [duration, 1]]
     : [[0, 0], [duration, 0]];
-  const TIME_SCALE = buildTimeScale(rounds, APPROACH, BEAT, CRIT_HOLD, duration);
+  const TIME_SCALE = buildTimeScale(shotBeats, duration);
   const CHAPTERS = [
     { t: 0, k: 'ch1' },
     { t: APPROACH + (t - APPROACH) * 0.35, k: 'ch2' },
@@ -222,22 +162,11 @@ export function buildChoreography(rounds, victory, opts = {}) {
   ];
   const shots = buildGeneratedShots(APPROACH, shotBeats, t, duration);
 
-  return { A_KEYS, B_KEYS, B_SHIELD, ROOT_KEYS, A_ADV, B_ADV, B_KNEEL, BREATH, B_LOOK_DOWN, TIME_SCALE, EVENTS, CAPTIONS, CHAPTERS, duration, shots };
-}
-
-// Кратко забавяне на времето (hit-stop) при всеки крит рунд — както в оригинала (t=12.86..13.62).
-function buildTimeScale(rounds, approach, beat, critHold, duration) {
-  const k = [[0, 1]];
-  let t = approach;
-  for (const r of rounds) {
-    const crit = r.result === 'crit';
-    const dur = crit ? beat + critHold : beat;
-    if (crit) {
-      const apex = t + dur * 0.55;
-      k.push([apex - 0.02, 1], [apex, 0.15], [apex + critHold * 0.5, 0.15], [apex + critHold * 0.5 + 0.1, 1]);
-    }
-    t += dur;
-  }
-  k.push([duration, 1]);
-  return k;
+  return {
+    A_KEYS, B_KEYS, B_SHIELD, ROOT_KEYS, A_ADV, B_ADV, B_KNEEL, BREATH, B_LOOK_DOWN, TIME_SCALE, EVENTS, CAPTIONS, CHAPTERS, duration, shots,
+    // 4a.4: за world.js (мрежа/щит) — единствения път двете страни могат да се разминат е ако
+    // някой ги извика отделно; roundsToChoreo.ts подава СЪЩИТЕ opts.heroClass/opts.foeName и
+    // на bootDuel, но ги пазим и тук като косвена проверка/удобство за дебъг.
+    kitA, kitB,
+  };
 }

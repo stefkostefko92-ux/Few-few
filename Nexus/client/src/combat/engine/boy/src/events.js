@@ -37,7 +37,7 @@ function closestOnSegment(a, b, p, out) {
   return out.copy(a).addScaledVector(ab, t);
 }
 
-export function createEvents({ A, B, fx, audio, director, camera, onLightning, onImpact }) {
+export function createEvents({ A, B, fx, audio, director, camera, onLightning, onImpact, projectiles }) {
   const scrapes = [];
   const pa = new THREE.Vector3();
   const pb = new THREE.Vector3();
@@ -71,6 +71,12 @@ export function createEvents({ A, B, fx, audio, director, camera, onLightning, o
 
   function away(from, to) {
     return new THREE.Vector3().subVectors(to.root.pos, from.root.pos).setY(0).normalize();
+  }
+
+  // Хоризонтална "странична" посока спрямо линията нападател→защитник (свят, НЕ спрямо
+  // камерата — за разлика от `right` в panOf(), който е мутиращ scratch за екранния pan).
+  function lateral(from, to) {
+    return new THREE.Vector3().crossVectors(away(from, to), UP).normalize();
   }
 
   function fire(ev, ts) {
@@ -141,6 +147,30 @@ export function createEvents({ A, B, fx, audio, director, camera, onLightning, o
       att.react('recoil', 0.45, away(vic, att));
       director.addTrauma(0.4 * p);
       audio.play('helm', p * 0.8, panOf(c), ts);
+    } else if (ev.type === 'cast') {
+      // 4a.4 (кръг 2): далечна атака (жезъл/лък) — снарядът тръгва от оръжието на нападателя
+      // (bladeTip — вярно за всеки тип оръжие, виж weapons-ranged.js) към целевата точка на
+      // тялото на защитника; при "пропуск" (block/dodge/miss резултат) целта е ОТМЕСТЕНА встрани
+      // — снарядът видимо НЕ уцелва, вместо да лети право в защитник, който по сървъра не е ударен.
+      const att = ev.by === 'B' ? B : A;
+      const vic = att === A ? B : A;
+      const spot = { head: vic.rig.w.head, chest: vic.rig.w.chest, lshoulder: vic.rig.w.shoulderL }[ev.target] || vic.rig.w.chest;
+      const to = spot.clone();
+      if (ev.miss) to.addScaledVector(lateral(att, vic), 0.55).addScaledVector(UP, 0.22);
+      const color = ev.kit === 'staff' ? 0x9fc4ff : 0xd9c08a;
+      // Стрелата тръгва от ръкохватката (bladeTip на лъка е горното рамо — летеше над главите).
+      const from = ev.kit === 'bow' ? att.grip : att.bladeTip;
+      projectiles?.spawn(from, to, ev.t, ev.flight, color, ev.kit === 'bow' ? 'arrow' : 'bolt');
+      audio.play('tap', 0.5, panOf(att.bladeTip), ts);
+    } else if (ev.type === 'shot') {
+      // Попадение на снаряд — импакт точно в кадъра, независимо от IK/blade близост (виж 'cast').
+      const att = ev.by === 'B' ? B : A;
+      const vic = att === A ? B : A;
+      const spot = { head: vic.rig.w.head, chest: vic.rig.w.chest, lshoulder: vic.rig.w.shoulderL }[ev.target] || vic.rig.w.chest;
+      fx.impact(spot, away(att, vic).addScaledVector(UP, 0.3), p * 0.6);
+      vic.react('helm', p * 0.7, away(att, vic));
+      director.addTrauma(0.35 * p);
+      audio.play('helm', p * 0.7, panOf(spot), ts);
     } else if (ev.type === 'disarm') {
       const vic = ev.against === 'A' ? A : B;
       audio.play('tap', 0.5, panOf(vic.grip), ts);

@@ -1,15 +1,17 @@
-// 4a.4 (Nexus порт, НЕ част от оригиналния boy) — клас-специфични тонове за оръжие/броня.
-// Съзнателно САМО материал/цвят, не нова геометрия: choreo-gen.js AIM.A/AIM.B контактната
-// математика е тунингована точно за слот A = дълъг меч БЕЗ щит / слот B = меч+щит (виж
-// choreo-gen.js:8-11) — смяна на формата/дължината на оръжието би развалила reach/contact
-// теста без нова регресия за всеки клас. Пълно класово огледаляне (напр. rogue без щит на
-// слот B) е отложено за 4a.6 (buildItem() адаптер), когато reach ще се извлича от самия
-// генериран предмет, не от фиксираните boy примитиви.
+// 4a.4 (Nexus порт, НЕ част от оригиналния boy) — клас-специфично оръжие/броня.
+// (кръг 2): weaponKit() решава ФОРМАТА на оръжието (меч/къс меч/жезъл/лък/боздуган) — далечните
+// китове (жезъл/лък) НЕ минават през choreo-gen.js AIM reach системата изобщо (виж
+// choreo-gen-attack.js buildRangedRound — контактът е момент на попадение на снаряд, не IK),
+// затова смяна на формата за тях е безопасна. Близките китове (меч/къс меч/боздуган) продължават
+// да ползват СЪЩИЯ IK/AIM reach механизъм като оригинала — само силует/дължина/тон се менят,
+// не позите/контактната логика — вижте bladeBase/bladeLen в тези builders (weapons.js/
+// weapons-ranged.js) остават в разумен диапазон на оригинала, проверено с fight-gen тестовете.
+// Пълно "предмет-точен" reach (от buildItem() генератора) е отложено за 4a.6.
 //
-// Прилага се чрез tintedMaterials(): взима СЪЩИЯ M пакет от materials.js и връща плитко копие
-// с клонирани (не мутирани — другият боец/сцената пазят оригинала) steelA/steelB/goldB/brass/
-// blade/bladeDark материали. undefined тон = без клониране = базовият вид на оригиналното
-// демо (нулев риск за класове/теми, които не са изрично оцветени).
+// tintedMaterials(): взима СЪЩИЯ M пакет от materials.js и връща плитко копие с клонирани (не
+// мутирани — другият боец/сцената пазят оригинала) steelA/steelB/goldB/brass/blade/bladeDark
+// материали. undefined тон = без клониране = базовият вид на оригиналното демо (нулев риск за
+// класове/теми, които не са изрично оцветени).
 import * as THREE from 'three/webgpu';
 
 export const CLASS_LOADOUT = {
@@ -37,6 +39,30 @@ export function classLoadout(cls) {
 export function foeLoadout(region) {
   return FOE_LOADOUT[region] || null;
 }
+
+// 4a.4 (кръг 2): weaponKit — единен източник на "какво оръжие държи този боец", четен и от
+// choreo-gen.js (хореография) и от world.js (мрежа/щит), за да не могат двете да се разминат.
+// name = hero.class ('warrior'|'ranger'|'mage'|'rogue') ИЛИ свободния текст на foe.name —
+// без сървърно поле "вид звяр" засега, затова foe.name се разпознава по ключова дума (грубо,
+// но прозрачно; истинско поле идва с бестиария в 4b).
+const NAME_KIT = [
+  [/witch|shadow lord|sorcer|warlock|hex|coven/i, 'staff'],
+  [/bandit|goblin|thief|footpad/i, 'shortsword'],
+  [/orc|troll|ogre|brute|golem/i, 'heavy'],
+  [/archer|hunter|scout/i, 'bow'],
+];
+const CLASS_KIT = { warrior: 'sword', rogue: 'shortsword', mage: 'staff', ranger: 'bow' };
+
+export function weaponKit(name) {
+  if (!name) return 'sword';
+  if (CLASS_KIT[name]) return CLASS_KIT[name];
+  for (const [re, kit] of NAME_KIT) if (re.test(name)) return kit;
+  return 'sword';
+}
+export const isRangedKit = (kit) => kit === 'staff' || kit === 'bow';
+// Щитът е ЕДИНСТВЕНО за слот B (foe) — виж choreo.js бележката за оригиналната асиметрия A/B;
+// 'shortsword'/'staff'/'bow' foe-ове нямат щит, точно както rogue/mage/ranger герой никога няма.
+export const hasShieldKit = (kit) => kit === 'sword' || kit === 'heavy';
 
 function tintMat(mat, hex) {
   const clone = mat.clone();

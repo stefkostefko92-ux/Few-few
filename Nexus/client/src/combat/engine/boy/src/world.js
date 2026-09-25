@@ -7,6 +7,7 @@ import { loadBakedSets } from './baked.js';
 import { createMaterials } from './materials.js';
 import { buildKnight } from './armor.js';
 import { longsword, armingSword, heaterShield } from './weapons.js';
+import { shortSword, staff, bow, mace } from './weapons-ranged.js';
 import { RigidBatcher } from './batcher.js';
 import { Cape } from './cloth.js';
 import { Fighter } from './fighter.js';
@@ -18,9 +19,20 @@ import { createRain } from './rain.js';
 import { createFX } from './fx.js';
 import { createBreath } from './atmos.js';
 import { installFog } from './fog.js';
+import { createProjectiles } from './ranged.js';
 import { setNoise, U } from './tsl.js';
 import { QUALITY } from './quality.js';
-import { tintedMaterials } from './loadout.js';
+import { tintedMaterials, weaponKit, hasShieldKit } from './loadout.js';
+
+// 4a.4 (кръг 2): избира builder-а по кита на слота. 'sword' пази ОРИГИНАЛНИЯ вид (A=longsword
+// двуръчен, B=armingSword едноръчен+щит) — нулев риск за базовата линия.
+function buildWeapon(kit, slot, M) {
+  if (kit === 'shortsword') return shortSword(M);
+  if (kit === 'staff') return staff(M);
+  if (kit === 'bow') return bow(M);
+  if (kit === 'heavy') return mace(M);
+  return slot === 'A' ? longsword(M) : armingSword(M);
+}
 
 export const FX_LAYER = 1;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -38,17 +50,27 @@ function makeLights(scene, quality) {
   if (quality.csm) moon.shadow.shadowNode = new CSMShadowNode(moon, { cascades: 3, maxFar: 70, mode: 'practical', lightMargin: 30 });
   // Cool back light that follows the camera and draws a rim along armour silhouettes.
   const rim = new THREE.DirectionalLight(0x9db4ff, 0.45);
-  const hemi = new THREE.HemisphereLight(0x223149, 0x0b0907, 0.3);
-  scene.add(moon, moon.target, rim, rim.target, hemi);
-  return { moon, rim, hemi };
+  const hemi = new THREE.HemisphereLight(0x3a4a66, 0x1a130c, 0.3);
+  // Nexus: топъл преден „ключ“ откъм камерата (като отблясък от факлите). Без сянка — нулева цена
+  // за shadow map; без него в картата на страницата бойците бяха черни силуети срещу луната.
+  const key = new THREE.DirectionalLight(0xffc98f, 1.1);
+  scene.add(moon, moon.target, rim, rim.target, hemi, key, key.target);
+  return { moon, rim, hemi, key };
+}
+
+export function aimKeyLight(key, camPos, center, intensity) {
+  key.intensity = intensity;
+  key.target.position.copy(center).setY(1.2);
+  key.position.copy(camPos).addScaledVector(UP, 3);
 }
 
 // Budget per set: the courtyard floor and walls fill the frame and get the hero resolution.
 const textureBudget = (q) => ({ default: q.texSize, cobble: q.texHero, wall: q.texHero });
 
-// 4a.4: loadout = { heroTint, foeTint } (виж loadout.js — clone-and-tint на steelA/steelB/
-// goldB/brass/blade/bladeDark, само за клас-специфичните материали; всичко останало от M
-// остава СПОДЕЛЕНО между двамата бойци и сцената, точно както в оригинала на boy).
+// 4a.4: loadout = { heroTint, foeTint, heroKit, foeKit } (виж loadout.js — clone-and-tint на
+// steelA/steelB/goldB/brass/blade/bladeDark, само за клас-специфичните материали; всичко
+// останало от M остава СПОДЕЛЕНО между двамата бойци и сцената, точно както в оригинала на boy;
+// kit-овете решават формата на оръжието/дали B носи щит — виж buildWeapon/hasShieldKit горе).
 export async function buildWorld(renderer, hud, quality, loadout = {}) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -94,23 +116,26 @@ export async function buildWorld(renderer, hud, quality, loadout = {}) {
   scene.add(fires.group, rain.group, fx.group, breath.mesh);
   const lights = makeLights(scene, quality);
 
+  const heroKit = loadout.heroKit || 'sword';
+  const foeKit = loadout.foeKit || 'sword';
   const heroM = tintedMaterials(M, loadout.heroTint);
   const foeM = tintedMaterials(M, loadout.foeTint);
   const knightA = buildKnight(heroM, 'A');
   const knightB = buildKnight(foeM, 'B');
-  const swordA = longsword(heroM);
-  const swordB = armingSword(foeM);
-  const shieldB = heaterShield(foeM);
+  const swordA = buildWeapon(heroKit, 'A', heroM);
+  const swordB = buildWeapon(foeKit, 'B', foeM);
+  const shieldB = hasShieldKit(foeKit) ? heaterShield(foeM) : null;
   const batcher = new RigidBatcher();
   for (const k of [knightA, knightB]) for (const name of Object.keys(k.pieces)) batcher.add(k.parts[name], k.pieces[name]);
   batcher.add(swordA.part, swordA.pieces);
   batcher.add(swordB.part, swordB.pieces);
-  batcher.add(shieldB.part, shieldB.pieces);
+  if (shieldB) batcher.add(shieldB.part, shieldB.pieces);
   const batches = batcher.build();
   batches.forEach((b) => scene.add(b));
   const capeA = new Cape(M.capeA, { length: 0.98, flare: 0.55 });
   const capeB = new Cape(M.capeB, { length: 1.24, flare: 0.85 });
-  scene.add(capeA.mesh, capeB.mesh);
+  const ranged = createProjectiles();
+  scene.add(capeA.mesh, capeB.mesh, ranged.group);
   const A = new Fighter('A', knightA, swordA, capeA, null);
   const B = new Fighter('B', knightB, swordB, capeB, shieldB);
 
@@ -132,7 +157,7 @@ export async function buildWorld(renderer, hud, quality, loadout = {}) {
   lights.moon.castShadow = true;
 
   return {
-    scene, camera, sky, ground, fires, brazierShadow, gateLight, rain, fx, breath, batcher, A, B, ...lights,
+    scene, camera, sky, ground, fires, brazierShadow, gateLight, rain, fx, breath, batcher, ranged, A, B, ...lights,
     wind: { x: 1.2, y: 0, z: 0.5, phase: 0 },
     prevBreath: [0, 0],
   };

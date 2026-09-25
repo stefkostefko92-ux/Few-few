@@ -23,10 +23,17 @@ export interface GeneratedChoreography {
   CHAPTERS: unknown[];
   duration: number;
   shots: unknown[];
+  /** 4a.4 (кръг 2): кита на всеки слот (debug/удобство — виж loadout.js weaponKit()). */
+  kitA: string;
+  kitB: string;
 }
 
 export interface BuildChoreographyOpts {
   rng?: () => number;
+  /** 4a.4: клас на героя — виж loadout.js weaponKit(). */
+  heroClass?: 'warrior' | 'ranger' | 'mage' | 'rogue' | null;
+  /** 4a.4 (кръг 2): свободния текст на foe.name — виж loadout.js weaponKit(). */
+  foeName?: string;
 }
 
 export function buildChoreography(

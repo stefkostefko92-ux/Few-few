@@ -12,10 +12,12 @@ export interface BootOpts {
   onImpact?: (ev: { type: string; roundIndex?: number; by?: 'A' | 'B'; against?: 'A' | 'B' }) => void;
   /** Прекъсва РАНО (преди buildWorld/compileAsync), ако React StrictMode вече е cleanup-нал. */
   signal?: AbortSignal;
-  /** 4a.4: клас-специфичен тон на оръжие/броня на героя — виж loadout.js. */
+  /** 4a.4: клас-специфичен тон/оръжие на героя — виж loadout.js weaponKit(). */
   heroClass?: 'warrior' | 'ranger' | 'mage' | 'rogue' | null;
   /** 4a.4: тема на противника по регион (combat-stage data-region) — виж loadout.js. */
   region?: string;
+  /** 4a.4 (кръг 2): свободния текст на foe.name — оръжие на противника (loadout.js weaponKit()). */
+  foeName?: string;
 }
 
 export interface BootHandle {

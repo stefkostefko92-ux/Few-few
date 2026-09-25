@@ -26,6 +26,8 @@ interface Props {
   heroClass?: 'warrior' | 'ranger' | 'mage' | 'rogue' | null;
   /** 4a.4: тема на противника по регион (loadout.js). */
   region?: string;
+  /** 4a.4 (кръг 2): свободния текст на foe.name — оръжие на противника (loadout.js weaponKit()). */
+  foeName?: string;
 }
 
 export interface BoyDuelHandle {
@@ -42,7 +44,7 @@ export interface BoyDuelHandle {
  * ½×/1×/2×/прескочи контроли на CombatScene.tsx (вграденият chrome на boy е скрит — виж
  * boy-hud.css `.embedded`).
  */
-const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true, loop, onEnd, onImpact, embedded, heroClass, region }, ref) => {
+const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true, loop, onEnd, onImpact, embedded, heroClass, region, foeName }, ref) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const bootRef = useRef<BootHandle | null>(null);
 
@@ -67,10 +69,10 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
     // Пречи на main.js да се самостартира срещу document.getElementById('view') — ние сме
     // отговорни за boot-ването (виж guard-а в main.js).
     (window as unknown as { __boyNoAutoboot?: boolean }).__boyNoAutoboot = true;
-    const choreography = rounds && rounds.length > 0 ? choreographyFromRounds(rounds, victory) : undefined;
+    const choreography = rounds && rounds.length > 0 ? choreographyFromRounds(rounds, victory, heroClass, foeName) : undefined;
     // Литерален relative specifier (не динамична променлива) — нужно е Vite/Rollup да го
     // открие статично и да го изнесе в собствен lazy chunk.
-    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd, onImpact, signal: controller.signal, heroClass, region })).then((h) => {
+    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd, onImpact, signal: controller.signal, heroClass, region, foeName })).then((h) => {
       if (controller.signal.aborted) { h.dispose(); return; }
       bootRef.current = h;
     });
@@ -80,7 +82,7 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
       bootRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rounds, victory, loop, heroClass, region]);
+  }, [rounds, victory, loop, heroClass, region, foeName]);
 
   return <div className={`boy-duel-root${embedded ? ' embedded' : ''}`} ref={rootRef} />;
 });

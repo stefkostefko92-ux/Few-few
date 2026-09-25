@@ -202,7 +202,10 @@ export class Fighter {
 
     const w = this.rig.w;
     this.handBasis(this.handR, this.grip, this.dir, this.edge, w.shoulderR);
-    if (who === 'A') {
+    // 4a.4 (кръг 2): двуръчен огледален грип за ВСЕКИ боец БЕЗ щит (първоначално само слот A —
+    // сега и слот B може да е двуръчен: къс меч/жезъл/лък/боздуган без щит, виж loadout.js
+    // hasShieldKit). Клонът е по наличие на щит, не по слот.
+    if (!this.shield) {
       const gl = this._w.copy(this.grip).addScaledVector(this.dir, -0.125);
       this.handBasis(this.handL, gl.clone(), this.dir, this.edge, w.shoulderL);
       P.elbowOut = 0;
@@ -230,7 +233,7 @@ export class Fighter {
         this.rig.update(P);
       }
     }
-    if (who === 'B') this.placeShield(root);
+    if (this.shield) this.placeShield(root);
     this.placeWeapon(T);
     this.bladeBase.copy(this.grip).addScaledVector(this.dir, this.weapon.bladeBase);
     this.bladeTip.copy(this.grip).addScaledVector(this.dir, this.weapon.bladeBase + this.weapon.bladeLen);

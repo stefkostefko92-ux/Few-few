@@ -1,13 +1,11 @@
-// Duel at Ravenhold: boots the renderer (WebGPU, WebGL 2 as fallback), runs the story clock, the
-// camera and the frame loop. A frame-time governor holds 60 fps by moving the internal
-// resolution, not by cutting effects.
-//
+// Duel at Ravenhold: boots the renderer (WebGPU, WebGL 2 fallback), runs the story clock, camera
+// and frame loop. A frame-time governor holds 60fps by moving internal resolution, not effects.
 // 4a.2/4a.3 (Nexus порт): main() → export async function bootDuel(canvas, opts), приема
-// opts.choreography (choreo-gen.js) и връща { dispose(), togglePlay, setSpeed, toggleSound, skip }
+// opts.choreography (choreo-gen.js), връща { dispose(), togglePlay, setSpeed, toggleSound, skip }
 // — реалните битки карат СВОЯ дуел през същия конвейер; auto-run долу пази `import('./main.js')`.
 import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { buildWorld, animateWorld } from './world.js';
+import { buildWorld, animateWorld, aimKeyLight } from './world.js';
 import { QUALITY, initialTier, createGovernor } from './quality.js';
 import { createDirector, realTimeOf, storyTimeAtReal, recompileDirector } from './director.js';
 import { createPipeline } from './pipeline.js';
@@ -22,17 +20,14 @@ import { reportFrame } from './hud-report.js';
 import { acceptIdentitySwizzle } from './gpu-compat.js';
 import { installDevHooks } from './dev-hooks.js';
 import { mobileGrade } from './mobile-grade.js';
-import { classLoadout, foeLoadout } from './loadout.js';
+import { classLoadout, foeLoadout, weaponKit } from './loadout.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
-/**
- * Стартира дуела в дадения canvas. opts.choreography (от choreo-gen.js) подменя хореографията
- * на boy преди построяването на света; без него тръгва фиксираният демо-филм. Връща
- * { dispose() } за пълно почистване (GPU памет, слушатели, rAF, AudioContext) — 4a.5 гейтва
- * многократни последователни битки без растеж на ресурсите.
- */
+/** Стартира дуела в canvas. opts.choreography (choreo-gen.js) подменя хореографията преди
+ * построяването на света; без него тръгва фиксираният демо-филм. Връща { dispose() } за пълно
+ * почистване (GPU памет, слушатели, rAF, AudioContext) — 4a.5 гейтва растеж на ресурсите. */
 export async function bootDuel(canvas, opts = {}) {
   if (opts.choreography) { setChoreography(opts.choreography); setDuration(opts.choreography.duration); }
   else resetChoreography();
@@ -67,9 +62,12 @@ export async function bootDuel(canvas, opts = {}) {
   } catch { hud.fatal(); return { dispose() {} }; }
   if (bailIfAborted()) return { dispose() {} };
   const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
-  // 4a.4: клас-специфичен тон по opts.heroClass, тема на противника по opts.region — виж
-  // loadout.js за защо е само материал, не нова геометрия.
-  const W = await buildWorld(renderer, hud, quality, { heroTint: classLoadout(opts.heroClass), foeTint: foeLoadout(opts.region) });
+  // 4a.4: тон по opts.heroClass/opts.region, оръжие/щит по opts.heroClass/opts.foeName — виж
+  // loadout.js. choreo-gen.js (roundsToChoreo.ts) чете СЪЩИТЕ heroClass/foeName — един избор.
+  const W = await buildWorld(renderer, hud, quality, {
+    heroTint: classLoadout(opts.heroClass), foeTint: foeLoadout(opts.region),
+    heroKit: weaponKit(opts.heroClass), foeKit: weaponKit(opts.foeName),
+  });
   if (bailIfAborted()) return { dispose() {} };
   const { scene, camera, A, B, fx } = W;
   const pipe = createPipeline(renderer, W);
@@ -82,7 +80,7 @@ export async function bootDuel(canvas, opts = {}) {
 
   const lightning = { at: -10, power: 0 };
   const events = createEvents({
-    A, B, fx, audio, director, camera,
+    A, B, fx, audio, director, camera, projectiles: W.ranged,
     onLightning(p) {
       lightning.at = performance.now() / 1000;
       lightning.power = p;
@@ -200,6 +198,7 @@ export async function bootDuel(canvas, opts = {}) {
       events.reset();
     }
     animateWorld(W, T, dT);
+    W.ranged.update(T);
     events.step(prevT, T, ts, jump);
     fx.update(dT, THREE.MathUtils.clamp(dT * 1.2, 0.012, 0.03), dtReal);
 
@@ -234,6 +233,7 @@ export async function bootDuel(canvas, opts = {}) {
     W.moon.position.copy(center).addScaledVector(MOON_DIR, 40);
     W.rim.target.position.copy(center).setY(1.3);
     W.rim.position.copy(W.rim.target.position).add(tmp.subVectors(W.rim.target.position, camera.position).setY(0).normalize().multiplyScalar(6)).addScaledVector(UP, 9);
+    aimKeyLight(W.key, camera.position, center, mg.key + flash * 0.6);
 
     const fadeIn = Math.max(0, 1 - (now / 1000 - startReal) / 1.2);
     pipe.render({
