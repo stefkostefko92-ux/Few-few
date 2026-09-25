@@ -3,27 +3,27 @@
     "hub": {
       "path": "/bg/",
       "mobile": {
-        "score": 99,
-        "FCP": 1588,
-        "LCP": 1972,
-        "TBT": 57,
+        "score": 98,
+        "FCP": 1856,
+        "LCP": 1904,
+        "TBT": 28,
         "CLS": 0,
-        "requests": 13,
+        "requests": 14,
         "spread": {
-          "LCP": 204,
-          "TBT": 139,
+          "LCP": 72,
+          "TBT": 7,
           "CLS": 0
         }
       },
       "desktop": {
         "score": 100,
-        "FCP": 188,
-        "LCP": 188,
+        "FCP": 236,
+        "LCP": 236,
         "TBT": 0,
         "CLS": 0,
-        "requests": 17,
+        "requests": 18,
         "spread": {
-          "LCP": 12,
+          "LCP": 68,
           "TBT": 0,
           "CLS": 0
         }
@@ -467,5 +467,5 @@
   },
   "tool": "tools/seo/prelaunch-audit.mjs (Lighthouse v10 криви; без Speed Index; лабораторно, не CrUX)",
   "runs": 3,
-  "date": "2026-09-18"
+  "date": "2026-09-25"
 }

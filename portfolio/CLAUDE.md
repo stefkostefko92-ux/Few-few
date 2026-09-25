@@ -19,6 +19,7 @@ _Stack: **генератор с нула runtime зависимости** (Node 
 node build.mjs                                  # → dist/ (броят файлове/URL се печата; 15 демота ×3 езика + хъб · проекти · цени · правна)
 node --test test/build.test.mjs                 # паритет на езиците · SEO инварианти · цени ≥15% под пазара · формата
 node --test api/server.test.mjs                 # контактният API (валидация · honeypot · лимит · HTTP договор, мокнат send)
+node --test test/raven.test.mjs                 # пренесеното от boy/: регулаторът на резолюцията · мълнията ≤2 импулса/s · грейдът · безопасността на hero.js
 node tools/a11y.mjs                             # WCAG проверка в Chromium → a11y/report.json (гейтната в теста: 0 грешки; след промяна по шаблон/CSS)
 node tools/brochure.mjs                         # брошурата А5 → public/broshura/*.pdf (след промяна по цени/демота/проекти; иска dist/ + Chromium)
 node tools/project-shots.mjs [id] [--live] [--url id=http://…]   # скрийншотите на реалните проекти → public/img/projects/ (1920×1200 + -sm 960×600)
@@ -48,7 +49,7 @@ src/templates/demo.mjs      шаблонът на демо страница (е�
 src/templates/widgets.mjs   „живите" карти в hero-то: booking · schedule · tiles · stats · consult
 src/templates/hub.mjs       началната (бранд тема), pricing.mjs — цените, misc.mjs — правна/404/robots/llms/sitemap
 src/templates/photos.mjs    снимките на демо: чете public/img/<id>/credits.json, <picture> + srcset, кредити
-src/assets/                 site.css+js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/ (4 продуктови добавки), fonts/*.css — без билд
+src/assets/                 site.css+js+raven.js+hero.js (хъб), demo.css+js + premium.css+js (демота), fx/ (4 продуктови добавки), fonts/*.css — без билд
 brand/logo-source.png       ЕДИНСТВЕНИЯТ източник на логото (1254², „CS" монограм + надпис) — не се редактира на ръка
 public/                     logo.png/webp (lockup) · logo-square · mark · icon-192/512 · apple-touch-icon · favicon.ico · og.png — всички от tools/brand.mjs; fonts/*.woff2, img/<demo>/, img/previews/<lang>/<demo>.webp (tools/previews.mjs), indexnow-key.txt
 photos.picks.json           ръчният подбор от Open Images (id · subset · автор · Flickr линк · CC BY 2.0) за всеки слот
@@ -144,8 +145,19 @@ tools/project-shots.mjs     скрийншотите на реалните пр�
   всеки кадър); магнитните букви с кеширани правоъгълници и само `transform` (без `font-weight` — variable
   шрифт се пренарежда всеки кадър); **без `backdrop-filter` на фиксирани/sticky навигации** (преизчислява се на
   всеки scroll кадър; фонът е 92–97% плътен и изглежда същото); без `will-change` на reveal елементите.
-  `hero.js`: непрозрачен canvas, 1100 частици @DPR≤1.5 (беше 1800 @DPR2), trig предизчислен, самоизмерване →
-  DPR 1 → по-малко частици → 30 FPS. **LITE режим** (`html.lite`): по Navigator API (≤4 ядра / ≤4 GB /
+  **Hero = езикът на „Двубой в Рейвънхолд“ (`boy/`, клон `claude/medieval-3d-fight-animation-9ybhpo`)**:
+  `raven.js` (класически скрипт, `window.CSRaven`) носи общото — регулаторът на `boy/src/quality.js` (мести
+  вътрешната резолюция, не FPS-а), началната скала 0.5/0.75, мълнията като два импулса (`flashAt`, ≤2 за секунда —
+  под прага на WCAG 2.3.1, няма я при reduced motion/LITE) и грейдът на `boy/src/post-grade.js` като GLSL (ACES
+  RRT/ODT · split-tone · S-крива · зърно · дитер). `hero.js` е ЕДИН фрагментен шейдър (WebGL2, един триъгълник):
+  ядрото на бранда (икосаедър, проектиран на CPU → 30 сегмента) в буря — облаци, лунни лъчи, дъжд, жарава, мъгла,
+  мокър карбонов под с отражение; 30 кадъра/с, старт след `load` + `requestIdleCallback`, паралелна компилация,
+  пауза при скрит таб/извън екрана. **LITE при старта или софтуерен WebGL (SwiftShader/llvmpipe) → изобщо не
+  компилира**, показва CSS постера (`.hero::before`: ядро · пръстен · жарава · лъчи; `html.hero-static`) — един
+  кадър на CPU е ~0.4 s блокирана нишка (desktop 83 → 100). LITE по-късно → замразен кадър. Бранд атмосферата на
+  останалите страници е само CSS на псевдоелементи (`body.hub …section::before`, `body.hub::after` винетка + зърно)
+  — така a11y проверката вижда истинския фон. Boot екранът е с резервирана височина и `transform` сканираща линия
+  (растящият списък даваше CLS 0.022). **LITE режим** (`html.lite`): по Navigator API (≤4 ядра / ≤4 GB /
   Save-Data / `update: slow`) или измерени <40 FPS две секунди подред (след 4-тата s) — спира безкрайните
   декоративни анимации, филтрите, живите iframe-и; в демотата спира Ken Burns + color blend. Съдържанието и
   функциите са същите. Reading progress в демото е `transform:scaleX`, не `width`.

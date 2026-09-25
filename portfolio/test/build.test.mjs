@@ -163,7 +163,8 @@ test("производителност: статични превюта за в�
   assert.ok(siteJs.includes("var FRAME = []") && (siteJs.match(/requestAnimationFrame\(loop\)/g) || []).length === 1, "един общ rAF цикъл");
   assert.ok(!/\.nav\{[^}]*backdrop-filter/.test(siteCss) && !demoCss.includes("backdrop-filter"), "фиксираните навигации са без backdrop-filter");
   assert.ok(!siteCss.includes("will-change:transform,opacity"), "reveal без will-change (стотици композитни слоеве)");
-  assert.ok(heroJs.includes('{ alpha: false }') && heroJs.includes("function degrade()"), "hero canvas: непрозрачен + адаптивна деградация");
+  // hero (boy/): непрозрачна WebGL2 канва на ≤0.75 резолюция с регулатор, старт след load (LCP/TBT), 30 fps, пауза извън екрана
+  for (const needle of ["alpha: false", "R.createGovernor", "R.initialPixelCap", 'addEventListener("load"', "FRAME_MS = 1000 / 30", "IntersectionObserver", "visibilitychange"]) assert.ok(heroJs.includes(needle), `hero: ${needle}`);
   assert.ok(siteCss.includes(".lite .hero-scan i") && rd("assets/premium.css").includes(".lite .hero-bg picture{animation:none"), "LITE режим в CSS");
 });
 

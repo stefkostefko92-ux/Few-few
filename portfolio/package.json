@@ -2,7 +2,7 @@
   "name": "carbon-stealth-portfolio",
   "version": "1.0.0",
   "private": true,
-  "description": "Портфолио на Carbon Stealth VCC — 15 демо лендинг страници (BG/EN/IT), реални проекти, цени, оферта, блог. Статичен сайт, генериран без зависимости, + контактен API (node:http, Brevo); sharp е само за конвейера на снимките.",
+  "description": "Портфолио на Carbon Stealth VCC — 15 демо лендинг страници (BG/EN/IT), реални проекти, цени, оферта, блог; хъбът в езика на „Двубой в Рейвънхолд“. Статичен сайт, генериран без зависимости, + контактен API (node:http, Brevo); sharp е само за конвейера на снимките.",
   "type": "module",
   "license": "UNLICENSED",
   "engines": {
@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "test": "node --test test/build.test.mjs api/server.test.mjs",
-    "check": "node build.mjs && node --test test/build.test.mjs api/server.test.mjs && node ../tools/qa/static-site-check.mjs dist",
+    "test": "node --test test/build.test.mjs test/raven.test.mjs api/server.test.mjs",
+    "check": "node build.mjs && node --test test/build.test.mjs test/raven.test.mjs api/server.test.mjs && node ../tools/qa/static-site-check.mjs dist",
     "serve": "node serve.mjs",
     "fonts": "node tools/fonts.mjs",
     "photos": "node tools/photos.mjs",

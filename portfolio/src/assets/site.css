@@ -42,18 +42,18 @@ p{margin:0}
 @keyframes cs-blink{50%{opacity:.3}}
 @keyframes cs-ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes cs-diag-scan{from{transform:translateY(-200%) rotate(45deg)}to{transform:translateY(200%) rotate(45deg)}}
-@keyframes cs-scan-boot{from{top:-2px}to{top:100%}}
+@keyframes cs-scan-boot{from{transform:translateY(-2px)}to{transform:translateY(100vh)}}
 @keyframes cs-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
 /* --- boot (BIOS POST) --- */
 .boot{position:fixed;inset:0;z-index:5000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px;transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
 .boot.out{opacity:0;transform:scale(1.04);pointer-events:none}
 .boot-cs{display:block;line-height:0}.boot-cs img{width:clamp(110px,26vw,200px);height:auto;filter:drop-shadow(0 0 40px rgba(var(--cyan-rgb),.3))}
-.boot-list{width:min(420px,90vw);display:grid;gap:4px;text-align:left}
-.boot-list div{display:flex;justify-content:space-between;gap:12px;opacity:0;transition:opacity .18s}
+.boot-list{width:min(420px,90vw);display:grid;gap:4px;text-align:left;min-height:calc(8*1.5em + 28px);align-content:start}
+.boot-list div{display:flex;justify-content:space-between;gap:12px;height:1.5em;line-height:1.5em;white-space:nowrap;opacity:0;transition:opacity .18s}.boot-list span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .boot-list div.on{opacity:1}
 .boot-list span:first-child{color:var(--ph)}.boot-list b{color:var(--green);font-weight:400}.boot-list span:last-child{color:var(--text-2)}
-.boot-scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(var(--cyan-rgb),.5),transparent);animation:cs-scan-boot 2s linear infinite}
+.boot-scan{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(var(--cyan-rgb),.5),transparent);animation:cs-scan-boot 2s linear infinite}
 .boot-corner{position:absolute;width:20px;height:20px;border-color:rgba(var(--cyan-rgb),.5);border-style:solid;border-width:0}
 .boot-corner.tl{top:20px;left:20px;border-top-width:1px;border-left-width:1px}.boot-corner.tr{top:20px;right:20px;border-top-width:1px;border-right-width:1px}.boot-corner.bl{bottom:20px;left:20px;border-bottom-width:1px;border-left-width:1px}.boot-corner.br{bottom:20px;right:20px;border-bottom-width:1px;border-right-width:1px}
 
@@ -91,7 +91,7 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 /* --- hero --- */
 .hero{position:relative;min-height:100dvh;display:flex;align-items:center;overflow:hidden}
 .hero-sm{min-height:0;padding:150px 0 60px}
-.hero-canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 1.4s cubic-bezier(.16,1,.3,1)}.hero-canvas.on{opacity:1}.hero-static .hero-canvas{display:none}
 .hero-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
 .hero-scan i{position:absolute;top:-50%;left:-50%;width:200%;height:2px;background:linear-gradient(90deg,transparent,rgba(var(--cyan-rgb),.3),transparent);animation:cs-diag-scan 6s linear infinite}
 .hero .wrap{position:relative;z-index:2;padding-top:80px;padding-bottom:60px}
@@ -356,3 +356,35 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .post-author{margin-top:40px;border:1px solid rgba(var(--off-rgb),.12);padding:20px 22px;font-size:12px;line-height:1.9;color:var(--text)}.post-author strong{display:block;color:var(--off);margin-bottom:6px}.post-author a{color:var(--cyan)}
 .post-sources{margin-top:28px}.post-cta{margin-top:32px;display:flex;gap:10px;flex-wrap:wrap}
 .city-list{list-style:none;display:grid;gap:8px;margin-top:10px}.city-list a{font-size:12px;color:var(--off)}.city-list a:hover{color:var(--cyan)}
+
+/* ── Рейвънхолд (boy/) за бранд страниците: статични слоеве, нула JS ─────────────────────────────────────
+   Същата светлина като шейдъра в hero.js — студени лунни лъчи отгоре-вляво, сиянието на ядрото вдясно,
+   топла жарава при пода, мъгла — като CSS кадър: показва се, докато WebGL2 тръгне, и остава, ако го няма.
+   Всичко е на ::before/::after (не на фона на секцията), за да вижда a11y проверката реалния фон на текста. */
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(circle at 81% 32%,rgba(255,160,70,.9) 0 2px,transparent 3px),radial-gradient(circle at 70% 60%,rgba(255,150,60,.8) 0 2px,transparent 3px),
+  radial-gradient(circle at 86% 58%,rgba(255,170,80,.7) 0 1.5px,transparent 2.5px),radial-gradient(circle at 64% 38%,rgba(255,140,50,.6) 0 1.5px,transparent 2.5px),
+  radial-gradient(circle at 75% 47%,transparent 0 21vmin,rgba(var(--cyan-rgb),.22) 21.4vmin,transparent 22.2vmin),
+  radial-gradient(circle at 75% 47%,rgba(170,250,255,.3) 0,rgba(var(--cyan-rgb),.14) 7vmin,transparent 17vmin),
+  radial-gradient(ellipse 20% 30% at 75% 47%,rgba(var(--cyan-rgb),.12),transparent 70%),
+  radial-gradient(ellipse 50% 2.5% at 75% 47%,rgba(var(--cyan-rgb),.08),transparent 70%),
+  linear-gradient(118deg,transparent 10%,rgba(130,170,255,.05) 16%,transparent 24%,transparent 28%,rgba(130,170,255,.035) 33%,transparent 40%),
+  radial-gradient(ellipse 40% 16% at 68% 100%,rgba(255,106,19,.07),transparent 70%),
+  radial-gradient(ellipse 120% 40% at 50% 100%,rgba(10,18,30,.9),transparent 70%),
+  linear-gradient(180deg,#020307 0%,#000 55%,#02040a 100%)}
+.hero::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.84) 0%,rgba(0,0,0,.66) 34%,rgba(0,0,0,.28) 56%,rgba(0,0,0,0) 72%)}
+@media(max-width:900px){.hero::before{background:radial-gradient(circle at 50% 24%,transparent 0 21vmin,rgba(var(--cyan-rgb),.18) 21.5vmin,transparent 22.5vmin),radial-gradient(circle at 50% 24%,rgba(170,250,255,.22) 0,rgba(var(--cyan-rgb),.1) 8vmin,transparent 18vmin),radial-gradient(ellipse 60% 26% at 50% 30%,rgba(var(--cyan-rgb),.12),transparent 70%),linear-gradient(118deg,transparent 10%,rgba(130,170,255,.05) 16%,transparent 26%),radial-gradient(ellipse 80% 14% at 50% 100%,rgba(255,106,19,.06),transparent 70%),linear-gradient(180deg,#020307,#000 60%,#02040a)}
+  .hero::after{background:linear-gradient(180deg,rgba(0,0,0,.2) 0%,rgba(0,0,0,.62) 42%,rgba(0,0,0,.8) 100%)}}
+body.hub main>section.section:first-child,body.hub main.section{position:relative;isolation:isolate}
+body.hub main>section.section:first-child::before,body.hub main.section::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(ellipse 34% 55% at 86% 8%,rgba(var(--cyan-rgb),.11),transparent 70%),
+  radial-gradient(ellipse 45% 2% at 86% 30%,rgba(var(--cyan-rgb),.07),transparent 70%),
+  linear-gradient(118deg,transparent 4%,rgba(130,170,255,.06) 10%,transparent 18%,transparent 22%,rgba(130,170,255,.045) 27%,transparent 34%),
+  radial-gradient(ellipse 50% 22% at 14% 100%,rgba(255,106,19,.06),transparent 70%),
+  linear-gradient(180deg,rgba(2,4,9,0) 60%,rgba(8,14,24,.55) 100%)}
+/* Грейдът на boy върху целия бранд сайт: винетка + статично филмово зърно (SVG шум, един слой, без blend mode). */
+body.hub::after{content:"";position:fixed;inset:0;z-index:3000;pointer-events:none;background:
+  radial-gradient(ellipse 120% 90% at 50% 45%,transparent 58%,rgba(0,0,0,.34) 100%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .55 0 0 0 0 .6 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.5}
+.lite body.hub::after{background:radial-gradient(ellipse 120% 90% at 50% 45%,transparent 58%,rgba(0,0,0,.34) 100%)}
+@media print{body.hub::after,.hero::before,.hero::after{display:none}}

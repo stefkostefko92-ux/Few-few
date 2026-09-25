@@ -144,7 +144,7 @@ export function renderHub(lang) {
     `<body class="hub">`, boot(ui), siteNav(lang, ui, PATHS.hub),
     `<main id="main">`, hero(ui), ticker(ui), demos(lang, ui), projects(lang, ui), `<div class="divider"></div>`, process(ui), why(ui), pricingTeaser(lang, ui), faqSection(lang, ui), contact(lang, ui), `</main>`,
     siteFooter(lang, ui),
-    `<script src="/assets/site.js" defer></script><script src="/assets/hero.js" defer></script>`,
+    `<script src="/assets/site.js" defer></script><script src="/assets/raven.js" defer></script><script src="/assets/hero.js" defer></script>`,
     `</body></html>`,
   ]);
 }
