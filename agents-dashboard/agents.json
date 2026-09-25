@@ -1118,7 +1118,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 371
+        "lessons": 373
       },
       "evolution": [
         {
@@ -1906,9 +1906,20 @@
           "date": "2026-09-24",
           "event": "v26.1 — учене",
           "detail": "Научи: ПРЕДАВАНЕ: handoff.mjs чете `Находки:` само от СЪЩИЯ ред (regex ^…Находки…:(.*)$); нахо…"
+        },
+        {
+          "version": "26.3.0",
+          "date": "2026-09-25",
+          "event": "v26.3 — учене",
+          "detail": "Научи: Проверка на съединен CSS селектор с querySelector(list.join(', ')) НЕ хваща незатворен … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-25",
+          "type": "learning",
+          "summary": "Научи: „Проверка на съединен CSS селектор с querySelector(list.join(', ')) НЕ хваща незатворен …\" (+1 още)"
+        },
         {
           "date": "2026-09-24",
           "type": "learning",
