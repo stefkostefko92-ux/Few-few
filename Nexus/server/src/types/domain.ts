@@ -9,6 +9,7 @@ export type ItemCategory =
   | 'shield'
   | 'ring'
   | 'amulet'
+  | 'cloak'
   | 'potion'
   | 'misc';
 
@@ -20,7 +21,8 @@ export type EquipSlot =
   | 'gloves'
   | 'boots'
   | 'ring'
-  | 'amulet';
+  | 'amulet'
+  | 'cloak';
 
 export interface Character {
   id: number;

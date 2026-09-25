@@ -96,7 +96,8 @@ function settleClosedListings(): void {
       if (row.bidder_id) {
         const item = db.prepare('SELECT id, name FROM items WHERE id = ?').get(row.item_id) as any;
         db.prepare(
-          `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)`,
+          // Наддава се в ГЕМОВЕ → gem_bought (не се продава на NPC за злато).
+          `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound, gem_bought) VALUES (?, ?, 1, 0, '', 1, 1)`,
         ).run(row.bidder_id, row.item_id);
         db.prepare(
           `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,

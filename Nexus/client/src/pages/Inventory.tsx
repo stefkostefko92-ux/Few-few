@@ -7,7 +7,7 @@ import Sprite, { spriteForItem } from '../components/Sprite';
 import { openItemViewer3D } from '../components/items3d/viewerStore';
 import '../styles/inventory.css';
 
-const SLOT_ORDER = ['weapon', 'offhand', 'helm', 'amulet', 'armor', 'gloves', 'boots', 'ring'] as const;
+const SLOT_ORDER = ['cloak', 'weapon', 'offhand', 'helm', 'amulet', 'armor', 'gloves', 'boots', 'ring'] as const;
 
 const CATEGORY_KEYS = ['all', 'weapon', 'armor', 'helm', 'shield', 'ring', 'amulet', 'potion'] as const;
 
@@ -295,7 +295,8 @@ export default function Inventory(): React.ReactElement {
                 {t('inventory.actions.list')}
               </button>
             )}
-            {!actions.item.equipped && (
+            {/* Купеното с гемове не се продава на търговеца (сървърът го отказва) — без мъртъв бутон. */}
+            {!actions.item.equipped && !actions.item.gem_bought && (
               <button className="danger" onClick={() => act('/inventory/sell', { inventoryId: actions.item.inv_id }, t('inventory.toasts.soldFor', { price: actions.item.sell_price }))}>
                 {t('inventory.actions.sell', { price: actions.item.sell_price })}
               </button>

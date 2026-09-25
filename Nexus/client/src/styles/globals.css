@@ -101,6 +101,10 @@ h1, h2, h3, h4 {
   font-weight: 600;
   letter-spacing: 0.02em;
   margin: 0;
+  /* „boy" винаги балансира дисплей-заглавията (text-wrap: balance) —
+     на два реда думите се делят равномерно, не 5+1 сираче. Поддържано
+     базово (Chromium/Firefox 2024+); без ефект другаде, безопасно. */
+  text-wrap: balance;
 }
 
 h1 { font-size: 2rem; }
@@ -134,6 +138,21 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
   border-color: var(--gold-2);
   box-shadow: 0 0 0 3px rgba(214,161,61,.18);
+}
+
+/* Клавиатурен фокус — видим пръстен навсякъде в приложението (WCAG 2.4.7).
+   Взето от дизайн-езика на „boy" (ember outline, 2px, отстъп 2px); тук в
+   бранд ember-а на Nexus вместо оранжева жарава. :focus-visible пада само
+   при клавиатурна навигация — мишка/тъч не показват пръстена. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--ember-1);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -418,6 +437,18 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .nav-meta::before { left: 25%; }
 .nav-meta::after  { left: 50%; }
 
+/* БЪГ (докладван визуално от админ-агента, потвърдено с getBoundingClientRect
+   на живо): .nav-meta излизаше ~57-60px извън 1440px viewport → хоризонтален
+   overflow на ВСЯКА /app/* страница. Причина: 6 nav-link-а (each 10px 16px
+   padding) + nav-meta (3 стат пила + bell + lang + profile) не се събират в
+   1440px, а нито един flex child не се свива (nav-spacer вече е 0). Стесняваме
+   само padding-а на линковете под 1600px — достатъчно (~72px спестени за 6
+   линка), десктоп >1600px остава непроменен. */
+@media (max-width: 1600px) {
+  .nav-link { padding: 10px 10px; }
+  .nav-links { gap: 2px; }
+}
+
 .nav-stat {
   position: relative;
   display: inline-flex;
@@ -462,6 +493,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   min-width: 32px;
   display: inline-block;
   text-align: right;
+  /* Моно цифрите не се клатят при промяна на стойността (боен HUD от „boy"). */
+  font-variant-numeric: tabular-nums;
 }
 
 .nav-stat .value.gold { color: var(--gold-1); }
@@ -971,7 +1004,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   animation: cd-pulse 1.4s ease-in-out infinite;
 }
 .cooldown-name { font-weight: 600; color: var(--text-2); }
-.cooldown-time { font-family: var(--font-mono); color: var(--text-1); }
+.cooldown-time { font-family: var(--font-mono); color: var(--text-1); font-variant-numeric: tabular-nums; }
 .cooldown-skip {
   white-space: nowrap;
   font-size: 12px;
@@ -1346,6 +1379,19 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   gap: 24px;
 }
 @media (max-width: 1100px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+/* HP/MP/XP редовете на Dashboard-а — 3 колони на десктоп, но на тесен
+   мобилен (≤560px) думата "EXPERIENCE" + число преливаха в реда на
+   прогрес-бара отдолу (напр. "-11100 / 797" застъпваше следващия ред).
+   1 колона на телефон оставя достатъчно ширина за текста. */
+.dash-bar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 560px) {
+  .dash-bar-grid { grid-template-columns: 1fr; gap: 14px; }
+}
 
 .character-card {
   background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
@@ -1878,6 +1924,95 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   /* Sidebar nav items get a touch-friendly hit area too. */
   .sidebar a, .sidebar button { min-height: 44px; }
 }
+
+/* =====================================================================
+   Споделени data-table / модал класове (.admin-table, .admin-overlay,
+   .admin-editor, .field-grid, .data-table)
+   ---------------------------------------------------------------------
+   БЪГ (докладван визуално — Guild.tsx directory table, Nexus/client/src/
+   pages/Guild.tsx:240,390,593; същите класове и в Inventory.tsx:299-300,
+   Market.tsx:126,181, Premium.tsx:213, Profile.tsx:135-136): тези класове
+   НЕ живеят в admin.css (той изобщо не ги дефинира — само мобилните
+   responsive overrides по-долу в този файл ги споменават). admin.css се
+   зарежда единствено от pages/admin/Layout.tsx, т.е. на всяка нормална
+   /app/* страница таблицата/модалът бяха напълно нестилизирани (гол
+   браузърен <table>, overlay без затъмнение). Базовите правила живееха
+   само мобилно (max-width:700px по-долу) — desktop нямаше нищо. Тук са
+   истинските базови стилове, споделени от играча (не само админ панела).
+   ===================================================================== */
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(4, 5, 8, .72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: admin-overlay-in .18s ease-out;
+}
+@keyframes admin-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+
+.admin-editor {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 301;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgba(255,255,255,.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.admin-editor h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--gold-1);
+  margin: 0;
+}
+.admin-editor .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.admin-table, .data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.admin-table thead th, .data-table thead th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border-2);
+  white-space: nowrap;
+}
+.admin-table tbody td, .data-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-1);
+  color: var(--text-1);
+  vertical-align: middle;
+}
+.admin-table tbody tr:hover, .data-table tbody tr:hover {
+  background: rgba(255,255,255,.02);
+}
+.admin-table tbody tr:last-child td, .data-table tbody tr:last-child td { border-bottom: none; }
 
 /* Responsive tables — five most-used data tables collapse to card mode
    on narrow screens. Each <tr> becomes a stacked card, each <td> takes

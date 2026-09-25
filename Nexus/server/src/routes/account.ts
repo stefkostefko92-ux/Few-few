@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { getDb } from '../db';
+import { detachFromGuild } from '../game/guild';
 import { authRequired } from '../middleware/auth';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
 import { eraseUser } from '../lib/erasure';
@@ -78,6 +79,12 @@ router.post('/delete-character', (req, res) => {
        WHERE seller_id IN (SELECT id FROM characters WHERE user_id = ?)
          AND status = 'active'`,
     ).run(userId);
+    // Гилдия: лидерът предава лидерството (ранг → стаж) или празната гилдия
+    // се разпуска. Без това guilds.leader_id (FK RESTRICT) проваляше
+    // триенето на герой-лидер с 500.
+    for (const c of db.prepare('SELECT id FROM characters WHERE user_id = ?').all(userId) as { id: number }[]) {
+      detachFromGuild(db, c.id, { deleting: true });
+    }
     db.prepare('DELETE FROM characters WHERE user_id = ?').run(userId);
   });
   tx(req.auth!.uid);

@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { getDb } from '../db';
+import { REALM_DROP_ITEMS, ensureRuntimeItems } from '../seed/runtimeItems';
 import { authRequired } from '../middleware/auth';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { loadEquipped } from '../game/equipment';
 import { applyXp } from '../game/progression';
 import { applyGuildMultipliers } from '../game/rewards';
@@ -98,36 +100,11 @@ function ensureWeekBoss(): { iso_week: string; boss_slug: string; boss_name: str
   return row;
 }
 
-/** Ensure the unique realm-boss drop items exist in the items table. */
+/** Уникалните дропове на realm боса — статовете живеят в seed/runtimeItems.ts
+ *  (по кривата, game/itemCurve.ts); UPSERT → стар ред получава текущите
+ *  статове и продажна цена и без ре-сийд. */
 function ensureRealmDropItems() {
-  const db = getDb();
-  const items: Array<[string, string, string, string, number, number, number, number, number]> = [
-    // [slug, name, category, sub_type, hp, mp, primary_stat, atk_min, atk_max]
-    ['realm_thalion_crown',     'Sunless Crown of Thalion',         'helm',   '',      420, 150, 24, 0, 0],
-    ['realm_vethryx_scale',     'Spine-of-Sky Scaleplate',          'armor',  '',      500, 0,   28, 0, 0],
-    ['realm_orsis_pendant',     'Drowned-God Pendant of Orsis',     'amulet', '',      380, 220, 0,  0, 0],
-    ['realm_kallosh_grimoire',  "Kallosh's Marrow Grimoire",        'weapon', 'staff', 280, 320, 0,  600, 950],
-    ['realm_dawn_unmaker_ash',  'Ash of the Dawn-Unmaker',          'cloak',  '',      460, 280, 22, 0, 0],
-    ['realm_unnamed_sigil',     "The Sigil That Wasn't Named",      'ring',   '',      350, 200, 26, 0, 0],
-  ];
-  for (const [slug, name, cat, sub, hp, mp, primary, amin, amax] of items) {
-    const have = db.prepare('SELECT 1 FROM items WHERE slug = ?').get(slug);
-    if (have) continue;
-    const defense = cat === 'helm' ? 120 : cat === 'armor' ? 140 : cat === 'cloak' ? 90 : 0;
-    db.prepare(
-      `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-         atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-         int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-       VALUES (?, ?, ?, ?, 10, 'legendary', 250, '', ?, ?, ?, ?, ?, ?, 0, ?, ?, 0, 0, 0, 0, 0, 500000, ?, ?, '')`,
-    ).run(
-      slug, name, cat, sub, amin, amax, defense, hp, mp,
-      cat === 'weapon' || cat === 'armor' || cat === 'ring' ? primary : 0,
-      cat === 'helm' || cat === 'cloak' ? Math.floor(primary * 0.7) : 0,
-      cat === 'amulet' || cat === 'weapon' && sub === 'staff' ? primary : 0,
-      cat === 'helm' ? 'helm' : cat === 'armor' ? 'armor' : cat === 'amulet' ? 'amulet' : cat === 'cloak' ? 'cloak' : cat === 'ring' ? 'ring' : 'staff',
-      `One of the six Realm Boss legendaries. Only drops to the hero who lands the killing blow.`,
-    );
-  }
+  ensureRuntimeItems(getDb(), REALM_DROP_ITEMS);
 }
 ensureRealmDropItems();
 
@@ -201,7 +178,7 @@ router.post('/strike', (req, res) => {
     atk_min: bossDef.atk_min, atk_max: bossDef.atk_max, defense: bossDef.defense, speed: bossDef.speed,
     crit_chance: 0.08, dodge_chance: 0.02, sprite: bossDef.sprite,
   };
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
   const damageDealt = Math.max(0, segHp - result.foe.hp);
   // Atomic update — boss HP can't go negative; contribution row CAS-inserted.
   try {

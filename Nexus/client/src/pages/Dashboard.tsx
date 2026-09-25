@@ -22,6 +22,12 @@ export default function Dashboard(): React.ReactElement {
   const xpForNext = Math.floor(50 * Math.pow(char.level + 1, 1.7));
   const xpCurrent = Math.floor(50 * Math.pow(char.level, 1.7));
   const pct = Math.max(0, Math.min(100, ((char.xp - xpCurrent) / (xpForNext - xpCurrent)) * 100));
+  // char.xp идва от сървъра по собствена крива на нивелиране; тази клиентска
+  // формула е само за прогрес-бара и може да не съвпадне 1:1 (напр. herald
+  // акаунти със ръчно зададени нива за тест). pct вече е clamp-нат — текстът
+  // трябва да е също, иначе играчът вижда "-11100 / 797" вместо реален прогрес.
+  const xpIntoLevel = Math.max(0, char.xp - xpCurrent);
+  const xpSpan = Math.max(1, xpForNext - xpCurrent);
 
   return (
     <div className="col" style={{ gap: 24 }}>
@@ -62,8 +68,8 @@ export default function Dashboard(): React.ReactElement {
             <div className="tag" style={{ background: 'rgba(106,167,255,.12)', color: 'var(--azure-1)', textAlign: 'center' }} title={t('dashboard.magDefTip')}>{t('dashboard.mDef')} +{derived.mag_def || 0}</div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
-            <BarRow label={t('dashboard.experience')} pct={pct} text={`${char.xp - xpCurrent} / ${xpForNext - xpCurrent}`} kind="xp" />
+          <div className="dash-bar-grid">
+            <BarRow label={t('dashboard.experience')} pct={pct} text={`${xpIntoLevel} / ${xpSpan}`} kind="xp" />
             <BarRow label={t('dashboard.health')} pct={(char.hp / char.hp_max) * 100} text={`${char.hp} / ${char.hp_max}`} kind="hp" />
             <BarRow label={t('dashboard.mana')} pct={(char.mp / char.mp_max) * 100} text={`${char.mp} / ${char.mp_max}`} kind="mp" />
           </div>
@@ -145,9 +151,9 @@ function StatCell({ label, value }: { label: string; value: number }) {
 function BarRow({ label, pct, text, kind }: { label: string; pct: number; text: string; kind: 'hp' | 'mp' | 'energy' | 'xp' }) {
   return (
     <div>
-      <div className="flex between" style={{ marginBottom: 6, fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--text-3)' }}>
+      <div className="flex between" style={{ marginBottom: 6, fontSize: 11, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--text-3)', flexWrap: 'wrap', gap: '2px 8px' }}>
         <span>{label}</span>
-        <span style={{ color: 'var(--text-2)' }}>{text}</span>
+        <span style={{ color: 'var(--text-2)', fontVariantNumeric: 'tabular-nums' }}>{text}</span>
       </div>
       <div className="bar" style={{ height: 12 }}>
         <div className={`bar-fill ${kind}`} style={{ width: `${pct}%` }} />

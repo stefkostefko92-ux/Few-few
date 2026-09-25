@@ -4,8 +4,10 @@ import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
+import { towerFoe, towerGold, towerXp } from '../game/rewardFormulas';
 import { assertReady, setCooldown, loadCooldowns } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import { trackGuildMission } from '../game/guildMissions';
@@ -21,75 +23,29 @@ router.use(authRequired);
  * Tower of Trials — endless scaling boss rush.
  *
  * Each floor pits the hero against a procedurally-scaled foe whose stats
- * grow with `floor`. Winning advances the run to floor+1. Losing ends the
- * run, banks your best floor, and lets you start again from 1.
+ * grow with `floor`. Winning advances the run to floor+1. Losing keeps you
+ * on the same floor (the cooldown is the price) with a fresh seed.
  *
  * Pacing: action cooldown (стълбицата в game/cooldowns.ts), НЕ енергия.
  * Climbing is server-authoritative —
  * we never trust the client's "I'm on floor X" claim.
  *
- * Rewards (only on win):
- *   gold = 8 + floor × 4
- *   xp   = 14 + floor × 6
+ * Rewards (only on win) — game/rewardFormulas.ts:
+ *   gold = 8 + floor × 5
+ *   xp   = 12 + floor × 7
  * Plus, every 5 floors, a "Vault" bonus of double rewards is rolled.
  *
  * Leaderboard is just the characters table sorted by tower_best_floor.
  * ======================================================================= */
 
-const ARCHETYPES = ['Wraith', 'Golem', 'Drake', 'Phantom', 'Devourer', 'Sentinel', 'Reaver', 'Hydraform'];
-
+// Противникът и наградните криви живеят в game/rewardFormulas.ts (чисти
+// функции — мерят се от баланс харнеса). Кривите: gold = 8 + 5·floor,
+// xp = 12 + 7·floor; vault (всеки 5-и етаж) ×2.
 function getChar(uid: number): Character | undefined {
   return getDb().prepare('SELECT * FROM characters WHERE user_id = ?').get(uid) as Character | undefined;
 }
 
-function buildFoe(floor: number, seed: number) {
-  // Light deterministic seeding so the same floor on the same run feels
-  // consistent if the player retries within the run.
-  // Tower difficulty curve, second pass. The first fix (`60+floor*60`
-  // linear) hit the audit's floor-100 target but made floor 1 a
-  // guaranteed wipe for a fresh lv 1 hero (120 HP foe vs ~80 HP hero) —
-  // caught by the launch smoke test. Quadratic ramp instead: gentle
-  // through the first ~15 floors (matches a lv 1-12 player), then
-  // steepens so floor 100 still lands at ~12k HP, in line with hunting
-  // lv 100 mobs (~10.5k).
-  const arch = ARCHETYPES[(seed + floor) % ARCHETYPES.length];
-  const lvlScale = Math.max(1, Math.floor(floor * 1.2));
-  return {
-    name: `${arch} of the ${floor}${ordinal(floor)} Vault`,
-    side: 'foe' as const,
-    level: lvlScale,
-    hp: Math.round(60 + floor * 22 + floor * floor * 1.0),
-    hp_max: Math.round(60 + floor * 22 + floor * floor * 1.0),
-    atk_min: Math.round(8 + floor * 1.4 + floor * floor * 0.035),
-    atk_max: Math.round(14 + floor * 1.8 + floor * floor * 0.045),
-    defense: Math.round(3 + floor * 0.6 + floor * floor * 0.008),
-    speed: 6 + Math.floor(floor * 0.2),
-    crit_chance: 0.05 + Math.min(0.25, floor * 0.005),
-    dodge_chance: 0.03 + Math.min(0.18, floor * 0.003),
-    sprite: 'monster-dragon',
-  };
-}
-
-function ordinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return s[(v - 20) % 10] || s[v] || s[0];
-}
-
-/* ───── Reward curves ─────
- * Designed so the Tower is a satisfying climb but never out-paces the rest
- * of the game's economy. Camp (idle) caps at ~28g/h, hunting kills give
- * 8-40g, daily tribute hands out ~50g. We want the Tower to feel rewarding
- * to push but not be a money printer:
- *   gold = 6 + floor × 2 (linear, gentle)
- *   xp   = 10 + floor × 3 (linear, gentle)
- * Vault every 5th floor doubles both. */
-// Reward formulas scaled up with the difficulty bump above so the
-// effort-to-payout ratio stays sane. The Tower is still a slower
-// faucet than open hunting at the same level but feels worth the
-// climb past floor ~40.
-function towerGold(floor: number): number { return 8 + floor * 5; }
-function towerXp(floor: number): number   { return 12 + floor * 7; }
+const buildFoe = towerFoe;
 
 router.get('/status', (req, res) => {
   const char = getChar(req.auth!.uid);
@@ -142,7 +98,7 @@ router.post('/climb', (req, res) => {
 
   const derived = deriveStats(char, loadEquipped(char.id));
   const hero = buildHeroActor(char, derived, char.hp);
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
 
   let xpGain = 0;
   let goldGain = 0;

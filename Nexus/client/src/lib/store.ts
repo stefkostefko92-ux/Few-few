@@ -24,7 +24,8 @@ interface State {
   /** Ако е зададено, сървърът е спрял достъпа. `until` 0 = постоянен. */
   banned: { reason: string; until: number } | null;
 
-  init: () => Promise<void>;
+  /** false = временна грешка (429/5xx/мрежа) — героят не е потвърден нито отречен. */
+  init: () => Promise<boolean>;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string, dateOfBirth: string, country: string) => Promise<void>;
   logout: () => void;
@@ -79,22 +80,26 @@ export const useStore = create<State>((set, get) => ({
   banned: registerBanHandler(set),
 
   async init() {
-    if (!getToken()) return;
-    try {
-      const r = await api.get('/character/me');
-      set({ character: r.character, derived: r.derived, cooldowns: r.cooldowns || {} });
+    if (!getToken()) return true;
+    // Токенът се чисти САМО при 401 (глобалният unauthorizedHandler в api.ts).
+    // 404 = акаунт без герой (нов играч / админ) — остава логнат; 429/5xx или
+    // мрежова грешка при рестарт на сървъра не бива да изхвърля играча.
+    const [acc, chr] = await Promise.allSettled([api.get('/account/me'), api.get('/character/me')]);
+    if (acc.status === 'fulfilled') set({ user: acc.value.user });
+    if (chr.status === 'fulfilled') {
+      set({ character: chr.value.character, derived: chr.value.derived, cooldowns: chr.value.cooldowns || {} });
       try {
         const m = await api.get('/mail');
         set({ unreadMail: m.unread ?? 0 });
       } catch { /* ignore */ }
-      try {
-        const u = await api.get('/account/me');
-        set({ user: u.user });
-      } catch { /* ignore */ }
-    } catch {
-      setToken(null);
-      set({ token: null, character: null });
+      return true;
     }
+    const status = (chr.reason as { status?: number })?.status;
+    if (status === 404 || status === 401) {
+      set({ character: null });
+      return true;
+    }
+    return false;
   },
 
   async login(username, password) {

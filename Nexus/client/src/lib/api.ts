@@ -94,7 +94,7 @@ async function request<T = any>(method: string, path: string, body?: any): Promi
       const firstField = fe && Object.values(fe).flat()[0];
       message = firstField || err.formErrors?.[0];
     }
-    throw new Error(message || `Request failed (${res.status})`);
+    throw Object.assign(new Error(message || `Request failed (${res.status})`), { status: res.status });
   }
   return data as T;
 }

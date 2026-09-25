@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from './lib/store';
 import { getToken } from './lib/api';
 import { startStream, stopStream } from './lib/stream';
@@ -160,16 +161,18 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
   const token = useStore((s) => s.token);
   const character = useStore((s) => s.character);
   const [ready, setReady] = useState(!getToken());
+  const { t } = useTranslation();
+  const [bootFailed, setBootFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
     (async () => {
-      if (getToken()) {
-        await init();
-      }
+      const ok = getToken() ? await init() : true;
+      setBootFailed(!ok);
       setReady(true);
     })();
-  }, [init]);
+  }, [init, attempt]);
 
   // SSE поток — активен само докато има логнат герой (push за
   // нотификации/чат). Спира при logout/липса на герой.
@@ -178,6 +181,20 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
     else stopStream();
   }, [character?.id]);
 
+  // Временна грешка при зареждане на героя: без това играчът би бил пратен
+  // на /create (все едно няма герой) — вместо това предлагаме нов опит.
+  if (ready && bootFailed && token) {
+    return (
+      <div className="auth-shell">
+        <div className="auth-card" style={{ textAlign: 'center' }}>
+          <h1 style={{ color: 'var(--gold-1)' }}>{t('boot.offlineTitle', 'The realm is not answering')}</h1>
+          <p className="muted">{t('boot.offlineBody', 'The server is busy or restarting. Your progress is safe.')}</p>
+          <button className="btn btn-primary" onClick={() => { setReady(false); setAttempt((a) => a + 1); }}>{t('boot.retry', 'Try again')}</button>
+        </div>
+      </div>
+    );
+  }
+
   if (!ready) {
     return (
       <div className="auth-shell">
@@ -185,7 +202,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
           <div className="auth-brand-mark">
             <svg viewBox="0 0 32 32"><path d="M16 4 L20 12 L28 13 L22 19 L24 28 L16 23 L8 28 L10 19 L4 13 L12 12 Z" fill="#d6a13d" /></svg>
           </div>
-          <h1 style={{ marginTop: 12, color: 'var(--gold-1)' }}>Awakening Nexus Dominion…</h1>
+          <h1 style={{ marginTop: 12, color: 'var(--gold-1)' }}>{t('boot.awakening', { defaultValue: 'Awakening Nexus Dominion…' })}</h1>
         </div>
       </div>
     );
@@ -212,7 +229,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
 
 export default function App(): React.ReactElement {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Bootstrapper>
         <CookieBanner />
         <BanScreen />

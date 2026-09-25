@@ -244,17 +244,17 @@
     "name": "Dragonbane",
     "category": "weapon",
     "sub_type": "sword",
-    "tier": 5,
+    "tier": 3,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "mail",
-      "primary": "#7d8a99",
-      "secondary": "#3e4a5a",
-      "trim": "#c8ced6",
-      "motif": "plain",
-      "finish": "polished"
+      "family": "plate",
+      "primary": "#9aa1a8",
+      "secondary": "#4a5058",
+      "trim": "#c2c7cc",
+      "motif": "rivets",
+      "finish": "matte"
     },
     "icon": "sword",
     "level_req": 25
@@ -264,17 +264,17 @@
     "name": "Voidwhisper",
     "category": "weapon",
     "sub_type": "staff",
-    "tier": 5,
+    "tier": 3,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "mail",
-      "primary": "#7d8a99",
-      "secondary": "#3e4a5a",
-      "trim": "#c8ced6",
-      "motif": "plain",
-      "finish": "polished"
+      "family": "plate",
+      "primary": "#9aa1a8",
+      "secondary": "#4a5058",
+      "trim": "#c2c7cc",
+      "motif": "rivets",
+      "finish": "matte"
     },
     "icon": "staff",
     "level_req": 25
@@ -284,17 +284,17 @@
     "name": "Wyrmtouch, the Fang of Khalad",
     "category": "weapon",
     "sub_type": "sword",
-    "tier": 5,
+    "tier": 3,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "mail",
-      "primary": "#7d8a99",
-      "secondary": "#3e4a5a",
-      "trim": "#c8ced6",
-      "motif": "plain",
-      "finish": "polished"
+      "family": "plate",
+      "primary": "#9aa1a8",
+      "secondary": "#4a5058",
+      "trim": "#c2c7cc",
+      "motif": "rivets",
+      "finish": "matte"
     },
     "icon": "sword",
     "level_req": 50
@@ -304,15 +304,15 @@
     "name": "Hammerhand's Reach",
     "category": "weapon",
     "sub_type": "axe",
-    "tier": 6,
+    "tier": 4,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "infernal",
-      "primary": "#5e3434",
-      "secondary": "#9a5a3a",
-      "trim": "#d8b27a",
+      "family": "plate",
+      "primary": "#707a84",
+      "secondary": "#5a3a3e",
+      "trim": "#b9a070",
       "motif": "plain",
       "finish": "polished"
     },
@@ -324,6 +324,26 @@
     "name": "Archlector's Theorem",
     "category": "weapon",
     "sub_type": "staff",
+    "tier": 5,
+    "rarity": "legendary",
+    "class_req": "",
+    "set_slug": null,
+    "theme": {
+      "family": "mail",
+      "primary": "#7d8a99",
+      "secondary": "#3e4a5a",
+      "trim": "#c8ced6",
+      "motif": "plain",
+      "finish": "polished"
+    },
+    "icon": "staff",
+    "level_req": 105
+  },
+  {
+    "slug": "sunken_king_trident",
+    "name": "Sunkengold Trident",
+    "category": "weapon",
+    "sub_type": "spear",
     "tier": 6,
     "rarity": "legendary",
     "class_req": "",
@@ -336,14 +356,34 @@
       "motif": "plain",
       "finish": "polished"
     },
-    "icon": "staff",
-    "level_req": 105
+    "icon": "spear",
+    "level_req": 140
   },
   {
-    "slug": "sunken_king_trident",
-    "name": "Sunkengold Trident",
+    "slug": "snowtooth_axe",
+    "name": "Frostbite, the Jarl-Axe",
     "category": "weapon",
-    "sub_type": "spear",
+    "sub_type": "axe",
+    "tier": 6,
+    "rarity": "legendary",
+    "class_req": "",
+    "set_slug": null,
+    "theme": {
+      "family": "infernal",
+      "primary": "#5e3434",
+      "secondary": "#9a5a3a",
+      "trim": "#d8b27a",
+      "motif": "plain",
+      "finish": "polished"
+    },
+    "icon": "axe",
+    "level_req": 175
+  },
+  {
+    "slug": "azhtek_armor",
+    "name": "Hellbinder Cuirass",
+    "category": "armor",
+    "sub_type": "",
     "tier": 7,
     "rarity": "legendary",
     "class_req": "",
@@ -355,46 +395,6 @@
       "trim": "#b6d6f2",
       "motif": "plain",
       "finish": "polished"
-    },
-    "icon": "spear",
-    "level_req": 140
-  },
-  {
-    "slug": "snowtooth_axe",
-    "name": "Frostbite, the Jarl-Axe",
-    "category": "weapon",
-    "sub_type": "axe",
-    "tier": 8,
-    "rarity": "legendary",
-    "class_req": "",
-    "set_slug": null,
-    "theme": {
-      "family": "celestial",
-      "primary": "#232a58",
-      "secondary": "#4e4190",
-      "trim": "#d6d2f2",
-      "motif": "plain",
-      "finish": "enameled"
-    },
-    "icon": "axe",
-    "level_req": 175
-  },
-  {
-    "slug": "azhtek_armor",
-    "name": "Hellbinder Cuirass",
-    "category": "armor",
-    "sub_type": "",
-    "tier": 8,
-    "rarity": "legendary",
-    "class_req": "",
-    "set_slug": null,
-    "theme": {
-      "family": "celestial",
-      "primary": "#232a58",
-      "secondary": "#4e4190",
-      "trim": "#d6d2f2",
-      "motif": "plain",
-      "finish": "enameled"
     },
     "icon": "armor",
     "level_req": 200
@@ -424,18 +424,17 @@
     "name": "Hollow Crown of Caethra",
     "category": "helm",
     "sub_type": "",
-    "tier": 9,
+    "tier": 8,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "bone",
-      "primary": "#46524a",
-      "secondary": "#bdb79e",
-      "trim": "#7e9272",
-      "emissive": "#6fe08a",
+      "family": "celestial",
+      "primary": "#232a58",
+      "secondary": "#4e4190",
+      "trim": "#d6d2f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "enameled"
     },
     "icon": "helm",
     "level_req": 260
@@ -868,17 +867,17 @@
     "name": "Ring of Power",
     "category": "ring",
     "sub_type": "",
-    "tier": 3,
+    "tier": 2,
     "rarity": "epic",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "plate",
-      "primary": "#9aa1a8",
-      "secondary": "#4a5058",
-      "trim": "#c2c7cc",
+      "family": "mail",
+      "primary": "#8c9196",
+      "secondary": "#5a4a3a",
+      "trim": "#a3a8ad",
       "motif": "rivets",
-      "finish": "matte"
+      "finish": "worn"
     },
     "icon": "ring",
     "level_req": 15
@@ -10803,18 +10802,17 @@
     "name": "Frostmoot Ledger of the Hunt",
     "category": "amulet",
     "sub_type": "",
-    "tier": 9,
+    "tier": 7,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "bone",
-      "primary": "#46524a",
-      "secondary": "#bdb79e",
-      "trim": "#7e9272",
-      "emissive": "#6fe08a",
+      "family": "arcane",
+      "primary": "#c6cedf",
+      "secondary": "#56648a",
+      "trim": "#b6d6f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "polished"
     },
     "icon": "amulet",
     "level_req": 220
@@ -10824,18 +10822,17 @@
     "name": "Bloomtide Hunter's Wreath",
     "category": "cloak",
     "sub_type": "",
-    "tier": 9,
+    "tier": 7,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "bone",
-      "primary": "#46524a",
-      "secondary": "#bdb79e",
-      "trim": "#7e9272",
-      "emissive": "#6fe08a",
+      "family": "arcane",
+      "primary": "#c6cedf",
+      "secondary": "#56648a",
+      "trim": "#b6d6f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "polished"
     },
     "icon": "cloak",
     "level_req": 220
@@ -10845,18 +10842,17 @@
     "name": "Sunhigh Ember-Crown",
     "category": "helm",
     "sub_type": "",
-    "tier": 9,
+    "tier": 7,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "bone",
-      "primary": "#46524a",
-      "secondary": "#bdb79e",
-      "trim": "#7e9272",
-      "emissive": "#6fe08a",
+      "family": "arcane",
+      "primary": "#c6cedf",
+      "secondary": "#56648a",
+      "trim": "#b6d6f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "polished"
     },
     "icon": "helm",
     "level_req": 220
@@ -10866,18 +10862,17 @@
     "name": "Emberfall Reaper's Ring",
     "category": "ring",
     "sub_type": "",
-    "tier": 9,
+    "tier": 7,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
-      "family": "bone",
-      "primary": "#46524a",
-      "secondary": "#bdb79e",
-      "trim": "#7e9272",
-      "emissive": "#6fe08a",
+      "family": "arcane",
+      "primary": "#c6cedf",
+      "secondary": "#56648a",
+      "trim": "#b6d6f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "polished"
     },
     "icon": "ring",
     "level_req": 220
@@ -10887,18 +10882,17 @@
     "name": "Sunless Crown of Thalion",
     "category": "helm",
     "sub_type": "",
-    "tier": 10,
+    "tier": 8,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "celestial",
-      "primary": "#f5eedb",
-      "secondary": "#cfa855",
-      "trim": "#fefcf5",
-      "emissive": "#f7e7a8",
+      "primary": "#232a58",
+      "secondary": "#4e4190",
+      "trim": "#d6d2f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "enameled"
     },
     "icon": "helm",
     "level_req": 250
@@ -10908,18 +10902,17 @@
     "name": "Spine-of-Sky Scaleplate",
     "category": "armor",
     "sub_type": "",
-    "tier": 10,
+    "tier": 8,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "celestial",
-      "primary": "#f5eedb",
-      "secondary": "#cfa855",
-      "trim": "#fefcf5",
-      "emissive": "#f7e7a8",
+      "primary": "#232a58",
+      "secondary": "#4e4190",
+      "trim": "#d6d2f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "enameled"
     },
     "icon": "armor",
     "level_req": 250
@@ -10929,18 +10922,17 @@
     "name": "Drowned-God Pendant of Orsis",
     "category": "amulet",
     "sub_type": "",
-    "tier": 10,
+    "tier": 8,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "celestial",
-      "primary": "#f5eedb",
-      "secondary": "#cfa855",
-      "trim": "#fefcf5",
-      "emissive": "#f7e7a8",
+      "primary": "#232a58",
+      "secondary": "#4e4190",
+      "trim": "#d6d2f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "enameled"
     },
     "icon": "amulet",
     "level_req": 250
@@ -10950,18 +10942,17 @@
     "name": "Kallosh's Marrow Grimoire",
     "category": "weapon",
     "sub_type": "staff",
-    "tier": 10,
+    "tier": 8,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "celestial",
-      "primary": "#f5eedb",
-      "secondary": "#cfa855",
-      "trim": "#fefcf5",
-      "emissive": "#f7e7a8",
+      "primary": "#232a58",
+      "secondary": "#4e4190",
+      "trim": "#d6d2f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "enameled"
     },
     "icon": "staff",
     "level_req": 250
@@ -10971,18 +10962,17 @@
     "name": "Ash of the Dawn-Unmaker",
     "category": "cloak",
     "sub_type": "",
-    "tier": 10,
+    "tier": 8,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "celestial",
-      "primary": "#f5eedb",
-      "secondary": "#cfa855",
-      "trim": "#fefcf5",
-      "emissive": "#f7e7a8",
+      "primary": "#232a58",
+      "secondary": "#4e4190",
+      "trim": "#d6d2f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "enameled"
     },
     "icon": "cloak",
     "level_req": 250
@@ -10992,18 +10982,17 @@
     "name": "The Sigil That Wasn't Named",
     "category": "ring",
     "sub_type": "",
-    "tier": 10,
+    "tier": 8,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "celestial",
-      "primary": "#f5eedb",
-      "secondary": "#cfa855",
-      "trim": "#fefcf5",
-      "emissive": "#f7e7a8",
+      "primary": "#232a58",
+      "secondary": "#4e4190",
+      "trim": "#d6d2f2",
       "motif": "plain",
-      "finish": "glowing"
+      "finish": "enameled"
     },
     "icon": "ring",
     "level_req": 250
@@ -11013,17 +11002,17 @@
     "name": "Trial Crown",
     "category": "helm",
     "sub_type": "",
-    "tier": 5,
+    "tier": 2,
     "rarity": "epic",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "mail",
-      "primary": "#7d8a99",
-      "secondary": "#3e4a5a",
-      "trim": "#c8ced6",
-      "motif": "plain",
-      "finish": "polished"
+      "primary": "#8c9196",
+      "secondary": "#5a4a3a",
+      "trim": "#a3a8ad",
+      "motif": "rivets",
+      "finish": "worn"
     },
     "icon": "helm",
     "level_req": 12
@@ -11033,17 +11022,17 @@
     "name": "Trial Aegis",
     "category": "armor",
     "sub_type": "",
-    "tier": 5,
+    "tier": 2,
     "rarity": "epic",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "mail",
-      "primary": "#7d8a99",
-      "secondary": "#3e4a5a",
-      "trim": "#c8ced6",
-      "motif": "plain",
-      "finish": "polished"
+      "primary": "#8c9196",
+      "secondary": "#5a4a3a",
+      "trim": "#a3a8ad",
+      "motif": "rivets",
+      "finish": "worn"
     },
     "icon": "armor",
     "level_req": 15
@@ -11053,17 +11042,17 @@
     "name": "Wyrmsong",
     "category": "weapon",
     "sub_type": "sword",
-    "tier": 5,
+    "tier": 2,
     "rarity": "legendary",
     "class_req": "",
     "set_slug": null,
     "theme": {
       "family": "mail",
-      "primary": "#7d8a99",
-      "secondary": "#3e4a5a",
-      "trim": "#c8ced6",
-      "motif": "plain",
-      "finish": "polished"
+      "primary": "#8c9196",
+      "secondary": "#5a4a3a",
+      "trim": "#a3a8ad",
+      "motif": "rivets",
+      "finish": "worn"
     },
     "icon": "sword",
     "level_req": 18

@@ -28,6 +28,28 @@ function shouldRunPointerFx(): boolean {
 export default function LandingEffects(): React.ReactElement | null {
   const trailRef = useRef<HTMLDivElement>(null);
 
+  // Custom cursor reticle (.landing::after в landing.css) — БЪГ: пръстенът
+  // нямаше JS, който да го мести, стоеше завинаги на (0,0) докато реалният
+  // показалец е скрит (`cursor:none`). Пишем позицията му през CSS
+  // custom properties на .landing контейнера и го показваме едва след
+  // първото истинско движение на мишката (класът .cursor-active).
+  useEffect(() => {
+    if (!shouldRunPointerFx()) return;
+    const root = document.querySelector<HTMLElement>('.landing');
+    if (!root) return;
+    let moved = false;
+    function onMove(e: MouseEvent) {
+      root!.style.setProperty('--cursor-x', `${e.clientX}px`);
+      root!.style.setProperty('--cursor-y', `${e.clientY}px`);
+      if (!moved) { moved = true; root!.classList.add('cursor-active'); }
+    }
+    window.addEventListener('mousemove', onMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      root.classList.remove('cursor-active');
+    };
+  }, []);
+
   // Cursor particle trail
   useEffect(() => {
     if (!shouldRunPointerFx()) return;
@@ -77,8 +99,21 @@ export default function LandingEffects(): React.ReactElement | null {
 
   // Scroll reveals
   useEffect(() => {
-    const targets = document.querySelectorAll('[data-reveal]');
+    // БЪГ: селекторът четеше само [data-reveal] — секциите feature-grid /
+    // class-grid / set-grid / region-row носят [data-reveal-stagger], а CSS-ът
+    // (landing.css) очаква .revealed точно на този елемент. Резултат: цели
+    // раздели (Features, Classes, Sets, World) оставаха opacity:0 завинаги —
+    // никой IntersectionObserver не ги наблюдаваше. Потвърдено на живо (виж
+    // доклада на агента) с headless проверка: className остава "class-grid",
+    // никога не получава "revealed".
+    const targets = document.querySelectorAll('[data-reveal], [data-reveal-stagger]');
     if (targets.length === 0) return;
+    // Прогресивно подобрение: без IntersectionObserver (много стар браузър)
+    // съдържанието не бива да остане невидимо завинаги — покажи го веднага.
+    if (typeof IntersectionObserver === 'undefined') {
+      targets.forEach((t) => t.classList.add('revealed'));
+      return;
+    }
     const obs = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -88,7 +123,15 @@ export default function LandingEffects(): React.ReactElement | null {
           }
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+      // БЪГ: threshold 0.12 иска 12% от ЦЯЛАТА височина на елемента видима
+      // наведнъж. [data-reveal-stagger] контейнерите (напр. .region-row с 16
+      // карти, наредени в 1 колона на мобилен) са по-високи от 7000px — през
+      // 874px viewport никога не се вижда >11%, значи прагът никога не пада
+      // и секцията остава невидима завинаги на телефон (потвърдено на живо:
+      // .region-row.className оставаше "region-row" след скрол + изчакване).
+      // threshold: 0 отключва reveal при първия видим пиксел — стандартно
+      // поведение за scroll-reveal и коректно за елементи с всякаква височина.
+      { threshold: 0, rootMargin: '0px 0px -8% 0px' },
     );
     targets.forEach((t) => obs.observe(t));
     return () => obs.disconnect();
