@@ -143,7 +143,7 @@ main {
   margin-bottom: 0.5rem;
 }
 .hero h1 {
-  font-size: clamp(2rem, 6vw, 3.2rem);
+  font-size: clamp(1.75rem, 6vw, 3.2rem);
   line-height: 1.15;
   margin: 0 0 1rem;
 }
@@ -155,6 +155,7 @@ main {
 }
 .features {
   display: grid;
+  /* 6 плочки: на широк екран 3+3 (при auto-fit петата/шестата висяха сами на ред). */
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1rem;
   margin: 2rem 0;
@@ -217,6 +218,7 @@ input[type='email'],
 input[type='password'],
 input[type='tel'],
 input[type='url'],
+input[type='search'],
 select,
 textarea {
   width: 100%;
@@ -459,43 +461,81 @@ legend {
   padding: 2.2rem 1.5rem 1.7rem;
   position: relative;
 }
+/* Страницата на визитката носи темата и ИЗВЪН картата. Изискването беше темата да
+   оцветява ЦЯЛАТА страница: на телефон картата заема екрана и разликата не личи, но на
+   таблет и лаптоп ~60% от екрана оставаше неутрално сив, а бутонът в менюто — в синьото
+   на сайта при всяка тема. Променливите (--t-*) идват от body.theme-* / body.custom-accent
+   (виж по-долу и personalize.js), тоест нула inline стилове — CSP остава непокътнат.
+   color-mix е наличен във всички актуални браузъри; фонът отдолу е резервата. */
+body.card-theme {
+  background-color: var(--t-soft, var(--bg));
+  background-image:
+    radial-gradient(
+      1100px 520px at 50% -140px,
+      color-mix(in srgb, var(--t-a) 46%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(180deg, var(--t-soft) 0%, color-mix(in srgb, var(--t-soft) 55%, var(--bg)) 100%);
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+body.card-theme .nav {
+  background: color-mix(in srgb, #fff 82%, transparent);
+  backdrop-filter: saturate(1.2) blur(6px);
+}
+body.card-theme .nav .btn {
+  background: var(--t-accent);
+}
+body.card-theme .nav .btn:hover {
+  background: var(--t-b);
+}
+body.card-theme .footer a {
+  color: var(--t-accent);
+}
+
 /* Цветови теми — задават палитрата на цялата карта (src/themes.js) */
-.vcard.theme-blue {
+.vcard.theme-blue,
+body.theme-blue {
   --t-a: #2563eb;
   --t-b: #7c3aed;
   --t-accent: #4f46e5;
   --t-soft: #eef2ff;
   --t-ring: #c7d2fe;
 }
-.vcard.theme-emerald {
+.vcard.theme-emerald,
+body.theme-emerald {
   --t-a: #059669;
   --t-b: #0d9488;
   --t-accent: #0f766e;
   --t-soft: #ecfdf5;
   --t-ring: #a7f3d0;
 }
-.vcard.theme-sunset {
+.vcard.theme-sunset,
+body.theme-sunset {
   --t-a: #ea580c;
   --t-b: #db2777;
   --t-accent: #db2777;
   --t-soft: #fff1f2;
   --t-ring: #fecdd3;
 }
-.vcard.theme-ocean {
+.vcard.theme-ocean,
+body.theme-ocean {
   --t-a: #0284c7;
   --t-b: #0891b2;
   --t-accent: #0e7490;
   --t-soft: #ecfeff;
   --t-ring: #a5f3fc;
 }
-.vcard.theme-graphite {
+.vcard.theme-graphite,
+body.theme-graphite {
   --t-a: #1f2937;
   --t-b: #4b5563;
   --t-accent: #334155;
   --t-soft: #f1f5f9;
   --t-ring: #cbd5e1;
 }
-.vcard.theme-rose {
+.vcard.theme-rose,
+body.theme-rose {
   --t-a: #e11d48;
   --t-b: #9d174d;
   --t-accent: #be123c;
@@ -749,12 +789,6 @@ legend {
   height: 48px;
   width: auto;
 }
-/* „Скоро“ състояние — приглушени бейджове, без действие */
-.vcard-wallet.is-soon .wallet-badges {
-  opacity: 0.45;
-  filter: grayscale(0.4);
-  pointer-events: none;
-}
 .soon-chip {
   display: inline-block;
   margin-left: 0.35rem;
@@ -859,9 +893,11 @@ legend {
   position: absolute;
   top: 6px;
   left: 6px;
-  background: rgba(17, 24, 39, 0.6);
+  /* 0.78 плътност: и върху бял банер белият текст остава ≥ 9:1 (при 0.6 беше ~4.8). */
+  background: rgba(17, 24, 39, 0.78);
   color: #fff;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 1px 6px;
@@ -1223,6 +1259,32 @@ legend {
   margin: 0.3rem 0;
 }
 
+/* Секцията за MCP конектора на началната. Преизползва .how и .link-box. */
+.ai-connector h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ai-connector .link-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+.ai-connector .link-box label {
+  flex-basis: 100%;
+}
+.ai-connector .link-box input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.ai-connector .ai-steps {
+  padding-left: 1.2rem;
+  line-height: 1.6;
+}
+
 /* Наръчник (съдържателните страници) — ляга върху .legal контейнера. */
 .guide .lead {
   font-size: 1.05rem;
@@ -1269,4 +1331,136 @@ legend {
   margin: 0 auto 0.4rem;
   max-width: 44rem;
   line-height: 1.8;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.9rem;
+}
+/* Разделителят е украса, не текст — не пада в началото на реда при пренасяне. */
+.footer-guides a + a::before {
+  content: '·';
+  margin-right: 0.9rem;
+  margin-left: -0.45rem;
+  color: var(--muted);
+  display: inline-block;
+}
+
+/* ── Поправки от визуалния одит ────────────────────────────────────────────────
+   Всяка е намерена с измерване в истински Chromium (DevTools емулация на 320/375/
+   768/1280), не на око. */
+
+/* Отметките бяха 13×13 px — на телефон почти неуцелими. */
+.check input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand);
+  vertical-align: -4px;
+}
+
+/* Сивият текст върху оцветения фон на визитката падаше до 4.3:1 (нормата е 4.5:1) —
+   регресия от темата на цялата страница. По-тъмното сиво дава ≥ 6:1 на всички теми. */
+body.card-theme {
+  --muted: #4b5563;
+}
+
+/* Печат: текстът до QR кода не можеше да се свие (flex без min-width: 0) и на 320 px
+   страницата се разширяваше до 371 px. */
+.print-preview > div {
+  min-width: 0;
+}
+.print-preview p {
+  overflow-wrap: anywhere;
+}
+
+/* Дълги думи („поверителност“ в H1) и адреси не бива да разширяват страницата. */
+.legal,
+.vcard-body,
+.print-card {
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 700px) {
+  /* iOS увеличава страницата, щом фокусираш поле с шрифт < 16 px — а всички бяха
+     15.2 px (търсачката в админа — 13.3 px). */
+  input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']),
+  select {
+    min-height: 44px;
+  }
+  .check input[type='checkbox'] {
+    width: 24px;
+    height: 24px;
+  }
+  input[type='file'] {
+    font-size: 15px;
+    padding: 0.45rem 0;
+  }
+  /* Цели за пръст: връзките във футъра и трохата бяха високи 16 px. */
+  .footer-guides a,
+  .footer p a,
+  .crumbs a {
+    display: inline-block;
+    padding: 6px 2px;
+  }
+  details > summary {
+    padding: 0.4rem 0;
+  }
+  /* По-тесни полета на правните страници — думата „поверителност“ в H1 не се събираше
+     на 320 px. */
+  .legal {
+    padding: 1.2rem 1rem;
+  }
+  .legal h1 {
+    font-size: clamp(1.45rem, 7vw, 2rem);
+  }
+}
+
+@media (max-width: 380px) {
+  /* Админското меню (3 връзки) не се събираше на 320 px и „Изход“ падаше на втори ред. */
+  .nav {
+    padding: 0.6rem 0.75rem;
+  }
+  .nav nav {
+    gap: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .nav nav .link-btn {
+    font-size: inherit;
+  }
+  /* По-малкият шрифт не бива да сваля целта под 24 px (WCAG 2.5.8). */
+  .nav nav a,
+  .nav nav .link-btn {
+    display: inline-block;
+    padding-block: 5px;
+  }
+  .print-preview {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (min-width: 700px) {
+  .features {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+/* Заглавието на формите за вход/регистрация беше 32 px и се чупеше на два реда. */
+.auth-card h1 {
+  font-size: clamp(1.5rem, 6.5vw, 1.9rem);
+  line-height: 1.2;
+  margin-top: 0;
+}
+@media (max-width: 700px) {
+  .footer-guides a + a::before {
+    display: none;
+  }
+}
+
+/* Връзка + препинателен знак след нея — точката не пада сама на нов ред. */
+.nowrap {
+  white-space: nowrap;
 }

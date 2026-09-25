@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import QRCode from 'qrcode';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { join } from 'node:path';
 import db, { UPLOADS_DIR } from '../db.js';
@@ -26,6 +27,35 @@ const heavyLimiter = rateLimit({
   message: 'Твърде много заявки. Опитай пак след минута.',
 });
 
+// „Този посетител вече видя визитката в последните 12 часа?“ — БЕЗ бисквитка.
+// Бисквитка само за статистиката на собственика не е строго необходима за услугата,
+// която посетителят иска (ePrivacy чл. 5(3) → би искала съгласие). Затова помним
+// необратим хеш (IP + браузър + визитка, с тайна сол, сменяна при всеки рестарт)
+// само в паметта на процеса: нищо на устройството, нищо в базата.
+const VIEW_TTL = 12 * 60 * 60 * 1000;
+const VIEW_MAX = 50_000;
+const viewSalt = crypto.randomBytes(32);
+const recentViews = new Map(); // хеш → момент на последното броене
+
+function firstViewIn12h(req, profileId) {
+  const now = Date.now();
+  const key = crypto
+    .createHmac('sha256', viewSalt)
+    .update(`${req.ip}|${req.get('user-agent') || ''}|${profileId}`)
+    .digest('base64url');
+  const at = recentViews.get(key);
+  if (at && now - at < VIEW_TTL) return false;
+  // Таван на паметта: Map пази реда на вмъкване, най-старите са първи.
+  if (recentViews.size >= VIEW_MAX)
+    for (const [k, t] of recentViews) {
+      if (recentViews.size < VIEW_MAX && now - t < VIEW_TTL) break;
+      recentViews.delete(k);
+    }
+  recentViews.delete(key);
+  recentViews.set(key, now);
+  return true;
+}
+
 // Публичен профил или собственикът гледа своя (преглед и при скрита визитка).
 function findVisibleProfile(req, slug) {
   const profile = db.prepare('SELECT * FROM profiles WHERE slug = ?').get(slug);
@@ -42,33 +72,31 @@ router.get('/p/:slug', (req, res) => {
   // Броим само чуждите преглеждания на публична визитка — и то веднъж на посетител
   // за 12 часа. Без това всеки refresh (дори HEAD) надуваше брояча и статистиката
   // на собственика ставаше безсмислена.
-  const seenCookie = `vzv${profile.id}`;
-  if (!isOwner && profile.is_public && !req.cookies?.[seenCookie]) {
+  if (!isOwner && profile.is_public && firstViewIn12h(req, profile.id))
     db.prepare('UPDATE profiles SET views = views + 1 WHERE id = ?').run(profile.id);
-    res.cookie(seenCookie, '1', {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 12 * 60 * 60 * 1000,
-      path: `/p/${profile.slug}`,
-    });
-  }
-  const description = [profile.headline, profile.company, profile.phone]
-    .filter(Boolean)
-    .join(' · ');
+  // Описанието е това, което Google показва под заглавието. „Фотограф · +359…“ (24 знака)
+  // не казва какво има на страницата — затова: кой е, с какво се занимава и какво може
+  // посетителят да направи тук. Телефонът не влиза, за да остане място за това в
+  // ~160-те знака; на самата визитка е на един клик.
+  const who = [profile.headline, profile.company].filter(Boolean).join(', ');
+  const description =
+    `${profile.display_name}${who ? ` — ${who}` : ''}. Контакти в дигитална визитка с QR код: обади се, пиши или запази контакта в телефона с един бутон.`.slice(
+      0,
+      160
+    );
   res.render('card', {
     title: profile.display_name,
+    // Темата се носи и от <body>, за да оцвети страницата около картата.
+    bodyClass: `card-theme ${profile.accent ? 'custom-accent' : `theme-${profile.theme}`}`,
     profile,
     links: getLinks(profile.id),
     accentCss: accentCss(profile.accent),
     isOwner,
     publicUrl,
-    wallet: walletLinks(profile),
+    wallet: walletLinks(profile, { preview: isOwner || Boolean(req.user?.is_admin) }),
     jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,
     pageMeta: {
-      description:
-        description ||
-        `Дигитална визитка на ${profile.display_name} — контакти с QR код, винаги актуални.`,
+      description,
       // Профилните думи са първи (те носят намерението „търся този човек/фирма“),
       // после общите за продукта. Правилото на репото иска ≥5 и задължително
       // „Carbon Stealth“ — при празен headline/company профилните са само един, затова
@@ -163,7 +191,9 @@ router.get('/p/:slug/vizitka.vcf', heavyLimiter, (req, res) => {
 // Качените изображения (снимки на профили + рекламни банери) — валидирани имена.
 router.get('/photo/:file', (req, res) => {
   if (!/^[a-f0-9]{32}\.(jpg|png|webp|gif)$/.test(req.params.file)) return res.status(404).end();
-  res.sendFile(join(UPLOADS_DIR, req.params.file), { maxAge: '1d' }, (err) => {
+  // Всяко качване получава НОВО случайно име — файл под дадено име никога не се
+  // променя, затова кешът може да е вечен (смяна на снимката = нов адрес).
+  res.sendFile(join(UPLOADS_DIR, req.params.file), { maxAge: '365d', immutable: true }, (err) => {
     if (err && !res.headersSent) res.status(404).end();
   });
 });

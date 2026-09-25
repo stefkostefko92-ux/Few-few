@@ -29,6 +29,7 @@ import { emitJsonNow } from "../lib/emit.mjs";
 import {
   MERGE_THRESHOLD, AGENT_DESC_MAX,
   jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard, repeatsLearnProtocol,
+  yamlPlainCut,
 } from "./oversee-lib.mjs";
 import { classify } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
 
@@ -116,6 +117,13 @@ for (const id of allIds) {
     const fm = (md.match(/^model:\s*(.+)$/m) || [])[1]?.trim() || null;
     const fe = (md.match(/^effort:\s*(.+)$/m) || [])[1]?.trim() || null;
     const jrec = aj.agents.find((a) => a.id === id) || {};
+    // Описанието е единственото, по което харнесът решава КОГА да делегира. `socialdjiyata` имаше
+    // „работа #1 е …“ — YAML го чете като коментар и агентът стигаше до рутинга с 57 от 645 знака.
+    const fdesc = (md.match(/^description:[ \t]*(.+)$/m) || [])[1];
+    if (fdesc) {
+      const cut = yamlPlainCut(fdesc);
+      if (cut !== -1) r.hard.push(`описанието се реже от YAML коментар („ #“) — харнесът вижда ${cut} от ${fdesc.trim().length} знака; махни „ #“ или цитирай стойността`);
+    }
     if (fm && jrec.model && fm !== jrec.model) r.hard.push(`модел разсинхрон: frontmatter=${fm} ≠ agents.json=${jrec.model}`);
     if (!fe) r.hard.push("липсва effort във frontmatter (рутинг на усилие)");
     else if (jrec.effort && fe !== jrec.effort) r.hard.push(`усилие разсинхрон: frontmatter=${fe} ≠ agents.json=${jrec.effort}`);

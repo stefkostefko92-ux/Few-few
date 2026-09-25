@@ -16,6 +16,10 @@ const PATHS = {
   wallet: `<path ${P} d="M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2"/><rect ${P} x="3" y="7" width="18" height="12" rx="2"/><path ${P} d="M16 12h3"/>`,
   qr: `<rect ${P} x="3" y="3" width="7" height="7" rx="1"/><rect ${P} x="14" y="3" width="7" height="7" rx="1"/><rect ${P} x="3" y="14" width="7" height="7" rx="1"/><path ${P} d="M14 14h3v3"/><path ${P} d="M20 14v.01"/><path ${P} d="M17 20h.01"/><path ${P} d="M20 17v3"/>`,
   flag: `<path ${P} d="M5 21V4"/><path ${P} d="M5 4h11l-2 3 2 3H5"/>`,
+  // NFC — безконтактен знак (три дъги)
+  nfc: `<path ${P} d="M8 9.5a4 4 0 0 1 0 5"/><path ${P} d="M11.5 7.5a7 7 0 0 1 0 9"/><path ${P} d="M15 5.5a10 10 0 0 1 0 13"/>`,
+  // Конекторът за AI асистенти (MCP)
+  plug: `<path ${P} d="M9 3v5M15 3v5"/><path ${P} d="M6 8h12v3a6 6 0 0 1-12 0V8Z"/><path ${P} d="M12 17v4"/>`,
   // Начална страница
   scan: `<path ${P} d="M4 8V6a2 2 0 0 1 2-2h2"/><path ${P} d="M16 4h2a2 2 0 0 1 2 2v2"/><path ${P} d="M20 16v2a2 2 0 0 1-2 2h-2"/><path ${P} d="M8 20H6a2 2 0 0 1-2-2v-2"/><path ${P} d="M4 12h16"/>`,
   refresh: `<path ${P} d="M20 11a8 8 0 0 0-14-4.5L4 8"/><path ${P} d="M4 4v4h4"/><path ${P} d="M4 13a8 8 0 0 0 14 4.5L20 16"/><path ${P} d="M20 20v-4h-4"/>`,

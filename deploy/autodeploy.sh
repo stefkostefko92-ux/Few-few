@@ -53,6 +53,10 @@ VIZITKA_PORT="${VIZITKA_PORT:-$(sed -n 's/^PORT=//p' /etc/vizitka/vizitka.env 2>
 VIZITKA_PORT="${VIZITKA_PORT:-3105}"
 # /healthz връща и ИМЕТО на приложението — само код 200 не доказва кой отговаря.
 VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:${VIZITKA_PORT}/healthz}"
+# node-ът, с който тръгва услугата (ExecStart в vizitka.service) — с него се проверява
+# нативният модул след npm ci.
+VIZITKA_NODE="${VIZITKA_NODE:-$(sed -n 's#^ExecStart=\([^ ]*node\) .*#\1#p' /etc/systemd/system/vizitka.service 2>/dev/null | head -1 || true)}"
+VIZITKA_NODE="${VIZITKA_NODE:-/usr/bin/node}"
 
 # panev (Panev Ascensori — systemd модел, като medqr/vizitka). Express сервира
 # предварително генерираните статични страници (корен + en/ + bg/) + /api/contact
@@ -242,6 +246,33 @@ ok "Източник за деплой: $SRC"
 
 deploy_failed=0
 
+# Пренася .env (тайните) на Compose продукт в новия release и го пази на стабилен
+# път. Преди се четеше САМО от `current` — а деплой само на друг продукт (напр.
+# PROJECTS="vizitka") мести `current` към release БЕЗ този .env; следващият деплой
+# не го намираше и eternaltouch си генерираше НОВИ пароли за базата (стар Postgres
+# том + нова парола = паднал сайт), а zabobovdol искаше интерактивен setup.
+# Ред: споделеният път → `current` → най-новият стар release, който го има.
+carry_env() {
+  local proj="$1" d="$2" shared="/opt/few-few/shared/$1/.env" src="" r
+  if [ ! -f "$d/.env" ]; then
+    if [ -f "$shared" ]; then
+      src="$shared"
+    elif [ -f "$CURRENT_LINK/$proj/.env" ]; then
+      src="$CURRENT_LINK/$proj/.env"
+    else
+      for r in $(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null || true); do
+        [ "${r%/}" = "${SRC%/}" ] && continue
+        if [ -f "$r$proj/.env" ]; then src="$r$proj/.env"; break; fi
+      done
+    fi
+    if [ -n "$src" ]; then cp -a "$src" "$d/.env"; ok "Пренесох $proj/.env от $src"; fi
+  fi
+  # Първият намерен .env става каноничен — оттук нататък не зависи от `current`.
+  if [ -f "$d/.env" ] && [ ! -f "$shared" ]; then
+    install -D -m 600 "$d/.env" "$shared" && ok "Запазих $proj/.env в $shared"
+  fi
+}
+
 # ── 3a) zabobovdol — Docker Compose ───────────────────────────────────────────
 # Откъде да дойде .env: стабилният дом → current → най-новият release, който го има. Печата пътя.
 zbd_env_source() {
@@ -421,27 +452,63 @@ deploy_vizitka() {
   [ -d "$d" ] || { warn "Няма vizitka/ в архива — пропускам."; return; }
   log "Разгръщам vizitka (systemd)…"
   id vizitka >/dev/null 2>&1 || die "Липсва системен юзър vizitka (виж vizitka/deploy/DEPLOY.md)."
-  # Бекъп на текущия код (data/ остава непокътната — извън rsync).
-  [ -d "$VIZITKA_DIR" ] && cp -a "$VIZITKA_DIR" "${VIZITKA_DIR}.bak-$TS"
   command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  # Бекъп на текущия код БЕЗ data/: там са базата и качените снимки (лични данни) —
+  # `cp -a` на цялата папка ги дублираше в .bak, който оставаше на диска при провал.
+  # node_modules влиза нарочно: откатът трябва да върне и работещите зависимости.
+  local bak="${VIZITKA_DIR}.bak-$TS"
+  if [ -f "$VIZITKA_DIR/package.json" ]; then
+    rsync -a --exclude data/ "$VIZITKA_DIR"/ "$bak"/
+  fi
+  # Връща кода (и зависимостите) от бекъпа; data/ не се пипа.
+  vizitka_restore_code() {
+    [ -d "$bak" ] || return 0
+    rsync -a --delete --exclude data/ "$bak"/ "$VIZITKA_DIR"/
+    chown -R vizitka:vizitka "$VIZITKA_DIR"
+    rm -rf "$bak"
+  }
   mkdir -p "$VIZITKA_DIR"
   rsync -a --delete \
     --exclude data/ --exclude node_modules/ --exclude .env \
     "$d"/ "$VIZITKA_DIR"/
   chown -R vizitka:vizitka "$VIZITKA_DIR"
-  ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev ) \
-    || { warn "vizitka: npm ci се провали — пропускам рестарта, старата услуга остава жива."; deploy_failed=1; return; }
-  # Снимка на базата ПРЕДИ рестарт — миграциите се пускат при старт (db.js).
+  # При провал на npm ci кодът на диска ВЕЧЕ е новият, а node_modules — полуподменени:
+  # „старата услуга остава жива“ важеше само до следващия рестарт (ъпдейт, OOM, reboot),
+  # който щеше да вдигне счупена комбинация. Затова връщаме и кода.
+  # `npm ls` след това НЕ е излишен: npm понякога се срива („Exit handler never called!“)
+  # с изход 0 и оставя node_modules непълни (хванато на генерална репетиция — рестартът
+  # вдигаше код без express, а само health проверката го връщаше, след секунди престой).
+  # Последната проверка зарежда нативния модул (better-sqlite3) със СЪЩИЯ node, с който
+  # тръгва услугата (ExecStart). npm ci компилира за node-а от PATH на sudo; ако на
+  # машината има две версии, модулът е за грешната (NODE_MODULE_VERSION) и услугата
+  # умира при старт — пак хванато на репетиция, пак с престой до отката.
+  if ! ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev \
+    && sudo -u vizitka npm ls --omit=dev --depth=0 >/dev/null \
+    && sudo -u vizitka "$VIZITKA_NODE" -e "new (require('better-sqlite3'))(':memory:').close()" ); then
+    warn "vizitka: npm ci се провали — връщам предишния код; услугата не е рестартирана."
+    vizitka_restore_code
+    deploy_failed=1; return
+  fi
+  # Снимка на базата ПРЕДИ рестарт — миграциите се пускат при старт (db.js). Само с
+  # онлайн backup API (sqlite3 CLI или better-sqlite3), който включва и WAL: голо `cp`
+  # на .db при жива услуга пропуска записите, които още са в -wal файла.
   local db="$VIZITKA_DIR/data/vizitka.db"
   local dbbak="${db}.pre-$TS"
   if [ -f "$db" ]; then
-    sudo -u vizitka sqlite3 "$db" ".backup '$dbbak'" || cp -a "$db" "$dbbak"
+    if ! { command -v sqlite3 >/dev/null && sudo -u vizitka sqlite3 "$db" ".backup '$dbbak'"; } &&
+      ! ( cd "$VIZITKA_DIR" && sudo -u vizitka node -e \
+        "new (require('better-sqlite3'))(process.argv[1],{readonly:true}).backup(process.argv[2]).then(()=>process.exit(0),e=>{console.error(e.message);process.exit(1)})" \
+        "$db" "$dbbak" ); then
+      warn "vizitka: снимката на базата не стана — НЕ рестартирам (миграция без бекъп)."
+      vizitka_restore_code
+      deploy_failed=1; return
+    fi
     log "Снимка на базата преди миграция: $dbbak"
   fi
   systemctl restart "$VIZITKA_SERVICE"
   sleep 2
   if health "$VIZITKA_HEALTH_URL" "vizitka" '"app":"vizitka"'; then
-    rm -rf "${VIZITKA_DIR}.bak-$TS"
+    rm -rf "$bak"
     ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
   else
     deploy_failed=1
@@ -452,10 +519,7 @@ deploy_vizitka() {
       rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
       chown vizitka:vizitka "$db"
     fi
-    if [ -d "${VIZITKA_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude data/ "${VIZITKA_DIR}.bak-$TS"/ "$VIZITKA_DIR"/
-      chown -R vizitka:vizitka "$VIZITKA_DIR"
-    fi
+    vizitka_restore_code
     systemctl restart "$VIZITKA_SERVICE"
   fi
 }
@@ -750,6 +814,10 @@ deploy_mastilko() {
   rsync -a --delete \
     --exclude node_modules/ --exclude .next/ --exclude .env --exclude data/ \
     "$d"/ "$MASTILKO_DIR"/
+  # Версията в service worker-а = този релийз, иначе `activate` не чисти
+  # старите кешове (филтрира по неизменен литерал) и статичният кеш расте.
+  sed -i "s|^const VERSION = \".*\";|const VERSION = \"mastilko-$TS\";|" \
+    "$MASTILKO_DIR/public/sw.js" 2>/dev/null || warn "sw.js: версията не е пренаписана"
   chown -R mastilko:mastilko "$MASTILKO_DIR"
   # Билд на сървъра: пълни зависимости → next build → сваляне до продукционни.
   ( cd "$MASTILKO_DIR" \
@@ -1092,9 +1160,7 @@ deploy_eternaltouch() {
   [ -d "$d" ] || { warn "Няма eternaltouch/ в архива — пропускам."; return; }
   log "Разгръщам eternaltouch (Docker Compose)…"
   # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
-  if [ -f "$CURRENT_LINK/eternaltouch/.env" ] && [ ! -f "$d/.env" ]; then
-    cp -a "$CURRENT_LINK/eternaltouch/.env" "$d/.env"; ok "Пренесох eternaltouch/.env"
-  fi
+  carry_env eternaltouch "$d"
   # Пръв деплой без .env: генерирай random secrets (app-ът иначе отказва да стартира).
   # SMTP_PASS остава CHANGE_ME — имейлите тръгват след като го попълниш веднъж ръчно.
   if [ ! -f "$d/.env" ]; then
@@ -1133,6 +1199,7 @@ EOF
     warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
   fi
   chmod 600 "$d/.env" 2>/dev/null || true
+  carry_env eternaltouch "$d"   # новогенерираният .env → стабилния път
   ( cd "$d" && bash deploy.sh ) \
     || { warn "eternaltouch: deploy.sh се провали — продължавам с останалите."; deploy_failed=1; return; }
   health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
@@ -1328,10 +1395,13 @@ deploy_adblock() {
   # 1) Обслужвани файлове → www root. Копираме избрани файлове (без README/конфиг),
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
-  for f in index.html privacy.html filters.json robots.txt sitemap.xml llms.txt \
-           og.png favicon.svg favicon-48.png apple-touch-icon.png icon-512.png; do
+  # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
+  for f in index.html privacy.html robots.txt sitemap.xml llms.txt \
+           og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
   done
+  # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
+  rm -f "$ADBLOCK_WWW/favicon.svg"
   # .well-known/ (security.txt и др.)
   if [ -d "$d/.well-known" ]; then
     mkdir -p "$ADBLOCK_WWW/.well-known"
@@ -1349,20 +1419,36 @@ deploy_adblock() {
   if id caddy >/dev/null 2>&1; then chown -R caddy:caddy "$ADBLOCK_WWW"; fi
   ok "adblock файлове → $ADBLOCK_WWW"
 
-  # 1а) Ed25519 подпис на filters.json (разширението го проверява при ъпдейт).
-  # Ключът живее САМО на сървъра (виж adblock/server/README.md); без ключ —
-  # без подпис, разширението приема ъпдейта както досега.
-  if [ -f "$ADBLOCK_SIGNING_KEY" ]; then
-    if openssl pkeyutl -sign -inkey "$ADBLOCK_SIGNING_KEY" -rawin \
-        -in "$ADBLOCK_WWW/filters.json" 2>/dev/null | base64 -w0 > "$ADBLOCK_WWW/filters.json.sig" \
-        && [ -s "$ADBLOCK_WWW/filters.json.sig" ]; then
-      chmod 644 "$ADBLOCK_WWW/filters.json.sig"
-      if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json.sig"; fi
-      ok "adblock: filters.json подписан (filters.json.sig)"
+  # 1а) filters.json + Ed25519 подпис, публикувани като ДВОЙКА.
+  # Разширението (Chrome 137+) ИЗИСКВА валиден подпис: липсващ .sig → „no
+  # signature", стар .sig към нов filters.json → „bad signature" — и в двата случая
+  # всички live ъпдейти се отхвърлят, включително аварийният стоп
+  # (disableRequestFlags). Затова: подписваме в staging и публикуваме двойката
+  # чак след успешен подпис; без ключ или при провал СТАРАТА (съвпадаща) двойка
+  # остава на място. Ключът живее САМО на сървъра (adblock/server/README.md).
+  if [ -f "$d/filters.json" ]; then
+    local stage; stage="$(mktemp -d)"
+    cp "$d/filters.json" "$stage/filters.json"
+    if [ -f "$ADBLOCK_SIGNING_KEY" ] \
+       && openssl pkeyutl -sign -inkey "$ADBLOCK_SIGNING_KEY" -rawin -in "$stage/filters.json" 2>/dev/null \
+            | base64 -w0 > "$stage/filters.json.sig" \
+       && [ -s "$stage/filters.json.sig" ]; then
+      install -m 644 "$stage/filters.json.sig" "$ADBLOCK_WWW/filters.json.sig.new"
+      install -m 644 "$stage/filters.json" "$ADBLOCK_WWW/filters.json.new"
+      mv -f "$ADBLOCK_WWW/filters.json.new" "$ADBLOCK_WWW/filters.json"
+      mv -f "$ADBLOCK_WWW/filters.json.sig.new" "$ADBLOCK_WWW/filters.json.sig"
+      if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json" "$ADBLOCK_WWW/filters.json.sig"; fi
+      ok "adblock: filters.json + filters.json.sig публикувани като подписана двойка"
+    elif [ -f "$ADBLOCK_WWW/filters.json" ] && [ -f "$ADBLOCK_WWW/filters.json.sig" ]; then
+      warn "adblock: НЯМА подпис (ключ: $ADBLOCK_SIGNING_KEY) — оставям предишната подписана двойка filters.json/.sig; новият filters.json НЕ е публикуван."
+      deploy_failed=1
     else
+      install -m 644 "$stage/filters.json" "$ADBLOCK_WWW/filters.json"
       rm -f "$ADBLOCK_WWW/filters.json.sig"
-      warn "adblock: подписването провали — премахнах .sig, ъпдейтите вървят неподписани."
+      warn "adblock: НЯМА ключ за подпис ($ADBLOCK_SIGNING_KEY) — filters.json е публикуван НЕПОДПИСАН; Chrome 137+ ще отхвърля live ъпдейтите, докато не сложиш ключа и не деплойнеш пак."
+      deploy_failed=1
     fi
+    rm -rf "$stage"
   fi
 
   # 2) Уеб сървър. Предпочитаме Caddy (авто-TLS); на сървъри с Nginx (моделът на

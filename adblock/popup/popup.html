@@ -52,6 +52,11 @@
     </div>
   </section>
 
+  <p class="rejections" id="rejLine" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 4 4 0 0 1-5-5 4 4 0 0 1-4-4Z"/><path d="m9 10 6 6m0-6-6 6"/></svg>
+    <span id="rejText"></span>
+  </p>
+
   <div class="site-group">
     <section class="site">
       <div class="site-id">
@@ -70,7 +75,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 9h18M8 13h8"/></svg>
         <span data-i18n="cosmetics">Hide ad boxes here</span>
       </div>
-      <label class="switch sm" data-i18n-title="cosmeticsTitle" title="Cosmetic filtering on this site (turn off if the layout breaks)">
+      <label class="switch sm" data-i18n-title="cosmeticsTitle" title="Hide ad boxes on this site (turn it off if the page layout breaks)">
         <span class="lbl" id="cosmLabel" data-i18n="on">On</span>
         <input type="checkbox" id="cosmToggle" checked />
         <span class="track"><span class="thumb"></span></span>
@@ -99,6 +104,11 @@
     </button>
   </div>
 
+  <button id="reportBtn" class="report-link" type="button" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20L12 3Zm0 6v5m0 3v.5"/></svg>
+    <span data-i18n="reportBroken">Site broken? Fix it or tell us</span>
+  </button>
+
   <a class="promo" href="https://carbonstealth.eu" target="_blank" rel="noopener">
     <img src="../icons/icon32.png" alt="" width="22" height="22" />
     <div>
@@ -113,7 +123,7 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.4.8-1.2 2-2.4 4-2.4 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21Z"/></svg>
       <span data-i18n="support">Support</span>
     </a>
-    <span class="meta"><i id="listDot">filters</i><i class="v">v5.0.3</i></span>
+    <span class="meta"><i id="listDot">filters</i><i class="v">v5.1.2</i></span>
   </footer>
 
   <script src="popup.js"></script>

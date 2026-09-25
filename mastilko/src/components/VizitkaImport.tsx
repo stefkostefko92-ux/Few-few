@@ -18,6 +18,8 @@ export default function VizitkaImport() {
   useEffect(() => {
     const token = params.get("token");
     if (!token) {
+      // Липсващ токен в URL — установимо чак в клиента при монтиране.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus("error");
       return;
     }

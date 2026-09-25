@@ -1,0 +1,10 @@
+Supreme AdBlock blokira reklame svuda — video reklame na YouTubeu, banere, iskočne prozore i tragače — bez praćenja onoga što radite.
+
+• Reklame na YouTubeu zaustavljaju se na izvoru, pa se videozapisi jednostavno puštaju.
+• Ugrađeni su EasyList, EasyPrivacy i uBlock Origin filteri, plus lista za vaš jezik (31 regionalna lista).
+• Baneri za kolačiće: pritišće „Odbij“ umjesto vas, uklanja zaostalo zamućenje i zaključano skrolanje i nikada ne pritišće dugme za prijavu, OAuth ili plaćanje.
+• Režim fokusa: sakriva chat oblačiće, iskočne prozore za bilten, upite za obavještenja, vidžete društvenih mreža, iskočne AI asistente i YouTube Shorts.
+• Anti-adblock zidovi i pop-under prozori se neutraliziraju.
+• Sajt ne radi? Jedan klik ga popravlja — ili nam javite; ništa se ne šalje prije nego što to vidite.
+• Potpisana ažuriranja filtera dvaput dnevno: nove reklamne mreže pokrivaju se u roku od nekoliko sati, bez udaljenog koda.
+• Bez računa, bez telemetrije, bez prikupljanja podataka. Besplatno, uz neobaveznu donaciju; iskočni prozor prikazuje jednu malu karticu s oznakom „Reklama“ za Carbon Stealth, autora proširenja.

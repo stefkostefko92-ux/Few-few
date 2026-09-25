@@ -17,7 +17,7 @@ globalThis.chrome = mock.chrome;
 const bg = loadBackground({
   chrome: mock.chrome,
   patch: (src) => src.replace(/const SIG_PUBKEYS_B64 = \[[^\]]*\];/, `const SIG_PUBKEYS_B64 = [${JSON.stringify(k1.pub)}, ${JSON.stringify(k2.pub)}];`),
-  exports: "fetchLiveConfig, applyState, doSyncScriptlets, canVerifyEd25519",
+  exports: "fetchLiveConfig, applyState, doSyncScriptlets, canVerifyEd25519, setEd25519: (v) => { ed25519Supported = v; }",
 });
 
 // ---------- 1) Ed25519 trust gate ----------
@@ -92,5 +92,80 @@ const health = await sendMessage(mock.listeners, { type: "getHealth" });
 ok("getHealth reports engine/rulesets/dynamic counts/live state/ed25519", health && typeof health.engineRegistered === "boolean" && Array.isArray(health.enabledRulesets) && typeof health.liveVersion === "number" && health.ed25519 === true && health.keys === 2 && typeof health.dynamic === "object");
 const foreign = await sendMessage(mock.listeners, { type: "getHealth" }, { id: "someone-else" });
 ok("messages from another extension are ignored", foreign === undefined);
+
+// ---------- 5) content scripts speak only for their own page (червен екип F3) ----------
+const page = { id: "test-ext", url: "https://evil.example/page", tab: { id: 5 } };
+mock.store.set("enabled", true);
+ok("content script cannot toggle protection", (await sendMessage(mock.listeners, { type: "toggle", enabled: false }, page)) === undefined && mock.store.get("enabled") === true);
+ok("content script cannot edit the allowlist", (await sendMessage(mock.listeners, { type: "setAllow", host: "doubleclick.net", allow: true }, page)) === undefined && !mock.store.get("allowlist").includes("doubleclick.net"));
+ok("content script cannot add a subscription or import settings",
+  (await sendMessage(mock.listeners, { type: "addSubscription", url: "https://evil.example/list.txt" }, page)) === undefined &&
+  (await sendMessage(mock.listeners, { type: "importSettings", data: { enabled: false } }, page)) === undefined);
+let sv = await sendMessage(mock.listeners, { type: "saveCustomSelector", host: "victim.example", selector: ".ad-box" }, page);
+ok("saveCustomSelector: stored under the SENDER's host, not msg.host", sv && sv.ok && (mock.store.get("customHidden")["evil.example"] || []).includes(".ad-box") && !mock.store.get("customHidden")["victim.example"]);
+sv = await sendMessage(mock.listeners, { type: "saveCustomSelector", selector: "iframe[sandbox]:remove-attr(sandbox)" }, page);
+ok("saveCustomSelector: unsafe procedural selector refused", sv && !sv.ok);
+
+// ---------- 6) allowlist: hosts only, IDN as punycode, one bad entry cannot poison the rest (Кодаджията) ----------
+let al = await sendMessage(mock.listeners, { type: "setAllow", host: "пример.бг", allow: true });
+ok("setAllow: raw Unicode IDN refused (DNR takes punycode only)", al && !al.ok);
+al = await sendMessage(mock.listeners, { type: "setAllow", host: "xn--e1afmkfd.xn--90ae", allow: true });
+const allowRules = mock.dynamic().filter((x) => x.id >= 90000 && x.id < 100000);
+ok("setAllow: punycode accepted; allow rules built only from valid hosts",
+  al && al.ok && al.allowlist.includes("xn--e1afmkfd.xn--90ae") &&
+  allowRules.some((x) => x.condition.requestDomains[0] === "xn--e1afmkfd.xn--90ae") && !allowRules.some((x) => x.condition.requestDomains[0] === "bad host"));
+await bg.doSyncScriptlets(true);
+const ex = mock.calls.registered.at(-1).excludeMatches;
+ok("scriptlets excluded on IDN / IP / localhost too (no invalid *. patterns)", ex.includes("*://xn--e1afmkfd.xn--90ae/*") &&
+  await (async () => { mock.store.set("allowlist", ["192.168.1.10", "localhost"]); await bg.doSyncScriptlets(true); const e = mock.calls.registered.at(-1).excludeMatches; return e.join() === "*://192.168.1.10/*,*://localhost/*"; })());
+
+// ---------- 7) a pause survives an extension update (Кодаджията) ----------
+mock.store.set("enabled", false); mock.store.set("pausedUntil", Date.now() + 20 * 60000);
+await mock.listeners.installed[0]({ reason: "update" });
+ok("update during a pause re-arms the resume alarm", mock.calls.alarms.some((a) => a.name === "resume"));
+mock.store.set("enabled", false); mock.store.set("pausedUntil", Date.now() - 1000);
+await mock.listeners.installed[0]({ reason: "update" });
+ok("update after the pause expired turns protection back on", mock.store.get("enabled") === true && mock.store.get("pausedUntil") === 0);
+
+// ---------- 8) anti-rollback only between SIGNED configs (червен екип F4) ----------
+served = { cfg: cfg(2e308 > 1 ? Number.MAX_VALUE : 1), sig: "" };
+served.cfg = JSON.stringify({ version: Number.MAX_VALUE, blockDomains: [], cosmetic: [], youtube: {} });
+served.sig = await sign(k1.kp, served.cfg);
+r = await bg.fetchLiveConfig(true);
+ok("absurd version (Number.MAX_VALUE) neutralised, cannot pin the baseline", !r.ok && r.reason === "stale version" && mock.store.get("liveConfig").version < 1e10);
+bg.setEd25519(false); // a browser without Ed25519 (Chrome < 137)
+served = { cfg: JSON.stringify({ version: 9999999999, blockDomains: [], cosmetic: [], youtube: {} }) };
+r = await bg.fetchLiveConfig(true);
+const pinned = mock.store.get("liveConfig");
+served = { cfg: cfg(5) };
+const r2 = await bg.fetchLiveConfig(true);
+served = { cfg: JSON.stringify({ version: 6, blockDomains: [], cosmetic: [], youtube: {}, scriptlets: [{ h: "example.com", n: "set-constant", a: ["adsEnabled", "false"] }] }) };
+await bg.fetchLiveConfig(true);
+ok("unsigned (no Ed25519): live scriptlets are dropped — they run in the page, only from a signed file", mock.store.get("liveConfig").verified === false && mock.store.get("liveConfig").scriptlets.length === 0);
+served = { cfg: cfg(5) };
+await bg.fetchLiveConfig(true);
+ok("unsigned (no Ed25519): a huge version cannot lock out later updates", r.ok && pinned.verified === false && r2.ok && mock.store.get("liveConfig").version === 5);
+bg.setEd25519(true);
+served = { cfg: cfg(3), sig: await sign(k1.kp, cfg(3)) };
+r = await bg.fetchLiveConfig(true);
+ok("first signed config after unsigned ones is accepted and becomes the baseline", r.ok && mock.store.get("liveConfig").verified === true);
+served = { cfg: cfg(2), sig: await sign(k1.kp, cfg(2)) };
+r = await bg.fetchLiveConfig(true);
+ok("…and an older signed one is then rejected", !r.ok && r.reason === "stale version");
+
+// ---------- 9) per-page log groups by list (Chrome gives no URL in packed builds) ----------
+mock.chrome.declarativeNetRequest.getMatchedRules = async () => ({ rulesMatchedInfo: [
+  { rule: { ruleId: 5, rulesetId: "easyprivacy" }, timeStamp: 1 },
+  { rule: { ruleId: 6, rulesetId: "easyprivacy" }, timeStamp: 2 },
+  { rule: { ruleId: 100003, rulesetId: "_dynamic" }, timeStamp: 3 },
+  { rule: { ruleId: 80001, rulesetId: "_dynamic" }, timeStamp: 4 },
+  { rule: { ruleId: 90001, rulesetId: "_dynamic" }, timeStamp: 5 },   // allowlist → not a block
+  { rule: { ruleId: 70000, rulesetId: "_dynamic" }, timeStamp: 6 },   // YouTube bypass → not a block
+] });
+const log = await sendMessage(mock.listeners, { type: "getTabLog", tabId: 5 });
+ok("getTabLog: per-list counts, allow rules excluded",
+  log && log.ok && log.total === 4 && log.items[0].list === "easyprivacy" && log.items[0].n === 2 &&
+  log.items.some((x) => x.list === "live") && log.items.some((x) => x.list === "user") && !log.items.some((x) => !x.list));
+ok("getTabLog is not available to content scripts (other tabs' activity)", (await sendMessage(mock.listeners, { type: "getTabLog", tabId: 5 }, page)) === undefined);
 
 done();

@@ -142,14 +142,14 @@ def popup(blocked="1,204", data="68 MB", time="14 min", host="nytimes.com", log=
     $("savedData").textContent = {json.dumps(data)};
     $("savedTime").textContent = {json.dumps(time)};
     $("siteHost").textContent = {json.dumps(host)};
-    $("listDot").textContent = "40,000+ filters";
+    $("listDot").textContent = "60,000+ filters";
     var items = {json.dumps(log)};
-    $("logCount").textContent = String(items.reduce(function (a, it) {{ return a + (it[2] || 1); }}, 0));
+    $("logCount").textContent = String(items.reduce(function (a, it) {{ return a + (it[1] || 0); }}, 0));
     $("logEmpty").hidden = items.length > 0;
     items.forEach(function (it) {{
       var li = document.createElement("li"), h = document.createElement("span"), t = document.createElement("span");
       h.className = "host"; h.textContent = it[0];
-      t.className = "type"; t.textContent = it[1] + (it[2] > 1 ? " ×" + it[2] : "");
+      t.className = "type"; t.textContent = "×" + it[1];
       li.append(h, t); $("logList").appendChild(li);
     }});
     if (items.length) $("logBox").open = true;
@@ -198,12 +198,15 @@ def features_panel():
     return f"""
 <div class="panel">
   <div class="ph">{SHIELD}<div><b>Settings</b><br><span>Carbon Stealth</span></div></div>
-  <div class="card"><h3>Extra protection</h3>
-    <div class="row"><div><div class="t">Smart Detection <span class="badge">unique</span></div><div class="d">Catches ads no filter list knows yet</div></div><div class="mini"></div></div>
-    <div class="row"><div><div class="t">YouTube ad blocking</div><div class="d">Remove pre-roll & mid-roll video ads</div></div><div class="mini"></div></div>
-    <div class="row"><div><div class="t">Cookie / consent banners</div><div class="d">Dismissed automatically</div></div><div class="mini"></div></div>
-    <div class="row"><div><div class="t">Meta sponsored posts</div><div class="d">Hidden on Facebook & Instagram</div></div><div class="mini"></div></div>
-    <div class="row"><div><div class="t">Anti-adblock bypass</div><div class="d">Removes "disable your adblocker" walls</div></div><div class="mini"></div></div>
+  <div class="card"><h3>Filter lists</h3>
+    <div class="row"><div><div class="t">uBlock Origin filters</div><div class="d">GPL-3.0 · 17,073 rules</div></div><div class="mini"></div></div>
+    <div class="row"><div><div class="t">French <span class="badge">your language</span></div><div class="d">AdGuard French · 4,917 rules</div></div><div class="mini"></div></div>
+    <div class="row"><div><div class="t">+ 30 more regional lists</div><div class="d">Arabic to Vietnamese, one switch each</div></div><div class="mini off"></div></div>
+  </div>
+  <div class="card"><h3>Focus mode</h3>
+    <div class="row"><div><div class="t">Chat bubbles</div><div class="d">Support and sales chat pop-ups</div></div><div class="mini"></div></div>
+    <div class="row"><div><div class="t">YouTube Shorts</div><div class="d">Shelves and tabs</div></div><div class="mini"></div></div>
+    <div class="row"><div><div class="t">“Sign in with Google”</div><div class="d">One Tap prompts</div></div><div class="mini off"></div></div>
   </div>
 </div>"""
 
@@ -223,7 +226,7 @@ SLIDES = [
     ("Free · Private · Fast",
      'Block ads <span class="c">everywhere</span>',
      "One click and the web is clean. Banners, pop-ups, trackers and YouTube video ads — gone.",
-     ["YouTube pre-roll & mid-roll ads", "EasyList & EasyPrivacy built in", "Banners, pop-ups & trackers", "Lighter, faster pages"],
+     ["YouTube pre-roll & mid-roll ads", "EasyList, EasyPrivacy & uBlock filters built in", "Banners, pop-ups, trackers & cookie walls", "Lighter, faster pages"],
      popup()),
     ("YouTube",
      'YouTube video ads, <span class="c">gone</span>',
@@ -235,18 +238,17 @@ SLIDES = [
      "Smart Detection spots ads by their shape — catching brand-new placements that rule-based blockers miss.",
      ["List-free heuristic detection", "Catches zero-day ad slots", "See exactly why each was blocked"],
      smartlog_panel()),
-    ("Your controls",
-     'Powerful, <span class="c">in your hands</span>',
-     "Per-site allowlist, custom filters, element picker, themes and cross-device sync.",
-     ["Advanced scriptlets & procedural filters", "Subscribe to any filter list by URL", "Pop-under blocker & cookie stripping", "Allow ads on sites you support"],
+    ("Your language · your focus",
+     'Local ads, <span class="c">local lists</span>',
+     "31 regional lists built in — the one for your language turns on by itself. Focus mode hides chat bubbles, pop-ups and Shorts.",
+     ["70 interface languages", "Site broken? One-click fixes", "Element picker & custom filters", "Allow ads on sites you support"],
      features_panel()),
     ("Private by design",
      '100% free. <span class="c">Zero tracking.</span>',
-     "No account, no telemetry, no data collection. Everything runs on your device — and the popup shows exactly what was blocked.",
-     ["See every blocked request, per page", "Nothing about you is sent", "MIT licensed · no account needed"],
+     "No account, no telemetry, no data collection. Everything runs on your device — and the popup shows what each filter list blocked on the page.",
+     ["See what each list blocked, per page", "Your browsing data never leaves the device", "MIT licensed · no account needed"],
      popup(blocked="9,140", data="4.6 GB", time="2.3 h", host="facebook.com",
-           log=[["connect.facebook.net", "script", 3], ["www.facebook.com", "beacon", 7],
-                ["static.xx.fbcdn.net", "image", 12], ["an.facebook.com", "xhr", 2]])),
+           log=[["EasyPrivacy", 12], ["EasyList", 7], ["uBlock filters", 5], ["Supreme core rules", 3], ["Tracking parameters", 2]])),
 ]
 
 for i, s in enumerate(SLIDES, 1) if __name__ == "__main__" else []:

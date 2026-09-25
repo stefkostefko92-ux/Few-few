@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import CardStudio from "@/components/studios/CardStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
+import RelatedTools from "@/components/RelatedTools";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
-const TITLE = "Безплатни визитки онлайн";
+const TITLE = "Безплатни визитки за печат онлайн (90 × 54 mm)";
 const DESC =
   "Направи си визитки 90 × 54 mm с топъл дизайн — шест шаблона, 10 на лист А4, готови за рязане. Безплатно, на български, без регистрация и без воден знак.";
 
@@ -47,6 +49,7 @@ export const metadata: Metadata = {
     "визитка vCard",
     "шаблони за визитки",
     "визитки 90x54",
+    "Carbon Stealth",
   ],
   alternates: { canonical: "/vizitki" },
   ...pageMeta(TITLE, DESC, "/vizitki"),
@@ -56,8 +59,9 @@ export default function VizitkiPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">
-          💼 Визитки
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
+          <Image src="/icons/vizitki.webp" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          Визитки
         </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           <strong className="text-ink">Мастилко „Визитки“ е безплатен инструмент за визитки за печат на български</strong>{" "}
@@ -69,6 +73,7 @@ export default function VizitkiPage() {
       </header>
       <CardStudio />
       <ToolFaq items={FAQ} />
+      <RelatedTools current="/vizitki" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

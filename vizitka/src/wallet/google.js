@@ -2,8 +2,11 @@
 // „Запази в Google Wallet"; при промяна PATCH-ваме обекта и то се разпространява до
 // запазилите го устройства. Подписване RS256 през node:crypto; API токен през
 // JWT-bearer grant. Без външни зависимости (Node 20 има глобален fetch).
+//
+// Модулът НЕ импортира базата (нито косвено през links.js): ползва се и от
+// scripts/wallet-google-class.mjs, който се пуска като root — там всеки импорт на
+// db.js създаваше/мигрираше база в текущата папка.
 import crypto from 'node:crypto';
-import { getLinks } from '../links.js';
 import {
   cardBgHex,
   googleServiceAccount,
@@ -27,14 +30,46 @@ function signRs256(header, payload, privateKey) {
 // Стабилен id по profile.id — не се чупи при смяна на слъг.
 const objectId = (id) => `${googleIssuerId()}.${String(id).replace(/[^\w.-]/g, '_')}`;
 
-// Дефиниция на класа (създава се при първото запазване през JWT).
-function genericClass() {
-  return { id: googleClassId(), classTemplateInfo: {} };
+// Дефиниция на класа.
+//
+// `MULTIPLE_HOLDERS` е задължително за нашия модел, не козметика: обектът е ЕДИН на
+// визитка (id по profile.id), а го запазват МНОГО посетители. Документацията на
+// Google не казва какво прави незададената стойност (само „unspecified preference“),
+// а другите стойности пускат по един притежател — тоест вторият човек, запазил
+// картата на Иван, рискува отказ. Полето е само на класа (GenericObject го няма).
+export function genericClass() {
+  return {
+    id: googleClassId(),
+    classTemplateInfo: {},
+    multipleDevicesAndHoldersAllowedStatus: 'MULTIPLE_HOLDERS',
+  };
 }
 
 // Обектът за конкретна визитка.
-function genericObject(profile, base) {
+//
+// Само контактите — БЕЗ собствените бутони на потребителя: те са произволни външни
+// адреси, а правилата на Google (Acceptable Use Policy) важат за всяка връзка в
+// картата. QR кодът води до живата визитка, където бутоните са.
+export function genericObject(profile, base) {
   const cardUrl = `${base}/p/${profile.slug}`;
+  const common = {
+    id: objectId(profile.id),
+    classId: googleClassId(),
+    hexBackgroundColor: cardBgHex(profile),
+    // Квадратно лого: Google го показва изрязано в КРЪГ, а основното ни лого е
+    // 409×211 — в кръг губеше краищата. wallet-logo.png е 660×660 с полета, така че
+    // целият знак влиза в описаната окръжност.
+    logo: { sourceUri: { uri: `${base}/wallet-logo.png` } },
+    cardTitle: { defaultValue: { language: 'bg', value: 'Vizitka' } },
+  };
+  // Скрие ли собственикът визитката, картата се маркира изтекла И се изпразва —
+  // иначе запазилите я устройства продължаваха да носят контактите му.
+  if (!profile.is_public)
+    return {
+      ...common,
+      state: 'EXPIRED',
+      header: { defaultValue: { language: 'bg', value: 'Визитката е скрита' } },
+    };
   const text = [];
   if (profile.headline) text.push({ id: 'headline', header: 'Позиция', body: profile.headline });
   if (profile.company) text.push({ id: 'company', header: 'Фирма', body: profile.company });
@@ -47,18 +82,10 @@ function genericObject(profile, base) {
   if (profile.phone) uris.push({ uri: `tel:${profile.phone}`, description: 'Обади се' });
   if (profile.contact_email)
     uris.push({ uri: `mailto:${profile.contact_email}`, description: 'Имейл' });
-  for (const l of getLinks(profile.id)) uris.push({ uri: l.url, description: l.label });
 
   return {
-    id: objectId(profile.id),
-    classId: googleClassId(),
-    // Скрие ли собственикът визитката, картата се маркира изтекла — иначе
-    // обновяването продължаваше да разнася контактите по вече запазилите я
-    // устройства (Apple пътят го спазва през 404 на update услугата).
-    state: profile.is_public ? 'ACTIVE' : 'EXPIRED',
-    hexBackgroundColor: cardBgHex(profile),
-    logo: { sourceUri: { uri: `${base}/logo.png` } },
-    cardTitle: { defaultValue: { language: 'bg', value: 'Vizitka' } },
+    ...common,
+    state: 'ACTIVE',
     header: { defaultValue: { language: 'bg', value: profile.display_name } },
     ...(profile.headline
       ? { subheader: { defaultValue: { language: 'bg', value: profile.headline } } }
@@ -69,19 +96,26 @@ function genericObject(profile, base) {
   };
 }
 
-// URL за бутона „Запази в Google Wallet".
-export function googleSaveUrl(profile, base) {
+// Подписаният токен за „Запази в Google Wallet“. Носи САМО id-тата (т.нар. skinny
+// JWT): класът и обектът вече съществуват в Google. С целите обекти линкът ставаше
+// ~2450 знака при обикновен профил, а Google гарантира работа до 1800 — над това
+// браузърите го режат и запазването тихо не става.
+export function googleSaveJwt(profile) {
   const sa = googleServiceAccount();
   const claims = {
     iss: sa.client_email,
     aud: 'google',
     typ: 'savetowallet',
     iat: Math.floor(Date.now() / 1000),
-    origins: [base],
-    payload: { genericClasses: [genericClass()], genericObjects: [genericObject(profile, base)] },
+    payload: { genericObjects: [{ id: objectId(profile.id), classId: googleClassId() }] },
   };
-  const jwt = signRs256({ alg: 'RS256', typ: 'JWT' }, claims, sa.private_key);
-  return SAVE_BASE + jwt;
+  return signRs256({ alg: 'RS256', typ: 'JWT' }, claims, sa.private_key);
+}
+
+// URL за бутона: първо гарантира, че класът и обектът са актуални в Google.
+export async function googleSaveUrl(profile, base) {
+  await upsertGoogleObject(profile, base);
+  return SAVE_BASE + googleSaveJwt(profile);
 }
 
 // --- Auto-update: PATCH на обекта (разпространява се до запазилите го устройства) --
@@ -116,6 +150,48 @@ async function getAccessToken() {
   accessToken = j.access_token;
   accessAt = now;
   return accessToken;
+}
+
+// Създава класа ПРЕДВАРИТЕЛНО (или го обновява, ако вече го има). Google иска поне
+// един клас, преди да даде право за публикуване, а JWT-то го създава чак при първото
+// запазване — което в демо режим може да направи само тестов акаунт. Идемпотентно:
+// GET → 404 → POST (създай), иначе PATCH. Не разчитаме на кода за „вече съществува“
+// при POST, защото документацията не го описва.
+export async function ensureGoogleClass() {
+  if (!googleEnabled()) throw new Error('Google Wallet не е конфигуриран (ISSUER_ID/SA_KEY).');
+  const token = await getAccessToken();
+  const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
+  const body = JSON.stringify(genericClass());
+  const url = `${API_BASE}/genericClass/${encodeURIComponent(googleClassId())}`;
+  const got = await fetch(url, { headers });
+  if (got.status === 404) {
+    const res = await fetch(`${API_BASE}/genericClass`, { method: 'POST', headers, body });
+    if (!res.ok) throw new Error(`Google: създаването на класа падна (${res.status}).`);
+    return 'created';
+  }
+  if (!got.ok) throw new Error(`Google: четенето на класа падна (${got.status}).`);
+  const res = await fetch(url, { method: 'PATCH', headers, body });
+  if (!res.ok) throw new Error(`Google: обновяването на класа падна (${res.status}).`);
+  return 'updated';
+}
+
+// Създава обекта, ако го няма, иначе го обновява (PATCH → 404 → POST). Класът се
+// гарантира веднъж на процес — обект без клас Google отказва.
+let classReady = false;
+async function upsertGoogleObject(profile, base) {
+  if (!classReady) {
+    await ensureGoogleClass();
+    classReady = true;
+  }
+  const token = await getAccessToken();
+  const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
+  const body = JSON.stringify(genericObject(profile, base));
+  const url = `${API_BASE}/genericObject/${encodeURIComponent(objectId(profile.id))}`;
+  const res = await fetch(url, { method: 'PATCH', headers, body });
+  if (res.ok) return;
+  if (res.status !== 404) throw new Error(`Google PATCH грешка: ${res.status}`);
+  const made = await fetch(`${API_BASE}/genericObject`, { method: 'POST', headers, body });
+  if (!made.ok) throw new Error(`Google: създаването на обекта падна (${made.status}).`);
 }
 
 // Обновява вече запазения обект. Ако още не е запазван (404) — тихо пропуска.

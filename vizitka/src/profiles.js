@@ -33,6 +33,7 @@ export function collectProfileInput(body) {
     fields,
     type: body.type === 'company' ? 'company' : 'personal',
     isPublic: body.is_public === '1' ? 1 : 0,
+    aiDiscoverable: body.ai_discoverable === '1' ? 1 : 0,
     theme: normalizeTheme(body.theme),
     accent: normalizeAccent(body.accent),
     avatarShape: normalizeShape(body.avatar_shape),
@@ -66,20 +67,26 @@ export function validateProfileInput(input, excludeProfileId) {
 // Записва промените по профил (по id) + собствените връзки. Приема вход от
 // collectProfileInput (вече валидиран).
 export function saveProfileEdit(profileId, input) {
-  const { fields, type, isPublic, theme, accent, avatarShape, font, slug, parsed } = input;
+  const { fields, type, isPublic, aiDiscoverable, theme, accent, avatarShape, font, slug, parsed } =
+    input;
   db.prepare(
     `UPDATE profiles SET
        slug = @slug, type = @type, display_name = @display_name, headline = @headline,
        company = @company, phone = @phone, contact_email = @contact_email, website = @website,
        address = @address, bio = @bio, facebook = @facebook, instagram = @instagram,
        linkedin = @linkedin, is_public = @is_public, theme = @theme, accent = @accent,
-       avatar_shape = @avatar_shape, font = @font, updated_at = datetime('now')
+       avatar_shape = @avatar_shape, font = @font, ai_discoverable = @ai_discoverable,
+       -- Дясната страна чете СТАРИТЕ стойности: датата се сменя само при реална промяна.
+       ai_consent_at = CASE WHEN ai_discoverable != @ai_discoverable
+                            THEN datetime('now') ELSE ai_consent_at END,
+       updated_at = datetime('now')
      WHERE id = @id`
   ).run({
     ...fields,
     slug,
     type,
     is_public: isPublic,
+    ai_discoverable: aiDiscoverable,
     theme,
     accent,
     avatar_shape: avatarShape,

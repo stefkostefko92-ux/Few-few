@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-theme="carbon">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="rep_title">Something broken on this site?</title>
+  <script src="../theme.js"></script>
+  <script src="../i18n.js"></script>
+  <link rel="stylesheet" href="../options/options.css" />
+  <link rel="stylesheet" href="report.css" />
+</head>
+<body>
+  <header>
+    <img class="logo" src="../icons/icon48.png" alt="" width="34" height="34" />
+    <div>
+      <h1>Supreme AdBlock</h1>
+      <span class="tagline" data-i18n="rep_title">Something broken on this site?</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2 data-i18n="rep_fix_first">Fix it now</h2>
+      <p class="row-sub"><span data-i18n="rep_site">Site:</span> <b id="host">—</b></p>
+      <p class="row-sub" data-i18n="rep_fix_desc">Most problems go away with one of these. Each one applies to this site only; the tab reloads.</p>
+      <div class="fixes">
+        <button id="fixCosm" class="btn" type="button" data-i18n="rep_fix_cosm">Turn off element hiding here</button>
+        <button id="fixAllow" class="btn" type="button" data-i18n="rep_fix_allow">Allow ads on this site</button>
+        <button id="fixPause" class="btn ghost" type="button" data-i18n="rep_fix_pause">Pause everywhere for 30 minutes</button>
+      </div>
+      <p class="hint" id="fixHint" role="status"></p>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="rep_tell_us">Tell us</h2>
+      <p class="row-sub" data-i18n="rep_tell_desc">We fix broken sites for everyone through the signed filter update, usually within a day. Nothing is sent by the extension: the report opens in your own email app, and you see every word of it first.</p>
+      <label class="field">
+        <span data-i18n="rep_what">What is wrong? (optional)</span>
+        <textarea id="what" rows="3" maxlength="1000" data-i18n-placeholder="rep_what_ph" placeholder="e.g. the video does not start, a white box covers the article…"></textarea>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="fullUrl" />
+        <span data-i18n="rep_full_url">Include the full page address (only the site name otherwise)</span>
+      </label>
+      <h3 class="sub-h" data-i18n="rep_preview">What will be sent</h3>
+      <pre id="preview" class="preview" aria-live="polite"></pre>
+      <div class="fixes">
+        <a id="sendMail" class="btn" href="#" data-i18n="rep_send_mail">Send by email</a>
+        <button id="copy" class="btn ghost" type="button" data-i18n="rep_copy">Copy report</button>
+      </div>
+      <p class="hint" id="sendHint" role="status"></p>
+      <p class="row-sub"><a href="https://adblock.carbonstealth.eu/privacy#report" target="_blank" rel="noopener" data-i18n="rep_privacy">How this report is handled: privacy policy</a></p>
+    </section>
+  </main>
+
+  <script src="report.js"></script>
+</body>
+</html>

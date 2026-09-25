@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "YouTube വീഡിയോ പരസ്യങ്ങൾ, ബാനറുകൾ, പോപ്പ്-അപ്പുകൾ, ട്രാക്കറുകൾ, കുക്കി അറിയിപ്പുകൾ എന്നിവ തടയുന്നു. സൗജന്യം, സ്വകാര്യം."
+  },
+  "byCarbon": {
+    "message": "Carbon Stealth-ൽ നിന്ന്"
+  },
+  "toggleProtection": {
+    "message": "പരിരക്ഷ ഓൺ/ഓഫ് ചെയ്യുക"
+  },
+  "protected": {
+    "message": "പരിരക്ഷിതം"
+  },
+  "paused": {
+    "message": "നിർത്തിവച്ചു"
+  },
+  "blockingHere": {
+    "message": "ഈ പേജിലെ പരസ്യങ്ങൾ തടയുന്നു"
+  },
+  "protectionOff": {
+    "message": "പരിരക്ഷ ഓഫാണ്"
+  },
+  "pause30": {
+    "message": "30 മിനിറ്റ് നിർത്തിവയ്ക്കുക"
+  },
+  "pausedResume": {
+    "message": "നിർത്തിവച്ചു, ഇപ്പോൾ പുനരാരംഭിക്കുക ($1 മിനിറ്റ് ബാക്കി)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "തടഞ്ഞവ"
+  },
+  "dataSaved": {
+    "message": "ലാഭിച്ച ഡാറ്റ"
+  },
+  "timeSaved": {
+    "message": "ലാഭിച്ച സമയം"
+  },
+  "thisSite": {
+    "message": "ഈ സൈറ്റ്"
+  },
+  "thisPage": {
+    "message": "ഈ പേജ്"
+  },
+  "blockOnSite": {
+    "message": "ഈ സൈറ്റിൽ പരസ്യങ്ങൾ തടയുക"
+  },
+  "blocking": {
+    "message": "തടയുന്നു"
+  },
+  "allowed": {
+    "message": "അനുവദിച്ചു"
+  },
+  "cosmetics": {
+    "message": "പരസ്യ ബോക്സുകൾ മറയ്ക്കുക"
+  },
+  "cosmeticsTitle": {
+    "message": "ഈ സൈറ്റിൽ പരസ്യ ബോക്സുകൾ മറയ്ക്കുക (പേജ് ലേഔട്ട് തകരാറിലായാൽ ഓഫാക്കുക)"
+  },
+  "on": {
+    "message": "ഓൺ"
+  },
+  "off": {
+    "message": "ഓഫ്"
+  },
+  "blockedHere": {
+    "message": "ഈ പേജിൽ തടഞ്ഞവ"
+  },
+  "logEmpty": {
+    "message": "ഇവിടെ ഇതുവരെ ഒന്നും തടഞ്ഞിട്ടില്ല."
+  },
+  "logUnavailable": {
+    "message": "ലോഗ് ഇപ്പോൾ ലഭ്യമല്ല (ബ്രൗസർ ക്വാട്ട) — ഒരു മിനിറ്റിനു ശേഷം വീണ്ടും ശ്രമിക്കുക."
+  },
+  "logCore": {
+    "message": "പ്രധാന നിയമങ്ങൾ"
+  },
+  "logYouTube": {
+    "message": "YouTube പരസ്യ നിയമങ്ങൾ"
+  },
+  "logParams": {
+    "message": "ട്രാക്കിംഗ് പാരാമീറ്ററുകൾ"
+  },
+  "logMalware": {
+    "message": "ക്ഷുദ്രവെയർ ഡൊമെയ്‌നുകൾ"
+  },
+  "logSurrogates": {
+    "message": "നിർവീര്യമാക്കിയ പരസ്യ സ്ക്രിപ്റ്റുകൾ"
+  },
+  "logPrivacy": {
+    "message": "സ്വകാര്യതാ പരിരക്ഷ"
+  },
+  "logUser": {
+    "message": "എന്റെ ഫിൽട്ടറുകൾ"
+  },
+  "logLive": {
+    "message": "തത്സമയ അപ്‌ഡേറ്റുകൾ"
+  },
+  "hideElement": {
+    "message": "എലമെന്റ് മറയ്ക്കുക"
+  },
+  "settings": {
+    "message": "ക്രമീകരണം"
+  },
+  "promoSub": {
+    "message": "ഗിയറും ടൂളുകളും, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "പരസ്യം"
+  },
+  "support": {
+    "message": "പിന്തുണയ്ക്കുക"
+  },
+  "filtersCount": {
+    "message": "$1+ ഫിൽട്ടറുകൾ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "രൂപഭാവം"
+  },
+  "opt_extra_protection": {
+    "message": "അധിക പരിരക്ഷ"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection ലോഗ്"
+  },
+  "opt_allowlisted_sites": {
+    "message": "അനുവദനീയ ലിസ്റ്റിലെ സൈറ്റുകൾ"
+  },
+  "opt_my_filters": {
+    "message": "എന്റെ ഫിൽട്ടറുകൾ"
+  },
+  "opt_hidden_elements": {
+    "message": "മറച്ച എലമെന്റുകൾ"
+  },
+  "opt_filter_updates": {
+    "message": "ഫിൽട്ടർ അപ്‌ഡേറ്റുകൾ"
+  },
+  "opt_engine_health": {
+    "message": "എഞ്ചിൻ നില"
+  },
+  "opt_backup": {
+    "message": "ബാക്കപ്പ്"
+  },
+  "opt_support_development": {
+    "message": "വികസനത്തെ പിന്തുണയ്ക്കുക"
+  },
+  "opt_theme": {
+    "message": "തീം"
+  },
+  "opt_sync_across_devices": {
+    "message": "ഉപകരണങ്ങളിലുടനീളം സമന്വയിപ്പിക്കുക"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube പരസ്യ തടയൽ"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "കുക്കി / സമ്മത ബാനറുകൾ"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "ആന്റി-ആഡ്ബ്ലോക്ക് മറികടക്കൽ"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta സ്പോൺസർ ചെയ്ത പോസ്റ്റുകൾ"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "ട്രാക്കിംഗ് പാരാമീറ്ററുകൾ നീക്കം ചെയ്യുക"
+  },
+  "opt_malware_protection": {
+    "message": "ക്ഷുദ്രവെയർ പരിരക്ഷ"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "പരസ്യ ടാർഗെറ്റിംഗ് ബ്രൗസർ API-കൾ തടയുക"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "ട്രാക്കിംഗ് ബീക്കണുകളും ക്രിപ്റ്റോമൈനറുകളും തടയുക"
+  },
+  "opt_auto_update_filters": {
+    "message": "ഫിൽട്ടറുകൾ സ്വയമേവ അപ്‌ഡേറ്റ് ചെയ്യുക"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (ഡാർക്ക്) അല്ലെങ്കിൽ ലൈറ്റ്"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "നിങ്ങൾ സൈൻ ഇൻ ചെയ്തിട്ടുള്ള എല്ലാ Chrome-ലും ക്രമീകരണം, അനുവദനീയ ലിസ്റ്റ്, ഫിൽട്ടറുകൾ എന്നിവ സമന്വയിപ്പിച്ച് നിലനിർത്തുന്നു"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube-ലെ വീഡിയോ പരസ്യങ്ങൾ നീക്കം ചെയ്യുന്നു. വീഡിയോകൾ പ്ലേ ആകുന്നില്ലെങ്കിൽ ഓഫാക്കുക."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "“കുക്കികൾ സ്വീകരിക്കുക” അറിയിപ്പുകൾ സ്വയമേവ അടയ്ക്കുന്നു"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "“നിങ്ങളുടെ ആഡ്ബ്ലോക്കർ ഓഫാക്കുക” ഭിത്തികൾ മറച്ച് പേജ് പുനഃസ്ഥാപിക്കുന്നു"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook-ലും Instagram-ലും “സ്പോൺസർ ചെയ്തത്” പോസ്റ്റുകൾ മറയ്ക്കുന്നു"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "നിങ്ങൾ തുറക്കുന്ന ലിങ്കുകളിൽ നിന്ന് utm_*, fbclid, gclid, മറ്റ് ക്ലിക്ക് ഐഡന്റിഫയറുകൾ എന്നിവ നീക്കം ചെയ്യുന്നു"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "അറിയപ്പെടുന്ന ക്ഷുദ്രവെയർ ഡൊമെയ്‌നുകൾ തടയുന്നു (abuse.ch-ന്റെ URLhaus ലിസ്റ്റ്)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "എല്ലാ സൈറ്റിലും Google Topics, FLoC, Protected Audience പരസ്യ API-കൾ പ്രവർത്തനരഹിതമാക്കുന്നു"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "മൂന്നാം കക്ഷി ഹൈപ്പർലിങ്ക് ഓഡിറ്റിംഗ് / ബീക്കൺ പിംഗുകൾ നിർത്തുന്നു, അറിയപ്പെടുന്ന ആഡ്-ടെക് പ്രതികരണങ്ങളിൽ നിന്ന് ട്രാക്കിംഗ് കുക്കികൾ നീക്കം ചെയ്യുന്നു, ബ്രൗസർ ക്രിപ്റ്റോമൈനിംഗ് സ്ക്രിപ്റ്റുകൾ തടയുന്നു. അനലിറ്റിക്സിനെ ആശ്രയിക്കുന്ന ഒരു സൈറ്റ് ഫീച്ചർ ശരിയായി പ്രവർത്തിക്കുന്നില്ലെങ്കിൽ ഓഫാക്കുക."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu-ൽ നിന്ന് പുതിയ ബ്ലോക്ക് നിയമങ്ങളും YouTube പരിഹാരങ്ങളും ദിവസം ഏകദേശം രണ്ടുതവണ എടുക്കുന്നു. ഡാറ്റ മാത്രം, കോഡില്ല; അഭ്യർത്ഥനയിൽ ഐഡന്റിഫയറുകളോ ബ്രൗസിംഗ് ഡാറ്റയോ ഇല്ല."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "ഹ്യൂറിസ്റ്റിക്കായി (ഫിൽട്ടർ ലിസ്റ്റ് ഇല്ലാതെ) പിടികൂടിയ പരസ്യങ്ങളുടെ തത്സമയ ലോഗ്, പുതിയവ ആദ്യം."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "സബ്‌സ്‌ക്രൈബ് ചെയ്ത ലിസ്റ്റുകൾ ടെക്സ്റ്റായി എടുക്കുന്നു (ഒരിക്കലും കോഡായി അല്ല), ദിവസവും അപ്‌ഡേറ്റ് ചെയ്യുന്നു, മുകളിലെ നിയന്ത്രിത ബ്ലോക്കുകളിൽ സൂക്ഷിക്കുന്നു. ഒരു ലിസ്റ്റിന്റെ നിയമങ്ങൾ ഒഴിവാക്കാൻ ആ ലിസ്റ്റ് നീക്കം ചെയ്യുക."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "പിക്കർ ഉപയോഗിച്ച് നിങ്ങൾ സ്വമേധയാ മറച്ച എലമെന്റുകൾ, സൈറ്റ് അനുസരിച്ച് ഗ്രൂപ്പ് ചെയ്തത്."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "തത്സമയ ഡയഗ്നോസ്റ്റിക്സ് — എല്ലാം പ്രാദേശികമായി കണക്കാക്കുന്നു. എന്തെങ്കിലും ചുവപ്പിലാണെങ്കിൽ, “ഇപ്പോൾ അപ്‌ഡേറ്റ് ചെയ്യുക” അല്ലെങ്കിൽ വിപുലീകരണം റീലോഡ് ചെയ്യുന്നത് സാധാരണയായി പ്രശ്നം പരിഹരിക്കും."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock എല്ലാവർക്കും സൗജന്യമാണ്. ഇതിന്റെ പരിപാലനത്തിന് സഹായിക്കാൻ ആഗ്രഹിക്കുന്നുവെങ്കിൽ, സംഭാവനകൾ സ്വാഗതം ചെയ്യുന്നു, പക്ഷേ ഒരിക്കലും നിർബന്ധമല്ല."
+  },
+  "opt_reset_statistics": {
+    "message": "സ്ഥിതിവിവരക്കണക്കുകൾ റീസെറ്റ് ചെയ്യുക"
+  },
+  "opt_add": {
+    "message": "ചേർക്കുക"
+  },
+  "opt_save_filters": {
+    "message": "ഫിൽട്ടറുകൾ സംരക്ഷിക്കുക"
+  },
+  "opt_subscribe": {
+    "message": "സബ്‌സ്‌ക്രൈബ് ചെയ്യുക"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "സബ്‌സ്‌ക്രിപ്ഷനുകൾ ഇപ്പോൾ പുതുക്കുക"
+  },
+  "opt_update_now": {
+    "message": "ഇപ്പോൾ അപ്‌ഡേറ്റ് ചെയ്യുക"
+  },
+  "opt_refresh": {
+    "message": "പുതുക്കുക"
+  },
+  "opt_export_settings": {
+    "message": "ക്രമീകരണം എക്സ്പോർട്ട് ചെയ്യുക"
+  },
+  "opt_import_settings": {
+    "message": "ക്രമീകരണം ഇമ്പോർട്ട് ചെയ്യുക"
+  },
+  "opt_e_g_example_com": {
+    "message": "ഉദാ. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! ഉദാഹരണം\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "ഫിൽട്ടർ ലിസ്റ്റ് URL-ലേക്ക് സബ്‌സ്‌ക്രൈബ് ചെയ്യുക (ഉദാ. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock ക്രമീകരണം"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · ക്രമീകരണം"
+  },
+  "opt_theme_light": {
+    "message": "ലൈറ്റ്"
+  },
+  "opt_badge_unique": {
+    "message": "സവിശേഷം"
+  },
+  "opt_smart_desc": {
+    "message": "ഒരു ഫിൽട്ടർ ലിസ്റ്റിനും ഇതുവരെ അറിയാത്ത പരസ്യങ്ങൾ പിടികൂടുന്നു: സാധാരണ പരസ്യ സ്ലോട്ടുകളുടെ വലുപ്പമുള്ള ക്രോസ്-ഒറിജിൻ ഫ്രെയിമുകൾ ഉടനടി മറയ്ക്കുന്നു, നിയമങ്ങൾ ആവശ്യമില്ല."
+  },
+  "opt_caught_so_far": {
+    "message": "ഇതുവരെ പിടികൂടി."
+  },
+  "opt_allow_desc": {
+    "message": "ഈ ഡൊമെയ്‌നുകളിൽ പരസ്യങ്ങൾ തടയില്ല."
+  },
+  "opt_fh_one": {
+    "message": "ഒരു വരിയിൽ ഒരു നിയമം."
+  },
+  "opt_fh_blocks": {
+    "message": "ഒരു ഡൊമെയ്ൻ തടയുന്നു;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ഒരു എലമെന്റ് എല്ലായിടത്തും മറയ്ക്കുന്നു;"
+  },
+  "opt_fh_site": {
+    "message": "അത് ആ സൈറ്റിൽ മാത്രം മറയ്ക്കുന്നു."
+  },
+  "opt_fh_comments": {
+    "message": "വരിയുടെ തുടക്കത്തിൽ"
+  },
+  "opt_fh_comments2": {
+    "message": "ഉണ്ടെങ്കിൽ, ആ വരി കമന്റാണ്."
+  },
+  "opt_donate": {
+    "message": "Revolut വഴി സംഭാവന നൽകുക"
+  },
+  "opt_made_by": {
+    "message": "Carbon Stealth നിർമ്മിച്ചത്"
+  },
+  "opt_empty_smart": {
+    "message": "ഹ്യൂറിസ്റ്റിക്കായി ഇതുവരെ ഒന്നും പിടികൂടിയിട്ടില്ല."
+  },
+  "opt_empty_allow": {
+    "message": "അനുവദനീയ ലിസ്റ്റിൽ ഇതുവരെ സൈറ്റുകളില്ല."
+  },
+  "opt_empty_hidden": {
+    "message": "സ്വമേധയാ ഇതുവരെ ഒന്നും മറച്ചിട്ടില്ല."
+  },
+  "opt_empty_subs": {
+    "message": "ഇതുവരെ സബ്‌സ്‌ക്രൈബ് ചെയ്ത ലിസ്റ്റുകളില്ല."
+  },
+  "opt_no_sw": {
+    "message": "service worker-ൽ നിന്ന് പ്രതികരണമില്ല."
+  },
+  "opt_remove": {
+    "message": "നീക്കം ചെയ്യുക"
+  },
+  "opt_filter_status": {
+    "message": "ഫിൽട്ടർ സെറ്റ് v$1, $2 അപ്‌ഡേറ്റ് ചെയ്തു. ഡാറ്റ മാത്രം, നിങ്ങളെക്കുറിച്ച് ഒന്നും അയയ്ക്കുന്നില്ല."
+  },
+  "opt_updating": {
+    "message": "അപ്‌ഡേറ്റ് ചെയ്യുന്നു…"
+  },
+  "opt_updated": {
+    "message": "അപ്‌ഡേറ്റ് ചെയ്തു (v$1, $2 അധിക നിയമങ്ങൾ)"
+  },
+  "opt_update_failed": {
+    "message": "അപ്‌ഡേറ്റ് പരാജയപ്പെട്ടു ($1)"
+  },
+  "opt_saved": {
+    "message": "സംരക്ഷിച്ചു ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 നിയമങ്ങൾ"
+  },
+  "opt_updated_ago": {
+    "message": "$1 അപ്‌ഡേറ്റ് ചെയ്തു"
+  },
+  "opt_not_fetched": {
+    "message": "ഇതുവരെ എടുത്തിട്ടില്ല"
+  },
+  "opt_failed_colon": {
+    "message": "പരാജയപ്പെട്ടു: $1"
+  },
+  "opt_enter_https": {
+    "message": "സാധുവായ https:// URL നൽകുക"
+  },
+  "opt_fetching": {
+    "message": "എടുക്കുന്നു…"
+  },
+  "opt_subscribed_ok": {
+    "message": "സബ്‌സ്‌ക്രൈബ് ചെയ്തു: $1 നിയമങ്ങൾ ✓"
+  },
+  "opt_failed_paren": {
+    "message": "പരാജയപ്പെട്ടു ($1)"
+  },
+  "opt_refreshing": {
+    "message": "പുതുക്കുന്നു…"
+  },
+  "opt_refreshed": {
+    "message": "പുതുക്കി ✓"
+  },
+  "opt_invalid_file": {
+    "message": "അസാധുവായ ക്രമീകരണ ഫയൽ."
+  },
+  "opt_no_response": {
+    "message": "പ്രതികരണമില്ല"
+  },
+  "opt_h_engine": {
+    "message": "ആന്റി-ആഡ്ബ്ലോക്ക് എഞ്ചിൻ"
+  },
+  "opt_h_rulesets": {
+    "message": "ഓണായ സ്റ്റാറ്റിക് നിയമ സെറ്റുകൾ"
+  },
+  "opt_h_live": {
+    "message": "തത്സമയ ഫിൽട്ടർ ഡൊമെയ്‌നുകൾ"
+  },
+  "opt_h_last": {
+    "message": "അവസാന അപ്‌ഡേറ്റ്"
+  },
+  "opt_h_sig": {
+    "message": "അപ്‌ഡേറ്റ് ഒപ്പുകൾ"
+  },
+  "opt_h_user": {
+    "message": "എന്റെ ഫിൽട്ടറുകൾ / അനുവദനീയ ലിസ്റ്റ് നിയമങ്ങൾ"
+  },
+  "opt_h_popup": {
+    "message": "ബിൽറ്റ്-ഇൻ പോപ്പ്-അപ്പ് പരസ്യ ഹോസ്റ്റുകൾ"
+  },
+  "opt_h_yt": {
+    "message": "YouTube ബൈപാസ്"
+  },
+  "opt_reason_frame": {
+    "message": "പരസ്യ വലുപ്പമുള്ള ക്രോസ്-ഒറിജിൻ ഫ്രെയിം"
+  },
+  "opt_reason_sticky": {
+    "message": "സ്റ്റിക്കി ബാനർ പരസ്യം"
+  },
+  "logRegional": {
+    "message": "പ്രാദേശിക ലിസ്റ്റുകൾ"
+  },
+  "logFocus": {
+    "message": "ഫോക്കസ് മോഡ്"
+  },
+  "opt_filter_lists": {
+    "message": "ഫിൽട്ടർ ലിസ്റ്റുകൾ"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList, EasyPrivacy എന്നിവ എപ്പോഴും ഓണാണ്. താഴെയുള്ളവ ഓപ്പൺ ലൈസൻസ് ലിസ്റ്റുകളാണ്, വിപുലീകരണത്തിൽ തന്നെ ഉൾപ്പെടുത്തിയവ; അതിനാൽ ഒന്ന് ഓണാക്കുമ്പോൾ ഒന്നും ഡൗൺലോഡ് ചെയ്യുന്നില്ല — അതിന്റെ രചയിതാവിൽ നിന്ന് വരുന്നതായി അടയാളപ്പെടുത്തിയ ലിസ്റ്റ് ഒഴികെ."
+  },
+  "opt_lists_core": {
+    "message": "പ്രധാനം"
+  },
+  "opt_lists_regional": {
+    "message": "പ്രാദേശികം"
+  },
+  "opt_lists_regional_desc": {
+    "message": "നിങ്ങളുടെ ബ്രൗസറിന്റെ ഭാഷയ്ക്കുള്ള ലിസ്റ്റ് സ്വയം ഓണാകും. മറ്റ് ഭാഷകളിലെ സൈറ്റുകൾ പതിവായി വായിക്കുന്നുണ്ടെങ്കിൽ മറ്റുള്ളവയും ചേർക്കുക."
+  },
+  "opt_focus_mode": {
+    "message": "ഫോക്കസ് മോഡ്"
+  },
+  "opt_focus_desc": {
+    "message": "പരസ്യമല്ലെങ്കിലും ശല്യമാകുന്നവ മറയ്ക്കുക. നിങ്ങൾ ഓണാക്കുന്നതുവരെ ഇവിടെയുള്ളതെല്ലാം ഓഫായിരിക്കും."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin ഫിൽട്ടറുകൾ"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin ടീമിൽ നിന്നുള്ള പരസ്യങ്ങൾ, ട്രാക്കറുകൾ, ആന്റി-ആഡ്ബ്ലോക്ക് പരിഹാരങ്ങൾ, സൈറ്റ് അറ്റകുറ്റപ്പണികൾ."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe-ന്റെ ലിസ്റ്റ്"
+  },
+  "opt_list_plowe_desc": {
+    "message": "പരസ്യ, ട്രാക്കിംഗ് സെർവറുകളുടെ ദീർഘകാല ലിസ്റ്റ്."
+  },
+  "opt_focus_social": {
+    "message": "സോഷ്യൽ മീഡിയ ബട്ടണുകളും വിജറ്റുകളും"
+  },
+  "opt_focus_social_desc": {
+    "message": "ഷെയർ ബട്ടണുകൾ, ലൈക്ക് ബോക്സുകൾ, എംബെഡ് ചെയ്ത ഫീഡുകൾ."
+  },
+  "opt_focus_chat": {
+    "message": "ചാറ്റ്, സപ്പോർട്ട് വിജറ്റുകൾ"
+  },
+  "opt_focus_chat_desc": {
+    "message": "പേജിന്റെ മൂലയിൽ ഒഴുകിനിൽക്കുന്ന ചാറ്റ് ബബിളുകൾ."
+  },
+  "opt_focus_newsletters": {
+    "message": "ന്യൂസ്‌ലെറ്റർ, സൈൻ-അപ്പ് പോപ്പ്-അപ്പുകൾ"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "“ഞങ്ങളുടെ ന്യൂസ്‌ലെറ്ററിലേക്ക് സബ്‌സ്‌ക്രൈബ് ചെയ്യൂ” ബോക്സുകളും ഓവർലേകളും."
+  },
+  "opt_focus_notifications": {
+    "message": "അറിയിപ്പ് അഭ്യർത്ഥനകൾ"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "ബ്രൗസർ ചോദിക്കുന്നതിന് മുമ്പ് സൈറ്റുകൾ കാണിക്കുന്ന “അറിയിപ്പുകൾ അനുവദിക്കണോ?” ബോക്സുകൾ."
+  },
+  "opt_focus_ai": {
+    "message": "AI അസിസ്റ്റന്റ് പോപ്പ്-അപ്പുകൾ"
+  },
+  "opt_focus_ai_desc": {
+    "message": "പേജുകളിൽ ചേർത്ത ചാറ്റ്ബോട്ട് ബബിളുകളും AI നിർദ്ദേശ പാനലുകളും."
+  },
+  "opt_focus_other": {
+    "message": "മറ്റ് ശല്യങ്ങൾ"
+  },
+  "opt_focus_other_desc": {
+    "message": "സ്റ്റിക്കി ബാറുകൾ, “ആപ്പിൽ തുറക്കുക” ബാനറുകൾ, സമാനമായ അലങ്കോലങ്ങൾ."
+  },
+  "opt_badge_lang": {
+    "message": "നിങ്ങളുടെ ഭാഷ"
+  },
+  "opt_badge_remote": {
+    "message": "രചയിതാവിൽ നിന്ന്"
+  },
+  "opt_remote_hint": {
+    "message": "പാക്കേജിൽ ഉൾപ്പെടുത്തിയിട്ടില്ല (പുനർവിതരണത്തിന് ലൈസൻസില്ല): നിങ്ങൾ ഓണാക്കുമ്പോൾ ബ്രൗസർ അത് $1-ൽ നിന്ന് ഡൗൺലോഡ് ചെയ്യും."
+  },
+  "opt_downloaded_from": {
+    "message": "നിങ്ങൾ ഓണാക്കുമ്പോൾ $1-ൽ നിന്ന് ഡൗൺലോഡ് ചെയ്യും"
+  },
+  "opt_lists_error": {
+    "message": "Chrome ഈ ലിസ്റ്റുകളുടെ സംയോജനം നിരസിച്ചു ($1). ചിലത് ഓഫാക്കുക."
+  },
+  "opt_badge_recommended": {
+    "message": "നിങ്ങളുടെ ഭാഷയ്ക്ക് ശുപാർശ ചെയ്യുന്നത്"
+  },
+  "reportBroken": {
+    "message": "സൈറ്റ് തകരാറിലാണോ? പരിഹരിക്കുക അല്ലെങ്കിൽ ഞങ്ങളെ അറിയിക്കുക"
+  },
+  "rep_title": {
+    "message": "ഈ സൈറ്റിൽ എന്തെങ്കിലും തകരാറുണ്ടോ?"
+  },
+  "rep_fix_first": {
+    "message": "ഇപ്പോൾ പരിഹരിക്കുക"
+  },
+  "rep_site": {
+    "message": "സൈറ്റ്:"
+  },
+  "rep_fix_desc": {
+    "message": "മിക്ക പ്രശ്നങ്ങളും ഇവയിലൊന്ന് കൊണ്ട് മാറും. ഓരോന്നും ഈ സൈറ്റിന് മാത്രം ബാധകം; ടാബ് റീലോഡ് ആകും."
+  },
+  "rep_fix_cosm": {
+    "message": "ഇവിടെ എലമെന്റ് മറയ്ക്കൽ ഓഫാക്കുക"
+  },
+  "rep_fix_allow": {
+    "message": "ഈ സൈറ്റിൽ പരസ്യങ്ങൾ അനുവദിക്കുക"
+  },
+  "rep_fix_pause": {
+    "message": "എല്ലായിടത്തും 30 മിനിറ്റ് നിർത്തിവയ്ക്കുക"
+  },
+  "rep_tell_us": {
+    "message": "ഞങ്ങളെ അറിയിക്കുക"
+  },
+  "rep_tell_desc": {
+    "message": "ഒപ്പിട്ട ഫിൽട്ടർ അപ്‌ഡേറ്റിലൂടെ തകരാറിലായ സൈറ്റുകൾ എല്ലാവർക്കുമായി ഞങ്ങൾ പരിഹരിക്കുന്നു, സാധാരണയായി ഒരു ദിവസത്തിനുള്ളിൽ. വിപുലീകരണം ഒന്നും അയയ്ക്കുന്നില്ല: റിപ്പോർട്ട് നിങ്ങളുടെ സ്വന്തം ഇമെയിൽ ആപ്പിൽ തുറക്കും, അതിലെ ഓരോ വാക്കും നിങ്ങൾ ആദ്യം കാണും."
+  },
+  "rep_what": {
+    "message": "എന്താണ് പ്രശ്നം? (ഓപ്ഷണൽ)"
+  },
+  "rep_what_ph": {
+    "message": "ഉദാ. വീഡിയോ ആരംഭിക്കുന്നില്ല, ഒരു വെളുത്ത ബോക്സ് ലേഖനം മറയ്ക്കുന്നു…"
+  },
+  "rep_full_url": {
+    "message": "പേജിന്റെ പൂർണ്ണ വിലാസം ഉൾപ്പെടുത്തുക (അല്ലെങ്കിൽ സൈറ്റിന്റെ പേര് മാത്രം)"
+  },
+  "rep_preview": {
+    "message": "എന്താണ് അയയ്ക്കുക"
+  },
+  "rep_send_mail": {
+    "message": "ഇമെയിൽ വഴി അയയ്ക്കുക"
+  },
+  "rep_copy": {
+    "message": "റിപ്പോർട്ട് പകർത്തുക"
+  },
+  "rep_privacy": {
+    "message": "ഈ റിപ്പോർട്ട് എങ്ങനെ കൈകാര്യം ചെയ്യുന്നു: സ്വകാര്യതാ നയം"
+  },
+  "rep_copied": {
+    "message": "പകർത്തി."
+  },
+  "rep_done_cosm": {
+    "message": "ഈ സൈറ്റിൽ എലമെന്റ് മറയ്ക്കൽ ഓഫാക്കി. റീലോഡ് ചെയ്തു — ശരിയായോ?"
+  },
+  "rep_done_allow": {
+    "message": "ഈ സൈറ്റിൽ പരസ്യങ്ങൾ അനുവദിച്ചു. റീലോഡ് ചെയ്തു — ശരിയായോ?"
+  },
+  "rep_done_pause": {
+    "message": "30 മിനിറ്റ് നിർത്തിവച്ചു. ഇപ്പോൾ സൈറ്റ് പ്രവർത്തിക്കുന്നുണ്ടെങ്കിൽ, ദയവായി താഴെ ഞങ്ങളെ അറിയിക്കുക."
+  },
+  "cookieRejections": {
+    "message": "നിങ്ങൾക്കായി നിരസിച്ച കുക്കി ബാനറുകൾ: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube-ലെ Shorts നിരകൾ, ടാബ്, നിർദ്ദേശങ്ങൾ."
+  },
+  "opt_focus_onetap": {
+    "message": "“Google ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുക” പോപ്പ്-അപ്പുകൾ"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "നിരവധി സൈറ്റുകളുടെ മൂലയിൽ പ്രത്യക്ഷപ്പെടുന്ന അക്കൗണ്ട് പിക്കർ. സൈൻ-ഇൻ ബട്ടണുകൾ തുടർന്നും പ്രവർത്തിക്കും."
+  },
+  "pickTip": {
+    "message": "മറയ്ക്കാൻ ഒരു എലമെന്റിൽ ക്ലിക്ക് ചെയ്യുക"
+  },
+  "pickZapTip": {
+    "message": "ഈ എലമെന്റ് നീക്കം ചെയ്യാൻ ക്ലിക്ക് ചെയ്യുക (ഒരിക്കൽ)"
+  },
+  "pickEscCancel": {
+    "message": "റദ്ദാക്കാൻ"
+  },
+  "opt_notices": {
+    "message": "ഫിൽട്ടർ ലിസ്റ്റുകളുടെ ലൈസൻസുകൾ"
+  }
+}

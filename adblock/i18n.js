@@ -19,7 +19,10 @@
       var m = t(el.getAttribute("data-i18n-placeholder"));
       if (m) el.setAttribute("placeholder", m);
     });
-    try { document.documentElement.lang = chrome.i18n.getUILanguage().slice(0, 2); } catch (e) {}
+    // full tag: slice(0, 2) turned fil into fi (Finnish) and zh-TW into zh
+    try { document.documentElement.lang = chrome.i18n.getUILanguage() || "en"; } catch (e) {}
+    // Arabic, Hebrew, Persian, Urdu: right-to-left (Chrome's own @@bidi_dir).
+    try { document.documentElement.dir = chrome.i18n.getMessage("@@bidi_dir") || "ltr"; } catch (e) {}
   }
   window.saI18n = { t: t, apply: apply };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { apply(document); });

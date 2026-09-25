@@ -145,6 +145,17 @@ if (!profileCols.has('cover'))
 // визитка, която потребителят сам е скрил (privacy-by-default, чл. 25(2) ОРЗД).
 if (!profileCols.has('hidden_by_admin'))
   db.exec('ALTER TABLE profiles ADD COLUMN hidden_by_admin INTEGER NOT NULL DEFAULT 0');
+// Съгласие визитката да се вижда през MCP конектора (ChatGPT/Claude). ПО
+// ПОДРАЗБИРАНЕ 0 и това не е предпазливост, а последователност: robots.txt спира
+// GPTBot/ClaudeBot от /p/, значи да подадем същите данни на същите доставчици през
+// наш конектор без изричен избор би било заобикаляне на собственото ни правило.
+// Публичността на визитката НЕ е съгласие за това (чл. 25(2) ОРЗД).
+if (!profileCols.has('ai_discoverable'))
+  db.exec('ALTER TABLE profiles ADD COLUMN ai_discoverable INTEGER NOT NULL DEFAULT 0');
+// Кога съгласието последно е дадено или оттеглено (чл. 7(1) ОРЗД — администраторът
+// трябва да може да докаже съгласието). NULL = никога не е пипано.
+if (!profileCols.has('ai_consent_at'))
+  db.exec('ALTER TABLE profiles ADD COLUMN ai_consent_at TEXT');
 // Таблицата `links` се създава в главната схема по-горе (CREATE TABLE IF NOT EXISTS).
 
 const userCols = new Set(

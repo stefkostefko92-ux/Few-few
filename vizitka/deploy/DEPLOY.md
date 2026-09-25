@@ -173,7 +173,14 @@ sudo PROJECTS="vizitka" bash deploy/autodeploy.sh   # само vizitka
 
 Скриптът прави: rsync на кода (без `data/`, `node_modules/`, `.env`) →
 `npm ci --omit=dev` → снимка на SQLite базата → `systemctl restart vizitka` →
-health check на `http://127.0.0.1:3105/` с автоматичен rollback при провал.
+health check на `http://127.0.0.1:3105/healthz` (иска 2xx и маркера `"app":"vizitka"`) с
+автоматичен rollback на кода и базата при провал. При провал на `npm ci` или на снимката
+на базата кодът се връща веднага и услугата изобщо не се рестартира. След `npm ci`
+се проверява и че зависимостите са пълни (`npm ls`), и че нативният модул
+`better-sqlite3` се зарежда със СЪЩИЯ `node` като `ExecStart` на услугата (засича се от
+`/etc/systemd/system/vizitka.service`, задава се и с `VIZITKA_NODE=`) — иначе при две
+версии на Node на машината услугата пада при старт. И двата случая са хванати на
+генерална репетиция и сега спират деплоя ПРЕДИ рестарта (нула престой).
 
 ## 6. Следпускови стъпки (SEO индексиране)
 
@@ -198,7 +205,19 @@ health check на `http://127.0.0.1:3105/` с автоматичен rollback п
 през API PATCH). И двете се активират само когато тайните са налични — иначе
 бутоните са скрити. Тайните са **файлове с права 600**, извън репото.
 
-**Apple Wallet** (изисква Apple Developer акаунт ~$99/год):
+**Apple Wallet** (изисква платен Apple Developer Program — 99 USD/год):
+
+> **Безплатен път няма** и това е проверено срещу Apple, не предположено: Pass Type ID и
+> сертификатът за подписване са само за платени членове, а освобождаването от таксата
+> е само за нефинансови организации, акредитирани учебни заведения и държавни органи —
+> изрично **не** за търговски дружества. Неподписан `.pkpass` iPhone просто отказва.
+> Услуги на трети страни с „безплатен план“ подписват със СВОЯ сертификат: издател на
+> картата става те, данните минават през тях (обработващ по чл. 28 ОРЗД, често извън
+> ЕС) — не пасва на нашата позиция.
+>
+> **Сметката обаче не е 99 USD само за Vizitka.** Една членска такса покрива целия екип
+> (Team ID): същият акаунт е нужен и за iOS приложението на MedQR в App Store
+> (`medqr/mobile`). Pass Type ID-то е само още един идентификатор под него.
 
 1. В Apple Developer → Identifiers създай **Pass Type ID** (напр.
    `pass.eu.carbonstealth.vizitka`), издай Pass signing сертификат и го експортирай.
@@ -223,19 +242,51 @@ health check на `http://127.0.0.1:3105/` с автоматичен rollback п
 > работи и стои актуална чрез QR-а към живия профил — просто полетата в самия пас не
 > се пушат при промяна.
 
-**Google Wallet** (безплатно):
+**Google Wallet** (безплатно — Google не взима такса за издаване на карти):
 
 1. Google Cloud → нов проект → включи **Google Wallet API**. Регистрирай се като
-   издател в [Google Wallet Console](https://pay.google.com/business/console) и вземи
-   **Issuer ID**.
-2. Създай **service account** с роля Wallet Object Issuer, свали JSON ключа:
+   издател в [Google Pay & Wallet Console](https://pay.google.com/business/console)
+   и вземи **Issuer ID**. Попълни и **Business profile** — без него не се дава право
+   за публикуване.
+2. Google Cloud → IAM → **Service accounts** → създай service account и свали JSON
+   ключа. **Правата НЕ се дават с IAM роля** (по-старата версия на този документ
+   беше грешна тук): копирай имейла на service account-а и в Pay & Wallet Console →
+   **Users → Invite a user** → постави го → ниво на достъп **Developer**. Без тази
+   покана API-то отказва и обновяването на картите тихо не работи.
    ```bash
    mkdir -p /etc/vizitka/google && chmod 700 /etc/vizitka/google
    mv service-account.json /etc/vizitka/google/service-account.json
    chown -R vizitka:vizitka /etc/vizitka/google && chmod 600 /etc/vizitka/google/*.json
    ```
-3. Задай `GOOGLE_WALLET_ISSUER_ID` и `GOOGLE_WALLET_SA_KEY` в `vizitka.env`.
-   Класът `<issuerId>.vizitka_generic` се създава автоматично при първото запазване.
+3. Задай `GOOGLE_WALLET_ISSUER_ID` и `GOOGLE_WALLET_SA_KEY` в `vizitka.env` и
+   `systemctl restart vizitka`.
+4. **Създай класа предварително** (Google го иска, ПРЕДИ да даде право за публикуване;
+   иначе класът се ражда чак при първото запазване, а в демо режим запазват само
+   тестови акаунти — кокошката и яйцето). Идемпотентно, пускай спокойно повторно:
+   ```bash
+   sudo node /opt/vizitka/scripts/wallet-google-class.mjs --env /etc/vizitka/vizitka.env
+   ```
+   Класът е с `MULTIPLE_HOLDERS`: обектът е един на визитка, а го запазват много
+   посетители — друга стойност пуска по един притежател.
+5. Pay & Wallet Console → **Google Wallet API → Request publishing access**. До
+   одобрението сметката е в **демо режим**: картите носят етикет „[TEST ONLY]“ и се
+   запазват само от акаунти, добавени като потребители/тестови. Скрийншоти вече не се
+   изискват.
 
-След `systemctl restart vizitka` бутоните „Добави в Apple Wallet" / „Запази в Google
-Wallet" се появяват на публичните визитки.
+6. След одобрението добави `GOOGLE_WALLET_PUBLISHED=1` в `/etc/vizitka/vizitka.env` и
+   рестартирай. Дотогава бутонът „Запази в Google Wallet“ се вижда **само от собственика
+   на визитката и от админа** — в демо режим обикновен посетител би получил грешка.
+
+> Картата показва само **квадратното лого** на сайта (`public/wallet-logo.png`, 660×660 —
+> Google го изрязва в кръг) и **никога** личната снимка. Google позволява снимка на
+> потребителя — пропускаме я по НАШ избор (минимизация на данните), не заради тяхно
+> ограничение. Собствените бутони на потребителя също не влизат в картата (правилата на
+> Google важат за всяка връзка в нея); QR кодът води към живата визитка.
+
+След `systemctl restart vizitka` бутонът „Добави в Apple Wallet“ се появява на публичните
+визитки веднага, а „Запази в Google Wallet“ — след стъпка 6.
+
+> **Значките** в `public/badge-*-wallet.svg` са временни. Преди включване ги смени с
+> официалните артове (Apple: developer.apple.com/wallet/add-to-apple-wallet-guidelines;
+> Google: developers.google.com/wallet/generic/resources/brand-guidelines) — и двете
+> компании забраняват собствени версии.

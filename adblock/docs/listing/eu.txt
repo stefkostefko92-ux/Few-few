@@ -1,0 +1,10 @@
+Supreme AdBlock-ek iragarkiak nonahi blokeatzen ditu — YouTubeko bideo-iragarkiak, bannerrak, laster-leihoak eta jarraipen-elementuak —, zer egiten duzun zelatatu gabe.
+
+• YouTubeko iragarkiak iturburuan geldiarazten dira, eta bideoak arazorik gabe erreproduzitzen dira.
+• EasyList, EasyPrivacy eta uBlock Origin iragazkiak integratuta daude, baita zure hizkuntzako zerrenda ere (31 eskualde-zerrenda).
+• Cookie-bannerrak: zure ordez sakatzen du Baztertu, geratzen den lausotzea eta korritze-blokeoa kentzen ditu, eta ez du inoiz saioa hasteko, OAuth edo ordaintzeko botoirik sakatzen.
+• Fokatze modua: ezkutatu txat-burbuilak, buletinen laster-leihoak, jakinarazpen-eskaerak, sare sozialetako trepetak, AA laster-leihoak eta YouTube Shorts.
+• Anti-adblock hesiak eta pop-under leihoak neutralizatu egiten dira.
+• Webgunea hautsita? Klik batek konpontzen du, edo esan iezaguzu — ez da ezer bidaltzen zuk aurrez ikusi gabe.
+• Iragazki-eguneratze sinatuak egunean bitan: iragarki-sare berriak ordu gutxitan kudeatzen dira, urruneko koderik gabe.
+• Konturik ez, telemetriarik ez, datu-bilketarik ez. Doan, aukerako dohaintza batekin; laster-leihoak txartel txiki bat erakusten du, «Irag.» etiketarekin, Carbon Stealth egilearena.

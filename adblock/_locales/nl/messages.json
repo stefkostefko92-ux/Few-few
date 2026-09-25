@@ -1,0 +1,603 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokkeert overal advertenties: YouTube-videoadvertenties, banners, pop-ups, trackers, cookiebanners en anti-adblockmuren. Gratis."
+  },
+  "byCarbon": {
+    "message": "door Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Bescherming aan/uit"
+  },
+  "protected": {
+    "message": "Beschermd"
+  },
+  "paused": {
+    "message": "Gepauzeerd"
+  },
+  "blockingHere": {
+    "message": "Blokkeert advertenties op deze pagina"
+  },
+  "protectionOff": {
+    "message": "Bescherming staat uit"
+  },
+  "pause30": {
+    "message": "Pauzeer 30 minuten"
+  },
+  "pausedResume": {
+    "message": "Gepauzeerd, nu hervatten (nog $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Geblokkeerd"
+  },
+  "dataSaved": {
+    "message": "Data bespaard"
+  },
+  "timeSaved": {
+    "message": "Tijd bespaard"
+  },
+  "thisSite": {
+    "message": "deze website"
+  },
+  "thisPage": {
+    "message": "deze pagina"
+  },
+  "blockOnSite": {
+    "message": "Advertenties op deze website blokkeren"
+  },
+  "blocking": {
+    "message": "Blokkeert"
+  },
+  "allowed": {
+    "message": "Toegestaan"
+  },
+  "cosmetics": {
+    "message": "Reclame hier verbergen"
+  },
+  "cosmeticsTitle": {
+    "message": "Reclame op deze website verbergen (schakel dit uit als de opmaak van de pagina niet meer klopt)"
+  },
+  "on": {
+    "message": "Aan"
+  },
+  "off": {
+    "message": "Uit"
+  },
+  "blockedHere": {
+    "message": "Geblokkeerd op deze pagina"
+  },
+  "logEmpty": {
+    "message": "Hier is nog niets geblokkeerd."
+  },
+  "logUnavailable": {
+    "message": "Logboek is nu niet beschikbaar (browserquotum) — probeer het over een minuut opnieuw."
+  },
+  "logCore": {
+    "message": "Supreme-basisregels"
+  },
+  "logYouTube": {
+    "message": "YouTube-advertenties"
+  },
+  "logParams": {
+    "message": "Trackingparameters"
+  },
+  "logMalware": {
+    "message": "Malwaredomeinen"
+  },
+  "logSurrogates": {
+    "message": "Geneutraliseerde reclamescripts"
+  },
+  "logPrivacy": {
+    "message": "Privacybescherming"
+  },
+  "logUser": {
+    "message": "Mijn filters"
+  },
+  "logLive": {
+    "message": "Live-updates"
+  },
+  "hideElement": {
+    "message": "Element verbergen"
+  },
+  "settings": {
+    "message": "Instellingen"
+  },
+  "promoSub": {
+    "message": "Uitrusting en tools, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Adv."
+  },
+  "support": {
+    "message": "Steunen"
+  },
+  "filtersCount": {
+    "message": "$1+ filters",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Weergave"
+  },
+  "opt_extra_protection": {
+    "message": "Extra bescherming"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection-logboek"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Toegestane websites"
+  },
+  "opt_my_filters": {
+    "message": "Mijn filters"
+  },
+  "opt_hidden_elements": {
+    "message": "Verborgen elementen"
+  },
+  "opt_filter_updates": {
+    "message": "Filterupdates"
+  },
+  "opt_engine_health": {
+    "message": "Status van de engine"
+  },
+  "opt_backup": {
+    "message": "Back-up"
+  },
+  "opt_support_development": {
+    "message": "Ontwikkeling steunen"
+  },
+  "opt_theme": {
+    "message": "Thema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Synchroniseren tussen apparaten"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube-advertenties blokkeren"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Cookie- en toestemmingsbanners"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock omzeilen"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Gesponsorde berichten van Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Trackingparameters verwijderen"
+  },
+  "opt_malware_protection": {
+    "message": "Bescherming tegen malware"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Browser-API’s voor advertentietargeting blokkeren"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Trackingbeacons en cryptominers blokkeren"
+  },
+  "opt_auto_update_filters": {
+    "message": "Filters automatisch bijwerken"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (donker) of licht"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Houd instellingen, toegestane websites en filters gesynchroniseerd in elke Chrome waarop u bent ingelogd"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Verwijdert videoadvertenties op YouTube. Schakel dit uit als video’s niet afspelen."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Sluit meldingen als “Cookies accepteren” automatisch"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Verbergt muren als “schakel uw adblocker uit” en herstelt de pagina"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Verbergt “Gesponsord”-berichten op Facebook en Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Verwijdert utm_*, fbclid, gclid en andere klik-ID’s uit de links die u opent"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokkeert bekende malwaredomeinen (URLhaus-lijst van abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Schakelt de advertentie-API’s Google Topics, FLoC en Protected Audience uit op elke website"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Stopt hyperlink-auditing- en beaconpings van derden, verwijdert trackingcookies uit bekende ad-tech-antwoorden en blokkeert cryptominingscripts in de browser. Schakel dit uit als een functie van een website die van analytics afhangt niet goed werkt."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Haalt ongeveer twee keer per dag nieuwe blokkeerregels en YouTube-oplossingen op van adblock.carbonstealth.eu. Alleen gegevens, geen code; het verzoek bevat geen identificatiegegevens of browsegegevens."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Live logboek van heuristisch onderschepte advertenties (zonder filterlijst), nieuwste eerst."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Geabonneerde lijsten worden als tekst opgehaald (nooit als code), dagelijks bijgewerkt en staan in de beheerde blokken hierboven. Verwijder een lijst om de bijbehorende regels te laten vallen."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elementen die u handmatig met de kiezer hebt verborgen, gegroepeerd per website."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Live diagnose — alles wordt lokaal berekend. Is iets rood, dan helpt “Nu bijwerken” of het opnieuw laden van de extensie meestal."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock is gratis voor iedereen. Wilt u helpen het te onderhouden, dan zijn donaties welkom, maar nooit verplicht."
+  },
+  "opt_reset_statistics": {
+    "message": "Statistieken resetten"
+  },
+  "opt_add": {
+    "message": "Toevoegen"
+  },
+  "opt_save_filters": {
+    "message": "Filters opslaan"
+  },
+  "opt_subscribe": {
+    "message": "Abonneren"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Abonnementen nu vernieuwen"
+  },
+  "opt_update_now": {
+    "message": "Nu bijwerken"
+  },
+  "opt_refresh": {
+    "message": "Vernieuwen"
+  },
+  "opt_export_settings": {
+    "message": "Instellingen exporteren"
+  },
+  "opt_import_settings": {
+    "message": "Instellingen importeren"
+  },
+  "opt_e_g_example_com": {
+    "message": "bijv. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! voorbeeld\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Abonneren op een filterlijst-URL (bijv. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock-instellingen"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Instellingen"
+  },
+  "opt_theme_light": {
+    "message": "Licht"
+  },
+  "opt_badge_unique": {
+    "message": "uniek"
+  },
+  "opt_smart_desc": {
+    "message": "Vangt advertenties die nog geen enkele filterlijst kent: frames van andere domeinen met de afmetingen van standaard advertentievakken worden meteen verborgen, zonder regels."
+  },
+  "opt_caught_so_far": {
+    "message": "tot nu toe onderschept."
+  },
+  "opt_allow_desc": {
+    "message": "Op deze domeinen worden advertenties niet geblokkeerd."
+  },
+  "opt_fh_one": {
+    "message": "Eén filter per regel."
+  },
+  "opt_fh_blocks": {
+    "message": "blokkeert een domein;"
+  },
+  "opt_fh_everywhere": {
+    "message": "verbergt een element overal;"
+  },
+  "opt_fh_site": {
+    "message": "verbergt het alleen op die website."
+  },
+  "opt_fh_comments": {
+    "message": "Regels die beginnen met"
+  },
+  "opt_fh_comments2": {
+    "message": "zijn opmerkingen."
+  },
+  "opt_donate": {
+    "message": "Doneren via Revolut"
+  },
+  "opt_made_by": {
+    "message": "gemaakt door Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Nog niets heuristisch onderschept."
+  },
+  "opt_empty_allow": {
+    "message": "Nog geen toegestane websites."
+  },
+  "opt_empty_hidden": {
+    "message": "Nog niets handmatig verborgen."
+  },
+  "opt_empty_subs": {
+    "message": "Nog geen geabonneerde lijsten."
+  },
+  "opt_no_sw": {
+    "message": "Geen reactie van de service worker."
+  },
+  "opt_remove": {
+    "message": "Verwijderen"
+  },
+  "opt_filter_status": {
+    "message": "Filterset v$1, bijgewerkt $2. Alleen gegevens, er wordt niets over u verzonden."
+  },
+  "opt_updating": {
+    "message": "Bijwerken…"
+  },
+  "opt_updated": {
+    "message": "Bijgewerkt (v$1, $2 extra regels)"
+  },
+  "opt_update_failed": {
+    "message": "Bijwerken mislukt ($1)"
+  },
+  "opt_saved": {
+    "message": "Opgeslagen ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 regels"
+  },
+  "opt_updated_ago": {
+    "message": "bijgewerkt $1"
+  },
+  "opt_not_fetched": {
+    "message": "nog niet opgehaald"
+  },
+  "opt_failed_colon": {
+    "message": "mislukt: $1"
+  },
+  "opt_enter_https": {
+    "message": "Voer een geldige https://-URL in"
+  },
+  "opt_fetching": {
+    "message": "Ophalen…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Geabonneerd: $1 regels ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Mislukt ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Vernieuwen…"
+  },
+  "opt_refreshed": {
+    "message": "Vernieuwd ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Ongeldig instellingenbestand."
+  },
+  "opt_no_response": {
+    "message": "geen reactie"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock-engine"
+  },
+  "opt_h_rulesets": {
+    "message": "Statische regelsets actief"
+  },
+  "opt_h_live": {
+    "message": "Domeinen in live filters"
+  },
+  "opt_h_last": {
+    "message": "Laatste update"
+  },
+  "opt_h_sig": {
+    "message": "Handtekeningen van updates"
+  },
+  "opt_h_user": {
+    "message": "Mijn filters / regels voor toegestane websites"
+  },
+  "opt_h_popup": {
+    "message": "Ingebouwde hosts van pop-upadvertenties"
+  },
+  "opt_h_yt": {
+    "message": "YouTube-omzeiling"
+  },
+  "opt_reason_frame": {
+    "message": "Frame van ander domein met advertentieformaat"
+  },
+  "opt_reason_sticky": {
+    "message": "Vaste advertentiebanner"
+  },
+  "logRegional": {
+    "message": "Regionale lijsten"
+  },
+  "logFocus": {
+    "message": "Focusmodus"
+  },
+  "opt_filter_lists": {
+    "message": "Filterlijsten"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList en EasyPrivacy staan altijd aan. De lijsten hieronder hebben een open licentie en zijn in de extensie ingebouwd, dus als u er een inschakelt wordt er niets gedownload, behalve bij een lijst die is gemarkeerd als afkomstig van de auteur."
+  },
+  "opt_lists_core": {
+    "message": "Basis"
+  },
+  "opt_lists_regional": {
+    "message": "Regionaal"
+  },
+  "opt_lists_regional_desc": {
+    "message": "De lijst voor de taal van uw browser gaat vanzelf aan. Voeg andere toe als u vaak websites in andere talen leest."
+  },
+  "opt_focus_mode": {
+    "message": "Focusmodus"
+  },
+  "opt_focus_desc": {
+    "message": "Verberg wat geen advertentie is maar toch in de weg zit. Alles hier staat uit totdat u het inschakelt."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin-filters"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Advertenties, trackers, anti-adblockoplossingen en websitereparaties van het uBlock Origin-team."
+  },
+  "opt_list_plowe": {
+    "message": "Lijst van Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Een al lang bestaande lijst met advertentie- en trackingservers."
+  },
+  "opt_focus_social": {
+    "message": "Knoppen en widgets van sociale media"
+  },
+  "opt_focus_social_desc": {
+    "message": "Deelknoppen, like-vakken en ingesloten feeds."
+  },
+  "opt_focus_chat": {
+    "message": "Chat- en supportwidgets"
+  },
+  "opt_focus_chat_desc": {
+    "message": "De zwevende chatbubbels in de hoek van de pagina."
+  },
+  "opt_focus_newsletters": {
+    "message": "Pop-ups voor nieuwsbrieven en aanmelden"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Vakken en overlays als “Schrijf u in voor onze nieuwsbrief”."
+  },
+  "opt_focus_notifications": {
+    "message": "Meldingsverzoeken"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Vakken als “Meldingen toestaan?” die websites tonen voordat de browser het vraagt."
+  },
+  "opt_focus_ai": {
+    "message": "Pop-ups van AI-assistenten"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Chatbotbubbels en AI-suggestiepanelen die aan pagina’s zijn toegevoegd."
+  },
+  "opt_focus_other": {
+    "message": "Andere ergernissen"
+  },
+  "opt_focus_other_desc": {
+    "message": "Vaste balken, banners als “Openen in app” en vergelijkbare rommel."
+  },
+  "opt_badge_lang": {
+    "message": "uw taal"
+  },
+  "opt_badge_remote": {
+    "message": "van de auteur"
+  },
+  "opt_remote_hint": {
+    "message": "Niet meegeleverd (geen licentie om te herdistribueren): uw browser downloadt hem van $1 wanneer u hem inschakelt."
+  },
+  "opt_downloaded_from": {
+    "message": "Wordt van $1 gedownload wanneer u hem inschakelt"
+  },
+  "opt_lists_error": {
+    "message": "Chrome heeft deze combinatie van lijsten geweigerd ($1). Schakel er enkele uit."
+  },
+  "opt_badge_recommended": {
+    "message": "aanbevolen voor uw taal"
+  },
+  "reportBroken": {
+    "message": "Website kapot? Los het op of laat het ons weten"
+  },
+  "rep_title": {
+    "message": "Werkt er iets niet op deze website?"
+  },
+  "rep_fix_first": {
+    "message": "Nu oplossen"
+  },
+  "rep_site": {
+    "message": "Website:"
+  },
+  "rep_fix_desc": {
+    "message": "De meeste problemen verdwijnen met een van deze opties. Elke optie geldt alleen voor deze website; het tabblad wordt opnieuw geladen."
+  },
+  "rep_fix_cosm": {
+    "message": "Elementen verbergen hier uitschakelen"
+  },
+  "rep_fix_allow": {
+    "message": "Advertenties op deze website toestaan"
+  },
+  "rep_fix_pause": {
+    "message": "Overal 30 minuten pauzeren"
+  },
+  "rep_tell_us": {
+    "message": "Laat het ons weten"
+  },
+  "rep_tell_desc": {
+    "message": "We repareren kapotte websites voor iedereen via de ondertekende filterupdate, meestal binnen een dag. De extensie verstuurt niets: het rapport opent in uw eigen e-mailprogramma en u ziet eerst elk woord ervan."
+  },
+  "rep_what": {
+    "message": "Wat is er mis? (optioneel)"
+  },
+  "rep_what_ph": {
+    "message": "bijv. de video start niet, een wit vak bedekt het artikel…"
+  },
+  "rep_full_url": {
+    "message": "Volledig paginaadres meesturen (anders alleen de naam van de website)"
+  },
+  "rep_preview": {
+    "message": "Wat er wordt verzonden"
+  },
+  "rep_send_mail": {
+    "message": "Versturen per e-mail"
+  },
+  "rep_copy": {
+    "message": "Rapport kopiëren"
+  },
+  "rep_privacy": {
+    "message": "Hoe dit rapport wordt behandeld: privacybeleid"
+  },
+  "rep_copied": {
+    "message": "Gekopieerd."
+  },
+  "rep_done_cosm": {
+    "message": "Elementen verbergen staat uit op deze website. Opnieuw geladen — is het opgelost?"
+  },
+  "rep_done_allow": {
+    "message": "Advertenties zijn toegestaan op deze website. Opnieuw geladen — is het opgelost?"
+  },
+  "rep_done_pause": {
+    "message": "30 minuten gepauzeerd. Als de website nu werkt, laat het ons dan hieronder weten."
+  },
+  "cookieRejections": {
+    "message": "Cookiebanners voor u geweigerd: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "De Shorts-rijen, het Shorts-tabblad en de suggesties op YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Pop-ups “Inloggen met Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "De accountkiezer die op veel websites in de hoek verschijnt. De inlogknoppen blijven werken."
+  },
+  "pickTip": {
+    "message": "Klik op een element om het te verbergen"
+  },
+  "pickZapTip": {
+    "message": "Klik om dit element te verwijderen (eenmalig)"
+  },
+  "pickEscCancel": {
+    "message": "om te annuleren"
+  },
+  "opt_notices": {
+    "message": "Licenties van de filterlijsten"
+  }
+}

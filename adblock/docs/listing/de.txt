@@ -1,0 +1,10 @@
+Supreme AdBlock blockiert Werbung überall – YouTube-Videoanzeigen, Banner, Pop-ups und Tracker – ohne zu beobachten, was Sie tun.
+
+• YouTube-Werbung wird an der Quelle gestoppt, deshalb laufen Videos einfach.
+• EasyList, EasyPrivacy und die uBlock-Origin-Filter sind eingebaut, dazu die Liste für Ihre Sprache (31 regionale Listen).
+• Cookie-Banner: drückt für Sie „Ablehnen“, entfernt zurückgebliebene Unschärfe und Scroll-Sperren und drückt nie eine Anmelde-, OAuth- oder Zahlungsschaltfläche.
+• Fokusmodus: blendet Chat-Blasen, Newsletter-Pop-ups, Benachrichtigungs-Aufforderungen, Social-Widgets, KI-Pop-ups und YouTube Shorts aus.
+• Anti-Adblock-Sperren und Pop-under werden neutralisiert.
+• Website kaputt? Ein Klick behebt es – oder melden Sie es uns; nichts wird gesendet, ohne dass Sie es vorher sehen.
+• Signierte Filter-Updates zweimal täglich: Neue Werbenetzwerke sind in Stunden abgedeckt, ohne Code aus dem Netz.
+• Kein Konto, keine Telemetrie, keine Datensammlung. Kostenlos, mit optionaler Spende; im Pop-up erscheint eine kleine Karte mit der Kennzeichnung „Anzeige“ für Carbon Stealth, den Hersteller.

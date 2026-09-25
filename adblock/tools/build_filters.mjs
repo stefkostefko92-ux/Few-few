@@ -1,6 +1,6 @@
 // Билд на статичните рулсети от публичните листи (dev-only, не влиза в пакета).
 //
-//   node tools/build_filters.mjs [--local <dir>]
+//   node tools/build_filters.mjs [--local <dir>] [--out <dir>] [--report]
 //
 // Сваля EasyList + EasyPrivacy + URLhaus (или чете свалени копия от <dir>) и
 // генерира:
@@ -19,10 +19,12 @@
 // Лицензи: EasyList/EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0),
 // URLhaus (abuse.ch) е CC0. Виж docs/LICENSES.md.
 
-import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, domainToASCII } from "node:url";
 import { runInNewContext } from "node:vm";
+import { createHash } from "node:crypto";
+import { genericCss } from "./generic_css.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -48,317 +50,29 @@ const SA_POLICY = (() => {
 if (!SA_POLICY || typeof SA_POLICY.protectedHost !== "function") { console.error("ERROR: scriptlets/policy.js did not define SA_POLICY"); process.exit(1); }
 const isProtected = (d) => SA_POLICY.protectedHost(d);
 
-const TYPE_MAP = {
-  script: "script", image: "image", stylesheet: "stylesheet", object: "object",
-  xmlhttprequest: "xmlhttprequest", xhr: "xmlhttprequest",
-  subdocument: "sub_frame", frame: "sub_frame", ping: "ping",
-  websocket: "websocket", media: "media", font: "font", other: "other",
-};
-
-// Опции, при които правилото се пропуска (не се превеждат към DNR).
-const SKIP_OPTS = new Set([
-  "generichide", "elemhide", "ghide", "ehide", "genericblock",
-  "rewrite", "redirect-rule", "removeparam", "replace",
-  "header", "cookie", "cname", "denyallow", "strict1p", "strict3p",
-  "inline-script", "inline-font", "mp4", "empty", "webrtc", "object-subrequest",
-  "badfilter", "all", "urlskip", "ipaddress", "method", "to", "from", "permissions",
-]);
-
-const isAscii = (s) => /^[\x20-\x7e]+$/.test(s);
-
-// $redirect=<resource> → our bundled surrogate (web_accessible resources/*). Unknown
-// resource names are skipped (never a broken redirect). $redirect-rule stays
-// skipped: DNR cannot express "only if otherwise blocked", and redirecting a
-// request that would have loaded breaks sites.
-const REDIRECT_MAP = {
-  "noopjs": "noop.js", "noop.js": "noop.js",
-  "1x1.gif": "1x1.gif", "1x1-transparent.gif": "1x1.gif", "2x2.png": "1x1.gif", "2x2-transparent.png": "1x1.gif", "32x32.png": "1x1.gif", "3x2.png": "1x1.gif",
-  "noop.txt": "noop.txt", "nooptext": "noop.txt", "noop.html": "noop.html", "noopframe": "noop.html",
-  "noop.css": "noop.css", "noopcss": "noop.css", "noop.json": "noop.json", "noopjson": "noop.json",
-  "noop-vast2.xml": "noop-vast.xml", "noop-vast3.xml": "noop-vast.xml", "noop-vast4.xml": "noop-vast.xml", "noopvast2": "noop-vast.xml", "noopvast3": "noop-vast.xml",
-  "google-analytics_analytics.js": "ga.js", "google-analytics.com/analytics.js": "ga.js", "google-analytics_ga.js": "ga.js", "google-analytics.com/ga.js": "ga.js",
-  "googletagmanager_gtm.js": "ga.js", "googletagmanager.com/gtm.js": "ga.js",
-  "googletagservices_gpt.js": "gpt.js", "googletagservices.com/gpt.js": "gpt.js",
-  "googlesyndication_adsbygoogle.js": "adsbygoogle.js", "googlesyndication.com/adsbygoogle.js": "adsbygoogle.js",
-  "google-ima.js": "ima3.js",
-  "scorecardresearch_beacon.js": "scorecardresearch.js", "scorecardresearch.com/beacon.js": "scorecardresearch.js",
-  "outbrain-widget.js": "outbrain.js", "widgets.outbrain.com/outbrain.js": "outbrain.js",
-  "amazon_apstag.js": "apstag.js",
-};
-// $csp= values we pass through: a conservative charset + must look like a policy.
-// Reporting directives are refused: `report-uri https://x/` would make the browser
-// POST the visited document URL to a third party on every violation (a list line
-// must never turn the extension into a beacon).
-const CSP_OK = (v) => /^[A-Za-z0-9 '":;\/*.\-_]{6,300}$/.test(v)
-  && /(-src\b|\bsandbox\b|frame-ancestors|upgrade-insecure-requests)/.test(v)
-  && !/\breport-(uri|to)\b/i.test(v);
-// Why a line was dropped (node tools/build_filters.mjs --report prints the histogram).
-const SKIP_REASONS = {};
-const skip = (r) => { SKIP_REASONS[r] = (SKIP_REASONS[r] || 0) + 1; return null; };
-const validDomain = (d) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d);
-
-// --- ABP мрежов ред -> междинно представяне -------------------------------
-function parseNetLine(line) {
-  let allow = false;
-  if (line.startsWith("@@")) { allow = true; line = line.slice(2); }
-  let pattern = line;
-  let optStr = "";
-  let cspValue = null;
-  // $csp=<policy>: the value carries spaces/quotes, so split it off first (it is
-  // always the last option in the lists we consume).
-  const ci = line.search(/\$(?:[a-z0-9-~,=.|*:]*,)?csp=/i);
-  if (ci >= 0) {
-    const tail = line.slice(ci + 1);
-    const cm = tail.match(/(?:^|,)csp=(.*)$/);
-    cspValue = cm ? cm[1].trim() : "";
-    if (!CSP_OK(cspValue)) return skip("csp:invalid");
-    if (allow) return skip("csp:exception");
-    pattern = line.slice(0, ci);
-    optStr = tail.replace(/(?:^|,)csp=.*$/, "");
-    if (optStr && !/^[a-z~][a-z0-9-~,=.|*:]*$/i.test(optStr)) return skip("csp:bad-options");
-  } else {
-    const di = line.lastIndexOf("$");
-    // "$" в URL шаблон е рядкост; опциите винаги са след последния "$".
-    if (di >= 0) {
-      const tail = line.slice(di + 1);
-      if (/^[a-z~][a-z0-9-~,=.|*:]*$/i.test(tail)) {
-        pattern = line.slice(0, di);
-        optStr = tail;
-      } else if (/[\s'"]/.test(tail)) {
-        return skip("opt:quoted-value");
-      }
-    }
-  }
-  if (!pattern || !isAscii(pattern)) return skip("pattern:non-ascii");
-  // Regex patterns stay out: an RE2-incompatible regex inside a STATIC ruleset
-  // makes Chrome refuse the whole ruleset, and we cannot validate at build time.
-  if (pattern.startsWith("/") && pattern.endsWith("/")) return skip("pattern:regex");
-
-  const o = {
-    allow, pattern, important: false, matchCase: false, party: null,
-    types: [], notTypes: [], initiator: [], notInitiator: [], doc: false,
-    redirect: null, csp: cspValue, popup: false,
-  };
-  if (optStr) {
-    for (const raw of optStr.split(",")) {
-      const neg = raw.startsWith("~");
-      const t = neg ? raw.slice(1) : raw;
-      const [name, val] = t.split("=");
-      if (name === "third-party" || name === "3p") { o.party = neg ? "firstParty" : "thirdParty"; continue; }
-      if (name === "first-party" || name === "1p") { o.party = neg ? "thirdParty" : "firstParty"; continue; }
-      if (name === "important") { o.important = true; continue; }
-      if (name === "match-case") { o.matchCase = true; continue; }
-      if (name === "document" || name === "doc") { if (neg) return skip("opt:~document"); o.doc = true; continue; }
-      if (name === "domain") {
-        let had = false, kept = 0, droppedNeg = false;
-        for (const d of (val || "").toLowerCase().split("|")) {
-          if (!d) continue;
-          had = true;
-          const isNeg = d.startsWith("~");
-          const dn = isNeg ? d.slice(1) : d;
-          if (!validDomain(dn)) { if (isNeg) droppedNeg = true; continue; } // wildcard TLD и др.
-          kept++;
-          (isNeg ? o.notInitiator : o.initiator).push(dn);
-        }
-        // За BLOCK правило загубен запис може да РАЗШИРИ обхвата (over-block):
-        // паднало ~изключване (напр. ~edu|~gov) или всички positive паднали →
-        // пропускаме реда, за да не блокираме по-широко от източника.
-        if (!o.allow && (droppedNeg || (had && kept === 0))) return skip("domain:lossy");
-        continue;
-      }
-      if (TYPE_MAP[name]) { (neg ? o.notTypes : o.types).push(TYPE_MAP[name]); continue; }
-      if (name === "popup") { if (neg || o.allow) return skip("popup:exception"); o.popup = true; continue; }
-      if (name === "redirect") {
-        if (neg || o.allow) return skip("redirect:exception");
-        const res = REDIRECT_MAP[(val || "").split(":")[0]];
-        if (!res) return skip("redirect:" + (val || "").split(":")[0]);
-        o.redirect = res;
-        continue;
-      }
-      if (SKIP_OPTS.has(name)) return skip("opt:" + name);
-      return skip("unknown:" + name); // непозната опция — по-безопасно е да пропуснем реда
-    }
-  }
-  // Смесени положителни+отрицателни domain= пазят от чупене на сайтове —
-  // не ги апроксимираме, пропускаме реда.
-  if (o.initiator.length && o.notInitiator.length) return skip("domain:mixed");
-  if (o.types.length && o.notTypes.length) o.notTypes = [];
-  return o;
-}
-
-// Чист ||domain^ (или ||domain/) шаблон -> домейн за сливане, иначе null.
-function pureDomain(pattern) {
-  const m = /^\|\|([a-z0-9.-]+)[\^/]?$/.exec(pattern.toLowerCase());
-  return m && validDomain(m[1]) ? m[1] : null;
-}
-
-// Redirects (surrogates) must beat block rules (priority 1) — same as rules/surrogates.json;
-// document allows (allowAllRequests) and $important sit above plain allow/block.
-const rulePriority = (o) =>
-  o.redirect ? 5 : o.doc && o.allow ? 4 : o.important ? (o.allow ? 4 : 3) : o.allow ? 2 : 1;
-function actionFor(o) {
-  if (o.csp) {
-    return { type: "modifyHeaders", responseHeaders: [{ header: "content-security-policy", operation: "append", value: o.csp }] };
-  }
-  if (o.redirect) return { type: "redirect", redirect: { extensionPath: "/resources/" + o.redirect } };
-  return { type: o.doc && o.allow ? "allowAllRequests" : o.allow ? "allow" : "block" };
-}
-function conditionFor(o) {
-  const c = {};
-  if (o.party) c.domainType = o.party;
-  if (o.types.length) c.resourceTypes = [...new Set(o.types)].sort();
-  else if (o.notTypes.length) {
-    // Chromium: правило само с excludedResourceTypes ползва клона
-    // ElementType_ANY & ~exclude — който ЗАПАЗВА main_frame (за разлика от
-    // "нито едно"-клона с default mask без main_frame). ABP `$~type` НЕ включва
-    // документа, затова за block правила изрично изключваме и main_frame, иначе
-    // блокираме навигация (напр. yandex /clck/, /ads/ страници).
-    const ex = o.allow ? o.notTypes : [...o.notTypes, "main_frame"];
-    c.excludedResourceTypes = [...new Set(ex)].sort();
-  }
-  if (o.initiator.length) c.initiatorDomains = [...new Set(o.initiator)].sort();
-  if (o.notInitiator.length) c.excludedInitiatorDomains = [...new Set(o.notInitiator)].sort();
-  if (o.matchCase) c.isUrlFilterCaseSensitive = true;
-  // $csp applies to documents only.
-  if (o.csp) { c.resourceTypes = ["main_frame", "sub_frame"]; delete c.excludedResourceTypes; }
-  return c;
-}
-
-// $popup domains (DNR cannot see popups) → baked into the MAIN-world engine as a
-// window.open guard (rules/popup_hosts.json → scriptlets/main.js). Pattern (non-
-// domain) popup rules stay skipped.
+// Converter (parse ABP/uBO lines → DNR rules + cosmetics) lives in lib/abp2dnr.js —
+// shared with the service worker, loaded here through node:vm like policy.js.
+const CONV = (() => {
+  const ctx = { SA_POLICY, domainToASCII, URL, console };
+  runInNewContext(readFileSync(join(ROOT, "lib", "abp2dnr.js"), "utf8"), ctx, { filename: "abp2dnr.js" });
+  return ctx.ABP2DNR;
+})();
+const { convertCosmetic, collectGenericHide, badfiltersOf, preprocess, hostsToAbp, validDomain, SKIP_REASONS } = CONV;
 const POPUP_HOSTS = new Set();
-
-function convertList(text, key) {
-  const merge = new Map(); // сигнатура -> {proto, domains:Set}
-  const pattern = [];
-  let skipped = 0;
-
-  for (let line of text.split("\n")) {
-    line = line.trim();
-    if (!line || line.startsWith("!") || line.startsWith("[")) continue;
-    if (line.includes("##") || line.includes("#@#") || line.includes("#?#") || line.includes("#$#")) continue;
-    const o = parseNetLine(line);
-    if (!o) { skipped++; continue; }
-
-    const d = pureDomain(o.pattern);
-    if (o.popup) {
-      if (d && !isProtected(d)) POPUP_HOSTS.add(d); else skip("popup:pattern");
-      continue;
-    }
-    if (d) {
-      if (!o.allow && isProtected(d)) continue;
-      const sig = JSON.stringify([o.allow, o.doc, o.important, o.party, o.types.sort(), o.notTypes.sort(), o.initiator.sort(), o.notInitiator.sort(), o.redirect, o.csp]);
-      if (!merge.has(sig)) merge.set(sig, { proto: o, domains: new Set() });
-      merge.get(sig).domains.add(d);
-    } else {
-      // Surrogate redirects on protected hosts are fine (the site keeps working); blocks are not.
-      if (!o.allow && !o.redirect && SA_POLICY.NEVER_LIVE.some((p) => o.pattern.includes(p))) continue;
-      pattern.push(o);
-    }
-  }
-
-  const rules = [];
-  let id = 1;
-
-  // 1) Слети domain правила (стабилен ред: по сигнатура, домейните сортирани).
-  for (const sig of [...merge.keys()].sort()) {
-    const { proto, domains } = merge.get(sig);
-    const all = [...domains].sort();
-    for (let i = 0; i < all.length; i += DOMAINS_PER_RULE) {
-      const c = conditionFor(proto);
-      c.requestDomains = all.slice(i, i + DOMAINS_PER_RULE);
-      if (proto.doc && proto.allow) c.resourceTypes = ["main_frame", "sub_frame"];
-      rules.push({
-        id: id++,
-        priority: rulePriority(proto),
-        action: actionFor(proto),
-        condition: c,
-      });
-    }
-  }
-
-  // 2) Пътни/шаблонни правила, изключенията винаги влизат, block до капа.
-  const cap = PATTERN_CAP[key] ?? Infinity;
-  let blocks = 0;
-  for (const o of pattern) {
-    if (!o.allow && blocks >= cap) { skip("cap:" + key); skipped++; continue; }
-    let uf = o.pattern.replace(/^\*+/, "").replace(/\*+$/, "");
-    if (o.pattern.endsWith("|")) uf += "|";
-    // DNR сравнява case-insensitive спрямо lowercase URL и суровия pattern —
-    // pattern с главна буква тихо не match-ва. Свеждаме до lowercase.
-    if (!o.matchCase) uf = uf.toLowerCase();
-    if (uf.length < 3) { skip("pattern:too-short"); skipped++; continue; }
-    const c = conditionFor(o);
-    c.urlFilter = uf;
-    if (o.doc && o.allow) c.resourceTypes = ["main_frame", "sub_frame"];
-    rules.push({
-      id: id++,
-      priority: priorityOf(o),
-      action: actionFor(o),
-      condition: c,
-    });
-    if (!o.allow) blocks++;
-  }
-
-  return { rules, skipped };
-}
-
-// --- Козметика --------------------------------------------------------------
-// Селектор, безопасен за вграждане в CSS файла/JSON (никакво изпълнимо съдържание).
-const BROAD = new Set(["*", "html", "body", ":root", "head", "div", "span", "a", "img", "main", "section", "article", "video", "iframe"]);
-const cssSafe = (s) =>
-  s.length >= 3 && s.length < 400 && !/[{}@]/.test(s) && !BROAD.has(s.toLowerCase());
-
-// Процедурни оператори, които content.js engine-ът разбира.
-const PROC_OK = /:(has-text|matches-css|matches-attr|matches-path|matches-media|matches-prop|watch-attr|upward|xpath|min-text-length|remove-attr|remove-class|remove|style)\(/;
-
-function convertCosmetic(text) {
-  const generic = new Set();
-  const specific = new Map(); // domain -> Set(selector)
-  const unhide = new Map();
-  const addTo = (map, domain, sel) => {
-    if (!map.has(domain)) map.set(domain, new Set());
-    map.get(domain).add(sel);
-  };
-
-  for (let line of text.split("\n")) {
-    line = line.trim();
-    if (!line || line.startsWith("!") || line.startsWith("[")) continue;
-    let sep, target;
-    if (line.includes("#@#")) { sep = "#@#"; target = "unhide"; }
-    else if (line.includes("#?#")) { sep = "#?#"; target = "proc"; }
-    else if (line.includes("##")) { sep = "##"; target = "hide"; }
-    else continue;
-    const i = line.indexOf(sep);
-    const domPart = line.slice(0, i);
-    const sel = line.slice(i + sep.length).trim();
-    if (!cssSafe(sel) || !isAscii(sel)) continue;
-    if (target === "proc" && !PROC_OK.test(sel)) continue;
-    if (sel.includes("+js(") || sel.includes("#$#")) continue;
-
-    const domains = domPart
-      ? domPart.toLowerCase().split(",").map((d) => d.trim())
-      : [];
-    if (!domains.length) {
-      if (target === "hide") generic.add(sel);
-      continue; // генерични unhide/procedural — пропускаме (пренебрежимо малко)
-    }
-    for (const d of domains) {
-      const neg = d.startsWith("~");
-      const dn = neg ? d.slice(1) : d;
-      if (!validDomain(dn)) continue;
-      if (neg) continue; // ~domain изключения при козметика — пропускаме реда за този домейн
-      addTo(target === "unhide" ? unhide : specific, dn, sel);
-    }
-  }
-  return { generic, specific, unhide };
-}
+const BADFILTER = new Set();
+const convertList = (text, key, popups = true) =>
+  CONV.convertList(text, key, { cap: PATTERN_CAP[key] ?? Infinity, badfilter: BADFILTER, popups: popups ? POPUP_HOSTS : null });
 
 // --- main --------------------------------------------------------------------
 const localDir = process.argv.includes("--local")
   ? process.argv[process.argv.indexOf("--local") + 1]
   : null;
+// --out <dir>: пиши генерираните файлове там вместо в репото (тестовете пускат
+// конвертора наистина, върху фикстури, без да пипат rules/). Четенията
+// (policy.js, ръчните рулсети за counts) остават от репото.
+const OUT = process.argv.includes("--out") ? process.argv[process.argv.indexOf("--out") + 1] : ROOT;
+mkdirSync(join(OUT, "rules"), { recursive: true });
+mkdirSync(join(OUT, "scriptlets"), { recursive: true });
 
 async function getText(key) {
   if (localDir) {
@@ -370,13 +84,85 @@ async function getText(key) {
   return res.text();
 }
 
+async function fetchText(url, depth = 0) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(url + ": HTTP " + res.status);
+  let text = await res.text();
+  if (/^\s*<(!doctype|html)/i.test(text)) throw new Error(url + ": HTML instead of a filter list");
+  // `!#include file` — само относителен път на същия хост (така прави и uBO).
+  if (depth < 2 && text.includes("!#include ")) {
+    const parts = [];
+    for (const line of text.split("\n")) {
+      const m = /^!#include\s+(\S+)\s*$/.exec(line.trim());
+      if (!m || /^[a-z]+:/i.test(m[1]) || m[1].includes("..")) { parts.push(line); continue; }
+      const inc = new URL(m[1], url);
+      // `//other.host/x` or `\\other.host` resolve to ANOTHER host — whose licence we never checked
+      if (inc.origin !== new URL(url).origin) { parts.push(line); continue; }
+      parts.push(await fetchText(inc.href, depth + 1));
+    }
+    text = parts.join("\n");
+  }
+  return text;
+}
+
+// Global uBO XHR redirects to ad networks (||doubleclick.net^$xhr,redirect=noop.txt,
+// ||pagead2.googlesyndication.com^$xhr,redirect=noop.js) exist to fool anti-adblock
+// detectors — and a detector's bait is always a REAL ad resource (adsbygoogle.js, gpt.js,
+// /pagead/id, /gampad/…). The redirect keeps working for exactly those paths; every other
+// request to the ad network stays BLOCKED (EasyList/our rules), as an ad blocker's should.
+// Site-specific redirects (with initiatorDomains) are left alone.
+const BAIT_NETS = new Set(["doubleclick.net", "googlesyndication.com", "pagead2.googlesyndication.com"]);
+const BAIT_PATHS = "^https?://[^/]+/(pagead/|tag/js/|gampad/|gpt/|ddm/|instream/|adsid/)";
+export function narrowBaitRedirects(rules) {
+  let next = rules.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+  const out = [];
+  for (const r of rules) {
+    const c = r.condition || {};
+    if (r.action.type === "redirect" && !c.initiatorDomains && !c.urlFilter && !c.regexFilter && (c.requestDomains || []).some((d) => BAIT_NETS.has(d))) {
+      const bait = c.requestDomains.filter((d) => BAIT_NETS.has(d)), rest = c.requestDomains.filter((d) => !BAIT_NETS.has(d));
+      if (rest.length) out.push({ ...r, condition: { ...c, requestDomains: rest } });
+      out.push({ ...r, id: rest.length ? next++ : r.id, condition: { ...c, requestDomains: bait, regexFilter: BAIT_PATHS } });
+      continue;
+    }
+    out.push(r);
+  }
+  return out;
+}
+
+const RAW_TEXT = new Map(); // id → text exactly as downloaded (for the notices' SHA-256)
+async function listText(entry) {
+  // Built-in Focus items: a few selectors of our own (MIT), no download.
+  if (entry.selectors) return entry.selectors.map((x) => "##" + x).join("\n");
+  if (localDir) {
+    const p = join(localDir, entry.id + ".txt");
+    return existsSync(p) ? readFileSync(p, "utf-8") : null; // тестове: без мрежа
+  }
+  const texts = [];
+  for (const u of entry.urls) texts.push(await fetchText(u));
+  RAW_TEXT.set(entry.id, texts.join("\n"));
+  return preprocess(texts.join("\n"));
+}
+
 const [el, ep, uh] = await Promise.all([getText("easylist"), getText("easyprivacy"), getText("urlhaus")]);
+// Текстовете на листите от каталога — предварително, за да важат $badfilter-ите
+// на основните листи (uBO) и за EasyList/EasyPrivacy.
+const CATALOG_TEXT = new Map();
+const CATALOG_ERR = new Map();
+{
+  const catalog = JSON.parse(readFileSync(join(ROOT, "tools", "lists.json"), "utf8")).lists;
+  await Promise.all(catalog.filter((e) => e.delivery === "bundled").map(async (e) => {
+    try { CATALOG_TEXT.set(e.id, await listText(e)); } catch (err) { CATALOG_ERR.set(e.id, err.message); }
+  }));
+  for (const t of [el, ep, ...catalog.filter((e) => e.group === "core").map((e) => CATALOG_TEXT.get(e.id) || "")])
+    for (const b of badfiltersOf(t)) BADFILTER.add(b);
+  console.log(`badfilter: ${BADFILTER.size} реда от основните листи`);
+}
 
 const counts = {};
 
 for (const [key, text] of [["easylist", el], ["easyprivacy", ep]]) {
   const { rules, skipped } = convertList(text, key);
-  writeFileSync(join(ROOT, "rules", key + ".json"), JSON.stringify(rules));
+  writeFileSync(join(OUT, "rules", key + ".json"), JSON.stringify(rules));
   counts[key] = rules.length;
   console.log(`${key}: ${rules.length} DNR правила (пропуснати ${skipped} несъвместими реда)`);
 }
@@ -399,33 +185,9 @@ for (const [key, text] of [["easylist", el], ["easyprivacy", ep]]) {
       condition: { requestDomains: domains.slice(i, i + DOMAINS_PER_RULE) },
     });
   }
-  writeFileSync(join(ROOT, "rules", "urlhaus.json"), JSON.stringify(rules));
+  writeFileSync(join(OUT, "rules", "urlhaus.json"), JSON.stringify(rules));
   counts.urlhaus = domains.length;
   console.log(`urlhaus: ${domains.length} malware домейна в ${rules.length} правила`);
-}
-
-// Хостове с @@…$generichide / $elemhide — EasyList изрично изключва генеричната
-// козметика там (напр. accounts.google.com, howtogeek.com). Пренасяме ги, за да
-// НЕ прилагаме cosmetic_generic.css на тези сайтове (иначе скриваме легитимен UI).
-function collectGenericHide(text) {
-  const hosts = new Set();
-  for (let line of text.split("\n")) {
-    line = line.trim();
-    if (!line.startsWith("@@")) continue;
-    if (line.includes("##") || line.includes("#@#") || line.includes("#?#") || line.includes("#$#")) continue;
-    const di = line.lastIndexOf("$");
-    if (di < 0) continue;
-    const opts = line.slice(di + 1);
-    if (!/(^|,)(generichide|ghide|elemhide|ehide)(,|$)/.test(opts)) continue;
-    const body = line.slice(2, di).toLowerCase();
-    const m = /^\|\|([a-z0-9.-]+)(?:[\^/]|$)/.exec(body);
-    if (m && validDomain(m[1])) hosts.add(m[1]);
-    const dm = /domain=([^,]+)/.exec(opts);
-    if (dm) for (const d of dm[1].toLowerCase().split("|")) {
-      if (d && !d.startsWith("~") && validDomain(d)) hosts.add(d);
-    }
-  }
-  return hosts;
 }
 
 // Козметика (EasyList; EasyPrivacy е с пренебрежима козметика, добавяме и нея).
@@ -438,16 +200,8 @@ function collectGenericHide(text) {
     for (const s of set) a.specific.get(d).add(s);
   }
 
-  // Генеричен CSS, гейтнат зад html[data-tbab-on] (content.js слага атрибута
-  // само при включена защита), на :is() чънкове — forgiving list, така един
-  // невалиден селектор не чупи целия чънк.
   const gen = [...a.generic].sort();
-  const CHUNK = 500;
-  let css = "/* Generated by tools/build_filters.mjs - EasyList generic cosmetic rules */\n";
-  for (let i = 0; i < gen.length; i += CHUNK) {
-    css += "html[data-tbab-on] :is(" + gen.slice(i, i + CHUNK).join(",\n") + "){display:none!important}\n";
-  }
-  writeFileSync(join(ROOT, "cosmetic_generic.css"), css);
+  writeFileSync(join(OUT, "cosmetic_generic.css"), genericCss(gen));
 
   const specObj = {};
   for (const d of [...a.specific.keys()].sort()) specObj[d] = [...a.specific.get(d)].sort();
@@ -456,7 +210,7 @@ function collectGenericHide(text) {
   const ghide = new Set([...collectGenericHide(el), ...collectGenericHide(ep)]);
   const genericHide = [...ghide].sort();
   writeFileSync(
-    join(ROOT, "rules", "cosmetic_specific.json"),
+    join(OUT, "rules", "cosmetic_specific.json"),
     JSON.stringify({ specific: specObj, unhide: unhideObj, genericHide })
   );
   counts.cosmeticGeneric = gen.length;
@@ -465,17 +219,169 @@ function collectGenericHide(text) {
   console.log(`козметика: ${gen.length} генерични, ${counts.cosmeticSpecific} домейн-специфични, unhide за ${Object.keys(unhideObj).length} домейна, generichide за ${genericHide.length} домейна`);
 }
 
+// --- Допълнителни листи (tools/lists.json) -----------------------------------
+// bundled → статичен DNR рулсет rules/list_<id>.json + козметика rules/cosmetic_<id>.json
+// (генеричен CSS като индексируем вложен блок, домейн-специфични, #@#, generichide);
+// remote → нищо не се пакетира: браузърът на потребителя сваля листа от автора,
+// когато той го включи (лист без лиценз за разпространение). rules/lists.json е
+// каталогът за UI и service worker-а; manifest.json се синхронизира с рулсетовете.
+const CATALOG = JSON.parse(readFileSync(join(ROOT, "tools", "lists.json"), "utf8")).lists;
+const LIST_PATTERN_CAP = 12000;
+
+const listCatalog = [];
+const manifestRulesets = [];
+for (const entry of CATALOG) {
+  const meta = {
+    id: entry.id, group: entry.group, default: entry.default, delivery: entry.delivery,
+    langs: entry.langs || [], title: entry.title, license: entry.license, homepage: entry.homepage,
+  };
+  if (entry.delivery === "remote") {
+    meta.url = entry.urls[0];
+    meta.slot = entry.slot; // fixed dynamic-rule slot: never reuse one for another list
+    listCatalog.push(meta);
+    continue;
+  }
+  if (CATALOG_ERR.has(entry.id)) { console.warn(`${entry.id}: пропуснат — ${CATALOG_ERR.get(entry.id)}`); continue; }
+  let text = CATALOG_TEXT.get(entry.id);
+  if (text == null) continue;
+  const ownBad = entry.group === "core" ? [] : badfiltersOf(text).filter((b) => !BADFILTER.has(b));
+  for (const b of ownBad) BADFILTER.add(b);
+  if (entry.format === "hosts") text = hostsToAbp(text);
+  PATTERN_CAP["list_" + entry.id] = LIST_PATTERN_CAP;
+  const conv = convertList(text, "list_" + entry.id, entry.group === "core");
+  const rules = narrowBaitRedirects(conv.rules), skipped = conv.skipped;
+  for (const b of ownBad) BADFILTER.delete(b);
+  // A list with no network rules (built-in selectors) gets no ruleset at all.
+  meta.ruleset = rules.length > 0;
+  if (meta.ruleset) writeFileSync(join(OUT, "rules", `list_${entry.id}.json`), JSON.stringify(rules));
+  const cos = convertCosmetic(text);
+  const spec = {}, unh = {};
+  for (const d of [...cos.specific.keys()].sort()) spec[d] = [...cos.specific.get(d)].sort();
+  for (const d of [...cos.unhide.keys()].sort()) unh[d] = [...cos.unhide.get(d)].sort();
+  const gen = [...cos.generic].sort();
+  writeFileSync(join(OUT, "rules", `cosmetic_${entry.id}.json`), JSON.stringify({
+    css: gen.length ? genericCss(gen, 500, `${entry.title} (${entry.license})`) : "",
+    specific: spec, unhide: unh, genericHide: [...collectGenericHide(text)].sort(),
+  }));
+  // uBO scriptlets (`host##+js(...)`) → scriptlets/list_ubo.txt: DATA for
+  // build_scriptlets.mjs, which validates every name/argument like list.txt and
+  // bakes them into scriptlets/main_ubo.js (registered only on those hosts).
+  // Global directives and `#@#+js` exceptions are left out: a global one would
+  // have to run on every site, and an exception must cancel its host's entry.
+  if (entry.id === "ubo") {
+    const js = [], exc = new Set();
+    for (let line of text.split("\n")) {
+      line = line.trim();
+      const e = line.indexOf("#@#+js(");
+      if (e > 0) { for (const h of line.slice(0, e).split(",")) exc.add(h.trim().toLowerCase() + "\u0000" + line.slice(e + 3)); continue; }
+      const i = line.indexOf("##+js(");
+      if (i <= 0 || line.startsWith("!")) continue;
+      const hosts = line.slice(0, i).split(",").map((h) => h.trim().toLowerCase())
+        .filter((h) => h && !exc.has(h + "\u0000" + line.slice(i + 2)));
+      if (hosts.length) js.push(hosts.join(",") + line.slice(i));
+    }
+    const kept = js.filter((l) => { const i = l.indexOf("##+js("); return !l.slice(0, i).split(",").some((h) => exc.has(h + "\u0000" + l.slice(i + 2))); });
+    // An exception on a SUBDOMAIN (job.mt.de#@#+js(x)) must also cancel the
+    // parent's directive (mt.de##+js(x)) there — the engine walks the whole
+    // host chain. Those exceptions travel with the data as `#@#+js` lines.
+    const onHost = new Set();
+    for (const l of kept) { const i = l.indexOf("##+js("); for (const h of l.slice(0, i).split(",")) onHost.add(h + "\u0000" + l.slice(i + 2)); }
+    const excLines = [];
+    for (const k of exc) {
+      const [h, d] = k.split("\u0000");
+      const parts = h.split(".");
+      for (let p = 1; p < parts.length - 1; p++) if (onHost.has(parts.slice(p).join(".") + "\u0000" + d)) { excLines.push(h + "#@#" + d); break; }
+    }
+    writeFileSync(join(OUT, "scriptlets", "list_ubo.txt"),
+      "! GENERATED by tools/build_filters.mjs from the uBlock Origin filters (GPL-3.0) — DATA, not code.\n" + [...new Set(kept)].concat(excLines.sort()).join("\n") + "\n");
+    console.log(`ubo scriptlets: ${kept.length} директиви → scriptlets/list_ubo.txt`);
+  }
+  meta.network = rules.length;
+  meta.cosmetic = gen.length + Object.values(spec).reduce((n, v) => n + v.length, 0);
+  listCatalog.push(meta);
+  if (meta.ruleset) manifestRulesets.push({ id: "list_" + entry.id, enabled: false, path: `rules/list_${entry.id}.json` });
+  counts["list_" + entry.id] = rules.length;
+  console.log(`${entry.id}: ${rules.length} DNR правила, ${meta.cosmetic} козметични (пропуснати ${skipped})`);
+}
+writeFileSync(join(OUT, "rules", "lists.json"), JSON.stringify(listCatalog, null, 1) + "\n");
+
+// THIRD_PARTY_NOTICES.txt (ships in the package): attribution + licence of every
+// list whose rules we redistribute, what we changed, where the unmodified source
+// came from (URL + date + SHA-256) and the licence texts in licenses/ — CC BY-SA,
+// GPL/AGPL, MPL, Apache and MIT all ask for some of this.
+function licenceFiles(e) {
+  const l = e.license || "", f = [];
+  if (/\bAGPL-3\.0/.test(l)) f.push("licenses/AGPL-3.0-only.txt");
+  else if (/\bGPL-3\.0/.test(l)) f.push("licenses/GPL-3.0-only.txt");
+  if (/CC BY-SA 3\.0/.test(l)) f.push("licenses/CC-BY-SA-3.0.txt");
+  if (/CC BY-SA 4\.0/.test(l)) f.push("licenses/CC-BY-SA-4.0.txt");
+  if (/CC BY 4\.0/.test(l)) f.push("licenses/CC-BY-4.0.txt");
+  if (/CC0/.test(l)) f.push("licenses/CC0-1.0.txt");
+  if (/Unlicense/.test(l)) f.push("licenses/Unlicense.txt");
+  if (/MPL-2\.0/.test(l)) f.push("licenses/MPL-2.0.txt");
+  if (/Apache-2\.0/.test(l)) f.push("licenses/Apache-2.0.txt");
+  if (e.id === "reg-mk") f.push("licenses/MIT-Macedonian-adBlock-Filters.txt");
+  if (e.id === "reg-ro") f.push("licenses/MIT-ROad-Block.txt");
+  return f;
+}
+if (OUT === ROOT) {
+  const sha = (t) => (t ? createHash("sha256").update(t).digest("hex") : "n/a");
+  const day = new Date().toISOString().slice(0, 10);
+  const bundled = CATALOG.filter((e) => e.delivery === "bundled" && !e.selectors);
+  const block = (title, license, files, homepage, urls, text) => [
+    title,
+    "  Licence: " + license + (files.length ? " — full text: " + files.join(", ") : ""),
+    "  Authors / homepage: " + homepage,
+    ...urls.map((u) => "  Source: " + u),
+    "  Retrieved " + day + " · SHA-256 of the text as downloaded (with its !#include files): " + sha(text),
+    "",
+  ];
+  const lines = [
+    "Supreme AdBlock — third-party filter lists",
+    "",
+    "The extension's code is MIT (see LICENSE). Its rules are derived from the lists",
+    "below, each under its own licence. What we changed: the rules were converted to",
+    "Chrome's declarativeNetRequest format and to CSS; duplicates, rules the browser",
+    "cannot express, rules our safety policy refuses (for example ones touching sign-in",
+    "or payment fields) and rules over a per-list size cap were left out. Nothing was",
+    "added to a list's own rules. The unmodified source of each list is at the URL",
+    "given below as of the date shown (the SHA-256 identifies the exact text); on",
+    "request we send a copy: info@carbonstealth.eu. The conversion tools are public:",
+    "https://github.com/stefkostefko92-ux/Few-few/tree/main/adblock/tools",
+    "",
+    ...block("EasyList", "GPL-3.0 or CC BY-SA 3.0", ["licenses/GPL-3.0-only.txt", "licenses/CC-BY-SA-3.0.txt"], "The EasyList authors — https://easylist.to/", [SOURCES.easylist], el),
+    ...block("EasyPrivacy", "GPL-3.0 or CC BY-SA 3.0", ["licenses/GPL-3.0-only.txt", "licenses/CC-BY-SA-3.0.txt"], "The EasyList authors — https://easylist.to/", [SOURCES.easyprivacy], ep),
+    ...block("URLhaus (abuse.ch)", "CC0 1.0", ["licenses/CC0-1.0.txt"], "https://urlhaus.abuse.ch/", [SOURCES.urlhaus], uh),
+    ...bundled.flatMap((e) => block(e.title, e.license, licenceFiles(e), e.homepage, e.urls || [], RAW_TEXT.get(e.id))),
+    "Not bundled — your browser downloads these from their authors only when you turn",
+    "them on, and converts them on your device:",
+    "",
+    ...CATALOG.filter((e) => e.delivery === "remote").flatMap((e) => [e.title, "  Licence: " + e.license, "  Authors / homepage: " + e.homepage, "  Source: " + e.urls[0], ""]),
+  ];
+  writeFileSync(join(ROOT, "THIRD_PARTY_NOTICES.txt"), lines.join("\n"));
+}
+
+// manifest.json: рулсетовете на листите са НАШ изход — синхронизираме ги (само в
+// репото; тестовете с --out не пипат manifest-а). Ръчните рулсети остават първи.
+if (OUT === ROOT) {
+  const mp = join(ROOT, "manifest.json");
+  const man = JSON.parse(readFileSync(mp, "utf8"));
+  const rr = man.declarative_net_request.rule_resources.filter((r) => !r.id.startsWith("list_"));
+  man.declarative_net_request.rule_resources = rr.concat(manifestRulesets);
+  writeFileSync(mp, JSON.stringify(man, null, 2) + "\n");
+}
+
 // Броим и ръчно поддържаните рулсети, за да е пълна статистиката в UI.
 for (const f of ["ad_rules", "youtube_rules", "removeparam", "surrogates", "headers", "privacy"]) {
   const p = join(ROOT, "rules", f + ".json");
   if (existsSync(p)) counts[f] = JSON.parse(readFileSync(p, "utf-8")).length;
 }
 const popupHosts = [...POPUP_HOSTS].sort();
-writeFileSync(join(ROOT, "rules", "popup_hosts.json"), JSON.stringify(popupHosts) + "\n");
+writeFileSync(join(OUT, "rules", "popup_hosts.json"), JSON.stringify(popupHosts) + "\n");
 counts.popupHosts = popupHosts.length; // before counts.json is written (health card reads it)
 console.log(`popup hosts (baked window.open guard): ${popupHosts.length}`);
 counts.generated = new Date().toISOString().slice(0, 10);
-writeFileSync(join(ROOT, "rules", "counts.json"), JSON.stringify(counts, null, 2) + "\n");
+writeFileSync(join(OUT, "rules", "counts.json"), JSON.stringify(counts, null, 2) + "\n");
 if (process.argv.includes("--report")) {
   console.log("skip reasons (top 30):", JSON.stringify(Object.entries(SKIP_REASONS).sort((a, b) => b[1] - a[1]).slice(0, 30)));
 }
