@@ -33,7 +33,10 @@ import type { Ruolo } from "@/lib/roles";
 import { passoValido, passoNuovo } from "@/lib/totp";
 import { consumaCodiceRecupero } from "@/lib/mfa";
 import { apriSessione } from "@/lib/sessioni";
-import { mfaObbligatorio, passwordScaduta } from "@/lib/password-policy";
+import {
+  accessoBloccatoSenzaMfa,
+  passwordScaduta,
+} from "@/lib/password-policy";
 
 const schema = z.object({
   email: z.string().trim().toLowerCase().email().max(200),
@@ -253,7 +256,9 @@ export const POST = gestito(async (req) => {
     ruolo: utente.ruolo,
     // Интерфейсът показва подсещане, вместо потребителят да разбере при
     // отказан достъп някъде другаде.
-    mfaRichiesto: mfaObbligatorio(utente.ruolo) && !utente.totpAttivo,
+    // Същото правило като в `richiedeRuolo` — иначе интерфейсът води към
+    // „Sicurezza" човек, когото сървърът всъщност пуска, или обратното.
+    mfaRichiesto: accessoBloccatoSenzaMfa(utente.ruolo, utente.totpAttivo),
     passwordScaduta: passwordScaduta(utente.passwordCambiataAt, ora),
   });
 });

@@ -113,3 +113,33 @@ export const RUOLI_MFA_OBBLIGATORIO = ["MASTER", "ADMIN"] as const;
 export function mfaObbligatorio(ruolo: string): boolean {
   return (RUOLI_MFA_OBBLIGATORIO as readonly string[]).includes(ruolo);
 }
+
+/**
+ * Налага ли се задължителният втори фактор в ТАЗИ инсталация.
+ *
+ * В продукция — ДА, без изключение по подразбиране. `MFA_OBBLIGATORIA=0` е
+ * само за тестовите стендове (там демо акаунтите на MASTER/ADMIN се ползват
+ * от стотици тестове паралелно, а една стъпка на TOTP = един вход). Изрично
+ * `1` включва и извън продукция — за проба на потока локално.
+ */
+export function mfaImposta(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  if (env.MFA_OBBLIGATORIA === "0") return false;
+  if (env.MFA_OBBLIGATORIA === "1") return true;
+  return env.NODE_ENV === "production";
+}
+
+/**
+ * Вярно, когато потребителят ДЪЛЖИ втори фактор и още го няма. Тогава всяка
+ * заявка с роля се отказва и интерфейсът го води към „Sicurezza": без това
+ * „задължителен за MASTER/ADMIN" беше надпис, а изтекла парола на ADMIN даваше
+ * пълен достъп (находка на прегледа).
+ */
+export function accessoBloccatoSenzaMfa(
+  ruolo: string,
+  totpAttivo: boolean,
+  imposta = mfaImposta(),
+): boolean {
+  return imposta && mfaObbligatorio(ruolo) && !totpAttivo;
+}

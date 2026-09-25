@@ -35,6 +35,13 @@ ufw allow OpenSSH && ufw allow 'Nginx Full' && ufw --force enable
 
 Разархивирай продукта в `/opt/erp-ascensori` (или дай пътя на `autodeploy.sh`).
 
+> **Първи вход на MASTER/ADMIN: вторият фактор е задължителен.** Гестионалът
+> отваря „Sicurezza dell'account" и не пуска към нищо друго, докато не е
+> включен: нужно е приложение за удостоверяване на телефона (Google/Microsoft
+> Authenticator, Aegis, 2FAS). Резервните кодове се показват ВЕДНЪЖ —
+> запишете ги в трезора заедно с `.env`. Загубени телефон и кодове = нов
+> MASTER през `scripts/crea-master.mjs`.
+
 ## 2. Тайни
 
 ```bash

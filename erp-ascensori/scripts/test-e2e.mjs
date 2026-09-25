@@ -26,6 +26,11 @@ const env = {
   RATE_LIMIT_LOGIN: "10000",
   RATE_LIMIT_REFRESH: "10000",
   NODE_ENV: "production",
+  // Задължителният втори фактор е ИЗКЛЮЧЕН само тук: демо акаунтите на
+  // MASTER/ADMIN се ползват от десетки тестове паралелно, а една стъпка на
+  // TOTP е един вход. Правилото има свой тест (password-policy.test.ts), а
+  // потокът за включване — e2e (sicurezza.spec.ts).
+  MFA_OBBLIGATORIA: "0",
   E2E_PORT: String(PORT),
 };
 

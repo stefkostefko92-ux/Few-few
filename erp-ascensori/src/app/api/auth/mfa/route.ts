@@ -19,6 +19,7 @@ import {
 import { hashCodiciRecupero } from "@/lib/mfa";
 import { mfaObbligatorio } from "@/lib/password-policy";
 import { revocaTutte } from "@/lib/sessioni";
+import { qrSvg } from "@/lib/qr";
 import { consenti, LIMITI } from "@/lib/rate-limit";
 
 /** Подготовка: нова тайна + URI за QR. Още НЕ включва втория фактор. */
@@ -40,7 +41,10 @@ export const GET = gestito(async () => {
       data: { totpSegreto: segreto },
     });
 
-  return ok({ attivo: false, segreto, uri: uriOtpauth(segreto, u.email) });
+  const uri = uriOtpauth(segreto, u.email);
+  // QR-ът се прави НА СЪРВЪРА: тайната не бива да минава през външна услуга
+  // за QR кодове, а клиентът няма нужда от библиотека само за това.
+  return ok({ attivo: false, segreto, uri, qr: qrSvg(uri, { modulo: 5 }) });
 });
 
 const schemaAttiva = z.object({ codice: z.string().trim().min(6).max(10) });

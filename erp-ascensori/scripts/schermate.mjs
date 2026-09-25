@@ -31,6 +31,11 @@ const env = {
   APP_URL: BASE,
   RATE_LIMIT_LOGIN: "10000",
   NODE_ENV: "production",
+  // Задължителният втори фактор е ИЗКЛЮЧЕН само тук: демо акаунтите на
+  // MASTER/ADMIN се ползват от десетки тестове паралелно, а една стъпка на
+  // TOTP е един вход. Правилото има свой тест (password-policy.test.ts), а
+  // потокът за включване — e2e (sicurezza.spec.ts).
+  MFA_OBBLIGATORIA: "0",
 };
 
 /** Страниците, подредени както човек ги обхожда. */
@@ -68,6 +73,7 @@ const PAGINE = [
   ["27-integrazioni", "/integrazioni"],
   ["28-privacy", "/privacy"],
   ["29-aziende", "/aziende"],
+  ["30-sicurezza", "/sicurezza"],
 ];
 
 let server;
@@ -234,6 +240,7 @@ async function main() {
     ["m6-scadenze", "/scadenze"],
     ["m7-fattura-dettaglio", null, { primo: "/fatture" }],
     ["m8-magazzino", "/magazzino"],
+    ["m9-sicurezza", "/sicurezza"],
   ])
     await scatta(tel, nome, percorso, opzioni);
   await mobile.close();

@@ -6,6 +6,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { randomBytes, createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { haPermesso, isRuolo, type Ruolo } from "@/lib/roles";
+import { accessoBloccatoSenzaMfa } from "@/lib/password-policy";
 
 export const SESSION_COOKIE = "ea_session";
 export const REFRESH_COOKIE = "ea_refresh";
@@ -147,10 +148,19 @@ export async function richiedeRuolo(minimo: Ruolo): Promise<Sessione> {
   // важат веднага, без да чакаме изтичането на access token-а (15 мин).
   const u = await prisma.user.findUnique({
     where: { id: s.sub },
-    select: { attivo: true, ruolo: true },
+    select: { attivo: true, ruolo: true, totpAttivo: true },
   });
   if (!u || !u.attivo) throw new ErroreHttp(401, "Utente non attivo");
   const ruolo = u.ruolo as Ruolo;
+  // Задължителният втори фактор се НАЛАГА, не се препоръчва: без него
+  // MASTER/ADMIN не стига до нито един маршрут с роля. Остават отворени само
+  // тези със `richiedeSessione` — `/api/me`, `/api/auth/mfa`, сесиите, изходът —
+  // точно колкото да го включи.
+  if (accessoBloccatoSenzaMfa(ruolo, u.totpAttivo))
+    throw new ErroreHttp(
+      403,
+      "Verifica in due passaggi obbligatoria per questo livello di accesso: attivarla in «Sicurezza dell'account».",
+    );
   if (!haPermesso(ruolo, minimo))
     throw new ErroreHttp(403, "Permessi insufficienti");
   // мулти-фирма: изтекъл абонамент → 402 (проверка при наличен tenant)

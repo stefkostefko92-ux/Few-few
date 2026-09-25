@@ -78,6 +78,7 @@ for (const [nome, percorso] of [
   ["календарът на обиколките", "/calendario"],
   ["пратката за счетоводителя", "/conservazione"],
   ["правата на субекта", "/privacy"],
+  ["сигурността на акаунта", "/sicurezza"],
 ] as const) {
   test(`${nome} е достъпна`, async ({ page }) => {
     await entra(page, UTENTI.ADMIN);

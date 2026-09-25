@@ -44,6 +44,7 @@ import {
   Moon,
   Sun,
   SignOut,
+  LockKey,
   CalendarCheck,
   CalendarBlank,
   List,
@@ -296,9 +297,14 @@ export default function Sidebar() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d && isRuolo(d.ruolo)) setUtente({ nome: d.nome, ruolo: d.ruolo });
+        // Дължимият втори фактор не е подсказка: докато не е включен, всички
+        // маршрути с роля отказват. Водим човека там, където може да го включи,
+        // вместо да го оставим сред страници, които дават само грешки.
+        if (d?.mfaRichiesto && window.location.pathname !== "/sicurezza")
+          router.replace("/sicurezza");
       })
       .catch(() => null);
-  }, []);
+  }, [router]);
 
   function cambiaTema() {
     const nuovo = !scuro;
@@ -426,12 +432,22 @@ export default function Sidebar() {
               {scuro ? <Sun size={DIM.bottone} /> : <Moon size={DIM.bottone} />}
             </button>
           </div>
-          <button
-            className="btn-secondary h-8 w-full text-xs"
-            onClick={() => void esci()}
-          >
-            <SignOut size={DIM.bottone} /> Esci
-          </button>
+          <div className="flex gap-2">
+            <Link
+              href="/sicurezza"
+              className="btn-secondary h-8 flex-1 text-xs"
+              aria-current={pathname === "/sicurezza" ? "page" : undefined}
+              onClick={() => setAperto(false)}
+            >
+              <LockKey size={DIM.bottone} /> Sicurezza
+            </Link>
+            <button
+              className="btn-secondary h-8 flex-1 text-xs"
+              onClick={() => void esci()}
+            >
+              <SignOut size={DIM.bottone} /> Esci
+            </button>
+          </div>
         </div>
       </aside>
     </>

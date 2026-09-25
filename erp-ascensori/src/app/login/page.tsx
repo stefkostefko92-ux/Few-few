@@ -53,7 +53,8 @@ export default function LoginPage() {
       // асансьор). Проверката е ЗАДЪЛЖИТЕЛНА: адресът идва отвън и без нея
       // подхвърлен линк изхвърля служителя на чужд сайт веднага след паролата.
       const da = new URLSearchParams(window.location.search).get("da");
-      router.push(ritornoSicuro(da));
+      // Дължимият втори фактор — първо той: без него маршрутите с роля отказват.
+      router.push(dati.mfaRichiesto ? "/sicurezza" : ritornoSicuro(da));
       router.refresh();
     } catch {
       setErrore("Errore di rete: riprovare");

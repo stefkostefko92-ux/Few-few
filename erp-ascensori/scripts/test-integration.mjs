@@ -60,6 +60,11 @@ const env = {
   // истински TLD (`esempio.it`) някой ден щеше да тръгне навън.
   SDI_INTERMEDIARIO_URL: "https://intermediario.invalid/api",
   NODE_ENV: "production",
+  // Задължителният втори фактор е ИЗКЛЮЧЕН само тук: демо акаунтите на
+  // MASTER/ADMIN се ползват от десетки тестове паралелно, а една стъпка на
+  // TOTP е един вход. Правилото има свой тест (password-policy.test.ts), а
+  // потокът за включване — e2e (sicurezza.spec.ts).
+  MFA_OBBLIGATORIA: "0",
 };
 
 // Предпазител: DROP DATABASE върви срещу СЪЩИЯ Postgres, на който е dev базата.

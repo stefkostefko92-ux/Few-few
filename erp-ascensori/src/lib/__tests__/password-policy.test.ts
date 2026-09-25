@@ -8,6 +8,8 @@ import {
   LUNGHEZZA_MINIMA_PRIVILEGIATA,
   GIORNI_SCADENZA,
   RUOLI_MFA_OBBLIGATORIO,
+  mfaImposta,
+  accessoBloccatoSenzaMfa,
 } from "../password-policy";
 
 test("дължината е основното изискване", () => {
@@ -96,4 +98,27 @@ test("вторият фактор е ЗАДЪЛЖИТЕЛЕН за нивата 
     "CLIENTE",
   ])
     assert.equal(mfaObbligatorio(r), false, r);
+});
+
+test("задължителният втори фактор: в продукция винаги, извън нея само изрично", () => {
+  assert.equal(mfaImposta({ NODE_ENV: "production" }), true);
+  assert.equal(
+    mfaImposta({ NODE_ENV: "production", MFA_OBBLIGATORIA: "0" }),
+    false,
+  );
+  assert.equal(mfaImposta({ NODE_ENV: "development" }), false);
+  assert.equal(
+    mfaImposta({ NODE_ENV: "development", MFA_OBBLIGATORIA: "1" }),
+    true,
+  );
+  assert.equal(typeof mfaImposta(), "boolean");
+});
+
+test("достъпът се спира само за роля с ЗАДЪЛЖИТЕЛЕН фактор, който още не е включен", () => {
+  assert.equal(accessoBloccatoSenzaMfa("ADMIN", false, true), true);
+  assert.equal(accessoBloccatoSenzaMfa("MASTER", false, true), true);
+  assert.equal(accessoBloccatoSenzaMfa("ADMIN", true, true), false);
+  assert.equal(accessoBloccatoSenzaMfa("TECNICO", false, true), false);
+  assert.equal(accessoBloccatoSenzaMfa("ADMIN", false, false), false);
+  assert.equal(typeof accessoBloccatoSenzaMfa("ADMIN", false), "boolean");
 });
