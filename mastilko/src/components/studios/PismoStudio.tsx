@@ -219,7 +219,7 @@ export default function PismoStudio() {
 
         <ProjectFile
           state={s}
-          filename="mastilko-pismo"
+          filename="mastilko-pismo" storageKey="mastilko-pismo"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>

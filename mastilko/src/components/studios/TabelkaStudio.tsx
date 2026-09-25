@@ -121,7 +121,7 @@ export default function TabelkaStudio() {
           </label>
           <StyleControls value={s} onChange={set} showTitleFx />
         </div>
-        <ProjectFile state={s} filename="mastilko-tabelka"
+        <ProjectFile state={s} filename="mastilko-tabelka" storageKey="mastilko-tabelka"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

@@ -74,6 +74,13 @@ export default function KonektorPage() {
   return (
     <article className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="font-display text-3xl font-bold sm:text-4xl">Мастилко в ChatGPT и Claude</h1>
+      {/* Менютата на двата асистента се преименуват често — датата казва на
+          читателя (и на AI, който цитира) колко свежи са стъпките. Обнови я,
+          когато ги провериш наново срещу официалните помощни страници. */}
+      <p className="mt-2 text-sm text-ink-faint">
+        Стъпките са проверени срещу официалните страници на Anthropic и OpenAI на{" "}
+        <time dateTime="2026-09-25">25 септември 2026 г.</time>
+      </p>
 
       {/* Отговор отпред — за хора, търсачки и AI асистенти. */}
       <p className="mt-4 text-lg text-ink-soft">
@@ -83,6 +90,10 @@ export default function KonektorPage() {
         Тогава казваш на асистента „направи ми етикети за буркани“ или „искам визитки
         с QR код“, а той сглобява дизайна и ти връща линк към готовия лист А4 — отваряш
         го, поправяш каквото искаш и принтираш. Безплатно, без регистрация и без ключ.
+      </p>
+      <p className="mt-3 text-sm text-ink-soft">
+        Мастилко е безплатно. Самият асистент има свои условия: в Claude собствени
+        конектори има и в безплатния план, а в ChatGPT — от план Plus нагоре.
       </p>
 
       <section className={`${card} mt-8`} aria-labelledby="adres">
@@ -186,7 +197,8 @@ export default function KonektorPage() {
           да сглобим линка и <strong className="text-ink">не се записва — нито в база, нито в лог</strong>.
           Дизайнът пътува в самия линк. Разговорът ти минава и през OpenAI или
           Anthropic по техните условия. При WiFi стикера паролата стои вътре в
-          линка — не го пращай на когото не трябва. Пълните подробности са в{" "}
+          линка и в историята на разговора — не публикувай и не препращай линка.
+          Пълните подробности са в{" "}
           <Link href="/poveritelnost" className="text-tera-dark underline">политиката за поверителност</Link>.
         </p>
       </section>
@@ -206,6 +218,7 @@ export default function KonektorPage() {
                 name: TITLE,
                 description: DESC,
                 inLanguage: "bg",
+                dateModified: "2026-09-25",
                 isPartOf: { "@id": ID.site },
                 publisher: { "@id": ID.org },
               },
@@ -222,7 +235,7 @@ export default function KonektorPage() {
                 inLanguage: "bg",
                 totalTime: "PT2M",
                 step: [
-                  "Отвори claude.ai и влез в Customize → Connectors.",
+                  "Отвори claude.ai или Claude Desktop и влез в Customize → Connectors.",
                   "Натисни +, после Add custom connector.",
                   `Постави адреса ${MCP_URL} и натисни Add.`,
                   "В разговор включи Мастилко от + → Connectors.",

@@ -574,7 +574,7 @@ export default function CvStudio() {
 
         <ProjectFile
           state={s}
-          filename="mastilko-cv"
+          filename="mastilko-cv" storageKey="mastilko-cv"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>

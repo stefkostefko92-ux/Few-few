@@ -66,10 +66,7 @@ export default function GramotiPage() {
       </header>
       <GramotaStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/gramoti"
-        aliases={["диплома за участие", "сертификат за участие", "благодарствена грамота", "почетна грамота", "certificate шаблон"]}
-      />
+      <RelatedTools current="/gramoti" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -100,6 +100,11 @@ export function rpcError(id: JsonRpcId, code: number, message: string, data?: un
   return { jsonrpc: "2.0", id, error: { code, message, ...(data === undefined ? {} : { data }) } };
 }
 
+/** `id` по JSON-RPC: низ, число, null или липсващ (нотификация). */
+export function isValidId(id: unknown): boolean {
+  return id === undefined || id === null || typeof id === "string" || typeof id === "number";
+}
+
 export function isModern(version: string | undefined | null): boolean {
   return version === MODERN_PROTOCOL;
 }
@@ -193,8 +198,14 @@ export function handleRpc(msg: unknown, headerVersion?: string | null): RpcOutco
   if (typeof msg !== "object" || msg === null || Array.isArray(msg)) {
     return { body: rpcError(null, RPC.INVALID_REQUEST, "Очаква се един JSON-RPC обект."), status: 400 };
   }
-  const m = msg as { jsonrpc?: unknown; id?: JsonRpcId; method?: unknown; params?: unknown };
-  const id: JsonRpcId = m.id ?? null;
+  const m = msg as { jsonrpc?: unknown; id?: unknown; method?: unknown; params?: unknown };
+  // JSON-RPC позволява само низ, число или null. Всичко друго връщаме ПРЕДИ да
+  // го сложим в отговора: обект или масив, вложен на хиляди нива, иначе
+  // стига до JSON.stringify и срива заявката с RangeError (500 без тяло).
+  if (!isValidId(m.id)) {
+    return { body: rpcError(null, RPC.INVALID_REQUEST, "„id“ трябва да е низ или число."), status: 400 };
+  }
+  const id: JsonRpcId = (m.id as JsonRpcId | undefined) ?? null;
 
   if (m.jsonrpc !== "2.0" || typeof m.method !== "string") {
     return { body: rpcError(id, RPC.INVALID_REQUEST, "Липсва „jsonrpc: 2.0“ или „method“."), status: 400 };

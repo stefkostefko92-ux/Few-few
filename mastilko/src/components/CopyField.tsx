@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Icon from "@/components/Icon";
 
 // Поле само за четене + бутон „Копирай“. Стойността е видима и маркируема
@@ -8,6 +8,9 @@ import Icon from "@/components/Icon";
 // удобство, не единственият път.
 export default function CopyField({ value, label }: { value: string; label: string }) {
   const [msg, setMsg] = useState("");
+  // useId, не твърдо „copy-field“: две полета на една страница иначе делят id
+  // и етикетът на второто сочи към първото.
+  const id = useId();
 
   async function copy() {
     try {
@@ -20,12 +23,12 @@ export default function CopyField({ value, label }: { value: string; label: stri
 
   return (
     <div>
-      <label className="field-label" htmlFor="copy-field">
+      <label className="field-label" htmlFor={id}>
         {label}
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
         <input
-          id="copy-field"
+          id={id}
           readOnly
           value={value}
           onFocus={(e) => e.currentTarget.select()}

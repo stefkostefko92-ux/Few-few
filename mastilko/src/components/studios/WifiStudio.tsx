@@ -153,7 +153,7 @@ export default function WifiStudio() {
           <Icon name="bulb" className="mr-1 h-4 w-4 align-[-3px]" /> Съвет: разлепен стикер с паролата е достъпен за всеки, който вижда
           листа — за заведения ползвай отделна гост-мрежа.
         </p>
-        <ProjectFile state={s} filename="mastilko-wifi"
+        <ProjectFile state={s} filename="mastilko-wifi" storageKey="mastilko-wifi"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

@@ -184,7 +184,7 @@ export default function PokanaStudio() {
           </div>
           <StyleControls value={s} onChange={set} showTitleFx />
         </div>
-        <ProjectFile state={s} filename="mastilko-pokana"
+        <ProjectFile state={s} filename="mastilko-pokana" storageKey="mastilko-pokana"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

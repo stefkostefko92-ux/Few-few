@@ -64,10 +64,7 @@ export default function VaucheriPage() {
       </header>
       <VoucherStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/vaucheri"
-        aliases={["талон за отстъпка", "купон за отстъпка", "gift voucher", "подаръчна карта", "ваучер за салон"]}
-      />
+      <RelatedTools current="/vaucheri" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

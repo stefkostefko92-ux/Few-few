@@ -825,7 +825,7 @@ export default function CardStudio() {
 
         <ProjectFile
           state={s}
-          filename="mastilko-vizitki"
+          filename="mastilko-vizitki" storageKey="mastilko-cards"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>

@@ -105,7 +105,7 @@ export default function MenuStudio() {
           <ImageUpload label="Лого (по избор)" value={s.logo} onChange={(logo) => set({ logo })} />
           <StyleControls value={s} onChange={set} />
         </div>
-        <ProjectFile state={s} filename="mastilko-menu"
+        <ProjectFile state={s} filename="mastilko-menu" storageKey="mastilko-menu"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

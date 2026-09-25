@@ -64,10 +64,7 @@ export default function DokumentniSnimkiPage() {
       </header>
       <PhotoStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/dokumentni-snimki"
-        aliases={["снимка за лична карта", "снимка за паспорт", "биометрична снимка", "снимка 35x45", "снимка за виза", "снимка за шофьорска книжка"]}
-      />
+      <RelatedTools current="/dokumentni-snimki" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -317,7 +317,7 @@ export default function GramotaStudio() {
 
           <StyleControls value={s} onChange={set} showTitleFx showPhotoFx />
         </div>
-        <ProjectFile state={s} filename="mastilko-gramota"
+        <ProjectFile state={s} filename="mastilko-gramota" storageKey="mastilko-gramota"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

@@ -73,10 +73,7 @@ export default function EtiketiPage() {
       </header>
       <LabelStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/etiketi"
-        aliases={["стикери за буркани", "лепенки за продукти", "етикети за тетрадки", "самозалепващи етикети", "етикети за подправки", "надписи за буркани"]}
-      />
+      <RelatedTools current="/etiketi" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

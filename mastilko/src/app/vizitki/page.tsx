@@ -72,10 +72,7 @@ export default function VizitkiPage() {
       </header>
       <CardStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/vizitki"
-        aliases={["бизнес карти", "визитни картички", "визитки с QR", "картички за контакти", "business cards"]}
-      />
+      <RelatedTools current="/vizitki" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

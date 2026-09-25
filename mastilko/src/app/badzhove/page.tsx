@@ -65,10 +65,7 @@ export default function BadzhovePage() {
       </header>
       <BadgeStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/badzhove"
-        aliases={["name tags", "табелки с имена", "баджове за конференция", "баджове за сватба", "бадж за ланярд"]}
-      />
+      <RelatedTools current="/badzhove" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

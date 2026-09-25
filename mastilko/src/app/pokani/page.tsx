@@ -65,10 +65,7 @@ export default function PokaniPage() {
       </header>
       <PokanaStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/pokani"
-        aliases={["картички за рожден ден", "покана за сватба", "покана за кръщене", "покана за парти", "картичка за юбилей"]}
-      />
+      <RelatedTools current="/pokani" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

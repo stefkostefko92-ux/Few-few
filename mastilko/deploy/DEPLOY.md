@@ -64,8 +64,13 @@ chmod 600 /opt/mastilko/.env && chown mastilko:mastilko /opt/mastilko/.env
 mkdir -p /etc/systemd/journald.conf.d
 printf '[Journal]\nMaxRetentionSec=30day\n' > /etc/systemd/journald.conf.d/retention.conf
 systemctl restart systemd-journald
-#     (Nginx access логът се върти от /etc/logrotate.d/nginx — увери се, че
-#      `rotate` × интервалът не надхвърля 30 дни.)
+#     Nginx: vhost-ът пише в /var/log/nginx/mastilko.{access,error}.log, които
+#     попадат под глобалното въртене /var/log/nginx/*.log. Провери, че `rotate`
+#     × интервалът не надхвърля 30 дни (в Ubuntu по подразбиране: daily × 14):
+grep -A10 '/var/log/nginx' /etc/logrotate.d/nginx | grep -E 'daily|weekly|rotate'
+#     И че никой глобален log_format не записва тялото на заявките (иначе
+#     обещанието за MCP конектора в /poveritelnost пада) — трябва да е празно:
+grep -rn 'request_body' /etc/nginx/ || echo "OK: тялото на заявките не се логва"
 
 # 5) Създай админ за панела на банерите (bcrypt хеш → data/admins.json, mode 600).
 #    Скриптът ПИТА за паролата — умишлено не е аргумент на командния ред (там

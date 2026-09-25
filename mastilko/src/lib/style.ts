@@ -217,7 +217,16 @@ export const StyleSchemaShape = {
   bgImage: z
     .string()
     .max(1500000)
-    .refine((v) => v === "" || /^data:image\//.test(v), "Фонът трябва да е качено изображение"),
+    // Закотвено ЦЯЛОТО, не само префиксът: стойността се вгражда в CSS като
+    // `url("…")`, а `"` в низа затваряше кавичките и отваряше втори url() —
+    // например „data:image/png;base64,AA"), url("https://…“ минаваше префикса.
+    // Сега след `base64,` са позволени само знаците на base64. Типовете са
+    // тези, които ImageUpload реално произвежда (WebP; браузър без WebP
+    // кодиране тихо пада на PNG) плюс JPEG за стари проекти.
+    .refine(
+      (v) => v === "" || /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(v),
+      "Фонът трябва да е качено изображение",
+    ),
   bgImageOpacity: z.number().min(0.05).max(1),
   bgImageFit: z.enum(["cover", "contain", "tile"]),
 };
@@ -452,10 +461,6 @@ export function contrastGrade(ratio: number): { label: string; ok: boolean } {
 }
 
 /**
- * Безопасен цвят за QR модулите: връща акцента само ако е достатъчно тъмен
- * спрямо бял фон (иначе чисто черно — скенируемостта е над естетиката).
- */
-/**
  * Цвят за ДРЕБЕН акцентен текст (слоган и подобни) върху фона на визитката.
  * Акцентът на топлите теми е светъл — напр. Теракота дава `#c25e3f` върху
  * `#f7dfd3` = 3.31:1, под AA 4.5:1 при 6.6pt (реално трудно четимо и на печат).
@@ -567,6 +572,10 @@ export function textOnSolid(bg: string, light: string, dark: string, target = 4.
   return pushUntilReadable(start, bg, target, useLight);
 }
 
+/**
+ * Безопасен цвят за QR модулите: връща акцента само ако е достатъчно тъмен
+ * спрямо бял фон (иначе чисто черно — скенируемостта е над естетиката).
+ */
 export function qrSafeColor(accent: string): string {
   const FALLBACK = "#1B1B1B";
   const lum = relLuminance(accent);

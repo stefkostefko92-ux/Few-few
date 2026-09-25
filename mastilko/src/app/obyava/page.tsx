@@ -64,10 +64,7 @@ export default function ObyavaPage() {
       </header>
       <ObyavaStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/obyava"
-        aliases={["обява с ресни", "обява с откъсващи се номера", "обява за уроци", "обява за квартира", "обява за услуги"]}
-      />
+      <RelatedTools current="/obyava" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -69,7 +69,10 @@ npm run lint && npm run typecheck && npm test   # качествена порт�
   EN превод), `PrintBar`, `SheetPreview` (props `landscape` за грамоти/табелки
   → инжектира `@page landscape`), `ThemePicker`, `ThemeToggle` (тъмна тема,
   `.dark` клас, скрипт против трепване в layout), `useLocalState` (localStorage
-  + чете споделен линк `#p=…`), `ProjectFile` (свали/качи JSON + `ShareButton`),
+  + чете споделен линк `#p=…`; преди да го приложи, пази до 3 резервни копия —
+  `src/lib/backups.ts`, връщат се от „Предишни версии“ в `ProjectFile`, който
+  затова иска `storageKey` = ключа на useLocalState; невалиден линк се
+  пренебрегва, несъвместим запис се мести в копията вместо да се презапише), `ProjectFile` (свали/качи JSON + `ShareButton`),
   `ImageUpload` (лого/снимка — смалява в браузъра до data URL, нищо навън),
   `QrImage`+`useQrDataUrl` (QR изцяло в браузъра — пакет qrcode, НИКОГА външна
   услуга). Тествана логика: `src/lib/{print,vcard,wifi}.ts`;

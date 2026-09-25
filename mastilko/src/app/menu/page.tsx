@@ -64,10 +64,7 @@ export default function MenuPage() {
       </header>
       <MenuStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/menu"
-        aliases={["ценоразпис", "меню за кафене", "меню за ресторант", "прайс лист", "меню за бар"]}
-      />
+      <RelatedTools current="/menu" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

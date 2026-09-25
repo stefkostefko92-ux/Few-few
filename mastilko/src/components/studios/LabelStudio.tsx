@@ -440,7 +440,7 @@ export default function LabelStudio() {
 
         <ProjectFile
           state={s}
-          filename="mastilko-etiketi"
+          filename="mastilko-etiketi" storageKey="mastilko-labels"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>

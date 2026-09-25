@@ -86,7 +86,7 @@ export default function CalendarStudio() {
           </label>
           <StyleControls value={s} onChange={set} hideBorder />
         </div>
-        <ProjectFile state={s} filename="mastilko-calendar"
+        <ProjectFile state={s} filename="mastilko-calendar" storageKey="mastilko-calendar"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

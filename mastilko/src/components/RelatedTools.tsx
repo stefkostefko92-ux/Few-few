@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { catalogById } from "@/lib/mcp/catalog";
 
 /**
  * Блок „Наричат го още“ + „Свързани инструменти“ на дъното на инструментна
@@ -111,13 +112,11 @@ const RELATED: Record<string, string[]> = {
   "/dokumentni-snimki": ["/cv", "/pismo", "/vizitki"],
 };
 
-export default function RelatedTools({
-  current,
-  aliases,
-}: {
-  current: string;
-  aliases?: string[];
-}) {
+export default function RelatedTools({ current }: { current: string }) {
+  // Синонимите идват от каталога на MCP конектора — един източник за видимия
+  // текст И за това, което асистентите четат през `fetch`. Доскоро бяха
+  // буквално копирани на 15 места и щяха да се разминат при първа поправка.
+  const aliases = catalogById(current.replace(/^\//, ""))?.aliases;
   // flatMap, не map+filter(Boolean) — `filter` не свива типа и TS пази `undefined`.
   const related = (RELATED[current] ?? []).flatMap((h) => TOOLS[h] ?? []);
 

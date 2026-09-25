@@ -79,7 +79,7 @@ export default function ObyavaStudio() {
           <ImageUpload label="Снимка (по избор)" value={s.image} onChange={(image) => set({ image })} />
           <StyleControls value={s} onChange={set} />
         </div>
-        <ProjectFile state={s} filename="mastilko-obyava"
+        <ProjectFile state={s} filename="mastilko-obyava" storageKey="mastilko-obyava"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

@@ -64,10 +64,7 @@ export default function WifiPage() {
       </header>
       <WifiStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/wifi"
-        aliases={["QR код за WiFi", "стикер с парола за WiFi", "WiFi парола за гости", "табелка с WiFi"]}
-      />
+      <RelatedTools current="/wifi" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

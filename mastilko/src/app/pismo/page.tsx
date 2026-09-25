@@ -74,10 +74,7 @@ export default function PismoPage() {
       </header>
       <PismoStudio />
       <ToolFaq items={FAQ} heading="Въпроси за мотивационното писмо" />
-      <RelatedTools
-        current="/pismo"
-        aliases={["придружително писмо", "писмо за кандидатстване", "cover letter", "мотивационно писмо образец"]}
-      />
+      <RelatedTools current="/pismo" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pismoJsonLd) }}

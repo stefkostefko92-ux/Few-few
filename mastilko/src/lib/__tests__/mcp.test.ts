@@ -249,10 +249,21 @@ test("каталогът покрива ВСИЧКИТЕ 14 инструмент
 
 // ── Съответствие със студията ───────────────────────────────────────────────
 
-test("границите на текстовете НЕ надвишават схемите на студията", () => {
-  // Ако наш максимум е по-голям от този на студиото, линкът се отваря празен
-  // (грешката се гълта в useLocalState) — мълчалив провал, който само тест
-  // може да хване. Затова четем истинските схеми от изходния код.
+/**
+ * Изрязва от изходния код на студиото текста на едно поле на ProjectSchema —
+ * от `    име:` до следващото поле на същото ниво (4 интервала отстъп).
+ */
+function studioField(src: string, name: string): string | null {
+  const schema = src.slice(src.indexOf("const ProjectSchema"));
+  const m = new RegExp(`\\n {4}${name}: ([\\s\\S]*?)(?=\\n {4}(?:[a-zA-Z]+:|\\.\\.\\.)|\\n {2}\\}\\))`).exec(schema);
+  return m ? m[1]! : null;
+}
+
+test("границите НЕ надвишават схемите на студията — низове, числа и списъци", () => {
+  // Ако наша граница е по-широка от тази на студиото, `ProjectSchema.parse`
+  // хвърля в браузъра, грешката се гълта и линкът се отваря ПРАЗЕН. А поле,
+  // което студиото не познава, то тихо изрязва — съдържанието просто липсва.
+  // И двете са мълчаливи провали, затова четем истинските схеми от кода.
   const studios: Record<string, string> = {
     napravi_etiketi: "LabelStudio",
     napravi_vizitki: "CardStudio",
@@ -268,30 +279,54 @@ test("границите на текстовете НЕ надвишават с�
     napravi_kalendar: "CalendarStudio",
     napravi_menu: "MenuStudio",
   };
-  // Наше име на поле → име в студиото, където се разминават нарочно.
+  // Наше име → име в студиото, където се разминават нарочно.
   const renamed: Record<string, string> = { guests: "series" };
+  // Числа, които toState превежда: календарът е 1–12 навън, 0–11 вътре.
+  const offset: Record<string, number> = { "napravi_kalendar.month": -1 };
+  // Полета, добавени от фабриката, които студиото получава чрез StyleSchemaShape.
+  const shared = new Set(["themeId"]);
 
+  let checked = 0;
   for (const [toolName, studio] of Object.entries(studios)) {
-    const src = readFileSync(
-      path.join(process.cwd(), "src/components/studios", `${studio}.tsx`),
-      "utf8",
-    );
+    const src = readFileSync(path.join(process.cwd(), "src/components/studios", `${studio}.tsx`), "utf8");
     const tool = toolByName(toolName);
     assert.ok(tool, `липсва инструмент ${toolName}`);
-    const props = (tool.inputSchema as { properties: Record<string, { maxLength?: number }> }).properties;
+    type Prop = { type?: string; maxLength?: number; minimum?: number; maximum?: number; maxItems?: number };
+    const props = (tool.inputSchema as { properties: Record<string, Prop> }).properties;
 
     for (const [field, def] of Object.entries(props)) {
-      if (def.maxLength === undefined) continue;
+      if (shared.has(field)) continue;
       const target = renamed[field] ?? field;
-      const m = new RegExp(`\\b${target}: z\\.string\\(\\)\\.max\\((\\d+)\\)`).exec(src);
-      if (!m) continue; // полета извън ProjectSchema (напр. themeId) се пропускат
-      const studioMax = Number(m[1]);
-      assert.ok(
-        def.maxLength <= studioMax,
-        `${toolName}.${field}: нашият максимум ${def.maxLength} е над ${studioMax} в ${studio}`,
-      );
+      const seg = studioField(src, target);
+      assert.ok(seg, `${toolName}.${field}: студиото ${studio} няма поле „${target}“ — стойността ще бъде изрязана`);
+
+      if (def.maxLength !== undefined) {
+        const m = /z\.string\(\)(?:\.min\(\d+\))?\.max\((\d+)\)/.exec(seg);
+        assert.ok(m, `${toolName}.${field}: в ${studio} не е низ с максимум`);
+        assert.ok(def.maxLength <= Number(m[1]), `${toolName}.${field}: ${def.maxLength} > ${m[1]} в ${studio}`);
+        checked++;
+      }
+      if (def.minimum !== undefined || def.maximum !== undefined) {
+        const m = /\.min\((-?[\d.]+)\)\.max\((-?[\d.]+)\)/.exec(seg);
+        assert.ok(m, `${toolName}.${field}: в ${studio} не е число с граници`);
+        const d = offset[`${toolName}.${field}`] ?? 0;
+        assert.ok(def.minimum! + d >= Number(m[1]), `${toolName}.${field}: минимум ${def.minimum}${d ? `(${d})` : ""} < ${m[1]}`);
+        assert.ok(def.maximum! + d <= Number(m[2]), `${toolName}.${field}: максимум ${def.maximum}${d ? `(${d})` : ""} > ${m[2]}`);
+        checked++;
+      }
+      if (def.maxItems !== undefined) {
+        // Последното `.max(N)` в полето е на самия списък (вътрешните са на низовете).
+        const all = [...seg.matchAll(/\.max\((\d+)\)/g)];
+        const last = all.at(-1);
+        assert.ok(last, `${toolName}.${field}: в ${studio} списъкът няма максимум`);
+        assert.ok(def.maxItems <= Number(last[1]), `${toolName}.${field}: ${def.maxItems} > ${last[1]} елемента`);
+        checked++;
+      }
     }
   }
+  // Предпазител срещу самия тест: ако регулярните изрази спрат да хващат,
+  // тестът не бива тихо да минава с нула проверки.
+  assert.ok(checked > 60, `проверени са само ${checked} граници — тестът вероятно се е счупил`);
 });
 
 test("всички инструменти за създаване сочат към истинска страница от каталога", () => {
@@ -416,4 +451,15 @@ test("всеки инструмент носи икона от нашия дом
       assert.match(ic.src, /^https:\/\/mastilko-bg\.com\/icons\/[a-z]+\.webp$/, `${t.name}: ${ic.src}`);
     }
   }
+});
+
+test("WiFi: предупреждението за паролата е в САМИЯ резултат, не само в описанието", () => {
+  const withPass = callTool("napravi_wifi_stiker", { ssid: "Kafe", password: "taina123" });
+  const summary = (withPass.structuredContent as { summary: string }).summary;
+  assert.match(summary, /паролата е вътре в този линк/);
+  // Текстовият блок носи същото — клиент без structuredContent също го вижда.
+  assert.match((withPass.content as Array<{ text: string }>)[0]!.text, /не го публикувай/);
+  // Отворена мрежа без парола → няма какво да се предупреждава.
+  const open = callTool("napravi_wifi_stiker", { ssid: "Kafe", auth: "nopass" });
+  assert.doesNotMatch((open.structuredContent as { summary: string }).summary, /паролата/);
 });

@@ -246,7 +246,7 @@ export default function BadgeStudio() {
 
           <StyleControls value={s} onChange={set} hideDecor hideBorder />
         </div>
-        <ProjectFile state={s} filename="mastilko-badge"
+        <ProjectFile state={s} filename="mastilko-badge" storageKey="mastilko-badge"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

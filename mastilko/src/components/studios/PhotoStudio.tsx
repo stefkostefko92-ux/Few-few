@@ -138,7 +138,7 @@ export default function PhotoStudio() {
             преди печат.
           </p>
         </div>
-        <ProjectFile state={s} filename="mastilko-photo"
+        <ProjectFile state={s} filename="mastilko-photo" storageKey="mastilko-photo"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

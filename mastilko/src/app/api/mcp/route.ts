@@ -22,12 +22,15 @@
 // точка, проверката на Origin става задължителна.
 
 import { NextResponse, type NextRequest } from "next/server";
-import { clientIp, pruneHits } from "@/lib/client-ip";
+import { clientIp } from "@/lib/client-ip";
+import { rateLimited } from "@/lib/mcp/rate-limit";
 import {
   RPC,
   SUPPORTED_PROTOCOL,
   eraOf,
   handleRpc,
+  isModern,
+  isValidId,
   metaVersion,
   rpcError,
   type JsonRpcResponse,
@@ -38,22 +41,12 @@ export const dynamic = "force-dynamic";
 /** Най-голямото тяло, което приемаме — инструментите работят с кратък текст. */
 const MAX_BODY = 256 * 1024;
 
-const WINDOW_MS = 60_000;
-const PER_IP_MAX = 120;
-const hits = new Map<string, number[]>();
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const list = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (list.length >= PER_IP_MAX) {
-    hits.set(ip, list);
-    return true;
-  }
-  list.push(now);
-  hits.set(ip, list);
-  if (hits.size > 2000) pruneHits(hits, WINDOW_MS, now);
-  return false;
-}
+/**
+ * Пакетите съществуват САМО в ревизия 2025-03-26 (премахнати в 2025-06-18).
+ * Без таван един POST с 512 съобщения минаваше покрай лимитера като ЕДНА
+ * заявка (~500× усилване) и покрай сверката на хедърите в модерната епоха.
+ */
+const MAX_BATCH = 10;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -123,11 +116,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return json(rpcError(null, RPC.PARSE_ERROR, "Невалиден JSON."), 400);
   }
 
-  // По-старите ревизии позволяваха пакет от съобщения в един масив. Приемаме
-  // го — по-евтино е, отколкото да се счупи клиент, който още го праща.
   if (Array.isArray(parsed)) {
-    if (parsed.length === 0) {
-      return json(rpcError(null, RPC.INVALID_REQUEST, "Празен пакет."), 400);
+    // Позволено само за 2025-03-26 (или без версия, което спецификацията
+    // приравнява на 2025-03-26). Модерен или 2025-06-18 клиент няма право да
+    // праща пакет — иначе пакетът е заобиколен път покрай сверката на хедърите.
+    const batchOk = !headerVersion || headerVersion === "2025-03-26";
+    if (!batchOk || parsed.some((m) => isModern(metaVersion(m)))) {
+      return json(rpcError(null, RPC.INVALID_REQUEST, "Пакети от съобщения не се поддържат в тази версия на протокола."), 400);
+    }
+    if (parsed.length === 0 || parsed.length > MAX_BATCH) {
+      return json(rpcError(null, RPC.INVALID_REQUEST, `Пакетът трябва да е от 1 до ${MAX_BATCH} съобщения.`), 400);
+    }
+    // Първото съобщение вече е таксувано горе; таксуваме останалите.
+    if (parsed.length > 1 && rateLimited(clientIp(req), parsed.length - 1)) {
+      return json(rpcError(null, RPC.INTERNAL, "Твърде много заявки. Опитай пак след минута."), 429);
     }
     const out = parsed
       .map((m) => handleRpc(m, headerVersion).body)
@@ -135,7 +137,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return out.length === 0 ? new NextResponse(null, { status: 202, headers: CORS }) : json(out);
   }
 
-  const id = (parsed as { id?: string | number | null })?.id ?? null;
+  const rawId = (parsed as { id?: unknown })?.id;
+  // Невалиден тип `id` се хваща в handleRpc; тук просто не го отразяваме.
+  const id = isValidId(rawId) ? ((rawId as string | number | null | undefined) ?? null) : null;
 
   // Хедърите ОГЛЕДАЛО на тялото — задължителни от 2026-07-28. Смисълът им е, че
   // посредник (балансьор, шлюз) маршрутизира по хедъра, докато сървърът

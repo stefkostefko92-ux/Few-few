@@ -155,7 +155,7 @@ export default function VoucherStudio() {
           <ImageUpload label="Лого (по избор)" value={s.logo} onChange={(logo) => set({ logo })} />
           <StyleControls value={s} onChange={set} hideBorder />
         </div>
-        <ProjectFile state={s} filename="mastilko-voucher"
+        <ProjectFile state={s} filename="mastilko-voucher" storageKey="mastilko-voucher"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>
 

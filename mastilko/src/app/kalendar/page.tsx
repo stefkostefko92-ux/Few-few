@@ -64,10 +64,7 @@ export default function KalendarPage() {
       </header>
       <CalendarStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/kalendar"
-        aliases={["стенен календар", "календар с празници", "календар 2026", "настолен календар", "календар PDF"]}
-      />
+      <RelatedTools current="/kalendar" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

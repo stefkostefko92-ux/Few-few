@@ -14,11 +14,11 @@ const BASE = "https://mastilko-bg.com";
  * нейната дата тук. Козметика (стил, вътрешни линкове) не изисква промяна.
  */
 const LAST_MODIFIED: Record<string, string> = {
-  "": "2026-09-18",
+  "": "2026-09-25",
   "/etiketi": "2026-09-18",
   "/vizitki": "2026-09-18",
-  "/cv": "2026-09-18",
-  "/pismo": "2026-09-18",
+  "/cv": "2026-09-25",
+  "/pismo": "2026-09-25",
   "/gramoti": "2026-09-18",
   "/pokani": "2026-09-18",
   "/tabelki": "2026-09-18",
@@ -31,8 +31,8 @@ const LAST_MODIFIED: Record<string, string> = {
   "/dokumentni-snimki": "2026-09-18",
   "/konektor": "2026-09-25",
   "/impresum": "2026-09-14",
-  "/poveritelnost": "2026-09-14",
-  "/usloviya": "2026-07-12",
+  "/poveritelnost": "2026-09-25",
+  "/usloviya": "2026-09-25",
 };
 
 const TOOLS = [

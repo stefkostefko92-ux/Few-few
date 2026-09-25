@@ -82,10 +82,7 @@ export default function CvPage() {
       </header>
       <CvStudio />
       <ToolFaq items={FAQ} heading="Въпроси за автобиографията" />
-      <RelatedTools
-        current="/cv"
-        aliases={["резюме", "CV шаблон", "автобиография образец", "Europass автобиография", "резюме за работа", "curriculum vitae"]}
-      />
+      <RelatedTools current="/cv" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(cvJsonLd) }}

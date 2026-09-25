@@ -140,4 +140,12 @@ test("схема: bgImage приема САМО качено изображен�
   // Точно това вкарваше втори, външен url() в CSS-а през споделен линк.
   assert.equal(S.safeParse({ bgImage: 'x"), url("https://evil.example/t.png' }).success, false);
   assert.equal(S.safeParse({ bgImage: "https://evil.example/t.png" }).success, false);
+  // Правилният префикс вече НЕ стига: `"` след него излизаше от url("…").
+  assert.equal(
+    S.safeParse({ bgImage: 'data:image/png;base64,AA"), url("https://evil.example/p.png' }).success,
+    false,
+  );
+  assert.equal(S.safeParse({ bgImage: "data:image/svg+xml;base64,PHN2Zz4=" }).success, false, "SVG може да носи скрипт");
+  assert.equal(S.safeParse({ bgImage: "data:image/png;base64,iVBORw0KGgo=" }).success, true);
+  assert.equal(S.safeParse({ bgImage: "data:image/jpeg;base64,/9j/4AAQ" }).success, true);
 });

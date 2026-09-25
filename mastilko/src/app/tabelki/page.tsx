@@ -65,10 +65,7 @@ export default function TabelkiPage() {
       </header>
       <TabelkaStudio />
       <ToolFaq items={FAQ} />
-      <RelatedTools
-        current="/tabelki"
-        aliases={["надписи за врата", "табела отворено затворено", "табела работно време", "указателна табелка", "надпис за офис"]}
-      />
+      <RelatedTools current="/tabelki" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
