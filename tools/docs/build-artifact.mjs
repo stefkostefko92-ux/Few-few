@@ -78,6 +78,9 @@ const DOCS_TAG = '<script src="./docs.js"></script>';
 const GALAXY_TAG = '<script src="./galaxy.js"></script>';
 const IMG_SRC = 'src="./mascots/${encodeURIComponent(id)}-icon3d.webp"';
 const IMG_SRC_INLINE = "src=\"${MASCOT_ICONS[id] || ''}\"";
+// 3D кадърът-резерв в профила (startMascot) — като иконите: data: URI вместо относителен път.
+const PORTRAIT_SRC = "`./mascots/${encodeURIComponent(agent.id)}-portrait3d.webp`";
+const PORTRAIT_SRC_INLINE = "(MASCOT_PORTRAITS[agent.id] || \"\")";
 // 3D навсякъде (собственика, 2026-09-24): `mascot3d.js` е external-three ESM зареждан лениво с
 // `import("./mascot3d.js")` (agents-dashboard/index.html#startMascot) — в артифакта относителен
 // път е блокиран от CSP, точно като docs.js/mascots/. Внасяме го като `data:` URI и пренасочваме
@@ -124,6 +127,17 @@ export function stripDocumentWrapper(src) {
   return `${src.slice(h0 + "<head>".length, h1).trim()}\n${src.slice(open.index + open[0].length, close).trim()}\n`;
 }
 
+/** Картата id → `data:` URI за 3D портретите в профила (`<id>-portrait3d.webp`). */
+export function mascotPortraitUris(dir, reader = null) {
+  const out = {};
+  for (const f of reader ? reader.list("mascots") : readdirSync(dir)) {
+    if (!f.endsWith("-portrait3d.webp")) continue;
+    const buf = reader ? reader.readBuf(`mascots/${f}`) : readFileSync(join(dir, f));
+    out[f.replace(/-portrait3d\.webp$/, "")] = `data:image/webp;base64,${buf.toString("base64")}`;
+  }
+  return out;
+}
+
 /** Картата id → `data:` URI за маскот-иконите. */
 export function mascotDataUris(dir, reader = null) {
   const icons = {};
@@ -136,6 +150,7 @@ export function mascotDataUris(dir, reader = null) {
     icons[f.replace(/-icon\.svg$/, "")] = `data:image/svg+xml,${encodeURIComponent(svg)}`;
   }
   // 3D кадърът (tools/agents/mascot-icons3d.mjs) има предимство; SVG-то остава за агент без кадър.
+  // (портретите `-portrait3d.webp` са отделна карта — mascotPortraitUris)
   for (const f of reader ? reader.list("mascots") : readdirSync(dir)) {
     if (!f.endsWith("-icon3d.webp")) continue;
     const buf = reader ? reader.readBuf(`mascots/${f}`) : readFileSync(join(dir, f));
@@ -216,7 +231,9 @@ export function build(dash = DASH, reader = null) {
   // Ръчният билд я слагаше СЛЕД употребата — работеше, но само защото функцията се вика по-късно.
   const first = html.indexOf("<script>");
   if (first === -1) throw new Error("няма скрипт блок");
-  html = `${html.slice(0, first)}<script>const MASCOT_ICONS = ${JSON.stringify(icons)};</script>\n${html.slice(first)}`;
+  const portraits = mascotPortraitUris(join(dash, "mascots"), reader);
+  if (html.includes(PORTRAIT_SRC)) html = html.split(PORTRAIT_SRC).join(PORTRAIT_SRC_INLINE);
+  html = `${html.slice(0, first)}<script>const MASCOT_ICONS = ${JSON.stringify(icons)};\nconst MASCOT_PORTRAITS = ${JSON.stringify(portraits)};</script>\n${html.slice(first)}`;
 
   // 3D маскотът: само ако таблото го зарежда (по-стари върхове на паметта нямат import-а).
   let m3d = "";

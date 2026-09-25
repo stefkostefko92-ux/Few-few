@@ -297,3 +297,10 @@ test("проверката е в състава на гейта и е задъл
   const rec = gate.slice(gate.indexOf('id: "mascots"'));
   assert.ok(!/required:\s*false/.test(rec.slice(0, rec.indexOf("}"))));
 });
+
+test("профилът: резервът е 3D кадърът, не старият SVG (SVG само ако и кадърът липсва)", () => {
+  const html = readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8");
+  assert.match(html, /-portrait3d\.webp`/, "startMascot зарежда 3D портрета");
+  assert.match(html, /\.mascot\.mascot-still svg[^{]*\{\s*display:\s*none/, "при зареден кадър SVG-то се крие");
+  for (const a of agents()) assert.ok(existsSync(join(DIR, `${a.id}-portrait3d.webp`)), `липсва портрет: ${a.id}`);
+});

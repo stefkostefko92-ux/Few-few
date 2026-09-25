@@ -154,6 +154,11 @@
      върху цял WebGL кадър, за разлика от статичния SVG отгоре). */
   .mascot.mascot-3d canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .mascot.mascot-3d svg { display: none; }
+  /* 3D кадърът-резерв: черният фон на рендера изчезва чрез screen върху тъмния хедър. */
+  .mascot .m3d-still { display: none; position: absolute; inset: 0; margin: auto; height: 100%; width: auto; max-width: 100%;
+    object-fit: contain; mix-blend-mode: screen; pointer-events: none; }
+  .mascot.mascot-still .m3d-still { display: block; }
+  .mascot.mascot-still svg, .mascot.mascot-3d .m3d-still { display: none; }
   .bubble { position: absolute; top: 18px; left: 20px; max-width: 184px; z-index: 3; background: rgba(9,13,20,.94); border: 1px solid var(--line); border-radius: 14px; border-bottom-left-radius: 4px; padding: 9px 12px; font-size: 12.5px; line-height: 1.42; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
   .bubble::after { content: ""; position: absolute; left: 16px; bottom: -7px; width: 12px; height: 12px; background: rgba(9,13,20,.94); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg); }
   .pinfo { position: relative; z-index: 2; }
@@ -16026,7 +16031,7 @@ function startMascot(host, agent) {
   stopMascot();
   if (!host) return;
   const token = mascotToken;
-  host.classList.remove("mascot-3d");
+  host.classList.remove("mascot-3d", "mascot-still");
   // Маскотът е ЕДИН герой (mascot/, PR #162); различава се само по цвят. Геометрията е вградена
   // веднъж в MASCOT_SVG, а темата на агента идва от MASCOT_THEMES — генерирани от
   // tools/agents/mascot-theme.mjs и гейтвани срещу него. Затова тук няма нито един цвят и нито
@@ -16038,6 +16043,14 @@ function startMascot(host, agent) {
   for (const k in theme) svg.style.setProperty(k, theme[k]);
   svg.classList.add("jm-animated");           // включва bob/пулс/мигане/пискюл от пакета
   svg.setAttribute("aria-label", agent.name);
+  // Резервът е 3D КАДЪР на агента (tools/agents/mascot-icons3d.mjs --portrait), не старият SVG
+  // (собственика, 2026-09-25: „върнал си стария маскот“ — живият 3D не тръгва при reduced-motion,
+  // без WebGL2 или ако three не се зареди). SVG-то остава само ако и кадърът липсва.
+  const still = new Image();
+  still.className = "m3d-still"; still.alt = ""; still.setAttribute("aria-hidden", "true"); still.decoding = "async";
+  still.onload = () => { if (token === mascotToken && host.isConnected) host.classList.add("mascot-still"); };
+  still.src = `./mascots/${encodeURIComponent(agent.id)}-portrait3d.webp`;
+  host.appendChild(still);
 
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   // Погледът следи курсора през двете променливи, които пакетът предвижда — без ререндер и без

@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader } from "./build-artifact.mjs";
+import { build, stripDocumentWrapper, mascotDataUris, assertPublishable, versionRegressions, mascot3dAsGlobal, mascot3dLoader, mascotPortraitUris } from "./build-artifact.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -131,4 +131,21 @@ test("mascotDataUris: 3D кадърът (.webp) има предимство пр
   const icons = mascotDataUris(dir);
   assert.match(icons.a, /^data:image\/svg\+xml,/, "без кадър → SVG");
   assert.equal(icons.b, "data:image/webp;base64,UklGRg==", "с кадър → webp");
+});
+
+// Собственика, 2026-09-25: „върнал си стария маскот“ — когато живият 3D не тръгне, резервът е 3D кадър.
+test("mascotPortraitUris: само `-portrait3d.webp`, като base64 webp", () => {
+  const dir = mkdtempSync(join(tmpdir(), "m3p-"));
+  writeFileSync(join(dir, "a-portrait3d.webp"), Buffer.from([82, 73, 70, 70]));
+  writeFileSync(join(dir, "a-icon3d.webp"), Buffer.from([0]));
+  assert.deepEqual(mascotPortraitUris(dir), { a: "data:image/webp;base64,UklGRg==" });
+});
+
+test("реалният билд: 3D портретите са вградени, относителният път към тях го няма", () => {
+  const { html } = build();
+  if (!readFileSync(join(ROOT, "agents-dashboard", "index.html"), "utf8").includes("-portrait3d.webp`")) return;
+  assert.ok(!html.includes("-portrait3d.webp`"), "относителен път = блокиран от CSP");
+  assert.ok(html.includes("MASCOT_PORTRAITS[agent.id]"), "профилът чете вградената карта");
+  const m = /const MASCOT_PORTRAITS = (\{.*?\});/.exec(html);
+  assert.ok(m && Object.keys(JSON.parse(m[1])).length === 28, "портрет за всеки от 28-те агента");
 });
