@@ -42,10 +42,13 @@
     }
   }
 
+  let wired = false;
   function enable() {
     active = true;
     document.documentElement.classList.add("tbab-aab");
     cleanup();
+    if (wired) return; // observers / timers only once per page
+    wired = true;
     // Throttle: scanning every element is costly, so cap it on busy pages.
     let queued = false;
     new MutationObserver(() => {
@@ -63,17 +66,32 @@
     }, 700);
   }
 
-  chrome.storage?.local.get(["enabled", "features"], (data) => {
-    if (data.enabled !== false && (data.features || {}).antiAdblock !== false) enable();
-  });
+  function disable() {
+    active = false;
+    document.documentElement.classList.remove("tbab-aab");
+  }
 
+  // Runs only when protection is on, the feature is on AND the site is not on
+  // the allowlist — re-evaluated on every storage change (the allowlist is the
+  // user's one per-site way out; it used to be ignored here).
+  const pageHost = location.hostname.replace(/^www\./, "");
+  const onList = (list) => (list || []).some((d) => pageHost === d || pageHost.endsWith("." + d));
+  const st = { enabled: true, feature: true, allowed: false };
+  function applyGate() {
+    const want = st.enabled && st.feature && !st.allowed;
+    if (want && !active) enable();
+    else if (!want && active) disable();
+  }
+  chrome.storage?.local.get(["enabled", "features", "allowlist"], (data) => {
+    st.enabled = data.enabled !== false;
+    st.feature = (data.features || {}).antiAdblock !== false;
+    st.allowed = onList(data.allowlist);
+    applyGate();
+  });
   chrome.storage?.onChanged.addListener((changes) => {
-    if (!changes.features) return;
-    const on = (changes.features.newValue || {}).antiAdblock !== false;
-    if (on && !active) enable();
-    else if (!on) {
-      active = false;
-      document.documentElement.classList.remove("tbab-aab");
-    }
+    if (changes.enabled) st.enabled = changes.enabled.newValue !== false;
+    if (changes.features) st.feature = (changes.features.newValue || {}).antiAdblock !== false;
+    if (changes.allowlist) st.allowed = onList(changes.allowlist.newValue);
+    if (changes.enabled || changes.features || changes.allowlist) applyGate();
   });
 })();

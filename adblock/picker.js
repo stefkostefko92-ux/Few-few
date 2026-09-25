@@ -11,6 +11,9 @@
   // Build a reasonably specific selector for an element.
   function selectorFor(el) {
     if (!el || el.nodeType !== 1) return null;
+    // A click on empty space lands on <body>/<html>: saving that would blank
+    // the whole site on every visit.
+    if (el === document.body || el === document.documentElement) return null;
     if (el.id && /^[a-zA-Z][\w-]*$/.test(el.id)) return "#" + el.id;
 
     const parts = [];

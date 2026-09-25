@@ -34,7 +34,7 @@ function alternates(): Array<{ hreflang: string; href: string }> {
   ];
 }
 
-const FAQ_KEYS = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'] as const;
+const FAQ_KEYS = ['q1', 'q5', 'q7', 'q8', 'q2', 'q3', 'q4', 'q6'] as const;
 
 landingRouter.get('/', (req: Request, res) => {
   const locale = res.locals.locale as Locale;
@@ -109,6 +109,9 @@ landingRouter.get('/', (req: Request, res) => {
     ogImage: absolute('/static/landing/og.png'),
     faqKeys: FAQ_KEYS,
     signedIn,
+    // Призивът за човек, който още не е клиент. Идва от конфигурацията — адресът за
+    // запитвания е решение на бизнеса, не на кода.
+    contactUrl: config().CONTACT_URL,
     // Стойностите идват от речниците, не от вход на потребител; `<` пак се екранира,
     // за да не може низ да затвори етикета предсрочно.
     structuredData: JSON.stringify(structured).replace(/</g, '\\u003c'),
@@ -190,12 +193,24 @@ landingRouter.get('/llms.txt', (_req, res) => {
         `- ${t('landing.how.step2Title')}: ${t('landing.how.step2Body')}`,
         `- ${t('landing.how.step3Title')}: ${t('landing.how.step3Body')}`,
         '',
-        `## ${t('landing.how.guardTitle')}`,
-        `- ${t('landing.faq.q1')} ${t('landing.faq.a1')}`,
-        `- ${t('landing.faq.q2')} ${t('landing.faq.a2')}`,
+        `## ${t('landing.who.title')}`,
+        `- ${t('landing.who.smallTitle')}: ${t('landing.who.smallBody')}`,
+        `- ${t('landing.who.agencyTitle')}: ${t('landing.who.agencyBody')}`,
+        `- ${t('landing.who.teamTitle')}: ${t('landing.who.teamBody')}`,
+        '',
+        `## ${t('landing.autopilot.title')}`,
+        t('landing.autopilot.lead'),
+        `- ${t('landing.autopilot.point3')}`,
+        `- ${t('landing.learn.note')}`,
+        '',
+        `## ${t('landing.faq.title')}`,
+        ...FAQ_KEYS.map(
+          (q) => `- ${t(`landing.faq.${q}`)} ${t(`landing.faq.${q.replace('q', 'a')}`)}`,
+        ),
         '',
         '## Links',
         `- ${absolute('/')}`,
+        `- ${config().CONTACT_URL}`,
         '- https://carbonstealth.eu',
         '',
       ].join('\n'),

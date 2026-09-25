@@ -76,6 +76,18 @@ var SA_POLICY = (function () {
   // Attributes whose removal downgrades page security/semantics; tags that are
   // never a legitimate remove-node-text target.
   var ATTR_DENY = /^(sandbox|type|name|autocomplete|required|disabled|readonly|rel|integrity|crossorigin|nonce|csp|referrerpolicy|href|src|srcdoc|action|method|formaction|allow)$/i;
+  // Procedural cosmetic ACTIONS change behaviour, not just visibility, so they
+  // get their own rules (a hostile subscription list / live channel / import
+  // must not be able to do more than hide things):
+  //  - `:style()` may not load anything or read attributes — `url(…)` in a
+  //    cosmetic rule is a tracking beacon on every matching page, and a CSS
+  //    escape (`\75 rl(`) would slip past a plain text check;
+  //  - `:remove-attr()` may never strip a security-relevant attribute
+  //    (ATTR_DENY) — `iframe[sandbox]:remove-attr(sandbox)` is a sandbox escape.
+  var STYLE_DENY = /url\s*\(|image-set|image\s*\(|attr\s*\(|expression|@import|element\s*\(|cross-fade|paint\s*\(|\\/i;
+  var ATTR_SENSITIVE = ["sandbox", "type", "name", "autocomplete", "required", "disabled", "readonly",
+    "rel", "integrity", "crossorigin", "nonce", "csp", "referrerpolicy", "href", "src", "srcdoc",
+    "action", "method", "formaction", "allow"];
   var TAG_OK = /^[a-z][a-z0-9-]*$/i;
   var TAG_DENY = /^(input|textarea|select|option|button|form|label|html|body|head)$/i;
 
@@ -89,12 +101,46 @@ var SA_POLICY = (function () {
       !/__proto__|constructor|prototype/.test(a) &&
       !/<\/?script|<\/?style|-->/i.test(a);
   }
+  function styleOk(decl) {
+    return typeof decl === "string" && decl.length <= ARG_MAX && !STYLE_DENY.test(decl);
+  }
+  function removeAttrOk(arg) {
+    if (typeof arg !== "string") return false;
+    var a = arg.trim();
+    if (!a || a.length > ARG_MAX) return false;
+    var last = a.lastIndexOf("/");
+    if (a.charAt(0) === "/" && last > 0) {
+      // regex argument: refuse it if it could match ANY sensitive attribute
+      var re;
+      try { re = new RegExp(a.slice(1, last), a.slice(last + 1).replace(/[^i]/g, "")); } catch (e) { return false; }
+      for (var i = 0; i < ATTR_SENSITIVE.length; i++) if (re.test(ATTR_SENSITIVE[i])) return false;
+      return true;
+    }
+    return !ATTR_DENY.test(a);
+  }
+  // Every :style(…) / :remove-attr(…) inside a (procedural) selector must pass.
+  function proceduralOk(sel) {
+    if (typeof sel !== "string") return false;
+    var rx = /:(style|remove-attr)\(/g, m;
+    while ((m = rx.exec(sel))) {
+      var start = m.index + m[0].length, depth = 1, i = start;
+      for (; i < sel.length && depth; i++) {
+        var c = sel.charAt(i);
+        if (c === "(") depth++; else if (c === ")") depth--;
+      }
+      if (depth) return false; // unbalanced
+      var arg = sel.slice(start, i - 1);
+      if (m[1] === "style" ? !styleOk(arg) : !removeAttrOk(arg)) return false;
+    }
+    return true;
+  }
   function safeSelector(s) {
     if (typeof s !== "string") return false;
     s = s.trim();
     if (s.length < 3 || s.length > 400 || UNSAFE_SELECTORS.indexOf(s.toLowerCase()) >= 0) return false;
     if (FORM_TARGET.test(s) || FORM_ATTR.test(s)) return false;
     if (UNIVERSAL.test(s) || s.charAt(0) === ":") return false;
+    if (!proceduralOk(s)) return false;
     return true;
   }
   function attrsOk(list) {
@@ -196,6 +242,7 @@ var SA_POLICY = (function () {
     COOKIE_NAME_DENY: COOKIE_NAME_DENY, COOKIE_VALUES: COOKIE_VALUES,
     UNSAFE_SELECTORS: UNSAFE_SELECTORS, FORM_TARGET: FORM_TARGET, FORM_ATTR: FORM_ATTR,
     UNIVERSAL: UNIVERSAL, ATTR_DENY: ATTR_DENY, TAG_OK: TAG_OK, TAG_DENY: TAG_DENY,
+    STYLE_DENY: STYLE_DENY, styleOk: styleOk, removeAttrOk: removeAttrOk, proceduralOk: proceduralOk,
     NEVER_LIVE: NEVER_LIVE,
     argSafe: argSafe, safeSelector: safeSelector, attrsOk: attrsOk,
     cookieValueOk: cookieValueOk, setConstOk: setConstOk, tokenValue: tokenValue,

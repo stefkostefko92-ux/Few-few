@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-21",
+    "updated": "2026-09-24",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 254
+        "lessons": 255
       },
       "evolution": [
         {
@@ -572,9 +572,20 @@
           "date": "2026-08-11",
           "event": "v18.2 — учене",
           "detail": "Научи: Блокът ПРЕДАВАНЕ ТРЯБВА да е markdown heading '## ПРЕДАВАНЕ', не '**ПРЕДАВАНЕ**' (удебе… (+2 още)"
+        },
+        {
+          "version": "18.3.0",
+          "date": "2026-09-24",
+          "event": "v18.3 — учене",
+          "detail": "Научи: Caddy v2 НЕ пише HTTP access логове без директива `log` в сайт-блока; при включен лог ф…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Caddy v2 НЕ пише HTTP access логове без директива `log` в сайт-блока; при включен лог ф…\" · 2 в карантина"
+        },
         {
           "date": "2026-08-11",
           "type": "learning",
@@ -1107,7 +1118,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 368
+        "lessons": 371
       },
       "evolution": [
         {
@@ -1883,9 +1894,31 @@
           "date": "2026-09-21",
           "event": "v25.8 — учене",
           "detail": "Научи: В `deploy/autodeploy.sh` (под `set -euo pipefail`) всяко `p=\\\"$(grep … | … )\\\"` без `||… (+2 още)"
+        },
+        {
+          "version": "26.0.0",
+          "date": "2026-09-24",
+          "event": "v26.0 — учене",
+          "detail": "Научи: adblock: tests/policy-parity само грепва tools/build_filters.mjs и не пуска конвертора,… (+1 още)"
+        },
+        {
+          "version": "26.1.0",
+          "date": "2026-09-24",
+          "event": "v26.1 — учене",
+          "detail": "Научи: ПРЕДАВАНЕ: handoff.mjs чете `Находки:` само от СЪЩИЯ ред (regex ^…Находки…:(.*)$); нахо…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „ПРЕДАВАНЕ: handoff.mjs чете `Находки:` само от СЪЩИЯ ред (regex ^…Находки…:(.*)$); нахо…\""
+        },
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „adblock: tests/policy-parity само грепва tools/build_filters.mjs и не пуска конвертора,…\" (+1 още)"
+        },
         {
           "date": "2026-09-21",
           "type": "learning",
@@ -3584,7 +3617,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 165
+        "lessons": 169
       },
       "evolution": [
         {
@@ -4000,9 +4033,31 @@
           "date": "2026-08-07",
           "event": "v14.8 — учене",
           "detail": "Научи: SupremeDiscordBot/frontend: production домейн е двусмислен в repo — код (Seo.jsx/preren… (+1 още)"
+        },
+        {
+          "version": "15.0.0",
+          "date": "2026-09-24",
+          "event": "v15.0 — учене",
+          "detail": "Научи: Числените маркетингови твърдения в adblock (40,000+ rules, 18 scriptlets, 2,700+ popup … (+1 още)"
+        },
+        {
+          "version": "15.2.0",
+          "date": "2026-09-24",
+          "event": "v15.2 — учене",
+          "detail": "Научи: Chrome Web Store листването на Supreme AdBlock (chbjbiabkgocfbbfhednpbhfeipjcclk) е акт… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Chrome Web Store листването на Supreme AdBlock (chbjbiabkgocfbbfhednpbhfeipjcclk) е акт…\" (+1 още)"
+        },
+        {
+          "date": "2026-09-24",
+          "type": "learning",
+          "summary": "Научи: „Числените маркетингови твърдения в adblock (40,000+ rules, 18 scriptlets, 2,700+ popup …\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
@@ -11879,6 +11934,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-24",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Supreme AdBlock 5.0.3 (adblock/manifest.json): без `tabs` permission, `tabs.query` все …\" (+2)"
+        },
         {
           "date": "2026-09-09",
           "type": "learning",

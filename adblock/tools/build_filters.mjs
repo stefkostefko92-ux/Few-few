@@ -1,6 +1,6 @@
 // Билд на статичните рулсети от публичните листи (dev-only, не влиза в пакета).
 //
-//   node tools/build_filters.mjs [--local <dir>]
+//   node tools/build_filters.mjs [--local <dir>] [--out <dir>] [--report]
 //
 // Сваля EasyList + EasyPrivacy + URLhaus (или чете свалени копия от <dir>) и
 // генерира:
@@ -19,7 +19,7 @@
 // Лицензи: EasyList/EasyPrivacy © The EasyList authors (GPLv3 / CC BY-SA 3.0),
 // URLhaus (abuse.ch) е CC0. Виж docs/LICENSES.md.
 
-import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
@@ -98,6 +98,13 @@ const skip = (r) => { SKIP_REASONS[r] = (SKIP_REASONS[r] || 0) + 1; return null;
 const validDomain = (d) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d);
 
 // --- ABP мрежов ред -> междинно представяне -------------------------------
+// Charset of an options string (everything after the last "$"). It MUST include
+// "_" (surrogate names: redirect=googletagservices_gpt.js) and "[" "]" (IPv6 in
+// domain=): without them the "$" was not recognised as the separator, the whole
+// line became a urlFilter with a literal "$…" in it — a dead rule that never
+// matches, and the intended redirect/exception was silently lost.
+const OPT_RE = /^[a-z~][a-z0-9_\-~,=.|*:\[\]]*$/i;
+
 function parseNetLine(line) {
   let allow = false;
   if (line.startsWith("@@")) { allow = true; line = line.slice(2); }
@@ -115,13 +122,13 @@ function parseNetLine(line) {
     if (allow) return skip("csp:exception");
     pattern = line.slice(0, ci);
     optStr = tail.replace(/(?:^|,)csp=.*$/, "");
-    if (optStr && !/^[a-z~][a-z0-9-~,=.|*:]*$/i.test(optStr)) return skip("csp:bad-options");
+    if (optStr && !OPT_RE.test(optStr)) return skip("csp:bad-options");
   } else {
     const di = line.lastIndexOf("$");
     // "$" в URL шаблон е рядкост; опциите винаги са след последния "$".
     if (di >= 0) {
       const tail = line.slice(di + 1);
-      if (/^[a-z~][a-z0-9-~,=.|*:]*$/i.test(tail)) {
+      if (OPT_RE.test(tail)) {
         pattern = line.slice(0, di);
         optStr = tail;
       } else if (/[\s'"]/.test(tail)) {
@@ -294,7 +301,7 @@ function convertList(text, key) {
     if (o.doc && o.allow) c.resourceTypes = ["main_frame", "sub_frame"];
     rules.push({
       id: id++,
-      priority: priorityOf(o),
+      priority: rulePriority(o),
       action: actionFor(o),
       condition: c,
     });
@@ -359,6 +366,11 @@ function convertCosmetic(text) {
 const localDir = process.argv.includes("--local")
   ? process.argv[process.argv.indexOf("--local") + 1]
   : null;
+// --out <dir>: пиши генерираните файлове там вместо в репото (тестовете пускат
+// конвертора наистина, върху фикстури, без да пипат rules/). Четенията
+// (policy.js, ръчните рулсети за counts) остават от репото.
+const OUT = process.argv.includes("--out") ? process.argv[process.argv.indexOf("--out") + 1] : ROOT;
+mkdirSync(join(OUT, "rules"), { recursive: true });
 
 async function getText(key) {
   if (localDir) {
@@ -376,7 +388,7 @@ const counts = {};
 
 for (const [key, text] of [["easylist", el], ["easyprivacy", ep]]) {
   const { rules, skipped } = convertList(text, key);
-  writeFileSync(join(ROOT, "rules", key + ".json"), JSON.stringify(rules));
+  writeFileSync(join(OUT, "rules", key + ".json"), JSON.stringify(rules));
   counts[key] = rules.length;
   console.log(`${key}: ${rules.length} DNR правила (пропуснати ${skipped} несъвместими реда)`);
 }
@@ -399,7 +411,7 @@ for (const [key, text] of [["easylist", el], ["easyprivacy", ep]]) {
       condition: { requestDomains: domains.slice(i, i + DOMAINS_PER_RULE) },
     });
   }
-  writeFileSync(join(ROOT, "rules", "urlhaus.json"), JSON.stringify(rules));
+  writeFileSync(join(OUT, "rules", "urlhaus.json"), JSON.stringify(rules));
   counts.urlhaus = domains.length;
   console.log(`urlhaus: ${domains.length} malware домейна в ${rules.length} правила`);
 }
@@ -447,7 +459,7 @@ function collectGenericHide(text) {
   for (let i = 0; i < gen.length; i += CHUNK) {
     css += "html[data-tbab-on] :is(" + gen.slice(i, i + CHUNK).join(",\n") + "){display:none!important}\n";
   }
-  writeFileSync(join(ROOT, "cosmetic_generic.css"), css);
+  writeFileSync(join(OUT, "cosmetic_generic.css"), css);
 
   const specObj = {};
   for (const d of [...a.specific.keys()].sort()) specObj[d] = [...a.specific.get(d)].sort();
@@ -456,7 +468,7 @@ function collectGenericHide(text) {
   const ghide = new Set([...collectGenericHide(el), ...collectGenericHide(ep)]);
   const genericHide = [...ghide].sort();
   writeFileSync(
-    join(ROOT, "rules", "cosmetic_specific.json"),
+    join(OUT, "rules", "cosmetic_specific.json"),
     JSON.stringify({ specific: specObj, unhide: unhideObj, genericHide })
   );
   counts.cosmeticGeneric = gen.length;
@@ -471,11 +483,11 @@ for (const f of ["ad_rules", "youtube_rules", "removeparam", "surrogates", "head
   if (existsSync(p)) counts[f] = JSON.parse(readFileSync(p, "utf-8")).length;
 }
 const popupHosts = [...POPUP_HOSTS].sort();
-writeFileSync(join(ROOT, "rules", "popup_hosts.json"), JSON.stringify(popupHosts) + "\n");
+writeFileSync(join(OUT, "rules", "popup_hosts.json"), JSON.stringify(popupHosts) + "\n");
 counts.popupHosts = popupHosts.length; // before counts.json is written (health card reads it)
 console.log(`popup hosts (baked window.open guard): ${popupHosts.length}`);
 counts.generated = new Date().toISOString().slice(0, 10);
-writeFileSync(join(ROOT, "rules", "counts.json"), JSON.stringify(counts, null, 2) + "\n");
+writeFileSync(join(OUT, "rules", "counts.json"), JSON.stringify(counts, null, 2) + "\n");
 if (process.argv.includes("--report")) {
   console.log("skip reasons (top 30):", JSON.stringify(Object.entries(SKIP_REASONS).sort((a, b) => b[1] - a[1]).slice(0, 30)));
 }

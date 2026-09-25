@@ -27,16 +27,16 @@
 
 <% if (managed.length) { %>
 <h2><%- icon('autopilot') %> <%= t('dash.managedPages') %></h2>
-<div class="table-wrap">
+<div class="table-wrap to-cards">
 <table><thead><tr><th><%= t('common.brand') %></th><th><%= t('dash.plan') %></th><th class="num"><%= t('dash.assets') %></th><th><%= t('dash.lastCycle') %></th><th class="num"><%= t('dash.drafts') %></th><th></th></tr></thead><tbody>
 <% managed.forEach((b) => { %>
   <% const pl = b.plan && typeof b.plan === 'object' ? b.plan : null; %>
   <tr>
-    <td><strong><%= b.name %></strong><span class="sub-line mono"><%= b.slug %></span></td>
-    <td><%= pl ? t('dash.perWeek', { count: pl.postsPerWeek }) + ' · ' + t('dash.reelsShare', { percent: Math.round(pl.reelsShare * 100) }) : '—' %></td>
-    <td class="num"><%= pl && Array.isArray(pl.assets) ? pl.assets.length : 0 %></td>
-    <td class="muted when"><%= b.lastAutopilotAt ? ui.relative(b.lastAutopilotAt) : t('dash.neverRun') %></td>
-    <td class="num"><a href="/admin/posts?status=DRAFT&brand=<%= b.slug %>"><%= b._count.posts %></a></td>
+    <td class="lead"><strong><%= b.name %></strong><span class="sub-line mono"><%= b.slug %></span></td>
+    <td class="full"><%= pl ? t('dash.perWeek', { count: pl.postsPerWeek }) + ' · ' + t('dash.reelsShare', { percent: Math.round(pl.reelsShare * 100) }) : '—' %></td>
+    <td class="num" data-label="<%= t('dash.assets') %>"><%= pl && Array.isArray(pl.assets) ? pl.assets.length : 0 %></td>
+    <td class="muted when" data-label="<%= t('dash.lastCycle') %>"><%= b.lastAutopilotAt ? ui.relative(b.lastAutopilotAt) : t('dash.neverRun') %></td>
+    <td class="num" data-label="<%= t('dash.drafts') %>"><a href="/admin/posts?status=DRAFT&brand=<%= b.slug %>"><%= b._count.posts %></a></td>
     <td><% if (can('insights:view')) { %><a class="btn ghost small" href="/admin/brands/<%= b.id %>/performance"><%- icon('metric-reach', { class: 'ic-sm' }) %> <%= t('dash.performance') %></a><% } %></td>
   </tr>
 <% }) %></tbody></table>
@@ -49,9 +49,9 @@
     <% if (!upcoming.length) { %>
       <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= t('dash.upcomingEmpty') %></strong><%= t('dash.upcomingEmptyHint') %></div></div>
     <% } else { %>
-    <div class="table-wrap"><table><thead><tr><th><%= t('common.when') %></th><th><%= t('common.brand') %></th><th><%= t('common.publication') %></th></tr></thead><tbody>
+    <div class="table-wrap to-cards"><table><thead><tr><th><%= t('common.when') %></th><th><%= t('common.brand') %></th><th><%= t('common.publication') %></th></tr></thead><tbody>
     <% upcoming.forEach((p) => { %>
-      <tr><td class="when"><%= ui.dateTime(p.scheduledAt) %><span class="sub-line"><%= ui.relative(p.scheduledAt) %></span></td><td><%= p.brand.name %><span class="sub-line">@<%= p.account ? p.account.username : '—' %></span></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 54) %><%= p.caption.length > 54 ? '…' : '' %></a></td></tr>
+      <tr><td class="when"><%= ui.dateTime(p.scheduledAt) %><span class="sub-line"><%= ui.relative(p.scheduledAt) %></span></td><td><%= p.brand.name %><span class="sub-line">@<%= p.account ? p.account.username : '—' %></span></td><td class="lead"><a href="/admin/posts/<%= p.id %>"><% if (p.caption) { %><%= p.caption.slice(0, 54) %><%= p.caption.length > 54 ? '…' : '' %><% } else { %><em class="muted"><%= t('posts.noCaption') %></em><% } %></a></td></tr>
     <% }) %></tbody></table></div><% } %>
   </section>
   <section>
@@ -59,33 +59,33 @@
     <% if (!recentDrafts.length) { %>
       <div class="panel"><div class="empty"><%- icon('empty', { class: 'ic-xl' }) %><strong><%= t('dash.draftsEmpty') %></strong><%= t('dash.draftsEmptyHint') %></div></div>
     <% } else { %>
-    <div class="table-wrap"><table><thead><tr><th><%= t('common.brand') %></th><th><%= t('common.createdBy') %></th><th><%= t('common.publication') %></th></tr></thead><tbody>
+    <div class="table-wrap to-cards"><table><thead><tr><th><%= t('common.brand') %></th><th><%= t('common.createdBy') %></th><th><%= t('common.publication') %></th></tr></thead><tbody>
     <% recentDrafts.forEach((p) => { %>
       <% const who = ui.creator(p); %>
-      <tr><td><%= p.brand.name %></td><td><span class="chip <%= who.tone %>"><%- icon(who.icon, { class: 'ic-sm' }) %> <%= t(who.key) %></span></td><td><a href="/admin/posts/<%= p.id %>"><%= p.caption.slice(0, 54) %><%= p.caption.length > 54 ? '…' : '' %></a></td></tr>
+      <tr><td><%= p.brand.name %></td><td><span class="chip <%= who.tone %>"><%- icon(who.icon, { class: 'ic-sm' }) %> <%= t(who.key) %></span></td><td class="lead"><a href="/admin/posts/<%= p.id %>"><% if (p.caption) { %><%= p.caption.slice(0, 54) %><%= p.caption.length > 54 ? '…' : '' %><% } else { %><em class="muted"><%= t('posts.noCaption') %></em><% } %></a></td></tr>
     <% }) %></tbody></table></div><% } %>
   </section>
 </div>
 
 <% if (failed.length) { %>
 <h2><%- icon('status-failed') %> <%= t('dash.failedTitle') %></h2>
-<div class="table-wrap">
+<div class="table-wrap to-cards">
 <table><thead><tr><th><%= t('common.brand') %></th><th><%= t('common.error') %></th><th class="num"><%= t('common.attempts') %></th><th></th></tr></thead><tbody>
 <% failed.forEach((p) => { %>
-  <tr><td><%= p.brand.name %></td><td class="mono"><%= (p.lastError || '').slice(0, 110) %></td><td class="num"><%= p.attempts %></td><td><a class="btn ghost small" href="/admin/posts/<%= p.id %>"><%= t('common.open') %></a></td></tr>
+  <tr><td class="lead"><%= p.brand.name %></td><td class="mono full"><%= (p.lastError || '').slice(0, 110) %></td><td class="num" data-label="<%= t('common.attempts') %>"><%= p.attempts %></td><td><a class="btn ghost small" href="/admin/posts/<%= p.id %>"><%= t('common.open') %></a></td></tr>
 <% }) %></tbody></table>
 </div>
 <% } %>
 
 <h2><%- icon('quota') %> <%= t('dash.quotas') %></h2>
-<div class="table-wrap">
+<div class="table-wrap to-cards">
 <table><thead><tr><th><%= t('common.account') %></th><th><%= t('common.brand') %></th><th><%= t('dash.quotaWindow') %></th><th><%= t('dash.quotaChecked') %></th><th><%= t('dash.tokenUntil') %></th></tr></thead><tbody>
 <% accounts.forEach((a) => { %>
   <% const tone = ui.quotaTone(a.quotaUsed, a.quotaTotal); %>
   <tr>
-    <td>@<%= a.username %></td>
+    <td class="lead">@<%= a.username %></td>
     <td><%= a.brand.name %></td>
-    <td>
+    <td class="full">
       <% if (a.quotaTotal) { %>
       <div class="meter">
         <div class="meter-track"><div class="meter-fill <%= tone %> p-<%= Math.round(Math.min(100, (a.quotaUsed / a.quotaTotal) * 100) / 5) * 5 %>"></div></div>
@@ -93,8 +93,8 @@
       </div>
       <% } else { %><span class="muted"><%= t('dash.quotaUnchecked') %></span><% } %>
     </td>
-    <td class="muted when"><%= a.quotaCheckedAt ? ui.relative(a.quotaCheckedAt) : t('common.never') %></td>
-    <td class="when"><%= ui.date(a.tokenExpiresAt) %></td>
+    <td class="muted when" data-label="<%= t('dash.quotaChecked') %>"><%= a.quotaCheckedAt ? ui.relative(a.quotaCheckedAt) : t('common.never') %></td>
+    <td class="when" data-label="<%= t('dash.tokenUntil') %>"><%= ui.date(a.tokenExpiresAt) %></td>
   </tr>
 <% }) %>
 <% if (!accounts.length) { %><tr><td colspan="5"><div class="empty"><%- icon('instagram', { class: 'ic-xl' }) %><strong><%= t('dash.noAccounts') %></strong><%= t('dash.noAccountsHint') %></div></td></tr><% } %>

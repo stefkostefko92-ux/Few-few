@@ -4,98 +4,95 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Privacy Policy — Supreme AdBlock</title>
-<meta name="description" content="Supreme AdBlock privacy policy. No account, no telemetry, no data collection — all ad blocking runs locally on your device. By Carbon Stealth." />
+<meta name="description" content="Supreme AdBlock privacy policy: your browsing data never leaves your device. No account, no analytics, no telemetry. Who we are, what the extension stores, the requests it makes and your rights under the GDPR." />
+<meta name="keywords" content="Supreme AdBlock privacy policy, Carbon Stealth, ad blocker privacy, GDPR, no telemetry, Chrome extension privacy" />
 <meta name="robots" content="index, follow" />
 <link rel="canonical" href="https://adblock.carbonstealth.eu/privacy" />
 <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
 <link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
 <meta property="og:title" content="Privacy Policy — Supreme AdBlock" />
-<meta property="og:description" content="No account, no telemetry, no data collection. All ad blocking runs locally on your device." />
+<meta property="og:description" content="Your browsing data never leaves your device. No account, no analytics, no telemetry." />
 <meta property="og:url" content="https://adblock.carbonstealth.eu/privacy" />
 <meta property="og:image" content="https://adblock.carbonstealth.eu/og.png" />
 <style>
   :root { color-scheme: dark; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #060608; color: #f5f5f0;
-    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    padding: 48px 20px 80px;
-  }
-  main { max-width: 720px; margin: 0 auto; }
+  body { background: #060608; color: #f5f5f0; font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 48px 20px 80px; }
+  main { max-width: 740px; margin: 0 auto; }
   header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-  header .dot { width: 12px; height: 12px; border-radius: 3px; background: #00e5ff; }
+  header img { width: 30px; height: 30px; }
   h1 { font-size: 26px; letter-spacing: 0.3px; }
-  .sub { color: #8c8c84; font-size: 14px; margin-bottom: 36px; }
-  h2 { font-size: 18px; margin: 32px 0 10px; color: #00e5ff; }
+  .sub { color: #a3a39c; font-size: 14px; margin-bottom: 30px; }
+  .tldr { border: 1px solid #22252c; border-left: 3px solid #00e5ff; border-radius: 10px; padding: 14px 18px; background: #0b0c0f; margin: 18px 0 8px; }
+  h2 { font-size: 18px; margin: 34px 0 10px; color: #00e5ff; }
   p { color: #d9d9d2; margin: 10px 0; }
   ul { margin: 10px 0 10px 22px; color: #d9d9d2; }
   li { margin: 4px 0; }
   strong { color: #f5f5f0; }
   code { background: #14161a; border: 1px solid #262a31; border-radius: 4px; padding: 1px 6px; font-size: 14px; }
-  a { color: #00e5ff; }
-  footer { margin-top: 48px; color: #8c8c84; font-size: 13px; }
+  a { color: #00e5ff; text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid #00e5ff; outline-offset: 3px; border-radius: 4px; }
+  footer { margin-top: 48px; color: #a3a39c; font-size: 13px; }
 </style>
 </head>
 <body>
 <main>
-  <header><span class="dot"></span><h1>Supreme AdBlock — Privacy Policy</h1></header>
-  <div class="sub">Last updated: September 2026</div>
+  <header><img src="/shield-96.webp" alt="" width="30" height="30" /><h1>Supreme AdBlock — Privacy Policy</h1></header>
+  <div class="sub">Last updated: 24 September 2026 · applies to the Supreme AdBlock browser extension and to this website</div>
 
-  <p>Supreme AdBlock is built to protect your privacy, not to collect data.</p>
+  <div class="tldr"><p><strong>In short:</strong> your browsing data never leaves your device. The extension has no account, no analytics and no telemetry. The only automatic network request is a filter update about twice a day; like any download it reaches our server with your IP address, and we do not log it.</p></div>
 
-  <h2>What we collect</h2>
-  <p><strong>Nothing.</strong> The extension has no analytics, no telemetry and no
-  accounts. We do not see which sites you visit, and nothing is ever sent to us. The
-  only times data can leave your device are the ones <i>you</i> trigger, listed below.</p>
+  <h2 id="controller">Who is responsible</h2>
+  <p>Carbon Stealth VCC, UIC (ЕИК) 208725180, 3 Samuil St., 2670 Bobov Dol, Bulgaria — <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a>. We are the controller for the data described in this policy.</p>
 
-  <h2>What is stored locally</h2>
-  <p>Kept in your browser's local storage and never sent to us. If you turn on <b>Sync across devices</b> (off by default), your browser mirrors the items marked <i>(sync)</i> to your own browser account via <code>storage.sync</code> — the browser vendor's servers, under your account, not ours:</p>
+  <h2 id="device">What the extension keeps on your device</h2>
+  <p>Kept in your browser's local extension storage; never sent to us. If you turn on <strong>Sync across devices</strong> (off by default), your browser copies the items marked <i>(sync)</i> to your own browser account via <code>storage.sync</code> — the browser vendor's servers, under your account, not ours. Turn sync off and they stay local only.</p>
   <ul>
-    <li>Whether protection is on or off <i>(sync)</i></li>
     <li>Your allowlisted sites <i>(sync)</i></li>
-    <li>Feature toggles (cookie banners, anti-adblock, Meta posts, theme, …) <i>(sync)</i></li>
-    <li>Your custom filter rules, including any filter list you imported <i>(sync)</i></li>
-    <li>Elements you hid manually with the picker</li>
-    <li>A local counter of how many ads were blocked</li>
-    <li>A short local log (last 50 entries) of the sites where Smart Detection blocked an ad-sized frame — shown in the settings so you can see why; never sent anywhere</li>
+    <li>Feature toggles and theme (cookie banners, anti-adblock, Meta posts, YouTube, …) <i>(sync)</i></li>
+    <li>Your own filter rules, including filter lists you subscribed to by URL, and the list of those URLs <i>(sync)</i></li>
+    <li>Sites where you switched off element hiding <i>(sync)</i></li>
+    <li>Whether protection is on, off or paused — per device, never synced</li>
+    <li>Elements you hid with the picker</li>
+    <li>Counters of how many requests were blocked (and the estimated data and time saved)</li>
+    <li>A short log (last 50 entries) of sites where Smart Detection hid an ad-sized frame, shown in Settings so you can see why</li>
     <li>The latest downloaded filter data (see below)</li>
   </ul>
-  <p>You can clear all of it from the extension's settings, or by removing the extension.</p>
+  <p>The popup's "Blocked on this page" view is built on the spot from which of our filter lists matched in that tab; it is not stored and never sent anywhere. You can clear everything from the extension's Settings, or by removing the extension.</p>
 
-  <h2>Network requests we make</h2>
-  <p><b>Two kinds, and neither carries any information about you.</b> <b>1. Filter updates (automatic, about twice a day):</b> the extension downloads a
-  small filter file (<code>filters.json</code>) from
-  <code>adblock.carbonstealth.eu</code> so blocking stays current as ad networks and
-  sites change. This request contains <strong>no information about you</strong> — no
-  identifiers, no browsing data. It is a plain GET of a public file, treated purely
-  as data (block rules, CSS selectors and scriptlet directives whose names and arguments come from a fixed allowlist); no downloaded code is ever executed. You
-  can turn auto-update off in the settings.</p>
-  <p><b>2. Filter list import (only when you ask for it):</b> if you paste a URL into <i>Import filter list</i> in the settings, the extension downloads that list as plain text from the address you gave — once when you add it, then about once a day to keep it current, until you remove it. The site hosting the list sees an ordinary request from your browser (your IP address and browser user agent), exactly as if you had opened that URL yourself. We are not involved in that request and nothing else is sent.</p>
+  <h2 id="requests">Network requests the extension makes</h2>
+  <p><strong>1. Filter updates (automatic, about twice a day).</strong> The extension downloads <code>filters.json</code> and its signature <code>filters.json.sig</code> from <code>adblock.carbonstealth.eu</code> so blocking keeps up with new ad networks. The request carries no identifier, no cookie and no browsing data. As with any download, our server necessarily sees your IP address and browser user agent to answer it; <strong>these requests are not logged</strong>. The file is data only — domain names, CSS selectors and scriptlet directives from a fixed allowlist — and no downloaded code is ever executed. You can turn auto-update off in Settings.</p>
+  <p><strong>2. Filter lists you add yourself (only if you do).</strong> If you subscribe to a filter list by URL, the extension downloads it as plain text from the address you gave — once when you add it, then about once a day until you remove it. The site hosting the list sees an ordinary request from your browser (IP address and user agent), exactly as if you opened that URL yourself. We are not involved in that request.</p>
+  <p>There are no other requests: no analytics, no crash reports, no "phone home".</p>
 
-  <h2>Permissions</h2>
+  <h2 id="website">This website</h2>
+  <p>adblock.carbonstealth.eu sets no cookies, uses no analytics and loads nothing from third parties (no external fonts, scripts or trackers). The server does not keep access logs for this site or for filter updates. Error logging is limited to critical server errors; if such an entry ever includes an IP address, it is kept only as long as needed to fix the problem and then deleted.</p>
+
+  <h2 id="basis">Legal basis, recipients and transfers</h2>
+  <p>We process IP addresses only transiently, to deliver filter updates and this website securely — our legitimate interest under <strong>Art. 6(1)(f) GDPR</strong>. We do not profile you, combine this data with anything else, sell it or share it. The only recipient is our hosting provider in the European Union, acting on our behalf. We do not transfer personal data outside the EU/EEA. If you enable sync, your browser vendor processes your synced settings under its own terms, at your choice.</p>
+
+  <h2 id="donations">Donations</h2>
+  <p>Donations are optional and handled by Revolut (revolut.me), which acts as an independent controller under its own privacy policy. When you donate we receive what Revolut shows the recipient — typically your name, the amount and any note you add — and keep it only as long as accounting law requires (Art. 6(1)(c) GDPR).</p>
+
+  <h2 id="rights">Your rights</h2>
+  <p>You have the right to access, rectification, erasure, restriction of processing, objection (Art. 21 GDPR) and data portability. Because we keep no logs of filter updates, we normally hold nothing that could identify you; to look into a specific request we would need your IP address and the approximate time (Art. 11 GDPR). Write to <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a> — we reply within one month.</p>
+  <p>You can also complain to the Bulgarian Commission for Personal Data Protection (КЗЛД, <a href="https://www.cpdp.bg" target="_blank" rel="noopener">www.cpdp.bg</a>) or to the data protection authority where you live.</p>
+
+  <h2 id="permissions">Extension permissions</h2>
   <ul>
-    <li><code>declarativeNetRequest</code> — block ad/tracker requests via rules.</li>
-    <li><code>declarativeNetRequestFeedback</code> — read which of our own rules matched in the current tab (<code>getMatchedRules</code>) to show the per-tab blocked count on the badge; no URLs are stored or sent.</li>
-    <li><code>storage</code> — save your settings locally.</li>
-    <li><code>alarms</code> — schedule the filter updates and the pause timer.</li>
+    <li><code>declarativeNetRequest</code> — block ad and tracker requests using filter rules.</li>
+    <li><code>declarativeNetRequestFeedback</code> — read which of our own rules matched in the active tab (<code>getMatchedRules</code>) to show the blocked count and which lists matched; no URL is read, stored or sent.</li>
+    <li><code>storage</code> — keep your settings and counters on your device.</li>
+    <li><code>alarms</code> — schedule filter updates and the pause timer.</li>
     <li><code>contextMenus</code> — the right-click "Block an element here" entry.</li>
-    <li><code>scripting</code> — inject a small, locally-bundled ad-neutralising script into the page; it runs from the package, fetches and executes no remote code, reads no personal data and sends nothing anywhere.</li>
-    <li>host access (<code>&lt;all_urls&gt;</code>) — apply blocking on the pages you
-    visit. Page content is processed locally and never sent anywhere.</li>
+    <li><code>scripting</code> — register one script that ships in the package and neutralises anti-adblock detectors; it fetches and executes no remote code, reads no personal data and sends nothing.</li>
+    <li>host access (<code>&lt;all_urls&gt;</code>) — block ads and apply cosmetic filtering on the pages you visit; page content is processed on your device and never sent anywhere.</li>
   </ul>
 
-  <h2>This website</h2>
-  <p>This site (adblock.carbonstealth.eu) sets no cookies and runs no analytics. Like
-  any web server it keeps short-lived technical logs (e.g. IP address, requested
-  file) purely for security and reliability; these are not used to profile you and
-  are not shared.</p>
+  <h2 id="changes">Changes</h2>
+  <p>If this policy changes, the new version is published here with a new date. Material changes are also noted in the extension's changelog.</p>
 
-  <h2>Contact</h2>
-  <p>Carbon Stealth VCC — questions at
-  <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a>
-  or <a href="https://carbonstealth.eu">carbonstealth.eu</a>.</p>
-
-  <footer>Supreme AdBlock, by Carbon Stealth VCC. Released under the MIT License.</footer>
+  <footer>Supreme AdBlock, by Carbon Stealth VCC · <a href="/">adblock.carbonstealth.eu</a> · Released under the MIT License.</footer>
 </main>
 </body>
 </html>
