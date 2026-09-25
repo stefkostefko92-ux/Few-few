@@ -5,6 +5,7 @@ import { sheetGrid } from "@/lib/print";
 import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
+import FitText from "@/components/FitText";
 import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
@@ -139,9 +140,8 @@ function Badge({
         gap: "1.5mm",
         position: "relative",
       }}>
-        <div style={{ fontFamily: elementFont(s, "name", "var(--font-display)"), fontWeight: 800, fontSize: fs(guest.name.length > 18 ? 7 : 9), lineHeight: 1.1 }}>
-          {guest.name}
-        </div>
+        <FitText text={guest.name} fontSize={fs(guest.name.length > 18 ? 7 : 9)} watch={s.textScale}
+          style={{ fontFamily: elementFont(s, "name", "var(--font-display)"), fontWeight: 800, lineHeight: 1.1 }} />
         {guest.role && (
           <div style={{ fontSize: fs(4), fontWeight: 700, color: accentInk }}>{guest.role}</div>
         )}
@@ -187,14 +187,16 @@ export default function BadgeStudio() {
             <input id="b-event" className="field-input" maxLength={60} value={s.eventName}
               onChange={(e) => set({ eventName: e.target.value })} placeholder="напр. КОНФЕРЕНЦИЯ 2026" />
           </div>
+          {/* 4-тият елемент е лимитът от ProjectSchema — по-голям maxLength
+              губеше въведеното при презареждане (пази го studio-inputs.test). */}
           {([
-            ["name", "Име", "Иван Петров"],
-            ["role", "Роля / позиция", "напр. Лектор"],
-            ["company", "Фирма / организация", "напр. Мечта ООД"],
-          ] as const).map(([k, label, ph]) => (
+            ["name", "Име", "Иван Петров", 60],
+            ["role", "Роля / позиция", "напр. Лектор", 60],
+            ["company", "Фирма / организация", "напр. Мечта ООД", 60],
+          ] as const).map(([k, label, ph, max]) => (
             <div key={k}>
               <label htmlFor={`b-${k}`} className="field-label">{label}</label>
-              <input id={`b-${k}`} className="field-input" maxLength={60} value={s[k]}
+              <input id={`b-${k}`} className="field-input" maxLength={max} value={s[k]}
                 onChange={(e) => set({ [k]: e.target.value })} placeholder={ph} disabled={lines.length > 0} />
             </div>
           ))}

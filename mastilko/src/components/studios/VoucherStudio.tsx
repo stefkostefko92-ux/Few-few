@@ -5,6 +5,7 @@ import { sheetGrid } from "@/lib/print";
 import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
+import FitText from "@/components/FitText";
 import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
@@ -80,9 +81,8 @@ function Voucher({ s, theme, serial, qrSrc }: { s: VoucherState; theme: WarmThem
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         textAlign: "center", padding: "2mm", flexShrink: 0,
       }}>
-        <div style={{ fontFamily: elementFont(s, "value", "var(--font-display)"), fontWeight: 800, fontSize: fs(11), lineHeight: 1 }}>
-          {s.value}
-        </div>
+        <FitText text={s.value} fontSize={fs(11)} watch={s.textScale}
+          style={{ fontFamily: elementFont(s, "value", "var(--font-display)"), fontWeight: 800, lineHeight: 1 }} />
         <div style={{ fontSize: fs(2.6), marginTop: "1.5mm" }}>ВАУЧЕР</div>
       </div>
       {/* Дясна част */}
@@ -91,7 +91,8 @@ function Voucher({ s, theme, serial, qrSrc }: { s: VoucherState; theme: WarmThem
           // eslint-disable-next-line @next/next/no-img-element
           <img src={s.logo} alt="" style={{ position: "absolute", right: "3mm", top: "3mm", height: "9mm", maxWidth: "22mm", objectFit: "contain" }} />
         )}
-        <div style={{ fontWeight: 800, fontSize: fs(4.4), color: accentInk, maxWidth: "36mm" }}>{s.business}</div>
+        <FitText text={s.business} fontSize={fs(4.4)} watch={s.textScale}
+          style={{ fontWeight: 800, color: accentInk, maxWidth: "36mm" }} />
         <div style={{ fontSize: fs(3.4), marginTop: "1mm" }}>{s.desc}</div>
         <div style={{ fontSize: fs(2.8), opacity: 0.9, marginTop: "auto" }}>{s.validUntil}</div>
         <div style={{ fontSize: fs(2.8), fontWeight: 700, marginTop: "0.5mm" }}>Код: {serial}</div>
@@ -120,15 +121,17 @@ export default function VoucherStudio() {
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       <div className="no-print space-y-5">
         <div className="card-warm space-y-4 p-5">
+          {/* 4-тият елемент е лимитът от ProjectSchema — по-голям maxLength
+              губеше въведеното при презареждане (пази го studio-inputs.test). */}
           {([
-            ["business", "Бизнес / фирма", "напр. Салон „Мечта“"],
-            ["value", "Стойност (голям текст)", "напр. −20% или Подарък"],
-            ["desc", "Описание", "напр. отстъпка за всяка услуга"],
-            ["validUntil", "Валидност", "напр. валиден до 31.12.2026 г."],
-          ] as const).map(([k, label, ph]) => (
+            ["business", "Бизнес / фирма", "напр. Салон „Мечта“", 60],
+            ["value", "Стойност (голям текст)", "напр. −20% или Подарък", 20],
+            ["desc", "Описание", "напр. отстъпка за всяка услуга", 80],
+            ["validUntil", "Валидност", "напр. валиден до 31.12.2026 г.", 60],
+          ] as const).map(([k, label, ph, max]) => (
             <div key={k}>
               <label htmlFor={`v-${k}`} className="field-label">{label}</label>
-              <input id={`v-${k}`} className="field-input" maxLength={80} value={s[k]}
+              <input id={`v-${k}`} className="field-input" maxLength={max} value={s[k]}
                 onChange={(e) => set({ [k]: e.target.value })} placeholder={ph} />
             </div>
           ))}

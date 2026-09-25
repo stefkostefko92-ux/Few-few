@@ -4,6 +4,7 @@ import { z } from "zod";
 import { resolveTheme, fontVars, elementFont, resolveDecor, sheetBg, borderCss, titleFx, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import FitText from "@/components/FitText";
 import FontPicker from "@/components/FontPicker";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
@@ -62,6 +63,13 @@ export default function TabelkaStudio() {
   const [s, setS] = useLocalState<TabelkaState>("mastilko-tabelka", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = resolveTheme(s);
   const set = (patch: Partial<TabelkaState>) => setS({ ...s, ...patch });
+
+  // Размер на заглавието: по дължина на целия текст (20+ знака → по-дребно)
+  // и груба оценка по най-дългата дума (~0.8 em на главна буква) за първия
+  // кадър; точното напасване (избираем шрифт!) прави FitText след рендер.
+  const usable = (s.landscape ? 297 : 210) - 40; // mm, без padding 20 mm
+  const longestWord = Math.max(1, ...s.title.split(/\s+/).map((w) => w.length));
+  const titleMm = Math.min(s.title.length > 20 ? 18 : 26, usable / (longestWord * 0.8));
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
@@ -147,13 +155,10 @@ export default function TabelkaStudio() {
               ) : (
                 s.emoji && <div style={{ fontSize: fs(60), lineHeight: 1 }}>{s.emoji}</div>
               )}
-              <div style={{
+              <FitText text={s.title} fontSize={fs(titleMm)} watch={s.textScale} style={{
                 fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800,
-                fontSize: fs(s.title.length > 20 ? 18 : 26), lineHeight: 1.05,
-                marginTop: "8mm", ...titleFx(s, theme),
-              }}>
-                {s.title}
-              </div>
+                lineHeight: 1.05, marginTop: "8mm", ...titleFx(s, theme),
+              }} />
               {s.subtitle && (
                 <div style={{
                   fontFamily: elementFont(s, "subtitle", "var(--font-sans)"),

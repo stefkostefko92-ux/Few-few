@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/components/Logo";
@@ -25,6 +25,20 @@ const TOOLS = [
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Escape затваря менюто и връща фокуса на бутона (WAI-ARIA disclosure) —
+  // иначе от клавиатурата то се затваряше само с нов клик.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <header className="no-print sticky top-0 z-40 border-b border-ink/10 bg-paper/85 backdrop-blur dark:bg-[#241d19]/85">
@@ -42,6 +56,7 @@ export default function Header() {
         <div className="flex items-center gap-1">
           <div className="relative">
             <button
+              ref={buttonRef}
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}

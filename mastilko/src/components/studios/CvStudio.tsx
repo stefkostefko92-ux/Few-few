@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { resolveTheme, fontVars, sheetBg, photoFilterCss, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
+import FitText from "@/components/FitText";
 import AiAssist from "@/components/AiAssist";
 import BrandKitButton from "@/components/BrandKitButton";
 import ImageUpload from "@/components/ImageUpload";
@@ -602,16 +603,16 @@ export default function CvStudio() {
                     <CvPhoto src={s.photo} shape={s.photoShape} size={s.photoSize} filter={photoFilterCss(s)} />
                   </div>
                 )}
-                <div
+                <FitText
+                  text={s.name || "Твоето име"}
+                  fontSize={fs(7)}
+                  watch={s.textScale}
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 800,
-                    fontSize: fs(7),
                     lineHeight: 1.15,
                   }}
-                >
-                  {s.name || "Твоето име"}
-                </div>
+                />
                 {s.title && (
                   <div style={{ fontSize: fs(3.4), marginTop: "1.5mm", opacity: 0.85 }}>
                     {s.title}
@@ -664,15 +665,15 @@ export default function CvStudio() {
                     <CvPhoto src={s.photo} shape={s.photoShape} size={s.photoSize} filter={photoFilterCss(s)} />
                   </div>
                 )}
-                <div
+                <FitText
+                  text={s.name || "Твоето име"}
+                  fontSize={fs(8)}
+                  watch={s.textScale}
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 800,
-                    fontSize: fs(8),
                   }}
-                >
-                  {s.name || "Твоето име"}
-                </div>
+                />
                 {s.title && (
                   <div style={{ fontSize: fs(3.6), marginTop: "1mm", color: theme.accent }}>
                     {s.title}
@@ -789,16 +790,16 @@ function EuropassCv({
   return (
     <div style={{ padding: "12mm 12mm 14mm 8mm", color: "#1B1B1B", minHeight: "297mm" }}>
       <EpRow first label="Автобиография">
-        <div
+        <FitText
+          text={s.name || "Твоето име"}
+          fontSize={fs(6.4)}
+          watch={s.textScale}
           style={{
             fontWeight: 800,
-            fontSize: fs(6.4),
             color: EUROPASS_BLUE,
             lineHeight: 1.15,
           }}
-        >
-          {s.name || "Твоето име"}
-        </div>
+        />
         {s.title && (
           <div style={{ fontSize: fs(3.4), marginTop: "1mm" }}>{s.title}</div>
         )}

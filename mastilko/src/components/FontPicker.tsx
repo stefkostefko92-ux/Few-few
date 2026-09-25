@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FONTS, fontCss } from "@/lib/style";
 
 interface Props {
@@ -17,6 +17,19 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
   const [open, setOpen] = useState(false);
   const current = FONTS.find((f) => f.id === value);
   const cats = [...new Set(FONTS.map((f) => f.cat))];
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Escape затваря списъка и връща фокуса на бутона (както менюто в хедъра).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     // Когато менюто е отворено, вдигаме контейнера в собствен stacking context
@@ -25,6 +38,7 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
     <div className={`relative ${open ? "z-30" : ""}`}>
       {label && <span className="field-label">{label}</span>}
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"

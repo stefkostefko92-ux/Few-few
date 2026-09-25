@@ -28,10 +28,13 @@ export default function ColorVisionToggle() {
 
   return (
     <>
-      <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
+      {/* flex-wrap + max-w-full: на телефон етикетът и най-дългата опция
+          (~250 px) не се събират на един ред — без пренасяне редът изтласкваше
+          страницата вдясно. */}
+      <label className="flex min-w-0 max-w-full flex-wrap items-center gap-2 text-sm font-semibold text-ink-soft">
         <span className="whitespace-nowrap">Преглед за далтонизъм:</span>
         <select
-          className="field-input !w-auto !py-1.5 text-sm"
+          className="field-input !w-auto max-w-full min-w-0 !py-1.5 text-sm"
           value={mode}
           onChange={(e) => setMode(e.target.value)}
           aria-label="Симулация на цветна слепота"

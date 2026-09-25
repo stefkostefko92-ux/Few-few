@@ -135,18 +135,20 @@ export default function PokanaStudio() {
         </div>
 
         <div className="card-warm space-y-4 p-5">
+          {/* 4-тият елемент е лимитът от ProjectSchema — по-голям maxLength
+              губеше въведеното при презареждане (пази го studio-inputs.test). */}
           {([
-            ["emoji", "Икона (емоджи)", "🎉"],
-            ["heading", "Заглавие", "Каним те на…"],
-            ["who", "Кой / повод", "напр. Мартин става на 7"],
-            ["date", "Дата", "15 юни 2026 г."],
-            ["time", "Час", "16:00 ч."],
-            ["place", "Място", "адрес"],
-            ["note", "Съобщение", "кратко послание"],
-          ] as const).map(([k, label, ph]) => (
+            ["emoji", "Икона (емоджи)", "🎉", 8],
+            ["heading", "Заглавие", "Каним те на…", 80],
+            ["who", "Кой / повод", "напр. Мартин става на 7", 80],
+            ["date", "Дата", "15 юни 2026 г.", 60],
+            ["time", "Час", "16:00 ч.", 40],
+            ["place", "Място", "адрес", 120],
+            ["note", "Съобщение", "кратко послание", 200],
+          ] as const).map(([k, label, ph, max]) => (
             <div key={k}>
               <label htmlFor={`p-${k}`} className="field-label">{label}</label>
-              <input id={`p-${k}`} className="field-input" maxLength={200} value={s[k]}
+              <input id={`p-${k}`} className="field-input" maxLength={max} value={s[k]}
                 onChange={(e) => set({ [k]: e.target.value })} placeholder={ph} />
             </div>
           ))}

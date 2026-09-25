@@ -178,7 +178,19 @@ export default function WifiStudio() {
                 <div style={{ fontWeight: 800, fontSize: fs(5), fontFamily: elementFont(s, "title", "var(--font-display)"), position: "relative", zIndex: 1 }}>
                   📶 {s.title || "WiFi"}
                 </div>
-                {qrSrc && <QrImage src={qrSrc} style={{ width: `${Math.min(size.w, size.h) * s.qrScale}mm`, height: `${Math.min(size.w, size.h) * s.qrScale}mm`, background: "#fff", padding: "1.5mm", borderRadius: "1.5mm" }} />}
+                {qrSrc ? (
+                  <QrImage src={qrSrc} style={{ width: `${Math.min(size.w, size.h) * s.qrScale}mm`, height: `${Math.min(size.w, size.h) * s.qrScale}mm`, background: "#fff", padding: "1.5mm", borderRadius: "1.5mm" }} />
+                ) : (
+                  // Без мрежа няма QR — празното място изглеждаше като счупен
+                  // лист. Само на екрана (no-print): празен лист не е за печат.
+                  <div className="no-print" style={{
+                    width: `${Math.min(size.w, size.h) * s.qrScale}mm`, height: `${Math.min(size.w, size.h) * s.qrScale}mm`,
+                    border: "0.4mm dashed currentColor", borderRadius: "1.5mm", fontStyle: "italic",
+                    display: "flex", alignItems: "center", justifyContent: "center", padding: "2mm", fontSize: fs(2.8),
+                  }}>
+                    QR кодът ще се появи, щом въведеш име на мрежата
+                  </div>
+                )}
                 <div style={{ fontSize: fs(3.2), wordBreak: "break-all" }}>
                   <strong>Мрежа:</strong> {s.ssid || "…"}
                 </div>

@@ -262,15 +262,17 @@ export default function GramotaStudio() {
             <textarea id="reason" className="field-input min-h-20" maxLength={400} value={s.reason}
               onChange={(e) => set({ reason: e.target.value })} />
           </div>
+          {/* 4-тият елемент е лимитът от ProjectSchema — по-голям maxLength
+              губеше въведеното при презареждане (пази го studio-inputs.test). */}
           {([
-            ["org", "Организация", "напр. ОУ „Христо Ботев“"],
-            ["place", "Място", "напр. Бобов дол"],
-            ["date", "Дата", "напр. 31 май 2026 г."],
-            ["signer", "Подпис (длъжност)", "напр. Директор"],
-          ] as const).map(([k, label, ph]) => (
+            ["org", "Организация", "напр. ОУ „Христо Ботев“", 80],
+            ["place", "Място", "напр. Бобов дол", 60],
+            ["date", "Дата", "напр. 31 май 2026 г.", 60],
+            ["signer", "Подпис (длъжност)", "напр. Директор", 60],
+          ] as const).map(([k, label, ph, max]) => (
             <div key={k}>
               <label htmlFor={`g-${k}`} className="field-label">{label}</label>
-              <input id={`g-${k}`} className="field-input" maxLength={80} value={s[k]}
+              <input id={`g-${k}`} className="field-input" maxLength={max} value={s[k]}
                 onChange={(e) => set({ [k]: e.target.value })} placeholder={ph} />
             </div>
           ))}

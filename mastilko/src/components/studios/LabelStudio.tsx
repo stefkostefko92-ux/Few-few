@@ -4,6 +4,7 @@ import { z } from "zod";
 import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
 import { resolveTheme, fontVars, resolveDecor, sheetBg, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
+import FitText from "@/components/FitText";
 import AiAssist from "@/components/AiAssist";
 import BackgroundDecor from "@/components/BackgroundDecor";
 import Barcode from "@/components/Barcode";
@@ -507,15 +508,12 @@ export default function LabelStudio() {
                     minWidth: 0,
                   }}
                 >
-                  <span
-                    style={{
-                      fontWeight: 800,
-                      fontSize: fs(Math.min(preset.h * 0.2, 9)),
-                      lineHeight: 1.15,
-                    }}
-                  >
-                    {content.text1 || "…"}
-                  </span>
+                  <FitText
+                    text={content.text1 || "…"}
+                    fontSize={fs(Math.min(preset.h * 0.2, 9))}
+                    watch={s.textScale}
+                    style={{ fontWeight: 800, lineHeight: 1.15 }}
+                  />
                   {content.text2 && (
                     <span
                       style={{
