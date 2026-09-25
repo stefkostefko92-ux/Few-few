@@ -2,6 +2,7 @@
 
 // Детайл на preventivo: редове + статус + тотали (сървърно преизчислени).
 
+import { STATO_LABEL } from "@/lib/enum-labels";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, ScheletroDettaglio } from "@/components/ui";
@@ -92,7 +93,7 @@ export default function Pagina() {
             {dataIt(p.createdAt)} · validità {p.validitaGiorni} gg
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <a
             className="btn-secondary inline-flex items-center gap-1.5"
             href={`/api/preventivi/${id}/pdf`}
@@ -111,7 +112,7 @@ export default function Pagina() {
           >
             {STATI.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {STATO_LABEL[s] ?? s}
               </option>
             ))}
           </select>

@@ -101,7 +101,7 @@ export default function Pagina() {
             {o.preventivo ? ` · da preventivo ${o.preventivo.numero}` : ""}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge valore={o.priorita} />
           <Badge valore={o.stato} />
         </div>

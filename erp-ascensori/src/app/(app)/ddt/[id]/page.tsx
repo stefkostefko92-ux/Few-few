@@ -82,7 +82,7 @@ export default function Pagina() {
             Inizio del trasporto: {dataOraIt(d.inizioTrasporto)}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <a
             className="btn-secondary inline-flex items-center gap-1.5"
             href={`/api/ddt/${id}/pdf`}

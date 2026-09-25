@@ -107,7 +107,7 @@ export default function CodaNotifiche() {
           funzione non è attiva in Dati aziendali.
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-border text-left text-xs uppercase text-text-3">
               <tr>

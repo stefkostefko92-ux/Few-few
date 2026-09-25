@@ -4,6 +4,7 @@
 // ширина и подредба. Конфигурацията се пази per-браузър (localStorage) и се
 // нулира с „Ripristina". Икономическите данни идват само за DIREZIONE+ (сървър).
 
+import { TIPO_SCADENZA } from "@/lib/enum-labels";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -580,7 +581,10 @@ function ListaScadenze({ stats }: { stats: Stats }) {
             <span className="font-mono font-medium">
               {s.impianto.matricola}
             </span>
-            <span className="text-text-2"> · {s.tipo}</span>
+            <span className="text-text-2">
+              {" "}
+              · {TIPO_SCADENZA[s.tipo] ?? s.tipo}
+            </span>
             {s.impianto.indirizzo && (
               <span className="text-text-3"> · {s.impianto.indirizzo}</span>
             )}

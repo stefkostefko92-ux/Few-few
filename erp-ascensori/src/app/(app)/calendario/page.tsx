@@ -108,7 +108,7 @@ export default function Pagina() {
             Ordini, visite da contratto e scadenze normative in un unico piano.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             className="btn-ghost inline-flex h-8 items-center gap-1 px-2 text-xs"
             onClick={() => sposta(-1)}
@@ -142,7 +142,7 @@ export default function Pagina() {
         <p className="text-sm text-text-3">…</p>
       ) : (
         <>
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <div className="min-w-3xl">
               <div className="grid grid-cols-7 gap-px">
                 {GIORNI_IT.map((g) => (

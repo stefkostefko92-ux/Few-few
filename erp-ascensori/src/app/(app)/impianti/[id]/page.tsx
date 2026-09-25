@@ -2,6 +2,7 @@
 
 // Детайл на импианта: технически данни + allegati + scadenze + tecnici assegnati.
 
+import { TIPO_SCADENZA } from "@/lib/enum-labels";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, Modale, ScheletroDettaglio } from "@/components/ui";
@@ -168,7 +169,7 @@ export default function Pagina() {
             amministratore: {amministratore}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <a
             className="btn-secondary inline-flex h-8 items-center gap-1.5 px-3 text-xs"
             href={`/api/impianti/${id}/libretto`}
@@ -385,7 +386,7 @@ export default function Pagina() {
                   className="flex items-center justify-between gap-2"
                 >
                   <span>
-                    {s.tipo} · {dataIt(s.dataScadenza)}
+                    {TIPO_SCADENZA[s.tipo] ?? s.tipo} · {dataIt(s.dataScadenza)}
                   </span>
                   {s.completata ? (
                     <span className="rounded-sm bg-success-subtle px-2 py-0.5 text-xs text-success-text">
@@ -470,7 +471,6 @@ export default function Pagina() {
             </ul>
           )}
         </div>
-
       </div>
 
       {modaleAssegna && (

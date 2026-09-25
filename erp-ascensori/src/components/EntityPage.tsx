@@ -261,7 +261,11 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
             }}
           />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
+            {/* `relative` НЕ е козметика: скритите за окото етикети (`sr-only`)
+                са `position:absolute` и без позициониран предшественик излизат
+                от скрола на таблицата — и разпъват ЦЯЛАТА страница на телефон
+                (така /magazzino скролваше хоризонтално). */}
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border-strong bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">

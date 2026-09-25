@@ -136,7 +136,7 @@ export default function Pagina() {
           un impianto.
         </p>
       ) : (
-        <div className="card overflow-x-auto p-5">
+        <div className="card relative overflow-x-auto p-5">
           <table className="w-full min-w-[52rem] text-sm">
             <thead className="border-b border-border text-left text-xs uppercase text-text-3">
               <tr>

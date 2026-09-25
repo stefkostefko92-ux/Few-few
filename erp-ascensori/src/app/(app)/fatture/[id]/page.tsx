@@ -8,6 +8,7 @@
 // „изпратена" не казва изпратена къде, а „платена" не разграничава частичното
 // постъпление от пълното.
 
+import { STATO_LABEL, TIPO_FATTURA } from "@/lib/enum-labels";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, ScheletroDettaglio } from "@/components/ui";
@@ -222,7 +223,7 @@ export default function Pagina() {
           </h1>
           <p className="mt-1 text-sm text-text-2">{f.oggetto ?? "—"}</p>
           <p className="mt-1 text-xs text-text-3">
-            {f.tipo} · {controparte}
+            {TIPO_FATTURA[f.tipo] ?? f.tipo} · {controparte}
             {f.condominio ? " (condominio)" : ""} · del {dataIt(f.data)}
             {f.dataScadenza ? ` · scade ${dataIt(f.dataScadenza)}` : ""}
             {f.ordineLavoro ? ` · ordine ${f.ordineLavoro.numero}` : ""}
@@ -236,7 +237,7 @@ export default function Pagina() {
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <a
             className="btn-secondary inline-flex items-center gap-1.5"
             href={`/api/fatture/${id}/pdf`}
@@ -277,7 +278,7 @@ export default function Pagina() {
           >
             {STATI.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {STATO_LABEL[s] ?? s}
               </option>
             ))}
           </select>

@@ -158,7 +158,7 @@ export default function Pagina() {
         {righe.length === 0 ? (
           <Vuoto messaggio="Nessuna operazione registrata" />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">

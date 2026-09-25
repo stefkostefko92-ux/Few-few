@@ -196,7 +196,7 @@ export default function Pagina() {
           </section>
 
           <section
-            className="card overflow-x-auto p-5 lg:col-span-2"
+            className="card relative overflow-x-auto p-5 lg:col-span-2"
             aria-label="Documenti"
           >
             <div className="mb-3 flex items-center justify-between">

@@ -2,6 +2,7 @@
 
 // Движения на склада — хронологичен регистър + форма за ново движение.
 
+import { TIPO_MOVIMENTO } from "@/lib/enum-labels";
 import { useCallback, useEffect, useState } from "react";
 import { Modale, Paginazione, Vuoto } from "@/components/ui";
 import { dataOraIt } from "@/lib/format";
@@ -133,7 +134,7 @@ export default function Pagina() {
                     <span
                       className={`inline-flex rounded-sm px-2 py-0.5 text-xs font-medium ${STILE_TIPO[m.tipo]}`}
                     >
-                      {m.tipo}
+                      {TIPO_MOVIMENTO[m.tipo] ?? m.tipo}
                     </span>
                   </td>
                   <td className="px-3 py-2.5 text-right font-mono">

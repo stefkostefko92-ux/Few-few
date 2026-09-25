@@ -187,7 +187,11 @@ async function main() {
     // `locale` на контекста не стига: форматът на родното поле за дата
     // следва езика на ПРОЦЕСА. Без това снимката показва „mm/dd/yyyy" —
     // нещо, което италианският оператор никога не вижда.
-    args: ["--lang=it-IT"],
+    args: ["--lang=it-IT", "--accept-lang=it-IT"],
+    // Безглавият Chromium взима езика на родните контроли („Choose Files",
+    // „mm/dd/yyyy") от средата на процеса, не от `--lang` — снимката показваше
+    // английски там, където италианският браузър на оператора пише италиански.
+    env: { ...process.env, LANG: "it_IT.UTF-8", LANGUAGE: "it" },
   });
 
   console.log("\n▸ настолен изглед");
@@ -219,13 +223,53 @@ async function main() {
   });
   const tel = await mobile.newPage();
   await entra(tel);
-  for (const [nome, percorso] of [
+  // Потокът на техника от телефон: списък → детайл → срокове → документи.
+  // Детайлите са там, където таблиците и формите се чупят първи на тясно.
+  for (const [nome, percorso, opzioni] of [
     ["m1-dashboard", "/dashboard"],
     ["m2-ordini", "/ordini"],
     ["m3-impianti", "/impianti"],
+    ["m4-impianto-dettaglio", null, { primo: "/impianti" }],
+    ["m5-ordine-dettaglio", null, { primo: "/ordini" }],
+    ["m6-scadenze", "/scadenze"],
+    ["m7-fattura-dettaglio", null, { primo: "/fatture" }],
+    ["m8-magazzino", "/magazzino"],
   ])
-    await scatta(tel, nome, percorso);
+    await scatta(tel, nome, percorso, opzioni);
   await mobile.close();
+
+  // ТЪМНАТА ТЕМА Е ОТДЕЛЕН ИНТЕРФЕЙС, не филтър. Контрастът се смята от
+  // `contrasto.test.ts`, но само снимката показва неща като бяла рамка от
+  // светлата тема или графика, забравила своите тъмни токени.
+  console.log("\n▸ тъмна тема");
+  const scuro = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+    locale: "it-IT",
+    timezoneId: "Europe/Rome",
+    colorScheme: "dark",
+  });
+  await scuro.addInitScript(() => {
+    try {
+      localStorage.setItem("ea:tema", "dark");
+    } catch {
+      /* без хранилище — остава предпочитанието на системата (dark) */
+    }
+  });
+  const buio = await scuro.newPage();
+  await scatta(buio, "d01-login", "/login");
+  await entra(buio);
+  for (const [nome, percorso, opzioni] of [
+    ["d02-dashboard", "/dashboard"],
+    ["d03-impianti", "/impianti"],
+    ["d04-impianto-dettaglio", null, { primo: "/impianti" }],
+    ["d05-fattura-dettaglio", null, { primo: "/fatture" }],
+    ["d06-ddt-dettaglio", null, { primo: "/ddt" }],
+    ["d07-impostazioni", "/impostazioni"],
+    ["d08-integrazioni", "/integrazioni"],
+  ])
+    await scatta(buio, nome, percorso, opzioni);
+  await scuro.close();
 
   await browser.close();
   await fermaServer();

@@ -31,18 +31,90 @@ test("QR стикерът отваря точно този импиант сле
   expect(qr?.headers()["content-type"]).toMatch(/image\/svg\+xml/);
 });
 
-test("интерфейсът не се разлива хоризонтално на телефон", async ({ page }) => {
-  await entra(page, UTENTI.TECNICO);
-  await page.goto("/ordini");
-  await page.waitForLoadState("networkidle");
+// Страниците, по които техник и офис минават от телефон. Детайлите са
+// включени нарочно: там заглавието носи ред бутони и падащо меню, и точно там
+// реалният дефект излезе (падащото меню на фактурата стърчеше извън екрана).
+const PAGINE_TELEFONO = [
+  "/dashboard",
+  "/ordini",
+  "/impianti",
+  "/scadenze",
+  "/magazzino",
+  "/movimenti",
+  "/fatture",
+  "/preventivi",
+  "/ddt",
+  "/condomini",
+];
+const DETTAGLI_TELEFONO = [
+  "/impianti",
+  "/ordini",
+  "/fatture",
+  "/preventivi",
+  "/ddt",
+];
+
+test("нито една страница не се разлива хоризонтално на телефон", async ({
+  page,
+}) => {
+  await entra(page, UTENTI.DIREZIONE);
   // Хоризонталният скрол на цялата страница е класическият дефект на „мобилна"
-  // версия, направена само с media queries.
-  const scorre = await page.evaluate(
-    () =>
-      document.documentElement.scrollWidth >
-      document.documentElement.clientWidth + 1,
-  );
-  expect(scorre).toBe(false);
+  // версия, направена само с media queries. Мерим и документа, и `main`:
+  // `main` е `overflow-y-auto`, тоест прелялото съдържание скролва ВЪТРЕ в него
+  // и документът изглежда чист. Таблиците имат своя обвивка със скрол — те не
+  // разпъват `main` и не падат тук.
+  const prelivato = () =>
+    page.evaluate(() => {
+      const d = document.documentElement;
+      const m = document.querySelector("main");
+      const largo = [...document.querySelectorAll<HTMLElement>("main *")]
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.width === 0 || r.right <= d.clientWidth + 1) return false;
+          // Вътре в собствен скрол (таблица) е позволено.
+          for (let p = el.parentElement; p && p !== m; p = p.parentElement) {
+            const ox = getComputedStyle(p).overflowX;
+            if (ox === "auto" || ox === "scroll") return false;
+          }
+          return true;
+        })
+        .slice(0, 3)
+        .map(
+          (el) =>
+            `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 3).join(".")}`,
+        );
+      return {
+        documento: d.scrollWidth > d.clientWidth + 1,
+        main: m ? m.scrollWidth > m.clientWidth + 1 : false,
+        largo,
+      };
+    });
+
+  const visitate: string[] = [];
+  for (const percorso of PAGINE_TELEFONO) {
+    await page.goto(percorso);
+    await page.waitForLoadState("networkidle");
+    visitate.push(percorso);
+    expect(await prelivato(), percorso).toEqual({
+      documento: false,
+      main: false,
+      largo: [],
+    });
+  }
+  for (const lista of DETTAGLI_TELEFONO) {
+    await page.goto(lista);
+    await page.waitForLoadState("networkidle");
+    const link = page.locator("tbody a").first();
+    if ((await link.count()) === 0) continue;
+    await link.click();
+    await page.waitForLoadState("networkidle");
+    expect(await prelivato(), `${lista}/<id>`).toEqual({
+      documento: false,
+      main: false,
+      largo: [],
+    });
+  }
+  expect(visitate.length).toBe(PAGINE_TELEFONO.length);
 });
 
 // ТЕСТЪТ ГОРЕ СИ МИНАВАШЕ ПРИ СЧУПЕН ТЕЛЕФОНЕН ИЗГЛЕД. Менюто стоеше постоянно
