@@ -16,8 +16,10 @@ export default {
     .setDescriptionLocalizations(CMD_DESC_L10N.daily)
     .setDMPermission(false),
   async execute(interaction) {
-    const lang = await resolveLang(interaction);
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    // Езикът може да иска бекенда (en-US + празен кеш) — след defer, не преди:
+    // 3-секундният прозорец на Discord не чака мрежата (одит на Дискорджията 25.09.2026).
+    const lang = await resolveLang(interaction);
     let data;
     try {
       ({ data } = await api.post("/bot/game/daily", { serverId: interaction.guildId, userId: interaction.user.id }));

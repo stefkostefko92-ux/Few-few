@@ -18,8 +18,10 @@ export default {
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
     .addStringOption((o) => o.setName("source").setDescription("Question source").addChoices({ name: "Question bank", value: "BANK" }, { name: "Knowledge base (Premium)", value: "KB" })),
   async execute(interaction) {
-    const lang = await resolveLang(interaction);
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    // Езикът може да иска бекенда (en-US + празен кеш) — след defer, не преди:
+    // 3-секундният прозорец на Discord не чака мрежата (одит на Дискорджията 25.09.2026).
+    const lang = await resolveLang(interaction);
     if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) return interaction.editReply({ content: t("game.trivia.noPermission", lang) });
     let out;
     try {

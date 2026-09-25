@@ -61,10 +61,12 @@ export default {
       .addIntegerOption((o) => o.setName("mine").setDescription("Number of YOUR companion to give").setRequired(true).setMinValue(1).setMaxValue(1000))
       .addIntegerOption((o) => o.setName("theirs").setDescription("Number of THEIR companion you want").setRequired(true).setMinValue(1).setMaxValue(1000))),
   async execute(interaction) {
-    const lang = await resolveLang(interaction);
     const sub = interaction.options.getSubcommand();
     const ephemeral = sub !== "trade";
     await interaction.deferReply(ephemeral ? { flags: MessageFlags.Ephemeral } : {});
+    // Езикът може да иска бекенда (en-US + празен кеш) — след defer, не преди:
+    // 3-секундният прозорец на Discord не чака мрежата (одит на Дискорджията 25.09.2026).
+    const lang = await resolveLang(interaction);
     try {
       if (sub === "list") {
         const mine = await owned(interaction);
@@ -139,9 +141,10 @@ export default {
         return interaction.editReply({ content: `<@${target.id}>`, embeds: [e], components: [row], allowedMentions: { users: [target.id] } });
       }
     } catch (err) {
+      // „price“ е опитаната сума при /companion feed (беше твърдо 0 → „струва ✨ 0“).
       const key = codeKey(err?.response?.data?.error || err?.response?.data?.code);
       const d = err?.response?.data || {};
-      return interaction.editReply({ content: key ? t(key, lang, { sparks: d.sparks ?? 0, price: 0 }) : friendlyError(err, interaction).content, embeds: [], components: [] });
+      return interaction.editReply({ content: key ? t(key, lang, { sparks: d.sparks ?? 0, price: interaction.options.getInteger("sparks") ?? 0 }) : friendlyError(err, interaction).content, embeds: [], components: [] });
     }
   },
 };

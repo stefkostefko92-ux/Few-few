@@ -17,16 +17,23 @@ export default {
     .addSubcommand((s) => s.setName("truth").setDescription("A question you answer honestly"))
     .addSubcommand((s) => s.setName("dare").setDescription("A small challenge in the channel")),
   async execute(interaction) {
-    const lang = await resolveLang(interaction);
-    const settings = await getGameSettings(interaction.guildId);
-    if (!settings?.enabled) return interaction.reply({ content: t("game.disabled", lang), flags: MessageFlags.Ephemeral });
-    if (!settings.isPremium) return interaction.reply({ content: t("game.party.premium", lang), flags: MessageFlags.Ephemeral });
+    // Две мрежови стъпки (език + настройки) не се побират надеждно в 3-секундния
+    // прозорец на Discord → първо публичен defer; при отказ публичният отговор се
+    // маха и остава лична бележка (одит на Дискорджията 25.09.2026).
+    await interaction.deferReply();
+    const [lang, settings] = await Promise.all([resolveLang(interaction), getGameSettings(interaction.guildId)]);
+    const refuse = async (key) => {
+      await interaction.deleteReply().catch(() => {});
+      return interaction.followUp({ content: t(key, lang), flags: MessageFlags.Ephemeral });
+    };
+    if (!settings?.enabled) return refuse("game.disabled");
+    if (!settings.isPremium) return refuse("game.party.premium");
     const dare = interaction.options.getSubcommand() === "dare";
     const bank = dare ? DARE : TRUTH;
     const prompt = bank[Math.floor(Math.random() * bank.length)];
     const embed = new EmbedBuilder().setColor(dare ? WARNING : INFO)
       .setTitle(t(dare ? "game.tod.dare" : "game.tod.truth", lang, { user: interaction.user.displayName || interaction.user.username }))
       .setDescription(prompt);
-    return interaction.reply({ embeds: [embed] });
+    return interaction.editReply({ embeds: [embed] });
   },
 };

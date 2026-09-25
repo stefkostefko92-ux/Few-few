@@ -15,8 +15,10 @@ export default {
     .setDescriptionLocalizations(CMD_DESC_L10N.quest)
     .setDMPermission(false),
   async execute(interaction) {
-    const lang = await resolveLang(interaction);
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    // Езикът може да иска бекенда (en-US + празен кеш) — след defer, не преди:
+    // 3-секундният прозорец на Discord не чака мрежата (одит на Дискорджията 25.09.2026).
+    const lang = await resolveLang(interaction);
     let quests;
     try {
       ({ data: quests } = await api.get(`/bot/game/quests/${interaction.guildId}`, { params: { userId: interaction.user.id } }));

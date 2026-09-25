@@ -93,3 +93,18 @@ describe("/companion list в Premium спазва лимита на Discord (о�
     expect(d).toContain("**#1**");
   });
 });
+
+describe("/companion feed без искри казва колко струва опитът (одит на Дискорджията 25.09.2026)", () => {
+  it("NOT_ENOUGH_SPARKS → „this costs ✨ 50“, не ✨ 0", async () => {
+    apiGet.mockResolvedValueOnce({ data: { sparks: 5, activeId: "own_0", companions: [{ id: "own_0", index: 1, name: "Blip", nickname: null, rarityEmoji: "⚪", stage: 1 }] } });
+    apiPost.mockRejectedValueOnce({ response: { status: 402, data: { error: "NOT_ENOUGH_SPARKS", sparks: 5 } } });
+    const editReply = vi.fn();
+    const i = { guildId: "222222222222222222", user: { id: "333333333333333333" }, locale: "en", deferReply: vi.fn(), editReply,
+      options: { getSubcommand: () => "feed", getInteger: (k) => (k === "sparks" ? 50 : 1) } };
+    await companion.execute(i);
+    const msg = editReply.mock.calls[0][0].content;
+    expect(msg).toContain("✨ 5,");
+    expect(msg).toContain("✨ 50");
+    expect(i.deferReply).toHaveBeenCalled();
+  });
+});

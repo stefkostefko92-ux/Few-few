@@ -18,9 +18,11 @@ export default {
     .addStringOption((o) => o.setName("by").setDescription("Ranking").setRequired(false)
       .addChoices({ name: "XP (all time)", value: "xp" }, { name: "Season XP", value: "seasonXp" }, { name: "Sparks", value: "sparks" })),
   async execute(interaction) {
-    const lang = await resolveLang(interaction);
     const by = interaction.options.getString("by") || "xp";
     await interaction.deferReply();
+    // Езикът може да иска бекенда (en-US + празен кеш) — след defer, не преди:
+    // 3-секундният прозорец на Discord не чака мрежата (одит на Дискорджията 25.09.2026).
+    const lang = await resolveLang(interaction);
     let data;
     try {
       ({ data } = await api.get(`/bot/game/leaderboard/${interaction.guildId}`, { params: { by, limit: 10 } }));

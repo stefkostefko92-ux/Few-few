@@ -129,14 +129,24 @@ describe("trivia + wyr", () => {
   });
   it("/wyr и /tod са Premium — Free получава бележка, не банката", async () => {
     apiGet.mockResolvedValueOnce({ data: settings({ isPremium: false }) });
-    const i = { guildId: SID, locale: "en", user: { id: UID, username: "u" }, reply: vi.fn(), options: { getSubcommand: () => "truth" } };
+    // Първо defer (3-секундният прозорец), после проверките; отказът маха
+    // публичния отговор и оставя лична бележка (одит 25.09.2026).
+    const mk = () => ({ guildId: SID, locale: "en", user: { id: UID, username: "u" }, options: { getSubcommand: () => "truth" },
+      deferReply: vi.fn(), editReply: vi.fn(), deleteReply: vi.fn().mockResolvedValue(), followUp: vi.fn(), reply: vi.fn() });
+    const i = mk();
     await wyr.execute(i);
-    expect(i.reply.mock.calls[0][0].content).toContain("Premium");
+    expect(i.deferReply).toHaveBeenCalledBefore(i.deleteReply);
+    expect(i.deleteReply).toHaveBeenCalled();
+    expect(i.followUp.mock.calls[0][0].content).toContain("Premium");
+    expect(i.followUp.mock.calls[0][0].flags).toBeTruthy();
+    expect(i.editReply).not.toHaveBeenCalled();
     game.__test.settingsCache.clear(); // кешът е 60 s — иначе tod вижда Free
     apiGet.mockResolvedValueOnce({ data: settings({ isPremium: true }) });
-    const j = { ...i, reply: vi.fn() };
+    const j = mk();
     await tod.execute(j);
-    expect(j.reply.mock.calls[0][0].embeds[0].toJSON().title).toContain("Truth");
+    expect(j.deferReply).toHaveBeenCalled();
+    expect(j.deleteReply).not.toHaveBeenCalled();
+    expect(j.editReply.mock.calls[0][0].embeds[0].toJSON().title).toContain("Truth");
   });
 });
 

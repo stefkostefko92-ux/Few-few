@@ -4,7 +4,7 @@
 // текстът остава достъпен за екранни четци.
 import { MessageFlags, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import api from "../utils/api.js";
-import { t, resolveLang } from "../i18n/index.js";
+import { t, resolveLang, resolveLangSync } from "../i18n/index.js";
 import { friendlyError } from "../utils/friendlyError.js";
 import { BRAND } from "../utils/colors.js";
 import { CMD_DESC_L10N } from "../utils/commandLocalizations.js";
@@ -22,10 +22,11 @@ export default {
     .setDMPermission(false)
     .addUserOption((o) => o.setName("user").setDescription("Whose profile (default: you)").setRequired(false)),
   async execute(interaction) {
-    const lang = await resolveLang(interaction);
     const target = interaction.options.getUser("user") || interaction.user;
-    if (target.bot) return interaction.reply({ content: t("game.profile.noBots", lang), flags: MessageFlags.Ephemeral });
+    if (target.bot) return interaction.reply({ content: t("game.profile.noBots", resolveLangSync(interaction)), flags: MessageFlags.Ephemeral });
     await interaction.deferReply();
+    // Езикът може да иска бекенда — след defer (одит на Дискорджията 25.09.2026).
+    const lang = await resolveLang(interaction);
     let p;
     try {
       ({ data: p } = await api.get(`/bot/game/profile/${interaction.guildId}/${target.id}`));

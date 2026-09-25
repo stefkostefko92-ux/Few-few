@@ -61,8 +61,10 @@ export default {
     .setDescriptionLocalizations(CMD_DESC_L10N.shop)
     .setDMPermission(false),
   async execute(interaction) {
-    const lang = await resolveLang(interaction);
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    // Езикът може да иска бекенда (en-US + празен кеш) — след defer, не преди:
+    // 3-секундният прозорец на Discord не чака мрежата (одит на Дискорджията 25.09.2026).
+    const lang = await resolveLang(interaction);
     try {
       const [{ data: items }, { data: profile }] = await Promise.all([
         api.get(`/bot/game/shop/${interaction.guildId}`),
