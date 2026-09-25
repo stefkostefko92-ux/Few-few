@@ -595,5 +595,8 @@
   },
   "pickEscCancel": {
     "message": "за отказ"
+  },
+  "opt_notices": {
+    "message": "Лицензи на филтър-листите"
   }
 }

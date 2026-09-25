@@ -595,5 +595,8 @@
   },
   "pickEscCancel": {
     "message": "to cancel"
+  },
+  "opt_notices": {
+    "message": "Licences of the filter lists"
   }
 }

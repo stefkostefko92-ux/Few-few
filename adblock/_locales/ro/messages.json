@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blochează reclamele (inclusiv pe YouTube), bannere, pop-up-uri, trackere, notificări cookie și ziduri anti-adblock. Gratuit."
+  },
+  "byCarbon": {
+    "message": "de Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Activați/dezactivați protecția"
+  },
+  "protected": {
+    "message": "Protejat"
+  },
+  "paused": {
+    "message": "În pauză"
+  },
+  "blockingHere": {
+    "message": "Blochează reclame pe această pagină"
+  },
+  "protectionOff": {
+    "message": "Protecția este dezactivată"
+  },
+  "pause30": {
+    "message": "Pauză de 30 de minute"
+  },
+  "pausedResume": {
+    "message": "În pauză; reluați acum (mai sunt $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blocate"
+  },
+  "dataSaved": {
+    "message": "Date economisite"
+  },
+  "timeSaved": {
+    "message": "Timp economisit"
+  },
+  "thisSite": {
+    "message": "acest site"
+  },
+  "thisPage": {
+    "message": "această pagină"
+  },
+  "blockOnSite": {
+    "message": "Blocați reclamele pe acest site"
+  },
+  "blocking": {
+    "message": "Blochează"
+  },
+  "allowed": {
+    "message": "Permis"
+  },
+  "cosmetics": {
+    "message": "Ascundeți reclamele aici"
+  },
+  "cosmeticsTitle": {
+    "message": "Filtrare cosmetică pe acest site (dezactivați-o dacă aspectul paginii se strică)"
+  },
+  "on": {
+    "message": "Da"
+  },
+  "off": {
+    "message": "Nu"
+  },
+  "blockedHere": {
+    "message": "Blocate pe această pagină"
+  },
+  "logEmpty": {
+    "message": "Încă nu s-a blocat nimic aici."
+  },
+  "logUnavailable": {
+    "message": "Jurnalul nu este disponibil acum (cota browserului) — încercați din nou peste un minut."
+  },
+  "logCore": {
+    "message": "Reguli de bază Supreme"
+  },
+  "logYouTube": {
+    "message": "Reclame YouTube"
+  },
+  "logParams": {
+    "message": "Parametri de urmărire"
+  },
+  "logMalware": {
+    "message": "Domenii malware"
+  },
+  "logSurrogates": {
+    "message": "Scripturi de reclame neutralizate"
+  },
+  "logPrivacy": {
+    "message": "Confidențialitate"
+  },
+  "logUser": {
+    "message": "Filtrele mele"
+  },
+  "logLive": {
+    "message": "Filtre live"
+  },
+  "hideElement": {
+    "message": "Ascundere element"
+  },
+  "settings": {
+    "message": "Setări"
+  },
+  "promoSub": {
+    "message": "Echipamente și instrumente, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reclamă"
+  },
+  "support": {
+    "message": "Susțineți"
+  },
+  "filtersCount": {
+    "message": "$1+ filtre",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Aspect"
+  },
+  "opt_extra_protection": {
+    "message": "Protecție suplimentară"
+  },
+  "opt_smart_detection_log": {
+    "message": "Jurnal Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Site-uri permise"
+  },
+  "opt_my_filters": {
+    "message": "Filtrele mele"
+  },
+  "opt_hidden_elements": {
+    "message": "Elemente ascunse"
+  },
+  "opt_filter_updates": {
+    "message": "Actualizări ale filtrelor"
+  },
+  "opt_engine_health": {
+    "message": "Starea motorului"
+  },
+  "opt_backup": {
+    "message": "Backup"
+  },
+  "opt_support_development": {
+    "message": "Susțineți dezvoltarea"
+  },
+  "opt_theme": {
+    "message": "Temă"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sincronizare pe toate dispozitivele"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Blocarea reclamelor YouTube"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Bannere de cookie-uri / consimțământ"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Ocolirea zidurilor anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Postări sponsorizate Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Eliminarea parametrilor de urmărire"
+  },
+  "opt_malware_protection": {
+    "message": "Protecție împotriva programelor malware"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blocarea API-urilor de browser pentru direcționarea reclamelor"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blocarea beaconurilor de urmărire și a criptominerilor"
+  },
+  "opt_auto_update_filters": {
+    "message": "Actualizarea automată a filtrelor"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (întunecată) sau luminoasă"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Păstrează sincronizate setările, lista de site-uri permise și filtrele în fiecare Chrome în care v-ați conectat"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Elimină reclamele video de pe YouTube. Dezactivați opțiunea dacă videoclipurile nu pornesc."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Închide automat solicitările „Acceptați cookie-urile”"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Ascunde zidurile „dezactivați blocantul de reclame” și restabilește pagina"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Ascunde postările „Sponsorizat” de pe Facebook și Instagram"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Elimină utm_*, fbclid, gclid și alți identificatori de clic din linkurile pe care le deschideți"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blochează domeniile malware cunoscute (lista URLhaus de la abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Dezactivează API-urile publicitare Google Topics, FLoC și Protected Audience pe toate site-urile"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Oprește ping-urile de auditare a hyperlinkurilor și beaconurile terțe, elimină cookie-urile de urmărire din răspunsurile ad-tech cunoscute și blochează scripturile de criptominare din browser. Dezactivați opțiunea dacă o funcție a unui site care depinde de analize nu funcționează corect."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Descarcă reguli noi de blocare și remedieri pentru YouTube de pe adblock.carbonstealth.eu de aproximativ două ori pe zi. Doar date, fără cod; cererea nu conține identificatori sau date de navigare."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Jurnal live al reclamelor detectate euristic (fără listă de filtre), cele mai noi primele."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Listele la care v-ați abonat sunt descărcate ca text (niciodată ca cod), actualizate zilnic și stocate în blocurile gestionate de mai sus. Eliminați o listă pentru a renunța la regulile ei."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elementele pe care le-ați ascuns manual cu selectorul, grupate pe site-uri."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Diagnosticare live — totul se calculează local. Dacă ceva este roșu, „Actualizați acum” sau reîncărcarea extensiei rezolvă de obicei problema."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock este gratuit pentru toată lumea. Dacă doriți să ajutați la întreținerea lui, donațiile sunt binevenite, dar niciodată obligatorii."
+  },
+  "opt_reset_statistics": {
+    "message": "Resetați statisticile"
+  },
+  "opt_add": {
+    "message": "Adăugați"
+  },
+  "opt_save_filters": {
+    "message": "Salvați filtrele"
+  },
+  "opt_subscribe": {
+    "message": "Abonați-vă"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Reîmprospătați abonamentele acum"
+  },
+  "opt_update_now": {
+    "message": "Actualizați acum"
+  },
+  "opt_refresh": {
+    "message": "Reîmprospătați"
+  },
+  "opt_export_settings": {
+    "message": "Exportați setările"
+  },
+  "opt_import_settings": {
+    "message": "Importați setările"
+  },
+  "opt_e_g_example_com": {
+    "message": "de ex. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! exemplu\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Abonați-vă la URL-ul unei liste de filtre (de ex. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Setări Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Setări"
+  },
+  "opt_theme_light": {
+    "message": "Luminoasă"
+  },
+  "opt_badge_unique": {
+    "message": "unic"
+  },
+  "opt_smart_desc": {
+    "message": "Prinde reclamele pe care încă nu le cunoaște nicio listă de filtre: cadrele din alte origini cu dimensiunea unui spațiu publicitar standard sunt ascunse imediat, fără reguli."
+  },
+  "opt_caught_so_far": {
+    "message": "detectate până acum."
+  },
+  "opt_allow_desc": {
+    "message": "Pe aceste domenii reclamele nu sunt blocate."
+  },
+  "opt_fh_one": {
+    "message": "O regulă pe linie."
+  },
+  "opt_fh_blocks": {
+    "message": "blochează un domeniu;"
+  },
+  "opt_fh_everywhere": {
+    "message": "ascunde un element peste tot;"
+  },
+  "opt_fh_site": {
+    "message": "îl ascunde doar pe acel site."
+  },
+  "opt_fh_comments": {
+    "message": "Liniile care încep cu"
+  },
+  "opt_fh_comments2": {
+    "message": "sunt comentarii."
+  },
+  "opt_donate": {
+    "message": "Donați prin Revolut"
+  },
+  "opt_made_by": {
+    "message": "creat de Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Încă nu s-a detectat nimic euristic."
+  },
+  "opt_empty_allow": {
+    "message": "Încă nu există site-uri permise."
+  },
+  "opt_empty_hidden": {
+    "message": "Încă nu ați ascuns nimic manual."
+  },
+  "opt_empty_subs": {
+    "message": "Încă nu v-ați abonat la nicio listă."
+  },
+  "opt_no_sw": {
+    "message": "Niciun răspuns de la service worker."
+  },
+  "opt_remove": {
+    "message": "Eliminați"
+  },
+  "opt_filter_status": {
+    "message": "Filtre v$1, actualizate $2. Doar date — nu se trimite nimic despre dvs."
+  },
+  "opt_updating": {
+    "message": "Se actualizează…"
+  },
+  "opt_updated": {
+    "message": "Actualizat (v$1, $2 reguli suplimentare)"
+  },
+  "opt_update_failed": {
+    "message": "Actualizarea a eșuat ($1)"
+  },
+  "opt_saved": {
+    "message": "Salvat ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 reguli"
+  },
+  "opt_updated_ago": {
+    "message": "actualizată $1"
+  },
+  "opt_not_fetched": {
+    "message": "încă nedescărcată"
+  },
+  "opt_failed_colon": {
+    "message": "eroare: $1"
+  },
+  "opt_enter_https": {
+    "message": "Introduceți un URL https:// valid"
+  },
+  "opt_fetching": {
+    "message": "Se descarcă…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Abonat: $1 reguli ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Eșuat ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Se reîmprospătează…"
+  },
+  "opt_refreshed": {
+    "message": "Reîmprospătat ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Fișier de setări nevalid."
+  },
+  "opt_no_response": {
+    "message": "niciun răspuns"
+  },
+  "opt_h_engine": {
+    "message": "Motor anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Seturi de reguli statice active"
+  },
+  "opt_h_live": {
+    "message": "Domenii din filtrele live"
+  },
+  "opt_h_last": {
+    "message": "Ultima actualizare"
+  },
+  "opt_h_sig": {
+    "message": "Semnăturile actualizărilor"
+  },
+  "opt_h_user": {
+    "message": "Filtrele mele / reguli de permitere"
+  },
+  "opt_h_popup": {
+    "message": "Gazde de reclame pop-up integrate"
+  },
+  "opt_h_yt": {
+    "message": "Ocolire YouTube"
+  },
+  "opt_reason_frame": {
+    "message": "Cadru din altă origine cu dimensiune de reclamă"
+  },
+  "opt_reason_sticky": {
+    "message": "Banner publicitar fix"
+  },
+  "logRegional": {
+    "message": "Liste regionale"
+  },
+  "logFocus": {
+    "message": "Modul Focus"
+  },
+  "opt_filter_lists": {
+    "message": "Liste de filtre"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList și EasyPrivacy sunt mereu active. Listele de mai jos au licență deschisă și sunt incluse în extensie, așa că activarea uneia nu descarcă nimic, cu excepția unei liste marcate ca provenind de la autorul ei."
+  },
+  "opt_lists_core": {
+    "message": "De bază"
+  },
+  "opt_lists_regional": {
+    "message": "Regionale"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Lista pentru limba browserului dvs. se activează singură. Adăugați altele dacă citiți des site-uri în alte limbi."
+  },
+  "opt_focus_mode": {
+    "message": "Modul Focus"
+  },
+  "opt_focus_desc": {
+    "message": "Ascunde ce nu este reclamă, dar tot deranjează. Totul de aici este dezactivat până îl activați."
+  },
+  "opt_list_ubo": {
+    "message": "Filtrele uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Reclame, trackere, remedieri anti-adblock și reparații de site-uri de la echipa uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Lista lui Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "O listă veche și consacrată de servere de reclame și urmărire."
+  },
+  "opt_focus_social": {
+    "message": "Butoane și widgeturi de social media"
+  },
+  "opt_focus_social_desc": {
+    "message": "Butoane de distribuire, casete „Îmi place” și fluxuri încorporate."
+  },
+  "opt_focus_chat": {
+    "message": "Widgeturi de chat și asistență"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Bulele de chat plutitoare din colțul paginii."
+  },
+  "opt_focus_newsletters": {
+    "message": "Pop-up-uri de newsletter și înscriere"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Casete și suprapuneri „Abonați-vă la newsletterul nostru”."
+  },
+  "opt_focus_notifications": {
+    "message": "Solicitări de notificări"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Casete „Permiteți notificările?” pe care site-urile le afișează înainte ca browserul să întrebe."
+  },
+  "opt_focus_ai": {
+    "message": "Pop-up-uri cu asistenți AI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Bule de chatbot și panouri cu sugestii AI adăugate în pagini."
+  },
+  "opt_focus_other": {
+    "message": "Alte neplăceri"
+  },
+  "opt_focus_other_desc": {
+    "message": "Bare fixe, bannere „Deschideți în aplicație” și alte elemente similare."
+  },
+  "opt_badge_lang": {
+    "message": "limba dvs."
+  },
+  "opt_badge_remote": {
+    "message": "de la autor"
+  },
+  "opt_remote_hint": {
+    "message": "Nu este inclusă (fără licență de redistribuire): browserul dvs. o descarcă de pe $1 când o activați."
+  },
+  "opt_downloaded_from": {
+    "message": "Descărcată de pe $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome a refuzat această combinație de liste ($1). Dezactivați câteva."
+  },
+  "opt_badge_recommended": {
+    "message": "recomandată pentru limba dvs."
+  },
+  "reportBroken": {
+    "message": "Site-ul nu funcționează? Reparați-l sau spuneți-ne"
+  },
+  "rep_title": {
+    "message": "Ceva nu funcționează pe acest site?"
+  },
+  "rep_fix_first": {
+    "message": "Reparați acum"
+  },
+  "rep_site": {
+    "message": "Site:"
+  },
+  "rep_fix_desc": {
+    "message": "Majoritatea problemelor dispar cu una dintre acestea. Fiecare se aplică doar acestui site; fila se reîncarcă."
+  },
+  "rep_fix_cosm": {
+    "message": "Dezactivați ascunderea elementelor aici"
+  },
+  "rep_fix_allow": {
+    "message": "Permiteți reclamele pe acest site"
+  },
+  "rep_fix_pause": {
+    "message": "Pauză peste tot timp de 30 de minute"
+  },
+  "rep_tell_us": {
+    "message": "Spuneți-ne"
+  },
+  "rep_tell_desc": {
+    "message": "Reparăm site-urile defecte pentru toată lumea prin actualizarea semnată a filtrelor, de obicei în cel mult o zi. Extensia nu trimite nimic: raportul se deschide în propria dvs. aplicație de e-mail și vedeți fiecare cuvânt înainte."
+  },
+  "rep_what": {
+    "message": "Ce nu este în regulă? (opțional)"
+  },
+  "rep_what_ph": {
+    "message": "de ex. videoclipul nu pornește, o casetă albă acoperă articolul…"
+  },
+  "rep_full_url": {
+    "message": "Includeți adresa completă a paginii (altfel doar numele site-ului)"
+  },
+  "rep_preview": {
+    "message": "Ce se va trimite"
+  },
+  "rep_send_mail": {
+    "message": "Trimiteți prin e-mail"
+  },
+  "rep_copy": {
+    "message": "Copiați raportul"
+  },
+  "rep_copied": {
+    "message": "Copiat."
+  },
+  "rep_done_cosm": {
+    "message": "Ascunderea elementelor este dezactivată pe acest site. Pagina a fost reîncărcată — s-a rezolvat?"
+  },
+  "rep_done_allow": {
+    "message": "Reclamele sunt permise pe acest site. Pagina a fost reîncărcată — s-a rezolvat?"
+  },
+  "rep_done_pause": {
+    "message": "Pauză de 30 de minute. Dacă site-ul funcționează acum, vă rugăm să ne spuneți mai jos."
+  },
+  "cookieRejections": {
+    "message": "Bannere de cookie-uri refuzate în numele dvs.: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Rafturile, fila și sugestiile Shorts de pe YouTube."
+  },
+  "opt_focus_onetap": {
+    "message": "Pop-up-uri „Conectați-vă cu Google”"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Selectorul de cont care apare în colțul multor site-uri. Butoanele de conectare continuă să funcționeze."
+  },
+  "pickTip": {
+    "message": "Faceți clic pe un element pentru a-l ascunde"
+  },
+  "pickZapTip": {
+    "message": "Faceți clic pentru a elimina acest element (o dată)"
+  },
+  "pickEscCancel": {
+    "message": "pentru anulare"
+  },
+  "opt_notices": {
+    "message": "Licențele listelor de filtre"
+  }
+}

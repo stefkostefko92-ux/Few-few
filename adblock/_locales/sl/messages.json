@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokira oglase povsod: na YouTubu, pasice, pojavna okna, sledilnike, obvestila o piškotkih in anti-adblock zidove. Brezplačno."
+  },
+  "byCarbon": {
+    "message": "izdelek Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Vklopi ali izklopi zaščito"
+  },
+  "protected": {
+    "message": "Zaščiteno"
+  },
+  "paused": {
+    "message": "Ustavljeno"
+  },
+  "blockingHere": {
+    "message": "Blokira oglase na tej strani"
+  },
+  "protectionOff": {
+    "message": "Zaščita je izklopljena"
+  },
+  "pause30": {
+    "message": "Premor za 30 minut"
+  },
+  "pausedResume": {
+    "message": "Ustavljeno, nadaljuj zdaj (še $1 min)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blokirano"
+  },
+  "dataSaved": {
+    "message": "Prihranek podatkov"
+  },
+  "timeSaved": {
+    "message": "Prihranek časa"
+  },
+  "thisSite": {
+    "message": "to spletno mesto"
+  },
+  "thisPage": {
+    "message": "ta stran"
+  },
+  "blockOnSite": {
+    "message": "Blokiraj oglase na tem spletnem mestu"
+  },
+  "blocking": {
+    "message": "Blokiranje"
+  },
+  "allowed": {
+    "message": "Dovoljeno"
+  },
+  "cosmetics": {
+    "message": "Skrij oglasna polja tukaj"
+  },
+  "cosmeticsTitle": {
+    "message": "Kozmetično filtriranje na tem spletnem mestu (izklopite ga, če se postavitev pokvari)"
+  },
+  "on": {
+    "message": "Vkl."
+  },
+  "off": {
+    "message": "Izkl."
+  },
+  "blockedHere": {
+    "message": "Blokirano na tej strani"
+  },
+  "logEmpty": {
+    "message": "Tukaj še ni bilo nič blokirano."
+  },
+  "logUnavailable": {
+    "message": "Dnevnik trenutno ni na voljo (kvota brskalnika) — poskusite znova čez minuto."
+  },
+  "logCore": {
+    "message": "Osnovna pravila"
+  },
+  "logYouTube": {
+    "message": "Oglasi na YouTubu"
+  },
+  "logParams": {
+    "message": "Parametri sledenja"
+  },
+  "logMalware": {
+    "message": "Zlonamerne domene"
+  },
+  "logSurrogates": {
+    "message": "Onesposobljeni oglasni skripti"
+  },
+  "logPrivacy": {
+    "message": "Zaščita zasebnosti"
+  },
+  "logUser": {
+    "message": "Moji filtri"
+  },
+  "logLive": {
+    "message": "Sprotne posodobitve"
+  },
+  "hideElement": {
+    "message": "Skrij element"
+  },
+  "settings": {
+    "message": "Nastavitve"
+  },
+  "promoSub": {
+    "message": "Oprema in orodja, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Oglas"
+  },
+  "support": {
+    "message": "Podpri"
+  },
+  "filtersCount": {
+    "message": "$1+ filtrov",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Videz"
+  },
+  "opt_extra_protection": {
+    "message": "Dodatna zaščita"
+  },
+  "opt_smart_detection_log": {
+    "message": "Dnevnik Smart Detection"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Spletna mesta na seznamu dovoljenih"
+  },
+  "opt_my_filters": {
+    "message": "Moji filtri"
+  },
+  "opt_hidden_elements": {
+    "message": "Skriti elementi"
+  },
+  "opt_filter_updates": {
+    "message": "Posodobitve filtrov"
+  },
+  "opt_engine_health": {
+    "message": "Stanje pogona"
+  },
+  "opt_backup": {
+    "message": "Varnostna kopija"
+  },
+  "opt_support_development": {
+    "message": "Podpora razvoju"
+  },
+  "opt_theme": {
+    "message": "Tema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sinhronizacija med napravami"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "Blokiranje oglasov na YouTubu"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Obvestila o piškotkih in soglasju"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Obid zidov anti-adblock"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Sponzorirane objave v omrežjih Meta"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Odstranjevanje parametrov sledenja"
+  },
+  "opt_malware_protection": {
+    "message": "Zaščita pred zlonamerno programsko opremo"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blokiranje API-jev brskalnika za ciljanje oglasov"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blokiranje sledilnih signalov in kriptorudarjev"
+  },
+  "opt_auto_update_filters": {
+    "message": "Samodejno posodabljanje filtrov"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (temna) ali svetla"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Sinhronizira nastavitve, seznam dovoljenih in filtre v vseh brskalnikih Chrome, v katere ste prijavljeni"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Odstrani videooglase na YouTubu. Izklopite, če se videoposnetki ne predvajajo."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Samodejno zapre pozive „Sprejmi piškotke“"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Skrije zidove „Izklopite blokator oglasov“ in obnovi stran"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Skrije objave „Sponzorirano“ na Facebooku in Instagramu"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Iz povezav, ki jih odprete, odstrani utm_*, fbclid, gclid in druge identifikatorje klikov"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokira znane zlonamerne domene (seznam URLhaus, abuse.ch)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Na vseh spletnih mestih onemogoči oglaševalske API-je Google Topics, FLoC in Protected Audience"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Ustavi pinge revizije povezav in sledilne signale tretjih oseb, odstrani sledilne piškotke iz odgovorov znanih oglaševalskih storitev in blokira skripte za kriptorudarjenje v brskalniku. Izklopite, če se funkcija spletnega mesta, ki je odvisna od analitike, ne obnaša pravilno."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Približno dvakrat na dan prenese nova pravila za blokiranje in popravke za YouTube z adblock.carbonstealth.eu. Samo podatki, brez kode; zahteva ne vsebuje identifikatorjev ali podatkov o brskanju."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Sprotni dnevnik oglasov, zaznanih hevristično (brez seznama filtrov), najnovejši na vrhu."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Naročeni seznami se prenašajo kot besedilo (nikoli kot koda), vsak dan se posodabljajo in so v upravljanih blokih zgoraj. Odstranite seznam, da odpravite njegova pravila."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elementi, ki ste jih ročno skrili z izbirnikom, razvrščeni po spletnih mestih."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Sprotna diagnostika — vse se izračuna lokalno. Če je kaj rdeče, običajno pomaga „Posodobi zdaj“ ali ponovno nalaganje razširitve."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock je brezplačen za vse. Če želite pomagati pri njegovem vzdrževanju, so donacije dobrodošle, nikoli pa niso obvezne."
+  },
+  "opt_reset_statistics": {
+    "message": "Ponastavi statistiko"
+  },
+  "opt_add": {
+    "message": "Dodaj"
+  },
+  "opt_save_filters": {
+    "message": "Shrani filtre"
+  },
+  "opt_subscribe": {
+    "message": "Naroči se"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Osveži naročnine zdaj"
+  },
+  "opt_update_now": {
+    "message": "Posodobi zdaj"
+  },
+  "opt_refresh": {
+    "message": "Osveži"
+  },
+  "opt_export_settings": {
+    "message": "Izvozi nastavitve"
+  },
+  "opt_import_settings": {
+    "message": "Uvozi nastavitve"
+  },
+  "opt_e_g_example_com": {
+    "message": "npr. example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! primer\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Naročite se na seznam filtrov prek URL-ja (npr. https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Nastavitve Supreme AdBlock"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Nastavitve"
+  },
+  "opt_theme_light": {
+    "message": "Svetla"
+  },
+  "opt_badge_unique": {
+    "message": "edinstveno"
+  },
+  "opt_smart_desc": {
+    "message": "Ujame oglase, ki jih še ne pozna noben seznam filtrov: okvirji z drugih domen v velikosti standardnih oglasnih mest se skrijejo takoj, brez pravil."
+  },
+  "opt_caught_so_far": {
+    "message": "doslej ujetih."
+  },
+  "opt_allow_desc": {
+    "message": "Na teh domenah se oglasi ne blokirajo."
+  },
+  "opt_fh_one": {
+    "message": "Eno pravilo na vrstico."
+  },
+  "opt_fh_blocks": {
+    "message": "blokira domeno;"
+  },
+  "opt_fh_everywhere": {
+    "message": "skrije element povsod;"
+  },
+  "opt_fh_site": {
+    "message": "ga skrije samo na tem spletnem mestu."
+  },
+  "opt_fh_comments": {
+    "message": "Vrstice, ki se začnejo z znakom"
+  },
+  "opt_fh_comments2": {
+    "message": "so komentarji."
+  },
+  "opt_donate": {
+    "message": "Donacija prek storitve Revolut"
+  },
+  "opt_made_by": {
+    "message": "izdelal Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Hevristično še ni bilo nič ujeto."
+  },
+  "opt_empty_allow": {
+    "message": "Na seznamu dovoljenih še ni spletnih mest."
+  },
+  "opt_empty_hidden": {
+    "message": "Ročno še ni bilo nič skrito."
+  },
+  "opt_empty_subs": {
+    "message": "Še ni naročenih seznamov."
+  },
+  "opt_no_sw": {
+    "message": "Service worker se ne odziva."
+  },
+  "opt_remove": {
+    "message": "Odstrani"
+  },
+  "opt_filter_status": {
+    "message": "Nabor filtrov v$1, posodobljen $2. Samo podatki, nič o vas se ne pošilja."
+  },
+  "opt_updating": {
+    "message": "Posodabljanje…"
+  },
+  "opt_updated": {
+    "message": "Posodobljeno (v$1, dodatna pravila: $2)"
+  },
+  "opt_update_failed": {
+    "message": "Posodobitev ni uspela ($1)"
+  },
+  "opt_saved": {
+    "message": "Shranjeno ✓"
+  },
+  "opt_rules_count": {
+    "message": "pravila: $1"
+  },
+  "opt_updated_ago": {
+    "message": "posodobljeno $1"
+  },
+  "opt_not_fetched": {
+    "message": "še ni preneseno"
+  },
+  "opt_failed_colon": {
+    "message": "napaka: $1"
+  },
+  "opt_enter_https": {
+    "message": "Vnesite veljaven naslov https://"
+  },
+  "opt_fetching": {
+    "message": "Prenašanje…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Naročeno, pravila: $1 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Napaka ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Osveževanje…"
+  },
+  "opt_refreshed": {
+    "message": "Osveženo ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Neveljavna datoteka z nastavitvami."
+  },
+  "opt_no_response": {
+    "message": "ni odziva"
+  },
+  "opt_h_engine": {
+    "message": "Pogon anti-adblock"
+  },
+  "opt_h_rulesets": {
+    "message": "Vklopljeni statični nabori pravil"
+  },
+  "opt_h_live": {
+    "message": "Domene iz sprotnih filtrov"
+  },
+  "opt_h_last": {
+    "message": "Zadnja posodobitev"
+  },
+  "opt_h_sig": {
+    "message": "Podpisi posodobitev"
+  },
+  "opt_h_user": {
+    "message": "Moji filtri / pravila dovoljenih"
+  },
+  "opt_h_popup": {
+    "message": "Vgrajeni gostitelji pojavnih oglasov"
+  },
+  "opt_h_yt": {
+    "message": "Obid na YouTubu"
+  },
+  "opt_reason_frame": {
+    "message": "Okvir z druge domene v velikosti oglasa"
+  },
+  "opt_reason_sticky": {
+    "message": "Lepljiva oglasna pasica"
+  },
+  "logRegional": {
+    "message": "Regionalni seznami"
+  },
+  "logFocus": {
+    "message": "Način zbranosti"
+  },
+  "opt_filter_lists": {
+    "message": "Seznami filtrov"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList in EasyPrivacy sta vedno vklopljena. Spodnji seznami imajo odprto licenco in so vgrajeni v razširitev, zato njihov vklop ne prenese ničesar, razen seznama, ki je označen, da prihaja od avtorja."
+  },
+  "opt_lists_core": {
+    "message": "Osnovni"
+  },
+  "opt_lists_regional": {
+    "message": "Regionalni"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Seznam za jezik vašega brskalnika se vklopi samodejno. Dodajte druge, če pogosto berete spletna mesta v drugih jezikih."
+  },
+  "opt_focus_mode": {
+    "message": "Način zbranosti"
+  },
+  "opt_focus_desc": {
+    "message": "Skrije tisto, kar ni oglas, a vseeno moti. Vse tukaj je izklopljeno, dokler tega ne vklopite."
+  },
+  "opt_list_ubo": {
+    "message": "Filtri uBlock Origin"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Oglasi, sledilniki, obidi anti-adblocka in popravki spletnih mest ekipe uBlock Origin."
+  },
+  "opt_list_plowe": {
+    "message": "Seznam Peter Lowe"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Dolgoletni seznam oglaševalskih in sledilnih strežnikov."
+  },
+  "opt_focus_social": {
+    "message": "Gumbi in pripomočki družbenih omrežij"
+  },
+  "opt_focus_social_desc": {
+    "message": "Gumbi za deljenje, polja „Všeč mi je“ in vdelani viri."
+  },
+  "opt_focus_chat": {
+    "message": "Pripomočki za klepet in podporo"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Plavajoči oblački klepeta v kotu strani."
+  },
+  "opt_focus_newsletters": {
+    "message": "Pojavna okna za e-novice in prijavo"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "Polja in prekrivna okna „Naročite se na naše e-novice“."
+  },
+  "opt_focus_notifications": {
+    "message": "Pozivi za obvestila"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "Okna „Dovolite obvestila?“, ki jih spletna mesta prikažejo, preden vpraša brskalnik."
+  },
+  "opt_focus_ai": {
+    "message": "Pojavni pomočniki UI"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Oblački klepetalnih robotov in plošče s predlogi UI, dodani na strani."
+  },
+  "opt_focus_other": {
+    "message": "Druge nadloge"
+  },
+  "opt_focus_other_desc": {
+    "message": "Lepljive vrstice, pasice „Odpri v aplikaciji“ in podobna navlaka."
+  },
+  "opt_badge_lang": {
+    "message": "vaš jezik"
+  },
+  "opt_badge_remote": {
+    "message": "od avtorja"
+  },
+  "opt_remote_hint": {
+    "message": "Ni vgrajen (ni licence za razširjanje): brskalnik ga prenese z naslova $1, ko ga vklopite."
+  },
+  "opt_downloaded_from": {
+    "message": "Preneseno z naslova $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome je zavrnil to kombinacijo seznamov ($1). Nekatere izklopite."
+  },
+  "opt_badge_recommended": {
+    "message": "priporočeno za vaš jezik"
+  },
+  "reportBroken": {
+    "message": "Spletno mesto ne deluje? Popravite ga ali nam sporočite"
+  },
+  "rep_title": {
+    "message": "Nekaj ne deluje na tem spletnem mestu?"
+  },
+  "rep_fix_first": {
+    "message": "Popravi zdaj"
+  },
+  "rep_site": {
+    "message": "Spletno mesto:"
+  },
+  "rep_fix_desc": {
+    "message": "Večina težav izgine z eno od teh možnosti. Vsaka velja samo za to spletno mesto; zavihek se znova naloži."
+  },
+  "rep_fix_cosm": {
+    "message": "Izklopi skrivanje elementov tukaj"
+  },
+  "rep_fix_allow": {
+    "message": "Dovoli oglase na tem spletnem mestu"
+  },
+  "rep_fix_pause": {
+    "message": "Premor povsod za 30 minut"
+  },
+  "rep_tell_us": {
+    "message": "Sporočite nam"
+  },
+  "rep_tell_desc": {
+    "message": "Nedelujoča spletna mesta popravljamo za vse prek podpisane posodobitve filtrov, običajno v enem dnevu. Razširitev ne pošlje ničesar: poročilo se odpre v vašem e-poštnem programu in vsako besedo vidite vnaprej."
+  },
+  "rep_what": {
+    "message": "Kaj je narobe? (neobvezno)"
+  },
+  "rep_what_ph": {
+    "message": "npr. videoposnetek se ne zažene, belo polje prekriva članek…"
+  },
+  "rep_full_url": {
+    "message": "Vključi celoten naslov strani (sicer samo ime spletnega mesta)"
+  },
+  "rep_preview": {
+    "message": "Kaj bo poslano"
+  },
+  "rep_send_mail": {
+    "message": "Pošlji po e-pošti"
+  },
+  "rep_copy": {
+    "message": "Kopiraj poročilo"
+  },
+  "rep_copied": {
+    "message": "Kopirano."
+  },
+  "rep_done_cosm": {
+    "message": "Skrivanje elementov je na tem spletnem mestu izklopljeno. Stran je znova naložena — je težava odpravljena?"
+  },
+  "rep_done_allow": {
+    "message": "Oglasi so na tem spletnem mestu dovoljeni. Stran je znova naložena — je težava odpravljena?"
+  },
+  "rep_done_pause": {
+    "message": "Premor za 30 minut. Če spletno mesto zdaj deluje, nam to sporočite spodaj."
+  },
+  "cookieRejections": {
+    "message": "Obvestila o piškotkih, zavrnjena namesto vas: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Police, zavihek in predlogi Shorts na YouTubu."
+  },
+  "opt_focus_onetap": {
+    "message": "Okna „Prijava z Googlom“"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Izbirnik računa, ki se pojavi v kotu mnogih spletnih mest. Gumbi za prijavo še naprej delujejo."
+  },
+  "pickTip": {
+    "message": "Kliknite element, da ga skrijete"
+  },
+  "pickZapTip": {
+    "message": "Kliknite, da odstranite ta element (enkratno)"
+  },
+  "pickEscCancel": {
+    "message": "za preklic"
+  },
+  "opt_notices": {
+    "message": "Licence seznamov filtrov"
+  }
+}

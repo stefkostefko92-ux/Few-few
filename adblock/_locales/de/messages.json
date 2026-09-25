@@ -61,7 +61,7 @@
     "message": "Erlaubt"
   },
   "cosmetics": {
-    "message": "Werbeflächen hier ausblenden"
+    "message": "Werbung hier ausblenden"
   },
   "cosmeticsTitle": {
     "message": "Kosmetische Filterung auf dieser Website (ausschalten, wenn das Layout kaputtgeht)"
@@ -595,5 +595,8 @@
   },
   "pickEscCancel": {
     "message": "zum Abbrechen"
+  },
+  "opt_notices": {
+    "message": "Lizenzen der Filterlisten"
   }
 }

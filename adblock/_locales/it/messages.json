@@ -595,5 +595,8 @@
   },
   "pickEscCancel": {
     "message": "per annullare"
+  },
+  "opt_notices": {
+    "message": "Licenze delle liste di filtri"
   }
 }

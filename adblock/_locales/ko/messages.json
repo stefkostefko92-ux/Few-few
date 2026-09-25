@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "모든 광고 차단: YouTube 동영상 광고, 배너, 팝업, 추적기, 쿠키 동의 창, 광고 차단 감지 벽까지. 무료, 빠름, 개인정보 보호."
+  },
+  "byCarbon": {
+    "message": "by Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "보호 켜기/끄기"
+  },
+  "protected": {
+    "message": "보호 중"
+  },
+  "paused": {
+    "message": "일시중지됨"
+  },
+  "blockingHere": {
+    "message": "이 페이지의 광고 차단 중"
+  },
+  "protectionOff": {
+    "message": "보호가 꺼져 있습니다"
+  },
+  "pause30": {
+    "message": "30분 동안 일시중지"
+  },
+  "pausedResume": {
+    "message": "일시중지됨, 지금 재개($1분 남음)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "차단됨"
+  },
+  "dataSaved": {
+    "message": "절약한 데이터"
+  },
+  "timeSaved": {
+    "message": "절약한 시간"
+  },
+  "thisSite": {
+    "message": "이 사이트"
+  },
+  "thisPage": {
+    "message": "이 페이지"
+  },
+  "blockOnSite": {
+    "message": "이 사이트에서 광고 차단"
+  },
+  "blocking": {
+    "message": "차단 중"
+  },
+  "allowed": {
+    "message": "허용됨"
+  },
+  "cosmetics": {
+    "message": "여기서 광고 영역 숨기기"
+  },
+  "cosmeticsTitle": {
+    "message": "이 사이트의 요소 숨김 필터(레이아웃이 깨지면 끄세요)"
+  },
+  "on": {
+    "message": "켜짐"
+  },
+  "off": {
+    "message": "꺼짐"
+  },
+  "blockedHere": {
+    "message": "이 페이지에서 차단됨"
+  },
+  "logEmpty": {
+    "message": "이 페이지에서 아직 차단된 항목이 없습니다."
+  },
+  "logUnavailable": {
+    "message": "지금은 로그를 표시할 수 없습니다(브라우저 할당량). 1분 후에 다시 시도하세요."
+  },
+  "logCore": {
+    "message": "Supreme 기본 규칙"
+  },
+  "logYouTube": {
+    "message": "YouTube 광고 규칙"
+  },
+  "logParams": {
+    "message": "추적 매개변수"
+  },
+  "logMalware": {
+    "message": "악성코드 도메인"
+  },
+  "logSurrogates": {
+    "message": "무력화된 광고 스크립트"
+  },
+  "logPrivacy": {
+    "message": "개인정보 보호"
+  },
+  "logUser": {
+    "message": "내 필터"
+  },
+  "logLive": {
+    "message": "실시간 업데이트"
+  },
+  "hideElement": {
+    "message": "요소 숨기기"
+  },
+  "settings": {
+    "message": "설정"
+  },
+  "promoSub": {
+    "message": "장비 및 도구, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "광고"
+  },
+  "support": {
+    "message": "후원"
+  },
+  "filtersCount": {
+    "message": "필터 $1+개",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "모양"
+  },
+  "opt_extra_protection": {
+    "message": "추가 보호"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detection 로그"
+  },
+  "opt_allowlisted_sites": {
+    "message": "허용 목록의 사이트"
+  },
+  "opt_my_filters": {
+    "message": "내 필터"
+  },
+  "opt_hidden_elements": {
+    "message": "숨긴 요소"
+  },
+  "opt_filter_updates": {
+    "message": "필터 업데이트"
+  },
+  "opt_engine_health": {
+    "message": "엔진 상태"
+  },
+  "opt_backup": {
+    "message": "백업"
+  },
+  "opt_support_development": {
+    "message": "개발 후원"
+  },
+  "opt_theme": {
+    "message": "테마"
+  },
+  "opt_sync_across_devices": {
+    "message": "기기 간 동기화"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube 광고 차단"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "쿠키 / 동의 배너"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "광고 차단 감지 우회"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta 스폰서 게시물"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "추적 매개변수 삭제"
+  },
+  "opt_malware_protection": {
+    "message": "악성코드 차단"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "광고 타겟팅용 브라우저 API 차단"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "추적 비콘 및 암호화폐 채굴 차단"
+  },
+  "opt_auto_update_filters": {
+    "message": "필터 자동 업데이트"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth(어둡게) 또는 밝게"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "로그인한 모든 Chrome에서 설정, 허용 목록, 필터를 동기화합니다"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "YouTube의 동영상 광고를 삭제합니다. 동영상이 재생되지 않으면 끄세요."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "'쿠키 허용' 요청 창을 자동으로 닫습니다"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "'광고 차단기를 사용 중지하세요' 벽을 숨기고 페이지를 복원합니다"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Facebook 및 Instagram의 '스폰서' 게시물을 숨깁니다"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "여는 링크에서 utm_*, fbclid, gclid 등의 클릭 식별자를 제거합니다"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "알려진 악성코드 도메인을 차단합니다(abuse.ch의 URLhaus 목록)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "모든 사이트에서 Google Topics, FLoC, Protected Audience 광고 API를 사용 중지합니다"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "타사 하이퍼링크 감사 및 비콘 핑을 막고, 알려진 광고 기술 서버의 응답에서 추적 쿠키를 제거하며, 브라우저 암호화폐 채굴 스크립트를 차단합니다. 분석 기능에 의존하는 사이트 기능이 제대로 작동하지 않으면 끄세요."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "adblock.carbonstealth.eu에서 새 차단 규칙과 YouTube 수정 사항을 하루에 약 두 번 가져옵니다. 데이터만 가져오며 코드는 없습니다. 요청에는 식별자나 인터넷 사용 기록 데이터가 포함되지 않습니다."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "휴리스틱으로 잡아낸 광고(필터 목록 없이)의 실시간 로그입니다. 최신 항목이 맨 위에 표시됩니다."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "구독한 목록은 텍스트로만 가져오며(코드로는 절대 가져오지 않음), 매일 업데이트되고, 위의 관리 블록에 들어갑니다. 목록을 삭제하면 해당 규칙도 삭제됩니다."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "요소 선택 도구로 직접 숨긴 요소입니다(사이트별)."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "실시간 진단입니다. 모든 계산은 기기에서 이루어집니다. 빨간색 항목이 있으면 '지금 업데이트'를 누르거나 확장 프로그램을 새로고침하면 대개 해결됩니다."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock은 누구나 무료로 사용할 수 있습니다. 유지 관리를 돕고 싶으시다면 후원을 환영하지만, 필수는 아닙니다."
+  },
+  "opt_reset_statistics": {
+    "message": "통계 초기화"
+  },
+  "opt_add": {
+    "message": "추가"
+  },
+  "opt_save_filters": {
+    "message": "필터 저장"
+  },
+  "opt_subscribe": {
+    "message": "구독"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "구독 목록 지금 새로고침"
+  },
+  "opt_update_now": {
+    "message": "지금 업데이트"
+  },
+  "opt_refresh": {
+    "message": "새로고침"
+  },
+  "opt_export_settings": {
+    "message": "설정 내보내기"
+  },
+  "opt_import_settings": {
+    "message": "설정 가져오기"
+  },
+  "opt_e_g_example_com": {
+    "message": "예: example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! example\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "필터 목록 URL 구독(예: https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlock 설정"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · 설정"
+  },
+  "opt_theme_light": {
+    "message": "밝게"
+  },
+  "opt_badge_unique": {
+    "message": "독자 기능"
+  },
+  "opt_smart_desc": {
+    "message": "아직 어떤 필터 목록에도 없는 광고를 잡아냅니다. 표준 광고 슬롯 크기의 교차 출처 프레임을 규칙 없이 즉시 숨깁니다."
+  },
+  "opt_caught_so_far": {
+    "message": "개를 지금까지 잡아냈습니다."
+  },
+  "opt_allow_desc": {
+    "message": "이 도메인에서는 광고를 차단하지 않습니다."
+  },
+  "opt_fh_one": {
+    "message": "한 줄에 규칙 하나."
+  },
+  "opt_fh_blocks": {
+    "message": "— 도메인을 차단합니다."
+  },
+  "opt_fh_everywhere": {
+    "message": "— 모든 곳에서 요소를 숨깁니다."
+  },
+  "opt_fh_site": {
+    "message": "— 해당 사이트에서만 숨깁니다."
+  },
+  "opt_fh_comments": {
+    "message": "줄 맨 앞에"
+  },
+  "opt_fh_comments2": {
+    "message": "기호가 있으면 주석입니다."
+  },
+  "opt_donate": {
+    "message": "Revolut로 후원하기"
+  },
+  "opt_made_by": {
+    "message": "made by Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "아직 휴리스틱으로 잡아낸 광고가 없습니다."
+  },
+  "opt_empty_allow": {
+    "message": "허용 목록에 사이트가 아직 없습니다."
+  },
+  "opt_empty_hidden": {
+    "message": "아직 직접 숨긴 요소가 없습니다."
+  },
+  "opt_empty_subs": {
+    "message": "아직 구독한 목록이 없습니다."
+  },
+  "opt_no_sw": {
+    "message": "서비스 워커에서 응답이 없습니다."
+  },
+  "opt_remove": {
+    "message": "삭제"
+  },
+  "opt_filter_status": {
+    "message": "필터 세트 v$1, 업데이트: $2. 데이터만 받으며 사용자에 관한 정보는 전송되지 않습니다."
+  },
+  "opt_updating": {
+    "message": "업데이트 중…"
+  },
+  "opt_updated": {
+    "message": "업데이트됨(v$1, 추가 규칙 $2개)"
+  },
+  "opt_update_failed": {
+    "message": "업데이트 실패($1)"
+  },
+  "opt_saved": {
+    "message": "저장됨 ✓"
+  },
+  "opt_rules_count": {
+    "message": "규칙 $1개"
+  },
+  "opt_updated_ago": {
+    "message": "업데이트: $1"
+  },
+  "opt_not_fetched": {
+    "message": "아직 가져오지 않음"
+  },
+  "opt_failed_colon": {
+    "message": "실패: $1"
+  },
+  "opt_enter_https": {
+    "message": "올바른 https:// URL을 입력하세요"
+  },
+  "opt_fetching": {
+    "message": "가져오는 중…"
+  },
+  "opt_subscribed_ok": {
+    "message": "구독 완료: 규칙 $1개 ✓"
+  },
+  "opt_failed_paren": {
+    "message": "실패($1)"
+  },
+  "opt_refreshing": {
+    "message": "새로고침 중…"
+  },
+  "opt_refreshed": {
+    "message": "새로고침됨 ✓"
+  },
+  "opt_invalid_file": {
+    "message": "설정 파일이 올바르지 않습니다."
+  },
+  "opt_no_response": {
+    "message": "응답 없음"
+  },
+  "opt_h_engine": {
+    "message": "광고 차단 감지 우회 엔진"
+  },
+  "opt_h_rulesets": {
+    "message": "사용 중인 정적 규칙 세트"
+  },
+  "opt_h_live": {
+    "message": "실시간 필터 도메인"
+  },
+  "opt_h_last": {
+    "message": "마지막 업데이트"
+  },
+  "opt_h_sig": {
+    "message": "업데이트 서명"
+  },
+  "opt_h_user": {
+    "message": "내 필터 / 허용 목록 규칙"
+  },
+  "opt_h_popup": {
+    "message": "내장된 팝업 광고 호스트"
+  },
+  "opt_h_yt": {
+    "message": "YouTube 우회"
+  },
+  "opt_reason_frame": {
+    "message": "광고 크기의 교차 출처 프레임"
+  },
+  "opt_reason_sticky": {
+    "message": "고정 배너 광고"
+  },
+  "logRegional": {
+    "message": "지역 목록"
+  },
+  "logFocus": {
+    "message": "집중 모드"
+  },
+  "opt_filter_lists": {
+    "message": "필터 목록"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList와 EasyPrivacy는 항상 켜져 있습니다. 아래 목록은 확장 프로그램에 포함된 오픈 라이선스 목록이므로, 켜도 아무것도 다운로드하지 않습니다. 단, 제작자에게서 받는다고 표시된 목록은 예외입니다."
+  },
+  "opt_lists_core": {
+    "message": "기본"
+  },
+  "opt_lists_regional": {
+    "message": "지역"
+  },
+  "opt_lists_regional_desc": {
+    "message": "브라우저 언어에 맞는 목록은 자동으로 켜집니다. 다른 언어로 된 사이트를 자주 보신다면 해당 목록도 추가하세요."
+  },
+  "opt_focus_mode": {
+    "message": "집중 모드"
+  },
+  "opt_focus_desc": {
+    "message": "광고는 아니지만 방해가 되는 요소를 숨깁니다. 여기 있는 항목은 직접 켜기 전까지 모두 꺼져 있습니다."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origin 필터"
+  },
+  "opt_list_ubo_desc": {
+    "message": "uBlock Origin 팀이 만든 광고·추적기 차단, 광고 차단 감지 대응, 사이트 수정 규칙."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe 목록"
+  },
+  "opt_list_plowe_desc": {
+    "message": "오랫동안 관리되어 온 광고 및 추적 서버 목록."
+  },
+  "opt_focus_social": {
+    "message": "소셜 미디어 버튼 및 위젯"
+  },
+  "opt_focus_social_desc": {
+    "message": "공유 버튼, 좋아요 상자, 삽입된 피드."
+  },
+  "opt_focus_chat": {
+    "message": "채팅 및 고객 지원 위젯"
+  },
+  "opt_focus_chat_desc": {
+    "message": "페이지 모서리에 떠 있는 채팅 말풍선."
+  },
+  "opt_focus_newsletters": {
+    "message": "뉴스레터 및 가입 팝업"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "'뉴스레터를 구독하세요' 상자와 오버레이."
+  },
+  "opt_focus_notifications": {
+    "message": "알림 요청 창"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "브라우저가 묻기 전에 사이트가 먼저 띄우는 '알림을 허용하시겠습니까?' 상자."
+  },
+  "opt_focus_ai": {
+    "message": "AI 어시스턴트 팝업"
+  },
+  "opt_focus_ai_desc": {
+    "message": "페이지에 추가된 챗봇 말풍선과 AI 제안 패널."
+  },
+  "opt_focus_other": {
+    "message": "기타 방해 요소"
+  },
+  "opt_focus_other_desc": {
+    "message": "고정 바, '앱에서 열기' 배너 등 화면을 어지럽히는 요소."
+  },
+  "opt_badge_lang": {
+    "message": "사용자 언어"
+  },
+  "opt_badge_remote": {
+    "message": "제작자에게서 받음"
+  },
+  "opt_remote_hint": {
+    "message": "포함되어 있지 않습니다(재배포 라이선스 없음). 켜면 브라우저가 $1에서 다운로드합니다."
+  },
+  "opt_downloaded_from": {
+    "message": "다운로드 위치: $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome에서 이 목록 조합을 거부했습니다($1). 일부를 끄세요."
+  },
+  "opt_badge_recommended": {
+    "message": "사용자 언어에 추천"
+  },
+  "reportBroken": {
+    "message": "사이트에 문제가 있나요? 수정 또는 신고"
+  },
+  "rep_title": {
+    "message": "이 사이트에 문제가 있나요?"
+  },
+  "rep_fix_first": {
+    "message": "지금 해결하기"
+  },
+  "rep_site": {
+    "message": "사이트:"
+  },
+  "rep_fix_desc": {
+    "message": "대부분의 문제는 다음 중 하나로 해결됩니다. 각 항목은 이 사이트에만 적용되며, 탭이 새로고침됩니다."
+  },
+  "rep_fix_cosm": {
+    "message": "여기서 요소 숨기기 끄기"
+  },
+  "rep_fix_allow": {
+    "message": "이 사이트에서 광고 허용"
+  },
+  "rep_fix_pause": {
+    "message": "모든 사이트에서 30분 동안 일시중지"
+  },
+  "rep_tell_us": {
+    "message": "알려 주세요"
+  },
+  "rep_tell_desc": {
+    "message": "문제가 있는 사이트는 서명된 필터 업데이트를 통해 모든 사용자를 위해 수정하며, 보통 하루 안에 처리됩니다. 확장 프로그램은 아무것도 전송하지 않습니다. 신고 내용은 사용 중인 이메일 앱에서 열리며, 보내기 전에 모든 내용을 직접 확인할 수 있습니다."
+  },
+  "rep_what": {
+    "message": "어떤 문제인가요? (선택사항)"
+  },
+  "rep_what_ph": {
+    "message": "예: 동영상이 시작되지 않음, 흰색 상자가 기사를 가림…"
+  },
+  "rep_full_url": {
+    "message": "페이지 전체 주소 포함(선택하지 않으면 사이트 이름만)"
+  },
+  "rep_preview": {
+    "message": "전송될 내용"
+  },
+  "rep_send_mail": {
+    "message": "이메일로 보내기"
+  },
+  "rep_copy": {
+    "message": "신고 내용 복사"
+  },
+  "rep_copied": {
+    "message": "복사했습니다."
+  },
+  "rep_done_cosm": {
+    "message": "이 사이트에서 요소 숨기기를 껐습니다. 새로고침했습니다. 해결되었나요?"
+  },
+  "rep_done_allow": {
+    "message": "이 사이트에서 광고를 허용했습니다. 새로고침했습니다. 해결되었나요?"
+  },
+  "rep_done_pause": {
+    "message": "30분 동안 일시중지했습니다. 이제 사이트가 정상적으로 작동하면 아래에서 알려 주세요."
+  },
+  "cookieRejections": {
+    "message": "대신 거부한 쿠키 배너: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "YouTube의 Shorts 섹션, 탭, 추천."
+  },
+  "opt_focus_onetap": {
+    "message": "'Google 계정으로 로그인' 팝업"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "많은 사이트의 모서리에 나타나는 계정 선택 창입니다. 로그인 버튼은 계속 작동합니다."
+  },
+  "pickTip": {
+    "message": "숨길 요소를 클릭하세요"
+  },
+  "pickZapTip": {
+    "message": "클릭하여 이 요소 삭제(한 번만)"
+  },
+  "pickEscCancel": {
+    "message": "키를 눌러 취소"
+  },
+  "opt_notices": {
+    "message": "필터 목록 라이선스"
+  }
+}

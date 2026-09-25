@@ -1,0 +1,600 @@
+{
+  "extName": {
+    "message": "Supreme AdBlock"
+  },
+  "extDescription": {
+    "message": "Blokeerib reklaamid kõikjal: YouTube'i videoreklaamid, bännerid, hüpikaknad, jälgijad ja anti-adblock seinad. Tasuta."
+  },
+  "byCarbon": {
+    "message": "loonud Carbon Stealth"
+  },
+  "toggleProtection": {
+    "message": "Lülita kaitse sisse/välja"
+  },
+  "protected": {
+    "message": "Kaitstud"
+  },
+  "paused": {
+    "message": "Peatatud"
+  },
+  "blockingHere": {
+    "message": "Blokeerib sellel lehel reklaame"
+  },
+  "protectionOff": {
+    "message": "Kaitse on välja lülitatud"
+  },
+  "pause30": {
+    "message": "Peata 30 minutiks"
+  },
+  "pausedResume": {
+    "message": "Peatatud, jätka kohe ($1 min jäänud)",
+    "placeholders": {
+      "mins": {
+        "content": "$1"
+      }
+    }
+  },
+  "blocked": {
+    "message": "Blokeeritud"
+  },
+  "dataSaved": {
+    "message": "Andmesääst"
+  },
+  "timeSaved": {
+    "message": "Ajasääst"
+  },
+  "thisSite": {
+    "message": "see sait"
+  },
+  "thisPage": {
+    "message": "see leht"
+  },
+  "blockOnSite": {
+    "message": "Blokeeri reklaamid sellel saidil"
+  },
+  "blocking": {
+    "message": "Blokeerib"
+  },
+  "allowed": {
+    "message": "Lubatud"
+  },
+  "cosmetics": {
+    "message": "Peida siin reklaamikastid"
+  },
+  "cosmeticsTitle": {
+    "message": "Kosmeetiline filtreerimine sellel saidil (lülitage välja, kui paigutus läheb katki)"
+  },
+  "on": {
+    "message": "Sees"
+  },
+  "off": {
+    "message": "Väljas"
+  },
+  "blockedHere": {
+    "message": "Blokeeritud sellel lehel"
+  },
+  "logEmpty": {
+    "message": "Siin pole veel midagi blokeeritud."
+  },
+  "logUnavailable": {
+    "message": "Logi pole praegu saadaval (brauseri kvoot) — proovige minuti pärast uuesti."
+  },
+  "logCore": {
+    "message": "Põhireeglid"
+  },
+  "logYouTube": {
+    "message": "YouTube'i reklaamid"
+  },
+  "logParams": {
+    "message": "Jälgimisparameetrid"
+  },
+  "logMalware": {
+    "message": "Pahavara domeenid"
+  },
+  "logSurrogates": {
+    "message": "Neutraliseeritud reklaamiskriptid"
+  },
+  "logPrivacy": {
+    "message": "Privaatsuse kaitse"
+  },
+  "logUser": {
+    "message": "Minu filtrid"
+  },
+  "logLive": {
+    "message": "Otsevärskendused"
+  },
+  "hideElement": {
+    "message": "Peida element"
+  },
+  "settings": {
+    "message": "Seaded"
+  },
+  "promoSub": {
+    "message": "Varustus ja tööriistad, carbonstealth.eu"
+  },
+  "adLabel": {
+    "message": "Reklaam"
+  },
+  "support": {
+    "message": "Toeta"
+  },
+  "filtersCount": {
+    "message": "$1+ filtrit",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_appearance": {
+    "message": "Välimus"
+  },
+  "opt_extra_protection": {
+    "message": "Lisakaitse"
+  },
+  "opt_smart_detection_log": {
+    "message": "Smart Detectioni logi"
+  },
+  "opt_allowlisted_sites": {
+    "message": "Lubatud saidid"
+  },
+  "opt_my_filters": {
+    "message": "Minu filtrid"
+  },
+  "opt_hidden_elements": {
+    "message": "Peidetud elemendid"
+  },
+  "opt_filter_updates": {
+    "message": "Filtrite värskendused"
+  },
+  "opt_engine_health": {
+    "message": "Mootori seisund"
+  },
+  "opt_backup": {
+    "message": "Varukoopia"
+  },
+  "opt_support_development": {
+    "message": "Toeta arendust"
+  },
+  "opt_theme": {
+    "message": "Teema"
+  },
+  "opt_sync_across_devices": {
+    "message": "Sünkroonimine seadmete vahel"
+  },
+  "opt_youtube_ad_blocking": {
+    "message": "YouTube'i reklaamide blokeerimine"
+  },
+  "opt_cookie_consent_banners": {
+    "message": "Küpsiste / nõusoleku bännerid"
+  },
+  "opt_anti_adblock_bypass": {
+    "message": "Anti-adblock seintest möödumine"
+  },
+  "opt_meta_sponsored_posts": {
+    "message": "Meta sponsitud postitused"
+  },
+  "opt_remove_tracking_parameters": {
+    "message": "Jälgimisparameetrite eemaldamine"
+  },
+  "opt_malware_protection": {
+    "message": "Kaitse pahavara eest"
+  },
+  "opt_block_ad_targeting_browser_apis": {
+    "message": "Blokeeri brauseri reklaamisihtimise API-d"
+  },
+  "opt_block_tracking_beacons_and_cryptominers": {
+    "message": "Blokeeri jälgimismajakad ja krüptokaevurid"
+  },
+  "opt_auto_update_filters": {
+    "message": "Värskenda filtreid automaatselt"
+  },
+  "opt_carbon_stealth_dark_or_light": {
+    "message": "Carbon Stealth (tume) või hele"
+  },
+  "opt_keep_settings_allowlist_and_filters_in_s": {
+    "message": "Hoiab seaded, lubatud loendi ja filtrid sünkroonis igas Chrome'is, kuhu olete sisse logitud"
+  },
+  "opt_remove_video_ads_on_youtube_turn_off_if_": {
+    "message": "Eemaldab YouTube'i videoreklaamid. Lülitage välja, kui videod ei käivitu."
+  },
+  "opt_automatically_dismiss_accept_cookies_pro": {
+    "message": "Sulgeb automaatselt „Nõustu küpsistega“ päringud"
+  },
+  "opt_hide_disable_your_adblocker_walls_and_re": {
+    "message": "Peidab „keelake oma reklaamiblokeerija“ seinad ja taastab lehe"
+  },
+  "opt_hide_sponsored_posts_on_facebook_and_ins": {
+    "message": "Peidab „Sponsitud“ postitused Facebookis ja Instagramis"
+  },
+  "opt_strip_utm_fbclid_gclid_and_other_click_i": {
+    "message": "Eemaldab avatavatest linkidest utm_*, fbclid, gclid ja muud klikitunnused"
+  },
+  "opt_block_known_malware_domains_urlhaus_list": {
+    "message": "Blokeerib teadaolevad pahavara domeenid (abuse.ch URLhausi loend)"
+  },
+  "opt_disable_google_topics_floc_and_protected": {
+    "message": "Keelab igal saidil reklaami-API-d Google Topics, FLoC ja Protected Audience"
+  },
+  "opt_stop_third_party_hyperlink_auditing_beac": {
+    "message": "Peatab kolmandate osapoolte hüperlingiauditi / majakapingid, eemaldab jälgimisküpsised teadaolevatest reklaamitehnoloogia vastustest ja blokeerib brauseris krüptokaevandamise skriptid. Lülitage välja, kui mõni analüütikast sõltuv saidi funktsioon ei tööta korralikult."
+  },
+  "opt_fetches_new_block_rules_and_youtube_fixe": {
+    "message": "Laadib umbes kaks korda päevas aadressilt adblock.carbonstealth.eu uusi blokeerimisreegleid ja YouTube'i parandusi. Ainult andmed, mitte kood; päring ei sisalda identifikaatoreid ega sirvimisandmeid."
+  },
+  "opt_live_log_of_ads_caught_heuristically_no_": {
+    "message": "Heuristiliselt tabatud reklaamide reaalajas logi (ilma filtriloendita), uusimad eespool."
+  },
+  "opt_subscribed_lists_are_fetched_as_text_nev": {
+    "message": "Tellitud loendid laaditakse tekstina (mitte kunagi koodina), neid värskendatakse iga päev ja need asuvad ülal hallatavates plokkides. Eemaldage loend, et selle reeglitest loobuda."
+  },
+  "opt_elements_you_hid_manually_with_the_picke": {
+    "message": "Elemendid, mille peitsite käsitsi valijaga, rühmitatud saidi järgi."
+  },
+  "opt_live_diagnostics_everything_is_computed_": {
+    "message": "Reaalajas diagnostika — kõik arvutatakse kohapeal. Kui midagi on punane, aitab tavaliselt „Värskenda kohe“ või laienduse uuesti laadimine."
+  },
+  "opt_supreme_adblock_is_free_for_everyone_if_": {
+    "message": "Supreme AdBlock on kõigile tasuta. Kui soovite aidata seda hooldada, on annetused teretulnud, kuid mitte kunagi kohustuslikud."
+  },
+  "opt_reset_statistics": {
+    "message": "Lähtesta statistika"
+  },
+  "opt_add": {
+    "message": "Lisa"
+  },
+  "opt_save_filters": {
+    "message": "Salvesta filtrid"
+  },
+  "opt_subscribe": {
+    "message": "Telli"
+  },
+  "opt_refresh_subscriptions_now": {
+    "message": "Värskenda tellimusi kohe"
+  },
+  "opt_update_now": {
+    "message": "Värskenda kohe"
+  },
+  "opt_refresh": {
+    "message": "Värskenda"
+  },
+  "opt_export_settings": {
+    "message": "Ekspordi seaded"
+  },
+  "opt_import_settings": {
+    "message": "Impordi seaded"
+  },
+  "opt_e_g_example_com": {
+    "message": "nt example.com"
+  },
+  "opt_example_10_ads_example_com_10_sticky_ad_": {
+    "message": "! näide\nads.example.com\n##.sticky-ad\nnews.com##.promoted"
+  },
+  "opt_subscribe_to_a_filter_list_url_e_g_https": {
+    "message": "Tellige filtriloendi URL (nt https://…/list.txt)"
+  },
+  "opt_page_title": {
+    "message": "Supreme AdBlocki seaded"
+  },
+  "opt_tagline": {
+    "message": "Carbon Stealth Edition · Seaded"
+  },
+  "opt_theme_light": {
+    "message": "Hele"
+  },
+  "opt_badge_unique": {
+    "message": "ainulaadne"
+  },
+  "opt_smart_desc": {
+    "message": "Tabab reklaame, mida ükski filtriloend veel ei tunne: teiste domeenide raamid, mis on standardsete reklaamikohtade suurusega, peidetakse kohe, reegleid pole vaja."
+  },
+  "opt_caught_so_far": {
+    "message": "tabatud seni."
+  },
+  "opt_allow_desc": {
+    "message": "Nendes domeenides reklaame ei blokeerita."
+  },
+  "opt_fh_one": {
+    "message": "Üks reegel rea kohta."
+  },
+  "opt_fh_blocks": {
+    "message": "blokeerib domeeni;"
+  },
+  "opt_fh_everywhere": {
+    "message": "peidab elemendi kõikjal;"
+  },
+  "opt_fh_site": {
+    "message": "peidab selle ainult sellel saidil."
+  },
+  "opt_fh_comments": {
+    "message": "Read, mis algavad märgiga"
+  },
+  "opt_fh_comments2": {
+    "message": "on kommentaarid."
+  },
+  "opt_donate": {
+    "message": "Anneta Revoluti kaudu"
+  },
+  "opt_made_by": {
+    "message": "loonud Carbon Stealth"
+  },
+  "opt_empty_smart": {
+    "message": "Heuristiliselt pole veel midagi tabatud."
+  },
+  "opt_empty_allow": {
+    "message": "Lubatud saite veel pole."
+  },
+  "opt_empty_hidden": {
+    "message": "Käsitsi pole veel midagi peidetud."
+  },
+  "opt_empty_subs": {
+    "message": "Tellitud loendeid veel pole."
+  },
+  "opt_no_sw": {
+    "message": "Service worker ei vasta."
+  },
+  "opt_remove": {
+    "message": "Eemalda"
+  },
+  "opt_filter_status": {
+    "message": "Filtrikomplekt v$1, värskendatud $2. Ainult andmed, teie kohta ei saadeta midagi."
+  },
+  "opt_updating": {
+    "message": "Värskendamine…"
+  },
+  "opt_updated": {
+    "message": "Värskendatud (v$1, $2 lisareeglit)"
+  },
+  "opt_update_failed": {
+    "message": "Värskendamine ebaõnnestus ($1)"
+  },
+  "opt_saved": {
+    "message": "Salvestatud ✓"
+  },
+  "opt_rules_count": {
+    "message": "$1 reeglit"
+  },
+  "opt_updated_ago": {
+    "message": "värskendatud $1"
+  },
+  "opt_not_fetched": {
+    "message": "pole veel laaditud"
+  },
+  "opt_failed_colon": {
+    "message": "nurjus: $1"
+  },
+  "opt_enter_https": {
+    "message": "Sisestage kehtiv https:// URL"
+  },
+  "opt_fetching": {
+    "message": "Laadimine…"
+  },
+  "opt_subscribed_ok": {
+    "message": "Tellitud: $1 reeglit ✓"
+  },
+  "opt_failed_paren": {
+    "message": "Nurjus ($1)"
+  },
+  "opt_refreshing": {
+    "message": "Värskendamine…"
+  },
+  "opt_refreshed": {
+    "message": "Värskendatud ✓"
+  },
+  "opt_invalid_file": {
+    "message": "Vigane seadete fail."
+  },
+  "opt_no_response": {
+    "message": "vastust pole"
+  },
+  "opt_h_engine": {
+    "message": "Anti-adblock mootor"
+  },
+  "opt_h_rulesets": {
+    "message": "Sisselülitatud staatilised reeglistikud"
+  },
+  "opt_h_live": {
+    "message": "Otsefiltrite domeenid"
+  },
+  "opt_h_last": {
+    "message": "Viimane värskendus"
+  },
+  "opt_h_sig": {
+    "message": "Värskenduste allkirjad"
+  },
+  "opt_h_user": {
+    "message": "Minu filtrid / lubamisreeglid"
+  },
+  "opt_h_popup": {
+    "message": "Sisseehitatud hüpikreklaamide hostid"
+  },
+  "opt_h_yt": {
+    "message": "YouTube'i möödapääs"
+  },
+  "opt_reason_frame": {
+    "message": "Teise domeeni reklaamisuurune raam"
+  },
+  "opt_reason_sticky": {
+    "message": "Kleepuv reklaamibänner"
+  },
+  "logRegional": {
+    "message": "Piirkondlikud loendid"
+  },
+  "logFocus": {
+    "message": "Fookusrežiim"
+  },
+  "opt_filter_lists": {
+    "message": "Filtriloendid"
+  },
+  "opt_lists_intro": {
+    "message": "EasyList ja EasyPrivacy on alati sees. Allolevad loendid on avatud litsentsiga ja laiendusse sisse ehitatud, nii et nende sisselülitamine ei laadi midagi alla, välja arvatud loend, mis on märgitud tulevat selle autorilt."
+  },
+  "opt_lists_core": {
+    "message": "Põhilised"
+  },
+  "opt_lists_regional": {
+    "message": "Piirkondlikud"
+  },
+  "opt_lists_regional_desc": {
+    "message": "Teie brauseri keele loend lülitub sisse iseenesest. Lisage teisi, kui loete sageli teistes keeltes saite."
+  },
+  "opt_focus_mode": {
+    "message": "Fookusrežiim"
+  },
+  "opt_focus_desc": {
+    "message": "Peidab selle, mis pole reklaam, kuid jääb ikkagi ette. Kõik siin on välja lülitatud, kuni te selle sisse lülitate."
+  },
+  "opt_list_ubo": {
+    "message": "uBlock Origini filtrid"
+  },
+  "opt_list_ubo_desc": {
+    "message": "Reklaamid, jälgijad, anti-adblocki parandused ja saidiparandused uBlock Origini meeskonnalt."
+  },
+  "opt_list_plowe": {
+    "message": "Peter Lowe loend"
+  },
+  "opt_list_plowe_desc": {
+    "message": "Pikaajaline reklaami- ja jälgimisserverite loend."
+  },
+  "opt_focus_social": {
+    "message": "Sotsiaalmeedia nupud ja vidinad"
+  },
+  "opt_focus_social_desc": {
+    "message": "Jagamisnupud, „Meeldib“ kastid ja manustatud vood."
+  },
+  "opt_focus_chat": {
+    "message": "Vestlus- ja toevidinad"
+  },
+  "opt_focus_chat_desc": {
+    "message": "Lehe nurgas hõljuvad vestlusmullid."
+  },
+  "opt_focus_newsletters": {
+    "message": "Uudiskirja- ja registreerumishüpikud"
+  },
+  "opt_focus_newsletters_desc": {
+    "message": "„Tellige meie uudiskiri“ kastid ja ülekatted."
+  },
+  "opt_focus_notifications": {
+    "message": "Teavituste päringud"
+  },
+  "opt_focus_notifications_desc": {
+    "message": "„Kas lubada teavitused?“ kastid, mida saidid näitavad enne, kui brauser küsib."
+  },
+  "opt_focus_ai": {
+    "message": "AI-assistentide hüpikud"
+  },
+  "opt_focus_ai_desc": {
+    "message": "Vestlusrobotite mullid ja AI-soovituste paneelid, mis lisatakse lehtedele."
+  },
+  "opt_focus_other": {
+    "message": "Muud tüütused"
+  },
+  "opt_focus_other_desc": {
+    "message": "Kleepuvad ribad, „Ava rakenduses“ bännerid ja sarnane segadus."
+  },
+  "opt_badge_lang": {
+    "message": "teie keel"
+  },
+  "opt_badge_remote": {
+    "message": "autorilt"
+  },
+  "opt_remote_hint": {
+    "message": "Pole kaasas (puudub litsents levitamiseks): brauser laadib selle sisselülitamisel alla aadressilt $1."
+  },
+  "opt_downloaded_from": {
+    "message": "Laaditud aadressilt $1"
+  },
+  "opt_lists_error": {
+    "message": "Chrome keeldus sellest loendite kombinatsioonist ($1). Lülitage mõned välja."
+  },
+  "opt_badge_recommended": {
+    "message": "soovitatud teie keelele"
+  },
+  "reportBroken": {
+    "message": "Sait ei tööta? Parandage see või andke meile teada"
+  },
+  "rep_title": {
+    "message": "Midagi ei tööta sellel saidil?"
+  },
+  "rep_fix_first": {
+    "message": "Parandage kohe"
+  },
+  "rep_site": {
+    "message": "Sait:"
+  },
+  "rep_fix_desc": {
+    "message": "Enamik probleeme kaob ühega neist. Iga valik kehtib ainult sellele saidile; vaheleht laaditakse uuesti."
+  },
+  "rep_fix_cosm": {
+    "message": "Lülita elementide peitmine siin välja"
+  },
+  "rep_fix_allow": {
+    "message": "Luba reklaamid sellel saidil"
+  },
+  "rep_fix_pause": {
+    "message": "Peata kõikjal 30 minutiks"
+  },
+  "rep_tell_us": {
+    "message": "Andke meile teada"
+  },
+  "rep_tell_desc": {
+    "message": "Parandame katkised saidid kõigi jaoks allkirjastatud filtrivärskendusega, tavaliselt päeva jooksul. Laiendus ei saada midagi: teade avaneb teie enda e-posti rakenduses ja näete enne iga selle sõna."
+  },
+  "rep_what": {
+    "message": "Mis on valesti? (valikuline)"
+  },
+  "rep_what_ph": {
+    "message": "nt video ei käivitu, valge kast katab artikli…"
+  },
+  "rep_full_url": {
+    "message": "Lisa lehe täielik aadress (muidu ainult saidi nimi)"
+  },
+  "rep_preview": {
+    "message": "Mis saadetakse"
+  },
+  "rep_send_mail": {
+    "message": "Saada e-postiga"
+  },
+  "rep_copy": {
+    "message": "Kopeeri teade"
+  },
+  "rep_copied": {
+    "message": "Kopeeritud."
+  },
+  "rep_done_cosm": {
+    "message": "Elementide peitmine on sellel saidil välja lülitatud. Uuesti laaditud — kas probleem lahenes?"
+  },
+  "rep_done_allow": {
+    "message": "Reklaamid on sellel saidil lubatud. Uuesti laaditud — kas probleem lahenes?"
+  },
+  "rep_done_pause": {
+    "message": "Peatatud 30 minutiks. Kui sait nüüd töötab, andke meile palun allpool teada."
+  },
+  "cookieRejections": {
+    "message": "Teie eest tagasi lükatud küpsisebännereid: $1"
+  },
+  "opt_focus_shorts": {
+    "message": "YouTube Shorts"
+  },
+  "opt_focus_shorts_desc": {
+    "message": "Shortsi riiulid, vaheleht ja soovitused YouTube'is."
+  },
+  "opt_focus_onetap": {
+    "message": "„Logi sisse Google'iga“ hüpikud"
+  },
+  "opt_focus_onetap_desc": {
+    "message": "Kontovalija, mis ilmub paljude saitide nurka. Sisselogimisnupud töötavad edasi."
+  },
+  "pickTip": {
+    "message": "Klõpsake elemendil, et see peita"
+  },
+  "pickZapTip": {
+    "message": "Klõpsake, et see element eemaldada (ühekordselt)"
+  },
+  "pickEscCancel": {
+    "message": "tühistamiseks"
+  },
+  "opt_notices": {
+    "message": "Filtriloendite litsentsid"
+  }
+}
