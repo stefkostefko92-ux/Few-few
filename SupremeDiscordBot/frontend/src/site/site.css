@@ -7,7 +7,7 @@
 .site {
   background: #16171b;
   color: #dce1e8;
-  font-family: Onest, "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: Onest, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-feature-settings: "ss01" on;
   -webkit-font-smoothing: antialiased;
 }
@@ -21,7 +21,7 @@
 
 /* Заглавията: Tektur, стегнато. Размерите идват от класовете. */
 .site-h {
-  font-family: Tektur, "Inter Tight", system-ui, sans-serif;
+  font-family: Tektur, system-ui, sans-serif;
   letter-spacing: -0.01em;
   line-height: 1.02;
   text-wrap: balance;
@@ -46,7 +46,7 @@
 /* Дълъг текст (правни страници, ръководства): ред под 80 знака. */
 .site-prose { max-width: 68ch; line-height: 1.7; color: #c3c9d3; }
 .site-prose h1, .site-prose h2, .site-prose h3 {
-  font-family: Tektur, "Inter Tight", system-ui, sans-serif; color: #dce1e8; line-height: 1.15;
+  font-family: Tektur, system-ui, sans-serif; color: #dce1e8; line-height: 1.15;
 }
 .site-prose a { color: #dce1e8; text-decoration: underline; text-decoration-color: #8c96a8; text-underline-offset: 3px; }
 .site-prose a:hover { text-decoration-color: #8fe600; }
@@ -75,7 +75,7 @@
    пребоядисваме към системата на сайта — таблото извън .site остава същото.
    Зеленото тук НЕ е акцент: cyan (= неоновото зелено) става хром; зеленото
    остава само за основния бутон. */
-.site h1, .site h2 { font-family: Tektur, "Inter Tight", system-ui, sans-serif; letter-spacing: -0.01em; }
+.site h1, .site h2 { font-family: Tektur, system-ui, sans-serif; letter-spacing: -0.01em; }
 .site .text-cs-text { color: #dce1e8; }
 .site .text-cs-muted { color: #aab2bf; }
 .site .text-cs-dim { color: #8c96a8; }
@@ -85,7 +85,7 @@
 .site .bg-cs-surface { background-color: #1e1f22; }
 .site .border-cs-border, .site .border-cs-border\/50 { border-color: #2f3238; }
 .site .border-cs-cyan { border-color: #8c96a8; }
-.site .font-display { font-family: Tektur, "Inter Tight", system-ui, sans-serif; }
+.site .font-display { font-family: Tektur, system-ui, sans-serif; }
 .site .cs-card {
   background: #1e1f22; border: 1px solid #2f3238; border-radius: 12px; box-shadow: none;
 }
@@ -104,7 +104,18 @@
 .site .cs-btn-secondary:hover { border-color: #8c96a8; background: transparent; }
 .site .cs-table th { color: #8c96a8; border-color: #2f3238; text-transform: none; letter-spacing: 0; font-family: Onest, system-ui, sans-serif; }
 .site .cs-table td { color: #c3c9d3; border-color: #2f3238; }
-.site .cs-badge-premium { background: rgba(240,194,76,.15); color: #f0c24c; border-color: transparent; }
+.site .cs-badge-premium { background: rgba(240,194,76,.15); color: #f0c24c; border-color: transparent; font-family: inherit; letter-spacing: normal; }
 .site .cs-table thead, .site .cs-table thead tr, .site .cs-table thead th { background: #1e1f22; }
 /* Малки етикети с главни букви — клишето; в сайта остават в нормален регистър. */
 .site .uppercase { text-transform: none; letter-spacing: normal; }
+/* Код в сайта (команди, /privacy delete): системният моно шрифт — не се
+   сваля Space Mono (шрифтът на таблото) заради няколко думи. */
+.site code, .site kbd, .site pre, .site .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+/* Малките заглавия в сайта наследяват шрифта на текста — иначе базовото
+   правило на таблото (h3 { font-display }) дърпаше Inter Tight на всяка
+   публична страница. Заглавията с .site-h остават Tektur. */
+.site :where(h3, h4, h5):not(.site-h) { font-family: inherit; letter-spacing: normal; }
+/* Страница на сайта → и тялото е на шрифта на сайта. Банерът за бисквитки
+   живее извън .site (общ с таблото) и празните текстови възли на <body>
+   иначе теглеха Inter Tight на всяка публична страница (измерено през CDP). */
+html:has(.site) body, html.site-root body { font-family: Onest, system-ui, -apple-system, "Segoe UI", sans-serif; background: #16171b; }

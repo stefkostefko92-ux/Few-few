@@ -1,6 +1,6 @@
 // frontend/src/App.jsx
-import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense, useLayoutEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { I18nProvider } from "./contexts/I18nContext";
@@ -91,6 +91,18 @@ function RequireSuperUser({ children }) {
   return <MfaGate>{children}</MfaGate>;
 }
 
+// Публичният сайт (всичко извън /dashboard) маркира <html> със .site-root, още
+// преди мързеливо заредената страница да се появи. Иначе за миг (спинърът на
+// Suspense) банерът за бисквитки стои в <body> без .site и тегли шрифта на
+// таблото (Inter Tight) — измерено на /status, /privacy и страниците с функции.
+function SiteRootMarker() {
+  const { pathname } = useLocation();
+  useLayoutEffect(() => {
+    document.documentElement.classList.toggle("site-root", !pathname.startsWith("/dashboard"));
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -99,6 +111,7 @@ export default function App() {
         <I18nProvider>
         <ToastProvider>
         <BrowserRouter>
+          <SiteRootMarker />
           <Suspense fallback={<Spinner />}>
             <Routes>
               <Route path="/" element={<Login />} />

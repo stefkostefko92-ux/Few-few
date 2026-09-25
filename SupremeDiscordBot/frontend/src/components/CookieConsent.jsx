@@ -85,12 +85,11 @@ export default function CookieConsent() {
       // Редизайн 25.09.2026: спокоен панел в цветовете на сайта (графит + хром),
       // без неонова рамка; „Приеми“ и „Откажи“ са равнозначни (без подбутване).
       className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[100] rounded-xl border border-[#2F3238] bg-[#1E1F22] p-5 text-[#DCE1E8] shadow-[0_18px_50px_-12px_rgba(0,0,0,0.7)]"
-      style={{ fontFamily: "Onest, 'Inter Tight', system-ui, sans-serif" }}
     >
       <div className="flex items-start gap-3 mb-4">
         <Cookie className="w-5 h-5 text-[#8C96A8] flex-shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1">
-          <h3 className="font-semibold text-[15px] mb-1">Cookies</h3>
+          <h3 className="font-[inherit] font-semibold text-[15px] tracking-normal mb-1">Cookies</h3>
           <p id="cookie-consent-description" className="text-sm text-[#8C96A8] leading-relaxed">
             Only the essential cookies for signing in and keeping your session. No tracking, no ads.{" "}
             <a href="/cookies" className="text-[#DCE1E8] underline underline-offset-2">

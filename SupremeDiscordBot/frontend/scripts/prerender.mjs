@@ -183,7 +183,7 @@ function landingSnapshot(t, locale = t.locale) {
         t.compare.rows.map(([c, f, p]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(p)}</td></tr>`).join("")
       }</tbody></table></section>`
     : "";
-  return `${heroSnapshot(t, locale)}<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
+  return `${heroSnapshot(t, locale)}<div class="site prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <section><h2>${esc(t.featuresHeading)}</h2><p>${esc(t.featuresSub)}</p><ul>${features}</ul></section>
     <section><h2>${esc(t.euHeading)}</h2><ul>${eu}</ul></section>
     ${compare}
@@ -274,7 +274,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     } — dashboard-only<p>${esc(f.description)}</p></li>`).join("");
     return `<section><h2>${esc(cat.icon)} ${esc(cat.category)}</h2><p>${esc(cat.description)}</p><ul>${cmds}${dashOnly}</ul></section>`;
   }).join("");
-  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
+  const snapshot = `<div class="site prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>${esc(title)}</h1>
     <p>Supreme Bot has ${totalCommands} slash commands across ${totalCategories} categories — tickets, panels, forms &amp; applications, verification, polls, giveaways, scheduled &amp; sticky messages, integrations, and server administration. Most features are also reachable from the web dashboard; this page is the full reference (the same list <code>/help</code> shows in Discord).</p>
     ${catHtml}
@@ -297,7 +297,7 @@ function compareSnapshot(d) {
   ).join("");
   const faq = d.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join("");
   const sources = d.sourceUrls.map((u) => `<a href="${esc(u)}">${esc(u)}</a>`).join(", ");
-  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
+  return `<div class="site prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>Supreme Bot vs ${esc(d.competitor)}</h1>
     <p>${esc(d.answer)}</p>
     <p><small>Checked ${esc(CHECKED_DATE)} against ${sources}. Prices as published by each vendor, not converted.</small></p>
@@ -321,7 +321,7 @@ for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
   const criteria = d.criteria.map(
     (c) => `<div><h3>${esc(c.title)}</h3><p>${esc(c.body)}</p><p><strong>How Supreme Bot covers this:</strong> ${esc(c.supreme)}</p></div>`
   ).join("");
-  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
+  const snapshot = `<div class="site prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>How to choose the best Discord ticket bot</h1>
     <p>${esc(d.answer)}</p>
     ${criteria}
@@ -339,7 +339,7 @@ for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
 {
   const d = GDPR_GUIDE;
   const sections = d.sections.map((s) => `<div><h3>${esc(s.title)}</h3><p>${esc(s.body)}</p></div>`).join("");
-  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
+  const snapshot = `<div class="site prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>GDPR &amp; EU hosting for Discord communities</h1>
     <p>${esc(d.answer)}</p>
     ${sections}
@@ -361,7 +361,7 @@ for (const d of [TICKET_TOOL_COMPARE, APPY_COMPARE]) {
   ).join("");
   const layouts = d.layoutModes.map((m) => `<div><h3>${esc(m.name)}</h3><p>${esc(m.body)}</p></div>`).join("");
   const limits = d.limits.map(([c, v]) => `<tr><td>${esc(c)}</td><td>${esc(v)}</td></tr>`).join("");
-  const snapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
+  const snapshot = `<div class="site prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>Ticket panel &amp; button setup</h1>
     <p>${esc(d.answer)}</p>
     <section><h2>The panel message</h2><table><thead><tr><th>Option</th><th>What it does</th><th>Values</th></tr></thead><tbody>${optRows(d.panelOptions)}</tbody></table></section>
@@ -390,7 +390,7 @@ function featureSnapshot(p) {
   const tiers = p.tiers.map(([c, f, pr]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(pr)}</td></tr>`).join("");
   const faq = p.faq.map((f) => `<div><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`).join("");
   const related = p.related.map((r) => `<li><a href="${r}">${esc(r)}</a></li>`).join("");
-  return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
+  return `<div class="site prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <nav><a href="/">Supreme Bot</a> / <a href="${FEATURES_HUB.path}">Features</a> / ${esc(p.nav)}</nav>
     <h1>${esc(p.h1)}</h1>
     <p>${esc(p.answer)}</p>
@@ -405,7 +405,7 @@ function featureSnapshot(p) {
   const hubItems = FEATURE_PAGES.map(
     (p) => `<li><h2><a href="${p.path}">${esc(p.h1)}</a></h2><p>${esc(p.description)}</p></li>`
   ).join("");
-  const hubSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
+  const hubSnapshot = `<div class="site prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif">
     <h1>${esc(FEATURES_HUB.h1)}</h1>
     <p>${esc(FEATURES_HUB.answer)}</p>
     <ul>${hubItems}</ul>
@@ -436,7 +436,7 @@ const STATIC_ROUTES = {
 };
 for (const [path, [title, description]] of Object.entries(STATIC_ROUTES)) {
   let html = withHead(template, { title, description, path, lang: "en" });
-  html = injectRoot(html, `<div class="prerender-content" style="max-width:48rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif"><h1>${esc(title)}</h1><p>${esc(description)}</p></div>`);
+  html = injectRoot(html, `<div class="site prerender-content" style="max-width:48rem;margin:0 auto;padding:2rem;color:#c3c9d3;background:#16171b;font-family:system-ui,sans-serif"><h1>${esc(title)}</h1><p>${esc(description)}</p></div>`);
   writeRoute(path, html);
   count++;
 }

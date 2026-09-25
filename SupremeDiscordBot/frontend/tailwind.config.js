@@ -80,8 +80,8 @@ export default {
         display: ['"Inter Tight"', "Inter", "sans-serif"],
         // Публичният сайт: Tektur (ъгловат, ехо на изсеченото „SUPREME“) за
         // заглавия, Onest за текста; и двата с кирилица и latin-ext (BG/PL/DE).
-        brand: ["Tektur", '"Inter Tight"', "system-ui", "sans-serif"],
-        body: ["Onest", '"Inter Tight"', "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        brand: ["Tektur", "system-ui", "sans-serif"],
+        body: ["Onest", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
       },
       letterSpacing: {
         "tight-2": "-0.02em",
