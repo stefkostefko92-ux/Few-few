@@ -1,5 +1,5 @@
 /* ============================================================
-   Ценоразписът: таблиците в продуктовите карти на тесни места.
+   Ценоразписът: таблиците на продуктовата страница на тесни места.
    Отделно от site.css и само на продуктовата страница —
    site/build.mjs слага линка.
    ============================================================ */
@@ -17,25 +17,48 @@
    на телефон; така остава вътре. */
 .table-scroll, .sys-card { position: relative; }
 
-/* Таблицата следва ширината на картата, не на екрана:
-   на тясно бутонът става „+“ (името му за четци остава
-   „Добави към поръчката — код“), а отстъпите се свиват,
-   за да не излиза колоната с бутона извън картата. */
-.sys-body { container-type: inline-size; }
+/* Таблицата следва ширината на кутията си, не на екрана: картата
+   (.sys-body) или скролиращата кутия (.table-scroll) на таблиците
+   за избор, SG и специалните артикули. На тясно бутонът става „+“
+   (името му за четци остава „Добави към поръчката — код“), а
+   отстъпите се свиват, за да не излиза колоната с бутона навън.
+   Скрол остава само на текстовата таблица за избор на телефон. */
+.sys-body, .table-scroll { container-type: inline-size; }
+/* Заглавките се пренасят между думите, вместо да разпъват таблицата
+   (където има място, пак са на един ред). */
+.price-table thead th, .table-scroll thead th { white-space: normal; }
+
+/* Матрицата SG — три клетки с код, цена и бутон: на таблет
+   българският надпис на бутона не се събира. */
+@container (max-width: 760px) {
+  .sg-table th, .sg-table td { padding-left: .5rem; padding-right: .5rem; }
+}
+@container (max-width: 680px) {
+  .sg-table .sg-cell { min-width: 0; }
+  .sg-table .add-btn { font-size: 0; padding: .3rem .6rem; line-height: 1; }
+  .sg-table .add-btn::before { content: '+'; font-size: 1.05rem; font-weight: 700; }
+}
+
 @container (max-width: 560px) {
-  .price-table th, .price-table td { padding-left: .5rem; padding-right: .5rem; }
+  .price-table th, .price-table td, .table-scroll th, .table-scroll td { padding-left: .5rem; padding-right: .5rem; }
   .price-table .add-btn { font-size: 0; padding: .3rem .6rem; line-height: 1; }
   .price-table .add-btn::before { content: '+'; font-size: 1.05rem; font-weight: 700; }
 }
 /* На най-тясното заглавките са с нормални букви (една дума с главни
    и разредка не се пренася и не пуска колоната да се свие). */
 @container (max-width: 400px) {
-  .price-table thead th { text-transform: none; letter-spacing: 0; font-size: .74rem; white-space: normal; }
-  .price-table th, .price-table td { padding-left: .3rem; padding-right: .3rem; font-size: .84rem; }
+  .price-table thead th, .table-scroll thead th { text-transform: none; letter-spacing: 0; font-size: .74rem; }
+  .price-table th, .price-table td, .table-scroll th, .table-scroll td { padding-left: .3rem; padding-right: .3rem; font-size: .84rem; }
+  .sg-table thead th:first-child { min-width: 0; }
+  .price-table .price-quote { white-space: normal; }
+  /* Специалните артикули: „BRACCIO 160 190“ е най-дългият код. */
+  .price-table-flat .code { white-space: normal; }
+  /* Таблицата за избор е само текст, без бутони: може по-дребно. */
+  .choose-table th, .choose-table td { font-size: .8rem; }
 }
 @container (max-width: 290px) {
-  .price-table th, .price-table td { padding-left: .2rem; padding-right: .2rem; font-size: .78rem; }
-  .price-table .add-btn { padding: .3rem .45rem; }
+  .price-table th, .price-table td, .table-scroll th, .table-scroll td { padding-left: .2rem; padding-right: .2rem; font-size: .78rem; }
+  .price-table .add-btn, .sg-table .add-btn { padding: .3rem .45rem; }
 }
 @media (max-width: 420px) {
   .sys-body { padding-left: .9rem; padding-right: .9rem; }
