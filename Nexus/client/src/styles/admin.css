@@ -506,7 +506,12 @@ body.adm-modal-open { overflow: hidden; }
 /* ---------- Таблет ---------- */
 @media (max-width: 1100px) {
   .admin-main { padding: 24px 22px 56px; }
-  .adm-two-col { grid-template-columns: 1fr; }
+  /* minmax(0,…) — без него единствената 1fr писта пази implicit min-width:auto
+     и не се свива под min-content на таблицата вътре (Overview „Последни
+     регистрации"), панелът изтичаше извън admin-shell-а на таблет 768px
+     (бисекция: scrollWidth 861>768). Същия капан като .chat-grid/.streak-row
+     (виж client/src/styles/globals.css). */
+  .adm-two-col { grid-template-columns: minmax(0, 1fr); }
   .adm-setting { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .adm-setting-actions { grid-column: 1 / -1; }
 }
