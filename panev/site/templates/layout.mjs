@@ -2,7 +2,6 @@
 // Всички url-и са абсолютни пътища; ORIGIN се ползва само за canonical/og.
 
 import { COMPANY, PATENT, CATALOG_PDF } from '../data/products.mjs';
-import { versioned } from './asset.mjs';
 
 export const ORIGIN = 'https://panevascensori.it';
 
@@ -254,7 +253,7 @@ ${orderDrawer(t)}
       <ul>
         <li><a href="${pagePath(t, 'privacy')}">${esc(t.meta.privacy.title.split('—')[0].trim())}</a></li>
         <li><a href="${pagePath(t, 'terms')}">${esc(t.termsPage.title)}</a></li>
-        <li><a href="${versioned(CATALOG_PDF)}" download>${esc(t.nav.catalog)}</a></li>
+        <li><a href="${CATALOG_PDF}" download>${esc(t.nav.catalog)}</a></li>
       </ul>
     </div>
   </div>
