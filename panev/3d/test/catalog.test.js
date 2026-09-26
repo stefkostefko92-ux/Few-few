@@ -61,9 +61,11 @@ for (const item of CATALOG) {
 }
 
 // SG 225 50 (p. 61, as the owner described the real part): one lower part, 30 mm deep along the
-// whole plate and 150 mm at the arm (x 50-95), carrying the two slots across the arm and the Ø12
-// hole; the plate's top edge carries nothing. Built with y up and z away from the plate.
-test('SG 225 50: slotted lower part with the hole, plain top edge', () => {
+// whole plate and 150 mm at the arm (x 50-95). The Ø12 hole and the two slots across the arm sit
+// on the arm's centre line, 20, 80 and 130 mm from the plate; the plate's top edge carries
+// nothing. Built with y up and z away from the plate; face holes are in the face's own drawing
+// coordinates (x along the plate, y from the plate).
+test('SG 225 50: hole and arm slots on one centre line in the lower part, plain top edge', () => {
   const mb = byId('SG-225-50').build().build();
   const strip = [Infinity, -Infinity];
   const arm = [Infinity, -Infinity, -Infinity];
@@ -82,9 +84,12 @@ test('SG 225 50: slotted lower part with the hole, plain top edge', () => {
   const mid = (h, k) => (Math.max(...h.map((p) => p[k])) + Math.min(...h.map((p) => p[k]))) / 2;
   const base = mb.faces.find((f) => f.name === 'base');
   const [hole, ...slots] = base.holes;
-  assert.ok(Math.abs(span(hole, 0) - 12) < 0.01 && Math.abs(mid(hole, 0) - 38) < 0.01, 'Ø12 hole 38 mm from the end');
+  assert.ok(Math.abs(span(hole, 0) - 12) < 0.01 && Math.abs(span(hole, 1) - 12) < 0.01, 'Ø12 hole');
   assert.equal(slots.length, 2);
   for (const h of slots) assert.ok(Math.abs(span(h, 0) - 27) < 0.01 && Math.abs(span(h, 1) - 12) < 0.01, `slot ${span(h, 0).toFixed(1)} x ${span(h, 1).toFixed(1)} mm across the arm`);
+  const at = (k) => base.holes.map((h) => Math.round(mid(h, k) * 100) / 100);
+  assert.deepEqual(at(0), [72.5, 72.5, 72.5], 'hole and slots on the arm centre line');
+  assert.deepEqual(at(1), [20, 80, 130], 'hole in the 30 mm strip, slots further back');
   assert.equal(mb.faces.find((f) => f.name === 'plate').holes.length, 1, 'the plate keeps only its long slot');
 });
 

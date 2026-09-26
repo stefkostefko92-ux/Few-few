@@ -37,17 +37,17 @@ export function guideSG(W, L) {
 
 // SG 225 50 (p. 61): 5 mm guide plate 225 x 50 for the rail with its long slot, and one lower part
 // folded off its whole bottom edge: 30 mm deep along the plate, 150 mm at the arm (x 50-95) that
-// rests on the support (length "A" to the customer's drawing). The arm's two slots run across it,
-// parallel to the plate (at about 0.3 and 0.83 of its length in the drawing), crossing the
-// lengthwise slots of the SC 50 170; the Ø12 hole is in the lower part, 38 mm from the end. The
-// drawing shows the arm on the top edge and the hole in the plate: the model follows the real
-// part as the owner described it.
+// rests on the support (length "A" to the customer's drawing). The Ø12 hole and the arm's two
+// slots sit on the arm's centre line, 20, 80 and 130 mm from the plate: the hole in the 30 mm
+// strip, the slots further back, running across the arm, parallel to the plate, to cross the
+// lengthwise slots of the SC 50 170. The drawing shows the arm on the top edge and the hole in
+// the plate: the model follows the real part as the owner described it.
 export function guideCustom() {
   const p = sheet({ t: 5, bevel: 0.6 });
   p.face('plate', { outline: rect(0, 0, 225, 50), holes: [slotX(90, 212, 25, 12)] });
   p.face('base', {
     outline: [[0, 0], [225, 0], [225, 30], [95, 30], [95, 150], [50, 150], [50, 30], [0, 30]],
-    holes: [circle(38, 20, 12), slotX(59, 86, 45, 12), slotX(59, 86, 125, 12)],
+    holes: [circle(72.5, 20, 12), slotX(59, 86, 80, 12), slotX(59, 86, 130, 12)],
   });
   p.bend('plate', 'base', { from: [0, 0], to: [225, 0], dir: 'up' });
   return p;
