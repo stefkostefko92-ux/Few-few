@@ -6,9 +6,32 @@ const api = axios.create({
   withCredentials: true,
 });
 
+/**
+ * Zod `flatten()` → четим текст. Няколко маршрута връщат `{ error: { formErrors,
+ * fieldErrors } }`; обектът стигаше до тоста и React падаше с „Objects are not
+ * valid as a React child“ — цялото табло се сменяше с екрана за грешка
+ * (одит 26.09.2026). Нормализираме ТУК, веднъж за всички повикващи.
+ */
+export function errorText(e, fallback = "Something went wrong") {
+  if (typeof e === "string") return e;
+  if (!e || typeof e !== "object") return fallback;
+  if (Array.isArray(e.formErrors) && e.formErrors.length) return e.formErrors.join(", ");
+  if (e.fieldErrors && typeof e.fieldErrors === "object") {
+    const parts = Object.entries(e.fieldErrors).filter(([, v]) => v?.length).map(([k, v]) => `${k}: ${[].concat(v).join(", ")}`);
+    if (parts.length) return parts.join(" · ");
+  }
+  if (typeof e.message === "string") return e.message;
+  return fallback;
+}
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    const data = err.response?.data;
+    if (data && typeof data === "object" && data.error !== undefined && typeof data.error !== "string") {
+      data.details = data.error;
+      data.error = errorText(data.error, "Invalid input");
+    }
     if (err.response?.status === 401) {
       const isAuthCheck = err.config?.url?.includes("/auth/me");
       const isLoginPage = window.location.pathname === "/";
@@ -129,8 +152,35 @@ export const getAdminUsers = (params) => api.get("/admin/users", { params }).the
 export const getAdminUser = (userId) => api.get(`/admin/users/${userId}`).then((r) => r.data);
 export const updateUserRole = (userId, role) =>
   api.patch(`/admin/users/${userId}/role?confirm=true`, { role }).then((r) => r.data);
-export const setUserBlacklisted = (userId, blacklisted) =>
-  api.patch(`/admin/users/${userId}/blacklist?confirm=true`, { blacklisted }).then((r) => r.data);
+// v51: причина и срок (until = ISO дата или null = безсрочно).
+export const setUserBlacklisted = (userId, blacklisted, { reason = null, until = null } = {}) =>
+  api.patch(`/admin/users/${userId}/blacklist?confirm=true`, { blacklisted, reason, until }).then((r) => r.data);
+
+// ─── v51 Админ CRUD: играта по сървъри, поддръжка, white-label, потребители ──
+const enc = encodeURIComponent;
+export const getAdminGameMembers   = (serverId, params) => api.get(`/admin/game/servers/${serverId}/members`, { params }).then((r) => r.data);
+export const getAdminMemberCompanions = (serverId, userId) => api.get(`/admin/game/servers/${serverId}/members/${userId}/companions`).then((r) => r.data);
+export const adminAdjustMember     = (serverId, userId, body) => api.patch(`/admin/game/servers/${serverId}/members/${userId}`, body).then((r) => r.data);
+export const adminGrantCompanion   = (serverId, userId, body) => api.post(`/admin/game/servers/${serverId}/members/${userId}/companions`, body).then((r) => r.data);
+export const adminRevokeCompanion  = (serverId, ownedId, reason) => api.delete(`/admin/game/servers/${serverId}/companions/${enc(ownedId)}`, { data: { reason } }).then((r) => r.data);
+export const adminResetGame        = (serverId, scope, reason) => api.post(`/admin/game/servers/${serverId}/reset`, { scope, confirm: true, reason }).then((r) => r.data);
+export const deleteAdminGameSeason = (code) => api.delete(`/admin/game/season/${enc(code)}`).then((r) => r.data);
+export const getAdminTickets       = (params) => api.get("/admin/support/tickets", { params }).then((r) => r.data);
+export const deleteAdminTicket     = (ticketId, reason) => api.delete(`/admin/support/tickets/${enc(ticketId)}?confirm=true`, { data: { reason } }).then((r) => r.data);
+export const getAdminPanels        = (params) => api.get("/admin/support/panels", { params }).then((r) => r.data);
+export const getAdminForms         = (params) => api.get("/admin/support/forms", { params }).then((r) => r.data);
+export const getAdminFleetBots     = () => api.get("/admin/fleet/bots").then((r) => r.data);
+export const adminFleetAction      = (serverId, action) => api.post(`/admin/fleet/${serverId}/${action}`).then((r) => r.data);
+export const adminFleetBranding    = (serverId, body) => api.patch(`/admin/fleet/${serverId}/branding`, body).then((r) => r.data);
+export const adminFleetRemoveToken = (serverId, reason) => api.delete(`/admin/fleet/${serverId}/token?confirm=true`, { data: { reason } }).then((r) => r.data);
+export const adminRevokeSessions   = (userId) => api.post(`/admin/users/${userId}/sessions/revoke`).then((r) => r.data);
+export const adminSetUserNote      = (userId, note) => api.patch(`/admin/users/${userId}/note`, { note }).then((r) => r.data);
+/**
+ * CSV като ТЕКСТ (axios не успява да го парсне като JSON и го връща суров).
+ * НЕ responseType "blob": тогава и грешката е blob и interceptor-ът не вижда
+ * code: "MFA_STEP_UP" → предизвикателството за втори фактор не се отваря.
+ */
+export const adminExportUsersCsv   = (params) => api.get("/admin/export/users.csv", { params }).then((r) => String(r.data));
 export const getAdminServers = (params) => api.get("/admin/servers", { params }).then((r) => r.data);
 export const getAdminServer = (serverId) => api.get(`/admin/servers/${serverId}`).then((r) => r.data);
 export const updateAdminServer = (serverId, data) => api.patch(`/admin/servers/${serverId}`, data).then((r) => r.data);

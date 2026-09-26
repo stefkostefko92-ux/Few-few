@@ -23,7 +23,7 @@ async function assertFormsOwned(buttons, serverId) {
 
 router.use(requireAuth, loadUser);
 
-const PREMIUM_PANEL_LIMIT = 50;
+export const PREMIUM_PANEL_LIMIT = 50;
 const BASE_PANEL_LIMIT = 1;
 
 // Map of panel fields → premium feature keys, for bulk validation on POST/PUT
@@ -156,7 +156,7 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
 
     if (!created.ok) {
       return res.status(403).json({
-        error: `Panel limit reached (${limit}). ${!isPremium ? "Upgrade to Premium for unlimited panels." : ""}`,
+        error: `Panel limit reached (${limit}). ${!isPremium ? `Upgrade to Premium for up to ${PREMIUM_PANEL_LIMIT} panels.` : ""}`,
         code: "LIMIT_REACHED",
       });
     }

@@ -222,6 +222,7 @@ export default {
   "game.counting.wrong": "❌ {{user}} a cassé la chaîne à **{{reached}}** : le nombre suivant était **{{expected}}**. Retour à 1 ! Record du serveur : **{{high}}**.",
   "game.counting.sameUser": "❌ {{user}}, tu ne peux pas compter deux fois de suite. Retour à 1 ! Record du serveur : **{{high}}**.",
   "game.counting.milestone": "🏆 **{{number}}** ! {{user}} décroche le palier (+{{xp}} XP).",
+  "game.counting.milestoneNoXp": "🏆 **{{number}}** ! {{user}} décroche le palier.",
   "game.counting.record": "🥇 Nouveau record du serveur : **{{number}}** !",
   "game.trivia.title": "🧠 Trivia",
   "game.trivia.kbTitle": "🧠 Trivia — connais-tu ton serveur ?",

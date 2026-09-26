@@ -135,7 +135,10 @@ router.get("/security", async (req, res, next) => {
       prisma.auditLog.findMany({
         where: { createdAt: { gte: since }, action: { in: [
           "MFA_ENABLED", "MFA_DISABLED", "MFA_VERIFY_FAILED", "MFA_BACKUP_CODE_USED", "MFA_BACKUP_CODES_REGENERATED",
-          "BRUTE_FORCE_BLOCK", "ROLE_CHANGED", "USER_BLACKLISTED", "USER_UNBLACKLISTED", "DSR_ERASED", "SECURITY_UNBLOCK", "API_KEY_REVOKED_ADMIN",
+          // Имената са каквото РЕАЛНО се пише (одит 26.09.2026: ROLE_CHANGED и
+          // BRUTE_FORCE_BLOCK не съществуваха → табът не показваше тези събития).
+          "SECURITY_BRUTE_FORCE_BLOCK", "USER_ROLE_CHANGED", "USER_BLACKLISTED", "USER_UNBLACKLISTED", "DSR_ERASED", "SECURITY_UNBLOCK", "API_KEY_REVOKED_ADMIN",
+          "MFA_RESET_BY_ADMIN", "USER_SESSIONS_REVOKED", "WHITELABEL_TOKEN_REMOVED_BY_ADMIN",
         ] } },
         orderBy: { createdAt: "desc" }, take: 100,
         include: { actor: { select: { id: true, username: true } } },
@@ -330,7 +333,7 @@ const discordId = z.string().regex(/^\d{5,25}$/);
 router.get("/dsr/requests", async (_req, res, next) => {
   try {
     const rows = await prisma.auditLog.findMany({
-      where: { action: { in: ["DSR_ERASED", "GDPR_ACCOUNT_DELETED", "GDPR_EXPORT", "GDPR_CONSENT_WITHDRAWN"] } },
+      where: { action: { in: ["DSR_ERASED", "GDPR_ACCOUNT_DELETED", "GDPR_DATA_EXPORT", "GDPR_CONSENT_WITHDRAWN"] } },
       orderBy: { createdAt: "desc" }, take: 200,
       include: { actor: { select: { id: true, username: true } } },
     });

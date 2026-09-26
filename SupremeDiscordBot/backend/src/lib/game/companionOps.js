@@ -109,7 +109,10 @@ export async function feedCompanion(serverId, userId, ownedId, sparks) {
     const owned = await tx.memberCompanion.findFirst({ where: { id: ownedId, serverId, userId } });
     if (!owned) return { ok: false, code: "NOT_OWNED" };
     if (owned.stage >= MAX_STAGE) return { ok: false, code: "MAX_STAGE" };
-    const dec = await tx.memberProgress.updateMany({ where: { serverId, userId, sparks: { gte: amount } }, data: { sparks: { decrement: amount } } });
+    // Взимаме само колкото липсва до финалната форма — над прага искрите
+    // изгаряха без ефект (fed=250, дадени 1000 → 950 изчезваха; одит 26.09.2026).
+    const charge = Math.min(amount, Math.max(1, STAGE_THRESHOLDS[MAX_STAGE - 1] - owned.fed));
+    const dec = await tx.memberProgress.updateMany({ where: { serverId, userId, sparks: { gte: charge } }, data: { sparks: { decrement: charge } } });
     if (dec.count !== 1) {
       const p = await tx.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { sparks: true } });
       return { ok: false, code: "NOT_ENOUGH_SPARKS", sparks: p?.sparks || 0 };
@@ -117,11 +120,11 @@ export async function feedCompanion(serverId, userId, ownedId, sparks) {
     // fed се ВДИГА атомарно, не се пише като абсолютна стойност: при две
     // едновременни хранения и двете четяха един и същ `owned.fed`, второто
     // презаписваше първото и платените искри изгаряха (одит на Кодаджията 25.09.2026).
-    const bumped = await tx.memberCompanion.update({ where: { id: owned.id }, data: { fed: { increment: amount } } });
+    const bumped = await tx.memberCompanion.update({ where: { id: owned.id }, data: { fed: { increment: charge } } });
     const stage = Math.max(bumped.stage, stageForFed(bumped.fed));
     const updated = stage === bumped.stage ? bumped : await tx.memberCompanion.update({ where: { id: owned.id }, data: { stage } });
     const p = await tx.memberProgress.findUnique({ where: { serverId_userId: { serverId, userId } }, select: { sparks: true } });
-    return { ok: true, owned: updated, evolved: stage > owned.stage, stage, sparksLeft: p?.sparks || 0, companion: await pub(companionById(owned.companionId), stage) };
+    return { ok: true, owned: updated, evolved: stage > owned.stage, stage, charged: charge, sparksLeft: p?.sparks || 0, companion: await pub(companionById(owned.companionId), stage) };
   });
 }
 

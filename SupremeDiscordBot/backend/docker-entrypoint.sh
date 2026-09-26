@@ -45,10 +45,11 @@ if ! npx prisma migrate diff \
       --from-url "$DATABASE_URL" \
       --to-schema-datamodel prisma/schema.prisma \
       --exit-code >/tmp/schema-drift.txt 2>&1; then
-  # Само излишни таблици (връщане към по-стара версия след адитивна миграция):
-  # старият код не ги пипа → безопасно, продължаваме с предупреждение.
+  # Само излишни таблици или nullable колони (връщане към по-стара версия след
+  # адитивна миграция): старият код не ги пипа → безопасно, продължаваме с
+  # предупреждение. NOT NULL колона без DEFAULT = истинско разминаване (v51).
   if node scripts/schema-drift-extra-only.mjs /tmp/schema-drift.txt; then
-    echo "[entrypoint] ⚠ базата е по-нова от кода (само таблици, които той не ползва) — продължавам."
+    echo "[entrypoint] ⚠ базата е по-нова от кода (само таблици/колони, които той не ползва) — продължавам."
     echo "[entrypoint] Starting server..."
     exec "$@"
   fi

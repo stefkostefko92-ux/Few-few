@@ -1,5 +1,6 @@
 // backend/src/routes/admin.js
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { guildIconUrl } from "../lib/discordCdn.js";
 import { planConfig, effectivePremiumWhere } from "../lib/premium.js";
@@ -26,6 +27,42 @@ function activePaidSubscription(server) {
 }
 
 const router = Router();
+
+// Одитни записи, които „Purge Old“ НИКОГА не трие: всичко, което staff прави
+// през конзолата, промени в достъпа и заявки по GDPR. Списъкът пазеше 7 вида,
+// а UI обещаваше „always preserved“ — трийха се ръчни смени на план, DSR,
+// нулиране на MFA и дори предишните purge записи (одит 26.09.2026).
+export const PRESERVED_AUDIT_ACTIONS = Object.freeze([
+  "USER_BLACKLISTED", "USER_UNBLACKLISTED", "USER_DELETED", "USER_ROLE_CHANGED", "USER_SESSIONS_REVOKED", "USER_NOTE_UPDATED", "USERS_EXPORTED",
+  "SERVER_DELETED", "SERVER_RESET", "SERVER_EDITED_ADMIN", "ADMIN_BROADCAST",
+  "PREMIUM_GRANTED_MANUAL", "PREMIUM_REVOKED_MANUAL", "PLAN_CHANGED_MANUAL", "PAYMENT_LOG_DELETED",
+  "ENTITLEMENT_RECONCILE_MANUAL", "WHITELABEL_RECONCILE_MANUAL",
+  "WHITELABEL_PAUSE_BY_ADMIN", "WHITELABEL_RESUME_BY_ADMIN", "WHITELABEL_RESTART_BY_ADMIN", "WHITELABEL_BRANDING_BY_ADMIN", "WHITELABEL_TOKEN_REMOVED_BY_ADMIN",
+  "MFA_RESET_BY_ADMIN", "MFA_DISABLED", "SECURITY_UNBLOCK", "API_KEY_REVOKED_ADMIN",
+  "DSR_ERASED", "GDPR_ACCOUNT_DELETED", "GDPR_DATA_EXPORT", "GDPR_CONSENT_WITHDRAWN",
+  "GAME_SEASON_CREATED", "GAME_SEASON_UPDATED", "GAME_SEASON_DELETED", "GAME_RESET_BY_ADMIN",
+  "GAME_MEMBER_ADJUSTED", "GAME_COMPANION_GRANTED", "GAME_COMPANION_REVOKED", "TICKET_DELETED_BY_ADMIN",
+  "AUDIT_LOG_PURGE",
+]);
+
+// ?page=0 / ?page=abc давали отрицателен или NaN skip → 500, а limit нямаше
+// таван (одит 26.09.2026). Едно нормализиране за всички списъци.
+function paging(query, { def = 50, max = 100 } = {}) {
+  const page = Math.max(1, Math.floor(Number(query.page)) || 1);
+  const limit = Math.min(max, Math.max(1, Math.floor(Number(query.limit)) || def));
+  return { page, limit, skip: (page - 1) * limit };
+}
+
+// Какво от потребителя излиза в админ конзолата. НИКОГА mfaSecret,
+// mfaBackupCodes, mfaLastUsedStep или имейл: детайлът и отговорите на
+// role/blacklist връщаха целия ред (include / res.json(updated)), тоест
+// шифрованата TOTP тайна и хешовете на резервните кодове стигаха до браузъра на
+// всеки SUPER_USER (одит 26.09.2026).
+export const ADMIN_USER_FIELDS = Object.freeze({
+  id: true, username: true, discriminator: true, avatar: true, globalRole: true, language: true,
+  isBlacklisted: true, blacklistReason: true, blacklistedAt: true, blacklistedUntil: true, adminNote: true,
+  mfaEnabledAt: true, createdAt: true, updatedAt: true,
+});
 
 // v3.4 — админ конзолата иска записан + потвърден втори фактор (TOTP) за всяка
 // staff роля; разрушителните маршрути по-долу искат и СВЕЖО потвърждение
@@ -106,6 +143,9 @@ router.get("/users", async (req, res, next) => {
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
   const { query, role } = req.query;
+  // v51: ?blacklisted=true — само потребителите в черния списък (вкл. изтекли
+  // срокове, за да се виждат и чистят).
+  const onlyBlacklisted = req.query.blacklisted === "true";
 
   try {
     const where = {
@@ -116,6 +156,7 @@ router.get("/users", async (req, res, next) => {
         ],
       }),
       ...(role && { globalRole: role }),
+      ...(onlyBlacklisted && { isBlacklisted: true }),
     };
 
     const [users, total] = await Promise.all([
@@ -127,7 +168,8 @@ router.get("/users", async (req, res, next) => {
         // броячи, не от контактите.
         select: {
           id: true, username: true, discriminator: true, avatar: true,
-          globalRole: true, isBlacklisted: true, language: true, createdAt: true,
+          globalRole: true, isBlacklisted: true, blacklistReason: true, blacklistedAt: true, blacklistedUntil: true,
+          language: true, createdAt: true,
           _count: { select: { tickets: true, applications: true, serverMembers: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -149,11 +191,12 @@ router.get("/users/:userId", async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.params.userId },
-      include: {
+      select: {
+        ...ADMIN_USER_FIELDS,
         serverMembers: {
           include: { server: { select: { id: true, name: true, isPremium: true } } },
         },
-        tickets: { take: 5, orderBy: { createdAt: "desc" } },
+        tickets: { take: 5, orderBy: { createdAt: "desc" }, select: { id: true, serverId: true, number: true, status: true, createdAt: true, closedAt: true } },
         sessions: { select: { createdAt: true, expiresAt: true }, take: 5 },
       },
     });
@@ -209,6 +252,7 @@ router.patch("/users/:userId/role", requireMainOwner, stepUp, async (req, res, n
     const updated = await prisma.user.update({
       where: { id: req.params.userId },
       data: { globalRole: role },
+      select: ADMIN_USER_FIELDS,
     });
 
     await prisma.auditLog.create({
@@ -242,7 +286,17 @@ router.patch("/users/:userId/role", requireMainOwner, stepUp, async (req, res, n
 // ─── PATCH /api/admin/users/:userId/blacklist ─────────────────────────────────
 
 router.patch("/users/:userId/blacklist", requireMainOwner, stepUp, async (req, res, next) => {
-  const { blacklisted } = req.body;
+  // v51: причина и срок. `until` = ISO дата в бъдещето или null (безсрочно).
+  const body = z.object({
+    blacklisted: z.boolean(),
+    reason: z.string().trim().max(500).optional().nullable(),
+    until: z.string().datetime({ offset: true }).optional().nullable(),
+  }).safeParse(req.body || {});
+  if (!body.success) return res.status(400).json({ error: "blacklisted (boolean), optional reason (≤500) and until (ISO date) are expected" });
+  const { blacklisted, reason = null, until = null } = body.data;
+  if (blacklisted && until && new Date(until) <= new Date()) {
+    return res.status(400).json({ error: "until must be in the future", code: "UNTIL_IN_PAST" });
+  }
 
   if (req.query.confirm !== "true") {
     return res.status(400).json({
@@ -254,27 +308,41 @@ router.patch("/users/:userId/blacklist", requireMainOwner, stepUp, async (req, r
   }
 
   try {
-    const target = await prisma.user.findUnique({ where: { id: req.params.userId } });
+    const target = await prisma.user.findUnique({ where: { id: req.params.userId }, select: { id: true, globalRole: true } });
     if (!target) return res.status(404).json({ error: "User not found" });
 
     if (target.globalRole === "MAIN_OWNER") {
       return res.status(403).json({ error: "Cannot blacklist the Main Owner" });
     }
+    if (target.id === req.user.id) {
+      return res.status(400).json({ error: "You cannot blacklist yourself", code: "SELF" });
+    }
 
     const updated = await prisma.user.update({
       where: { id: req.params.userId },
-      data: { isBlacklisted: !!blacklisted },
+      data: blacklisted
+        ? { isBlacklisted: true, blacklistReason: reason || null, blacklistedUntil: until ? new Date(until) : null, blacklistedAt: new Date() }
+        : { isBlacklisted: false, blacklistReason: null, blacklistedUntil: null, blacklistedAt: null },
+      select: ADMIN_USER_FIELDS,
     });
+
+    // Живите сесии падат веднага — иначе вече влезлият потребител продължава
+    // до изтичане на бисквитката (loadUser го спира при СЛЕДВАЩАТА заявка, но
+    // сесията остава в таблицата и се брои като активна).
+    const sessionsRevoked = blacklisted
+      ? Number(await prisma.$executeRaw`DELETE FROM express_sessions WHERE sess->>'userId' = ${target.id}`.catch(() => 0)) || 0
+      : 0;
 
     await prisma.auditLog.create({
       data: {
         actorId: req.user.id,
         action: blacklisted ? "USER_BLACKLISTED" : "USER_UNBLACKLISTED",
         targetId: req.params.userId,
+        metadata: blacklisted ? { reason: reason || null, until: until || null, sessionsRevoked } : {},
       },
     });
 
-    res.json(updated);
+    res.json({ ...updated, sessionsRevoked });
   } catch (err) {
     next(err);
   }
@@ -297,20 +365,27 @@ function adminServerView(server) {
 // ─── GET /api/admin/servers ───────────────────────────────────────────────────
 
 router.get("/servers", async (req, res, next) => {
-  const { page = 1, limit = 50, premium } = req.query;
+  const { premium } = req.query;
+  const { page, limit, skip } = paging(req.query);
+  // Търсене по име или id — над 100 сървъра по-старите не можеха да се
+  // намерят и управляват от конзолата (одит 26.09.2026).
+  const q = String(req.query.query || "").trim().slice(0, 100);
 
   try {
     const where = {
       ...(premium !== undefined && { isPremium: premium === "true" }),
+      ...(q && { OR: [{ name: { contains: q, mode: "insensitive" } }, { id: { contains: q } }] }),
     };
 
     const [servers, total] = await Promise.all([
       prisma.server.findMany({
         where,
-        include: { _count: { select: { tickets: true, panels: true, forms: true, members: true } } },
+        // agency.plan: модалът за план предлагаше „Agency 5“ за всяко агентско
+        // място и „Set“ сваляше agency10 на 5 места (одит 26.09.2026).
+        include: { _count: { select: { tickets: true, panels: true, forms: true, members: true } }, agency: { select: { plan: true } } },
         orderBy: { createdAt: "desc" },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip,
+        take: limit,
       }),
       prisma.server.count({ where }),
     ]);
@@ -319,7 +394,7 @@ router.get("/servers", async (req, res, next) => {
     // пак таен) и Stripe идентификаторите. Детайлният маршрут по-долу ги маха, а
     // списъкът не: същият клас „едно правило, две определения". И `icon` излиза
     // като АДРЕС, за да не строи всеки клиент URL сам. (07.08.2026)
-    res.json({ servers: servers.map(adminServerView), total });
+    res.json({ servers: servers.map(adminServerView), total, page, limit });
   } catch (err) {
     next(err);
   }
@@ -328,7 +403,8 @@ router.get("/servers", async (req, res, next) => {
 // ─── GET /api/admin/payments ──────────────────────────────────────────────────
 
 router.get("/payments", async (req, res, next) => {
-  const { page = 1, limit = 50, status } = req.query;
+  const { status } = req.query;
+  const { page, limit, skip } = paging(req.query);
 
   try {
     const where = { ...(status && { status }) };
@@ -337,8 +413,8 @@ router.get("/payments", async (req, res, next) => {
       prisma.paymentLog.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip,
+        take: limit,
       }),
       prisma.paymentLog.count({ where }),
       cashCollectedThisMonth(),
@@ -347,7 +423,7 @@ router.get("/payments", async (req, res, next) => {
     // `collectedThisMonth` е КАСА (реално платени фактури този календарен месец),
     // НЕ MRR. Преди се връщаше под името `mrr` — грешно: сумата подскача при
     // годишни фактури, нулира се на 1-во число и не вижда agency плащания.
-    res.json({ payments, total, collectedThisMonth });
+    res.json({ payments, total, collectedThisMonth, page, limit });
   } catch (err) {
     next(err);
   }
@@ -356,7 +432,8 @@ router.get("/payments", async (req, res, next) => {
 // ─── GET /api/admin/audit-logs ────────────────────────────────────────────────
 
 router.get("/audit-logs", async (req, res, next) => {
-  const { page = 1, limit = 100, action, actorId } = req.query;
+  const { action, actorId } = req.query;
+  const { page, limit, skip } = paging(req.query, { def: 100, max: 200 });
 
   try {
     const where = {
@@ -370,13 +447,13 @@ router.get("/audit-logs", async (req, res, next) => {
         include: { actor: { select: { id: true, username: true, avatar: true } } },
         // actorTag is on the log itself (for SYSTEM entries where actor is null)
         orderBy: { createdAt: "desc" },
-        skip: (Number(page) - 1) * Number(limit),
-        take: Number(limit),
+        skip,
+        take: limit,
       }),
       prisma.auditLog.count({ where }),
     ]);
 
-    res.json({ logs, total });
+    res.json({ logs, total, page, limit });
   } catch (err) {
     next(err);
   }
@@ -958,6 +1035,13 @@ router.patch("/servers/:serverId", stepUp, async (req, res, next) => {
     roundRobinEnabled, roundRobinRoleId,
   } = req.body;
 
+  // null = пази завинаги; иначе цели дни 1–3650. 0 правеше границата „сега“ и
+  // нощната метла триеше ВСИЧКИ затворени транскрипти (одит 26.09.2026).
+  if (archiveRetentionDays !== undefined && archiveRetentionDays !== null
+      && !(Number.isInteger(archiveRetentionDays) && archiveRetentionDays >= 1 && archiveRetentionDays <= 3650)) {
+    return res.status(400).json({ error: "archiveRetentionDays must be null (forever) or a whole number from 1 to 3650", code: "INVALID_RETENTION" });
+  }
+
   try {
     const updated = await prisma.server.update({
       where: { id: req.params.serverId },
@@ -1136,11 +1220,7 @@ router.post("/audit-logs/purge", requireMainOwner, stepUp, async (req, res, next
       where: {
         createdAt: { lt: cutoff },
         // Never purge destructive actions — they must be preserved forever
-        action: { notIn: [
-          "USER_BLACKLISTED", "USER_UNBLACKLISTED", "USER_DELETED",
-          "USER_ROLE_CHANGED", "SERVER_DELETED",
-          "PREMIUM_GRANTED_MANUAL", "PREMIUM_REVOKED_MANUAL",
-        ]},
+        action: { notIn: [...PRESERVED_AUDIT_ACTIONS] },
       },
     });
     await prisma.auditLog.create({
@@ -1214,15 +1294,20 @@ router.post("/servers/:serverId/broadcast", stepUp, async (req, res, next) => {
   if (!channelId || !message) return res.status(400).json({ error: "channelId and message required" });
 
   try {
-    // Dynamically import to avoid circular dep
-    const { notifyBot } = await import("../services/botNotifier.js");
-    const result = await notifyBot("ADMIN_BROADCAST", {
+    // Dynamically import to avoid circular dep. Verbose: notifyBot връщаше null
+    // при офлайн бот/грешен канал, а маршрутът пак казваше ok:true и пишеше
+    // одит за съобщение, което никога не е тръгнало (одит 26.09.2026).
+    const { notifyBotVerbose } = await import("../services/botNotifier.js");
+    const result = await notifyBotVerbose("ADMIN_BROADCAST", {
       serverId: req.params.serverId,
       channelId,
       title: title || "Platform Notice",
       message,
       senderTag: req.user.username,
     });
+    if (!result || result.botError) {
+      return res.status(502).json({ error: `The bot did not post the notice: ${result?.botError || "no response"}`, code: "BOT_FAILED" });
+    }
 
     await prisma.auditLog.create({
       data: {
