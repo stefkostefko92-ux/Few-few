@@ -60,25 +60,32 @@ for (const item of CATALOG) {
   });
 }
 
-// SG 225 50 (p. 61): the 30 mm foot runs under the whole plate (the far end shows the L of plate
-// and foot) and the arm's two slots run across the arm, parallel to the plate.
-test('SG 225 50: foot along the whole plate, slots across the arm', () => {
+// SG 225 50 (p. 61, as the owner described the real part): one lower part, 30 mm deep along the
+// whole plate and 150 mm at the arm (x 50-95), carrying the two slots across the arm and the Ø12
+// hole; the plate's top edge carries nothing. Built with y up and z away from the plate.
+test('SG 225 50: slotted lower part with the hole, plain top edge', () => {
   const mb = byId('SG-225-50').build().build();
-  let x0 = Infinity;
-  let x1 = -Infinity;
+  const strip = [Infinity, -Infinity];
+  const arm = [Infinity, -Infinity, -Infinity];
+  let top = 0;
   for (let i = 0; i < mb.pos.length; i += 3) {
     const [x, y, z] = [mb.pos[i], mb.pos[i + 1], mb.pos[i + 2]];
-    if (y > 5 + 1e-6 || z < 10 || z > 30 + 1e-6) continue; // the flat of the foot, behind the bend
-    x0 = Math.min(x0, x);
-    x1 = Math.max(x1, x);
+    if (y >= 45 && z > 5 + 1e-6) top++;
+    if (y > 5 + 1e-6 || z < 10) continue; // the flat of the lower part, behind the bend
+    if (z <= 30 + 1e-6) [strip[0], strip[1]] = [Math.min(strip[0], x), Math.max(strip[1], x)];
+    else [arm[0], arm[1], arm[2]] = [Math.min(arm[0], x), Math.max(arm[1], x), Math.max(arm[2], z)];
   }
-  assert.ok(x0 < 1e-6 && Math.abs(x1 - 225) < 1e-6, `foot from x = ${x0} to ${x1}`);
-  const arm = mb.faces.find((f) => f.name === 'arm');
-  assert.equal(arm.holes.length, 2);
-  for (const h of arm.holes) {
-    const span = (k) => Math.max(...h.map((p) => p[k])) - Math.min(...h.map((p) => p[k]));
-    assert.ok(Math.abs(span(0) - 27) < 0.01 && Math.abs(span(1) - 12) < 0.01, `slot ${span(0).toFixed(1)} x ${span(1).toFixed(1)} mm`);
-  }
+  assert.equal(top, 0, 'nothing folded off the top edge');
+  assert.ok(strip[0] < 1e-6 && Math.abs(strip[1] - 225) < 1e-6, `30 mm strip from x = ${strip[0]} to ${strip[1]}`);
+  assert.ok(Math.abs(arm[0] - 50) < 1e-6 && Math.abs(arm[1] - 95) < 1e-6 && Math.abs(arm[2] - 150) < 1e-6, `arm x ${arm[0]}-${arm[1]}, to z = ${arm[2]}`);
+  const span = (h, k) => Math.max(...h.map((p) => p[k])) - Math.min(...h.map((p) => p[k]));
+  const mid = (h, k) => (Math.max(...h.map((p) => p[k])) + Math.min(...h.map((p) => p[k]))) / 2;
+  const base = mb.faces.find((f) => f.name === 'base');
+  const [hole, ...slots] = base.holes;
+  assert.ok(Math.abs(span(hole, 0) - 12) < 0.01 && Math.abs(mid(hole, 0) - 38) < 0.01, 'Ø12 hole 38 mm from the end');
+  assert.equal(slots.length, 2);
+  for (const h of slots) assert.ok(Math.abs(span(h, 0) - 27) < 0.01 && Math.abs(span(h, 1) - 12) < 0.01, `slot ${span(h, 0).toFixed(1)} x ${span(h, 1).toFixed(1)} mm across the arm`);
+  assert.equal(mb.faces.find((f) => f.name === 'plate').holes.length, 1, 'the plate keeps only its long slot');
 });
 
 // SU and SD arms carry a flange folded down along their straight side, 30 mm deep from the arm's

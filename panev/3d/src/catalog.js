@@ -21,6 +21,9 @@ export const VIEWS = {
   corner: { frame: WALL, mirror: false, dir: [1, 1, 1] },
   square: { frame: WALL, mirror: false, dir: [-1, 1, 1] },
   bar: { frame: FLAT, mirror: false, dir: [-1, 1, 1] },
+  // SG 225 50: from the side of its lower part, so the hole and both arm slots show (the drawing
+  // on p. 61 has the arm on top, see guides.js).
+  guide: { frame: WALL, mirror: true, dir: [-1, 1.25, 1] },
 };
 
 const items = [];
@@ -52,7 +55,7 @@ add('SC 50 170', 'SC', 61, 4, '50 × 170', () => supportSliding(50, 170), 'suppo
 for (const W of [50, 60, 80]) {
   for (const L of [130, 150, 170, 190, 220]) add(`SG ${W} ${L}`, 'SG', L <= 150 ? 57 : L <= 190 ? 58 : 59, 4, `${W} × ${L}`, () => guideSG(W, L), 'SG');
 }
-add('SG 225 50', 'SG', 61, 5, '150 + 30', () => guideCustom(), 'support');
+add('SG 225 50', 'SG', 61, 5, '150 + 30', () => guideCustom(), 'guide');
 
 // Section 06 — rigid-arm wall fixing (p. 62).
 add('SN 60 65', 'special', 62, 5, '65 × 65 × 60', () => cornerSN(), 'corner');
