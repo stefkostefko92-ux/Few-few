@@ -28,6 +28,11 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 8_000 },
   fullyParallel: false, // споделена сървърна БД между тестове — сериен, за детерминизъм
+  // `fullyParallel: false` сериализира тестовете САМО В рамките на един
+  // файл — различни spec ФАЙЛОВЕ пак вървят в паралелни worker-и по
+  // подразбиране. Явен `workers: 1`, за да е целият run истински сериен
+  // (споделената БД/NPC пул иначе е реален вектор за cross-file flake).
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['html'], ['junit', { outputFile: 'results/junit.xml' }]] : 'list',

@@ -101,9 +101,15 @@ router.post('/delete-character', (req, res) => {
 router.get('/export', (req, res) => {
   const db = getDb();
   const userId = req.auth!.uid;
+  // Одит (backend round): SELECT-ът искаше email_verified/email_verified_at —
+  // колони, които НИКОГА не са съществували в users (schema.ts) и не се
+  // ползват никъде другаде в кода (никаква имейл-верификация не е внедрена).
+  // Резултатът: GDPR чл. 20 експортът хвърляше 500 при ВСЯКА заявка, за
+  // ВСЕКИ потребител — правото на преносимост на данни беше изцяло счупено,
+  // не само в тестовата среда (колоните липсват във всяка инсталация).
   const user = db
     .prepare(
-      `SELECT id, username, email, created_at, is_admin, email_verified, email_verified_at
+      `SELECT id, username, email, date_of_birth, country, created_at, is_admin
          FROM users WHERE id = ?`,
     )
     .get(userId) as Record<string, unknown> | undefined;
@@ -131,7 +137,10 @@ router.get('/export', (req, res) => {
     quest_log: collect('SELECT * FROM quest_log'),
     achievements: collect('SELECT * FROM achievements'),
     bestiary: collect('SELECT * FROM bestiary'),
-    mail: collect('SELECT id, character_id, from_name, subject, body, sent_at, read_at FROM mail'),
+    // Одит: колоната се казва created_at (schema.ts) — "sent_at" никога не е
+    // съществувала, второ счупено поле в СЪЩИЯ GDPR експорт (виж email_verified
+    // по-горе в тази функция).
+    mail: collect('SELECT id, character_id, from_name, subject, body, created_at, read_at FROM mail'),
     purchases,
   });
 });
