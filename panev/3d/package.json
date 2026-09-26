@@ -1,0 +1,38 @@
+{
+  "name": "panev-3d",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Panev Ascensori — 3D delle staffe a catalogo: modelli parametrici in lamiera (pieghe, asole, smussi) generati dal codice e rendering fotorealistico in tempo reale (WebGPU con fallback WebGL 2, three.js TSL).",
+  "keywords": [
+    "Carbon Stealth",
+    "Panev Ascensori",
+    "staffe ascensori",
+    "staffe 3D",
+    "WebGPU",
+    "three.js",
+    "lamiera zincata"
+  ],
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "bake": "node bake/index.mjs",
+    "build": "node bake/index.mjs && node build.mjs",
+    "lint": "node check.mjs",
+    "test": "node --test test/*.test.js",
+    "gate": "node check.mjs && node --test test/*.test.js && npm run build",
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "render": "npm run build && node scripts/render.mjs",
+    "sheet": "node scripts/sheet.mjs",
+    "site": "npm run build && node scripts/site.mjs",
+    "catalog-pdf": "python3 pdf/gen.py && node pdf/print.mjs && python3 pdf/merge.py && python3 pdf/verify.py"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright": "1.56.1",
+    "sharp": "0.35.4",
+    "three": "0.186.1"
+  }
+}

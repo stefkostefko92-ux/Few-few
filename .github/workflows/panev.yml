@@ -47,29 +47,20 @@ jobs:
           done < <(find . -name '*.js' -o -name '*.mjs' | grep -v node_modules)
           exit $fail
 
-      # СЪЗНАТЕЛНО БЕЗ `npm run build:site`: `site/build.mjs` импортва `site/data/i18n/{it,en,bg}.mjs`,
-      # а те НЕ са в репото — `panev/.gitignore` имаше неанкериран `data/`, който освен базата
-      # (`panev/data/`) криеше и `panev/site/data/`. Правилото е поправено на `/data/`, но самите
-      # файлове още липсват и билдът пада в чист клон (значи и в деплой архива). Щом собственикът
-      # ги комитне, добави тук стъпка `npm run build:site` — тя е истинският гейт за сайта.
-
-      # Блокерът по-горе беше само коментар — тоест невидим при реален рън. Тази стъпка го изважда
-      # в лога на ВСЯКО пускане: изброява точно кои модули липсват, за да не се разчита някой да
-      # прочете YAML коментар. НЕ гейтва (`continue-on-error` не е нужен — стъпката винаги излиза 0),
-      # защото липсата е бизнес съдържание, което само собственикът може да достави.
-      - name: Липсващо съдържание за сайта (видимост, не гейт)
+      # Истинският гейт на сайта: генераторът минава и страниците, които дава, са точно тези в
+      # репото — нито ръчна редакция на генериран HTML, нито забравен билд след промяна по site/
+      # (или по 3d/template.html и 3d-viewer/, от които се правят 3D страниците), нито нова
+      # страница, която не е комитната (`git status` вижда и неследените файлове, `git diff` — не).
+      # В sitemap.xml се прощава само lastmod — датата на билда. site/data вече е в репото (беше
+      # скрит от стария неанкериран `data/` в .gitignore и е възстановен от генерираните страници).
+      - name: Билд на сайта без разминаване с репото
         working-directory: panev
         run: |
-          missing=0
-          for f in site/data/i18n/it.mjs site/data/i18n/en.mjs site/data/i18n/bg.mjs site/data/products.mjs; do
-            if [ ! -f "$f" ]; then
-              echo "::warning file=panev/site/build.mjs::липсва $f — `npm run build:site` не може да мине"
-              missing=$((missing+1))
-            fi
-          done
-          if [ "$missing" -gt 0 ]; then
-            echo "▲ $missing липсващи модула: билдът на сайта е блокиран, докато не бъдат комитнати."
-            echo "  Щом ги има, добави стъпка \`npm run build:site\` — тя е истинският гейт за сайта."
-          else
-            echo "✓ всички модули с данни са налични — ВРЕМЕ Е за стъпка \`npm run build:site\` тук."
+          npm run build:site
+          drift="$(git status --porcelain -- . ':(exclude)sitemap.xml')"
+          if [ -n "$drift" ] || ! git diff --quiet -I '<lastmod>' -- sitemap.xml; then
+            echo "$drift"
+            git diff --stat -I '<lastmod>' -- sitemap.xml
+            echo "::error::генерираните страници се разминават с site/ — пусни npm run build:site в panev/ и комитни"
+            exit 1
           fi

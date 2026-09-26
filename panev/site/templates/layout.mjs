@@ -30,7 +30,7 @@ export function pagePath(t, pageKey) {
   return p.replace(/\.html$/, '');
 }
 
-function hreflangLinks(locales, pageKey) {
+export function hreflangLinks(locales, pageKey) {
   const links = locales.map((t) =>
     `  <link rel="alternate" hreflang="${t.htmlLang}" href="${ORIGIN}${pagePath(t, pageKey)}">`
   );
@@ -107,14 +107,18 @@ export function jsonLd(t, pageKey, extra = []) {
   return `<script type="application/ld+json">${jsonEmbed({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
 }
 
-export function head(t, locales, pageKey, { ldExtra = [], ogImage = '/img/og-home.jpg' } = {}) {
+// styles/htmlAttrs/viewport: 3D страниците (viewer.mjs) идват със собствен стил и данни.
+export function head(t, locales, pageKey, {
+  ldExtra = [], ogImage = '/img/og-home.jpg', htmlAttrs = '',
+  viewport = 'width=device-width, initial-scale=1', styles = '<link rel="stylesheet" href="/css/site.css">',
+} = {}) {
   const m = t.meta[pageKey];
   const canonical = `${ORIGIN}${pagePath(t, pageKey)}`;
   return `<!DOCTYPE html>
-<html lang="${t.htmlLang}">
+<html lang="${t.htmlLang}"${htmlAttrs}>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="${viewport}">
   <title>${esc(m.title)}</title>
   <meta name="description" content="${esc(m.description)}">
   <meta name="keywords" content="${esc(m.keywords.join(', '))}">
@@ -138,7 +142,7 @@ ${hreflangLinks(locales, pageKey)}
   <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" href="/fonts/Inter-var-${t.lang === 'bg' ? 'cyrillic' : 'latin'}.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/css/site.css">
+  ${styles}
   ${jsonLd(t, pageKey, ldExtra)}
 </head>`;
 }
@@ -148,6 +152,7 @@ export function header(t, locales, pageKey, activeKey) {
     ['home', t.nav.home],
     ['products', t.nav.products],
     ['catalog', t.nav.catalog],
+    ['viewer3d', t.nav.viewer3d],
     ['contacts', t.nav.contacts],
   ].map(([key, label]) =>
     `<a href="${pagePath(t, key)}"${key === activeKey ? ' aria-current="page"' : ''}>${esc(label)}</a>`
@@ -254,7 +259,7 @@ ${orderDrawer(t)}
   </div>
   <div class="wrap footer-bottom">
     <p>&copy; ${year} ${esc(COMPANY.name)} — ${esc(f.rights)}</p>
-    <p>${esc(f.credits)} <a href="https://carbonstealth.eu" rel="external">Carbon Stealth VCC</a></p>
+    <p>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
   </div>
 </footer>
 <script src="/js/site.js" defer></script>

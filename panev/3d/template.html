@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="it" class="booting">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Staffe Panev in 3D</title>
+<meta name="description" content="Le staffe brevettate Panev Ascensori in 3D: modelli in lamiera zincata generati dal catalogo 2026, da ruotare, montare e fotografare.">
+<meta name="keywords" content="Carbon Stealth, Panev Ascensori, staffe ascensori 3D, staffe porte di piano, supporti guide contrappeso, staffe guida SG, lamiera zincata">
+<meta name="theme-color" content="#162862">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Staffe Panev in 3D">
+<meta property="og:description" content="Le staffe brevettate Panev Ascensori in 3D, generate dal catalogo 2026.">
+<meta property="og:locale" content="it_IT">
+<style>
+  :root {
+    --ink: #162862; --ink-2: #1d3271; --muted: #56628a; --grey: #6d6d6c;
+    --paper: #f4f6f9; --line: #e2e6ea; --card: rgba(255, 255, 255, 0.86); --on-ink: #fff;
+    --stage: #e9ecf1; --focus: #3b5bdb;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #dfe5f5; --ink-2: #b9c4e6; --muted: #9aa5c7; --grey: #a3a3a2;
+      --paper: #0e1631; --line: #26335c; --card: rgba(14, 22, 49, 0.86); --on-ink: #0e1631;
+      --stage: #0b1128; --focus: #8ea6ff;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #dfe5f5; --ink-2: #b9c4e6; --muted: #9aa5c7; --grey: #a3a3a2;
+    --paper: #0e1631; --line: #26335c; --card: rgba(14, 22, 49, 0.86); --on-ink: #0e1631;
+    --stage: #0b1128; --focus: #8ea6ff;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.45 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  button, input, output { font: inherit; color: inherit; }
+  .app { display: grid; grid-template: "top top" auto "list stage" 1fr "list tools" auto "list foot" auto / 288px 1fr; height: 100vh; height: 100dvh; }
+  .top { grid-area: top; display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: #162862; color: #fff; }
+  h1 { font-size: 16px; font-weight: 650; margin: 0; flex: 1; letter-spacing: 0.01em; }
+  .langs { display: flex; gap: 4px; }
+  .langs button { background: transparent; border: 1px solid rgba(255, 255, 255, 0.4); color: #fff; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+  .langs button[aria-pressed="true"] { background: #fff; color: #162862; }
+  .langs a { border: 1px solid rgba(255, 255, 255, 0.4); color: #fff; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 600; text-decoration: none; }
+  .langs a[aria-current="page"] { background: #fff; color: #162862; }
+  .home { display: flex; flex: none; }
+  .home img { display: block; height: 28px; width: auto; }
+  .embed .top, .embed .foot { display: none; }
+  .list { grid-area: list; overflow-y: auto; border-right: 1px solid var(--line); padding: 8px 12px 16px; background: var(--paper); }
+  .list h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 14px 0 6px; font-weight: 650; }
+  .list ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 4px; }
+  .list button { width: 100%; text-align: left; border: 1px solid var(--line); background: transparent; border-radius: 6px; padding: 5px 8px; cursor: pointer; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .list button:hover { border-color: var(--muted); }
+  .list button[aria-current="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+  .stage { grid-area: stage; position: relative; min-height: 0; }
+  .viewport { position: absolute; inset: 0; background: var(--stage); }
+  #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+  .info { position: absolute; left: 16px; top: 14px; max-width: min(420px, calc(100% - 32px)); background: var(--card); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+  .info p { margin: 0; }
+  .code { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+  .meta, .partner { color: var(--muted); font-size: 13px; }
+  .partner button { border: 0; background: none; padding: 0; color: var(--ink-2); text-decoration: underline; cursor: pointer; font-weight: 600; }
+  .warn { margin-top: 6px !important; font-size: 12px; color: var(--grey); }
+  .hint { position: absolute; right: 16px; bottom: 10px; margin: 0; font-size: 12px; color: var(--muted); text-align: right; max-width: 60%; }
+  .tools { grid-area: tools; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--paper); }
+  .group { display: flex; align-items: center; gap: 4px; }
+  .group > span, .group > label { color: var(--muted); font-size: 12px; margin-right: 4px; }
+  .seg button, .act { border: 1px solid var(--line); background: transparent; padding: 5px 10px; cursor: pointer; border-radius: 6px; }
+  .seg button[aria-pressed="true"], .act[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+  .seg button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .act.primary { background: var(--ink-2); color: var(--on-ink); border-color: var(--ink-2); font-weight: 600; }
+  .adj input { width: 160px; accent-color: var(--ink-2); }
+  .adj output { min-width: 56px; font-variant-numeric: tabular-nums; }
+  button:focus-visible, input:focus-visible, #view:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .foot { grid-area: foot; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; padding: 8px 16px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); }
+  .foot a { color: var(--ink-2); }
+  .overlay { position: absolute; inset: 0; display: grid; place-items: center; padding-inline: 16px; text-align: center; background: color-mix(in srgb, var(--stage) 70%, transparent); font-weight: 600; }
+  [hidden] { display: none !important; }
+  .overlay.noscript { background: var(--stage); }
+  @media (scripting: enabled) { .booting .info, .booting .tools, .booting .list, .booting .foot { visibility: hidden; } }
+  @media (max-width: 860px) {
+    .app { grid-template: "top" auto "stage" auto "tools" auto "list" auto "foot" auto / 100%; height: auto; }
+    .viewport { position: relative; height: 62vh; height: 62svh; }
+    .list { border-right: 0; border-top: 1px solid var(--line); overflow: visible; }
+    .hint { display: none; }
+    .info { position: static; max-width: none; border-width: 0 0 1px; border-radius: 0; background: var(--paper); backdrop-filter: none; padding: 10px 16px; }
+    .code { font-size: 17px; }
+    .adj input { width: 130px; }
+  }
+  @media (max-width: 400px) {
+    .top { gap: 10px; }
+    .home img { height: 22px; }
+    h1 { font-size: 15px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1 id="title">Staffe Panev in 3D</h1>
+    <div class="langs" role="group" id="langs" aria-label="Lingua"></div>
+  </header>
+  <nav class="list" id="list" aria-label="Catalogo 2026"></nav>
+  <main class="stage">
+    <div class="viewport">
+      <canvas id="view" tabindex="0" aria-label="Modello 3D"></canvas>
+      <p class="hint" id="hint"></p>
+      <div class="overlay" id="loading" role="status">Caricamento del modello 3D…</div>
+      <noscript><div class="overlay noscript">La vista 3D ha bisogno di JavaScript: attivalo nel browser.</div></noscript>
+      <div class="overlay" id="busy" role="status" hidden></div>
+      <div class="overlay" id="fatal" role="alert" hidden><p></p></div>
+    </div>
+    <section class="info" id="info" aria-live="polite">
+      <p class="code" id="code"></p>
+      <p class="name" id="name"></p>
+      <p class="meta" id="meta"></p>
+      <p class="partner" id="partner" hidden><span></span> <button type="button"></button></p>
+      <p class="warn" id="warn" hidden></p>
+    </section>
+  </main>
+  <div class="tools" id="tools" role="toolbar" aria-label="Controlli"></div>
+  <footer class="foot">
+    <span id="note"></span>
+    <span>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></span>
+  </footer>
+</div>
+<script type="module" src="%BUNDLE%"></script>
+</body>
+</html>

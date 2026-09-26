@@ -1,0 +1,64 @@
+/* ============================================================
+   3D рендерите (img/3d) и 3D изгледът на началната страница.
+   Отделно от site.css и само на страниците, които ги показват
+   (началната и продуктите) — site/build.mjs слага линка.
+   ============================================================ */
+
+/* Рендерите са 4:3 и пълнят мястото си: фонът им е студиото
+   на рендера, не бяла карта с отстъп като при чертежите. */
+picture.render { background: #e9ecf1; }
+picture.render img { width: 100%; height: 100%; object-fit: cover; padding: 0; }
+.hero-visual picture.render img { border-radius: 6px; }
+.sys-media { padding: 0; background: #e9ecf1; align-items: stretch; }
+.sys-media picture.render { width: 100%; }
+.sys-media picture.render img { max-height: none; }
+
+/* ── 3D изгледът ── */
+#vista-3d { scroll-margin-top: 68px; }
+.viewer-head {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 1rem 3rem; align-items: end; margin-bottom: 1.6rem;
+}
+.viewer-head .lead { margin-bottom: 0; }
+.viewer-points { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.viewer-points li { position: relative; padding-left: 1.4rem; font-weight: 600; color: var(--navy); }
+.viewer-points li::before {
+  content: ''; position: absolute; left: 0; top: .5em;
+  width: .6rem; height: .6rem; border-radius: 2px; background: var(--navy-2);
+}
+.viewer-frame {
+  position: relative; height: clamp(420px, 72vh, 720px);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; background: #e9ecf1; box-shadow: var(--shadow);
+}
+.viewer-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+.viewer-poster { display: block; position: relative; height: 100%; }
+.viewer-poster picture.render { height: 100%; }
+.viewer-start {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: .7rem;
+  padding: .95rem 1.6rem; border-radius: 999px;
+  background: var(--navy); color: #fff; font-weight: 700; white-space: nowrap;
+  box-shadow: 0 12px 30px rgba(22, 40, 98, .35);
+  transition: background var(--dur), transform var(--dur);
+}
+/* Триъгълникът „пусни“ — чист CSS (без SVG). */
+.viewer-start::before {
+  content: ''; border-style: solid; border-width: .45rem 0 .45rem .75rem;
+  border-color: transparent transparent transparent currentColor;
+}
+.viewer-poster:hover .viewer-start,
+.viewer-poster:focus-visible .viewer-start { background: var(--navy-3); transform: translate(-50%, -50%) scale(1.04); }
+.viewer-full { margin: .9rem 0 0; text-align: right; font-weight: 600; }
+
+@media (max-width: 1020px) {
+  .viewer-head { grid-template-columns: 1fr; align-items: start; }
+}
+/* Под 860 px визьорът е на цял екран: тук остава постерът като линк към него. */
+@media (max-width: 860px) {
+  .viewer-frame { height: auto; aspect-ratio: 4 / 3; }
+  .viewer-full { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .viewer-start { transition: none; }
+}
