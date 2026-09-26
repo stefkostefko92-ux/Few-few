@@ -321,7 +321,9 @@ test('настройки: границите са в описанието, ад�
   for (const row of g.json.settings) assert.deepEqual(row.bounds, settingBounds(row.def), row.def.key);
   // stat_upgrade_base_cost 0 би зациклил affordableUpgrades → min 1.
   assert.equal((await call('PUT', '/api/admin/settings/stat_upgrade_base_cost', admin.token, { value: 0 })).status, 400);
-  assert.equal(fs.readFileSync(path.join(__dirname, '../../routes/admin.ts'), 'utf8').includes('SETTING_BOUNDS'), false, 'втори източник на граници');
+  const adminDir = path.join(__dirname, '../../routes/admin');
+  const adminSrc = fs.readdirSync(adminDir).filter((f) => f.endsWith('.ts')).map((f) => fs.readFileSync(path.join(adminDir, f), 'utf8')).join('\n');
+  assert.equal(adminSrc.includes('SETTING_BOUNDS'), false, 'втори източник на граници');
 });
 
 test('настройки: всяка е прочетена от играта (нито една „мъртва" в панела); кешът се обновява при запис', () => {
