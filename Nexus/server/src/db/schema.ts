@@ -884,6 +884,27 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
     CREATE INDEX IF NOT EXISTS idx_season_scores ON season_scores(season_key, points DESC);
+
+    /* ===== Системна поща от админ панела (една партида = едно изпращане) =====
+       Всяко писмо в mail носи admin_mail_id → партидата може да се изтегли
+       наведнъж. Прикаченото злато/предмет се зачислява ВЕДНАГА при
+       изпращане (няма „вземи" поток) — изтриването НЕ го отнема. */
+    CREATE TABLE IF NOT EXISTS admin_mail (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      target       TEXT NOT NULL,              -- 'all' | 'character'
+      character_id INTEGER,                    -- при target = 'character'
+      from_name    TEXT NOT NULL,
+      subject      TEXT NOT NULL,
+      body         TEXT NOT NULL,
+      gold         INTEGER NOT NULL DEFAULT 0,
+      item_id      INTEGER,
+      item_qty     INTEGER NOT NULL DEFAULT 0,
+      recipients   INTEGER NOT NULL DEFAULT 0,
+      sent_by      INTEGER,
+      created_at   INTEGER NOT NULL,
+      FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE SET NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_admin_mail_created ON admin_mail(created_at DESC);
     CREATE TABLE IF NOT EXISTS season_results (
       season_key   TEXT NOT NULL,
       character_id INTEGER NOT NULL,
@@ -897,4 +918,14 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
   `);
+
+  // Админ партида на писмото (admin_mail.id) — за изтегляне наведнъж.
+  const mailCols = new Set((db.prepare(`PRAGMA table_info(mail)`).all() as { name: string }[]).map((c) => c.name));
+  if (!mailCols.has('admin_mail_id')) db.exec(`ALTER TABLE mail ADD COLUMN admin_mail_id INTEGER`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_mail_admin ON mail(admin_mail_id)`);
+
+  // Аукцион, отменен от админ: гемовете на водещия наддавач са върнати,
+  // предметът НЕ се дава; обявата е затворена (settled = 1).
+  const aucCols = new Set((db.prepare(`PRAGMA table_info(auction_listings)`).all() as { name: string }[]).map((c) => c.name));
+  if (!aucCols.has('cancelled_at')) db.exec(`ALTER TABLE auction_listings ADD COLUMN cancelled_at INTEGER NOT NULL DEFAULT 0`);
 }

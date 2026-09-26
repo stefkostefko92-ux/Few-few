@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
+import { SLOT_FOR_CATEGORY } from '../game/equipment';
 
 const router = Router();
 router.use(authRequired);
@@ -33,17 +34,7 @@ router.get('/', (req, res) => {
 
 const equipSchema = z.object({ inventoryId: z.number().int() });
 
-const slotForCategory: Record<string, string> = {
-  weapon: 'weapon',
-  shield: 'offhand',
-  helm: 'helm',
-  armor: 'armor',
-  gloves: 'gloves',
-  boots: 'boots',
-  ring: 'ring',
-  amulet: 'amulet',
-  cloak: 'cloak',
-};
+const slotForCategory = SLOT_FOR_CATEGORY;
 
 router.post('/equip', (req, res) => {
   const parse = equipSchema.safeParse(req.body);

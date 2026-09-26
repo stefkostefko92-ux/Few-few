@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { PRODUCTS, findProduct } from '../seed/products';
+import { effectiveProducts, findPurchasableProduct } from '../game/productOverrides';
 import type { Character } from '../types/domain';
 import { logFromRequest, logEvent } from '../lib/logger';
 import { banUser } from '../lib/bans';
@@ -63,7 +63,8 @@ function getChar(uid: number): Character | undefined {
 /* ---- Public catalog ---- */
 router.get('/products', (_req, res) => {
   res.json({
-    products: PRODUCTS,
+    // Замените от админ панела (цена / изключен) — изключените не се показват.
+    products: effectiveProducts().filter((p) => p.enabled).map(({ base_price_cents: _b, overridden: _o, enabled: _e, ...p }) => p),
     mode: isDevMode() ? 'dev' : 'stripe',
   });
 });
@@ -107,7 +108,8 @@ router.post('/checkout', async (req, res) => {
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const char = getChar(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  const product = findProduct(parse.data.kind);
+  // Сумата идва от сървъра (каталог + админ замяна), никога от клиента.
+  const product = findPurchasableProduct(parse.data.kind);
   if (!product) { res.status(404).json({ error: 'Unknown product' }); return; }
 
   const db = getDb();

@@ -93,7 +93,7 @@ test('runtime уникатите: пълни редове, уникални slug
   assert.equal(new Set(slugs).size, slugs.length);
   for (const s of slugs) assert.ok(!(ITEM_SEED as Row[]).some((i) => i.slug === s), `${s} е и в ITEM_SEED`);
   const src = (f: string) => fs.readFileSync(path.join(__dirname, '..', '..', 'routes', f), 'utf8');
-  for (const [rows, file] of [[SEASON_TROPHY_ITEMS, 'events.ts'], [REALM_DROP_ITEMS, 'realmBoss.ts'], [TRIAL_GEAR_ITEMS, 'trialCache.ts']] as const) {
+  for (const [rows, file] of [[SEASON_TROPHY_ITEMS, 'events.ts'], [REALM_DROP_ITEMS, '../game/realmBoss.ts'], [TRIAL_GEAR_ITEMS, 'trialCache.ts']] as const) {
     const text = src(file);
     for (const r of rows) assert.ok(text.includes(`'${r.slug}'`), `${r.slug} не се ползва в routes/${file}`);
   }
