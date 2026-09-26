@@ -20,7 +20,9 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   + `bg/` + `sitemap.xml` + `404.html`. **Не редактирай генерираните файлове
   ръчно** — променяй източника и пусни билда.
 - **Каталог:** `docs/catalogo-staffe-panev-2026.pdf` (вграден + за сваляне);
-  превюта в `img/catalogo/`.
+  превюта в `img/catalogo/`. 95 страници, 10 MB: 68-те на каталога плюс 27 страници „Vista 3D“
+  с рендерите. Правят се с `cd 3d && npm run catalog-pdf`, никога на ръка. Текстът на сайта
+  („80 pagine“, „PDF · 8 MB“) идва от липсващия `site/data` и още не е обновен.
 - **Дизайн:** само каталожната палитра (`#162862`, `#1d3271`, `#f4f6f9`,
   `#e2e6ea`, `#667298`, `#878786`); Inter variable self-hosted (latin +
   cyrillic в `fonts/Inter-var-*.woff2`); без емоджита и декоративни SVG.

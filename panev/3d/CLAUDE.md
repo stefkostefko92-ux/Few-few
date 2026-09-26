@@ -58,6 +58,15 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
   паритета) и `ui.js`.
 - **`bake/`** — офлайн текстури (worker_threads + sharp) към `dist/tex/`. Кешира се по хеш на
   източника.
+- **`pdf/`** — 27-те страници „Vista 3D“ в `panev/docs/catalogo-staffe-panev-2026.pdf` и рендерите
+  на стр. 06 (`npm run catalog-pdf`, иска python3 + PyMuPDF + Pillow; подробно в README).
+  - Основата е git blob (`BASE_BLOB` в `gen.py`). Не пускай сливането върху вече слетия PDF.
+  - Chromium растеризира `box-shadow` в PDF, по едно голямо изображение на страница. Сянката е
+    векторен полупрозрачен div, както в оригинала.
+  - Прозрачният фон на листовете идва от CDP `Emulation.setDefaultBackgroundColorOverride`.
+  - PyMuPDF записва префикса на page label като UTF-8. `merge.py` го превръща в PDFDocEncoding
+    („·“ = `\267`).
+  - `verify.py` е гейтът на този PDF: всяка оригинална страница трябва да остане идентична.
 
 ## Правила
 

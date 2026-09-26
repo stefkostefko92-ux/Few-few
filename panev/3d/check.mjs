@@ -11,7 +11,7 @@ const list = (dir, ext) =>
     return f.endsWith(ext) ? [p] : [];
   });
 const modules = [...list('src', '.js'), ...list('bake', '.mjs')];
-const all = [...modules, ...list('test', '.js'), ...list('scripts', '.mjs'), 'build.mjs', 'check.mjs'];
+const all = [...modules, ...list('test', '.js'), ...list('scripts', '.mjs'), ...list('pdf', '.mjs'), 'build.mjs', 'check.mjs'];
 
 for (const f of all) {
   try {
@@ -20,7 +20,7 @@ for (const f of all) {
     errors.push(`${f}: syntax error\n${String(err.stderr).trim()}`);
   }
 }
-for (const f of [...modules, ...list('scripts', '.mjs'), 'build.mjs']) {
+for (const f of [...modules, ...list('scripts', '.mjs'), ...list('pdf', '.mjs'), 'build.mjs']) {
   const text = readFileSync(f, 'utf8');
   const lines = text.split('\n').length - 1;
   if (lines > 300) errors.push(`${f}: ${lines} lines, split the module (limit 300)`);
