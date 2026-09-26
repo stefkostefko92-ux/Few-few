@@ -571,6 +571,12 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   line-height: 1.1;
 }
 .nav-profile-info .name { font-size: 13px; font-weight: 600; color: var(--text-1); }
+/* Таван на самия текст, не min-width по веригата от flex контейнери (това скриваше името
+   изцяло). Дълго име + дълга титла разтягаха лентата до 1635px на 1440px екран. Таванът
+   следва ширината: лого + 6 връзки + HP/злато/гемове + звънец + език оставят ~110px на
+   1440px. Пълният текст остава в title (Navbar.tsx). */
+.nav-profile-info .name,
+.nav-profile-info .sub { max-width: clamp(96px, 7.5vw, 200px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nav-profile-info .sub { font-size: 11px; color: var(--text-3); }
 
 .nav-menu {

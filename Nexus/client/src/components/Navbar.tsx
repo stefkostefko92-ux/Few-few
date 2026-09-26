@@ -123,7 +123,7 @@ export default function Navbar(): React.ReactElement {
           ) : (
             <div className="nav-avatar">{initials}</div>
           )}
-          <div className="nav-profile-info">
+          <div className="nav-profile-info" title={char ? `${char.name}${char.current_title ? `, ${char.current_title}` : ''}` : undefined}>
             <div className="name">
               {char?.name || user?.username || t('navbar.guest')}
               {char?.current_title && <span style={{ color: 'var(--amethyst-1)', marginLeft: 4 }}>, {char.current_title}</span>}
