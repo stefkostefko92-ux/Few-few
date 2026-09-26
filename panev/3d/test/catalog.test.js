@@ -60,6 +60,27 @@ for (const item of CATALOG) {
   });
 }
 
+// SG 225 50 (p. 61): the 30 mm foot runs under the whole plate (the far end shows the L of plate
+// and foot) and the arm's two slots run across the arm, parallel to the plate.
+test('SG 225 50: foot along the whole plate, slots across the arm', () => {
+  const mb = byId('SG-225-50').build().build();
+  let x0 = Infinity;
+  let x1 = -Infinity;
+  for (let i = 0; i < mb.pos.length; i += 3) {
+    const [x, y, z] = [mb.pos[i], mb.pos[i + 1], mb.pos[i + 2]];
+    if (y > 5 + 1e-6 || z < 10 || z > 30 + 1e-6) continue; // the flat of the foot, behind the bend
+    x0 = Math.min(x0, x);
+    x1 = Math.max(x1, x);
+  }
+  assert.ok(x0 < 1e-6 && Math.abs(x1 - 225) < 1e-6, `foot from x = ${x0} to ${x1}`);
+  const arm = mb.faces.find((f) => f.name === 'arm');
+  assert.equal(arm.holes.length, 2);
+  for (const h of arm.holes) {
+    const span = (k) => Math.max(...h.map((p) => p[k])) - Math.min(...h.map((p) => p[k]));
+    assert.ok(Math.abs(span(0) - 27) < 0.01 && Math.abs(span(1) - 12) < 0.01, `slot ${span(0).toFixed(1)} x ${span(1).toFixed(1)} mm`);
+  }
+});
+
 // SU and SD arms carry a flange folded down along their straight side, 30 mm deep from the arm's
 // top, from the wall flange to the arm end (pp. 20-38). Built in the wall frame: y up, z out.
 const APRON_SIDE = { SU: 220, 'SD 150': 90, 'SD 220': 160 };

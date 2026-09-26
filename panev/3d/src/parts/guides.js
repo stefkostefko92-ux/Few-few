@@ -35,14 +35,17 @@ export function guideSG(W, L) {
   return p;
 }
 
-// SG 225 50: 5 mm guide plate 225 x 50 for the rail, a 150 mm arm folded off its top edge onto the
-// support (length "A" to the customer's drawing) and a 30 mm lip at the foot of the far end.
+// SG 225 50 (p. 61): 5 mm guide plate 225 x 50 for the rail, a 150 mm arm folded off its top edge
+// onto the support (length "A" to the customer's drawing) and a 30 mm foot along the whole lower
+// edge, on the arm's side: the plate's far end shows the L of plate and foot, its lower edge has no
+// relief. The arm's two slots run across it, parallel to the plate (at about 0.3 and 0.83 of its
+// length in both views of the drawing), crossing the lengthwise slots of the SC 50 170 under it.
 export function guideCustom() {
   const p = sheet({ t: 5, bevel: 0.6 });
   p.face('plate', { outline: rect(0, 0, 225, 50), holes: [circle(38, 25, 12), slotX(90, 212, 25, 12)] });
-  p.face('arm', { outline: rect(0, 0, 45, 150), holes: [slotY(22.5, 25, 75, 12), slotY(22.5, 90, 140, 12)] });
-  p.face('lip', { outline: rect(0, 0, 50, 30) });
+  p.face('arm', { outline: rect(0, 0, 45, 150), holes: [slotX(9, 36, 45, 12), slotX(9, 36, 125, 12)] });
+  p.face('foot', { outline: rect(0, 0, 225, 30) });
   p.bend('plate', 'arm', { from: [50, 50], to: [95, 50], dir: 'up' });
-  p.bend('plate', 'lip', { from: [175, 0], to: [225, 0], dir: 'up' });
+  p.bend('plate', 'foot', { from: [0, 0], to: [225, 0], dir: 'up' });
   return p;
 }
