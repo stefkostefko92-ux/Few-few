@@ -2240,11 +2240,16 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   .nav-hamburger { width: 44px; height: 44px; }
 
   /* Chat: двуколонният layout (inline grid) се стакира вертикално. !important
-     е нужен, защото inline стил бие клас-селектор. */
-  .chat-grid { grid-template-columns: 1fr !important; }
+     е нужен, защото inline стил бие клас-селектор. minmax(0,…) — без него
+     дори единствената 1fr писта има implicit min-width:auto и не се свива
+     под min-content на канал-листа (дълги имена на канали като "Пепелни
+     пустоши"), картата изтичаше до 397px на 360px viewport (скрито от
+     `body{overflow-x:hidden}` — няма видим скрол, но съдържанието реално е
+     извън екрана, невидимо за играча). Открито чрез DOM бисекция. */
+  .chat-grid { grid-template-columns: minmax(0, 1fr) !important; }
 
   /* Guild header: crest + инфо + treasury карта в един ред изтича → стак. */
-  .guild-header { grid-template-columns: 1fr !important; text-align: center; justify-items: center; }
+  .guild-header { grid-template-columns: minmax(0, 1fr) !important; text-align: center; justify-items: center; }
   .guild-header .guild-crest { margin: 0 auto; }
 
   /* Character-card: базовото `140px 1fr` (по-долу в source) отменя ранния
