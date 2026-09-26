@@ -25,6 +25,12 @@ export function I18nProvider({ children }) {
   const { user } = useAuth();
   const lang = SUPPORTED_LOCALES.includes(user?.language) ? user.language : DEFAULT_LOCALE;
   const [, setLoaded] = useState(0); // само за пре-рендер, когато таблицата пристигне
+  // Последният напълно зареден език. При СМЯНА на език показваме него, докато
+  // новият пристигне — `return null` тогава размонтираше целия BrowserRouter и
+  // незаписаните форми се губеха (ревю 26.09.2026). null само при първия старт.
+  // Помни се САМО за влязъл потребител: иначе при вход (анонимен EN → езикът на
+  // потребителя) за миг се рисуваше английски — точно мигането, което null пази.
+  const [shown, setShown] = useState(null);
 
   useEffect(() => {
     if (LOADED[lang]) return undefined;
@@ -36,19 +42,22 @@ export function I18nProvider({ children }) {
   }, [lang]);
 
   const ready = !!LOADED[lang];
+  const known = !!user;
+  useEffect(() => { if (ready && known && shown !== lang) setShown(lang); }, [ready, known, lang, shown]);
+  const active = ready ? lang : (known ? shown : null);
   const t = useCallback(
     (key, vars) => {
-      const table = LOADED[lang] || DASHBOARD_EN;
+      const table = LOADED[active] || DASHBOARD_EN;
       const value = table[key] ?? DASHBOARD_EN[key] ?? key;
       return interpolate(value, vars);
     },
-    [lang, ready],
+    [active],
   );
 
-  const value = useMemo(() => ({ t, lang }), [t, lang]);
+  const value = useMemo(() => ({ t, lang: active || lang }), [t, active, lang]);
   // Езикът на потребителя още пътува (~19 KB, веднъж на сесия): не рисуваме
   // английски за миг — това мига. Анонимните посетители са на английски и не чакат.
-  if (!ready) return null;
+  if (!active) return null;
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 

@@ -4,14 +4,14 @@
 // routes/adminManage.js; каквото таблото на сървъра вече прави (настройки на
 // играта, магазин, куестове, затваряне на тикет, изтриване на панел/форма) се
 // вика ОТТАМ — requireServerAdmin пуска платформения админ с потвърден фактор.
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Gamepad2, Search, Server, LifeBuoy, ExternalLink, Trash2, Sparkles, SlidersHorizontal, RotateCcw, XCircle } from "lucide-react";
 import {
   getAdminServers, getAdminGameMembers, getAdminMemberCompanions, adminAdjustMember, adminGrantCompanion, adminRevokeCompanion,
   adminResetGame, getAdminGameSeason, getAdminTickets, deleteAdminTicket, getAdminPanels, getAdminForms,
-  closeTicket, deletePanel, deleteForm,
+  closeTicket, deleteAdminPanel, deleteAdminForm,
 } from "../api";
 import Modal from "../components/Modal";
 import { useToast } from "../contexts/ToastContext";
@@ -317,6 +317,8 @@ function TicketsList({ serverId, q }) {
   const toast = useToast();
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
+  // Нов филтър → първа страница (иначе страница 3 на новия филтър е празна; ревю 26.09.2026).
+  useEffect(() => { setPage(1); }, [serverId, q]);
   const [acting, setActing] = useState(null); // { ticket, kind: "close" | "delete" }
   const [reason, setReason] = useState("");
   const { data, isLoading, isError, error, refetch } = useQuery({
@@ -380,9 +382,13 @@ function PanelsList({ serverId, q }) {
   const qc = useQueryClient();
   const toast = useToast();
   const [page, setPage] = useState(1);
+  // Нов филтър → първа страница (иначе страница 3 на новия филтър е празна; ревю 26.09.2026).
+  useEffect(() => { setPage(1); }, [serverId, q]);
   const [confirm, setConfirm] = useState(null);
   const { data, isLoading, isError, error, refetch } = useQuery({ queryKey: ["admin-panels", serverId, q, page], queryFn: () => getAdminPanels({ serverId, q: q || undefined, page, limit: 25 }), placeholderData: (prev) => prev });
-  const del = useMutation({ mutationFn: (p) => deletePanel(p.serverId, p.id), onSuccess: () => { toast.success("Panel deleted."); setConfirm(null); qc.invalidateQueries({ queryKey: ["admin-panels"] }); }, onError: (e) => toast.error(adminErr(e)) });
+  const [reason, setReason] = useState("");
+  // Админ маршрутът (step-up + MAIN_OWNER + одит), не този на таблото — ревю 26.09.2026.
+  const del = useMutation({ mutationFn: (p) => deleteAdminPanel(p.id, reason.trim()), onSuccess: () => { toast.success("Panel deleted."); setConfirm(null); setReason(""); qc.invalidateQueries({ queryKey: ["admin-panels"] }); }, onError: (e) => toast.error(adminErr(e)) });
   const rows = data?.panels || [];
   return (
     <Section title="Panels" icon={LifeBuoy}>
@@ -409,11 +415,13 @@ function PanelsList({ serverId, q }) {
       )}
       {confirm && (
         <Modal open onClose={() => { setConfirm(null); del.reset(); }} title={`Delete panel „${confirm.name}“?`} maxWidth="max-w-md">
-          <p className="text-sm text-cs-muted">Its tickets stay (they lose the panel link). The posted Discord message is not removed by this action.</p>
+          <p className="text-sm text-cs-muted mb-4">Its tickets stay (they lose the panel link). The posted Discord message is not removed by this action. Main Owner only.</p>
+          <label className="cs-label" htmlFor="panel-reason">Reason (audit log)</label>
+          <input id="panel-reason" className="cs-input" value={reason} onChange={(e) => setReason(e.target.value)} />
           {del.isError && <p className="text-xs text-danger mt-2" role="alert">{adminErr(del.error)}</p>}
           <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-cs-border">
-            <button type="button" className="cs-btn-ghost" onClick={() => { setConfirm(null); del.reset(); }}>Cancel</button>
-            <button type="button" className="cs-btn-danger" disabled={del.isPending} onClick={() => del.mutate(confirm)}>{del.isPending ? "Deleting…" : "Delete panel"}</button>
+            <button type="button" className="cs-btn-ghost" onClick={() => { setConfirm(null); setReason(""); del.reset(); }}>Cancel</button>
+            <button type="button" className="cs-btn-danger" disabled={del.isPending || reason.trim().length < 3} onClick={() => del.mutate(confirm)}>{del.isPending ? "Deleting…" : "Delete panel"}</button>
           </div>
         </Modal>
       )}
@@ -425,10 +433,13 @@ function FormsList({ serverId, q }) {
   const qc = useQueryClient();
   const toast = useToast();
   const [page, setPage] = useState(1);
+  // Нов филтър → първа страница (иначе страница 3 на новия филтър е празна; ревю 26.09.2026).
+  useEffect(() => { setPage(1); }, [serverId, q]);
   const [confirm, setConfirm] = useState(null);
   const [force, setForce] = useState(false);
   const { data, isLoading, isError, error, refetch } = useQuery({ queryKey: ["admin-forms", serverId, q, page], queryFn: () => getAdminForms({ serverId, q: q || undefined, page, limit: 25 }), placeholderData: (prev) => prev });
-  const del = useMutation({ mutationFn: (f) => deleteForm(f.serverId, f.id, force), onSuccess: (r) => { toast.success(`Form deleted${r?.applicationsDeleted ? ` with ${r.applicationsDeleted} applications` : ""}.`); setConfirm(null); setForce(false); qc.invalidateQueries({ queryKey: ["admin-forms"] }); }, onError: (e) => toast.error(adminErr(e)) });
+  const [reason, setReason] = useState("");
+  const del = useMutation({ mutationFn: (f) => deleteAdminForm(f.id, reason.trim(), force), onSuccess: (r) => { toast.success(`Form deleted${r?.applicationsDeleted ? ` with ${r.applicationsDeleted} applications` : ""}.`); setConfirm(null); setForce(false); setReason(""); qc.invalidateQueries({ queryKey: ["admin-forms"] }); }, onError: (e) => toast.error(adminErr(e)) });
   const rows = data?.forms || [];
   const apps = confirm?._count?.applications || 0;
   return (
@@ -456,7 +467,9 @@ function FormsList({ serverId, q }) {
       )}
       {confirm && (
         <Modal open onClose={() => { setConfirm(null); del.reset(); }} title={`Delete form „${confirm.name}“?`} maxWidth="max-w-md">
-          <p className="text-sm text-cs-muted">The questions are deleted with it.</p>
+          <p className="text-sm text-cs-muted mb-4">The questions are deleted with it. Main Owner only.</p>
+          <label className="cs-label" htmlFor="form-reason">Reason (audit log)</label>
+          <input id="form-reason" className="cs-input" value={reason} onChange={(e) => setReason(e.target.value)} />
           {apps > 0 && (
             <label className="flex gap-2 items-start text-sm mt-3">
               <input type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} />
@@ -466,7 +479,7 @@ function FormsList({ serverId, q }) {
           {del.isError && <p className="text-xs text-danger mt-2" role="alert">{adminErr(del.error)}</p>}
           <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-cs-border">
             <button type="button" className="cs-btn-ghost" onClick={() => { setConfirm(null); del.reset(); }}>Cancel</button>
-            <button type="button" className="cs-btn-danger" disabled={del.isPending || (apps > 0 && !force)} onClick={() => del.mutate(confirm)}>{del.isPending ? "Deleting…" : "Delete form"}</button>
+            <button type="button" className="cs-btn-danger" disabled={del.isPending || (apps > 0 && !force) || reason.trim().length < 3} onClick={() => del.mutate(confirm)}>{del.isPending ? "Deleting…" : "Delete form"}</button>
           </div>
         </Modal>
       )}

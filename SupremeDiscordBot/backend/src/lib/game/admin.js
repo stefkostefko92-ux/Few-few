@@ -23,10 +23,19 @@ export async function adjustMember(serverId, userId, { xpDelta = 0, sparksDelta 
   if (Math.abs(xpDelta) > MAX_ADJUST || Math.abs(sparksDelta) > MAX_ADJUST) return { ok: false, code: "INVALID_AMOUNT" };
   if (!xpDelta && !sparksDelta) return { ok: false, code: "NOTHING_TO_DO" };
   return prisma.$transaction(async (tx) => {
-    const before = await ensureProgress(tx, serverId, userId);
-    const xp = Math.max(0, before.xp + xpDelta);
-    const seasonXp = Math.max(0, before.seasonXp + xpDelta);
-    const sparks = Math.max(0, before.sparks + sparksDelta);
+    await ensureProgress(tx, serverId, userId);
+    // Първо атомарен increment — той ЗАКЛЮЧВА реда до края на транзакцията, така
+    // че едновременно XP от играта или втора корекция не се губят (преди:
+    // четене + абсолютен запис → lost update; ревю 26.09.2026). После, върху
+    // вече заключения ред, режем под 0 и преизчисляваме нивото.
+    const bumped = await tx.memberProgress.update({
+      where: { serverId_userId: { serverId, userId } },
+      data: { xp: { increment: xpDelta }, seasonXp: { increment: xpDelta }, sparks: { increment: sparksDelta } },
+    });
+    const before = { xp: bumped.xp - xpDelta, sparks: bumped.sparks - sparksDelta, level: bumped.level };
+    const xp = Math.max(0, bumped.xp);
+    const seasonXp = Math.max(0, bumped.seasonXp);
+    const sparks = Math.max(0, bumped.sparks);
     const level = levelFromXp(xp);
     const after = await tx.memberProgress.update({
       where: { serverId_userId: { serverId, userId } },

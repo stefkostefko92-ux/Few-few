@@ -168,6 +168,8 @@ export const deleteAdminGameSeason = (code) => api.delete(`/admin/game/season/${
 export const getAdminTickets       = (params) => api.get("/admin/support/tickets", { params }).then((r) => r.data);
 export const deleteAdminTicket     = (ticketId, reason) => api.delete(`/admin/support/tickets/${enc(ticketId)}?confirm=true`, { data: { reason } }).then((r) => r.data);
 export const getAdminPanels        = (params) => api.get("/admin/support/panels", { params }).then((r) => r.data);
+export const deleteAdminPanel      = (panelId, reason) => api.delete(`/admin/support/panels/${enc(panelId)}?confirm=true`, { data: { reason } }).then((r) => r.data);
+export const deleteAdminForm       = (formId, reason, withApplications) => api.delete(`/admin/support/forms/${enc(formId)}?confirm=true`, { data: { reason, withApplications } }).then((r) => r.data);
 export const getAdminForms         = (params) => api.get("/admin/support/forms", { params }).then((r) => r.data);
 export const getAdminFleetBots     = () => api.get("/admin/fleet/bots").then((r) => r.data);
 export const adminFleetAction      = (serverId, action) => api.post(`/admin/fleet/${serverId}/${action}`).then((r) => r.data);

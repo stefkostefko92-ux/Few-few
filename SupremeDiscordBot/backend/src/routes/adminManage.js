@@ -26,6 +26,7 @@ import { adjustMember, grantCompanion, resetServerGame, MAX_ADJUST } from "../li
 import { releaseCompanion } from "../lib/game/companionOps.js";
 import { companionById, publicCompanion } from "../lib/game/companions.js";
 import { deleteSeason } from "../lib/game/seasons.js";
+import { deleteFormCascade } from "../lib/formDelete.js";
 
 const router = Router();
 router.use(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa);
@@ -273,6 +274,40 @@ router.get("/support/forms", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// DELETE /api/admin/support/panels/:panelId?confirm=true  { reason }
+// DELETE /api/admin/support/forms/:formId?confirm=true     { reason, withApplications }
+// Отделно от маршрутите на таблото: там няма step-up, MAIN_OWNER и одит, а
+// изтриване от платформен админ в ЧУЖД сървър трябва да остави следа
+// (ревю 26.09.2026). Формата с кандидатури иска изрично withApplications.
+router.delete("/support/panels/:panelId", requireMainOwner, stepUp, async (req, res, next) => {
+  if (req.query.confirm !== "true") return res.status(400).json({ error: "Destructive action requires confirmation", hint: "Add ?confirm=true to confirm" });
+  const reason = z.string().trim().min(3).max(300).safeParse(req.body?.reason);
+  if (!reason.success) return res.status(400).json({ error: "A reason (3–300 chars) is required" });
+  try {
+    const panel = await prisma.panel.findUnique({ where: { id: req.params.panelId }, select: { id: true, serverId: true, name: true, _count: { select: { tickets: true } } } });
+    if (!panel) return res.status(404).json({ error: "Panel not found" });
+    await prisma.panel.delete({ where: { id: panel.id } }); // тикетите остават (SET NULL)
+    await writeAudit({ actorId: req.user.id, serverId: panel.serverId, action: "PANEL_DELETED_BY_ADMIN", targetId: panel.id, metadata: { name: panel.name, tickets: panel._count.tickets, reason: reason.data } });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+router.delete("/support/forms/:formId", requireMainOwner, stepUp, async (req, res, next) => {
+  if (req.query.confirm !== "true") return res.status(400).json({ error: "Destructive action requires confirmation", hint: "Add ?confirm=true to confirm" });
+  const body = z.object({ reason: z.string().trim().min(3).max(300), withApplications: z.boolean().default(false) }).safeParse(req.body || {});
+  if (!body.success) return res.status(400).json({ error: "A reason (3–300 chars) is required" });
+  try {
+    const form = await prisma.form.findUnique({ where: { id: req.params.formId }, select: { id: true, serverId: true, name: true, _count: { select: { applications: true } } } });
+    if (!form) return res.status(404).json({ error: "Form not found" });
+    if (form._count.applications > 0 && !body.data.withApplications) {
+      return res.status(409).json({ error: `Form has ${form._count.applications} application(s) — confirm deleting them too.`, code: "FORM_HAS_APPLICATIONS", applicationCount: form._count.applications });
+    }
+    await deleteFormCascade(form.id);
+    await writeAudit({ actorId: req.user.id, serverId: form.serverId, action: "FORM_DELETED_BY_ADMIN", targetId: form.id, metadata: { name: form.name, applicationsDeleted: form._count.applications, reason: body.data.reason } });
+    res.json({ ok: true, applicationsDeleted: form._count.applications });
+  } catch (err) { next(err); }
+});
+
 // ═══ White-label ботове ══════════════════════════════════════════════════════
 
 const BOT_URL = () => process.env.BOT_API_URL || "http://bot:3001";
@@ -382,7 +417,8 @@ router.post("/users/:userId/sessions/revoke", requireMainOwner, stepUp, async (r
     if (user.globalRole === "MAIN_OWNER") return res.status(403).json({ error: "Cannot sign out the Main Owner" });
     // И двата вида: бисквитната сесия (express_sessions) и Discord OAuth токените
     // (sessions) — без вторите requireServerAdmin пак би стигал до Discord.
-    const web = Number(await prisma.$executeRaw`DELETE FROM express_sessions WHERE sess->>'userId' = ${user.id}`.catch(() => 0)) || 0;
+    // Без .catch: погълната грешка отчиташе „изход отвсякъде“, а сесиите оставаха (ревю 26.09.2026).
+    const web = Number(await prisma.$executeRaw`DELETE FROM express_sessions WHERE sess->>'userId' = ${user.id}`) || 0;
     const oauth = (await prisma.session.deleteMany({ where: { userId: user.id } })).count;
     await writeAudit({ actorId: req.user.id, action: "USER_SESSIONS_REVOKED", targetId: user.id, metadata: { web, oauth, ip: req.ip } });
     res.json({ ok: true, web, oauth });

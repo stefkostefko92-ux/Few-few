@@ -72,11 +72,17 @@ describe("играта по сървъри", () => {
   it("корекция: не пада под 0, нивото се извежда от XP, одит с преди/след", async () => {
     prismaMock.memberProgress.createMany.mockResolvedValue({ count: 0 });
     prismaMock.memberProgress.findUnique.mockResolvedValue({ xp: 150, seasonXp: 40, sparks: 10, level: 1 });
-    prismaMock.memberProgress.update.mockImplementation(async ({ data }) => ({ ...data }));
+    // 1) атомарен increment (заключва реда) → базата връща новите стойности;
+    // 2) изрязване под 0 + ниво върху заключения ред.
+    prismaMock.memberProgress.update
+      .mockResolvedValueOnce({ xp: -850, seasonXp: -960, sparks: 35, level: 1 })
+      .mockImplementationOnce(async ({ data }) => ({ ...data }));
     const r = await request(app).patch(`/api/admin/game/servers/${SID}/members/${UID}`).send({ xpDelta: -1000, sparksDelta: 25, reason: "грешно XP" });
     expect(r.status).toBe(200);
-    const data = prismaMock.memberProgress.update.mock.calls[0][0].data;
+    expect(prismaMock.memberProgress.update.mock.calls[0][0].data).toEqual({ xp: { increment: -1000 }, seasonXp: { increment: -1000 }, sparks: { increment: 25 } });
+    const data = prismaMock.memberProgress.update.mock.calls[1][0].data;
     expect(data).toEqual({ xp: 0, seasonXp: 0, sparks: 35, level: 0 });
+    expect(r.body.before).toEqual({ xp: 150, sparks: 10, level: 1 });
     expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "GAME_MEMBER_ADJUSTED", targetId: UID, serverId: SID }));
   });
   it("корекция без причина или с дробно число → 400, нищо не се пише", async () => {
@@ -230,3 +236,24 @@ describe("потребители и достъп", () => {
     expect(sel.email).toBeUndefined();
   });
 });
+
+describe("поддръжка — изтриване на панел/форма (ревю 26.09.2026)", () => {
+  it("панел: MAIN_OWNER + причина + одит; SUPER_USER → 403", async () => {
+    USER.globalRole = "SUPER_USER";
+    let r = await request(app).delete("/api/admin/support/panels/p1?confirm=true").send({ reason: "дубликат" });
+    expect(r.status).toBe(403);
+    USER.globalRole = "MAIN_OWNER";
+    prismaMock.panel.findUnique.mockResolvedValue({ id: "p1", serverId: SID, name: "Support", _count: { tickets: 3 } });
+    prismaMock.panel.delete.mockResolvedValue({});
+    r = await request(app).delete("/api/admin/support/panels/p1?confirm=true").send({ reason: "дубликат" });
+    expect(r.status).toBe(200);
+    expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "PANEL_DELETED_BY_ADMIN", serverId: SID, targetId: "p1" }));
+  });
+  it("форма с кандидатури без withApplications → 409, нищо не се трие", async () => {
+    prismaMock.form.findUnique.mockResolvedValue({ id: "f1", serverId: SID, name: "Apply", _count: { applications: 2 } });
+    const r = await request(app).delete("/api/admin/support/forms/f1?confirm=true").send({ reason: "стара" });
+    expect(r.status).toBe(409); expect(r.body.code).toBe("FORM_HAS_APPLICATIONS");
+    expect(prismaMock.form.delete).not.toHaveBeenCalled();
+  });
+});
+

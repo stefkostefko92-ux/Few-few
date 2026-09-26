@@ -228,7 +228,9 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
 router.delete("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => {
   try {
     if (!(await panelBelongsToServer(req))) return res.status(404).json({ error: "Panel not found" });
-    await prisma.panel.delete({ where: { id: req.params.panelId } });
+    const gone = await prisma.panel.delete({ where: { id: req.params.panelId } });
+    // Изтриването нямаше одит (ревю 26.09.2026) — създаването имаше.
+    await logAudit(req.user.id, req.params.serverId, "PANEL_DELETED", gone.id, { name: gone.name });
     res.json({ ok: true });
   } catch (err) {
     next(err);
