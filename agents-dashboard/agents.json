@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-25",
+    "updated": "2026-09-26",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -11036,7 +11036,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 177
+        "lessons": 178
       },
       "evolution": [
         {
@@ -11482,9 +11482,20 @@
           "date": "2026-09-25",
           "event": "v15.5 — учене",
           "detail": "Научи: boy loadout.js::tintedMaterials() тонира само .color (hue) на steelA/steelB/goldB/brass… (+1 още)"
+        },
+        {
+          "version": "15.6.0",
+          "date": "2026-09-26",
+          "event": "v15.6 — учене",
+          "detail": "Научи: Nexus Dominion navbar: HP/GP/GM пилюлите (.nav-meta .nav-stat) се криеха на ≤700px, но …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-26",
+          "type": "learning",
+          "summary": "Научи: „Nexus Dominion navbar: HP/GP/GM пилюлите (.nav-meta .nav-stat) се криеха на ≤700px, но …\" · 2 в карантина"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
