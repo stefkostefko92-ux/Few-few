@@ -33,6 +33,8 @@ interface Props {
   /** Зареждането се провали (няма WebGL/WebGPU, грешка в шейдър…) — CombatScene показва
       резултата без 3D, вместо играчът да остане завинаги на екрана за зареждане. */
   onFail?: (err: unknown) => void;
+  /** 4b: foe.sprite от сървъра — истински звяр/голям хуманоид/призрак/рицар (beast-config.js bodyKind). */
+  foeSprite?: string;
 }
 
 export interface BoyDuelHandle {
@@ -49,7 +51,7 @@ export interface BoyDuelHandle {
  * ½×/1×/2×/прескочи контроли на CombatScene.tsx (вграденият chrome на boy е скрит — виж
  * boy-hud.css `.embedded`).
  */
-const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true, loop, onEnd, onImpact, embedded, heroClass, region, foeName, onReady, onFail }, ref) => {
+const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true, loop, onEnd, onImpact, embedded, heroClass, region, foeName, foeSprite, onReady, onFail }, ref) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const bootRef = useRef<BootHandle | null>(null);
 
@@ -74,10 +76,10 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
     // Пречи на main.js да се самостартира срещу document.getElementById('view') — ние сме
     // отговорни за boot-ването (виж guard-а в main.js).
     (window as unknown as { __boyNoAutoboot?: boolean }).__boyNoAutoboot = true;
-    const choreography = rounds && rounds.length > 0 ? choreographyFromRounds(rounds, victory, heroClass, foeName) : undefined;
+    const choreography = rounds && rounds.length > 0 ? choreographyFromRounds(rounds, victory, heroClass, foeName, foeSprite) : undefined;
     // Литерален relative specifier (не динамична променлива) — нужно е Vite/Rollup да го
     // открие статично и да го изнесе в собствен lazy chunk.
-    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd, onImpact, signal: controller.signal, heroClass, region, foeName })).then((h) => {
+    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd, onImpact, signal: controller.signal, heroClass, region, foeName, foeSprite })).then((h) => {
       if (controller.signal.aborted) { h.dispose(); return; }
       if (h.failed) { onFail?.(new Error('renderer unavailable')); return; }
       bootRef.current = h;
@@ -91,7 +93,7 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
       bootRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rounds, victory, loop, heroClass, region, foeName]);
+  }, [rounds, victory, loop, heroClass, region, foeName, foeSprite]);
 
   return <div className={`boy-duel-root${embedded ? ' embedded' : ''}`} ref={rootRef} />;
 });

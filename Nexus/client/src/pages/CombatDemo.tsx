@@ -73,7 +73,9 @@ export default function CombatDemo(): React.ReactElement {
     const region = params.get('region') || undefined;
     // &foename= override за QA на 4a.4 (кръг 2) оръжие-по-вид-звяр (loadout.js weaponKit()) —
     // "The Black Warden" резолвва на 'sword' (базовата линия); подай напр. "The Witch Queen".
-    const foe = params.get('foename') ? { ...DEMO_FOE, name: params.get('foename')! } : DEMO_FOE;
+    // &sprite= override за QA на 4b риг/geo по вид звяр (beast-config.js bodyKind) — напр.
+    // rat|boar|wolf|golem|titan|troll|wraith (spider/serpent/drake остават рицари — виж 4b доклада).
+    const foe = { ...DEMO_FOE, ...(params.get('foename') ? { name: params.get('foename')! } : {}), ...(params.get('sprite') ? { sprite: params.get('sprite')! } : {}) };
     return (
       <div style={{ width: '100vw', height: '100vh', position: 'fixed', inset: 0 }}>
         <CombatScene

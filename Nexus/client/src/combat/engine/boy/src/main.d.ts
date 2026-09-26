@@ -18,6 +18,8 @@ export interface BootOpts {
   region?: string;
   /** 4a.4 (кръг 2): свободния текст на foe.name — оръжие на противника (loadout.js weaponKit()). */
   foeName?: string;
+  /** 4b: foe.sprite от сървъра — истински звяр/голям хуманоид/призрак/рицар (beast-config.js). */
+  foeSprite?: string;
 }
 
 export interface BootHandle {
