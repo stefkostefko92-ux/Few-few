@@ -9101,7 +9101,7 @@
           "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
           "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
         ],
-        "lessons": 177
+        "lessons": 178
       },
       "evolution": [
         {
@@ -9445,9 +9445,20 @@
           "date": "2026-08-07",
           "event": "v16.2 — учене",
           "detail": "Научи: Уникален бизнес-ключ в ефекта на webhook handler (напр. PaymentLog.stripeInvoiceId @uni… (+2 още)"
+        },
+        {
+          "version": "16.3.0",
+          "date": "2026-09-26",
+          "event": "v16.3 — учене",
+          "detail": "Научи: Ред на абонамент, който остава след canceled, блокира повторно абониране, ако проверкат…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-26",
+          "type": "learning",
+          "summary": "Научи: „Ред на абонамент, който остава след canceled, блокира повторно абониране, ако проверкат…\""
+        },
         {
           "date": "2026-09-26",
           "type": "quarantine",

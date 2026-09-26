@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-26:** Ред на абонамент, който остава след canceled, блокира повторно абониране, ако проверката е „има ред“, а не „статусът е жив“ (active/trialing/past_due/unpaid/paused). _(Gaming; verified; Gaming/apps/api/src/routes/shop.test.ts)_
 
 - **2026-07-23 (пресверена 2026-08-04):** SEPA се потвърждава ~T+6 работни дни, с 5-дневен refusal прозорец; след succeeded остава dispute риск (8 седмици no-questions-asked, до 13 месеца unauthorized). Слушай charge.dispute.created за отнемане на достъп. _("SEPA dispute/refund път"; verified; https://docs.stripe.com/payments/sepa-debit)_
 - **2026-07-23 (пресверена 2026-08-04):** SEPA Direct Debit е delayed-notification метод: при checkout.session.completed payment_status е unpaid и PaymentIntent е в processing, не succeeded. Достъп се дава на checkout.session.async_payment_succeeded, не на completed; обработвай и async_payment_failed. _("Stripe Checkout + отложени методи (SEPA/ACH/bank transfer)"; verified; https://docs.stripe.com/checkout/fulfillment)_
