@@ -631,3 +631,45 @@ body.adm-modal-open { overflow: hidden; }
   .adm-overlay, .adm-modal, .adm-modal.drawer, .adm-skeleton { animation: none; }
   .admin-stat.link, .admin-sidebar a, .adm-table-wrap { transition: none; }
 }
+
+/* ---------- Широко чекмедже, избор на герой, лента, решетка ---------- */
+.adm-modal.drawer.wide { width: min(920px, 100%); }
+.adm-picker { position: relative; }
+.adm-picker input { width: 100%; }
+.adm-picker-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  max-height: 240px;
+  overflow-y: auto;
+}
+.adm-picker-list button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--text-1);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  cursor: pointer;
+  min-height: 40px;
+}
+.adm-picker-list button:hover, .adm-picker-list button:focus-visible { background: var(--bg-2); }
+.adm-picked { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--border-2); border-radius: var(--radius-sm); background: var(--bg-3); }
+.adm-meter { height: 10px; border-radius: 999px; background: var(--bg-3); border: 1px solid var(--border-1); overflow: hidden; }
+.adm-meter span { display: block; height: 100%; background: var(--gold-2); border-radius: inherit; }
+.adm-meter.crimson span { background: var(--crimson-1); }
+.adm-meter.emerald span { background: var(--emerald-1); }
+.adm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.adm-grid .adm-card { margin: 0; }
+.adm-inline-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.adm-bonus { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+fieldset.adm-check-row { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+/* Колоната на модала е flex — без това лентата с раздели (overflow-x) се
+   свива до 0 височина и разделите изчезват. */
+.adm-modal-body > * { flex-shrink: 0; }
+.adm-tabs { flex-shrink: 0; }

@@ -7,6 +7,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
+import { api } from '../../lib/api';
 import './i18n';
 
 /* ===================== Превод и форматиране ===================== */
@@ -212,7 +213,7 @@ export function Field({ label, hint, error, children, wide }: { label: string; h
 }
 
 /** Числово поле, което пази суровия текст докато се пише (без NaN). */
-export function NumberInput({ id, value, onChange, min, max, step }: { id?: string; value: number | '' | null | undefined; onChange: (v: number | '') => void; min?: number; max?: number; step?: number }) {
+export function NumberInput({ id, value, onChange, min, max, step, placeholder, ariaLabel }: { id?: string; value: number | '' | null | undefined; onChange: (v: number | '') => void; min?: number; max?: number; step?: number; placeholder?: string; ariaLabel?: string }) {
   return (
     <input
       id={id}
@@ -222,6 +223,8 @@ export function NumberInput({ id, value, onChange, min, max, step }: { id?: stri
       min={min}
       max={max}
       step={step}
+      placeholder={placeholder}
+      aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
     />
   );
@@ -235,8 +238,10 @@ const modalStack: symbol[] = [];
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function Modal({ title, onClose, children, footer, variant = 'dialog', danger }: {
+export function Modal({ title, onClose, children, footer, variant = 'dialog', danger, wide }: {
   title: React.ReactNode; onClose: () => void; children: React.ReactNode; footer?: React.ReactNode; variant?: 'dialog' | 'drawer'; danger?: boolean;
+  /** По-широко чекмедже — за детайли с таблици (герой, гилдия). */
+  wide?: boolean;
 }) {
   const { t } = useAdminT();
   const ref = useRef<HTMLDivElement>(null);
@@ -274,7 +279,7 @@ export function Modal({ title, onClose, children, footer, variant = 'dialog', da
   // Портал към body: `position: fixed` не бива да зависи от трансформиран родител.
   return createPortal(
     <div className="adm-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={ref} className={`adm-modal ${variant}${danger ? ' danger' : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <div ref={ref} className={`adm-modal ${variant}${danger ? ' danger' : ''}${wide ? ' wide' : ''}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className="adm-modal-head">
           <h2 id={titleId}>{title}</h2>
           <button type="button" className="adm-icon-btn" onClick={onClose} aria-label={t('common.close')}>×</button>
@@ -374,3 +379,89 @@ export function Tag({ tone, children }: { tone?: 'gold' | 'crimson' | 'emerald' 
 
 /** Грешка от api.ts → текст (сървърът връща вече четим низ). */
 export const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
+/* ===================== Раздели (tabs) ===================== */
+
+/** Достъпни раздели (role=tablist, стрелки ←/→). Панелът се рендерира от викащия. */
+export function Tabs<K extends string>({ tabs, value, onChange, label, idPrefix }: {
+  tabs: readonly { id: K; label: React.ReactNode }[]; value: K; onChange: (k: K) => void; label: string; idPrefix: string;
+}) {
+  const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const i = tabs.findIndex((x) => x.id === value);
+    const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+    onChange(next.id);
+    document.getElementById(`${idPrefix}-tab-${next.id}`)?.focus();
+  };
+  return (
+    <div className="adm-tabs" role="tablist" aria-label={label} onKeyDown={onKey}>
+      {tabs.map((x) => (
+        <button
+          key={x.id} type="button" role="tab" id={`${idPrefix}-tab-${x.id}`} aria-selected={value === x.id} aria-controls={`${idPrefix}-panel-${x.id}`}
+          tabIndex={value === x.id ? 0 : -1} className={value === x.id ? 'active' : undefined} onClick={() => onChange(x.id)}
+        >{x.label}</button>
+      ))}
+    </div>
+  );
+}
+
+export function TabPanel({ idPrefix, id, children }: { idPrefix: string; id: string; children: React.ReactNode }) {
+  return <div role="tabpanel" id={`${idPrefix}-panel-${id}`} aria-labelledby={`${idPrefix}-tab-${id}`}>{children}</div>;
+}
+
+/* ===================== Избор на герой ===================== */
+
+export interface CharOption { id: number; name: string; class: string; level: number; username: string | null }
+
+/** Търсене на герой по име/потребител/id → избран герой. */
+export function CharacterPicker({ value, onChange, label, id }: { value: CharOption | null; onChange: (c: CharOption | null) => void; label: string; id?: string }) {
+  const { t } = useAdminT();
+  const [q, setQ] = useState('');
+  const dq = useDebounced(q, 250);
+  const [opts, setOpts] = useState<CharOption[]>([]);
+  useEffect(() => {
+    if (!dq.trim() || value) { setOpts([]); return; }
+    let live = true;
+    api.get(`/admin/characters?${new URLSearchParams({ q: dq.trim(), pageSize: '8', kind: 'players' })}`)
+      .then((r) => { if (live) setOpts(r.characters || []); })
+      .catch(() => { if (live) setOpts([]); });
+    return () => { live = false; };
+  }, [dq, value]);
+  if (value) {
+    return (
+      <div className="adm-picked">
+        <span><strong>{value.name}</strong> <span className="muted cap">{value.class} · {t('common.lv')} {value.level}</span>{value.username ? <span className="muted"> · {value.username}</span> : null}</span>
+        <button type="button" className="btn btn-sm" onClick={() => { onChange(null); setQ(''); }}>{t('common.change')}</button>
+      </div>
+    );
+  }
+  return (
+    <div className="adm-picker">
+      <input id={id} type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('common.findHero')} aria-label={label} maxLength={80} autoComplete="off" />
+      {opts.length > 0 && (
+        <ul className="adm-picker-list">
+          {opts.map((o) => (
+            <li key={o.id}>
+              <button type="button" onClick={() => onChange(o)}>
+                <strong>{o.name}</strong> <span className="muted cap">{o.class} · {t('common.lv')} {o.level}</span>{o.username ? <span className="muted"> · {o.username}</span> : null}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Лента за HP/прогрес (достъпна: role=progressbar). */
+export function Meter({ value, max, label, tone }: { value: number; max: number; label: string; tone?: 'crimson' | 'gold' | 'emerald' }) {
+  const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
+  return (
+    <div className={`adm-meter${tone ? ` ${tone}` : ''}`} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={value}>
+      <span style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
+/** Редкостите на предметите (филтри, етикети). */
+export const RARITY = ['common', 'uncommon', 'rare', 'epic', 'legendary'] as const;
