@@ -272,40 +272,49 @@ model Tenant {
 /// документ: чл. 1, ал. 3 D.P.R. 472/1996 иска generalità del cedente върху
 /// DDT, а бъдещият XML за SDI иска и повече. Един ред на фирма (вкл. `null`).
 model DatiAzienda {
-  id              String   @id @default(uuid()) @db.Uuid
-  ragioneSociale  String
-  partitaIva      String?
-  codiceFiscale   String?
-  indirizzo       String?
-  cap             String?
-  citta           String?
-  provincia       String?
-  telefono        String?
-  email           String?
-  pec             String?
+  id               String   @id @default(uuid()) @db.Uuid
+  ragioneSociale   String
+  partitaIva       String?
+  codiceFiscale    String?
+  indirizzo        String?
+  cap              String?
+  citta            String?
+  provincia        String?
+  telefono         String?
+  email            String?
+  pec              String?
   /// Codice destinatario / codice SDI за е-фактурата.
-  codiceSdi       String?
+  codiceSdi        String?
   /// Данъчен режим по кодировката на SDI (RF01 = обикновен, RF19 = forfettario).
   /// Задължителен реквизит на `CedentePrestatore` — без него XML-ът се отхвърля.
-  regimeFiscale   String   @default("RF01")
-  iban            String?
+  regimeFiscale    String   @default("RF01")
+  iban             String?
   /// Регистрация в търговския регистър (REA) — влиза в подписа на документите.
-  rea             String?
-  capitaleSociale String?
+  rea              String?
+  capitaleSociale  String?
   /// Бележка под линия на печатните документи (условия на плащане и подобни).
-  notePiePagina   String?
+  notePiePagina    String?
+  sitoWeb          String?
+  /// Логото за печатните документи: PNG/JPEG, проверено и БЕЗ метаданни
+  /// (`src/lib/pdf/logo.ts`). В базата, не на диска: върви с бекъпа и с RLS.
+  logo             Bytes?
+  logoTipo         String?
+  /// Шаблонът на документите (`src/lib/pdf/modello.ts`). Чете се през
+  /// `leggiModello`: повреден или стар запис пада на стойностите по
+  /// подразбиране поле по поле, никога не проваля документ.
+  modelloDocumenti Json?
   /// Кой получава известията за срокове. Списък с адреси, разделени със запетая.
   ///
   /// ОТДЕЛНО от `email` (адреса на фирмата върху фактурите): известието за
   /// изтичаща законова проверка трябва да стигне до техническия отговорник, а
   /// не в общата кутия „info@", която никой не отваря.
-  emailAvvisi     String?
+  emailAvvisi      String?
   /// Изпращат ли се известията изобщо. ИЗКЛЮЧЕНО по подразбиране — включването
   /// е съзнателно действие, защото праща поща от името на фирмата.
-  avvisiAttivi    Boolean  @default(false)
-  tenantId        String?  @unique @db.Uuid
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  avvisiAttivi     Boolean  @default(false)
+  tenantId         String?  @unique @db.Uuid
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@map("dati_azienda")
 }

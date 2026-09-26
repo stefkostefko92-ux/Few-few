@@ -72,3 +72,23 @@ export async function apiFetch<T = Record<string, unknown>>(
   const dati = (await res.json().catch(() => ({}))) as T;
   return { ok: res.ok, stato: res.status, dati };
 }
+
+/**
+ * Същото подновяване на сесията, но БЕЗ JSON: за качване на файл (multipart —
+ * браузърът слага границата сам) и за отговор, който е файл (PDF). `null` при
+ * паднала мрежа.
+ */
+export async function apiFile(
+  url: string,
+  init?: RequestInit,
+): Promise<Response | null> {
+  try {
+    let res = await fetch(url, init);
+    if (res.status === 401 && (await rinnova())) res = await fetch(url, init);
+    if (res.status === 401 && typeof window !== "undefined")
+      window.location.href = "/login";
+    return res;
+  } catch {
+    return null;
+  }
+}

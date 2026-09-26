@@ -76,6 +76,7 @@ const PAGINE = [
   ["30-sicurezza", "/sicurezza"],
   ["31-amministrazione", "/amministrazione"],
   ["32-utente-sicurezza", "/utenti", { clicca: "Sicurezza" }],
+  ["33-modello-documenti", "/impostazioni/documenti"],
 ];
 
 let server;
@@ -255,6 +256,7 @@ async function main() {
     ["m13-integrazioni", "/integrazioni"],
     ["m14-privacy", "/privacy"],
     ["m15-impostazioni", "/impostazioni"],
+    ["m16-modello-documenti", "/impostazioni/documenti"],
   ])
     await scatta(tel, nome, percorso, opzioni);
   await mobile.close();

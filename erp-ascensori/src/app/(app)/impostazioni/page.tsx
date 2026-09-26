@@ -4,6 +4,7 @@
 // са задължителни на DDT по чл. 1, ал. 3 D.P.R. 472/1996 — затова страницата
 // показва изрично кои от тях още липсват, вместо да остави документите непълни.
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ScheletroDettaglio } from "@/components/ui";
 import { IcoAttenzione, IcoIntegro } from "@/components/icone";
@@ -27,6 +28,7 @@ const CAMPI: {
   { name: "telefono", label: "Telefono" },
   { name: "email", label: "E-mail" },
   { name: "pec", label: "PEC" },
+  { name: "sitoWeb", label: "Sito web" },
   {
     name: "codiceSdi",
     label: "Codice destinatario (SdI)",
@@ -64,6 +66,8 @@ const OBBLIGATORI_SDI = ["provincia", "regimeFiscale"];
 
 export default function Pagina() {
   const [dati, setDati] = useState<Dati | null>(null);
+  /** Провалено зареждане НЕ е празна форма: запис от нея би изтрил данните. */
+  const [erroreCarica, setErroreCarica] = useState<string | null>(null);
   /** Отделно от `dati`: то е речник от низове, а това е булево. */
   const [avvisi, setAvvisi] = useState(false);
   const [salvataggio, setSalvataggio] = useState(false);
@@ -76,8 +80,16 @@ export default function Pagina() {
     const { ok, dati: d } = await apiFetch<Dati & { avvisiAttivi?: boolean }>(
       "/api/dati-azienda",
     );
-    setDati(ok ? d : {});
-    setAvvisi(Boolean(ok && d.avvisiAttivi));
+    if (!ok) {
+      setErroreCarica(
+        (d as { error?: string }).error ??
+          "Impossibile leggere i dati aziendali.",
+      );
+      return;
+    }
+    setErroreCarica(null);
+    setDati(d);
+    setAvvisi(Boolean(d.avvisiAttivi));
   }, []);
 
   useEffect(() => {
@@ -111,6 +123,16 @@ export default function Pagina() {
     }
   }
 
+  if (erroreCarica)
+    return (
+      <div
+        role="alert"
+        className="rounded-lg border border-danger/30 bg-danger-subtle px-3 py-2.5 text-sm text-danger-text"
+      >
+        {erroreCarica} I dati non vengono mostrati per non sovrascriverli con un
+        modulo vuoto: ricaricare la pagina.
+      </div>
+    );
   if (!dati) return <ScheletroDettaglio carte={1} />;
 
   const mancanti = OBBLIGATORI.filter((c) => !dati[c]);
@@ -118,14 +140,19 @@ export default function Pagina() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-1">
-          Dati aziendali
-        </h1>
-        <p className="mt-1 text-sm text-text-3">
-          Compaiono in testa a preventivi, documenti contabili e documenti di
-          trasporto
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-text-1">
+            Dati aziendali
+          </h1>
+          <p className="mt-1 text-sm text-text-3">
+            Compaiono in testa a preventivi, documenti contabili e documenti di
+            trasporto
+          </p>
+        </div>
+        <Link href="/impostazioni/documenti" className="btn-secondary">
+          Modello dei documenti
+        </Link>
       </div>
 
       <div

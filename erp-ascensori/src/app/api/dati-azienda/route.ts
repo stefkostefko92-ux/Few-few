@@ -32,11 +32,14 @@ const schema = z.object({
     .trim()
     .toUpperCase()
     .regex(/^RF\d{2}$/, "Regime fiscale non valido (es. RF01)")
-    .optional(),
+    // `nullish`, не `optional`: формата праща празното поле като `null`, а
+    // полето е нужно за файла за SDI, не за печата — без него „Salva" падаше.
+    .nullish(),
   iban: str(40),
   rea: str(50),
   capitaleSociale: str(50),
   notePiePagina: str(500),
+  sitoWeb: str(200),
   /// Получателите на известията за срокове. Списък, разделен със запетая.
   ///
   /// Не се валидира като ЕДИН адрес: полето носи няколко. Всеки адрес минава
@@ -49,10 +52,13 @@ const schema = z.object({
 export const GET = gestito(async () => {
   // Всеки вижда данните: те са на самите документи, които и без това чете.
   const s = await richiedeRuolo("OPERATORE");
-  const d = await prisma.datiAzienda.findFirst({
+  const riga = await prisma.datiAzienda.findFirst({
     where: { tenantId: s.tenantId ?? null },
+    // Логото и шаблонът имат свои маршрути: байтовете в JSON са безсмислени.
+    omit: { logo: true, modelloDocumenti: true },
   });
-  if (!d) return ok({});
+  if (!riga) return ok({});
+  const d = { ...riga, haLogo: riga.logoTipo !== null };
   // С ИЗКЛЮЧЕНИЕ на получателите на известията. Те НЕ са на документите —
   // това са вътрешни адреси на хора, а опашката, която ги носи, вече е ADMIN+
   // (`/api/notifiche`). Същото правило, приложено на второто място, където
@@ -69,20 +75,32 @@ export const GET = gestito(async () => {
 export const PUT = gestito(async (req) => {
   // Данните определят как изглежда всеки издаден документ → ADMIN+.
   const s = await richiedeRuolo("ADMIN");
-  const data = await corpoValidato(req, schema);
+  const { regimeFiscale, ...resto } = await corpoValidato(req, schema);
+  // Празен режим = „не се сменя" (колоната има стойност по подразбиране RF01).
+  const data = { ...resto, ...(regimeFiscale ? { regimeFiscale } : {}) };
   const tenantId = s.tenantId ?? null;
 
   const prima = await prisma.datiAzienda.findFirst({ where: { tenantId } });
   const dopo = prima
-    ? await prisma.datiAzienda.update({ where: { id: prima.id }, data })
-    : await prisma.datiAzienda.create({ data: { ...data, tenantId } });
+    ? await prisma.datiAzienda.update({
+        where: { id: prima.id },
+        data,
+        omit: { logo: true, modelloDocumenti: true },
+      })
+    : await prisma.datiAzienda.create({
+        data: { ...data, tenantId },
+        omit: { logo: true, modelloDocumenti: true },
+      });
 
   await scriviAudit({
     azione: "UPDATE",
     entita: "dati_azienda",
     entitaId: dopo.id,
     dettagli: prima
-      ? dettagliModifica(prima, { ...prima, ...data })
+      ? dettagliModifica(
+          { ...prima, logo: undefined, modelloDocumenti: undefined },
+          { ...prima, ...data, logo: undefined, modelloDocumenti: undefined },
+        )
       : { creazione: true },
     utenteId: s.sub,
     tenantId,

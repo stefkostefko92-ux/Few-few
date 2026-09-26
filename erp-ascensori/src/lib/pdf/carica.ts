@@ -13,21 +13,27 @@ import type {
   DocumentoPdf,
   RigaDocumento,
 } from "@/lib/pdf/documento";
+import { leggiModello, type ModelloDocumenti } from "@/lib/pdf/modello";
 
 /**
- * Данните на издаващата фирма.
+ * Данните на издаващата фирма и нейният шаблон за документите.
  *
  * Ако още не са попълнени, документът НЕ се отказва — връща се минимален
  * запис с явно указание. Празен документ е по-лош от документ с липсващо
  * поле: първият блокира работата, вторият показва какво трябва да се допълни.
  */
-export async function datiAzienda(tenantId: string | null): Promise<Azienda> {
+export async function datiStampa(
+  tenantId: string | null,
+): Promise<{ azienda: Azienda; modello: ModelloDocumenti }> {
   const d = await prisma.datiAzienda.findFirst({ where: { tenantId } });
-  if (d) return d;
+  if (d) return { azienda: d, modello: leggiModello(d.modelloDocumenti) };
   return {
-    ragioneSociale: "— Dati azienda non configurati —",
-    notePiePagina:
-      "Completare i dati aziendali in Impostazioni: sono obbligatori sui documenti di trasporto (art. 1 D.P.R. 472/1996).",
+    azienda: {
+      ragioneSociale: "— Dati azienda non configurati —",
+      notePiePagina:
+        "Completare i dati aziendali in Impostazioni: sono obbligatori sui documenti di trasporto (art. 1 D.P.R. 472/1996).",
+    },
+    modello: leggiModello(null),
   };
 }
 
@@ -93,11 +99,12 @@ export async function pdfPreventivo(
     aliquotaIva: v.aliquotaIva.toString(),
   }));
   return {
+    chiave: "preventivo",
     tipo: "Preventivo",
     numero: p.numero,
     data: p.createdAt,
     oggetto: p.oggetto,
-    azienda: await datiAzienda(tenantId),
+    ...(await datiStampa(tenantId)),
     destinatario: controparte(p.amministratore),
     righe: righeConPrezzi(p.voci),
     conPrezzi: true,
@@ -146,11 +153,12 @@ export async function pdfFattura(
     : null;
 
   return {
+    chiave: "fattura",
     tipo: f.tipo === "EMESSA" ? "Documento contabile" : "Fattura ricevuta",
     numero: f.numero,
     data: f.data,
     oggetto: f.oggetto,
-    azienda: await datiAzienda(tenantId),
+    ...(await datiStampa(tenantId)),
     // Получателят е кондоминиумът, когато го има: администраторът само го
     // представлява и НЕ е страна по документа.
     destinatario: f.condominio
@@ -224,11 +232,12 @@ export async function pdfDdt(
   });
   if (!d) return null;
   return {
+    chiave: "ddt",
     tipo: "Documento di trasporto",
     numero: d.numero,
     data: d.data,
     oggetto: null,
-    azienda: await datiAzienda(tenantId),
+    ...(await datiStampa(tenantId)),
     // Получателят на DDT е свободен текст в модела — показва се както е въведен.
     destinatario: d.destinatario
       ? { denominazione: d.destinatario, indirizzo: d.indirizzoConsegna }
@@ -291,11 +300,12 @@ export async function pdfRapportino(
   };
 
   return {
+    chiave: "rapportino",
     tipo: "Rapportino di intervento",
     numero: r.numero,
     data: r.dataOra,
     oggetto: r.ordineLavoro.oggetto,
-    azienda: await datiAzienda(tenantId),
+    ...(await datiStampa(tenantId)),
     destinatario: null,
     corpo: r.descrizione,
     // Вложеното — първо артикулите ОТ СКЛАДА (с количество; те са свалили

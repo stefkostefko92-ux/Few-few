@@ -12,8 +12,16 @@
 
 import PDFDocument from "pdfkit";
 import { prisma } from "@/lib/prisma";
-import { datiAzienda } from "@/lib/pdf/carica";
+import { datiStampa } from "@/lib/pdf/carica";
 import type { Azienda } from "@/lib/pdf/documento";
+import {
+  CARATTERI,
+  MARGINI,
+  MODELLO_PREDEFINITO,
+  compila,
+  type ModelloDocumenti,
+} from "@/lib/pdf/modello";
+import { riconosciLogo } from "@/lib/pdf/logo";
 import {
   TIPO_IMPIANTO_LABEL,
   REGIME_IMPIANTO_LABEL,
@@ -21,10 +29,8 @@ import {
 import { TIPO_INTERVENTO_LABEL } from "@/lib/normativa/interventi";
 import { CONTROLLI_ART15, problemiConformita } from "@/lib/normativa/verifiche";
 
-const MARGINE = 40;
 const GRIGIO = "#6b7280";
 const SCURO = "#111827";
-const ACCENTO = "#116bb5";
 const ROSSO = "#b91c1c";
 
 const dataIt = (d: Date | null | undefined) =>
@@ -40,6 +46,8 @@ const ESITO_LABEL: Record<string, string> = {
 
 export interface DatiLibretto {
   azienda: Azienda;
+  /** Шаблонът на фирмата: цвят, шрифт, лого, заглавие, текстове (`modello.ts`). */
+  modello?: ModelloDocumenti | null;
   impianto: {
     matricola: string;
     matricolaComune: string | null;
@@ -117,7 +125,7 @@ export async function caricaLibretto(
   if (!i) return null;
 
   return {
-    azienda: await datiAzienda(tenantId),
+    ...(await datiStampa(tenantId)),
     impianto: {
       matricola: i.matricola,
       matricolaComune: i.matricolaComune,
@@ -190,9 +198,15 @@ export async function caricaLibretto(
 }
 
 export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
+  const modello = d.modello ?? MODELLO_PREDEFINITO;
+  const cfg = modello.documenti.libretto;
+  const MARGINE = MARGINI[modello.margine];
+  const ACCENTO = modello.colore;
+  const f = CARATTERI[modello.carattere];
   const pdf = new PDFDocument({
     size: "A4",
     margin: MARGINE,
+    bufferPages: true,
     info: {
       Title: `Libretto impianto ${d.impianto.matricolaComune ?? d.impianto.matricola}`,
       Author: d.azienda.ragioneSociale,
@@ -213,11 +227,7 @@ export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
   const titolo = (t: string) => {
     spazio(60);
     pdf.moveDown(0.8);
-    pdf
-      .fillColor(ACCENTO)
-      .fontSize(11)
-      .font("Helvetica-Bold")
-      .text(t.toUpperCase());
+    pdf.fillColor(ACCENTO).fontSize(11).font(f.grassetto).text(t.toUpperCase());
     pdf
       .moveTo(MARGINE, pdf.y + 2)
       .lineTo(pdf.page.width - MARGINE, pdf.y + 2)
@@ -228,28 +238,60 @@ export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
   const coppia = (label: string, valore: string) => {
     pdf
       .fontSize(9)
-      .font("Helvetica")
+      .font(f.normale)
       .fillColor(GRIGIO)
       .text(label, { continued: true });
     pdf.fillColor(SCURO).text(`  ${valore}`);
   };
 
   // ── Заглавие ──────────────────────────────────────────────────────────────
+  const matricola = d.impianto.matricolaComune ?? d.impianto.matricola;
+  const valori = {
+    azienda: d.azienda.ragioneSociale,
+    numero: matricola,
+    data: dataIt(d.generatoIl),
+    destinatario: d.impianto.condominio?.nome,
+    iban: d.azienda.iban,
+  };
+  // Логото — горе вдясно: заглавието вляво остава първото, което окото чете.
+  const info =
+    modello.logo.posizione !== "nessuna" && d.azienda.logo
+      ? riconosciLogo(d.azienda.logo)
+      : null;
+  if (d.azienda.logo && info) {
+    const k = Math.min(
+      modello.logo.larghezza / info.larghezza,
+      50 / info.altezza,
+    );
+    const l = info.larghezza * k;
+    try {
+      pdf.image(
+        Buffer.from(d.azienda.logo),
+        pdf.page.width - MARGINE - l,
+        MARGINE,
+        { width: l, height: info.altezza * k },
+      );
+    } catch {
+      // повреден файл не проваля досието — логото просто липсва
+    }
+  }
   pdf
     .fillColor(ACCENTO)
     .fontSize(18)
-    .font("Helvetica-Bold")
-    .text("LIBRETTO DELL'IMPIANTO");
+    .font(f.grassetto)
+    .text(cfg.titolo.toUpperCase(), MARGINE, MARGINE, {
+      width: larghezza - 150,
+    });
   pdf
     .fillColor(SCURO)
     .fontSize(12)
     .text(
-      `${TIPO_IMPIANTO_LABEL[d.impianto.tipo as keyof typeof TIPO_IMPIANTO_LABEL] ?? d.impianto.tipo} — matricola ${d.impianto.matricolaComune ?? d.impianto.matricola}`,
+      `${TIPO_IMPIANTO_LABEL[d.impianto.tipo as keyof typeof TIPO_IMPIANTO_LABEL] ?? d.impianto.tipo} — matricola ${matricola}`,
     );
   pdf
     .fillColor(GRIGIO)
     .fontSize(8)
-    .font("Helvetica")
+    .font(f.normale)
     .text(
       `${d.azienda.ragioneSociale} · documento generato il ${dataIt(d.generatoIl)}`,
     );
@@ -258,7 +300,7 @@ export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
   pdf.moveDown(0.5);
   pdf
     .fontSize(7)
-    .font("Helvetica-Oblique")
+    .font(f.corsivo)
     .fillColor(GRIGIO)
     .text(
       "Raccolta dei dati dell'impianto tenuti dalla ditta di manutenzione. Non sostituisce i verbali " +
@@ -267,14 +309,20 @@ export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
       { width: larghezza },
     );
 
-  if (d.problemi.length) {
-    pdf.moveDown(0.6);
+  const iniziale = compila(cfg.testoIniziale, valori).trim();
+  if (iniziale) {
+    pdf.moveDown(0.5);
     pdf
       .fontSize(9)
-      .font("Helvetica-Bold")
-      .fillColor(ROSSO)
-      .text("DATI MANCANTI");
-    pdf.fontSize(8).font("Helvetica");
+      .font(f.normale)
+      .fillColor(SCURO)
+      .text(iniziale, { width: larghezza });
+  }
+
+  if (d.problemi.length) {
+    pdf.moveDown(0.6);
+    pdf.fontSize(9).font(f.grassetto).fillColor(ROSSO).text("DATI MANCANTI");
+    pdf.fontSize(8).font(f.normale);
     for (const p of d.problemi) pdf.text(`•  ${p}`, { width: larghezza });
   }
 
@@ -316,19 +364,19 @@ export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
   if (!d.verifiche.length) {
     pdf
       .fontSize(9)
-      .font("Helvetica")
+      .font(f.normale)
       .fillColor(GRIGIO)
       .text("Nessuna verifica registrata.");
   } else {
     for (const v of d.verifiche) {
       spazio(50);
-      pdf.fontSize(9).font("Helvetica-Bold");
+      pdf.fontSize(9).font(f.grassetto);
       pdf.fillColor(v.esito === "NEGATIVO" ? ROSSO : SCURO);
       pdf.text(
         `${dataIt(v.data)}  ·  ${ESITO_LABEL[v.esito] ?? v.esito}` +
           (v.numeroVerbale ? `  ·  verbale ${v.numeroVerbale}` : ""),
       );
-      pdf.fontSize(8).font("Helvetica").fillColor(GRIGIO);
+      pdf.fontSize(8).font(f.normale).fillColor(GRIGIO);
       pdf.text(
         `${v.tipo === "PERIODICA" ? "Periodica" : "Straordinaria"} — ${v.organismo ?? "organismo non indicato"}`,
       );
@@ -345,13 +393,13 @@ export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
   if (!d.interventi.length) {
     pdf
       .fontSize(9)
-      .font("Helvetica")
+      .font(f.normale)
       .fillColor(GRIGIO)
       .text("Nessun intervento registrato.");
   } else {
     for (const r of d.interventi) {
       spazio(60);
-      pdf.fontSize(9).font("Helvetica-Bold").fillColor(SCURO);
+      pdf.fontSize(9).font(f.grassetto).fillColor(SCURO);
       pdf.text(
         `${dataIt(r.dataOra)}  ·  ${r.numero}  ·  ${
           TIPO_INTERVENTO_LABEL[
@@ -359,7 +407,7 @@ export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
           ] ?? r.tipoIntervento
         }`,
       );
-      pdf.fontSize(8).font("Helvetica").fillColor(SCURO);
+      pdf.fontSize(8).font(f.normale).fillColor(SCURO);
       pdf.text(r.descrizione, { width: larghezza });
 
       // Проверките по чл. 15, ал. 4 се изписват ПОИМЕННО. Точно това се пита
@@ -385,6 +433,41 @@ export function generaLibretto(d: DatiLibretto): Promise<Buffer> {
         );
       pdf.moveDown(0.4);
     }
+  }
+
+  const finale = compila(cfg.testoFinale, valori).trim();
+  if (finale) {
+    spazio(40);
+    pdf.moveDown(0.8);
+    pdf
+      .fontSize(9)
+      .font(f.normale)
+      .fillColor(SCURO)
+      .text(finale, { width: larghezza });
+  }
+
+  // Под линия на всяка страница: бележката на шаблона и „Pagina X di N".
+  const nota = compila(cfg.notaPiede, valori).trim();
+  const { start, count } = pdf.bufferedPageRange();
+  for (let p = start; p < start + count; p++) {
+    pdf.switchToPage(p);
+    const margine = pdf.page.margins.bottom;
+    pdf.page.margins.bottom = 0;
+    const y = pdf.page.height - MARGINE / 2 - 6;
+    pdf.fontSize(7).font(f.normale).fillColor(GRIGIO);
+    if (nota)
+      pdf.text(nota, MARGINE, y, {
+        width: larghezza - 90,
+        lineBreak: false,
+        ellipsis: true,
+      });
+    if (modello.numeriPagina)
+      pdf.text(`Pagina ${p - start + 1} di ${count}`, MARGINE, y, {
+        width: larghezza,
+        align: "right",
+        lineBreak: false,
+      });
+    pdf.page.margins.bottom = margine;
   }
 
   pdf.end();

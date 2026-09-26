@@ -81,6 +81,7 @@ for (const [nome, percorso] of [
   ["сигурността на акаунта", "/sicurezza"],
   ["панелът за администриране", "/amministrazione"],
   ["потребителите", "/utenti"],
+  ["шаблонът на документите", "/impostazioni/documenti"],
 ] as const) {
   test(`${nome} е достъпна`, async ({ page }) => {
     await entra(page, UTENTI.ADMIN);

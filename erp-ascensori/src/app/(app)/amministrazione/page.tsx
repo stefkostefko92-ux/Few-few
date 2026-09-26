@@ -274,6 +274,7 @@ export default function PaginaAmministrazione() {
             ["/utenti", "Utenti e livelli di accesso"],
             ["/audit", "Registro operazioni e verifica integrità"],
             ["/impostazioni", "Dati aziendali e fatturazione"],
+            ["/impostazioni/documenti", "Modello dei documenti (logo, testi)"],
             ["/integrazioni", "API, webhook e coda email"],
             ["/privacy", "Diritti privacy (GDPR)"],
             ["/sicurezza", "Sicurezza del mio account"],

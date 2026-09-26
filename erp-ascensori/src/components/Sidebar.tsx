@@ -235,6 +235,12 @@ const GRUPPI: Gruppo[] = [
         minimo: "ADMIN",
       },
       {
+        href: "/impostazioni/documenti",
+        label: "Modello documenti",
+        icona: <FileText size={DIM.navigazione} />,
+        minimo: "ADMIN",
+      },
+      {
         href: "/integrazioni",
         label: "Integrazioni",
         icona: <PlugsConnected size={DIM.navigazione} />,
@@ -330,6 +336,12 @@ export default function Sidebar() {
 
   const ruolo = utente?.ruolo;
 
+  // Активна е НАЙ-ДЪЛГАТА съвпадаща връзка: иначе на /impostazioni/documenti
+  // светеха и „Dati aziendali", и „Modello documenti".
+  const voceAttiva = GRUPPI.flatMap((g) => g.voci)
+    .map((v) => v.href)
+    .filter((h) => pathname === h || pathname.startsWith(h + "/"))
+    .sort((a, b) => b.length - a.length)[0];
   return (
     <>
       {/* Горна лента — само под `lg`. Фиксирана, защото главното съдържание е
@@ -396,8 +408,7 @@ export default function Sidebar() {
                   </div>
                 )}
                 {visibili.map((v) => {
-                  const attiva =
-                    pathname === v.href || pathname.startsWith(v.href + "/");
+                  const attiva = v.href === voceAttiva;
                   return (
                     <Link
                       key={v.href}
