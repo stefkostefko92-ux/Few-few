@@ -16,6 +16,10 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { parseFallback, replaceFallback } from "../../tools/lib/dashboard-fallback.mjs";
+import { norm, addLessons, lessonIndex, lessonText, summarize, applyUpdate, countVerifiedText } from "../../tools/lib/memory-core.mjs";
+import { publishLessons, pendingLessons, isGitRepo } from "../../tools/lib/memory-branch.mjs";
+import { evalMode } from "../../tools/lib/eval-mode.mjs";
+import { CREDENTIAL } from "../../tools/lib/secret-patterns.mjs";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -27,28 +31,31 @@ const LOCK_DIR = join(PROJECT_DIR, "agents-dashboard", ".sync.lock");
 
 function readStdin() { try { return readFileSync(0, "utf8"); } catch { return ""; } }
 
-function collectText(node, out) {
-  if (!node || typeof node !== "object") return;
-  if (Array.isArray(node)) { for (const n of node) collectText(n, out); return; }
-  for (const [k, v] of Object.entries(node)) {
-    if (k === "text" && typeof v === "string") out.push(v);
-    else if (v && typeof v === "object") collectText(v, out);
+// САМО текстът, който агентът е написал (assistant → content[].type === "text"). Преди се събираше всеки
+// „text“ възел в транскрипта, вкл. tool_result: прочетен файл/страница/issue с ```learn блок ставаше
+// „поука“ (Разбивача, 2026-09-24 — възпроизведено; LLM01). Недоверено съдържание е данни, не памет.
+export function assistantTexts(lines) {
+  const out = [];
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t) continue;
+    let o; try { o = JSON.parse(t); } catch { continue; }
+    const m = o?.message;
+    if (o?.type !== "assistant" || m?.role !== "assistant" || !Array.isArray(m.content)) continue;
+    for (const c of m.content) if (c?.type === "text" && typeof c.text === "string") out.push(c.text);
   }
+  return out;
 }
 
 function transcriptText(path) {
   if (!path || !existsSync(path)) return "";
-  const out = [];
-  for (const line of readFileSync(path, "utf8").split("\n")) {
-    const t = line.trim();
-    if (!t) continue;
-    try { collectText(JSON.parse(t), out); } catch { /* skip */ }
-  }
-  return out.join("\n");
+  return assistantTexts(readFileSync(path, "utf8").split("\n")).join("\n");
 }
 
-function lastLearnBlock(text) {
-  const re = /```learn\s*\n([\s\S]*?)```/g;
+// Оградата е на СОБСТВЕН ред (и отварящата, и затварящата): „```learn“ в средата на изречение (напр.
+// поука, която описва самата кука) иначе отрязваше блока и ученето изчезваше.
+export function lastLearnBlock(text) {
+  const re = /^[ \t]*```learn[ \t]*\n([\s\S]*?)^[ \t]*```[ \t]*$/gm;
   let m, last = null;
   while ((m = re.exec(text)) !== null) last = m[1];
   return last;
@@ -73,7 +80,9 @@ export function normalizeConfidence(raw) {
   return CONFIDENCE_SYNONYMS[s] || "unverified";
 }
 
-function parseLearn(block) {
+const unquote = (v) => { const t = String(v).trim(); return /^(["']).*\1$/.test(t) ? t.slice(1, -1).trim() : t; };
+
+export function parseLearn(block) {
   const res = { agent: null, date: null, lessons: [] };
   let cur = null;
   for (const raw of block.split("\n")) {
@@ -85,18 +94,50 @@ function parseLearn(block) {
     // nabludatelya/analizatora ползваха `lesson:` и поуките им бяха тихо изхвърлени).
     else if ((m = line.match(/^\s*-\s*(?:text|lesson|insight|claim):\s*(.+)$/))) { cur = { text: m[1].trim().replace(/^["']|["']$/g, ""), confidence: "unverified", source: "", scope: "", reverify: "" }; res.lessons.push(cur); }
     else if (cur && (m = line.match(/^\s*confidence:\s*(.+)$/))) cur.confidence = normalizeConfidence(m[1]);
-    else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = m[1].trim();
-    else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = m[1].trim();
+    // Кавичките около стойността са YAML украса, не част от източника. Без махането им 19 от 23 проверени
+    // поуки на 3D Maniac (реални команди → изход) паднаха в Карантина като „без източник“ (2026-09-24).
+    else if (cur && (m = line.match(/^\s*source:\s*(.+)$/))) cur.source = unquote(m[1]);
+    else if (cur && (m = line.match(/^\s*scope:\s*(.+)$/))) cur.scope = unquote(m[1]);
     else if (cur && (m = line.match(/^\s*re-?verify:\s*(\d{4}-\d{2}-\d{2}).*$/i))) cur.reverify = m[1].trim(); // #2 явен TTL за критичен факт
   }
+  if (!res.lessons.length) res.lessons = inlineLessons(block);
   return res;
 }
 
-const norm = (s) => s.toLowerCase().replace(/[`'"„“”]/g, "").replace(/\s+/g, " ").replace(/[.;,]+$/, "").trim();
+// Резервен формат: поука като свободен булет с полетата в същия ред —
+// „- 2026-09-24: текст… confidence: verified; source: файл:ред“. Сийдъра предаде 25 проверени поуки
+// точно така (2026-09-24) и парсерът намери НУЛА — ученето тихо изчезна. Същите проверки важат
+// (тайна, инжекция, реален източник за verified), тук само се разчита формата.
+export function inlineLessons(block) {
+  const out = [], entries = [];
+  // Булет + редовете под него (полетата често продължават на следващ ред) = една поука.
+  for (const raw of block.split("\n")) {
+    const line = raw.trim();
+    if (line.startsWith("- ")) entries.push(line.slice(2));
+    else if (line && entries.length && !/^(agent|date|lessons):/i.test(line)) entries[entries.length - 1] += " " + line;
+  }
+  for (const body of entries) {
+    // Форматът на самия файл памет: „**дата:** текст _(scope; confidence; source)_“. Конвейера и
+    // Принтаджията предадоха по 25 поуки точно така (2026-09-24) — пак НУЛА, пак тихо.
+    const e = body.match(/^\*\*\d{4}-\d{2}-\d{2}:\*\*\s*(.+?)\s*_\(([^;]+);\s*([^;]+);\s*(.+?)\)_\s*$/);
+    if (e) { out.push({ text: e[1].trim(), confidence: normalizeConfidence(e[3].trim()), source: e[4].trim().replace(/^["']|["']$/g, ""), scope: e[2].trim(), reverify: "" }); continue; }
+    if (!/\bconfidence:/i.test(body)) continue;
+    const text = body.split(/\s*\bconfidence:/i)[0].replace(/^\*{0,2}\d{4}-\d{2}-\d{2}\*{0,2}:\s*/, "").replace(/[\s.;,]+$/, "").trim();
+    const conf = (body.match(/\bconfidence:\s*([^;|]+)/i) || [])[1] || "";
+    const source = ((body.match(/\bsource:\s*(.+?)(?:;\s*scope:|$)/i) || [])[1] || "").trim();
+    const scope = ((body.match(/\bscope:\s*(.+)$/i) || [])[1] || "").trim();
+    if (text) out.push({ text, confidence: normalizeConfidence(conf.trim()), source, scope, reverify: "" });
+  }
+  return out;
+}
+
 
 // Guardrail (flawlessness #10): НИКОГА тайна/ключ/токен в паметта — твърд гейт, не съвет.
 const SECRET_RE = /\b(?:sk|rk|pk)_(?:live|test|prod)_[A-Za-z0-9]{8,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{35}|\b(?:ya29|AQ)\.[0-9A-Za-z_-]{20,}|(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|amqp):\/\/[^\s:@/]+:[^\s:@/]+@|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/;
-const looksSecret = (s) => SECRET_RE.test(String(s));
+// + КАНОНИЧНИЯТ списък (tools/lib/secret-patterns.mjs). Собственият SECRET_RE беше по-тесен —
+// sk-ant-…, github_pat_…, Discord bot token влизаха в паметта (Разбивача, мисия 2). Пазим и локалния
+// заради формите, които каноничният умишлено не блокира в рънтайм (JWT, DB URL с парола).
+const looksSecret = (s) => { const t = String(s); return SECRET_RE.test(t) || CREDENTIAL.some((p) => p.re.test(t)); };
 
 // Анти устойчива-инжекция (persistent prompt injection): паметта се ИНЖЕКТИРА в
 // контекста на всеки бъдещ старт (memory-preload) → зловреден сайт, който убеди агент
@@ -104,8 +145,8 @@ const looksSecret = (s) => SECRET_RE.test(String(s));
 // императиви за изпращане/изпълнение, смяна на роля/правила, exfil URL-и, скрити знаци.
 const INJECTION_RE = new RegExp(
   [
-    /(?:ignore|disregard|forget)\s+(?:all\s+)?(?:previous|prior|earlier|above)\s+(?:instructions?|rules?|context)/.source,
-    /(?:игнорирай|забрави|пренебрегни)\s+(?:всички\s+)?(?:предишн[\p{L}]*|горн[\p{L}]*|досегашн[\p{L}]*|тези|тукашн[\p{L}]*)\s+(?:инструкц[\p{L}]*|правил[\p{L}]*|указан[\p{L}]*)/u.source,
+    /(?:ignore|disregard|forget)\s+(?:all\s+)?(?:the\s+)?(?:previous|prior|earlier|above)\s+(?:instructions?|rules?|context)/.source,
+    /(?:игнорирай|забрави|пренебрегни)\s+(?:всички\s+)?(?:предишн[\p{L}]*|предходн[\p{L}]*|горн[\p{L}]*|досегашн[\p{L}]*|тези|тукашн[\p{L}]*)\s+(?:инструкц[\p{L}]*|правил[\p{L}]*|указан[\p{L}]*)/u.source,
     /you\s+are\s+(?:now|no\s+longer)\s/.source,
     /(?:ти\s+(?:вече\s+)?си|отсега\s+си)\s+(?:друг|нов)\s+(?:агент|асистент)/.source,
     /(?:винаги|always)\s+(?:изпращай|изпрати|прати|send|post|forward|exfiltrate)\b/.source,
@@ -118,11 +159,26 @@ const INJECTION_RE = new RegExp(
     /(?:ignora|olvida)\s+(?:todas\s+las\s+)?(?:instrucciones|reglas)\s+(?:anteriores|previas)/u.source, // ES
     /(?:sei\s+(?:ora|adesso)|du\s+bist\s+(?:jetzt|nun)|ahora\s+eres)\s/u.source, // IT/DE/ES смяна на роля
     /(?:invia|manda|inoltra|sende|schicke|leite|env[ií]a)\b[^\n]{0,80}\b(?:a|an|zu)\s+https?:\/\//u.source, // IT/DE/ES exfil→URL
-    /[​-‏‪-‮⁦-⁩]/.source, // нулево-широки/bidi контролни знаци
+    /(?:ты\s+теперь|теперь\s+ты|(?:игнорируй|забудь)\s+(?:все\s+)?(?:предыдущие|прежние)\s+(?:инструкции|правила))/u.source, // RU
+    /(?:ignore[zr]?|oublie[zr]?)\s+(?:toutes\s+)?les\s+(?:instructions|règles)\s+(?:précédentes|antérieures)/u.source, // FR
+    // Variation selectors след буква (не след емоджи) и supplementary VS — невидим носител на текст.
+    /[\p{L}][\uFE00-\uFE0F]|[\u{E0100}-\u{E01EF}]/u.source,
+    // Нулево-широки/bidi/невидими знаци — същият клас като INVISIBLE в guard-secrets (U+2060, U+FEFF,
+    // U+00AD, U+180E, U+3164, Tags). Преди: само U+200B-200F/202A-202E/2066-2069 → скрита инструкция минаваше.
+    /[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFEFF\u{E0000}-\u{E007F}]/u.source,
   ].join("|"),
   "iu",
 );
-const looksInjection = (s) => INJECTION_RE.test(String(s));
+// Нормализация преди проверката: NFKC сгъва fullwidth/стилизирани форми („ｉｇｎｏｒｅ“), а латинизираният
+// вариант хваща кирилски хомоглифи в английски фрази („іgnore“ с укр. і). Проверяваме и оригинала
+// (невидимите знаци), и двете нормализирани форми.
+const HOMOGLYPH = { а: "a", е: "e", о: "o", р: "p", с: "c", у: "y", х: "x", і: "i", ј: "j", ѕ: "s", ԁ: "d", ӏ: "l", һ: "h", ԛ: "q", ԝ: "w" };
+const latinize = (t) => t.replace(/[аеорсухіјѕԁӏһԛԝ]/g, (c) => HOMOGLYPH[c]);
+const looksInjection = (s) => {
+  const raw = String(s ?? "");
+  const n = raw.normalize("NFKC");
+  return INJECTION_RE.test(raw) || INJECTION_RE.test(n) || INJECTION_RE.test(latinize(n.toLowerCase()));
+};
 
 // „Verified" иска РЕАЛЕН източник. Синтактична проверка (не семантична — hook-ът не отваря URL-а);
 // curate + човек до push.
@@ -143,199 +199,104 @@ const looksInjection = (s) => INJECTION_RE.test(String(s));
 import { isRealSource as sourceIsReal } from "../../tools/agents/oversee-lib.mjs";
 export { sourceIsReal };
 
-// ВНИМАНИЕ: анкерът трябва да СЪВПАДА с insertUnder (`^##` на ред). Дълго време ensureSections
-// тестваше БЕЗ `^` (substring) → ако „## Проверени поуки" се появи НЕ в началото на ред (напр.
-// в проза), ensureSections решаваше „секцията съществува" и не я добавяше, но insertUnder (с `^##`)
-// не я намираше и добавяше булета осиротял в КРАЯ на файла. Двата предиката трябва да съдят еднакво.
-function ensureSections(txt) {
-  if (!/^##\s*Проверени поуки/m.test(txt)) txt += `\n## Проверени поуки (verified)\n`;
-  if (!/^##\s*Карантина/m.test(txt)) txt += `\n## Карантина (непроверени — НЕ са факт)\n`;
-  return txt;
+export { looksSecret, looksInjection };
+
+// Таван за поука (Разбивача: 20 000-знаков булет минаваше и раздуваше паметта). Най-дългата реална
+// поука към 2026-09-24 е ~3200 знака с метаданните — таванът е с резерв.
+export const MAX_TEXT = 2000, MAX_SOURCE = 600, MAX_LESSONS = 30;
+
+// Бъдеща дата (`date: 2099-…`) изплуваше отровната поука най-отгоре при извличане (сортът е по дата).
+// Датата на поуката е най-много днешната; невалидна → днешната.
+export function clampDate(raw, today = new Date().toISOString().slice(0, 10)) {
+  const d = String(raw || "").trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !Number.isFinite(Date.parse(d))) return today;
+  return d > today ? today : d;
 }
-function insertUnder(txt, heading, line) {
-  const lines = txt.split("\n");
-  const idx = lines.findIndex((l) => new RegExp(`^##\\s*${heading}`).test(l));
-  if (idx === -1) return txt + `\n${line}\n`;
-  lines.splice(idx + 1, 0, line);
-  return lines.join("\n");
+
+export function runnerMatches(runner, agent) {
+  const r = String(runner || "").trim();
+  if (!r) return true;
+  return r === agent;
 }
+
 function atomicWrite(file, content) {
   const tmp = `${file}.tmp.${process.pid}`;
   writeFileSync(tmp, content);
   renameSync(tmp, file);
 }
 
-// Сериен достъп до таблото — оцелява при паралелни субагенти. mkdir е атомичен.
+// Сериен достъп до таблото в резервния път — оцелява при паралелни субагенти. mkdir е атомичен.
 function withLock(fn) {
   for (let i = 0; i < 150; i++) {
     try { mkdirSync(LOCK_DIR); } catch { sleepMs(40); continue; }
     try { return fn(); } finally { try { rmdirSync(LOCK_DIR); } catch { /* ignore */ } }
   }
-  // не успяхме да заключим — пропусни (паметта вече е записана; таблото е козметика)
 }
 function sleepMs(ms) {
   const sab = new Int32Array(new SharedArrayBuffer(4));
   Atomics.wait(sab, 0, 0, ms);
 }
 
-// Без таван на timeline-а: цялата еволюция на ученето се пази (агентите нямат
-// лимит на това, което научават — виж bumpVersion + curate MAX_PER_SECTION).
-const MAX_EVOLUTION = Infinity;
-function cmpVer(a, b) {
-  const pa = String(a).split(".").map((n) => parseInt(n, 10) || 0);
-  const pb = String(b).split(".").map((n) => parseInt(n, 10) || 0);
-  for (let i = 0; i < 3; i++) { const d = (pa[i] || 0) - (pb[i] || 0); if (d) return d; }
-  return 0;
-}
-function latestVersion(a) {
-  let best = "0.0.0";
-  for (const e of a.evolution || []) if (cmpVer(e.version, best) > 0) best = e.version;
-  return best;
-}
-// Схема „учене ролва в major": всеки 10 проверени поуки = +1 major.
-// minor е цифра 0–9; 10-ото учене ролва в следващ major (6.9 → 7.0 → …).
-// БЕЗ таван — ученето е неограничено: 10.0 → 10.1 → … → 11.0 → … нагоре без край.
-// Зрелостта расте вечно, защото знанието на агентите няма лимит.
-function bumpVersion(v) {
-  const p = String(v).split(".").map((n) => parseInt(n, 10) || 0);
-  let maj = p[0] || 0;
-  let min = (p[1] || 0) + 1;
-  if (min > 9) { maj += 1; min = 0; }
-  return `${maj}.${min}.0`;
-}
-// Вдига версията с N стъпки — по ЕДНА на ПРОВЕРЕНА поука (документираният замисъл: 10 поуки = +1 major).
-// По-рано вдигаше +0.1 на РЪН независимо от броя поуки → подценяваше многопоучните рънове.
-function bumpVersionBy(v, n) {
-  let out = v;
-  for (let i = 0; i < Math.max(1, n); i++) out = bumpVersion(out);
-  return out;
-}
-
-// Прилага activity запис и (при проверено учене) вдига minor версията + timeline запис.
-// Връща true, ако нещо се е променило.
-// Брои булетите в раздела „Проверени поуки" на паметта. `null` при липсващ/нечетим файл —
-// тогава не пипаме полето (по-добре старо число, отколкото да занулим показателя).
+// Брои булетите в раздела „Проверени поуки". `null` при липсващ/нечетим файл — тогава не пипаме
+// полето (по-добре старо число, отколкото да занулим показателя). Броенето е в memory-core.
 export function countVerified(agentId, dir = MEM_DIR) {
   let txt;
   try { txt = readFileSync(join(dir, `${agentId}.md`), "utf8"); } catch { return null; }
-  let inSec = false, n = 0;
-  for (const ln of txt.split("\n")) {
-    if (/^##\s/.test(ln)) { inSec = /verified|Проверени поуки/i.test(ln); continue; }
-    if (inSec && /^\s*-\s+\*\*/.test(ln)) n++;
-  }
-  return n;
+  return countVerifiedText(txt);
 }
 
-function applyUpdate(obj, agentId, activityEntry, evoDetail, verifiedCount = 1) {
-  const a = (obj.agents || []).find((x) => x.id === agentId);
-  if (!a) return false;
-  let changed = false;
-
-  a.activity = a.activity || [];
-  if (!a.activity.some((x) => x.summary === activityEntry.summary)) {
-    a.activity.unshift(activityEntry); // без cap — пазим целия поток на учене
-    changed = true;
-  }
-
-  // Реалният брой ПРОВЕРЕНИ поуки. Таблото дотук показваше `knowledge.sources` под етикет
-  // „ПОУКИ" — а това са изследователските източници ПРИ РАЖДАНЕТО на агента, статично число,
-  // което не мърда, колкото и да учи флотът. Поддържаме истинския брой тук, до самия запис.
-  const lessons = countVerified(agentId);
-  if (lessons != null && a.knowledge && a.knowledge.lessons !== lessons) {
-    a.knowledge.lessons = lessons;
-    changed = true;
-  }
-
-  // Проверено учене вдига версията — по ЕДНА стъпка на ПРОВЕРЕНА поука (не на рън).
-  if (evoDetail) {
-    a.evolution = a.evolution || [];
-    if (!a.evolution.some((e) => e.detail === evoDetail)) {
-      const next = bumpVersionBy(latestVersion(a), verifiedCount);
-      a.evolution.push({
-        version: next,
-        date: activityEntry.date,
-        event: `v${next.split(".").slice(0, 2).join(".")} — учене`,
-        detail: evoDetail,
-      });
-      // капни timeline-а, но винаги запази „Раждането" (index 0)
-      if (a.evolution.length > MAX_EVOLUTION) {
-        const birth = a.evolution[0];
-        a.evolution = [birth, ...a.evolution.slice(-(MAX_EVOLUTION - 1))];
-      }
-      changed = true;
+// РЕЗЕРВЕН път (само когато няма git): записва в работното дърво + таблото, както преди.
+function writeWorkingTree(agentId, file, txt, s) {
+  atomicWrite(file, txt);
+  const lessons = countVerifiedText(txt);
+  withLock(() => {
+    if (existsSync(DASH_JSON)) {
+      try {
+        const j = JSON.parse(readFileSync(DASH_JSON, "utf8"));
+        if (applyUpdate(j, agentId, s.activity, s.evoDetail, s.verifiedCount, lessons)) atomicWrite(DASH_JSON, JSON.stringify(j, null, 2) + "\n");
+      } catch { /* ignore */ }
     }
-  }
-
-  if (obj.meta) obj.meta.updated = activityEntry.date;
-  return changed;
+    if (existsSync(DASH_HTML)) {
+      try {
+        // String-aware локаторът живее в tools/lib/dashboard-fallback.mjs (един парсер, не два).
+        const h = readFileSync(DASH_HTML, "utf8");
+        const fb = parseFallback(h);
+        if (fb && applyUpdate(fb, agentId, s.activity, s.evoDetail, s.verifiedCount, lessons)) atomicWrite(DASH_HTML, replaceFallback(h, fb));
+      } catch { /* ignore */ }
+    }
+  });
 }
 
-function updateDashboard(agentId, entry, evoDetail, verifiedCount = 1) {
-  // 1) agents.json (каноничен)
-  if (existsSync(DASH_JSON)) {
-    try {
-      const j = JSON.parse(readFileSync(DASH_JSON, "utf8"));
-      if (applyUpdate(j, agentId, entry, evoDetail, verifiedCount)) atomicWrite(DASH_JSON, JSON.stringify(j, null, 2) + "\n");
-    } catch { /* ignore */ }
-  }
-  // 2) вграден FALLBACK в index.html (за file:// преглед)
-  if (existsSync(DASH_HTML)) {
-    try {
-      const h = readFileSync(DASH_HTML, "utf8");
-      // String-aware локаторът живее в tools/lib/dashboard-fallback.mjs — вторият консуматор
-      // (sync-dashboard.mjs) щеше да го ПРЕПИШЕ, а преписаният парсер дрейфва (днешният урок с
-      // двата списъка за тайни и двата брояча на поуки). Скоби ВЪТРЕ в JSON низове (поука с „{id}“)
-      // не бива да се броят — иначе parse гърми тихо и FALLBACK замръзва (реален бъг, поправен веднъж).
-      const fb = parseFallback(h);
-      if (!fb) return;
-      if (applyUpdate(fb, agentId, entry, evoDetail, verifiedCount)) {
-        atomicWrite(DASH_HTML, replaceFallback(h, fb));
-      }
-    } catch { /* ignore */ }
-  }
-}
-
-// Целият git-критичен участък (add + commit + push) под ЕДИН flock — сериализира се между
-// ВСИЧКИ паралелни hook-ове. Иначе два detached `git pull --rebase --autostash` се стъпват
-// (местят HEAD/индекса едновременно) и губят commit-и — точно бъгът, при който паралелни
-// агенти губеха поуки. flock -w 120 ЧАКА реда си (не „пропуска" като mkdir-lock при контенция).
-// Detached: не блокира hook-а (SubagentStop има timeout). Push политика: на канона (main/master)
-// не пушва сам (влиза през човек/CI/PR — verified-гейтът е синтактичен), освен AGENT_MEMORY_PUSH_MAIN=1.
-function bgGitSync(agentId) {
-  if (!/^[\w-]+$/.test(agentId)) return; // sanity срещу инжекция в командата
-  const lock = join(PROJECT_DIR, "agents-dashboard", ".git-sync.lock");
-  const pushMain = process.env.AGENT_MEMORY_PUSH_MAIN === "1" ? "1" : "0";
-  const script = [
-    `exec 9>"${lock}" 2>/dev/null || exit 0`,
-    `flock -w 120 9 || exit 0`,                        // изчакай реда си (до 120с), после се откажи тихо
-    `cd "${PROJECT_DIR}" || exit 0`,
-    `git add ".claude/agents/_memory/${agentId}.md" "agents-dashboard/agents.json" "agents-dashboard/index.html" 2>/dev/null`,
-    `git diff --cached --quiet 2>/dev/null && exit 0`, // нищо staged → нищо за commit
-    // Имейлът е noreply@anthropic.com — иначе GitHub показва авто-комитите като Unverified
-    // (carbonstealth имейлът не е свързан с подписващ акаунт; stop-hook-git-check го лови).
-    `git -c user.name="Claude" -c user.email="noreply@anthropic.com" commit -m "auto: ${agentId} научи — памет + версия + табло" 2>/dev/null || exit 0`,
-    `b=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)`,
-    `if [ "$b" = "main" ] || [ "$b" = "master" ]; then [ "${pushMain}" = "1" ] || exit 0; fi`,
-    `git push 2>/dev/null || (git pull --rebase --autostash 2>/dev/null && git push 2>/dev/null)`,
-  ].join("\n");
+// Фонова синхронизация на agents/memory (fetch → обединяване → сгъване на main → push). Detached:
+// не блокира агента (SubagentStop има timeout). AGENT_MEMORY_SYNC=0 я изключва (тестове/офлайн).
+function bgSync() {
+  if (process.env.AGENT_MEMORY_SYNC === "0") return;
   try {
-    const child = spawn("sh", ["-c", script], { cwd: PROJECT_DIR, detached: true, stdio: "ignore", env: process.env });
+    const child = spawn(process.execPath, [join(PROJECT_DIR, "tools", "lib", "memory-branch.mjs"), "--sync"],
+      { cwd: PROJECT_DIR, detached: true, stdio: "ignore", env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR } });
     child.unref();
   } catch { /* никога не блокирай агента заради git */ }
 }
 
+// Къде отива поуката (2026-09-23). Дотук: работното дърво + `git add` + commit в КЛОНА НА ЗАДАЧАТА.
+// Измерено: 562 проверени поуки в 32 клона никога не стигнаха до main (нова сесия тръгва от main и не
+// ги вижда), а всяка поука пипаше таблото → осем от девет клона не се сливаха чисто. Сега поуката
+// става commit в собствения клон `agents/memory` през plumbing (HEAD/индекс/работно дърво — непокътнати),
+// memory-preload я вижда веднага, а PR-ът agents/memory → main я внася. Работното дърво се пише само
+// ако няма git (резервен път) — иначе клонът на задачата остава чист от памет.
 function main() {
   let payload = {};
   try { payload = JSON.parse(readStdin()); } catch { /* ignore */ }
 
   // Прекъснат/сринат run → НЕ записвай „научено" (half-baked поука от недовършена мисъл).
-  // Fail-open: ако харнесът не подаде такова поле, се държим както преди. (kimi GOAL.md: interrupt≠stop.)
   const stopReason = String(payload.stop_reason || payload.reason || payload.subtype || payload.status || "").toLowerCase();
   if (payload.interrupted === true || payload.is_error === true ||
       /\b(interrupt|cancel|abort|error|fail|timeout|max_turns|max_budget)\b/.test(stopReason)) process.exit(0);
 
   const tPath = payload.agent_transcript_path || payload.transcript_path || "";
   const text = transcriptText(tPath) || payload.last_assistant_message || "";
+  // Жива проверка: входът е измислен → „поука" за него би отровила паметта. Нищо не се записва.
+  if (evalMode(PROJECT_DIR)) process.exit(0);
   const block = lastLearnBlock(text);
   if (!block) process.exit(0);
 
@@ -343,55 +304,52 @@ function main() {
   if (!parsed.agent) process.exit(0);
   const file = join(MEM_DIR, `${parsed.agent}.md`);
   if (!existsSync(file)) process.exit(0); // не е от нашия списък — no-op
+  // Блокът пише само в паметта на агента, който РЕАЛНО е вървял. Иначе razbivacha (или прочетено
+  // съдържание) с `agent: kasadjiyata` тровеше чужда памет (Разбивача, 2026-09-24). Ръчен запис без
+  // agent_type (оркестраторът прихваща изгубени поуки) остава възможен.
+  if (!runnerMatches(payload.agent_type, parsed.agent)) process.exit(0);
 
-  const date = parsed.date || new Date().toISOString().slice(0, 10);
-  let txt = ensureSections(readFileSync(file, "utf8"));
-  const existingNorm = new Set(txt.split("\n").filter((l) => l.startsWith("- ")).map((l) => norm(l)));
+  const date = clampDate(parsed.date);
+  const working = readFileSync(file, "utf8");
+  // Дедупът вижда И поуките, които чакат в agents/memory — иначе същата поука се публикува повторно.
+  const pending = pendingLessons(PROJECT_DIR, parsed.agent, working);
+  const seen = lessonIndex(working, pending.length ? `## Проверени поуки\n${pending.join("\n")}\n` : "");
 
-  const newVerified = [], newQuar = [];
-  for (const les of parsed.lessons) {
+  const newV = [], newQ = [];
+  // Таван на броя: един блок не може да наводни паметта (200 поуки = раздута памет + бум на версията).
+  for (const les of parsed.lessons.slice(0, MAX_LESSONS)) {
     if (!les.text || !les.source) continue; // източник или нищо
-    if (looksSecret(les.text) || looksSecret(les.source)) continue; // тайна → НЕ записвай (твърд дроп)
-    if (looksInjection(les.text) || looksInjection(les.scope) || looksInjection(les.source)) continue; // инжекция-инструкция → твърд дроп (анти persistent injection)
+    if (les.text.length > MAX_TEXT || les.source.length > MAX_SOURCE || String(les.scope).length > 200) continue; // таван: паметта не се раздува
+    if (looksSecret(les.text) || looksSecret(les.source) || looksSecret(les.scope)) continue; // тайна → НЕ записвай (твърд дроп)
+    if (looksInjection(les.text) || looksInjection(les.scope) || looksInjection(les.source)) continue; // анти persistent injection
     // „Verified" иска реален източник; иначе пада в карантина (не вярвай на самооценката).
     let confidence = String(les.confidence || "").toLowerCase();
     if (confidence === "verified" && !sourceIsReal(les.source)) confidence = "unverified";
     const entry = `- **${date}:** ${les.text} _(${les.scope || "общо"}; ${confidence}; ${les.source}${les.reverify ? `; re-verify: ${les.reverify}` : ""})_`;
-    if (existingNorm.has(norm(entry)) || [...existingNorm].some((e) => e.includes(norm(les.text)))) continue;
-    const verified = confidence === "verified";
-    txt = insertUnder(txt, verified ? "Проверени поуки" : "Карантина", entry);
-    existingNorm.add(norm(entry));
-    (verified ? newVerified : newQuar).push(les.text);
+    // Само точен дубъл или същото тяло. Старата проверка „текстът е подниз на съществуващ ред“
+    // изхвърляше истински нови кратки поуки (Разбивача, мисия 2).
+    if (seen.has(entry)) continue;
+    seen.exact.add(norm(entry));
+    (confidence === "verified" ? newV : newQ).push(entry);
   }
+  if (newV.length + newQ.length === 0) process.exit(0);
 
-  if (newVerified.length + newQuar.length === 0) process.exit(0);
-  atomicWrite(file, txt);
-
-  // обнови таблото (activity feed) — страницата „живее" при всяко научено нещо
-  const trim = (s) => (s.length > 90 ? s.slice(0, 87) + "…" : s);
-  let summary;
-  if (newVerified.length) {
-    summary = `Научи: „${trim(newVerified[0])}"` +
-      (newVerified.length > 1 ? ` (+${newVerified.length - 1} още)` : "") +
-      (newQuar.length ? ` · ${newQuar.length} в карантина` : "");
-  } else {
-    summary = `Хипотеза → карантина: „${trim(newQuar[0])}"` + (newQuar.length > 1 ? ` (+${newQuar.length - 1})` : "");
+  let published = null;
+  if (isGitRepo(PROJECT_DIR)) {
+    try { published = publishLessons(PROJECT_DIR, { [parsed.agent]: { verified: newV, quarantine: newQ } }, { date }); } catch { published = null; }
   }
-  const activity = { date, type: newVerified.length ? "learning" : "quarantine", summary };
-  // Само ПРОВЕРЕНО учене вдига версията (карантина не брои).
-  const evoDetail = newVerified.length
-    ? `Научи: ${trim(newVerified[0])}${newVerified.length > 1 ? ` (+${newVerified.length - 1} още)` : ""}`
-    : null;
-  // Таблото (локален JSON запис) под mkdir-lock; целият git участък (add+commit+push) отива
-  // в ЕДИН flock-guarded detached процес → сериализиран между всички паралелни агенти, без загуба.
-  withLock(() => { updateDashboard(parsed.agent, activity, evoDetail, newVerified.length); });
-  bgGitSync(parsed.agent);
-
+  if (published?.ok && !published.skipped?.includes(parsed.agent)) {
+    bgSync();
+    process.exit(0);
+  }
+  // Резервен път: няма git, агентът е нов (основата не го познава) или публикуването се провали.
+  const r = addLessons(working, { verified: newV, quarantine: newQ });
+  if (!r.added.verified.length && !r.added.quarantine.length) process.exit(0);
+  writeWorkingTree(parsed.agent, file, r.txt, summarize(r.added.verified.map(lessonText), r.added.quarantine.map(lessonText), date));
   process.exit(0);
 }
 
-// Пусни main() САМО като CLI (SubagentStop hook) — иначе import от тест чете stdin и излиза,
-// което правеше файла нетестваем (за разлика от memory-preload.mjs, който вече има този гард).
+// Пусни main() САМО като CLI (SubagentStop hook) — иначе import от тест чете stdin и излиза.
 if (import.meta.url === `file://${process.argv[1]}`) {
   try { main(); } catch { process.exit(0); } // никога не блокирай агента заради паметта
 }

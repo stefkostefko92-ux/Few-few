@@ -39,6 +39,7 @@ const CHECKS = [
   { id: "def-freshness", desc: "свежест на дефинициите (без просрочени срокове)", cmd: ["tools/agents/def-freshness.mjs"] },
   { id: "consistency", desc: "противоречия/безизточникови verified в паметта", cmd: ["tools/agents/consistency-audit.mjs", "--check"] },
   { id: "mascots", desc: "всеки агент носи маскота от mascot/, пребоядисан в акцента си", cmd: ["tools/agents/mascot-theme.mjs", "--check"] },
+  { id: "galaxy", desc: "рендерът на галактиката (agents-dashboard/galaxy): check → тестове → билд, galaxy.js свеж", cmd: ["agents-dashboard/galaxy/gate.mjs"] },
   { id: "dashboard-sync", desc: "таблото не лъже за знанието (agents.json ↔ реалния брой поуки в _memory)", cmd: ["tools/agents/sync-dashboard.mjs", "--check"] },
   { id: "loop-audit", desc: "readiness на автоматизациите (автономия-стълба)", cmd: ["tools/agents/loops/loop-audit.mjs"] },
   { id: "recovery-audit", desc: "стълбата провал→възстановяване е цяла", cmd: ["tools/agents/recovery-audit.mjs"] },
@@ -56,6 +57,9 @@ const CHECKS = [
   // нищо (нито гейт, нито кука, нито CI) — спящ инструмент, и точно тогава имаше 2 реални дубла.
   // Гейтва се само ТОЧНИЯТ дедуп (`--check`, 0.25s): механичен и еднозначен. Пълният ход (парафрази,
   // числови противоречия, застаряване) е ~11s O(n²) и иска ЧОВЕШКО решение — не влиза в пътя на PR.
+  // 2026-09-23: изборът при старт гледаше само първите 40 реда → 27–32% от проверените поуки изобщо
+  // можеха да стигнат до агента; никой не го мереше. Гейтва ДОСТИЖИМОСТТА (задача = самата поука).
+  { id: "memory-recall", desc: "всяка проверена поука може да стигне до агента (достижимост ≥95%)", cmd: ["tools/agents/memory-recall.mjs", "--check"] },
   { id: "memory-curate", desc: "паметта няма ТОЧНИ дубли (една поука, записана два пъти)", cmd: ["tools/memory/curate.mjs", "--check"] },
   // Кръг 13: `quarantine-review.mjs` съществуваше и НЕ беше пускан нито веднъж — затова беше
   // невидимо, че 343 от 514 карантинирани поуки (67%) носят източник, който ДНЕС минава проверката
@@ -63,6 +67,15 @@ const CHECKS = [
   // намирането на кандидати е ДОБРО, гейт по броя им би наказвал откриването. Тук пазим видимостта;
   // повторната проверка е работа на агента срещу източника и е решение на собственика (струва пари).
   { id: "quarantine", desc: "колко карантинирани поуки чакат повторна проверка (видимост, не гейт)", cmd: ["tools/memory/quarantine-review.mjs"], required: false },
+  // 2026-09-23: 562 проверени поуки в 32 клона никога не стигнаха до main — куката комитваше в клона на
+  // задачата и никой не мереше. Сега ученето отива в `agents/memory`, а тук е термометърът: колко
+  // проверени поуки стоят в клонове извън main И извън agents/memory. СЪВЕТВАЩО: заседнала поука в чужд
+  // клон не е вина на текущия PR, а поправката е механична (`harvest-memory.mjs --apply`). При плитък
+  // checkout (PR CI) казва „НЕИЗМЕРЕНО", не „чисто"; седмичният sweep тегли пълната история и мери.
+  { id: "harvest", desc: "заседнали поуки в клонове извън main (учене, което нова сесия не вижда)", cmd: ["tools/agents/harvest-memory.mjs", "--check", "--no-fetch"], required: false },
+  // 2026-09-23: токен-отчетността беше ОЦЕНКА на статичния текст (<8% от цената). Реалната употреба
+  // идва от транскриптите (usage-capture.mjs → agents/memory). СЪВЕТВАЩО: докладва, не гейтва разход.
+  { id: "usage", desc: "реална употреба на токени по пускане (къде отиват парите, ходове p50/p90)", cmd: ["tools/agents/usage-report.mjs", "--check"], required: false },
   { id: "shared-candidates", desc: "кандидати за _shared (дедуп на памет през агенти)", cmd: ["tools/agents/shared-candidates.mjs"], required: false },
   { id: "doc-audit", desc: "застаряла/липсваща документация", cmd: ["tools/docs/doc-audit.mjs"], required: false },
   // СЪВЕТВАЩО, не гейт (решение на собственика, 2026-08-04): docs.js е генериран артефакт и се съди

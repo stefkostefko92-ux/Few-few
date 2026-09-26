@@ -235,6 +235,17 @@ export async function runRetentionJob() {
         // DailyMetric е агрегат (само броячи, нула лични данни), но е безполезен
         // за сървър без бот и расте по ред на ден — чистим го заедно с останалото.
         prisma.dailyMetric.deleteMany({ where: { serverId } }),
+        // v50 — Server Season: напредък, покупки, спътници, куестове, trivia
+        prisma.memberProgress.deleteMany({ where: { serverId } }),
+        prisma.gameXpGrant.deleteMany({ where: { serverId } }),
+        prisma.shopPurchase.deleteMany({ where: { serverId } }),
+        prisma.shopItem.deleteMany({ where: { serverId } }),
+        prisma.memberCompanion.deleteMany({ where: { serverId } }),
+        prisma.companionSpawn.deleteMany({ where: { serverId } }),
+        prisma.companionTrade.deleteMany({ where: { serverId } }),
+        prisma.serverQuest.deleteMany({ where: { serverId } }),
+        prisma.triviaRound.deleteMany({ where: { serverId } }),
+        prisma.gameSettings.deleteMany({ where: { serverId } }),
         prisma.auditLog.create({
           data: { actorId: null, actorTag: "SYSTEM", serverId, action: "SERVER_DATA_PURGED", targetId: serverId },
         }),

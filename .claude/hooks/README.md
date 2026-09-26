@@ -1,41 +1,94 @@
 # Hooks — `.claude/hooks/`
 
-Куки, наложени от харнеса (Claude Code). Регистрират се в `.claude/settings.json`.
+Куки, наложени от харнеса (Claude Code). Регистрират се в `.claude/settings.json`. Този файл описва
+**реалното** състояние — до 2026-09-09 описваше три предпазителя и стар matcher, докато в
+settings.json бяха регистрирани четири с други matcher-и. Документ, който твърди състояние, което не
+съществува, е по-лош от липсващ (виж secret-parity: „зелено по слепота").
 
-## Активни (регистрирани в settings.json)
-- **`memory-preload.mjs`** (`SubagentStart`) — инжектира „Проверени поуки" + доктрината за сигурност +
-  общата процедура (`_memory/PROCEDURE.md`) в контекста на всеки агент при старт.
+## Активни — цикълът на паметта
+- **`memory-preload.mjs`** (`SubagentStart`) — инжектира релевантните „Проверени поуки" + доктрината за
+  сигурност (`_memory/SECURITY.md`) + общата процедура (`_memory/PROCEDURE.md`) в контекста на всеки агент.
+- **`dod-check.mjs`** (`SubagentStop`) — налага блока `## ПРЕДАВАНЕ` (HANDOFF) и дневника на веригите;
+  агент без валидно предаване не завършва тихо.
 - **`memory-capture.mjs`** (`SubagentStop`) — изважда последния ```learn блок от транскрипта, записва
-  verified → памет / друго → Карантина, обновява таблото, авто-commit/push (flock-сериализиран).
+  verified → памет / друго → Карантина (тайни се изпускат твърдо), обновява таблото.
+- **`precompact-save.mjs`** (`PreCompact`) — запазва състоянието преди компактиране на контекста.
+- **`session-dod.mjs`** (`Stop`) — проверка на завършеност в края на сесията.
+- **`artifact-sync.mjs`** (`Stop`) — правило на собственика (2026-09-23): агентите научиха → артефактът на
+  флота се обновява ВИНАГИ. Кука не може сама да публикува Artifact, затова връща сесията ВЕДНЪЖ, когато
+  ЛОКАЛНИЯТ `agents/memory` (появява се само при учене в този clone) е по-нов от публикувания връх
+  (`.git/agents-artifact.json`): билд от върха на паметта → публикуване на същия адрес →
+  `build-artifact.mjs --mark-published <sha>`. Втори Stop → само напомняне (без цикъл).
 
-## Активни предпазители (регистрирани в settings.json)
-Отбранителни, **fail-open** (хук-грешка никога не спира работата), тествани
-(`tools/hooks/guards.test.mjs`). Регистрирани като `PreToolUse`/`PostToolUse` (виж settings.json):
+## Активни предпазители
+Отбранителни, **fail-open** при вътрешна грешка (хук-бъг никога не спира работата), **fail-closed** при
+засечен вектор (exit 2). Тествани в `tools/hooks/guards.test.mjs` + `tools/security/secret-parity.test.mjs`.
 
-- **`guard-dangerous.mjs`** (`PreToolUse` matcher `Bash`) — блокира САМО еднозначно катастрофални команди
-  (`rm -rf /`, fork bomb, `mkfs`, `dd of=/dev/sd…`, `curl|sh`, `git push --force main`). Всичко останало
-  минава — не пречи на нормалната работа.
-- **`guard-secrets.mjs`** (`PostToolUse` matcher `Write|Edit`) — ранно предупреждение, ако тъкмо записан
-  файл съдържа високо-уверен секрет-шаблон (Stripe/AWS/GitHub/PEM/Slack/Google). Пропуска fixture/test/
-  eval/scratch пътища. Реалният hard gate остава `tools/security/secret-scan.mjs` при commit/CI.
-- **`guard-exfil.mjs`** (`PreToolUse` matcher `Bash|WebFetch`) — блокира ИЗНАСЯНЕ на тайни/данни навън:
-  `curl`/`wget`/`nc`/… с литерален секрет, тайна env променлива, `.env` файл или пълен env dump към мрежата;
-  WebFetch към URL с секрет. Near-zero-FP (нормалните curl/git/npm минават). Затваря lethal-trifecta изхода,
-  който `guard-secrets` (само запис в repo) не покрива. Споделя secret-шаблоните с `guard-secrets.mjs`.
+| Кука | Събитие · matcher | Какво блокира |
+|---|---|---|
+| **`guard-prompt.mjs`** | `UserPromptSubmit` | Случайно ПОСТАВЕНА тайна в промпта (клипборд) — да не влезе в история/логове. Байпас по избор: „[секрет-ок]". |
+| **`guard-dangerous.mjs`** | `PreToolUse` · `Bash` | Само еднозначно катастрофалното: `rm -rf` на корен/дом/работно дърво (`/`, `~`, `$HOME`, `.`, `$PWD`), fork bomb, `mkfs`/`dd`/`wipefs`/`shred` върху `/dev` диск, `find / -delete`, `curl\|sh`, force push към main (`--force`, `-f`, `+refspec`), изтриване на main (`:main`, `--delete`), `gh repo delete`. |
+| **`guard-secrets.mjs`** | `PostToolUse` · `Write\|Edit\|MultiEdit\|NotebookEdit` | Тъкмо записан файл/бележник с високо-уверен credential (17 типа от `tools/lib/secret-patterns.mjs`). Пропуска fixture/test/eval/scratch пътища. Твърдият гейт остава `secret-scan.mjs` при commit/CI. |
+| **`guard-exfil.mjs`** | `PreToolUse` · `Bash\|WebFetch\|WebSearch\|mcp__.*` | ИЗНАСЯНЕ навън (lethal-trifecta изходът): литерална тайна или тайна env променлива към мрежов verb/интерпретатор; `.env`/ключ/credential файл през пайп, субституция `$(…)`, stdin редирект, `-d/-F/-T/--data-raw/--post-file`, scp/rsync, архив, четене от код (`readFileSync`, `open`); `/proc/*/environ`; пълен env dump; команди, които издават credential (`gh auth token`, `vault read`…) към мрежа; стажиране (env dump/тайна → файл, `git remote add` чужд URL); `git push` към чужд URL; `npm publish`; тайна в URL/търсене; **тайна в аргумент на MCP инструмент** (`mcp__github__*`, `mcp__Gmail__*`… — целият `tool_input` се сериализира и се търси по същия списък + секрет в URL query). |
 
-Регистрацията (вече в settings.json):
+**Един източник за „какво е тайна":** `tools/lib/secret-patterns.mjs` (`CREDENTIAL`). Трите куки
+(`guard-secrets` → `guard-exfil`, `guard-prompt`) го ИМПОРТИРАТ; `secret-parity.test.mjs` пази и трите.
+Ръчно преписан списък дрейфва винаги — така 8 типа credential минаваха през промпта до 2026-09-08.
 
-```json
-"PreToolUse": [
-  { "matcher": "Bash", "hooks": [
-    { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-dangerous.mjs\"", "timeout": 10 } ] }
-],
-"PostToolUse": [
-  { "matcher": "Write|Edit", "hooks": [
-    { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-secrets.mjs\"", "timeout": 10 } ] }
-]
-```
+**Санитизация на входа:** и трите предпазителя минават входа през `sanitize()` (маха невидими знаци —
+U+200B, Unicode Tags и др. — и нормализира NFKC). Без това един U+200B в средата на `sk_live_…` го
+правеше невидим за всеки шаблон.
 
-**Договор:** всеки хук чете JSON от stdin (`{tool_name, tool_input, …}`). `PreToolUse` блокира при **exit 2**
-(причината на stderr); `PostToolUse` surface-ва предупреждение при exit 2. Всичко друго → exit 0 (разреши).
-Пробвай ръчно: `echo '{"tool_input":{"command":"rm -rf /"}}' | node .claude/hooks/guard-dangerous.mjs`.
+### Доктрина за фалшивите позитиви
+Цената на фалшив блок е **изключен предпазител** (хората ги махат, когато пречат). Затова:
+- **Командна позиция, не споменаване.** Шаблон за `git push …`, `npm publish`, `gh auth token | curl`
+  съвпада само в началото на команда (`^`, след `;`/`&&`/`|`/нов ред), не в кавички на текстов аргумент.
+  Иначе описанието в дневника на грешките, което цитира вектора, се блокира от самия предпазител
+  (случило се, 2026-09-08).
+- **Токен-котва `TOK`** вместо `\b\S*`: `\b` е граница дума/не-дума, а `~/.ssh` и `/proc/…` започват с
+  `.`/`/` — без котва шаблонът мълчи. Една котва, три консуматора.
+- **Самостоятелен флаг:** `-T` с флаг `i` съвпадаше с `-t` вътре в `--test`; флагът трябва да е предшестван
+  от празно място, а името на файла — да не прекрачва кавичка/запетая.
+- **Домът е самият дом:** `rm -rf ~/.cache` не е катастрофа; `~`, `$HOME`, `.` — само когато са целият път.
+- `psql $DATABASE_URL -c … > out.txt` редиректира ИЗХОД, не тайната → стажирането се котви към `echo/printf`.
+- **`env` е dump само като КОМАНДА** (2026-09-21, хванато върху собствена команда): `\benv\b` ловеше и
+  РАЗШИРЕНИЕТО `.env` — `x="a.env"` в скрипт с `fetch(` даваше „пълен env dump към мрежата". Котвата
+  `ENV_CMD` изисква `env`/`printenv`/`set` да не са след `.`, `/`, `-`, `_` или буква; изпращането на `.env`
+  ФАЙЛ си остава хванато от отделния `ENV_FILE`.
+
+### MCP каналът (2026-09-21)
+MCP инструментите са изходен канал наравно с Bash/WebFetch: тяло на коментар в GitHub, чернова в Gmail, заявка
+към SEO API напускат машината. Проба на живо: 3/3 извиквания с тайна в аргумент минаха, защото matcher-ът
+беше `Bash|WebFetch|WebSearch`. Сега `mcp__.*` е в matcher-а, а `detectMcpExfil()` сериализира ЦЕЛИЯ
+`tool_input` (формата е различна за всеки сървър — не гадаем полета) и търси същите литерални тайни + секрет в
+URL query. MCP се проверява ПЪРВИ в диспечера — име като `mcp__x__fetch_page` иначе би паднало в
+`detectUrlExfil(ti.url)` с `undefined`. `deep-audit` брои `mcp__` в `tools:` на агент за недоверена външна
+повърхност (иска injection spec) — днес нула агенти го имат; регексът е покритие за бъдещето, не мутационно
+доказано.
+
+### Къде отива поуката (`memory-capture.mjs` → `tools/lib/memory-branch.mjs`)
+Два дефекта от един корен — куката комитваше в КЛОНА НА ЗАДАЧАТА:
+- **2026-09-21:** голо `git commit` погълна отворен merge на човека (746 комита, 629 файла) и го пушна;
+- **2026-09-23 (измерено):** 562 проверени поуки в 32 клона никога не стигнаха до main — нова сесия тръгва
+  от main и не ги вижда; всяка поука пипаше и таблото, затова осем от девет клона не се сливаха чисто.
+
+Сега поуката е commit в собствения клон **`agents/memory`** през git plumbing (временен индекс,
+`hash-object`, `commit-tree`): HEAD, индексът и работното дърво на човека **не се пипат** — отворен merge
+или чуждо стажирано съдържание не могат да бъдат погълнати като КЛАС. Фоново (`--sync`): fetch → ако
+отдалеченият е разклонен, обединяване по съдържание → ако main е напреднал, „сгъване" (дървото на main +
+добавените поуки + пресметнато табло) → push. PR-ът `agents/memory` → main е винаги без конфликти.
+`memory-preload` добавя чакащите поуки от клона (без махнатите нарочно в main). Без git → резервен път
+(работното дърво). `AGENT_MEMORY_SYNC=0` спира фоновия sync (тестове/офлайн).
+
+Събиране на заседналото: `node tools/agents/harvest-memory.mjs [--apply]` — поуките, добавени в клон спрямо
+общия предшественик с main, минус вече наличните, минус **някога махнатите в main** (историята — иначе
+squash-merge връща курираното), през същите филтри (тайна/инжекция/повреден → дроп; без източник или мъртъв
+път → карантина). Иска пълна история; при плитък clone казва „НЕИЗМЕРЕНО". `.gitattributes` слага
+`merge=union` на паметта (append-only) — старите продуктови PR-и вече не конфликтират по нея.
+Доказано: `tools/hooks/memory-branch.test.mjs` и `tools/agents/harvest-memory.test.mjs` (bare origin,
+отворен merge, разклонени сесии, напреднал main, squash курация) + пет мутации.
+
+**Договор:** всеки хук чете JSON от stdin (`{tool_name, tool_input, …}`). `PreToolUse`/`UserPromptSubmit`
+блокират при **exit 2** (причината на stderr); `PostToolUse` surface-ва предупреждение при exit 2. Всичко
+друго → exit 0 (разреши).
+Пробвай ръчно: `echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}' | node .claude/hooks/guard-dangerous.mjs`.

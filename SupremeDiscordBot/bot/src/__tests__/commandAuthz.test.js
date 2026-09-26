@@ -37,7 +37,7 @@ describe("авторизация на командите", () => {
   // Командите, които публикуват съдържание от името на бота в канал.
   // Нарочно е СПИСЪК, а не евристика: тестът трябва да се проваля шумно,
   // когато някой добави четвърта такава команда, вместо тихо да я подмине.
-  const PUBLISHING = ["poll", "giveaway"];
+  const PUBLISHING = ["poll", "giveaway", "spawn"];
 
   it.each(PUBLISHING)("/%s изисква права — ботът не публикува по молба на всеки", (name) => {
     const cmd = commands().find((c) => c.name === name);
@@ -45,7 +45,7 @@ describe("авторизация на командите", () => {
     expect(isGuarded(cmd.src), `/${name} е без гард`).toBe(true);
   });
 
-  it("двете публикуващи команди искат ЕДНО И СЪЩО право", () => {
+  it("публикуващите команди искат ЕДНО И СЪЩО право", () => {
     const perms = PUBLISHING.map((name) => {
       const src = commands().find((c) => c.name === name).src;
       return (src.match(/setDefaultMemberPermissions\(PermissionFlagsBits\.(\w+)\)/) || [])[1];

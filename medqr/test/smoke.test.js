@@ -148,7 +148,10 @@ try {
   const health = await req('/health');
   assert.equal(health.status, 200);
   assert.equal(health.headers.get('cache-control'), 'no-store');
-  ok('/health връща 200 без кеширане');
+  const hb = await health.json();
+  assert.equal(hb.app, 'medqr', 'маркер за идентичност за deploy гейта');
+  assert.equal(hb.ok, true);
+  ok('/health връща 200 без кеширане, с идентичност и проверка на базата');
 
   // 8б. Невалиден имейл за спешен контакт се отхвърля (защита от header injection)
   const badEmail = await req('/profile/edit', {
@@ -238,12 +241,24 @@ try {
   await req(`/e/${rawProfile.emergency_token}`); // повторно отваряне
   await settle();
   assert.equal(notif(), 1, 'повторното отваряне не дублира известието');
-  // Link-preview бот (WhatsApp) не бива да задейства фалшиво „спешно" известие.
-  await fetch(`${base}/e/${rawProfile.emergency_token}`, {
+  // Link-preview бот (WhatsApp) не бива да задейства фалшиво „спешно" известие —
+  // но показът на данните се записва в журнала (UA е в ръцете на клиента).
+  const logged = () =>
+    db
+      .prepare('SELECT COUNT(*) c FROM access_log WHERE profile_id = ? AND user_agent = ?')
+      .get(rawProfile.id, 'WhatsApp/2.23 A').c;
+  const botRes = await fetch(`${base}/e/${rawProfile.emergency_token}`, {
     headers: { 'user-agent': 'WhatsApp/2.23 A' },
   });
+  assert.equal(botRes.status, 200);
+  // Express рутира без значение от регистъра — /E/<token> трябва да носи същото no-store.
+  const upper = await fetch(`${base}/E/${rawProfile.emergency_token}`, {
+    headers: { 'user-agent': 'curl/8.5' },
+  });
+  assert.equal(upper.headers.get('cache-control'), 'no-store', '/E/ без no-store');
   await settle();
   assert.equal(notif(), 1, 'бот за link-preview не задейства известие');
+  assert.equal(logged(), 1, 'показът при бот-UA също е в журнала');
   ok('близкият се уведомява при отваряне (без дублиране и без бот preview)');
 
   // 11в. Споделяне на местоположение (JSON + CSRF заглавие), с радиус на точност

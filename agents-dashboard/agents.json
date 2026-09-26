@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-09-25",
+    "updated": "2026-09-26",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 395
+        "lessons": 401
       },
       "evolution": [
         {
@@ -605,14 +605,14 @@
         },
         {
           "version": "31.3.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v31.3 — учене",
           "detail": "Научи: Бисквитките в BG (ePrivacy чл. 5(3)) са транспонирани в ЗЕТ (Закон за електронната търг… (+121 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Бисквитките в BG (ePrivacy чл. 5(3)) са транспонирани в ЗЕТ (Закон за електронната търг…\" (+121 още) · 20 в карантина"
         },
@@ -1173,7 +1173,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 515
+        "lessons": 517
       },
       "evolution": [
         {
@@ -1989,7 +1989,7 @@
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „nginx: add_header в location блок отменя ВСИЧКИ add_header от server нивото (наследяват…\" (+126 още) · 11 в карантина"
         },
@@ -2834,14 +2834,14 @@
         },
         {
           "version": "20.1.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.1 — учене",
           "detail": "Научи: capture-transcript.hasLearnBlock търси learn оградата със суров нов ред в СУРОВИЯ JSONL… (+32 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „capture-transcript.hasLearnBlock търси learn оградата със суров нов ред в СУРОВИЯ JSONL…\" (+32 още)"
         },
@@ -3339,14 +3339,14 @@
         },
         {
           "version": "20.1.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.1 — учене",
           "detail": "Научи: manifest-lint isSample regex (/example|sample|\\\\.md$/i срещу целия rel path) изключва h… (+46 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „manifest-lint isSample regex (/example|sample|\\\\.md$/i срещу целия rel path) изключва h…\" (+46 още) · 5 в карантина"
         },
@@ -3748,7 +3748,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 230
+        "lessons": 232
       },
       "evolution": [
         {
@@ -4192,7 +4192,7 @@
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „vizitka/src/seo.js:336-370 cardJsonLd() emits Person/Organization directly as a top-lev…\" (+48 още) · 13 в карантина"
         },
@@ -4777,14 +4777,14 @@
         },
         {
           "version": "20.2.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.2 — учене",
           "detail": "Научи: tools/seo/prelaunch-audit.mjs приема единичен HTML файл като TARGET без грешка, но serv… (+99 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „tools/seo/prelaunch-audit.mjs приема единичен HTML файл като TARGET без грешка, но serv…\" (+99 още) · 7 в карантина"
         },
@@ -5374,14 +5374,14 @@
         },
         {
           "version": "24.0.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v24.0 — учене",
           "detail": "Научи: Блокът за предаване трябва да е буквално „## ПРЕДАВАНЕ“ с полета От/Към/Статус/Находки/… (+42 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Блокът за предаване трябва да е буквално „## ПРЕДАВАНЕ“ с полета От/Към/Статус/Находки/…\" (+42 още) · 23 в карантина"
         },
@@ -6245,14 +6245,14 @@
         },
         {
           "version": "20.2.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.2 — учене",
           "detail": "Научи: ДЕФЕКТ (не поправян, само докладван): zabobovdol/prisma/seed-community.ts:82-83,89-90,9… (+58 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „ДЕФЕКТ (не поправян, само докладван): zabobovdol/prisma/seed-community.ts:82-83,89-90,9…\" (+58 още) · 3 в карантина"
         },
@@ -6636,7 +6636,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 240
+        "lessons": 242
       },
       "evolution": [
         {
@@ -7037,14 +7037,14 @@
         },
         {
           "version": "20.7.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.7 — учене",
           "detail": "Научи: Health probe зад i18n middleware може да върне 307, а `curl -fsS` БЕЗ `-L` третира 307 … (+41 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Health probe зад i18n middleware може да върне 307, а `curl -fsS` БЕЗ `-L` третира 307 …\" (+41 още) · 27 в карантина"
         },
@@ -7877,14 +7877,14 @@
         },
         {
           "version": "20.2.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.2 — учене",
           "detail": "Научи: ICP без глобално подравняване (identity init, 15° ротация + транслация на ~100mm детайл… (+55 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „ICP без глобално подравняване (identity init, 15° ротация + транслация на ~100mm детайл…\" (+55 още) · 92 в карантина"
         },
@@ -8668,14 +8668,14 @@
         },
         {
           "version": "20.3.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.3 — учене",
           "detail": "Научи: Instagram media контейнер параметър `thumb_offset` (видео/Reels cover kадър) е в МИЛИСЕ… (+41 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Instagram media контейнер параметър `thumb_offset` (видео/Reels cover kадър) е в МИЛИСЕ…\" (+41 още) · 14 в карантина"
         },
@@ -9414,14 +9414,14 @@
         },
         {
           "version": "20.9.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.9 — учене",
           "detail": "Научи: linketto webhook няма журнал по event.id (идемпотентността е само по ефект — upsert по … (+46 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „linketto webhook няма журнал по event.id (идемпотентността е само по ефект — upsert по …\" (+46 още) · 12 в карантина"
         },
@@ -10145,14 +10145,14 @@
         },
         {
           "version": "20.3.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.3 — учене",
           "detail": "Научи: @bubblewrap/cli и @bubblewrap/core текуща стабилна версия е 1.25.0 (dist-tags latest); … (+63 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „@bubblewrap/cli и @bubblewrap/core текуща стабилна версия е 1.25.0 (dist-tags latest); …\" (+63 още) · 40 в карантина"
         },
@@ -10812,14 +10812,14 @@
         },
         {
           "version": "20.2.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.2 — учене",
           "detail": "Научи: tools/print/printability.mjs правилно хваща non-manifold ръб (флап-триъгълник, споделящ… (+63 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „tools/print/printability.mjs правилно хваща non-manifold ръб (флап-триъгълник, споделящ…\" (+63 още) · 10 в карантина"
         },
@@ -11588,9 +11588,14 @@
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „ПОПРАВКА на предишна поука от тази сесия: MDN изрично казва 'requestAnimationFrame() ca…\" (+53 още) · 15 в карантина"
+        },
+        {
+          "date": "2026-09-23",
+          "type": "definition",
+          "summary": "Дефиницията вече казва истината за инструментите: вижда рендера (Chromium+Playwright), не вижда FPS/GPU."
         },
         {
           "date": "2026-09-10",
@@ -12424,14 +12429,14 @@
         },
         {
           "version": "20.6.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.6 — учене",
           "detail": "Научи: declarativeNetRequest.getMatchedRules има твърда квота MAX_GETMATCHEDRULES_CALLS_PER_IN… (+50 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „declarativeNetRequest.getMatchedRules има твърда квота MAX_GETMATCHEDRULES_CALLS_PER_IN…\" (+50 още)"
         },
@@ -13148,14 +13153,14 @@
         },
         {
           "version": "20.0.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.0 — учене",
           "detail": "Научи: clientManager.js:36-56 SHARED_INTENTS и index.js:38-73 главните intents — при това чете… (+48 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „clientManager.js:36-56 SHARED_INTENTS и index.js:38-73 главните intents — при това чете…\" (+48 още) · 2 в карантина"
         },
@@ -13633,14 +13638,14 @@
         },
         {
           "version": "20.2.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.2 — учене",
           "detail": "Научи: Ред на записа след вход е риск-инвариант: treydar/src/bot.js:127-133 пише state.positio… (+40 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Ред на записа след вход е риск-инвариант: treydar/src/bot.js:127-133 пише state.positio…\" (+40 още)"
         },
@@ -13900,9 +13905,9 @@
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
-          "summary": "Научи: „Vertex AI: единичните региони (europe-west1 и др.) поддържат само Claude Sonnet 4.6 и п…\" (+35 още) · 3 в карантина"
+          "summary": "Научи: „Vertex AI: единичните региони (europe-west1 и др.) поддържат само Claude Sonnet 4.6 и п…\" (+34 още) · 3 в карантина"
         },
         {
           "date": "2026-09-25",
@@ -14107,14 +14112,14 @@
         },
         {
           "version": "20.2.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.2 — учене",
           "detail": "Научи: КАПАН заключена цена → ФУ: за свободна продажба и ценови баркод 29 CSPos подава към ФУ … (+48 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „КАПАН заключена цена → ФУ: за свободна продажба и ценови баркод 29 CSPos подава към ФУ …\" (+48 още)"
         },
@@ -14352,14 +14357,14 @@
         },
         {
           "version": "21.0.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v21.0 — учене",
           "detail": "Научи: Capacitor major версия определя targetSdk по подразбиране: 6 → 34, 7 → 35, 8 → 36 (Cap … (+46 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Capacitor major версия определя targetSdk по подразбиране: 6 → 34, 7 → 35, 8 → 36 (Cap …\" (+46 още) · 3 в карантина"
         },
@@ -14581,14 +14586,14 @@
         },
         {
           "version": "20.2.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.2 — учене",
           "detail": "Научи: workflow-audit.mjs `no-path-filter` правилото не проверява тригера — flags security.yml… (+54 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „workflow-audit.mjs `no-path-filter` правилото не проверява тригера — flags security.yml…\" (+54 още) · 5 в карантина"
         },
@@ -14809,9 +14814,9 @@
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
-          "summary": "Научи: „CSPos продуктов тест гейт беше червен в тази сесия САМО защото node_modules/ липсваше в…\" (+38 още) · 2 в карантина"
+          "summary": "Научи: „CSPos продуктов тест гейт беше червен в тази сесия САМО защото node_modules/ липсваше в…\" (+36 още) · 2 в карантина"
         },
         {
           "date": "2026-09-25",
@@ -15006,17 +15011,28 @@
           "detail": "Научи: JSDoc (jsdoc.app) пълен таг-списък групиран по употреба: документиране на функция — @pa… (+8 още)"
         },
         {
+          "version": "13.3.0",
+          "date": "2026-09-21",
+          "event": "v13.3 — учене",
+          "detail": "Научи: Техника 'draft-release-notes-from' (Prompt library, Anthropic) — диф между две версийни…"
+        },
+        {
           "version": "20.2.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.2 — учене",
-          "detail": "Научи: tools/docs/doc-audit.mjs `no-llms` проверка е ЛЪЖЛИВО-ПОЛОЖИТЕЛНА за продукти, които се… (+69 още)"
+          "detail": "Научи: tools/docs/doc-audit.mjs `no-llms` проверка е ЛЪЖЛИВО-ПОЛОЖИТЕЛНА за продукти, които се… (+68 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
-          "summary": "Научи: „tools/docs/doc-audit.mjs `no-llms` проверка е ЛЪЖЛИВО-ПОЛОЖИТЕЛНА за продукти, които се…\" (+69 още) · 8 в карантина"
+          "summary": "Научи: „tools/docs/doc-audit.mjs `no-llms` проверка е ЛЪЖЛИВО-ПОЛОЖИТЕЛНА за продукти, които се…\" (+68 още) · 8 в карантина"
+        },
+        {
+          "date": "2026-09-21",
+          "type": "learning",
+          "summary": "Научи: „Техника 'draft-release-notes-from' (Prompt library, Anthropic) — диф между две версийни…\""
         },
         {
           "date": "2026-07-28",
@@ -15182,17 +15198,28 @@
           "detail": "Научи: node-cron 4.x ХВАЩА грешката на задача, логва я през собствения си logger и emit-ва 'ex… (+4 още)"
         },
         {
+          "version": "16.0.0",
+          "date": "2026-09-21",
+          "event": "v16.0 — учене",
+          "detail": "Научи: Триажът на инцидент корелира ТРИ източника на доказателства, не един: логове + скорошни… (+2 още)"
+        },
+        {
           "version": "20.3.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.3 — учене",
-          "detail": "Научи: SQLite `SELECT 1` НЕ докосва файла на базата — това е liveness на връзката, не readines… (+45 още)"
+          "detail": "Научи: SQLite `SELECT 1` НЕ докосва файла на базата — това е liveness на връзката, не readines… (+42 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
-          "summary": "Научи: „SQLite `SELECT 1` НЕ докосва файла на базата — това е liveness на връзката, не readines…\" (+45 още) · 6 в карантина"
+          "summary": "Научи: „SQLite `SELECT 1` НЕ докосва файла на базата — това е liveness на връзката, не readines…\" (+42 още) · 5 в карантина"
+        },
+        {
+          "date": "2026-09-21",
+          "type": "learning",
+          "summary": "Научи: „Триажът на инцидент корелира ТРИ източника на доказателства, не един: логове + скорошни…\" (+2 още) · 1 в карантина"
         },
         {
           "date": "2026-08-07",
@@ -15359,14 +15386,14 @@
         },
         {
           "version": "20.3.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.3 — учене",
           "detail": "Научи: Капан в Next.js App Router: ако route файл изнася само GET, Next сам създава HEAD и пол… (+47 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Капан в Next.js App Router: ако route файл изнася само GET, Next сам създава HEAD и пол…\" (+47 още) · 1 в карантина"
         },
@@ -15472,7 +15499,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 132
+        "lessons": 134
       },
       "evolution": [
         {
@@ -15501,14 +15528,14 @@
         },
         {
           "version": "22.8.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v22.8 — учене",
           "detail": "Научи: Поправка „запази повредения файл + запиши затворен kill-switch“ е вярна само ако новият… (+77 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Поправка „запази повредения файл + запиши затворен kill-switch“ е вярна само ако новият…\" (+77 още) · 3 в карантина"
         },
@@ -15635,14 +15662,14 @@
         },
         {
           "version": "20.6.0",
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "event": "v20.6 — учене",
           "detail": "Научи: Четвърт АХ се урежда в 5 изхода (цяла/половин печалба, връщане, половин/цяла загуба); ч… (+48 още)"
         }
       ],
       "activity": [
         {
-          "date": "2026-09-25",
+          "date": "2026-09-26",
           "type": "learning",
           "summary": "Научи: „Четвърт АХ се урежда в 5 изхода (цяла/половин печалба, връщане, половин/цяла загуба); ч…\" (+48 още) · 18 в карантина"
         },

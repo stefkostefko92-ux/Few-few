@@ -8,10 +8,12 @@ import { useMemo, useState, useRef, lazy, Suspense } from "react";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe,
-  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList,
+  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList, Gamepad2,
 } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
+import GameShowcase from "../components/GameShowcase";
+import FeatureLinks from "../components/FeatureLinks";
 import { LANDING_TRANSLATIONS } from "../i18n/landing";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
@@ -44,6 +46,7 @@ const FEATURE_ICONS = {
   welcomer: UserPlus,
   knowledgeBase: BookOpen,
   canned: ClipboardList,
+  game: Gamepad2,
 };
 
 export default function LandingLocalized({ locale }) {
@@ -107,14 +110,14 @@ export default function LandingLocalized({ locale }) {
             <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
-              <div className="font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
+              <div className="hidden sm:block font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
                 by {COMPANY_NAME}
               </div>
             </div>
           </a>
           <div className="flex items-center gap-4">
             <LanguageSwitcher current={locale} />
-            <button onClick={handleLogin} className="cs-btn-primary text-xs">SIGN IN →</button>
+            <button onClick={handleLogin} className="cs-btn-primary text-xs whitespace-nowrap">SIGN IN →</button>
           </div>
         </header>
 
@@ -163,6 +166,9 @@ export default function LandingLocalized({ locale }) {
             </div>
           </div>
         </section>
+
+        {/* SERVER SEASON — играта (текстът по локал, картинките общи) */}
+        {t.game && <GameShowcase heading={t.game.heading} sub={t.game.sub} bullets={t.game.bullets} link={t.game.link} />}
 
         {/* EU TRUST */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
@@ -316,6 +322,7 @@ export default function LandingLocalized({ locale }) {
                 <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsAppy}</a>
               </nav>
             )}
+            <FeatureLinks heading={t.guides?.features || "Features"} />
 
             <div className="text-center text-xs font-mono text-cs-dim border-t border-cs-border/30 pt-4">
               Created and Designed by{" "}

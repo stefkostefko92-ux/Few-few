@@ -7,6 +7,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { prisma } from "../lib/prisma.js";
+import { gameDataFor, gameEraseSteps } from "../lib/game/privacy.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
 import { redisStore } from "../lib/rateLimitStore.js";
 
@@ -69,6 +70,7 @@ export { CREATED_BY_MODELS };
 router.get("/export", subjectRightsLimiter, async (req, res, next) => {
   try {
     const userId = req.user.id;
+    const game = await gameDataFor(userId); // v50 — Server Season (lib/game/privacy.js)
 
     // Collect all data tied to this user ID
     // Одит 09.08.2026: декларацията „всички лични данни" пропускаше 5 таблици,
@@ -200,6 +202,8 @@ router.get("/export", subjectRightsLimiter, async (req, res, next) => {
         giveaway_entries: giveawayEntries,
         server_memberships: memberships,
         discord_role_snapshots: roleSnapshots,
+        // v50 — Server Season (одит 25.09.2026: експортът ги пропускаше).
+        server_season_game: game,
         // Чл. 15(1) — какво субектът е СЪЗДАЛ, не само какво е получил.
         created_by_me: {
           polls,
@@ -328,6 +332,13 @@ router.post("/delete-account", subjectRightsLimiter, async (req, res, next) => {
         .then(() => tx.memberRoleSnapshot.deleteMany({ where: { userId } }))
         .catch(() => {});
 
+      // 1г. Server Season (v50) — същите стъпки като /privacy в бота (dsr.js).
+      // Преди таблото не ги пипаше: изтритият акаунт оставаше с цял профил в
+      // играта (одит на Кодаджията и Правния Разбирач, 25.09.2026).
+      for (const [, step] of gameEraseSteps(tx, userId)) {
+        await Promise.resolve().then(step).catch(() => {});
+      }
+
       // 2. Delete all sessions (revokes OAuth tokens — they're stored here)
       await tx.session.deleteMany({ where: { userId } }).catch(() => {});
 
@@ -407,8 +418,8 @@ router.post("/report-abuse", async (req, res, next) => {
     if (!allowedTypes.includes(targetType)) {
       return res.status(400).json({ error: `targetType must be: ${allowedTypes.join(", ")}` });
     }
-    if (!reason || reason.length < 10) {
-      return res.status(400).json({ error: "reason must be at least 10 characters" });
+    if (typeof reason !== "string" || reason.length < 10 || reason.length > 2000) {
+      return res.status(400).json({ error: "reason must be 10–2000 characters" });
     }
 
     // Store as audit log entry with ABUSE_REPORT action
@@ -438,7 +449,10 @@ router.post("/report-abuse", async (req, res, next) => {
         Sentry.captureMessage(`DSA abuse report: ${targetType}`, {
           level: "warning",
           tags: { kind: "abuse_report" },
-          extra: { reportId: report.id, targetId, reason },
+          // Само идентификатори: свободният текст на подателя (reason/details)
+          // остава в базата в ЕС и се чете от админ конзолата — Privacy Policy
+          // обещава анонимизирани данни към Sentry (Правният Разбирач 25.09.2026).
+          extra: { reportId: report.id, targetType },
         });
       } catch { /* monitoring is best-effort — never block the response */ }
     }

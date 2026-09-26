@@ -3,6 +3,7 @@
 // (separate from the bot-notifier that calls the bot)
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { awardTicketSlaXp } from "../lib/game/xp.js";
 import { requireBotSecret } from "../middleware/auth.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
 import { ensureArchiveToken, tokenizedArchiveUrl } from "../lib/archiveToken.js";
@@ -594,10 +595,12 @@ router.post("/ticket/:ticketId/close", async (req, res, next) => {
       include: {
         messages: { orderBy: { createdAt: "asc" } },
         creator: true, assignee: true,
-        panel: { select: { transcriptChannelId: true, name: true } },
+        panel: { select: { transcriptChannelId: true, name: true, slaFirstResponseMinutes: true, slaResolutionMinutes: true } },
         server: { select: { archiveChannelId: true } },
       },
     });
+    // v50 — XP за staff, затворил тикет БЕЗ пробив на SLA (само панели със SLA; веднъж на тикет).
+    awardTicketSlaXp(ticket, closedById).catch(() => {});
 
     // Generate HTML archive
     const html = generateHtmlTranscript(ticket);

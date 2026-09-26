@@ -8,7 +8,7 @@ import {
   Zap, BookOpen, Lightbulb,
   LineChart, Key,
   Menu, X as CloseIcon, MessageSquareText,
- KeyRound } from "lucide-react";
+ KeyRound, Gamepad2 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
 import { getServers, logout } from "../api";
@@ -193,6 +193,7 @@ export default function Layout() {
               <NavItem to={`/dashboard/${serverId}/applications`} icon={Users}>{t("nav.applications")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/verification`} icon={ShieldCheck}>{t("nav.verification")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/automation`} icon={Zap}>{t("nav.automation")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/game`} icon={Gamepad2}>{t("nav.game")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/analytics`} icon={LineChart}>{t("nav.analytics")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/apikeys`} icon={Key}>{t("nav.apikeys")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/commands`} icon={BookOpen}>{t("nav.commands")}</NavItem>
