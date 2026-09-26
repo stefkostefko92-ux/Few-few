@@ -182,11 +182,13 @@ app.use((req, res, next) => {
   // Мачваме срещу НОРМАЛИЗИРАНИЯ път: Express не percent-decode-ва req.path,
   // а express.static го декодира преди да резолвне файла — затова /li%62/db.js
   // би подминал prefix-правило върху req.path и би разкрил изходния код.
-  // Декодираме веднъж и колабсираме повтарящи се слешове (заради %2f).
-  const norm = decodedPath.replace(/\/{2,}/g, '/');
-  if (norm.includes('..') || norm.includes('\0')) {
+  // Декодираме веднъж и нормализираме като send: колабсира повтарящите се слешове (заради %2f)
+  // и единичните „.“ сегменти — иначе /./server.js или /%2e/3d/src/app.js подминаваха всички
+  // prefix-правила, а send ги сервираше (и /./data/<снимка на базата> от autodeploy.sh).
+  if (decodedPath.includes('..') || decodedPath.includes('\0')) {
     return res.status(404).send('Not found');
   }
+  const norm = path.posix.normalize(decodedPath);
   // Case-insensitive: on case-insensitive filesystems /Data/panev.DB etc. would
   // otherwise bypass the blocklist and disclose the SQLite DB (hashes + PII).
   const blocked = [/^\/data\b/i, /^\/scripts\b/i, /^\/lib\b/i, /^\/node_modules\b/i,

@@ -1,0 +1,42 @@
+/* ============================================================
+   Ценоразписът: таблиците в продуктовите карти на тесни места.
+   Отделно от site.css и само на продуктовата страница —
+   site/build.mjs слага линка.
+   ============================================================ */
+
+/* Две карти на ред само когато и таблицата, и снимката се
+   събират: под 1200 px (с класически скролбар 1020 не стига)
+   конфигурациите са една под друга. */
+@media (max-width: 1200px) {
+  .sys-list-2 { grid-template-columns: 1fr; }
+}
+
+/* Скритият за очите текст в заглавката на колоната с бутоните
+   (.visually-hidden) е position: absolute. Без позициониран родител
+   той излиза от скролиращата таблица и разширява цялата страница
+   на телефон; така остава вътре. */
+.table-scroll, .sys-card { position: relative; }
+
+/* Таблицата следва ширината на картата, не на екрана:
+   на тясно бутонът става „+“ (името му за четци остава
+   „Добави към поръчката — код“), а отстъпите се свиват,
+   за да не излиза колоната с бутона извън картата. */
+.sys-body { container-type: inline-size; }
+@container (max-width: 560px) {
+  .price-table th, .price-table td { padding-left: .5rem; padding-right: .5rem; }
+  .price-table .add-btn { font-size: 0; padding: .3rem .6rem; line-height: 1; }
+  .price-table .add-btn::before { content: '+'; font-size: 1.05rem; font-weight: 700; }
+}
+/* На най-тясното заглавките са с нормални букви (една дума с главни
+   и разредка не се пренася и не пуска колоната да се свие). */
+@container (max-width: 400px) {
+  .price-table thead th { text-transform: none; letter-spacing: 0; font-size: .74rem; white-space: normal; }
+  .price-table th, .price-table td { padding-left: .3rem; padding-right: .3rem; font-size: .84rem; }
+}
+@container (max-width: 290px) {
+  .price-table th, .price-table td { padding-left: .2rem; padding-right: .2rem; font-size: .78rem; }
+  .price-table .add-btn { padding: .3rem .45rem; }
+}
+@media (max-width: 420px) {
+  .sys-body { padding-left: .9rem; padding-right: .9rem; }
+}

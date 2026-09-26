@@ -41,6 +41,7 @@ const T = {
     controls: 'Controlli',
     canvas: (name) => `Modello 3D: ${name}`,
     fatal: 'Il browser non supporta WebGPU né WebGL 2: impossibile mostrare il modello 3D.',
+    noscript: 'La vista 3D ha bisogno di JavaScript: attivalo nel browser.',
   },
   en: {
     title: 'Panev brackets in 3D',
@@ -80,6 +81,7 @@ const T = {
     controls: 'Controls',
     canvas: (name) => `3D model: ${name}`,
     fatal: 'This browser supports neither WebGPU nor WebGL 2, so the 3D model cannot be shown.',
+    noscript: 'The 3D view needs JavaScript: turn it on in your browser.',
   },
   bg: {
     title: 'Планките Panev в 3D',
@@ -119,6 +121,7 @@ const T = {
     controls: 'Управление',
     canvas: (name) => `3D модел: ${name}`,
     fatal: 'Браузърът не поддържа нито WebGPU, нито WebGL 2 — 3D моделът не може да се покаже.',
+    noscript: '3D изгледът изисква JavaScript: включи го в браузъра.',
   },
 };
 

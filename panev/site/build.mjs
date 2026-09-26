@@ -21,14 +21,17 @@ import { viewerPage } from './templates/viewer.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const locales = [it, en, bg];
 
-// Стиловете на 3D рендерите и 3D изгледа — само на страниците, които ги показват (с версия от
-// съдържанието, за да не остане стар в кеша).
-const VISTA_CSS = `/css/vista-3d.css?v=${createHash('sha256').update(readFileSync(join(ROOT, 'css/vista-3d.css'))).digest('hex').slice(0, 10)}`;
+// Допълнителните стилове — само на страниците, които ги ползват, с версия от съдържанието, за да
+// не остане стар файл в кеша: vista-3d.css (3D рендерите и 3D изгледа), listino.css (таблиците в
+// продуктовите карти на тесни места).
+const versioned = (file) => `/${file}?v=${createHash('sha256').update(readFileSync(join(ROOT, file))).digest('hex').slice(0, 10)}`;
+const VISTA_CSS = versioned('css/vista-3d.css');
+const LISTINO_CSS = versioned('css/listino.css');
 const STYLES = '<link rel="stylesheet" href="/css/site.css">';
 
 const PAGES = [
-  { key: 'home',     og: '/img/og-home.jpg',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t), css: VISTA_CSS },
-  { key: 'products', og: '/img/og-prodotti.jpg', body: (t) => productsPage(t, locales), ld: (t) => productsLd(t), css: VISTA_CSS },
+  { key: 'home',     og: '/img/og-home.jpg',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t), css: [VISTA_CSS] },
+  { key: 'products', og: '/img/og-prodotti.jpg', body: (t) => productsPage(t, locales), ld: (t) => productsLd(t), css: [VISTA_CSS, LISTINO_CSS] },
   { key: 'catalog',  og: '/img/og-prodotti.jpg', body: (t) => catalogPage(t, locales),  ld: (t) => catalogLd(t) },
   { key: 'contacts', og: '/img/og-contatti.jpg', body: (t) => contactsPage(t, locales), ld: (t) => contactsLd(t) },
   { key: 'privacy',  og: '/img/og-home.jpg',     body: (t) => privacyPage(t) },
@@ -41,7 +44,7 @@ for (const t of locales) {
     const html = page(t, locales, def.key, def.key, def.body(t), {
       ogImage: def.og,
       ldExtra: def.ld ? def.ld(t) : [],
-      styles: def.css ? `${STYLES}\n  <link rel="stylesheet" href="${def.css}">` : STYLES,
+      styles: [STYLES, ...(def.css ?? []).map((href) => `<link rel="stylesheet" href="${href}">`)].join('\n  '),
     });
     const outPath = join(ROOT, t.base.replace(/^\//, ''), t.slugs[def.key]);
     mkdirSync(dirname(outPath), { recursive: true });

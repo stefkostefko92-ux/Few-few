@@ -76,6 +76,7 @@
   .foot a { color: var(--ink-2); }
   .overlay { position: absolute; inset: 0; display: grid; place-items: center; padding-inline: 16px; text-align: center; background: color-mix(in srgb, var(--stage) 70%, transparent); font-weight: 600; }
   [hidden] { display: none !important; }
+  .overlay.noscript { background: var(--stage); }
   @media (max-width: 860px) {
     .app { grid-template: "top" auto "stage" auto "tools" auto "list" auto "foot" auto / 100%; height: auto; }
     .viewport { position: relative; height: 62vh; height: 62svh; }
@@ -84,6 +85,11 @@
     .info { position: static; max-width: none; border-width: 0 0 1px; border-radius: 0; background: var(--paper); backdrop-filter: none; padding: 10px 16px; }
     .code { font-size: 17px; }
     .adj input { width: 130px; }
+  }
+  @media (max-width: 400px) {
+    .top { gap: 10px; }
+    .home img { height: 22px; }
+    h1 { font-size: 15px; }
   }
   @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 </style>
@@ -100,6 +106,7 @@
       <canvas id="view" tabindex="0" aria-label="Modello 3D"></canvas>
       <p class="hint" id="hint"></p>
       <div class="overlay" id="loading" role="status">Caricamento del modello 3D…</div>
+      <noscript><div class="overlay noscript">La vista 3D ha bisogno di JavaScript: attivalo nel browser.</div></noscript>
       <div class="overlay" id="busy" role="status" hidden></div>
       <div class="overlay" id="fatal" role="alert" hidden><p></p></div>
     </div>

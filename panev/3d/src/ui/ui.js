@@ -189,8 +189,11 @@ export function createUI(api) {
     lang = l;
     t = strings(l);
     document.documentElement.lang = l;
-    document.title = t.title;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', t.description);
+    // A site page's head is already in its language (and longer, for search): leave it as it is.
+    if (!langHrefs) {
+      document.title = t.title;
+      document.querySelector('meta[name="description"]')?.setAttribute('content', t.description);
+    }
     $('title').textContent = t.title;
     $('list').setAttribute('aria-label', t.catalog);
     $('tools').setAttribute('aria-label', t.controls);

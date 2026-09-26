@@ -28,6 +28,11 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 - **Дизайн:** само каталожната палитра (`#162862`, `#1d3271`, `#f4f6f9`,
   `#e2e6ea`, `#667298`, `#878786`); Inter variable self-hosted (latin +
   cyrillic в `fonts/Inter-var-*.woff2`); без емоджита и декоративни SVG.
+- **Стилове:** `css/site.css` е общото. Новото е в отделни файлове, само където
+  трябва: `css/vista-3d.css` (3D рендерите и 3D изгледа — начална и продукти) и
+  `css/listino.css` (таблиците в продуктовите карти на тясно, container queries).
+  Линковете с `?v=<хеш>` ги слага `site/build.mjs`. Менюто се свива в бутон под
+  1180 px — българските надписи са най-дългите и не се събират по-тясно.
 - **Поръчка:** списък в `localStorage` (`js/site.js`) → mailto или
   `POST /api/contact` (съществуващият бекенд с honeypot + rate limit + nodemailer).
 - **server.js:** clean URLs (без `.html`, важи и за `en/`/`bg/`), 301 legacy

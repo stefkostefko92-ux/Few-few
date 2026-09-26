@@ -49,15 +49,18 @@ jobs:
 
       # Истинският гейт на сайта: генераторът минава и страниците, които дава, са точно тези в
       # репото — нито ръчна редакция на генериран HTML, нито забравен билд след промяна по site/
-      # (или по 3d/template.html и 3d-viewer/, от които се правят 3D страниците). sitemap.xml е
-      # изключен: lastmod е датата на билда. site/data вече е в репото (беше скрит от стария
-      # неанкериран `data/` в .gitignore и е възстановен от генерираните страници).
+      # (или по 3d/template.html и 3d-viewer/, от които се правят 3D страниците), нито нова
+      # страница, която не е комитната (`git status` вижда и неследените файлове, `git diff` — не).
+      # В sitemap.xml се прощава само lastmod — датата на билда. site/data вече е в репото (беше
+      # скрит от стария неанкериран `data/` в .gitignore и е възстановен от генерираните страници).
       - name: Билд на сайта без разминаване с репото
         working-directory: panev
         run: |
           npm run build:site
-          if ! git diff --quiet -- . ':(exclude)sitemap.xml'; then
-            git diff --stat -- . ':(exclude)sitemap.xml'
+          drift="$(git status --porcelain -- . ':(exclude)sitemap.xml')"
+          if [ -n "$drift" ] || ! git diff --quiet -I '<lastmod>' -- sitemap.xml; then
+            echo "$drift"
+            git diff --stat -I '<lastmod>' -- sitemap.xml
             echo "::error::генерираните страници се разминават с site/ — пусни npm run build:site в panev/ и комитни"
             exit 1
           fi

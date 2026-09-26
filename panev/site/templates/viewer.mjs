@@ -42,6 +42,7 @@ function localize(app, t) {
     ['aria-label="Modello 3D"', `aria-label="${esc(s.canvas('').replace(/: $/, ''))}"`],
     ['>Caricamento del modello 3D…<', `>${esc(s.loading)}<`],
     ['aria-label="Controlli"', `aria-label="${esc(s.controls)}"`],
+    ['>La vista 3D ha bisogno di JavaScript: attivalo nel browser.<', `>${esc(s.noscript)}<`],
   ];
   return swaps.reduce((html, [from, to]) => {
     if (html.split(from).length !== 2) throw new Error(`3d/template.html: „${from}“ трябва да е точно веднъж`);
@@ -71,7 +72,8 @@ export function viewerPage(t, locales) {
   return `${head(t, locales, 'viewer3d', {
     ogImage: '/img/og-3d.jpg',
     ldExtra: [appLd(t)],
-    htmlAttrs: ` data-lang="${t.lang}" data-lang-hrefs="${esc(JSON.stringify(hrefs))}"`,
+    // Сайтът е само светъл: 3D-то го следва и в рамката на началната страница (без тъмна тема).
+    htmlAttrs: ` data-lang="${t.lang}" data-theme="light" data-lang-hrefs="${esc(JSON.stringify(hrefs))}"`,
     viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
     styles: `<style>${FONTS}${STYLE}</style>`,
   })}
