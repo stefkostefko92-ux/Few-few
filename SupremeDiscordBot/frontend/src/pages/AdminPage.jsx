@@ -1,22 +1,25 @@
 // frontend/src/pages/AdminPage.jsx
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart2, Users, Server, DollarSign, FileText,
   Shield, Ban, Search, Trash2, RotateCcw, Edit, MessageSquare,
-  Star, AlertTriangle, CheckCircle, Sparkles, TrendingUp,
+  Star, AlertTriangle, CheckCircle, Sparkles, TrendingUp, ExternalLink, Download, LogOut, Gamepad2, LifeBuoy,
 } from "lucide-react";
 import api, {
   getAnalytics, getRevenue, getAdminUsers, getAdminUser,
   getPayments, getAuditLogs, getAdminServers, getAdminServer,
   deleteAdminServer, resetAdminServer, broadcastToServer, setServerPlan,
-  deleteAdminUser, deleteAdminPayment, purgeAuditLogs, updateAdminServer, updateUserRole, setUserBlacklisted
+  deleteAdminUser, deleteAdminPayment, purgeAuditLogs, updateAdminServer, updateUserRole, setUserBlacklisted,
+  adminExportUsersCsv, adminRevokeSessions, adminSetUserNote,
 } from "../api";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../contexts/ToastContext";
-import { SystemTab, SecurityTab, BillingTab, FleetTab, ComplianceTab, SeasonTab } from "./AdminOpsTabs";
+import { SystemTab, SecurityTab, BillingTab, FleetTab, ComplianceTab, SeasonTab, LoadError } from "./AdminOpsTabs";
+import { ConfirmModal, Pager } from "./adminShared";
+import { GameAdminTab, SupportTab } from "./AdminManageTabs";
 import { Activity, ShieldCheck, CreditCard, Bot, FileCheck } from "lucide-react";
 
 // Админ конзолата е EN-only (изключена от i18n) — суров сървърен текст + резерва.
@@ -36,6 +39,8 @@ const TABS = [
   { id: "fleet",     label: "Fleet",     icon: Bot },
   { id: "compliance", label: "Compliance", icon: FileCheck },
   { id: "season",    label: "Season",    icon: Sparkles },
+  { id: "game",      label: "Game",      icon: Gamepad2 },
+  { id: "support",   label: "Support",   icon: LifeBuoy },
 ];
 
 const ROLE_COLORS = {
@@ -61,17 +66,24 @@ export default function AdminPage() {
           Platform <span className="text-cs-cyan">Control</span>
         </h1>
         <p className="text-cs-muted text-sm">
-          Global management — analytics, users, servers, payments, audit logs, system health, security, billing, fleet and data-subject requests. Every write requires a fresh second factor.
+          Global management — analytics, users, servers, payments, audit logs, system health, security, billing, fleet, data-subject requests, the game on every server and support across all servers. Every write requires a fresh second factor.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-0 mb-8 border-b border-cs-border overflow-x-auto">
+      {/* Tabs — на телефон падащо меню: 14 таба в хоризонтална лента показваха
+          три, без знак, че има още (визуален одит 26.09.2026). */}
+      <label className="sm:hidden block mb-6">
+        <span className="sr-only">Section</span>
+        <select className="cs-select" value={tab} onChange={(e) => setTab(e.target.value)}>
+          {TABS.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
+        </select>
+      </label>
+      <div className="hidden sm:flex gap-0 mb-8 border-b border-cs-border overflow-x-auto">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-mono uppercase tracking-wider
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-mono uppercase tracking-wider whitespace-nowrap flex-shrink-0
                         transition-colors border-b-2 -mb-px
                         ${tab === id
                           ? "border-cs-cyan text-cs-cyan"
@@ -96,6 +108,8 @@ export default function AdminPage() {
       {tab === "fleet"     && <FleetTab />}
       {tab === "compliance" && <ComplianceTab />}
       {tab === "season"    && <SeasonTab />}
+      {tab === "game"      && <GameAdminTab />}
+      {tab === "support"   && <SupportTab />}
     </div>
   );
 }
@@ -105,7 +119,9 @@ export default function AdminPage() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function AnalyticsTab() {
-  const { data, isLoading } = useQuery({ queryKey: ["analytics"], queryFn: getAnalytics });
+  const { data, isLoading, isError, error, refetch } = useQuery({ queryKey: ["analytics"], queryFn: getAnalytics });
+  // Без това провалена заявка рисуваше нули като истински числа (одит 26.09.2026).
+  if (isError) return <LoadError error={error} onRetry={refetch} />;
 
   if (isLoading) {
     return (
@@ -356,12 +372,30 @@ function UsersTab() {
   const qc = useQueryClient();
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [onlyBlacklisted, setOnlyBlacklisted] = useState(false);
+  const [page, setPage] = useState(1);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const toast = useToast();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["adminUsers", query, roleFilter],
-    queryFn: () => getAdminUsers({ query, role: roleFilter || undefined, limit: 100 }),
+    queryKey: ["adminUsers", query, roleFilter, onlyBlacklisted, page],
+    queryFn: () => getAdminUsers({ query, role: roleFilter || undefined, blacklisted: onlyBlacklisted ? "true" : undefined, page, limit: 50 }),
+    placeholderData: (prev) => prev,
+  });
+
+  // CSV без имейли; MAIN_OWNER + свеж втори фактор (при 403 се отваря
+  // предизвикателството и човекът натиска пак).
+  const exportCsv = useMutation({
+    mutationFn: () => adminExportUsersCsv({ role: roleFilter || undefined, blacklisted: onlyBlacklisted ? "true" : undefined }),
+    onSuccess: (csv) => {
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = `supreme-users-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    },
+    onError: (err) => toast.error(adminErr(err)),
   });
 
   const deleteUser = useMutation({
@@ -374,24 +408,30 @@ function UsersTab() {
 
   return (
     <>
-      <div className="flex gap-3 mb-6">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="relative flex-1 min-w-[12rem] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-dim" aria-hidden="true" />
           <input
             className="cs-input pl-10"
             placeholder="Search by username or Discord ID..."
             aria-label="Search users by username or Discord ID"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
           />
         </div>
-        <select className="cs-select max-w-[200px]" aria-label="Filter users by role" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+        <select className="cs-select max-w-[200px]" aria-label="Filter users by role" value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}>
           <option value="">All roles</option>
           <option value="MAIN_OWNER">Main Owner</option>
           <option value="SUPER_USER">Super User</option>
           <option value="SUPPORT_STAFF">Support Staff</option>
           <option value="USER">User</option>
         </select>
+        <label className="flex items-center gap-2 text-sm text-cs-muted">
+          <input type="checkbox" checked={onlyBlacklisted} onChange={(e) => { setOnlyBlacklisted(e.target.checked); setPage(1); }} /> Blacklisted only
+        </label>
+        <button type="button" className="cs-btn-secondary cs-btn-sm ml-auto" onClick={() => exportCsv.mutate()} disabled={exportCsv.isPending}>
+          <Download className="w-3.5 h-3.5" aria-hidden="true" /> {exportCsv.isPending ? "Exporting…" : "Export CSV"}
+        </button>
       </div>
 
       <div className="cs-card p-0 overflow-x-auto">
@@ -430,9 +470,11 @@ function UsersTab() {
                 </td>
                 <td><span className={ROLE_COLORS[u.globalRole] || "cs-badge-muted"}>{u.globalRole}</span></td>
                 <td>
-                  {u.isBlacklisted
-                    ? <span className="cs-badge-danger">Blacklisted</span>
-                    : <span className="cs-badge-success">Active</span>}
+                  {u.isBlacklisted && (!u.blacklistedUntil || new Date(u.blacklistedUntil) > new Date())
+                    ? <span className="cs-badge-danger" title={u.blacklistReason || undefined}>Blacklisted{u.blacklistedUntil ? ` · until ${new Date(u.blacklistedUntil).toLocaleDateString()}` : ""}</span>
+                    : u.isBlacklisted
+                      ? <span className="cs-badge-muted" title="The blacklist period has ended — the user can sign in again.">Expired ban</span>
+                      : <span className="cs-badge-success">Active</span>}
                 </td>
                 <td className="text-cs-muted font-mono text-xs">{u._count?.serverMembers ?? 0}</td>
                 <td className="text-cs-muted font-mono text-xs">{u._count?.tickets ?? 0}</td>
@@ -459,6 +501,8 @@ function UsersTab() {
           </tbody>
         </table>
       </div>
+
+      <Pager page={page} limit={data?.limit || 50} total={data?.total || 0} onPage={setPage} />
 
       {selectedUserId && <UserDetailModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />}
 
@@ -496,14 +540,34 @@ function UserDetailModal({ userId, onClose }) {
     onError: (err) => toast.error(adminErr(err)),
   });
 
+  const refreshUser = () => {
+    qc.invalidateQueries({ queryKey: ["adminUsers"] });
+    qc.invalidateQueries({ queryKey: ["adminUser", userId] });
+  };
+  const [banReason, setBanReason] = useState("");
+  const [banUntil, setBanUntil] = useState(""); // YYYY-MM-DD или празно = безсрочно
   const setBlacklist = useMutation({
-    mutationFn: ({ blacklisted }) => setUserBlacklisted(userId, blacklisted),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["adminUsers"] });
-      qc.invalidateQueries({ queryKey: ["adminUser", userId] });
+    mutationFn: ({ blacklisted }) => setUserBlacklisted(userId, blacklisted, blacklisted
+      ? { reason: banReason.trim() || null, until: banUntil ? new Date(`${banUntil}T23:59:59`).toISOString() : null }
+      : {}),
+    onSuccess: (r) => {
+      refreshUser(); setBanReason(""); setBanUntil("");
+      if (r?.isBlacklisted) toast.success(`Blacklisted${r.sessionsRevoked ? ` · ${r.sessionsRevoked} session(s) signed out` : ""}.`);
     },
     onError: (err) => toast.error(adminErr(err)),
   });
+  const revokeSessions = useMutation({
+    mutationFn: () => adminRevokeSessions(userId),
+    onSuccess: (r) => toast.success(`Signed out: ${r.web} browser session(s), ${r.oauth} Discord login(s).`),
+    onError: (err) => toast.error(adminErr(err)),
+  });
+  const [note, setNote] = useState(null); // null = не е редактирана още
+  const saveNote = useMutation({
+    mutationFn: (value) => adminSetUserNote(userId, value),
+    onSuccess: () => { refreshUser(); setNote(null); toast.success("Note saved."); },
+    onError: (err) => toast.error(adminErr(err)),
+  });
+  const banActive = !!user?.isBlacklisted && (!user.blacklistedUntil || new Date(user.blacklistedUntil) > new Date());
 
   return (
     <Modal open onClose={onClose} title="Edit User" maxWidth="max-w-2xl">
@@ -546,27 +610,58 @@ function UserDetailModal({ userId, onClose }) {
                 </div>
 
                 <div>
-                  <label className="cs-label">Blacklist Status</label>
+                  <label className="cs-label">Blacklist</label>
                   {user.isBlacklisted ? (
-                    <button
-                      className="cs-btn-secondary cs-btn-sm"
-                      onClick={() => setBlacklist.mutate({ blacklisted: false })}
-                      disabled={setBlacklist.isPending}
-                    >
-                      <CheckCircle className="w-4 h-4" /> Remove from blacklist
-                    </button>
+                    <div className="space-y-2">
+                      <p className="text-sm text-cs-muted">
+                        {banActive ? <span className="text-danger">Blacklisted</span> : <span>Ban expired</span>}
+                        {user.blacklistedAt && <> since {new Date(user.blacklistedAt).toLocaleString()}</>}
+                        {user.blacklistedUntil ? <> · until {new Date(user.blacklistedUntil).toLocaleString()}</> : <> · no end date</>}
+                        {user.blacklistReason && <><br />Reason: {user.blacklistReason}</>}
+                      </p>
+                      <button className="cs-btn-secondary cs-btn-sm" onClick={() => setBlacklist.mutate({ blacklisted: false })} disabled={setBlacklist.isPending}>
+                        <CheckCircle className="w-4 h-4" /> Remove from blacklist
+                      </button>
+                    </div>
                   ) : (
-                    <button
-                      className="cs-btn-danger cs-btn-sm"
-                      onClick={() => setBlacklist.mutate({ blacklisted: true })}
-                      disabled={setBlacklist.isPending}
-                    >
-                      <Ban className="w-4 h-4" /> Add to blacklist
-                    </button>
+                    <div className="grid sm:grid-cols-[1fr_auto_auto] gap-2 items-end">
+                      <div>
+                        <label className="sr-only" htmlFor="ban-reason">Reason</label>
+                        <input id="ban-reason" className="cs-input" maxLength={500} placeholder="Reason (optional, audit-logged)" value={banReason} onChange={(e) => setBanReason(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-cs-dim" htmlFor="ban-until">Until (empty = no end)</label>
+                        <input id="ban-until" className="cs-input" type="date" min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)} value={banUntil} onChange={(e) => setBanUntil(e.target.value)} />
+                      </div>
+                      <button className="cs-btn-danger cs-btn-sm" onClick={() => setBlacklist.mutate({ blacklisted: true })} disabled={setBlacklist.isPending}>
+                        <Ban className="w-4 h-4" /> Blacklist
+                      </button>
+                    </div>
                   )}
+                  <p className="text-[11px] text-cs-dim mt-1">A blacklisted user cannot sign in or use the bot; their open sessions are signed out immediately.</p>
+                </div>
+
+                <div>
+                  <label className="cs-label">Sessions</label>
+                  <button className="cs-btn-secondary cs-btn-sm" onClick={() => revokeSessions.mutate()} disabled={revokeSessions.isPending}>
+                    <LogOut className="w-4 h-4" aria-hidden="true" /> Sign out everywhere
+                  </button>
+                  <p className="text-[11px] text-cs-dim mt-1">Ends every browser session and removes the stored Discord login — they sign in again.</p>
                 </div>
               </>
             )}
+
+            <div>
+              <label className="cs-label" htmlFor="admin-note">Internal note (staff only — included in the user's GDPR data export)</label>
+              <textarea id="admin-note" className="cs-input min-h-[80px]" maxLength={2000}
+                value={note ?? (user.adminNote || "")} onChange={(e) => setNote(e.target.value)} />
+              {note !== null && note !== (user.adminNote || "") && (
+                <div className="flex gap-2 mt-2">
+                  <button className="cs-btn-primary cs-btn-sm" onClick={() => saveNote.mutate(note)} disabled={saveNote.isPending}>{saveNote.isPending ? "Saving…" : "Save note"}</button>
+                  <button className="cs-btn-ghost cs-btn-sm" onClick={() => setNote(null)}>Discard</button>
+                </div>
+              )}
+            </div>
 
             <div className="grid grid-cols-3 gap-4 pt-4 border-t border-cs-border">
               <div><div className="cs-label">Servers</div><div className="font-display text-2xl font-bold text-cs-cyan">{user.serverMembers?.length ?? 0}</div></div>
@@ -586,7 +681,7 @@ function UserDetailModal({ userId, onClose }) {
 // Всички ръчно задаваеми планове (PLANS в backend/src/lib/premium.js).
 const PLAN_OPTIONS = [
   { value: "free",       label: "Free",        note: "Revokes all premium features (base limits)." },
-  { value: "premium",    label: "Premium",     note: "Unlimited panels/forms, AI replies, round-robin, webhooks, API." },
+  { value: "premium",    label: "Premium",     note: "Up to 50 panels and 50 forms, AI replies, round-robin, webhooks, API." },
   { value: "whitelabel", label: "White-label", note: "Premium + custom bot under the customer's own brand." },
   { value: "agency5",    label: "Agency 5",    note: "White-label for up to 5 servers — creates a manual Agency owned by the server owner; they attach the other servers themselves." },
   { value: "agency10",   label: "Agency 10",   note: "White-label for up to 10 servers — creates a manual Agency owned by the server owner; they attach the other servers themselves." },
@@ -604,10 +699,15 @@ function ServersTab() {
   const [editServer, setEditServer] = useState(null);
   const [broadcastServer, setBroadcastServer] = useState(null);
   const [reason, setReason] = useState("");
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
 
+  // Страници + търсене: досега само първите 100 — по-старите сървъри не можеха
+  // да се управляват (одит 26.09.2026).
   const { data, isLoading } = useQuery({
-    queryKey: ["adminServers"],
-    queryFn: () => getAdminServers({ limit: 100 }),
+    queryKey: ["adminServers", query, page],
+    queryFn: () => getAdminServers({ query: query || undefined, page, limit: 50 }),
+    placeholderData: (prev) => prev,
   });
 
   const invalidate = () => {
@@ -632,12 +732,19 @@ function ServersTab() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-cs-muted text-sm font-mono">
-          → {data?.total ?? 0} total servers
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-dim" aria-hidden="true" />
+          <input
+            className="cs-input pl-10"
+            placeholder="Search by server name or ID..."
+            aria-label="Search servers by name or ID"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+          />
         </div>
-        <div className="font-mono text-[10px] uppercase tracking-wider text-cs-dim">
-          Grant • Revoke • Edit • Broadcast • Reset • Delete
+        <div className="text-cs-muted text-sm font-mono">
+          {data?.total ?? 0} servers
         </div>
       </div>
 
@@ -689,9 +796,10 @@ function ServersTab() {
                 <td className="text-cs-dim text-xs">{new Date(s.createdAt).toLocaleDateString()}</td>
                 <td className="text-right">
                   <div className="flex gap-1 justify-end items-center">
+                    <Link to={`/dashboard/${s.id}`} className="cs-btn-ghost cs-btn-sm" title="Open this server's dashboard as a platform admin" aria-label={`Open dashboard of ${s.name}`}><ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /></Link>
                     <button
                       onClick={() => {
-                        setSelectedPlan(s.agencyId ? "agency5" : (s.plan && s.plan !== "free" ? s.plan : "premium"));
+                        setSelectedPlan(s.agencyId ? (s.agency?.plan || "agency5") : (s.plan && s.plan !== "free" ? s.plan : "premium"));
                         setConfirmPlan({ server: s });
                       }}
                       className="cs-btn-sm text-premium hover:bg-premium/10 border border-premium/30 px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
@@ -709,13 +817,14 @@ function ServersTab() {
           </tbody>
         </table>
       </div>
+      <Pager page={page} limit={data?.limit || 50} total={data?.total || 0} onPage={setPage} />
 
       {confirmPlan && (
         <ConfirmModal
           title="Change plan"
           danger={selectedPlan === "free"}
           confirmLabel={selectedPlan === "free" ? "Revoke (set Free)" : `✦ Set ${PLAN_OPTIONS.find((p) => p.value === selectedPlan)?.label}`}
-          onCancel={() => { setConfirmPlan(null); setReason(""); }}
+          onCancel={() => { setConfirmPlan(null); setReason(""); setPlanMut.reset(); }}
           onConfirm={() => setPlanMut.mutate({ serverId: confirmPlan.server.id, plan: selectedPlan, reason })}
           loading={setPlanMut.isPending}
           error={setPlanMut.error?.response?.data?.error}
@@ -746,7 +855,7 @@ function ServersTab() {
           danger
           confirmLabel="Permanently Delete"
           onConfirm={() => delServer.mutate(confirmDelete.id)}
-          onCancel={() => setConfirmDelete(null)}
+          onCancel={() => { setConfirmDelete(null); delServer.reset(); }}
           loading={delServer.isPending}
           error={delServer.error?.response?.data?.error}
           message={`Permanently delete "${confirmDelete.name}" and ALL its panels, forms, tickets, applications, audit logs, payment logs? This cannot be undone. The bot will remain in the Discord guild until manually removed.`}
@@ -759,7 +868,7 @@ function ServersTab() {
           danger
           confirmLabel="Reset Everything"
           onConfirm={() => resetServer.mutate(confirmReset.id)}
-          onCancel={() => setConfirmReset(null)}
+          onCancel={() => { setConfirmReset(null); resetServer.reset(); }}
           loading={resetServer.isPending}
           error={resetServer.error?.response?.data?.error}
           message={`Delete ALL panels, forms, tickets, applications for "${confirmReset.name}" but keep the server record and Premium status? Useful for a clean slate.`}
@@ -774,13 +883,27 @@ function ServersTab() {
 
 function EditServerModal({ server, onClose }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({
+  // Празно задържане = „завинаги“ (null в базата). Досега празното се
+  // показваше като 30 и при ВСЯКО записване (дори само на лог канала) Premium
+  // сървър губеше архивите по-стари от 30 дни; „0 = forever“ пък триеше всички
+  // (одит 26.09.2026). Затова се праща САМО промененото.
+  const initial = {
     logChannelId:         server.logChannelId || "",
     archiveChannelId:     server.archiveChannelId || "",
-    archiveRetentionDays: server.archiveRetentionDays ?? 30,
+    archiveRetentionDays: server.archiveRetentionDays == null ? "" : String(server.archiveRetentionDays),
     customBotName:        server.customBotName || "",
     customBotAvatar:      server.customBotAvatar || "",
-  });
+  };
+  const [form, setForm] = useState(initial);
+  const retentionInvalid = form.archiveRetentionDays !== "" && !(/^\d+$/.test(form.archiveRetentionDays) && Number(form.archiveRetentionDays) >= 1 && Number(form.archiveRetentionDays) <= 3650);
+  const changes = () => {
+    const out = {};
+    for (const k of Object.keys(initial)) {
+      if (form[k] === initial[k]) continue;
+      out[k] = k === "archiveRetentionDays" ? (form[k] === "" ? null : Number(form[k])) : form[k];
+    }
+    return out;
+  };
 
   const update = useMutation({
     mutationFn: (data) => updateAdminServer(server.id, data),
@@ -804,8 +927,10 @@ function EditServerModal({ server, onClose }) {
           </div>
           <div>
             <label className="cs-label">Archive Retention (days)</label>
-            <input className="cs-input" type="number" min="0" {...field("archiveRetentionDays")} />
-            <p className="text-xs text-cs-dim mt-1">0 = forever (Premium default)</p>
+            <input className="cs-input" type="number" min="1" max="3650" placeholder="Forever" aria-invalid={retentionInvalid || undefined} {...field("archiveRetentionDays")} />
+            <p className={`text-xs mt-1 ${retentionInvalid ? "text-danger" : "text-cs-dim"}`}>
+              {retentionInvalid ? "Use a whole number from 1 to 3650, or leave empty." : "Empty = keep forever (Premium default). Closed-ticket transcripts older than this are deleted nightly."}
+            </p>
           </div>
           <div>
             <label className="cs-label">Custom Bot Name (Premium white-label)</label>
@@ -825,11 +950,12 @@ function EditServerModal({ server, onClose }) {
           <button className="cs-btn-ghost" onClick={onClose}>Cancel</button>
           <button
             className="cs-btn-primary"
-            disabled={update.isPending}
-            onClick={() => update.mutate({
-              ...form,
-              archiveRetentionDays: Number(form.archiveRetentionDays) || 0,
-            })}
+            disabled={update.isPending || retentionInvalid}
+            onClick={() => {
+              const data = changes();
+              if (!Object.keys(data).length) return onClose();
+              update.mutate(data);
+            }}
           >{update.isPending ? "Saving..." : "Save Changes"}</button>
         </div>
     </Modal>
@@ -886,7 +1012,8 @@ function PaymentsTab() {
   const qc = useQueryClient();
   const toast = useToast();
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const { data, isLoading } = useQuery({ queryKey: ["payments"], queryFn: () => getPayments({ limit: 100 }) });
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useQuery({ queryKey: ["payments", page], queryFn: () => getPayments({ page, limit: 100 }), placeholderData: (prev) => prev });
 
   const del = useMutation({
     mutationFn: deleteAdminPayment,
@@ -958,6 +1085,7 @@ function PaymentsTab() {
           </tbody>
         </table>
       </div>
+      <Pager page={page} limit={data?.limit || 100} total={data?.total || 0} onPage={setPage} />
 
       <ConfirmDialog
         open={!!confirmDelete}
@@ -982,10 +1110,12 @@ function AuditTab() {
   const [actionFilter, setActionFilter] = useState("");
   const [confirmPurge, setConfirmPurge] = useState(false);
   const [purgeDays, setPurgeDays] = useState(90);
+  const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["auditLogs", actionFilter],
-    queryFn: () => getAuditLogs({ limit: 200, action: actionFilter || undefined }),
+    queryKey: ["auditLogs", actionFilter, page],
+    queryFn: () => getAuditLogs({ page, limit: 100, action: actionFilter || undefined }),
+    placeholderData: (prev) => prev,
   });
 
   const purge = useMutation({
@@ -1007,7 +1137,7 @@ function AuditTab() {
           placeholder="Filter by action..."
           aria-label="Filter audit log by action"
           value={actionFilter}
-          onChange={(e) => setActionFilter(e.target.value)}
+          onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
         />
         <button className="cs-btn-danger cs-btn-sm" onClick={() => setConfirmPurge(true)}>
           <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Purge Old
@@ -1042,6 +1172,7 @@ function AuditTab() {
           </tbody>
         </table>
       </div>
+      <Pager page={page} limit={data?.limit || 100} total={data?.total || 0} onPage={setPage} />
 
       {confirmPurge && (
         <ConfirmModal
@@ -1054,47 +1185,12 @@ function AuditTab() {
           error={purge.error?.response?.data?.error}
         >
           <p className="text-sm text-cs-muted mb-4">
-            Destructive entries (user deletions, blacklists, role changes, server deletions, Premium grants) are <strong className="text-cs-text">always preserved</strong> regardless of age.
+            Everything staff did in this console (access, plan and data changes, deletions, resets), GDPR requests and earlier purges are <strong className="text-cs-text">always preserved</strong> regardless of age.
           </p>
           <label className="cs-label">Delete logs older than (days, minimum 30)</label>
           <input type="number" min="30" className="cs-input" value={purgeDays} onChange={(e) => setPurgeDays(e.target.value)} />
         </ConfirmModal>
       )}
     </>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// GENERIC CONFIRM MODAL
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function ConfirmModal({ title, message, children, confirmLabel, onConfirm, onCancel, loading, error, danger }) {
-  return (
-    <Modal open onClose={onCancel} title={title} maxWidth="max-w-md">
-      <div className="flex items-center gap-3 mb-4">
-        <div className={`w-10 h-10 border flex items-center justify-center ${danger ? "border-danger text-danger" : "border-cs-cyan text-cs-cyan"}`}>
-          <AlertTriangle className="w-5 h-5" aria-hidden="true" />
-        </div>
-        {danger && <span className="sr-only">Warning</span>}
-      </div>
-
-      {message && <p className="text-sm text-cs-muted leading-relaxed mb-4">{message}</p>}
-      {children}
-
-      {error && (
-        <div className="border border-danger/40 bg-danger/5 px-3 py-2 text-xs text-danger mt-3" role="alert">
-          {error}
-        </div>
-      )}
-
-      <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-cs-border">
-        <button className="cs-btn-ghost" onClick={onCancel} disabled={loading}>Cancel</button>
-        <button
-          className={danger ? "cs-btn-danger" : "cs-btn-primary"}
-          disabled={loading}
-          onClick={onConfirm}
-        >{loading ? "Working..." : confirmLabel}</button>
-      </div>
-    </Modal>
   );
 }

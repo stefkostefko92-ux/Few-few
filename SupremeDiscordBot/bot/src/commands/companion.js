@@ -101,7 +101,7 @@ export default {
         const { data } = await api.post(`/bot/game/companions/${interaction.guildId}/${interaction.user.id}/feed`, { ownedId: c.id, sparks });
         const e = new EmbedBuilder().setColor(data.evolved ? SUCCESS : BRAND)
           .setTitle(data.evolved ? t("game.companion.evolved", lang, { name: c.nickname || c.name, stage: data.stage }) : t("game.companion.fedTitle", lang, { name: c.nickname || c.name }))
-          .setDescription(t("game.companion.fedBody", lang, { sparks, fed: data.owned.fed, left: data.sparksLeft }))
+          .setDescription(t("game.companion.fedBody", lang, { sparks: data.charged ?? sparks, fed: data.owned.fed, left: data.sparksLeft }))
           .setThumbnail(data.companion.imageUrl);
         return interaction.editReply({ embeds: [e] });
       }

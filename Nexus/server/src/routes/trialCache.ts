@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { logFromRequest } from '../lib/logger';
 import type { Character } from '../types/domain';
+import { TRIAL_GEAR_ITEMS, ensureRuntimeItems } from '../seed/runtimeItems';
 
 const router = Router();
 router.use(authRequired);
@@ -92,7 +93,7 @@ const OFFERINGS: Offering[] = [
   {
     slug: 'trial_armor',
     name: 'Trial Aegis',
-    description: 'Plate forged from compressed floor-energy. +60 HP, +12 Defense.',
+    description: 'Plate forged from compressed floor-energy. +62 HP, +13 Defense.',
     cost: 18,
     category: 'gear',
     effect: { item_slug: 'trial_aegis' },
@@ -110,39 +111,10 @@ const OFFERINGS: Offering[] = [
 ];
 
 // On first access we materialise the unique gear items in the items table.
-// Doing this lazily keeps the seed script untouched.
+// Статовете живеят в seed/runtimeItems.ts (по кривата, game/itemCurve.ts);
+// UPSERT веднъж на процес → стар ред получава текущите статове без ре-сийд.
 function ensureUniqueItems(): void {
-  const db = getDb();
-  const have = (slug: string) =>
-    !!(db.prepare('SELECT id FROM items WHERE slug = ?').get(slug) as any);
-
-  if (!have('trial_crown')) {
-    db.prepare(
-      `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-         atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-         int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-       VALUES ('trial_crown', 'Trial Crown', 'helm', '', 5, 'epic', 12, '',
-               0, 0, 6, 35, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 600, 'helm', 'A relic helm from the Tower of Trials.', '')`,
-    ).run();
-  }
-  if (!have('trial_aegis')) {
-    db.prepare(
-      `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-         atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-         int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-       VALUES ('trial_aegis', 'Trial Aegis', 'armor', '', 5, 'epic', 15, '',
-               0, 0, 12, 60, 0, 3, 0, 4, 0, 0, 1, 0, 0, 0, 1000, 'armor', 'Plate forged from compressed floor-energy.', '')`,
-    ).run();
-  }
-  if (!have('wyrmsong_blade')) {
-    db.prepare(
-      `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-         atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-         int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-       VALUES ('wyrmsong_blade', 'Wyrmsong', 'weapon', 'sword', 5, 'legendary', 18, '',
-               14, 32, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 2500, 'sword', 'A blade that hums louder the higher you climb.', '')`,
-    ).run();
-  }
+  ensureRuntimeItems(getDb(), TRIAL_GEAR_ITEMS);
 }
 
 function getChar(uid: number): Character | undefined {

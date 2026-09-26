@@ -10,10 +10,10 @@ import { SUPPORTED, switchLocale, type Locale } from '../i18n';
 const LABELS: Record<Locale, string> = { en: 'EN', bg: 'БГ', it: 'IT' };
 
 export default function LanguageSelector({ compact = false }: { compact?: boolean }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const current = (SUPPORTED.find((l) => i18n.language?.startsWith(l)) ?? 'en') as Locale;
   return (
-    <div className={`lang-selector${compact ? ' lang-selector--compact' : ''}`} role="group" aria-label="Language">
+    <div className={`lang-selector${compact ? ' lang-selector--compact' : ''}`} role="group" aria-label={t('common.language', { defaultValue: 'Language' })}>
       {SUPPORTED.map((loc) => (
         <button
           key={loc}

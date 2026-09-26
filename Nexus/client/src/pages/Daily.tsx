@@ -131,8 +131,8 @@ export default function Daily(): React.ReactElement {
               <div className="flex between">
                 <div>
                   <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{q.title}</strong>
-                  <div className="muted text-sm" style={{ textTransform: 'capitalize' }}>
-                    {q.region.replace(/_/g, ' ')} · {t('daily.lv', { n: q.level_req })}
+                  <div className="muted text-sm">
+                    {t(`world.regions.${q.region}.name`, { defaultValue: q.region.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) })} · {t('daily.lv', { n: q.level_req })}
                   </div>
                 </div>
                 {q.completed && <span className="tag emerald">{t('daily.claimedTag')}</span>}
@@ -191,7 +191,7 @@ function WeeklyCard(): React.ReactElement | null {
     setBusy(true);
     try {
       const r = await api.post('/weekly/claim');
-      toast(t('weekly.claimed', { defaultValue: `Claimed! +${r.granted.gold} gold, +${r.granted.gems} gems` }), 'success');
+      toast(t('weekly.claimed', { defaultValue: 'Claimed! +{{gold}} gold, +{{gems}} gems', gold: r.granted.gold, gems: r.granted.gems }), 'success');
       await refreshCharacter();
       load();
     } catch (e: any) { toast(e.message, 'error'); }

@@ -759,6 +759,22 @@ app.post("/internal/whitelabel-reconcile", async (req, res) => {
   }
 });
 
+// v51 — статус на white-label клиентите за админ конзолата (Fleet). Без токени:
+// само дали е свързан, под какво име и с каква латентност.
+app.get("/internal/whitelabel-status", (_req, res) => {
+  const bots = {};
+  for (const [serverId, c] of customClients.entries()) {
+    bots[serverId] = {
+      ready: !!c?.isReady?.(),
+      tag: c?.user?.tag || null,
+      applicationId: c?.user?.id || null,
+      ping: Number.isFinite(c?.ws?.ping) ? c.ws.ping : null,
+      readySince: c?.readyAt ? c.readyAt.toISOString() : null,
+    };
+  }
+  res.json({ bots });
+});
+
 app.post("/internal/application-reviewed", async (req, res) => {
   try {
     await handleApplicationReviewed(client, req.body);

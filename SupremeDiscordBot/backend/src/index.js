@@ -113,6 +113,7 @@ import automationRouter from "./routes/automation.js";
 import billingRouter from "./routes/billing.js";
 import mfaRouter from "./routes/mfa.js";
 import adminOpsRouter from "./routes/adminOps.js";
+import adminManageRouter from "./routes/adminManage.js"; // v51 CRUD: игра по сървъри, поддръжка, white-label, потребители
 import analyticsRouter from "./routes/analytics.js";
 import statusRouter from "./routes/status.js";
 import publicApiRouter, { apiKeyManagementRouter } from "./routes/publicApi.js";
@@ -324,6 +325,7 @@ app.use("/api/bot", botV18Router);           // v1.8 polls/giveaways/sticky/sche
 app.use("/api/automation", automationRouter); // v1.8 dashboard CRUD for polls/giveaways/sticky/scheduled + commands catalog
 app.use("/api/auth/mfa", mfaRouter);
 app.use("/api/admin", adminOpsRouter);        // v3.4 System · Security · Billing · Fleet · DSR (същите гардове + MFA)         // v3.4 Втори фактор (TOTP) — задължителен за staff
+app.use("/api/admin", adminManageRouter);     // v51 — игра по сървъри · поддръжка · white-label · потребители (същите гардове + MFA)
 app.use("/api/billing", billingRouter);       // v3.3 Доставчико-неутрално състояние на плащанията (Discord-first)
 app.use("/api/analytics", analyticsRouter);   // v2.1 Heatmap, leaderboard, funnel
 app.use("/api/apikeys", apiKeyManagementRouter); // v2.1 API key CRUD (dashboard-authed)

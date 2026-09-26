@@ -49,7 +49,7 @@ export default function Forgot(): React.ReactElement {
             </p>
             {devToken && (
               <div className="field">
-                <label>dev token (SMTP off)</label>
+                <span className="muted text-sm">dev token (SMTP off)</span>
                 <Link to={`/reset?token=${encodeURIComponent(devToken)}`} style={{ wordBreak: 'break-all' }}>{devToken}</Link>
               </div>
             )}
@@ -58,8 +58,8 @@ export default function Forgot(): React.ReactElement {
         ) : (
           <form className="auth-form" onSubmit={onSubmit}>
             <div className="field">
-              <label>{t('login.usernameOrEmail')}</label>
-              <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} autoFocus required />
+              <label htmlFor="forgot-id">{t('login.usernameOrEmail')}</label>
+              <input id="forgot-id" value={identifier} onChange={(e) => setIdentifier(e.target.value)} autoFocus required />
             </div>
             <button className="btn btn-primary" type="submit" disabled={loading || !identifier.trim()}>
               {loading ? '…' : t('forgot.send', { defaultValue: 'Send reset link' })}

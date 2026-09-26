@@ -5,7 +5,8 @@
   "description": "Nexus Dominion — a high-quality browser MMORPG inspired by the classic Nexus Dominion.",
   "workspaces": [
     "server",
-    "client"
+    "client",
+    "e2e"
   ],
   "scripts": {
     "dev": "concurrently -k -n SERVER,CLIENT -c blue,magenta \"npm:dev --workspace server\" \"npm:dev --workspace client\"",
