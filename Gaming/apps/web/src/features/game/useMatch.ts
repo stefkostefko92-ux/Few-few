@@ -10,6 +10,7 @@ import {
 import { getSocket } from "../../lib/socket";
 import { getBotDifficulty } from "../../lib/botDifficulty";
 import { useMatchStore } from "../../lib/store";
+import { refreshUser, useRefreshUserOnFocus } from "../progression/userRefresh";
 
 export type MatchPhase = "searching" | "playing" | "over";
 
@@ -43,6 +44,9 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
   const [turn, setTurn] = useState<number | null>(null);
   const [terminal, setTerminal] = useState(false);
   const [result, setResult] = useState<GameOverMsg | null>(null);
+
+  // Чиповете/нивото в хедъра се опресняват и при връщане в таба.
+  useRefreshUserOnFocus();
 
   useEffect(() => {
     if (!gameKey) return;
@@ -101,6 +105,8 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       setResult(o);
       setPhase("over");
       useMatchStore.getState().setPhase("over");
+      // Наградата (чипове/опит/ниво) е начислена преди GAME_OVER — обнови хедъра.
+      void refreshUser(true);
     };
     const onPresence = (p: PresenceMsg) => {
       if (p.matchId !== boundId.current) return;
