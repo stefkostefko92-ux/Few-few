@@ -22,7 +22,20 @@ import { installFog } from './fog.js';
 import { createProjectiles } from './ranged.js';
 import { setNoise, U } from './tsl.js';
 import { QUALITY } from './quality.js';
-import { tintedMaterials, weaponKit, hasShieldKit } from './loadout.js';
+import { tintedMaterials, weaponKit, hasShieldKit, giantMaterials, ghostMaterials, ghostCapeMaterial } from './loadout.js';
+import { bodyKind, beastSpecies, beastBodyType, giantScale, WRAITH_HOVER } from './beast-config.js';
+import { buildBeast } from './beast-geo.js';
+import { BeastFighter } from './beast-fighter.js';
+import { buildSerpent } from './serpent-geo.js';
+import { SerpentFighter } from './serpent-fighter.js';
+import { buildSpider } from './spider-geo.js';
+import { SpiderFighter } from './spider-fighter.js';
+import { partBuildFor } from './fighter-scale.js';
+
+// 4b кръг 2: „без крака, реещ се" — призракът пренася рицарската геометрия, но краката/фаулдите
+// просто не влизат в batcher-а (виж kind==='wraith' клона долу); rig-ът продължава да ги смята
+// (нулев риск за IK-a), само нищо не ги рисува.
+const WRAITH_HIDE_PARTS = new Set(['tassetR', 'tassetL', 'thighL', 'thighR', 'shinL', 'shinR', 'footR', 'footL']);
 
 // 4a.4 (кръг 2): избира builder-а по кита на слота. 'sword' пази ОРИГИНАЛНИЯ вид (A=longsword
 // двуръчен, B=armingSword едноръчен+щит) — нулев риск за базовата линия.
@@ -121,29 +134,70 @@ export async function buildWorld(renderer, hud, quality, loadout = {}) {
   const heroM = tintedMaterials(M, loadout.heroTint);
   const foeM = tintedMaterials(M, loadout.foeTint);
   const knightA = buildKnight(heroM, 'A');
-  const knightB = buildKnight(foeM, 'B');
   const swordA = buildWeapon(heroKit, 'A', heroM);
-  const swordB = buildWeapon(foeKit, 'B', foeM);
-  const shieldB = hasShieldKit(foeKit) ? heaterShield(foeM) : null;
   const batcher = new RigidBatcher();
-  for (const k of [knightA, knightB]) for (const name of Object.keys(k.pieces)) batcher.add(k.parts[name], k.pieces[name]);
+  for (const name of Object.keys(knightA.pieces)) batcher.add(knightA.parts[name], knightA.pieces[name]);
   batcher.add(swordA.part, swordA.pieces);
-  batcher.add(swordB.part, swordB.pieces);
-  if (shieldB) batcher.add(shieldB.part, shieldB.pieces);
+  const capeA = new Cape(M.capeA, { length: 0.98, flare: 0.55 });
+
+  // 4b: слот B е рицар/голям хуманоид/призрак (рицарският риг, само материал/мащаб/hover се
+  // менят — виж fighter.js applyGiantScale/opts.hover) ИЛИ истински звяр (BeastRig/BeastFighter,
+  // beast-rig.js/beast-fighter.js) — избрано по foe.sprite (beast-config.js bodyKind), не по
+  // оръжие. Batcher-ът е СПОДЕЛЕН (общи материали = общи draw call-ове) и за двата клона. Звярът
+  // няма плащ (BeastFighter.cape е инертна заглушка) — истинският Cape симулатор дори не се
+  // строи, иначе статично, никога степвано платно щеше да виси в сцената (нищо не го стъпва).
+  const kind = bodyKind(loadout.foeSprite);
+  let B;
+  let capeB = null;
+  let beastSkinMesh = null;
+  if (kind === 'beast') {
+    // 4b кръг 3: 'quad' (rat/boar/wolf/drake) И 'spider' вече са SDF-скинирани SkinnedMesh
+    // (beast-sdf.js/spider-sdf.js) — 'serpent' остава СОБСТВЕН риг (сегментна верига, вече
+    // прегледан и одобрен) — виж beast-config.js bodyType.
+    const species = beastSpecies(foeKit);
+    const bt = beastBodyType(foeKit);
+    const builder = bt === 'serpent' ? buildSerpent : bt === 'spider' ? buildSpider : buildBeast;
+    const beast = builder(species);
+    for (const name of Object.keys(beast.pieces)) batcher.add(beast.rig.parts[name], beast.pieces[name]);
+    if (beast.skin) beastSkinMesh = beast.skin.mesh; // THREE.SkinnedMesh — извън batcher-а.
+    const FighterCls = bt === 'serpent' ? SerpentFighter : bt === 'spider' ? SpiderFighter : BeastFighter;
+    B = new FighterCls('B', species, beast);
+  } else {
+    // 4b кръг 2: призрачният плащ е тониран към същата призрачна палитра (ghostMaterials) —
+    // не буквално разкъсана геометрия (cloth.js остава непипнат — нулев риск за симулацията),
+    // но вече не е несъвместимото яркочервено наметало на рицар.
+    const capeMat = kind === 'wraith' ? ghostCapeMaterial(M.capeB) : M.capeB;
+    capeB = new Cape(capeMat, { length: kind === 'wraith' ? 1.5 : 1.24, flare: kind === 'wraith' ? 1.1 : 0.85 });
+    const bodyM = kind === 'giant' ? giantMaterials(foeM, loadout.foeSprite) : kind === 'wraith' ? ghostMaterials(foeM) : foeM;
+    const knightB = buildKnight(bodyM, 'B');
+    const swordB = buildWeapon(foeKit, 'B', bodyM);
+    // Едрите хуманоиди никога не носят щит (юмрук/боздуган — brief 4b), независимо от кита.
+    const shieldB = kind !== 'giant' && hasShieldKit(foeKit) ? heaterShield(bodyM) : null;
+    for (const name of Object.keys(knightB.pieces)) {
+      if (kind === 'wraith' && WRAITH_HIDE_PARTS.has(name)) continue; // „без крака, реещ се" — виж бележката горе.
+      batcher.add(knightB.parts[name], knightB.pieces[name]);
+    }
+    batcher.add(swordB.part, swordB.pieces);
+    if (shieldB) batcher.add(shieldB.part, shieldB.pieces);
+    if (kind === 'giant') capeB.mesh.visible = false; // мащабът на тялото не се пренася в плата — виж fighter-scale.js бележката.
+    const opts = kind === 'giant' ? { scale: giantScale(loadout.foeSprite), partScale: partBuildFor(loadout.foeSprite) } : kind === 'wraith' ? { hover: WRAITH_HOVER } : {};
+    B = new Fighter('B', knightB, swordB, capeB, shieldB, opts);
+  }
   const batches = batcher.build();
   batches.forEach((b) => scene.add(b));
-  const capeA = new Cape(M.capeA, { length: 0.98, flare: 0.55 });
-  const capeB = new Cape(M.capeB, { length: 1.24, flare: 0.85 });
   const ranged = createProjectiles();
-  scene.add(capeA.mesh, capeB.mesh, ranged.group);
+  scene.add(capeA.mesh, ranged.group);
+  if (capeB) scene.add(capeB.mesh);
+  if (beastSkinMesh) scene.add(beastSkinMesh);
   const A = new Fighter('A', knightA, swordA, capeA, null);
-  const B = new Fighter('B', knightB, swordB, capeB, shieldB);
 
   // Image-based lighting captured from the courtyard itself, so the armour reflects real fires.
   hud.loading('load_shaders', 0.75);
   await nextFrame();
   // The moon's cascades must bind to the story camera, not the capture's cube camera.
-  const hidden = [...batches, capeA.mesh, capeB.mesh, rain.group, fx.group, breath.mesh];
+  const hidden = [...batches, capeA.mesh, rain.group, fx.group, breath.mesh];
+  if (capeB) hidden.push(capeB.mesh);
+  if (beastSkinMesh) hidden.push(beastSkinMesh);
   hidden.forEach((o) => (o.visible = false));
   ground.setReflections(false);
   lights.moon.castShadow = false;

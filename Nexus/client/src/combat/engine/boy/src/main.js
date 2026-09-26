@@ -63,10 +63,10 @@ export async function bootDuel(canvas, opts = {}) {
   if (bailIfAborted()) return { dispose() {} };
   const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
   // 4a.4: тон по opts.heroClass/opts.region, оръжие/щит по opts.heroClass/opts.foeName — виж
-  // loadout.js. choreo-gen.js (roundsToChoreo.ts) чете СЪЩИТЕ heroClass/foeName — един избор.
+  // loadout.js; choreo-gen.js чете СЪЩИТЕ heroClass/foeName/foeSprite (4b: риг/geo по вид).
   const W = await buildWorld(renderer, hud, quality, {
     heroTint: classLoadout(opts.heroClass), foeTint: foeLoadout(opts.region),
-    heroKit: weaponKit(opts.heroClass), foeKit: weaponKit(opts.foeName),
+    heroKit: weaponKit(opts.heroClass), foeKit: weaponKit(opts.foeName, opts.foeSprite), foeSprite: opts.foeSprite,
   });
   if (bailIfAborted()) return { dispose() {} };
   const { scene, camera, A, B, fx } = W;
@@ -248,7 +248,7 @@ export async function bootDuel(canvas, opts = {}) {
       grain: 0.04,
       aspect,
       sharp: internal.x < out.x * 0.98 ? 0.35 : 0.9,
-      bars: aspect > 1.35 ? Math.max(0, (1 - aspect / 2.39) / 2) : 0,
+      bars: !opts.choreography && aspect > 1.35 ? Math.max(0, (1 - aspect / 2.39) / 2) : 0,
       fade: Math.max(fadeIn, THREE.MathUtils.smoothstep(T, DURATION - 1.0, DURATION - 0.1)),
     });
 
@@ -264,7 +264,7 @@ export async function bootDuel(canvas, opts = {}) {
     });
   }
   renderer.setAnimationLoop(frame);
-  installDevHooks(clock, events, () => EVENTS);
+  installDevHooks(clock, events, () => EVENTS, camera, A, B);
 
   return {
     dispose() {

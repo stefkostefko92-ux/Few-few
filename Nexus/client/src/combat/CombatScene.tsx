@@ -197,6 +197,7 @@ export default function CombatScene(props: Props): React.ReactElement {
         heroClass={hero.class}
         region={region}
         foeName={foe.name}
+        foeSprite={foe.sprite}
       />}
 
       {showIntro && (

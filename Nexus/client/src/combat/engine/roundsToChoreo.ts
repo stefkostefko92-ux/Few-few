@@ -23,10 +23,11 @@ export function choreographyFromRounds(
   victory: boolean,
   heroClass?: CharacterClass | null,
   foeName?: string,
+  foeSprite?: string,
 ): GeneratedChoreography {
   const genRounds: GenRound[] = rounds.map((r) => ({
     attacker: r.attacker,
     result: ACTION_TO_RESULT[r.action] ?? 'hit',
   }));
-  return buildChoreography(genRounds, victory, { heroClass, foeName });
+  return buildChoreography(genRounds, victory, { heroClass, foeName, foeSprite });
 }
