@@ -2232,6 +2232,14 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   .character-card { grid-template-columns: 1fr; }
   .character-card .portrait { width: 100%; }
 
+  /* Character-card header ред (име + ⚔/🛡/⚡/🌀 пилюли): играчско име е
+     ВИНАГИ една неделима дума (regex `^[a-zA-Z][a-zA-Z0-9_]*$` в character.ts),
+     значи min-content ширината му не се свива — на 360px редът изтичаше до
+     520px (потвърдено визуално). Пуска пилюлите на нов ред + позволява на
+     дългото име да пренесе, вместо да избута реда извън viewport-а. */
+  .character-card .flex.between { flex-wrap: wrap; row-gap: 8px; }
+  .character-card h1 { overflow-wrap: anywhere; }
+
   /* Sidebar becomes a slide-in drawer instead of disappearing. */
   .sidebar {
     display: block;
