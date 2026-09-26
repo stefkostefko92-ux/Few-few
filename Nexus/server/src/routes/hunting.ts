@@ -10,7 +10,7 @@ import { liveCombatTuning } from '../game/settings';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
-import { assertReady, setCooldown } from '../game/cooldowns';
+import { claimCooldown } from '../game/cooldowns';
 import { applyBountyKill } from './bounties';
 import { trackBattlePass } from './battlepass';
 import { applyFactionRepFromHunt } from './faction';
@@ -100,8 +100,6 @@ router.post('/hunt', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  try { assertReady(char.id, 'hunt'); }
-  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'hunt' }); return; }
   if (char.hp <= Math.floor(char.hp_max * 0.1)) {
     res.status(400).json({ error: 'Too wounded to hunt. Rest first.' });
     return;
@@ -111,6 +109,13 @@ router.post('/hunt', (req, res) => {
     res.status(400).json({ error: `Region requires level ${gate}` });
     return;
   }
+  // Claimed atomically ONLY after the invalid-attempt guards above (a
+  // rejected/wounded/under-level attempt must not burn the cooldown) and
+  // BEFORE any combat/reward logic runs — see claimCooldown() doc comment:
+  // two concurrent /hunt calls must not both grant rewards.
+  let cooldownMs: number;
+  try { cooldownMs = claimCooldown(char.id, 'hunt'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'hunt' }); return; }
   // Избор на среща (game/regions.ts): обикновен пул ±3 → 8 → 16 → всички
   // (без APEX — иначе на върха на региона 33–100% от лова бяха срещу босса),
   // а APEX-ът в ±3 нива се среща с APEX_ENCOUNTER_CHANCE.
@@ -186,7 +191,6 @@ router.post('/hunt', (req, res) => {
     }
   }
   char.hp = Math.max(1, result.hero.hp > 0 ? result.hero.hp : 1);
-  const cooldownMs = setCooldown(char.id, 'hunt');
   db.prepare(
     `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ? WHERE id = ?`,
   ).run(
