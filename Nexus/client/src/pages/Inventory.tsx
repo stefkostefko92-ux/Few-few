@@ -317,8 +317,9 @@ export default function Inventory(): React.ReactElement {
               </Trans>
             </p>
             <div className="field">
-              <label>{t('inventory.listDialog.priceLabel')}</label>
+              <label htmlFor="inventory-list-price">{t('inventory.listDialog.priceLabel')}</label>
               <input
+                id="inventory-list-price"
                 type="number"
                 min={1}
                 max={1_000_000}
