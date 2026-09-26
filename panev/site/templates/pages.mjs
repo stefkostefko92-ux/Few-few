@@ -2,6 +2,7 @@
 
 import { esc, pagePath, ORIGIN } from './layout.mjs';
 import { COMPANY, CATALOG_PDF } from '../data/products.mjs';
+import { versioned } from './asset.mjs';
 
 // ── Каталог ──────────────────────────────────────────────────
 export function catalogPage(t, locales) {
@@ -24,8 +25,8 @@ export function catalogPage(t, locales) {
       <span class="chip chip-light">${esc(c.sizeNote)}</span>
     </div>
     <div class="hero-cta">
-      <a class="btn btn-white" href="${CATALOG_PDF}" download>${esc(c.download)}</a>
-      <a class="btn btn-outline" href="${CATALOG_PDF}" target="_blank" rel="noopener">${esc(c.view)}</a>
+      <a class="btn btn-white" href="${versioned(CATALOG_PDF)}" download>${esc(c.download)}</a>
+      <a class="btn btn-outline" href="${versioned(CATALOG_PDF)}" target="_blank" rel="noopener">${esc(c.view)}</a>
     </div>
   </div>
 </section>
@@ -33,7 +34,7 @@ export function catalogPage(t, locales) {
 <section class="section">
   <div class="wrap catalog-grid">
     <div class="catalog-viewer">
-      <object data="${CATALOG_PDF}#view=FitH" type="application/pdf" width="100%" height="640" aria-label="${esc(c.title)}">
+      <object data="${versioned(CATALOG_PDF)}#view=FitH" type="application/pdf" width="100%" height="640" aria-label="${esc(c.title)}">
         <p class="callout">${esc(c.fallback)}</p>
       </object>
     </div>
@@ -41,7 +42,7 @@ export function catalogPage(t, locales) {
       <h2>${esc(c.tocTitle)}</h2>
       <ol>${toc}</ol>
       <p class="note">${esc(c.interactiveNote)}</p>
-      <a class="btn btn-primary" href="${CATALOG_PDF}" download>${esc(c.download)}</a>
+      <a class="btn btn-primary" href="${versioned(CATALOG_PDF)}" download>${esc(c.download)}</a>
     </aside>
   </div>
 </section>
