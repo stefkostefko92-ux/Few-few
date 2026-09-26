@@ -875,6 +875,13 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   padding: 24px;
   box-shadow: var(--shadow-2);
   position: relative;
+  /* .panel е flex item вътре в .col (display:flex;flex-direction:column) —
+     без min-width:0 наследява default min-width:auto (content-based) и НЕ
+     се свива под min-content на децата си (напр. .table-scroll с широка
+     таблица), значи .table-scroll/overflow-x:auto никога не се задейства и
+     цялата страница получава хоризонтален скрол (потвърдено на Leaderboard/
+     BattlePass, мобилно). min-width:0 е no-op извън flex/grid контекст. */
+  min-width: 0;
 }
 
 .panel-header {
@@ -883,6 +890,12 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   justify-content: space-between;
   margin-bottom: 18px;
   gap: 16px;
+  /* Заглавие(+подзаглавие) от едната страна + бутон(и) от другата не се
+     свиват под flex по подразбиране — на тесни екрани (Arena/History/Social/
+     Trade "Обнови"/"Добави приятел"/… бутоните) редът изтичаше. Пренасяне на
+     бутона под заглавието е приемливо, не крие информация. */
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 
 .panel-title {
@@ -1387,6 +1400,14 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
+}
+
+/* Mail.tsx: списък писма (ляво) + четец (дясно). Фиксираните 320px за
+   лявата колона (бивш inline style) не се свиваха и картата изтичаше до
+   ~479px на 360px мобилен viewport. */
+.mail-grid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; }
+@media (max-width: 700px) {
+  .mail-grid { grid-template-columns: 1fr; }
 }
 
 .dashboard-grid {
@@ -2204,6 +2225,14 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
      след секция NAVBAR) правилото печели при еднаква специфичност. */
   .nav-links { display: none; }
 
+  /* Пролука между 701–900px: hamburger-ът се включва на ≤900px и освобождава
+     мястото на nav-links, но HP/GP/GM статистиките в .nav-meta се криеха
+     едва на ≤700px (виж секция NAVBAR по-горе) — на таблет (768px) .nav-meta
+     не се събираше в реда, .nav-profile изтичаше извън navbar-а и увисваше
+     като плаваща карта върху съдържанието (потвърдено визуално, tablet 768px,
+     всяка /app страница). Тук (НАКРАЯ) печели при еднаква специфичност. */
+  .nav-meta .nav-stat { display: none; }
+
   /* iOS Safari зуумва при фокус на input с font-size < 16px → форсирай 16px. */
   input, textarea, select { font-size: 16px; }
 
@@ -2223,6 +2252,14 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
      колоната се смачква/изтича. Тук (НАКРАЯ) стакът печели. */
   .character-card { grid-template-columns: 1fr; }
   .character-card .portrait { width: 100%; }
+
+  /* Character-card header ред (име + ⚔/🛡/⚡/🌀 пилюли): играчско име е
+     ВИНАГИ една неделима дума (regex `^[a-zA-Z][a-zA-Z0-9_]*$` в character.ts),
+     значи min-content ширината му не се свива — на 360px редът изтичаше до
+     520px (потвърдено визуално). Пуска пилюлите на нов ред + позволява на
+     дългото име да пренесе, вместо да избута реда извън viewport-а. */
+  .character-card .flex.between { flex-wrap: wrap; row-gap: 8px; }
+  .character-card h1 { overflow-wrap: anywhere; }
 
   /* Sidebar becomes a slide-in drawer instead of disappearing. */
   .sidebar {

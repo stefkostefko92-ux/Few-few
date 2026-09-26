@@ -122,12 +122,15 @@ export default function Dashboard(): React.ReactElement {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {mail.slice(0, 5).map((m) => (
                 <div key={m.id} className="card">
-                  <div className="flex between">
-                    <div>
+                  {/* align-items: flex-start — .flex.between стяга (stretch) по подразбиране;
+                      при дълго заглавие лявата колона расте на 3 реда и "Ново" плочката се
+                      разтяга вертикално до овална капсула (потвърдено визуално, мобилен изглед). */}
+                  <div className="flex between" style={{ alignItems: 'flex-start', gap: 8 }}>
+                    <div style={{ minWidth: 0 }}>
                       <strong style={{ color: 'var(--text-1)' }}>{m.subject}</strong>
                       <div className="muted text-sm">{t('dashboard.from', { name: m.from_name })}</div>
                     </div>
-                    {!m.read_at && <span className="tag gold">{t('dashboard.new')}</span>}
+                    {!m.read_at && <span className="tag gold" style={{ flexShrink: 0 }}>{t('dashboard.new')}</span>}
                   </div>
                 </div>
               ))}

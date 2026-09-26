@@ -1704,6 +1704,8 @@
     "awakening": "Nexus Dominion si risveglia…",
     "offlineTitle": "Il regno non risponde",
     "offlineBody": "Il server è occupato o si sta riavviando. I tuoi progressi sono al sicuro.",
+    "rateLimitedTitle": "Troppe richieste",
+    "rateLimitedBody": "Sono state inviate troppe richieste. Nuovo tentativo automatico tra {{count}}s.",
     "retry": "Riprova"
   },
   "items3d": {
