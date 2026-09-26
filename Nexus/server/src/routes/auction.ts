@@ -33,6 +33,7 @@ interface ListingRow {
   bidder_id: number | null;
   bidder_name: string | null;
   settled: number;
+  cancelled_at: number;
 }
 
 const HOUR_MS = 3_600_000;
@@ -96,7 +97,8 @@ function settleClosedListings(): void {
       if (row.bidder_id) {
         const item = db.prepare('SELECT id, name FROM items WHERE id = ?').get(row.item_id) as any;
         db.prepare(
-          `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)`,
+          // Наддава се в ГЕМОВЕ → gem_bought (не се продава на NPC за злато).
+          `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound, gem_bought) VALUES (?, ?, 1, 0, '', 1, 1)`,
         ).run(row.bidder_id, row.item_id);
         db.prepare(
           `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,
@@ -142,7 +144,7 @@ router.get('/', (_req, res) => {
     .prepare(
       `SELECT al.hour_bucket, al.item_slug, items.name AS item_name, al.current_bid, al.bidder_name
        FROM auction_listings al JOIN items ON items.id = al.item_id
-       WHERE al.settled = 1 ORDER BY al.hour_bucket DESC LIMIT 6`,
+       WHERE al.settled = 1 AND al.cancelled_at = 0 ORDER BY al.hour_bucket DESC LIMIT 6`,
     )
     .all();
   const nextHour = (listing.hour_bucket + 1) * HOUR_MS;
@@ -164,6 +166,8 @@ router.post('/bid', (req, res) => {
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const listing = getOrCreateCurrent();
   if (!listing) { res.status(404).json({ error: 'No auction running' }); return; }
+  // Отменена от админ обява на текущия час остава затворена до следващия.
+  if (listing.settled || listing.cancelled_at) { res.status(409).json({ error: 'This auction was closed by the realm administrators.' }); return; }
   if (listing.bidder_id === char.id) {
     res.status(400).json({ error: 'You are already the top bidder.' });
     return;
@@ -183,9 +187,9 @@ router.post('/bid', (req, res) => {
     // from both refunding the same previous bidder (a gem-dup) — only the
     // bid that wins the CAS proceeds to refund.
     const claim = listing.bidder_id
-      ? db.prepare('UPDATE auction_listings SET current_bid = ?, bidder_id = ?, bidder_name = ? WHERE id = ? AND current_bid = ? AND bidder_id = ?')
+      ? db.prepare('UPDATE auction_listings SET current_bid = ?, bidder_id = ?, bidder_name = ? WHERE id = ? AND current_bid = ? AND bidder_id = ? AND settled = 0')
           .run(parse.data.amount, char.id, char.name, listing.id, listing.current_bid, listing.bidder_id)
-      : db.prepare('UPDATE auction_listings SET current_bid = ?, bidder_id = ?, bidder_name = ? WHERE id = ? AND current_bid = ? AND bidder_id IS NULL')
+      : db.prepare('UPDATE auction_listings SET current_bid = ?, bidder_id = ?, bidder_name = ? WHERE id = ? AND current_bid = ? AND bidder_id IS NULL AND settled = 0')
           .run(parse.data.amount, char.id, char.name, listing.id, listing.current_bid);
     if (claim.changes !== 1) throw new Error('Another bid landed first — retry.');
     // Debit current bidder atomically.

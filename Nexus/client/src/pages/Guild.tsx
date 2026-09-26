@@ -265,22 +265,22 @@ function NoGuild({ data, browse, onChanged, createOpen, setCreateOpen }: any): R
           <div className="admin-editor" style={{ width: 460 }}>
             <h3>{t('guild.foundTitle')}</h3>
             <div className="field">
-              <label>{t('guild.form.name')}</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={30} style={{ width: '100%' }} />
+              <label htmlFor="guild-form-name">{t('guild.form.name')}</label>
+              <input id="guild-form-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={30} style={{ width: '100%' }} />
             </div>
             <div className="field-grid">
               <div className="field">
-                <label>{t('guild.form.tag')}</label>
-                <input value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value.toUpperCase() })} maxLength={5} style={{ width: '100%' }} />
+                <label htmlFor="guild-form-tag">{t('guild.form.tag')}</label>
+                <input id="guild-form-tag" value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value.toUpperCase() })} maxLength={5} style={{ width: '100%' }} />
               </div>
               <div className="field">
-                <label>{t('guild.form.crestColor')}</label>
-                <input type="color" value={form.crest_color} onChange={(e) => setForm({ ...form, crest_color: e.target.value })} style={{ width: '100%', height: 40 }} />
+                <label htmlFor="guild-form-color">{t('guild.form.crestColor')}</label>
+                <input id="guild-form-color" type="color" value={form.crest_color} onChange={(e) => setForm({ ...form, crest_color: e.target.value })} style={{ width: '100%', height: 40 }} />
               </div>
             </div>
             <div className="field">
-              <label>{t('guild.form.motto')}</label>
-              <input value={form.motto} onChange={(e) => setForm({ ...form, motto: e.target.value })} maxLength={80} style={{ width: '100%' }} placeholder={t('guild.form.mottoPlaceholder')} />
+              <label htmlFor="guild-form-motto">{t('guild.form.motto')}</label>
+              <input id="guild-form-motto" value={form.motto} onChange={(e) => setForm({ ...form, motto: e.target.value })} maxLength={80} style={{ width: '100%' }} placeholder={t('guild.form.mottoPlaceholder')} />
             </div>
             <div className="actions">
               <button className="btn" onClick={() => setCreateOpen(false)}>{t('common.cancel')}</button>
@@ -485,7 +485,7 @@ function ChatTab({ guildId, myCharId }: { guildId: number; myCharId?: number }) 
                 className="chat-report"
                 title={t('guild.chat.report', { defaultValue: 'Report message' })}
                 aria-label={t('guild.chat.report', { defaultValue: 'Report message' })}
-                onClick={() => setReport({ contentKind: 'chat', contentRef: `chat:${m.id}`, label: `Message from ${m.name}` })}
+                onClick={() => setReport({ contentKind: 'chat', contentRef: `guildchat:${m.id}`, label: t('report.messageFrom', { defaultValue: 'Message from {{name}}', name: m.name }) })}
                 style={{ background: 'none', border: 'none', color: 'var(--text-3, #7a7f8c)', cursor: 'pointer', fontSize: 13, padding: 4, alignSelf: 'center' }}
               >⚑</button>
             )}
@@ -914,7 +914,7 @@ function VaultTab({ onRefreshChar }: { onRefreshChar: () => Promise<any> }): Rea
                   <div style={{ flex: 1 }}>
                     <div className={`rarity-${v.rarity}`} style={{ fontWeight: 700 }}>{v.name}</div>
                     <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>
-                      {v.category} · {t('common.lv')} {v.level_req} · {t(`common.rarity.${v.rarity}`, { defaultValue: v.rarity })}
+                      {t(`market.categories.${v.category}`, { defaultValue: v.category })} · {t('common.lv')} {v.level_req} · {t(`common.rarity.${v.rarity}`, { defaultValue: v.rarity })}
                     </div>
                     <div className="muted text-sm" style={{ marginTop: 4 }}>
                       {t('guild.vault.donatedBy', { name: v.depositor_name })} · {new Date(v.deposited_at).toLocaleDateString()}

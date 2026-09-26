@@ -5,7 +5,7 @@ import { useStore } from '../lib/store';
 
 interface TItem { inv_id: number; name: string; rarity?: string; icon?: string; }
 interface Side { name?: string; ready: boolean; gold: number; items: TItem[]; }
-interface Offer { id: number; iAmSender: boolean; me: Side; them: Side; }
+interface Offer { id: number; iAmSender: boolean; me: Side; them: Side; gold_fee_pct?: number; they_receive?: number; i_receive?: number; }
 
 export default function Trade(): React.ReactElement {
   const { t } = useTranslation();
@@ -79,7 +79,13 @@ export default function Trade(): React.ReactElement {
       <div style={{ minHeight: 60 }}>
         {side.items.length === 0 && side.gold === 0 && <span className="muted" style={{ fontSize: 13 }}>{t('trade.nothing', { defaultValue: '(nothing offered)' })}</span>}
         {side.items.map((i) => <div key={i.inv_id} style={{ fontSize: 13 }}>• {i.name}</div>)}
-        {side.gold > 0 && <div className="gold" style={{ fontSize: 13, marginTop: 4 }}>+ {side.gold} gold</div>}
+        {side.gold > 0 && <div className="gold" style={{ fontSize: 13, marginTop: 4 }}>{t('trade.goldOffered', { defaultValue: '+ {{amount}} gold', amount: side.gold })}</div>}
+        {/* Такса като на пазара: получателят взима нетото — показваме го, за да няма изненади. */}
+        {side.gold > 0 && (offer?.gold_fee_pct ?? 0) > 0 && (
+          <div className="muted" style={{ fontSize: 12 }}>
+            {t('trade.netAfterFee', { defaultValue: 'Arrives as {{net}} gold after the {{pct}}% fee', net: mine ? offer?.they_receive : offer?.i_receive, pct: offer?.gold_fee_pct })}
+          </div>
+        )}
       </div>
     </div>
   );

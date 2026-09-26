@@ -5,11 +5,14 @@ import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown } from '../game/cooldowns';
+import { pickClassLoot } from '../game/drops';
 import { DUNGEONS } from '../seed/dungeons';
 import { logFromRequest } from '../lib/logger';
+import { mythicPlusReward, MYTHIC_TIER_SCALE } from '../game/rewardFormulas';
 import type { Character, Monster } from '../types/domain';
 
 /**
@@ -19,10 +22,11 @@ import type { Character, Monster } from '../types/domain';
  * stages, a clear bonus, and a loot pool. After a player clears a
  * scripted dungeon once, the same dungeon becomes available on a
  * Mythic+ track where every monster's HP and attack scale by
- * `(1 + tier * 0.12)`. The player picks a tier; each successful clear
- * unlocks the next tier and pays gold + XP scaled accordingly. Each
- * tenth tier also drops a guaranteed tier-9 equipment piece from the
- * dungeon's loot pool.
+ * `(1 + tier * 0.12)`. The player picks a tier; the FIRST clear of a new
+ * tier unlocks the next one and pays the dungeon's clear bonus scaled by
+ * tier; re-clearing an already-beaten tier pays the stage pile only (see
+ * game/rewardFormulas.ts#mythicPlusReward). The first clear of every tenth
+ * tier also drops a guaranteed piece from the dungeon's loot pool.
  *
  * Pity protection: five consecutive failures unlock the next tier as
  * if you'd cleared the current one — so a stuck player makes progress.
@@ -31,7 +35,7 @@ import type { Character, Monster } from '../types/domain';
 const router = Router();
 router.use(authRequired);
 
-const TIER_SCALE = 0.12; // 12% per tier
+const TIER_SCALE = MYTHIC_TIER_SCALE; // 12% per tier (game/rewardFormulas.ts)
 
 function ensureRun(charId: number, dungeonSlug: string): { character_id: number; dungeon_slug: string; best_tier: number; current_tier: number; current_stage: number; run_seed: number; run_started_at: number; consecutive_fails: number; updated_at: number } {
   const db = getDb();
@@ -134,7 +138,7 @@ router.post('/strike', (req, res) => {
   };
   const derived = deriveStats(char, loadEquipped(char.id));
   const hero = buildHeroActor(char, derived, char.hp);
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
   try {
     const out = db.transaction(() => {
       if (result.winner === 'hero') {
@@ -188,18 +192,28 @@ router.post('/claim', (req, res) => {
       const guard = db.prepare('UPDATE mythic_plus_progress SET run_started_at = 0 WHERE character_id = ? AND dungeon_slug = ? AND run_started_at = ?').run(char.id, slug, prog.run_started_at);
       if (guard.changes !== 1) { const e: any = new Error('Already claimed.'); e.clientSafe = true; e.status = 400; throw e; }
       const tier = prog.current_tier;
-      // Reward = scripted clear bonus, scaled by tier.
-      const scale = 1 + tier * TIER_SCALE;
-      const baseXp = Math.round(dungeon.xp_bonus * scale);
-      const baseGold = Math.round(dungeon.gold_bonus * scale);
-      const r = applyGuildMultipliers(char.id, baseGold, baseXp);
+      // Одит (най-голямата дупка): всеки claim плащаше ПЪЛНИЯ бонус на
+      // подземието × tier мащаба, гейтнат само от 7–10 мин dungeon cooldown —
+      // т.е. M+ tier 1 заобикаляше 24-часовия per-dungeon lock и печаташе
+      // ~20× лова на час. Пълният бонус е за ПЪРВО изчистване на нов tier;
+      // повторенията плащат купчината на етапите (game/rewardFormulas.ts).
+      const stageMonsters = dungeon.stages
+        .map((s) => db.prepare('SELECT level, xp_reward, gold_min, gold_max FROM monsters WHERE slug = ?').get(s.monster_slug) as Monster | undefined)
+        .filter((m): m is Monster => !!m);
+      const reward = mythicPlusReward(dungeon, stageMonsters, tier, prog.best_tier);
+      const r = applyGuildMultipliers(char.id, reward.gold, reward.xp);
       char.gold += r.gold;
       const lvlRes = applyXp(char, r.xp);
-      // Tier-10 milestone drop: guaranteed loot-pool item.
+      // Tier-10 milestone drop: guaranteed loot-pool item — САМО при първо
+      // изчистване (иначе повторение на tier 10 даваше гарантиран T10 предмет
+      // за 72k злато при търговеца на всеки ~8.5 мин).
       let milestoneDrop: string | null = null;
-      if (tier > 0 && tier % 10 === 0 && dungeon.loot_pool.length > 0) {
-        milestoneDrop = dungeon.loot_pool[Math.floor(Math.random() * dungeon.loot_pool.length)];
-        const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(milestoneDrop) as { id: number } | undefined;
+      if (reward.firstClear && tier > 0 && tier % 10 === 0 && dungeon.loot_pool.length > 0) {
+        // Съобразено с класа (game/drops.ts → pickClassLoot): своя/универсален сет.
+        milestoneDrop = pickClassLoot(dungeon.loot_pool, char.class);
+        const item = milestoneDrop
+          ? db.prepare('SELECT id FROM items WHERE slug = ?').get(milestoneDrop) as { id: number } | undefined
+          : undefined;
         if (item) db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
       }
       // Best-tier bookkeeping; reset fails on success.
@@ -219,7 +233,7 @@ router.post('/claim', (req, res) => {
       // сетваше само при wipe (:158) → печелившият chain-ваше M+ безкрайно
       // без никакъв pacing — най-голямата дупка от одита на дейностите.
       setCooldown(char.id, 'dungeon');
-      return { tier, xp: r.xp, gold: r.gold, lvlRes, milestoneDrop };
+      return { tier, xp: r.xp, gold: r.gold, lvlRes, milestoneDrop, first_clear: reward.firstClear };
     }).immediate();
     logFromRequest(req, {
       category: 'inventory', action: 'mythicplus_clear',

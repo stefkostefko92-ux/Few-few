@@ -159,6 +159,14 @@
 {"t":"handoff","ts":"2026-09-25T08:11:17.294Z","id":"auto","from":"izpitatelya","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:17:45.566Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:20:37.061Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T11:34:43.544Z","id":"auto","from":"dizayner","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T12:00:11.141Z","id":"auto","from":"dizayner","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T15:02:05.012Z","id":"auto","from":"dizayner","to":"човек","status":"блокер"}
+{"t":"handoff","ts":"2026-09-25T16:12:40.470Z","id":"auto","from":"dizayner","to":"kodadjiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T16:43:04.515Z","id":"auto","from":"dizayner","to":"dizayner","status":"има бележки"}
+{"t":"handoff","ts":"2026-09-25T17:53:10.074Z","id":"auto","from":"dizayner","to":"човек","status":"наред"}
+{"t":"handoff","ts":"2026-09-25T17:54:20.146Z","id":"auto","from":"dizayner","to":"оркестратор","status":"наред"}
+{"t":"handoff","ts":"2026-09-25T17:54:33.520Z","id":"auto","from":"dizayner","to":"човек","status":"наред"}
 {"t":"start","ts":"2026-09-26T08:38:38.872Z","id":"rda7f4a4e","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-09-26T08:38:38.872Z","id":"rda7f4a4e","from":"kodadjiyata","to":"diskordjiyata","status":"има бележки","run":"b40d1fff"}
 {"t":"handoff","ts":"2026-09-26T08:41:01.896Z","id":"rda7f4a4e","from":"kodadjiyata","to":"човек","status":"има бележки","run":"b68eb46d"}

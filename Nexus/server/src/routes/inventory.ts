@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
+import { SLOT_FOR_CATEGORY } from '../game/equipment';
 
 const router = Router();
 router.use(authRequired);
@@ -17,7 +18,7 @@ router.get('/', (req, res) => {
   }
   const rows = db
     .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, inv.soul_bound, inv.listed,
+      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, inv.soul_bound, inv.listed, inv.gem_bought,
               COALESCE(e.enchant_count, 0) AS enchant_count,
               COALESCE(e.bonuses_json, '{}') AS enchant_bonuses_json,
               items.*
@@ -33,16 +34,7 @@ router.get('/', (req, res) => {
 
 const equipSchema = z.object({ inventoryId: z.number().int() });
 
-const slotForCategory: Record<string, string> = {
-  weapon: 'weapon',
-  shield: 'offhand',
-  helm: 'helm',
-  armor: 'armor',
-  gloves: 'gloves',
-  boots: 'boots',
-  ring: 'ring',
-  amulet: 'amulet',
-};
+const slotForCategory = SLOT_FOR_CATEGORY;
 
 router.post('/equip', (req, res) => {
   const parse = equipSchema.safeParse(req.body);
@@ -228,7 +220,7 @@ router.post('/sell', (req, res) => {
     const result = db.transaction(() => {
       const row = db
         .prepare(
-          `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.listed, inv.vaulted_guild_id, items.* FROM inventory inv
+          `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.listed, inv.vaulted_guild_id, inv.gem_bought, items.* FROM inventory inv
            JOIN items ON inv.item_id = items.id WHERE inv.id = ? AND inv.character_id = ?`,
         )
         .get(parse.data.inventoryId, ch.id) as any;
@@ -236,8 +228,10 @@ router.post('/sell', (req, res) => {
       if (row.vaulted_guild_id) { const e: any = new Error('Withdraw the item from the guild vault first'); e.clientSafe = true; e.status = 400; throw e; }
       if (row.equipped) { const e: any = new Error('Unequip before selling'); e.clientSafe = true; e.status = 400; throw e; }
       if (row.listed) { const e: any = new Error('Cancel the market listing first'); e.clientSafe = true; e.status = 400; throw e; }
+      // Купено с гемове → не се продава за злато (иначе гем→злато конвертор).
+      if (row.gem_bought) { const e: any = new Error('Items bought with gems cannot be sold to the merchant.'); e.clientSafe = true; e.status = 400; throw e; }
       const dec = db.prepare(
-        'UPDATE inventory SET quantity = quantity - 1 WHERE id = ? AND character_id = ? AND quantity >= 1 AND equipped = 0 AND listed = 0 AND vaulted_guild_id = 0',
+        'UPDATE inventory SET quantity = quantity - 1 WHERE id = ? AND character_id = ? AND quantity >= 1 AND equipped = 0 AND listed = 0 AND vaulted_guild_id = 0 AND gem_bought = 0',
       ).run(row.inv_id, ch.id);
       if (dec.changes !== 1) { const e: any = new Error('Item not found'); e.clientSafe = true; e.status = 404; throw e; }
       db.prepare('DELETE FROM inventory WHERE id = ? AND quantity <= 0').run(row.inv_id);

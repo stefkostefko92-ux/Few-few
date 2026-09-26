@@ -94,7 +94,19 @@ async function request<T = any>(method: string, path: string, body?: any): Promi
       const firstField = fe && Object.values(fe).flat()[0];
       message = firstField || err.formErrors?.[0];
     }
-    throw new Error(message || `Request failed (${res.status})`);
+    // 429 → колко да чакаме преди повторен опит. `Retry-After` (секунди или
+    // HTTP-дата) е стандартният хедър; нашият лимитер праща `standardHeaders`
+    // (RateLimit-Reset, секунди до края на прозореца) вместо него — четем и
+    // двата, за да работим независимо кой е наличен. Липсват ли — разумен
+    // фиксиран fallback (не 0, за да не спамим веднага повторна заявка).
+    let retryAfterMs: number | undefined;
+    if (res.status === 429) {
+      const ra = res.headers.get('retry-after');
+      const rl = res.headers.get('ratelimit-reset');
+      const seconds = ra ? Number(ra) : rl ? Number(rl) : NaN;
+      retryAfterMs = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 5000;
+    }
+    throw Object.assign(new Error(message || `Request failed (${res.status})`), { status: res.status, retryAfterMs });
   }
   return data as T;
 }

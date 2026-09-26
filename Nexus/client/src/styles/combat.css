@@ -174,7 +174,80 @@
   letter-spacing: .02em;
 }
 
-/* ===== Battlefield ===== */
+/* ===== 4a.3: ъглови HUD карти над новия двигател (boy) — заменят старите HP ленти,
+   плаващи над 3D глави (проектирани от CombatScene3D); boy не изнася 3D→екран проекция,
+   а фиксираните ъгли остават четими и на 402×874 (мобилно изискване от брифа). ===== */
+.duel-hud {
+  position: absolute;
+  z-index: 6;
+  width: min(280px, 42vw);
+  padding: 10px 12px;
+  background: rgba(8, 9, 13, .68);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+}
+.duel-hud-hero { left: 16px; bottom: 16px; }
+.duel-hud-foe { right: 16px; top: 16px; }
+.duel-hud-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--text-1);
+  margin-bottom: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+}
+.duel-hud-pops {
+  position: relative;
+  height: 0;
+  overflow: visible;
+}
+.duel-hud-pops .dmg-pop {
+  position: absolute;
+  top: auto;
+  left: 50%;
+  bottom: 8px;
+}
+/* Героят: над картата му стои редът с лога — числото летеше през текста. Излита ВДЯСНО от
+   картата, в празното пространство на сцената. */
+.duel-hud-hero .duel-hud-pops .dmg-pop {
+  left: calc(100% + 44px);
+  bottom: 18px;
+}
+/* Foe картата седи горе (top:16px) — стандартната dmg-fly анимация лети НАГОРЕ (translateY
+   отрицателен) и би излязла извън видимата зона над екрана. За foe пуска надолу, В картата. */
+.duel-hud-foe .duel-hud-pops .dmg-pop {
+  top: 8px;
+  bottom: auto;
+  animation-name: dmg-fly-down;
+}
+@keyframes dmg-fly-down {
+  0%   { transform: translate(-50%, 0) scale(.5);  opacity: 0; }
+  15%  { transform: translate(-50%, 14px) scale(1.3); opacity: 1; }
+  35%  { transform: translate(-50%, 30px) scale(1); }
+  100% { transform: translate(-50%, 110px) scale(.9); opacity: 0; }
+}
+@media (max-width: 480px) {
+  .duel-hud { width: min(220px, 56vw); padding: 8px 10px; }
+  .duel-hud-name { font-size: 11px; }
+  /* Четирите бутона за скорост (~190px, горе-ляво) + картата на противника (56vw, горе-дясно)
+     не се събират в 402px — картата режеше името („e Troll“). Под реда с бутоните. */
+  .duel-hud-foe { top: 60px; }
+}
+/* 4a.3-fix (кръг 3): бяха долу-дясно, но на 402px hero-hud (долу-ляво, до 42vw широка) и
+   контролите се приближаваха достатъчно да режат "542 / 542" при по-дълги имена/числа. Горе,
+   до прогрес-лентата (левият край е свободен — foe-hud е горе-ДЯСНО), няма как да се доближат
+   до HP лентата на героя, каквато и да е ширината ѝ. */
+.duel-controls {
+  position: absolute;
+  top: 20px;
+  left: 16px;
+  z-index: 8;
+  display: flex;
+  gap: 6px;
+}
+
+/* ===== Battlefield (легаси — премахнато в 4a.3, реда пази combat-log/combat-result CSS) ===== */
 .combat-field {
   position: relative;
   z-index: 5;
@@ -320,6 +393,9 @@
 .fighter-svg { width: 180px; height: 240px; }
 
 /* ===== Damage numbers — parabolic flight ===== */
+/* 4a.3-fix (кръг 3): на тъмна нощна сцена #ffb6a3/#c2c2c2 с 1px черен кант се губеха. Дебел
+   стройк (paint-order под фила) + двоен слой сянка (плътна близка + мека широка) държи числото
+   четимо върху всякакъв фон — броня, огън, небе — без да го превръща в UI чип. */
 .dmg-pop {
   position: absolute;
   top: 28%;
@@ -328,24 +404,29 @@
   z-index: 12;
   font-family: var(--font-display);
   font-weight: 700;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 3px rgba(10, 6, 4, .92);
+  text-stroke: 3px rgba(10, 6, 4, .92);
   text-shadow:
-    -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000,
-    0 0 14px rgba(0, 0, 0, .8);
+    0 2px 3px rgba(0, 0, 0, .95),
+    0 0 18px rgba(0, 0, 0, .85);
   animation: dmg-fly 1.4s cubic-bezier(.21, .7, .35, 1) forwards;
 }
-.dmg-pop.normal { color: #ffb6a3; font-size: 30px; }
-.dmg-pop.big { color: #ff5040; font-size: 44px; }
+.dmg-pop.normal { color: #ffcdb8; font-size: 30px; }
+.dmg-pop.big { color: #ff6a52; font-size: 44px; }
 .dmg-pop.crit {
-  color: #ffe34d;
+  color: #ffe875;
   font-size: 62px;
+  -webkit-text-stroke: 4px rgba(30, 14, 4, .95);
+  text-stroke: 4px rgba(30, 14, 4, .95);
   text-shadow:
-    -2px -2px 0 #2a1808, 2px -2px 0 #2a1808, -2px 2px 0 #2a1808, 2px 2px 0 #2a1808,
-    0 0 24px rgba(255, 200, 80, .95);
+    0 2px 4px rgba(0, 0, 0, .95),
+    0 0 28px rgba(255, 200, 80, .95);
   animation-duration: 1.7s;
 }
-.dmg-pop.miss { color: #c2c2c2; font-size: 22px; font-style: italic; }
-.dmg-pop.dodge { color: #6aa7ff; font-size: 24px; font-style: italic; }
-.dmg-pop.block { color: #f5d28a; font-size: 24px; font-style: italic; }
+.dmg-pop.miss { color: #e4e4e4; font-size: 22px; font-style: italic; }
+.dmg-pop.dodge { color: #8fc2ff; font-size: 24px; font-style: italic; }
+.dmg-pop.block { color: #ffe3a3; font-size: 24px; font-style: italic; }
 
 @keyframes dmg-fly {
   0%   { transform: translate(-50%, 0) scale(.5);  opacity: 0; }
@@ -558,35 +639,43 @@
 .hit-stop * { animation-play-state: paused !important; }
 
 /* ===== Combat log ===== */
+/* 4a.3-fix (кръг 3): пълен history box, full-width — на 402×874 всяка нова реда бутваше
+   кутията надолу и тя все влизаше в торса на бойците на средата на екрана (докладвано ДВА
+   пъти при преглед: и тук, и в hunting екрана). Смалено до ЕДНОРЕДОВ билет с ПОСЛЕДНОТО
+   събитие (не история), закотвен плътно НАД hero-hud картата (не платно-широк) — никога не
+   може да пресече центъра на кадъра, каквато и да е дължината на текста. */
 .combat-log {
-  position: relative;
+  position: absolute;
+  left: 16px;
+  bottom: 92px;
   z-index: 7;
-  background: linear-gradient(180deg, rgba(0, 0, 0, .65), rgba(0, 0, 0, .85));
-  border-top: 1px solid rgba(255, 255, 255, .05);
-  padding: 16px 28px;
-  max-height: 200px;
-  overflow-y: auto;
-  font-size: 14px;
+  max-width: min(280px, 60vw);
+  background: linear-gradient(180deg, rgba(0, 0, 0, .6), rgba(0, 0, 0, .82));
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 999px;
+  padding: 6px 14px 6px 6px;
+  font-size: 12px;
 }
 .combat-log .line {
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .04);
+  padding: 0;
   color: var(--text-2);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   animation: log-line-in .25s ease-out;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.combat-log .line:last-child { border-bottom: none; }
 .combat-log .line .round-num {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--bg-3);
   border: 1px solid var(--border-3);
   color: var(--gold-1);
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 11px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -607,7 +696,8 @@
   text-align: center;
   padding: 28px;
   border-top: 1px solid rgba(255, 255, 255, .05);
-  background: linear-gradient(180deg, rgba(0, 0, 0, .8), rgba(0, 0, 0, .92));
+  /* Почти плътен: при .8 картата на противника (z 6) прозираше през текста „Victory“. */
+  background: linear-gradient(180deg, rgba(0, 0, 0, .95), rgba(0, 0, 0, .97));
 }
 .combat-result.victory .title { color: var(--gold-1); }
 .combat-result.defeat .title { color: var(--crimson-1); }
@@ -673,6 +763,11 @@
   color: var(--gold-1);
   text-shadow: 0 0 24px rgba(214, 161, 61, .6);
   animation: intro-zoom 1s cubic-bezier(.2, .8, .2, 1);
+  /* Дългите имена („Ser Aldric vs The Black Warden“) излизаха вляво извън екрана на телефон. */
+  max-width: 100%;
+  padding: 0 16px;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 @keyframes intro-zoom {
   0% { transform: scale(.4); opacity: 0; letter-spacing: .8em; }
@@ -686,7 +781,7 @@
   .combat-fighter { width: 140px; height: 220px; }
   .fighter-svg { width: 140px; height: 200px; }
   .combat-result .title { font-size: 32px; }
-  .intro-screen .title { font-size: 28px; }
+  .intro-screen .title { font-size: 26px; letter-spacing: .12em; }
 }
 
 /* =========================================================================
@@ -816,7 +911,8 @@
   .combat-stage .crit-aura,
   .combat-stage .shockwave,
   .combat-stage .spark-fly,
-  .combat-stage .dmg-fly {
+  .combat-stage .dmg-fly,
+  .combat-stage .dmg-pop {
     animation-duration: 0.001s !important;
     transition-duration: 0.001s !important;
   }
@@ -926,4 +1022,32 @@
 @media (prefers-reduced-motion: reduce) {
   .combat3d-pop { animation-duration: .01ms; }
   .combat3d-hpbar-fill, .combat3d-hpbar-ghost { transition: none; }
+}
+
+/* Край без 3D — когато сцената се зарежда твърде бавно (без GPU) или изобщо не може да тръгне.
+   Над сцената, в центъра; бутонът показва целия лог и резултата. */
+.combat-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  background: rgba(7, 8, 12, .78);
+  backdrop-filter: blur(3px);
+}
+.combat-fallback-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--text-1);
+}
+.combat-fallback p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--text-2);
+  line-height: 1.55;
 }
