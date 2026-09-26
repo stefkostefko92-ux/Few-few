@@ -84,7 +84,8 @@ export function packNormal(nm, n) {
   return out;
 }
 
-// R = ambient occlusion, G = roughness factor x 0.5 (so 1.0 sits mid-range), B = metalness.
+// R = ambient occlusion, G = roughness factor x 0.5 (so 1.0 sits mid-range), B = the set's `metal`
+// channel (every material here is fully metallic: the zinc keeps its passivation film's thickness there).
 export function packORM(img, ao, n) {
   const out = new Uint8Array(n * 3);
   for (let i = 0, j = 0; i < n; i++, j += 3) {

@@ -14,6 +14,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/
 const outDir = args.out ? String(args.out) : join(here, '..', 'dist', 'tex');
 const only = args.only ? String(args.only).split(',') : null;
 const log = (s) => process.stdout.write(`${s}\n`);
+const NEAR = Number(args.near ?? 60);
 
 function sourceHash() {
   const h = createHash('sha256');
@@ -21,9 +22,12 @@ function sourceHash() {
   return h.digest('hex').slice(0, 16);
 }
 
-const encode = (pixels, w, h, file) =>
+// Albedo is lossy. A face set's normal and ORM maps (`exact: true`) carry slopes of a few 8-bit
+// levels that plain lossy WebP flattened into blocks, so they go near-lossless; the edge set's
+// strong striations survive lossy WebP at a tenth of the size.
+const encode = (pixels, w, h, file, exact = false) =>
   sharp(Buffer.from(pixels.buffer, pixels.byteOffset, pixels.byteLength), { raw: { width: w, height: h, channels: 3 } })
-    .webp({ quality: 92, effort: 5 })
+    .webp(exact ? { nearLossless: true, quality: NEAR, effort: 6 } : { quality: 92, effort: 5 })
     .toFile(join(outDir, file));
 
 async function bakeSet(url, set) {
@@ -36,8 +40,8 @@ async function bakeSet(url, set) {
   const ao = cavity(img.h, w, h, px, set.aoRadii, set.aoWeights);
   const files = { albedo: `${set.name}_albedo.webp`, normal: `${set.name}_normal.webp`, orm: `${set.name}_orm.webp` };
   await encode(packAlbedo(img, n), w, h, files.albedo);
-  await encode(packNormal(normals(img.h, w, h, px, set.normalStrength), n), w, h, files.normal);
-  await encode(packORM(img, ao, n), w, h, files.orm);
+  await encode(packNormal(normals(img.h, w, h, px, set.normalStrength), n), w, h, files.normal, set.exact);
+  await encode(packORM(img, ao, n), w, h, files.orm, set.exact);
   log(`  ${set.name} ${w}x${h} in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
   return { tile: set.tile, files };
 }

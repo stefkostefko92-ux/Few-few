@@ -1,9 +1,9 @@
 // Loads the offline-baked PBR sets (tex/manifest.json + WebP maps): albedo, tangent-space normal
-// and ORM (ambient occlusion, roughness factor ×0.5, metalness). A missing file (page opened
+// and ORM (ambient occlusion, roughness factor ×0.5, and a free channel the zinc uses for its
+// passivation film's thickness). A missing file (page opened
 // from disk, bake not run) falls back to a flat 1x1 stand-in so the scene still renders.
 import * as THREE from 'three/webgpu';
 
-const SETS = ['zinc', 'edge'];
 
 function configure(t, srgb) {
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -29,18 +29,21 @@ async function bitmap(url) {
   return createImageBitmap(await res.blob(), { imageOrientation: 'flipY', premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
 }
 
-export async function loadSets(base) {
-  const out = Object.fromEntries(SETS.map((n) => [n, flatSet()]));
-  let manifest;
-  try {
-    const res = await fetch(`${base}manifest.json`);
-    if (!res.ok) return out;
-    manifest = await res.json();
-  } catch {
-    return out;
-  }
+// The manifest is fetched once per page; null when it is missing.
+let manifestOnce = null;
+const manifestAt = (base) =>
+  (manifestOnce ??= fetch(`${base}manifest.json`)
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null));
+
+// `names`: the sets to load now. The bright finish needs zinc and edge at boot; the hot-dip grains
+// load when that finish is first chosen.
+export async function loadSets(base, names = ['zinc', 'edge']) {
+  const out = Object.fromEntries(names.map((n) => [n, flatSet()]));
+  const manifest = await manifestAt(base);
+  if (!manifest) return out;
   await Promise.all(
-    SETS.filter((n) => manifest[n]).flatMap((n) =>
+    names.filter((n) => manifest[n]).flatMap((n) =>
       ['albedo', 'normal', 'orm'].map(async (map) => {
         const img = await bitmap(`${base}${manifest[n].files[map]}`).catch(() => null);
         if (!img) return;

@@ -44,10 +44,11 @@ function sweptBox(asm) {
 // mode 'assembly' falls back to the part when the catalogue pairs it with nothing.
 // M = { part: [zinc, edge], hw, rail }. Returns { object, box (world, metres), view, asm }.
 export function stage(item, hand, mode, M) {
-  const asm = mode === 'assembly' ? assemblyFor(item, M) : null;
+  const view = ASSEMBLY_VIEWS[item.family === 'door' ? 'door' : 'guide'];
+  const mirror = Boolean(view.mirror) !== (hand === 'SX');
+  const asm = mode === 'assembly' ? assemblyFor(item, M, { left: mirror }) : null;
   if (asm) {
-    const view = ASSEMBLY_VIEWS[item.family === 'door' ? 'door' : 'guide'];
-    const { holder, box } = settle(asm.group, sweptBox(asm), Boolean(view.mirror) !== (hand === 'SX'));
+    const { holder, box } = settle(asm.group, sweptBox(asm), mirror);
     holder.name = `${item.code} (assembly)`;
     return { object: holder, box, view, asm };
   }

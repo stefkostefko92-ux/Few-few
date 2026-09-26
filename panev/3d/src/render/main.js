@@ -5,7 +5,7 @@ import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CATALOG, byId } from '../catalog.js';
 import { LOOKS, environmentMap, backdropNode, createStudio, aimKey, aimRoom } from './studio.js';
-import { createMaterials, createHardware } from './materials.js';
+import { FINISHES, createMaterials, createHardware } from './materials.js';
 import { stage, viewDirection } from './stage.js';
 import { partnerOf } from './assembly.js';
 import { frame } from './framing.js';
@@ -63,7 +63,7 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
   setLook(lookName);
   const sets = await loadSets(texBase);
   let finish = 'electro';
-  const M = { part: createMaterials(sets, finish), ...createHardware(finish) };
+  const M = { part: createMaterials(sets, finish), ...createHardware(finish, sets) };
 
   const controls = new OrbitControls(camera, canvas);
   Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 0.12, maxDistance: 3, maxPolarAngle: Math.PI * 0.5 - 0.02, autoRotateSpeed: 0.8 });
@@ -104,11 +104,15 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
     return state;
   }
 
-  function setFinish(name) {
-    if (!name || name === finish) return;
+  // Resolves once the finish is on screen: its baked sets may still have to load (hot-dip grains).
+  async function setFinish(name) {
+    if (!FINISHES[name] || name === finish) return;
     finish = name;
+    const need = [FINISHES[name].set, FINISHES[name].edgeSet].filter((n) => !(n in sets));
+    if (need.length) Object.assign(sets, await loadSets(texBase, need));
+    if (finish !== name) return;
     const old = [...M.part, M.hw, M.rail];
-    Object.assign(M, { part: createMaterials(sets, finish), ...createHardware(finish) });
+    Object.assign(M, { part: createMaterials(sets, finish), ...createHardware(finish, sets) });
     show(state.item.id, { reframe: false });
     old.forEach((m) => m.dispose());
   }

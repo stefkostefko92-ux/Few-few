@@ -69,6 +69,8 @@ export class Cells {
     this.f1 = 0;
     this.f2 = 0;
     this.id = 0;
+    this.dx = 0;
+    this.dy = 0;
   }
 
   query(u, v) {
@@ -79,6 +81,8 @@ export class Cells {
     let b1 = 1e9;
     let b2 = 1e9;
     let id = 0;
+    let ox = 0;
+    let oy = 0;
     for (let j = -1; j <= 1; j++) {
       const wy = wrap(iy + j, this.ny);
       for (let i = -1; i <= 1; i++) {
@@ -90,12 +94,16 @@ export class Cells {
           b2 = b1;
           b1 = d;
           id = this.ids[k];
+          ox = dx;
+          oy = dy;
         } else if (d < b2) b2 = d;
       }
     }
     this.f1 = Math.sqrt(b1);
     this.f2 = Math.sqrt(b2);
     this.id = id;
+    this.dx = ox;
+    this.dy = oy;
     return this;
   }
 }

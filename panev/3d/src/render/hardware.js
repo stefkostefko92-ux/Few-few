@@ -1,49 +1,59 @@
-// Fasteners and the guide rail for the assembly views: M10 hex bolts (DIN 933 proportions), nuts,
-// washers, a T-section counterweight guide rail and the clamp plates that hold its foot. Built
-// in millimetres along +Y (bolt axis) and returned as geometries for the shared materials.
+// Fasteners and the guide rail for the assembly views, to ISO dimensions (M10): hex bolt ISO 4017
+// (full thread, property class 8.8 forged into the head), hex nut ISO 4032, plain washer ISO 7089,
+// a T-section counterweight guide rail and the sliding clips that hold its foot. Millimetres,
+// built along +Y (bolt axis); every geometry carries normals and UVs in millimetres, so the baked
+// zinc detail lies on them at its true scale.
 import * as THREE from 'three/webgpu';
+import { hexBody, revolve } from './forms.js';
+import { externalThread } from './thread.js';
+import { classMarking } from './marking.js';
 
-const hexPrism = (af, h, chamfer) => {
-  // Hexagon across flats `af`, height h, with the 30° chamfer of a real head on the top edge.
-  const r = af / Math.sqrt(3);
-  const pts = [];
-  pts.push(new THREE.Vector2(0, 0), new THREE.Vector2(r, 0), new THREE.Vector2(r, h - chamfer), new THREE.Vector2(af / 2 - 0.2, h), new THREE.Vector2(0, h));
-  const g = new THREE.LatheGeometry(pts, 6);
-  g.rotateY(Math.PI / 6);
-  return g.toNonIndexed();
-};
+// ISO 4017 / 4032 / 7089, M10: across flats, head height and washer face, nut height, washer.
+export const M10 = { s: 16, k: 6.4, c: 0.4, dw: 14.9, m: 8.4, washer: { d1: 10.5, d2: 20, h: 2 } };
+const RHO = 1.2; // forged corner radius: across corners about 18.1 mm
 
-export function boltGeometry(length, { d = 10, af = 16, head = 6.4 } = {}) {
-  const headG = hexPrism(af, head, 0.9);
-  headG.computeVertexNormals();
-  headG.translate(0, length, 0);
-  const shank = new THREE.CylinderGeometry(d / 2 - 0.15, d / 2 - 0.15, length, 64, 1, true);
-  shank.translate(0, length / 2, 0);
-  const tipG = new THREE.CylinderGeometry(d / 2 - 0.15, d / 2 - 1, 1, 64);
-  tipG.translate(0, -0.5, 0);
-  return merge([headG, shank.toNonIndexed(), tipG.toNonIndexed()]);
-}
-
-export function nutGeometry({ af = 16, h = 8, d = 10 } = {}) {
-  const r = af / Math.sqrt(3);
-  const shape = new THREE.Shape();
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2 + Math.PI / 6;
-    if (i === 0) shape.moveTo(r * Math.cos(a), r * Math.sin(a));
-    else shape.lineTo(r * Math.cos(a), r * Math.sin(a));
+// The bolt from its end (y = 0) to the bearing face under the head (y = length), head above. The
+// thread runs out 2.2 mm under the head (ISO 4017 allows up to 3P) into the blank diameter.
+export function boltGeometry(length, { left = false } = {}) {
+  const { s, k, c, dw } = M10;
+  const threadTo = length - 2.2;
+  const fillet = [];
+  for (let i = 0; i <= 6; i++) {
+    const phi = Math.PI - (Math.PI / 2) * (i / 6);
+    fillet.push({ r: 5.12 + 0.6 * Math.cos(phi), y: length - 0.6 + 0.6 * Math.sin(phi) });
   }
-  shape.closePath();
-  const hole = new THREE.Path();
-  hole.absarc(0, 0, d / 2 - 0.4, 0, Math.PI * 2, true);
-  shape.holes.push(hole);
-  const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.5, bevelSegments: 3, curveSegments: 48 });
-  g.rotateX(-Math.PI / 2);
-  return g;
+  const underHead = revolve([{ r: 4.52, y: threadTo }, ...fillet, { r: dw / 2, y: length }, { r: dw / 2, y: length + c }], 72, [8]);
+  const end = revolve([{ r: 0, y: 0 }, { r: 3.9, y: 0 }], 72);
+  const head = hexBody({ s, rho: RHO, height: k - c, top: 7.55, bottomHole: dw / 2 });
+  head.translate(0, length + c, 0);
+  const mark = classMarking();
+  mark.translate(0, length + k, 0);
+  const bolt = merge([externalThread({ from: 0, to: threadTo, left }), end, underHead, head, mark]);
+  bolt.userData.thread = left ? 'left' : 'right';
+  return bolt;
 }
 
-export function washerGeometry({ od = 20, id = 10.5, t = 2 } = {}) {
-  const pts = [new THREE.Vector2(id / 2, 0), new THREE.Vector2(od / 2 - 0.3, 0), new THREE.Vector2(od / 2, 0.3), new THREE.Vector2(od / 2, t - 0.3), new THREE.Vector2(od / 2 - 0.3, t), new THREE.Vector2(id / 2, t), new THREE.Vector2(id / 2, 0)];
-  return new THREE.LatheGeometry(pts, 72).toNonIndexed();
+// ISO 4032, both faces chamfered, 120° countersinks into the bore; y = 0 is the bearing face.
+export function nutGeometry() {
+  const { s, m } = M10;
+  const cs = 5.4;
+  const bore = 4.19;
+  const depth = (cs - bore) / Math.tan(Math.PI / 3);
+  const body = hexBody({ s, rho: RHO, height: m, top: 7.45, bottom: 7.45, topHole: cs, bottomHole: cs });
+  const hole = revolve([{ r: cs, y: m }, { r: bore, y: m - depth }, { r: bore, y: depth }, { r: cs, y: 0 }], 72, [1, 2]);
+  return merge([body, hole]);
+}
+
+// ISO 7089 punched washer: the punch side (up) rolled over at both edges, the burr side sharp.
+export function washerGeometry() {
+  const { d1, d2, h } = M10.washer;
+  const [ri, ro, e] = [d1 / 2, d2 / 2, 0.28];
+  const arc = (cr, cy, from, to) => Array.from({ length: 5 }, (_, i) => {
+    const a = from + ((to - from) * i) / 4;
+    return { r: cr + e * Math.cos(a), y: cy + e * Math.sin(a) };
+  });
+  const profile = [{ r: ri, y: 0 }, { r: ro, y: 0 }, ...arc(ro - e, h - e, 0, Math.PI / 2), ...arc(ri + e, h - e, Math.PI / 2, Math.PI), { r: ri, y: 0 }];
+  return revolve(profile, 96, [1]);
 }
 
 // T-section guide rail (≈ T50): foot 50 x 5, blade 5 thick standing 45 on it, small root
@@ -67,27 +77,40 @@ export function railGeometry(length) {
   return g;
 }
 
-// Clamp plate pressing the rail foot against the guide bracket.
-export function clampGeometry() {
-  const g = new THREE.BoxGeometry(22, 5, 40, 1, 1, 1);
-  g.translate(0, 2.5, 0);
+// Sliding clip on the rail foot, 22 x 34 x 10: the nose (x < -5.5) presses the foot's upper face
+// (z = 5), the heel stands on the bracket (z = 0) round the bolt, the nose tapers. Origin on the
+// bolt axis at the bracket face; +x away from the rail, +y along it, +z out of the bracket.
+export function clipGeometry() {
+  const b = 0.4;
+  const pts = [[-10.6, 5.4], [-5.1, 5.4], [-5.1, 0.4], [10.6, 0.4], [10.6, 8.9], [9.9, 9.6], [-7.8, 9.6], [-10.6, 8.1]];
+  const shape = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, z)));
+  const g = new THREE.ExtrudeGeometry(shape, { depth: 34 - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 3, curveSegments: 8 });
+  g.translate(0, 0, -(34 - 2 * b) / 2);
+  g.rotateX(Math.PI / 2);
+  g.clearGroups();
   return g;
 }
 
+// One non-indexed geometry from parts with position, normal and uv.
 function merge(geos) {
+  const flat = geos.map((g) => (g.index ? g.toNonIndexed() : g));
   let count = 0;
-  for (const g of geos) count += g.attributes.position.count;
+  for (const g of flat) count += g.attributes.position.count;
   const pos = new Float32Array(count * 3);
   const nor = new Float32Array(count * 3);
+  const uv = new Float32Array(count * 2);
   let o = 0;
-  for (const g of geos) {
+  for (const g of flat) {
     if (!g.attributes.normal) g.computeVertexNormals();
     pos.set(g.attributes.position.array, o * 3);
     nor.set(g.attributes.normal.array, o * 3);
+    if (g.attributes.uv) uv.set(g.attributes.uv.array, o * 2);
     o += g.attributes.position.count;
   }
   const out = new THREE.BufferGeometry();
   out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  out.computeBoundingSphere();
   return out;
 }

@@ -12,7 +12,7 @@ import { SUPPORT_H, armOf } from '../parts/supports.js';
 import { SG_FLANGE, STATIONS } from '../parts/guides.js';
 import { framedGeometry } from './model.js';
 import { fastener } from './fasteners.js';
-import { railGeometry } from './hardware.js';
+import { railGeometry, clipGeometry } from './hardware.js';
 
 const WALL = { o: [0, 0, 0], u: [1, 0, 0], v: [0, 1, 0], n: [0, 0, 1] };
 const PLATFORM = { o: [0, 0, 0], u: [0, 0, 1], v: [1, 0, 0], n: [0, 1, 0] };
@@ -53,8 +53,9 @@ const mesh = (geo, mats) => {
   return m;
 };
 
-// B + A with the two M10 bolts. M = { part: [zinc, edge], hw, rail } materials.
-function doorAssembly(aItem, bItem, M) {
+// B + A with the two M10 bolts. M = { part: [zinc, edge], hw, rail } materials; `left`: shown
+// mirrored (the threads are swept the other way so they still read right-handed).
+function doorAssembly(aItem, bItem, M, left) {
   const mats = M.part;
   const hw = M.hw;
   const sec = Number(aItem.code.split(' ')[1]);
@@ -71,9 +72,9 @@ function doorAssembly(aItem, bItem, M) {
   const a = mesh(framedGeometry(aItem, PLATFORM), mats);
   a.position.set(-g.t, pivot.y - (g.t - hy), s.col - hx).sub(pivot);
   turn.add(a);
-  fastener(group, hw, new THREE.Vector3(-g.t, pivot.y, pivot.z), X, g.t + s.t, 0.3);
+  fastener(group, hw, new THREE.Vector3(-g.t, pivot.y, pivot.z), X, g.t + s.t, { spin: 0.3, left });
   const [lx, ly] = g.holes[1];
-  fastener(turn, hw, new THREE.Vector3(-g.t, hy - ly, lx - hx), X, g.t + s.t, 1.1);
+  fastener(turn, hw, new THREE.Vector3(-g.t, hy - ly, lx - hx), X, g.t + s.t, { spin: 1.1, left });
   const max = sec === 65 ? 8 : 7;
   const set = (deg) => {
     turn.rotation.x = -THREE.MathUtils.degToRad(Math.max(-max, Math.min(max, deg)));
@@ -82,34 +83,38 @@ function doorAssembly(aItem, bItem, M) {
   return { group, set, range: [-max, max], value: 0, step: 0.5, unit: '°', kind: 'angle' };
 }
 
-// Rail with two clamp plates bolted through the SG flange slots. `face` = SG flange outer
+// Rail with two sliding clips bolted through the SG flange slots. `face` = SG flange outer
 // surface point at the rail centre, `out` = unit normal of that face, `along` = rail foot width.
-// Built once: the slider re-places the rail and clamps many times a second.
+// Built once: the slider re-places the rail and clips many times a second.
 let railGeo = null;
-let clampGeo = null;
+let clipGeo = null;
 
-function railOn(parent, M, face, out, along) {
+function railOn(parent, M, face, out, along, left) {
   const hw = M.hw;
   railGeo ??= railGeometry(RAIL);
-  clampGeo ??= new THREE.BoxGeometry(22, 34, 5);
+  clipGeo ??= clipGeometry();
   const rail = mesh(railGeo, M.rail);
   const y0 = SUPPORT_H + SG_FLANGE / 2 - RAIL / 2;
   rail.position.copy(face).setY(y0);
   rail.lookAt(rail.position.clone().add(out.clone().negate()));
   parent.add(rail);
   for (const side of [-1, 1]) {
-    const c = face.clone().addScaledVector(along, side * 31).addScaledVector(out, 5);
-    const clamp = mesh(clampGeo, hw);
-    clamp.position.copy(c).addScaledVector(out, 2.5).setY(SUPPORT_H + SG_FLANGE / 2);
-    clamp.lookAt(clamp.position.clone().add(out));
-    parent.add(clamp);
-    fastener(parent, hw, c.clone().addScaledVector(out, 5).setY(SUPPORT_H + SG_FLANGE / 2), out.clone().negate(), 14, side);
+    // Clip axes: x away from the rail, z out of the flange, y along the rail (right-handed).
+    const cx = along.clone().multiplyScalar(side);
+    const cy = new THREE.Vector3().crossVectors(out, cx);
+    const at = face.clone().addScaledVector(along, side * 31).setY(SUPPORT_H + SG_FLANGE / 2);
+    const clip = mesh(clipGeo, hw);
+    clip.name = 'clip';
+    clip.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(cx, cy, out));
+    clip.position.copy(at);
+    parent.add(clip);
+    fastener(parent, hw, at.clone().addScaledVector(out, 10), out.clone().negate(), 14, { spin: side, left });
   }
 }
 
 // Support + SG + rail. The SG rides on the support plate; the rail sits in an end slot of the SG
 // flange, near end for short reaches and the SG turned round (far end) for long ones.
-function guideAssembly(supItem, sgItem, M) {
+function guideAssembly(supItem, sgItem, M, left) {
   const mats = M.part;
   const hw = M.hw;
   const arm = armOf(supItem.code);
@@ -132,8 +137,8 @@ function guideAssembly(supItem, sgItem, M) {
       sg.position.set(x0, SUPPORT_H, zf);
       moving.add(sg);
       const zRow = arm.W <= 60 ? arm.W - 22 : arm.W - 35;
-      for (const s of [st[1], st[st.length - 2]]) fastener(moving, hw, new THREE.Vector3(x0 + s, SUPPORT_H + 4, zRow), DOWN, 8, s);
-      railOn(moving, M, new THREE.Vector3(D, 0, zf), new THREE.Vector3(0, 0, 1), X);
+      for (const s of [st[1], st[st.length - 2]]) fastener(moving, hw, new THREE.Vector3(x0 + s, SUPPORT_H + 4, zRow), DOWN, 8, { spin: s, left });
+      railOn(moving, M, new THREE.Vector3(D, 0, zf), new THREE.Vector3(0, 0, 1), X, left);
     } else {
       // SG along the arm, flange flush with the arm's outer edge; rail at z = D.
       const far = D > (range[0] + range[1]) / 2;
@@ -148,9 +153,9 @@ function guideAssembly(supItem, sgItem, M) {
       const slots = [[30, mid - 10], [mid + 10, arm.Lp - 15]];
       slots.forEach(([a, b], i) => {
         const z = st.map((s) => z0 + s).find((v) => v >= a && v <= b);
-        if (z !== undefined) fastener(moving, hw, new THREE.Vector3(xc, SUPPORT_H + 4, z), DOWN, 9, i);
+        if (z !== undefined) fastener(moving, hw, new THREE.Vector3(xc, SUPPORT_H + 4, z), DOWN, 9, { spin: i, left });
       });
-      railOn(moving, M, new THREE.Vector3(xf, 0, D), X, new THREE.Vector3(0, 0, 1));
+      railOn(moving, M, new THREE.Vector3(xf, 0, D), X, new THREE.Vector3(0, 0, 1), left);
     }
   };
   const value = sc ? arm.L / 2 : Math.round((range[0] + range[1]) / 2);
@@ -158,11 +163,12 @@ function guideAssembly(supItem, sgItem, M) {
   return { group, set, range, value, step: 1, unit: 'mm', kind: sc ? 'slide' : 'reach' };
 }
 
-// Assembly for a catalogue item (its catalogue partner), or null when it has none.
-export function assemblyFor(item, M) {
+// Assembly for a catalogue item (its catalogue partner), or null when it has none. `left`: it will
+// be shown mirrored.
+export function assemblyFor(item, M, { left = false } = {}) {
   const partner = partnerOf(item);
   if (!partner) return null;
-  if (item.family === 'door') return item.code.startsWith('A') ? doorAssembly(item, partner, M) : doorAssembly(partner, item, M);
+  if (item.family === 'door') return item.code.startsWith('A') ? doorAssembly(item, partner, M, left) : doorAssembly(partner, item, M, left);
   const [sup, sg] = item.family === 'SG' ? [partner, item] : [item, partner];
-  return guideAssembly(sup, sg, M);
+  return guideAssembly(sup, sg, M, left);
 }

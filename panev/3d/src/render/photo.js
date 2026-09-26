@@ -1,6 +1,7 @@
-// Print-quality stills of the current view: the camera re-framed at the photo's aspect, `frames`
-// jittered frames (sub-pixel camera offsets, key light moved across its softbox for soft shadows,
-// rotating AO noise) averaged into display-ready RGBA8 pixels.
+// Print-quality stills of the current view: the camera re-framed at the photo's aspect (or kept
+// where it is with `reframe: false`, for a close-up), `frames` jittered frames (sub-pixel camera
+// offsets, key light moved across its softbox for soft shadows, rotating AO noise) averaged into
+// display-ready RGBA8 pixels.
 import * as THREE from 'three/webgpu';
 import { frame, silhouette } from './framing.js';
 import { createPhoto } from './pipeline.js';
@@ -11,7 +12,7 @@ import { halton } from './sampling.js';
 // view and returns the function that restarts it.
 export function createStills(ctx) {
   const { renderer, scene, camera, controls, P, studio, state } = ctx;
-  return async function photo({ width = 1600, height = 1200, frames = 48, softness = 0.15 } = {}) {
+  return async function photo({ width = 1600, height = 1200, frames = 48, softness = 0.15, reframe = true } = {}) {
     const resume = ctx.pause();
     const keep = { pr: renderer.getPixelRatio(), size: renderer.getSize(new THREE.Vector2()), aspect: camera.aspect, pos: camera.position.clone(), room: scene.environmentRotation.clone() };
     // Framed on the pose on show: an assembly's live box excludes the rest of its adjustment range.
@@ -32,7 +33,8 @@ export function createStills(ctx) {
       renderer.setPixelRatio(1);
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
-      frame(camera, silhouette(state.object), dir, { fill: 0.8 });
+      if (reframe) frame(camera, silhouette(state.object), dir, { fill: 0.8 });
+      else camera.updateProjectionMatrix();
       shot = createPhoto(renderer, scene, camera, P);
       return await shot.shoot(frames, async (i) => {
         const [jx, jy] = halton(i + 1);

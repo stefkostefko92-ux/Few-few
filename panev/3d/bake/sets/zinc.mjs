@@ -1,8 +1,11 @@
-// Electro-galvanised hot-rolled plate, one tile = 80 mm: long low waves from the rolling mill, a
-// fine orange peel from the plating, sparse pits in the base steel, cloudy roughness and a faint
-// blue/yellow play of the passivation. Heights in millimetres; colour and roughness are factors
-// applied to the material's own values at runtime.
-import { fbm, perlin, Cells, smoothstep } from '../noise.mjs';
+// Bright zinc-coated sheet with a clear (blue) passivation, one tile = 80 mm, u along the rolling
+// direction: the fine lines the skin-pass rolls print along the strip, in bands; a light orange
+// peel from the coat; long low waves from the mill; rare pits in the base steel; cloudy roughness;
+// and, in the metal channel, the thickness of the passivation film, which drives the faint blue,
+// violet and gold play where it is thicker. Heights in millimetres, sized so their slopes (about
+// 0.02-0.03 rad) survive 8-bit maps and show in the reflections; colour and roughness are factors
+// on the material's own values.
+import { fbm, Cells, smoothstep } from '../noise.mjs';
 
 export default {
   name: 'zinc',
@@ -11,29 +14,31 @@ export default {
   tile: [80, 80],
   seed: 7,
   normalStrength: 1,
+  exact: true,
   aoRadii: [0.25, 1],
-  aoWeights: [0.3, 0.2],
+  aoWeights: [0.25, 0.15],
 
   setup(seed) {
-    return { seed, pits: new Cells(110, 110, seed + 5) };
+    return { seed, pits: new Cells(90, 90, seed + 5) };
   },
 
   shade(ctx, u, v, o) {
     const s = ctx.seed;
-    const waves = 0.05 * fbm(u, v, 3, 3, s + 1);
-    const peel = 0.003 * fbm(u, v, 40, 3, s + 2);
-    const grain = 0.0008 * perlin(u * 320, v * 320, 320, 320, s + 3);
+    // Rolling lines: 2 cells along u, 220 across (about 0.36 mm), stronger in some bands.
+    const band = 0.5 + 0.5 * fbm(u, v, 1, 2, s + 9, 0.5, 6);
+    const lines = fbm(u, v, 2, 3, s + 1, 0.55, 220) * (0.6 + 0.8 * band);
+    const waves = 0.03 * fbm(u, v, 3, 3, s + 2);
+    const peel = 0.006 * fbm(u, v, 48, 3, s + 3);
     const p = ctx.pits.query(u, v);
-    const pit = p.id > 0.985 ? smoothstep(0.28, 0.04, p.f1) : 0;
-    o.h = waves + peel + grain - 0.006 * pit;
-    const cloud = fbm(u, v, 5, 4, s + 4);
+    const pit = p.id > 0.992 ? smoothstep(0.3, 0.05, p.f1) : 0;
+    o.h = waves + peel + 0.0016 * lines - 0.005 * pit;
+    const cloud = fbm(u, v, 4, 4, s + 4);
     const tint = fbm(u, v, 2, 3, s + 6);
-    const lum = 1 + 0.03 * cloud - 0.08 * pit;
-    o.r = lum * (1 - 0.014 * tint);
-    o.g = lum * (1 - 0.003 * tint);
-    o.b = lum * (1 + 0.016 * tint);
-    const fine = perlin(u * 160, v * 160, 160, 160, s + 7);
-    o.rough = Math.min(2, Math.max(0.3, 1 + 0.17 * cloud + 0.07 * fine + 0.25 * pit));
-    o.metal = 1;
+    const lum = 1 + 0.025 * cloud + 0.012 * lines - 0.06 * pit;
+    o.r = lum * (1 - 0.012 * tint);
+    o.g = lum * (1 - 0.002 * tint);
+    o.b = lum * (1 + 0.014 * tint);
+    o.rough = Math.min(1.9, Math.max(0.45, 1 + 0.2 * cloud + 0.14 * lines + 0.3 * pit));
+    o.metal = Math.min(1, Math.max(0, 0.5 + 0.9 * fbm(u, v, 3, 3, s + 8)));
   },
 };
