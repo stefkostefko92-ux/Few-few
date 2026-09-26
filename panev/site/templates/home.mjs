@@ -3,6 +3,7 @@
 import { esc, pagePath } from './layout.mjs';
 import { render3d } from './parts.mjs';
 import { COMPANY, PATENT, CATALOG_PDF, doorSystems, guideConfigs, sgFixed } from '../data/products.mjs';
+import { versioned } from './asset.mjs';
 
 // ── Начална страница ─────────────────────────────────────────
 export function homePage(t, locales) {
@@ -60,7 +61,7 @@ export function homePage(t, locales) {
       <div class="chips">${chips}</div>
       <div class="hero-cta">
         <a class="btn btn-white" href="${pagePath(t, 'products')}">${esc(h.ctaProducts)}</a>
-        <a class="btn btn-outline" href="${CATALOG_PDF}" download>${esc(h.ctaCatalog)}</a>
+        <a class="btn btn-outline" href="${versioned(CATALOG_PDF)}" download>${esc(h.ctaCatalog)}</a>
         <a class="btn btn-outline" href="#vista-3d">${esc(h.cta3d)}</a>
       </div>
       <div class="patent-badge">

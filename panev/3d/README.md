@@ -101,7 +101,8 @@ xvfb-run -a npm run render -- --codes=A-65-170-7,SU-220-160 --size=1600x1200 --f
   - Всеки детайл в каталожния изглед: `<код>.webp`, 1600×1200, изпълнение DX.
   - Всеки каталожен комплект в монтаж: `<код>+<код>.webp`.
   - Обзорни листове `catalogo-3d.webp` и `montaggi-3d.webp` (`npm run sheet`).
-- **Как са направени.** С `scripts/render.mjs` под `xvfb-run -a` (WebGPU), 32 кадъра на снимка:
+- **Как са направени.** С `scripts/render.mjs` под `xvfb-run -a` (WebGPU), 24 кадъра на снимка
+  (`--frames=24`; на софтуерния GPU ~2,5 min на рендер, 75-те за ~3 часа):
   `--out=renders --png=dist/renders` за детайлите, същото с `--mode=assembly` за комплектите.
 - **PNG без загуби.** Остават в `dist/renders/` и не се комитват.
 - **`renders/catalogo/`.** Комплектът A 65 170 7 + B 65 320 в DX и SX, 1600×1266, точно по картите

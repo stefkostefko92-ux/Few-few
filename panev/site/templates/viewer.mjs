@@ -8,6 +8,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { esc, head, pagePath, ORIGIN } from './layout.mjs';
+import { versioned } from './asset.mjs';
 import { COMPANY } from '../data/products.mjs';
 import { strings } from '../../3d/src/ui/i18n.js';
 
@@ -94,7 +95,7 @@ function embedHead(t) {
 
 export function viewerPage(t, locales, { embed = false } = {}) {
   const top = embed ? embedHead(t) : head(t, locales, 'viewer3d', {
-    ogImage: '/img/og-3d.jpg',
+    ogImage: versioned('img/og-3d.jpg'),
     ldExtra: [appLd(t)],
     htmlAttrs: htmlAttrs(t, false),
     viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
