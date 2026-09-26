@@ -87,7 +87,10 @@ export default function Settings(): React.ReactElement {
           </div>
           <div className="card">
             <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('settings.email')}</div>
-            <div style={{ fontSize: 16 }}>{acct?.email || user?.email || '—'}</div>
+            {/* overflow-wrap: имейл без интервали (a+b@dom.com) не се пренася по
+                подразбиране — на 360px дълъг адрес изтичаше извън картата
+                (потвърдено визуално, Settings, мобилен изглед). */}
+            <div style={{ fontSize: 16, overflowWrap: 'anywhere' }}>{acct?.email || user?.email || '—'}</div>
           </div>
           <div className="card">
             <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('settings.joined')}</div>
@@ -162,12 +165,16 @@ export default function Settings(): React.ReactElement {
         <p className="muted">
           {t('settings.deleteWarning')} <strong>{t('settings.cannotBeUndone')}</strong>
         </p>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 12 }}>
+        {/* flexWrap + input flex:1 min-width:0 — input(maxWidth:240)+бутон не
+            се свиваха на 360px (нито едното няма flex-shrink override), редът
+            изтичаше до 390px. Пренасяне на бутона на нов ред е приемливо тук
+            (не е загуба на информация, за разлика от изрязан текст). */}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 12, flexWrap: 'wrap' }}>
           <input
             value={deleteText}
             onChange={(e) => setDeleteText(e.target.value)}
             placeholder={t('settings.typeDelete')}
-            style={{ maxWidth: 240 }}
+            style={{ maxWidth: 240, flex: '1 1 160px', minWidth: 0 }}
           />
           <button className="btn btn-danger" onClick={deleteCharacter} disabled={deleteText !== 'DELETE' || deleteBusy}>
             {deleteBusy ? t('settings.deleting') : t('settings.deleteChar')}
