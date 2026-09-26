@@ -1,6 +1,7 @@
 // Смяна на статус на фактура — САМО по позволените преходи.
 // Фискален документ не се връща назад: платена не става чернова, сторнирана е финална.
 
+import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
@@ -31,7 +32,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!transizioneFatturaAmmessa(da, stato))
       throw new ErroreHttp(
         409,
-        `Transizione non ammessa: da «${da}» a «${stato}»`,
+        `Transizione non ammessa: da «${etichetta(STATO_LABEL, da)}» a «${etichetta(STATO_LABEL, stato)}»`,
       );
     // условен запис — пази от състезание между две едновременни промени
     const upd = await tx.fattura.updateMany({

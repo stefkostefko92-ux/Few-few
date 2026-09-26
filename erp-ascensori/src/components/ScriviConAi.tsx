@@ -17,6 +17,7 @@
 import { useEffect, useId, useState } from "react";
 import { IcoAttenzione, IcoNota, IcoFatto, IcoAi } from "@/components/icone";
 import { MAX_INGRESSO } from "@/lib/ai/testo";
+import { apiFetch } from "@/lib/fetch-client";
 
 interface StatoAi {
   attiva: boolean;
@@ -27,9 +28,13 @@ interface StatoAi {
 /** Кешира отговора: състоянието е едно за сесията, не за всяко поле. */
 let statoCache: Promise<StatoAi | null> | null = null;
 function caricaStato(): Promise<StatoAi | null> {
-  statoCache ??= fetch("/api/ai/testo")
-    .then((r) => (r.ok ? (r.json() as Promise<StatoAi>) : null))
-    .catch(() => null);
+  // Неуспехът НЕ се кешира: иначе едно изтекло подновяване скриваше бутона до
+  // края на сесията.
+  statoCache ??= apiFetch<StatoAi>("/api/ai/testo").then((r) => {
+    if (r.ok) return r.dati;
+    statoCache = null;
+    return null;
+  });
   return statoCache;
 }
 
@@ -74,20 +79,20 @@ export default function ScriviConAi({
     setProposta(null);
     setInCorso(true);
     try {
-      const res = await fetch("/api/ai/testo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ compito, appunti }),
-      });
-      const d = (await res.json().catch(() => ({}))) as {
-        testo?: string;
-        error?: string;
-      };
-      if (!res.ok) {
-        setErrore(d.error ?? "Errore nella composizione del testo.");
+      const r = await apiFetch<{ testo?: string; error?: string }>(
+        "/api/ai/testo",
+        { method: "POST", body: JSON.stringify({ compito, appunti }) },
+      );
+      if (!r.ok) {
+        // `stato` 0 = мрежата, не сървърът.
+        setErrore(
+          r.stato === 0
+            ? "Connessione non riuscita: verificare la rete e riprovare."
+            : (r.dati.error ?? "Errore nella composizione del testo."),
+        );
         return;
       }
-      setProposta(d.testo ?? "");
+      setProposta(r.dati.testo ?? "");
     } catch {
       // Мрежата, не сървърът: без това бутонът остава в „Generazione…"
       // завинаги и операторът не разбира дали да чака.

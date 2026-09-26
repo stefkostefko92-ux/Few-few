@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui";
 import { euro, dataIt } from "@/lib/format";
 
 const config: EntityConfig = {
+  ruoloElimina: "RESPONSABILE",
   titolo: "Preventivi",
   singolare: "preventivo",
   genere: "m",

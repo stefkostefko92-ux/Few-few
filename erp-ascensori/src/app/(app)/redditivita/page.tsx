@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/fetch-client";
 import { ScheletroTabella } from "@/components/ui";
 import { IcoAttenzione } from "@/components/icone";
-import { euro } from "@/lib/format";
+import { euro, numeroIt } from "@/lib/format";
 
 interface Redditivita {
   ricavi: string;
@@ -38,16 +38,21 @@ export default function Pagina() {
     null,
   );
   const [caricamento, setCaricamento] = useState(true);
+  const [errore, setErrore] = useState<string | null>(null);
 
   const carica = useCallback(async () => {
     setCaricamento(true);
     const q = new URLSearchParams({ per });
     if (da) q.set("da", da);
     if (a) q.set("a", a);
-    const { ok, dati: d } = await apiFetch<{ righe: Riga[]; nota: string }>(
-      `/api/report/redditivita?${q}`,
-    );
-    setDati(ok ? d : { righe: [], nota: "" });
+    const { ok, dati: d } = await apiFetch<{
+      righe: Riga[];
+      nota: string;
+      error?: string;
+    }>(`/api/report/redditivita?${q}`);
+    // Грешка НЕ е „няма данни за периода".
+    setErrore(ok ? null : (d.error ?? "Impossibile calcolare il report."));
+    setDati(ok ? d : null);
     setCaricamento(false);
   }, [per, da, a]);
 
@@ -130,6 +135,10 @@ export default function Pagina() {
 
       {caricamento ? (
         <ScheletroTabella righe={6} />
+      ) : errore ? (
+        <p role="alert" className="text-sm text-danger-text">
+          {errore}
+        </p>
       ) : !dati?.righe.length ? (
         <p className="text-sm text-text-3">
           Nessun dato nel periodo. Servono ordini collegati a un contratto o a
@@ -194,7 +203,7 @@ export default function Pagina() {
                       {/* Знакът НЕ носи смисъла сам: числото е отрицателно и се чете. */}
                       {r.redditivita.marginePerc === null
                         ? "—"
-                        : `${r.redditivita.marginePerc} %`}
+                        : `${numeroIt(r.redditivita.marginePerc)} %`}
                     </td>
                   </tr>
                 );

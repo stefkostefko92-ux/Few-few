@@ -8,13 +8,14 @@ import { prisma } from "@/lib/prisma";
 import {
   mfaObbligatorio,
   accessoBloccatoSenzaMfa,
+  passwordScaduta,
 } from "@/lib/password-policy";
 
 export const GET = gestito(async () => {
   const s = await richiedeSessione();
   const u = await prisma.user.findUnique({
     where: { id: s.sub },
-    select: { ruolo: true, totpAttivo: true },
+    select: { ruolo: true, totpAttivo: true, passwordCambiataAt: true },
   });
   // Фирмата, в която MASTER работи — за лентата отгоре на всяка страница.
   const azienda =
@@ -34,6 +35,8 @@ export const GET = gestito(async () => {
     mfaObbligatoria: mfaObbligatorio(ruolo),
     /** Дължи ли го СЕГА: интерфейсът води към „Sicurezza", докато е вярно. */
     mfaRichiesto: accessoBloccatoSenzaMfa(ruolo, totpAttivo),
+    /** Изтекла по срока на политиката: „Sicurezza" предлага смяната. */
+    passwordScaduta: passwordScaduta(u?.passwordCambiataAt),
     aziendaContesto: azienda,
   });
 });

@@ -7,6 +7,18 @@ export function euro(v: string | number | null | undefined): string {
   return n.toLocaleString("it-IT", { style: "currency", currency: "EUR" });
 }
 
+/**
+ * Количество, тегло, процент по италиански: запетая за десетичните, точка за
+ * хилядите, до 3 десетични. „1.5" на екрана се чете като хиляда и петстотин.
+ * Нечисловото (празно поле) се връща както е.
+ */
+export function numeroIt(v: string | number | null | undefined): string {
+  if (v === null || v === undefined || v === "") return "—";
+  const n = typeof v === "number" ? v : Number(v);
+  if (Number.isNaN(n)) return String(v);
+  return n.toLocaleString("it-IT", { maximumFractionDigits: 3 });
+}
+
 export function dataIt(v: string | Date | null | undefined): string {
   if (!v) return "—";
   const d = typeof v === "string" ? new Date(v) : v;

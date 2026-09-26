@@ -52,6 +52,19 @@ export default function Pagina() {
     etichetta: string;
   } | null>(null);
   const [errore, setErrore] = useState<string | null>(null);
+  /** Двоен клик = два ключа (тайната на единия никой не вижда) или два webhook-а. */
+  const [inCorso, setInCorso] = useState(false);
+
+  /** Необратимите действия: потвърждение, после грешката — на екрана. */
+  async function elimina(url: string, domanda: string) {
+    if (inCorso || !confirm(domanda)) return;
+    setInCorso(true);
+    setErrore(null);
+    const r = await apiFetch<{ error?: string }>(url, { method: "DELETE" });
+    setInCorso(false);
+    if (!r.ok) setErrore(r.dati.error ?? "Errore");
+    void carica();
+  }
 
   const [etichetta, setEtichetta] = useState("");
   const [ambitiScelti, setAmbitiScelti] = useState<string[]>([]);
@@ -81,6 +94,8 @@ export default function Pagina() {
 
   async function creaChiave(e: React.FormEvent) {
     e.preventDefault();
+    if (inCorso) return;
+    setInCorso(true);
     setErrore(null);
     const { ok, dati } = await apiFetch<{ chiave?: string; error?: string }>(
       "/api/chiavi",
@@ -89,6 +104,7 @@ export default function Pagina() {
         body: JSON.stringify({ etichetta, ambiti: ambitiScelti }),
       },
     );
+    setInCorso(false);
     if (!ok) return setErrore(dati.error ?? "Errore");
     setNuovoSegreto({ testo: dati.chiave ?? "", etichetta: "Chiave API" });
     setEtichetta("");
@@ -98,6 +114,8 @@ export default function Pagina() {
 
   async function creaWebhook(e: React.FormEvent) {
     e.preventDefault();
+    if (inCorso) return;
+    setInCorso(true);
     setErrore(null);
     const { ok, dati } = await apiFetch<{ segreto?: string; error?: string }>(
       "/api/webhooks",
@@ -106,6 +124,7 @@ export default function Pagina() {
         body: JSON.stringify({ url, eventi: eventiScelti }),
       },
     );
+    setInCorso(false);
     if (!ok) return setErrore(dati.error ?? "Errore");
     setNuovoSegreto({
       testo: dati.segreto ?? "",
@@ -180,12 +199,13 @@ export default function Pagina() {
                   <td className="py-2 text-right">
                     <button
                       className="btn-ghost h-7 px-2 text-xs text-danger-text"
-                      onClick={async () => {
-                        await apiFetch(`/api/chiavi/${k.id}`, {
-                          method: "DELETE",
-                        });
-                        void carica();
-                      }}
+                      disabled={inCorso}
+                      onClick={() =>
+                        void elimina(
+                          `/api/chiavi/${k.id}`,
+                          `Revocare la chiave «${k.etichetta}»? Il software che la usa riceverà subito un errore e la chiave non si può riattivare.`,
+                        )
+                      }
                     >
                       Revoca
                     </button>
@@ -213,7 +233,7 @@ export default function Pagina() {
             <button
               className="btn-primary"
               type="submit"
-              disabled={!ambitiScelti.length}
+              disabled={!ambitiScelti.length || inCorso}
             >
               Crea chiave
             </button>
@@ -294,12 +314,13 @@ export default function Pagina() {
                   <td className="py-2 text-right">
                     <button
                       className="btn-ghost h-7 px-2 text-xs text-danger-text"
-                      onClick={async () => {
-                        await apiFetch(`/api/webhooks/${w.id}`, {
-                          method: "DELETE",
-                        });
-                        void carica();
-                      }}
+                      disabled={inCorso}
+                      onClick={() =>
+                        void elimina(
+                          `/api/webhooks/${w.id}`,
+                          "Eliminare il webhook? Si perde anche lo storico delle consegne.",
+                        )
+                      }
                     >
                       Elimina
                     </button>
@@ -329,7 +350,7 @@ export default function Pagina() {
             <button
               className="btn-primary"
               type="submit"
-              disabled={!eventiScelti.length}
+              disabled={!eventiScelti.length || inCorso}
             >
               Crea webhook
             </button>

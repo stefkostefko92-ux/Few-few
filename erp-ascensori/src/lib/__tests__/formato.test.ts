@@ -8,6 +8,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import {
+  numeroIt,
   euro,
   dataIt,
   dataOraIt,
@@ -63,7 +64,7 @@ describe("датите", () => {
     }
   });
 
-  test("perInputData дава ISO дата за <input type=\"date\">", () => {
+  test('perInputData дава ISO дата за <input type="date">', () => {
     assert.equal(perInputData("2026-03-05T00:00:00Z"), "2026-03-05");
     assert.equal(perInputData(new Date("2026-03-05T00:00:00Z")), "2026-03-05");
     assert.equal(perInputData(null), "");
@@ -78,4 +79,14 @@ describe("множественото число", () => {
     // Нулата е множествено в италианския: „0 righe", не „0 riga".
     assert.equal(plurale(0, "riga", "righe"), "0 righe");
   });
+});
+
+test("numeroIt: запетая за десетичните, точка за хилядите", () => {
+  const n = (s: string) => s.replace(/\u00a0|\u202f/g, " ");
+  assert.equal(numeroIt("1.5"), "1,5");
+  assert.equal(n(numeroIt(12500)), "12.500");
+  assert.equal(numeroIt("0.125"), "0,125");
+  assert.equal(numeroIt(null), "—");
+  assert.equal(numeroIt(""), "—");
+  assert.equal(numeroIt("n/d"), "n/d");
 });

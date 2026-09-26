@@ -20,6 +20,8 @@ const opzioniPeriodicita = (
 }));
 
 const config: EntityConfig = {
+  ruoloModifica: "RESPONSABILE",
+  ruoloElimina: "RESPONSABILE",
   titolo: "Contratti di manutenzione",
   singolare: "contratto",
   genere: "m",

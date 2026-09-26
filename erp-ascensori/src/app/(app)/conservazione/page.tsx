@@ -15,6 +15,7 @@
 
 import { useState } from "react";
 import { IcoNota } from "@/components/icone";
+import { apiFile } from "@/lib/fetch-client";
 
 /** Първият ден на текущата година — обичайното начало на такава пратка. */
 function inizioAnno(): string {
@@ -45,10 +46,14 @@ export default function Pagina() {
     setErrore(null);
     setEsito(null);
     try {
-      const res = await fetch(
+      const res = await apiFile(
         `/api/fatture/conservazione?dal=${dal}&al=${al}`,
         { credentials: "same-origin" },
       );
+      if (!res) {
+        setErrore("Errore di rete: riprovare.");
+        return;
+      }
       if (!res.ok) {
         const dati = (await res.json().catch(() => null)) as {
           error?: string;

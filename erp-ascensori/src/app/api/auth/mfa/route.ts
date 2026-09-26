@@ -102,6 +102,10 @@ const schemaDisattiva = z.object({ password: z.string().min(1).max(200) });
 export const DELETE = gestito(async (req) => {
   const s = await richiedeSessione();
   const { password } = await corpoValidato(req, schemaDisattiva);
+  // Паролата се проверява тук извън входа — без таван откраднатата сесия би
+  // налучквала паролата без край.
+  if (!consenti(`mfa-off:${s.sub}`, 5, LIMITI.finestraMs))
+    throw new ErroreHttp(429, "Troppi tentativi: riprovare più tardi.");
 
   const u = await prisma.user.findUniqueOrThrow({
     where: { id: s.sub },
@@ -114,8 +118,9 @@ export const DELETE = gestito(async (req) => {
       403,
       "La verifica in due passaggi è obbligatoria per questo livello di accesso",
     );
+  // 403, не 401: 401 значи „сесията я няма" и интерфейсът води към входа.
   if (!(await bcrypt.compare(password, u.password)))
-    throw new ErroreHttp(401, "Password non corretta");
+    throw new ErroreHttp(403, "Password non corretta");
 
   await prisma.user.update({
     where: { id: s.sub },
@@ -126,9 +131,9 @@ export const DELETE = gestito(async (req) => {
       codiciRecupero: [],
     },
   });
-  // Изключването на втория фактор е промяна в сигурността: всички други
-  // устройства падат.
-  await revocaTutte(s.sub);
+  // Изключването на втория фактор е промяна в сигурността: всички ДРУГИ
+  // устройства падат; това, от което се изключва, остава влязло.
+  await revocaTutte(s.sub, s.sid);
   await scriviAudit({
     azione: "STATE_CHANGE",
     entita: "users",

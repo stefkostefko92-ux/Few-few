@@ -54,6 +54,21 @@ const config: EntityConfig = {
     { name: "citta", label: "Città", tipo: "text" },
     { name: "cap", label: "CAP", tipo: "text" },
     { name: "provincia", label: "Provincia (sigla)", tipo: "text" },
+    {
+      name: "codiceSdi",
+      label: "Codice destinatario",
+      tipo: "text",
+      aiuto:
+        "7 caratteri, per la fattura elettronica allo studio. Se manca, si usa 0000000: la fattura resta nel cassetto fiscale.",
+    },
+    {
+      name: "attivo",
+      label: "Attivo",
+      tipo: "checkbox",
+      predefinito: true,
+      aiuto:
+        "Una scheda collegata a condomìni o documenti non si elimina: si disattiva, lo storico resta.",
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

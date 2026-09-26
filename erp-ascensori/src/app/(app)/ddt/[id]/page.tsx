@@ -14,6 +14,7 @@ import {
 } from "@/components/icone";
 import { dataIt, dataOraIt } from "@/lib/format";
 import { TIPO_MOVIMENTO } from "@/lib/enum-labels";
+import { apiFetch } from "@/lib/fetch-client";
 
 interface DdtDettaglio {
   id: string;
@@ -43,12 +44,14 @@ export default function Pagina() {
   const [errore, setErrore] = useState<string | null>(null);
 
   const carica = useCallback(async () => {
-    const res = await fetch(`/api/ddt/${id}`);
-    if (!res.ok) {
-      setErrore("DDT non trovato");
+    const r = await apiFetch<DdtDettaglio & { error?: string }>(
+      `/api/ddt/${id}`,
+    );
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "DDT non trovato");
       return;
     }
-    setD(await res.json());
+    setD(r.dati);
   }, [id]);
 
   useEffect(() => {

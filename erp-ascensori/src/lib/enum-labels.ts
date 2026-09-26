@@ -84,6 +84,8 @@ export const STATO_LABEL: Record<string, string> = {
   CONSEGNATA: "Consegnata",
   MANCATA_CONSEGNA: "Mancata consegna (nel cassetto fiscale)",
   SCARTATA: "Scartata dallo SdI",
+  // Изход от публичната администрация (FPA): документът е отхвърлен от нея.
+  RIFIUTATA: "Rifiutata dalla PA",
   ACCETTATA: "Accettata dalla PA",
   DECORSI_TERMINI: "Decorrenza termini",
   // StatoPagamentoFattura

@@ -67,13 +67,17 @@ export default function Pagina() {
   const [anno, setAnno] = useState(oggi.getFullYear());
   const [mese, setMese] = useState(oggi.getMonth() + 1);
   const [d, setD] = useState<Dati | null>(null);
+  const [errore, setErrore] = useState<string | null>(null);
   const [giornoAperto, setGiornoAperto] = useState<Giorno | null>(null);
 
   const carica = useCallback(async () => {
-    const { ok, dati } = await apiFetch<Dati>(
+    const { ok, dati } = await apiFetch<Dati & { error?: string }>(
       `/api/calendario?anno=${anno}&mese=${mese}`,
     );
-    if (ok) setD(dati);
+    if (ok) {
+      setD(dati);
+      setErrore(null);
+    } else setErrore(dati.error ?? "Impossibile leggere il calendario.");
   }, [anno, mese]);
 
   useEffect(() => {
@@ -138,8 +142,12 @@ export default function Pagina() {
         </div>
       </header>
 
-      {!d ? (
-        <p className="text-sm text-text-3">…</p>
+      {errore ? (
+        <p role="alert" className="text-sm text-danger-text">
+          {errore}
+        </p>
+      ) : !d ? (
+        <p className="text-sm text-text-3">Caricamento…</p>
       ) : (
         <>
           <div className="relative overflow-x-auto">

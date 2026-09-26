@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -20,8 +21,10 @@ import {
 import Link from "next/link";
 import { IcoNuovo } from "@/components/icone";
 import { perInputData, perInputDataOra } from "@/lib/format";
-import { apiFetch } from "@/lib/fetch-client";
+import { apiFetch, tutteLeRighe } from "@/lib/fetch-client";
 import CompilaConAi from "@/components/CompilaConAi";
+import { useRuolo } from "@/components/useRuolo";
+import { haPermesso, type Ruolo } from "@/lib/roles";
 
 export type Riga = Record<string, unknown>;
 
@@ -74,6 +77,14 @@ export interface Campo {
    * `aria-describedby`, не е просто сив текст.
    */
   aiuto?: string;
+  /**
+   * Полето се вижда и праща само от това ниво нагоре — същото като
+   * `riservati` на маршрута (напр. часовата цена на служителя: DIREZIONE+).
+   * Под него НЕ се праща изобщо: иначе всеки запис би бил 403.
+   */
+  ruoloMinimo?: Ruolo;
+  /** Само при промяна: при създаване стойността я извежда сървърът. */
+  soloModifica?: boolean;
 }
 
 export interface EntityConfig {
@@ -92,6 +103,13 @@ export interface EntityConfig {
   cerca?: string;
   /** позволено изтриване (сървърът пак проверява) */
   eliminabile?: boolean;
+  /**
+   * Минималната роля за създаване/промяна и за изтриване — същата като на
+   * маршрута (по подразбиране OPERATORE / RESPONSABILE като в `crud.ts`).
+   * Само за да не показваме бутон, който сървърът ще откаже.
+   */
+  ruoloModifica?: Ruolo;
+  ruoloElimina?: Ruolo;
   /** линк към детайл при клик на редицата */
   linkDettaglio?: (r: Riga) => string;
   /** допълнителни бутони в заглавието */
@@ -127,6 +145,16 @@ export function valoreAnnidato(r: Riga, chiave: string): unknown {
 }
 
 export default function EntityPage({ config }: { config: EntityConfig }) {
+  const ruolo = useRuolo();
+  // Докато ролята не е известна, „Nuovo"/„Modifica" се показват (почти всеки
+  // може); „Elimina" — не (разрушителното не мига и изчезва).
+  const puoModificare =
+    ruolo === null || haPermesso(ruolo, config.ruoloModifica ?? "OPERATORE");
+  const puoEliminare =
+    ruolo !== null && haPermesso(ruolo, config.ruoloElimina ?? "RESPONSABILE");
+  /** Само последният отговор пише в таблицата: при бавна мрежа по-старото
+   *  търсене („ros") иначе презаписваше новото („rossi"). */
+  const ultimaRichiesta = useRef(0);
   const [righe, setRighe] = useState<Riga[]>([]);
   const [totale, setTotale] = useState(0);
   const [page, setPage] = useState(1);
@@ -147,8 +175,10 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
         ? `&${config.filtroStato.campo}=${stato}`
         : "";
     const url = `${config.api}?page=${page}&size=${size}${q ? `&q=${encodeURIComponent(q)}` : ""}${filtro}`;
+    const n = ++ultimaRichiesta.current;
     try {
       const { ok, dati } = await apiJson(url);
+      if (n !== ultimaRichiesta.current) return;
       if (ok) {
         setRighe((dati.righe as Riga[]) ?? []);
         setTotale((dati.totale as number) ?? 0);
@@ -166,6 +196,12 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
   useEffect(() => {
     void carica();
   }, [carica]);
+  // Формата вика `onSalvato` СЛЕД заявката — от рендера, в който е натиснат
+  // „Salva". Без референция към последния `carica` написаното междувременно в
+  // търсенето се губеше: старото презареждане (без `q`) идваше последно и
+  // показваше целия списък под филтъра.
+  const caricaAttuale = useRef(carica);
+  caricaAttuale.current = carica;
 
   async function elimina(r: Riga) {
     if (!confirm("Eliminare definitivamente questa scheda?")) return;
@@ -192,13 +228,16 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
         </div>
         <div className="flex items-center gap-2">
           {config.extraAzioni}
-          <button
-            className="btn-primary inline-flex items-center gap-1.5"
-            onClick={() => setModale({ modo: "crea" })}
-          >
-            <IcoNuovo />
-            {config.genere === "f" ? "Nuova" : "Nuovo"} {config.singolare ?? ""}
-          </button>
+          {puoModificare && (
+            <button
+              className="btn-primary inline-flex items-center gap-1.5"
+              onClick={() => setModale({ modo: "crea" })}
+            >
+              <IcoNuovo />
+              {config.genere === "f" ? "Nuova" : "Nuovo"}{" "}
+              {config.singolare ?? ""}
+            </button>
+          )}
         </div>
       </div>
 
@@ -326,15 +365,17 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          className="btn-ghost h-8 px-2.5 text-xs"
-                          onClick={() =>
-                            setModale({ modo: "modifica", riga: r })
-                          }
-                        >
-                          Modifica
-                        </button>
-                        {config.eliminabile !== false && (
+                        {puoModificare && (
+                          <button
+                            className="btn-ghost h-8 px-2.5 text-xs"
+                            onClick={() =>
+                              setModale({ modo: "modifica", riga: r })
+                            }
+                          >
+                            Modifica
+                          </button>
+                        )}
+                        {config.eliminabile !== false && puoEliminare && (
                           <button
                             className="btn-ghost h-8 px-2.5 text-xs text-danger-text"
                             onClick={() => void elimina(r)}
@@ -366,7 +407,7 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
           onChiudi={() => setModale(null)}
           onSalvato={() => {
             setModale(null);
-            void carica();
+            void caricaAttuale.current();
           }}
         />
       )}
@@ -388,7 +429,7 @@ function valoreIniziale(campo: Campo, riga?: Riga): unknown {
     return campo.tipo === "checkbox" ? false : "";
   if (campo.tipo === "date") return perInputData(v as string | Date);
   if (campo.tipo === "datetime") return perInputDataOra(v as string | Date);
-  if (campo.tipo === "tags") return (v as string[]).join(", ");
+  if (campo.tipo === "tags") return Array.isArray(v) ? v.join(", ") : String(v);
   // Многото стойности идват като списък от свързващи редове — вадим само id-тата.
   if (campo.tipo === "multiselect")
     return Array.isArray(v)
@@ -416,6 +457,13 @@ export function FormEntity({
     ),
   );
   const [errore, setErrore] = useState<string | null>(null);
+  const ruoloForm = useRuolo();
+  const campi = config.campi.filter(
+    (c) =>
+      !(c.soloModifica && modo === "crea") &&
+      (!c.ruoloMinimo ||
+        (ruoloForm !== null && haPermesso(ruoloForm, c.ruoloMinimo))),
+  );
   const [salvataggio, setSalvataggio] = useState(false);
   const [opzioniFk, setOpzioniFk] = useState<Record<string, Opzione[]>>({});
 
@@ -427,16 +475,14 @@ export function FormEntity({
   useEffect(() => {
     for (const campo of campiFk) {
       const { url, etichetta } = campo.opzioniApi!;
-      void apiJson(`${url}${url.includes("?") ? "&" : "?"}size=200`).then(
-        ({ ok, dati }) => {
-          if (!ok) return;
-          const lista = ((dati.righe as Riga[]) ?? []).map((r) => ({
-            value: String(r.id),
-            label: etichetta(r),
-          }));
-          setOpzioniFk((prev) => ({ ...prev, [campo.name]: lista }));
-        },
-      );
+      void tutteLeRighe<Riga>(url).then(({ ok, righe }) => {
+        if (!ok) return;
+        const lista = righe.map((r) => ({
+          value: String(r.id),
+          label: etichetta(r),
+        }));
+        setOpzioniFk((prev) => ({ ...prev, [campo.name]: lista }));
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -447,7 +493,7 @@ export function FormEntity({
     setErrore(null);
 
     const corpo: Record<string, unknown> = {};
-    for (const campo of config.campi) {
+    for (const campo of campi) {
       let v = valori[campo.name];
       if (campo.tipo === "number")
         v = v === "" || v === null ? null : Number(v);
@@ -463,9 +509,11 @@ export function FormEntity({
         v = v === "" ? null : v;
       if (campo.tipo === "select") v = v === "" ? null : v;
       if (campo.tipo === "multiselect") v = Array.isArray(v) ? v : [];
+      // Масив идва от ИИ („Compila da un documento"), низ — от полето.
       if (campo.tipo === "tags")
-        v =
-          typeof v === "string"
+        v = Array.isArray(v)
+          ? v.map((x) => String(x).trim()).filter(Boolean)
+          : typeof v === "string"
             ? v
                 .split(",")
                 .map((x) => x.trim())
@@ -503,23 +551,21 @@ export function FormEntity({
       }
       aperto
       onChiudi={onChiudi}
-      largo={config.campi.length > 6}
+      largo={campi.length > 6}
     >
       <form onSubmit={salva}>
         {config.moduloAi && (
           <CompilaConAi
             modulo={config.moduloAi}
-            etichette={Object.fromEntries(
-              config.campi.map((c) => [c.name, c.label]),
-            )}
+            etichette={Object.fromEntries(campi.map((c) => [c.name, c.label]))}
             valoriAttuali={valori}
             onCompila={(campi) => setValori((prev) => ({ ...prev, ...campi }))}
           />
         )}
         <div
-          className={`grid gap-4 ${config.campi.length > 6 ? "sm:grid-cols-2" : ""}`}
+          className={`grid gap-4 ${campi.length > 6 ? "sm:grid-cols-2" : ""}`}
         >
-          {config.campi.map((campo) => (
+          {campi.map((campo) => (
             <div
               key={campo.name}
               className={campo.colSpan2 ? "sm:col-span-2" : ""}

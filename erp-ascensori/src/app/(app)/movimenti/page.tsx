@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Modale, Paginazione, Vuoto } from "@/components/ui";
 import { dataOraIt } from "@/lib/format";
 import { IcoNuovo } from "@/components/icone";
-import { apiFetch } from "@/lib/fetch-client";
+import { apiFetch, tutteLeRighe } from "@/lib/fetch-client";
 
 interface Movimento {
   id: string;
@@ -68,8 +68,8 @@ export default function Pagina() {
   }, [page]);
 
   const caricaArticoli = useCallback(async () => {
-    const r = await apiFetch<{ righe?: Articolo[] }>("/api/articoli?size=200");
-    if (r.ok) setArticoli(r.dati.righe ?? []);
+    const r = await tutteLeRighe<Articolo>("/api/articoli");
+    if (r.ok) setArticoli(r.righe);
   }, []);
 
   useEffect(() => {

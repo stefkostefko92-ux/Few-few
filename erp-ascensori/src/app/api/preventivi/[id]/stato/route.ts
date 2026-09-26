@@ -1,6 +1,7 @@
 // Смяна на статус на оферта — САМО по позволените преходи.
 // APPROVATO се пази за RESPONSABILE+ (гл. Controlli amministrativi).
 
+import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
@@ -36,7 +37,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!transizionePreventivoAmmessa(da, stato))
       throw new ErroreHttp(
         409,
-        `Transizione non ammessa: da «${da}» a «${stato}»`,
+        `Transizione non ammessa: da «${etichetta(STATO_LABEL, da)}» a «${etichetta(STATO_LABEL, stato)}»`,
       );
     const upd = await tx.preventivo.updateMany({
       where: { id, stato: da },

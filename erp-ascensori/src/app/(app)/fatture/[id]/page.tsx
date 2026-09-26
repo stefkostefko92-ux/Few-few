@@ -28,6 +28,8 @@ import DdtFattura from "@/components/DdtFattura";
 import { euro, dataIt } from "@/lib/format";
 import { MODALITA_PAGAMENTO } from "@/lib/fiscale/pagamenti";
 import { azioneRichiesta, type StatoSdi } from "@/lib/fiscale/sdi-stato";
+import { apiFetch, apiFile } from "@/lib/fetch-client";
+import { TRANSIZIONI_FATTURA } from "@/lib/regole-fiscali";
 
 interface Pagamento {
   id: string;
@@ -110,8 +112,6 @@ interface ControlloSdi {
   };
 }
 
-const STATI = ["BOZZA", "EMESSA", "INVIATA", "PAGATA", "SCADUTA", "STORNATA"];
-
 /** Само вписванията, които операторът прави сам; останалите идват от известие. */
 const AZIONI_SDI: { stato: StatoSdi; etichetta: string; da: StatoSdi[] }[] = [
   { stato: "INVIATA", etichetta: "Segna come trasmessa", da: ["GENERATA"] },
@@ -146,42 +146,81 @@ export default function Pagina() {
     riferimento: "",
   });
   const [occupato, setOccupato] = useState(false);
+  const [erroreAzione, setErroreAzione] = useState<string | null>(null);
 
   const carica = useCallback(async () => {
-    const res = await fetch(`/api/fatture/${id}`);
-    if (!res.ok) {
-      setErrore("Fattura non trovata");
+    const r = await apiFetch<Fattura & { error?: string }>(
+      `/api/fatture/${id}`,
+    );
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "Fattura non trovata");
       return;
     }
-    const dati: Fattura = await res.json();
-    setF(dati);
-    if (dati.tipo !== "EMESSA") {
+    setF(r.dati);
+    if (r.dati.tipo !== "EMESSA") {
       setSdi(null);
       return;
     }
-    const c = await fetch(`/api/fatture/${id}/xml?controlla=1`);
-    setSdi(c.ok ? await c.json() : null);
+    const c = await apiFetch<ControlloSdi>(
+      `/api/fatture/${id}/xml?controlla=1`,
+    );
+    setSdi(c.ok ? c.dati : null);
   }, [id]);
 
   useEffect(() => {
     void carica();
   }, [carica]);
 
-  /** Един път за всички действия: заявка → грешката се показва → презареждане. */
-  async function agisci(url: string, opzioni: RequestInit) {
+  /**
+   * Един път за всички действия: (потвърждение) → заявка → грешката се показва
+   * на страницата → презареждане. `conferma` — за необратимите.
+   */
+  async function agisci(url: string, opzioni: RequestInit, conferma?: string) {
+    if (occupato || (conferma && !confirm(conferma))) return false;
     setOccupato(true);
+    setErroreAzione(null);
     try {
-      const res = await fetch(url, {
-        headers: { "Content-Type": "application/json" },
-        ...opzioni,
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        alert(d.error ?? "Errore");
+      const r = await apiFetch<{ error?: string }>(url, opzioni);
+      if (!r.ok) {
+        setErroreAzione(r.dati.error ?? "Errore");
         return false;
       }
       await carica();
       return true;
+    } finally {
+      setOccupato(false);
+    }
+  }
+
+  /**
+   * Тегли XML-а и ОПРЕСНЯВА екрана: сървърът вече е минал на „XML generato"
+   * и бутонът „Segna come trasmessa" трябва да се появи без ръчно презареждане.
+   */
+  async function scaricaXml() {
+    if (occupato) return;
+    setOccupato(true);
+    setErroreAzione(null);
+    try {
+      const res = await apiFile(`/api/fatture/${id}/xml`);
+      if (!res || !res.ok) {
+        const d = res ? await res.json().catch(() => ({})) : {};
+        setErroreAzione(
+          (d as { error?: string }).error ??
+            "Download non riuscito: verificare la connessione.",
+        );
+        return;
+      }
+      const nome =
+        /filename="([^"]+)"/.exec(
+          res.headers.get("content-disposition") ?? "",
+        )?.[1] ?? `${id}.xml`;
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = nome;
+      a.click();
+      URL.revokeObjectURL(url);
+      await carica();
     } finally {
       setOccupato(false);
     }
@@ -248,12 +287,11 @@ export default function Pagina() {
             Stampa
           </a>
           {f.tipo === "EMESSA" && (
-            <a
-              className={`btn-secondary inline-flex items-center gap-1.5 ${
-                sdi && !sdi.pronta ? "pointer-events-none opacity-50" : ""
-              }`}
-              href={`/api/fatture/${id}/xml`}
-              aria-disabled={sdi ? !sdi.pronta : undefined}
+            <button
+              type="button"
+              className="btn-secondary inline-flex items-center gap-1.5"
+              disabled={occupato || (sdi ? !sdi.pronta : false)}
+              onClick={() => void scaricaXml()}
               title={
                 sdi && !sdi.pronta
                   ? "Completare i requisiti elencati sotto"
@@ -262,28 +300,50 @@ export default function Pagina() {
             >
               <IcoEsporta />
               XML SdI
-            </a>
+            </button>
           )}
           <Badge valore={f.stato} />
-          <select
-            className="input w-40"
-            value={f.stato}
-            onChange={(e) =>
-              void agisci(`/api/fatture/${id}/stato`, {
-                method: "PATCH",
-                body: JSON.stringify({ stato: e.target.value }),
-              })
-            }
-            aria-label="Cambia stato"
-          >
-            {STATI.map((s) => (
-              <option key={s} value={s}>
-                {STATO_LABEL[s] ?? s}
+          {/* Само позволените преходи: иначе изборът даваше 409. */}
+          {(TRANSIZIONI_FATTURA[f.stato as keyof typeof TRANSIZIONI_FATTURA]
+            ?.length ?? 0) > 0 && (
+            <select
+              className="input w-44"
+              value=""
+              disabled={occupato}
+              onChange={(e) => {
+                const stato = e.target.value;
+                void agisci(
+                  `/api/fatture/${id}/stato`,
+                  { method: "PATCH", body: JSON.stringify({ stato }) },
+                  stato === "STORNATA"
+                    ? "Stornare la fattura? L'operazione è definitiva; la nota di credito va emessa come documento a sé."
+                    : undefined,
+                );
+              }}
+              aria-label="Cambia stato"
+            >
+              <option value="" disabled>
+                Cambia stato…
               </option>
-            ))}
-          </select>
+              {TRANSIZIONI_FATTURA[
+                f.stato as keyof typeof TRANSIZIONI_FATTURA
+              ].map((s) => (
+                <option key={s} value={s}>
+                  {STATO_LABEL[s] ?? s}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
+      {erroreAzione && (
+        <p
+          role="alert"
+          className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+        >
+          {erroreAzione}
+        </p>
+      )}
 
       {f.tipo === "EMESSA" && sdi && (
         <div
@@ -385,7 +445,8 @@ export default function Pagina() {
             </div>
           </dl>
 
-          {f.statoSdi !== "NON_INVIATA" && (
+          {/* Известие има смисъл само за ТРЪГНАЛ документ. */}
+          {f.statoSdi !== "NON_INVIATA" && f.statoSdi !== "GENERATA" && (
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <span className="text-xs text-text-3">
                 Registra notifica ricevuta:
@@ -396,13 +457,18 @@ export default function Pagina() {
                   className="btn-ghost h-7 px-2 text-xs"
                   disabled={occupato}
                   onClick={() =>
-                    void agisci(`/api/fatture/${id}/notifiche`, {
-                      method: "POST",
-                      body: JSON.stringify({
-                        tipo: n.tipo,
-                        esito: n.esito ?? null,
-                      }),
-                    })
+                    void agisci(
+                      `/api/fatture/${id}/notifiche`,
+                      {
+                        method: "POST",
+                        body: JSON.stringify({
+                          tipo: n.tipo,
+                          esito: n.esito ?? null,
+                        }),
+                      },
+                      // Необратимо: пуска срокове и известява счетоводството.
+                      `Registrare la notifica «${n.etichetta}»? Non potrà essere annullata.`,
+                    )
                   }
                 >
                   {n.etichetta}
@@ -491,9 +557,11 @@ export default function Pagina() {
                       disabled={occupato}
                       aria-label={`Elimina incasso del ${dataIt(p.data)}`}
                       onClick={() =>
-                        void agisci(`/api/fatture/${id}/pagamenti/${p.id}`, {
-                          method: "DELETE",
-                        })
+                        void agisci(
+                          `/api/fatture/${id}/pagamenti/${p.id}`,
+                          { method: "DELETE" },
+                          `Eliminare l'incasso di ${euro(p.importo)} del ${dataIt(p.data)}?`,
+                        )
                       }
                     >
                       <IcoElimina />

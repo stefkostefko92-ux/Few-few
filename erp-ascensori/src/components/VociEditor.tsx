@@ -4,7 +4,7 @@
 // Тоталите се преизчисляват от сървъра — тук само се показват.
 
 import { useId, useState } from "react";
-import { euro } from "@/lib/format";
+import { euro, numeroIt } from "@/lib/format";
 import { IcoNuovoPiccolo } from "@/components/icone";
 import { apiFetch } from "@/lib/fetch-client";
 import ScriviConAi from "@/components/ScriviConAi";
@@ -149,14 +149,16 @@ export default function VociEditor({
             {voci.map((v) => (
               <tr key={v.id} className="border-b border-border last:border-0">
                 <td className="py-2 pr-3">{v.descrizione}</td>
-                <td className="py-2 pr-3 text-right font-mono">{v.quantita}</td>
+                <td className="py-2 pr-3 text-right font-mono">
+                  {numeroIt(v.quantita)}
+                </td>
                 {conPrezzi ? (
                   <>
                     <td className="py-2 pr-3 text-right font-mono">
                       {euro(v.prezzoUnitario)}
                     </td>
                     <td className="py-2 pr-3 text-right font-mono">
-                      {v.aliquotaIva}
+                      {numeroIt(v.aliquotaIva)} %
                       {v.naturaIva ? (
                         <span className="ml-1 text-xs text-text-3">
                           {v.naturaIva}
@@ -171,7 +173,7 @@ export default function VociEditor({
                   <>
                     <td className="py-2 pr-3">{v.um ?? "—"}</td>
                     <td className="py-2 pr-3 text-right font-mono">
-                      {v.peso ?? "—"}
+                      {numeroIt(v.peso)}
                     </td>
                   </>
                 )}

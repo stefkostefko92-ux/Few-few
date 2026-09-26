@@ -50,7 +50,7 @@ const config: EntityConfig = {
     },
     {
       chiave: "prossimaRevisione",
-      label: "Prossima revisione",
+      label: "Prossima verifica periodica",
       render: (r) => dataIt(r.prossimaRevisione as string | null),
     },
   ],
@@ -134,8 +134,16 @@ const config: EntityConfig = {
       label: "Manutenzione affidata dal",
       tipo: "date",
     },
-    { name: "ultimaRevisione", label: "Ultima revisione", tipo: "date" },
-    { name: "prossimaRevisione", label: "Prossima revisione", tipo: "date" },
+    {
+      name: "ultimaRevisione",
+      label: "Ultima verifica periodica",
+      tipo: "date",
+    },
+    {
+      name: "prossimaRevisione",
+      label: "Prossima verifica periodica",
+      tipo: "date",
+    },
     {
       name: "condominioId",
       label: "Condominio",
@@ -151,6 +159,14 @@ const config: EntityConfig = {
         etichetta: (r) =>
           String(r.ragioneSociale ?? `${r.nome} ${r.cognome ?? ""}`),
       },
+    },
+    {
+      name: "attivo",
+      label: "Impianto attivo",
+      tipo: "checkbox",
+      predefinito: true,
+      aiuto:
+        "Un impianto con interventi o verifiche non si elimina: si disattiva, lo storico resta.",
     },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],

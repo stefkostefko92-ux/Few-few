@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { IcoAttenzione } from "@/components/icone";
+import { apiFetch } from "@/lib/fetch-client";
 
 interface Contesto {
   id: string;
@@ -14,23 +15,33 @@ interface Contesto {
 
 export default function BannerContesto() {
   const [azienda, setAzienda] = useState<Contesto | null>(null);
+  const [errore, setErrore] = useState<string | null>(null);
+  const [inCorso, setInCorso] = useState(false);
 
   useEffect(() => {
-    void fetch("/api/me")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setAzienda(d?.aziendaContesto ?? null))
-      .catch(() => null);
+    void apiFetch<{ aziendaContesto?: Contesto | null }>("/api/me").then(
+      (r) => r.ok && setAzienda(r.dati.aziendaContesto ?? null),
+    );
   }, []);
 
   if (!azienda) return null;
 
   async function esci() {
-    await fetch("/api/amministrazione/azienda", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenantId: null }),
-    });
-    window.location.reload();
+    if (inCorso) return;
+    setInCorso(true);
+    setErrore(null);
+    // Презареждането при неуспех би оставило лентата — и човека в мнението,
+    // че вече е излязъл, докато още пише в данните на тази фирма.
+    const r = await apiFetch<{ error?: string }>(
+      "/api/amministrazione/azienda",
+      { method: "POST", body: JSON.stringify({ tenantId: null }) },
+    );
+    if (r.ok) {
+      window.location.reload();
+      return;
+    }
+    setErrore(r.dati.error ?? "Uscita non riuscita: riprovare.");
+    setInCorso(false);
   }
 
   return (
@@ -47,10 +58,16 @@ export default function BannerContesto() {
           appartengono a questa azienda.
         </span>
       </span>
+      {errore && (
+        <span role="alert" className="text-danger-text">
+          {errore}
+        </span>
+      )}
       <button
         type="button"
         className="btn-secondary h-7 px-2 text-xs"
         onClick={() => void esci()}
+        disabled={inCorso}
       >
         Esci dall&apos;azienda
       </button>

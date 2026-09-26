@@ -69,6 +69,8 @@ export default function Pagina() {
   const router = useRouter();
   const [c, setC] = useState<Contratto | null>(null);
   const [errore, setErrore] = useState<string | null>(null);
+  const [erroreAzione, setErroreAzione] = useState<string | null>(null);
+  const [inCorso, setInCorso] = useState(false);
 
   const carica = useCallback(async () => {
     const { ok, dati } = await apiFetch<Contratto & { error?: string }>(
@@ -83,6 +85,17 @@ export default function Pagina() {
   }, [carica]);
 
   async function transizione(stato: StatoContratto) {
+    if (inCorso) return;
+    // Прекратеният договор не се възобновява: потвърждение, не един клик.
+    if (
+      stato === "DISDETTO" &&
+      !confirm(
+        "Disdire il contratto? Lo stato è definitivo: visite e fatture programmate si fermano.",
+      )
+    )
+      return;
+    setInCorso(true);
+    setErroreAzione(null);
     const { ok, dati } = await apiFetch<{ error?: string }>(
       `/api/contratti/${id}/stato`,
       {
@@ -90,8 +103,9 @@ export default function Pagina() {
         body: JSON.stringify({ stato }),
       },
     );
+    setInCorso(false);
     if (!ok) {
-      alert(dati.error ?? "Errore");
+      setErroreAzione(dati.error ?? "Errore");
       return;
     }
     void carica();
@@ -151,6 +165,7 @@ export default function Pagina() {
                   <button
                     key={s}
                     className={`inline-flex items-center gap-1.5 ${s === "DISDETTO" ? "btn-danger" : "btn-primary"}`}
+                    disabled={inCorso}
                     onClick={() => void transizione(s)}
                   >
                     <IcoTransizione />
@@ -158,6 +173,14 @@ export default function Pagina() {
                   </button>
                 ))}
               </div>
+            )}
+            {erroreAzione && (
+              <p
+                role="alert"
+                className="mt-3 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+              >
+                {erroreAzione}
+              </p>
             )}
           </div>
 

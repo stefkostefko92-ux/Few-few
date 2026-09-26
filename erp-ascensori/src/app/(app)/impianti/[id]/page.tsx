@@ -16,6 +16,9 @@ import {
   IcoStampa,
 } from "@/components/icone";
 import { dataIt } from "@/lib/format";
+import { apiFetch, tutteLeRighe } from "@/lib/fetch-client";
+import { useRuolo } from "@/components/useRuolo";
+import { haPermesso } from "@/lib/roles";
 import Allegati from "@/components/Allegati";
 import CompilaConAi from "@/components/CompilaConAi";
 import {
@@ -100,26 +103,30 @@ export default function Pagina() {
   const [errore, setErrore] = useState<string | null>(null);
   const [modaleAssegna, setModaleAssegna] = useState(false);
   const [modaleVerifica, setModaleVerifica] = useState(false);
+  const ruolo = useRuolo();
+  // Проверки и назначения се вписват от RESPONSABILE нагоре (сървърът го
+  // налага); по-ниските не виждат бутон, който само ще върне 403.
+  const puoGestire = ruolo !== null && haPermesso(ruolo, "RESPONSABILE");
 
   const carica = useCallback(async () => {
     // Филтрирането е СЪРВЪРНО (?impiantoId=…). Дърпането на цялата таблица и
     // филтриране в браузъра тихо губеше записите след първата страница.
+    type Lista = { righe?: unknown[] };
     const [ri, rs, ra, rv] = await Promise.all([
-      fetch(`/api/impianti/${id}`),
-      fetch(`/api/scadenze?impiantoId=${id}`),
-      fetch(`/api/assegnazioni?impiantoId=${id}`),
-      fetch(`/api/impianti/${id}/verifiche`),
+      apiFetch<Impianto & { error?: string }>(`/api/impianti/${id}`),
+      apiFetch<Lista>(`/api/scadenze?impiantoId=${id}`),
+      apiFetch<Lista>(`/api/assegnazioni?impiantoId=${id}`),
+      apiFetch<Lista>(`/api/impianti/${id}/verifiche`),
     ]);
     if (!ri.ok) {
-      setErrore("Impianto non trovato");
+      setErrore(ri.dati.error ?? "Impianto non trovato");
       return;
     }
-    const base = await ri.json();
     setImp({
-      ...base,
-      scadenze: rs.ok ? (await rs.json()).righe : [],
-      assegnazioni: ra.ok ? (await ra.json()).righe : [],
-      verifiche: rv.ok ? (await rv.json()).righe : [],
+      ...ri.dati,
+      scadenze: (rs.ok ? rs.dati.righe : []) as Impianto["scadenze"],
+      assegnazioni: (ra.ok ? ra.dati.righe : []) as Impianto["assegnazioni"],
+      verifiche: (rv.ok ? rv.dati.righe : []) as Impianto["verifiche"],
     });
   }, [id]);
 
@@ -202,13 +209,15 @@ export default function Pagina() {
           <h2 className="text-lg font-semibold text-text-1">
             Conformità normativa
           </h2>
-          <button
-            className="btn-secondary inline-flex items-center gap-1.5"
-            onClick={() => setModaleVerifica(true)}
-          >
-            <IcoNuovoPiccolo />
-            Registra verifica
-          </button>
+          {puoGestire && (
+            <button
+              className="btn-secondary inline-flex items-center gap-1.5"
+              onClick={() => setModaleVerifica(true)}
+            >
+              <IcoNuovoPiccolo />
+              Registra verifica
+            </button>
+          )}
         </div>
 
         {imp.stato === "FERMO_AMMINISTRATIVO" && (
@@ -355,11 +364,11 @@ export default function Pagina() {
               valore={dataIt(imp.dataInstallazione)}
             />
             <Riga
-              label="Ultima revisione"
+              label="Ultima verifica periodica"
               valore={dataIt(imp.ultimaRevisione)}
             />
             <Riga
-              label="Prossima revisione"
+              label="Prossima verifica periodica"
               valore={dataIt(imp.prossimaRevisione)}
             />
           </dl>
@@ -434,13 +443,15 @@ export default function Pagina() {
             <h2 className="text-lg font-semibold text-text-1">
               Tecnici assegnati
             </h2>
-            <button
-              className="btn-secondary inline-flex h-8 items-center gap-1 px-3 text-xs"
-              onClick={() => setModaleAssegna(true)}
-            >
-              <IcoNuovoPiccolo />
-              Assegna
-            </button>
+            {puoGestire && (
+              <button
+                className="btn-secondary inline-flex h-8 items-center gap-1 px-3 text-xs"
+                onClick={() => setModaleAssegna(true)}
+              >
+                <IcoNuovoPiccolo />
+                Assegna
+              </button>
+            )}
           </div>
           {imp.assegnazioni.length === 0 ? (
             <p className="text-sm text-text-3">Nessun tecnico assegnato.</p>
@@ -528,25 +539,27 @@ function FormVerifica({
 
   async function salva(e: React.FormEvent) {
     e.preventDefault();
+    if (salvataggio) return;
     setSalvataggio(true);
     try {
-      const res = await fetch(`/api/impianti/${impiantoId}/verifiche`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: form.tipo,
-          data: form.data,
-          esito: form.esito,
-          organismo: form.organismo || null,
-          numeroVerbale: form.numeroVerbale || null,
-          prescrizioni: form.prescrizioni || null,
-          scadenzaPrescrizioni: form.scadenzaPrescrizioni || null,
-          note: form.note || null,
-        }),
-      });
-      const d = await res.json();
-      if (!res.ok) {
-        setErrore(d.error ?? "Errore");
+      const r = await apiFetch<{ error?: string }>(
+        `/api/impianti/${impiantoId}/verifiche`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            tipo: form.tipo,
+            data: form.data,
+            esito: form.esito,
+            organismo: form.organismo || null,
+            numeroVerbale: form.numeroVerbale || null,
+            prescrizioni: form.prescrizioni || null,
+            scadenzaPrescrizioni: form.scadenzaPrescrizioni || null,
+            note: form.note || null,
+          }),
+        },
+      );
+      if (!r.ok) {
+        setErrore(r.dati.error ?? "Errore");
         return;
       }
       onSalvato();
@@ -754,33 +767,42 @@ function FormAssegnazione({
   >([]);
   const [dipendenteId, setDipendenteId] = useState("");
   const [errore, setErrore] = useState<string | null>(null);
+  /** Двойно натискане = две еднакви назначения. */
+  const [invio, setInvio] = useState(false);
 
   useEffect(() => {
-    void fetch("/api/dipendenti?size=200&attivo=true")
-      .then((r) => r.json())
-      .then((d) => setDipendenti(d.righe ?? []));
+    void tutteLeRighe<{ id: string; nome: string; cognome: string }>(
+      "/api/dipendenti?attivo=true",
+    ).then((r) => r.ok && setDipendenti(r.righe));
   }, []);
 
   async function salva(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch("/api/assegnazioni", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ impiantoId, dipendenteId }),
-    });
-    const d = await res.json();
-    if (!res.ok) {
-      setErrore(d.error ?? "Errore");
-      return;
+    if (invio) return;
+    setInvio(true);
+    try {
+      const r = await apiFetch<{ error?: string }>("/api/assegnazioni", {
+        method: "POST",
+        body: JSON.stringify({ impiantoId, dipendenteId }),
+      });
+      if (!r.ok) {
+        setErrore(r.dati.error ?? "Errore");
+        return;
+      }
+      onSalvato();
+    } finally {
+      setInvio(false);
     }
-    onSalvato();
   }
 
   return (
     <Modale titolo="Assegna tecnico" aperto onChiudi={onChiudi}>
       <form onSubmit={salva}>
-        <label className="label">Tecnico responsabile *</label>
+        <label className="label" htmlFor="assegna-tecnico">
+          Tecnico responsabile *
+        </label>
         <select
+          id="assegna-tecnico"
           className="input mb-4"
           required
           value={dipendenteId}
@@ -798,8 +820,8 @@ function FormAssegnazione({
           <button type="button" className="btn-secondary" onClick={onChiudi}>
             Annulla
           </button>
-          <button type="submit" className="btn-primary">
-            Assegna
+          <button type="submit" className="btn-primary" disabled={invio}>
+            {invio ? "Assegnazione…" : "Assegna"}
           </button>
         </div>
       </form>

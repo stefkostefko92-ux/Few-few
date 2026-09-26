@@ -9,6 +9,8 @@ import { Badge, ScheletroDettaglio } from "@/components/ui";
 import { IcoIndietro, IcoStampa } from "@/components/icone";
 import VociEditor, { type VoceRiga } from "@/components/VociEditor";
 import { euro, dataIt } from "@/lib/format";
+import { apiFetch } from "@/lib/fetch-client";
+import { TRANSIZIONI_PREVENTIVO } from "@/lib/regole-fiscali";
 
 interface Preventivo {
   id: string;
@@ -30,21 +32,23 @@ interface Preventivo {
   voci: VoceRiga[];
 }
 
-const STATI = ["BOZZA", "INVIATO", "APPROVATO", "RIFIUTATO", "SCADUTO"];
-
 export default function Pagina() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [p, setP] = useState<Preventivo | null>(null);
   const [errore, setErrore] = useState<string | null>(null);
+  const [erroreAzione, setErroreAzione] = useState<string | null>(null);
+  const [inCorso, setInCorso] = useState(false);
 
   const carica = useCallback(async () => {
-    const res = await fetch(`/api/preventivi/${id}`);
-    if (!res.ok) {
-      setErrore("Preventivo non trovato");
+    const r = await apiFetch<Preventivo & { error?: string }>(
+      `/api/preventivi/${id}`,
+    );
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "Preventivo non trovato");
       return;
     }
-    setP(await res.json());
+    setP(r.dati);
   }, [id]);
 
   useEffect(() => {
@@ -52,14 +56,24 @@ export default function Pagina() {
   }, [carica]);
 
   async function cambiaStato(stato: string) {
-    const res = await fetch(`/api/preventivi/${id}/stato`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stato }),
-    });
-    const d = await res.json();
-    if (!res.ok) {
-      alert(d.error ?? "Errore");
+    if (inCorso || !p || stato === p.stato) return;
+    // APPROVATO и RIFIUTATO са крайни: от одобрената оферта се ражда ордин.
+    if (
+      (stato === "APPROVATO" || stato === "RIFIUTATO") &&
+      !confirm(
+        `Segnare il preventivo come «${STATO_LABEL[stato]}»? Lo stato è definitivo.`,
+      )
+    )
+      return;
+    setInCorso(true);
+    setErroreAzione(null);
+    const r = await apiFetch<{ error?: string }>(
+      `/api/preventivi/${id}/stato`,
+      { method: "PATCH", body: JSON.stringify({ stato }) },
+    );
+    setInCorso(false);
+    if (!r.ok) {
+      setErroreAzione(r.dati.error ?? "Errore");
       return;
     }
     void carica();
@@ -104,20 +118,39 @@ export default function Pagina() {
             Stampa
           </a>
           <Badge valore={p.stato} />
-          <select
-            className="input w-44"
-            value={p.stato}
-            onChange={(e) => void cambiaStato(e.target.value)}
-            aria-label="Cambia stato"
-          >
-            {STATI.map((s) => (
-              <option key={s} value={s}>
-                {STATO_LABEL[s] ?? s}
+          {/* Само позволените преходи: иначе изборът даваше 409. */}
+          {(TRANSIZIONI_PREVENTIVO[
+            p.stato as keyof typeof TRANSIZIONI_PREVENTIVO
+          ]?.length ?? 0) > 0 && (
+            <select
+              className="input w-44"
+              value=""
+              disabled={inCorso}
+              onChange={(e) => void cambiaStato(e.target.value)}
+              aria-label="Cambia stato"
+            >
+              <option value="" disabled>
+                Cambia stato…
               </option>
-            ))}
-          </select>
+              {TRANSIZIONI_PREVENTIVO[
+                p.stato as keyof typeof TRANSIZIONI_PREVENTIVO
+              ].map((s) => (
+                <option key={s} value={s}>
+                  {STATO_LABEL[s] ?? s}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
+      {erroreAzione && (
+        <p
+          role="alert"
+          className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+        >
+          {erroreAzione}
+        </p>
+      )}
 
       <div className="card mb-6 p-5">
         <h2 className="mb-4 text-lg font-semibold text-text-1">Voci</h2>

@@ -2,6 +2,9 @@
 
 // Законови срокове по импианти + бутон за ръчно пускане на автоматизма.
 
+import { apiFetch } from "@/lib/fetch-client";
+import { useRuolo } from "@/components/useRuolo";
+import { haPermesso } from "@/lib/roles";
 import { useState } from "react";
 import EntityPage, {
   type EntityConfig,
@@ -27,21 +30,42 @@ function FlagNotifica({ attivo, label }: { attivo: boolean; label: string }) {
 
 function BottoneControllo() {
   const [esito, setEsito] = useState<string | null>(null);
+  const [inCorso, setInCorso] = useState(false);
+  const ruolo = useRuolo();
+  // Ръчното пускане е RESPONSABILE+ (`richiedeAvvioManuale`).
+  if (ruolo === null || !haPermesso(ruolo, "RESPONSABILE")) return null;
   async function esegui() {
-    setEsito("…");
-    const res = await fetch("/api/scadenze/check", { method: "POST" });
-    const d = await res.json();
+    if (inCorso) return;
+    setInCorso(true);
+    setEsito(null);
+    const r = await apiFetch<{
+      notificheScadenze: number;
+      automezziAggiornati: number;
+      preventiviScaduti: number;
+      fattureScadute: number;
+      error?: string;
+    }>("/api/scadenze/check", { method: "POST" });
+    setInCorso(false);
+    const d = r.dati;
     setEsito(
-      res.ok
+      r.ok
         ? `Avvisi generati: ${d.notificheScadenze} · automezzi aggiornati: ${d.automezziAggiornati} · preventivi scaduti: ${d.preventiviScaduti} · fatture scadute: ${d.fattureScadute}`
         : (d.error ?? "Errore"),
     );
   }
   return (
     <div className="flex items-center gap-2">
-      {esito && <span className="text-xs text-text-3">{esito}</span>}
-      <button className="btn-secondary" onClick={() => void esegui()}>
-        Esegui controllo scadenze
+      {esito && (
+        <span className="text-xs text-text-3" role="status">
+          {esito}
+        </span>
+      )}
+      <button
+        className="btn-secondary"
+        disabled={inCorso}
+        onClick={() => void esegui()}
+      >
+        {inCorso ? "Controllo in corso…" : "Esegui controllo scadenze"}
       </button>
     </div>
   );
@@ -106,11 +130,11 @@ const config: EntityConfig = {
       tipo: "select",
       richiesto: true,
       predefinito: "revisione",
-      opzioni: [
-        { value: "revisione", label: "Revisione" },
-        { value: "certificazione", label: "Certificazione" },
-        { value: "manutenzione", label: "Manutenzione" },
-      ],
+      // Същите етикети като в списъка („Verifica periodica"), не втора истина.
+      opzioni: Object.entries(TIPO_SCADENZA).map(([value, label]) => ({
+        value,
+        label,
+      })),
     },
     {
       name: "dataScadenza",

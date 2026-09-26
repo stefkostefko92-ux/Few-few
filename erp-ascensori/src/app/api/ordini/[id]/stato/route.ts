@@ -1,6 +1,7 @@
 // Смяна на статус на ордина — САМО по позволените преходи от workflow таблицата.
 // Успешният преход пише редица в storico_stati + audit STATE_CHANGE (в транзакция).
 
+import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
@@ -36,7 +37,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!transizioneAmmessa(da, stato))
       throw new ErroreHttp(
         409,
-        `Transizione non ammessa: da «${da}» a «${stato}»`,
+        `Transizione non ammessa: da «${etichetta(STATO_LABEL, da)}» a «${etichetta(STATO_LABEL, stato)}»`,
       );
     // Условен запис: пази от състезание — ако друга заявка е сменила статуса
     // междувременно, count===0 и преходът се отказва (без невалиден скок).

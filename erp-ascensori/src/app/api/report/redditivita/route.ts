@@ -92,6 +92,8 @@ export const GET = gestito(async (req) => {
     },
     select: {
       contrattoId: true,
+      // Договор само с фактури за канон (без ордини) иначе излизаше като „—".
+      contratto: { select: { numero: true, oggetto: true } },
       voci: {
         select: { quantita: true, prezzoUnitario: true, aliquotaIva: true },
       },
@@ -161,7 +163,10 @@ export const GET = gestito(async (req) => {
   if (per === "contratto")
     for (const f of fattureContratto) {
       if (!f.contrattoId) continue;
-      prendi(f.contrattoId, "—").ingressi.ricaviNetti.push(...netto(f.voci));
+      prendi(
+        f.contrattoId,
+        `${f.contratto?.numero ?? "?"} · ${f.contratto?.oggetto ?? "—"}`,
+      ).ingressi.ricaviNetti.push(...netto(f.voci));
     }
 
   const righe = ordinaPerMargine(
@@ -180,6 +185,12 @@ export const GET = gestito(async (req) => {
     nota:
       "Margine di contribuzione: non comprende i costi indiretti (sede, assicurazioni, " +
       "parco mezzi, amministrazione). Serve a confrontare contratti e impianti, non a " +
-      "determinare l'utile d'esercizio.",
+      "determinare l'utile d'esercizio." +
+      // По импиант канонът не е разпределен: без бележката всеки обслужван
+      // импиант изглежда на загуба.
+      (per === "impianto"
+        ? " Vista per impianto: il canone dei contratti non è ripartito sugli impianti; " +
+          "sono inclusi solo gli ordini di lavoro e le loro fatture."
+        : ""),
   });
 });

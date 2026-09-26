@@ -53,6 +53,7 @@ import {
 } from "@phosphor-icons/react";
 import { DIM } from "@/components/icone";
 import { haPermesso, type Ruolo, RUOLO_LABEL, isRuolo } from "@/lib/roles";
+import { apiFetch } from "@/lib/fetch-client";
 
 interface Voce {
   href: string;
@@ -154,6 +155,7 @@ const GRUPPI: Gruppo[] = [
         href: "/ordini",
         label: "Ordini di lavoro",
         icona: <Wrench size={DIM.navigazione} />,
+        minimo: "TECNICO",
       },
       {
         href: "/impianti/etichette",
@@ -186,6 +188,7 @@ const GRUPPI: Gruppo[] = [
         href: "/calendario",
         label: "Calendario",
         icona: <CalendarBlank size={DIM.navigazione} />,
+        minimo: "TECNICO",
       },
       {
         href: "/scadenzario",
@@ -306,17 +309,17 @@ export default function Sidebar() {
 
   useEffect(() => {
     setScuro(document.documentElement.classList.contains("dark"));
-    void fetch("/api/me")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d && isRuolo(d.ruolo)) setUtente({ nome: d.nome, ruolo: d.ruolo });
-        // Дължимият втори фактор не е подсказка: докато не е включен, всички
-        // маршрути с роля отказват. Водим човека там, където може да го включи,
-        // вместо да го оставим сред страници, които дават само грешки.
-        if (d?.mfaRichiesto && window.location.pathname !== "/sicurezza")
-          router.replace("/sicurezza");
-      })
-      .catch(() => null);
+    void apiFetch<{ nome: string; ruolo: string; mfaRichiesto?: boolean }>(
+      "/api/me",
+    ).then((r) => {
+      const d = r.ok ? r.dati : null;
+      if (d && isRuolo(d.ruolo)) setUtente({ nome: d.nome, ruolo: d.ruolo });
+      // Дължимият втори фактор не е подсказка: докато не е включен, всички
+      // маршрути с роля отказват. Водим човека там, където може да го включи,
+      // вместо да го оставим сред страници, които дават само грешки.
+      if (d?.mfaRichiesto && window.location.pathname !== "/sicurezza")
+        router.replace("/sicurezza");
+    });
   }, [router]);
 
   function cambiaTema() {
@@ -329,7 +332,15 @@ export default function Sidebar() {
   }
 
   async function esci() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    // Без проверка неуспешният изход (мрежа, 5xx) водеше към входа, а сесията
+    // оставаше жива — на споделен компютър следващият влизаше като предишния.
+    try {
+      const r = await fetch("/api/auth/logout", { method: "POST" });
+      if (!r.ok && r.status !== 401) throw new Error(String(r.status));
+    } catch {
+      window.alert("Uscita non riuscita: riprovare.");
+      return;
+    }
     router.push("/login");
     router.refresh();
   }
@@ -397,7 +408,9 @@ export default function Sidebar() {
         <nav className="flex-1 overflow-y-auto px-2 pb-4">
           {GRUPPI.map((g, i) => {
             const visibili = g.voci.filter(
-              (v) => !v.minimo || (ruolo && haPermesso(ruolo, v.minimo)),
+              // Без изрично ниво — OPERATORE: всички вътрешни API-та отказват
+              // CLIENTE, тоест връзка за него води само до грешки.
+              (v) => ruolo && haPermesso(ruolo, v.minimo ?? "OPERATORE"),
             );
             if (visibili.length === 0) return null;
             return (

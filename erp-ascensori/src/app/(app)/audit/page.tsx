@@ -6,6 +6,39 @@ import { useCallback, useEffect, useState } from "react";
 import { Paginazione, Vuoto } from "@/components/ui";
 import { IcoAlterato, IcoIntegro } from "@/components/icone";
 import { dataOraIt, plurale } from "@/lib/format";
+import { AZIONE_AUDIT } from "@/lib/enum-labels";
+import { apiFetch } from "@/lib/fetch-client";
+
+interface EsitoVerifica {
+  controllate: number;
+  integro: boolean;
+  corrotte: unknown[];
+  catenaRotta: unknown[];
+  codaTroncata: unknown[];
+  ancoraAlterata: unknown[];
+  ancoraAssente: unknown[];
+  conChiaveVecchia: unknown[];
+  error?: string;
+}
+
+/**
+ * Всяка находка на проверката поотделно. Преди текстът броеше само редовете с
+ * невалиден подпис — при изтрит ред или отрязана опашка пишеше „0 righe con
+ * firma non valida" и операторът го приемаше за фалшива тревога.
+ */
+function descriviAlterazione(d: EsitoVerifica): string {
+  const parti = [
+    d.corrotte.length &&
+      plurale(d.corrotte.length, "firma non valida", "firme non valide"),
+    d.catenaRotta.length &&
+      `${plurale(d.catenaRotta.length, "anello interrotto", "anelli interrotti")} (righe eliminate)`,
+    d.codaTroncata.length &&
+      `coda del registro eliminata in ${plurale(d.codaTroncata.length, "azienda", "aziende")}`,
+    d.ancoraAlterata.length &&
+      plurale(d.ancoraAlterata.length, "ancora alterata", "ancore alterate"),
+  ].filter(Boolean);
+  return `ALTERAZIONE RILEVATA: ${parti.join(" · ")}`;
+}
 
 interface RigaAudit {
   id: string;
@@ -52,16 +85,19 @@ export default function Pagina() {
   const size = 50;
 
   const carica = useCallback(async () => {
-    const res = await fetch(
+    const r = await apiFetch<{
+      righe: RigaAudit[];
+      totale: number;
+      error?: string;
+    }>(
       `/api/audit?page=${page}&size=${size}${azione ? `&azione=${azione}` : ""}`,
     );
-    const d = await res.json();
-    if (!res.ok) {
-      setErrore(d.error ?? "Errore");
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "Errore");
       return;
     }
-    setRighe(d.righe);
-    setTotale(d.totale);
+    setRighe(r.dati.righe);
+    setTotale(r.dati.totale);
   }, [page, azione]);
 
   useEffect(() => {
@@ -69,24 +105,24 @@ export default function Pagina() {
   }, [carica]);
 
   async function verificaIntegrita() {
+    if (verifica?.esito === "in-corso") return;
     setVerifica({ esito: "in-corso", testo: "Verifica in corso…" });
-    const res = await fetch("/api/audit/verifica", {
+    const r = await apiFetch<EsitoVerifica>("/api/audit/verifica", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ limite: 1000 }),
     });
-    const d = await res.json();
-    if (!res.ok) setVerifica({ esito: "errore", testo: d.error ?? "Errore" });
+    const d = r.dati;
+    if (!r.ok) setVerifica({ esito: "errore", testo: d.error ?? "Errore" });
     else if (d.integro)
       setVerifica({
         esito: "integro",
-        testo: `Integro: ${plurale(d.controllate, "riga verificata", "righe verificate")}, nessuna alterazione`,
+        testo:
+          `Integro: ${plurale(d.controllate, "riga verificata", "righe verificate")}, nessuna alterazione` +
+          (d.ancoraAssente.length
+            ? ` (punto di ancoraggio non ancora creato per ${plurale(d.ancoraAssente.length, "azienda", "aziende")})`
+            : ""),
       });
-    else
-      setVerifica({
-        esito: "alterato",
-        testo: `ALTERAZIONE RILEVATA: ${plurale(d.corrotte.length, "riga", "righe")} con firma non valida`,
-      });
+    else setVerifica({ esito: "alterato", testo: descriviAlterazione(d) });
   }
 
   if (errore) return <Vuoto messaggio={errore} />;
@@ -108,6 +144,7 @@ export default function Pagina() {
               отместваше бутона с празнина. */}
           <button
             className="btn-secondary"
+            disabled={verifica?.esito === "in-corso"}
             onClick={() => void verificaIntegrita()}
           >
             Verifica integrità
@@ -152,7 +189,7 @@ export default function Pagina() {
             <option value="">Tutte le azioni</option>
             {AZIONI.map((a) => (
               <option key={a} value={a}>
-                {a}
+                {AZIONE_AUDIT[a] ?? a}
               </option>
             ))}
           </select>
@@ -185,7 +222,7 @@ export default function Pagina() {
                       <span
                         className={`inline-flex rounded-sm px-2 py-0.5 text-xs font-medium ${STILE_AZIONE[r.azione] ?? "bg-surface-3"}`}
                       >
-                        {r.azione}
+                        {AZIONE_AUDIT[r.azione] ?? r.azione}
                       </span>
                     </td>
                     <td className="px-3 py-2.5">{r.entita}</td>

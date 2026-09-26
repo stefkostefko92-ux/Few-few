@@ -20,6 +20,7 @@
 import { useEffect, useState } from "react";
 import { IcoAttenzione, IcoNota, IcoFatto } from "@/components/icone";
 import { TIPI_PERMESSI, DIMENSIONE_MASSIMA } from "@/lib/allegati/tipi";
+import { apiFetch, apiFile } from "@/lib/fetch-client";
 
 interface Scartato {
   campo: string;
@@ -42,9 +43,13 @@ interface StatoAi {
 /** Кешира отговора: състоянието е едно за цялата сесия, не за всяка форма. */
 let statoCache: Promise<StatoAi | null> | null = null;
 function caricaStato(): Promise<StatoAi | null> {
-  statoCache ??= fetch("/api/ai/estrai")
-    .then((r) => (r.ok ? (r.json() as Promise<StatoAi>) : null))
-    .catch(() => null);
+  // Неуспехът НЕ се кешира: иначе едно изтекло подновяване скриваше бутона до
+  // края на сесията.
+  statoCache ??= apiFetch<StatoAi>("/api/ai/estrai").then((r) => {
+    if (r.ok) return r.dati;
+    statoCache = null;
+    return null;
+  });
   return statoCache;
 }
 
@@ -100,10 +105,11 @@ export default function CompilaConAi({
       const corpo = new FormData();
       corpo.set("file", file);
       corpo.set("modulo", modulo);
-      const res = await fetch("/api/ai/estrai", {
+      const res = await apiFile("/api/ai/estrai", {
         method: "POST",
         body: corpo,
       });
+      if (!res) throw new Error("rete");
       const d = await res.json().catch(() => ({}));
       if (!res.ok) {
         setErrore(

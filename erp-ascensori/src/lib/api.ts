@@ -1,6 +1,6 @@
 // Общи помощници за API маршрутите: JSON отговори, Zod валидация, обработка на грешки.
 import { NextResponse } from "next/server";
-import { ZodError, type ZodSchema } from "zod";
+import { ZodError, type ZodTypeAny, type infer as ZodInfer } from "zod";
 import { ErroreHttp } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
 import { ETICHETTE_CAMPI } from "@/lib/zod-it"; // регистрира и IT error map
@@ -26,11 +26,15 @@ export function errore(status: number, message: string): NextResponse {
   return NextResponse.json({ error: message }, { status });
 }
 
-/** Валидира тялото по Zod схема; хвърля ErroreHttp(400) с четимо съобщение. */
-export async function corpoValidato<T>(
+/**
+ * Валидира тялото по Zod схема; хвърля ErroreHttp(400) с четимо съобщение.
+ * Връща ИЗХОДА на схемата (`z.infer`), не входа: със `ZodSchema<T>` схема с
+ * `transform` даваше на маршрута типа на суровия вход.
+ */
+export async function corpoValidato<S extends ZodTypeAny>(
   req: Request,
-  schema: ZodSchema<T>,
-): Promise<T> {
+  schema: S,
+): Promise<ZodInfer<S>> {
   let json: unknown;
   try {
     json = await req.json();

@@ -17,6 +17,12 @@ import { ScheletroDettaglio } from "@/components/ui";
 import { IcoAttenzione, IcoIntegro, IcoNota } from "@/components/icone";
 import { apiFetch } from "@/lib/fetch-client";
 import { dataOraIt } from "@/lib/format";
+import { RUOLO_LABEL, isRuolo } from "@/lib/roles";
+import {
+  LUNGHEZZA_MINIMA,
+  LUNGHEZZA_MINIMA_PRIVILEGIATA,
+  RUOLI_MFA_OBBLIGATORIO,
+} from "@/lib/password-policy";
 
 interface Me {
   nome: string;
@@ -24,6 +30,7 @@ interface Me {
   totpAttivo: boolean;
   mfaObbligatoria: boolean;
   mfaRichiesto: boolean;
+  passwordScaduta?: boolean;
 }
 
 interface Preparazione {
@@ -76,6 +83,15 @@ export default function PaginaSicurezza() {
   const [sessioni, setSessioni] = useState<Sessione[]>([]);
   const [errore, setErrore] = useState<string | null>(null);
   const [inCorso, setInCorso] = useState(false);
+  const [erroreSessioni, setErroreSessioni] = useState<string | null>(null);
+  const [passwordOff, setPasswordOff] = useState("");
+  const [apriOff, setApriOff] = useState(false);
+  const [pwAttuale, setPwAttuale] = useState("");
+  const [pwNuova, setPwNuova] = useState("");
+  const [pwConferma, setPwConferma] = useState("");
+  const [esitoPw, setEsitoPw] = useState<{ ok: boolean; testo: string } | null>(
+    null,
+  );
 
   const carica = useCallback(async () => {
     const [m, s] = await Promise.all([
@@ -125,16 +141,89 @@ export default function PaginaSicurezza() {
   }
 
   async function terminaSessione(id: string) {
-    const r = await apiFetch(`/api/sessioni/${id}`, { method: "DELETE" });
+    setErroreSessioni(null);
+    const r = await apiFetch<{ error?: string }>(`/api/sessioni/${id}`, {
+      method: "DELETE",
+    });
     if (r.ok) await carica();
+    else
+      setErroreSessioni(r.dati.error ?? "Impossibile terminare la sessione.");
   }
 
   async function terminaAltre() {
-    const r = await apiFetch("/api/sessioni?altre=1", { method: "DELETE" });
+    setErroreSessioni(null);
+    const r = await apiFetch<{ error?: string }>("/api/sessioni?altre=1", {
+      method: "DELETE",
+    });
     if (r.ok) await carica();
+    else
+      setErroreSessioni(r.dati.error ?? "Impossibile terminare le sessioni.");
+  }
+
+  /** Само когато вторият фактор НЕ е задължителен за ролята (сървърът пази). */
+  async function disattiva(e: React.FormEvent) {
+    e.preventDefault();
+    if (inCorso) return;
+    setInCorso(true);
+    setErrore(null);
+    try {
+      const r = await apiFetch<{ error?: string }>("/api/auth/mfa", {
+        method: "DELETE",
+        body: JSON.stringify({ password: passwordOff }),
+      });
+      if (!r.ok) {
+        setErrore(r.dati.error ?? "Errore");
+        return;
+      }
+      setPasswordOff("");
+      setApriOff(false);
+      await carica();
+    } finally {
+      setInCorso(false);
+    }
+  }
+
+  async function cambiaPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (inCorso) return;
+    if (pwNuova !== pwConferma) {
+      setEsitoPw({ ok: false, testo: "Le due password non coincidono." });
+      return;
+    }
+    setInCorso(true);
+    setEsitoPw(null);
+    try {
+      const r = await apiFetch<{ error?: string }>("/api/me/password", {
+        method: "POST",
+        body: JSON.stringify({ attuale: pwAttuale, nuova: pwNuova }),
+      });
+      if (!r.ok) {
+        setEsitoPw({
+          ok: false,
+          testo: r.dati.error ?? "Impossibile cambiare la password.",
+        });
+        return;
+      }
+      setPwAttuale("");
+      setPwNuova("");
+      setPwConferma("");
+      setEsitoPw({
+        ok: true,
+        testo:
+          "Password cambiata. Le sessioni sugli altri dispositivi sono state terminate.",
+      });
+      await carica();
+    } finally {
+      setInCorso(false);
+    }
   }
 
   if (!me) return <ScheletroDettaglio carte={2} />;
+  const minimaPw = (RUOLI_MFA_OBBLIGATORIO as readonly string[]).includes(
+    me.ruolo,
+  )
+    ? LUNGHEZZA_MINIMA_PRIVILEGIATA
+    : LUNGHEZZA_MINIMA;
 
   return (
     <div className="max-w-3xl">
@@ -143,7 +232,8 @@ export default function PaginaSicurezza() {
           Sicurezza dell&apos;account
         </h1>
         <p className="mt-1 text-sm text-text-3">
-          Verifica in due passaggi e dispositivi con una sessione aperta
+          Password, verifica in due passaggi e dispositivi con una sessione
+          aperta
         </p>
       </div>
 
@@ -154,9 +244,12 @@ export default function PaginaSicurezza() {
         >
           <IcoAttenzione />
           <span>
-            Per il livello di accesso <strong>{me.ruolo}</strong> la verifica in
-            due passaggi è obbligatoria. Fino alla sua attivazione le altre
-            funzioni del gestionale restano bloccate.
+            Per il livello di accesso{" "}
+            <strong>
+              {isRuolo(me.ruolo) ? RUOLO_LABEL[me.ruolo] : me.ruolo}
+            </strong>{" "}
+            la verifica in due passaggi è obbligatoria. Fino alla sua
+            attivazione le altre funzioni del gestionale restano bloccate.
           </span>
         </div>
       )}
@@ -174,7 +267,53 @@ export default function PaginaSicurezza() {
               codice generato dall&apos;app di autenticazione.
             </span>
           </p>
-        ) : !prep ? (
+        ) : null}
+        {me.totpAttivo && !me.mfaObbligatoria ? (
+          apriOff ? (
+            <form
+              onSubmit={disattiva}
+              className="mt-3 flex flex-wrap items-end gap-2"
+            >
+              <div>
+                <label className="label" htmlFor="password-off">
+                  Password attuale
+                </label>
+                <input
+                  id="password-off"
+                  type="password"
+                  className="input w-56"
+                  autoComplete="current-password"
+                  required
+                  value={passwordOff}
+                  onChange={(e) => setPasswordOff(e.target.value)}
+                />
+              </div>
+              <button
+                type="submit"
+                className="btn-secondary text-danger-text"
+                disabled={inCorso}
+              >
+                Disattiva
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setApriOff(false)}
+              >
+                Annulla
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              className="btn-ghost mt-3 text-danger-text"
+              onClick={() => setApriOff(true)}
+            >
+              Disattiva la verifica in due passaggi
+            </button>
+          )
+        ) : null}
+        {me.totpAttivo ? null : !prep ? (
           <>
             <p className="mt-2 text-sm text-text-2">
               Serve un&apos;app di autenticazione sul telefono (ad esempio
@@ -286,6 +425,90 @@ export default function PaginaSicurezza() {
         )}
       </section>
 
+      <section className="card mb-6 p-5" aria-labelledby="titolo-password">
+        <h2 id="titolo-password" className="text-lg font-semibold text-text-1">
+          Password
+        </h2>
+        {me.passwordScaduta && (
+          <p
+            className="mt-2 flex items-start gap-2 text-sm text-warning-text"
+            role="status"
+          >
+            <IcoAttenzione />
+            <span>
+              La password è scaduta secondo la politica aziendale: sceglierne
+              una nuova.
+            </span>
+          </p>
+        )}
+        <p className="mt-1 text-sm text-text-3">
+          Almeno {minimaPw} caratteri. Una frase lunga è più sicura di una
+          parola con simboli.
+        </p>
+        <form
+          onSubmit={cambiaPassword}
+          className="mt-4 grid gap-3 sm:grid-cols-3"
+        >
+          <div>
+            <label className="label" htmlFor="pw-attuale">
+              Password attuale
+            </label>
+            <input
+              id="pw-attuale"
+              type="password"
+              className="input"
+              autoComplete="current-password"
+              required
+              value={pwAttuale}
+              onChange={(e) => setPwAttuale(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="pw-nuova">
+              Nuova password
+            </label>
+            <input
+              id="pw-nuova"
+              type="password"
+              className="input"
+              autoComplete="new-password"
+              minLength={minimaPw}
+              required
+              value={pwNuova}
+              onChange={(e) => setPwNuova(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="pw-conferma">
+              Ripeti la nuova password
+            </label>
+            <input
+              id="pw-conferma"
+              type="password"
+              className="input"
+              autoComplete="new-password"
+              minLength={minimaPw}
+              required
+              value={pwConferma}
+              onChange={(e) => setPwConferma(e.target.value)}
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <button type="submit" className="btn-primary" disabled={inCorso}>
+              Cambia password
+            </button>
+          </div>
+        </form>
+        {esitoPw && (
+          <p
+            role={esitoPw.ok ? "status" : "alert"}
+            className={`mt-3 text-sm ${esitoPw.ok ? "text-success-text" : "text-danger-text"}`}
+          >
+            {esitoPw.testo}
+          </p>
+        )}
+      </section>
+
       <section className="card p-5" aria-labelledby="titolo-sessioni">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2
@@ -307,6 +530,11 @@ export default function PaginaSicurezza() {
         <p className="mt-1 text-sm text-text-3">
           Un dispositivo che non si riconosce va terminato subito.
         </p>
+        {erroreSessioni && (
+          <p role="alert" className="mt-2 text-sm text-danger-text">
+            {erroreSessioni}
+          </p>
+        )}
         <ul className="mt-4 divide-y divide-border">
           {sessioni.map((s) => (
             <li

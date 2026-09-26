@@ -92,3 +92,27 @@ export async function apiFile(
     return null;
   }
 }
+
+/**
+ * Всички редове на списъчен маршрут, страница по страница (по 200 — таванът на
+ * сървъра). За падащите менюта във формите: с едно `?size=200` фирма с 201-ви
+ * импиант или артикул не можеше да го избере — отрязването беше мълчаливо.
+ * `massimo` пази браузъра от безкраен списък.
+ */
+export async function tutteLeRighe<T = Record<string, unknown>>(
+  url: string,
+  massimo = 5000,
+): Promise<{ ok: boolean; righe: T[]; error?: string }> {
+  const sep = url.includes("?") ? "&" : "?";
+  const righe: T[] = [];
+  for (let page = 1; righe.length < massimo; page++) {
+    const r = await apiFetch<{ righe?: T[]; totale?: number; error?: string }>(
+      `${url}${sep}size=200&page=${page}`,
+    );
+    if (!r.ok) return { ok: false, righe, error: r.dati.error };
+    const pagina = r.dati.righe ?? [];
+    righe.push(...pagina);
+    if (pagina.length < 200 || righe.length >= (r.dati.totale ?? 0)) break;
+  }
+  return { ok: true, righe };
+}

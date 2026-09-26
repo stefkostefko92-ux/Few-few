@@ -175,6 +175,15 @@ const euro = (v?: string | null) =>
     ? "—"
     : `${Number(v).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
 
+/** Количество/тегло по италиански; празното (свободен ред) остава празно. */
+const quantitaIt = (v?: string | null) => {
+  if (v === null || v === undefined || v === "") return v ?? "—";
+  const n = Number(v);
+  return Number.isNaN(n)
+    ? v
+    : n.toLocaleString("it-IT", { maximumFractionDigits: 3 });
+};
+
 const dataIt = (d: Date) =>
   `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${d.getUTCFullYear()}`;
 
@@ -457,12 +466,17 @@ function tabellaRighe(
     const valori = doc.conPrezzi
       ? [
           r.descrizione,
-          r.quantita,
+          quantitaIt(r.quantita),
           euro(r.prezzoUnitario),
-          r.aliquotaIva ?? "—",
+          r.aliquotaIva ? quantitaIt(r.aliquotaIva) : "—",
           euro(r.totale),
         ]
-      : [r.descrizione, r.quantita, r.um ?? "—", r.peso ?? "—"];
+      : [
+          r.descrizione,
+          quantitaIt(r.quantita),
+          r.um ?? "—",
+          r.peso ? quantitaIt(r.peso) : "—",
+        ];
 
     const altezza = Math.max(
       14,

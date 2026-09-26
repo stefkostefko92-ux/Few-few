@@ -92,6 +92,7 @@ export const GET = gestito(async () => {
       estraiAttiva: ai.estraiAttiva,
       testoAttiva: ai.testoAttiva,
       providerConfigurato: configAi().effettivo !== "off",
+      fornitore: configAi().etichettaFornitore,
     },
     automatismi,
     // Същото правило като `richiedeAvvioManuale` — бутонът не лъже.

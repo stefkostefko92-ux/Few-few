@@ -54,7 +54,12 @@ export default function LoginPage() {
       // подхвърлен линк изхвърля служителя на чужд сайт веднага след паролата.
       const da = new URLSearchParams(window.location.search).get("da");
       // Дължимият втори фактор — първо той: без него маршрутите с роля отказват.
-      router.push(dati.mfaRichiesto ? "/sicurezza" : ritornoSicuro(da));
+      // Изтеклата парола — също там: страницата предлага смяната веднага.
+      router.push(
+        dati.mfaRichiesto || dati.passwordScaduta
+          ? "/sicurezza"
+          : ritornoSicuro(da),
+      );
       router.refresh();
     } catch {
       setErrore("Errore di rete: riprovare");

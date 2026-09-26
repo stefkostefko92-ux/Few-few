@@ -11,6 +11,7 @@ import Rapportini from "@/components/Rapportini";
 import TempiIntervento from "@/components/TempiIntervento";
 import { dataIt, dataOraIt } from "@/lib/format";
 import { TRANSIZIONI, type Stato } from "@/lib/workflow";
+import { apiFetch } from "@/lib/fetch-client";
 
 interface Ordine {
   id: string;
@@ -46,14 +47,16 @@ export default function Pagina() {
   const [o, setO] = useState<Ordine | null>(null);
   const [nota, setNota] = useState("");
   const [errore, setErrore] = useState<string | null>(null);
+  const [erroreAzione, setErroreAzione] = useState<string | null>(null);
+  const [inCorso, setInCorso] = useState(false);
 
   const carica = useCallback(async () => {
-    const res = await fetch(`/api/ordini/${id}`);
-    if (!res.ok) {
-      setErrore("Ordine non trovato");
+    const r = await apiFetch<Ordine & { error?: string }>(`/api/ordini/${id}`);
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "Ordine non trovato");
       return;
     }
-    setO(await res.json());
+    setO(r.dati);
   }, [id]);
 
   useEffect(() => {
@@ -61,14 +64,24 @@ export default function Pagina() {
   }, [carica]);
 
   async function transizione(stato: Stato) {
-    const res = await fetch(`/api/ordini/${id}/stato`, {
+    if (inCorso) return;
+    // Крайните състояния не се връщат: едно погрешно натискане е завинаги.
+    if (
+      (stato === "ANNULLATO" || stato === "CHIUSO") &&
+      !confirm(
+        `Portare l'ordine a «${etichetta(STATO_LABEL, stato)}»? Lo stato è definitivo.`,
+      )
+    )
+      return;
+    setInCorso(true);
+    setErroreAzione(null);
+    const r = await apiFetch<{ error?: string }>(`/api/ordini/${id}/stato`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ stato, nota: nota || null }),
     });
-    const d = await res.json();
-    if (!res.ok) {
-      alert(d.error ?? "Errore");
+    setInCorso(false);
+    if (!r.ok) {
+      setErroreAzione(r.dati.error ?? "Errore");
       return;
     }
     setNota("");
@@ -130,6 +143,7 @@ export default function Pagina() {
                     <button
                       key={s}
                       className={`inline-flex items-center gap-1.5 ${s === "ANNULLATO" ? "btn-danger" : "btn-primary"}`}
+                      disabled={inCorso}
                       onClick={() => void transizione(s)}
                     >
                       <IcoTransizione />
@@ -137,6 +151,14 @@ export default function Pagina() {
                     </button>
                   ))}
                 </div>
+                {erroreAzione && (
+                  <p
+                    role="alert"
+                    className="mt-3 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+                  >
+                    {erroreAzione}
+                  </p>
+                )}
               </>
             )}
           </div>

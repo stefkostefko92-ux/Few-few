@@ -65,6 +65,7 @@ const config: EntityConfig = {
       name: "costoOrario",
       label: "Costo orario aziendale (€, IVA escl.)",
       tipo: "text",
+      ruoloMinimo: "DIREZIONE",
     },
     { name: "patente", label: "Patente", tipo: "text" },
     {

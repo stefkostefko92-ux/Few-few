@@ -13,6 +13,8 @@ import {
 } from "@/lib/fiscale/pagamenti";
 
 const config: EntityConfig = {
+  ruoloModifica: "DIREZIONE",
+  ruoloElimina: "DIREZIONE",
   titolo: "Fatture",
   singolare: "fattura",
   genere: "f",
@@ -133,6 +135,16 @@ const config: EntityConfig = {
         value,
         label,
       })),
+    },
+    {
+      // При създаване удръжката се извежда от кондоминиума (заместник по
+      // данъка); тук — само за поправка, когато изводът е грешен.
+      name: "ritenuta",
+      label: "Ritenuta d'acconto (art. 25-ter D.P.R. 600/1973)",
+      tipo: "checkbox",
+      soloModifica: true,
+      aiuto:
+        "Il condominio trattiene il 4 % e lo versa all'erario. Togliere il segno solo se il condominio non è sostituto d'imposta.",
     },
     {
       name: "splitPayment",

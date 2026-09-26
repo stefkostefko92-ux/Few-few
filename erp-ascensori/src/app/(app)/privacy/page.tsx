@@ -47,19 +47,34 @@ export default function Pagina() {
     setEsito(null);
     setScelto(null);
     setPiano(null);
-    const { ok, dati } = await apiFetch<{ righe: Soggetto[] }>(
+    const { ok, dati } = await apiFetch<{ righe: Soggetto[]; error?: string }>(
       `/api/gdpr?q=${encodeURIComponent(q)}`,
     );
-    setRighe(ok ? dati.righe : []);
+    // Провалено търсене НЕ е „няма субект": иначе на искане по чл. 15 може да
+    // се отговори, че за лицето няма данни.
+    if (!ok) {
+      setRighe(null);
+      setEsito({
+        tipo: "errore",
+        testo: dati.error ?? "Ricerca non riuscita: riprovare.",
+      });
+      return;
+    }
+    setRighe(dati.righe);
   }
 
   async function apriPiano(s: Soggetto) {
     setScelto(s);
     setEsito(null);
-    const { ok, dati } = await apiFetch<{ piano: Piano }>(
+    const { ok, dati } = await apiFetch<{ piano: Piano; error?: string }>(
       `/api/gdpr/${s.tipo}/${s.id}/anonimizza`,
     );
     setPiano(ok ? dati.piano : null);
+    if (!ok)
+      setEsito({
+        tipo: "errore",
+        testo: dati.error ?? "Impossibile preparare il piano.",
+      });
   }
 
   async function conferma() {
@@ -287,79 +302,117 @@ export default function Pagina() {
  * му НЕ излизат никъде.
  */
 function TrattamentoAi() {
-  const [stato, setStato] = useState<{
-    attiva: boolean;
+  // Разкритието по чл. 13–14 е за ИНСТАЛАЦИЯТА, не за гледащия: ако ИИ е
+  // изключен за ролята или акаунта на администратора, техниците пак може да
+  // пращат документи навън. Затова идва от `/api/amministrazione/stato`
+  // (глобално + по функция + доставчик), не от `/api/ai/*` (правата на ТОЗИ).
+  const [ai, setAi] = useState<{
+    estrai: boolean;
+    testo: boolean;
     fornitore: string;
   } | null>(null);
 
   useEffect(() => {
     let vivo = true;
-    void fetch("/api/ai/estrai")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => vivo && setStato(d))
-      .catch(() => {});
+    void apiFetch<{
+      ai: {
+        attiva: boolean;
+        estraiAttiva: boolean;
+        testoAttiva: boolean;
+        providerConfigurato: boolean;
+        fornitore: string;
+      };
+    }>("/api/amministrazione/stato").then((r) => {
+      if (!vivo || !r.ok) return;
+      const a = r.dati.ai;
+      const base = a.providerConfigurato && a.attiva;
+      setAi({
+        estrai: base && a.estraiAttiva,
+        testo: base && a.testoAttiva,
+        fornitore: a.fornitore,
+      });
+    });
     return () => {
       vivo = false;
     };
   }, []);
 
-  if (!stato) return null;
+  if (!ai) return null;
+  const stato = { attiva: ai.estrai, fornitore: ai.fornitore };
   return (
     <div className="card mb-6 p-5">
       <h2 className="text-lg font-semibold text-text-1">
         Funzioni assistite da un modello linguistico
       </h2>
-      {stato.attiva ? (
+      {ai.estrai || ai.testo ? (
         <>
-          <p className="mt-1 text-sm text-text-2">
-            La funzione «Compila da un documento» è <strong>attiva</strong>. Il
-            documento caricato viene trasmesso a{" "}
-            <strong>{stato.fornitore}</strong>, che lo elabora per conto del
-            titolare e ne restituisce i dati estratti. Il documento può
-            contenere dati personali (nomi, codici fiscali, indirizzi).
-          </p>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-2">
-            <li>
-              Il trasferimento avviene solo quando un operatore carica un
-              documento: non c&apos;è alcun invio automatico.
-            </li>
-            <li>
-              Nel registro delle operazioni resta traccia dell&apos;invio (chi,
-              quando, quale scheda, impronta del file) ma <strong>non</strong>{" "}
-              il contenuto del documento.
-            </li>
-            <li>
-              I dati estratti sono una proposta: nulla viene salvato senza
-              conferma di una persona.
-            </li>
-            <li>
-              Il fornitore agisce come responsabile del trattamento (art. 28
-              GDPR): l&apos;accordo con lui e l&apos;informativa ai clienti sono
-              a carico del titolare.
-            </li>
-            <li>
-              Se il fornitore ha sede fuori dallo Spazio economico europeo —
-              come i tre previsti di serie (Google, Anthropic, OpenAI), con sede
-              negli Stati Uniti — il trasferimento richiede una delle garanzie
-              del Capo V GDPR (ad esempio l&apos;adesione al EU-U.S. Data
-              Privacy Framework o clausole contrattuali tipo), che il titolare
-              verifica nel proprio contratto con il fornitore.
-            </li>
-          </ul>
+          {ai.estrai ? (
+            <>
+              <p className="mt-1 text-sm text-text-2">
+                La funzione «Compila da un documento» è <strong>attiva</strong>.
+                Il documento caricato viene trasmesso a{" "}
+                <strong>{stato.fornitore}</strong>, che lo elabora per conto del
+                titolare e ne restituisce i dati estratti. Il documento può
+                contenere dati personali (nomi, codici fiscali, indirizzi).
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-2">
+                <li>
+                  Il trasferimento avviene solo quando un operatore carica un
+                  documento: non c&apos;è alcun invio automatico.
+                </li>
+                <li>
+                  Nel registro delle operazioni resta traccia dell&apos;invio
+                  (chi, quando, quale scheda, impronta del file) ma{" "}
+                  <strong>non</strong> il contenuto del documento.
+                </li>
+                <li>
+                  I dati estratti sono una proposta: nulla viene salvato senza
+                  conferma di una persona.
+                </li>
+                <li>
+                  Il fornitore agisce come responsabile del trattamento (art. 28
+                  GDPR): l&apos;accordo con lui e l&apos;informativa ai clienti
+                  sono a carico del titolare.
+                </li>
+                <li>
+                  Se il fornitore ha sede fuori dallo Spazio economico europeo —
+                  come i tre previsti di serie (Google, Anthropic, OpenAI), con
+                  sede negli Stati Uniti — il trasferimento richiede una delle
+                  garanzie del Capo V GDPR (ad esempio l&apos;adesione al
+                  EU-U.S. Data Privacy Framework o clausole contrattuali tipo),
+                  che il titolare verifica nel proprio contratto con il
+                  fornitore.
+                </li>
+              </ul>
+            </>
+          ) : (
+            <p className="mt-1 text-sm text-text-2">
+              La funzione «Compila da un documento» è{" "}
+              <strong>disattivata</strong>: nessun documento lascia questo
+              server.
+            </p>
+          )}
           {/* Втората функция е РАЗЛИЧНО обработване и се обявява отделно:
               там навън излиза документ, тук — бележка, писана от оператора.
               Слети в едно изречение, човекът научава за едното и пропуска
               другото (чл. 12(1) ОРЗД иска ясно и разделно). */}
-          <p className="mt-3 text-sm text-text-2">
-            È attiva anche la funzione «Scrivi con l&apos;AI», che riformula gli
-            appunti del tecnico in una descrizione o in un riepilogo. In questo
-            caso a {stato.fornitore} viene inviato{" "}
-            <strong>il testo scritto dall&apos;operatore</strong>, non un
-            documento. Valgono le stesse regole: nessun invio automatico, nel
-            registro resta solo il fatto (chi, quando, quale compito, quanti
-            caratteri) e non il testo, il risultato è una proposta modificabile
-            che nessuno salva al posto di una persona.
-          </p>
+          {ai.testo ? (
+            <p className="mt-3 text-sm text-text-2">
+              È attiva la funzione «Scrivi con l&apos;AI», che riformula gli
+              appunti del tecnico in una descrizione o in un riepilogo. In
+              questo caso a {stato.fornitore} viene inviato{" "}
+              <strong>il testo scritto dall&apos;operatore</strong>, non un
+              documento. Valgono le stesse regole: nessun invio automatico, nel
+              registro resta solo il fatto (chi, quando, quale compito, quanti
+              caratteri) e non il testo, il risultato è una proposta
+              modificabile che nessuno salva al posto di una persona.
+            </p>
+          ) : (
+            <p className="mt-3 text-sm text-text-2">
+              La funzione «Scrivi con l&apos;AI» è <strong>disattivata</strong>:
+              nessun testo lascia questo server.
+            </p>
+          )}
         </>
       ) : (
         <p className="mt-1 text-sm text-text-2">

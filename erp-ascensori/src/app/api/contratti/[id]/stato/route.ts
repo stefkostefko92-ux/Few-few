@@ -1,6 +1,7 @@
 // Смяна на статус на договор — САМО по позволените преходи.
 // Активирането зарежда двата графика; прекратяването е финално.
 
+import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
@@ -30,7 +31,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!transizioneContrattoAmmessa(da, stato))
       throw new ErroreHttp(
         409,
-        `Passaggio non consentito: da «${da}» a «${stato}»`,
+        `Passaggio non consentito: da «${etichetta(STATO_LABEL, da)}» a «${etichetta(STATO_LABEL, stato)}»`,
       );
 
     // Активирането зарежда графиците, ако още са празни (договор, създаден

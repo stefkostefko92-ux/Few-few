@@ -18,6 +18,7 @@ import {
 import { Barra } from "@/components/ui";
 import { IcoChiudi, IcoGiu, IcoLarghezza, IcoSu } from "@/components/icone";
 import { euro, dataIt } from "@/lib/format";
+import { apiFetch } from "@/lib/fetch-client";
 
 // ── Модел на конфигурацията ─────────────────────────────────────────────────
 
@@ -142,14 +143,21 @@ export default function Dashboard() {
   const [widgets, setWidgets] = useState<WidgetCfg[]>(PREDEFINITO);
   const [modifica, setModifica] = useState(false);
   const [pronto, setPronto] = useState(false);
+  /** Провалено зареждане НЕ е вечен скелет: казва се какво е станало. */
+  const [erroreStats, setErroreStats] = useState<string | null>(null);
 
   useEffect(() => {
     setWidgets(caricaCfg());
     setPronto(true);
-    void fetch("/api/dashboard/stats")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setStats(d))
-      .catch(() => null);
+    void apiFetch<Stats & { error?: string }>("/api/dashboard/stats").then(
+      (r) => {
+        if (r.ok) setStats(r.dati);
+        else
+          setErroreStats(
+            r.dati.error ?? "Impossibile leggere i dati del cruscotto.",
+          );
+      },
+    );
   }, []);
 
   const salva = useCallback((nuovi: WidgetCfg[]) => {
@@ -270,12 +278,22 @@ export default function Dashboard() {
         </div>
       )}
 
+      {erroreStats && (
+        <p
+          role="alert"
+          className="mb-4 rounded-md bg-danger-subtle px-3 py-2 text-sm text-danger-text"
+        >
+          {erroreStats}
+        </p>
+      )}
+
       <div className="grid gap-5 lg:grid-cols-2">
         {widgets.map((w, i) => (
           <div key={w.id} className={w.larghezza === 2 ? "lg:col-span-2" : ""}>
             <WidgetCard
               cfg={w}
               stats={stats}
+              errore={erroreStats !== null}
               modifica={modifica}
               primo={i === 0}
               ultimo={i === widgets.length - 1}
@@ -295,6 +313,7 @@ export default function Dashboard() {
 function WidgetCard({
   cfg,
   stats,
+  errore,
   modifica,
   primo,
   ultimo,
@@ -304,6 +323,7 @@ function WidgetCard({
 }: {
   cfg: WidgetCfg;
   stats: Stats | null;
+  errore: boolean;
   modifica: boolean;
   primo: boolean;
   ultimo: boolean;
@@ -397,7 +417,9 @@ function WidgetCard({
         )}
       </div>
 
-      {!stats ? (
+      {!stats && errore ? (
+        <p className="py-4 text-sm text-text-3">Dati non disponibili.</p>
+      ) : !stats ? (
         <div
           className="space-y-3 py-4"
           role="status"

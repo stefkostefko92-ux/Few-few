@@ -92,6 +92,14 @@ const config: EntityConfig = {
           String(r.ragioneSociale ?? `${r.nome} ${r.cognome ?? ""}`),
       },
     },
+    {
+      name: "attivo",
+      label: "Attivo",
+      tipo: "checkbox",
+      predefinito: true,
+      aiuto:
+        "Una scheda usata in fatture o impianti non si elimina: si disattiva e scompare dalle scelte, lo storico resta.",
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

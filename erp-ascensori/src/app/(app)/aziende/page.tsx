@@ -6,6 +6,8 @@ import EntityPage, { type EntityConfig } from "@/components/EntityPage";
 import { dataIt } from "@/lib/format";
 
 const config: EntityConfig = {
+  ruoloModifica: "MASTER",
+  ruoloElimina: "MASTER",
   titolo: "Aziende (multi-tenant)",
   singolare: "azienda",
   genere: "f",

@@ -1,6 +1,12 @@
 // Generic CRUD фабрика: една конфигурация на entity → GET/POST + GET/PUT/DELETE.
 // Всяка операция минава през проверка на ролята (на сървъра!) и пише в audit.
 
+import {
+  campiNascosti,
+  oscuraRiservati,
+  scritturaVietata,
+  type Riservati,
+} from "@/lib/campi-riservati";
 import type { ZodSchema } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -73,6 +79,27 @@ export interface CrudConfig {
    * уредба не се пуска с падащо меню.
    */
   vincoloModifica?: (prima: unknown, data: unknown) => string | null;
+  /**
+   * Полета само за ниво `ruolo`+ (`campi-riservati.ts`): под него не се
+   * виждат (и във вложените обекти), а записът им е 403.
+   */
+  riservati?: Riservati;
+}
+
+/** 403 при опит за запис на запазено поле; връща скритите за отговора. */
+function controllaRiservati(
+  cfg: CrudConfig,
+  ruolo: Ruolo,
+  data: unknown,
+): ReadonlySet<string> {
+  const nascosti = campiNascosti(cfg.riservati, ruolo);
+  const vietati = scritturaVietata(data, nascosti);
+  if (vietati.length)
+    throw new ErroreHttp(
+      403,
+      `Campo riservato al livello ${cfg.riservati?.ruolo}: ${vietati.join(", ")}`,
+    );
+  return nascosti;
 }
 
 /** Делегатът върху ТРАНЗАКЦИОНЕН клиент — за да важи наложеният обхват (RLS). */
@@ -128,12 +155,18 @@ export function rottaCollezione(cfg: CrudConfig) {
         d.count({ where }),
       ]);
     });
-    return ok({ righe, totale, page, size });
+    return ok({
+      righe: oscuraRiservati(righe, campiNascosti(cfg.riservati, s.ruolo)),
+      totale,
+      page,
+      size,
+    });
   });
 
   const POST = gestito(async (req) => {
     const s = await richiedeRuolo(cfg.ruoloScrittura ?? "OPERATORE");
     const data = await corpoValidato(req, cfg.schemaCreate);
+    const nascostiC = controllaRiservati(cfg, s.ruolo, data);
     // Външните ключове — по фирмата на сесията, ПРЕДИ записа (`riferimenti.ts`).
     const creato = await conRls(s, async (tx) => {
       await verificaRiferimenti(s, data, tx);
@@ -156,7 +189,7 @@ export function rottaCollezione(cfg: CrudConfig) {
       utenteId: s.sub,
       tenantId: s.tenantId,
     });
-    return ok(creato, 201);
+    return ok(oscuraRiservati(creato, nascostiC), 201);
   });
 
   return { GET, POST };
@@ -174,13 +207,14 @@ export function rottaElemento(cfg: CrudConfig) {
       }),
     );
     if (!r) throw new ErroreHttp(404, "Record non trovato");
-    return ok(r);
+    return ok(oscuraRiservati(r, campiNascosti(cfg.riservati, s.ruolo)));
   });
 
   const PUT = gestito(async (req, ctx) => {
     const s = await richiedeRuolo(cfg.ruoloScrittura ?? "OPERATORE");
     const { id } = await ctx.params;
     const data = await corpoValidato(req, cfg.schemaUpdate);
+    const nascostiU = controllaRiservati(cfg, s.ruolo, data);
     // Четенето и записът в ЕДНА транзакция: така проверката за собственост не
     // може да се размине с промяната (и обхватът важи за двете).
     const { prima, dopo } = await conRls(s, async (tx) => {
@@ -211,7 +245,7 @@ export function rottaElemento(cfg: CrudConfig) {
       utenteId: s.sub,
       tenantId: s.tenantId,
     });
-    return ok(dopo);
+    return ok(oscuraRiservati(dopo, nascostiU));
   });
 
   const DELETE = gestito(async (_req, ctx) => {

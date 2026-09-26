@@ -8,6 +8,12 @@
 // какво ще се случи. Кой какво може да направи решава СЪРВЪРЪТ
 // (`utenteGestibile`); бутоните тук само не предлагат очевидно невъзможното.
 
+import { apiFetch, tutteLeRighe } from "@/lib/fetch-client";
+import {
+  LUNGHEZZA_MINIMA,
+  LUNGHEZZA_MINIMA_PRIVILEGIATA,
+  mfaObbligatorio,
+} from "@/lib/password-policy";
 import { useCallback, useEffect, useState } from "react";
 import { Modale, Vuoto } from "@/components/ui";
 import { dataOraIt } from "@/lib/format";
@@ -50,14 +56,13 @@ async function chiama(
   url: string,
   init: RequestInit,
 ): Promise<{ ok: boolean; errore?: string }> {
-  const res = await fetch(url, {
-    ...init,
-    headers: { "Content-Type": "application/json" },
-  });
-  if (res.ok) return { ok: true };
-  const d = await res.json().catch(() => ({}));
-  return { ok: false, errore: d.error ?? "Errore" };
+  const r = await apiFetch<{ error?: string }>(url, init);
+  return r.ok ? { ok: true } : { ok: false, errore: r.dati.error ?? "Errore" };
 }
+
+/** Минималната дължина за РОЛЯТА — същата като на сървъра (password-policy). */
+const minimoPassword = (ruolo: string) =>
+  mfaObbligatorio(ruolo) ? LUNGHEZZA_MINIMA_PRIVILEGIATA : LUNGHEZZA_MINIMA;
 
 export default function Pagina() {
   const [righe, setRighe] = useState<Utente[]>([]);
@@ -68,37 +73,46 @@ export default function Pagina() {
   const [reset, setReset] = useState<Utente | null>(null);
   const [sicurezza, setSicurezza] = useState<Utente | null>(null);
   const [cerca, setCerca] = useState("");
+  const [caricato, setCaricato] = useState(false);
 
   const carica = useCallback(async () => {
-    const res = await fetch("/api/utenti");
-    const d = await res.json();
-    if (!res.ok) {
-      setErrore(d.error ?? "Errore");
+    const r = await apiFetch<{ righe: Utente[]; error?: string }>(
+      "/api/utenti",
+    );
+    setCaricato(true);
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "Errore");
       return;
     }
-    setRighe(d.righe);
+    const lista = r.dati.righe;
+    setRighe(lista);
     setSicurezza((prec) =>
-      prec ? (d.righe.find((u: Utente) => u.id === prec.id) ?? null) : null,
+      prec ? (lista.find((u) => u.id === prec.id) ?? null) : null,
     );
   }, []);
 
   useEffect(() => {
     void carica();
     void (async () => {
-      const r = await fetch("/api/me");
+      const r = await apiFetch<Io>("/api/me");
       if (!r.ok) return;
-      const me: Io = await r.json();
-      setIo(me);
+      setIo(r.dati);
       // Фирмите са служебна таблица — само MASTER ги вижда (и му трябват:
       // той управлява потребителите на всички).
-      if (me.ruolo === "MASTER") {
-        const t = await fetch("/api/tenants?size=100");
-        if (t.ok) setAziende((await t.json()).righe ?? []);
+      if (r.dati.ruolo === "MASTER") {
+        const t = await tutteLeRighe<Azienda>("/api/tenants");
+        if (t.ok) setAziende(t.righe);
       }
     })();
   }, [carica]);
 
   const master = io?.ruolo === "MASTER";
+  // Какво сървърът ПОЗВОЛЯВА на този администратор над този акаунт
+  // (`utenteGestibile`): MASTER се пипа само от MASTER; паролата на друг
+  // администратор — също. Бутонът, който винаги дава 403, не се показва.
+  const gestibile = (u: Utente) => master || u.ruolo !== "MASTER";
+  const passwordAmmessa = (u: Utente) =>
+    master || u.id === io?.id || !PRIVILEGIATI.includes(u.ruolo);
   // Колоната „Azienda“ — само ако има фирми: в еднофирмена инсталация е цялата „—“.
   const conAziende = master && aziende.length > 0;
   const nomeAzienda = (id: string | null) =>
@@ -176,24 +190,30 @@ export default function Pagina() {
               <StatoUtente u={u} />
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                className="btn-secondary h-8 px-3 text-xs"
-                onClick={() => setModale(u)}
-              >
-                Modifica
-              </button>
-              <button
-                className="btn-secondary h-8 px-3 text-xs"
-                onClick={() => setReset(u)}
-              >
-                Password
-              </button>
-              <button
-                className="btn-secondary h-8 px-3 text-xs"
-                onClick={() => setSicurezza(u)}
-              >
-                Sicurezza
-              </button>
+              {gestibile(u) && (
+                <button
+                  className="btn-secondary h-8 px-3 text-xs"
+                  onClick={() => setModale(u)}
+                >
+                  Modifica
+                </button>
+              )}
+              {gestibile(u) && passwordAmmessa(u) && (
+                <button
+                  className="btn-secondary h-8 px-3 text-xs"
+                  onClick={() => setReset(u)}
+                >
+                  Password
+                </button>
+              )}
+              {gestibile(u) && (
+                <button
+                  className="btn-secondary h-8 px-3 text-xs"
+                  onClick={() => setSicurezza(u)}
+                >
+                  Sicurezza
+                </button>
+              )}
             </div>
           </li>
         ))}
@@ -260,34 +280,48 @@ export default function Pagina() {
                   {dataOraIt(u.ultimoAccesso)}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-right">
-                  <button
-                    className="btn-ghost h-7 px-2 text-xs"
-                    onClick={() => setModale(u)}
-                  >
-                    Modifica
-                  </button>
-                  <button
-                    className="btn-ghost h-7 px-2 text-xs"
-                    onClick={() => setReset(u)}
-                  >
-                    Password
-                  </button>
-                  <button
-                    className="btn-ghost h-7 px-2 text-xs"
-                    onClick={() => setSicurezza(u)}
-                  >
-                    Sicurezza
-                  </button>
+                  {gestibile(u) && (
+                    <button
+                      className="btn-ghost h-7 px-2 text-xs"
+                      onClick={() => setModale(u)}
+                    >
+                      Modifica
+                    </button>
+                  )}
+                  {gestibile(u) && passwordAmmessa(u) && (
+                    <button
+                      className="btn-ghost h-7 px-2 text-xs"
+                      onClick={() => setReset(u)}
+                    >
+                      Password
+                    </button>
+                  )}
+                  {gestibile(u) && (
+                    <button
+                      className="btn-ghost h-7 px-2 text-xs"
+                      onClick={() => setSicurezza(u)}
+                    >
+                      Sicurezza
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      {visibili.length === 0 && (
+      {!caricato ? (
         <p className="px-3 py-6 text-center text-sm text-text-3">
-          Nessun utente corrisponde alla ricerca.
+          Caricamento…
         </p>
+      ) : (
+        visibili.length === 0 && (
+          <p className="px-3 py-6 text-center text-sm text-text-3">
+            {filtro
+              ? "Nessun utente corrisponde alla ricerca."
+              : "Nessun utente."}
+          </p>
+        )
       )}
 
       {modale && (
@@ -307,7 +341,11 @@ export default function Pagina() {
         <FormPassword
           utente={reset}
           onChiudi={() => setReset(null)}
-          onSalvato={() => setReset(null)}
+          onSalvato={() => {
+            setReset(null);
+            // Новата парола сваля и блокадата — значката трябва да се обнови.
+            void carica();
+          }}
         />
       )}
       {sicurezza && (
@@ -630,14 +668,12 @@ function FormUtente({
       ...(master ? { tenantId: form.tenantId || null } : {}),
     };
     const corpo = utente ? comune : { ...comune, password: form.password };
-    const res = await fetch(url, {
+    const r = await apiFetch<{ error?: string }>(url, {
       method: utente ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(corpo),
     });
-    const d = await res.json();
-    if (!res.ok) {
-      setErrore(d.error ?? "Errore");
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "Errore");
       return;
     }
     onSalvato();
@@ -664,14 +700,14 @@ function FormUtente({
         {!utente && (
           <>
             <label className="label" htmlFor="utente-password">
-              Password iniziale (min. 10 caratteri) *
+              Password iniziale (min. {minimoPassword(form.ruolo)} caratteri) *
             </label>
             <input
               id="utente-password"
               type="password"
               className="input mb-4"
               required
-              minLength={10}
+              minLength={minimoPassword(form.ruolo)}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
@@ -712,11 +748,15 @@ function FormUtente({
           value={form.ruolo}
           onChange={(e) => setForm({ ...form, ruolo: e.target.value as Ruolo })}
         >
-          {RUOLI.map((r, i) => (
-            <option key={r} value={r}>
-              L{i + 1} · {RUOLO_LABEL[r]}
-            </option>
-          ))}
+          {/* L1 MASTER се дава само от MASTER (сървърът отказва). */}
+          {RUOLI.map(
+            (r, i) =>
+              (master || r !== "MASTER") && (
+                <option key={r} value={r}>
+                  L{i + 1} · {RUOLO_LABEL[r]}
+                </option>
+              ),
+          )}
         </select>
         {master && (
           <>
@@ -773,14 +813,12 @@ function FormPassword({
 
   async function salva(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch(`/api/utenti/${utente.id}/password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    const d = await res.json();
-    if (!res.ok) {
-      setErrore(d.error ?? "Errore");
+    const r = await apiFetch<{ error?: string }>(
+      `/api/utenti/${utente.id}/password`,
+      { method: "POST", body: JSON.stringify({ password }) },
+    );
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "Errore");
       return;
     }
     onSalvato();
@@ -798,14 +836,15 @@ function FormPassword({
           una nuova. Le sessioni attive dell&apos;utente verranno chiuse.
         </p>
         <label className="label" htmlFor="nuova-password">
-          Nuova password temporanea (min. 10 caratteri)
+          Nuova password temporanea (min. {minimoPassword(utente.ruolo)}{" "}
+          caratteri)
         </label>
         <input
           id="nuova-password"
           type="password"
           className="input mb-4"
           required
-          minLength={10}
+          minLength={minimoPassword(utente.ruolo)}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />

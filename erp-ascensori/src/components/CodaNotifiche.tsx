@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { IcoAttenzione, IcoNota, IcoIntegro } from "@/components/icone";
 import { dataOraIt } from "@/lib/format";
+import { apiFetch } from "@/lib/fetch-client";
 
 interface Riga {
   id: string;
@@ -50,10 +51,11 @@ export default function CodaNotifiche() {
 
   useEffect(() => {
     let vivo = true;
-    void fetch("/api/notifiche?size=20")
-      .then((r) => (r.ok ? (r.json() as Promise<Esito>) : null))
-      .then((v) => vivo && v && setD(v))
-      .catch(() => {});
+    // Секцията е второстепенна: при грешка просто не се показва, но изтеклата
+    // сесия се подновява като навсякъде другаде.
+    void apiFetch<Esito>("/api/notifiche?size=20").then(
+      (r) => vivo && r.ok && setD(r.dati),
+    );
     return () => {
       vivo = false;
     };

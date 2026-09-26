@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ScheletroDettaglio } from "@/components/ui";
 import { IcoAttenzione, IcoIntegro } from "@/components/icone";
 import { dataOraIt } from "@/lib/format";
+import { apiFetch } from "@/lib/fetch-client";
 import { RUOLI, RUOLO_LABEL, type Ruolo } from "@/lib/roles";
 
 interface Run {
@@ -87,16 +88,10 @@ const AUTOMATISMI: Record<
   notifiche: { titolo: "Invio email in coda", cadenza: "ogni 15 minuti" },
 };
 
-async function invia<T>(
-  url: string,
-  init: RequestInit = {},
-): Promise<{ ok: boolean; dati: T & { error?: string } }> {
-  const res = await fetch(url, {
-    ...init,
-    headers: { "Content-Type": "application/json" },
-  });
-  const dati = await res.json().catch(() => ({}));
-  return { ok: res.ok, dati };
+/** През `apiFetch`: изтеклата сесия се подновява, паднала мрежа дава съобщение
+ *  вместо вечно „зареждане". */
+function invia<T>(url: string, init: RequestInit = {}) {
+  return apiFetch<T & { error?: string }>(url, init);
 }
 
 export default function PaginaAmministrazione() {
@@ -323,12 +318,18 @@ function SezioneAzienda() {
   const [corrente, setCorrente] = useState<Azienda | null>(null);
   const [scelta, setScelta] = useState("");
   const [errore, setErrore] = useState<string | null>(null);
+  const [caricata, setCaricata] = useState(false);
 
   useEffect(() => {
     void invia<{ corrente: Azienda | null; aziende: Azienda[] }>(
       "/api/amministrazione/azienda",
     ).then((r) => {
-      if (!r.ok) return;
+      // Без това неуспешното зареждане казваше „няма фирми" — невярно.
+      if (!r.ok) {
+        setErrore(r.dati.error ?? "Impossibile caricare le aziende.");
+        return;
+      }
+      setCaricata(true);
       setAziende(r.dati.aziende);
       setCorrente(r.dati.corrente);
       setScelta(r.dati.corrente?.id ?? "");
@@ -345,7 +346,7 @@ function SezioneAzienda() {
       setErrore(r.dati.error ?? "Errore");
       return;
     }
-    // Ricarica completa: ogni pagina e ogni menu devono leggere la nuova azienda.
+    // Пълно презареждане: всяка страница и всяко меню четат новата фирма.
     window.location.reload();
   }
 
@@ -360,7 +361,7 @@ function SezioneAzienda() {
         nei dati di una di esse si entra nella sua azienda: ogni ingresso e
         uscita resta nel registro operazioni di quell&apos;azienda.
       </p>
-      {aziende.length === 0 ? (
+      {!caricata ? null : aziende.length === 0 ? (
         <p className="mt-3 text-sm text-text-2">
           Nessuna azienda registrata: l&apos;installazione è ad azienda singola.
         </p>

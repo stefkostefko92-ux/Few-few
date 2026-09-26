@@ -10,7 +10,7 @@
 // подписа на клиента стои и вложеното, което той плаща.
 
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch } from "@/lib/fetch-client";
+import { apiFetch, tutteLeRighe } from "@/lib/fetch-client";
 import { IcoNuovoPiccolo, IcoElimina } from "@/components/icone";
 
 interface Riga {
@@ -57,11 +57,9 @@ export default function MaterialiRapportino({
 
   useEffect(() => {
     if (bloccato) return; // подписан отчет не иска списък за избор
-    void apiFetch<{ righe: Articolo[] }>("/api/articoli?size=200").then(
-      ({ ok, dati }) => {
-        if (ok) setArticoli(dati.righe ?? []);
-      },
-    );
+    void tutteLeRighe<Articolo>("/api/articoli").then(({ ok, righe }) => {
+      if (ok) setArticoli(righe);
+    });
   }, [bloccato]);
 
   async function aggiungi(e: React.FormEvent) {

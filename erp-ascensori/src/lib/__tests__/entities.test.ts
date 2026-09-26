@@ -628,3 +628,47 @@ describe("затворените списъци на схемите", () => {
     });
   });
 });
+
+describe("изчистена дата във формата", () => {
+  test("null не става 01.01.1970: задължителната дата дава грешка, не тиха 1970", () => {
+    // Задължителна дата (срок на импианта).
+    const c = scadenzeImpianti.schemaCreate.safeParse({
+      impiantoId: "11111111-2222-4333-8444-555555555555",
+      tipo: "revisione",
+      dataScadenza: null,
+    });
+    assert.equal(c.success, false);
+    const u = scadenzeImpianti.schemaUpdate.safeParse({ dataScadenza: null });
+    assert.equal(u.success, false, "изчистена задължителна дата = грешка");
+    // Незадължителната (начало на назначение) — изчистена = не се пипа.
+    const f = assegnazioniTecnici.schemaUpdate.safeParse({ dataInizio: null });
+    assert.equal(f.success, true);
+    assert.equal(
+      (f as { data: { dataInizio?: Date } }).data.dataInizio,
+      undefined,
+    );
+    const ok = scadenzeImpianti.schemaUpdate.safeParse({
+      dataScadenza: "2027-03-01",
+    });
+    assert.equal(
+      (ok as { data: { dataScadenza: Date } }).data.dataScadenza
+        .toISOString()
+        .slice(0, 10),
+      "2027-03-01",
+    );
+  });
+});
+
+describe("изчистено незадължително поле", () => {
+  test("null за колона без NULL = „не се пипа“, не 400", () => {
+    const r = articoli.schemaUpdate.safeParse({
+      sogliaMinima: null,
+      aliquotaIva: null,
+    });
+    assert.equal(r.success, true);
+    assert.deepEqual((r as { data: Record<string, unknown> }).data, {
+      sogliaMinima: undefined,
+      aliquotaIva: undefined,
+    });
+  });
+});

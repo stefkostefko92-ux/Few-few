@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { IcoEsporta, IcoElimina, IcoAttenzione } from "@/components/icone";
 import { dataIt } from "@/lib/format";
 import { TIPI_PERMESSI, DIMENSIONE_MASSIMA } from "@/lib/allegati/tipi";
+import { apiFetch, apiFile } from "@/lib/fetch-client";
 
 interface Allegato {
   id: string;
@@ -56,10 +57,12 @@ export default function Allegati({
   const input = useRef<HTMLInputElement>(null);
 
   const carica = useCallback(async () => {
-    const res = await fetch(
+    const r = await apiFetch<{ righe?: Allegato[]; error?: string }>(
       `/api/allegati?entita=${encodeURIComponent(entita)}&entitaId=${encodeURIComponent(entitaId)}`,
     );
-    if (res.ok) setRighe((await res.json()).righe);
+    // Неуспешното зареждане не бива да казва „Nessun allegato".
+    if (r.ok) setRighe(r.dati.righe ?? []);
+    else setErrore(r.dati.error ?? "Impossibile caricare gli allegati.");
   }, [entita, entitaId]);
 
   useEffect(() => {
@@ -83,7 +86,14 @@ export default function Allegati({
       corpo.set("file", file);
       corpo.set("entita", entita);
       corpo.set("entitaId", entitaId);
-      const res = await fetch("/api/allegati", { method: "POST", body: corpo });
+      const res = await apiFile("/api/allegati", {
+        method: "POST",
+        body: corpo,
+      });
+      if (!res) {
+        setErrore("Errore di rete: riprovare.");
+        return false;
+      }
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         setErrore(d.error ?? "Errore durante il caricamento");
@@ -109,10 +119,11 @@ export default function Allegati({
 
   async function rimuovi(a: Allegato) {
     if (!confirm(`Eliminare «${a.nome}»?`)) return;
-    const res = await fetch(`/api/allegati/${a.id}`, { method: "DELETE" });
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      setErrore(d.error ?? "Errore");
+    const r = await apiFetch<{ error?: string }>(`/api/allegati/${a.id}`, {
+      method: "DELETE",
+    });
+    if (!r.ok) {
+      setErrore(r.dati.error ?? "Eliminazione non riuscita.");
       return;
     }
     void carica();

@@ -71,6 +71,24 @@ export const decOpt = dec.nullish();
 const str = z.string().trim().min(1).max(300);
 const strOpt = z.string().trim().max(2000).nullish();
 const dataOpt = z.coerce.date().nullish();
+/**
+ * Незадължително поле, чиято колона НЕ е nullable: формата праща изчистеното
+ * поле (или „—" в меню) като `null`, а `.optional()` не го приема → 400
+ * „Campo obbligatorio" за поле, което не е задължително. `null` = не се пипа.
+ */
+const assente = <T>(v: T | null | undefined): T | undefined => v ?? undefined;
+/**
+ * Дата, която НЕ може да е празна в базата. Формата праща изчистеното поле
+ * като `null`, а `z.coerce.date(null)` е 01.01.1970 — тоест изчистена дата
+ * на фактура/договор тихо ставаше 1970 (SdI я отказва). Празното = „не е
+ * подадено": при създаване — „Campo obbligatorio", при промяна — не се пипа.
+ */
+const dataObbl = z.union([z.string().min(1), z.date()]).pipe(z.coerce.date());
+const dataFacolt = z
+  .union([z.string(), z.date()])
+  .nullish()
+  .transform((v) => (v === null || v === "" ? undefined : v))
+  .pipe(z.coerce.date().optional());
 const uuid = z.string().uuid();
 const uuidOpt = uuid.nullish();
 
@@ -121,7 +139,7 @@ export const condomini: CrudConfig = {
 };
 
 const amministratoreBase = z.object({
-  tipo: z.enum(["PERSONA_FISICA", "SOCIETA"]).optional(),
+  tipo: z.enum(["PERSONA_FISICA", "SOCIETA"]).nullish().transform(assente),
   nome: str,
   cognome: strOpt,
   ragioneSociale: strOpt,
@@ -205,6 +223,9 @@ export const dipendenti: CrudConfig = {
   schemaUpdate: dipendenteBase.partial(),
   searchFields: ["nome", "cognome", "codiceFiscale"],
   orderBy: { cognome: "asc" },
+  // Заплата + осигуровки: виждат и пишат само DIREZIONE+ (рентабилността е
+  // тяхна). Скрито и когато служителят идва вложен в друга същност.
+  riservati: { ruolo: "DIREZIONE", campi: ["costoOrario"] },
 };
 
 const automezzoBase = z.object({
@@ -216,7 +237,7 @@ const automezzoBase = z.object({
     .transform((v) => v.toUpperCase()),
   marca: str,
   modello: str,
-  chilometraggio: z.number().int().min(0).optional(),
+  chilometraggio: z.number().int().min(0).nullish().transform(assente),
   scadenzaRevisione: dataOpt,
   scadenzaAssicurazione: dataOpt,
   scadenzaTagliando: dataOpt,
@@ -232,6 +253,8 @@ export const automezzi: CrudConfig = {
   schemaUpdate: automezzoBase.partial(),
   searchFields: ["targa", "marca", "modello"],
   include: { conducente: true },
+  // Служителят идва вложен: часовата цена остава за DIREZIONE+.
+  riservati: { ruolo: "DIREZIONE", campi: ["costoOrario"] },
   orderBy: { targa: "asc" },
   // Цветният статус се преизчислява при всеки запис по най-близката дата.
   //
@@ -255,7 +278,10 @@ export const automezzi: CrudConfig = {
 
 const cottimistaBase = z.object({
   ragioneSociale: str,
-  tipo: z.enum(["DITTA_INDIVIDUALE", "COOPERATIVA", "AZIENDA"]).optional(),
+  tipo: z
+    .enum(["DITTA_INDIVIDUALE", "COOPERATIVA", "AZIENDA"])
+    .nullish()
+    .transform(assente),
   partitaIva: z.string().trim().max(20).nullish(),
   email: z
     .string()
@@ -305,8 +331,8 @@ const impiantoBase = z.object({
   matricolaComune: strOpt,
   comune: strOpt,
   dataComunicazione: dataOpt,
-  tipo: z.enum(TIPI_IMPIANTO).optional(),
-  regime: z.enum(REGIMI_IMPIANTO).optional(),
+  tipo: z.enum(TIPI_IMPIANTO).nullish().transform(assente),
+  regime: z.enum(REGIMI_IMPIANTO).nullish().transform(assente),
   marca: str,
   modello: str,
   anno: z.number().int().min(1900).max(2100).nullish(),
@@ -348,8 +374,8 @@ const impiantoBase = z.object({
 
 /** Законова проверка от трета страна (чл. 13/14). */
 export const verificaImpiantoSchema = z.object({
-  tipo: z.enum(TIPI_VERIFICA).optional(),
-  data: z.coerce.date(),
+  tipo: z.enum(TIPI_VERIFICA).nullish().transform(assente),
+  data: dataObbl,
   esito: z.enum(ESITI_VERIFICA),
   organismo: strOpt,
   numeroVerbale: strOpt,
@@ -411,7 +437,7 @@ export const impianti: CrudConfig = {
 const scadenzaBase = z.object({
   impiantoId: uuid,
   tipo: z.enum(["revisione", "certificazione", "manutenzione"]),
-  dataScadenza: z.coerce.date(),
+  dataScadenza: dataObbl,
   completata: z.boolean().optional(),
   note: strOpt,
 });
@@ -431,7 +457,7 @@ export const scadenzeImpianti: CrudConfig = {
 const assegnazioneBase = z.object({
   impiantoId: uuid,
   dipendenteId: uuid,
-  dataInizio: z.coerce.date().optional(),
+  dataInizio: dataFacolt,
   dataFine: dataOpt,
   attiva: z.boolean().optional(),
   note: strOpt,
@@ -445,6 +471,8 @@ export const assegnazioniTecnici: CrudConfig = {
   ruoloScrittura: "RESPONSABILE",
   filterFields: ["impiantoId", "dipendenteId"],
   include: { impianto: { select: { matricola: true } }, dipendente: true },
+  // Служителят идва вложен: часовата цена остава за DIREZIONE+.
+  riservati: { ruolo: "DIREZIONE", campi: ["costoOrario"] },
   orderBy: { dataInizio: "desc" },
 };
 
@@ -460,14 +488,14 @@ const articoloBase = z.object({
     .max(2000)
     .nullish()
     .transform((v) => (v === null ? "" : v)),
-  tipo: z.enum(["COMPONENTI", "VENDITA"]).optional(),
+  tipo: z.enum(["COMPONENTI", "VENDITA"]).nullish().transform(assente),
   categoria: strOpt,
   ubicazione: strOpt,
-  sogliaMinima: z.number().int().min(0).optional(),
+  sogliaMinima: z.number().int().min(0).nullish().transform(assente),
   prezzoAcquisto: decOpt,
   prezzoVendita: decOpt,
   marginePerc: decOpt,
-  aliquotaIva: aliquota.optional(),
+  aliquotaIva: aliquota.nullish().transform(assente),
   note: strOpt,
   attivo: z.boolean().optional(),
   // quantita НЕ е тук: движи се само чрез движения
@@ -538,7 +566,7 @@ export const tenants: CrudConfig = {
 };
 
 const ddtBase = z.object({
-  data: z.coerce.date().optional(),
+  data: dataFacolt,
   causale: strOpt,
   destinatario: strOpt,
   indirizzoConsegna: strOpt,
@@ -616,14 +644,17 @@ export const rigaDdtSchema = z.object({
 export const preventivoSchema = z.object({
   oggetto: str,
   descrizione: strOpt,
-  validitaGiorni: z.number().int().min(1).max(365).optional(),
+  validitaGiorni: z.number().int().min(1).max(365).nullish().transform(assente),
   impiantoId: uuidOpt,
   amministratoreId: uuidOpt,
   note: strOpt,
 });
 
 export const ordineSchema = z.object({
-  priorita: z.enum(["ORDINARIA", "URGENTE", "EMERGENZA"]).optional(),
+  priorita: z
+    .enum(["ORDINARIA", "URGENTE", "EMERGENZA"])
+    .nullish()
+    .transform(assente),
   oggetto: str,
   descrizione: strOpt,
   noteInterne: strOpt,
@@ -641,7 +672,7 @@ export const ordineSchema = z.object({
 
 export const fatturaSchema = z.object({
   tipo: z.enum(["EMESSA", "RICEVUTA"]).optional(),
-  data: z.coerce.date().optional(),
+  data: dataFacolt,
   dataScadenza: dataOpt,
   oggetto: strOpt,
   /// ПОЛУЧАТЕЛЯТ, когато работата е за кондоминиум. Има предимство пред
@@ -691,7 +722,7 @@ export const fatturaSchema = z.object({
 
 /** Получено плащане по фактура. */
 export const pagamentoSchema = z.object({
-  data: z.coerce.date().optional(),
+  data: dataFacolt,
   importo: dec,
   modalita: z
     .string()
@@ -707,7 +738,7 @@ export const pagamentoSchema = z.object({
 export const notificaSdiSchema = z.object({
   tipo: z.enum(TIPI_NOTIFICA),
   identificativoSdi: strOpt,
-  dataOra: z.coerce.date().optional(),
+  dataOra: dataFacolt,
   descrizione: strOpt,
   /// Само при NE: EC01 приета, EC02 отказана от публичната администрация.
   esito: z
@@ -744,8 +775,8 @@ export const contrattoBase = z.object({
   aliquotaIva: aliquota.optional(),
   periodicitaVisite: z.enum(PERIODICITA_VALORI).optional(),
   periodicitaFatturazione: z.enum(PERIODICITA_VALORI).optional(),
-  dataInizio: z.coerce.date(),
-  dataFine: z.coerce.date(),
+  dataInizio: dataObbl,
+  dataFine: dataObbl,
   rinnovoAutomatico: z.boolean().optional(),
   preavvisoMesi: z.number().int().min(0).max(24).optional(),
   /** Договорените времена за отзив. `null` = не е договорено, тоест не се мери
@@ -782,7 +813,7 @@ export const ESITI_INTERVENTO = [
 ] as const;
 
 export const rapportinoSchema = z.object({
-  dataOra: z.coerce.date().optional(),
+  dataOra: dataFacolt,
   /** Часовете влизат във фактурирането — до две десетични, най-много 24 на ден. */
   oreLavoro: z
     .string()

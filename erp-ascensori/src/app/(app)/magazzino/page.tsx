@@ -90,6 +90,14 @@ const config: EntityConfig = {
       tipo: "textarea",
       colSpan2: true,
     },
+    {
+      name: "attivo",
+      label: "Articolo attivo",
+      tipo: "checkbox",
+      predefinito: true,
+      aiuto:
+        "Un articolo con movimenti non si elimina: si disattiva e non compare più nelle scelte.",
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

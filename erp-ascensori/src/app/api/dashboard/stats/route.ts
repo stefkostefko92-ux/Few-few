@@ -151,19 +151,40 @@ export const GET = gestito(async () => {
   // Икономика — само за DIREZIONE и нагоре
   if (!haPermesso(s.ruolo, "DIREZIONE")) return ok(base);
 
-  const [fatture, insolute] = await Promise.all([
+  // Три числа, три различни въпроса — и всяко от своя източник:
+  //   • „Emesso" — ИЗДАДЕНИТЕ (не черновите, не сторнираните), по дата на док.;
+  //   • „Incassato" — ПОСТЪПЛЕНИЯТА по датата им: плащанията сменят
+  //     `statoPagamento`/`totalePagato`, не `stato`, тоест броенето по
+  //     „PAGATA" пропускаше частичните и повечето пълни;
+  //   • „Insoluti" — издадени, с изтекъл падеж и неплатен ОСТАТЪК (сумата е
+  //     остатъкът, не целият документ).
+  const [fatture, pagamenti, aperte] = await Promise.all([
     prisma.fattura.findMany({
       where: {
         tipo: "EMESSA",
-        stato: { not: "STORNATA" },
+        stato: { notIn: ["BOZZA", "STORNATA"] },
         data: { gte: inizio12Mesi },
         ...t,
       },
-      select: { data: true, totaleLordo: true, stato: true },
+      select: { data: true, totaleLordo: true },
+    }),
+    prisma.pagamento.findMany({
+      where: {
+        data: { gte: inizio12Mesi },
+        fattura: { tipo: "EMESSA", stato: { not: "STORNATA" } },
+        ...t,
+      },
+      select: { data: true, importo: true },
     }),
     prisma.fattura.findMany({
-      where: { tipo: "EMESSA", stato: "SCADUTA", ...t },
-      select: { totaleLordo: true },
+      where: {
+        tipo: "EMESSA",
+        stato: { notIn: ["BOZZA", "STORNATA"] },
+        statoPagamento: { not: "PAGATA" },
+        dataScadenza: { lt: oggi },
+        ...t,
+      },
+      select: { totaleLordo: true, totalePagato: true },
     }),
   ]);
 
@@ -171,13 +192,15 @@ export const GET = gestito(async () => {
   const perMese = new Map(
     mesi.map((m) => [m.chiave, { emesso: 0, incassato: 0 }]),
   );
+  const chiaveMese = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   for (const f of fatture) {
-    const chiave = `${f.data.getFullYear()}-${String(f.data.getMonth() + 1).padStart(2, "0")}`;
-    const riga = perMese.get(chiave);
-    if (!riga) continue;
-    const cents = toCents(f.totaleLordo.toString());
-    riga.emesso += cents;
-    if (f.stato === "PAGATA") riga.incassato += cents;
+    const riga = perMese.get(chiaveMese(f.data));
+    if (riga) riga.emesso += toCents(f.totaleLordo.toString());
+  }
+  for (const p of pagamenti) {
+    const riga = perMese.get(chiaveMese(p.data));
+    if (riga) riga.incassato += toCents(p.importo.toString());
   }
   const fatturatoMensile = mesi.map((m) => ({
     nome: m.label,
@@ -185,10 +208,14 @@ export const GET = gestito(async () => {
     incassato: Number(fromCents(perMese.get(m.chiave)!.incassato)),
   }));
 
-  const totaleInsoluto = insolute.reduce(
-    (acc, f) => acc + toCents(f.totaleLordo.toString()),
-    0,
-  );
+  const residui = aperte
+    .map(
+      (f) =>
+        toCents(f.totaleLordo.toString()) - toCents(f.totalePagato.toString()),
+    )
+    .filter((c) => c > 0);
+  const insolute = { length: residui.length };
+  const totaleInsoluto = residui.reduce((acc, c) => acc + c, 0);
 
   return ok({
     ...base,

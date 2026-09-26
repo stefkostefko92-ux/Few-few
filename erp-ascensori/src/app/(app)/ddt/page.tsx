@@ -7,6 +7,7 @@ import EntityPage, {
 import { dataIt, dataOraIt } from "@/lib/format";
 
 const config: EntityConfig = {
+  ruoloElimina: "RESPONSABILE",
   titolo: "Documenti di trasporto",
   singolare: "documento di trasporto",
   genere: "m",

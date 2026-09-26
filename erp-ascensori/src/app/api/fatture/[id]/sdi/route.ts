@@ -8,6 +8,7 @@
 // Обратният път (`GENERATA` → `NON_INVIATA`) е нарочно позволен: подаването е
 // човешко вписване и грешката трябва да се поправя, преди да е дошло известие.
 
+import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ok, corpoValidato, gestito } from "@/lib/api";
@@ -50,7 +51,7 @@ export const PATCH = gestito(async (req, ctx) => {
     if (!transizioneSdiAmmessa(da, data.stato))
       throw new ErroreHttp(
         409,
-        `Transizione SdI non ammessa: da «${da}» a «${data.stato}»`,
+        `Transizione SdI non ammessa: da «${etichetta(STATO_LABEL, da)}» a «${etichetta(STATO_LABEL, data.stato)}»`,
       );
     if (data.stato === "INVIATA" && !prima.progressivoInvio)
       throw new ErroreHttp(

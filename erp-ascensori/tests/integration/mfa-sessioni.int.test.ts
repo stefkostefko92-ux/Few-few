@@ -213,6 +213,27 @@ describe("втори фактор", () => {
     });
     assert.equal(off.status, 403);
   });
+
+  test("незадължителният се изключва с парола; тази сесия остава, другите падат", async () => {
+    const u = await nuovoUtente("OPERATORE");
+    const altra = new Sessione();
+    assert.equal(await altra.entra(u.email), 200);
+    const setup = await u.sessione.get<{ segreto: string }>("/api/auth/mfa");
+    await u.sessione.post("/api/auth/mfa", {
+      codice: codiceTotp(setup.dati.segreto),
+    });
+    // Грешна парола — 403, НЕ 401 (401 би изхвърлил човека към входа).
+    const male = await u.sessione.richiesta("DELETE", "/api/auth/mfa", {
+      password: "Sbagliata!2026x",
+    });
+    assert.equal(male.status, 403);
+    const off = await u.sessione.richiesta("DELETE", "/api/auth/mfa", {
+      password: PASSWORD,
+    });
+    assert.equal(off.status, 200, JSON.stringify(off.dati));
+    assert.equal((await u.sessione.get("/api/me")).status, 200, "тази остава");
+    assert.equal((await altra.get("/api/me")).status, 401, "другите падат");
+  });
 });
 
 describe("активни сесии", () => {
@@ -279,6 +300,50 @@ describe("активни сесии", () => {
     );
     const rinnovo = await u.sessione.richiesta("POST", "/api/auth/refresh");
     assert.equal(rinnovo.status, 401);
+  });
+
+  test("всеки сменя СОБСТВЕНАТА си парола; тази сесия остава, другите падат", async () => {
+    const u = await nuovoUtente("TECNICO");
+    const altra = new Sessione();
+    assert.equal(await altra.entra(u.email), 200);
+    const nuova = "scala mobile al terzo piano";
+    // Грешна текуща — 403 (не 401, който би изхвърлил към входа).
+    const male = await u.sessione.post("/api/me/password", {
+      attuale: "Sbagliata!2026x",
+      nuova,
+    });
+    assert.equal(male.status, 403);
+    // Същата като текущата — отказ.
+    assert.equal(
+      (
+        await u.sessione.post("/api/me/password", {
+          attuale: PASSWORD,
+          nuova: PASSWORD,
+        })
+      ).status,
+      400,
+    );
+    // Политиката важи и тук.
+    assert.equal(
+      (
+        await u.sessione.post("/api/me/password", {
+          attuale: PASSWORD,
+          nuova: "Corta1!",
+        })
+      ).status,
+      400,
+    );
+    const r = await u.sessione.post("/api/me/password", {
+      attuale: PASSWORD,
+      nuova,
+    });
+    assert.equal(r.status, 200, JSON.stringify(r.dati));
+    assert.equal((await u.sessione.get("/api/me")).status, 200, "тази остава");
+    assert.equal((await altra.get("/api/me")).status, 401, "другите падат");
+    const nuovoAccesso = new Sessione();
+    assert.equal(await nuovoAccesso.entra(u.email, nuova), 200);
+    const me = await nuovoAccesso.get<{ passwordScaduta: boolean }>("/api/me");
+    assert.equal(me.dati.passwordScaduta, false);
   });
 });
 
