@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useStore } from '../../lib/store';
 import BanDialog from './BanDialog';
@@ -20,14 +21,6 @@ interface UsersResp { users: UserRow[]; total: number; page: number; pages: numb
 
 const isBanned = (u: { banned: number; banned_until: number }) => u.banned === 1 && (u.banned_until === 0 || u.banned_until > Date.now());
 
-const HERO_FIELDS: { key: string; min: number; max: number }[] = [
-  { key: 'level', min: 1, max: 500 }, { key: 'gold', min: 0, max: 1e12 },
-  { key: 'arena_rating', min: 0, max: 100000 }, { key: 'stat_points', min: 0, max: 100000 },
-  { key: 'skill_points', min: 0, max: 100000 }, { key: 'energy', min: 0, max: 999 },
-  { key: 'energy_max', min: 1, max: 999 }, { key: 'hp', min: 1, max: 1e7 },
-  { key: 'hp_max', min: 1, max: 1e7 }, { key: 'mp', min: 0, max: 1e7 }, { key: 'mp_max', min: 0, max: 1e7 },
-];
-
 export default function Users(): React.ReactElement {
   const { t } = useAdminT();
   const fmt = useFmt();
@@ -40,7 +33,9 @@ export default function Users(): React.ReactElement {
     [dq, filter, page],
   );
   const [detail, setDetail] = useState<UserRow | null>(null);
-  const [hero, setHero] = useState<UserRow | null>(null);
+  const navigate = useNavigate();
+  // Героят се управлява на един екран — „Герои" (инвентар, напредък, бойна история).
+  const openHero = (charId: number | null) => { if (charId) navigate(`/admin/characters?open=${charId}`); };
   const [creating, setCreating] = useState(false);
 
   return (
@@ -93,14 +88,13 @@ export default function Users(): React.ReactElement {
           actions={(u) => (
             <>
               <button type="button" className="btn btn-sm" onClick={() => setDetail(u)}>{t('common.details')}</button>
-              {u.char_id ? <button type="button" className="btn btn-sm" onClick={() => setHero(u)}>{t('users.editHero')}</button> : null}
+              {u.char_id ? <button type="button" className="btn btn-sm" onClick={() => openHero(u.char_id)}>{t('users.editHero')}</button> : null}
             </>
           )}
         />
         {data && <Pager page={data.page} pages={data.pages} total={data.total} onPage={setPage} />}
       </StateView>
-      {detail && <UserDetail row={detail} onClose={() => setDetail(null)} onChanged={reload} onEditHero={() => { setHero(detail); setDetail(null); }} />}
-      {hero && <HeroEditor row={hero} onClose={() => setHero(null)} onSaved={() => { setHero(null); void reload(); }} />}
+      {detail && <UserDetail row={detail} onClose={() => setDetail(null)} onChanged={reload} onEditHero={() => { const id = detail.char_id; setDetail(null); openHero(id); }} />}
       {creating && <CreateUser onClose={() => setCreating(false)} onDone={() => { setCreating(false); void reload(); }} />}
     </>
   );
@@ -241,49 +235,6 @@ function GemsDialog({ userId, name, onClose, onDone }: { userId: number; name: s
       <form id="adm-gems" className="adm-form" onSubmit={submit}>
         <Field label={t('users.gemsAmount')} hint={t('common.range', { min: '-1 000 000', max: '1 000 000' })} error={amount !== '' && !valid ? t('common.invalidNumber') : null} wide>
           {(id) => <NumberInput id={id} value={amount} onChange={setAmount} min={-1_000_000} max={1_000_000} />}
-        </Field>
-      </form>
-    </Modal>
-  );
-}
-
-function HeroEditor({ row, onClose, onSaved }: { row: UserRow; onClose: () => void; onSaved: () => void }) {
-  const { t } = useAdminT();
-  const toast = useStore((s) => s.toast);
-  const init: Record<string, number | ''> = {};
-  for (const f of HERO_FIELDS) init[f.key] = (row as any)[f.key] ?? '';
-  const [vals, setVals] = useState(init);
-  const [title, setTitle] = useState(row.current_title || '');
-  const [busy, setBusy] = useState(false);
-  const bad = HERO_FIELDS.find((f) => { const v = vals[f.key]; return v === '' || !Number.isInteger(v) || (v as number) < f.min || (v as number) > f.max; });
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (bad) { toast(`${t(`users.heroFields.${bad.key}`)}: ${t('common.range', { min: bad.min, max: bad.max })}`, 'error'); return; }
-    // Прати само променените полета → одитът показва точно „от → към".
-    const patch: Record<string, unknown> = {};
-    for (const f of HERO_FIELDS) if (vals[f.key] !== (row as any)[f.key]) patch[f.key] = vals[f.key];
-    if (title !== (row.current_title || '')) patch.current_title = title;
-    if (!Object.keys(patch).length) { onClose(); return; }
-    setBusy(true);
-    try { await api.put(`/admin/characters/${row.char_id}`, patch); toast(t('common.saved'), 'success'); onSaved(); }
-    catch (err) { toast(errMsg(err), 'error'); }
-    finally { setBusy(false); }
-  }
-  return (
-    <Modal
-      variant="drawer"
-      title={t('users.editHeroTitle', { name: row.char_name })}
-      onClose={onClose}
-      footer={<><button type="button" className="btn" onClick={onClose}>{t('common.cancel')}</button><button type="submit" form="adm-hero" className="btn btn-primary" disabled={busy}>{busy ? t('common.saving') : t('common.save')}</button></>}
-    >
-      <form id="adm-hero" className="adm-form grid" onSubmit={submit}>
-        {HERO_FIELDS.map((f) => (
-          <Field key={f.key} label={t(`users.heroFields.${f.key}`)} error={bad?.key === f.key ? t('common.range', { min: f.min, max: f.max }) : null}>
-            {(id) => <NumberInput id={id} value={vals[f.key]} min={f.min} max={f.max} onChange={(v) => setVals({ ...vals, [f.key]: v })} />}
-          </Field>
-        ))}
-        <Field label={t('users.heroFields.current_title')} wide>
-          {(id) => <input id={id} value={title} maxLength={40} onChange={(e) => setTitle(e.target.value)} />}
         </Field>
       </form>
     </Modal>

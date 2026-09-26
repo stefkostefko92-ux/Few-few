@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   IconChart, IconBag, IconSkull, IconScroll, IconUser, IconMail, IconCog, IconBolt,
-  IconCrown, IconStar, IconShield, IconCoin, IconKey, IconGem, IconFlame,
+  IconCrown, IconStar, IconShield, IconCoin, IconKey, IconGem, IconFlame, IconSword,
 } from '../../lib/icons';
 import { ConfirmProvider, useAdminT } from './ui';
 import '../../styles/admin.css';
@@ -12,20 +12,30 @@ const GROUPS: { key: string; items: Item[] }[] = [
   { key: 'overview', items: [{ to: '/admin', key: 'overview', icon: IconChart, end: true }] },
   { key: 'players', items: [
     { to: '/admin/users', key: 'users', icon: IconUser },
+    { to: '/admin/characters', key: 'characters', icon: IconSword },
+    { to: '/admin/guilds', key: 'guilds', icon: IconCrown },
+    { to: '/admin/mail', key: 'mail', icon: IconMail },
+  ] },
+  { key: 'economy', items: [
     { to: '/admin/purchases', key: 'purchases', icon: IconCoin },
     { to: '/admin/marketplace', key: 'marketplace', icon: IconBag },
-    { to: '/admin/guilds', key: 'guilds', icon: IconCrown },
+    { to: '/admin/auction', key: 'auction', icon: IconGem },
+    { to: '/admin/trades', key: 'trades', icon: IconKey },
   ] },
   { key: 'safety', items: [
     { to: '/admin/moderation', key: 'moderation', icon: IconShield },
+    { to: '/admin/chat', key: 'chat', icon: IconScroll },
     { to: '/admin/logs', key: 'logs', icon: IconKey },
   ] },
   { key: 'content', items: [
     { to: '/admin/items', key: 'items', icon: IconGem },
     { to: '/admin/monsters', key: 'monsters', icon: IconSkull },
     { to: '/admin/quests', key: 'quests', icon: IconScroll },
+    { to: '/admin/content', key: 'content', icon: IconStar },
   ] },
   { key: 'features', items: [
+    { to: '/admin/realm-boss', key: 'realmBoss', icon: IconFlame },
+    { to: '/admin/season', key: 'season', icon: IconCrown },
     { to: '/admin/tower', key: 'tower', icon: IconFlame },
     { to: '/admin/bounties', key: 'bounties', icon: IconSkull },
     { to: '/admin/battlepass', key: 'battlepass', icon: IconStar },
@@ -34,7 +44,6 @@ const GROUPS: { key: string; items: Item[] }[] = [
   { key: 'system', items: [
     { to: '/admin/settings', key: 'settings', icon: IconCog },
     { to: '/admin/webhooks', key: 'webhooks', icon: IconBolt },
-    { to: '/admin/broadcast', key: 'broadcast', icon: IconMail },
     { to: '/admin/server', key: 'server', icon: IconChart },
   ] },
 ];

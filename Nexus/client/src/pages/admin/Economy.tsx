@@ -1,9 +1,9 @@
-/** Поръчки, пазар и гилдии — икономическият изглед на админ панела. */
+/** Поръчки, пазар, аукцион и размени — икономическият изглед на админ панела. */
 import React, { useState } from 'react';
 import { api } from '../../lib/api';
 import { useStore } from '../../lib/store';
 import {
-  DataTable, Field, Modal, NumberInput, PageHeader, Pager, SearchBox, Select, StateView, Tag, Toolbar,
+  DataTable, PageHeader, Pager, SearchBox, Select, StateView, Tag, Toolbar,
   errMsg, useAdminT, useConfirm, useDebounced, useFmt, useLoad,
 } from './ui';
 
@@ -21,6 +21,8 @@ interface Purchase {
 export function Purchases(): React.ReactElement {
   const { t } = useAdminT();
   const fmt = useFmt();
+  const toast = useStore((s) => s.toast);
+  const confirm = useConfirm();
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('all');
   const [page, setPage] = useState(1);
@@ -29,9 +31,24 @@ export function Purchases(): React.ReactElement {
     () => api.get(`/admin/purchases?${new URLSearchParams({ q: dq, status, page: String(page), pageSize: '25' })}`),
     [dq, status, page],
   );
+  async function refund(p: Purchase) {
+    const r = await confirm({
+      title: t('purchases.refundTitle', { id: p.id }),
+      body: <>{t('purchases.refundBody', { amount: fmt.money(p.amount_cents, p.currency) })}{p.gems_granted ? <><br />{t('purchases.refundGems', { gems: fmt.num(p.gems_granted) })}</> : null}</>,
+      reason: { min: 3, placeholder: t('purchases.refundReason') },
+      confirmLabel: t('purchases.refund'),
+      danger: true,
+    });
+    if (!r) return;
+    try {
+      const out = await api.post(`/admin/purchases/${p.id}/refund`, { reason: r.reason, revoke_gems: true });
+      toast(t('purchases.refunded', { gems: fmt.num(out.gems_clawed_back) }), 'success');
+      await reload();
+    } catch (e) { toast(errMsg(e), 'error'); }
+  }
   return (
     <>
-      <PageHeader title={t('purchases.title')} count={data?.total ?? null} />
+      <PageHeader title={t('purchases.title')} count={data?.total ?? null} subtitle={t('purchases.subtitle')} />
       <Toolbar>
         <SearchBox value={q} onChange={(v) => { setQ(v); setPage(1); }} placeholder={t('purchases.searchPlaceholder')} />
         <Select
@@ -55,6 +72,9 @@ export function Purchases(): React.ReactElement {
             { key: 'created_at', label: t('purchases.created'), render: (p) => fmt.dateTime(p.created_at) },
             { key: 'completed_at', label: t('purchases.completed'), render: (p) => (p.completed_at ? fmt.dateTime(p.completed_at) : null) },
           ]}
+          actions={(p) => (p.status === 'completed' || p.status === 'disputed'
+            ? <button type="button" className="btn btn-sm btn-danger" onClick={() => refund(p)}>{t('purchases.refund')}</button>
+            : null)}
         />
         {data && <Pager page={data.page} pages={data.pages} total={data.total} onPage={setPage} />}
       </StateView>
@@ -130,79 +150,123 @@ export function Marketplace(): React.ReactElement {
   );
 }
 
-/* ===================== Гилдии ===================== */
-interface Guild {
-  id: number; name: string; tag: string; member_slots: number | null; member_count: number; xp: number; gold: number;
-  attr_level: number; power_level: number; defence_level: number; exp_bonus_level: number; gold_bonus_level: number; gold_level: number;
+/* ===================== Аукцион (гемове, по час) ===================== */
+interface Auction {
+  id: number; hour_bucket: number; item_slug: string; item_name: string; rarity: string; starts_at: number; ends_at: number;
+  starting_bid: number; current_bid: number; bidder_id: number | null; bidder_name: string | null; settled: number; cancelled_at: number;
 }
-const GUILD_FIELDS: { key: keyof Guild; max: number }[] = [
-  { key: 'attr_level', max: 100 }, { key: 'power_level', max: 100 }, { key: 'defence_level', max: 100 },
-  { key: 'exp_bonus_level', max: 100 }, { key: 'gold_bonus_level', max: 100 }, { key: 'gold_level', max: 100 },
-  { key: 'xp', max: 1e12 }, { key: 'gold', max: 1e12 },
-];
+const auctionState = (a: Auction, now: number) => (a.cancelled_at ? 'cancelled' : a.settled ? 'settled' : a.ends_at <= now ? 'closing' : 'open');
+const AUCTION_TONE: Record<string, 'gold' | 'emerald' | 'crimson' | undefined> = { open: 'gold', closing: 'gold', settled: 'emerald', cancelled: 'crimson' };
 
-export function Guilds(): React.ReactElement {
+export function Auction(): React.ReactElement {
   const { t } = useAdminT();
   const fmt = useFmt();
   const toast = useStore((s) => s.toast);
-  const { data, error, loading, reload } = useLoad<Guild[]>(async () => (await api.get('/admin/guilds')).guilds, []);
-  const [edit, setEdit] = useState<Guild | null>(null);
-  const [vals, setVals] = useState<Record<string, number | ''>>({});
-  const [busy, setBusy] = useState(false);
-
-  function open(g: Guild) {
-    setEdit(g);
-    setVals(Object.fromEntries(GUILD_FIELDS.map((f) => [f.key, g[f.key] as number])));
-  }
-  const bad = GUILD_FIELDS.find((f) => { const v = vals[f.key]; return v === '' || !Number.isInteger(v) || (v as number) < 0 || (v as number) > f.max; });
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    if (!edit || bad) return;
-    const patch: Record<string, unknown> = {};
-    for (const f of GUILD_FIELDS) if (vals[f.key] !== edit[f.key]) patch[f.key] = vals[f.key];
-    if (!Object.keys(patch).length) { setEdit(null); return; }
-    setBusy(true);
-    try { await api.put(`/admin/guilds/${edit.id}`, patch); toast(t('common.saved'), 'success'); setEdit(null); await reload(); }
-    catch (err) { toast(errMsg(err), 'error'); }
-    finally { setBusy(false); }
+  const confirm = useConfirm();
+  const [q, setQ] = useState('');
+  const [status, setStatus] = useState('all');
+  const [page, setPage] = useState(1);
+  const dq = useDebounced(q);
+  const { data, error, loading, reload } = useLoad<{ listings: Auction[]; total: number; page: number; pages: number; server_now: number }>(
+    () => api.get(`/admin/auction?${new URLSearchParams({ q: dq, status, page: String(page), pageSize: '25' })}`),
+    [dq, status, page],
+  );
+  const now = data?.server_now ?? Date.now();
+  async function cancel(a: Auction) {
+    const r = await confirm({
+      title: t('auction.cancelTitle', { item: a.item_name }),
+      body: a.bidder_id ? t('auction.cancelBodyBid', { gems: fmt.num(a.current_bid), name: a.bidder_name }) : t('auction.cancelBody'),
+      reason: { min: 3, placeholder: t('auction.reasonPlaceholder') },
+      confirmLabel: t('auction.cancel'),
+      danger: true,
+    });
+    if (!r) return;
+    try {
+      const out = await api.post(`/admin/auction/${a.id}/cancel`, { reason: r.reason });
+      toast(t('auction.cancelled', { gems: fmt.num(out.refunded) }), 'success');
+      await reload();
+    } catch (e) { toast(errMsg(e), 'error'); }
   }
   return (
     <>
-      <PageHeader title={t('guilds.title')} count={data?.length ?? null} />
-      <StateView loading={loading} error={error} onRetry={reload} isEmpty={!data?.length}>
+      <PageHeader title={t('auction.title')} count={data?.total ?? null} subtitle={t('auction.subtitle')} />
+      <Toolbar>
+        <SearchBox value={q} onChange={(v) => { setQ(v); setPage(1); }} placeholder={t('auction.searchPlaceholder')} />
+        <Select label={t('common.status')} value={status} onChange={(v) => { setStatus(v); setPage(1); }} options={['all', 'open', 'settled', 'cancelled'].map((s) => ({ value: s, label: t(`auction.st.${s}`) }))} />
+      </Toolbar>
+      <StateView loading={loading} error={error} onRetry={reload} isEmpty={!data?.listings.length} emptyText={t('common.noResults')}>
         <DataTable
-          rows={data || []}
-          rowKey={(g) => g.id}
+          rows={data?.listings || []}
+          rowKey={(a) => a.id}
+          dim={loading}
+          caption={t('auction.title')}
           cols={[
-            { key: 'name', label: t('common.name'), primary: true, render: (g) => <strong>{g.name}</strong> },
-            { key: 'tag', label: t('guilds.tag'), mono: true, render: (g) => `[${g.tag}]` },
-            { key: 'members', label: t('guilds.members'), align: 'right', render: (g) => `${fmt.num(g.member_count)}${g.member_slots ? ` / ${fmt.num(g.member_slots)}` : ''}` },
-            { key: 'xp', label: t('guilds.xp'), align: 'right', render: (g) => fmt.num(g.xp) },
-            { key: 'gold', label: t('guilds.treasury'), align: 'right', render: (g) => <span className="gold">{fmt.num(g.gold)}</span> },
-            {
-              key: 'tracks', label: t('guilds.tracks'), mono: true,
-              render: (g) => <span title={GUILD_FIELDS.slice(0, 6).map((f) => `${t(`guilds.f.${f.key}`)}: ${g[f.key]}`).join('\n')}>{g.attr_level}·{g.power_level}·{g.defence_level}·{g.exp_bonus_level}·{g.gold_bonus_level}·{g.gold_level}</span>,
-            },
+            { key: 'item', label: t('market.item'), primary: true, render: (a) => <span className="adm-stack"><strong className={`rarity-${a.rarity}`}>{a.item_name}</strong><span className="muted mono small">#{a.id}</span></span> },
+            { key: 'window', label: t('auction.window'), render: (a) => `${fmt.dateTime(a.starts_at)} – ${fmt.time(a.ends_at)}` },
+            { key: 'bid', label: t('auction.bid'), align: 'right', render: (a) => <span className="gem mono">{fmt.num(a.current_bid)}</span> },
+            { key: 'bidder', label: t('auction.bidder'), render: (a) => a.bidder_name },
+            { key: 'status', label: t('common.status'), render: (a) => { const st = auctionState(a, now); return <Tag tone={AUCTION_TONE[st]}>{t(`auction.st.${st}`)}</Tag>; } },
           ]}
-          actions={(g) => <button type="button" className="btn btn-sm" onClick={() => open(g)}>{t('common.edit')}</button>}
+          actions={(a) => (!a.settled ? <button type="button" className="btn btn-sm btn-danger" onClick={() => cancel(a)}>{t('auction.cancel')}</button> : null)}
         />
+        {data && <Pager page={data.page} pages={data.pages} total={data.total} onPage={setPage} />}
       </StateView>
-      {edit && (
-        <Modal
-          variant="drawer"
-          title={t('guilds.editTitle', { name: edit.name })}
-          onClose={() => setEdit(null)}
-          footer={<><button type="button" className="btn" onClick={() => setEdit(null)}>{t('common.cancel')}</button><button type="submit" form="adm-guild" className="btn btn-primary" disabled={!!bad || busy}>{busy ? t('common.saving') : t('common.save')}</button></>}
-        >
-          <form id="adm-guild" className="adm-form grid" onSubmit={save}>
-            {GUILD_FIELDS.map((f) => (
-              <Field key={f.key} label={t(`guilds.f.${f.key}`)} hint={t('common.range', { min: 0, max: fmt.num(f.max) })} error={bad?.key === f.key ? t('common.range', { min: 0, max: fmt.num(f.max) }) : null}>
-                {(id) => <NumberInput id={id} value={vals[f.key]} min={0} max={f.max} onChange={(v) => setVals({ ...vals, [f.key]: v })} />}
-              </Field>
-            ))}
-          </form>
-        </Modal>
-      )}
+    </>
+  );
+}
+
+/* ===================== Размени (P2P escrow) ===================== */
+interface Trade {
+  id: number; from_id: number; from_name: string; to_id: number; to_name: string; from_gold: number; to_gold: number;
+  from_item_count: number; to_item_count: number; from_ready: number; to_ready: number; status: string; created_at: number; updated_at: number;
+}
+const TRADE_TONE: Record<string, 'gold' | 'emerald' | 'crimson' | undefined> = { pending: 'gold', completed: 'emerald', cancelled: 'crimson', declined: 'crimson' };
+
+export function Trades(): React.ReactElement {
+  const { t } = useAdminT();
+  const fmt = useFmt();
+  const toast = useStore((s) => s.toast);
+  const confirm = useConfirm();
+  const [q, setQ] = useState('');
+  const [status, setStatus] = useState('pending');
+  const [page, setPage] = useState(1);
+  const dq = useDebounced(q);
+  const { data, error, loading, reload } = useLoad<{ trades: Trade[]; total: number; page: number; pages: number }>(
+    () => api.get(`/admin/trades?${new URLSearchParams({ q: dq, status, page: String(page), pageSize: '25' })}`),
+    [dq, status, page],
+  );
+  async function cancel(x: Trade) {
+    const r = await confirm({ title: t('trades.cancelTitle', { a: x.from_name, b: x.to_name }), body: t('trades.cancelBody'), reason: { min: 3 }, confirmLabel: t('trades.cancel'), danger: true });
+    if (!r) return;
+    try { await api.post(`/admin/trades/${x.id}/cancel`, { reason: r.reason }); toast(t('trades.cancelled'), 'success'); await reload(); }
+    catch (e) { toast(errMsg(e), 'error'); }
+  }
+  const side = (items: number, gold: number) => [items ? t('trades.items', { count: items }) : '', gold ? `${fmt.num(gold)} g` : ''].filter(Boolean).join(' + ') || '—';
+  return (
+    <>
+      <PageHeader title={t('trades.title')} count={data?.total ?? null} subtitle={t('trades.subtitle')} />
+      <Toolbar>
+        <SearchBox value={q} onChange={(v) => { setQ(v); setPage(1); }} placeholder={t('trades.searchPlaceholder')} />
+        <Select label={t('common.status')} value={status} onChange={(v) => { setStatus(v); setPage(1); }} options={['all', 'pending', 'completed', 'cancelled', 'declined'].map((s) => ({ value: s, label: t(`trades.st.${s}`) }))} />
+      </Toolbar>
+      <StateView loading={loading} error={error} onRetry={reload} isEmpty={!data?.trades.length} emptyText={t('common.noResults')}>
+        <DataTable
+          rows={data?.trades || []}
+          rowKey={(x) => x.id}
+          dim={loading}
+          caption={t('trades.title')}
+          cols={[
+            { key: 'parties', label: t('trades.parties'), primary: true, render: (x) => <span>{x.from_name} ⇄ {x.to_name} <span className="muted mono">#{x.id}</span></span> },
+            { key: 'from', label: t('trades.fromGives'), render: (x) => side(x.from_item_count, x.from_gold) },
+            { key: 'to', label: t('trades.toGives'), render: (x) => side(x.to_item_count, x.to_gold) },
+            { key: 'ready', label: t('trades.ready'), render: (x) => `${x.from_ready ? '✓' : '·'} / ${x.to_ready ? '✓' : '·'}` },
+            { key: 'status', label: t('common.status'), render: (x) => <Tag tone={TRADE_TONE[x.status]}>{t(`trades.st.${x.status}`, { defaultValue: x.status })}</Tag> },
+            { key: 'updated', label: t('trades.updated'), render: (x) => fmt.dateTime(x.updated_at) },
+          ]}
+          actions={(x) => (x.status === 'pending' ? <button type="button" className="btn btn-sm btn-danger" onClick={() => cancel(x)}>{t('trades.cancel')}</button> : null)}
+        />
+        {data && <Pager page={data.page} pages={data.pages} total={data.total} onPage={setPage} />}
+      </StateView>
     </>
   );
 }

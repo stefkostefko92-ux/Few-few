@@ -165,9 +165,9 @@ export function Items(): React.ReactElement {
       template={{ slug: '', name: '', category: 'weapon', sub_type: '', tier: 1, rarity: 'common', level_req: 1, class_req: '', atk_min: 0, atk_max: 0, defense: 0, hp_bonus: 0, mp_bonus: 0, str_bonus: 0, dex_bonus: 0, con_bonus: 0, int_bonus: 0, cha_bonus: 0, wis_bonus: 0, heal_hp: 0, heal_mp: 0, buy_price: 0, sell_price: 0, icon: 'sword', description: '' }}
       fields={[
         txt('slug'), txt('name'),
-        { key: 'category', type: 'select', options: ['weapon', 'helm', 'armor', 'gloves', 'boots', 'shield', 'ring', 'amulet', 'potion', 'misc'] },
+        { key: 'category', type: 'select', options: ['weapon', 'helm', 'armor', 'gloves', 'boots', 'shield', 'cloak', 'ring', 'amulet', 'potion', 'misc'] },
         { key: 'rarity', type: 'select', options: ['common', 'uncommon', 'rare', 'epic', 'legendary'] },
-        num('tier', 1, 10), num('level_req', 1, 500), txt('sub_type'), txt('class_req'),
+        num('tier', 1, 12), num('level_req', 1, 1000), txt('sub_type'), txt('class_req'),
         num('atk_min'), num('atk_max'), num('defense'),
         num('hp_bonus', -100000, 100000), num('mp_bonus', -100000, 100000),
         num('str_bonus', -100000, 100000), num('dex_bonus', -100000, 100000), num('con_bonus', -100000, 100000),
@@ -197,7 +197,7 @@ export function Monsters(): React.ReactElement {
       ]}
       template={{ slug: '', name: '', level: 1, hp: 20, atk_min: 2, atk_max: 4, defense: 0, speed: 5, xp_reward: 5, gold_min: 1, gold_max: 3, sprite: 'goblin', family: 'beast', region: 'whispering_woods' }}
       fields={[
-        txt('slug'), txt('name'), num('level', 1, 500), num('hp', 1),
+        txt('slug'), txt('name'), num('level', 1, 1000), num('hp', 1),
         num('atk_min'), num('atk_max'), num('defense'), num('speed', 1, 50),
         num('xp_reward'), num('gold_min'), num('gold_max'),
         { key: 'sprite', type: 'select', dynamic: true, options: ['goblin', 'wolf', 'rat', 'boar', 'bandit', 'troll', 'orc', 'witch', 'spider', 'golem', 'serpent', 'wraith', 'drake', 'titan', 'shadowlord', 'overlord'] },
@@ -228,7 +228,7 @@ export function Quests(): React.ReactElement {
       fields={[
         txt('slug'), txt('title'),
         { key: 'region', type: 'select', dynamic: true, options: REGIONS },
-        num('level_req', 1, 500), num('energy_cost', 0, 99), txt('monster_slug'),
+        num('level_req', 1, 1000), num('energy_cost', 0, 99), txt('monster_slug'),
         num('xp_reward'), num('gold_reward'), { key: 'item_reward', type: 'text', wide: true },
         { key: 'intro', type: 'textarea' }, { key: 'narrative', type: 'textarea' },
         { key: 'success_text', type: 'textarea' }, { key: 'failure_text', type: 'textarea' },
