@@ -94,7 +94,18 @@ export const PUT = gestito(async (req, ctx) => {
           })),
         });
     }
-    return tx.contratto.update({ where: { id }, data, include });
+    // Чернова с нова начална дата: графикът тръгва от НЕЯ. Иначе след
+    // активиране автоматизмът ражда фактури и ордини за периоди преди
+    // договора (датата напред) или пропуска дължими посещения (назад).
+    const grafici =
+      prima.stato === "BOZZA" && data.dataInizio
+        ? { prossimaVisita: data.dataInizio, prossimaFattura: data.dataInizio }
+        : {};
+    return tx.contratto.update({
+      where: { id },
+      data: { ...data, ...grafici },
+      include,
+    });
   });
 
   await scriviAudit({

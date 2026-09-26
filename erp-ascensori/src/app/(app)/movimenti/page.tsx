@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Modale, Paginazione, Vuoto } from "@/components/ui";
 import { dataOraIt } from "@/lib/format";
 import { IcoNuovo } from "@/components/icone";
+import { apiFetch } from "@/lib/fetch-client";
 
 interface Movimento {
   id: string;
@@ -43,44 +44,68 @@ export default function Pagina() {
     nota: "",
   });
   const [errore, setErrore] = useState<string | null>(null);
+  const [erroreLista, setErroreLista] = useState<string | null>(null);
+  const [caricato, setCaricato] = useState(false);
+  /** Движението сваля наличността: двойно натискане = две движения. */
+  const [invio, setInvio] = useState(false);
   const size = 50;
 
   const carica = useCallback(async () => {
-    const res = await fetch(`/api/movimenti?page=${page}&size=${size}`);
-    if (!res.ok) return;
-    const d = await res.json();
-    setRighe(d.righe);
-    setTotale(d.totale);
+    const r = await apiFetch<{
+      righe: Movimento[];
+      totale: number;
+      error?: string;
+    }>(`/api/movimenti?page=${page}&size=${size}`);
+    setCaricato(true);
+    if (!r.ok) {
+      // Грешка при четене НЕ е „няма движения".
+      setErroreLista(r.dati.error ?? "Impossibile leggere i movimenti.");
+      return;
+    }
+    setErroreLista(null);
+    setRighe(r.dati.righe);
+    setTotale(r.dati.totale);
   }, [page]);
+
+  const caricaArticoli = useCallback(async () => {
+    const r = await apiFetch<{ righe?: Articolo[] }>("/api/articoli?size=200");
+    if (r.ok) setArticoli(r.dati.righe ?? []);
+  }, []);
 
   useEffect(() => {
     void carica();
-    void fetch("/api/articoli?size=200")
-      .then((r) => r.json())
-      .then((d) => setArticoli(d.righe ?? []));
   }, [carica]);
+  useEffect(() => {
+    void caricaArticoli();
+  }, [caricaArticoli]);
 
   async function salva(e: React.FormEvent) {
     e.preventDefault();
+    if (invio) return;
+    setInvio(true);
     setErrore(null);
-    const res = await fetch("/api/movimenti", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        articoloId: form.articoloId,
-        tipo: form.tipo,
-        quantita: Number(form.quantita),
-        nota: form.nota || null,
-      }),
-    });
-    const d = await res.json();
-    if (!res.ok) {
-      setErrore(d.error ?? "Errore");
-      return;
+    try {
+      const r = await apiFetch<{ error?: string }>("/api/movimenti", {
+        method: "POST",
+        body: JSON.stringify({
+          articoloId: form.articoloId,
+          tipo: form.tipo,
+          quantita: Number(form.quantita),
+          nota: form.nota || null,
+        }),
+      });
+      if (!r.ok) {
+        setErrore(r.dati.error ?? "Errore");
+        return;
+      }
+      setAperto(false);
+      setForm({ articoloId: "", tipo: "ENTRATA", quantita: "", nota: "" });
+      // И наличностите в менюто — иначе следващото движение показва старата.
+      void carica();
+      void caricaArticoli();
+    } finally {
+      setInvio(false);
     }
-    setAperto(false);
-    setForm({ articoloId: "", tipo: "ENTRATA", quantita: "", nota: "" });
-    void carica();
   }
 
   return (
@@ -104,7 +129,13 @@ export default function Pagina() {
       </div>
 
       <div className="card overflow-hidden">
-        {righe.length === 0 ? (
+        {erroreLista ? (
+          <p role="alert" className="px-4 py-6 text-sm text-danger-text">
+            {erroreLista}
+          </p>
+        ) : !caricato ? (
+          <p className="px-4 py-6 text-sm text-text-3">Caricamento…</p>
+        ) : righe.length === 0 ? (
           <Vuoto messaggio="Nessun movimento registrato" />
         ) : (
           <table className="w-full text-sm">
@@ -138,12 +169,12 @@ export default function Pagina() {
                     </span>
                   </td>
                   <td className="px-3 py-2.5 text-right font-mono">
+                    {/* Корекцията е ПОДПИСАНА: знакът идва от стойността. */}
                     {m.tipo === "USCITA"
-                      ? "−"
+                      ? `−${Math.abs(m.quantita)}`
                       : m.tipo === "ENTRATA"
-                        ? "+"
-                        : "±"}
-                    {m.quantita}
+                        ? `+${Math.abs(m.quantita)}`
+                        : `${m.quantita < 0 ? "−" : "+"}${Math.abs(m.quantita)}`}
                   </td>
                   <td className="px-3 py-2.5 text-text-2">{m.nota ?? "—"}</td>
                 </tr>
@@ -165,8 +196,11 @@ export default function Pagina() {
         onChiudi={() => setAperto(false)}
       >
         <form onSubmit={salva}>
-          <label className="label">Articolo *</label>
+          <label className="label" htmlFor="mov-articolo">
+            Articolo *
+          </label>
           <select
+            id="mov-articolo"
             className="input mb-4"
             required
             value={form.articoloId}
@@ -179,8 +213,11 @@ export default function Pagina() {
               </option>
             ))}
           </select>
-          <label className="label">Tipo *</label>
+          <label className="label" htmlFor="mov-tipo">
+            Tipo *
+          </label>
           <select
+            id="mov-tipo"
             className="input mb-4"
             value={form.tipo}
             onChange={(e) => setForm({ ...form, tipo: e.target.value })}
@@ -189,16 +226,22 @@ export default function Pagina() {
             <option value="USCITA">Uscita</option>
             <option value="RETTIFICA">Rettifica (± correzione)</option>
           </select>
-          <label className="label">Quantità *</label>
+          <label className="label" htmlFor="mov-quantita">
+            Quantità *
+          </label>
           <input
+            id="mov-quantita"
             type="number"
             className="input mb-4 font-mono"
             required
             value={form.quantita}
             onChange={(e) => setForm({ ...form, quantita: e.target.value })}
           />
-          <label className="label">Causale / riferimento</label>
+          <label className="label" htmlFor="mov-nota">
+            Causale / riferimento
+          </label>
           <input
+            id="mov-nota"
             className="input mb-4"
             value={form.nota}
             onChange={(e) => setForm({ ...form, nota: e.target.value })}
@@ -219,8 +262,8 @@ export default function Pagina() {
             >
               Annulla
             </button>
-            <button type="submit" className="btn-primary">
-              Registra
+            <button type="submit" className="btn-primary" disabled={invio}>
+              {invio ? "Registrazione…" : "Registra"}
             </button>
           </div>
         </form>

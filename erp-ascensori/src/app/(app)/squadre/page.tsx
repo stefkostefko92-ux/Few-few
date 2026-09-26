@@ -55,6 +55,7 @@ const config: EntityConfig = {
       name: "attiva",
       label: "Disponibile per nuove assegnazioni",
       tipo: "checkbox",
+      predefinito: true,
     },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],

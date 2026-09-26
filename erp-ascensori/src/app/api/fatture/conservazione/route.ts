@@ -26,11 +26,25 @@ import {
   type DocumentoConservazione,
 } from "@/lib/sdi/conservazione";
 
-/** Дата от адреса. Сгрешена стойност дава 400 с обяснение, не 500 от базата. */
-function dataParam(url: URL, nome: string): Date | null {
+/**
+ * Дата от адреса. Сгрешена стойност дава 400 с обяснение, не 500 от базата.
+ *
+ * `YYYY-MM-DD` е ДЕН по стенния час на сървъра (Europe/Rome — `ENV TZ`), не
+ * полунощ UTC: `new Date("2026-03-31")` е 02:00 в Рим, тоест фактура от
+ * сутринта на последния ден отпадаше от пратката — и не влизаше и в следващата.
+ * С `giornoDopo` краят е ИЗКЛЮЧВАЩ: началото на следващия ден.
+ */
+function dataParam(url: URL, nome: string, giornoDopo = false): Date | null {
   const v = url.searchParams.get(nome);
   if (!v) return null;
-  const d = new Date(v);
+  const giorno = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  const d = giorno
+    ? new Date(
+        Number(giorno[1]),
+        Number(giorno[2]) - 1,
+        Number(giorno[3]) + (giornoDopo ? 1 : 0),
+      )
+    : new Date(v);
   if (Number.isNaN(d.getTime()))
     throw new ErroreHttp(400, `Parametro «${nome}» non è una data valida`);
   return d;
@@ -48,7 +62,7 @@ export const GET = gestito(async (req) => {
   const s = await richiedeRuolo("DIREZIONE");
   const url = new URL(req.url);
   const dal = dataParam(url, "dal");
-  const al = dataParam(url, "al");
+  const al = dataParam(url, "al", true);
 
   const dove = {
     ...filtroTenant(s),
@@ -56,7 +70,7 @@ export const GET = gestito(async (req) => {
     // Черновата НЕ влиза: тя не е издаден документ и няма какво да се съхранява.
     stato: { not: "BOZZA" as const },
     ...(dal || al
-      ? { data: { ...(dal ? { gte: dal } : {}), ...(al ? { lte: al } : {}) } }
+      ? { data: { ...(dal ? { gte: dal } : {}), ...(al ? { lt: al } : {}) } }
       : {}),
   };
 

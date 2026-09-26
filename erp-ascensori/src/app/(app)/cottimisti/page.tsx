@@ -53,7 +53,12 @@ const config: EntityConfig = {
     { name: "email", label: "Email", tipo: "email" },
     { name: "telefono", label: "Telefono", tipo: "text" },
     { name: "indirizzo", label: "Indirizzo", tipo: "text" },
-    { name: "attivo", label: "Abilitato a nuovi lavori", tipo: "checkbox" },
+    {
+      name: "attivo",
+      label: "Abilitato a nuovi lavori",
+      tipo: "checkbox",
+      predefinito: true,
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

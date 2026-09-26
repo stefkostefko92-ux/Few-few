@@ -147,6 +147,7 @@ const config: EntityConfig = {
       name: "rinnovoAutomatico",
       label: "Rinnovo tacito alla scadenza",
       tipo: "checkbox",
+      predefinito: true,
     },
     {
       name: "preavvisoMesi",

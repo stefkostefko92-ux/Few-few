@@ -365,7 +365,23 @@ export const impianti: CrudConfig = {
   entita: "impianti",
   model: "impianto",
   schemaCreate: impiantoBase,
-  schemaUpdate: impiantoBase.partial(),
+  // Промяната ПРИЕМА „fermo amministrativo" — иначе спряната уредба не може
+  // да бъде пипната изобщо (формата праща текущото състояние обратно).
+  // Налагането му оттук се отказва във `vincoloModifica`.
+  schemaUpdate: impiantoBase
+    .extend({
+      stato: z
+        .enum([
+          "ATTIVO",
+          "FERMO",
+          "MANUTENZIONE",
+          "FUORI_SERVIZIO",
+          "DISMESSO",
+          "FERMO_AMMINISTRATIVO",
+        ])
+        .optional(),
+    })
+    .partial(),
   searchFields: [
     "matricola",
     "marca",
@@ -381,6 +397,11 @@ export const impianti: CrudConfig = {
   vincoloModifica: (prima, data) => {
     const p = prima as { stato?: string };
     const d = data as { stato?: string };
+    if (
+      d.stato === "FERMO_AMMINISTRATIVO" &&
+      p.stato !== "FERMO_AMMINISTRATIVO"
+    )
+      return "Il fermo amministrativo non si imposta a mano: deriva da una verifica periodica con esito negativo (art. 14 D.P.R. 162/1999).";
     if (p.stato !== "FERMO_AMMINISTRATIVO" || !d.stato || d.stato === p.stato)
       return null;
     return "Impianto in fermo amministrativo: può essere rimesso in servizio solo registrando una nuova verifica con esito positivo (art. 14 c.2 D.P.R. 162/1999).";
@@ -431,7 +452,14 @@ const articoloBase = z.object({
   codice: str,
   barcode: strOpt,
   nome: str,
-  descrizione: z.string().trim().max(2000).optional(),
+  // Формата праща празното поле като `null`: без `nullish` всяка промяна на
+  // артикул без описание даваше 400 „Campo obbligatorio".
+  descrizione: z
+    .string()
+    .trim()
+    .max(2000)
+    .nullish()
+    .transform((v) => (v === null ? "" : v)),
   tipo: z.enum(["COMPONENTI", "VENDITA"]).optional(),
   categoria: strOpt,
   ubicazione: strOpt,

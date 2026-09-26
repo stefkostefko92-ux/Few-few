@@ -28,8 +28,29 @@ export const GET = gestito(async (req, ctx) => {
   const { id } = await ctx.params;
   const f = await fatturaPerSdi(id, s.tenantId ?? null);
   if (!f) return errore(404, "Fattura non trovata");
+  const stato = await prisma.fattura.findFirst({
+    where: { id, tenantId: s.tenantId ?? null },
+    select: { stato: true, progressivoInvio: true },
+  });
+  // Сторнирана и НИКОГА неподавана: файлът би бил ново издаване на
+  // анулиран документ. Подаденият се тегли пак — „както е издаден" (TD01).
+  if (stato?.stato === "STORNATA" && !stato.progressivoInvio)
+    return errore(
+      409,
+      "Fattura stornata mai trasmessa: la nota di credito (TD04) è un documento a sé, con un proprio numero, da emettere tramite il proprio intermediario.",
+    );
 
-  const { problemi, avvisi } = controllaPerSdi(f);
+  const controllo = controllaPerSdi(f);
+  // Черновата не се изнася (виж горе) — и проверката го казва, за да изключи
+  // бутона, вместо файлът да излезе и номерът да се изразходва.
+  const problemi =
+    stato?.stato === "BOZZA"
+      ? [
+          "Fattura in bozza: va emessa prima di generare il file per lo SdI.",
+          ...controllo.problemi,
+        ]
+      : controllo.problemi;
+  const { avvisi } = controllo;
   const t = totaliSdi(f);
   const soloControllo = new URL(req.url).searchParams.get("controlla") === "1";
   if (soloControllo)

@@ -461,6 +461,19 @@ describe("правилата, които не са очевидни", () => {
     assert.equal(v({ stato: "FERMO_AMMINISTRATIVO" }, { note: "x" }), null);
     // Уредба, която НЕ е спряна, се мени свободно.
     assert.equal(v({ stato: "ATTIVO" }, { stato: "FERMO" }), null);
+    // …но спирането не се НАЛАГА от менюто: то идва от отрицателна проверка.
+    assert.match(
+      String(v({ stato: "ATTIVO" }, { stato: "FERMO_AMMINISTRATIVO" })),
+      /non si imposta a mano/,
+    );
+    // Спряната уредба вече може да се редактира (схемата приема състоянието).
+    assert.equal(
+      impianti.schemaUpdate.safeParse({
+        stato: "FERMO_AMMINISTRATIVO",
+        note: "x",
+      }).success,
+      true,
+    );
   });
 
   test("документът наследява потребителя от СЕСИЯТА, не от тялото", () => {

@@ -138,6 +138,7 @@ const config: EntityConfig = {
       name: "splitPayment",
       label: "Scissione dei pagamenti (art. 17-ter)",
       tipo: "checkbox",
+      predefinito: false,
       aiuto:
         "Solo verso la pubblica amministrazione: l'IVA è versata dall'ente, non da noi.",
     },

@@ -37,9 +37,15 @@ export const PATCH = gestito(async (req, ctx) => {
   const dopo = await prisma.$transaction(async (tx) => {
     const prima = await tx.fattura.findFirst({
       where: { id, ...filtroTenant(s) },
-      select: { statoSdi: true, progressivoInvio: true },
+      select: { statoSdi: true, progressivoInvio: true, stato: true },
     });
     if (!prima) throw new ErroreHttp(404, "Fattura non trovata");
+    // Чернова няма SdI живот: тя не е издадена и може още да изчезне.
+    if (prima.stato === "BOZZA")
+      throw new ErroreHttp(
+        409,
+        "Fattura in bozza: va emessa prima di registrare esiti dello SdI",
+      );
     const da = prima.statoSdi as StatoSdi;
     if (!transizioneSdiAmmessa(da, data.stato))
       throw new ErroreHttp(

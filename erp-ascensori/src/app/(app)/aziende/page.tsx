@@ -63,7 +63,12 @@ const config: EntityConfig = {
       label: "Scadenza abbonamento",
       tipo: "date",
     },
-    { name: "attivo", label: "Accesso attivo", tipo: "checkbox" },
+    {
+      name: "attivo",
+      label: "Accesso attivo",
+      tipo: "checkbox",
+      predefinito: true,
+    },
     { name: "note", label: "Note", tipo: "textarea", colSpan2: true },
   ],
 };

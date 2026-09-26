@@ -4,9 +4,12 @@
 // данните, които СЕИДЪТ и потребителският поток произвеждат, наистина стигат до
 // годен файл — и че негодната фактура се спира ПРЕДИ подаване, с обяснение.
 
-import { test, describe, before } from "node:test";
+import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { comeRuolo, Sessione, BASE, unico } from "./_client";
+import { prisma } from "../../src/lib/prisma";
+
+after(() => prisma.$disconnect());
 
 let direzione: Sessione;
 let master: Sessione;
@@ -59,6 +62,31 @@ async function nuovaFattura(
   assert.equal(f.status, 201, JSON.stringify(f.dati));
   const v = await direzione.post(`/api/fatture/${f.dati.id}/voci`, voce);
   assert.equal(v.status, 201, JSON.stringify(v.dati));
+  // Издадена: черновата не се изнася (номерът ѝ още може да се освободи).
+  const e = await direzione.patch(`/api/fatture/${f.dati.id}/stato`, {
+    stato: "EMESSA",
+  });
+  assert.equal(e.status, 200, JSON.stringify(e.dati));
+  return f.dati;
+}
+
+/** Само чернова — за проверките, които искат да я видят отказана. */
+async function nuovaBozza() {
+  const f = await direzione.post<{ id: string; numero: string }>(
+    "/api/fatture",
+    {
+      oggetto: unico("SDI-bozza"),
+      amministratoreId: amministratoreId,
+      tipo: "EMESSA",
+    },
+  );
+  assert.equal(f.status, 201, JSON.stringify(f.dati));
+  await direzione.post(`/api/fatture/${f.dati.id}/voci`, {
+    descrizione: "Canone",
+    quantita: "1",
+    prezzoUnitario: "300.00",
+    aliquotaIva: "22",
+  });
   return f.dati;
 }
 
@@ -69,6 +97,31 @@ async function scaricaXml(s: Sessione, id: string) {
   });
   return { status: res.status, testo: await res.text(), headers: res.headers };
 }
+
+describe("черновата не излиза към SDI", () => {
+  test("XML: 409 + проблем в проверката; ръчно отбелязване — 409", async () => {
+    const b = await nuovaBozza();
+    const c = await direzione.get<{ pronta: boolean; problemi: string[] }>(
+      `/api/fatture/${b.id}/xml?controlla=1`,
+    );
+    assert.equal(c.dati.pronta, false);
+    assert.match(c.dati.problemi.join(" "), /bozza/);
+    assert.equal((await scaricaXml(direzione, b.id)).status, 422);
+    const sdi = await direzione.patch(`/api/fatture/${b.id}/sdi`, {
+      stato: "INVIATA",
+    });
+    assert.equal(sdi.status, 409);
+    const riga = await prisma.fattura.findUnique({
+      where: { id: b.id },
+      select: { progressivoInvio: true },
+    });
+    assert.equal(
+      riga?.progressivoInvio ?? null,
+      null,
+      "номерът не е изразходван",
+    );
+  });
+});
 
 describe("експорт за SDI", () => {
   test("фактура с пълни реквизити дава годен XML", async () => {
@@ -194,7 +247,10 @@ describe("експорт за SDI", () => {
 // БАЗАТА стигат до правилния получател, че удържането се смята от истински
 // тотали и че статусите не се разминават с постъпленията.
 
-async function fatturaCondominio(voce?: Record<string, unknown>) {
+async function fatturaCondominio(
+  voce?: Record<string, unknown>,
+  { bozza = false }: { bozza?: boolean } = {},
+) {
   const f = await direzione.post<{
     id: string;
     numero: string;
@@ -216,6 +272,12 @@ async function fatturaCondominio(voce?: Record<string, unknown>) {
     },
   );
   assert.equal(v.status, 201, JSON.stringify(v.dati));
+  if (!bozza) {
+    const e = await direzione.patch(`/api/fatture/${f.dati.id}/stato`, {
+      stato: "EMESSA",
+    });
+    assert.equal(e.status, 200, JSON.stringify(e.dati));
+  }
   return f.dati;
 }
 
@@ -287,7 +349,7 @@ describe("кондоминиумът е получателят", () => {
 
 describe("плащания и статус в SDI", () => {
   test("частичното постъпление е PARZIALE, пълното — PAGATA", async () => {
-    const f = await fatturaCondominio();
+    const f = await fatturaCondominio(undefined, { bozza: true });
     assert.equal(
       (await direzione.patch(`/api/fatture/${f.id}/stato`, { stato: "EMESSA" }))
         .status,
@@ -319,7 +381,7 @@ describe("плащания и статус в SDI", () => {
   });
 
   test("по чернова не се вписват постъпления", async () => {
-    const f = await fatturaCondominio();
+    const f = await fatturaCondominio(undefined, { bozza: true });
     const r = await direzione.post(`/api/fatture/${f.id}/pagamenti`, {
       importo: "10.00",
     });
@@ -392,12 +454,15 @@ describe("плащания и статус в SDI", () => {
 
 describe("значими блага", () => {
   test("разцепването ражда трите законови реда и вдига ставката на горницата", async () => {
-    const f = await fatturaCondominio({
-      descrizione: "Posa in opera",
-      quantita: "1",
-      prezzoUnitario: "3000.00",
-      aliquotaIva: "10",
-    });
+    const f = await fatturaCondominio(
+      {
+        descrizione: "Posa in opera",
+        quantita: "1",
+        prezzoUnitario: "3000.00",
+        aliquotaIva: "10",
+      },
+      { bozza: true },
+    );
     assert.equal(
       (
         await direzione.post(`/api/fatture/${f.id}/voci`, {

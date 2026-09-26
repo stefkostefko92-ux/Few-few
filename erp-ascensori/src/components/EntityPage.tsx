@@ -377,8 +377,12 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
 // ── Формата (create/edit) ───────────────────────────────────────────────────
 
 function valoreIniziale(campo: Campo, riga?: Riga): unknown {
+  // Отметка без изрична стойност по подразбиране тръгва ИЗКЛЮЧЕНА: включена
+  // по подразбиране, всяка нова фактура излизаше с разделено плащане на ДДС
+  // (чл. 17-ter) — и ДДС-то не влизаше в дължимото. Полетата „активен" си
+  // казват `predefinito: true` сами.
   if (!riga)
-    return campo.predefinito ?? (campo.tipo === "checkbox" ? true : "");
+    return campo.predefinito ?? (campo.tipo === "checkbox" ? false : "");
   const v = riga[campo.name];
   if (v === null || v === undefined)
     return campo.tipo === "checkbox" ? false : "";
