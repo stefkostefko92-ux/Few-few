@@ -222,6 +222,7 @@ export default {
   "game.counting.wrong": "❌ {{user}} rompió la cadena en **{{reached}}**: el siguiente número era **{{expected}}**. ¡Vuelta al 1! Récord del servidor: **{{high}}**.",
   "game.counting.sameUser": "❌ {{user}}, no puedes contar dos veces seguidas. ¡Vuelta al 1! Récord del servidor: **{{high}}**.",
   "game.counting.milestone": "🏆 ¡**{{number}}**! {{user}} se lleva el hito (+{{xp}} XP).",
+  "game.counting.milestoneNoXp": "🏆 ¡**{{number}}**! {{user}} se lleva el hito.",
   "game.counting.record": "🥇 ¡Nuevo récord del servidor: **{{number}}**!",
   "game.trivia.title": "🧠 Trivia",
   "game.trivia.kbTitle": "🧠 Trivia: ¿conoces tu servidor?",

@@ -214,9 +214,13 @@ function LevelsTab({ data }) {
   const { serverId } = useParams();
   const [rows, setRows] = useState(() => (data.settings.levelRoles || []).map((r) => ({ level: r.level, roleId: r.roleId })));
   const limit = data.limits.levelRoles;
+  // Непълен ред (без роля или с ниво < 1) се изхвърляше тихо и таблото казваше
+  // „Запазено“ — ролята просто изчезваше (одит 26.09.2026). Сега записът спира.
+  const rowOk = (r) => Number(r.level) >= 1 && SNOWFLAKE.test(String(r.roleId).trim());
+  const invalidRows = rows.filter((r) => !rowOk(r));
   const save = useMutation({
     mutationFn: () => updateGameSettings(serverId, {
-      levelRoles: rows.filter((r) => Number(r.level) >= 1 && SNOWFLAKE.test(String(r.roleId).trim())).map((r) => ({ level: Number(r.level), roleId: String(r.roleId).trim() })),
+      levelRoles: rows.filter(rowOk).map((r) => ({ level: Number(r.level), roleId: String(r.roleId).trim() })),
     }),
     onSuccess: () => { toast.success(t("game.saved")); qc.invalidateQueries({ queryKey: ["game", serverId] }); },
     onError: (err) => toast.error(errMsg(err, t("game.saveFailed"))),
@@ -240,7 +244,8 @@ function LevelsTab({ data }) {
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
           <button type="button" className="cs-btn-secondary" disabled={rows.length >= limit} onClick={() => setRows((rs) => [...rs, { level: (rs.at(-1)?.level ? Number(rs.at(-1).level) + 5 : 5), roleId: "" }])}><Plus className="w-4 h-4" aria-hidden="true" /> {t("game.levels.add")}</button>
-          <button type="button" className="cs-btn-primary" disabled={save.isPending} onClick={() => save.mutate()}><Save className="w-4 h-4" aria-hidden="true" /> {t("game.save")}</button>
+          <button type="button" className="cs-btn-primary" disabled={save.isPending}
+            onClick={() => (invalidRows.length ? toast.error(t("game.levels.invalidRows")) : save.mutate())}><Save className="w-4 h-4" aria-hidden="true" /> {t("game.save")}</button>
         </div>
         {rows.length >= limit && <p className="text-xs text-warning mt-2">{t("game.levels.limit", { n: limit })}</p>}
       </div>
@@ -265,7 +270,9 @@ function ShopTab({ data }) {
   const { serverId } = useParams();
   const [editing, setEditing] = useState(null); // null | "new" | id
   const [form, setForm] = useState(emptyItem());
-  const { data: items = [] } = useQuery({ queryKey: ["game-shop", serverId], queryFn: () => getGameShop(serverId) });
+  // Без isLoading/isError магазинът казваше „няма артикули“, докато зарежда
+  // или при грешка — и бутонът „Нов“ пускаше над лимита (одит 26.09.2026).
+  const { data: items = [], isLoading: shopLoading, isError: shopError } = useQuery({ queryKey: ["game-shop", serverId], queryFn: () => getGameShop(serverId) });
   const { data: purchases = [] } = useQuery({ queryKey: ["game-purchases", serverId], queryFn: () => getGamePurchases(serverId) });
   const limit = data.limits.shopItems;
   const invalidate = () => { qc.invalidateQueries({ queryKey: ["game-shop", serverId] }); qc.invalidateQueries({ queryKey: ["game", serverId] }); };
@@ -289,12 +296,14 @@ function ShopTab({ data }) {
           <h2 className="text-lg font-semibold text-cs-text">{t("game.shop.title")}</h2>
           <div className="flex items-center gap-2">
             <span className="cs-badge">{items.length} / {limit}{!data.isPremium && <PremiumBadge small />}</span>
-            <button type="button" className="cs-btn-primary" disabled={items.length >= limit} onClick={() => { setForm(emptyItem()); setEditing("new"); }}><Plus className="w-4 h-4" aria-hidden="true" /> {t("game.shop.new")}</button>
+            <button type="button" className="cs-btn-primary" disabled={shopLoading || shopError || items.length >= limit} onClick={() => { setForm(emptyItem()); setEditing("new"); }}><Plus className="w-4 h-4" aria-hidden="true" /> {t("game.shop.new")}</button>
           </div>
         </div>
         <p className="text-xs text-cs-dim mt-1">{t("game.shop.hint")}</p>
         {items.length >= limit && <p className="text-xs text-warning mt-2">{t("game.shop.limit", { n: limit })}</p>}
-        {items.length === 0 && <p className="text-sm text-cs-muted mt-4">{t("game.shop.empty")}</p>}
+        {shopLoading && <p className="text-sm text-cs-muted mt-4" role="status">{t("game.loading")}</p>}
+        {shopError && <p className="text-sm text-danger mt-4" role="alert">{t("common.operationFailed")}</p>}
+        {!shopLoading && !shopError && items.length === 0 && <p className="text-sm text-cs-muted mt-4">{t("game.shop.empty")}</p>}
         <ul className="mt-4 divide-y divide-cs-border/50">
           {items.map((i) => (
             <li key={i.id} className="py-3 flex items-center justify-between gap-3 flex-wrap">
@@ -365,7 +374,7 @@ function LeaderboardTab() {
   const { t } = useT();
   const { serverId } = useParams();
   const [by, setBy] = useState("xp");
-  const { data } = useQuery({ queryKey: ["game-lb", serverId, by], queryFn: () => getGameLeaderboard(serverId, by) });
+  const { data, isLoading, isError } = useQuery({ queryKey: ["game-lb", serverId, by], queryFn: () => getGameLeaderboard(serverId, by) });
   const rows = data?.rows || [];
   return (
     <div className="cs-card">
@@ -380,7 +389,9 @@ function LeaderboardTab() {
           </select>
         </label>
       </div>
-      {rows.length === 0 ? <p className="text-sm text-cs-muted">{t("game.lb.empty")}</p> : (
+      {isLoading ? <p className="text-sm text-cs-muted" role="status">{t("game.loading")}</p>
+        : isError ? <p className="text-sm text-danger" role="alert">{t("common.operationFailed")}</p>
+        : rows.length === 0 ? <p className="text-sm text-cs-muted">{t("game.lb.empty")}</p> : (
         <div className="overflow-x-auto"><table className="cs-table w-full text-sm min-w-[40rem]">
           <thead><tr><th>#</th><th>{t("game.lb.user")}</th><th>{t("game.lb.level")}</th><th>XP</th><th>{t("game.lb.seasonXp")}</th><th>✨</th><th>🔥</th><th>{t("game.lb.messages")}</th><th>{t("game.lb.voice")}</th></tr></thead>
           <tbody>{rows.map((r, i) => (

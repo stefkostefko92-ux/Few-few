@@ -60,7 +60,10 @@ async function applyCountMessage(message, number) {
   }
   await message.react(out.record ? "🥇" : "✅").catch(() => {});
   if (out.milestone) {
-    await message.channel.send({ content: t("game.counting.milestone", lang, { number: out.number, user: `<@${message.author.id}>`, xp: out.xp }), allowedMentions: { users: [message.author.id] } }).catch(() => {});
+    // XP за етап се дава веднъж на член (ключ counting:<число>) — при повторно
+    // стигане след рестарт на броенето беше „(+0 XP)“ (одит 26.09.2026).
+    const key = out.xp > 0 ? "game.counting.milestone" : "game.counting.milestoneNoXp";
+    await message.channel.send({ content: t(key, lang, { number: out.number, user: `<@${message.author.id}>`, xp: out.xp }), allowedMentions: { users: [message.author.id] } }).catch(() => {});
   }
   if (out.record && out.number > 1 && out.number % 50 === 0) {
     await message.channel.send({ content: t("game.counting.record", lang, { number: out.number }) }).catch(() => {});

@@ -195,6 +195,17 @@ describe("хранене", () => {
     expect(prismaMock.memberCompanion.update.mock.calls[0][0].data).toEqual({ fed: { increment: 50 } }); // одит 25.09.2026: не абсолютна стойност
     expect(prismaMock.memberProgress.updateMany.mock.calls[1][0].where.sparks).toEqual({ gte: 50 });
   });
+  it("над прага за финалната форма се взима само липсващото (одит 26.09.2026)", async () => {
+    prismaMock.memberCompanion.findFirst.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 2, fed: 250 });
+    prismaMock.memberProgress.updateMany.mockResolvedValueOnce({ count: 1 });
+    prismaMock.memberCompanion.update
+      .mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", stage: 2, fed: 250 + data.fed.increment }))
+      .mockImplementationOnce(async ({ data }) => ({ id: "mc1", companionId: "lime-blip", fed: 300, ...data }));
+    prismaMock.memberProgress.findUnique.mockResolvedValueOnce({ sparks: 950 });
+    const out = await ops.feedCompanion("222222222222222222", "333333333333333333", "mc1", 1000);
+    expect(out).toMatchObject({ ok: true, stage: 3, charged: 50, sparksLeft: 950 });
+    expect(prismaMock.memberProgress.updateMany.mock.calls.at(-1)[0].data).toEqual({ sparks: { decrement: 50 } });
+  });
   it("крайна форма → MAX_STAGE; невалидна сума → INVALID_AMOUNT", async () => {
     prismaMock.memberCompanion.findFirst.mockResolvedValueOnce({ id: "mc1", companionId: "lime-blip", stage: 3, fed: 300 });
     expect((await ops.feedCompanion("222222222222222222", "333333333333333333", "mc1", 10)).code).toBe("MAX_STAGE");

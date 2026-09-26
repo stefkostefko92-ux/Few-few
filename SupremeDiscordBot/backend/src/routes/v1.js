@@ -63,8 +63,8 @@ router.get("/panels/:id", requireApiKey("panels:read"), async (req, res, next) =
 // ─── Tickets ────────────────────────────────────────────────────────────────
 router.get("/tickets", requireApiKey("tickets:read"), async (req, res, next) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page || "1", 10));
-    const limit = Math.min(100, parseInt(req.query.limit || "25", 10));
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 25));
     const status = req.query.status;
 
     const where = { serverId: req.params.serverId };
@@ -122,8 +122,8 @@ router.get("/forms", requireApiKey("forms:read"), async (req, res, next) => {
 // ─── Applications ───────────────────────────────────────────────────────────
 router.get("/applications", requireApiKey("applications:read"), async (req, res, next) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page || "1", 10));
-    const limit = Math.min(100, parseInt(req.query.limit || "25", 10));
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 25));
     const [items, total] = await Promise.all([
       prisma.application.findMany({
         where: { serverId: req.params.serverId },

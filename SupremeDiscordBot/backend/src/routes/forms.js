@@ -1,5 +1,6 @@
 // backend/src/routes/forms.js
 import { Router } from "express";
+import { deleteFormCascade } from "../lib/formDelete.js";
 import { prisma } from "../lib/prisma.js";
 import { z } from "zod";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
@@ -338,12 +339,7 @@ router.delete("/:serverId/:formId", requireServerAdmin, async (req, res, next) =
 
     // Cascade delete using interactive transaction — lets us handle
     // optional tables gracefully without breaking the transaction.
-    await prisma.$transaction(async (tx) => {
-      await tx.application.deleteMany({ where: { formId: req.params.formId } });
-      await tx.formCooldown.deleteMany({ where: { formId: req.params.formId } });
-      await tx.formQuestion.deleteMany({ where: { formId: req.params.formId } });
-      await tx.form.delete({ where: { id: req.params.formId } });
-    });
+    await deleteFormCascade(req.params.formId);
 
     res.json({ ok: true, applicationsDeleted: appCount });
   } catch (err) {
