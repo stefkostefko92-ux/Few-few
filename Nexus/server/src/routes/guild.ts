@@ -915,16 +915,27 @@ router.post('/vault/deposit', (req, res) => {
   if (inv.soul_bound) { res.status(400).json({ error: 'Soul-bound items cannot be donated' }); return; }
   if (inv.category === 'potion') { res.status(400).json({ error: 'Consumables cannot be donated' }); return; }
 
+  // CAS: two concurrent /vault/deposit calls for the SAME inventoryId both
+  // passed the `!inv.vaulted_guild_id` read above (neither had written it
+  // yet) and both inserted a guild_vault row for the same inventory_id —
+  // one physical item shown as TWO vault entries. Whichever member took it
+  // first would flip vaulted_guild_id to 0 (protected by the CAS in
+  // /vault/take), so no item was ever duplicated, but the second row stuck
+  // around as a ghost vault listing until server restart. Gate the flag
+  // flip itself on `vaulted_guild_id = 0` so only one deposit can win.
   const tx = db.transaction(() => {
-    // Mark the row as vaulted — character_id stays so the FK is satisfied,
-    // but the inventory query filters out vaulted_guild_id > 0 so the
-    // depositor no longer sees it in their bag.
-    db.prepare(`UPDATE inventory SET vaulted_guild_id = ? WHERE id = ?`).run(g.guild.id, inv.id);
+    const flag = db.prepare(`UPDATE inventory SET vaulted_guild_id = ? WHERE id = ? AND character_id = ? AND vaulted_guild_id = 0`)
+      .run(g.guild.id, inv.id, char.id);
+    if (flag.changes !== 1) { const e: any = new Error('Already in the guild vault'); e.clientSafe = true; e.status = 409; throw e; }
     db.prepare(
       `INSERT INTO guild_vault (guild_id, inventory_id, deposited_by, deposited_at) VALUES (?, ?, ?, ?)`,
     ).run(g.guild.id, inv.id, char.id, Date.now());
   });
-  tx();
+  try { tx(); }
+  catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
+  }
   res.json({ ok: true, item_name: inv.name });
 });
 

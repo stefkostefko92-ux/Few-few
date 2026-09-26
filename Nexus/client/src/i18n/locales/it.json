@@ -1470,7 +1470,7 @@
     "soundEnabled": "Effetti sonori",
     "volume": "Volume",
     "pwMismatch": "Le password non coincidono.",
-    "pwTooShort": "Usa almeno 6 caratteri.",
+    "pwTooShort": "Usa almeno 8 caratteri.",
     "pwUpdated": "Password aggiornata.",
     "typeDelete": "Digita DELETE per confermare",
     "charDeleted": "Personaggio eliminato. Ricomincia.",

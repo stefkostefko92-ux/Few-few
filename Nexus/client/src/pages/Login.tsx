@@ -39,13 +39,13 @@ export default function Login(): React.ReactElement {
         </div>
         <form className="auth-form" onSubmit={onSubmit}>
           <div className="field">
-            <label>{t('login.usernameOrEmail')}</label>
-            <input value={u} onChange={(e) => setU(e.target.value)} autoFocus required />
+            <label htmlFor="login-u">{t('login.usernameOrEmail')}</label>
+            <input id="login-u" value={u} onChange={(e) => setU(e.target.value)} autoFocus required />
           </div>
           <div className="field">
-            <label>{t('auth.password')}</label>
-            <input type="password" value={p} onChange={(e) => setP(e.target.value)} required minLength={6} />
-            {err && <div className="error">{err}</div>}
+            <label htmlFor="login-p">{t('auth.password')}</label>
+            <input id="login-p" type="password" value={p} onChange={(e) => setP(e.target.value)} required minLength={6} />
+            {err && <div className="error" role="alert">{err}</div>}
           </div>
           <button className="btn btn-primary" type="submit" disabled={loading}>
             {loading ? t('login.signingIn') : t('login.enterButton')}
