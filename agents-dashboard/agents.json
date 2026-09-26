@@ -11036,7 +11036,7 @@
           "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
           "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
         ],
-        "lessons": 187
+        "lessons": 188
       },
       "evolution": [
         {
@@ -11506,9 +11506,20 @@
           "date": "2026-09-26",
           "event": "v16.5 — учене",
           "detail": "Научи: CSS transform (translateX/Y) на елемент чиято статична кутия НЕ overflow-ва все пак мож… (+1 още)"
+        },
+        {
+          "version": "16.6.0",
+          "date": "2026-09-26",
+          "event": "v16.6 — учене",
+          "detail": "Научи: Nexus Dominion desktop nav-profile overflow (дълго име+титла) — правилният фикс е таван…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-26",
+          "type": "learning",
+          "summary": "Научи: „Nexus Dominion desktop nav-profile overflow (дълго име+титла) — правилният фикс е таван…\" · 1 в карантина"
+        },
         {
           "date": "2026-09-26",
           "type": "learning",
