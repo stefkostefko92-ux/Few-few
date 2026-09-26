@@ -283,12 +283,23 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: absolute;
   inset: auto 0 -1px 0;
   height: 1px;
+  /* background-position анимация вместо transform:translateX — translateX(±10%)
+     рисуваше извън статичния кутия на елемента и в headless Chromium това
+     броеше към document.scrollWidth (.navbar НЕ може да е overflow:hidden —
+     .nav-menu дропдаунът вътре пада под навбара и щеше да се отреже).
+     Открито чрез бисекция на mystery ~10-73px "хоризонтален скрол" на ~18
+     /app страници на 768px — не беше видим бъг (body{overflow-x:hidden} го
+     крие), но е излишен и лесно се маха. */
   background: linear-gradient(90deg, transparent, rgba(214,161,61,.55), transparent);
+  background-size: 200% 100%;
   animation: nav-edge-pan 12s linear infinite;
 }
 @keyframes nav-edge-pan {
-  0%, 100% { transform: translateX(-10%); }
-  50% { transform: translateX(10%); }
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .navbar::after { animation: none; background-position: 100% 0; }
 }
 
 .nav-brand {
