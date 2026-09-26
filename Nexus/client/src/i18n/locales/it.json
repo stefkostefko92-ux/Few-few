@@ -1751,6 +1751,8 @@
     "arena": "Arena",
     "item": "Oggetto",
     "replay": "Rivedi",
-    "continue": "Continua"
+    "continue": "Continua",
+    "stalledTitle": "Il combattimento procede troppo lentamente",
+    "stalledBody": "Questo dispositivo disegna la scena molto lentamente. L’esito è già deciso: puoi vederlo subito."
   }
 }

@@ -1751,6 +1751,8 @@
     "arena": "Arena",
     "item": "Item",
     "replay": "Replay",
-    "continue": "Continue"
+    "continue": "Continue",
+    "stalledTitle": "The fight is running too slowly",
+    "stalledBody": "This device is drawing the scene very slowly. The outcome is already decided — you can see it now."
   }
 }

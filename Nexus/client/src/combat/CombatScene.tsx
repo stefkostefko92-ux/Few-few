@@ -78,11 +78,13 @@ export default function CombatScene(props: Props): React.ReactElement {
   const [speedLabel, setSpeedLabel] = useState<'0.5' | '1' | '2'>('1');
   const { t } = useTranslation();
   // Състояние на 3D двигателя: зареждане → тече | бавно (таймер) | провал (няма WebGL/грешка).
-  const [engine, setEngine] = useState<'loading' | 'ready' | 'slow' | 'failed'>('loading');
+  const [engine, setEngine] = useState<'loading' | 'ready' | 'slow' | 'failed' | 'stalled'>('loading');
   const popId = useRef(0);
   // ref, не state: handleEnd стига до двигателя веднъж при boot (затворена стара стойност) —
   // ако бавната сцена се зареди СЛЕД края без 3D, onDone не бива да гръмне втори път.
   const endedRef = useRef(false);
+  // Последен знак на живот от двигателя (зареждане/удар) — за пазача на напредъка.
+  const lastProgressRef = useRef(Date.now());
   const [sceneDropped, setSceneDropped] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<BoyDuelHandle>(null);
@@ -102,12 +104,26 @@ export default function CombatScene(props: Props): React.ReactElement {
     return () => clearTimeout(timer);
   }, [engine]);
 
+  // Без GPU сцената понякога ТРЪГВА (контролите се показват), но кадрите са толкова бавни, че
+  // боят на практика замръзва — зареждащият таймер вече не пази този случай. Ако 20 s няма
+  // нито един удар, а рундове остават, предлагаме резултата (сцената продължава отзад).
+  useEffect(() => {
+    if (engine !== 'ready' || done) return;
+    const iv = setInterval(() => {
+      if (endedRef.current) return;
+      if (logVisible.length < rounds.length && Date.now() - lastProgressRef.current > 20000) setEngine('stalled');
+    }, 2000);
+    return () => clearInterval(iv);
+  }, [engine, done, logVisible.length, rounds.length]);
+
   const heroHpPct = Math.max(0, (heroHp / hero.hp_max) * 100);
   const foeHpPct = Math.max(0, (foeHp / foe.hp_max) * 100);
   const heroGhost = useGhostHp(heroHp, hero.hp_max);
   const foeGhost = useGhostHp(foeHp, foe.hp_max);
 
   function handleImpact(ev: ImpactEvent) {
+    lastProgressRef.current = Date.now();
+    setEngine((e) => (e === 'stalled' ? 'ready' : e)); // функционално: handleImpact е затворен при boot
     if (ev.roundIndex === undefined || ev.roundIndex < 0 || ev.roundIndex >= rounds.length) return; // финалният удар — вече отразено от последния рунд
     const round = rounds[ev.roundIndex];
     const attackerIsHero = round.attacker === 'hero';
@@ -133,6 +149,14 @@ export default function CombatScene(props: Props): React.ReactElement {
     setShowIntro(false);
     setSceneDropped(true); // размонтира BoyDuelStage → dispose() на двигателя, нищо не върти във фона
     handleEnd();
+  }
+
+  /** „Прескочи“: двигателят скача до края; ако на бавна машина краят не дойде до 3 s —
+      резултатът без 3D (иначе бутонът изглеждаше мъртъв). */
+  function skipToEnd() {
+    if (engine !== 'ready' || !engineRef.current) { finishWithoutScene(); return; }
+    engineRef.current.skip();
+    setTimeout(() => { if (!endedRef.current) finishWithoutScene(); }, 3000);
   }
 
   function handleEnd() {
@@ -168,7 +192,7 @@ export default function CombatScene(props: Props): React.ReactElement {
         embedded
         onImpact={handleImpact}
         onEnd={handleEnd}
-        onReady={() => setEngine('ready')}
+        onReady={() => { lastProgressRef.current = Date.now(); setEngine('ready'); }}
         onFail={() => { setEngine('failed'); setShowIntro(false); }}
         heroClass={hero.class}
         region={region}
@@ -244,15 +268,15 @@ export default function CombatScene(props: Props): React.ReactElement {
             <button className={`btn btn-sm${speedLabel === '0.5' ? ' btn-primary' : ''}`} onClick={() => setSpeed('0.5')} title={t('combat.speedSlow')} aria-label={t('combat.speedSlow')}>½×</button>
             <button className={`btn btn-sm${speedLabel === '1' ? ' btn-primary' : ''}`} onClick={() => setSpeed('1')} title={t('combat.speedNormal')} aria-label={t('combat.speedNormal')}>1×</button>
             <button className={`btn btn-sm${speedLabel === '2' ? ' btn-primary' : ''}`} onClick={() => setSpeed('2')} title={t('combat.speedFast')} aria-label={t('combat.speedFast')}>2×</button>
-            <button className="btn btn-sm" onClick={() => (engine === 'ready' ? engineRef.current?.skip() : finishWithoutScene())} title={t('combat.skip')} aria-label={t('combat.skip')}>≫</button>
+            <button className="btn btn-sm" onClick={skipToEnd} title={t('combat.skip')} aria-label={t('combat.skip')}>≫</button>
           </div>
         </>
       )}
 
-      {!done && (engine === 'slow' || engine === 'failed') && (
+      {!done && (engine === 'slow' || engine === 'failed' || engine === 'stalled') && (
         <div className="combat-fallback" role="status">
-          <div className="combat-fallback-title">{t(engine === 'failed' ? 'combat.noSceneTitle' : 'combat.slowTitle')}</div>
-          <p>{t(engine === 'failed' ? 'combat.noSceneBody' : 'combat.slowBody')}</p>
+          <div className="combat-fallback-title">{t(engine === 'failed' ? 'combat.noSceneTitle' : engine === 'stalled' ? 'combat.stalledTitle' : 'combat.slowTitle')}</div>
+          <p>{t(engine === 'failed' ? 'combat.noSceneBody' : engine === 'stalled' ? 'combat.stalledBody' : 'combat.slowBody')}</p>
           <button className="btn btn-primary" onClick={finishWithoutScene} autoFocus>{t('combat.showResult')}</button>
         </div>
       )}
