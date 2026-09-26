@@ -35,7 +35,7 @@ export default function Settings(): React.ReactElement {
       toast(t('settings.pwMismatch'), 'error');
       return;
     }
-    if (next.length < 6) {
+    if (next.length < 8) {
       toast(t('settings.pwTooShort'), 'error');
       return;
     }
@@ -106,16 +106,16 @@ export default function Settings(): React.ReactElement {
         </div>
         <form onSubmit={changePassword} style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}>
           <div className="field">
-            <label>{t('settings.currentPw')}</label>
-            <input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} required />
+            <label htmlFor="settings-current-pw">{t('settings.currentPw')}</label>
+            <input id="settings-current-pw" type="password" value={current} onChange={(e) => setCurrent(e.target.value)} required />
           </div>
           <div className="field">
-            <label>{t('settings.newPw')}</label>
-            <input type="password" value={next} onChange={(e) => setNext(e.target.value)} required minLength={6} />
+            <label htmlFor="settings-new-pw">{t('settings.newPw')}</label>
+            <input id="settings-new-pw" type="password" value={next} onChange={(e) => setNext(e.target.value)} required minLength={8} />
           </div>
           <div className="field">
-            <label>{t('settings.confirmPw')}</label>
-            <input type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} required minLength={6} />
+            <label htmlFor="settings-confirm-pw">{t('settings.confirmPw')}</label>
+            <input id="settings-confirm-pw" type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} required minLength={8} />
           </div>
           <button className="btn btn-primary" type="submit" disabled={pwBusy}>
             {pwBusy ? t('settings.updating') : t('settings.updatePw')}

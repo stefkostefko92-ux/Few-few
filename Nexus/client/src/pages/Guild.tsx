@@ -265,22 +265,22 @@ function NoGuild({ data, browse, onChanged, createOpen, setCreateOpen }: any): R
           <div className="admin-editor" style={{ width: 460 }}>
             <h3>{t('guild.foundTitle')}</h3>
             <div className="field">
-              <label>{t('guild.form.name')}</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={30} style={{ width: '100%' }} />
+              <label htmlFor="guild-form-name">{t('guild.form.name')}</label>
+              <input id="guild-form-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={30} style={{ width: '100%' }} />
             </div>
             <div className="field-grid">
               <div className="field">
-                <label>{t('guild.form.tag')}</label>
-                <input value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value.toUpperCase() })} maxLength={5} style={{ width: '100%' }} />
+                <label htmlFor="guild-form-tag">{t('guild.form.tag')}</label>
+                <input id="guild-form-tag" value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value.toUpperCase() })} maxLength={5} style={{ width: '100%' }} />
               </div>
               <div className="field">
-                <label>{t('guild.form.crestColor')}</label>
-                <input type="color" value={form.crest_color} onChange={(e) => setForm({ ...form, crest_color: e.target.value })} style={{ width: '100%', height: 40 }} />
+                <label htmlFor="guild-form-color">{t('guild.form.crestColor')}</label>
+                <input id="guild-form-color" type="color" value={form.crest_color} onChange={(e) => setForm({ ...form, crest_color: e.target.value })} style={{ width: '100%', height: 40 }} />
               </div>
             </div>
             <div className="field">
-              <label>{t('guild.form.motto')}</label>
-              <input value={form.motto} onChange={(e) => setForm({ ...form, motto: e.target.value })} maxLength={80} style={{ width: '100%' }} placeholder={t('guild.form.mottoPlaceholder')} />
+              <label htmlFor="guild-form-motto">{t('guild.form.motto')}</label>
+              <input id="guild-form-motto" value={form.motto} onChange={(e) => setForm({ ...form, motto: e.target.value })} maxLength={80} style={{ width: '100%' }} placeholder={t('guild.form.mottoPlaceholder')} />
             </div>
             <div className="actions">
               <button className="btn" onClick={() => setCreateOpen(false)}>{t('common.cancel')}</button>

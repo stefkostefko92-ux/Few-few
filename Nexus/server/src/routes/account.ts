@@ -6,6 +6,7 @@ import { detachFromGuild } from '../game/guild';
 import { authRequired } from '../middleware/auth';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
 import { eraseUser } from '../lib/erasure';
+import { withMonitoring } from '../lib/observability';
 
 const router = Router();
 router.use(authRequired);
@@ -28,7 +29,7 @@ const changePwSchema = z.object({
   next: passwordRule,
 });
 
-router.post('/password', async (req, res) => {
+router.post('/password', withMonitoring(async (req, res) => {
   const parse = changePwSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: parse.error.flatten() });
@@ -53,7 +54,7 @@ router.post('/password', async (req, res) => {
   db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?')
     .run(hash, req.auth!.uid);
   res.json({ ok: true });
-});
+}));
 
 const deleteCharSchema = z.object({
   confirm: z.literal('DELETE'),
@@ -147,7 +148,7 @@ const deleteAccountSchema = z.object({
  * Purchase rows are pseudonymised, not deleted — VAT/OSS bookkeeping
  * requires retention; we null out character_id but keep the totals.
  */
-router.post('/delete-account', async (req, res) => {
+router.post('/delete-account', withMonitoring(async (req, res) => {
   const parse = deleteAccountSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: 'Confirm by typing "DELETE MY ACCOUNT" and your password.' });
@@ -169,6 +170,6 @@ router.post('/delete-account', async (req, res) => {
   // на guilds.leader_id проваля триенето за гилдийни лидери).
   db.transaction((uid: number) => eraseUser(db, uid))(userId);
   res.json({ ok: true });
-});
+}));
 
 export default router;

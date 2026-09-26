@@ -138,7 +138,15 @@ app.use('/api/auth', authLimiter);
 // + /forgot + /reset are rare; capping them an order of magnitude lower
 // than the general auth pool blocks credential-stuffing and password-
 // reset spamming without affecting normal login traffic.
-const sensitiveAuthLimiter = rateLimit({ windowMs: 60 * 60_000, max: 8, standardHeaders: true });
+// Hard-coded (NOT the settings-backed authLimiter above) on purpose — an
+// admin fat-fingering a setting must never be able to reopen the abuse
+// window. The ONLY override is a non-production env var for local e2e
+// runs (Nexus/e2e/ registers many isolated test users per run, easily
+// >8/hour) — refused outright in production regardless of the env var.
+const sensitiveAuthMax = process.env.NODE_ENV !== 'production' && process.env.NEXUS_E2E_AUTH_RATE_MAX
+  ? Number(process.env.NEXUS_E2E_AUTH_RATE_MAX) || 8
+  : 8;
+const sensitiveAuthLimiter = rateLimit({ windowMs: 60 * 60_000, max: sensitiveAuthMax, standardHeaders: true });
 app.use('/api/auth/register', sensitiveAuthLimiter);
 app.use('/api/auth/forgot',   sensitiveAuthLimiter);
 app.use('/api/auth/reset',    sensitiveAuthLimiter);

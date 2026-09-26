@@ -10,7 +10,7 @@ import { liveCombatTuning } from '../game/settings';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
-import { assertReady, setCooldown } from '../game/cooldowns';
+import { claimCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import { trackGuildMission } from '../game/guildMissions';
 import { addSeasonPoints } from '../game/seasons';
@@ -58,8 +58,6 @@ router.post('/challenge', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  try { assertReady(char.id, 'arena'); }
-  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'arena' }); return; }
   // Wounded guard — entering a duel at 1 HP is a guaranteed rating
   // loss plus a burned cooldown.
   if (char.hp <= Math.floor(char.hp_max * 0.1)) {
@@ -82,6 +80,11 @@ router.post('/challenge', (req, res) => {
     res.status(400).json({ error: 'That opponent is outside your challenge bracket.' });
     return;
   }
+  // Claimed atomically after the invalid-attempt guards, before combat —
+  // two concurrent /arena/challenge calls must not both pay out (see
+  // cooldowns.ts claimCooldown() doc comment).
+  try { claimCooldown(char.id, 'arena'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'arena' }); return; }
   // Arena is a duel of equals — both fighters enter at full HP. Previously
   // the hero entered with current HP (possibly fresh off a hunt at 11%)
   // while the opponent always entered at hp_max, handing the defender a
@@ -129,7 +132,6 @@ router.post('/challenge', (req, res) => {
     }
   }
   char.hp = Math.max(1, result.hero.hp);
-  const cooldownMs = setCooldown(char.id, 'arena');
   db.prepare(
     `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, arena_rating = ?, wins = wins + ?, losses = losses + ? WHERE id = ?`,
   ).run(

@@ -11,7 +11,7 @@ import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { grantDrop, grantUniqueItem, DROP_RATES } from '../game/drops';
-import { assertReady, setCooldown } from '../game/cooldowns';
+import { claimCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Quest, Item, InventoryEntry } from '../types/domain';
 
@@ -60,12 +60,15 @@ router.post('/start', (req, res) => {
     res.status(400).json({ error: `Requires level ${quest.level_req}` });
     return;
   }
-  try { assertReady(char.id, 'quest'); }
-  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'quest' }); return; }
   if (char.hp <= Math.floor(char.hp_max * 0.1)) {
     res.status(400).json({ error: 'Too wounded to set out. Rest first.' });
     return;
   }
+  // Claimed atomically after the invalid-attempt guards, before any
+  // reward logic — two concurrent /quest/start calls must not both pay
+  // out (see cooldowns.ts claimCooldown() doc comment).
+  try { claimCooldown(char.id, 'quest'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'quest' }); return; }
 
   // Get monster
   const monster = quest.monster_slug
@@ -87,7 +90,6 @@ router.post('/start', (req, res) => {
     const goldGain = r.gold;
     char.gold += goldGain;
     const lvlRes = applyXp(char, xpGain);
-    setCooldown(char.id, 'quest');
     db.prepare(
       `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ? WHERE id = ?`,
     ).run(
@@ -182,7 +184,6 @@ router.post('/start', (req, res) => {
   if (result.winner === 'foe') {
     char.gold -= questLossPenalty(char.gold, quest);
   }
-  setCooldown(char.id, 'quest');
   db.prepare(
     `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ? WHERE id = ?`,
   ).run(

@@ -8,7 +8,7 @@ import { liveCombatTuning } from '../game/settings';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { towerFoe, towerGold, towerXp } from '../game/rewardFormulas';
-import { assertReady, setCooldown, loadCooldowns } from '../game/cooldowns';
+import { claimCooldown, loadCooldowns } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import { trackGuildMission } from '../game/guildMissions';
 import { addSeasonPoints } from '../game/seasons';
@@ -80,14 +80,18 @@ router.post('/climb', (req, res) => {
   const db = getDb();
   const char = getChar(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  try { assertReady(char.id, 'tower'); }
-  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'tower' }); return; }
   // Same wounded guard hunting has — entering a fight at 1 HP is a
   // guaranteed wipe plus a burned cooldown, a pure UX trap.
   if (char.hp <= Math.floor(char.hp_max * 0.1)) {
     res.status(400).json({ error: 'Too wounded to climb. Rest first.' });
     return;
   }
+  // Claimed atomically after the wounded guard, before combat — two
+  // concurrent /tower/climb calls must not both pay out (see cooldowns.ts
+  // claimCooldown() doc comment).
+  let cooldownMs: number;
+  try { cooldownMs = claimCooldown(char.id, 'tower'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'tower' }); return; }
 
   // Lazy-init the run seed so each run is a different gauntlet.
   let seed = (char as any).tower_run_seed;
@@ -146,7 +150,6 @@ router.post('/climb', (req, res) => {
   }
 
   char.hp = Math.max(1, result.hero.hp > 0 ? result.hero.hp : 1);
-  const cooldownMs = setCooldown(char.id, 'tower');
   db.prepare(
     `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?,
        hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?,
