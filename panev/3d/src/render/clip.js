@@ -153,11 +153,11 @@ function head(T, c) {
   const outline = coffin(c);
   const zb = c.foot + c.relief;
   const skin = 0.3; // pad and ridge reach this far up into the body, out of sight
-  // Panel: the outline 3.4 mm in, corners 1.2; its wall sinks 0.7 mm over 0.5 mm, facing in.
-  const panel = inset(outline, 3.4 + 1.2);
+  // Panel: the outline 3.8 mm in, corners 1.2; its wall sinks 0.7 mm over 0.5 mm, facing in.
+  const panel = inset(outline, 3.8 + 1.2);
   const depth = 0.7;
   const rim = ring(panel, 1.2);
-  block(T, outline, { R: 2.2, z0: zb, z1: c.top, rb: 0.6, rt: 1.2, hole: rim });
+  block(T, outline, { R: 2.5, z0: zb, z1: c.top, rb: 0.6, rt: 1.6, hole: rim });
   const slope = Math.hypot(0.5, depth);
   walls(T, panel, [{ r: 0.7, z: c.top - depth, nh: -depth / slope, nz: 0.5 / slope }, { r: 1.2, z: c.top, nh: -depth / slope, nz: 0.5 / slope }], true);
   cap(T, ring(panel, 0.7), c.top - depth, true);
@@ -194,12 +194,12 @@ export function clipGeometry({ left = false } = {}) {
   const T = new Tris();
   const floor = head(T, N1);
   const mark = (text, x) => {
-    const g = stamp(text, { mirror: left, relief: 0.5 });
+    const g = stamp(text, { mirror: left, height: 5, relief: 0.5 });
     g.rotateZ(Math.PI / 2); // reads along +y, the tops of the letters towards the nose
     g.translate(x, 0, floor);
     return g;
   };
-  const top = merge([T.geometry(), mark('M10', -9.5), mark('N1', 4.5)]);
+  const top = merge([T.geometry(), mark('M10', -8.5), mark('N1', 4.5)]);
   const clip = merge([top, shank(N1.shank, left)]);
   const n = top.attributes.position.count;
   clip.addGroup(0, n, 0);
