@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-09-26:** handoff.mjs чете полето „Находки:“ само от същия ред (FIELD regex до края на реда) — находки като списък под заглавието се броят за празни и Stop hook-ът пада; пиши ги на един ред с файл:ред + увереност. _(fleet; verified; tools/agents/handoff.mjs:53-58,120-123; node tools/agents/handoff.mjs scratchpad/kod-handoff.md)_
 - **2026-09-26:** Gaming cue: validate отхвърля SHOOT с cueX/cueY, когато ballInHand=false — остатъчно клиентско състояние за поставяне на бялата води до постоянно отхвърляни удари. _(Gaming; verified; Gaming/packages/game-core/src/engines/cue-sports/cue.ts:884-885; node scratchpad/kod-cue.mjs)_
 - **2026-09-26:** Gaming web: useMatch свързва наново същия монтиран изглед към нов мач (партийна стая); всеки useRef за дедупликация по мач трябва да се нулира по m.matchId (CueView и DominoView го правят, BingoView sentPos не). _(Gaming; verified; Gaming/apps/web/src/features/game/useMatch.ts:230-241; bingo/BingoView.tsx:72-82)_
 - **2026-09-26:** Gaming realtime: двигатели без validate се сверяват с legalActions чрез stable() (ключовете се сортират) — действие, сглобено в клиента, минава само ако полетата съвпадат точно; cue/dice/words/magnat имат validate за свободен вход. _(Gaming; verified; Gaming/apps/realtime/src/room.ts:54-62,184-195)_
