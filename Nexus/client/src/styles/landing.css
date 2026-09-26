@@ -976,7 +976,10 @@
 /* ===== Streak rows + wheel kept here for app-internal pages ===== */
 .streak-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* minmax(0,…) — без него all колоните имплицитно са minmax(auto,1fr) и НЕ
+     се свиват под min-content на съдържанието им (награда/число в клетката),
+     редът изтичаше до ~508px на 360px мобилен viewport (Daily.tsx). */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
 }
 .streak-cell {
