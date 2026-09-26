@@ -162,3 +162,5 @@
 {"t":"start","ts":"2026-09-26T08:38:38.872Z","id":"rda7f4a4e","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-09-26T08:38:38.872Z","id":"rda7f4a4e","from":"kodadjiyata","to":"diskordjiyata","status":"има бележки","run":"b40d1fff"}
 {"t":"handoff","ts":"2026-09-26T08:41:01.896Z","id":"rda7f4a4e","from":"kodadjiyata","to":"човек","status":"има бележки","run":"b68eb46d"}
+{"t":"start","ts":"2026-09-26T09:16:23.445Z","id":"rc4a84597","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-09-26T09:16:23.445Z","id":"rc4a84597","from":"kodadjiyata","to":"diskordjiyata","status":"има бележки","run":"4fb686a6"}
