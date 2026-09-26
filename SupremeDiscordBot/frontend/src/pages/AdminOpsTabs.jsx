@@ -7,14 +7,16 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity, ShieldCheck, ShieldAlert, KeyRound, Ban, RefreshCw, Trash2, Search, Server, CreditCard, Bot, FileText, AlertTriangle,
+  Activity, ShieldCheck, ShieldAlert, KeyRound, Ban, RefreshCw, Trash2, Search, Server, CreditCard, Bot, FileText, AlertTriangle, Sparkles, Plus,
 } from "lucide-react";
 import {
   getAdminSystem, getAdminSecurity, adminUnblock, adminRevokeApiKey, getAdminBilling, adminReconcileBilling,
   getAdminFleet, adminReconcileFleet, getDsrRequests, getDsrSummary, dsrErase, adminResetUserMfa,
+  getAdminGameSeason, createAdminGameSeason, updateAdminGameSeason,
 } from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../contexts/ToastContext";
+import { toUtcInput, fromUtcInput } from "../utils/utcDateInput";
 
 const adminErr = (err) => {
   const d = err?.response?.data;
@@ -30,10 +32,14 @@ const ago = (d) => {
 };
 
 function Tile({ label, value, sub, ok }) {
+  // Думи като „configured“/„connected“/„v49_user_mfa“ в text-4xl излизаха извън
+  // картата на телефон (визуален одит 25.09.2026) — дългите стойности са по-малки
+  // и се пренасят, числата остават големи.
+  const long = String(value ?? "").length > 6;
   return (
-    <div className="cs-stat">
+    <div className="cs-stat min-w-0">
       <div className="cs-stat-label">{label}</div>
-      <div className={`cs-stat-value ${ok === true ? "text-success" : ok === false ? "text-danger" : ""}`}>{value}</div>
+      <div className={`cs-stat-value break-words ${long ? "!text-2xl sm:!text-3xl" : ""} ${ok === true ? "text-success" : ok === false ? "text-danger" : ""}`}>{value}</div>
       {sub && <div className="font-mono text-[10px] text-cs-dim mt-1 break-all">{sub}</div>}
     </div>
   );
@@ -326,6 +332,98 @@ export function ComplianceTab() {
       </Section>
       <ConfirmDialog open={confirm} title={`Erase data for ${activeId}?`} message={`Scope: ${scope}. This cannot be undone. A fresh second-factor confirmation (≤10 min) is required.`} confirmLabel="Erase" destructive loading={erase.isPending}
         onConfirm={() => { setConfirm(false); erase.mutate(); }} onCancel={() => setConfirm(false)} />
+    </div>
+  );
+}
+
+// ═══ SERVER SEASON (v50) ══════════════════════════════════════════════════════
+// Сезоните са глобални: кодът, името, датите и кои спътници са сезонни се
+// управляват оттук (базата), не от кода. Смяната засяга ВСИЧКИ сървъри.
+// Полетата са обявени като UTC — utils/utcDateInput.js (тестван) ги чете и пише като UTC.
+const toLocalInput = toUtcInput;
+const fromLocalInput = fromUtcInput;
+const RARITY_ORDER = ["legendary", "epic", "rare", "uncommon", "common"];
+
+function SeasonForm({ initial, catalog, onSubmit, pending, submitLabel, withCode }) {
+  const [form, setForm] = useState(() => ({
+    code: initial?.code || "", name: initial?.name || "", startsAt: toLocalInput(initial?.startsAt), endsAt: toLocalInput(initial?.endsAt),
+    companionIds: [...(initial?.companionIds || [])],
+  }));
+  const toggle = (id) => setForm((f) => ({ ...f, companionIds: f.companionIds.includes(id) ? f.companionIds.filter((x) => x !== id) : [...f.companionIds, id] }));
+  const groups = RARITY_ORDER.map((r) => ({ r, items: catalog.filter((c) => c.rarity === r) })).filter((g) => g.items.length);
+  return (
+    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onSubmit({ ...(withCode ? { code: form.code.trim().toUpperCase() } : {}), name: form.name.trim(), startsAt: fromLocalInput(form.startsAt), endsAt: fromLocalInput(form.endsAt), companionIds: form.companionIds }); }}>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        {withCode && <label className="block"><span className="cs-label">Code</span><input className="cs-input font-mono" value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} placeholder="S2" maxLength={16} required /></label>}
+        <label className={`block ${withCode ? "" : "md:col-span-2"}`}><span className="cs-label">Name</span><input className="cs-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} maxLength={80} required /></label>
+        <label className="block"><span className="cs-label">Starts (UTC)</span><input className="cs-input" type="datetime-local" value={form.startsAt} onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))} required /></label>
+        <label className="block"><span className="cs-label">Ends (UTC)</span><input className="cs-input" type="datetime-local" value={form.endsAt} onChange={(e) => setForm((f) => ({ ...f, endsAt: e.target.value }))} required /></label>
+      </div>
+      <div>
+        <div className="cs-label mb-1">Seasonal companions — {form.companionIds.length} selected (they spawn only while the season is active and leave when it ends)</div>
+        {groups.map((g) => (
+          <div key={g.r} className="mb-2">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mb-1">{g.items[0].rarityEmoji} {g.r}</div>
+            <div className="flex flex-wrap gap-2">
+              {g.items.map((c) => {
+                const on = form.companionIds.includes(c.id);
+                return (
+                  <button type="button" key={c.id} onClick={() => toggle(c.id)} aria-pressed={on}
+                    className={`flex items-center gap-2 px-2 py-1 rounded border text-xs transition-colors ${on ? "border-cs-cyan text-cs-cyan" : "border-cs-border text-cs-muted hover:text-cs-text"}`}>
+                    <img src={c.imageUrl.replace(/^https?:\/\/[^/]+/, "")} alt="" width={24} height={24} loading="lazy" className="w-6 h-6 rounded" />
+                    {c.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-end"><button type="submit" className="cs-btn-primary" disabled={pending}>{submitLabel}</button></div>
+    </form>
+  );
+}
+
+export function SeasonTab() {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [creating, setCreating] = useState(false);
+  const { data, isLoading } = useQuery({ queryKey: ["admin-game-season"], queryFn: getAdminGameSeason });
+  const refresh = () => qc.invalidateQueries({ queryKey: ["admin-game-season"] });
+  const update = useMutation({ mutationFn: ({ code, body }) => updateAdminGameSeason(code, body), onSuccess: () => { toast.success("Season updated — the bot picks it up within a minute."); refresh(); }, onError: (e) => toast.error(adminErr(e)) });
+  const create = useMutation({ mutationFn: createAdminGameSeason, onSuccess: (s) => { toast.success(`Season ${s.code} created.`); setCreating(false); refresh(); }, onError: (e) => toast.error(adminErr(e)) });
+  if (isLoading) return <Loading />;
+  const d = data || { seasons: [], catalog: [] };
+  const cur = d.current;
+  const status = !cur ? "none" : cur.ended ? "ended" : cur.active ? "active" : "upcoming";
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Tile label="Current season" value={cur ? cur.code : "—"} sub={cur?.name} ok={status === "active"} />
+        <Tile label="Status" value={status} ok={status === "active" ? true : status === "ended" ? false : undefined} sub={cur ? `${fmt(cur.startsAt)} → ${fmt(cur.endsAt)}` : "no season row yet"} />
+        <Tile label="Seasonal companions" value={cur?.companionIds?.length ?? 0} sub="spawn only while active" />
+        <Tile label="Seasons on record" value={d.seasons.length} sub="newest by start date becomes current" />
+      </div>
+      {status === "ended" && <p className="text-xs text-warning">The current season has ended: seasonal companions no longer spawn and the daily job resets season XP once per server. Create the next season below.</p>}
+      <Section title={`Edit ${cur ? cur.code : "season"}`} icon={Sparkles}
+        right={<button type="button" onClick={() => setCreating((v) => !v)} className="cs-btn-secondary text-xs flex items-center gap-1"><Plus className="w-3 h-3" /> New season</button>}>
+        {cur ? (
+          <SeasonForm key={cur.code} initial={cur} catalog={d.catalog} pending={update.isPending} submitLabel="Save season" onSubmit={(body) => update.mutate({ code: cur.code, body })} />
+        ) : <p className="text-cs-dim">No season yet — create one.</p>}
+        <p className="font-mono text-[10px] text-cs-dim mt-3">Requires Main Owner + a fresh second factor. Changes apply to every server: spawns read the season from the database (cached 60 s). Levels, sparks and caught companions are never touched by a season change.</p>
+      </Section>
+      {creating && (
+        <Section title="New season" icon={Plus}>
+          <SeasonForm initial={{ companionIds: [] }} catalog={d.catalog} withCode pending={create.isPending} submitLabel="Create season" onSubmit={(body) => create.mutate(body)} />
+          <p className="font-mono text-[10px] text-cs-dim mt-3">Becomes current once its start date is reached (a later start keeps the present season running until then). The previous season is closed by the nightly job when its end date passes.</p>
+        </Section>
+      )}
+      <Section title="All seasons" icon={FileText}>
+        <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Code</th><th>Name</th><th>Starts</th><th>Ends</th><th>Seasonal</th><th>State</th></tr></thead><tbody>
+          {!d.seasons.length && <tr><td colSpan={6} className="text-cs-dim">No seasons.</td></tr>}
+          {d.seasons.map((s) => <tr key={s.code}><td className="font-mono">{s.code}</td><td>{s.name}</td><td className="text-xs">{fmt(s.startsAt)}</td><td className="text-xs">{fmt(s.endsAt)}</td><td>{s.companionIds.length}</td><td><span className="cs-badge">{s.ended ? "ended" : s.active ? "active" : "upcoming"}</span></td></tr>)}
+        </tbody></table></div>
+      </Section>
     </div>
   );
 }

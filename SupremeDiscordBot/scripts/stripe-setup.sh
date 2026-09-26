@@ -18,18 +18,32 @@
 #      обработва → отпечатва STRIPE_WEBHOOK_SECRET (само при създаване)
 #   3. Данъчна регистрация България (ЗДДС, standard) за Stripe Tax
 #
-# Употреба:
-#   STRIPE_SECRET_KEY=sk_test_... bash scripts/stripe-setup.sh          # test mode
-#   STRIPE_SECRET_KEY=sk_live_... bash scripts/stripe-setup.sh          # live mode
+# Употреба (само легаси — виж предпазителя по-долу):
+#   LEGACY_STRIPE_SETUP=1 STRIPE_SECRET_KEY=sk_test_... bash scripts/stripe-setup.sh   # test mode
+#   LEGACY_STRIPE_SETUP=1 STRIPE_SECRET_KEY=sk_live_... bash scripts/stripe-setup.sh   # live mode
 #   DOMAIN=https://supremebot.carbonstealth.eu (по подразбиране)
 #
 # ЗАБЕЛЕЖКА: ключът се подава само през env — никога не влиза в repo-то.
 set -euo pipefail
 
+# ЛЕГАСИ (v3.3, решение на собственика 12.09.2026): новите абонаменти се продават
+# САМО през Discord Premium Apps — без годишни, без Agency, без пробен период
+# (lib/billing.js). Този скрипт създава точно тях, затова по подразбиране ОТКАЗВА.
+# Пуска се само съзнателно, за поддръжка на заварените Stripe абонати.
+if [ "${LEGACY_STRIPE_SETUP:-0}" != "1" ]; then
+  echo "✗ stripe-setup.sh е легаси: продажбите са само през Discord (v3.3)."
+  echo "  Само за заварените Stripe абонати: LEGACY_STRIPE_SETUP=1 bash $0 (с ключа в env)"
+  exit 1
+fi
+
 : "${STRIPE_SECRET_KEY:?Задай STRIPE_SECRET_KEY=sk_test_... или sk_live_...}"
 DOMAIN="${DOMAIN:-https://supremebot.carbonstealth.eu}"
 API="https://api.stripe.com/v1"
-AUTH=(-u "${STRIPE_SECRET_KEY}:")
+# Ключът през curl конфиг (600), не в аргументите: `-u ключ:` се вижда в `ps`
+# на всеки потребител на машината (одит на VPS-аджията 25.09.2026).
+CURL_CFG="$(mktemp)"; chmod 600 "$CURL_CFG"; trap 'rm -f "$CURL_CFG"' EXIT
+printf 'user = "%s:"\n' "$STRIPE_SECRET_KEY" > "$CURL_CFG"
+AUTH=(-K "$CURL_CFG")
 
 MODE="LIVE"; [[ "$STRIPE_SECRET_KEY" == sk_test_* ]] && MODE="TEST"
 echo "══ Stripe setup v3.0 (${MODE} mode) → ${DOMAIN} ══"
@@ -228,7 +242,17 @@ if [ "$EXISTING_WH" -eq 0 ]; then
     -d description="Supreme Bot backend — подписан, идемпотентен по event.id")
   WH_SECRET=$(echo "$WH_JSON" | grep -o '"secret": *"whsec_[^"]*"' | sed 's/.*"\(whsec_[^"]*\)"/\1/')
   echo "  ✓ Webhook създаден."
-  echo "  ⚠ ЗАПИШИ СЕГА (показва се само веднъж): STRIPE_WEBHOOK_SECRET=${WH_SECRET}"
+  # Тайната НЕ минава през stdout (терминал/scrollback/tee към лог) — одит 24.09.2026.
+  # Записва се във файл само за собственика (600) и се печата само пътят + дължината.
+  if [ -z "$WH_SECRET" ]; then
+    echo "  ⚠ Не успях да извадя signing secret от отговора — вземи го от Dashboard → Webhooks → Reveal."
+  else
+    WH_SAVE_PATH="${STRIPE_WH_SAVE_PATH:-$HOME/.supreme-stripe-webhook-secret}"
+    ( umask 077 && printf 'STRIPE_WEBHOOK_SECRET=%s\n' "$WH_SECRET" > "$WH_SAVE_PATH" )
+    chmod 600 "$WH_SAVE_PATH"
+    echo "  ⚠ Signing secret (${#WH_SECRET} знака) е записан в $WH_SAVE_PATH (права 600, показва се само веднъж)."
+    echo "    Премести реда в backend/.env и изтрий файла: shred -u \"$WH_SAVE_PATH\""
+  fi
 else
   echo "  ✓ Webhook за $WH_URL вече съществува (signing secret: Dashboard → Webhooks → Reveal)."
 fi
@@ -248,7 +272,7 @@ fi
 echo ""
 echo "══ Готово. Попълни в backend/.env: ══"
 echo "  STRIPE_SECRET_KEY=<ключът, с който пусна скрипта>"
-echo "  STRIPE_WEBHOOK_SECRET=<whsec_... отгоре или от Dashboard>"
+echo "  STRIPE_WEBHOOK_SECRET=<от файла, посочен отгоре, или от Dashboard → Webhooks>"
 # При ценова промяна: старият id се добавя СЛЕД новия (запетая) — lib/premium.js
 # разпознава всички id-та от списъка (grandfather при подновяване), а за
 # checkout взима ПЪРВИЯ (новата цена).
