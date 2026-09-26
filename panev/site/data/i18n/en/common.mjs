@@ -12,6 +12,7 @@ export default {
     contacts: 'contacts.html',
     privacy: 'privacy.html',
     terms: 'terms.html',
+    viewer3d: 'brackets-3d.html',
   },
   langNames: { it: 'Italiano', en: 'English', bg: 'Български' },
   fmtPrice: (n) => `€ ${n.toFixed(2)}`,
@@ -43,7 +44,7 @@ export default {
     },
     catalog: {
       title: 'Technical catalogue 2026 (PDF) — browse and download | Panev Ascensori',
-      description: 'Panev Ascensori technical and commercial catalogue, 2026 edition: 80 pages of technical drawings, dimensions in mm, product codes and the full price list. Browse it online or download the PDF.',
+      description: 'Panev Ascensori technical and commercial catalogue, 2026 edition: 95 pages of technical drawings, dimensions in mm, product codes and the full price list. Browse it online or download the PDF.',
       keywords: [
         'lift brackets catalogue PDF',
         'technical catalogue elevators 2026',
@@ -89,11 +90,24 @@ export default {
         'Carbon Stealth',
       ],
     },
+    viewer3d: {
+      title: 'Panev brackets in 3D — all 48 catalogue items',
+      description: 'All 48 brackets of the 2026 catalogue in 3D: rotate them, switch DX/SX, see them installed with the adjustment and save an HD photo. Built to the catalogue.',
+      keywords: [
+        'lift brackets 3D',
+        'landing door bracket 3D model',
+        'counterweight guide rail support 3D',
+        'guide rail bracket SG 3D',
+        'Panev Ascensori',
+        'Carbon Stealth',
+      ],
+    },
   },
   nav: {
     home: 'Home',
     products: 'Products & price list',
     catalog: 'PDF catalogue',
+    viewer3d: '3D view',
     contacts: 'Contacts & orders',
     skip: 'Skip to content',
     menuLabel: 'Main menu',
@@ -126,6 +140,5 @@ export default {
     companyTitle: 'Company',
     legalTitle: 'Legal',
     rights: 'All rights reserved.',
-    credits: 'Created and designed by',
   },
 };

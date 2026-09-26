@@ -22,6 +22,8 @@ export function createUI(api) {
   let lang = pickLang();
   let t = strings(lang);
   const buttons = new Map();
+  // On the site every language has its own address: the switch is a set of links carrying the view.
+  const langHrefs = JSON.parse(document.documentElement.dataset.langHrefs ?? 'null');
 
   function buildList() {
     buttons.clear();
@@ -111,6 +113,7 @@ export function createUI(api) {
     put('look', api.look, 'studio');
     put('lang', lang, autoLang);
     history.replaceState(null, '', `${location.pathname}?${q}`);
+    for (const a of $('langs').querySelectorAll('a')) a.search = q.toString();
   }
 
   // Scrolls the side list (desktop) to the current code; the stacked mobile list is left alone.
@@ -194,17 +197,21 @@ export function createUI(api) {
     $('langs').setAttribute('aria-label', t.language);
     $('hint').textContent = t.hint;
     $('note').textContent = t.note;
-    for (const b of $('langs').children) b.setAttribute('aria-pressed', String(b.dataset.lang === l));
+    for (const b of $('langs').children) {
+      if (!langHrefs) b.setAttribute('aria-pressed', String(b.dataset.lang === l));
+      else if (b.dataset.lang === l) b.setAttribute('aria-current', 'page');
+    }
     buildList();
     sync();
   }
 
   $('langs').replaceChildren(
     ...LANGS.map((l) => {
-      const b = el('button', { type: 'button', textContent: l.toUpperCase(), lang: l, title: LANG_NAMES[l] });
+      const props = { textContent: l.toUpperCase(), lang: l, title: LANG_NAMES[l] };
+      const b = langHrefs ? el('a', { ...props, href: langHrefs[l], hreflang: l }) : el('button', { ...props, type: 'button' });
       b.dataset.lang = l;
       b.setAttribute('aria-label', LANG_NAMES[l]);
-      b.addEventListener('click', () => setLang(l));
+      if (!langHrefs) b.addEventListener('click', () => setLang(l));
       return b;
     }),
   );

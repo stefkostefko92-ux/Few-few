@@ -8,10 +8,26 @@ export default {
     chips: ['Made in Italy', 'Galvanised steel', 'Ambidextrous system', 'Patented'],
     ctaProducts: 'See products & prices',
     ctaCatalog: 'Download the catalogue (PDF)',
+    cta3d: 'View in 3D',
     patentLabel: 'Utility model patent',
     numAbbr: 'No.',
     patentOffice: 'Ministry of Enterprises and Made in Italy — UIBM · filed 19 May 2023',
-    visualAlt: 'Technical drawing of the patented brackets in right-hand (DX) and left-hand (SX) versions',
+    visualAlt: '3D render of plate A 65 170 7 installed with bracket B 65 320',
+  },
+  viewer3d: {
+    kicker: '3D view',
+    title: 'The brackets in 3D, before you order',
+    lead: 'All 48 catalogue items, modelled in galvanised sheet steel from the dimensions in mm: rotate them, switch between DX and SX, see them installed with their partner bracket and try the adjustment.',
+    start: 'Start the 3D view',
+    fullscreen: 'Open full screen',
+    frameTitle: '3D view of the Panev brackets',
+    posterAlt: '3D render of support SU 220 160 installed with guide bracket SG 80 150 and the guide rail',
+    points: [
+      '48 items from the 2026 catalogue',
+      'DX and SX versions',
+      'Installed with M10 bolts, with the adjustment',
+      'HD photo to download',
+    ],
   },
   stats: [
     { value: '± 8°', label: 'Angular adjustment' },
@@ -34,17 +50,17 @@ export default {
     title: 'Three applications, one system',
     items: [
       {
-        img: 'prod-porte-overview',
+        img: 'a-45-170-7_b-45-320',
         title: 'Landing door sill',
         body: 'Fixing and height adjustment of the landing door sill relative to the finished floor level of the landing.',
       },
       {
-        img: 'sistema-overview',
+        img: 'a-65-170-7_b-65-320-sx',
         title: 'Car door operator',
         body: 'Mounting of the car door operator, with the bracket fixed to the shaft structure and to the car.',
       },
       {
-        img: 'prod-SU-SG-overview',
+        img: 'sd-220-200_sg-80-190',
         title: 'Counterweight guide rails',
         body: 'Fixing of the counterweight guide rails to the shaft masonry, with adjustable SU · SD · SC supports.',
       },
@@ -56,22 +72,22 @@ export default {
     title: 'From the price list: the most requested brackets',
     families: [
       {
-        img: 'prod-porte-overview',
+        img: 'a-65-170-7_b-65-220',
         title: 'Landing door brackets — A / B series',
         body: 'Perforated plate + slotted bracket, ± 7° / ± 8° adjustment on out-of-plumb masonry.',
       },
       {
-        img: 'prod-SU-SG-overview',
+        img: 'su-220-180_sg-80-170',
         title: 'SU / SD supports + SG guide bracket',
         body: 'Universal or offset support with joining bracket, 45 – 215 mm extension range.',
       },
       {
-        img: 'prod-SC-overview',
+        img: 'sc-80-220_sg-80-220',
         title: 'SC sliding supports + SG',
         body: 'For the widest ranges, up to 235 mm, 4 mm thickness.',
       },
       {
-        img: 'prod-SG220-overview',
+        img: 'sg-80-190',
         title: 'Fixed SG guide brackets',
         body: 'Widths 50 / 60 / 80 mm, lengths 130 – 220 mm, ready for direct pairing.',
       },

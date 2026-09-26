@@ -7,10 +7,12 @@ on:
   push:
     paths:
       - 'panev/3d/**'
+      - 'panev/3d-viewer/**'
       - '.github/workflows/panev-3d.yml'
   pull_request:
     paths:
       - 'panev/3d/**'
+      - 'panev/3d-viewer/**'
       - '.github/workflows/panev-3d.yml'
 
 concurrency:
@@ -38,3 +40,10 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Гейт (синтаксис и правила, i18n паритет, геометрични тестове на 48-те планки, изпичане + билд)
         run: npm run gate
+      # Сайтът сервира 3D билда от panev/3d-viewer/ (`npm run site`). Бъндълът там трябва да е точно
+      # този, който гейтът току-що билдна (esbuild е детерминистичен), а текстурите — от същия
+      # източник (ключът в manifest.json е хешът му; самите пиксели не се сравняват между машини).
+      - name: Публикуваният в сайта 3D билд е актуален
+        run: |
+          cmp dist/staffe-3d.js ../3d-viewer/staffe-3d.js || { echo "::error::panev/3d-viewer/staffe-3d.js е стар — пусни npm run site в panev/3d и комитни"; exit 1; }
+          cmp dist/tex/manifest.json ../3d-viewer/tex/manifest.json || { echo "::error::текстурите в panev/3d-viewer/tex/ са от друг източник — пусни npm run site"; exit 1; }

@@ -1,7 +1,7 @@
 // Продукти и ценоразпис, с JSON-LD ItemList.
 
 import { esc, ORIGIN } from './layout.mjs';
-import { img, addBtn, itemRow, sectionHead } from './parts.mjs';
+import { render3d, addBtn, itemRow, sectionHead } from './parts.mjs';
 import { COMPANY, doorSystems, guideConfigs, sgFixed, specials, allPricedItems } from '../data/products.mjs';
 
 // ── Продукти и ценоразпис ────────────────────────────────────
@@ -17,7 +17,7 @@ export function productsPage(t, locales) {
       itemRow(t, it, `${p.typeNames[it.type]} ${it.dims}`)).join('');
     return `
     <article class="sys-card" id="${s.id}">
-      <div class="sys-media">${img(s.img, p.systemTitle(s.serie, s.variant), { w: 380, h: 380 })}</div>
+      <div class="sys-media">${render3d(s.img, p.systemTitle(s.serie, s.variant), { sizes: '(max-width: 700px) 100vw, 380px' })}</div>
       <div class="sys-body">
         <h3>${esc(p.systemTitle(s.serie, s.variant))}</h3>
         <p class="sys-specs"><span>${esc(p.regol)} <strong>${esc(s.regol)}</strong></span><span>${esc(p.sp)} <strong>${esc(s.sp)}</strong></span></p>
@@ -37,7 +37,7 @@ export function productsPage(t, locales) {
     ].join('');
     return `
     <article class="sys-card sys-card-cfg">
-      <div class="sys-media">${img(c.img, `${c.sup.code} + ${c.gui.code}`, { w: 380, h: 300 })}</div>
+      <div class="sys-media">${render3d(c.img, `${c.sup.code} + ${c.gui.code}`, { sizes: '(max-width: 700px) 100vw, 380px' })}</div>
       <div class="sys-body">
         <h3>${esc(c.sup.code)} · ${esc(c.gui.code)}</h3>
         <p class="sys-specs"><span>${esc(p.th.corsa)} <strong>${esc(c.corsa)}</strong></span><span>${esc(p.aletta)}</span></p>

@@ -30,6 +30,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" href="/fonts/Inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/vista-3d.css?v=6ea5eeff64">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://panevascensori.it/#organization","name":"Panev Ascensori SAS","url":"https://panevascensori.it/","logo":"https://panevascensori.it/img/panev-logo.png","email":"info@panevascensori.it","telephone":"+39 379 296 9699","vatID":"IT09346970966","taxID":"09346970966","identifier":{"@type":"PropertyValue","propertyID":"REA","value":"MI - 2084376"},"address":{"@type":"PostalAddress","streetAddress":"Via Madonna del Salvatore 6","postalCode":"20010","addressLocality":"Vittuone","addressRegion":"MI","addressCountry":"IT"},"contactPoint":{"@type":"ContactPoint","contactType":"sales","email":"info@panevascensori.it","telephone":"+39 379 296 9699","availableLanguage":["it","en","bg"]},"knowsAbout":["staffe per ascensori","staffe porte di piano","guide del contrappeso","lift brackets","landing door brackets","counterweight guide rails","планки за асансьори","планки за етажни врати","водачи на противотежестта","brevetto Modello di Utilità UIBM 202023000002112"]},{"@type":"WebSite","@id":"https://panevascensori.it/#website","url":"https://panevascensori.it/","name":"Panev Ascensori SAS","inLanguage":"it","publisher":{"@id":"https://panevascensori.it/#organization"}},{"@type":"WebPage","url":"https://panevascensori.it/","name":"Panev Ascensori — Staffe brevettate per porte di piano e guide del contrappeso","description":"Staffe forate, snodate e asolate per ascensori: fissaggio regolabile di porte di piano e guide del contrappeso su murature irregolari. Brevetto UIBM N. 202023000002112. Made in Italy. Ordini via email.","inLanguage":"it","isPartOf":{"@id":"https://panevascensori.it/#website"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Come si ordina?","acceptedAnswer":{"@type":"Answer","text":"Via email a info@panevascensori.it: indica codice, quantità e — dove prevista — la mano DX o SX. Il pulsante „Ordina via email“ e la lista d’ordine precompilano il messaggio. Rispondiamo con conferma d’ordine, totale e tempi di consegna."}},{"@type":"Question","name":"I prezzi includono l’IVA?","acceptedAnswer":{"@type":"Answer","text":"No: tutti i prezzi a listino sono in euro, IVA esclusa, riferiti a unità singole (listino 2026). La vendita è riservata a operatori professionali (B2B) con partita IVA; fattura elettronica via SdI."}},{"@type":"Question","name":"Quanto costa la spedizione e in quanto tempo arriva?","acceptedAnswer":{"@type":"Answer","text":"La spedizione è gratuita in tutta Italia per ordini superiori a 500 € (IVA esclusa); sotto tale soglia le spese sono indicate nella conferma d’ordine. Consegna standard 2 – 5 giorni lavorativi, express 24 – 48 ore su richiesta."}},{"@type":"Question","name":"Che cosa significano DX e SX?","acceptedAnswer":{"@type":"Answer","text":"Ogni staffa è ambidestra: DX indica la versione destra, SX la sinistra. Questo permette di aggirare i ferri d’armatura nel calcestruzzo e di forare nei punti più adatti. La mano desiderata va indicata in fase d’ordine."}},{"@type":"Question","name":"Quale serie devo scegliere?","acceptedAnswer":{"@type":"Answer","text":"Per il fissaggio della porta di piano: serie A / B (sezioni 37 / 45 / 65 mm, regolazione ± 7° / ± 8°). Per le guide del contrappeso: supporti SU (universale), SD (decentrato) o SC (scorrevole) abbinati alla staffa di giunzione SG, con corsa 45 – 235 mm. Per misure fuori standard: soluzioni su disegno esecutivo, a preventivo."}},{"@type":"Question","name":"Le staffe sono conformi alle normative e garantite?","acceptedAnswer":{"@type":"Answer","text":"Sì: prodotti conformi alla normativa UNI EN 81, acciaio zincato conforme UNI EN 10025, idonei al collaudo UNI 10411. Il sistema è tutelato da brevetto per Modello di Utilità UIBM N. 202023000002112, valido fino al 2033. Garanzia 2 anni sui difetti di fabbricazione."}}]}]}</script>
 </head><body>
 <a class="skip-link" href="#main">Salta al contenuto</a>
@@ -42,6 +43,7 @@
         <a href="/" aria-current="page">Home</a>
         <a href="/prodotti">Prodotti e listino</a>
         <a href="/catalogo">Catalogo PDF</a>
+        <a href="/staffe-3d">Vista 3D</a>
         <a href="/contatti">Contatti e ordini</a>
     </nav>
     <div class="header-tools">
@@ -66,6 +68,7 @@
       <div class="hero-cta">
         <a class="btn btn-white" href="/prodotti">Vedi prodotti e listino</a>
         <a class="btn btn-outline" href="/docs/catalogo-staffe-panev-2026.pdf" download>Scarica il catalogo (PDF)</a>
+        <a class="btn btn-outline" href="#vista-3d">Guarda in 3D</a>
       </div>
       <div class="patent-badge">
         <p><strong>Brevetto per Modello di Utilità N. 202023000002112</strong></p>
@@ -73,13 +76,36 @@
       </div>
     </div>
     <div class="hero-visual">
-      <picture>
-  <source srcset="/img/staffe-4viste.webp" type="image/webp">
-  <img src="/img/staffe-4viste.png" alt="Disegno tecnico delle staffe brevettate nelle versioni destra (DX) e sinistra (SX)" width="560" height="560">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-65-170-7_b-65-320-hero-480.webp 480w, /img/3d/a-65-170-7_b-65-320-hero-960.webp 960w" sizes="(max-width: 1020px) 420px, 460px">
+  <img src="/img/3d/a-65-170-7_b-65-320-hero-960.jpg" alt="Render 3D della piastra A 65 170 7 montata con la staffa B 65 320" width="960" height="1200" fetchpriority="high">
 </picture>
     </div>
   </div>
   <div class="wrap stats-band"><div class="stat"><strong>± 8°</strong><span>Regolazione angolare</span></div><div class="stat"><strong>45 – 255</strong><span>Corsa di estensione (mm)</span></div><div class="stat"><strong>DX / SX</strong><span>Staffe ambidestre</span></div><div class="stat"><strong>4 / 5</strong><span>Spessore lamiera (mm)</span></div></div>
+</section>
+
+<section class="section section-tint section-3d" id="vista-3d">
+  <div class="wrap">
+    <div class="viewer-head">
+      <div>
+        <p class="kicker">Vista 3D</p>
+        <h2>Le staffe in 3D, prima di ordinare</h2>
+        <p class="lead">Tutti i 48 articoli del catalogo, modellati in lamiera zincata dalle quote in mm: ruotali, passa da DX a SX, guardali montati con la staffa abbinata e prova la regolazione.</p>
+      </div>
+      <ul class="viewer-points"><li>48 articoli del catalogo 2026</li><li>Versioni DX e SX</li><li>Montaggio con bulloni M10 e regolazione</li><li>Foto HD da scaricare</li></ul>
+    </div>
+    <div class="viewer-frame" data-viewer data-src="/staffe-3d?embed=1&amp;code=SU-220-160&amp;mode=assembly" data-title="Vista 3D delle staffe Panev">
+      <a class="viewer-poster" href="/staffe-3d?code=SU-220-160&amp;mode=assembly">
+        <picture class="render">
+  <source type="image/webp" srcset="/img/3d/su-220-160_sg-80-150-480.webp 480w, /img/3d/su-220-160_sg-80-150-960.webp 960w, /img/3d/su-220-160_sg-80-150-1600.webp 1600w" sizes="(max-width: 1200px) 100vw, 1160px">
+  <img src="/img/3d/su-220-160_sg-80-150-960.jpg" alt="Render 3D del supporto SU 220 160 montato con la staffa guida SG 80 150 e la guida" width="960" height="720" loading="lazy" decoding="async">
+</picture>
+        <span class="viewer-start">Avvia la vista 3D</span>
+      </a>
+    </div>
+    <p class="viewer-full"><a href="/staffe-3d">Apri a tutto schermo</a></p>
+  </div>
 </section>
 
 <section class="section">
@@ -95,9 +121,9 @@
     <aside class="highlight-card">
       <h3>Rigidezza massima dove serve</h3>
       <p>Nervature contigue e più larghe presso il giunto articolato: la staffa resiste meglio proprio nel punto più sollecitato.</p>
-      <picture>
-  <source srcset="/img/sistema-overview.webp" type="image/webp">
-  <img src="/img/sistema-overview.png" alt="Rigidezza massima dove serve" width="440" height="330" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-37-170-2_b-37-320-480.webp 480w, /img/3d/a-37-170-2_b-37-320-960.webp 960w" sizes="(max-width: 860px) 100vw, 440px">
+  <img src="/img/3d/a-37-170-2_b-37-320-960.jpg" alt="Rigidezza massima dove serve" width="960" height="720" loading="lazy" decoding="async">
 </picture>
     </aside>
   </div>
@@ -109,9 +135,9 @@
     <h2>Tre applicazioni, un solo sistema</h2>
     <div class="app-grid">
     <article class="app-card">
-      <picture>
-  <source srcset="/img/prod-porte-overview.webp" type="image/webp">
-  <img src="/img/prod-porte-overview.png" alt="Soglia porta di piano" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-45-170-7_b-45-320-480.webp 480w, /img/3d/a-45-170-7_b-45-320-960.webp 960w" sizes="(max-width: 860px) 100vw, 380px">
+  <img src="/img/3d/a-45-170-7_b-45-320-960.jpg" alt="Soglia porta di piano" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="app-body">
         <p class="app-num">01</p>
@@ -120,9 +146,9 @@
       </div>
     </article>
     <article class="app-card">
-      <picture>
-  <source srcset="/img/sistema-overview.webp" type="image/webp">
-  <img src="/img/sistema-overview.png" alt="Gruppo operatore" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-65-170-7_b-65-320-sx-480.webp 480w, /img/3d/a-65-170-7_b-65-320-sx-960.webp 960w" sizes="(max-width: 860px) 100vw, 380px">
+  <img src="/img/3d/a-65-170-7_b-65-320-sx-960.jpg" alt="Gruppo operatore" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="app-body">
         <p class="app-num">02</p>
@@ -131,9 +157,9 @@
       </div>
     </article>
     <article class="app-card">
-      <picture>
-  <source srcset="/img/prod-SU-SG-overview.webp" type="image/webp">
-  <img src="/img/prod-SU-SG-overview.png" alt="Guide del contrappeso" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/sd-220-200_sg-80-190-480.webp 480w, /img/3d/sd-220-200_sg-80-190-960.webp 960w" sizes="(max-width: 860px) 100vw, 380px">
+  <img src="/img/3d/sd-220-200_sg-80-190-960.jpg" alt="Guide del contrappeso" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="app-body">
         <p class="app-num">03</p>
@@ -151,9 +177,9 @@
     <h2>Dal listino: le staffe più richieste</h2>
     <div class="fam-grid">
     <a class="fam-card" href="/prodotti#sezione-01">
-      <picture>
-  <source srcset="/img/prod-porte-overview.webp" type="image/webp">
-  <img src="/img/prod-porte-overview.png" alt="Staffe porta di piano — serie A / B" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-65-170-7_b-65-220-480.webp 480w, /img/3d/a-65-170-7_b-65-220-960.webp 960w" sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px">
+  <img src="/img/3d/a-65-170-7_b-65-220-960.jpg" alt="Staffe porta di piano — serie A / B" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="fam-body">
         <h3>Staffe porta di piano — serie A / B</h3>
@@ -162,9 +188,9 @@
       </div>
     </a>
     <a class="fam-card" href="/prodotti#sezione-02">
-      <picture>
-  <source srcset="/img/prod-SU-SG-overview.webp" type="image/webp">
-  <img src="/img/prod-SU-SG-overview.png" alt="Supporti SU / SD + guida SG" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/su-220-180_sg-80-170-480.webp 480w, /img/3d/su-220-180_sg-80-170-960.webp 960w" sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px">
+  <img src="/img/3d/su-220-180_sg-80-170-960.jpg" alt="Supporti SU / SD + guida SG" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="fam-body">
         <h3>Supporti SU / SD + guida SG</h3>
@@ -173,9 +199,9 @@
       </div>
     </a>
     <a class="fam-card" href="/prodotti#sezione-04">
-      <picture>
-  <source srcset="/img/prod-SC-overview.webp" type="image/webp">
-  <img src="/img/prod-SC-overview.png" alt="Supporti scorrevoli SC + SG" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/sc-80-220_sg-80-220-480.webp 480w, /img/3d/sc-80-220_sg-80-220-960.webp 960w" sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px">
+  <img src="/img/3d/sc-80-220_sg-80-220-960.jpg" alt="Supporti scorrevoli SC + SG" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="fam-body">
         <h3>Supporti scorrevoli SC + SG</h3>
@@ -184,9 +210,9 @@
       </div>
     </a>
     <a class="fam-card" href="/prodotti#sezione-05">
-      <picture>
-  <source srcset="/img/prod-SG220-overview.webp" type="image/webp">
-  <img src="/img/prod-SG220-overview.png" alt="Staffe guida SG fisse" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/sg-80-190-480.webp 480w, /img/3d/sg-80-190-960.webp 960w" sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px">
+  <img src="/img/3d/sg-80-190-960.jpg" alt="Staffe guida SG fisse" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="fam-body">
         <h3>Staffe guida SG fisse</h3>
@@ -323,7 +349,7 @@
   </div>
   <div class="wrap footer-bottom">
     <p>&copy; 2026 Panev Ascensori SAS — Tutti i diritti riservati.</p>
-    <p>Creato e disegnato da <a href="https://carbonstealth.eu" rel="external">Carbon Stealth VCC</a></p>
+    <p>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
   </div>
 </footer>
 <script src="/js/site.js" defer></script>

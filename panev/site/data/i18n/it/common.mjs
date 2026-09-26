@@ -12,6 +12,7 @@ export default {
     contacts: 'contatti.html',
     privacy: 'privacy.html',
     terms: 'condizioni.html',
+    viewer3d: 'staffe-3d.html',
   },
   langNames: { it: 'Italiano', en: 'English', bg: 'Български' },
   fmtPrice: (n) => `${n.toFixed(2).replace('.', ',')} €`,
@@ -43,7 +44,7 @@ export default {
     },
     catalog: {
       title: 'Catalogo tecnico 2026 (PDF) — sfoglia e scarica | Panev Ascensori',
-      description: 'Catalogo tecnico e commerciale Panev Ascensori, edizione 2026: 80 pagine con disegni tecnici, quote in mm, codici e listino completo. Consultalo online o scaricalo in PDF.',
+      description: 'Catalogo tecnico e commerciale Panev Ascensori, edizione 2026: 95 pagine con disegni tecnici, quote in mm, codici e listino completo. Consultalo online o scaricalo in PDF.',
       keywords: [
         'catalogo staffe ascensori PDF',
         'catalogo tecnico ascensori 2026',
@@ -89,11 +90,24 @@ export default {
         'Carbon Stealth',
       ],
     },
+    viewer3d: {
+      title: 'Staffe Panev in 3D — i 48 articoli del catalogo 2026',
+      description: 'Le 48 staffe del catalogo 2026 in 3D: ruotale, passa da DX a SX, guardale montate con la regolazione e scarica una foto HD. Modelli dalle quote del catalogo.',
+      keywords: [
+        'staffe ascensori 3D',
+        'modello 3D staffe porte di piano',
+        'supporti guide contrappeso 3D',
+        'staffe guida SG 3D',
+        'Panev Ascensori',
+        'Carbon Stealth',
+      ],
+    },
   },
   nav: {
     home: 'Home',
     products: 'Prodotti e listino',
     catalog: 'Catalogo PDF',
+    viewer3d: 'Vista 3D',
     contacts: 'Contatti e ordini',
     skip: 'Salta al contenuto',
     menuLabel: 'Menu principale',
@@ -126,6 +140,5 @@ export default {
     companyTitle: 'Azienda',
     legalTitle: 'Note legali',
     rights: 'Tutti i diritti riservati.',
-    credits: 'Creato e disegnato da',
   },
 };

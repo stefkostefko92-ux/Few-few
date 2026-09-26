@@ -12,6 +12,7 @@ export default {
     contacts: 'kontakti.html',
     privacy: 'poveritelnost.html',
     terms: 'usloviya.html',
+    viewer3d: 'planki-3d.html',
   },
   langNames: { it: 'Italiano', en: 'English', bg: 'Български' },
   fmtPrice: (n) => `${n.toFixed(2).replace('.', ',')} €`,
@@ -43,7 +44,7 @@ export default {
     },
     catalog: {
       title: 'Технически каталог 2026 (PDF) — разгледай и свали | Panev Ascensori',
-      description: 'Технически и търговски каталог на Panev Ascensori, издание 2026: 80 страници с технически чертежи, размери в mm, кодове и пълен ценоразпис. Разгледай го онлайн или го свали като PDF.',
+      description: 'Технически и търговски каталог на Panev Ascensori, издание 2026: 95 страници с технически чертежи, размери в mm, кодове и пълен ценоразпис. Разгледай го онлайн или го свали като PDF.',
       keywords: [
         'каталог планки за асансьори PDF',
         'технически каталог асансьори 2026',
@@ -89,11 +90,24 @@ export default {
         'Carbon Stealth',
       ],
     },
+    viewer3d: {
+      title: 'Планките Panev в 3D — 48-те артикула от каталога',
+      description: 'Всички 48 планки от каталога 2026 в 3D: завърти ги, смени DX и SX, виж ги монтирани с регулирането и свали HD снимка. Моделите следват каталога.',
+      keywords: [
+        'планки за асансьори 3D',
+        '3D модел на планки за етажни врати',
+        'опори за водачи на противотежестта 3D',
+        'планки за водачи SG 3D',
+        'Panev Ascensori',
+        'Carbon Stealth',
+      ],
+    },
   },
   nav: {
     home: 'Начало',
     products: 'Продукти и ценоразпис',
     catalog: 'PDF каталог',
+    viewer3d: '3D изглед',
     contacts: 'Контакти и поръчки',
     skip: 'Към съдържанието',
     menuLabel: 'Главно меню',
@@ -126,6 +140,5 @@ export default {
     companyTitle: 'Фирма',
     legalTitle: 'Правна информация',
     rights: 'Всички права запазени.',
-    credits: 'Създадено и проектирано от',
   },
 };

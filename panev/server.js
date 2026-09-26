@@ -113,7 +113,7 @@ function securityHeaders(req, res, next) {
     "font-src 'self'",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://api.stripe.com",
-    "frame-src https://js.stripe.com https://hooks.stripe.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com", // 'self': 3D изгледът на началната страница
     "object-src 'self'",   // каталожният PDF се вгражда с <object>
     "base-uri 'self'",
     "form-action 'self'",
@@ -197,7 +197,9 @@ app.use((req, res, next) => {
                    // under Apache; the app runs under Node behind Nginx, so enforce here.
                    /^\/README\.md$/i, /^\/server\.js$/i, /\.php$/i, /\.sh$/i, /^\/\.htaccess$/i,
                    // изходният код на генератора и вътрешните бележки не се сервират
-                   /^\/site\b/i, /^\/CLAUDE\.md$/i];
+                   /^\/site\b/i, /^\/CLAUDE\.md$/i, /^\/DEPLOY\.md$/i,
+                   // изходният пакет на 3D каталога; сайтът сервира само билда му от /3d-viewer/
+                   /^\/3d(\/|$)/i];
   if (blocked.some(r => r.test(norm))) return res.status(404).send('Not found');
   next();
 });

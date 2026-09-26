@@ -8,10 +8,26 @@ export default {
     chips: ['Made in Italy', 'Acciaio zincato', 'Sistema ambidestro', 'Brevettato'],
     ctaProducts: 'Vedi prodotti e listino',
     ctaCatalog: 'Scarica il catalogo (PDF)',
+    cta3d: 'Guarda in 3D',
     patentLabel: 'Brevetto per Modello di Utilità',
     numAbbr: 'N.',
     patentOffice: 'Ministero delle Imprese e del Made in Italy — UIBM · deposito 19/05/2023',
-    visualAlt: 'Disegno tecnico delle staffe brevettate nelle versioni destra (DX) e sinistra (SX)',
+    visualAlt: 'Render 3D della piastra A 65 170 7 montata con la staffa B 65 320',
+  },
+  viewer3d: {
+    kicker: 'Vista 3D',
+    title: 'Le staffe in 3D, prima di ordinare',
+    lead: 'Tutti i 48 articoli del catalogo, modellati in lamiera zincata dalle quote in mm: ruotali, passa da DX a SX, guardali montati con la staffa abbinata e prova la regolazione.',
+    start: 'Avvia la vista 3D',
+    fullscreen: 'Apri a tutto schermo',
+    frameTitle: 'Vista 3D delle staffe Panev',
+    posterAlt: 'Render 3D del supporto SU 220 160 montato con la staffa guida SG 80 150 e la guida',
+    points: [
+      '48 articoli del catalogo 2026',
+      'Versioni DX e SX',
+      'Montaggio con bulloni M10 e regolazione',
+      'Foto HD da scaricare',
+    ],
   },
   stats: [
     { value: '± 8°', label: 'Regolazione angolare' },
@@ -34,17 +50,17 @@ export default {
     title: 'Tre applicazioni, un solo sistema',
     items: [
       {
-        img: 'prod-porte-overview',
+        img: 'a-45-170-7_b-45-320',
         title: 'Soglia porta di piano',
         body: 'Fissaggio e regolazione in quota della soglia della porta di piano rispetto alla quota zero del pianerottolo.',
       },
       {
-        img: 'sistema-overview',
+        img: 'a-65-170-7_b-65-320-sx',
         title: 'Gruppo operatore',
         body: 'Montaggio del gruppo operatore per l’apertura della porta di cabina, con la staffa fissata alla struttura del vano e alla cabina.',
       },
       {
-        img: 'prod-SU-SG-overview',
+        img: 'sd-220-200_sg-80-190',
         title: 'Guide del contrappeso',
         body: 'Fissaggio delle guide del contrappeso alla muratura del vano di corsa, con supporti regolabili serie SU · SD · SC.',
       },
@@ -56,22 +72,22 @@ export default {
     title: 'Dal listino: le staffe più richieste',
     families: [
       {
-        img: 'prod-porte-overview',
+        img: 'a-65-170-7_b-65-220',
         title: 'Staffe porta di piano — serie A / B',
         body: 'Piastra forata + staffa asolata, regolazione ± 7° / ± 8° su murature non perpendicolari.',
       },
       {
-        img: 'prod-SU-SG-overview',
+        img: 'su-220-180_sg-80-170',
         title: 'Supporti SU / SD + guida SG',
         body: 'Supporto universale o decentrato con staffa di giunzione, corsa di estensione 45 – 215 mm.',
       },
       {
-        img: 'prod-SC-overview',
+        img: 'sc-80-220_sg-80-220',
         title: 'Supporti scorrevoli SC + SG',
         body: 'Per le corse più ampie, fino a 235 mm, spessore 4 mm.',
       },
       {
-        img: 'prod-SG220-overview',
+        img: 'sg-80-190',
         title: 'Staffe guida SG fisse',
         body: 'Larghezze 50 / 60 / 80 mm, lunghezze 130 – 220 mm, pronte per l’abbinamento diretto.',
       },

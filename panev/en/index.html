@@ -30,6 +30,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preload" href="/fonts/Inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/vista-3d.css?v=6ea5eeff64">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://panevascensori.it/#organization","name":"Panev Ascensori SAS","url":"https://panevascensori.it/","logo":"https://panevascensori.it/img/panev-logo.png","email":"info@panevascensori.it","telephone":"+39 379 296 9699","vatID":"IT09346970966","taxID":"09346970966","identifier":{"@type":"PropertyValue","propertyID":"REA","value":"MI - 2084376"},"address":{"@type":"PostalAddress","streetAddress":"Via Madonna del Salvatore 6","postalCode":"20010","addressLocality":"Vittuone","addressRegion":"MI","addressCountry":"IT"},"contactPoint":{"@type":"ContactPoint","contactType":"sales","email":"info@panevascensori.it","telephone":"+39 379 296 9699","availableLanguage":["it","en","bg"]},"knowsAbout":["staffe per ascensori","staffe porte di piano","guide del contrappeso","lift brackets","landing door brackets","counterweight guide rails","планки за асансьори","планки за етажни врати","водачи на противотежестта","brevetto Modello di Utilità UIBM 202023000002112"]},{"@type":"WebSite","@id":"https://panevascensori.it/#website","url":"https://panevascensori.it/","name":"Panev Ascensori SAS","inLanguage":"en","publisher":{"@id":"https://panevascensori.it/#organization"}},{"@type":"WebPage","url":"https://panevascensori.it/en/","name":"Panev Ascensori — Patented brackets for landing doors and counterweight guide rails","description":"Slotted, hinged, perforated steel brackets for lifts: adjustable fixing of landing doors and counterweight guide rails on irregular masonry. Utility model patent UIBM No. 202023000002112. Made in Italy. Orders by email.","inLanguage":"en","isPartOf":{"@id":"https://panevascensori.it/#website"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I place an order?","acceptedAnswer":{"@type":"Answer","text":"By email to info@panevascensori.it: state the code, the quantity and — where applicable — the DX (right) or SX (left) hand. The “Order by email” button and the order list pre-fill the message for you. We reply with an order confirmation, total and delivery times."}},{"@type":"Question","name":"Do prices include VAT?","acceptedAnswer":{"@type":"Answer","text":"No: all list prices are in euro, excluding VAT, per single unit (2026 price list). Sales are reserved to professional operators (B2B) with a VAT number; electronic invoicing via SdI."}},{"@type":"Question","name":"How much is shipping and how long does delivery take?","acceptedAnswer":{"@type":"Answer","text":"Shipping is free across Italy for orders above € 500 (excl. VAT); below that threshold costs are stated in the order confirmation. Standard delivery takes 2 – 5 working days, express 24 – 48 hours on request."}},{"@type":"Question","name":"What do DX and SX mean?","acceptedAnswer":{"@type":"Answer","text":"Every bracket is ambidextrous: DX is the right-hand version, SX the left-hand one. This lets you avoid rebar in concrete walls and drill in the most suitable spots. State the required hand when ordering."}},{"@type":"Question","name":"Which series should I choose?","acceptedAnswer":{"@type":"Answer","text":"For landing door fixing: A / B series (37 / 45 / 65 mm sections, ± 7° / ± 8° adjustment). For counterweight guide rails: SU (universal), SD (offset) or SC (sliding) supports paired with the SG joining bracket, 45 – 235 mm range. For non-standard sizes: solutions to shop drawing, quoted on request."}},{"@type":"Question","name":"Are the brackets standard-compliant and under warranty?","acceptedAnswer":{"@type":"Answer","text":"Yes: products comply with UNI EN 81, galvanised steel complies with UNI EN 10025, suitable for UNI 10411 inspection. The system is protected by utility model patent UIBM No. 202023000002112, valid until 2033. 2-year warranty on manufacturing defects."}}]}]}</script>
 </head><body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -42,6 +43,7 @@
         <a href="/en/" aria-current="page">Home</a>
         <a href="/en/products">Products &amp; price list</a>
         <a href="/en/catalogue">PDF catalogue</a>
+        <a href="/en/brackets-3d">3D view</a>
         <a href="/en/contacts">Contacts &amp; orders</a>
     </nav>
     <div class="header-tools">
@@ -66,6 +68,7 @@
       <div class="hero-cta">
         <a class="btn btn-white" href="/en/products">See products &amp; prices</a>
         <a class="btn btn-outline" href="/docs/catalogo-staffe-panev-2026.pdf" download>Download the catalogue (PDF)</a>
+        <a class="btn btn-outline" href="#vista-3d">View in 3D</a>
       </div>
       <div class="patent-badge">
         <p><strong>Utility model patent No. 202023000002112</strong></p>
@@ -73,13 +76,36 @@
       </div>
     </div>
     <div class="hero-visual">
-      <picture>
-  <source srcset="/img/staffe-4viste.webp" type="image/webp">
-  <img src="/img/staffe-4viste.png" alt="Technical drawing of the patented brackets in right-hand (DX) and left-hand (SX) versions" width="560" height="560">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-65-170-7_b-65-320-hero-480.webp 480w, /img/3d/a-65-170-7_b-65-320-hero-960.webp 960w" sizes="(max-width: 1020px) 420px, 460px">
+  <img src="/img/3d/a-65-170-7_b-65-320-hero-960.jpg" alt="3D render of plate A 65 170 7 installed with bracket B 65 320" width="960" height="1200" fetchpriority="high">
 </picture>
     </div>
   </div>
   <div class="wrap stats-band"><div class="stat"><strong>± 8°</strong><span>Angular adjustment</span></div><div class="stat"><strong>45 – 255</strong><span>Extension range (mm)</span></div><div class="stat"><strong>DX / SX</strong><span>Ambidextrous brackets</span></div><div class="stat"><strong>4 / 5</strong><span>Sheet thickness (mm)</span></div></div>
+</section>
+
+<section class="section section-tint section-3d" id="vista-3d">
+  <div class="wrap">
+    <div class="viewer-head">
+      <div>
+        <p class="kicker">3D view</p>
+        <h2>The brackets in 3D, before you order</h2>
+        <p class="lead">All 48 catalogue items, modelled in galvanised sheet steel from the dimensions in mm: rotate them, switch between DX and SX, see them installed with their partner bracket and try the adjustment.</p>
+      </div>
+      <ul class="viewer-points"><li>48 items from the 2026 catalogue</li><li>DX and SX versions</li><li>Installed with M10 bolts, with the adjustment</li><li>HD photo to download</li></ul>
+    </div>
+    <div class="viewer-frame" data-viewer data-src="/en/brackets-3d?embed=1&amp;code=SU-220-160&amp;mode=assembly" data-title="3D view of the Panev brackets">
+      <a class="viewer-poster" href="/en/brackets-3d?code=SU-220-160&amp;mode=assembly">
+        <picture class="render">
+  <source type="image/webp" srcset="/img/3d/su-220-160_sg-80-150-480.webp 480w, /img/3d/su-220-160_sg-80-150-960.webp 960w, /img/3d/su-220-160_sg-80-150-1600.webp 1600w" sizes="(max-width: 1200px) 100vw, 1160px">
+  <img src="/img/3d/su-220-160_sg-80-150-960.jpg" alt="3D render of support SU 220 160 installed with guide bracket SG 80 150 and the guide rail" width="960" height="720" loading="lazy" decoding="async">
+</picture>
+        <span class="viewer-start">Start the 3D view</span>
+      </a>
+    </div>
+    <p class="viewer-full"><a href="/en/brackets-3d">Open full screen</a></p>
+  </div>
 </section>
 
 <section class="section">
@@ -95,9 +121,9 @@
     <aside class="highlight-card">
       <h3>Maximum stiffness where it matters</h3>
       <p>Contiguous ribs, wider next to the articulated joint: the bracket is strongest exactly at its most stressed point.</p>
-      <picture>
-  <source srcset="/img/sistema-overview.webp" type="image/webp">
-  <img src="/img/sistema-overview.png" alt="Maximum stiffness where it matters" width="440" height="330" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-37-170-2_b-37-320-480.webp 480w, /img/3d/a-37-170-2_b-37-320-960.webp 960w" sizes="(max-width: 860px) 100vw, 440px">
+  <img src="/img/3d/a-37-170-2_b-37-320-960.jpg" alt="Maximum stiffness where it matters" width="960" height="720" loading="lazy" decoding="async">
 </picture>
     </aside>
   </div>
@@ -109,9 +135,9 @@
     <h2>Three applications, one system</h2>
     <div class="app-grid">
     <article class="app-card">
-      <picture>
-  <source srcset="/img/prod-porte-overview.webp" type="image/webp">
-  <img src="/img/prod-porte-overview.png" alt="Landing door sill" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-45-170-7_b-45-320-480.webp 480w, /img/3d/a-45-170-7_b-45-320-960.webp 960w" sizes="(max-width: 860px) 100vw, 380px">
+  <img src="/img/3d/a-45-170-7_b-45-320-960.jpg" alt="Landing door sill" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="app-body">
         <p class="app-num">01</p>
@@ -120,9 +146,9 @@
       </div>
     </article>
     <article class="app-card">
-      <picture>
-  <source srcset="/img/sistema-overview.webp" type="image/webp">
-  <img src="/img/sistema-overview.png" alt="Car door operator" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-65-170-7_b-65-320-sx-480.webp 480w, /img/3d/a-65-170-7_b-65-320-sx-960.webp 960w" sizes="(max-width: 860px) 100vw, 380px">
+  <img src="/img/3d/a-65-170-7_b-65-320-sx-960.jpg" alt="Car door operator" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="app-body">
         <p class="app-num">02</p>
@@ -131,9 +157,9 @@
       </div>
     </article>
     <article class="app-card">
-      <picture>
-  <source srcset="/img/prod-SU-SG-overview.webp" type="image/webp">
-  <img src="/img/prod-SU-SG-overview.png" alt="Counterweight guide rails" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/sd-220-200_sg-80-190-480.webp 480w, /img/3d/sd-220-200_sg-80-190-960.webp 960w" sizes="(max-width: 860px) 100vw, 380px">
+  <img src="/img/3d/sd-220-200_sg-80-190-960.jpg" alt="Counterweight guide rails" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="app-body">
         <p class="app-num">03</p>
@@ -151,9 +177,9 @@
     <h2>From the price list: the most requested brackets</h2>
     <div class="fam-grid">
     <a class="fam-card" href="/en/products#sezione-01">
-      <picture>
-  <source srcset="/img/prod-porte-overview.webp" type="image/webp">
-  <img src="/img/prod-porte-overview.png" alt="Landing door brackets — A / B series" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/a-65-170-7_b-65-220-480.webp 480w, /img/3d/a-65-170-7_b-65-220-960.webp 960w" sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px">
+  <img src="/img/3d/a-65-170-7_b-65-220-960.jpg" alt="Landing door brackets — A / B series" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="fam-body">
         <h3>Landing door brackets — A / B series</h3>
@@ -162,9 +188,9 @@
       </div>
     </a>
     <a class="fam-card" href="/en/products#sezione-02">
-      <picture>
-  <source srcset="/img/prod-SU-SG-overview.webp" type="image/webp">
-  <img src="/img/prod-SU-SG-overview.png" alt="SU / SD supports + SG guide bracket" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/su-220-180_sg-80-170-480.webp 480w, /img/3d/su-220-180_sg-80-170-960.webp 960w" sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px">
+  <img src="/img/3d/su-220-180_sg-80-170-960.jpg" alt="SU / SD supports + SG guide bracket" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="fam-body">
         <h3>SU / SD supports + SG guide bracket</h3>
@@ -173,9 +199,9 @@
       </div>
     </a>
     <a class="fam-card" href="/en/products#sezione-04">
-      <picture>
-  <source srcset="/img/prod-SC-overview.webp" type="image/webp">
-  <img src="/img/prod-SC-overview.png" alt="SC sliding supports + SG" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/sc-80-220_sg-80-220-480.webp 480w, /img/3d/sc-80-220_sg-80-220-960.webp 960w" sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px">
+  <img src="/img/3d/sc-80-220_sg-80-220-960.jpg" alt="SC sliding supports + SG" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="fam-body">
         <h3>SC sliding supports + SG</h3>
@@ -184,9 +210,9 @@
       </div>
     </a>
     <a class="fam-card" href="/en/products#sezione-05">
-      <picture>
-  <source srcset="/img/prod-SG220-overview.webp" type="image/webp">
-  <img src="/img/prod-SG220-overview.png" alt="Fixed SG guide brackets" width="440" height="300" loading="lazy" decoding="async">
+      <picture class="render">
+  <source type="image/webp" srcset="/img/3d/sg-80-190-480.webp 480w, /img/3d/sg-80-190-960.webp 960w" sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px">
+  <img src="/img/3d/sg-80-190-960.jpg" alt="Fixed SG guide brackets" width="960" height="720" loading="lazy" decoding="async">
 </picture>
       <div class="fam-body">
         <h3>Fixed SG guide brackets</h3>
@@ -323,7 +349,7 @@
   </div>
   <div class="wrap footer-bottom">
     <p>&copy; 2026 Panev Ascensori SAS — All rights reserved.</p>
-    <p>Created and designed by <a href="https://carbonstealth.eu" rel="external">Carbon Stealth VCC</a></p>
+    <p>Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
   </div>
 </footer>
 <script src="/js/site.js" defer></script>

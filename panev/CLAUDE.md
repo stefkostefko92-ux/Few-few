@@ -14,15 +14,17 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 
 - **Източник:** `site/` — `site/build.mjs` (генератор), `site/data/products.mjs`
   (всички кодове/цени от каталога — единствен източник на истината),
-  `site/data/i18n/{it,en,bg}.mjs` (пълните текстове), `site/templates/*.mjs`.
+  `site/data/i18n/{it,en,bg}.mjs` (пълните текстове, разделени по страници в
+  `i18n/<език>/{common,home,products,pages,legal}.mjs`), `site/templates/*.mjs`.
+  `site/data` беше извън git (стар `.gitignore` с `data/`) и е възстановен от
+  генерираните страници: билдът ги възпроизвеждаше байт по байт.
 - **Изход:** статични страници в корена (`index.html`, `prodotti.html`,
   `catalogo.html`, `contatti.html`, `privacy.html`, `condizioni.html`) + `en/`
   + `bg/` + `sitemap.xml` + `404.html`. **Не редактирай генерираните файлове
   ръчно** — променяй източника и пусни билда.
 - **Каталог:** `docs/catalogo-staffe-panev-2026.pdf` (вграден + за сваляне);
   превюта в `img/catalogo/`. 95 страници, 10 MB: 68-те на каталога плюс 27 страници „Vista 3D“
-  с рендерите. Правят се с `cd 3d && npm run catalog-pdf`, никога на ръка. Текстът на сайта
-  („80 pagine“, „PDF · 8 MB“) идва от липсващия `site/data` и още не е обновен.
+  с рендерите. Правят се с `cd 3d && npm run catalog-pdf`, никога на ръка.
 - **Дизайн:** само каталожната палитра (`#162862`, `#1d3271`, `#f4f6f9`,
   `#e2e6ea`, `#667298`, `#878786`); Inter variable self-hosted (latin +
   cyrillic в `fonts/Inter-var-*.woff2`); без емоджита и декоративни SVG.
@@ -42,10 +44,24 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 Детайлите са в `3d/CLAUDE.md` и `3d/README.md`. Гейт: `cd 3d && npm run gate`. CI:
 `.github/workflows/panev-3d.yml`.
 
+**3D в сайта.**
+- **Страници:** `/staffe-3d`, `/en/brackets-3d`, `/bg/planki-3d` — визьорът в собствен документ
+  (`site/templates/viewer.mjs`, без `site.css`), с canonical, hreflang, OG, JSON-LD и sitemap.
+  Маркировката и стилът идват от `3d/template.html`, статичните текстове — от `3d/src/ui/i18n.js`.
+- **Начална страница:** секция „Vista 3D“ (`#vista-3d`) с постер; на широк екран кликът го сменя
+  с визьора в рамка (`?embed=1`), на тесен отваря 3D страницата. Преди клика не се тегли нищо от 3D.
+- **Снимки:** продуктите и началната страница показват 3D рендерите от `img/3d/` (WebP 480/960,
+  JPEG 960). Изрязаните от каталога картинки са махнати; `img/staffa-*` остават, защото ги ползва
+  админът (сийдът в `scripts/seed.js`).
+- **Ред:** `cd 3d && npm run site` (бъндъл + текстури → `3d-viewer/`, снимки → `img/3d/`,
+  `img/og-3d.jpg`), после `npm run build:site`. И двете папки се комитват — деплоят е rsync.
+- **server.js:** `frame-src 'self'` е за рамката; `/3d/` (изходният пакет) и `DEPLOY.md` не се
+  сервират.
+
 ## Команди (в `panev/`)
 
 ```bash
-npm run build:site       # node site/build.mjs — регенерира 18-те страници + sitemap
+npm run build:site       # node site/build.mjs — регенерира 21-те страници (18 + три 3D) + sitemap
 npm run dev              # nodemon server.js
 npm start                # node server.js
 npm run db:seed          # node scripts/seed.js (admin/legacy данни)

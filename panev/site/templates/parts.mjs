@@ -1,11 +1,16 @@
-// Общите парчета HTML на страниците: снимка, бутон за поръчка, цена, ред от ценоразписа, корица на секция.
+// Общите парчета HTML на страниците: 3D рендер, бутон за поръчка, цена, ред от ценоразписа, корица на секция.
 
 import { esc } from './layout.mjs';
 
-export function img(name, alt, { w = 480, h = 360, lazy = true, cls = '' } = {}) {
-  return `<picture${cls ? ` class="${cls}"` : ''}>
-  <source srcset="/img/${name}.webp" type="image/webp">
-  <img src="/img/${name}.png" alt="${esc(alt)}" width="${w}" height="${h}"${lazy ? ' loading="lazy" decoding="async"' : ''}>
+// 3D рендер от img/3d/ (прави ги `cd 3d && npm run site`): WebP в 480 и 960 px (large: и 1600 px),
+// JPEG за стари браузъри. sizes е колко широко се показва мястото — браузърът взема по-малкия файл,
+// където стига. Рендерите са 4:3 (h = 720 при ширина 960); изрязаните варианти подават своята h.
+export function render3d(name, alt, { sizes, lazy = true, priority = false, large = false, h = 720 } = {}) {
+  const src = (w, ext) => `/img/3d/${name}-${w}.${ext}`;
+  const widths = large ? [480, 960, 1600] : [480, 960];
+  return `<picture class="render">
+  <source type="image/webp" srcset="${widths.map((w) => `${src(w, 'webp')} ${w}w`).join(', ')}" sizes="${sizes}">
+  <img src="${src(960, 'jpg')}" alt="${esc(alt)}" width="960" height="${h}"${lazy ? ' loading="lazy" decoding="async"' : ''}${priority ? ' fetchpriority="high"' : ''}>
 </picture>`;
 }
 

@@ -1,0 +1,26 @@
+{
+ "edge": {
+  "key": "9c0d1318c0ea4ef5",
+  "tile": [
+   20,
+   5
+  ],
+  "files": {
+   "albedo": "edge_albedo.webp",
+   "normal": "edge_normal.webp",
+   "orm": "edge_orm.webp"
+  }
+ },
+ "zinc": {
+  "key": "9c0d1318c0ea4ef5",
+  "tile": [
+   80,
+   80
+  ],
+  "files": {
+   "albedo": "zinc_albedo.webp",
+   "normal": "zinc_normal.webp",
+   "orm": "zinc_orm.webp"
+  }
+ }
+}

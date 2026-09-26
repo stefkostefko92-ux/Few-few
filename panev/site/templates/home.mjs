@@ -1,7 +1,7 @@
 // Началната страница и нейният JSON-LD (FAQPage).
 
 import { esc, pagePath } from './layout.mjs';
-import { img } from './parts.mjs';
+import { render3d } from './parts.mjs';
 import { COMPANY, PATENT, CATALOG_PDF, doorSystems, guideConfigs, sgFixed } from '../data/products.mjs';
 
 // ── Начална страница ─────────────────────────────────────────
@@ -14,7 +14,7 @@ export function homePage(t, locales) {
 
   const apps = t.applications.items.map((a, i) => `
     <article class="app-card">
-      ${img(a.img, a.title, { w: 440, h: 300 })}
+      ${render3d(a.img, a.title, { sizes: '(max-width: 860px) 100vw, 380px' })}
       <div class="app-body">
         <p class="app-num">0${i + 1}</p>
         <h3>${esc(a.title)}</h3>
@@ -30,7 +30,7 @@ export function homePage(t, locales) {
   ];
   const fams = t.featured.families.map((f, i) => `
     <a class="fam-card" href="${pagePath(t, 'products')}#sezione-0${[1, 2, 4, 5][i]}">
-      ${img(f.img, f.title, { w: 440, h: 300 })}
+      ${render3d(f.img, f.title, { sizes: '(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 280px' })}
       <div class="fam-body">
         <h3>${esc(f.title)}</h3>
         <p>${esc(f.body)}</p>
@@ -61,6 +61,7 @@ export function homePage(t, locales) {
       <div class="hero-cta">
         <a class="btn btn-white" href="${pagePath(t, 'products')}">${esc(h.ctaProducts)}</a>
         <a class="btn btn-outline" href="${CATALOG_PDF}" download>${esc(h.ctaCatalog)}</a>
+        <a class="btn btn-outline" href="#vista-3d">${esc(h.cta3d)}</a>
       </div>
       <div class="patent-badge">
         <p><strong>${esc(h.patentLabel)} ${esc(h.numAbbr || 'N.')} ${PATENT.number}</strong></p>
@@ -68,11 +69,12 @@ export function homePage(t, locales) {
       </div>
     </div>
     <div class="hero-visual">
-      ${img('staffe-4viste', h.visualAlt || h.title, { w: 560, h: 560, lazy: false })}
+      ${render3d('a-65-170-7_b-65-320-hero', h.visualAlt, { sizes: '(max-width: 1020px) 420px, 460px', lazy: false, priority: true, h: 1200 })}
     </div>
   </div>
   <div class="wrap stats-band">${stats}</div>
 </section>
+${viewerSection(t)}
 
 <section class="section">
   <div class="wrap section-grid">
@@ -87,7 +89,7 @@ export function homePage(t, locales) {
     <aside class="highlight-card">
       <h3>${esc(t.problem.highlight)}</h3>
       <p>${esc(t.problem.highlightBody)}</p>
-      ${img('sistema-overview', t.problem.highlight, { w: 440, h: 330 })}
+      ${render3d('a-37-170-2_b-37-320', t.problem.highlight, { sizes: '(max-width: 860px) 100vw, 440px' })}
     </aside>
   </div>
 </section>
@@ -144,6 +146,36 @@ export function homePage(t, locales) {
         <p>${esc(f.a)}</p>
       </details>`).join('')}
     </div>
+  </div>
+</section>`;
+}
+
+// 3D изгледът: постер (рендерът на опора + планка за водач), който на широк екран става самия
+// визьор в рамка — чак при клик, затова страницата не тежи нищо повече. На тесен екран и без JS
+// постерът е линк към цялата 3D страница. Рамката започва от същия комплект като постера.
+function viewerSection(t) {
+  const v = t.viewer3d;
+  const view = 'code=SU-220-160&amp;mode=assembly';
+  const href = pagePath(t, 'viewer3d');
+  const points = v.points.map((x) => `<li>${esc(x)}</li>`).join('');
+  return `
+<section class="section section-tint section-3d" id="vista-3d">
+  <div class="wrap">
+    <div class="viewer-head">
+      <div>
+        <p class="kicker">${esc(v.kicker)}</p>
+        <h2>${esc(v.title)}</h2>
+        <p class="lead">${esc(v.lead)}</p>
+      </div>
+      <ul class="viewer-points">${points}</ul>
+    </div>
+    <div class="viewer-frame" data-viewer data-src="${href}?embed=1&amp;${view}" data-title="${esc(v.frameTitle)}">
+      <a class="viewer-poster" href="${href}?${view}">
+        ${render3d('su-220-160_sg-80-150', v.posterAlt, { sizes: '(max-width: 1200px) 100vw, 1160px', large: true })}
+        <span class="viewer-start">${esc(v.start)}</span>
+      </a>
+    </div>
+    <p class="viewer-full"><a href="${href}">${esc(v.fullscreen)}</a></p>
   </div>
 </section>`;
 }

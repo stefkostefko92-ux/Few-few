@@ -58,6 +58,13 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
   паритета) и `ui.js`.
 - **`bake/`** — офлайн текстури (worker_threads + sharp) към `dist/tex/`. Кешира се по хеш на
   източника.
+- **`scripts/site.mjs`** (`npm run site`) — публикува в сайта бъндъла и текстурите
+  (`../3d-viewer/`) и снимките от рендерите (`../img/3d/`, `../img/og-3d.jpg`). Страниците прави
+  `panev/site/templates/viewer.mjs`, който чете маркировката и стила от `template.html` и сменя
+  италианските текстове в него. Ако ги промениш, обнови и замените там: всяка трябва да хване точно
+  едно място, иначе билдът на сайта спира.
+  - Езикът на страница от сайта е фиксиран (`<html data-lang>`, `pickLang`); `data-lang-hrefs`
+    прави превключвателя линкове, които носят изгледа. `?embed=1` е рамката на началната страница.
 - **`pdf/`** — 27-те страници „Vista 3D“ в `panev/docs/catalogo-staffe-panev-2026.pdf` и рендерите
   на стр. 06 (`npm run catalog-pdf`, иска python3 + PyMuPDF + Pillow; подробно в README).
   - Основата е git blob (`BASE_BLOB` в `gen.py`). Не пускай сливането върху вече слетия PDF.

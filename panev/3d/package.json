@@ -26,6 +26,7 @@
     "smoke": "npm run build && node scripts/smoke.mjs",
     "render": "npm run build && node scripts/render.mjs",
     "sheet": "node scripts/sheet.mjs",
+    "site": "npm run build && node scripts/site.mjs",
     "catalog-pdf": "python3 pdf/gen.py && node pdf/print.mjs && python3 pdf/merge.py && python3 pdf/verify.py"
   },
   "devDependencies": {

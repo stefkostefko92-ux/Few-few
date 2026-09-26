@@ -124,8 +124,14 @@ const T = {
 
 export const strings = (lang) => T[lang] ?? T.it;
 
-// Language from ?lang=, else the browser's, else Italian.
-export function pickLang(search = location.search, prefs = navigator.languages ?? [navigator.language]) {
+// Language fixed by the page (the site's 3D pages, one address per language, set <html data-lang>),
+// else from ?lang=, else the browser's, else Italian.
+export function pickLang(
+  search = location.search,
+  prefs = navigator.languages ?? [navigator.language],
+  fixed = globalThis.document?.documentElement.dataset.lang,
+) {
+  if (LANGS.includes(fixed)) return fixed;
   const q = new URLSearchParams(search).get('lang');
   if (LANGS.includes(q)) return q;
   const hit = prefs.map((l) => String(l).slice(0, 2).toLowerCase()).find((l) => LANGS.includes(l));
