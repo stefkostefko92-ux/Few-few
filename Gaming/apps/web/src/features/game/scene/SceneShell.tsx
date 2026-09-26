@@ -85,9 +85,10 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   // not swallow the "play again" button).
   const game = useMatchStore((s) => s.game);
   const lobbyWaiting = useLobbyStore((s) => s.lobby !== null && s.lobby.game === game);
+  // Реми (равен резултат, winner null) не е загуба — неутрален звук, не „загубил си“.
   useEffect(() => {
-    playCue(won ? "win" : "loss");
-  }, [won]);
+    playCue(won ? "win" : mine === "loss" ? "loss" : "deal");
+  }, [won, mine]);
   return (
     <div className="cine-over" role="dialog" aria-modal="true">
       {won ? <WinConfetti /> : null}

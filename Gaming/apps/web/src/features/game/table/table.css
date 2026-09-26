@@ -3,8 +3,10 @@
    all card games; per-game accents tune the hue via --table-felt. */
 
 .aso-table {
-  --table-felt: var(--felt-700);
-  --table-felt-dark: var(--felt-900);
+  /* Собствено сукно (тъмносин кепър), независимо от цвета на страниците: иначе смяната
+     на палитрата на приложението боядисва масата кафява като дървото около нея. */
+  --table-felt: #1e2750;
+  --table-felt-dark: #0b0f24;
   position: relative;
   width: 100%;
   /* Plot scales with the viewport height so big monitors get a big table,

@@ -70,6 +70,11 @@ export function BingoView({ title }: { title: string }) {
   // the same position: one request per state.pos, and the click clears the timer.
   const drawTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sentPos = useRef(-1);
+  // Нов мач в същия монтиран изглед (прегрупирана стая): позицията започва отначало,
+  // затова паметта „вече пратено за тази позиция“ се нулира — иначе тегленето спира.
+  useEffect(() => {
+    sentPos.current = -1;
+  }, [m.matchId]);
   const requestDraw = useCallback(() => {
     if (drawTimer.current) {
       clearTimeout(drawTimer.current);

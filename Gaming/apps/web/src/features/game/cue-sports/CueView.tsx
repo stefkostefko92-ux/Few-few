@@ -161,9 +161,12 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const foulChoice = game === "SNOOKER" && !!state?.foulChoice;
   const canReplay = foulChoice && !!state?.missReplay;
 
-  // A fresh shot / turn change drops any armed push-out declaration.
+  // A fresh shot / turn change drops any armed push-out declaration — and the
+  // cue-ball placement mode: left on across a turn change (e.g. the clock ran
+  // out mid-placement) it blocked aiming and every shot was then rejected.
   useEffect(() => {
     setPushArmed(false);
+    setPlacing(false);
   }, [state?.shotNo, state?.turn]);
 
   const liveBalls: RBall[] = animating
