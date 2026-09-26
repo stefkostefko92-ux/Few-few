@@ -4,7 +4,6 @@ import { Badge, Button, Field, Panel, cn } from "../../ui";
 import { api, type AdminAuditEntry, type AdminFlag, type DiscordConfig, type DiscordEventKey } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
 import { isAdmin } from "../../app/RequireRole";
-import { GAME_CATALOG } from "../lobby/games";
 import { adminApi } from "./adminApi";
 import { AdminEconomy } from "./AdminEconomy";
 import { AdminReports } from "./AdminReports";
@@ -13,12 +12,18 @@ import { AdminRooms } from "./AdminRooms";
 import { AdminProducts } from "./AdminProducts";
 import { AdminOrders } from "./AdminOrders";
 import { AdminAnnouncements } from "./AdminAnnouncements";
+import { AdminSeasons } from "./AdminSeasons";
+import { AdminMatches } from "./AdminMatches";
 import { ErrorPanel, errorMessage, useLoad } from "./load";
+import { gameTitle } from "../lobby/games";
+import type { GameKey } from "@aso/shared";
 
 type Tab =
   | "dashboard"
   | "economy"
   | "users"
+  | "matches"
+  | "seasons"
   | "rooms"
   | "products"
   | "orders"
@@ -36,6 +41,8 @@ export function AdminPanel() {
     { key: "dashboard", label: t("admin.dashboard") },
     { key: "economy", label: t("admin.economy", "Икономика") },
     { key: "users", label: t("admin.users") },
+    { key: "matches", label: t("admin.matchesTab", "Мачове") },
+    { key: "seasons", label: t("admin.seasons", "Сезони") },
     { key: "rooms", label: t("admin.rooms", "Живи маси") },
     { key: "products", label: t("admin.products", "Продукти") },
     { key: "orders", label: t("admin.orders", "Поръчки") },
@@ -72,6 +79,8 @@ export function AdminPanel() {
       {tab === "dashboard" ? <Dashboard /> : null}
       {tab === "economy" ? <AdminEconomy /> : null}
       {tab === "users" ? <AdminUsers /> : null}
+      {tab === "matches" ? <AdminMatches /> : null}
+      {tab === "seasons" ? <AdminSeasons /> : null}
       {tab === "rooms" ? <AdminRooms /> : null}
       {tab === "products" ? <AdminProducts /> : null}
       {tab === "orders" ? <AdminOrders /> : null}
@@ -139,7 +148,7 @@ function Dashboard() {
                 .map(([key, n]) => (
                   <li key={key} className="flex items-center justify-between">
                     <span className="text-ink-200">
-                      {GAME_CATALOG.find((g) => g.key === key)?.title ?? key}
+                      {gameTitle(t, key as GameKey)}
                     </span>
                     <span className="tnum text-brass-300">{n}</span>
                   </li>
@@ -180,6 +189,9 @@ function Flags() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
+  const [actionError, setActionError] = useState<unknown>(null);
+  // Решенията по сигнали са модераторска работа: API-то връща 403 на SUPPORT.
+  const canTriage = ["MODERATOR", "ADMIN", "OWNER"].includes(useAuthStore((s) => s.user?.role) ?? "");
 
   async function load(c?: string) {
     setLoading(true);
@@ -204,9 +216,12 @@ function Flags() {
 
   async function review(id: string, next: string) {
     setBusy(id);
+    setActionError(null);
     try {
       await api.adminReviewFlag(id, next);
       reload();
+    } catch (e) {
+      setActionError(e); // иначе провалът беше необработен и екипът не виждаше нищо
     } finally {
       setBusy(null);
     }
@@ -232,6 +247,7 @@ function Flags() {
         ))}
       </div>
 
+      {actionError ? <ErrorPanel error={actionError} onRetry={() => setActionError(null)} /> : null}
       {error && flags.length === 0 ? (
         <ErrorPanel error={error} onRetry={() => void load()} />
       ) : loading && flags.length === 0 ? (
@@ -244,7 +260,7 @@ function Flags() {
             <Panel key={f.id} className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 text-ink-100">
-                  <Badge tone="felt">{f.game}</Badge>
+                  <Badge tone="felt">{gameTitle(t, f.game as GameKey)}</Badge>
                   {f.reason}
                   <span className="tnum text-loss">({f.score.toFixed(2)})</span>
                 </div>
@@ -258,7 +274,7 @@ function Flags() {
                   </button>
                 </div>
               </div>
-              {f.status === "OPEN" || f.status === "REVIEWING" ? (
+              {(f.status === "OPEN" || f.status === "REVIEWING") && canTriage ? (
                 <div className="flex gap-2">
                   <Button variant="ghost" loading={busy === f.id} onClick={() => review(f.id, "DISMISSED")}>
                     {t("admin.dismiss")}
@@ -465,6 +481,21 @@ const AUDIT_ACTIONS = [
   "announcement_create",
   "announcement_activate",
   "announcement_deactivate",
+  "announcement_delete",
+  "product_delete",
+  "season_create",
+  "season_update",
+  "season_activate",
+  "season_delete",
+  "inventory_grant",
+  "inventory_revoke",
+  "achievement_grant",
+  "achievement_revoke",
+  "quest_reset",
+  "rating_set",
+  "rating_reset",
+  "notification_send",
+  "user_erase",
   "bootstrap_owner",
 ];
 

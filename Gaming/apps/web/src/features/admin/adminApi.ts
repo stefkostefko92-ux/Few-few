@@ -83,6 +83,7 @@ export interface AdminUserDetail {
   user: AdminUserRow & {
     xp: number;
     emailVerified: boolean;
+    deletedAt: string | null;
     purchases: {
       id: string;
       status: string;
@@ -224,6 +225,99 @@ export interface AdminAnnouncement {
   expiresAt: string | null;
 }
 
+// ── Разширен CRUD (сезони, мачове, данни на играч) ──────────────────────────
+
+export interface AdminSeason {
+  id: string;
+  index: number;
+  startsAt: string;
+  endsAt: string;
+  active: boolean;
+}
+
+export interface AdminMatchesFilter {
+  game?: string;
+  userId?: string;
+  from?: string;
+  to?: string;
+  cursor?: string;
+}
+export interface AdminMatchRow {
+  id: string;
+  game: string;
+  mode: string;
+  startedAt: string;
+  endedAt: string | null;
+  players: number;
+}
+export interface AdminMatchDetail {
+  id: string;
+  game: string;
+  mode: string;
+  seed: string | null;
+  seedHidden: boolean;
+  startedAt: string;
+  endedAt: string | null;
+  players: {
+    id: string;
+    userId: string;
+    displayName: string | null;
+    seat: number;
+    result: string | null;
+    mmrDelta: number;
+    chipsDelta: string;
+  }[];
+}
+
+export interface AdminInventoryItem {
+  id: string;
+  cosmeticId: string;
+  equipped: boolean;
+  name: string | null;
+  game: string | null;
+  type: string | null;
+}
+export interface AdminAchievement {
+  key: string;
+  unlockedAt: string;
+  title: string | null;
+  icon: string | null;
+}
+export interface AdminQuest {
+  id: string;
+  key: string;
+  period: string;
+  progress: number;
+  target: number;
+  completedAt: string | null;
+}
+export interface AdminRating {
+  game: string;
+  mmr: number;
+  games: number;
+  wins: number;
+}
+export interface AdminNotification {
+  id: string;
+  type: string;
+  data: { title?: string; body?: string; kind?: string } | null;
+  readAt: string | null;
+  createdAt: string;
+}
+export interface AdminSubscription {
+  id: string;
+  stripeSubId: string;
+  tier: string;
+  status: string;
+  currentPeriodEnd: string;
+}
+
+type Ok = { ok: true };
+const json = (method: string, body?: unknown): RequestInit => ({
+  method,
+  ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+});
+
 // ── Calls ────────────────────────────────────────────────────────────────────
 
 export const adminApi = {
@@ -279,4 +373,42 @@ export const adminApi = {
       method: "PATCH",
       body: JSON.stringify({ active }),
     }),
+  // Сезони
+  seasons: () => request<{ items: AdminSeason[] }>("/admin/seasons"),
+  createSeason: (input: { index: number; startsAt: string; endsAt: string }) =>
+    request<{ season: AdminSeason }>("/admin/seasons", json("POST", input)),
+  updateSeason: (id: string, patch: { startsAt?: string; endsAt?: string }) =>
+    request<{ season: AdminSeason }>(`/admin/seasons/${id}`, json("PATCH", patch)),
+  activateSeason: (id: string) => request<{ season: AdminSeason }>(`/admin/seasons/${id}/activate`, json("POST")),
+  deleteSeason: (id: string) => request<Ok>(`/admin/seasons/${id}`, json("DELETE")),
+
+  // Мачове
+  matches: (filter: AdminMatchesFilter) => request<Page<AdminMatchRow>>(`/admin/matches${qs({ ...filter })}`),
+  match: (id: string) => request<{ match: AdminMatchDetail }>(`/admin/matches/${id}`),
+
+  // Данни на играч
+  userInventory: (id: string) => request<{ items: AdminInventoryItem[] }>(`/admin/users/${id}/inventory`),
+  grantCosmetic: (id: string, cosmeticId: string) =>
+    request<unknown>(`/admin/users/${id}/inventory`, json("POST", { cosmeticId })),
+  revokeCosmetic: (id: string, itemId: string) => request<Ok>(`/admin/users/${id}/inventory/${itemId}`, json("DELETE")),
+  userAchievements: (id: string) => request<{ items: AdminAchievement[] }>(`/admin/users/${id}/achievements`),
+  grantAchievement: (id: string, key: string) =>
+    request<unknown>(`/admin/users/${id}/achievements`, json("POST", { key })),
+  revokeAchievement: (id: string, key: string) =>
+    request<Ok>(`/admin/users/${id}/achievements/${encodeURIComponent(key)}`, json("DELETE")),
+  userQuests: (id: string) => request<{ items: AdminQuest[] }>(`/admin/users/${id}/quests`),
+  resetQuest: (id: string, questId: string) => request<Ok>(`/admin/users/${id}/quests/${questId}`, json("DELETE")),
+  userRatings: (id: string) => request<{ items: AdminRating[] }>(`/admin/users/${id}/ratings`),
+  setRating: (id: string, game: string, body: { mmr: number } | { reset: true }) =>
+    request<{ rating: AdminRating }>(`/admin/users/${id}/ratings/${game}`, json("PATCH", body)),
+  userNotifications: (id: string) => request<{ items: AdminNotification[] }>(`/admin/users/${id}/notifications`),
+  sendNotification: (id: string, input: { title: string; body: string }) =>
+    request<unknown>(`/admin/users/${id}/notifications`, json("POST", input)),
+  userSubscription: (id: string) =>
+    request<{ subscription: AdminSubscription | null }>(`/admin/users/${id}/subscription`),
+  eraseUser: (id: string, confirmEmail: string) => request<Ok>(`/admin/users/${id}`, json("DELETE", { confirmEmail })),
+
+  // Твърдо изтриване
+  deleteAnnouncement: (id: string) => request<Ok>(`/admin/announcements/${id}`, json("DELETE")),
+  deleteProduct: (id: string) => request<Ok>(`/admin/products/${id}`, json("DELETE")),
 };
