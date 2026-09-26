@@ -2204,6 +2204,14 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
      след секция NAVBAR) правилото печели при еднаква специфичност. */
   .nav-links { display: none; }
 
+  /* Пролука между 701–900px: hamburger-ът се включва на ≤900px и освобождава
+     мястото на nav-links, но HP/GP/GM статистиките в .nav-meta се криеха
+     едва на ≤700px (виж секция NAVBAR по-горе) — на таблет (768px) .nav-meta
+     не се събираше в реда, .nav-profile изтичаше извън navbar-а и увисваше
+     като плаваща карта върху съдържанието (потвърдено визуално, tablet 768px,
+     всяка /app страница). Тук (НАКРАЯ) печели при еднаква специфичност. */
+  .nav-meta .nav-stat { display: none; }
+
   /* iOS Safari зуумва при фокус на input с font-size < 16px → форсирай 16px. */
   input, textarea, select { font-size: 16px; }
 
