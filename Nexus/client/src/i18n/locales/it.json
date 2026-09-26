@@ -1731,5 +1731,26 @@
     "title": "Set di equipaggiamento",
     "subtitle": "Bonus set completi — 2/4/6 pezzi indossati insieme. Apri una vetrina 3D per ogni set.",
     "showcase": "Vetrina 3D"
+  },
+  "combat": {
+    "skip": "Salta alla fine",
+    "speedSlow": "Lento",
+    "speedNormal": "Normale",
+    "speedFast": "Veloce",
+    "sizeUp": "I due sfidanti si studiano.",
+    "slowTitle": "La scena si carica lentamente",
+    "slowBody": "Questo dispositivo disegna il duello 3D senza scheda grafica e può volerci qualche minuto. L’esito è già deciso: puoi vederlo subito.",
+    "noSceneTitle": "La scena 3D non può partire",
+    "noSceneBody": "Il tuo browser non supporta WebGPU né WebGL 2. Il combattimento è stato risolto sul server: il risultato è pronto.",
+    "showResult": "Mostra il risultato",
+    "victory": "Vittoria",
+    "defeat": "Sconfitta",
+    "victoryBody": "Il nemico è abbattuto. Il tuo nome risuona nel regno.",
+    "defeatBody": "Il mondo si oscura. Cura le ferite e rialzati.",
+    "gold": "oro",
+    "arena": "Arena",
+    "item": "Oggetto",
+    "replay": "Rivedi",
+    "continue": "Continua"
   }
 }

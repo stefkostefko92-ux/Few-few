@@ -1731,5 +1731,26 @@
     "title": "Equipment Sets",
     "subtitle": "Full bonus sets — 2/4/6 pieces equipped together. Open a 3D showcase for any set.",
     "showcase": "3D showcase"
+  },
+  "combat": {
+    "skip": "Skip to the end",
+    "speedSlow": "Slow",
+    "speedNormal": "Normal",
+    "speedFast": "Fast",
+    "sizeUp": "The combatants size each other up.",
+    "slowTitle": "The scene is loading slowly",
+    "slowBody": "This device renders the 3D duel without a graphics card, which can take minutes. The outcome is already decided — you can see it now.",
+    "noSceneTitle": "The 3D scene cannot start",
+    "noSceneBody": "Your browser does not support WebGPU or WebGL 2. The fight was resolved on the server — the result is ready.",
+    "showResult": "Show the result",
+    "victory": "Victory",
+    "defeat": "Defeat",
+    "victoryBody": "The foe is vanquished. Your name echoes through the realm.",
+    "defeatBody": "The world dims. Tend your wounds and rise again.",
+    "gold": "gold",
+    "arena": "Arena",
+    "item": "Item",
+    "replay": "Replay",
+    "continue": "Continue"
   }
 }

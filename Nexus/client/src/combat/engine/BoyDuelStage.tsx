@@ -28,6 +28,11 @@ interface Props {
   region?: string;
   /** 4a.4 (кръг 2): свободния текст на foe.name — оръжие на противника (loadout.js weaponKit()). */
   foeName?: string;
+  /** Двигателят е заредил сцената и боят тече. */
+  onReady?: () => void;
+  /** Зареждането се провали (няма WebGL/WebGPU, грешка в шейдър…) — CombatScene показва
+      резултата без 3D, вместо играчът да остане завинаги на екрана за зареждане. */
+  onFail?: (err: unknown) => void;
 }
 
 export interface BoyDuelHandle {
@@ -44,7 +49,7 @@ export interface BoyDuelHandle {
  * ½×/1×/2×/прескочи контроли на CombatScene.tsx (вграденият chrome на boy е скрит — виж
  * boy-hud.css `.embedded`).
  */
-const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true, loop, onEnd, onImpact, embedded, heroClass, region, foeName }, ref) => {
+const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true, loop, onEnd, onImpact, embedded, heroClass, region, foeName, onReady, onFail }, ref) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const bootRef = useRef<BootHandle | null>(null);
 
@@ -74,7 +79,11 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
     // открие статично и да го изнесе в собствен lazy chunk.
     import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd, onImpact, signal: controller.signal, heroClass, region, foeName })).then((h) => {
       if (controller.signal.aborted) { h.dispose(); return; }
+      if (h.failed) { onFail?.(new Error('renderer unavailable')); return; }
       bootRef.current = h;
+      onReady?.();
+    }).catch((err: unknown) => {
+      if (!controller.signal.aborted) onFail?.(err);
     });
     return () => {
       controller.abort();

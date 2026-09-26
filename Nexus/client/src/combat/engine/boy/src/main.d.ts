@@ -21,6 +21,8 @@ export interface BootOpts {
 }
 
 export interface BootHandle {
+  /** true, когато рендерът не може да тръгне (няма WebGPU/WebGL 2). */
+  failed?: boolean;
   dispose(): void;
   togglePlay?(): void;
   setSpeed?(v: number): void;

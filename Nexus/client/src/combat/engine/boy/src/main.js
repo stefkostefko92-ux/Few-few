@@ -59,7 +59,7 @@ export async function bootDuel(canvas, opts = {}) {
     acceptIdentitySwizzle();
     renderer = new THREE.WebGPURenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance', forceWebGL });
     await renderer.init();
-  } catch { hud.fatal(); return { dispose() {} }; }
+  } catch { hud.fatal(); return { failed: true, dispose() {} }; }
   if (bailIfAborted()) return { dispose() {} };
   const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
   // 4a.4: тон по opts.heroClass/opts.region, оръжие/щит по opts.heroClass/opts.foeName — виж
