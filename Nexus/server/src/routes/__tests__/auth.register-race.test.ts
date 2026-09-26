@@ -31,14 +31,20 @@ function buildApp() {
 
 test('register: конкурентна дублирана заявка получава 409, НЕ увисва', async () => {
   const app = buildApp();
+  // Случайно суфиксирано име ВСЕКИ run (не литерал) — изолация между
+  // тестове/run-ове; литерал тук веднъж предизвика UNIQUE колизия с
+  // остатъчен ред от друг run на същия процес и разкри втори, независим
+  // проблем (флейки тест заради споделено име), маскиращ се като провал
+  // на самата concurrency защита.
+  const username = `racecond_${Date.now()}_${Math.floor(Math.random() * 1e6)}`.slice(0, 20);
   const body = {
-    username: 'racecond_test',
-    email: 'race_a@example.com',
+    username,
+    email: `race_a_${Date.now()}@example.com`,
     password: 'Testpass123',
     dateOfBirth: '2000-01-01',
     country: 'BG',
   };
-  const body2 = { ...body, email: 'race_b@example.com' }; // same username, different email
+  const body2 = { ...body, email: `race_b_${Date.now()}@example.com` }; // same username, different email
 
   // Симулира реалната надпревара: и двете заявки тръгват "паралелно"
   // (Promise.all) към ЕДИН и същ express app instance/DB — точно каквото
@@ -48,16 +54,19 @@ test('register: конкурентна дублирана заявка полу�
     request(app).post('/api/auth/register').send(body2),
   ]);
 
-  const statuses = [r1.status, r2.status].sort();
   // И двете заявки ТРЯБВА да отговорят (нито една не увисва) — точно това
   // гарантира тестът: и двата промиса на Promise.all() трябва да се
   // resolve-нат в разумно време (node:test-ът има собствен таймаут; преди
-  // фикса единият заглъхваше и целият тест изтичаше).
-  assert.deepEqual(statuses, [201, 409], 'едната печели (201), другата получава чист 409 — не hang, не 500');
-
-  const winner = r1.status === 201 ? r1 : r2;
+  // фикса единият заглъхваше и целият тест изтичаше). Точната подредба на
+  // 201/409 зависи от реалния bcrypt-тайминг (истинска надпревара, не
+  // симулирана) — инвариантът, който проверяваме, е точно ЕДИН победител,
+  // никога 500, никога и двата 201 (double-register).
+  const statuses = [r1.status, r2.status];
+  assert.ok(statuses.every((s) => s === 201 || s === 409), `очаквах само 201/409, получих ${statuses}`);
+  const winners = [r1, r2].filter((r) => r.status === 201);
+  assert.equal(winners.length, 1, `точно ЕДИН победител очакван, получих ${winners.length} (${statuses})`);
   const loser = r1.status === 201 ? r2 : r1;
-  assert.equal(winner.body.user.username, 'racecond_test');
+  assert.equal(winners[0].body.user.username, username);
   assert.match(loser.body.error, /already in use/i);
 });
 
