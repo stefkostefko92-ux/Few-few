@@ -10,9 +10,10 @@ import it from './data/i18n/it.mjs';
 import en from './data/i18n/en.mjs';
 import bg from './data/i18n/bg.mjs';
 import { page, pagePath, ORIGIN } from './templates/layout.mjs';
+import { homePage, homeLd } from './templates/home.mjs';
+import { productsPage, productsLd } from './templates/products.mjs';
 import {
-  homePage, homeLd, productsPage, productsLd, catalogPage, catalogLd,
-  contactsPage, contactsLd, privacyPage, termsPage,
+  catalogPage, catalogLd, contactsPage, contactsLd, privacyPage, termsPage,
 } from './templates/pages.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
