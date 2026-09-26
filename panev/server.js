@@ -314,7 +314,9 @@ app.use(express.static(path.join(__dirname), {
   index: ['index.html'],
   setHeaders(res, filePath) {
     if (filePath.endsWith('.pdf')) {
-      res.setHeader('Cache-Control', 'public, max-age=604800');
+      // Каталогът се подменя под същия, раздаден на клиенти адрес — браузърът проверява всеки път
+      // (ETag → 304, ако не е сменен), иначе би показвал старо копие до седмица.
+      res.setHeader('Cache-Control', 'public, no-cache');
       res.setHeader('Content-Disposition', 'inline');
     }
     if (filePath.endsWith('.svg') || filePath.endsWith('.js') || filePath.endsWith('.css')) {

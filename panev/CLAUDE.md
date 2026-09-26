@@ -25,6 +25,10 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 - **Каталог:** `docs/catalogo-staffe-panev-2026.pdf` (вграден + за сваляне);
   превюта в `img/catalogo/`. 95 страници, 10 MB: 68-те на каталога плюс 27 страници „Vista 3D“
   с рендерите. Правят се с `cd 3d && npm run catalog-pdf`, никога на ръка.
+  **Адресът `https://panevascensori.it/docs/catalogo-staffe-panev-2026.pdf` е раздаден на клиенти
+  като реклама — не го сменяй и не му добавяй `?v=`.** Новото издание отива под същото име, а
+  `/docs/` е `no-cache` (nginx + `server.js`): браузърът проверява при всяко отваряне и сваля
+  наново само ако файлът е сменен (ETag → 304).
 - **Дизайн:** само каталожната палитра (`#162862`, `#1d3271`, `#f4f6f9`,
   `#e2e6ea`, `#667298`, `#878786`); Inter variable self-hosted (latin +
   cyrillic в `fonts/Inter-var-*.woff2`); без емоджита и декоративни SVG.
@@ -64,7 +68,7 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 - **Снимки:** продуктите и началната страница показват 3D рендерите от `img/3d/` (WebP 480/960,
   JPEG 960). Изрязаните от каталога картинки са махнати; `img/staffa-*` остават, защото ги ползва
   админът (сийдът в `scripts/seed.js`). Адресите им носят `?v=<хеш на файла>` (`versioned()` в
-  `site/templates/parts.mjs`): nginx кешира `/img/` 30 дни без проверка, а имената не се менят,
+  `site/templates/asset.mjs`): nginx кешира `/img/` 30 дни без проверка, а имената не се менят,
   когато рендерите се прерисуват.
 - **Ред:** `cd 3d && npm run site` (бъндъл + текстури → `3d-viewer/`, снимки → `img/3d/`,
   `img/og-3d.jpg`), после `npm run build:site`. И двете папки се комитват — деплоят е rsync.
