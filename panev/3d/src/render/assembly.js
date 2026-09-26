@@ -13,7 +13,7 @@ import { SG_FLANGE, SG_T, STATIONS, flangeRuns } from '../parts/guides.js';
 import { framedGeometry } from './model.js';
 import { fastener, nutOn } from './fasteners.js';
 import { railGeometry } from './hardware.js';
-import { clipGeometry, clipReach } from './clip.js';
+import { N1, clipGeometry, clipReach } from './clip.js';
 
 const WALL = { o: [0, 0, 0], u: [1, 0, 0], v: [0, 1, 0], n: [0, 0, 1] };
 const PLATFORM = { o: [0, 0, 0], u: [0, 0, 1], v: [1, 0, 0], n: [0, 1, 0] };
@@ -116,16 +116,20 @@ function railOn(parent, M, face, out, along, left, seats) {
 }
 
 // Where the rail sits on an SG `l` long: c mm from the SG's start, searched over [lo, hi] for
-// the place nearest `want` where both clips' shanks stand in flange slots (5 mm clear of the round
-// ends), each clip as near 35 mm from the rail's centre as its slot allows. Near the ends of some
-// ranges no place seats both: then the clips go as near their slots as they can.
+// the place nearest `want` where both clips' shanks stand in the 11 mm flange slots (the axis at
+// least 5 mm in from a slot's end, so the M10 thread clears it) and their heels stay on the SG,
+// each clip as near 35 mm from the rail's centre as its slot allows. Near the ends of some ranges
+// no place seats both: then the clips go as near their slots as they can.
 function seatRail(l, want, lo, hi) {
   const runs = flangeRuns(l);
-  const miss = (s) => Math.min(...runs.map(([a, b]) => Math.max(a + 5 - s, s - (b - 5), 0)));
+  const miss = (s, side) => {
+    const heel = s + side * N1.heel;
+    return Math.min(...runs.map(([a, b]) => Math.max(a + 5 - s, s - (b - 5), 0))) + Math.max(0, -heel, heel - l);
+  };
   const clipAt = (c, side) => {
     let pick = null;
     for (let d = REACH.min; d <= REACH.max + 1e-9; d += 0.5) {
-      const m = miss(c + side * d);
+      const m = miss(c + side * d, side);
       const score = m * 1000 + Math.abs(d - 35);
       if (!pick || score < pick.score) pick = { d, m, score };
     }

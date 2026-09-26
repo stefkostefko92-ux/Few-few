@@ -15,6 +15,9 @@ export const STATIONS = {
 };
 export const SG_FLANGE = 50;
 export const SG_T = 4;
+// The flange slots take the rail clips' M10 shanks: 11 mm wide, as the owner measured them (the
+// catalogue does not dimension them).
+export const SG_SLOT = 11;
 
 // Flange slots 10 mm in from each end, 8 mm webs: two equal slots up to 150 mm, from 170 mm a
 // 73 mm middle slot between two shorter ones. [start, end] along the length, round ends included.
@@ -31,7 +34,7 @@ export function guideSG(W, L) {
   const p = sheet({ t: SG_T, bevel: 0.5 });
   const y1 = W - (W >= 80 ? 10 : 5);
   p.face('plate', { outline: rect(0, 0, L, W), holes: STATIONS[L].map((x) => slotY(x, 20, y1, 10)) });
-  p.face('flange', { outline: rect(0, 0, L, SG_FLANGE), holes: flangeRuns(L).map(([a, b]) => slotX(a, b, SG_FLANGE / 2, 10)) });
+  p.face('flange', { outline: rect(0, 0, L, SG_FLANGE), holes: flangeRuns(L).map(([a, b]) => slotX(a, b, SG_FLANGE / 2, SG_SLOT)) });
   p.bend('plate', 'flange', { from: [0, 0], to: [L, 0], dir: 'up' });
   return p;
 }
