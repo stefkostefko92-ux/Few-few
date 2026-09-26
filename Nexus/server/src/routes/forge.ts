@@ -5,6 +5,7 @@ import { authRequired } from '../middleware/auth';
 import type { Character } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 import { trackBattlePass } from './battlepass';
+import { RARITY_WEIGHTS, enchantCost, performEnchant, ForgeError } from '../lib/forgeExec';
 
 const router = Router();
 router.use(authRequired);
@@ -31,30 +32,8 @@ router.use(authRequired);
  * in derived-stats. (Hooked in stats.ts derivation in a follow-up.)
  * ======================================================================= */
 
-const RARITY_WEIGHTS: Record<string, { small: number; medium: number; greater: number; shatter: number }> = {
-  common:    { small: 55, medium: 25, greater: 10, shatter: 10 },
-  uncommon:  { small: 50, medium: 28, greater: 12, shatter: 10 },
-  rare:      { small: 45, medium: 30, greater: 18, shatter: 7 },
-  epic:      { small: 40, medium: 32, greater: 24, shatter: 4 },
-  legendary: { small: 35, medium: 35, greater: 28, shatter: 2 },
-};
-
-const BONUS_STATS = ['str_bonus', 'dex_bonus', 'con_bonus', 'int_bonus', 'cha_bonus', 'wis_bonus', 'hp_bonus', 'mp_bonus', 'defense', 'atk_max'] as const;
-
 function getChar(uid: number): Character | undefined {
   return getDb().prepare('SELECT * FROM characters WHERE user_id = ?').get(uid) as Character | undefined;
-}
-
-function enchantCost(tier: number, count: number): number {
-  return Math.floor(100 * Math.max(1, tier) * Math.pow(1.6, count));
-}
-
-function rollBucket(weights: { small: number; medium: number; greater: number; shatter: number }): 'small' | 'medium' | 'greater' | 'shatter' {
-  const r = Math.random() * 100;
-  if (r < weights.small) return 'small';
-  if (r < weights.small + weights.medium) return 'medium';
-  if (r < weights.small + weights.medium + weights.greater) return 'greater';
-  return 'shatter';
 }
 
 router.get('/status/:inventoryId', (req, res) => {
@@ -109,89 +88,61 @@ router.post('/enchant', (req, res) => {
   if (row.listed) { res.status(400).json({ error: 'Cancel the market listing first.' }); return; }
   if (row.category === 'potion') { res.status(400).json({ error: 'Potions cannot be enchanted.' }); return; }
   if (row.enchant_count >= 5) { res.status(400).json({ error: 'This item is fully enchanted.' }); return; }
-  const cost = enchantCost(row.tier, row.enchant_count);
 
-  // Atomic gold debit — fails if the balance moved.
-  const spent = db
-    .prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?')
-    .run(cost, char.id, cost);
-  if (spent.changes !== 1) {
-    res.status(400).json({ error: `Not enough gold (${cost}g required).` });
-    return;
+  // Audit (backend round): the gold debit, the guarantee consumption and the
+  // final inventory_enchants write used to be three separate statements
+  // outside any transaction, each reading `row.enchant_count` captured
+  // BEFORE the request even started. Two concurrent /enchant calls on the
+  // SAME item both passed the pre-checks, both debited gold (each CAS check
+  // on gold alone succeeds independently), and both then wrote
+  // `enchant_count = row.enchant_count + 1` via the same value — a lost
+  // update: the player paid for two enchants but only one stat roll ever
+  // stuck (whichever UPDATE ran last silently discarded the other's bonus).
+  // performEnchant() (lib/forgeExec.ts) now runs the whole
+  // read→charge→roll→write sequence inside one IMMEDIATE transaction that
+  // re-reads the enchant ledger fresh, so the second concurrent call sees
+  // the already-advanced count and pays for its own, distinct enchant
+  // instead of clobbering the first.
+  let result: ReturnType<typeof performEnchant>;
+  try {
+    result = performEnchant(db, char.id, { inv_id: row.inv_id, item_id: row.item_id, tier: row.tier, rarity: row.rarity });
+  } catch (e: any) {
+    if (e instanceof ForgeError) { res.status(400).json({ error: e.message }); return; }
+    throw e;
   }
 
-  const weights = RARITY_WEIGHTS[row.rarity] || RARITY_WEIGHTS.common;
-  let bucket = rollBucket(weights);
-
-  // Anvil Ward (from the Trial Cache) consumes one stack and converts a
-  // would-be shatter into a guaranteed small enchant. This closes the
-  // Tower → Trial Cache → Forge loop.
-  //
-  // Audit security #7: the previous version read `forge_guarantees` from
-  // the in-memory `char` row, converted the bucket optimistically, then
-  // tried to debit with a guarded UPDATE. Two concurrent enchants could
-  // both see `guarantees > 0`, both convert the shatter, but only one
-  // debit ran — letting a player double-spend a single Ward. Now we
-  // debit FIRST inside a single statement and only convert the bucket
-  // if changes===1.
-  let guaranteeUsed = false;
-  if (bucket === 'shatter') {
-    const info = db
-      .prepare('UPDATE characters SET forge_guarantees = forge_guarantees - 1 WHERE id = ? AND forge_guarantees > 0')
-      .run(char.id);
-    if (info.changes === 1) {
-      bucket = 'small';
-      guaranteeUsed = true;
-      // Sync the in-memory char row so the response carries the right
-      // remaining count.
-      (char as any).forge_guarantees = ((char as any).forge_guarantees || 1) - 1;
-    }
-  }
-
-  if (bucket === 'shatter') {
-    db.prepare('DELETE FROM inventory WHERE id = ?').run(row.inv_id);
+  if (result.outcome === 'shatter') {
     logFromRequest(req, {
       category: 'inventory', action: 'forge_shatter', level: 'warn',
       character_id: char.id, target_id: row.item_id, target_type: 'item',
       message: `${char.name}'s ${row.name} shattered in the Forge`,
-      meta: { cost, enchants_before: row.enchant_count, rarity: row.rarity },
+      meta: { cost: result.cost, enchants_before: result.enchantsBefore, rarity: row.rarity },
     });
-    res.json({ ok: true, outcome: 'shatter', message: `${row.name} shattered.`, cost });
+    res.json({ ok: true, outcome: 'shatter', message: `${row.name} shattered.`, cost: result.cost });
     return;
   }
 
-  const amount = bucket === 'small' ? 1 : bucket === 'medium' ? 2 : 3;
-  const stat = BONUS_STATS[Math.floor(Math.random() * BONUS_STATS.length)];
-  const bonuses = JSON.parse(row.bonuses_json || '{}') as Record<string, number>;
-  bonuses[stat] = (bonuses[stat] || 0) + amount;
-
-  db.prepare(
-    `INSERT INTO inventory_enchants (inventory_id, enchant_count, bonuses_json)
-     VALUES (?, ?, ?)
-     ON CONFLICT(inventory_id) DO UPDATE SET enchant_count = excluded.enchant_count, bonuses_json = excluded.bonuses_json`,
-  ).run(row.inv_id, row.enchant_count + 1, JSON.stringify(bonuses));
-
   trackBattlePass(char.id, 'forge_enchant', 1);
-  trackBattlePass(char.id, 'forge_high_enchant', row.enchant_count + 1);
+  trackBattlePass(char.id, 'forge_high_enchant', result.newEnchants!);
 
   logFromRequest(req, {
     category: 'inventory', action: 'forge_enchant',
     character_id: char.id, target_id: row.item_id, target_type: 'item',
-    message: `${char.name} enchanted ${row.name}: +${amount} ${stat}${guaranteeUsed ? ' (Ward used)' : ''}`,
-    meta: { cost, bucket, stat, amount, enchants: row.enchant_count + 1, rarity: row.rarity, guarantee_used: guaranteeUsed },
+    message: `${char.name} enchanted ${row.name}: +${result.amount} ${result.stat}${result.guaranteeUsed ? ' (Ward used)' : ''}`,
+    meta: { cost: result.cost, bucket: result.bucket, stat: result.stat, amount: result.amount, enchants: result.newEnchants, rarity: row.rarity, guarantee_used: result.guaranteeUsed },
   });
 
   res.json({
     ok: true,
-    outcome: bucket,
-    message: `+${amount} ${stat.replace('_bonus', '').replace('atk_max', 'attack')}`,
-    stat,
-    amount,
-    cost,
-    new_enchants: row.enchant_count + 1,
-    new_bonuses: bonuses,
-    guarantee_used: guaranteeUsed,
-    guarantees_remaining: Math.max(0, ((char as any).forge_guarantees || 0) - (guaranteeUsed ? 1 : 0)),
+    outcome: result.bucket,
+    message: `+${result.amount} ${result.stat!.replace('_bonus', '').replace('atk_max', 'attack')}`,
+    stat: result.stat,
+    amount: result.amount,
+    cost: result.cost,
+    new_enchants: result.newEnchants,
+    new_bonuses: result.newBonuses,
+    guarantee_used: result.guaranteeUsed,
+    guarantees_remaining: Math.max(0, ((char as any).forge_guarantees || 0) - (result.guaranteeUsed ? 1 : 0)),
   });
 });
 
