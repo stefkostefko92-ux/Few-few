@@ -205,7 +205,7 @@ export function registerWorld(router: Router): void {
     }, q);
     // Прогнозна награда по текущия ранг (същата формула като финализацията).
     const offset = (meta.page - 1) * meta.pageSize;
-    const standings = rows.map((r, i) => ({ ...r, projected: q.q ? null : rewardForRank(offset + i + 1, participants) }));
+    const standings = rows.map((r, i) => ({ ...r, position: q.q ? null : offset + i + 1, projected: q.q ? null : rewardForRank(offset + i + 1, participants) }));
     const seasons = db.prepare(`SELECT season_key, COUNT(*) AS players, MAX(points) AS top_points,
       (SELECT COUNT(*) FROM season_results r WHERE r.season_key = s.season_key) AS finalized
       FROM season_scores s GROUP BY season_key ORDER BY season_key DESC LIMIT 24`).all();
