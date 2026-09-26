@@ -32,6 +32,9 @@ model User {
   banUntil      DateTime? // temp-ban expiry; null = permanent. Expired bans are lifted lazily
   termsAcceptedAt DateTime? // consent to ToS + 18+ at registration (GDPR)
   deletedAt     DateTime? // GDPR erasure: anonymized + login disabled
+  // Версия на сесиите: влиза в refresh JWT; +1 при нулиране на парола/изтриване
+  // → всички стари refresh токени (други устройства) стават невалидни.
+  tokenVersion  Int       @default(0)
   createdAt     DateTime  @default(now())
   lastSeenAt    DateTime  @default(now())
 
@@ -201,7 +204,11 @@ model Purchase {
   userId    String
   productId String
   stripeId  String   @unique
-  status    String
+  status    String // pending | completed | failed | refunded
+  // Реално платената сума (session.amount_total) в най-малката единица на валутата —
+  // приходите в таблото се сумират от нея, не от текущата цена на продукта.
+  amountCents Int
+  currency    String   @default("eur")
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)

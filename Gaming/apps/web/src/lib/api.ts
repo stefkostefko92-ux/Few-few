@@ -39,6 +39,8 @@ export class ApiError extends Error {
     public readonly status: number,
     public readonly code: string,
     message: string,
+    /** Целият обект `error` от отговора (напр. `issues` при validation_error, `until` при бан). */
+    public readonly details: Record<string, unknown> = {},
   ) {
     super(message);
     this.name = "ApiError";
@@ -93,9 +95,9 @@ async function request<T>(path: string, init?: RequestInit, retried = false): Pr
   if (!res.ok) {
     const err =
       typeof body === "object" && body !== null && "error" in body
-        ? (body as { error: { code?: string; message?: string } }).error
+        ? (body as { error: { code?: string; message?: string } & Record<string, unknown> }).error
         : undefined;
-    throw new ApiError(res.status, err?.code ?? "unknown", err?.message ?? "Request failed");
+    throw new ApiError(res.status, err?.code ?? "unknown", err?.message ?? "Request failed", err ?? {});
   }
 
   return body as T;
@@ -156,7 +158,15 @@ export const api = {
     }),
   billingPortal: () => request<{ url: string }>("/shop/portal", { method: "POST" }),
   vipStatus: () =>
-    request<{ tier: VipTier; vipUntil: string | null; perks: VipPerks }>("/shop/vip"),
+    request<{
+      tier: VipTier;
+      vipUntil: string | null;
+      perks: VipPerks;
+      /** Жив Stripe абонамент (active/trialing/past_due/unpaid/paused) или null. */
+      subscription: { status: string; tier: VipTier; currentPeriodEnd: string } | null;
+      /** Има Stripe клиент → може да отвори Customer Portal (отказ, карта, фактури). */
+      canManageBilling: boolean;
+    }>("/shop/vip"),
 
   // Progression (S6)
   claimDaily: () =>

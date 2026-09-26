@@ -1,15 +1,17 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@aso/db";
-import { PRODUCT_KINDS, ROLES, VIP_TIERS, type Role, type VipTier } from "@aso/shared";
+import { PRODUCT_KINDS, ROLES, VIP_TIERS, levelFromXp, type Role, type VipTier } from "@aso/shared";
 import { asyncHandler, badRequest, forbidden, HttpError } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { revokeUser, unrevokeUser } from "../auth/revocation.js";
-import { discordEnabled, notifyAdminAction, notifyBroadcast, sendTest } from "../integrations/discord.js";
+import { discordEnabled, notifyBroadcast, sendTest } from "../integrations/discord.js";
 import { getDiscordConfig, setDiscordConfig } from "../settings.js";
 import { getStripe, stripeEnabled } from "../economy/stripe.js";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
+import { audit, resolveActorName } from "./adminShared.js";
+import { adminCrudRouter } from "./adminCrud.js";
 
 export const adminRouter: Router = Router();
 
@@ -61,31 +63,6 @@ async function liftExpiredBans(): Promise<void> {
   });
 }
 
-/** Friendly actor label for the audit trail (display name, else the id). */
-async function resolveActorName(userId: string): Promise<string> {
-  const u = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true } });
-  return u?.displayName ?? userId;
-}
-
-/** Record a staff mutation and mirror it to Discord. */
-async function audit(
-  actor: { sub: string },
-  actorName: string,
-  action: string,
-  targetId: string | null,
-  detail: Record<string, unknown>,
-): Promise<void> {
-  await prisma.adminAudit.create({
-    data: { actorId: actor.sub, actorName, action, targetId, detail: JSON.stringify(detail) },
-  });
-  notifyAdminAction({
-    actor: actorName,
-    action,
-    target: targetId ?? undefined,
-    detail: JSON.stringify(detail),
-  });
-}
-
 const startOfToday = (): Date => {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
@@ -98,7 +75,7 @@ adminRouter.get(
   asyncHandler(async (_req, res) => {
     await liftExpiredBans();
     const since = startOfToday();
-    const [users, banned, newToday, openFlags, matchesToday, vipGroups, byProduct, products, gameGroups, audits] =
+    const [users, banned, newToday, openFlags, matchesToday, vipGroups, revenueAgg, gameGroups, audits] =
       await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { banned: true } }),
@@ -106,21 +83,20 @@ adminRouter.get(
         prisma.collusionFlag.count({ where: { status: "OPEN" } }),
         prisma.match.count({ where: { startedAt: { gte: since } } }),
         prisma.user.groupBy({ by: ["vipTier"], _count: { _all: true } }),
-        // Aggregate completed purchases by product (O(products)) instead of
-        // loading every purchase row into memory.
-        prisma.purchase.groupBy({ by: ["productId"], where: { status: "completed" }, _count: { _all: true } }),
-        prisma.product.findMany({ select: { id: true, priceCents: true } }),
+        // Приходи = сума от реално платеното (Purchase.amountCents), НЕ текуща
+        // цена × брой — иначе смяна на цената пренаписва историята. Checkout е
+        // само в EUR, затова сумата е в евроцентове.
+        prisma.purchase.aggregate({
+          where: { status: "completed" },
+          _sum: { amountCents: true },
+          _count: { _all: true },
+        }),
         prisma.match.groupBy({ by: ["game"], where: { startedAt: { gte: since } }, _count: { _all: true } }),
         prisma.adminAudit.findMany({ orderBy: { createdAt: "desc" }, take: 12 }),
       ]);
 
-    const priceById = new Map(products.map((p) => [p.id, p.priceCents]));
-    let revenueCents = 0;
-    let purchases = 0;
-    for (const g of byProduct) {
-      revenueCents += (priceById.get(g.productId) ?? 0) * g._count._all;
-      purchases += g._count._all;
-    }
+    const revenueCents = revenueAgg._sum.amountCents ?? 0;
+    const purchases = revenueAgg._count._all;
     const vip: Record<string, number> = {};
     for (const g of vipGroups) vip[g.vipTier] = g._count._all;
     const gamesToday: Record<string, number> = {};
@@ -171,8 +147,8 @@ adminRouter.get(
         FROM "Match" WHERE "startedAt" >= ${start} GROUP BY 1`,
       prisma.$queryRaw<(DayCount & { cents: number })[]>`
         SELECT date_trunc('day', p."createdAt")::date AS day, COUNT(*)::int AS n,
-               COALESCE(SUM(pr."priceCents"), 0)::int AS cents
-        FROM "Purchase" p JOIN "Product" pr ON pr."id" = p."productId"
+               COALESCE(SUM(p."amountCents"), 0)::int AS cents
+        FROM "Purchase" p
         WHERE p."status" = 'completed' AND p."createdAt" >= ${start} GROUP BY 1`,
       prisma.match.groupBy({
         by: ["game"],
@@ -245,11 +221,14 @@ adminRouter.get(
       select: {
         id: true, email: true, displayName: true, role: true, vipTier: true,
         banned: true, banReason: true, banUntil: true, chips: true, gems: true,
-        level: true, createdAt: true, lastSeenAt: true,
+        xp: true, createdAt: true, lastSeenAt: true,
       },
     });
     const hasMore = rows.length > take;
-    const users = (hasMore ? rows.slice(0, take) : rows).map((u) => ({ ...u, chips: u.chips.toString() }));
+    // Нивото се смята от xp (колоната `level` на старите акаунти е останала 1).
+    const users = (hasMore ? rows.slice(0, take) : rows).map((u) => ({
+      ...u, chips: u.chips.toString(), level: levelFromXp(u.xp).level,
+    }));
     res.json({ users, nextCursor: hasMore ? (users[users.length - 1]?.id ?? null) : null });
   }),
 );
@@ -273,7 +252,7 @@ adminRouter.get(
       where: { targetId: id }, orderBy: { createdAt: "desc" }, take: 20,
     });
     const { passwordHash: _pw, ...safe } = user;
-    res.json({ user: { ...safe, chips: user.chips.toString() }, audits });
+    res.json({ user: { ...safe, chips: user.chips.toString(), level: levelFromXp(user.xp).level }, audits });
   }),
 );
 
@@ -415,11 +394,18 @@ adminRouter.patch(
 
     if (Object.keys(data).length === 0) throw badRequest("noop", "Няма промени");
 
+    // Сравняваме ПРЕДИ записа (обектът `target` не бива да се чете след update).
+    const roleChanged = Boolean(input.role) && input.role !== target.role;
     const updated = await prisma.user.update({ where: { id }, data });
     // Make a ban take effect immediately (revoke live access tokens); lift it
     // on unban.
     if (input.banned === true) await revokeUser(id);
     if (input.banned === false) await unrevokeUser(id);
+    // Ролята живее в access JWT (~15 мин): при смяна отменяме издадените токени,
+    // за да не пази понижен админ правата си. Refresh издава нов токен с ролята от
+    // базата, така че сесията продължава с новата роля. След unban-а горе, за да
+    // не го изтрие.
+    if (roleChanged) await revokeUser(id);
     await audit(req.user!, actorName, "update_user", id, {
       target: target.displayName,
       ...input,
@@ -432,12 +418,12 @@ adminRouter.patch(
 function toAdminUser(u: {
   id: string; email: string; displayName: string; role: string; vipTier: string;
   banned: boolean; banReason: string | null; banUntil: Date | null;
-  chips: bigint; gems: number; level: number;
+  chips: bigint; gems: number; xp: number;
 }) {
   return {
     id: u.id, email: u.email, displayName: u.displayName, role: u.role,
     vipTier: u.vipTier, banned: u.banned, banReason: u.banReason, banUntil: u.banUntil,
-    chips: u.chips.toString(), gems: u.gems, level: u.level,
+    chips: u.chips.toString(), gems: u.gems, level: levelFromXp(u.xp).level,
   };
 }
 
@@ -859,7 +845,8 @@ adminRouter.get(
       userEmail: p.user?.email ?? null,
       sku: p.product?.sku ?? null,
       kind: p.product?.kind ?? null,
-      priceCents: p.product?.priceCents ?? 0,
+      // Платената сума към момента на покупката — не текущата цена на продукта.
+      priceCents: p.amountCents ?? p.product?.priceCents ?? 0,
     }));
     res.json({ items, nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null });
   }),
@@ -1008,3 +995,9 @@ adminRouter.patch(
     res.json({ announcement: updated });
   }),
 );
+
+// ── Разширен CRUD (сезони, мачове, инвентар, постижения, мисии, рейтинги,
+// известия, изтриване на акаунт, триене на обяви/продукти) ─────────────────────
+// Под-рутерът наследява requireAuth + staff RBAC от горния `use`; записите са
+// гейтнати поотделно вътре (ADMIN+; изтриване на акаунт — само OWNER).
+adminRouter.use(adminCrudRouter);

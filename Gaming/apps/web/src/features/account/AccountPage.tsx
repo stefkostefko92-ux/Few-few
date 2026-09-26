@@ -4,18 +4,21 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Button, Modal, Panel } from "../../ui";
 import { ACCOUNT_EXPORT_URL, api } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
+import { afterLogout } from "../../lib/session";
 import { getFourColor, setFourColor } from "../../lib/a11y";
 import { Achievements } from "../progression/Achievements";
+import { SubscriptionPanel, useVipStatus } from "../shop/SubscriptionPanel";
 
 /** Player account & privacy controls (GDPR: data export + erasure). */
 export function AccountPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const setUser = useAuthStore((s) => s.setUser);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [fourColor, setFourColorState] = useState(getFourColor());
+  // VIP абонатът управлява/отказва абонамента и оттук (не само от магазина).
+  const vip = useVipStatus();
 
   if (!user) return null;
 
@@ -23,7 +26,7 @@ export function AccountPage() {
     setBusy(true);
     try {
       await api.deleteAccount();
-      setUser(null);
+      afterLogout(); // сокет, облици, стая, мач и потребител — нищо не остава
       navigate("/login", { replace: true });
     } catch {
       setBusy(false);
@@ -53,6 +56,8 @@ export function AccountPage() {
           <Stat label={t("account.level")} value={String(user.level)} />
         </div>
       </Panel>
+
+      <SubscriptionPanel vip={vip} className="mb-6" />
 
       <Achievements />
 

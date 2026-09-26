@@ -172,14 +172,25 @@ async function main(): Promise<void> {
     }
     void (async () => {
       try {
-        const [revoked, user] = await Promise.all([
-          redis.exists(`revoked:${claims.sub}`).catch(() => 0),
+        const [revokedRaw, user] = await Promise.all([
+          redis.get(`revoked:${claims.sub}`).catch(() => null),
           prisma.user.findUnique({
             where: { id: claims.sub },
-            select: { banned: true, deletedAt: true },
+            select: { banned: true, banUntil: true, deletedAt: true },
           }),
         ]);
-        if (revoked === 1 || !user || user.banned || user.deletedAt) {
+        // Денилистът пази МОМЕНТА на отмяната (unix сек.; легаси „1“ = всичко):
+        // отхвърляме само токени, издадени до него — нов токен след смяна на роля
+        // или изтекъл бан минава (същото правило като API-то).
+        const revokedAt = revokedRaw === null ? null : Number(revokedRaw);
+        const iat = (claims as { iat?: number }).iat;
+        const revoked =
+          revokedAt !== null &&
+          (!Number.isFinite(revokedAt) || revokedAt < 1_000_000_000 || typeof iat !== "number" || iat <= revokedAt);
+        // Временен бан с изтекъл срок не се брои (вдига го API-то при вход/refresh).
+        const banActive =
+          !!user?.banned && (!user.banUntil || user.banUntil.getTime() > Date.now());
+        if (revoked || !user || banActive || user.deletedAt) {
           next(new Error("forbidden"));
           return;
         }

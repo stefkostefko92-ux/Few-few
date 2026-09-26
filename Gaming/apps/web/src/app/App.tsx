@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { api } from "../lib/api";
-import { useAuthStore, useCosmeticsStore } from "../lib/store";
+import { useAuthStore } from "../lib/store";
+import { afterLogin } from "../lib/session";
 import { AuthScreen } from "../features/auth/AuthScreen";
 import { ForgotPassword } from "../features/auth/ForgotPassword";
 import { ResetPassword } from "../features/auth/ResetPassword";
@@ -26,9 +27,7 @@ import { FriendsPage } from "../features/social/FriendsPage";
 const GameView = lazy(() => import("../features/game/GameView").then((m) => ({ default: m.GameView })));
 
 export function App() {
-  const setUser = useAuthStore((s) => s.setUser);
   const setInitializing = useAuthStore((s) => s.setInitializing);
-  const setEquipped = useCosmeticsStore((s) => s.setEquipped);
   const user = useAuthStore((s) => s.user);
 
   // Restore session from the httpOnly cookie on first load.
@@ -38,11 +37,8 @@ export function App() {
       .me()
       .then((res) => {
         if (cancelled) return;
-        setUser(res.user);
-        // Load equipped cosmetics so games render the player's chosen themes.
-        api.equippedCosmetics().then((c) => {
-          if (!cancelled) setEquipped(c.equipped);
-        }).catch(() => undefined);
+        // Общият път „след вход“: потребител + облеклите облици (като при вход с парола).
+        void afterLogin(res.user);
       })
       .catch(() => undefined)
       .finally(() => {
@@ -51,7 +47,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [setUser, setInitializing, setEquipped]);
+  }, [setInitializing]);
 
   return (
     <>
