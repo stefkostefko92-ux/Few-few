@@ -1162,7 +1162,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 424
+        "lessons": 427
       },
       "evolution": [
         {
@@ -2034,9 +2034,20 @@
           "date": "2026-09-26",
           "event": "v28.6 — учене",
           "detail": "Научи: Gaming web: ui/Button ползва `disabled ?? loading` — изрично disabled={false} маха защи… (+2 още)"
+        },
+        {
+          "version": "28.9.0",
+          "date": "2026-09-26",
+          "event": "v28.9 — учене",
+          "detail": "Научи: Gaming realtime: двигатели без validate се сверяват с legalActions чрез stable() (ключо… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-26",
+          "type": "learning",
+          "summary": "Научи: „Gaming realtime: двигатели без validate се сверяват с legalActions чрез stable() (ключо…\" (+2 още)"
+        },
         {
           "date": "2026-09-26",
           "type": "learning",
