@@ -214,7 +214,9 @@ async function main() {
       velocita: "1.000",
       organismoNotificato: "Organismo Notificato 0407",
       manutentoreDal: new Date("2018-06-01"),
-      ultimaRevisione: fraGiorni(-320),
+      // Същите дати като проверката по-долу (24 месеца, чл. 13): иначе
+      // детайлът показваше три различни „следващи проверки".
+      ultimaRevisione: fraGiorni(-685),
       prossimaRevisione: fraGiorni(45),
       condominioId: condomini[0].id,
       amministratoreId: amministratori[0].id,
@@ -248,7 +250,8 @@ async function main() {
       matricolaComune: "MB-1998-00219",
       comune: "Monza",
       organismoNotificato: "ASL Monza e Brianza",
-      prossimaRevisione: fraGiorni(160),
+      ultimaRevisione: fraGiorni(-200),
+      prossimaRevisione: fraGiorni(530),
     },
   ];
   const impianti = [];
@@ -272,7 +275,8 @@ async function main() {
         data: {
           impiantoId: imp.id,
           tipo: "revisione",
-          dataScadenza: fraGiorni(25 + idx * 40),
+          // Срокът е следващата проверка на самия импиант — едно число.
+          dataScadenza: imp.prossimaRevisione ?? fraGiorni(25 + idx * 40),
         },
       });
     }
@@ -463,6 +467,45 @@ async function main() {
     });
   }
 
+  // ── Contratto di manutenzione ────────────────────────────────────────────
+  // Сърцето на бизнеса: без договор демото показваше празни „Contratti" и
+  // „Redditività". Датите на автоматизмите са в БЪДЕЩЕТО — сийдът не бива да
+  // ражда ордини и фактури при първия нощен пуск (нито в тестовете).
+  const contratto = await creaSeMancante(
+    prisma.contratto,
+    { numero: "CTR-2026-0001", tenantId: null },
+    {
+      numero: "CTR-2026-0001",
+      stato: "ATTIVO",
+      oggetto: "Manutenzione ordinaria impianti Condominio Torre Aurora",
+      canone: "450.00",
+      aliquotaIva: "22.00",
+      periodicitaVisite: "MENSILE",
+      periodicitaFatturazione: "TRIMESTRALE",
+      dataInizio: fraGiorni(-120),
+      dataFine: fraGiorni(610),
+      rinnovoAutomatico: true,
+      preavvisoMesi: 3,
+      slaInterventoMin: 120,
+      slaRipristinoOre: 24,
+      condominioId: condomini[0].id,
+      amministratoreId: amministratori[0].id,
+      prossimaVisita: fraGiorni(12),
+      prossimaFattura: fraGiorni(40),
+    },
+  );
+  for (const imp of [impianti[0], impianti[1]])
+    await prisma.contrattoImpianto.upsert({
+      where: {
+        contrattoId_impiantoId: {
+          contrattoId: contratto.id,
+          impiantoId: imp.id,
+        },
+      },
+      update: {},
+      create: { contrattoId: contratto.id, impiantoId: imp.id },
+    });
+
   // ── Ordine di lavoro + storico ───────────────────────────────────────────
   const ordine = await creaSeMancante(
     prisma.ordineLavoro,
@@ -475,6 +518,7 @@ async function main() {
       descrizione:
         "Sostituzione completa delle funi come da preventivo approvato.",
       impiantoId: impianti[0].id,
+      contrattoId: contratto.id,
       preventivoId: preventivo.id,
       tecnicoId: dipendenti[0].id,
       dataInizio: fraGiorni(-2),
@@ -592,7 +636,7 @@ async function main() {
       },
     });
   }
-  await creaSeMancante(
+  const ddt = await creaSeMancante(
     prisma.ddt,
     { numero: "DDT-2026-0001", tenantId: null },
     {
@@ -608,6 +652,30 @@ async function main() {
     },
   );
 
+  // Без редове документът е непълен (липсва описанието на стоките) — и демото
+  // го отваряше в червено.
+  if ((await prisma.rigaDdt.count({ where: { ddtId: ddt.id } })) === 0)
+    await prisma.rigaDdt.createMany({
+      data: [
+        {
+          ddtId: ddt.id,
+          descrizione: "Fune d'acciaio Ø10 mm",
+          quantita: "60.00",
+          um: "m",
+          peso: "24.00",
+          ordine: 0,
+        },
+        {
+          ddtId: ddt.id,
+          descrizione: "Morsetti serrafune",
+          quantita: "12.00",
+          um: "pz",
+          peso: "1.80",
+          ordine: 1,
+        },
+      ],
+    });
+
   // ── Законова проверка (чл. 13 D.P.R. 162/1999) ───────────────────────────
   // Демото показва и двата случая: изрядна проверка и такава с предписания.
   if (
@@ -619,7 +687,7 @@ async function main() {
       data: {
         impiantoId: impianti[0].id,
         tipo: "PERIODICA",
-        data: fraGiorni(-320),
+        data: fraGiorni(-685),
         esito: "POSITIVO",
         organismo: "Organismo Notificato 0407",
         numeroVerbale: "VP-2025-1187",

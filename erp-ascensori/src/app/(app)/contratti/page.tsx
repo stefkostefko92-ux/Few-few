@@ -32,7 +32,11 @@ const config: EntityConfig = {
   linkDettaglio: (r) => `/contratti/${r.id}`,
   filtroStato: { campo: "stato", valori: STATI_CONTRATTO },
   colonne: [
-    { chiave: "numero", label: "Numero", className: "font-mono font-medium" },
+    {
+      chiave: "numero",
+      label: "Numero",
+      className: "font-mono font-medium whitespace-nowrap",
+    },
     { chiave: "oggetto", label: "Oggetto" },
     {
       chiave: "stato",

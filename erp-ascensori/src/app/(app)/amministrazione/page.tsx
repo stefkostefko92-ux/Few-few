@@ -222,7 +222,12 @@ export default function PaginaAmministrazione() {
             Assistente AI
           </h2>
           <p className="mt-3 flex items-start gap-2 text-sm">
-            {stato.ai.attiva ? (
+            {/* Включен, но без доставчик = не работи: зеленото тук лъжеше. */}
+            {stato.ai.attiva && !stato.ai.providerConfigurato ? (
+              <span className="flex items-center gap-1.5 text-warning-text">
+                <IcoAttenzione /> Attivo, ma non disponibile
+              </span>
+            ) : stato.ai.attiva ? (
               <span className="flex items-center gap-1.5 text-success-text">
                 <IcoIntegro /> Attivo per l&apos;installazione
               </span>
@@ -235,7 +240,7 @@ export default function PaginaAmministrazione() {
           <p className="mt-2 text-xs text-text-3">
             {stato.ai.providerConfigurato
               ? "Fornitore configurato sul server."
-              : "Fornitore non configurato sul server (AI_PROVIDER, AI_API_KEY)."}
+              : "Fornitore non configurato sul server (AI_PROVIDER, AI_API_KEY): i pulsanti AI non compaiono finché non viene impostato."}
           </p>
           {!stato.master && (
             <p className="mt-2 text-xs text-text-3">

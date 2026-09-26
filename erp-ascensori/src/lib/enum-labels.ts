@@ -58,6 +58,49 @@ export const AZIONE_AUDIT: Record<string, string> = {
   IMPORT: "Importazione",
 };
 
+/** Какво е засегнато, в регистъра на операциите. Там се пише името на
+ *  таблицата („users", „ordini_lavoro") — точно, но не за четене. */
+export const ENTITA_AUDIT: Record<string, string> = {
+  users: "Utente",
+  sessioni_attive: "Sessione",
+  contesto_azienda: "Azienda di lavoro",
+  tenants: "Azienda",
+  dati_azienda: "Dati aziendali",
+  configurazione_ai: "Configurazione IA",
+  ai_testi: "Testo con IA",
+  ai_estrazioni: "Lettura con IA",
+  api_keys: "Chiave API",
+  webhooks: "Webhook",
+  notifiche: "Avviso",
+  condomini: "Condominio",
+  amministratori: "Amministratore",
+  dipendenti: "Dipendente",
+  automezzi: "Automezzo",
+  cottimisti: "Cottimista",
+  squadre: "Squadra",
+  impianti: "Impianto",
+  scadenze_impianti: "Scadenza",
+  verifiche_impianti: "Verifica periodica",
+  assegnazioni_tecnici: "Assegnazione tecnico",
+  articoli_magazzino: "Articolo",
+  movimenti_magazzino: "Movimento di magazzino",
+  documenti: "Documento",
+  allegati: "Allegato",
+  firme_digitali: "Firma digitale",
+  contratti: "Contratto",
+  preventivi: "Preventivo",
+  voci_preventivo: "Voce di preventivo",
+  ordini_lavoro: "Ordine di lavoro",
+  rapportini: "Rapportino",
+  materiali_rapportino: "Materiale del rapportino",
+  fatture: "Fattura",
+  voci_fattura: "Voce di fattura",
+  pagamenti: "Incasso",
+  solleciti: "Sollecito",
+  ddt: "DDT",
+  righe_ddt: "Riga di DDT",
+};
+
 /** Статусите, показани извън баджовете (падащи менюта, съобщения). */
 export const STATO_LABEL: Record<string, string> = {
   BOZZA: "Bozza",

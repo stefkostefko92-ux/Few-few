@@ -29,6 +29,7 @@ interface Ordine {
   cottimista: { ragioneSociale: string } | null;
   squadra: { nome: string } | null;
   preventivo: { numero: string } | null;
+  contratto: { numero: string } | null;
   storico: {
     id: string;
     statoPrecedente: string | null;
@@ -112,6 +113,7 @@ export default function Pagina() {
             Impianto {o.impianto?.matricola ?? "—"}
             {o.impianto?.indirizzo ? ` · ${o.impianto.indirizzo}` : ""}
             {o.preventivo ? ` · da preventivo ${o.preventivo.numero}` : ""}
+            {o.contratto ? ` · contratto ${o.contratto.numero}` : ""}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

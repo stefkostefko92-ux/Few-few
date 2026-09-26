@@ -14,6 +14,7 @@ const include = {
   cottimista: true,
   squadra: true,
   preventivo: { select: { numero: true, totaleLordo: true } },
+  contratto: { select: { numero: true } },
   storico: { orderBy: { createdAt: "desc" as const } },
   fatture: { select: { id: true, numero: true, stato: true } },
   ddt: { select: { id: true, numero: true, data: true } },

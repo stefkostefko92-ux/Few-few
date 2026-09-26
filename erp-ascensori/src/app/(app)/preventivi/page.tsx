@@ -19,7 +19,11 @@ const config: EntityConfig = {
   cerca: "Cerca per numero, oggetto…",
   linkDettaglio: (r) => `/preventivi/${r.id}`,
   colonne: [
-    { chiave: "numero", label: "Numero", className: "font-mono font-medium" },
+    {
+      chiave: "numero",
+      label: "Numero",
+      className: "font-mono font-medium whitespace-nowrap",
+    },
     { chiave: "oggetto", label: "Oggetto" },
     {
       chiave: "stato",

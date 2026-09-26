@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Paginazione, Vuoto } from "@/components/ui";
 import { IcoAlterato, IcoIntegro } from "@/components/icone";
 import { dataOraIt, plurale } from "@/lib/format";
-import { AZIONE_AUDIT } from "@/lib/enum-labels";
+import { AZIONE_AUDIT, ENTITA_AUDIT, etichetta } from "@/lib/enum-labels";
 import { apiFetch } from "@/lib/fetch-client";
 
 interface EsitoVerifica {
@@ -225,7 +225,9 @@ export default function Pagina() {
                         {AZIONE_AUDIT[r.azione] ?? r.azione}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5">{r.entita}</td>
+                    <td className="px-3 py-2.5" title={r.entita}>
+                      {etichetta(ENTITA_AUDIT, r.entita)}
+                    </td>
                     <td className="px-3 py-2.5 font-mono text-xs text-text-3">
                       {r.entitaId ? r.entitaId.slice(0, 8) : "—"}
                     </td>

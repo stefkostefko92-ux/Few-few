@@ -17,7 +17,11 @@ const config: EntityConfig = {
   moduloAi: "articoli",
   cerca: "Cerca per codice, nome, barcode…",
   colonne: [
-    { chiave: "codice", label: "Codice", className: "font-mono font-medium" },
+    {
+      chiave: "codice",
+      label: "Codice",
+      className: "font-mono font-medium whitespace-nowrap",
+    },
     { chiave: "nome", label: "Nome" },
     {
       chiave: "tipo",

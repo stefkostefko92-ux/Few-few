@@ -78,7 +78,13 @@ function Misura({ titolo, m }: { titolo: string; m: EsitoSla["intervento"] }) {
   if (m.stato === "non_applicabile")
     return (
       <div className="text-xs text-text-3">
-        {titolo}: nessun tempo concordato a contratto
+        {/* Прагът може да е договорен, а часовникът да не е тръгнал: без
+            отметка „Segnalazione" няма начало. Дотогава тук пишеше „няма
+            договорен срок" — невярно за договор със срок. */}
+        {titolo}:{" "}
+        {m.sogliaMin
+          ? `entro ${durataIt(m.sogliaMin)} da contratto · il conteggio parte dalla segnalazione`
+          : "nessun tempo concordato a contratto"}
       </div>
     );
   return (

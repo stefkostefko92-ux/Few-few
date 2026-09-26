@@ -25,7 +25,11 @@ const config: EntityConfig = {
   cerca: "Cerca per numero, oggetto…",
   linkDettaglio: (r) => `/fatture/${r.id}`,
   colonne: [
-    { chiave: "numero", label: "Numero", className: "font-mono font-medium" },
+    {
+      chiave: "numero",
+      label: "Numero",
+      className: "font-mono font-medium whitespace-nowrap",
+    },
     {
       chiave: "tipo",
       label: "Tipo",

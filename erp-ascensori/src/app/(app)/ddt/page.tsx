@@ -17,7 +17,11 @@ const config: EntityConfig = {
   cerca: "Cerca per numero, destinatario…",
   linkDettaglio: (r) => `/ddt/${r.id}`,
   colonne: [
-    { chiave: "numero", label: "Numero", className: "font-mono font-medium" },
+    {
+      chiave: "numero",
+      label: "Numero",
+      className: "font-mono font-medium whitespace-nowrap",
+    },
     { chiave: "data", label: "Data", render: (r) => dataIt(r.data as string) },
     { chiave: "causale", label: "Causale" },
     { chiave: "destinatario", label: "Destinatario" },

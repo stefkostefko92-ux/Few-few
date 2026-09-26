@@ -30,7 +30,7 @@ const config: EntityConfig = {
     {
       chiave: "matricola",
       label: "Matricola",
-      className: "font-mono font-medium",
+      className: "font-mono font-medium whitespace-nowrap",
     },
     {
       chiave: "marca",

@@ -604,7 +604,8 @@ export default function Pagina() {
                   inputMode="decimal"
                   required
                   value={incasso.importo}
-                  placeholder={residuo}
+                  // Италиански разделител: полето приема и запетая.
+                  placeholder={residuo.replace(".", ",")}
                   onChange={(e) =>
                     setIncasso({ ...incasso, importo: e.target.value })
                   }
