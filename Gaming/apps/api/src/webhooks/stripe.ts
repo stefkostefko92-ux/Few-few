@@ -5,10 +5,10 @@ import { VIP_PERKS } from "@aso/shared";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
 import { getStripe } from "../economy/stripe.js";
-import { applyVip, clearVip, grantProduct, grantVipStipend } from "../economy/grants.js";
+import { applyVip, clearVip, grantProduct, grantVipStipend, snapshotFromMetadata } from "../economy/grants.js";
 import { invoiceSubscriptionId, subscriptionPeriodEnd } from "../economy/stripeShape.js";
 import { productIdBySku } from "../economy/seed.js";
-import { productBySku } from "../economy/catalog.js";
+import { vipTierForSku } from "../economy/catalog.js";
 import { notifyPurchase, notifyVip } from "../integrations/discord.js";
 
 export const stripeWebhookRouter: Router = Router();
@@ -81,37 +81,10 @@ async function markProcessed(
 
 async function handleEvent(event: Stripe.Event): Promise<void> {
   switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const userId = session.metadata?.userId ?? session.client_reference_id ?? undefined;
-      const sku = session.metadata?.sku;
-      if (!userId || !sku) {
-        logger.warn({ id: event.id }, "checkout.session.completed without userId/sku");
-        await prisma.$transaction((tx) => markProcessed(tx, event));
-        return;
-      }
-      const productId = await productIdBySku(sku);
-      await prisma.$transaction(async (tx) => {
-        // One-time purchases grant immediately; subscriptions are granted on
-        // invoice.paid, but we record the purchase here for the audit trail.
-        if (session.mode === "payment") await grantProduct(tx, userId, sku);
-        if (session.id && productId) {
-          await tx.purchase.upsert({
-            where: { stripeId: session.id },
-            create: { stripeId: session.id, userId, productId, status: "completed" },
-            update: { status: "completed" },
-          });
-        }
-        await markProcessed(tx, event);
-      });
-      // Announce one-time purchases to Discord (VIP is announced on invoice.paid).
-      if (session.mode === "payment") {
-        const product = productBySku(sku);
-        const u = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true } });
-        if (product && u) {
-          notifyPurchase({ displayName: u.displayName, sku, priceCents: product.priceCents });
-        }
-      }
+    case "checkout.session.completed":
+    case "checkout.session.async_payment_succeeded":
+    case "checkout.session.async_payment_failed": {
+      await handleCheckoutSession(event, event.data.object as Stripe.Checkout.Session);
       return;
     }
 
@@ -124,7 +97,8 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       }
       const sub = await getStripe().subscriptions.retrieve(subId);
       const userId = sub.metadata?.userId;
-      const tier = asTier(sub.metadata?.sku?.replace("vip_", "").toUpperCase());
+      // Нивото е записано при checkout; за стари абонаменти — изведено от SKU.
+      const tier = asTier(sub.metadata?.vipTier || vipTierForSku(sub.metadata?.sku ?? ""));
       if (!userId) {
         await prisma.$transaction((tx) => markProcessed(tx, event));
         return;
@@ -241,5 +215,74 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       // Ack and record so Stripe stops retrying unknown-but-valid events.
       await prisma.$transaction((tx) => markProcessed(tx, event));
     }
+  }
+}
+
+/**
+ * `checkout.session.*` — записва покупката (с реално платената сума от Stripe)
+ * и начислява еднократните продукти. `completed` НЕ значи платено: при отложен
+ * метод (`payment_status: "unpaid"`) само записваме „pending“ и чакаме
+ * `async_payment_succeeded`/`_failed`. Идемпотентност: `event.id` (ProcessedEvent)
+ * + бизнес-ключът `session.id` (вече „completed“ покупка не се начислява втори път).
+ */
+async function handleCheckoutSession(event: Stripe.Event, session: Stripe.Checkout.Session): Promise<void> {
+  const md = session.metadata ?? {};
+  const userId = md.userId ?? session.client_reference_id ?? undefined;
+  const sku = md.sku;
+  if (!userId || !sku) {
+    logger.warn({ id: event.id }, `${event.type} without userId/sku`);
+    await prisma.$transaction((tx) => markProcessed(tx, event));
+    return;
+  }
+
+  const failed = event.type === "checkout.session.async_payment_failed";
+  const paid =
+    !failed &&
+    (event.type === "checkout.session.async_payment_succeeded" ||
+      session.payment_status === "paid" ||
+      session.payment_status === "no_payment_required");
+  const status = failed ? "failed" : paid ? "completed" : "pending";
+
+  // Реално платената сума от Stripe (не текущата цена на продукта) → историята
+  // на приходите не се преизчислява при смяна на цената.
+  const snapshot = snapshotFromMetadata(md);
+  const snapPrice = Number(md.priceCents);
+  const amountCents =
+    typeof session.amount_total === "number"
+      ? session.amount_total
+      : Number.isSafeInteger(snapPrice) && snapPrice >= 0
+        ? snapPrice
+        : 0;
+  const currency = (session.currency ?? "eur").toLowerCase();
+  // Покупката се връзва към продукта по SKU независимо от `active` (платеното се
+  // дължи). По SKU, не по metadata.productId — проверен ред, без FK грешка/ретрай.
+  const productId = await productIdBySku(sku);
+
+  let granted = false;
+  await prisma.$transaction(async (tx) => {
+    const prev = await tx.purchase.findUnique({ where: { stripeId: session.id } });
+    // Еднократните продукти се дават тук; VIP — от invoice.paid.
+    const alreadyGranted = prev?.status === "completed" || prev?.status === "refunded";
+    if (paid && session.mode === "payment" && !alreadyGranted) {
+      await grantProduct(tx, userId, sku, snapshot);
+      granted = true;
+    }
+    if (productId) {
+      await tx.purchase.upsert({
+        where: { stripeId: session.id },
+        create: { stripeId: session.id, userId, productId, status, amountCents, currency },
+        // „completed“/„refunded“ не се връщат назад от закъсняло събитие.
+        update: alreadyGranted ? {} : { status, amountCents, currency },
+      });
+    } else {
+      logger.error({ id: event.id, sku, userId }, "checkout: product row missing — purchase not recorded");
+    }
+    await markProcessed(tx, event);
+  });
+
+  // Discord: само реално начислени еднократни покупки (VIP се обявява на invoice.paid).
+  if (granted) {
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true } });
+    if (u) notifyPurchase({ displayName: u.displayName, sku, priceCents: amountCents });
   }
 }

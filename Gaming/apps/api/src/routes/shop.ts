@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { prisma } from "@aso/db";
-import { checkoutSchema, VIP_PERKS, type VipTier } from "@aso/shared";
-import { asyncHandler, badRequest, unauthorized, HttpError } from "../http.js";
+import { checkoutSchema, VIP_PERKS, type VipTier, effectiveVipTier } from "@aso/shared";
+import { asyncHandler, badRequest, conflict, unauthorized, HttpError } from "../http.js";
 import { requireAuth } from "../middleware/requireAuth.js";
-import { CATALOG, productBySku } from "../economy/catalog.js";
+import { listActiveProducts, toProductView, vipTierForSku } from "../economy/catalog.js";
 import { getStripe, stripeEnabled } from "../economy/stripe.js";
 import { env } from "../env.js";
+import { webUrl } from "../webUrl.js";
 
 export const shopRouter: Router = Router();
 
@@ -40,12 +41,25 @@ function consentText(locale: string | null | undefined, isSubscription: boolean)
   return isSubscription ? l.sub : l.oneOff;
 }
 
+/**
+ * Статуси на Stripe абонамент, при които той още съществува (плаща се, в
+ * пробен период, в dunning или на пауза) — нов VIP checkout се блокира и
+ * играчът се насочва към портала. `canceled`/`incomplete_expired` са крайни:
+ * след тях може да се абонира отново (преди редът оставаше и блокираше завинаги).
+ */
+export const LIVE_SUB_STATUSES: ReadonlySet<string> = new Set(["active", "trialing", "past_due", "unpaid", "paused"]);
+
 /** GET /api/shop/catalog — public product list + VIP perk table.
- *  `billingEnabled:false` (Stripe not configured) tells the client to render
- *  the catalog as a "coming soon" preview instead of offering checkout. */
-shopRouter.get("/catalog", (_req, res) => {
-  res.json({ products: CATALOG, vipPerks: VIP_PERKS, billingEnabled: stripeEnabled() });
-});
+ *  Чете таблицата `Product` (само `active`), т.е. редакциите в админа важат
+ *  веднага. `billingEnabled:false` (Stripe not configured) tells the client to
+ *  render the catalog as a "coming soon" preview instead of offering checkout. */
+shopRouter.get(
+  "/catalog",
+  asyncHandler(async (_req, res) => {
+    const products = await listActiveProducts();
+    res.json({ products, vipPerks: VIP_PERKS, billingEnabled: stripeEnabled() });
+  }),
+);
 
 shopRouter.use(requireAuth);
 
@@ -61,8 +75,16 @@ shopRouter.post(
   asyncHandler(async (req, res) => {
     if (!stripeEnabled()) throw serviceUnavailable();
     const { sku } = checkoutSchema.parse(req.body);
-    const product = productBySku(sku);
-    if (!product) throw badRequest("unknown_sku", "Непознат продукт");
+    // Цената и наградата идват САМО от реда в `Product` (сървърът) — никога от клиента.
+    const row = await prisma.product.findUnique({ where: { sku } });
+    if (!row) throw new HttpError(404, "unknown_sku", "Непознат продукт");
+    if (!row.active) throw conflict("product_unavailable", "Продуктът не се предлага в момента");
+    const product = toProductView(row);
+    const vipTier = row.kind === "VIP_SUB" ? vipTierForSku(sku) : undefined;
+    // Fail closed: без положителна цена или (за VIP) без разпознато ниво не пускаме плащане.
+    if (row.priceCents <= 0 || (row.kind === "VIP_SUB" && !vipTier)) {
+      throw conflict("product_unavailable", "Продуктът не се предлага в момента");
+    }
 
     const userId = req.user!.sub;
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -72,7 +94,9 @@ shopRouter.post(
     // unique userId on Subscription, so a 2nd would later 500 the webhook).
     if (product.kind === "VIP_SUB") {
       const existing = await prisma.subscription.findUnique({ where: { userId } });
-      if (existing) throw badRequest("already_subscribed", "Вече имаш активен абонамент");
+      if (existing && LIVE_SUB_STATUSES.has(existing.status)) {
+        throw conflict("already_subscribed", "Вече имаш активен абонамент — управлявай го от „Управление на абонамента“");
+      }
     }
 
     const stripe = getStripe();
@@ -95,10 +119,24 @@ shopRouter.post(
       {
         mode: isSubscription ? "subscription" : "payment",
         customer: customerId,
-        // Carry identity + sku so the webhook knows what to grant, to whom.
+        // Carry identity + sku + a snapshot of what is being paid for, so the
+        // webhook grants exactly this (an admin edit in between changes nothing).
+        // Metadata is set only here, server-side with the secret key.
         client_reference_id: userId,
-        metadata: { userId, sku },
-        ...(isSubscription ? { subscription_data: { metadata: { userId, sku } } } : {}),
+        metadata: {
+          userId,
+          sku,
+          productId: row.id,
+          snap: "1",
+          kind: row.kind,
+          priceCents: String(row.priceCents),
+          gems: String(row.gems ?? 0),
+          chips: String(row.chips ?? 0),
+          cosmeticId: row.cosmeticId ?? "",
+        },
+        ...(isSubscription
+          ? { subscription_data: { metadata: { userId, sku, vipTier: vipTier ?? "" } } }
+          : {}),
         // CRD art. 16: show the immediate-supply / withdrawal-right notice above
         // the pay button on every session (`submit`, no Dashboard config needed).
         // The stronger ToS *checkbox* (consent_collection + its acceptance text)
@@ -119,41 +157,53 @@ shopRouter.post(
             quantity: 1,
             price_data: {
               currency: "eur",
-              unit_amount: product.priceCents,
+              unit_amount: row.priceCents,
               product_data: { name: product.title },
               ...(isSubscription ? { recurring: { interval: "month" as const } } : {}),
             },
           },
         ],
-        success_url: `${env.PUBLIC_WEB_URL}/shop?status=success`,
-        cancel_url: `${env.PUBLIC_WEB_URL}/shop?status=cancel`,
+        success_url: webUrl("/shop?status=success"),
+        cancel_url: webUrl("/shop?status=cancel"),
       },
       // Idempotency: the SDK retries network failures by replaying the POST, and
       // a user can double-click. A short per-user/sku time bucket collapses both
-      // into one Checkout Session instead of two charges.
-      { idempotencyKey: `checkout:${userId}:${sku}:${Math.floor(Date.now() / 30_000)}` },
+      // into one Checkout Session instead of two charges. The price is part of
+      // the key: an admin price edit inside the bucket must not replay the old
+      // session (Stripe rejects a reused key with different parameters).
+      {
+        idempotencyKey: `checkout:${userId}:${sku}:${row.priceCents}:${Math.floor(Date.now() / 30_000)}`,
+      },
     );
 
     res.json({ url: session.url });
   }),
 );
 
-/** POST /api/shop/portal — open the Stripe Billing Portal for VIP management. */
+/**
+ * POST /api/shop/portal — Stripe Customer Portal: смяна на карта, фактури и
+ * ОТКАЗ от VIP абонамента (ЕС: отказът трябва да е лесно достъпен). Клиентът се
+ * взема от записания `stripeCustomerId`, иначе от абонамента.
+ */
 shopRouter.post(
   "/portal",
   asyncHandler(async (req, res) => {
     if (!stripeEnabled()) throw serviceUnavailable();
     const userId = req.user!.sub;
-    const sub = await prisma.subscription.findUnique({ where: { userId } });
-    if (!sub) throw badRequest("no_subscription", "Няма активен абонамент");
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw unauthorized();
 
     const stripe = getStripe();
-    // Resolve the customer from the stored subscription.
-    const stripeSub = await stripe.subscriptions.retrieve(sub.stripeSubId);
-    const customer = typeof stripeSub.customer === "string" ? stripeSub.customer : stripeSub.customer.id;
+    let customer = user.stripeCustomerId;
+    if (!customer) {
+      const sub = await prisma.subscription.findUnique({ where: { userId } });
+      if (!sub) throw badRequest("no_subscription", "Няма активен абонамент");
+      const stripeSub = await stripe.subscriptions.retrieve(sub.stripeSubId);
+      customer = typeof stripeSub.customer === "string" ? stripeSub.customer : stripeSub.customer.id;
+    }
 
     const portal = await stripe.billingPortal.sessions.create(
-      { customer, return_url: `${env.PUBLIC_WEB_URL}/shop` },
+      { customer, return_url: webUrl("/shop") },
       { idempotencyKey: `portal:${userId}:${Math.floor(Date.now() / 30_000)}` },
     );
     res.json({ url: portal.url });
@@ -166,7 +216,19 @@ shopRouter.get(
   asyncHandler(async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user!.sub } });
     if (!user) throw unauthorized();
-    const tier = user.vipTier as VipTier;
-    res.json({ tier, vipUntil: user.vipUntil, perks: VIP_PERKS[tier] });
+    // Реално активното ниво: изтекъл VIP (vipUntil в миналото) е NONE.
+    const tier: VipTier = effectiveVipTier(user.vipTier, user.vipUntil);
+    const sub = await prisma.subscription.findUnique({ where: { userId: user.id } });
+    const live = sub !== null && LIVE_SUB_STATUSES.has(sub.status);
+    res.json({
+      tier,
+      vipUntil: user.vipUntil,
+      perks: VIP_PERKS[tier],
+      // Клиентът показва „Управление на абонамента“ вместо бутоните за покупка.
+      subscription: live
+        ? { status: sub.status, tier: sub.tier, currentPeriodEnd: sub.currentPeriodEnd }
+        : null,
+      canManageBilling: live || Boolean(user.stripeCustomerId),
+    });
   }),
 );

@@ -92,7 +92,7 @@ harvest_legacy_env() {
     docker inspect "$pg" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^POSTGRES_(USER|PASSWORD|DB)=' || true
     if [ -n "$api" ]; then
       docker inspect "$api" --format '{{range .Config.Env}}{{println .}}{{end}}' |
-        grep -E '^(JWT_SECRET|JWT_REFRESH_SECRET|INTERNAL_API_SECRET|CORS_ORIGINS|PUBLIC_WEB_URL|PUBLIC_API_URL|COOKIE_DOMAIN|BOOTSTRAP_OWNER_EMAIL|STRIPE_[A-Z_]+|SMTP_[A-Z_]+|GOOGLE_CLIENT_[A-Z]+|FACEBOOK_APP_[A-Z]+|DISCORD_WEBHOOK_URL|SENTRY_DSN)=' || true
+        grep -E '^(JWT_SECRET|JWT_REFRESH_SECRET|INTERNAL_API_SECRET|CORS_ORIGINS|PUBLIC_WEB_URL|PUBLIC_API_URL|WEB_BASE_PATH|COOKIE_DOMAIN|BOOTSTRAP_OWNER_EMAIL|STRIPE_[A-Z_]+|SMTP_[A-Z_]+|GOOGLE_CLIENT_[A-Z]+|FACEBOOK_APP_[A-Z]+|DISCORD_WEBHOOK_URL|SENTRY_DSN)=' || true
     fi
   } > "$out"
   umask "$old_umask"
@@ -101,7 +101,7 @@ harvest_legacy_env() {
   for kv in "POSTGRES_USER=aso" "POSTGRES_DB=aso" \
             "JWT_SECRET=$(openssl rand -hex 32)" "JWT_REFRESH_SECRET=$(openssl rand -hex 32)" \
             "INTERNAL_API_SECRET=$(openssl rand -hex 24)" \
-            "CORS_ORIGINS=https://${DOMAIN}" "PUBLIC_WEB_URL=https://${DOMAIN}/app" \
+            "CORS_ORIGINS=https://${DOMAIN}" "PUBLIC_WEB_URL=https://${DOMAIN}" "WEB_BASE_PATH=/app" \
             "PUBLIC_API_URL=https://${DOMAIN}" "BOOTSTRAP_OWNER_EMAIL=${OWNER_EMAIL}" \
             "STRIPE_TOS_CONFIGURED=false"; do
     grep -q "^${kv%%=*}=" "$out" || echo "$kv" >> "$out"
@@ -144,7 +144,10 @@ JWT_SECRET=$(openssl rand -hex 32)
 JWT_REFRESH_SECRET=$(openssl rand -hex 32)
 INTERNAL_API_SECRET=$(openssl rand -hex 24)
 CORS_ORIGINS=https://${DOMAIN}
-PUBLIC_WEB_URL=https://${DOMAIN}/app
+# Конвенция: PUBLIC_WEB_URL = само origin, WEB_BASE_PATH = пътят на SPA-то.
+# (Стар .env с PUBLIC_WEB_URL=…/app продължава да работи — API-то не дублира /app.)
+PUBLIC_WEB_URL=https://${DOMAIN}
+WEB_BASE_PATH=/app
 PUBLIC_API_URL=https://${DOMAIN}
 COOKIE_DOMAIN=
 BOOTSTRAP_OWNER_EMAIL=${OWNER_EMAIL}
