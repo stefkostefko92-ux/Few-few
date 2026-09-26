@@ -28,7 +28,9 @@ export function t(key, lang = "en", vars = {}) {
 
   // Simple {{varName}} interpolation
   for (const [k, v] of Object.entries(vars)) {
-    str = str.replace(new RegExp(`\\{\\{\\s*${k}\\s*\\}\\}`, "g"), String(v));
+    // Функция, не низ: при низ `$&`, `$$`, `` $` `` се тълкуват като шаблони за
+    // замяна — артикул „VIP $$“ излизаше като „VIP $“ (одит 26.09.2026).
+    str = str.replace(new RegExp(`\\{\\{\\s*${k}\\s*\\}\\}`, "g"), () => String(v));
   }
   return str;
 }

@@ -31,7 +31,7 @@ export const PREMIUM_FEATURES = {
   "panel.inactivityAutoClose": { label: "Inactivity Auto-Close",       category: "Tickets" },
   "panel.autoCloseOnLeave":    { label: "Auto-Close on User Leave",    category: "Tickets" },
   "panel.multipleCategories":  { label: "Separate Open/Closed Categories", category: "Tickets" },
-  "panel.unlimitedCount":      { label: "Unlimited Panels",            category: "Tickets" },
+  "panel.unlimitedCount":      { label: "Up to 50 Panels",             category: "Tickets" },
   "panel.sla":                 { label: "SLA Tracking",                category: "Tickets" },
 
   // ─── Ticket actions ────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ export const PREMIUM_FEATURES = {
   "form.autoRoleOnReview":     { label: "Auto Role on Accept/Deny",    category: "Forms" },
   "form.customDmMessages":     { label: "Custom DM Messages",          category: "Forms" },
   "form.maxQuestions50":       { label: "50 Questions per Form",       category: "Forms" },
-  "form.unlimited":            { label: "Unlimited Forms",             category: "Forms" },
+  "form.unlimited":            { label: "Up to 50 Forms",              category: "Forms" },
 
   // ─── Verification ──────────────────────────────────────────────────────
   // НАРОЧНО ПРАЗНО. Защитата срещу рейд НЕ се продава.
@@ -88,6 +88,12 @@ export const PREMIUM_FEATURES = {
   "data.csvExport":            { label: "CSV Export",                  category: "Data" },
   "data.longRetention":        { label: "Unlimited Transcript Retention", category: "Data" },
   "data.panelDuplicate":       { label: "Duplicate Panels",            category: "Data" },
+  // v50 — Server Season (играта)
+  "game.shop50":               { label: "50 Shop Items",               category: "Game" },
+  "game.levelRolesUnlimited":  { label: "Unlimited Level Roles",       category: "Game" },
+  "game.companionsFull":       { label: "Full Companion Collection",   category: "Game" },
+  "game.quests3":              { label: "3 Active Server Quests",      category: "Game" },
+  "game.kbTrivia":             { label: "Knowledge Base Trivia",       category: "Game" },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -105,6 +111,11 @@ export const BASE_LIMITS = {
   transcriptRetentionDays: 30,
   kbArticles:         3, // v32 — Knowledge Base
   reactionRoleMessages: 2, // v33 — Reaction Roles
+  // v50 — Server Season
+  shopItems:          5,
+  levelRoles:         5,
+  companionSlots:     1,
+  activeQuests:       1,
 };
 
 export const PREMIUM_LIMITS = {
@@ -119,6 +130,11 @@ export const PREMIUM_LIMITS = {
   transcriptRetentionDays: null, // null = forever
   kbArticles:         50, // v32 — Knowledge Base
   reactionRoleMessages: 25, // v33 — Reaction Roles
+  // v50 — Server Season
+  shopItems:          50,
+  levelRoles:         100,
+  companionSlots:     1000,
+  activeQuests:       3,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

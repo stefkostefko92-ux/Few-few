@@ -86,7 +86,15 @@ const FIX = {
   "GET /api/admin/security": { mfaEnforced: true, staff: [{ id: "u1", username: "stefan", globalRole: "MAIN_OWNER", mfaEnabled: true, mfaEnabledAt: new Date().toISOString(), backupCodesLeft: 9, sessions: 1, createdAt: new Date().toISOString() }, { id: "u2", username: "ana", globalRole: "SUPPORT_STAFF", mfaEnabled: false, mfaEnabledAt: null, backupCodesLeft: 0, sessions: 0, createdAt: new Date().toISOString() }], sessions: { total: 3 }, bruteForce: { blocked: [{ scope: "auth", key: "203.0.113.7", label: "203.0.113.x", failures: 9, blockedUntil: new Date(Date.now() + 60000).toISOString(), retryAfterSec: 60 }], trackedEntries: 4, redis: true, windowSec: 900, steps: [{ failures: 5, blockMs: 60000 }] }, apiKeys: { active: 1, revoked: 0, items: [{ id: "k1", serverId: SID, userId: "u1", name: "ci", keyPrefix: "sb_ab", scopes: ["tickets:read"], lastUsedAt: null, expiresAt: null, revokedAt: null, requestCount: 3, createdAt: new Date().toISOString() }] }, blacklisted: 0, events: [{ id: "e1", createdAt: new Date().toISOString(), action: "MFA_ENABLED", actor: { id: "u1", username: "stefan" }, targetId: "u1" }] },
   "GET /api/admin/billing": { config: { provider: "discord", discord: { enabled: true, configured: true, storeUrl: "https://discord.com/application-directory/1/store" }, stripe: { purchasesEnabled: false, legacyManagement: false } }, discord: [{ id: SID, name: "T19C", plan: "premium", discordEntitlementId: "e1", discordSkuId: "s1", discordSubscriptionId: "x", discordSubscriptionStatus: 0, statusLabel: "active", discordCurrentPeriodEnd: new Date().toISOString(), premiumSince: new Date().toISOString() }], stripe: [], agencies: [], graceServers: 0, lastReconcileGrantAt: null },
   "GET /api/admin/fleet": { withToken: [{ id: SID, name: "T19C", plan: "agency10", planSource: "stripe", customBotName: "T19 Bot", agencyId: "ag1", accessUntil: null }], bot: { gateway: "connected", brandBots: { total: 1, ready: 1, down: 0 }, uptime: 100 } },
+  "GET /api/admin/game/season": { current: { id: "S1", code: "S1", name: "Season 1 — First Light", startsAt: "2026-09-21T00:00:00Z", endsAt: "2026-12-14T00:00:00Z", companionIds: ["gold-midas", "cobalt-stellaris"], active: true, ended: false }, seasons: [{ id: "S1", code: "S1", name: "Season 1 — First Light", startsAt: "2026-09-21T00:00:00Z", endsAt: "2026-12-14T00:00:00Z", companionIds: ["gold-midas", "cobalt-stellaris"], active: true, ended: false }], catalog: [{ id: "lime-blip", name: "Blip", rarity: "common", rarityEmoji: "⚪", family: "Lime", imageUrl: "/game/companions/lime-blip-1.jpg", seasonal: false }, { id: "gold-midas", name: "Midas", rarity: "legendary", rarityEmoji: "🟡", family: "Gold", imageUrl: "/game/companions/gold-midas-1.jpg", seasonal: true }, { id: "cobalt-stellaris", name: "Stellaris", rarity: "legendary", rarityEmoji: "🟡", family: "Cobalt", imageUrl: "/game/companions/cobalt-stellaris-1.jpg", seasonal: true }] },
   "GET /api/admin/dsr/requests": { requests: [{ id: "r1", createdAt: new Date().toISOString(), action: "DSR_ERASED", targetId: "123", actor: { id: "u1", username: "stefan" }, metadata: { scope: "identity", via: "bot" } }] },
+  [`GET /api/game/${SID}`]: { settings: { serverId: SID, enabled: true, xpPerMessage: 15, messageCooldownSec: 60, xpPerVoiceMinute: 5, announceChannelId: null, levelUpMessage: true, levelRoles: [{ level: 5, roleId: "700000000000000001" }], dailySparks: 50, spawnEnabled: true, spawnChannelIds: [], countingChannelId: null, triviaChannelId: null, triviaSchedule: null, questChannelId: null, questEnabled: true }, limits: { shopItems: 5, levelRoles: 5, activeQuests: 1, companionSlots: 1 }, isPremium: false, stats: { players: 12, totalXp: 48210, totalMessages: 3200, totalVoiceMinutes: 640, sparksInCirculation: 2100, shopItems: 1, top: [{ userId: "333333333333333333", xp: 9000, level: 12, sparks: 300, streak: 9 }] }, levelTable: [{ level: 1, xp: 100 }, { level: 5, xp: 1000 }, { level: 10, xp: 4675 }] },
+  [`GET /api/game/${SID}/shop`]: [{ id: "it1", serverId: SID, name: "VIP colour", description: "30 days of the VIP colour role", priceSparks: 300, type: "ROLE", roleId: "700000000000000002", durationDays: 30, stock: null, enabled: true, sortOrder: 0, sold: 4 }],
+  [`GET /api/game/${SID}/purchases`]: [{ id: "p1", userId: "333333333333333333", priceSparks: 300, expiresAt: new Date(Date.now() + 86400000 * 20).toISOString(), revokedAt: null, item: { name: "VIP colour", type: "ROLE" } }],
+  [`GET /api/game/${SID}/companions`]: { season: { id: "S1", name: "Season 1 — First Light", startsAt: "2026-09-21T00:00:00Z", endsAt: "2026-12-14T00:00:00Z" }, spawns: 40, caught: 31, catalog: [{ id: "lime-blip", name: "Blip", rarity: "common", rarityLabel: "Common", rarityEmoji: "⚪", imageUrl: "/game/companions/lime-blip-1.jpg", seasonId: null, caught: 12 }, { id: "gold-midas", name: "Midas", rarity: "legendary", rarityLabel: "Legendary", rarityEmoji: "🟡", imageUrl: "/game/companions/gold-midas-1.jpg", seasonId: "S1", caught: 1 }], collectors: [{ userId: "333333333333333333", count: 4 }] },
+  [`GET /api/game/${SID}/leaderboard`]: { by: "xp", rows: [{ userId: "333333333333333333", xp: 9000, level: 12, sparks: 300, seasonXp: 9000, streak: 9, messages: 500, voiceMinutes: 60 }] },
+  [`GET /api/game/${SID}/quests`]: { types: [{ key: "MESSAGES", emoji: "💬", reward: 100, min: 300, max: 50000 }, { key: "POLL_VOTES", emoji: "🗳️", reward: 120, min: 15, max: 2000 }], active: [{ id: "q1", type: "MESSAGES", emoji: "💬", target: 3000, progress: 1260, rewardSparks: 100, status: "ACTIVE", startsAt: new Date().toISOString(), endsAt: new Date(Date.now() + 86400000 * 4).toISOString(), channelId: "500000000000000001", messageId: null, bar: "▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱ 42 %", contributors: [{ userId: "333333333333333333", amount: 400 }, { userId: "444444444444444444", amount: 260 }] }], history: [{ id: "q0", type: "DAILY_CLAIMS", emoji: "📅", target: 40, progress: 40, rewardSparks: 80, status: "COMPLETED", startsAt: new Date(Date.now() - 86400000 * 14).toISOString(), endsAt: new Date(Date.now() - 86400000 * 7).toISOString(), bar: "▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰ 100 %", contributors: 12 }] },
+  [`GET /api/game/${SID}/minigames`]: { counting: { channelId: "500000000000000002", current: 87, high: 312 }, trivia: { channelId: "500000000000000003", schedule: "weekly", rounds: 9, recent: [{ id: "r1", source: "BANK", question: "What is the capital of Australia?", winnerId: "333333333333333333", createdAt: new Date().toISOString(), closedAt: new Date().toISOString(), answers: 6 }, { id: "r2", source: "KB", question: "Which knowledge-base article answers this? “Refunds are processed within 14 days…”", winnerId: null, createdAt: new Date(Date.now() - 86400000).toISOString(), closedAt: new Date(Date.now() - 86400000).toISOString(), answers: 3 }], winners: [{ userId: "333333333333333333", wins: 4 }] } },
   "GET /api/auth/mfa/status": { enabled: false, enabledAt: null, required: false, enrollmentRequired: false, verifiedInSession: false, backupCodesLeft: 0, issuer: "Supreme Bot" },
   [`GET /api/servers/${SID}`]: {
     id: SID, name: "T19C", icon: null, plan: "agency10", isPremium: true, hasWhiteLabel: true,
@@ -122,9 +130,16 @@ const FIX = {
   [`GET /api/analytics/${SID}/dashboard`]: {
     kpis: { ticketsOpened: { value: 12, deltaPct: 8 }, ticketsClosed: { value: 10, deltaPct: -3 },
       avgFirstResponseMin: 7, applications: { value: 4, deltaPct: 0 } },
-    live: { pendingApplications: 1, openTickets: 3 },
-    series: { tickets: Array.from({ length: 14 }, (_, i) => ({ date: `2026-08-${String(i + 1).padStart(2, "0")}`, opened: (i * 7) % 5, closed: (i * 3) % 4 })) },
-    topPanels: [{ name: "Support", count: 9 }, { name: "Reports", count: 3 }],
+    // Формата = routes/analytics.js GET /:serverId/dashboard (сверено 24.09.2026).
+    // Старият fixture носеше `series: { tickets }` (обект) и `topPanels` — таблото
+    // чупеше с „e.map is not a function“ в САМАТА проверка, невидимо, защото
+    // гейтът не гледаше екрана на ErrorBoundary.
+    days: 14,
+    live: { pendingApplications: 1, openTickets: 3, claimedTickets: 1 },
+    series: Array.from({ length: 14 }, (_, i) => ({ day: `2026-08-${String(i + 1).padStart(2, "0")}`, opened: (i * 7) % 5, closed: (i * 3) % 4 })),
+    distribution: [{ label: "Support", value: 9 }, { label: "Reports", value: 3 }],
+    recentTickets: [],
+    satisfaction: { avg: 4.6, count: 5 },
   },
   [`GET /api/panels/${SID}`]: [
     { id: "p1", name: "Support", title: "Отвори тикет", buttons: [], supportRoleIds: [roles[2].id], published: true },
@@ -135,17 +150,50 @@ const FIX = {
   ],
   [`GET /api/tickets/${SID}`]: { tickets: [], total: 0 },
   [`GET /api/reactionroles/${SID}`]: [],
+  // Истинският каталог на бекенда (същият, който /help ползва) — без него
+  // страницата „Commands“ в таблото се снимаше празна (визуален одит 25.09.2026).
+  "GET /api/automation/commands-catalog": (await import("../../backend/src/data/commandsCatalog.js")).COMMAND_CATALOG,
+  // v51 — админ конзолата: списъци със страници, играта, поддръжката, ботовете.
+  "GET /api/admin/users": { total: 120, page: 1, limit: 50, users: [
+    { id: "222222222222222222", username: "maria", discriminator: "0", avatar: null, globalRole: "USER", isBlacklisted: true, blacklistReason: "Spam in tickets", blacklistedAt: new Date().toISOString(), blacklistedUntil: new Date(Date.now() + 7 * 864e5).toISOString(), language: "bg", createdAt: new Date().toISOString(), _count: { tickets: 4, applications: 1, serverMembers: 2 } },
+    { id: "333333333333333333", username: "a-very-long-username-that-should-wrap", discriminator: "0", avatar: null, globalRole: "SUPPORT_STAFF", isBlacklisted: false, blacklistReason: null, blacklistedAt: null, blacklistedUntil: null, language: "en", createdAt: new Date().toISOString(), _count: { tickets: 0, applications: 0, serverMembers: 1 } },
+  ] },
+  "GET /api/admin/servers": { total: 140, page: 1, limit: 50, servers: [
+    { id: SID, name: "T19C", icon: null, plan: "agency10", planSource: "stripe", isPremium: true, agencyId: "ag1", agency: { plan: "agency10" }, createdAt: new Date().toISOString(), _count: { tickets: 3, panels: 1, forms: 1, members: 5 } },
+    { id: "444444444444444444", name: "Free community with a long name", icon: null, plan: "free", planSource: null, isPremium: false, agencyId: null, createdAt: new Date().toISOString(), _count: { tickets: 0, panels: 0, forms: 0, members: 1 } },
+  ] },
+  "GET /api/admin/payments": { payments: [], total: 0, collectedThisMonth: 0, page: 1, limit: 100 },
+  "GET /api/admin/audit-logs": { total: 250, page: 1, limit: 100, logs: [
+    { id: "a1", createdAt: new Date().toISOString(), action: "GAME_MEMBER_ADJUSTED", actorId: "u1", actor: { id: "u1", username: "stefan", avatar: null }, serverId: SID, targetId: "222222222222222222", metadata: { xpDelta: 100, sparksDelta: -20, reason: "refund" } },
+  ] },
+  "GET /api/admin/fleet/bots": { botReachable: true, botError: null, bots: [
+    { id: SID, name: "T19C", plan: "whitelabel", planSource: "discord", customBotName: "T19 Bot", customBotAvatar: null, customBotPausedAt: null, agencyId: null, accessUntil: null, live: { ready: true, tag: "T19 Bot#0001", applicationId: "1", ping: 42, readySince: new Date().toISOString() } },
+    { id: "444444444444444444", name: "Paused brand", plan: "agency10", planSource: "stripe", customBotName: null, customBotAvatar: null, customBotPausedAt: new Date().toISOString(), agencyId: "ag1", accessUntil: null, live: null },
+  ] },
+  "GET /api/admin/game/servers/": { server: { id: SID, name: "T19C" }, total: 60, page: 1, limit: 25, members: [
+    { userId: "222222222222222222", username: "maria", xp: 12450, level: 14, seasonXp: 3000, sparks: 870, streak: 6, messages: 400, voiceMinutes: 120, activeCompanionId: null, updatedAt: new Date().toISOString(), companions: 3, levelFromXp: 14 },
+    { userId: "333333333333333333", username: null, xp: 90, level: 0, seasonXp: 90, sparks: 5, streak: 0, messages: 6, voiceMinutes: 0, activeCompanionId: null, updatedAt: new Date().toISOString(), companions: 0, levelFromXp: 0 },
+  ] },
+  "GET /api/admin/support/tickets": { total: 80, page: 1, limit: 25, tickets: [
+    { id: "ckt1", serverId: SID, number: 142, status: "OPEN", priority: "NORMAL", channelId: "1", closedAt: null, closeReason: null, createdAt: new Date().toISOString(), lastActivityAt: new Date().toISOString(), hasTranscript: false, server: { name: "T19C" }, creator: { id: "222222222222222222", username: "maria" }, assignee: null, panel: { id: "p1", name: "Support" }, _count: { messages: 12 } },
+    { id: "ckt2", serverId: SID, number: 141, status: "CLOSED", priority: "NORMAL", channelId: null, closedAt: new Date().toISOString(), closeReason: "Solved", createdAt: new Date().toISOString(), lastActivityAt: new Date().toISOString(), hasTranscript: true, server: { name: "T19C" }, creator: { id: "333333333333333333", username: "ivan" }, assignee: null, panel: null, _count: { messages: 4 } },
+  ] },
+  "GET /api/admin/support/panels": { total: 1, page: 1, limit: 25, panels: [{ id: "p1", serverId: SID, name: "Support", channelId: "1", messageId: "2", createdAt: new Date().toISOString(), server: { name: "T19C" }, _count: { tickets: 12 } }] },
+  "GET /api/admin/support/forms": { total: 1, page: 1, limit: 25, forms: [{ id: "f1", serverId: SID, name: "Staff Application", createdAt: new Date().toISOString(), server: { name: "T19C" }, _count: { questions: 6, applications: 3 } }] },
   [`GET /api/billing/config`]: { provider: "discord", discord: { enabled: true, configured: true, applicationId: "app", storeUrl: "https://discord.com/application-directory/app/store", plans: { premium: { label: "Premium", monthlyEur: "4.99", skuId: "s1", url: "https://discord.com/application-directory/app/store/s1" }, whitelabel: { label: "White-label", monthlyEur: "9.99", skuId: "s2", url: "https://discord.com/application-directory/app/store/s2" } } }, stripe: { purchasesEnabled: false, legacyManagement: false } },
   [`GET /api/billing/${SID}`]: { provider: "discord", isPremium: true, plan: "agency10", source: "agency", agencyCovered: true, agencyOwnedByMe: true, discord: {}, stripe: { legacy: false, portalAvailable: false } },
 };
 
+// MP_DEBUG=1 печата коя заявка кой fixture получава (точно / по префикс / празно).
+const DEBUG = process.env.MP_DEBUG === "1";
 function fixtureFor(method, path) {
   const key = `${method} ${path}`;
-  if (FIX[key]) return FIX[key];
+  if (FIX[key]) { if (DEBUG) console.log(`    · ${key} → точен`); return FIX[key]; }
   for (const [k, v] of Object.entries(FIX)) {
     const [m, p] = k.split(" ");
-    if (m === method && path.startsWith(p)) return v;
+    if (m === method && path.startsWith(p)) { if (DEBUG) console.log(`    · ${key} → ПРЕФИКС ${k}`); return v; }
   }
+  if (DEBUG) console.log(`    · ${key} → празно (${method === "GET" ? "[]" : "{ok}"})`);
   return method === "GET" ? [] : { ok: true };
 }
 
@@ -155,11 +203,21 @@ const PAGES = [
   { path: "/bg", name: "landing-bg" },
   { path: "/status", name: "status" },
   { path: "/commands", name: "commands-public" },
+  { path: "/features", name: "features-hub" },
+  { path: "/features/discord-ticket-system", name: "features-tickets" },
   { path: `/dashboard/${SID}`, name: "overview" },
   { path: `/dashboard/${SID}/settings`, name: "settings" },
   { path: `/dashboard/${SID}/forms`, name: "forms" },
   { path: `/dashboard/${SID}/panels`, name: "panels" },
   { path: `/dashboard/${SID}/automation`, name: "automation" },
+  { path: `/dashboard/${SID}/game`, name: "game" },
+  // Останалите пет раздела на играта — дотогава проверката виждаше само „Обзор“
+  // (одит 25.09.2026). `tab` = видимото име; кликът е като на потребител.
+  { path: `/dashboard/${SID}/game`, name: "game-levels", tab: "Level roles" },
+  { path: `/dashboard/${SID}/game`, name: "game-shop", tab: "Shop" },
+  { path: `/dashboard/${SID}/game`, name: "game-leaderboard", tab: "Leaderboard" },
+  { path: `/dashboard/${SID}/game`, name: "game-companions", tab: "Companions" },
+  { path: `/dashboard/${SID}/game`, name: "game-quests", tab: "Quests & mini-games" },
   { path: `/dashboard/${SID}/tickets`, name: "tickets" },
   { path: `/dashboard/${SID}/premium`, name: "premium" },
   { path: `/dashboard/${SID}/verification`, name: "verification" },
@@ -175,6 +233,15 @@ const PAGES = [
   { path: "/dashboard/admin?tab=billing", name: "admin-billing" },
   { path: "/dashboard/admin?tab=fleet", name: "admin-fleet" },
   { path: "/dashboard/admin?tab=compliance", name: "admin-compliance" },
+  { path: "/dashboard/admin?tab=season", name: "admin-season" },
+  // v51 — табовете, които досега изобщо не се обхождаха, + новите.
+  { path: "/dashboard/admin?tab=users", name: "admin-users" },
+  { path: "/dashboard/admin?tab=servers", name: "admin-servers" },
+  { path: "/dashboard/admin?tab=payments", name: "admin-payments" },
+  { path: "/dashboard/admin?tab=audit", name: "admin-audit" },
+  { path: "/dashboard/admin?tab=game", name: "admin-game", click: "T19C" },
+  { path: "/dashboard/admin?tab=support", name: "admin-support" },
+  { path: "/dashboard/admin?tab=support", name: "admin-support-forms", tab: "Forms" },
 ];
 
 // ─── Достъпност: axe-core върху РЕАЛНО рендерираните страници ───────────────
@@ -188,6 +255,14 @@ const AXE_SRC = readFileSync(new URL("../node_modules/axe-core/axe.min.js", impo
 
 const failures = [];
 const note = (ok, msg) => { console.log(`  ${ok ? "✓" : "✗"} ${msg}`); if (!ok) failures.push(msg); };
+// Снимките са за човешко око, не критерий на гейта. `page.screenshot` чака
+// document.fonts.ready и понякога виси („waiting for fonts to load“) — неуловената
+// грешка убиваше ЦЕЛИЯ скрипт насред обиколката (одит 25.09.2026). Сега: ограничено
+// чакане на шрифтовете, после снимка; провал = предупреждение, не срив и не ✗.
+async function shot(page, file) {
+  await page.evaluate(() => Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 3000))])).catch(() => {});
+  await page.screenshot({ path: file, timeout: 15_000 }).catch((e) => console.log(`  · снимката ${file.split("/").pop()} пропусната (${e.message.split("\n")[0]})`));
+}
 
 const browser = await launch();
 const srv = await serveDist();
@@ -199,6 +274,12 @@ for (const view of [
   { tag: "desktop", viewport: { width: 1280, height: 800 } },
 ]) {
   const ctx = await browser.newContext({ ...view, tag: undefined });
+  // Външни заявки (аватари от cdn.discordapp.com в тестовите данни, шрифтове,
+  // CDN-и) минаваха през мрежата и `page.goto(waitUntil: "load")` ги чакаше —
+  // при бавна мрежа случайна страница удряше 30-секундния таймаут (одит
+  // 25.09.2026: всяко пускане пропадаше на различна страница). Проверката мери
+  // ОФОРМЛЕНИЕТО и JS грешките на нашия код — чуждите ресурси се прекъсват.
+  await ctx.route((url) => !/^(127\.0\.0\.1|localhost)$/.test(url.hostname), (route) => route.abort());
   await ctx.route("**/api/**", async (route) => {
     const req = route.request();
     const url = new URL(req.url());
@@ -208,13 +289,45 @@ for (const view of [
   const page = await ctx.newPage();
   const consoleErrors = [];
   page.on("pageerror", (e) => consoleErrors.push(String(e).split("\n")[0]));
+  // React ErrorBoundary ХВАЩА грешката при рендер — тя никога не става
+  // `pageerror`, само console.error. Точно така осемте начални страници
+  // показваха „Something went wrong“ (FeatureLinks без import), а проверката
+  // беше зелена (одит 24.09.2026). Слушаме и конзолата за ErrorBoundary/ReferenceError.
+  page.on("console", (m) => {
+    if (m.type() !== "error") return;
+    const txt = m.text();
+    if (/\[ErrorBoundary\]|ReferenceError|TypeError: .* is not a function/.test(txt)) consoleErrors.push(txt.split("\n")[0]);
+  });
 
   console.log(`\n── ${view.tag} ${view.viewport.width}×${view.viewport.height} ──`);
-  for (const { path, name } of PAGES) {
+  // MP_ONLY=overview,game — само тези страници (диагностика; пълният гейт е без него).
+  const ONLY = (process.env.MP_ONLY || "").split(",").filter(Boolean);
+  for (const { path, name, tab, click } of PAGES.filter((x) => !ONLY.length || ONLY.includes(x.name))) {
     // НЕ networkidle: refetchInterval-ите на React Query държат мрежата будна
     // и „idle" никога не идва — таймаут, който изглежда като счупена страница.
-    await page.goto(base + path, { waitUntil: "load" }).catch((e) => note(false, `${name}: не зареди (${e.message.split("\n")[0]})`));
+    // domcontentloaded + ограничено чакане на `load`: проверката мери оформлението и
+    // JS грешките на НАШИЯ код, не кога браузърът е приключил със всичко. Със
+    // `waitUntil: "load"` случайна страница удряше 30 s таймаут в дълго пускане
+    // (одит 25.09.2026) — фалшив провал, който учи хората да игнорират гейта.
+    const nav = await page.goto(base + path, { waitUntil: "domcontentloaded" }).catch((e) => { note(false, `${name}: не зареди (${e.message.split("\n")[0]})`); return null; });
+    if (nav) await page.waitForLoadState("load", { timeout: 10_000 }).catch(() => {});
     await page.waitForTimeout(900); // данните от мока + анимациите на влизане
+    if (tab) {
+      const t = page.getByRole("tab", { name: tab, exact: true });
+      const found = await t.count();
+      note(found > 0, `${name}: разделът „${tab}“ съществува`);
+      if (found) { await t.first().click(); await page.waitForTimeout(900); }
+    }
+    // `click` = бутон по видимо име (напр. избор на сървър в админ „Game“).
+    if (click) {
+      const b = page.getByRole("button", { name: new RegExp(click) });
+      const found = await b.count();
+      note(found > 0, `${name}: бутонът „${click}“ съществува`);
+      if (found) { await b.first().click(); await page.waitForTimeout(900); }
+    }
+    // Резервният екран на ErrorBoundary = страницата НЕ работи, каквото и да казва прелива.
+    const crashed = await page.evaluate(() => /Something went wrong/i.test(document.body?.innerText || ""));
+    note(!crashed, `${name}: страницата рендерира (не екрана на ErrorBoundary)`);
     const over = await page.evaluate(() => {
       const el = document.documentElement;
       return { sw: el.scrollWidth, cw: el.clientWidth };
@@ -285,7 +398,28 @@ for (const view of [
     });
     note(sticking.length === 0,
       `${name}: нула хоризонтални преливи в контейнерите${sticking.length ? " → " + sticking.join(" · ") : ""}`);
-    await page.screenshot({ path: join(SHOTS, `${view.tag}-${name}.png`) });
+
+    // Сляпо петно на горното (визуален одит 25.09.2026): картите са
+    // overflow:visible — текстът не скролва, просто ИЗЛИЗА през рамката
+    // („configured“ в text-4xl на телефон). Затова всяка карта (cs-card/cs-stat)
+    // със съдържание по-широко от нея е дефект, независимо от overflow.
+    const spilling = await page.evaluate(() => {
+      const bad = [];
+      for (const el of document.querySelectorAll(".cs-card, .cs-stat")) {
+        if (el.scrollWidth <= el.clientWidth + 1) continue;
+        // Карта, която сама скролва/реже (overflow-x-auto на таблиците), не
+        // изтича навън — тя е нарочен скрол; само „visible“ пуска текста през ръба.
+        if (getComputedStyle(el).overflowX !== "visible") continue;
+        if (el.closest('[aria-hidden="true"]')) continue;
+        const text = (el.innerText || "").trim().split("\n")[0].slice(0, 40);
+        bad.push(`<${el.tagName.toLowerCase()} „${text}“> ${el.scrollWidth}>${el.clientWidth}`);
+        if (bad.length >= 5) break;
+      }
+      return bad;
+    });
+    note(spilling.length === 0,
+      `${name}: нищо не излиза през рамката на карта${spilling.length ? " → " + spilling.join(" · ") : ""}`);
+    await shot(page, join(SHOTS, `${view.tag}-${name}.png`));
   }
 
   // ─── Порталът на ролите: отвори и премери ────────────────────────────────
@@ -317,7 +451,7 @@ for (const view of [
       const inside = box.x >= -1 && box.y >= -1 && box.x + box.width <= vp.width + 1 && box.y + box.height <= vp.height + 1;
       note(inside, `${view.tag}: списъкът с роли е изцяло във viewport (${Math.round(box.y)}+${Math.round(box.height)} от ${vp.height})`);
       note(box.height >= 150, `${view.tag}: списъкът е използваем на височина (${Math.round(box.height)}px)`);
-      await page.screenshot({ path: join(SHOTS, `${view.tag}-role-picker-open.png`) });
+      await shot(page, join(SHOTS, `${view.tag}-role-picker-open.png`));
     }
   } else note(false, `${view.tag}: бутонът „Add role…" липсва на Settings`);
 
@@ -349,7 +483,7 @@ for (const view of [
       const vp = view.viewport;
       const inside = menu.x >= -1 && menu.y >= -1 && menu.x + menu.width <= vp.width + 1 && menu.y + menu.height <= vp.height + 1;
       note(inside, `${view.tag}: менюто за език е изцяло във viewport (x=${Math.round(menu.x)}, ${Math.round(menu.width)}px широко)`);
-      await page.screenshot({ path: join(SHOTS, `${view.tag}-language-menu-open.png`) });
+      await shot(page, join(SHOTS, `${view.tag}-language-menu-open.png`));
     }
     await page.keyboard.press("Escape");
   } else note(false, `${view.tag}: бутонът за език липсва в лентата`);

@@ -759,6 +759,22 @@ app.post("/internal/whitelabel-reconcile", async (req, res) => {
   }
 });
 
+// v51 — статус на white-label клиентите за админ конзолата (Fleet). Без токени:
+// само дали е свързан, под какво име и с каква латентност.
+app.get("/internal/whitelabel-status", (_req, res) => {
+  const bots = {};
+  for (const [serverId, c] of customClients.entries()) {
+    bots[serverId] = {
+      ready: !!c?.isReady?.(),
+      tag: c?.user?.tag || null,
+      applicationId: c?.user?.id || null,
+      ping: Number.isFinite(c?.ws?.ping) ? c.ws.ping : null,
+      readySince: c?.readyAt ? c.readyAt.toISOString() : null,
+    };
+  }
+  res.json({ bots });
+});
+
 app.post("/internal/application-reviewed", async (req, res) => {
   try {
     await handleApplicationReviewed(client, req.body);
@@ -1160,6 +1176,66 @@ app.post("/internal/ai-reply", async (req, res) => {
 });
 
 // Admin broadcast — send a system message to a specific server channel
+// ─── v50 Server Season ───────────────────────────────────────────────────────
+// Ниво нагоре от събитие в backend-а (анкета/подарък/кандидатура/тикет/верификация):
+// раздай ролите за ниво и обяви. Партидите от съобщения/глас минават през utils/game.js.
+app.post("/internal/game-level-up", async (req, res) => {
+  const { serverId, announceChannelId, levelUpMessage, ...up } = req.body || {};
+  if (!serverId || !up.userId) return res.status(400).json({ error: "serverId и userId са задължителни" });
+  try {
+    const { applyLevelUp } = await import("./utils/game.js");
+    await applyLevelUp(client, serverId, up, announceChannelId, levelUpMessage);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+// Изтекла роля от магазина (scheduler game-shop-expiry). ok:false → backend ще опита пак.
+app.post("/internal/game-role-revoke", async (req, res) => {
+  const { serverId, userId, roleId } = req.body || {};
+  if (!serverId || !userId || !roleId) return res.status(400).json({ error: "serverId, userId и roleId са задължителни" });
+  try {
+    const { revokeShopRole } = await import("./utils/game.js");
+    const ok = await revokeShopRole(client, { serverId, userId, roleId });
+    res.json({ ok });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+// Етап 3: куест (STARTED публикува, PROGRESS редактира, COMPLETED/FAILED затваря + обявява).
+app.post("/internal/game-quest", async (req, res) => {
+  const { event, serverId } = req.body || {};
+  if (!event || !serverId) return res.status(400).json({ error: "event и serverId са задължителни" });
+  try {
+    const { handleQuestEvent } = await import("./utils/minigames.js");
+    res.json(await handleQuestEvent(client, req.body));
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+// Етап 3: trivia (POST публикува кръг от scheduler-а, CLOSE показва отговора при изтичане).
+app.post("/internal/game-trivia", async (req, res) => {
+  const { event, serverId, round } = req.body || {};
+  if (!event || !serverId || !round) return res.status(400).json({ error: "event, serverId и round са задължителни" });
+  try {
+    const { postTrivia, closeTriviaMessage } = await import("./utils/minigames.js");
+    if (event === "POST") return res.json(await postTrivia(client, serverId, round));
+    if (event === "CLOSE") return res.json({ ok: await closeTriviaMessage(client, serverId, round, { winnerId: round.winnerId || null }) });
+    res.status(400).json({ error: "непознато събитие" });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+// Етап 4: краят на сезона — обява с топ 3 в канала за обяви (scheduler game-season).
+app.post("/internal/game-season-end", async (req, res) => {
+  const { serverId, season } = req.body || {};
+  if (!serverId || !season?.name) return res.status(400).json({ error: "serverId и season са задължителни" });
+  try {
+    const { announceSeasonEnd } = await import("./utils/minigames.js");
+    res.json({ ok: await announceSeasonEnd(client, req.body) });
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+// Таблото смени настройките → изхвърли кеша за сървъра.
+app.post("/internal/game-settings-changed", async (req, res) => {
+  const { serverId } = req.body || {};
+  if (!serverId) return res.status(400).json({ error: "serverId е задължителен" });
+  const { invalidateGameSettings } = await import("./utils/game.js");
+  invalidateGameSettings(serverId);
+  res.json({ ok: true });
+});
+
 app.post("/internal/admin-broadcast", async (req, res) => {
   const { serverId, channelId, title, message, senderTag } = req.body;
   if (!channelId || !message) return res.status(400).json({ error: "channelId and message required" });

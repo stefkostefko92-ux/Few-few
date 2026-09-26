@@ -7,21 +7,24 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity, ShieldCheck, ShieldAlert, KeyRound, Ban, RefreshCw, Trash2, Search, Server, CreditCard, Bot, FileText, AlertTriangle,
+  Activity, ShieldCheck, ShieldAlert, KeyRound, Ban, RefreshCw, Trash2, Search, Server, CreditCard, Bot, FileText, AlertTriangle, Sparkles, Plus,
 } from "lucide-react";
 import {
   getAdminSystem, getAdminSecurity, adminUnblock, adminRevokeApiKey, getAdminBilling, adminReconcileBilling,
-  getAdminFleet, adminReconcileFleet, getDsrRequests, getDsrSummary, dsrErase, adminResetUserMfa,
+  getAdminFleet, adminReconcileFleet, getAdminFleetBots, adminFleetAction, adminFleetBranding, adminFleetRemoveToken, getDsrRequests, getDsrSummary, dsrErase, adminResetUserMfa,
+  getAdminGameSeason, createAdminGameSeason, updateAdminGameSeason, deleteAdminGameSeason,
 } from "../api";
 import ConfirmDialog from "../components/ConfirmDialog";
+import Modal from "../components/Modal";
 import { useToast } from "../contexts/ToastContext";
+import { toUtcInput, fromUtcInput } from "../utils/utcDateInput";
 
 const adminErr = (err) => {
   const d = err?.response?.data;
   if (d?.code === "MFA_STEP_UP") return "Confirm your second factor (dialog opened), then repeat the action.";
   return d?.error || "Action failed. Please try again.";
 };
-const fmt = (d) => (d ? new Date(d).toLocaleString() : "—");
+export const fmt = (d) => (d ? new Date(d).toLocaleString() : "—");
 const ago = (d) => {
   if (!d) return "never";
   const ms = Date.now() - new Date(d).getTime();
@@ -29,16 +32,20 @@ const ago = (d) => {
   return h < 1 ? `${Math.floor(ms / 60000)} min ago` : h < 48 ? `${h} h ago` : `${Math.floor(h / 24)} d ago`;
 };
 
-function Tile({ label, value, sub, ok }) {
+export function Tile({ label, value, sub, ok }) {
+  // Думи като „configured“/„connected“/„v49_user_mfa“ в text-4xl излизаха извън
+  // картата на телефон (визуален одит 25.09.2026) — дългите стойности са по-малки
+  // и се пренасят, числата остават големи.
+  const long = String(value ?? "").length > 6;
   return (
-    <div className="cs-stat">
+    <div className="cs-stat min-w-0">
       <div className="cs-stat-label">{label}</div>
-      <div className={`cs-stat-value ${ok === true ? "text-success" : ok === false ? "text-danger" : ""}`}>{value}</div>
+      <div className={`cs-stat-value break-words ${long ? "!text-2xl sm:!text-3xl" : ""} ${ok === true ? "text-success" : ok === false ? "text-danger" : ""}`}>{value}</div>
       {sub && <div className="font-mono text-[10px] text-cs-dim mt-1 break-all">{sub}</div>}
     </div>
   );
 }
-function Section({ title, icon: Icon, children, right }) {
+export function Section({ title, icon: Icon, children, right }) {
   return (
     <div className="cs-card">
       <div className="flex items-center justify-between gap-3 mb-4">
@@ -51,13 +58,25 @@ function Section({ title, icon: Icon, children, right }) {
     </div>
   );
 }
-const Loading = () => <div className="cs-card h-40 animate-pulse" role="status"><span className="sr-only">Loading…</span></div>;
+export const Loading = () => <div className="cs-card h-40 animate-pulse" role="status"><span className="sr-only">Loading…</span></div>;
+// Без него провалена заявка рендерираше `data || {}` като „DOWN“ / „no“ / нули —
+// лъжливо състояние вместо честна грешка (одит 26.09.2026).
+export function LoadError({ error, onRetry }) {
+  const msg = error?.response?.data?.error || error?.message || "Request failed";
+  return (
+    <div className="cs-card border-danger/40" role="alert">
+      <p className="text-sm text-danger flex items-center gap-2"><AlertTriangle className="w-4 h-4" aria-hidden="true" /> Could not load this tab: {msg}</p>
+      {onRetry && <button type="button" className="cs-btn-secondary cs-btn-sm mt-3" onClick={() => onRetry()}><RefreshCw className="w-3.5 h-3.5" aria-hidden="true" /> Retry</button>}
+    </div>
+  );
+}
 const Bool = ({ v }) => <span className={v ? "text-success" : "text-danger"}>{v ? "yes" : "no"}</span>;
 
 // ═══ SYSTEM ═══════════════════════════════════════════════════════════════════
 export function SystemTab() {
-  const { data, isLoading, refetch, isFetching } = useQuery({ queryKey: ["admin-system"], queryFn: getAdminSystem, refetchInterval: 30000 });
+  const { data, isLoading, isError, error: loadError, refetch, isFetching } = useQuery({ queryKey: ["admin-system"], queryFn: getAdminSystem, refetchInterval: 30000 });
   if (isLoading) return <Loading />;
+  if (isError) return <LoadError error={loadError} onRetry={refetch} />;
   const d = data || {};
   const jobs = Object.entries(d.jobs || {}).sort(([a], [b]) => a.localeCompare(b));
   return (
@@ -112,7 +131,7 @@ export function SystemTab() {
 export function SecurityTab() {
   const qc = useQueryClient();
   const toast = useToast();
-  const { data, isLoading } = useQuery({ queryKey: ["admin-security"], queryFn: getAdminSecurity, refetchInterval: 30000 });
+  const { data, isLoading, isError, error: loadError, refetch } = useQuery({ queryKey: ["admin-security"], queryFn: getAdminSecurity, refetchInterval: 30000 });
   const [confirm, setConfirm] = useState(null);
   const unblockMut = useMutation({ mutationFn: ({ scope, key }) => adminUnblock(scope, key), onSuccess: () => { toast.success("Unblocked."); qc.invalidateQueries({ queryKey: ["admin-security"] }); }, onError: (e) => toast.error(adminErr(e)) });
   const revokeMut = useMutation({ mutationFn: adminRevokeApiKey, onSuccess: () => { toast.success("API key revoked."); qc.invalidateQueries({ queryKey: ["admin-security"] }); }, onError: (e) => toast.error(adminErr(e)) });
@@ -120,6 +139,7 @@ export function SecurityTab() {
   const [resetReason, setResetReason] = useState("");
   const resetMut = useMutation({ mutationFn: ({ id, reason }) => adminResetUserMfa(id, reason), onSuccess: (r) => { toast.success(`Second factor reset · ${r.sessionsRevoked} session(s) revoked.`); setResetTarget(null); setResetReason(""); qc.invalidateQueries({ queryKey: ["admin-security"] }); }, onError: (e) => toast.error(adminErr(e)) });
   if (isLoading) return <Loading />;
+  if (isError) return <LoadError error={loadError} onRetry={refetch} />;
   const d = data || {};
   const noMfa = (d.staff || []).filter((s) => !s.mfaEnabled);
   return (
@@ -190,9 +210,10 @@ export function SecurityTab() {
 export function BillingTab() {
   const qc = useQueryClient();
   const toast = useToast();
-  const { data, isLoading } = useQuery({ queryKey: ["admin-billing"], queryFn: getAdminBilling });
+  const { data, isLoading, isError, error: loadError, refetch } = useQuery({ queryKey: ["admin-billing"], queryFn: getAdminBilling });
   const reconcile = useMutation({ mutationFn: adminReconcileBilling, onSuccess: (r) => { toast.success(`Reconciled: ${r.fetched ?? 0} active · granted ${r.granted ?? 0} · revoked ${r.revoked ?? 0}`); qc.invalidateQueries({ queryKey: ["admin-billing"] }); }, onError: (e) => toast.error(adminErr(e)) });
   if (isLoading) return <Loading />;
+  if (isError) return <LoadError error={loadError} onRetry={refetch} />;
   const d = data || {};
   const cfg = d.config || {};
   return (
@@ -238,9 +259,10 @@ export function BillingTab() {
 export function FleetTab() {
   const qc = useQueryClient();
   const toast = useToast();
-  const { data, isLoading } = useQuery({ queryKey: ["admin-fleet"], queryFn: getAdminFleet, refetchInterval: 30000 });
+  const { data, isLoading, isError, error: loadError, refetch } = useQuery({ queryKey: ["admin-fleet"], queryFn: getAdminFleet, refetchInterval: 30000 });
   const reconcile = useMutation({ mutationFn: adminReconcileFleet, onSuccess: (r) => { toast.success(`Fleet reconciled: ${JSON.stringify(r)}`); qc.invalidateQueries({ queryKey: ["admin-fleet"] }); }, onError: (e) => toast.error(adminErr(e)) });
   if (isLoading) return <Loading />;
+  if (isError) return <LoadError error={loadError} onRetry={refetch} />;
   const d = data || {};
   const bb = d.bot?.brandBots || {};
   return (
@@ -253,13 +275,105 @@ export function FleetTab() {
       </div>
       <Section title="White-label fleet" icon={Bot}
         right={<button onClick={() => reconcile.mutate()} disabled={reconcile.isPending} className="cs-btn-secondary text-xs flex items-center gap-1"><RefreshCw className={`w-3 h-3 ${reconcile.isPending ? "animate-spin" : ""}`} /> Reconcile brand bots now</button>}>
-        <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Server</th><th>Bot name</th><th>Plan</th><th>Source</th><th>Agency</th><th>Grace until</th></tr></thead><tbody>
-          {!d.withToken?.length && <tr><td colSpan={6} className="text-cs-dim">No server has uploaded a custom bot token.</td></tr>}
-          {(d.withToken || []).map((s) => <tr key={s.id}><td>{s.name} <span className="font-mono text-[10px] text-cs-dim">{s.id}</span></td><td>{s.customBotName || "—"}</td><td className="font-mono text-xs">{s.plan}</td><td>{s.planSource || "—"}</td><td className="font-mono text-[10px]">{s.agencyId || "—"}</td><td className="text-xs">{fmt(s.accessUntil)}</td></tr>)}
-        </tbody></table></div>
-        <p className="font-mono text-[10px] text-cs-dim mt-2">Reconcile converges running brand bots to the entitled set (the bot fails closed when the backend is unreachable — it never shuts live clients down on a network error).</p>
+        <FleetBots />
+        <p className="font-mono text-[10px] text-cs-dim mt-2">Reconcile converges running brand bots to the entitled set (the bot fails closed when the backend is unreachable — it never shuts live clients down on a network error). Pause keeps the token but stops the bot until you resume it — reconcile will not restart a paused bot.</p>
       </Section>
     </div>
+  );
+}
+
+// v51 — white-label ботовете: жив статус от бота + пауза/рестарт/брандиране/токен.
+function FleetBots() {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [branding, setBranding] = useState(null);   // { id, name, customBotName, customBotAvatar }
+  const [removing, setRemoving] = useState(null);   // server
+  const [reason, setReason] = useState("");
+  const { data, isLoading, isError, error, refetch } = useQuery({ queryKey: ["admin-fleet-bots"], queryFn: getAdminFleetBots, refetchInterval: 30000 });
+  const refresh = () => { qc.invalidateQueries({ queryKey: ["admin-fleet-bots"] }); qc.invalidateQueries({ queryKey: ["admin-fleet"] }); };
+  const act = useMutation({
+    mutationFn: ({ id, action }) => adminFleetAction(id, action),
+    onSuccess: (r) => { r.botError ? toast.error(`Saved, but the bot did not confirm: ${r.botError}`) : toast.success({ pause: "Bot paused.", resume: "Bot resumed.", restart: "Bot restarted." }[r.action] || "Done."); refresh(); },
+    onError: (e) => toast.error(adminErr(e)),
+  });
+  const brand = useMutation({
+    mutationFn: ({ id, body }) => adminFleetBranding(id, body),
+    onSuccess: (r) => { r.botError ? toast.error(`Saved, but the bot did not apply it: ${r.botError}`) : toast.success("Branding saved."); setBranding(null); refresh(); },
+    onError: (e) => toast.error(adminErr(e)),
+  });
+  const remove = useMutation({
+    mutationFn: ({ id, why }) => adminFleetRemoveToken(id, why),
+    onSuccess: () => { toast.success("Token removed — the brand bot is shutting down."); setRemoving(null); setReason(""); refresh(); },
+    onError: (e) => toast.error(adminErr(e)),
+  });
+  if (isLoading) return <div className="h-24 animate-pulse bg-cs-panel/40" role="status"><span className="sr-only">Loading…</span></div>;
+  if (isError) return <LoadError error={error} onRetry={refetch} />;
+  const bots = data?.bots || [];
+  return (
+    <>
+      {!data?.botReachable && <p className="text-xs text-warning mb-3" role="alert">The bot process did not answer ({data?.botError || "unreachable"}) — live status is unknown; actions are saved and apply when it is back.</p>}
+      <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Server</th><th>Bot</th><th>Status</th><th>Plan</th><th>Grace until</th><th className="text-right">Actions</th></tr></thead><tbody>
+        {!bots.length && <tr><td colSpan={6} className="text-cs-dim">No server has uploaded a custom bot token.</td></tr>}
+        {bots.map((b) => {
+          const state = b.customBotPausedAt ? "paused" : b.live?.ready ? "online" : b.live ? "connecting" : "offline";
+          const cls = { paused: "cs-badge-muted", online: "cs-badge-success", connecting: "cs-badge", offline: "cs-badge-danger" }[state];
+          const busy = act.isPending && act.variables?.id === b.id;
+          return (
+            <tr key={b.id}>
+              <td className="min-w-[10rem]">{b.name} <div className="font-mono text-[10px] text-cs-dim">{b.id}</div></td>
+              <td className="min-w-[9rem]">{b.customBotName || b.live?.tag || "—"}{b.live?.ping != null && <div className="font-mono text-[10px] text-cs-dim">{b.live.ping} ms</div>}</td>
+              <td><span className={cls}>{state}</span>{b.customBotPausedAt && <div className="font-mono text-[10px] text-cs-dim">since {fmt(b.customBotPausedAt)}</div>}</td>
+              <td className="font-mono text-xs">{b.plan}{b.agencyId ? " · agency" : ""}</td>
+              <td className="text-xs">{fmt(b.accessUntil)}</td>
+              <td className="text-right whitespace-nowrap">
+                {b.customBotPausedAt
+                  ? <button type="button" className="cs-btn-secondary cs-btn-sm" disabled={busy} onClick={() => act.mutate({ id: b.id, action: "resume" })}>Resume</button>
+                  : <>
+                      <button type="button" className="cs-btn-ghost cs-btn-sm" disabled={busy} onClick={() => act.mutate({ id: b.id, action: "restart" })}>Restart</button>
+                      <button type="button" className="cs-btn-ghost cs-btn-sm" disabled={busy} onClick={() => act.mutate({ id: b.id, action: "pause" })}>Pause</button>
+                    </>}
+                <button type="button" className="cs-btn-ghost cs-btn-sm" onClick={() => setBranding({ id: b.id, server: b.name, name: b.customBotName || "", avatarUrl: b.customBotAvatar || "" })}>Branding</button>
+                <button type="button" className="cs-btn-ghost cs-btn-sm text-danger" aria-label={`Remove bot token for ${b.name}`} onClick={() => setRemoving(b)}><Trash2 className="w-3.5 h-3.5" aria-hidden="true" /></button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody></table></div>
+
+      {branding && (
+        <Modal open onClose={() => { setBranding(null); brand.reset(); }} title={`Branding — ${branding.server}`} maxWidth="max-w-lg">
+          <form onSubmit={(e) => { e.preventDefault(); brand.mutate({ id: branding.id, body: { name: branding.name.trim() || null, avatarUrl: branding.avatarUrl.trim() || null } }); }} className="space-y-4">
+            <div>
+              <label className="cs-label" htmlFor="wl-name">Bot name</label>
+              <input id="wl-name" className="cs-input" maxLength={32} value={branding.name} onChange={(e) => setBranding({ ...branding, name: e.target.value })} placeholder="2–32 characters (empty = keep Discord's)" />
+            </div>
+            <div>
+              <label className="cs-label" htmlFor="wl-avatar">Avatar URL (https)</label>
+              <input id="wl-avatar" className="cs-input font-mono text-xs" type="url" value={branding.avatarUrl} onChange={(e) => setBranding({ ...branding, avatarUrl: e.target.value })} placeholder="https://…" />
+              <p className="text-xs text-cs-dim mt-1">Discord allows about two avatar changes per hour; the bot restarts to apply it.</p>
+            </div>
+            {brand.isError && <p className="text-xs text-danger" role="alert">{adminErr(brand.error)}</p>}
+            <div className="flex justify-end gap-3 pt-2 border-t border-cs-border">
+              <button type="button" className="cs-btn-ghost" onClick={() => { setBranding(null); brand.reset(); }}>Cancel</button>
+              <button type="submit" className="cs-btn-primary" disabled={brand.isPending}>{brand.isPending ? "Saving…" : "Save branding"}</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {removing && (
+        <Modal open onClose={() => { setRemoving(null); setReason(""); remove.reset(); }} title={`Remove bot token — ${removing.name}`} maxWidth="max-w-md">
+          <p className="text-sm text-cs-muted mb-4">The encrypted token is deleted and the brand bot shuts down. The customer has to paste a new token to bring it back. Main Owner only.</p>
+          <label className="cs-label" htmlFor="wl-reason">Reason (kept in the audit log)</label>
+          <input id="wl-reason" className="cs-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. token leaked, abuse report #…" />
+          {remove.isError && <p className="text-xs text-danger mt-2" role="alert">{adminErr(remove.error)}</p>}
+          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-cs-border">
+            <button type="button" className="cs-btn-ghost" onClick={() => { setRemoving(null); setReason(""); remove.reset(); }}>Cancel</button>
+            <button type="button" className="cs-btn-danger" disabled={remove.isPending || reason.trim().length < 3} onClick={() => remove.mutate({ id: removing.id, why: reason.trim() })}>{remove.isPending ? "Removing…" : "Remove token"}</button>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 }
 
@@ -326,6 +440,125 @@ export function ComplianceTab() {
       </Section>
       <ConfirmDialog open={confirm} title={`Erase data for ${activeId}?`} message={`Scope: ${scope}. This cannot be undone. A fresh second-factor confirmation (≤10 min) is required.`} confirmLabel="Erase" destructive loading={erase.isPending}
         onConfirm={() => { setConfirm(false); erase.mutate(); }} onCancel={() => setConfirm(false)} />
+    </div>
+  );
+}
+
+// ═══ SERVER SEASON (v50) ══════════════════════════════════════════════════════
+// Сезоните са глобални: кодът, името, датите и кои спътници са сезонни се
+// управляват оттук (базата), не от кода. Смяната засяга ВСИЧКИ сървъри.
+// Полетата са обявени като UTC — utils/utcDateInput.js (тестван) ги чете и пише като UTC.
+const toLocalInput = toUtcInput;
+const fromLocalInput = fromUtcInput;
+const RARITY_ORDER = ["legendary", "epic", "rare", "uncommon", "common"];
+
+function SeasonForm({ initial, catalog, onSubmit, pending, submitLabel, withCode }) {
+  const [form, setForm] = useState(() => ({
+    code: initial?.code || "", name: initial?.name || "", startsAt: toLocalInput(initial?.startsAt), endsAt: toLocalInput(initial?.endsAt),
+    companionIds: [...(initial?.companionIds || [])],
+  }));
+  const toggle = (id) => setForm((f) => ({ ...f, companionIds: f.companionIds.includes(id) ? f.companionIds.filter((x) => x !== id) : [...f.companionIds, id] }));
+  const groups = RARITY_ORDER.map((r) => ({ r, items: catalog.filter((c) => c.rarity === r) })).filter((g) => g.items.length);
+  return (
+    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onSubmit({ ...(withCode ? { code: form.code.trim().toUpperCase() } : {}), name: form.name.trim(), startsAt: fromLocalInput(form.startsAt), endsAt: fromLocalInput(form.endsAt), companionIds: form.companionIds }); }}>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        {withCode && <label className="block"><span className="cs-label">Code</span><input className="cs-input font-mono" value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} placeholder="S2" maxLength={16} required /></label>}
+        <label className={`block ${withCode ? "" : "md:col-span-2"}`}><span className="cs-label">Name</span><input className="cs-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} maxLength={80} required /></label>
+        <label className="block"><span className="cs-label">Starts (UTC)</span><input className="cs-input" type="datetime-local" value={form.startsAt} onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))} required /></label>
+        <label className="block"><span className="cs-label">Ends (UTC)</span><input className="cs-input" type="datetime-local" value={form.endsAt} onChange={(e) => setForm((f) => ({ ...f, endsAt: e.target.value }))} required /></label>
+      </div>
+      <div>
+        <div className="cs-label mb-1">Seasonal companions — {form.companionIds.length} selected (they spawn only while the season is active and leave when it ends)</div>
+        {groups.map((g) => (
+          <div key={g.r} className="mb-2">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-cs-dim mb-1">{g.items[0].rarityEmoji} {g.r}</div>
+            <div className="flex flex-wrap gap-2">
+              {g.items.map((c) => {
+                const on = form.companionIds.includes(c.id);
+                return (
+                  <button type="button" key={c.id} onClick={() => toggle(c.id)} aria-pressed={on}
+                    className={`flex items-center gap-2 px-2 py-1 rounded border text-xs transition-colors ${on ? "border-cs-cyan text-cs-cyan" : "border-cs-border text-cs-muted hover:text-cs-text"}`}>
+                    <img src={c.imageUrl.replace(/^https?:\/\/[^/]+/, "")} alt="" width={24} height={24} loading="lazy" className="w-6 h-6 rounded" />
+                    {c.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-end"><button type="submit" className="cs-btn-primary" disabled={pending}>{submitLabel}</button></div>
+    </form>
+  );
+}
+
+export function SeasonTab() {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [creating, setCreating] = useState(false);
+  const { data, isLoading, isError, error: loadError, refetch } = useQuery({ queryKey: ["admin-game-season"], queryFn: getAdminGameSeason });
+  const refresh = () => qc.invalidateQueries({ queryKey: ["admin-game-season"] });
+  const update = useMutation({ mutationFn: ({ code, body }) => updateAdminGameSeason(code, body), onSuccess: () => { toast.success("Season updated — the bot picks it up within a minute."); refresh(); }, onError: (e) => toast.error(adminErr(e)) });
+  const create = useMutation({ mutationFn: createAdminGameSeason, onSuccess: (s) => { toast.success(`Season ${s.code} created.`); setCreating(false); refresh(); }, onError: (e) => toast.error(adminErr(e)) });
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const remove = useMutation({ mutationFn: deleteAdminGameSeason, onSuccess: () => { toast.success(`Season ${confirmDelete} deleted.`); setConfirmDelete(null); refresh(); }, onError: (e) => toast.error(adminErr(e)) });
+  if (isLoading) return <Loading />;
+  if (isError) return <LoadError error={loadError} onRetry={refetch} />;
+  const d = data || { seasons: [], catalog: [] };
+  const cur = d.current;
+  const status = !cur ? "none" : cur.ended ? "ended" : cur.active ? "active" : "upcoming";
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Tile label="Current season" value={cur ? cur.code : "—"} sub={cur?.name} ok={status === "active"} />
+        <Tile label="Status" value={status} ok={status === "active" ? true : status === "ended" ? false : undefined} sub={cur ? `${fmt(cur.startsAt)} → ${fmt(cur.endsAt)}` : "no season row yet"} />
+        <Tile label="Seasonal companions" value={cur?.companionIds?.length ?? 0} sub="spawn only while active" />
+        <Tile label="Seasons on record" value={d.seasons.length} sub="newest by start date becomes current" />
+      </div>
+      {status === "ended" && <p className="text-xs text-warning">The current season has ended: seasonal companions no longer spawn and the daily job resets season XP once per server. Create the next season below.</p>}
+      <Section title={`Edit ${cur ? cur.code : "season"}`} icon={Sparkles}
+        right={<button type="button" onClick={() => setCreating((v) => !v)} className="cs-btn-secondary text-xs flex items-center gap-1"><Plus className="w-3 h-3" /> New season</button>}>
+        {cur ? (
+          <SeasonForm key={cur.code} initial={cur} catalog={d.catalog} pending={update.isPending} submitLabel="Save season" onSubmit={(body) => update.mutate({ code: cur.code, body })} />
+        ) : <p className="text-cs-dim">No season yet — create one.</p>}
+        <p className="font-mono text-[10px] text-cs-dim mt-3">Requires Main Owner + a fresh second factor. Changes apply to every server: spawns read the season from the database (cached 60 s). Levels, sparks and caught companions are never touched by a season change.</p>
+      </Section>
+      {creating && (
+        <Section title="New season" icon={Plus}>
+          <SeasonForm initial={{ companionIds: [] }} catalog={d.catalog} withCode pending={create.isPending} submitLabel="Create season" onSubmit={(body) => create.mutate(body)} />
+          <p className="font-mono text-[10px] text-cs-dim mt-3">Becomes current once its start date is reached (a later start keeps the present season running until then). The previous season is closed by the nightly job when its end date passes.</p>
+        </Section>
+      )}
+      <Section title="All seasons" icon={FileText}>
+        <div className="overflow-x-auto"><table className="cs-table"><thead><tr><th>Code</th><th>Name</th><th>Starts</th><th>Ends</th><th>Seasonal</th><th>State</th><th className="text-right">Actions</th></tr></thead><tbody>
+          {!d.seasons.length && <tr><td colSpan={7} className="text-cs-dim">No seasons.</td></tr>}
+          {d.seasons.map((s) => {
+            const upcoming = !s.ended && !s.active;
+            return (
+              <tr key={s.code}><td className="font-mono">{s.code}</td><td>{s.name}</td><td className="text-xs">{fmt(s.startsAt)}</td><td className="text-xs">{fmt(s.endsAt)}</td><td>{s.companionIds.length}</td><td><span className="cs-badge">{s.ended ? "ended" : s.active ? "active" : "upcoming"}</span></td>
+                <td className="text-right">
+                  {upcoming
+                    ? <button type="button" className="cs-btn-ghost cs-btn-sm text-danger" onClick={() => setConfirmDelete(s.code)} aria-label={`Delete season ${s.code}`}><Trash2 className="w-3.5 h-3.5" aria-hidden="true" /></button>
+                    : <span className="font-mono text-[10px] text-cs-dim" title="A started season has already shaped the servers — end it by changing its end date.">locked</span>}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody></table></div>
+        <p className="font-mono text-[10px] text-cs-dim mt-3">Only a season that has not started can be deleted. To end a running season early, set its end date.</p>
+      </Section>
+      {confirmDelete && (
+        <ConfirmDialog
+          open
+          title={`Delete season ${confirmDelete}?`}
+          message="It has not started yet, so no server has been affected. This cannot be undone."
+          confirmLabel="Delete season"
+          destructive
+          loading={remove.isPending}
+          onConfirm={() => remove.mutate(confirmDelete)}
+          onCancel={() => { setConfirmDelete(null); remove.reset(); }}
+        />
+      )}
     </div>
   );
 }

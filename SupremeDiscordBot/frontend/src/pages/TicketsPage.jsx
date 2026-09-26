@@ -106,7 +106,9 @@ export default function TicketsPage() {
 
   const claimMut = useMutation({
     mutationFn: (ticketId) => claimTicket(serverId, ticketId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tickets", serverId] }); setClaimError(null); },
+    // botWarning: поето в базата, но Discord НЕ е уведомен — досега се
+    // игнорираше и staff мислеше, че каналът знае (одит 26.09.2026).
+    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ["tickets", serverId] }); setClaimError(null); if (data?.botWarning) toast.error(data.botWarning); },
     onError: (err) => setClaimError(err?.response?.data?.error || t("tickets.claimFailed")),
   });
 
@@ -126,8 +128,10 @@ export default function TicketsPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
+      {/* Заглавието не се свива: пет филтъра го притискаха до „0 total / tickets“
+          на два реда (визуален одит 25.09.2026) — филтрите се пренасят под него. */}
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+        <div className="shrink-0">
           <h1 className="text-2xl font-bold text-cs-text">{t("tickets.title")}</h1>
           <p className="text-cs-muted text-sm mt-1">
             {t("tickets.totalCount", { n: data?.total ?? 0 })}

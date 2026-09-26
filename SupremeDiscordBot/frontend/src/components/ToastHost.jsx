@@ -27,7 +27,7 @@ export default function ToastHost() {
           {t.type === "error"
             ? <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" aria-hidden="true" />
             : <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" aria-hidden="true" />}
-          <p className="text-cs-text text-sm flex-1 min-w-0 break-words">{t.message}</p>
+          <p className="text-cs-text text-sm flex-1 min-w-0 break-words">{typeof t.message === "string" ? t.message : String(t.message?.message || "Something went wrong")}</p>
           <button
             type="button"
             onClick={() => ctx.dismiss(t.id)}
