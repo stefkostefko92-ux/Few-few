@@ -7,6 +7,7 @@ import { signToken } from '../middleware/auth';
 import { logFromRequest } from '../lib/logger';
 import { clientIp, clientHwid, isBanEvasion } from '../lib/bans';
 import { sendPasswordResetEmail, emailConfigured } from '../lib/email';
+import { withMonitoring } from '../lib/observability';
 
 const router = Router();
 
@@ -86,7 +87,7 @@ const registerSchema = z.object({
   country: z.string().length(2).regex(/^[A-Z]{2}$/),
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', withMonitoring(async (req, res) => {
   const parse = registerSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: parse.error.flatten() });
@@ -117,10 +118,29 @@ router.post('/register', async (req, res) => {
   }
   const hash = await bcrypt.hash(password, 12);  // audit #14: rounds 12 ≥ OWASP guidance
   const now = Date.now();
-  const info = db
-    .prepare('INSERT INTO users (username, email, password_hash, date_of_birth, country, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
-    .run(username, email, hash, dateOfBirth, country, now, now);
-  const uid = info.lastInsertRowid as number;
+  let uid: number;
+  try {
+    const info = db
+      .prepare('INSERT INTO users (username, email, password_hash, date_of_birth, country, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .run(username, email, hash, dateOfBirth, country, now, now);
+    uid = info.lastInsertRowid as number;
+  } catch (e: any) {
+    // Audit (backend round): two concurrent /register calls for the SAME
+    // username/email both pass the `existing` check above (neither has
+    // inserted yet), then the SECOND insert hits the UNIQUE constraint.
+    // This throw used to be unhandled (the handler was a bare `async`
+    // with no try/catch, and no wrapper) — Express 4 does not catch
+    // async-handler rejections, so the loser's request just hung forever
+    // (confirmed live: curl never got a response). withMonitoring() above
+    // is the generic safety net for any OTHER unexpected throw; this
+    // catch turns the ONE expected race outcome into the same clean 409
+    // a slower duplicate registration gets normally, instead of a 500.
+    if (e?.code === 'SQLITE_CONSTRAINT_UNIQUE' || /UNIQUE constraint failed/.test(String(e?.message))) {
+      res.status(409).json({ error: 'Username or email already in use' });
+      return;
+    }
+    throw e;
+  }
   const token = signToken({ uid, username }, 0);
   // Do NOT put the raw email in meta: logEvent mirrors meta to stdout and
   // fans it out to any configured webhook (incl. non-EU ones like Discord),
@@ -128,14 +148,14 @@ router.post('/register', async (req, res) => {
   // event useful for support without leaking the address.
   logFromRequest(req, { category: 'auth', action: 'register', user_id: uid, message: `New user ${username}`, meta: { email_hash: hashIdentifier(email), country, age: ageFromDob(dateOfBirth) } });
   res.status(201).json({ token, user: { id: uid, username, email, is_admin: 0 } });
-});
+}));
 
 const loginSchema = z.object({
   username: z.string(),
   password: z.string(),
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', withMonitoring(async (req, res) => {
   const parse = loginSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: parse.error.flatten() });
@@ -179,7 +199,7 @@ router.post('/login', async (req, res) => {
   const token = signToken({ uid: user.id, username: user.username }, user.token_version || 0);
   logFromRequest(req, { category: 'auth', action: 'login', user_id: user.id, message: `Login ${user.username}` });
   res.json({ token, user: { id: user.id, username: user.username, email: user.email, is_admin: user.is_admin } });
-});
+}));
 
 /* =========================================================================
    Password reset — token-based flow.
@@ -191,7 +211,7 @@ router.post('/login', async (req, res) => {
    ========================================================================= */
 const forgotSchema = z.object({ identifier: z.string().min(1) });
 
-router.post('/forgot', async (req, res) => {
+router.post('/forgot', withMonitoring(async (req, res) => {
   const parse = forgotSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const { identifier } = parse.data;
@@ -226,7 +246,7 @@ router.post('/forgot', async (req, res) => {
     body.expiresAt = expires;
   }
   res.json(body);
-});
+}));
 
 const resetSchema = z.object({
   // Audit fix: regex-validate hex shape but don't lock to one length,
@@ -235,7 +255,7 @@ const resetSchema = z.object({
   newPassword: z.string().min(8).max(100),  // bumped to 8 (audit #14)
 });
 
-router.post('/reset', async (req, res) => {
+router.post('/reset', withMonitoring(async (req, res) => {
   const parse = resetSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const { token, newPassword } = parse.data;
@@ -246,13 +266,20 @@ router.post('/reset', async (req, res) => {
     res.status(400).json({ error: 'Invalid or expired token' });
     return;
   }
+  // CAS the claim: two concurrent /reset calls with the same token both
+  // passed the `used_at` read above before either wrote it. Gate the
+  // actual claim on an atomic UPDATE so only one wins; the loser sees
+  // changes===0 and gets a clean 400 instead of silently re-hashing the
+  // password a second time (harmless here since both use the SAME
+  // newPassword, but the pattern must match every other claim route).
+  const claim = db.prepare('UPDATE password_resets SET used_at = ? WHERE token = ? AND used_at = 0').run(Date.now(), token);
+  if (claim.changes !== 1) { res.status(400).json({ error: 'Invalid or expired token' }); return; }
   const hash = await bcrypt.hash(newPassword, 12);
   // Bump token_version to immediately invalidate every existing JWT
   // for this user (audit #6).
   db.prepare('UPDATE users SET password_hash=?, token_version=token_version+1 WHERE id=?').run(hash, row.user_id);
-  db.prepare('UPDATE password_resets SET used_at=? WHERE token=?').run(Date.now(), token);
   logFromRequest(req, { category: 'auth', action: 'password_reset', user_id: row.user_id, message: 'password updated via reset token' });
   res.json({ ok: true });
-});
+}));
 
 export default router;

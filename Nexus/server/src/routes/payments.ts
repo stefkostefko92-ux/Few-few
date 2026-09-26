@@ -6,6 +6,7 @@ import { PRODUCTS, findProduct } from '../seed/products';
 import type { Character } from '../types/domain';
 import { logFromRequest, logEvent } from '../lib/logger';
 import { banUser } from '../lib/bans';
+import { withMonitoring } from '../lib/observability';
 
 const router = Router();
 
@@ -99,7 +100,7 @@ const checkoutSchema = z.object({
   }),
 });
 
-router.post('/checkout', async (req, res) => {
+router.post('/checkout', withMonitoring(async (req, res) => {
   // Чист 503, ако сме в production без конфигуриран Stripe — иначе долу
   // stripe клонът щеше да гръмне в TypeError (null.checkout) → грозен 500.
   if (refuseInProduction(res)) return;
@@ -222,7 +223,7 @@ router.post('/checkout', async (req, res) => {
     db.prepare(`UPDATE purchases SET status = 'failed' WHERE id = ?`).run(purchaseId);
     res.status(500).json({ error: e.message || 'Could not create checkout session' });
   }
-});
+}));
 
 /* ---- Credit a pending purchase ---- */
 function applyPurchase(purchaseId: number): { ok: true; granted: any } | { ok: false; error: string } {
@@ -307,7 +308,7 @@ function applyPurchase(purchaseId: number): { ok: true; granted: any } | { ok: f
 
 /* ---- Stripe redirect handler (success_url comes back here via the client) ---- */
 const verifySchema = z.object({ session_id: z.string().optional(), purchase_id: z.number().optional() });
-router.post('/verify', async (req, res) => {
+router.post('/verify', withMonitoring(async (req, res) => {
   if (refuseInProduction(res)) return;
   const parse = verifySchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
@@ -357,7 +358,7 @@ router.post('/verify', async (req, res) => {
     if ('error' in result) { res.status(500).json({ error: result.error }); return; }
     res.json({ ok: true, status: 'completed', granted: result.granted });
   }
-});
+}));
 
 /* ---- Optional Stripe webhook ----
  *
