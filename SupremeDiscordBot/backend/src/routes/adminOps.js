@@ -25,6 +25,8 @@ import { billingConfig } from "../lib/billing.js";
 import { discordSubscriptionLabel } from "../lib/discordSubscription.js";
 import { summarizeDiscordUser, eraseDiscordUser } from "../lib/dsr.js";
 import { aiTrainingAttested } from "../services/aiReply.js";
+import { COMPANIONS, publicCompanion } from "../lib/game/companions.js";
+import { getCurrentSeason, listSeasons, createSeason, updateSeason, publicSeason } from "../lib/game/seasons.js";
 
 const router = Router();
 router.use(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa);
@@ -271,6 +273,54 @@ router.post("/fleet/reconcile", requireMainOwner, stepUp, async (req, res, next)
     await writeAudit({ actorId: req.user.id, action: "WHITELABEL_RECONCILE_MANUAL", targetId: "fleet", metadata: r.ok ? r.data : { error: r.error } });
     if (!r.ok) return res.status(502).json({ error: `Bot did not run the reconcile: ${r.error}` });
     res.json({ ok: true, ...r.data });
+  } catch (err) { next(err); }
+});
+
+// ─── Server Season: сезоните (v50) ───────────────────────────────────────────
+// Глобални за платформата — затова са тук, не в таблото на сървъра. Четене за
+// staff; създаване/промяна = MAIN_OWNER + step-up (сменя кои спътници се
+// появяват във ВСИЧКИ сървъри). Логиката/валидацията е в lib/game/seasons.js.
+const seasonSchema = z.object({
+  code: z.string().min(1).max(16).optional(),
+  name: z.string().min(1).max(80).optional(),
+  startsAt: z.string().datetime({ offset: true }).optional(),
+  endsAt: z.string().datetime({ offset: true }).optional(),
+  companionIds: z.array(z.string().min(1).max(60)).max(100).optional(),
+});
+
+router.get("/game/season", async (_req, res, next) => {
+  try {
+    const now = new Date();
+    const [current, all] = await Promise.all([getCurrentSeason({ now, fresh: true }), listSeasons()]);
+    res.json({
+      current: publicSeason(current, now),
+      seasons: all.map((s) => publicSeason(s, now)),
+      catalog: COMPANIONS.map((c) => { const p = publicCompanion(c, 1, current); return { id: p.id, name: p.name, rarity: p.rarity, rarityEmoji: p.rarityEmoji, family: p.family, imageUrl: p.imageUrl, seasonal: !!p.seasonId }; }),
+    });
+  } catch (err) { next(err); }
+});
+
+router.post("/game/season", requireMainOwner, stepUp, async (req, res, next) => {
+  const parsed = seasonSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  const { code, name, startsAt, endsAt, companionIds = [] } = parsed.data;
+  if (!code || !name || !startsAt || !endsAt) return res.status(400).json({ error: "code, name, startsAt и endsAt са задължителни" });
+  try {
+    const out = await createSeason({ code, name, startsAt, endsAt, companionIds });
+    if (!out.ok) return res.status(["DUPLICATE", "OVERLAP", "ENDED"].includes(out.code) ? 409 : 400).json({ error: out.error, code: out.code });
+    await writeAudit({ actorId: req.user.id, action: "GAME_SEASON_CREATED", targetId: out.season.code, metadata: { name: out.season.name, startsAt: out.season.startsAt, endsAt: out.season.endsAt, companions: out.season.companionIds.length } });
+    res.status(201).json(publicSeason(out.season));
+  } catch (err) { next(err); }
+});
+
+router.put("/game/season/:code", requireMainOwner, stepUp, async (req, res, next) => {
+  const parsed = seasonSchema.omit({ code: true }).safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  try {
+    const out = await updateSeason(req.params.code, parsed.data);
+    if (!out.ok) return res.status(out.code === "NOT_FOUND" ? 404 : ["OVERLAP", "ENDED"].includes(out.code) ? 409 : 400).json({ error: out.error, code: out.code });
+    await writeAudit({ actorId: req.user.id, action: "GAME_SEASON_UPDATED", targetId: out.season.code, metadata: { keys: Object.keys(parsed.data) } });
+    res.json(publicSeason(out.season));
   } catch (err) { next(err); }
 });
 

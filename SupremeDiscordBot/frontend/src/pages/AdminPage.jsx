@@ -16,7 +16,7 @@ import api, {
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../contexts/ToastContext";
-import { SystemTab, SecurityTab, BillingTab, FleetTab, ComplianceTab } from "./AdminOpsTabs";
+import { SystemTab, SecurityTab, BillingTab, FleetTab, ComplianceTab, SeasonTab } from "./AdminOpsTabs";
 import { Activity, ShieldCheck, CreditCard, Bot, FileCheck } from "lucide-react";
 
 // Админ конзолата е EN-only (изключена от i18n) — суров сървърен текст + резерва.
@@ -35,6 +35,7 @@ const TABS = [
   { id: "billing",   label: "Billing",   icon: CreditCard },
   { id: "fleet",     label: "Fleet",     icon: Bot },
   { id: "compliance", label: "Compliance", icon: FileCheck },
+  { id: "season",    label: "Season",    icon: Sparkles },
 ];
 
 const ROLE_COLORS = {
@@ -94,6 +95,7 @@ export default function AdminPage() {
       {tab === "billing"   && <BillingTab />}
       {tab === "fleet"     && <FleetTab />}
       {tab === "compliance" && <ComplianceTab />}
+      {tab === "season"    && <SeasonTab />}
     </div>
   );
 }

@@ -626,4 +626,51 @@ cron.schedule("45 3 * * *", job("dunning", async () => {
   await jobHeartbeat("dunning", { downgraded: r?.downgraded ?? 0, graceExpired: r?.graceExpired ?? 0 });
 }), TZ);
 
+// ─── v50 Server Season: изтекли роли от магазина ────────────────────────────
+// Покупка с durationDays носи expiresAt; на всеки 15 min (не */10 — той е на sla-watch,
+// а тестовете индексират задачите по cron израз) казваме на бота да махне
+// ролята и маркираме revokedAt (идемпотентно — при провал на бота ще опитаме пак).
+cron.schedule("*/15 * * * *", job("game-shop-expiry", async () => {
+  const { expireShopPurchases } = await import("../lib/game/shopExpiry.js");
+  const { revoked } = await expireShopPurchases();
+  if (revoked) await jobHeartbeat("game-shop-expiry", { revoked });
+}), TZ);
+
+// ─── v50 Server Season, етап 3: куестове и trivia ────────────────────────────
+// Куестове: изтеклите → FAILED/COMPLETED с награди; сървър с включени куестове
+// и без жив куест получава седмичния (ротация по седмица). Уникален cron израз
+// (":07") — тестовете индексират задачите по израз.
+cron.schedule("7 * * * *", job("game-quests", async () => {
+  const { expireQuests, ensureWeeklyQuest } = await import("../lib/game/questOps.js");
+  const ended = await expireQuests();
+  const servers = await prisma.gameSettings.findMany({ where: { enabled: true, questEnabled: true }, select: { serverId: true }, take: 500 });
+  let started = 0;
+  for (const s of servers) {
+    const r = await ensureWeeklyQuest(s.serverId).catch(() => null);
+    if (r?.created) started++;
+  }
+  if (started || ended.failed || ended.completed) await jobHeartbeat("game-quests", { started, ...ended });
+}), TZ);
+
+// Trivia: затваря изтеклите кръгове (ботът показва отговора) и публикува
+// насрочените (дневно = Premium, седмично = всички).
+cron.schedule("11 * * * *", job("game-trivia", async () => {
+  const { closeExpiredRounds, scheduleDue } = await import("../lib/game/trivia.js");
+  const closed = await closeExpiredRounds();
+  const posted = await scheduleDue();
+  if (closed || posted) await jobHeartbeat("game-trivia", { closed, posted });
+}), TZ);
+
+// Етап 4: краят на сезона (веднъж на сървър, идемпотентно по lastSeasonId) —
+// топ 3 по сезонно XP към бота за обява, seasonXp → 0; нива/искри/спътници остават.
+// На всеки 5 минути, не веднъж дневно (одит 25.09.2026): нулирането трие и XP-то,
+// натрупано в НОВИЯ сезон между края на стария и пускането на задачата — при
+// 04:23 това бяха до 4 часа игра. Сега прозорецът е ≤ 5 min; когато всички сървъри
+// са затворени, задачата е една заявка за сезоните + празен findMany.
+cron.schedule("*/5 * * * *", job("game-season", async () => {
+  const { closeSeasonIfEnded } = await import("../lib/game/season.js");
+  const r = await closeSeasonIfEnded();
+  if (r.closed) await jobHeartbeat("game-season", r);
+}), TZ);
+
 console.log("[Scheduler] Background jobs started");

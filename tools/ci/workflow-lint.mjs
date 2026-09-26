@@ -29,15 +29,24 @@ const files = readdirSync(DIR).filter((f) => /\.ya?ml$/.test(f)).sort();
 const hard = [];
 const soft = [];
 
-/** Груб, но достатъчен парсър: job-овете са с отстъп 2 под `jobs:`. */
-function jobsOf(src) {
-  const i = src.indexOf("\njobs:");
-  if (i < 0) return [];
-  const body = src.slice(i + "\njobs:".length);
+/**
+ * Груб, но достатъчен парсър: job-овете са с отстъп 2 под `jobs:`. Ред по ред, не с един regex —
+ * старият `\n {2}name:\n((?: {4}.*\n|\n)*)` изяждаше празния ред преди следващия job и го губеше
+ * изцяло (security.yml „dependencies“ и supremediscordbot.yml „bot“ минаваха „чисто“ без timeout;
+ * Конвейера, 2026-09-24).
+ */
+export function jobsOf(src) {
+  const lines = String(src).split("\n");
+  const start = lines.findIndex((l) => /^jobs:\s*(#.*)?$/.test(l));
+  if (start < 0) return [];
   const out = [];
-  const re = /\n {2}([A-Za-z0-9_-]+):\n((?: {4}.*\n|\n)*)/g;
-  let m;
-  while ((m = re.exec(body))) out.push({ name: m[1], body: m[2] });
+  let cur = null;
+  for (const l of lines.slice(start + 1)) {
+    if (/^\S/.test(l)) break; // следващ ключ от първо ниво → край на jobs
+    const m = l.match(/^ {2}([A-Za-z0-9_-]+):\s*(#.*)?$/);
+    if (m) { cur = { name: m[1], body: "" }; out.push(cur); continue; }
+    if (cur) cur.body += l + "\n";
+  }
   return out;
 }
 

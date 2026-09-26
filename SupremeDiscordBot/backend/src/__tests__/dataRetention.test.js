@@ -42,6 +42,17 @@ vi.mock("../lib/prisma.js", () => ({
     cannedResponse: del("cannedResponse"),
     webhook: del("webhook"),
     dailyMetric: del("dailyMetric"),
+    // v50 — Server Season: десетте таблици на играта (стъпка 3б ги чисти).
+    memberProgress: del("memberProgress"),
+    gameXpGrant: del("gameXpGrant"),
+    shopPurchase: del("shopPurchase"),
+    shopItem: del("shopItem"),
+    memberCompanion: del("memberCompanion"),
+    companionSpawn: del("companionSpawn"),
+    companionTrade: del("companionTrade"),
+    serverQuest: del("serverQuest"),
+    triviaRound: del("triviaRound"),
+    gameSettings: del("gameSettings"),
     // v45 „лепкави роли" — стъпка 2б. ЛИПСВАШЕ в мока (одит, 02.09.2026):
     // job-ът хващаше `Cannot read properties of undefined (reading 'deleteMany')`,
     // логваше „❌ Role snapshot retention failed" 24 пъти и продължаваше — тоест

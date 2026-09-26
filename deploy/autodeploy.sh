@@ -30,7 +30,9 @@ KEEP_RELEASES="${KEEP_RELEASES:-5}"
 # medqr (systemd модел)
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
-MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
+MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/healthz}"
+# Маркер за идентичност: „/“ зад HTTPS редиректа даваше 308 и гейтът минаваше за всеки процес на порта.
+MEDQR_HEALTH_EXPECT="${MEDQR_HEALTH_EXPECT:-\"app\":\"medqr\"}"
 
 # ВНИМАНИЕ за всяко присвояване по-долу, което чете ПО ИЗБОР налична стойност:
 # `X="$(cmd 2>/dev/null | head -1)"` при `set -euo pipefail` УБИВА скрипта, ако
@@ -86,7 +88,17 @@ NEXUS_HEALTH_URL="${NEXUS_HEALTH_URL:-http://127.0.0.1:4000/api/health}"
 # zabobovdol (Docker Compose модел) — портът се авто-засича от неговия .env (HTTP_PORT),
 # освен ако ZBD_HEALTH_URL не е зададен изрично.
 ZBD_HEALTH_URL_SET="${ZBD_HEALTH_URL:+1}"
-ZBD_HEALTH_URL="${ZBD_HEALTH_URL:-http://127.0.0.1:80/}"
+# /api/health прави SELECT 1 към базата и връща {"ok":true}. Докато сондата гледаше „/“, 200 от
+# страница, рендирана без база (или от ДРУГО приложение на порта), минаваше за жив деплой.
+ZBD_HEALTH_URL="${ZBD_HEALTH_URL:-http://127.0.0.1:80/api/health}"
+ZBD_HEALTH_EXPECT='"ok":true'
+# СТАБИЛЕН дом на тайните на zabobovdol, ИЗВЪН releases/ (600). Реалният риск: .env се пренасяше
+# само от `current`; ако липсва (current сочи release без zabobovdol), setup-env.sh генерираше НОВ
+# POSTGRES_PASSWORD, който не пасва на съществуващата база → продукцията пада след миграцията.
+ZBD_ENV="${ZBD_ENV:-/opt/few-few/shared/zabobovdol/.env}"
+ZBD_BACKUPS="${ZBD_BACKUPS:-/opt/few-few/shared/zabobovdol/backups}"
+ZBD_SITE="${ZBD_SITE:-https://zabobovdol.carbonstealth.eu}"
+ZBD_INDEXNOW="${ZBD_INDEXNOW:-1}"
 FORCE_SEED="${FORCE_SEED:-0}"
 
 # mastilko (systemd модел, като medqr) — Next.js, билд на сървъра, порт 3200
@@ -262,18 +274,98 @@ carry_env() {
 }
 
 # ── 3a) zabobovdol — Docker Compose ───────────────────────────────────────────
+# Откъде да дойде .env: стабилният дом → current → най-новият release, който го има. Печата пътя.
+zbd_env_source() {
+  local cand
+  for cand in "$ZBD_ENV" "$CURRENT_LINK/zabobovdol/.env"; do
+    if [ -f "$cand" ]; then printf '%s\n' "$cand"; return 0; fi
+  done
+  cand="$(find "$RELEASES_DIR" -maxdepth 4 -path '*/zabobovdol/.env' 2>/dev/null | sort -r | head -1 || true)"
+  [ -n "$cand" ] || return 1
+  printf '%s\n' "$cand"
+}
+
+# Има ли следи от съществуваща инсталация (дъмп или Docker volume)? Тогава нов .env е ОПАСЕН.
+zbd_has_data() {
+  # Всеки шаблон поотделно: `ls a b c` пада, ако дори един няма съвпадение — тогава наличен .dump
+  # не се виждаше и скриптът генерираше нови тайни (хванато от autodeploy-zbd.test.mjs).
+  # Всеки непразен видим файл е следа: backup-db.sh пише *.sql.gz.age / *.sql.gz.gpg, а тесен глоб
+  # (.dump/.sql/.sql.gz) ги пропускаше → нови тайни при миграция (Разбивача, 2026-09-24).
+  # Търси се рекурсивно и през симлинкове (поддиректории, скрити файлове); само *.partial
+  # (незавършен запис от backup-db.sh) не се брои (Разбивача, мисия 4).
+  if [ -d "$ZBD_BACKUPS" ] && [ -n "$(find -L "$ZBD_BACKUPS" -type f -size +0 ! -name '*.partial' -print -quit 2>/dev/null)" ]; then
+    return 0
+  fi
+  # Неуспешна проверка = „има данни“: спрян Docker демон не бива да води до нови тайни.
+  if command -v docker >/dev/null 2>&1; then
+    local vols
+    vols="$(docker volume ls -q 2>/dev/null)" || return 0
+    printf '%s\n' "$vols" | grep -q 'zabobovdol' && return 0
+  fi
+  return 1
+}
+
+# Огледай .env в стабилния дом (600). Идемпотентно; никога не печата съдържание.
+zbd_persist_env() {
+  local from="$1"
+  [ -f "$from" ] || return 0
+  install -d -m 700 "$(dirname "$ZBD_ENV")"
+  cmp -s "$from" "$ZBD_ENV" 2>/dev/null || cp -a "$from" "$ZBD_ENV"
+  chmod 600 "$ZBD_ENV"
+}
+
+# URL-ът на сондата: изричният ZBD_HEALTH_URL побеждава; иначе портът от .env (HTTP_PORT).
+zbd_health_url() {
+  local envf="$1" p
+  if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$envf" ]; then
+    p="$(grep -E '^HTTP_PORT=' "$envf" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
+    [ -n "$p" ] && { printf 'http://127.0.0.1:%s/api/health\n' "$p"; return 0; }
+  fi
+  printf '%s\n' "$ZBD_HEALTH_URL"
+}
+
+# Откат САМО на кода: вдига предишния release на zabobovdol със същото compose име. Базата не се
+# пипа — миграциите са адитивни по правило (prisma-migrate skill), значи старият код работи с нея.
+zbd_rollback() {
+  local prev="$1"
+  [ -n "$prev" ] && [ -d "$prev" ] || { warn "zabobovdol: няма предишен release за откат — оставям както е."; return 1; }
+  warn "zabobovdol: връщам предишния код ($prev)…"
+  ( cd "$prev" && if docker compose version >/dev/null 2>&1; then docker compose up -d --build; else docker-compose up -d --build; fi ) \
+    || { warn "zabobovdol: откатът не вдигна предишния код — нужен е човек."; return 1; }
+  return 0
+}
+
+zbd_ping_indexnow() {
+  [ "$ZBD_INDEXNOW" = "1" ] || return 0
+  ( cd "$SRC" && node tools/seo/indexnow.mjs "$ZBD_SITE" --key-location "$ZBD_SITE/indexnow-key.txt" ) \
+    || warn "zabobovdol: IndexNow подаването пропадна — не е фатално (ключът се сервира от /indexnow-key.txt)."
+}
+
 deploy_zabobovdol() {
   local d="$SRC/zabobovdol"
   [ -d "$d" ] || { warn "Няма zabobovdol/ в архива — пропускам."; return; }
   log "Разгръщам zabobovdol (Docker Compose)…"
-  # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
-  carry_env zabobovdol "$d"
+  # Предишният работещ код (за откат) — current още сочи стария release, мести се само при успех.
+  local prev=""
+  [ -d "$CURRENT_LINK/zabobovdol" ] && prev="$(readlink -f "$CURRENT_LINK/zabobovdol" || true)"
+  [ "$prev" = "$(readlink -f "$d")" ] && prev=""
+  # Тайните живеят на сървъра, не в архива: стабилен дом → current → най-нов release.
+  if [ ! -f "$d/.env" ]; then
+    local src_env; src_env="$(zbd_env_source || true)"
+    if [ -n "$src_env" ]; then
+      cp -a "$src_env" "$d/.env"; chmod 600 "$d/.env"; ok "Пренесох zabobovdol/.env"
+    elif zbd_has_data; then
+      # Fail closed: нов .env = нова парола за СЪЩЕСТВУВАЩА база → продукцията пада.
+      warn "zabobovdol: .env липсва навсякъде, а има данни от предишна инсталация — НЕ генерирам нови тайни. Възстанови $ZBD_ENV (600) и пусни пак."
+      deploy_failed=1; return
+    fi
+  fi
   # Бекъпите живеят на СТАБИЛЕН път извън releases — иначе умират с прочистването
   # на старите releases (KEEP_RELEASES) и историята се губи при всеки деплой.
-  mkdir -p /opt/few-few/shared/zabobovdol/backups
+  mkdir -p "$ZBD_BACKUPS"
   rm -rf "$d/backups"
-  ln -sfnT /opt/few-few/shared/zabobovdol/backups "$d/backups"
-  ok "zabobovdol/backups -> /opt/few-few/shared/zabobovdol/backups"
+  ln -sfnT "$ZBD_BACKUPS" "$d/backups"
+  ok "zabobovdol/backups -> $ZBD_BACKUPS"
   # `|| { … return; }` НЕ е украса: скриптът върви под `set -euo pipefail`, значи
   # ненулев изход от subshell-а убива ЦЕЛИЯ autodeploy насред пробега — всички
   # следващи проекти в $PROJECTS остават неразгърнати, symlink-ът и резюмето се
@@ -284,18 +376,18 @@ deploy_zabobovdol() {
       local args=(); [ "$FORCE_SEED" = "1" ] && args+=(--seed)
       bash scripts/deploy.sh "${args[@]}"        # строи, вдига и сийдва (1-ви път)
     else
-      warn "Няма zabobovdol/.env — пускам setup-env.sh интерактивно."
+      warn "Няма zabobovdol/.env и няма следи от данни — първа инсталация: пускам setup-env.sh."
       bash scripts/setup-env.sh && bash scripts/deploy.sh
     fi
-  ) || { warn "zabobovdol: deploy.sh се провали — продължавам с останалите проекти."; deploy_failed=1; return; }
-  carry_env zabobovdol "$d"   # .env от интерактивния setup → стабилния път
-  # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
-  local url="$ZBD_HEALTH_URL"
-  if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
-    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
-    [ -n "$p" ] && url="http://127.0.0.1:${p}/"
+  ) || { warn "zabobovdol: deploy.sh се провали — продължавам с останалите проекти."; zbd_rollback "$prev" || true; deploy_failed=1; return; }
+  zbd_persist_env "$d/.env"
+  local url; url="$(zbd_health_url "$d/.env")"
+  if health "$url" "zabobovdol" "$ZBD_HEALTH_EXPECT"; then
+    zbd_ping_indexnow
+  else
+    zbd_rollback "$prev" && health "$(zbd_health_url "$prev/.env")" "zabobovdol (предишен код)" "$ZBD_HEALTH_EXPECT" || true
+    deploy_failed=1
   fi
-  health "$url" "zabobovdol" || deploy_failed=1
 }
 
 # ── 3b) medqr — systemd ───────────────────────────────────────────────────────
@@ -324,7 +416,7 @@ deploy_medqr() {
   fi
   systemctl restart "$MEDQR_SERVICE"
   sleep 2
-  if health "$MEDQR_HEALTH_URL" "medqr"; then
+  if health "$MEDQR_HEALTH_URL" "medqr" "$MEDQR_HEALTH_EXPECT"; then
     rm -rf "${MEDQR_DIR}.bak-$TS"
     # Пазим последните няколко pre-миграционни снимки; чистим по-старите.
     ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
@@ -815,7 +907,9 @@ deploy_supreme() {
     # Собственият deploy.sh: проверява .env-ите, билдва, вдига, чака backend health
     # (миграциите се пускат автоматично в backend entrypoint-а) и регистрира
     # slash командите. Ако нещо липсва, той се проваля с ясна грешка.
-    bash deploy.sh
+    # IndexNow се подава от ТОЗИ скрипт, и то само след зелен smoke — не от
+    # deploy.sh преди health (одит на VPS-аджията 25.09.2026).
+    SUPREME_SKIP_INDEXNOW=1 bash deploy.sh
   ) || { warn "SupremeDiscordBot: deploy.sh се провали."; deploy_failed=1; supreme_rollback_hint "$d"; return; }
   # Health на публичния frontend порт (8080). Останалите services са вътрешни
   # и се валидират от Docker healthcheck-овете + от собствения deploy.sh.
@@ -827,6 +921,7 @@ deploy_supreme() {
     # (Одит, 07.08.2026)
     if bash "$d/deploy/smoke.sh"; then
       ok "SupremeDiscordBot: smoke мина"
+      supreme_ping_indexnow "$d"   # търсачките — само към работещ release
     else
       warn "SupremeDiscordBot: smoke ПАДНА — деплоят е горе, но нещо не работи."
       deploy_failed=1
@@ -834,7 +929,6 @@ deploy_supreme() {
     fi
     supreme_install_backup_timer "$d"
     supreme_install_restore_drill_timer "$d"
-    supreme_ping_indexnow "$d"
   else
     deploy_failed=1
     supreme_rollback_hint "$d"
@@ -850,14 +944,20 @@ deploy_supreme() {
 #
 # (VPS-аджията, одит 07.08.2026 — дотогава провалът само вдигаше флаг и мълчеше.)
 supreme_rollback_hint() {
-  local prev
-  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p || true)"
+  # Работещият release е този, към който сочи `current` — при провал на Supreme
+  # `current` НЕ се мести. Преди тук стоеше „вторият най-нов release“ (грешен при
+  # повторен опит), път без вложената папка на архива и без PROJECTS — командата
+  # щеше да върне назад и останалите продукти (одит на VPS-аджията 25.09.2026).
+  local live
+  live="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   warn "Supreme НЯМА автоматичен откат (Compose + вече мигрирана база)."
-  if [ -n "$prev" ]; then
-    warn "Предишен release: ${prev%/}"
-    warn "Откат на КОДА:  RELEASE_DIR='${prev%/}' bash '${prev%/}/deploy/autodeploy.sh'"
+  if [ -n "$live" ] && [ -f "$live/deploy/autodeploy.sh" ]; then
+    warn "Работещ release (current): $live"
+    warn "Откат на КОДА:  sudo RELEASE_DIR='$live' PROJECTS='SupremeDiscordBot' bash '$live/deploy/autodeploy.sh'"
+    warn "Ако старият код е преди v3.5.0 и базата вече е мигрирана до v50: първо"
+    warn "  SKIP_SCHEMA_CHECK=1 в $SUPREME_ENV_DIR/backend/.env (разликата е само 13 излишни таблици)."
   else
-    warn "Няма предишен release — това е първият деплой."
+    warn "Няма работещ release в $CURRENT_LINK — това е първият деплой."
   fi
   warn "ВНИМАНИЕ: миграциите вече са приложени. Ако новата схема е несъвместима"
   warn "със стария код, първо провери 'npx prisma migrate status' в backend контейнера."
@@ -918,17 +1018,18 @@ UNIT
 }
 
 # Откъде да пренесем .env файловете на Supreme — ТРИ източника, по ред на доверие:
-#   1) $CURRENT_LINK/SupremeDiscordBot — там ги редактира човекът (документите
-#      сочат „backend/.env на сървъра" = текущия release), значи е най-пресният;
-#   2) $SUPREME_ENV_DIR — огледалото от последния пробег на този скрипт (оцелява
-#      местене на `current` от друг продукт и чистене на releases);
+#   1) $SUPREME_ENV_DIR — каноничното копие; преди всеки пробег в него се слива
+#      по-пресният файл от current (редакцията може да е и на двете места);
+#   2) $CURRENT_LINK/SupremeDiscordBot — ако shared още не съществува;
 #   3) най-новият release под $RELEASES_DIR, който ги има — резерва за сървър,
 #      деплойван само със стария скрипт (преди shared да съществува).
 # Критерий за „има ги" е backend/.env — той е задължителен и никога не се
 # генерира. Печата ПЪТ, не съдържание; при нищо намерено връща 1.
 supreme_env_source() {
   local cand
-  for cand in "$CURRENT_LINK/SupremeDiscordBot" "$SUPREME_ENV_DIR"; do
+  # shared ПЪРВО: огледалото преди всеки пробег (supreme_persist_env от current)
+  # вече е слело по-пресния от двата файла там — shared е каноничното копие.
+  for cand in "$SUPREME_ENV_DIR" "$CURRENT_LINK/SupremeDiscordBot"; do
     if [ -f "$cand/backend/.env" ]; then printf '%s\n' "$cand"; return 0; fi
   done
   # releases/<TS>/<корен-от-ZIP>/SupremeDiscordBot/backend/.env → 5 нива; сортът по
@@ -947,7 +1048,11 @@ supreme_persist_env() {
   install -d -m 700 "$SUPREME_ENV_DIR" "$SUPREME_ENV_DIR/backend" "$SUPREME_ENV_DIR/bot" "$SUPREME_ENV_DIR/frontend"
   for f in $SUPREME_ENV_FILES; do
     [ -f "$from/$f" ] || continue
-    if ! cmp -s "$from/$f" "$SUPREME_ENV_DIR/$f"; then
+    # По-ПРЕСНИЯТ печели (одит на VPS-аджията 25.09.2026): бележките за 3.5.0
+    # казват „редактирай в shared/“, старите — „в current/“. Безусловното копие
+    # current → shared триеше прясна редакция в shared (напр. SKU-тата) със
+    # старото копие. `cp -a` пази mtime, затова огледалото не се „осъвременява“.
+    if [ ! -f "$SUPREME_ENV_DIR/$f" ] || { ! cmp -s "$from/$f" "$SUPREME_ENV_DIR/$f" && [ "$from/$f" -nt "$SUPREME_ENV_DIR/$f" ]; }; then
       cp -a "$from/$f" "$SUPREME_ENV_DIR/$f"
     fi
     chmod 600 "$SUPREME_ENV_DIR/$f"

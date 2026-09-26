@@ -44,7 +44,6 @@ const MEM_DIR = process.env.CURATE_MEM_DIR ||
 const MAX_PER_SECTION = Infinity; // БЕЗ лимит — знанието на агентите не се архивира никога; само дубли/противоречия се третират
 const SIM_THRESHOLD = 0.6; // Jaccard над това → вероятно дублат/противоречие (флаг за преглед)
 const MERGE_THRESHOLD = 0.82; // Jaccard над това → почти сигурен ПАРАФРАЗ (не противоречие) → авто-сливане при --merge-dups
-const STALE_DAYS = 45; // време-чувствителна поука по-стара от това → флаг за повторна проверка
 const WRITE = process.argv.includes("--write");
 // Семантична дедупликация: маха БЛИЗКИ парафрази (не точни дубли), но само при много висока
 // прилика (≥MERGE_THRESHOLD) — това е редундантност, не противоречие; средният диапазон
@@ -57,8 +56,12 @@ const MERGE_SAFE = process.argv.includes("--merge-safe");
 // прескача O(n²) сравненията по прилика и застаряването — те са човешка преценка, не дефект.
 const CHECK = process.argv.includes("--check");
 
-// Време-чувствителни факти (версии, „latest“, дати, API дати) гният — flawlessness #8 (TTL/provenance).
-const TIME_SENSITIVE = /верси|latest|текущ|\bv?\d+\.\d+|\b20\d\d\b|API \d|stable|release/i;
+// Време-чувствителните факти гният — flawlessness #8 (TTL/provenance). ЕДНА дефиниция за „просрочена
+// поука": класовете на memory-freshness (гейтът). До 2026-09-09 тук стоеше отделна евристика
+// „регекс за версия/година + 45 дни", преписана и в oversee — две истини за едно понятие (85% „застарели"
+// тук срещу 0 просрочени в гейта в същия ден). Изричен „re-verify: ДАТА" в поуката побеждава класа.
+import { classify } from "../agents/memory-freshness.mjs";
+const REVERIFY_RE = /re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
 function lessonDate(bullet) { const m = bullet.match(/\*\*(\d{4}-\d{2}-\d{2})/); return m ? m[1] : null; }
 function daysSince(d) { return (Date.now() - new Date(d + "T00:00:00Z").getTime()) / 86400000; }
 
@@ -210,8 +213,11 @@ for (const f of readdirSync(MEM_DIR).filter((x) => x.endsWith(".md") && x !== "P
       for (const i of kept) {
         if (dropped.has(i)) continue;
         const t = blockText(entries[i]), d = lessonDate(t);
-        if (d && TIME_SENSITIVE.test(t) && daysSince(d) > STALE_DAYS) {
-          report.push(`  ⏳ застаряло (${Math.round(daysSince(d))}д, ${d}): ${t.slice(0, 110)}…`); totalStale++;
+        const rv = t.match(REVERIFY_RE);
+        const cls = classify(t);
+        const overdue = rv ? daysSince(rv[1]) > 0 : (d && cls.days != null && daysSince(d) > cls.days);
+        if (overdue) {
+          report.push(`  ⏳ просрочено (${rv ? "re-verify " + rv[1] : cls.id + ", " + cls.days + "д"}, ${d}): ${t.slice(0, 110)}…`); totalStale++;
         }
       }
 
@@ -246,7 +252,7 @@ if (CHECK) {
 const mergeHint = MERGE_SAFE || MERGE_DUPS ? "" : " (dry — добави --merge-safe за парафразите)";
 console.log(`\ncurate: ${totalDup} точни дубли, ${totalMerged} слети парафрази${mergeHint}, ${totalCap} капнати, ` +
   `${totalParaphrase} парафрази за сливане, ${totalNumConflict} ЧИСЛОВИ противоречия (човек решава), ` +
-  `${totalStale} застарели (>${STALE_DAYS}д).` +
+  `${totalStale} просрочени (по класовете на memory-freshness).` +
   (WRITE ? " [записано]" : " [dry-run — добави --write за прилагане]"));
 }
 

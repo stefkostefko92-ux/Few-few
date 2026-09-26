@@ -48,7 +48,7 @@
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
           "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
         ],
-        "lessons": 273
+        "lessons": 279
       },
       "evolution": [
         {
@@ -1162,7 +1162,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 388
+        "lessons": 390
       },
       "evolution": [
         {
@@ -3716,7 +3716,7 @@
           "wshobson/agents — структура и trigger-rich описания",
           "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
         ],
-        "lessons": 181
+        "lessons": 183
       },
       "evolution": [
         {
@@ -6560,7 +6560,7 @@
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
           "deploy/autodeploy.sh — собственият автоматизиран поток"
         ],
-        "lessons": 198
+        "lessons": 200
       },
       "evolution": [
         {
@@ -11430,9 +11430,20 @@
           "date": "2026-09-09",
           "event": "v14.4 — учене",
           "detail": "Научи: За визуален preview на MV3 popup извън браузъра стъбвай window.chrome (runtime.sendMess…"
+        },
+        {
+          "version": "14.5.0",
+          "date": "2026-09-23",
+          "event": "v14.5 — дефиниция ↔ памет",
+          "detail": "Дефиниция v1.1 „Граница“ поправена: 19 verified поуки в паметта доказват реален Chromium + Playwright (screenshot → сравни → поправи), а дефиницията твърдеше „не виждаш рендера“ — задължителна визуална проверка; невидимото остава FPS/GPU профилът и реалните устройства."
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-23",
+          "type": "definition",
+          "summary": "Дефиницията вече казва истината за инструментите: вижда рендера (Chromium+Playwright), не вижда FPS/GPU."
+        },
         {
           "date": "2026-09-10",
           "type": "quarantine",
@@ -13636,7 +13647,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 183
+        "lessons": 184
       },
       "evolution": [
         {
@@ -14483,7 +14494,7 @@
           "JavaScript testing best practices (goldbergyoni); Martin Fowler test doubles / characterization tests",
           "Това репо: критични потоци (medqr SOS, CSPos фискал, Stripe), per-product toolchain, Prisma testing"
         ],
-        "lessons": 171
+        "lessons": 173
       },
       "evolution": [
         {
@@ -14719,7 +14730,7 @@
           "Docusaurus/MkDocs/VitePress (docs сайтове, версиониране, i18n); markdownlint/Vale",
           "Това репо: per-product CLAUDE.md/README, BG източник, runbook-и (deploy/DEPLOY.md), safety-critical низове"
         ],
-        "lessons": 142
+        "lessons": 143
       },
       "evolution": [
         {
@@ -14757,9 +14768,20 @@
           "date": "2026-07-24",
           "event": "v13.2 — учене",
           "detail": "Научи: JSDoc (jsdoc.app) пълен таг-списък групиран по употреба: документиране на функция — @pa… (+8 още)"
+        },
+        {
+          "version": "13.3.0",
+          "date": "2026-09-21",
+          "event": "v13.3 — учене",
+          "detail": "Научи: Техника 'draft-release-notes-from' (Prompt library, Anthropic) — диф между две версийни…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-21",
+          "type": "learning",
+          "summary": "Научи: „Техника 'draft-release-notes-from' (Prompt library, Anthropic) — диф между две версийни…\""
+        },
         {
           "date": "2026-07-28",
           "type": "quarantine",
@@ -14878,7 +14900,7 @@
           "Kubernetes probes docs (liveness/readiness/startup), graceful shutdown/SIGTERM",
           "Това репо: CLAUDE.md (продуктов стек), границата VPS-аджията (машина/деплой) и Конвейерът (CI)"
         ],
-        "lessons": 168
+        "lessons": 171
       },
       "evolution": [
         {
@@ -14922,9 +14944,20 @@
           "date": "2026-08-07",
           "event": "v15.7 — учене",
           "detail": "Научи: node-cron 4.x ХВАЩА грешката на задача, логва я през собствения си logger и emit-ва 'ex… (+4 още)"
+        },
+        {
+          "version": "16.0.0",
+          "date": "2026-09-21",
+          "event": "v16.0 — учене",
+          "detail": "Научи: Триажът на инцидент корелира ТРИ източника на доказателства, не един: логове + скорошни… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-09-21",
+          "type": "learning",
+          "summary": "Научи: „Триажът на инцидент корелира ТРИ източника на доказателства, не един: логове + скорошни…\" (+2 още) · 1 в карантина"
+        },
         {
           "date": "2026-08-07",
           "type": "learning",
@@ -15192,7 +15225,7 @@
           "Метод сензор ≠ съдия + adversarial verify (.claude/agents/_evals/reliability.md)",
           "Границата: Кодаджията (пасивен ревю), Изпитателят (функционални тестове), Правния (закон)"
         ],
-        "lessons": 54
+        "lessons": 56
       },
       "evolution": [
         {
