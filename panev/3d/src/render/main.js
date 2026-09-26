@@ -127,6 +127,10 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
     wake();
   }
   window.addEventListener('resize', resize);
+  // The view's box also changes without a window resize: on desktop the panels around it fill in
+  // once the interface is up and take height from it. TRAA sets the camera's aspect from the drawing
+  // buffer every frame, so a buffer left at the first size showed the part squashed (about 9%).
+  new ResizeObserver(() => resize()).observe(canvas);
   resize();
   show(params.get('code') || CATALOG[0].id, { hand: params.get('hand') || 'DX', mode: params.get('mode') || 'part' });
 
