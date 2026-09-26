@@ -29,9 +29,20 @@ async function req(method, path, { token, body } = {}) {
 }
 
 let seq = 0;
+/**
+ * Уникално username ≤20 символа. Одит: `\`${tag}_${suffix}\`.slice(0, 20)`
+ * режеше ОПАШКАТА (най-бързо променящата се част на Date.now()) вместо
+ * TAG-а за tag-ове ≥6 символа — два run-а в рамките на една и съща ~10s
+ * секунда колизираха на 409 "already in use" (засечено на живо между два
+ * последователни run-а на admin-probe.mjs, същия клас бъг). Режем TAG-а.
+ */
+function uniqueUsername(tag) {
+  const suffix = `${Date.now().toString(36)}${(++seq).toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
+  const maxTagLen = Math.max(1, 19 - suffix.length);
+  return `${tag.slice(0, maxTagLen)}_${suffix}`.slice(0, 20);
+}
 async function registerUser(tag) {
-  const suffix = `${Date.now()}_${++seq}_${Math.floor(Math.random() * 1e6)}`;
-  const username = `${tag}_${suffix}`.slice(0, 20);
+  const username = uniqueUsername(tag);
   const r = await req('POST', '/auth/register', {
     body: { username, email: `${username}@example.com`, password: 'Testpass123', dateOfBirth: '2000-01-01', country: 'BG' },
   });

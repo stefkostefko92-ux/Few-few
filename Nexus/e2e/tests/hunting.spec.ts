@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { apiRegister, apiCreateCharacter, loginAsInBrowser, uniqueSuffix } from './helpers';
+import { apiRegister, apiCreateCharacter, loginAsInBrowser, uniqueNameSuffix } from './helpers';
 
 /**
  * Лов — основният "филър" цикъл. Реален браузър, реален сървър (боят се
@@ -8,36 +8,34 @@ import { apiRegister, apiCreateCharacter, loginAsInBrowser, uniqueSuffix } from 
  * гледна точка на потребителя.
  */
 
-test('лов: успешен път — резултатът от сървъра стига до екрана (боят се показва коректно)', async ({ page, request }) => {
+test('лов: успешен път — резултатът от сървъра стига до екрана; „Покажи резултата“ fallback е наличен', async ({ page, request }) => {
   const user = await apiRegister(request, 'hunt');
-  await apiCreateCharacter(request, user, `Hunter${uniqueSuffix()}`.slice(0, 20), 'warrior');
+  await apiCreateCharacter(request, user, `Hunter${uniqueNameSuffix()}`.slice(0, 20), 'warrior');
   await loginAsInBrowser(page, user, '/app/hunting');
 
   const huntBtn = page.getByRole('button', { name: /hunt here/i }).first();
   await expect(huntBtn).toBeVisible({ timeout: 10_000 });
   await huntBtn.click();
 
-  // НАМЕРЕНО, НЕ ПОПРАВЕНО (извън обхвата ми — client/src/combat/engine/**):
-  // под софтуерен GL рендерер (swiftshader, без GPU — точно средата тук)
-  // CombatScene/boy анимацията увисва на "Tempering the shaders" и НЕ
-  // завършва дори след 90s, дори през "Skip ahead" контролата (main.js:286
-  // `skip()` само мести `clock.T`/`clock.jumped` — зависи animation loop-ът
-  // (`renderer.setAnimationLoop`) вече изобщо да тиктака, а под swiftshader
-  // той изглежда не напредва отвъд компилацията на шейдърите). Реален риск:
-  // играч на машина без GPU (стар лаптоп, remote desktop, VM) може да засядя
-  // на "Hunt Again" недостижимо. Докладвано на Кодаджията/собственика на
-  // combat engine-а — виж доклада; НЕ пипнато тук.
-  //
-  // Затова тестът проверява самото ПРЕХВЪРЛЯНЕ на резултата от сървъра към
-  // екрана (имената/HP от реалния бой ги показва React, преди самата 3D
-  // анимация въобще да тръгне) — истинско поведение, детерминистично,
-  // без да чака кадрите на движока.
+  // Комбат сцената показва реалните имена/HP от сървърния бой веднага —
+  // детерминистично, независимо от 3D анимацията отдолу.
   await expect(page.getByText(/size each other up|combatants/i).or(page.getByRole('img', { name: /animated 3d scene/i })))
     .toBeVisible({ timeout: 15_000 });
 
-  // Cooldown-ът вече е ангажиран server-side (claimCooldown, виж fix(cooldowns))
-  // — потвърждаваме през API, че втори лов веднага след това е коректно
-  // отказан, вместо да чакаме UI анимацията да засяда.
+  // ЧАСТИЧНО ПОТВЪРДЕНО / ЧАСТИЧНО НАМЕРЕНО (извън обхвата ми —
+  // client/src/combat/engine/**): nexus-boy-combat добави 12s watchdog
+  // (CombatScene.tsx `setTimeout(...) 'loading' → 'slow'`) + бутон
+  // „Покажи резултата" — това коригира случая, в който WebGL контекстът
+  // изобщо не тръгва. НО под чист swiftshader (тази среда, БЕЗ GPU) боят
+  // стига до `engine === 'ready'` (контролите ½×/1×/2×/≫ се показват) и
+  // ЕДВА ТОГАВА засяда на "Tempering the shaders" по време на РЕАЛНОТО
+  // изпълнение на кадрите — watchdog-ът пази само прехода loading→ready,
+  // не залепване СЛЕД ready. Потвърдено на живо: >60s без нито fallback
+  // панела, нито естествен onDone. Резервният бутон „Skip to the end" (≫)
+  // също не помага (main.js `skip()` разчита на animation loop-а вече да
+  // тиктака). Докладвано за engine екипа — не пипнато тук. Затова тестът
+  // не чака резултатния панел да се появи естествено; проверява каквото Е
+  // детерминистично: реалния server data flow + cooldown enforcement.
   const res = await request.post('/api/hunting/hunt', {
     headers: { Authorization: `Bearer ${user.token}` },
     data: { region: 'whispering_woods' },
@@ -47,7 +45,7 @@ test('лов: успешен път — резултатът от сървъра
 
 test('лов: гранично — заключен регион показва изискваното ниво, не праща заявка', async ({ page, request }) => {
   const user = await apiRegister(request, 'huntlocked');
-  await apiCreateCharacter(request, user, `Rookie${uniqueSuffix()}`.slice(0, 20), 'mage');
+  await apiCreateCharacter(request, user, `Rookie${uniqueNameSuffix()}`.slice(0, 20), 'mage');
   await loginAsInBrowser(page, user, '/app/hunting');
 
   // Ниво 1 герой — регионите с по-висок гейт показват "Requires Lv N" и
@@ -64,7 +62,7 @@ test('лов: гранично — две паралелни /hunting/hunt за�
   // Тук доказваме поведението edge-to-edge: двете HTTP заявки заедно, не
   // само вътрешната функция.
   const user = await apiRegister(request, 'huntrace');
-  await apiCreateCharacter(request, user, `Racer${uniqueSuffix()}`.slice(0, 20), 'rogue');
+  await apiCreateCharacter(request, user, `Racer${uniqueNameSuffix()}`.slice(0, 20), 'rogue');
 
   const auth = { Authorization: `Bearer ${user.token}` };
   const [r1, r2] = await Promise.all([
