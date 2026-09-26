@@ -23,6 +23,9 @@ interface State {
   toasts: Toast[];
   /** Ако е зададено, сървърът е спрял достъпа. `until` 0 = постоянен. */
   banned: { reason: string; until: number } | null;
+  /** Причина за неуспешен boot — 'rate_limited' (429, знаем колко да чакаме)
+      срещу общо 'offline' (5xx/мрежа/рестарт) за различен, честен текст. */
+  bootError: { kind: 'rate_limited' | 'offline'; retryAfterMs?: number } | null;
 
   /** false = временна грешка (429/5xx/мрежа) — героят не е потвърден нито отречен. */
   init: () => Promise<boolean>;
@@ -78,9 +81,11 @@ export const useStore = create<State>((set, get) => ({
   toasts: [],
   levelUp: null,
   banned: registerBanHandler(set),
+  bootError: null,
 
   async init() {
     if (!getToken()) return true;
+    set({ bootError: null });
     // Токенът се чисти САМО при 401 (глобалният unauthorizedHandler в api.ts).
     // 404 = акаунт без герой (нов играч / админ) — остава логнат; 429/5xx или
     // мрежова грешка при рестарт на сървъра не бива да изхвърля играча.
@@ -99,6 +104,15 @@ export const useStore = create<State>((set, get) => ({
       set({ character: null });
       return true;
     }
+    // 429 → честно "твърде много заявки" с автоматичен повторен опит по
+    // Retry-After/RateLimit-Reset, вместо генеричното "кралството не отговаря"
+    // (същата грешка за рестарт на сървъра ≠ клиентът е засипал API-то).
+    if (status === 429) {
+      const retryAfterMs = (chr.reason as { retryAfterMs?: number })?.retryAfterMs;
+      set({ bootError: { kind: 'rate_limited', retryAfterMs } });
+      return false;
+    }
+    set({ bootError: { kind: 'offline' } });
     return false;
   },
 

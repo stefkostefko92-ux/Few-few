@@ -1704,6 +1704,8 @@
     "awakening": "Awakening Nexus Dominion…",
     "offlineTitle": "The realm is not answering",
     "offlineBody": "The server is busy or restarting. Your progress is safe.",
+    "rateLimitedTitle": "Too many requests",
+    "rateLimitedBody": "Too many requests were sent. Retrying automatically in {{count}}s.",
     "retry": "Try again"
   },
   "items3d": {

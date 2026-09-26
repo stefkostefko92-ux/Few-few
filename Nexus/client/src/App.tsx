@@ -160,10 +160,12 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
   const init = useStore((s) => s.init);
   const token = useStore((s) => s.token);
   const character = useStore((s) => s.character);
+  const bootError = useStore((s) => s.bootError);
   const [ready, setReady] = useState(!getToken());
   const { t } = useTranslation();
   const [bootFailed, setBootFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [countdown, setCountdown] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
@@ -174,6 +176,18 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
     })();
   }, [init, attempt]);
 
+  // 429 → автоматичен повторен опит по Retry-After/RateLimit-Reset (капнат
+  // 3–30с — сървърът може да прати некоректно голяма/малка стойност), вместо
+  // да оставяме играча да гледа екран и да кликва ръчно "Опитай пак".
+  useEffect(() => {
+    if (!(ready && bootFailed && bootError?.kind === 'rate_limited')) return undefined;
+    const seconds = Math.min(30, Math.max(3, Math.round((bootError.retryAfterMs ?? 5000) / 1000)));
+    setCountdown(seconds);
+    const tick = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
+    const retry = setTimeout(() => { setReady(false); setAttempt((a) => a + 1); }, seconds * 1000);
+    return () => { clearInterval(tick); clearTimeout(retry); };
+  }, [ready, bootFailed, bootError]);
+
   // SSE поток — активен само докато има логнат герой (push за
   // нотификации/чат). Спира при logout/липса на герой.
   useEffect(() => {
@@ -183,12 +197,21 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
 
   // Временна грешка при зареждане на героя: без това играчът би бил пратен
   // на /create (все едно няма герой) — вместо това предлагаме нов опит.
+  // 429 (твърде много заявки) ≠ 5xx/мрежов рестарт — различен, честен текст +
+  // автоматичен countdown-повторен опит (виж useEffect по-горе).
   if (ready && bootFailed && token) {
+    const rateLimited = bootError?.kind === 'rate_limited';
     return (
       <div className="auth-shell">
         <div className="auth-card" style={{ textAlign: 'center' }}>
-          <h1 style={{ color: 'var(--gold-1)' }}>{t('boot.offlineTitle', 'The realm is not answering')}</h1>
-          <p className="muted">{t('boot.offlineBody', 'The server is busy or restarting. Your progress is safe.')}</p>
+          <h1 style={{ color: 'var(--gold-1)' }}>
+            {rateLimited ? t('boot.rateLimitedTitle', 'Too many requests') : t('boot.offlineTitle', 'The realm is not answering')}
+          </h1>
+          <p className="muted">
+            {rateLimited
+              ? t('boot.rateLimitedBody', { count: countdown, defaultValue: 'Too many requests — retrying automatically in {{count}}s.' })
+              : t('boot.offlineBody', 'The server is busy or restarting. Your progress is safe.')}
+          </p>
           <button className="btn btn-primary" onClick={() => { setReady(false); setAttempt((a) => a + 1); }}>{t('boot.retry', 'Try again')}</button>
         </div>
       </div>
