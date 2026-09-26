@@ -1,0 +1,28 @@
+# Общите заглавия към приложението.
+#
+# `install -m 644 deploy/nginx/proxy_params_erp /etc/nginx/` преди първия
+# `nginx -t` — vhost-ът го включва на три места и без него конфигурацията НЕ
+# се зарежда изобщо.
+
+proxy_http_version 1.1;
+
+proxy_set_header Host              $host;
+proxy_set_header X-Real-IP         $remote_addr;
+
+# ЗАДАВА, НЕ ДОБАВЯ. `$proxy_add_x_forwarded_for` долепя подаденото от клиента
+# към истинското IP; приложението чете с `TRUSTED_PROXY_HOPS` отзад-напред и
+# при добавяне клиентът може да напъха каквото си иска пред нашето. Одитният
+# запис и ограничението по честота стоят на това число.
+proxy_set_header X-Forwarded-For   $remote_addr;
+proxy_set_header X-Forwarded-Proto $scheme;
+
+proxy_set_header Upgrade           $http_upgrade;
+proxy_set_header Connection        "upgrade";
+
+proxy_read_timeout    360s;
+proxy_send_timeout    360s;
+proxy_connect_timeout 10s;
+
+# Пратката за conservazione и PDF-ите тръгват като поток — буферирането ги
+# събира в паметта на nginx без полза.
+proxy_buffering off;

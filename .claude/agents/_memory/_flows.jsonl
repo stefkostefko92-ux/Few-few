@@ -159,3 +159,16 @@
 {"t":"handoff","ts":"2026-09-25T08:11:17.294Z","id":"auto","from":"izpitatelya","to":"kodadjiyata","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:17:45.566Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T08:20:37.061Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
+{"t":"start","ts":"2026-09-25T14:49:18.703Z","id":"r3ab5826b","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-09-25T14:49:18.703Z","id":"r3ab5826b","from":"prevodach","to":"kodadjiyata","status":"има бележки","run":"e0ca56c8"}
+{"t":"handoff","ts":"2026-09-25T14:49:46.132Z","id":"r3ab5826b","from":"razbivacha","to":"kasadjiyata","status":"има бележки","run":"c74bc708"}
+{"t":"handoff","ts":"2026-09-25T14:50:20.860Z","id":"r3ab5826b","from":"kachestveniyat","to":"kodadjiyata","status":"има бележки","run":"bd7643dd"}
+{"t":"handoff","ts":"2026-09-25T14:50:30.576Z","id":"r3ab5826b","from":"izpitatelya","to":"kodadjiyata","status":"наред","run":"8afe70a7"}
+{"t":"handoff","ts":"2026-09-25T14:51:55.870Z","id":"r3ab5826b","from":"vps-adjiyata","to":"kodadjiyata","status":"блокер","run":"d4db3b61"}
+{"t":"handoff","ts":"2026-09-25T14:51:59.222Z","id":"r3ab5826b","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"3209952d"}
+{"t":"start","ts":"2026-09-25T17:03:31.467Z","id":"r796a7eae","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-09-25T17:03:31.467Z","id":"r796a7eae","from":"kodadjiyata","to":"човек","status":"има бележки","run":"44a1cc5b"}
+{"t":"start","ts":"2026-09-26T04:37:41.816Z","id":"rf0f0fe26","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-09-26T04:37:41.816Z","id":"rf0f0fe26","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"af71aefe"}
+{"t":"handoff","ts":"2026-09-26T04:40:34.956Z","id":"rf0f0fe26","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"f29c2d5c"}
+{"t":"handoff","ts":"2026-09-26T04:40:39.035Z","id":"rf0f0fe26","from":"kodadjiyata","to":"човек","status":"има бележки","run":"da2966bb"}

@@ -1,0 +1,21 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env.local
+*.db
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+schermate/
+
+# Прикачените файлове от интеграционните тестове (истински файлове по диска).
+.test-allegati/
+
+# Отчетите за покритие се раждат при всяко пускане — не влизат в репото.
+coverage/

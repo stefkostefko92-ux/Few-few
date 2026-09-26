@@ -1,0 +1,276 @@
+// Generic CRUD фабрика: една конфигурация на entity → GET/POST + GET/PUT/DELETE.
+// Всяка операция минава през проверка на ролята (на сървъра!) и пише в audit.
+
+import {
+  campiNascosti,
+  oscuraRiservati,
+  scritturaVietata,
+  type Riservati,
+} from "@/lib/campi-riservati";
+import type { ZodSchema } from "zod";
+import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { conRls } from "@/lib/rls";
+import { ok, corpoValidato, gestito } from "@/lib/api";
+import { verificaRiferimenti } from "@/lib/riferimenti";
+import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
+import { scriviAudit } from "@/lib/audit";
+import {
+  dettagliCreazione,
+  dettagliModifica,
+  dettagliCancellazione,
+} from "@/lib/audit-dettagli";
+import type { Ruolo } from "@/lib/roles";
+import type { Sessione as SessioneAttiva } from "@/lib/auth";
+import { filtroTenant, tenantDiCreazione } from "@/lib/tenant";
+import { paginazione, testoParam, booleanoParam, uuidParam } from "@/lib/query";
+
+interface Delegate {
+  findMany(args?: object): Promise<unknown[]>;
+  count(args?: object): Promise<number>;
+  findUnique(args: object): Promise<unknown | null>;
+  findFirst(args: object): Promise<unknown | null>;
+  create(args: object): Promise<unknown>;
+  update(args: object): Promise<unknown>;
+  delete(args: object): Promise<unknown>;
+}
+
+/** Ключовете на Prisma клиента, които са МОДЕЛИ (имат `findMany`), а не `$transaction`.
+ *
+ *  Без този тип `model` беше просто `string` и печатна грешка в конфигурацията
+ *  („condomino" вместо „condominio") се откриваше чак по време на изпълнение —
+ *  като 500 при първата заявка към маршрута. Сега е грешка при компилация. */
+export type ModelloPrisma = {
+  [K in keyof typeof prisma]: (typeof prisma)[K] extends { findMany: unknown }
+    ? K
+    : never;
+}[keyof typeof prisma];
+
+export interface CrudConfig {
+  /** име на таблицата за audit (напр. "condomini") */
+  entita: string;
+  /** Prisma delegate (prisma.condominio и т.н.) */
+  model: ModelloPrisma;
+  schemaCreate: ZodSchema;
+  schemaUpdate: ZodSchema;
+  ruoloLettura?: Ruolo; // по подразбиране OPERATORE
+  ruoloScrittura?: Ruolo; // по подразбиране OPERATORE
+  ruoloCancellazione?: Ruolo; // по подразбиране RESPONSABILE
+  include?: object;
+  orderBy?: object;
+  /** текстови полета за търсене с ?q= */
+  searchFields?: string[];
+  /** полета, по които списъкът може да се филтрира от СЪРВЪРА (?поле=стойност).
+   *  Без тях клиентът е принуден да дърпа всичко и да филтрира сам — което тихо
+   *  губи данни над лимита на страницата. */
+  filterFields?: string[];
+  /** Моделът НЯМА tenantId (напр. tenants сам, служебни таблици). */
+  senzaTenant?: boolean;
+  /** полета от сесията, които се записват при създаване (напр. автор) */
+  campiSessione?: (s: SessioneAttiva) => Record<string, unknown>;
+  /** hook след запис (напр. преизчисляване на тотали) */
+  afterWrite?: (id: string) => Promise<void>;
+  /**
+   * Проверка ПРЕДИ промяна, върху заварения ред и подадените данни.
+   *
+   * Връща съобщение на италиански, когато промяната не бива да мине (409), или
+   * `null`. Нужна е за инварианти, които схемата не може да изрази, защото
+   * зависят от ТЕКУЩОТО състояние на реда — напр. че административно спряна
+   * уредба не се пуска с падащо меню.
+   */
+  vincoloModifica?: (prima: unknown, data: unknown) => string | null;
+  /**
+   * Полета само за ниво `ruolo`+ (`campi-riservati.ts`): под него не се
+   * виждат (и във вложените обекти), а записът им е 403.
+   */
+  riservati?: Riservati;
+}
+
+/** 403 при опит за запис на запазено поле; връща скритите за отговора. */
+function controllaRiservati(
+  cfg: CrudConfig,
+  ruolo: Ruolo,
+  data: unknown,
+): ReadonlySet<string> {
+  const nascosti = campiNascosti(cfg.riservati, ruolo);
+  const vietati = scritturaVietata(data, nascosti);
+  if (vietati.length)
+    throw new ErroreHttp(
+      403,
+      `Campo riservato al livello ${cfg.riservati?.ruolo}: ${vietati.join(", ")}`,
+    );
+  return nascosti;
+}
+
+/** Делегатът върху ТРАНЗАКЦИОНЕН клиент — за да важи наложеният обхват (RLS). */
+function delegate(
+  model: ModelloPrisma,
+  db: Prisma.TransactionClient | typeof prisma = prisma,
+): Delegate {
+  return (db as unknown as Record<ModelloPrisma, Delegate>)[model];
+}
+
+function idRecord(r: unknown): string {
+  return String((r as { id: string }).id);
+}
+
+/** GET (списък с търсене/страници) + POST (създаване). */
+export function rottaCollezione(cfg: CrudConfig) {
+  const GET = gestito(async (req) => {
+    const s = await richiedeRuolo(cfg.ruoloLettura ?? "OPERATORE");
+    const url = new URL(req.url);
+    const q = testoParam(url);
+    const attivo = booleanoParam(url, "attivo");
+    const { page, size, skip, take } = paginazione(url);
+
+    // Изолация по фирма ПЪРВО — не се презаписва от клиентски параметър.
+    const where: Record<string, unknown> = cfg.senzaTenant
+      ? {}
+      : filtroTenant(s);
+    if (q && cfg.searchFields?.length) {
+      where.OR = cfg.searchFields.map((f) => ({
+        [f]: { contains: q, mode: "insensitive" },
+      }));
+    }
+    if (attivo !== undefined) where.attivo = attivo;
+    for (const campo of cfg.filterFields ?? []) {
+      const v = url.searchParams.get(campo);
+      // Полетата с име на …Id са външни ключове: сгрешен UUID трябва да даде 400,
+      // не 500 от базата.
+      if (v) where[campo] = campo.endsWith("Id") ? uuidParam(url, campo) : v;
+    }
+
+    // Втора линия: дори да отпадне `filtroTenant` горе, обхватът е наложен и от
+    // самата база (политиките `tenant_isolation`, `src/lib/rls.ts`).
+    const [righe, totale] = await conRls(s, (tx) => {
+      const d = delegate(cfg.model, tx);
+      return Promise.all([
+        d.findMany({
+          where,
+          include: cfg.include,
+          orderBy: cfg.orderBy ?? { createdAt: "desc" },
+          skip,
+          take,
+        }),
+        d.count({ where }),
+      ]);
+    });
+    return ok({
+      righe: oscuraRiservati(righe, campiNascosti(cfg.riservati, s.ruolo)),
+      totale,
+      page,
+      size,
+    });
+  });
+
+  const POST = gestito(async (req) => {
+    const s = await richiedeRuolo(cfg.ruoloScrittura ?? "OPERATORE");
+    const data = await corpoValidato(req, cfg.schemaCreate);
+    const nascostiC = controllaRiservati(cfg, s.ruolo, data);
+    // Външните ключове — по фирмата на сесията, ПРЕДИ записа (`riferimenti.ts`).
+    const creato = await conRls(s, async (tx) => {
+      await verificaRiferimenti(s, data, tx);
+      return delegate(cfg.model, tx).create({
+        data: {
+          ...(data as object),
+          ...(cfg.senzaTenant ? {} : tenantDiCreazione(s)),
+          ...(cfg.campiSessione?.(s) ?? {}),
+        },
+        include: cfg.include,
+      });
+    });
+    const id = idRecord(creato);
+    if (cfg.afterWrite) await cfg.afterWrite(id);
+    await scriviAudit({
+      azione: "CREATE",
+      entita: cfg.entita,
+      entitaId: id,
+      dettagli: dettagliCreazione(data),
+      utenteId: s.sub,
+      tenantId: s.tenantId,
+    });
+    return ok(oscuraRiservati(creato, nascostiC), 201);
+  });
+
+  return { GET, POST };
+}
+
+/** GET/PUT/DELETE по /:id. */
+export function rottaElemento(cfg: CrudConfig) {
+  const GET = gestito(async (_req, ctx) => {
+    const s = await richiedeRuolo(cfg.ruoloLettura ?? "OPERATORE");
+    const { id } = await ctx.params;
+    const r = await conRls(s, (tx) =>
+      delegate(cfg.model, tx).findFirst({
+        where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
+        include: cfg.include,
+      }),
+    );
+    if (!r) throw new ErroreHttp(404, "Record non trovato");
+    return ok(oscuraRiservati(r, campiNascosti(cfg.riservati, s.ruolo)));
+  });
+
+  const PUT = gestito(async (req, ctx) => {
+    const s = await richiedeRuolo(cfg.ruoloScrittura ?? "OPERATORE");
+    const { id } = await ctx.params;
+    const data = await corpoValidato(req, cfg.schemaUpdate);
+    const nascostiU = controllaRiservati(cfg, s.ruolo, data);
+    // Четенето и записът в ЕДНА транзакция: така проверката за собственост не
+    // може да се размине с промяната (и обхватът важи за двете).
+    const { prima, dopo } = await conRls(s, async (tx) => {
+      const d = delegate(cfg.model, tx);
+      const prima = await d.findFirst({
+        where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
+      });
+      if (!prima) throw new ErroreHttp(404, "Record non trovato");
+      const vietato = cfg.vincoloModifica?.(prima, data);
+      if (vietato) throw new ErroreHttp(409, vietato);
+      await verificaRiferimenti(s, data, tx);
+      const dopo = await d.update({
+        where: { id },
+        data: data as object,
+        include: cfg.include,
+      });
+      return { prima, dopo };
+    });
+    if (cfg.afterWrite) await cfg.afterWrite(id);
+    await scriviAudit({
+      azione: "UPDATE",
+      entita: cfg.entita,
+      entitaId: id,
+      dettagli: dettagliModifica(prima, {
+        ...(prima as object),
+        ...(data as object),
+      }),
+      utenteId: s.sub,
+      tenantId: s.tenantId,
+    });
+    return ok(oscuraRiservati(dopo, nascostiU));
+  });
+
+  const DELETE = gestito(async (_req, ctx) => {
+    const s = await richiedeRuolo(cfg.ruoloCancellazione ?? "RESPONSABILE");
+    const { id } = await ctx.params;
+    const prima = await conRls(s, async (tx) => {
+      const d = delegate(cfg.model, tx);
+      const prima = await d.findFirst({
+        where: cfg.senzaTenant ? { id } : { id, ...filtroTenant(s) },
+      });
+      if (!prima) throw new ErroreHttp(404, "Record non trovato");
+      // Референцирани от документи записи ги пази самата база (FK) → 409 в gestito()
+      await d.delete({ where: { id } });
+      return prima;
+    });
+    await scriviAudit({
+      azione: "DELETE",
+      entita: cfg.entita,
+      entitaId: id,
+      dettagli: dettagliCancellazione(prima),
+      utenteId: s.sub,
+      tenantId: s.tenantId,
+    });
+    return ok({ ok: true });
+  });
+
+  return { GET, PUT, DELETE };
+}

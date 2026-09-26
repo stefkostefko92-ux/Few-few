@@ -21,9 +21,11 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma erp-ascensori}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
+# Каквото трябва да преживее прочистването на старите издания.
+SHARED_DIR="${SHARED_DIR:-/opt/few-few/shared}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
 
@@ -168,6 +170,12 @@ CADDY_SITES_DIR="${CADDY_SITES_DIR:-/etc/caddy/sites}"
 CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
 CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
 ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
+
+# erp-ascensori (ERP Ascensori Enterprise — Docker Compose) — app:3050 + postgres
+# във вътрешната мрежа на стека (базата БЕЗ публикуван порт), зад Nginx с TLS.
+# Тайните живеят в erp-ascensori/.env на сървъра (mode 600) и се пренасят при
+# всеки деплой. `readyz` проверява база + схема + наличието на ключовете.
+ERP_HEALTH_URL="${ERP_HEALTH_URL:-http://127.0.0.1:3050/api/readyz}"
 ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
@@ -253,7 +261,7 @@ deploy_failed=0
 # том + нова парола = паднал сайт), а zabobovdol искаше интерактивен setup.
 # Ред: споделеният път → `current` → най-новият стар release, който го има.
 carry_env() {
-  local proj="$1" d="$2" shared="/opt/few-few/shared/$1/.env" src="" r
+  local proj="$1" d="$2" shared="$SHARED_DIR/$1/.env" src="" r
   if [ ! -f "$d/.env" ]; then
     if [ -f "$shared" ]; then
       src="$shared"
@@ -1394,6 +1402,163 @@ deploy_vpsdashboard() {
   fi
 }
 
+# ── 3и) erp-ascensori — Docker Compose ────────────────────────────────────────
+deploy_erp_ascensori() {
+  local d="$SRC/erp-ascensori"
+  [ -d "$d" ] || { warn "Няма erp-ascensori/ в архива — пропускам."; return; }
+  log "Разгръщам erp-ascensori (Docker Compose)…"
+
+  # Тайните живеят на сървъра, не в архива — и на СТАБИЛЕН път.
+  #
+  # Преди .env се четеше САМО от `current`. Но първото разгръщане пада по
+  # конструкция (APP_URL е още примерният), а при провал `current` не се мести —
+  # тоест .env-ът, който човек редактира, остава в издание, което никой не чете.
+  # Следващият пуск генерираше НОВИ тайни, падаше пак на APP_URL, и така в
+  # кръг. Каноничният файл е `$SHARED_DIR/erp-ascensori/.env`: там се
+  # редактира, оттам се пренася.
+  local env_shared="$SHARED_DIR/erp-ascensori/.env"
+  carry_env erp-ascensori "$d"
+
+  # Пръв деплой: генерирай тайните с продуктовия скрипт (идемпотентен, mode 600).
+  # НЕ пускаме демо seed-а — той има публично известна парола. Първият MASTER се
+  # създава изрично, с показана веднъж случайна парола.
+  local primo=0
+  if [ ! -f "$d/.env" ]; then
+    # НОВИ ТАЙНИ ВЪРХУ СТАРА БАЗА СА ПО-ЛОШИ ОТ НИКАКВИ. Томът на базата помни
+    # паролата от първото вдигане; нов AUDIT_HMAC_KEY прави всеки подпис в
+    # одита невалиден, нов SESSION_SECRET — всички сесии. Ако томът е тук, а
+    # .env-ът не е, липсва ФАЙЛ, не инсталация: отказваме и казваме къде да го
+    # върне.
+    if docker volume inspect erp-ascensori_db-data >/dev/null 2>&1; then
+      warn "erp-ascensori: томът erp-ascensori_db-data съществува, но .env липсва."
+      warn "  НЕ генерирам нови тайни (стара база + нова парола = паднал гестионал,"
+      warn "  нов AUDIT_HMAC_KEY = невалидни подписи в одита). Върни .env в $env_shared."
+      deploy_failed=1
+      return
+    fi
+    primo=1
+    warn "Няма erp-ascensori/.env — генерирам тайните."
+    # ПРОВАЛЪТ ТУК Е ПРОВАЛ НА ЕДИН ПРОЕКТ, НЕ НА ДЕПЛОЯ.
+    #
+    # `setup-env.sh` излиза с 1 по КОНСТРУКЦИЯ при първо пускане (APP_URL е още
+    # примерният — от него се печатат стикерите по уредбите). Под
+    # `set -euo pipefail` необработеният ненулев изход прекратява ЦЕЛИЯ скрипт
+    # ПРЕДИ стъпка 4: `current` не се пренасочва към новото издание. А всеки
+    # пренос на тайни чете `$CURRENT_LINK/<проект>/.env` — тоест следващият
+    # деплой генерира НОВИ тайни за всички проекти и сваля сесиите навсякъде.
+    # И всичко това без нито един ред грешка от самия autodeploy.
+    #
+    # Генерираното се записва на стабилния път ДОРИ при провал: тайните вече са
+    # попълнени, остава само APP_URL — и човекът трябва да го зададе във
+    # файла, който следващият пуск ще прочете.
+    local setup_ok=1
+    ( cd "$d" && bash scripts/setup-env.sh ) || setup_ok=0
+    [ -f "$d/.env" ] && install -D -m 600 "$d/.env" "$env_shared"
+    if [ "$setup_ok" = "0" ]; then
+      warn "erp-ascensori: настройката на средата не мина — задай APP_URL в $env_shared и пусни пак."
+      deploy_failed=1
+      return
+    fi
+    warn "Задай TRUSTED_PROXY_HOPS и BACKUP_AGE_RECIPIENT в $env_shared."
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+
+  # БЕКЪПИТЕ ИЗЛИЗАТ ОТ ПАПКАТА НА ИЗДАНИЕТО.
+  #
+  # `docker-compose.yml` монтира `./backup`, тоест при този поток бекъпите се
+  # пишат ВЪТРЕ в `/opt/few-few/releases/<час>/erp-ascensori/`. Прочистването
+  # по-долу пази последните $KEEP_RELEASES издания — на шестото разгръщане
+  # цялата история от дъмпове и архиви на файловете изчезва. Същият symlink
+  # решава същия проблем при zabobovdol.
+  local backups="$SHARED_DIR/erp-ascensori/backups"
+  mkdir -p "$backups"
+  chmod 700 "$backups"
+  if [ -d "$d/backup" ] && [ ! -L "$d/backup" ]; then
+    # Ако разгръщането е минало веднъж без symlink, пренасяме намереното.
+    cp -an "$d/backup/." "$backups/" 2>/dev/null || true
+    rm -rf "$d/backup"
+  fi
+  ln -sfnT "$backups" "$d/backup"
+  ok "erp-ascensori/backup -> $backups"
+
+  # ТОЧКА ЗА ВРЪЩАНЕ ПРЕДИ МИГРАЦИИТЕ. Те се прилагат при старта на новия
+  # контейнер, а нощният дъмп може да е на 23 часа — миграция, която се провали
+  # по средата или изтрие колона, без свеж дъмп значи загубен работен ден по
+  # фискален регистър. Дъмпът се прави от ВЕЧЕ работещия `backup` контейнер:
+  # той има `age`, паролата и същите добавки за RLS като нощния. Провален дъмп
+  # спира ТОЗИ продукт — миграция без точка за връщане не се пуска.
+  if ( cd "$d" && docker compose ps --status running --services 2>/dev/null | grep -qx backup ); then
+    local pg_user pg_db
+    pg_user="$(sed -n 's/^POSTGRES_USER=//p' "$d/.env" | head -1 | tr -d "\"'")"
+    pg_db="$(sed -n 's/^POSTGRES_DB=//p' "$d/.env" | head -1 | tr -d "\"'")"
+    # shellcheck disable=SC2016  # $F и $BACKUP_AGE_RECIPIENT са на контейнера
+    if ( cd "$d" && docker compose exec -T -e U="$pg_user" -e D="${pg_db:-erp_ascensori}" backup sh -c '
+          F=/backup/pre-deploy-$(date +%Y%m%d-%H%M%S).dump
+          PGOPTIONS="-c app.tenant_id=*" pg_dump --enable-row-security -h db -U "$U" -d "$D" -Fc -f "$F" || { rm -f "$F"; exit 1; }
+          if [ -n "$BACKUP_AGE_RECIPIENT" ]; then
+            age -r "$BACKUP_AGE_RECIPIENT" -o "$F.age" "$F"; e=$?; rm -f "$F"; [ $e -eq 0 ] || exit 1
+          fi
+          find /backup -name "pre-deploy-*" -mtime +31 -delete
+          exit 0' ); then
+      ok "erp-ascensori: дъмп преди миграциите в $backups"
+    else
+      warn "erp-ascensori: дъмпът преди миграциите НЕ мина — не пускам новото издание."
+      deploy_failed=1; return
+    fi
+  else
+    warn "erp-ascensori: няма работещ backup контейнер (пръв деплой или спрян стек) — без дъмп преди миграциите."
+  fi
+
+  # Миграциите се прилагат от docker-entrypoint.sh при старта на контейнера.
+  # `|| { …; return; }` НЕ е украса — същото правило като при zabobovdol: под
+  # `set -euo pipefail` неуспешен билд без него убива ЦЕЛИЯ autodeploy и
+  # следващите проекти в $PROJECTS остават неразгърнати. Провал на един
+  # продукт е провал на ЕДИН продукт.
+  ( cd "$d" && docker compose up -d --build ) || {
+    warn "erp-ascensori: docker compose up не мина — виж 'docker compose logs' в $d."
+    deploy_failed=1; return
+  }
+
+  if [ "$primo" = "1" ]; then
+    warn "Първо разгръщане: създай MASTER акаунта с"
+    warn "  cd $d && docker compose run --rm -e MASTER_EMAIL=<адрес> app node scripts/crea-master.mjs"
+  fi
+
+  health "$ERP_HEALTH_URL" "erp-ascensori" || { deploy_failed=1; return; }
+
+  # ГЕЙТ НА ИЗДАНИЕТО, НЕ НА ТРАФИКА. `pronto` казва само „пускай ли трафик"
+  # (база + схема + ключове) — нарочно, за да не свали пълен диск целия
+  # гестионал в цикъл от рестарти. Но ново издание НЯМА право да тръгне с
+  # непримонтиран том (качените сертификати изчезват при следващото
+  # пресъздаване на контейнера) или с неактивна RLS (втората линия на
+  # изолацията между фирмите става украса). Това чете `rilascio`.
+  #
+  # Токенът минава през --config на стандартния вход, НЕ като аргумент:
+  # аргументите се виждат в `ps` от всеки локален потребител.
+  local token corpo
+  token="$(sed -n 's/^HEALTH_TOKEN=//p' "$d/.env" 2>/dev/null | head -1 || true)"
+  # `setup-env.sh` пише стойностите В КАВИЧКИ; Compose ги маха, sed — не.
+  # С кавичките токенът никога не съвпадаше и изданието „не минаваше" винаги.
+  token="${token%\"}"; token="${token#\"}"; token="${token%\'}"; token="${token#\'}"
+  if [ -z "$token" ]; then
+    warn "erp-ascensori: няма HEALTH_TOKEN в .env — пропускам проверката на изданието (архив/RLS)."
+    return
+  fi
+  corpo="$(printf 'header = "x-health-token: %s"\n' "$token" \
+    | curl -fsS --max-time 5 --config - "$ERP_HEALTH_URL" || true)"
+  case "$corpo" in
+    *'"rilascio":true'*)
+      ok "erp-ascensori: изданието минава (архив записваем, RLS активна, номерацията уникална)." ;;
+    *)
+      warn "erp-ascensori: изданието НЕ минава."
+      warn "  архив: том за прикачените файлове монтиран и записваем?"
+      warn "  RLS:   ролята на приложението не бива да е суперпотребител."
+      warn "  уникалност: приложени ли са миграциите (не \`db push\`)? Виж unicitaMotivo в /api/readyz."
+      deploy_failed=1
+      ;;
+  esac
+}
+
 # ── 3h) adblock — ЧИСТ СТАТИЧЕН сайт зад Caddy (без билд/Node/база) ────────────
 # Копира само трите обслужвани файла в /var/www/adblock и инсталира/обновява
 # Caddy сайт-блока (adblock/server/Caddyfile → /etc/caddy/sites/adblock.caddy,
@@ -1616,6 +1781,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
+    erp-ascensori)        deploy_erp_ascensori ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
