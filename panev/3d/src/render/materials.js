@@ -4,7 +4,8 @@
 //  · electro — bright zinc with a clear (blue) passivation: a thin film whose thickness varies in
 //    broad patches (baked), the laser-cut edges bare steel;
 //  · hotdip — dipped after cutting: duller, spangled grains, the edges coated too, no film play.
-// The fasteners are zinc-plated to match, with the same baked detail at a finer scale.
+// The fasteners are zinc-plated to match, with the same baked detail at a finer scale; the rail
+// clips' forged heads have their own pebbled grain (set `forged`, loaded with the first assembly).
 import * as THREE from 'three/webgpu';
 import { uv, vec2, float, mix, texture, normalMap, materialColor, materialRoughness } from 'three/tsl';
 
@@ -12,11 +13,13 @@ export const FINISHES = {
   electro: {
     set: 'zinc', edgeSet: 'edge', color: 0xd2d7de, roughness: 0.3, iridescence: 0.12, film: [250, 330], edge: 0xa9afb7, edgeRough: 0.62,
     hw: { color: 0xd9dee6, roughness: 0.24, iridescence: 0.18, scale: 2.5 },
+    forged: { color: 0xc9ced6, roughness: 0.38, iridescence: 0.12 },
   },
   hotdip: {
     set: 'spangle', edgeSet: 'spangle', color: 0xb7bcc3, roughness: 0.42, iridescence: 0, film: [200, 460], edge: 0xaeb3ba, edgeRough: 0.55,
     // Hot-dip bolts are spun after the bath: no spangle to see, only a fine matte grain.
     hw: { color: 0xa9aeb5, roughness: 0.5, iridescence: 0, scale: 10 },
+    forged: { color: 0xa4a9b0, roughness: 0.55, iridescence: 0 },
   },
 };
 
@@ -54,8 +57,24 @@ function applySet(mat, set, { scale = 1, swap = false, film = null } = {}) {
   if (film) mat.iridescenceThicknessNode = mix(float(film[0]), float(film[1]), orm.b);
 }
 
-// Assembly hardware: zinc-plated M10 bolts, nuts, washers and rail clips; and the counterweight
-// guide rail in bright drawn steel, its drawing lines along the rail.
+// The rail clips' forged heads (their shanks take the bolts' material).
+export function createForged(finishName = 'electro', sets = null) {
+  const f = FINISHES[finishName];
+  const m = new THREE.MeshPhysicalNodeMaterial({
+    name: 'forged',
+    color: f.forged.color,
+    metalness: 1,
+    roughness: f.forged.roughness,
+    iridescence: f.forged.iridescence,
+    iridescenceIOR: 1.55,
+    iridescenceThicknessRange: f.film,
+  });
+  if (sets?.forged) applySet(m, sets.forged, { film: f.forged.iridescence > 0 ? f.film : null });
+  return m;
+}
+
+// Assembly hardware: zinc-plated M10 bolts, nuts, washers and the clips' shanks, the clips' heads
+// (`forged`); and the counterweight guide rail in bright drawn steel, its drawing lines along it.
 export function createHardware(finishName = 'electro', sets = null) {
   const f = FINISHES[finishName];
   const hw = new THREE.MeshPhysicalNodeMaterial({
@@ -70,5 +89,5 @@ export function createHardware(finishName = 'electro', sets = null) {
   if (sets?.[f.set]) applySet(hw, sets[f.set], { scale: f.hw.scale, film: f.hw.iridescence > 0 ? f.film : null });
   const rail = new THREE.MeshStandardNodeMaterial({ name: 'rail', color: 0x9fa5ac, metalness: 1, roughness: 0.3 });
   if (sets?.zinc) applySet(rail, sets.zinc, { swap: true });
-  return { hw, rail };
+  return { hw, rail, forged: createForged(finishName, sets) };
 }

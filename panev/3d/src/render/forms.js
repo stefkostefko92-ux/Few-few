@@ -4,7 +4,8 @@
 //    s = 16; the standards ask at least 17.77), cut by the 30° chamfer cone at the top and, for a
 //    nut, at the bottom too. The cone draws the arcs on each flat that make a real head read as one;
 //  · revolve — a profile turned about the axis (washers, the washer face, countersinks), with
-//    sharp corners kept sharp.
+//    sharp corners kept sharp;
+//  · merge — the parts of one fastener as a single geometry.
 // Axis +Y, non-indexed.
 import * as THREE from 'three/webgpu';
 
@@ -171,4 +172,28 @@ export function revolve(profile, segments = 96, sharp = []) {
     }
   }
   return T.geometry();
+}
+
+// One non-indexed geometry from parts with position, normal and uv.
+export function merge(geos) {
+  const flat = geos.map((g) => (g.index ? g.toNonIndexed() : g));
+  let count = 0;
+  for (const g of flat) count += g.attributes.position.count;
+  const pos = new Float32Array(count * 3);
+  const nor = new Float32Array(count * 3);
+  const uv = new Float32Array(count * 2);
+  let o = 0;
+  for (const g of flat) {
+    if (!g.attributes.normal) g.computeVertexNormals();
+    pos.set(g.attributes.position.array, o * 3);
+    nor.set(g.attributes.normal.array, o * 3);
+    if (g.attributes.uv) uv.set(g.attributes.uv.array, o * 2);
+    o += g.attributes.position.count;
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  out.computeBoundingSphere();
+  return out;
 }

@@ -1,7 +1,10 @@
-// The raised property-class marking forged into a bolt head, "8.8" (ISO 898-1): each 8 is the
-// outline of two stacked elliptic rings (the union, computed exactly) with their two counters as
-// holes, the dot a small disc. Extruded `relief` mm with a soft bevel, as a forged mark stands.
-// Built in the XZ plane on y = 0, standing up +Y, centred; digits `height` mm tall.
+// Raised marks forged into the fasteners, extruded `relief` mm with a soft bevel:
+//  · classMarking — the property class on a bolt head, "8.8" (ISO 898-1): each 8 is the outline of
+//    two stacked elliptic rings (the union, computed exactly) with their two counters as holes, the
+//    dot a small disc. Built in the XZ plane on y = 0, standing up +Y, centred;
+//  · stamp — the size and type on the rail clip ("M10", "N1") in a plain die-sunk sans, each glyph
+//    one outline so no two solids overlap. Built in the XY plane reading along +x, up +y, centred,
+//    standing up +z.
 import * as THREE from 'three/webgpu';
 
 const ellipse = (cx, cy, a, b, from, to, n) => {
@@ -60,4 +63,41 @@ export function classMarking({ height = 2.8, stroke = 0.42, relief = 0.2 } = {})
   g.rotateX(-Math.PI / 2);
   g.clearGroups();
   return g;
+}
+
+// Glyphs 4.2 mm tall on a baseline at v = 0: `w` advance, one outline or an elliptic ring
+// [cx, cy, a, b, stroke].
+const GLYPHS = {
+  M: { w: 3.6, loop: [[0, 0], [0.7, 0], [0.7, 2.9], [1.55, 1.1], [2.05, 1.1], [2.9, 2.9], [2.9, 0], [3.6, 0], [3.6, 4.2], [2.95, 4.2], [1.8, 1.85], [0.65, 4.2], [0, 4.2]] },
+  N: { w: 3, loop: [[0, 0], [0.7, 0], [0.7, 2.95], [2.3, 0], [3, 0], [3, 4.2], [2.3, 4.2], [2.3, 1.25], [0.7, 4.2], [0, 4.2]] },
+  1: { w: 1.25, loop: [[0.55, 0], [1.25, 0], [1.25, 4.2], [0.8, 4.2], [0.05, 3.45], [0.45, 3.05], [0.55, 3.15]] },
+  0: { w: 2.8, ring: [1.4, 2.1, 1.4, 2.1, 0.7] },
+};
+
+// `mirror`: reversed along x, for a part shown mirrored (it reads right once the view flips it).
+export function stamp(text, { height = 4.2, relief = 0.35, gap = 0.55, mirror = false } = {}) {
+  const k = height / 4.2;
+  const chars = [...text];
+  let x = -chars.reduce((s, c, i) => s + GLYPHS[c].w + (i ? gap : 0), 0) / 2;
+  const shapes = [];
+  for (const c of chars) {
+    const g = GLYPHS[c];
+    const loop = (pts) => {
+      const v = pts.map(([u, w]) => new THREE.Vector2((mirror ? -1 : 1) * (x + u) * k, (w - 2.1) * k));
+      return mirror ? v.reverse() : v;
+    };
+    if (g.ring) {
+      const [cx, cy, a, b, s] = g.ring;
+      const oval = (ra, rb) => loop(Array.from({ length: 48 }, (_, i) => [cx + ra * Math.cos((i * Math.PI) / 24), cy + rb * Math.sin((i * Math.PI) / 24)]));
+      const shape = new THREE.Shape(oval(a, b));
+      shape.holes.push(new THREE.Path(oval(a - s, b - s)));
+      shapes.push(shape);
+    } else shapes.push(new THREE.Shape(loop(g.loop)));
+    x += g.w + gap;
+  }
+  const bevel = 0.1;
+  const geo = new THREE.ExtrudeGeometry(shapes, { depth: relief - bevel, bevelEnabled: true, bevelThickness: bevel, bevelSize: 0.06, bevelSegments: 2, curveSegments: 8 });
+  // The lower bevel sinks into the face it stands on (z < 0), the top stands at `relief`.
+  geo.clearGroups();
+  return geo;
 }

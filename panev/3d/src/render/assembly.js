@@ -9,10 +9,11 @@ import * as THREE from 'three/webgpu';
 import { byId } from '../catalog.js';
 import { B_SECTIONS, A_LEGS } from '../parts/door.js';
 import { SUPPORT_H, armOf } from '../parts/supports.js';
-import { SG_FLANGE, STATIONS } from '../parts/guides.js';
+import { SG_FLANGE, SG_T, STATIONS, flangeRuns } from '../parts/guides.js';
 import { framedGeometry } from './model.js';
-import { fastener } from './fasteners.js';
-import { railGeometry, clipGeometry } from './hardware.js';
+import { fastener, nutOn } from './fasteners.js';
+import { railGeometry } from './hardware.js';
+import { clipGeometry, clipReach } from './clip.js';
 
 const WALL = { o: [0, 0, 0], u: [1, 0, 0], v: [0, 1, 0], n: [0, 0, 1] };
 const PLATFORM = { o: [0, 0, 0], u: [0, 0, 1], v: [1, 0, 0], n: [0, 1, 0] };
@@ -53,7 +54,7 @@ const mesh = (geo, mats) => {
   return m;
 };
 
-// B + A with the two M10 bolts. M = { part: [zinc, edge], hw, rail } materials; `left`: shown
+// B + A with the two M10 bolts. M = { part: [zinc, edge], hw, forged, rail } materials; `left`: shown
 // mirrored (the threads are swept the other way so they still read right-handed).
 function doorAssembly(aItem, bItem, M, left) {
   const mats = M.part;
@@ -83,33 +84,60 @@ function doorAssembly(aItem, bItem, M, left) {
   return { group, set, range: [-max, max], value: 0, step: 0.5, unit: '°', kind: 'angle' };
 }
 
-// Rail with two sliding clips bolted through the SG flange slots. `face` = SG flange outer
-// surface point at the rail centre, `out` = unit normal of that face, `along` = rail foot width.
-// Built once: the slider re-places the rail and clips many times a second.
+// Rail held by two N1 clips (clip.js) through the SG flange slots, a washer and a nut behind the
+// flange on each. `face` = SG flange outer surface point at the rail centre, `out` = unit normal
+// of that face, `along` = rail foot width; `seats` = [side, distance from the rail centre] per
+// clip. Built once: the slider re-places the rail and clips many times a second.
+const RAIL_HALF = 25; // the T50 rail's foot, each side of its centre
+const REACH = clipReach(RAIL_HALF);
 let railGeo = null;
-let clipGeo = null;
+const clipGeos = {};
 
-function railOn(parent, M, face, out, along, left) {
-  const hw = M.hw;
+function railOn(parent, M, face, out, along, left, seats) {
   railGeo ??= railGeometry(RAIL);
-  clipGeo ??= clipGeometry();
+  const clipGeo = (clipGeos[left] ??= clipGeometry({ left }));
   const rail = mesh(railGeo, M.rail);
   const y0 = SUPPORT_H + SG_FLANGE / 2 - RAIL / 2;
   rail.position.copy(face).setY(y0);
   rail.lookAt(rail.position.clone().add(out.clone().negate()));
   parent.add(rail);
-  for (const side of [-1, 1]) {
+  for (const [side, d] of seats) {
     // Clip axes: x away from the rail, z out of the flange, y along the rail (right-handed).
     const cx = along.clone().multiplyScalar(side);
     const cy = new THREE.Vector3().crossVectors(out, cx);
-    const at = face.clone().addScaledVector(along, side * 31).setY(SUPPORT_H + SG_FLANGE / 2);
-    const clip = mesh(clipGeo, hw);
+    const at = face.clone().addScaledVector(along, side * d).setY(SUPPORT_H + SG_FLANGE / 2);
+    const clip = mesh(clipGeo, [M.forged ?? M.hw, M.hw]);
     clip.name = 'clip';
     clip.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(cx, cy, out));
     clip.position.copy(at);
     parent.add(clip);
-    fastener(parent, hw, at.clone().addScaledVector(out, 10), out.clone().negate(), 14, { spin: side, left });
+    nutOn(parent, M.hw, at.clone().addScaledVector(out, -SG_T), out.clone().negate(), side);
   }
+}
+
+// Where the rail sits on an SG `l` long: c mm from the SG's start, searched over [lo, hi] for
+// the place nearest `want` where both clips' shanks stand in flange slots (5 mm clear of the round
+// ends), each clip as near 35 mm from the rail's centre as its slot allows. Near the ends of some
+// ranges no place seats both: then the clips go as near their slots as they can.
+function seatRail(l, want, lo, hi) {
+  const runs = flangeRuns(l);
+  const miss = (s) => Math.min(...runs.map(([a, b]) => Math.max(a + 5 - s, s - (b - 5), 0)));
+  const clipAt = (c, side) => {
+    let pick = null;
+    for (let d = REACH.min; d <= REACH.max + 1e-9; d += 0.5) {
+      const m = miss(c + side * d);
+      const score = m * 1000 + Math.abs(d - 35);
+      if (!pick || score < pick.score) pick = { d, m, score };
+    }
+    return pick;
+  };
+  let best = null;
+  for (let c = Math.max(0, lo); c <= Math.min(l, hi) + 1e-9; c += 0.5) {
+    const [a, b] = [clipAt(c, -1), clipAt(c, 1)];
+    const score = (a.m + b.m) * 1000 + Math.abs(c - want);
+    if (!best || score < best.score) best = { c, seats: [[-1, a.d], [1, b.d]], score };
+  }
+  return best;
 }
 
 // Support + SG + rail. The SG rides on the support plate; the rail sits in an end slot of the SG
@@ -130,19 +158,24 @@ function guideAssembly(supItem, sgItem, M, left) {
     moving.clear();
     const D = Math.max(range[0], Math.min(range[1], d));
     if (sc) {
-      // SG along the wall on the SC plate, flange 2 mm past its edge; rail at x = D.
-      const x0 = Math.max(-10, Math.min(arm.L - l + 70, D - l / 2));
+      // SG along the wall on the SC plate, flange 2 mm past its edge, as centred on the rail
+      // (x = D) as its clips' slots allow.
+      const { c, seats } = seatRail(l, l / 2, D - (arm.L - l + 70), D + 10);
+      const x0 = D - c;
       const zf = arm.W + 2;
       const sg = mesh(framedGeometry(sgItem, ALONG_WALL), mats);
       sg.position.set(x0, SUPPORT_H, zf);
       moving.add(sg);
       const zRow = arm.W <= 60 ? arm.W - 22 : arm.W - 35;
       for (const s of [st[1], st[st.length - 2]]) fastener(moving, hw, new THREE.Vector3(x0 + s, SUPPORT_H + 4, zRow), DOWN, 8, { spin: s, left });
-      railOn(moving, M, new THREE.Vector3(D, 0, zf), new THREE.Vector3(0, 0, 1), X, left);
+      railOn(moving, M, new THREE.Vector3(D, 0, zf), new THREE.Vector3(0, 0, 1), X, left, seats);
     } else {
-      // SG along the arm, flange flush with the arm's outer edge; rail at z = D.
+      // SG along the arm, flange flush with the arm's outer edge, at least 10 mm off the wall;
+      // rail at z = D, as near the SG's end as its clips' slots allow (the far end when the rail
+      // is far out: the SG turned round).
       const far = D > (range[0] + range[1]) / 2;
-      const z0 = Math.max(10, far ? D + 45 - l : D - 45);
+      const { c, seats } = seatRail(l, far ? l : 0, 0, D - 10);
+      const z0 = D - c;
       const xf = arm.x1;
       const sg = mesh(framedGeometry(sgItem, ALONG_ARM), mats);
       sg.position.set(xf, SUPPORT_H, z0);
@@ -155,7 +188,7 @@ function guideAssembly(supItem, sgItem, M, left) {
         const z = st.map((s) => z0 + s).find((v) => v >= a && v <= b);
         if (z !== undefined) fastener(moving, hw, new THREE.Vector3(xc, SUPPORT_H + 4, z), DOWN, 9, { spin: i, left });
       });
-      railOn(moving, M, new THREE.Vector3(xf, 0, D), X, new THREE.Vector3(0, 0, 1), left);
+      railOn(moving, M, new THREE.Vector3(xf, 0, D), X, new THREE.Vector3(0, 0, 1), left, seats);
     }
   };
   const value = sc ? arm.L / 2 : Math.round((range[0] + range[1]) / 2);

@@ -58,6 +58,38 @@ test('whatever is staged stands centred on the floor, in either hand', () => {
   }
 });
 
+// Rays along each clip's shank, on its axis and 4.9 mm off it, must pass the SG flange through a
+// slot. At the very ends of some ranges no slot can take both clips (the rail right by the wall on
+// an SU/SD arm, the SG far past an SC plate); everywhere else they must.
+test('the rail clips go through the SG flange slots, not the metal', () => {
+  const side = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+  const M2 = { part: [side, side], hw: side, rail: side, forged: side };
+  const ray = new THREE.Raycaster();
+  for (const item of paired.filter((i) => i.family !== 'door' && i.family !== 'SG')) {
+    const a = assemblyFor(item, M2);
+    const [lo, hi] = a.range;
+    for (const D of [a.value, ...Array.from({ length: 7 }, (_, k) => lo + 15 + ((hi - lo - 30) * k) / 6)]) {
+      a.set(D);
+      a.group.updateMatrixWorld(true);
+      const parts = [];
+      const clips = [];
+      a.group.traverse((o) => (o.material === M2.part ? parts.push(o) : o.name === 'clip' && clips.push(o)));
+      assert.equal(clips.length, 2, `${item.code}: two clips`);
+      for (const clip of clips) {
+        const e = [0, 1, 2].map((i) => new THREE.Vector3().setFromMatrixColumn(clip.matrixWorld, i));
+        const o = new THREE.Vector3().setFromMatrixPosition(clip.matrixWorld);
+        for (let k = -1; k < 4; k++) {
+          const off = k < 0 ? 0 : 4.9;
+          const from = o.clone().addScaledVector(e[0], off * Math.cos((k * Math.PI) / 2)).addScaledVector(e[1], off * Math.sin((k * Math.PI) / 2)).addScaledVector(e[2], 1);
+          ray.set(from, e[2].clone().negate());
+          ray.far = 7;
+          assert.equal(ray.intersectObject(parts[1], false).length, 0, `${item.code} at ${D}: a clip's shank through the SG`);
+        }
+      }
+    }
+  }
+});
+
 test('guide assemblies slide over the range printed on their catalogue page', () => {
   for (const [code, range] of [['SU 220 160', [45, 155]], ['SU 220 200', [45, 215]], ['SD 220 160', [50, 155]], ['SC 60 200', [45, 213]], ['SC 80 220', [45, 255]]]) {
     const a = assemblyFor(CATALOG.find((i) => i.code === code), M);

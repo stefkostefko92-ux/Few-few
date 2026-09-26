@@ -14,10 +14,11 @@ export const STATIONS = {
   220: [15, 35, 55, 75, 110, 145, 165, 185, 205],
 };
 export const SG_FLANGE = 50;
+export const SG_T = 4;
 
 // Flange slots 10 mm in from each end, 8 mm webs: two equal slots up to 150 mm, from 170 mm a
-// 73 mm middle slot between two shorter ones.
-function flangeRuns(L) {
+// 73 mm middle slot between two shorter ones. [start, end] along the length, round ends included.
+export function flangeRuns(L) {
   if (L <= 150) {
     const s = (L - 28) / 2;
     return [[10, 10 + s], [18 + s, L - 10]];
@@ -27,7 +28,7 @@ function flangeRuns(L) {
 }
 
 export function guideSG(W, L) {
-  const p = sheet({ t: 4, bevel: 0.5 });
+  const p = sheet({ t: SG_T, bevel: 0.5 });
   const y1 = W - (W >= 80 ? 10 : 5);
   p.face('plate', { outline: rect(0, 0, L, W), holes: STATIONS[L].map((x) => slotY(x, 20, y1, 10)) });
   p.face('flange', { outline: rect(0, 0, L, SG_FLANGE), holes: flangeRuns(L).map(([a, b]) => slotX(a, b, SG_FLANGE / 2, 10)) });

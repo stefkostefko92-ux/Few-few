@@ -1,6 +1,6 @@
 {
  "edge": {
-  "key": "41f5c61fbf09a3c8",
+  "key": "455bfa0cdb17102a",
   "tile": [
    20,
    5
@@ -12,7 +12,7 @@
   }
  },
  "zinc": {
-  "key": "41f5c61fbf09a3c8",
+  "key": "455bfa0cdb17102a",
   "tile": [
    80,
    80
@@ -24,7 +24,7 @@
   }
  },
  "spangle": {
-  "key": "41f5c61fbf09a3c8",
+  "key": "455bfa0cdb17102a",
   "tile": [
    120,
    120
@@ -33,6 +33,18 @@
    "albedo": "spangle_albedo.webp",
    "normal": "spangle_normal.webp",
    "orm": "spangle_orm.webp"
+  }
+ },
+ "forged": {
+  "key": "455bfa0cdb17102a",
+  "tile": [
+   24,
+   24
+  ],
+  "files": {
+   "albedo": "forged_albedo.webp",
+   "normal": "forged_normal.webp",
+   "orm": "forged_orm.webp"
   }
  }
 }

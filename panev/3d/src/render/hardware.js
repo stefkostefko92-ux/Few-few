@@ -1,10 +1,10 @@
 // Fasteners and the guide rail for the assembly views, to ISO dimensions (M10): hex bolt ISO 4017
-// (full thread, property class 8.8 forged into the head), hex nut ISO 4032, plain washer ISO 7089,
-// a T-section counterweight guide rail and the sliding clips that hold its foot. Millimetres,
-// built along +Y (bolt axis); every geometry carries normals and UVs in millimetres, so the baked
-// zinc detail lies on them at its true scale.
+// (full thread, property class 8.8 forged into the head), hex nut ISO 4032, plain washer ISO 7089
+// and a T-section counterweight guide rail (its clips are in clip.js). Millimetres, built along +Y
+// (bolt axis); every geometry carries normals and UVs in millimetres, so the baked zinc detail
+// lies on them at its true scale.
 import * as THREE from 'three/webgpu';
-import { hexBody, revolve } from './forms.js';
+import { hexBody, revolve, merge } from './forms.js';
 import { externalThread } from './thread.js';
 import { classMarking } from './marking.js';
 
@@ -75,42 +75,4 @@ export function railGeometry(length) {
   const g = new THREE.ExtrudeGeometry(s, { depth: length, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.4, bevelSegments: 2, curveSegments: 16 });
   g.rotateX(-Math.PI / 2);
   return g;
-}
-
-// Sliding clip on the rail foot, 22 x 34 x 10: the nose (x < -5.5) presses the foot's upper face
-// (z = 5), the heel stands on the bracket (z = 0) round the bolt, the nose tapers. Origin on the
-// bolt axis at the bracket face; +x away from the rail, +y along it, +z out of the bracket.
-export function clipGeometry() {
-  const b = 0.4;
-  const pts = [[-10.6, 5.4], [-5.1, 5.4], [-5.1, 0.4], [10.6, 0.4], [10.6, 8.9], [9.9, 9.6], [-7.8, 9.6], [-10.6, 8.1]];
-  const shape = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, z)));
-  const g = new THREE.ExtrudeGeometry(shape, { depth: 34 - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 3, curveSegments: 8 });
-  g.translate(0, 0, -(34 - 2 * b) / 2);
-  g.rotateX(Math.PI / 2);
-  g.clearGroups();
-  return g;
-}
-
-// One non-indexed geometry from parts with position, normal and uv.
-function merge(geos) {
-  const flat = geos.map((g) => (g.index ? g.toNonIndexed() : g));
-  let count = 0;
-  for (const g of flat) count += g.attributes.position.count;
-  const pos = new Float32Array(count * 3);
-  const nor = new Float32Array(count * 3);
-  const uv = new Float32Array(count * 2);
-  let o = 0;
-  for (const g of flat) {
-    if (!g.attributes.normal) g.computeVertexNormals();
-    pos.set(g.attributes.position.array, o * 3);
-    nor.set(g.attributes.normal.array, o * 3);
-    if (g.attributes.uv) uv.set(g.attributes.uv.array, o * 2);
-    o += g.attributes.position.count;
-  }
-  const out = new THREE.BufferGeometry();
-  out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
-  out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-  out.computeBoundingSphere();
-  return out;
 }

@@ -1,7 +1,7 @@
 // Places fasteners in an assembly: an ISO 4017 M10 bolt with an ISO 7089 washer under the head,
-// clamping `grip` mm of plate, then a washer and an ISO 4032 nut on the far side, all on one axis.
-// `left`: the assembly is shown mirrored, so its threads are swept left-handed and read right-
-// handed on screen, as every M10 is. Millimetres.
+// clamping `grip` mm of plate, then a washer and an ISO 4032 nut on the far side, all on one axis
+// (`nutOn` alone for the rail clip's own shank). `left`: the assembly is shown mirrored, so its
+// threads are swept left-handed and read right-handed on screen, as every M10 is. Millimetres.
 import * as THREE from 'three/webgpu';
 import { M10, boltGeometry, nutGeometry, washerGeometry } from './hardware.js';
 
@@ -36,7 +36,13 @@ export function fastener(parent, material, start, axis, grip, { spin = 0, left =
   parent.add(place(new THREE.Mesh(cached('washer', () => washerGeometry()), material), at(-washerT), ax, 0, 'washer'));
   const back = ax.clone().negate();
   parent.add(place(new THREE.Mesh(cached(`bolt${length}${left ? 'L' : 'R'}`, () => boltGeometry(length, { left })), material), at(-washerT + length), back, spin, 'bolt'));
-  parent.add(place(new THREE.Mesh(cached('washer', () => washerGeometry()), material), at(grip), ax, 0, 'washer'));
-  parent.add(place(new THREE.Mesh(cached('nut', () => nutGeometry()), material), at(grip + washerT), ax, spin + 0.4, 'nut'));
+  nutOn(parent, material, at(grip), ax, spin);
   return length;
+}
+
+// A washer on the plate at `start` and a nut on it, `axis` pointing out of the plate.
+export function nutOn(parent, material, start, axis, spin = 0) {
+  const ax = axis.clone().normalize();
+  parent.add(place(new THREE.Mesh(cached('washer', () => washerGeometry()), material), start.clone(), ax, 0, 'washer'));
+  parent.add(place(new THREE.Mesh(cached('nut', () => nutGeometry()), material), start.clone().addScaledVector(ax, M10.washer.h), ax, spin + 0.4, 'nut'));
 }

@@ -1,10 +1,11 @@
 // The fasteners are built to ISO dimensions (M10) and face outward: every triangle winds with its
 // normals, the thread is right-handed (left-handed for a mirrored assembly, which reads right-
-// handed once mirrored), and the head, nut, washer and clip measure what they should.
+// handed once mirrored), and the head, nut, washer and N1 rail clip measure what they should.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three/webgpu';
-import { boltGeometry, nutGeometry, washerGeometry, clipGeometry, M10 } from '../src/render/hardware.js';
+import { boltGeometry, nutGeometry, washerGeometry, M10 } from '../src/render/hardware.js';
+import { clipGeometry, clipReach, N1 } from '../src/render/clip.js';
 import { externalThread, threadProfile } from '../src/render/thread.js';
 import { fastener } from '../src/render/fasteners.js';
 import { stage } from '../src/render/stage.js';
@@ -36,7 +37,7 @@ const points = (g) => {
 };
 
 test('every fastener solid winds with its normals (seen from outside)', () => {
-  for (const [name, g] of [['bolt 35', boltGeometry(35)], ['bolt 35 left', boltGeometry(35, { left: true })], ['nut', nutGeometry()], ['washer', washerGeometry()], ['clip', clipGeometry()]]) {
+  for (const [name, g] of [['bolt 35', boltGeometry(35)], ['bolt 35 left', boltGeometry(35, { left: true })], ['nut', nutGeometry()], ['washer', washerGeometry()], ['clip', clipGeometry()], ['clip left', clipGeometry({ left: true })]]) {
     assert.ok(windingAgreement(g) > 0.999, `${name}: ${(windingAgreement(g) * 100).toFixed(2)} % of triangles agree`);
   }
 });
@@ -95,13 +96,24 @@ test('ISO 4032 nut and ISO 7089 washer measure right', () => {
   assert.ok(Math.abs(Math.max(...radii) - 10) < 1e-3 && Math.abs(Math.min(...radii) - 5.25) < 1e-3, 'washer 20 / 10.5');
 });
 
-test('the clip sits on the bracket and the rail foot: 22 x 34 x 10, nose underside at 5 mm', () => {
+test('the N1 clip: head 36 x 20 x 14 on its heel pad and nose ridge, M10 shank 25 under the bracket', () => {
   const g = clipGeometry();
   const box = new THREE.Box3().setFromBufferAttribute(g.attributes.position);
-  const near = (a, b) => Math.abs(a - b) < 1e-3;
-  assert.ok(near(box.min.x, -11) && near(box.max.x, 11) && near(box.min.y, -17) && near(box.max.y, 17) && near(box.min.z, 0) && near(box.max.z, 10), JSON.stringify(box));
-  const nose = points(g).filter((q) => q.x < -6.5);
-  assert.ok(near(Math.min(...nose.map((q) => q.z)), 5), 'the nose rests on the foot, 5 mm up');
+  const near = (a, b, tol = 0.1) => Math.abs(a - b) < tol;
+  assert.ok(near(box.min.x, -N1.nose) && near(box.max.x, N1.heel) && near(box.max.y, N1.width / 2) && near(box.min.y, -N1.width / 2), JSON.stringify(box));
+  assert.ok(near(box.max.z, N1.top, 1e-3) && near(box.min.z, -N1.shank, 1e-3), `z ${box.min.z} to ${box.max.z}`);
+  const pts = points(g);
+  const low = (test) => Math.min(...pts.filter(test).map((q) => q.z));
+  assert.ok(near(low((q) => q.x > 6 && q.z > -1), 0, 1e-3), 'the heel pad stands on the bracket');
+  assert.ok(near(low((q) => q.x < -N1.nose + 3 && q.z > -1), N1.foot, 1e-3), 'the nose ridge stands on the rail foot');
+  assert.ok(low((q) => q.x > -N1.nose + 5 && q.x < N1.pad - 0.5 && q.z > -1) > N1.foot + 0.5, 'clear of the foot in between');
+  // The shank: M10 thread from its end to under the bracket, no wider than the 10 mm slot.
+  const shank = pts.filter((q) => q.z < -1);
+  assert.ok(Math.max(...shank.map((q) => Math.hypot(q.x, q.y))) <= 5, 'the shank fits the SG slot');
+  assert.ok(near(Math.max(...shank.filter((q) => q.z < -6).map((q) => Math.hypot(q.x, q.y))), 4.95, 1e-3), 'M10 major diameter');
+  assert.deepEqual(g.groups.map((gr) => gr.materialIndex), [0, 1], 'forged head, then the shank');
+  const reach = clipReach(25);
+  assert.ok(reach.min === 32.5 && reach.max === 40.5, JSON.stringify(reach));
 });
 
 test('each bolt is the shortest ISO length with at least one thread past its nut', () => {
@@ -114,7 +126,7 @@ test('each bolt is the shortest ISO length with at least one thread past its nut
   }
 });
 
-test('every bolt reads right-handed on screen, in both hands of both kinds of assembly', () => {
+test('every bolt and clip reads right-handed on screen, in both hands of both kinds of assembly', () => {
   const mat = new THREE.MeshBasicNodeMaterial();
   const M = { part: [mat, mat], hw: mat, rail: mat };
   for (const code of ['A-65-170-7', 'SU-220-160', 'SC-80-220']) {
@@ -122,7 +134,7 @@ test('every bolt reads right-handed on screen, in both hands of both kinds of as
       const { object } = stage(byId(code), hand, 'assembly', M);
       object.updateMatrixWorld(true);
       const bolts = [];
-      object.traverse((o) => o.name === 'bolt' && bolts.push(o));
+      object.traverse((o) => (o.name === 'bolt' || o.name === 'clip') && bolts.push(o));
       assert.ok(bolts.length >= 2, `${code} ${hand}: bolts on show`);
       for (const b of bolts) {
         // A left-hand sweep is right only when the world mirrors it (negative determinant).

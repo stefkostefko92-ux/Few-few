@@ -5,7 +5,7 @@ import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CATALOG, byId } from '../catalog.js';
 import { LOOKS, environmentMap, backdropNode, createStudio, aimKey, aimRoom } from './studio.js';
-import { FINISHES, createMaterials, createHardware } from './materials.js';
+import { FINISHES, createMaterials, createHardware, createForged } from './materials.js';
 import { stage, viewDirection } from './stage.js';
 import { partnerOf } from './assembly.js';
 import { frame } from './framing.js';
@@ -83,6 +83,7 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
   // Shows a catalogue item on its own (mode 'part') or installed with its catalogue partner
   // (mode 'assembly'; parts without one stay on their own). `reframe: false` keeps the camera.
   function show(id, { hand = state.hand, mode = state.mode, reframe = true } = {}) {
+    if (mode === 'assembly') forged();
     const item = byId(id) ?? CATALOG[0];
     const keep = state.asm && item === state.item ? state.asm.value : null;
     if (state.object) scene.remove(state.object);
@@ -104,6 +105,20 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
     return state;
   }
 
+  // Only assemblies have clips: their forged grain loads with the first one, then the view is
+  // staged again with it. A photo waits for it.
+  let forging = null;
+  function forged() {
+    forging ??= loadSets(texBase, ['forged']).then((loaded) => {
+      Object.assign(sets, loaded);
+      const old = M.forged;
+      M.forged = createForged(finish, sets);
+      show(state.item.id, { reframe: false });
+      old.dispose();
+    });
+    return forging;
+  }
+
   // Resolves once the finish is on screen: its baked sets may still have to load (hot-dip grains).
   async function setFinish(name) {
     if (!FINISHES[name] || name === finish) return;
@@ -111,7 +126,7 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
     const need = [FINISHES[name].set, FINISHES[name].edgeSet].filter((n) => !(n in sets));
     if (need.length) Object.assign(sets, await loadSets(texBase, need));
     if (finish !== name) return;
-    const old = [...M.part, M.hw, M.rail];
+    const old = [...M.part, M.hw, M.rail, M.forged];
     Object.assign(M, { part: createMaterials(sets, finish), ...createHardware(finish, sets) });
     show(state.item.id, { reframe: false });
     old.forEach((m) => m.dispose());
@@ -145,7 +160,7 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
     interactive.render();
   });
 
-  const photo = createStills({
+  const still = createStills({
     renderer,
     scene,
     camera,
@@ -164,6 +179,11 @@ export async function boot({ canvas, onReady, texBase = 'tex/' }) {
       };
     },
   });
+
+  const photo = async (options) => {
+    await forging;
+    return still(options);
+  };
 
   const api = { show, adjust, photo, setLook, setFinish, wake, partnerOf, renderer, camera, controls, state, backend, uniforms: P, studio, get look() { return lookName; }, get finish() { return finish; }, get idle() { return settle <= 0 && !controls.autoRotate; } };
   onReady?.(api);
