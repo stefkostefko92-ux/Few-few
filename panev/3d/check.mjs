@@ -42,7 +42,7 @@ if (!title || title[1].length > 60) errors.push('template.html: <title> missing 
 const desc = tpl.match(/<meta name="description" content="([^"]+)">/);
 if (!desc || desc[1].length > 160) errors.push('template.html: meta description missing or over 160 characters');
 if ((tpl.match(/<h1[\s>]/g) || []).length !== 1) errors.push('template.html: exactly one <h1>');
-if (!/<html lang="it">/.test(tpl)) errors.push('template.html: <html lang="it"> (Italian is the source language)');
+if (!/<html lang="it"[\s>]/.test(tpl)) errors.push('template.html: <html lang="it"> (Italian is the source language)');
 if (!tpl.includes('<script type="module" src="%BUNDLE%"></script>')) errors.push('template.html: the %BUNDLE% module script is missing');
 
 // Every interface language carries the same keys as the Italian source.

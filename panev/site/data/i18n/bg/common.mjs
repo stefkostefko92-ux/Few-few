@@ -13,6 +13,7 @@ export default {
     privacy: 'poveritelnost.html',
     terms: 'usloviya.html',
     viewer3d: 'planki-3d.html',
+    viewer3dEmbed: 'planki-3d-embed.html',
   },
   langNames: { it: 'Italiano', en: 'English', bg: 'Български' },
   fmtPrice: (n) => `${n.toFixed(2).replace('.', ',')} €`,

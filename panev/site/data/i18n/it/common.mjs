@@ -13,6 +13,7 @@ export default {
     privacy: 'privacy.html',
     terms: 'condizioni.html',
     viewer3d: 'staffe-3d.html',
+    viewer3dEmbed: 'staffe-3d-embed.html',
   },
   langNames: { it: 'Italiano', en: 'English', bg: 'Български' },
   fmtPrice: (n) => `${n.toFixed(2).replace('.', ',')} €`,

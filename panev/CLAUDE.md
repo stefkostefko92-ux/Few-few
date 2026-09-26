@@ -54,7 +54,13 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
   (`site/templates/viewer.mjs`, без `site.css`), с canonical, hreflang, OG, JSON-LD и sitemap.
   Маркировката и стилът идват от `3d/template.html`, статичните текстове — от `3d/src/ui/i18n.js`.
 - **Начална страница:** секция „Vista 3D“ (`#vista-3d`) с постер; на широк екран кликът го сменя
-  с визьора в рамка (`?embed=1`), на тесен отваря 3D страницата. Преди клика не се тегли нищо от 3D.
+  с визьора в рамка, на тесен отваря 3D страницата. Преди клика не се тегли нищо от 3D. Рамката е
+  отделен документ (`/staffe-3d-embed`, `/en/brackets-3d-embed`, `/bg/planki-3d-embed`): noindex,
+  без canonical, извън sitemap.
+- **Без подскачане:** класовете `booting` (панелите се показват, когато изгледът е готов) и `embed`
+  (рамката — без горна лента и долен ред) са в маркировката, а езиковите линкове се рендират при
+  билда. Бъндълът идва секунди след първото рисуване на бавна връзка; ако ги слагаше скриптът,
+  страницата подскачаше (CLS 0.95 на телефон), а в рамката лентата се виждаше за миг.
 - **Снимки:** продуктите и началната страница показват 3D рендерите от `img/3d/` (WebP 480/960,
   JPEG 960). Изрязаните от каталога картинки са махнати; `img/staffa-*` остават, защото ги ползва
   админът (сийдът в `scripts/seed.js`).
@@ -66,7 +72,7 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 ## Команди (в `panev/`)
 
 ```bash
-npm run build:site       # node site/build.mjs — регенерира 21-те страници (18 + три 3D) + sitemap
+npm run build:site       # node site/build.mjs — регенерира 24-те страници (18 + три 3D + три рамки) + sitemap
 npm run dev              # nodemon server.js
 npm start                # node server.js
 npm run db:seed          # node scripts/seed.js (admin/legacy данни)

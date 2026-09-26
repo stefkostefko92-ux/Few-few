@@ -169,7 +169,7 @@ function viewerSection(t) {
       </div>
       <ul class="viewer-points">${points}</ul>
     </div>
-    <div class="viewer-frame" data-viewer data-src="${href}?embed=1&amp;${view}" data-title="${esc(v.frameTitle)}">
+    <div class="viewer-frame" data-viewer data-src="${pagePath(t, 'viewer3dEmbed')}?${view}" data-title="${esc(v.frameTitle)}">
       <a class="viewer-poster" href="${href}?${view}">
         ${render3d('su-220-160_sg-80-150', v.posterAlt, { sizes: '(max-width: 1200px) 100vw, 1160px', large: true })}
         <span class="viewer-start">${esc(v.start)}</span>

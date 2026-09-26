@@ -13,6 +13,7 @@ export default {
     privacy: 'privacy.html',
     terms: 'terms.html',
     viewer3d: 'brackets-3d.html',
+    viewer3dEmbed: 'brackets-3d-embed.html',
   },
   langNames: { it: 'Italiano', en: 'English', bg: 'Български' },
   fmtPrice: (n) => `€ ${n.toFixed(2)}`,

@@ -52,8 +52,10 @@ for (const t of locales) {
     written++;
   }
   // 3D страницата: собствен документ (визьорът), не layout-а на сайта — виж templates/viewer.mjs.
+  // Рамката на началната страница е същият визьор в отделен документ (noindex, извън sitemap).
   writeFileSync(join(ROOT, t.base.replace(/^\//, ''), t.slugs.viewer3d), viewerPage(t, locales));
-  written++;
+  writeFileSync(join(ROOT, t.base.replace(/^\//, ''), t.slugs.viewer3dEmbed), viewerPage(t, locales, { embed: true }));
+  written += 2;
 }
 
 // ── 404 — една обща страница за трите езика ──────────────────
@@ -64,6 +66,7 @@ const notFound = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>404 — Pagina non trovata | Panev Ascensori</title>
   <meta name="robots" content="noindex">
+  <meta name="keywords" content="Panev Ascensori, staffe per ascensori, lift brackets, планки за асансьори, pagina non trovata, Carbon Stealth">
   <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
   <link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">

@@ -22,8 +22,10 @@ export function createUI(api) {
   let lang = pickLang();
   let t = strings(lang);
   const buttons = new Map();
-  // On the site every language has its own address: the switch is a set of links carrying the view.
-  const langHrefs = JSON.parse(document.documentElement.dataset.langHrefs ?? 'null');
+  // On the site every language has its own address: the page ships the switch as links in its markup
+  // (site/templates/viewer.mjs), so the top bar is whole before this script arrives, and updateURL
+  // makes them carry the view. The standalone page switches in place with buttons made here.
+  const siteLinks = $('langs').querySelector('a') !== null;
 
   function buildList() {
     buttons.clear();
@@ -190,7 +192,7 @@ export function createUI(api) {
     t = strings(l);
     document.documentElement.lang = l;
     // A site page's head is already in its language (and longer, for search): leave it as it is.
-    if (!langHrefs) {
+    if (!siteLinks) {
       document.title = t.title;
       document.querySelector('meta[name="description"]')?.setAttribute('content', t.description);
     }
@@ -200,24 +202,22 @@ export function createUI(api) {
     $('langs').setAttribute('aria-label', t.language);
     $('hint').textContent = t.hint;
     $('note').textContent = t.note;
-    for (const b of $('langs').children) {
-      if (!langHrefs) b.setAttribute('aria-pressed', String(b.dataset.lang === l));
-      else if (b.dataset.lang === l) b.setAttribute('aria-current', 'page');
-    }
+    if (!siteLinks) for (const b of $('langs').children) b.setAttribute('aria-pressed', String(b.dataset.lang === l));
     buildList();
     sync();
   }
 
-  $('langs').replaceChildren(
-    ...LANGS.map((l) => {
-      const props = { textContent: l.toUpperCase(), lang: l, title: LANG_NAMES[l] };
-      const b = langHrefs ? el('a', { ...props, href: langHrefs[l], hreflang: l }) : el('button', { ...props, type: 'button' });
-      b.dataset.lang = l;
-      b.setAttribute('aria-label', LANG_NAMES[l]);
-      if (!langHrefs) b.addEventListener('click', () => setLang(l));
-      return b;
-    }),
-  );
+  if (!siteLinks) {
+    $('langs').replaceChildren(
+      ...LANGS.map((l) => {
+        const b = el('button', { type: 'button', textContent: l.toUpperCase(), lang: l, title: LANG_NAMES[l] });
+        b.dataset.lang = l;
+        b.setAttribute('aria-label', LANG_NAMES[l]);
+        b.addEventListener('click', () => setLang(l));
+        return b;
+      }),
+    );
+  }
   api.controls.listenToKeyEvents($('view'));
   setLang(lang);
   $('loading').hidden = true;
