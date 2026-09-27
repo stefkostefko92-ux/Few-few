@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Logo from '../components/Logo';
 import LandingDuel from '../components/LandingDuel';
 import LandingSetShowcase from '../components/LandingSetShowcase';
 import LandingEffects from '../components/LandingEffects';
-import CinematicIntro from '../components/CinematicIntro';
 import LanguageSelector from '../components/LanguageSelector';
 import '../styles/landing.css';
 
@@ -67,10 +66,6 @@ function SplitText({ text }: { text: string }) {
 
 export default function Landing(): React.ReactElement {
   const { t } = useTranslation();
-  const [showIntro, setShowIntro] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    try { return sessionStorage.getItem('nd_intro_seen') !== '1'; } catch { return true; }
-  });
   // Locale: pick from ?lang= → browser default → English, then rewrite
   // <html lang>, <title> and <meta name="description"> so search engines and
   // share previews pick up the right language for IT / BG visitors.
@@ -84,7 +79,6 @@ export default function Landing(): React.ReactElement {
 
   return (
     <div className="landing">
-      {showIntro && <CinematicIntro onDone={() => setShowIntro(false)} />}
       <LandingEffects />
 
       {/* Top nav */}

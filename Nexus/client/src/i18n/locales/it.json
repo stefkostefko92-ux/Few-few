@@ -1572,16 +1572,6 @@
       }
     }
   },
-  "intro": {
-    "dialogAria": "Narrazione introduttiva",
-    "skip": "Salta",
-    "line1": "La strada verso nord è di nuovo aperta.",
-    "line2": "Sei regni l’hanno pagata. Nessuno dirà con cosa.",
-    "line3": "Inizi ad Aedric, con una spada in prestito dalla guardia e un nome che nessuno conosce ancora.",
-    "line4": "C’è una torre alla fine della strada. Scalala, e il reame imparerà il tuo nome.",
-    "line5": "Benvenuto a Nexus.",
-    "skipAria": "Salta l’introduzione"
-  },
   "notif": {
     "title": "Notifiche",
     "empty": "Nessuna novità."
