@@ -39,17 +39,45 @@ function portraitK(aspect) {
   return Math.min(1, Math.max(0, (1.05 - (aspect || 1)) / 0.45));
 }
 
+// 4b: чисто вертикален fit (полу-височината на съдържанието срещу вертикалния FOV пряко, без
+// aspect) — halfWidth-базираният fitDistance() пази ШИРОЧИНАТА, но нищо досега не пазеше
+// ВИСОЧИНАТА: рицар-срещу-рицар (~1.75m и двамата) винаги се побираше случайно, а дракон/титан
+// (S.spanY) излиза извън горния ръб на кадъра без този под.
+function fitDistanceVertical(halfHeight, vFovDeg) {
+  const vFov = (vFovDeg * Math.PI) / 180;
+  return Math.max(MIN_DIST, halfHeight / Math.tan(vFov / 2));
+}
+
 function orbitShot(S, sway, baseVFov, halfWidth, height) {
   const p = portraitK(S.aspect);
   const angle = SIDE - p * 0.62 + Math.max(-MAX_SWAY, Math.min(MAX_SWAY, sway)) * (1 - p * 0.5);
-  // Далечен бой (маг/стрелец) стои на по-голяма дистанция от меле — фиксиран halfWidth
-  // изрязваше противника извън кадъра на портрет. Ширината покрива реалната проекция + тялото.
+  // 4b QA-fix (кръг 2): двамата бяха математически "в кадър" (NDC вътре в [-1,1]), но точно на
+  // ръба — за дребен звяр (плюс HUD панелите отгоре) това е практически "извън кадър". margin
+  // вече расте с 18% сигурност + минимум, скалиран по spanY (по-едро тяло, по-широк силует).
   const sep = S.A && S.B ? Math.hypot(S.B.root.pos.x - S.A.root.pos.x, S.B.root.pos.z - S.A.root.pos.z) : 0;
-  const hw = Math.max(halfWidth * (1 - p * 0.3), (sep / 2) * Math.abs(Math.sin(angle)) + 0.75);
   const vFov = effectiveVFov(baseVFov, S.aspect);
-  const d = fitDistance(hw, vFov, S.aspect);
-  const pos = S.C.clone().addScaledVector(S.u, Math.cos(angle) * d).addScaledVector(S.v, Math.sin(angle) * d).add({ x: 0, y: height, z: 0 });
-  const target = S.C.clone().add({ x: 0, y: 1.15, z: 0 });
+  // 4b: standHeight (fighter.js/beast-fighter.js) решава и вертикалния под, и очната височина —
+  // плъх (spanY≈0.24) сяда камерата ниско и близо, титан/дракон (spanY>2) я вдига и отдалечава.
+  const spanY = S.spanY ?? 1.75;
+  const margin = Math.max(0.85, spanY * 0.4);
+  const hw = Math.max(halfWidth * (1 - p * 0.3), (sep / 2) * Math.abs(Math.sin(angle)) * 1.18 + margin);
+  // 4b QA-fix (кръг 4): още веднъж отрязан шлем в hit кадър при нисък противник (докладвано при
+  // преглед, случайно по бой — точното запазена/крит хореография променя sway/axis/сепарация,
+  // не само spanY) — бюджетът расте с допълнителна сигурност, не само spanY-базирания под.
+  // Кинематографичните ленти на boy са изключени за генерираните двубои (main.js) — в картата на
+  // страницата те изяждаха ~40% от височината и шлемът на героя падаше под горната лента.
+  const dv = fitDistanceVertical(spanY * 0.85 + 0.7, vFov);
+  const d = Math.max(fitDistance(hw, vFov, S.aspect), dv);
+  // 4b QA-fix (кръг 3): eyeY зависеше САМО от spanY (винаги ръста на по-високия боец) — за нисък
+  // противник (плъх/паяк) target (S.midY) пада надолу, но окото на камерата оставаше на същата
+  // височина → по-голям наклон надолу спрямо преди, и халфХайт-бюджетът (симетричен около target,
+  // смятан за РАВНИННА камера) вече не важи: героят се "качва" над горния ръб (докладвано при
+  // преглед — шлемът му отрязан в hit кадъра). Дръж окото на ПОЧТИ постоянно превишение НАД target
+  // (наклонът не расте с ниска цел), вместо на абсолютна височина, независима от target.
+  const midY = S.midY ?? 1.15;
+  const eyeY = Math.min(Math.max(midY + height * 0.55, spanY * 0.35), height * 1.6);
+  const pos = S.C.clone().addScaledVector(S.u, Math.cos(angle) * d).addScaledVector(S.v, Math.sin(angle) * d).add({ x: 0, y: eyeY, z: 0 });
+  const target = S.C.clone().add({ x: 0, y: S.midY ?? 1.15, z: 0 });
   return { pos, target, fov: vFov, focus: 'C', fstop: 2.8, hand: 0.3 };
 }
 

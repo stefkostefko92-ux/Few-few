@@ -135,6 +135,15 @@ export function createDirector(camera, { reducedMotion, shots = DEFAULT_SHOTS } 
       S.fwdA.copy(S.u);
       S.aspect = camera.aspect; // 4a.3-fix: генерираните кадри трябва да знаят портрет/пейзаж.
       S.sep = A.root.pos.distanceTo(B.root.pos);
+      // 4b: рамка по РЕАЛНИЯ ръст на двамата (standHeight — fighter.js/beast-fighter.js), не
+      // фиксираните ~1.15m от оригиналния демо-двубой (двама рицари) — иначе плъх до земята
+      // пада извън кадъра, а дракон/титан излиза от него отгоре (виж shot-builder.js orbitShot).
+      const hiH = Math.max(A.standHeight ?? 1.75, B.standHeight ?? 1.75);
+      const loH = Math.min(A.standHeight ?? 1.75, B.standHeight ?? 1.75);
+      // Центърът на кадъра следва ПО-ВИСОКИЯ боец (вдигнатото оръжие стига ~1.25× ръста) — с
+      // нисък противник (плъх) старата формула сваляше целта до ~0.55 м и шлемът излизаше горе.
+      S.midY = hiH * 0.5 + loH * 0.05;
+      S.spanY = hiH;
       let i = shots.findIndex((s) => T >= s.t0 && T < s.t1);
       if (i < 0) i = shots.length - 1;
       const shot = shots[i];

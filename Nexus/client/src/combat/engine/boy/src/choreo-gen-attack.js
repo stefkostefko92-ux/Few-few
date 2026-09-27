@@ -5,8 +5,32 @@
 // рунд), не пресмята дублиращо от rounds — един източник на истина, нула риск от разминаване.
 import { GUARD_POSES } from './choreo.js';
 import { isRangedKit, hasShieldKit } from './loadout.js';
+import { isBeastKit, beastSpecies } from './beast-config.js';
 
 const { A_VOMTAG, B_GUARD, STAFF_REST, STAFF_CHANNEL, STAFF_CAST, BOW_REST, BOW_DRAW, BOW_LOOSE } = GUARD_POSES;
+
+// 4b: звярът няма ръка — "хватката" тук е захапката/лапата, локално p/d/e в собствената му
+// рамка (виж beast-fighter.js — то чете W.p през СЪЩИЯ weaponAt() като меча на рицаря). Височина
+// от beast-config.js (biteY), не фиксираната човешка 1.35 — затова и anchorY по-долу.
+function beastGuardPose(kit) {
+  const S = beastSpecies(kit);
+  return { p: [0, S.biteY * 0.88, S.reach * 0.35], d: [0, -0.15, 1], e: [0, 1, 0] };
+}
+function beastAimTable(kit) {
+  const S = beastSpecies(kit);
+  const y = S.biteY;
+  const z = S.reach;
+  return {
+    head: { hand: [0.02, y, z], contact: 0.55, anchorY: y + 0.1 },
+    headL: { hand: [0.03, y * 0.96, z * 0.9], contact: 0.5, anchorY: y + 0.1 },
+    lshoulder: { hand: [0.04, y * 0.9, z * 0.85], contact: 0.55, anchorY: y + 0.1 },
+    chest: { hand: [0.02, y * 1.06, z * 0.95], contact: 0.5, anchorY: y + 0.1 },
+  };
+}
+/** Кит-специфична AIM таблица на нападателя — звяр (beast-config.js) или човешката AIM[slot]. */
+export function aimTableFor(slot, kit) {
+  return isBeastKit(kit) ? beastAimTable(kit) : AIM[slot];
+}
 
 export function push(list, t, entry) {
   list.push({ t, ...entry });
@@ -38,6 +62,7 @@ const RANGED_DUR_MUL = 1.55;
 export const FLIGHT_T = 0.5;
 
 export function guardPoseFor(slot, kit) {
+  if (isBeastKit(kit)) return beastGuardPose(kit);
   if (kit === 'staff') return STAFF_REST;
   if (kit === 'bow') return BOW_REST;
   return slot === 'A' ? A_VOMTAG : B_GUARD;
@@ -48,21 +73,25 @@ export function guardPoseFor(slot, kit) {
 export function buildMeleeRound(ctx) {
   const {
     round, ti, t, rnd, attackerSlot, defenderSlot, attackerKeys, defenderKeys, attackerKit, defenderKit,
-    B_SHIELD, EVENTS, ROOT_KEYS, A_ADV, B_ADV, shotBeats,
+    B_SHIELD, EVENTS, ROOT_KEYS, A_ADV, B_ADV, shotBeats, reachPad = 0,
   } = ctx;
   const crit = round.result === 'crit';
   const fast = attackerKit === 'shortsword'; // разбойник: по-бързо, по-ниско (брифа 4a.4).
   const dur = (crit ? BEAT + CRIT_HOLD : BEAT) * (fast ? 0.82 : 1);
   const cycle = fast ? TARGET_CYCLE_LOW : TARGET_CYCLE;
   const target = cycle[ti % cycle.length];
-  const aimTpl = AIM[attackerSlot][target];
+  const aimTpl = aimTableFor(attackerSlot, attackerKit)[target];
   const windT = t + dur * 0.28;
   const apexT = t + dur * 0.55;
   const returnT = t + dur;
+  // 4b: защитникът е звяр с различен ръст от рицар — DYNAMIC_AIMS (fighter.js/timeline.js) вече
+  // прицелва живо по other.rig.w.head във всеки кадър около удара; без dynamic контактната точка
+  // би стояла на фиксираната човешка височина от TARGETS[] и мечът би минал над плъх/под титан.
+  const dynamic = isBeastKit(defenderKit) || undefined;
 
   push(attackerKeys, windT, { pose: guardPoseFor(attackerSlot, attackerKit), ease: 'in', crouch: 0.1 });
   push(attackerKeys, apexT, {
-    aim: { target, hand: aimTpl.hand, contact: aimTpl.contact }, e: [0, 1, 0], ease: 'in', lean: crit ? 0.14 : 0.1, crouch: 0.1,
+    aim: { target, hand: aimTpl.hand, contact: aimTpl.contact, anchorY: aimTpl.anchorY, dynamic }, e: [0, 1, 0], ease: 'in', lean: crit ? 0.14 : 0.1, crouch: 0.1,
   });
   if (crit) push(attackerKeys, apexT + CRIT_HOLD * 0.6, { hold: true, crouch: 0.1 });
 
@@ -87,9 +116,9 @@ export function buildMeleeRound(ctx) {
   push(attackerKeys, returnT, { pose: guardPoseFor(attackerSlot, attackerKit), ease: 'out', crouch: 0.08 });
 
   const axis = 0.15 + ti * 0.08;
-  ROOT_KEYS.push([apexT - 0.12, 0.1, 0.42, 2.1, axis]);
-  ROOT_KEYS.push([apexT, 0.1, 0.42, 1.35 + 0.1 * rnd(), axis]);
-  ROOT_KEYS.push([returnT, 0.1, 0.42, 2.1, axis]);
+  ROOT_KEYS.push([apexT - 0.12, 0.1, 0.42, 2.1 + reachPad, axis]);
+  ROOT_KEYS.push([apexT, 0.1, 0.42, 1.35 + reachPad + 0.1 * rnd(), axis]);
+  ROOT_KEYS.push([returnT, 0.1, 0.42, 2.1 + reachPad, axis]);
   const advPulse = attackerSlot === 'A' ? A_ADV : B_ADV;
   advPulse.push([apexT, 0.18 + 0.1 * rnd()]);
   advPulse.push([returnT, 0]);
@@ -103,7 +132,7 @@ export function buildMeleeRound(ctx) {
  * (choreo-gen.js EVENTS 'cast'+'shot', обработени в events.js/ranged.js), не IK близост.
  * Нападателят пази по-голяма дистанция целия рунд (ROOT_KEYS сепарация, не иска reach). */
 export function buildRangedRound(ctx) {
-  const { round, ti, t, rnd, attackerSlot, defenderSlot, attackerKeys, attackerKit, EVENTS, ROOT_KEYS, A_ADV, B_ADV, shotBeats } = ctx;
+  const { round, ti, t, rnd, attackerSlot, defenderSlot, attackerKeys, attackerKit, EVENTS, ROOT_KEYS, A_ADV, B_ADV, shotBeats, reachPad = 0 } = ctx;
   const crit = round.result === 'crit';
   const hit = round.result === 'hit' || crit;
   const dur = (crit ? BEAT + CRIT_HOLD : BEAT) * RANGED_DUR_MUL;
@@ -124,8 +153,8 @@ export function buildRangedRound(ctx) {
   EVENTS.push({ t: impactT, type: 'roundmark', roundIndex: ti, by: attackerSlot, against: defenderSlot });
 
   const axis = 0.15 + ti * 0.08;
-  ROOT_KEYS.push([t + 0.05, 0.1, 0.42, 3.1 + 0.2 * rnd(), axis]);
-  ROOT_KEYS.push([returnT, 0.1, 0.42, 3.0, axis]);
+  ROOT_KEYS.push([t + 0.05, 0.1, 0.42, 3.1 + reachPad + 0.2 * rnd(), axis]);
+  ROOT_KEYS.push([returnT, 0.1, 0.42, 3.0 + reachPad, axis]);
   const advPulse = attackerSlot === 'A' ? A_ADV : B_ADV;
   advPulse.push([releaseT, -0.05]);
   advPulse.push([returnT, 0]);

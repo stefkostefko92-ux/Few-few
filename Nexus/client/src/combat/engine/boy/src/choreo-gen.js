@@ -14,7 +14,8 @@
 import { GUARD_POSES } from './choreo.js';
 import { weaponKit, hasShieldKit } from './loadout.js';
 import { buildGeneratedShots } from './shot-builder.js';
-import { push, buildRound, buildTimeScale, guardPoseFor, AIM } from './choreo-gen-attack.js';
+import { push, buildRound, buildTimeScale, guardPoseFor, aimTableFor } from './choreo-gen-attack.js';
+import { isBeastKit, beastReachPad } from './beast-config.js';
 
 const { A_REST, B_REST, A_POINT_DOWN, SH_REST, SH_GUARD, STAFF_CHANNEL, BOW_DRAW } = GUARD_POSES;
 
@@ -37,7 +38,7 @@ export function mulberry32(seed) {
   };
 }
 
-const idlePoseFor = (slot, kit) => (kit === 'staff' || kit === 'bow' ? guardPoseFor(slot, kit) : slot === 'A' ? A_REST : B_REST);
+const idlePoseFor = (slot, kit) => (kit === 'staff' || kit === 'bow' || isBeastKit(kit) ? guardPoseFor(slot, kit) : slot === 'A' ? A_REST : B_REST);
 
 /** rounds: [{attacker:'hero'|'foe', result:'hit'|'crit'|'block'|'dodge'|'miss'}], victory: bool
  * opts.heroClass ('warrior'|'ranger'|'mage'|'rogue'), opts.foeName (свободен текст, за
@@ -45,7 +46,10 @@ const idlePoseFor = (slot, kit) => (kit === 'staff' || kit === 'bow' ? guardPose
 export function buildChoreography(rounds, victory, opts = {}) {
   const rnd = opts.rng || mulberry32(1);
   const kitA = weaponKit(opts.heroClass);
-  const kitB = weaponKit(opts.foeName);
+  const kitB = weaponKit(opts.foeName, opts.foeSprite);
+  // 4b кръг 3: виж beast-config.js beastReachPad — 0 за рицар/компактни зверове, реален допълнителен
+  // прозор за дълготели (дракон), за да не влиза муцуната в героя при апекса на удара.
+  const reachPad = beastReachPad(kitB);
   const A_KEYS = [];
   const B_KEYS = [];
   const B_SHIELD = [];
@@ -64,7 +68,7 @@ export function buildChoreography(rounds, victory, opts = {}) {
   push(A_KEYS, APPROACH, { pose: guardPoseFor('A', kitA) });
   push(B_KEYS, APPROACH, { pose: guardPoseFor('B', kitB) });
   push(B_SHIELD, APPROACH, { sh: SH_GUARD });
-  ROOT_KEYS.push([APPROACH, 0.1, 0.42, 2.4, 0.15]);
+  ROOT_KEYS.push([APPROACH, 0.1, 0.42, 2.4 + reachPad, 0.15]);
   CAPTIONS.push({ t: APPROACH + 0.2, d: 2.2, k: 'vomTag' });
 
   let t = APPROACH;
@@ -79,7 +83,7 @@ export function buildChoreography(rounds, victory, opts = {}) {
     const defenderKit = defenderSlot === 'A' ? kitA : kitB;
     const returnT = buildRound({
       round, ti, t, rnd, attackerSlot, defenderSlot, attackerKeys, defenderKeys, attackerKit, defenderKit,
-      B_SHIELD, EVENTS, ROOT_KEYS, A_ADV, B_ADV, shotBeats,
+      B_SHIELD, EVENTS, ROOT_KEYS, A_ADV, B_ADV, shotBeats, reachPad,
     });
     // Guard-опресняване за защитника (независимо от вида рунд) — иначе сплайнът му интерполира
     // от последния му ключ право до следващия си рунд (голям прозорец, вижда се като "плъзгане").
@@ -98,10 +102,11 @@ export function buildChoreography(rounds, victory, opts = {}) {
   const winnerKeys = winnerSlot === 'A' ? A_KEYS : B_KEYS;
   const loserKeys = loserSlot === 'A' ? A_KEYS : B_KEYS;
   const finishT0 = t + 0.35;
-  const finishAim = winnerSlot === 'A' ? AIM.A.headL : AIM.B.headL;
-  push(winnerKeys, t + 0.15, { pose: preFinishPoseFor(winnerSlot, winnerSlot === 'A' ? kitA : kitB), crouch: 0.1, lead: 'R' });
+  const winnerKit = winnerSlot === 'A' ? kitA : kitB;
+  const finishAim = aimTableFor(winnerSlot, winnerKit).headL;
+  push(winnerKeys, t + 0.15, { pose: preFinishPoseFor(winnerSlot, winnerKit), crouch: 0.1, lead: 'R' });
   push(winnerKeys, finishT0, {
-    aim: { target: 'headL', hand: finishAim.hand, dynamic: true }, e: [0.4, -0.7, 0.3], ease: 'in', tw: 0.35, lean: 0.16, crouch: 0.12, lead: 'R',
+    aim: { target: 'headL', hand: finishAim.hand, anchorY: finishAim.anchorY, dynamic: true }, e: [0.4, -0.7, 0.3], ease: 'in', tw: 0.35, lean: 0.16, crouch: 0.12, lead: 'R',
   });
   push(winnerKeys, finishT0 + 0.3, { pose: A_POINT_DOWN, tw: 0.05, lean: 0.08, crouch: 0.06, lead: 'L' });
   push(winnerKeys, finishT0 + 1.85, { pose: A_POINT_DOWN, tw: 0.05, lean: 0.08, crouch: 0.06 });
@@ -139,9 +144,9 @@ export function buildChoreography(rounds, victory, opts = {}) {
   // клона сега важи и за B, затова reach нуждите му вече съвпадат с A-случая, не с оригиналния B.
   const winnerHasShield = winnerSlot === 'B' && hasShieldKit(kitB);
   const finishSep = winnerHasShield ? 1.1 : 1.4;
-  ROOT_KEYS.push([finishT0 - 0.1, 0.1, 0.42, 2.1, finishAxis]);
-  ROOT_KEYS.push([finishT0, 0.1, 0.42, finishSep, finishAxis]);
-  ROOT_KEYS.push([duration, 0.1, 0.42, 1.65, finishAxis]);
+  ROOT_KEYS.push([finishT0 - 0.1, 0.1, 0.42, 2.1 + reachPad, finishAxis]);
+  ROOT_KEYS.push([finishT0, 0.1, 0.42, finishSep + reachPad, finishAxis]);
+  ROOT_KEYS.push([duration, 0.1, 0.42, 1.65 + reachPad, finishAxis]);
   A_ADV.push([duration, A_ADV[A_ADV.length - 1][1]]);
   B_ADV.push([duration, B_ADV[B_ADV.length - 1][1]]);
   push(B_SHIELD, finishT0, { sh: SH_GUARD });

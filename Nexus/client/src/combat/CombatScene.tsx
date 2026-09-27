@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CombatActor, CombatRound } from '../lib/types';
 import BoyDuelStage, { BoyDuelHandle, ImpactEvent } from './engine/BoyDuelStage';
@@ -88,6 +88,13 @@ export default function CombatScene(props: Props): React.ReactElement {
   const [sceneDropped, setSceneDropped] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<BoyDuelHandle>(null);
+  // БЪГ: autoFocus на резервния бутон караше браузъра да скочи обратно до дуела, докато
+  // потребителят скролира надолу по лендинга („колелцето не слиза“). Фокус без скрол и
+  // само ако сцената вече се вижда.
+  const focusFallback = useCallback((el: HTMLButtonElement | null) => {
+    const r = stageRef.current?.getBoundingClientRect();
+    if (el && r && r.top < window.innerHeight && r.bottom > 0) el.focus({ preventScroll: true });
+  }, []);
 
   // Intro card (боят стартира веднага — boy има собствен loading fade-in).
   useEffect(() => {
@@ -111,6 +118,10 @@ export default function CombatScene(props: Props): React.ReactElement {
     if (engine !== 'ready' || done) return;
     const iv = setInterval(() => {
       if (endedRef.current) return;
+      // Двигателят спира кадрите, докато сцената е извън екрана (frame-gate.js) — това не е
+      // замръзване; иначе при връщане играчът виждаше „боят върви твърде бавно“.
+      const r = stageRef.current?.getBoundingClientRect();
+      if (document.hidden || !r || r.bottom <= 0 || r.top >= window.innerHeight) { lastProgressRef.current = Date.now(); return; }
       if (logVisible.length < rounds.length && Date.now() - lastProgressRef.current > 20000) setEngine('stalled');
     }, 2000);
     return () => clearInterval(iv);
@@ -197,6 +208,7 @@ export default function CombatScene(props: Props): React.ReactElement {
         heroClass={hero.class}
         region={region}
         foeName={foe.name}
+        foeSprite={foe.sprite}
       />}
 
       {showIntro && (
@@ -277,7 +289,7 @@ export default function CombatScene(props: Props): React.ReactElement {
         <div className="combat-fallback" role="status">
           <div className="combat-fallback-title">{t(engine === 'failed' ? 'combat.noSceneTitle' : engine === 'stalled' ? 'combat.stalledTitle' : 'combat.slowTitle')}</div>
           <p>{t(engine === 'failed' ? 'combat.noSceneBody' : engine === 'stalled' ? 'combat.stalledBody' : 'combat.slowBody')}</p>
-          <button className="btn btn-primary" onClick={finishWithoutScene} autoFocus>{t('combat.showResult')}</button>
+          <button className="btn btn-primary" onClick={finishWithoutScene} ref={focusFallback}>{t('combat.showResult')}</button>
         </div>
       )}
 

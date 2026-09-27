@@ -1572,16 +1572,6 @@
       }
     }
   },
-  "intro": {
-    "dialogAria": "Intro narration",
-    "skip": "Skip",
-    "line1": "The road north is open again.",
-    "line2": "Six kingdoms paid for it. None will say with what.",
-    "line3": "You start at Aedric, with a sword borrowed from the watch and a name nobody knows yet.",
-    "line4": "There is a tower at the end of the road. Climb it, and the realm learns your name.",
-    "line5": "Welcome to Nexus.",
-    "skipAria": "Skip intro narration"
-  },
   "notif": {
     "title": "Notifications",
     "empty": "Nothing new."

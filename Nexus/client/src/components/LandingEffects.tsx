@@ -165,6 +165,7 @@ export default function LandingEffects(): React.ReactElement | null {
     }
     function enter(this: HTMLElement) {
       this.style.transition = 'transform .12s ease-out';
+      this.style.willChange = 'transform';
       rectMap.set(this, this.getBoundingClientRect());
     }
     function move(this: HTMLElement, e: MouseEvent) {
@@ -181,6 +182,9 @@ export default function LandingEffects(): React.ReactElement | null {
       const hl = this.querySelector<HTMLElement>('.tilt-glare');
       if (hl) hl.style.background = 'transparent';
       rectMap.delete(this);
+      // Слоят се освобождава след връщащия преход (.45s), не веднага.
+      const el = this;
+      setTimeout(() => { if (!rectMap.has(el)) el.style.willChange = ''; }, 500);
     }
     for (const c of cards) {
       c.addEventListener('mouseenter', enter as any);
