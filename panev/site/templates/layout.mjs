@@ -2,6 +2,7 @@
 // Всички url-и са абсолютни пътища; ORIGIN се ползва само за canonical/og.
 
 import { COMPANY, PATENT, CATALOG_PDF } from '../data/products.mjs';
+import { logoPicture, versioned } from './asset.mjs';
 
 export const ORIGIN = 'https://panevascensori.it';
 
@@ -109,7 +110,7 @@ export function jsonLd(t, pageKey, extra = []) {
 
 // styles/htmlAttrs/viewport: 3D страниците (viewer.mjs) идват със собствен стил и данни.
 export function head(t, locales, pageKey, {
-  ldExtra = [], ogImage = '/img/og-home.jpg', htmlAttrs = '',
+  ldExtra = [], ogImage = versioned('img/og-panev.jpg'), htmlAttrs = '',
   viewport = 'width=device-width, initial-scale=1', styles = '<link rel="stylesheet" href="/css/site.css">',
 } = {}) {
   const m = t.meta[pageKey];
@@ -169,7 +170,7 @@ export function header(t, locales, pageKey, activeKey) {
 <header class="site-header">
   <div class="wrap header-inner">
     <a class="brand" href="${pagePath(t, 'home')}" aria-label="${esc(COMPANY.name)}">
-      <img src="/img/panev-logo.png" srcset="/img/panev-logo.webp" alt="${esc(COMPANY.name)}" width="170" height="44">
+      ${logoPicture(esc(COMPANY.name), { width: 148 })}
     </a>
     <nav class="site-nav" id="site-nav" aria-label="${esc(t.nav.menuLabel)}">
         ${nav}
@@ -225,7 +226,7 @@ ${orderDrawer(t)}
 <footer class="site-footer">
   <div class="wrap footer-grid">
     <div class="footer-brand">
-      <img src="/img/panev-logo-darkmode.png" alt="${esc(COMPANY.name)}" width="170" height="44" loading="lazy">
+      ${logoPicture(esc(COMPANY.name), { width: 200, lazy: true })}
       <p>${esc(f.tagline)}</p>
       <p class="footer-patent">${esc(f.patentLine)}</p>
       <p class="footer-flag"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>${esc(f.madeInItaly)}</p>

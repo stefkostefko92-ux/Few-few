@@ -1,12 +1,17 @@
 """Checks dist/pdf/catalogo-staffe-panev-2026.pdf against the base catalogue:
-- every base page renders pixel-identical (page 7: identical outside its two cards);
+- every base page renders pixel-identical (page 7: identical outside its two cards), outside the
+  logo's place (logo.py);
+- every page shows the owner's logo exactly once, undistorted, inside its white badge or card, and
+  the old logo nowhere;
 - every 3D page carries only its own text and links to the drawing page its label names;
 - the outline and the index links still reach the same printed pages;
 - the page labels are PDFDocEncoded."""
 import os
 import sys
+from collections import Counter
 import numpy as np
 import pymupdf
+import logo
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist", "pdf")
 base = pymupdf.open(os.path.join(OUT, "base.pdf"))
@@ -24,16 +29,39 @@ positions = [i for i, flag in enumerate(is3d) if not flag]
 if len(positions) != base.page_count:
     sys.exit(f"{len(positions)} base pages found, {base.page_count} expected")
 
+def white(page, r):
+    """The white badge or card under the rectangle r (the smallest white fill round it)."""
+    fills = [d["rect"] for d in page.get_drawings() if d.get("fill") == (1.0, 1.0, 1.0) and (d.get("fill_opacity") or 1) > 0.9 and d["rect"].contains(r)]
+    return min(fills, key=lambda f: f.width * f.height, default=pymupdf.Rect())
+
+
+# The logo's place on each base page: the old one's place grown to the new one's (the section covers:
+# the badge), left out of the pixel comparison; and the white it has to stay on. The section covers
+# and the 3D pages take the header's badge, the most common one.
+size = logo.image()[2]
+olds = {pos: logo.old_logos(base[i]) for i, pos in enumerate(positions)}
+zones = {pos: [r | logo.placed(r, size) for _, r in old] or [logo.BADGE] for pos, old in olds.items()}
+whites = {pos: [white(base[i], r) for _, r in olds[pos]] for i, pos in enumerate(positions)}
+badge = pymupdf.Rect(Counter(tuple(w) for ws in whites.values() for w in ws).most_common(1)[0][0])
 cards = [pymupdf.Rect(140.6, 301.9, 400.9, 510.4), pymupdf.Rect(441.4, 301.9, 700.9, 510.4)]
+s = 60 / 72
 for i, pos in enumerate(positions):
     a, b = pixels(base[i]), pixels(new[pos])
-    if i == 6:
-        s = 60 / 72
-        for r in cards:
-            a[int(r.y0 * s) - 1 : int(r.y1 * s) + 2, int(r.x0 * s) - 1 : int(r.x1 * s) + 2] = 0
-            b[int(r.y0 * s) - 1 : int(r.y1 * s) + 2, int(r.x0 * s) - 1 : int(r.x1 * s) + 2] = 0
+    for r in zones[pos] + (cards if i == 6 else []):
+        a[int(r.y0 * s) - 1 : int(r.y1 * s) + 2, int(r.x0 * s) - 1 : int(r.x1 * s) + 2] = 0
+        b[int(r.y0 * s) - 1 : int(r.y1 * s) + 2, int(r.x0 * s) - 1 : int(r.x1 * s) + 2] = 0
     if np.abs(a - b).max():
         problems.append(f"base page {i + 1} changed")
+
+for page in new:
+    if logo.old_logos(page):
+        problems.append(f"page {page.number + 1}: the old logo is still there")
+    shown = [r for img in page.get_images(full=True) if (img[2], img[3]) == size for r in page.get_image_rects(img[0])]
+    on = whites.get(page.number) or [badge]
+    if len(shown) != 1 or not any((w + (-0.5, -0.5, 0.5, 0.5)).contains(shown[0]) for w in on):
+        problems.append(f"page {page.number + 1}: the logo at {shown}, expected once on the white of {on}")
+    elif abs(shown[0].width / shown[0].height - size[0] / size[1]) > 0.01:
+        problems.append(f"page {page.number + 1}: the logo is distorted ({shown[0]})")
 
 for pos in (p for p, flag in enumerate(is3d) if flag):
     page = new[pos]

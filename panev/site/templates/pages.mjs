@@ -2,13 +2,14 @@
 
 import { esc, pagePath, ORIGIN } from './layout.mjs';
 import { COMPANY, CATALOG_PDF } from '../data/products.mjs';
+import { versioned } from './asset.mjs';
 
 // ── Каталог ──────────────────────────────────────────────────
 export function catalogPage(t, locales) {
   const c = t.catalogPage;
   const previews = [1, 5, 8, 10, 14, 20, 40, 63, 65].map((n) => {
     const nn = String(n).padStart(2, '0');
-    return `<li><img src="/img/catalogo/pagina-${nn}.webp" alt="${esc(c.previewTitle)} — ${nn}" width="248" height="175" loading="lazy" decoding="async"></li>`;
+    return `<li><img src="${versioned(`img/catalogo/pagina-${nn}.webp`)}" alt="${esc(c.previewTitle)} — ${nn}" width="248" height="175" loading="lazy" decoding="async"></li>`;
   }).join('');
   const toc = c.toc.map((x) => `<li>${esc(x)}</li>`).join('');
 

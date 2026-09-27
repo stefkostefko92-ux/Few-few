@@ -78,6 +78,8 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
   без загуби: обикновеният WebP изглаждаше наклоните от по няколко нива на квадратни блокове.
   `spangle` се тегли чак при избор на горещата поцинковка, `forged` — с първата сглобка
   (`loadSets(base, names)`).
+- **`scripts/logo.mjs`** (`npm run logo`) — логото на сайта от `panev/img/brand/`: PNG 640 за
+  JSON-LD, WebP 640/360/180 и `img/og-panev.jpg`.
 - **`scripts/site.mjs`** (`npm run site`) — публикува в сайта бъндъла и текстурите
   (`../3d-viewer/`) и снимките от рендерите (`../img/3d/`, `../img/og-3d.jpg`). Страниците прави
   `panev/site/templates/viewer.mjs`, който чете маркировката и стила от `template.html` и сменя
@@ -97,7 +99,15 @@ xvfb-run -a npm run render -- --codes=<id,id> --size=1600x1200 --frames=48 --out
   - Прозрачният фон на листовете идва от CDP `Emulation.setDefaultBackgroundColorOverride`.
   - PyMuPDF записва префикса на page label като UTF-8. `merge.py` го превръща в PDFDocEncoding
     („·“ = `\267`).
-  - `verify.py` е гейтът на този PDF: всяка оригинална страница трябва да остане идентична.
+  - `verify.py` е гейтът на този PDF: всяка оригинална страница трябва да остане идентична, освен
+    мястото на логото.
+  - **Логото.** `logo.py` (вика го `merge.py`) слага логото от `panev/img/brand/` на мястото на
+    старото и в табелката на шестте корици на секции. Старото изображение се изпразва с
+    `delete_image`. Табелката на кориците е копие от продуктова страница: redaction маха всичко
+    друго, а старото лого се маха от потока (`/Name Do`) и от ресурсите. Иначе копието го носи.
+    `verify.py` иска логото точно веднъж на страница, върху бялото и неизкривено.
+  - `previews.py` прави наново `panev/img/catalogo/pagina-NN.webp` от готовия PDF в
+    `dist/pdf/catalogo/`.
 
 ## Правила
 
