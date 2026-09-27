@@ -78,7 +78,9 @@ export function aimKeyLight(key, camPos, center, intensity) {
 }
 
 // Budget per set: the courtyard floor and walls fill the frame and get the hero resolution.
-const textureBudget = (q) => ({ default: q.texSize, cobble: q.texHero, wall: q.texHero });
+// k < 1: вграден дуел (лендинг/бой в играта, canvas ~1200 px) — 2048² карти там не се виждат,
+// а качването им към GPU беше най-тежката стъпка при зареждане.
+const textureBudget = (q, k = 1) => ({ default: q.texSize * k, cobble: q.texHero * k, wall: q.texHero * k });
 
 // 4a.4: loadout = { heroTint, foeTint, heroKit, foeKit } (виж loadout.js — clone-and-tint на
 // steelA/steelB/goldB/brass/blade/bladeDark, само за клас-специфичните материали; всичко
@@ -93,10 +95,15 @@ export async function buildWorld(renderer, hud, quality, loadout = {}) {
   await nextFrame();
   const noise = noiseTexture();
   setNoise(noise);
-  const S = await loadBakedSets('tex/', textureBudget(quality), aniso, (k, n) => hud.loading(k < n * 0.5 ? 'load_forge' : 'load_cobbles', 0.05 + (k / n) * 0.45));
+  const S = await loadBakedSets('tex/', textureBudget(quality, loadout.texScale ?? 1), aniso, (k, n) => hud.loading(k < n * 0.5 ? 'load_forge' : 'load_cobbles', 0.05 + (k / n) * 0.45));
   hud.loading('load_walls', 0.55);
   await nextFrame();
-  const T0 = { capeA: capeTextureAzure(), capeB: capeTextureCrimson(), shield: shieldTextures(), banner: bannerTexture(), ripple: rippleTexture(), puddle: puddleTexture() };
+  // По кадър между рисуваните текстури — иначе една задача от ~1 s замразява страницата-домакин.
+  const T0 = {};
+  for (const [k, make] of Object.entries({ capeA: capeTextureAzure, capeB: capeTextureCrimson, shield: shieldTextures, banner: bannerTexture, ripple: rippleTexture, puddle: puddleTexture })) {
+    T0[k] = make();
+    await nextFrame();
+  }
 
   const M = createMaterials(S, T0);
   const scene = new THREE.Scene();

@@ -7,6 +7,8 @@ export interface BootOpts {
   reducedMotion?: boolean;
   /** false спира на последния кадър вместо да зацикля (реални битки не зацикляй). */
   loop?: boolean;
+  /** Вграден в React страница: без глобални клавиши и без смяна на document.title/lang. */
+  embedded?: boolean;
   onEnd?: () => void;
   /** Извиква се ТОЧНО в кадъра на всеки контактен/roundmark EVENTS запис (choreo-gen.js). */
   onImpact?: (ev: { type: string; roundIndex?: number; by?: 'A' | 'B'; against?: 'A' | 'B' }) => void;

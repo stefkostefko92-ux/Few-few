@@ -1,8 +1,6 @@
-// Duel at Ravenhold: boots the renderer (WebGPU, WebGL 2 fallback), runs the story clock, camera
-// and frame loop. A frame-time governor holds 60fps by moving internal resolution, not effects.
-// 4a.2/4a.3 (Nexus порт): main() → export async function bootDuel(canvas, opts), приема
-// opts.choreography (choreo-gen.js), връща { dispose(), togglePlay, setSpeed, toggleSound, skip }
-// — реалните битки карат СВОЯ дуел през същия конвейер; auto-run долу пази `import('./main.js')`.
+// Duel at Ravenhold: renderer (WebGPU, WebGL 2 fallback), story clock, camera, frame loop; governor
+// държи 60fps чрез вътрешна резолюция. bootDuel(canvas, opts) — opts.choreography (choreo-gen.js),
+// връща { dispose(), togglePlay, setSpeed, toggleSound, skip }; auto-run долу пази демо пътя.
 import * as THREE from 'three/webgpu';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, animateWorld, aimKeyLight } from './world.js';
@@ -21,13 +19,12 @@ import { acceptIdentitySwizzle } from './gpu-compat.js';
 import { installDevHooks } from './dev-hooks.js';
 import { mobileGrade } from './mobile-grade.js';
 import { classLoadout, foeLoadout, weaponKit } from './loadout.js';
+import { createFrameGate } from './frame-gate.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
-/** Стартира дуела в canvas. opts.choreography (choreo-gen.js) подменя хореографията преди
- * построяването на света; без него тръгва фиксираният демо-филм. Връща { dispose() } за пълно
- * почистване (GPU памет, слушатели, rAF, AudioContext) — 4a.5 гейтва растеж на ресурсите. */
+/** Стартира дуела в canvas; dispose() чисти GPU памет, слушатели, rAF и AudioContext. */
 export async function bootDuel(canvas, opts = {}) {
   if (opts.choreography) { setChoreography(opts.choreography); setDuration(opts.choreography.duration); }
   else resetChoreography();
@@ -42,15 +39,14 @@ export async function bootDuel(canvas, opts = {}) {
   let free = false;
   let showStats = false;
   const h = {};
-  const hud = createHud(h);
+  const hud = createHud(h, { embedded: !!opts.embedded });
   let disposed = false;
 
-  // Абортира РАНО (преди buildWorld()/compileAsync), ако StrictMode вече е размонтирал —
-  // без това двете double-invoke копия се борят за GPU едновременно под софтуерен рендер.
+  // Абортира РАНО (преди buildWorld()/compileAsync), ако StrictMode вече е размонтирал.
   function bailIfAborted() {
     if (!opts.signal?.aborted) return false;
     try { renderer?.dispose(); } catch { /* backend already gone */ }
-    return true;
+    hud.dispose(); return true;
   }
 
   let renderer;
@@ -59,14 +55,14 @@ export async function bootDuel(canvas, opts = {}) {
     acceptIdentitySwizzle();
     renderer = new THREE.WebGPURenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance', forceWebGL });
     await renderer.init();
-  } catch { hud.fatal(); return { failed: true, dispose() {} }; }
+  } catch { hud.fatal(); hud.dispose(); return { failed: true, dispose() {} }; }
   if (bailIfAborted()) return { dispose() {} };
   const backend = renderer.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL 2';
   // 4a.4: тон по opts.heroClass/opts.region, оръжие/щит по opts.heroClass/opts.foeName — виж
   // loadout.js; choreo-gen.js чете СЪЩИТЕ heroClass/foeName/foeSprite (4b: риг/geo по вид).
   const W = await buildWorld(renderer, hud, quality, {
     heroTint: classLoadout(opts.heroClass), foeTint: foeLoadout(opts.region),
-    heroKit: weaponKit(opts.heroClass), foeKit: weaponKit(opts.foeName, opts.foeSprite), foeSprite: opts.foeSprite,
+    heroKit: weaponKit(opts.heroClass), foeKit: weaponKit(opts.foeName, opts.foeSprite), foeSprite: opts.foeSprite, texScale: opts.embedded ? 0.5 : 1,
   });
   if (bailIfAborted()) return { dispose() {} };
   const { scene, camera, A, B, fx } = W;
@@ -75,8 +71,9 @@ export async function bootDuel(canvas, opts = {}) {
   const csm = W.moon.shadow.shadowNode;
   const director = createDirector(camera, { reducedMotion, shots: opts.choreography?.shots });
   const audio = createAudio();
-  const controls = new OrbitControls(camera, renderer.domElement);
-  Object.assign(controls, { enabled: false, enableDamping: true, minDistance: 1.2, maxDistance: 22, maxPolarAngle: Math.PI * 0.495 });
+  // Лениво: OrbitControls закача non-passive `wheel` на canvas-а → скролът над дуела чакаше main thread.
+  let controls = null;
+  const orbit = () => (controls ??= Object.assign(new OrbitControls(camera, renderer.domElement), { enabled: false, enableDamping: true, minDistance: 1.2, maxDistance: 22, maxPolarAngle: Math.PI * 0.495 }));
 
   const lightning = { at: -10, power: 0 };
   const events = createEvents({
@@ -125,8 +122,8 @@ export async function bootDuel(canvas, opts = {}) {
     setSpeed(v) { clock.speed = v; hud.setSpeed(v); },
     toggleCamera() {
       free = !free;
-      controls.enabled = free;
-      if (free) controls.target.copy(A.root.pos).add(B.root.pos).multiplyScalar(0.5).setY(1.2);
+      orbit().enabled = free;
+      if (free) orbit().target.copy(A.root.pos).add(B.root.pos).multiplyScalar(0.5).setY(1.2);
       hud.setCamera(free);
     },
     toggleSound() { hud.setSound(audio.toggle()); },
@@ -172,7 +169,9 @@ export async function bootDuel(canvas, opts = {}) {
   governor.reset(perf.last);
 
   let lastFov = 0;
+  const gate = createFrameGate(canvas, clock, () => free);
   function frame(now) {
+    if (!gate.shouldRender(now)) { perf.last = now; governor.reset(now); return; }
     const dtMs = now - perf.last;
     const dtReal = Math.min(0.05, Math.max(0, dtMs / 1000));
     perf.last = now;
@@ -272,6 +271,7 @@ export async function bootDuel(canvas, opts = {}) {
       disposed = true;
       renderer.setAnimationLoop(null);
       window.removeEventListener('resize', resize);
+      gate.dispose(); controls?.dispose(); hud.dispose();
       audio.dispose?.();
       try { renderer.dispose(); } catch { /* backend already gone */ }
       const gl = renderer.getContext?.();

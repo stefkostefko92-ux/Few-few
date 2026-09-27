@@ -79,7 +79,7 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
     const choreography = rounds && rounds.length > 0 ? choreographyFromRounds(rounds, victory, heroClass, foeName, foeSprite) : undefined;
     // Литерален relative specifier (не динамична променлива) — нужно е Vite/Rollup да го
     // открие статично и да го изнесе в собствен lazy chunk.
-    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, onEnd, onImpact, signal: controller.signal, heroClass, region, foeName, foeSprite })).then((h) => {
+    import('./boy/src/main.js').then((mod) => mod.bootDuel(canvas, { choreography, loop, embedded, onEnd, onImpact, signal: controller.signal, heroClass, region, foeName, foeSprite })).then((h) => {
       if (controller.signal.aborted) { h.dispose(); return; }
       if (h.failed) { onFail?.(new Error('renderer unavailable')); return; }
       bootRef.current = h;
@@ -93,7 +93,7 @@ const BoyDuelStage = forwardRef<BoyDuelHandle, Props>(({ rounds, victory = true,
       bootRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rounds, victory, loop, heroClass, region, foeName, foeSprite]);
+  }, [rounds, victory, loop, embedded, heroClass, region, foeName, foeSprite]);
 
   return <div className={`boy-duel-root${embedded ? ' embedded' : ''}`} ref={rootRef} />;
 });
