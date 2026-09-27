@@ -3,12 +3,14 @@
 - after every product (after the assembly drawing for SU/SD/SC) a 3D page is inserted: a copy of
   the product page keeps its header, side tab and footer, its body is removed by redaction and the
   sheet is laid over it, with a link back to the technical drawing;
-- page labels follow the printed numbers ("14", "14 · 3D", ...).
-Every other page stays as it is: drawings, dimensions, ranges, tables and prices.
+- page labels follow the printed numbers ("14", "14 · 3D", ...);
+- the logo is the owner's new one on every page (logo.py).
+Every other thing stays as it is: drawings, dimensions, ranges, tables and prices.
 Writes dist/pdf/catalogo-staffe-panev-2026.pdf."""
 import json
 import os
 import pymupdf
+import logo
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist", "pdf")
 spec = json.load(open(os.path.join(OUT, "spec.json")))["pages"]
@@ -45,6 +47,8 @@ for k, page_spec in sorted(enumerate(spec), key=lambda t: -t[1]["after"]):  # fr
     page.show_pdf_page(page.rect, gen, k)
     page.insert_link({"kind": pymupdf.LINK_GOTO, "from": LINK, "page": page_spec["refs"][0][0] - 1, "to": pymupdf.Point(0, 0)})
     order.insert(at, None)
+
+logo.apply(doc, tpl)  # the owner's logo on every page, in place of the old one (logo.py)
 
 base_labels = {i: "Copertina" if i == 0 else "Retro" if i == n_base - 1 else f"{i:02d}" for i in range(n_base)}
 added = iter(p["label"] for p in sorted(spec, key=lambda p: p["after"]))

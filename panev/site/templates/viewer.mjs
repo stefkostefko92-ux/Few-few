@@ -8,7 +8,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { esc, head, pagePath, ORIGIN } from './layout.mjs';
-import { versioned } from './asset.mjs';
+import { logoPicture, versioned } from './asset.mjs';
 import { COMPANY } from '../data/products.mjs';
 import { strings } from '../../3d/src/ui/i18n.js';
 
@@ -42,7 +42,7 @@ function localize(app, t, locales, embed) {
   const swaps = [
     // В рамката лентата е скрита: без логото (картинката иначе се тегли напразно).
     ...(embed ? [] : [['<header class="top">', `<header class="top">
-    <a class="home" href="${pagePath(t, 'home')}"><img src="/img/panev-logo-darkmode.png" alt="${esc(COMPANY.name)}" width="170" height="44"></a>`]]),
+    <a class="home" href="${pagePath(t, 'home')}">${logoPicture(esc(COMPANY.name), { width: 128 })}</a>`]]),
     ['<h1 id="title">Staffe Panev in 3D</h1>', `<h1 id="title">${esc(s.title)}</h1>`],
     ['aria-label="Lingua"></div>', `aria-label="${esc(s.language)}">${langs}</div>`],
     ['aria-label="Catalogo 2026"', `aria-label="${esc(s.catalog)}"`],

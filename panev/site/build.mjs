@@ -30,19 +30,18 @@ const LISTINO_CSS = versioned('css/listino.css');
 const STYLES = '<link rel="stylesheet" href="/css/site.css">';
 
 const PAGES = [
-  { key: 'home',     og: '/img/og-home.jpg',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t), css: [VISTA_CSS] },
-  { key: 'products', og: '/img/og-prodotti.jpg', body: (t) => productsPage(t, locales), ld: (t) => productsLd(t), css: [VISTA_CSS, LISTINO_CSS] },
-  { key: 'catalog',  og: '/img/og-prodotti.jpg', body: (t) => catalogPage(t, locales),  ld: (t) => catalogLd(t) },
-  { key: 'contacts', og: '/img/og-contatti.jpg', body: (t) => contactsPage(t, locales), ld: (t) => contactsLd(t) },
-  { key: 'privacy',  og: '/img/og-home.jpg',     body: (t) => privacyPage(t) },
-  { key: 'terms',    og: '/img/og-home.jpg',     body: (t) => termsPage(t) },
+  { key: 'home',     body: (t) => homePage(t, locales), ld: (t) => homeLd(t), css: [VISTA_CSS] },
+  { key: 'products', body: (t) => productsPage(t, locales), ld: (t) => productsLd(t), css: [VISTA_CSS, LISTINO_CSS] },
+  { key: 'catalog',  body: (t) => catalogPage(t, locales),  ld: (t) => catalogLd(t) },
+  { key: 'contacts', body: (t) => contactsPage(t, locales), ld: (t) => contactsLd(t) },
+  { key: 'privacy',  body: (t) => privacyPage(t) },
+  { key: 'terms',    body: (t) => termsPage(t) },
 ];
 
 let written = 0;
 for (const t of locales) {
   for (const def of PAGES) {
     const html = page(t, locales, def.key, def.key, def.body(t), {
-      ogImage: def.og,
       ldExtra: def.ld ? def.ld(t) : [],
       styles: [STYLES, ...(def.css ?? []).map((href) => `<link rel="stylesheet" href="${href}">`)].join('\n  '),
     });
