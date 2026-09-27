@@ -4,21 +4,25 @@
   the product page keeps its header, side tab and footer, its body is removed by redaction and the
   sheet is laid over it, with a link back to the technical drawing;
 - page labels follow the printed numbers ("14", "14 · 3D", ...);
-- the logo is the owner's new one on every page (logo.py).
+- the logo is the owner's new one on every page (logo.py);
+- "Proprietà intellettuale di Panev Ascensori SAS" in every footer but the cover's and on every
+  technical drawing (notice.py; the renders carry it from their sheets).
 Every other thing stays as it is: drawings, dimensions, ranges, tables and prices.
 Writes dist/pdf/catalogo-staffe-panev-2026.pdf."""
 import json
 import os
 import pymupdf
 import logo
+import notice
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist", "pdf")
-spec = json.load(open(os.path.join(OUT, "spec.json")))["pages"]
+data = json.load(open(os.path.join(OUT, "spec.json")))
+spec, stamps = data["pages"], data["stamps"]
 gen = pymupdf.open(os.path.join(OUT, "gen.pdf"))
 doc = pymupdf.open(os.path.join(OUT, "base.pdf"))
 tpl = pymupdf.open(os.path.join(OUT, "base.pdf"))  # untouched copy: templates of the inserted pages
 n_base = doc.page_count
-if gen.page_count != len(spec) + 1:
+if gen.page_count != len(spec) + 1 + len(stamps):  # the sheets, the page-7 overlay, the stamps
     raise SystemExit("gen.pdf does not match spec.json: run gen.py and print.mjs again")
 
 # Page 7: remove the two line illustrations, lay the renders over the cards.
@@ -28,7 +32,7 @@ if len(drawings) != 2:
     raise SystemExit(f"page 7: expected the 2 DX / SX illustrations, found {len(drawings)}")
 for info in drawings:
     p06.delete_image(info["xref"])
-p06.show_pdf_page(p06.rect, gen, gen.page_count - 1)
+p06.show_pdf_page(p06.rect, gen, len(spec))
 
 BODY = pymupdf.Rect(0, 40.5, 815.5, 569.5)  # below the header bar, above the footer, left of the side tab
 PAGENO = pymupdf.Rect(780, 575, 815, 591)
@@ -60,6 +64,7 @@ doc.set_page_labels([{"startpage": pos, "prefix": lab, "style": "", "firstpagenu
 # PyMuPDF writes the prefix as UTF-8 bytes; PDF text strings want PDFDocEncoding, where "·" is 0xB7.
 kind, value = doc.xref_get_key(doc.pdf_catalog(), "PageLabels")
 doc.xref_set_key(doc.pdf_catalog(), "PageLabels", value.replace("\\302\\267", "\\267"))
+notice.apply(doc, gen, stamps)  # the intellectual property notice, by the labels (notice.py)
 
 out = os.path.join(OUT, "catalogo-staffe-panev-2026.pdf")
 doc.save(out, garbage=4, deflate=True)
