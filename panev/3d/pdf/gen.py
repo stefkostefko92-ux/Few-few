@@ -1,6 +1,7 @@
 """Builds the "Vista 3D" pages of the catalogue as HTML (print.mjs prints them, merge.py puts them into
 the catalogue): one page after every product, plus the page-7 overlay with the DX / SX renders.
-Writes dist/pdf/: base.pdf (the catalogue before the 3D pages), img/*.jpg, sheets.html, spec.json.
+Writes dist/pdf/: base.pdf (the catalogue before the 3D pages), img/*.jpg, sheets.html (the sheets, the page-7
+overlay, the intellectual property stamps), spec.json.
 Renders: lossless PNG from dist/renders* when present, else the committed WebP in renders/."""
 import json
 import math
@@ -52,6 +53,18 @@ for (name, catalogue), width_pt in placed.items():
     img.save(os.path.join(OUT, rel), "JPEG", quality=88, subsampling=2, optimize=True)
     files[(name, catalogue)] = rel
 
+# "Proprietà intellettuale di Panev Ascensori SAS" (the owner's wish: almost everywhere in the catalogue): a caption at the
+# bottom right of every render here, and stamp pages after the sheets for notice.py to lay on the other pages:
+# the footer line after "MADE IN ITALY", the same alone on the section covers, the line after the copyright on the back,
+# and the caption of the technical drawings. Each stamp: [page after the sheets, its rectangle there].
+IP = "Proprietà intellettuale di Panev Ascensori SAS"
+IP_BOX = (142, 9.6)
+STAMPS = {
+    "foot": (0, (100, 572, 380, 592), f'<div class="abs foot" style="left:104.6pt;color:#5c7690">· {IP}</div>'),
+    "foot_light": (1, (30, 572, 380, 592), f'<div class="abs foot" style="left:34pt;color:#9aaac4">{IP}</div>'),
+    "back": (2, (247, 552, 610, 568), f'<div class="abs" style="left:250pt;top:556.1pt;font-size:6.75pt;letter-spacing:0.06em;color:#9aaac4;white-space:nowrap">· {IP}</div>'),
+    "corner": (3, (100, 100, 100 + IP_BOX[0], 100 + IP_BOX[1]), f'<div class="ip" style="left:100pt;top:100pt;right:auto;bottom:auto">© {IP}</div>'),
+}
 CSS = f"""
 @font-face {{ font-family: Inter; src: url(file://{FONTS}/Inter-var-latin.woff2) format('woff2'); font-weight: 100 900;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }}
@@ -92,6 +105,9 @@ html, body {{ margin: 0; padding: 0; background: transparent; }}
 .refs {{ right: 40.5pt; top: 546.3pt; font-size: 6.75pt; font-weight: 500; letter-spacing: 0.1em; color: #5a6875; text-transform: uppercase; white-space: nowrap; }}
 .pageno {{ right: 34pt; top: 578.9pt; font-size: 6.38pt; font-weight: 700; letter-spacing: 0.12em; color: #162862; white-space: nowrap; }}
 .p06 {{ border-radius: 4pt; overflow: hidden; }}
+.ip {{ position: absolute; right: 3pt; bottom: 3pt; width: {IP_BOX[0]}pt; height: {IP_BOX[1]}pt; display: flex; align-items: center; justify-content: center;
+  border-radius: 2pt; background: rgba(255, 255, 255, 0.82); font-size: 5.6pt; font-weight: 500; letter-spacing: 0.02em; color: #667298; white-space: nowrap; }}
+.foot {{ top: 578.9pt; font-size: 6.38pt; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; white-space: nowrap; }}
 """
 CUBE = ('<svg viewBox="0 0 24 24" fill="none" stroke="#162862" stroke-width="1.6" stroke-linejoin="round">'
         '<path d="M12 2.8 20.5 7.4v9.2L12 21.2 3.5 16.6V7.4z"/><path d="M3.5 7.4 12 12l8.5-4.6M12 12v9.2"/></svg>')
@@ -107,7 +123,7 @@ def tags(s):
 
 
 def sheet(p):
-    shots = "".join(f'<div class="abs shot" style="{box(*s["rect"])}"><img src="{files[(s["render"], False)]}" alt="">{tags(s)}</div>' for s in p["shots"])
+    shots = "".join(f'<div class="abs shot" style="{box(*s["rect"])}"><img src="{files[(s["render"], False)]}" alt="">{tags(s)}<div class="ip">© {IP}</div></div>' for s in p["shots"])
     chips = "".join(f'<span class="chip">{escape(c)}</span>' for c in p["codes"])
     refs = "Disegni tecnici · pag. " + " – ".join(n for _, n in p["refs"])
     return (
@@ -124,14 +140,18 @@ def sheet(p):
 
 
 def sheet_p06():
-    imgs = "".join(f'<div class="abs p06" style="{box(r[0], r[1], r[2] - r[0], r[3] - r[1])}"><img src="{files[(n, True)]}" alt=""></div>' for n, r in L.P7)
+    imgs = "".join(f'<div class="abs p06" style="{box(r[0], r[1], r[2] - r[0], r[3] - r[1])}"><img src="{files[(n, True)]}" alt=""><div class="ip">© {IP}</div></div>' for n, r in L.P7)
     return f'<section class="sheet">{imgs}</section>'
 
 
-html = f'<!doctype html><html lang="it"><head><meta charset="utf-8"><style>{CSS}</style></head><body>{"".join(sheet(p) for p in pages)}{sheet_p06()}</body></html>'
+def stamps():
+    return "".join(f'<section class="sheet">{html}</section>' for _, (_, _, html) in sorted(STAMPS.items(), key=lambda kv: kv[1][0]))
+
+
+html = f'<!doctype html><html lang="it"><head><meta charset="utf-8"><style>{CSS}</style></head><body>{"".join(sheet(p) for p in pages)}{sheet_p06()}{stamps()}</body></html>'
 with open(os.path.join(OUT, "sheets.html"), "w") as f:
     f.write(html)
 with open(os.path.join(OUT, "spec.json"), "w") as f:
-    json.dump(dict(pages=pages), f, ensure_ascii=False, indent=1)
+    json.dump(dict(pages=pages, stamps={k: [len(pages) + 1 + n, rect] for k, (n, rect, _) in STAMPS.items()}), f, ensure_ascii=False, indent=1)
 size = sum(os.path.getsize(os.path.join(OUT, v)) for v in files.values())
-print(f"{len(pages)} 3D pages + page-7 overlay, {len(files)} images, {size / 1e6:.1f} MB")
+print(f"{len(pages)} 3D pages + page-7 overlay + {len(STAMPS)} stamps, {len(files)} images, {size / 1e6:.1f} MB")
