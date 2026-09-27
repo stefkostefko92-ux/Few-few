@@ -91,27 +91,33 @@
 }
 
 /* ===== Animated gradient mesh ===== */
+/* ПРОИЗВОДИТЕЛНОСТ (лаг/забиване на лендинга): мрежата беше absolute върху
+   ЦЯЛАТА страница (~14 700 px) с filter:blur(120px) + mix-blend-mode:screen
+   на 4 анимирани петна → blur-ът се преизчисляваше всеки кадър, а смесването
+   изискваше изолирана група с размера на страницата (~80 MB GPU памет само
+   за нея). Измерено в Chromium: 12.5 → 42 fps при скрол само от тази смяна.
+   Сега: fixed слой с размера на екрана, мекотата идва от самия градиент
+   (без filter), без blend режим — на почти черен фон screen ≈ нормално. */
 .gradient-mesh {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  contain: strict;
 }
 .mesh-blob {
   position: absolute;
   width: 800px;
   height: 800px;
   border-radius: 50%;
-  filter: blur(120px);
-  mix-blend-mode: screen;
-  opacity: .55;
+  opacity: .4;
   will-change: transform;
 }
-.mesh-blob.mesh-1 { background: radial-gradient(circle, #d6a13d, transparent 70%); top: -200px; left: -200px; animation: mesh-drift-1 22s ease-in-out infinite; }
-.mesh-blob.mesh-2 { background: radial-gradient(circle, #b6261b, transparent 70%); top: 25%; right: -300px; animation: mesh-drift-2 26s ease-in-out infinite; }
-.mesh-blob.mesh-3 { background: radial-gradient(circle, #6f3fb6, transparent 70%); bottom: -300px; left: 35%; animation: mesh-drift-3 30s ease-in-out infinite; }
-.mesh-blob.mesh-4 { background: radial-gradient(circle, #1f8b54, transparent 70%); top: 60%; left: -250px; animation: mesh-drift-4 28s ease-in-out infinite; opacity: .35; }
+.mesh-blob.mesh-1 { background: radial-gradient(circle closest-side, rgba(214,161,61,.75), rgba(214,161,61,.28) 45%, transparent); top: -200px; left: -200px; animation: mesh-drift-1 22s ease-in-out infinite; }
+.mesh-blob.mesh-2 { background: radial-gradient(circle closest-side, rgba(182,38,27,.75), rgba(182,38,27,.28) 45%, transparent); top: 25%; right: -300px; animation: mesh-drift-2 26s ease-in-out infinite; }
+.mesh-blob.mesh-3 { background: radial-gradient(circle closest-side, rgba(111,63,182,.75), rgba(111,63,182,.28) 45%, transparent); bottom: -300px; left: 35%; animation: mesh-drift-3 30s ease-in-out infinite; }
+.mesh-blob.mesh-4 { background: radial-gradient(circle closest-side, rgba(31,139,84,.75), rgba(31,139,84,.28) 45%, transparent); top: 60%; left: -250px; animation: mesh-drift-4 28s ease-in-out infinite; opacity: .25; }
 @keyframes mesh-drift-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33% { transform: translate(120px, 100px) scale(1.15); }
@@ -132,8 +138,10 @@
 }
 
 /* Background grid */
+/* fixed с размера на екрана — absolute върху цялата страница правеше слой
+   ~80 MB (Overlap промоция над анимираната мрежа). */
 .landing-grid {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
@@ -189,10 +197,12 @@
 [data-reveal-stagger].revealed > *:nth-child(n+13) { opacity: 1; transform: translateY(0); transition-delay: .55s; }
 
 /* ===== 3D tilt + glare ===== */
+/* will-change се слага от LandingEffects само докато курсорът е над картата —
+   постоянното беше ~23 отделни GPU слоя, и то на телефон, където наклонът
+   изобщо не работи. */
 [data-tilt] {
   position: relative;
   transform-style: preserve-3d;
-  will-change: transform;
 }
 .tilt-glare {
   position: absolute;
@@ -245,9 +255,12 @@
 /* Section reveal helper */
 .section [data-reveal] { transition-delay: .05s; }
 
+/* Жарава: fixed с размера на екрана, не absolute върху цялата страница —
+   анимиран transform на слой 1440×14 700 px (~80 MB) принуждаваше и десетки
+   карти над него в собствени слоеве (overlap промоция). */
 .landing::before {
   content: '';
-  position: absolute;
+  position: fixed;
   inset: 0;
   background-image:
     radial-gradient(2px 2px at 25% 20%, rgba(255,210,140,.85), transparent 60%),
@@ -934,7 +947,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing::before, .hero-fighter, .hero-eyebrow, .hero-title, .hero-subtitle, .hero-cta, .hero-logo {
+  .landing::before, .mesh-blob, .hero-fighter, .hero-eyebrow, .hero-title, .hero-subtitle, .hero-cta, .hero-logo {
     animation: none !important;
   }
 }
