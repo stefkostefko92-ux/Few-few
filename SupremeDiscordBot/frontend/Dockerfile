@@ -25,7 +25,10 @@ COPY --chown=nginx:nginx nginx-security-headers.conf /etc/nginx/security-headers
 # nginx-unprivileged uses port 8080 (no privileged binding)
 EXPOSE 8080
 
+# 127.0.0.1, НЕ localhost: в Alpine образа `localhost` сочи към ::1 (IPv6), а nginx
+# слуша само на IPv4 (`listen 8080;`) → „Connection refused“ и контейнерът стоеше
+# „unhealthy“, докато сайтът работеше (реален провал на сървъра, 27.09.2026).
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -q -O /dev/null http://localhost:8080/ || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

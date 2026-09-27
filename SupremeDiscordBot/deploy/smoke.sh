@@ -99,7 +99,7 @@ if command -v docker >/dev/null && [ -f "$COMPOSE_DIR/docker-compose.yml" ]; the
   # а fetch връща тялото при всеки код. Плюс същото търпение като пробата.
   bot_health() {
     (cd "$COMPOSE_DIR" && docker compose exec -T bot node -e \
-      'fetch("http://localhost:3001/health").then((r)=>r.text()).then((t)=>console.log(t)).catch(()=>process.exit(1))' \
+      'fetch("http://127.0.0.1:3001/health").then((r)=>r.text()).then((t)=>console.log(t)).catch(()=>process.exit(1))' \
       2>/dev/null) || echo ""
   }
   b=""

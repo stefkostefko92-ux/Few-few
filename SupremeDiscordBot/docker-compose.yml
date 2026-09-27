@@ -152,7 +152,7 @@ services:
     expose:
       - "3000"  # internal only — nginx proxies to this
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -206,7 +206,7 @@ services:
     expose:
       - "3001"  # internal only — only backend calls it
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -261,7 +261,8 @@ services:
       # (plain HTTP, no X-Forwarded-Proto → secure session cookie never set).
       - "127.0.0.1:8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ >/dev/null || exit 1"]
+      # 127.0.0.1, не localhost: localhost = ::1 в Alpine, nginx слуша само IPv4 (27.09.2026).
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
