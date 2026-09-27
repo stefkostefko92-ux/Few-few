@@ -5,9 +5,12 @@
 // (слаба машина по Navigator API или измерени <40 FPS две секунди подред) сваля ефектите още.
 document.documentElement.classList.add("js");
 var FINE = matchMedia("(pointer: fine)").matches;
-var PAUSED = false; try { PAUSED = localStorage.getItem("cs-lite") === "1"; } catch (e) {} // изборът „Анимации: стоп" (WCAG 2.2.2) се помни
-var LITE = PAUSED || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4) || (navigator.connection && navigator.connection.saveData) || matchMedia("(update: slow)").matches;
-function goLite() { if (LITE) return; LITE = true; document.documentElement.classList.add("lite"); dispatchEvent(new Event("cs-lite")); }
+// Изборът на потребителя (WCAG 2.2.2) се помни: "1" = „стоп", "0" = „пусни" (надделява и над автоматичния LITE
+// на слаба машина, и над FPS детектора), липса = автоматично.
+var FX_PREF = null; try { FX_PREF = localStorage.getItem("cs-lite"); } catch (e) {}
+var PAUSED = FX_PREF === "1", FORCED = FX_PREF === "0";
+var LITE = PAUSED || !FORCED && !!((navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || (typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4) || (navigator.connection && navigator.connection.saveData) || matchMedia("(update: slow)").matches);
+function goLite() { if (LITE || FORCED) return; LITE = true; document.documentElement.classList.add("lite"); dispatchEvent(new Event("cs-lite")); }
 if (LITE) document.documentElement.classList.add("lite");
 var P = { x: innerWidth / 2, y: innerHeight / 2, down: false, moved: false };
 addEventListener("pointermove", function (e) { P.x = e.clientX; P.y = e.clientY; P.moved = true; }, { passive: true });
@@ -76,11 +79,18 @@ addEventListener("pointerdown", function (e) {
 (function loop(now) { for (var i = 0; i < FRAME.length; i++) FRAME[i](now); requestAnimationFrame(loop); })(performance.now());
 
 // --- „Анимации: стоп" — потребителски контрол за движещото се съдържание (WCAG 2.2.2); включва LITE режима и се помни ---
+// Двупосочен: „стоп" спира на място (goLite); „пусни" помни "0" и презарежда — курсорът, магнитите, живите прегледи
+// и бурята се инициализират само при старт, затова връщането без презареждане би било наполовина.
 (function () {
   var ts = document.querySelectorAll("[data-fx-toggle]"); if (!ts.length) return;
-  function mark() { ts.forEach(function (t) { t.setAttribute("aria-pressed", "true"); t.textContent = t.dataset.on; t.disabled = true; }); }
-  if (PAUSED) mark();
-  ts.forEach(function (t) { t.addEventListener("click", function () { try { localStorage.setItem("cs-lite", "1"); } catch (e) {} goLite(); mark(); }); });
+  function mark(paused) { ts.forEach(function (t) { t.dataset.off = t.dataset.off || t.textContent; t.setAttribute("aria-pressed", String(paused)); t.textContent = paused ? t.dataset.on : t.dataset.off; }); }
+  mark(LITE);
+  addEventListener("cs-lite", function () { mark(true); }); // FPS детекторът също спира → бутонът показва „пусни"
+  ts.forEach(function (t) { t.addEventListener("click", function () {
+    if (LITE) { try { localStorage.setItem("cs-lite", "0"); } catch (e) {} location.reload(); return; }
+    try { localStorage.setItem("cs-lite", "1"); } catch (e) {}
+    FORCED = false; goLite();
+  }); });
 })();
 
 // --- меню + език ---

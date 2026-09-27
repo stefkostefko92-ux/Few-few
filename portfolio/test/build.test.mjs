@@ -235,6 +235,9 @@ test("формата за запитване: POST /api/contact на трите 
   }
   assert.ok(readFileSync(join(ROOT_DIR, "nginx.conf"), "utf8").includes("location /api/"), "nginx проксира /api/");
   assert.ok(readFileSync(join(ROOT_DIR, "src/assets/site.js"), "utf8").includes('getElementById("cform")'), "site.js обработва формата");
+  // „Анимации: стоп" е двупосочен (WCAG 2.2.2): никога не се заключва, „пусни" помни "0" и надделява над автоматичния LITE.
+  const siteJs = readFileSync(join(ROOT_DIR, "src/assets/site.js"), "utf8");
+  assert.ok(!/t\.disabled\s*=\s*true/.test(siteJs) && siteJs.includes('localStorage.setItem("cs-lite", "0")') && siteJs.includes("!FORCED && !!("), "бутонът за анимациите пуска отново");
 });
 
 test("достъпност: a11y/report.json покрива всички BG страници + EN/IT хъб с нула грешки; декларацията ×3 носи реалните числа; бутон „Анимации: стоп“ в хъба; брошурата А5 ×3 (HTML noindex + PDF с 6 страници, линк в подножието)", () => {
@@ -250,6 +253,7 @@ test("достъпност: a11y/report.json покрива всички BG ст
     assert.ok(a.includes("WCAG 2.1"), `${lang}: стандартът е посочен`);
     const hub = readFileSync(join(OUT, `${lang}/index.html`), "utf8");
     assert.ok(hub.includes('data-fx-toggle') && hub.includes('aria-pressed="false"'), `${lang}: бутон за спиране на анимациите`);
+    assert.ok(hub.includes(`data-on="${I18N[lang].nav.pauseOn}"`), `${lang}: бутонът носи и текста за пускане`);
     assert.ok(hub.includes(`href="${PATHS.a11y[lang]}"`) && hub.includes(`href="${BROCHURE_PDF[lang]}" download`), `${lang}: линкове към декларацията и PDF брошурата`);
     const b = readFileSync(join(OUT, PATHS.brochure[lang].slice(1), "index.html"), "utf8");
     assert.ok(b.includes('content="noindex, follow"') && (b.match(/<section class="bp/g) || []).length === 6, `${lang}: брошурата е noindex с 6 страници`);

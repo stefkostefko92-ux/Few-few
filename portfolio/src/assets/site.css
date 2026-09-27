@@ -224,7 +224,7 @@ body.glitching{box-shadow:inset 3px 0 0 rgba(var(--cyan-rgb),.5),inset -3px 0 0 
 .legal h2{font-size:1.2rem;letter-spacing:.05em;color:var(--cyan);margin:36px 0 12px}
 .legal p{font-size:12px;color:var(--text);line-height:2;max-width:70ch;margin-bottom:8px}
 .a11y-list{padding-left:18px;display:grid;gap:8px;font-size:12px;line-height:1.9;color:var(--text);max-width:70ch}.a11y-result{color:var(--off)}
-.fx-toggle{background:none;border:1px solid rgba(var(--cyan-rgb),.35);color:var(--text);padding:6px 9px;cursor:pointer;font:inherit;font-size:9px;letter-spacing:.2em;text-transform:uppercase;min-height:24px}.fx-toggle:hover{border-color:var(--cyan);color:var(--cyan)}.fx-toggle[aria-pressed=true]{color:var(--cyan);border-style:dashed;cursor:default}@media(max-width:900px){.fx-toggle:not(.fx-mobile){display:none}}.fx-mobile{display:none;margin-top:24px;align-self:flex-start}@media(max-width:900px){.mobile-menu .fx-mobile{display:inline-block}}
+.fx-toggle{background:none;border:1px solid rgba(var(--cyan-rgb),.35);color:var(--text);padding:6px 9px;cursor:pointer;font:inherit;font-size:9px;letter-spacing:.2em;text-transform:uppercase;min-height:24px}.fx-toggle:hover{border-color:var(--cyan);color:var(--cyan)}.fx-toggle[aria-pressed=true]{color:var(--cyan);border-style:dashed}@media(max-width:900px){.fx-toggle:not(.fx-mobile){display:none}}.fx-mobile{display:none;margin-top:24px;align-self:flex-start}@media(max-width:900px){.mobile-menu .fx-mobile{display:inline-block}}
 
 /* --- футър --- */
 .foot{border-top:1px solid rgba(var(--off-rgb),.08);background:rgba(0,0,0,.5);padding:64px 0 40px}

@@ -15,7 +15,7 @@ export default {
     projectsDesc: "Nexus Dominion, ERP Ascensori, Treti Mart, Vizitka, Mastilko, Panev Ascensori — real Carbon Stealth VCC products, live, with stack and case-study facts.",
     projectsKeywords: ["web studio portfolio", "real website projects", "custom ERP", "browser game", "marketplace Bulgaria", "Carbon Stealth projects"],
   },
-  nav: { demos: "Demos", vertical: "By industry", blogNav: "Blog", hostingNav: "Hosting", quoteNav: "Quote", projects: "Projects", process: "Process", why: "Why us", pricing: "Pricing", contact: "Contact", legal: "Legal", a11y: "Accessibility", brochure: "Brochure", pause: "Animations: off", pauseOn: "Animations: stopped", menu: "Menu" },
+  nav: { demos: "Demos", vertical: "By industry", blogNav: "Blog", hostingNav: "Hosting", quoteNav: "Quote", projects: "Projects", process: "Process", why: "Why us", pricing: "Pricing", contact: "Contact", legal: "Legal", a11y: "Accessibility", brochure: "Brochure", pause: "Animations: off", pauseOn: "Animations: on", menu: "Menu" },
   hero: {
     eyebrow: "Carbon Stealth VCC · web studio · Bulgaria · Italy",
     title: "Your new website. <em>Ready to browse right now.</em>",
@@ -308,7 +308,7 @@ export default {
       "Keyboard: everything works without a mouse — navigation, languages, forms, the device preview, the cart in the shop demo; visible focus on every element; a “skip to content” link at the top of every page.",
       "Contrast: each demo's accent and muted colours are adjusted automatically by the generator to at least 4.5:1 against the background.",
       "Text scales to 200% without loss of content; no text in images (except logos).",
-      "Motion: the demo websites respect the device's “reduce motion” setting; on the home page animations can be stopped with the “Animations: off” button in the navigation (the choice is remembered).",
+      "Motion: the demo websites respect the device's “reduce motion” setting; on the home page animations can be stopped with the “Animations: off” button in the navigation and started again with the same button (“Animations: on”); the choice is remembered.",
       "Forms: every field has a visible label, errors are reported in place and announced to screen readers (aria-live).",
       "No cookies, no autoplaying sound or video, no flashing content (nothing above 3 times per second).",
     ],

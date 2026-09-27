@@ -15,7 +15,7 @@ export default {
     projectsDesc: "Nexus Dominion, ERP Ascensori, Treti Mart, Vizitka, Mastilko, Panev Ascensori — prodotti reali di Carbon Stealth VCC online, con stack e fatti dai case study.",
     projectsKeywords: ["portfolio web agency", "progetti siti reali", "ERP su misura", "gioco browser", "marketplace Bulgaria", "progetti Carbon Stealth"],
   },
-  nav: { demos: "Demo", vertical: "Per settore", blogNav: "Blog", hostingNav: "Hosting", quoteNav: "Preventivo", projects: "Progetti", process: "Processo", why: "Perché noi", pricing: "Prezzi", contact: "Contatti", legal: "Note legali", a11y: "Accessibilità", brochure: "Brochure", pause: "Animazioni: stop", pauseOn: "Animazioni: ferme", menu: "Menu" },
+  nav: { demos: "Demo", vertical: "Per settore", blogNav: "Blog", hostingNav: "Hosting", quoteNav: "Preventivo", projects: "Progetti", process: "Processo", why: "Perché noi", pricing: "Prezzi", contact: "Contatti", legal: "Note legali", a11y: "Accessibilità", brochure: "Brochure", pause: "Animazioni: stop", pauseOn: "Animazioni: avvia", menu: "Menu" },
   hero: {
     eyebrow: "Carbon Stealth VCC · web studio · Bulgaria · Italia",
     title: "Il tuo nuovo sito. <em>Pronto da sfogliare adesso.</em>",
@@ -308,7 +308,7 @@ export default {
       "Tastiera: tutto funziona senza mouse — navigazione, lingue, moduli, l'anteprima dispositivi, il carrello nella demo del negozio; focus visibile su ogni elemento; link «vai al contenuto» in cima a ogni pagina.",
       "Contrasto: i colori di accento e attenuati di ogni demo vengono corretti automaticamente dal generatore fino ad almeno 4,5:1 rispetto allo sfondo.",
       "Il testo si ingrandisce al 200% senza perdita di contenuto; nessun testo nelle immagini (tranne i loghi).",
-      "Movimento: i siti demo rispettano l'impostazione «riduci movimento» del dispositivo; nella home le animazioni si fermano con il pulsante «Animazioni: stop» nella navigazione (la scelta viene ricordata).",
+      "Movimento: i siti demo rispettano l'impostazione «riduci movimento» del dispositivo; nella home le animazioni si fermano con il pulsante «Animazioni: stop» nella navigazione e si riavviano con lo stesso pulsante («Animazioni: avvia»); la scelta viene ricordata.",
       "Moduli: ogni campo ha un'etichetta visibile, gli errori sono segnalati sul posto e letti dagli screen reader (aria-live).",
       "Niente cookie, nessun audio o video in riproduzione automatica, nessun contenuto lampeggiante (niente oltre 3 volte al secondo).",
     ],
