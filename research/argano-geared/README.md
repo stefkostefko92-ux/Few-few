@@ -61,7 +61,10 @@ estratti dei motori di ricerca (capitolo 11)._
     Prisma + PostgreSQL, BullMQ + Redis, PDF con font DejaVu, next-intl IT/EN/BG). L'enumerazione
     completa basta: ~29 400 configurazioni in circa 25 ms.
 12. **Responsabilità**: dal 9 dicembre 2026 il software è un prodotto ai sensi della Direttiva (UE)
-    2024/2853 e la responsabilità verso il danneggiato non si esclude per contratto ⚠️.
+    2024/2853 ⚠️ e la responsabilità verso il danneggiato non si esclude per contratto (art. 15). Il
+    software si presenta come strumento di ausilio al calcolo, con progetto, verifica e conformità
+    in capo all'installatore: testo dell'avvertenza e suoi limiti (art. 1229 e 1341 c.c.) nel
+    capitolo 10.3.
 13. **Roadmap** (stime di ordine di grandezza):
     - fondamenta: 2–3 settimane;
     - MVP della sostituzione (in alto e in basso, argano inserito a mano): 8–10 settimane;

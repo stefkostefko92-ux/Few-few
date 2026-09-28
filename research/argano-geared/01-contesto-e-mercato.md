@@ -58,7 +58,7 @@ dei motori di ricerca (capitolo 11): vanno ricontrollati sul catalogo in vigore 
 nel database. Parametri **non** trovati in nessun estratto: coppia massima in uscita, corrente del
 motore, avviamenti/ora, rapporto di intermittenza, rendimento per rapporto, coppia del freno,
 inerzie, masse. Sono proprio i dati che servono alle verifiche del capitolo 4: la raccolta dati
-presso i costruttori è quindi un lavoro della fase 0 (capitolo 10.3), non un dettaglio.
+presso i costruttori è quindi un lavoro della fase 0 (capitolo 10.4), non un dettaglio.
 
 ## 1.4 Strumenti che esistono già
 

@@ -41,13 +41,62 @@ Non è consulenza legale: sono i punti da portare a un legale prima del lancio.
 | Tema | Che cosa dicono le fonti | Cosa fare |
 |---|---|---|
 | Direttiva 2014/33/UE | la conformità è dell'installatore; il report entra nel fascicolo tecnico esaminato dall'organismo notificato (capitolo 2.1) | report tracciabile: input, metodo, profilo normativo, versioni del motore e del catalogo, hash |
-| Responsabilità da prodotto difettoso, Direttiva (UE) 2024/2853 | il software è un prodotto indipendentemente dalla modalità di fornitura (considerando 13 ⚠️); si applica ai prodotti immessi sul mercato dopo il **9 dicembre 2026**; verso il danneggiato la responsabilità non può essere limitata né esclusa per contratto (art. 15 ⚠️). In Italia il Consiglio dei ministri del 4 agosto 2026 ha approvato in esame preliminare il decreto di recepimento; l'adozione definitiva non è verificata | assicurazione RC prodotto; dossier di validazione (10.1); ruoli chiari nel report (il software propone, il progettista verifica e firma); le clausole contrattuali ripartiscono il rischio solo tra imprese |
+| Responsabilità da prodotto difettoso, Direttiva (UE) 2024/2853 | il software è un prodotto indipendentemente dalla modalità di fornitura (considerando 13 ⚠️); si applica ai prodotti immessi sul mercato dopo il **9 dicembre 2026**; verso il danneggiato la responsabilità non può essere limitata né esclusa per contratto (art. 15 ✅). In Italia il Consiglio dei ministri del 4 agosto 2026 ha approvato in esame preliminare il decreto di recepimento; l'adozione definitiva non è verificata | assicurazione RC prodotto; dossier di validazione (10.1); ruoli chiari nel report (il software propone, il progettista verifica e firma); le clausole contrattuali ripartiscono il rischio solo tra imprese |
 | Cyber Resilience Act, Regolamento (UE) 2024/2847 | un SaaS puro usato dal browser è fuori campo; un componente installabile (app desktop o mobile, calcolatore offline) sarebbe un prodotto con elementi digitali; applicazione piena dall'11 dicembre 2027 ⚠️ | restare SaaS nel browser nelle prime fasi |
 | Diritto d'autore sulle norme | CEN-CENELEC vieta la copia anche parziale senza accordo; la licenza UNI ammette riproduzioni parziali solo per uso interno; la sentenza CGUE C-588/21 P (5 marzo 2024) riconosce un interesse pubblico prevalente all'**accesso** alle norme armonizzate, non una licenza a riprodurle; metodi e formule in sé non sono protetti dal diritto d'autore (TRIPS art. 9.2) | implementare i metodi nel proprio codice; citare numero di clausola ed edizione; non mostrare testo, figure o tabelle della norma; chiedere a UNI per i valori tabellari; l'utente deve possedere la norma |
 | Dati dei costruttori | i cataloghi sono protetti (il catalogo Sassi riporta “riproduzione riservata”) | accordi scritti di uso dei dati nel software, fonte per ogni valore (capitolo 8.2) |
 | GDPR | dati personali minimi (account); i progetti sono dati commerciali riservati del cliente | hosting UE, isolamento per tenant, conservazione dichiarata |
 
-## 10.3 Roadmap
+## 10.3 Avvertenza e limitazione di responsabilità
+
+Posizione dell'azienda: il software è uno strumento automatico di ausilio al calcolo, che rende il
+pre-dimensionamento più facile e veloce; la responsabilità della progettazione, della verifica dei
+risultati e della conformità dell'impianto resta sempre dell'installatore e dei tecnici che usano i
+risultati. È coerente con il quadro del capitolo 2: la conformità dell'impianto è
+dell'installatore, e la sostituzione della macchina passa dalla verifica straordinaria.
+
+Dove va il testo: nell'interfaccia sopra i risultati, in ogni report (anche nel riepilogo copiato)
+e nelle condizioni d'uso accettate alla registrazione. Il calcolatore prototipo lo mostra già in
+italiano, inglese e bulgaro. È una bozza da far rivedere a un legale; fa fede la versione italiana.
+
+**Testo proposto — Avvertenza e limitazione di responsabilità.** Questo calcolatore è uno strumento
+automatico di ausilio al calcolo: rende il pre-dimensionamento più facile e veloce, ma i risultati
+sono indicativi e non costituiscono una relazione di calcolo, un progetto o un parere tecnico. La
+responsabilità della progettazione, della verifica dei risultati, della scelta dei componenti e
+della conformità dell'impianto resta sempre in capo all'installatore e ai tecnici che li
+utilizzano.
+
+1. Il software applica formule ricostruite da fonti secondarie (valori marcati ⚠) ai dati inseriti
+   dall'utente, senza verificarne la correttezza: dati errati producono risultati errati.
+2. Prima di ogni uso i risultati vanno verificati da un tecnico qualificato sui testi vigenti delle
+   norme (tra cui UNI EN 81-20, UNI EN 81-50 e UNI 10411-1) e sui dati dei costruttori.
+3. La conformità dell'impianto, la documentazione per l'organismo notificato e ogni decisione
+   sull'impianto restano a carico dell'installatore e dei tecnici incaricati, secondo la normativa
+   vigente (tra cui la Direttiva 2014/33/UE e il DPR 162/1999).
+4. Il software è fornito “così com'è”, senza garanzie di esattezza, completezza o idoneità a uno
+   scopo specifico.
+5. Nei limiti massimi consentiti dalla legge applicabile, Carbon Stealth VCC non risponde di danni
+   diretti o indiretti derivanti dall'uso dei risultati o dall'impossibilità di usarli. Restano
+   salvi i casi in cui la responsabilità non può essere esclusa o limitata per legge.
+6. Usando il calcolatore accetti queste condizioni.
+
+Che cosa l'avvertenza non può fare, e perché servono anche le misure della tabella 10.2:
+
+- **Verso il danneggiato** non esclude né limita la responsabilità da prodotto difettoso: la
+  Direttiva (UE) 2024/2853, art. 15, chiede agli Stati membri di impedirlo sia per contratto sia per
+  legge nazionale ✅.
+- **Dolo e colpa grave**: in Italia è nullo ogni patto che esclude o limita preventivamente la
+  responsabilità per dolo o colpa grave, o per la violazione di obblighi derivanti da norme di
+  ordine pubblico (art. 1229 c.c.) ✅.
+- **Condizioni generali di contratto**: le limitazioni di responsabilità a favore di chi le ha
+  predisposte hanno effetto solo se approvate specificamente per iscritto (art. 1341, secondo
+  comma, c.c.) ✅. Come raccogliere questa approvazione nella registrazione online va deciso con il
+  legale ⚠️.
+
+Per questo il testo limita la responsabilità «nei limiti massimi consentiti dalla legge» e fa salvi
+i casi inderogabili, invece di escluderla del tutto.
+
+## 10.4 Roadmap
 
 Le durate sono **stime di ordine di grandezza** per un team di una persona full-stack
 TypeScript senior più un ingegnere ascensorista a tempo parziale; non sono un preventivo.
@@ -63,7 +112,7 @@ Perché la sostituzione con verifica prima del selettore: è il caso d'uso princ
 subito anche senza catalogo (l'installatore inserisce l'argano offerto dal fornitore) e produce i
 casi di test che servono al selettore.
 
-## 10.4 Rischi principali
+## 10.5 Rischi principali
 
 | Rischio | Probabilità | Impatto | Mitigazione |
 |---|---|---|---|
@@ -74,4 +123,4 @@ casi di test che servono al selettore.
 | Rilievo impreciso (massa della cabina, bilanciamento, quote) | alta | alto | prova di bilanciamento, origine di ogni dato, controllo con l'argano esistente (capitolo 6.4), sensibilità ±10% |
 | Requisiti della UNI 10411-1:2024 diversi dalle sintesi dell'edizione 2021 | media | alto | acquisto e lettura della 2024 in fase 0; lista di adeguamenti come dato versionato, non come codice |
 | Adozione: gli installatori usano già i configuratori gratuiti dei costruttori | media | alto | valore che i configuratori non danno: confronto multi-marca, verifiche esposte, flusso per la sostituzione |
-| Responsabilità civile (Direttiva 2024/2853) | bassa | molto alto | 10.2 |
+| Responsabilità civile (Direttiva 2024/2853) | bassa | molto alto | 10.2 e 10.3 |
