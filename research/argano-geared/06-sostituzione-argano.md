@@ -79,6 +79,9 @@ adeguamento.
   ammortizzatori restano nel loro campo; il software lo verifica comunque contro i dati di targa
   inseriti. Le pulegge di rinvio esistenti devono essere compatibili con il diametro delle funi
   nuove (rapporto D/d) e in buono stato.
+- **Calate con tiro diretto**: attacchi di cabina e contrappeso e fori nella soletta restano; se
+  la puleggia nuova ha un diametro diverso le calate si spostano e le funi si inclinano. Il
+  software calcola lo spostamento e l'angolo di avvolgimento che ne risulta (5.3).
 
 ## 6.6 Adeguamenti per la sostituzione del macchinario (UNI 10411-1)
 

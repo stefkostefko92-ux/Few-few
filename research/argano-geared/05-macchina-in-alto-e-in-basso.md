@@ -12,7 +12,7 @@ gestire entrambe le disposizioni dal primo giorno, con lo stesso motore di calco
 
 | Disposizione | Percorso delle funi | Che cosa cambia nel calcolo |
 |---|---|---|
-| In alto, 1:1, senza rinvio | puleggia → cabina e contrappeso in verticale | α = 180°; nessuna puleggia oltre a quella di trazione |
+| In alto, 1:1, senza rinvio (tiro diretto) | puleggia → cabina e contrappeso in verticale | α = 180°; nessuna puleggia oltre a quella di trazione; interasse delle calate uguale al diametro della puleggia, quindi nella sostituzione un diametro diverso sposta le calate (5.3) |
 | In alto, 1:1, con rinvio | puleggia → rinvio → contrappeso | α < 180° dalla geometria (5.3); una flessione semplice; tiro sull'albero inclinato |
 | In basso, 1:1, rinvii in testata | cabina → puleggia A in testata → giù alla puleggia di trazione → su alla puleggia B → contrappeso | due pulegge; funi lunghe circa il doppio; tiri alla puleggia ridotti dal peso dei tratti discendenti; **carico sull'albero verso l'alto**; le pulegge in testata portano cabina, contrappeso e funi |
 | Taglia 2:1, in alto o in basso | pulegge su cabina e contrappeso, attacchi fissi | velocità delle funi 2·v; più pulegge e possibili flessioni inverse |
@@ -74,6 +74,26 @@ Esempio: R0 = 280 mm, R1 = 200 mm, rinvio 300 mm di lato e 600 mm sotto → θ =
 macchina in basso e i rami verticali verso le pulegge in testata α = 180°, e una differenza
 di 70 mm tra le calate su 24 m di altezza vale appena 0,17°.
 
+**Tiro diretto nella sostituzione.** Senza rinvio l'interasse delle calate è uguale al diametro
+della puleggia. Se la puleggia nuova ha un diametro diverso, gli attacchi di cabina e contrappeso
+restano dove sono e le funi si inclinano. Con la puleggia nuova centrata sulle calate esistenti
+ogni calata si sposta di Δ = (D_esistente − D_nuova)/2; allineandola al lato cabina, tutto lo
+spostamento va sul lato contrappeso. Per ogni posizione della cabina:
+
+```text
+α = 180° − atan(Δ_cabina / L_cabina) − atan(Δ_contrappeso / L_contrappeso)
+L: lunghezza libera della fune tra puleggia e attacco (minima, L0, con il carico a fine corsa)
+Δ > 0 se la puleggia nuova è più piccola (funi divergenti, α < 180°)
+```
+
+Il valore peggiore si ha con la cabina a un estremo della corsa, cioè nelle posizioni delle
+verifiche di aderenza. Con i dati del capitolo 7 (600 → 560 mm, puleggia centrata, L0 = 2 m,
+H = 18 m): Δ = 20 mm per lato, α = 179,4° ed e^(f·α) in frenatura scende da 1,696 a 1,693.
+Sull'aderenza l'effetto è trascurabile; i 20 mm per lato vanno invece controllati sui fori della
+soletta e sugli attacchi, e con spostamenti grandi serve un rinvio. Allineando la puleggia al lato
+cabina lo spostamento diventa 40 mm sul lato contrappeso e α scende a 178,9° con la cabina in
+basso.
+
 ## 5.4 Deviazione laterale delle funi
 
 Nelle disposizioni in basso laterali le funi possono arrivare alla puleggia inclinate rispetto
@@ -121,6 +141,7 @@ Anche le pulegge di rinvio devono rispettare il rapporto minimo tra diametro e f
 |---|---|
 | Posizione della macchina e schema del percorso delle funi | scegliere l'elenco di elementi (5.2) |
 | Coordinate e diametri di puleggia di trazione e rinvii | α (5.3), N_equiv(p) |
+| Interasse delle calate esistenti e posizione della nuova puleggia (tiro diretto) | spostamento delle calate, α nella sostituzione (5.3) |
 | Distanza verticale tra pulegge in testata e puleggia di trazione | peso dei tratti discendenti |
 | Inerzia (o massa e forma) delle pulegge di rinvio | frenatura di emergenza |
 | Flessioni inverse, scostamenti laterali tra le gole | N_equiv(p), deviazione laterale |

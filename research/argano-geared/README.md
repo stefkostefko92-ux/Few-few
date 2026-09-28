@@ -12,7 +12,7 @@ estratti dei motori di ricerca (capitolo 11)._
 ## Sintesi
 
 1. **Caso d'uso principale: sostituire argani vecchi con argani nuovi** su impianti esistenti in
-   Italia, con macchina **in alto o in basso** (capitoli 5 e 6). L'impianto nuovo è una variante.
+   Italia, con macchina **in alto (a tiro diretto o con rinvio) o in basso** (capitoli 5 e 6). L'impianto nuovo è una variante.
 2. **Che cosa fa il software.** Parte dal rilievo dell'impianto (targhe, misure, prova di
    bilanciamento), ricostruisce masse e percorso delle funi, calcola l'argano esistente per
    controllare i dati, poi valuta *tutte* le configurazioni di un catalogo multi-marca (modello ×
