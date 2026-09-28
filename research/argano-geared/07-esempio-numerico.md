@@ -44,6 +44,7 @@ Rendimento del vano 0,85 (capitolo 5.6) → η = 0,70 · 0,85 = 0,595.
 | Altre verifiche | Risultato |
 |---|---|
 | funi: D/d · N_equiv · S_f richiesto · S_f effettivo | 56 · 8,84 (5,0 ⚠️ + K_p 3,84) · max(11,17; 12) = 12 · 47 500 / 3 328 N = **14,27** |
+| rinvio: Dp/d | 400 / 10 = **40**, al limite: con funi Ø11 sarebbe 36,4 → KO |
 | potenza statica (squilibrio 3 335 N, cabina vuota in discesa dall'alto; con la cabina carica in salita dal basso 3 320 N) | 3 335 · 1,0 / 0,595 = **5,61 kW**: il motore da 5,5 kW è al 102% → **KO**; con 7,5 kW al 75% |
 | formula semplificata (1 − k)·Q·g·v/η | 5,19 kW: sottostima del 7,5% per il peso delle funi non compensate |
 | coppia di accelerazione, motore 7,5 kW | 36,3 + (0,103/0,595 + 0,08) · 122,9 = 67,4 N·m = 1,36 · M_n (49,4 N·m) |

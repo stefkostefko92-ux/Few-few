@@ -39,7 +39,7 @@ sottodimensionato. La validazione è quindi parte del prodotto, non una fase fin
 
 **Stato del prototipo (settembre 2026).** Dopo il passaggio sulla precisione il calcolatore
 supera:
-- 26 verifiche a mano. Tra queste le forme chiuse del caso C, i due casi pubblicati di S_f e i
+- 32 verifiche a mano. Tra queste le forme chiuse del caso C, i due casi pubblicati di S_f e i
   fattori di gola. La tangente esatta del tiro diretto è ricalcolata con i vettori. La
   decelerazione reale del freno esce dalla legge di Newton scritta sulla cabina, e
   l'equilibrio dei momenti sull'albero motore è controllato con η_i.
@@ -57,7 +57,14 @@ supera:
     frenatura in più, cabina vuota in discesa per il motore e tangente esatta (utilizzo al
     massimo −0,37%);
   - nessun impianto passa da “non superato” a “superato”.
-- 400 impianti casuali per la proposta, con zero proposte che falliscono la verifica.
+- 400 impianti casuali per la proposta: 1 158 configurazioni proposte, nessuna delle quali
+  fallisce la verifica.
+- Dopo il secondo passaggio sulla precisione vengono verificati anche:
+  - D/d ≥ 40 sulle pulegge di rinvio, che limita anche la fune della proposta;
+  - la coppia in uscita del riduttore contro il valore di catalogo, quando è inserito.
+
+  Il campo della massa della cabina ricorda che il cavo flessibile e l'eventuale compensazione
+  fanno parte di P.
 
 ## 10.2 Responsabilità e aspetti legali
 

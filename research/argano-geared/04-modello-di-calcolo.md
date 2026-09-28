@@ -146,7 +146,12 @@ tecnico del costruttore). L'usura modifica la geometria della gola e quindi l'ad
 Requisiti minimi:
 
 - D/d ≥ 40 per funi di acciaio secondo ISO 4344 ✅ (ELA 2026: “la vecchia regola D/d ≥ 40 resta
-  applicabile senza considerazioni di fatica”).
+  applicabile senza considerazioni di fatica”). Il rapporto vale per pulegge di trazione, pulegge
+  di rinvio e tamburi (EN 81-20 §5.5.2.1, testo da confermare ⚠️). Il calcolatore lo verifica anche
+  sulle pulegge di rinvio (Dp/d) e ne tiene conto nella proposta. Il diametro della fune resta
+  limitato dalle pulegge dell'impianto: con rinvii Ø400 al massimo Ø10. Su 5 632 argani casuali
+  con rinvii, 1 880 non rispettano Dp/d ≥ 40. Di questi, 60 risultavano “tutte le verifiche
+  superate” prima che la verifica esistesse.
 - Almeno due funi indipendenti, ciascuna con il proprio attacco (Direttiva 2014/33/UE,
   Allegato I, testo riportato da fonte secondaria) ⚠️.
 - Diametro nominale ≥ 8 mm salvo approvazione di un organismo notificato ⚠️.
@@ -317,7 +322,7 @@ EN 81-1).
 | Id | Verifica | Limite | Stato della fonte |
 |---|---|---|---|
 | `kin.speed` | velocità reale vs nominale | tolleranza del profilo normativo | ⚠️ |
-| `rope.dd` | D/d | ≥ 40 | ✅ |
+| `rope.dd` | D/d della puleggia di trazione e Dp/d delle pulegge di rinvio | ≥ 40 | ✅ regola / ⚠️ testo sui rinvii |
 | `rope.count_diameter` | numero e diametro delle funi | ≥ 2; ≥ 8 mm | ⚠️ |
 | `rope.safety_factor` | S_f,effettivo | ≥ max(S_f,calc; 12 o 16) | ✅ formula / ⚠️ minimi |
 | `traction.loading` | T1/T2 caricamento | ≤ e^(f·α) | ⚠️ valori |
@@ -325,7 +330,7 @@ EN 81-1).
 | `traction.braking_real` | T1/T2 frenatura alla decelerazione reale del freno (avviso) | ≤ e^(f·α) | ⚠️ lettura della norma |
 | `traction.stalled` | T1/T2 cabina bloccata | ≥ e^(f·α) | ⚠️ valori |
 | `shaft.load` | carico sull'albero | ≤ dato del costruttore | derivazione + catalogo |
-| `gear.torque` | coppia in uscita | ≤ dato del costruttore | derivazione + catalogo |
+| `gear.torque` | coppia in uscita (caso peggiore tra cabina carica in salita e vuota in discesa) | ≤ dato del costruttore; nel prototipo solo se inserito | derivazione + catalogo |
 | `gear.thermal` | potenza termica, avviamenti/ora | ≤ dato del costruttore | catalogo |
 | `motor.power` | potenza statica | ≤ potenza nominale | derivazione |
 | `motor.accel_torque` | coppia di accelerazione | ≤ capacità motore + inverter | derivazione + catalogo |
