@@ -59,16 +59,22 @@ Tre conseguenze che il software deve rispettare:
 ## 5.3 Angolo di avvolgimento dalle quote
 
 Il software calcola α dalle coordinate dei centri e dai diametri delle pulegge, invece di
-chiederlo a occhio. Per un ramo che va dalla puleggia di trazione (raggio R0) a una puleggia
-(raggio R1) toccata dallo stesso lato della fune (flessione semplice), con centro spostato di
-Δx in orizzontale e h in verticale:
+chiederlo a occhio. Il rinvio (raggio R1) ha il centro spostato di Δx in orizzontale verso il
+contrappeso e di h in verticale rispetto alla puleggia di trazione (raggio R0); d = √(Δx² + h²).
+Il ramo devia verso l'esterno o verso l'interno, e nei due casi tocca il rinvio da lati opposti:
 
 ```text
-θ = atan(Δx / h) − asin( (R0 − R1) / √(Δx² + h²) )     deviazione del ramo dalla verticale
-α = 180° − θ   se il ramo devia verso l'esterno;   α = 180° + θ   se devia verso l'interno
+verso l'esterno, flessione semplice (tangente esterna):
+  θ = atan(Δx / h) − asin( (R0 − R1) / d ),   α = 180° − θ        (vale se θ ≥ 0)
+verso l'interno, flessione inversa (tangente interna, N_pr = 1):
+  θ = asin( (R0 + R1) / d ) − atan(Δx / h),   α = 180° + θ
+d < R0 + R1: le pulegge si sovrappongono, geometria impossibile
 ```
 
-Derivazione (tangente esterna a due cerchi); con Δx = R0 − R1 il ramo è verticale e θ = 0.
+Derivazione: tangente comune ai due cerchi; con Δx = R0 − R1 il ramo è verticale e θ = 0. Se la
+tangente esterna risulta inclinata verso l'interno (θ < 0), la fune non può scendere in verticale
+dallo stesso lato del rinvio: lo avvolge dal lato opposto, con una flessione inversa che pesa sulle
+funi (N_equiv(p) = 4·K_p). Il calcolatore lo segnala e chiede N_pr ≥ 1.
 Esempio: R0 = 280 mm, R1 = 200 mm, rinvio 300 mm di lato e 600 mm sotto → θ = 19,7°,
 α = 160,3°. In generale α è l'arco tra i due punti di tangenza sul lato di contatto; con la
 macchina in basso e i rami verticali verso le pulegge in testata α = 180°, e una differenza

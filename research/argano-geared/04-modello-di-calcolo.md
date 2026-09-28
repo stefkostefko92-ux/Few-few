@@ -127,14 +127,15 @@ numericamente su due casi pubblicati:
 ```text
 N_equiv   = N_equiv(t) + N_equiv(p)
 N_equiv(p) = K_p · (N_ps + 4·N_pr),   K_p = (D / Dp_medio)^4
-S_f,calc  = 10^[ 2,6834 − log10(695,85·10^6 · N_equiv / (D/d)^8,567)
-                          / log10(77,09 · (D/d)^−2,894) ]
+S_f,calc  = 10^[ 2,6834 − ( log10(695,85·10^6 · N_equiv / (D/d)^8,567)
+                            / log10(77,09 · (D/d)^−2,894) ) ]
 S_f,richiesto = max(S_f,calc ; minimo normativo)
 S_f,effettivo = F_min / T_max,fune,   T_max,fune = [(P + Q)/r + m_f(H + L0)] · g / n
 ```
 
-Riproduzioni: la relazione di calcolo pubblicata da liftdesign.it (N_equiv = 20,898,
-D/d ≈ 50,9) dà S_f = 16,69 esattamente; il caso di Mellor (N_equiv = 7, D/d = 40) dà 16,4
+Riproduzioni (la divisione va fatta prima della sottrazione: solo così i casi tornano): la
+relazione di calcolo pubblicata da liftdesign.it (N_equiv = 20,898, D/d ≈ 50,9) dà S_f = 16,69
+esattamente; il caso di Mellor (N_equiv = 7, D/d = 40) dà 16,4
 contro “circa 16”. N_ps = pulegge con flessione semplice, N_pr = pulegge con flessione
 inversa; la regola su quando una flessione inversa va contata (distanza tra le pulegge)
 va presa dalla norma ⚠️. La definizione di T_max,fune (cabina ferma al piano più basso con
@@ -149,6 +150,11 @@ Valori di N_equiv(t):
 | semicircolare con sottosquadro β = 105° | 15,2 | ✅ |
 | a V, γ = 35° | 18,5 | ✅ |
 | altri angoli (β 75–100°, γ 36–45°) | tabella 2 di EN 81-50 | ⚠️ da trascrivere dal testo acquistato |
+
+Il calcolatore prototipo usa per gli altri angoli valori **provvisori, non verificati**, con
+interpolazione lineare: β 75° → 2,5; 80° → 3,0; 85° → 3,8; 95° → 6,7; 100° → 10,0; γ 36° → 15,2;
+38° → 10,5; 40° → 7,1; 42° → 5,6; 45° → 4,0 ⚠️. Fuori tabella prende il valore più sfavorevole
+(β < 75° → 2,5; γ > 45° → 4,0) e rifiuta γ < 35°. Vanno sostituiti con la tabella 2 prima dell'uso.
 
 Pressione specifica nella gola: presente in EN 81-1 fino all'edizione 1986, sostituita dal
 calcolo del coefficiente di sicurezza dell'Allegato N nell'edizione 1998 (Elevator World,
