@@ -72,9 +72,10 @@ Tre condizioni, tutte basate su Euler-Eytelwein ✅ (Mellor; Elevator World; Sci
 2025, che cita §5.11.2.3 di EN 81-50):
 
 ```text
-1. caricamento           T1/T2 ≤ e^(f·α)   statico, cabina al piano più basso con 1,25·Q   μ = 0,1
-2. frenatura d'emergenza T1/T2 ≤ e^(f·α)   dinamico, a ≥ 0,5 m/s² (0,8 m/s² con
-                                            ammortizzatori a corsa ridotta)               μ = 0,1/(1 + v_f/10)
+1. caricamento           T1/T2 ≤ e^(f·α)   statico, 1,25·Q, cabina in basso e in alto   μ = 0,1
+2. frenatura d'emergenza T1/T2 ≤ e^(f·α)   dinamico, cabina vuota e carica, in discesa e
+                                            in salita, in basso e in alto; a ≥ 0,5 m/s²
+                                            (0,8 m/s² con ammortizzatori a corsa ridotta)   μ = 0,1/(1 + v_f/10)
 3. cabina bloccata       T1/T2 ≥ e^(f·α)   contrappeso sugli ammortizzatori, macchina
                                             che gira in salita (cabina vuota in alto)      μ = 0,2
 T1 = tiro maggiore, T2 = tiro minore
@@ -85,9 +86,39 @@ T1 = tiro maggiore, T2 = tiro minore
   sono ⚠️: il valore di 0,8 m/s² con ammortizzatori a corsa ridotta compare in EN 81-1
   secondo una fonte secondaria; il campione BSI di EN 81-50:2020 (p. 50, §5.11.2.3.2) parla di
   “1,25 Q più il peso dei dispositivi di movimentazione, dove usati”.
-- Caso 2, due sottocasi da verificare entrambi: cabina con portata in discesa al piano più
-  basso; cabina vuota in salita al piano più alto. Quale dei due governa dipende da k e
-  dalla corsa (capitolo 7: governa il secondo).
+- Caso 1: il software calcola le due posizioni estreme e tiene la peggiore (di norma la cabina in
+  basso).
+- Caso 2: il software calcola tutte le otto combinazioni di carico (vuota, con portata), verso
+  (discesa, salita) e posizione (in basso, in alto) e mostra la peggiore per ciascun verso. Di
+  solito governano la cabina con portata in discesa in basso e la cabina vuota in salita in alto
+  (capitolo 7: la seconda). Con contrappeso pesante e funi lunghe la riga “in discesa” può essere
+  governata dalla cabina vuota in discesa in alto (14,5% di 6 013 argani casuali), che però alla
+  stessa decelerazione non supera mai la cabina vuota in salita: cambia la riga, non l'esito.
+
+**Decelerazione reale del freno (seconda verifica, per ora un avviso).** Secondo le fonti
+secondarie, EN 81-50 chiede di considerare ogni parte in movimento “con la sua decelerazione” e
+fissa solo il minimo di 0,5 (0,8) m/s² ⚠️. In un arresto di emergenza la decelerazione vera la
+dà il freno, e con due gruppi dimensionati secondo EN 81-20 è spesso molto più alta del
+minimo. Il software calcola anche questa, per ogni combinazione del caso 2, con tutti i gruppi e
+riduttore rigido (funi che non slittano):
+
+```text
+ruota lenta che trascina il riduttore (η_i):  β = (M_f − η_i·M_g/i) / (J_m·i + η_i·J_l/i)
+motore che trascina il riduttore (η_d):       β = (η_d·i·M_f − M_g) / (J_l + η_d·J_m·i²)
+a = β · D / (2·r),   a_verifica = max(a, 0,5 o 0,8 m/s²)
+M_f: coppia totale del freno sull'albero motore; M_g: squilibrio statico alla puleggia · D/2,
+     > 0 se asseconda il moto; J_l: inerzia del lato lento riportata alla puleggia
+     (masse, funi, puleggia, rinvii); β: decelerazione angolare della puleggia
+η_i ≈ 2 − 1/η_d se il costruttore non lo dà (vite senza fine; 0 = irreversibile)
+```
+
+Derivazione: equilibrio dei momenti sui due alberi con il rendimento del riduttore nel verso in
+cui passa la potenza. L'attrito del riduttore aumenta la decelerazione, come il volano dei vecchi
+argani la attenua. Il risultato è mostrato come avviso e non cambia l'esito, finché la lettura
+di §5.11.2.2.2 non è confermata sul testo della norma; insieme il software dà l'intervallo della
+coppia del freno: dal minimo richiesto da EN 81-20 (4.9) al massimo che tiene l'aderenza alla
+decelerazione reale. Nel capitolo 7 quell'intervallo è vuoto con la gola semicircolare
+(capitolo 7.4).
 
 Fattore della gola `f` (forma di EN 81-1 Allegato M, ripresa in EN 81-50 §5.11.2.3) ⚠️:
 
@@ -151,10 +182,14 @@ Valori di N_equiv(t):
 | a V, γ = 35° | 18,5 | ✅ |
 | altri angoli (β 75–100°, γ 36–45°) | tabella 2 di EN 81-50 | ⚠️ da trascrivere dal testo acquistato |
 
-Il calcolatore prototipo usa per gli altri angoli valori **provvisori, non verificati**, con
-interpolazione lineare: β 75° → 2,5; 80° → 3,0; 85° → 3,8; 95° → 6,7; 100° → 10,0; γ 36° → 15,2;
-38° → 10,5; 40° → 7,1; 42° → 5,6; 45° → 4,0 ⚠️. Fuori tabella prende il valore più sfavorevole
-(β < 75° → 2,5; γ > 45° → 4,0) e rifiuta γ < 35°. Vanno sostituiti con la tabella 2 prima dell'uso.
+Il calcolatore prototipo usa per gli altri angoli valori **provvisori, non verificati**:
+β 75° → 2,5; 80° → 3,0; 85° → 3,8; 95° → 6,7; 100° → 10,0; γ 36° → 15,2; 38° → 10,5; 40° → 7,1;
+42° → 5,6; 45° → 4,0 ⚠️. Tra due punti **non interpola**: prende il valore del punto più
+sfavorevole (il β superiore, il γ inferiore), perché la tabella non dà una regola di
+interpolazione e quella lineare sottostimerebbe N_equiv (β = 96°: 7,36 invece di 10,0).
+Fuori tabella prende il valore più sfavorevole (β < 75° → 2,5; γ > 45° → 4,0), rifiuta γ < 35° e
+tra 105° e il limite di 106° estrapola dall'ultimo tratto, segnalando il valore come non
+verificato. I valori vanno sostituiti con la tabella 2 prima dell'uso.
 
 Pressione specifica nella gola: presente in EN 81-1 fino all'edizione 1986, sostituita dal
 calcolo del coefficiente di sicurezza dell'Allegato N nell'edizione 1998 (Elevator World,
@@ -177,9 +212,12 @@ conta anche il sollevamento netto sugli ancoraggi (capitolo 5.5).
 ## 4.7 Riduttore
 
 ```text
-ΔF          = [(P + Q − M_cw)/r + m_f(L_cabina) − m_f(L_contrappeso)] · g   (cabina carica in salita dal basso)
+ΔF_carica   = [(P + Q − M_cw)/r + m_f(L_cabina) − m_f(L_contrappeso)] · g   (cabina carica in salita dal basso)
+ΔF_vuota    = [(M_cw − P)/r + m_f(L_contrappeso) − m_f(L_cabina)] · g       (cabina vuota in discesa dall'alto)
+ΔF          = il maggiore dei due (con k > 0,5 o funi lunghe sul lato contrappeso governa il
+              secondo: 34% di 6 013 argani casuali con k tra 0,40 e 0,55)
 M_p,statica = ΔF · D/2
-M_p,max     = M_p,statica + J_ext,p · (2·r·a/D)                            (durante l'accelerazione)
+M_p,max     = M_p,statica + J_ext,p · (2·r·a/D)                            (durante l'accelerazione, caso peggiore)
 ```
 
 - `M_p,max` va confrontato con la coppia massima in uscita del riduttore, se il costruttore
@@ -232,9 +270,15 @@ coppia richiesta a un singolo gruppo: stessa formula con Q al posto di 1,25·Q, 
 
 - Scelta prudente: `η_i = 1` (l'attrito del riduttore aiuta il freno, ma non ci si conta).
 - `a_f` è la decelerazione minima voluta (dato di progetto, > 0).
-- Verifica inversa: con la coppia di catalogo si calcola la decelerazione **massima** (cabina
-  carica in salita, dove gravità e freno si sommano) e la si confronta con il limite del
-  paracadute o degli ammortizzatori.
+- Verifica inversa: con la coppia di catalogo si calcola la decelerazione reale di ogni caso di
+  frenata (formula del 4.4, qui con l'η_i del costruttore o stimato, perché l'attrito la
+  aumenta). La **massima** si confronta con il limite del paracadute o degli ammortizzatori
+  (1 g ⚠️). Di solito è quella della cabina vuota in discesa, dove gravità e freno si sommano
+  sulla massa più piccola.
+- Intervallo della coppia per gruppo: il minimo è il più alto dei requisiti qui sopra; il massimo
+  è la coppia oltre la quale, alla decelerazione reale, l'aderenza non regge più in qualche caso
+  (4.4). Se il minimo supera già il massimo, nessuna regolazione del freno risolve: servono più
+  aderenza (gola, angolo di avvolgimento) o una frenatura più dolce.
 
 ## 4.10 UCMP e protezione contro la velocità eccessiva in salita
 
@@ -277,7 +321,8 @@ EN 81-1).
 | `rope.count_diameter` | numero e diametro delle funi | ≥ 2; ≥ 8 mm | ⚠️ |
 | `rope.safety_factor` | S_f,effettivo | ≥ max(S_f,calc; 12 o 16) | ✅ formula / ⚠️ minimi |
 | `traction.loading` | T1/T2 caricamento | ≤ e^(f·α) | ⚠️ valori |
-| `traction.braking` | T1/T2 frenatura, due sottocasi | ≤ e^(f·α) | ⚠️ valori |
+| `traction.braking` | T1/T2 frenatura, otto combinazioni a 0,5 (0,8) m/s² | ≤ e^(f·α) | ⚠️ valori |
+| `traction.braking_real` | T1/T2 frenatura alla decelerazione reale del freno (avviso) | ≤ e^(f·α) | ⚠️ lettura della norma |
 | `traction.stalled` | T1/T2 cabina bloccata | ≥ e^(f·α) | ⚠️ valori |
 | `shaft.load` | carico sull'albero | ≤ dato del costruttore | derivazione + catalogo |
 | `gear.torque` | coppia in uscita | ≤ dato del costruttore | derivazione + catalogo |
@@ -287,6 +332,7 @@ EN 81-1).
 | `motor.rms` | coppia efficace | ≤ coppia nominale | derivazione (IEC 60034-1) |
 | `brake.torque` | 1,25·Q tutti i gruppi; un gruppo con Q in discesa e a vuoto in salita | ≥ coppia richiesta | ⚠️ |
 | `brake.max_decel` | decelerazione massima | ≤ paracadute / ammortizzatori | ⚠️ |
+| `brake.range` | coppia per gruppo tra il minimo richiesto e il massimo per l'aderenza reale | intervallo non vuoto | derivazione |
 | `ucmp.route` e `acop.route` | organo di arresto ammesso | certificato valido | ⚠️ |
 | `rescue.manual` | forza al volantino | ≤ 400 N, altrimenti manovra elettrica | ⚠️ |
 | `layout.uplift` | sollevamento netto (macchina in basso) | ≤ capacità degli ancoraggi | derivazione + dato strutturale |

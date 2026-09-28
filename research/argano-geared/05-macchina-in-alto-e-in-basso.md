@@ -87,10 +87,17 @@ ogni calata si sposta di Δ = (D_esistente − D_nuova)/2; allineandola al lato 
 spostamento va sul lato contrappeso. Per ogni posizione della cabina:
 
 ```text
-α = 180° − atan(Δ_cabina / L_cabina) − atan(Δ_contrappeso / L_contrappeso)
-L: lunghezza libera della fune tra puleggia e attacco (minima, L0, con il carico a fine corsa)
+α = 180° − θ_cabina − θ_contrappeso
+θ = atan2(R + Δ, L) − asin( R / √((R + Δ)² + L²) )   (tangente esatta dall'attacco alla puleggia)
+  ≈ atan(Δ / L) quando L ≫ R
+R: raggio della puleggia nuova; L: distanza verticale tra centro della puleggia e attacco
+(minima, L0, con il carico a fine corsa)
 Δ > 0 se la puleggia nuova è più piccola (funi divergenti, α < 180°)
 ```
+
+L'approssimazione atan(Δ/L) sovrastima l'inclinazione quando L è corto: con L0 = 0,1 m, R = 0,3 m e
+Δ = 20 mm dà 11,3° contro 9,2°. Va a favore di sicurezza, ma il calcolatore usa la tangente esatta.
+Su impianti casuali la differenza sull'utilizzo dell'aderenza resta sotto lo 0,4%.
 
 Il valore peggiore si ha con la cabina a un estremo della corsa, cioè nelle posizioni delle
 verifiche di aderenza. Con i dati del capitolo 7 (600 → 560 mm, puleggia centrata, L0 = 2 m,

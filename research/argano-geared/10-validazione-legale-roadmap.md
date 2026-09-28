@@ -33,6 +33,31 @@ sottodimensionato. La validazione è quindi parte del prodotto, non una fase fin
 9. **Metodo del percorso della fune**: con la macchina in alto senza rinvii deve dare gli stessi
    tiri delle formule dirette del capitolo 4.2; per la macchina in basso si confronta con un
    calcolo a mano indipendente dei due casi di frenatura.
+10. **Lettura di EN 81-50 §5.11.2.2.2** sul testo: se la verifica di frenatura va fatta alla
+    decelerazione reale del freno quando supera il minimo (capitolo 4.4 e 7.4). Finché non è
+    decisa, il calcolatore la mostra come avviso e l'esito resta quello a 0,5 (0,8) m/s².
+
+**Stato del prototipo (settembre 2026).** Dopo il passaggio sulla precisione il calcolatore
+supera:
+- 26 verifiche a mano. Tra queste le forme chiuse del caso C, i due casi pubblicati di S_f e i
+  fattori di gola. La tangente esatta del tiro diretto è ricalcolata con i vettori. La
+  decelerazione reale del freno esce dalla legge di Newton scritta sulla cabina, e
+  l'equilibrio dei momenti sull'albero motore è controllato con η_i.
+- Un test di proprietà su 7 606 argani casuali. Oltre ai punti del 6 controlla che la
+  decelerazione reale:
+  - non scenda mai sotto il minimo;
+  - cresca con la coppia del freno e con l'attrito del riduttore.
+
+  Controlla anche che gli estremi dell'intervallo del freno tengano l'aderenza e che N_equiv(t)
+  cresca con β e cali con γ. L'unico risultato infinito è un caso fisico di fune lenta.
+- Una regressione differenziale sulla versione precedente, su 6 013 argani casuali:
+  - cinematica, S_f effettivo, tiri massimi, freno richiesto, forza al volantino e cabina
+    bloccata sono identici;
+  - le differenze vengono solo dalle scelte volute: N_equiv(t) senza interpolazione, casi di
+    frenatura in più, cabina vuota in discesa per il motore e tangente esatta (utilizzo al
+    massimo −0,37%);
+  - nessun impianto passa da “non superato” a “superato”.
+- 400 impianti casuali per la proposta, con zero proposte che falliscono la verifica.
 
 ## 10.2 Responsabilità e aspetti legali
 

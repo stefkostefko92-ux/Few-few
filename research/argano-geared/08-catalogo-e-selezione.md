@@ -263,3 +263,14 @@ Negli impianti esistenti la massa della cabina è spesso stimata. Il sistema ric
 configurazioni ammissibili con la massa della cabina a −10% e +10% (e, a scelta, con il
 bilanciamento a ±5 punti) e segnala quelle che cambiano esito. È un calcolo di pochi
 millisecondi e protegge dal caso più comune di errore in cantiere.
+
+Il calcolatore prototipo lo fa per l'argano verificato: massa della cabina ±10% a bilanciamento
+costante e bilanciamento ±0,05. Se è inserito il carico di equilibrio misurato, varia solo la
+massa della cabina, e con lei il contrappeso. Per ogni variante mostra aderenza (norma e
+decelerazione reale), S_f, potenza, carico sull'albero ed esito, e dice quali verifiche cambiano.
+Nel caso B del capitolo 7 l'esito cambia:
+- con la cabina più leggera del 10% la frenatura a vuoto in salita diventa KO;
+- con la cabina più pesante del 10% supera il carico sull'albero;
+- con k + 0,05 la frenatura a vuoto in salita diventa KO.
+
+Prima di decidere vanno misurati massa della cabina e bilanciamento.

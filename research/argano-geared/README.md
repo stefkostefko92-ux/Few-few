@@ -42,7 +42,9 @@ estratti dei motori di ricerca (capitolo 11)._
 6. **Perché un selettore e non un foglio di calcolo** (capitolo 7.2): in un caso da 630 kg la
    frenatura d'emergenza a cabina vuota fallisce del 2,9%, e due delle quattro correzioni “ovvie”
    rompono la verifica del carico sull'albero; con un rendimento del vano realistico (60–86%
-   secondo Elevator World) il motore da 5,5 kW non basta più.
+   secondo Elevator World) il motore da 5,5 kW non basta più. Il freno a due gruppi imposto
+   dalla sostituzione decelera l'arresto di emergenza a 2–6 m/s²; a quella decelerazione la gola
+   semicircolare non tiene l'aderenza, e la verifica a 0,5 m/s² non lo mostra (capitolo 7.4).
 7. **Sostituzione in Italia**: è una modifica costruttiva (DPR 162/1999) con adeguamento secondo
    UNI 10411-1:2024 e verifica straordinaria ⚠️. Le sintesi dell'edizione 2021 chiedono per la
    sostituzione della macchina: freno a due elementi (uno solo deve fermare la cabina carica in
@@ -56,7 +58,8 @@ estratti dei motori di ricerca (capitolo 11)._
    multi-marca con verifiche esposte e un flusso per la sostituzione.
 10. **La parte difficile sono i dati**: coppia in uscita, rendimento per rapporto, coppia del freno
     e inerzie non risultano pubblicati in forma accessibile; nella sostituzione pesano anche massa
-    della cabina e bilanciamento (prova con pinza amperometrica).
+    della cabina e bilanciamento (prova con pinza amperometrica). Nell'esempio del capitolo 7
+    l'esito cambia già con la massa della cabina ±10% (capitolo 8.9).
 11. **Architettura**: lo stack già in produzione nel monorepo (Next.js 15, TypeScript strict, zod,
     Prisma + PostgreSQL, BullMQ + Redis, PDF con font DejaVu, next-intl IT/EN/BG). L'enumerazione
     completa basta: ~29 400 configurazioni in circa 25 ms.

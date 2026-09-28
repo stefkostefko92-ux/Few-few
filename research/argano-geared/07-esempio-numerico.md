@@ -18,6 +18,7 @@ percorso della fune (script Node, doppia precisione).
 | | carico di rottura minimo · massa lineare | 47,5 kN · 0,336 kg/m | stime dalla tabella Pfeifer (8 mm: 30,4 kN; 21,5 kg/100 m) |
 | Nuovo argano | puleggia · gola | 560 mm · semicircolare con sottosquadro β = 90°, γ = 35° | illustrativo, nei limiti raccomandati da Montanari |
 | | rapporto · rendimento diretto η_d | 43 · 0,70 | illustrativo · ipotesi |
+| | rendimento inverso η_i (frenata con la ruota che trascina la vite) | 0,571 = 2 − 1/η_d | stima (capitolo 4.4) |
 | | motori a catalogo (4 poli, 1450 giri/min) | 5,5 kW (J = 0,06 kg·m²) · 7,5 kW (J = 0,08 kg·m²) | illustrativo |
 | | freno sull'albero motore | 2 × 45 N·m (5,5 kW) · 2 × 60 N·m (7,5 kW) | illustrativo |
 | | inerzia puleggia · carico statico max albero · massa | 2,5 kg·m² · 2 500 kg · 450 kg | illustrativo |
@@ -43,12 +44,13 @@ Rendimento del vano 0,85 (capitolo 5.6) → η = 0,70 · 0,85 = 0,595.
 | Altre verifiche | Risultato |
 |---|---|
 | funi: D/d · N_equiv · S_f richiesto · S_f effettivo | 56 · 8,84 (5,0 ⚠️ + K_p 3,84) · max(11,17; 12) = 12 · 47 500 / 3 328 N = **14,27** |
-| potenza statica (squilibrio 3 320 N) | 3 320 · 1,0 / 0,595 = **5,58 kW**: il motore da 5,5 kW è al 101% → **KO**; con 7,5 kW al 74% |
-| formula semplificata (1 − k)·Q·g·v/η | 5,19 kW: sottostima di circa il 7% per il peso delle funi non compensate |
+| potenza statica (squilibrio 3 335 N, cabina vuota in discesa dall'alto; con la cabina carica in salita dal basso 3 320 N) | 3 335 · 1,0 / 0,595 = **5,61 kW**: il motore da 5,5 kW è al 102% → **KO**; con 7,5 kW al 75% |
+| formula semplificata (1 − k)·Q·g·v/η | 5,19 kW: sottostima del 7,5% per il peso delle funi non compensate |
 | coppia di accelerazione, motore 7,5 kW | 36,3 + (0,103/0,595 + 0,08) · 122,9 = 67,4 N·m = 1,36 · M_n (49,4 N·m) |
 | coppia massima in uscita dal riduttore | 1 473 N·m (da confrontare con il catalogo) |
 | freno 2 × 60 N·m: 1,25·Q tutti i gruppi · un gruppo con Q in discesa · un gruppo a vuoto in salita | 46,2 · 35,7 · 33,7 N·m → OK |
-| decelerazione massima (cabina carica in salita, freno pieno) | 5,04 m/s² (0,51 g), da confrontare con paracadute e ammortizzatori |
+| decelerazione massima in frenata, tutti i gruppi (cabina vuota in discesa in alto) | 6,98 m/s² (0,71 g) con η_i stimato; 5,91 m/s² con η_i = 1; da confrontare con paracadute e ammortizzatori |
+| aderenza alla decelerazione reale del freno (avviso, capitolo 4.4) | cabina vuota in salita in alto, a = 5,67 m/s²: T1/T2 = 5,59 contro e^(f·α) = 1,60, utilizzo **3,50** |
 | forza al volantino (perdite di riduttore e vano incluse) | 36,3 N·m / 0,2 m = **182 N** ≤ 400 N ⚠️ |
 | carico sull'albero, prova 1,25·Q, verso il basso | **2 496 kg** su 2 500 kg (99,8%) |
 
@@ -90,7 +92,8 @@ Il nuovo argano è quello del caso A con il motore da 7,5 kW e funi nuove Ø10.
 | potenza statica · utilizzo del motore | 7,04 kW · 94% | 5,94 kW · 79% | il riduttore nuovo rende di più |
 | coppia di accelerazione / coppia nominale | 2,10 | 1,46 | il volano del motore vecchio pesa |
 | freno | un solo elemento | 2 × 60 N·m: 46,6 · 36,0 · 34,0 N·m richiesti | il vecchio non rispetta i due esemplari della UNI 10411-1 (capitolo 6.6) |
-| decelerazione massima del freno | 0,19 g | 0,50 g | da confrontare con paracadute e ammortizzatori |
+| decelerazione massima del freno, tutti i gruppi | 0,21 g | 0,70 g | η_i stimato 0,333 e 0,571; da confrontare con paracadute e ammortizzatori |
+| aderenza alla decelerazione reale del freno (avviso) | 1,32 a 1,74 m/s² | **4,02** a 5,57 m/s² | cabina vuota in salita in alto in entrambi; capitolo 7.4 |
 | forza al volantino | 235 N | 193 N | ≤ 400 N ⚠️ |
 | carico sull'albero (1,25·Q), verso l'alto | 2 460 kg | 2 468 kg | ≤ 2 500 kg della nuova macchina |
 | sollevamento netto sugli ancoraggi | 1 860 kg | **2 018 kg** | +158 kg: la nuova macchina è più leggera, gli ancoraggi esistenti vanno verificati |
@@ -101,7 +104,36 @@ rapporto T1/T2 è 1,642 con macchina in alto senza rinvio e **1,687** con macchi
 (peso dei tratti discendenti e inerzia delle pulegge in testata). Con la macchina in basso il
 margine di aderenza si consuma quasi tutto.
 
-## 7.4 Che cosa insegna l'esempio
+## 7.4 Freno e aderenza alla decelerazione reale
+
+La verifica di frenatura della norma usa 0,5 m/s². In un arresto di emergenza, però, la
+decelerazione la dà il freno, e con i due gruppi che EN 81-20 chiede è molto più alta. Caso B,
+argano nuovo; la regolazione minima per gruppo (36,0 N·m) è quella con cui ogni gruppo da solo
+rallenta la cabina con portata a 0,5 m/s² (capitolo 4.9):
+
+| Configurazione | Decelerazione reale (cabina vuota in salita, in alto) | Utilizzo dell'aderenza | Coppia per gruppo ammessa |
+|---|---|---|---|
+| 2 × 60 N·m, η_i 0,571 (stima) | 5,57 m/s² | 4,02 | da 36,0 N·m: nessuna tiene l'aderenza |
+| 2 × 60 N·m, η_i = 1 (riduttore senza attrito) | 4,00 m/s² | 2,38 | nessuna |
+| 2 × 36,0 N·m (minimo), η_i 0,571 | 3,09 m/s² | 1,85 | nessuna |
+| 2 × 36,0 N·m, η_i = 1 | 2,05 m/s² | 1,43 | nessuna |
+| gola a V temprata γ = 35°, 2 × 36,0 N·m, η_i 0,571 | 3,09 m/s² | 1,22 | nessuna; e S_f richiesto 14,81 > 14,27 |
+| gola a V temprata γ = 35°, 2 × 36,0 N·m, η_i = 1 | 2,05 m/s² | 0,94 | da 36,0 a 39,3 N·m; ma S_f KO |
+| argano esistente, 1 × 80 N·m e volano, η_i 0,333 (stima) | 1,74 m/s² | 1,32 | — |
+| argano esistente, η_i = 1 | 1,14 m/s² | 1,14 | — |
+
+Con la gola semicircolare (β = 90°) la cabina vuota in salita tiene l'aderenza solo fino a
+0,52 m/s² (con la gola a V temprata γ = 35° fino a 2,32 m/s²), mentre il minimo dei due gruppi la
+frena a 2–3 m/s². Nessuna regolazione del freno che
+rispetti EN 81-20 chiude il problema: in un arresto di emergenza a cabina vuota in salita le funi
+possono slittare. Il vecchio argano, con un solo freno e il volano, frenava più dolce. Se la
+lettura della norma che chiede la decelerazione reale è quella giusta, la soluzione passa dalla
+gola, dall'angolo di avvolgimento, dalla taglia 2:1 o da una frenatura controllata; per questo il
+calcolatore mostra il caso come avviso, con i numeri, e non come esito. La lettura va decisa sul
+testo di EN 81-50 §5.11.2.2.2 ⚠️. Nella proposta il software preferisce comunque le configurazioni
+che tengono l'aderenza anche alla decelerazione reale, quando i limiti della gola lo consentono.
+
+## 7.5 Che cosa insegna l'esempio
 
 - Nessuna verifica si può fare da sola: aderenza, carico sull'albero, funi e motore si influenzano
   a vicenda, e la correzione di una può rompere un'altra.
@@ -111,3 +143,6 @@ margine di aderenza si consuma quasi tutto.
   vanno presi dal costruttore e dalla disposizione reale, non da un valore unico.
 - Nella sostituzione il confronto con l'argano esistente mostra subito che cosa migliora (potenza,
   freno a due elementi) e che cosa va verificato in più (margine di aderenza, ancoraggi).
+- Il freno a due gruppi, obbligatorio nella sostituzione, frena molto più forte del vecchio: la
+  verifica di aderenza a 0,5 m/s² non basta a sapere se le funi tengono in un arresto di
+  emergenza (7.4).
