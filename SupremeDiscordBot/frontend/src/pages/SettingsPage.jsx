@@ -153,7 +153,6 @@ export default function SettingsPage() {
   };
 
   const isPremium = server?.isPremium;
-  const hasWL = !!server?.hasWhiteLabel;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
@@ -361,20 +360,17 @@ export default function SettingsPage() {
           )}
         </div>
 
-        {/* ── White-label Bot (White-label / Agency plan) ───────────────
-             Заключваше се по плана Premium, а полетата се пращат (и бекендът ги
-             приема) само при hasWhiteLabel — Premium клиент попълваше токен,
-             виждаше „Saved“ и нищо не се записваше (одит 26.09.2026). */}
+        {/* ── White-label Bot (Premium) ─────────────────────────────── */}
         <div
-          aria-disabled={!hasWL}
-          className={`cs-card space-y-4 ${!hasWL ? "opacity-50 pointer-events-none" : ""}`}
+          aria-disabled={!isPremium}
+          className={`cs-card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-purple-400" />
               <h2 className="font-semibold text-cs-text">White-label Bot</h2>
             </div>
-            {!hasWL && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> White-label plan</span>}
+            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium Only</span>}
           </div>
 
           <label className="block">
@@ -384,8 +380,8 @@ export default function SettingsPage() {
               placeholder={t("ui.ph.botName")}
               value={form.customBotName}
               onChange={(e) => set("customBotName", e.target.value)}
-              disabled={!hasWL}
-              tabIndex={hasWL ? undefined : -1}
+              disabled={!isPremium}
+              tabIndex={isPremium ? undefined : -1}
             />
           </label>
 
@@ -396,8 +392,8 @@ export default function SettingsPage() {
               placeholder="https://example.com/avatar.png"
               value={form.customBotAvatar}
               onChange={(e) => set("customBotAvatar", e.target.value)}
-              disabled={!hasWL}
-              tabIndex={hasWL ? undefined : -1}
+              disabled={!isPremium}
+              tabIndex={isPremium ? undefined : -1}
             />
           </label>
 
@@ -410,12 +406,12 @@ export default function SettingsPage() {
               value={form.customBotToken}
               onChange={(e) => set("customBotToken", e.target.value)}
               autoComplete="off"
-              disabled={!hasWL}
-              tabIndex={hasWL ? undefined : -1}
+              disabled={!isPremium}
+              tabIndex={isPremium ? undefined : -1}
             />
             <p className="text-xs text-cs-muted mt-1">
-              The token is encrypted and never shown again. On save your own bot starts with it;
-              a new avatar is applied on the next restart (Discord allows about two changes per hour).
+              ⚠️ Token is stored securely server-side. The name and avatar update
+              immediately — full white-label token support requires a dedicated bot instance.
             </p>
           </label>
         </div>

@@ -39,8 +39,6 @@ export default function Dungeons(): React.ReactElement {
   const [active, setActive] = useState<ActiveRun | null>(null);
   const [fight, setFight] = useState<any>(null);
   const [busy, setBusy] = useState(false);
-  // 4a.3-fix: панелът с изхода трябва да чака анимацията да свърши (виж Hunting.tsx).
-  const [animDone, setAnimDone] = useState(false);
 
   async function load() {
     try {
@@ -71,7 +69,6 @@ export default function Dungeons(): React.ReactElement {
     setBusy(true);
     try {
       const r = await api.post('/dungeon/advance');
-      setAnimDone(false);
       setFight(r);
       showUnlocks(r.unlocked);
       await refresh();
@@ -113,10 +110,9 @@ export default function Dungeons(): React.ReactElement {
           rounds={fight.rounds}
           victory={fight.success}
           onClose={() => { setFight(null); load(); }}
-          onDone={() => setAnimDone(true)}
           introTitle={t('dungeons.stageIntro', { stage: fight.stage, total: fight.totalStages, name: fight.foe.name })}
         />
-        {animDone && <div className="panel" style={{ padding: 16 }}>
+        <div className="panel" style={{ padding: 16 }}>
           {fight.cleared ? (
             <div className="flex between">
               <div>{t('dungeons.finalStageYours')}</div>
@@ -136,7 +132,7 @@ export default function Dungeons(): React.ReactElement {
               </div>
             </div>
           )}
-        </div>}
+        </div>
       </div>
     );
   }

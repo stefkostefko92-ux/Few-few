@@ -97,8 +97,6 @@ export interface InventoryItem extends Item {
   equipped: number;
   slot: string;
   soul_bound?: number;
-  /** Купено с гемове — обвързано, не се продава на търговеца. */
-  gem_bought?: number;
   listed?: number;
   enchant_count?: number;
   enchant_bonuses_json?: string;

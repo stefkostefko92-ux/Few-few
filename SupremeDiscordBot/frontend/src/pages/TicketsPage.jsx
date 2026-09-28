@@ -106,9 +106,7 @@ export default function TicketsPage() {
 
   const claimMut = useMutation({
     mutationFn: (ticketId) => claimTicket(serverId, ticketId),
-    // botWarning: поето в базата, но Discord НЕ е уведомен — досега се
-    // игнорираше и staff мислеше, че каналът знае (одит 26.09.2026).
-    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ["tickets", serverId] }); setClaimError(null); if (data?.botWarning) toast.error(data.botWarning); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tickets", serverId] }); setClaimError(null); },
     onError: (err) => setClaimError(err?.response?.data?.error || t("tickets.claimFailed")),
   });
 

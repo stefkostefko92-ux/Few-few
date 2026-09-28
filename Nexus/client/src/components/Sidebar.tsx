@@ -51,7 +51,6 @@ const SECTIONS: SectionDef[] = [
       { to: '/app/trial-cache', labelKey: 'sidebar.trialCache', icon: IconStar },
       { to: '/app/dungeons', labelKey: 'sidebar.dungeons', icon: IconCrown },
       { to: '/app/forge', labelKey: 'sidebar.forge', icon: IconBolt },
-      { to: '/app/sets', labelKey: 'sidebar.sets', icon: IconStar },
       { to: '/app/recipes', labelKey: 'sidebar.recipes', icon: IconStar },
       { to: '/app/arena', labelKey: 'sidebar.arena', icon: IconSword },
       { to: '/app/history', labelKey: 'sidebar.history', icon: IconSword },
@@ -143,9 +142,7 @@ export default function Sidebar(): React.ReactElement {
           <div className="sidebar-hero-meta">
             <div className="sidebar-hero-name">{char.name}</div>
             {(char as any).current_title && <div className="sidebar-hero-title">{(char as any).current_title}</div>}
-            {/* Нивото вече седи като бадж върху аватара (sidebar-hero-lvl) —
-                тук само класът, без повторение и без средна точка. */}
-            <div className="sidebar-hero-class">{char.class}</div>
+            <div className="sidebar-hero-class">{char.class.toUpperCase()} · LV {char.level}</div>
           </div>
         </div>
       )}

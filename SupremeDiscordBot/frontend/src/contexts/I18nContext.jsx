@@ -5,13 +5,9 @@
 // Fallback: непреведен ключ показва английския канон, а напълно непознат ключ
 // връща самия ключ — така липсващ превод НИКОГА не чупи екрана (най-лошото е
 // английска дума на иначе преведена страница).
-import { createContext, useContext, useMemo, useCallback, useEffect, useState } from "react";
+import { createContext, useContext, useMemo, useCallback } from "react";
 import { useAuth } from "./AuthContext";
-import { DASHBOARD_EN, LOCALE_LOADERS, SUPPORTED_LOCALES, DEFAULT_LOCALE } from "../i18n/dashboard";
-
-// Заредените таблици (английският е винаги тук). Кеш на ниво модул — езикът се
-// тегли веднъж на сесия, не при всяко монтиране.
-const LOADED = { [DEFAULT_LOCALE]: DASHBOARD_EN };
+import { DASHBOARD_LOCALES, DEFAULT_LOCALE } from "../i18n/dashboard";
 
 const I18nContext = createContext(null);
 
@@ -23,41 +19,18 @@ function interpolate(str, vars) {
 
 export function I18nProvider({ children }) {
   const { user } = useAuth();
-  const lang = SUPPORTED_LOCALES.includes(user?.language) ? user.language : DEFAULT_LOCALE;
-  const [, setLoaded] = useState(0); // само за пре-рендер, когато таблицата пристигне
-  // Последният напълно зареден език. При СМЯНА на език показваме него, докато
-  // новият пристигне — `return null` тогава размонтираше целия BrowserRouter и
-  // незаписаните форми се губеха (ревю 26.09.2026). null само при първия старт.
-  // Помни се САМО за влязъл потребител: иначе при вход (анонимен EN → езикът на
-  // потребителя) за миг се рисуваше английски — точно мигането, което null пази.
-  const [shown, setShown] = useState(null);
+  const lang = DASHBOARD_LOCALES[user?.language] ? user.language : DEFAULT_LOCALE;
 
-  useEffect(() => {
-    if (LOADED[lang]) return undefined;
-    let alive = true;
-    LOCALE_LOADERS[lang]?.()
-      .then((m) => { LOADED[lang] = m.default; if (alive) setLoaded((n) => n + 1); })
-      .catch(() => { LOADED[lang] = DASHBOARD_EN; if (alive) setLoaded((n) => n + 1); }); // мрежата падна → английски, не празен екран
-    return () => { alive = false; };
-  }, [lang]);
-
-  const ready = !!LOADED[lang];
-  const known = !!user;
-  useEffect(() => { if (ready && known && shown !== lang) setShown(lang); }, [ready, known, lang, shown]);
-  const active = ready ? lang : (known ? shown : null);
   const t = useCallback(
     (key, vars) => {
-      const table = LOADED[active] || DASHBOARD_EN;
-      const value = table[key] ?? DASHBOARD_EN[key] ?? key;
+      const table = DASHBOARD_LOCALES[lang] || DASHBOARD_LOCALES[DEFAULT_LOCALE];
+      const value = table[key] ?? DASHBOARD_LOCALES[DEFAULT_LOCALE][key] ?? key;
       return interpolate(value, vars);
     },
-    [active],
+    [lang],
   );
 
-  const value = useMemo(() => ({ t, lang: active || lang }), [t, active, lang]);
-  // Езикът на потребителя още пътува (~19 KB, веднъж на сесия): не рисуваме
-  // английски за миг — това мига. Анонимните посетители са на английски и не чакат.
-  if (!active) return null;
+  const value = useMemo(() => ({ t, lang }), [t, lang]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 

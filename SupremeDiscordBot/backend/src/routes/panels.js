@@ -23,7 +23,7 @@ async function assertFormsOwned(buttons, serverId) {
 
 router.use(requireAuth, loadUser);
 
-export const PREMIUM_PANEL_LIMIT = 50;
+const PREMIUM_PANEL_LIMIT = 50;
 const BASE_PANEL_LIMIT = 1;
 
 // Map of panel fields → premium feature keys, for bulk validation on POST/PUT
@@ -156,7 +156,7 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
 
     if (!created.ok) {
       return res.status(403).json({
-        error: `Panel limit reached (${limit}). ${!isPremium ? `Upgrade to Premium for up to ${PREMIUM_PANEL_LIMIT} panels.` : ""}`,
+        error: `Panel limit reached (${limit}). ${!isPremium ? "Upgrade to Premium for unlimited panels." : ""}`,
         code: "LIMIT_REACHED",
       });
     }
@@ -228,9 +228,7 @@ router.put("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => 
 router.delete("/:serverId/:panelId", requireServerAdmin, async (req, res, next) => {
   try {
     if (!(await panelBelongsToServer(req))) return res.status(404).json({ error: "Panel not found" });
-    const gone = await prisma.panel.delete({ where: { id: req.params.panelId } });
-    // Изтриването нямаше одит (ревю 26.09.2026) — създаването имаше.
-    await logAudit(req.user.id, req.params.serverId, "PANEL_DELETED", gone.id, { name: gone.name });
+    await prisma.panel.delete({ where: { id: req.params.panelId } });
     res.json({ ok: true });
   } catch (err) {
     next(err);

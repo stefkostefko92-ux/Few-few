@@ -2,7 +2,6 @@
 // Internal routes called BY the Discord bot to interact with the backend API
 // (separate from the bot-notifier that calls the bot)
 import { Router } from "express";
-import { isBlacklistActive, BLACKLIST_SELECT } from "../lib/blacklist.js";
 import { prisma } from "../lib/prisma.js";
 import { awardTicketSlaXp } from "../lib/game/xp.js";
 import { requireBotSecret } from "../middleware/auth.js";
@@ -126,12 +125,10 @@ router.get("/server/:serverId/token", async (req, res, next) => {
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { customBotToken: true, customBotPausedAt: true },
+      select: { customBotToken: true },
     });
 
     if (!server) return res.status(404).json({ error: "Server not found" });
-    // v51: спрян от админ конзолата → като без токен (ботът сваля клиента и не го вдига).
-    if (server.customBotPausedAt) return res.json({ token: null, paused: true });
     // White-label bot runs only while the server holds the White-label / Agency
     // tier (getServerTier resolves own plan, active trial and agency seats).
     const { hasWhiteLabel } = await getServerTier(req.params.serverId);
@@ -612,10 +609,7 @@ router.post("/ticket/:ticketId/close", async (req, res, next) => {
     const archiveUrl = tokenizedArchiveUrl(ticket.id, token);
     await prisma.ticket.update({
       where: { id: ticket.id },
-      // Discord Developer Terms §5(c)(i) — транскриптът при покой е шифриран
-      // (lib/transcriptAtRest.js). Основният път на затваряне пишеше открит
-      // текст, докато таблото и DSR минаваха през sealTranscript (одит 26.09.2026).
-      data: { archiveHtml: sealTranscript(html), archiveUrl },
+      data: { archiveHtml: html, archiveUrl },
     });
 
     // Build full URL — prefer env var, fallback to request headers (for auto-detection)
@@ -790,10 +784,8 @@ router.post("/ticket/:ticketId/delete", async (req, res, next) => {
           assignee: true,
         },
     });
-      // Само новогенерираният се шифрира — заварен archiveHtml вече е във
-      // формата при покой и повторно sealTranscript би го шифрирал двойно.
       if (fullTicket) {
-        archiveHtml = sealTranscript(generateHtmlTranscript(fullTicket));
+        archiveHtml = generateHtmlTranscript(fullTicket);
       }
     }
 
@@ -837,7 +829,7 @@ router.post("/ticket/:ticketId/transcript", async (req, res, next) => {
     const token = await ensureArchiveToken(ticket.id, ticket.archiveToken);
     await prisma.ticket.update({
       where: { id: ticket.id },
-      data: { archiveHtml: sealTranscript(html), archiveUrl: tokenizedArchiveUrl(ticket.id, token) },
+      data: { archiveHtml: html, archiveUrl: tokenizedArchiveUrl(ticket.id, token) },
     });
 
     const url = `${process.env.FRONTEND_URL || ""}${tokenizedArchiveUrl(ticket.id, token)}`;
@@ -1000,9 +992,9 @@ router.get("/user/:userId/blacklisted", async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.params.userId },
-      select: BLACKLIST_SELECT,
+      select: { isBlacklisted: true },
     });
-    res.json({ blacklisted: isBlacklistActive(user) });
+    res.json({ blacklisted: user?.isBlacklisted || false });
   } catch (err) {
     next(err);
   }
@@ -1225,7 +1217,7 @@ router.get("/servers/with-custom-tokens", async (req, res, next) => {
     // решава и при `/token`. Множеството е малко по конструкция — токен имат
     // само white-label/agency клиенти. (Одит 07.08.2026)
     const candidates = await prisma.server.findMany({
-      where: { customBotToken: { not: null }, customBotPausedAt: null },
+      where: { customBotToken: { not: null } },
       select: { id: true, name: true },
     });
 

@@ -2,11 +2,9 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { getDb } from '../db';
-import { detachFromGuild } from '../game/guild';
 import { authRequired } from '../middleware/auth';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
 import { eraseUser } from '../lib/erasure';
-import { withMonitoring } from '../lib/observability';
 
 const router = Router();
 router.use(authRequired);
@@ -29,7 +27,7 @@ const changePwSchema = z.object({
   next: passwordRule,
 });
 
-router.post('/password', withMonitoring(async (req, res) => {
+router.post('/password', async (req, res) => {
   const parse = changePwSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: parse.error.flatten() });
@@ -54,7 +52,7 @@ router.post('/password', withMonitoring(async (req, res) => {
   db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?')
     .run(hash, req.auth!.uid);
   res.json({ ok: true });
-}));
+});
 
 const deleteCharSchema = z.object({
   confirm: z.literal('DELETE'),
@@ -80,12 +78,6 @@ router.post('/delete-character', (req, res) => {
        WHERE seller_id IN (SELECT id FROM characters WHERE user_id = ?)
          AND status = 'active'`,
     ).run(userId);
-    // Гилдия: лидерът предава лидерството (ранг → стаж) или празната гилдия
-    // се разпуска. Без това guilds.leader_id (FK RESTRICT) проваляше
-    // триенето на герой-лидер с 500.
-    for (const c of db.prepare('SELECT id FROM characters WHERE user_id = ?').all(userId) as { id: number }[]) {
-      detachFromGuild(db, c.id, { deleting: true });
-    }
     db.prepare('DELETE FROM characters WHERE user_id = ?').run(userId);
   });
   tx(req.auth!.uid);
@@ -101,15 +93,9 @@ router.post('/delete-character', (req, res) => {
 router.get('/export', (req, res) => {
   const db = getDb();
   const userId = req.auth!.uid;
-  // Одит (backend round): SELECT-ът искаше email_verified/email_verified_at —
-  // колони, които НИКОГА не са съществували в users (schema.ts) и не се
-  // ползват никъде другаде в кода (никаква имейл-верификация не е внедрена).
-  // Резултатът: GDPR чл. 20 експортът хвърляше 500 при ВСЯКА заявка, за
-  // ВСЕКИ потребител — правото на преносимост на данни беше изцяло счупено,
-  // не само в тестовата среда (колоните липсват във всяка инсталация).
   const user = db
     .prepare(
-      `SELECT id, username, email, date_of_birth, country, created_at, is_admin
+      `SELECT id, username, email, created_at, is_admin, email_verified, email_verified_at
          FROM users WHERE id = ?`,
     )
     .get(userId) as Record<string, unknown> | undefined;
@@ -137,10 +123,7 @@ router.get('/export', (req, res) => {
     quest_log: collect('SELECT * FROM quest_log'),
     achievements: collect('SELECT * FROM achievements'),
     bestiary: collect('SELECT * FROM bestiary'),
-    // Одит: колоната се казва created_at (schema.ts) — "sent_at" никога не е
-    // съществувала, второ счупено поле в СЪЩИЯ GDPR експорт (виж email_verified
-    // по-горе в тази функция).
-    mail: collect('SELECT id, character_id, from_name, subject, body, created_at, read_at FROM mail'),
+    mail: collect('SELECT id, character_id, from_name, subject, body, sent_at, read_at FROM mail'),
     purchases,
   });
 });
@@ -157,7 +140,7 @@ const deleteAccountSchema = z.object({
  * Purchase rows are pseudonymised, not deleted — VAT/OSS bookkeeping
  * requires retention; we null out character_id but keep the totals.
  */
-router.post('/delete-account', withMonitoring(async (req, res) => {
+router.post('/delete-account', async (req, res) => {
   const parse = deleteAccountSchema.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: 'Confirm by typing "DELETE MY ACCOUNT" and your password.' });
@@ -179,6 +162,6 @@ router.post('/delete-account', withMonitoring(async (req, res) => {
   // на guilds.leader_id проваля триенето за гилдийни лидери).
   db.transaction((uid: number) => eraseUser(db, uid))(userId);
   res.json({ ok: true });
-}));
+});
 
 export default router;

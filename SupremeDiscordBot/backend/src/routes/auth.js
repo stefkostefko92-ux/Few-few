@@ -1,6 +1,5 @@
 // backend/src/routes/auth.js
 import { Router } from "express";
-import { isBlacklistActive } from "../lib/blacklist.js";
 import { randomBytes } from "crypto";
 import { encrypt } from "../lib/crypto.js";
 import axios from "axios";
@@ -108,7 +107,7 @@ router.get("/callback", async (req, res) => {
       },
     });
 
-    if (isBlacklistActive(user)) {
+    if (user.isBlacklisted) {
       return res.redirect(`${process.env.FRONTEND_URL}/?error=blacklisted`);
     }
 

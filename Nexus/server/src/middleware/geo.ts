@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { getSetting, isSettingSet } from '../game/settings';
 
 /**
  * Country-level allowlist for the platform.
@@ -20,19 +19,9 @@ import { getSetting, isSettingSet } from '../game/settings';
 const DEFAULT_ALLOWED = 'BG,IT';
 const STATIC_BLOCK_PATHS = ['/api/health']; // never block health
 
-/** Приоритет: админ настройката (ако е зададена в панела) → env →
- *  подразбиране. Преди настройките allowed_countries/strict_geo се пазеха,
- *  но мидълуерът четеше само env — админ промяната нямаше ефект. */
 function allowedSet(): Set<string> {
-  const src = isSettingSet('allowed_countries')
-    ? getSetting<string>('allowed_countries')
-    : (process.env.ALLOWED_COUNTRIES || DEFAULT_ALLOWED);
-  const raw = src.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+  const raw = (process.env.ALLOWED_COUNTRIES || DEFAULT_ALLOWED).split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
   return new Set(raw);
-}
-
-function strictGeo(): boolean {
-  return isSettingSet('strict_geo') ? getSetting<boolean>('strict_geo') : process.env.STRICT_GEO === '1';
 }
 
 function detectCountry(req: Request): string {
@@ -76,7 +65,7 @@ export function geoBlock(req: Request, res: Response, next: NextFunction): void 
   if (allowed.has(country)) return next();
 
   // Unknown: block in strict mode, allow otherwise.
-  if (country === 'XX' && !strictGeo()) return next();
+  if (country === 'XX' && process.env.STRICT_GEO !== '1') return next();
 
   // Friendly JSON for API, friendly HTML for SPA.
   if (req.path.startsWith('/api/')) {
@@ -107,7 +96,7 @@ export function getGeoInfo(_req: Request, res: Response): void {
   res.json({
     allowed,
     detected: _req.detectedCountry || detectCountry(_req),
-    strict: strictGeo(),
+    strict: process.env.STRICT_GEO === '1',
     disabled: process.env.DISABLE_GEO === '1',
   });
 }

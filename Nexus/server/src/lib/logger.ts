@@ -187,7 +187,7 @@ function formatDiscordPayload(payload: any): any {
   };
 }
 
-export async function deliver(endpoint: { url: string; secret?: string; id?: number }, payload: any): Promise<void> {
+async function deliver(endpoint: { url: string; secret?: string; id?: number }, payload: any): Promise<void> {
   const markUnsafe = () => {
     if (endpoint.id) {
       getDb()
