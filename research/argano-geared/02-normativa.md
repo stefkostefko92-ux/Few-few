@@ -4,7 +4,7 @@
 
 Nessuna fonte ufficiale (EUR-Lex, normattiva.it, Gazzetta Ufficiale, store UNI/ISO) è stata
 letta integralmente: la rete dell'ambiente di ricerca bloccava l'apertura delle pagine e i
-fatti vengono dagli estratti dei motori di ricerca (capitolo 9). I riferimenti numerici di
+fatti vengono dagli estratti dei motori di ricerca (capitolo 11). I riferimenti numerici di
 articoli e clausole segnati ⚠️ vanno controllati sul testo ufficiale.
 
 ## 2.1 Direttiva Ascensori 2014/33/UE
@@ -69,7 +69,8 @@ trovata una decisione di esecuzione che citi già EN ISO 8100-1/-2:2026 ⚠️.
 - **UNI 10411-1:2024**: modifiche o sostituzioni di parti di ascensori elettrici a fune non
   conformi alle direttive 95/16/CE o 2014/33/UE (UNI 10411-2:2024 per gli idraulici; UNI
   10411-11 e -12:2024 per gli impianti conformi). La serie richiama UNI EN 81-20:2020 e UNI EN
-  81-21:2022. Il rapporto con EN 81-80 non è stato verificato.
+  81-21:2022. Il rapporto con EN 81-80 non è stato verificato. Gli adeguamenti richiesti per la
+  sostituzione del macchinario sono nel capitolo 6.6.
 
 Conseguenza progettuale: il flusso “sostituzione dell'argano su impianto esistente” deve
 produrre un report utilizzabile per l'adeguamento secondo UNI 10411-1 e per la verifica
@@ -80,7 +81,7 @@ chiaramente separati dai dati della nuova macchina.
 
 1. Profilo normativo versionato e riportato in ogni calcolo.
 2. Riferimento di clausola accanto a ogni verifica, **senza** riprodurre il testo della norma
-   (capitolo 8.2): l'utente professionale possiede la norma.
+   (capitolo 10.2): l'utente professionale possiede la norma.
 3. Doppio flusso: impianto nuovo (EN 81-20/-50 o EN ISO 8100) e sostituzione su impianto
    esistente (DPR 162/1999, UNI 10411-1:2024).
 4. Registro dei certificati di esame UE del tipo per i freni e i dispositivi usati come

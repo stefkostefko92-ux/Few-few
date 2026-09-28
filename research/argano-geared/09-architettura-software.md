@@ -1,8 +1,8 @@
-# 7. Architettura del software
+# 9. Architettura del software
 
 [← Indice](README.md)
 
-## 7.1 Principi di progetto
+## 9.1 Principi di progetto
 
 1. **Motore di calcolo puro e deterministico.** Tutte le formule vivono in un modulo
    TypeScript senza dipendenze da UI, database o rete: stessi input + stessa versione del
@@ -22,7 +22,7 @@
 5. **Tecnologia collaudata.** Lo stack è quello già in produzione nel monorepo
    (`linketto/`, `zabobovdol/`, `piuma/`): nessuna libreria nuova senza un motivo misurabile.
 
-## 7.2 Stack consigliato
+## 9.2 Stack consigliato
 
 | Livello | Scelta | Già in produzione in | Perché |
 |---|---|---|---|
@@ -34,7 +34,7 @@
 | i18n | next-intl, lingue IT (default) · EN · BG | `linketto/` | Mercato italiano, documentazione tecnica spesso in inglese |
 | Autenticazione | JWT in cookie httpOnly, Argon2id, gerarchia di ruoli | `piuma/` (Argon2id) | Dati di progetto dei clienti = dati riservati |
 | Log | pino, nessun dato personale nei log | `piuma/` | Log strutturati, correlabili al calcolo |
-| Test | `node:test` via tsx (unit) · property-based · Playwright (e2e) | `linketto/`, `piuma/` | Vedi capitolo 8 |
+| Test | `node:test` via tsx (unit) · property-based · Playwright (e2e) | `linketto/`, `piuma/` | Vedi capitolo 10 |
 | Deploy | Docker compose + nginx + Let's Encrypt, `GET /health` | `deploy/` del monorepo | Flusso `fetch-deploy.sh` → `autodeploy.sh` già esistente |
 
 Alternativa per il PDF, se si preferisce un unico runtime Node: HTML → PDF con Chromium
@@ -42,7 +42,7 @@ Alternativa per il PDF, se si preferisce un unico runtime Node: HTML → PDF con
 `panev/3d/pdf/print.mjs`. Vantaggio: il report a schermo e quello stampato condividono un solo
 template. Svantaggio: immagine Docker più pesante (Chromium).
 
-## 7.3 Moduli
+## 9.3 Moduli
 
 ```mermaid
 flowchart LR
@@ -71,7 +71,7 @@ flowchart LR
 Il confine di `calc/` va fatto rispettare da una regola ESLint `no-restricted-imports`:
 nessun import da `next`, `@prisma/client`, `fs` o rete dentro `calc/`.
 
-## 7.4 Il contratto del motore di calcolo
+## 9.4 Il contratto del motore di calcolo
 
 ```ts
 export type CheckStatus = "pass" | "fail" | "warn" | "not_applicable";
@@ -109,9 +109,9 @@ Regole del motore:
   `EN-ISO-8100-2:2026` durante e dopo la transizione, capitolo 2.2); formule, coefficienti e
   tabelle che cambiano tra i profili vivono in moduli separati e testati entrambi.
 - **Versione del motore = semver.** Una modifica di formula è una *minor* o una *major*,
-  mai una *patch*, e rigenera i casi di riferimento (capitolo 8).
+  mai una *patch*, e rigenera i casi di riferimento (capitolo 10).
 
-## 7.5 Prestazioni: basta l'enumerazione completa
+## 9.5 Prestazioni: basta l'enumerazione completa
 
 Un catalogo realistico (50 modelli × 7 pulegge × 7 rapporti × 6 motori × 2 freni =
 29 400 configurazioni) è stato valutato con un prototipo delle verifiche in **circa 25 ms**
@@ -119,10 +119,12 @@ su Node 22 (misura locale, `performance.now()`, dopo riscaldamento del JIT). Non
 solutori di ottimizzazione né cache: si valuta tutto, si filtra e si ordina. Questo rende
 anche banale spiegare gli scarti.
 
-## 7.6 API
+## 9.6 API
 
 | Metodo e percorso | Scopo | Autorizzazione |
 |---|---|---|
+| `POST /api/surveys` | Salva il rilievo di un impianto esistente (valori con origine, foto delle targhe) | utente autenticato |
+| `POST /api/surveys/:id/baseline` | Calcola l'argano esistente e segnala le incoerenze dei dati | proprietario |
 | `POST /api/calculations` | Valida gli input, esegue selezione e verifiche, salva lo snapshot | utente autenticato |
 | `GET /api/calculations/:id` | Legge uno snapshot (input, risultati, versioni, hash) | proprietario o stesso tenant |
 | `POST /api/calculations/:id/verify` | Verifica una configurazione scelta a mano (anche fuori catalogo) | utente autenticato |
@@ -136,26 +138,30 @@ Tutte le rotte con autenticazione controllano anche l'**autorizzazione** sul sin
 progetto (isolamento per tenant), non solo l'identità. Rate limit su autenticazione e sugli
 endpoint di calcolo.
 
-## 7.7 Esperienza utente
+## 9.7 Esperienza utente
 
-Wizard in cinque passi, ognuno con validazione immediata e valori tipici marcati come tali:
+Il percorso di default è la **sostituzione dell'argano**; l'impianto nuovo è una variante con
+meno passi. Ogni passo ha validazione immediata, e ogni valore mostra la sua origine (targa,
+misura, stima, catalogo):
 
-1. **Impianto** — tipo (persone / merci accompagnate), portata, massa cabina, bilanciamento,
-   velocità, corsa, fermate, impianto nuovo o sostituzione dell'argano su impianto esistente.
-2. **Sospensione e funi** — taglia (1:1, 2:1), numero, diametro e tipo di funi, compensazione,
-   cavo flessibile.
-3. **Geometria della trazione** — posizione del locale macchina, puleggia di rinvio,
-   angolo di avvolgimento, profilo e angoli delle gole.
-4. **Servizio** — avviamenti/ora, rapporto di intermittenza, alimentazione, azionamento
-   (VVVF), temperatura del locale.
-5. **Vincoli e preferenze** — produttori ammessi, dispositivo UCMP previsto, manovra di
-   emergenza manuale o elettrica, criteri di ordinamento (costo, margine, peso, efficienza).
+1. **Rilievo dell'impianto esistente** — targhe di motore e riduttore (anche da foto), puleggia,
+   funi, freno, componenti di sicurezza, locale macchina (capitolo 6.2).
+2. **Impianto** — tipo, portata, massa della cabina, bilanciamento o carico di equilibrio misurato,
+   velocità nominale, corsa, fermate, testata, fossa.
+3. **Disposizione e geometria** — macchina in alto o in basso, schema del percorso delle funi con
+   le pulegge di rinvio e le quote; l'angolo di avvolgimento compare calcolato su uno schizzo che
+   si aggiorna mentre si inseriscono le quote.
+4. **Funi, servizio e azionamento** — funi nuove, taglia, compensazione, avviamenti/ora,
+   intermittenza, alimentazione, rendimento del vano.
+5. **Vincoli e preferenze** — produttori ammessi, basamento e ancoraggi, protezioni già
+   presenti, manovra di emergenza, criterio di ordinamento.
 
-Pagina risultati: le prime configurazioni ammissibili con un semaforo per ogni verifica, il
-confronto affiancato, le “quasi ammissibili” con il motivo dello scarto, e l'analisi di
-sensibilità sulla massa della cabina (±10%), che negli impianti esistenti è spesso stimata.
+Pagina risultati: il calcolo dell'argano esistente con le eventuali incoerenze dei dati; le
+configurazioni ammissibili con un semaforo per ogni verifica; il confronto vecchio/nuovo; le
+“quasi ammissibili” con il motivo dello scarto; gli adeguamenti UNI 10411-1 con il loro stato;
+l'analisi di sensibilità sulla massa della cabina (±10%).
 
-## 7.8 Sicurezza e privacy
+## 9.8 Sicurezza e privacy
 
 - zod su ogni input esterno, anche nelle rotte admin; nessuna concatenazione di stringhe in
   SQL (solo Prisma).

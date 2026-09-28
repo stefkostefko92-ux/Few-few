@@ -3,7 +3,7 @@
 [← Indice](README.md)
 
 Questo capitolo è la specifica del motore di calcolo: ogni formula diventa una funzione pura
-e ogni verifica un `CheckResult` (capitolo 7.4). Legenda: ✅ confermato da almeno due fonti
+e ogni verifica un `CheckResult` (capitolo 9.4). Legenda: ✅ confermato da almeno due fonti
 indipendenti o riprodotto numericamente su un caso pubblicato; ⚠️ fonte secondaria o estratto
 non letto integralmente, **da verificare riga per riga sul testo UNI EN 81-50:2020 / EN ISO
 8100-2:2026 acquistato prima di scrivere il codice**; “derivazione” = meccanica elementare,
@@ -44,10 +44,11 @@ Derivazione. Con taglia r:1 sulla puleggia grava una sola calata di funi per lat
 cabina e contrappeso sono divisi per r. Nei casi dinamici le masse appese accelerano con
 `a` e le funi con `r·a`. Compensazione (catene o funi) e cavo flessibile si aggiungono al
 lato su cui gravano, in funzione della posizione della cabina; la loro esatta
-modellazione va presa da EN 81-50 §5.11 ⚠️. Attrito nelle guide e inerzia delle pulegge di
-rinvio vengono trascurati nell'MVP: nei casi di frenatura l'attrito delle guide riduce il
-rapporto T1/T2, quindi trascurarlo è a favore di sicurezza (derivazione); l'inerzia delle
-pulegge va invece aggiunta quando la norma la richiede ⚠️.
+modellazione va presa da EN 81-50 §5.11 ⚠️. Le formule qui sopra valgono per la macchina in alto
+senza rinvii; per la macchina in basso e per ogni percorso con pulegge i tiri si calcolano con il
+metodo del percorso della fune (capitolo 5.2). L'attrito di guide e pulegge riduce T1/T2 in
+frenatura: si trascura nella verifica di aderenza (a favore di sicurezza) e si conta nella
+potenza con il rendimento del vano; l'inerzia delle pulegge invece si conta ⚠️.
 
 ## 4.3 Cinematica, rapporto e velocità reale
 
@@ -86,7 +87,7 @@ T1 = tiro maggiore, T2 = tiro minore
   “1,25 Q più il peso dei dispositivi di movimentazione, dove usati”.
 - Caso 2, due sottocasi da verificare entrambi: cabina con portata in discesa al piano più
   basso; cabina vuota in salita al piano più alto. Quale dei due governa dipende da k e
-  dalla corsa (capitolo 5: governa il secondo).
+  dalla corsa (capitolo 7: governa il secondo).
 
 Fattore della gola `f` (forma di EN 81-1 Allegato M, ripresa in EN 81-50 §5.11.2.3) ⚠️:
 
@@ -106,8 +107,8 @@ di Mellor. È un controllo di plausibilità, non una verifica del testo.
 
 Limiti geometrici delle gole: la norma pone un limite superiore a β (EN 81-1: 106°) ⚠️;
 Montanari raccomanda β ≤ 90° e non oltre 105°, γ ≥ 32°, consigliato 35–40° (documento
-tecnico del costruttore). L'usura delle gole riduce β nel tempo: il software deve
-permettere di verificare anche la gola usurata.
+tecnico del costruttore). L'usura modifica la geometria della gola e quindi l'aderenza
+(Montanari): nella verifica dell'argano esistente il software usa gli angoli misurati.
 
 ## 4.5 Funi (EN 81-20 §5.5 ed EN 81-50 §5.12)
 
@@ -163,8 +164,9 @@ R = √( T1² + T2² + 2·T1·T2·cos(π − α) )
 Derivazione: somma vettoriale dei due tiri; con α = 180° (funi verticali) R = T1 + T2. Casi
 da calcolare: cabina con portata al piano più basso; prova statica con 1,25·Q ⚠️. Il
 confronto con il “carico statico massimo sull'albero” del catalogo va fatto nella
-definizione del costruttore (capitolo 6.2): nessun costruttore consultato pubblica la
-formula con cui lo intende.
+definizione del costruttore (capitolo 8.2): nessun costruttore consultato pubblica la
+formula con cui lo intende. Con la macchina in basso la risultante è diretta verso l'alto e
+conta anche il sollevamento netto sugli ancoraggi (capitolo 5.5).
 
 ## 4.7 Riduttore
 
@@ -189,7 +191,7 @@ M_p,max     = M_p,statica + J_ext,p · (2·r·a/D)                            (d
 ## 4.8 Motore
 
 ```text
-potenza statica:            P_st = ΔF · v_f / η,       η = η_d · η_altri
+potenza statica:            P_st = ΔF · v_f / η,       η = η_d · η_vano
 formula semplificata:       P ≈ (1 − k) · Q · g · v / η          (senza funi né compensazione)
 coppia nominale:            M_n = 9550 · P_n[kW] / n_n
 coppia statica al motore:   M_st = M_p,statica / (i · η)
@@ -198,9 +200,10 @@ coppia di accelerazione:    M_acc = M_st + (J_ext/η + J_motore) · α_m,   α_m
 coppia efficace (termica):  M_rms = √( Σ M_k²·t_k / T_ciclo ),  T_ciclo = 3600 / avviamenti_ora
 ```
 
-Derivazioni standard. La formula semplificata sottostima la potenza quando le funi non sono
-compensate: nel capitolo 5, con 18 m di corsa, dà 5,00 kW invece di 5,39 kW (−7%). Le condizioni di
-servizio (S3, S4, S5 e rapporto di intermittenza) seguono IEC 60034-1; il confronto di
+Derivazioni standard. η_vano è il rendimento del vano (pulegge, guide, funi): secondo Elevator
+World va tipicamente dal 60% all'86% (capitolo 5.6). La formula semplificata sottostima la
+potenza quando le funi non sono compensate: nel capitolo 7, con 18 m di corsa, del 7% circa.
+Le condizioni di servizio (S3, S4, S5 e rapporto di intermittenza) seguono IEC 60034-1; il confronto di
 `M_acc` va fatto con la coppia che motore **e** inverter possono dare per il tempo di
 accelerazione (dati di targa, non valori tipici).
 
@@ -210,12 +213,15 @@ Requisito ⚠️ (stessa formulazione trovata in due ricerche indipendenti): il 
 arrestare la macchina con la cabina in discesa alla velocità nominale con la portata più il
 25%, con decelerazione media non superiore a quella dell'intervento del paracadute o
 dell'arresto sugli ammortizzatori. Gli organi meccanici sono in almeno due gruppi; se uno
-non agisce, l'altro deve ancora rallentare la cabina in discesa con la portata nominale ⚠️.
+non agisce, l'altro deve ancora rallentare, arrestare e tenere ferma la cabina in discesa a
+velocità nominale con la portata **e in salita a vuoto** (formulazione riportata dalle sintesi
+della UNI 10411-1:2021; da confrontare con EN 81-20 §5.9.2.2) ⚠️.
 
 ```text
 coppia richiesta al motore (tutti i gruppi, 1,25·Q):
     M_f ≥ [(P + 1,25·Q − M_cw)/r + m_f(L_cabina) − m_f(L_contrappeso)]·g·(D/2)·η_i/i + J_tot·a_f·2·r·i/D
-coppia richiesta a un singolo gruppo: stessa formula con Q al posto di 1,25·Q
+coppia richiesta a un singolo gruppo: stessa formula con Q al posto di 1,25·Q, e caso a vuoto in
+    salita con lo squilibrio del contrappeso [M_cw − P + funi]·g al posto di quello della cabina
 ```
 
 - Scelta prudente: `η_i = 1` (l'attrito del riduttore aiuta il freno, ma non ci si conta).
@@ -242,12 +248,13 @@ Attenzione: secondo CMA & Partners un freno sull'albero lento di un albero soste
 di due supporti non è riconosciuto da EN 81-20:2020 come componente di sicurezza ⚠️. Regola del
 software: se il freno agisce sull'albero motore, la configurazione è ammissibile solo con un
 dispositivo esterno certificato, e il report ne riporta certificato e limiti (masse,
-velocità).
+velocità). Questa regola vale per gli impianti nuovi; nella sostituzione dell'argano valgono gli
+adeguamenti della UNI 10411-1 (capitolo 6.6).
 
 ## 4.11 Manovra di emergenza
 
 ```text
-M_man = M_p,statica / (i · η_d)      (cabina con portata in salita, freno aperto)
+M_man = M_p,statica / (i · η_d · η_vano)      (cabina con portata in salita, freno aperto)
 F_volantino = M_man / r_volantino
 ```
 
@@ -272,7 +279,9 @@ EN 81-1).
 | `motor.power` | potenza statica | ≤ potenza nominale | derivazione |
 | `motor.accel_torque` | coppia di accelerazione | ≤ capacità motore + inverter | derivazione + catalogo |
 | `motor.rms` | coppia efficace | ≤ coppia nominale | derivazione (IEC 60034-1) |
-| `brake.torque` | 1,25·Q tutti i gruppi; Q un gruppo | ≥ coppia richiesta | ⚠️ |
+| `brake.torque` | 1,25·Q tutti i gruppi; un gruppo con Q in discesa e a vuoto in salita | ≥ coppia richiesta | ⚠️ |
 | `brake.max_decel` | decelerazione massima | ≤ paracadute / ammortizzatori | ⚠️ |
 | `ucmp.route` e `acop.route` | organo di arresto ammesso | certificato valido | ⚠️ |
 | `rescue.manual` | forza al volantino | ≤ 400 N, altrimenti manovra elettrica | ⚠️ |
+| `layout.uplift` | sollevamento netto (macchina in basso) | ≤ capacità degli ancoraggi | derivazione + dato strutturale |
+| `rope.fleet_angle` | deviazione laterale delle funi | soglia configurabile | ⚠️ |

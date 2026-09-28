@@ -1,8 +1,8 @@
-# 6. Catalogo delle macchine e algoritmo di selezione
+# 8. Catalogo delle macchine e algoritmo di selezione
 
 [← Indice](README.md)
 
-## 6.1 Che cosa serve sapere di ogni argano
+## 8.1 Che cosa serve sapere di ogni argano
 
 Il selettore è buono quanto i dati del catalogo. Per ogni modello servono i campi che
 alimentano almeno una verifica del capitolo 4; tutto il resto è descrizione commerciale.
@@ -24,7 +24,7 @@ alimentano almeno una verifica del capitolo 4; tutto il resto è descrizione com
 | Prezzo, tempi di consegna | centesimi di €, giorni | ordinamento | Dato commerciale, versione separata |
 | Fonte | URL, pagina, edizione | tracciabilità | Ogni numero deve poter essere ricondotto al documento del costruttore |
 
-## 6.2 Normalizzazione dei dati dei costruttori
+## 8.2 Normalizzazione dei dati dei costruttori
 
 I cataloghi non sono omogenei: stesse parole, definizioni diverse. Regole:
 
@@ -38,12 +38,12 @@ I cataloghi non sono omogenei: stesse parole, definizioni diverse. Regole:
    perché i calcoli salvati vi fanno riferimento.
 4. **Import strutturato.** Un modello CSV/XLSX per costruttore, validato con lo stesso schema
    zod dell'admin. Niente scraping dei PDF: i dati si ottengono dai costruttori con un
-   accordo che ne autorizzi l'uso nel software (capitolo 8).
+   accordo che ne autorizzi l'uso nel software (capitolo 10).
 5. **Validità temporale.** Ogni modello ha date di inizio e fine commercializzazione: la
    selezione per un impianto nuovo esclude i modelli fuori produzione, la verifica di un
    impianto esistente no.
 
-## 6.3 Modello dati (schema Prisma di massima)
+## 8.3 Modello dati (schema Prisma di massima)
 
 ```prisma
 enum GearType { WORM HELICAL }
@@ -145,9 +145,25 @@ model BrakeOption {
   @@index([modelId])
 }
 
+enum MachinePosition { TOP TOP_DEFLECTOR BOTTOM_HEADROOM BOTTOM_SIDE }
+
+model SiteSurvey {
+  id          String          @id @default(cuid())
+  projectId   String
+  position    MachinePosition
+  data        Json
+  photoKeys   String[]
+  createdById String
+  createdAt   DateTime        @default(now())
+
+  @@index([projectId])
+  @@index([createdById])
+}
+
 model Calculation {
   id               String   @id @default(cuid())
   projectId        String
+  surveyId         String?
   engineVersion    String
   normProfile      String
   catalogVersionId String
@@ -158,15 +174,20 @@ model Calculation {
   createdAt        DateTime @default(now())
 
   @@index([projectId])
+  @@index([surveyId])
   @@index([catalogVersionId])
   @@index([createdById])
 }
 ```
 
-`Project`, `User`, `Tenant` e `AuditLog` seguono gli schemi già usati negli altri prodotti.
-Le tabelle `Calculation` non si aggiornano mai: una correzione è un nuovo calcolo.
+`SiteSurvey.data` contiene i valori del rilievo (capitolo 6.2), ciascuno con unità e origine
+(targa, misura, stima, documento), validati con lo stesso schema zod del wizard; le foto delle
+targhe sono file nello storage. `Project`, `User`, `Tenant` e `AuditLog` seguono gli schemi già
+usati negli altri prodotti. Le tabelle `Calculation` non si aggiornano mai: una correzione è un
+nuovo calcolo, e il calcolo dell'argano esistente (baseline) e quello del nuovo sono due
+snapshot distinti dello stesso rilievo.
 
-## 6.4 Configurazione candidata
+## 8.4 Configurazione candidata
 
 Una **configurazione** è la combinazione *modello × rapporto × puleggia × motore × freno*
 compatibile con i dati dell'impianto:
@@ -174,27 +195,37 @@ compatibile con i dati dell'impianto:
 - la puleggia deve avere diametro funi = diametro scelto e almeno *n* gole;
 - il motore deve essere offerto con quel modello e con quella tensione di alimentazione;
 - il freno deve essere compatibile con il motore e, se agisce sull'albero motore, la
-  configurazione eredita l'obbligo di un dispositivo UCMP separato (capitolo 4.10).
+  configurazione eredita l'obbligo di un dispositivo UCMP separato (impianto nuovo, capitolo
+  4.10) o gli adeguamenti della UNI 10411-1 (sostituzione, capitolo 6.6).
 
-## 6.5 Algoritmo
+Nella sostituzione si aggiungono i vincoli dell'impianto esistente (capitolo 6):
+
+- velocità reale entro la tolleranza della velocità nominale, correggibile in frequenza;
+- ingombri, interassi di fissaggio e altezza compatibili con il basamento, o adattatore previsto;
+- uscita delle funi (distanza tra le calate) e lato della puleggia compatibili con i rinvii;
+- massa compatibile con il solaio (macchina in alto) o con gli ancoraggi (macchina in basso).
+
+## 8.5 Algoritmo
 
 ```text
 input grezzo
   → schema zod: tipi, intervalli, coerenza tra campi, conversione in SI
-  → grandezze indipendenti dalla macchina: masse, contrappeso, masse delle funi per lato
+  → grandezze indipendenti dalla macchina: masse, contrappeso, percorso delle funi (capitolo 5)
+  → sostituzione: calcolo dell'argano esistente (baseline) e controllo di coerenza dei dati
   → per ogni configurazione compatibile del catalogo pubblicato:
        cinematica (giri puleggia, rapporto, velocità reale, frequenza al motore)
        verifiche del capitolo 4 → lista di CheckResult
   → ammissibili  = nessuna verifica "fail"
   → quasi ammissibili = una sola verifica "fail" con utilizzo ≤ 1,10
   → ordinamento degli ammissibili
+  → sostituzione: confronto vecchio/nuovo e lista degli adeguamenti
   → snapshot immutabile + hash
 ```
 
-L'enumerazione è completa (capitolo 7.5: ~29 400 configurazioni in circa 25 ms), quindi
+L'enumerazione è completa (capitolo 9.5: ~29 400 configurazioni in circa 25 ms), quindi
 nessuna euristica può “perdere” la soluzione migliore.
 
-## 6.6 Ordinamento
+## 8.6 Ordinamento
 
 Default lessicografico, modificabile dall'utente:
 
@@ -207,7 +238,7 @@ Default lessicografico, modificabile dall'utente:
 
 In alternativa: fronte di Pareto costo/margine, con le configurazioni dominate nascoste.
 
-## 6.7 Spiegare gli scarti
+## 8.7 Spiegare gli scarti
 
 Per ogni configurazione quasi ammissibile il sistema mostra la verifica che fallisce e la
 leva più piccola che la renderebbe ammissibile, calcolata dal motore e non indovinata:
@@ -219,14 +250,14 @@ leva più piccola che la renderebbe ammissibile, calcolata dal motore e non indo
 - carico sull'albero superato → taglia 2:1 o modello superiore;
 - forza al volantino oltre il limite → manovra di emergenza elettrica.
 
-## 6.8 Verifica di una macchina fuori catalogo
+## 8.8 Verifica di una macchina fuori catalogo
 
 Nella sostituzione dell'argano su un impianto esistente capita spesso di dover verificare
 una macchina specifica (offerta di un costruttore non a catalogo, macchina ricondizionata).
 Lo stesso motore di calcolo accetta una configurazione inserita a mano; il report la
 marca come “dati forniti dall'utente” invece di “catalogo versione X”.
 
-## 6.9 Sensibilità
+## 8.9 Sensibilità
 
 Negli impianti esistenti la massa della cabina è spesso stimata. Il sistema ricalcola le
 configurazioni ammissibili con la massa della cabina a −10% e +10% (e, a scelta, con il

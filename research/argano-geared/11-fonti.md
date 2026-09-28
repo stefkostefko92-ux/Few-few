@@ -1,4 +1,4 @@
-# 9. Fonti
+# 11. Fonti
 
 [← Indice](README.md)
 
@@ -60,6 +60,9 @@ di norme a pagamento emerse nelle ricerche **non** sono state usate.
 - ANSI/AGMA 6034-C21 — https://members.agma.org/MyAGMA/MyAGMA/Store/Item_Detail.aspx?iProductCode=6034_C21&Category=STANDARDS
 - Rendimento e irreversibilità delle viti senza fine — https://qtcgears.com/tools/info/infoworm.php · https://www.machinedesign.com/motors-drives/article/21834661/self-locking-worm-gears-fact-or-fiction
 - Sassi MF (dati degli ingranaggi e freno sull'albero lento) — https://www.sassi.it/en/geared-machines/mf-series/
+- Elevator World, “Shaft Efficiency Calculation in Elevators” (rendimento del vano 60–86%) — https://elevatorworld.com/article/shaft-efficiency-calculation-in-elevators/
+- Prova di bilanciamento con pinza amperometrica — https://www.samatools.it/blog/Ascensori-norme-per-la-sicurezza-e-strumenti-di-misura-per-le-verifiche-periodiche
+- Deviazione laterale delle funi (fleet angle) — https://www.mennens.nl/en/lifting-knowhow/file-steel-wire-rope/fleet-angles
 - Coppia efficace — https://blog.orientalmotor.com/motor-sizing-basics-part-3-acceleration-torque-and-rms-torque
 - Servizi S3, S4, S5 (IEC 60034-1) — https://electrical-engineering-portal.com/10-duty-types-three-phase-asynchronous-motors
 - Bilanciamento e dimensionamento del motore — https://www.researchgate.net/publication/276949903_Lift_and_Escalator_Motor_Sizing_with_Calculations_and_Examples
@@ -69,6 +72,7 @@ di norme a pagamento emerse nelle ricerche **non** sono state usate.
 ## Costruttori e strumenti
 
 - Sassi: argani — https://www.sassi.it/en/geared-machines/ · MODY — https://www.sassi.it/en/geared-machines/mody/ · TORO — https://www.sassi.it/en/geared-machines/toro/ · catalogo 2023 — https://www.sassi.it/tabelle/file/Catalogue%20Gearbox%202023_01.pdf · ARGA Web — https://argaweb.sassi.it/
+- Sassi MODY 4 poli VVVF (listino di un rivenditore) — https://lift-store.it/124-argani/6036-argano-sassi-mod-mody-4-poli-vvvf-portata-480-kg-potenza-4kw-puleggia-mano-destra-freq-50hz-tens-400v-tensione-elettr-2390062352109.html · pagina storica Sassi con motori 4/16 poli — https://new.sassi.it/it/prodotti/argani/Pagine/MF94.aspx
 - Sassi MF48 (listino di un rivenditore) — https://lift-store.it/124-argani/6040-argano-mf48-portata-630-kg-con-tiro-1-1-portata-1000-kg-con-tiro-2-1-rapporti-1-60-1-47-2-71-3-56-gamma-potenze-4-16-9215039774001.html
 - Montanari: catalogo — https://www.montanarigiulio.com/catalogo/argani/argani-lift/ · M65 — https://www.montanarigiulio.com/prodotto/argani/argani-lift/m65/ · M105 — https://www.montanarigiulio.com/prodotto/argani/argani-lift/m105/ · M109 — https://www.montanarigiulio.com/prodotto/argani/argani-lift/m109/ · configuratore — https://www.montanarigiulio.com/montanari-configurator/
 - SICOR: serie geared — https://www.sicoritaly.com/en/geared-series/ · MR12C — https://www.sicoritaly.com/en/geared-series/geared-mr12c/ · configuratore — https://www.sicoritaly.com/en/online-configurator/
@@ -91,6 +95,7 @@ di norme a pagamento emerse nelle ricerche **non** sono state usate.
 - DPR 162/1999, testi consolidati — https://www.comune.roma.it/web-resources/cms/documents/barriere_dpr_162_1999.pdf · https://www.anacam.it/images/anacam/documentazione/Normative/Italia/DPR/23_normativa_dpr162_del300499.pdf
 - DPR 23/2017 — https://olympus.uniurb.it/index.php?option=com_content&view=article&id=16560:dpr23-17&catid=5&Itemid=137 · DPR 8/2015 — https://www.overtec.it/articoli/ascensori/ascensori-gli-ultimi-aggiornamenti-alla-disciplina-generale
 - Verifica straordinaria — https://www.mcj.it/ascensori.html · https://www.etruriacert.com/ascensori/verifiche-periodiche-elevatori/informazioni-utili · https://www.ictgenesia.it/magazine/dpr-16299-quando-e-necessaria-la-verifica-straordinaria.php
+- UNI 10411-1:2021, sintesi dei requisiti per la sostituzione della macchina — https://www.studioterragitti.it/le-nuove-norme-10411-1-e-2-2021-impianto-ascensore/ · https://www.elevatorquality.it/normativa-ascensori/ · https://www.schindler.it/it/media/news-comunicati/piu-sicurezza-in-ascensore-con-le-nuove-norme-uni-2021.html · https://www.grivangroup-spa.com/en/greater-safety-with-the-new-uni-10411-1-2021-and-uni-10411-2-2021-standards/ · https://www.marcobolletta.com/2022/02/07/normativa-ascensori-2022/
 - UNI 10411 edizioni 2024 — https://www.vericert.it/le-nuove-edizioni-2024-delle-norme-uni-10411-1211-e-12/ · https://conto.uni.com/uni-10411-1-2024 · https://www.insic.it/edilizia-e-progettazione/ascensori-elettrici-e-idraulici-nuove-norme-uni-10411/
 - Direttiva (UE) 2024/2853 — https://eur-lex.europa.eu/eli/dir/2024/2853/oj/eng · recepimento italiano — https://www.affarieuropei.gov.it/it/comunicazione/notizie/cdm-4-ago-26/ · https://www.governo.it/en/node/32468 · https://www.dirittobancario.it/art/responsabilita-per-danni-da-prodotti-difettosi-novita-dallo-schema-di-decreto/ · commento — https://www.dreyfus.fr/en/2026/09/25/defective-software-how-does-directive-eu-2024-2853-reshape-manufacturers-product-liability/
 - Cyber Resilience Act — https://www.cyberresilienceact.eu/commission-guidance.html · https://openssf.org/public-policy/eu-cyber-resilience-act/

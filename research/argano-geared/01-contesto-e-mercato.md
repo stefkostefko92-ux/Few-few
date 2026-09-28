@@ -54,11 +54,11 @@ non quantificato dalle fonti trovate.
 | Ziehl-Abegg | Germania | azionamenti con riduttore | vedi 1.2 ⚠️ |
 
 Tutti i numeri della tabella vengono da pagine o schede dei costruttori lette tramite estratti
-dei motori di ricerca (capitolo 9): vanno ricontrollati sul catalogo in vigore prima di entrare
+dei motori di ricerca (capitolo 11): vanno ricontrollati sul catalogo in vigore prima di entrare
 nel database. Parametri **non** trovati in nessun estratto: coppia massima in uscita, corrente del
 motore, avviamenti/ora, rapporto di intermittenza, rendimento per rapporto, coppia del freno,
 inerzie, masse. Sono proprio i dati che servono alle verifiche del capitolo 4: la raccolta dati
-presso i costruttori è quindi un lavoro della fase 0 (capitolo 8.3), non un dettaglio.
+presso i costruttori è quindi un lavoro della fase 0 (capitolo 10.3), non un dettaglio.
 
 ## 1.4 Strumenti che esistono già
 
