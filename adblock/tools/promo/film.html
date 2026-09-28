@@ -116,7 +116,7 @@
     <div class="visual in" data-d="0.2"><div class="panelwrap"><div class="pz" id="lists"></div></div></div>
   </section>
 
-  <section class="scene" id="s4">
+  <section class="scene" id="s4" data-cut="full">
     <div class="cap" style="width:700px">
       <p class="eyebrow in" data-d="0.35">04 — Measured, not claimed</p>
       <h2 class="term in" data-d="0.5">130 of 132 <span class="c">blocked.</span></h2>
@@ -141,7 +141,7 @@
     <div class="end"><div>
       <img class="in" data-d="0.12" data-dur="0.4" src="../../server/shield-380.webp" alt="" />
       <h2 class="in" data-d="0.35">Supreme <span class="c">AdBlock</span></h2>
-      <p class="line in" data-d="0.8">Free for Chrome · Edge · Brave</p>
+      <p class="line in" data-d="0.8">For Chrome · Edge · Brave</p>
       <p class="url in" data-d="1.2">adblock.carbonstealth.eu</p>
       <p class="credit in" data-d="1.8">Created and Designed by Carbon Stealth VCC</p>
     </div></div>
@@ -149,7 +149,7 @@
 
   <div class="brand"><img src="../../server/shield-96.webp" alt="" />Carbon Stealth</div>
   <div class="slate"><span>Supreme AdBlock · <b id="ver" style="font-weight:300">5.1</b></span><span class="rec" id="tc">00:00:00:00</span></div>
-  <div class="foot">Free · No account · No telemetry</div>
+  <div class="foot">No account · No telemetry · Signed updates</div>
   <div id="vig"></div>
   <canvas id="grain" width="960" height="540"></canvas>
   <div id="black"></div>
@@ -195,6 +195,8 @@
   var ease = function (x) { x = clamp(x); return 1 - Math.pow(1 - x, 3); };
   var smooth = function (x) { x = clamp(x); return x * x * (3 - 2 * x); };
   var env = function (t) { return t < 0 ? 0 : Math.exp(-t / 0.07) + (t > 0.16 ? 0.7 * Math.exp(-(t - 0.16) / 0.09) : 0); };
+  // the Chrome Web Store cut: no comparison with other products in store media
+  if (window.PROMO_CUT === "store") [].forEach.call(document.querySelectorAll('[data-cut="full"]'), function (n) { n.remove(); });
   var scenes = [].slice.call(document.querySelectorAll(".scene"));
   var fired = {};
   var grain = document.getElementById("grain").getContext("2d"), gimg = grain.createImageData(960, 540);

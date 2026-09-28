@@ -23,6 +23,13 @@ manifest-referenced file is present.
 
 ## 2. Graphic assets (all in `store/`)
 
+> **Text in images (rejected once — „Red Nickel“, 5.1.2, for „100% free“ on a screenshot).**
+> Screenshots, promo tiles and the listing video must not carry promotional keywords
+> („free“, „100%“, „#1“, „new“, „best“, „recommended“, „unique“, „premium“…) nor claims about
+> other products. Describe what the extension does. `tests/store.test.mjs` gates the slide
+> text and the store cut of the video; the CWS video is `supreme-adblock-promo-<v>-store-web.mp4`
+> (no comparison scene, no „free“).
+
 | Asset | Size | File | Required |
 |-------|------|------|----------|
 | Store icon | 128×128 | `store/store_icon_128.png` | ✅ |
