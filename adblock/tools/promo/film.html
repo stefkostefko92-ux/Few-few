@@ -197,6 +197,7 @@
   var env = function (t) { return t < 0 ? 0 : Math.exp(-t / 0.07) + (t > 0.16 ? 0.7 * Math.exp(-(t - 0.16) / 0.09) : 0); };
   // the Chrome Web Store cut: no comparison with other products in store media
   if (window.PROMO_CUT === "store") [].forEach.call(document.querySelectorAll('[data-cut="full"]'), function (n) { n.remove(); });
+  if (window.PROMO_CUT === "store") { var e5 = document.querySelector("#s5 .eyebrow"); if (e5) e5.textContent = "04 — Private by design"; }
   var scenes = [].slice.call(document.querySelectorAll(".scene"));
   var fired = {};
   var grain = document.getElementById("grain").getContext("2d"), gimg = grain.createImageData(960, 540);
