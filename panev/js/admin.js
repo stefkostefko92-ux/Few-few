@@ -79,11 +79,8 @@ async function renderAdminLayout() {
   sidebar.innerHTML = `
     <div class="admin-brand">
       <a href="index.html" class="admin-brand-logo">
-        <span class="admin-brand-mark">PA</span>
-        <div>
-          <div class="admin-brand-name">Panev Ascensori</div>
-          <div class="admin-brand-sub">Admin Panel</div>
-        </div>
+        <img class="admin-brand-img" src="../img/panev-logo-360.webp" alt="Panev Ascensori" width="190" height="39">
+        <div class="admin-brand-sub">Admin Panel</div>
       </a>
     </div>
     <nav class="admin-nav">

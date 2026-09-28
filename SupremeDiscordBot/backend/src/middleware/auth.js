@@ -1,5 +1,6 @@
 // backend/src/middleware/auth.js
 import axios from "axios";
+import { isBlacklistActive } from "../lib/blacklist.js";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "../lib/prisma.js";
 import { encrypt, decryptSafe } from "../lib/crypto.js";
@@ -30,7 +31,7 @@ export async function loadUser(req, res, next) {
       req.session.destroy();
       return res.status(401).json({ error: "User not found" });
     }
-    if (user.isBlacklisted) {
+    if (isBlacklistActive(user)) {
       return res.status(403).json({ error: "You have been blacklisted from this platform" });
     }
     req.user = user;

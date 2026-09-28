@@ -1,7 +1,7 @@
 # Panev Ascensori SAS — llms.txt
 # https://panevascensori.it/
 # Formato: https://llmstxt.org
-# Aggiornato: 2026-07-24
+# Aggiornato: 2026-09-26
 
 > Panev Ascensori SAS è un produttore italiano di staffe brevettate (Modello di Utilità UIBM N. 202023000002112) per il fissaggio regolabile di porte di piano e guide del contrappeso di ascensori e montacarichi. Vendita B2B a listino, ordini via email a info@panevascensori.it. Sito in italiano, inglese e bulgaro.
 
@@ -37,7 +37,8 @@
 
 - [Home (IT)](https://panevascensori.it/): panoramica del sistema brevettato
 - [Prodotti e listino (IT)](https://panevascensori.it/prodotti): tutti i codici con prezzi
-- [Catalogo PDF (IT)](https://panevascensori.it/catalogo): catalogo tecnico 2026, 80 pagine, scaricabile
+- [Catalogo PDF (IT)](https://panevascensori.it/catalogo): catalogo tecnico 2026, 95 pagine con le viste 3D, scaricabile
+- [Vista 3D (IT)](https://panevascensori.it/staffe-3d): i 48 articoli del catalogo in 3D, da ruotare, montare (DX / SX, con la regolazione) e fotografare; modelli generati dalle quote del catalogo — [EN](https://panevascensori.it/en/brackets-3d) · [BG](https://panevascensori.it/bg/planki-3d)
 - [Contatti e ordini (IT)](https://panevascensori.it/contatti): ordine via email, dati aziendali
 - [English](https://panevascensori.it/en/) · [Български](https://panevascensori.it/bg/)
 - [Catalogo PDF diretto](https://panevascensori.it/docs/catalogo-staffe-panev-2026.pdf)

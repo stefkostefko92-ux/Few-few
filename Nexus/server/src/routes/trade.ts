@@ -4,7 +4,8 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { notify } from '../lib/notify';
 import { blockedIdSet } from './social';
-import { executeTrade, ITEM_GUARD } from '../lib/tradeExec';
+import { executeTrade, ITEM_GUARD, tradeGoldFee } from '../lib/tradeExec';
+import { getSetting } from '../game/settings';
 
 /**
  * P2P размяна с escrow. КРИТИЧНО: изпълнението е в ЕДНА транзакция с
@@ -37,9 +38,17 @@ router.get('/active', (req, res) => {
   const hydrate = (ids: number[]) => ids.length
     ? db.prepare(`SELECT inv.id AS inv_id, items.slug, items.name, items.rarity, items.icon FROM inventory inv JOIN items ON items.id = inv.item_id WHERE inv.id IN (${ids.map(() => '?').join(',')})`).all(...ids)
     : [];
+  const feePct = getSetting<number>('market_fee_pct');
+  const myGold = offer.from_id === me.id ? offer.from_gold : offer.to_gold;
+  const theirGold = offer.from_id === me.id ? offer.to_gold : offer.from_gold;
   res.json({
+    // Таксата върху предаденото злато (като пазара) — клиентът може да покаже нетото.
+    gold_fee_pct: feePct,
     offer: {
       id: offer.id, iAmSender: offer.from_id === me.id,
+      gold_fee_pct: feePct,
+      they_receive: myGold - tradeGoldFee(myGold, feePct),
+      i_receive: theirGold - tradeGoldFee(theirGold, feePct),
       me: { ready: (offer.from_id === me.id ? offer.from_ready : offer.to_ready) === 1, gold: offer.from_id === me.id ? offer.from_gold : offer.to_gold, items: hydrate(JSON.parse(offer.from_id === me.id ? offer.from_items : offer.to_items)) },
       them: { name: otherChar.name, ready: (offer.from_id === me.id ? offer.to_ready : offer.from_ready) === 1, gold: offer.from_id === me.id ? offer.to_gold : offer.from_gold, items: hydrate(JSON.parse(offer.from_id === me.id ? offer.to_items : offer.from_items)) },
     },

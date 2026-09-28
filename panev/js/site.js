@@ -306,5 +306,22 @@
     });
   }
 
+  // ── 3D изгледът на началната страница: постерът става визьор в рамка чак при клик ──
+  // (дотогава страницата не тегли нищо от 3D-то). Под 860 px визьорът е на цял екран,
+  // затова там линкът просто отваря 3D страницата; същото и при отваряне в нов раздел.
+  var viewer = document.querySelector('[data-viewer]');
+  if (viewer) {
+    viewer.querySelector('.viewer-poster').addEventListener('click', function (e) {
+      if (viewer.clientWidth < 860 || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      e.preventDefault();
+      var frame = document.createElement('iframe');
+      frame.src = viewer.getAttribute('data-src');
+      frame.title = viewer.getAttribute('data-title');
+      frame.setAttribute('allow', 'fullscreen');
+      viewer.replaceChildren(frame);
+      frame.focus();
+    });
+  }
+
   render();
 })();

@@ -6,6 +6,7 @@ import { logFromRequest } from '../lib/logger';
 import { trackBattlePass } from './battlepass';
 import { applyGuildMultipliers } from '../game/rewards';
 import type { Character, Monster } from '../types/domain';
+import { REGION_GATES, isApexSlug } from '../game/regions';
 
 const router = Router();
 router.use(authRequired);
@@ -53,14 +54,20 @@ function pickMonsters(char: Character): Monster[] {
   // The hunt mostly draws from level-appropriate monsters. We pull from one
   // level band lower (so the easy bounty is achievable solo) up to two
   // bands higher (brutal pushes the hero).
-  const min = Math.max(1, char.level - 2);
-  const max = char.level + 2;
-  return getDb()
-    .prepare(
-      `SELECT * FROM monsters WHERE level BETWEEN ? AND ?
-       ORDER BY level ASC, RANDOM()`,
-    )
-    .all(min, max) as Monster[];
+  // Одит: целта трябва да е ловима — регионът да е отключен (lv 23 получаваше
+  // Shadow Lord в заключения Shadowfell, вход 24) и да не е APEX (среща се
+  // само с APEX_ENCOUNTER_CHANCE → 12 убийства бяха практически невъзможни).
+  // Прозорецът се разширява (±2 → 5 → 10), ако на нивото няма ловима цел.
+  const stmt = getDb().prepare(
+    `SELECT * FROM monsters WHERE level BETWEEN ? AND ?
+     ORDER BY level ASC, RANDOM()`,
+  );
+  for (const w of [2, 5, 10]) {
+    const pool = (stmt.all(Math.max(1, char.level - w), char.level + w) as Monster[])
+      .filter((m) => !isApexSlug(m.slug) && (REGION_GATES[m.region] ?? 1) <= char.level);
+    if (pool.length) return pool;
+  }
+  return [];
 }
 
 function generateDailyBounties(char: Character): Bounty[] {

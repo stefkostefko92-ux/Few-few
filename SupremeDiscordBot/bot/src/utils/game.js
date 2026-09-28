@@ -26,21 +26,34 @@ export const SPAWN_MIN_EVENTS = 6;
 export const SPAWN_CHANCE = 1 / 25;
 export const SPAWN_LOCAL_INTERVAL_MS = 12 * 60 * 1000;
 
+// Заявка в полет по сървър: при изтекъл кеш всяко съобщение пускаше СВОЯ
+// заявка и отговорите пристигаха в произволен ред — опашката на Counting се
+// нареждаше грешно и верен ход („5“ преди „6“) се обявяваше за грешка
+// (одит 26.09.2026). Всички чакат едно обещание → редът се запазва.
+const settingsInflight = new Map();
+
 export async function getGameSettings(serverId) {
   const hit = settingsCache.get(serverId);
   if (hit && hit.expiresAt > Date.now()) return hit.settings;
-  let settings = null;
-  try {
-    ({ data: settings } = await api.get(`/bot/game/settings/${serverId}`));
-  } catch {
-    settings = hit?.settings || null; // при провал пазим последното известно
-  }
-  settingsCache.set(serverId, { settings, expiresAt: Date.now() + SETTINGS_TTL_MS });
-  return settings;
+  const inflight = settingsInflight.get(serverId);
+  if (inflight) return inflight;
+  const p = (async () => {
+    let settings = null;
+    try {
+      ({ data: settings } = await api.get(`/bot/game/settings/${serverId}`));
+    } catch {
+      settings = hit?.settings || null; // при провал пазим последното известно
+    }
+    settingsCache.set(serverId, { settings, expiresAt: Date.now() + SETTINGS_TTL_MS });
+    return settings;
+  })().finally(() => settingsInflight.delete(serverId));
+  settingsInflight.set(serverId, p);
+  return p;
 }
 
 export function invalidateGameSettings(serverId) {
   settingsCache.delete(serverId);
+  settingsInflight.delete(serverId);
 }
 
 function bucket(serverId, userId) {
@@ -165,6 +178,9 @@ export async function tickVoiceXp(client) {
   return credited;
 }
 
+/** Горната граница на backend-а (routes/bot_game.js → xp-batch `entries.max`). */
+export const XP_BATCH_MAX = 500;
+
 /** Изпраща натрупаното към backend-а и раздава ролите за ниво. */
 export async function flushXp(client) {
   if (pending.size === 0) return;
@@ -173,14 +189,19 @@ export async function flushXp(client) {
   for (const [serverId, users] of batches) {
     const entries = [...users.entries()].map(([userId, e]) => ({ userId, ...e })).filter((e) => e.messageXpEvents || e.voiceMinutes);
     if (!entries.length) continue;
-    try {
-      const { data } = await api.post("/bot/game/xp-batch", { serverId, entries });
-      for (const up of data?.levelUps || []) {
-        await applyLevelUp(client, serverId, up, data.announceChannelId, data.levelUpMessage).catch(() => {});
+    // Backend-ът приема до XP_BATCH_MAX записа на заявка; над това цялата партида
+    // пропадаше с 400 и големите сървъри губеха XP (одит 26.09.2026) → на парчета.
+    for (let i = 0; i < entries.length; i += XP_BATCH_MAX) {
+      const chunk = entries.slice(i, i + XP_BATCH_MAX);
+      try {
+        const { data } = await api.post("/bot/game/xp-batch", { serverId, entries: chunk });
+        for (const up of data?.levelUps || []) {
+          await applyLevelUp(client, serverId, up, data.announceChannelId, data.levelUpMessage).catch(() => {});
+        }
+      } catch (err) {
+        // Загубена партида = загубени ~30 s XP; не трупаме назад, за да не удвоим при повторен провал.
+        console.warn(`[game] xp-batch за ${serverId} пропадна: ${err?.response?.status || err.message}`);
       }
-    } catch (err) {
-      // Загубена партида = загубени ~30 s XP; не трупаме назад, за да не удвоим при повторен провал.
-      console.warn(`[game] xp-batch за ${serverId} пропадна: ${err?.response?.status || err.message}`);
     }
   }
 }
@@ -224,12 +245,20 @@ export async function applyLevelUp(client, serverId, up, announceChannelId, leve
 }
 
 /** Маха изтекла роля от магазина (backend → /internal/game-role-revoke). */
+// Грешки, които НИКОГА няма да минат при повторен опит: неизвестна роля/член,
+// липсващ достъп/права. „false“ за тях държеше покупката завинаги начело на
+// опашката (asc, take 200) и при достатъчно такива нито една по-нова роля не
+// изтичаше (одит 26.09.2026). Няма какво да се маха → свършено.
+const PERMANENT_ROLE_ERRORS = new Set([10011, 10007, 50001, 50013]);
+
 export async function revokeShopRole(client, { serverId, userId, roleId }) {
   const guild = client.guilds.cache.get(serverId) || await client.guilds.fetch(serverId).catch(() => null);
-  if (!guild) return false;
+  if (!guild) return true; // ботът вече не е в сървъра — ролята не може и не трябва да се пипа
   const member = await guild.members.fetch(userId).catch(() => null);
   if (!member || !member.roles.cache.has(roleId)) return true;
-  return member.roles.remove(roleId, "Server Season: shop role expired").then(() => true).catch(() => false);
+  return member.roles.remove(roleId, "Server Season: shop role expired")
+    .then(() => true)
+    .catch((err) => PERMANENT_ROLE_ERRORS.has(err?.code));
 }
 
 /** Дава купена роля; връща причината, ако не може. */
@@ -243,4 +272,4 @@ export async function grantShopRole(guild, member, roleId) {
 }
 
 /** Само за тестове. */
-export const __test = { cooldown, pending, voiceJoined, settingsCache, spawnState };
+export const __test = { cooldown, pending, voiceJoined, settingsCache, settingsInflight, spawnState };

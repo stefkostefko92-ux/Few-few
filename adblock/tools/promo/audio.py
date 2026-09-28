@@ -10,6 +10,8 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TL = json.load(open(os.path.join(HERE, "timeline.json")))
+if len(sys.argv) > 2 and sys.argv[2] != "full":
+    TL = {**TL, **TL["cuts"][sys.argv[2]]}
 SR, DUR = 48000, TL["duration"]
 N = int(SR * DUR)
 rng = np.random.default_rng(0x5A17)

@@ -222,6 +222,7 @@ export default {
   "game.counting.wrong": "❌ {{user}} brak de ketting bij **{{reached}}** — het volgende getal was **{{expected}}**. Terug naar 1! Serverrecord: **{{high}}**.",
   "game.counting.sameUser": "❌ {{user}}, je mag niet twee keer achter elkaar tellen. Terug naar 1! Serverrecord: **{{high}}**.",
   "game.counting.milestone": "🏆 **{{number}}**! {{user}} pakt de mijlpaal (+{{xp}} XP).",
+  "game.counting.milestoneNoXp": "🏆 **{{number}}**! {{user}} pakt de mijlpaal.",
   "game.counting.record": "🥇 Nieuw serverrecord: **{{number}}**!",
   "game.trivia.title": "🧠 Trivia",
   "game.trivia.kbTitle": "🧠 Trivia — ken je je server?",

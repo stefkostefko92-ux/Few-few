@@ -2,13 +2,15 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { applyXp, paceXpForKill } from '../game/progression';
+import { applyXp } from '../game/progression';
+import { arenaReward, arenaInBracket, ARENA_BRACKET } from '../game/rewardFormulas';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { liveCombatTuning } from '../game/settings';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
-import { assertReady, setCooldown } from '../game/cooldowns';
+import { claimCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import { trackGuildMission } from '../game/guildMissions';
 import { addSeasonPoints } from '../game/seasons';
@@ -33,7 +35,7 @@ router.get('/opponents', (req, res) => {
        WHERE id != ? AND level BETWEEN ? AND ?
        ORDER BY ABS(arena_rating - ?) ASC LIMIT 8`,
     )
-    .all(char.id, Math.max(1, char.level - 3), char.level + 3, char.arena_rating);
+    .all(char.id, Math.max(1, char.level - ARENA_BRACKET), char.level + ARENA_BRACKET, char.arena_rating);
   res.json({ opponents: list });
 });
 
@@ -56,8 +58,6 @@ router.post('/challenge', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  try { assertReady(char.id, 'arena'); }
-  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'arena' }); return; }
   // Wounded guard — entering a duel at 1 HP is a guaranteed rating
   // loss plus a burned cooldown.
   if (char.hp <= Math.floor(char.hp_max * 0.1)) {
@@ -72,10 +72,19 @@ router.post('/challenge', (req, res) => {
   // Enforce the same ±3 level bracket the /opponents list is filtered to,
   // so a client can't hand-pick a far weaker/AFK target to farm easy wins
   // and drops, or grief a chosen player's rating, on every cooldown.
-  if ((opp as any).is_npc === 0 && (opp.level < char.level - 3 || opp.level > char.level + 3)) {
+  // Одит: NPC тренировъчните кукли бяха изключени от скобата → lv 300 герой
+  // можеше да бие lv 2 кукла за гарантирани сезонни точки (+20), гилдийна
+  // мисия (arena_wins), battle pass и рейтинг. Скобата важи за ВСИЧКИ —
+  // точно това, което /opponents показва.
+  if (!arenaInBracket(char.level, opp.level)) {
     res.status(400).json({ error: 'That opponent is outside your challenge bracket.' });
     return;
   }
+  // Claimed atomically after the invalid-attempt guards, before combat —
+  // two concurrent /arena/challenge calls must not both pay out (see
+  // cooldowns.ts claimCooldown() doc comment).
+  try { claimCooldown(char.id, 'arena'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'arena' }); return; }
   // Arena is a duel of equals — both fighters enter at full HP. Previously
   // the hero entered with current HP (possibly fresh off a hunt at 11%)
   // while the opponent always entered at hp_max, handing the defender a
@@ -88,7 +97,7 @@ router.post('/challenge', (req, res) => {
   foe.sprite = opp.class;
   foe.hp = foe.hp_max;
 
-  const result = simulateCombat(hero, foe);
+  const result = simulateCombat(hero, foe, liveCombatTuning());
 
   // Rating change (simple ELO-ish)
   const expected = 1 / (1 + Math.pow(10, (opp.arena_rating - char.arena_rating) / 400));
@@ -108,8 +117,8 @@ router.post('/challenge', (req, res) => {
     // арената остава XP-фокусирана (25+5L), но вече не е златна пустиня.
     // Pace-clamp arena XP to the same ~8-kills/level target the other
     // activities use, so it can't out-earn hunting on the shared curve.
-    const arenaXp = Math.min(Math.round(paceXpForKill(opp.level) * 1.8), 25 + opp.level * 5);
-    const r = applyGuildMultipliers(char.id, 12 + opp.level * 6, arenaXp);
+    const base = arenaReward(opp.level);
+    const r = applyGuildMultipliers(char.id, base.gold, base.xp);
     xpGain = r.xp;
     goldGain = r.gold;
     lvlRes = applyXp(char, xpGain);
@@ -123,7 +132,6 @@ router.post('/challenge', (req, res) => {
     }
   }
   char.hp = Math.max(1, result.hero.hp);
-  const cooldownMs = setCooldown(char.id, 'arena');
   db.prepare(
     `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, arena_rating = ?, wins = wins + ?, losses = losses + ? WHERE id = ?`,
   ).run(

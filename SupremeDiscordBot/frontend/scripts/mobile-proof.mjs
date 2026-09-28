@@ -153,6 +153,33 @@ const FIX = {
   // Истинският каталог на бекенда (същият, който /help ползва) — без него
   // страницата „Commands“ в таблото се снимаше празна (визуален одит 25.09.2026).
   "GET /api/automation/commands-catalog": (await import("../../backend/src/data/commandsCatalog.js")).COMMAND_CATALOG,
+  // v51 — админ конзолата: списъци със страници, играта, поддръжката, ботовете.
+  "GET /api/admin/users": { total: 120, page: 1, limit: 50, users: [
+    { id: "222222222222222222", username: "maria", discriminator: "0", avatar: null, globalRole: "USER", isBlacklisted: true, blacklistReason: "Spam in tickets", blacklistedAt: new Date().toISOString(), blacklistedUntil: new Date(Date.now() + 7 * 864e5).toISOString(), language: "bg", createdAt: new Date().toISOString(), _count: { tickets: 4, applications: 1, serverMembers: 2 } },
+    { id: "333333333333333333", username: "a-very-long-username-that-should-wrap", discriminator: "0", avatar: null, globalRole: "SUPPORT_STAFF", isBlacklisted: false, blacklistReason: null, blacklistedAt: null, blacklistedUntil: null, language: "en", createdAt: new Date().toISOString(), _count: { tickets: 0, applications: 0, serverMembers: 1 } },
+  ] },
+  "GET /api/admin/servers": { total: 140, page: 1, limit: 50, servers: [
+    { id: SID, name: "T19C", icon: null, plan: "agency10", planSource: "stripe", isPremium: true, agencyId: "ag1", agency: { plan: "agency10" }, createdAt: new Date().toISOString(), _count: { tickets: 3, panels: 1, forms: 1, members: 5 } },
+    { id: "444444444444444444", name: "Free community with a long name", icon: null, plan: "free", planSource: null, isPremium: false, agencyId: null, createdAt: new Date().toISOString(), _count: { tickets: 0, panels: 0, forms: 0, members: 1 } },
+  ] },
+  "GET /api/admin/payments": { payments: [], total: 0, collectedThisMonth: 0, page: 1, limit: 100 },
+  "GET /api/admin/audit-logs": { total: 250, page: 1, limit: 100, logs: [
+    { id: "a1", createdAt: new Date().toISOString(), action: "GAME_MEMBER_ADJUSTED", actorId: "u1", actor: { id: "u1", username: "stefan", avatar: null }, serverId: SID, targetId: "222222222222222222", metadata: { xpDelta: 100, sparksDelta: -20, reason: "refund" } },
+  ] },
+  "GET /api/admin/fleet/bots": { botReachable: true, botError: null, bots: [
+    { id: SID, name: "T19C", plan: "whitelabel", planSource: "discord", customBotName: "T19 Bot", customBotAvatar: null, customBotPausedAt: null, agencyId: null, accessUntil: null, live: { ready: true, tag: "T19 Bot#0001", applicationId: "1", ping: 42, readySince: new Date().toISOString() } },
+    { id: "444444444444444444", name: "Paused brand", plan: "agency10", planSource: "stripe", customBotName: null, customBotAvatar: null, customBotPausedAt: new Date().toISOString(), agencyId: "ag1", accessUntil: null, live: null },
+  ] },
+  "GET /api/admin/game/servers/": { server: { id: SID, name: "T19C" }, total: 60, page: 1, limit: 25, members: [
+    { userId: "222222222222222222", username: "maria", xp: 12450, level: 14, seasonXp: 3000, sparks: 870, streak: 6, messages: 400, voiceMinutes: 120, activeCompanionId: null, updatedAt: new Date().toISOString(), companions: 3, levelFromXp: 14 },
+    { userId: "333333333333333333", username: null, xp: 90, level: 0, seasonXp: 90, sparks: 5, streak: 0, messages: 6, voiceMinutes: 0, activeCompanionId: null, updatedAt: new Date().toISOString(), companions: 0, levelFromXp: 0 },
+  ] },
+  "GET /api/admin/support/tickets": { total: 80, page: 1, limit: 25, tickets: [
+    { id: "ckt1", serverId: SID, number: 142, status: "OPEN", priority: "NORMAL", channelId: "1", closedAt: null, closeReason: null, createdAt: new Date().toISOString(), lastActivityAt: new Date().toISOString(), hasTranscript: false, server: { name: "T19C" }, creator: { id: "222222222222222222", username: "maria" }, assignee: null, panel: { id: "p1", name: "Support" }, _count: { messages: 12 } },
+    { id: "ckt2", serverId: SID, number: 141, status: "CLOSED", priority: "NORMAL", channelId: null, closedAt: new Date().toISOString(), closeReason: "Solved", createdAt: new Date().toISOString(), lastActivityAt: new Date().toISOString(), hasTranscript: true, server: { name: "T19C" }, creator: { id: "333333333333333333", username: "ivan" }, assignee: null, panel: null, _count: { messages: 4 } },
+  ] },
+  "GET /api/admin/support/panels": { total: 1, page: 1, limit: 25, panels: [{ id: "p1", serverId: SID, name: "Support", channelId: "1", messageId: "2", createdAt: new Date().toISOString(), server: { name: "T19C" }, _count: { tickets: 12 } }] },
+  "GET /api/admin/support/forms": { total: 1, page: 1, limit: 25, forms: [{ id: "f1", serverId: SID, name: "Staff Application", createdAt: new Date().toISOString(), server: { name: "T19C" }, _count: { questions: 6, applications: 3 } }] },
   [`GET /api/billing/config`]: { provider: "discord", discord: { enabled: true, configured: true, applicationId: "app", storeUrl: "https://discord.com/application-directory/app/store", plans: { premium: { label: "Premium", monthlyEur: "4.99", skuId: "s1", url: "https://discord.com/application-directory/app/store/s1" }, whitelabel: { label: "White-label", monthlyEur: "9.99", skuId: "s2", url: "https://discord.com/application-directory/app/store/s2" } } }, stripe: { purchasesEnabled: false, legacyManagement: false } },
   [`GET /api/billing/${SID}`]: { provider: "discord", isPremium: true, plan: "agency10", source: "agency", agencyCovered: true, agencyOwnedByMe: true, discord: {}, stripe: { legacy: false, portalAvailable: false } },
 };
@@ -207,6 +234,14 @@ const PAGES = [
   { path: "/dashboard/admin?tab=fleet", name: "admin-fleet" },
   { path: "/dashboard/admin?tab=compliance", name: "admin-compliance" },
   { path: "/dashboard/admin?tab=season", name: "admin-season" },
+  // v51 — табовете, които досега изобщо не се обхождаха, + новите.
+  { path: "/dashboard/admin?tab=users", name: "admin-users" },
+  { path: "/dashboard/admin?tab=servers", name: "admin-servers" },
+  { path: "/dashboard/admin?tab=payments", name: "admin-payments" },
+  { path: "/dashboard/admin?tab=audit", name: "admin-audit" },
+  { path: "/dashboard/admin?tab=game", name: "admin-game", click: "T19C" },
+  { path: "/dashboard/admin?tab=support", name: "admin-support" },
+  { path: "/dashboard/admin?tab=support", name: "admin-support-forms", tab: "Forms" },
 ];
 
 // ─── Достъпност: axe-core върху РЕАЛНО рендерираните страници ───────────────
@@ -267,7 +302,7 @@ for (const view of [
   console.log(`\n── ${view.tag} ${view.viewport.width}×${view.viewport.height} ──`);
   // MP_ONLY=overview,game — само тези страници (диагностика; пълният гейт е без него).
   const ONLY = (process.env.MP_ONLY || "").split(",").filter(Boolean);
-  for (const { path, name, tab } of PAGES.filter((x) => !ONLY.length || ONLY.includes(x.name))) {
+  for (const { path, name, tab, click } of PAGES.filter((x) => !ONLY.length || ONLY.includes(x.name))) {
     // НЕ networkidle: refetchInterval-ите на React Query държат мрежата будна
     // и „idle" никога не идва — таймаут, който изглежда като счупена страница.
     // domcontentloaded + ограничено чакане на `load`: проверката мери оформлението и
@@ -282,6 +317,13 @@ for (const view of [
       const found = await t.count();
       note(found > 0, `${name}: разделът „${tab}“ съществува`);
       if (found) { await t.first().click(); await page.waitForTimeout(900); }
+    }
+    // `click` = бутон по видимо име (напр. избор на сървър в админ „Game“).
+    if (click) {
+      const b = page.getByRole("button", { name: new RegExp(click) });
+      const found = await b.count();
+      note(found > 0, `${name}: бутонът „${click}“ съществува`);
+      if (found) { await b.first().click(); await page.waitForTimeout(900); }
     }
     // Резервният екран на ErrorBoundary = страницата НЕ работи, каквото и да казва прелива.
     const crashed = await page.evaluate(() => /Something went wrong/i.test(document.body?.innerText || ""));

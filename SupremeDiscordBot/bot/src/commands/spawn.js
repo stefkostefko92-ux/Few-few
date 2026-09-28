@@ -17,7 +17,9 @@ import { postSpawn } from "../utils/game.js";
 
 // Без тях съобщението не излиза, а появата вече е създадена и блокира следващата
 // за 5 минути — затова се проверява ПРЕДИ заявката към backend-а.
-const NEEDED = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks];
+// ReadMessageHistory: след 5 минути появата се маркира „избягала“ през
+// channel.messages.fetch — без него бутонът „Улови“ оставаше видим.
+const NEEDED = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.ReadMessageHistory];
 
 export default {
   data: new SlashCommandBuilder()

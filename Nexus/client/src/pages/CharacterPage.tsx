@@ -88,7 +88,15 @@ export default function CharacterPage(): React.ReactElement {
             <button className="btn" onClick={rest}>{t('characterPage.rest')}</button>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 24 }}>
+        {/* БЪГ (докладван на 360px, втори проход): гол `1fr` не пречи на
+            дъщерна колона да прелее (implicit track min е `auto`, не 0), а
+            дори с minmax(0,1fr) 160px фиксираната аватар-колона + 24px gap
+            не оставя достатъчно място за текстовата колона под ~480px —
+            съдържанието ѝ (заглавие+ред+картата "How upgrades work") пак
+            прелива странично. Истинската поправка е да се стакира на тесен
+            viewport (avatar над текста), не само да се свива — виж
+            .hero-header-grid в globals.css. */}
+        <div className="hero-header-grid" style={{ display: 'grid', gridTemplateColumns: '160px minmax(0, 1fr)', gap: 24 }}>
           <div className="portrait" style={{ width: 160, height: 200 }}>
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
               <div style={{ transform: 'scale(.82) translateY(-2%)' }}>{spriteFor(char.class)}</div>

@@ -27,6 +27,14 @@ model User {
   email           String?
   globalRole      GlobalRole @default(USER)
   isBlacklisted   Boolean    @default(false)
+  // ─── v51 Админ конзола: черен списък с причина и срок, бележка ──────────
+  // blacklistedUntil = null → безсрочно; изтекъл срок = НЕ е в черния списък
+  // (lib/blacklist.js — едно определение за входа, API-то и бота). Бележката е
+  // вътрешна за staff, но е лични данни → влиза в GDPR експорта.
+  blacklistReason  String?
+  blacklistedAt    DateTime?
+  blacklistedUntil DateTime?
+  adminNote        String?
   // ─── v3.4 Втори фактор (TOTP, RFC 6238) — задължителен за staff ролите ────
   // Тайната е шифрирана при покой (lib/crypto.js) и никога не напуска сървъра;
   // резервните кодове са SHA-256 хешове (JSON масив), еднократни;
@@ -145,6 +153,9 @@ model Server {
   customBotToken            String?
   customBotName             String?
   customBotAvatar           String?
+  // v51 — пауза на white-label бота от админ конзолата. Докато е зададено,
+  // /bot/server/:id/token връща null и реконсилиацията НЕ го вдига отново.
+  customBotPausedAt         DateTime?
   // ─── v3.0 Discord native monetization (Premium Apps entitlements) ─────────
   // When a server is upgraded via Discord's own subscription SKUs, we record
   // the entitlement so ENTITLEMENT_DELETE can revoke access. SKU → plan mapping

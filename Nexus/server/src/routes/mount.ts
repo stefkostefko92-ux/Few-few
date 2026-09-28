@@ -23,7 +23,7 @@ router.use(authRequired);
  * cooldown is rolled.
  * ======================================================================= */
 
-interface MountDef {
+export interface MountDef {
   slug: string;
   name: string;
   description: string;
@@ -37,7 +37,7 @@ interface MountDef {
   mag_def_bonus: number;
 }
 
-const MOUNTS: MountDef[] = [
+export const MOUNTS: MountDef[] = [
   {
     slug: 'mount_riding_horse',
     name: 'Riding Horse',
@@ -94,18 +94,18 @@ const MOUNTS: MountDef[] = [
     phys_dmg_bonus: 38, phys_def_bonus: 28, mag_dmg_bonus: 22, mag_def_bonus: 22,
   },
   {
-    // Чистата „скорост" опция: капът (50%) без бойни статове, по-евтина от
-    // Griffin — статовете се докупуват à-la-carte (ADDONS, 500 гема).
-    // Баланс одит: каталогът рекламираше 65/75/90%, а engine-ът капва на
-    // 50% (cooldowns.ts) → плащаш повече, получаваш същото. Стълбицата
-    // вече е честна: всеки по-скъп mount дава реално повече.
+    // Върхът на стълбицата. Беше „чиста скорост" за 1000 гема (< Griffin
+    // 1500) с нула бойни статове — tier 7, но по-евтин И по-слаб от tier 6.
+    // Сега цената, CDR и базовите статове растат монотонно с tier-а
+    // (тест: econFixes.test.ts). CDR капът е 50% (cooldowns.ts), затова
+    // над Griffin растат статовете, не CDR.
     slug: 'mount_world_serpent',
     name: 'World Serpent',
     description: 'A bound fragment of the snake that once swallowed the sky. The realm bends to its rider.',
-    gem_cost: 1000,
+    gem_cost: 2200,
     rarity: 'legendary', tier: 7,
     cooldown_reduction_pct: 50,
-    phys_dmg_bonus: 0, phys_def_bonus: 0, mag_dmg_bonus: 0, mag_def_bonus: 0,
+    phys_dmg_bonus: 44, phys_def_bonus: 34, mag_dmg_bonus: 44, mag_def_bonus: 34,
   },
 ];
 
@@ -205,7 +205,7 @@ router.post('/buy', (req, res) => {
       if (debit.changes !== 1) { const e: any = new Error(`Need ${mount.gem_cost} gems.`); e.clientSafe = true; e.status = 400; throw e; }
       const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(mount.slug) as any;
       return db.prepare(
-        "INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)",
+        "INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound, gem_bought) VALUES (?, ?, 1, 0, '', 1, 1)",
       ).run(char.id, item.id);
     }).immediate();
     logFromRequest(req, {

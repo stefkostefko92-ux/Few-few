@@ -233,6 +233,7 @@ export default {
   "game.counting.wrong": "❌ {{user}} broke the chain at **{{reached}}** — the next number was **{{expected}}**. Back to 1! Server record: **{{high}}**.",
   "game.counting.sameUser": "❌ {{user}}, you can't count twice in a row. Back to 1! Server record: **{{high}}**.",
   "game.counting.milestone": "🏆 **{{number}}**! {{user}} takes the milestone (+{{xp}} XP).",
+  "game.counting.milestoneNoXp": "🏆 **{{number}}**! {{user}} takes the milestone.",
   "game.counting.record": "🥇 New server record: **{{number}}**!",
   "game.trivia.title": "🧠 Trivia",
   "game.trivia.kbTitle": "🧠 Trivia — know your server",

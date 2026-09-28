@@ -8,7 +8,15 @@
  * `characters.stat_upgrades` so each stat scales independently.
  */
 
+import { getSetting } from './settings';
+
 export const UPGRADE_BASE_COST = 5;
+
+/** Текущата база от админ настройката stat_upgrade_base_cost (≥ 1; по
+ *  подразбиране 5). Чистите функции долу приемат базата като параметър. */
+export function upgradeBaseCost(): number {
+  return getSetting<number>('stat_upgrade_base_cost');
+}
 
 export type StatKey =
   | 'strength' | 'dexterity' | 'constitution'
@@ -34,23 +42,24 @@ export function parseCounts(raw: string | null | undefined): UpgradeCounts {
  *  Линейна крива по спецификация на собственика: 5, 10, 15, 20, 25, 30, 35,
  *  40, 45, … — тоест `5 * (count + 1)` за n-тото вдигане. Атрибутите се вдигат
  *  ЕДИНСТВЕНО със злато (level-up вече НЕ дава точки). */
-export function nextUpgradeCost(count: number): number {
-  return UPGRADE_BASE_COST * (count + 1);
+export function nextUpgradeCost(count: number, base: number = UPGRADE_BASE_COST): number {
+  return base * (count + 1);
 }
 
 /** Cumulative cost to upgrade a stat from 0 → n upgrades. Затворена форма на
  *  сумата 5+10+…+5n = 5 · n(n+1)/2. */
-export function cumulativeCost(n: number): number {
-  return (UPGRADE_BASE_COST * n * (n + 1)) / 2;
+export function cumulativeCost(n: number, base: number = UPGRADE_BASE_COST): number {
+  return (base * n * (n + 1)) / 2;
 }
 
 /** Number of upgrades possible with `gold` from current count. */
-export function affordableUpgrades(currentCount: number, gold: number): number {
+export function affordableUpgrades(currentCount: number, gold: number, base: number = UPGRADE_BASE_COST): number {
+  if (base <= 0) return 0; // защита от безкраен цикъл (настройката е ≥ 1)
   let bought = 0;
   let g = gold;
   let count = currentCount;
-  while (g >= nextUpgradeCost(count)) {
-    g -= nextUpgradeCost(count);
+  while (g >= nextUpgradeCost(count, base)) {
+    g -= nextUpgradeCost(count, base);
     bought++;
     count++;
   }
@@ -58,8 +67,8 @@ export function affordableUpgrades(currentCount: number, gold: number): number {
 }
 
 /** Total cost of `n` consecutive upgrades starting from `currentCount`. */
-export function batchCost(currentCount: number, n: number): number {
+export function batchCost(currentCount: number, n: number, base: number = UPGRADE_BASE_COST): number {
   let total = 0;
-  for (let i = 0; i < n; i++) total += nextUpgradeCost(currentCount + i);
+  for (let i = 0; i < n; i++) total += nextUpgradeCost(currentCount + i, base);
   return total;
 }

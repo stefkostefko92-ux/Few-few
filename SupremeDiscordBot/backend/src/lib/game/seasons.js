@@ -141,3 +141,20 @@ export async function updateSeason(code, patch, now = new Date()) {
   invalidateSeasonCache();
   return { ok: true, season: row };
 }
+
+/**
+ * Изтрива сезон, който още НЕ е започнал (v51, админ конзолата). Започнал или
+ * приключил сезон вече е оставил следа по сървърите (сезонни спътници, класация,
+ * нулирано XP) — изтриването му би пренаписало историята; за край сега се
+ * сменя endsAt, за грешка в бъдещ сезон — трие се и се прави нов.
+ */
+export async function deleteSeason(code, now = new Date()) {
+  const existing = await prisma.gameSeason.findUnique({ where: { code } });
+  if (!existing) return { ok: false, code: "NOT_FOUND", error: "Няма такъв сезон" };
+  if (new Date(existing.startsAt) <= now) {
+    return { ok: false, code: "STARTED", error: `Сезон ${code} вече е започнал — не се трие; за край сега сменете endsAt` };
+  }
+  await prisma.gameSeason.delete({ where: { code } });
+  invalidateSeasonCache();
+  return { ok: true, season: existing };
+}

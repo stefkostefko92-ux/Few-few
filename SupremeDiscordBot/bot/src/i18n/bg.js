@@ -220,6 +220,7 @@ export default {
   "game.counting.wrong": "❌ {{user}} прекъсна веригата на **{{reached}}** — следващото число беше **{{expected}}**. Отначало от 1! Рекорд на сървъра: **{{high}}**.",
   "game.counting.sameUser": "❌ {{user}}, не може да броиш два пъти подред. Отначало от 1! Рекорд на сървъра: **{{high}}**.",
   "game.counting.milestone": "🏆 **{{number}}**! {{user}} взима етапа (+{{xp}} XP).",
+  "game.counting.milestoneNoXp": "🏆 **{{number}}**! {{user}} взима етапа.",
   "game.counting.record": "🥇 Нов рекорд на сървъра: **{{number}}**!",
   "game.trivia.title": "🧠 Trivia",
   "game.trivia.kbTitle": "🧠 Trivia — познаваш ли сървъра си",

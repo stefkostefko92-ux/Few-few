@@ -1,5 +1,8 @@
 import React from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useStore } from '../lib/store';
+
+const CONTACT_EMAIL = 'info@carbonstealth.eu';
 
 /**
  * Пълноекранен ban screen. Показва се, когато сървърът върне 403
@@ -8,6 +11,7 @@ import { useStore } from '../lib/store';
  * (DSA чл. 17 — обосновка достига засегнатия и през вътрешната поща).
  */
 export default function BanScreen(): React.ReactElement | null {
+  const { t, i18n } = useTranslation();
   const banned = useStore((s) => s.banned);
   const logout = useStore((s) => s.logout);
   if (!banned) return null;
@@ -16,7 +20,7 @@ export default function BanScreen(): React.ReactElement | null {
     <div
       role="alertdialog"
       aria-modal="true"
-      aria-label="Access suspended"
+      aria-label={t('ban.title', { defaultValue: 'Access suspended' })}
       style={{
         position: 'fixed', inset: 0, zIndex: 100000,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -27,29 +31,31 @@ export default function BanScreen(): React.ReactElement | null {
       <div style={{ maxWidth: 460 }}>
         <div aria-hidden="true" style={{ fontSize: 56, marginBottom: 12 }}>⛔</div>
         <h1 style={{ margin: '0 0 10px', color: '#e85a4f', fontSize: 26, letterSpacing: 0.5 }}>
-          {banned.until > 0 ? 'Access temporarily suspended' : 'Access suspended'}
+          {banned.until > 0
+            ? t('ban.titleTemporary', { defaultValue: 'Access temporarily suspended' })
+            : t('ban.title', { defaultValue: 'Access suspended' })}
         </h1>
         <p style={{ color: 'var(--text-2, #b8bcc8)', lineHeight: 1.5, margin: '0 0 8px' }}>
           {banned.reason}
         </p>
         {banned.until > 0 && (
           <p style={{ color: 'var(--gold-1, #d6a13d)', lineHeight: 1.5, margin: '0 0 8px', fontWeight: 600 }}>
-            Access is restored on {new Date(banned.until).toLocaleString()}.
+            {t('ban.restoredOn', { defaultValue: 'Access is restored on {{date}}.', date: new Date(banned.until).toLocaleString(i18n.language) })}
           </p>
         )}
         <p style={{ color: 'var(--text-3, #7a7f8c)', fontSize: 13, lineHeight: 1.5, margin: '0 0 22px' }}>
-          If you believe this is a mistake, contact{' '}
-          <a href="mailto:info@carbonstealth.eu" style={{ color: 'var(--gold-1, #d6a13d)' }}>
-            info@carbonstealth.eu
-          </a>
-          . Any statement of reasons has also been delivered to your in-game mail (EU DSA Art. 17).
+          <Trans
+            i18nKey="ban.contact"
+            values={{ email: CONTACT_EMAIL }}
+            components={{ mail: <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'var(--gold-1, #d6a13d)' }} /> }}
+          />
         </p>
         <button
           className="btn"
           onClick={() => { logout(); window.location.href = '/'; }}
           style={{ minWidth: 140 }}
         >
-          Return to start
+          {t('ban.returnToStart', { defaultValue: 'Return to start' })}
         </button>
       </div>
     </div>
