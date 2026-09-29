@@ -178,10 +178,10 @@ fila sono troppi. Per questo ha due modalità, con lo stesso motore e gli stessi
   raccolte in un blocco chiuso da aprire su richiesta.
 - **Esperto** — tutti i campi (63 nell'esempio A) e tutti i riquadri aperti, come prima.
 
-Il pulsante «Stima F_min e massa dal diametro» riempie carico di rottura e massa lineare con
-valori tipici per funi 8×19 Seale 1570 N/mm², segnalati come stima: vanno sostituiti con quelli
-del certificato. Il PDF e il riepilogo da copiare contengono sempre il testo completo,
-qualunque sia la modalità.
+«Stima F_min e massa dal diametro» riempie carico di rottura e massa lineare con valori tipici
+di funi 8×19 Seale 1570 N/mm², segnati come stima da sostituire con il certificato. PDF e
+riepilogo hanno sempre il testo completo. Il titolo dell'esito conta anche le verifiche con
+«Attenzione», in ambra: mai un titolo verde sopra righe in ambra.
 
 ## 9.8 Sicurezza e privacy
 
