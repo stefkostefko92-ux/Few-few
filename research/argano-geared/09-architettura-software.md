@@ -161,6 +161,28 @@ configurazioni ammissibili con un semaforo per ogni verifica; il confronto vecch
 “quasi ammissibili” con il motivo dello scarto; gli adeguamenti UNI 10411-1 con il loro stato;
 l'analisi di sensibilità sulla massa della cabina (±10%).
 
+Il prototipo (calcolatore in una pagina) ha mostrato che chi lo usa in cantiere è il tecnico
+manutentore, non il progettista: più di sessanta campi e quattordici riquadri di risultati in
+fila sono troppi. Per questo ha due modalità, con lo stesso motore e gli stessi risultati:
+
+- **Semplice** (default) — 46 campi (esempio A) nell'ordine di lavoro: impianto, disposizione,
+  argano esistente, argano nuovo o proposta, funi. I dati meno comuni (fune oltre la corsa,
+  inerzie, rendimenti del vano e inverso, poli, frequenza, flessioni in più, servizio) restano
+  nascosti con i valori caricati o tipici, e una nota lo dice. Le flessioni delle funi si contano
+  dalla disposizione (5.7). Sotto la proposta, il riquadro «Esito in breve» ha una riga per area
+  (aderenza, funi, motore e riduttore, freno, albero e ancoraggio, manovra di emergenza, dati
+  incerti), ciascuna con semaforo e una frase con i numeri che contano: utilizzo dell'aderenza,
+  coefficiente di sicurezza delle funi effettivo e richiesto, potenza necessaria e di targa,
+  intervallo di coppia del freno, carico sull'albero, forza della manovra a mano, verifiche che
+  cambiano esito con massa della cabina e bilanciamento incerti (8.9). Le tabelle tecniche sono
+  raccolte in un blocco chiuso da aprire su richiesta.
+- **Esperto** — tutti i campi (63 nell'esempio A) e tutti i riquadri aperti, come prima.
+
+Il pulsante «Stima F_min e massa dal diametro» riempie carico di rottura e massa lineare con
+valori tipici per funi 8×19 Seale 1570 N/mm², segnalati come stima: vanno sostituiti con quelli
+del certificato. Il PDF e il riepilogo da copiare contengono sempre il testo completo,
+qualunque sia la modalità.
+
 ## 9.8 Sicurezza e privacy
 
 - zod su ogni input esterno, anche nelle rotte admin; nessuna concatenazione di stringhe in

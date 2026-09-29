@@ -57,8 +57,8 @@ supera:
     frenatura in più, cabina vuota in discesa per il motore e tangente esatta (utilizzo al
     massimo −0,37%);
   - nessun impianto passa da “non superato” a “superato”.
-- 400 impianti casuali per la proposta: 1 158 configurazioni proposte, nessuna delle quali
-  fallisce la verifica.
+- 400 impianti casuali per la proposta: 1 241 configurazioni proposte (con le flessioni contate
+  dalla disposizione, 5.7), nessuna delle quali fallisce la verifica.
 - Dopo il secondo passaggio sulla precisione vengono verificati anche:
   - D/d ≥ 40 sulle pulegge di rinvio, che limita anche la fune della proposta;
   - la coppia in uscita del riduttore contro il valore di catalogo, quando è inserito.

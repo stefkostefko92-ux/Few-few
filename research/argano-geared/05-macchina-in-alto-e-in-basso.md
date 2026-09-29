@@ -140,13 +140,20 @@ default per disposizione, modificabile e riportato nel report.
 | Disposizione | Flessioni tipiche | Effetto |
 |---|---|---|
 | In alto senza rinvio | nessuna oltre alla puleggia di trazione | N_equiv(p) = 0 |
-| In alto con rinvio | una semplice | N_equiv(p) = K_p |
+| In alto con rinvio | una semplice; inversa se la fune avvolge il rinvio dal lato interno (5.3) | N_equiv(p) = K_p, oppure 4·K_p |
 | In basso, rinvii in testata | due semplici | N_equiv(p) = 2·K_p; funi lunghe circa il doppio |
 | 2:1 | pulegge di cabina, contrappeso e testata | contare anche le flessioni inverse ⚠️ |
 
 Con la macchina in basso il tiro massimo della fune non è alla puleggia di trazione ma alla
 puleggia in testata lato cabina: il coefficiente di sicurezza effettivo va calcolato lì.
-Anche le pulegge di rinvio devono rispettare il rapporto minimo tra diametro e fune ⚠️.
+Anche le pulegge di rinvio devono rispettare il rapporto minimo tra diametro e fune (4.5).
+
+Nel prototipo le flessioni tipiche si contano dalla disposizione, per non chiederle al tecnico:
+il rinvio vale una flessione semplice, o una inversa quando la geometria mostra l'avvolgimento
+dal lato interno; la macchina in basso vale due flessioni semplici; la taglia 2:1 ne aggiunge
+due (una puleggia di cabina e una di contrappeso). Nei campi «flessioni in più» vanno solo le
+pulegge oltre a queste, per esempio due pulegge sotto la cabina; la classificazione come
+flessione semplice o inversa resta del progettista ⚠️.
 
 ## 5.8 Dati di geometria da chiedere
 
