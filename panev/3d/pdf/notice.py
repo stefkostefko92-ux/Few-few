@@ -17,7 +17,7 @@ REACH = 30  # how far outside a crowded drawing its caption may go (into the car
 INK = 240  # darker than this (0-255) is something on the page: lines, text, the cards' light borders
 MIN_AREA = 3000  # a drawing is at least this big; smaller images are icons and the header's logo
 NOT_DRAWINGS = ("Copertina", "02", "Retro")  # the logo and the QR code, the patent certificate (a document)
-DRAWINGS = 50  # in the base catalogue: the patent's figures (pp. 03-05) and every product's drawing
+DRAWINGS = 21  # left after inline.py: the assembly drawings (17 and the rigid arm's) and the patent's on pp. 03-04
 COVERS = 6  # section covers: no footer
 
 

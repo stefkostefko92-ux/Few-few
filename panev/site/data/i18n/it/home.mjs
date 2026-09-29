@@ -57,7 +57,7 @@ export default {
       {
         img: 'a-65-170-7_b-65-320-sx',
         title: 'Gruppo operatore',
-        body: 'Montaggio del gruppo operatore per l’apertura della porta di cabina, con la staffa fissata alla struttura del vano e alla cabina.',
+        body: 'Montaggio del gruppo operatore per l’apertura della porta di cabina: la staffa va fissata alla struttura della cabina e all’operatore.',
       },
       {
         img: 'sd-220-200_sg-80-190',
