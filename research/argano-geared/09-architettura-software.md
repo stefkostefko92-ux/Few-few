@@ -161,12 +161,12 @@ configurazioni ammissibili con un semaforo per ogni verifica; il confronto vecch
 “quasi ammissibili” con il motivo dello scarto; gli adeguamenti UNI 10411-1 con il loro stato;
 l'analisi di sensibilità sulla massa della cabina (±10%).
 
-Il prototipo (calcolatore in una pagina) ha mostrato che chi lo usa in cantiere è il tecnico
-manutentore, non il progettista: più di sessanta campi e quattordici riquadri di risultati in
-fila sono troppi. Per questo ha due modalità, con lo stesso motore e gli stessi risultati:
+Il prototipo ha mostrato che in cantiere lo usa il tecnico manutentore, non il progettista:
+oltre sessanta campi e quattordici riquadri in fila sono troppi. Per questo ha due modalità,
+con lo stesso motore e gli stessi risultati:
 
-- **Semplice** (default) — 46 campi (esempio A) nell'ordine di lavoro: impianto, disposizione,
-  argano esistente, argano nuovo o proposta, funi. I dati meno comuni (fune oltre la corsa,
+- **Semplice** (default) — 45 campi nell'esempio B (31 nell'A) nell'ordine di lavoro: impianto,
+  disposizione, argano esistente, argano nuovo o proposta, funi. I dati meno comuni (fune oltre la corsa,
   inerzie, rendimenti del vano e inverso, poli, frequenza, flessioni in più, servizio) restano
   nascosti con i valori caricati o tipici, e una nota lo dice. Le flessioni delle funi si contano
   dalla disposizione (5.7). Sotto la proposta, il riquadro «Esito in breve» ha una riga per area
@@ -176,12 +176,12 @@ fila sono troppi. Per questo ha due modalità, con lo stesso motore e gli stessi
   intervallo di coppia del freno, carico sull'albero, forza della manovra a mano, verifiche che
   cambiano esito con massa della cabina e bilanciamento incerti (8.9). Le tabelle tecniche sono
   raccolte in un blocco chiuso da aprire su richiesta.
-- **Esperto** — tutti i campi (63 nell'esempio A) e tutti i riquadri aperti, come prima.
+- **Esperto** — tutti i campi (62 nell'esempio B, 41 nell'A) e tutti i riquadri aperti, come prima.
 
 «Stima F_min e massa dal diametro» riempie carico di rottura e massa lineare con valori tipici
 di funi 8×19 Seale 1570 N/mm², segnati come stima da sostituire con il certificato. PDF e
-riepilogo hanno sempre il testo completo. Il titolo dell'esito conta anche le verifiche con
-«Attenzione», in ambra: mai un titolo verde sopra righe in ambra.
+riepilogo hanno sempre il testo completo; il titolo dell'esito conta anche le verifiche con
+«Attenzione» (in ambra).
 
 ## 9.8 Sicurezza e privacy
 

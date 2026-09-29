@@ -200,6 +200,9 @@ compatibile con i dati dell'impianto:
 
 Nella sostituzione si aggiungono i vincoli dell'impianto esistente (capitolo 6):
 
+- funi con lo stesso numero e diametro di quelle montate, come si fa di norma (capitolo 6.5):
+  la puleggia deve avere gole per quel diametro e almeno quel numero di gole, e D/d, S_f e
+  aderenza si verificano con quelle funi; funi diverse solo su scelta esplicita;
 - velocità reale entro la tolleranza della velocità nominale, correggibile in frequenza;
 - ingombri, interassi di fissaggio e altezza compatibili con il basamento, o adattatore previsto;
 - uscita delle funi (distanza tra le calate) e lato della puleggia compatibili con i rinvii;

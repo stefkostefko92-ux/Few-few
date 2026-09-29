@@ -43,7 +43,7 @@ supera:
   fattori di gola. La tangente esatta del tiro diretto è ricalcolata con i vettori. La
   decelerazione reale del freno esce dalla legge di Newton scritta sulla cabina, e
   l'equilibrio dei momenti sull'albero motore è controllato con η_i.
-- Un test di proprietà su 7 606 argani casuali. Oltre ai punti del 6 controlla che la
+- Un test di proprietà su 7 573 argani casuali. Oltre ai punti del 6 controlla che la
   decelerazione reale:
   - non scenda mai sotto il minimo;
   - cresca con la coppia del freno e con l'attrito del riduttore.
@@ -58,7 +58,10 @@ supera:
     massimo −0,37%);
   - nessun impianto passa da “non superato” a “superato”.
 - 400 impianti casuali per la proposta: 1 241 configurazioni proposte (con le flessioni contate
-  dalla disposizione, 5.7), nessuna delle quali fallisce la verifica.
+  dalla disposizione, 5.7), nessuna delle quali fallisce la verifica. Altre 400 sostituzioni con
+  le funi esistenti tenute fisse (6.5): 893 configurazioni, tutte con lo stesso numero e diametro
+  di funi e nessuna che fallisce la verifica; il valore di catalogo della coppia in uscita
+  dell'argano offerto non cambia la proposta.
 - Dopo il secondo passaggio sulla precisione vengono verificati anche:
   - D/d ≥ 40 sulle pulegge di rinvio, che limita anche la fune della proposta;
   - la coppia in uscita del riduttore contro il valore di catalogo, quando è inserito.

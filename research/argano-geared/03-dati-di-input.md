@@ -59,8 +59,8 @@ Altri dati dello stesso tipo che migliorano il calcolo:
 | Campo | Unità | Obbligatorio | Validazione / nota |
 |---|---|---|---|
 | Taglia r | 1:1 · 2:1 | sì | 4:1 e oltre in una fase successiva |
-| Numero di funi n | — | sì | ≥ 2 ⚠️; con 2 funi il minimo del coefficiente di sicurezza passa da 12 a 16 ⚠️ |
-| Diametro nominale d | mm | sì | ≥ 8 mm salvo approvazione di un organismo notificato ⚠️ |
+| Numero di funi n | — | sì | ≥ 2 ⚠️; con 2 funi il minimo del coefficiente di sicurezza passa da 12 a 16 ⚠️; nella sostituzione di norma quello delle funi esistenti (6.5) |
+| Diametro nominale d | mm | sì | ≥ 8 mm salvo approvazione di un organismo notificato ⚠️; nella sostituzione di norma quello delle funi esistenti (6.5) |
 | Costruzione e grado | es. 8×19 Seale anima tessile, 1570 o 1370/1770 N/mm² | sì | da elenco (ISO 4344:2022, EN 12385-5:2021) |
 | Carico di rottura minimo · massa lineare | kN · kg/m | sì | dalla scheda del fornitore; mai stimati dal software senza avviso |
 | Compensazione · cavo flessibile | massa lineare, punto di attacco | no | necessari per corse lunghe |

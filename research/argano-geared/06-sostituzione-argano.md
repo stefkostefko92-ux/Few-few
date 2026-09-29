@@ -17,7 +17,8 @@ macchina è adeguata.
 3. **Calcolo dell'argano esistente** con lo stesso motore: velocità reale, aderenza, funi,
    potenza. Serve come controllo dei dati (6.4).
 4. **Selezione del nuovo argano** (capitolo 8) con i vincoli dell'impianto: stessa velocità
-   nominale, ingombri e fissaggi, uscita delle funi, lato della puleggia, massa e ancoraggio.
+   nominale, stesso numero e diametro delle funi, ingombri e fissaggi, uscita delle funi, lato
+   della puleggia, massa e ancoraggio.
 5. **Confronto vecchio/nuovo** in una tabella (esempio nel capitolo 7.3).
 6. **Adeguamenti richiesti** dalla UNI 10411-1 per la sostituzione del macchinario (6.6).
 7. **Report** per l'adeguamento e per la verifica straordinaria, con ogni dato marcato come
@@ -34,7 +35,7 @@ macchina è adeguata.
 | Motore esistente | targa: kW, poli (anche doppia polarità, es. 4/16), giri, tensione, corrente | alta | velocità reale, confronto |
 | Rapporto di riduzione | targa del riduttore, o conteggio di principi della vite e denti della corona | alta | velocità reale |
 | Puleggia esistente | diametro primitivo misurato, numero e profilo delle gole, usura | media | baseline, confronto |
-| Funi | numero, diametro misurato, costruzione, stato | media | baseline; di norma si sostituiscono con l'argano |
+| Funi | numero, diametro misurato, costruzione, stato | media | baseline; di norma si sostituiscono con l'argano con funi nuove dello stesso numero e diametro, che diventano un vincolo della selezione |
 | Disposizione e rinvii | schizzo quotato: posizione della macchina, diametri e posizioni delle pulegge, altezze | media | capitolo 5 |
 | Corsa, fermate, testata, fossa | libretto e misura | alta | masse delle funi, lunghezze |
 | Freno esistente | tipo, numero di elementi meccanici, volano | alta | confronto, adeguamenti |
@@ -79,6 +80,14 @@ adeguamento.
   ammortizzatori restano nel loro campo; il software lo verifica comunque contro i dati di targa
   inseriti. Le pulegge di rinvio esistenti devono essere compatibili con il diametro delle funi
   nuove (rapporto D/d) e in buono stato.
+- **Funi**: nella sostituzione si scelgono di norma funi nuove con lo stesso numero e lo stesso
+  diametro di quelle montate (indicazione di Panev Ascensori). Attacchi e pulegge di rinvio
+  restano così compatibili, e il rapporto D/d dei rinvii non cambia; cambiano invece D/d e
+  aderenza sulla puleggia nuova, che il software verifica con quelle funi. Il calcolatore le
+  tiene fisse anche nella proposta, con una riga per ogni diametro di puleggia che passa; con il
+  catalogo servono pulegge con gole per quel diametro e almeno quel numero di gole (8.4). Se con
+  le funi esistenti nessuna configurazione passa lo dice, e solo togliendo la spunta mostra
+  proposte con funi diverse (esempio nel capitolo 7.3).
 - **Calate con tiro diretto**: attacchi di cabina e contrappeso e fori nella soletta restano; se
   la puleggia nuova ha un diametro diverso le calate si spostano e le funi si inclinano. Il
   software calcola lo spostamento e l'angolo di avvolgimento che ne risulta (5.3).

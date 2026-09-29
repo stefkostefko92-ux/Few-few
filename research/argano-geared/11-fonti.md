@@ -108,6 +108,12 @@ di norme a pagamento emerse nelle ricerche **non** sono state usate.
 - Regolamento (UE) 2019/1781 — https://eur-lex.europa.eu/eli/reg/2019/1781 · nota CEMEP/CAPIEL — https://www.lenze.com/fileadmin/lenze/documents/de/other/Information_Ecodesign_Regulation_2019-1781_CEMEP_CAPIEL_2nd_Edition_-_20210510.pdf
 - ISO 25745-1:2023 — https://www.iso.org/standard/78245.html · ISO 25745-2:2015 — https://www.iso.org/standard/60951.html · Amd 1:2023 — https://www.iso.org/standard/85459.html · VDI 4707 foglio 1 — https://www.vdi.de/richtlinien/details/vdi-4707-blatt-1-aufzuege-energieeffizienz
 
+## Indicazioni di cantiere
+
+- Panev Ascensori, 29 settembre 2026: negli impianti esistenti si scelgono di norma diametro e
+  numero delle funi uguali a quelli montati in precedenza. Usata nei capitoli 6.2, 6.5, 7.3 e 8.4
+  e nel calcolatore.
+
 ## Bibliografia tecnica
 
 - L. Janovský, *Elevator Mechanical Design*, 3ª ed., Elevator World, 1999, ISBN 978-1-886536-26-5.
