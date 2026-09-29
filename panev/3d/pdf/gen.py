@@ -43,6 +43,8 @@ for page in pages:
         placed[(s["render"], False)] = max(placed.get((s["render"], False), 0), s["rect"][2])
 for name, r in L.P7:
     placed[(name, True)] = r[2] - r[0]
+for name, catalogue, r, _, _ in L.P5:
+    placed[(name, catalogue)] = max(placed.get((name, catalogue), 0), r[2] - r[0])
 files = {}
 for (name, catalogue), width_pt in placed.items():
     img = Image.open(source(name, catalogue)).convert("RGB")
@@ -105,6 +107,12 @@ html, body {{ margin: 0; padding: 0; background: transparent; }}
 .refs {{ right: 40.5pt; top: 546.3pt; font-size: 6.75pt; font-weight: 500; letter-spacing: 0.1em; color: #5a6875; text-transform: uppercase; white-space: nowrap; }}
 .pageno {{ right: 34pt; top: 578.9pt; font-size: 6.38pt; font-weight: 700; letter-spacing: 0.12em; color: #162862; white-space: nowrap; }}
 .p06 {{ border-radius: 4pt; overflow: hidden; }}
+.para {{ width: 202pt; font-size: 7.12pt; line-height: 11.25pt; color: #1b2733; }}
+.para b, .fix b {{ font-weight: 700; color: #162862; }}
+.intro {{ font-size: 8.25pt; color: #5a6875; white-space: nowrap; }}
+.fix {{ font-size: 6.38pt; color: #1b2733; white-space: nowrap; }}
+.app {{ overflow: hidden; border-radius: 4pt 4pt 0 0; }}
+.app img {{ display: block; width: 100%; height: 100%; object-fit: cover; }}
 .ip {{ position: absolute; right: 3pt; bottom: 3pt; width: {IP_BOX[0]}pt; height: {IP_BOX[1]}pt; display: flex; align-items: center; justify-content: center;
   border-radius: 2pt; background: rgba(255, 255, 255, 0.82); font-size: 5.6pt; font-weight: 500; letter-spacing: 0.02em; color: #667298; white-space: nowrap; }}
 .foot {{ top: 578.9pt; font-size: 6.38pt; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; white-space: nowrap; }}
@@ -122,8 +130,28 @@ def tags(s):
     return f'<div class="tags"><span class="c">{escape(s["label"])}</span><span class="d">{escape(s["desc"])}</span>{extra}</div>'
 
 
+def tiles(p):
+    return "".join(f'<div class="abs shot" style="{box(*s["rect"])}"><img src="{files[(s["render"], False)]}" alt="">{tags(s)}<div class="ip">© {IP}</div></div>' for s in p["shots"])
+
+
+def rect(r):
+    return box(r[0], r[1], r[2] - r[0], r[3] - r[1])
+
+
+def sheet_inline(p):
+    """Laid over the product page: a white panel over the drawing's, the renders in it, the card's title
+    bar saying what it shows now, and the note of the SU/SD/SC pages that spoke of the drawing."""
+    pan = p["panel"]
+    fix = f'<div class="abs fix" style="left:{pan["note"][0]:.2f}pt;top:{pan["note"][1] - 0.3:.2f}pt">{L.FIX}</div>' if pan["note"] else ""
+    return (
+        f'<section class="sheet"><div class="abs inner" style="{rect(pan["inner"])}"></div>{tiles(p)}'
+        f'<div class="abs bar" style="{rect(pan["bar"])};background:none"><span class="l">Vista 3D</span><span class="r">{escape(p["right"])}</span></div>'
+        f"{fix}</section>"
+    )
+
+
 def sheet(p):
-    shots = "".join(f'<div class="abs shot" style="{box(*s["rect"])}"><img src="{files[(s["render"], False)]}" alt="">{tags(s)}<div class="ip">© {IP}</div></div>' for s in p["shots"])
+    shots = tiles(p)
     chips = "".join(f'<span class="chip">{escape(c)}</span>' for c in p["codes"])
     refs = "Disegni tecnici · pag. " + " – ".join(n for _, n in p["refs"])
     return (
@@ -144,14 +172,23 @@ def sheet_p06():
     return f'<section class="sheet">{imgs}</section>'
 
 
+def sheet_p05():
+    apps = "".join(f'<div class="abs app" style="{rect(r)}"><img src="{files[(n, cat)]}" alt=""><div class="ip">© {IP}</div></div>'
+                   f'<div class="abs para" style="left:{x:.2f}pt;top:{y - 1.6:.2f}pt">{text}</div>' for n, cat, r, (x, y), text in L.P5)
+    (x, y), intro = L.P5_INTRO
+    return f'<section class="sheet">{apps}<div class="abs intro" style="left:{x}pt;top:{y - 0.9:.2f}pt">{intro}</div></section>'
+
+
 def stamps():
     return "".join(f'<section class="sheet">{html}</section>' for _, (_, _, html) in sorted(STAMPS.items(), key=lambda kv: kv[1][0]))
 
 
-html = f'<!doctype html><html lang="it"><head><meta charset="utf-8"><style>{CSS}</style></head><body>{"".join(sheet(p) for p in pages)}{sheet_p06()}{stamps()}</body></html>'
+html = f'<!doctype html><html lang="it"><head><meta charset="utf-8"><style>{CSS}</style></head><body>{"".join(sheet_inline(p) if p["mode"] == "inline" else sheet(p) for p in pages)}{sheet_p06()}{sheet_p05()}{stamps()}</body></html>'
 with open(os.path.join(OUT, "sheets.html"), "w") as f:
     f.write(html)
 with open(os.path.join(OUT, "spec.json"), "w") as f:
-    json.dump(dict(pages=pages, stamps={k: [len(pages) + 1 + n, rect] for k, (n, rect, _) in STAMPS.items()}), f, ensure_ascii=False, indent=1)
+    # gen.pdf: the sheets in the order of `pages`, then page 7's renders, page 6's, the stamps.
+    json.dump(dict(pages=pages, p06=len(pages), p05=len(pages) + 1, stamps={k: [len(pages) + 2 + n, r] for k, (n, r, _) in STAMPS.items()}), f, ensure_ascii=False, indent=1)
 size = sum(os.path.getsize(os.path.join(OUT, v)) for v in files.values())
-print(f"{len(pages)} 3D pages + page-7 overlay + {len(STAMPS)} stamps, {len(files)} images, {size / 1e6:.1f} MB")
+inline = sum(p["mode"] == "inline" for p in pages)
+print(f"{inline} product pages with renders, {len(pages) - inline} 3D pages, pages 6 and 7, {len(STAMPS)} stamps; {len(files)} images, {size / 1e6:.1f} MB")

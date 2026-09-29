@@ -57,7 +57,7 @@ export default {
       {
         img: 'a-65-170-7_b-65-320-sx',
         title: 'Car door operator',
-        body: 'Mounting of the car door operator, with the bracket fixed to the shaft structure and to the car.',
+        body: 'Mounting of the car door operator: the bracket is fixed to the car structure and to the operator.',
       },
       {
         img: 'sd-220-200_sg-80-190',
