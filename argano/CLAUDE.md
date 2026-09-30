@@ -39,8 +39,9 @@ src/lib/             auth (JWT в httpOnly бисквитка), rbac (7 роли
                      ratelimit, audit, calc-input (zod за стойностите на формата), snapshot-hash, seo.
 src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts).
 src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
-src/components/machine/ 3D сцената на началната страница: машината от пример A (parts, materials), конвейерът
-                     scene → TRAA → bloom → grade (ACES) и нивата на качество — по техниките на 3D двигателя boy
+src/components/machine/ 3D сцената на началната страница: машината от пример A (parts/ — рама, редуктор, шайба,
+                     спирачка, мотор; materials — емайл, струговано с анизотропия), конвейерът scene → GTAO → TRAA →
+                     bloom → grade (ACES) и нивата на качество — по техниките на 3D двигателя boy
                      (Nexus/client/src/combat/engine/boy). MachineStage: постер веднага, three.js лениво.
 src/app/             [locale]/… страниците, api/ (health, relazione PDF, lista-verifica), robots, sitemap, llms.txt.
 messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (358 ключа × 3 езика).

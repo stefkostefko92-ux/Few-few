@@ -5,14 +5,16 @@
 export interface Quality {
   /** Temporal anti-aliasing (needs a few frames to settle). */
   traa: boolean;
+  /** Ground-truth ambient occlusion (GTAO): the contact shadows where the parts meet. */
+  ao: boolean;
   bloom: boolean;
   shadowMap: number;
   maxDPR: number;
 }
 
 export const QUALITY = {
-  low: { traa: true, bloom: false, shadowMap: 1024, maxDPR: 1 },
-  high: { traa: true, bloom: true, shadowMap: 2048, maxDPR: 1.5 },
+  low: { traa: true, ao: false, bloom: false, shadowMap: 1024, maxDPR: 1 },
+  high: { traa: true, ao: true, bloom: true, shadowMap: 2048, maxDPR: 1.5 },
 } as const satisfies Record<string, Quality>;
 
 /** Phones and small screens start on the light tier. */

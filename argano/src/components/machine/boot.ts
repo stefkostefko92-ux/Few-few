@@ -1,9 +1,11 @@
 // Boots the machine stage, after boy's main.js and pipeline.js (Nexus combat engine): WebGPU with the WebGL 2
-// fallback of three's WebGPURenderer; film pipeline scene (HDR + velocity MRT) → TRAA → bloom → grade; a frame-time
-// governor on the internal resolution; shaders warmed up before the curtain rises; everything freed on dispose.
+// fallback of three's WebGPURenderer; film pipeline scene (HDR + velocity + normal MRT) → GTAO → TRAA → bloom →
+// grade; a frame-time governor on the internal resolution; shaders warmed up before the curtain rises; everything
+// freed on dispose.
 import * as THREE from 'three/webgpu';
-import { pass, mrt, output, velocity } from 'three/tsl';
+import { pass, mrt, output, velocity, normalView, packNormalToRGB, unpackRGBToNormal, sample, screenUV, vec4, convertToTexture } from 'three/tsl';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
+import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { buildWorld, type Pointer } from './scene';
 import { grade, gradeUniforms, lensGlow } from './grade';
 import { QUALITY, createGovernor, initialQuality, stageGrade } from './quality';
@@ -78,20 +80,40 @@ export async function bootMachine(canvas: HTMLCanvasElement, opts: BootOptions):
     renderer.dispose();
     return null;
   }
-  const quality = opts.still ? { ...QUALITY.high, maxDPR: 3 } : initialQuality(matchMedia('(pointer: coarse)').matches, Math.min(screen.width, screen.height));
+  const quality = opts.still ? { ...QUALITY.high, maxDPR: 3, shadowMap: 4096 } : initialQuality(matchMedia('(pointer: coarse)').matches, Math.min(screen.width, screen.height));
   const P = gradeUniforms();
   if (opts.still) P.grain.value = 0;
   let world: ReturnType<typeof buildWorld>, pipeline: THREE.RenderPipeline;
+  // Effect nodes own render targets: freed with the stage (boy: keep()).
+  const owned: { dispose(): void }[] = [];
+  const keep = <T extends { dispose(): void }>(node: T): T => {
+    owned.push(node);
+    return node;
+  };
   try {
     world = buildWorld(renderer, quality);
     pipeline = new THREE.RenderPipeline(renderer);
     pipeline.outputColorTransform = false; // the grade outputs display-referred sRGB
     const scenePass = pass(world.scene, world.camera);
-    scenePass.setMRT(mrt({ output, velocity }));
+    scenePass.setMRT(mrt(quality.ao ? { output, velocity, normal: vec4(packNormalToRGB(normalView), 1) } : { output, velocity }));
+    const depth = scenePass.getTextureNode('depth');
     let image: THREE.TextureNode = scenePass.getTextureNode('output');
-    if (quality.traa) image = resolvedTexture(traa(image, scenePass.getTextureNode('depth'), scenePass.getTextureNode('velocity'), world.camera));
-    pipeline.outputNode = grade(image, quality.bloom ? lensGlow(image) : null, P);
+    if (quality.ao) {
+      // Contact shadows where the parts meet, as in boy's pipeline.js: half resolution, noise rotated per frame
+      // and averaged by TRAA. The radius is small: the machine is 1.5 m long.
+      scenePass.getTexture('normal').type = THREE.UnsignedByteType;
+      const packed = scenePass.getTextureNode('normal');
+      const occ = keep(ao(depth, sample((st) => unpackRGBToNormal(packed.sample(st).rgb)), world.camera));
+      occ.resolutionScale = 0.5;
+      occ.radius.value = 0.12;
+      occ.samples.value = 12;
+      occ.useTemporalFiltering = true;
+      image = keep(convertToTexture(vec4(image.rgb.mul(occ.getTextureNode().sample(screenUV).r.mul(0.8).add(0.2)), image.a)));
+    }
+    if (quality.traa) image = resolvedTexture(keep(traa(image, depth, scenePass.getTextureNode('velocity'), world.camera)));
+    pipeline.outputNode = grade(image, quality.bloom ? keep(lensGlow(image)) : null, P);
   } catch {
+    for (const node of owned) node.dispose();
     renderer.dispose();
     return null;
   }
@@ -134,6 +156,7 @@ export async function bootMachine(canvas: HTMLCanvasElement, opts: BootOptions):
     host.removeEventListener('pointerleave', onLeave);
     canvas.removeEventListener('webglcontextlost', fail);
     pipeline.dispose();
+    for (const node of owned) node.dispose();
     world.dispose();
     const ctx = renderer.getContext();
     renderer.dispose();
@@ -163,8 +186,9 @@ export async function bootMachine(canvas: HTMLCanvasElement, opts: BootOptions):
       return fail();
     }
     frames += 1;
-    // TRAA settles over a few frames: the still waits longer, the live stage shows up quickly.
-    if (frames === (opts.still ? 32 : 6)) {
+    // TRAA settles over a few frames: the still waits longer (two full cycles of the GTAO noise), the live stage
+    // shows up quickly.
+    if (frames === (opts.still ? 48 : 6)) {
       if (opts.still) {
         renderer.setAnimationLoop(null); // the still is done: the canvas keeps the last frame
         canvas.dataset.still = 'ready';

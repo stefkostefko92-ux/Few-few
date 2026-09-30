@@ -9,7 +9,7 @@ import type { Quality } from './quality';
 
 /** Background of the stage; the page paints the same colour behind the picture (globals.css, .stage). */
 export const STAGE_BG = '#0e1422';
-const TARGET = new THREE.Vector3(0.24, 0.31, 0.06);
+const TARGET = new THREE.Vector3(0.28, 0.31, 0.06);
 const RATIO = 43; // example A: 1:43
 const SHEAVE_SPEED = 0.2; // rad/s, slowed down for the eye: the handwheel turns 43 times faster
 
