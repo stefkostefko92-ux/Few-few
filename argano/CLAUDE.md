@@ -6,52 +6,63 @@ B2B софтуер за монтажници в Италия: от даннит�
 UNI EN 81-50:2020, UNI 10411-1:2024. Изследването е в `research/argano-geared/` (на италиански),
 прототипът-калкулатор е публикуваният артефакт за Panev (версия 12).
 
-_Етап 1 (сега): изчислителният модул `src/calc/` + тестовете + регистърът на нормите. Следват
-Next.js 15 приложение (акаунти, проекти, relazione di calcolo, IT/EN/BG) по гл. 9 на изследването.
-Root правилата са в кореновия `CLAUDE.md`._
+_Етап 2 (сега): Next.js 15 приложение върху чистия модул `src/calc/` — фирми и 7 роли, асансьори
+(проекти), калкулатор с резултати на живо, неизменими записи с SHA-256, relazione di calcolo в PDF,
+IT/EN/BG. Root правилата са в кореновия `CLAUDE.md`._
 
 ## Команди (в `argano/`)
 
 ```bash
 npm install
-npm run lint          # ESLint 10 + typescript-eslint strict
+npm run lint          # ESLint 10 + typescript-eslint strict + react-hooks + next
 npm run typecheck     # tsc --noEmit
-npm test              # node:test през tsx: golden, ръчни проверки, свойства, предложение, регистър
+npm test              # node:test през tsx: golden, ръчни проверки, свойства, предложение, регистър, роли, вход, snapshot, отчет, преводи
+npm run build         # prisma generate + next build
+npm run dev           # нужни: PostgreSQL и .env (виж .env.example: DATABASE_URL, AUTH_SECRET, PUBLIC_BASE_URL)
+ADMIN_PASSWORD=… npm run admin:create                 # администратор на платформата (SUPERADMIN), идемпотентно
+BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъра срещу пуснат сървър (Playwright)
 npm run lista         # docs/lista-verifica-normativa.md + .json от регистъра
-python3 scripts/lista-verifica-xlsx.py   # docs/lista-verifica-normativa.xlsx (нужен е openpyxl)
 ```
 
-Гейтът (задължителен преди „готово“): `lint` + `typecheck` + `test`.
+Гейтът (задължителен преди „готово“): `lint` + `typecheck` + `test` + `build`, после `smoke` срещу
+пуснат `next start` с PostgreSQL.
 
 ## Структура
 
 ```
-src/calc/            Чист изчислителен модул: без I/O, без framework (ESLint го пази).
-                     Работи в браузъра (веднага докато се пише) и на сървъра (официалният резултат).
-  norme.ts           K (всички числа от норми, оценки и решения) + VOCI (регистърът: стойност,
-                     клауза за проверка, източник, статус) + PROFILO (италианските документи).
-  compute.ts         Проверка на една машина: сцепление (3 условия, 8 случая при аварийно
-                     спиране + реално забавяне), въжета, кинематика, задвижване, спирачка, вал.
-  sizing.ts          Предложението: мрежа от шайби/въжета/двигатели; при подмяна пази въжетата.
-  inputs.ts          Стойностите от формата → Plant/Machine; невалидното влиза в `bad`.
-  presets.ts         Примерите A, B, C от гл. 7 на изследването.
-  __tests__/         golden (побитово срещу прототипа v12), ръчни проверки, свойства,
-                     предложение, регистър; fixtures/golden-v12.json.
-scripts/             lista-verifica.ts, lista-verifica-xlsx.py, golden-export.ts
-docs/                Lista di verifica normativa (за инженера на Panev)
+src/calc/            Чист изчислителен модул: без I/O, без framework (ESLint го пази). snapshot.ts — каноничният
+                     вид на резултатите, който се записва и хешира (и golden тестът ползва).
+src/lib/present/     Текстовете и таблиците на прототипа v12 като чисти функции: ползват ги и екранът, и PDF-ът.
+src/lib/report/      build.ts — моделът на relazione (италиански); render.ts — вика report/relazione.py.
+src/lib/             auth (JWT в httpOnly бисквитка), rbac (7 роли по способности), schemas (zod), env, db, log (pino),
+                     ratelimit, audit, calc-input (zod за стойностите на формата), snapshot-hash, seo.
+src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts).
+src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
+src/app/             [locale]/… страниците, api/ (health, relazione PDF, lista-verifica), robots, sitemap, llms.txt.
+messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (358 ключа × 3 езика).
+report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
+prisma/              schema + migrations/0_init (с тригер, който забранява UPDATE на Calculation).
+deploy/              deploy.sh (сървърът), nginx/argano.conf. Dockerfile, docker-compose.yml, docker-entrypoint.sh.
 ```
 
 ## Правила
 
 - **Всяко число от норма е в `K` и има запис във `VOCI`.** Тестът `norme.test.ts` пада, ако
   константа или проверка няма запис или текстът на записа не казва числото от кода.
-- **Корекция по купената норма:** смени `K`/`VOCI` (статус `confermato`), после
-  `npm run lista`, после `npx tsx scripts/golden-export.ts "<причина>"` — golden фикстурата се
-  пресъздава само съзнателно и причината влиза в комита.
+- **Корекция по купената норма:** смени `K`/`VOCI` (статус `confermato`), вдигни `ENGINE_VERSION`
+  (`src/calc/snapshot.ts`, semver), `npm run lista`, после `npx tsx scripts/golden-export.ts "<причина>"`.
+  Записаните изчисления със стар двигател остават видими, но PDF не се генерира наново (409), докато не се преизчислят.
 - **Числена идентичност:** операциите в `compute.ts`/`sizing.ts` са в реда на прототипа; не
   „опростявай“ формула, без да пуснеш golden теста (разлика в 7-ия знак го чупи).
+- **Сървърът не вярва на браузъра:** записът валидира стойностите със zod, смята наново и пази
+  snapshot + SHA-256; изчисление не се променя (тригер в базата), вариант = нов запис.
+- **Изолация по фирма:** всяка заявка е през `src/server/queries.ts` или с `companyId` от сесията;
+  чуждо id е 404. Правата — само през `can(role, capability)`.
+- **Текстове:** UI на три езика (паритетът се проверява от тест); relazione е само на италиански.
+  Текстовете на калкулатора са от прототипа — промяна се прави в трите езика наведнъж.
+- **CSP с nonce** (`src/middleware.ts`): никакви inline скриптове; единственият `dangerouslySetInnerHTML`
+  е JSON-LD с екраниран `<`.
 - **Не копирай текст на нормите** в кода, тестовете или документите: само номер на клауза и
   стойност (авторско право на CEN-CENELEC и UNI).
-- Коментарите в кода са на английски (както в `panev/`), текстовете за инженера и отчета — на
-  италиански, комитите — на български.
-- Без CI workflow засега (решение на собственика); гейтът се пуска локално.
+- Коментарите в кода са на английски, текстовете за инженера и отчета — на италиански, комитите — на
+  български. Без CI workflow засега (решение на собственика); гейтът се пуска локално.

@@ -1,0 +1,148 @@
+// Argano — data model. Tenant = company (installer); every project and calculation belongs to one company.
+// Calculations are immutable snapshots (a database trigger refuses UPDATE, see migrations/0_init).
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Seven levels, strictly ordered: a higher level includes the lower ones (src/lib/rbac.ts).
+enum Role {
+  VIEWER
+  TECHNICIAN
+  ENGINEER
+  MANAGER
+  ADMIN
+  OWNER
+  SUPERADMIN
+}
+
+enum Verdict {
+  OK
+  WARN
+  FAIL
+}
+
+model Company {
+  id           String        @id @default(cuid())
+  name         String
+  vatNumber    String?
+  city         String?
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  users        User[]
+  projects     Project[]
+  calculations Calculation[]
+  auditLogs    AuditLog[]
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  companyId          String
+  company            Company             @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  email              String              @unique
+  name               String
+  passwordHash       String
+  role               Role                @default(TECHNICIAN)
+  active             Boolean             @default(true)
+  /// set for passwords issued by someone else: the user must choose a new one at the first login
+  mustChangePassword Boolean             @default(true)
+  /// incremented to end every session of the user (password change, deactivation)
+  tokenVersion       Int                 @default(0)
+  locale             String              @default("it")
+  lastLoginAt        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  projectsCreated    Project[]           @relation("ProjectCreatedBy")
+  calculations       Calculation[]
+  reviews            CalculationReview[]
+
+  @@index([companyId])
+}
+
+/// A lift installation (impianto) of a company.
+model Project {
+  id           String        @id @default(cuid())
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name         String
+  address      String?
+  city         String?
+  province     String?
+  plantNumber  String?
+  client       String?
+  notes        String?
+  createdById  String?
+  createdBy    User?         @relation("ProjectCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  archivedAt   DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  calculations Calculation[]
+
+  @@index([companyId, archivedAt])
+  @@index([createdById])
+}
+
+/// Immutable snapshot: the values entered, the engine and profile versions, the canonical results and their hash.
+model Calculation {
+  id            String              @id @default(cuid())
+  companyId     String
+  company       Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  label         String?
+  engineVersion String
+  profileId     String
+  inputs        Json
+  results       Json
+  sha256        String
+  verdict       Verdict
+  failCount     Int
+  warnCount     Int
+  /// machine in one line, e.g. "D 520 mm · 4 × Ø11 · 1:39 · 7,5 kW"
+  summary       String
+  createdAt     DateTime            @default(now())
+  reviews       CalculationReview[]
+
+  @@index([projectId, createdAt])
+  @@index([companyId])
+  @@index([userId])
+}
+
+/// Internal review ("visto") of a calculation by an engineer of the company. Not a signature.
+model CalculationReview {
+  id            String      @id @default(cuid())
+  calculationId String
+  calculation   Calculation @relation(fields: [calculationId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  note          String?
+  createdAt     DateTime    @default(now())
+
+  @@index([calculationId])
+  @@index([userId])
+}
+
+/// Who did what. No personal data beyond the user id.
+model AuditLog {
+  id        String   @id @default(cuid())
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([companyId, createdAt])
+  @@index([userId])
+}

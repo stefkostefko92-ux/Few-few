@@ -128,6 +128,15 @@ ZIP отпреди месец.
   `up -d` (миграциите — от entrypoint-а, `prisma migrate deploy`). Health + отделна проверка, че
   **работникът** тича; при празна база напомня `npm run owner:create` (собственикът не се създава
   автоматично) → `piuma/DEPLOY.md`.
+- **argano** (Argano — проверка на редукторна машина): Docker Compose (app + PostgreSQL), логиката е в
+  `argano/deploy/deploy.sh` (идемпотентен). Тайните са в `ARGANO_ENV` (`/opt/few-few/shared/argano/.env`, 600);
+  при пръв деплой се генерират (парола на базата, `AUTH_SECRET`, парола на администратора — отпечатва се веднъж;
+  своя парола: `ARGANO_ADMIN_PASSWORD=…`). `pg_dump` ПРЕДИ миграцията (последните 5; провален дъмп спира
+  деплоя), `docker compose build` + `up -d` (миграциите — от entrypoint-а, `prisma migrate deploy`). Приложението
+  слуша само на `127.0.0.1:4320` (`APP_PORT`); при пръв старт проверява, че портът е свободен. Health на
+  `/api/health` с маркер `"app":"argano"`. Nginx vhost (`argano/deploy/nginx/argano.conf`) + certbot за
+  `argano.carbonstealth.eu` — нужен е DNS A запис към VPS-а; без него остава само HTTP и деплоят не се проваля.
+  Индексирането е изключено (`ALLOW_INDEXING=false`) до одобрение за публично пускане → `argano/DEPLOY.md`.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
@@ -141,7 +150,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma argano` | кои проекти да се разгръщат тук |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
@@ -149,6 +158,7 @@ ZIP отпреди месец.
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
+| `ARGANO_ENV` | `/opt/few-few/shared/argano/.env` | тайните на argano (600); портът е `APP_PORT` в него (по подразбиране 4320) |
 | `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
