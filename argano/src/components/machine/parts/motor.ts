@@ -88,19 +88,26 @@ export function motor(M: MachineMaterials): THREE.Group {
   return g;
 }
 
-/** Emergency handwheel on the motor shaft end (it turns with the worm). */
+/** Grip radius of the handwheel: the handwheel radius of example A (rh, src/calc/presets.ts). */
+const GRIP = 0.2;
+/** Mid-surface of the dished web: the hub stands 18 mm proud of the rim. */
+const dish = (r: number) => 0.018 * (1 - (r - 0.05) / 0.126);
+
+/**
+ * Emergency handwheel on the motor shaft end, as lift machines have it: a smooth dished disc with a rolled rim to
+ * grip, no spokes and no handle, painted yellow, the directions of travel painted on its face (materials.ts). It
+ * turns with the worm.
+ */
 export function handwheel(M: MachineMaterials): THREE.Group {
   const g = new THREE.Group();
-  g.add(mesh(new THREE.TorusGeometry(0.14, 0.011, 18, 120).rotateY(Math.PI / 2), M.yellow));
-  g.add(mesh(latheX([V(0.0001, -0.028), V(0.03, -0.028), V(0.034, -0.02), V(0.034, 0.02), V(0.03, 0.028), V(0.0001, 0.028)], 48), M.yellow));
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2;
-    const spoke = mesh(new THREE.CylinderGeometry(0.0075, 0.0105, 0.11, 16), M.yellow, 0, Math.cos(a) * 0.087, Math.sin(a) * 0.087);
-    spoke.rotation.x = a;
-    g.add(spoke);
-  }
-  g.add(mesh(new THREE.CylinderGeometry(0.011, 0.013, 0.075, 20).rotateZ(Math.PI / 2), M.rubber, 0.04, 0.14, 0)); // grip
-  g.add(mesh(hexZ(0.015, 0.01).rotateY(Math.PI / 2), M.steel, 0.032, 0, 0)); // nut on the shaft end
+  const rc = GRIP - 0.01, rb = 0.016, ac = 0.004, t = 0.0035; // rim bead centre, bead radius, half web thickness
+  const pts = [V(0.0001, -0.06), V(0.03, -0.06), V(0.034, -0.056), V(0.034, -0.03), V(0.042, -0.024), V(0.042, 0.006), V(0.046, 0.012), V(0.052, dish(0.052) - t)];
+  for (let r = 0.07; r < 0.172; r += 0.02) pts.push(V(r, dish(r) - t));
+  for (let deg = 209; deg <= 542; deg += 9) pts.push(V(rc + rb * Math.cos((deg * Math.PI) / 180), ac + rb * Math.sin((deg * Math.PI) / 180)));
+  for (let r = 0.17; r > 0.06; r -= 0.02) pts.push(V(r, dish(r) + t));
+  pts.push(V(0.052, dish(0.052) + t), V(0.046, 0.026), V(0.042, 0.031), V(0.042, 0.036), V(0.038, 0.04), V(0.0001, 0.04));
+  g.add(mesh(latheX(pts, 128), M.handwheel));
+  g.add(mesh(cylX(0.021, 0.004, 32), M.steel, 0.042, 0, 0), mesh(hexZ(0.015, 0.011).rotateY(Math.PI / 2), M.steel, 0.0495, 0, 0)); // washer and nut
   return g;
 }
 
