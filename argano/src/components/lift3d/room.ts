@@ -2,6 +2,7 @@
 // machine below, a room past the wall behind the counterweight; the geared machine of the landing page scaled to
 // the sheave of the calculation and turned onto the rope plane; the diverting and top pulleys, and the car and
 // counterweight pulleys of a 2:1 roping. Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { Layout } from '@/shaft';
 import type { RopeRig } from '@/lib/lift';

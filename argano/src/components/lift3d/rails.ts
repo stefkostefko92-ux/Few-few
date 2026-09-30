@@ -1,6 +1,7 @@
 // Guide rails: T profiles of the design's sizes (foot b, blade height h and thickness k), their blades pointing at the
 // car or the counterweight, from the pit floor up under the slab, fixed to the walls by brackets every 2.5 m; the
 // bridge bracket of a side counterweight. Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { RAILS, type Layout, type Rail } from '@/shaft';
 import type { Section } from '@/shaft/section';

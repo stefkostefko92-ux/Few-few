@@ -1,6 +1,7 @@
 // The counterweight: a steel frame with its filler plates, the guide shoes on its two rails, the hitch on top and the
 // buffer plate below. Built in plan and heights from its buffer plate (millimetres); the group rides at that level.
 // Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { Layout } from '@/shaft';
 import { box } from './geom';

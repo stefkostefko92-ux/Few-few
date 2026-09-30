@@ -2,6 +2,7 @@
 // (src/lib/lift/rig.ts). The straight runs follow the car and the counterweight every frame (unit tubes, scaled);
 // the arcs on the wheels are built once and ride with a moving wheel (the car and counterweight pulleys of a 2:1
 // roping). Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { belt, type Belt, type RopeRig } from '@/lib/lift';
 import type { LiftMaterials } from './materials';

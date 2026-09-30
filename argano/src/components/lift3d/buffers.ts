@@ -1,5 +1,6 @@
 // Spring buffers in the pit: the car's under its buffer plates, the counterweight's under its own, each on its base.
 // The springs shorten with the compression the simulation gives. Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';

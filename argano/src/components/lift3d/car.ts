@@ -2,6 +2,7 @@
 // the sling (central on the two side walls, or cantilever "a zaino" on the wall opposite a side entrance) with its
 // guide shoes, the buffer plates, the balustrade, the light, and the people of the load. Built in plan and heights
 // from the car floor (millimetres); the group rides at the car floor level. Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { Layout } from '@/shaft';
 import { KV } from '@/shaft/norme';

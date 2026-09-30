@@ -2,6 +2,7 @@
 // entrance A, y into the shaft) and heights in millimetres from the lowest floor; the scene in metres with Y up and
 // Z toward the viewer standing at entrance A: X = x, Y = z, Z = −y.
 // Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 
 /** Plan point (x, y) at height z, millimetres → world metres. */

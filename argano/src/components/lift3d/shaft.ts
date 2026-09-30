@@ -2,6 +2,7 @@
 // serves, the landing doors (frame and panels, telescopic or centre opening), the landings outside, the pit floor,
 // the slab over the shaft with the rope opening and a label at each floor. Plan and heights in millimetres
 // (geom.ts turns them into metres). Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { DoorLayout, Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';

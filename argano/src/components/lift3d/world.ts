@@ -1,6 +1,7 @@
 // The installation as a scene: shaft, car, counterweight, rails, buffers, ropes, machine and room, the spaces of the
 // checks; lights and room reflections; every frame the state of the simulation moves the parts, and the walls
 // between the camera and the shaft turn into ghosts. Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { section } from '@/shaft';

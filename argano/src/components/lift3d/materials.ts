@@ -3,6 +3,7 @@
 // the shaft is seen from any side; each wall has its own material for that. The ropes carry a strand pattern that
 // slides with the rope travel (uniform ropeShift), so a slip against the turning sheave shows.
 // Loaded only through boot.ts (lazy).
+// Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { float, materialColor, mix, mx_noise_float, positionWorld, sin, uniform, uv, vec3 } from 'three/tsl';
 
