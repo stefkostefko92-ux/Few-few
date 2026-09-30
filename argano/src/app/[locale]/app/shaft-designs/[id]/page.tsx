@@ -8,11 +8,11 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { shaftInputsSchema, shaftSourceSchema } from '@/lib/shaft-input';
 import { verifyShaftStored } from '@/lib/shaft-hash';
-import { drawPlan, SHAFT_ENGINE_VERSION } from '@/shaft';
+import { SHAFT_ENGINE_VERSION } from '@/shaft';
 import { getShaftDesign } from '@/server/queries';
 import VerdictPill from '@/components/VerdictPill';
 import Crumbs from '@/components/Crumbs';
-import PlanSvg from '@/components/shaft/PlanSvg';
+import ShaftViews from '@/components/shaft/ShaftViews';
 import ShaftResults from '@/components/shaft/ShaftResults';
 
 export async function generateMetadata() {
@@ -31,7 +31,6 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
   const { layout: L, same } = verifyShaftStored(inputs.data, d.sha256);
   const [t, tc, tp] = await Promise.all([getTranslations('shaft'), getTranslations('calculations'), getTranslations('projects')]);
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const plan = drawPlan(L, { car: t('plan.car'), counterweight: t('plan.counterweight'), persons: t('plan.persons'), doorT2: t('plan.doorT2'), doorC2: t('plan.doorC2'), title: t('plan.title') });
   const open = !d.project.archivedAt && can(user.role, 'calc:create');
   return (
     <main className="page">
@@ -56,7 +55,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
         <div className="wide"><dt>{tc('title')}</dt><dd>{t('calcCount', { n: d._count.calculations })}</dd></div>
       </dl>
       <section className="panel shaft-output">
-        <PlanSvg drawing={plan} id={d.id} label={t('planLabel', { W: L.inputs.W, D: L.inputs.D, A: L.A, B: L.B })} />
+        <ShaftViews L={L} id={d.id} planLabel={t('planLabel', { W: L.inputs.W, D: L.inputs.D, A: L.A, B: L.B })} sectionLabel={t('sectionLabel')} scaleText={(n) => t('scale', { n })} />
         <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
         <p className="note">{t('limits')}</p>
       </section>

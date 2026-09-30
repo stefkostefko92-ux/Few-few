@@ -5,6 +5,7 @@ import calcIt from '../../../messages/calc/it.json';
 import appIt from '../../../messages/it.json';
 import { deg } from '@/calc/math';
 import { PROFILO, VOCI, type Stato } from '@/calc/norme';
+import { COND, PALETTE, concreteTile } from '@/drawing';
 import { vociOfDesign } from '@/shaft';
 import type { BrakeCase, CheckId, CheckStatus, FormValues, TractionCase } from '@/calc/types';
 import { analyse } from '../present/analysis';
@@ -188,5 +189,7 @@ export function buildReport(r: ReportInput): ReportDoc {
       code: `SHA-256 ${r.calc.sha256}`,
     },
     blocks: B,
+    // the plan of the shaft design is drawn by the drawing kernel: its colours, concrete speckle and lettering
+    ...(r.design ? { drawing: { palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: {} } } : {}),
   };
 }

@@ -5,6 +5,7 @@
 // the text of the standards.
 
 import type { Stato } from '../calc/norme';
+import { VOCI_VERT } from './norme-vert';
 import type { Access, ShaftCheckId } from './types';
 
 export const KV = {
@@ -34,9 +35,17 @@ export const KV = {
   carMinDepth: 800,
   cwMinLength: 400,
   cwMaxLength: 900,
-  cwRailClear: 100,
   cwEndGap: 40,
+  cwShoe: 20,
   sizeStep: 10,
+  // cantilever sling: feet of the car rails inside the platform's depth; car rail foot to the counterweight rail foot
+  cantRailEnd: 20,
+  cantCwGap: 70,
+  // doors in plan: jambs of the landing door opening; car door operator 2·L + 60 mm long, 150 mm deep
+  doorPortal: 50,
+  doorOpFactor: 2,
+  doorOpExtra: 60,
+  doorOpDepth: 150,
 } as const;
 
 export type CostanteVano = keyof typeof KV;
@@ -52,11 +61,13 @@ export const DEFAULTS = {
   cwDepth: 140,
   cwWallGap: 80,
   rearGap: 60,
+  shoeGap: 30,
+  cwRailGap: 85,
 } as const;
 
 export type Allowance = keyof typeof DEFAULTS;
 
-export type GruppoVano = 'cabina' | 'distanze' | 'accessibilita' | 'porte' | 'ingombri' | 'modello_vano';
+export type GruppoVano = 'cabina' | 'distanze' | 'accessibilita' | 'porte' | 'ingombri' | 'sezione' | 'locale' | 'carichi' | 'modello_vano';
 
 export interface VoceVano {
   id: string;
@@ -145,17 +156,33 @@ export const VOCI_VANO: readonly VoceVano[] = [
     id: 'ingombri.tipici', gruppo: 'ingombri', titolo: 'Ingombri tipici nel vano (modificabili su ogni progetto)',
     valore: 'profondità della porta di piano 80 mm; gioco tra le soglie 30 mm; porta di cabina 80 mm; pareti della cabina 35 mm; '
       + 'guide e staffe della cabina 165 mm per lato; cabina–contrappeso 60 mm; spessore del contrappeso 140 mm; '
-      + 'guide e staffe del contrappeso 80 mm; cabina–parete di fondo 60 mm',
+      + 'guide e staffe del contrappeso 80 mm; cabina–parete di fondo 60 mm; punta della guida–cabina 30 mm; '
+      + 'contrappeso laterale–piede della guida di cabina 85 mm',
     riferimento: 'dati del costruttore di guide, porte e cabina', fonte: 'valori tipici: scelta del software', stato: 'scelta',
     verifiche: ['v_fit'],
   },
   {
     id: 'ingombri.contrappeso.laterale', gruppo: 'ingombri', titolo: 'Contrappeso laterale',
-    valore: 'la guida della cabina su quel lato sta a metà profondità della cabina, il contrappeso dietro di essa, a 100 mm dal suo asse e a 40 mm '
-      + 'dalla parete di fondo; lunghezza del contrappeso in pianta da 400 a 900 mm (sotto 400 mm: «Attenzione»); con il contrappeso sul fondo, '
-      + 'al massimo la larghezza tra le guide della cabina',
+    valore: 'tra la parete e la guida della cabina, centrato sull\'asse delle guide di cabina, con le sue guide alle estremità (pattini 20 mm) '
+      + 'e la guida di cabina su una staffa a ponte; a 40 mm dalle zone delle porte; lunghezza in pianta da 400 a 900 mm (sotto 400 mm: '
+      + '«Attenzione»); con il contrappeso sul fondo, al massimo la larghezza tra le guide della cabina',
     riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
-    costanti: ['cwMinLength', 'cwMaxLength', 'cwRailClear', 'cwEndGap'], verifiche: ['v_cwlen'],
+    costanti: ['cwMinLength', 'cwMaxLength', 'cwEndGap', 'cwShoe'], verifiche: ['v_cwlen'],
+  },
+  {
+    id: 'ingombri.arcata.zaino', gruppo: 'ingombri', titolo: 'Arcata a zaino (due accessi adiacenti a 90°)',
+    valore: 'entrambe le guide di cabina sulla parete opposta all\'accesso laterale, con le lame affacciate lungo la parete (il momento della cabina '
+      + 'a sbalzo va sulle facce delle lame); piedi delle guide a 20 mm dentro la profondità della piattaforma; contrappeso tra le guide, '
+      + 'contro la parete, con le sue guide alle estremità e i piedi a 70 mm da quelli delle guide di cabina (staffe)',
+    riferimento: '—', fonte: 'scelta del software (principio: cataloghi di arcate a zaino); disposizione da confermare con il fornitore dell\'arcata', stato: 'scelta',
+    costanti: ['cantRailEnd', 'cantCwGap'],
+  },
+  {
+    id: 'porte.operatore', gruppo: 'porte', titolo: 'Vano porta di piano e operatore della porta di cabina',
+    valore: 'vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 2·L + 60 mm e profondo 150 mm; '
+      + 'con due accessi adiacenti gli operatori non devono sovrapporsi all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
+    riferimento: 'dato del fornitore delle porte', fonte: 'valori tipici: scelta del software da confermare con il fornitore', stato: 'scelta',
+    costanti: ['doorPortal', 'doorOpFactor', 'doorOpExtra', 'doorOpDepth'], verifiche: ['v_door2', 'v_op'],
   },
   {
     id: 'modello.passo', gruppo: 'modello_vano', titolo: 'Dimensioni proposte della cabina',
@@ -164,10 +191,12 @@ export const VOCI_VANO: readonly VoceVano[] = [
     costanti: ['sizeStep'],
   },
   {
-    id: 'modello.solo.pianta', gruppo: 'modello_vano', titolo: 'Limiti del progetto in pianta',
-    valore: 'solo la pianta: fossa, testata e spazi di rifugio non sono verificati; il rilievo dal disegno CAD va controllato in cantiere',
-    riferimento: 'UNI EN 81-20:2020, 5.2.5.7 e 5.2.5.8 (fossa e testata)', fonte: 'limite del modello attuale', stato: 'scelta',
+    id: 'modello.limiti', gruppo: 'modello_vano', titolo: 'Limiti del modello del vano',
+    valore: 'pianta, sezione A-A e locale macchina da un modello semplificato: arcata, operatori delle porte, ammortizzatori e macchina hanno '
+      + 'posizioni e ingombri tipici, da sostituire con i dati dei fornitori; il rilievo dal disegno CAD va controllato in cantiere',
+    riferimento: '—', fonte: 'limite del modello attuale', stato: 'scelta',
   },
+  ...VOCI_VERT,
 ];
 
 const ACCESS_VOCE: Readonly<Record<Access, string | null>> = {

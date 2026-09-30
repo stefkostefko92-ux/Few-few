@@ -2,10 +2,13 @@
 // default and every check, and its texts must say the numbers the layout uses.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULTS, KV, VOCI_VANO, vociOfDesign } from '../index';
-import type { Access, CostanteVano, ShaftCheckId } from '../index';
+import { COSTANTI_VERT, DEFAULTS, KV, KV_VERT, VOCI_VANO, VOCI_VERT, vociOfDesign } from '../index';
+import type { Access, CostanteVano, CostanteVert, ShaftCheckId } from '../index';
 
-const CHECKS: readonly ShaftCheckId[] = ['v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen'];
+const CHECKS: readonly ShaftCheckId[] = [
+  'v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_door2', 'v_op', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen',
+  'h_refuge', 'h_clear', 'h_parapet', 'p_refuge', 'p_apron', 'b_runby', 'b_car', 'b_cw', 'm_height', 'm_panel', 'm_door',
+];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
 const voce = (id: string) => {
   const v = VOCI_VANO.find((x) => x.id === id);
@@ -41,7 +44,9 @@ test('i testi riportano i numeri usati', () => {
   assert.ok(voce('porte.ingombro').valore.includes(`${it(KV.doorStackT2)}·L + ${KV.doorFrame} mm`));
   assert.ok(voce('porte.ingombro').valore.includes(`${KV.doorStackC2}·L + ${KV.doorFrame} mm`));
   assert.ok(voce('porte.cabina').valore.includes(`+ ${KV.carDoorMargin} mm`) && voce('porte.cabina').valore.includes(`≥ ${KV.carMinDepth} mm`));
-  for (const t of [`da ${KV.cwMinLength} a ${KV.cwMaxLength} mm`, `a ${KV.cwRailClear} mm`, `a ${KV.cwEndGap} mm`]) assert.ok(voce('ingombri.contrappeso.laterale').valore.includes(t), t);
+  for (const t of [`da ${KV.cwMinLength} a ${KV.cwMaxLength} mm`, `pattini ${KV.cwShoe} mm`, `a ${KV.cwEndGap} mm`]) assert.ok(voce('ingombri.contrappeso.laterale').valore.includes(t), t);
+  for (const t of [`a ${KV.cantRailEnd} mm`, `a ${KV.cantCwGap} mm`]) assert.ok(voce('ingombri.arcata.zaino').valore.includes(t), t);
+  for (const t of [`${KV.doorPortal} mm`, `${KV.doorOpFactor}·L + ${KV.doorOpExtra} mm`, `profondo ${KV.doorOpDepth} mm`]) assert.ok(voce('porte.operatore').valore.includes(t), t);
   assert.ok(voce('modello.passo').valore.includes(`${KV.sizeStep} mm`));
   const typical = voce('ingombri.tipici').valore;
   for (const v of Object.values(DEFAULTS)) assert.ok(typical.includes(`${v} mm`), `${v} mm`);
@@ -54,4 +59,22 @@ test('voci di un progetto: solo il caso di accessibilità scelto', () => {
   assert.deepEqual(acc('dm236_residential'), ['accessibilita.residenziale']);
   assert.deepEqual(acc('dm236_public'), ['accessibilita.non.residenziale']);
   assert.equal(vociOfDesign('none').length, VOCI_VANO.filter((v) => v.gruppo !== 'accessibilita').length);
+});
+
+test('sezione, locale macchina e carichi: ogni costante ha la sua voce e la voce dice il numero', () => {
+  const ids = new Set(VOCI_VERT.map((v) => v.id));
+  for (const id of Object.keys(COSTANTI_VERT)) assert.ok(ids.has(id), `voce ${id}`);
+  const mapped = new Set(Object.values(COSTANTI_VERT).flat());
+  assert.deepEqual((Object.keys(KV_VERT) as CostanteVert[]).filter((c) => !mapped.has(c)), []);
+  for (const [id, keys] of Object.entries(COSTANTI_VERT)) {
+    const text = voce(id).valore;
+    for (const k of keys) {
+      const v = KV_VERT[k];
+      const wanted = k === 'loadOffset' ? ['1/8'] : k === 'refugeH' ? Object.values(KV_VERT.refugeH).map((h) => `alto ${h} mm`)
+        : k === 'refugePlan' ? Object.values(KV_VERT.refugePlan).map(([w, d]) => `${w} × ${d} mm`) : [it(v as number)];
+      for (const t of wanted) assert.ok(text.includes(t), `${id}: ${k} → «${t}»`);
+    }
+  }
+  // the entries of the section are in the registry of the shaft, so in the checklist and in the report
+  for (const v of VOCI_VERT) assert.ok(VOCI_VANO.includes(v), v.id);
 });

@@ -1,11 +1,12 @@
-// Section of the relazione for the shaft design a calculation comes from: what was measured and how, the plan to a
-// standard scale, the checks in plan with their clauses, the allowances assumed and the limits of the model. Pure.
+// Section of the relazione for the shaft design a calculation comes from: what was measured and how, the plan at the
+// main floor to a standard scale (drawn by the drawing kernel, like the drawing set), the checks of the shaft with
+// their clauses, the allowances assumed and the limits of the model. Pure.
 import appIt from '../../../messages/it.json';
 import type { CheckStatus } from '@/calc/types';
-import { DEFAULTS, drawPlan, explodeDim, isUpperLimit, verdictOf, vociOfDesign, type Allowance, type Drawing, type Layout, type ShaftCheckId } from '@/shaft';
-import { PLAN_LABELS_IT } from '../shaft-labels';
+import { fitView, renderView, moveShapes, type Box } from '@/drawing';
+import { DEFAULTS, isUpperLimit, planDims, planEntities, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheckId } from '@/shaft';
 import type { ShaftSource } from '../shaft-input';
-import type { PlanItem, ReportBlock } from './model';
+import type { ReportBlock } from './model';
 
 export interface ReportDesign {
   id: string;
@@ -29,26 +30,23 @@ export interface ShaftTexts {
 }
 
 const S = appIt.shaft;
-const VERDICT = { ok: 'supera le verifiche in pianta', warn: 'supera, con avvisi', fail: 'non supera le verifiche in pianta' } as const;
+const VERDICT = { ok: 'supera le verifiche del vano', warn: 'supera, con avvisi', fail: 'non supera le verifiche del vano' } as const;
+const ENTRANCES = { one: 'un accesso', opposite: 'due accessi opposti', adjacent: 'due accessi adiacenti a 90° (arcata a zaino)' } as const;
 // the screen labels carry their clause in brackets; the report has a column for it
 const plain = (label: string): string => label.replace(/\s*\((UNI|DM) [^)]*\)$/, '');
 
-/** The primitives of the plan for the renderer: dimensions become lines and one text, vertical texts an angle. */
-export function planItems(d: Drawing): PlanItem[] {
-  return d.prims.flatMap((p): PlanItem[] => {
-    switch (p.k) {
-      case 'poly':
-      case 'line':
-        return [p];
-      case 'text':
-        return [{ k: 'text', layer: p.layer, at: p.at, h: p.h, text: p.text, align: p.align, angle: p.vertical ? Math.PI / 2 : 0 }];
-      case 'dim': {
-        const e = explodeDim(p);
-        return [...e.lines.map(([a, b]): PlanItem => ({ k: 'line', layer: 'QUOTE', a, b })),
-          { k: 'text', layer: 'QUOTE', at: e.text.at, h: e.text.h, text: e.text.value, align: 'c', angle: e.text.angle }];
-      }
-    }
-  });
+/** Width of the report's text frame and the most height the plan may take [mm]. */
+const PLAN_W = 178, PLAN_H = 175, PAD = 3;
+
+/** The plan at the main floor, laid out by the drawing kernel in a box as wide as the report's text frame. */
+export function planBlock(L: Layout): ReportBlock {
+  const { W, D, wall: T } = L.inputs, V = L.inputs.vertical, f = Math.min(V.main, V.floors.length - 1);
+  const ents = [...planEntities(L, 'main', f), ...planDims(L, 'main', f, { level: `piano "${V.floors[f]?.label ?? ''}"` })];
+  const area: Box = { x0: PAD, y0: PAD, x1: PLAN_W - PAD, y1: PLAN_H - PAD };
+  const place = fitView({ x0: -T, y0: -T, x1: W + T, y1: D + T }, ents, area, [10, 20, 25, 50, 100, 200]) ?? { scale: 200, ox: PLAN_W / 2, oy: PLAN_H / 2 };
+  const r = renderView(ents, place);
+  // no empty band above or below the drawing
+  return { t: 'plan', shapes: moveShapes(r.shapes, 0, PAD - r.extent.y0), w: PLAN_W, h: r.extent.y1 - r.extent.y0 + 2 * PAD, scale: `Scala 1:${place.scale} sul foglio A4 stampato al 100%` };
 }
 
 export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts): ReportBlock[] {
@@ -58,9 +56,8 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts): Repo
     B.push({ t: 'box', text: `La portata del calcolo (${fmt(calcQ, 0)} kg) è diversa da quella del progetto del vano (${fmt(L.Q, 0)} kg): la pianta e le verifiche in pianta valgono per ${fmt(L.Q, 0)} kg.` });
   }
   if (!L.fits) B.push({ t: 'box', text: S.notFit });
-
-  const drawing = drawPlan(L, PLAN_LABELS_IT);
-  B.push({ t: 'plan', items: planItems(drawing), bounds: drawing.bounds, maxHeight: 175, scale: 'Scala 1:{n} sul foglio A4 stampato al 100%' });
+  B.push(planBlock(L));
+  const V = I.vertical;
 
   B.push({ t: 'kv', rows: [
     ['Progetto del vano', `${d.id}${d.label ? ` · ${d.label}` : ''} · ${x.when(d.createdAt)} · ${d.author ?? '—'}`],
@@ -71,16 +68,18 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts): Repo
     ...(src ? [['Impronta SHA-256 del disegno', src.sha256] as [string, string]] : []),
     ['Cabina proposta, interno', `${fmt(L.A, 0)} × ${fmt(L.B, 0)} mm · ${fmt(L.area, 2)} m² su ${fmt(L.areaMax, 2)} m² ammessi per ${fmt(L.Q, 0)} kg`],
     ['Portata · persone', `${fmt(L.Q, 0)} kg (${L.Qgiven ? 'data' : 'dalla superficie della cabina più grande che entra'}) · ${L.persons} persone`],
-    ['Porte · contrappeso', `${S[I.door]}, luce netta ${fmt(I.doorWidth, 0)} mm · contrappeso: ${S[`cw_${I.cw}` as const].toLowerCase()}`],
+    ['Porte · contrappeso', `${S[I.door]}, luce netta ${fmt(I.doorWidth, 0)} × ${fmt(I.doorHeight, 0)} mm, ${ENTRANCES[I.entrances]} · contrappeso: ${S[`cw_${L.cwSide}` as const].toLowerCase()}`],
+    ['Fermate · corsa · velocità', `${V.floors.length} fermate · ${fmt(travel(V.floors) / 1000, 2)} m · ${fmt(V.v, 2)} m/s`],
+    ['Fossa · testata', `${fmt(V.pit, 0)} mm · ${fmt(V.headroom, 0)} mm`],
     ['Accessibilità', S[`access_${I.access}` as const]],
-    ['Esito in pianta', VERDICT[verdictOf(L)]],
+    ['Esito delle verifiche del vano', VERDICT[verdictOf(L)]],
     ['Motore del progetto', `Argano vano ${d.engineVersion} · profilo normativo ${d.profileId}`],
     ['Impronta SHA-256 del progetto', d.sha256],
   ] });
   const voci = vociOfDesign(I.access);
   const refOf = (id: ShaftCheckId): string => [...new Set(voci.filter((v) => v.verifiche?.includes(id)).flatMap((v) => v.riferimento.split('; '))
     .map((r) => r.trim()).filter((r) => r && r !== '—'))].join('; ') || 'modello di calcolo del software';
-  B.push({ t: 'h3', text: 'Verifiche in pianta' });
+  B.push({ t: 'h3', text: 'Verifiche del vano: pianta, sezione e locale macchina' });
   B.push({ t: 'grid', head: x.head, rows: L.checks.map((c) => {
     const unit = c.unit ? ` ${c.unit}` : '';
     return [plain(S[`c_${c.id}` as const]), c.value === null ? '—' : `${fmt(c.value, c.dec)}${unit}`, c.limit === null ? '' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}`, st(c.status), refOf(c.id)];

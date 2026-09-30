@@ -1,13 +1,13 @@
-// Shaft layout: the tables of rated load, area and passengers; car sizing, door, counterweight and checks on hand-
-// worked shafts; properties over a grid of shafts; the plan drawing.
+// Shaft layout: the tables of rated load, area and passengers; car sizing, doors, counterweight and checks on hand-
+// worked shafts; two entrances opposite and adjacent (cantilever sling); properties over a grid of shafts; the plan
+// as model entities for the drawing kernel.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { defaultInputs, drawPlan, layout, loadForArea, maxArea, passengers, shaftSnapshot, verdictOf } from '../index';
+import { KV, RAILS, defaultInputs, layout, loadForArea, maxArea, passengers, planDims, planEntities, shaftSnapshot, verdictOf } from '../index';
 import type { ShaftInputs } from '../index';
 
 const near = (a: number, b: number, eps = 1e-9) => assert.ok(Math.abs(a - b) <= eps, `${a} ≠ ${b}`);
 const status = (I: ShaftInputs) => Object.fromEntries(layout(I).checks.map((c) => [c.id, c.status]));
-const LABELS = { car: 'CABINA', counterweight: 'CONTRAPPESO', persons: 'persone', doorT2: 'T2', doorC2: 'C2', title: 'PIANTA' };
 
 test('superficie massima per portata: righe, interpolazione e oltre 2500 kg', () => {
   near(maxArea(630), 1.66);
@@ -37,7 +37,7 @@ test('vano 1600 × 1750, contrappeso sul fondo, edificio esistente: la cabina pi
   assert.equal(L.fits, true);
   assert.equal(verdictOf(L), 'ok');
   // telescopic door 800: frame 1,5·800 + 110 = 1310, 145 mm from each side wall
-  assert.equal(L.door.frame1 - L.door.frame0, 1310);
+  assert.equal(L.doors[0].frame1 - L.doors[0].frame0, 1310);
   assert.equal(L.checks.find((c) => c.id === 'v_door')?.value, 145);
 });
 
@@ -60,16 +60,52 @@ test('vano troppo piccolo: la cabina minima non entra', () => {
   assert.equal(fit?.value, -440);
 });
 
-test('contrappeso laterale: cabina spostata, contrappeso dietro la guida', () => {
+test('contrappeso laterale: tra la parete e la guida di cabina, la guida su una staffa a ponte', () => {
   const L = layout({ ...defaultInputs(1800, 1600), cw: 'left' });
-  assert.equal(L.car.x, 283); // centred between 80 + 140 + 60 = 280 and 1800 − 165 = 1635
-  assert.equal(L.A, 1280);
+  // counterweight zone 80 + 140 + 85 + 65 (T70-1/A) + 30 = 400; centred between 400 and 1800 − 165 = 1635
+  assert.equal(L.A, 1160);
   assert.equal(L.B, 1280);
+  assert.equal(L.car.x, 403);
   assert.equal(L.cw.x, 80);
-  assert.equal(L.cw.h, 1560 - 965); // from 100 mm past the rail at mid-depth to 40 mm from the back wall
+  assert.equal(L.cw.h, KV.cwMaxLength);
+  // centred on the rails' axis at mid-depth of the car
+  assert.equal(L.cw.y + L.cw.h / 2, L.car.y + L.car.h / 2);
+  assert.ok(L.bridge && L.bridge.y0 < L.cw.y && L.bridge.y1 > L.cw.y + L.cw.h, 'staffa a ponte oltre le guide del contrappeso');
   assert.equal(status({ ...defaultInputs(1800, 1600), cw: 'left' }).v_cwlen, 'ok');
 });
 
+test('due accessi opposti: la cabina va da porta a porta, il contrappeso di lato', () => {
+  const L = layout({ ...defaultInputs(1800, 2000), entrances: 'opposite', Q: 630 });
+  assert.equal(L.doors.length, 2);
+  assert.deepEqual(L.doors.map((d) => d.wall), ['front', 'rear']);
+  assert.equal(L.cwSide, 'left');
+  // depth fixed: 2000 − 2 × (80 + 30 + 80) − 70
+  assert.equal(L.B, 1550);
+  assert.equal(L.frame.kind, 'central');
+});
+
+test('due accessi adiacenti: arcata a zaino con le lame affacciate lungo la parete', () => {
+  const I: ShaftInputs = { ...defaultInputs(1800, 1900), entrances: 'adjacent', side2: 'right', Q: 400, access: 'none' };
+  const L = layout(I), cr = RAILS[I.carRail];
+  assert.equal(L.frame.kind, 'cantilever');
+  assert.equal(L.cwSide, 'left');
+  const [a, b] = L.rails.filter((r) => r.kind === 'car');
+  assert.deepEqual([a.dir, b.dir], ['back', 'front'], 'lame una verso l\'altra');
+  assert.equal(a.x, b.x);
+  assert.equal(L.frame.dbg, b.y - a.y);
+  // the feet 20 mm inside the platform's depth, the car rail on the counterweight side of the car
+  assert.equal(a.y - cr.h, L.car.y + KV.cantRailEnd);
+  assert.equal(b.y + cr.h, L.car.y + L.car.h - KV.cantRailEnd);
+  assert.equal(L.car.x, a.x + cr.b / 2 + I.shoeGap);
+  // the car spans from the rails to the side door: the whole width, the depth the load admits
+  assert.equal(L.A, L.maxA);
+  assert.ok(L.area <= L.areaMax + 1e-9);
+  // the counterweight between the rails' feet, against the wall
+  assert.ok(L.cw.x === I.cwWallGap && L.cw.y > a.y - cr.h && L.cw.y + L.cw.h < b.y + cr.h);
+  assert.deepEqual(L.doors.map((d) => [d.side, d.wall]), [['A', 'front'], ['B', 'right']]);
+  // the operators of the two doors run into each other at the corner: a warning, not a failure
+  assert.equal(status(I).v_op, 'warn');
+});
 test('porta centrale troppo larga per il vano e distanze fuori limite', () => {
   const s = status({ ...defaultInputs(1400, 2000), door: 'C2', doorWidth: 900, access: 'none', sillGap: 40, cwCarGap: 40, landingDepth: 120 });
   assert.equal(s.v_door, 'fail');
@@ -94,12 +130,16 @@ test('proprietà: un vano più grande non dà mai una cabina più piccola', () =
   }
 });
 
-test('istantanea stabile e disegno completo', () => {
+test('istantanea stabile e pianta completa per il nucleo di disegno', () => {
   const I = defaultInputs(1600, 1750);
   assert.deepEqual(shaftSnapshot(I).snapshot, shaftSnapshot({ ...I }).snapshot);
-  const d = drawPlan(layout(I), LABELS);
-  const layers = new Set(d.prims.map((p) => p.layer));
-  for (const l of ['MURI', 'VANO', 'CABINA', 'PORTE', 'GUIDE', 'CONTRAPPESO', 'QUOTE', 'TESTI']) assert.ok(layers.has(l as never), l);
-  assert.ok(d.prims.some((p) => p.k === 'dim' && p.text === '1600'));
-  assert.ok(d.prims.some((p) => p.k === 'text' && p.text === 'CABINA 1200 × 1210'));
+  const L = layout(I), f = I.vertical.main, ents = [...planEntities(L, 'main', f), ...planDims(L, 'main', f, { level: 'piano "0"' })];
+  // the clear shaft outline, the concrete walls, the car, the rails and their dimension chains
+  assert.ok(ents.some((e) => e.e === 'path' && e.st === 'wall' && !e.fill && e.pts.length === 4 && e.pts[2][0] === 1600 && e.pts[2][1] === 1750), 'vano netto');
+  assert.ok(ents.some((e) => e.e === 'path' && e.fill === 'concrete'), 'muri');
+  assert.ok(ents.some((e) => e.e === 'path' && e.fill === 'car'), 'cabina');
+  assert.ok(ents.filter((e) => e.e === 'path' && e.st === 'steel').length >= 4, 'guide');
+  const chains = ents.flatMap((e) => (e.e === 'chain' ? [e.c] : []));
+  assert.ok(chains.some((c) => c.dir === 'x' && c.pts[0] === 0 && c.pts[c.pts.length - 1] === 1600 && c.text?.[0]?.includes('Vano')), 'quota del vano');
+  assert.ok(chains.some((c) => c.text?.some((t) => t?.includes('D.F.G. Arcata'))), 'distanza fra le guide');
 });

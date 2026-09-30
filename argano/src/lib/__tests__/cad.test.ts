@@ -7,7 +7,7 @@ import { readCad, CadReadError } from '../cad/read';
 import { castRays, dominantAngle, shaftSize, surveyCorners } from '../cad/measure';
 import { dwgVersion, MM_PER_UNIT } from '../cad/model';
 import { planToDxf } from '../cad/export';
-import { defaultInputs, drawPlan, layout } from '@/shaft';
+import { defaultInputs, layout } from '@/shaft';
 
 const rot = (x: number, y: number, a: number): [number, number] => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
 
@@ -95,12 +95,15 @@ test('misura del vano con quattro raggi, anche su una pianta ruotata', () => {
 });
 
 test('la pianta esportata in DXF si rilegge, in millimetri e con i layer', () => {
-  const d = drawPlan(layout(defaultInputs(1600, 1750)), { car: 'CABINA', counterweight: 'CONTRAPPESO', persons: 'persone', doorT2: 'T2', doorC2: 'C2', title: 'PIANTA' });
-  const text = planToDxf(d, 'Impianto di prova');
+  const text = planToDxf(layout(defaultInputs(1600, 1750)), 'Impianto di prova');
   assert.match(text, /\$INSUNITS\s+70\s+4/);
   const m = readCad(new TextEncoder().encode(text), 'progetto.dxf');
-  for (const l of ['MURI', 'VANO', 'CABINA', 'PORTE', 'GUIDE', 'CONTRAPPESO', 'QUOTE']) assert.ok(m.layers.some((x) => x.name === l), l);
-  assert.ok(m.bounds.minX >= d.bounds.minX && m.bounds.maxX <= d.bounds.maxX && m.bounds.minY >= d.bounds.minY - 200 && m.bounds.maxY <= d.bounds.maxY);
+  // layers with segments (the reader keeps lines for measuring); the lettering is on TESTI
+  for (const l of ['MURI', 'VANO', 'CABINA', 'PORTE', 'GUIDE', 'CONTRAPPESO', 'ASSI', 'QUOTE']) assert.ok(m.layers.some((x) => x.name === l), l);
+  assert.match(text, /\nTEXT\n[\s\S]*?\n\s*8\nTESTI\n/);
+  // everything around the shaft: walls, dimension rows and lettering written back in model millimetres at 1:20
+  assert.ok(m.bounds.minX < -200 && m.bounds.maxX > 1800 && m.bounds.minY < -200 && m.bounds.maxY > 1950);
+  assert.ok(m.bounds.minX > -3000 && m.bounds.maxX < 4600 && m.bounds.minY > -3500 && m.bounds.maxY < 4800);
   // the clear shaft on its own layer, exactly 1600 × 1750
   const vano = m.layers.findIndex((x) => x.name === 'VANO'), xs: number[] = [], ys: number[] = [];
   for (let i = 0; i < m.count; i++) {
@@ -108,7 +111,7 @@ test('la pianta esportata in DXF si rilegge, in millimetri e con i layer', () =>
     xs.push(m.seg[4 * i], m.seg[4 * i + 2]);
     ys.push(m.seg[4 * i + 1], m.seg[4 * i + 3]);
   }
-  assert.deepEqual([Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)], [0, 1600, 0, 1750]);
+  assert.deepEqual([Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)].map((v) => Math.round(v * 1000) / 1000), [0, 1600, 0, 1750]);
 });
 
 function near(a: number, b: number, eps = 1e-6): void {

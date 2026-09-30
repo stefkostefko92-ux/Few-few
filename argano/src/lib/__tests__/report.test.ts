@@ -29,7 +29,7 @@ const texts = (doc: ReportDoc): string[] => doc.blocks.flatMap((b) => {
     case 'grid': return [...b.head, ...b.rows.flat()];
     case 'list': return b.items;
     case 'sign': return b.labels;
-    case 'plan': return [b.scale, ...b.items.flatMap((i) => (i.k === 'text' ? [i.text] : []))];
+    case 'plan': return [b.scale, ...b.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : []))];
     default: return [b.text];
   }
 });
@@ -65,9 +65,14 @@ test('calcolo da un progetto del vano: pianta in scala, verifiche in pianta, voc
   assert.equal(h[h.indexOf("Dati dell'impianto") + 1], 'Vano e cabina');
   assert.deepEqual(heads(buildReport(base)).filter((x) => x === 'Vano e cabina'), []);
   const plan = same.blocks.find((b) => b.t === 'plan');
-  assert.ok(plan && plan.t === 'plan' && plan.items.length > 50 && plan.scale.includes('{n}'));
-  assert.ok(plan.items.some((i) => i.k === 'text' && i.text.startsWith('CABINA ')), 'testo della cabina');
-  assert.ok(plan.items.every((i) => i.k !== 'text' || Number.isFinite(i.angle)), 'angoli dei testi');
+  assert.ok(plan && plan.t === 'plan' && plan.shapes.length > 100 && /^Scala 1:(10|20|25|50) /.test(plan.scale), 'pianta in scala');
+  assert.ok(plan.shapes.some((s) => s.t === 'text' && s.text === '1600 Vano piano "0"'), 'quota del vano');
+  // inside its box, as wide as the report's text frame
+  for (const s of plan.shapes) {
+    const pts = s.t === 'line' ? [s.a, s.b] : s.t === 'path' ? s.pts : s.t === 'text' ? [s.at] : s.t === 'circle' || s.t === 'arc' ? [s.c] : [];
+    for (const [x, y] of pts) assert.ok(x >= -0.5 && x <= plan.w + 0.5 && y >= -0.5 && y <= plan.h + 0.5, `forma fuori dal riquadro: ${x}, ${y}`);
+  }
+  assert.ok(same.drawing && same.drawing.patterns.concrete.shapes.length > 0, 'colori e retino del disegno');
   const L = shaftSnapshot({ ...defaultInputs(1600, 1750), Q }).layout;
   const checks = same.blocks.find((b) => b.t === 'grid' && b.rows.some((r) => r[0] === 'Gioco tra le soglie'));
   assert.ok(checks && checks.t === 'grid' && checks.rows.length === L.checks.length && checks.rows.every((r) => r[4]), 'una riga per verifica, con riferimento');

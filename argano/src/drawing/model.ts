@@ -1,0 +1,45 @@
+// Model entities: geometry in millimetres of the object (y up) with annotations that keep their size on paper
+// (lettering, symbols, dimension chains). A view turns them into paper primitives at a scale.
+import type { FillName, StyleName } from './style';
+import type { Align, Ink, Pt } from './types';
+
+export type Side = 'top' | 'bottom' | 'left' | 'right';
+
+export type SymbolName = 'dot' | 'tri' | 'square' | 'overUp' | 'overDown' | 'plumb' | 'box' | 'light';
+
+/** A chain of linear dimensions measured along x or y. */
+export interface Chain {
+  dir: 'x' | 'y';
+  /** coordinates along the measured direction [model mm], in order; two or more */
+  pts: readonly number[];
+  /** outside the drawing on a side, row 0 nearest to it … */
+  side?: Side;
+  row?: number;
+  /** … or across the drawing, at this model coordinate */
+  at?: number;
+  /** extension lines start at this model coordinate (one for all, or one per point; null = none);
+   *  outside chains default to the edge of the drawing */
+  from?: number | readonly (number | null)[];
+  /** text of each segment, '{v}' for the measured value; null or missing = the value */
+  text?: readonly (string | null)[];
+}
+
+export type Entity =
+  | { e: 'line'; a: Pt; b: Pt; st: StyleName }
+  | { e: 'path'; pts: readonly Pt[]; closed: boolean; st?: StyleName; fill?: FillName }
+  | { e: 'circle'; c: Pt; r: number; st?: StyleName; fill?: FillName }
+  | { e: 'arc'; c: Pt; r: number; a0: number; a1: number; st: StyleName }
+  /** lettering at a model point, size on paper [mm] */
+  | { e: 'text'; at: Pt; text: string; size?: number; angle?: number; align?: Align; bold?: boolean; ink?: Ink; halo?: boolean }
+  /** a symbol of fixed paper size at a model point */
+  | { e: 'mark'; at: Pt; sym: SymbolName; size?: number }
+  /** a reference in a small circle (e.g. a load P5), with a leader to the element it names */
+  | { e: 'tag'; at: Pt; text: string; to?: Pt }
+  | { e: 'chain'; c: Chain };
+
+export const line = (a: Pt, b: Pt, st: StyleName = 'thin'): Entity => ({ e: 'line', a, b, st });
+export const path = (pts: readonly Pt[], closed = true, st: StyleName | undefined = 'thin', fill?: FillName): Entity => ({ e: 'path', pts, closed, st, fill });
+export const rect = (x0: number, y0: number, x1: number, y1: number, st: StyleName | undefined = 'thin', fill?: FillName): Entity =>
+  path([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], true, st, fill);
+export const circle = (c: Pt, r: number, st: StyleName | undefined = 'thin', fill?: FillName): Entity => ({ e: 'circle', c, r, st, fill });
+export const chain = (c: Chain): Entity => ({ e: 'chain', c });

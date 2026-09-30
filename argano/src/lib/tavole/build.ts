@@ -1,0 +1,130 @@
+// The drawing set of a lift, A4 sheets: 1 the data; the plans of the shaft at the top floor (headroom), at the main
+// floor and at the lowest floor; section A-A whole and in three details (headroom, main floor, pit); the machine room
+// in plan and in section B-B; the pit in plan with its loads. Each view at the largest standard scale that fits with
+// its dimensions; the count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
+import {
+  A4, COND, PALETTE, concreteTile, drawingArea, frame, sheetTitle, strip, toPaper,
+  type Box, type DrawingDoc, type Page, type Place, type Pt, type Shape, type SheetMeta,
+} from '@/drawing';
+import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
+import type { PlanLevel } from '@/shaft/plan-view';
+import type { SectionKind } from '@/shaft/section-dims';
+import type { Layout } from '@/shaft/types';
+import { analyse, type Analysis } from '../present/analysis';
+import { dataSheet } from './data';
+import { dataSheetShapes } from './datasheet';
+import { legendColumn, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
+import { dateIt, placeLines, type TavoleInput } from './input';
+import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
+import { makeFmt } from '../present/tr';
+import { machineOf, planView, roomView, sectionView } from './views';
+
+type Spec =
+  | { k: 'plan'; level: PlanLevel; floor: number; title: string; subtitle?: string; total: string; legend: LegendItem[] }
+  | { k: 'section'; kind: SectionKind; floor: number; title: string; subtitle?: string; legend: LegendItem[] }
+  | { k: 'room-plan' | 'room-section'; title: string; subtitle: string };
+
+export interface TavoleResult {
+  doc: DrawingDoc;
+  /** where the calculation and the design disagree */
+  warnings: string[];
+  /** title and scale of each sheet */
+  sheets: { title: string; scale: number | null }[];
+}
+
+const LEGEND_W = 34;
+
+function specs(L: Layout, room: boolean): Spec[] {
+  const V = L.inputs.vertical, top = V.floors.length - 1, main = Math.min(Math.max(0, V.main), top), label = (i: number): string => V.floors[i]?.label ?? String(i);
+  const sp = spaceLegend(L, makeFmt('it-IT')), loads = 'CARICHI: VALORI NEL FOGLIO 1';
+  const out: Spec[] = [
+    { k: 'plan', level: 'top', floor: top, title: `VISTA IN PIANTA DEL VANO IN TESTATA - ULTIMA FERMATA SUPERIORE "${label(top)}"`, total: 'in Testata', legend: [sp.free, sp.top] },
+    { k: 'plan', level: 'main', floor: main, title: `VISTA IN PIANTA DEL VANO - FERMATA PIANO PRINCIPALE "${label(main)}"`, total: `piano "${label(main)}"`, legend: [] },
+  ];
+  if (main !== 0) out.push({ k: 'plan', level: 'bottom', floor: 0, title: `VISTA IN PIANTA DEL VANO - ULTIMA FERMATA INFERIORE "${label(0)}"`, total: `piano "${label(0)}"`, legend: [] });
+  out.push(
+    { k: 'section', kind: 'full', floor: top, title: 'VISTA IN ELEVATO - SEZ. A-A', legend: [OVER_UP, sp.top, sp.free, OVER_DOWN, sp.pit] },
+    { k: 'section', kind: 'top', floor: top, title: `VISTA IN ELEVATO - ULTIMA FERMATA SUPERIORE "${label(top)}" - SEZ. A-A`, subtitle: 'PARTICOLARE DEGLI SPAZI DELLA CABINA IN TESTATA', legend: [sp.top, OVER_UP, sp.free] },
+    { k: 'section', kind: 'floor', floor: main, title: `VISTA IN ELEVATO - FERMATA PIANO PRINCIPALE "${label(main)}" - SEZ. A-A`, subtitle: 'PARTICOLARE DELLA CABINA AL PIANO', legend: [] },
+    { k: 'section', kind: 'pit', floor: 0, title: `VISTA IN ELEVATO IN FOSSA - ULTIMA FERMATA INFERIORE "${label(0)}" - SEZ. A-A`, subtitle: `PARTICOLARE DEGLI SPAZI DELLA CABINA AL PIANO "${label(0)}" E IN FOSSA`, legend: [OVER_DOWN, sp.pit] },
+  );
+  if (room) {
+    out.push(
+      { k: 'room-plan', title: 'VISTA IN PIANTA DEL LOCALE MACCHINA', subtitle: `${loads.replace('CARICHI', 'CARICHI SULLA SOLETTA')}` },
+      { k: 'room-section', title: 'VISTA IN ELEVATO DEL LOCALE MACCHINA - SEZ. B-B', subtitle: loads },
+    );
+  }
+  out.push({ k: 'plan', level: 'pit', floor: 0, title: `VISTA IN PIANTA DEL VANO AL PIANO "${label(0)}" E IN FOSSA`, subtitle: loads.replace('CARICHI', 'CARICHI IN FOSSA'), total: `piano "${label(0)}" e in Fossa`, legend: [sp.pit] });
+  return out;
+}
+
+const inset = (b: Box, l: number, r: number, bottom: number, top: number): Box => ({ x0: b.x0 + l, y0: b.y0 + bottom, x1: b.x1 - r, y1: b.y1 - top });
+
+interface Drawn {
+  shapes: Shape[];
+  scale: number;
+}
+
+function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box): Drawn {
+  // room around the view for the legend, the "LATO FERMATE" labels (rotated on a side wall) and the section marks
+  const lg = legendRow(s.legend, area), side = (w: 'left' | 'right'): number => (L.doors.some((d) => d.wall === w) ? 9 : 4);
+  const { r, place } = planView(L, s.level, s.floor, s.total, inset(area, side('left'), side('right'), lg.height + 7, 6));
+  const px = toPaper(place, [L.car.x + L.car.w / 2, 0])[0];
+  const marks = sectionMarks([px, r.extent.y1 + 3.5], [px, r.extent.y0 - 3.5], 'left', 'A');
+  return { shapes: [...r.shapes, ...sideLabels(L, r.extent), ...marks, ...lg.shapes], scale: place.scale };
+}
+
+function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box): Drawn {
+  // the whole section keeps its height: its legend goes in a column on the left, the details' in a row at the foot
+  const full = s.kind === 'full', lg = full ? { shapes: legendColumn(s.legend, area, LEGEND_W), height: 0 } : legendRow(s.legend, area);
+  const view = full ? inset(area, LEGEND_W + 4, 0, 0, 0) : inset(area, 0, 0, lg.height + (lg.height ? 4 : 0), 0);
+  const { r, place } = sectionView(L, s.kind, s.floor, view);
+  return { shapes: [...r.shapes, ...lg.shapes], scale: place.scale };
+}
+
+/** Section line B-B on the room plan: along the rope drops, beyond the drawing at both ends, looking across them. */
+function roomMarks(G: RoomGeo, p: Place, edges: Box): Shape[] {
+  const at = (u: number): Pt => toPaper(p, [G.carDrop[0] + u * G.ux, G.carDrop[1] + u * G.uy]);
+  const a = at(0), b = at(G.calata), dx = b[0] - a[0], dy = b[1] - a[1], n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n;
+  // from the middle of the drops out to the edges of the drawing, 5 mm beyond
+  const mid: Pt = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const reach = (s: number): Pt => {
+    let t = 0;
+    while (t < 400) {
+      const q: Pt = [mid[0] + s * ux * t, mid[1] + s * uy * t];
+      if (q[0] < edges.x0 || q[0] > edges.x1 || q[1] < edges.y0 || q[1] > edges.y1) return [q[0] + s * ux * 5, q[1] + s * uy * 5];
+      t += 1;
+    }
+    return mid;
+  };
+  const view = Math.abs(ux) >= Math.abs(uy) ? (ux > 0 ? 'up' : 'down') : uy > 0 ? 'left' : 'right';
+  return sectionMarks(reach(-1), reach(1), view, 'B');
+}
+
+function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box): Drawn {
+  const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
+  if (!v) throw new Error('no machine room');
+  return { shapes: [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.edges) : [])], scale: v.place.scale };
+}
+
+export function buildTavole(x: TavoleInput): TavoleResult {
+  const L = x.layout, a: Analysis = analyse(x.values), list = specs(L, L.inputs.room !== null), pages = list.length + 1, M = machineOf(a, x.plant);
+  const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
+  const meta = (page: number): SheetMeta => ({
+    number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',
+  });
+  const ds = dataSheet(x, a, pages);
+  const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...dataSheetShapes(ds.sheet)] }];
+  const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL\'IMPIANTO', scale: null }];
+  list.forEach((s, i) => {
+    const sub = s.subtitle !== undefined, area = drawingArea(sub);
+    const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area) : roomSheet(L, M, s.k, area);
+    out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...d.shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(d.scale, sub), ...strip(meta(i + 2))] });
+    sheets.push({ title: s.title, scale: d.scale });
+  });
+  const doc: DrawingDoc = {
+    meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Progetto dell\'ascensore: dati, piante e sezioni del vano, locale macchina', author: x.company.name },
+    palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: x.company.logo ? { logo: x.company.logo } : {}, pages: out,
+  };
+  return { doc, warnings: ds.warnings, sheets };
+}

@@ -6,7 +6,6 @@ Fonts: DejaVu Sans registered from REPORT_FONT_DIR (Cyrillic, Greek and technica
 Helvetica/Times. Works with ReportLab 3.6 (Debian bookworm) and later.
 """
 import json
-import os
 import re
 import sys
 from xml.sax.saxutils import escape
@@ -16,17 +15,13 @@ from reportlab.lib.enums import TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.platypus import CondPageBreak, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+import fonts
 from plan_drawing import Plan
 
-FONT_DIR = os.environ.get("REPORT_FONT_DIR", "/usr/share/fonts/truetype/dejavu")
-pdfmetrics.registerFont(TTFont("DejaVu", os.path.join(FONT_DIR, "DejaVuSans.ttf")))
-pdfmetrics.registerFont(TTFont("DejaVu-Bold", os.path.join(FONT_DIR, "DejaVuSans-Bold.ttf")))
-pdfmetrics.registerFontFamily("DejaVu", normal="DejaVu", bold="DejaVu-Bold", italic="DejaVu", boldItalic="DejaVu-Bold")
+fonts.register()
 
 INK = colors.HexColor("#121829")
 MUTED = colors.HexColor("#5a6480")
@@ -136,13 +131,16 @@ def sign(labels):
     return KeepTogether([Spacer(1, 22 * mm), t])
 
 
+DRAWING = {}  # colours, patterns and lettering of the views, from the model (ReportDoc.drawing)
+
+
 def room_under(blocks, i):
     """Room a heading needs under it when a plan follows, past the warnings between them; None otherwise."""
     j, boxes = i + 1, 0
     while j < len(blocks) and blocks[j]["t"] == "box":
         j, boxes = j + 1, boxes + 1
     if j < len(blocks) and blocks[j]["t"] == "plan":
-        return Plan(blocks[j], FRAME_W).height + (12 + 16 * boxes) * mm
+        return Plan(blocks[j], FRAME_W, DRAWING).height + (12 + 16 * boxes) * mm
     return None
 
 
@@ -178,7 +176,7 @@ def flow(blocks):
         elif kind == "sign":
             out.append(sign(b["labels"]))
         elif kind == "plan":
-            out += [Spacer(1, 4), Plan(b, FRAME_W), Spacer(1, 4)]
+            out += [Spacer(1, 4), Plan(b, FRAME_W, DRAWING), Spacer(1, 4)]
         else:
             raise ValueError("unknown block " + kind)
     return out
@@ -226,6 +224,7 @@ def numbered_canvas(meta):
 def main():
     doc_model = json.load(sys.stdin)
     meta = doc_model["meta"]
+    DRAWING.update(doc_model.get("drawing") or {})
     out = sys.stdout.buffer
     doc = SimpleDocTemplate(out, pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN, topMargin=17 * mm, bottomMargin=17 * mm,
                             title=meta["title"], author=meta["author"], subject=meta["subject"], creator="Argano · Carbon Stealth VCC")

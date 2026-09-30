@@ -4,12 +4,10 @@ import { rateLimit } from '@/lib/ratelimit';
 import { idSchema } from '@/lib/schemas';
 import { shaftInputsSchema } from '@/lib/shaft-input';
 import { verifyShaftStored } from '@/lib/shaft-hash';
-import { PLAN_LABELS_IT } from '@/lib/shaft-labels';
 import { planToDxf } from '@/lib/cad/export';
 import { audit } from '@/lib/audit';
 import { log } from '@/lib/log';
 import { getShaftDesign } from '@/server/queries';
-import { drawPlan } from '@/shaft';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -33,7 +31,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const stored = verifyShaftStored(inputs.data, d.sha256);
     if (!stored.same) return text(409, 'The running engine does not reproduce this design');
     const title = `${d.project.name} · progetto del vano ${d.id} · ${d.createdAt.toISOString().slice(0, 10)} · SHA-256 ${d.sha256.slice(0, 16)}`;
-    const dxf = planToDxf(drawPlan(stored.layout, PLAN_LABELS_IT), title);
+    const dxf = planToDxf(stored.layout, title);
     await audit({ companyId: user.companyId, userId: user.id, action: 'DXF_DOWNLOADED', entity: 'ShaftDesign', entityId: d.id });
     const name = `vano-${slug(d.project.name)}-${d.createdAt.toISOString().slice(0, 10)}.dxf`;
     return new Response(dxf, {

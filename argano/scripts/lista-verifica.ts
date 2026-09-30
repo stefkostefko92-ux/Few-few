@@ -26,14 +26,20 @@ const ORDER: readonly Gruppo[] = ['trazione', 'gole', 'funi', 'freno', 'azioname
 // the shaft design (src/shaft/norme.ts), after the machine
 const GRUPPO_VANO: Record<GruppoVano, string> = {
   cabina: 'Vano: cabina e portata', distanze: 'Vano: distanze in pianta', accessibilita: 'Vano: accessibilità (DM 236/1989)', porte: 'Vano: porte',
-  ingombri: 'Vano: ingombri tipici', modello_vano: 'Vano: limiti del progetto',
+  ingombri: 'Vano: ingombri tipici', sezione: 'Vano: sezione, spazi di rifugio e ammortizzatori', locale: 'Locale del macchinario',
+  carichi: 'Carichi sull\'edificio e spinte sulle guide', modello_vano: 'Vano: limiti del progetto',
 };
 const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   v_fit: 'la cabina entra nel vano', v_area: 'superficie della cabina per la portata', v_acc_car: 'cabina minima (DM 236/1989)',
   v_acc_door: 'porta minima (DM 236/1989)', v_acc_side: 'porta sul lato corto', v_door: 'ingombro della porta di piano',
   v_wall: 'parete di fronte all\'entrata', v_sill: 'gioco tra le soglie', v_cw: 'distanza cabina–contrappeso', v_cwlen: 'lunghezza del contrappeso',
+  v_door2: 'ingombro della seconda porta di piano', v_op: 'operatori delle porte adiacenti', h_refuge: 'spazio di rifugio in testata',
+  h_clear: 'distanze libere dal soffitto', h_parapet: 'balaustra sul tetto di cabina', p_refuge: 'spazio di rifugio in fossa',
+  p_apron: 'grembiule sugli ammortizzatori compressi', b_runby: 'extracorsa di cabina e contrappeso', b_car: 'corsa degli ammortizzatori di cabina',
+  b_cw: 'corsa dell\'ammortizzatore del contrappeso', m_height: 'altezza del locale macchina', m_panel: 'superficie libera davanti al quadro',
+  m_door: 'porta del locale macchina',
 };
-const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'modello_vano'];
+const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
 const cell = (s: string): string => s.replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
 const rows = [

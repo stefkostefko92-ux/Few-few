@@ -10,9 +10,11 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import type { ShaftSource } from '@/lib/shaft-input';
 import { saveShaftDesignAction } from '@/server/shaft-actions';
-import { drawPlan, layout, type ShaftInputs } from '@/shaft';
-import PlanSvg from './PlanSvg';
+import { layout, type ShaftInputs } from '@/shaft';
+import RoomOptions from './RoomOptions';
 import ShaftOptions from './ShaftOptions';
+import ShaftViews from './ShaftViews';
+import VerticalOptions from './VerticalOptions';
 import ShaftResults from './ShaftResults';
 import SurveyPanel, { type SurveyResult } from './SurveyPanel';
 
@@ -51,9 +53,6 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
   }, []);
 
   const L = useMemo(() => layout(I), [I]);
-  const plan = useMemo(() => drawPlan(L, {
-    car: t('plan.car'), counterweight: t('plan.counterweight'), persons: t('plan.persons'), doorT2: t('plan.doorT2'), doorC2: t('plan.doorC2'), title: t('plan.title'),
-  }), [L, t]);
   const valid = I.W >= 500 && I.W <= 10000 && I.D >= 500 && I.D <= 10000;
 
   const save = (): void => {
@@ -91,10 +90,12 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
           <p className="note">{source ? t('sourceCad', { file: source.file, format: source.format.toUpperCase() }) : t('edited')}</p>
           <h2>{t('step2')}</h2>
           <ShaftOptions I={I} set={set} lastQ={lastQ} />
+          <VerticalOptions I={I} set={set} />
+          <RoomOptions I={I} set={set} />
         </section>
         <section className="panel shaft-output" aria-live="polite">
           <h2>{t('result')}</h2>
-          <PlanSvg drawing={plan} id="live" label={t('planLabel', { W: I.W, D: I.D, A: L.A, B: L.B })} />
+          <ShaftViews L={L} id="live" planLabel={t('planLabel', { W: I.W, D: I.D, A: L.A, B: L.B })} sectionLabel={t('sectionLabel')} scaleText={(n) => t('scale', { n })} />
           <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
           <p className="note">{t('limits')}</p>
         </section>
