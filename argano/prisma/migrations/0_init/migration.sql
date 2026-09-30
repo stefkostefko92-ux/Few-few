@@ -165,9 +165,14 @@ ALTER TABLE "CalculationReview" ADD CONSTRAINT "CalculationReview_userId_fkey" F
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 
--- A saved calculation is an immutable snapshot: refuse every UPDATE (defence in depth; the application has no update path).
+-- A saved calculation is an immutable snapshot: refuse every UPDATE (defence in depth; the application has no update
+-- path). The one exception is the author link becoming NULL when the user is deleted (ON DELETE SET NULL, e.g. an
+-- erasure request): nothing else in the row may change.
 CREATE FUNCTION "calculation_immutable"() RETURNS trigger AS $$
 BEGIN
+  IF OLD."userId" IS NOT NULL AND NEW."userId" IS NULL AND (to_jsonb(NEW) - 'userId') = (to_jsonb(OLD) - 'userId') THEN
+    RETURN NEW;
+  END IF;
   RAISE EXCEPTION 'Calculation % is immutable', OLD."id";
 END;
 $$ LANGUAGE plpgsql;

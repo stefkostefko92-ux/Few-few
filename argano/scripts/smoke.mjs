@@ -61,6 +61,7 @@ try {
   await page.fill('input[name="name"]', `Smoke ${stamp}`);
   await page.fill('input[name="city"]', 'Milano');
   await Promise.all([page.waitForURL(/\/projects\/(?!new)[a-z0-9]+$/), page.click('main form button[type="submit"]')]);
+  const projectUrl = page.url();
 
   step('calculation');
   await page.click('a[href$="/calc"]');
@@ -78,6 +79,18 @@ try {
   assert.equal(pdf.headers()['content-type'], 'application/pdf');
   const body = await pdf.body();
   assert.equal(body.subarray(0, 5).toString('latin1'), '%PDF-');
+
+  assert.deepEqual(errors, [], 'browser errors');
+  step('an archived installation is read only');
+  await page.goto(projectUrl);
+  await Promise.all([page.waitForLoadState('networkidle'), page.click('main form:has(input[name="archive"][value="1"]) button')]);
+  await page.waitForSelector('main form:has(input[name="archive"][value="0"])');
+  assert.equal((await page.goto(`${projectUrl}/edit`)).status(), 404, 'edit of an archived installation');
+  assert.equal((await page.goto(`${projectUrl}/calc`)).status(), 404, 'new calculation on an archived installation');
+  await page.goto(projectUrl);
+  await page.click('main form:has(input[name="archive"][value="0"]) button');
+  await page.waitForSelector('main form:has(input[name="archive"][value="1"])');
+  errors.length = 0; // the two 404 above were provoked on purpose
 
   step('new user with a temporary password');
   await page.goto(`${BASE}/it/app/team`);

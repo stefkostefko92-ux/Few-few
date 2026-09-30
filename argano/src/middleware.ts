@@ -34,6 +34,6 @@ export default function middleware(request: NextRequest): NextResponse {
 }
 
 export const config = {
-  // pages only: API routes, Next assets, fonts and files with an extension (robots.txt, sitemap.xml, llms.txt) are out
-  matcher: ['/((?!api|_next|fonts|.*\\..*).*)'],
+  // every page, also addresses with a dot (their 404 gets the policy too); out: API, Next assets and the real files
+  matcher: ['/((?!api/|_next/|fonts/|robots\\.txt|sitemap\\.xml|llms\\.txt|icon\\.svg|og\\.png|favicon\\.ico).*)'],
 };

@@ -41,7 +41,8 @@ export async function updateProjectAction(_prev: FormState, fd: FormData): Promi
   const parsed = readProject(fd);
   if (!id.success) return { error: 'notFound' };
   if (!parsed.success) return { error: 'invalidFields', fields: parsed.error.issues.map((i) => String(i.path[0])) };
-  const res = await prisma.project.updateMany({ where: { id: id.data, companyId: a.user.companyId }, data: parsed.data });
+  // an archived installation is read only: restore it first
+  const res = await prisma.project.updateMany({ where: { id: id.data, companyId: a.user.companyId, archivedAt: null }, data: parsed.data });
   if (res.count !== 1) return { error: 'notFound' };
   await audit({ companyId: a.user.companyId, userId: a.user.id, action: 'PROJECT_UPDATED', entity: 'Project', entityId: id.data });
   redirect(`/${a.locale}/app/projects/${id.data}`);

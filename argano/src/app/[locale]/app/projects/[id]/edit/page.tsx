@@ -10,7 +10,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ lo
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'projects:edit');
   const p = await getProject(user, id);
-  if (!p) notFound();
+  if (!p || p.archivedAt) notFound();
   const t = await getTranslations('projects');
   return (
     <main className="page page-narrow">
