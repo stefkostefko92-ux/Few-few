@@ -18,10 +18,12 @@ export default async function NormePage({ params }: { params: Promise<{ locale: 
   const counts = VOCI.reduce<Partial<Record<Stato, number>>>((acc, v) => ({ ...acc, [v.stato]: (acc[v.stato] ?? 0) + 1 }), {});
   return (
     <main className="page">
-      <div className="flex flex-col gap-1">
-        <p className="eyebrow">{t('profile', { id: PROFILO.id })}</p>
-        <h1>{t('title')}</h1>
-        <p className="lead">{t('lead')}</p>
+      <div className="page-head">
+        <div className="titles">
+          <span className="chip">{t('profile', { id: PROFILO.id })}</span>
+          <h1>{t('title')}</h1>
+          <p className="lead">{t('lead')}</p>
+        </div>
       </div>
       <section className="panel">
         <h2>{PROFILO.titolo}</h2>
@@ -36,16 +38,16 @@ export default async function NormePage({ params }: { params: Promise<{ locale: 
           ))}
           <a className="btn btn-sm" href="/api/lista-verifica">{t('download')}</a>
         </div>
-        <div className="panel overflow-x-auto p-0">
-          <table className="data-table">
+        <div className="table-panel">
+          <table className="data-table stack">
             <thead><tr><th>{t('col_item')}</th><th>{t('col_value')}</th><th>{t('col_ref')}</th><th>{t('col_status')}</th></tr></thead>
             <tbody>
               {VOCI.map((v) => (
                 <tr key={v.id}>
-                  <td><b>{v.titolo}</b><div className="note mono">{v.id}</div>{v.nota ? <div className="note">{v.nota}</div> : null}</td>
-                  <td>{v.valore}{v.costanti?.length ? <div className="note mono">K.{v.costanti.join(', K.')}</div> : null}</td>
-                  <td>{v.riferimento}<div className="note">{v.fonte}</div></td>
-                  <td><span className={`status-pill ${STATUS_CLASS[v.stato]}`}>{t(`stato_${v.stato}`)}</span></td>
+                  <td className="row-title"><b>{v.titolo}</b><div className="note mono">{v.id}</div>{v.nota ? <div className="note">{v.nota}</div> : null}</td>
+                  <td data-label={t('col_value')}><div>{v.valore}{v.costanti?.length ? <div className="note mono">K.{v.costanti.join(', K.')}</div> : null}</div></td>
+                  <td data-label={t('col_ref')}><div>{v.riferimento}<div className="note">{v.fonte}</div></div></td>
+                  <td data-label={t('col_status')}><span className={`status-pill ${STATUS_CLASS[v.stato]}`}>{t(`stato_${v.stato}`)}</span></td>
                 </tr>
               ))}
             </tbody>

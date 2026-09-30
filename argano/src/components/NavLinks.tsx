@@ -7,7 +7,8 @@ export interface NavItem {
   label: string;
 }
 
-// The current section is marked; /app matches only itself and the project pages under it.
+// The current section is marked; /app matches only itself and the project pages under it. Inside the phone menu a
+// click closes the menu (the layout stays mounted on client navigation).
 export default function NavLinks({ items, label }: { items: NavItem[]; label: string }) {
   const pathname = usePathname();
   const current = (href: string): boolean =>
@@ -15,7 +16,8 @@ export default function NavLinks({ items, label }: { items: NavItem[]; label: st
   return (
     <nav className="nav" aria-label={label}>
       {items.map((it) => (
-        <Link key={it.href} href={it.href} aria-current={current(it.href) ? 'page' : undefined}>{it.label}</Link>
+        <Link key={it.href} href={it.href} aria-current={current(it.href) ? 'page' : undefined}
+          onClick={(e) => e.currentTarget.closest('details')?.removeAttribute('open')}>{it.label}</Link>
       ))}
     </nav>
   );

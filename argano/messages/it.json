@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Argano — verifica e scelta dell'argano geared",
-    "description": "Verifica di aderenza, funi, motore, freno e albero per la sostituzione dell'argano geared, con relazione di calcolo per il fascicolo tecnico.",
+    "title": "Argano — verifica e scelta dell’argano geared",
+    "description": "Verifica di aderenza, funi, motore, freno e albero per la sostituzione dell’argano geared, con relazione di calcolo per il fascicolo tecnico.",
     "keywords": "Carbon Stealth, argano geared, sostituzione argano, verifica aderenza, UNI EN 81-50, UNI 10411-1, relazione di calcolo, ascensori"
   },
   "common": {
@@ -12,11 +12,11 @@
   },
   "errors": {
     "notFoundTitle": "Pagina non trovata",
-    "notFoundText": "L'indirizzo non esiste oppure non è accessibile con il tuo account.",
+    "notFoundText": "L’indirizzo non esiste oppure non è accessibile con il tuo account.",
     "toProjects": "Vai agli impianti",
     "toHome": "Pagina iniziale",
     "errorTitle": "Si è verificato un errore",
-    "errorText": "L'operazione non è andata a buon fine. Riprova; se il problema continua, comunica il codice qui sotto.",
+    "errorText": "L’operazione non è andata a buon fine. Riprova; se il problema continua, comunica il codice qui sotto.",
     "errorCode": "Codice: {code}",
     "retry": "Riprova",
     "invalidLogin": "E-mail o password non corretti.",
@@ -36,12 +36,12 @@
   "auth": {
     "title": "Accesso",
     "description": "Accesso riservato agli installatori abilitati ad Argano.",
-    "lead": "Accesso su invito: l'account lo crea l'amministratore della tua azienda.",
+    "lead": "Accesso su invito: l’account lo crea l’amministratore della tua azienda.",
     "email": "E-mail",
     "password": "Password",
     "signIn": "Accedi",
     "signingIn": "Accesso…",
-    "noAccount": "Non hai un account? Chiedilo all'amministratore della tua azienda; durante la validazione gli accessi sono su invito."
+    "noAccount": "Non hai un account? Chiedilo all’amministratore della tua azienda; durante la validazione gli accessi sono su invito."
   },
   "nav": {
     "label": "Sezioni",
@@ -50,7 +50,9 @@
     "team": "Utenti",
     "audit": "Registro attività",
     "admin": "Aziende",
-    "logout": "Esci"
+    "logout": "Esci",
+    "menu": "Menu",
+    "breadcrumb": "Percorso"
   },
   "roles": {
     "VIEWER": "Osservatore",
@@ -62,14 +64,13 @@
     "SUPERADMIN": "Amministratore della piattaforma"
   },
   "landing": {
-    "metaTitle": "Argano — verifica dell'argano geared nella sostituzione",
-    "metaDescription": "Verifica di aderenza, funi, motore, freno e albero per sostituire l'argano geared, con proposta automatica e relazione di calcolo in PDF.",
-    "eyebrow": "Per installatori di ascensori in Italia",
-    "h1": "Argano: scelta e verifica dell'argano geared nella sostituzione",
-    "answer": "Argano verifica se un argano geared è adatto all'impianto esistente — aderenza nelle tre condizioni della UNI EN 81-50, funi, motore, freno, manovra di emergenza e albero — oppure ne propone uno, e prepara la relazione di calcolo per il fascicolo tecnico.",
+    "metaTitle": "Argano — verifica dell’argano geared nella sostituzione",
+    "metaDescription": "Verifica di aderenza, funi, motore, freno e albero per sostituire l’argano geared, con proposta automatica e relazione di calcolo in PDF.",
+    "h1": "Argano: scelta e verifica dell’argano geared nella sostituzione",
+    "answer": "Argano verifica se un argano geared è adatto all’impianto esistente — aderenza nelle tre condizioni della UNI EN 81-50, funi, motore, freno, manovra di emergenza e albero — oppure ne propone uno, e prepara la relazione di calcolo per il fascicolo tecnico.",
     "ctaLogin": "Accedi",
     "ctaHow": "Come funziona",
-    "status": "In validazione: i valori normativi sono in verifica da parte di un ingegnere e l'accesso è su invito. I risultati restano indicativi finché la lista di verifica non è firmata.",
+    "status": "In validazione: i valori normativi sono in verifica da parte di un ingegnere e l’accesso è su invito. I risultati restano indicativi finché la lista di verifica non è firmata.",
     "featuresTitle": "Che cosa fa Argano?",
     "feature1Title": "Verifica completa della macchina",
     "feature1Text": "Aderenza al caricamento, in frenatura di emergenza (8 casi, anche alla decelerazione reale del freno) e a cabina bloccata; funi, D/d e coefficiente di sicurezza; potenza e coppia; freno; manovra a mano; carico su albero e ancoraggi.",
@@ -80,11 +81,10 @@
     "feature4Title": "Tracciabilità",
     "feature4Text": "Ogni calcolo è uno snapshot immutabile con versione del motore, profilo normativo e impronta SHA-256: gli stessi dati danno sempre lo stesso risultato.",
     "howTitle": "Come funziona?",
-    "stepLabel": "Passo {n}",
-    "step1Title": "Dati dell'impianto",
+    "step1Title": "Dati dell’impianto",
     "step1Text": "Portata, massa della cabina, bilanciamento, velocità, corsa, disposizione della macchina (in alto, con rinvio o in basso) e geometria.",
     "step2Title": "Argano esistente e argano nuovo",
-    "step2Text": "I dati di targa della macchina offerta, oppure la proposta del software, e il confronto con l'argano esistente.",
+    "step2Text": "I dati di targa della macchina offerta, oppure la proposta del software, e il confronto con l’argano esistente.",
     "step3Title": "Esito e relazione",
     "step3Text": "Esito in breve con semaforo per area, tabelle tecniche complete e relazione di calcolo in PDF dal calcolo salvato.",
     "normsTitle": "Su quali norme si basa?",
@@ -94,13 +94,17 @@
     "faq1q": "Argano sostituisce la relazione firmata dal tecnico?",
     "faq1a": "No. Argano prepara i calcoli e la relazione; il documento diventa relazione di calcolo quando un tecnico abilitato lo verifica e lo firma, e la responsabilità resta sua.",
     "faq2q": "Funziona con la macchina in basso?",
-    "faq2a": "Sì. Il calcolo segue il percorso della fune per macchina in alto a tiro diretto, in alto con puleggia di rinvio e in basso con due pulegge in testata, compreso il carico sull'albero verso l'alto.",
+    "faq2a": "Sì. Il calcolo segue il percorso della fune per macchina in alto a tiro diretto, in alto con puleggia di rinvio e in basso con due pulegge in testata, compreso il carico sull’albero verso l’alto.",
     "faq3q": "Nella sostituzione posso tenere le funi esistenti?",
-    "faq3a": "Sì, è l'impostazione predefinita: le funi nuove hanno lo stesso numero e diametro di quelle montate e anche la proposta le mantiene.",
+    "faq3a": "Sì, è l’impostazione predefinita: le funi nuove hanno lo stesso numero e diametro di quelle montate e anche la proposta le mantiene.",
     "faq4q": "Dove sono conservati i dati?",
-    "faq4a": "Su server nell'Unione europea. I progetti di un'azienda sono visibili solo agli utenti della stessa azienda.",
+    "faq4a": "Su server nell’Unione europea. I progetti di un’azienda sono visibili solo agli utenti della stessa azienda.",
     "faq5q": "In quali lingue è disponibile?",
-    "faq5a": "Interfaccia in italiano, inglese e bulgaro; la relazione di calcolo è in italiano."
+    "faq5a": "Interfaccia in italiano, inglese e bulgaro; la relazione di calcolo è in italiano.",
+    "machineAlt": "Argano geared sul suo basamento: motore con alette di raffreddamento, freno a tamburo con elettromagnete, riduttore a vite senza fine, volantino per la manovra di emergenza e puleggia di trazione con quattro funi.",
+    "machineCaption": "La macchina dell’esempio A del calcolatore: puleggia D 560 mm, 4 funi Ø 10 mm, rapporto 1:43, motore 7,5 kW. Modello illustrativo, non un prodotto reale.",
+    "normsDoc": "Documento",
+    "normsScope": "Ambito"
   },
   "projects": {
     "title": "Impianti",
@@ -117,7 +121,7 @@
     "col_count": "Calcoli",
     "noCalculations": "Nessun calcolo",
     "newTitle": "Nuovo impianto",
-    "newLead": "I dati per riconoscere l'impianto; i dati tecnici si inseriscono nel calcolo.",
+    "newLead": "I dati per riconoscere l’impianto; i dati tecnici si inseriscono nel calcolo.",
     "editTitle": "Modifica impianto",
     "project": "Impianto",
     "archived": "archiviato",
@@ -151,7 +155,7 @@
     "reviewed": "Visti: {n}",
     "newTitle": "Nuovo calcolo",
     "newLead": "I risultati si aggiornano mentre scrivi. Al salvataggio il server ricalcola tutto e conserva il calcolo con la sua impronta.",
-    "replaceExample": "Sostituisci i valori con quelli dell'impianto.",
+    "replaceExample": "Sostituisci i valori con quelli dell’impianto.",
     "labelPlaceholder": "Descrizione (facoltativa), es. offerta 2 o variante D 600",
     "label": "Descrizione del calcolo",
     "saving": "Salvataggio…",
@@ -172,7 +176,7 @@
   },
   "account": {
     "title": "Account",
-    "mustChange": "La password ti è stata assegnata da un'altra persona: scegline una nuova per continuare.",
+    "mustChange": "La password ti è stata assegnata da un’altra persona: scegline una nuova per continuare.",
     "name": "Nome",
     "email": "E-mail",
     "company": "Azienda",
@@ -206,7 +210,7 @@
     "addTitle": "Aggiungi un utente",
     "add": "Crea utente",
     "tempPassword": "Password temporanea per {email} (mostrata una sola volta):",
-    "tempPasswordNote": "Consegnala di persona o con un canale sicuro. Al primo accesso l'utente sceglie la propria password."
+    "tempPasswordNote": "Consegnala di persona o con un canale sicuro. Al primo accesso l’utente sceglie la propria password."
   },
   "admin": {
     "title": "Aziende",
@@ -231,7 +235,7 @@
   "norme": {
     "title": "Registro delle norme",
     "profile": "Profilo {id}",
-    "lead": "Ogni valore che il software usa, con il documento e la clausola dove verificarlo, la fonte attuale e lo stato. I testi sono in italiano perché vanno all'ingegnere e nella relazione.",
+    "lead": "Ogni valore che il software usa, con il documento e la clausola dove verificarlo, la fonte attuale e lo stato. I testi sono in italiano perché vanno all’ingegnere e nella relazione.",
     "download": "Lista di verifica (Excel)",
     "col_item": "Voce",
     "col_value": "Valore nel software",
@@ -250,6 +254,30 @@
     "when": "Quando",
     "who": "Chi",
     "what": "Azione",
-    "object": "Oggetto"
+    "object": "Oggetto",
+    "actions": {
+      "LOGIN": "Accesso",
+      "LOGIN_FAILED": "Accesso non riuscito",
+      "LOGOUT": "Uscita",
+      "PASSWORD_CHANGED": "Password cambiata",
+      "PROJECT_CREATED": "Impianto creato",
+      "PROJECT_UPDATED": "Impianto modificato",
+      "PROJECT_ARCHIVED": "Impianto archiviato",
+      "PROJECT_RESTORED": "Impianto ripristinato",
+      "CALCULATION_SAVED": "Calcolo salvato",
+      "CALCULATION_REVIEWED": "Visto al calcolo",
+      "REPORT_DOWNLOADED": "Relazione scaricata",
+      "USER_CREATED": "Utente creato",
+      "USER_UPDATED": "Utente modificato",
+      "USER_PASSWORD_RESET": "Password temporanea generata",
+      "COMPANY_CREATED": "Azienda creata",
+      "COMPANY_UPDATED": "Azienda modificata"
+    },
+    "entities": {
+      "User": "Utente",
+      "Project": "Impianto",
+      "Calculation": "Calcolo",
+      "Company": "Azienda"
+    }
   }
 }

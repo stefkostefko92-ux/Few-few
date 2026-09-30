@@ -1,0 +1,70 @@
+/* App shell: header (inline on wide screens, a menu on phones), breadcrumbs, page header, the title block of an
+   installation or a calculation (drawn like the cartiglio of a technical drawing) and the footer, kept at the bottom. */
+body { min-height: 100dvh; display: flex; flex-direction: column; }
+body > main { flex: 1 0 auto; }
+
+.topbar { background: var(--surface); border-bottom: 1px solid var(--rule); position: sticky; top: 0; z-index: 30; }
+.topbar .inner { max-width: 1320px; margin: 0 auto; padding: 10px 16px; min-height: 60px; display: flex; align-items: center; gap: 12px 22px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); min-width: 0; }
+.brand svg { width: 30px; height: 30px; flex: none; border-radius: 8px; }
+.brand b { font: 700 20px/1 var(--font-cond); letter-spacing: .005em; }
+.brand span { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-wide { display: flex; align-items: center; gap: 18px; flex: 1 1 auto; min-width: 0; }
+.bar-wide .nav { flex: 1 1 auto; }
+.bar-end { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.nav { display: flex; gap: 2px; }
+.nav a { text-decoration: none; color: var(--ink-2); font-size: 14px; padding: 8px 11px; border-radius: 8px; white-space: nowrap; }
+.nav a:hover { background: var(--surface2); color: var(--ink); }
+.nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.userbox { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.langs { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; flex: none; }
+.langs a { text-decoration: none; color: var(--ink-2); font: 500 12.5px/1 var(--font-body); padding: 8px 9px; }
+.langs a[aria-current="true"] { background: var(--accent); color: var(--accent-ink); }
+
+.menu { display: none; margin-left: auto; position: relative; }
+.menu > summary { list-style: none; display: inline-flex; align-items: center; gap: 9px; padding: 9px 13px; border: 1px solid var(--rule); border-radius: 9px;
+  cursor: pointer; font: 500 14px/1 var(--font-body); color: var(--ink); background: var(--surface); }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu .burger { width: 16px; height: 12px; flex: none; background:
+  linear-gradient(currentColor 0 0) top / 100% 2px no-repeat, linear-gradient(currentColor 0 0) center / 100% 2px no-repeat, linear-gradient(currentColor 0 0) bottom / 100% 2px no-repeat; }
+.menu[open] > summary { border-color: var(--accent); }
+.menu-panel { position: absolute; right: 0; top: calc(100% + 8px); width: min(320px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 12px; box-shadow: var(--shadow-lg); padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+.menu-panel .nav { flex-direction: column; }
+.menu-panel .nav a { padding: 12px; font-size: 15px; }
+.menu-foot { border-top: 1px solid var(--rule); padding: 10px 4px 4px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.menu-foot .who { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 13.5px; }
+.menu-foot .who span { color: var(--muted); font-size: 12.5px; }
+@media (max-width: 899px) {
+  .bar-wide { display: none; }
+  .menu { display: block; }
+  .topbar .brand span { display: none; }
+}
+@media (max-width: 479px) {
+  .topbar .inner { gap: 10px; }
+  .public .brand span { display: none; }
+}
+
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--muted); }
+.crumbs li { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.crumbs li + li::before { content: "/"; color: var(--rule-strong); }
+.crumbs a { color: var(--muted); text-decoration: none; }
+.crumbs a:hover { color: var(--accent); text-decoration: underline; }
+.crumbs [aria-current] { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 42ch; }
+
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 24px; }
+.page-head .titles { display: flex; flex-direction: column; gap: 6px; min-width: 0; max-width: 80ch; }
+.page-head .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.page-head h1 { overflow-wrap: anywhere; }
+.chip { display: inline-flex; align-items: center; width: fit-content; font: 600 12px/1.2 var(--font-body); padding: 4px 9px; border-radius: 6px; color: var(--muted); background: var(--surface2); border: 1px solid var(--rule); }
+
+.cartiglio { margin: 0; display: flex; flex-wrap: wrap; background: var(--surface);
+  border: 1.5px solid color-mix(in srgb, var(--ink) 55%, var(--rule)); border-radius: 10px; overflow: hidden; }
+.cartiglio > div { flex: 1 1 170px; margin: 0 -1px -1px 0; padding: 11px 16px 13px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cartiglio dt { font-size: 12.5px; line-height: 1.2; color: var(--muted); }
+.cartiglio dd { margin: 0; overflow-wrap: anywhere; }
+.cartiglio .wide { flex-basis: 100%; }
+.cartiglio .hash { font: 12.5px/1.45 var(--font-mono); color: var(--ink-2); }
+
+.site-footer { border-top: 1px solid var(--rule); margin-top: 24px; }
+.site-footer .inner { max-width: 1320px; margin: 0 auto; padding: 16px 16px 26px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; font-size: 13px; color: var(--muted); }

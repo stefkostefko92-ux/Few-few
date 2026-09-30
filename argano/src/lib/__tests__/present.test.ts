@@ -40,3 +40,16 @@ test('esempi A, B, C in tre lingue: testi completi, tabelle coerenti', () => {
     }
   }
 });
+
+test('numeri uguali sul server e nel browser: separatori fissi, non quelli del runtime', () => {
+  const cases: ReadonlyArray<readonly [string, number, number, string]> = [
+    ['it-IT', 2500, 0, '2500'], ['it-IT', 12345.5, 1, '12.345,5'], ['it-IT', -1234567.891, 2, '-1.234.567,89'], ['it-IT', 0.456, 3, '0,456'],
+    ['bg-BG', 2500, 0, '2500'], ['bg-BG', 12345.5, 1, '12 345,5'],
+    ['en-GB', 2500, 0, '2,500'], ['en-GB', 12345.5, 1, '12,345.5'], ['en-GB', 999.995, 2, '1,000.00'],
+  ];
+  for (const [loc, x, dec, want] of cases) assert.equal(makePres(calcIt as CalcDict, loc).fmt(x, dec), want, `${loc} ${x}`);
+  const f = makePres(calcIt as CalcDict, 'it-IT').fmt;
+  assert.equal(f(Infinity), '∞');
+  assert.equal(f(Number.NaN), '—');
+  assert.equal(f(null), '—');
+});

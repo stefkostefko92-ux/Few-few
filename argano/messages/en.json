@@ -50,7 +50,9 @@
     "team": "Users",
     "audit": "Activity log",
     "admin": "Companies",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "menu": "Menu",
+    "breadcrumb": "Breadcrumb"
   },
   "roles": {
     "VIEWER": "Viewer",
@@ -64,7 +66,6 @@
   "landing": {
     "metaTitle": "Argano — geared lift machine check for replacements",
     "metaDescription": "Traction, rope, motor, brake and shaft checks for replacing a geared lift machine, with an automatic proposal and a PDF calculation report.",
-    "eyebrow": "For lift installers in Italy",
     "h1": "Argano: choosing and checking the geared machine for a replacement",
     "answer": "Argano checks whether a geared machine suits the existing lift — traction in the three conditions of UNI EN 81-50, ropes, motor, brake, manual rescue and shaft — or proposes one, and prepares the calculation report (relazione di calcolo) for the technical file.",
     "ctaLogin": "Sign in",
@@ -72,7 +73,7 @@
     "status": "In validation: an engineer is checking the normative values and access is by invitation. Results stay indicative until the verification checklist is signed.",
     "featuresTitle": "What does Argano do?",
     "feature1Title": "Complete machine check",
-    "feature1Text": "Traction at loading, in emergency braking (8 cases, also at the brake's real deceleration) and with the car stalled; ropes, D/d and safety factor; power and torque; brake; manual rescue; shaft and anchor loads.",
+    "feature1Text": "Traction at loading, in emergency braking (8 cases, also at the brake’s real deceleration) and with the car stalled; ropes, D/d and safety factor; power and torque; brake; manual rescue; shaft and anchor loads.",
     "feature2Title": "Proposal without a catalogue",
     "feature2Text": "When no machine has been chosen yet, Argano proposes sheave, groove, ratio, IEC motor and brake setting. In a replacement it keeps the number and diameter of the existing ropes.",
     "feature3Title": "PDF calculation report",
@@ -80,15 +81,14 @@
     "feature4Title": "Traceability",
     "feature4Text": "Every calculation is an immutable snapshot with engine version, normative profile and SHA-256 fingerprint: the same data always give the same result.",
     "howTitle": "How does it work?",
-    "stepLabel": "Step {n}",
     "step1Title": "Installation data",
     "step1Text": "Rated load, car mass, balance, speed, travel, machine layout (top, with a deflector or bottom) and geometry.",
     "step2Title": "Existing and new machine",
-    "step2Text": "The nameplate data of the offered machine or the software's proposal, compared with the existing machine.",
+    "step2Text": "The nameplate data of the offered machine or the software’s proposal, compared with the existing machine.",
     "step3Title": "Result and report",
     "step3Text": "Result in brief with a traffic light per area, complete technical tables and a PDF calculation report from the saved calculation.",
     "normsTitle": "Which standards is it based on?",
-    "normsLead": "The software's Italian normative profile includes:",
+    "normsLead": "The software’s Italian normative profile includes:",
     "normsNote": "Profile {profile}. Every value the software uses is tied to a document and clause in the standards registry; values from secondary sources are marked ⚠ until they are checked against the current text.",
     "faqTitle": "Frequently asked questions",
     "faq1q": "Does Argano replace the report signed by the technician?",
@@ -98,9 +98,13 @@
     "faq3q": "Can I keep the existing ropes in a replacement?",
     "faq3a": "Yes, that is the default: the new ropes have the same number and diameter as the installed ones, and the proposal keeps them too.",
     "faq4q": "Where are the data kept?",
-    "faq4a": "On servers in the European Union. A company's projects are visible only to the users of that company.",
+    "faq4a": "On servers in the European Union. A company’s projects are visible only to the users of that company.",
     "faq5q": "Which languages are available?",
-    "faq5a": "The interface is in Italian, English and Bulgarian; the calculation report is in Italian."
+    "faq5a": "The interface is in Italian, English and Bulgarian; the calculation report is in Italian.",
+    "machineAlt": "Geared machine on its bedplate: motor with cooling fins, drum brake with electromagnet, worm gearbox, handwheel for emergency operation and traction sheave with four ropes.",
+    "machineCaption": "The machine of the calculator’s example A: sheave D 560 mm, 4 ropes Ø 10 mm, ratio 1:43, 7.5 kW motor. Illustrative model, not a real product.",
+    "normsDoc": "Document",
+    "normsScope": "Scope"
   },
   "projects": {
     "title": "Installations",
@@ -250,6 +254,30 @@
     "when": "When",
     "who": "Who",
     "what": "Action",
-    "object": "Object"
+    "object": "Object",
+    "actions": {
+      "LOGIN": "Signed in",
+      "LOGIN_FAILED": "Failed sign-in",
+      "LOGOUT": "Signed out",
+      "PASSWORD_CHANGED": "Password changed",
+      "PROJECT_CREATED": "Installation created",
+      "PROJECT_UPDATED": "Installation edited",
+      "PROJECT_ARCHIVED": "Installation archived",
+      "PROJECT_RESTORED": "Installation restored",
+      "CALCULATION_SAVED": "Calculation saved",
+      "CALCULATION_REVIEWED": "Calculation reviewed",
+      "REPORT_DOWNLOADED": "Report downloaded",
+      "USER_CREATED": "User created",
+      "USER_UPDATED": "User edited",
+      "USER_PASSWORD_RESET": "Temporary password issued",
+      "COMPANY_CREATED": "Company created",
+      "COMPANY_UPDATED": "Company edited"
+    },
+    "entities": {
+      "User": "User",
+      "Project": "Installation",
+      "Calculation": "Calculation",
+      "Company": "Company"
+    }
   }
 }

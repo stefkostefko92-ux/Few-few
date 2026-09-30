@@ -1,5 +1,6 @@
-import { getFormatter, getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
+import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
+import { dateFormat } from '@/lib/dates';
 import { listCompanies } from '@/server/queries';
 import { setCompanyActiveAction } from '@/server/user-actions';
 import CreateCompanyForm from '@/components/CreateCompanyForm';
@@ -13,26 +14,28 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const me = await requireCapability(locale, 'platform:admin');
-  const [t, format, companies, lang] = await Promise.all([getTranslations('admin'), getFormatter(), listCompanies(), getLocale()]);
+  const [t, companies, lang] = await Promise.all([getTranslations('admin'), listCompanies(), getLocale()]);
+  const fd = dateFormat(locale);
   return (
     <main className="page">
-      <div className="flex flex-col gap-1">
-        <p className="eyebrow">Carbon Stealth VCC</p>
-        <h1>{t('title')}</h1>
-        <p className="lead">{t('lead')}</p>
+      <div className="page-head">
+        <div className="titles">
+          <h1>{t('title')}</h1>
+          <p className="lead">{t('lead')}</p>
+        </div>
       </div>
-      <div className="panel overflow-x-auto p-0">
-        <table className="data-table">
+      <div className="table-panel">
+        <table className="data-table stack">
           <thead><tr><th>{t('company')}</th><th>{t('created')}</th><th className="text-right">{t('users')}</th><th className="text-right">{t('projects')}</th><th className="text-right">{t('calculations')}</th><th>{t('status')}</th></tr></thead>
           <tbody>
             {companies.map((c) => (
               <tr key={c.id}>
-                <td><b>{c.name}</b><div className="note">{[c.vatNumber, c.city].filter(Boolean).join(' · ') || '—'}</div></td>
-                <td>{format.dateTime(c.createdAt, { dateStyle: 'medium' })}</td>
-                <td className="num text-right">{c._count.users}</td>
-                <td className="num text-right">{c._count.projects}</td>
-                <td className="num text-right">{c._count.calculations}</td>
-                <td>
+                <td className="row-title"><b>{c.name}</b><div className="note">{[c.vatNumber, c.city].filter(Boolean).join(' · ') || '—'}</div></td>
+                <td data-label={t('created')}>{fd.date(c.createdAt)}</td>
+                <td data-label={t('users')} className="num text-right">{c._count.users}</td>
+                <td data-label={t('projects')} className="num text-right">{c._count.projects}</td>
+                <td data-label={t('calculations')} className="num text-right">{c._count.calculations}</td>
+                <td data-label={t('status')}>
                   {c.id === me.companyId ? <span className="status-pill ok">{t('active')}</span> : (
                     <form action={setCompanyActiveAction} className="flex items-center gap-2">
                       <input type="hidden" name="locale" value={lang} />

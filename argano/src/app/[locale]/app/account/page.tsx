@@ -17,7 +17,7 @@ export default async function AccountPage({ params, searchParams }: { params: Pr
     <main className="page page-narrow">
       <h1>{t('title')}</h1>
       {first || user.mustChangePassword ? <p className="alert alert-warn">{t('mustChange')}</p> : null}
-      <dl className="panel meta-grid m-0">
+      <dl className="cartiglio">
         <div><dt>{t('name')}</dt><dd>{user.name}</dd></div>
         <div><dt>{t('email')}</dt><dd>{user.email}</dd></div>
         <div><dt>{t('company')}</dt><dd>{user.companyName}</dd></div>

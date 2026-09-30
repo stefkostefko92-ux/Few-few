@@ -70,7 +70,7 @@ try {
   await page.waitForTimeout(300);
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const calcUrl = page.url();
-  assert.match(await page.textContent('dl.meta-grid'), /riprodotto/, 'hash reproduced');
+  assert.match(await page.textContent('dl.cartiglio'), /riprodotto/, 'hash reproduced');
 
   step('calculation report (PDF)');
   const href = await page.getAttribute('a[href*="/relazione"]', 'href');

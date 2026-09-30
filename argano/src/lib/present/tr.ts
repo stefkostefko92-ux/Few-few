@@ -23,17 +23,31 @@ export function makeTr(dict: CalcDict): Tr {
   };
 }
 
+// Separators written out instead of taken from the runtime's CLDR data: the server (Node) and the browser must
+// print the same text or React hydration fails, and they do not agree (Node 22 with ICU 78 prints 2500 in it-IT,
+// Chromium 141 prints 2.500). minGroup is CLDR's minimum grouping digits: with 2, a 4-digit number is not grouped.
+const SEPARATORS: Readonly<Record<string, { dec: string; group: string; minGroup: number }>> = {
+  it: { dec: ',', group: '.', minGroup: 2 },
+  bg: { dec: ',', group: ' ', minGroup: 2 },
+  en: { dec: '.', group: ',', minGroup: 1 },
+};
+
 export function makeFmt(intlLocale: string): Fmt {
+  const sep = SEPARATORS[intlLocale.slice(0, 2)] ?? SEPARATORS.en;
   const formats = new Map<number, Intl.NumberFormat>();
   return (x, dec = 2) => {
     if (x === Infinity) return '∞';
     if (x == null || !Number.isFinite(x)) return '—';
     let f = formats.get(dec);
     if (!f) {
-      f = new Intl.NumberFormat(intlLocale, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+      // Rounding by Intl as before; only the digits are taken from it, in the ICU-independent en-US form.
+      f = new Intl.NumberFormat('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec, useGrouping: false });
       formats.set(dec, f);
     }
-    return f.format(x);
+    const plain = f.format(x), sign = plain.startsWith('-') ? '-' : '';
+    const [int = '', frac] = plain.slice(sign.length).split('.');
+    const grouped = int.length >= 3 + sep.minGroup ? int.replace(/\B(?=(\d{3})+$)/g, sep.group) : int;
+    return `${sign}${grouped}${frac ? sep.dec + frac : ''}`;
   };
 }
 

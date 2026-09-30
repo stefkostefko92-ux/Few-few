@@ -6,7 +6,7 @@ export default function RootNotFound() {
     <html lang="it">
       <body>
         <main className="page page-narrow">
-          <p className="eyebrow">404</p>
+          <span className="chip">404</span>
           <h1>Pagina non trovata · Page not found · Страницата не е намерена</h1>
           <p className="flex flex-wrap gap-3">
             <a className="btn" href="/it">Italiano</a>

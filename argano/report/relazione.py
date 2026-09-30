@@ -7,6 +7,7 @@ Helvetica/Times. Works with ReportLab 3.6 (Debian bookworm) and later.
 """
 import json
 import os
+import re
 import sys
 from xml.sax.saxutils import escape
 
@@ -51,8 +52,19 @@ MARGIN = 16 * mm
 FRAME_W = PAGE_W - 2 * MARGIN
 
 
+# Engineering notation of the texts: M_cw, η_d, N_equiv(t) → subscripts; e^(f·α) → superscript.
+SUBSCRIPT = re.compile(r"(?<=[A-Za-zΑ-Ωα-ω])_([A-Za-z0-9]+)")
+SUPERSCRIPT = re.compile(r"\^\(([^()]{1,24})\)")
+
+
+def markup(text):
+    s = escape(str(text))
+    s = SUPERSCRIPT.sub(r"<super>\1</super>", SUBSCRIPT.sub(r"<sub>\1</sub>", s))
+    return s.replace("\n", "<br/>")
+
+
 def p(text, style=BODY):
-    return Paragraph(escape(str(text)).replace("\n", "<br/>"), style)
+    return Paragraph(markup(text), style)
 
 
 def kv(rows):
@@ -94,6 +106,8 @@ def grid(block):
         ("TOPPADDING", (0, 0), (-1, -1), 2.2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2.2),
         ("LEFTPADDING", (0, 0), (-1, -1), 2.5), ("RIGHTPADDING", (0, 0), (-1, -1), 2.5),
     ]
+    if status:
+        style.append(("LEFTPADDING", (scol, 0), (scol, -1), 9))  # the verdict does not touch the limit before it
     t.setStyle(TableStyle(style))
     return t
 
@@ -128,10 +142,11 @@ def flow(blocks):
             out.append(p(b["text"], H1))
         elif kind == "sub":
             out.append(p(b["text"], SUB))
+        # a heading never ends a page: room for it, a table head and its first rows
         elif kind == "h2":
-            out += [CondPageBreak(28 * mm), p(b["text"], H2)]
+            out += [CondPageBreak(45 * mm), p(b["text"], H2)]
         elif kind == "h3":
-            out += [CondPageBreak(20 * mm), p(b["text"], H3)]
+            out += [CondPageBreak(38 * mm), p(b["text"], H3)]
         elif kind == "p":
             out.append(p(b["text"], NOTE if b.get("style") == "note" else BODY))
             out.append(Spacer(1, 2))
@@ -144,7 +159,7 @@ def flow(blocks):
             out.append(Spacer(1, 3))
         elif kind == "list":
             for item in b["items"]:
-                out.append(Paragraph(escape(item), ParagraphStyle("li", parent=BODY, leftIndent=9, bulletIndent=0), bulletText="•"))
+                out.append(Paragraph(markup(item), ParagraphStyle("li", parent=BODY, leftIndent=9, bulletIndent=0), bulletText="•"))
         elif kind == "verdict":
             out.append(p(b["text"], ParagraphStyle("v", parent=VERDICT, textColor=STATUS.get(b.get("status"), INK))))
         elif kind == "sign":

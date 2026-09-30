@@ -22,6 +22,7 @@ npm run dev           # нужни: PostgreSQL и .env (виж .env.example: DAT
 ADMIN_PASSWORD=… npm run admin:create                 # администратор на платформата (SUPERADMIN), идемпотентно
 BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъра срещу пуснат сървър (Playwright)
 npm run lista         # docs/lista-verifica-normativa.md + .json от регистъра
+BASE_URL=… node scripts/render-poster.mjs            # постерът на 3D сцената (public/img/argano-machine-*.webp)
 ```
 
 Гейтът (задължителен преди „готово“): `lint` + `typecheck` + `test` + `build`, после `smoke` срещу
@@ -38,6 +39,9 @@ src/lib/             auth (JWT в httpOnly бисквитка), rbac (7 роли
                      ratelimit, audit, calc-input (zod за стойностите на формата), snapshot-hash, seo.
 src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts).
 src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
+src/components/machine/ 3D сцената на началната страница: машината от пример A (parts, materials), конвейерът
+                     scene → TRAA → bloom → grade (ACES) и нивата на качество — по техниките на 3D двигателя boy
+                     (Nexus/client/src/combat/engine/boy). MachineStage: постер веднага, three.js лениво.
 src/app/             [locale]/… страниците, api/ (health, relazione PDF, lista-verifica), robots, sitemap, llms.txt.
 messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (358 ключа × 3 езика).
 report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
@@ -64,5 +68,11 @@ deploy/              deploy.sh (сървърът), nginx/argano.conf. Dockerfile
   е JSON-LD с екраниран `<`.
 - **Не копирай текст на нормите** в кода, тестовете или документите: само номер на клауза и
   стойност (авторско право на CEN-CENELEC и UNI).
+- **3D сцената:** само на началната страница (входът показва постера). three.js се зарежда лениво, едва когато
+  сцената е на екрана; при `prefers-reduced-motion`, save-data, липса на WebGL или бавен кадър остава постерът.
+  WebGPU само на хардуерен адаптер, иначе WebGL 2. След промяна в `src/components/machine/` пусни
+  `scripts/render-poster.mjs`, за да съвпада постерът с първия жив кадър.
+- **Числата на екрана** минават през `makeFmt` (фиксирани разделители, не ICU на средата): Node и браузърът
+  трябва да дават един и същ текст, иначе хидратацията на React пада (ICU 78: 2500, Chromium 141: 2.500).
 - Коментарите в кода са на английски, текстовете за инженера и отчета — на италиански, комитите — на
   български. Без CI workflow засега (решение на собственика); гейтът се пуска локално.

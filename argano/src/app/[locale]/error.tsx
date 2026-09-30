@@ -7,7 +7,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
   const t = useTranslations('errors');
   return (
     <main className="page page-narrow">
-      <p className="eyebrow">500</p>
+      <span className="chip">500</span>
       <h1>{t('errorTitle')}</h1>
       <p className="lead">{t('errorText')}</p>
       {error.digest ? <p className="note mono">{t('errorCode', { code: error.digest })}</p> : null}

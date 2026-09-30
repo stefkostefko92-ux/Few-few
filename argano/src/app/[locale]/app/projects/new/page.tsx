@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import ProjectForm from '@/components/ProjectForm';
+import Crumbs from '@/components/Crumbs';
 
 export async function generateMetadata() {
   const t = await getTranslations('projects');
@@ -15,9 +15,13 @@ export default async function NewProjectPage({ params }: { params: Promise<{ loc
   const t = await getTranslations('projects');
   return (
     <main className="page page-narrow">
-      <p className="note"><Link href="/app">← {t('title')}</Link></p>
-      <h1>{t('newTitle')}</h1>
-      <p className="lead">{t('newLead')}</p>
+      <Crumbs items={[{ href: '/app', label: t('title') }, { label: t('newTitle') }]} />
+      <div className="page-head">
+        <div className="titles">
+          <h1>{t('newTitle')}</h1>
+          <p className="lead">{t('newLead')}</p>
+        </div>
+      </div>
       <ProjectForm />
     </main>
   );

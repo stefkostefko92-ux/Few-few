@@ -7,7 +7,7 @@ export default async function NotFound() {
   return (
     <>
       <main className="page page-narrow">
-        <p className="eyebrow">404</p>
+        <span className="chip">404</span>
         <h1>{t('notFoundTitle')}</h1>
         <p className="lead">{t('notFoundText')}</p>
         <p className="flex flex-wrap gap-3">

@@ -62,3 +62,26 @@ export function listCompanies() {
 export function listAudit(user: SessionUser) {
   return prisma.auditLog.findMany({ where: { companyId: user.companyId }, orderBy: { createdAt: 'desc' }, take: 300 });
 }
+
+/**
+ * The same events with readable names: who acted, and the installation, calculation, user or company touched.
+ * The ids come only from this company's log; installations and calculations are looked up in this company only.
+ */
+export async function listAuditNamed(user: SessionUser) {
+  const rows = await listAudit(user);
+  const ids = (entity: string): string[] => [...new Set(rows.filter((r) => r.entity === entity).map((r) => r.entityId).filter((x): x is string => !!x))];
+  const actors = rows.map((r) => r.userId).filter((x): x is string => !!x);
+  const [users, projects, calculations, companies] = await Promise.all([
+    prisma.user.findMany({ where: { id: { in: [...new Set([...actors, ...ids('User')])] } }, select: { id: true, name: true } }),
+    prisma.project.findMany({ where: { id: { in: ids('Project') }, companyId: user.companyId }, select: { id: true, name: true } }),
+    prisma.calculation.findMany({ where: { id: { in: ids('Calculation') }, companyId: user.companyId }, select: { id: true, label: true, project: { select: { name: true } } } }),
+    prisma.company.findMany({ where: { id: { in: ids('Company') } }, select: { id: true, name: true } }),
+  ]);
+  const names = new Map<string, string>([
+    ...users.map((u) => [u.id, u.name] as const),
+    ...projects.map((p) => [p.id, p.name] as const),
+    ...calculations.map((c) => [c.id, c.label ? `${c.project.name} · ${c.label}` : c.project.name] as const),
+    ...companies.map((c) => [c.id, c.name] as const),
+  ]);
+  return { rows, names };
+}

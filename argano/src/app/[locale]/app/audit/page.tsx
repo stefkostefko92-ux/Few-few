@@ -1,7 +1,7 @@
-import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
-import { prisma } from '@/lib/db';
-import { listAudit } from '@/server/queries';
+import { dateFormat } from '@/lib/dates';
+import { listAuditNamed } from '@/server/queries';
 
 export async function generateMetadata() {
   const t = await getTranslations('audit');
@@ -12,26 +12,29 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const me = await requireCapability(locale, 'audit:view');
-  const [t, format, rows] = await Promise.all([getTranslations('audit'), getFormatter(), listAudit(me)]);
-  const ids = [...new Set(rows.map((r) => r.userId).filter((x): x is string => !!x))];
-  const users = new Map((await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } })).map((u) => [u.id, u.name]));
+  const [t, { rows, names }] = await Promise.all([getTranslations('audit'), listAuditNamed(me)]);
+  const fd = dateFormat(locale);
+  const label = (group: 'actions' | 'entities', key: string): string => (t.has(`${group}.${key}`) ? t(`${group}.${key}`) : key);
   return (
     <main className="page">
-      <div className="flex flex-col gap-1">
-        <p className="eyebrow">{me.companyName}</p>
-        <h1>{t('title')}</h1>
-        <p className="lead">{t('lead')}</p>
+      <div className="page-head">
+        <div className="titles">
+          <h1>{t('title')}</h1>
+          <p className="lead">{t('lead')}</p>
+        </div>
       </div>
-      <div className="panel overflow-x-auto p-0">
-        <table className="data-table">
-          <thead><tr><th>{t('when')}</th><th>{t('who')}</th><th>{t('what')}</th><th>{t('object')}</th></tr></thead>
+      <div className="table-panel">
+        <table className="data-table stack">
+          <thead><tr><th>{t('what')}</th><th>{t('when')}</th><th>{t('who')}</th><th>{t('object')}</th></tr></thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id}>
-                <td className="whitespace-nowrap">{format.dateTime(r.createdAt, { dateStyle: 'short', timeStyle: 'medium' })}</td>
-                <td>{r.userId ? users.get(r.userId) ?? '—' : '—'}</td>
-                <td className="mono">{r.action}</td>
-                <td className="mono note">{r.entity}{r.entityId ? ` · ${r.entityId}` : ''}</td>
+                <td className="row-title"><b>{label('actions', r.action)}</b></td>
+                <td data-label={t('when')} className="num whitespace-nowrap">{fd.stamp(r.createdAt)}</td>
+                <td data-label={t('who')}>{r.userId ? names.get(r.userId) ?? '—' : '—'}</td>
+                <td data-label={t('object')}>
+                  <span>{label('entities', r.entity)}{r.entityId ? <span className="note"> · {names.get(r.entityId) ?? r.entityId}</span> : null}</span>
+                </td>
               </tr>
             ))}
           </tbody>
