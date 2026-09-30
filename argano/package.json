@@ -30,7 +30,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/calc/__tests__/*.test.ts src/shaft/__tests__/*.test.ts src/lib/__tests__/*.test.ts",
+    "test": "tsx --test src/calc/__tests__/*.test.ts src/shaft/__tests__/*.test.ts src/sim/__tests__/*.test.ts src/lib/__tests__/*.test.ts",
     "lista": "tsx scripts/lista-verifica.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",

@@ -2,8 +2,9 @@
 //   health → public page (no console or CSP errors) → sign-in → installation → calculation → saved snapshot with
 //   reproduced hash → calculation report (PDF) → shaft design by hand, its DXF, a calculation from it with the plan in
 //   its report → data of the installation, company logo, drawing set issued from that calculation (sheets, PDF) and
-//   its revision → new user who must change the password → a second company that cannot open the first company's
-//   calculation, shaft design, DXF or drawing set.
+//   its revision → the installation in one form with its live 3D simulation, saved in one go (shaft design and
+//   calculation together), with its documents → new user who must change the password → a second company that cannot
+//   open the first company's calculation, shaft design, DXF, drawing set or lift design.
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… node scripts/smoke.mjs
 // Playwright is not a dependency of the app: the local install is used, else the global one.
 import { Buffer } from 'node:buffer';
@@ -41,6 +42,13 @@ async function login(page, email, password) {
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app(\/account\?first=1)?$/), page.click('main form button[type="submit"]')]);
+}
+/** Waits until React has hydrated the element (its props are attached): a click before that is lost. */
+async function hydrated(page, selector) {
+  await page.waitForFunction((sel) => {
+    const el = globalThis.document.querySelector(sel);
+    return !!el && Object.keys(el).some((k) => k.startsWith('__reactProps'));
+  }, selector);
 }
 async function logout(page) {
   await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
@@ -140,14 +148,38 @@ try {
   await Promise.all([page.waitForURL((u) => /\/drawing-sets\/[a-z0-9]+$/.test(u.pathname) && u.pathname !== setPath, { timeout: 60000 }), page.click('main form:has(input[maxlength="120"]) button[type="submit"]')]);
   assert.match(await page.textContent('h1'), / R1$/, 'revision R1');
 
+  step('the installation in one form: live simulation, save, documents');
+  await page.goto(`${projectUrl}/progetto`);
+  await page.waitForSelector('.lift-facts .lift-verdict');
+  await page.waitForSelector('.lift-stage.live, .lift-stage.failed', { timeout: 120000 });
+  await page.click('.scenario-tabs > button:nth-child(2)');
+  await page.waitForSelector('.sim-chart svg path.line');
+  await page.check('#auto-P');
+  await page.waitForSelector('.lift-calc .auto-value .badge');
+  await page.fill('.lift-work .savebar input', 'Progetto di prova');
+  await Promise.all([page.waitForURL(/\/lift-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click('.lift-work .savebar button.btn-primary')]);
+  const liftUrl = page.url();
+  await page.waitForSelector('.lift-view .lift-facts');
+  assert.equal(await page.locator('main .alert-warn, main .alert-bad').count(), 0, 'the running engines reproduce the saved design');
+  const liftRelHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
+  const liftRel = await page.request.get(`${BASE}${liftRelHref}`);
+  assert.equal(liftRel.status(), 200);
+  assert.equal((await liftRel.body()).subarray(0, 5).toString('latin1'), '%PDF-');
+  const liftDxfHref = await page.getAttribute('.doc-links a[href$="/dxf"]', 'href');
+  assert.equal((await page.request.get(`${BASE}${liftDxfHref}`)).status(), 200);
+  await page.goto(projectUrl);
+  await page.waitForSelector('.lift-home .lift-facts');
+
   assert.deepEqual(errors, [], 'browser errors');
   step('an archived installation is read only');
   await page.goto(projectUrl);
+  await hydrated(page, 'main form:has(input[name="archive"][value="1"]) button');
   await Promise.all([page.waitForLoadState('networkidle'), page.click('main form:has(input[name="archive"][value="1"]) button')]);
   await page.waitForSelector('main form:has(input[name="archive"][value="0"])');
   assert.equal((await page.goto(`${projectUrl}/edit`)).status(), 404, 'edit of an archived installation');
   assert.equal((await page.goto(`${projectUrl}/calc`)).status(), 404, 'new calculation on an archived installation');
   await page.goto(projectUrl);
+  await hydrated(page, 'main form:has(input[name="archive"][value="0"]) button');
   await page.click('main form:has(input[name="archive"][value="0"]) button');
   await page.waitForSelector('main form:has(input[name="archive"][value="1"])');
   errors.length = 0; // the two 404 above were provoked on purpose
@@ -200,6 +232,8 @@ try {
   assert.equal((await page.request.get(`${BASE}${dxfHref}`)).status(), 404, 'DXF of another company');
   assert.equal((await page.goto(setUrl)).status(), 404, 'drawing set of another company');
   assert.equal((await page.request.get(`${BASE}${setPdfHref}`)).status(), 404, 'drawing set PDF of another company');
+  assert.equal((await page.goto(liftUrl)).status(), 404, 'lift design of another company');
+  assert.equal((await page.request.get(`${BASE}${liftRelHref}`)).status(), 404, 'report of the lift design of another company');
 
   step('all good');
 } finally {

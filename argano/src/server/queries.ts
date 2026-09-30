@@ -142,3 +142,34 @@ export function getCompanyLogo(user: SessionUser) {
     select: { name: true, logo: { select: { id: true, mime: true, data: true, width: true, height: true, createdAt: true } } },
   });
 }
+
+export function listLiftDesigns(user: SessionUser, projectId: string) {
+  return prisma.liftDesign.findMany({
+    where: { projectId, companyId: user.companyId },
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+    select: { id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, createdAt: true, engineVersion: true, user: { select: { name: true } } },
+  });
+}
+
+/** A saved lift design with what the page needs: the form as entered, the records made from it and their hashes. */
+export function getLiftDesign(user: SessionUser, id: string) {
+  return prisma.liftDesign.findFirst({
+    where: { id, companyId: user.companyId },
+    include: {
+      project: { select: { id: true, name: true, archivedAt: true } },
+      user: { select: { name: true } },
+      calculation: { select: { id: true, sha256: true, engineVersion: true } },
+      shaftDesign: { select: { id: true, sha256: true, engineVersion: true } },
+    },
+  });
+}
+
+/** The latest lift design of an installation (the project page shows it in 3D). */
+export function latestLiftDesign(user: SessionUser, projectId: string) {
+  return prisma.liftDesign.findFirst({
+    where: { projectId, companyId: user.companyId },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, inputs: true, label: true, createdAt: true, calculationId: true, shaftDesignId: true, verdict: true },
+  });
+}

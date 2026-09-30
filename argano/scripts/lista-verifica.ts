@@ -1,4 +1,5 @@
-// Generates the verification checklist for the engineer from the registry (src/calc/norme.ts):
+// Generates the verification checklist for the engineer from the registries (src/calc/norme.ts, src/shaft/norme.ts, the
+// values filled in from the one form in src/lib/lift/norme.ts, the simulation's in src/sim/norme.ts):
 // docs/lista-verifica-normativa.md (in the repository) and docs/lista-verifica-normativa.json (for the spreadsheet).
 // Run: npm run lista
 import { writeFileSync } from 'node:fs';
@@ -6,6 +7,8 @@ import { PROFILO, VOCI } from '../src/calc/index';
 import type { CheckId, Gruppo, Stato } from '../src/calc/index';
 import { VOCI_VANO } from '../src/shaft/index';
 import type { GruppoVano, ShaftCheckId } from '../src/shaft/index';
+import { VOCI_IMPIANTO } from '../src/lib/lift/norme';
+import { VOCI_SIM } from '../src/sim/norme';
 
 const STATO: Record<Stato, string> = {
   confermato: 'confermato', da_verificare: 'da verificare', stima: 'stima', derivazione: 'derivazione', scelta: 'scelta del software', prassi: 'prassi di cantiere',
@@ -40,6 +43,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   m_door: 'porta del locale macchina',
 };
 const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
+const IMPIANTO = 'Impianto: valori calcolati dai dati inseriti una volta', SIMULAZIONE = 'Simulazione nel tempo (3D e grafici)';
 const cell = (s: string): string => s.replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
 const rows = [
@@ -51,8 +55,12 @@ const rows = [
     id: `vano.${v.id}`, gruppo: GRUPPO_VANO[v.gruppo], voce: v.titolo, valore: v.valore, riferimento: v.riferimento, fonte: v.fonte, stato: STATO[v.stato],
     verifiche: (v.verifiche ?? []).map((c) => VERIFICA_VANO[c]).join('; '), nota: v.nota ?? '',
   })),
+  // the installation's one form and the simulation in time: no checks of their own
+  ...[...VOCI_IMPIANTO.map((v) => ({ v, gruppo: IMPIANTO })), ...VOCI_SIM.map((v) => ({ v, gruppo: SIMULAZIONE }))].map(({ v, gruppo }) => ({
+    id: v.id, gruppo, voce: v.titolo, valore: v.valore, riferimento: v.riferimento, fonte: v.fonte, stato: STATO[v.stato], verifiche: '', nota: v.nota ?? '',
+  })),
 ].map((r, j) => ({ n: j + 1, ...r }));
-const ALL = [...VOCI, ...VOCI_VANO];
+const ALL = [...VOCI, ...VOCI_VANO, ...VOCI_IMPIANTO, ...VOCI_SIM];
 const count = (s: Stato): number => ALL.filter((v) => v.stato === s).length;
 
 const md: string[] = [
@@ -71,11 +79,11 @@ const md: string[] = [
   '',
   ...PROFILO.documenti.map((d) => `- **${d.sigla}** — ${d.ambito}`),
   '',
-  `Voci: ${ALL.length} (argano ${VOCI.length}, vano ${VOCI_VANO.length}) — da verificare ${count('da_verificare')}, confermate ${count('confermato')}, scelte del software ${count('scelta')}, ` +
+  `Voci: ${ALL.length} (argano ${VOCI.length}, vano ${VOCI_VANO.length}, impianto ${VOCI_IMPIANTO.length}, simulazione ${VOCI_SIM.length}) — da verificare ${count('da_verificare')}, confermate ${count('confermato')}, scelte del software ${count('scelta')}, ` +
     `stime ${count('stima')}, derivazioni ${count('derivazione')}, prassi ${count('prassi')}.`,
   '',
 ];
-for (const title of [...ORDER.map((g) => GRUPPO[g]), ...ORDER_VANO.map((g) => GRUPPO_VANO[g])]) {
+for (const title of [...ORDER.map((g) => GRUPPO[g]), ...ORDER_VANO.map((g) => GRUPPO_VANO[g]), IMPIANTO, SIMULAZIONE]) {
   const group = rows.filter((r) => r.gruppo === title);
   if (!group.length) continue;
   md.push(`## ${title}`, '', '| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |', '|---|---|---|---|---|---|---|');

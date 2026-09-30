@@ -18,7 +18,7 @@ calcolo, lista e relazione.
 - **UNI 10411-1:2024** — modifiche e sostituzioni su ascensori elettrici esistenti non conformi alle direttive
 - **DM 236/1989** — accessibilità: cabina e porta minime (8.1.12), per il progetto del vano
 
-Voci: 79 (argano 47, vano 32) — da verificare 48, confermate 4, scelte del software 18, stime 4, derivazioni 3, prassi 2.
+Voci: 93 (argano 47, vano 32, impianto 7, simulazione 7) — da verificare 49, confermate 4, scelte del software 25, stime 5, derivazioni 8, prassi 2.
 
 ## Aderenza
 
@@ -188,3 +188,27 @@ Voci: 79 (argano 47, vano 32) — da verificare 48, confermate 4, scelte del sof
 |---|---|---|---|---|---|---|
 | 78 | Dimensioni proposte della cabina | la cabina più grande che entra nel vano, a passi di 10 mm, con superficie entro il limite della portata; a parità di superficie, la più profonda | — | scelta del software | scelta del software | — |
 | 79 | Limiti del modello del vano | pianta, sezione A-A e locale macchina da un modello semplificato: arcata, operatori delle porte, ammortizzatori e macchina hanno posizioni e ingombri tipici, da sostituire con i dati dei fornitori; il rilievo dal disegno CAD va controllato in cantiere | — | limite del modello attuale | scelta del software | — |
+
+## Impianto: valori calcolati dai dati inseriti una volta
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 80 | Corsa | somma delle altezze tra i piani, dal più basso al più alto | — | dati dei piani inseriti | derivazione | — |
+| 81 | Portata e velocità | la portata inserita, oppure quella della cabina più grande che entra nel vano (Tabella 6); la velocità è una sola per il vano e per la macchina | UNI EN 81-20:2020, 5.4.2.1 | progetto del vano | derivazione | — |
+| 82 | Massa della cabina non inserita — va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto | P = 1,1·Q arrotondata per eccesso a 10 kg: valore di partenza per far girare il calcolo | ricerca, capitoli 3 e 6 (origine della massa della cabina) | scelta del software, senza fonte | stima | — |
+| 83 | Fune oltre la corsa (L0) | dalla sommità dell'arcata con la cabina all'ultimo piano fino all'asse della puleggia: testata − sommità dell'arcata + solaio del locale + asse della puleggia a 0,9·D sul pavimento del locale (macchina in basso o senza locale: fino al soffitto del vano) | — | dati verticali del vano; altezza dell'asse scelta dal software | scelta del software | — |
+| 84 | Distanza orizzontale della puleggia di rinvio (dx) | calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2: la puleggia di trazione sopra la cabina, il rinvio sopra il contrappeso | ricerca, capitolo 5.3 | pianta del vano | derivazione | — |
+| 85 | Macchina in basso: altezza fino alle pulegge in alto (Hv) | corsa + testata: la macchina al livello del piano più basso, le pulegge sotto il soffitto del vano | ricerca, capitolo 5 | dati verticali del vano | derivazione | — |
+| 86 | Macchina proposta — una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori | la prima opzione del dimensionamento (capitolo 8): puleggia, funi, rapporto, gola, motore e freno che passano ogni verifica; con le ipotesi del gruppo (poli, giri, rendimenti, inerzie) inserite | ricerca, capitolo 8 | motore di calcolo | scelta del software | — |
+
+## Simulazione nel tempo (3D e grafici)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 87 | Forze nella simulazione — agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico) | tiri delle funi, T1/T2, e^(f·α), coppie e decelerazione del freno con le stesse funzioni della verifica (modello delle funi del motore di calcolo), valutate istante per istante con la posizione e l'accelerazione della cabina | UNI EN 81-50:2020, 5.11 (aderenza); ricerca, capitolo 4 | motore di calcolo (src/calc/model.ts) | derivazione | — |
+| 88 | Profilo del moto tra i piani — accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi | profilo a strappo limitato: velocità nominale, accelerazione di progetto e strappo 1 m/s³; se il tragitto è corto, la velocità più alta che ci sta | ISO 18738-1:2012 (misura della qualità di marcia, nessun limite) | scelta del software | scelta del software | — |
+| 89 | Limite di aderenza mostrato durante la marcia | e^(f·α) con il coefficiente d'attrito della frenatura (μ ridotto con la velocità delle funi): il confronto è indicativo (oltre il limite: avviso, non verifica fallita), la verifica resta quella dei casi della norma | UNI EN 81-50:2020, 5.11.2.2 | scelta del software | scelta del software | — |
+| 90 | Tempi delle porte | apertura 2,5 s, chiusura 3 s, sosta a porte aperte 3 s, partenza 0,5 s dopo la chiusura | — | scelta del software (solo animazione) | scelta del software | — |
+| 91 | Urto sugli ammortizzatori — la rigidezza è una scelta del software coerente con i carichi sulla fossa; la verifica della corsa resta quella della sezione | velocità d'urto 1,15 volte la nominale; ammortizzatore lineare con la corsa piena a 4 volte il carico statico (lo stesso valore dei carichi sulla fossa); la cabina e il contrappeso si separano all'urto | UNI EN 81-20:2020, 5.8.2.2 | sintesi della norma di costruttori e organismi notificati (fonti secondarie) | da verificare | — |
+| 92 | Cabina bloccata: rotazione in salita | la macchina gira in salita a 0,3 m/s finché il contrappeso poggia sui suoi ammortizzatori; poi le funi devono slittare (T1/T2 ≥ e^(f·α), μ della cabina bloccata) | UNI EN 81-50:2020, 5.11.2 | motore di calcolo; velocità scelta dal software | scelta del software | — |
+| 93 | Passo di campionamento | 0,02 s; tra due campioni i valori sono interpolati linearmente | — | scelta del software | scelta del software | — |

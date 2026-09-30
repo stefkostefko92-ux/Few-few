@@ -9,12 +9,14 @@ import { DEFAULT_ROOM, type RoomInputs, type ShaftInputs } from '@/shaft';
 interface Props {
   I: ShaftInputs;
   set(patch: Partial<ShaftInputs>): void;
+  /** unfolded at first (the one form of an installation) */
+  open?: boolean;
 }
 
 type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall'>;
 const WALLS = ['front', 'rear', 'left', 'right'] as const;
 
-export default function RoomOptions({ I, set }: Props) {
+export default function RoomOptions({ I, set, open = false }: Props) {
   const t = useTranslations('shaft'), R = I.room;
   const put = (patch: Partial<RoomInputs>): void => { if (R) set({ room: { ...R, ...patch } }); };
   const field = (key: NumKey, min: number, max: number) => (
@@ -33,7 +35,7 @@ export default function RoomOptions({ I, set }: Props) {
     </label>
   );
   return (
-    <details className="room-options">
+    <details className="room-options" open={open}>
       <summary>{t('rm_title')}</summary>
       <label className="check">
         <input type="checkbox" checked={R !== null} onChange={(e) => set({ room: e.target.checked ? DEFAULT_ROOM : null })} />

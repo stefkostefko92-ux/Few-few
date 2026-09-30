@@ -1,0 +1,62 @@
+// One row of the calculator's form (prototype v12): a number with its unit, a choice or a check box, with its hint.
+// Shared by the calculator and by the one form of an installation, which can show a row read-only with the value
+// the software filled in and a badge saying so.
+import type { FormValues } from '@/calc/types';
+import type { CalcKey, Pres } from '@/lib/present/tr';
+import { shown, type Field } from './fields';
+
+interface Props {
+  P: Pres;
+  f: Field;
+  V: FormValues;
+  bad: ReadonlySet<string>;
+  set: (id: string, value: string | boolean) => void;
+  /** a value filled in by the software: shown, not editable */
+  auto?: { value: string; badge: string } | null;
+  /** next to the label: e.g. the switch between automatic and entered */
+  extra?: React.ReactNode;
+}
+
+export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null }: Props) {
+  const { t } = P;
+  const label = t((f.key ?? f.id) as CalcKey);
+  const hidden = !shown(f.id, V), adv = f.adv ? ' adv' : '';
+  if (f.kind === 'check') {
+    return (
+      <div className="row check" hidden={hidden}>
+        <input type="checkbox" id={f.id} checked={!!V[f.id]} onChange={(e) => set(f.id, e.target.checked)} />
+        <label htmlFor={f.id}>{label}</label>
+      </div>
+    );
+  }
+  const hint = f.hint ? <div className={`hint${adv}`} hidden={hidden}>{t(f.hint)}</div> : null;
+  if (f.kind === 'select') {
+    return (
+      <>
+        <div className={`row${f.wide ? ' wide' : ''}${adv}`} hidden={hidden}>
+          <label htmlFor={f.id}>{label}{extra}</label>
+          <select id={f.id} value={String(V[f.id] ?? '')} onChange={(e) => set(f.id, e.target.value)} disabled={!!auto}>
+            {f.options.map((o) => <option key={o.value} value={o.value}>{o.literal ? o.label : t(o.label as CalcKey)}</option>)}
+          </select>
+          {f.wide ? null : <span />}
+        </div>
+        {hint}
+      </>
+    );
+  }
+  return (
+    <>
+      <div className={`row${adv}${auto ? ' auto' : ''}`} hidden={hidden}>
+        <label htmlFor={f.id}>{label}{extra}</label>
+        {auto ? (
+          <output id={f.id} className="num auto-value">{auto.value} <span className="badge">{auto.badge}</span></output>
+        ) : (
+          <input type="number" inputMode="decimal" id={f.id} step={f.step} value={String(V[f.id] ?? '')}
+            onChange={(e) => set(f.id, e.target.value)} aria-invalid={bad.has(f.id) || undefined} />
+        )}
+        <span className="unit">{f.unit}</span>
+      </div>
+      {hint}
+    </>
+  );
+}

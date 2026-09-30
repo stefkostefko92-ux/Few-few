@@ -29,6 +29,8 @@ export interface Governor {
   sample(dtMs: number, nowMs: number): boolean;
   /** True when even the lowest scale misses the budget: the page falls back to the still picture. */
   readonly hopeless: boolean;
+  /** Frames far over the budget (too slow to sample): straight to the lowest scale. True when the scale changed. */
+  floor(nowMs: number): boolean;
 }
 
 // A frame slower than budgetMs is a missed 60 Hz refresh (with slack for jitter). Too many misses in the window
@@ -63,6 +65,12 @@ export function createGovernor({ budgetMs = 19.5, windowSize = 40, minScale = 0.
         g.scale = Math.min(1, g.scale * 1.08);
       } else return false;
       g.lastChange = nowMs;
+      g.samples.length = 0;
+      return true;
+    },
+    floor(nowMs) {
+      if (g.scale <= minScale) return false;
+      Object.assign(g, { ceiling: g.scale, ceilingUntil: nowMs + holdMs, scale: minScale, lastChange: nowMs });
       g.samples.length = 0;
       return true;
     },

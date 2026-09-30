@@ -8,9 +8,8 @@ import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { PRESETS } from '@/calc/presets';
 import { ropeFamily } from '@/calc/sizing';
-import { ceilTo } from '@/calc/math';
 import type { FormValues } from '@/calc/types';
-import { analyse, mirrorRopes } from '@/lib/present/analysis';
+import { analyse, mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
@@ -82,9 +81,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const onUse = (key: UseKey): void => {
     const o = key === 'pick' ? a.sizing.pick : a.sizing.options[key];
     if (!o) return;
-    const M = o.M;
-    edit({ n_D: M.D, n_groove: M.groove.type, n_beta: M.groove.beta, n_gamma: M.groove.gamma, n_i: M.i, n_Pn: M.Pn, n_brakeSets: 2,
-      n_brakeNm: M.brakeNm, n_shaftMax: M.shaftMax, n_MpCat: ceilTo(o.res.drive.MpMax, 10), n_n: M.n, n_d: M.d, n_Fmin: M.Fmin, n_qf: M.qf });
+    edit(proposalValues(o));
     setPropMsg(t('p_applied'));
   };
   const save = (): void => {

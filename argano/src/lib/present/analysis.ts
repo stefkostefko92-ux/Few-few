@@ -2,7 +2,8 @@
 import { brakeWindow, compute, sensitivity } from '@/calc/compute';
 import { readInputs } from '@/calc/inputs';
 import { sizeMachine } from '@/calc/sizing';
-import type { BrakeWindow, FormValues, ParsedInputs, Results, SensitivityVariant, Sizing } from '@/calc/types';
+import { ceilTo } from '@/calc/math';
+import type { BrakeWindow, FormValues, ParsedInputs, Results, SensitivityVariant, Sizing, SizingOption } from '@/calc/types';
 
 export interface Analysis {
   ctx: ParsedInputs;
@@ -25,4 +26,13 @@ export function analyse(V: FormValues): Analysis {
 export function mirrorRopes(V: FormValues): FormValues {
   if (V.context === 'repl' && V.keepRopes && V.compare && (V.n_n !== V.o_n || V.n_d !== V.o_d)) return { ...V, n_n: V.o_n, n_d: V.o_d };
   return V;
+}
+
+/** A proposal as values of the new-machine fields; poles, speed, η_d, inertias and mass stay as entered. */
+export function proposalValues(o: SizingOption): FormValues {
+  const M = o.M;
+  return {
+    n_D: M.D, n_groove: M.groove.type, n_beta: M.groove.beta, n_gamma: M.groove.gamma, n_i: M.i, n_Pn: M.Pn, n_brakeSets: 2,
+    n_brakeNm: M.brakeNm, n_shaftMax: M.shaftMax, n_MpCat: ceilTo(o.res.drive.MpMax, 10), n_n: M.n, n_d: M.d, n_Fmin: M.Fmin, n_qf: M.qf,
+  };
 }

@@ -9,12 +9,14 @@ import { DEFAULT_VERTICAL, type Floor, type ShaftInputs, type VerticalInputs } f
 interface Props {
   I: ShaftInputs;
   set(patch: Partial<ShaftInputs>): void;
+  /** unfolded at first (the one form of an installation) */
+  open?: boolean;
 }
 
 type NumKey = Exclude<keyof VerticalInputs, 'floors' | 'main' | 'topRefuge' | 'pitRefuge'>;
 const num = (s: string): number => Number(s.replace(',', '.'));
 
-export default function VerticalOptions({ I, set }: Props) {
+export default function VerticalOptions({ I, set, open = false }: Props) {
   const t = useTranslations('shaft'), V = I.vertical, floors = V.floors;
   const put = (patch: Partial<VerticalInputs>): void => set({ vertical: { ...V, ...patch } });
   const field = (key: NumKey, min: number, max: number, step = 10) => (
@@ -37,7 +39,7 @@ export default function VerticalOptions({ I, set }: Props) {
   };
   const doors: readonly Floor['door'][] = I.entrances === 'one' ? ['A'] : ['A', 'B', 'AB'];
   return (
-    <details className="vertical-options">
+    <details className="vertical-options" open={open}>
       <summary>{t('vt_title')}</summary>
       <div className="form-grid">
         {field('v', 0.1, 10, 0.05)}

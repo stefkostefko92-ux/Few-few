@@ -22,13 +22,15 @@ export interface Machine {
   worm: THREE.Object3D[];
 }
 
-export function buildMachine(M: MachineMaterials): Machine {
+/** The machine on its bedplate; withRopes false leaves the ropes to the caller (the installation draws its own). */
+export function buildMachine(M: MachineMaterials, withRopes = true): Machine {
   const group = new THREE.Group();
   const b = brake(M);
   const wheel = handwheel(M);
   wheel.position.set(0.99, DIM.yWorm, 0);
   const s = sheave(M);
   s.position.set(0, DIM.yWheel, DIM.zSheave);
-  group.add(bedplate(M), floorOpenings(M), gearbox(M), b.group, motor(M), wheel, s, ropes(M), conduit(M));
+  group.add(bedplate(M), gearbox(M), b.group, motor(M), wheel, s, conduit(M));
+  if (withRopes) group.add(floorOpenings(M), ropes(M));
   return { group, sheave: s, worm: [wheel, b.drum] };
 }

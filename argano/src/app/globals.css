@@ -4,19 +4,23 @@
 @import './tables.css';
 @import './landing.css';
 @import './shaft.css';
+@import './lift.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Tokens of the calculator prototype (light, then dark), plus the page-level ones: secondary ink, the brand navy
-   (the same in both themes) and the background of the 3D stage (a dark machine room in both themes). */
+   (the same in both themes), the backgrounds of the 3D stages and the readout over them (a dark machine room in both
+   themes) and the two series of the simulation charts (validated for colour vision deficiency on both surfaces). */
 :root {
   --bg: #eef1f6; --surface: #ffffff; --surface2: #f6f8fb; --ink: #121829; --ink-2: #2f3852; --muted: #5a6480; --rule: #d6dce6; --rule-strong: #aeb7c7;
   --accent: #1d3271; --accent-ink: #ffffff; --accent-soft: #e3e8f5; --brand: #1d3271;
   --ok: #1f7a4a; --ok-bg: #e2f2e9; --warn: #8f5500; --warn-bg: #fbefd9; --fail: #b3261e; --fail-bg: #fbe3e1;
   --info: #3b4a73; --info-bg: #e8ecf5; --rope: #1d3271; --steel: #8a93ab; --car: #dfe5f1;
   --stage-bg: linear-gradient(180deg, #03070f 0%, #1c2130 45%, #262b3b 70%, #1f2432 100%); --shadow-lg: 0 24px 48px -28px rgba(12, 20, 40, .45);
+  --series-1: #2a78d6; --series-2: #eb6834;
+  --lift-bg: #10161f; --hud-bg: rgb(10 14 22 / .74); --hud-ink: #e7ebf4; --hud-muted: #9aa4bf;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-cond: "IBM Plex Sans Condensed", "Arial Narrow", "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -29,6 +33,7 @@
     --accent: #9db1ff; --accent-ink: #0c111d; --accent-soft: #1f2a48;
     --ok: #5ccf8e; --ok-bg: #133323; --warn: #f2b454; --warn-bg: #3a2a10; --fail: #ff8a80; --fail-bg: #3d1716;
     --info: #b8c4e6; --info-bg: #1f2740; --rope: #9db1ff; --steel: #6f7893; --car: #222c45;
+    --series-1: #3987e5; --series-2: #d95926;
     --shadow-lg: 0 24px 48px -28px rgba(0, 0, 0, .7);
   }
 }
@@ -38,6 +43,7 @@
   --accent: #9db1ff; --accent-ink: #0c111d; --accent-soft: #1f2a48;
   --ok: #5ccf8e; --ok-bg: #133323; --warn: #f2b454; --warn-bg: #3a2a10; --fail: #ff8a80; --fail-bg: #3d1716;
   --info: #b8c4e6; --info-bg: #1f2740; --rope: #9db1ff; --steel: #6f7893; --car: #222c45;
+  --series-1: #3987e5; --series-2: #d95926;
   --shadow-lg: 0 24px 48px -28px rgba(0, 0, 0, .7);
 }
 

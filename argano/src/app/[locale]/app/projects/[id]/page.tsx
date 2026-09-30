@@ -4,7 +4,9 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
-import { getProject, listCalculations, listDrawingSets, listShaftDesigns } from '@/server/queries';
+import { getProject, latestLiftDesign, listCalculations, listDrawingSets, listLiftDesigns, listShaftDesigns } from '@/server/queries';
+import { liftInputsSchema } from '@/lib/lift-input';
+import LiftView from '@/components/lift/LiftView';
 import { setProjectArchivedAction } from '@/server/project-actions';
 import VerdictPill from '@/components/VerdictPill';
 import Crumbs from '@/components/Crumbs';
@@ -20,8 +22,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const user = await requireCapability(locale, 'projects:view');
   const p = await getProject(user, id);
   if (!p) notFound();
-  const [t, tc, ts, tt, calcs, designs, sets, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('shaft'),
-    getTranslations('tavole'), listCalculations(user, p.id), listShaftDesigns(user, p.id), listDrawingSets(user, p.id), getLocale()]);
+  const [t, tc, ts, tt, tl, calcs, designs, sets, lifts, latest, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('shaft'),
+    getTranslations('tavole'), getTranslations('lift'), listCalculations(user, p.id), listShaftDesigns(user, p.id), listDrawingSets(user, p.id),
+    listLiftDesigns(user, p.id), latestLiftDesign(user, p.id), getLocale()]);
+  const latestInputs = latest ? liftInputsSchema.safeParse(latest.inputs) : null;
   const fd = dateFormat(locale);
   const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
   const editable = can(user.role, 'projects:edit') && !p.archivedAt;
@@ -35,7 +39,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
           {place ? <p className="lead">{place}</p> : null}
         </div>
         <div className="actions">
-          {editable ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/calc`}>{tc('new')}</Link> : null}
+          {editable ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{latest ? tl('edit') : tl('start')}</Link> : null}
           {editable ? <Link className="btn" href={`/app/projects/${p.id}/edit`}>{t('edit')}</Link> : null}
           {can(user.role, 'projects:archive') ? (
             <form action={setProjectArchivedAction}>
@@ -55,6 +59,40 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
         <div><dt>{t('updated')}</dt><dd>{fd.dateTime(p.updatedAt)}</dd></div>
         {p.notes ? <div className="wide"><dt>{t('field_notes')}</dt><dd className="whitespace-pre-line">{p.notes}</dd></div> : null}
       </dl>
+
+      <section className="flex flex-col gap-3 lift-home">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2>{tl('homeTitle')}</h2>
+          {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
+        </div>
+        {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} /> : (
+          <div className="panel items-start">
+            <p>{tl('homeEmpty')}</p>
+            {editable ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{tl('start')}</Link> : null}
+          </div>
+        )}
+        {lifts.length > 1 ? <h3>{tl('history')}</h3> : null}
+        {lifts.length > 1 ? (
+          <div className="table-panel">
+            <table className="data-table stack">
+              <thead><tr><th>{tc('col_date')}</th><th>{tc('col_result')}</th><th>{tl('col_design')}</th><th>{tc('col_author')}</th></tr></thead>
+              <tbody>
+                {lifts.map((x) => (
+                  <tr key={x.id}>
+                    <td className="row-title">
+                      <Link href={`/app/lift-designs/${x.id}`} className="font-semibold">{fd.dateTime(x.createdAt)}</Link>
+                      {x.label ? <div className="note">{x.label}</div> : null}
+                    </td>
+                    <td data-label={tc('col_result')}><VerdictPill verdict={x.verdict} fails={x.failCount} warns={x.warnCount} /></td>
+                    <td data-label={tl('col_design')} className="spec">{x.summary}</td>
+                    <td data-label={tc('col_author')}>{x.user?.name ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </section>
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -113,7 +151,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2>{tc('title')}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2>{tc('title')}</h2>
+          {editable && calcs.length ? <Link className="btn" href={`/app/projects/${p.id}/calc`}>{tc('new')}</Link> : null}
+        </div>
         {calcs.length === 0 ? (
           <div className="panel items-start">
             <p>{tc('empty')}</p>

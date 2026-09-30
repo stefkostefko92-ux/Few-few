@@ -1,8 +1,9 @@
 // Input form of the prototype v12 (buildForm): installation, layout, existing machine, new machine, ropes,
 // service. Values are kept as typed (strings); the engine parses them.
 import type { FormValues } from '@/calc/types';
-import type { CalcKey, Pres } from '@/lib/present/tr';
+import type { Pres } from '@/lib/present/tr';
 import { LAYOUT, MACHINE, PLANT, ROPES, SERVICE, shown, type Field } from './fields';
+import FieldRow from './FieldRow';
 
 export type Prefix = 'n_' | 'o_';
 
@@ -18,40 +19,7 @@ interface Props {
 
 export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopesHint }: Props) {
   const { t } = P;
-  const label = (f: Field): string => t((f.key ?? f.id) as CalcKey);
-  const row = (f: Field) => {
-    const hidden = !shown(f.id, V), adv = f.adv ? ' adv' : '';
-    if (f.kind === 'check') {
-      return (
-        <div key={f.id} className="row check" hidden={hidden}>
-          <input type="checkbox" id={f.id} checked={!!V[f.id]} onChange={(e) => set(f.id, e.target.checked)} />
-          <label htmlFor={f.id}>{label(f)}</label>
-        </div>
-      );
-    }
-    const hint = f.hint ? <div key={`${f.id}-hint`} className={`hint${adv}`} hidden={hidden}>{t(f.hint)}</div> : null;
-    if (f.kind === 'select') {
-      return [
-        <div key={f.id} className={`row${f.wide ? ' wide' : ''}${adv}`} hidden={hidden}>
-          <label htmlFor={f.id}>{label(f)}</label>
-          <select id={f.id} value={String(V[f.id] ?? '')} onChange={(e) => set(f.id, e.target.value)}>
-            {f.options.map((o) => <option key={o.value} value={o.value}>{o.literal ? o.label : t(o.label as CalcKey)}</option>)}
-          </select>
-          {f.wide ? null : <span />}
-        </div>,
-        hint,
-      ];
-    }
-    return [
-      <div key={f.id} className={`row${adv}`} hidden={hidden}>
-        <label htmlFor={f.id}>{label(f)}</label>
-        <input type="number" inputMode="decimal" id={f.id} step={f.step} value={String(V[f.id] ?? '')}
-          onChange={(e) => set(f.id, e.target.value)} aria-invalid={bad.has(f.id) || undefined} />
-        <span className="unit">{f.unit}</span>
-      </div>,
-      hint,
-    ];
-  };
+  const row = (f: Field) => <FieldRow key={f.id} P={P} f={f} V={V} bad={bad} set={set} />;
   const rows = (fields: readonly Field[]) => fields.map(row);
   const check = (id: 'compare' | 'keepD' | 'keepRopes') => (
     <div className="row check" hidden={!shown(id, V)}>

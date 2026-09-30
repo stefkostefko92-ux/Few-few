@@ -47,6 +47,7 @@ model Company {
   logos           CompanyLogo[]    @relation("CompanyLogos")
   drawingSets     DrawingSet[]
   drawingCounters DrawingCounter[]
+  liftDesigns     LiftDesign[]
 }
 
 /// A logo uploaded by a company, immutable: a drawing set keeps the one it was issued with. PNG or JPEG, checked by
@@ -89,6 +90,7 @@ model User {
   shaftDesigns       ShaftDesign[]
   reviews            CalculationReview[]
   drawingSets        DrawingSet[]
+  liftDesigns        LiftDesign[]
 
   @@index([companyId])
 }
@@ -115,6 +117,7 @@ model Project {
   calculations Calculation[]
   shaftDesigns ShaftDesign[]
   drawingSets  DrawingSet[]
+  liftDesigns  LiftDesign[]
 
   @@index([companyId, archivedAt])
   @@index([createdById])
@@ -146,6 +149,7 @@ model Calculation {
   createdAt     DateTime            @default(now())
   reviews       CalculationReview[]
   drawingSets   DrawingSet[]
+  liftDesign    LiftDesign?
 
   @@index([projectId, createdAt])
   @@index([companyId])
@@ -180,6 +184,43 @@ model ShaftDesign {
   createdAt     DateTime      @default(now())
   calculations  Calculation[]
   drawingSets   DrawingSet[]
+  liftDesign    LiftDesign?
+
+  @@index([projectId, createdAt])
+  @@index([companyId])
+  @@index([userId])
+}
+
+/// The installation entered once (immutable, like a calculation): the one form (shaft, calculator values, switches of
+/// the automatic values), and the shaft design and the calculation made from it in the same transaction, the version
+/// of the derivation and the SHA-256 of the canonical record. The 3D simulation replays it; the report, the DXF and
+/// the drawing sets come from its calculation and shaft design, which keep their own hashes.
+model LiftDesign {
+  id            String      @id @default(cuid())
+  companyId     String
+  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  label         String?
+  /// { shaft, calc, auto } as entered (src/lib/lift-input.ts)
+  inputs        Json
+  /// where the shaft's dimensions come from (null: typed in), as for a shaft design
+  source        Json?
+  shaftDesignId String      @unique
+  shaftDesign   ShaftDesign @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
+  calculationId String      @unique
+  calculation   Calculation @relation(fields: [calculationId], references: [id], onDelete: NoAction)
+  /// version of the derivation from the one form (src/lib/lift/version.ts)
+  engineVersion String
+  sha256        String
+  verdict       Verdict
+  failCount     Int
+  warnCount     Int
+  /// e.g. "Vano 1600 × 1750 · 600 kg · 0,63 m/s · D 520 · 4 × Ø10 · 1:63 · 4 kW"
+  summary       String
+  createdAt     DateTime    @default(now())
 
   @@index([projectId, createdAt])
   @@index([companyId])

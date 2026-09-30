@@ -4,52 +4,25 @@ import { K } from './norme';
 import { G, deg, rad, ratio } from './math';
 import { grooveF, neqT } from './groove';
 import { wrapAngles } from './geometry';
+import { ropeModel, type RopePath } from './model';
 import type {
   BrakeCase, BrakeResult, BrakeWindow, Check, CheckId, CheckStatus, DriveResult, EndPosition, Kinematics, Levers,
   Machine, Plant, Results, RopesResult, SensitivityVariant, ShaftResult, StallCase, TractionCase,
 } from './types';
 
-/** A rope segment of length L going up (1) or down (−1) from the load towards the sheave, or a diverting pulley. */
-type Segment = readonly ['s', number, 1 | -1] | readonly ['p'];
-interface RopePath { car: readonly Segment[]; cwt: readonly Segment[] }
 interface End { pos: EndPosition; p: RopePath; alpha: number }
 
 const worst = <T extends { util: number }>(list: readonly T[]): T => list.reduce((a, b) => (b.util > a.util ? b : a));
 
 export function compute(I: Plant, M: Machine): Results {
   const Q = I.Q, P = I.P, r = I.r;
-  const k = I.qeq > 0 ? I.qeq / Q : I.k;
-  const Mcw = P + k * Q;
+  // masses, rope paths, the pull at the sheave, the inertia and the brake's deceleration (model.ts)
+  const { k, Mcw, R, path, walk, Jext, brakeDecel } = ropeModel(I, M);
   const wa = wrapAngles(I, M), alphaB = rad(wa.B), alphaT = rad(wa.T);
-  const w = M.n * M.qf;
-  const pulleys = I.layout === 'top' ? [] : I.layout === 'topDefl' ? [1] : [1, 1];
-  const Rp = I.Dp / 2000;
-  const path = (carAtBottom: boolean): RopePath => {
-    const Lc = carAtBottom ? I.H + I.L0 : I.L0, Lw = carAtBottom ? I.L0 : I.H + I.L0;
-    if (I.layout === 'top') return { car: [['s', Lc, 1]], cwt: [['s', Lw, 1]] };
-    if (I.layout === 'topDefl') return { car: [['s', Lc, 1]], cwt: [['s', Lw, 1], ['p'], ['s', I.h, 1]] };
-    return { car: [['s', Lc, 1], ['p'], ['s', I.Hv, -1]], cwt: [['s', Lw, 1], ['p'], ['s', I.Hv, -1]] };
-  };
-  // pull at the sheave: the hanging mass accelerating upwards with aUp, then each rope segment and pulley on the way
-  const walk = (mass: number, aUp: number, els: readonly Segment[]): number => {
-    let T = (mass * (G + aUp)) / r;
-    const aw = r * aUp;
-    for (const e of els) {
-      if (e[0] === 's') { const m = w * e[1]; T = e[2] > 0 ? T + m * (G + aw) : T - m * (G - aw); }
-      else T += (I.Jp * aw) / (Rp * Rp);
-      if (T < 0) T = 0;
-    }
-    return T;
-  };
   const pB = path(true), pT = path(false);
   // the two end positions of the car, each with its rope path and wrap angle
   const eB: End = { pos: 'b', p: pB, alpha: alphaB }, eT: End = { pos: 't', p: pT, alpha: alphaT }, ends = [eB, eT];
   const alphaDeg = Math.min(wa.B, wa.T);
-  // inertia referred to the motor shaft: moving masses, ropes, traction sheave and pulleys
-  const R = M.D / 2000;
-  const ropeLen = I.layout === 'top' ? I.H + 2 * I.L0 : I.layout === 'topDefl' ? I.H + 2 * I.L0 + I.h : I.H + 2 * I.L0 + 2 * I.Hv;
-  const Jpul = pulleys.length * I.Jp * Math.pow(M.D / I.Dp, 2);
-  const Jext = (load: number): number => (P + load + Mcw) * Math.pow(R / (r * M.i), 2) + w * ropeLen * Math.pow(R / M.i, 2) + (M.Js + Jpul) / (M.i * M.i);
   // static unbalance at the sheave: car side minus counterweight side [N]
   const unbalance = (load: number, e: End): number => walk(P + load, 0, e.p.car) - walk(Mcw, 0, e.p.cwt);
 
@@ -66,17 +39,6 @@ export function compute(I: Plant, M: Machine): Results {
   // really gives with all its sets (never below that minimum).
   const Tb = M.brakeNm * M.brakeSets;
   const vf = I.v * r, muB = K.muBrakingBase / (1 + vf / K.muBrakingSpeed), fB = grooveF(muB, M.groove, 'braking');
-  // car deceleration for a total brake torque tb on the motor shaft; tg = torque of the unbalance at the sheave, > 0
-  // when it drives the motion. Slow side driving the gear: reverse efficiency η_i; motor side driving it: η_d.
-  const brakeDecel = (tb: number, tg: number, load: number): number => {
-    const i = M.i, Jls = Jext(load) * i * i;
-    let beta = (tb - (M.etaI * tg) / i) / (M.Jm * i + (M.etaI * Jls) / i);
-    if (tg + Jls * beta < 0) {
-      beta = (M.etaD * i * tb - tg) / (Jls + M.etaD * M.Jm * i * i);
-      if (M.Jm * i * beta < tb) beta = (tb - tg / i) / (M.Jm * i + Jls / i); // between the two regimes: friction left out
-    }
-    return (beta * R) / r;
-  };
   // tb null: the minimum deceleration of the standard; a number: the brake's own deceleration with that total torque
   const brakeCase = (load: number, e: End, dir: 1 | -1, tb: number | null, ub: number): BrakeCase => {
     const a = tb == null ? I.ae : brakeDecel(tb, dir * ub * R, load), aEff = Math.max(I.ae, a);
