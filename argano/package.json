@@ -1,0 +1,41 @@
+{
+  "name": "argano",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Argano — scelta e verifica dell'argano geared nella sostituzione, con il profilo normativo italiano (DPR 162/1999, UNI EN 81-20:2020, UNI EN 81-50:2020, UNI 10411-1:2024).",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "argano"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "argano geared",
+    "sostituzione argano",
+    "ascensori",
+    "UNI EN 81-50",
+    "UNI 10411-1",
+    "relazione di calcolo",
+    "Panev Ascensori"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/calc/__tests__/*.test.ts",
+    "lista": "tsx scripts/lista-verifica.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.4",
+    "eslint": "^10.11.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0"
+  }
+}
