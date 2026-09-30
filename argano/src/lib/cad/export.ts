@@ -1,7 +1,7 @@
 // The plan drawing of a shaft design as a DXF file (AutoCAD 2007 format, UTF-8 texts, millimetres), with acad-ts:
 // one layer per kind of part, polylines for outlines, dimensions drawn as lines, ticks and texts so that every CAD
 // program shows them the same way.
-import * as acad from '@node-projects/acad-ts';
+import { acad } from './acad';
 import { explodeDim, type DimPrim, type Drawing, type PlanLayer, type Pt } from '@/shaft';
 
 /** AutoCAD colour index of each layer. */

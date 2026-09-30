@@ -40,7 +40,24 @@ export function getCalculation(user: SessionUser, id: string) {
       project: true,
       user: { select: { name: true } },
       reviews: { orderBy: { createdAt: 'asc' }, include: { user: { select: { name: true, role: true } } } },
+      shaftDesign: { select: { id: true, label: true, summary: true, inputs: true, source: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, user: { select: { name: true } } } },
     },
+  });
+}
+
+export function listShaftDesigns(user: SessionUser, projectId: string) {
+  return prisma.shaftDesign.findMany({
+    where: { projectId, companyId: user.companyId },
+    orderBy: { createdAt: 'desc' },
+    take: 200,
+    select: { id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, sha256: true, createdAt: true, source: true, user: { select: { name: true } } },
+  });
+}
+
+export function getShaftDesign(user: SessionUser, id: string) {
+  return prisma.shaftDesign.findFirst({
+    where: { id, companyId: user.companyId },
+    include: { project: true, user: { select: { name: true } }, _count: { select: { calculations: true } } },
   });
 }
 
@@ -71,16 +88,17 @@ export async function listAuditNamed(user: SessionUser) {
   const rows = await listAudit(user);
   const ids = (entity: string): string[] => [...new Set(rows.filter((r) => r.entity === entity).map((r) => r.entityId).filter((x): x is string => !!x))];
   const actors = rows.map((r) => r.userId).filter((x): x is string => !!x);
-  const [users, projects, calculations, companies] = await Promise.all([
+  const [users, projects, calculations, designs, companies] = await Promise.all([
     prisma.user.findMany({ where: { id: { in: [...new Set([...actors, ...ids('User')])] } }, select: { id: true, name: true } }),
     prisma.project.findMany({ where: { id: { in: ids('Project') }, companyId: user.companyId }, select: { id: true, name: true } }),
     prisma.calculation.findMany({ where: { id: { in: ids('Calculation') }, companyId: user.companyId }, select: { id: true, label: true, project: { select: { name: true } } } }),
+    prisma.shaftDesign.findMany({ where: { id: { in: ids('ShaftDesign') }, companyId: user.companyId }, select: { id: true, label: true, project: { select: { name: true } } } }),
     prisma.company.findMany({ where: { id: { in: ids('Company') } }, select: { id: true, name: true } }),
   ]);
   const names = new Map<string, string>([
     ...users.map((u) => [u.id, u.name] as const),
     ...projects.map((p) => [p.id, p.name] as const),
-    ...calculations.map((c) => [c.id, c.label ? `${c.project.name} · ${c.label}` : c.project.name] as const),
+    ...[...calculations, ...designs].map((c) => [c.id, c.label ? `${c.project.name} · ${c.label}` : c.project.name] as const),
     ...companies.map((c) => [c.id, c.name] as const),
   ]);
   return { rows, names };

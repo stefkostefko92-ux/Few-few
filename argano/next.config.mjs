@@ -7,8 +7,9 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  // native or Node-only packages stay outside the server bundle
-  serverExternalPackages: ['argon2', 'pino'],
+  // native or Node-only packages stay outside the server bundle; acad-ts looks classes up by name, which the
+  // minifier would rename (see src/lib/cad/acad.ts for the browser)
+  serverExternalPackages: ['argon2', 'pino', '@node-projects/acad-ts'],
   async headers() {
     return [
       {

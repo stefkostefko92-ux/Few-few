@@ -21,6 +21,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.platypus import CondPageBreak, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from plan_drawing import Plan
+
 FONT_DIR = os.environ.get("REPORT_FONT_DIR", "/usr/share/fonts/truetype/dejavu")
 pdfmetrics.registerFont(TTFont("DejaVu", os.path.join(FONT_DIR, "DejaVuSans.ttf")))
 pdfmetrics.registerFont(TTFont("DejaVu-Bold", os.path.join(FONT_DIR, "DejaVuSans-Bold.ttf")))
@@ -134,19 +136,30 @@ def sign(labels):
     return KeepTogether([Spacer(1, 22 * mm), t])
 
 
+def room_under(blocks, i):
+    """Room a heading needs under it when a plan follows, past the warnings between them; None otherwise."""
+    j, boxes = i + 1, 0
+    while j < len(blocks) and blocks[j]["t"] == "box":
+        j, boxes = j + 1, boxes + 1
+    if j < len(blocks) and blocks[j]["t"] == "plan":
+        return Plan(blocks[j], FRAME_W).height + (12 + 16 * boxes) * mm
+    return None
+
+
 def flow(blocks):
     out = []
-    for b in blocks:
+    for i, b in enumerate(blocks):
         kind = b["t"]
+        # a heading never ends a page: room for it and a table head with its first rows, or for the plan under it
+        room = room_under(blocks, i) if kind in ("h2", "h3") else None
         if kind == "h1":
             out.append(p(b["text"], H1))
         elif kind == "sub":
             out.append(p(b["text"], SUB))
-        # a heading never ends a page: room for it, a table head and its first rows
         elif kind == "h2":
-            out += [CondPageBreak(45 * mm), p(b["text"], H2)]
+            out += [CondPageBreak(room or 45 * mm), p(b["text"], H2)]
         elif kind == "h3":
-            out += [CondPageBreak(38 * mm), p(b["text"], H3)]
+            out += [CondPageBreak(room or 38 * mm), p(b["text"], H3)]
         elif kind == "p":
             out.append(p(b["text"], NOTE if b.get("style") == "note" else BODY))
             out.append(Spacer(1, 2))
@@ -164,6 +177,8 @@ def flow(blocks):
             out.append(p(b["text"], ParagraphStyle("v", parent=VERDICT, textColor=STATUS.get(b.get("status"), INK))))
         elif kind == "sign":
             out.append(sign(b["labels"]))
+        elif kind == "plan":
+            out += [Spacer(1, 4), Plan(b, FRAME_W), Spacer(1, 4)]
         else:
             raise ValueError("unknown block " + kind)
     return out

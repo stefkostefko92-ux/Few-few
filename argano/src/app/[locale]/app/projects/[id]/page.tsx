@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
-import { getProject, listCalculations } from '@/server/queries';
+import { getProject, listCalculations, listShaftDesigns } from '@/server/queries';
 import { setProjectArchivedAction } from '@/server/project-actions';
 import VerdictPill from '@/components/VerdictPill';
 import Crumbs from '@/components/Crumbs';
@@ -20,7 +20,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const user = await requireCapability(locale, 'projects:view');
   const p = await getProject(user, id);
   if (!p) notFound();
-  const [t, tc, calcs, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), listCalculations(user, p.id), getLocale()]);
+  const [t, tc, ts, calcs, designs, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('shaft'),
+    listCalculations(user, p.id), listShaftDesigns(user, p.id), getLocale()]);
   const fd = dateFormat(locale);
   const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
   const editable = can(user.role, 'projects:edit') && !p.archivedAt;
@@ -54,6 +55,38 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
         <div><dt>{t('updated')}</dt><dd>{fd.dateTime(p.updatedAt)}</dd></div>
         {p.notes ? <div className="wide"><dt>{t('field_notes')}</dt><dd className="whitespace-pre-line">{p.notes}</dd></div> : null}
       </dl>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2>{ts('sectionTitle')}</h2>
+          {editable ? <Link className="btn" href={`/app/projects/${p.id}/vano`}>{ts('new')}</Link> : null}
+        </div>
+        {designs.length === 0 ? (
+          <p className="note">{ts('empty')}</p>
+        ) : (
+          <div className="table-panel">
+            <table className="data-table stack">
+              <thead>
+                <tr><th>{ts('col_date')}</th><th>{ts('col_result')}</th><th>{ts('col_design')}</th><th>{ts('source')}</th><th>{ts('col_author')}</th></tr>
+              </thead>
+              <tbody>
+                {designs.map((d) => (
+                  <tr key={d.id}>
+                    <td className="row-title">
+                      <Link href={`/app/shaft-designs/${d.id}`} className="font-semibold">{fd.dateTime(d.createdAt)}</Link>
+                      {d.label ? <div className="note">{d.label}</div> : null}
+                    </td>
+                    <td data-label={ts('col_result')}><VerdictPill verdict={d.verdict} fails={d.failCount} warns={d.warnCount} /></td>
+                    <td data-label={ts('col_design')} className="spec">{d.summary}</td>
+                    <td data-label={ts('source')}>{d.source ? 'DXF/DWG' : ts('sourceHand')}</td>
+                    <td data-label={ts('col_author')}>{d.user?.name ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2>{tc('title')}</h2>

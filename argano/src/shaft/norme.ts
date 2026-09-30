@@ -5,7 +5,7 @@
 // the text of the standards.
 
 import type { Stato } from '../calc/norme';
-import type { ShaftCheckId } from './types';
+import type { Access, ShaftCheckId } from './types';
 
 export const KV = {
   // UNI EN 81-20:2020, 5.4.2.1 (Tabella 6): rated load [kg] → maximum available car area [m²], linear in between
@@ -169,3 +169,10 @@ export const VOCI_VANO: readonly VoceVano[] = [
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7 e 5.2.5.8 (fossa e testata)', fonte: 'limite del modello attuale', stato: 'scelta',
   },
 ];
+
+const ACCESS_VOCE: Readonly<Record<Access, string | null>> = {
+  none: null, dm236_existing: 'accessibilita.esistenti', dm236_residential: 'accessibilita.residenziale', dm236_public: 'accessibilita.non.residenziale',
+};
+
+/** The entries behind a design: all of them but the accessibility cases the design does not apply. */
+export const vociOfDesign = (access: Access): VoceVano[] => VOCI_VANO.filter((v) => v.gruppo !== 'accessibilita' || v.id === ACCESS_VOCE[access]);

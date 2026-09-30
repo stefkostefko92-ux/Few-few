@@ -8,7 +8,9 @@ UNI EN 81-50:2020, UNI 10411-1:2024. Изследването е в `research/ar
 
 _Етап 2 (сега): Next.js 15 приложение върху чистия модул `src/calc/` — фирми и 7 роли, асансьори
 (проекти), калкулатор с резултати на живо, неизменими записи с SHA-256, relazione di calcolo в PDF,
-IT/EN/BG. Root правилата са в кореновия `CLAUDE.md`._
+IT/EN/BG. Проект на шахтата (`src/shaft/`): мерене с клик върху DXF/DWG чертеж в браузъра или мерки на ръка →
+най-голямата кабина, врати, водачи, противотежест и проверки в план → план в DXF и в relazione. Root правилата
+са в кореновия `CLAUDE.md`._
 
 ## Команди (в `argano/`)
 
@@ -16,7 +18,7 @@ IT/EN/BG. Root правилата са в кореновия `CLAUDE.md`._
 npm install
 npm run lint          # ESLint 10 + typescript-eslint strict + react-hooks + next
 npm run typecheck     # tsc --noEmit
-npm test              # node:test през tsx: golden, ръчни проверки, свойства, предложение, регистър, роли, вход, snapshot, отчет, преводи
+npm test              # node:test през tsx: golden, ръчни проверки, свойства, предложение, регистър, роли, вход, snapshot, отчет, преводи, шахта, CAD
 npm run build         # prisma generate + next build
 npm run dev           # нужни: PostgreSQL и .env (виж .env.example: DATABASE_URL, AUTH_SECRET, PUBLIC_BASE_URL)
 ADMIN_PASSWORD=… npm run admin:create                 # администратор на платформата (SUPERADMIN), идемпотентно
@@ -33,20 +35,28 @@ BASE_URL=… node scripts/render-poster.mjs            # постерът на 3
 ```
 src/calc/            Чист изчислителен модул: без I/O, без framework (ESLint го пази). snapshot.ts — каноничният
                      вид на резултатите, който се записва и хешира (и golden тестът ползва).
+src/shaft/           Чист двигател на шахтата в план: area (Табл. 6/8 на EN 81-20), layout (кабина, врати, водачи,
+                     противотежест, проверки), drawing (примитиви в mm: SVG, DXF и PDF ги ползват), norme (KV,
+                     DEFAULTS, VOCI_VANO), snapshot (SHAFT_ENGINE_VERSION). Координати: x по стената с вратите, y навътре.
+src/lib/cad/         DXF/DWG: model (отсечки по слоеве), read (acad-ts; само в браузъра), measure (лъчи от точката на
+                     клика, доминантна посока), export (план → DXF), acad.ts (възстановява имената на класовете).
 src/lib/present/     Текстовете и таблиците на прототипа v12 като чисти функции: ползват ги и екранът, и PDF-ът.
-src/lib/report/      build.ts — моделът на relazione (италиански); render.ts — вика report/relazione.py.
+src/lib/report/      build.ts — моделът на relazione (италиански); shaft.ts — секцията „Vano e cabina“ с плана;
+                     render.ts — вика report/relazione.py.
 src/lib/             auth (JWT в httpOnly бисквитка), rbac (7 роли по способности), schemas (zod), env, db, log (pino),
                      ratelimit, audit, calc-input (zod за стойностите на формата), snapshot-hash, seo.
 src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts).
 src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
+src/components/shaft/ Проектантът на шахтата: SurveyPanel + CadViewer (canvas, pan/zoom, клик), опции, PlanSvg, резултати.
 src/components/machine/ 3D сцената на началната страница: машината от пример A (parts/ — рама, редуктор, шайба,
                      спирачка, мотор; materials — емайл, струговано с анизотропия), конвейерът scene → GTAO → TRAA →
                      bloom → grade (ACES) и нивата на качество — по техниките на 3D двигателя boy
                      (Nexus/client/src/combat/engine/boy). MachineStage: постер веднага, three.js лениво.
-src/app/             [locale]/… страниците, api/ (health, relazione PDF, lista-verifica), robots, sitemap, llms.txt.
+src/app/             [locale]/… страниците, api/ (health, relazione PDF, DXF на проект, lista-verifica), robots, sitemap, llms.txt.
 messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (358 ключа × 3 езика).
 report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
-prisma/              schema + migrations/0_init (с тригер, който забранява UPDATE на Calculation).
+report/plan_drawing.py Планът в PDF: най-големият стандартен мащаб, който се побира (1:10…1:200), щриховка, ореол на текстовете.
+prisma/              schema + migrations/0_init (тригер: без UPDATE на Calculation), 1_shaft_design (същото за ShaftDesign).
 deploy/              deploy.sh (сървърът), nginx/argano.conf. Dockerfile, docker-compose.yml, docker-entrypoint.sh.
 ```
 
@@ -60,7 +70,13 @@ deploy/              deploy.sh (сървърът), nginx/argano.conf. Dockerfile
 - **Числена идентичност:** операциите в `compute.ts`/`sizing.ts` са в реда на прототипа; не
   „опростявай“ формула, без да пуснеш golden теста (разлика в 7-ия знак го чупи).
 - **Сървърът не вярва на браузъра:** записът валидира стойностите със zod, смята наново и пази
-  snapshot + SHA-256; изчисление не се променя (тригер в базата), вариант = нов запис.
+  snapshot + SHA-256; изчисление не се променя (тригер в базата), вариант = нов запис. Същото за проекта на
+  шахтата (`ShaftDesign`): промяна в `KV`/`VOCI_VANO` на `src/shaft/norme.ts` → вдигни `SHAFT_ENGINE_VERSION`;
+  DXF и relazione на изчисление от проект се генерират само ако двигателят възпроизвежда хеша на проекта (иначе 409).
+- **Чертежът не напуска браузъра:** DXF/DWG се чете с `@node-projects/acad-ts` (MIT) само в браузъра, през
+  динамичен импорт; към сървъра стигат мерките, SHA-256 на файла и описанието на мерането. Сървърът ползва
+  acad-ts само за да запише DXF на плана. acad-ts търси класовете по `constructor.name`, което минификацията
+  чупи: импортирай го **само** през `src/lib/cad/acad.ts` и го дръж в `serverExternalPackages` (`next.config.mjs`).
 - **Изолация по фирма:** всяка заявка е през `src/server/queries.ts` или с `companyId` от сесията;
   чуждо id е 404. Правата — само през `can(role, capability)`.
 - **Текстове:** UI на три езика (паритетът се проверява от тест); relazione е само на италиански.

@@ -1,5 +1,5 @@
-// Argano — data model. Tenant = company (installer); every project and calculation belongs to one company.
-// Calculations are immutable snapshots (a database trigger refuses UPDATE, see migrations/0_init).
+// Argano — data model. Tenant = company (installer); every project, calculation and shaft design belongs to one
+// company. Calculations and shaft designs are immutable snapshots (database triggers refuse UPDATE, see migrations).
 
 generator client {
   provider      = "prisma-client-js"
@@ -39,6 +39,7 @@ model Company {
   users        User[]
   projects     Project[]
   calculations Calculation[]
+  shaftDesigns ShaftDesign[]
   auditLogs    AuditLog[]
 }
 
@@ -61,6 +62,7 @@ model User {
   updatedAt          DateTime            @updatedAt
   projectsCreated    Project[]           @relation("ProjectCreatedBy")
   calculations       Calculation[]
+  shaftDesigns       ShaftDesign[]
   reviews            CalculationReview[]
 
   @@index([companyId])
@@ -84,6 +86,7 @@ model Project {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   calculations Calculation[]
+  shaftDesigns ShaftDesign[]
 
   @@index([companyId, archivedAt])
   @@index([createdById])
@@ -109,8 +112,44 @@ model Calculation {
   warnCount     Int
   /// machine in one line, e.g. "D 520 mm · 4 × Ø11 · 1:39 · 7,5 kW"
   summary       String
+  /// shaft design the calculation was started from (its plan goes into the report)
+  shaftDesignId String?
+  shaftDesign   ShaftDesign?        @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
   createdAt     DateTime            @default(now())
   reviews       CalculationReview[]
+
+  @@index([projectId, createdAt])
+  @@index([companyId])
+  @@index([userId])
+  @@index([shaftDesignId])
+}
+
+/// Plan of the shaft (immutable, like a calculation): the dimensions surveyed on a CAD drawing or typed in, the
+/// options chosen, the layout computed by src/shaft and the hash of the canonical record. The drawing itself is never
+/// stored: only its name and SHA-256 and the measure taken on it (source).
+model ShaftDesign {
+  id            String        @id @default(cuid())
+  companyId     String
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  label         String?
+  engineVersion String
+  profileId     String
+  /// where the dimensions come from: null when typed in; else file name, SHA-256, format, units and the measure
+  source        Json?
+  inputs        Json
+  results       Json
+  sha256        String
+  verdict       Verdict
+  failCount     Int
+  warnCount     Int
+  /// e.g. "Vano 1600 × 1750 · cabina 1200 × 1210 · 600 kg · 8 persone"
+  summary       String
+  createdAt     DateTime      @default(now())
+  calculations  Calculation[]
 
   @@index([projectId, createdAt])
   @@index([companyId])

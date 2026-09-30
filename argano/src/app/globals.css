@@ -3,6 +3,7 @@
 @import './shell.css';
 @import './tables.css';
 @import './landing.css';
+@import './shaft.css';
 
 @tailwind base;
 @tailwind components;

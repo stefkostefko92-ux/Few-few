@@ -109,8 +109,10 @@ export function drawPlan(L: Layout, labels: PlanLabels): Drawing {
   // counterweight: frame with the usual cross
   P.push(rect('CONTRAPPESO', cw.x, cw.y, cw.x + cw.w, cw.y + cw.h, 'cw'));
   P.push({ k: 'line', layer: 'CONTRAPPESO', a: [cw.x, cw.y], b: [cw.x + cw.w, cw.y + cw.h] }, { k: 'line', layer: 'CONTRAPPESO', a: [cw.x, cw.y + cw.h], b: [cw.x + cw.w, cw.y] });
-  if (cwSide === 'rear') P.push({ k: 'text', layer: 'TESTI', at: [cw.x + cw.w / 2, cw.y - 70], h: 40, text: labels.counterweight, align: 'c' });
-  else P.push({ k: 'text', layer: 'TESTI', at: [cwSide === 'left' ? cw.x + cw.w + 40 : cw.x - 40, cw.y + cw.h / 2], h: 40, text: labels.counterweight, align: 'c', vertical: true });
+  // the label inside the frame, along its length
+  const ch = Math.min(40, (cwSide === 'rear' ? cw.h : cw.w) * 0.45);
+  if (cwSide === 'rear') P.push({ k: 'text', layer: 'TESTI', at: [cw.x + cw.w / 2, cw.y + cw.h / 2 - ch * 0.35], h: ch, text: labels.counterweight, align: 'c' });
+  else P.push({ k: 'text', layer: 'TESTI', at: [cw.x + cw.w / 2 + ch * 0.35, cw.y + cw.h / 2], h: ch, text: labels.counterweight, align: 'c', vertical: true });
   for (const r of L.rails) P.push(...rail(r));
 
   // dimensions: shaft, car inside, door clear width, clearances in front of the car

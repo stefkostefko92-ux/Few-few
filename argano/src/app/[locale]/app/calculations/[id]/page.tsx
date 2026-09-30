@@ -6,7 +6,9 @@ import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { formValuesSchema } from '@/lib/calc-input';
 import { verifyStored } from '@/lib/snapshot-hash';
+import { reproduceDesign } from '@/lib/shaft-hash';
 import { ENGINE_VERSION } from '@/calc/snapshot';
+import { SHAFT_ENGINE_VERSION } from '@/shaft';
 import { getCalculation } from '@/server/queries';
 import VerdictPill from '@/components/VerdictPill';
 import ReviewForm from '@/components/ReviewForm';
@@ -27,7 +29,9 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const values = formValuesSchema.safeParse(c.inputs);
   if (!values.success) notFound();
   const { same } = verifyStored(values.data, c.sha256);
-  const [t, tp, tr] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles')]);
+  // the report draws the plan of the shaft design too: it needs that design reproduced as well
+  const designSame = !c.shaftDesign || reproduceDesign(c.shaftDesign) !== null;
+  const [t, tp, tr, ts] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft')]);
   const fd = dateFormat(locale);
   return (
     <main className="page">
@@ -35,7 +39,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
       <div className="page-head">
         <div className="titles"><h1>{t('viewTitle')}{c.label ? ` · ${c.label}` : ''}</h1></div>
         <div className="actions">
-          {same && can(user.role, 'report:download') ? (
+          {same && designSame && can(user.role, 'report:download') ? (
             <a className="btn btn-primary" href={`/api/calculations/${c.id}/relazione?locale=${locale}`}>{t('downloadReport')}</a>
           ) : null}
           {can(user.role, 'calc:create') && !c.project.archivedAt ? (
@@ -44,12 +48,16 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
         </div>
       </div>
       {same ? null : <p className="alert alert-warn">{t('engineChanged', { stored: c.engineVersion, current: ENGINE_VERSION })}</p>}
+      {c.shaftDesign && !designSame ? <p className="alert alert-warn">{ts('designChanged', { stored: c.shaftDesign.engineVersion, current: SHAFT_ENGINE_VERSION })}</p> : null}
       <dl className="cartiglio">
         <div><dt>{t('col_result')}</dt><dd><VerdictPill verdict={c.verdict} fails={c.failCount} warns={c.warnCount} /></dd></div>
         <div><dt>{t('col_date')}</dt><dd>{fd.dateTime(c.createdAt)}</dd></div>
         <div><dt>{t('col_author')}</dt><dd>{c.user?.name ?? '—'}</dd></div>
         <div><dt>{t('col_machine')}</dt><dd className="num">{c.summary}</dd></div>
         <div><dt>{t('engine')}</dt><dd className="num">{c.engineVersion} · {c.profileId}</dd></div>
+        {c.shaftDesign ? (
+          <div><dt>{ts('linked')}</dt><dd><Link href={`/app/shaft-designs/${c.shaftDesign.id}`} className="num">{c.shaftDesign.summary}</Link></dd></div>
+        ) : null}
         <div className="wide"><dt>{t('col_hash')}</dt><dd className="hash">{c.sha256}{same ? ` · ${t('hashOk')}` : ''}</dd></div>
       </dl>
       <section className="panel">

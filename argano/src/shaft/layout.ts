@@ -17,6 +17,9 @@ export function defaultInputs(W: number, D: number): ShaftInputs {
   return { W, D, Q: null, door: 'T2', doorWidth: 800, cw: 'rear', access: 'dm236_existing', ...DEFAULTS };
 }
 
+/** Checks whose limit is a maximum (value ≤ limit); for the others it is a minimum. */
+export const isUpperLimit = (id: ShaftCheckId): boolean => id === 'v_area' || id === 'v_wall' || id === 'v_sill';
+
 function check(id: ShaftCheckId, ok: boolean, value: number | null, limit: number | null, dec: number, unit: ShaftCheck['unit'], soft = false): ShaftCheck {
   return { id, status: ok ? 'ok' : soft ? 'warn' : 'fail', value, limit, dec, unit };
 }

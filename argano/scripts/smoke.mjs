@@ -1,7 +1,8 @@
 // End-to-end smoke test against a running Argano (local or staging), with a real browser:
 //   health → public page (no console or CSP errors) → sign-in → installation → calculation → saved snapshot with
-//   reproduced hash → calculation report (PDF) → new user who must change the password → a second company that
-//   cannot open the first company's calculation.
+//   reproduced hash → calculation report (PDF) → shaft design by hand, its DXF, a calculation from it with the plan in
+//   its report → new user who must change the password → a second company that cannot open the first company's
+//   calculation, shaft design or DXF.
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… node scripts/smoke.mjs
 // Playwright is not a dependency of the app: the local install is used, else the global one.
 import { createRequire } from 'node:module';
@@ -80,6 +81,31 @@ try {
   const body = await pdf.body();
   assert.equal(body.subarray(0, 5).toString('latin1'), '%PDF-');
 
+  step('shaft design by hand, its DXF, a calculation from it and its report');
+  await page.goto(`${projectUrl}/vano`);
+  await page.click('.shaft-input [role="radio"]:nth-child(2)');
+  const size = page.locator('.shaft-input .form-grid input');
+  await size.nth(0).fill('1650');
+  await size.nth(1).fill('1800');
+  await page.waitForSelector('.shaft-output svg.plan');
+  await Promise.all([page.waitForURL(/\/shaft-designs\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.btn-primary')]);
+  const designUrl = page.url();
+  assert.match(await page.textContent('dl.cartiglio'), /riprodotto/, 'design hash reproduced');
+  const dxfHref = await page.getAttribute('a[href$="/dxf"]', 'href');
+  const dxf = await page.request.get(`${BASE}${dxfHref}`);
+  assert.equal(dxf.status(), 200);
+  const dxfText = await dxf.text();
+  assert.ok(dxfText.includes('CABINA') && dxfText.trimEnd().endsWith('EOF'), 'DXF with the layer of the car');
+  await page.click('a[href*="/calc?design="]');
+  await page.waitForSelector('.verdict .big');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  assert.equal(await page.locator('dl.cartiglio a[href*="/shaft-designs/"]').count(), 1, 'calculation linked to the design');
+  const planPdf = await page.request.get(`${BASE}${await page.getAttribute('a[href*="/relazione"]', 'href')}`);
+  assert.equal(planPdf.status(), 200);
+  const planBody = await planPdf.body();
+  assert.equal(planBody.subarray(0, 5).toString('latin1'), '%PDF-');
+  assert.ok(planBody.length > body.length, 'the report with the plan is larger');
+
   assert.deepEqual(errors, [], 'browser errors');
   step('an archived installation is read only');
   await page.goto(projectUrl);
@@ -136,6 +162,8 @@ try {
   assert.equal(other.status(), 404, 'calculation of another company');
   const otherPdf = await page.request.get(`${BASE}${href}`);
   assert.equal(otherPdf.status(), 404, 'report of another company');
+  assert.equal((await page.goto(designUrl)).status(), 404, 'shaft design of another company');
+  assert.equal((await page.request.get(`${BASE}${dxfHref}`)).status(), 404, 'DXF of another company');
 
   step('all good');
 } finally {

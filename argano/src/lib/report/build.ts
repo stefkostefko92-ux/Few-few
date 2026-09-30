@@ -5,6 +5,7 @@ import calcIt from '../../../messages/calc/it.json';
 import appIt from '../../../messages/it.json';
 import { deg } from '@/calc/math';
 import { PROFILO, VOCI, type Stato } from '@/calc/norme';
+import { vociOfDesign } from '@/shaft';
 import type { BrakeCase, CheckId, CheckStatus, FormValues, TractionCase } from '@/calc/types';
 import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
@@ -12,6 +13,7 @@ import { techTables, type Cell } from '../present/tables';
 import { textsFor, verdictStatus } from '../present/texts';
 import { makePres, type CalcKey } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
+import { shaftBlocks, type ReportDesign } from './shaft';
 
 export interface ReportInput {
   calc: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; profileId: string; author: string | null };
@@ -19,6 +21,8 @@ export interface ReportInput {
   company: string;
   reviews: readonly { name: string | null; role: keyof typeof appIt.roles | null; note: string | null; createdAt: Date }[];
   values: FormValues;
+  /** the shaft design the calculation comes from, when there is one */
+  design?: ReportDesign | null;
   generatedAt: Date;
 }
 
@@ -42,7 +46,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   const section = (title: string): void => { n += 1; B.push({ t: 'h2', text: `${n}. ${title}` }); };
   const st = (s: CheckStatus): string => X.st(s);
 
-  const counts = VOCI.reduce<Partial<Record<Stato, number>>>((acc, v) => ({ ...acc, [v.stato]: (acc[v.stato] ?? 0) + 1 }), {});
+  const vano = r.design ? vociOfDesign(r.design.layout.inputs.access) : [];
+  const counts = [...VOCI, ...vano].reduce<Partial<Record<Stato, number>>>((acc, v) => ({ ...acc, [v.stato]: (acc[v.stato] ?? 0) + 1 }), {});
   const countText = (Object.keys(STATO) as Stato[]).filter((s) => counts[s]).map((s) => `${counts[s]} ${STATO[s]}`).join(' · ');
 
   B.push({ t: 'h1', text: `Relazione di calcolo — ${repl ? "sostituzione dell'argano" : "argano per impianto nuovo"}` });
@@ -58,7 +63,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Verifica dell'argano geared ${repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${t(`lay_${I.layout}`)}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull'albero secondo il modello di calcolo del software.${repl ? " La sostituzione del macchinario è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i.; gli adeguamenti seguono la UNI 10411-1:2024." : ''}` });
+  B.push({ t: 'p', text: `Verifica dell'argano geared ${repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${t(`lay_${I.layout}`)}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull'albero secondo il modello di calcolo del software.${repl ? " La sostituzione del macchinario è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i.; gli adeguamenti seguono la UNI 10411-1:2024." : ''}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
   section('Riferimenti normativi');
   B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: PROFILO.documenti.map((d) => [d.sigla, d.ambito]), widths: [0.38, 0.62], align: ['l', 'l'] });
 
@@ -74,6 +79,11 @@ export function buildReport(r: ReportInput): ReportDoc {
     [t('buffers'), I.ae > 0.5 ? 'sì' : 'no'], [t('rh'), `${fmt(I.rh, 2)} m`],
   ];
   B.push({ t: 'kv', rows: plant });
+
+  if (r.design) {
+    section('Vano e cabina');
+    B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }));
+  }
 
   section('Argano verificato');
   B.push({ t: 'kv', rows: X.machineRows(N, res) });
@@ -160,8 +170,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   section('Voci normative usate e loro stato');
   const ids = new Set(res.checks.map((c) => c.id));
   const used = VOCI.filter((v) => v.verifiche?.some((c) => ids.has(c)));
-  B.push({ t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: used.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),
-    status: used.map((v) => (v.stato === 'confermato' ? 'ok' : v.stato === 'da_verificare' ? 'warn' : 'info')), widths: [0.27, 0.33, 0.26, 0.14], align: ['l', 'l', 'l', 'l'] });
+  const listed = [...used, ...vano];
+  B.push({ t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),
+    status: listed.map((v) => (v.stato === 'confermato' ? 'ok' : v.stato === 'da_verificare' ? 'warn' : 'info')), widths: [0.27, 0.33, 0.26, 0.14], align: ['l', 'l', 'l', 'l'] });
 
   section(t('lg_title'));
   B.push({ t: 'p', text: t('lg_short') });

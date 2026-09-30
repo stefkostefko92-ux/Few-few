@@ -48,7 +48,7 @@ export interface CadModel {
 }
 
 /** Layers usually holding annotations, not walls: hidden by default so the measure does not stop on them. */
-const ANNOTATION = /(quot|dim|text|testo|scritt|hatch|tratt|campit|arred|furn|asse|axis|griglia|grid|defpoints)/i;
+const ANNOTATION = /(quot|dim|text|test[oi]|scritt|hatch|tratt|campit|arred|furn|asse|axis|griglia|grid|defpoints)/i;
 export const isAnnotationLayer = (name: string): boolean => ANNOTATION.test(name);
 
 /** "AC1027"-style version of a DWG, null when the bytes are not a DWG. */

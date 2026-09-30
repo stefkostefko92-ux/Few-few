@@ -23,7 +23,7 @@ const fmt = makeFmt('it-IT');
 
 // The browser only shows a preview: the server validates the values, recomputes everything with the same engine
 // and stores the immutable snapshot with its hash. The browser's result is never trusted.
-export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown }): Promise<SaveResult> {
+export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; designId?: unknown }): Promise<SaveResult> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
   if (user.mustChangePassword || !can(user.role, 'calc:create')) return { ok: false, error: 'forbidden' };
@@ -33,6 +33,13 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   if (!values.success) return { ok: false, error: 'invalidFields', fields: values.error.issues.map((i) => String(i.path[0] ?? '')) };
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
+  // the shaft design it starts from, if any: of the same installation of the same company
+  const designId = input.designId == null ? null : idSchema.safeParse(input.designId);
+  if (designId && !designId.success) return { ok: false, error: 'invalidFields' };
+  const design = designId?.success
+    ? await prisma.shaftDesign.findFirst({ where: { id: designId.data, projectId: project.id, companyId: user.companyId }, select: { id: true } })
+    : null;
+  if (designId && !design) return { ok: false, error: 'notFound' };
 
   const V = mirrorRopes(values.data);
   const ctx = readInputs(V);
@@ -44,7 +51,7 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
       companyId: user.companyId, projectId: project.id, userId: user.id, label: label.data,
       engineVersion: snapshot.engine, profileId: snapshot.profile, inputs: snapshot.values ?? {}, results: snapshot.results,
       sha256: snapshotHash(snapshot), verdict: VERDICT[verdictStatus(res)],
-      failCount: res.fails.length, warnCount: res.checks.filter((c) => c.status === 'warn').length, summary,
+      failCount: res.fails.length, warnCount: res.checks.filter((c) => c.status === 'warn').length, summary, shaftDesignId: design?.id ?? null,
     },
     select: { id: true },
   });

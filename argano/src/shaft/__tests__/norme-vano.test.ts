@@ -2,8 +2,8 @@
 // default and every check, and its texts must say the numbers the layout uses.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULTS, KV, VOCI_VANO } from '../index';
-import type { CostanteVano, ShaftCheckId } from '../index';
+import { DEFAULTS, KV, VOCI_VANO, vociOfDesign } from '../index';
+import type { Access, CostanteVano, ShaftCheckId } from '../index';
 
 const CHECKS: readonly ShaftCheckId[] = ['v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen'];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
@@ -45,4 +45,13 @@ test('i testi riportano i numeri usati', () => {
   assert.ok(voce('modello.passo').valore.includes(`${KV.sizeStep} mm`));
   const typical = voce('ingombri.tipici').valore;
   for (const v of Object.values(DEFAULTS)) assert.ok(typical.includes(`${v} mm`), `${v} mm`);
+});
+
+test('voci di un progetto: solo il caso di accessibilità scelto', () => {
+  const acc = (a: Access): string[] => vociOfDesign(a).filter((v) => v.gruppo === 'accessibilita').map((v) => v.id);
+  assert.deepEqual(acc('none'), []);
+  assert.deepEqual(acc('dm236_existing'), ['accessibilita.esistenti']);
+  assert.deepEqual(acc('dm236_residential'), ['accessibilita.residenziale']);
+  assert.deepEqual(acc('dm236_public'), ['accessibilita.non.residenziale']);
+  assert.equal(vociOfDesign('none').length, VOCI_VANO.filter((v) => v.gruppo !== 'accessibilita').length);
 });

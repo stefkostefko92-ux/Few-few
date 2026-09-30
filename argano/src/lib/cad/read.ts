@@ -2,7 +2,7 @@
 // never leaves the user's computer, only the measures taken on it are saved. DWG from AutoCAD R14 (AC1014) on; older
 // files must be saved again or exported as DXF. Blocks are exploded (up to 8 levels), curves cut into segments, and
 // mirrored entities (extrusion 0,0,−1) turned back into world coordinates.
-import * as acad from '@node-projects/acad-ts';
+import { acad } from './acad';
 import { dwgVersion, isAnnotationLayer, unitsOf, type CadLayer, type CadModel } from './model';
 
 export const MAX_SEGMENTS = 400_000;
@@ -78,14 +78,14 @@ export function readCad(bytes: Uint8Array, name: string): CadModel {
       for (const x of e.explode()) visit(x, depth + 1, layerName);
       return;
     }
-    const li = layerIndex(e.layer ?? null, inherited);
-    if (e instanceof acad.Line) push(e.startPoint.x, e.startPoint.y, e.endPoint.x, e.endPoint.y, li);
-    else if (e instanceof acad.LwPolyline) chain(e.getPoints(16), e.isClosed, mirrored(e.normal), li);
-    else if (e instanceof acad.Polyline) chain(e.getPoints(16), e.isClosed, mirrored(e.normal), li);
-    else if (e instanceof acad.Arc) chain(e.polygonalVertexes(24), false, mirrored(e.normal), li);
-    else if (e instanceof acad.Circle) chain(e.polygonalVertexes(48), true, mirrored(e.normal), li);
-    else if (e instanceof acad.Ellipse) chain(e.polygonalVertexes(64), false, false, li);
-    else if (e instanceof acad.Spline) chain(e.polygonalVertexes(64), e.isClosed, false, li);
+    const li = (): number => layerIndex(e.layer ?? null, inherited);
+    if (e instanceof acad.Line) push(e.startPoint.x, e.startPoint.y, e.endPoint.x, e.endPoint.y, li());
+    else if (e instanceof acad.LwPolyline) chain(e.getPoints(16), e.isClosed, mirrored(e.normal), li());
+    else if (e instanceof acad.Polyline) chain(e.getPoints(16), e.isClosed, mirrored(e.normal), li());
+    else if (e instanceof acad.Arc) chain(e.polygonalVertexes(24), false, mirrored(e.normal), li());
+    else if (e instanceof acad.Circle) chain(e.polygonalVertexes(48), true, mirrored(e.normal), li());
+    else if (e instanceof acad.Ellipse) chain(e.polygonalVertexes(64), false, false, li());
+    else if (e instanceof acad.Spline) chain(e.polygonalVertexes(64), e.isClosed, false, li());
     else skipped += 1;
   };
   for (const e of space.entities) visit(e, 0, null);
