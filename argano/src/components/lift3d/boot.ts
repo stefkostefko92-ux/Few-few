@@ -200,7 +200,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
       if (slowRun >= SLOW_RUN / 2 && governor.floor(now)) {
         resize();
         slowRun = 0;
-      } else if (slowRun >= SLOW_RUN || governor.hopeless) return fail();
+      } else if (slowRun >= SLOW_RUN) return fail();
     }
     if (governor.sample(dt * 1000, now)) resize();
     const f = opts.clock.frame();
