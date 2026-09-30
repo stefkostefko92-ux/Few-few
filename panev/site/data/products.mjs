@@ -18,7 +18,7 @@ export const PATENT = { number: '202023000002112' };
 
 export const CATALOG_PDF = '/docs/catalogo-staffe-panev-2026.pdf';
 export const CATALOG_EDITION = '2026';
-export const CATALOG_PAGES = 95;
+export const CATALOG_PAGES = 69;
 
 // Снимките (img) са 3D рендерите на комплекта от img/3d/ (прави ги `cd 3d && npm run site`).
 

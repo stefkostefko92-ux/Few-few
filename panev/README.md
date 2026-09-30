@@ -32,7 +32,7 @@ panev/
 ├── index.html · prodotti.html · catalogo.html · contatti.html
 │   privacy.html · condizioni.html          ← генерирани (IT)
 ├── en/ · bg/                 ← генерирани (EN, BG)
-├── docs/catalogo-staffe-panev-2026.pdf     ← каталогът (95 стр., прави го `cd 3d && npm run catalog-pdf`)
+├── docs/catalogo-staffe-panev-2026.pdf     ← каталогът (69 стр., прави го `cd 3d && npm run catalog-pdf`)
 ├── img/                      ← изображения, img/catalogo/ превюта, img/brand/ оригиналът на логото
 ├── css/site.css · js/site.js ← новият фронт
 ├── fonts/Inter-var-*.woff2   ← self-hosted, вкл. кирилица
