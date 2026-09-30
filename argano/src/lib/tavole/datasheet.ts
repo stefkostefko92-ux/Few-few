@@ -118,11 +118,11 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
   out.push(T([c1 + 1.6, r1 - 6], 'ELABORATO DA', 2), fitted([xR - 1.6, r1 - 6.3], d.author, 3.6, 20, { align: 'r' }));
   out.push(T([c1 + 1.6, r1 - 15], 'DATA', 2), fitted([xR - 1.6, r1 - 15.3], d.date, 3.6, 28, { align: 'r' }));
   // approval, revisions, logo, plant number, drawing number
-  const cA = 58, cB = 118;
+  const cA = 58, cB = 118, lastRev = d.revisions.at(-1);
   out.push(L([cA, r2], [cA, y0], 0.3), L([cB, r2], [cB, r2 - 13.5], 0.2), L([cB + 16, r2], [cB + 16, r2 - 13.5], 0.2));
   out.push(T([xL + 1.2, r2 - 3], 'FIRMA PER APPROVAZIONE DEL', 1.8), T([xL + 1.2, r2 - 5.4], 'PRESENTE PROGETTO :', 1.8), T([xL + 1.2, y0 + 14.2], 'Data', 1.4));
   out.push(L([xL, y0 + 10.5], [cA, y0 + 10.5], 0.3), L([xL, y0 + 4.2], [cA, y0 + 4.2], 0.2), L([xL + 23, y0], [xL + 23, y0 + 4.2], 0.2));
-  out.push(T([xL + 1.2, y0 + 6], 'DIS. N°', 1.8), fitted([xL + 12, y0 + 5.8], d.number, 4.6, cA - xL - 13), T([xL + 1.2, y0 + 1.3], `PAGINA N° 1/${d.pages}`, 1.7), T([xL + 24, y0 + 1.3], 'R_  __/__/__', 1.7));
+  out.push(T([xL + 1.2, y0 + 6], 'DIS. N°', 1.8), fitted([xL + 12, y0 + 5.8], d.number, 4.6, cA - xL - 13), T([xL + 1.2, y0 + 1.3], `PAGINA N° 1/${d.pages}`, 1.7), fitted([xL + 24, y0 + 1.3], lastRev ? `${lastRev.mark} ${lastRev.date}` : 'R_  __/__/__', 1.7, cA - xL - 25));
   out.push(T([(cA + cB) / 2, r2 - 2.8], 'REVISIONE DISEGNO', 1.9, { align: 'c' }), T([cB + 8, r2 - 2.8], 'DATA', 1.9, { align: 'c' }), T([(cB + 16 + c1) / 2, r2 - 2.8], 'FIRMA', 1.9, { align: 'c' }));
   for (let i = 0; i < 3; i++) {
     const yr = r2 - 3.8 - i * 3.25, rev = d.revisions[i];

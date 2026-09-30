@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
-import { getProject, listCalculations, listShaftDesigns } from '@/server/queries';
+import { getProject, listCalculations, listDrawingSets, listShaftDesigns } from '@/server/queries';
 import { setProjectArchivedAction } from '@/server/project-actions';
 import VerdictPill from '@/components/VerdictPill';
 import Crumbs from '@/components/Crumbs';
@@ -20,8 +20,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const user = await requireCapability(locale, 'projects:view');
   const p = await getProject(user, id);
   if (!p) notFound();
-  const [t, tc, ts, calcs, designs, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('shaft'),
-    listCalculations(user, p.id), listShaftDesigns(user, p.id), getLocale()]);
+  const [t, tc, ts, tt, calcs, designs, sets, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('shaft'),
+    getTranslations('tavole'), listCalculations(user, p.id), listShaftDesigns(user, p.id), listDrawingSets(user, p.id), getLocale()]);
   const fd = dateFormat(locale);
   const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
   const editable = can(user.role, 'projects:edit') && !p.archivedAt;
@@ -80,6 +80,30 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
                     <td data-label={ts('col_design')} className="spec">{d.summary}</td>
                     <td data-label={ts('source')}>{d.source ? 'DXF/DWG' : ts('sourceHand')}</td>
                     <td data-label={ts('col_author')}>{d.user?.name ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2>{tt('list')}</h2>
+          <Link className="btn" href={`/app/projects/${p.id}/impianto`}>{tt('plantTitle')}</Link>
+        </div>
+        {sets.length === 0 ? <p className="note">{tt('none')} {tt('needDesign')}</p> : (
+          <div className="table-panel">
+            <table className="data-table stack">
+              <thead><tr><th>{tt('number')}</th><th>{tt('revision')}</th><th>{tc('col_date')}</th><th>{tc('col_author')}</th></tr></thead>
+              <tbody>
+                {sets.map((x) => (
+                  <tr key={x.id}>
+                    <td className="row-title"><Link href={`/app/drawing-sets/${x.id}`} className="num font-semibold">{x.number}</Link></td>
+                    <td data-label={tt('revision')}>{x.revision ? `R${x.revision}` : tt('firstIssue')}</td>
+                    <td data-label={tc('col_date')}>{fd.dateTime(x.createdAt)}</td>
+                    <td data-label={tc('col_author')}>{x.user?.name ?? x.authorInitials}</td>
                   </tr>
                 ))}
               </tbody>

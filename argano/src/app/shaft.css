@@ -9,10 +9,11 @@
 fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 fieldset.field > legend { font-size: 13.5px; font-weight: 500; padding: 0; margin-bottom: 6px; }
 .seg-row { display: inline-flex; flex-wrap: wrap; gap: 1px; width: fit-content; max-width: 100%; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; background: var(--rule); }
-.seg-row > label, .seg-row > button { position: relative; flex: 1 0 auto; text-align: center; font: 500 13.5px/1.2 var(--font-body); color: var(--ink-2); background: var(--surface); border: 0; padding: 9px 13px; cursor: pointer; }
+.seg-row > label, .seg-row > button, .seg-row > a { position: relative; flex: 1 0 auto; text-align: center; font: 500 13.5px/1.2 var(--font-body); color: var(--ink-2); background: var(--surface); border: 0; padding: 9px 13px; cursor: pointer; }
 .seg-row > label input { position: absolute; opacity: 0; pointer-events: none; }
 .seg-row > .on { background: var(--accent); color: var(--accent-ink); }
-.seg-row > label:focus-within, .seg-row > button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.seg-row > a { text-decoration: none; font-variant-numeric: tabular-nums; min-width: 2.6em; }
+.seg-row > label:focus-within, .seg-row > button:focus-visible, .seg-row > a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 .shaft-input { gap: 14px; }
 .shaft-input h2 + .seg-row { margin-top: -2px; }
@@ -39,23 +40,34 @@ fieldset.field > legend { font-size: 13.5px; font-weight: 500; padding: 0; margi
 .layers li label { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; min-width: 0; }
 .layers li .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* the plan: a drawing sheet */
-.plan { display: block; width: 100%; height: auto; max-height: 72vh; background: var(--surface2); border: 1px solid var(--rule); border-radius: 10px; }
-.plan polygon, .plan polyline, .plan line { vector-effect: non-scaling-stroke; stroke-width: 1; fill: none; stroke: var(--ink-2); stroke-linejoin: round; }
-.plan .fill-wall { fill: var(--wall-hatch); stroke: var(--ink-2); }
-.plan .hatch-line { stroke: var(--rule-strong); stroke-width: 7; }
-.plan .pl-vano { stroke: var(--ink); stroke-width: 1.6; }
-.plan .fill-car { fill: var(--car); stroke: var(--accent); stroke-width: 1.2; }
-.plan .fill-cw { fill: color-mix(in srgb, var(--steel) 22%, var(--surface)); stroke: var(--ink-2); }
-.plan .pl-contrappeso { stroke: var(--muted); }
-.plan .pl-guide { fill: color-mix(in srgb, var(--steel) 30%, transparent); stroke: var(--muted); }
-.plan .fill-steel { fill: var(--steel); stroke: var(--ink-2); }
-.plan .fill-door, .plan .pl-porte { stroke: var(--accent); }
-.plan .fill-door { fill: var(--accent-soft); }
-.plan .pl-quote line { stroke: var(--muted); stroke-width: .9; }
-.plan text { font-family: var(--font-cond); fill: var(--ink); font-weight: 500; paint-order: stroke; stroke: var(--surface2); stroke-width: 9px; stroke-linejoin: round; }
-.plan .pt-quote { fill: var(--ink-2); font-weight: 500; font-variant-numeric: tabular-nums; }
-.plan .pt-testi { font-weight: 600; letter-spacing: .02em; }
+/* the views of the drawing kernel: sheets of white paper in every theme, like the PDF */
+.shaft-views { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 12px; align-items: start; }
+@media (max-width: 760px) { .shaft-views { grid-template-columns: minmax(0, 1fr); } }
+.sheet-view, .sheet-page { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sheet-view figcaption, .sheet-page figcaption { font-size: 12.5px; color: var(--muted); text-align: right; }
+.sheet-svg { display: block; width: 100%; height: auto; max-height: 76vh; border: 1px solid var(--rule); border-radius: 8px; background: #fff; }
+.sheet-view-tall .sheet-svg { max-height: 90vh; }
+.sheet-page .sheet-svg { max-height: none; box-shadow: 0 1px 3px rgb(0 0 0 / .12); }
+.sheet-page { max-width: 900px; }
+
+/* the designer's vertical data and machine room */
+.vertical-options, .room-options { border-top: 1px solid var(--rule); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.vertical-options > summary, .room-options > summary { cursor: pointer; font-weight: 600; }
+.floors { width: 100%; border-collapse: collapse; font-size: 14px; }
+.floors caption { text-align: left; font-weight: 500; padding-bottom: 4px; }
+.floors th { text-align: left; font: 500 12.5px var(--font-body); color: var(--muted); padding: 2px 4px; }
+.floors td { padding: 2px 4px; }
+.floors td .input { min-width: 0; width: 100%; }
+.floors td:nth-child(1) { width: 18%; }
+.floors td:nth-child(4) { text-align: center; }
+
+label.check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+label.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* drawing sets */
+.plant-form fieldset > legend { font-weight: 600; padding: 0 6px; }
+.logo-preview { margin: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.logo-preview img { max-width: min(360px, 100%); height: auto; background: #fff; border: 1px solid var(--rule); border-radius: 6px; padding: 8px; }
 
 /* figures and checks */
 .shaft-results { display: flex; flex-direction: column; gap: 12px; }

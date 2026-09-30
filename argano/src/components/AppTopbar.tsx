@@ -15,6 +15,7 @@ export default async function AppTopbar({ user }: { user: SessionUser }) {
     { href: '/app', label: t('projects') },
     { href: '/app/norme', label: t('norms') },
     ...(can(user.role, 'users:manage') ? [{ href: '/app/team', label: t('team') }] : []),
+    ...(can(user.role, 'company:edit') ? [{ href: '/app/company', label: t('company') }] : []),
     ...(can(user.role, 'audit:view') ? [{ href: '/app/audit', label: t('audit') }] : []),
     ...(can(user.role, 'platform:admin') ? [{ href: '/app/admin', label: t('admin') }] : []),
   ];

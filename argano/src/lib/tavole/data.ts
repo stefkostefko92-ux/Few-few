@@ -124,7 +124,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   const checks: DataSheet['checks'] = L.checks.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
-    if (c.id === 'm_door' && room) return [label, `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, OUTCOME[c.status]];
+    if (c.id === 'm_door' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, OUTCOME[c.status]];
     return [label, withUnit(c.value, c.dec, c.unit), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, OUTCOME[c.status]];
   });
   const sp = spaceLegend(L, fmt);

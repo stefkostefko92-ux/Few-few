@@ -1,6 +1,7 @@
 import 'server-only';
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
+import { DESIGN_SELECT } from './drawing-compose';
 
 // Reads, always scoped to the company of the signed-in user: an id from another company is "not found".
 
@@ -27,7 +28,7 @@ export function listCalculations(user: SessionUser, projectId: string) {
     orderBy: { createdAt: 'desc' },
     take: 200,
     select: {
-      id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, sha256: true, createdAt: true, engineVersion: true,
+      id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, sha256: true, createdAt: true, engineVersion: true, shaftDesignId: true,
       user: { select: { name: true } }, _count: { select: { reviews: true } },
     },
   });
@@ -102,4 +103,42 @@ export async function listAuditNamed(user: SessionUser) {
     ...companies.map((c) => [c.id, c.name] as const),
   ]);
   return { rows, names };
+}
+
+export function listDrawingSets(user: SessionUser, projectId: string) {
+  return prisma.drawingSet.findMany({
+    where: { projectId, companyId: user.companyId },
+    orderBy: [{ year: 'desc' }, { seq: 'desc' }, { revision: 'desc' }],
+    take: 200,
+    select: { id: true, number: true, revision: true, pages: true, createdAt: true, calculationId: true, authorInitials: true, user: { select: { name: true } } },
+  });
+}
+
+export function getDrawingSet(user: SessionUser, id: string) {
+  return prisma.drawingSet.findFirst({
+    where: { id, companyId: user.companyId },
+    include: {
+      project: { select: { id: true, name: true, archivedAt: true } },
+      user: { select: { name: true } },
+      logo: { select: { mime: true, data: true } },
+      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true } },
+      shaftDesign: { select: DESIGN_SELECT },
+    },
+  });
+}
+
+/** The other revisions of the same drawing number (for the history on a set's page). */
+export function listRevisions(user: SessionUser, year: number, seq: number) {
+  return prisma.drawingSet.findMany({
+    where: { companyId: user.companyId, year, seq },
+    orderBy: { revision: 'asc' },
+    select: { id: true, revision: true, createdAt: true, revisions: true },
+  });
+}
+
+export function getCompanyLogo(user: SessionUser) {
+  return prisma.company.findUnique({
+    where: { id: user.companyId },
+    select: { name: true, logo: { select: { id: true, mime: true, data: true, width: true, height: true, createdAt: true } } },
+  });
 }

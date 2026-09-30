@@ -2,15 +2,22 @@ import 'server-only';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { env } from '../env';
+import type { DrawingDoc } from '@/drawing';
 import type { ReportDoc } from './model';
 
 const TIMEOUT_MS = 30_000;
 const MAX_BYTES = 25 * 1024 * 1024;
 
-// report/relazione.py draws the model (JSON on stdin, PDF on stdout); no shell, fixed arguments, bounded time and size.
-export function renderPdf(doc: ReportDoc): Promise<Buffer> {
+/** The relazione: report/relazione.py lays out the blocks. */
+export const renderPdf = (doc: ReportDoc): Promise<Buffer> => runRenderer('relazione.py', doc);
+
+/** The drawing set: report/tavole.py paints the sheets laid out by the drawing kernel. */
+export const renderTavole = (doc: DrawingDoc): Promise<Buffer> => runRenderer('tavole.py', doc);
+
+// A renderer of report/ draws the model (JSON on stdin, PDF on stdout); no shell, fixed arguments, bounded time and size.
+function runRenderer(name: 'relazione.py' | 'tavole.py', doc: ReportDoc | DrawingDoc): Promise<Buffer> {
   const { PYTHON_BIN, REPORT_FONT_DIR } = env();
-  const script = path.join(process.cwd(), 'report', 'relazione.py');
+  const script = path.join(process.cwd(), 'report', name);
   return new Promise((resolve, reject) => {
     // only what the renderer needs: no secrets from the server environment reach the child process
     const childEnv: NodeJS.ProcessEnv = {

@@ -64,7 +64,7 @@ export function chainShapes(c: Chain, place: Place, edges: Box): Shape[] {
     // a text longer than its segment shrinks down to DIM.minText; still too long, it goes past the end of the chain
     // that stays within the drawing, or beside the line
     const full = textWidth(text, { size, cond: true }), k = full + 0.6 > len ? Math.max(DIM.minText / size, (len - 0.6) / full) : 1;
-    const ts = size * k, w = full * k, off = horiz ? DIM.textGap : -DIM.textGap;
+    const ts = k < 1 ? Math.max(DIM.minText, size * k) : size, w = full * (ts / size), off = horiz ? DIM.textGap : -DIM.textGap;
     const mid = (a + b) / 2, halo = !c.side, lo = horiz ? edges.x0 : edges.y0, hi = horiz ? edges.x1 : edges.y1;
     let at: readonly [number, number], align: 'l' | 'c' | 'r' = 'c';
     if (w + 0.6 <= len) {

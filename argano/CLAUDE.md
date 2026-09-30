@@ -8,9 +8,12 @@ UNI EN 81-50:2020, UNI 10411-1:2024. Изследването е в `research/ar
 
 _Етап 2 (сега): Next.js 15 приложение върху чистия модул `src/calc/` — фирми и 7 роли, асансьори
 (проекти), калкулатор с резултати на живо, неизменими записи с SHA-256, relazione di calcolo в PDF,
-IT/EN/BG. Проект на шахтата (`src/shaft/`): мерене с клик върху DXF/DWG чертеж в браузъра или мерки на ръка →
-най-голямата кабина, врати, водачи, противотежест и проверки в план → план в DXF и в relazione. Root правилата
-са в кореновия `CLAUDE.md`._
+IT/EN/BG. Проект на шахтата (`src/shaft/`, двигател 2): мерене с клик върху DXF/DWG чертеж в браузъра или мерки на
+ръка → кабина, един/два срещуположни/два съседни входа (арката „a zaino“), водачи, противотежест, спирки, приямък,
+горна част, буфери, машинно помещение и проверките им → план в DXF и в relazione. **Комплект чертежи**
+(`src/lib/tavole/`): лист 1 с данните, товарите P1–P9, силите по водачите и проверките, планове, разрез A-A,
+машинно, приямък — A4 листове с щампа, лого на фирмата, номер ГГ-NNN и ревизии, в PDF и на екрана. Root
+правилата са в кореновия `CLAUDE.md`._
 
 ## Команди (в `argano/`)
 
@@ -35,28 +38,41 @@ BASE_URL=… node scripts/render-poster.mjs            # постерът на 3
 ```
 src/calc/            Чист изчислителен модул: без I/O, без framework (ESLint го пази). snapshot.ts — каноничният
                      вид на резултатите, който се записва и хешира (и golden тестът ползва).
-src/shaft/           Чист двигател на шахтата в план: area (Табл. 6/8 на EN 81-20), layout (кабина, врати, водачи,
-                     противотежест, проверки), drawing (примитиви в mm: SVG, DXF и PDF ги ползват), norme (KV,
-                     DEFAULTS, VOCI_VANO), snapshot (SHAFT_ENGINE_VERSION). Координати: x по стената с вратите, y навътре.
+src/drawing/         Чертожно ядро: хартиени примитиви в mm (y нагоре), изгледи в стандартен мащаб (fitView), размерни
+                     вериги, символи, лист A4 (рамка, щампа, таблици), бетонна текстура, метрики на DejaVu Sans в TS
+                     (scripts/font-metrics.py ги генерира) — подреждането е в TS, SVG и ReportLab само рисуват.
+src/shaft/           Чист двигател на шахтата: area (Табл. 6/8 на EN 81-20), layout (кабина, входове, водачи, противотежест,
+                     проверки в план), vertical + section (разрез A-A и проверките му), room + machine-room (машинно),
+                     plan-view/plan-dims, section-view/section-dims, room-view (обекти за ядрото), rails (профили T),
+                     norme + norme-vert (KV, KV_VERT, DEFAULTS, регистърът), snapshot (SHAFT_ENGINE_VERSION).
+                     Координати в план: x по стената на вход A, y навътре; в разреза x = y на плана, z от най-ниската спирка.
+src/lib/tavole/      Комплектът чертежи: build (листовете), views (изгледите без хартията), datasheet + data (лист 1),
+                     loads (P1–P9), forces (сили по водачите, EN 81-50 5.10), notes (наш текст на бележките), extras
+                     (легенди, „LATO FERMATE“, знаци на разрезите), compose (снимките на издадения комплект, zod).
 src/lib/cad/         DXF/DWG: model (отсечки по слоеве), read (acad-ts; само в браузъра), measure (лъчи от точката на
                      клика, доминантна посока), export (план → DXF), acad.ts (възстановява имената на класовете).
 src/lib/present/     Текстовете и таблиците на прототипа v12 като чисти функции: ползват ги и екранът, и PDF-ът.
-src/lib/report/      build.ts — моделът на relazione (италиански); shaft.ts — секцията „Vano e cabina“ с плана;
-                     render.ts — вика report/relazione.py.
+src/lib/report/      build.ts — моделът на relazione (италиански); shaft.ts — секцията „Vano e cabina“ с плана (ядрото);
+                     render.ts — вика report/relazione.py или report/tavole.py.
 src/lib/             auth (JWT в httpOnly бисквитка), rbac (7 роли по способности), schemas (zod), env, db, log (pino),
                      ratelimit, audit, calc-input (zod за стойностите на формата), snapshot-hash, seo.
 src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts).
 src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
-src/components/shaft/ Проектантът на шахтата: SurveyPanel + CadViewer (canvas, pan/zoom, клик), опции, PlanSvg, резултати.
+src/components/shaft/ Проектантът на шахтата: SurveyPanel + CadViewer (canvas, pan/zoom, клик), опции (план, вертикални данни,
+                     машинно), ShaftViews (план + разрез), резултати. src/components/drawing/ShapesSvg — ядрото в SVG.
+src/components/tavole/ Данните на съоръжението, логото на фирмата, издаване и ревизия на комплект.
 src/components/machine/ 3D сцената на началната страница: машината от пример A (parts/ — рама, редуктор, шайба,
                      спирачка, мотор; materials — емайл, струговано с анизотропия), конвейерът scene → GTAO → TRAA →
                      bloom → grade (ACES) и нивата на качество — по техниките на 3D двигателя boy
                      (Nexus/client/src/combat/engine/boy). MachineStage: постер веднага, three.js лениво.
-src/app/             [locale]/… страниците, api/ (health, relazione PDF, DXF на проект, lista-verifica), robots, sitemap, llms.txt.
+src/app/             [locale]/… страниците, api/ (health, relazione PDF, DXF на проект, PDF на комплект, lista-verifica), robots,
+                     sitemap, llms.txt.
 messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (358 ключа × 3 езика).
 report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
-report/plan_drawing.py Планът в PDF: най-големият стандартен мащаб, който се побира (1:10…1:200), щриховка, ореол на текстовете.
-prisma/              schema + migrations/0_init (тригер: без UPDATE на Calculation), 1_shaft_design (същото за ShaftDesign).
+report/tavole.py     Рисува комплекта чертежи (JSON от ядрото → PDF); fonts.py регистрира DejaVu; plan_drawing.py рисува
+                     плана в relazione със същия Painter. ReportLab 3.6 (Debian bookworm) и по-нов.
+prisma/              schema + migrations/0_init (тригер: без UPDATE на Calculation), 1_shaft_design (същото за ShaftDesign),
+                     2_drawing_sets (данни на съоръжението, лога, комплекти и брояч; тригери: комплектът и логото не се менят).
 deploy/              deploy.sh (сървърът), nginx/argano.conf. Dockerfile, docker-compose.yml, docker-entrypoint.sh.
 ```
 
@@ -91,5 +107,11 @@ deploy/              deploy.sh (сървърът), nginx/argano.conf. Dockerfile
   `scripts/render-poster.mjs`, за да съвпада постерът с първия жив кадър.
 - **Числата на екрана** минават през `makeFmt` (фиксирани разделители, не ICU на средата): Node и браузърът
   трябва да дават един и същ текст, иначе хидратацията на React пада (ICU 78: 2500, Chromium 141: 2.500).
+- **Комплект чертежи:** издаденият комплект е неизменим (тригер) и пази снимка на данните на съоръжението, проекта,
+  името на фирмата, логото (ред в `CompanyLogo`, също неизменим) и SHA-256 на каноничния чертеж; PDF се рисува
+  наново само ако текущите двигатели дават същия хеш (иначе 409 → нова ревизия). Номерът ГГ-NNN идва от
+  `DrawingCounter` в транзакцията на издаването; ревизията е нов ред със същия номер и бележка.
+- **Логото** е PNG или JPEG, познато по магическите байтове, до 300 KB (`src/lib/logo.ts`); пази се в базата.
+- **Бележките за клиента** са наш текст с номера на клаузи и числата от регистъра — никога текст на чужд комплект.
 - Коментарите в кода са на английски, текстовете за инженера и отчета — на италиански, комитите — на
   български. Без CI workflow засега (решение на собственика); гейтът се пуска локално.

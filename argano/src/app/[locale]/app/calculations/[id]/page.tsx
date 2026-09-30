@@ -9,7 +9,8 @@ import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { ENGINE_VERSION } from '@/calc/snapshot';
 import { SHAFT_ENGINE_VERSION } from '@/shaft';
-import { getCalculation } from '@/server/queries';
+import { getCalculation, listDrawingSets } from '@/server/queries';
+import IssueForm from '@/components/tavole/IssueForm';
 import VerdictPill from '@/components/VerdictPill';
 import ReviewForm from '@/components/ReviewForm';
 import Crumbs from '@/components/Crumbs';
@@ -31,7 +32,9 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const { same } = verifyStored(values.data, c.sha256);
   // the report draws the plan of the shaft design too: it needs that design reproduced as well
   const designSame = !c.shaftDesign || reproduceDesign(c.shaftDesign) !== null;
-  const [t, tp, tr, ts] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft')]);
+  const [t, tp, tr, ts, tt, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
+    getTranslations('tavole'), listDrawingSets(user, c.projectId)]);
+  const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
   return (
     <main className="page">
@@ -73,6 +76,19 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
           </ul>
         ) : <p className="note">{t('noReviews')}</p>}
         {can(user.role, 'calc:review') ? <ReviewForm calculationId={c.id} /> : null}
+      </section>
+      <section className="panel">
+        <h2>{tt('title')}</h2>
+        <p className="note">{tt('lead')}</p>
+        {mine.length ? (
+          <ul className="m-0 flex list-none flex-col gap-1 p-0">
+            {mine.map((x) => (
+              <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link> · <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>
+            ))}
+          </ul>
+        ) : null}
+        {!c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
+          : same && designSame && can(user.role, 'calc:create') && !c.project.archivedAt ? <IssueForm calculationId={c.id} /> : null}
       </section>
       <CalculationView values={values.data} brand={user.companyName} />
     </main>

@@ -1,10 +1,12 @@
 // End-to-end smoke test against a running Argano (local or staging), with a real browser:
 //   health → public page (no console or CSP errors) → sign-in → installation → calculation → saved snapshot with
 //   reproduced hash → calculation report (PDF) → shaft design by hand, its DXF, a calculation from it with the plan in
-//   its report → new user who must change the password → a second company that cannot open the first company's
-//   calculation, shaft design or DXF.
+//   its report → data of the installation, company logo, drawing set issued from that calculation (sheets, PDF) and
+//   its revision → new user who must change the password → a second company that cannot open the first company's
+//   calculation, shaft design, DXF or drawing set.
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… node scripts/smoke.mjs
 // Playwright is not a dependency of the app: the local install is used, else the global one.
+import { Buffer } from 'node:buffer';
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
 import assert from 'node:assert/strict';
@@ -23,6 +25,8 @@ const BASE = (process.env.BASE_URL ?? 'http://localhost:3100').replace(/\/+$/, '
 const ADMIN = { email: process.env.ADMIN_EMAIL ?? 'admin@carbonstealth.eu', password: process.env.ADMIN_PASSWORD ?? '' };
 if (!ADMIN.password) throw new Error('ADMIN_PASSWORD is required');
 const stamp = Date.now().toString(36);
+// a 96 × 32 PNG, made for this test
+const LOGO_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAGAAAAAgCAIAAABiouoDAAAAfUlEQVR42u3aywmAMBBFUSO2YDlWZR1WZTkWMS7cDRgQowieu8n+8t6QX4mIDuf0FNQZjmWcFi4S2zpLkIq1qljK1Z9J00aCVIwggr40pOsT64mNhgSpGEEEgSCCCCKIIIIIIgjXDqsuGCWIIIJenUFeECWIoKYUvzsk6BY7X3sSQy3KvssAAAAASUVORK5CYII=';
 const step = (s) => process.stdout.write(`▸ ${s}\n`);
 
 async function newPage(browser) {
@@ -87,7 +91,7 @@ try {
   const size = page.locator('.shaft-input .form-grid input');
   await size.nth(0).fill('1650');
   await size.nth(1).fill('1800');
-  await page.waitForSelector('.shaft-output svg.plan');
+  await page.waitForSelector('.shaft-output svg.sheet-svg');
   await Promise.all([page.waitForURL(/\/shaft-designs\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.btn-primary')]);
   const designUrl = page.url();
   assert.match(await page.textContent('dl.cartiglio'), /riprodotto/, 'design hash reproduced');
@@ -105,6 +109,36 @@ try {
   const planBody = await planPdf.body();
   assert.equal(planBody.subarray(0, 5).toString('latin1'), '%PDF-');
   assert.ok(planBody.length > body.length, 'the report with the plan is larger');
+  const designCalcUrl = page.url();
+
+  step('data of the installation, company logo, drawing set and its revision');
+  await page.goto(`${projectUrl}/impianto`);
+  await page.locator('.plant-form input').first().fill('M 73 (Sx)');
+  await page.click('.plant-form button[type="submit"]');
+  await page.waitForSelector('.plant-form [role="status"]');
+  await page.goto(`${BASE}/it/app/company`);
+  await page.setInputFiles('input[name="logo"]', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(LOGO_PNG, 'base64') });
+  await page.click('main form button[type="submit"]');
+  await page.waitForSelector('.logo-preview img');
+  await page.goto(designCalcUrl);
+  await page.fill('main form input[placeholder="A.C."]', 'S.T.');
+  await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[placeholder="A.C."]) button[type="submit"]')]);
+  const setUrl = page.url();
+  await page.waitForSelector('.sheet-page svg.sheet-svg image');
+  const sheets = await page.locator('nav.seg-row a').count();
+  assert.ok(sheets >= 8, `sheets ${sheets}`);
+  const setPdfHref = await page.getAttribute('a[href$="/pdf"]', 'href');
+  const setPdf = await page.request.get(`${BASE}${setPdfHref}`);
+  assert.equal(setPdf.status(), 200);
+  const setBody = await setPdf.body();
+  assert.equal(setBody.subarray(0, 5).toString('latin1'), '%PDF-');
+  await page.goto(`${setUrl}?p=5`);
+  await page.waitForSelector('.sheet-page svg.sheet-svg');
+  await page.fill('main form input[maxlength="120"]', 'Seconda emissione di prova');
+  await page.fill('main form input[placeholder="A.C."]', 'S.T.');
+  const setPath = new URL(setUrl).pathname;
+  await Promise.all([page.waitForURL((u) => /\/drawing-sets\/[a-z0-9]+$/.test(u.pathname) && u.pathname !== setPath, { timeout: 60000 }), page.click('main form:has(input[maxlength="120"]) button[type="submit"]')]);
+  assert.match(await page.textContent('h1'), / R1$/, 'revision R1');
 
   assert.deepEqual(errors, [], 'browser errors');
   step('an archived installation is read only');
@@ -164,6 +198,8 @@ try {
   assert.equal(otherPdf.status(), 404, 'report of another company');
   assert.equal((await page.goto(designUrl)).status(), 404, 'shaft design of another company');
   assert.equal((await page.request.get(`${BASE}${dxfHref}`)).status(), 404, 'DXF of another company');
+  assert.equal((await page.goto(setUrl)).status(), 404, 'drawing set of another company');
+  assert.equal((await page.request.get(`${BASE}${setPdfHref}`)).status(), 404, 'drawing set PDF of another company');
 
   step('all good');
 } finally {
