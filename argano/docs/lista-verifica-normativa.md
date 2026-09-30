@@ -13,11 +13,12 @@ calcolo, lista e relazione.
 
 - **Direttiva 2014/33/UE** — requisiti essenziali di sicurezza (Allegato I)
 - **DPR 162/1999 e s.m.i. (DPR 8/2015, DPR 23/2017)** — sostituzione del macchinario come modifica costruttiva; verifica straordinaria (art. 14)
-- **UNI EN 81-20:2020** — funi (5.5) e freno (5.9.2.2)
+- **UNI EN 81-20:2020** — funi (5.5), freno (5.9.2.2), distanze nel vano (5.2.5) e superficie della cabina (5.4.2)
 - **UNI EN 81-50:2020** — aderenza (5.11) e coefficiente di sicurezza delle funi (5.12)
 - **UNI 10411-1:2024** — modifiche e sostituzioni su ascensori elettrici esistenti non conformi alle direttive
+- **DM 236/1989** — accessibilità: cabina e porta minime (8.1.12), per il progetto del vano
 
-Voci: 47 — da verificare 27, confermate 4, scelte del software 10, stime 2, derivazioni 3, prassi 1.
+Voci: 61 (argano 47, vano 14) — da verificare 35, confermate 4, scelte del software 16, stime 2, derivazioni 3, prassi 1.
 
 ## Aderenza
 
@@ -110,3 +111,47 @@ Voci: 47 — da verificare 27, confermate 4, scelte del software 10, stime 2, de
 | 45 | Tiri con il metodo del percorso della fune | masse e funi di ogni tratto, inerzia delle pulegge di rinvio; attrito di guide e pulegge trascurato in aderenza | UNI EN 81-50:2020, 5.11 | derivazione; il conteggio dell'inerzia delle pulegge va confermato | da verificare | aderenza al caricamento; aderenza in frenatura, in discesa; aderenza in frenatura, in salita; aderenza alla decelerazione reale (avviso); cabina bloccata |
 | 46 | Compensazione e cavo flessibile | non modellati a parte: la loro massa sul lato cabina entra in P | UNI EN 81-50:2020, 5.11 | limite del modello attuale | scelta del software | — |
 | 47 | Analisi di sensibilità | P ±10%; k ±0,05 se il carico di equilibrio non è misurato | — | scelta del software (incertezza tipica del rilievo) | scelta del software | — |
+
+## Vano: cabina e portata
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 48 | Superficie utile massima della cabina per portata — la superficie è calcolata come larghezza × profondità interne, senza nicchie né rientranze della porta | 100 kg 0,37 m²; 180 kg 0,58; 225 kg 0,70; 300 kg 0,90; 375 kg 1,10; 400 kg 1,17; 450 kg 1,30; 525 kg 1,45; 600 kg 1,60; 630 kg 1,66; 675 kg 1,75; 750 kg 1,90; 800 kg 2,00; 825 kg 2,05; 900 kg 2,20; 975 kg 2,35; 1000 kg 2,40; 1050 kg 2,50; 1125 kg 2,65; 1200 kg 2,80; 1250 kg 2,90; 1275 kg 2,95; 1350 kg 3,10; 1425 kg 3,25; 1500 kg 3,40; 1600 kg 3,56; 2000 kg 4,20; 2500 kg 5,00; oltre 2500 kg +0,16 m² ogni 100 kg; interpolazione lineare | UNI EN 81-20:2020, 5.4.2.1 (Tabella 6) | Elevator World, «Rated Load and Maximum Available Car Area» (fonte secondaria); valori della EN 81-1 (Tabella 1.1) | da verificare | superficie della cabina per la portata |
+| 49 | Numero di passeggeri | il minore tra Q/75 arrotondato per difetto e il numero ammesso dalla superficie: 1 persona 0,28 m²; 2 0,49; 3 0,60; 4 0,79; 5 0,98; 6 1,17; 7 1,31; 8 1,45; 9 1,59; 10 1,73; 11 1,87; 12 2,01; 13 2,15; 14 2,29; 15 2,43; 16 2,57; 17 2,71; 18 2,85; 19 2,99; 20 3,13; oltre 20 +0,115 m² per persona | UNI EN 81-20:2020, 5.4.2 (Tabella 8) | valori della EN 81-1 (Tabella 1.2), edizione superata | da verificare | — |
+
+## Vano: distanze in pianta
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 50 | Parete del vano di fronte all'entrata della cabina | distanza orizzontale dalla soglia o dal telaio della porta di cabina ≤ 150 mm (qui: profondità della porta di piano + gioco tra le soglie) | UNI EN 81-20:2020, 5.2.5.3.1 | schede EN 81-20 dei costruttori (KONE), fonti secondarie | da verificare | parete di fronte all'entrata |
+| 51 | Gioco tra soglia di cabina e soglia di piano | distanza orizzontale ≤ 35 mm | UNI EN 81-20:2020 (clausola da individuare; 11.2.3 nella EN 81-1) | fonti secondarie concordi | da verificare | gioco tra le soglie |
+| 52 | Distanza tra cabina e contrappeso | ≥ 50 mm tra la cabina con i suoi componenti e il contrappeso con i suoi | UNI EN 81-20:2020, 5.2.5.5.1 | schede EN 81-20 dei costruttori (KONE), fonti secondarie | da verificare | distanza cabina–contrappeso |
+
+## Vano: accessibilità (DM 236/1989)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 53 | Edifici residenziali nuovi: cabina e porta minime | cabina larga 950 mm e profonda 1300 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (non verificata) | DM 236/1989, 8.1.12 | sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi | da verificare | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 54 | Edifici non residenziali nuovi: cabina e porta minime | cabina larga 1100 mm e profonda 1400 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (non verificata) | DM 236/1989, 8.1.12 | sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi | da verificare | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 55 | Adeguamento di edifici esistenti: cabina e porta minime | cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (non verificata) | DM 236/1989, 8.1.12 | sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi | da verificare | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+
+## Vano: porte
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 56 | Ingombro della porta di piano lungo la parete del vano | telescopica a 2 ante: 1,5·L + 110 mm; centrale a 2 ante: 2·L + 110 mm (L = luce netta) | dato del fornitore delle porte | valori tipici: scelta del software da confermare con il fornitore | scelta del software | ingombro della porta di piano |
+| 57 | Larghezza della cabina rispetto alla porta | larghezza interna ≥ luce della porta + 50 mm; profondità interna ≥ 800 mm | — | scelta del software | scelta del software | la cabina entra nel vano |
+
+## Vano: ingombri tipici
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 58 | Ingombri tipici nel vano (modificabili su ogni progetto) | profondità della porta di piano 80 mm; gioco tra le soglie 30 mm; porta di cabina 80 mm; pareti della cabina 35 mm; guide e staffe della cabina 165 mm per lato; cabina–contrappeso 60 mm; spessore del contrappeso 140 mm; guide e staffe del contrappeso 80 mm; cabina–parete di fondo 60 mm | dati del costruttore di guide, porte e cabina | valori tipici: scelta del software | scelta del software | la cabina entra nel vano |
+| 59 | Contrappeso laterale | la guida della cabina su quel lato sta a metà profondità della cabina, il contrappeso dietro di essa, a 100 mm dal suo asse e a 40 mm dalla parete di fondo; lunghezza del contrappeso in pianta da 400 a 900 mm (sotto 400 mm: «Attenzione»); con il contrappeso sul fondo, al massimo la larghezza tra le guide della cabina | — | scelta del software | scelta del software | lunghezza del contrappeso |
+
+## Vano: limiti del progetto
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 60 | Dimensioni proposte della cabina | la cabina più grande che entra nel vano, a passi di 10 mm, con superficie entro il limite della portata; a parità di superficie, la più profonda | — | scelta del software | scelta del software | — |
+| 61 | Limiti del progetto in pianta | solo la pianta: fossa, testata e spazi di rifugio non sono verificati; il rilievo dal disegno CAD va controllato in cantiere | UNI EN 81-20:2020, 5.2.5.7 e 5.2.5.8 (fossa e testata) | limite del modello attuale | scelta del software | — |

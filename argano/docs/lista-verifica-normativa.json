@@ -13,7 +13,7 @@
       },
       {
         "sigla": "UNI EN 81-20:2020",
-        "ambito": "funi (5.5) e freno (5.9.2.2)"
+        "ambito": "funi (5.5), freno (5.9.2.2), distanze nel vano (5.2.5) e superficie della cabina (5.4.2)"
       },
       {
         "sigla": "UNI EN 81-50:2020",
@@ -22,6 +22,10 @@
       {
         "sigla": "UNI 10411-1:2024",
         "ambito": "modifiche e sostituzioni su ascensori elettrici esistenti non conformi alle direttive"
+      },
+      {
+        "sigla": "DM 236/1989",
+        "ambito": "accessibilità: cabina e porta minime (8.1.12), per il progetto del vano"
       }
     ]
   },
@@ -586,6 +590,174 @@
       "valore": "P ±10%; k ±0,05 se il carico di equilibrio non è misurato",
       "riferimento": "—",
       "fonte": "scelta del software (incertezza tipica del rilievo)",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 48,
+      "id": "vano.cabina.superficie",
+      "gruppo": "Vano: cabina e portata",
+      "voce": "Superficie utile massima della cabina per portata",
+      "valore": "100 kg 0,37 m²; 180 kg 0,58; 225 kg 0,70; 300 kg 0,90; 375 kg 1,10; 400 kg 1,17; 450 kg 1,30; 525 kg 1,45; 600 kg 1,60; 630 kg 1,66; 675 kg 1,75; 750 kg 1,90; 800 kg 2,00; 825 kg 2,05; 900 kg 2,20; 975 kg 2,35; 1000 kg 2,40; 1050 kg 2,50; 1125 kg 2,65; 1200 kg 2,80; 1250 kg 2,90; 1275 kg 2,95; 1350 kg 3,10; 1425 kg 3,25; 1500 kg 3,40; 1600 kg 3,56; 2000 kg 4,20; 2500 kg 5,00; oltre 2500 kg +0,16 m² ogni 100 kg; interpolazione lineare",
+      "riferimento": "UNI EN 81-20:2020, 5.4.2.1 (Tabella 6)",
+      "fonte": "Elevator World, «Rated Load and Maximum Available Car Area» (fonte secondaria); valori della EN 81-1 (Tabella 1.1)",
+      "stato": "da verificare",
+      "verifiche": "superficie della cabina per la portata",
+      "nota": "la superficie è calcolata come larghezza × profondità interne, senza nicchie né rientranze della porta"
+    },
+    {
+      "n": 49,
+      "id": "vano.cabina.passeggeri",
+      "gruppo": "Vano: cabina e portata",
+      "voce": "Numero di passeggeri",
+      "valore": "il minore tra Q/75 arrotondato per difetto e il numero ammesso dalla superficie: 1 persona 0,28 m²; 2 0,49; 3 0,60; 4 0,79; 5 0,98; 6 1,17; 7 1,31; 8 1,45; 9 1,59; 10 1,73; 11 1,87; 12 2,01; 13 2,15; 14 2,29; 15 2,43; 16 2,57; 17 2,71; 18 2,85; 19 2,99; 20 3,13; oltre 20 +0,115 m² per persona",
+      "riferimento": "UNI EN 81-20:2020, 5.4.2 (Tabella 8)",
+      "fonte": "valori della EN 81-1 (Tabella 1.2), edizione superata",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 50,
+      "id": "vano.distanze.parete.entrata",
+      "gruppo": "Vano: distanze in pianta",
+      "voce": "Parete del vano di fronte all'entrata della cabina",
+      "valore": "distanza orizzontale dalla soglia o dal telaio della porta di cabina ≤ 150 mm (qui: profondità della porta di piano + gioco tra le soglie)",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.3.1",
+      "fonte": "schede EN 81-20 dei costruttori (KONE), fonti secondarie",
+      "stato": "da verificare",
+      "verifiche": "parete di fronte all'entrata",
+      "nota": ""
+    },
+    {
+      "n": 51,
+      "id": "vano.distanze.soglie",
+      "gruppo": "Vano: distanze in pianta",
+      "voce": "Gioco tra soglia di cabina e soglia di piano",
+      "valore": "distanza orizzontale ≤ 35 mm",
+      "riferimento": "UNI EN 81-20:2020 (clausola da individuare; 11.2.3 nella EN 81-1)",
+      "fonte": "fonti secondarie concordi",
+      "stato": "da verificare",
+      "verifiche": "gioco tra le soglie",
+      "nota": ""
+    },
+    {
+      "n": 52,
+      "id": "vano.distanze.contrappeso",
+      "gruppo": "Vano: distanze in pianta",
+      "voce": "Distanza tra cabina e contrappeso",
+      "valore": "≥ 50 mm tra la cabina con i suoi componenti e il contrappeso con i suoi",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.5.1",
+      "fonte": "schede EN 81-20 dei costruttori (KONE), fonti secondarie",
+      "stato": "da verificare",
+      "verifiche": "distanza cabina–contrappeso",
+      "nota": ""
+    },
+    {
+      "n": 53,
+      "id": "vano.accessibilita.residenziale",
+      "gruppo": "Vano: accessibilità (DM 236/1989)",
+      "voce": "Edifici residenziali nuovi: cabina e porta minime",
+      "valore": "cabina larga 950 mm e profonda 1300 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (non verificata)",
+      "riferimento": "DM 236/1989, 8.1.12",
+      "fonte": "sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi",
+      "stato": "da verificare",
+      "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
+      "nota": ""
+    },
+    {
+      "n": 54,
+      "id": "vano.accessibilita.non.residenziale",
+      "gruppo": "Vano: accessibilità (DM 236/1989)",
+      "voce": "Edifici non residenziali nuovi: cabina e porta minime",
+      "valore": "cabina larga 1100 mm e profonda 1400 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (non verificata)",
+      "riferimento": "DM 236/1989, 8.1.12",
+      "fonte": "sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi",
+      "stato": "da verificare",
+      "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
+      "nota": ""
+    },
+    {
+      "n": 55,
+      "id": "vano.accessibilita.esistenti",
+      "gruppo": "Vano: accessibilità (DM 236/1989)",
+      "voce": "Adeguamento di edifici esistenti: cabina e porta minime",
+      "valore": "cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (non verificata)",
+      "riferimento": "DM 236/1989, 8.1.12",
+      "fonte": "sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi",
+      "stato": "da verificare",
+      "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
+      "nota": ""
+    },
+    {
+      "n": 56,
+      "id": "vano.porte.ingombro",
+      "gruppo": "Vano: porte",
+      "voce": "Ingombro della porta di piano lungo la parete del vano",
+      "valore": "telescopica a 2 ante: 1,5·L + 110 mm; centrale a 2 ante: 2·L + 110 mm (L = luce netta)",
+      "riferimento": "dato del fornitore delle porte",
+      "fonte": "valori tipici: scelta del software da confermare con il fornitore",
+      "stato": "scelta del software",
+      "verifiche": "ingombro della porta di piano",
+      "nota": ""
+    },
+    {
+      "n": 57,
+      "id": "vano.porte.cabina",
+      "gruppo": "Vano: porte",
+      "voce": "Larghezza della cabina rispetto alla porta",
+      "valore": "larghezza interna ≥ luce della porta + 50 mm; profondità interna ≥ 800 mm",
+      "riferimento": "—",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "la cabina entra nel vano",
+      "nota": ""
+    },
+    {
+      "n": 58,
+      "id": "vano.ingombri.tipici",
+      "gruppo": "Vano: ingombri tipici",
+      "voce": "Ingombri tipici nel vano (modificabili su ogni progetto)",
+      "valore": "profondità della porta di piano 80 mm; gioco tra le soglie 30 mm; porta di cabina 80 mm; pareti della cabina 35 mm; guide e staffe della cabina 165 mm per lato; cabina–contrappeso 60 mm; spessore del contrappeso 140 mm; guide e staffe del contrappeso 80 mm; cabina–parete di fondo 60 mm",
+      "riferimento": "dati del costruttore di guide, porte e cabina",
+      "fonte": "valori tipici: scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "la cabina entra nel vano",
+      "nota": ""
+    },
+    {
+      "n": 59,
+      "id": "vano.ingombri.contrappeso.laterale",
+      "gruppo": "Vano: ingombri tipici",
+      "voce": "Contrappeso laterale",
+      "valore": "la guida della cabina su quel lato sta a metà profondità della cabina, il contrappeso dietro di essa, a 100 mm dal suo asse e a 40 mm dalla parete di fondo; lunghezza del contrappeso in pianta da 400 a 900 mm (sotto 400 mm: «Attenzione»); con il contrappeso sul fondo, al massimo la larghezza tra le guide della cabina",
+      "riferimento": "—",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "lunghezza del contrappeso",
+      "nota": ""
+    },
+    {
+      "n": 60,
+      "id": "vano.modello.passo",
+      "gruppo": "Vano: limiti del progetto",
+      "voce": "Dimensioni proposte della cabina",
+      "valore": "la cabina più grande che entra nel vano, a passi di 10 mm, con superficie entro il limite della portata; a parità di superficie, la più profonda",
+      "riferimento": "—",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 61,
+      "id": "vano.modello.solo.pianta",
+      "gruppo": "Vano: limiti del progetto",
+      "voce": "Limiti del progetto in pianta",
+      "valore": "solo la pianta: fossa, testata e spazi di rifugio non sono verificati; il rilievo dal disegno CAD va controllato in cantiere",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.7 e 5.2.5.8 (fossa e testata)",
+      "fonte": "limite del modello attuale",
       "stato": "scelta del software",
       "verifiche": "",
       "nota": ""

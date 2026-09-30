@@ -30,7 +30,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/calc/__tests__/*.test.ts src/lib/__tests__/*.test.ts",
+    "test": "tsx --test src/calc/__tests__/*.test.ts src/shaft/__tests__/*.test.ts src/lib/__tests__/*.test.ts",
     "lista": "tsx scripts/lista-verifica.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
@@ -56,6 +56,7 @@
   },
   "homepage": "https://argano.carbonstealth.eu",
   "dependencies": {
+    "@node-projects/acad-ts": "3.2.0",
     "@prisma/client": "^6.19.3",
     "argon2": "^0.45.1",
     "jose": "^6.2.12",

@@ -24,9 +24,9 @@ export default tseslint.config(
     languageOptions: { globals: { process: 'readonly', fetch: 'readonly', console: 'readonly', URL: 'readonly' } },
   },
   {
-    // the calculation engine runs in the browser and on the server: no runtime, framework or I/O imports
-    files: ['src/calc/**/*.ts'],
-    ignores: ['src/calc/__tests__/**'],
+    // the calculation and shaft engines run in the browser and on the server: no runtime, framework or I/O imports
+    files: ['src/calc/**/*.ts', 'src/shaft/**/*.ts'],
+    ignores: ['src/calc/__tests__/**', 'src/shaft/__tests__/**'],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [

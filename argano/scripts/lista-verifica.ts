@@ -4,6 +4,8 @@
 import { writeFileSync } from 'node:fs';
 import { PROFILO, VOCI } from '../src/calc/index';
 import type { CheckId, Gruppo, Stato } from '../src/calc/index';
+import { VOCI_VANO } from '../src/shaft/index';
+import type { GruppoVano, ShaftCheckId } from '../src/shaft/index';
 
 const STATO: Record<Stato, string> = {
   confermato: 'confermato', da_verificare: 'da verificare', stima: 'stima', derivazione: 'derivazione', scelta: 'scelta del software', prassi: 'prassi di cantiere',
@@ -21,13 +23,31 @@ const VERIFICA: Record<CheckId, string> = {
   s_force: 'forza al volantino', s_uplift: 'sollevamento netto',
 };
 const ORDER: readonly Gruppo[] = ['trazione', 'gole', 'funi', 'freno', 'azionamento', 'soccorso', 'albero', 'sostituzione', 'modello'];
+// the shaft design (src/shaft/norme.ts), after the machine
+const GRUPPO_VANO: Record<GruppoVano, string> = {
+  cabina: 'Vano: cabina e portata', distanze: 'Vano: distanze in pianta', accessibilita: 'Vano: accessibilità (DM 236/1989)', porte: 'Vano: porte',
+  ingombri: 'Vano: ingombri tipici', modello_vano: 'Vano: limiti del progetto',
+};
+const VERIFICA_VANO: Record<ShaftCheckId, string> = {
+  v_fit: 'la cabina entra nel vano', v_area: 'superficie della cabina per la portata', v_acc_car: 'cabina minima (DM 236/1989)',
+  v_acc_door: 'porta minima (DM 236/1989)', v_acc_side: 'porta sul lato corto', v_door: 'ingombro della porta di piano',
+  v_wall: 'parete di fronte all\'entrata', v_sill: 'gioco tra le soglie', v_cw: 'distanza cabina–contrappeso', v_cwlen: 'lunghezza del contrappeso',
+};
+const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'modello_vano'];
 const cell = (s: string): string => s.replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
-const rows = ORDER.flatMap((g) => VOCI.filter((v) => v.gruppo === g)).map((v, j) => ({
-  n: j + 1, id: v.id, gruppo: GRUPPO[v.gruppo], voce: v.titolo, valore: v.valore, riferimento: v.riferimento, fonte: v.fonte, stato: STATO[v.stato],
-  verifiche: (v.verifiche ?? []).map((c) => VERIFICA[c]).join('; '), nota: v.nota ?? '',
-}));
-const count = (s: Stato): number => VOCI.filter((v) => v.stato === s).length;
+const rows = [
+  ...ORDER.flatMap((g) => VOCI.filter((v) => v.gruppo === g)).map((v) => ({
+    id: v.id, gruppo: GRUPPO[v.gruppo], voce: v.titolo, valore: v.valore, riferimento: v.riferimento, fonte: v.fonte, stato: STATO[v.stato],
+    verifiche: (v.verifiche ?? []).map((c) => VERIFICA[c]).join('; '), nota: v.nota ?? '',
+  })),
+  ...ORDER_VANO.flatMap((g) => VOCI_VANO.filter((v) => v.gruppo === g)).map((v) => ({
+    id: `vano.${v.id}`, gruppo: GRUPPO_VANO[v.gruppo], voce: v.titolo, valore: v.valore, riferimento: v.riferimento, fonte: v.fonte, stato: STATO[v.stato],
+    verifiche: (v.verifiche ?? []).map((c) => VERIFICA_VANO[c]).join('; '), nota: v.nota ?? '',
+  })),
+].map((r, j) => ({ n: j + 1, ...r }));
+const ALL = [...VOCI, ...VOCI_VANO];
+const count = (s: Stato): number => ALL.filter((v) => v.stato === s).length;
 
 const md: string[] = [
   `# Lista di verifica normativa — profilo ${PROFILO.id}`,
@@ -45,14 +65,14 @@ const md: string[] = [
   '',
   ...PROFILO.documenti.map((d) => `- **${d.sigla}** — ${d.ambito}`),
   '',
-  `Voci: ${VOCI.length} — da verificare ${count('da_verificare')}, confermate ${count('confermato')}, scelte del software ${count('scelta')}, ` +
+  `Voci: ${ALL.length} (argano ${VOCI.length}, vano ${VOCI_VANO.length}) — da verificare ${count('da_verificare')}, confermate ${count('confermato')}, scelte del software ${count('scelta')}, ` +
     `stime ${count('stima')}, derivazioni ${count('derivazione')}, prassi ${count('prassi')}.`,
   '',
 ];
-for (const g of ORDER) {
-  const group = rows.filter((r) => r.gruppo === GRUPPO[g]);
+for (const title of [...ORDER.map((g) => GRUPPO[g]), ...ORDER_VANO.map((g) => GRUPPO_VANO[g])]) {
+  const group = rows.filter((r) => r.gruppo === title);
   if (!group.length) continue;
-  md.push(`## ${GRUPPO[g]}`, '', '| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |', '|---|---|---|---|---|---|---|');
+  md.push(`## ${title}`, '', '| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |', '|---|---|---|---|---|---|---|');
   for (const r of group) md.push(`| ${r.n} | ${cell(r.voce)}${r.nota ? ` — ${cell(r.nota)}` : ''} | ${cell(r.valore)} | ${cell(r.riferimento)} | ${cell(r.fonte)} | ${r.stato} | ${cell(r.verifiche) || '—'} |`);
   md.push('');
 }
