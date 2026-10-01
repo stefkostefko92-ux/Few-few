@@ -17,16 +17,21 @@ Docker Compose (приложение + PostgreSQL 16) зад nginx на хост
    (домейнът със SPF и DKIM). Изпраща се през `smtp-relay.brevo.com:2525` със STARTTLS (VPS-ът блокира
    25/465/587). Без тези данни регистрацията и забравената парола стоят затворени (страниците го
    казват), всичко друго работи.
-4. **Деплой** (като root; паролите се въвеждат скрито и не остават в историята на shell-а):
+4. **Деплой** в root shell (`sudo -i`; `sudo bash …` губи променливите). Паролите се въвеждат скрито и
+   не остават в историята на shell-а. Блокът в `{ … }` се поставя наведнъж: shell-ът го прочита целия,
+   преди да зададе първия въпрос, затова следващ ред не попада в поле за парола. От `main`; клон, таг
+   или комит — `REF=<…>` пред `PROJECTS`:
    ```bash
    curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
      | tar -xz -C /root --strip-components=1 --wildcards '*/deploy/fetch-deploy.sh'
-   read -rsp 'Парола на admin@carbonstealth.eu: ' LIFTPILOT_ADMIN_PASSWORD; echo
-   read -rp  'Brevo SMTP login: ' LIFTPILOT_SMTP_USER
-   read -rsp 'Brevo SMTP ключ: ' LIFTPILOT_SMTP_PASS; echo
-   export LIFTPILOT_ADMIN_PASSWORD LIFTPILOT_SMTP_USER LIFTPILOT_SMTP_PASS
-   REF=<клон|таг|SHA> PROJECTS="liftpilot" bash /root/deploy/fetch-deploy.sh
-   unset LIFTPILOT_ADMIN_PASSWORD LIFTPILOT_SMTP_USER LIFTPILOT_SMTP_PASS
+   {
+     read -rsp 'Парола на admin@carbonstealth.eu: ' LIFTPILOT_ADMIN_PASSWORD; echo
+     read -rp  'Brevo SMTP login: ' LIFTPILOT_SMTP_USER
+     read -rsp 'Brevo SMTP ключ: ' LIFTPILOT_SMTP_PASS; echo
+     export LIFTPILOT_ADMIN_PASSWORD LIFTPILOT_SMTP_USER LIFTPILOT_SMTP_PASS
+     PROJECTS="liftpilot" bash /root/deploy/fetch-deploy.sh
+     unset LIFTPILOT_ADMIN_PASSWORD LIFTPILOT_SMTP_USER LIFTPILOT_SMTP_PASS
+   }
    ```
    Без `LIFTPILOT_ADMIN_PASSWORD` се генерира случайна парола и се отпечатва веднъж. Администраторът
    се създава при първия старт; щом приложението е здраво, `ADMIN_PASSWORD` се изпразва в `.env`.
@@ -39,7 +44,7 @@ Docker Compose (приложение + PostgreSQL 16) зад nginx на хост
 
 ## Всеки следващ деплой
 
-Същата команда без `read`-овете (тайните вече са в `.env`). Скриптът: пренася `.env` → `pg_dump` в
+`PROJECTS="liftpilot" bash /root/deploy/fetch-deploy.sh` — без въпросите (тайните вече са в `.env`). Скриптът: пренася `.env` → `pg_dump` в
 `/opt/few-few/shared/liftpilot/backups/` (последните 5; без бекъп няма миграция) → `docker compose
 build` + `up -d` → миграциите от entrypoint-а (`prisma migrate deploy`, никога `db push`) → health
 `/api/health` с маркер `"app":"liftpilot"` → nginx vhost (`deploy/nginx/liftpilot.conf`) + certbot.
@@ -62,5 +67,7 @@ cd /opt/few-few/current/liftpilot && docker compose ps && docker compose logs --
 ## Публично пускане (след съгласуване и разрешения)
 
 Докато не е одобрено, търсачките са спрени (`ALLOW_INDEXING=false`: `robots.txt` Disallow, `noindex`).
-След одобрение: `ALLOW_INDEXING=true` в `.env`, деплой, после IndexNow:
-`node tools/seo/indexnow.mjs https://liftpilot.carbonstealth.eu` и Search Console за Google.
+След одобрение: `ALLOW_INDEXING=true` в `.env` и деплой; за Google — Search Console (`tools/seo/gsc.mjs`).
+IndexNow (Bing, Yandex, Seznam…) иска ключов файл, който сайтът публикува; LiftPilot още няма такъв —
+добавя се заедно с одобрението (`node tools/seo/indexnow.mjs --gen-key`), после
+`node tools/seo/indexnow.mjs https://liftpilot.carbonstealth.eu`.
