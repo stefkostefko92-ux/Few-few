@@ -6,93 +6,9 @@
 // Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { float, fract, materialColor, materialRoughness, mix, mx_noise_float, positionWorld, sin, smoothstep, step, uniform, uv, vec3 } from 'three/tsl';
-
-const TAU = Math.PI * 2;
+import { aluminium, concrete, galvanized, granite, hazard, lamp, machined, millScale, perforated, physical, rope, shiftUniform, stainless, standard, tiles, type Shift } from './finishes';
 export type Side = 'front' | 'rear' | 'left' | 'right';
 export const SIDES: readonly Side[] = ['front', 'rear', 'left', 'right'];
-
-const standard = (p: THREE.MeshStandardNodeMaterialParameters) => new THREE.MeshStandardNodeMaterial(p);
-const physical = (p: THREE.MeshPhysicalNodeMaterialParameters) => new THREE.MeshPhysicalNodeMaterial(p);
-
-/** Cast concrete: a broad mottle and a fine grain. */
-function concrete(hex: string): THREE.MeshStandardNodeMaterial {
-  const m = standard({ color: new THREE.Color(hex), roughness: 0.93 });
-  const broad = mx_noise_float(positionWorld.mul(2.4)).mul(0.5).add(0.5), fine = mx_noise_float(positionWorld.mul(21)).mul(0.5).add(0.5);
-  m.colorNode = materialColor.mul(broad.mul(0.1).add(fine.mul(0.05)).add(0.9));
-  return m;
-}
-
-/** Brushed stainless steel of the car and the doors: vertical brushing in the roughness. */
-function stainless(hex = '#d3d7db'): THREE.MeshPhysicalNodeMaterial {
-  const m = physical({ color: new THREE.Color(hex), metalness: 0.9, roughness: 0.36 });
-  const brush = mx_noise_float(vec3(positionWorld.x.mul(420), positionWorld.y.mul(3), positionWorld.z.mul(420)));
-  m.roughnessNode = float(0.36).add(brush.mul(0.08));
-  return m;
-}
-
-/** Hot-dip galvanized sheet: the spangle shows as a patchy tone and sheen. */
-function galvanized(hex: string): THREE.MeshPhysicalNodeMaterial {
-  const m = physical({ color: new THREE.Color(hex), metalness: 0.75, roughness: 0.42 });
-  const spangle = mx_noise_float(positionWorld.mul(130)).mul(0.5).add(0.5), broad = mx_noise_float(positionWorld.mul(1.2)).mul(0.5).add(0.5);
-  m.colorNode = materialColor.mul(spangle.mul(0.035).add(broad.mul(0.03)).add(0.95));
-  m.roughnessNode = materialRoughness.mul(spangle.mul(0.18).add(0.92));
-  return m;
-}
-
-/** Stone tiles of the landings: 600 mm squares with their joints, a faint veining. */
-function tiles(hex: string): THREE.MeshStandardNodeMaterial {
-  const m = standard({ color: new THREE.Color(hex), roughness: 0.45 });
-  const joint = (x: THREE.Node<'float'>) => step(0.985, fract(x.div(0.6)));
-  const vein = mx_noise_float(positionWorld.mul(4)).mul(0.5).add(0.5);
-  m.colorNode = materialColor.mul(vein.mul(0.08).add(0.94)).mul(float(1).sub(joint(positionWorld.x).add(joint(positionWorld.z)).min(1).mul(0.35)));
-  return m;
-}
-
-/** Polished granite: a dark ground with light and black grains, a soft reflection. */
-function granite(): THREE.MeshPhysicalNodeMaterial {
-  const m = physical({ color: new THREE.Color('#3b3e43'), roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.12 });
-  const p = positionWorld.mul(90), a = mx_noise_float(p), b = mx_noise_float(p.mul(1.9).add(7.3));
-  const light = smoothstep(0.42, 0.62, a), dark = smoothstep(0.45, 0.7, b);
-  m.colorNode = mix(mix(materialColor, vec3(0.62, 0.63, 0.65), light.mul(0.55)), vec3(0.06, 0.06, 0.07), dark.mul(0.6));
-  return m;
-}
-
-/** Hazard paint: yellow and black stripes at 45° (buffer pedestals, the edges a body can strike). */
-function hazard(): THREE.MeshStandardNodeMaterial {
-  const m = standard({ color: new THREE.Color('#d9a62b'), roughness: 0.55 });
-  const band = step(0.5, fract(positionWorld.x.add(positionWorld.y).add(positionWorld.z).mul(7)));
-  m.colorNode = mix(materialColor, vec3(0.03, 0.03, 0.035), band);
-  return m;
-}
-
-/** Perforated galvanized sheet: square holes on a 40 mm pitch, cut by the alpha test. */
-function perforated(): THREE.MeshStandardNodeMaterial {
-  const m = standard({ color: new THREE.Color('#aab0b6'), metalness: 0.6, roughness: 0.5, side: THREE.DoubleSide, alphaTest: 0.5 });
-  const hole = (x: THREE.Node<'float'>) => step(0.22, fract(x.mul(25))).mul(step(fract(x.mul(25)), 0.78));
-  m.opacityNode = float(1).sub(hole(positionWorld.x.add(positionWorld.z)).mul(hole(positionWorld.y)));
-  return m;
-}
-
-/** The lit face of a lamp, brighter than white so it still reads as a light after the tone mapping. */
-function lamp(): THREE.MeshBasicNodeMaterial {
-  const m = new THREE.MeshBasicNodeMaterial({ color: new THREE.Color('#fff4df') });
-  m.colorNode = materialColor.mul(4);
-  return m;
-}
-
-const shiftUniform = () => uniform(0);
-type Shift = ReturnType<typeof shiftUniform>;
-
-/** Steel ropes: eight strands laid with a pitch of 65 mm, sliding along with the rope. */
-function rope(shift: Shift, sign: 1 | -1): THREE.MeshPhysicalNodeMaterial {
-  const m = physical({ color: new THREE.Color('#a4abb3'), metalness: 1, roughness: 0.42 });
-  const along = (sign > 0 ? positionWorld.y.sub(shift) : positionWorld.y.add(shift)).div(0.065);
-  const lay = sin(uv().y.mul(TAU * 8).add(along.mul(TAU))).mul(0.5).add(0.5).pow(0.6);
-  m.colorNode = materialColor.mul(mix(float(0.36), float(1.05), lay));
-  m.roughnessNode = mix(float(0.62), float(0.3), lay);
-  return m;
-}
 
 export interface LiftMaterials {
   walls: Record<Side, THREE.MeshStandardNodeMaterial>;
@@ -104,7 +20,14 @@ export interface LiftMaterials {
   roof: THREE.MeshStandardNodeMaterial;
   pit: THREE.MeshStandardNodeMaterial;
   steel: THREE.MeshPhysicalNodeMaterial;
+  /** bright steel: pulleys' axles, rods */
   rail: THREE.MeshPhysicalNodeMaterial;
+  /** guide rails: machined blade (/B), cold-drawn profile (/A), the rolled foot and the rolled rails */
+  railBlade: THREE.MeshPhysicalNodeMaterial;
+  railDrawn: THREE.MeshPhysicalNodeMaterial;
+  railFoot: THREE.MeshPhysicalNodeMaterial;
+  /** polyurethane tyres of the door rollers */
+  roller: THREE.MeshStandardNodeMaterial;
   car: THREE.MeshPhysicalNodeMaterial;
   /** lit faces of the lamps */
   carLight: THREE.MeshBasicNodeMaterial;
@@ -120,7 +43,7 @@ export interface LiftMaterials {
   panel: THREE.MeshPhysicalNodeMaterial;
   /** car shell, roof, apron, brackets: galvanized sheet */
   galv: THREE.MeshPhysicalNodeMaterial;
-  /** sills, trims, skirting, door track: the rails' bright steel */
+  /** extruded aluminium: sills, trims, skirting, door tracks */
   alu: THREE.MeshPhysicalNodeMaterial;
   /** handrail, operating panel, buttons: polished like the mirror */
   chrome: THREE.MeshPhysicalNodeMaterial;
@@ -154,19 +77,25 @@ export interface LiftMaterials {
 
 const byside = <T,>(make: () => T): Record<Side, T> => ({ front: make(), rear: make(), left: make(), right: make() });
 
-export function createLiftMaterials(): LiftMaterials {
+/** `pit`: height of the pit floor [m], toward which the shaft's concrete darkens. */
+export function createLiftMaterials(pit: number | null = null): LiftMaterials {
   const ropeShift = shiftUniform();
   const zone = (hex: string) => new THREE.MeshBasicNodeMaterial({ color: new THREE.Color(hex), transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide });
   const all = {
-    walls: byside(() => concrete('#9b9791')),
+    walls: byside(() => concrete('#9b9791', pit)),
     roomWalls: byside(() => concrete('#aaa59d')),
     landing: byside(() => stainless('#b9bfc5')),
     floors: byside(() => tiles('#b9b3aa')),
     slab: concrete('#8f8b85'),
     roof: concrete('#a09b94'),
-    pit: concrete('#6f6c68'),
+    pit: concrete('#6f6c68', pit),
     steel: physical({ color: new THREE.Color('#34404c'), metalness: 0.35, roughness: 0.55, clearcoat: 0.2 }),
     rail: physical({ color: new THREE.Color('#b8bfc6'), metalness: 1, roughness: 0.26 }),
+    railBlade: machined('#c3c9cf', 0.2, 0.75),
+    railDrawn: machined('#a9b0b7', 0.3, 0.45),
+    railFoot: millScale('#3d434a'),
+    roller: standard({ color: new THREE.Color('#1b1d20'), roughness: 0.42 }),
+    alu: aluminium('#c4c9ce'),
     car: stainless(),
     carLight: lamp(),
     carDoor: stainless('#c9ced3'),
@@ -192,7 +121,7 @@ export function createLiftMaterials(): LiftMaterials {
     ropeCw: rope(ropeShift, -1),
   };
   // the same finish under another name: no extra shader to build
-  const aliases = { skin: all.person, alu: all.rail, chrome: all.mirror, ceiling: all.panel, oil: all.base };
+  const aliases = { skin: all.person, chrome: all.mirror, ceiling: all.panel, oil: all.base };
   const materials: THREE.Material[] = [
     ...Object.values(all.walls), ...Object.values(all.roomWalls), ...Object.values(all.landing), ...Object.values(all.floors),
     ...Object.values(all).flatMap((m) => (m instanceof THREE.Material ? [m] : [])),

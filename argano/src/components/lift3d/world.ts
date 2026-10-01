@@ -53,7 +53,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const pmrem = new THREE.PMREMGenerator(renderer), room = new RoomEnvironment(), env = pmrem.fromScene(room, 0.04);
   scene.environment = env.texture;
   scene.environmentIntensity = 0.85;
-  const M = createLiftMaterials();
+  const M = createLiftMaterials(S.pitFloor / 1000);
 
   const rig = ropeRig(dv);
   const carDrop = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2], cwDrop = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
@@ -100,13 +100,13 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   setZones(false);
 
   // lights: sky and ground, a warm key from the front with shadows around the car, a cool rim from behind
-  scene.add(new THREE.HemisphereLight(0xc4d0ff, 0x2a2420, 0.95));
+  scene.add(new THREE.HemisphereLight(0xd8dde6, 0x2a2420, 0.95));
   const key = new THREE.DirectionalLight(0xffe6cc, 2.2);
   key.castShadow = quality.ao;
   key.shadow.mapSize.set(quality.shadowMap, quality.shadowMap);
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 20 });
   key.shadow.bias = -0.0005;
-  const rim = new THREE.DirectionalLight(0x9fb8ff, 1.1);
+  const rim = new THREE.DirectionalLight(0xc9d5f0, 1.1);
   scene.add(key, key.target, rim, rim.target);
 
   const W = I.W / 1000, D = I.D / 1000, wall = I.wall / 1000, R = I.room;

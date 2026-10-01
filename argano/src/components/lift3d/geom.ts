@@ -53,6 +53,18 @@ export function wallBox(wall: Wall, W: number, D: number, u0: number, u1: number
   return box(ax, ay, z0, bx, by, z1, material);
 }
 
+/** A section across a wall (x: v from the wall's inner face, y: height from z; metres) extruded along the wall from
+ *  u0 to u1 [mm], in place: sills, tracks, rail profiles laid along a wall. */
+export function extrudeAlong(wall: Wall, W: number, D: number, shape: THREE.Shape, u0: number, u1: number, z: number): THREE.BufferGeometry {
+  const [ox, oy] = onWall(wall, W, D, 0, 0), [ux, uy] = onWall(wall, W, D, 1, 0), [vx, vy] = onWall(wall, W, D, 0, 1);
+  const o = P(ox, oy, 0), u = P(ux, uy, 0).sub(o).normalize(), v = P(vx, vy, 0).sub(o).normalize(), up = new THREE.Vector3(0, 1, 0);
+  // the section's frame must stay right-handed: the extrusion runs along v × up, one way or the other along the wall
+  const along = new THREE.Vector3().crossVectors(v, up), start = along.dot(u) > 0 ? Math.min(u0, u1) : Math.max(u0, u1);
+  const g = new THREE.ExtrudeGeometry(shape, { depth: Math.abs(u1 - u0) / 1000, bevelEnabled: false, curveSegments: 4 });
+  const [sx, sy] = onWall(wall, W, D, start, 0);
+  return g.applyMatrix4(new THREE.Matrix4().makeBasis(v, up, along).setPosition(P(sx, sy, z)));
+}
+
 /** Static parts gathered by material and merged into one mesh each (the parts are freed once merged). */
 export class Batch {
   private readonly parts = new Map<THREE.Material, THREE.BufferGeometry[]>();
@@ -85,6 +97,21 @@ export class Batch {
     const u = P(ux, uy, 0).sub(P(ox, oy, 0)).normalize(), n = new THREE.Vector3().crossVectors(u, s.divideScalar(len));
     const g = new THREE.BoxGeometry(Math.abs(u1 - u0) / 1000, len, thick / 1000);
     this.add(g.applyMatrix4(new THREE.Matrix4().makeBasis(u, s, n).setPosition(pa.add(pb).multiplyScalar(0.5))), material);
+  }
+
+  /** A flat part laid along a wall: its outline in the wall's plane (u along the wall, z up; millimetres), with holes,
+   *  from v0 to v1 deep (any order). */
+  outline(wall: Wall, W: number, D: number, pts: readonly (readonly [number, number])[], v0: number, v1: number, material: THREE.Material, holes: readonly (readonly (readonly [number, number])[])[] = []): void {
+    const [ox, oy] = onWall(wall, W, D, 0, 0), [ux, uy] = onWall(wall, W, D, 1, 0), [vx, vy] = onWall(wall, W, D, 0, 1);
+    const o = P(ox, oy, 0), u = P(ux, uy, 0).sub(o).normalize(), v = P(vx, vy, 0).sub(o).normalize(), up = new THREE.Vector3(0, 1, 0);
+    // the outline's frame (u, up, u × up) stays right-handed: the thickness runs one way or the other along v
+    const n = new THREE.Vector3().crossVectors(u, up), start = n.dot(v) > 0 ? Math.min(v0, v1) : Math.max(v0, v1);
+    const vec = (q: readonly (readonly [number, number])[]): THREE.Vector2[] => q.map(([a, z]) => new THREE.Vector2(a / 1000, z / 1000));
+    const shape = new THREE.Shape(vec(pts));
+    for (const h of holes) shape.holes.push(new THREE.Path(vec(h)));
+    const g = new THREE.ExtrudeGeometry(shape, { depth: Math.abs(v1 - v0) / 1000, bevelEnabled: false });
+    const [sx, sy] = onWall(wall, W, D, 0, start);
+    this.add(g.applyMatrix4(new THREE.Matrix4().makeBasis(u, up, n).setPosition(P(sx, sy, 0))), material);
   }
 
   /** The merged meshes into the group. */

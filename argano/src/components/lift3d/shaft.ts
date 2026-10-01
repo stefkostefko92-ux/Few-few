@@ -8,46 +8,14 @@ import * as THREE from 'three/webgpu';
 import type { DoorLayout, Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { KV } from '@/shaft/norme';
-import { Batch, P, wallBox } from './geom';
+import { Batch, P } from './geom';
+import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
+import { landingHeader } from './operator';
+import { sill, sillSupport } from './sill';
 import { SIDES, type LiftMaterials, type Side } from './materials';
 
 const LANDING = 1200;
 const SLAB = 200;
-
-export interface DoorPanels {
-  group: THREE.Group;
-  /** opening 0 (closed) … 1 (open) */
-  set(k: number): void;
-}
-
-/** Door panels of a door layout at height z0, on two tracks at v0 and v1 from the wall's inner face. */
-export function doorPanels(wall: Side, W: number, D: number, d: DoorLayout, z0: number, v0: number, v1: number, t: number, material: THREE.Material): DoorPanels {
-  const group = new THREE.Group(), L = d.width, ov = 20, h = d.height;
-  type Panel = { mesh: THREE.Mesh; travel: number; base: THREE.Vector3; dir: THREE.Vector3 };
-  const panels: Panel[] = [];
-  const axis = wall === 'front' || wall === 'rear' ? P(1, 0, 0) : P(0, 1, 0);
-  const add = (a0: number, a1: number, track: number, travel: number): void => {
-    const mesh = wallBox(wall, W, D, a0, a1, track, track + t, z0, z0 + h, material);
-    panels.push({ mesh, travel, base: mesh.position.clone(), dir: axis.clone().normalize() });
-    group.add(mesh);
-  };
-  if (d.kind === 'C2') {
-    const mid = (d.u0 + d.u1) / 2;
-    add(d.u0, mid + ov / 2, v0, -L / 2);
-    add(mid - ov / 2, d.u1, v0, L / 2);
-  } else {
-    const sgn = d.stack === 'low' ? -1 : 1;
-    // the fast panel away from the stack, on the track nearer the shaft; the slow one next to the stack
-    if (sgn > 0) { add(d.u0, d.u0 + L / 2 + ov, v1, L); add(d.u0 + L / 2, d.u1 + ov, v0, L / 2); }
-    else { add(d.u1 - L / 2 - ov, d.u1, v1, -L); add(d.u0 - ov, d.u0 + L / 2, v0, -L / 2); }
-  }
-  return {
-    group,
-    set(k) {
-      for (const p of panels) p.mesh.position.copy(p.base).addScaledVector(p.dir, (p.travel * k) / 1000);
-    },
-  };
-}
 
 export interface ShaftModel {
   /** walls and landing doors of each side, for the x-ray */
@@ -60,6 +28,18 @@ export interface ShaftModel {
 /** Entrances serving a floor, as door layouts. */
 export function doorsOf(L: Layout, door: 'A' | 'B' | 'AB'): DoorLayout[] {
   return L.doors.filter((d) => door === 'AB' || d.side === door);
+}
+
+/** The hardware of a landing entrance at the level z, on the shaft side of the wall: the suspension, the panels (by
+ *  the car's across the sill gap), the sill on its angle, the stone threshold through the wall. */
+export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number): DoorPanels {
+  const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth);
+  landingHeader(C, M, d.wall, W, D, d, tracks, LANDING_PANEL, z + d.height, I.landingDepth);
+  const panels = doorPanels(d.wall, W, D, d, z, tracks, LANDING_PANEL, M.landing[d.wall], M, { kind: 'lock', v0: I.landingDepth + I.sillGap });
+  sill(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, -25, I.landingDepth, z, trackPlanes(d, tracks, LANDING_PANEL));
+  sillSupport(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, I.landingDepth, z);
+  C.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -I.wall, -25, z - 30, z, M.stone);
+  return panels;
 }
 
 function label(text: string): THREE.Sprite {
@@ -132,21 +112,9 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, holes: reado
       const cb = d.u1 + KV.doorPortal + 110 < len ? d.u1 + KV.doorPortal + 60 : d.u0 - KV.doorPortal - 120;
       g.wallBox(d.wall, W, D, cb, cb + 60, -wall - 6, -wall, z + 1040, z + 1220, frame);
       g.wallBox(d.wall, W, D, cb + 15, cb + 45, -wall - 11, -wall - 6, z + 1100, z + 1130, frame);
-      // on the shaft side the header over the stack: back plate and cover, the track, the lock at the closing edge
-      const h0 = Math.min(d.frame0, d.u0), h1 = Math.max(d.frame1, d.u1);
-      C.wallBox(d.wall, W, D, h0, h1, 0, 4, zh + 10, zh + 200, M.galv);
-      C.wallBox(d.wall, W, D, h0, h1, 0, I.landingDepth, zh + 192, zh + 200, M.galv);
-      C.wallBox(d.wall, W, D, h0 + 20, h1 - 20, 8, I.landingDepth - 6, zh + 70, zh + 96, M.alu);
-      const lock = d.kind === 'C2' ? (d.u0 + d.u1) / 2 - 75 : d.stack === 'low' ? d.u1 - 140 : d.u0 - 10;
-      C.wallBox(d.wall, W, D, lock, lock + 150, 4, 52, zh + 18, zh + 112, M.frame);
-      const panels = doorPanels(d.wall, W, D, d, z, 12, 44, 26, M.landing[d.wall]);
+      const panels = landingEntrance(C, M, I, d, z);
       sides[d.wall].add(panels.group);
       landings.push({ floor: i, panels });
-      // aluminium sill with the grooves of the panels' tracks, on its bracket; the landing
-      C.wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, -wall, I.landingDepth, z - 30, z, M.alu);
-      for (const tr of d.kind === 'C2' ? [12] : [12, 44]) C.wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, tr + 7, tr + 19, z, z + 0.6, M.glass);
-      C.wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, 0, 5, z - 170, z - 30, M.galv);
-      C.wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, 0, I.landingDepth - 4, z - 36, z - 30, M.galv);
       g.wallBox(d.wall, W, D, -wall - 400, len + wall + 400, -wall - LANDING, -wall, z - SLAB, z, M.floors[d.wall]);
       const tag = label(f.label);
       const [lx, ly] = d.wall === 'front' ? [d.u0 - 320, -wall - 60] : d.wall === 'rear' ? [d.u1 + 320, D + wall + 60] : d.wall === 'left' ? [-wall - 60, d.u1 + 320] : [W + wall + 60, d.u0 - 320];

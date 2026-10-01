@@ -6,9 +6,11 @@
 // Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import type { Layout } from '@/shaft';
-import { Batch, onWall, type Point } from './geom';
-import { doorPanels, type DoorPanels } from './shaft';
+import type { DoorLayout, Layout } from '@/shaft';
+import { Batch, onWall } from './geom';
+import { CAR_PANEL, carTracks, doorPanels, trackPlanes, type DoorPanels } from './doors';
+import { carOperator } from './operator';
+import { sill } from './sill';
 import { buildCarInside, type CarWall } from './car-inside';
 import { buildSling, type Hitch } from './sling';
 import type { GovernorSpot } from './governor';
@@ -29,6 +31,23 @@ export interface CarModel {
 
 // UNI EN 81-20 5.4.5: the apron's vertical part at least 0.75 m, then bevelled back at 60° to the horizontal
 const APRON = 750, BEVEL = 130;
+// the finished floor (the sill's top), the operator's belt over the roof [mm]
+const FLOOR = 12, BELT = 115;
+
+/** An entrance of the car, in plan from its wall of the shaft: the door panels in front of the car (the fast one by the
+ *  landing's), the sill with the grooves of their tracks, the apron under the sill, the operator over the door. `v`: the
+ *  car's outer face from that wall, `t`: the car's wall, `Ho`: the car's outer height (its roof). */
+export function carEntrance(B: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, v: number, t: number, Ho: number): DoorPanels {
+  const W = I.W, D = I.D, side = d.wall, v0 = I.landingDepth + I.sillGap, tracks = carTracks(v0);
+  const p = doorPanels(side, W, D, d, 0, tracks, CAR_PANEL, M.carDoor, M, { kind: 'coupler', v0, belt: Ho + BELT });
+  sill(B, M, side, W, D, d.u0 - 40, d.u1 + 40, v0, v + t, FLOOR, trackPlanes(d, tracks, CAR_PANEL), true);
+  B.wallBox(side, W, D, d.u0 - 25, d.u1 + 25, v0, v0 + 3, -APRON, -12, M.galv);
+  const rad = Math.PI / 3;
+  B.plate(side, W, D, d.u0 - 25, d.u1 + 25, [v0 + 1.5, -APRON], [v0 + 1.5 + BEVEL * Math.cos(rad), -APRON - BEVEL * Math.sin(rad)], 3, M.galv);
+  for (const u of [d.u0 + 60, (d.u0 + d.u1) / 2, d.u1 - 60]) B.wallBox(side, W, D, u - 3, u + 3, v0 + 3, v0 + 45, -APRON + 40, -12, M.galv);
+  carOperator(B, M, side, W, D, d, tracks, CAR_PANEL, v, Ho, Ho + BELT);
+  return p;
+}
 
 export function buildCar(L: Layout, M: LiftMaterials, hitch: Hitch | null, gov: GovernorSpot | null, labels: readonly string[]): CarModel {
   const I = L.inputs, V = I.vertical, W = I.W, D = I.D, c = L.car, t = I.carWall;
@@ -43,7 +62,7 @@ export function buildCar(L: Layout, M: LiftMaterials, hitch: Hitch | null, gov: 
   };
   const walls: CarWall[] = [], panels: DoorPanels[] = [];
   for (const side of SIDES) {
-    const [a0, a1, v] = sideSpan[side], d = doorsBySide.get(side), len = side === 'front' || side === 'rear' ? W : D;
+    const [a0, a1, v] = sideSpan[side], d = doorsBySide.get(side);
     walls.push({ side, face: v + t, a0: a0 + t, a1: a1 - t, door: d });
     const pieces: readonly (readonly [number, number, number, number])[] = d ? [[a0, d.u0, 0, H], [d.u1, a1, 0, H], [d.u0, d.u1, d.height, H]] : [[a0, a1, 0, H]];
     for (const [u0, u1, z0, z1] of pieces) if (u1 - u0 > 1) B.wallBox(side, W, D, u0, u1, v + 12, v + t - 2, z0, z1, M.galv);
@@ -53,41 +72,11 @@ export function buildCar(L: Layout, M: LiftMaterials, hitch: Hitch | null, gov: 
       const u = a0 + 12 + ((a1 - a0 - 24) * k) / n;
       if (!d || u < d.u0 - 30 || u > d.u1 + 30) B.wallBox(side, W, D, u - 12, u + 12, v, v + 12, 0, H, M.galv);
     }
-    if (d) B.wallBox(side, W, D, d.u0, d.u1, v, v + 12, d.height + 30, d.height + 60, M.galv);
     if (!d) continue;
-
-    // car door panels in front of the car, the sill with the grooves of their tracks, the apron under the sill
-    const v0 = I.landingDepth + I.sillGap, tracks = d.kind === 'C2' ? [v0 + 10] : [v0 + 10, v0 + 42];
-    const p = doorPanels(side, W, D, d, 0, v0 + 10, v0 + 42, 24, M.carDoor);
+    B.wallBox(side, W, D, d.u0, d.u1, v, v + 12, d.height + 30, d.height + 60, M.galv);
+    const p = carEntrance(B, M, I, d, v, t, Ho);
     panels.push(p);
     group.add(p.group);
-    B.wallBox(side, W, D, d.u0 - 40, d.u1 + 40, v0, v, -25, 12, M.alu);
-    B.wallBox(side, W, D, d.u0, d.u1, v, v + t, -25, 12, M.alu);
-    for (const tr of tracks) B.wallBox(side, W, D, d.u0 - 40, d.u1 + 40, tr + 6, tr + 18, 12, 12.6, M.glass);
-    B.wallBox(side, W, D, d.u0 - 25, d.u1 + 25, v0, v0 + 3, -APRON, -25, M.galv);
-    const rad = Math.PI / 3;
-    B.plate(side, W, D, d.u0 - 25, d.u1 + 25, [v0 + 1.5, -APRON], [v0 + 1.5 + BEVEL * Math.cos(rad), -APRON - BEVEL * Math.sin(rad)], 3, M.galv);
-    for (const u of [d.u0 + 60, (d.u0 + d.u1) / 2, d.u1 - 60]) B.wallBox(side, W, D, u - 3, u + 3, v0 + 3, v0 + 45, -APRON + 40, -25, M.galv);
-
-    // operator over the door: as long as the panels' travel needs (inside the shaft), its fascia over the hangers,
-    // the track, the motor at the stack's end and the control box
-    const Lw = d.width, ext = 40;
-    const [h0, h1] = d.kind === 'C2' ? [(d.u0 + d.u1) / 2 - Lw - ext, (d.u0 + d.u1) / 2 + Lw + ext]
-      : d.stack === 'low' ? [d.u1 - 1.5 * Lw - 20 - ext, d.u1 + ext] : [d.u0 - ext, d.u0 + 1.5 * Lw + 20 + ext];
-    const lo = Math.max(h0, 20), hi = Math.min(h1, len - 20);
-    const at = (u: number, vv: number, z: number): Point => {
-      const [x, y] = onWall(side, W, D, u, vv);
-      return [x, y, z];
-    };
-    B.wallBox(side, W, D, lo, hi, v0 + 2, v0 + 5, d.height + 15, Ho + 40, M.galv);
-    B.wallBox(side, W, D, lo + 20, hi - 20, v0 + 8, v0 + 74, d.height + 95, d.height + 125, M.alu);
-    B.wallBox(side, W, D, lo, hi, v0 + 5, v0 + 150, Ho, Ho + 10, M.galv);
-    B.wallBox(side, W, D, lo, hi, v0 + 140, v0 + 150, Ho + 10, Ho + 170, M.galv);
-    const motorAt = d.stack === 'low' ? lo + 120 : hi - 120, sgn = d.stack === 'low' ? -1 : 1;
-    B.rod(at(motorAt - sgn * 80, v0 + 85, Ho + 70), at(motorAt + sgn * 80, v0 + 85, Ho + 70), 48, M.frame, 20);
-    B.rod(at(motorAt + sgn * 80, v0 + 85, Ho + 70), at(motorAt + sgn * 95, v0 + 85, Ho + 70), 30, M.alu, 16);
-    const box0 = d.stack === 'low' ? hi - 260 : lo + 40;
-    B.wallBox(side, W, D, box0, box0 + 220, v0 + 40, v0 + 130, Ho + 10, Ho + 120, M.frame);
   }
 
   // roof, its balustrade (kneebar, handrail, toe board) on the sides without an entrance, the inspection station
