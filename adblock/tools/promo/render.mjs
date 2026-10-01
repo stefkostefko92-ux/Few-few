@@ -18,9 +18,12 @@ import { execFileSync } from "node:child_process";
 
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = join(HERE, "..", "..");
 const arg = (n, d) => { const i = process.argv.indexOf("--" + n); return i > 0 ? process.argv[i + 1] : d; };
-const TL = JSON.parse(readFileSync(join(HERE, "timeline.json"), "utf8"));
+const CUT = arg("cut", "full");
+const TL0 = JSON.parse(readFileSync(join(HERE, "timeline.json"), "utf8"));
+const TL = CUT === "full" ? TL0 : Object.assign({}, TL0, TL0.cuts[CUT]);
+if (!TL) throw new Error("unknown cut " + CUT);
 const ver = JSON.parse(readFileSync(join(ROOT, "manifest.json"), "utf8")).version;
-const OUT = join(ROOT, "dist", "promo"), FR = join(OUT, "frames"), FONTS = join(OUT, "fonts");
+const OUT = join(ROOT, "dist", "promo"), FR = join(OUT, CUT === "full" ? "frames" : "frames-" + CUT), FONTS = join(OUT, "fonts");
 mkdirSync(FR, { recursive: true }); mkdirSync(FONTS, { recursive: true });
 
 // 1) assets
@@ -47,7 +50,7 @@ patch("preserveDrawingBuffer: false", "preserveDrawingBuffer: true");
 patch("var dt = Math.min(0.05, now - (frame.p || now));", "F = Math.max(F, window.__amb || 0);\n      var dt = Math.min(0.05, now - (frame.p || now));");
 patch("if (!strikes.length && !sparks.length) {", "if (!strikes.length && !sparks.length && !(window.__amb > 0)) {");
 patch("      el: cv,\n", "      el: cv,\n      kick: function () { if (!running) { running = true; requestAnimationFrame(frame); } },\n");
-const film = readFileSync(join(HERE, "film.html"), "utf8").replace("/*__STORM__*/", () => "window.PROMO_TIMELINE = " + JSON.stringify(TL) + ";\n" + storm)
+const film = readFileSync(join(HERE, "film.html"), "utf8").replace("/*__STORM__*/", () => "window.PROMO_TIMELINE = " + JSON.stringify(TL) + ";\nwindow.PROMO_CUT = " + JSON.stringify(CUT) + ";\n" + storm)
   .replace('<b id="ver" style="font-weight:300">5.1</b>', () => `<b id="ver" style="font-weight:300">${ver}</b>`);
 
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".webp": "image/webp", ".png": "image/png", ".woff2": "font/woff2" };
@@ -86,14 +89,15 @@ if (errors.length) throw new Error("film errors: " + errors.join(" | "));
 if (process.argv.includes("--only-frames")) process.exit(0);
 
 // 4) audio  5) encode
-const wav = join(OUT, "audio.wav");
-execFileSync("python3", [join(HERE, "audio.py"), wav], { stdio: "inherit" });
+const wav = join(OUT, CUT === "full" ? "audio.wav" : `audio-${CUT}.wav`);
+execFileSync("python3", [join(HERE, "audio.py"), wav, CUT], { stdio: "inherit" });
 let ffmpeg = process.env.FFMPEG;
 if (!ffmpeg) ffmpeg = execFileSync("python3", ["-c", "import imageio_ffmpeg as f; print(f.get_ffmpeg_exe())"]).toString().trim();
-const mp4 = join(ROOT, "dist", `supreme-adblock-promo-${ver}.mp4`);
+const tag = CUT === "full" ? "" : "-" + CUT;
+const mp4 = join(ROOT, "dist", `supreme-adblock-promo-${ver}${tag}.mp4`);
 execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-framerate", String(TL.fps), "-i", join(FR, "%05d.jpg"), "-i", wav,
   "-c:v", "libx264", "-preset", "slow", "-tune", "grain", "-crf", "19", "-pix_fmt", "yuv420p", "-profile:v", "high", "-r", String(TL.fps),
   "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", "-shortest", mp4], { stdio: "inherit" });
-const thumb = join(ROOT, "dist", `supreme-adblock-promo-${ver}-thumb.png`);
+const thumb = join(ROOT, "dist", `supreme-adblock-promo-${ver}${tag}-thumb.png`);
 execFileSync(ffmpeg, ["-y", "-loglevel", "error", "-i", join(FR, `${String(Math.round(2.3 * TL.fps)).padStart(5, "0")}.jpg`), "-vf", "scale=1280:720", thumb], { stdio: "inherit" });
 console.log("→", mp4, "\n→", thumb);

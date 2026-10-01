@@ -17,7 +17,7 @@ Supreme AdBlock keeps the web clean and fast, without watching what you do.
   and search ads
 - EasyList, EasyPrivacy and the uBlock Origin filters built in, plus the list for
   your language — 31 regional lists, the one for your browser's language on by itself
-- Removes banners, pop-ups, pop-unders and native "recommended" ads
+- Removes banners, pop-ups, pop-unders and native sponsored-content widgets
 - Hides sponsored posts on Facebook & Instagram
 - Stops trackers and behavioural analytics
 - Blocks third-party tracking cookies and beacons at the network level
@@ -78,7 +78,7 @@ Your browsing data never leaves your device. No account, no analytics, no teleme
 
 It reaches the ads that rules alone cannot. Pop-unders are refused at the moment
 a page calls window.open, for 2,700+ known hosts; anti-adblock walls are
-neutralised; and brand-new ad slots no filter list knows yet are caught by their
+neutralised; and ad slots no filter list names yet are caught by their
 shape, not by a rule.
 
 When a site breaks, you fix it in one click. Allow the site outright, or keep
@@ -89,7 +89,7 @@ You can see what it did. A per-page breakdown of what each filter list
 blocked, live counters for data and time saved, and a health card in the
 settings that confirms every part is actually running.
 
-100% free. No account, no telemetry, no data collection, everything stays on
+No cost, no account, no telemetry, no data collection, everything stays on
 your device. If it makes your browsing better, donations are welcome but never
 required.
 
@@ -147,7 +147,7 @@ Supreme AdBlock пази уеб-а чист и бърз, без да следи 
 
 Виждате какво е свършило. Разбивка по филтър-листи за всяка страница, броячи на живо за спестени данни и време, и карта за здравето на двигателя в настройките, която потвърждава, че всяка част наистина работи.
 
-100% безплатно. Без акаунт, без телеметрия, без събиране на данни — всичко остава на вашето устройство. Popup-ът и настройките показват една малка, ясно обозначена реклама на собствената ни марка Carbon Stealth и незадължителен линк за дарение; нищо не е от трета страна и никакви данни не напускат устройството ви заради това.
+Без заплащане, без акаунт, без телеметрия, без събиране на данни — всичко остава на вашето устройство. Popup-ът и настройките показват една малка, ясно обозначена реклама на собствената ни марка Carbon Stealth и незадължителен линк за дарение; нищо не е от трета страна и никакви данни не напускат устройството ви заради това.
 
 **it**
 
@@ -194,7 +194,7 @@ Se un sito si rompe, lo sistemi con un clic. Consenti l'intero sito, oppure mant
 
 Vedi cosa ha fatto. Per ogni pagina, quanto ha bloccato ciascuna lista di filtri, contatori in tempo reale di dati e tempo risparmiati e una scheda di stato nelle impostazioni che conferma che ogni componente è davvero attivo.
 
-100% gratuito. Nessun account, nessuna telemetria, nessuna raccolta di dati: tutto resta sul tuo dispositivo. Il popup e le impostazioni mostrano una piccola promozione, chiaramente etichettata, del nostro marchio Carbon Stealth e un link facoltativo per le donazioni; nulla è di terze parti e nessun dato lascia il tuo dispositivo per questo.
+Nessun costo, nessun account, nessuna telemetria, nessuna raccolta di dati: tutto resta sul tuo dispositivo. Il popup e le impostazioni mostrano una piccola promozione, chiaramente etichettata, del nostro marchio Carbon Stealth e un link facoltativo per le donazioni; nulla è di terze parti e nessun dato lascia il tuo dispositivo per questo.
 
 **de**
 
@@ -241,7 +241,7 @@ Wenn eine Seite kaputtgeht, reparieren Sie es mit einem Klick. Erlauben Sie die 
 
 Sie sehen, was es getan hat. Pro Seite, wie viel jede Filterliste blockiert hat, Live-Zähler für gesparte Daten und Zeit und eine Statuskarte in den Einstellungen, die bestätigt, dass jeder Teil wirklich läuft.
 
-100 % kostenlos. Kein Konto, keine Telemetrie, keine Datensammlung: Alles bleibt auf Ihrem Gerät. Popup und Einstellungen zeigen eine kleine, klar gekennzeichnete Eigenwerbung für unsere Marke Carbon Stealth und einen optionalen Spendenlink; nichts stammt von Dritten, und dafür verlassen keine Daten Ihr Gerät.
+Keine Kosten, kein Konto, keine Telemetrie, keine Datensammlung: Alles bleibt auf Ihrem Gerät. Popup und Einstellungen zeigen eine kleine, klar gekennzeichnete Eigenwerbung für unsere Marke Carbon Stealth und einen optionalen Spendenlink; nichts stammt von Dritten, und dafür verlassen keine Daten Ihr Gerät.
 
 ## Privacy
 Single purpose: content blocker — blocks ads, trackers and page annoyances (pop-ups,
