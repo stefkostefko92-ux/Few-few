@@ -8,7 +8,7 @@
 // into a batch. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { FISHPLATES, RAILS, railClip, type Rail, type RailType } from '@/shaft';
+import { FISHPLATES, GENERIC_BRACKET, RAILS, railClip, type Rail, type RailType } from '@/shaft';
 import { P, type Batch } from './geom';
 import { N1, fastener, frameAt, type Fastener } from './hardware';
 import type { LiftMaterials } from './materials';
@@ -32,7 +32,7 @@ export function railFrameOf(r: Rail, h: number): RailFrame & { dx: number; dy: n
 }
 
 // the bracket's plate behind the foot, its flanges, the wall plate [mm]; a two-piece bracket past this reach
-const PLATE = 10, FLANGE = 8, WALL_PLATE = 12, ONE_PIECE = 150;
+const { plate: PLATE, flange: FLANGE, wallPlate: WALL_PLATE, onePiece: ONE_PIECE } = GENERIC_BRACKET;
 
 /** The foot's front face at c from the axis: from its thickness at the root (tf) down to the edge's (te). */
 export function footFace(type: RailType, c: number): number {

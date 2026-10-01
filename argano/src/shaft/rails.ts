@@ -82,5 +82,10 @@ export function railClip(t: RailType): RailClip {
   return { bolt, width, length, shank, reach: shank + (16.5 / 36) * length + 2 };
 }
 
+/** A generic rail bracket (when not Panev's): the plate behind the foot, the flange of its angles, the plate on the wall
+ *  [mm thick]; up to `onePiece` from the wall one piece, beyond it two angles bolted together (components/lift3d/railfix.ts
+ *  builds it, plan-staffe.ts draws it). */
+export const GENERIC_BRACKET = { plate: 10, flange: 8, wallPlate: 12, onePiece: 150 } as const;
+
 /** Designation as written on the drawings, e.g. "T 70x70x8" or "T89/B". */
 export const railLabel = (t: RailType): string => (RAILS[t].iso ? t : `T ${t.slice(1)}`);

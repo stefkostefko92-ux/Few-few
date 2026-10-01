@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import type { Plant } from '@/lib/plant';
+import { KV_VERT } from '@/shaft/norme-vert';
 import { savePlantAction } from '@/server/drawing-actions';
 
 type TextKey = 'machine' | 'control' | 'shaft' | 'carFinish' | 'landingDoors' | 'carDoors' | 'carFrame' | 'carBrackets' | 'cwBrackets' | 'governor' | 'governorRope' | 'carBuffers' | 'cwBuffers';
@@ -30,6 +31,7 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
     <label className="field" key={k}>
       <span>{t(`f_${k}`)}</span>
       <input className="input num" type="number" inputMode="decimal" min={0} step={step} value={P[k] ?? ''} disabled={readOnly}
+        placeholder={k === 'carBracketPitch' || k === 'cwBracketPitch' ? String(KV_VERT.bracketPitch) : undefined}
         onChange={(e) => { const v = e.target.value.replace(',', '.'); put({ [k]: v === '' ? undefined : Number(v) }); }} />
     </label>
   );
@@ -67,6 +69,7 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
           {text('cwBrackets')}
           {num('cwBracketPitch', 50)}
         </div>
+        <p className="note">{t('bracketRule', { pitch: KV_VERT.bracketPitch })}</p>
       </fieldset>
       <fieldset className="panel">
         <legend>{t('g_safety')}</legend>

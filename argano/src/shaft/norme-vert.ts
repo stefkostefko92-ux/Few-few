@@ -61,6 +61,14 @@ export const KV_VERT = {
   // estimates of the data sheet: rails end under the slab; the governor pulley above the machine room floor [mm]
   railTopGap: 50,
   governorAbove: 800,
+  // brackets along a rail: one every pitch, one more at the start and one at the end; the first over the rail's foot
+  // and the last under its top [mm] (the rule the client fits them by)
+  bracketPitch: 2000,
+  bracketFirst: 600,
+  bracketLast: 200,
+  // walls of an old building that stand elsewhere at the top floor and in the headroom: the least clearance of the car
+  // and the counterweight running past them [mm]
+  headRun: 25,
 } as const;
 
 export type CostanteVert = keyof typeof KV_VERT;
@@ -162,6 +170,26 @@ export const VOCI_VERT: readonly VoceVano[] = [
     riferimento: 'UNI EN 81-20:2020, introduzione (ipotesi)', fonte: EN, stato: 'da_verificare',
   },
   {
+    id: 'distanze.testata', gruppo: 'distanze', titolo: 'Pareti all\'ultimo piano e in testata diverse dal piano principale',
+    valore: 'negli edifici esistenti le pareti del vano all\'ultima fermata e in testata possono stare altrove che al piano principale: cabina, '
+      + `guide e contrappeso restano a piombo; la cabina con soglie e operatori delle porte e il contrappeso passano ad almeno ${KV_VERT.headRun} mm `
+      + 'dalle pareti spostate (meno: «Attenzione»; dentro la parete: «Non conforme»); le porte di piano dell\'ultima fermata restano in linea con '
+      + 'la cabina e la parete non entra nel loro spessore, i piedi delle guide e la staffa a ponte non entrano nelle pareti; le staffe arrivano '
+      + 'alla parete dove sta (le staffe Panev si verificano anche lì); la distanza dalla parete di fronte all\'entrata (voce '
+      + 'distanze.parete.entrata) vale anche in testata',
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.3.1 (parete di fronte all\'entrata); il resto scelta del software',
+    fonte: 'scelta del software: il margine di marcia va confermato con l\'installatore', stato: 'scelta', verifiche: ['v_head'],
+  },
+  {
+    id: 'guide.staffe', gruppo: 'carichi', titolo: 'Numero e posizione delle staffe delle guide',
+    valore: `una staffa ogni ${KV_VERT.bracketPitch} mm di guida, più una all'inizio e una alla fine: per guida ⌊L / ${KV_VERT.bracketPitch}⌋ + 2 `
+      + `(L la lunghezza della guida); la prima a ${KV_VERT.bracketFirst} mm dal piede della guida, l'ultima a ${KV_VERT.bracketLast} mm dalla `
+      + 'sua sommità, le altre a passo uguale tra le due; una staffa che cadrebbe sulla piastra di una giunzione (guide da 5 m dal fondo della '
+      + `fossa) si sposta appena oltre la piastra. Il passo inserito nei dati dell'impianto sostituisce i ${KV_VERT.bracketPitch} mm`,
+    riferimento: 'regola di montaggio indicata dal committente', fonte: 'scelta del committente', stato: 'scelta',
+    nota: 'il passo delle staffe va confermato con la verifica delle guide (UNI EN 81-50:2020, 5.10), che usa la distanza tra le staffe',
+  },
+  {
     id: 'foglio.stime', gruppo: 'carichi', titolo: 'Lunghezze stimate nel foglio dei dati',
     valore: 'guide dal pavimento della fossa fino a 50 mm sotto la soletta del vano; fune del limitatore: due volte l\'altezza dalla fossa al limitatore, '
       + 'posto 800 mm sopra il pavimento del locale; funi di trazione: taglia × (corsa + 2 × tratto oltre la corsa), più deviazione o rinvii',
@@ -187,4 +215,6 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   illuminazione: ['wellLux', 'wellLuxElse', 'roomLux'],
   'locale.temperatura': ['tempMin', 'tempMax'],
   'foglio.stime': ['railTopGap', 'governorAbove'],
+  'guide.staffe': ['bracketPitch', 'bracketFirst', 'bracketLast'],
+  'distanze.testata': ['headRun'],
 };

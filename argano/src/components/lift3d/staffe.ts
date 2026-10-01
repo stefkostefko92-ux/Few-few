@@ -1,8 +1,8 @@
 // Panev's brackets in place, as the catalogue pairs and adjusts them. Under every landing sill the landing-door
 // brackets: B anchored to the wall below the opening, A bolted to its rib through the joint and the lock, its platform
-// under the sill, cut to the sill's depth. On a counterweight rail every 2.5 m: the SU or SD support anchored to the
-// wall, the SG guide bracket bolted on its arm and the rail clamped to the SG's flange by two N1 clips whose shanks
-// stand in the flange's slots. The support is the shortest whose printed range takes the rail's distance from the
+// under the sill, cut to the sill's depth. On a counterweight rail at each height of the bracket rule
+// (src/shaft/brackets.ts): the SU or SD support anchored to the wall, the SG guide bracket bolted on its arm and the
+// rail clamped to the SG's flange by two N1 clips whose shanks stand in the flange's slots. The support is the shortest whose printed range takes the rail's distance from the
 // wall and whose flange fits behind the rail. Millimetres in an assembly frame (x along the wall, y up, z into the
 // shaft), placed in metres. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).

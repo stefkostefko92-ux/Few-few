@@ -3,13 +3,15 @@
 // rails (feet, tips, D.F.G.), the axes and the shaft; on the side walls the counterweight rails, the bracket, the car
 // and the shaft; inside the car the clear door opening; the spaces with their sizes and the rope drop. Each dimension
 // says which input its new length changes (edit.ts), so the screens can change any of them where it is drawn: a
-// distance of the plan set by hand (plan.*), an allowance, the shaft's or the doors' size.
+// distance of the plan set by hand (plan.*), an allowance, the shaft's or the doors' size. In the headroom the walls
+// stand where head.ts puts them and the dimensions that end on a wall move that wall (head.*): the car, its rails and
+// the counterweight run plumb.
 import { chain, edit as E, type Edit, type Entity, type Side } from '../drawing';
 import { KV } from './norme';
 import { RAILS } from './rails';
 import { callStationAt, callStationOf } from './callstation';
 import { cwNiche, nichesOf } from './niche';
-import { doorsAt, pitSpace, roofSpaces, type PlanLevel } from './plan-view';
+import { doorsAt, pitSpace, roofSpaces, wallsAt, type PlanLevel } from './plan-view';
 import type { DoorLayout, Layout, NicheUse, Wall } from './types';
 
 const sideOf: Record<Wall, Side> = { front: 'bottom', rear: 'top', left: 'left', right: 'right' };
@@ -30,8 +32,17 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
   const cr = RAILS[I.carRail], wr = RAILS[I.cwRail], nd = cwNiche(I, L.cwSide)?.depth ?? 0;
   const open = doorsAt(L, floor), door = open[0] ?? L.doors[0];
   const doorSide = sideOf[door.wall];
-  const rows: Record<Side, number> = { top: 0, bottom: 0, left: 0, right: 0 };
-  const push = (side: Side, dir: 'x' | 'y', pts: number[], text?: (string | null)[], edit?: (Edit | null)[]): void => {
+  const rows: Record<Side, number> = { top: 0, bottom: 0, left: 0, right: 0 }, B = wallsAt(L, level), head = level === 'top';
+  // in the headroom a chain that ends on a wall ends where that wall stands there, and that end moves it
+  const atHead = (dir: 'x' | 'y', pts: number[], edit?: (Edit | null)[]): [number[], (Edit | null)[] | undefined] => {
+    const size = dir === 'x' ? W : D, [h0, h1] = dir === 'x' ? [B.x0, B.x1] : [B.y0, B.y1], [lo, hi] = dir === 'x' ? ['left', 'right'] : ['front', 'rear'];
+    const n = pts.length, p = pts.map((v) => (v === 0 ? h0 : v === size ? h1 : v)), e = Array.from({ length: n - 1 }, (_, i) => edit?.[i] ?? null);
+    if (pts[n - 1] === size) e[n - 2] = E(`head.${hi}`, size - p[n - 2], -1);
+    if (pts[0] === 0 && n > 2) e[0] = E(`head.${lo}`, p[1], -1);
+    return [p, e];
+  };
+  const push = (side: Side, dir: 'x' | 'y', pts0: number[], text?: (string | null)[], edit0?: (Edit | null)[]): void => {
+    const [pts, edit] = head ? atHead(dir, pts0, edit0) : [pts0, edit0];
     out.push(chain({ dir, pts, side, row: rows[side]++, text, edit }));
   };
   // the niches of a wall along it, inside the shaft's total; the depth of each across its wall, at its middle
@@ -39,7 +50,8 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
     if (sideOf[n.wall] !== side) return;
     const along = n.wall === 'front' || n.wall === 'rear', len = along ? W : D, k = `n.${i}`, mid = n.at + n.width / 2;
     push(side, along ? 'x' : 'y', [0, n.at, n.at + n.width, len], [null, `{v} ${NICHE_TEXT[n.use]}`, null], [E(`${k}.at`), E(`${k}.width`), E(`${k}.at`, len - n.width, -1)]);
-    const face = n.wall === 'rear' ? D : n.wall === 'right' ? W : 0, pts = face === 0 ? [-n.depth, 0] : [face, face + n.depth];
+    const out1 = n.wall === 'rear' || n.wall === 'right', face = n.wall === 'rear' ? B.y1 : n.wall === 'right' ? B.x1 : n.wall === 'front' ? B.y0 : B.x0;
+    const pts = out1 ? [face, face + n.depth] : [face - n.depth, face];
     out.push(chain({ dir: along ? 'y' : 'x', pts, at: mid, edit: [E(`${k}.depth`)] }));
   });
   const total = (side: Side, dir: 'x' | 'y'): void => {

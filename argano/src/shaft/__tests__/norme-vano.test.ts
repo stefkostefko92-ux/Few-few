@@ -6,7 +6,7 @@ import { COSTANTI_VERT, DEFAULTS, KV, KV_VERT, VOCI_VANO, VOCI_VERT, vociOfDesig
 import type { Access, CostanteVano, CostanteVert, ShaftCheckId } from '../index';
 
 const CHECKS: readonly ShaftCheckId[] = [
-  'v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_door2', 'v_op', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen', 'v_place', 'v_doorcar',
+  'v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_door2', 'v_op', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen', 'v_place', 'v_doorcar', 'v_head',
   'h_refuge', 'h_clear', 'h_parapet', 'p_refuge', 'p_apron', 'b_runby', 'b_car', 'b_cw', 'm_height', 'm_panel', 'm_door',
 ];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');

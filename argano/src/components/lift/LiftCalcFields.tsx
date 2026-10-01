@@ -3,6 +3,7 @@
 // The installation and the machine in the one form: the calculator's fields (prototype v12, same units and texts),
 // but only those a person must enter. The car mass, the rope geometry and the machine are filled in by the software
 // unless switched to entered; an automatic value is shown with a badge saying so.
+import { SHEAVE_GRID } from '@/calc/sizing';
 import type { FormValues } from '@/calc/types';
 import { BOTTOM_SCHEMES, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { BRANDS, catalogOf, type Brand } from '@/lib/catalog/machines';
@@ -34,6 +35,17 @@ const field = (id: string): Field => {
 /** the group's assumptions, entered also when the machine is proposed */
 const ASSUMED = ['n_etaD', 'n_etaI', 'n_poles', 'n_fn', 'n_nm', 'n_Jm', 'n_Js', 'n_mass'] as const;
 
+/** A direct pull: the falls in the plan are the sheave's diameter apart (the existing sheave's when it is compared), or
+ *  why not — beyond the calculation's sheaves, or another sheave than the plan's. */
+function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t']) {
+  const { I, N, O, compare } = derived.analysis.ctx, c = derived.calata ?? 0, D = compare && I.context === 'repl' ? O.D : N.D;
+  const bad = derived.issues.includes('calata'), out = c < SHEAVE_GRID[0] - 0.5 || c > SHEAVE_GRID[SHEAVE_GRID.length - 1] + 0.5;
+  const text = !bad ? t('hint_calata', { c: fmt(c, 0), D: fmt(D, 0) })
+    : out ? t('hint_calata_range', { c: fmt(c, 0), min: SHEAVE_GRID[0], max: SHEAVE_GRID[SHEAVE_GRID.length - 1] })
+      : t('hint_calata_bad', { c: fmt(c, 0), D: fmt(D, 0) });
+  return <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
+}
+
 export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAuto, setBottom, setCatalog, t }: Props) {
   const V: FormValues = { ...inp.calc, layout: derived.values.layout };
   const DV = derived.values, auto = inp.auto, { fmt } = P;
@@ -55,6 +67,7 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
         <div className="rows">
           {row('r')}
           {row('layout')}
+          {derived.calata !== null ? calataHint(derived, fmt, t) : null}
           {derived.bottom ? (
             <>
               <div className="row wide">

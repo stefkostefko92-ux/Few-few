@@ -121,6 +121,8 @@ export const shaftInputsSchema = z.object({
   cwBrackets: z.enum(['panev', 'generic']).optional(),
   doorMaker: z.enum(['generic', '2sg', 'fermator']).optional(),
   governor: z.string().refine((g) => GOVERNORS.some((x) => x.model === g)).optional(),
+  /** the walls at the top floor and in the headroom, in from the main floor's (src/shaft/head.ts) */
+  head: z.object({ front: mm(-500, 500), rear: mm(-500, 500), left: mm(-500, 500), right: mm(-500, 500) }).strict().optional(),
 }).strict();
 
 const finite = z.number().finite();

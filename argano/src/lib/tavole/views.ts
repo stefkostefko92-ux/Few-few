@@ -4,7 +4,7 @@
 import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type ViewResult } from '@/drawing';
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
-import { planEntities, type PlanLevel } from '@/shaft/plan-view';
+import { planEntities, wallsAt, type PlanLevel } from '@/shaft/plan-view';
 import { roomPlanEntities, roomSectionEntities } from '@/shaft/room-view';
 import { section } from '@/shaft/section';
 import { sectionDims, type SectionKind } from '@/shaft/section-dims';
@@ -31,9 +31,8 @@ function placeIn(model: Box, entities: readonly Entity[], area: Box, scales: rea
 
 /** Plan of the shaft at a level; `total` names the level in the overall dimensions (e.g. `in Testata`). */
 export function planView(L: Layout, level: PlanLevel, floor: number, total: string, area: Box): View {
-  const { W, D, wall: T } = L.inputs;
-  const ents = [...planEntities(L, level, floor), ...planDims(L, level, floor, { level: total })];
-  const place = placeIn({ x0: -T, y0: -T, x1: W + T, y1: D + T }, ents, area, PLAN_SCALES);
+  const T = L.inputs.wall, B = wallsAt(L, level), ents = [...planEntities(L, level, floor), ...planDims(L, level, floor, { level: total })];
+  const place = placeIn({ x0: Math.min(0, B.x0) - T, y0: Math.min(0, B.y0) - T, x1: Math.max(L.inputs.W, B.x1) + T, y1: Math.max(L.inputs.D, B.y1) + T }, ents, area, PLAN_SCALES);
   return { r: renderView(ents, place), place };
 }
 
@@ -101,15 +100,16 @@ function sectionPreview(L: Layout): ReturnType<typeof cropped> | null {
   }
 }
 
-export type ScreenView = 'plan' | SectionKind | 'room-plan' | 'room-section';
+export type ScreenView = 'plan' | 'head' | SectionKind | 'room-plan' | 'room-section';
 
-/** One view for the screens that change the design: the plan at the main floor, section A-A whole or a detail (the
- *  headroom, the car at the main floor, the pit), the machine room in plan or in section B-B (with a machine); null
- *  when it cannot be drawn. */
+/** One view for the screens that change the design: the plan at the main floor or at the top floor and in the
+ *  headroom (its walls where they stand there), section A-A whole or a detail (the headroom, the car at the main floor,
+ *  the pit), the machine room in plan or in section B-B (with a machine); null when it cannot be drawn. */
 export function screenView(L: Layout, v: ScreenView, M: MachineSpec | null): ReturnType<typeof cropped> | null {
   const V = L.inputs.vertical, top = V.floors.length - 1, main = Math.min(V.main, top), area: Box = { x0: 0, y0: 0, x1: 190, y1: 190 };
   try {
     if (v === 'plan') return cropped(planView(L, 'main', main, `piano "${V.floors[main]?.label ?? ''}"`, area));
+    if (v === 'head') return cropped(planView(L, 'top', top, 'in Testata', area));
     if (v === 'room-plan' || v === 'room-section') {
       const r = M ? roomView(L, M, v === 'room-plan' ? 'plan' : 'section', area) : null;
       return r ? cropped(r) : null;

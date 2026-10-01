@@ -3,22 +3,23 @@
 // pointing at the car or the counterweight, from the pit floor up under the slab. Cold-drawn rails (/A) are bright all
 // over; on a machined rail (/B) the blade is planed bright and oiled, the foot left in its mill scale; the rolled
 // profiles are dark. In 5 m lengths: a hairline at each joint, the fishplate of the rail's size behind it with its
-// eight bolts. Every 2.5 m a bracket: the plate behind the foot held by two forged clips, the arm out to the wall in
-// one piece or two (railfix.ts); on a counterweight rail Panev's support, its SG and two N1 clips instead
-// (staffe.ts); the bridge bracket of a side counterweight. Loaded only through boot.ts (lazy).
+// eight bolts. The brackets as many and where the rule puts them (one every 2 m, plus the first and the last:
+// src/shaft/brackets.ts): the plate behind the foot held by two forged clips, the arm out to the wall in one piece or
+// two (railfix.ts); on a counterweight rail Panev's support, its SG and two N1 clips instead (staffe.ts); the bridge
+// bracket of a side counterweight. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { FISHPLATES, RAILS, type Layout, type RailType } from '@/shaft';
+import { RAILS, RAIL_LENGTH, bracketHeights, railSpan, type Layout, type RailType } from '@/shaft';
 import type { Section } from '@/shaft/section';
-import { KV_VERT } from '@/shaft/norme-vert';
 import { cwNiche } from '@/shaft/niche';
 import { cwBracketsOf } from '@/shaft/staffe';
+import { hasHead, headOf, headRail } from '@/shaft/head';
 import { Batch } from './geom';
 import type { LiftMaterials } from './materials';
 import { clippedPlate, fishplate, railFrameOf, wallArm } from './railfix';
 import { cwSupport, railSupport } from './staffe';
 
-const BRACKET_PITCH = 2500, RAIL_LENGTH = 5000, JOINT_GAP = 0.6;
+const JOINT_GAP = 0.6;
 
 /** The section's two parts in the rail's frame [mm]: the blade (tip and faces) and the foot with the root's radii. */
 function section(b: number, h: number, k: number): { blade: [number, number][]; foot: [number, number][] } {
@@ -40,7 +41,9 @@ function finish(type: RailType, M: LiftMaterials): readonly [THREE.Material, THR
 
 export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group {
   const g = new THREE.Group(), B = new Batch(), I = L.inputs, niche = cwNiche(I, L.cwSide);
-  const z0 = S.pitFloor, z1 = S.ceiling - KV_VERT.railTopGap;
+  // from the top floor up the brackets reach the walls where they stand in the headroom (src/shaft/head.ts)
+  const zHead = hasHead(I) ? S.levels[I.vertical.floors.length - 1] ?? Infinity : Infinity, span = niche ? [niche.at, niche.at + niche.width] as const : undefined;
+  const [z0, z1] = railSpan(S);
   for (const r of L.rails) {
     const type = r.kind === 'car' ? I.carRail : I.cwRail, { b, h, k } = RAILS[type], F = railFrameOf(r, h), [mBlade, mFoot] = finish(type, M);
     const sec = section(b, h, k);
@@ -65,21 +68,21 @@ export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group
       const [p, q] = [F.plan(a0, c0), F.plan(a1, c1)];
       B.box(p[0], p[1], za, q[0], q[1], zb, M.galv);
     };
-    const brackets: number[] = [];
-    for (let z = z0 + 600; z < z1 - 200; z += BRACKET_PITCH) brackets.push(z);
-    // the fishplates behind the joints, clear of the brackets
-    const plateLen = FISHPLATES[type].l;
-    for (const j of joints) if (!brackets.some((z) => Math.abs(z + 75 - j) < plateLen / 2 + 90)) fishplate(B, M, RF, type, j, galv);
+    const brackets = bracketHeights(z0, z1, type);
+    // the fishplates behind the joints (the brackets keep clear of them)
+    for (const j of joints) fishplate(B, M, RF, type, j, galv);
     // a counterweight rail on Panev's supports (staffe.ts) when the design takes them and one fits; otherwise the plate
     // with its two clips and the arm out to the wall (or to the bridge)
-    const panev = r.kind === 'cw' && cwBracketsOf(I) === 'panev' ? cwSupport(r, h, I.W, I.D, niche ? [niche.at, niche.at + niche.width] : undefined) : null;
+    const isPanev = r.kind === 'cw' && cwBracketsOf(I) === 'panev';
+    const panevMain = isPanev ? cwSupport(r, h, I.W, I.D, span) : null, panevHead = isPanev ? cwSupport(r, h, I.W, I.D, span, headOf(I)) : null;
     for (const z of brackets) {
+      const up = z >= zHead, panev = up ? panevHead : panevMain;
       if (panev) {
         railSupport(B, M, panev.wall, I.W, I.D, panev.foot, panev.reach, z, panev.mirror, b / 2, panev.sup, panev.inset);
         continue;
       }
-      const outer = clippedPlate(B, M, RF, type, z + 75, galv);
-      const toWall = r.bracketAxis === 'x' ? r.bracketTo - (r.x - F.dx * h) : r.bracketTo - (r.y - F.dy * h);
+      const outer = clippedPlate(B, M, RF, type, z + 75, galv), to = (up ? headRail(I, r) : r).bracketTo;
+      const toWall = r.bracketAxis === 'x' ? to - (r.x - F.dx * h) : to - (r.y - F.dy * h);
       const along = r.bracketAxis === 'x' ? Math.abs(F.dx) > 0.5 : Math.abs(F.dy) > 0.5;
       if (along) {
         // the wall behind the foot: the arm straight back from the plate
@@ -94,7 +97,7 @@ export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group
   }
   if (L.bridge) {
     const bridge = L.bridge;
-    for (let z = z0 + 600; z < z1 - 200; z += BRACKET_PITCH) B.box(bridge.x - 40, bridge.y0, z, bridge.x + 40, bridge.y1, z + 120, M.steel);
+    for (const z of bracketHeights(z0, z1, I.cwRail)) B.box(bridge.x - 40, bridge.y0, z, bridge.x + 40, bridge.y1, z + 120, M.steel);
   }
   B.into(g);
   return g;

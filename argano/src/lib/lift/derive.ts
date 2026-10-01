@@ -39,6 +39,8 @@ export interface LiftInputs {
 
 export type Origin = 'entered' | 'auto' | 'estimate';
 export type DerivedKey = 'Q' | 'v' | 'H' | 'P' | 'L0' | 'dx' | 'Hv' | 'machine';
+/** What the plan cannot give or contradicts: the diverting pulley's distance, a direct pull's falls (calata). */
+export type IssueKey = DerivedKey | 'calata';
 
 export interface LiftDerived {
   shaft: ShaftInputs;
@@ -49,8 +51,12 @@ export interface LiftDerived {
   origin: Readonly<Record<DerivedKey, Origin>>;
   /** the sizing found no machine: the one entered is checked instead */
   noProposal: boolean;
-  /** automatic values the plan cannot give (the pulleys do not fit as a simple bend between the rope drops) */
-  issues: readonly DerivedKey[];
+  /** automatic values the plan cannot give (the pulleys do not fit as a simple bend between the rope drops), and a direct
+   *  pull whose falls in the plan are not the sheave's diameter apart */
+  issues: readonly IssueKey[];
+  /** direct pull (no diverting pulley): the spacing of the falls in the plan, which the sheave's pitch diameter must
+   *  equal [mm]; null with a diverting pulley or the machine below */
+  calata: number | null;
   machine: MachineSpec;
   /** the rope scheme of a machine below; null with the machine above */
   bottom: BottomScheme | null;
@@ -81,17 +87,21 @@ function ropeBeyond(S: ShaftInputs, V: FormValues, headOver: number | null): num
   return Math.max(0.1, m3((vt.headroom - vt.frameTop + above) / 1000));
 }
 
+/** Spacing in the plan of the two falls of the rope over the machine [mm]: from the car's drop to the counterweight's,
+ *  Dp less with 2:1 roping (the ropes run up from the inner sides of the car and counterweight pulleys). */
+function fallSpacing(L: Layout, V: FormValues): number {
+  const car = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2], cw = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
+  return Math.hypot(cw[0] - car[0], cw[1] - car[1]) - (num(V, 'r') === 2 ? num(V, 'Dp') : 0);
+}
+
 /**
  * Horizontal distance from the sheave to the diverting pulley, with the counterweight's rope drop where the plan puts
  * it: past the pulley's outer side (simple bend: the drop spacing less the two radii) or, when the rope must come
- * inwards, past its inner side (reverse bend: Dp further). With 2:1 roping the ropes run up from the inner sides of the
- * car and counterweight pulleys, Dp closer together. When neither bend is the one the wrap-angle model reads from that
- * distance, the plan cannot give it (fits: false; the simple value is kept, never clamped).
+ * inwards, past its inner side (reverse bend: Dp further). When neither bend is the one the wrap-angle model reads from
+ * that distance, the plan cannot give it (fits: false; the simple value is kept, never clamped).
  */
 function deflectorDx(L: Layout, V: FormValues): { dx: number; fits: boolean } {
-  const car = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2], cw = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
-  const D = num(V, 'n_D'), Dp = num(V, 'Dp'), h = num(V, 'h');
-  const span = Math.hypot(cw[0] - car[0], cw[1] - car[1]) - (num(V, 'r') === 2 ? Dp : 0);
+  const D = num(V, 'n_D'), Dp = num(V, 'Dp'), h = num(V, 'h'), span = fallSpacing(L, V);
   const simple = m3((span - D / 2 - Dp / 2) / 1000), reverse = m3((span - D / 2 + Dp / 2) / 1000);
   if (simple >= 0 && deflectorAngle(D, Dp, simple, h)?.reverse === false) return { dx: simple, fits: true };
   if (reverse >= 0 && deflectorAngle(D, Dp, reverse, h)?.reverse === true) return { dx: reverse, fits: true };
@@ -101,13 +111,13 @@ function deflectorDx(L: Layout, V: FormValues): { dx: number; fits: boolean } {
 /**
  * The machine proposed for the values V. The sheave changes the rope geometry (rope beyond the travel, distance of the
  * diverting pulley), which changes the wrap angle: each sheave of the grid (or the one kept) is sized with its own
- * geometry, and only sheaves whose diverting pulley the plan can place (planned) are taken. The choice is the sizing's
- * own: per rope diameter the fewest ropes, then the smallest sheave (ropes kept: every sheave), then compareOptions. With
- * the geometry entered by hand this is exactly the sizing of the calculator. null: nothing passes (the machine entered is
- * checked).
+ * geometry, and only sheaves whose diverting pulley the plan can place (planned) are taken; a direct pull takes only the
+ * sheave `only` lists (its falls are the plan's). The choice is the sizing's own: per rope diameter the fewest ropes,
+ * then the smallest sheave (ropes kept: every sheave), then compareOptions. With the geometry entered by hand this is
+ * exactly the sizing of the calculator. null: nothing passes (the machine entered is checked).
  */
-function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean, fitOf: ((o: SizingOption, W: FormValues) => CatalogFit | null) | null): { V: FormValues; fit: CatalogFit | null } | null {
-  const c0 = readInputs(V0), sheaves = c0.fixedD ? [c0.fixedD] : SHEAVE_GRID;
+function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean, fitOf: ((o: SizingOption, W: FormValues) => CatalogFit | null) | null, only: readonly number[] | null): { V: FormValues; fit: CatalogFit | null } | null {
+  const c0 = readInputs(V0), sheaves = c0.fixedD ? [c0.fixedD] : only ?? SHEAVE_GRID;
   const found: { o: SizingOption; V: FormValues; fit: CatalogFit | null }[] = [];
   for (const D of sheaves) {
     const W = geometry({ ...V0, n_D: D });
@@ -145,19 +155,30 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   };
   V = geometry(mirrorRopes(V));
   // the diverting pulley's distance comes from the plan: only geometries the wrap-angle model reads as drawn
-  const c0 = readInputs(V).I, planned = inp.auto.dx && c0.layout === 'topDefl' && c0.alphaMode !== 'manual';
+  const p0 = readInputs(V), c0 = p0.I, planned = inp.auto.dx && c0.layout === 'topDefl' && c0.alphaMode !== 'manual';
+  // a direct pull hangs the falls from the sheave's two sides: its pitch diameter is their spacing in the plan, so the
+  // proposal takes that sheave (within the grid's range); when the existing machine is compared, its sheave set the
+  // hitches and the new one may differ (the calculation inclines the ropes)
+  const direct = c0.layout === 'top', oldHitches = direct && p0.compare && c0.context === 'repl';
+  const fallD = direct ? Math.round(fallSpacing(L, V)) : 0;
+  const only = direct && !oldHitches ? (fallD >= SHEAVE_GRID[0] && fallD <= SHEAVE_GRID[SHEAVE_GRID.length - 1] ? [fallD] : []) : null;
   let noProposal = false, catalog: LiftDerived['catalog'] = null;
   if (inp.auto.machine) {
     // from the maker chosen when one of its machines takes an option, else from the calculation grid
-    const choice = inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r'))) : null;
-    const proposed = fromCat ?? propose(V, L, geometry, planned, null);
+    const choice = inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r')), only) : null;
+    const proposed = fromCat ?? propose(V, L, geometry, planned, null, only);
     if (choice) catalog = { fit: fromCat?.fit ?? null, miss: !fromCat };
     if (proposed) V = proposed.V;
     else noProposal = true;
   }
-  const analysis = analyse(V), { I, N } = analysis.ctx;
-  // a distance the plan cannot give is reported: it must be measured and entered
-  const issues: DerivedKey[] = planned && !deflectorDx(L, V).fits ? ['dx'] : [];
+  const analysis = analyse(V), { I, N, O } = analysis.ctx;
+  // a distance the plan cannot give is reported: it must be measured and entered; falls of a direct pull that are not
+  // the sheave's diameter apart contradict the plan (registry impianto.calata)
+  const calata = direct ? fallSpacing(L, V) : null;
+  const issues: IssueKey[] = [
+    ...(planned && !deflectorDx(L, V).fits ? ['dx' as const] : []),
+    ...(calata !== null && Math.abs(calata - (oldHitches ? O.D : N.D)) > KL.calataTol ? ['calata' as const] : []),
+  ];
   const origin: Record<DerivedKey, Origin> = {
     Q: S.Q === null ? 'auto' : 'entered', v: 'entered', H: 'auto', P: inp.auto.P ? 'estimate' : 'entered',
     L0: inp.auto.L0 ? 'auto' : 'entered', dx: inp.auto.dx ? 'auto' : 'entered', Hv: inp.auto.Hv ? 'auto' : 'entered',
@@ -167,7 +188,7 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r) : null;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {
-    shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, machine, bottom: scheme, bottomGap, headPulleys: g ? 2 + extraBends(g) : 0, catalog,
+    shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, calata, machine, bottom: scheme, bottomGap, headPulleys: g ? 2 + extraBends(g) : 0, catalog,
     sim: simModel(I, N, analysis.res, Sec, vt),
   };
 }

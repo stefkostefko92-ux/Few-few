@@ -1,14 +1,17 @@
 // The shaft built from its design: the four walls with the landing door openings at the floors each entrance
 // serves, the landing doors (stainless portal and panels, telescopic or centre opening; on the shaft side the header
 // with its track and lock, the aluminium sill on Panev's brackets), the landings outside with the call station, the pit
-// floor, the slab over the shaft with its openings and a label at each floor. Plan and heights in millimetres
-// (geom.ts turns them into metres); static parts merged by material. Loaded only through boot.ts (lazy).
+// floor, the slab over the shaft with its openings and a label at each floor. From the top floor to the slab the walls
+// stand where src/shaft/head.ts puts them (an old building's may stand elsewhere); the landing door of the top floor
+// stays in line with the car. Plan and heights in millimetres (geom.ts turns them into metres); static parts merged by
+// material. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { DoorLayout, Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { KV } from '@/shaft/norme';
 import { callStationAt, callStationOf } from '@/shaft/callstation';
+import { headOf } from '@/shaft/head';
 import { lampHeights, nichesOf } from '@/shaft/niche';
 import { Batch, P, onWall } from './geom';
 import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
@@ -47,11 +50,11 @@ export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'],
 }
 
 /** The landing call station beside a door at the floor level z, where src/shaft/callstation.ts puts it: the brushed
- *  plate on the landing face of the wall, the floor display at its top, the buttons with their lit rings (one at the
- *  ends of the travel, up and down between). */
-function callStation(g: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number, plate: THREE.Material, calls: 'up' | 'down' | 'both'): void {
-  const cs = callStationOf(I), { u } = callStationAt(d, cs), [w, h, t] = KV.callPanel, f = -I.wall - t, zc = z + cs.height;
-  g.wallBox(d.wall, I.W, I.D, u - w / 2, u + w / 2, f, -I.wall, zc - h / 2, zc + h / 2, plate);
+ *  plate on the landing face of the wall (`s` mm into the shaft in the headroom), the floor display at its top, the
+ *  buttons with their lit rings (one at the ends of the travel, up and down between). */
+function callStation(g: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number, plate: THREE.Material, calls: 'up' | 'down' | 'both', s = 0): void {
+  const cs = callStationOf(I), { u } = callStationAt(d, cs), [w, h, t] = KV.callPanel, f = -I.wall - t + s, zc = z + cs.height;
+  g.wallBox(d.wall, I.W, I.D, u - w / 2, u + w / 2, f, -I.wall + s, zc - h / 2, zc + h / 2, plate);
   g.wallBox(d.wall, I.W, I.D, u - 40, u + 40, f - 1, f, zc + 75, zc + 115, M.glass);
   g.wallBox(d.wall, I.W, I.D, u - 14, u + 14, f - 1.5, f - 1, zc + 85, zc + 105, M.led);
   for (const dz of calls === 'both' ? [35, -35] : [0]) {
@@ -110,10 +113,10 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
     }
   });
   // each wall in columns between the edges of its openings and niches; in each column the runs of the same inner face
-  // (through an opening: no wall; in a niche: its back) from the pit floor to the slab
-  const lampZ = lampHeights(S, KV.nicheLightH);
+  // (through an opening: no wall; in a niche: its back) from the pit floor to the slab, moved in the headroom
+  const lampZ = lampHeights(S, KV.nicheLightH), head = headOf(I), top = V.floors.length - 1, zHead = S.levels[top] ?? zTop;
   for (const side of SIDES) {
-    const along = side === 'front' || side === 'rear';
+    const along = side === 'front' || side === 'rear', hs = head[side];
     const a0 = along ? -wall : 0, a1 = along ? W + wall : D, mat = M.walls[side], g = byside[side];
     const cuts = [
       ...openings[side].map((o) => ({ ...o, v: -wall })),
@@ -122,20 +125,20 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
         .map(([z0, z1]) => ({ u0: n.at, u1: n.at + n.width, z0, z1, v: -n.depth }))),
     ];
     const edges = (vals: number[], lo: number, hi: number): number[] => [...new Set([lo, hi, ...vals.filter((x) => x > lo && x < hi)])].sort((p, q) => p - q);
-    const us = edges(cuts.flatMap((c) => [c.u0, c.u1]), a0, a1), zs = edges(cuts.flatMap((c) => [c.z0, c.z1]), zBot, zTop);
+    const us = edges(cuts.flatMap((c) => [c.u0, c.u1]), a0, a1), zs = edges([...cuts.flatMap((c) => [c.z0, c.z1]), ...(hs ? [zHead] : [])], zBot, zTop);
     for (let i = 0; i + 1 < us.length; i++) {
       const u0 = us[i], u1 = us[i + 1], um = (u0 + u1) / 2;
-      let run: { z0: number; z1: number; v: number } | null = null;
+      let run: { z0: number; z1: number; v: number; s: number } | null = null;
       const flush = (): void => {
-        if (run && run.v > -wall + 1 && run.z1 - run.z0 > 1 && u1 - u0 > 1) g.wallBox(side, W, D, u0, u1, -wall, run.v, run.z0, run.z1, mat);
+        if (run && run.v > -wall + 1 && run.z1 - run.z0 > 1 && u1 - u0 > 1) g.wallBox(side, W, D, u0, u1, -wall + run.s, run.v + run.s, run.z0, run.z1, mat);
       };
       for (let j = 0; j + 1 < zs.length; j++) {
-        const z0 = zs[j], z1 = zs[j + 1], zm = (z0 + z1) / 2;
+        const z0 = zs[j], z1 = zs[j + 1], zm = (z0 + z1) / 2, sh = zm > zHead ? hs : 0;
         const v = Math.min(0, ...cuts.filter((c) => um > c.u0 && um < c.u1 && zm > c.z0 && zm < c.z1).map((c) => c.v));
-        if (run && run.v === v) run.z1 = z1;
+        if (run && run.v === v && run.s === sh) run.z1 = z1;
         else {
           flush();
-          run = { z0, z1, v };
+          run = { z0, z1, v, s: sh };
         }
       }
       flush();
@@ -147,14 +150,16 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
     const z = S.levels[i];
     for (const d of doorsOf(L, f.door)) {
       const g = byside[d.wall], frame = M.landing[d.wall], len = d.wall === 'front' || d.wall === 'rear' ? W : D, zh = z + d.height;
-      g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30, 10, z, zh + 60, frame);
-      g.wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30, 10, z, zh + 60, frame);
-      g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30, 10, zh, zh + 60, frame);
-      callStation(g, M, I, d, z, frame, i === 0 ? 'up' : i === V.floors.length - 1 ? 'down' : 'both');
+      // the portal and the landing on the wall where it stands at this floor; the door itself in line with the car
+      const s = i === top ? head[d.wall] : 0;
+      g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30 + s, 10 + s, z, zh + 60, frame);
+      g.wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, z, zh + 60, frame);
+      g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, zh, zh + 60, frame);
+      callStation(g, M, I, d, z, frame, i === 0 ? 'up' : i === V.floors.length - 1 ? 'down' : 'both', s);
       const panels = landingEntrance(C, M, I, d, z);
       sides[d.wall].add(panels.group);
       landings.push({ floor: i, panels });
-      g.wallBox(d.wall, W, D, -wall - 400, len + wall + 400, -wall - LANDING, -wall, z - SLAB, z, M.floors[d.wall]);
+      g.wallBox(d.wall, W, D, -wall - 400, len + wall + 400, -wall - LANDING + s, -wall + s, z - SLAB, z, M.floors[d.wall]);
       const tag = label(f.label);
       const [lx, ly] = d.wall === 'front' ? [d.u0 - 320, -wall - 60] : d.wall === 'rear' ? [d.u1 + 320, D + wall + 60] : d.wall === 'left' ? [-wall - 60, d.u1 + 320] : [W + wall + 60, d.u0 - 320];
       tag.position.copy(P(lx, ly, z + d.height - 250));

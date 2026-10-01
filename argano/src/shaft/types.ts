@@ -64,6 +64,16 @@ export interface CallStation {
   height: number;
 }
 
+/** The inner faces of the shaft at the top floor and in the headroom, where an old building may have them elsewhere
+ *  than at the main floor: how far each stands in from the main floor's (negative: further out) [mm]. The car, its
+ *  rails and the counterweight run plumb; the landing door of the top floor stays in line with the car. */
+export interface HeadWalls {
+  front: number;
+  rear: number;
+  left: number;
+  right: number;
+}
+
 export type ShaftInputs = {
   /** clear width of the shaft along the front wall [mm] */
   W: number;
@@ -99,11 +109,13 @@ export type ShaftInputs = {
   doorMaker?: 'generic' | '2sg' | 'fermator';
   /** the overspeed governor's model (governor.ts); missing: by the rated speed */
   governor?: string;
+  /** the walls at the top floor and in the headroom (head.ts); missing: as at the main floor */
+  head?: HeadWalls;
 } & Record<Allowance, number>;
 
 export type ShaftCheckId =
   | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_door' | 'v_door2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
-  | 'v_place' | 'v_doorcar' | 'v_niche' | 'v_staffa'
+  | 'v_place' | 'v_doorcar' | 'v_niche' | 'v_staffa' | 'v_head'
   | 'h_refuge' | 'h_clear' | 'h_parapet' | 'p_refuge' | 'p_apron' | 'b_runby' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door';
 
 export interface ShaftCheck {

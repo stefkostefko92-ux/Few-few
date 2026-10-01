@@ -3,7 +3,7 @@
 // guide bracket bolted along its arm, the rail clamped to the SG's flange by two forged N1 clips whose shanks stand in
 // the flange's slots. Which support takes a rail at a distance from its wall, and where on the SG the rail sits. Pure:
 // the plan draws them (plan-view.ts), the 3D builds them (components/lift3d/staffe.ts).
-import type { Rail, ShaftInputs, Wall } from './types';
+import type { HeadWalls, Rail, ShaftInputs, Wall } from './types';
 
 export type V2 = [number, number];
 
@@ -88,31 +88,33 @@ export function supportFor(reach: number, back: number, ahead: number): Support 
 }
 
 /** A counterweight rail on its wall: the wall, the back of the rail's foot along it, the rail's axis from the wall
- *  (`reach`), whether the blade points toward lower u (`mirror`), the depth of the niche the bracket goes to (`inset`)
- *  and the room on the wall behind the foot and in front of it (inside the niche: `span` along the wall). Null when the
- *  blade does not run along the wall: the catalogue's supports carry the rail's foot square to it. `h`: blade height. */
-function onItsWall(r: Rail, h: number, W: number, D: number, span?: readonly [number, number]) {
+ *  (`reach`), whether the blade points toward lower u (`mirror`), how far behind the main floor's face of the wall the
+ *  bracket's wall is (`inset`: the back of a niche; below 0 a wall that stands in at the head) and the room on the wall
+ *  behind the foot and in front of it (inside the niche: `span` along the wall). Null when the blade does not run
+ *  along the wall: the catalogue's supports carry the rail's foot square to it. `h`: blade height; `head`: the walls
+ *  where they stand in the headroom (head.ts), else as at the main floor. */
+function onItsWall(r: Rail, h: number, W: number, D: number, span?: readonly [number, number], head?: HeadWalls) {
   const across = r.bracketAxis === 'y', along = across ? r.dir === 'left' || r.dir === 'right' : r.dir === 'back' || r.dir === 'front';
   const far = across ? D : W, high = r.bracketTo > far / 2, inset = high ? r.bracketTo - far : -r.bracketTo;
   if (!along || inset < -1) return null;
   const wall: Wall = across ? (high ? 'rear' : 'front') : high ? 'right' : 'left';
   const sign = r.dir === 'right' || r.dir === 'back' ? 1 : -1, [lo, hi] = span ?? [0, across ? W : D];
-  const foot = (across ? r.x : r.y) - sign * h, reach = Math.abs(r.bracketTo - (across ? r.y : r.x));
+  const shift = head?.[wall] ?? 0, foot = (across ? r.x : r.y) - sign * h, reach = Math.abs(r.bracketTo - (across ? r.y : r.x)) - shift;
   const back = sign > 0 ? foot - lo : hi - foot;
-  return { wall, foot, reach, mirror: sign < 0, inset: Math.max(0, inset), back, ahead: hi - lo - back };
+  return { wall, foot, reach, mirror: sign < 0, inset: Math.max(0, inset) - shift, back, ahead: hi - lo - back };
 }
 
 /** Where a counterweight rail's Panev support goes, with the support: the shortest whose printed range takes the rail's
  *  distance from its wall (or from the back of its niche) and whose plate fits on the wall; null when none does. */
-export function cwSupport(r: Rail, h: number, W: number, D: number, span?: readonly [number, number]): { wall: Wall; foot: number; reach: number; mirror: boolean; sup: Support; inset: number } | null {
-  const g = onItsWall(r, h, W, D, span), sup = g && supportFor(g.reach, g.back, g.ahead);
+export function cwSupport(r: Rail, h: number, W: number, D: number, span?: readonly [number, number], head?: HeadWalls): { wall: Wall; foot: number; reach: number; mirror: boolean; sup: Support; inset: number } | null {
+  const g = onItsWall(r, h, W, D, span, head), sup = g && supportFor(g.reach, g.back, g.ahead);
   return g && sup ? { wall: g.wall, foot: g.foot, reach: g.reach, mirror: g.mirror, sup, inset: g.inset } : null;
 }
 
 /** How well the catalogue takes a rail [mm]: the tightest margin (range, room for the plate) of the support chosen;
  *  when none fits, below 0 by how much the nearest misses; null when its blade does not run along its wall. */
-export function supportMargin(r: Rail, h: number, W: number, D: number, span?: readonly [number, number]): number | null {
-  const g = onItsWall(r, h, W, D, span);
+export function supportMargin(r: Rail, h: number, W: number, D: number, span?: readonly [number, number], head?: HeadWalls): number | null {
+  const g = onItsWall(r, h, W, D, span, head);
   if (!g) return null;
   const margin = (s: Support): number => Math.min(g.reach - s.range[0], s.range[1] - g.reach, g.back - (PLATES[s.kind].arm[1] + 10), g.ahead - (PLATES[s.kind].flange - PLATES[s.kind].arm[1] + 10));
   const sup = supportFor(g.reach, g.back, g.ahead);

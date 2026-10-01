@@ -11,12 +11,14 @@ import { slabOpenings } from '../slab';
 
 type Shaft = ReturnType<typeof defaultLift>['shaft'];
 const VARIANTS: readonly (readonly ['top' | 'topDefl', '1' | '2', Partial<Shaft>])[] = [
-  ['topDefl', '1', {}], ['topDefl', '2', {}], ['top', '1', {}], ['top', '2', {}], ['topDefl', '1', { cw: 'left' }], ['top', '1', { cw: 'right' }],
+  // a direct pull at 2:1 needs falls a sheave apart: a deeper shaft than the example's (registry impianto.calata)
+  ['topDefl', '1', {}], ['topDefl', '2', {}], ['top', '1', {}], ['top', '2', { D: 2000 }], ['topDefl', '1', { cw: 'left' }], ['top', '1', { cw: 'right' }],
 ];
 
 for (const [layout, r, shaft] of VARIANTS) {
   test(`locale macchinario ${layout} ${r}:1${shaft.cw ? `, contrappeso ${shaft.cw}` : ''}: disegni e 3D concordano`, () => {
     const base = defaultLift(), dv = deriveLift({ ...base, shaft: { ...base.shaft, ...shaft }, calc: { ...base.calc, layout, r } });
+    assert.deepEqual(dv.issues, [], 'progetto coerente');
     const L = dv.layout, M = dv.machine, G = roomGeo(L, M), rig = ropeRig(dv), S = section(L);
     assert.ok(G, 'il progetto ha un locale macchinario');
     // the sheave and the diverting pulley: along the drop line from the car's drop, heights over the room's floor

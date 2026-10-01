@@ -10,6 +10,7 @@ import { sectionChecks } from './section';
 import { roomChecks } from './machine-room';
 import { check } from './checks';
 import { cwNiche, nicheMargin } from './niche';
+import { hasHead, headCheck, headFacingExtra, headOf } from './head';
 import { PANEV_BACK, cwBracketsOf, supportMargin } from './staffe';
 import type { Access, CwSide, DoorLayout, Layout, Rail, Rect, ShaftCheck, ShaftInputs, Wall } from './types';
 
@@ -215,9 +216,11 @@ export function layout(I: ShaftInputs): Layout {
   const onCar = Math.min(...doors.map((d) => (d.wall === 'front' || d.wall === 'rear' ? Math.min(d.u0 - carInner.x, carInner.x + A - d.u1) : Math.min(d.u0 - carInner.y, carInner.y + B - d.u1))));
   const niches = nicheMargin(I, doors, cwSide, { lo: cwLo, hi: cwHi });
   // Panev's supports for the counterweight rails: one of the catalogue's must take each rail (on its wall, or in its niche)
-  const span = niche ? [niche.at, niche.at + niche.width] as const : undefined;
+  const span = niche ? [niche.at, niche.at + niche.width] as const : undefined, heads = hasHead(I) ? [undefined, headOf(I)] : [undefined];
   const staffe = cwBracketsOf(I) === 'panev'
-    ? Math.min(...rails.filter((r) => r.kind === 'cw').map((r) => supportMargin(r, wr.h, W, D, span) ?? Infinity)) : null;
+    ? Math.min(...rails.filter((r) => r.kind === 'cw').flatMap((r) => heads.map((h) => supportMargin(r, wr.h, W, D, span, h) ?? Infinity))) : null;
+  // the walls of the top floor's entrances further out in the headroom: the car stands that much further from them
+  const facing = I.landingDepth + I.sillGap + headFacingExtra(I, doors);
 
   // the landing door's frame and the car door's operator inside the shaft
   const doorMargin = (d: DoorLayout): number => {
@@ -236,7 +239,7 @@ export function layout(I: ShaftInputs): Layout {
     ...(doors[1] ? [check('v_door2', doorMargin(doors[1]) >= 0, doorMargin(doors[1]), 0, 0, 'mm')] : []),
     // two adjacent entrances: the operators on the car roof must not run into each other at the shared corner
     ...(adj && doors[1] ? [((x: number) => check('v_op', x <= 0, x, 0, 0, 'mm', true))(clash(operatorBox(I, doors[0]), operatorBox(I, doors[1])))] : []),
-    check('v_wall', I.landingDepth + I.sillGap <= KV.wallFacingEntranceMax, I.landingDepth + I.sillGap, KV.wallFacingEntranceMax, 0, 'mm'),
+    check('v_wall', facing <= KV.wallFacingEntranceMax, facing, KV.wallFacingEntranceMax, 0, 'mm'),
     check('v_sill', I.sillGap <= KV.sillGapMax, I.sillGap, KV.sillGapMax, 0, 'mm'),
     check('v_cw', carCw >= KV.carCwMin, carCw, KV.carCwMin, 0, 'mm'),
     check('v_cwlen', cwLength >= KV.cwMinLength, cwLength, KV.cwMinLength, 0, 'mm', true),
@@ -253,7 +256,8 @@ export function layout(I: ShaftInputs): Layout {
     inputs: I, fits, A, B, area, Q, Qgiven: I.Q !== null, areaMax, persons: passengers(Q, area), maxA, maxB, minA, minB,
     car, carInner, doors, frame, cw: cwRect, cwSide, cwDbg, bridge, rails, checks,
   };
-  L.checks.push(...sectionChecks(L), ...roomChecks(L));
+  const head = headCheck(L);
+  L.checks.push(...(head ? [head] : []), ...sectionChecks(L), ...roomChecks(L));
   return L;
 }
 

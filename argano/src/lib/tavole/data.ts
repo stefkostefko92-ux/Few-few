@@ -8,6 +8,7 @@ import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
 import { isUpperLimit } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { bracketCount } from '@/shaft/brackets';
 import { RAILS, railLabel, type RailType } from '@/shaft/rails';
 import { section } from '@/shaft/section';
 import type { DataSheet, Row } from './datasheet';
@@ -64,11 +65,12 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['PORTE DI CABINA', 'tipo', txt(Pl.carDoors, doors)],
   ];
 
-  // rails from the pit floor to under the slab; brackets at the declared pitch; ropes and governor rope (estimates)
+  // rails from the pit floor to under the slab; brackets one every pitch (the declared one or the rule's) plus the
+  // first and the last of each rail (registry guide.staffe); ropes and governor rope (estimates)
   const railLen = (V.pit + S.top + V.headroom - KV_VERT.railTopGap) / 1000;
   const rails = (kind: 'new' | 'existing' | undefined, t: RailType): string => `${kind === 'existing' ? 'ESISTENTI ' : ''}${railLabel(t)}`;
   const brackets = (kind: 'new' | 'existing' | undefined, text: string | undefined, pitch: number | undefined): string =>
-    txt(text, kind === 'existing' ? 'ESISTENTI' : pitch ? `${2 * (Math.floor((railLen * 1000) / pitch) + 1)}` : '—');
+    txt(text, kind === 'existing' ? 'ESISTENTI' : `${2 * bracketCount(railLen * 1000, pitch ?? KV_VERT.bracketPitch)}`);
   const ropeLen = I.r * (I.H + 2 * I.L0) + (I.layout === 'topDefl' ? I.h : I.layout === 'bottom' ? 2 * I.Hv : 0);
   const room = L.inputs.room, govLen = (2 * (V.pit + S.top + V.headroom + (room ? room.slab + KV_VERT.governorAbove : 0))) / 1000;
   const g = N.groove, fRated = res.kin.fRated;
@@ -88,11 +90,11 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['GUIDE DI CABINA', 'tipo', rails(Pl.carRails, L.inputs.carRail)],
     ['LUNGHEZZA GUIDE DI CABINA', 'm', Pl.carRails === 'existing' ? 'ESISTENTI' : fmt(railLen, 1)],
     ['STAFFE GUIDE DI CABINA', 'N°', brackets(Pl.carRails, Pl.carBrackets, Pl.carBracketPitch)],
-    ['PASSO STAFFE CABINA', 'mm', num(Pl.carBracketPitch)],
+    ['PASSO STAFFE CABINA', 'mm', num(Pl.carBracketPitch ?? KV_VERT.bracketPitch)],
     ['GUIDE CONTRAPPESO', 'tipo', rails(Pl.cwRails, L.inputs.cwRail)],
     ['LUNGHEZZA GUIDE CONTRAPPESO', 'm', Pl.cwRails === 'existing' ? 'ESISTENTI' : fmt(railLen, 1)],
     ['STAFFE GUIDE CONTRAPPESO', 'N°', brackets(Pl.cwRails, Pl.cwBrackets, Pl.cwBracketPitch)],
-    ['PASSO STAFFE CONTRAPPESO', 'mm', num(Pl.cwBracketPitch)],
+    ['PASSO STAFFE CONTRAPPESO', 'mm', num(Pl.cwBracketPitch ?? KV_VERT.bracketPitch)],
     ['FUNI DI TRAZIONE', 'N°-Ø', `${N.n} - ${num(N.d)}`],
     ['LUNGHEZZA FUNI (CIASCUNA)', 'm', fmt(ropeLen, 0)],
     ['LIMITATORE DI VELOCITÀ', 'tipo', txt(Pl.governor)],

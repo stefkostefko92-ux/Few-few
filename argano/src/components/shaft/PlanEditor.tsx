@@ -1,7 +1,8 @@
 'use client';
 
-// The drawings of the design, to be changed where they are: the plan at the main floor, section A-A whole and in its
-// details, the machine room. Any dimension clicked takes a new length and the design is laid out again; the
+// The drawings of the design, to be changed where they are: the plan at the main floor and the one at the top floor
+// and in the headroom (where an old building's walls may stand elsewhere), section A-A whole and in its details, the
+// machine room. Any dimension clicked takes a new length and the design is laid out again; the
 // distances of the plan set by hand are listed below, with what the software would put there, to be reset one by
 // one. Every value goes through the same validation as the save.
 // Motion: none; the drawing is redrawn, never animated.
@@ -26,7 +27,7 @@ interface Props {
   titleAs?: 'h2' | 'h3';
 }
 
-const VIEWS: readonly ScreenView[] = ['plan', 'full', 'top', 'floor', 'pit', 'room-plan', 'room-section'];
+const VIEWS: readonly ScreenView[] = ['plan', 'head', 'full', 'top', 'floor', 'pit', 'room-plan', 'room-section'];
 
 export default function PlanEditor({ I, onChange, machine, id, titleAs: Title = 'h2' }: Props) {
   const t = useTranslations('shaft');
@@ -37,7 +38,8 @@ export default function PlanEditor({ I, onChange, machine, id, titleAs: Title = 
   const v = useMemo(() => screenView(L, shown, room ? machine : null), [L, shown, room, machine]);
 
   const texts = useEditTexts(L);
-  const manual = (e: Edit): boolean => e.key.startsWith('plan.') && valueOf(I, e.key) !== null;
+  // distances of the plan and walls of the headroom set by hand
+  const manual = (e: Edit): boolean => (e.key.startsWith('plan.') && valueOf(I, e.key) !== null) || (e.key.startsWith('head.') && (valueOf(I, e.key) ?? 0) !== 0);
   const onEdit = (e: Edit, length: number): Refusal | null => {
     const r = editShaft(I, e, length);
     if (!r.ok) return r;

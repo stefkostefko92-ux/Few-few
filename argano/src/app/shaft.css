@@ -52,11 +52,11 @@ fieldset.field > legend { font-size: 13.5px; font-weight: 500; padding: 0; margi
 .sheet-page { max-width: 900px; }
 
 /* the designer's vertical data and machine room */
-.vertical-options, .room-options, .niche-options { border-top: 1px solid var(--rule); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
-.vertical-options > summary, .room-options > summary, .niche-options > summary { cursor: pointer; font-weight: 600; }
+.vertical-options, .room-options, .niche-options, .head-options { border-top: 1px solid var(--rule); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.vertical-options > summary, .room-options > summary, .niche-options > summary, .head-options > summary { cursor: pointer; font-weight: 600; }
 .niche-options .niche { margin: 0; min-width: 0; padding: 8px 12px 12px; border: 1px solid var(--rule); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
 .niche-options .niche > legend { padding: 0 4px; font: 600 13.5px/1.3 var(--font-body); color: var(--ink-2); }
-.niche-options .niche > .btn { align-self: flex-start; }
+.niche-options .niche > .btn, .head-options > .btn { align-self: flex-start; }
 .floors { width: 100%; border-collapse: collapse; font-size: 14px; }
 .floors caption { text-align: left; font-weight: 500; padding-bottom: 4px; }
 .floors th { text-align: left; font: 500 12.5px var(--font-body); color: var(--muted); padding: 2px 4px; }

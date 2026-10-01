@@ -12,7 +12,7 @@ export interface Box {
 }
 
 /** Colours by role; the palette of the document maps them to values (one source for SVG and PDF). */
-export type Ink = 'ink' | 'ink2' | 'muted' | 'axis' | 'space' | 'jamb' | 'concrete' | 'steel' | 'car' | 'door' | 'cw' | 'paper' | 'accent' | 'dark';
+export type Ink = 'ink' | 'ink2' | 'muted' | 'axis' | 'space' | 'jamb' | 'concrete' | 'steel' | 'zinc' | 'car' | 'door' | 'cw' | 'paper' | 'accent' | 'dark';
 
 export interface Stroke {
   ink: Ink;

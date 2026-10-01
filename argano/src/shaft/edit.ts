@@ -1,11 +1,12 @@
 // Changing a distance where it is drawn. The key of a dimension's edit (src/drawing/model.ts) names an input of the
 // shaft: its size (W, D), the doors' size, an allowance, a distance of the plan set by hand (plan.*), a niche's place
 // and size (n.<index>.*), the call stations' place (cs.*), a height of section A-A (v.*) or a size of the machine room
-// (room.*); the new length of the dimension gives its value. Pure: the screens validate the result as the save does
-// (src/lib/shaft-edit.ts).
+// (room.*) or where a wall stands in the headroom (head.*); the new length of the dimension gives its value. Pure: the
+// screens validate the result as the save does (src/lib/shaft-edit.ts).
 import type { Edit } from '../drawing';
 import { callStationOf } from './callstation';
 import { DEFAULTS, type Allowance } from './norme';
+import { headOf } from './head';
 import { counterweightSide } from './layout';
 import type { RoomInputs } from './room';
 import type { Layout, PlanFix, PlanKey, ShaftInputs } from './types';
@@ -21,6 +22,7 @@ const R_KEYS = ['W', 'D', 'shaftX', 'shaftY', 'H', 'ridge', 'slab', 'doorAt', 'd
 const SIZES = ['W', 'D', 'doorWidth', 'doorHeight'] as const;
 const N_KEYS = ['at', 'width', 'depth'] as const;
 const CS_KEYS = ['offset', 'height'] as const;
+const H_KEYS = ['front', 'rear', 'left', 'right'] as const;
 // the arrangement's distances: they mean something else once the entrances or the counterweight's side change
 const ARRANGEMENT: readonly PlanKey[] = ['doorB', 'railY', 'dbg', 'cwLen', 'cwPos'];
 
@@ -41,7 +43,7 @@ function nicheKey(I: ShaftInputs, head: string, sub: string): { i: number; f: (t
 /** Every key an edit can carry (a niche's with index 0): the screens name each one (editLabel). */
 export const editKeys = (): string[] => [
   ...SIZES, ...Object.keys(DEFAULTS), ...PLAN_KEYS.map((k) => `plan.${k}`), ...V_KEYS.map((k) => `v.${k}`), ...R_KEYS.map((k) => `room.${k}`),
-  ...N_KEYS.map((k) => `n.0.${k}`), ...CS_KEYS.map((k) => `cs.${k}`),
+  ...N_KEYS.map((k) => `n.0.${k}`), ...CS_KEYS.map((k) => `cs.${k}`), ...H_KEYS.map((k) => `head.${k}`),
 ];
 
 /** The message (namespace shaft) naming the input behind an edit's key as the form calls it; the rail's distance reads
@@ -53,6 +55,7 @@ export function editLabel(key: string, cantilever: boolean): string {
   if (head === 'room') return `rm_${sub}`;
   if (head === 'n') return `nc_${sub.slice(sub.indexOf('.') + 1)}`;
   if (head === 'cs') return `cs_${sub}`;
+  if (head === 'head') return `hd_${sub}`;
   return isAllowance(key) ? `a_${key}` : key;
 }
 
@@ -72,6 +75,12 @@ export function withValue(I: ShaftInputs, key: string, value: number): ShaftInpu
   if (v) return { ...I, vertical: { ...I.vertical, [v]: value } };
   const r = head === 'room' ? pick(R_KEYS, sub) : undefined;
   if (r && I.room) return { ...I, room: { ...I.room, [r]: value } };
+  const w = head === 'head' ? pick(H_KEYS, sub) : undefined;
+  if (w) {
+    // walls back where the main floor has them leave no headroom of their own
+    const next = { ...headOf(I), [w]: value };
+    return { ...I, head: H_KEYS.some((k) => next[k] !== 0) ? next : undefined };
+  }
   return null;
 }
 
@@ -97,7 +106,9 @@ export function valueOf(I: ShaftInputs, key: string): number | null {
   const v = head === 'v' ? pick(V_KEYS, sub) : undefined;
   if (v) return I.vertical[v];
   const r = head === 'room' ? pick(R_KEYS, sub) : undefined;
-  return r && I.room ? I.room[r] : null;
+  if (r) return I.room ? I.room[r] : null;
+  const w = head === 'head' ? pick(H_KEYS, sub) : undefined;
+  return w ? headOf(I)[w] : null;
 }
 
 /** The distances of the plan that can be set by hand on this layout, with their values now (worked out or set). */

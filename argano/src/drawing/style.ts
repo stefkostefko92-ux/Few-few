@@ -1,6 +1,6 @@
 // Line styles, fills and colours of the drawings, in the manner of the lift layout drawings of the trade: black
 // outlines, concrete speckled in orange, axes blue dash-dot, spaces for the maintenance person olive dashed, landing
-// door jambs orange. Widths and dashes are on paper [mm].
+// door jambs orange, galvanized brackets in a pale zinc grey. Widths and dashes are on paper [mm].
 import type { Fill, Ink, Stroke } from './types';
 
 export const PALETTE: Readonly<Record<Ink, string>> = {
@@ -12,6 +12,7 @@ export const PALETTE: Readonly<Record<Ink, string>> = {
   jamb: '#df6f16',
   concrete: '#ef7d1d',
   steel: '#9ba2ae',
+  zinc: '#dfe4ea',
   car: '#eef1f7',
   door: '#e5eaf2',
   cw: '#eceef2',
@@ -37,7 +38,7 @@ export const STYLES: Readonly<Record<StyleName, Stroke>> = {
   frame: { ink: 'ink', w: 0.4 },
 };
 
-export type FillName = 'concrete' | 'car' | 'door' | 'cw' | 'steel' | 'dark' | 'paper';
+export type FillName = 'concrete' | 'car' | 'door' | 'cw' | 'steel' | 'zinc' | 'dark' | 'paper';
 
 export const FILLS: Readonly<Record<FillName, Fill>> = {
   concrete: { k: 'pattern', id: 'concrete' },
@@ -45,6 +46,7 @@ export const FILLS: Readonly<Record<FillName, Fill>> = {
   door: { k: 'solid', ink: 'door' },
   cw: { k: 'solid', ink: 'cw' },
   steel: { k: 'solid', ink: 'steel' },
+  zinc: { k: 'solid', ink: 'zinc' },
   dark: { k: 'solid', ink: 'dark' },
   paper: { k: 'solid', ink: 'paper' },
 };

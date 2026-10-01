@@ -23,6 +23,7 @@ import { asCalcDict } from '../calc/dict';
 import ShaftOptions from '../shaft/ShaftOptions';
 import VerticalOptions from '../shaft/VerticalOptions';
 import RoomOptions from '../shaft/RoomOptions';
+import HeadOptions from '../shaft/HeadOptions';
 import NicheOptions from '../shaft/NicheOptions';
 import PlanEditor from '../shaft/PlanEditor';
 import type { Refusal } from '../drawing/EditableDrawing';
@@ -152,6 +153,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
         <p className="note">{source ? ts('sourceCad', { file: source.file, format: source.format.toUpperCase() }) : ts('edited')}</p>
         <ShaftOptions I={inp.shaft} set={setShaft} lastQ={lastQ} />
         <NicheOptions I={inp.shaft} set={setShaft} />
+        <HeadOptions I={inp.shaft} set={setShaft} />
         <h2>{t('s_floors')}</h2>
         <VerticalOptions I={inp.shaft} set={setShaft} open />
         {above ? <RoomOptions I={inp.shaft} set={setShaft} /> : null}

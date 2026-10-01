@@ -3,8 +3,10 @@
 // from the lowest floor. Walls with the landing openings and slabs of the floors each side serves, pit and slab over
 // the shaft, the machine room, the car at a floor with frame, operator and balustrade, the counterweight where the
 // ropes put it, rails, buffers, the spaces for the maintenance person and the ropes. A long travel is compressed
-// between two heights (the floors in between keep only their level), with break marks on the walls.
+// between two heights (the floors in between keep only their level), with break marks on the walls. From the top floor
+// to the slab the walls stand where head.ts puts them (an old building's may stand elsewhere).
 import { clipBand, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
+import { headOf } from './head';
 import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
 import { lampHeights, nichesOf } from './niche';
@@ -53,15 +55,24 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
     return (side === 'front' ? onFront : onRear) ? [i] : [];
   });
   // a niche the cut passes through: the wall is thinner there, all the way up (counterweight, trunking) or at each lamp
-  const cutX = L.car.x + L.car.w / 2;
+  const cutX = L.car.x + L.car.w / 2, hd = headOf(I), topFloor = V.floors.length - 1, zHead = S.levels[topFloor] ?? Infinity;
   for (const side of ['front', 'rear'] as const) {
-    const face = (d: number): [number, number] => (side === 'front' ? [-T, -d] : [D + d, D + T]);
+    // a wall `s` mm into the shaft (in the headroom), behind its face by d (a niche)
+    const face = (d: number, s = 0): [number, number] => (side === 'front' ? [-T + s, -d + s] : [D + d - s, D + T - s]);
+    const shift = side === 'front' ? hd.front : hd.rear;
     const across = nichesOf(I).filter((n) => n.wall === side && cutX > n.at && cutX < n.at + n.width);
     const chase = Math.max(0, ...across.filter((n) => n.use !== 'light').map((n) => n.depth)), light = across.find((n) => n.use === 'light');
     const lamps = light ? lampHeights(S, KV.nicheLightH).map((z) => [z, z + KV.nicheLightH] as const) : [];
-    const piece = (d: number, za: number, zb: number): void => {
-      const [a, b] = face(d);
+    const put = (d: number, s: number, za: number, zb: number): void => {
+      const [a, b] = face(d, s);
       out.push(box(a, za, b, zb, 'wall', 'concrete'));
+    };
+    const piece = (d: number, za: number, zb: number): void => {
+      const h0 = Math.max(za, zHead), h1 = Math.min(zb, S.ceiling);
+      if (!shift || h1 <= h0) return put(d, 0, za, zb);
+      if (h0 > za) put(d, 0, za, h0);
+      put(d, shift, h0, h1);
+      if (zb > h1) put(d, 0, h1, zb);
     };
     // the wall from za to zb, recessed where a niche is: niches go from the pit floor to the slab, lamps' at the lamps
     const stretch = (za: number, zb: number): void => {
@@ -90,7 +101,8 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
     for (const i of served(side)) {
       const zf = S.levels[i];
       if (!inWin(zf)) continue;
-      const ext = side === 'front' ? [-T - LANDING_EXT, -T] : [D + T, D + T + LANDING_EXT];
+      const sh = i === topFloor ? (side === 'front' ? hd.front : -hd.rear) : 0;
+      const ext = side === 'front' ? [-T - LANDING_EXT + sh, -T + sh] : [D + T + sh, D + T + LANDING_EXT + sh];
       if (compressed(zf)) {
         out.push(line(P(ext[0], zf), P(ext[1], zf), 'outline'));
       } else {
@@ -110,17 +122,19 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
 
   // pit floor, slab over the shaft, machine room
   if (inWin(S.pitFloor)) out.push(box(-T, S.pitFloor - SLAB, D + T, S.pitFloor, 'wall', 'concrete'));
+  // the slab over the shaft reaches the walls where they stand in the headroom too
+  const s0 = Math.min(-T, -T + hd.front), s1 = Math.max(D + T, D + T - hd.rear);
   if (I.room && S.ceiling <= v.hi) {
     const r = I.room, top = S.ceiling + r.slab + r.H, ridge = r.ridge ? S.ceiling + r.slab + r.ridge : top;
     const holeX = L.car.y + L.car.h / 2;
-    out.push(box(-T, S.ceiling, holeX - 120, S.ceiling + r.slab, 'wall', 'concrete'), box(holeX + 120, S.ceiling, D + T, S.ceiling + r.slab, 'wall', 'concrete'));
+    out.push(box(s0, S.ceiling, holeX - 120, S.ceiling + r.slab, 'wall', 'concrete'), box(holeX + 120, S.ceiling, s1, S.ceiling + r.slab, 'wall', 'concrete'));
     // the room's walls up to the roof, or cut where the view ends
     const wallTop = Math.min(ridge, zTop);
     if (wallTop > S.ceiling + r.slab + 1) out.push(box(-T, S.ceiling + r.slab, 0, wallTop, 'wall', 'concrete'), box(D, S.ceiling + r.slab, D + T, wallTop, 'wall', 'concrete'));
     if (ridge <= zTop && top <= v.hi + 1) out.push(box(-T, ridge, D + T, ridge + SLAB, 'wall', 'concrete'));
     if (S.ceiling + r.slab + 250 <= zTop) out.push({ e: 'text', at: P(D / 2, S.ceiling + r.slab + 250), text: 'LOCALE MACCHINA', size: 2.4, align: 'c' });
   } else if (S.ceiling <= v.hi) {
-    out.push(box(-T, S.ceiling, D + T, S.ceiling + SLAB, 'wall', 'concrete'));
+    out.push(box(s0, S.ceiling, s1, S.ceiling + SLAB, 'wall', 'concrete'));
   }
 
   // rails seen beyond the cut: facing the cut, a rail shows its foot; along it, its side from foot to tip
@@ -160,7 +174,7 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
   const zf = S.levels[v.carFloor] ?? 0;
   if (zf + S.highest >= v.lo && zf - V.frameBelow <= v.hi) out.push(...car(L, P, zf, Math.min(S.ceiling, zTop), v.carFloor === V.floors.length - 1));
   if (v.carFloor === V.floors.length - 1 && zf + S.moveUp + S.highest >= v.lo) out.push(...carTopAt(L, P, zf + S.moveUp));
-  const bounds: Box = { x0: -T - LANDING_EXT, y0: Z(zBot), x1: D + T + LANDING_EXT, y1: Z(zTop) };
+  const bounds: Box = { x0: -T - LANDING_EXT + Math.min(0, hd.front), y0: Z(zBot), x1: D + T + LANDING_EXT + Math.max(0, -hd.rear), y1: Z(zTop) };
   return { entities: clipBand(out, bounds.y0, bounds.y1), bounds, S };
 }
 

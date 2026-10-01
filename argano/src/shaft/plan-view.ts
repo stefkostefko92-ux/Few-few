@@ -1,107 +1,33 @@
 // A plan of the shaft at one level, as model entities for the drawing kernel: concrete walls with the landing door
-// openings of that level and their jambs, landing doors, car with its doors and operator, car frame, T rails with
-// brackets, counterweight (on a side: its bridge bracket), axes, and what the level shows: the spaces on the car
-// roof at the top, buffers and the space in the pit at the bottom. Dimensions are added by plan-dims.ts.
+// openings of that level and their jambs (plan-walls.ts; at the top floor and in the headroom where head.ts puts
+// them), landing doors, car with its doors and operator, car frame, T rails with brackets reaching the walls,
+// counterweight (on a side: its bridge bracket), axes, and what the level shows: the spaces on the car roof at the
+// top, buffers and the space in the pit at the bottom. Dimensions are added by plan-dims.ts.
 import { circle, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
 import { KV } from './norme';
 import { callStationAt, callStationOf } from './callstation';
-import { chasesOn, nichesOf, wallLength } from './niche';
+import { headBox, headOf, headRail, mainBox, type WallBox } from './head';
 import { governorPlan } from './plan-governor';
-import { panevSupportPlan } from './plan-staffe';
+import { onWall, quad, walls } from './plan-walls';
+import { genericBracketPlan, panevSupportPlan } from './plan-staffe';
 import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from './sill';
 import { KV_VERT } from './norme-vert';
 import { RAILS } from './rails';
-import type { DoorLayout, Layout, Rail, Wall } from './types';
+import type { DoorLayout, Layout, Rail } from './types';
 
 export type PlanLevel = 'top' | 'main' | 'bottom' | 'pit';
+
+export { innerFace } from './plan-walls';
+
+/** Where the walls of a plan stand: at the top floor and in the headroom as head.ts says, elsewhere as at the main
+ *  floor. */
+export const wallsAt = (L: Layout, level: PlanLevel): WallBox => (level === 'top' ? headBox(L.inputs) : mainBox(L.inputs));
 
 /** Entrances with a landing door at a floor. */
 export const doorsAt = (L: Layout, floor: number): DoorLayout[] => {
   const f = L.inputs.vertical.floors[floor];
   return f ? L.doors.filter((d) => f.door.includes(d.side)) : [];
 };
-
-/** Model point of (u along the wall, v into the shaft from the wall). */
-function onWall(L: Layout, w: Wall, u: number, v: number): Pt {
-  const { W, D } = L.inputs;
-  return w === 'front' ? [u, v] : w === 'rear' ? [u, D - v] : w === 'left' ? [v, u] : [W - v, u];
-}
-const quad = (L: Layout, w: Wall, u0: number, v0: number, u1: number, v1: number): Pt[] => [onWall(L, w, u0, v0), onWall(L, w, u1, v0), onWall(L, w, u1, v1), onWall(L, w, u0, v1)];
-
-/** The inner face of the shaft walls, round the niches that run their whole height: clockwise from the front-left
- *  corner, each wall walked along its axis or back. */
-export function innerFace(L: Layout): Pt[] {
-  const out: Pt[] = [];
-  const walk = (w: Wall, back: boolean): void => {
-    const ns = chasesOn(L.inputs, w).sort((a, b) => (back ? b.at - a.at : a.at - b.at));
-    const [start, end] = back ? [wallLength(L.inputs, w), 0] : [0, wallLength(L.inputs, w)];
-    out.push(onWall(L, w, start, 0));
-    for (const n of ns) {
-      const [a, b] = back ? [n.at + n.width, n.at] : [n.at, n.at + n.width];
-      out.push(onWall(L, w, a, 0), onWall(L, w, a, -n.depth), onWall(L, w, b, -n.depth), onWall(L, w, b, 0));
-    }
-    out.push(onWall(L, w, end, 0));
-  };
-  walk('front', false);
-  walk('right', false);
-  walk('rear', true);
-  walk('left', true);
-  // corners appear twice where the walls meet, and the walk ends where it started
-  const same = (p: Pt, q: Pt): boolean => Math.hypot(p[0] - q[0], p[1] - q[1]) < 0.01;
-  const pts = out.filter((p, i) => i === 0 || !same(p, out[i - 1]));
-  return pts.length > 1 && same(pts[0], pts[pts.length - 1]) ? pts.slice(0, -1) : pts;
-}
-
-/** Concrete ring around the shaft, cut by the openings of the landing doors at this floor and thinner behind the
- *  niches that run its whole height; its inner face goes round them. */
-function walls(L: Layout, open: DoorLayout[]): Entity[] {
-  const { W, D, wall: T } = L.inputs, out: Entity[] = [];
-  const strip = (w: Wall, len: number): void => {
-    const cuts = open.filter((d) => d.wall === w).map((d) => [d.u0 - KV.doorPortal, d.u1 + KV.doorPortal] as const);
-    const recess = chasesOn(L.inputs, w);
-    // the side walls run past the corners, the front and rear ones stop at them
-    const ends = w === 'left' || w === 'right' ? [-T, len + T] : [0, len];
-    const us = [...new Set([...ends, ...cuts.flat(), ...recess.flatMap((n) => [n.at, n.at + n.width])])].filter((u) => u >= ends[0] && u <= ends[1]).sort((a, b) => a - b);
-    // runs of the same wall face: open (null) or the face's depth behind the inner face
-    let run: { u0: number; u1: number; v: number | null } | null = null;
-    const flush = (): void => {
-      if (run && run.v !== null && run.v > -T && run.u1 - run.u0 > 0.5) out.push(path(quad(L, w, run.u0, run.v, run.u1, -T), true, 'wall', 'concrete'));
-    };
-    for (let i = 0; i + 1 < us.length; i++) {
-      const a = us[i], b = us[i + 1], mid = (a + b) / 2;
-      const v = cuts.some(([c0, c1]) => mid > c0 && mid < c1) ? null : -(recess.find((n) => mid > n.at && mid < n.at + n.width)?.depth ?? 0);
-      if (run && run.v === v) run.u1 = b;
-      else {
-        flush();
-        run = { u0: a, u1: b, v };
-      }
-    }
-    flush();
-  };
-  strip('front', W);
-  strip('rear', W);
-  strip('left', D);
-  strip('right', D);
-  out.push(path(innerFace(L), true, 'wall'));
-  // the lamps' recesses are above the cut: dashed, with the lamp; the trunking in its chase
-  for (const n of nichesOf(L.inputs)) {
-    const c = onWall(L, n.wall, n.at + n.width / 2, -n.depth / 2);
-    if (n.use === 'light') {
-      out.push(path([onWall(L, n.wall, n.at, 0), onWall(L, n.wall, n.at, -n.depth), onWall(L, n.wall, n.at + n.width, -n.depth), onWall(L, n.wall, n.at + n.width, 0)], false, 'hidden'));
-      out.push({ e: 'mark', at: c, sym: 'light' });
-    } else if (n.use === 'duct') {
-      const hw = Math.min(50, n.width / 2 - 10), d = Math.min(60, n.depth - 10);
-      if (hw > 5 && d > 5) out.push(path(quad(L, n.wall, n.at + n.width / 2 - hw, -n.depth, n.at + n.width / 2 + hw, -n.depth + d), true, 'thin', 'steel'));
-    }
-  }
-  // jambs of the openings: along the reveal and returning on the outer face
-  for (const d of open) {
-    for (const [u, s] of [[d.u0 - KV.doorPortal, -1], [d.u1 + KV.doorPortal, 1]] as const) {
-      out.push(path([onWall(L, d.wall, u, 0), onWall(L, d.wall, u, -T), onWall(L, d.wall, u + s * 60, -T)], false, 'jamb'));
-    }
-  }
-  return out;
-}
 
 /** A sill seen from above along u0–u1, from v0 to v1 deep, with the two edges of each groove; the closed panels on
  *  their tracks (the fast one by the gap leads, the slow one by the stack; a centre door's two meet in the middle). */
@@ -128,10 +54,10 @@ function landingDoor(L: Layout, d: DoorLayout): Entity[] {
     ...sillAndPanels(L, d, d.u0 - 40, d.u1 + 40, 0, depth, landingTracks(depth), LANDING_PANEL)];
 }
 
-/** The landing call station beside a landing door, on the landing face of the wall. */
-function callPanel(L: Layout, d: DoorLayout): Entity[] {
+/** The landing call station beside a landing door, on the landing face of the wall standing on `box`. */
+function callPanel(L: Layout, d: DoorLayout, box: WallBox): Entity[] {
   const { u } = callStationAt(d, callStationOf(L.inputs)), [w, , t] = KV.callPanel, T = L.inputs.wall;
-  return [path(quad(L, d.wall, u - w / 2, -T - t, u + w / 2, -T), true, 'outline', 'steel')];
+  return [path(quad(L, d.wall, u - w / 2, -T - t, u + w / 2, -T, box), true, 'outline', 'steel')];
 }
 
 /** Car: walls with the entrances open, car sills and closed panels, the operator above each entrance. */
@@ -150,20 +76,18 @@ function carBody(L: Layout, level: PlanLevel): Entity[] {
 }
 
 /** T rail with its tip at (x, y) pointing along `dir`, and its bracket (Panev's support on a counterweight rail, with
- *  its code when `label`). */
-function rail(L: Layout, r: Rail, shoes: boolean, label = false): Entity[] {
+ *  its code when `label`); `head`: in the headroom, the brackets reach the walls where they stand there. */
+function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false): Entity[] {
+  const r = head ? headRail(L.inputs, r0) : r0;
   const s = RAILS[r.kind === 'car' ? L.inputs.carRail : L.inputs.cwRail], tf = Math.max(6, s.k * 0.9);
   const local: Pt[] = [[0, -s.k / 2], [0, s.k / 2], [-(s.h - tf), s.k / 2], [-(s.h - tf), s.b / 2], [-s.h, s.b / 2], [-s.h, -s.b / 2], [-(s.h - tf), -s.b / 2], [-(s.h - tf), -s.k / 2]];
   const [ux, uy] = r.dir === 'right' ? [1, 0] : r.dir === 'left' ? [-1, 0] : r.dir === 'back' ? [0, 1] : [0, -1];
   const at = (u: number, v: number): Pt => [r.x + u * ux - v * uy, r.y + u * uy + v * ux];
   const out: Entity[] = [path(local.map(([u, v]) => at(u, v)), true, 'steel', 'steel')];
-  const foot = at(-s.h, 0), w = r.kind === 'car' ? 30 : 22, panev = panevSupportPlan(L, r, label);
-  if (panev) out.push(...panev);
-  else if (r.bracketAxis === 'x' && Math.abs(r.bracketTo - foot[0]) > 1) {
-    out.push(rect(Math.min(foot[0], r.bracketTo), foot[1] - w, Math.max(foot[0], r.bracketTo), foot[1] + w, 'steel'));
-  } else if (r.bracketAxis === 'y' && Math.abs(r.bracketTo - foot[1]) > 1) {
-    out.push(rect(foot[0] - w, Math.min(foot[1], r.bracketTo), foot[0] + w, Math.max(foot[1], r.bracketTo), 'steel'));
-  }
+  // the bracket under the rail: Panev's support, or the generic one out to the wall or the bridge
+  const br = panevSupportPlan(L, r0, label, head ? headOf(L.inputs) : undefined) ?? genericBracketPlan(L, r);
+  out.unshift(...br.under);
+  out.push(...br.over);
   // guide shoe of the guided part, at the tip
   if (shoes) out.push(rect(...shoe(at), 'thin'));
   return out;
@@ -221,8 +145,8 @@ function space(x0: number, y0: number, x1: number, y1: number): Entity[] {
 }
 
 export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity[] {
-  const open = doorsAt(L, floor), out: Entity[] = [...walls(L, open)];
-  for (const d of open) out.push(...landingDoor(L, d), ...callPanel(L, d));
+  const open = doorsAt(L, floor), box = wallsAt(L, level), out: Entity[] = [...walls(L, open, box)];
+  for (const d of open) out.push(...landingDoor(L, d), ...callPanel(L, d, box));
   if (level === 'pit') {
     // the pit seen from above: the car and the counterweight are up in the shaft, only their outline is shown
     const c = L.car, w = L.cw;
@@ -231,7 +155,7 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
   } else {
     out.push(...carBody(L, level), ...counterweight(L), ...carFrame(L));
   }
-  L.rails.forEach((r, i) => out.push(...rail(L, r, level !== 'pit', r.kind === 'cw' && L.rails.findIndex((x) => x.kind === 'cw') === i)));
+  L.rails.forEach((r, i) => out.push(...rail(L, r, level !== 'pit', r.kind === 'cw' && L.rails.findIndex((x) => x.kind === 'cw') === i, level === 'top')));
   out.push(...axes(L), ...governorPlan(L, level === 'pit'));
   if (level === 'top') {
     const { refuge: r, free: f } = roofSpaces(L);

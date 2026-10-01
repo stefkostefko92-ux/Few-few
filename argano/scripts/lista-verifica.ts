@@ -37,7 +37,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   v_acc_door: 'porta minima (DM 236/1989)', v_acc_side: 'porta sul lato corto', v_door: 'ingombro della porta di piano',
   v_wall: 'parete di fronte all\'entrata', v_sill: 'gioco tra le soglie', v_cw: 'distanza cabina–contrappeso', v_cwlen: 'lunghezza del contrappeso',
   v_door2: 'ingombro della seconda porta di piano', v_op: 'operatori delle porte adiacenti', v_place: 'quote fissate a mano: ingombri al loro posto',
-  v_doorcar: 'quote fissate a mano: porte dentro la cabina', v_niche: 'nicchie nelle pareti', v_staffa: 'staffe del catalogo per le guide del contrappeso', h_refuge: 'spazio di rifugio in testata',
+  v_doorcar: 'quote fissate a mano: porte dentro la cabina', v_niche: 'nicchie nelle pareti', v_staffa: 'staffe del catalogo per le guide del contrappeso', v_head: 'pareti in testata diverse dal piano principale', h_refuge: 'spazio di rifugio in testata',
   h_clear: 'distanze libere dal soffitto', h_parapet: 'balaustra sul tetto di cabina', p_refuge: 'spazio di rifugio in fossa',
   p_apron: 'grembiule sugli ammortizzatori compressi', b_runby: 'extracorsa di cabina e contrappeso', b_car: 'corsa degli ammortizzatori di cabina',
   b_cw: 'corsa dell\'ammortizzatore del contrappeso', m_height: 'altezza del locale macchina', m_panel: 'superficie libera davanti al quadro',

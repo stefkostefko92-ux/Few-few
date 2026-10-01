@@ -84,6 +84,25 @@ test('rinvio dalla pianta: semplice o inverso come lo legge l\'angolo di avvolgi
   assert.deepEqual(deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 560 }, auto: { ...AUTO_ALL, machine: false, dx: false } }).issues, []);
 });
 
+test('tiro diretto: la puleggia è la calata della pianta; un diametro diverso o fuori gamma è segnalato', () => {
+  const base = defaultLift(), top = { ...base.calc, layout: 'top' };
+  for (const shaft of [base.shaft, { ...base.shaft, cw: 'left' as const }]) {
+    const d = deriveLift({ ...base, shaft, calc: top }), c = d.calata ?? 0, rig = ropeRig(d);
+    assert.equal(d.analysis.ctx.N.D, Math.round(c));
+    assert.deepEqual(d.issues, []);
+    // the falls hang plumb: the sheave's counterweight side over the counterweight's drop
+    assert.ok(Math.abs((rig.sheave.u + rig.sheave.r) * 1000 - rig.calata * 1000) <= KL.calataTol, `calata ${c}`);
+  }
+  // another sheave by hand, or the existing one compared: the plan contradicts it
+  assert.deepEqual(deriveLift({ ...base, calc: { ...top, n_D: 560 }, auto: { ...AUTO_ALL, machine: false } }).issues, ['calata']);
+  assert.deepEqual(deriveLift({ ...base, calc: { ...top, compare: true, o_D: 560 } }).issues, ['calata']);
+  // a car so deep that the falls are beyond the calculation's sheaves: no machine, the plan must change
+  const deep = deriveLift({ ...base, shaft: { ...base.shaft, W: 2000, D: 2300 }, calc: top });
+  assert.ok((deep.calata ?? 0) > 800 && deep.noProposal && deep.issues.includes('calata'));
+  // with a diverting pulley the falls are free
+  assert.equal(deriveLift(base).calata, null);
+});
+
 test('macchina proposta: la stessa qualunque puleggia fosse inserita prima; con la geometria a mano, quella del dimensionamento', () => {
   const base = defaultLift();
   for (const shaft of [base.shaft, { ...base.shaft, W: 1100, D: 1300, cw: 'left' as const }]) {
@@ -124,6 +143,7 @@ test('registri dei valori automatici e della simulazione', () => {
   assert.ok(text(VOCI_IMPIANTO, 'impianto.massa.cabina').includes(`P = ${it(KL.carMassRatio)}·Q`));
   assert.ok(text(VOCI_IMPIANTO, 'impianto.massa.cabina').includes(`${KL.carMassStep} kg`));
   assert.ok(text(VOCI_IMPIANTO, 'impianto.L0').includes(`${it(KL.sheaveAxisPerD)}·D`));
+  assert.ok(text(VOCI_IMPIANTO, 'impianto.calata').includes(`più di ${KL.calataTol} mm`));
   assert.ok(text(VOCI_SIM, 'sim.profilo').includes(`${it(KS.jerk)} m/s³`));
   for (const k of ['doorOpen', 'doorClose', 'dwell', 'startDelay'] as const) assert.ok(text(VOCI_SIM, 'sim.porte').includes(`${it(KS[k])} s`), k);
   assert.ok(text(VOCI_SIM, 'sim.ammortizzatori').includes(`${it(KS.bufferSpeed)} volte`));

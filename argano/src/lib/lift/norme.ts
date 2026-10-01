@@ -2,6 +2,7 @@
 // estimate of the car mass, the rope lengths and distances of the layout, the machine proposed. Each one is shown as
 // automatic on the screen and can be overwritten. Italian texts: they go to the engineer.
 import type { Stato } from '@/calc/norme';
+import { SHEAVE_GRID } from '@/calc/sizing';
 
 export const KL = {
   // estimate of the empty car mass when it is not entered: P = ratio · Q, rounded up to the step [kg]
@@ -20,6 +21,8 @@ export const KL = {
   underRoomH: 2400,
   // a maker's machine for the proposal: its ratio may give a speed this far from the ratio of the rated speed
   catalogRatioTol: 0.1,
+  // direct pull: the falls in the plan and the sheave's pitch diameter may differ by this much (the rounding) [mm]
+  calataTol: 1,
 } as const;
 
 export type CostanteImpianto = keyof typeof KL;
@@ -67,6 +70,18 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'perché le funi salgono dal lato interno delle pulegge di cabina e di contrappeso. La puleggia di trazione sopra la cabina, il rinvio sopra il '
       + 'contrappeso; se nessuna delle due geometrie torna con l\'angolo di avvolgimento, la distanza va misurata sull\'impianto',
     riferimento: 'ricerca, capitolo 5.3', fonte: 'pianta del vano', stato: 'derivazione',
+  },
+  {
+    id: 'impianto.calata', titolo: 'Tiro diretto (senza rinvio): calata uguale al diametro della puleggia',
+    valore: 'senza rinvio le due calate scendono dai due lati della puleggia di trazione: la loro distanza in pianta (dall\'asse della cabina a '
+      + 'quello del contrappeso, meno Dp con la taglia 2:1) è il diametro primitivo D. La macchina proposta ha la puleggia di diametro uguale '
+      + `alla calata della pianta, se è nella gamma del calcolo (da ${SHEAVE_GRID[0]} a ${SHEAVE_GRID[SHEAVE_GRID.length - 1]} mm); una macchina `
+      + 'inserita a mano, o nella sostituzione con il confronto la macchina esistente (i suoi attacchi restano), con un diametro che si scosta '
+      + `dalla calata più di ${KL.calataTol} mm è segnalata e il progetto non si salva`,
+    riferimento: 'ricerca, capitolo 5.3 (angolo di avvolgimento del tiro diretto)', fonte: 'geometria delle funi', stato: 'derivazione',
+    costanti: ['calataTol'],
+    nota: 'con un diametro diverso dalla calata le funi si inclinano verso gli attacchi: nella sostituzione con il confronto il calcolo ne tiene '
+      + 'conto per la nuova puleggia; oltre pochi millimetri servono una puleggia di rinvio o il contrappeso spostato (quota «Calata» in pianta)',
   },
   {
     id: 'impianto.Hv', titolo: 'Macchina in basso: altezza fino alle pulegge in alto (Hv)',
