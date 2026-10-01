@@ -114,6 +114,15 @@ try {
   await page.fill('.shaft-output .ed-pop input', String(was + 20));
   await page.press('.shaft-output .ed-pop input', 'Enter');
   await page.waitForSelector('.shaft-output table.fixes tr.hand');
+  // the pit in plan: the car buffers 40 mm further apart, on the drawing; the dimension then reads it
+  await page.click('.shaft-output [role="tab"]:has-text("Pianta della fossa")');
+  const span = page.locator('.shaft-output .ed-hits .hit[aria-label*="Ammortizzatori di cabina: interasse"]').first();
+  const spanWas = Number(/^(\d+)/.exec((await span.getAttribute('aria-label')) ?? '')?.[1]);
+  assert.ok(spanWas > 0, 'distance between the car buffers drawn');
+  await span.click();
+  await page.fill('.shaft-output .ed-pop input', String(spanWas + 40));
+  await page.press('.shaft-output .ed-pop input', 'Enter');
+  await page.waitForSelector(`.shaft-output .ed-hits .hit[aria-label^="${spanWas + 40}"][aria-label*="Ammortizzatori di cabina: interasse"]`);
   await Promise.all([page.waitForURL(/\/shaft-designs\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.btn-primary')]);
   const designUrl = page.url();
   assert.match(await page.textContent('dl.cartiglio'), /riprodotto/, 'design hash reproduced');

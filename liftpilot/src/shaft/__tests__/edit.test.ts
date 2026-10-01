@@ -27,6 +27,9 @@ const CASES: readonly (readonly [string, (I: ShaftInputs) => ShaftInputs])[] = [
   ['contrappeso a sinistra in nicchia', (I) => ({ ...I, cw: 'left', niches: [{ use: 'cw', wall: 'left', at: 400, width: 1000, depth: 120 }] })],
   ['imbotti tra i marmi, porta più piccola', (I) => ({ ...I, imbotti: { left: 120, right: 85, top: 140 } })],
   ['imbotti, accessi opposti', (I) => ({ ...I, entrances: 'opposite', D: 2000, imbotti: { left: 60, right: 60, top: 0 } })],
+  ['un ammortizzatore di cabina', (I) => ({ ...I, vertical: { ...I.vertical, carBuffers: 1 } })],
+  ['quattro ammortizzatori di cabina messi a mano, contrappeso a destra', (I) => ({ ...I, cw: 'right', vertical: { ...I.vertical, carBuffers: 4 },
+    plan: { bufX: 760, bufY: 840, bufSpan: 820, cwBufPos: 900 } })],
 ];
 
 /** Each edit by choice of the drawings of `draw`: every entry chosen is taken, and the same dimension then shows it as
@@ -90,7 +93,7 @@ for (const [name, make] of CASES) {
   });
 }
 
-test('quote modificabili in sezione A-A: altezze di fossa, testata, interpiani, cabina, arcata, porte, imbotti, ammortizzatori', () => {
+test('quote modificabili in sezione A-A: altezze di fossa, testata, interpiani, cabina, arcata, porte, imbotti, ammortizzatori e dove stanno', () => {
   const I: ShaftInputs = { ...defaultInputs(1600, 1750), imbotti: { left: 100, right: 100, top: 150 } }, top = I.vertical.floors.length - 1;
   const views: readonly (readonly [SectionKind, number])[] = [['full', top], ['top', top], ['floor', 0], ['pit', 0]];
   const keys = new Set<string>();
@@ -108,7 +111,7 @@ test('quote modificabili in sezione A-A: altezze di fossa, testata, interpiani, 
   }
   for (const k of ['v.pit', 'v.headroom', 'v.opTop', 'doorHeight', 'v.carOutH', 'v.frameTop', 'v.carH', 'v.parapet', 'v.carBufferBase', 'v.carBufferH',
     'v.frameBelow', 'v.cwBufferBase', 'v.cwBufferH', 'v.cwH', 'v.platform', 'v.carBufferStroke', 'v.cwBufferStroke', 'v.cwRunby', 'v.cwScreen', 'f.0.rise',
-    'f.3.rise', 'imb.top', 'imb.height', 'v.topRefuge', 'v.pitRefuge']) assert.ok(keys.has(k), k);
+    'f.3.rise', 'imb.top', 'imb.height', 'v.topRefuge', 'v.pitRefuge', 'plan.bufY', 'cwWallGap']) assert.ok(keys.has(k), k);
 });
 
 test('sezione accorciata: le quote dicono le altezze vere, non quelle disegnate', () => {

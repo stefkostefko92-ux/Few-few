@@ -1,10 +1,10 @@
 'use client';
 
-// The drawings of the design, to be changed where they are: the plan at the main floor and the one at the top floor
-// and in the headroom (where an old building's walls may stand elsewhere), section A-A whole and in its details, the
-// machine room. Any dimension clicked takes a new length and the design is laid out again; the
-// distances of the plan set by hand are listed below, with what the software would put there, to be reset one by
-// one. Every value goes through the same validation as the save.
+// The drawings of the design, to be changed where they are: the plan at the main floor, the one at the top floor and in
+// the headroom (where an old building's walls may stand elsewhere) and the one in the pit (buffers, refuge space),
+// section A-A whole and in its details, the machine room. Any dimension clicked takes a new length and the design is
+// laid out again; the distances of the plan set by hand are listed below, with what the software would put there, to
+// be reset one by one. Every value goes through the same validation as the save.
 // Motion: none; the drawing is redrawn, never animated.
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -29,7 +29,7 @@ interface Props {
   titleAs?: 'h2' | 'h3';
 }
 
-const VIEWS: readonly ScreenView[] = ['plan', 'head', 'full', 'top', 'floor', 'pit', 'room-plan', 'room-section'];
+const VIEWS: readonly ScreenView[] = ['plan', 'head', 'pit-plan', 'full', 'top', 'floor', 'pit', 'room-plan', 'room-section'];
 
 export default function PlanEditor({ I, onChange, machine, onCalc, id, titleAs: Title = 'h2' }: Props) {
   const t = useTranslations('shaft');

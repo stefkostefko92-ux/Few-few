@@ -4,7 +4,8 @@
 // counterweight to the car rail, the axes, the car with its space to a side counterweight, and the shaft; on the side
 // walls (plan-dims-walls.ts) the depth from the landing sill to the end of the car, the car inside with its walls, the
 // car with its sill to a counterweight at the back, the counterweight rails, the bracket, and the shaft; inside the car
-// the clear door opening; the spaces with their sizes and the rope drop. Each dimension says which input its new
+// the clear door opening; the spaces with their sizes and the rope drop; in the pit where the buffers stand
+// (plan-dims-pit.ts). Each dimension says which input its new
 // length changes (edit.ts), so the screens can change any of them where it is drawn: a distance of the plan set by
 // hand (plan.*), an allowance, the shaft's or the doors' size, the linings; a rail's profile and a refuge space's type
 // by choice. In the headroom the walls stand where head.ts puts them and the dimensions that end on a wall move that
@@ -17,7 +18,9 @@ import { callStationAt, callStationOf, lowIsLeft } from './callstation';
 import { hasImbotti, marbleOpening } from './imbotti';
 import { cwNiche, nichesOf } from './niche';
 import { calataEdit } from './drop';
-import { doorsAt, pitSpace, roofSpaces, wallsAt, type PlanLevel } from './plan-view';
+import { doorsAt, roofSpaces, wallsAt, type PlanLevel } from './plan-view';
+import { pitSpace } from './pit';
+import { pitRows, type PitRow } from './plan-dims-pit';
 import { sideWallDims } from './plan-dims-walls';
 import type { DoorLayout, Layout, NicheUse, Wall } from './types';
 
@@ -64,8 +67,15 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
     const pts = out1 ? [face, face + n.depth] : [face - n.depth, face];
     out.push(chain({ dir: along ? 'y' : 'x', pts, at: mid, edit: [E(`${k}.depth`)] }));
   });
+  // in the pit the buffers' places, each in a row just inside the shaft's total of its side (any left over outside)
+  const pit = level === 'pit' ? pitRows(L, doorSide) : [], placed = new Set<PitRow>();
+  const pitRow = (r: PitRow): void => {
+    push(r.side, r.dir, r.pts, r.text, r.edit);
+    placed.add(r);
+  };
   const total = (side: Side, dir: 'x' | 'y'): void => {
     niches(side);
+    for (const r of pit) if (!placed.has(r) && r.side === side && r.dir === dir) pitRow(r);
     push(side, dir, [0, dir === 'x' ? W : D], [`{v} Vano ${dir === 'x' ? labels.level : ''}`.trim()], [E(dir === 'x' ? 'W' : 'D')]);
   };
   // the call station of each landing door at this level, from the door's portal, nearest the drawing
@@ -159,6 +169,7 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
 
   // inside: clear openings of the car doors, counterweight thickness, rope drop (in the pit only the spaces)
   if (level === 'pit') {
+    for (const r of pit) if (!placed.has(r)) pitRow(r);
     const p = pitSpace(L), pick = refugePick('v.pitRefuge', I.vertical.pitRefuge);
     out.push(chain({ dir: 'x', pts: [p.x0, p.x1], at: p.y0 + (p.y1 - p.y0) * 0.62, edit: [pick] }), chain({ dir: 'y', pts: [p.y0, p.y1], at: p.x0 + (p.x1 - p.x0) * 0.3, edit: [pick] }));
     return out;

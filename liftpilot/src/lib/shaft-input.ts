@@ -91,6 +91,10 @@ export const planSchema = z.object({
   dbg: mm(100, 10000).optional(),
   cwLen: mm(100, 3000).optional(),
   cwPos: mm(0, 10000).optional(),
+  bufX: mm(0, 10000).optional(),
+  bufY: mm(0, 10000).optional(),
+  bufSpan: mm(100, 5000).optional(),
+  cwBufPos: mm(0, 10000).optional(),
 }).strict();
 
 /** A niche in a wall of the shaft (src/shaft/niche.ts). */

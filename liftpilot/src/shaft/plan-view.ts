@@ -12,6 +12,7 @@ import { onWall, quad, walls } from './plan-walls';
 import { genericBracketPlan, panevSupportPlan } from './plan-staffe';
 import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from './sill';
 import { KV_VERT } from './norme-vert';
+import { bufferPlan, pitSpace } from './pit';
 import { standOf } from './section';
 import { RAILS } from './rails';
 import type { DoorLayout, Layout, Rail } from './types';
@@ -166,7 +167,7 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
   if (level === 'pit') {
     const p = pitSpace(L);
     out.push(...space(p.x0, p.y0, p.x1, p.y1), { e: 'mark', at: [(p.x0 + p.x1) / 2 + 60, (p.y0 + p.y1) / 2 - 60], sym: 'square' });
-    for (const b of buffersAt(L)) out.push(circle(b.c, b.r, 'outline', 'paper'), circle(b.c, b.r * 0.55, 'thin'));
+    for (const b of bufferPlan(L).spots) out.push(circle(b.c, b.r, 'outline', 'paper'), circle(b.c, b.r * 0.55, 'thin'));
     out.push(...pitTags(L));
   }
   return out;
@@ -182,13 +183,6 @@ export function roofSpaces(L: Layout): { refuge: Box; free: Box } {
   };
 }
 
-/** In the pit, under the middle of the car: the refuge space, its long side along the car's longer one. */
-export function pitSpace(L: Layout): Box {
-  const ci = L.carInner, [a, b] = KV_VERT.refugePlan[L.inputs.vertical.pitRefuge], [w, h] = ci.h >= ci.w ? [a, b] : [b, a];
-  const x0 = ci.x + (ci.w - w) / 2, y0 = ci.y + (ci.h - h) / 2;
-  return { x0, y0, x1: x0 + w, y1: y0 + h };
-}
-
 /** Where the loads on the pit floor act (see loads.ts): P5 car rails, P6 car buffers, P7 counterweight rails, P8 its buffer. */
 function pitTags(L: Layout): Entity[] {
   const out: Entity[] = [], cx = L.car.x + L.car.w / 2, cy = L.car.y + L.car.h / 2;
@@ -200,19 +194,6 @@ function pitTags(L: Layout): Entity[] {
     const foot: Pt = [r.x, r.y], at: Pt = r.kind === 'car' ? [r.x + (r.x < cx ? 120 : -120), r.y + 230] : [r.x + (r.x < cx ? 230 : -230), r.y];
     out.push({ e: 'tag', at, text: r.kind === 'car' ? 'P5' : 'P7', to: foot });
   }
-  for (const b of buffersAt(L)) out.push({ e: 'tag', at: b.kind === 'car' ? toward(b.c, -230) : [b.c[0] + 230, b.c[1] + 160], text: b.kind === 'car' ? 'P6' : 'P8', to: b.c });
-  return out;
-}
-
-/** Plan positions of the buffers: under the car beside its rails, under the middle of the counterweight. */
-export function buffersAt(L: Layout): { c: Pt; r: number; kind: 'car' | 'cw' }[] {
-  const n = L.inputs.vertical.carBuffers, car = L.car, out: { c: Pt; r: number; kind: 'car' | 'cw' }[] = [];
-  const cy = car.y + car.h / 2, cx = car.x + car.w / 2;
-  if (n === 1) out.push({ c: [cx, cy], r: 75, kind: 'car' });
-  else {
-    const dx = car.w / 2 - 160;
-    for (let i = 0; i < n; i++) out.push({ c: [cx + (i % 2 ? dx : -dx), cy + (n > 2 ? (i < 2 ? -car.h / 4 : car.h / 4) : 0)], r: 75, kind: 'car' });
-  }
-  out.push({ c: [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2], r: 60, kind: 'cw' });
+  for (const b of bufferPlan(L).spots) out.push({ e: 'tag', at: b.kind === 'car' ? toward(b.c, -230) : [b.c[0] + 230, b.c[1] + 160], text: b.kind === 'car' ? 'P6' : 'P8', to: b.c });
   return out;
 }

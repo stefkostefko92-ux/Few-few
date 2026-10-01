@@ -9,6 +9,7 @@ import { DEFAULT_VERTICAL } from './vertical';
 import { sectionChecks } from './section';
 import { roomChecks } from './machine-room';
 import { check } from './checks';
+import { bufferChecks } from './pit';
 import { cwNiche, nicheMargin } from './niche';
 import { hasHead, headCheck, headFacingExtra, headOf } from './head';
 import { PANEV_BACK, cwBracketsOf, supportMargin } from './staffe';
@@ -19,6 +20,7 @@ const ACCESS: Readonly<Record<Exclude<Access, 'none'>, readonly [number, number,
 };
 
 const floorTo = (x: number, step: number): number => Math.floor(x / step + 1e-9) * step;
+const BUFFER_KEYS: ReadonlySet<string> = new Set(['bufX', 'bufY', 'bufSpan', 'cwBufPos']);
 const round1 = (x: number): number => Math.round(x);
 
 /** A new design: the largest car, telescopic 800 × 2000 mm doors, one entrance, counterweight at the back. */
@@ -244,7 +246,8 @@ export function layout(I: ShaftInputs): Layout {
     check('v_cw', carCw >= KV.carCwMin, carCw, KV.carCwMin, 0, 'mm'),
     check('v_cwlen', cwLength >= KV.cwMinLength, cwLength, KV.cwMinLength, 0, 'mm', true),
     // only a plan with distances set by hand can put them out of place: the worked-out one keeps them in by construction
-    ...(Object.values(fix).some((v) => v !== undefined) ? [
+    // (the buffers' places have a check of their own, pit.ts)
+    ...(Object.entries(fix).some(([k, v]) => v !== undefined && !BUFFER_KEYS.has(k)) ? [
       check('v_place', place >= 0, Math.round(place), 0, 0, 'mm'),
       check('v_doorcar', onCar >= 0, Math.round(onCar), 0, 0, 'mm'),
     ] : []),
@@ -257,7 +260,7 @@ export function layout(I: ShaftInputs): Layout {
     car, carInner, doors, frame, cw: cwRect, cwSide, cwDbg, bridge, rails, checks,
   };
   const head = headCheck(L);
-  L.checks.push(...(head ? [head] : []), ...sectionChecks(L), ...roomChecks(L));
+  L.checks.push(...(head ? [head] : []), ...bufferChecks(L), ...sectionChecks(L), ...roomChecks(L));
   return L;
 }
 

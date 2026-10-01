@@ -236,9 +236,11 @@ export const VOCI_VANO: readonly VoceVano[] = [
     valore: 'ogni quota della pianta (cabina, porte, operatore della porta di cabina, guide, contrappeso) si può fissare a mano al posto di '
       + 'quella proposta; la cabina resta fuori dalle zone di porte, guide e contrappeso, le guide del contrappeso nel loro spazio (laterale: '
       + 'fuori dalle zone delle porte che ha di fronte più il gioco d\'estremità; arcata a zaino: tra i piedi delle guide di cabina meno il gioco '
-      + 'delle staffe) e la luce di ogni porta dentro la cabina; altrimenti «Non conforme»',
+      + 'delle staffe) e la luce di ogni porta dentro la cabina; altrimenti «Non conforme». Anche gli ammortizzatori si possono '
+      + 'spostare: quelli di cabina restano con il piatto sotto la piattaforma e fuori dalla pianta dello spazio di rifugio in fossa '
+      + '(UNI EN 81-20, 5.2.5.8), quello del contrappeso dentro la lunghezza del contrappeso',
     riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
-    verifiche: ['v_place', 'v_doorcar'],
+    verifiche: ['v_place', 'v_doorcar', 'v_buffer'],
   },
   {
     id: 'modello.limiti', gruppo: 'modello_vano', titolo: 'Limiti del modello del vano',

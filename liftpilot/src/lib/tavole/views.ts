@@ -106,16 +106,18 @@ function sectionPreview(L: Layout): ReturnType<typeof cropped> | null {
   }
 }
 
-export type ScreenView = 'plan' | 'head' | SectionKind | 'room-plan' | 'room-section';
+export type ScreenView = 'plan' | 'head' | 'pit-plan' | SectionKind | 'room-plan' | 'room-section';
 
-/** One view for the screens that change the design: the plan at the main floor or at the top floor and in the
- *  headroom (its walls where they stand there), section A-A whole or a detail (the headroom, the car at the main floor,
- *  the pit), the machine room in plan or in section B-B (with a machine); null when it cannot be drawn. */
+/** One view for the screens that change the design: the plan at the main floor, at the top floor and in the headroom
+ *  (its walls where they stand there) or at the lowest floor and in the pit (the buffers and the refuge space), section
+ *  A-A whole or a detail (the headroom, the car at the main floor, the pit), the machine room in plan or in section B-B
+ *  (with a machine); null when it cannot be drawn. */
 export function screenView(L: Layout, v: ScreenView, M: MachineSpec | null): ReturnType<typeof cropped> | null {
   const V = L.inputs.vertical, top = V.floors.length - 1, main = Math.min(V.main, top), area: Box = { x0: 0, y0: 0, x1: 190, y1: 190 };
   try {
     if (v === 'plan') return cropped(planView(L, 'main', main, `piano "${V.floors[main]?.label ?? ''}"`, area));
     if (v === 'head') return cropped(planView(L, 'top', top, 'in Testata', area));
+    if (v === 'pit-plan') return cropped(planView(L, 'pit', 0, `piano "${V.floors[0]?.label ?? ''}" e in Fossa`, area));
     if (v === 'room-plan' || v === 'room-section') {
       const r = M ? roomView(L, M, v === 'room-plan' ? 'plan' : 'section', area) : null;
       return r ? cropped(r) : null;

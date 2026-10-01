@@ -36,6 +36,13 @@ export interface PlanFix {
   /** counterweight: its length in plan and where it starts along the wall it stands by (x at the back, y on a side) */
   cwLen?: number;
   cwPos?: number;
+  /** car buffers (pit.ts): the middle between the outer ones from the left wall, their line from the front wall, and
+   *  between the axes of the outer ones across the car (two or more) */
+  bufX?: number;
+  bufY?: number;
+  bufSpan?: number;
+  /** the counterweight's buffer along the wall the counterweight stands by (x at the back, y on a side) */
+  cwBufPos?: number;
 }
 
 export type PlanKey = keyof PlanFix;
@@ -126,7 +133,7 @@ export type ShaftInputs = {
 
 export type ShaftCheckId =
   | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_door' | 'v_door2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
-  | 'v_place' | 'v_doorcar' | 'v_niche' | 'v_staffa' | 'v_head'
+  | 'v_place' | 'v_doorcar' | 'v_buffer' | 'v_niche' | 'v_staffa' | 'v_head'
   | 'h_refuge' | 'h_clear' | 'h_parapet' | 'h_stand' | 'p_refuge' | 'p_apron' | 'p_screen' | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
   | 'm_beam' | 'm_beamf';
 

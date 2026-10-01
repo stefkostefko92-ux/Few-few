@@ -4,7 +4,7 @@
 // sliding into it, its pad); each moves with the compression the simulation gives. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { bufferType, type BufferType, type Layout } from '@/shaft';
+import { bufferPlan, bufferType, type BufferType, type Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { Batch, P } from './geom';
 import { coil } from './sling';
@@ -78,7 +78,8 @@ export function buildBuffers(L: Layout, S: Section, M: LiftMaterials, carSpots: 
   };
   const carType = bufferType(V, 'car'), cwType = bufferType(V, 'cw');
   for (const [x, y] of carSpots) one(x, y, V.carBufferBase, V.carBufferH, true, carType);
-  one(L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2, V.cwBufferBase, V.cwBufferH, false, cwType);
+  const [wx, wy] = bufferPlan(L).spots.find((s) => s.kind === 'cw')?.c ?? [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
+  one(wx, wy, V.cwBufferBase, V.cwBufferH, false, cwType);
   B.into(g);
   // the buffer's height h runs from its base to its top; a spring fills it but for the cups and pad, a pad squashes
   // from its plate (at most to 10 % of its height, bulging), a plunger slides into its cylinder

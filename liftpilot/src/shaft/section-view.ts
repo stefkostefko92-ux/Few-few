@@ -14,7 +14,8 @@ import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
 import { lampHeights, nichesOf } from './niche';
 import { CAR_PANEL, LANDING_PANEL, carTracks, landingTracks, sillSection, trackPlanes } from './sill';
-import { pitSpace, roofSpaces } from './plan-view';
+import { roofSpaces } from './plan-view';
+import { bufferPlan, pitSpace } from './pit';
 import { RAILS } from './rails';
 import { cwPlateAt, screenOf, section, type Section } from './section';
 import type { Layout, Rail } from './types';
@@ -171,11 +172,11 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
     out.push(box(x0, S.pitFloor + 300, x1, S.pitFloor + screenOf(V), 'hidden'));
   }
 
-  // buffers on their bases, and the space in the pit
+  // buffers on their bases where pit.ts puts them (each row of car buffers, the counterweight's), and the space in the pit
   if (inWin(S.pitFloor)) {
-    const cy = L.car.y + L.car.h / 2;
-    out.push(...buffer(P, cy, S.pitFloor, V.carBufferBase, V.carBufferH, bufferType(V, 'car')));
-    out.push(...buffer(P, c.y + c.h / 2, S.pitFloor, V.cwBufferBase, V.cwBufferH, bufferType(V, 'cw')));
+    const bp = bufferPlan(L), cwAt = bp.spots.find((b) => b.kind === 'cw')?.c[1] ?? c.y + c.h / 2;
+    for (const y of bp.rows) out.push(...buffer(P, y, S.pitFloor, V.carBufferBase, V.carBufferH, bufferType(V, 'car')));
+    out.push(...buffer(P, cwAt, S.pitFloor, V.cwBufferBase, V.cwBufferH, bufferType(V, 'cw')));
     const ps = pitSpace(L), h = KV_VERT.refugeH[V.pitRefuge];
     out.push(...cross(P, ps.y0, S.pitFloor, ps.y1, S.pitFloor + h), { e: 'mark', at: P((ps.y0 + ps.y1) / 2 - 80, S.pitFloor + h / 2), sym: 'square' });
   }

@@ -6,7 +6,7 @@
 // Built in plan and heights from the car floor (millimetres) into the car's batch. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { RAILS, type Layout, type Rail } from '@/shaft';
+import { RAILS, bufferPlan, type Layout, type Rail } from '@/shaft';
 import { P, type Batch } from './geom';
 import type { GovernorSpot } from './governor';
 import type { LiftMaterials } from './materials';
@@ -143,9 +143,11 @@ export function buildSling(L: Layout, M: LiftMaterials, B: Batch, hitch: Hitch |
     B.rod([hitch.x - ax * o, hitch.y - ay * o, zAxle], [hitch.x + ax * o, hitch.y + ay * o, zAxle], 22, M.alu, 16);
   }
 
-  // buffer plates under the car, where the buffers stand
-  const n = Math.max(1, V.carBuffers), yb = f.kind === 'central' ? f.axis : c.y + c.h / 2;
-  const spots = Array.from({ length: n }, (_, i) => [c.x + (c.w * (i + 1)) / (n + 1), yb] as const);
-  for (const [bx, by] of spots) B.box(bx - 90, by - 90, zLow - 12, bx + 90, by + 90, zLow, M.steel);
+  // buffer plates under the car where the buffers stand (pit.ts); one off the safety plank hangs from the platform
+  const spots = bufferPlan(L).spots.filter((b) => b.kind === 'car').map((b) => b.c);
+  for (const [bx, by] of spots) {
+    B.box(bx - 90, by - 90, zLow - 12, bx + 90, by + 90, zLow, M.steel);
+    if (f.kind !== 'central' || Math.abs(by - f.axis) > 85) B.box(bx - 30, by - 30, zLow, bx + 30, by + 30, -V.platform, M.steel);
+  }
   return spots;
 }

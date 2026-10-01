@@ -1,11 +1,14 @@
 // Dimensions of section A-A by view: the whole shaft (pit, travel and the floors' rises, headroom, total height, the
 // counterweight and its run-by), the headroom with the car at the top floor, the car at a floor with its heights (and
-// the linings over the landing doors), the pit with buffers, their strokes and the counterweight's screen. Values are
+// the linings over the landing doors), the pit with buffers, their strokes, where they stand and the counterweight's
+// screen. Values are
 // the real ones even where the travel is drawn compressed; the overtravels of the car are shown as dashed lines with
 // their symbols. Each height says which input its new value changes (edit.ts): a height of the section (v.*), a floor's
 // rise, of the doors, of the linings or of the call stations; a refuge space's height by choosing its type.
 import { chain, edit as E, line, type Edit, type Entity, type Pt } from '../drawing';
 import { bufferType } from './buffers';
+import { cwNiche } from './niche';
+import { bufferPlan } from './pit';
 import { callStationOf } from './callstation';
 import { hasImbotti, marbleHeight } from './imbotti';
 import { KV } from './norme';
@@ -37,6 +40,11 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
   };
   const at = (x: number, pts: number[], text?: (string | null)[], edit?: (Edit | null)[]): void => {
     out.push(chain({ dir: 'y', at: x, ...real(pts, text, edit) }));
+  };
+  // along the section (the plan's y, never drawn shorter), under it
+  let below = 0;
+  const under = (pts: number[], text: (string | null)[], edit: Edit[]): void => {
+    out.push(chain({ dir: 'x', side: 'bottom', row: below++, pts, text, edit }));
   };
   const zf = S.levels[carFloor] ?? 0, roof = zf + V.carOutH, c = L.car, n = V.floors.length;
   // a buffer's stroke: entered, or for a polyurethane pad 90 % of its height (the height takes the change)
@@ -77,7 +85,8 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
     at(c.y + 90, [roof, roof + KV_VERT.refugeH[V.topRefuge]], undefined, [refugePick('v.topRefuge', V.topRefuge)]);
   }
   if (kind === 'pit' || kind === 'full') {
-    const plateCar = -V.frameBelow, low = plateCar - S.moveDown, x = c.y + c.h / 2;
+    const bp = bufferPlan(L), plateCar = -V.frameBelow, low = plateCar - S.moveDown, x = bp.rows[0] ?? c.y + c.h / 2;
+    const cwAt = bp.spots.find((b) => b.kind === 'cw')?.c[1] ?? L.cw.y + L.cw.h / 2;
     // the run-by of the car is set by the height of the buffers' plinths
     side('left', [S.pitFloor, S.pitFloor + V.carBufferBase, S.carBufferTop, ...(kind === 'pit' ? [plateCar, 0] : [])],
       ['{v} Base Ammort.', '{v} Ammort.', ...(kind === 'pit' ? ['{v}', '{v}'] : [])],
@@ -87,8 +96,17 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
       out.push(line(P(c.y - 60, low), P(c.y + c.h + 60, low), 'hidden'), { e: 'mark', at: P(c.y - 170, low), sym: 'overDown' });
       at(x + 130, [S.carBufferTop - S.carStroke, S.carBufferTop], ['Corsa {v}'], [strokeEdit('car')]);
       at(x + 330, [S.pitFloor, S.pitFloor + KV_VERT.refugeH[V.pitRefuge]], undefined, [refugePick('v.pitRefuge', V.pitRefuge)]);
+      // where the buffers stand from the front wall: the car's row(s) (pit.ts); the counterweight's under its middle at the
+      // back (its wall gap moves it, the car keeps its depth), along its wall on a side
+      const D = I.D, q = c.h / 4, [r0, r1] = bp.rows, keep = [{ key: 'plan.B', value: L.B }] as const;
+      if (r1 === undefined) under([0, bp.y, D], ['{v} Ammort. cabina', null], [E('plan.bufY'), E('plan.bufY', D, -1)]);
+      else under([0, r0 ?? bp.y, r1, D], ['{v} Ammort. cabina', null, null], [E('plan.bufY', q), E('plan.B', -2 * I.carWall, 2), E('plan.bufY', D - q, -1)]);
+      const nd = cwNiche(I, L.cwSide)?.depth ?? 0;
+      under([0, cwAt, D], ['{v} Ammort. contrappeso', null], L.cwSide === 'rear'
+        ? [E('cwWallGap', D + nd - I.cwDepth / 2, -1, keep), E('cwWallGap', nd - I.cwDepth / 2, 1, keep)]
+        : [E('plan.cwBufPos'), E('plan.cwBufPos', D, -1)]);
     }
-    const w = L.cw, cx = w.y + w.h / 2;
+    const cx = cwAt;
     // the counterweight's buffer; with the car at the top floor (whole section) the counterweight's run-by over it
     const plate = S.pitFloor + S.cwLow + (S.top - zf);
     side('right', [S.pitFloor, S.pitFloor + V.cwBufferBase, S.cwBufferTop, ...(kind === 'full' ? [plate] : [])], ['{v} Base Ammort.', '{v} Ammort.', ...(kind === 'full' ? ['{v} Extracorsa'] : [])],

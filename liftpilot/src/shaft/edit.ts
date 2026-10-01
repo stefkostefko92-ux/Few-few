@@ -11,6 +11,7 @@ import { DEFAULTS, type Allowance } from './norme';
 import { headOf } from './head';
 import { imbottiOf, marbleHeight, marbleWidth, withImbotti, withMarbleHeight, withMarbleWidth } from './imbotti';
 import { counterweightSide, layout } from './layout';
+import { bufferPlan } from './pit';
 import { PROFILE_NAMES } from './profiles';
 import { RAIL_TYPES } from './rails';
 import { supportOf } from './support';
@@ -21,7 +22,7 @@ import type { VerticalInputs } from './vertical';
 /** The keys of T whose values are plain numbers (set or not). */
 type NumKey<T> = { [K in keyof T]-?: NonNullable<T[K]> extends number ? (number extends NonNullable<T[K]> ? K : never) : never }[keyof T];
 
-export const PLAN_KEYS: readonly PlanKey[] = ['A', 'B', 'carX', 'doorA', 'doorB', 'opLen', 'railY', 'dbg', 'cwLen', 'cwPos'];
+export const PLAN_KEYS: readonly PlanKey[] = ['A', 'B', 'carX', 'doorA', 'doorB', 'opLen', 'railY', 'dbg', 'cwLen', 'cwPos', 'bufX', 'bufY', 'bufSpan', 'cwBufPos'];
 const V_KEYS = ['pit', 'headroom', 'carH', 'carOutH', 'platform', 'opTop', 'frameTop', 'frameBelow', 'parapet', 'carBufferH', 'carBufferStroke',
   'carBufferBase', 'cwH', 'cwBufferH', 'cwBufferStroke', 'cwBufferBase', 'cwRunby', 'cwScreen', 'standW', 'standD'] as const satisfies readonly NumKey<VerticalInputs>[];
 const R_KEYS = ['W', 'D', 'shaftX', 'shaftY', 'H', 'ridge', 'slab', 'doorAt', 'doorW', 'doorH', 'panelAt', 'panelW', 'panelD', 'panelH'] as const satisfies readonly NumKey<RoomInputs>[];
@@ -36,7 +37,7 @@ const PICK_KEYS = ['carRail', 'cwRail', 'v.topRefuge', 'v.pitRefuge', 'sup.profi
 /** Inputs of the calculation a drawing of the machine room shows (applied by the screen that holds them). */
 export const CALC_KEYS = ['calc.h'] as const;
 // the arrangement's distances: they mean something else once the entrances or the counterweight's side change
-const ARRANGEMENT: readonly PlanKey[] = ['doorB', 'railY', 'dbg', 'cwLen', 'cwPos'];
+const ARRANGEMENT: readonly PlanKey[] = ['doorB', 'railY', 'dbg', 'cwLen', 'cwPos', 'cwBufPos'];
 // a door's place along its wall and its operator: kept when the shaft changes size while the door still opens on the car
 const DOORS: readonly PlanKey[] = ['doorA', 'doorB', 'opLen'];
 
@@ -180,6 +181,12 @@ export function planValues(L: Layout): Partial<Record<PlanKey, number>> {
   };
   if (d1) out.doorB = d1.u0;
   if (L.frame.kind === 'cantilever') out.dbg = L.frame.dbg;
+  // where the buffers stand (pit.ts)
+  const bp = bufferPlan(L);
+  out.bufX = bp.x;
+  out.bufY = bp.y;
+  if (bp.span !== null) out.bufSpan = bp.span;
+  out.cwBufPos = bp.cwPos;
   return out;
 }
 
