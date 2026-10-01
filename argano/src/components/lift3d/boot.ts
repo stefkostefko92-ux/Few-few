@@ -1,7 +1,8 @@
 // Boots the 3D installation, on the landing page's pipeline (src/components/machine/boot.ts): WebGPU on a hardware
-// adapter, else WebGL 2; scene (HDR + velocity MRT) → GTAO on the high tier → TRAA → grade. An orbit camera with four
-// views (car, whole shaft, machine, pit); the car view follows the car. The simulation's clock gives the state of
-// every frame; frames are drawn only while something moves. Everything freed on dispose. Loaded lazily by LiftStage.tsx.
+// adapter, else WebGL 2, never on a software rasteriser; scene (HDR + velocity MRT) → GTAO on the high tier → TRAA →
+// grade. An orbit camera with four views (car, whole shaft, machine, pit); the car view follows the car. The
+// simulation's clock gives the state of every frame; frames are drawn only while something moves. Every part's
+// pipeline is compiled before the first frame. Everything freed on dispose. Loaded lazily by LiftStage.tsx.
 import * as THREE from 'three/webgpu';
 import { pass, mrt, output, velocity, normalView, packNormalToRGB, unpackRGBToNormal, sample, screenUV, vec4, convertToTexture } from 'three/tsl';
 import { traa } from 'three/addons/tsl/display/TRAANode.js';
@@ -10,7 +11,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { LiftDerived } from '@/lib/lift';
 import type { SimClock } from '../lift/clock';
 import { grade, gradeUniforms } from '../machine/grade';
-import { acceptIdentitySwizzle, hardwareWebGPU, resolvedTexture } from '../machine/gpu';
+import { acceptIdentitySwizzle, hardwareWebGPU, resolvedTexture, softwareRenderer } from '../machine/gpu';
 import { createGovernor, initialQuality } from '../machine/quality';
 import { buildLiftWorld, LIFT_FOV, type LiftWorld } from './world';
 
@@ -61,7 +62,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
   } catch {
     return null;
   }
-  if (opts.signal.aborted) {
+  if (opts.signal.aborted || softwareRenderer(renderer.getContext())) {
     renderer.dispose();
     return null;
   }
@@ -233,7 +234,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
   }
 
   try {
-    await renderer.compileAsync(stage.world.scene, camera);
+    await stage.world.compile(camera);
   } catch {
     dispose();
     return null;
@@ -260,7 +261,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
       const st = build(next);
       if (!st) return;
       try {
-        await renderer.compileAsync(st.world.scene, camera);
+        await st.world.compile(camera);
       } catch {
         release(st);
         return;

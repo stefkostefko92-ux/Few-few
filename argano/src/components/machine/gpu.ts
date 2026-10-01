@@ -38,6 +38,20 @@ export async function hardwareWebGPU(): Promise<boolean> {
   }
 }
 
+// A software rasteriser (SwiftShader, llvmpipe, the Basic Render Driver) draws the installation at a frame a second or
+// slower and holds the page up while it does: the installation's stage falls back to the charts at once. Chrome masks
+// the renderer's name behind WEBGL_debug_renderer_info; Firefox gives it as RENDERER (and warns on that extension).
+const SOFTWARE = /swiftshader|llvmpipe|softpipe|software|basic render/i;
+export function softwareRenderer(context: unknown): boolean {
+  if (!(context instanceof WebGL2RenderingContext)) return false;
+  const plain: unknown = context.getParameter(context.RENDERER);
+  if (typeof plain === 'string' && SOFTWARE.test(plain)) return true;
+  if (typeof plain === 'string' && !/webkit|mozilla/i.test(plain)) return false;
+  const info = context.getExtension('WEBGL_debug_renderer_info');
+  const name: unknown = info ? context.getParameter(info.UNMASKED_RENDERER_WEBGL) : null;
+  return typeof name === 'string' && SOFTWARE.test(name);
+}
+
 // @types/three 0.186 leaves out TRAANode.getTextureNode(), which three 0.186 has (TRAANode.js): the resolved frame.
 export function resolvedTexture(node: object): THREE.TextureNode {
   const get: unknown = Reflect.get(node, 'getTextureNode');

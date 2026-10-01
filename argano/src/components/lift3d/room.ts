@@ -1,14 +1,15 @@
-// The machine and its room: the room above the shaft (walls with the door, roof, control panel, lamp) or, with the
-// machine below, a room past the wall behind the counterweight; the geared machine of the landing page scaled to
-// the sheave of the calculation and turned onto the rope plane; the diverting and top pulleys, and the car and
-// counterweight pulleys of a 2:1 roping. Loaded only through boot.ts (lazy).
+// The machine and its room: the room above the shaft (walls with the door, roof, the controller cabinet, the main
+// switch by the door, the lifting hook over the machine, the lamp) or, with the machine below, a room past the wall
+// behind the counterweight; the geared machine of the landing page scaled to the sheave of the calculation and
+// turned onto the rope plane; the diverting and top pulleys, and the car and counterweight pulleys of a 2:1 roping.
+// Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { Layout } from '@/shaft';
 import type { RopeRig } from '@/lib/lift';
 import { buildMachine, DIM, ROPE_LENGTH } from '../machine/parts';
 import { createMaterials, type MachineMaterials } from '../machine/materials';
-import { box, onWall } from './geom';
+import { Batch, box, onWall } from './geom';
 import { SIDES, type LiftMaterials, type Side } from './materials';
 
 const WALL = 250;
@@ -65,9 +66,29 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
       } else piece(a0, a1, z0, z0 + H);
     }
     roof.add(box(x0 - WALL, y0 - WALL, z0 + H, x0 + Wr + WALL, y0 + Dr + WALL, z0 + H + 200, M.roof));
-    // control panel against its wall, and the lamp
-    const [p0, p1] = [onWall(R.panelWall, Wr, Dr, R.panelAt, 0), onWall(R.panelWall, Wr, Dr, R.panelAt + R.panelW, R.panelD)];
-    common.add(box(p0[0] + x0, p0[1] + y0, z0, p1[0] + x0, p1[1] + y0, z0 + R.panelH, M.panel));
+    // a box against a wall of the room: u along it, v out from it, z over the floor
+    const B = new Batch();
+    const fix = (wall: Side, u0: number, u1: number, v0: number, v1: number, za: number, zb: number, m: THREE.Material): void => {
+      const [p, q] = [onWall(wall, Wr, Dr, u0, v0), onWall(wall, Wr, Dr, u1, v1)];
+      B.box(p[0] + x0, p[1] + y0, z0 + za, q[0] + x0, q[1] + y0, z0 + zb, m);
+    };
+    // the controller cabinet: two doors with their handles, the display and the lamps of its state, the louvres
+    const pw = R.panelWall, a = R.panelAt, w = R.panelW, dp = R.panelD, h = R.panelH;
+    fix(pw, a, a + w, 0, dp, 0, h, M.panel);
+    fix(pw, a + w / 2 - 2, a + w / 2 + 2, dp, dp + 1, 40, h - 40, M.glass);
+    for (const u of [a + w / 2 - 40, a + w / 2 + 28]) fix(pw, u, u + 12, dp, dp + 22, h / 2 - 90, h / 2 + 90, M.chrome);
+    fix(pw, a + 60, a + 200, dp, dp + 2, h - 300, h - 210, M.glass);
+    for (const [k, m] of [[0, M.led], [1, M.carLight], [2, M.red]] as const) fix(pw, a + 240 + k * 40, a + 260 + k * 40, dp, dp + 4, h - 265, h - 245, m);
+    for (let k = 0; k < 5; k++) fix(pw, a + w / 2 + 60, a + w - 60, dp, dp + 3, 120 + k * 36, 132 + k * 36, M.glass);
+    // the main switch by the door, its handle
+    const dw = R.doorWall, sw = R.doorAt > 400 ? R.doorAt - 300 : R.doorAt + R.doorW + 100;
+    fix(dw, sw, sw + 200, 0, 130, 1450, 1750, M.panel);
+    fix(dw, sw + 70, sw + 130, 130, 145, 1560, 1640, M.base);
+    fix(dw, sw + 92, sw + 108, 145, 175, 1540, 1660, M.red);
+    // the lamp under the roof
+    fix('front', Wr / 2 - 300, Wr / 2 + 300, Dr / 2 - 60, Dr / 2 + 60, H - 70, H, M.galv);
+    fix('front', Wr / 2 - 280, Wr / 2 + 280, Dr / 2 - 45, Dr / 2 + 45, H - 74, H - 70, M.carLight);
+    B.into(common);
     const lamp = new THREE.PointLight(0xfff2de, 2.2, 7, 2);
     lamp.position.set((x0 + Wr / 2) / 1000, (z0 + H - 150) / 1000, -(y0 + Dr / 2) / 1000);
     common.add(lamp);
@@ -92,6 +113,14 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   const local = new THREE.Vector3(0, DIM.yWheel * s, DIM.zSheave * s).applyEuler(machine.group.rotation);
   machine.group.position.copy(centre).sub(local);
   common.add(machine.group);
+  // the lifting hook over the machine, on its plate under the roof of the room above
+  if (!rig.bottom && R) {
+    const top = (z0 + R.H) / 1000, hook = new Batch(), hx = centre.x * 1000, hy = -centre.z * 1000;
+    hook.box(hx - 110, hy - 110, z0 + R.H - 14, hx + 110, hy + 110, z0 + R.H, M.galv);
+    hook.rod([hx, hy, z0 + R.H - 14], [hx, hy, z0 + R.H - 90], 14, M.steel, 12);
+    hook.add(new THREE.TorusGeometry(0.045, 0.012, 10, 24).translate(centre.x, top - 0.135, centre.z), M.steel);
+    hook.into(common);
+  }
 
   // pulleys: diverting and top ones fixed; car and counterweight pulleys of a 2:1 roping follow them
   const width = n * Math.max(d + 6, 1.7 * d) / 1000 + 0.03;

@@ -1,13 +1,14 @@
 // The shaft built from its design: the four walls with the landing door openings at the floors each entrance
-// serves, the landing doors (frame and panels, telescopic or centre opening), the landings outside, the pit floor,
-// the slab over the shaft with the rope opening and a label at each floor. Plan and heights in millimetres
-// (geom.ts turns them into metres). Loaded only through boot.ts (lazy).
+// serves, the landing doors (stainless portal and panels, telescopic or centre opening; on the shaft side the header
+// with its track and lock, the aluminium sill on its bracket), the landings outside with the call button, the pit
+// floor, the slab over the shaft with the rope opening and a label at each floor. Plan and heights in millimetres
+// (geom.ts turns them into metres); static parts merged by material. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { DoorLayout, Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { KV } from '@/shaft/norme';
-import { P, box, wallBox } from './geom';
+import { Batch, P, wallBox } from './geom';
 import { SIDES, type LiftMaterials, type Side } from './materials';
 
 const LANDING = 1200;
@@ -91,7 +92,7 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, holes: reado
   const I = L.inputs, V = I.vertical, W = I.W, D = I.D, wall = I.wall;
   const zBot = S.pitFloor, zTop = S.ceiling;
   const sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
-  const common = new THREE.Group();
+  const common = new THREE.Group(), C = new Batch(), byside: Record<Side, Batch> = { front: new Batch(), rear: new Batch(), left: new Batch(), right: new Batch() };
   const landings: { floor: number; panels: DoorPanels }[] = [];
 
   // openings per wall: the clear opening with its jambs, from the floor to the head of the door
@@ -103,10 +104,10 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, holes: reado
   });
   for (const side of SIDES) {
     const along = side === 'front' || side === 'rear';
-    const a0 = along ? -wall : 0, a1 = along ? W + wall : D, mat = M.walls[side], g = sides[side];
+    const a0 = along ? -wall : 0, a1 = along ? W + wall : D, mat = M.walls[side], g = byside[side];
     const ops = openings[side].slice().sort((p, q) => p.z0 - q.z0);
     const piece = (u0: number, u1: number, z0: number, z1: number): void => {
-      if (u1 - u0 > 1 && z1 - z0 > 1) g.add(wallBox(side, W, D, u0, u1, -wall, 0, z0, z1, mat));
+      if (u1 - u0 > 1 && z1 - z0 > 1) g.wallBox(side, W, D, u0, u1, -wall, 0, z0, z1, mat);
     };
     if (!ops.length) piece(a0, a1, zBot, zTop);
     else {
@@ -119,22 +120,34 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, holes: reado
     }
   }
 
-  // landing doors: frame on the wall, panels on the shaft side of the wall; the landing floor outside
+  // landing doors: the portal through the wall, the panels on the shaft side of the wall; the landing floor outside
   V.floors.forEach((f, i) => {
     const z = S.levels[i];
     for (const d of doorsOf(L, f.door)) {
-      const g = sides[d.wall], len = d.wall === 'front' || d.wall === 'rear' ? W : D;
-      g.add(wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30, 10, z, z + d.height + 60, M.frame));
-      g.add(wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30, 10, z, z + d.height + 60, M.frame));
-      g.add(wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30, 10, z + d.height, z + d.height + 60, M.frame));
-      // the header of the door over the stack, on the shaft side
-      g.add(wallBox(d.wall, W, D, Math.min(d.frame0, d.u0), Math.max(d.frame1, d.u1), 0, I.landingDepth, z + d.height, z + d.height + 180, M.frame));
+      const g = byside[d.wall], frame = M.landing[d.wall], len = d.wall === 'front' || d.wall === 'rear' ? W : D, zh = z + d.height;
+      g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30, 10, z, zh + 60, frame);
+      g.wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30, 10, z, zh + 60, frame);
+      g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30, 10, zh, zh + 60, frame);
+      // call button by the portal, on the landing
+      const cb = d.u1 + KV.doorPortal + 110 < len ? d.u1 + KV.doorPortal + 60 : d.u0 - KV.doorPortal - 120;
+      g.wallBox(d.wall, W, D, cb, cb + 60, -wall - 6, -wall, z + 1040, z + 1220, frame);
+      g.wallBox(d.wall, W, D, cb + 15, cb + 45, -wall - 11, -wall - 6, z + 1100, z + 1130, frame);
+      // on the shaft side the header over the stack: back plate and cover, the track, the lock at the closing edge
+      const h0 = Math.min(d.frame0, d.u0), h1 = Math.max(d.frame1, d.u1);
+      C.wallBox(d.wall, W, D, h0, h1, 0, 4, zh + 10, zh + 200, M.galv);
+      C.wallBox(d.wall, W, D, h0, h1, 0, I.landingDepth, zh + 192, zh + 200, M.galv);
+      C.wallBox(d.wall, W, D, h0 + 20, h1 - 20, 8, I.landingDepth - 6, zh + 70, zh + 96, M.alu);
+      const lock = d.kind === 'C2' ? (d.u0 + d.u1) / 2 - 75 : d.stack === 'low' ? d.u1 - 140 : d.u0 - 10;
+      C.wallBox(d.wall, W, D, lock, lock + 150, 4, 52, zh + 18, zh + 112, M.frame);
       const panels = doorPanels(d.wall, W, D, d, z, 12, 44, 26, M.landing[d.wall]);
-      g.add(panels.group);
+      sides[d.wall].add(panels.group);
       landings.push({ floor: i, panels });
-      // sill and landing
-      common.add(wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, -wall, I.landingDepth, z - 30, z, M.frame));
-      g.add(wallBox(d.wall, W, D, -wall - 400, len + wall + 400, -wall - LANDING, -wall, z - SLAB, z, M.floors[d.wall]));
+      // aluminium sill with the grooves of the panels' tracks, on its bracket; the landing
+      C.wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, -wall, I.landingDepth, z - 30, z, M.alu);
+      for (const tr of d.kind === 'C2' ? [12] : [12, 44]) C.wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, tr + 7, tr + 19, z, z + 0.6, M.glass);
+      C.wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, 0, 5, z - 170, z - 30, M.galv);
+      C.wallBox(d.wall, W, D, d.u0 - 40, d.u1 + 40, 0, I.landingDepth - 4, z - 36, z - 30, M.galv);
+      g.wallBox(d.wall, W, D, -wall - 400, len + wall + 400, -wall - LANDING, -wall, z - SLAB, z, M.floors[d.wall]);
       const tag = label(f.label);
       const [lx, ly] = d.wall === 'front' ? [d.u0 - 320, -wall - 60] : d.wall === 'rear' ? [d.u1 + 320, D + wall + 60] : d.wall === 'left' ? [-wall - 60, d.u1 + 320] : [W + wall + 60, d.u0 - 320];
       tag.position.copy(P(lx, ly, z + d.height - 250));
@@ -143,17 +156,19 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, holes: reado
   });
 
   // pit floor and the slab over the shaft with the opening for the ropes
-  common.add(box(-wall, -wall, zBot - 300, W + wall, D + wall, zBot, M.pit));
+  C.box(-wall, -wall, zBot - 300, W + wall, D + wall, zBot, M.pit);
   const R = I.room, slab = R ? R.slab : 250;
   const [hx0, hy0, hx1, hy1] = holes;
   const sx0 = R ? -R.shaftX : -wall, sy0 = R ? -R.shaftY : -wall, sx1 = R ? R.W - R.shaftX : W + wall, sy1 = R ? R.D - R.shaftY : D + wall;
   const slabPiece = (x0: number, y0: number, x1: number, y1: number): void => {
-    if (x1 - x0 > 1 && y1 - y0 > 1) common.add(box(x0, y0, zTop, x1, y1, zTop + slab, M.slab));
+    if (x1 - x0 > 1 && y1 - y0 > 1) C.box(x0, y0, zTop, x1, y1, zTop + slab, M.slab);
   };
   slabPiece(sx0, sy0, hx0, sy1);
   slabPiece(hx1, sy0, sx1, sy1);
   slabPiece(hx0, sy0, hx1, hy0);
   slabPiece(hx0, hy1, hx1, sy1);
+  C.into(common);
+  for (const side of SIDES) byside[side].into(sides[side]);
 
   return {
     sides, common,

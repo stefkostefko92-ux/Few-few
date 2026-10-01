@@ -1,7 +1,7 @@
 // The ropes of the installation in 3D: n ropes side by side along the sheave's axis, over the wheels of the rope rig
 // (src/lib/lift/rig.ts). The straight runs follow the car and the counterweight every frame (unit tubes, scaled);
 // the arcs on the wheels are built once and ride with a moving wheel (the car and counterweight pulleys of a 2:1
-// roping). Loaded only through boot.ts (lazy).
+// roping); the ends of a 1:1 roping fan out to the sockets of their hitches. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { belt, type Belt, type RopeRig } from '@/lib/lift';
@@ -14,16 +14,27 @@ export interface RopeModel {
 }
 
 const Y = new THREE.Vector3(0, 1, 0);
+// the sockets of a 1:1 hitch sit wider apart than the ropes run: across the rope plane and staggered along it [m]
+const HITCH_PITCH = 0.05, HITCH_STAGGER = 0.022;
 
-export function buildRopes(rig: RopeRig, n: number, d: number, M: LiftMaterials): RopeModel {
+/** Plan positions [mm] of the rope ends on a 1:1 hitch at u [m] along the drop line (car 0, counterweight calata). */
+export function hitchSpots(rig: RopeRig, n: number, u: number): (readonly [number, number])[] {
+  const [ox, oy] = rig.origin, [dx, dy] = rig.dir;
+  return Array.from({ length: n }, (_, i) => {
+    const off = (i - (n - 1) / 2) * HITCH_PITCH * 1000, along = (u + (i % 2 ? HITCH_STAGGER : -HITCH_STAGGER)) * 1000;
+    return [ox + along * dx - off * dy, oy + along * dy + off * dx] as const;
+  });
+}
+
+export function buildRopes(rig: RopeRig, n: number, d: number, M: LiftMaterials, hitched: boolean): RopeModel {
   const group = new THREE.Group(), rr = d / 2000, pitch = Math.max(d + 6, 1.7 * d) / 1000;
   // one unit tube per world, shared by its straight runs: disposed with the world (never shared across worlds)
   const unit = new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)), 1, 1, 10);
   const [ox, oy] = rig.origin, [dx, dy] = rig.dir;
-  // a point of the rope plane (u, y) for rope i, in world metres; the ropes spread across the plane
-  const world = (u: number, y: number, i: number, out = new THREE.Vector3()): THREE.Vector3 => {
-    const off = (i - (n - 1) / 2) * pitch;
-    const px = ox / 1000 + u * dx - off * dy, py = oy / 1000 + u * dy + off * dx;
+  // a point of the rope plane (u, y) for rope i, in world metres; the ropes spread across the plane, wider at a hitch
+  const world = (u: number, y: number, i: number, out = new THREE.Vector3(), atHitch = false): THREE.Vector3 => {
+    const off = (i - (n - 1) / 2) * (atHitch ? HITCH_PITCH : pitch), du = atHitch ? (i % 2 ? HITCH_STAGGER : -HITCH_STAGGER) : 0;
+    const px = ox / 1000 + (u + du) * dx - off * dy, py = oy / 1000 + (u + du) * dy + off * dx;
     return out.set(px, y, -py);
   };
   const sheaveAt = rig.elements(0, 0).findIndex((e) => e.kind === 'wheel' && Math.abs(e.u - rig.sheave.u) < 1e-9 && Math.abs(e.y - rig.sheave.y) < 1e-9);
@@ -57,8 +68,9 @@ export function buildRopes(rig: RopeRig, n: number, d: number, M: LiftMaterials)
       const els = rig.elements(s, w), bl = belt(els);
       bl.runs.forEach(([p0, p1], j) => {
         for (let i = 0; i < n; i++) {
-          world(p0[0], p0[1], i, a);
-          world(p1[0], p1[1], i, b);
+          // a 1:1 roping ends on the hitches of the car (first run) and of the counterweight (last run)
+          world(p0[0], p0[1], i, a, hitched && j === 0);
+          world(p1[0], p1[1], i, b, hitched && j === bl.runs.length - 1);
           const m = runMeshes[j]?.[i];
           if (!m) continue;
           const len = a.distanceTo(b);
