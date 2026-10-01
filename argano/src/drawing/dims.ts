@@ -6,7 +6,7 @@ import { textWidth } from './metrics';
 import type { Chain } from './model';
 import { STYLES, TEXT } from './style';
 import { arrowhead } from './symbols';
-import type { Box, Shape } from './types';
+import type { Box, Shape, TextShape } from './types';
 
 /** Paper distances [mm]: first row from the drawing, between rows, extension overshoot and gap, arrow, text. */
 export const DIM = { first: 7, row: 6.2, over: 1.4, gap: 1, arrow: 2.1, textGap: 0.8, stagger: 2.9, minText: 1.8 } as const;
@@ -16,7 +16,8 @@ export const rowOffset = (row: number): number => DIM.first + row * DIM.row;
 
 const fmt = (v: number): string => String(Math.round(v));
 
-export function chainShapes(c: Chain, place: Place, edges: Box): Shape[] {
+/** `onText`: told of the lettering of each segment, its index and its value (the screens make it editable). */
+export function chainShapes(c: Chain, place: Place, edges: Box, onText?: (s: TextShape, i: number, value: number) => void): Shape[] {
   const out: Shape[] = [], horiz = c.dir === 'x';
   if (c.pts.length < 2) return out;
   const along = c.pts.map((v) => (horiz ? toPaper(place, [v, 0])[0] : toPaper(place, [0, v])[1]));
@@ -78,7 +79,9 @@ export function chainShapes(c: Chain, place: Place, edges: Box): Shape[] {
     } else {
       at = P(mid, line + off + (horiz ? DIM.stagger : -DIM.stagger));
     }
-    out.push({ t: 'text', at, text, size: ts, angle: rot, align, cond: true, halo });
+    const shape: TextShape = { t: 'text', at, text, size: ts, angle: rot, align, cond: true, halo };
+    out.push(shape);
+    onText?.(shape, i, value);
   }
   return out;
 }

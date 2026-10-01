@@ -2,7 +2,7 @@
 // governor, the control panel with its free area, the main switch) and section B-B along the rope drops (floor slab
 // with the shaft under it, walls and roof, the machine: sheave, gearbox, motor, brake, handwheel, diverting pulley).
 // The machine is schematic, sized on its sheave. Model entities for the drawing kernel; dimensions included.
-import { chain, circle, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
+import { chain, circle, edit as E, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
 import type { MachineSpec, RoomGeo } from './machine-room';
 import type { Layout } from './types';
 
@@ -60,10 +60,11 @@ export function roomPlanEntities(L: Layout, M: MachineSpec, G: RoomGeo): { entit
   out.push(path(sw, true, 'outline', 'paper'), { e: 'text', at: [mid(sw)[0] + inward[0] * 260, mid(sw)[1] + inward[1] * 260 - 30], text: 'INTERRUTTORE GENERALE', size: 1.5, align: 'c' });
   // dimensions: room, door, bedframe, rope drops
   const dimSide = R.doorWall === 'front' ? 'bottom' : R.doorWall === 'rear' ? 'top' : R.doorWall;
-  out.push(chain({ dir: 'x', pts: [0, R.W], side: dimSide === 'top' ? 'bottom' : 'top', row: 0 }));
-  out.push(chain({ dir: 'y', pts: [0, R.D], side: dimSide === 'right' ? 'left' : 'right', row: 0 }));
-  if (dimSide === 'top' || dimSide === 'bottom') out.push(chain({ dir: 'x', pts: [0, d0, d1, R.W], side: dimSide, row: 0, text: [null, `Porta ${R.doorW}x H. ${R.doorH}`, null] }));
-  else out.push(chain({ dir: 'y', pts: [0, d0, d1, R.D], side: dimSide, row: 0, text: [null, `Porta ${R.doorW}x H. ${R.doorH}`, null] }));
+  out.push(chain({ dir: 'x', pts: [0, R.W], side: dimSide === 'top' ? 'bottom' : 'top', row: 0, edit: [E('room.W')] }));
+  out.push(chain({ dir: 'y', pts: [0, R.D], side: dimSide === 'right' ? 'left' : 'right', row: 0, edit: [E('room.D')] }));
+  const across = dimSide === 'top' || dimSide === 'bottom', wallLen = across ? R.W : R.D;
+  out.push(chain({ dir: across ? 'x' : 'y', pts: [0, d0, d1, wallLen], side: dimSide, row: 0, text: [null, `Porta ${R.doorW}x H. ${R.doorH}`, null],
+    edit: [E('room.doorAt'), E('room.doorW'), E('room.doorAt', wallLen - R.doorW, -1)] }));
   // bedframe and rope drops dimensioned on the side away from the gearbox and the motor
   const [a, b] = [onDrop(G, G.frame0, -G.frameW / 2 - 120), onDrop(G, G.frame1, -G.frameW / 2 - 120)], drop = onDrop(G, 0, -G.frameW / 2 - 320);
   if (Math.abs(G.ux) > Math.abs(G.uy)) {
@@ -125,8 +126,8 @@ export function roomSectionEntities(L: Layout, M: MachineSpec, G: RoomGeo): { en
   out.push(line([0, zs], [0, -R.slab - below], 'thin'), line([G.calata, M.Dp > 0 ? zp : zs], [G.calata, -R.slab - below], 'thin'));
   if (M.Dp > 0) out.push(line([G.sheaveAt + (D / 2) * 0.2, zs - (D / 2) * 0.98], [G.pulleyAt - (M.Dp / 2) * 0.2, zp + (M.Dp / 2) * 0.98], 'thin'));
   // dimensions and references
-  out.push(chain({ dir: 'y', pts: [0, top], side: 'left', row: 0 }));
-  if (ridge > top) out.push(chain({ dir: 'y', pts: [0, ridge], side: 'left', row: 1 }));
+  out.push(chain({ dir: 'y', pts: [0, top], side: 'left', row: 0, edit: [E('room.H')] }));
+  if (ridge > top) out.push(chain({ dir: 'y', pts: [0, ridge], side: 'left', row: 1, edit: [E('room.ridge')] }));
   out.push(chain({ dir: 'y', pts: [0, zs], at: G.frame0 - 120 }));
   out.push(chain({ dir: 'x', pts: [G.frame0, G.frame1], side: 'top', row: 0, text: ['{v} Telaio'] }));
   out.push(chain({ dir: 'x', pts: [0, G.calata], at: -R.slab - below + 160, text: ['{v} Calata Funi (Rif.)'] }));

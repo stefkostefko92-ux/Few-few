@@ -76,7 +76,9 @@ export function ropeRig(dv: LiftDerived): RopeRig {
       mid.push({ kind: 'wheel', u: pulley.u, y: pulley.y, r: R1, cw: !rev });
     }
   } else {
-    const yTop = ceiling - Rp - 0.12, ug = wallAt - 0.04, yM = (KL.sheaveAxisPerD * N.D) / 1000;
+    // the two runs down to the machine in the gap between the counterweight's back and the wall, clear of both
+    const cwBack = cm + L.inputs.cwDepth / 2000, gap = Math.max(0, wallAt - cwBack);
+    const yTop = ceiling - Rp - 0.12, ug = wallAt - 0.3 * gap, ug2 = wallAt - 0.7 * gap, yM = (KL.sheaveAxisPerD * N.D) / 1000;
     const wall = L.inputs.wall / 1000;
     sheave = { role: 'sheave', u: wallAt + wall + 0.35 + R0, y: yM, r: R0 };
     const A: Wheel = { role: 'top', u: u0 + Rp, y: yTop, r: Rp }, B: Wheel = { role: 'top', u: u1 + Rp, y: yTop, r: Rp };
@@ -85,7 +87,7 @@ export function ropeRig(dv: LiftDerived): RopeRig {
       { kind: 'wheel', u: A.u, y: A.y, r: Rp, cw: true },
       { kind: 'pt', u: ug, y: yTop + Rp }, { kind: 'pt', u: ug, y: yM + R0 },
       { kind: 'wheel', u: sheave.u, y: sheave.y, r: R0, cw: true },
-      { kind: 'pt', u: ug - 0.05, y: yM - R0 }, { kind: 'pt', u: ug - 0.05, y: yTop + Rp - 0.05 },
+      { kind: 'pt', u: ug2, y: yM - R0 }, { kind: 'pt', u: ug2, y: yTop + Rp - 0.05 },
       { kind: 'wheel', u: B.u, y: B.y, r: Rp, cw: false },
     ];
   }

@@ -6,7 +6,7 @@ import { COSTANTI_VERT, DEFAULTS, KV, KV_VERT, VOCI_VANO, VOCI_VERT, vociOfDesig
 import type { Access, CostanteVano, CostanteVert, ShaftCheckId } from '../index';
 
 const CHECKS: readonly ShaftCheckId[] = [
-  'v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_door2', 'v_op', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen',
+  'v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_door2', 'v_op', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen', 'v_place', 'v_doorcar',
   'h_refuge', 'h_clear', 'h_parapet', 'p_refuge', 'p_apron', 'b_runby', 'b_car', 'b_cw', 'm_height', 'm_panel', 'm_door',
 ];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
@@ -45,8 +45,9 @@ test('i testi riportano i numeri usati', () => {
   assert.ok(voce('porte.ingombro').valore.includes(`${KV.doorStackC2}·L + ${KV.doorFrame} mm`));
   assert.ok(voce('porte.cabina').valore.includes(`+ ${KV.carDoorMargin} mm`) && voce('porte.cabina').valore.includes(`≥ ${KV.carMinDepth} mm`));
   for (const t of [`da ${KV.cwMinLength} a ${KV.cwMaxLength} mm`, `pattini ${KV.cwShoe} mm`, `a ${KV.cwEndGap} mm`]) assert.ok(voce('ingombri.contrappeso.laterale').valore.includes(t), t);
-  for (const t of [`a ${KV.cantRailEnd} mm`, `a ${KV.cantCwGap} mm`]) assert.ok(voce('ingombri.arcata.zaino').valore.includes(t), t);
-  for (const t of [`${KV.doorPortal} mm`, `${KV.doorOpFactor}·L + ${KV.doorOpExtra} mm`, `profondo ${KV.doorOpDepth} mm`]) assert.ok(voce('porte.operatore').valore.includes(t), t);
+  for (const t of [`a ${KV.cantRailEnd} mm`, `a ${KV.cantCwGap} mm`, `a ${KV.cantClipGap} mm dalle bride`]) assert.ok(voce('ingombri.arcata.zaino').valore.includes(t), t);
+  for (const t of [`${KV.doorPortal} mm`, `${it(KV.doorOpT2[0])}·L + ${KV.doorOpT2[1]} mm`, `${KV.doorOpC2[0]}·L + ${KV.doorOpC2[1]} mm`, `${KV.doorOpClose} mm oltre la luce`,
+    `profondo ${KV.doorOpDepth} mm`]) assert.ok(voce('porte.operatore').valore.includes(t), t);
   assert.ok(voce('modello.passo').valore.includes(`${KV.sizeStep} mm`));
   const typical = voce('ingombri.tipici').valore;
   for (const v of Object.values(DEFAULTS)) assert.ok(typical.includes(`${v} mm`), `${v} mm`);

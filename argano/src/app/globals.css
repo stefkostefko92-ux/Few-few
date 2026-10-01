@@ -4,6 +4,7 @@
 @import './tables.css';
 @import './landing.css';
 @import './shaft.css';
+@import './edit.css';
 @import './lift.css';
 
 @tailwind base;

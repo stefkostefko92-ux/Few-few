@@ -4,7 +4,7 @@
 // its dimensions; the count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
 import {
   A4, COND, PALETTE, concreteTile, drawingArea, frame, sheetTitle, strip, toPaper,
-  type Box, type DrawingDoc, type Page, type Place, type Pt, type Shape, type SheetMeta,
+  type Box, type DrawingDoc, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
 } from '@/drawing';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import type { PlanLevel } from '@/shaft/plan-view';
@@ -30,6 +30,8 @@ export interface TavoleResult {
   warnings: Mismatch[];
   /** title and scale of each sheet */
   sheets: { title: string; scale: number | null }[];
+  /** the dimensions of each sheet the screens let change (not part of the document) */
+  hits: Hit[][];
 }
 
 const LEGEND_W = 34;
@@ -63,6 +65,7 @@ const inset = (b: Box, l: number, r: number, bottom: number, top: number): Box =
 interface Drawn {
   shapes: Shape[];
   scale: number;
+  hits: Hit[];
 }
 
 function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box): Drawn {
@@ -71,7 +74,7 @@ function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box): Drawn
   const { r, place } = planView(L, s.level, s.floor, s.total, inset(area, side('left'), side('right'), lg.height + 7, 6));
   const px = toPaper(place, [L.car.x + L.car.w / 2, 0])[0];
   const marks = sectionMarks([px, r.extent.y1 + 3.5], [px, r.extent.y0 - 3.5], 'left', 'A');
-  return { shapes: [...r.shapes, ...sideLabels(L, r.extent), ...marks, ...lg.shapes], scale: place.scale };
+  return { shapes: [...r.shapes, ...sideLabels(L, r.extent), ...marks, ...lg.shapes], scale: place.scale, hits: r.hits };
 }
 
 function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box): Drawn {
@@ -79,7 +82,7 @@ function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box):
   const full = s.kind === 'full', lg = full ? { shapes: legendColumn(s.legend, area, LEGEND_W), height: 0 } : legendRow(s.legend, area);
   const view = full ? inset(area, LEGEND_W + 4, 0, 0, 0) : inset(area, 0, 0, lg.height + (lg.height ? 4 : 0), 0);
   const { r, place } = sectionView(L, s.kind, s.floor, view);
-  return { shapes: [...r.shapes, ...lg.shapes], scale: place.scale };
+  return { shapes: [...r.shapes, ...lg.shapes], scale: place.scale, hits: r.hits };
 }
 
 /** Section line B-B on the room plan: along the rope drops, beyond the drawing at both ends, looking across them. */
@@ -104,7 +107,7 @@ function roomMarks(G: RoomGeo, p: Place, edges: Box): Shape[] {
 function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box): Drawn {
   const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
   if (!v) throw new Error('no machine room');
-  return { shapes: [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.edges) : [])], scale: v.place.scale };
+  return { shapes: [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.edges) : [])], scale: v.place.scale, hits: v.r.hits };
 }
 
 export function buildTavole(x: TavoleInput): TavoleResult {
@@ -115,16 +118,17 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   });
   const ds = dataSheet(x, a, pages);
   const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...dataSheetShapes(ds.sheet)] }];
-  const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL\'IMPIANTO', scale: null }];
+  const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL\'IMPIANTO', scale: null }], hits: Hit[][] = [[]];
   list.forEach((s, i) => {
     const sub = s.subtitle !== undefined, area = drawingArea(sub);
     const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area) : roomSheet(L, M, s.k, area);
     out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...d.shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(d.scale, sub), ...strip(meta(i + 2))] });
     sheets.push({ title: s.title, scale: d.scale });
+    hits.push(d.hits);
   });
   const doc: DrawingDoc = {
     meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Progetto dell\'ascensore: dati, piante e sezioni del vano, locale macchina', author: x.company.name },
     palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: x.company.logo ? { logo: x.company.logo } : {}, pages: out,
   };
-  return { doc, warnings: ds.warnings, sheets };
+  return { doc, warnings: ds.warnings, sheets, hits };
 }

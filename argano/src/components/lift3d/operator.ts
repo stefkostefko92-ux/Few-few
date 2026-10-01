@@ -48,10 +48,11 @@ function tracks(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, pl
   B.wallBox(wall, W, D, u0, u1, vBack, outer, zt + SHELF, zt + SHELF + 6, M.galv);
 }
 
-/** The car door operator. `tr`: the panels' tracks, `t` their thickness, `vCar`: the car's front face, `roof`: the
- *  roof's height, `belt`: the height of the belt's lower strand. */
+/** The car door operator, as long as the layout makes it (the catalogues' length for the door, src/shaft/norme.ts).
+ *  `tr`: the panels' tracks, `t` their thickness, `vCar`: the car's front face, `roof`: the roof's height, `belt`: the
+ *  height of the belt's lower strand. */
 export function carOperator(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, d: DoorLayout, tr: Tracks, t: number, vCar: number, roof: number, belt: number): void {
-  const len = wall === 'front' || wall === 'rear' ? W : D, [lo, hi] = headerSpan(d, len), zt = d.height, top = roof + 235;
+  const len = wall === 'front' || wall === 'rear' ? W : D, lo = Math.max(d.op0, 20), hi = Math.min(d.op1, len - 20), zt = d.height, top = roof + 235;
   // the belt runs just in front of the fast panel's hanger plate, over the clamp on it (doors.ts); the cover over it
   const vb = tr.fast - 4, front = vb - 10;
   const at = (u: number, v: number, z: number): Point => {

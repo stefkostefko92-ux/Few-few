@@ -2,9 +2,9 @@
 // drawings; lettering, symbols and dimension chains keep their paper size. The largest standard scale that fits a
 // drawing with its dimension rows into an area is chosen here too.
 import { chainShapes, rowOffset } from './dims';
-import { boundsOf, boxH, boxW, toPaper, union, type Place } from './geom';
+import { boundsOf, boxH, boxW, grow, toPaper, union, type Place } from './geom';
 import { textWidth } from './metrics';
-import type { Entity, Side } from './model';
+import type { Edit, Entity, Side } from './model';
 import { FILLS, STYLES, TEXT } from './style';
 import { symbol } from './symbols';
 import type { Box, Pt, Shape } from './types';
@@ -12,12 +12,21 @@ import type { Box, Pt, Shape } from './types';
 /** ISO 5455 reductions, with the 1:25 of lift layouts. */
 export const SCALES = [5, 10, 20, 25, 50, 100, 200, 500] as const;
 
+/** A dimension the screens let the user change: the box of its lettering on paper, what it changes, its value [mm]. */
+export interface Hit {
+  box: Box;
+  edit: Edit;
+  value: number;
+}
+
 export interface ViewResult {
   shapes: Shape[];
   /** the geometry on paper, without annotations */
   edges: Box;
   /** everything on paper */
   extent: Box;
+  /** the editable dimensions (the sheets ignore them) */
+  hits: Hit[];
 }
 
 function geometry(e: Entity, place: Place): Shape | null {
@@ -49,7 +58,7 @@ export function shapeBox(s: Shape): Box {
 }
 
 export function renderView(entities: readonly Entity[], place: Place): ViewResult {
-  const geo: Shape[] = [], notes: Shape[] = [];
+  const geo: Shape[] = [], notes: Shape[] = [], hits: Hit[] = [];
   let edges: Box | null = null;
   for (const e of entities) {
     const g = geometry(e, place);
@@ -67,13 +76,17 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
     } else if (e.e === 'tag') {
       notes.push(...tag(toPaper(place, e.at), e.text, e.to ? toPaper(place, e.to) : null));
     } else if (e.e === 'chain') {
-      notes.push(...chainShapes(e.c, place, E));
+      const edit = e.c.edit;
+      notes.push(...chainShapes(e.c, place, E, edit ? (s, i, value) => {
+        const ed = edit[i];
+        if (ed) hits.push({ box: grow(shapeBox(s), 0.5), edit: ed, value: ed.value ?? value });
+      } : undefined));
     }
   }
   const shapes = [...geo, ...notes];
   let extent: Box | null = null;
   for (const s of shapes) extent = union(extent, shapeBox(s));
-  return { shapes, edges: E, extent: extent ?? E };
+  return { shapes, edges: E, extent: extent ?? E, hits };
 }
 
 /** A reference in a circle with its leader, sized on paper. */
@@ -108,6 +121,10 @@ export function fitView(model: Box, entities: readonly Entity[], area: Box, scal
   const cx = area.x0 + r.left + w / 2, cy = area.y0 + r.bottom + h / 2;
   return { scale, ox: cx - (model.x0 + model.x1) / 2 / scale, oy: cy - (model.y0 + model.y1) / 2 / scale };
 }
+
+/** Editable dimensions moved on paper by (dx, dy). */
+export const moveHits = (hits: readonly Hit[], dx: number, dy: number): Hit[] =>
+  hits.map((h) => ({ ...h, box: { x0: h.box.x0 + dx, y0: h.box.y0 + dy, x1: h.box.x1 + dx, y1: h.box.y1 + dy } }));
 
 /** Shapes moved on paper by (dx, dy). */
 export function moveShapes(shapes: readonly Shape[], dx: number, dy: number): Shape[] {

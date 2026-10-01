@@ -17,6 +17,29 @@ export type Entrances = 'one' | 'opposite' | 'adjacent';
 /** Walls of the shaft. */
 export type Wall = 'front' | 'rear' | 'left' | 'right';
 
+/** Distances of the plan set by hand: each replaces what the layout works out [mm]. */
+export interface PlanFix {
+  /** car inside: width along the front wall and depth */
+  A?: number;
+  B?: number;
+  /** the platform's side from the left wall */
+  carX?: number;
+  /** clear opening of entrance A, of entrance B, from the corner of its wall where its axis starts */
+  doorA?: number;
+  doorB?: number;
+  /** length of the car door operator */
+  opLen?: number;
+  /** central sling: the car rails' axis from the front wall; cantilever: the tip of the front car rail */
+  railY?: number;
+  /** cantilever sling: between the tips of the two car rails */
+  dbg?: number;
+  /** counterweight: its length in plan and where it starts along the wall it stands by (x at the back, y on a side) */
+  cwLen?: number;
+  cwPos?: number;
+}
+
+export type PlanKey = keyof PlanFix;
+
 export type ShaftInputs = {
   /** clear width of the shaft along the front wall [mm] */
   W: number;
@@ -40,10 +63,13 @@ export type ShaftInputs = {
   vertical: VerticalInputs;
   /** machine room above the shaft; null: not drawn */
   room: RoomInputs | null;
+  /** distances of the plan set by hand (absent: all worked out) */
+  plan?: PlanFix;
 } & Record<Allowance, number>;
 
 export type ShaftCheckId =
   | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_door' | 'v_door2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
+  | 'v_place' | 'v_doorcar'
   | 'h_refuge' | 'h_clear' | 'h_parapet' | 'p_refuge' | 'p_apron' | 'b_runby' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door';
 
 export interface ShaftCheck {

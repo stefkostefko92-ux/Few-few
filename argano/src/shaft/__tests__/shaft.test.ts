@@ -3,7 +3,7 @@
 // as model entities for the drawing kernel.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { KV, RAILS, defaultInputs, layout, loadForArea, maxArea, passengers, planDims, planEntities, shaftSnapshot, verdictOf } from '../index';
+import { KV, RAILS, defaultInputs, layout, loadForArea, maxArea, passengers, planDims, planEntities, railClip, shaftSnapshot, verdictOf } from '../index';
 import type { ShaftInputs } from '../index';
 
 const near = (a: number, b: number, eps = 1e-9) => assert.ok(Math.abs(a - b) <= eps, `${a} ≠ ${b}`);
@@ -96,7 +96,10 @@ test('due accessi adiacenti: arcata a zaino con le lame affacciate lungo la pare
   // the feet 20 mm inside the platform's depth, the car rail on the counterweight side of the car
   assert.equal(a.y - cr.h, L.car.y + KV.cantRailEnd);
   assert.equal(b.y + cr.h, L.car.y + L.car.h - KV.cantRailEnd);
-  assert.equal(L.car.x, a.x + cr.b / 2 + I.shoeGap);
+  // the car clear of the clips on the feet's edges: 31,8 mm of clip and plate past the edge of a T70 foot, 10 mm more
+  const clip = railClip(I.carRail);
+  assert.ok(Math.abs(clip.reach - 31.8) < 0.05, `${clip.reach}`);
+  assert.equal(L.car.x, a.x + cr.b / 2 + Math.ceil(clip.reach) + KV.cantClipGap);
   // the car spans from the rails to the side door: the whole width, the depth the load admits
   assert.equal(L.A, L.maxA);
   assert.ok(L.area <= L.areaMax + 1e-9);

@@ -4,7 +4,7 @@
 import appIt from '../../../messages/it.json';
 import type { CheckStatus } from '@/calc/types';
 import { fitView, renderView, moveShapes, type Box } from '@/drawing';
-import { DEFAULTS, isUpperLimit, planDims, planEntities, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheckId } from '@/shaft';
+import { DEFAULTS, PLAN_KEYS, isUpperLimit, planDims, planEntities, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheckId } from '@/shaft';
 import type { ShaftSource } from '../shaft-input';
 import type { ReportBlock } from './model';
 
@@ -87,6 +87,15 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts): Repo
 
   B.push({ t: 'h3', text: 'Ingombri considerati' });
   B.push({ t: 'kv', rows: (Object.keys(DEFAULTS) as Allowance[]).map((k): [string, string] => [S[`a_${k}` as const], `${fmt(I[k], 0)} mm${I[k] === DEFAULTS[k] ? ' (valore tipico)' : ''}`]) });
+  // the distances of the plan set by hand in place of the ones worked out
+  const hand = PLAN_KEYS.flatMap((k): [string, string][] => {
+    const v = I.plan?.[k];
+    return v === undefined ? [] : [[k === 'railY' && L.frame.kind === 'cantilever' ? S.pk_railY_cant : S[`pk_${k}` as const], `${fmt(v, 0)} mm`]];
+  });
+  if (hand.length) {
+    B.push({ t: 'h3', text: S.fx_title.replace('{n}', String(hand.length)) });
+    B.push({ t: 'kv', rows: hand });
+  }
   B.push({ t: 'p', text: S.limits, style: 'note' });
   return B;
 }

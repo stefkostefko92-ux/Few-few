@@ -7,6 +7,17 @@ export type Side = 'top' | 'bottom' | 'left' | 'right';
 
 export type SymbolName = 'dot' | 'tri' | 'square' | 'overUp' | 'overDown' | 'plumb' | 'box' | 'light';
 
+/** What changing a dimension does on the screens: the input `key` becomes base + k · (the new length) [mm]; the
+ *  inputs in `also` take the values given, so that what the dimension starts from stays where it is. `value`: the real
+ *  length where the drawing shortens it. The sheets ignore it. */
+export interface Edit {
+  key: string;
+  base: number;
+  k: number;
+  value?: number;
+  also?: readonly { key: string; value: number }[];
+}
+
 /** A chain of linear dimensions measured along x or y. */
 export interface Chain {
   dir: 'x' | 'y';
@@ -22,6 +33,8 @@ export interface Chain {
   from?: number | readonly (number | null)[];
   /** text of each segment, '{v}' for the measured value; null or missing = the value */
   text?: readonly (string | null)[];
+  /** what editing each segment changes (null: it cannot be changed there) */
+  edit?: readonly (Edit | null)[];
 }
 
 export type Entity =
@@ -43,3 +56,5 @@ export const rect = (x0: number, y0: number, x1: number, y1: number, st: StyleNa
   path([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], true, st, fill);
 export const circle = (c: Pt, r: number, st: StyleName | undefined = 'thin', fill?: FillName): Entity => ({ e: 'circle', c, r, st, fill });
 export const chain = (c: Chain): Entity => ({ e: 'chain', c });
+/** An edit of a dimension: the input `key` becomes base + k · (the new length). */
+export const edit = (key: string, base = 0, k = 1, also?: Edit['also']): Edit => (also ? { key, base, k, also } : { key, base, k });

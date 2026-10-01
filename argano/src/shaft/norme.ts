@@ -41,10 +41,15 @@ export const KV = {
   // cantilever sling: feet of the car rails inside the platform's depth; car rail foot to the counterweight rail foot
   cantRailEnd: 20,
   cantCwGap: 70,
-  // doors in plan: jambs of the landing door opening; car door operator 2·L + 60 mm long, 150 mm deep
+  // cantilever sling: the car 10 mm clear of the clips on the car rails' feet (the clips' reach: src/shaft/rails.ts)
+  cantClipGap: 10,
+  // doors in plan: jambs of the landing door opening; car door operator by door kind (catalogues 2SG FLY, Fermator
+  // 40/10 VF, taken on the long side): telescopic 1,5·L + 50, its closing side 25 mm past the opening; centre opening
+  // 2·L + 60; 150 mm deep
   doorPortal: 50,
-  doorOpFactor: 2,
-  doorOpExtra: 60,
+  doorOpT2: [1.5, 50],
+  doorOpC2: [2, 60],
+  doorOpClose: 25,
   doorOpDepth: 150,
 } as const;
 
@@ -173,22 +178,36 @@ export const VOCI_VANO: readonly VoceVano[] = [
     id: 'ingombri.arcata.zaino', gruppo: 'ingombri', titolo: 'Arcata a zaino (due accessi adiacenti a 90°)',
     valore: 'entrambe le guide di cabina sulla parete opposta all\'accesso laterale, con le lame affacciate lungo la parete (il momento della cabina '
       + 'a sbalzo va sulle facce delle lame); piedi delle guide a 20 mm dentro la profondità della piattaforma; contrappeso tra le guide, '
-      + 'contro la parete, con le sue guide alle estremità e i piedi a 70 mm da quelli delle guide di cabina (staffe)',
+      + 'contro la parete, con le sue guide alle estremità e i piedi a 70 mm da quelli delle guide di cabina (staffe); la cabina a 10 mm dalle '
+      + 'bride che tengono i piedi delle guide sulle staffe (bride forgiate della misura della guida, con la piastra oltre il piede)',
     riferimento: '—', fonte: 'scelta del software (principio: cataloghi di arcate a zaino); disposizione da confermare con il fornitore dell\'arcata', stato: 'scelta',
-    costanti: ['cantRailEnd', 'cantCwGap'],
+    costanti: ['cantRailEnd', 'cantCwGap', 'cantClipGap'],
   },
   {
     id: 'porte.operatore', gruppo: 'porte', titolo: 'Vano porta di piano e operatore della porta di cabina',
-    valore: 'vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 2·L + 60 mm e profondo 150 mm; '
-      + 'con due accessi adiacenti gli operatori non devono sovrapporsi all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
-    riferimento: 'dato del fornitore delle porte', fonte: 'valori tipici: scelta del software da confermare con il fornitore', stato: 'scelta',
-    costanti: ['doorPortal', 'doorOpFactor', 'doorOpExtra', 'doorOpDepth'], verifiche: ['v_door2', 'v_op'],
+    valore: 'vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 1,5·L + 50 mm con porta telescopica '
+      + '(il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con due accessi adiacenti '
+      + 'gli operatori non devono sovrapporsi all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
+    riferimento: 'dato del fornitore delle porte',
+    fonte: 'cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), '
+      + 'letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore',
+    stato: 'da_verificare',
+    costanti: ['doorPortal', 'doorOpT2', 'doorOpC2', 'doorOpClose', 'doorOpDepth'], verifiche: ['v_door', 'v_door2', 'v_op'],
   },
   {
     id: 'modello.passo', gruppo: 'modello_vano', titolo: 'Dimensioni proposte della cabina',
     valore: 'la cabina più grande che entra nel vano, a passi di 10 mm, con superficie entro il limite della portata; a parità di superficie, la più profonda',
     riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
     costanti: ['sizeStep'],
+  },
+  {
+    id: 'modello.quote', gruppo: 'modello_vano', titolo: 'Quote della pianta fissate a mano',
+    valore: 'ogni quota della pianta (cabina, porte, operatore della porta di cabina, guide, contrappeso) si può fissare a mano al posto di '
+      + 'quella proposta; la cabina resta fuori dalle zone di porte, guide e contrappeso, le guide del contrappeso nel loro spazio (laterale: '
+      + 'fuori dalle zone delle porte che ha di fronte più il gioco d\'estremità; arcata a zaino: tra i piedi delle guide di cabina meno il gioco '
+      + 'delle staffe) e la luce di ogni porta dentro la cabina; altrimenti «Non conforme»',
+    riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
+    verifiche: ['v_place', 'v_doorcar'],
   },
   {
     id: 'modello.limiti', gruppo: 'modello_vano', titolo: 'Limiti del modello del vano',

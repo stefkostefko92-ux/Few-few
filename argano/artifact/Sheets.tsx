@@ -2,25 +2,30 @@
 // app's PDF uses: an unissued set, without number, author or logo. The software's estimates are marked as in the app.
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'use-intl';
+import type { Edit } from '@/drawing';
 import { valueMarks, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { buildTavole } from '@/lib/tavole/build';
-import ShapesSvg from '@/components/drawing/ShapesSvg';
+import { valueOf } from '@/shaft';
+import EditableDrawing, { type Refusal } from '@/components/drawing/EditableDrawing';
+import { useEditTexts } from '@/components/shaft/edit-texts';
 
 interface Props {
   inputs: LiftInputs;
   derived: LiftDerived;
   lead: string;
+  /** a dimension of a sheet given a new length (the design above changes): null when applied, else why not */
+  onEdit(e: Edit, length: number): Refusal | null;
 }
 
-export default function Sheets({ inputs, derived, lead }: Props) {
-  const t = useTranslations('tavole');
+export default function Sheets({ inputs, derived, lead, onEdit }: Props) {
+  const t = useTranslations('tavole'), texts = useEditTexts(derived.layout);
   const [page, setPage] = useState(1);
-  const doc = useMemo(() => buildTavole({
+  const { doc, hits } = useMemo(() => buildTavole({
     values: derived.values, layout: derived.layout, plant: {}, marks: valueMarks(inputs.auto, derived),
     project: { name: '—', address: null, city: null, province: null, plantNumber: null, client: null },
     company: { name: 'Argano', logo: null },
     set: { number: '—', issuedAt: new Date(), author: '—', revisions: [] },
-  }).doc, [inputs.auto, derived]);
+  }), [inputs.auto, derived]);
   const total = doc.pages.length, n = Math.min(page, total), sheet = doc.pages[n - 1];
   return (
     <section className="panel ar-sheets" aria-labelledby="ar-sheets-title">
@@ -33,7 +38,8 @@ export default function Sheets({ inputs, derived, lead }: Props) {
       </nav>
       {sheet ? (
         <figure className="sheet-page">
-          <ShapesSvg shapes={sheet.shapes} w={sheet.w} h={sheet.h} id={`ar-sheet-${n}`} label={t('sheet', { n, total })} />
+          <EditableDrawing shapes={sheet.shapes} w={sheet.w} h={sheet.h} id={`ar-sheet-${n}`} label={t('sheet', { n, total })} hits={hits[n - 1] ?? []} fit="width"
+            manual={(e) => e.key.startsWith('plan.') && valueOf(inputs.shaft, e.key) !== null} onEdit={onEdit} texts={texts} />
           <figcaption className="note">{t('sheet', { n, total })}</figcaption>
         </figure>
       ) : null}

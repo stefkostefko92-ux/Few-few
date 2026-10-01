@@ -35,3 +35,13 @@ test('funi del progetto: a piombo sopra la cabina e sopra il contrappeso', () =>
     assert.ok(rig.sheave.y > rig.roomFloor, 'la puleggia sta sopra il pavimento del locale');
   }
 });
+
+test('macchina in basso: i due tratti verso la macchina scendono tra il contrappeso e la parete, senza toccare nessuno dei due', () => {
+  const inp = defaultLift();
+  for (const cw of ['rear', 'left'] as const) {
+    const d = deriveLift({ shaft: { ...inp.shaft, cw }, calc: { ...inp.calc, layout: 'bottom', r: '1' }, auto: AUTO_ALL }), rig = ropeRig(d);
+    const back = rig.calata + d.layout.inputs.cwDepth / 2000, runs = rig.elements(0, 0).filter((e) => e.kind === 'pt' && e.u > rig.calata + 1e-6);
+    assert.equal(runs.length, 4, cw);
+    for (const e of runs) assert.ok(e.u > back + 0.015 && e.u < rig.wallAt - 0.015, `${cw}: ${e.u.toFixed(3)} fuori da (${back.toFixed(3)}, ${rig.wallAt.toFixed(3)})`);
+  }
+});

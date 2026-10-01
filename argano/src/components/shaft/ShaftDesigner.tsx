@@ -10,10 +10,10 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import type { ShaftSource } from '@/lib/shaft-input';
 import { saveShaftDesignAction } from '@/server/shaft-actions';
-import { layout, type ShaftInputs } from '@/shaft';
+import { keptPlan, layout, type ShaftInputs } from '@/shaft';
 import RoomOptions from './RoomOptions';
 import ShaftOptions from './ShaftOptions';
-import ShaftViews from './ShaftViews';
+import PlanEditor from './PlanEditor';
 import VerticalOptions from './VerticalOptions';
 import ShaftResults from './ShaftResults';
 import SurveyPanel, { type SurveyResult } from './SurveyPanel';
@@ -37,7 +37,11 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
 
   const set = (patch: Partial<ShaftInputs>): void => {
     if (typeof patch.Q === 'number') setLastQ(patch.Q);
-    setI((prev) => ({ ...prev, ...patch }));
+    // the distances set by hand go with the arrangement they belong to
+    setI((prev) => {
+      const next = { ...prev, ...patch };
+      return { ...next, plan: keptPlan(prev, next) };
+    });
     setSaveError(null);
   };
   const setSize = (key: 'W' | 'D', value: string): void => {
@@ -95,7 +99,7 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
         </section>
         <section className="panel shaft-output" aria-live="polite">
           <h2>{t('result')}</h2>
-          <ShaftViews L={L} id="live" planLabel={t('planLabel', { W: I.W, D: I.D, A: L.A, B: L.B })} sectionLabel={t('sectionLabel')} scaleText={(n) => t('scale', { n })} />
+          <PlanEditor I={I} onChange={set} machine={null} id="live" titleAs="h3" />
           <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
           <p className="note">{t('limits')}</p>
         </section>

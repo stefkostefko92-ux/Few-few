@@ -65,6 +65,20 @@ export const roomSchema = z.object({
 
 const allowance = <K extends keyof typeof DEFAULTS>(k: K, max: number) => mm(0, max).default(DEFAULTS[k]);
 
+/** Distances of the plan set by hand on the drawing (src/shaft/edit.ts); each one absent is worked out. */
+export const planSchema = z.object({
+  A: mm(300, 6000).optional(),
+  B: mm(300, 6000).optional(),
+  carX: mm(0, 10000).optional(),
+  doorA: mm(0, 10000).optional(),
+  doorB: mm(0, 10000).optional(),
+  opLen: mm(300, 6000).optional(),
+  railY: mm(0, 10000).optional(),
+  dbg: mm(100, 10000).optional(),
+  cwLen: mm(100, 3000).optional(),
+  cwPos: mm(0, 10000).optional(),
+}).strict();
+
 export const shaftInputsSchema = z.object({
   W: mm(500, 10000),
   D: mm(500, 10000),
@@ -92,6 +106,7 @@ export const shaftInputsSchema = z.object({
   rearGap: allowance('rearGap', 800),
   shoeGap: allowance('shoeGap', 300),
   cwRailGap: allowance('cwRailGap', 500),
+  plan: planSchema.optional(),
 }).strict();
 
 const finite = z.number().finite();

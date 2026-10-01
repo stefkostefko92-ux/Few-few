@@ -719,11 +719,11 @@
       "id": "vano.porte.operatore",
       "gruppo": "Vano: porte",
       "voce": "Vano porta di piano e operatore della porta di cabina",
-      "valore": "vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 2·L + 60 mm e profondo 150 mm; con due accessi adiacenti gli operatori non devono sovrapporsi all'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)",
+      "valore": "vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 1,5·L + 50 mm con porta telescopica (il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con due accessi adiacenti gli operatori non devono sovrapporsi all'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)",
       "riferimento": "dato del fornitore delle porte",
-      "fonte": "valori tipici: scelta del software da confermare con il fornitore",
-      "stato": "scelta del software",
-      "verifiche": "ingombro della seconda porta di piano; operatori delle porte adiacenti",
+      "fonte": "cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore",
+      "stato": "da verificare",
+      "verifiche": "ingombro della porta di piano; ingombro della seconda porta di piano; operatori delle porte adiacenti",
       "nota": ""
     },
     {
@@ -755,7 +755,7 @@
       "id": "vano.ingombri.arcata.zaino",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Arcata a zaino (due accessi adiacenti a 90°)",
-      "valore": "entrambe le guide di cabina sulla parete opposta all'accesso laterale, con le lame affacciate lungo la parete (il momento della cabina a sbalzo va sulle facce delle lame); piedi delle guide a 20 mm dentro la profondità della piattaforma; contrappeso tra le guide, contro la parete, con le sue guide alle estremità e i piedi a 70 mm da quelli delle guide di cabina (staffe)",
+      "valore": "entrambe le guide di cabina sulla parete opposta all'accesso laterale, con le lame affacciate lungo la parete (il momento della cabina a sbalzo va sulle facce delle lame); piedi delle guide a 20 mm dentro la profondità della piattaforma; contrappeso tra le guide, contro la parete, con le sue guide alle estremità e i piedi a 70 mm da quelli delle guide di cabina (staffe); la cabina a 10 mm dalle bride che tengono i piedi delle guide sulle staffe (bride forgiate della misura della guida, con la piastra oltre il piede)",
       "riferimento": "—",
       "fonte": "scelta del software (principio: cataloghi di arcate a zaino); disposizione da confermare con il fornitore dell'arcata",
       "stato": "scelta del software",
@@ -968,6 +968,18 @@
     },
     {
       "n": 79,
+      "id": "vano.modello.quote",
+      "gruppo": "Vano: limiti del progetto",
+      "voce": "Quote della pianta fissate a mano",
+      "valore": "ogni quota della pianta (cabina, porte, operatore della porta di cabina, guide, contrappeso) si può fissare a mano al posto di quella proposta; la cabina resta fuori dalle zone di porte, guide e contrappeso, le guide del contrappeso nel loro spazio (laterale: fuori dalle zone delle porte che ha di fronte più il gioco d'estremità; arcata a zaino: tra i piedi delle guide di cabina meno il gioco delle staffe) e la luce di ogni porta dentro la cabina; altrimenti «Non conforme»",
+      "riferimento": "—",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "quote fissate a mano: ingombri al loro posto; quote fissate a mano: porte dentro la cabina",
+      "nota": ""
+    },
+    {
+      "n": 80,
       "id": "vano.modello.limiti",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Limiti del modello del vano",
@@ -979,7 +991,7 @@
       "nota": ""
     },
     {
-      "n": 80,
+      "n": 81,
       "id": "impianto.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Corsa",
@@ -991,7 +1003,7 @@
       "nota": ""
     },
     {
-      "n": 81,
+      "n": 82,
       "id": "impianto.portata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Portata e velocità",
@@ -1003,7 +1015,7 @@
       "nota": ""
     },
     {
-      "n": 82,
+      "n": 83,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -1015,7 +1027,7 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto"
     },
     {
-      "n": 83,
+      "n": 84,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -1027,11 +1039,11 @@
       "nota": ""
     },
     {
-      "n": 84,
+      "n": 85,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
-      "valore": "calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2 (con taglia 2:1 anche − Dp: le funi salgono dal lato interno delle pulegge di cabina e di contrappeso): la puleggia di trazione sopra la cabina, il rinvio sopra il contrappeso, rinvio semplice; se le pulegge non entrano così, la distanza va misurata sull'impianto",
+      "valore": "calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2 (rinvio semplice: la fune scende dal lato esterno della puleggia di rinvio); se la fune deve rientrare, − D/2 + Dp/2 (rinvio inverso: dal lato interno); con taglia 2:1 la calata è minore di Dp, perché le funi salgono dal lato interno delle pulegge di cabina e di contrappeso. La puleggia di trazione sopra la cabina, il rinvio sopra il contrappeso; se nessuna delle due geometrie torna con l'angolo di avvolgimento, la distanza va misurata sull'impianto",
       "riferimento": "ricerca, capitolo 5.3",
       "fonte": "pianta del vano",
       "stato": "derivazione",
@@ -1039,7 +1051,7 @@
       "nota": ""
     },
     {
-      "n": 85,
+      "n": 86,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
@@ -1051,7 +1063,7 @@
       "nota": ""
     },
     {
-      "n": 86,
+      "n": 87,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1060,10 +1072,10 @@
       "fonte": "motore di calcolo",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori"
+      "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 87,
+      "n": 88,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1075,7 +1087,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 88,
+      "n": 89,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1087,7 +1099,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi"
     },
     {
-      "n": 89,
+      "n": 90,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1099,7 +1111,7 @@
       "nota": ""
     },
     {
-      "n": 90,
+      "n": 91,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1111,7 +1123,7 @@
       "nota": ""
     },
     {
-      "n": 91,
+      "n": 92,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -1123,7 +1135,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa; la verifica della corsa resta quella della sezione"
     },
     {
-      "n": 92,
+      "n": 93,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1135,7 +1147,7 @@
       "nota": ""
     },
     {
-      "n": 93,
+      "n": 94,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",

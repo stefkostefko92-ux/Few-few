@@ -1,7 +1,7 @@
 // The views of the drawing set without the paper around them: a plan of the shaft at a level, section A-A whole or in
 // a detail, the machine room in plan or in section B-B, each laid out at the largest standard scale that fits an area
 // with its dimensions. The sheets add titles, legends and marks; the screens show the views alone.
-import { boxH, fitView, moveShapes, renderView, type Box, type Entity, type Place, type Shape, type ViewResult } from '@/drawing';
+import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type ViewResult } from '@/drawing';
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
 import { planEntities, type PlanLevel } from '@/shaft/plan-view';
@@ -85,16 +85,36 @@ export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', ar
   return { r: renderView(entities, place), place, G };
 }
 
-/** A view cropped to its extent with a margin, for the screens: shapes in a box w × h [mm] and the scale. */
-export function cropped(v: View, pad = 3): { shapes: Shape[]; w: number; h: number; scale: number } {
-  const e = v.r.extent;
-  return { shapes: moveShapes(v.r.shapes, pad - e.x0, pad - e.y0), w: e.x1 - e.x0 + 2 * pad, h: e.y1 - e.y0 + 2 * pad, scale: v.place.scale };
+/** A view cropped to its extent with a margin, for the screens: shapes in a box w × h [mm], the scale, the editable
+ *  dimensions. */
+export function cropped(v: View, pad = 3): { shapes: Shape[]; w: number; h: number; scale: number; hits: Hit[] } {
+  const e = v.r.extent, dx = pad - e.x0, dy = pad - e.y0;
+  return { shapes: moveShapes(v.r.shapes, dx, dy), w: e.x1 - e.x0 + 2 * pad, h: e.y1 - e.y0 + 2 * pad, scale: v.place.scale, hits: moveHits(v.r.hits, dx, dy) };
 }
 
 /** Section A-A whole for the screens; null when it does not fit even at 1:200 (the plan is shown alone). */
 function sectionPreview(L: Layout): ReturnType<typeof cropped> | null {
   try {
     return cropped(sectionView(L, 'full', L.inputs.vertical.floors.length - 1, { x0: 0, y0: 0, x1: 130, y1: 260 }));
+  } catch {
+    return null;
+  }
+}
+
+export type ScreenView = 'plan' | SectionKind | 'room-plan' | 'room-section';
+
+/** One view for the screens that change the design: the plan at the main floor, section A-A whole or a detail (the
+ *  headroom, the car at the main floor, the pit), the machine room in plan or in section B-B (with a machine); null
+ *  when it cannot be drawn. */
+export function screenView(L: Layout, v: ScreenView, M: MachineSpec | null): ReturnType<typeof cropped> | null {
+  const V = L.inputs.vertical, top = V.floors.length - 1, main = Math.min(V.main, top), area: Box = { x0: 0, y0: 0, x1: 190, y1: 190 };
+  try {
+    if (v === 'plan') return cropped(planView(L, 'main', main, `piano "${V.floors[main]?.label ?? ''}"`, area));
+    if (v === 'room-plan' || v === 'room-section') {
+      const r = M ? roomView(L, M, v === 'room-plan' ? 'plan' : 'section', area) : null;
+      return r ? cropped(r) : null;
+    }
+    return cropped(sectionView(L, v, v === 'floor' ? main : v === 'pit' ? 0 : top, v === 'full' ? { x0: 0, y0: 0, x1: 130, y1: 260 } : area));
   } catch {
     return null;
   }

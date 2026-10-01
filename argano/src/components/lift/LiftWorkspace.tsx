@@ -3,23 +3,27 @@
 // The installation in one screen: the one form on the left (the shaft, the floors, the machine room, the lift and its
 // machine), everything the software works out and the 3D simulation on the right, live; every check with a button
 // that replays it; the save, after which the server derives everything again and stores it.
-import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type Ref } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
+import type { Edit } from '@/drawing';
 import { deriveLift, type AutoFlags, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import type { ShaftSource } from '@/lib/shaft-input';
+import { editShaft } from '@/lib/shaft-edit';
 import { saveLiftDesignAction } from '@/server/lift-actions';
-import type { ShaftInputs } from '@/shaft';
+import { keptPlan, type ShaftInputs } from '@/shaft';
 import { asCalcDict } from '../calc/dict';
 import ShaftOptions from '../shaft/ShaftOptions';
 import VerticalOptions from '../shaft/VerticalOptions';
 import RoomOptions from '../shaft/RoomOptions';
+import PlanEditor from '../shaft/PlanEditor';
+import type { Refusal } from '../drawing/EditableDrawing';
 import SurveyPanel, { type SurveyResult } from '../shaft/SurveyPanel';
 import LiftCalcFields from './LiftCalcFields';
 import LiftFacts from './LiftFacts';
@@ -31,9 +35,16 @@ interface Props {
   initial: LiftInputs;
   /** the inputs and what they give, each time they settle (the standalone page draws the sheets from them) */
   onDerived?(inputs: LiftInputs, derived: LiftDerived): void;
+  /** changes from outside the form: a dimension of the sheets (the standalone page) */
+  api?: Ref<WorkspaceApi>;
 }
 
-export default function LiftWorkspace({ projectId, initial, onDerived }: Props) {
+export interface WorkspaceApi {
+  /** a dimension of the drawings given a new length: null when applied, else why not */
+  edit(e: Edit, length: number): Refusal | null;
+}
+
+export default function LiftWorkspace({ projectId, initial, onDerived, api }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -52,9 +63,21 @@ export default function LiftWorkspace({ projectId, initial, onDerived }: Props) 
 
   const setShaft = (patch: Partial<ShaftInputs>): void => {
     if (typeof patch.Q === 'number') setLastQ(patch.Q);
-    setInp((p) => ({ ...p, shaft: { ...p.shaft, ...patch } }));
+    // the distances set by hand go with the arrangement they belong to
+    setInp((p) => {
+      const shaft = { ...p.shaft, ...patch };
+      return { ...p, shaft: { ...shaft, plan: keptPlan(p.shaft, shaft) } };
+    });
     setSaveError(null);
   };
+  useImperativeHandle(api, () => ({
+    edit(e, length) {
+      const r = editShaft(inp.shaft, e, length);
+      if (!r.ok) return r;
+      setShaft(r.inputs);
+      return null;
+    },
+  }));
   const setCalc = (patch: FormValues): void => {
     setInp((p) => ({ ...p, calc: mirrorRopes({ ...p.calc, ...patch }) }));
     setSaveError(null);
@@ -123,6 +146,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived }: Props) 
       <div className="lift-main">
         <LiftFacts derived={derived} X={X} fmt={P.fmt} />
         <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
+        <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} id="lift-plan" /></section>
         <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
       </div>
       <div className="savebar">

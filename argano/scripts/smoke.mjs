@@ -1,10 +1,10 @@
 // End-to-end smoke test against a running Argano (local or staging), with a real browser:
 //   health → public page (no console or CSP errors) → sign-in → installation → calculation → saved snapshot with
-//   reproduced hash → calculation report (PDF) → shaft design by hand, its DXF, a calculation from it with the plan in
-//   its report → data of the installation, company logo, drawing set issued from that calculation (sheets, PDF) and
-//   its revision → the installation in one form with its live 3D simulation, saved in one go (shaft design and
-//   calculation together), with its documents → new user who must change the password → a second company that cannot
-//   open the first company's calculation, shaft design, DXF, drawing set or lift design.
+//   reproduced hash → calculation report (PDF) → shaft design by hand (a distance changed on its plan), its DXF, a
+//   calculation from it with the plan in its report → data of the installation, company logo, drawing set issued from
+//   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation, saved
+//   in one go (shaft design and calculation together), with its documents → new user who must change the password → a
+//   second company that cannot open the first company's calculation, shaft design, DXF, drawing set or lift design.
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… node scripts/smoke.mjs
 // Playwright is not a dependency of the app: the local install is used, else the global one.
 import { Buffer } from 'node:buffer';
@@ -100,6 +100,13 @@ try {
   await size.nth(0).fill('1650');
   await size.nth(1).fill('1800');
   await page.waitForSelector('.shaft-output svg.sheet-svg');
+  // a distance of the plan changed on the drawing itself: the platform 20 mm further from the left wall
+  const hit = page.locator('.shaft-output .ed-hits .hit[aria-label*="Piattaforma: distanza dalla parete sinistra"]').first();
+  const was = Number(/^(\d+)/.exec((await hit.getAttribute('aria-label')) ?? '')?.[1]);
+  await hit.click();
+  await page.fill('.shaft-output .ed-pop input', String(was + 20));
+  await page.press('.shaft-output .ed-pop input', 'Enter');
+  await page.waitForSelector('.shaft-output table.fixes tr.hand');
   await Promise.all([page.waitForURL(/\/shaft-designs\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.btn-primary')]);
   const designUrl = page.url();
   assert.match(await page.textContent('dl.cartiglio'), /riprodotto/, 'design hash reproduced');

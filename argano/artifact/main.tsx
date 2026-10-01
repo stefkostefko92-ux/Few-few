@@ -1,7 +1,7 @@
 // The standalone page of the two tools made for Argano: the choice and check of the geared machine, and the
 // installation entered once, simulated in 3D, with its drawing set. The app's own components and engines run in the
 // browser; nothing leaves the page and nothing is stored (the language and the tab are remembered on this device).
-import { StrictMode, useCallback, useEffect, useState, type MouseEvent } from 'react';
+import { StrictMode, useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { IntlProvider, useTranslations } from 'use-intl';
 import appIt from '../messages/it.json';
@@ -13,7 +13,7 @@ import calcBg from '../messages/calc/bg.json';
 import { PRESETS } from '@/calc/presets';
 import { defaultLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import Calculator from '@/components/calc/Calculator';
-import LiftWorkspace from '@/components/lift/LiftWorkspace';
+import LiftWorkspace, { type WorkspaceApi } from '@/components/lift/LiftWorkspace';
 import Sheets from './Sheets';
 
 type Locale = 'it' | 'en' | 'bg';
@@ -29,7 +29,7 @@ const SHELL: Record<Locale, { sub: string; tabs: Record<Tab, string>; calcTitle:
     calcTitle: 'Scelta e verifica dell’argano geared',
     calcLead: 'Aderenza, funi, motore, freno, soccorso e albero, con l’argano esistente a confronto e la proposta di un argano nuovo. I risultati si aggiornano mentre scrivi.',
     local: 'Tutto si calcola nel tuo browser: nessun dato esce da questa pagina e niente viene salvato.',
-    sheetsLead: 'Le tavole del progetto qui sopra, disegnate dal vivo con lo stesso nucleo del PDF dell’applicazione: un set non emesso, senza numero né logo.',
+    sheetsLead: 'Le tavole del progetto qui sopra, disegnate dal vivo con lo stesso nucleo del PDF dell’applicazione: un set non emesso, senza numero né logo. Anche qui ogni quota si cambia con un clic.',
   },
   en: {
     sub: 'geared machine · installation design',
@@ -37,7 +37,7 @@ const SHELL: Record<Locale, { sub: string; tabs: Record<Tab, string>; calcTitle:
     calcTitle: 'Choice and check of the geared machine',
     calcLead: 'Traction, ropes, motor, brake, rescue and shaft, with the existing machine compared and a new machine proposed. The results update as you type.',
     local: 'Everything is computed in your browser: no data leaves this page and nothing is saved.',
-    sheetsLead: 'The sheets of the design above, drawn live by the same kernel as the app’s PDF: an unissued set, without number or logo.',
+    sheetsLead: 'The sheets of the design above, drawn live by the same kernel as the app’s PDF: an unissued set, without number or logo. Here too any dimension changes with a click.',
   },
   bg: {
     sub: 'редукторна машина · проект на асансьора',
@@ -45,7 +45,7 @@ const SHELL: Record<Locale, { sub: string; tabs: Record<Tab, string>; calcTitle:
     calcTitle: 'Избор и проверка на редукторната машина',
     calcLead: 'Сцепление, въжета, мотор, спирачка, евакуация и вал, със сравнение със старата машина и предложение за нова. Резултатите се обновяват, докато пишете.',
     local: 'Всичко се смята във вашия браузър: никакви данни не напускат страницата и нищо не се записва.',
-    sheetsLead: 'Листовете на проекта отгоре, нарисувани на живо със същото ядро като PDF-а на приложението: неиздаден комплект, без номер и лого.',
+    sheetsLead: 'Листовете на проекта отгоре, нарисувани на живо със същото ядро като PDF-а на приложението: неиздаден комплект, без номер и лого. И тук всеки размер се сменя с щракване.',
   },
 };
 
@@ -81,6 +81,7 @@ function Tools({ locale, setLocale }: { locale: Locale; setLocale(l: Locale): vo
   const [opened, setOpened] = useState<Record<Tab, boolean>>(() => ({ calcolo: tab === 'calcolo', progetto: tab === 'progetto' }));
   const [design, setDesign] = useState<{ inputs: LiftInputs; derived: LiftDerived } | null>(null);
   const onDerived = useCallback((inputs: LiftInputs, derived: LiftDerived) => setDesign({ inputs, derived }), []);
+  const work = useRef<WorkspaceApi>(null);
   const open = (next: Tab) => (e: MouseEvent<HTMLAnchorElement>): void => {
     e.preventDefault();
     setTab(next);
@@ -122,8 +123,9 @@ function Tools({ locale, setLocale }: { locale: Locale; setLocale(l: Locale): vo
         ) : null}
         {opened.progetto ? (
           <div hidden={tab !== 'progetto'} className="ar-lift">
-            <LiftWorkspace projectId="" initial={defaultLift()} onDerived={onDerived} />
-            {design ? <Sheets inputs={design.inputs} derived={design.derived} lead={S.sheetsLead} /> : null}
+            <LiftWorkspace projectId="" initial={defaultLift()} onDerived={onDerived} api={work} />
+            {design ? <Sheets inputs={design.inputs} derived={design.derived} lead={S.sheetsLead}
+              onEdit={(e, length) => work.current?.edit(e, length) ?? { min: null, max: null }} /> : null}
           </div>
         ) : null}
       </main>
