@@ -2,6 +2,7 @@
 // installation, the project and the company, and the identity of this issue of the set (number, author, revisions).
 import type { FormValues } from '@/calc/types';
 import type { Layout } from '@/shaft/types';
+import type { ValueMarks } from '../lift/marks';
 import type { Plant } from '../plant';
 
 export interface TavoleRevision {
@@ -15,6 +16,8 @@ export interface TavoleInput {
   values: FormValues;
   layout: Layout;
   plant: Plant;
+  /** what the software filled in, when the calculation comes from the one form of a lift design */
+  marks?: ValueMarks;
   project: { name: string; address: string | null; city: string | null; province: string | null; plantNumber: string | null; client: string | null };
   company: { name: string; logo: { mime: 'image/png' | 'image/jpeg'; data: string } | null };
   set: {

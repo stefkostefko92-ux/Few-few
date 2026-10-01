@@ -57,7 +57,8 @@ export function travelLimits(m: SimModel, s: number): { s: number; bufCar: numbe
 export type ScenarioId = 'ride' | 'brake' | 'loading' | 'stall' | 'buffer';
 
 export interface RideParams { from: number; to: number; load: number }
-export interface BrakeParams { load: 'q' | 'e'; dir: 'dn' | 'up'; decel: 'real' | 'norm' }
+/** pos: the end position of the verification's case (default: the governing one for this load and direction) */
+export interface BrakeParams { load: 'q' | 'e'; dir: 'dn' | 'up'; decel: 'real' | 'norm'; pos?: 'b' | 't' }
 export interface BufferParams { side: 'car' | 'cw' }
 
 export type ScenarioParams =
@@ -78,6 +79,8 @@ export interface SimSummary {
   /** emergency stop: distances without and with the slip [m] */
   stopDistance?: number;
   slipDistance?: number;
+  /** emergency stop with the brake's own deceleration: what the brake alone gives [m/s²] (≤ 0: it cannot hold the car) */
+  brakeOwn?: number;
   /** buffers: largest compression and the stroke [m] */
   compression?: number;
   stroke?: number;

@@ -1,7 +1,8 @@
 // Values of sheet 1, written: characteristics and specifications of the installation from the calculation, the shaft
 // design and the data of the installation; the analysis of the loads on the machine; P1…P9; the forces on the rails;
-// the electrical supply; the title block. What nobody entered prints as a dash. The calculation and the design must
-// describe the same lift: where they disagree the set carries a warning.
+// the electrical supply; the title block. What nobody entered prints as a dash; the car weight estimated by the software
+// says so, with a note. The calculation and the design must describe the same lift: where they disagree the set
+// carries a warning (shown with the set).
 import appIt from '../../../messages/it.json';
 import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
@@ -13,25 +14,32 @@ import type { DataSheet, Row } from './datasheet';
 import { railForces } from './forces';
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { loads } from './loads';
-import { clientNotes, spaceLegend } from './notes';
+import { clientNotes, estimateNote, spaceLegend } from './notes';
 
 const fmt = makeFmt('it-IT');
 const dec = (x: number): number => (Number.isInteger(x) ? 0 : Math.abs(x * 10 - Math.round(x * 10)) < 1e-9 ? 1 : 2);
 const num = (x: number | null | undefined): string => (x == null ? '—' : fmt(x, dec(x)));
 const txt = (s: string | undefined, fallback = '—'): string => (s && s.trim() ? s.trim() : fallback);
 
+/** A value the calculation and the shaft design give differently. */
+export interface Mismatch {
+  what: 'travel' | 'speed' | 'load';
+  calc: number;
+  shaft: number;
+}
+
 export interface DataSheetResult {
   sheet: DataSheet;
-  warnings: string[];
+  warnings: Mismatch[];
 }
 
 export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheetResult {
-  const { ctx, res } = a, { I, N } = ctx, L = x.layout, Pl = x.plant, V = L.inputs.vertical, S = section(L);
-  const warnings: string[] = [];
+  const { ctx, res } = a, { I, N } = ctx, L = x.layout, Pl = x.plant, V = L.inputs.vertical, S = section(L), pEstimate = x.marks?.pEstimate ?? false;
+  const warnings: Mismatch[] = [];
   const travel = S.top / 1000;
-  if (Math.abs(travel - I.H) > 0.05) warnings.push(`corsa del calcolo ${fmt(I.H, 2)} m, del vano ${fmt(travel, 2)} m`);
-  if (Math.abs(V.v - I.v) > 0.005) warnings.push(`velocità del calcolo ${fmt(I.v, 2)} m/s, del vano ${fmt(V.v, 2)} m/s`);
-  if (L.Q !== I.Q) warnings.push(`portata del calcolo ${fmt(I.Q, 0)} kg, del vano ${fmt(L.Q, 0)} kg`);
+  if (Math.abs(travel - I.H) > 0.05) warnings.push({ what: 'travel', calc: I.H, shaft: travel });
+  if (Math.abs(V.v - I.v) > 0.005) warnings.push({ what: 'speed', calc: I.v, shaft: V.v });
+  if (L.Q !== I.Q) warnings.push({ what: 'load', calc: I.Q, shaft: L.Q });
 
   // stops and landing doors actually served
   const served = (f: (typeof V.floors)[number]): number => [...f.door].filter((s) => L.doors.some((d) => d.side === s)).length;
@@ -107,7 +115,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['PAVIMENTO DEL CLIENTE (MAX)', kg(Pl.massFloor), 'kg'],
     ['OPERATORE E ANTINE', kg(Pl.massDoors), 'kg'],
     ['ARCATA', kg(Pl.massFrame), 'kg'],
-    ['PESO TOTALE CABINA', fmt(I.P, 0), 'kg'],
+    ['PESO TOTALE CABINA', `${fmt(I.P, 0)}${pEstimate ? ' (STIMA)' : ''}`, 'kg'],
     ['FUNI', fmt(ropesKg, 0), 'kg'],
     ['CAVI FLESSIBILI', fmt(cablesKg, 0), 'kg'],
     ['CONTRAPPESO', fmt(res.Mcw, 0), 'kg'],
@@ -127,12 +135,13 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     if (c.id === 'm_door' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, OUTCOME[c.status]];
     return [label, withUnit(c.value, c.dec, c.unit), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, OUTCOME[c.status]];
   });
-  const sp = spaceLegend(L, fmt);
+  const sp = spaceLegend(L, fmt), notes = clientNotes(L);
+  if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
 
   return {
     warnings,
     sheet: {
-      base, specs, loads: loadRows, notes: clientNotes(L), legend: [sp.free, sp.pit, sp.top],
+      base, specs, loads: loadRows, notes, legend: [sp.free, sp.pit, sp.top],
       forces: { fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }, checks,
       electric: [['TENSIONE F.M.', 'V', num(Pl.voltage)], ['LUCE', 'V', num(Pl.lightVoltage)], ['FREQUENZA', 'Hz', num(Pl.frequency)], ['INTERMITTENZA', '%', num(Pl.duty)]],
       P, client: x.project.client || '—', location: placeLines(x.project), author: x.set.author, date: dateIt(x.set.issuedAt),

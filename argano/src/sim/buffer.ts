@@ -32,7 +32,8 @@ export function buffer(m: SimModel, p: BufferParams): SimRun {
   const sOf = (x: number): number => (car ? contact - x : contact + x);
   const frame = (x: number, vIn: number, aOut: number, tau: number | null): Omit<Frame, 't'> => {
     const s = sOf(x), rise = tau == null ? 0 : jumpAt(Math.min(tau, tj));
-    const vUp = car ? -vIn : vIn;
+    // the counterweight on its buffer: the car rides up with the jump as well
+    const vUp = car ? -vIn : vIn + (tau != null && tau < tj ? vj - G * tau : 0);
     return {
       s: car ? s : s + rise, v: vUp, a: aOut, cw: car ? m.cw0 - s + rise : m.cw0 - s, theta: m.phys.sheaveAngle(s - sOf(0)), rope: I.r * (s - sOf(0)),
       Tc: Number.NaN, Tw: Number.NaN, ratio: Number.NaN, efa: Number.NaN, torque: 0, bufCar: car ? x : 0, bufCw: car ? 0 : x, door: 0,

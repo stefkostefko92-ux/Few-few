@@ -11,7 +11,7 @@ import type { PlanLevel } from '@/shaft/plan-view';
 import type { SectionKind } from '@/shaft/section-dims';
 import type { Layout } from '@/shaft/types';
 import { analyse, type Analysis } from '../present/analysis';
-import { dataSheet } from './data';
+import { dataSheet, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
 import { legendColumn, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
 import { dateIt, placeLines, type TavoleInput } from './input';
@@ -27,7 +27,7 @@ type Spec =
 export interface TavoleResult {
   doc: DrawingDoc;
   /** where the calculation and the design disagree */
-  warnings: string[];
+  warnings: Mismatch[];
   /** title and scale of each sheet */
   sheets: { title: string; scale: number | null }[];
 }

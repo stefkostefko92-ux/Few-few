@@ -9,7 +9,7 @@ import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import { deriveLift, type AutoFlags, type LiftInputs } from '@/lib/lift';
-import { mirrorRopes } from '@/lib/present/analysis';
+import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
@@ -44,7 +44,7 @@ export default function LiftWorkspace({ projectId, initial }: Props) {
   const [saving, startSaving] = useTransition();
   const deferred = useDeferredValue(inp);
   const derived = useMemo(() => deriveLift(deferred), [deferred]);
-  const bad = useMemo(() => new Set(visibleBad(derived.analysis.ctx.bad, derived.values)), [derived]);
+  const bad = useMemo(() => new Set(visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values)), [derived]);
   const sim = useRef<SimApi>(null);
 
   const setShaft = (patch: Partial<ShaftInputs>): void => {
@@ -56,7 +56,22 @@ export default function LiftWorkspace({ projectId, initial }: Props) {
     setInp((p) => ({ ...p, calc: mirrorRopes({ ...p.calc, ...patch }) }));
     setSaveError(null);
   };
-  const setAuto = (patch: Partial<AutoFlags>): void => setInp((p) => ({ ...p, auto: { ...p.auto, ...patch } }));
+  // a value switched to entered starts from the one the software showed, so nothing jumps
+  const setAuto = (patch: Partial<AutoFlags>): void => {
+    const pick = derived.analysis.sizing.pick;
+    const ids: Readonly<Record<keyof AutoFlags, readonly string[]>> = {
+      P: ['P'], L0: ['L0'], dx: ['dx'], Hv: ['Hv'], machine: derived.origin.machine === 'auto' && pick ? Object.keys(proposalValues(pick)) : [],
+    };
+    const seed: Record<string, string | number | boolean> = {};
+    for (const k of Object.keys(patch) as (keyof AutoFlags)[]) {
+      if (patch[k] !== false) continue;
+      for (const id of ids[k]) {
+        const v = derived.values[id];
+        if (v !== undefined) seed[id] = v;
+      }
+    }
+    setInp((p) => ({ ...p, auto: { ...p.auto, ...patch }, calc: mirrorRopes({ ...p.calc, ...seed }) }));
+  };
   const setSize = (key: 'W' | 'D', value: string): void => {
     const v = Math.round(Number(value.replace(',', '.')));
     if (!Number.isFinite(v)) return;

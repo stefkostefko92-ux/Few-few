@@ -98,6 +98,38 @@ test('funi che slittano alla decelerazione reale del freno (esempio A, capitolo 
   assert.ok(run.events.some((e) => e.id === 'slip'));
 });
 
+test('frenatura in ogni caso della verifica: parte e si ferma dentro la corsa, con l\'utilizzo del caso', () => {
+  for (const pr of ['A', 'B', 'C'] as const) {
+    for (const m of [modelOf(pr), modelOf(pr, { H: 3 })]) {
+      for (const decel of ['norm', 'real'] as const) {
+        for (const c of decel === 'real' ? m.res.brkReal : m.res.brk) {
+          const run = runScenario(m, { id: 'brake', p: { load: c.load, dir: c.dir, decel, pos: c.pos } }), tag = `${pr} H ${m.H} ${decel} ${c.load}/${c.dir}/${c.pos}`;
+          near(run.summary.util, c.util, 1e-9, `${tag} utilizzo`);
+          const on = run.events.find((e) => e.id === 'brakeOn')?.t ?? Infinity, d = run.series.data;
+          for (let i = 0; i < run.series.n && i * run.series.dt < on - 1e-9; i++) {
+            assert.ok(d.s[i] >= -1e-9 && d.s[i] <= m.H + 1e-9, `${tag}: fuori corsa prima del freno (${d.s[i]})`);
+            assert.ok(d.bufCar[i] === 0 && d.bufCw[i] === 0, `${tag}: sugli ammortizzatori prima del freno`);
+          }
+          const end = frameAt(run.series, duration(run.series)).s;
+          if (Number.isFinite(run.summary.slipDistance ?? 0)) assert.ok(end >= -1e-6 && end <= m.H + 1e-6, `${tag}: fermata fuori corsa (${end})`);
+        }
+      }
+    }
+  }
+});
+
+test('frenata con il freno reale: l\'accelerazione e l\'esito della verifica; un freno che non trattiene la cabina non passa', () => {
+  const m = modelOf('C'), hard = m.res.brake.aMaxCase;
+  const run = runScenario(m, { id: 'brake', p: { load: hard.load, dir: hard.dir, decel: 'real', pos: hard.pos } });
+  near(run.summary.accel, hard.aEff, 1e-9, 'decelerazione massima del freno');
+  near(run.summary.brakeOwn ?? NaN, hard.a, 1e-9, 'decelerazione del freno da solo');
+  // a brake too weak to hold the loaded car going down
+  const weak = modelOf('C', { n_brakeNm: 5 });
+  const w = runScenario(weak, { id: 'brake', p: { load: 'q', dir: 'dn', decel: 'real' } });
+  assert.ok((w.summary.brakeOwn ?? 1) <= 0 && w.verdict === 'fail', `freno debole: ${w.summary.brakeOwn} ${w.verdict}`);
+  assert.ok(w.events.some((e) => e.id === 'carStop') && frameAt(w.series, duration(w.series)).bufCar > 0, 'sugli ammortizzatori');
+});
+
 test('caricamento a 1,25·Q e cabina bloccata: stesso esito della verifica', () => {
   for (const pr of ['A', 'B', 'C'] as const) {
     const m = modelOf(pr);
@@ -107,6 +139,30 @@ test('caricamento a 1,25·Q e cabina bloccata: stesso esito della verifica', () 
     const st = runScenario(m, { id: 'stall' });
     assert.equal(st.verdict === 'ok', m.res.stall.ratio >= m.res.stall.efa);
     if (st.summary.slip) near(st.summary.ratio, st.summary.efa, 1e-6, `${pr} slittamento`);
+  }
+});
+
+test('caricamento che slitta: la cabina scivola con l\'aderenza al limite, non cade; l\'esito è quello della verifica a 1,25·Q', () => {
+  const m = modelOf('A', { k: 0.3 }), run = runScenario(m, { id: 'loading' });
+  assert.ok(m.res.load.util > 1, 'la verifica del caricamento non passa');
+  near(run.summary.util, m.res.load.util, 1e-12, 'utilizzo della verifica');
+  assert.equal(run.verdict, 'fail');
+  const d = run.series.data;
+  let sliding = 0;
+  for (let i = 0; i < run.series.n; i++) {
+    if (!d.slip[i]) continue;
+    sliding += 1;
+    assert.ok(d.a[i] < 0 && d.a[i] > -1, `accelerazione nello slittamento ${d.a[i]}`);
+    // the acceleration of the step before, at the position after it: equal to the rope's weight moved in one step
+    near(d.ratio[i], d.efa[i], 1e-4, 'T1/T2 al limite mentre slitta');
+  }
+  assert.ok(sliding > 0, 'slitta');
+});
+
+test('cabina bloccata al limite: la simulazione dà l\'esito della verifica (funi come all\'ultimo piano)', () => {
+  for (let H = 51; H <= 54.01; H += 0.25) {
+    const m = modelOf('A', { n_n: 8, n_d: 13, n_qf: 0.568, n_Fmin: 80, H }), run = runScenario(m, { id: 'stall' });
+    assert.equal(run.verdict === 'ok', m.res.stall.ratio >= m.res.stall.efa, `H ${H}`);
   }
 });
 
@@ -128,15 +184,19 @@ test('moto coerente: la velocità è la derivata della posizione in ogni scenari
       runScenario(m, { id: 'ride', p: { from: 0, to: m.levels.length - 1, load: m.I.Q } }),
       runScenario(m, { id: 'brake', p: { load: 'q', dir: 'dn', decel: 'norm' } }),
       runScenario(m, { id: 'brake', p: { load: 'e', dir: 'up', decel: 'real' } }),
+      runScenario(m, { id: 'brake', p: { load: 'q', dir: 'up', decel: 'norm', pos: 'b' } }),
+      runScenario(m, { id: 'brake', p: { load: 'e', dir: 'dn', decel: 'norm', pos: 't' } }),
       runScenario(m, { id: 'loading' }),
       runScenario(m, { id: 'stall' }),
       runScenario(m, { id: 'buffer', p: { side: 'car' } }),
+      runScenario(m, { id: 'buffer', p: { side: 'cw' } }),
     ];
     for (const run of runs) {
       const { s, v } = run.series.data, dt = run.series.dt;
-      // central differences against the speed; a few samples may sit on a kink (contact, slip onset)
+      // each step against the mean speed over it (trapezoid: exact to dt² even on a stiff buffer); a few steps may hold
+      // a kink (contact, slip onset, the car landing back after its jump)
       let off = 0;
-      for (let i = 1; i < run.series.n - 1; i++) if (Math.abs((s[i + 1] - s[i - 1]) / (2 * dt) - v[i]) > 0.05) off += 1;
+      for (let i = 0; i < run.series.n - 1; i++) if (Math.abs((s[i + 1] - s[i]) / dt - (v[i] + v[i + 1]) / 2) > 0.05) off += 1;
       assert.ok(off <= 3, `${pr} ${run.scenario.id}: ${off} campioni con velocità incoerente`);
     }
   }

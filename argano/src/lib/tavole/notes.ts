@@ -4,6 +4,7 @@
 import type { SymbolName } from '@/drawing';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { Layout } from '@/shaft/types';
+import { P_ESTIMATE_RULE } from '../lift/marks';
 import type { Fmt } from '../present/tr';
 
 const POSTURE: Readonly<Record<1 | 2 | 3, string>> = { 1: 'IN PIEDI', 2: 'ACCUCCIATO', 3: 'DISTESO' };
@@ -54,6 +55,14 @@ export function clientNotes(L: Layout): Note[] {
   });
   return notes;
 }
+
+/** The car weight was not entered: the sheet carries the software's estimate, to be replaced before the works. */
+export const estimateNote = (P: string, tag: string): Note => ({
+  title: 'DATI STIMATI DAL SOFTWARE', tag,
+  text: `Il peso totale della cabina (${P} kg) non è stato inserito: è la stima del software (${P_ESTIMATE_RULE}). Contrappeso, aderenza, `
+    + 'funi e carichi P1-P9 di questo foglio ne dipendono: prima dei lavori va sostituito con il peso reale (libretto dell\'impianto, costruttore '
+    + 'della cabina o prova di bilanciamento) e il calcolo va ripetuto.',
+});
 
 export interface LegendItem {
   sym: SymbolName;

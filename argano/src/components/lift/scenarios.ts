@@ -30,9 +30,14 @@ export function scenarioForCheck(id: CheckId | ShaftCheckId, res: Results, m: Si
   const top = m.levels.length - 1;
   switch (id) {
     case 'tr_load': return { sc: { id: 'loading' }, view: 'car' };
-    case 'tr_dn': return { sc: { id: 'brake', p: { load: res.dn.load, dir: 'dn', decel: 'norm' } }, view: 'room' };
-    case 'tr_up': return { sc: { id: 'brake', p: { load: res.up.load, dir: 'up', decel: 'norm' } }, view: 'room' };
-    case 'tr_real': case 'b_amax': return { sc: { id: 'brake', p: { load: res.real.load, dir: res.real.dir, decel: 'real' } }, view: 'room' };
+    case 'tr_dn': return { sc: { id: 'brake', p: { load: res.dn.load, dir: 'dn', decel: 'norm', pos: res.dn.pos } }, view: 'room' };
+    case 'tr_up': return { sc: { id: 'brake', p: { load: res.up.load, dir: 'up', decel: 'norm', pos: res.up.pos } }, view: 'room' };
+    case 'tr_real': return { sc: { id: 'brake', p: { load: res.real.load, dir: res.real.dir, decel: 'real', pos: res.real.pos } }, view: 'room' };
+    // the largest deceleration the brake gives: its own case, not the worst for traction
+    case 'b_amax': {
+      const c = res.brake.aMaxCase;
+      return { sc: { id: 'brake', p: { load: c.load, dir: c.dir, decel: 'real', pos: c.pos } }, view: 'room' };
+    }
     case 'tr_stall': return { sc: { id: 'stall' }, view: 'room' };
     case 'd_pst': case 'd_ratio': case 'd_mp': return { sc: { id: 'ride', p: { from: 0, to: top, load: m.I.Q } }, view: 'car' };
     case 'b_car': case 'b_runby': case 'p_apron': return { sc: { id: 'buffer', p: { side: 'car' } }, view: 'pit' };

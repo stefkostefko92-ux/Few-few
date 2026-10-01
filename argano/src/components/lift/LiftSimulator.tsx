@@ -44,10 +44,15 @@ function summary(run: SimRun, t: ReturnType<typeof useTranslations<'lift'>>, fmt
   const s = run.summary, sc = run.scenario;
   if (sc.id === 'ride') return t(s.util > 1 ? 'sum_ride_over' : 'sum_ride', { from: labels[sc.p.from] ?? '', to: labels[sc.p.to] ?? '', load: fmt(sc.p.load, 0), util: fmt(s.util, 3), torque: fmt(s.torque, 0) });
   if (sc.id === 'brake') {
+    if (s.brakeOwn != null && s.brakeOwn <= 0) return t('sum_brake_none', { tb: fmt(s.torque, 0) });
     const base = { a: fmt(s.accel, 2), util: fmt(s.util, 2), d0: fmt((s.stopDistance ?? 0) * 100, 0) };
-    return s.slip ? t('sum_brake_slip', { ...base, d1: fmt(Math.min(s.slipDistance ?? 0, 99) * 100, 0) }) : t('sum_brake_ok', base);
+    // the brake alone is weaker than the standard's minimum, which the verification uses
+    const min = s.brakeOwn != null && s.brakeOwn < s.accel - 1e-9 ? ` ${t('sum_brake_min', { a0: fmt(s.brakeOwn, 2), a: base.a })}` : '';
+    const d1 = s.slipDistance ?? 0;
+    if (s.slip) return (Number.isFinite(d1) ? t('sum_brake_slip', { ...base, d1: fmt(d1 * 100, 0) }) : t('sum_brake_runaway', base)) + min;
+    return t('sum_brake_ok', base) + min;
   }
-  if (sc.id === 'loading') return t(s.slip ? 'sum_loading_fail' : 'sum_loading_ok', { util: fmt(s.util, 3) });
+  if (sc.id === 'loading') return t(run.verdict === 'fail' ? 'sum_loading_fail' : 'sum_loading_ok', { util: fmt(s.util, 3) });
   if (sc.id === 'stall') return t(run.verdict === 'ok' ? 'sum_stall_ok' : 'sum_stall_fail', { ratio: fmt(s.ratio, 2), efa: fmt(s.efa, 2) });
   const x = fmt((s.compression ?? 0) * 1000, 0), stroke = fmt((s.stroke ?? 0) * 1000, 0);
   return run.verdict === 'ok' ? t('sum_buffer_ok', { x, stroke, g: fmt(s.accel / 9.81, 2) }) : t('sum_buffer_fail', { stroke });
@@ -108,8 +113,9 @@ export default function LiftSimulator({ derived, fmt, api }: Props) {
         put('speed', `${fmt(Math.abs(f.v), 2)} m/s ${f.v > 0.005 ? '▲' : f.v < -0.005 ? '▼' : ''}`);
         put('ratio', Number.isFinite(f.ratio) ? `${fmt(f.ratio, 2)} / ${fmt(f.efa, 2)}` : '—');
         put('load', `${fmt(f.load, 0)} kg`);
-        // a slip is the expected outcome with the car stalled, an advice with the brake's own deceleration, a failure otherwise
-        el.dataset.slip = f.slip > 0 ? (sc.id === 'stall' ? 'ok' : sc.id === 'brake' && sc.p.decel === 'real' ? 'warn' : 'fail') : '';
+        // a slip is the expected outcome with the car stalled, an advice with the brake's own deceleration (unless the car
+        // does not stop), a failure otherwise
+        el.dataset.slip = f.slip > 0 ? (sc.id === 'stall' ? 'ok' : sc.id === 'brake' && sc.p.decel === 'real' && run.verdict !== 'fail' ? 'warn' : 'fail') : '';
         // the brake holding a car at rest is the normal state: flagged only while it stops a moving car
         el.dataset.brake = f.brake > 0 && Math.abs(f.v) > 0.005 ? '1' : '0';
       }

@@ -1,6 +1,7 @@
 // Which charts a run shows, and what is on them: one quantity per chart (never two scales on one plot), the
-// run's time on x, a limit or a reference line where the verification has one, with the side that fails. Pure.
-import type { SimRun } from '@/sim';
+// run's time on x, a limit or a reference line where the verification has one (from the moment its condition holds),
+// with the side that fails. Pure.
+import type { EventId, SimRun } from '@/sim';
 
 export interface Line {
   key: string;
@@ -44,6 +45,11 @@ export function chartsFor(run: SimRun, t: ChartText, R: number, r: number, Mn: n
   const d = run.series.data, sc = run.scenario.id;
   const speed: ChartSpec = { key: 'v', title: t('ch_v'), unit: 'm/s', dec: 2, zero: true, lines: [{ key: 'v', label: t('ch_car'), values: d.v, tone: 1 }] };
   const accel: ChartSpec = { key: 'a', title: t('ch_a'), unit: 'm/s²', dec: 2, zero: true, lines: [{ key: 'a', label: t('ch_car'), values: d.a, tone: 1 }] };
+  // the condition of a check holds from its event on (the brake closing, the counterweight on its buffer): no limit before
+  const from = (id: EventId): Float64Array => {
+    const on = run.events.find((e) => e.id === id)?.t ?? 0, dt = run.series.dt;
+    return map(d.efa, (x, i) => (i * dt >= on - 1e-9 ? x : Number.NaN));
+  };
   const traction = (bad: 'above' | 'below', limit: ArrayLike<number> = d.efa): ChartSpec => ({
     key: 'ratio', title: t('ch_ratio'), unit: '', dec: 3, lines: [{ key: 'ratio', label: 'T1/T2', values: d.ratio, tone: 1 }],
     limit: { values: limit, label: t('ch_limit'), bad },
@@ -57,16 +63,12 @@ export function chartsFor(run: SimRun, t: ChartText, R: number, r: number, Mn: n
     lines: [{ key: 'car', label: t('ch_car'), values: map(d.v, Math.abs), tone: 1 }, { key: 'sheave', label: t('ch_sheave'), values: sheaveSpeed(run, R, r), tone: 2 }],
   };
   if (sc === 'ride') return [speed, accel, traction('above'), torque];
-  if (sc === 'brake') return [both, traction('above'), { ...accel, title: t('ch_a') }];
+  if (sc === 'brake') return [both, traction('above', from('brakeOn')), { ...accel, title: t('ch_a') }];
   if (sc === 'loading') {
     return [{ key: 'load', title: t('ch_load'), unit: 'kg', dec: 0, zero: true, lines: [{ key: 'load', label: t('ch_load'), values: d.load, tone: 1 }], limit: { values: 1.25 * Q, label: t('ch_load125'), bad: 'none' } },
       traction('above')];
   }
-  if (sc === 'stall') {
-    // the condition of the check holds once the counterweight is on its buffer: no limit before
-    const on = run.events.find((e) => e.id === 'cwBuffer')?.t ?? 0, dt = run.series.dt;
-    return [both, traction('below', map(d.efa, (x, i) => (i * dt >= on - 1e-9 ? x : Number.NaN))), torque];
-  }
+  if (sc === 'stall') return [both, traction('below', from('cwBuffer')), torque];
   // buffers: the deceleration of the mass on the buffer in g, the compression against the stroke
   const car = run.scenario.id === 'buffer' && run.scenario.p.side === 'car';
   const comp = car ? d.bufCar : d.bufCw;

@@ -10,11 +10,13 @@ import { shaftInputsSchema } from '@/lib/shaft-input';
 import { AUTO_ALL, defaultLift, type LiftInputs } from '@/lib/lift';
 
 export async function liftStart(user: SessionUser, projectId: string, fromId: string | null): Promise<LiftInputs> {
-  const lift = await prisma.liftDesign.findFirst({
-    where: { projectId, companyId: user.companyId, ...(fromId ? { id: fromId } : {}) },
+  const find = (id: string | null) => prisma.liftDesign.findFirst({
+    where: { projectId, companyId: user.companyId, ...(id ? { id } : {}) },
     orderBy: { createdAt: 'desc' },
     select: { inputs: true },
   });
+  // an id not of this installation (or not the company's) counts as none: the latest is taken
+  const lift = (fromId ? await find(fromId) : null) ?? await find(null);
   const parsed = lift ? liftInputsSchema.safeParse(lift.inputs) : null;
   if (parsed?.success) return parsed.data;
   const base = defaultLift();

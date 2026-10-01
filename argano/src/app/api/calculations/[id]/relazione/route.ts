@@ -5,6 +5,7 @@ import { idSchema } from '@/lib/schemas';
 import { formValuesSchema } from '@/lib/calc-input';
 import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
+import { calcMarks } from '@/lib/lift-marks';
 import { buildReport } from '@/lib/report/build';
 import { renderPdf } from '@/lib/report/render';
 import { audit } from '@/lib/audit';
@@ -19,7 +20,8 @@ const text = (status: number, body: string): Response => new Response(body, { st
 const slug = (s: string): string => s.normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[\s_]+/g, '-').toLowerCase().slice(0, 60) || 'impianto';
 
 // The report of a saved calculation, regenerated from the stored values only when the running engine reproduces
-// the stored hash, and that of the shaft design the calculation comes from (otherwise 409: it must be redone).
+// the stored hash, and that of the shaft design the calculation comes from (otherwise 409: it must be redone). What the
+// software filled in from the one form of a lift design is marked as such.
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
   try {
     const user = await getSessionUser();
@@ -36,7 +38,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (c.shaftDesign && !design) return text(409, 'The running engine does not reproduce the shaft design of this calculation');
     const doc = buildReport({
       calc: { id: c.id, label: c.label, createdAt: c.createdAt, sha256: c.sha256, engineVersion: c.engineVersion, profileId: c.profileId, author: c.user?.name ?? null },
-      project: c.project, company: user.companyName, values: values.data, design, generatedAt: new Date(),
+      project: c.project, company: user.companyName, values: values.data, design, marks: calcMarks(c.liftDesign, c.sha256), generatedAt: new Date(),
       reviews: c.reviews.map((r) => ({ name: r.user?.name ?? null, role: r.user && isRole(r.user.role) ? r.user.role : null, note: r.note, createdAt: r.createdAt })),
     });
     const pdf = await renderPdf(doc);

@@ -127,6 +127,8 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
   controls.minDistance = 0.8;
   controls.maxDistance = 120;
   let view: View = opts.view;
+  // the zones switch, kept across a change of design; the count of designs asked for (the latest wins)
+  let zonesOn = false, designs = 0;
   // camera glide toward a view: from where it is to target + offset·distance
   // (on the wall clock: it takes GLIDE_MS however slow the frames are)
   let glide: { from: THREE.Vector3; to: THREE.Vector3; tFrom: THREE.Vector3; tTo: THREE.Vector3; start: number } | null = null;
@@ -253,6 +255,8 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
       renderer.setAnimationLoop(next ? frame : null);
     },
     async setDesign(next) {
+      // only the latest design is put on: an older one finishing its compile later is dropped
+      const ticket = ++designs;
       const st = build(next);
       if (!st) return;
       try {
@@ -261,10 +265,11 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
         release(st);
         return;
       }
-      if (disposed) { release(st); return; }
+      if (disposed || ticket !== designs) { release(st); return; }
       const old = stage;
       stage = st;
       world = st.world;
+      world.setZones(zonesOn);
       const f = opts.clock.frame();
       if (f) world.update(f, camera.position);
       release(old);
@@ -276,6 +281,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
       wake();
     },
     setZones(on) {
+      zonesOn = on;
       world.setZones(on);
       wake();
     },

@@ -4,6 +4,8 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
+import { INTL_LOCALE, isLocale } from '@/i18n/locales';
+import { makeFmt } from '@/lib/present/tr';
 import { revisionsSchema } from '@/lib/tavole/compose';
 import { composeStored } from '@/server/drawing-compose';
 import { getDrawingSet, listCalculations, listRevisions } from '@/server/queries';
@@ -19,7 +21,8 @@ export async function generateMetadata() {
 }
 
 // An issued drawing set: its number and revision, the PDF, one sheet at a time drawn again from what the set was made
-// of (the same drawing, or a warning that the engines no longer reproduce it), the revisions and a new revision.
+// of (the same drawing, or a warning that the engines no longer reproduce it), where its calculation and shaft design
+// disagree, the revisions and a new revision.
 export default async function DrawingSetPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ p?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -27,9 +30,11 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   const s = await getDrawingSet(user, id);
   if (!s) notFound();
   const [t, tp, tc] = await Promise.all([getTranslations('tavole'), getTranslations('projects'), getTranslations('calculations')]);
-  const fd = dateFormat(locale);
+  const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const r = composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo });
   const doc = 'doc' in r ? r.doc : null;
+  const DEC = { travel: 2, speed: 2, load: 0 } as const;
+  const mismatch = 'doc' in r ? r.warnings.map((w) => t(`mm_${w.what}`, { calc: fmt(w.calc, DEC[w.what]), shaft: fmt(w.shaft, DEC[w.what]) })) : [];
   const total = doc?.pages.length ?? s.pages, page = Math.min(Math.max(1, Number((await searchParams).p) || 1), total);
   const sheet = doc?.pages[page - 1];
   const history = await listRevisions(user, s.year, s.seq);
@@ -52,6 +57,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
         </div>
       </div>
       {doc ? null : <p className="alert alert-warn">{t('engineChanged')}</p>}
+      {mismatch.length ? <p className="alert alert-warn" role="status">{t('mismatch', { list: mismatch.join('; ') })}</p> : null}
       {doc && sheet ? (
         <section className="flex flex-col gap-3">
           <nav className="seg-row" aria-label={t('sheets')}>

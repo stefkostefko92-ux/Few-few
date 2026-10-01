@@ -13,11 +13,12 @@ export interface RopeModel {
   set(s: number, w: number): void;
 }
 
-const UNIT = new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)), 1, 1, 10);
 const Y = new THREE.Vector3(0, 1, 0);
 
 export function buildRopes(rig: RopeRig, n: number, d: number, M: LiftMaterials): RopeModel {
   const group = new THREE.Group(), rr = d / 2000, pitch = Math.max(d + 6, 1.7 * d) / 1000;
+  // one unit tube per world, shared by its straight runs: disposed with the world (never shared across worlds)
+  const unit = new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)), 1, 1, 10);
   const [ox, oy] = rig.origin, [dx, dy] = rig.dir;
   // a point of the rope plane (u, y) for rope i, in world metres; the ropes spread across the plane
   const world = (u: number, y: number, i: number, out = new THREE.Vector3()): THREE.Vector3 => {
@@ -29,7 +30,7 @@ export function buildRopes(rig: RopeRig, n: number, d: number, M: LiftMaterials)
   const ref: Belt = belt(rig.elements(0, 0));
   // runs up to the sheave carry the car side's texture, the rest the counterweight side's
   const runMeshes = ref.runs.map((_, j) => Array.from({ length: n }, () => {
-    const m = new THREE.Mesh(UNIT, j < sheaveAt ? M.ropeCar : M.ropeCw);
+    const m = new THREE.Mesh(unit, j < sheaveAt ? M.ropeCar : M.ropeCw);
     m.castShadow = true;
     group.add(m);
     return m;

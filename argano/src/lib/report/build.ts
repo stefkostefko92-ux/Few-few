@@ -1,6 +1,7 @@
 // Relazione di calcolo (Italian) of a saved calculation: identification, object and references, data, verified
 // machine, checks with their clauses, every traction case, detailed tables, sensitivity, comparison, proposal,
-// adaptations, values to check, status of the normative entries used, notice and signature. Pure.
+// adaptations, values to check, status of the normative entries used, notice and signature. The values the software
+// filled in from the one form (estimated car mass, geometry from the shaft design, machine proposed) are marked. Pure.
 import calcIt from '../../../messages/calc/it.json';
 import appIt from '../../../messages/it.json';
 import { deg } from '@/calc/math';
@@ -8,6 +9,8 @@ import { PROFILO, VOCI, type Stato } from '@/calc/norme';
 import { COND, PALETTE, concreteTile } from '@/drawing';
 import { vociOfDesign } from '@/shaft';
 import type { BrakeCase, CheckId, CheckStatus, FormValues, TractionCase } from '@/calc/types';
+import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
+import { VOCI_IMPIANTO } from '../lift/norme';
 import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
 import { techTables, type Cell } from '../present/tables';
@@ -24,6 +27,8 @@ export interface ReportInput {
   values: FormValues;
   /** the shaft design the calculation comes from, when there is one */
   design?: ReportDesign | null;
+  /** what the software filled in, when the calculation comes from the one form of a lift design */
+  marks?: ValueMarks;
   generatedAt: Date;
 }
 
@@ -40,7 +45,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   const P = makePres(calcIt, 'it-IT'), X = textsFor(P), { t, fmt } = P;
   const a = analyse(r.values), { ctx, res, old, sizing, sens } = a, { I, N } = ctx;
   const when = (d: Date): string => new Intl.DateTimeFormat('it-IT', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(d);
-  const repl = I.context === 'repl', pr = r.project;
+  const repl = I.context === 'repl', pr = r.project, m = r.marks ?? NO_MARKS;
+  const fromShaft = (k: 'L0' | 'dx' | 'Hv', named = true): string => (m.geometry.includes(k) ? ` (${named ? `${k} ` : ''}dal progetto del vano)` : '');
   const place = [pr.address, pr.city, pr.province].filter(Boolean).join(', ');
   const B: ReportBlock[] = [];
   let n = 0;
@@ -70,16 +76,22 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   section("Dati dell'impianto");
   const plant: [string, string][] = [
-    [t('context'), t(repl ? 'ctx_repl' : 'ctx_new')], [t('layout'), t(`lay_${I.layout}`)], [t('Q'), `${fmt(I.Q, 0)} kg`], [t('P'), `${fmt(I.P, 0)} kg`],
+    [t('context'), t(repl ? 'ctx_repl' : 'ctx_new')], [t('layout'), t(`lay_${I.layout}`)], [t('Q'), `${fmt(I.Q, 0)} kg`],
+    [t('P'), `${fmt(I.P, 0)} kg${m.pEstimate ? ' — stima del software, da sostituire con la massa reale' : ''}`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg${I.qeq > 0 ? ` (${t('qeq')}: ${fmt(I.qeq, 0)} kg)` : ''}`], [t('v'), `${fmt(I.v, 2)} m/s`],
-    [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 1)} m · ${fmt(I.L0, 1)} m`], [t('alphaMode'), `α ${X.alphaText(res)}`],
-    ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')}`, `${fmt(I.dx, 2)} m · ${fmt(I.h, 2)} m`] as [string, string]] : []),
-    ...(I.layout === 'bottom' ? [[t('Hv'), `${fmt(I.Hv, 1)} m`] as [string, string]] : []),
+    [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 1)} m · ${fmt(I.L0, 1)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
+    ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')}`, `${fmt(I.dx, 2)} m · ${fmt(I.h, 2)} m${fromShaft('dx')}`] as [string, string]] : []),
+    ...(I.layout === 'bottom' ? [[t('Hv'), `${fmt(I.Hv, 1)} m${fromShaft('Hv', false)}`] as [string, string]] : []),
     ...(res.ropes.DpD != null ? [[t('Dp'), `${fmt(I.Dp, 0)} mm`] as [string, string]] : []),
     [t('etaShaft'), fmt(I.etaShaft, 2)], [`${t('aDesign')} · ${t('aBrake')}`, `${fmt(I.aDesign, 2)} · ${fmt(I.aBrake, 2)} m/s²`],
     [t('buffers'), I.ae > 0.5 ? 'sì' : 'no'], [t('rh'), `${fmt(I.rh, 2)} m`],
   ];
   B.push({ t: 'kv', rows: plant });
+  if (m.pEstimate) {
+    B.push({ t: 'box', text: `MASSA DELLA CABINA STIMATA. La massa della cabina P = ${fmt(I.P, 0)} kg non è stata inserita: è la stima del software (${P_ESTIMATE_RULE}). `
+      + 'Contrappeso, aderenza, funi, freno e carichi dipendono da P: prima di usare questa relazione sostituirla con la massa reale (libretto '
+      + "dell'impianto, costruttore della cabina o prova di bilanciamento) e ripetere il calcolo." });
+  }
 
   if (r.design) {
     section('Vano e cabina');
@@ -88,6 +100,10 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   section('Argano verificato');
   B.push({ t: 'kv', rows: X.machineRows(N, res) });
+  if (m.machineProposed) {
+    B.push({ t: 'p', style: 'note', text: 'Argano proposto dal dimensionamento del software: la prima opzione che passa ogni verifica, su una griglia di calcolo e '
+      + 'non su un catalogo. Il modello reale va scelto con il costruttore con questi valori e la verifica ripetuta con i suoi dati di targa.' });
+  }
   B.push({ t: 'verdict', text: `${X.verdictText(res)} — ${t('indicative')}`, status: verdictStatus(res) });
   if (old) {
     B.push({ t: 'h3', text: `${t('g_old')} (confronto)` });
@@ -166,12 +182,16 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
 
   section(t('c_verify'));
-  B.push({ t: 'list', items: X.verifyList(I, N, res).map((x) => `⚠ ${x}`) });
+  const estimated = m.pEstimate ? [`Massa della cabina: è la stima del software (${P_ESTIMATE_RULE}); sostituirla con quella reale e ripetere il calcolo`] : [];
+  B.push({ t: 'list', items: [...estimated, ...X.verifyList(I, N, res)].map((x) => `⚠ ${x}`) });
 
   section('Voci normative usate e loro stato');
   const ids = new Set(res.checks.map((c) => c.id));
   const used = VOCI.filter((v) => v.verifiche?.some((c) => ids.has(c)));
-  const listed = [...used, ...vano];
+  // and the registry entries of the values the software filled in, where the layout uses them
+  const filled = new Set([...(m.pEstimate ? ['impianto.massa.cabina'] : []), ...(m.machineProposed ? ['impianto.macchina'] : []),
+    ...m.geometry.filter((k) => k === 'L0' || (k === 'dx' && I.layout === 'topDefl') || (k === 'Hv' && I.layout === 'bottom')).map((k) => `impianto.${k}`)]);
+  const listed = [...used, ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
   B.push({ t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),
     status: listed.map((v) => (v.stato === 'confermato' ? 'ok' : v.stato === 'da_verificare' ? 'warn' : 'info')), widths: [0.27, 0.33, 0.26, 0.14], align: ['l', 'l', 'l', 'l'] });
 

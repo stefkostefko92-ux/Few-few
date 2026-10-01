@@ -42,7 +42,7 @@ export async function saveLiftDesignAction(input: { projectId: unknown; inputs: 
   if (!project) return { ok: false, error: 'notFound' };
 
   const d = deriveLift(inputs.data);
-  if (d.analysis.ctx.bad.length) return { ok: false, error: 'invalidInputs', fields: [...new Set(d.analysis.ctx.bad)] };
+  if (d.analysis.ctx.bad.length || d.issues.length) return { ok: false, error: 'invalidInputs', fields: [...new Set([...d.analysis.ctx.bad, ...d.issues])] };
   const { snapshot: shaftSnap, layout: L } = shaftSnapshot(d.shaft), calcSnap = snapshotOf(d.values);
   const shaftSha = shaftHash(shaftSnap), calcSha = snapshotHash(calcSnap), res = d.analysis.res, N = d.analysis.ctx.N;
   const S = d.shaft, shaftWarns = L.checks.filter((c) => c.status === 'warn').length, shaftFails = L.checks.filter((c) => c.status === 'fail').length;

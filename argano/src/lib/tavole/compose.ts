@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import type { FormValues } from '@/calc/types';
 import type { Layout } from '@/shaft/types';
+import { NO_MARKS, type ValueMarks } from '../lift/marks';
 import { plantSchema } from '../plant';
 import type { TavoleInput, TavoleRevision } from './input';
 
@@ -49,12 +50,14 @@ export interface StoredSet {
 }
 
 /** The input of the drawing set of a stored set; null when a stored part does not read back. */
-export function storedInput(values: FormValues, layout: Layout, s: StoredSet, logo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null): TavoleInput | null {
+export function storedInput(
+  values: FormValues, layout: Layout, s: StoredSet, logo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null, marks: ValueMarks = NO_MARKS,
+): TavoleInput | null {
   const plant = plantSchema.safeParse(s.plant ?? {}), project = projectDataSchema.safeParse(s.projectData), revs = revisionsSchema.safeParse(s.revisions);
   if (!plant.success || !project.success || !revs.success) return null;
   const revisions: TavoleRevision[] = revs.data.map((r) => ({ mark: r.mark, text: r.text, date: new Date(r.date) }));
   return {
-    values, layout, plant: plant.data, project: project.data,
+    values, layout, plant: plant.data, marks, project: project.data,
     company: { name: s.companyName, logo: logo ? { mime: logo.mime, data: Buffer.from(logo.data).toString('base64') } : null },
     set: { number: s.number, issuedAt: s.createdAt, author: s.authorInitials, revisions },
   };

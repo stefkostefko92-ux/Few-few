@@ -105,6 +105,18 @@ test('tavole: numero di fogli, tutto dentro il foglio A4, testi senza buchi', ()
   assert.equal(JSON.stringify(buildTavole(input({ ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null })).doc), JSON.stringify(small.doc));
 });
 
+test('peso della cabina stimato dal software: segnato nel foglio 1 con la sua nota; calcolo e vano diversi tornano come avvisi', () => {
+  const I: ShaftInputs = { ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null };
+  const plain = buildTavole(input(I)), marked = buildTavole({ ...input(I), marks: { pEstimate: true, geometry: [], machineProposed: false } });
+  const sheet1 = (r: typeof plain): string[] => r.doc.pages[0]?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
+  assert.ok(!sheet1(plain).some((t) => t.includes('STIMA')), 'nessun segno senza stima');
+  assert.ok(sheet1(marked).includes('700 (STIMA)'), 'peso totale della cabina');
+  assert.ok(sheet1(marked).includes('DATI STIMATI DAL SOFTWARE') && sheet1(marked).includes('NOTA 3'), 'nota per il cliente');
+  for (const s of marked.doc.pages[0]?.shapes ?? []) for (const [x, y] of points(s)) assert.ok(x > -0.5 && x < A4.w + 0.5 && y > -0.5 && y < A4.h + 0.5, `${s.t} a ${x}, ${y}`);
+  // the rated load of the calculation (630 kg) is not the shaft's (400 kg)
+  assert.deepEqual(plain.warnings.filter((w) => w.what === 'load'), [{ what: 'load', calc: 630, shaft: 400 }]);
+});
+
 test('parti conservate delle tavole: si rileggono, altrimenti nessuna tavola', () => {
   assert.equal(setNumber(2026, 7), '26-007');
   assert.equal(setNumber(2031, 123), '31-123');

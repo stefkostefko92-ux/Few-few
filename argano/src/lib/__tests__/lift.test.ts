@@ -3,12 +3,12 @@
 // cover their constants and say their numbers.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readInputs } from '@/calc/index';
+import { readInputs, sizeMachine } from '@/calc/index';
 import { travel } from '@/shaft';
 import { formValuesSchema, visibleBad } from '@/lib/calc-input';
 import { shaftInputsSchema } from '@/lib/shaft-input';
 import { liftInputsSchema } from '@/lib/lift-input';
-import { AUTO_ALL, KL, VOCI_IMPIANTO, carMassEstimate, defaultLift, deriveLift, type LiftInputs } from '@/lib/lift';
+import { AUTO_ALL, KL, VOCI_IMPIANTO, carMassEstimate, defaultLift, deriveLift, ropeRig, valueMarks, type LiftInputs } from '@/lib/lift';
 import { KS, VOCI_SIM, duration, frameAt, runScenario } from '@/sim';
 
 const it = (x: number): string => String(x).replace('.', ',');
@@ -39,6 +39,14 @@ test('i valori inseriti restano: massa della cabina, macchina, geometria', () =>
   assert.deepEqual([d.origin.P, d.origin.machine, d.origin.dx], ['entered', 'entered', 'entered']);
 });
 
+test('segni per i documenti: dagli interruttori salvati; l\'argano proposto solo se la derivazione è nota', () => {
+  const inp = defaultLift(), d = deriveLift(inp);
+  assert.deepEqual(valueMarks(inp.auto, d), { pEstimate: true, geometry: ['L0', 'dx', 'Hv'], machineProposed: true });
+  assert.equal(valueMarks(inp.auto, null).machineProposed, false);
+  const hand: LiftInputs = { ...inp, calc: { ...inp.calc, P: 812, n_D: 480 }, auto: { ...AUTO_ALL, P: false, machine: false, Hv: false } };
+  assert.deepEqual(valueMarks(hand.auto, deriveLift(hand)), { pEstimate: false, geometry: ['L0', 'dx'], machineProposed: false });
+});
+
 test('distanza del rinvio e fune oltre la corsa, a mano', () => {
   const d = deriveLift(defaultLift()), L = d.layout, V = d.values;
   const calata = Math.hypot(L.cw.x + L.cw.w / 2 - (L.car.x + L.car.w / 2), L.cw.y + L.cw.h / 2 - (L.car.y + L.car.h / 2));
@@ -47,6 +55,44 @@ test('distanza del rinvio e fune oltre la corsa, a mano', () => {
   const vt = d.shaft.vertical, room = d.shaft.room;
   assert.ok(room);
   assert.equal(V.L0, Math.round(vt.headroom - vt.frameTop + room.slab + KL.sheaveAxisPerD * D) / 1000);
+});
+
+test('rinvio dalla pianta: semplice o inverso come lo legge l\'angolo di avvolgimento; 2:1 dal lato interno delle pulegge', () => {
+  const base = defaultLift();
+  const spacing = (d: ReturnType<typeof deriveLift>): number => {
+    const L = d.layout;
+    return Math.hypot(L.cw.x + L.cw.w / 2 - (L.car.x + L.car.w / 2), L.cw.y + L.cw.h / 2 - (L.car.y + L.car.h / 2));
+  };
+  const same3d = (d: ReturnType<typeof deriveLift>): void => {
+    const rig = ropeRig(d), defl = rig.wheels.find((w) => w.role === 'deflector');
+    assert.ok(defl && Math.abs(defl.u - rig.sheave.u - Number(d.values.dx)) < 1e-9, 'stessa geometria nel 3D');
+  };
+  // 2:1 in a deep shaft: a simple bend, the ropes Dp closer together
+  const deep = deriveLift({ ...base, shaft: { ...base.shaft, D: 2200 }, calc: { ...base.calc, r: '2' } });
+  const D1 = Number(deep.values.n_D), Dp = Number(deep.values.Dp);
+  assert.ok(Math.abs(Number(deep.values.dx) - Math.round(spacing(deep) - Dp - D1 / 2 - Dp / 2) / 1000) < 1e-12, `dx ${deep.values.dx}`);
+  assert.deepEqual(deep.issues, []);
+  same3d(deep);
+  // 2:1 in the example shaft: only a reverse bend places the rope drop where the plan has it (Dp/2 past the pulley)
+  const tight = deriveLift({ ...base, calc: { ...base.calc, r: '2' } }), D2 = Number(tight.values.n_D);
+  assert.deepEqual(tight.issues, []);
+  assert.ok(Math.abs(Number(tight.values.dx) - Math.round(spacing(tight) - Dp - D2 / 2 + Dp / 2) / 1000) < 1e-12, `dx ${tight.values.dx}`);
+  same3d(tight);
+  // a sheave entered by hand that leaves neither bend: the distance is reported, the form cannot be saved as is
+  const hand = deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 560 }, auto: { ...AUTO_ALL, machine: false } });
+  assert.deepEqual(hand.issues, ['dx']);
+  assert.deepEqual(deriveLift({ ...base, calc: { ...base.calc, r: '2', n_D: 560 }, auto: { ...AUTO_ALL, machine: false, dx: false } }).issues, []);
+});
+
+test('macchina proposta: la stessa qualunque puleggia fosse inserita prima; con la geometria a mano, quella del dimensionamento', () => {
+  const base = defaultLift();
+  for (const shaft of [base.shaft, { ...base.shaft, W: 1100, D: 1300, cw: 'left' as const }]) {
+    const D = [440, 560, 640].map((n_D) => deriveLift({ ...base, shaft, calc: { ...base.calc, n_D } }).analysis.ctx.N.D);
+    assert.deepEqual(new Set(D).size, 1, `pulegge ${D.join('/')}`);
+  }
+  const hand = deriveLift({ ...base, calc: { ...base.calc, context: 'new' }, auto: { ...AUTO_ALL, L0: false, dx: false } }), c = readInputs(hand.values);
+  const sz = sizeMachine(c.I, c.N, c.fixedD, c.rope);
+  assert.deepEqual([hand.analysis.ctx.N.D, hand.analysis.ctx.N.n, hand.analysis.ctx.N.d], [sz.pick?.D, sz.pick?.n, sz.pick?.d]);
 });
 
 test('i record che il server salva passano gli schemi e si rifanno uguali', () => {

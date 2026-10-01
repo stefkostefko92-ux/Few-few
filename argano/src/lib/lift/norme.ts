@@ -51,8 +51,10 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   },
   {
     id: 'impianto.dx', titolo: 'Distanza orizzontale della puleggia di rinvio (dx)',
-    valore: 'calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2: la puleggia di trazione sopra la cabina, il rinvio sopra '
-      + 'il contrappeso',
+    valore: 'calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2 (rinvio semplice: la fune scende dal lato esterno della '
+      + 'puleggia di rinvio); se la fune deve rientrare, − D/2 + Dp/2 (rinvio inverso: dal lato interno); con taglia 2:1 la calata è minore di Dp, '
+      + 'perché le funi salgono dal lato interno delle pulegge di cabina e di contrappeso. La puleggia di trazione sopra la cabina, il rinvio sopra il '
+      + 'contrappeso; se nessuna delle due geometrie torna con l\'angolo di avvolgimento, la distanza va misurata sull\'impianto',
     riferimento: 'ricerca, capitolo 5.3', fonte: 'pianta del vano', stato: 'derivazione',
   },
   {
@@ -65,6 +67,8 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     valore: 'la prima opzione del dimensionamento (capitolo 8): puleggia, funi, rapporto, gola, motore e freno che passano ogni verifica; con le '
       + 'ipotesi del gruppo (poli, giri, rendimenti, inerzie) inserite',
     riferimento: 'ricerca, capitolo 8', fonte: 'motore di calcolo', stato: 'scelta',
-    nota: 'una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori',
+    nota: 'una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria '
+      + 'delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla '
+      + 'pianta solo le pulegge per cui la pianta sa posizionare il rinvio',
   },
 ];

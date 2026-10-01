@@ -32,8 +32,9 @@ export default function LiftStage({ derived, clock, view, zones, label, texts }:
     const controller = new AbortController();
     let visible = true, handle: LiftHandle | null = null;
     const sync = (): void => handle?.setActive(visible && document.visibilityState === 'visible');
+    const booted = designRef.current;
     import('../lift3d/boot')
-      .then((m) => m.bootLift(canvas, designRef.current, {
+      .then((m) => m.bootLift(canvas, booted, {
         signal: controller.signal, clock, view: viewRef.current, reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
         onReady: () => setState('live'), onFail: () => setState('failed'),
       }))
@@ -43,6 +44,8 @@ export default function LiftStage({ derived, clock, view, zones, label, texts }:
         handle = h;
         handleRef.current = h;
         h.setZones(zonesRef.current);
+        // the data changed while the stage was loading: put on the latest
+        if (designRef.current !== booted) void h.setDesign(designRef.current);
         sync();
       })
       .catch(() => setState('failed'));

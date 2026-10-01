@@ -42,6 +42,8 @@ export function getCalculation(user: SessionUser, id: string) {
       user: { select: { name: true } },
       reviews: { orderBy: { createdAt: 'asc' }, include: { user: { select: { name: true, role: true } } } },
       shaftDesign: { select: { id: true, label: true, summary: true, inputs: true, source: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, user: { select: { name: true } } } },
+      // the one form it was made from, if any: the documents mark what the software filled in
+      liftDesign: { select: { inputs: true } },
     },
   });
 }
@@ -121,7 +123,7 @@ export function getDrawingSet(user: SessionUser, id: string) {
       project: { select: { id: true, name: true, archivedAt: true } },
       user: { select: { name: true } },
       logo: { select: { mime: true, data: true } },
-      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true } },
+      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, liftDesign: { select: { inputs: true } } } },
       shaftDesign: { select: DESIGN_SELECT },
     },
   });

@@ -2,9 +2,11 @@
 // the rated load when not given), the calculator's values with the travel, the speed and the rated load taken from
 // the shaft, the car mass estimated when missing, the rope geometry measured on the plan and the section, the machine
 // proposed by the sizing (and the geometry again with its sheave). Every automatic value can be switched off and
-// entered by hand (AutoFlags). Pure: the browser and the server derive the same.
-import { readInputs, sizeMachine } from '@/calc/index';
-import type { FormValues } from '@/calc/types';
+// entered by hand (AutoFlags); one the plan cannot give is reported (issues) and must be entered. Pure: the browser and
+// the server derive the same.
+import { SHEAVE_GRID, compareOptions, readInputs, sizeMachine } from '@/calc/index';
+import { deflectorAngle } from '@/calc/geometry';
+import type { FormValues, SizingOption } from '@/calc/types';
 import { layout, section, travel, type Layout, type ShaftInputs } from '@/shaft';
 import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
@@ -39,6 +41,8 @@ export interface LiftDerived {
   origin: Readonly<Record<DerivedKey, Origin>>;
   /** the sizing found no machine: the one entered is checked instead */
   noProposal: boolean;
+  /** automatic values the plan cannot give (the pulleys do not fit as a simple bend between the rope drops) */
+  issues: readonly DerivedKey[];
   machine: MachineSpec;
   sim: SimModel;
 }
@@ -59,11 +63,47 @@ function ropeBeyond(S: ShaftInputs, V: FormValues): number {
   return Math.max(0.1, m3((vt.headroom - vt.frameTop + above) / 1000));
 }
 
-/** Horizontal distance from the sheave to the diverting pulley: the drop spacing on the plan less the two radii. */
-function deflectorDx(L: Layout, V: FormValues): number {
+/**
+ * Horizontal distance from the sheave to the diverting pulley, with the counterweight's rope drop where the plan puts
+ * it: past the pulley's outer side (simple bend: the drop spacing less the two radii) or, when the rope must come
+ * inwards, past its inner side (reverse bend: Dp further). With 2:1 roping the ropes run up from the inner sides of the
+ * car and counterweight pulleys, Dp closer together. When neither bend is the one the wrap-angle model reads from that
+ * distance, the plan cannot give it (fits: false; the simple value is kept, never clamped).
+ */
+function deflectorDx(L: Layout, V: FormValues): { dx: number; fits: boolean } {
   const car = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2], cw = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
-  const calata = Math.hypot(cw[0] - car[0], cw[1] - car[1]);
-  return Math.max(0, m3((calata - num(V, 'n_D') / 2 - num(V, 'Dp') / 2) / 1000));
+  const D = num(V, 'n_D'), Dp = num(V, 'Dp'), h = num(V, 'h');
+  const span = Math.hypot(cw[0] - car[0], cw[1] - car[1]) - (num(V, 'r') === 2 ? Dp : 0);
+  const simple = m3((span - D / 2 - Dp / 2) / 1000), reverse = m3((span - D / 2 + Dp / 2) / 1000);
+  if (simple >= 0 && deflectorAngle(D, Dp, simple, h)?.reverse === false) return { dx: simple, fits: true };
+  if (reverse >= 0 && deflectorAngle(D, Dp, reverse, h)?.reverse === true) return { dx: reverse, fits: true };
+  return { dx: simple, fits: false };
+}
+
+/**
+ * The machine proposed for the values V. The sheave changes the rope geometry (rope beyond the travel, distance of the
+ * diverting pulley), which changes the wrap angle: each sheave of the grid (or the one kept) is sized with its own
+ * geometry, and only sheaves whose diverting pulley the plan can place (planned) are taken. The choice is the sizing's
+ * own: per rope diameter the fewest ropes, then the smallest sheave (ropes kept: every sheave), then compareOptions. With
+ * the geometry entered by hand this is exactly the sizing of the calculator. null: nothing passes (the machine entered is
+ * checked).
+ */
+function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean): FormValues | null {
+  const c0 = readInputs(V0), sheaves = c0.fixedD ? [c0.fixedD] : SHEAVE_GRID;
+  const found: { o: SizingOption; V: FormValues }[] = [];
+  for (const D of sheaves) {
+    const W = geometry({ ...V0, n_D: D });
+    if (planned && !deflectorDx(L, W).fits) continue;
+    const c = readInputs(W);
+    for (const o of sizeMachine(c.I, c.N, D, c.rope).options) found.push({ o, V: W });
+  }
+  const first = new Map<number, { o: SizingOption; V: FormValues }>();
+  for (const x of found) {
+    const y = first.get(x.o.d);
+    if (!y || x.o.n < y.o.n || (x.o.n === y.o.n && x.o.D < y.o.D)) first.set(x.o.d, x);
+  }
+  const best = (c0.rope ? found : [...first.values()]).sort((a, b) => compareOptions(a.o, b.o))[0];
+  return best ? geometry(mirrorRopes({ ...best.V, ...proposalValues(best.o) })) : null;
 }
 
 export function deriveLift(inp: LiftInputs): LiftDerived {
@@ -71,30 +111,29 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   let V: FormValues = { ...inp.calc, Q: L.Q, v: vt.v, H: rise / 1000 };
   if (inp.auto.P) V = { ...V, P: carMassEstimate(L.Q) };
   if (inp.auto.Hv) V = { ...V, Hv: m3((rise + vt.headroom) / 1000) };
-  const geometry = (): void => {
-    if (inp.auto.L0) V = { ...V, L0: ropeBeyond(S, V) };
-    if (inp.auto.dx) V = { ...V, dx: deflectorDx(L, V) };
+  const geometry = (W: FormValues): FormValues => {
+    let X = W;
+    if (inp.auto.L0) X = { ...X, L0: ropeBeyond(S, X) };
+    if (inp.auto.dx) X = { ...X, dx: deflectorDx(L, X).dx };
+    return X;
   };
-  geometry();
-  V = mirrorRopes(V);
+  V = mirrorRopes(geometry(V));
+  // the diverting pulley's distance comes from the plan: only geometries the wrap-angle model reads as drawn
+  const c0 = readInputs(V).I, planned = inp.auto.dx && c0.layout === 'topDefl' && c0.alphaMode !== 'manual';
   let noProposal = false;
   if (inp.auto.machine) {
-    // the sheave changes the rope geometry, which changes the wrap angle: size again until the sheave stays
-    for (let k = 0; k < 3; k++) {
-      const ctx = readInputs(V), sz = sizeMachine(ctx.I, ctx.N, ctx.fixedD, ctx.rope);
-      if (!sz.pick) { noProposal = true; break; }
-      const before = num(V, 'n_D');
-      V = mirrorRopes({ ...V, ...proposalValues(sz.pick) });
-      geometry();
-      if (num(V, 'n_D') === before) break;
-    }
+    const proposed = propose(V, L, geometry, planned);
+    if (proposed) V = proposed;
+    else noProposal = true;
   }
   const analysis = analyse(V), { I, N } = analysis.ctx;
+  // a distance the plan cannot give is reported: it must be measured and entered
+  const issues: DerivedKey[] = planned && !deflectorDx(L, V).fits ? ['dx'] : [];
   const origin: Record<DerivedKey, Origin> = {
     Q: S.Q === null ? 'auto' : 'entered', v: 'entered', H: 'auto', P: inp.auto.P ? 'estimate' : 'entered',
     L0: inp.auto.L0 ? 'auto' : 'entered', dx: inp.auto.dx ? 'auto' : 'entered', Hv: inp.auto.Hv ? 'auto' : 'entered',
     machine: inp.auto.machine && !noProposal ? 'auto' : 'entered',
   };
   const machine: MachineSpec = { D: N.D, Dp: I.layout === 'topDefl' ? I.Dp : 0, n: N.n, d: N.d, mass: N.mass, label: '' };
-  return { shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, machine, sim: simModel(I, N, analysis.res, section(L), vt) };
+  return { shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, machine, sim: simModel(I, N, analysis.res, section(L), vt) };
 }

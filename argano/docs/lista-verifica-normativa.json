@@ -1031,7 +1031,7 @@
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
-      "valore": "calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2: la puleggia di trazione sopra la cabina, il rinvio sopra il contrappeso",
+      "valore": "calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2 (con taglia 2:1 anche − Dp: le funi salgono dal lato interno delle pulegge di cabina e di contrappeso): la puleggia di trazione sopra la cabina, il rinvio sopra il contrappeso, rinvio semplice; se le pulegge non entrano così, la distanza va misurata sull'impianto",
       "riferimento": "ricerca, capitolo 5.3",
       "fonte": "pianta del vano",
       "stato": "derivazione",

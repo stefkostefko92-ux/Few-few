@@ -51,6 +51,22 @@ test('relazione degli esempi A, B, C: sezioni numerate, una riga per verifica, n
   }
 });
 
+test('valori riempiti dal software: massa della cabina stimata, geometria dal vano, argano proposto', () => {
+  const plain = texts(buildReport(input('A')));
+  const doc = buildReport({ ...input('A'), marks: { pEstimate: true, geometry: ['L0', 'dx'], machineProposed: true } }), all = texts(doc);
+  assert.ok(doc.blocks.some((b) => b.t === 'box' && b.text.startsWith('MASSA DELLA CABINA STIMATA. La massa della cabina P = 700 kg')), 'avviso');
+  assert.ok(all.includes('700 kg — stima del software, da sostituire con la massa reale'), 'riga della massa');
+  assert.ok(all.some((x) => x.endsWith('(L0 dal progetto del vano)')) && all.some((x) => x.endsWith('(dx dal progetto del vano)')), 'geometria dal vano');
+  assert.ok(all.some((x) => x.startsWith('Argano proposto dal dimensionamento del software')), 'argano proposto');
+  assert.ok(all.some((x) => x.startsWith('⚠ Massa della cabina: è la stima del software (1,1 × portata')), 'valori da verificare');
+  for (const v of ['Massa della cabina non inserita', 'Fune oltre la corsa (L0)', 'Distanza orizzontale della puleggia di rinvio (dx)', 'Macchina proposta']) assert.ok(all.includes(v), v);
+  // the bottom-machine height is not used by this layout (A: deflector on top)
+  assert.ok(!all.includes('Macchina in basso: altezza fino alle pulegge in alto (Hv)'));
+  for (const x of ['STIMATA', 'stima del software', 'dal progetto del vano', 'Argano proposto', 'Massa della cabina non inserita']) {
+    assert.ok(!plain.some((y) => y.includes(x)), `senza segni: «${x}»`);
+  }
+});
+
 test('sostituzione con adeguamenti UNI 10411-1, impianto nuovo con UCMP', () => {
   const hasHead = (doc: ReportDoc, s: string): boolean => doc.blocks.some((b) => b.t === 'h2' && b.text.includes(s));
   assert.ok(hasHead(buildReport(input('B')), 'UNI 10411-1'));

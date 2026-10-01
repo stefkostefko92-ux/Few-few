@@ -1,43 +1,49 @@
 // The two cases where the machine stands or turns against a car that cannot move as it should:
 // - loading: at the end position of the verification, with the brake closed, people load the car up to 1.25·Q;
-//   if T1/T2 passes e^(f·α) the ropes slip and the car slides down (onto its buffers at the lowest floor);
+//   if T1/T2 passes e^(f·α) the ropes slip and the car slides (down onto its buffers at the lowest floor) at the
+//   acceleration that brings T1/T2 back to e^(f·α); the outcome is the verification's, at 1.25·Q;
 // - car stalled: the machine turns upwards past the top floor until the counterweight lands on its buffer; the
-//   ropes must then slip (the car stays), otherwise the car is lifted into the headroom.
+//   ropes must then slip (the car stays), otherwise the car is lifted into the headroom. The pulls are taken with
+//   the ropes as at the top floor, as in the verification, so the replay slips exactly when the check passes.
 // Stepped in time, the same pulls as the verification. Pure.
 import { K } from '../calc/norme';
 import { G } from '../calc/math';
 import { KS } from './norme';
+import type { Pull } from './physics';
 import { recorder } from './series';
 import { travelLimits, type SimModel, type SimRun } from './model';
 
 const RAMP = 6;
 const HOLD = 3;
 
-/** The upward acceleration (≤ 0) at which T1/T2 falls back to e^(f·α): the car sliding down. */
-function slideAccel(u: (a: number) => number): number {
-  let lo = -G, hi = 0;
-  if (u(lo) > 1) return lo;
+/**
+ * The car's upward acceleration while the ropes slip: the heavier side's pull over the lighter's falls back to
+ * e^(f·α). That ratio drops as the heavier side accelerates downwards (to 0 at −g), so it has one root.
+ */
+function slideAccel(pull: (a: number) => Pull, efa: number): number {
+  const down = pull(0).Tc >= pull(0).Tw, sign = down ? -1 : 1;
+  const over = (a: number): boolean => { const p = pull(a); return (down ? p.Tc / p.Tw : p.Tw / p.Tc) > efa; };
+  // the root lies between at rest (still slipping) and the heavier side weightless
+  let near = 0, far = sign * G;
   for (let k = 0; k < 60; k++) {
-    const mid = (lo + hi) / 2;
-    if (u(mid) > 1) hi = mid;
-    else lo = mid;
+    const mid = (near + far) / 2;
+    if (over(mid)) near = mid;
+    else far = mid;
   }
-  return lo;
+  return near;
 }
 
 export function loading(m: SimModel): SimRun {
   const P = m.phys, I = m.I, s0 = m.res.load.pos === 'b' ? 0 : m.H, Lmax = K.loadTestFactor * I.Q, dt = KS.step;
   const rec = recorder(dt);
-  let s = s0, v = 0, slipping = false, landed = false, t = 0, worst = 0, wRatio = 0, wEfa = 0;
+  let s = s0, v = 0, slipping = false, landed = false, t = 0;
   const util = (at: number, L: number, a: number): number => P.pull(at, a, L).ratio / P.efa('loading', at);
   while (t <= RAMP + HOLD + 1e-9) {
     const L = Lmax * Math.min(1, t / RAMP);
     let a = 0;
     if (!landed) {
-      const u0 = util(s, L, 0);
-      if (u0 > worst) { worst = u0; wRatio = P.pull(s, 0, L).ratio; wEfa = P.efa('loading', s); }
-      if (u0 > 1 && !slipping) { slipping = true; rec.event('slip'); }
-      if (slipping) a = slideAccel((x) => util(s, L, x));
+      if (util(s, L, 0) > 1 && !slipping) { slipping = true; rec.event('slip'); }
+      if (slipping) a = slideAccel((x) => P.pull(s, x, L), P.efa('loading', s));
       v += a * dt;
       const lim = travelLimits(m, s + v * dt);
       if (lim.s !== s + v * dt || lim.bufCar > 0) {
@@ -57,8 +63,12 @@ export function loading(m: SimModel): SimRun {
     t += dt;
   }
   const series = rec.done();
-  const verdict = worst > 1 ? 'fail' : worst > K.tractionWarn ? 'warn' : 'ok';
-  return { scenario: { id: 'loading' }, series, events: series.events, verdict, summary: { util: worst, ratio: wRatio, efa: wEfa, torque: 0, accel: 0, slip: slipping } };
+  // the verification's case: 1.25·Q at rest at its end position
+  const uCheck = util(s0, Lmax, 0), verdict = uCheck > 1 ? 'fail' : uCheck > K.tractionWarn ? 'warn' : 'ok';
+  return {
+    scenario: { id: 'loading' }, series, events: series.events, verdict,
+    summary: { util: uCheck, ratio: P.pull(s0, 0, Lmax).ratio, efa: P.efa('loading', s0), torque: 0, accel: 0, slip: slipping },
+  };
 }
 
 export function stall(m: SimModel): SimRun {
@@ -67,14 +77,15 @@ export function stall(m: SimModel): SimRun {
   const xFull = m.cwStroke / m.bufferFactor;
   const hanging = (x: number): number => Mcw * Math.max(0, 1 - x / xFull);
   const rec = recorder(dt);
+  // the ropes as at the top floor (the verification's position); only the counterweight's hanging mass changes
   const ratioAt = (at: number): { ratio: number; efa: number; x: number } => {
     const x = Math.max(0, at - m.cwContact);
-    return { ratio: P.pull(at, 0, 0, hanging(x)).ratio, efa: P.efa('stalled', at), x };
+    return { ratio: P.pull(m.H, 0, 0, hanging(x)).ratio, efa: P.efa('stalled', m.H), x };
   };
   let s = m.H, t = 0, sheave = 0, slipping = false, lifted = false, tEnd = Infinity, touched = false, rSlip = 0, eSlip = 0;
   const eta = M.etaD * I.etaShaft;
   while (t <= Math.min(tEnd, 30) + 1e-9) {
-    const { x } = ratioAt(s), mw = hanging(x), pl = P.pull(s, 0, 0, mw), efa = P.efa('stalled', s);
+    const { x } = ratioAt(s), mw = hanging(x), pl = P.pull(m.H, 0, 0, mw), efa = P.efa('stalled', m.H);
     const moving = !slipping;
     rec.push({
       s, v: moving ? vUp : 0, a: 0, cw: m.cw0 - Math.min(s, m.cwContact + xFull), theta: P.sheaveAngle(sheave), rope: I.r * (s - m.H),

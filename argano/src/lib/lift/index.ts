@@ -9,3 +9,5 @@ export type { Belt, BeltEl, Pt2 } from './belt';
 export { ropeRig } from './rig';
 export type { RopeRig, Wheel } from './rig';
 export { LIFT_ENGINE_VERSION } from './version';
+export { NO_MARKS, P_ESTIMATE_RULE, valueMarks } from './marks';
+export type { GeometryKey, ValueMarks } from './marks';

@@ -2,14 +2,17 @@ import 'server-only';
 // The drawing set of a calculation, built on the server from what the database holds: the calculation's values and
 // its shaft design, both reproduced by the running engines (otherwise the set is refused), the data of the
 // installation, the project and the company with its current logo. Used by the issue and the revision (live data)
-// and by the PDF (the snapshots of the stored set).
+// and by the PDF (the snapshots of the stored set). A calculation made from the one form of a lift design carries the
+// marks of what the software filled in (the estimated car weight on sheet 1).
 import type { Prisma } from '@prisma/client';
 import type { SessionUser } from '@/lib/auth';
 import { formValuesSchema } from '@/lib/calc-input';
+import { calcMarks } from '@/lib/lift-marks';
 import { plantSchema } from '@/lib/plant';
 import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { buildTavole } from '@/lib/tavole/build';
+import type { Mismatch } from '@/lib/tavole/data';
 import { projectData, storedInput, type ProjectData, type StoredSet } from '@/lib/tavole/compose';
 import type { TavoleRevision } from '@/lib/tavole/input';
 import { tavoleHash } from '@/lib/tavole-hash';
@@ -55,7 +58,7 @@ export async function composeFromCalculation(
   const c = await tx.calculation.findFirst({
     where: { id: calculationId, companyId: user.companyId },
     select: {
-      inputs: true, sha256: true, shaftDesign: { select: DESIGN_SELECT },
+      inputs: true, sha256: true, shaftDesign: { select: DESIGN_SELECT }, liftDesign: { select: { inputs: true } },
       project: { select: { id: true, name: true, address: true, city: true, province: true, plantNumber: true, client: true, plant: true, archivedAt: true } },
     },
   });
@@ -70,7 +73,7 @@ export async function composeFromCalculation(
     number: set.number, createdAt: set.issuedAt, authorInitials: set.author, companyName: company.name, projectData: pd,
     plant: plant.success ? plant.data : {}, revisions: set.revisions.map((x) => ({ mark: x.mark, text: x.text, date: x.date.toISOString() })),
   };
-  const input = storedInput(r.values, r.layout, stored, logo);
+  const input = storedInput(r.values, r.layout, stored, logo, calcMarks(c.liftDesign, c.sha256));
   if (!input) return { ok: false, error: 'notFound' };
   const { doc } = buildTavole(input);
   return {
@@ -79,17 +82,20 @@ export async function composeFromCalculation(
   };
 }
 
-/** A stored set drawn again from its snapshots; null when the engines do not reproduce it (hash differs). */
+/**
+ * A stored set drawn again from its snapshots, with where its calculation and shaft design disagree; an error when the
+ * engines do not reproduce it (hash differs).
+ */
 export function composeStored(s: StoredSet & {
   sha256: string;
-  calculation: { inputs: unknown; sha256: string };
+  calculation: { inputs: unknown; sha256: string; liftDesign: { inputs: unknown } | null };
   shaftDesign: Parameters<typeof reproduceDesign>[0];
   logo: { mime: string; data: Uint8Array } | null;
-}): { doc: DrawingDoc } | ComposeError {
+}): { doc: DrawingDoc; warnings: Mismatch[] } | ComposeError {
   const r = reproduce({ inputs: s.calculation.inputs, sha256: s.calculation.sha256, shaftDesign: s.shaftDesign });
   if (!r.ok) return r;
-  const input = storedInput(r.values, r.layout, s, logoOf(s.logo));
+  const input = storedInput(r.values, r.layout, s, logoOf(s.logo), calcMarks(s.calculation.liftDesign, s.calculation.sha256));
   if (!input) return { ok: false, error: 'notFound' };
-  const { doc } = buildTavole(input);
-  return tavoleHash(doc) === s.sha256 ? { doc } : { ok: false, error: 'engineChanged' };
+  const { doc, warnings } = buildTavole(input);
+  return tavoleHash(doc) === s.sha256 ? { doc, warnings } : { ok: false, error: 'engineChanged' };
 }
