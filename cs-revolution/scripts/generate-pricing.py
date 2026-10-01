@@ -16,7 +16,7 @@ import html, json, os
 from decimal import Decimal, ROUND_HALF_UP
 
 BASE = "https://carbonstealth.eu"
-LASTMOD = "2026-09-17"
+LASTMOD = "2026-10-01"
 RESEARCH_DATE = "2026-09-17"
 MIN_DISCOUNT = 0.15
 VAT_RATE_BG = 20
@@ -254,11 +254,14 @@ def jsonld(lang, canon):
     ]
     for t in TIERS:
         x = p["tiers"][t["id"]]
-        graph.append({"@type": "Product", "name": f'{x["name"]} — {x["tag"]}', "description": x["desc"],
-                      "brand": {"@type": "Brand", "name": "Carbon Stealth"},
+        # Service, not Product: these are made-to-order services. As "Product"+"Offer" Google read them
+        # as shop items (Merchant listings / Product snippets) and demanded image, shipping, returns and
+        # reviews — none of which a web-development package has (and reviews must never be invented).
+        graph.append({"@type": "Service", "@id": f'{canon}#{t["id"]}', "name": f'{x["name"]} — {x["tag"]}', "description": x["desc"],
+                      "serviceType": x["tag"], "provider": {"@id": f"{BASE}/#organization"},
+                      "areaServed": [{"@type": "Country", "name": "Italy"}, {"@type": "Country", "name": "Bulgaria"}, {"@type": "Place", "name": "European Union"}],
                       "offers": {"@type": "Offer", "price": shown(t["price"], lang), "priceCurrency": "EUR", "url": f'{canon}#{t["id"]}',
                                  "priceSpecification": {"@type": "UnitPriceSpecification", "price": shown(t["price"], lang), "priceCurrency": "EUR", "valueAddedTaxIncluded": lang == "bg"},
-                                 "availability": "https://schema.org/InStock", "priceValidUntil": "2026-12-31",
                                  "seller": {"@id": f"{BASE}/#organization"}}})
     graph.append({"@type": "FAQPage", "mainEntity": [
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in p["faq"]]})
