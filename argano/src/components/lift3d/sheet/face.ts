@@ -1,6 +1,8 @@
 // The solid of one flat face of a sheet-metal part: its coated top (s = t) and bottom (s = 0) surfaces and the cut
 // walls round every free edge and hole. Bend edges stay open: the bend's strip carries the solid on. Ported from
 // Panev's 3D catalogue (panev/3d/src/geo/face.js), without the edge bevels (too small to show in the shaft).
+// Loaded only through boot.ts (lazy).
+// Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { EDGE, ZINC, type MeshBuilder, type V3 } from './mesh';
 import type { Flags } from './outline';

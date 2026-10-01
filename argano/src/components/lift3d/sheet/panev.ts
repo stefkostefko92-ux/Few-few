@@ -4,6 +4,8 @@
 // (platform with the sill slots, rib with the joint and the lock), A cut to the sill's depth as the catalogue allows.
 // Counterweight-guide supports SU (universal), SD (offset) and SC (sliding), and the SG guide bracket that carries the
 // rail on them. Ported from Panev's 3D catalogue (panev/3d/src/parts); the products share no code. Millimetres.
+// Loaded only through boot.ts (lazy).
+// Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import { sheet, type Sheet } from './part';
 import { Path, circle, rect, slotX, slotY, type Loop, type V2 } from './path';
 

@@ -1,5 +1,7 @@
 // A 90° press-brake bend: the cylindrical strip joining a parent face to a child face, and the child's frame; inner
 // radius r, thickness t. Ported from Panev's 3D catalogue (panev/3d/src/geo/bend.js), without the edge bevels.
+// Loaded only through boot.ts (lazy).
+// Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import { EDGE, ZINC, type MeshBuilder, type V3 } from './mesh';
 import type { Frame } from './face';
 

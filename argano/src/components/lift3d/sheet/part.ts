@@ -3,6 +3,8 @@
 // from. The builder trims the faces back to the tangent lines, cuts reliefs where a bend stops short of an edge, folds
 // the children into place and emits one closed solid. Millimetres. Ported from Panev's 3D catalogue
 // (panev/3d/src/geo/part.js).
+// Loaded only through boot.ts (lazy).
+// Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import { MeshBuilder, type V3 } from './mesh';
 import { ccw, cw, type Loop, type V2 } from './path';
 import { trimBend, type Flags } from './outline';

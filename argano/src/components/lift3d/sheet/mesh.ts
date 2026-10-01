@@ -1,5 +1,7 @@
 // A growable triangle mesh with two groups: 0 the coated surfaces (faces and bends), 1 the cut edges (walls round the
 // outlines and the holes). Positions in millimetres. Ported from Panev's 3D catalogue (panev/3d/src/geo/mesh.js).
+// Loaded only through boot.ts (lazy).
+// Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 
 export type V3 = [number, number, number];

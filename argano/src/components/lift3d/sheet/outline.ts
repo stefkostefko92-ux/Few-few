@@ -1,6 +1,8 @@
 // Trimming a bend edge of a flat face back to its tangent line, with a relief notch where the bend covers only part of
 // the edge. Loops are counter-clockwise with the material on the left; `flags[i]` tags edge i → i+1 (null: a free cut
 // edge, otherwise the id of the bend attached there). Ported from Panev's 3D catalogue (panev/3d/src/geo/outline.js).
+// Loaded only through boot.ts (lazy).
+// Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import type { Loop, V2 } from './path';
 
 export type Flags = (number | null)[];

@@ -1,6 +1,8 @@
 // 2D outlines of the flat faces of a sheet-metal part, in millimetres: a loop is an array of [x, y] points without
 // a closing duplicate. Outer loops run counter-clockwise and holes clockwise, so the material always lies on the left
 // of every edge. Ported from Panev's 3D catalogue (panev/3d/src/geo/path.js); the products share no code.
+// Loaded only through boot.ts (lazy).
+// Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 
 export type V2 = [number, number];
 export type Loop = V2[];
