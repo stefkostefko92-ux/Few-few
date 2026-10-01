@@ -10,6 +10,7 @@ import { section } from '@/shaft/section';
 import { sectionDims, type SectionKind } from '@/shaft/section-dims';
 import { sectionEntities, type SectionView } from '@/shaft/section-view';
 import type { Layout } from '@/shaft/types';
+import { machineSpec } from '../lift/machine';
 import type { Plant } from '../plant';
 import type { Analysis } from '../present/analysis';
 
@@ -72,8 +73,7 @@ export function sectionView(L: Layout, kind: SectionKind, floor: number, area: B
 
 /** The machine as the calculation and the data of the installation describe it. */
 export function machineOf(a: Analysis, plant: Plant): MachineSpec {
-  const { I, N } = a.ctx;
-  return { D: N.D, Dp: I.layout === 'topDefl' ? I.Dp : 0, n: N.n, d: N.d, mass: plant.massMachine ?? N.mass, label: plant.machine ?? '' };
+  return machineSpec(a.ctx, plant.massMachine ?? a.ctx.N.mass, plant.machine ?? '');
 }
 
 /** The machine room in plan or in section B-B; null when the design has no machine room. */

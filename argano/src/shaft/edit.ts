@@ -1,8 +1,10 @@
 // Changing a distance where it is drawn. The key of a dimension's edit (src/drawing/model.ts) names an input of the
-// shaft: its size (W, D), the doors' size, an allowance, a distance of the plan set by hand (plan.*), a height of
-// section A-A (v.*) or a size of the machine room (room.*); the new length of the dimension gives its value. Pure:
-// the screens validate the result as the save does (src/lib/shaft-edit.ts).
+// shaft: its size (W, D), the doors' size, an allowance, a distance of the plan set by hand (plan.*), a niche's place
+// and size (n.<index>.*), the call stations' place (cs.*), a height of section A-A (v.*) or a size of the machine room
+// (room.*); the new length of the dimension gives its value. Pure: the screens validate the result as the save does
+// (src/lib/shaft-edit.ts).
 import type { Edit } from '../drawing';
+import { callStationOf } from './callstation';
 import { DEFAULTS, type Allowance } from './norme';
 import { counterweightSide } from './layout';
 import type { RoomInputs } from './room';
@@ -17,6 +19,8 @@ const V_KEYS = ['pit', 'headroom', 'carH', 'carOutH', 'platform', 'opTop', 'fram
   'carBufferBase', 'cwH', 'cwBufferH', 'cwBufferStroke', 'cwBufferBase', 'cwRunby'] as const satisfies readonly NumKey<VerticalInputs>[];
 const R_KEYS = ['W', 'D', 'shaftX', 'shaftY', 'H', 'ridge', 'slab', 'doorAt', 'doorW', 'doorH', 'panelAt', 'panelW', 'panelD', 'panelH'] as const satisfies readonly NumKey<RoomInputs>[];
 const SIZES = ['W', 'D', 'doorWidth', 'doorHeight'] as const;
+const N_KEYS = ['at', 'width', 'depth'] as const;
+const CS_KEYS = ['offset', 'height'] as const;
 // the arrangement's distances: they mean something else once the entrances or the counterweight's side change
 const ARRANGEMENT: readonly PlanKey[] = ['doorB', 'railY', 'dbg', 'cwLen', 'cwPos'];
 
@@ -27,12 +31,23 @@ const isAllowance = (k: string): k is Allowance => Object.hasOwn(DEFAULTS, k);
  *  that keeps the dimension reading the length typed. */
 export const editValue = (e: Edit, length: number): number => Math.round(e.base + e.k * length - Math.sign(e.k) * 1e-6);
 
+/** A niche's size named by `n.<index>.<at|width|depth>`: its index and field, or null. */
+function nicheKey(I: ShaftInputs, head: string, sub: string): { i: number; f: (typeof N_KEYS)[number] } | null {
+  if (head !== 'n') return null;
+  const [n, field] = sub.split('.'), i = Number(n), f = pick(N_KEYS, field ?? '');
+  return f && Number.isInteger(i) && I.niches?.[i] ? { i, f } : null;
+}
+
 /** The inputs with the input `key` set to `value`; null for a key that names no input of these inputs. */
 export function withValue(I: ShaftInputs, key: string, value: number): ShaftInputs | null {
   const size = pick(SIZES, key);
   if (size) return { ...I, [size]: value };
   if (isAllowance(key)) return { ...I, [key]: value };
   const dot = key.indexOf('.'), head = key.slice(0, dot), sub = key.slice(dot + 1);
+  const n = nicheKey(I, head, sub);
+  if (n && I.niches) return { ...I, niches: I.niches.map((x, j) => (j === n.i ? { ...x, [n.f]: value } : x)) };
+  const cs = head === 'cs' ? pick(CS_KEYS, sub) : undefined;
+  if (cs) return { ...I, callStation: { ...callStationOf(I), [cs]: value } };
   const p = head === 'plan' ? pick(PLAN_KEYS, sub) : undefined;
   if (p) return { ...I, plan: { ...I.plan, [p]: value } };
   const v = head === 'v' ? pick(V_KEYS, sub) : undefined;
@@ -55,6 +70,10 @@ export function valueOf(I: ShaftInputs, key: string): number | null {
   if (size) return I[size];
   if (isAllowance(key)) return I[key];
   const dot = key.indexOf('.'), head = key.slice(0, dot), sub = key.slice(dot + 1);
+  const n = nicheKey(I, head, sub);
+  if (n && I.niches) return I.niches[n.i][n.f];
+  const cs = head === 'cs' ? pick(CS_KEYS, sub) : undefined;
+  if (cs) return callStationOf(I)[cs];
   const p = head === 'plan' ? pick(PLAN_KEYS, sub) : undefined;
   if (p) return I.plan?.[p] ?? null;
   const v = head === 'v' ? pick(V_KEYS, sub) : undefined;

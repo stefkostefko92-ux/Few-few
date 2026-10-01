@@ -12,6 +12,9 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import type { DoorLayout } from '@/shaft';
 import { Batch, P, onWall, type Point } from './geom';
 import type { LiftMaterials, Side } from './materials';
+import { CAR_PANEL, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from '@/shaft/sill';
+
+export { CAR_PANEL, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks };
 
 export interface DoorPanels {
   group: THREE.Group;
@@ -33,20 +36,10 @@ export type Lead = { kind: 'lock'; v0: number } | { kind: 'coupler'; v0: number;
 export const gapSide = (lead: Lead['kind']): 1 | -1 => (lead === 'lock' ? 1 : -1);
 
 /** The panels' tracks from the wall [mm]: the fast panel's and the slow one's (a centre opening door runs on the fast one). */
-export interface Tracks { fast: number; slow: number }
 
-/** Door panels' thickness [mm]: landing and car. */
-export const LANDING_PANEL = 26, CAR_PANEL = 24;
 
-/** The tracks of a landing door, set back from the edge of its sill at the landing's depth: the fast panel by the gap,
- *  the slow one by the wall (50 and 12 mm at the usual 80 mm). */
-export const landingTracks = (depth: number): Tracks => ({ fast: depth - 30, slow: depth - 68 });
 
-/** The tracks of a car door from the edge of its sill v0 (the landing's depth and the sill gap). */
-export const carTracks = (v0: number): Tracks => ({ fast: v0 + 10, slow: v0 + 46 });
 
-/** The centre planes of the tracks a door runs on, for the grooves of the sill. */
-export const trackPlanes = (d: DoorLayout, tr: Tracks, t: number): number[] => (d.kind === 'C2' ? [tr.fast + t / 2] : [tr.fast + t / 2, tr.slow + t / 2]);
 
 export function doorPanels(wall: Side, W: number, D: number, d: DoorLayout, z0: number, tr: Tracks, t: number, material: THREE.Material, M: LiftMaterials, lead: Lead): DoorPanels {
   const group = new THREE.Group(), L = d.width, ov = 20, h = d.height, zt = z0 + h, along = wall === 'front' || wall === 'rear';

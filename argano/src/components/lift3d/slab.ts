@@ -6,6 +6,7 @@
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { belt, type RopeRig } from '@/lib/lift';
+import { ropeWidths } from '@/shaft/machine-room';
 import type { Batch } from './geom';
 import type { GovernorSpot } from './governor';
 import type { LiftMaterials } from './materials';
@@ -21,43 +22,42 @@ const CLEAR = 30, CURB_H = 50, CURB_T = 25;
 // the governor's rope and its holes [mm]
 const GOV_HOLE = 50;
 
-/** Half the width of the n ropes side by side, and of a pulley with its cheeks [mm]. */
-export function ropeWidths(n: number, d: number): { ropes: number; pulley: number } {
-  const pitch = Math.max(d + 6, 1.7 * d);
-  return { ropes: ((n - 1) / 2) * pitch + d / 2, pulley: (n * pitch + 30) / 2 + 18 };
-}
+/** Half the width of the ropes and of a pulley: src/shaft/machine-room.ts, the drawings of the room take the same. */
+export { ropeWidths };
 
 /** The openings of the slab from zb to zt [m] for the ropes of `rig` with the car anywhere in `travel` (car floor s,
- *  counterweight w [m]), and the holes of the governor's rope. */
+ *  counterweight w [m]), piece by piece in the planes of the ropes, and the holes of the governor's rope. */
 export function slabOpenings(rig: RopeRig, n: number, d: number, zb: number, zt: number, travel: readonly (readonly [number, number])[], gov: GovernorSpot | null): Opening[] {
-  const spans: { lo: number; hi: number; wheel: boolean }[] = [];
-  const within = (y: number): boolean => y >= zb && y <= zt;
-  for (const [s, w] of travel) {
-    const els = rig.elements(s, w), b = belt(els);
-    for (const [[u1, y1], [u2, y2]] of b.runs) {
-      // the part of the run between the slab's faces
-      const us: number[] = [];
-      if (within(y1)) us.push(u1);
-      if (within(y2)) us.push(u2);
-      for (const y of [zb, zt]) if ((y1 - y) * (y2 - y) < 0) us.push(u1 + ((u2 - u1) * (y - y1)) / (y2 - y1));
-      if (us.length) spans.push({ lo: Math.min(...us), hi: Math.max(...us), wheel: false });
+  const within = (y: number): boolean => y >= zb && y <= zt, wd = ropeWidths(n, d), out: Opening[] = [];
+  rig.pieces(0, 0).forEach((ref, k) => {
+    const spans: { lo: number; hi: number; wheel: boolean }[] = [];
+    for (const [s, w] of travel) {
+      const els = rig.pieces(s, w)[k].els, b = belt(els);
+      for (const [[u1, y1], [u2, y2]] of b.runs) {
+        // the part of the run between the slab's faces
+        const us: number[] = [];
+        if (within(y1)) us.push(u1);
+        if (within(y2)) us.push(u2);
+        for (const y of [zb, zt]) if ((y1 - y) * (y2 - y) < 0) us.push(u1 + ((u2 - u1) * (y - y1)) / (y2 - y1));
+        if (us.length) spans.push({ lo: Math.min(...us), hi: Math.max(...us), wheel: false });
+      }
+      for (const e of els) if (e.kind === 'wheel' && e.y + e.r > zb && e.y - e.r < zt) spans.push({ lo: e.u - e.r, hi: e.u + e.r, wheel: true });
     }
-    for (const e of els) if (e.kind === 'wheel' && e.y + e.r > zb && e.y - e.r < zt) spans.push({ lo: e.u - e.r, hi: e.u + e.r, wheel: true });
-  }
-  spans.sort((p, q) => p.lo - q.lo);
-  const merged: { lo: number; hi: number; wheel: boolean }[] = [];
-  for (const sp of spans) {
-    const last = merged.at(-1);
-    if (last && sp.lo - last.hi < 0.08) {
-      last.hi = Math.max(last.hi, sp.hi);
-      last.wheel ||= sp.wheel;
-    } else merged.push({ ...sp });
-  }
-  const [ox, oy] = rig.origin, [dx, dy] = rig.dir, wd = ropeWidths(n, d);
-  const at = (u: number, a: number): readonly [number, number] => [ox + u * dx - a * dy, oy + u * dy + a * dx];
-  const out: Opening[] = merged.map((m) => {
-    const u0 = m.lo * 1000 - CLEAR, u1 = m.hi * 1000 + CLEAR, a = (m.wheel ? Math.max(wd.ropes, wd.pulley) : wd.ropes) + CLEAR;
-    return { pts: [at(u0, -a), at(u1, -a), at(u1, a), at(u0, a)], curb: !m.wheel };
+    spans.sort((p, q) => p.lo - q.lo);
+    const merged: { lo: number; hi: number; wheel: boolean }[] = [];
+    for (const sp of spans) {
+      const last = merged.at(-1);
+      if (last && sp.lo - last.hi < 0.08) {
+        last.hi = Math.max(last.hi, sp.hi);
+        last.wheel ||= sp.wheel;
+      } else merged.push({ ...sp });
+    }
+    const [ox, oy] = ref.plane.origin, [dx, dy] = ref.plane.dir;
+    const at = (u: number, a: number): readonly [number, number] => [ox + u * dx - a * dy, oy + u * dy + a * dx];
+    for (const m of merged) {
+      const u0 = m.lo * 1000 - CLEAR, u1 = m.hi * 1000 + CLEAR, a = (m.wheel ? Math.max(wd.ropes, wd.pulley) : wd.ropes) + CLEAR;
+      out.push({ pts: [at(u0, -a), at(u1, -a), at(u1, a), at(u0, a)], curb: !m.wheel });
+    }
   });
   if (gov) {
     for (const y of [gov.y1, gov.y2]) {
@@ -89,9 +89,9 @@ function plan(B: Batch, outline: readonly (readonly [number, number])[], holes: 
 }
 
 /** The slab from z0 to z1 [mm] over the plan rectangle [x0, y0, x1, y1], with its openings; the curbs when `room`. */
-export function buildSlab(B: Batch, M: LiftMaterials, rect: readonly [number, number, number, number], z0: number, z1: number, openings: readonly Opening[], room: boolean): void {
+export function buildSlab(B: Batch, M: LiftMaterials, rect: readonly [number, number, number, number], z0: number, z1: number, openings: readonly Opening[], room: boolean, mat: THREE.Material = M.slab): void {
   const [x0, y0, x1, y1] = rect;
-  plan(B, [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], openings.map((o) => o.pts), z0, z1, M.slab);
+  plan(B, [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], openings.map((o) => o.pts), z0, z1, mat);
   if (!room) return;
   for (const o of openings) if (o.curb) plan(B, grow(o.pts, CURB_T), [o.pts], z1, z1 + CURB_H, M.galv);
 }

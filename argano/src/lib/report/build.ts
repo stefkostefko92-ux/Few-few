@@ -9,6 +9,7 @@ import { PROFILO, VOCI, type Stato } from '@/calc/norme';
 import { COND, PALETTE, concreteTile } from '@/drawing';
 import { vociOfDesign } from '@/shaft';
 import type { BrakeCase, CheckId, CheckStatus, FormValues, TractionCase } from '@/calc/types';
+import type { BottomScheme } from '../lift/bottom';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
 import { VOCI_IMPIANTO } from '../lift/norme';
 import { analyse } from '../present/analysis';
@@ -18,6 +19,13 @@ import { textsFor, verdictStatus } from '../present/texts';
 import { makePres, type CalcKey } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { shaftBlocks, type ReportDesign } from './shaft';
+
+/** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
+const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
+  head: 'in basso, rinvii in testata, macchina accanto al vano',
+  room: 'in basso, locale pulegge sopra il vano, macchina accanto al vano',
+  under: 'macchina sotto il vano, rinvii in testata',
+};
 
 export interface ReportInput {
   calc: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; profileId: string; author: string | null };
@@ -46,6 +54,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const a = analyse(r.values), { ctx, res, old, sizing, sens } = a, { I, N } = ctx;
   const when = (d: Date): string => new Intl.DateTimeFormat('it-IT', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(d);
   const repl = I.context === 'repl', pr = r.project, m = r.marks ?? NO_MARKS;
+  const layoutText = I.layout === 'bottom' && m.bottom ? BOTTOM_IT[m.bottom] : t(`lay_${I.layout}`);
   const fromShaft = (k: 'L0' | 'dx' | 'Hv', named = true): string => (m.geometry.includes(k) ? ` (${named ? `${k} ` : ''}dal progetto del vano)` : '');
   const place = [pr.address, pr.city, pr.province].filter(Boolean).join(', ');
   const B: ReportBlock[] = [];
@@ -70,13 +79,13 @@ export function buildReport(r: ReportInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Verifica dell'argano geared ${repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${t(`lay_${I.layout}`)}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull'albero secondo il modello di calcolo del software.${repl ? " La sostituzione del macchinario è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i.; gli adeguamenti seguono la UNI 10411-1:2024." : ''}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
+  B.push({ t: 'p', text: `Verifica dell'argano geared ${repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull'albero secondo il modello di calcolo del software.${repl ? " La sostituzione del macchinario è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i.; gli adeguamenti seguono la UNI 10411-1:2024." : ''}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
   section('Riferimenti normativi');
   B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: PROFILO.documenti.map((d) => [d.sigla, d.ambito]), widths: [0.38, 0.62], align: ['l', 'l'] });
 
   section("Dati dell'impianto");
   const plant: [string, string][] = [
-    [t('context'), t(repl ? 'ctx_repl' : 'ctx_new')], [t('layout'), t(`lay_${I.layout}`)], [t('Q'), `${fmt(I.Q, 0)} kg`],
+    [t('context'), t(repl ? 'ctx_repl' : 'ctx_new')], [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
     [t('P'), `${fmt(I.P, 0)} kg${m.pEstimate ? ' — stima del software, da sostituire con la massa reale' : ''}`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg${I.qeq > 0 ? ` (${t('qeq')}: ${fmt(I.qeq, 0)} kg)` : ''}`], [t('v'), `${fmt(I.v, 2)} m/s`],
     [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 1)} m · ${fmt(I.L0, 1)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
@@ -182,7 +191,11 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
 
   section(t('c_verify'));
-  const estimated = m.pEstimate ? [`Massa della cabina: è la stima del software (${P_ESTIMATE_RULE}); sostituirla con quella reale e ripetere il calcolo`] : [];
+  const estimated = [
+    ...(m.pEstimate ? [`Massa della cabina: è la stima del software (${P_ESTIMATE_RULE}); sostituirla con quella reale e ripetere il calcolo`] : []),
+    ...(I.layout === 'bottom' && m.bottom ? [`Schema delle funi con la macchina in basso (${BOTTOM_IT[m.bottom]}): rinvii, rami e passaggi ricostruiti dal software; rilevarli sull'impianto`] : []),
+    ...(I.layout === 'bottom' && m.bottom === 'under' ? ['Spazio accessibile sotto il vano: paracadute del contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori'] : []),
+  ];
   B.push({ t: 'list', items: [...estimated, ...X.verifyList(I, N, res)].map((x) => `⚠ ${x}`) });
 
   section('Voci normative usate e loro stato');
@@ -190,6 +203,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const used = VOCI.filter((v) => v.verifiche?.some((c) => ids.has(c)));
   // and the registry entries of the values the software filled in, where the layout uses them
   const filled = new Set([...(m.pEstimate ? ['impianto.massa.cabina'] : []), ...(m.machineProposed ? ['impianto.macchina'] : []),
+    ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []),
     ...m.geometry.filter((k) => k === 'L0' || (k === 'dx' && I.layout === 'topDefl') || (k === 'Hv' && I.layout === 'bottom')).map((k) => `impianto.${k}`)]);
   const listed = [...used, ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
   B.push({ t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),

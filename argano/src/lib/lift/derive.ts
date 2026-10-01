@@ -11,6 +11,8 @@ import { layout, section, travel, type Layout, type ShaftInputs } from '@/shaft'
 import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import { simModel, type SimModel } from '@/sim';
+import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
+import { machineSpec } from './machine';
 import { KL } from './norme';
 
 /** Values the software fills in (true) or takes as entered (false). */
@@ -27,6 +29,8 @@ export interface LiftInputs {
   shaft: ShaftInputs;
   calc: FormValues;
   auto: AutoFlags;
+  /** the rope scheme of a machine below (bottom.ts); missing: pulleys under the shaft's slab */
+  bottom?: BottomScheme;
 }
 
 export type Origin = 'entered' | 'auto' | 'estimate';
@@ -44,6 +48,13 @@ export interface LiftDerived {
   /** automatic values the plan cannot give (the pulleys do not fit as a simple bend between the rope drops) */
   issues: readonly DerivedKey[];
   machine: MachineSpec;
+  /** the rope scheme of a machine below; null with the machine above */
+  bottom: BottomScheme | null;
+  /** its runs to the machine do not clear the counterweight and its brackets: the gap behind the counterweight as
+   *  designed and the least that clears them (null: none up to 1,5 m more) [mm]; null when they clear */
+  bottomGap: { now: number; need: number | null } | null;
+  /** the head pulleys of the scheme (the calculation counts two of them for the bottom layout) */
+  headPulleys: number;
   sim: SimModel;
 }
 
@@ -56,10 +67,11 @@ const m3 = (x: number): number => Math.round(x * 1000) / 1000;
 /** P = ratio · Q, rounded up to the step (registry impianto.massa.cabina). */
 export const carMassEstimate = (Q: number): number => Math.ceil((KL.carMassRatio * Q) / KL.carMassStep - 1e-9) * KL.carMassStep;
 
-/** Rope beyond the travel: from the crosshead at the top floor to the sheave axis (registry impianto.L0). */
-function ropeBeyond(S: ShaftInputs, V: FormValues): number {
+/** Rope beyond the travel: from the crosshead at the top floor to the sheave axis, with the machine below to the axes of
+ *  the head pulleys (registry impianto.L0). */
+function ropeBeyond(S: ShaftInputs, V: FormValues, headOver: number | null): number {
   const vt = S.vertical, D = num(V, 'n_D');
-  const above = V.layout !== 'bottom' && S.room ? S.room.slab + KL.sheaveAxisPerD * D : 0;
+  const above = headOver !== null ? headOver : S.room ? S.room.slab + KL.sheaveAxisPerD * D : 0;
   return Math.max(0.1, m3((vt.headroom - vt.frameTop + above) / 1000));
 }
 
@@ -107,17 +119,22 @@ function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormVal
 }
 
 export function deriveLift(inp: LiftInputs): LiftDerived {
-  const S = inp.shaft, L = layout(S), vt = S.vertical, rise = travel(vt.floors);
+  const S = inp.shaft, L = layout(S), vt = S.vertical, rise = travel(vt.floors), Sec = section(L);
   let V: FormValues = { ...inp.calc, Q: L.Q, v: vt.v, H: rise / 1000 };
   if (inp.auto.P) V = { ...V, P: carMassEstimate(L.Q) };
-  if (inp.auto.Hv) V = { ...V, Hv: m3((rise + vt.headroom) / 1000) };
+  // a machine below: the scheme's head pulleys beyond the two the calculation counts are extra simple bends, Hv runs
+  // from their axes to the sheave's (both with the sheave of each sizing step)
+  const scheme: BottomScheme | null = V.layout === 'bottom' ? inp.bottom ?? 'head' : null, npsEntered = num(inp.calc, 'nps');
+  if (inp.auto.Hv && !scheme) V = { ...V, Hv: m3((rise + vt.headroom) / 1000) };
   const geometry = (W: FormValues): FormValues => {
     let X = W;
-    if (inp.auto.L0) X = { ...X, L0: ropeBeyond(S, X) };
+    const g = scheme ? bottomGeo(L, scheme, num(X, 'n_D'), num(X, 'Dp'), num(X, 'n_n'), num(X, 'n_d'), num(X, 'r')) : null;
+    if (g) X = { ...X, nps: npsEntered + extraBends(g), ...(inp.auto.Hv ? { Hv: m3((g.zHead - g.zSheave) / 1000) } : {}) };
+    if (inp.auto.L0) X = { ...X, L0: ropeBeyond(S, X, g ? g.zHead - Sec.ceiling : null) };
     if (inp.auto.dx) X = { ...X, dx: deflectorDx(L, X).dx };
     return X;
   };
-  V = mirrorRopes(geometry(V));
+  V = geometry(mirrorRopes(V));
   // the diverting pulley's distance comes from the plan: only geometries the wrap-angle model reads as drawn
   const c0 = readInputs(V).I, planned = inp.auto.dx && c0.layout === 'topDefl' && c0.alphaMode !== 'manual';
   let noProposal = false;
@@ -134,6 +151,11 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
     L0: inp.auto.L0 ? 'auto' : 'entered', dx: inp.auto.dx ? 'auto' : 'entered', Hv: inp.auto.Hv ? 'auto' : 'entered',
     machine: inp.auto.machine && !noProposal ? 'auto' : 'entered',
   };
-  const machine: MachineSpec = { D: N.D, Dp: I.layout === 'topDefl' ? I.Dp : 0, n: N.n, d: N.d, mass: N.mass, label: '' };
-  return { shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, machine, sim: simModel(I, N, analysis.res, section(L), vt) };
+  const machine: MachineSpec = machineSpec(analysis.ctx);
+  const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r) : null;
+  const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
+  return {
+    shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, machine, bottom: scheme, bottomGap, headPulleys: g ? 2 + extraBends(g) : 0,
+    sim: simModel(I, N, analysis.res, Sec, vt),
+  };
 }

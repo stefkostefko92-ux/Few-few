@@ -1,15 +1,19 @@
 // The fittings of the shaft: in the pit the access ladder by the lowest landing, the stop switch within reach of
 // that landing, the pit lamp and the perforated screen in front of the counterweight's run (0.3 m to 2.5 m over the
-// pit floor); along the shaft the lighting, one fitting a floor and one under the ceiling, on their conduit. Plan
-// and heights in millimetres, into the shaft's batch. Loaded only through boot.ts (lazy).
+// pit floor); along the shaft the lighting, one fitting a floor and one under the slab, on their conduit (in their
+// niche when the shaft has one), and the cable trunking in its chase. Plan and heights in millimetres, into the shaft's
+// batch. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import type { Layout } from '@/shaft';
+import { KV } from '@/shaft/norme';
+import { lampHeights, nichesOf } from '@/shaft/niche';
 import type { Section } from '@/shaft/section';
 import { onWall, type Batch } from './geom';
 import { freeSides } from './governor';
 import type { LiftMaterials } from './materials';
 
-const LADDER_W = 400, RUNG = 280;
+// the ladder's width and rungs' pitch, a lamp's height without a niche [mm]
+const LADDER_W = 400, RUNG = 280, LAMP_H = 600;
 
 export function buildPit(L: Layout, S: Section, M: LiftMaterials, B: Batch): void {
   const { W, D } = L.inputs, c = L.car, zBot = S.pitFloor, z0 = S.levels[0] ?? 0, free = freeSides(L);
@@ -56,15 +60,31 @@ export function buildPit(L: Layout, S: Section, M: LiftMaterials, B: Batch): voi
     for (const y of [y0, y1]) B.box(x - 20, y - 20, zBot, x + 20, y + 20, zs1, M.galv);
   }
 
-  // shaft lighting on that wall by the back corner: a fitting a floor, one under the ceiling
-  if (lamps) {
-    const u = D - 130, zTop = S.ceiling - 500;
-    const [cx, cy] = onWall(lamps, W, D, u - 60, 25);
+  // shaft lighting: a compact fitting in each recess of its niche, the conduit in the wall behind; without the niche on
+  // that wall by the back corner, a fitting a floor and one under the slab on their conduit
+  const ln = nichesOf(L.inputs).find((n) => n.use === 'light');
+  if (ln) {
+    const u = ln.at + ln.width / 2, w = Math.min(100, ln.width / 2 - 20), v0 = -ln.depth, H = KV.nicheLightH;
+    const [cx, cy] = onWall(ln.wall, W, D, u - w - 15, v0 + 10);
     B.rod([cx, cy, zBot + 1000], [cx, cy, S.ceiling], 10, M.galv, 8);
-    for (const z of [...S.levels.map((l) => l + 1500), zTop]) {
-      if (z + 600 > S.ceiling - 80) continue;
-      B.wallBox(lamps, W, D, u - 35, u + 35, 0, 50, z, z + 600, M.galv);
-      B.wallBox(lamps, W, D, u - 22, u + 22, 50, 53, z + 20, z + 580, M.carLight);
+    for (const z of lampHeights(S, H)) {
+      B.wallBox(ln.wall, W, D, u - w, u + w, v0, v0 + 45, z + 60, z + H - 60, M.galv);
+      B.wallBox(ln.wall, W, D, u - w + 12, u + w - 12, v0 + 45, v0 + 48, z + 75, z + H - 75, M.carLight);
     }
+  } else if (lamps) {
+    const u = D - 130, [cx, cy] = onWall(lamps, W, D, u - 60, 25);
+    B.rod([cx, cy, zBot + 1000], [cx, cy, S.ceiling], 10, M.galv, 8);
+    for (const z of lampHeights(S, LAMP_H)) {
+      B.wallBox(lamps, W, D, u - 35, u + 35, 0, 50, z, z + LAMP_H, M.galv);
+      B.wallBox(lamps, W, D, u - 22, u + 22, 50, 53, z + 20, z + LAMP_H - 20, M.carLight);
+    }
+  }
+
+  // the cable trunking in its chase, pit floor to slab: the channel and its cover
+  for (const n of nichesOf(L.inputs).filter((x) => x.use === 'duct')) {
+    const u = n.at + n.width / 2, hw = Math.min(50, n.width / 2 - 10), d = Math.min(60, n.depth - 10), v0 = -n.depth;
+    if (hw <= 5 || d <= 5) continue;
+    B.wallBox(n.wall, W, D, u - hw, u + hw, v0, v0 + d - 3, zBot, S.ceiling, M.galv);
+    B.wallBox(n.wall, W, D, u - hw + 3, u + hw - 3, v0 + d - 3, v0 + d, zBot, S.ceiling, M.galv);
   }
 }

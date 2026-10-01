@@ -728,6 +728,18 @@
     },
     {
       "n": 59,
+      "id": "vano.porte.bottoniera",
+      "gruppo": "Vano: porte",
+      "voce": "Bottoniera di piano",
+      "valore": "accanto a ogni porta di piano, sul pianerottolo: per default a destra guardando la porta, il centro della pulsantiera a 150 mm dal vano della porta e i pulsanti a 1100 mm dal pavimento; pulsantiera di 120 × 300 mm, sporgente 15 mm dal muro; lato, distanza e altezza modificabili su ogni progetto",
+      "riferimento": "altezze e distanze dagli angoli per l'accessibilità da verificare (DM 236/1989, UNI EN 81-70)",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 60,
       "id": "vano.ingombri.tipici",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Ingombri tipici nel vano (modificabili su ogni progetto)",
@@ -739,7 +751,7 @@
       "nota": ""
     },
     {
-      "n": 60,
+      "n": 61,
       "id": "vano.ingombri.contrappeso.laterale",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Contrappeso laterale",
@@ -751,7 +763,7 @@
       "nota": ""
     },
     {
-      "n": 61,
+      "n": 62,
       "id": "vano.ingombri.arcata.zaino",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Arcata a zaino (due accessi adiacenti a 90°)",
@@ -763,7 +775,31 @@
       "nota": ""
     },
     {
-      "n": 62,
+      "n": 63,
+      "id": "vano.ingombri.nicchie",
+      "gruppo": "Vano: ingombri tipici",
+      "voce": "Nicchie nelle pareti del vano",
+      "valore": "contrappeso in nicchia: il contrappeso con le sue guide sta nella nicchia della parete su cui corre, con almeno 20 mm tra le guide e i fianchi della nicchia (con le staffe Panev, lo spazio della piastra del supporto dietro il piede di ogni guida); la distanza dalla parete si misura dal fondo della nicchia e la cabina guadagna la sua profondità, senza scendere sotto gli ingombri delle guide; luce del vano in nicchia: una nicchia alta 400 mm per lampada, le lampade 1500 mm sopra ogni piano e l'ultima a 80 mm sotto il solaio; canalina in nicchia: dal fondo della fossa al solaio; ogni nicchia dentro la sua parete, fuori dai telai delle porte di piano e dalle altre nicchie, con almeno 50 mm di muro dietro; altrimenti «Non conforme»",
+      "riferimento": "—",
+      "fonte": "scelta del software; la resistenza della parete con la nicchia va verificata dal progettista",
+      "stato": "scelta del software",
+      "verifiche": "nicchie nelle pareti",
+      "nota": ""
+    },
+    {
+      "n": 64,
+      "id": "vano.ingombri.staffe.contrappeso",
+      "gruppo": "Vano: ingombri tipici",
+      "voce": "Staffe delle guide del contrappeso (catalogo Panev)",
+      "valore": "per default il supporto Panev SU o SD con la guida SG, la guida serrata sulla flangia della SG da due bride N1: il supporto più corto il cui campo stampato prende la distanza della guida dalla parete (o dal fondo della nicchia) e la cui piastra sta sulla parete: SU, SD 150 e SD 220 lunghi 160 mm da 45 a 155 mm (SD 220 da 50), lunghi 180 mm da 45 a 195 mm, lunghi 200 mm da 45 a 215 mm; nessuno adatto: «Non conforme» (si possono scegliere staffe generiche, da dimensionare a parte)",
+      "riferimento": "catalogo staffe Panev 2026, pp. 20-59",
+      "fonte": "catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf)",
+      "stato": "confermato",
+      "verifiche": "staffe del catalogo per le guide del contrappeso",
+      "nota": ""
+    },
+    {
+      "n": 65,
       "id": "vano.spazi.rifugio",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Spazi di rifugio sul tetto di cabina e in fossa",
@@ -775,7 +811,7 @@
       "nota": ""
     },
     {
-      "n": 63,
+      "n": 66,
       "id": "vano.spazi.salto",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Posizione più alta della cabina",
@@ -787,7 +823,7 @@
       "nota": ""
     },
     {
-      "n": 64,
+      "n": 67,
       "id": "vano.spazi.testata.parti",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Distanze libere dal soffitto con la cabina nella posizione più alta",
@@ -799,7 +835,7 @@
       "nota": ""
     },
     {
-      "n": 65,
+      "n": 68,
       "id": "vano.spazi.fossa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Distanze in fossa con la cabina sugli ammortizzatori compressi",
@@ -811,7 +847,7 @@
       "nota": ""
     },
     {
-      "n": 66,
+      "n": 69,
       "id": "vano.spazi.balaustra",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Balaustra sul tetto di cabina",
@@ -823,7 +859,7 @@
       "nota": ""
     },
     {
-      "n": 67,
+      "n": 70,
       "id": "vano.spazi.tetto.superficie",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Superficie dove una persona può stare sul tetto di cabina",
@@ -835,7 +871,7 @@
       "nota": ""
     },
     {
-      "n": 68,
+      "n": 71,
       "id": "vano.contrappeso.schermo",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Schermo del contrappeso in fossa",
@@ -847,7 +883,7 @@
       "nota": ""
     },
     {
-      "n": 69,
+      "n": 72,
       "id": "vano.ammortizzatori.corsa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori ad accumulo di energia lineari (molle)",
@@ -859,7 +895,7 @@
       "nota": ""
     },
     {
-      "n": 70,
+      "n": 73,
       "id": "vano.locale.macchina",
       "gruppo": "Locale del macchinario",
       "voce": "Locale del macchinario",
@@ -871,7 +907,7 @@
       "nota": ""
     },
     {
-      "n": 71,
+      "n": 74,
       "id": "vano.illuminazione",
       "gruppo": "Locale del macchinario",
       "voce": "Illuminazione del vano e del locale del macchinario",
@@ -883,7 +919,7 @@
       "nota": ""
     },
     {
-      "n": 72,
+      "n": 75,
       "id": "vano.locale.temperatura",
       "gruppo": "Locale del macchinario",
       "voce": "Temperatura dei locali del macchinario e degli armadi",
@@ -895,7 +931,7 @@
       "nota": ""
     },
     {
-      "n": 73,
+      "n": 76,
       "id": "vano.carichi.fossa",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carichi sul pavimento della fossa",
@@ -907,7 +943,7 @@
       "nota": ""
     },
     {
-      "n": 74,
+      "n": 77,
       "id": "vano.guide.spinte",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Spinte sulle guide di cabina",
@@ -919,7 +955,7 @@
       "nota": ""
     },
     {
-      "n": 75,
+      "n": 78,
       "id": "vano.carichi.macchina",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carico della macchina sulla soletta",
@@ -931,7 +967,7 @@
       "nota": ""
     },
     {
-      "n": 76,
+      "n": 79,
       "id": "vano.carichi.cavi",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Massa dei cavi flessibili",
@@ -943,7 +979,7 @@
       "nota": ""
     },
     {
-      "n": 77,
+      "n": 80,
       "id": "vano.foglio.stime",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Lunghezze stimate nel foglio dei dati",
@@ -955,7 +991,7 @@
       "nota": ""
     },
     {
-      "n": 78,
+      "n": 81,
       "id": "vano.modello.passo",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Dimensioni proposte della cabina",
@@ -967,7 +1003,7 @@
       "nota": ""
     },
     {
-      "n": 79,
+      "n": 82,
       "id": "vano.modello.quote",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Quote della pianta fissate a mano",
@@ -979,7 +1015,7 @@
       "nota": ""
     },
     {
-      "n": 80,
+      "n": 83,
       "id": "vano.modello.limiti",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Limiti del modello del vano",
@@ -991,7 +1027,7 @@
       "nota": ""
     },
     {
-      "n": 81,
+      "n": 84,
       "id": "impianto.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Corsa",
@@ -1003,7 +1039,7 @@
       "nota": ""
     },
     {
-      "n": 82,
+      "n": 85,
       "id": "impianto.portata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Portata e velocità",
@@ -1015,7 +1051,7 @@
       "nota": ""
     },
     {
-      "n": 83,
+      "n": 86,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -1027,7 +1063,7 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto"
     },
     {
-      "n": 84,
+      "n": 87,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -1039,7 +1075,7 @@
       "nota": ""
     },
     {
-      "n": 85,
+      "n": 88,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
@@ -1051,19 +1087,31 @@
       "nota": ""
     },
     {
-      "n": 86,
+      "n": 89,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
-      "valore": "corsa + testata: la macchina al livello del piano più basso, le pulegge sotto il soffitto del vano",
-      "riferimento": "ricerca, capitolo 5",
+      "valore": "dall'asse dei rinvii in testata all'asse della puleggia di trazione, secondo lo schema delle funi (impianto.basso.schema); la puleggia ha l'asse a 0,9·D sul pavimento del suo locale",
+      "riferimento": "ricerca, capitolo 5; funi con la macchina in basso, capitolo 2.6",
       "fonte": "dati verticali del vano",
       "stato": "derivazione",
       "verifiche": "",
       "nota": ""
     },
     {
-      "n": 87,
+      "n": 90,
+      "id": "impianto.basso.schema",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Macchina in basso: schema delle funi",
+      "valore": "tre schemi: rinvii appesi sotto il solaio del vano (assi a Dp/2 + 120 mm sotto il soffitto), macchina nel locale al piano più basso oltre la parete del contrappeso con la puleggia nel vano; locale pulegge sopra il solaio (assi a 450 mm sul pavimento del locale, solaio di 250 mm se il locale non è progettato), macchina come sopra; macchina sotto il vano, in un locale alto 2400 mm sotto la soletta della fossa di 300 mm, rinvii sotto il solaio. I due rami alla macchina salgono dietro il contrappeso a 50 mm dalla parete e dal contrappeso, la puleggia con il piano parallelo alla parete; per lato un rinvio a 180° se il ramo dista dalla calata in pianta non più di Dp, altrimenti due rinvii a 90° con un tratto orizzontale. Il calcolo conta due rinvii per la macchina in basso: gli altri entrano come flessioni semplici aggiuntive (nps)",
+      "riferimento": "ricerca, funi con la macchina in basso, capitoli 2–5; DPR 1497/1963 artt. 5–9, 33",
+      "fonte": "geometria ricostruita dal software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": "lo schema reale va rilevato sull'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori"
+    },
+    {
+      "n": 91,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1075,7 +1123,7 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 88,
+      "n": 92,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1087,7 +1135,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 89,
+      "n": 93,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1099,7 +1147,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi"
     },
     {
-      "n": 90,
+      "n": 94,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1111,7 +1159,7 @@
       "nota": ""
     },
     {
-      "n": 91,
+      "n": 95,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1123,7 +1171,7 @@
       "nota": ""
     },
     {
-      "n": 92,
+      "n": 96,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -1135,7 +1183,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa; la verifica della corsa resta quella della sezione"
     },
     {
-      "n": 93,
+      "n": 97,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1147,7 +1195,7 @@
       "nota": ""
     },
     {
-      "n": 94,
+      "n": 98,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",

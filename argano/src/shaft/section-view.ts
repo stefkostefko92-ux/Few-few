@@ -5,7 +5,10 @@
 // ropes put it, rails, buffers, the spaces for the maintenance person and the ropes. A long travel is compressed
 // between two heights (the floors in between keep only their level), with break marks on the walls.
 import { clipBand, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
+import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
+import { lampHeights, nichesOf } from './niche';
+import { CAR_PANEL, LANDING_PANEL, carTracks, landingTracks, sillSection, trackPlanes } from './sill';
 import { pitSpace, roofSpaces } from './plan-view';
 import { RAILS } from './rails';
 import { cwPlateAt, section, type Section } from './section';
@@ -49,12 +52,39 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
     const onFront = f.door.includes('A'), onRear = I.entrances === 'opposite' && f.door.includes('B');
     return (side === 'front' ? onFront : onRear) ? [i] : [];
   });
+  // a niche the cut passes through: the wall is thinner there, all the way up (counterweight, trunking) or at each lamp
+  const cutX = L.car.x + L.car.w / 2;
   for (const side of ['front', 'rear'] as const) {
-    const [x0, x1] = side === 'front' ? [-T, 0] : [D, D + T];
+    const face = (d: number): [number, number] => (side === 'front' ? [-T, -d] : [D + d, D + T]);
+    const across = nichesOf(I).filter((n) => n.wall === side && cutX > n.at && cutX < n.at + n.width);
+    const chase = Math.max(0, ...across.filter((n) => n.use !== 'light').map((n) => n.depth)), light = across.find((n) => n.use === 'light');
+    const lamps = light ? lampHeights(S, KV.nicheLightH).map((z) => [z, z + KV.nicheLightH] as const) : [];
+    const piece = (d: number, za: number, zb: number): void => {
+      const [a, b] = face(d);
+      out.push(box(a, za, b, zb, 'wall', 'concrete'));
+    };
+    // the wall from za to zb, recessed where a niche is: niches go from the pit floor to the slab, lamps' at the lamps
+    const stretch = (za: number, zb: number): void => {
+      if (chase > 0 && (za < S.pitFloor || zb > S.ceiling)) {
+        const a = Math.max(za, S.pitFloor), b = Math.min(zb, S.ceiling);
+        if (za < a) piece(0, za, a);
+        if (b > a) stretch(a, b);
+        if (zb > b) piece(0, Math.max(b, za), zb);
+        return;
+      }
+      let z = za;
+      for (const [l0, l1] of lamps) {
+        if (l1 <= z || l0 >= zb || !light) continue;
+        if (l0 > z) piece(chase, z, l0);
+        piece(Math.max(chase, light.depth), Math.max(z, l0), Math.min(l1, zb));
+        z = Math.min(l1, zb);
+      }
+      if (zb > z + 1) piece(chase, z, zb);
+    };
     const gaps = served(side).map((i) => S.levels[i]).filter((z) => inWin(z) && !compressed(z)).map((z) => [z, z + I.doorHeight] as const);
     let z = zBot;
     for (const [a, b] of [...gaps, [zTop, zTop] as const]) {
-      if (a > z + 1) out.push(box(x0, z, x1, Math.min(a, zTop), 'wall', 'concrete'));
+      if (a > z + 1) stretch(z, Math.min(a, zTop));
       z = Math.max(z, b);
     }
     for (const i of served(side)) {
@@ -65,9 +95,11 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
         out.push(line(P(ext[0], zf), P(ext[1], zf), 'outline'));
       } else {
         out.push(box(ext[0], zf - SLAB, ext[1], zf, 'wall', 'concrete'));
-        const s = side === 'front' ? 1 : -1, w0 = side === 'front' ? 0 : D, dl = I.landingDepth;
-        out.push(box(w0, zf - 40, w0 + s * dl, zf, 'outline', 'steel'));
-        out.push(box(w0 + s * (dl - 50), zf, w0 + s * (dl - 14), zf + I.doorHeight, 'thin', 'door'));
+        const s = side === 'front' ? 1 : -1, w0 = side === 'front' ? 0 : D, dl = I.landingDepth, X = (v: number): number => w0 + s * v;
+        // the sill's section with a groove under each panel's track, the panels on their tracks (sill.ts, as the 3D)
+        const door = L.doors.find((d) => d.wall === side), grooves = door ? trackPlanes(door, landingTracks(dl), LANDING_PANEL) : [];
+        out.push(path(sillSection(-25, dl, grooves, false).map(([v, z]) => P(X(v), zf + z)), true, 'outline', 'steel'));
+        for (const g of grooves) out.push(box(X(g - LANDING_PANEL / 2), zf, X(g + LANDING_PANEL / 2), zf + I.doorHeight, 'thin', 'door'));
         out.push(box(w0, zf + I.doorHeight, w0 + s * dl, zf + I.doorHeight + 150, 'thin'));
       }
       out.push({ e: 'text', at: P(side === 'front' ? -T - LANDING_EXT + 60 : D + T + LANDING_EXT - 60, zf + 80), text: V.floors[i].label, size: 3, align: side === 'front' ? 'l' : 'r' });
@@ -185,10 +217,11 @@ function car(L: Layout, P: (x: number, z: number) => Pt, zf: number, ropeTop: nu
   for (const [a, open] of [[x0, front], [x1 - w, rear]] as const) {
     if (open) {
       out.push(b(a, zf + I.doorHeight, a + w, zf + V.carOutH, 'outline', 'car'));
-      const dx = a === x0 ? -I.carDoorDepth + 14 : w + 14;
-      out.push(b(a + dx, zf, a + dx + 18, zf + I.doorHeight, 'thin', 'door'));
-      const s0 = a === x0 ? x0 - I.carDoorDepth : x1, s1 = a === x0 ? x0 : x1 + I.carDoorDepth;
-      out.push(b(s0, zf - 30, s1, zf, 'outline', 'steel'));
+      // the car sill from the gap to the car's inside, nosing at the gap, the panels on their tracks (sill.ts)
+      const fr = a === x0, X = (v: number): number => (fr ? v : I.D - v), v0 = I.landingDepth + I.sillGap, inner = fr ? x0 + w : I.D - (x1 - w);
+      const door = L.doors.find((d) => d.wall === (fr ? 'front' : 'rear')), grooves = door ? trackPlanes(door, carTracks(v0), CAR_PANEL) : [];
+      out.push(path(sillSection(v0, inner, grooves, true).map(([v, z]) => P(X(v), zf + z)), true, 'outline', 'steel'));
+      for (const g of grooves) out.push(b(X(g - CAR_PANEL / 2), zf, X(g + CAR_PANEL / 2), zf + I.doorHeight, 'thin', 'door'));
       // operator over the entrance, on the car roof
       if (V.opTop > V.carOutH + 60) out.push(b(a === x0 ? x0 - I.carDoorDepth : x1 - 150, zf + V.carOutH + 60, a === x0 ? x0 + 150 : x1 + I.carDoorDepth, zf + V.opTop, 'thin'));
     } else {

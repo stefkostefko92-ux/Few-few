@@ -7,11 +7,14 @@
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { N1 } from '@/shaft/staffe';
 import type { Batch } from './geom';
 
-/** ISO 4017 / 4032 / 7089, M10: across flats, head and nut heights, washer; N1: the clip after the owner's part. */
+/** ISO 4017 / 4032 / 7089, M10: across flats, head and nut heights, washer; N1 (src/shaft/staffe.ts): the clip after
+ *  the owner's part. */
 export const M10 = { s: 16, k: 6.4, m: 8.4, washer: 20, washerH: 2 } as const;
-export const N1 = { nose: 19.5, heel: 16.5, width: 20, tip: 14, top: 14, foot: 5, relief: 0.8, pad: -7, shank: 25 } as const;
+
+export { N1 };
 
 const cyl = (r: number, y0: number, y1: number, seg: number): THREE.BufferGeometry => new THREE.CylinderGeometry(r, r, y1 - y0, seg).translate(0, (y0 + y1) / 2, 0);
 const hexagon = (s: number, y0: number, y1: number): THREE.BufferGeometry => cyl(s / Math.sqrt(3), y0, y1, 6).rotateY(Math.PI / 6);

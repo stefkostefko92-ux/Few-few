@@ -4,7 +4,7 @@
 // but only those a person must enter. The car mass, the rope geometry and the machine are filled in by the software
 // unless switched to entered; an automatic value is shown with a badge saying so.
 import type { FormValues } from '@/calc/types';
-import type { AutoFlags, LiftDerived, LiftInputs } from '@/lib/lift';
+import { BOTTOM_SCHEMES, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
 import FieldRow from '../calc/FieldRow';
@@ -18,7 +18,8 @@ interface Props {
   bad: ReadonlySet<string>;
   setCalc(patch: FormValues): void;
   setAuto(patch: Partial<AutoFlags>): void;
-  t(key: string): string;
+  setBottom(b: BottomScheme): void;
+  t(key: string, values?: Record<string, string | number>): string;
 }
 
 const ALL: readonly Field[] = [...PLANT, ...LAYOUT, ...MACHINE('n_'), ...MACHINE('o_'), ...ROPES('n_'), ...ROPES('o_'), ...SERVICE];
@@ -30,7 +31,7 @@ const field = (id: string): Field => {
 /** the group's assumptions, entered also when the machine is proposed */
 const ASSUMED = ['n_etaD', 'n_etaI', 'n_poles', 'n_fn', 'n_nm', 'n_Jm', 'n_Js', 'n_mass'] as const;
 
-export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAuto, t }: Props) {
+export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAuto, setBottom, t }: Props) {
   const V: FormValues = { ...inp.calc, layout: derived.values.layout };
   const DV = derived.values, auto = inp.auto, { fmt } = P;
   const set = (id: string, value: string | boolean): void => setCalc({ [id]: value });
@@ -51,6 +52,23 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
         <div className="rows">
           {row('r')}
           {row('layout')}
+          {derived.bottom ? (
+            <>
+              <div className="row">
+                <label htmlFor="bottom-scheme">{t('bottom_scheme')}</label>
+                <select id="bottom-scheme" className="input" value={derived.bottom} onChange={(e) => setBottom(e.target.value as BottomScheme)}>
+                  {BOTTOM_SCHEMES.map((b) => <option key={b} value={b}>{t(`bottom_${b}`)}</option>)}
+                </select>
+              </div>
+              <p className="hint">{t('hint_bottom_pulleys', { n: derived.headPulleys, extra: derived.headPulleys - 2 })}</p>
+              {derived.bottom === 'under' ? <p className="hint">{t('hint_bottom_under')}</p> : null}
+              {derived.bottomGap ? (
+                <p className="hint bad" role="alert">{derived.bottomGap.need === null
+                  ? t('hint_bottom_gap_none', { now: derived.bottomGap.now })
+                  : t('hint_bottom_gap', { now: derived.bottomGap.now, need: derived.bottomGap.need })}</p>
+              ) : null}
+            </>
+          ) : null}
           {toggle('P', t('auto_P'))}
           {row('P', auto.P ? { value: fmt(num('P'), 0), badge: t('badge_estimate') } : null)}
           {auto.P ? <p className="hint">{t('hint_P_estimate')}</p> : null}

@@ -96,6 +96,12 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts): Repo
     B.push({ t: 'h3', text: S.fx_title.replace('{n}', String(hand.length)) });
     B.push({ t: 'kv', rows: hand });
   }
+  const niches = I.niches ?? [];
+  if (niches.length) {
+    B.push({ t: 'h3', text: S.nc_title });
+    B.push({ t: 'kv', rows: niches.map((n): [string, string] => [S[`nc_use_${n.use}` as const],
+      `parete ${S[`wall_${n.wall}` as const]}, a ${fmt(n.at, 0)} mm dall'angolo, larga ${fmt(n.width, 0)} mm, profonda ${fmt(n.depth, 0)} mm`]) });
+  }
   B.push({ t: 'p', text: S.limits, style: 'note' });
   return B;
 }

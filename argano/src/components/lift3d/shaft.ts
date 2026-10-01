@@ -1,6 +1,6 @@
 // The shaft built from its design: the four walls with the landing door openings at the floors each entrance
 // serves, the landing doors (stainless portal and panels, telescopic or centre opening; on the shaft side the header
-// with its track and lock, the aluminium sill on Panev's brackets), the landings outside with the call button, the pit
+// with its track and lock, the aluminium sill on Panev's brackets), the landings outside with the call station, the pit
 // floor, the slab over the shaft with its openings and a label at each floor. Plan and heights in millimetres
 // (geom.ts turns them into metres); static parts merged by material. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
@@ -8,7 +8,9 @@ import * as THREE from 'three/webgpu';
 import type { DoorLayout, Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { KV } from '@/shaft/norme';
-import { Batch, P } from './geom';
+import { callStationAt, callStationOf } from '@/shaft/callstation';
+import { lampHeights, nichesOf } from '@/shaft/niche';
+import { Batch, P, onWall } from './geom';
 import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
 import { landingHeader } from './operator';
 import { SILL_H, sill } from './sill';
@@ -44,6 +46,22 @@ export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'],
   return panels;
 }
 
+/** The landing call station beside a door at the floor level z, where src/shaft/callstation.ts puts it: the brushed
+ *  plate on the landing face of the wall, the floor display at its top, the buttons with their lit rings (one at the
+ *  ends of the travel, up and down between). */
+function callStation(g: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number, plate: THREE.Material, calls: 'up' | 'down' | 'both'): void {
+  const cs = callStationOf(I), { u } = callStationAt(d, cs), [w, h, t] = KV.callPanel, f = -I.wall - t, zc = z + cs.height;
+  g.wallBox(d.wall, I.W, I.D, u - w / 2, u + w / 2, f, -I.wall, zc - h / 2, zc + h / 2, plate);
+  g.wallBox(d.wall, I.W, I.D, u - 40, u + 40, f - 1, f, zc + 75, zc + 115, M.glass);
+  g.wallBox(d.wall, I.W, I.D, u - 14, u + 14, f - 1.5, f - 1, zc + 85, zc + 105, M.led);
+  for (const dz of calls === 'both' ? [35, -35] : [0]) {
+    const [a0, a1] = [onWall(d.wall, I.W, I.D, u, f), onWall(d.wall, I.W, I.D, u, f - 6)];
+    g.rod([a0[0], a0[1], zc + dz], [a1[0], a1[1], zc + dz], 17, M.carLight, 20);
+    const [b0, b1] = [onWall(d.wall, I.W, I.D, u, f - 6), onWall(d.wall, I.W, I.D, u, f - 9)];
+    g.rod([b0[0], b0[1], zc + dz], [b1[0], b1[1], zc + dz], 14, M.chrome, 20);
+  }
+}
+
 function label(text: string): THREE.Sprite {
   const c = document.createElement('canvas');
   c.width = 128;
@@ -70,8 +88,14 @@ function label(text: string): THREE.Sprite {
   return s;
 }
 
-/** `cuts`: where the slab over the shaft is open (slabOpenings). */
-export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readonly Opening[]): ShaftModel {
+/** Openings a machine below needs: through a wall [mm along it, heights], and in the pit's slab (slabOpenings). */
+export interface MachineCuts {
+  walls: readonly { side: Side; u0: number; u1: number; z0: number; z1: number }[];
+  pit: readonly Opening[];
+}
+
+/** `cuts`: where the slab over the shaft is open (slabOpenings); `machine`: what a machine below needs open. */
+export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readonly Opening[], machine: MachineCuts = { walls: [], pit: [] }): ShaftModel {
   const I = L.inputs, V = I.vertical, W = I.W, D = I.D, wall = I.wall;
   const zBot = S.pitFloor, zTop = S.ceiling;
   const sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
@@ -85,21 +109,36 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
       openings[d.wall].push({ u0: d.u0 - KV.doorPortal, u1: d.u1 + KV.doorPortal, z0: S.levels[i], z1: S.levels[i] + d.height + 120 });
     }
   });
+  // each wall in columns between the edges of its openings and niches; in each column the runs of the same inner face
+  // (through an opening: no wall; in a niche: its back) from the pit floor to the slab
+  const lampZ = lampHeights(S, KV.nicheLightH);
   for (const side of SIDES) {
     const along = side === 'front' || side === 'rear';
     const a0 = along ? -wall : 0, a1 = along ? W + wall : D, mat = M.walls[side], g = byside[side];
-    const ops = openings[side].slice().sort((p, q) => p.z0 - q.z0);
-    const piece = (u0: number, u1: number, z0: number, z1: number): void => {
-      if (u1 - u0 > 1 && z1 - z0 > 1) g.wallBox(side, W, D, u0, u1, -wall, 0, z0, z1, mat);
-    };
-    if (!ops.length) piece(a0, a1, zBot, zTop);
-    else {
-      const o0 = Math.min(...ops.map((o) => o.u0)), o1 = Math.max(...ops.map((o) => o.u1));
-      piece(a0, o0, zBot, zTop);
-      piece(o1, a1, zBot, zTop);
-      let z = zBot;
-      for (const o of ops) { piece(o0, o1, z, o.z0); z = o.z1; }
-      piece(o0, o1, z, zTop);
+    const cuts = [
+      ...openings[side].map((o) => ({ ...o, v: -wall })),
+      ...machine.walls.filter((c) => c.side === side).map((c) => ({ ...c, v: -wall })),
+      ...nichesOf(I).filter((n) => n.wall === side).flatMap((n) => (n.use === 'light' ? lampZ.map((z) => [z, z + KV.nicheLightH]) : [[zBot, zTop]])
+        .map(([z0, z1]) => ({ u0: n.at, u1: n.at + n.width, z0, z1, v: -n.depth }))),
+    ];
+    const edges = (vals: number[], lo: number, hi: number): number[] => [...new Set([lo, hi, ...vals.filter((x) => x > lo && x < hi)])].sort((p, q) => p - q);
+    const us = edges(cuts.flatMap((c) => [c.u0, c.u1]), a0, a1), zs = edges(cuts.flatMap((c) => [c.z0, c.z1]), zBot, zTop);
+    for (let i = 0; i + 1 < us.length; i++) {
+      const u0 = us[i], u1 = us[i + 1], um = (u0 + u1) / 2;
+      let run: { z0: number; z1: number; v: number } | null = null;
+      const flush = (): void => {
+        if (run && run.v > -wall + 1 && run.z1 - run.z0 > 1 && u1 - u0 > 1) g.wallBox(side, W, D, u0, u1, -wall, run.v, run.z0, run.z1, mat);
+      };
+      for (let j = 0; j + 1 < zs.length; j++) {
+        const z0 = zs[j], z1 = zs[j + 1], zm = (z0 + z1) / 2;
+        const v = Math.min(0, ...cuts.filter((c) => um > c.u0 && um < c.u1 && zm > c.z0 && zm < c.z1).map((c) => c.v));
+        if (run && run.v === v) run.z1 = z1;
+        else {
+          flush();
+          run = { z0, z1, v };
+        }
+      }
+      flush();
     }
   }
 
@@ -111,10 +150,7 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
       g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30, 10, z, zh + 60, frame);
       g.wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30, 10, z, zh + 60, frame);
       g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30, 10, zh, zh + 60, frame);
-      // call button by the portal, on the landing
-      const cb = d.u1 + KV.doorPortal + 110 < len ? d.u1 + KV.doorPortal + 60 : d.u0 - KV.doorPortal - 120;
-      g.wallBox(d.wall, W, D, cb, cb + 60, -wall - 6, -wall, z + 1040, z + 1220, frame);
-      g.wallBox(d.wall, W, D, cb + 15, cb + 45, -wall - 11, -wall - 6, z + 1100, z + 1130, frame);
+      callStation(g, M, I, d, z, frame, i === 0 ? 'up' : i === V.floors.length - 1 ? 'down' : 'both');
       const panels = landingEntrance(C, M, I, d, z);
       sides[d.wall].add(panels.group);
       landings.push({ floor: i, panels });
@@ -127,7 +163,8 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
   });
 
   // pit floor and the slab over the shaft with the openings it needs (slab.ts)
-  C.box(-wall, -wall, zBot - 300, W + wall, D + wall, zBot, M.pit);
+  if (machine.pit.length) buildSlab(C, M, [-wall, -wall, W + wall, D + wall], zBot - 300, zBot, machine.pit, false, M.pit);
+  else C.box(-wall, -wall, zBot - 300, W + wall, D + wall, zBot, M.pit);
   const R = I.room;
   const rect = [R ? -R.shaftX : -wall, R ? -R.shaftY : -wall, R ? R.W - R.shaftX : W + wall, R ? R.D - R.shaftY : D + wall] as const;
   buildSlab(C, M, rect, zTop, zTop + (R ? R.slab : 250), cuts, Boolean(R));

@@ -6,40 +6,15 @@
 // the frames into the shaft's batch. Loaded only through boot.ts (lazy).
 // Motion: the pulleys turn as the car travels; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import type { Layout, Rail } from '@/shaft';
+import type { Layout } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { P, type Batch } from './geom';
-import { govSize, governorFrame, governorWheel, type GovSize } from './govparts';
-import { LEVER_REACH, tensionWeight } from './tension';
-import type { LiftMaterials, Side } from './materials';
+import { governorFrame, governorWheel } from './govparts';
+import { freeSides, governorSpot, type GovernorSpot } from '@/shaft/governor';
 
-/** Where the governor rope runs: x of its plane, the strand clamped to the car (y1) and the free one (y2); the
- *  governor's size, the car rail beside the rope, and whether the lever kind of tension weight fits the shaft. */
-export interface GovernorSpot {
-  side: Side;
-  x: number;
-  y1: number;
-  y2: number;
-  G: GovSize;
-  rail: Rail;
-  lever: boolean;
-}
-
-/** The side walls with neither an entrance nor the counterweight, left first. */
-export function freeSides(L: Layout): Side[] {
-  return (['left', 'right'] as const).filter((s) => L.cwSide !== s && !L.doors.some((d) => d.wall === s));
-}
-
-export function governorSpot(L: Layout): GovernorSpot | null {
-  if (L.frame.kind !== 'central') return null;
-  const side = freeSides(L).at(-1);
-  const rail = L.rails.find((r) => r.kind === 'car' && (side === 'left' ? r.dir === 'right' : r.dir === 'left'));
-  if (!side || !rail) return null;
-  const { W, D } = L.inputs, gap = side === 'left' ? L.car.x : W - (L.car.x + L.car.w), G = govSize(L.inputs.vertical.v);
-  if (gap < 110) return null;
-  const x = side === 'left' ? gap / 2 - 10 : W - gap / 2 + 10, y1 = rail.y + 145, y2 = y1 + 2 * G.R;
-  return y2 + G.R < D - 80 ? { side, x, y1, y2, G, rail, lever: y1 + G.R + LEVER_REACH < D - 60 } : null;
-}
+export { freeSides, governorSpot, type GovernorSpot };
+import { tensionWeight } from './tension';
+import type { LiftMaterials } from './materials';
 
 export interface GovernorModel {
   /** the governor's and the tension pulley, which turn */

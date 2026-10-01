@@ -21,6 +21,10 @@ const CASES: readonly (readonly [string, (I: ShaftInputs) => ShaftInputs])[] = [
   ['accessi adiacenti a destra', (I) => ({ ...I, entrances: 'adjacent', side2: 'right', W: 1900, D: 1900 })],
   ['accessi adiacenti a sinistra, portata data', (I) => ({ ...I, entrances: 'adjacent', side2: 'left', W: 1900, D: 1900, Q: 630 })],
   ['portata data, cabina dispari', (I) => ({ ...I, Q: 630, W: 1611, carWall: 36 })],
+  ['contrappeso in nicchia sul fondo, luce e canalina in nicchia', (I) => ({ ...I, niches: [
+    { use: 'cw', wall: 'rear', at: 300, width: 1000, depth: 150 }, { use: 'light', wall: 'left', at: 1300, width: 300, depth: 100 },
+    { use: 'duct', wall: 'right', at: 200, width: 200, depth: 100 }] })],
+  ['contrappeso a sinistra in nicchia', (I) => ({ ...I, cw: 'left', niches: [{ use: 'cw', wall: 'left', at: 400, width: 1000, depth: 120 }] })],
 ];
 const LEVELS: readonly PlanLevel[] = ['top', 'main', 'bottom', 'pit'];
 

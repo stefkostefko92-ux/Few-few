@@ -7,8 +7,10 @@
 import { chain, edit as E, type Edit, type Entity, type Side } from '../drawing';
 import { KV } from './norme';
 import { RAILS } from './rails';
+import { callStationAt, callStationOf } from './callstation';
+import { cwNiche, nichesOf } from './niche';
 import { doorsAt, pitSpace, roofSpaces, type PlanLevel } from './plan-view';
-import type { DoorLayout, Layout, Wall } from './types';
+import type { DoorLayout, Layout, NicheUse, Wall } from './types';
 
 const sideOf: Record<Wall, Side> = { front: 'bottom', rear: 'top', left: 'left', right: 'right' };
 const opposite: Record<Side, Side> = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
@@ -21,16 +23,35 @@ export interface PlanLabels {
 /** The input that places a door along its wall: where its clear opening starts. */
 const doorKey = (d: DoorLayout): string => `plan.door${d.side}`;
 
+const NICHE_TEXT: Record<NicheUse, string> = { cw: 'Nicchia contrappeso', light: 'Nicchia luce', duct: 'Nicchia canalina' };
+
 export function planDims(L: Layout, level: PlanLevel, floor: number, labels: PlanLabels): Entity[] {
   const I = L.inputs, { W, D, carWall: cw } = I, out: Entity[] = [], { car, carInner: ci } = L;
-  const cr = RAILS[I.carRail], wr = RAILS[I.cwRail];
+  const cr = RAILS[I.carRail], wr = RAILS[I.cwRail], nd = cwNiche(I, L.cwSide)?.depth ?? 0;
   const open = doorsAt(L, floor), door = open[0] ?? L.doors[0];
   const doorSide = sideOf[door.wall];
   const rows: Record<Side, number> = { top: 0, bottom: 0, left: 0, right: 0 };
   const push = (side: Side, dir: 'x' | 'y', pts: number[], text?: (string | null)[], edit?: (Edit | null)[]): void => {
     out.push(chain({ dir, pts, side, row: rows[side]++, text, edit }));
   };
-  const total = (side: Side, dir: 'x' | 'y'): void => push(side, dir, [0, dir === 'x' ? W : D], [`{v} Vano ${dir === 'x' ? labels.level : ''}`.trim()], [E(dir === 'x' ? 'W' : 'D')]);
+  // the niches of a wall along it, inside the shaft's total; the depth of each across its wall, at its middle
+  const niches = (side: Side): void => nichesOf(I).forEach((n, i) => {
+    if (sideOf[n.wall] !== side) return;
+    const along = n.wall === 'front' || n.wall === 'rear', len = along ? W : D, k = `n.${i}`, mid = n.at + n.width / 2;
+    push(side, along ? 'x' : 'y', [0, n.at, n.at + n.width, len], [null, `{v} ${NICHE_TEXT[n.use]}`, null], [E(`${k}.at`), E(`${k}.width`), E(`${k}.at`, len - n.width, -1)]);
+    const face = n.wall === 'rear' ? D : n.wall === 'right' ? W : 0, pts = face === 0 ? [-n.depth, 0] : [face, face + n.depth];
+    out.push(chain({ dir: along ? 'y' : 'x', pts, at: mid, edit: [E(`${k}.depth`)] }));
+  });
+  const total = (side: Side, dir: 'x' | 'y'): void => {
+    niches(side);
+    push(side, dir, [0, dir === 'x' ? W : D], [`{v} Vano ${dir === 'x' ? labels.level : ''}`.trim()], [E(dir === 'x' ? 'W' : 'D')]);
+  };
+  // the call station of each landing door at this level, from the door's portal, nearest the drawing
+  const cs = callStationOf(I);
+  for (const d of open) {
+    const { u, from } = callStationAt(d, cs);
+    push(sideOf[d.wall], d.wall === 'front' || d.wall === 'rear' ? 'x' : 'y', [Math.min(u, from), Math.max(u, from)], ['{v} Bottoniera'], [E('cs.offset')]);
+  }
   // from the front wall: the landing door with the sill gap, then the car door; the platform across y
   const sill = I.landingDepth + I.sillGap;
   const carY = [E('carDoorDepth', -sill), E('plan.B', -2 * cw), E('plan.B', D - car.y - 2 * cw, -1)];
@@ -57,8 +78,9 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
     const [l, r] = carRails, footL = l.x - cr.h, footR = r.x + cr.h, sg = I.shoeGap;
     push(railSide, 'x', [0, footL, l.x, r.x, footR, W], [null, null, '', null, null], [E('plan.carX', cr.h + sg), null, null, null, E('plan.carX', W - car.w - sg - cr.h, -1)]);
     push(railSide, 'x', [0, l.x, r.x, W], [null, '{v} D.F.G. Arcata', null], [E('plan.carX', sg), E('plan.A', -2 * (sg + cw)), E('plan.carX', W - car.w - sg, -1)]);
-    // axes of the car and of a side counterweight: the car moves, the counterweight goes with its wall gap
-    const cx = car.x + car.w / 2, ax = L.cw.x + L.cw.w / 2, wallGap = E('cwWallGap', -I.cwDepth / 2);
+    // axes of the car and of a side counterweight: the car moves, the counterweight goes with its wall gap (from the
+    // back of its niche)
+    const cx = car.x + car.w / 2, ax = L.cw.x + L.cw.w / 2, wallGap = E('cwWallGap', nd - I.cwDepth / 2);
     if (L.cwSide === 'rear') push(railSide, 'x', [0, cx, W], undefined, [E('plan.carX', -car.w / 2), E('plan.carX', W - car.w / 2, -1)]);
     else if (L.cwSide === 'left') push(railSide, 'x', [0, ax, cx, W], undefined, [wallGap, E('plan.carX', ax - car.w / 2), E('plan.carX', W - car.w / 2, -1)]);
     else push(railSide, 'x', [0, cx, ax, W], undefined, [E('plan.carX', -car.w / 2), E('plan.carX', ax - car.w / 2, -1), wallGap]);
@@ -118,7 +140,7 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
   const c = L.cw;
   if (L.cwSide === 'rear') {
     // the counterweight moves with its wall gap; the car keeps its depth
-    const drop = E('cwWallGap', D - I.cwDepth / 2 - car.y - car.h / 2, -1, [{ key: 'plan.B', value: L.B }]);
+    const drop = E('cwWallGap', D + nd - I.cwDepth / 2 - car.y - car.h / 2, -1, [{ key: 'plan.B', value: L.B }]);
     out.push(chain({ dir: 'y', pts: [car.y + car.h / 2, c.y + c.h / 2], at: c.x + c.w / 2 - 120, text: ['Calata ({v})'], edit: [drop] }));
   } else {
     const cx = car.x + car.w / 2, ax = c.x + c.w / 2, y = L.frame.kind === 'central' ? L.frame.axis - 160 : c.y + c.h / 2 - 160;

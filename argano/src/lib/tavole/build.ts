@@ -111,7 +111,7 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
 }
 
 export function buildTavole(x: TavoleInput): TavoleResult {
-  const L = x.layout, a: Analysis = analyse(x.values), list = specs(L, L.inputs.room !== null), pages = list.length + 1, M = machineOf(a, x.plant);
+  const L = x.layout, a: Analysis = analyse(x.values), list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom'), pages = list.length + 1, M = machineOf(a, x.plant);
   const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
   const meta = (page: number): SheetMeta => ({
     number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',

@@ -1,9 +1,9 @@
 'use client';
 
-// The choices of a shaft design: rated load (the largest car, or a given load), entrances, doors, counterweight,
-// rails, walls, accessibility and, folded away, the allowances with their typical values.
+// The choices of a shaft design: rated load (the largest car, or a given load), entrances, doors and their landing
+// call stations, counterweight, rails, walls, accessibility and, folded away, the allowances with their typical values.
 import { useTranslations } from 'next-intl';
-import { DEFAULTS, RAIL_TYPES, counterweightSide, railLabel, type Allowance, type RailType, type ShaftInputs } from '@/shaft';
+import { DEFAULTS, RAIL_TYPES, callStationOf, counterweightSide, cwBracketsOf, railLabel, type Allowance, type RailType, type ShaftInputs } from '@/shaft';
 
 interface Props {
   I: ShaftInputs;
@@ -32,7 +32,7 @@ function Seg<T extends string>({ name, value, options, label, onChange }: { name
 }
 
 export default function ShaftOptions({ I, set, lastQ }: Props) {
-  const t = useTranslations('shaft');
+  const t = useTranslations('shaft'), cs = callStationOf(I);
   const num = (key: 'Q' | 'doorWidth' | 'doorHeight' | 'wall' | Allowance, label: string, min: number, max: number, step = 10) => (
     <label className="field">
       <span>{label}</span>
@@ -53,6 +53,26 @@ export default function ShaftOptions({ I, set, lastQ }: Props) {
       <Seg name="door" label={t('door')} value={I.door} onChange={(door) => set({ door })} options={[{ v: 'T2', label: t('T2') }, { v: 'C2', label: t('C2') }]} />
       {num('doorWidth', t('doorWidth'), 500, 2500, 50)}
       {num('doorHeight', t('doorHeight'), 1800, 3000, 50)}
+      <fieldset className="field call-station">
+        <legend>{t('cs_title')}</legend>
+        <div className="seg-row" role="radiogroup" aria-label={t('cs_side')}>
+          {(['left', 'right'] as const).map((side) => (
+            <label key={side} className={cs.side === side ? 'on' : undefined}>
+              <input type="radio" name="cs-side" value={side} checked={cs.side === side} onChange={() => set({ callStation: { ...cs, side } })} />
+              {t(`cs_${side}`)}
+            </label>
+          ))}
+        </div>
+        <div className="form-grid">
+          {(['offset', 'height'] as const).map((k) => (
+            <label className="field" key={k}>
+              <span>{t(`cs_${k}`)}</span>
+              <input className="input num" type="number" inputMode="numeric" min={k === 'offset' ? 0 : 600} max={2000} step={10} value={cs[k]}
+                onChange={(e) => { const v = int(e.target.value); if (Number.isFinite(v)) set({ callStation: { ...cs, [k]: v } }); }} />
+            </label>
+          ))}
+        </div>
+      </fieldset>
       {I.entrances === 'one'
         ? <Seg name="cw" label={t('cw')} value={I.cw} onChange={(cw) => set({ cw })}
             options={[{ v: 'rear', label: t('cw_rear') }, { v: 'left', label: t('cw_left') }, { v: 'right', label: t('cw_right') }]} />
@@ -68,6 +88,8 @@ export default function ShaftOptions({ I, set, lastQ }: Props) {
         ))}
         {num('wall', t('wall'), 50, 1000, 10)}
       </div>
+      <Seg name="cw-brackets" label={t('cb_title')} value={cwBracketsOf(I)} onChange={(cwBrackets) => set({ cwBrackets })}
+        options={[{ v: 'panev', label: t('cb_panev') }, { v: 'generic', label: t('cb_generic') }]} />
       <label className="field">
         <span>{t('access')}</span>
         <select className="input" value={I.access} onChange={(e) => set({ access: e.target.value as ShaftInputs['access'] })}>

@@ -11,6 +11,8 @@ import * as THREE from 'three/webgpu';
 import { FISHPLATES, RAILS, type Layout, type RailType } from '@/shaft';
 import type { Section } from '@/shaft/section';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { cwNiche } from '@/shaft/niche';
+import { cwBracketsOf } from '@/shaft/staffe';
 import { Batch } from './geom';
 import type { LiftMaterials } from './materials';
 import { clippedPlate, fishplate, railFrameOf, wallArm } from './railfix';
@@ -37,7 +39,7 @@ function finish(type: RailType, M: LiftMaterials): readonly [THREE.Material, THR
 }
 
 export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group {
-  const g = new THREE.Group(), B = new Batch(), I = L.inputs;
+  const g = new THREE.Group(), B = new Batch(), I = L.inputs, niche = cwNiche(I, L.cwSide);
   const z0 = S.pitFloor, z1 = S.ceiling - KV_VERT.railTopGap;
   for (const r of L.rails) {
     const type = r.kind === 'car' ? I.carRail : I.cwRail, { b, h, k } = RAILS[type], F = railFrameOf(r, h), [mBlade, mFoot] = finish(type, M);
@@ -68,12 +70,12 @@ export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group
     // the fishplates behind the joints, clear of the brackets
     const plateLen = FISHPLATES[type].l;
     for (const j of joints) if (!brackets.some((z) => Math.abs(z + 75 - j) < plateLen / 2 + 90)) fishplate(B, M, RF, type, j, galv);
-    // a counterweight rail on Panev's supports (staffe.ts) where one fits; otherwise the plate with its two clips and
-    // the arm out to the wall (or to the bridge)
-    const panev = r.kind === 'cw' ? cwSupport(r, h, I.W, I.D) : null;
+    // a counterweight rail on Panev's supports (staffe.ts) when the design takes them and one fits; otherwise the plate
+    // with its two clips and the arm out to the wall (or to the bridge)
+    const panev = r.kind === 'cw' && cwBracketsOf(I) === 'panev' ? cwSupport(r, h, I.W, I.D, niche ? [niche.at, niche.at + niche.width] : undefined) : null;
     for (const z of brackets) {
       if (panev) {
-        railSupport(B, M, panev.wall, I.W, I.D, panev.foot, panev.reach, z, panev.mirror, b / 2, panev.sup);
+        railSupport(B, M, panev.wall, I.W, I.D, panev.foot, panev.reach, z, panev.mirror, b / 2, panev.sup, panev.inset);
         continue;
       }
       const outer = clippedPlate(B, M, RF, type, z + 75, galv);

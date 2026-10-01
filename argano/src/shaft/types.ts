@@ -40,6 +40,30 @@ export interface PlanFix {
 
 export type PlanKey = keyof PlanFix;
 
+/** What a niche in a shaft wall holds: the counterweight, which runs in it; the shaft lighting, a recess at each lamp;
+ *  the cable trunking, a chase from the pit floor to the slab. */
+export type NicheUse = 'cw' | 'light' | 'duct';
+
+/** A niche in a wall of the shaft [mm]. */
+export interface Niche {
+  use: NicheUse;
+  wall: Wall;
+  /** where it starts along the wall's axis (x on the front and rear walls, y on the side ones), its width along it */
+  at: number;
+  width: number;
+  /** into the wall from its inner face */
+  depth: number;
+}
+
+/** The landing call station of every landing door: beside the door on the landing, on the side seen from the
+ *  landing; from the door's opening in the wall (its portal) to the middle of the panel, and the buttons' middle over
+ *  the landing floor [mm]. */
+export interface CallStation {
+  side: 'left' | 'right';
+  offset: number;
+  height: number;
+}
+
 export type ShaftInputs = {
   /** clear width of the shaft along the front wall [mm] */
   W: number;
@@ -65,11 +89,17 @@ export type ShaftInputs = {
   room: RoomInputs | null;
   /** distances of the plan set by hand (absent: all worked out) */
   plan?: PlanFix;
+  /** niches in the walls (absent: none) */
+  niches?: Niche[];
+  /** landing call stations (absent: the typical place) */
+  callStation?: CallStation;
+  /** brackets of the counterweight rails: Panev's supports SU/SD with the SG (absent), or generic ones */
+  cwBrackets?: 'panev' | 'generic';
 } & Record<Allowance, number>;
 
 export type ShaftCheckId =
   | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_door' | 'v_door2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
-  | 'v_place' | 'v_doorcar'
+  | 'v_place' | 'v_doorcar' | 'v_niche' | 'v_staffa'
   | 'h_refuge' | 'h_clear' | 'h_parapet' | 'p_refuge' | 'p_apron' | 'b_runby' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door';
 
 export interface ShaftCheck {

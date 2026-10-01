@@ -2,8 +2,9 @@
 // car at the top floor, the car at a floor with its heights, the pit with buffers and the counterweight's spaces.
 // Values are the real ones even where the travel is drawn compressed; the overtravels of the car are shown as
 // dashed lines with their symbols. Each height says which input its new value changes (edit.ts): a height of the
-// section (v.*) or of the doors.
+// section (v.*), of the doors or of the call stations.
 import { chain, edit as E, line, type Edit, type Entity, type Pt } from '../drawing';
+import { callStationOf } from './callstation';
 import { KV_VERT } from './norme-vert';
 import { mapZ, type ZMap } from './section-view';
 import type { Section } from './section';
@@ -41,6 +42,7 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
   if (kind === 'top' || kind === 'floor') {
     side('left', [zf, zf + V.opTop], ['{v} H. Ingombro Max Operatore'], [E('v.opTop')]);
     side('left', [zf, zf + I.doorHeight], ['{v} H. Luce Porta di piano'], [E('doorHeight')]);
+    side('left', [zf, zf + callStationOf(I).height], ['{v} H. Bottoniera'], [E('cs.height')]);
     if (kind === 'top') side('left', [zf, S.ceiling], ['Testata {v}'], [E('v.headroom')]);
     side('right', [zf, roof], ['{v} H. Esterno Cabina'], [E('v.carOutH')]);
     side('right', [zf, zf + V.frameTop], ['{v} Ingombro Arcata'], [E('v.frameTop')]);

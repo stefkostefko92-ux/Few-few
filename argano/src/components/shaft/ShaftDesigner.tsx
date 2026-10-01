@@ -11,6 +11,7 @@ import { makeFmt } from '@/lib/present/tr';
 import type { ShaftSource } from '@/lib/shaft-input';
 import { saveShaftDesignAction } from '@/server/shaft-actions';
 import { keptPlan, layout, type ShaftInputs } from '@/shaft';
+import NicheOptions from './NicheOptions';
 import RoomOptions from './RoomOptions';
 import ShaftOptions from './ShaftOptions';
 import PlanEditor from './PlanEditor';
@@ -94,6 +95,7 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
           <p className="note">{source ? t('sourceCad', { file: source.file, format: source.format.toUpperCase() }) : t('edited')}</p>
           <h2>{t('step2')}</h2>
           <ShaftOptions I={I} set={set} lastQ={lastQ} />
+          <NicheOptions I={I} set={set} />
           <VerticalOptions I={I} set={set} />
           <RoomOptions I={I} set={set} />
         </section>

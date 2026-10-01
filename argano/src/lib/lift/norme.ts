@@ -9,6 +9,15 @@ export const KL = {
   carMassStep: 10,
   // height of the sheave axis above the machine room floor, per metre of sheave diameter (machine on its bedframe)
   sheaveAxisPerD: 0.9,
+  // the slab over the shaft when no room is designed over it [mm]
+  slab: 250,
+  // machine below (bottom.ts): the runs to the machine clear of the wall and of the counterweight's back; the head
+  // pulleys' axes under the slab (Dp/2 and their frame) or over the pulley room's floor; the room under the pit [mm]
+  bottomClear: 50,
+  headFrame: 120,
+  pulleyRoomAxis: 450,
+  underSlab: 300,
+  underRoomH: 2400,
 } as const;
 
 export type CostanteImpianto = keyof typeof KL;
@@ -59,8 +68,23 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   },
   {
     id: 'impianto.Hv', titolo: 'Macchina in basso: altezza fino alle pulegge in alto (Hv)',
-    valore: 'corsa + testata: la macchina al livello del piano più basso, le pulegge sotto il soffitto del vano',
-    riferimento: 'ricerca, capitolo 5', fonte: 'dati verticali del vano', stato: 'derivazione',
+    valore: 'dall\'asse dei rinvii in testata all\'asse della puleggia di trazione, secondo lo schema delle funi (impianto.basso.schema); '
+      + 'la puleggia ha l\'asse a 0,9·D sul pavimento del suo locale',
+    riferimento: 'ricerca, capitolo 5; funi con la macchina in basso, capitolo 2.6', fonte: 'dati verticali del vano', stato: 'derivazione',
+  },
+  {
+    id: 'impianto.basso.schema', titolo: 'Macchina in basso: schema delle funi',
+    valore: `tre schemi: rinvii appesi sotto il solaio del vano (assi a Dp/2 + ${KL.headFrame} mm sotto il soffitto), macchina nel locale al piano più `
+      + `basso oltre la parete del contrappeso con la puleggia nel vano; locale pulegge sopra il solaio (assi a ${KL.pulleyRoomAxis} mm sul pavimento `
+      + `del locale, solaio di ${KL.slab} mm se il locale non è progettato), macchina come sopra; macchina sotto il vano, in un locale alto `
+      + `${KL.underRoomH} mm sotto la soletta della fossa di ${KL.underSlab} mm, rinvii sotto il solaio. I due rami alla macchina salgono dietro il `
+      + `contrappeso a ${KL.bottomClear} mm dalla parete e dal contrappeso, la puleggia con il piano parallelo alla parete; per lato un rinvio a 180° `
+      + 'se il ramo dista dalla calata in pianta non più di Dp, altrimenti due rinvii a 90° con un tratto orizzontale. Il calcolo conta due rinvii '
+      + 'per la macchina in basso: gli altri entrano come flessioni semplici aggiuntive (nps)',
+    riferimento: 'ricerca, funi con la macchina in basso, capitoli 2–5; DPR 1497/1963 artt. 5–9, 33', fonte: 'geometria ricostruita dal software',
+    stato: 'scelta', costanti: ['bottomClear', 'headFrame', 'pulleyRoomAxis', 'underSlab', 'underRoomH', 'slab'],
+    nota: 'lo schema reale va rilevato sull\'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del '
+      + 'contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori',
   },
   {
     id: 'impianto.macchina', titolo: 'Macchina proposta',

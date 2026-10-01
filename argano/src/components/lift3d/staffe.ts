@@ -7,13 +7,15 @@
 // shaft), placed in metres. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import type { Rail } from '@/shaft';
+import { seatRail, type Support } from '@/shaft/staffe';
 import { onWall, type Batch } from './geom';
-import { N1, fastener, frameAt, place, type Fastener } from './hardware';
+import { fastener, frameAt, place, type Fastener } from './hardware';
 import type { LiftMaterials, Side } from './materials';
 import type { Frame } from './sheet/face';
 import type { Sheet } from './sheet/part';
-import { A_LEGS, B_SECTIONS, PLATES, SG_FLANGE, SG_T, STATIONS, SUPPORT_H, bracketB, flangeRuns, guideSG, plateA, supportArm, type ArmKind, type SgLength } from './sheet/panev';
+import { A_LEGS, B_SECTIONS, PLATES, SG_FLANGE, SG_T, STATIONS, SUPPORT_H, bracketB, guideSG, plateA, supportArm } from './sheet/panev';
+
+export { cwSupport } from '@/shaft/staffe';
 
 const WALL: Frame = { o: [0, 0, 0], u: [1, 0, 0], v: [0, 1, 0], n: [0, 0, 1] };
 const PLATFORM: Frame = { o: [0, 0, 0], u: [0, 0, 1], v: [1, 0, 0], n: [0, 1, 0] };
@@ -30,9 +32,10 @@ function part(key: string, make: () => Sheet, frame: Frame): readonly [THREE.Buf
   return g;
 }
 
-/** The assembly frame on a wall: origin at (u, z) on its face [mm], x along +u (−u when mirrored), z into the shaft. */
-function wallFrame(wall: Side, W: number, D: number, u: number, z: number, mirror: boolean): THREE.Matrix4 {
-  const [ox, oy] = onWall(wall, W, D, u, 0), [ux, uy] = onWall(wall, W, D, u + 1, 0), [vx, vy] = onWall(wall, W, D, u, 1);
+/** The assembly frame on a wall: origin at (u, z) on its face [mm] (`inset` behind it: the back of a niche), x along
+ *  +u (−u when mirrored), z into the shaft. */
+function wallFrame(wall: Side, W: number, D: number, u: number, z: number, mirror: boolean, inset = 0): THREE.Matrix4 {
+  const [ox, oy] = onWall(wall, W, D, u, -inset), [ux, uy] = onWall(wall, W, D, u + 1, -inset), [vx, vy] = onWall(wall, W, D, u, 1 - inset);
   const ex = new THREE.Vector3(ux - ox, 0, -(uy - oy)).multiplyScalar(mirror ? -1 : 1), ez = new THREE.Vector3(vx - ox, 0, -(vy - oy));
   return new THREE.Matrix4().makeBasis(ex, new THREE.Vector3(0, 1, 0), ez).setPosition(ox / 1000, z / 1000, -oy / 1000);
 }
@@ -82,63 +85,10 @@ export function doorBrackets(B: Batch, M: LiftMaterials, wall: Side, W: number, 
 
 // ---- counterweight rails
 
-/** Adjustment range printed on each support's page (pp. 20-38), and the SG it is paired with. */
-const SUPPORTS: readonly { kind: ArmKind; Lp: 160 | 180 | 200; range: readonly [number, number]; sg: SgLength }[] = [
-  { kind: 'SU', Lp: 160, range: [45, 155], sg: 150 }, { kind: 'SU', Lp: 180, range: [45, 195], sg: 170 }, { kind: 'SU', Lp: 200, range: [45, 215], sg: 190 },
-  { kind: 'SD220', Lp: 160, range: [50, 155], sg: 150 }, { kind: 'SD220', Lp: 180, range: [45, 195], sg: 170 }, { kind: 'SD220', Lp: 200, range: [45, 215], sg: 190 },
-  { kind: 'SD150', Lp: 160, range: [45, 155], sg: 150 }, { kind: 'SD150', Lp: 180, range: [45, 195], sg: 170 }, { kind: 'SD150', Lp: 200, range: [45, 215], sg: 190 },
-];
-
-/** Where the rail sits on an SG `l` long: c from its start, the place nearest `want` in [lo, hi] where both clips'
- *  shanks stand in the flange's slots (5 mm in from their ends) and their heels stay on the SG, each clip as near
- *  35 mm from the rail's centre as its slot allows (the foot `half` wide each side). */
-function seatRail(l: number, want: number, lo: number, hi: number, half: number): { c: number; seats: [number, number][] } {
-  const runs = flangeRuns(l), min = half - N1.pad + 0.5, max = half + N1.nose - 4;
-  const miss = (s: number, side: number): number => {
-    const heel = s + side * N1.heel;
-    return Math.min(...runs.map(([a, b]) => Math.max(a + 5 - s, s - (b - 5), 0))) + Math.max(0, -heel, heel - l);
-  };
-  const clipAt = (c: number, side: number): { d: number; m: number; score: number } => {
-    let pick = { d: min, m: Infinity, score: Infinity };
-    for (let d = min; d <= max + 1e-9; d += 0.5) {
-      const m = miss(c + side * d, side), score = m * 1000 + Math.abs(d - 35);
-      if (score < pick.score) pick = { d, m, score };
-    }
-    return pick;
-  };
-  let best = { c: 0, seats: [[-1, min], [1, min]] as [number, number][], score: Infinity };
-  for (let c = Math.max(0, lo); c <= Math.min(l, hi) + 1e-9; c += 0.5) {
-    const [a, b] = [clipAt(c, -1), clipAt(c, 1)], score = (a.m + b.m) * 1000 + Math.abs(c - want);
-    if (score < best.score) best = { c, seats: [[-1, a.d], [1, b.d]], score };
-  }
-  return best;
-}
-
-type Support = (typeof SUPPORTS)[number];
-
-/** The support for a rail `reach` mm from the wall, with `back` mm free on the wall behind its foot and `ahead` in
- *  front of it (an SD's flange runs on past the arm), or null. */
-function supportFor(reach: number, back: number, ahead: number): Support | null {
-  return SUPPORTS.find((s) => reach >= s.range[0] && reach <= s.range[1] && PLATES[s.kind].arm[1] + 10 <= back && PLATES[s.kind].flange - PLATES[s.kind].arm[1] + 10 <= ahead) ?? null;
-}
-
-/** Where a counterweight rail's Panev support goes: the rail's blade must run along the wall it is fixed to (the
- *  catalogue's supports carry the rail's foot square to the wall). `h` the blade's height, null when none fits. */
-export function cwSupport(r: Rail, h: number, W: number, D: number): { wall: Side; foot: number; reach: number; mirror: boolean; sup: Support } | null {
-  const across = r.bracketAxis === 'y', along = across ? r.dir === 'left' || r.dir === 'right' : r.dir === 'back' || r.dir === 'front';
-  const far = across ? D : W;
-  if (!along || (Math.abs(r.bracketTo) > 1 && Math.abs(r.bracketTo - far) > 1)) return null;
-  const wall: Side = across ? (r.bracketTo > 1 ? 'rear' : 'front') : r.bracketTo > 1 ? 'right' : 'left';
-  const sign = r.dir === 'right' || r.dir === 'back' ? 1 : -1, len = across ? W : D;
-  const foot = (across ? r.x : r.y) - sign * h, reach = Math.abs(r.bracketTo - (across ? r.y : r.x));
-  const back = sign > 0 ? foot : len - foot, sup = supportFor(reach, back, len - back);
-  return sup ? { wall, foot, reach, mirror: sign < 0, sup } : null;
-}
-
 /** A counterweight rail's bracket at height z: the rail's foot back at u = foot on the wall, its axis `reach` from
  *  it, the blade toward +u (`mirror`: toward −u), the foot `half` wide each side of the axis. */
-export function railSupport(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, foot: number, reach: number, z: number, mirror: boolean, half: number, sup: Support): void {
-  const k = PLATES[sup.kind], xf = k.arm[1], a = assembly(B, M, wallFrame(wall, W, D, mirror ? foot + xf : foot - xf, z, mirror));
+export function railSupport(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, foot: number, reach: number, z: number, mirror: boolean, half: number, sup: Support, inset = 0): void {
+  const k = PLATES[sup.kind], xf = k.arm[1], a = assembly(B, M, wallFrame(wall, W, D, mirror ? foot + xf : foot - xf, z, mirror, inset));
   a.part(part(`${sup.kind}-${sup.Lp}`, () => supportArm(sup.kind, sup.Lp), WALL));
   for (const [x0, x1] of k.slots) a.fix('anchor', [(x0 + x1) / 2, SUPPORT_H / 2, 5], [0, 0, 1]);
   // the SG along the arm, its flange at the arm's outer edge under the rail's foot, turned round when the rail is far out

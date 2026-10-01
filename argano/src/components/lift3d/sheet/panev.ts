@@ -8,6 +8,9 @@
 // Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import { sheet, type Sheet } from './part';
 import { Path, circle, rect, slotX, slotY, type Loop, type V2 } from './path';
+import { PLATES, SG_FLANGE, SG_SLOT, SG_T, STATIONS, SUPPORT_H, flangeRuns, type ArmKind, type SgLength } from '@/shaft/staffe';
+
+export { PLATES, SG_FLANGE, SG_SLOT, SG_T, STATIONS, SUPPORT_H, flangeRuns, type ArmKind, type SgLength };
 
 const ANCHOR = 12; // wall anchor slots
 const BOLT = 10.5; // M10 joint and locking bolts
@@ -74,16 +77,7 @@ export function plateA(section: Section, length: number, width: number, slots: '
 
 // ---- counterweight-guide supports (sections 02-05): a wall flange 65 mm high, the plate folded off its top edge
 
-export const SUPPORT_H = 65;
 const APRON = 30; // the stiffening flange folded down along the SU/SD arm's straight side (pp. 20-38)
-
-/** Plate outlines in (x along the wall, y out from it), the arm last (pp. 21-55); flange slots [x0, x1]. */
-export const PLATES = {
-  SU: { flange: 220, span: 220, arm: [160, 220], outline: (Lp: number): Loop => [[0, 0], [0, 20], [130, 50], [160, 110], [160, Lp], [220, Lp], [220, 0]], slots: [[11, 83], [95, 193]] },
-  SD150: { flange: 150, span: 90, arm: [30, 90], outline: (Lp: number): Loop => [[0, 0], [0, 30], [30, 110], [30, Lp], [90, Lp], [90, 0]], slots: [[10, 61], [105, 145]] },
-  SD220: { flange: 220, span: 160, arm: [100, 160], outline: (Lp: number): Loop => [[0, 0], [0, 30], [70, 50], [100, 110], [100, Lp], [160, Lp], [160, 0]], slots: [[11, 83], [161, 215]] },
-} as const;
-export type ArmKind = keyof typeof PLATES;
 
 /** SU 220 Lp, SD 150 Lp, SD 220 Lp — 5 mm; root = the wall flange (x along the wall, y up to the plate at 65). */
 export function supportArm(kind: ArmKind, Lp: number): Sheet {
@@ -118,27 +112,6 @@ export function supportSliding(W: 50 | 60 | 80 | 90, L: 200 | 220): Sheet {
   p.face('plate', { outline: rect(0, 0, L, W), holes });
   p.bend('flange', 'plate', { from: [0, SUPPORT_H], to: [L, SUPPORT_H], dir: 'up' });
   return p;
-}
-
-/** SG W L (pp. 57-59): transverse Ø10 slot stations on the plate, 20 mm pitch from 15 mm in at each end. */
-export const STATIONS: Record<130 | 150 | 170 | 190 | 220, readonly number[]> = {
-  130: [15, 35, 55, 75, 95, 115],
-  150: [15, 35, 55, 95, 115, 135],
-  170: [15, 35, 55, 85, 115, 135, 155],
-  190: [15, 35, 55, 75, 115, 135, 155, 175],
-  220: [15, 35, 55, 75, 110, 145, 165, 185, 205],
-};
-export type SgLength = keyof typeof STATIONS;
-export const SG_FLANGE = 50, SG_T = 4, SG_SLOT = 11; // the flange slots take the clips' M10 shanks
-
-/** Flange slots 10 mm in from each end, 8 mm webs: two up to 150 mm, from 170 mm a 73 mm one between two shorter. */
-export function flangeRuns(L: number): V2[] {
-  if (L <= 150) {
-    const s = (L - 28) / 2;
-    return [[10, 10 + s], [18 + s, L - 10]];
-  }
-  const sh = (L - 109) / 2;
-  return [[10, 10 + sh], [18 + sh, 91 + sh], [99 + sh, L - 10]];
 }
 
 /** SG W L — 4 mm angle: root = the plate (x along the length, y from the flange's mould line to the free edge). */

@@ -39,7 +39,7 @@ export const DEFAULT_ROOM: RoomInputs = {
   doorW: 800,
   doorH: 2000,
   panelWall: 'rear',
-  panelAt: 300,
+  panelAt: 1900,
   panelW: 800,
   panelD: 300,
   panelH: 1800,

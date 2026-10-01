@@ -9,6 +9,7 @@
 // Motion: the pulleys turn as the car travels; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { mergeGeometries, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { govSize, type Governor } from '@/shaft/governor';
 import { P, type Batch, type Point } from './geom';
 import { fastener, frameAt } from './hardware';
 import type { LiftMaterials } from './materials';
@@ -16,19 +17,9 @@ import { coil } from './sling';
 
 /** A governor's size: the pulleys' pitch radius (the rope's centre), the rope's radius, half the rim's width; the
  *  axle over the base, the frame's top over the axle, half the base plate along the axle and along the rope [mm]. */
-export interface GovSize {
-  R: number;
-  rope: number;
-  half: number;
-  axle: number;
-  top: number;
-  baseA: number;
-  baseW: number;
-}
-const SMALL: GovSize = { R: 100, rope: 3, half: 15, axle: 240, top: 130, baseA: 82.5, baseW: 110 };
-const LARGE: GovSize = { R: 150, rope: 4, half: 20, axle: 330, top: 210, baseA: 120, baseW: 118 };
-/** The governor for a rated speed [m/s]. */
-export const govSize = (v: number): GovSize => (v <= 1.48 ? SMALL : LARGE);
+/** The governor's sizes (src/shaft/governor.ts, by the rated speed). */
+export type GovSize = Governor;
+export { govSize };
 // the cheeks' inner face and their thickness [mm]
 const CHEEK = 26, CHEEK_T = 14;
 

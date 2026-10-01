@@ -6,7 +6,7 @@
 // millimetres. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import type { BeltEl, RopeRig } from '@/lib/lift';
+import type { BeltEl, RopePlane, RopeRig } from '@/lib/lift';
 import type { Batch, Point } from './geom';
 import type { LiftMaterials } from './materials';
 import { ropeWidths } from './slab';
@@ -27,25 +27,29 @@ export function pulley(r: number, width: number, dir: readonly [number, number],
   return g;
 }
 
-/** The frames of the fixed pulleys and the dead ends of a 2:1 roping. floor: the room's floor [mm], null without a
- *  room above; ceiling: the slab's underside [mm]. */
+/** The frames of the fixed pulleys and the dead ends of a 2:1 roping, each in the plane of its wheel or rope.
+ *  floor: the floor of the room over the slab [mm], null without one; ceiling: the slab's underside [mm]. */
 export function pulleyFrames(B: Batch, M: LiftMaterials, rig: RopeRig, n: number, d: number, floor: number | null, ceiling: number): void {
-  const [ox, oy] = rig.origin, [dx, dy] = rig.dir, turn = Math.atan2(dy, dx), wd = ropeWidths(n, d), half = wd.pulley;
-  const at = (u: number, a: number, z: number): Point => [ox + u * dx - a * dy, oy + u * dy + a * dx, z];
-  // a box in the rope plane's axes: u along it, a across it, z up
-  const ob = (u0: number, u1: number, a0: number, a1: number, z0: number, z1: number, m: THREE.Material): void => {
-    const g = new THREE.BoxGeometry(Math.abs(u1 - u0) / 1000, Math.abs(z1 - z0) / 1000, Math.abs(a1 - a0) / 1000).rotateY(turn);
-    const [x, y] = at((u0 + u1) / 2, (a0 + a1) / 2, 0);
-    B.add(g.translate(x / 1000, (z0 + z1) / 2000, -y / 1000), m);
-  };
-  // a hexagon bolt head with its washer on a face at z, pointing up (s = 1) or down (s = −1)
-  const bolt = (u: number, a: number, z: number, s: 1 | -1): void => {
-    B.rod(at(u, a, z), at(u, a, z + s * 2), 13, M.galv, 16);
-    B.rod(at(u, a, z + s * 2), at(u, a, z + s * 9), 9.5, M.galv, 6);
+  const wd = ropeWidths(n, d), half = wd.pulley;
+  const frame = (p: RopePlane) => {
+    const [ox, oy] = p.origin, [dx, dy] = p.dir, turn = Math.atan2(dy, dx);
+    const at = (u: number, a: number, z: number): Point => [ox + u * dx - a * dy, oy + u * dy + a * dx, z];
+    // a box in the rope plane's axes: u along it, a across it, z up
+    const ob = (u0: number, u1: number, a0: number, a1: number, z0: number, z1: number, m: THREE.Material): void => {
+      const g = new THREE.BoxGeometry(Math.abs(u1 - u0) / 1000, Math.abs(z1 - z0) / 1000, Math.abs(a1 - a0) / 1000).rotateY(turn);
+      const [x, y] = at((u0 + u1) / 2, (a0 + a1) / 2, 0);
+      B.add(g.translate(x / 1000, (z0 + z1) / 2000, -y / 1000), m);
+    };
+    // a hexagon bolt head with its washer on a face at z, pointing up (s = 1) or down (s = −1)
+    const bolt = (u: number, a: number, z: number, s: 1 | -1): void => {
+      B.rod(at(u, a, z), at(u, a, z + s * 2), 13, M.galv, 16);
+      B.rod(at(u, a, z + s * 2), at(u, a, z + s * 9), 9.5, M.galv, 6);
+    };
+    return { at, ob, bolt };
   };
   for (const w of rig.wheels) {
     if (w.role === 'sheave') continue;
-    const uc = w.u * 1000, yc = w.y * 1000, R = w.r * 1000;
+    const { at, ob, bolt } = frame(w.plane), uc = w.u * 1000, yc = w.y * 1000, R = w.r * 1000;
     B.rod(at(uc, -half - 22, yc), at(uc, half + 22, yc), 20, M.rail, 16);
     for (const s of [-1, 1]) B.rod(at(uc, s * (half + 4), yc), at(uc, s * (half + 22), yc), 26, M.galv, 6);
     if (floor !== null && yc > ceiling) {
@@ -69,12 +73,13 @@ export function pulleyFrames(B: Batch, M: LiftMaterials, rig: RopeRig, n: number
   // the dead ends of a 2:1 roping: a plate anchored under the slab, a socket on each rope's end, its nut on the plate.
   // A rope's end is a dead end only before the car's or the counterweight's pulley: a 1:1 rope ends on the car's
   // crosshead or on the counterweight, before a wheel at rest
-  const els = rig.elements(0, 0), pitch = Math.max(d + 6, 1.7 * d);
-  const atRest = (e: BeltEl): boolean => e.kind === 'wheel' && rig.wheels.some((w) => Math.abs(w.u - e.u) < 1e-9 && Math.abs(w.y - e.y) < 1e-9);
-  const ends = [[els[0], els[1]], [els.at(-1), els.at(-2)]] as const;
-  for (const [e, next] of ends) {
-    if (e?.kind !== 'pt' || next?.kind !== 'wheel' || atRest(next)) continue;
-    const u = e.u * 1000, y = e.y * 1000, a = wd.ropes + 50;
+  const pcs = rig.pieces(0, 0), pitch = Math.max(d + 6, 1.7 * d);
+  const atRest = (e: BeltEl, p: RopePlane): boolean => e.kind === 'wheel' && rig.wheels.some((w) => w.plane === p && Math.abs(w.u - e.u) < 1e-9 && Math.abs(w.y - e.y) < 1e-9);
+  const first = pcs[0], last = pcs[pcs.length - 1];
+  const ends = [[first, first.els[0], first.els[1]], [last, last.els.at(-1), last.els.at(-2)]] as const;
+  for (const [pc, e, next] of ends) {
+    if (e?.kind !== 'pt' || next?.kind !== 'wheel' || atRest(next, pc.plane)) continue;
+    const { at, ob, bolt } = frame(pc.plane), u = e.u * 1000, y = e.y * 1000, a = wd.ropes + 50;
     ob(u - 90, u + 90, -a, a, ceiling - 16, ceiling, M.galv);
     for (const s of [-1, 1]) for (const k of [-1, 1]) bolt(u + k * 65, s * (a - 22), ceiling - 16, -1);
     for (let i = 0; i < n; i++) {

@@ -51,6 +51,18 @@ export const KV = {
   doorOpC2: [2, 60],
   doorOpClose: 25,
   doorOpDepth: 150,
+  // niches in the walls: the wall left behind a niche, the counterweight's rails clear of a niche's sides, the recess
+  // of a lamp; the lamps of the shaft 1,5 m over each floor and the top one 80 mm under the slab
+  nicheBackMin: 50,
+  nicheGap: 20,
+  nicheLightH: 400,
+  lampOverFloor: 1500,
+  lampUnderSlab: 80,
+  // landing call station: 150 mm from the door's portal on the landing's right, its buttons' middle 1100 mm over the
+  // floor; the panel 120 × 300 mm, 15 mm proud of the wall
+  callOffset: 150,
+  callHeight: 1100,
+  callPanel: [120, 300, 15],
 } as const;
 
 export type CostanteVano = keyof typeof KV;
@@ -193,6 +205,35 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore',
     stato: 'da_verificare',
     costanti: ['doorPortal', 'doorOpT2', 'doorOpC2', 'doorOpClose', 'doorOpDepth'], verifiche: ['v_door', 'v_door2', 'v_op'],
+  },
+  {
+    id: 'ingombri.nicchie', gruppo: 'ingombri', titolo: 'Nicchie nelle pareti del vano',
+    valore: 'contrappeso in nicchia: il contrappeso con le sue guide sta nella nicchia della parete su cui corre, con almeno 20 mm tra le guide '
+      + 'e i fianchi della nicchia (con le staffe Panev, lo spazio della piastra del supporto dietro il piede di ogni guida); la distanza dalla '
+      + 'parete si misura dal fondo della nicchia e la cabina guadagna la sua profondità, senza '
+      + 'scendere sotto gli ingombri delle guide; luce del vano in nicchia: una nicchia alta 400 mm per lampada, le lampade 1500 mm sopra ogni '
+      + 'piano e l\'ultima a 80 mm sotto il solaio; canalina in nicchia: dal fondo della fossa al solaio; ogni nicchia dentro la sua parete, fuori '
+      + 'dai telai delle porte di piano e dalle altre nicchie, con almeno 50 mm di muro dietro; altrimenti «Non conforme»',
+    riferimento: '—', fonte: 'scelta del software; la resistenza della parete con la nicchia va verificata dal progettista', stato: 'scelta',
+    costanti: ['nicheBackMin', 'nicheGap', 'nicheLightH', 'lampOverFloor', 'lampUnderSlab'], verifiche: ['v_niche'],
+  },
+  {
+    id: 'ingombri.staffe.contrappeso', gruppo: 'ingombri', titolo: 'Staffe delle guide del contrappeso (catalogo Panev)',
+    valore: 'per default il supporto Panev SU o SD con la guida SG, la guida serrata sulla flangia della SG da due bride N1: il supporto più corto il '
+      + 'cui campo stampato prende la distanza della guida dalla parete (o dal fondo della nicchia) e la cui piastra sta sulla parete: SU, SD 150 '
+      + 'e SD 220 lunghi 160 mm da 45 a 155 mm (SD 220 da 50), lunghi 180 mm da 45 a 195 mm, lunghi 200 mm da 45 a 215 mm; nessuno adatto: '
+      + '«Non conforme» (si possono scegliere staffe generiche, da dimensionare a parte)',
+    riferimento: 'catalogo staffe Panev 2026, pp. 20-59', fonte: 'catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf)', stato: 'confermato',
+    verifiche: ['v_staffa'],
+  },
+  {
+    id: 'porte.bottoniera', gruppo: 'porte', titolo: 'Bottoniera di piano',
+    valore: 'accanto a ogni porta di piano, sul pianerottolo: per default a destra guardando la porta, il centro della pulsantiera a 150 mm '
+      + 'dal vano della porta e i pulsanti a 1100 mm dal pavimento; pulsantiera di 120 × 300 mm, sporgente 15 mm dal muro; lato, distanza '
+      + 'e altezza modificabili su ogni progetto',
+    riferimento: 'altezze e distanze dagli angoli per l\'accessibilità da verificare (DM 236/1989, UNI EN 81-70)',
+    fonte: 'scelta del software', stato: 'scelta',
+    costanti: ['callOffset', 'callHeight', 'callPanel'],
   },
   {
     id: 'modello.passo', gruppo: 'modello_vano', titolo: 'Dimensioni proposte della cabina',

@@ -3,26 +3,27 @@
 // horizontal kind: a lever hinged on the rail's bracket, the pulley on it and the cast-iron weight at its far end —
 // 22 kg for a governor that trips both ways, about 700 × 330 × 113 over all (PFB R4KE for LK200) — and the slack-rope
 // switch under the lever by the hinge. Where it is not, the vertical kind: the pulley's carriage sliding on a channel
-// clamped to the rail, the weight of 30 kg hung straight under it (PFB R4T). Millimetres in the pulley's frame — a
+// clamped to the rail, the weight of 44 kg hung straight under it (PFB R4R, the vertical kit PFB pairs with a governor
+// that trips both ways). Millimetres in the pulley's frame — a
 // along the axle (plan x), w along the rope's plane (plan y), h up — round its centre o. Loaded only through boot.ts
 // (lazy).
 // Motion: the pulley turns as the car travels; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { RAILS, type Rail, type RailType } from '@/shaft';
 import type { Batch, Point } from './geom';
+import { LEVER_REACH, TENSION } from '@/shaft/governor';
 import type { GovSize } from './govparts';
 import type { LiftMaterials } from './materials';
 import { clippedPlate, railFrameOf } from './railfix';
 
-// the lever: hinge past the clip, the weight's middle beyond the pulley, the bars' inner face and thickness; the
-// weights (cast iron, 7,2 kg/dm³: 113 × 150 × 185 mm ≈ 22 kg, 113 × 150 × 250 mm ≈ 30 kg) [mm]
-const HINGE = 80, WEIGHT_AT = 330, BAR = 26, BAR_T = 8, LEVER_W: Point = [113, 150, 185], HANG_W: Point = [113, 150, 250];
-
-/** How far the horizontal kind reaches past the pulley's centre, along the rope's plane away from the rail [mm]. */
-export const LEVER_REACH = WEIGHT_AT + LEVER_W[1] / 2 + 40;
+// the lever and the weights (src/shaft/governor.ts: the pit's plan draws the same) [mm]
+const { hinge: HINGE, bar: BAR, barT: BAR_T, weightAt: WEIGHT_AT } = TENSION;
+const LEVER_W: Point = [...TENSION.lever], HANG_W: Point = [...TENSION.hang];
 
 /** The tension weight round the pulley's centre o: on the car rail `rail` (its type `type`), the lever kind when
  *  `lever`, else the vertical kind. `sw`: +1 when the rope's plane runs from the rail toward +y, −1 toward −y. */
+export { LEVER_REACH };
+
 export function tensionWeight(B: Batch, M: LiftMaterials, o: Point, G: GovSize, rail: Rail, type: RailType, lever: boolean, sw: 1 | -1): void {
   const [x, y, z] = o, { b } = RAILS[type], RF = railFrameOf(rail, RAILS[type].h);
   const at = (a: number, w: number, h: number): Point => [x + a, y + sw * w, z + h];

@@ -1,8 +1,11 @@
-// Machine room above the shaft: where the machine sits (its sheave over the car's rope drop, the diverting pulley over
-// the counterweight's), the checks of the room (height, free area in front of the control panel, door), and the
-// geometry both drawings of the room share. The machine is a schematic worm-geared machine sized on the sheave.
+// Machine room above the shaft: where the machine sits (its sheave's car side over the car's rope drop, the diverting
+// pulley where the counterweight's drop leaves it), the checks of the room (height, free area in front of the control
+// panel, door), and the geometry both drawings of the room share: the ropes' straight runs between the wheels and the
+// slab's openings round them, as the 3D cuts them (components/lift3d/slab.ts). The machine is the 3D's (machine-outline).
 import { check } from './checks';
+import { MACHINE_A, MACHINE_X, MACHINE_Z } from './machine-outline';
 import { KV_VERT } from './norme-vert';
+import { cwPlateAt, section } from './section';
 import type { Layout, ShaftCheck } from './types';
 import type { RoomInputs } from './room';
 
@@ -18,6 +21,13 @@ export interface MachineSpec {
   mass: number;
   /** label, e.g. "M73 Sx" */
   label: string;
+  /** the sheave's axis over the room's floor */
+  axis: number;
+  /** diverting pulley: its axis below the sheave's, and whether the ropes wrap it the other way (reverse bend) */
+  h: number;
+  reverse: boolean;
+  /** 2:1: the ropes rise to the machine half a pulley in from the car's and the counterweight's drops; 1:1: 0 */
+  ropeIn: number;
 }
 
 export interface RoomGeo {
@@ -29,13 +39,24 @@ export interface RoomGeo {
   ux: number;
   uy: number;
   calata: number;
-  /** centres of the sheave and of the diverting pulley on the drop line, from the car drop [mm] */
+  /** centres of the sheave and of the diverting pulley on the drop line, from the car drop; the pulley's axis over the
+   *  room's floor [mm] */
   sheaveAt: number;
   pulleyAt: number;
-  /** bedframe along the drop line, from the car drop, and its width across [mm] */
+  pulleyZ: number;
+  /** the machine's bedframe along the drop line, from the car drop, and the machine across it (v: toward the left of
+   *  the drop line, the sheave on it) [mm] */
   frame0: number;
   frame1: number;
-  frameW: number;
+  across: readonly [number, number];
+  /** the machine's scale on the 3D's Ø 560 */
+  s: number;
+}
+
+/** Half the width of the n ropes side by side, and of a pulley with its cheeks [mm]. */
+export function ropeWidths(n: number, d: number): { ropes: number; pulley: number } {
+  const pitch = Math.max(d + 6, 1.7 * d);
+  return { ropes: ((n - 1) / 2) * pitch + d / 2, pulley: (n * pitch + 30) / 2 + 18 };
 }
 
 /** Room coordinates: origin at the room's inner corner; the shaft's inner corner of entrance A lies at (shaftX, shaftY). */
@@ -44,12 +65,73 @@ export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
   if (!R) return null;
   const car: [number, number] = [R.shaftX + L.car.x + L.car.w / 2, R.shaftY + L.car.y + L.car.h / 2];
   const cw: [number, number] = [R.shaftX + L.cw.x + L.cw.w / 2, R.shaftY + L.cw.y + L.cw.h / 2];
-  const dx = cw[0] - car[0], dy = cw[1] - car[1], calata = Math.hypot(dx, dy) || 1;
-  const sheaveAt = M.D / 2, pulleyAt = M.Dp > 0 ? calata - M.Dp / 2 : M.D / 2;
+  const dx = cw[0] - car[0], dy = cw[1] - car[1], calata = Math.hypot(dx, dy) || 1, s = M.D / (2000 * MACHINE_A.rp);
+  const sheaveAt = M.ropeIn + M.D / 2, u1 = calata - M.ropeIn;
+  const pulleyAt = M.Dp > 0 ? (M.reverse ? u1 + M.Dp / 2 : u1 - M.Dp / 2) : sheaveAt;
+  const v = (z: number): number => (MACHINE_A.zSheave - z) * 1000 * s;
   return {
-    room: R, carDrop: car, cwDrop: cw, ux: dx / calata, uy: dy / calata, calata, sheaveAt, pulleyAt,
-    frame0: -200, frame1: Math.max(calata, M.D) + 200, frameW: Math.max(500, Math.round(M.D * 0.9)),
+    room: R, carDrop: car, cwDrop: cw, ux: dx / calata, uy: dy / calata, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h,
+    frame0: sheaveAt + MACHINE_X[0] * 1000 * s, frame1: sheaveAt + MACHINE_X[1] * 1000 * s, across: [v(MACHINE_Z[1]), v(MACHINE_Z[0])], s,
   };
+}
+
+type P2 = readonly [number, number];
+
+/** The straight runs of a rope over wheels in order (centre, radius signed: > 0 wrapped clockwise seen with y up, 0 a
+ *  point), each from where it leaves a wheel to where it meets the next. */
+export function ropeRuns(els: readonly { c: P2; rho: number }[]): [P2, P2][] {
+  const out: [P2, P2][] = [];
+  for (let i = 0; i + 1 < els.length; i++) {
+    const { c: a, rho: ra } = els[i], { c: b, rho: rb } = els[i + 1];
+    const d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, th = Math.atan2(b[1] - a[1], b[0] - a[0]) - Math.asin(Math.max(-1, Math.min(1, (ra - rb) / d)));
+    const nx = -Math.sin(th), ny = Math.cos(th);
+    out.push([[a[0] + ra * nx, a[1] + ra * ny], [b[0] + rb * nx, b[1] + rb * ny]]);
+  }
+  return out;
+}
+
+/** The ropes in section B-B (u along the drop line, z over the room's floor), from the car's drop over the sheave and
+ *  the diverting pulley to the counterweight's, their hitches `car` and `cw` mm below the floor. */
+export function roomRopes(M: MachineSpec, G: RoomGeo, car: number, cw: number): [P2, P2][] {
+  const els: { c: P2; rho: number }[] = [{ c: [M.ropeIn, -car], rho: 0 }, { c: [G.sheaveAt, M.axis], rho: M.D / 2 }];
+  if (M.Dp > 0) els.push({ c: [G.pulleyAt, G.pulleyZ], rho: M.reverse ? -M.Dp / 2 : M.Dp / 2 });
+  els.push({ c: [G.calata - M.ropeIn, -cw], rho: 0 });
+  return ropeRuns(els);
+}
+
+/** Where the slab is open along the drop line, from u0 to u1 [mm], as the 3D cuts it: round each run of the ropes
+ *  between the slab's faces with the hitches at each of `depths` ([car, counterweight] below the floor: the ends of
+ *  the travel) and round a pulley that dips into it, 30 mm clear, openings closer than 80 mm merged. */
+export function slabHoles(M: MachineSpec, G: RoomGeo, slab: number, depths: readonly (readonly [number, number])[]): { u0: number; u1: number; wheel: boolean }[] {
+  const spans: { lo: number; hi: number; wheel: boolean }[] = [], zb = -slab, inside = (z: number): boolean => z >= zb && z <= 0;
+  for (const [car, cw] of depths) {
+    for (const [[ua, za], [ub, zb2]] of roomRopes(M, G, car, cw)) {
+      const us: number[] = [];
+      if (inside(za)) us.push(ua);
+      if (inside(zb2)) us.push(ub);
+      for (const z of [zb, 0]) if ((za - z) * (zb2 - z) < 0) us.push(ua + ((ub - ua) * (z - za)) / (zb2 - za));
+      if (us.length) spans.push({ lo: Math.min(...us), hi: Math.max(...us), wheel: false });
+    }
+  }
+  if (M.Dp > 0 && G.pulleyZ - M.Dp / 2 < 0 && G.pulleyZ + M.Dp / 2 > zb) spans.push({ lo: G.pulleyAt - M.Dp / 2, hi: G.pulleyAt + M.Dp / 2, wheel: true });
+  spans.sort((p, q) => p.lo - q.lo);
+  const merged: typeof spans = [];
+  for (const sp of spans) {
+    const last = merged.at(-1);
+    if (last && sp.lo - last.hi < 80) {
+      last.hi = Math.max(last.hi, sp.hi);
+      last.wheel ||= sp.wheel;
+    } else merged.push({ ...sp });
+  }
+  return merged.map((m) => ({ u0: m.lo - 30, u1: m.hi + 30, wheel: m.wheel }));
+}
+
+/** How far below the room's floor the car's and the counterweight's hitches are [mm]: with the car at the lowest and at
+ *  the top floor (the ends of the travel), and halfway. */
+export function hitchDepths(L: Layout): { ends: [number, number][]; mid: [number, number] } {
+  const S = section(L), V = L.inputs.vertical, floor = S.ceiling + (L.inputs.room?.slab ?? 0);
+  const at = (zf: number): [number, number] => [floor - (zf + V.frameTop), floor - (cwPlateAt(S, zf) + V.cwH + 60)];
+  return { ends: [at(0), at(S.top)], mid: at(S.top / 2) };
 }
 
 export function roomChecks(L: Layout): ShaftCheck[] {

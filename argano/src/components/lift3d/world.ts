@@ -6,7 +6,7 @@ import * as THREE from 'three/webgpu';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { section } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { ropeRig, type LiftDerived } from '@/lib/lift';
+import { KL, planeAt, ropeRig, type LiftDerived, type RopePlane } from '@/lib/lift';
 import type { Frame } from '@/sim';
 import { Batch, P, box, disposeTree } from './geom';
 import { createLiftMaterials, SIDES, type Side } from './materials';
@@ -18,7 +18,7 @@ import { buildRails } from './rails';
 import { buildBuffers } from './buffers';
 import { buildRopes, hitchSpots } from './ropes';
 import type { Hitch } from './sling';
-import { buildRoom } from './room';
+import { buildRoom, machinePassage } from './room';
 import { buildPit } from './pit';
 import { buildCable } from './cable';
 import { buildGovernor, governorSpot } from './governor';
@@ -61,16 +61,20 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const gov = governorSpot(L), slab = (I.room?.slab ?? 250) / 1000, sim = dv.sim;
   const travel = [sim.levels[0], sim.levels[sim.levels.length - 1]].map((s) => [s, sim.cw0 - s] as const);
   const openings = slabOpenings(rig, N.n, N.d, S.ceiling / 1000, S.ceiling / 1000 + slab, travel, gov);
-  const shaft = buildShaft(L, S, M, openings);
-  // the ropes end on the car: a 1:1 hitch on the crosshead, or the car pulley of a 2:1 roping
-  const two = dv.analysis.ctx.I.r === 2;
-  const [hx, hy] = rig.origin, across = [-rig.dir[1], rig.dir[0]] as const, Rp = dv.analysis.ctx.I.Dp / 2, width = N.n * Math.max(N.d + 6, 1.7 * N.d) + 30;
-  const hitchAt = (u: number): Hitch => (two
-    ? { kind: 'pulley', x: hx + u * 1000 * rig.dir[0], y: hy + u * 1000 * rig.dir[1], across, r: Rp, width }
-    : { kind: 'ropes', at: hitchSpots(rig, N.n, u) });
+  // a machine below: its front through the wall behind the counterweight, or under the pit with the ropes through its slab
+  const passage = machinePassage(rig, N.D), under = rig.scheme?.scheme === 'under';
+  const pitHoles = under ? slabOpenings(rig, N.n, N.d, (S.pitFloor - KL.underSlab) / 1000, S.pitFloor / 1000, travel, null) : [];
+  const shaft = buildShaft(L, S, M, openings, { walls: passage ? [passage] : [], pit: pitHoles });
+  // the ropes end on the car: a 1:1 hitch on the crosshead, or the car pulley of a 2:1 roping, in the plane of its rope
+  const two = dv.analysis.ctx.I.r === 2, pcs = rig.pieces(0, 0), carPlane = pcs[0].plane, cwPlane = pcs[pcs.length - 1].plane;
+  const Rp = dv.analysis.ctx.I.Dp / 2, width = N.n * Math.max(N.d + 6, 1.7 * N.d) + 30;
+  const hitchAt = (pl: RopePlane, u: number): Hitch => {
+    const [x, y] = planeAt(pl, u);
+    return two ? { kind: 'pulley', x, y, across: [-pl.dir[1], pl.dir[0]], r: Rp, width } : { kind: 'ropes', at: hitchSpots(pl, N.n, u) };
+  };
   const labels = dv.sim.labels;
-  const car = buildCar(L, M, hitchAt(0), gov, labels);
-  const cw = buildCounterweight(L, M, hitchAt(rig.calata));
+  const car = buildCar(L, M, hitchAt(carPlane, 0), gov, labels);
+  const cw = buildCounterweight(L, M, hitchAt(cwPlane, rig.bottom ? 0 : rig.calata));
   const rails = buildRails(L, S, M);
   const buffers = buildBuffers(L, S, M, car.bufferSpots);
   const ropes = buildRopes(rig, N.n, N.d, M, !two);
@@ -78,7 +82,8 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   // the fittings of the shaft and the pit, the governor's loop, the travelling cable
   const fit = new Batch(), fittings = new THREE.Group();
   buildPit(L, S, M, fit);
-  const governor = gov ? buildGovernor(L, S, gov, rig.bottom ? null : rig.roomFloor * 1000, M, fit) : null;
+  const govFloor = !rig.bottom ? rig.roomFloor * 1000 : rig.scheme?.scheme === 'room' ? S.ceiling + slab * 1000 : null;
+  const governor = gov ? buildGovernor(L, S, gov, govFloor, M, fit) : null;
   fit.into(fittings);
   const cable = buildCable(L, S, M, gov);
   for (const side of SIDES) scene.add(shaft.sides[side], machine.sides[side]);
@@ -112,8 +117,10 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const W = I.W / 1000, D = I.D / 1000, wall = I.wall / 1000, R = I.room;
   const levels = S.levels;
   const carPos = new THREE.Vector3(), cwPos = new THREE.Vector3();
-  const [ox, oy] = rig.origin, [dx, dy] = rig.dir;
-  const at = (u: number, y: number, out: THREE.Vector3): THREE.Vector3 => out.set(ox / 1000 + u * dx, y, -(oy / 1000 + u * dy));
+  const at = (pl: RopePlane, u: number, y: number, out: THREE.Vector3): THREE.Vector3 => {
+    const [x, yy] = planeAt(pl, u);
+    return out.set(x / 1000, y, -yy / 1000);
+  };
   return {
     scene,
     update(f, cam, target) {
@@ -132,9 +139,8 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
       ropes.set(f.s, f.cw);
       M.ropeShift.value = f.rope;
       // 2:1: the car pulley is the first wheel of the rope, the counterweight pulley the last
-      const two = dv.analysis.ctx.I.r === 2, wheels = two ? rig.elements(f.s, f.cw).filter((e) => e.kind === 'wheel') : [];
-      const cp = wheels[0], wp = wheels[wheels.length - 1];
-      machine.set(f.theta, N.i, cp?.kind === 'wheel' ? at(cp.u, cp.y, carPos) : null, wp?.kind === 'wheel' ? at(wp.u, wp.y, cwPos) : null);
+      const now = rig.pieces(f.s, f.cw), p0 = now[0], p1 = now[now.length - 1], cp = p0.els[1], wp = p1.els[p1.els.length - 2];
+      machine.set(f.theta, N.i, two && cp?.kind === 'wheel' ? at(p0.plane, cp.u, cp.y, carPos) : null, two && wp?.kind === 'wheel' ? at(p1.plane, wp.u, wp.y, cwPos) : null);
       // key light follows the car so its shadows stay sharp
       key.position.set(cx / 1000 + 3, f.s + 5, -cy / 1000 + 6);
       key.target.position.set(cx / 1000, f.s + 1, -cy / 1000);

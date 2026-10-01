@@ -9,6 +9,8 @@ import { DEFAULT_VERTICAL } from './vertical';
 import { sectionChecks } from './section';
 import { roomChecks } from './machine-room';
 import { check } from './checks';
+import { cwNiche, nicheMargin } from './niche';
+import { PANEV_BACK, cwBracketsOf, supportMargin } from './staffe';
 import type { Access, CwSide, DoorLayout, Layout, Rail, Rect, ShaftCheck, ShaftInputs, Wall } from './types';
 
 const ACCESS: Readonly<Record<Exclude<Access, 'none'>, readonly [number, number, number]>> = {
@@ -106,11 +108,22 @@ export function layout(I: ShaftInputs): Layout {
   // car passes the clips on their feet' edges
   const cantGap = Math.max(I.shoeGap, Math.ceil(railClip(I.carRail).reach) + KV.cantClipGap);
   const cantileverZone = I.cwWallGap + I.cwDepth + I.cwRailGap + cr.b + cantGap;
+  // a niche the counterweight runs in: its wall is that much further back there, and the car gains it down to the room
+  // the rails need anyway
+  const niche = cwNiche(I, cwSide), nd = niche?.depth ?? 0;
   const zone = (w: Wall): number => {
     if (w === 'front') return doorZone;
-    if (w === 'rear') return I.entrances === 'opposite' ? doorZone : cwSide === 'rear' ? I.cwWallGap + I.cwDepth + I.cwCarGap : I.rearGap;
-    if (I.entrances === 'adjacent') return I.side2 === w ? doorZone : cwSide === w ? cantileverZone : I.railZone;
-    return cwSide === w ? lateralZone : I.railZone;
+    if (w === 'rear') return I.entrances === 'opposite' ? doorZone : cwSide === 'rear' ? Math.max(I.rearGap, I.cwWallGap + I.cwDepth + I.cwCarGap - nd) : I.rearGap;
+    if (I.entrances === 'adjacent') return I.side2 === w ? doorZone : cwSide === w ? Math.max(I.railZone, cantileverZone - nd) : I.railZone;
+    return cwSide === w ? Math.max(I.railZone, lateralZone - nd) : I.railZone;
+  };
+  // the counterweight along its wall: the length its room gives and its start, centred at `mid`, inside its niche with
+  // its rails and the room their brackets' plates need on the niche's back (Panev's supports) or the niche's gap
+  const cwAlong = (room: number, mid: number): readonly [number, number] => {
+    const keep = KV.cwShoe + wr.h + (cwBracketsOf(I) === 'panev' ? PANEV_BACK : KV.nicheGap);
+    const len = fix.cwLen ?? Math.max(0, Math.min(KV.cwMaxLength, floorTo(niche ? Math.min(room, niche.width - 2 * keep) : room, step)));
+    const start = round1(mid - len / 2);
+    return [len, fix.cwPos ?? (niche ? Math.min(Math.max(start, niche.at + keep), niche.at + niche.width - keep - len) : start)];
   };
   const xL = zone('left'), xR = W - zone('right'), yF = zone('front'), yB = D - zone('rear');
   const maxA = Math.max(0, floorTo(xR - xL - 2 * carWall, step)), maxB = Math.max(0, floorTo(yB - yF - 2 * carWall, step));
@@ -153,38 +166,37 @@ export function layout(I: ShaftInputs): Layout {
     rails.push({ x: ax, y: y0, dir: 'back', kind: 'car', bracketAxis: 'x', bracketTo: wallX },
       { x: ax, y: y1, dir: 'front', kind: 'car', bracketAxis: 'x', bracketTo: wallX });
     // counterweight between the feet of the car rails, against the wall, clear of their brackets; its rails at its ends
-    const mid = round1((f0 + f1) / 2), room = f1 - f0 - 2 * (KV.cantCwGap + KV.cwShoe + wr.h);
-    const len = fix.cwLen ?? Math.max(0, Math.min(KV.cwMaxLength, floorTo(room, step))), cx0 = left ? I.cwWallGap : W - I.cwWallGap - I.cwDepth;
-    cwRect = { x: cx0, y: fix.cwPos ?? round1(mid - len / 2), w: I.cwDepth, h: len };
+    const [len, cy] = cwAlong(f1 - f0 - 2 * (KV.cantCwGap + KV.cwShoe + wr.h), round1((f0 + f1) / 2));
+    const cx0 = left ? I.cwWallGap - nd : W - I.cwWallGap - I.cwDepth + nd, cwWall = left ? -nd : W + nd;
+    cwRect = { x: cx0, y: cy, w: I.cwDepth, h: len };
     cwDbg = len + 2 * KV.cwShoe;
     cwRoom = [f0 + KV.cantCwGap, f1 - KV.cantCwGap];
-    rails.push({ x: cx0 + I.cwDepth / 2, y: cwRect.y - KV.cwShoe, dir: 'back', kind: 'cw', bracketAxis: 'x', bracketTo: wallX },
-      { x: cx0 + I.cwDepth / 2, y: cwRect.y + len + KV.cwShoe, dir: 'front', kind: 'cw', bracketAxis: 'x', bracketTo: wallX });
+    rails.push({ x: cx0 + I.cwDepth / 2, y: cwRect.y - KV.cwShoe, dir: 'back', kind: 'cw', bracketAxis: 'x', bracketTo: cwWall },
+      { x: cx0 + I.cwDepth / 2, y: cwRect.y + len + KV.cwShoe, dir: 'front', kind: 'cw', bracketAxis: 'x', bracketTo: cwWall });
   } else {
     const yMid = fix.railY ?? round1(car.y + car.h / 2), l = car.x - I.shoeGap, r = car.x + car.w + I.shoeGap;
     frame = { kind: 'central', axis: yMid, dbg: r - l };
     rails.push({ x: l, y: yMid, dir: 'right', kind: 'car', bracketAxis: 'x', bracketTo: cwSide === 'left' ? l - cr.h : 0 });
     rails.push({ x: r, y: yMid, dir: 'left', kind: 'car', bracketAxis: 'x', bracketTo: cwSide === 'right' ? r + cr.h : W });
     if (cwSide === 'rear') {
-      const len = fix.cwLen ?? Math.min(KV.cwMaxLength, floorTo(W - 2 * I.railZone, step)), cx = fix.cwPos ?? round1(car.x + car.w / 2 - len / 2), y = D - I.cwWallGap - I.cwDepth;
+      const [len, cx] = cwAlong(W - 2 * I.railZone, car.x + car.w / 2), y = D + nd - I.cwWallGap - I.cwDepth;
       cwRect = { x: cx, y, w: len, h: I.cwDepth };
       cwDbg = len + 2 * KV.cwShoe;
       cwRoom = [0, W];
-      rails.push({ x: cx - KV.cwShoe, y: y + I.cwDepth / 2, dir: 'right', kind: 'cw', bracketAxis: 'y', bracketTo: D },
-        { x: cx + len + KV.cwShoe, y: y + I.cwDepth / 2, dir: 'left', kind: 'cw', bracketAxis: 'y', bracketTo: D });
+      rails.push({ x: cx - KV.cwShoe, y: y + I.cwDepth / 2, dir: 'right', kind: 'cw', bracketAxis: 'y', bracketTo: D + nd },
+        { x: cx + len + KV.cwShoe, y: y + I.cwDepth / 2, dir: 'left', kind: 'cw', bracketAxis: 'y', bracketTo: D + nd });
     } else {
       // beside the car, between the wall and the car rail, centred on the rails' axis; clear of the door zones it faces
-      const left = cwSide === 'left', x0 = left ? I.cwWallGap : W - I.cwWallGap - I.cwDepth, xOut = left ? x0 + I.cwDepth + I.cwRailGap : x0 - I.cwRailGap;
+      const left = cwSide === 'left', x0 = left ? I.cwWallGap - nd : W + nd - I.cwWallGap - I.cwDepth, xOut = left ? x0 + I.cwDepth + I.cwRailGap : x0 - I.cwRailGap;
       const blocks = (w: Wall): boolean => frames.some((d) => d.wall === w && (left ? d.frame0 - 40 < xOut : d.frame1 + 40 > xOut));
       const yLo = (blocks('front') ? doorZone : 0) + KV.cwEndGap, yHi = D - (blocks('rear') ? doorZone : 0) - KV.cwEndGap;
-      const half = Math.min(yMid - yLo, yHi - yMid) - KV.cwShoe - wr.h;
-      const len = fix.cwLen ?? Math.max(0, Math.min(KV.cwMaxLength, floorTo(2 * half, step)));
-      cwRect = { x: x0, y: fix.cwPos ?? round1(yMid - len / 2), w: I.cwDepth, h: len };
+      const [len, cy] = cwAlong(2 * (Math.min(yMid - yLo, yHi - yMid) - KV.cwShoe - wr.h), yMid);
+      cwRect = { x: x0, y: cy, w: I.cwDepth, h: len };
       cwDbg = len + 2 * KV.cwShoe;
       cwRoom = [yLo, yHi];
-      const ax = x0 + I.cwDepth / 2, wallX = left ? 0 : W;
-      rails.push({ x: ax, y: cwRect.y - KV.cwShoe, dir: 'back', kind: 'cw', bracketAxis: 'x', bracketTo: wallX },
-        { x: ax, y: cwRect.y + len + KV.cwShoe, dir: 'front', kind: 'cw', bracketAxis: 'x', bracketTo: wallX });
+      const ax = x0 + I.cwDepth / 2, cwWall = left ? -nd : W + nd;
+      rails.push({ x: ax, y: cwRect.y - KV.cwShoe, dir: 'back', kind: 'cw', bracketAxis: 'x', bracketTo: cwWall },
+        { x: ax, y: cwRect.y + len + KV.cwShoe, dir: 'front', kind: 'cw', bracketAxis: 'x', bracketTo: cwWall });
       bridge = { x: xOut, y0: cwRect.y - KV.cwShoe - wr.h, y1: cwRect.y + len + KV.cwShoe + wr.h };
     }
   }
@@ -195,6 +207,11 @@ export function layout(I: ShaftInputs): Layout {
   const cwLo = (cwSide === 'rear' ? cwRect.x : cwRect.y) - KV.cwShoe - wr.h, cwHi = (cwSide === 'rear' ? cwRect.x + cwRect.w : cwRect.y + cwRect.h) + KV.cwShoe + wr.h;
   const place = Math.min(car.x - zone('left'), W - zone('right') - (car.x + car.w), car.y - zone('front'), D - zone('rear') - (car.y + car.h), cwLo - cwRoom[0], cwRoom[1] - cwHi);
   const onCar = Math.min(...doors.map((d) => (d.wall === 'front' || d.wall === 'rear' ? Math.min(d.u0 - carInner.x, carInner.x + A - d.u1) : Math.min(d.u0 - carInner.y, carInner.y + B - d.u1))));
+  const niches = nicheMargin(I, doors, cwSide, { lo: cwLo, hi: cwHi });
+  // Panev's supports for the counterweight rails: one of the catalogue's must take each rail (on its wall, or in its niche)
+  const span = niche ? [niche.at, niche.at + niche.width] as const : undefined;
+  const staffe = cwBracketsOf(I) === 'panev'
+    ? Math.min(...rails.filter((r) => r.kind === 'cw').map((r) => supportMargin(r, wr.h, W, D, span) ?? Infinity)) : null;
 
   // the landing door's frame and the car door's operator inside the shaft
   const doorMargin = (d: DoorLayout): number => {
@@ -222,6 +239,8 @@ export function layout(I: ShaftInputs): Layout {
       check('v_place', place >= 0, Math.round(place), 0, 0, 'mm'),
       check('v_doorcar', onCar >= 0, Math.round(onCar), 0, 0, 'mm'),
     ] : []),
+    ...(niches !== null ? [check('v_niche', niches >= 0, Math.round(niches), 0, 0, 'mm')] : []),
+    ...(staffe !== null && Number.isFinite(staffe) ? [check('v_staffa', staffe >= 0, Math.round(staffe), 0, 0, 'mm')] : []),
   ];
 
   const L: Layout = {

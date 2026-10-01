@@ -17,6 +17,7 @@ export const liftInputsSchema = z.object({
   shaft: shaftInputsSchema,
   calc: formValuesSchema,
   auto: autoSchema,
+  bottom: z.enum(['head', 'room', 'under']).optional(),
 }).strict();
 
 export type LiftInputsParsed = z.infer<typeof liftInputsSchema>;

@@ -1,20 +1,22 @@
-// The machine and its room: the room's shell (roomshell.ts) — above the shaft, or with the machine below a room past
-// the wall behind the counterweight, the ropes through that wall in their sleeves; the geared machine of the landing
-// page scaled to the sheave of the calculation and turned onto the rope plane, its anti-vibration mounts on levelling
-// shims on the floor beside the rope openings (slab.ts); its cable in a floor trunking to the controller and the main
-// switch's feed (wiring.ts); the lifting hook over it; the diverting and top pulleys on their frames, the car and
-// counterweight pulleys of a 2:1 roping and its dead ends (pulleys.ts). Loaded only through boot.ts (lazy).
+// The machine and its room: the room's shell (roomshell.ts) — above the shaft; with the machine below, a room past the
+// wall behind the counterweight at the lowest floor (the machine's front through an opening in that wall, its sheave
+// in the gap behind the counterweight) and, for a pulley room, that room over the slab; or a room under the pit — the
+// geared machine of the landing page scaled to the sheave of the calculation and turned onto the sheave's rope plane,
+// its anti-vibration mounts on levelling shims on the floor beside the rope openings (slab.ts); its cable in a floor
+// trunking to the controller and the main switch's feed (wiring.ts); the lifting hook over it; the diverting and head
+// pulleys on their frames, each in its rope's plane, the car and counterweight pulleys of a 2:1 roping and its dead
+// ends (pulleys.ts). Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { Layout } from '@/shaft';
-import { belt, type RopeRig } from '@/lib/lift';
+import { KL, planeAt, type RopePlane, type RopeRig } from '@/lib/lift';
 import { buildMachine, CONDUIT_END, DIM, ROPE_LENGTH } from '../machine/parts';
 import { createMaterials, type MachineMaterials } from '../machine/materials';
 import { Batch } from './geom';
 import { pulley, pulleyFrames } from './pulleys';
 import { ropeWidths, type Opening } from './slab';
 import type { GovernorSpot } from './governor';
-import { buildShell, shellOf, switchAt } from './roomshell';
+import { buildShell, shellsOf, switchAt } from './roomshell';
 import { mainFeed, rectOf, roomPoint, trunking, trunkingRoute, type Rect } from './wiring';
 import type { LiftMaterials, Side } from './materials';
 
@@ -32,33 +34,56 @@ export interface RoomModel {
   dispose(): void;
 }
 
+/** The opening the machine's front needs in the wall behind the counterweight (machine below, beside the shaft): along
+ *  that wall [mm] from its start, from the room's floor to over the machine; null for the other schemes. */
+export function machinePassage(rig: RopeRig, D: number): { side: Side; u0: number; u1: number; z0: number; z1: number } | null {
+  const g = rig.scheme;
+  if (!g || g.scheme === 'under') return null;
+  // the slow shaft through the wall: a sleeve's opening round it, on the sheave's axis
+  const [dx, dy] = rig.dir, alongX = Math.abs(dx) <= Math.abs(dy), [px, py] = planeAt(rig.sheave.plane, rig.sheave.u), r = 0.075 * (D / 560) * 1000 + 30;
+  const side: Side = alongX ? (dy > 0 ? 'rear' : 'front') : dx > 0 ? 'right' : 'left', u = alongX ? px : py, z = rig.sheave.y * 1000;
+  return { side, u0: u - r, u1: u + r, z0: z - r, z1: z + r };
+}
+
+/** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot. */
+/** Where the machine stands in plan: the direction of its worm (local X), its sheave's centre [world m] and, beside the
+ *  shaft, how much longer its slow shaft is to carry the sheave through the wall into the gap behind the counterweight
+ *  [mm] (the gearbox in the room, 50 mm clear of the wall). */
+export function machinePose(rig: RopeRig, wall: number, n: number, d: number, D: number): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
+  const g = rig.scheme, S = rig.sheave, [px, py] = planeAt(S.plane, S.u), s = D / 560;
+  // above: the worm along the drops' plane; below: along the wall, the gearbox past the sheave away from the shaft
+  // (through the wall) or, under the pit, toward the car
+  const xDir = !g ? rig.dir : g.scheme === 'under' ? g.across : ([-g.across[0], -g.across[1]] as const);
+  const ext = g && g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + wall + 50 - (DIM.zSheave - 0.2) * s * 1000) : 0;
+  return { xDir, centre: new THREE.Vector3(px / 1000, S.y, -py / 1000), ext };
+}
+
 /** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot. */
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null): RoomModel {
   const I = L.inputs, sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
   const roof = new THREE.Group(), common = new THREE.Group();
-  const [dx, dy] = rig.dir, [ox, oy] = rig.origin, turn = Math.atan2(dy, dx);
-  const at = (u: number, y: number): THREE.Vector3 => new THREE.Vector3(ox / 1000 + u * dx, y, -(oy / 1000 + u * dy));
-  const z0 = rig.roomFloor * 1000, shell = shellOf(L, rig), R = shell?.room ?? null;
-  if (shell) buildShell(shell, M, sides, roof, common);
-  if (rig.bottom) {
-    // the ropes through the shaft's wall into the room below: a steel sleeve round each run where it crosses the wall
-    const sleeves = new Batch(), wd = ropeWidths(n, d), w0 = rig.wallAt, w1 = rig.wallAt + I.wall / 1000, mid = (w0 + w1) / 2;
-    for (const [[ua, ya], [ub, yb]] of belt(rig.elements(0, 0)).runs) {
-      if ((ua - mid) * (ub - mid) >= 0) continue;
-      const y = ya + ((yb - ya) * (mid - ua)) / (ub - ua), len = (w1 - w0) * 1000 + 30, c = at(mid, y);
-      const g = new THREE.BoxGeometry(len / 1000, (d + 50) / 1000, (2 * wd.ropes + 50) / 1000).rotateY(turn);
-      sleeves.add(g.translate(c.x, c.y, c.z), M.galv);
-    }
-    sleeves.into(common);
-  }
+  const at = (p: RopePlane, u: number, y: number): THREE.Vector3 => {
+    const [x, yy] = planeAt(p, u);
+    return new THREE.Vector3(x / 1000, y, -yy / 1000);
+  };
+  const z0 = rig.roomFloor * 1000, shells = shellsOf(L, rig), shell = shells.find((sh) => sh.kind === 'machine') ?? null, R = shell?.room ?? null;
+  for (const sh of shells) buildShell(sh, M, sides, roof, common);
 
-  // the machine: scaled to the sheave, its rope plane on the drops' plane, the car side of the sheave toward the car
+  // the machine: scaled to the sheave, its rope plane on the sheave's, the sheave's centre where the rig puts it
   const MM: MachineMaterials = createMaterials(ROPE_LENGTH);
-  const machine = buildMachine(MM, false), s = D / 560;
+  const machine = buildMachine(MM, false), s = D / 560, pose = machinePose(rig, I.wall, n, d, D), e = pose.ext / 1000 / s;
   machine.group.scale.setScalar(s);
-  machine.group.rotation.y = Math.atan2(dy, dx);
-  const centre = at(rig.sheave.u, rig.sheave.y);
-  const local = new THREE.Vector3(0, DIM.yWheel * s, DIM.zSheave * s).applyEuler(machine.group.rotation);
+  machine.group.rotation.y = Math.atan2(pose.xDir[1], pose.xDir[0]);
+  const centre = pose.centre;
+  if (e > 0) {
+    // the sheave on the longer slow shaft, out through the wall
+    machine.sheave.position.z += e;
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, DIM.zSheave + e - 0.2, 24).rotateX(Math.PI / 2), MM.machined);
+    shaft.position.set(0, DIM.yWheel, (0.2 + DIM.zSheave + e) / 2);
+    shaft.castShadow = true;
+    machine.group.add(shaft);
+  }
+  const local = new THREE.Vector3(0, DIM.yWheel * s, (DIM.zSheave + e) * s).applyEuler(machine.group.rotation);
   machine.group.position.copy(centre).sub(local);
   common.add(machine.group);
   // levelling shims under the four mounts, down to the floor (the sheave's axis sits at its height over the floor)
@@ -89,7 +114,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     const half = ropeWidths(n, d).pulley;
     for (const w of rig.wheels) {
       if (rig.bottom || w.role === 'sheave' || w.y * 1000 <= ceiling) continue;
-      const u0 = (w.u - w.r) * 1000 - 110, u1 = (w.u + w.r) * 1000 + 110, a = half + 40;
+      const u0 = (w.u - w.r) * 1000 - 110, u1 = (w.u + w.r) * 1000 + 110, a = half + 40, [ox, oy] = w.plane.origin, [dx, dy] = w.plane.dir;
       blocked.push(rectOf([[u0, -a], [u1, -a], [u1, a], [u0, a]].map(([u, v]) => [ox + u * dx - v * dy, oy + u * dy + v * dx] as const)));
     }
     if (gov && !rig.bottom) blocked.push(rectOf([[gov.x - 175, gov.y1 - 30], [gov.x + 175, gov.y2 + 30]]));
@@ -109,19 +134,21 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     hook.into(common);
   }
 
-  // pulleys: diverting and top ones fixed on their frames; car and counterweight pulleys of a 2:1 roping follow them
+  // pulleys: diverting and head ones fixed on their frames; car and counterweight pulleys of a 2:1 roping follow them
   const width = n * Math.max(d + 6, 1.7 * d) / 1000 + 0.03, frames = new Batch();
   for (const w of rig.wheels) {
     if (w.role === 'sheave') continue;
-    const p = pulley(w.r, width, rig.dir, M.pulley);
-    p.position.copy(at(w.u, w.y));
+    const p = pulley(w.r, width, w.plane.dir, M.pulley);
+    p.position.copy(at(w.plane, w.u, w.y));
     common.add(p);
   }
-  pulleyFrames(frames, M, rig, n, d, rig.bottom ? null : z0, ceiling);
+  const over = !rig.bottom ? z0 : rig.scheme?.scheme === 'room' ? ceiling + (I.room?.slab ?? KL.slab) : null;
+  pulleyFrames(frames, M, rig, n, d, over, ceiling);
   frames.into(common);
-  const moving = rig.elements(0, 0).filter((e) => e.kind === 'wheel' && !rig.wheels.some((w) => Math.abs(w.u - e.u) < 1e-9 && Math.abs(w.y - e.y) < 1e-9));
-  const carP = moving[0]?.kind === 'wheel' ? pulley(moving[0].r, width, rig.dir, M.pulley) : null;
-  const cwP = moving[1]?.kind === 'wheel' ? pulley(moving[1].r, width, rig.dir, M.pulley) : null;
+  const pcs = rig.pieces(0, 0), first = pcs[0], last = pcs[pcs.length - 1];
+  const moving = (pc: typeof first, e: (typeof first.els)[number] | undefined): THREE.Group | null =>
+    e?.kind === 'wheel' && !rig.wheels.some((w) => w.plane === pc.plane && Math.abs(w.u - e.u) < 1e-9 && Math.abs(w.y - e.y) < 1e-9) ? pulley(e.r, width, pc.plane.dir, M.pulley) : null;
+  const carP = moving(first, first.els[1]), cwP = moving(last, last.els[last.els.length - 2]);
   if (carP) common.add(carP);
   if (cwP) common.add(cwP);
 

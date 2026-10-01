@@ -79,6 +79,15 @@ export const planSchema = z.object({
   cwPos: mm(0, 10000).optional(),
 }).strict();
 
+/** A niche in a wall of the shaft (src/shaft/niche.ts). */
+export const nicheSchema = z.object({
+  use: z.enum(['cw', 'light', 'duct']),
+  wall,
+  at: mm(0, 10000),
+  width: mm(50, 5000),
+  depth: mm(10, 1000),
+}).strict();
+
 export const shaftInputsSchema = z.object({
   W: mm(500, 10000),
   D: mm(500, 10000),
@@ -107,6 +116,9 @@ export const shaftInputsSchema = z.object({
   shoeGap: allowance('shoeGap', 300),
   cwRailGap: allowance('cwRailGap', 500),
   plan: planSchema.optional(),
+  niches: z.array(nicheSchema).max(8).optional(),
+  callStation: z.object({ side: z.enum(['left', 'right']), offset: mm(0, 2000), height: mm(600, 2000) }).strict().optional(),
+  cwBrackets: z.enum(['panev', 'generic']).optional(),
 }).strict();
 
 const finite = z.number().finite();

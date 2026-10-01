@@ -3,31 +3,15 @@
 // brackets (staffe.ts). Plan and heights in millimetres, into a batch. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
+import { GROOVE, GROOVE_D, SILL_H, sillSection } from '@/shaft/sill';
 import { extrudeAlong, type Batch } from './geom';
 import type { LiftMaterials, Side } from './materials';
 
-// height of the extrusion, groove width and depth, rib pitch and depth [mm]
-export const SILL_H = 24;
-const H = SILL_H, GROOVE = 11, GROOVE_D = 14, RIB = 4, RIB_D = 0.9;
+export { SILL_H };
 
-/** The section across the sill, from v0 (inner edge) to v1 (nosing), top at 0, in metres; a groove at each of `grooves`.
- *  `flip`: the nosing at v0 instead (a car sill faces the landing, toward the wall). */
-function section(v0: number, v1: number, grooves: readonly number[], flip: boolean): THREE.Shape {
-  const m = (v: number, z: number): THREE.Vector2 => new THREE.Vector2((flip ? v0 + v1 - v : v) / 1000, z / 1000);
-  grooves = flip ? grooves.map((g) => v0 + v1 - g) : grooves;
-  const pts: THREE.Vector2[] = [m(v0, -H), m(v1 - 3, -H), m(v1, -H + 3), m(v1, -3), m(v1 - 3, 0)];
-  // the walking face from the nosing back to the inner edge: ribs, broken by the grooves
-  const cuts = grooves.map((g) => [g - GROOVE / 2, g + GROOVE / 2] as const).sort((a, b) => b[0] - a[0]);
-  let v = v1 - 6;
-  for (const [g0, g1] of [...cuts, [v0 - 1, v0] as const]) {
-    for (; v - RIB > g1 + 2; v -= RIB) pts.push(m(v - RIB / 4, 0), m(v - RIB / 2, -RIB_D), m(v - (3 * RIB) / 4, 0));
-    if (g1 < v0 + 1) break;
-    pts.push(m(g1 + 1, 0), m(g1, -1), m(g1, -GROOVE_D), m(g0, -GROOVE_D), m(g0, -1), m(g0 - 1, 0));
-    v = g0 - 3;
-  }
-  pts.push(m(v0, 0));
-  return new THREE.Shape(pts);
-}
+/** The section across the sill (src/shaft/sill.ts), in metres. */
+const section = (v0: number, v1: number, grooves: readonly number[], flip: boolean): THREE.Shape =>
+  new THREE.Shape(sillSection(v0, v1, grooves, flip).map(([v, z]) => new THREE.Vector2(v / 1000, z / 1000)));
 
 /** A sill along `wall` from u0 to u1, from v0 to v1 deep, its top at z, grooved under the panels' tracks, its nosing
  *  toward the gap at v1 (landing) or at v0 (`flip`, car). */
