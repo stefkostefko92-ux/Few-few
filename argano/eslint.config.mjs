@@ -4,11 +4,11 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import nextPlugin from '@next/eslint-plugin-next';
 
 export default tseslint.config(
-  { ignores: ['node_modules/**', '.next/**', 'next-env.d.ts'] },
+  { ignores: ['node_modules/**', '.next/**', 'next-env.d.ts', 'artifact/dist/**'] },
   js.configs.recommended,
   ...tseslint.configs.strict,
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'artifact/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks, '@next/next': nextPlugin },
     rules: {
       ...reactHooks.configs.recommended.rules,

@@ -33,6 +33,7 @@ ADMIN_PASSWORD=… npm run admin:create                 # администрат
 BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъра срещу пуснат сървър (Playwright)
 npm run lista         # docs/lista-verifica-normativa.md + .json от регистъра
 BASE_URL=… node scripts/render-poster.mjs            # постерът на 3D сцената (public/img/argano-machine-*.webp)
+npm run artifact      # самостоятелната страница с двата инструмента → artifact/dist (claude.ai Artifact или статичен хост)
 ```
 
 Гейтът (задължителен преди „готово“): `lint` + `typecheck` + `test` + `build`, после `smoke` срещу
@@ -93,6 +94,9 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      2_drawing_sets (данни на съоръжението, лога, комплекти и брояч; тригери: комплектът и логото не се менят),
                      3_lift_designs (LiftDesign: въведеното + връзки към проекта на шахтата и изчислението; неизменим).
 deploy/              deploy.sh (сървърът), nginx/argano.conf. Dockerfile, docker-compose.yml, docker-entrypoint.sh.
+artifact/            Самостоятелната страница: калкулаторът и проектът със 3D симулацията и листовете на чертежите, изцяло в
+                     браузъра, със същите компоненти и двигатели; шимове за next-intl (use-intl), routing и server actions
+                     (нищо не се записва). scripts/build-artifact.mjs я сглобява (esbuild + Tailwind, шрифтовете до нея).
 ```
 
 ## Правила

@@ -3,12 +3,12 @@
 // The installation in one screen: the one form on the left (the shaft, the floors, the machine room, the lift and its
 // machine), everything the software works out and the 3D simulation on the right, live; every check with a button
 // that replays it; the save, after which the server derives everything again and stores it.
-import { useDeferredValue, useMemo, useRef, useState, useTransition } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
-import { deriveLift, type AutoFlags, type LiftInputs } from '@/lib/lift';
+import { deriveLift, type AutoFlags, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
@@ -29,9 +29,11 @@ import LiftSimulator, { type SimApi } from './LiftSimulator';
 interface Props {
   projectId: string;
   initial: LiftInputs;
+  /** the inputs and what they give, each time they settle (the standalone page draws the sheets from them) */
+  onDerived?(inputs: LiftInputs, derived: LiftDerived): void;
 }
 
-export default function LiftWorkspace({ projectId, initial }: Props) {
+export default function LiftWorkspace({ projectId, initial, onDerived }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -45,6 +47,7 @@ export default function LiftWorkspace({ projectId, initial }: Props) {
   const deferred = useDeferredValue(inp);
   const derived = useMemo(() => deriveLift(deferred), [deferred]);
   const bad = useMemo(() => new Set(visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values)), [derived]);
+  useEffect(() => { onDerived?.(deferred, derived); }, [deferred, derived, onDerived]);
   const sim = useRef<SimApi>(null);
 
   const setShaft = (patch: Partial<ShaftInputs>): void => {
