@@ -3,7 +3,8 @@
 // scenarios read it. Pure.
 import type { Machine, Plant, Results } from '../calc/types';
 import type { Section } from '../shaft/section';
-import type { VerticalInputs } from '../shaft/vertical';
+import type { BufferType, VerticalInputs } from '../shaft/vertical';
+import { bufferType } from '../shaft/buffers';
 import { KV_VERT } from '../shaft/norme-vert';
 import { physics, type Physics } from './physics';
 import type { Series, SimEvent } from './series';
@@ -24,9 +25,11 @@ export interface SimModel {
    *  plate touches its buffer (above the top floor) [m] */
   carContact: number;
   cwContact: number;
-  /** buffer strokes [m] and number of car buffers */
+  /** buffer strokes [m] (a polyurethane pad's 90 % of its height), their types and the number of car buffers */
   carStroke: number;
   cwStroke: number;
+  carType: BufferType;
+  cwType: BufferType;
   carBuffers: number;
   /** conventional jump of the car or counterweight when the other lands on its buffers [m] */
   jump: number;
@@ -42,7 +45,7 @@ export function simModel(I: Plant, M: Machine, res: Results, S: Section, V: Vert
     cw0: mm(S.pitFloor + S.cwLow + S.top),
     carContact: mm(S.carBufferTop + V.frameBelow),
     cwContact: mm(S.top + V.cwRunby),
-    carStroke: mm(V.carBufferStroke), cwStroke: mm(V.cwBufferStroke), carBuffers: V.carBuffers,
+    carStroke: mm(S.carStroke), cwStroke: mm(S.cwStroke), carType: bufferType(V, 'car'), cwType: bufferType(V, 'cw'), carBuffers: V.carBuffers,
     jump: mm(S.jump), bufferFactor: KV_VERT.bufferFactor,
   };
 }

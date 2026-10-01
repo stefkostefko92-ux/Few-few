@@ -1,19 +1,20 @@
-// Boots the 3D installation, on the landing page's pipeline (src/components/machine/boot.ts): WebGPU on a hardware
-// adapter, else WebGL 2, never on a software rasteriser; scene (HDR + velocity MRT) → GTAO on the high tier → TRAA →
-// grade. An orbit camera with four views (car, whole shaft, machine, pit); the car view follows the car. The
-// simulation's clock gives the state of every frame; frames are drawn only while something moves. Every part's
-// pipeline is compiled before the first frame. Everything freed on dispose. Loaded lazily by LiftStage.tsx.
+// Boots the 3D installation, on the landing page's pipeline (src/components/machine/boot.ts, here pipeline.ts): WebGPU
+// on a hardware adapter (the top quality tier on a large screen), else WebGL 2, never on a software rasteriser. An orbit
+// camera with four views (car, whole shaft, machine, pit); the car view follows the car. The simulation's clock gives
+// the state of every frame; frames are drawn only while something moves, at the resolution the governor holds the
+// frame rate with, and once the scene is at rest its last frames are drawn sharper (supersampled where the screen's
+// own resolution is lower: resolution.ts). Every part's pipeline is compiled before the first frame. Everything freed on
+// dispose. Loaded lazily by LiftStage.tsx.
 import * as THREE from 'three/webgpu';
-import { pass, mrt, output, velocity, normalView, packNormalToRGB, unpackRGBToNormal, sample, screenUV, vec4, convertToTexture } from 'three/tsl';
-import { traa } from 'three/addons/tsl/display/TRAANode.js';
-import { ao } from 'three/addons/tsl/display/GTAONode.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { LiftDerived } from '@/lib/lift';
 import type { SimClock } from '../lift/clock';
-import { grade, gradeUniforms } from '../machine/grade';
-import { acceptIdentitySwizzle, hardwareWebGPU, resolvedTexture, softwareRenderer } from '../machine/gpu';
+import { gradeUniforms } from '../machine/grade';
+import { acceptIdentitySwizzle, hardwareWebGPU, softwareRenderer } from '../machine/gpu';
 import { createGovernor, initialQuality } from '../machine/quality';
-import { buildLiftWorld, LIFT_FOV, type LiftWorld } from './world';
+import { buildStage, releaseStage, type Stage } from './pipeline';
+import { motionRatio, stillRatio } from './resolution';
+import { LIFT_FOV, type LiftWorld } from './world';
 
 export type View = 'car' | 'shaft' | 'room' | 'pit';
 
@@ -51,13 +52,17 @@ const SETTLE_FRAMES = 16;
 // the lowest scale; SLOW_RUN of them in a row there end the 3D, the charts carry the simulation, the page stays responsive
 const SLOW_MS = 250;
 const SLOW_RUN = 6;
+// frames without a change before the still picture is drawn sharper; a sharper frame slower than REFINE_MAX_MS ends
+// the sharper stills for the session (a GPU that cannot afford them)
+const QUIET_FRAMES = 3;
+const REFINE_MAX_MS = 140;
 
 export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts: LiftBootOptions): Promise<LiftHandle | null> {
   acceptIdentitySwizzle();
-  let renderer: THREE.WebGPURenderer;
+  let renderer: THREE.WebGPURenderer, gpu: boolean;
   try {
-    const forceWebGL = !(await hardwareWebGPU());
-    renderer = new THREE.WebGPURenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance', forceWebGL });
+    gpu = await hardwareWebGPU();
+    renderer = new THREE.WebGPURenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance', forceWebGL: !gpu });
     await renderer.init();
   } catch {
     return null;
@@ -66,54 +71,15 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
     renderer.dispose();
     return null;
   }
-  const quality = initialQuality(matchMedia('(pointer: coarse)').matches, Math.min(screen.width, screen.height));
+  const quality = initialQuality(matchMedia('(pointer: coarse)').matches, Math.min(screen.width, screen.height), gpu);
   const P = gradeUniforms();
   P.grain.value = 0;
   P.ca.value = 0;
   P.vignette.value = 0.16;
   P.exposure.value = 1.08;
   const camera = new THREE.PerspectiveCamera(LIFT_FOV, 4 / 3, 0.05, 160);
-  // a world and the pipeline that renders it; replaced together when the design changes
-  interface Stage { world: LiftWorld; pipeline: THREE.RenderPipeline; owned: { dispose(): void }[] }
-  const build = (design: LiftDerived): Stage | null => {
-    const owned: { dispose(): void }[] = [];
-    const keep = <T extends { dispose(): void }>(node: T): T => {
-      owned.push(node);
-      return node;
-    };
-    let world: LiftWorld | null = null;
-    try {
-      world = buildLiftWorld(renderer, design, quality);
-      const pipeline = new THREE.RenderPipeline(renderer);
-      pipeline.outputColorTransform = false;
-      const scenePass = pass(world.scene, camera);
-      scenePass.setMRT(mrt(quality.ao ? { output, velocity, normal: vec4(packNormalToRGB(normalView), 1) } : { output, velocity }));
-      const depth = scenePass.getTextureNode('depth');
-      let image: THREE.TextureNode = scenePass.getTextureNode('output');
-      if (quality.ao) {
-        scenePass.getTexture('normal').type = THREE.UnsignedByteType;
-        const packed = scenePass.getTextureNode('normal');
-        const occ = keep(ao(depth, sample((st) => unpackRGBToNormal(packed.sample(st).rgb)), camera));
-        occ.resolutionScale = 0.5;
-        occ.radius.value = 0.35;
-        occ.samples.value = 12;
-        occ.useTemporalFiltering = true;
-        image = keep(convertToTexture(vec4(image.rgb.mul(occ.getTextureNode().sample(screenUV).r.mul(0.75).add(0.25)), image.a)));
-      }
-      image = resolvedTexture(keep(traa(image, depth, scenePass.getTextureNode('velocity'), camera)));
-      pipeline.outputNode = grade(image, null, P);
-      return { world, pipeline, owned };
-    } catch {
-      for (const node of owned) node.dispose();
-      world?.dispose();
-      return null;
-    }
-  };
-  const release = (st: Stage): void => {
-    st.pipeline.dispose();
-    for (const node of st.owned) node.dispose();
-    st.world.dispose();
-  };
+  const build = (design: LiftDerived): Stage | null => buildStage(renderer, design, quality, camera, P);
+  const release = releaseStage;
   const initial = build(dv);
   if (!initial) {
     renderer.dispose();
@@ -143,10 +109,13 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
     } else glide = { from: camera.position.clone(), to, tFrom: controls.target.clone(), tTo: f.target.clone(), start: performance.now() };
   };
 
-  const governor = createGovernor();
+  // the pipelines are compiled before the first frame: a short warm-up, from the tier's starting scale
+  const governor = createGovernor({ warmupMs: 800, startScale: quality.startScale });
+  // a still picture drawn sharper; off for the session on a GPU too slow for it
+  let refining = false, refineOff = false;
   function resize(): void {
     const w = Math.max(1, canvas.clientWidth), h = Math.max(1, canvas.clientHeight);
-    renderer.setPixelRatio(Math.max(0.5, Math.min(window.devicePixelRatio || 1, quality.maxDPR) * governor.scale));
+    renderer.setPixelRatio(refining ? stillRatio(quality, w, h) : motionRatio(quality, governor.scale, w, h, window.devicePixelRatio || 1));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -155,7 +124,13 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
   // on demand: frames while the run plays and while the camera moves, glides or catches up with the car (the controls
   // report every move), then a few more; a still scene costs nothing
   let still = 0;
-  const wake = (): void => { still = 0; };
+  const wake = (): void => {
+    still = 0;
+    if (refining) {
+      refining = false;
+      resize();
+    }
+  };
   const offClock = opts.clock.subscribe(wake);
   controls.addEventListener('change', wake);
   const sizer = new ResizeObserver(() => { resize(); wake(); });
@@ -165,7 +140,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
   if (first) world.update(first, camera.position, controls.target);
   place(view, false);
 
-  let disposed = false, active = false, frames = 0, last = performance.now(), prevRendered = false, lastRendered = 0, slowRun = 0;
+  let disposed = false, active = false, frames = 0, last = performance.now(), prevRendered = false, lastRendered = 0, slowRun = 0, prevSharp = false;
   function dispose(): void {
     if (disposed) return;
     disposed = true;
@@ -198,14 +173,28 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
       prevRendered = false;
       return;
     }
-    if (prevRendered && frames > 4) {
+    // at rest: the last frames at the still resolution (the temporal filters settle on them)
+    if (!refining && !refineOff && still === QUIET_FRAMES) {
+      const w = Math.max(1, canvas.clientWidth), h = Math.max(1, canvas.clientHeight);
+      if (stillRatio(quality, w, h) > renderer.getPixelRatio() + 0.05) {
+        refining = true;
+        resize();
+        still = 0;
+      }
+    }
+    if (prevRendered && prevSharp && now - lastRendered > REFINE_MAX_MS) {
+      refineOff = true;
+      refining = false;
+      resize();
+    } else if (prevRendered && frames > 4 && !prevSharp && !refining) {
       slowRun = now - lastRendered > SLOW_MS ? slowRun + 1 : 0;
       if (slowRun >= SLOW_RUN / 2 && governor.floor(now)) {
         resize();
         slowRun = 0;
       } else if (slowRun >= SLOW_RUN) return fail();
     }
-    if (governor.sample(dt * 1000, now)) resize();
+    // the governor reads the moving frames only
+    if (!refining && !prevSharp && governor.sample(dt * 1000, now)) resize();
     const f = opts.clock.frame();
     if (f) world.update(f, camera.position, controls.target);
     if (glide) {
@@ -229,6 +218,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
     frames += 1;
     still += 1;
     prevRendered = true;
+    prevSharp = refining;
     lastRendered = now;
     if (frames === 4) opts.onReady();
   }

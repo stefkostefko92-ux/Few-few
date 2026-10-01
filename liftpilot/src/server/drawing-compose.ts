@@ -14,7 +14,7 @@ import { reproduceDesign } from '@/lib/shaft-hash';
 import { buildTavole } from '@/lib/tavole/build';
 import type { Mismatch } from '@/lib/tavole/data';
 import { projectData, storedInput, type ProjectData, type StoredSet } from '@/lib/tavole/compose';
-import type { TavoleRevision } from '@/lib/tavole/input';
+import type { TavoleInput, TavoleRevision } from '@/lib/tavole/input';
 import { tavoleHash } from '@/lib/tavole-hash';
 import type { DrawingDoc } from '@/drawing';
 
@@ -31,10 +31,13 @@ export interface Composed {
   projectId: string;
   shaftDesignId: string;
   logoId: string | null;
+  clientLogoId: string | null;
   plant: Prisma.InputJsonValue;
   projectData: ProjectData;
   companyName: string;
   doc: DrawingDoc;
+  /** what the set was drawn from (values, layout, data of the installation) */
+  input: TavoleInput;
   sha256: string;
   pages: number;
 }
@@ -52,33 +55,39 @@ function reproduce(c: { inputs: unknown; sha256: string; shaftDesign: Parameters
   return { ok: true as const, values: values.data, layout: design.layout, designId: c.shaftDesign.id };
 }
 
+/** `readOnly`: an export, allowed for an archived project too (an issue is not). */
 export async function composeFromCalculation(
-  tx: Tx, user: SessionUser, calculationId: string, set: { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[] },
+  tx: Tx, user: SessionUser, calculationId: string, set: { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[] }, readOnly = false,
 ): Promise<Composed | ComposeError> {
   const c = await tx.calculation.findFirst({
     where: { id: calculationId, companyId: user.companyId },
     select: {
       inputs: true, sha256: true, shaftDesign: { select: DESIGN_SELECT }, liftDesign: { select: { inputs: true } },
-      project: { select: { id: true, name: true, address: true, city: true, province: true, plantNumber: true, client: true, plant: true, archivedAt: true } },
+      project: {
+        select: {
+          id: true, name: true, address: true, city: true, province: true, plantNumber: true, client: true, plant: true, archivedAt: true,
+          clientLogo: { select: { id: true, mime: true, data: true } },
+        },
+      },
     },
   });
   if (!c) return { ok: false, error: 'notFound' };
-  if (c.project.archivedAt) return { ok: false, error: 'archived' };
+  if (c.project.archivedAt && !readOnly) return { ok: false, error: 'archived' };
   const r = reproduce(c);
   if (!r.ok) return r;
   const company = await tx.company.findUnique({ where: { id: user.companyId }, select: { name: true, logo: { select: { id: true, mime: true, data: true } } } });
   if (!company) return { ok: false, error: 'notFound' };
-  const plant = plantSchema.safeParse(c.project.plant ?? {}), pd = projectData(c.project), logo = logoOf(company.logo);
+  const plant = plantSchema.safeParse(c.project.plant ?? {}), pd = projectData(c.project), logo = logoOf(company.logo), clientLogo = logoOf(c.project.clientLogo);
   const stored: StoredSet = {
     number: set.number, createdAt: set.issuedAt, authorInitials: set.author, companyName: company.name, projectData: pd,
     plant: plant.success ? plant.data : {}, revisions: set.revisions.map((x) => ({ mark: x.mark, text: x.text, date: x.date.toISOString() })),
   };
-  const input = storedInput(r.values, r.layout, stored, logo, calcMarks(c.liftDesign, c.sha256));
+  const input = storedInput(r.values, r.layout, stored, logo, calcMarks(c.liftDesign, c.sha256), clientLogo);
   if (!input) return { ok: false, error: 'notFound' };
   const { doc } = buildTavole(input);
   return {
-    ok: true, projectId: c.project.id, shaftDesignId: r.designId, logoId: logo ? company.logo?.id ?? null : null,
-    plant: (plant.success ? plant.data : {}) as Prisma.InputJsonValue, projectData: pd, companyName: company.name, doc, sha256: tavoleHash(doc), pages: doc.pages.length,
+    ok: true, projectId: c.project.id, shaftDesignId: r.designId, logoId: logo ? company.logo?.id ?? null : null, clientLogoId: clientLogo ? c.project.clientLogo?.id ?? null : null,
+    plant: (plant.success ? plant.data : {}) as Prisma.InputJsonValue, projectData: pd, companyName: company.name, doc, input, sha256: tavoleHash(doc), pages: doc.pages.length,
   };
 }
 
@@ -91,10 +100,11 @@ export function composeStored(s: StoredSet & {
   calculation: { inputs: unknown; sha256: string; liftDesign: { inputs: unknown } | null };
   shaftDesign: Parameters<typeof reproduceDesign>[0];
   logo: { mime: string; data: Uint8Array } | null;
+  clientLogo?: { mime: string; data: Uint8Array } | null;
 }): { doc: DrawingDoc; warnings: Mismatch[] } | ComposeError {
   const r = reproduce({ inputs: s.calculation.inputs, sha256: s.calculation.sha256, shaftDesign: s.shaftDesign });
   if (!r.ok) return r;
-  const input = storedInput(r.values, r.layout, s, logoOf(s.logo), calcMarks(s.calculation.liftDesign, s.calculation.sha256));
+  const input = storedInput(r.values, r.layout, s, logoOf(s.logo), calcMarks(s.calculation.liftDesign, s.calculation.sha256), logoOf(s.clientLogo ?? null));
   if (!input) return { ok: false, error: 'notFound' };
   const { doc, warnings } = buildTavole(input);
   return tavoleHash(doc) === s.sha256 ? { doc, warnings } : { ok: false, error: 'engineChanged' };

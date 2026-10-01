@@ -11,6 +11,10 @@ export interface Floor {
   door: 'A' | 'B' | 'AB';
 }
 
+/** Pit buffers: linear energy accumulation (springs), non-linear energy accumulation (polyurethane pads, tamponi),
+ *  energy dissipation (hydraulic). */
+export type BufferType = 'spring' | 'pu' | 'oil';
+
 export interface VerticalInputs {
   /** rated speed [m/s]: buffer strokes and the jump of the car in the headroom depend on it */
   v: number;
@@ -32,14 +36,17 @@ export interface VerticalInputs {
   frameBelow: number;
   /** balustrade on the car roof [mm]; 0 = none */
   parapet: number;
-  /** car buffers: number, height, stroke, and what they stand on (supports and plinths) [mm] */
+  /** car buffers: number, height, stroke, and what they stand on (supports and plinths) [mm]; their type (missing:
+   *  springs; a polyurethane pad's stroke is 90 % of its height, buffers.ts) */
   carBuffers: number;
+  carBufferType?: BufferType;
   carBufferH: number;
   carBufferStroke: number;
   carBufferBase: number;
   /** counterweight: overall height [mm] */
   cwH: number;
-  /** counterweight buffer: height, stroke, base [mm] */
+  /** counterweight buffer: height, stroke, base [mm]; its type */
+  cwBufferType?: BufferType;
   cwBufferH: number;
   cwBufferStroke: number;
   cwBufferBase: number;
@@ -48,6 +55,11 @@ export interface VerticalInputs {
   /** spaces for the maintenance person: on the car roof and in the pit */
   topRefuge: 1 | 2;
   pitRefuge: 1 | 2 | 3;
+  /** the counterweight's screen in the pit: its top over the pit floor [mm]; missing: the least the standard asks */
+  cwScreen?: number;
+  /** the place on the car roof where a person can stand: across and along the car [mm]; missing: 400 × 300 */
+  standW?: number;
+  standD?: number;
 }
 
 export const DEFAULT_FLOORS: Floor[] = [

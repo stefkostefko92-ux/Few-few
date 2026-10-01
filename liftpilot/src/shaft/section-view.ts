@@ -6,14 +6,17 @@
 // between two heights (the floors in between keep only their level), with break marks on the walls. From the top floor
 // to the slab the walls stand where head.ts puts them (an old building's may stand elsewhere).
 import { clipBand, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
+import { bufferType } from './buffers';
+import { buffer } from './section-buffer';
 import { headOf } from './head';
+import { hasImbotti, marbleHeight } from './imbotti';
 import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
 import { lampHeights, nichesOf } from './niche';
 import { CAR_PANEL, LANDING_PANEL, carTracks, landingTracks, sillSection, trackPlanes } from './sill';
 import { pitSpace, roofSpaces } from './plan-view';
 import { RAILS } from './rails';
-import { cwPlateAt, section, type Section } from './section';
+import { cwPlateAt, screenOf, section, type Section } from './section';
 import type { Layout, Rail } from './types';
 
 /** Real heights between z0 and z1 are drawn f times shorter. */
@@ -92,7 +95,9 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
       }
       if (zb > z + 1) piece(chase, z, zb);
     };
-    const gaps = served(side).map((i) => S.levels[i]).filter((z) => inWin(z) && !compressed(z)).map((z) => [z, z + I.doorHeight] as const);
+    // the opening in the wall: the door's, or the old one between the marbles round its linings
+    const opening = hasImbotti(I) ? marbleHeight(I) : I.doorHeight;
+    const gaps = served(side).map((i) => S.levels[i]).filter((z) => inWin(z) && !compressed(z)).map((z) => [z, z + opening] as const);
     let z = zBot;
     for (const [a, b] of [...gaps, [zTop, zTop] as const]) {
       if (a > z + 1) stretch(z, Math.min(a, zTop));
@@ -113,6 +118,11 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
         out.push(path(sillSection(-25, dl, grooves, false).map(([v, z]) => P(X(v), zf + z)), true, 'outline', 'steel'));
         for (const g of grooves) out.push(box(X(g - LANDING_PANEL / 2), zf, X(g + LANDING_PANEL / 2), zf + I.doorHeight, 'thin', 'door'));
         out.push(box(w0, zf + I.doorHeight, w0 + s * dl, zf + I.doorHeight + 150, 'thin'));
+        if (opening > I.doorHeight) {
+          // the portal's head and the top lining across the wall, up to the marble
+          const head = zf + I.doorHeight + KV.doorHead;
+          out.push(box(w0 - s * T, zf + I.doorHeight, w0, head, 'outline', 'steel'), box(w0 - s * T, head, w0, zf + opening, 'outline', 'paper'));
+        }
       }
       out.push({ e: 'text', at: P(side === 'front' ? -T - LANDING_EXT + 60 : D + T + LANDING_EXT - 60, zf + 80), text: V.floors[i].label, size: 3, align: side === 'front' ? 'l' : 'r' });
     }
@@ -158,14 +168,14 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
   }
   if (inWin(S.pitFloor)) {
     const x0 = L.cwSide === 'rear' ? c.y - 25 : c.y - 40, x1 = L.cwSide === 'rear' ? c.y - 15 : c.y + c.h + 40;
-    out.push(box(x0, S.pitFloor + 300, x1, S.pitFloor + KV_VERT.cwScreen, 'hidden'));
+    out.push(box(x0, S.pitFloor + 300, x1, S.pitFloor + screenOf(V), 'hidden'));
   }
 
   // buffers on their bases, and the space in the pit
   if (inWin(S.pitFloor)) {
     const cy = L.car.y + L.car.h / 2;
-    out.push(...buffer(P, cy, S.pitFloor, V.carBufferBase, V.carBufferH));
-    out.push(...buffer(P, c.y + c.h / 2, S.pitFloor, V.cwBufferBase, V.cwBufferH));
+    out.push(...buffer(P, cy, S.pitFloor, V.carBufferBase, V.carBufferH, bufferType(V, 'car')));
+    out.push(...buffer(P, c.y + c.h / 2, S.pitFloor, V.cwBufferBase, V.cwBufferH, bufferType(V, 'cw')));
     const ps = pitSpace(L), h = KV_VERT.refugeH[V.pitRefuge];
     out.push(...cross(P, ps.y0, S.pitFloor, ps.y1, S.pitFloor + h), { e: 'mark', at: P((ps.y0 + ps.y1) / 2 - 80, S.pitFloor + h / 2), sym: 'square' });
   }
@@ -188,15 +198,6 @@ function cross(P: (x: number, z: number) => Pt, x0: number, z0: number, x1: numb
   return [path([P(x0, z0), P(x1, z0), P(x1, z1), P(x0, z1)], true, 'space'), line(P(x0, z0), P(x1, z1), 'space'), line(P(x0, z1), P(x1, z0), 'space')];
 }
 
-/** A spring buffer standing on its base (plinth and support). */
-function buffer(P: (x: number, z: number) => Pt, x: number, floor: number, base: number, h: number): Entity[] {
-  const out: Entity[] = [], w = 90, zb = floor + base;
-  if (base > 0) out.push(path([P(x - w, floor), P(x + w, floor), P(x + w, zb), P(x - w, zb)], true, 'outline', base > 350 ? 'concrete' : 'steel'));
-  const turns = Math.max(3, Math.round(h / 45)), pts: Pt[] = [P(x - 45, zb)];
-  for (let i = 1; i <= turns; i++) pts.push(P(i % 2 ? x + 45 : x - 45, zb + (h - 20) * (i / turns)));
-  out.push(path(pts, false, 'thin'), path([P(x - 60, zb + h - 20), P(x + 60, zb + h - 20), P(x + 60, zb + h), P(x - 60, zb + h)], true, 'outline', 'steel'));
-  return out;
-}
 
 /** Stiles of the car frame in the section: at the rails' axis, or one at each rail's tip on a cantilever sling. */
 const stilesOf = (L: Layout): number[] =>

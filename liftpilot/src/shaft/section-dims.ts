@@ -1,13 +1,18 @@
-// Dimensions of section A-A by view: the whole shaft (pit, travel, headroom, total height), the headroom with the
-// car at the top floor, the car at a floor with its heights, the pit with buffers and the counterweight's spaces.
-// Values are the real ones even where the travel is drawn compressed; the overtravels of the car are shown as
-// dashed lines with their symbols. Each height says which input its new value changes (edit.ts): a height of the
-// section (v.*), of the doors or of the call stations.
+// Dimensions of section A-A by view: the whole shaft (pit, travel and the floors' rises, headroom, total height, the
+// counterweight and its run-by), the headroom with the car at the top floor, the car at a floor with its heights (and
+// the linings over the landing doors), the pit with buffers, their strokes and the counterweight's screen. Values are
+// the real ones even where the travel is drawn compressed; the overtravels of the car are shown as dashed lines with
+// their symbols. Each height says which input its new value changes (edit.ts): a height of the section (v.*), a floor's
+// rise, of the doors, of the linings or of the call stations; a refuge space's height by choosing its type.
 import { chain, edit as E, line, type Edit, type Entity, type Pt } from '../drawing';
+import { bufferType } from './buffers';
 import { callStationOf } from './callstation';
+import { hasImbotti, marbleHeight } from './imbotti';
+import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
+import { refugePick } from './plan-picks';
 import { mapZ, type ZMap } from './section-view';
-import type { Section } from './section';
+import { screenOf, type Section } from './section';
 import type { Layout } from './types';
 
 export type SectionKind = 'full' | 'top' | 'floor' | 'pit';
@@ -33,30 +38,43 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
   const at = (x: number, pts: number[], text?: (string | null)[], edit?: (Edit | null)[]): void => {
     out.push(chain({ dir: 'y', at: x, ...real(pts, text, edit) }));
   };
-  const zf = S.levels[carFloor] ?? 0, roof = zf + V.carOutH, c = L.car;
+  const zf = S.levels[carFloor] ?? 0, roof = zf + V.carOutH, c = L.car, n = V.floors.length;
+  // a buffer's stroke: entered, or for a polyurethane pad 90 % of its height (the height takes the change)
+  const strokeEdit = (sd: 'car' | 'cw'): Edit => (bufferType(V, sd) === 'pu' ? E(`v.${sd}BufferH`, 0, 1 / KV_VERT.puStroke) : E(`v.${sd}BufferStroke`));
 
   if (kind === 'full') {
-    side('left', [S.pitFloor, 0, S.top, S.ceiling], [`Fossa ${V.pit}`, `Corsa ${S.top}`, `Testata ${V.headroom}`], [E('v.pit'), null, E('v.headroom')]);
-    side('left', [S.pitFloor, S.ceiling], [`${V.pit + S.top + V.headroom} Altezza Totale Vano`]);
+    // the travel's last rise takes a new travel; the headroom a new total height
+    const last = n - 2, before = S.top - (V.floors[last]?.rise ?? 0);
+    side('left', [S.pitFloor, 0, S.top, S.ceiling], [`Fossa ${V.pit}`, `Corsa ${S.top}`, `Testata ${V.headroom}`], [E('v.pit'), E(`f.${last}.rise`, -before), E('v.headroom')]);
+    side('left', [S.pitFloor, S.ceiling], [`${V.pit + S.top + V.headroom} Altezza Totale Vano`], [E('v.headroom', -(V.pit + S.top))]);
+    // each floor's rise, from the lowest floor up
+    side('right', S.levels, S.levels.slice(1).map(() => 'Interpiano {v}'), S.levels.slice(1).map((_, i) => E(`f.${i}.rise`)));
   }
   if (kind === 'top' || kind === 'floor') {
     side('left', [zf, zf + V.opTop], ['{v} H. Ingombro Max Operatore'], [E('v.opTop')]);
     side('left', [zf, zf + I.doorHeight], ['{v} H. Luce Porta di piano'], [E('doorHeight')]);
     side('left', [zf, zf + callStationOf(I).height], ['{v} H. Bottoniera'], [E('cs.height')]);
-    if (kind === 'top') side('left', [zf, S.ceiling], ['Testata {v}'], [E('v.headroom')]);
+    if (hasImbotti(I)) {
+      // over the landing door: the portal's head and the top lining up to the marble
+      const h = marbleHeight(I);
+      side('left', [zf, zf + I.doorHeight + KV.doorHead, zf + h], ['{v}', 'Imb. sup. {v}'], [E('doorHeight', -KV.doorHead), E('imb.top')]);
+      side('left', [zf, zf + h], ['{v} H. sotto il marmo'], [E('imb.height')]);
+    }
+    if (kind === 'top') side('left', [zf, S.ceiling], ['Testata {v}'], [E('v.headroom', -(S.top - zf))]);
     side('right', [zf, roof], ['{v} H. Esterno Cabina'], [E('v.carOutH')]);
     side('right', [zf, zf + V.frameTop], ['{v} Ingombro Arcata'], [E('v.frameTop')]);
     at(c.y + c.h / 2 + 40, [zf, zf + V.carH], ['{v} H. Interno Cabina'], [E('v.carH')]);
     at(c.y + 200, [zf, zf + I.doorHeight], ['{v} H. Luce Porta'], [E('doorHeight')]);
+    at(c.y + c.h - 60, [zf - V.platform, zf], ['{v}'], [E('v.platform')]);
   }
   if (kind === 'top') {
     if (V.parapet > 0) side('right', [roof, roof + V.parapet], ['{v} H. Parapetto'], [E('v.parapet')]);
     side('right', [roof, S.ceiling], undefined, [E('v.headroom', V.carOutH)]);
-    // car past the top floor with the counterweight on its compressed buffer
+    // car past the top floor with the counterweight on its compressed buffer: its run-by takes the change
     const up = roof + S.moveUp;
     out.push(line(P(c.y - 60, up), P(c.y + c.h + 60, up), 'hidden'), { e: 'mark', at: P(c.y + c.h + 150, up), sym: 'overUp' });
-    at(c.y + c.h - 120, [roof, up], ['{v}']);
-    at(c.y + 90, [roof, roof + KV_VERT.refugeH[V.topRefuge]]);
+    at(c.y + c.h - 120, [roof, up], ['{v}'], [E('v.cwRunby', -(S.cwStroke + S.jump))]);
+    at(c.y + 90, [roof, roof + KV_VERT.refugeH[V.topRefuge]], undefined, [refugePick('v.topRefuge', V.topRefuge)]);
   }
   if (kind === 'pit' || kind === 'full') {
     const plateCar = -V.frameBelow, low = plateCar - S.moveDown, x = c.y + c.h / 2;
@@ -67,13 +85,16 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
     if (kind === 'pit') {
       side('left', [S.pitFloor, 0], ['Fossa {v}'], [E('v.pit')]);
       out.push(line(P(c.y - 60, low), P(c.y + c.h + 60, low), 'hidden'), { e: 'mark', at: P(c.y - 170, low), sym: 'overDown' });
-      out.push({ e: 'text', at: P(x + 130, S.carBufferTop - V.carBufferH / 2), text: `Freccia ${V.carBufferStroke}`, size: 1.9 });
-      at(x + 330, [S.pitFloor, S.pitFloor + KV_VERT.refugeH[V.pitRefuge]]);
+      at(x + 130, [S.carBufferTop - S.carStroke, S.carBufferTop], ['Corsa {v}'], [strokeEdit('car')]);
+      at(x + 330, [S.pitFloor, S.pitFloor + KV_VERT.refugeH[V.pitRefuge]], undefined, [refugePick('v.pitRefuge', V.pitRefuge)]);
     }
     const w = L.cw, cx = w.y + w.h / 2;
-    side('right', [S.pitFloor, S.pitFloor + V.cwBufferBase, S.cwBufferTop], ['{v} Base Ammort.', '{v} Ammort.'], [E('v.cwBufferBase'), E('v.cwBufferH')]);
-    side('right', [S.pitFloor, S.pitFloor + KV_VERT.cwScreen], ['{v} H. Protezione Contrappeso in Fossa']);
-    out.push({ e: 'text', at: P(cx + 130, S.cwBufferTop - V.cwBufferH / 2), text: `Freccia ${V.cwBufferStroke}`, size: 1.9 });
+    // the counterweight's buffer; with the car at the top floor (whole section) the counterweight's run-by over it
+    const plate = S.pitFloor + S.cwLow + (S.top - zf);
+    side('right', [S.pitFloor, S.pitFloor + V.cwBufferBase, S.cwBufferTop, ...(kind === 'full' ? [plate] : [])], ['{v} Base Ammort.', '{v} Ammort.', ...(kind === 'full' ? ['{v} Extracorsa'] : [])],
+      [E('v.cwBufferBase'), E('v.cwBufferH'), ...(kind === 'full' ? [E('v.cwRunby')] : [])]);
+    side('right', [S.pitFloor, S.pitFloor + screenOf(V)], ['{v} H. Protezione Contrappeso in Fossa'], [E('v.cwScreen')]);
+    at(cx + 130, [S.cwBufferTop - S.cwStroke, S.cwBufferTop], ['Corsa {v}'], [strokeEdit('cw')]);
   }
   if (kind === 'full') {
     const plate = S.pitFloor + S.cwLow + (S.top - zf);

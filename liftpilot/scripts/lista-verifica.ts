@@ -38,10 +38,11 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   v_wall: 'parete di fronte all\'entrata', v_sill: 'gioco tra le soglie', v_cw: 'distanza cabina–contrappeso', v_cwlen: 'lunghezza del contrappeso',
   v_door2: 'ingombro della seconda porta di piano', v_op: 'operatori delle porte adiacenti', v_place: 'quote fissate a mano: ingombri al loro posto',
   v_doorcar: 'quote fissate a mano: porte dentro la cabina', v_niche: 'nicchie nelle pareti', v_staffa: 'staffe del catalogo per le guide del contrappeso', v_head: 'pareti in testata diverse dal piano principale', h_refuge: 'spazio di rifugio in testata',
-  h_clear: 'distanze libere dal soffitto', h_parapet: 'balaustra sul tetto di cabina', p_refuge: 'spazio di rifugio in fossa',
-  p_apron: 'grembiule sugli ammortizzatori compressi', b_runby: 'extracorsa di cabina e contrappeso', b_car: 'corsa degli ammortizzatori di cabina',
+  h_clear: 'distanze libere dal soffitto', h_parapet: 'balaustra sul tetto di cabina', h_stand: 'superficie per stare sul tetto di cabina',
+  p_refuge: 'spazio di rifugio in fossa', p_screen: 'protezione del contrappeso in fossa',
+  p_apron: 'grembiule sugli ammortizzatori compressi', b_runby: 'extracorsa di cabina e contrappeso', b_type: 'tipo di ammortizzatori per la velocità', b_car: 'corsa degli ammortizzatori di cabina',
   b_cw: 'corsa dell\'ammortizzatore del contrappeso', m_height: 'altezza del locale macchina', m_panel: 'superficie libera davanti al quadro',
-  m_door: 'porta del locale macchina',
+  m_door: 'porta del locale macchina', m_beam: 'tensione nelle putrelle sotto l\'argano', m_beamf: 'freccia delle putrelle sotto l\'argano',
 };
 const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
 const IMPIANTO = 'Impianto: valori calcolati dai dati inseriti una volta', SIMULAZIONE = 'Simulazione nel tempo (3D e grafici)';

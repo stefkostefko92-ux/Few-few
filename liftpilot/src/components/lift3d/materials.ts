@@ -37,6 +37,8 @@ export interface LiftMaterials {
   base: THREE.MeshStandardNodeMaterial;
   spring: THREE.MeshPhysicalNodeMaterial;
   rubber: THREE.MeshStandardNodeMaterial;
+  /** polyurethane buffer pads (cellular, matt yellow) */
+  pu: THREE.MeshStandardNodeMaterial;
   /** people: clothes and skin, tinted per person (instance colours) */
   person: THREE.MeshStandardNodeMaterial;
   skin: THREE.MeshStandardNodeMaterial;
@@ -109,6 +111,7 @@ export function createLiftMaterials(pit: number | null = null): LiftMaterials {
     base: standard({ color: new THREE.Color('#d0a638'), roughness: 0.6 }),
     spring: physical({ color: new THREE.Color('#7b838c'), metalness: 1, roughness: 0.34 }),
     rubber: standard({ color: new THREE.Color('#131416'), roughness: 0.9 }),
+    pu: standard({ color: new THREE.Color('#d6a21e'), roughness: 0.78 }),
     person: standard({ color: new THREE.Color('#ffffff'), roughness: 0.82 }),
     galv: galvanized('#b4bac0'),
     mirror: physical({ color: new THREE.Color('#eef1f4'), metalness: 1, roughness: 0.03 }),

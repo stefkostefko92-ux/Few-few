@@ -14,8 +14,9 @@ interface Props {
 export default function LiftFacts({ derived, X, fmt }: Props) {
   const t = useTranslations('lift');
   const L = derived.layout, res = derived.analysis.res, { I, N } = derived.analysis.ctx, o = derived.origin;
-  const fails = res.fails.length + L.checks.filter((c) => c.status === 'fail').length;
-  const warns = res.checks.filter((c) => c.status === 'warn').length + L.checks.filter((c) => c.status === 'warn').length;
+  const shaftChecks = [...L.checks, ...derived.supportChecks];
+  const fails = res.fails.length + shaftChecks.filter((c) => c.status === 'fail').length;
+  const warns = res.checks.filter((c) => c.status === 'warn').length + shaftChecks.filter((c) => c.status === 'warn').length;
   const verdict = fails ? 'fail' : warns || verdictOf(L) === 'warn' ? 'warn' : 'ok';
   const badge = (k: keyof typeof o) => (o[k] === 'estimate' ? <span className="badge est">{t('badge_estimate')}</span> : o[k] === 'auto' ? <span className="badge">{t('badge_auto')}</span> : null);
   return (

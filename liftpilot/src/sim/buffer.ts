@@ -1,8 +1,10 @@
 // Impact on the buffers at 115 % of the rated speed (registry sim.ammortizzatori): the car with its rated load on
-// the car buffers, or the counterweight on its buffer. Linear buffers, full stroke at bufferFactor times the static
-// load: x(τ) = x_eq·(1 − cos ωτ) + (v₀/ω)·sin ωτ, exactly. The other side leaves the ropes and rises by the
-// conventional jump of the section check, then falls back. The traction is not in play here; the channel a carries
-// the deceleration of the mass on the buffer (positive while the buffer slows it down). Pure.
+// the car buffers, or the counterweight on its buffer. Springs and polyurethane pads (on their useful stroke, 90 % of
+// the height) as linear buffers, full stroke at bufferFactor times the static load: x(τ) = x_eq·(1 − cos ωτ) +
+// (v₀/ω)·sin ωτ, exactly. A hydraulic buffer stops the mass over its whole stroke at a constant deceleration
+// v₀²/(2·stroke). The other side leaves the ropes and rises by the conventional jump of the section check, then falls
+// back. The traction is not in play here; the channel a carries the deceleration of the mass on the buffer (positive
+// while the buffer slows it down). Pure.
 import { G } from '../calc/math';
 import { KS } from './norme';
 import { ease, runPhases, type Phase } from './phases';
@@ -16,13 +18,14 @@ const HOLD = 1.5;
 export function buffer(m: SimModel, p: BufferParams): SimRun {
   const I = m.I, car = p.side === 'car';
   const mass = car ? I.P + I.Q : m.phys.model.Mcw, stroke = car ? m.carStroke : m.cwStroke;
-  const v0 = KS.bufferSpeed * I.v, k = (m.bufferFactor * mass * G) / stroke, w = Math.sqrt(k / mass), xeq = (mass * G) / k;
-  const A = Math.hypot(xeq, v0 / w), phi = Math.atan2(xeq, v0 / w);
-  const xOf = (tau: number): number => xeq * (1 - Math.cos(w * tau)) + (v0 / w) * Math.sin(w * tau);
-  const vOf = (tau: number): number => xeq * w * Math.sin(w * tau) + v0 * Math.cos(w * tau);
-  const xMax = xeq + A, solid = xMax > stroke;
+  const v0 = KS.bufferSpeed * I.v, oil = (car ? m.carType : m.cwType) === 'oil';
+  const k = (m.bufferFactor * mass * G) / stroke, w = Math.sqrt(k / mass), xeq = oil ? stroke : (mass * G) / k;
+  const A = Math.hypot(xeq, v0 / w), phi = Math.atan2(xeq, v0 / w), aOil = (v0 * v0) / (2 * stroke);
+  const xOf = (tau: number): number => (oil ? v0 * tau - (aOil * tau * tau) / 2 : xeq * (1 - Math.cos(w * tau)) + (v0 / w) * Math.sin(w * tau));
+  const vOf = (tau: number): number => (oil ? v0 - aOil * tau : xeq * w * Math.sin(w * tau) + v0 * Math.cos(w * tau));
+  const xMax = oil ? stroke : xeq + A, solid = !oil && xMax > stroke;
   // time of the deepest point, or of the buffer going solid
-  const tauEnd = solid ? (phi + Math.asin(Math.min(1, (stroke - xeq) / A))) / w : (Math.PI / 2 + phi) / w;
+  const tauEnd = oil ? v0 / aOil : solid ? (phi + Math.asin(Math.min(1, (stroke - xeq) / A))) / w : (Math.PI / 2 + phi) / w;
   const xEnd = Math.min(xOf(tauEnd), stroke);
   // the other side: up by the conventional jump (0,035·v² of the section check) and back
   const vj = Math.sqrt(2 * G * m.jump), tj = (2 * vj) / G;
@@ -40,8 +43,8 @@ export function buffer(m: SimModel, p: BufferParams): SimRun {
       load: car ? I.Q : 0, slip: 0, brake: 0,
     };
   };
-  // deceleration of the mass on the spring
-  const decel = (x: number): number => (k * x) / mass - G;
+  // deceleration of the mass on the spring, or the hydraulic buffer's constant one
+  const decel = (x: number): number => (oil ? aOil : (k * x) / mass - G);
   const approach = (u: number): Omit<Frame, 't'> => {
     const f = frame(0, v0, 0, null);
     const back = v0 * (APPROACH - u);
@@ -59,7 +62,7 @@ export function buffer(m: SimModel, p: BufferParams): SimRun {
     { dur: Math.max(HOLD, tj - tauEnd - SETTLE), at: (u) => frame(xeq, 0, 0, tauEnd + SETTLE + u) },
   ];
   const series = runPhases(phases);
-  const peakDecel = solid ? Infinity : decel(xMax);
+  const peakDecel = solid ? Infinity : oil ? aOil : decel(xMax);
   return {
     scenario: { id: 'buffer', p }, series, events: series.events, verdict: solid ? 'fail' : 'ok',
     summary: { util: xMax / stroke, ratio: Number.NaN, efa: Number.NaN, torque: 0, accel: peakDecel, compression: Math.min(xMax, stroke), stroke, slip: false },

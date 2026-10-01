@@ -29,6 +29,8 @@ export interface DataSheet {
   plant: string;
   company: string;
   logo: boolean;
+  /** the client's logo beside its name */
+  clientLogo?: boolean;
 }
 
 const L = (a: readonly [number, number], b: readonly [number, number], w = 0.25): Shape => ({ t: 'line', a, b, s: { ink: 'ink', w } });
@@ -112,7 +114,10 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
   // title block
   const yb = yd - gridH - 1.6, y0 = FRAME.y0, r1 = yb - 9, r2 = r1 - 18, c1 = 150;
   out.push(box(xL, y0, xR, yb, 0.3), L([xL, r1], [xR, r1], 0.3), L([xL, r2], [xR, r2], 0.3), L([c1, r1], [c1, y0], 0.3), L([c1, r1 - 9], [xR, r1 - 9], 0.2));
-  out.push(T([xL + 1.6, r1 + 3], 'COMMITTENTE :', 2), fitted([xL + 26, r1 + 2.6], d.client, 5, c1 - xL - 28, { at: [xL + 26, r1 + 2.6] }));
+  // the client's name, and its logo at the end of the row when there is one
+  const clientW = d.clientLogo ? 40 : 0;
+  out.push(T([xL + 1.6, r1 + 3], 'COMMITTENTE :', 2), fitted([xL + 26, r1 + 2.6], d.client, 5, c1 - xL - 28 - clientW, { at: [xL + 26, r1 + 2.6] }));
+  if (d.clientLogo) out.push({ t: 'image', ref: 'client', box: { x0: c1 - clientW, y0: r1 + 1, x1: c1 - 2, y1: yb - 1 } });
   out.push(L([c1, r1], [c1, yb], 0.3));
   out.push(T([xL + 1.6, r1 - 6], 'UBICAZIONE :', 2), fitted([xL + 26, r1 - 6.4], d.location[0], 4.6, c1 - xL - 28), fitted([xL + 26, r1 - 14.6], d.location[1], 4.6, c1 - xL - 28));
   out.push(T([c1 + 1.6, r1 - 6], 'ELABORATO DA', 2), fitted([xR - 1.6, r1 - 6.3], d.author, 3.6, 20, { align: 'r' }));

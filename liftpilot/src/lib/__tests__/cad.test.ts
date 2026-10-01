@@ -6,8 +6,10 @@ import * as acad from '@node-projects/acad-ts';
 import { readCad, CadReadError } from '../cad/read';
 import { castRays, dominantAngle, shaftSize, surveyCorners } from '../cad/measure';
 import { dwgVersion, MM_PER_UNIT } from '../cad/model';
-import { planToDxf } from '../cad/export';
-import { defaultInputs, layout } from '@/shaft';
+import { cp1252, planToDxf, toDwg, toDxf } from '../cad/export';
+import { projectViews } from '../cad/project';
+import { defaultLift, deriveLift } from '../lift';
+import { defaultInputs, layout, travel } from '@/shaft';
 
 const rot = (x: number, y: number, a: number): [number, number] => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
 
@@ -117,3 +119,23 @@ test('la pianta esportata in DXF si rilegge, in millimetri e con i layer', () =>
 function near(a: number, b: number, eps = 1e-6): void {
   assert.ok(Math.abs(a - b) <= eps, `${a} ≠ ${b}`);
 }
+
+test('il progetto intero in DXF e DWG: tutte le viste affiancate, la stessa geometria letta da entrambi', () => {
+  const d = deriveLift(defaultLift()), views = projectViews(d.layout, d.machine, true);
+  // the drawing set's views: three plans, section A-A and its three details, the machine room twice
+  assert.equal(views.length, 9);
+  const dxf = new TextEncoder().encode(toDxf(views, 'Prova')), dwg = toDwg(views, 'Prova');
+  assert.equal(new TextDecoder().decode(dwg.subarray(0, 6)), 'AC1015');
+  const a = readCad(dxf, 'progetto.dxf'), b = readCad(dwg, 'progetto.dwg');
+  assert.ok(a.count > 1000);
+  assert.equal(b.count, a.count);
+  assert.deepEqual(b.bounds, a.bounds);
+  // side by side along x: as wide as the views together, as tall as the whole section A-A at its real height
+  assert.ok(a.bounds.maxX - a.bounds.minX > 30000 && a.bounds.maxY > travel(d.shaft.vertical.floors));
+});
+
+test('testi del DWG nella code page 1252: i segni fuori in ASCII', () => {
+  assert.equal(cp1252('Ø 560 · 10× – 1470 à'), 'Ø 560 · 10× – 1470 à');
+  assert.equal(cp1252('σ ≤ fyk/γM0'), 'sigma <= fyk/gammaM0');
+  assert.equal(cp1252('漢'), '?');
+});

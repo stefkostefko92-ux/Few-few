@@ -25,7 +25,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!id.success) return text(404, 'Not found');
     const s = await getDrawingSet(user, id.data);
     if (!s) return text(404, 'Not found');
-    const r = composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo });
+    const r = composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo });
     if ('ok' in r) return text(r.error === 'engineChanged' ? 409 : 404, r.error === 'engineChanged' ? 'The running engines do not reproduce this drawing set' : 'Not found');
     const pdf = await renderTavole(r.doc);
     await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_DOWNLOADED', entity: 'DrawingSet', entityId: s.id });

@@ -49,7 +49,7 @@ export default function IssueForm({ calculationId, revise }: Props) {
         ) : null}
         <label className="field">
           <span>{t('initials')}</span>
-          <input className="input" value={initials} onChange={(e) => setInitials(e.target.value)} maxLength={12} required placeholder="A.C." />
+          <input className="input" value={initials} onChange={(e) => setInitials(e.target.value)} maxLength={12} required />
         </label>
       </div>
       {revise ? <p className="note">{t('reviseHint')}</p> : null}

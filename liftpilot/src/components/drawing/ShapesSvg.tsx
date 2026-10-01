@@ -2,7 +2,7 @@
 // y axis turned upward, on white paper in every theme (it is a sheet). Lettering keeps the width the kernel measured
 // with DejaVu Sans (textLength), whatever font the browser has; halos are a paper-coloured stroke under the letters.
 // No state: renders on the server and in the designer.
-import { COND, PALETTE, concreteTile, textWidth, type Fill, type Pattern, type Shape, type Stroke } from '@/drawing';
+import { COND, PALETTE, concreteTile, textWidth, type Fill, type ImageRef, type Pattern, type Shape, type SheetImage, type Stroke } from '@/drawing';
 
 const TILE: Pattern = concreteTile();
 const FONT = "'DejaVu Sans', Verdana, 'Segoe UI', Arial, sans-serif";
@@ -15,12 +15,13 @@ interface Props {
   label: string;
   id: string;
   className?: string;
-  logo?: { mime: 'image/png' | 'image/jpeg'; data: string } | null;
+  /** the sheet's logos by name (the company's, the client's) */
+  images?: Partial<Record<ImageRef, SheetImage>>;
 }
 
 const f2 = (x: number): string => (Math.round(x * 100) / 100).toString();
 
-export default function ShapesSvg({ shapes, w, h, label, id, className, logo }: Props) {
+export default function ShapesSvg({ shapes, w, h, label, id, className, images = {} }: Props) {
   const Y = (y: number): number => h - y;
   const pts = (p: readonly (readonly [number, number])[]): string => p.map(([x, y]) => `${f2(x)},${f2(Y(y))}`).join(' ');
   const stroke = (s?: Stroke) => (s ? { stroke: PALETTE[s.ink], strokeWidth: s.w, strokeDasharray: s.dash?.join(' ') } : { stroke: 'none' });
@@ -52,10 +53,12 @@ export default function ShapesSvg({ shapes, w, h, label, id, className, logo }: 
           </text>
         );
       }
-      case 'image':
-        return logo
-          ? <image key={i} href={`data:${logo.mime};base64,${logo.data}`} x={f2(s.box.x0)} y={f2(Y(s.box.y1))} width={f2(s.box.x1 - s.box.x0)} height={f2(s.box.y1 - s.box.y0)} preserveAspectRatio="xMidYMid meet" />
+      case 'image': {
+        const img = images[s.ref];
+        return img
+          ? <image key={i} href={`data:${img.mime};base64,${img.data}`} x={f2(s.box.x0)} y={f2(Y(s.box.y1))} width={f2(s.box.x1 - s.box.x0)} height={f2(s.box.y1 - s.box.y0)} preserveAspectRatio="xMidYMid meet" />
           : null;
+      }
     }
   };
   return (

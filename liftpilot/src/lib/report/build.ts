@@ -19,6 +19,8 @@ import { textsFor, verdictStatus } from '../present/texts';
 import { makePres, type CalcKey } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { shaftBlocks, type ReportDesign } from './shaft';
+import { machineSpec } from '../lift/machine';
+import { supportChecks, supportLoad } from '../lift/support';
 
 /** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
 const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
@@ -104,7 +106,8 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   if (r.design) {
     section('Vano e cabina');
-    B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }));
+    const beams = supportChecks(r.design.layout, machineSpec(ctx, N.mass, '', r.design.layout.inputs.room), supportLoad(ctx, res.Mcw));
+    B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams));
   }
 
   section('Argano verificato');

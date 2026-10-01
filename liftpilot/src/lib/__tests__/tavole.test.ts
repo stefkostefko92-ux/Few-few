@@ -105,6 +105,18 @@ test('tavole: numero di fogli, tutto dentro il foglio A4, testi senza buchi', ()
   assert.equal(JSON.stringify(buildTavole(input({ ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null })).doc), JSON.stringify(small.doc));
 });
 
+test('logo del committente: nel cartiglio accanto al nome, fra le immagini del documento; senza, solo il nome', () => {
+  const I = { ...defaultInputs(1740, 1445), Q: 400, access: 'none' as const, room: null };
+  const withClient = buildTavole({ ...input(I, true), clientLogo: { mime: 'image/png', data: LOGO } }), without = buildTavole(input(I, true));
+  const refs = (r: typeof without) => r.doc.pages[0]?.shapes.flatMap((s) => (s.t === 'image' ? [s.ref] : [])) ?? [];
+  assert.deepEqual(refs(withClient).sort(), ['client', 'logo']);
+  assert.deepEqual(refs(without), ['logo']);
+  assert.ok(withClient.doc.images.client && !without.doc.images.client);
+  // the client's logo inside the title block's client row, left of the column of the author
+  const box = withClient.doc.pages[0]?.shapes.find((s) => s.t === 'image' && s.ref === 'client');
+  assert.ok(box?.t === 'image' && box.box.x1 <= 150 && box.box.y1 - box.box.y0 > 5);
+});
+
 test('peso della cabina stimato dal software: segnato nel foglio 1 con la sua nota; calcolo e vano diversi tornano come avvisi', () => {
   const I: ShaftInputs = { ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null };
   const plain = buildTavole(input(I)), marked = buildTavole({ ...input(I), marks: { pEstimate: true, geometry: [], machineProposed: false } });

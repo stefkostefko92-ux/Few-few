@@ -3,7 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, RAIL_TYPES } from '@/shaft';
+import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS } from '@/shaft';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
 
@@ -27,6 +27,8 @@ export const verticalSchema = z.object({
   frameBelow: mm(0, 3000),
   parapet: mm(0, 2000),
   carBuffers: z.number().int().min(1).max(4),
+  carBufferType: z.enum(['spring', 'pu', 'oil']).optional(),
+  cwBufferType: z.enum(['spring', 'pu', 'oil']).optional(),
   carBufferH: mm(50, 3000),
   carBufferStroke: mm(10, 2000),
   carBufferBase: mm(0, 3000),
@@ -37,12 +39,23 @@ export const verticalSchema = z.object({
   cwRunby: mm(0, 2000),
   topRefuge: z.union([z.literal(1), z.literal(2)]),
   pitRefuge: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  cwScreen: mm(300, 6000).optional(),
+  standW: mm(100, 3000).optional(),
+  standD: mm(100, 3000).optional(),
 }).strict().superRefine((V, ctx) => {
   if (V.main >= V.floors.length) ctx.addIssue({ code: 'custom', path: ['main'], message: 'main floor out of range' });
   if (V.carOutH < V.carH) ctx.addIssue({ code: 'custom', path: ['carOutH'], message: 'outside height below inside height' });
 });
 
 const wall = z.enum(['front', 'rear', 'left', 'right']);
+
+/** What the machine stands on (src/shaft/support.ts); each value absent is the typical one. */
+const supportSchema = z.object({
+  kind: z.enum(SUPPORT_KINDS),
+  profile: z.enum(PROFILE_NAMES).optional(),
+  height: mm(0, 3000).optional(),
+  length: mm(300, 5000).optional(),
+}).strict();
 
 export const roomSchema = z.object({
   W: mm(1000, 20000),
@@ -61,6 +74,7 @@ export const roomSchema = z.object({
   panelW: mm(200, 3000),
   panelD: mm(100, 1000),
   panelH: mm(500, 3000),
+  support: supportSchema.optional(),
 }).strict();
 
 const allowance = <K extends keyof typeof DEFAULTS>(k: K, max: number) => mm(0, max).default(DEFAULTS[k]);
@@ -123,6 +137,8 @@ export const shaftInputsSchema = z.object({
   governor: z.string().refine((g) => GOVERNORS.some((x) => x.model === g)).optional(),
   /** the walls at the top floor and in the headroom, in from the main floor's (src/shaft/head.ts) */
   head: z.object({ front: mm(-500, 500), rear: mm(-500, 500), left: mm(-500, 500), right: mm(-500, 500) }).strict().optional(),
+  /** linings of the landing doors in an old opening between the marbles (src/shaft/imbotti.ts) */
+  imbotti: z.object({ left: mm(0, 1500), right: mm(0, 1500), top: mm(0, 1500) }).strict().optional(),
 }).strict();
 
 const finite = z.number().finite();

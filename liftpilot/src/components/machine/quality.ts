@@ -5,21 +5,32 @@
 export interface Quality {
   /** Temporal anti-aliasing (needs a few frames to settle). */
   traa: boolean;
-  /** Ground-truth ambient occlusion (GTAO): the contact shadows where the parts meet. */
+  /** Ground-truth ambient occlusion (GTAO): the contact shadows where the parts meet; its resolution against the
+   *  frame's and its samples. */
   ao: boolean;
+  aoScale: number;
+  aoSamples: number;
   bloom: boolean;
   shadowMap: number;
+  /** the PCF filter's radius [shadow-map texels]: a finer map takes a wider one for the same soft edge */
+  shadowRadius: number;
+  /** device pixels per CSS pixel while something moves, at most (the governor scales it, from `startScale` up), and for
+   *  a still picture (above the screen's own: supersampled, the browser scales it down) */
   maxDPR: number;
+  stillDPR: number;
+  startScale: number;
 }
 
 export const QUALITY = {
-  low: { traa: true, ao: false, bloom: false, shadowMap: 1024, maxDPR: 1 },
-  high: { traa: true, ao: true, bloom: true, shadowMap: 2048, maxDPR: 1.5 },
+  low: { traa: true, ao: false, aoScale: 0.5, aoSamples: 8, bloom: false, shadowMap: 1024, shadowRadius: 1, maxDPR: 1, stillDPR: 1.5, startScale: 1 },
+  high: { traa: true, ao: true, aoScale: 0.5, aoSamples: 12, bloom: true, shadowMap: 2048, shadowRadius: 1, maxDPR: 1.5, stillDPR: 2, startScale: 1 },
+  ultra: { traa: true, ao: true, aoScale: 0.75, aoSamples: 16, bloom: true, shadowMap: 4096, shadowRadius: 2, maxDPR: 2, stillDPR: 2, startScale: 0.7 },
 } as const satisfies Record<string, Quality>;
 
-/** Phones and small screens start on the light tier. */
-export function initialQuality(coarsePointer: boolean, shortestScreenSide: number): Quality {
-  return coarsePointer || shortestScreenSide < 700 ? QUALITY.low : QUALITY.high;
+/** Phones and small screens start on the light tier; a large screen with a hardware WebGPU adapter on the top one. */
+export function initialQuality(coarsePointer: boolean, shortestScreenSide: number, strongGpu = false): Quality {
+  if (coarsePointer || shortestScreenSide < 700) return QUALITY.low;
+  return strongGpu ? QUALITY.ultra : QUALITY.high;
 }
 
 export interface Governor {
@@ -34,10 +45,10 @@ export interface Governor {
 }
 
 // A frame slower than budgetMs is a missed 60 Hz refresh (with slack for jitter). Too many misses in the window
-// lower the scale by 15 %; a clean window raises it by 8 %, but not back above a scale that just failed until
-// holdMs has passed.
-export function createGovernor({ budgetMs = 19.5, windowSize = 40, minScale = 0.5, warmupMs = 2500, holdMs = 20000 } = {}): Governor {
-  const g = { scale: 1, samples: [] as number[], lastChange: 0, ceiling: 1, ceilingUntil: 0, since: 0, slowAtMin: 0 };
+// lower the scale by 15 %; a clean window raises it by 8 % (from startScale, up to 1), but not back above a scale that
+// just failed until holdMs has passed.
+export function createGovernor({ budgetMs = 19.5, windowSize = 40, minScale = 0.5, warmupMs = 2500, holdMs = 20000, startScale = 1 } = {}): Governor {
+  const g = { scale: startScale, samples: [] as number[], lastChange: 0, ceiling: 1, ceilingUntil: 0, since: 0, slowAtMin: 0 };
   return {
     get scale() {
       return g.scale;
@@ -46,7 +57,7 @@ export function createGovernor({ budgetMs = 19.5, windowSize = 40, minScale = 0.
       return g.slowAtMin >= 3;
     },
     reset(nowMs) {
-      Object.assign(g, { scale: 1, lastChange: 0, ceiling: 1, ceilingUntil: 0, since: nowMs, slowAtMin: 0 });
+      Object.assign(g, { scale: startScale, lastChange: 0, ceiling: 1, ceilingUntil: 0, since: nowMs, slowAtMin: 0 });
       g.samples.length = 0;
     },
     sample(dtMs, nowMs) {

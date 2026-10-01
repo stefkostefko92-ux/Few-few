@@ -11,7 +11,7 @@ import { useTranslations } from 'next-intl';
 import type { Edit } from '@/drawing';
 import { screenView, type ScreenView } from '@/lib/tavole/views';
 import { checkedInputs, editShaft } from '@/lib/shaft-edit';
-import { layout, valueOf, type MachineSpec, type ShaftInputs } from '@/shaft';
+import { editValue, layout, valueOf, type MachineSpec, type ShaftInputs } from '@/shaft';
 import EditableDrawing, { type Refusal } from '../drawing/EditableDrawing';
 import { useEditTexts } from './edit-texts';
 import PlanFixes from './PlanFixes';
@@ -22,6 +22,8 @@ interface Props {
   onChange(next: ShaftInputs): void;
   /** the machine, for the machine room's views; null: none drawn */
   machine: MachineSpec | null;
+  /** a value of the calculation a drawing shows (calc.*), in mm: null when applied, else why not; missing: refused */
+  onCalc?(key: string, value: number): Refusal | null;
   id: string;
   /** the title's level where the editor sits */
   titleAs?: 'h2' | 'h3';
@@ -29,7 +31,7 @@ interface Props {
 
 const VIEWS: readonly ScreenView[] = ['plan', 'head', 'full', 'top', 'floor', 'pit', 'room-plan', 'room-section'];
 
-export default function PlanEditor({ I, onChange, machine, id, titleAs: Title = 'h2' }: Props) {
+export default function PlanEditor({ I, onChange, machine, onCalc, id, titleAs: Title = 'h2' }: Props) {
   const t = useTranslations('shaft');
   const [view, setView] = useState<ScreenView>('plan');
   const L = useMemo(() => layout(I), [I]);
@@ -41,6 +43,7 @@ export default function PlanEditor({ I, onChange, machine, id, titleAs: Title = 
   // distances of the plan and walls of the headroom set by hand
   const manual = (e: Edit): boolean => (e.key.startsWith('plan.') && valueOf(I, e.key) !== null) || (e.key.startsWith('head.') && (valueOf(I, e.key) ?? 0) !== 0);
   const onEdit = (e: Edit, length: number): Refusal | null => {
+    if (e.key.startsWith('calc.')) return onCalc ? onCalc(e.key, editValue(e, length)) : { min: null, max: null };
     const r = editShaft(I, e, length);
     if (!r.ok) return r;
     onChange(r.inputs);

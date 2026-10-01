@@ -7,6 +7,7 @@ import { path, type Entity, type Pt } from '../drawing';
 import { mainBox, type WallBox } from './head';
 import { KV } from './norme';
 import { chasesOn, nichesOf } from './niche';
+import { marbleOpening } from './imbotti';
 import type { DoorLayout, Layout, Wall } from './types';
 
 /** Model point of (u along the wall, v into the shaft from its face), the walls standing on `box`. */
@@ -50,7 +51,7 @@ export function walls(L: Layout, open: readonly DoorLayout[], box: WallBox = mai
   const T = L.inputs.wall, out: Entity[] = [];
   const strip = (w: Wall): void => {
     const [lo, hi] = extent(w, box);
-    const cuts = open.filter((d) => d.wall === w).map((d) => [d.u0 - KV.doorPortal, d.u1 + KV.doorPortal] as const);
+    const cuts = open.filter((d) => d.wall === w).map((d) => { const m = marbleOpening(L.inputs, d); return [m.u0, m.u1] as const; });
     const recess = chasesOn(L.inputs, w);
     // the side walls run past the corners, the front and rear ones stop at them
     const ends = w === 'left' || w === 'right' ? [lo - T, hi + T] : [lo, hi];
@@ -84,10 +85,17 @@ export function walls(L: Layout, open: readonly DoorLayout[], box: WallBox = mai
       if (hw > 5 && d > 5) out.push(path(quad(L, n.wall, n.at + n.width / 2 - hw, -n.depth, n.at + n.width / 2 + hw, -n.depth + d, box), true, 'thin', 'steel'));
     }
   }
-  // jambs of the openings: along the reveal and returning on the outer face
+  // jambs of the openings (the marbles of an old one): along the reveal and returning on the outer face; in an old
+  // opening the new door's portal through the wall and the linings beside it
   for (const d of open) {
-    for (const [u, s] of [[d.u0 - KV.doorPortal, -1], [d.u1 + KV.doorPortal, 1]] as const) {
+    const m = marbleOpening(L.inputs, d), p = KV.doorPortal;
+    for (const [u, s] of [[m.u0, -1], [m.u1, 1]] as const) {
       out.push(path([onWall(L, d.wall, u, 0, box), onWall(L, d.wall, u, -T, box), onWall(L, d.wall, u + s * 60, -T, box)], false, 'jamb'));
+    }
+    if (m.low > 0 || m.high > 0) {
+      for (const [a, b] of [[d.u0 - p, d.u0], [d.u1, d.u1 + p]] as const) out.push(path(quad(L, d.wall, a, -T, b, 0, box), true, 'thin', 'door'));
+      if (m.low > 0) out.push(path(quad(L, d.wall, m.u0, -T, d.u0 - p, 0, box), true, 'outline', 'steel'));
+      if (m.high > 0) out.push(path(quad(L, d.wall, d.u1 + p, -T, m.u1, 0, box), true, 'outline', 'steel'));
     }
   }
   return out;

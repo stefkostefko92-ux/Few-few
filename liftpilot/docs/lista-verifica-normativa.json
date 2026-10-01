@@ -752,6 +752,18 @@
     },
     {
       "n": 61,
+      "id": "vano.porte.imbotti",
+      "gruppo": "Vano: porte",
+      "voce": "Imbotti della porta di piano (sostituzione con una luce più piccola)",
+      "valore": "quando la porta nuova ha una luce più piccola del vano esistente tra i marmi, gli imbotti laterali (a sinistra e a destra guardando la porta dal pianerottolo) e quello superiore coprono la differenza: distanza tra i marmi = imbotto sinistro + luce + 2 × 50 mm di portale + imbotto destro; altezza sotto il marmo superiore = altezza della luce + 60 mm di architrave del portale + imbotto superiore; gli stessi imbotti per tutte le porte di piano, in lamiera sul filo del muro verso il pianerottolo, disegnati in pianta, in sezione e nel 3D",
+      "riferimento": "dato del fornitore delle porte (imbotti su misura)",
+      "fonte": "scelta del software",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 62,
       "id": "vano.ingombri.tipici",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Ingombri tipici nel vano (modificabili su ogni progetto)",
@@ -763,7 +775,7 @@
       "nota": "pacchetto porta di catalogo (porta di cabina + gioco tra le soglie + porta di piano), da wittur.com: Hydra 210 mm a 2 ante telescopiche e 180 mm a 2 ante centrali, Hydra 3000 180 e 130, Augusta EVO 190 e 110, Sematic 2000 C-MOD 185 e 117, Fineline 115 e 85; Sematic 2000 B 255 e 165 (cabina 90 e 45, gioco 30, piano 135 e 90, da una copia della brochure). Con le porte scelte, i tre ingombri vanno portati alla somma del fornitore (oggi 80 + 30 + 80 = 190 mm)"
     },
     {
-      "n": 62,
+      "n": 63,
       "id": "vano.ingombri.contrappeso.laterale",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Contrappeso laterale",
@@ -775,7 +787,7 @@
       "nota": ""
     },
     {
-      "n": 63,
+      "n": 64,
       "id": "vano.ingombri.arcata.zaino",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Arcata a zaino (due accessi adiacenti a 90°)",
@@ -787,7 +799,7 @@
       "nota": ""
     },
     {
-      "n": 64,
+      "n": 65,
       "id": "vano.ingombri.nicchie",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Nicchie nelle pareti del vano",
@@ -799,7 +811,7 @@
       "nota": ""
     },
     {
-      "n": 65,
+      "n": 66,
       "id": "vano.ingombri.staffe.contrappeso",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Staffe delle guide del contrappeso (catalogo Panev)",
@@ -811,7 +823,7 @@
       "nota": ""
     },
     {
-      "n": 66,
+      "n": 67,
       "id": "vano.ingombri.limitatore",
       "gruppo": "Vano: ingombri tipici",
       "voce": "Limitatore di velocità e tenditore (pianta, locale macchina, 3D)",
@@ -823,7 +835,7 @@
       "nota": "per le RQ-A Montanari 0,15–3,0 m/s è il campo della famiglia: il limite di ogni taglia va letto sul manuale; delle basi pubblicate non è detto quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200)"
     },
     {
-      "n": 67,
+      "n": 68,
       "id": "vano.spazi.rifugio",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Spazi di rifugio sul tetto di cabina e in fossa",
@@ -835,7 +847,7 @@
       "nota": ""
     },
     {
-      "n": 68,
+      "n": 69,
       "id": "vano.spazi.salto",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Posizione più alta della cabina",
@@ -847,7 +859,7 @@
       "nota": ""
     },
     {
-      "n": 69,
+      "n": 70,
       "id": "vano.spazi.testata.parti",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Distanze libere dal soffitto con la cabina nella posizione più alta",
@@ -859,7 +871,7 @@
       "nota": ""
     },
     {
-      "n": 70,
+      "n": 71,
       "id": "vano.spazi.fossa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Distanze in fossa con la cabina sugli ammortizzatori compressi",
@@ -871,7 +883,7 @@
       "nota": ""
     },
     {
-      "n": 71,
+      "n": 72,
       "id": "vano.spazi.balaustra",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Balaustra sul tetto di cabina",
@@ -883,43 +895,67 @@
       "nota": ""
     },
     {
-      "n": 72,
+      "n": 73,
       "id": "vano.spazi.tetto.superficie",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Superficie dove una persona può stare sul tetto di cabina",
-      "valore": "area continua ≥ 0,12 m² con il lato minore ≥ 250 mm (disegnata 400 × 300 mm); sopra di essa deve esserci l'altezza dello spazio di rifugio",
+      "valore": "area continua ≥ 0,12 m² con il lato minore ≥ 250 mm (disegnata 400 × 300 mm, modificabile sulla pianta in testata); sopra di essa deve esserci l'altezza dello spazio di rifugio",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.7.3",
       "fonte": "sintesi della UNI EN 81-20:2020 di costruttori e organismi notificati (KONE, Sodimas, MCCAA), fonti secondarie concordi",
       "stato": "da verificare",
-      "verifiche": "",
-      "nota": ""
-    },
-    {
-      "n": 73,
-      "id": "vano.contrappeso.schermo",
-      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
-      "voce": "Schermo del contrappeso in fossa",
-      "valore": "dal punto più basso del contrappeso sugli ammortizzatori compressi fino ad almeno 2000 mm sopra il pavimento della fossa",
-      "riferimento": "UNI EN 81-20:2020, 5.2.5.5.1",
-      "fonte": "sintesi della UNI EN 81-20:2020 di costruttori e organismi notificati (KONE, Sodimas, MCCAA), fonti secondarie concordi",
-      "stato": "da verificare",
-      "verifiche": "",
+      "verifiche": "superficie per stare sul tetto di cabina",
       "nota": ""
     },
     {
       "n": 74,
-      "id": "vano.ammortizzatori.corsa",
+      "id": "vano.contrappeso.schermo",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
-      "voce": "Ammortizzatori ad accumulo di energia lineari (molle)",
-      "valore": "ammessi fino a 1 m/s; corsa ≥ 0,135·v² m e comunque ≥ 65 mm; extracorsa della cabina e del contrappeso ≥ 0 (nessun minimo nella norma)",
-      "riferimento": "UNI EN 81-20:2020, 5.8.2.2",
+      "voce": "Schermo del contrappeso in fossa",
+      "valore": "dal punto più basso del contrappeso sugli ammortizzatori compressi fino ad almeno 2000 mm sopra il pavimento della fossa (altezza dello schermo modificabile sul progetto, mai sotto questo valore)",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.5.1",
       "fonte": "sintesi della UNI EN 81-20:2020 di costruttori e organismi notificati (KONE, Sodimas, MCCAA), fonti secondarie concordi",
       "stato": "da verificare",
-      "verifiche": "corsa degli ammortizzatori di cabina; corsa dell'ammortizzatore del contrappeso; extracorsa di cabina e contrappeso",
+      "verifiche": "protezione del contrappeso in fossa",
       "nota": ""
     },
     {
       "n": 75,
+      "id": "vano.ammortizzatori.corsa",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Ammortizzatori ad accumulo di energia lineari (molle)",
+      "valore": "ammessi fino a 1 m/s; corsa ≥ 0,135·v² m e comunque ≥ 65 mm; extracorsa della cabina e del contrappeso ≥ 0 (nessun minimo nella norma)",
+      "riferimento": "UNI EN 81-20:2020, 5.8.2 (accumulo di energia, caratteristica lineare; sottoclausola da verificare sul testo)",
+      "fonte": "sintesi della UNI EN 81-20:2020 di costruttori e organismi notificati (KONE, Sodimas, MCCAA), fonti secondarie concordi",
+      "stato": "da verificare",
+      "verifiche": "tipo di ammortizzatori per la velocità; corsa degli ammortizzatori di cabina; corsa dell'ammortizzatore del contrappeso; extracorsa di cabina e contrappeso",
+      "nota": ""
+    },
+    {
+      "n": 76,
+      "id": "vano.ammortizzatori.poliuretano",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Ammortizzatori ad accumulo di energia non lineari (tamponi in poliuretano)",
+      "valore": "ammessi fino a 1 m/s come le molle; nessuna corsa minima da formula: il campo di masse del certificato di esame di tipo per la velocità deve comprendere, per ogni tampone, la cabina vuota e a pieno carico (o il contrappeso); «completamente compresso» vuol dire compresso del 90 % dell'altezza, quindi la corsa è 0,9·H negli spazi in fossa e in testata; tampone tipico alti 80 mm (P+S Diepocell D, Ø da 80 a 220 mm; ACLA AUTAN XL)",
+      "riferimento": "UNI EN 81-20:2020, 5.8.2 (caratteristica non lineare) e UNI EN 81-50:2020, 5.5 (esame di tipo); sottoclausole da verificare sul testo",
+      "fonte": "cataloghi P+S Diepocell (wwlift.de), ACLA AUTAN XL (acla.de), Stingl (corsa al 90 %); estratti di ricerca del 1° ottobre 2026",
+      "stato": "da verificare",
+      "verifiche": "tipo di ammortizzatori per la velocità; corsa degli ammortizzatori di cabina; corsa dell'ammortizzatore del contrappeso",
+      "nota": ""
+    },
+    {
+      "n": 77,
+      "id": "vano.ammortizzatori.idraulici",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Ammortizzatori a dissipazione di energia (idraulici)",
+      "valore": "a ogni velocità; corsa ≥ 0,0674·v² m (arresto per gravità al 115 % della velocità nominale); la corsa ridotta con il controllo del rallentamento non è considerata; ammortizzatori tipici: Oleo LSB10 fino a 1 m/s, alto 222,2 mm con corsa 73,4 mm; LSB16 fino a 1,6 m/s, alto 485,5 mm con corsa 173,5 mm",
+      "riferimento": "UNI EN 81-20:2020, 5.8.2 (dissipazione di energia; sottoclausola da verificare sul testo)",
+      "fonte": "catalogo Oleo LSB e SEB (oleo.co.uk), estratti di ricerca del 1° ottobre 2026",
+      "stato": "da verificare",
+      "verifiche": "tipo di ammortizzatori per la velocità; corsa degli ammortizzatori di cabina; corsa dell'ammortizzatore del contrappeso",
+      "nota": ""
+    },
+    {
+      "n": 78,
       "id": "vano.locale.macchina",
       "gruppo": "Locale del macchinario",
       "voce": "Locale del macchinario",
@@ -931,7 +967,7 @@
       "nota": ""
     },
     {
-      "n": 76,
+      "n": 79,
       "id": "vano.illuminazione",
       "gruppo": "Locale del macchinario",
       "voce": "Illuminazione del vano e del locale del macchinario",
@@ -943,7 +979,7 @@
       "nota": ""
     },
     {
-      "n": 77,
+      "n": 80,
       "id": "vano.locale.temperatura",
       "gruppo": "Locale del macchinario",
       "voce": "Temperatura dei locali del macchinario e degli armadi",
@@ -955,7 +991,31 @@
       "nota": ""
     },
     {
-      "n": 78,
+      "n": 81,
+      "id": "vano.locale.basamento",
+      "gruppo": "Locale del macchinario",
+      "voce": "Basamento dell'argano",
+      "valore": "su spessori di livellamento sotto gli appoggi (l'asse della puleggia dove lo mette il software), su telaio di due profilati sul pavimento (tipico UPN 200, alto quanto il profilato come i telai bassi universali), su due putrelle da muro a muro che possono stare sollevate dal pavimento (tipiche IPE 200, appoggio nei muri 150 mm), su piastre d'acciaio sotto gli appoggi (tipiche 20 mm) o su plinto in calcestruzzo (tipico 250 mm); tamponi antivibranti di 30 mm sotto gli appoggi, salvo sugli spessori; telaio e plinto 100 mm oltre il telaio dell'argano a ogni estremità; l'altezza del basamento porta l'asse della puleggia, che il calcolo (tratto di fune oltre la corsa) e il 3D seguono",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.8 (carichi sull'edificio); scelta del costruttore",
+      "fonte": "telaio basso universale per argano alto 200 mm (lift-store.it); tamponi antivibranti 25–30 mm (catalogo Donati); piastre di 20 mm e plinto di 250–300 mm nella pratica di installazione (fonti estere, da confermare); estratti di ricerca del 1° ottobre 2026",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 82,
+      "id": "vano.locale.putrelle",
+      "gruppo": "Locale del macchinario",
+      "voce": "Verifica delle putrelle sotto l'argano",
+      "valore": "ognuna delle due putrelle porta metà del carico dell'argano (il suo peso più il carico statico sull'asse per il coefficiente dinamico) come forza concentrata in mezzeria, più il proprio peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e γM0 = 1,05; freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 della luce libera con E = 210000 MPa; proprietà dei profili EN 10365",
+      "riferimento": "NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E); DPR 1497/1963, art. 5 (carichi fissi più 1,5 volte il carico statico delle funi; freccia ≤ 1/1500 della luce libera: regola storica, da confermare)",
+      "fonte": "NTC 2018 (DM 17/01/2018); catalogo dei profilati ArcelorMittal (EN 10365) confrontato con due tabelle indipendenti; DPR 1497/1963 letto per intero (research/argano-geared, cap. 15, §1.1)",
+      "stato": "da verificare",
+      "verifiche": "tensione nelle putrelle sotto l'argano; freccia delle putrelle sotto l'argano",
+      "nota": "verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal progettista"
+    },
+    {
+      "n": 83,
       "id": "vano.carichi.fossa",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carichi sul pavimento della fossa",
@@ -967,7 +1027,7 @@
       "nota": ""
     },
     {
-      "n": 79,
+      "n": 84,
       "id": "vano.guide.spinte",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Spinte sulle guide di cabina",
@@ -979,7 +1039,7 @@
       "nota": ""
     },
     {
-      "n": 80,
+      "n": 85,
       "id": "vano.carichi.macchina",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carico della macchina sulla soletta",
@@ -991,7 +1051,7 @@
       "nota": ""
     },
     {
-      "n": 81,
+      "n": 86,
       "id": "vano.carichi.cavi",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Massa dei cavi flessibili",
@@ -1003,7 +1063,7 @@
       "nota": ""
     },
     {
-      "n": 82,
+      "n": 87,
       "id": "vano.guide.staffe",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Numero e posizione delle staffe delle guide",
@@ -1015,7 +1075,7 @@
       "nota": "il passo delle staffe va confermato con la verifica delle guide (UNI EN 81-50:2020, 5.10), che usa la distanza tra le staffe"
     },
     {
-      "n": 83,
+      "n": 88,
       "id": "vano.foglio.stime",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Lunghezze stimate nel foglio dei dati",
@@ -1027,7 +1087,7 @@
       "nota": ""
     },
     {
-      "n": 84,
+      "n": 89,
       "id": "vano.modello.passo",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Dimensioni proposte della cabina",
@@ -1039,7 +1099,7 @@
       "nota": ""
     },
     {
-      "n": 85,
+      "n": 90,
       "id": "vano.modello.quote",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Quote della pianta fissate a mano",
@@ -1051,7 +1111,7 @@
       "nota": ""
     },
     {
-      "n": 86,
+      "n": 91,
       "id": "vano.modello.limiti",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Limiti del modello del vano",
@@ -1063,7 +1123,7 @@
       "nota": ""
     },
     {
-      "n": 87,
+      "n": 92,
       "id": "impianto.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Corsa",
@@ -1075,7 +1135,7 @@
       "nota": ""
     },
     {
-      "n": 88,
+      "n": 93,
       "id": "impianto.portata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Portata e velocità",
@@ -1087,7 +1147,7 @@
       "nota": ""
     },
     {
-      "n": 89,
+      "n": 94,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -1099,7 +1159,7 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto"
     },
     {
-      "n": 90,
+      "n": 95,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -1111,7 +1171,7 @@
       "nota": ""
     },
     {
-      "n": 91,
+      "n": 96,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
@@ -1123,7 +1183,7 @@
       "nota": ""
     },
     {
-      "n": 92,
+      "n": 97,
       "id": "impianto.calata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Tiro diretto (senza rinvio): calata uguale al diametro della puleggia",
@@ -1135,7 +1195,7 @@
       "nota": "con un diametro diverso dalla calata le funi si inclinano verso gli attacchi: nella sostituzione con il confronto il calcolo ne tiene conto per la nuova puleggia; oltre pochi millimetri servono una puleggia di rinvio o il contrappeso spostato (quota «Calata» in pianta)"
     },
     {
-      "n": 93,
+      "n": 98,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
@@ -1147,7 +1207,7 @@
       "nota": ""
     },
     {
-      "n": 94,
+      "n": 99,
       "id": "impianto.basso.schema",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: schema delle funi",
@@ -1159,7 +1219,7 @@
       "nota": "lo schema reale va rilevato sull'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori"
     },
     {
-      "n": 95,
+      "n": 100,
       "id": "impianto.catalogo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta dal catalogo di un costruttore",
@@ -1171,7 +1231,7 @@
       "nota": "i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell'ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
     },
     {
-      "n": 96,
+      "n": 101,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1183,7 +1243,7 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 97,
+      "n": 102,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1195,7 +1255,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 98,
+      "n": 103,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1207,7 +1267,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi"
     },
     {
-      "n": 99,
+      "n": 104,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1219,7 +1279,7 @@
       "nota": ""
     },
     {
-      "n": 100,
+      "n": 105,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1231,19 +1291,19 @@
       "nota": ""
     },
     {
-      "n": 101,
+      "n": 106,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
-      "valore": "velocità d'urto 1,15 volte la nominale; ammortizzatore lineare con la corsa piena a 4 volte il carico statico (lo stesso valore dei carichi sulla fossa); la cabina e il contrappeso si separano all'urto",
-      "riferimento": "UNI EN 81-20:2020, 5.8.2.2",
+      "valore": "velocità d'urto 1,15 volte la nominale; molle e tamponi in poliuretano come ammortizzatori lineari con la corsa piena a 4 volte il carico statico (lo stesso valore dei carichi sulla fossa; per i tamponi la corsa utile è 0,9·H); ammortizzatori idraulici con decelerazione costante v₀²/(2·corsa) su tutta la corsa; la cabina e il contrappeso si separano all'urto",
+      "riferimento": "UNI EN 81-20:2020, 5.8.2",
       "fonte": "sintesi della norma di costruttori e organismi notificati (fonti secondarie)",
       "stato": "da verificare",
       "verifiche": "",
-      "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa; la verifica della corsa resta quella della sezione"
+      "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione"
     },
     {
-      "n": 102,
+      "n": 107,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1255,7 +1315,7 @@
       "nota": ""
     },
     {
-      "n": 103,
+      "n": 108,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",

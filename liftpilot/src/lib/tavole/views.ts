@@ -53,8 +53,14 @@ function fullSection(L: Layout, area: Box): { v: SectionView; scale: number } {
   throw new Error('section A-A does not fit on the sheet');
 }
 
+/** Section A-A whole at its real height (no travel drawn shorter), from under the pit to the machine room's stub. */
+export function realSection(L: Layout): SectionView {
+  const S = section(L), r = L.inputs.room;
+  return { carFloor: L.inputs.vertical.floors.length - 1, lo: -Infinity, hi: r ? S.ceiling + r.slab + 600 : S.ceiling + SLAB, zmap: null };
+}
+
 /** The heights a detail shows: the headroom with the car at the top floor, the car at a floor, the pit. */
-function detailWindow(L: Layout, kind: SectionKind, floor: number): SectionView {
+export function detailWindow(L: Layout, kind: SectionKind, floor: number): SectionView {
   const S = section(L), V = L.inputs.vertical, r = L.inputs.room, zf = S.levels[floor] ?? 0, low = S.levels[0] ?? 0;
   if (kind === 'top') return { carFloor: floor, lo: zf - V.frameBelow - 400, hi: r ? S.ceiling + r.slab + 500 : S.ceiling + SLAB, zmap: null };
   if (kind === 'pit') return { carFloor: floor, lo: S.pitFloor - SLAB, hi: low + S.highest + 500, zmap: null };
@@ -70,9 +76,9 @@ export function sectionView(L: Layout, kind: SectionKind, floor: number, area: B
   return { r: renderView(ents, place), place };
 }
 
-/** The machine as the calculation and the data of the installation describe it. */
-export function machineOf(a: Analysis, plant: Plant): MachineSpec {
-  return machineSpec(a.ctx, plant.massMachine ?? a.ctx.N.mass, plant.machine ?? '');
+/** The machine as the calculation and the data of the installation describe it, on the room's support. */
+export function machineOf(a: Analysis, plant: Plant, L: Layout): MachineSpec {
+  return machineSpec(a.ctx, plant.massMachine ?? a.ctx.N.mass, plant.machine ?? '', L.inputs.room);
 }
 
 /** The machine room in plan or in section B-B; null when the design has no machine room. */

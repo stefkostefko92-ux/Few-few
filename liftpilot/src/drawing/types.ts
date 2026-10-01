@@ -56,8 +56,11 @@ export type Shape =
   /** arc from a0 to a1 degrees, counter-clockwise */
   | { t: 'arc'; c: Pt; r: number; a0: number; a1: number; s: Stroke }
   | TextShape
-  /** the company logo, fitted inside the box keeping its proportions */
-  | { t: 'image'; ref: 'logo'; box: Box };
+  /** a logo (the company's, the client's), fitted inside the box keeping its proportions */
+  | { t: 'image'; ref: ImageRef; box: Box };
+
+export type ImageRef = 'logo' | 'client';
+export type SheetImage = { mime: 'image/png' | 'image/jpeg'; data: string };
 
 export interface Page {
   /** sheet size [mm] */
@@ -78,6 +81,6 @@ export interface DrawingDoc {
   patterns: Readonly<Record<PatternId, Pattern>>;
   /** horizontal scale of condensed lettering */
   cond: number;
-  images: { logo?: { mime: 'image/png' | 'image/jpeg'; data: string } };
+  images: Partial<Record<ImageRef, SheetImage>>;
   pages: Page[];
 }

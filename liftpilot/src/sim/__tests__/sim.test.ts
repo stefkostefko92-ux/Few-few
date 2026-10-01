@@ -201,3 +201,16 @@ test('moto coerente: la velocità è la derivata della posizione in ogni scenari
     }
   }
 });
+
+test('ammortizzatori idraulici: decelerazione costante su tutta la corsa, la cabina ferma alla fine della corsa', () => {
+  const m0 = modelOf('A'), m = { ...m0, carType: 'oil' as const, carStroke: 0.074 };
+  const run = runScenario(m, { id: 'buffer', p: { side: 'car' } }), v0 = 1.15 * m.I.v;
+  near(run.summary.accel, (v0 * v0) / (2 * m.carStroke), 1e-9, 'decelerazione');
+  near(run.summary.compression ?? 0, m.carStroke, 1e-9, 'corsa');
+  assert.equal(run.verdict, 'ok');
+  // the motion stays consistent: speed is the derivative of the position
+  const { s, v } = run.series.data, dt = run.series.dt;
+  let off = 0;
+  for (let i = 0; i < run.series.n - 1; i++) if (Math.abs((s[i + 1] - s[i]) / dt - (v[i] + v[i + 1]) / 2) > 0.05) off += 1;
+  assert.ok(off <= 3, `${off} campioni con velocità incoerente`);
+});

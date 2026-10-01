@@ -95,7 +95,7 @@ export async function issueDrawingSetAction(input: { calculationId: unknown; aut
         if (!c.ok) throw new ComposeRefused(c.error);
         const set = await tx.drawingSet.create({
           data: {
-            companyId: user.companyId, projectId: c.projectId, calculationId: calcId.data, shaftDesignId: c.shaftDesignId, userId: user.id, logoId: c.logoId,
+            companyId: user.companyId, projectId: c.projectId, calculationId: calcId.data, shaftDesignId: c.shaftDesignId, userId: user.id, logoId: c.logoId, clientLogoId: c.clientLogoId,
             number, year, seq, revision: 0, authorInitials: initials.data, revisions: [], plant: c.plant, projectData: c.projectData,
             companyName: c.companyName, sha256: c.sha256, pages: c.pages, createdAt: issuedAt,
           },
@@ -143,7 +143,7 @@ export async function reviseDrawingSetAction(input: { drawingSetId: unknown; cal
       if (c.projectId !== base.projectId) return { ok: false as const, error: 'notFound' };
       const set = await tx.drawingSet.create({
         data: {
-          companyId: user.companyId, projectId: c.projectId, calculationId: calcId.data, shaftDesignId: c.shaftDesignId, userId: user.id, logoId: c.logoId,
+          companyId: user.companyId, projectId: c.projectId, calculationId: calcId.data, shaftDesignId: c.shaftDesignId, userId: user.id, logoId: c.logoId, clientLogoId: c.clientLogoId,
           number: base.number, year: base.year, seq: base.seq, revision, authorInitials: initials.data, revisions, plant: c.plant, projectData: c.projectData,
           companyName: c.companyName, sha256: c.sha256, pages: c.pages, createdAt: issuedAt,
         },

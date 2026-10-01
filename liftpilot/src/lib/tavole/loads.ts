@@ -2,6 +2,7 @@
 // supports with the dynamic coefficient, the rope hitches of a 2:1 installation, the governor, the rails and the
 // buffers on the pit floor, the whole on the slab. Registry: carichi.fossa, carichi.macchina (src/shaft/norme-vert.ts).
 import { KV_VERT } from '@/shaft/norme-vert';
+import { axisStatic } from '@/lib/lift/support';
 import { impactFactor, type SafetyGear } from './forces';
 
 const G = 9.81;
@@ -40,8 +41,7 @@ export interface Loads {
 
 export function loads(x: LoadsInput): Loads {
   const r = x.roping > 1 ? 2 : 1, dyn = x.dyn;
-  const hung = r === 1 ? x.P + x.Q + x.Mcw : (x.P + x.Q + x.Mcw) / 2;
-  const stat = hung + x.ropes + x.cables, dynamic = stat * dyn;
+  const stat = axisStatic(x), dynamic = stat * dyn;
   const k1 = impactFactor(x.safetyGear);
   const P1 = daN(dynamic);
   const P2 = r === 2 ? daN(((x.P + x.Q) / 2) * dyn) : null;

@@ -12,6 +12,7 @@ import type { Section } from '@/shaft/section';
 import { KV } from '@/shaft/norme';
 import { callStationAt, callStationOf } from '@/shaft/callstation';
 import { headOf } from '@/shaft/head';
+import { hasImbotti, marbleOpening } from '@/shaft/imbotti';
 import { lampHeights, nichesOf } from '@/shaft/niche';
 import { Batch, P, onWall } from './geom';
 import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
@@ -97,6 +98,19 @@ export interface MachineCuts {
   pit: readonly Opening[];
 }
 
+/** The linings (imbotti) of an old opening round the new door at the level z: brushed sheet beside the portal and over
+ *  its head (the portal's stainless), a little behind the portal's face, from the landing face of the wall to the
+ *  shaft; the marbles round the old opening. */
+function imbotti(g: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number, s: number, sheet: THREE.Material): void {
+  const m = marbleOpening(I, d), p = KV.doorPortal, zh = z + d.height + KV.doorHead, top = z + m.h, f = -I.wall - 15 + s, b = s;
+  if (m.u0 < d.u0 - p - 0.5) g.wallBox(d.wall, I.W, I.D, m.u0, d.u0 - p, f, b, z, top, sheet);
+  if (m.u1 > d.u1 + p + 0.5) g.wallBox(d.wall, I.W, I.D, d.u1 + p, m.u1, f, b, z, top, sheet);
+  if (top > zh + 0.5) g.wallBox(d.wall, I.W, I.D, m.u0, m.u1, f, b, zh, top, sheet);
+  // the marbles: the old opening's jambs and head on the landing face
+  for (const [u0, u1] of [[m.u0 - 30, m.u0], [m.u1, m.u1 + 30]] as const) g.wallBox(d.wall, I.W, I.D, u0, u1, -I.wall - 20 + s, -I.wall + 40 + s, z, top + 30, M.stone);
+  g.wallBox(d.wall, I.W, I.D, m.u0 - 30, m.u1 + 30, -I.wall - 20 + s, -I.wall + 40 + s, top, top + 30, M.stone);
+}
+
 /** `cuts`: where the slab over the shaft is open (slabOpenings); `machine`: what a machine below needs open. */
 export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readonly Opening[], machine: MachineCuts = { walls: [], pit: [] }): ShaftModel {
   const I = L.inputs, V = I.vertical, W = I.W, D = I.D, wall = I.wall;
@@ -105,11 +119,13 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
   const common = new THREE.Group(), C = new Batch(), byside: Record<Side, Batch> = { front: new Batch(), rear: new Batch(), left: new Batch(), right: new Batch() };
   const landings: { floor: number; panels: DoorPanels }[] = [];
 
-  // openings per wall: the clear opening with its jambs, from the floor to the head of the door
-  const openings: Record<Side, { u0: number; u1: number; z0: number; z1: number }[]> = { front: [], rear: [], left: [], right: [] };
+  // openings per wall: the clear opening with its jambs, from the floor to the head of the door; an old opening between
+  // the marbles round a smaller new door, up to the top marble
+  const imb = hasImbotti(I), openings: Record<Side, { u0: number; u1: number; z0: number; z1: number }[]> = { front: [], rear: [], left: [], right: [] };
   V.floors.forEach((f, i) => {
     for (const d of doorsOf(L, f.door)) {
-      openings[d.wall].push({ u0: d.u0 - KV.doorPortal, u1: d.u1 + KV.doorPortal, z0: S.levels[i], z1: S.levels[i] + d.height + 120 });
+      const m = marbleOpening(I, d);
+      openings[d.wall].push({ u0: m.u0, u1: m.u1, z0: S.levels[i], z1: S.levels[i] + (imb ? Math.max(m.h, d.height + KV.doorHead) : d.height + 120) });
     }
   });
   // each wall in columns between the edges of its openings and niches; in each column the runs of the same inner face
@@ -155,6 +171,7 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
       g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30 + s, 10 + s, z, zh + 60, frame);
       g.wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, z, zh + 60, frame);
       g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, zh, zh + 60, frame);
+      if (imb) imbotti(g, M, I, d, z, s, frame);
       callStation(g, M, I, d, z, frame, i === 0 ? 'up' : i === V.floors.length - 1 ? 'down' : 'both', s);
       const panels = landingEntrance(C, M, I, d, z);
       sides[d.wall].add(panels.group);

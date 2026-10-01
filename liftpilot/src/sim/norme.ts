@@ -65,10 +65,12 @@ export const VOCI_SIM: readonly VoceSim[] = [
   },
   {
     id: 'sim.ammortizzatori', titolo: 'Urto sugli ammortizzatori',
-    valore: `velocità d'urto ${it(KS.bufferSpeed)} volte la nominale; ammortizzatore lineare con la corsa piena a ${KV_VERT.bufferFactor} volte il carico `
-      + 'statico (lo stesso valore dei carichi sulla fossa); la cabina e il contrappeso si separano all\'urto',
-    riferimento: 'UNI EN 81-20:2020, 5.8.2.2', fonte: 'sintesi della norma di costruttori e organismi notificati (fonti secondarie)', stato: 'da_verificare',
-    costanti: ['bufferSpeed'], nota: 'la rigidezza è una scelta del software coerente con i carichi sulla fossa; la verifica della corsa resta quella della sezione',
+    valore: `velocità d'urto ${it(KS.bufferSpeed)} volte la nominale; molle e tamponi in poliuretano come ammortizzatori lineari con la corsa piena `
+      + `a ${KV_VERT.bufferFactor} volte il carico statico (lo stesso valore dei carichi sulla fossa; per i tamponi la corsa utile è ${it(KV_VERT.puStroke)}·H); `
+      + 'ammortizzatori idraulici con decelerazione costante v₀²/(2·corsa) su tutta la corsa; la cabina e il contrappeso si separano all\'urto',
+    riferimento: 'UNI EN 81-20:2020, 5.8.2', fonte: 'sintesi della norma di costruttori e organismi notificati (fonti secondarie)', stato: 'da_verificare',
+    costanti: ['bufferSpeed'], nota: 'la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: '
+      + 'valori indicativi); la verifica della corsa resta quella della sezione',
   },
   {
     id: 'sim.bloccata', titolo: 'Cabina bloccata: rotazione in salita',

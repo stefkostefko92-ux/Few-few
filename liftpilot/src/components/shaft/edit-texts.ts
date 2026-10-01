@@ -10,7 +10,7 @@ export function useEditTexts(L: Layout): EditTexts & { nameOf(key: string): stri
   const t = useTranslations('shaft');
   const name = (key: string): string => t(editLabel(key, L.frame.kind === 'cantilever'));
   return {
-    nameOf: name, group: t('ed_group'), name: (e) => name(e.key), newValue: t('ed_new'), moves: (what) => t('ed_moves', { what }), apply: t('ed_apply'), cancel: t('ed_cancel'),
+    nameOf: name, group: t('ed_group'), name: (e) => name(e.key), newValue: t('ed_new'), pick: t('ed_pick'), moves: (what) => t('ed_moves', { what }), apply: t('ed_apply'), cancel: t('ed_cancel'),
     refused: (min, max) => (min !== null && max !== null ? t('ed_range', { min, max }) : min !== null ? t('ed_min', { min }) : max !== null ? t('ed_max', { max }) : t('ed_bad')),
   };
 }

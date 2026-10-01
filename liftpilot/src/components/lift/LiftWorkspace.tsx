@@ -9,7 +9,7 @@ import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
-import { deriveLift, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { KL, deriveLift, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
@@ -18,12 +18,13 @@ import { visibleBad } from '@/lib/calc-input';
 import type { ShaftSource } from '@/lib/shaft-input';
 import { editShaft } from '@/lib/shaft-edit';
 import { saveLiftDesignAction } from '@/server/lift-actions';
-import { keptPlan, type ShaftInputs } from '@/shaft';
+import { editValue, keptPlan, type ShaftInputs } from '@/shaft';
 import { asCalcDict } from '../calc/dict';
 import ShaftOptions from '../shaft/ShaftOptions';
 import VerticalOptions from '../shaft/VerticalOptions';
 import RoomOptions from '../shaft/RoomOptions';
 import HeadOptions from '../shaft/HeadOptions';
+import ImbottiOptions from '../shaft/ImbottiOptions';
 import NicheOptions from '../shaft/NicheOptions';
 import PlanEditor from '../shaft/PlanEditor';
 import type { Refusal } from '../drawing/EditableDrawing';
@@ -41,6 +42,9 @@ interface Props {
   /** changes from outside the form: a dimension of the sheets (the standalone page) */
   api?: Ref<WorkspaceApi>;
 }
+
+/** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
+const CALC_H_MAX = 3000;
 
 export interface WorkspaceApi {
   /** a dimension of the drawings given a new length: null when applied, else why not */
@@ -73,8 +77,20 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     });
     setSaveError(null);
   };
+  const setCalc = (patch: FormValues): void => {
+    setInp((p) => ({ ...p, calc: mirrorRopes({ ...p.calc, ...patch }) }));
+    setSaveError(null);
+  };
+  // a value of the calculation a drawing of the machine room shows: the diverting pulley's height under the sheave [mm]
+  const setCalcFromDrawing = (key: string, value: number): Refusal | null => {
+    if (key !== 'calc.h') return { min: null, max: null };
+    if (!Number.isFinite(value) || Math.abs(value) > CALC_H_MAX) return { min: -CALC_H_MAX, max: CALC_H_MAX };
+    setCalc({ h: value / 1000 });
+    return null;
+  };
   useImperativeHandle(api, () => ({
     edit(e, length) {
+      if (e.key.startsWith('calc.')) return setCalcFromDrawing(e.key, editValue(e, length));
       const r = editShaft(inp.shaft, e, length);
       if (!r.ok) return r;
       setShaft(r.inputs);
@@ -91,10 +107,6 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
       void _drop;
       return catalog ? { ...rest, catalog } : rest;
     });
-    setSaveError(null);
-  };
-  const setCalc = (patch: FormValues): void => {
-    setInp((p) => ({ ...p, calc: mirrorRopes({ ...p.calc, ...patch }) }));
     setSaveError(null);
   };
   // a value switched to entered starts from the one the software showed, so nothing jumps
@@ -119,8 +131,9 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     setShaft({ [key]: v });
     setSource(null);
   };
+  // the shaft measured on a drawing: the car and what stands round it follow its size, as with the fields
   const onSurvey = (r: SurveyResult): void => {
-    setInp((p) => ({ ...p, shaft: { ...p.shaft, W: r.W, D: r.D } }));
+    setShaft({ W: r.W, D: r.D });
     setSource(r.source);
   };
   const save = (): void => {
@@ -154,16 +167,17 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
         <ShaftOptions I={inp.shaft} set={setShaft} lastQ={lastQ} />
         <NicheOptions I={inp.shaft} set={setShaft} />
         <HeadOptions I={inp.shaft} set={setShaft} />
+        <ImbottiOptions I={inp.shaft} set={setShaft} />
         <h2>{t('s_floors')}</h2>
         <VerticalOptions I={inp.shaft} set={setShaft} open />
-        {above ? <RoomOptions I={inp.shaft} set={setShaft} /> : null}
+        {above ? <RoomOptions I={inp.shaft} set={setShaft} machine={{ D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D }} /> : null}
         <h2>{t('s_drive')}</h2>
         <LiftCalcFields P={P} X={X} inp={inp} derived={derived} bad={bad} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} setCatalog={setCatalog} t={(k, v) => t(k, v)} />
       </form>
       <div className="lift-main">
         <LiftFacts derived={derived} X={X} fmt={P.fmt} />
         <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
-        <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} id="lift-plan" /></section>
+        <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
         <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
       </div>
       <div className="savebar">

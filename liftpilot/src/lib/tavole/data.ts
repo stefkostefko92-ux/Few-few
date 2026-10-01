@@ -6,16 +6,26 @@
 import appIt from '../../../messages/it.json';
 import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
+import { cablesMass, ropeLength, supportChecks } from '../lift/support';
 import { isUpperLimit } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { bracketCount } from '@/shaft/brackets';
+import { bufferType } from '@/shaft/buffers';
+import { hasImbotti, imbottiOf } from '@/shaft/imbotti';
+import type { BufferType } from '@/shaft/vertical';
 import { RAILS, railLabel, type RailType } from '@/shaft/rails';
 import { section } from '@/shaft/section';
 import type { DataSheet, Row } from './datasheet';
 import { railForces } from './forces';
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { loads } from './loads';
+import { machineOf } from './views';
 import { clientNotes, estimateNote, spaceLegend } from './notes';
+
+/** The buffers by type as the data sheet writes them: the car's (plural) and the counterweight's. */
+const BUFFER_TEXT: Readonly<Record<BufferType, readonly [string, string]>> = {
+  spring: ['MOLLE', 'MOLLA'], pu: ['TAMPONI IN POLIURETANO', 'TAMPONE IN POLIURETANO'], oil: ['IDRAULICI', 'IDRAULICO'],
+};
 
 const fmt = makeFmt('it-IT');
 const dec = (x: number): number => (Number.isInteger(x) ? 0 : Math.abs(x * 10 - Math.round(x * 10)) < 1e-9 ? 1 : 2);
@@ -63,6 +73,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['RIVESTIMENTO CABINA', 'tipo', txt(Pl.carFinish)],
     ['PORTE DI PIANO', 'tipo', txt(Pl.landingDoors, doors)],
     ['PORTE DI CABINA', 'tipo', txt(Pl.carDoors, doors)],
+    // the linings of an old opening between the marbles round a smaller new door
+    ...(hasImbotti(L.inputs) ? [((m) => ['IMBOTTI PORTE DI PIANO (SX - DX - SUP)', 'mm', `${m.left} - ${m.right} - ${m.top}`] as Row)(imbottiOf(L.inputs))] : []),
   ];
 
   // rails from the pit floor to under the slab; brackets one every pitch (the declared one or the rule's) plus the
@@ -71,7 +83,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const rails = (kind: 'new' | 'existing' | undefined, t: RailType): string => `${kind === 'existing' ? 'ESISTENTI ' : ''}${railLabel(t)}`;
   const brackets = (kind: 'new' | 'existing' | undefined, text: string | undefined, pitch: number | undefined): string =>
     txt(text, kind === 'existing' ? 'ESISTENTI' : `${2 * bracketCount(railLen * 1000, pitch ?? KV_VERT.bracketPitch)}`);
-  const ropeLen = I.r * (I.H + 2 * I.L0) + (I.layout === 'topDefl' ? I.h : I.layout === 'bottom' ? 2 * I.Hv : 0);
+  const ropeLen = ropeLength(I);
   const room = L.inputs.room, govLen = (2 * (V.pit + S.top + V.headroom + (room ? room.slab + KV_VERT.governorAbove : 0))) / 1000;
   const g = N.groove, fRated = res.kin.fRated;
   const specs: Row[] = [
@@ -99,12 +111,12 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['LUNGHEZZA FUNI (CIASCUNA)', 'm', fmt(ropeLen, 0)],
     ['LIMITATORE DI VELOCITÀ', 'tipo', txt(Pl.governor)],
     ['FUNE DEL LIMITATORE', 'm-Ø', `${fmt(Math.ceil(govLen), 0)} - ${txt(Pl.governorRope)}`],
-    ['AMMORTIZZATORI CABINA', 'N°-tipo', `${V.carBuffers} - ${txt(Pl.carBuffers, 'MOLLE')}`],
-    ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${txt(Pl.cwBuffers, 'MOLLA')}`],
+    ['AMMORTIZZATORI CABINA', 'N°-tipo', `${V.carBuffers} - ${txt(Pl.carBuffers, BUFFER_TEXT[bufferType(V, 'car')][0])}`],
+    ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${txt(Pl.cwBuffers, BUFFER_TEXT[bufferType(V, 'cw')][1])}`],
   ];
 
   // loads on the machine and on the building
-  const ropesKg = N.n * N.qf * ropeLen, cablesKg = Pl.massCables ?? KV_VERT.cableKgM * (travel / 2 + 3);
+  const ropesKg = N.n * N.qf * ropeLen, cablesKg = cablesMass(travel, Pl.massCables);
   const machine = Pl.massMachine ?? N.mass, dyn = Pl.dynFactor ?? KV_VERT.dynFactor;
   const ld = loads({
     P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r,
@@ -132,7 +144,9 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON CONFORME', info: '—' } as const;
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
-  const checks: DataSheet['checks'] = L.checks.map((c) => {
+  // the shaft's checks, then the beams under the machine at the load of this sheet
+  const all = [...L.checks, ...supportChecks(L, machineOf(a, Pl, L), { machine, static: ld.static, dyn })];
+  const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     if (c.id === 'm_door' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, OUTCOME[c.status]];
     return [label, withUnit(c.value, c.dec, c.unit), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, OUTCOME[c.status]];
@@ -148,7 +162,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
       electric: [['TENSIONE F.M.', 'V', num(Pl.voltage)], ['LUCE', 'V', num(Pl.lightVoltage)], ['FREQUENZA', 'Hz', num(Pl.frequency)], ['INTERMITTENZA', '%', num(Pl.duty)]],
       P, client: x.project.client || '—', location: placeLines(x.project), author: x.set.author, date: dateIt(x.set.issuedAt),
       revisions: x.set.revisions.map((r) => ({ mark: r.mark, text: r.text, date: dateIt(r.date) })),
-      number: x.set.number, pages, plant: x.project.plantNumber || '—', company: x.company.name, logo: x.company.logo !== null,
+      number: x.set.number, pages, plant: x.project.plantNumber || '—', company: x.company.name, logo: x.company.logo !== null, clientLogo: x.clientLogo != null,
     },
   };
 }

@@ -81,6 +81,22 @@
 .views > button:focus-visible { outline: 2px solid var(--hud-ink); outline-offset: 1px; }
 .views label.check { color: var(--hud-ink); font-size: 13px; padding: 0 8px 0 10px; gap: 7px; }
 .views label.check input { width: 16px; height: 16px; }
+.views > button.full { display: inline-grid; place-items: center; padding: 7px 9px; }
+.views > button.full svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* full screen: the simulator over the whole screen (the browser's, or the window's where that is refused); the stage
+   takes what the controls leave, the charts stay on the page */
+html.sim-full-open { overflow: hidden; }
+.lift-sim.full { position: fixed; inset: 0; z-index: 80; width: 100%; height: 100%; max-width: none; margin: 0; border: 0; border-radius: 0;
+  display: grid; grid-template-rows: minmax(0, 1fr) auto auto; gap: 8px; overflow: hidden;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+.lift-sim.full .stage-wrap { display: flex; flex-direction: column; min-height: 0; }
+.lift-sim.full .lift-stage { flex: 1 1 auto; height: auto; min-height: 0; }
+.lift-sim.full .sim-charts { display: none; }
+.lift-sim.full .sim-controls { max-height: 32vh; overflow-y: auto; }
+@media (max-height: 560px) {
+  .lift-sim.full .scenario-params, .lift-sim.full .sim-result { display: none; }
+}
 @media (max-width: 560px) {
   .facts > div { padding: 9px 12px 10px; }
   .facts dd { font-size: 14px; }

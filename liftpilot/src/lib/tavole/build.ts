@@ -19,7 +19,8 @@ import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
 import { machineOf, planView, roomView, sectionView } from './views';
 
-type Spec =
+/** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
+export type Spec =
   | { k: 'plan'; level: PlanLevel; floor: number; title: string; subtitle?: string; total: string; legend: LegendItem[] }
   | { k: 'section'; kind: SectionKind; floor: number; title: string; subtitle?: string; legend: LegendItem[] }
   | { k: 'room-plan' | 'room-section'; title: string; subtitle: string };
@@ -36,7 +37,7 @@ export interface TavoleResult {
 
 const LEGEND_W = 34;
 
-function specs(L: Layout, room: boolean): Spec[] {
+export function specs(L: Layout, room: boolean): Spec[] {
   const V = L.inputs.vertical, top = V.floors.length - 1, main = Math.min(Math.max(0, V.main), top), label = (i: number): string => V.floors[i]?.label ?? String(i);
   const sp = spaceLegend(L, makeFmt('it-IT')), loads = 'CARICHI: VALORI NEL FOGLIO 1';
   const out: Spec[] = [
@@ -111,7 +112,7 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
 }
 
 export function buildTavole(x: TavoleInput): TavoleResult {
-  const L = x.layout, a: Analysis = analyse(x.values), list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom'), pages = list.length + 1, M = machineOf(a, x.plant);
+  const L = x.layout, a: Analysis = analyse(x.values), list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom'), pages = list.length + 1, M = machineOf(a, x.plant, L);
   const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
   const meta = (page: number): SheetMeta => ({
     number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',
@@ -128,7 +129,7 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   });
   const doc: DrawingDoc = {
     meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Progetto dell\'ascensore: dati, piante e sezioni del vano, locale macchina', author: x.company.name },
-    palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: x.company.logo ? { logo: x.company.logo } : {}, pages: out,
+    palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: { ...(x.company.logo ? { logo: x.company.logo } : {}), ...(x.clientLogo ? { client: x.clientLogo } : {}) }, pages: out,
   };
   return { doc, warnings: ds.warnings, sheets, hits };
 }

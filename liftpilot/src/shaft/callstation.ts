@@ -8,7 +8,7 @@ import type { CallStation, DoorLayout, ShaftInputs, Wall } from './types';
 export const callStationOf = (I: ShaftInputs): CallStation => I.callStation ?? { side: 'right', offset: KV.callOffset, height: KV.callHeight };
 
 /** Whether lower u along the wall is on the left of someone on its landing facing the shaft. */
-const lowIsLeft = (w: Wall): boolean => w === 'front' || w === 'right';
+export const lowIsLeft = (w: Wall): boolean => w === 'front' || w === 'right';
 
 /** Middle of the call station along the door's wall [mm], and the edge of the door's portal it is measured from. */
 export function callStationAt(d: DoorLayout, cs: CallStation): { u: number; from: number } {

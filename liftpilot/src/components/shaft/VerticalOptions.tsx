@@ -4,7 +4,8 @@
 // serve, pit and headroom, heights of car, frame and counterweight, buffers and the spaces for the maintenance person.
 // Typical values to start from; section A-A and its checks follow them live.
 import { useTranslations } from 'next-intl';
-import { DEFAULT_VERTICAL, type Floor, type ShaftInputs, type VerticalInputs } from '@/shaft';
+import { BUFFER_TYPES, DEFAULT_VERTICAL, bufferStroke, bufferType, withBufferType, type BufferType, type Floor, type ShaftInputs, type VerticalInputs } from '@/shaft';
+import { screenOf, standOf } from '@/shaft/section';
 
 interface Props {
   I: ShaftInputs;
@@ -13,7 +14,7 @@ interface Props {
   open?: boolean;
 }
 
-type NumKey = Exclude<keyof VerticalInputs, 'floors' | 'main' | 'topRefuge' | 'pitRefuge'>;
+type NumKey = Exclude<keyof VerticalInputs, 'floors' | 'main' | 'topRefuge' | 'pitRefuge' | 'carBufferType' | 'cwBufferType'>;
 const num = (s: string): number => Number(s.replace(',', '.'));
 
 export default function VerticalOptions({ I, set, open = false }: Props) {
@@ -22,10 +23,28 @@ export default function VerticalOptions({ I, set, open = false }: Props) {
   const field = (key: NumKey, min: number, max: number, step = 10) => (
     <label className="field" key={key}>
       <span>{t(`vt_${key}`)}</span>
-      <input className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={V[key]}
+      <input className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={key === 'cwScreen' ? screenOf(V) : key === 'standW' ? standOf(V)[0] : key === 'standD' ? standOf(V)[1] : V[key]}
         onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) put({ [key]: key === 'v' ? v : Math.round(v) }); }} />
     </label>
   );
+  // a buffer's type: a typical one of it, its support moved so the run-by stays; a pad's stroke follows its height
+  const typeField = (side: 'car' | 'cw') => (
+    <label className="field" key={`${side}-type`}>
+      <span>{t(`vt_${side}BufferType`)}</span>
+      <select className="input" value={bufferType(V, side)} onChange={(e) => {
+        const ty = BUFFER_TYPES.find((x) => x === e.target.value);
+        if (ty) set({ vertical: withBufferType(V, side, ty as BufferType) });
+      }}>
+        {BUFFER_TYPES.map((x) => <option key={x} value={x}>{t(`bt_${x}`)}</option>)}
+      </select>
+    </label>
+  );
+  const strokeField = (side: 'car' | 'cw') => (bufferType(V, side) === 'pu' ? (
+    <label className="field" key={`${side}-stroke`}>
+      <span>{t(`vt_${side}BufferStroke`)}</span>
+      <input className="input num" type="number" value={bufferStroke(V, side)} readOnly aria-readonly="true" />
+    </label>
+  ) : field(side === 'car' ? 'carBufferStroke' : 'cwBufferStroke', 10, 2000, 5));
   const setFloor = (i: number, patch: Partial<Floor>): void => put({ floors: floors.map((f, j) => (j === i ? { ...f, ...patch } : f)) });
   const addFloor = (): void => {
     const last = floors[floors.length - 1], n = Number(last?.label);
@@ -84,15 +103,21 @@ export default function VerticalOptions({ I, set, open = false }: Props) {
         {field('cwH', 300, 10000)}
       </div>
       <div className="form-grid">
+        {typeField('car')}
         {field('carBuffers', 1, 4, 1)}
         {field('carBufferH', 50, 3000)}
-        {field('carBufferStroke', 10, 2000, 5)}
+        {strokeField('car')}
         {field('carBufferBase', 0, 3000)}
+        {typeField('cw')}
         {field('cwBufferH', 50, 3000)}
-        {field('cwBufferStroke', 10, 2000, 5)}
+        {strokeField('cw')}
         {field('cwBufferBase', 0, 3000)}
         {field('cwRunby', 0, 2000)}
+        {field('cwScreen', 300, 6000)}
+        {field('standW', 100, 3000)}
+        {field('standD', 100, 3000)}
       </div>
+      <p className="note">{t('bt_hint')}</p>
       <div className="form-grid">
         <label className="field">
           <span>{t('vt_topRefuge')}</span>

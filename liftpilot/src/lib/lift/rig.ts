@@ -7,6 +7,7 @@
 // counterweight's head pulleys down to it; they meet on the vertical runs to the machine. Pure.
 import { deflectorAngle } from '@/calc/geometry';
 import { section, type Layout } from '@/shaft';
+import { sheaveAxis } from './machine';
 import { KL } from './norme';
 import type { BeltEl } from './belt';
 import { bottomGeo, exitAlong, type BottomGeo, type BottomScheme } from './bottom';
@@ -72,7 +73,7 @@ export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'he
     // the car side of the rope rises at u0, the counterweight side comes down at u1
     const u0 = two ? Rp : 0, u1 = two ? cm - Rp : cm;
     const roomFloor = ceiling + slab;
-    const sheave: Wheel = { role: 'sheave', u: u0 + R0, y: roomFloor + (KL.sheaveAxisPerD * N.D) / 1000, r: R0, plane: drop };
+    const sheave: Wheel = { role: 'sheave', u: u0 + R0, y: roomFloor + sheaveAxis(L.inputs.room, N.D) / 1000, r: R0, plane: drop };
     const fixed: Wheel[] = [sheave], mid: BeltEl[] = [{ kind: 'wheel', u: sheave.u, y: sheave.y, r: R0, cw: true }];
     if (I.layout === 'topDefl') {
       const rev = deflectorAngle(N.D, I.Dp, I.dx, I.h)?.reverse ?? false;

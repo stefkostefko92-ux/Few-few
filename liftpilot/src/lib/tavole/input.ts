@@ -20,6 +20,8 @@ export interface TavoleInput {
   marks?: ValueMarks;
   project: { name: string; address: string | null; city: string | null; province: string | null; plantNumber: string | null; client: string | null };
   company: { name: string; logo: { mime: 'image/png' | 'image/jpeg'; data: string } | null };
+  /** the logo of the client who commissioned the project, next to its name in the title block */
+  clientLogo?: { mime: 'image/png' | 'image/jpeg'; data: string } | null;
   set: {
     /** drawing number, e.g. 26-001 */
     number: string;

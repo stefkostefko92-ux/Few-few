@@ -1,8 +1,8 @@
 // Public API of the drawing kernel: paper primitives, model entities, views to scale, dimension chains, symbols, the
 // A4 sheet. Pure, no I/O: the drawing set is laid out here and only painted by the SVG and PDF renderers.
 export type * from './types';
-export type { Chain, Edit, Entity, Side, SymbolName } from './model';
-export { chain, circle, edit, line, path, rect } from './model';
+export type { Chain, Edit, Entity, PickOption, Side, SymbolName } from './model';
+export { chain, circle, edit, line, path, pickEdit, rect } from './model';
 export { A4, FRAME, STRIP_H, drawingArea, fitted, frame, paragraph, sheetTitle, strip, table } from './sheet';
 export type { Cell, SheetMeta } from './sheet';
 export { COND, fitSize, textWidth, wrap } from './metrics';

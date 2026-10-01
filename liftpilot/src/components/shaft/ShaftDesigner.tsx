@@ -12,6 +12,7 @@ import type { ShaftSource } from '@/lib/shaft-input';
 import { saveShaftDesignAction } from '@/server/shaft-actions';
 import { keptPlan, layout, type ShaftInputs } from '@/shaft';
 import HeadOptions from './HeadOptions';
+import ImbottiOptions from './ImbottiOptions';
 import NicheOptions from './NicheOptions';
 import RoomOptions from './RoomOptions';
 import ShaftOptions from './ShaftOptions';
@@ -52,8 +53,12 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
     set({ [key]: v });
     setSource(null); // typed in: no longer the measure on the drawing
   };
+  // the shaft measured on a drawing: the car and what stands round it follow its size, as with the fields
   const onSurvey = useCallback((r: SurveyResult): void => {
-    setI((prev) => ({ ...prev, W: r.W, D: r.D }));
+    setI((prev) => {
+      const next = { ...prev, W: r.W, D: r.D };
+      return { ...next, plan: keptPlan(prev, next) };
+    });
     setSource(r.source);
     setSaveError(null);
   }, []);
@@ -98,6 +103,7 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
           <ShaftOptions I={I} set={set} lastQ={lastQ} />
           <NicheOptions I={I} set={set} />
           <HeadOptions I={I} set={set} />
+          <ImbottiOptions I={I} set={set} />
           <VerticalOptions I={I} set={set} />
           <RoomOptions I={I} set={set} />
         </section>

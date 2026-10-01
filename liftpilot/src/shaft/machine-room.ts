@@ -53,6 +53,18 @@ export interface RoomGeo {
   s: number;
 }
 
+/** Where the drop line runs inside the rectangle [x0, x1] × [y0, y1] of the room: the range of u. */
+export function dropSpan(G: RoomGeo, x0: number, y0: number, x1: number, y1: number): [number, number] {
+  let lo = -Infinity, hi = Infinity;
+  for (const [p, d, a, b] of [[G.carDrop[0], G.ux, x0, x1], [G.carDrop[1], G.uy, y0, y1]] as const) {
+    if (Math.abs(d) < 1e-9) continue;
+    const t0 = (a - p) / d, t1 = (b - p) / d;
+    lo = Math.max(lo, Math.min(t0, t1));
+    hi = Math.min(hi, Math.max(t0, t1));
+  }
+  return [lo, hi];
+}
+
 /** Half the width of the n ropes side by side, and of a pulley with its cheeks [mm]. */
 export function ropeWidths(n: number, d: number): { ropes: number; pulley: number } {
   const pitch = Math.max(d + 6, 1.7 * d);

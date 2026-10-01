@@ -1,4 +1,5 @@
-/* Public landing: the machine stage is the one bold element; the sections under it stay quiet and ruled. */
+/* Public landing: the machine stage leads; under it the product's facts, its modules as one ruled grid, the software's
+   own drawings and 3D frames, the way to the documents, the safeguards on a quiet panel, a closing call in the accent. */
 .landing { max-width: 1320px; width: 100%; margin: 0 auto; padding: 36px 16px 64px; display: flex; flex-direction: column; gap: 72px; }
 .hero { display: grid; gap: 32px; align-items: center; }
 @media (min-width: 1024px) { .hero { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 52px; } }
@@ -18,30 +19,103 @@
 .stage.is-live .stage-canvas { opacity: 1; }
 .stage figcaption { font-size: 13px; line-height: 1.5; color: var(--muted); max-width: 72ch; }
 
-.section { display: flex; flex-direction: column; gap: 20px; }
-.section > h2 { font-size: 28px; line-height: 1.12; letter-spacing: -0.01em; }
-.section .lead { font-size: 15.5px; }
+.section { display: flex; flex-direction: column; gap: 22px; }
+.section h2 { font-size: clamp(25px, 1vw + 18px, 32px); line-height: 1.12; letter-spacing: -0.01em; }
+.section .lead { font-size: 16px; line-height: 1.6; color: var(--ink-2); max-width: 70ch; }
+.section-head { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { margin: 0; font: 600 12.5px/1.2 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.btn-quiet { background: transparent; border-color: transparent; text-decoration: underline; text-underline-offset: 3px; }
+.btn-quiet:hover { border-color: var(--rule); }
 
-.features { margin: 0; display: grid; gap: 0 48px; }
-@media (min-width: 760px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.feature { display: grid; grid-template-columns: 48px minmax(0, 1fr); align-content: start; gap: 6px 18px; padding: 22px 0 24px; border-top: 1px solid var(--rule); }
-.feature svg { grid-row: span 2; width: 48px; height: 48px; color: var(--accent); }
-.feature dt { font: 700 18px/1.3 var(--font-cond); }
-.feature dd { margin: 0; color: var(--ink-2); max-width: 60ch; }
+/* the product in four facts, under the hero: what it follows, what it gives, what it shows, where it lives */
+.facts-strip { margin: -32px 0 0; display: grid; grid-template-columns: minmax(0, 1fr); border: 1px solid var(--rule); border-radius: 14px; background: var(--surface); overflow: hidden; }
+@media (min-width: 640px) { .facts-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .facts-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.facts-strip > div { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-top: 1px solid var(--rule); }
+.facts-strip > div:first-child { border-top: 0; }
+@media (min-width: 640px) {
+  .facts-strip > div:nth-child(2) { border-top: 0; }
+  .facts-strip > div:nth-child(2n) { border-left: 1px solid var(--rule); }
+}
+@media (min-width: 1100px) {
+  .facts-strip > div { border-top: 0; }
+  .facts-strip > div + div { border-left: 1px solid var(--rule); }
+}
+.facts-strip dt { font: 700 19px/1.2 var(--font-cond); color: var(--ink); font-variant-numeric: tabular-nums; }
+.facts-strip dd { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
 
-/* The three steps hang on one rope, like the car and the counterweight on the sheave. */
+/* six modules on the same data, each a ruled cell with its drawing */
+.modules { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+@media (min-width: 720px) { .modules { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .modules { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.module { display: flex; flex-direction: column; gap: 10px; padding: 24px 24px 26px; background: var(--surface); min-width: 0; }
+.module svg, .trust-list svg { width: 44px; height: 44px; color: var(--accent); flex: none; }
+.module h3 { font: 700 19px/1.25 var(--font-cond); }
+.module p { margin: 0; color: var(--ink-2); line-height: 1.6; }
+
+/* the software's own drawings, on paper whatever the theme */
+.sheets { display: grid; gap: 20px; align-items: start; }
+@media (min-width: 960px) { .sheets { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); } }
+.sheet { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.sheet-paper { background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 12px; box-shadow: var(--shadow-lg); }
+.sheet-paper img { display: block; width: 100%; height: auto; max-height: 720px; object-fit: contain; }
+.sheet figcaption, .frame figcaption { font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+.sheet .scale { font: 600 12px/1 var(--font-mono); color: var(--ink-2); border: 1px solid var(--rule); border-radius: 5px; padding: 2px 5px; margin-left: 4px; }
+
+/* frames of the 3D simulation: the whole shaft standing beside the machine room and the car */
+.frames { display: grid; gap: 16px; }
+@media (min-width: 900px) {
+  .frames { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); grid-template-rows: auto auto; align-items: start; }
+  .frame.tall { grid-column: 1; grid-row: 1 / span 2; }
+  .frame.wide { grid-column: 2; }
+}
+.frame { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.frame img { display: block; width: 100%; height: auto; border-radius: 12px; background: var(--lift-bg); box-shadow: var(--shadow-lg); }
+@media (max-width: 899px) { .frame.tall img { max-height: 560px; object-fit: contain; } }
+
+/* what is delivered: a format tag over each document */
+.outputs { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 40px; }
+@media (min-width: 760px) { .outputs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.outputs li { display: flex; flex-direction: column; gap: 8px; padding: 20px 0 22px; border-top: 1px solid var(--rule); }
+.outputs .format { align-self: flex-start; font: 600 12px/1 var(--font-mono); letter-spacing: .04em; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 5px 8px; }
+.outputs h3, .audiences h3, .trust-list h3 { font: 700 18px/1.3 var(--font-cond); }
+.outputs p, .audiences p, .trust-list p { margin: 0; color: var(--ink-2); max-width: 60ch; }
+
+.split { display: grid; gap: 22px; }
+@media (min-width: 960px) { .split { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 48px; } }
+.audiences { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.audiences li { display: flex; flex-direction: column; gap: 6px; padding: 18px 0; border-top: 1px solid var(--rule); }
+
+.trust { padding: 32px clamp(16px, 3vw, 40px); border-radius: 18px; background: var(--surface2); border: 1px solid var(--rule); }
+.trust-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 24px 36px; }
+@media (min-width: 720px) { .trust-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .trust-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.trust-list li { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+/* the call to register, closing the page */
+.end-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 32px; padding: clamp(24px, 4vw, 44px);
+  border-radius: 18px; background: var(--accent); color: var(--accent-ink); }
+.end-cta > div:first-child { display: flex; flex-direction: column; gap: 8px; max-width: 60ch; }
+.end-cta h2 { font-size: clamp(24px, 1vw + 17px, 30px); line-height: 1.15; }
+.end-cta p { margin: 0; opacity: .9; }
+.end-cta .btn { background: transparent; color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent-ink) 55%, transparent); }
+.end-cta .btn-primary { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+.end-cta .btn:hover { border-color: var(--accent-ink); }
+
+/* The steps hang on one rope, like the car and the counterweight on the sheave. */
 .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 26px; counter-reset: step; }
-@media (min-width: 900px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; } }
+@media (min-width: 720px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .steps { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 30px; } }
 .steps li { position: relative; display: flex; flex-direction: column; gap: 8px; padding-top: 56px; }
 .steps li::before { counter-increment: step; content: counter(step); position: absolute; top: 0; left: 0; z-index: 1; width: 40px; height: 40px; border-radius: 50%;
   display: grid; place-items: center; border: 2px solid var(--accent); background: var(--bg); color: var(--accent); font: 700 17px/1 var(--font-cond); }
-@media (min-width: 900px) {
-  .steps li::after { content: ""; position: absolute; top: 19px; left: 40px; right: -36px; height: 2px;
+@media (min-width: 1100px) {
+  .steps li::after { content: ""; position: absolute; top: 19px; left: 40px; right: -30px; height: 2px;
     background: repeating-linear-gradient(90deg, var(--steel) 0 7px, transparent 7px 11px); }
   .steps li:last-child::after { display: none; }
 }
 .steps h3 { font-size: 18px; }
-.steps p { color: var(--ink-2); max-width: 46ch; }
+.steps p { margin: 0; color: var(--ink-2); max-width: 46ch; }
 
 .registry-wrap { overflow-x: auto; }
 .registry { width: 100%; border-collapse: collapse; font-size: 14.5px; }

@@ -46,6 +46,8 @@ export async function saveLiftDesignAction(input: { projectId: unknown; inputs: 
   const { snapshot: shaftSnap, layout: L } = shaftSnapshot(d.shaft), calcSnap = snapshotOf(d.values);
   const shaftSha = shaftHash(shaftSnap), calcSha = snapshotHash(calcSnap), res = d.analysis.res, N = d.analysis.ctx.N;
   const S = d.shaft, shaftWarns = L.checks.filter((c) => c.status === 'warn').length, shaftFails = L.checks.filter((c) => c.status === 'fail').length;
+  // the beams under the machine are checked with the machine of the calculation: they count for the lift's verdict
+  const beamFails = d.supportChecks.filter((c) => c.status === 'fail').length, beamWarns = d.supportChecks.filter((c) => c.status === 'warn').length;
   const calcWarns = res.checks.filter((c) => c.status === 'warn').length;
   const machine = `D ${fmt(N.D, 0)} mm · ${N.n} × Ø${fmt(N.d, Number.isInteger(N.d) ? 0 : 1)} · 1:${fmt(N.i, Number.isInteger(N.i) ? 0 : 1)} · ${fmt(N.Pn, 1)} kW`;
   const hash = liftHash({ engine: LIFT_ENGINE_VERSION, inputs: canon(inputs.data), shaft: shaftSha, calc: calcSha });
@@ -71,7 +73,8 @@ export async function saveLiftDesignAction(input: { projectId: unknown; inputs: 
       data: {
         companyId: user.companyId, projectId: project.id, userId: user.id, label: label.data, inputs: inputs.data as Prisma.InputJsonValue, source: source$,
         shaftDesignId: shaft.id, calculationId: calc.id, engineVersion: LIFT_ENGINE_VERSION, sha256: hash,
-        verdict: VERDICT[worse(verdictStatus(res), verdictOf(L))], failCount: res.fails.length + shaftFails, warnCount: calcWarns + shaftWarns,
+        verdict: VERDICT[worse(worse(verdictStatus(res), verdictOf(L)), beamFails ? 'fail' : beamWarns ? 'warn' : 'ok')],
+        failCount: res.fails.length + shaftFails + beamFails, warnCount: calcWarns + shaftWarns + beamWarns,
         summary: `${S.W} × ${S.D} mm · ${fmt(L.Q, 0)} kg · ${fmt(S.vertical.v, 2)} m/s · ${machine}`,
       },
       select: { id: true },

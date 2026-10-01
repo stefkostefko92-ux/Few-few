@@ -1,9 +1,10 @@
 'use client';
 
 // A drawing of the kernel whose dimensions can be changed where they are: the lettering of each editable dimension
-// is a button in a layer over the drawing; clicking it (or Enter on it) opens a field on the spot with its length,
-// Enter applies it (the owner lays the design out again and the drawing follows), Esc or a click elsewhere leaves
-// it. Dimensions whose input was set by hand are marked. The drawing itself is the same SVG as everywhere else.
+// is a button in a layer over the drawing; clicking it (or Enter on it) opens a field on the spot with its length —
+// or, for a length a catalogue or a table gives, the list of its entries —, Enter applies it (the owner lays the
+// design out again and the drawing follows), Esc or a click elsewhere leaves it. Dimensions whose input was set by
+// hand are marked. The drawing itself is the same SVG as everywhere else.
 // Motion: none; the buttons only change colour on hover and focus.
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import type { Edit, Hit, Shape } from '@/drawing';
@@ -15,8 +16,9 @@ export interface EditTexts {
   group: string;
   /** the name of the input a dimension changes */
   name(edit: Edit): string;
-  /** the field's label, and what changing the dimension changes (from the input's name) */
+  /** the field's label (a length; an entry of a list), and what changing the dimension changes (from the input's name) */
   newValue: string;
+  pick: string;
   moves(name: string): string;
   apply: string;
   cancel: string;
@@ -37,7 +39,7 @@ interface Props {
   hits: readonly Hit[];
   /** the input of a dimension is set by hand: it is marked */
   manual(edit: Edit): boolean;
-  /** a new length for a dimension: null when applied, else why not */
+  /** a new length for a dimension (for a choice: the index of the entry): null when applied, else why not */
   onEdit(edit: Edit, length: number): Refusal | null;
   texts: EditTexts;
   /** 'screen': no taller than most of the window (views); 'width': as wide as its place (sheets of paper) */
@@ -53,6 +55,7 @@ export default function EditableDrawing({ shapes, w, h, id, label, hits, manual,
   const [pxPerMm, setPxPerMm] = useState(3);
   const [open, setOpen] = useState<number | null>(null);
   const [text, setText] = useState('');
+  const [choice, setChoice] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const hit = open === null ? null : hits[open] ?? null;
 
@@ -81,6 +84,7 @@ export default function EditableDrawing({ shapes, w, h, id, label, hits, manual,
     if (v === undefined) return;
     setOpen(i);
     setText(String(Math.round(v)));
+    setChoice(Math.max(0, hits[i]?.edit.pick?.current ?? 0));
     setError(null);
   };
   const leave = (): void => {
@@ -91,6 +95,12 @@ export default function EditableDrawing({ shapes, w, h, id, label, hits, manual,
   const submit = (e: FormEvent): void => {
     e.preventDefault();
     if (!hit) return;
+    if (hit.edit.pick) {
+      const r = onEdit(hit.edit, choice);
+      if (r) setError(texts.refused(r.min, r.max));
+      else leave();
+      return;
+    }
     const v = Number(text.trim().replace(',', '.'));
     if (!text.trim() || !Number.isFinite(v) || v < 0) {
       setError(texts.refused(0, null));
@@ -132,15 +142,25 @@ export default function EditableDrawing({ shapes, w, h, id, label, hits, manual,
               ? { top: `${((1 - hit.box.y1 / h) * 100).toFixed(2)}%`, transform: 'translate(-50%, calc(-100% - 6px))' }
               : { top: `${((1 - hit.box.y0 / h) * 100).toFixed(2)}%`, transform: 'translate(-50%, 6px)' }),
           }}>
-          <label className="ed-field">
-            <span>{texts.newValue}</span>
-            <span className="ed-row">
-              <input className="input num" type="number" inputMode="numeric" min={0} step={1} value={text} autoFocus
-                onFocus={(e) => e.currentTarget.select()} onChange={(e) => { setText(e.target.value); setError(null); }}
-                aria-invalid={error ? true : undefined} aria-describedby={error ? `${uid}-err` : undefined} />
-              <span className="ed-unit">mm</span>
-            </span>
-          </label>
+          {hit.edit.pick ? (
+            <label className="ed-field">
+              <span>{texts.pick}</span>
+              <select className="input" value={choice} autoFocus onChange={(e) => { setChoice(Number(e.target.value)); setError(null); }}
+                aria-invalid={error ? true : undefined} aria-describedby={error ? `${uid}-err` : undefined}>
+                {hit.edit.pick.options.map((o, k) => <option key={k} value={k}>{o.label}</option>)}
+              </select>
+            </label>
+          ) : (
+            <label className="ed-field">
+              <span>{texts.newValue}</span>
+              <span className="ed-row">
+                <input className="input num" type="number" inputMode="numeric" min={0} step={1} value={text} autoFocus
+                  onFocus={(e) => e.currentTarget.select()} onChange={(e) => { setText(e.target.value); setError(null); }}
+                  aria-invalid={error ? true : undefined} aria-describedby={error ? `${uid}-err` : undefined} />
+                <span className="ed-unit">mm</span>
+              </span>
+            </label>
+          )}
           <span className="note">{texts.moves(texts.name(hit.edit))}</span>
           <span className="ed-row">
             <button type="submit" className="btn btn-primary btn-sm">{texts.apply}</button>

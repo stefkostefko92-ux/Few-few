@@ -13,8 +13,6 @@ import Crumbs from '@/components/Crumbs';
 import IssueForm from '@/components/tavole/IssueForm';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
 
-const isLogoMime = (m: string): m is 'image/png' | 'image/jpeg' => m === 'image/png' || m === 'image/jpeg';
-
 export async function generateMetadata() {
   const t = await getTranslations('tavole');
   return { title: t('title') };
@@ -31,7 +29,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   if (!s) notFound();
   const [t, tp, tc] = await Promise.all([getTranslations('tavole'), getTranslations('projects'), getTranslations('calculations')]);
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const r = composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo });
+  const r = composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo });
   const doc = 'doc' in r ? r.doc : null;
   const DEC = { travel: 2, speed: 2, load: 0 } as const;
   const mismatch = 'doc' in r ? r.warnings.map((w) => t(`mm_${w.what}`, { calc: fmt(w.calc, DEC[w.what]), shaft: fmt(w.shaft, DEC[w.what]) })) : [];
@@ -42,7 +40,6 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   const editable = can(user.role, 'calc:create') && !s.project.archivedAt;
   // only a calculation made from a shaft design gives a drawing set
   const calcs = editable ? (await listCalculations(user, s.projectId)).filter((c) => c.shaftDesignId).map((c) => ({ id: c.id, label: `${fd.dateTime(c.createdAt)}${c.label ? ` · ${c.label}` : ''} · ${c.summary}` })) : [];
-  const logo = s.logo && isLogoMime(s.logo.mime) ? { mime: s.logo.mime, data: Buffer.from(s.logo.data).toString('base64') } : null;
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${s.projectId}`, label: s.project.name }, { label: `${t('number')} ${s.number}` }]} />
@@ -66,7 +63,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
             ))}
           </nav>
           <figure className="sheet-page">
-            <ShapesSvg shapes={sheet.shapes} w={sheet.w} h={sheet.h} id={`sheet-${page}`} label={t('sheet', { n: page, total })} logo={logo} />
+            <ShapesSvg shapes={sheet.shapes} w={sheet.w} h={sheet.h} id={`sheet-${page}`} label={t('sheet', { n: page, total })} images={doc.images} />
             <figcaption className="note">{t('sheet', { n: page, total })}</figcaption>
           </figure>
         </section>

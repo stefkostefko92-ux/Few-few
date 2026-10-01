@@ -9,13 +9,22 @@ export type SymbolName = 'dot' | 'tri' | 'square' | 'overUp' | 'overDown' | 'plu
 
 /** What changing a dimension does on the screens: the input `key` becomes base + k · (the new length) [mm]; the
  *  inputs in `also` take the values given, so that what the dimension starts from stays where it is. `value`: the real
- *  length where the drawing shortens it. The sheets ignore it. */
+ *  length where the drawing shortens it. `pick`: a length a catalogue or a table gives (a rail's profile, a refuge
+ *  space's type) is changed by choosing another entry: the input `key` takes the `set` of the option chosen. The
+ *  sheets ignore it. */
 export interface Edit {
   key: string;
   base: number;
   k: number;
   value?: number;
   also?: readonly { key: string; value: number }[];
+  pick?: { options: readonly PickOption[]; current: number };
+}
+
+/** An entry a dimension can be changed to: its name on the screens and the value its input takes. */
+export interface PickOption {
+  label: string;
+  set: string | number;
 }
 
 /** A chain of linear dimensions measured along x or y. */
@@ -58,3 +67,5 @@ export const circle = (c: Pt, r: number, st: StyleName | undefined = 'thin', fil
 export const chain = (c: Chain): Entity => ({ e: 'chain', c });
 /** An edit of a dimension: the input `key` becomes base + k · (the new length). */
 export const edit = (key: string, base = 0, k = 1, also?: Edit['also']): Edit => (also ? { key, base, k, also } : { key, base, k });
+/** An edit by choice: the input `key` takes the `set` of the option chosen; `current` is the one drawn (-1: none). */
+export const pickEdit = (key: string, options: readonly PickOption[], current: number): Edit => ({ key, base: 0, k: 1, pick: { options, current } });

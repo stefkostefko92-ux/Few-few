@@ -3,6 +3,7 @@
 // Italian texts, clause numbers and values only. Sources: summaries of EN 81-20/50 by makers and notified bodies
 // (research of 30/09/2026, docs of the licensed text still to be checked).
 import type { VoceVano } from './norme';
+import { VOCI_SUPPORTO } from './norme-supporto';
 
 export const KV_VERT = {
   // UNI EN 81-20:2020, Tabella 3: refuge spaces by type, height and plan [mm] (type 3 in the pit only)
@@ -26,13 +27,21 @@ export const KV_VERT = {
   parapetH2: 1100,
   // 5.2.5.5.1: screen of the counterweight in the pit up to ≥ 2000 mm above the pit floor
   cwScreen: 2000,
-  // 5.8.2.2: linear energy accumulation buffers up to 1 m/s, stroke ≥ 0,135·v² m and ≥ 65 mm
+  // 5.8.2: energy accumulation buffers (linear: springs; non-linear: polyurethane pads) up to 1 m/s; linear: stroke
+  // ≥ 0,135·v² m and ≥ 65 mm; non-linear: fully compressed at 90 % of the height; energy dissipation (hydraulic): any
+  // speed, stroke ≥ 0,0674·v² m. Typical buffers of the catalogues: P+S Diepocell D pads 80 mm high; Oleo LSB10 and
+  // LSB16 [height, stroke] (registry ammortizzatori.*)
   springMaxV: 1,
   strokeK: 0.135,
   strokeMin: 65,
-  // 5.2.5.7.3: a place where a person can stand: ≥ 0,12 m² with the smaller side ≥ 250 mm
+  puStroke: 0.9,
+  puTypical: 80,
+  oilStrokeK: 0.0674,
+  oilTypical: [[222.2, 73.4], [485.5, 173.5]],
+  // 5.2.5.7.3: a place where a person can stand: ≥ 0,12 m² with the smaller side ≥ 250 mm; drawn 400 × 300 unless set
   roofFreeArea: 0.12,
   roofFreeSide: 250,
+  standDrawn: [400, 300],
   // 5.2.6.3.2.1 and 5.2.3: machine room: clear height of working areas, free area in front of the panel, access door [mm]
   roomH: 2100,
   panelFreeDepth: 700,
@@ -69,6 +78,20 @@ export const KV_VERT = {
   // walls of an old building that stand elsewhere at the top floor and in the headroom: the least clearance of the car
   // and the counterweight running past them [mm]
   headRun: 25,
+  // the machine's support (registry locale.basamento, locale.putrelle): pads under the mounts; the typical frame, beams,
+  // plates and plinth; frame and plinth past the bedplate at each end; the beams' bearing in the walls [mm]; steel
+  // S275 [MPa], γM0, E [MPa]; the beams' elastic deflection limit (span / this)
+  supportPads: 30,
+  supportFrame: 'UPN 200',
+  supportBeam: 'IPE 200',
+  supportPlate: 20,
+  supportPlinth: 250,
+  supportOverhang: 100,
+  supportBearing: 150,
+  steelFyk: 275,
+  steelGammaM0: 1.05,
+  steelE: 210000,
+  beamDeflection: 1500,
 } as const;
 
 export type CostanteVert = keyof typeof KV_VERT;
@@ -112,19 +135,42 @@ export const VOCI_VERT: readonly VoceVano[] = [
   },
   {
     id: 'spazi.tetto.superficie', gruppo: 'sezione', titolo: 'Superficie dove una persona può stare sul tetto di cabina',
-    valore: 'area continua ≥ 0,12 m² con il lato minore ≥ 250 mm (disegnata 400 × 300 mm); sopra di essa deve esserci l\'altezza dello spazio di rifugio',
+    valore: 'area continua ≥ 0,12 m² con il lato minore ≥ 250 mm (disegnata 400 × 300 mm, modificabile sulla pianta in testata); sopra di essa '
+      + 'deve esserci l\'altezza dello spazio di rifugio',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.3', fonte: EN, stato: 'da_verificare',
+    verifiche: ['h_stand'],
   },
   {
     id: 'contrappeso.schermo', gruppo: 'sezione', titolo: 'Schermo del contrappeso in fossa',
-    valore: 'dal punto più basso del contrappeso sugli ammortizzatori compressi fino ad almeno 2000 mm sopra il pavimento della fossa',
+    valore: 'dal punto più basso del contrappeso sugli ammortizzatori compressi fino ad almeno 2000 mm sopra il pavimento della fossa '
+      + '(altezza dello schermo modificabile sul progetto, mai sotto questo valore)',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.5.1', fonte: EN, stato: 'da_verificare',
+    verifiche: ['p_screen'],
   },
   {
     id: 'ammortizzatori.corsa', gruppo: 'sezione', titolo: 'Ammortizzatori ad accumulo di energia lineari (molle)',
     valore: 'ammessi fino a 1 m/s; corsa ≥ 0,135·v² m e comunque ≥ 65 mm; extracorsa della cabina e del contrappeso ≥ 0 (nessun minimo nella norma)',
-    riferimento: 'UNI EN 81-20:2020, 5.8.2.2', fonte: EN, stato: 'da_verificare',
-    verifiche: ['b_car', 'b_cw', 'b_runby'],
+    riferimento: 'UNI EN 81-20:2020, 5.8.2 (accumulo di energia, caratteristica lineare; sottoclausola da verificare sul testo)', fonte: EN, stato: 'da_verificare',
+    verifiche: ['b_type', 'b_car', 'b_cw', 'b_runby'],
+  },
+  {
+    id: 'ammortizzatori.poliuretano', gruppo: 'sezione', titolo: 'Ammortizzatori ad accumulo di energia non lineari (tamponi in poliuretano)',
+    valore: 'ammessi fino a 1 m/s come le molle; nessuna corsa minima da formula: il campo di masse del certificato di esame di tipo per la velocità '
+      + 'deve comprendere, per ogni tampone, la cabina vuota e a pieno carico (o il contrappeso); «completamente compresso» vuol dire compresso del '
+      + '90 % dell\'altezza, quindi la corsa è 0,9·H negli spazi in fossa e in testata; tampone tipico alti 80 mm (P+S Diepocell D, Ø da 80 a 220 mm; '
+      + 'ACLA AUTAN XL)',
+    riferimento: 'UNI EN 81-20:2020, 5.8.2 (caratteristica non lineare) e UNI EN 81-50:2020, 5.5 (esame di tipo); sottoclausole da verificare sul testo',
+    fonte: 'cataloghi P+S Diepocell (wwlift.de), ACLA AUTAN XL (acla.de), Stingl (corsa al 90 %); estratti di ricerca del 1° ottobre 2026', stato: 'da_verificare',
+    verifiche: ['b_type', 'b_car', 'b_cw'],
+  },
+  {
+    id: 'ammortizzatori.idraulici', gruppo: 'sezione', titolo: 'Ammortizzatori a dissipazione di energia (idraulici)',
+    valore: 'a ogni velocità; corsa ≥ 0,0674·v² m (arresto per gravità al 115 % della velocità nominale); la corsa ridotta con il controllo del '
+      + 'rallentamento non è considerata; ammortizzatori tipici: Oleo LSB10 fino a 1 m/s, alto 222,2 mm con corsa 73,4 mm; LSB16 fino a 1,6 m/s, '
+      + 'alto 485,5 mm con corsa 173,5 mm',
+    riferimento: 'UNI EN 81-20:2020, 5.8.2 (dissipazione di energia; sottoclausola da verificare sul testo)',
+    fonte: 'catalogo Oleo LSB e SEB (oleo.co.uk), estratti di ricerca del 1° ottobre 2026', stato: 'da_verificare',
+    verifiche: ['b_type', 'b_car', 'b_cw'],
   },
   {
     id: 'locale.macchina', gruppo: 'locale', titolo: 'Locale del macchinario',
@@ -195,6 +241,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
       + 'posto 800 mm sopra il pavimento del locale; funi di trazione: taglia × (corsa + 2 × tratto oltre la corsa), più deviazione o rinvii',
     riferimento: '—', fonte: 'stima del software, da sostituire con le misure di cantiere', stato: 'stima',
   },
+  ...VOCI_SUPPORTO,
 ];
 
 /** Constants of this registry, for the test that every one has its entry. */
@@ -204,9 +251,11 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'spazi.testata.parti': ['headEquip', 'headShoe', 'headBalustrade'],
   'spazi.fossa': ['pitClear', 'apron', 'apronClear'],
   'spazi.balaustra': ['parapetGap1', 'parapetGap2', 'parapetH1', 'parapetH2'],
-  'spazi.tetto.superficie': ['roofFreeArea', 'roofFreeSide'],
+  'spazi.tetto.superficie': ['roofFreeArea', 'roofFreeSide', 'standDrawn'],
   'contrappeso.schermo': ['cwScreen'],
   'ammortizzatori.corsa': ['springMaxV', 'strokeK', 'strokeMin'],
+  'ammortizzatori.poliuretano': ['puStroke', 'puTypical'],
+  'ammortizzatori.idraulici': ['oilStrokeK', 'oilTypical'],
   'locale.macchina': ['roomH', 'panelFreeDepth', 'panelFreeWidth', 'doorMinW', 'doorMinH'],
   'carichi.fossa': ['bufferFactor', 'k1Progressive', 'k1Roller', 'k1Instant'],
   'guide.spinte': ['k2Running', 'loadOffset'],
@@ -217,4 +266,6 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'foglio.stime': ['railTopGap', 'governorAbove'],
   'guide.staffe': ['bracketPitch', 'bracketFirst', 'bracketLast'],
   'distanze.testata': ['headRun'],
+  'locale.basamento': ['supportPads', 'supportFrame', 'supportBeam', 'supportPlate', 'supportPlinth', 'supportOverhang', 'supportBearing'],
+  'locale.putrelle': ['steelFyk', 'steelGammaM0', 'steelE', 'beamDeflection'],
 };

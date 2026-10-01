@@ -1,5 +1,7 @@
-// Machine room above the shaft: the room around the machine, its door, the control panel and the main switch.
-// Inputs and typical values; the drawings and the checks are in machine-room.ts.
+// Machine room above the shaft: the room around the machine, its door, the control panel and the main switch, the
+// machine's support. Inputs and typical values; the drawings and the checks are in machine-room.ts, the support in
+// support.ts.
+import type { MachineSupport } from './support';
 
 export interface RoomInputs {
   /** clear room, as a rectangle in plan [mm] */
@@ -24,6 +26,8 @@ export interface RoomInputs {
   panelW: number;
   panelD: number;
   panelH: number;
+  /** what the machine stands on (missing: levelling shims, the sheave's axis where the software puts it) */
+  support?: MachineSupport;
 }
 
 export const DEFAULT_ROOM: RoomInputs = {

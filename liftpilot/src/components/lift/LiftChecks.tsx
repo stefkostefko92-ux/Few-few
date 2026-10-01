@@ -1,8 +1,8 @@
 'use client';
 
 // Every check of the installation in one list: the machine's (traction, ropes, drive, brake, rescue) and the
-// shaft's (plan, section, machine room), with value, limit and result; where the simulation can replay a check, a
-// button runs it in 3D.
+// shaft's (plan, section, machine room and the beams under the machine), with value, limit and result; where the
+// simulation can replay a check, a button runs it in 3D.
 import { useTranslations } from 'next-intl';
 import type { Check } from '@/calc/types';
 import type { LiftDerived } from '@/lib/lift';
@@ -43,7 +43,7 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
                 <td>{simulate(c.id)}</td>
               </tr>
             ))}
-            {L.checks.map((c) => {
+            {[...L.checks, ...derived.supportChecks].map((c) => {
               const unit = c.unit ? ` ${c.unit}` : '';
               return (
                 <tr key={c.id}>

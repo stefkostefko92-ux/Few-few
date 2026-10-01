@@ -111,6 +111,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   key.shadow.mapSize.set(quality.shadowMap, quality.shadowMap);
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 20 });
   key.shadow.bias = -0.0005;
+  key.shadow.radius = quality.shadowRadius;
   const rim = new THREE.DirectionalLight(0xc9d5f0, 1.1);
   scene.add(key, key.target, rim, rim.target);
 

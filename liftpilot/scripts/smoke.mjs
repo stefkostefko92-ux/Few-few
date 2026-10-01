@@ -1,7 +1,7 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
 //   health → public page (no console or CSP errors) → sign-in → installation → calculation → saved snapshot with
 //   reproduced hash → calculation report (PDF) → shaft design by hand (a distance changed on its plan), its DXF, a
-//   calculation from it with the plan in its report → data of the installation, company logo, drawing set issued from
+//   calculation from it with the plan in its report → data of the installation, client and company logos, drawing set issued from
 //   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation, saved
 //   in one go (shaft design and calculation together), with its documents → new user who must change the password → a
 //   second company that cannot open the first company's calculation, shaft design, DXF, drawing set or lift design →
@@ -138,15 +138,20 @@ try {
   await page.locator('.plant-form input').first().fill('M 73 (Sx)');
   await page.click('.plant-form button[type="submit"]');
   await page.waitForSelector('.plant-form [role="status"]');
+  // the client's logo, beside its name in the title block
+  await page.setInputFiles('.panel input[name="logo"]', { name: 'cliente.png', mimeType: 'image/png', buffer: Buffer.from(LOGO_PNG, 'base64') });
+  await page.click('.panel:has(input[name="logo"]) button[type="submit"]');
+  await page.waitForSelector('.logo-preview img');
   await page.goto(`${BASE}/it/app/company`);
   await page.setInputFiles('input[name="logo"]', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(LOGO_PNG, 'base64') });
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('.logo-preview img');
   await page.goto(designCalcUrl);
-  await page.fill('main form input[placeholder="A.C."]', 'S.T.');
-  await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[placeholder="A.C."]) button[type="submit"]')]);
+  await page.fill('main form input[maxlength="12"]', 'S.T.');
+  await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
   const setUrl = page.url();
   await page.waitForSelector('.sheet-page svg.sheet-svg image');
+  assert.equal(await page.locator('.sheet-page svg.sheet-svg image').count(), 2, 'the company\'s and the client\'s logo on sheet 1');
   const sheets = await page.locator('nav.seg-row a').count();
   assert.ok(sheets >= 8, `sheets ${sheets}`);
   const setPdfHref = await page.getAttribute('a[href$="/pdf"]', 'href');
@@ -157,7 +162,7 @@ try {
   await page.goto(`${setUrl}?p=5`);
   await page.waitForSelector('.sheet-page svg.sheet-svg');
   await page.fill('main form input[maxlength="120"]', 'Seconda emissione di prova');
-  await page.fill('main form input[placeholder="A.C."]', 'S.T.');
+  await page.fill('main form:has(input[maxlength="120"]) input[maxlength="12"]', 'S.T.');
   const setPath = new URL(setUrl).pathname;
   await Promise.all([page.waitForURL((u) => /\/drawing-sets\/[a-z0-9]+$/.test(u.pathname) && u.pathname !== setPath, { timeout: 60000 }), page.click('main form:has(input[maxlength="120"]) button[type="submit"]')]);
   assert.match(await page.textContent('h1'), / R1$/, 'revision R1');
@@ -181,6 +186,12 @@ try {
   assert.equal((await liftRel.body()).subarray(0, 5).toString('latin1'), '%PDF-');
   const liftDxfHref = await page.getAttribute('.doc-links a[href$="/dxf"]', 'href');
   assert.equal((await page.request.get(`${BASE}${liftDxfHref}`)).status(), 200);
+  // the saved project exported: the drawing set as a draft PDF, every view as DXF and DWG
+  for (const [format, magic] of [['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015']]) {
+    const res = await page.request.get(`${BASE}${await page.getAttribute(`a[href^="/api/lift-designs/"][href$="/${format}"]`, 'href')}`);
+    assert.equal(res.status(), 200, format);
+    assert.equal((await res.body()).subarray(0, magic.length).toString('latin1'), magic, format);
+  }
   await page.goto(projectUrl);
   await page.waitForSelector('.lift-home .lift-facts');
 
@@ -248,6 +259,7 @@ try {
   assert.equal((await page.request.get(`${BASE}${setPdfHref}`)).status(), 404, 'drawing set PDF of another company');
   assert.equal((await page.goto(liftUrl)).status(), 404, 'lift design of another company');
   assert.equal((await page.request.get(`${BASE}${liftRelHref}`)).status(), 404, 'report of the lift design of another company');
+  for (const format of ['pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}${new URL(liftUrl).pathname.replace(/^\/it\/app/, '/api')}/${format}`)).status(), 404, `${format} export of another company`);
 
   if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser) });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');

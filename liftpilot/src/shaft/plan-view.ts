@@ -12,6 +12,7 @@ import { onWall, quad, walls } from './plan-walls';
 import { genericBracketPlan, panevSupportPlan } from './plan-staffe';
 import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from './sill';
 import { KV_VERT } from './norme-vert';
+import { standOf } from './section';
 import { RAILS } from './rails';
 import type { DoorLayout, Layout, Rail } from './types';
 
@@ -174,10 +175,10 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
 
 /** On the car roof: the refuge space at the back on the right, the free area of at least 0,12 m² at the back on the left. */
 export function roofSpaces(L: Layout): { refuge: Box; free: Box } {
-  const ci = L.carInner, [w, d] = KV_VERT.refugePlan[L.inputs.vertical.topRefuge], top = ci.y + ci.h - 60;
+  const ci = L.carInner, [w, d] = KV_VERT.refugePlan[L.inputs.vertical.topRefuge], top = ci.y + ci.h - 60, [sw, sd] = standOf(L.inputs.vertical);
   return {
     refuge: { x0: ci.x + ci.w - 60 - w, y0: Math.max(ci.y + 60, top - d), x1: ci.x + ci.w - 60, y1: top },
-    free: { x0: ci.x + 60, y0: top - 300, x1: ci.x + 460, y1: top },
+    free: { x0: ci.x + 60, y0: top - sd, x1: ci.x + 60 + sw, y1: top },
   };
 }
 

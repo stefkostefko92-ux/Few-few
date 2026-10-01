@@ -19,7 +19,10 @@ export function listProjects(user: SessionUser, archived: boolean) {
 }
 
 export function getProject(user: SessionUser, id: string) {
-  return prisma.project.findFirst({ where: { id, companyId: user.companyId }, include: { createdBy: { select: { name: true } } } });
+  return prisma.project.findFirst({
+    where: { id, companyId: user.companyId },
+    include: { createdBy: { select: { name: true } }, clientLogo: { select: { id: true, mime: true, data: true } } },
+  });
 }
 
 export function listCalculations(user: SessionUser, projectId: string) {
@@ -123,6 +126,7 @@ export function getDrawingSet(user: SessionUser, id: string) {
       project: { select: { id: true, name: true, archivedAt: true } },
       user: { select: { name: true } },
       logo: { select: { mime: true, data: true } },
+      clientLogo: { select: { mime: true, data: true } },
       calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, liftDesign: { select: { inputs: true } } } },
       shaftDesign: { select: DESIGN_SELECT },
     },

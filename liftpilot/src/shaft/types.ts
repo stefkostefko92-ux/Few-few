@@ -64,6 +64,15 @@ export interface CallStation {
   height: number;
 }
 
+/** Linings of the landing doors' openings (imbotti) where a new door with a smaller clear opening goes into an old
+ *  opening between the marbles: the side ones beside the portal, left and right as seen from the landing, and the top
+ *  one over the portal's head; the same at every landing door [mm]. */
+export interface Imbotti {
+  left: number;
+  right: number;
+  top: number;
+}
+
 /** The inner faces of the shaft at the top floor and in the headroom, where an old building may have them elsewhere
  *  than at the main floor: how far each stands in from the main floor's (negative: further out) [mm]. The car, its
  *  rails and the counterweight run plumb; the landing door of the top floor stays in line with the car. */
@@ -111,12 +120,15 @@ export type ShaftInputs = {
   governor?: string;
   /** the walls at the top floor and in the headroom (head.ts); missing: as at the main floor */
   head?: HeadWalls;
+  /** linings of the landing doors' openings (imbotti.ts); missing: none, the opening is the portal's */
+  imbotti?: Imbotti;
 } & Record<Allowance, number>;
 
 export type ShaftCheckId =
   | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_door' | 'v_door2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
   | 'v_place' | 'v_doorcar' | 'v_niche' | 'v_staffa' | 'v_head'
-  | 'h_refuge' | 'h_clear' | 'h_parapet' | 'p_refuge' | 'p_apron' | 'b_runby' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door';
+  | 'h_refuge' | 'h_clear' | 'h_parapet' | 'h_stand' | 'p_refuge' | 'p_apron' | 'p_screen' | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
+  | 'm_beam' | 'm_beamf';
 
 export interface ShaftCheck {
   id: ShaftCheckId;
@@ -125,7 +137,7 @@ export interface ShaftCheck {
   limit: number | null;
   /** decimals shown */
   dec: number;
-  unit: 'mm' | 'm²' | '';
+  unit: 'mm' | 'm²' | 'm/s' | 'MPa' | '';
 }
 
 export interface Rect {

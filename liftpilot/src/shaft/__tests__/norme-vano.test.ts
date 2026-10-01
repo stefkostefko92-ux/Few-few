@@ -7,7 +7,7 @@ import type { Access, CostanteVano, CostanteVert, ShaftCheckId } from '../index'
 
 const CHECKS: readonly ShaftCheckId[] = [
   'v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_door2', 'v_op', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen', 'v_place', 'v_doorcar', 'v_head',
-  'h_refuge', 'h_clear', 'h_parapet', 'p_refuge', 'p_apron', 'b_runby', 'b_car', 'b_cw', 'm_height', 'm_panel', 'm_door',
+  'h_refuge', 'h_clear', 'h_parapet', 'h_stand', 'p_refuge', 'p_apron', 'p_screen', 'b_runby', 'b_type', 'b_car', 'b_cw', 'm_height', 'm_panel', 'm_door', 'm_beam', 'm_beamf',
 ];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
 const voce = (id: string) => {
@@ -44,6 +44,7 @@ test('i testi riportano i numeri usati', () => {
   assert.ok(voce('porte.ingombro').valore.includes(`${it(KV.doorStackT2)}·L + ${KV.doorFrame} mm`));
   assert.ok(voce('porte.ingombro').valore.includes(`${KV.doorStackC2}·L + ${KV.doorFrame} mm`));
   assert.ok(voce('porte.cabina').valore.includes(`+ ${KV.carDoorMargin} mm`) && voce('porte.cabina').valore.includes(`≥ ${KV.carMinDepth} mm`));
+  assert.ok(voce('porte.imbotti').valore.includes(`${KV.doorHead} mm di architrave`) && voce('porte.imbotti').valore.includes(`2 × ${KV.doorPortal} mm di portale`));
   for (const t of [`da ${KV.cwMinLength} a ${KV.cwMaxLength} mm`, `pattini ${KV.cwShoe} mm`, `a ${KV.cwEndGap} mm`]) assert.ok(voce('ingombri.contrappeso.laterale').valore.includes(t), t);
   for (const t of [`a ${KV.cantRailEnd} mm`, `a ${KV.cantCwGap} mm`, `a ${KV.cantClipGap} mm dalle bride`]) assert.ok(voce('ingombri.arcata.zaino').valore.includes(t), t);
   for (const t of [`${KV.doorPortal} mm`, `${it(KV.doorOpT2[0])}·L + ${KV.doorOpT2[1]} mm`, `${KV.doorOpC2[0]}·L + ${KV.doorOpC2[1]} mm`, `${KV.doorOpClose} mm oltre la luce`,
@@ -73,7 +74,9 @@ test('sezione, locale macchina e carichi: ogni costante ha la sua voce e la voce
     for (const k of keys) {
       const v = KV_VERT[k];
       const wanted = k === 'loadOffset' ? ['1/8'] : k === 'refugeH' ? Object.values(KV_VERT.refugeH).map((h) => `alto ${h} mm`)
-        : k === 'refugePlan' ? Object.values(KV_VERT.refugePlan).map(([w, d]) => `${w} × ${d} mm`) : [it(v as number)];
+        : k === 'refugePlan' ? Object.values(KV_VERT.refugePlan).map(([w, d]) => `${w} × ${d} mm`)
+          : k === 'standDrawn' ? [`${KV_VERT.standDrawn[0]} × ${KV_VERT.standDrawn[1]} mm`]
+            : k === 'oilTypical' ? KV_VERT.oilTypical.flatMap(([h, st]) => [`alto ${it(h)} mm`, `corsa ${it(st)} mm`]) : [it(v as number)];
       for (const t of wanted) assert.ok(text.includes(t), `${id}: ${k} → «${t}»`);
     }
   }

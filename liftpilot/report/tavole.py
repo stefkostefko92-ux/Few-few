@@ -28,8 +28,8 @@ class Painter:
         self.cond = doc["cond"]
         self.patterns = doc["patterns"]
         self.forms = set()
-        logo = doc.get("images", {}).get("logo")
-        self.logo = ImageReader(io.BytesIO(base64.b64decode(logo["data"]))) if logo else None
+        # the logos by name: the company's ("logo") and the client's ("client")
+        self.images = {k: ImageReader(io.BytesIO(base64.b64decode(v["data"]))) for k, v in doc.get("images", {}).items()}
 
     # --- strokes and paths -------------------------------------------------------------------------------------
     def stroke_style(self, s):
@@ -114,14 +114,15 @@ class Painter:
             c.restoreState()
 
     def image(self, s):
-        if not self.logo:
+        img = self.images.get(s["ref"])
+        if not img:
             return
         b = s["box"]
-        iw, ih = self.logo.getSize()
+        iw, ih = img.getSize()
         bw, bh = b["x1"] - b["x0"], b["y1"] - b["y0"]
         k = min(bw / iw, bh / ih)
         w, h = iw * k, ih * k
-        self.c.drawImage(self.logo, (b["x0"] + (bw - w) / 2) * K, (b["y0"] + (bh - h) / 2) * K, w * K, h * K, mask="auto")
+        self.c.drawImage(img, (b["x0"] + (bw - w) / 2) * K, (b["y0"] + (bh - h) / 2) * K, w * K, h * K, mask="auto")
 
     # --- dispatch ----------------------------------------------------------------------------------------------
     def shape(self, s):

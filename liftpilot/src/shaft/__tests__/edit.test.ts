@@ -25,7 +25,26 @@ const CASES: readonly (readonly [string, (I: ShaftInputs) => ShaftInputs])[] = [
     { use: 'cw', wall: 'rear', at: 300, width: 1000, depth: 150 }, { use: 'light', wall: 'left', at: 1300, width: 300, depth: 100 },
     { use: 'duct', wall: 'right', at: 200, width: 200, depth: 100 }] })],
   ['contrappeso a sinistra in nicchia', (I) => ({ ...I, cw: 'left', niches: [{ use: 'cw', wall: 'left', at: 400, width: 1000, depth: 120 }] })],
+  ['imbotti tra i marmi, porta più piccola', (I) => ({ ...I, imbotti: { left: 120, right: 85, top: 140 } })],
+  ['imbotti, accessi opposti', (I) => ({ ...I, entrances: 'opposite', D: 2000, imbotti: { left: 60, right: 60, top: 0 } })],
 ];
+
+/** Each edit by choice of the drawings of `draw`: every entry chosen is taken, and the same dimension then shows it as
+ *  the one drawn. */
+function picks(I: ShaftInputs, draw: (I: ShaftInputs) => Chain[], name: string): number {
+  let n = 0;
+  draw(I).forEach((c, j) => c.edit?.forEach((e, i) => {
+    if (!e?.pick) return;
+    assert.ok(e.pick.current >= 0, `${name}: ${e.key} scelta attuale`);
+    e.pick.options.forEach((o, k) => {
+      const next = applyEdit(I, e, k);
+      assert.ok(next, `${name}: ${e.key} = ${o.set}`);
+      assert.equal(draw(next)[j]?.edit?.[i]?.pick?.current, k, `${name}: ${e.key} → ${o.label}`);
+    });
+    n++;
+  }));
+  return n;
+}
 const LEVELS: readonly PlanLevel[] = ['top', 'main', 'bottom', 'pit'];
 
 /** Each editable segment of the drawings of `draw`: given its length + d, the same segment reads it afterwards. */
@@ -33,7 +52,8 @@ function roundTrip(I: ShaftInputs, draw: (I: ShaftInputs) => Chain[], name: stri
   const before = draw(I);
   let n = 0;
   before.forEach((c, j) => c.edit?.forEach((e, i) => {
-    if (!e) return;
+    // a length of a catalogue or a table is changed by choice (picks below)
+    if (!e || e.pick) return;
     const now = reads(c, i);
     // a segment of no length has no lettering to click
     if (now === 0) return;
@@ -52,30 +72,43 @@ function roundTrip(I: ShaftInputs, draw: (I: ShaftInputs) => Chain[], name: stri
 for (const [name, make] of CASES) {
   test(`quote modificabili in pianta: ogni quota legge il valore scritto (${name})`, () => {
     const I = make(defaultInputs(1600, 1750));
-    let n = 0;
+    let n = 0, p = 0;
     for (const level of LEVELS) {
-      n += roundTrip(I, (J) => {
+      const draw = (J: ShaftInputs): Chain[] => {
         const L = layout(J), floor = level === 'top' ? J.vertical.floors.length - 1 : level === 'main' ? J.vertical.main : 0;
         return chains(planDims(L, level, floor, { level: 'x' }));
-      }, `${name}, ${level}`);
+      };
+      n += roundTrip(I, draw, `${name}, ${level}`);
+      p += picks(I, draw, `${name}, ${level}`);
+      // every dimension of the plan can be changed where it is drawn
+      for (const c of draw(I)) c.pts.slice(1).forEach((v, i) => {
+        if (Math.abs(v - c.pts[i]) >= 0.5) assert.ok(c.edit?.[i], `${name}, ${level}: quota ${Math.round(Math.abs(v - c.pts[i]))} (${c.text?.[i] ?? ''}) senza modifica`);
+      });
     }
     assert.ok(n > 30, `${n} quote`);
+    assert.ok(p >= 2, `${p} scelte`);
   });
 }
 
-test('quote modificabili in sezione A-A: altezze di fossa, testata, cabina, arcata, porte, ammortizzatori', () => {
-  const I = defaultInputs(1600, 1750), top = I.vertical.floors.length - 1;
+test('quote modificabili in sezione A-A: altezze di fossa, testata, interpiani, cabina, arcata, porte, imbotti, ammortizzatori', () => {
+  const I: ShaftInputs = { ...defaultInputs(1600, 1750), imbotti: { left: 100, right: 100, top: 150 } }, top = I.vertical.floors.length - 1;
   const views: readonly (readonly [SectionKind, number])[] = [['full', top], ['top', top], ['floor', 0], ['pit', 0]];
   const keys = new Set<string>();
   for (const [kind, floor] of views) {
-    roundTrip(I, (J) => {
+    const draw = (J: ShaftInputs): Chain[] => {
       const L = layout(J), es = chains(sectionDims(L, section(L), kind, floor, null));
       for (const c of es) for (const e of c.edit ?? []) if (e) keys.add(e.key);
       return es;
-    }, kind);
+    };
+    roundTrip(I, draw, kind);
+    picks(I, draw, kind);
+    for (const c of draw(I)) c.pts.slice(1).forEach((v, i) => {
+      if (Math.abs(v - c.pts[i]) >= 0.5) assert.ok(c.edit?.[i], `${kind}: quota ${c.text?.[i] ?? ''} senza modifica`);
+    });
   }
   for (const k of ['v.pit', 'v.headroom', 'v.opTop', 'doorHeight', 'v.carOutH', 'v.frameTop', 'v.carH', 'v.parapet', 'v.carBufferBase', 'v.carBufferH',
-    'v.frameBelow', 'v.cwBufferBase', 'v.cwBufferH', 'v.cwH']) assert.ok(keys.has(k), k);
+    'v.frameBelow', 'v.cwBufferBase', 'v.cwBufferH', 'v.cwH', 'v.platform', 'v.carBufferStroke', 'v.cwBufferStroke', 'v.cwRunby', 'v.cwScreen', 'f.0.rise',
+    'f.3.rise', 'imb.top', 'imb.height', 'v.topRefuge', 'v.pitRefuge']) assert.ok(keys.has(k), k);
 });
 
 test('sezione accorciata: le quote dicono le altezze vere, non quelle disegnate', () => {
@@ -125,12 +158,15 @@ test('quote a mano: cambiano gli accessi o il lato del contrappeso, restano solo
 
 test('chiavi delle quote: dati del vano, ingombri, quote a mano, altezze, locale macchina', () => {
   const I = defaultInputs(1600, 1750);
-  for (const [k, v] of [['W', 1700], ['doorHeight', 2100], ['sillGap', 25], ['plan.cwLen', 600], ['v.pit', 1500], ['room.doorW', 900]] as const) {
+  for (const [k, v] of [['W', 1700], ['doorHeight', 2100], ['sillGap', 25], ['plan.cwLen', 600], ['v.pit', 1500], ['room.doorW', 900], ['f.1.rise', 3200],
+    ['v.cwScreen', 2200], ['v.standW', 450], ['imb.left', 90], ['imb.top', 120], ['imb.marble', 1200], ['imb.height', 2400]] as const) {
     const J = withValue(I, k, v);
     assert.ok(J, k);
     assert.equal(valueOf(J, k), v, k);
   }
   assert.equal(withValue(I, 'v.floors', 1), null);
+  assert.equal(withValue(I, `f.${I.vertical.floors.length - 1}.rise`, 3000), null, 'l\'ultima fermata non ha interpiano');
+  assert.equal(withValue(I, 'calc.h', 300), null, 'i dati del calcolo li applica chi li tiene');
   assert.equal(withValue(I, 'plan.nothing', 1), null);
   assert.equal(withValue({ ...I, room: null }, 'room.W', 3000), null);
   // the rope drop of a counterweight at the back keeps the car's depth where it is
@@ -140,4 +176,20 @@ test('chiavi delle quote: dati del vano, ingombri, quote a mano, altezze, locale
   assert.ok(J);
   assert.equal(J.plan?.B, L.B);
   assert.equal(J.cwWallGap, I.cwWallGap - 100);
+});
+
+test('il vano cambia misura: la cabina e ciò che le sta intorno si adattano, le porte fissate a mano restano se aprono ancora sulla cabina', () => {
+  // a door set by hand where it still opens on the car the wider shaft gets
+  const I0 = defaultInputs(1600, 1750), L0 = layout(I0), door = layout({ ...I0, W: 1800 }).carInner.x + 30;
+  const I: ShaftInputs = { ...I0, plan: { A: L0.A - 100, B: L0.B - 100, carX: L0.car.x + 20, doorA: door, cwPos: L0.cw.x } };
+  const wider: ShaftInputs = { ...I, W: 1800 }, kept = keptPlan(I, wider);
+  assert.deepEqual(kept, { doorA: door });
+  const L = layout({ ...wider, plan: kept });
+  assert.ok(L.A > L0.A, `la cabina cresce col vano: ${L.A} > ${L0.A}`);
+  assert.ok(L.checks.every((c) => c.status === 'ok'), 'tutto conforme');
+  // smaller: a door that would no longer open on the car goes back to the one worked out
+  const small: ShaftInputs = { ...I, W: 1250, D: 1450 }, L2 = layout({ ...small, plan: keptPlan(I, small) });
+  assert.ok(!L2.checks.some((c) => c.id === 'v_doorcar' && c.status !== 'ok'), 'nessuna porta fuori dalla cabina');
+  // the same size: what was set by hand stays
+  assert.deepEqual(keptPlan(I, { ...I, Q: 630 }), I.plan);
 });

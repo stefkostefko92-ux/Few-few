@@ -7,14 +7,15 @@
 import { SHEAVE_GRID, compareOptions, readInputs, sizeMachine } from '@/calc/index';
 import { deflectorAngle } from '@/calc/geometry';
 import type { FormValues, SizingOption } from '@/calc/types';
-import { layout, section, travel, type Layout, type ShaftInputs } from '@/shaft';
+import { layout, section, travel, type Layout, type ShaftCheck, type ShaftInputs } from '@/shaft';
 import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import { simModel, type SimModel } from '@/sim';
 import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
 import { bestFit, catalogValues, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
-import { machineSpec } from './machine';
+import { machineSpec, sheaveAxis } from './machine';
+import { supportChecks, supportLoad } from './support';
 import { KL } from './norme';
 
 /** Values the software fills in (true) or takes as entered (false). */
@@ -58,6 +59,8 @@ export interface LiftDerived {
    *  equal [mm]; null with a diverting pulley or the machine below */
   calata: number | null;
   machine: MachineSpec;
+  /** the checks of the machine's support in the room (the beams under it), at the load sheet 1 counts */
+  supportChecks: readonly ShaftCheck[];
   /** the rope scheme of a machine below; null with the machine above */
   bottom: BottomScheme | null;
   /** its runs to the machine do not clear the counterweight and its brackets: the gap behind the counterweight as
@@ -83,7 +86,7 @@ export const carMassEstimate = (Q: number): number => Math.ceil((KL.carMassRatio
  *  the head pulleys (registry impianto.L0). */
 function ropeBeyond(S: ShaftInputs, V: FormValues, headOver: number | null): number {
   const vt = S.vertical, D = num(V, 'n_D');
-  const above = headOver !== null ? headOver : S.room ? S.room.slab + KL.sheaveAxisPerD * D : 0;
+  const above = headOver !== null ? headOver : S.room ? S.room.slab + sheaveAxis(S.room, D) : 0;
   return Math.max(0.1, m3((vt.headroom - vt.frameTop + above) / 1000));
 }
 
@@ -184,11 +187,13 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
     L0: inp.auto.L0 ? 'auto' : 'entered', dx: inp.auto.dx ? 'auto' : 'entered', Hv: inp.auto.Hv ? 'auto' : 'entered',
     machine: inp.auto.machine && !noProposal ? 'auto' : 'entered',
   };
-  const machine: MachineSpec = machineSpec(analysis.ctx);
+  const machine: MachineSpec = machineSpec(analysis.ctx, analysis.ctx.N.mass, '', S.room);
+  const supportCk = supportChecks(L, machine, supportLoad(analysis.ctx, analysis.res.Mcw));
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r) : null;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {
-    shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, calata, machine, bottom: scheme, bottomGap, headPulleys: g ? 2 + extraBends(g) : 0, catalog,
+    shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, calata, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
+    headPulleys: g ? 2 + extraBends(g) : 0, catalog,
     sim: simModel(I, N, analysis.res, Sec, vt),
   };
 }

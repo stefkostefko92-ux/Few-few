@@ -48,12 +48,18 @@ export function websiteLd(locale: Locale): JsonLd {
   return { '@type': 'WebSite', '@id': `${publicBaseUrl()}/#website`, name: SITE_NAME, url: `${publicBaseUrl()}/${locale}`, inLanguage: locale, publisher: { '@id': 'https://carbonstealth.eu/#org' } };
 }
 
-export function softwareLd(locale: Locale, description: string): JsonLd {
+export function softwareLd(locale: Locale, description: string, features: readonly string[] = []): JsonLd {
   return {
-    '@type': 'SoftwareApplication', name: SITE_NAME, applicationCategory: 'BusinessApplication', applicationSubCategory: 'Engineering calculation',
+    '@type': 'SoftwareApplication', name: SITE_NAME, applicationCategory: 'BusinessApplication', applicationSubCategory: 'Lift design and engineering calculation',
     operatingSystem: 'Web', inLanguage: ['it', 'en', 'bg'], description, url: `${publicBaseUrl()}/${locale}`,
+    ...(features.length ? { featureList: [...features] } : {}),
     publisher: { '@id': 'https://carbonstealth.eu/#org' }, areaServed: { '@type': 'Country', name: 'Italia' },
   };
+}
+
+/** A process in steps (HowTo): its name and each step's name and text. */
+export function howToLd(name: string, steps: readonly { name: string; text: string }[]): JsonLd {
+  return { '@type': 'HowTo', name, step: steps.map((x, i) => ({ '@type': 'HowToStep', position: i + 1, name: x.name, text: x.text })) };
 }
 
 export function breadcrumbLd(items: readonly { name: string; url: string }[]): JsonLd {

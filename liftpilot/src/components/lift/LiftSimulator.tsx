@@ -58,8 +58,12 @@ function summary(run: SimRun, t: ReturnType<typeof useTranslations<'lift'>>, fmt
   return run.verdict === 'ok' ? t('sum_buffer_ok', { x, stroke, g: fmt(s.accel / 9.81, 2) }) : t('sum_buffer_fail', { stroke });
 }
 
+/** The simulator over the whole screen: the browser's full screen, or the window where that is refused. */
+type Full = 'off' | 'native' | 'window';
+
 export default function LiftSimulator({ derived, fmt, api }: Props) {
   const t = useTranslations('lift');
+  const [full, setFull] = useState<Full>('off');
   const m = derived.sim, main = derived.shaft.vertical.main, above = derived.analysis.ctx.I.layout !== 'bottom';
   const [clock] = useState(createClock);
   const [sc, setSc] = useState<ScenarioParams>(() => defaultScenario('ride', m, main));
@@ -81,6 +85,33 @@ export default function LiftSimulator({ derived, fmt, api }: Props) {
       section.current?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     },
   }), []);
+
+  // the browser leaves its full screen (Esc, a gesture): the simulator goes back into the page
+  useEffect(() => {
+    const sync = (): void => setFull((f) => (document.fullscreenElement === section.current ? 'native' : f === 'native' ? 'off' : f));
+    document.addEventListener('fullscreenchange', sync);
+    return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
+  // over the window: the page under it does not scroll, Esc closes it
+  useEffect(() => {
+    if (full !== 'window') return;
+    const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') setFull('off'); };
+    document.documentElement.classList.add('sim-full-open');
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.documentElement.classList.remove('sim-full-open');
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [full]);
+  const toggleFull = (): void => {
+    const el = section.current;
+    if (!el) return;
+    if (full === 'native') void document.exitFullscreen().catch(() => setFull('off'));
+    else if (full === 'window') setFull('off');
+    // not on an iPhone nor in every embedded frame: there the window
+    else if (document.fullscreenEnabled && typeof el.requestFullscreen === 'function') el.requestFullscreen({ navigationUI: 'hide' }).then(() => setFull('native'), () => setFull('window'));
+    else setFull('window');
+  };
 
   const set = (next: ScenarioParams, play: boolean): void => {
     autoplay.current = play;
@@ -129,7 +160,7 @@ export default function LiftSimulator({ derived, fmt, api }: Props) {
 
   const specs = useMemo(() => chartsFor(run, (k) => t(k), m.phys.model.R, m.I.r, m.phys.Mn, m.I.Q), [run, t, m]);
   return (
-    <section ref={section} className="lift-sim" aria-label={t('sim_title')}>
+    <section ref={section} className={full === 'off' ? 'lift-sim' : 'lift-sim full'} aria-label={t('sim_title')}>
       <div className="stage-wrap">
         <LiftStage derived={derived} clock={clock} view={view} zones={zones} label={t('stage_label')} texts={{ loading: t('loading3d'), failed: t('no3d') }} />
         <dl ref={hud} className="hud" aria-live="off">
@@ -143,6 +174,11 @@ export default function LiftSimulator({ derived, fmt, api }: Props) {
         <div className="views" role="radiogroup" aria-label={t('views')}>
           {VIEWS.map((v) => <button key={v} type="button" role="radio" aria-checked={view === v} className={view === v ? 'on' : undefined} onClick={() => setView(v)}>{t(`view_${v}`)}</button>)}
           <label className="check"><input type="checkbox" checked={zones} onChange={(e) => setZones(e.target.checked)} /> {t('zones')}</label>
+          <button type="button" className="full" aria-pressed={full !== 'off'} aria-label={t(full === 'off' ? 'full_on' : 'full_off')} title={t(full === 'off' ? 'full_on' : 'full_off')} onClick={toggleFull}>
+            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+              <path d={full === 'off' ? 'M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5' : 'M8 3v5H3M17 8h-5V3M12 17v-5h5M3 12h5v5'} />
+            </svg>
+          </button>
         </div>
       </div>
       <SimControls sc={sc} choose={choose} set={set} labels={m.labels} here={here} Q={m.I.Q} T={duration(run.series)} clock={clock} fmt={fmt} />

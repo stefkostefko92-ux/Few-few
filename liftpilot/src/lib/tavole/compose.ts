@@ -52,6 +52,7 @@ export interface StoredSet {
 /** The input of the drawing set of a stored set; null when a stored part does not read back. */
 export function storedInput(
   values: FormValues, layout: Layout, s: StoredSet, logo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null, marks: ValueMarks = NO_MARKS,
+  clientLogo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null = null,
 ): TavoleInput | null {
   const plant = plantSchema.safeParse(s.plant ?? {}), project = projectDataSchema.safeParse(s.projectData), revs = revisionsSchema.safeParse(s.revisions);
   if (!plant.success || !project.success || !revs.success) return null;
@@ -59,6 +60,7 @@ export function storedInput(
   return {
     values, layout, plant: plant.data, marks, project: project.data,
     company: { name: s.companyName, logo: logo ? { mime: logo.mime, data: Buffer.from(logo.data).toString('base64') } : null },
+    clientLogo: clientLogo ? { mime: clientLogo.mime, data: Buffer.from(clientLogo.data).toString('base64') } : null,
     set: { number: s.number, issuedAt: s.createdAt, author: s.authorInitials, revisions },
   };
 }

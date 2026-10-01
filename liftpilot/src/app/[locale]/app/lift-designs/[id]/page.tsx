@@ -69,6 +69,17 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
             <Link className="btn" href={`/app/shaft-designs/${d.shaftDesign.id}`}>{t('doc_shaft')}</Link>
           </div>
         ) : <p className="note">{t('docs_refused')}</p>}
+        {same && can(user.role, 'report:download') ? (
+          <div className="panel">
+            <h3>{t('doc_export')}</h3>
+            <p className="note">{t('export_lead')}</p>
+            <div className="doc-links">
+              <a className="btn" href={`/api/lift-designs/${d.id}/pdf`}>{t('doc_pdf')}</a>
+              <a className="btn" href={`/api/lift-designs/${d.id}/dxf`}>{t('doc_dxf_all')}</a>
+              <a className="btn" href={`/api/lift-designs/${d.id}/dwg`}>{t('doc_dwg')}</a>
+            </div>
+          </div>
+        ) : null}
         {same && editable ? (
           <div className="panel">
             <h3>{tt('title')}</h3>

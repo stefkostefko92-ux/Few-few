@@ -5,6 +5,7 @@
 // the text of the standards.
 
 import type { Stato } from '../calc/norme';
+import { VOCI_PORTE } from './norme-porte';
 import { VOCI_VERT } from './norme-vert';
 import type { Access, ShaftCheckId } from './types';
 
@@ -47,6 +48,8 @@ export const KV = {
   // 40/10 VF, taken on the long side): telescopic 1,5·L + 50, its closing side 25 mm past the opening; centre opening
   // 2·L + 60; 150 mm deep
   doorPortal: 50,
+  // the portal's head over the clear opening on the landing (registry porte.imbotti)
+  doorHead: 60,
   doorOpT2: [1.5, 50],
   doorOpC2: [2, 60],
   doorOpClose: 25,
@@ -161,18 +164,6 @@ export const VOCI_VANO: readonly VoceVano[] = [
     costanti: ['dm236Existing'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side'],
   },
   {
-    id: 'porte.ingombro', gruppo: 'porte', titolo: 'Ingombro della porta di piano lungo la parete del vano',
-    valore: 'telescopica a 2 ante: 1,5·L + 110 mm; centrale a 2 ante: 2·L + 110 mm (L = luce netta)',
-    riferimento: 'dato del fornitore delle porte', fonte: 'valori tipici: scelta del software da confermare con il fornitore', stato: 'scelta',
-    costanti: ['doorStackT2', 'doorStackC2', 'doorFrame'], verifiche: ['v_door'],
-  },
-  {
-    id: 'porte.cabina', gruppo: 'porte', titolo: 'Larghezza della cabina rispetto alla porta',
-    valore: 'larghezza interna ≥ luce della porta + 50 mm; profondità interna ≥ 800 mm',
-    riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
-    costanti: ['carDoorMargin', 'carMinDepth'], verifiche: ['v_fit'],
-  },
-  {
     id: 'ingombri.tipici', gruppo: 'ingombri', titolo: 'Ingombri tipici nel vano (modificabili su ogni progetto)',
     valore: 'profondità della porta di piano 80 mm; gioco tra le soglie 30 mm; porta di cabina 80 mm; pareti della cabina 35 mm; '
       + 'guide e staffe della cabina 165 mm per lato; cabina–contrappeso 60 mm; spessore del contrappeso 140 mm; '
@@ -201,20 +192,6 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'bride che tengono i piedi delle guide sulle staffe (bride forgiate della misura della guida, con la piastra oltre il piede)',
     riferimento: '—', fonte: 'scelta del software (principio: cataloghi di arcate a zaino); disposizione da confermare con il fornitore dell\'arcata', stato: 'scelta',
     costanti: ['cantRailEnd', 'cantCwGap', 'cantClipGap'],
-  },
-  {
-    id: 'porte.operatore', gruppo: 'porte', titolo: 'Vano porta di piano e operatore della porta di cabina',
-    valore: 'vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 1,5·L + 50 mm con porta telescopica '
-      + '(il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con il fornitore scelto: '
-      + '2SG FLY/LIKE 1,5·L + 40 mm (telescopica) e 2·L + 20 mm (centrale), Fermator 40/10 1,5·L + 50 mm e 2·L + 50 mm; con due accessi adiacenti '
-      + 'gli operatori non devono sovrapporsi all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
-    riferimento: 'dato del fornitore delle porte',
-    fonte: 'cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), '
-      + 'letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore. Le formule con + 40 danno esattamente la lunghezza '
-      + 'delle soglie Fermator di catalogo (2 ante telescopiche, luce 900: 1390 mm; 2 ante centrali, luce 700: 1440 mm): potrebbero essere la '
-      + 'soglia e non la trave dell\'operatore. Wittur, Prisma, Dapa e CMM: lunghezza dell\'operatore non trovata',
-    stato: 'da_verificare',
-    costanti: ['doorPortal', 'doorOpT2', 'doorOpC2', 'doorOpClose', 'doorOpDepth', 'doorOpMakers'], verifiche: ['v_door', 'v_door2', 'v_op'],
   },
   {
     id: 'ingombri.nicchie', gruppo: 'ingombri', titolo: 'Nicchie nelle pareti del vano',
@@ -249,15 +226,6 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200)',
   },
   {
-    id: 'porte.bottoniera', gruppo: 'porte', titolo: 'Bottoniera di piano',
-    valore: 'accanto a ogni porta di piano, sul pianerottolo: per default a destra guardando la porta, il centro della pulsantiera a 150 mm '
-      + 'dal vano della porta e i pulsanti a 1100 mm dal pavimento; pulsantiera di 120 × 300 mm, sporgente 15 mm dal muro; lato, distanza '
-      + 'e altezza modificabili su ogni progetto',
-    riferimento: 'altezze e distanze dagli angoli per l\'accessibilità da verificare (DM 236/1989, UNI EN 81-70)',
-    fonte: 'scelta del software', stato: 'scelta',
-    costanti: ['callOffset', 'callHeight', 'callPanel'],
-  },
-  {
     id: 'modello.passo', gruppo: 'modello_vano', titolo: 'Dimensioni proposte della cabina',
     valore: 'la cabina più grande che entra nel vano, a passi di 10 mm, con superficie entro il limite della portata; a parità di superficie, la più profonda',
     riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
@@ -278,6 +246,7 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'posizioni e ingombri tipici, da sostituire con i dati dei fornitori; il rilievo dal disegno CAD va controllato in cantiere',
     riferimento: '—', fonte: 'limite del modello attuale', stato: 'scelta',
   },
+  ...VOCI_PORTE,
   ...VOCI_VERT,
 ];
 

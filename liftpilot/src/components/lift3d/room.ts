@@ -8,7 +8,7 @@
 // ends (pulleys.ts). Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import type { Layout } from '@/shaft';
+import { supportOf, type Layout, type MachineSupport } from '@/shaft';
 import { KL, planeAt, type RopePlane, type RopeRig } from '@/lib/lift';
 import { buildMachine, CONDUIT_END, DIM, ROPE_LENGTH } from '../machine/parts';
 import { createMaterials, type MachineMaterials } from '../machine/materials';
@@ -17,8 +17,11 @@ import { pulley, pulleyFrames } from './pulleys';
 import { ropeWidths, type Opening } from './slab';
 import type { GovernorSpot } from './governor';
 import { buildShell, shellsOf, switchAt } from './roomshell';
+import { buildSupport, wallsAlong } from './support';
 import { mainFeed, rectOf, roomPoint, trunking, trunkingRoute, type Rect } from './wiring';
 import type { LiftMaterials, Side } from './materials';
+
+const SHIMS: MachineSupport = { kind: 'shims' };
 
 export interface RoomModel {
   /** walls of the machine's room, by side (x-ray); the rest */
@@ -86,17 +89,14 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   const local = new THREE.Vector3(0, DIM.yWheel * s, (DIM.zSheave + e) * s).applyEuler(machine.group.rotation);
   machine.group.position.copy(centre).sub(local);
   common.add(machine.group);
-  // levelling shims under the four mounts, down to the floor (the sheave's axis sits at its height over the floor)
-  const gap = (rig.sheave.y - rig.roomFloor) / s - DIM.yWheel;
-  if (gap > 0.0002) {
-    const shim = new THREE.BoxGeometry(0.12, gap, 0.1);
-    for (const x of [-0.36, 0.95]) for (const z of [-DIM.zBeam, DIM.zBeam]) {
-      const m = new THREE.Mesh(shim, M.galv);
-      m.position.set(x, -gap / 2, z);
-      m.receiveShadow = true;
-      machine.group.add(m);
-    }
-  }
+  // what the machine stands on, down to the floor (the sheave's axis sits at its height over the floor): above the
+  // shaft the room's support (shims, frame, beams, plates, plinth), below it levelling shims
+  const gap = ((rig.sheave.y - rig.roomFloor) / s - DIM.yWheel) * s, sup = rig.bottom ? SHIMS : supportOf(I.room);
+  const walls = R ? wallsAlong([machine.group.position.x * 1000, -machine.group.position.z * 1000], pose.xDir, { x0: -R.shaftX, y0: -R.shaftY, x1: R.W - R.shaftX, y1: R.D - R.shaftY }) : null;
+  const base = buildSupport(sup, s, D, gap, walls, M);
+  base.position.copy(machine.group.position);
+  base.rotation.copy(machine.group.rotation);
+  common.add(base);
   // the motor's cable: in a floor trunking to the controller's cabinet, or into the floor; the main switch's feed
   machine.group.updateMatrixWorld(true);
   const end = new THREE.Vector3(...CONDUIT_END).applyMatrix4(machine.group.matrixWorld), wires = new Batch();
@@ -106,11 +106,15 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     const uc = Math.min(R.panelAt + R.panelW - 120, Math.max(R.panelAt + 120, tip[across] - (across ? y0 : x0)));
     const from = roomPoint(R, x0, y0, pw, uc, R.panelD - 60), o = roomPoint(R, x0, y0, pw, uc, R.panelD - 59);
     const blocked: Rect[] = rig.bottom ? [] : openings.map((op) => rectOf(op.pts, op.curb ? 25 : 0));
-    // the bedframe, the pulleys' stands on the floor, the governor, the way through the door (it opens outward)
+    // the bedframe (and a frame or plinth under it), the pulleys' stands on the floor, the governor, the way through
+    // the door (it opens outward)
+    base.updateMatrixWorld(true);
+    const foot = new THREE.Box3().setFromObject(base), wide = sup.kind === 'frame' || sup.kind === 'plinth';
     blocked.push(rectOf([[-0.52, -0.2], [1.12, -0.2], [1.12, 0.2], [-0.52, 0.2]].map(([x, zz]) => {
       const p = new THREE.Vector3(x, 0, zz).applyMatrix4(machine.group.matrixWorld);
       return [p.x * 1000, -p.z * 1000] as const;
     })));
+    if (wide) blocked.push(rectOf([[foot.min.x * 1000, -foot.max.z * 1000], [foot.max.x * 1000, -foot.min.z * 1000]]));
     const half = ropeWidths(n, d).pulley;
     for (const w of rig.wheels) {
       if (rig.bottom || w.role === 'sheave' || w.y * 1000 <= ceiling) continue;
