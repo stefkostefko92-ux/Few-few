@@ -2,6 +2,7 @@
 // between which the lock's rollers go. The car's travel sweeps every height, so the check is in plan: the cells of a
 // millimetre that the parts of a car entrance and of the landing entrance on the same wall cover, along the wall (u) and
 // from it (v), never coincide. The vanes and the rollers do share v (the coupler takes the rollers), never u.
+// Motion: none, nothing is drawn here; the scene's prefers-reduced-motion handling is in LiftStage.tsx.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three/webgpu';
