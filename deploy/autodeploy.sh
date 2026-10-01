@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma argano}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -149,9 +149,10 @@ PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
 # инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
 PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
 
-# argano (Docker Compose: app + db, host nginx + Let's Encrypt). Тайните са в стабилния път извън releases/ (600);
-# при пръв деплой argano/deploy/deploy.sh ги генерира и отпечатва паролата на администратора веднъж.
-ARGANO_ENV="${ARGANO_ENV:-/opt/few-few/shared/argano/.env}"
+# liftpilot (Docker Compose: app + db, host nginx + Let's Encrypt). Тайните са в стабилния път извън releases/ (600);
+# при пръв деплой liftpilot/deploy/deploy.sh ги генерира (паролата на администратора — от LIFTPILOT_ADMIN_PASSWORD
+# или случайна, отпечатана веднъж); LIFTPILOT_SMTP_USER/LIFTPILOT_SMTP_PASS — данните на Brevo за писмата.
+LIFTPILOT_ENV="${LIFTPILOT_ENV:-/opt/few-few/shared/liftpilot/.env}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1317,19 +1318,19 @@ deploy_piuma() {
   fi
 }
 
-# ── 3й) argano — Docker Compose (app + db) зад nginx на хоста ─────────────────
-# Цялата логика е в argano/deploy/deploy.sh (идемпотентен): тайни при пръв деплой, pg_dump ПРЕДИ миграцията
+# ── 3й) liftpilot — Docker Compose (app + db) зад nginx на хоста ──────────────
+# Цялата логика е в liftpilot/deploy/deploy.sh (идемпотентен): тайни при пръв деплой, pg_dump ПРЕДИ миграцията
 # (без бекъп няма миграция), build + up, health с маркер, nginx vhost + certbot. Тук само го викаме и проверяваме.
-deploy_argano() {
-  local d="$SRC/argano"
-  [ -d "$d" ] || { warn "Няма argano/ в архива — пропускам."; return; }
-  log "Разгръщам argano (Docker Compose)…"
-  command -v docker >/dev/null || { warn "argano: липсва docker — пропускам."; deploy_failed=1; return; }
+deploy_liftpilot() {
+  local d="$SRC/liftpilot"
+  [ -d "$d" ] || { warn "Няма liftpilot/ в архива — пропускам."; return; }
+  log "Разгръщам liftpilot (Docker Compose)…"
+  command -v docker >/dev/null || { warn "liftpilot: липсва docker — пропускам."; deploy_failed=1; return; }
   # `( … ) || { … }`: при `set -e` провал тук не бива да спира следващите проекти.
-  ( cd "$d" && ARGANO_ENV="$ARGANO_ENV" bash deploy/deploy.sh ) \
-    || { warn "argano: deploy.sh се провали — старите контейнери остават както са."; deploy_failed=1; return; }
-  local p; p="$(grep -E '^APP_PORT=' "$ARGANO_ENV" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
-  health "http://127.0.0.1:${p:-4320}/api/health" "argano" '"app":"argano"' || deploy_failed=1
+  ( cd "$d" && LIFTPILOT_ENV="$LIFTPILOT_ENV" bash deploy/deploy.sh ) \
+    || { warn "liftpilot: deploy.sh се провали — старите контейнери остават както са."; deploy_failed=1; return; }
+  local p; p="$(grep -E '^APP_PORT=' "$LIFTPILOT_ENV" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
+  health "http://127.0.0.1:${p:-4320}/api/health" "liftpilot" '"app":"liftpilot"' || deploy_failed=1
 }
 
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
@@ -1635,7 +1636,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
-    argano)     deploy_argano ;;
+    liftpilot)  deploy_liftpilot ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
