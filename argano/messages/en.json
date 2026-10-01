@@ -562,7 +562,13 @@
     "nc_add_cw": "+ Counterweight",
     "nc_add_light": "+ Lighting",
     "nc_add_duct": "+ Trunking",
-    "nc_hint": "Distance from the corner: on the front and rear walls from the left one, on the side walls from the front one. A counterweight in a niche gives the car the niche's depth. The dimensions can also be changed by clicking them on the plan."
+    "nc_hint": "Distance from the corner: on the front and rear walls from the left one, on the side walls from the front one. A counterweight in a niche gives the car the niche's depth. The dimensions can also be changed by clicking them on the plan.",
+    "dm_title": "Car door operator",
+    "dm_generic": "generic (the longest of the catalogues)",
+    "dm_2sg": "2SG FLY / LIKE",
+    "dm_fermator": "Fermator 40/10",
+    "gov_title": "Overspeed governor",
+    "gov_auto": "by the rated speed (PFB {model})"
   },
   "tavole": {
     "title": "Drawing set",
@@ -796,6 +802,12 @@
     "hint_bottom_pulleys": "Head pulleys: {n}. The calculation for a machine below counts 2; {extra} more as extra simple bends.",
     "hint_bottom_under": "Accessible space under the shaft: safety gear on the counterweight (or a solid pier down to the ground) and a pit floor for the buffers’ reactions (EN 81-20, 5.2.5.4).",
     "hint_bottom_gap": "The runs to the machine do not pass behind the counterweight: widen the gap between the counterweight and the wall from {now} to {need} mm (on the plan).",
-    "hint_bottom_gap_none": "The runs to the machine do not pass behind the counterweight even with 1.5 m more gap (now {now} mm): use another scheme or a different shaft."
+    "hint_bottom_gap_none": "The runs to the machine do not pass behind the counterweight even with 1.5 m more gap (now {now} mm): use another scheme or a different shaft.",
+    "cat_brand": "Machine from the catalogue of",
+    "cat_grid": "calculation grid (no catalogue)",
+    "cat_model": "Model",
+    "cat_any": "the smallest that passes",
+    "cat_fit": "{model}: ratio {ratio}, allowed static load {stat} kg; with this ratio the speed is off by {dv} % and the inverter brings it back to the rated one. Data from extracts of the maker’s pages: check them on the data sheet.",
+    "cat_miss": "No {brand} machine passes the checks with these data: the proposal comes from the calculation grid."
   }
 }

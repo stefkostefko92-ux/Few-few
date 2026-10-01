@@ -16,20 +16,24 @@ export interface ValueMarks {
   machineProposed: boolean;
   /** the rope scheme of a machine below, as entered (bottom.ts) */
   bottom?: BottomScheme | null;
+  /** the maker's machine the proposal took (catalog.ts) */
+  catalog?: { brand: string; model: string; ratio: string; staticKg: number; src: string } | null;
 }
 
-export const NO_MARKS: ValueMarks = { pEstimate: false, geometry: [], machineProposed: false, bottom: null };
+export const NO_MARKS: ValueMarks = { pEstimate: false, geometry: [], machineProposed: false, bottom: null, catalog: null };
 
 /**
  * From the switches of the form as saved. The machine counts as proposed only when the derivation that made the
  * calculation is known (it reproduces the stored values) and found a machine; otherwise nothing is claimed about it.
  */
-export function valueMarks(auto: AutoFlags, derived: Pick<LiftDerived, 'origin'> | null, bottom: BottomScheme | null = null): ValueMarks {
+export function valueMarks(auto: AutoFlags, derived: Pick<LiftDerived, 'origin' | 'catalog'> | null, bottom: BottomScheme | null = null): ValueMarks {
+  const f = derived?.origin.machine === 'auto' ? derived.catalog?.fit ?? null : null;
   return {
     pEstimate: auto.P,
     geometry: (['L0', 'dx', 'Hv'] as const).filter((k) => auto[k]),
     machineProposed: derived?.origin.machine === 'auto',
     bottom,
+    catalog: f && f.ratio ? { brand: f.machine.brand, model: f.machine.model, ratio: f.ratio, staticKg: f.machine.staticKg, src: f.machine.src } : null,
   };
 }
 

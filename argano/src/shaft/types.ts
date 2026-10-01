@@ -95,6 +95,10 @@ export type ShaftInputs = {
   callStation?: CallStation;
   /** brackets of the counterweight rails: Panev's supports SU/SD with the SG (absent), or generic ones */
   cwBrackets?: 'panev' | 'generic';
+  /** the car door operator's supplier (its catalogue's length); missing: the longest of the catalogues */
+  doorMaker?: 'generic' | '2sg' | 'fermator';
+  /** the overspeed governor's model (governor.ts); missing: by the rated speed */
+  governor?: string;
 } & Record<Allowance, number>;
 
 export type ShaftCheckId =

@@ -12,6 +12,8 @@ import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import { simModel, type SimModel } from '@/sim';
 import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
+import { bestFit, catalogValues, type CatalogChoice } from './catalog';
+import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineSpec } from './machine';
 import { KL } from './norme';
 
@@ -31,6 +33,8 @@ export interface LiftInputs {
   auto: AutoFlags;
   /** the rope scheme of a machine below (bottom.ts); missing: pulleys under the shaft's slab */
   bottom?: BottomScheme;
+  /** the maker (and model) the proposal takes the machine from (catalog.ts); missing: the calculation grid */
+  catalog?: CatalogChoice;
 }
 
 export type Origin = 'entered' | 'auto' | 'estimate';
@@ -55,6 +59,8 @@ export interface LiftDerived {
   bottomGap: { now: number; need: number | null } | null;
   /** the head pulleys of the scheme (the calculation counts two of them for the bottom layout) */
   headPulleys: number;
+  /** the proposal from a catalogue: the maker's machine taken, or none of the choice passing (the grid's proposal) */
+  catalog: { fit: CatalogFit | null; miss: boolean } | null;
   sim: SimModel;
 }
 
@@ -100,22 +106,25 @@ function deflectorDx(L: Layout, V: FormValues): { dx: number; fits: boolean } {
  * the geometry entered by hand this is exactly the sizing of the calculator. null: nothing passes (the machine entered is
  * checked).
  */
-function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean): FormValues | null {
+function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormValues, planned: boolean, fitOf: ((o: SizingOption, W: FormValues) => CatalogFit | null) | null): { V: FormValues; fit: CatalogFit | null } | null {
   const c0 = readInputs(V0), sheaves = c0.fixedD ? [c0.fixedD] : SHEAVE_GRID;
-  const found: { o: SizingOption; V: FormValues }[] = [];
+  const found: { o: SizingOption; V: FormValues; fit: CatalogFit | null }[] = [];
   for (const D of sheaves) {
     const W = geometry({ ...V0, n_D: D });
     if (planned && !deflectorDx(L, W).fits) continue;
     const c = readInputs(W);
-    for (const o of sizeMachine(c.I, c.N, D, c.rope).options) found.push({ o, V: W });
+    for (const o of sizeMachine(c.I, c.N, D, c.rope).options) {
+      const fit = fitOf ? fitOf(o, W) : null;
+      if (!fitOf || fit) found.push({ o, V: W, fit });
+    }
   }
-  const first = new Map<number, { o: SizingOption; V: FormValues }>();
+  const first = new Map<number, (typeof found)[number]>();
   for (const x of found) {
     const y = first.get(x.o.d);
     if (!y || x.o.n < y.o.n || (x.o.n === y.o.n && x.o.D < y.o.D)) first.set(x.o.d, x);
   }
   const best = (c0.rope ? found : [...first.values()]).sort((a, b) => compareOptions(a.o, b.o))[0];
-  return best ? geometry(mirrorRopes({ ...best.V, ...proposalValues(best.o) })) : null;
+  return best ? { V: geometry(mirrorRopes({ ...best.V, ...proposalValues(best.o), ...(best.fit ? catalogValues(best.fit) : {}) })), fit: best.fit } : null;
 }
 
 export function deriveLift(inp: LiftInputs): LiftDerived {
@@ -137,10 +146,13 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   V = geometry(mirrorRopes(V));
   // the diverting pulley's distance comes from the plan: only geometries the wrap-angle model reads as drawn
   const c0 = readInputs(V).I, planned = inp.auto.dx && c0.layout === 'topDefl' && c0.alphaMode !== 'manual';
-  let noProposal = false;
+  let noProposal = false, catalog: LiftDerived['catalog'] = null;
   if (inp.auto.machine) {
-    const proposed = propose(V, L, geometry, planned);
-    if (proposed) V = proposed;
+    // from the maker chosen when one of its machines takes an option, else from the calculation grid
+    const choice = inp.catalog, fromCat = choice ? propose(V, L, geometry, planned, (o, W) => bestFit(choice, o, num(W, 'Q'), num(W, 'r'))) : null;
+    const proposed = fromCat ?? propose(V, L, geometry, planned, null);
+    if (choice) catalog = { fit: fromCat?.fit ?? null, miss: !fromCat };
+    if (proposed) V = proposed.V;
     else noProposal = true;
   }
   const analysis = analyse(V), { I, N } = analysis.ctx;
@@ -155,7 +167,7 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r) : null;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {
-    shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, machine, bottom: scheme, bottomGap, headPulleys: g ? 2 + extraBends(g) : 0,
+    shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, machine, bottom: scheme, bottomGap, headPulleys: g ? 2 + extraBends(g) : 0, catalog,
     sim: simModel(I, N, analysis.res, Sec, vt),
   };
 }

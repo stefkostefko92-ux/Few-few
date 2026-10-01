@@ -3,7 +3,7 @@
 // The choices of a shaft design: rated load (the largest car, or a given load), entrances, doors and their landing
 // call stations, counterweight, rails, walls, accessibility and, folded away, the allowances with their typical values.
 import { useTranslations } from 'next-intl';
-import { DEFAULTS, RAIL_TYPES, callStationOf, counterweightSide, cwBracketsOf, railLabel, type Allowance, type RailType, type ShaftInputs } from '@/shaft';
+import { DEFAULTS, GOVERNORS, RAIL_TYPES, callStationOf, counterweightSide, cwBracketsOf, govSize, railLabel, type Allowance, type RailType, type ShaftInputs } from '@/shaft';
 
 interface Props {
   I: ShaftInputs;
@@ -53,6 +53,12 @@ export default function ShaftOptions({ I, set, lastQ }: Props) {
       <Seg name="door" label={t('door')} value={I.door} onChange={(door) => set({ door })} options={[{ v: 'T2', label: t('T2') }, { v: 'C2', label: t('C2') }]} />
       {num('doorWidth', t('doorWidth'), 500, 2500, 50)}
       {num('doorHeight', t('doorHeight'), 1800, 3000, 50)}
+      <label className="field">
+        <span>{t('dm_title')}</span>
+        <select className="input" value={I.doorMaker ?? 'generic'} onChange={(e) => set({ doorMaker: e.target.value as NonNullable<ShaftInputs['doorMaker']> })}>
+          {(['generic', '2sg', 'fermator'] as const).map((m) => <option key={m} value={m}>{t(`dm_${m}`)}</option>)}
+        </select>
+      </label>
       <fieldset className="field call-station">
         <legend>{t('cs_title')}</legend>
         <div className="seg-row" role="radiogroup" aria-label={t('cs_side')}>
@@ -88,6 +94,13 @@ export default function ShaftOptions({ I, set, lastQ }: Props) {
         ))}
         {num('wall', t('wall'), 50, 1000, 10)}
       </div>
+      <label className="field">
+        <span>{t('gov_title')}</span>
+        <select className="input" value={I.governor ?? ''} onChange={(e) => set({ governor: e.target.value || undefined })}>
+          <option value="">{t('gov_auto', { model: govSize(I.vertical.v).model })}</option>
+          {GOVERNORS.filter((g) => I.vertical.v <= g.vMax).map((g) => <option key={g.model} value={g.model}>{`PFB ${g.model} · Ø ${2 * g.R} · ≤ ${g.vMax} m/s`}</option>)}
+        </select>
+      </label>
       <Seg name="cw-brackets" label={t('cb_title')} value={cwBracketsOf(I)} onChange={(cwBrackets) => set({ cwBrackets })}
         options={[{ v: 'panev', label: t('cb_panev') }, { v: 'generic', label: t('cb_generic') }]} />
       <label className="field">

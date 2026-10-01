@@ -562,7 +562,13 @@
     "nc_add_cw": "+ Contrappeso",
     "nc_add_light": "+ Luce",
     "nc_add_duct": "+ Canalina",
-    "nc_hint": "Distanza dall'angolo: sulle pareti davanti e dietro da quello sinistro, sulle pareti laterali da quello davanti. Il contrappeso in nicchia lascia alla cabina la profondità della nicchia. Le quote si cambiano anche cliccandole sulla pianta."
+    "nc_hint": "Distanza dall'angolo: sulle pareti davanti e dietro da quello sinistro, sulle pareti laterali da quello davanti. Il contrappeso in nicchia lascia alla cabina la profondità della nicchia. Le quote si cambiano anche cliccandole sulla pianta.",
+    "dm_title": "Operatore della porta di cabina",
+    "dm_generic": "generico (il più lungo dei cataloghi)",
+    "dm_2sg": "2SG FLY / LIKE",
+    "dm_fermator": "Fermator 40/10",
+    "gov_title": "Limitatore di velocità",
+    "gov_auto": "secondo la velocità (PFB {model})"
   },
   "tavole": {
     "title": "Tavole di progetto",
@@ -796,6 +802,12 @@
     "hint_bottom_pulleys": "Rinvii in alto: {n}. Il calcolo della macchina in basso ne conta 2; {extra} in più come flessioni semplici aggiuntive.",
     "hint_bottom_under": "Spazio accessibile sotto il vano: paracadute sul contrappeso (o pilastro pieno fino al terreno) e fondo della fossa per le reazioni degli ammortizzatori (UNI EN 81-20, 5.2.5.4).",
     "hint_bottom_gap": "I rami verso la macchina non passano dietro il contrappeso: porta lo spazio tra contrappeso e parete da {now} a {need} mm (si cambia sulla pianta).",
-    "hint_bottom_gap_none": "I rami verso la macchina non passano dietro il contrappeso nemmeno con 1,5 m di spazio in più (ora {now} mm): serve un altro schema o un vano diverso."
+    "hint_bottom_gap_none": "I rami verso la macchina non passano dietro il contrappeso nemmeno con 1,5 m di spazio in più (ora {now} mm): serve un altro schema o un vano diverso.",
+    "cat_brand": "Argano dal catalogo di",
+    "cat_grid": "griglia di calcolo (nessun catalogo)",
+    "cat_model": "Modello",
+    "cat_any": "il più piccolo che passa",
+    "cat_fit": "{model}: rapporto {ratio}, carico statico ammesso {stat} kg; con questo rapporto la velocità si scosta di {dv} % e l’inverter la riporta a quella nominale. Dati da estratti delle pagine del costruttore: da verificare sulla scheda.",
+    "cat_miss": "Nessun argano {brand} passa le verifiche con questi dati: la proposta viene dalla griglia di calcolo."
   }
 }

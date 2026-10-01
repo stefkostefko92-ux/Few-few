@@ -172,6 +172,11 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
 
   section(`${t('c_prop')} (informativa)`);
+  if (m.catalog) {
+    B.push({ t: 'p', text: `Argano a catalogo: ${m.catalog.brand} ${m.catalog.model}, rapporto ${m.catalog.ratio}, carico statico ammesso ${fmt(m.catalog.staticKg, 0)} kg `
+      + `(fonte: ${m.catalog.src}). Il calcolo usa questo rapporto, il carico statico e la massa del catalogo; i dati vengono da estratti delle pagine del `
+      + 'costruttore e vanno verificati sulla scheda prima dell\'ordine.' });
+  }
   if (sizing.pick) {
     B.push({ t: 'kv', rows: X.proposalRows(sizing.pick, N, sizing.fixedD, !!sizing.keep) });
     B.push({ t: 'h3', text: X.altText(sizing) });
@@ -203,7 +208,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const used = VOCI.filter((v) => v.verifiche?.some((c) => ids.has(c)));
   // and the registry entries of the values the software filled in, where the layout uses them
   const filled = new Set([...(m.pEstimate ? ['impianto.massa.cabina'] : []), ...(m.machineProposed ? ['impianto.macchina'] : []),
-    ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []),
+    ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []), ...(m.catalog ? ['impianto.catalogo'] : []),
     ...m.geometry.filter((k) => k === 'L0' || (k === 'dx' && I.layout === 'topDefl') || (k === 'Hv' && I.layout === 'bottom')).map((k) => `impianto.${k}`)]);
   const listed = [...used, ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
   B.push({ t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),

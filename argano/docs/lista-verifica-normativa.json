@@ -719,7 +719,7 @@
       "id": "vano.porte.operatore",
       "gruppo": "Vano: porte",
       "voce": "Vano porta di piano e operatore della porta di cabina",
-      "valore": "vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 1,5·L + 50 mm con porta telescopica (il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con due accessi adiacenti gli operatori non devono sovrapporsi all'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)",
+      "valore": "vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 1,5·L + 50 mm con porta telescopica (il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con il fornitore scelto: 2SG FLY/LIKE 1,5·L + 40 mm (telescopica) e 2·L + 20 mm (centrale), Fermator 40/10 1,5·L + 50 mm e 2·L + 50 mm; con due accessi adiacenti gli operatori non devono sovrapporsi all'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)",
       "riferimento": "dato del fornitore delle porte",
       "fonte": "cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore",
       "stato": "da verificare",
@@ -1112,6 +1112,18 @@
     },
     {
       "n": 91,
+      "id": "impianto.catalogo",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Macchina proposta dal catalogo di un costruttore",
+      "valore": "tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, carico statico sull'albero non oltre quello del catalogo, motore nella sua gamma, portata dichiarata; il rapporto è quello del catalogo più vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del 10 % (l'inverter adatta la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo",
+      "riferimento": "ricerca, capitolo 12 (catalogo degli argani)",
+      "fonte": "estratti delle pagine dei costruttori (SICOR, Sassi, Montanari), 1° ottobre 2026",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": "i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell'ordine"
+    },
+    {
+      "n": 92,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1123,7 +1135,7 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 92,
+      "n": 93,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1135,7 +1147,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 93,
+      "n": 94,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1147,7 +1159,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi"
     },
     {
-      "n": 94,
+      "n": 95,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1159,7 +1171,7 @@
       "nota": ""
     },
     {
-      "n": 95,
+      "n": 96,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1171,7 +1183,7 @@
       "nota": ""
     },
     {
-      "n": 96,
+      "n": 97,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -1183,7 +1195,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa; la verifica della corsa resta quella della sezione"
     },
     {
-      "n": 97,
+      "n": 98,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1195,7 +1207,7 @@
       "nota": ""
     },
     {
-      "n": 98,
+      "n": 99,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",

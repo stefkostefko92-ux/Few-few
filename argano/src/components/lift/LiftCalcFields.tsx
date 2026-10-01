@@ -5,6 +5,8 @@
 // unless switched to entered; an automatic value is shown with a badge saying so.
 import type { FormValues } from '@/calc/types';
 import { BOTTOM_SCHEMES, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { BRANDS, catalogOf, type Brand } from '@/lib/catalog/machines';
+import type { CatalogChoice } from '@/lib/lift/catalog';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
 import FieldRow from '../calc/FieldRow';
@@ -19,6 +21,7 @@ interface Props {
   setCalc(patch: FormValues): void;
   setAuto(patch: Partial<AutoFlags>): void;
   setBottom(b: BottomScheme): void;
+  setCatalog(c: CatalogChoice | undefined): void;
   t(key: string, values?: Record<string, string | number>): string;
 }
 
@@ -31,7 +34,7 @@ const field = (id: string): Field => {
 /** the group's assumptions, entered also when the machine is proposed */
 const ASSUMED = ['n_etaD', 'n_etaI', 'n_poles', 'n_fn', 'n_nm', 'n_Jm', 'n_Js', 'n_mass'] as const;
 
-export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAuto, setBottom, t }: Props) {
+export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAuto, setBottom, setCatalog, t }: Props) {
   const V: FormValues = { ...inp.calc, layout: derived.values.layout };
   const DV = derived.values, auto = inp.auto, { fmt } = P;
   const set = (id: string, value: string | boolean): void => setCalc({ [id]: value });
@@ -82,6 +85,31 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
           {toggle('machine', t('auto_machine'))}
           {auto.machine ? (
             <>
+              <div className="row">
+                <label htmlFor="cat-brand">{t('cat_brand')}</label>
+                <select id="cat-brand" className="input" value={inp.catalog?.brand ?? ''}
+                  onChange={(e) => setCatalog(e.target.value ? { brand: e.target.value as Brand } : undefined)}>
+                  <option value="">{t('cat_grid')}</option>
+                  {BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+              {inp.catalog ? (
+                <div className="row">
+                  <label htmlFor="cat-model">{t('cat_model')}</label>
+                  <select id="cat-model" className="input" value={inp.catalog.model ?? ''}
+                    onChange={(e) => setCatalog({ brand: inp.catalog?.brand ?? 'SICOR', ...(e.target.value ? { model: e.target.value } : {}) })}>
+                    <option value="">{t('cat_any')}</option>
+                    {catalogOf(inp.catalog.brand).map((c) => <option key={c.model} value={c.model}>{c.model}</option>)}
+                  </select>
+                </div>
+              ) : null}
+              {derived.catalog?.fit ? (
+                <p className="hint">{t('cat_fit', {
+                  model: `${derived.catalog.fit.machine.brand} ${derived.catalog.fit.machine.model}`, ratio: derived.catalog.fit.ratio ?? '',
+                  stat: fmt(derived.catalog.fit.machine.staticKg, 0), dv: `${derived.catalog.fit.dv >= 0 ? '+' : ''}${fmt(derived.catalog.fit.dv * 100, 1)}`,
+                })}</p>
+              ) : null}
+              {derived.catalog?.miss ? <p className="hint bad" role="alert">{t('cat_miss', { brand: inp.catalog?.model ? `${inp.catalog.brand} ${inp.catalog.model}` : inp.catalog?.brand ?? '' })}</p> : null}
               <p className="hint">{derived.noProposal ? t('no_proposal') : t('hint_machine_auto')}</p>
               {pick && !derived.noProposal ? <p className="proposal-line num">{X.proposalShort(pick)}</p> : null}
               <div className="subhead">{t('assumptions')}</div>

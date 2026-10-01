@@ -16,7 +16,7 @@ Elementi che entrano nella selezione:
 
 | Elemento | Che cosa conta per il calcolo |
 |---|---|
-| Riduttore | rapporto (es. Sassi MODY 1/37–1/49 e 2/47–3/41; Montanari M105 da 1/71 a 4/67), rendimento diretto e inverso, capacità termica |
+| Riduttore | rapporto (es. Sassi MODY 1/37, 1/49, 1/60, 2/47, 3/41; Montanari M105 da 1/71 a 4/67), rendimento diretto e inverso, capacità termica |
 | Puleggia di trazione | diametro primitivo, numero e profilo delle gole; SICOR offre gole lavorate su specifica del cliente |
 | Motore | asincrono a due velocità (impianti esistenti) o con inverter VVVF; Torin Drive Europe elenca anche motori sincroni con riduttore ⚠️ |
 | Freno | di norma a tamburo sull'albero motore; alcuni modelli hanno un secondo freno sull'albero lento (capitolo 4.10) |
@@ -45,7 +45,7 @@ non quantificato dalle fonti trovate.
 
 | Costruttore | Paese | Serie geared | Dati pubblicati trovati |
 |---|---|---|---|
-| Alberto Sassi S.p.A. | Italia | MODY, LEO, MF (MF48, MF84, MF94), TORO, MB | MODY: carico statico 2 250 kg, 480 o 630 kg, 1:1 o 2:1, 1 m/s; MF48: 630 kg in 1:1, 1 000 kg in 2:1 (listino di un rivenditore) ⚠️; MF84: 6 000 kg statici; MF94: 8 000 kg statici, puleggia fino a Ø1000, fino a 5,62 m/s; TORO: 1 000 kg in 1:1, 2 000 kg in 2:1 |
+| Alberto Sassi S.p.A. | Italia | MODY, LEO, MF (MF48, MF84, MF94), TORO, MB | MODY: carico statico 2 300 kg (corretto il 1° ottobre 2026: prima 2 250 kg), 480 kg in 1:1 e 630 kg in 2:1, rapporti 1/37, 1/49, 1/60, 2/47, 3/41 (capitolo 12); MF48: 630 kg in 1:1, 1 000 kg in 2:1 (listino di un rivenditore) ⚠️; MF84: 6 000 kg statici; MF94: 8 000 kg statici, puleggia fino a Ø1000, fino a 5,62 m/s; TORO: 1 000 kg in 1:1, 2 000 kg in 2:1 |
 | Montanari Giulio & C. | Italia | M65, M83–M85, M93–M95, M98–M98H, M105, M109 | M65: puleggia 480 mm; 320 kg a 0,7 m/s con 3×Ø10 e 3 kW; 400 kg a 1,0 m/s con 4×Ø10 e 4 kW |
 | SICOR | Italia | MR12C, MR21 (SSB), MR26 (SSB), SH130, SH140 SSB, SH160 SSB | MR12C: 25,5 kN (2 600 kg) statici, fino a 550 kg; MR21 SSB: 55 kN ⚠️; MR26: 64,7 kN ⚠️; pulegge 320–885 mm |
 | Torin Drive | Cina | YJ/FYJ, TGD1 | fino a 2,5 m/s (sito europeo) ⚠️ |

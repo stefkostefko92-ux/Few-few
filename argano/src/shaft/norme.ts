@@ -51,6 +51,9 @@ export const KV = {
   doorOpC2: [2, 60],
   doorOpClose: 25,
   doorOpDepth: 150,
+  // the operator of the supplier chosen (same extracts): 2SG FLY/LIKE 2AT 1,5·A + 40 and 2AO 2·A + 20; Fermator 40/10
+  // 1,5·PL + 50 and 2·PL + 50
+  doorOpMakers: { '2sg': { T2: [1.5, 40], C2: [2, 20] }, fermator: { T2: [1.5, 50], C2: [2, 50] } },
   // niches in the walls: the wall left behind a niche, the counterweight's rails clear of a niche's sides, the recess
   // of a lamp; the lamps of the shaft 1,5 m over each floor and the top one 80 mm under the slab
   nicheBackMin: 50,
@@ -198,13 +201,14 @@ export const VOCI_VANO: readonly VoceVano[] = [
   {
     id: 'porte.operatore', gruppo: 'porte', titolo: 'Vano porta di piano e operatore della porta di cabina',
     valore: 'vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 1,5·L + 50 mm con porta telescopica '
-      + '(il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con due accessi adiacenti '
+      + '(il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con il fornitore scelto: '
+      + '2SG FLY/LIKE 1,5·L + 40 mm (telescopica) e 2·L + 20 mm (centrale), Fermator 40/10 1,5·L + 50 mm e 2·L + 50 mm; con due accessi adiacenti '
       + 'gli operatori non devono sovrapporsi all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
     riferimento: 'dato del fornitore delle porte',
     fonte: 'cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), '
       + 'letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore',
     stato: 'da_verificare',
-    costanti: ['doorPortal', 'doorOpT2', 'doorOpC2', 'doorOpClose', 'doorOpDepth'], verifiche: ['v_door', 'v_door2', 'v_op'],
+    costanti: ['doorPortal', 'doorOpT2', 'doorOpC2', 'doorOpClose', 'doorOpDepth', 'doorOpMakers'], verifiche: ['v_door', 'v_door2', 'v_op'],
   },
   {
     id: 'ingombri.nicchie', gruppo: 'ingombri', titolo: 'Nicchie nelle pareti del vano',

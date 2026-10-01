@@ -53,10 +53,16 @@ function carSize(I: ShaftInputs, maxA: number, maxB: number, minA: number, minB:
   return best ? { ...best, Q: I.Q } : { A: fixedA ? maxA : minA, B: fixedB ? maxB : minB, Q: I.Q };
 }
 
+/** The car door operator's length as f·L + e: the supplier's catalogue when one is chosen, else the longest of them. */
+export function doorOpOf(I: ShaftInputs): readonly [number, number] {
+  const m = I.doorMaker && I.doorMaker !== 'generic' ? KV.doorOpMakers[I.doorMaker] : null;
+  return m ? m[I.door] : I.door === 'C2' ? KV.doorOpC2 : KV.doorOpT2;
+}
+
 /** A door on a wall, along that wall's axis between `lo` and `hi` (the car inside). A telescopic door goes flush with
  *  the side of the car that leaves the walls more room, or with the side `flush` asks for. */
 function doorOn(I: ShaftInputs, side: 'A' | 'B', wall: Wall, lo: number, hi: number, wallLen: number, flush?: 'lo' | 'hi'): DoorLayout {
-  const L = I.doorWidth, half = KV.doorFrame / 2, [f, e] = I.door === 'C2' ? KV.doorOpC2 : KV.doorOpT2, opLen = f * L + e;
+  const L = I.doorWidth, half = KV.doorFrame / 2, [f, e] = doorOpOf(I), opLen = f * L + e;
   const base = { side, wall, kind: I.door, width: L, height: I.doorHeight };
   if (I.door === 'C2') {
     const mid = (lo + hi) / 2, overall = KV.doorStackC2 * L + KV.doorFrame;

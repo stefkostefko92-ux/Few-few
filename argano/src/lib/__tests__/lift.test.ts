@@ -41,10 +41,10 @@ test('i valori inseriti restano: massa della cabina, macchina, geometria', () =>
 
 test('segni per i documenti: dagli interruttori salvati; l\'argano proposto solo se la derivazione è nota', () => {
   const inp = defaultLift(), d = deriveLift(inp);
-  assert.deepEqual(valueMarks(inp.auto, d), { pEstimate: true, geometry: ['L0', 'dx', 'Hv'], machineProposed: true, bottom: null });
+  assert.deepEqual(valueMarks(inp.auto, d), { pEstimate: true, geometry: ['L0', 'dx', 'Hv'], machineProposed: true, bottom: null, catalog: null });
   assert.equal(valueMarks(inp.auto, null).machineProposed, false);
   const hand: LiftInputs = { ...inp, calc: { ...inp.calc, P: 812, n_D: 480 }, auto: { ...AUTO_ALL, P: false, machine: false, Hv: false } };
-  assert.deepEqual(valueMarks(hand.auto, deriveLift(hand)), { pEstimate: false, geometry: ['L0', 'dx'], machineProposed: false, bottom: null });
+  assert.deepEqual(valueMarks(hand.auto, deriveLift(hand)), { pEstimate: false, geometry: ['L0', 'dx'], machineProposed: false, bottom: null, catalog: null });
 });
 
 test('distanza del rinvio e fune oltre la corsa, a mano', () => {

@@ -18,6 +18,8 @@ export const KL = {
   pulleyRoomAxis: 450,
   underSlab: 300,
   underRoomH: 2400,
+  // a maker's machine for the proposal: its ratio may give a speed this far from the ratio of the rated speed
+  catalogRatioTol: 0.1,
 } as const;
 
 export type CostanteImpianto = keyof typeof KL;
@@ -85,6 +87,16 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     stato: 'scelta', costanti: ['bottomClear', 'headFrame', 'pulleyRoomAxis', 'underSlab', 'underRoomH', 'slab'],
     nota: 'lo schema reale va rilevato sull\'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del '
       + 'contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori',
+  },
+  {
+    id: 'impianto.catalogo', titolo: 'Macchina proposta dal catalogo di un costruttore',
+    valore: `tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, `
+      + `carico statico sull'albero non oltre quello del catalogo, motore nella sua gamma, portata dichiarata; il rapporto è quello del catalogo più `
+      + `vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del ${it(KL.catalogRatioTol * 100)} % (l'inverter adatta `
+      + `la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo`,
+    riferimento: 'ricerca, capitolo 12 (catalogo degli argani)', fonte: 'estratti delle pagine dei costruttori (SICOR, Sassi, Montanari), 1° ottobre 2026',
+    stato: 'da_verificare', costanti: ['catalogRatioTol'],
+    nota: 'i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell\'ordine',
   },
   {
     id: 'impianto.macchina', titolo: 'Macchina proposta',

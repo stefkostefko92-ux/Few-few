@@ -47,7 +47,8 @@ test('i testi riportano i numeri usati', () => {
   for (const t of [`da ${KV.cwMinLength} a ${KV.cwMaxLength} mm`, `pattini ${KV.cwShoe} mm`, `a ${KV.cwEndGap} mm`]) assert.ok(voce('ingombri.contrappeso.laterale').valore.includes(t), t);
   for (const t of [`a ${KV.cantRailEnd} mm`, `a ${KV.cantCwGap} mm`, `a ${KV.cantClipGap} mm dalle bride`]) assert.ok(voce('ingombri.arcata.zaino').valore.includes(t), t);
   for (const t of [`${KV.doorPortal} mm`, `${it(KV.doorOpT2[0])}·L + ${KV.doorOpT2[1]} mm`, `${KV.doorOpC2[0]}·L + ${KV.doorOpC2[1]} mm`, `${KV.doorOpClose} mm oltre la luce`,
-    `profondo ${KV.doorOpDepth} mm`]) assert.ok(voce('porte.operatore').valore.includes(t), t);
+    `profondo ${KV.doorOpDepth} mm`, ...Object.values(KV.doorOpMakers).flatMap((m) => [`${it(m.T2[0])}·L + ${m.T2[1]} mm`, `${m.C2[0]}·L + ${m.C2[1]} mm`])])
+    assert.ok(voce('porte.operatore').valore.includes(t), t);
   assert.ok(voce('modello.passo').valore.includes(`${KV.sizeStep} mm`));
   const typical = voce('ingombri.tipici').valore;
   for (const v of Object.values(DEFAULTS)) assert.ok(typical.includes(`${v} mm`), `${v} mm`);

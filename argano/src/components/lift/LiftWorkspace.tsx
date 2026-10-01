@@ -10,6 +10,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
 import { deriveLift, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import type { CatalogChoice } from '@/lib/lift/catalog';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
@@ -83,6 +84,14 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     setInp((p) => ({ ...p, bottom }));
     setSaveError(null);
   };
+  const setCatalog = (catalog: CatalogChoice | undefined): void => {
+    setInp((p) => {
+      const { catalog: _drop, ...rest } = p;
+      void _drop;
+      return catalog ? { ...rest, catalog } : rest;
+    });
+    setSaveError(null);
+  };
   const setCalc = (patch: FormValues): void => {
     setInp((p) => ({ ...p, calc: mirrorRopes({ ...p.calc, ...patch }) }));
     setSaveError(null);
@@ -147,7 +156,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
         <VerticalOptions I={inp.shaft} set={setShaft} open />
         {above ? <RoomOptions I={inp.shaft} set={setShaft} /> : null}
         <h2>{t('s_drive')}</h2>
-        <LiftCalcFields P={P} X={X} inp={inp} derived={derived} bad={bad} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} t={(k, v) => t(k, v)} />
+        <LiftCalcFields P={P} X={X} inp={inp} derived={derived} bad={bad} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} setCatalog={setCatalog} t={(k, v) => t(k, v)} />
       </form>
       <div className="lift-main">
         <LiftFacts derived={derived} X={X} fmt={P.fmt} />

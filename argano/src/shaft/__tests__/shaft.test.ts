@@ -146,3 +146,13 @@ test('istantanea stabile e pianta completa per il nucleo di disegno', () => {
   assert.ok(chains.some((c) => c.dir === 'x' && c.pts[0] === 0 && c.pts[c.pts.length - 1] === 1600 && c.text?.[0]?.includes('Vano')), 'quota del vano');
   assert.ok(chains.some((c) => c.text?.some((t) => t?.includes('D.F.G. Arcata'))), 'distanza fra le guide');
 });
+
+test('operatore della porta di cabina dal catalogo del fornitore scelto', () => {
+  const base = defaultInputs(1600, 1750);
+  const len = (I: ShaftInputs): number => layout(I).doors[0].op1 - layout(I).doors[0].op0;
+  assert.equal(len(base), 1.5 * 800 + 50);
+  assert.equal(len({ ...base, doorMaker: '2sg' }), 1.5 * 800 + 40);
+  assert.equal(len({ ...base, door: 'C2', doorMaker: '2sg' }), 2 * 800 + 20);
+  assert.equal(len({ ...base, door: 'C2', doorMaker: 'fermator' }), 2 * 800 + 50);
+  assert.equal(len({ ...base, door: 'C2' }), 2 * 800 + 60);
+});

@@ -3,7 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, RAIL_TYPES } from '@/shaft';
+import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, RAIL_TYPES } from '@/shaft';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
 
@@ -119,6 +119,8 @@ export const shaftInputsSchema = z.object({
   niches: z.array(nicheSchema).max(8).optional(),
   callStation: z.object({ side: z.enum(['left', 'right']), offset: mm(0, 2000), height: mm(600, 2000) }).strict().optional(),
   cwBrackets: z.enum(['panev', 'generic']).optional(),
+  doorMaker: z.enum(['generic', '2sg', 'fermator']).optional(),
+  governor: z.string().refine((g) => GOVERNORS.some((x) => x.model === g)).optional(),
 }).strict();
 
 const finite = z.number().finite();
