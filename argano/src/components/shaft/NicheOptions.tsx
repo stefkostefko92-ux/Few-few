@@ -71,7 +71,7 @@ export default function NicheOptions({ I, set }: Props) {
       ))}
       <div className="seg-row">
         {USES.map((u) => (
-          <button key={u} type="button" className="btn btn-sm" disabled={list.length >= 8} onClick={() => set({ niches: [...list, proposal(I, u)] })}>{t(`nc_add_${u}`)}</button>
+          <button key={u} type="button" disabled={list.length >= 8} onClick={() => set({ niches: [...list, proposal(I, u)] })}>{t(`nc_add_${u}`)}</button>
         ))}
       </div>
       <p className="note">{t('nc_hint')}</p>

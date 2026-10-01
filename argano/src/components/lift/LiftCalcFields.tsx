@@ -57,7 +57,7 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
           {row('layout')}
           {derived.bottom ? (
             <>
-              <div className="row">
+              <div className="row wide">
                 <label htmlFor="bottom-scheme">{t('bottom_scheme')}</label>
                 <select id="bottom-scheme" className="input" value={derived.bottom} onChange={(e) => setBottom(e.target.value as BottomScheme)}>
                   {BOTTOM_SCHEMES.map((b) => <option key={b} value={b}>{t(`bottom_${b}`)}</option>)}
@@ -85,7 +85,7 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
           {toggle('machine', t('auto_machine'))}
           {auto.machine ? (
             <>
-              <div className="row">
+              <div className="row wide">
                 <label htmlFor="cat-brand">{t('cat_brand')}</label>
                 <select id="cat-brand" className="input" value={inp.catalog?.brand ?? ''}
                   onChange={(e) => setCatalog(e.target.value ? { brand: e.target.value as Brand } : undefined)}>
@@ -94,7 +94,7 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
                 </select>
               </div>
               {inp.catalog ? (
-                <div className="row">
+                <div className="row wide">
                   <label htmlFor="cat-model">{t('cat_model')}</label>
                   <select id="cat-model" className="input" value={inp.catalog.model ?? ''}
                     onChange={(e) => setCatalog({ brand: inp.catalog?.brand ?? 'SICOR', ...(e.target.value ? { model: e.target.value } : {}) })}>

@@ -25,7 +25,7 @@ export { callStationAt, callStationOf } from './callstation';
 export { PANEV_BACK, cwBracketsOf, cwSupport, supportMargin } from './staffe';
 export { GOVERNORS, LEVER_REACH, freeSides, govSize, governorSpot } from './governor';
 export type { Governor, GovernorSpot } from './governor';
-export { PLAN_KEYS, applyEdit, editValue, keptPlan, planValues, valueOf, withValue, withoutFix } from './edit';
+export { PLAN_KEYS, applyEdit, editKeys, editLabel, editValue, keptPlan, planValues, valueOf, withValue, withoutFix } from './edit';
 export type { PlanLabels } from './plan-dims';
 export { sectionEntities, mapZ } from './section-view';
 export type { SectionView, ZMap } from './section-view';

@@ -38,6 +38,24 @@ function nicheKey(I: ShaftInputs, head: string, sub: string): { i: number; f: (t
   return f && Number.isInteger(i) && I.niches?.[i] ? { i, f } : null;
 }
 
+/** Every key an edit can carry (a niche's with index 0): the screens name each one (editLabel). */
+export const editKeys = (): string[] => [
+  ...SIZES, ...Object.keys(DEFAULTS), ...PLAN_KEYS.map((k) => `plan.${k}`), ...V_KEYS.map((k) => `v.${k}`), ...R_KEYS.map((k) => `room.${k}`),
+  ...N_KEYS.map((k) => `n.0.${k}`), ...CS_KEYS.map((k) => `cs.${k}`),
+];
+
+/** The message (namespace shaft) naming the input behind an edit's key as the form calls it; the rail's distance reads
+ *  differently on a cantilever frame. */
+export function editLabel(key: string, cantilever: boolean): string {
+  const dot = key.indexOf('.'), head = dot < 0 ? '' : key.slice(0, dot), sub = key.slice(dot + 1);
+  if (head === 'plan') return sub === 'railY' && cantilever ? 'pk_railY_cant' : `pk_${sub}`;
+  if (head === 'v') return `vt_${sub}`;
+  if (head === 'room') return `rm_${sub}`;
+  if (head === 'n') return `nc_${sub.slice(sub.indexOf('.') + 1)}`;
+  if (head === 'cs') return `cs_${sub}`;
+  return isAllowance(key) ? `a_${key}` : key;
+}
+
 /** The inputs with the input `key` set to `value`; null for a key that names no input of these inputs. */
 export function withValue(I: ShaftInputs, key: string, value: number): ShaftInputs | null {
   const size = pick(SIZES, key);
