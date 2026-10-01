@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { assignableRoles, can, outranks, type Capability } from '@/lib/rbac';
+import { mailConfigured } from '@/lib/mail';
 import { hashPassword, temporaryPassword } from '@/lib/password';
 import { rateLimit } from '@/lib/ratelimit';
 import { companyCreateSchema, idSchema, roleSchema, userCreateSchema } from '@/lib/schemas';
@@ -35,12 +36,17 @@ export async function createUserAction(_prev: FormState, fd: FormData): Promise<
   const parsed = userCreateSchema.safeParse({ email: str(fd, 'email'), name: str(fd, 'name'), role: str(fd, 'role') });
   if (!parsed.success) return { error: 'invalidFields', fields: parsed.error.issues.map((i) => String(i.path[0])) };
   if (!assignableRoles(me.role).includes(parsed.data.role)) return { error: 'forbidden' };
+  // A company's own users confirm the address at their first sign-in (the link by e-mail + the temporary password):
+  // a company that registered itself cannot make a confirmed account for an address it does not own. The platform's
+  // administrator vouches for the addresses it enters.
+  const vouched = me.role === 'SUPERADMIN';
+  if (!vouched && !mailConfigured()) return { error: 'mailUnavailable' };
   if (await prisma.user.findUnique({ where: { email: parsed.data.email }, select: { id: true } })) return { error: 'emailTaken' };
   const password = temporaryPassword();
   let user;
   try {
     user = await prisma.user.create({
-      data: { ...parsed.data, companyId: me.companyId, passwordHash: await hashPassword(password), mustChangePassword: true, locale: localeOf(fd), emailVerifiedAt: new Date() },
+      data: { ...parsed.data, companyId: me.companyId, passwordHash: await hashPassword(password), mustChangePassword: true, locale: localeOf(fd), emailVerifiedAt: vouched ? new Date() : null },
     });
   } catch (e) {
     if (emailTaken(e)) return { error: 'emailTaken' };
@@ -48,7 +54,7 @@ export async function createUserAction(_prev: FormState, fd: FormData): Promise<
   }
   await audit({ companyId: me.companyId, userId: me.id, action: 'USER_CREATED', entity: 'User', entityId: user.id, meta: { role: user.role } });
   revalidatePath(`/${localeOf(fd)}/app/team`);
-  return { ok: true, secret: password, message: user.email };
+  return { ok: true, secret: password, message: user.email, pending: !vouched };
 }
 
 export async function updateUserAction(fd: FormData): Promise<void> {

@@ -36,6 +36,8 @@ export const registerSchema = z
   .refine((v) => passwordPolicyOk(v.password), { path: ['password'], message: 'weakPassword' })
   .refine((v) => v.password === v.confirm, { path: ['confirm'], message: 'passwordMismatch' });
 
+export type RegisterInput = z.infer<typeof registerSchema>;
+
 export const forgotSchema = z.object({ email: emailSchema });
 
 /** The link of the registration and the password chosen there. */

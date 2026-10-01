@@ -57,12 +57,37 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink }) {
   await page.fill('input[name="password"]', `Altra${stamp}Password9`);
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('main .alert-bad');
-  assert.match(await page.textContent('main .alert-bad'), /Non è la password/, 'another password does not confirm');
+  assert.match(await page.textContent('main .alert-bad'), /La password non è corretta/, 'another password does not confirm');
   await page.goto('about:blank');
   await page.goto(fresh.url);
   await page.fill('input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   assert.match(await page.textContent('header'), new RegExp(`Ascensori ${stamp} srl`), 'signed in, in its own company');
+
+  step('a user added by a self-registered company confirms the address at the first sign-in');
+  const member = `collega.${stamp}@example.com`;
+  await page.goto(`${BASE}/it/app/team`);
+  await page.fill('main form input[name="name"]', 'Collega di prova');
+  await page.fill('main form input[name="email"]', member);
+  await page.click('main form:has(input[name="email"]) button[type="submit"]');
+  const temp = (await page.locator('.secret').first().textContent())?.trim() ?? '';
+  assert.equal(temp.length, 16);
+  await page.waitForSelector('main form .note[role="status"]');
+  await page.reload();
+  assert.match(await page.textContent('main table'), /deve confermare l’e-mail/, 'the member is shown as not confirmed');
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  since = Date.now();
+  await page.fill('input[name="email"]', member);
+  await page.fill('input[name="password"]', temp);
+  await page.click('main form button[type="submit"]');
+  await page.waitForSelector('main .alert-bad');
+  assert.match(await page.textContent('main .alert-bad'), /Conferma prima/, 'no session before the confirmation');
+  const invite = await sink.next(member, since);
+  assert.ok(invite, 'confirmation e-mail of the member');
+  await page.goto('about:blank');
+  await page.goto(link(invite.text, 'verify-email').url);
+  await page.fill('input[name="password"]', temp);
+  await Promise.all([page.waitForURL(/\/it\/app\/account\?first=1$/), page.click('main form button[type="submit"]')]);
   await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
 
   step('forgotten password: the e-mail link, a new password, the old one refused');

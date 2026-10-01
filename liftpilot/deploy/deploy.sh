@@ -25,11 +25,6 @@ die()  { printf '\033[31m✘ liftpilot: %s\033[0m\n' "$*" >&2; exit 1; }
 command -v docker >/dev/null || die "docker is missing (Docker Engine + compose plugin)"
 rand() { openssl rand -base64 64 | tr -dc 'A-Za-z0-9' | head -c "$1"; }
 
-# A value for the secrets file: single quotes keep it literal for Docker Compose (no $ interpolation).
-quote() {
-  case "$1" in *"'"* | *$'\n'*) die "a value with a quote or a new line cannot go into $ENV_FILE";; esac
-  printf "'%s'" "$1"
-}
 env_get() { grep -E "^$1=" "$ENV_FILE" | head -1 | cut -d= -f2- || true; }
 # KEY=value replaces the key's line or is appended; the file stays 600 at every step
 env_put() {
@@ -41,6 +36,10 @@ env_put() {
   mv "$tmp" "$ENV_FILE"
 }
 env_default() { grep -qE "^$1=" "$ENV_FILE" || env_put "$1" "$2"; }
+# KEY='value': single quotes keep a secret literal for Docker Compose (no $ interpolation). Checked here, in the
+# script's own shell (never inside $(…), where die would end only a subshell): a quote or a new line stops the deploy.
+q_ok() { case "$2" in *"'"* | *$'\n'*) die "$1: a value with a quote or a new line cannot go into $ENV_FILE";; esac; }
+env_put_q() { q_ok "$1" "$2"; env_put "$1" "'$2'"; }
 
 # 1) secrets live on the server only; created once, then only what is given here changes
 install -d -m 700 "$SHARED"
@@ -69,16 +68,19 @@ EOF
   fi
 fi
 chmod 600 "$ENV_FILE"
-[ -n "${LIFTPILOT_ADMIN_PASSWORD:-}" ] && env_put ADMIN_PASSWORD "$(quote "$LIFTPILOT_ADMIN_PASSWORD")"
+if [ -n "${LIFTPILOT_ADMIN_PASSWORD:-}" ]; then env_put_q ADMIN_PASSWORD "$LIFTPILOT_ADMIN_PASSWORD"; fi
 # mail: Brevo's relay on 2525 (the VPS provider blocks 25/465/587); the host is written only with a login, so that
 # without one the application keeps registration and forgotten password closed instead of failing to send
 env_default SMTP_PORT 2525
 env_default SMTP_SECURE false
-env_default MAIL_FROM "$(quote "${LIFTPILOT_MAIL_FROM:-LiftPilot <noreply@carbonstealth.eu>}")"
-[ -n "${LIFTPILOT_MAIL_FROM:-}" ] && env_put MAIL_FROM "$(quote "$LIFTPILOT_MAIL_FROM")"
+if [ -n "${LIFTPILOT_MAIL_FROM:-}" ] || ! grep -qE '^MAIL_FROM=' "$ENV_FILE"; then
+  env_put_q MAIL_FROM "${LIFTPILOT_MAIL_FROM:-LiftPilot <noreply@carbonstealth.eu>}"
+fi
 if [ -n "${LIFTPILOT_SMTP_USER:-}" ] && [ -n "${LIFTPILOT_SMTP_PASS:-}" ]; then
-  env_put SMTP_USER "$(quote "$LIFTPILOT_SMTP_USER")"
-  env_put SMTP_PASS "$(quote "$LIFTPILOT_SMTP_PASS")"
+  q_ok SMTP_USER "$LIFTPILOT_SMTP_USER"
+  q_ok SMTP_PASS "$LIFTPILOT_SMTP_PASS"
+  env_put_q SMTP_USER "$LIFTPILOT_SMTP_USER"
+  env_put_q SMTP_PASS "$LIFTPILOT_SMTP_PASS"
   env_default SMTP_HOST smtp-relay.brevo.com
 fi
 if [ -z "$(env_get SMTP_HOST)" ] || [ -z "$(env_get SMTP_USER)" ] || [ -z "$(env_get SMTP_PASS)" ]; then
@@ -114,22 +116,27 @@ docker compose build
 docker compose up -d --remove-orphans
 
 # 5) health: the answer must come from LiftPilot itself
-for i in $(seq 1 40); do
-  if curl -fsS --max-time 5 "http://127.0.0.1:$PORT/api/health" 2>/dev/null | grep -q '"app":"liftpilot"'; then
-    ok "healthy on 127.0.0.1:$PORT"
-    break
-  fi
-  if [ "$i" = 40 ]; then
-    docker compose logs --tail 60 app || true
-    die "not healthy on 127.0.0.1:$PORT"
-  fi
-  sleep 3
-done
-# the administrator exists now (the entrypoint stops the start when it cannot create it): its password leaves the files
+wait_healthy() {
+  local i
+  for i in $(seq 1 40); do
+    if curl -fsS --max-time 5 "http://127.0.0.1:$PORT/api/health" 2>/dev/null | grep -q '"app":"liftpilot"'; then
+      ok "healthy on 127.0.0.1:$PORT"
+      return 0
+    fi
+    sleep 3
+  done
+  docker compose logs --tail 60 app || true
+  die "not healthy on 127.0.0.1:$PORT"
+}
+wait_healthy
+# the administrator exists now (the entrypoint stops the start when it cannot create it): its password leaves the
+# secrets file, and the container is made again without it (a running container keeps the environment it began with)
 if [ -n "$(env_get ADMIN_PASSWORD)" ]; then
   env_put ADMIN_PASSWORD ""
   install -m 600 "$ENV_FILE" .env
-  ok "administrator ready; ADMIN_PASSWORD emptied in $ENV_FILE"
+  docker compose up -d app
+  wait_healthy
+  ok "administrator ready; ADMIN_PASSWORD gone from $ENV_FILE and from the container"
 fi
 
 # 6) nginx vhost and TLS certificate (LIFTPILOT_TLS=0 or no nginx: skipped)

@@ -16,6 +16,7 @@ export default function CreateUserForm({ roles }: { roles: Role[] }) {
       <h2>{t('addTitle')}</h2>
       {state.error ? <p className="alert alert-bad" role="alert">{te(state.error)}</p> : null}
       {state.ok && state.secret ? <SecretOnce email={state.message} secret={state.secret} /> : null}
+      {state.ok && state.pending ? <p className="note" role="status">{t('confirmNote')}</p> : null}
       <div className="form-grid">
         <label className="field"><span>{t('name')} *</span><input className="input" name="name" maxLength={120} required /></label>
         <label className="field"><span>{t('email')} *</span><input className="input" type="email" name="email" maxLength={254} required /></label>

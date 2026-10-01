@@ -68,7 +68,7 @@ export function listUsers(user: SessionUser) {
   return prisma.user.findMany({
     where: { companyId: user.companyId },
     orderBy: [{ active: 'desc' }, { name: 'asc' }],
-    select: { id: true, name: true, email: true, role: true, active: true, lastLoginAt: true, mustChangePassword: true },
+    select: { id: true, name: true, email: true, role: true, active: true, lastLoginAt: true, mustChangePassword: true, emailVerifiedAt: true },
   });
 }
 

@@ -40,7 +40,7 @@
     "archived": "L'impianto è archiviato.",
     "conflict": "Un'altra emissione è avvenuta nello stesso momento: riprova.",
     "unverified": "Conferma prima il tuo indirizzo e-mail: ti abbiamo inviato un nuovo link (controlla anche lo spam).",
-    "verifyWrongPassword": "Non è la password scelta alla registrazione.",
+    "verifyWrongPassword": "La password non è corretta.",
     "invalidLink": "Il link non è valido, è già stato usato o è scaduto: chiedine uno nuovo.",
     "mailUnavailable": "L’invio delle e-mail non è ancora attivo: riprova più tardi o scrivi a info@carbonstealth.eu.",
     "consentRequired": "Per registrarti spunta le due conferme."
@@ -228,7 +228,9 @@
     "addTitle": "Aggiungi un utente",
     "add": "Crea utente",
     "tempPassword": "Password temporanea per {email} (mostrata una sola volta):",
-    "tempPasswordNote": "Consegnala di persona o con un canale sicuro. Al primo accesso l’utente sceglie la propria password."
+    "tempPasswordNote": "Consegnala di persona o con un canale sicuro. Al primo accesso l’utente sceglie la propria password.",
+    "confirmNote": "Al primo accesso il nuovo utente conferma l’indirizzo con il link che riceve per e-mail e la password temporanea.",
+    "pendingEmail": "deve confermare l’e-mail"
   },
   "admin": {
     "title": "Aziende",
@@ -863,7 +865,7 @@
   },
   "verify": {
     "title": "Conferma l’indirizzo e-mail",
-    "lead": "Inserisci la password che hai scelto alla registrazione: l’account si attiva ed entri subito.",
+    "lead": "Inserisci la password del tuo account: l’account si attiva ed entri subito.",
     "password": "Password",
     "submit": "Conferma ed entra",
     "submitting": "Conferma…",
@@ -907,7 +909,7 @@
     "cookiesTitle": "Quali cookie usa LiftPilot?",
     "cookiesText": "Solo cookie tecnici: uno httpOnly per la sessione dopo l’accesso (al massimo 12 ore) e uno di sessione (NEXT_LOCALE) che ricorda la lingua scelta quando è diversa da quella del browser. Nessun cookie di analisi, pubblicità o profilazione, per questo non serve un banner di consenso.",
     "retentionTitle": "Per quanto tempo li conserviamo?",
-    "retentionText": "Account e dati finché l’account esiste; una registrazione mai confermata viene cancellata dopo {days} giorni. Il registro attività resta finché esiste l’account dell’azienda. Puoi chiedere la cancellazione in qualsiasi momento a info@carbonstealth.eu.",
+    "retentionText": "Account e dati finché l’account esiste; un account mai confermato né usato (una registrazione o un utente aggiunto da un’azienda) viene cancellato dopo {days} giorni. Il registro attività resta finché esiste l’account dell’azienda. Puoi chiedere la cancellazione in qualsiasi momento a info@carbonstealth.eu.",
     "rightsTitle": "Quali sono i tuoi diritti?",
     "rightsText": "Accesso, rettifica, cancellazione, limitazione, portabilità e opposizione (artt. 15–21 GDPR): scrivi a info@carbonstealth.eu. Puoi presentare reclamo all’autorità bulgara per la protezione dei dati (www.cpdp.bg) o al Garante per la protezione dei dati personali (www.garanteprivacy.it). Non prendiamo decisioni automatizzate che ti riguardano (art. 22 GDPR).",
     "serviceTitle": "Che cos’è il servizio?",
@@ -922,10 +924,10 @@
   "mail": {
     "greeting": "Buongiorno,",
     "verifySubject": "Conferma l’indirizzo e-mail del tuo account LiftPilot",
-    "verifyIntro": "per attivare l’account della tua azienda su LiftPilot apri il link qui sotto e inserisci la password che hai scelto alla registrazione.",
+    "verifyIntro": "per attivare il tuo account LiftPilot apri il link qui sotto e inserisci la tua password.",
     "verifyButton": "Conferma l’indirizzo",
     "verifyTtl": "Il link vale {hours, plural, one {un’ora} other {# ore}}.",
-    "verifyIgnore": "Se la registrazione non è tua, ignora questo messaggio: senza conferma l’account non si attiva.",
+    "verifyIgnore": "Se non hai chiesto tu questo account, ignora questo messaggio: senza conferma l’account non si attiva.",
     "resetSubject": "Nuova password per LiftPilot",
     "resetIntro": "abbiamo ricevuto una richiesta di nuova password per il tuo account LiftPilot. Apri il link qui sotto per sceglierla.",
     "resetButton": "Scegli la nuova password",

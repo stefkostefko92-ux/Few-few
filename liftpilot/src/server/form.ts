@@ -6,6 +6,8 @@ export interface FormState {
   /** shown once, e.g. a temporary password */
   secret?: string;
   message?: string;
+  /** the new account confirms its address at the first sign-in */
+  pending?: boolean;
 }
 
 export const initialFormState: FormState = {};

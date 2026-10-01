@@ -1,5 +1,6 @@
 'use server';
 
+import { after } from 'next/server';
 import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
@@ -7,6 +8,7 @@ import { audit } from '@/lib/audit';
 import { endSession, getSessionUser, startSession } from '@/lib/auth';
 import { mailAccount } from '@/lib/account-mail';
 import { mailConfigured } from '@/lib/mail';
+import { purgeUnconfirmed } from '@/lib/purge';
 import { burnPasswordCheck, hashPassword, verifyPassword } from '@/lib/password';
 import { clientIp, rateLimit, rateReset } from '@/lib/ratelimit';
 import { loginSchema, newPasswordSchema } from '@/lib/schemas';
@@ -19,6 +21,7 @@ const localeOf = (fd: FormData): Locale => { const l = str(fd, 'locale'); return
 
 export async function loginAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const locale = localeOf(fd);
+  after(purgeUnconfirmed); // accounts never confirmed, at most every 6 h, after the answer
   const parsed = loginSchema.safeParse({ email: str(fd, 'email'), password: str(fd, 'password') });
   if (!parsed.success) return { error: 'invalidLogin' };
   const { email, password } = parsed.data;

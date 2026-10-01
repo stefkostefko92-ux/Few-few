@@ -51,6 +51,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
                   <td data-label={t('status')}>
                     <div className="cell-stack">
                       <span className={`status-pill ${u.active ? 'ok' : 'fail'}`}>{u.active ? t('active') : t('inactive')}</span>
+                      {u.active && !u.emailVerifiedAt ? <span className="note">{t('pendingEmail')}</span> : null}
                       {u.mustChangePassword && u.active ? <span className="note">{t('pendingPassword')}</span> : null}
                     </div>
                   </td>
