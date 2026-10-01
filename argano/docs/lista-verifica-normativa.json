@@ -721,7 +721,7 @@
       "voce": "Vano porta di piano e operatore della porta di cabina",
       "valore": "vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 1,5·L + 50 mm con porta telescopica (il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con il fornitore scelto: 2SG FLY/LIKE 1,5·L + 40 mm (telescopica) e 2·L + 20 mm (centrale), Fermator 40/10 1,5·L + 50 mm e 2·L + 50 mm; con due accessi adiacenti gli operatori non devono sovrapporsi all'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)",
       "riferimento": "dato del fornitore delle porte",
-      "fonte": "cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore",
+      "fonte": "cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore. Le formule con + 40 danno esattamente la lunghezza delle soglie Fermator di catalogo (2 ante telescopiche, luce 900: 1390 mm; 2 ante centrali, luce 700: 1440 mm): potrebbero essere la soglia e non la trave dell'operatore. Wittur, Prisma, Dapa e CMM: lunghezza dell'operatore non trovata",
       "stato": "da verificare",
       "verifiche": "ingombro della porta di piano; ingombro della seconda porta di piano; operatori delle porte adiacenti",
       "nota": ""
@@ -748,7 +748,7 @@
       "fonte": "valori tipici: scelta del software",
       "stato": "scelta del software",
       "verifiche": "la cabina entra nel vano",
-      "nota": ""
+      "nota": "pacchetto porta di catalogo (porta di cabina + gioco tra le soglie + porta di piano), da wittur.com: Hydra 210 mm a 2 ante telescopiche e 180 mm a 2 ante centrali, Hydra 3000 180 e 130, Augusta EVO 190 e 110, Sematic 2000 C-MOD 185 e 117, Fineline 115 e 85; Sematic 2000 B 255 e 165 (cabina 90 e 45, gioco 30, piano 135 e 90, da una copia della brochure). Con le porte scelte, i tre ingombri vanno portati alla somma del fornitore (oggi 80 + 30 + 80 = 190 mm)"
     },
     {
       "n": 61,
@@ -800,6 +800,18 @@
     },
     {
       "n": 65,
+      "id": "vano.ingombri.limitatore",
+      "gruppo": "Vano: ingombri tipici",
+      "voce": "Limitatore di velocità e tenditore (pianta, locale macchina, 3D)",
+      "valore": "per velocità il più piccolo PFB che la regge: LK200 (Ø 200, fune 6) fino a 1,48 m/s, LK250 fino a 1,74, LK300 fino a 2,93, R12BF fino a 4,00; oppure il modello scelto se regge la velocità: PFB (LX, LK, R1, R10BF) o Montanari (RQ-A 200, 250 e 300, NOR fino a 1,50 m/s, RG 200 fino a 0,30). Disegnati nelle proporzioni del LK200 (alto 370 mm, base 220 × 165) salvo LX120 alto 178, R10BF 488 su base 460 × 196, R12BF 524 su base 520 × 116, R1-LR 344 su base 285 × 80. Tenditore in fossa sulla guida di cabina: a leva con 22 kg (come PFB R4K) o verticale con 44 kg (come PFB R4R)",
+      "riferimento": "dati del fornitore del limitatore",
+      "fonte": "pagine pfb.it e montanarigiulio.com, schede di elevatorequipment.co.uk (altezze, basi), estratti di ricerca del 1° ottobre 2026",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": "per le RQ-A Montanari 0,15–3,0 m/s è il campo della famiglia: il limite di ogni taglia va letto sul manuale; delle basi pubblicate non è detto quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200)"
+    },
+    {
+      "n": 66,
       "id": "vano.spazi.rifugio",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Spazi di rifugio sul tetto di cabina e in fossa",
@@ -811,7 +823,7 @@
       "nota": ""
     },
     {
-      "n": 66,
+      "n": 67,
       "id": "vano.spazi.salto",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Posizione più alta della cabina",
@@ -823,7 +835,7 @@
       "nota": ""
     },
     {
-      "n": 67,
+      "n": 68,
       "id": "vano.spazi.testata.parti",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Distanze libere dal soffitto con la cabina nella posizione più alta",
@@ -835,7 +847,7 @@
       "nota": ""
     },
     {
-      "n": 68,
+      "n": 69,
       "id": "vano.spazi.fossa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Distanze in fossa con la cabina sugli ammortizzatori compressi",
@@ -847,7 +859,7 @@
       "nota": ""
     },
     {
-      "n": 69,
+      "n": 70,
       "id": "vano.spazi.balaustra",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Balaustra sul tetto di cabina",
@@ -859,7 +871,7 @@
       "nota": ""
     },
     {
-      "n": 70,
+      "n": 71,
       "id": "vano.spazi.tetto.superficie",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Superficie dove una persona può stare sul tetto di cabina",
@@ -871,7 +883,7 @@
       "nota": ""
     },
     {
-      "n": 71,
+      "n": 72,
       "id": "vano.contrappeso.schermo",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Schermo del contrappeso in fossa",
@@ -883,7 +895,7 @@
       "nota": ""
     },
     {
-      "n": 72,
+      "n": 73,
       "id": "vano.ammortizzatori.corsa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori ad accumulo di energia lineari (molle)",
@@ -895,7 +907,7 @@
       "nota": ""
     },
     {
-      "n": 73,
+      "n": 74,
       "id": "vano.locale.macchina",
       "gruppo": "Locale del macchinario",
       "voce": "Locale del macchinario",
@@ -907,7 +919,7 @@
       "nota": ""
     },
     {
-      "n": 74,
+      "n": 75,
       "id": "vano.illuminazione",
       "gruppo": "Locale del macchinario",
       "voce": "Illuminazione del vano e del locale del macchinario",
@@ -919,7 +931,7 @@
       "nota": ""
     },
     {
-      "n": 75,
+      "n": 76,
       "id": "vano.locale.temperatura",
       "gruppo": "Locale del macchinario",
       "voce": "Temperatura dei locali del macchinario e degli armadi",
@@ -931,7 +943,7 @@
       "nota": ""
     },
     {
-      "n": 76,
+      "n": 77,
       "id": "vano.carichi.fossa",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carichi sul pavimento della fossa",
@@ -943,7 +955,7 @@
       "nota": ""
     },
     {
-      "n": 77,
+      "n": 78,
       "id": "vano.guide.spinte",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Spinte sulle guide di cabina",
@@ -955,7 +967,7 @@
       "nota": ""
     },
     {
-      "n": 78,
+      "n": 79,
       "id": "vano.carichi.macchina",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carico della macchina sulla soletta",
@@ -967,7 +979,7 @@
       "nota": ""
     },
     {
-      "n": 79,
+      "n": 80,
       "id": "vano.carichi.cavi",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Massa dei cavi flessibili",
@@ -979,7 +991,7 @@
       "nota": ""
     },
     {
-      "n": 80,
+      "n": 81,
       "id": "vano.foglio.stime",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Lunghezze stimate nel foglio dei dati",
@@ -991,7 +1003,7 @@
       "nota": ""
     },
     {
-      "n": 81,
+      "n": 82,
       "id": "vano.modello.passo",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Dimensioni proposte della cabina",
@@ -1003,7 +1015,7 @@
       "nota": ""
     },
     {
-      "n": 82,
+      "n": 83,
       "id": "vano.modello.quote",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Quote della pianta fissate a mano",
@@ -1015,7 +1027,7 @@
       "nota": ""
     },
     {
-      "n": 83,
+      "n": 84,
       "id": "vano.modello.limiti",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Limiti del modello del vano",
@@ -1027,7 +1039,7 @@
       "nota": ""
     },
     {
-      "n": 84,
+      "n": 85,
       "id": "impianto.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Corsa",
@@ -1039,7 +1051,7 @@
       "nota": ""
     },
     {
-      "n": 85,
+      "n": 86,
       "id": "impianto.portata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Portata e velocità",
@@ -1051,7 +1063,7 @@
       "nota": ""
     },
     {
-      "n": 86,
+      "n": 87,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -1063,7 +1075,7 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto"
     },
     {
-      "n": 87,
+      "n": 88,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -1075,7 +1087,7 @@
       "nota": ""
     },
     {
-      "n": 88,
+      "n": 89,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
@@ -1087,7 +1099,7 @@
       "nota": ""
     },
     {
-      "n": 89,
+      "n": 90,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
@@ -1099,7 +1111,7 @@
       "nota": ""
     },
     {
-      "n": 90,
+      "n": 91,
       "id": "impianto.basso.schema",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: schema delle funi",
@@ -1111,19 +1123,19 @@
       "nota": "lo schema reale va rilevato sull'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori"
     },
     {
-      "n": 91,
+      "n": 92,
       "id": "impianto.catalogo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta dal catalogo di un costruttore",
-      "valore": "tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, carico statico sull'albero non oltre quello del catalogo, motore nella sua gamma, portata dichiarata; il rapporto è quello del catalogo più vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del 10 % (l'inverter adatta la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo",
+      "valore": "tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, carico statico sull'albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del 10 % (l'inverter adatta la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo",
       "riferimento": "ricerca, capitolo 12 (catalogo degli argani)",
-      "fonte": "estratti delle pagine dei costruttori (SICOR, Sassi, Montanari), 1° ottobre 2026",
+      "fonte": "estratti delle pagine dei costruttori (SICOR, Sassi, Montanari, GEM, FAER) e dei rivenditori, 1° ottobre 2026",
       "stato": "da verificare",
       "verifiche": "",
-      "nota": "i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell'ordine"
+      "nota": "i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell'ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
     },
     {
-      "n": 92,
+      "n": 93,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1135,7 +1147,7 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 93,
+      "n": 94,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1147,7 +1159,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 94,
+      "n": 95,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1159,7 +1171,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi"
     },
     {
-      "n": 95,
+      "n": 96,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1171,7 +1183,7 @@
       "nota": ""
     },
     {
-      "n": 96,
+      "n": 97,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1183,7 +1195,7 @@
       "nota": ""
     },
     {
-      "n": 97,
+      "n": 98,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -1195,7 +1207,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa; la verifica della corsa resta quella della sezione"
     },
     {
-      "n": 98,
+      "n": 99,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1207,7 +1219,7 @@
       "nota": ""
     },
     {
-      "n": 99,
+      "n": 100,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",

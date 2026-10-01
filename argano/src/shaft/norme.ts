@@ -180,6 +180,10 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'contrappeso laterale–piede della guida di cabina 85 mm',
     riferimento: 'dati del costruttore di guide, porte e cabina', fonte: 'valori tipici: scelta del software', stato: 'scelta',
     verifiche: ['v_fit'],
+    nota: 'pacchetto porta di catalogo (porta di cabina + gioco tra le soglie + porta di piano), da wittur.com: Hydra 210 mm a 2 ante telescopiche '
+      + 'e 180 mm a 2 ante centrali, Hydra 3000 180 e 130, Augusta EVO 190 e 110, Sematic 2000 C-MOD 185 e 117, Fineline 115 e 85; Sematic 2000 B '
+      + '255 e 165 (cabina 90 e 45, gioco 30, piano 135 e 90, da una copia della brochure). Con le porte scelte, i tre ingombri vanno portati alla '
+      + 'somma del fornitore (oggi 80 + 30 + 80 = 190 mm)',
   },
   {
     id: 'ingombri.contrappeso.laterale', gruppo: 'ingombri', titolo: 'Contrappeso laterale',
@@ -206,7 +210,9 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'gli operatori non devono sovrapporsi all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
     riferimento: 'dato del fornitore delle porte',
     fonte: 'cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), '
-      + 'letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore',
+      + 'letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore. Le formule con + 40 danno esattamente la lunghezza '
+      + 'delle soglie Fermator di catalogo (2 ante telescopiche, luce 900: 1390 mm; 2 ante centrali, luce 700: 1440 mm): potrebbero essere la '
+      + 'soglia e non la trave dell\'operatore. Wittur, Prisma, Dapa e CMM: lunghezza dell\'operatore non trovata',
     stato: 'da_verificare',
     costanti: ['doorPortal', 'doorOpT2', 'doorOpC2', 'doorOpClose', 'doorOpDepth', 'doorOpMakers'], verifiche: ['v_door', 'v_door2', 'v_op'],
   },
@@ -229,6 +235,18 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + '«Non conforme» (si possono scegliere staffe generiche, da dimensionare a parte)',
     riferimento: 'catalogo staffe Panev 2026, pp. 20-59', fonte: 'catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf)', stato: 'confermato',
     verifiche: ['v_staffa'],
+  },
+  {
+    id: 'ingombri.limitatore', gruppo: 'ingombri', titolo: 'Limitatore di velocità e tenditore (pianta, locale macchina, 3D)',
+    valore: 'per velocità il più piccolo PFB che la regge: LK200 (Ø 200, fune 6) fino a 1,48 m/s, LK250 fino a 1,74, LK300 fino a 2,93, R12BF fino a '
+      + '4,00; oppure il modello scelto se regge la velocità: PFB (LX, LK, R1, R10BF) o Montanari (RQ-A 200, 250 e 300, NOR fino a 1,50 m/s, RG 200 '
+      + 'fino a 0,30). Disegnati nelle proporzioni del LK200 (alto 370 mm, base 220 × 165) salvo LX120 alto 178, R10BF 488 su base 460 × 196, '
+      + 'R12BF 524 su base 520 × 116, R1-LR 344 su base 285 × 80. Tenditore in fossa sulla guida di cabina: a leva con 22 kg (come PFB R4K) o '
+      + 'verticale con 44 kg (come PFB R4R)',
+    riferimento: 'dati del fornitore del limitatore', stato: 'da_verificare',
+    fonte: 'pagine pfb.it e montanarigiulio.com, schede di elevatorequipment.co.uk (altezze, basi), estratti di ricerca del 1° ottobre 2026',
+    nota: 'per le RQ-A Montanari 0,15–3,0 m/s è il campo della famiglia: il limite di ogni taglia va letto sul manuale; delle basi pubblicate non è detto '
+      + 'quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200)',
   },
   {
     id: 'porte.bottoniera', gruppo: 'porte', titolo: 'Bottoniera di piano',

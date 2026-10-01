@@ -91,12 +91,14 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   {
     id: 'impianto.catalogo', titolo: 'Macchina proposta dal catalogo di un costruttore',
     valore: `tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, `
-      + `carico statico sull'albero non oltre quello del catalogo, motore nella sua gamma, portata dichiarata; il rapporto è quello del catalogo più `
+      + `carico statico sull'albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più `
       + `vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del ${it(KL.catalogRatioTol * 100)} % (l'inverter adatta `
       + `la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo`,
-    riferimento: 'ricerca, capitolo 12 (catalogo degli argani)', fonte: 'estratti delle pagine dei costruttori (SICOR, Sassi, Montanari), 1° ottobre 2026',
+    riferimento: 'ricerca, capitolo 12 (catalogo degli argani)', fonte: 'estratti delle pagine dei costruttori (SICOR, Sassi, Montanari, GEM, FAER) e dei rivenditori, 1° ottobre 2026',
     stato: 'da_verificare', costanti: ['catalogRatioTol'],
-    nota: 'i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell\'ordine',
+    nota: 'i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell\'ordine; '
+      + 'per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; '
+      + 'GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce',
   },
   {
     id: 'impianto.macchina', titolo: 'Macchina proposta',

@@ -98,7 +98,7 @@ export default function ShaftOptions({ I, set, lastQ }: Props) {
         <span>{t('gov_title')}</span>
         <select className="input" value={I.governor ?? ''} onChange={(e) => set({ governor: e.target.value || undefined })}>
           <option value="">{t('gov_auto', { model: govSize(I.vertical.v).model })}</option>
-          {GOVERNORS.filter((g) => I.vertical.v <= g.vMax).map((g) => <option key={g.model} value={g.model}>{`PFB ${g.model} · Ø ${2 * g.R} · ≤ ${g.vMax} m/s`}</option>)}
+          {GOVERNORS.filter((g) => I.vertical.v <= g.vMax).map((g) => <option key={g.model} value={g.model}>{`${g.brand} ${g.model} · Ø ${2 * g.R} · ≤ ${g.vMax} m/s`}</option>)}
         </select>
       </label>
       <Seg name="cw-brackets" label={t('cb_title')} value={cwBracketsOf(I)} onChange={(cwBrackets) => set({ cwBrackets })}

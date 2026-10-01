@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import { formValuesSchema } from './calc-input';
 import { shaftInputsSchema } from './shaft-input';
+import { BRANDS } from '@/lib/catalog/machines';
 
 export const autoSchema = z.object({
   P: z.boolean(),
@@ -18,7 +19,7 @@ export const liftInputsSchema = z.object({
   calc: formValuesSchema,
   auto: autoSchema,
   bottom: z.enum(['head', 'room', 'under']).optional(),
-  catalog: z.object({ brand: z.enum(['SICOR', 'Sassi', 'Montanari']), model: z.string().min(1).max(40).optional() }).strict().optional(),
+  catalog: z.object({ brand: z.enum(BRANDS), model: z.string().min(1).max(40).optional() }).strict().optional(),
 }).strict();
 
 export type LiftInputsParsed = z.infer<typeof liftInputsSchema>;

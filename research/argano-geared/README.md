@@ -87,9 +87,9 @@ estratti dei motori di ricerca (capitolo 11)._
 9. [Architettura del software](09-architettura-software.md)
 10. [Validazione, aspetti legali, roadmap](10-validazione-legale-roadmap.md)
 11. [Fonti](11-fonti.md)
-12. [Catalogo degli argani: SICOR, Sassi, Montanari, GEAT](12-catalogo-argani.md)
-13. [Limitatori di velocità e tenditori: PFB, Montanari](13-limitatori-e-tenditori.md)
-14. [Operatori di cabina, sospensioni di piano e soglie](14-porte-e-soglie.md)
+12. [Catalogo degli argani: SICOR, Sassi, Montanari, GEAT](12-catalogo-argani.md) — con il secondo giro: Montanari completo, GEM, FAER, masse SICOR e Sassi
+13. [Limitatori di velocità e tenditori: PFB, Montanari](13-limitatori-e-tenditori.md) — con il secondo giro: gamma Montanari, quote PFB R10BF, R12BF, R1-LR
+14. [Operatori di cabina, sospensioni di piano e soglie](14-porte-e-soglie.md) — con il secondo giro: Wittur, Sematic, Prisma, Dapa, CMM
 15. [Funi con la macchina in basso: i tre schemi](15-funi-macchina-in-basso.md)
 
 ## Decisioni
