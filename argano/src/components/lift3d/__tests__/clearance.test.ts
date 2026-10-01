@@ -11,6 +11,9 @@ import { Batch } from '../geom';
 import { createLiftMaterials, type Side } from '../materials';
 import { carEntrance } from '../car';
 import { landingEntrance } from '../shaft';
+import { buildCounterweight } from '../counterweight';
+import { buildRails } from '../rails';
+import { section } from '@/shaft/section';
 
 /** u along the wall and v from it [mm] of a scene point (metres, Y up, Z = −y). */
 function plan(wall: Side, W: number, D: number, p: THREE.Vector3): readonly [number, number] {
@@ -88,5 +91,29 @@ for (const [name, extra] of VARIANTS) {
       const band = (s: Set<number>): boolean => [...s].some((c) => c % 100000 >= v0 - 14 && c % 100000 < v0 - 6);
       assert.ok(band(a) && band(b), `${d.wall}: le lame del accoppiatore e i rulli della serratura si incontrano`);
     }
+  });
+}
+
+/** The cells in plan (x · 100000 + y, millimetres) of a subtree's meshes whose material passes `keep`. */
+function planCells(root: THREE.Object3D, keep: (m: THREE.Material) => boolean): Set<number> {
+  const only = new THREE.Group();
+  root.updateWorldMatrix(true, true);
+  root.traverse((o) => {
+    if (o instanceof THREE.Mesh && !Array.isArray(o.material) && keep(o.material)) {
+      const m = new THREE.Mesh(o.geometry.clone().applyMatrix4(o.matrixWorld));
+      only.add(m);
+    }
+  });
+  return cells(only, 'front', 0, 0, 1e9);
+}
+
+for (const [name, extra] of [['contrappeso dietro la cabina', {}], ['contrappeso laterale', { cw: 'left' }]] as const) {
+  test(`staffe: il contrappeso passa davanti alle staffe delle sue guide (${name})`, () => {
+    const L = layout({ ...defaultInputs(1600, 1750), ...extra }), M = createLiftMaterials();
+    const brackets = planCells(buildRails(L, section(L), M), (m) => m === M.zinc || m === M.cut);
+    assert.ok(brackets.size > 0, 'le staffe Panev ci sono');
+    const cw = planCells(buildCounterweight(L, M, null), () => true);
+    const shared = [...brackets].filter((c) => cw.has(c));
+    assert.equal(shared.length, 0, `${shared.length} mm² in comune (${shared.slice(0, 3).map((c) => `x ${Math.floor(c / 100000)} y ${c % 100000}`).join(', ')})`);
   });
 }

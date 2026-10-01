@@ -4,7 +4,8 @@
 // over; on a machined rail (/B) the blade is planed bright and oiled, the foot left in its mill scale; the rolled
 // profiles are dark. In 5 m lengths: a hairline at each joint, the fishplate behind it, four bolts each side through
 // the foot. Every 2.5 m a bracket: the plate behind the foot held by two clips with their bolts, an angle out to the
-// wall and the wall plate on its two anchors; the bridge bracket of a side counterweight. Loaded only through boot.ts (lazy).
+// wall and the wall plate on its two anchors; on a counterweight rail Panev's support, its SG and two N1 clips instead
+// (staffe.ts); the bridge bracket of a side counterweight. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { RAILS, type Layout, type Rail, type RailType } from '@/shaft';
@@ -12,6 +13,7 @@ import type { Section } from '@/shaft/section';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { Batch, type Point } from './geom';
 import type { LiftMaterials } from './materials';
+import { cwSupport, railSupport } from './staffe';
 
 const BRACKET_PITCH = 2500, RAIL_LENGTH = 5000, JOINT_GAP = 0.6;
 
@@ -88,9 +90,15 @@ export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group
       span(-14, 0, -half + 4, half - 4, j - 140, j + 140, M.railFoot);
       for (const dz of [-105, -45, 45, 105]) for (const c of [-cm, cm]) bolt(af, c, j + dz, 1, 8);
     }
+    // a counterweight rail on Panev's supports (staffe.ts) where one fits; otherwise the bracket drawn here
+    const panev = r.kind === 'cw' ? cwSupport(r, h, I.W, I.D) : null;
     for (const z of brackets) {
+      if (panev) {
+        railSupport(B, M, panev.wall, I.W, I.D, panev.foot, panev.reach, z, panev.mirror, half, panev.sup);
+        continue;
+      }
       // plate behind the foot; two clips over the foot's edges, bolted through the plate beside the foot
-      span(-12, 0, -half - 32, half + 32, z, z + 150, M.galv);
+      span(-12, 0, -half - 24, half + 24, z, z + 150, M.galv);
       for (const s of [-1, 1]) {
         span(te - 1, te + 9, s * (half - 14), s * (half + 20), z + 45, z + 105, M.galv);
         bolt(te + 9, s * (half + 8), z + 75, 1);

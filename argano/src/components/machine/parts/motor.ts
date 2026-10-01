@@ -111,9 +111,12 @@ export function handwheel(M: MachineMaterials): THREE.Group {
   return g;
 }
 
+/** Where the conduit ends on the floor behind the motor: the installation's trunking takes the cable on from there. */
+export const CONDUIT_END: readonly [number, number, number] = [0.9, 0.012, -0.4];
+
 /** Flexible conduit from the terminal box gland down to the floor, behind the motor. */
 export function conduit(M: MachineMaterials): THREE.Mesh {
   const y = DIM.yWorm + R + 0.042;
-  const path = new THREE.CatmullRomCurve3([P3(0.53, y, -0.08), P3(0.535, y - 0.004, -0.2), P3(0.6, 0.22, -0.3), P3(0.66, 0.03, -0.35), P3(0.76, 0.012, -0.38), P3(0.9, 0.012, -0.4)]);
+  const path = new THREE.CatmullRomCurve3([P3(0.53, y, -0.08), P3(0.535, y - 0.004, -0.2), P3(0.6, 0.22, -0.3), P3(0.66, 0.03, -0.35), P3(0.76, 0.012, -0.38), P3(...CONDUIT_END)]);
   return mesh(new THREE.TubeGeometry(path, 80, 0.011, 12), M.rubber);
 }

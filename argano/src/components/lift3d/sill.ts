@@ -1,14 +1,14 @@
 // Sills of the entrances, landing and car: the extruded aluminium section (a walking face with fine ribs, a groove
-// under each door track for the panels' shoes, the rounded nosing toward the gap), and at a landing the galvanized
-// angle that carries it on the wall, with its gussets and anchors, and the stone threshold through the wall. Plan and
-// heights in millimetres, into a batch. Loaded only through boot.ts (lazy).
+// under each door track for the panels' shoes, the rounded nosing toward the gap). A landing's sill rests on Panev's
+// brackets (staffe.ts). Plan and heights in millimetres, into a batch. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { extrudeAlong, onWall, type Batch } from './geom';
+import { extrudeAlong, type Batch } from './geom';
 import type { LiftMaterials, Side } from './materials';
 
 // height of the extrusion, groove width and depth, rib pitch and depth [mm]
-const H = 24, GROOVE = 11, GROOVE_D = 14, RIB = 4, RIB_D = 0.9;
+export const SILL_H = 24;
+const H = SILL_H, GROOVE = 11, GROOVE_D = 14, RIB = 4, RIB_D = 0.9;
 
 /** The section across the sill, from v0 (inner edge) to v1 (nosing), top at 0, in metres; a groove at each of `grooves`.
  *  `flip`: the nosing at v0 instead (a car sill faces the landing, toward the wall). */
@@ -35,21 +35,4 @@ export function sill(B: Batch, M: LiftMaterials, wall: Side, W: number, D: numbe
   B.add(extrudeAlong(wall, W, D, section(v0, v1, grooves, flip), u0, u1, z), M.alu);
   // dirt packed in the bottom of the grooves
   for (const g of grooves) B.wallBox(wall, W, D, u0 + 2, u1 - 2, g - GROOVE / 2 + 0.5, g + GROOVE / 2 - 0.5, z - GROOVE_D, z - GROOVE_D + 2, M.rubber);
-}
-
-/** The angle under a landing sill, on the wall face: its legs, a gusset every 400 mm, two anchors between gussets. */
-export function sillSupport(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, u0: number, u1: number, depth: number, z: number): void {
-  const top = z - H;
-  B.wallBox(wall, W, D, u0, u1, 0, 5, top - 140, top, M.galv);
-  B.wallBox(wall, W, D, u0, u1, 0, depth - 6, top - 6, top, M.galv);
-  const n = Math.max(2, Math.round((u1 - u0) / 400));
-  for (let k = 0; k <= n; k++) {
-    const u = u0 + 15 + ((u1 - u0 - 30) * k) / n;
-    B.plate(wall, W, D, u - 2.5, u + 2.5, [5, top - 130], [depth - 12, top - 8], 5, M.galv);
-    if (k === n) continue;
-    const a = u + (u1 - u0 - 30) / n / 2;
-    const [x, y] = onWall(wall, W, D, a, 5), [x1, y1] = onWall(wall, W, D, a, 14);
-    B.rod([x, y, top - 70], [x1, y1, top - 70], 11, M.galv, 6);
-    B.rod([x, y, top - 70], [(x + x1) / 2, (y + y1) / 2, top - 70], 15, M.galv, 16);
-  }
 }

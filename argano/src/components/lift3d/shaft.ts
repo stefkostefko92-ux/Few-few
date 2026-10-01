@@ -1,7 +1,7 @@
 // The shaft built from its design: the four walls with the landing door openings at the floors each entrance
 // serves, the landing doors (stainless portal and panels, telescopic or centre opening; on the shaft side the header
-// with its track and lock, the aluminium sill on its bracket), the landings outside with the call button, the pit
-// floor, the slab over the shaft with the rope opening and a label at each floor. Plan and heights in millimetres
+// with its track and lock, the aluminium sill on Panev's brackets), the landings outside with the call button, the pit
+// floor, the slab over the shaft with its openings and a label at each floor. Plan and heights in millimetres
 // (geom.ts turns them into metres); static parts merged by material. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
@@ -11,7 +11,9 @@ import { KV } from '@/shaft/norme';
 import { Batch, P } from './geom';
 import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
 import { landingHeader } from './operator';
-import { sill, sillSupport } from './sill';
+import { SILL_H, sill } from './sill';
+import { doorBrackets } from './staffe';
+import { buildSlab, type Opening } from './slab';
 import { SIDES, type LiftMaterials, type Side } from './materials';
 
 const LANDING = 1200;
@@ -31,13 +33,13 @@ export function doorsOf(L: Layout, door: 'A' | 'B' | 'AB'): DoorLayout[] {
 }
 
 /** The hardware of a landing entrance at the level z, on the shaft side of the wall: the suspension, the panels (by
- *  the car's across the sill gap), the sill on its angle, the stone threshold through the wall. */
+ *  the car's across the sill gap), the sill on Panev's brackets, the stone threshold through the wall. */
 export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number): DoorPanels {
   const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth);
   landingHeader(C, M, d.wall, W, D, d, tracks, LANDING_PANEL, z + d.height, I.landingDepth);
   const panels = doorPanels(d.wall, W, D, d, z, tracks, LANDING_PANEL, M.landing[d.wall], M, { kind: 'lock', v0: I.landingDepth + I.sillGap });
   sill(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, -25, I.landingDepth, z, trackPlanes(d, tracks, LANDING_PANEL));
-  sillSupport(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, I.landingDepth, z);
+  doorBrackets(C, M, d.wall, W, D, d.u0 + 10, d.u1 - 10, z, I.landingDepth, SILL_H);
   C.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -I.wall, -25, z - 30, z, M.stone);
   return panels;
 }
@@ -68,7 +70,8 @@ function label(text: string): THREE.Sprite {
   return s;
 }
 
-export function buildShaft(L: Layout, S: Section, M: LiftMaterials, holes: readonly [number, number, number, number]): ShaftModel {
+/** `cuts`: where the slab over the shaft is open (slabOpenings). */
+export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readonly Opening[]): ShaftModel {
   const I = L.inputs, V = I.vertical, W = I.W, D = I.D, wall = I.wall;
   const zBot = S.pitFloor, zTop = S.ceiling;
   const sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
@@ -123,18 +126,11 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, holes: reado
     }
   });
 
-  // pit floor and the slab over the shaft with the opening for the ropes
+  // pit floor and the slab over the shaft with the openings it needs (slab.ts)
   C.box(-wall, -wall, zBot - 300, W + wall, D + wall, zBot, M.pit);
-  const R = I.room, slab = R ? R.slab : 250;
-  const [hx0, hy0, hx1, hy1] = holes;
-  const sx0 = R ? -R.shaftX : -wall, sy0 = R ? -R.shaftY : -wall, sx1 = R ? R.W - R.shaftX : W + wall, sy1 = R ? R.D - R.shaftY : D + wall;
-  const slabPiece = (x0: number, y0: number, x1: number, y1: number): void => {
-    if (x1 - x0 > 1 && y1 - y0 > 1) C.box(x0, y0, zTop, x1, y1, zTop + slab, M.slab);
-  };
-  slabPiece(sx0, sy0, hx0, sy1);
-  slabPiece(hx1, sy0, sx1, sy1);
-  slabPiece(hx0, sy0, hx1, hy0);
-  slabPiece(hx0, hy1, hx1, sy1);
+  const R = I.room;
+  const rect = [R ? -R.shaftX : -wall, R ? -R.shaftY : -wall, R ? R.W - R.shaftX : W + wall, R ? R.D - R.shaftY : D + wall] as const;
+  buildSlab(C, M, rect, zTop, zTop + (R ? R.slab : 250), cuts, Boolean(R));
   C.into(common);
   for (const side of SIDES) byside[side].into(sides[side]);
 

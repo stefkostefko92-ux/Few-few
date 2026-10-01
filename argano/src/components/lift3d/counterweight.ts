@@ -35,10 +35,10 @@ export function buildCounterweight(L: Layout, M: LiftMaterials, hitch: Hitch | n
     box(u - 16, u + 16, dep / 2 - 16, dep / 2 + 16, top + 18, top + 36, M.steel);
   }
   // guide shoes on its rails
-  const k = RAILS[L.inputs.cwRail].k;
+  const { k, h } = RAILS[L.inputs.cwRail];
   for (const rail of L.rails.filter((x) => x.kind === 'cw')) {
-    guideShoe(B, M, rail, k, 30, false);
-    guideShoe(B, M, rail, k, H - 140, true);
+    guideShoe(B, M, rail, k, h, 30, false);
+    guideShoe(B, M, rail, k, h, H - 140, true);
   }
   // the hitch: the ropes end 60 mm over the top beam
   const cx = r.x + r.w / 2, cy = r.y + r.h / 2;

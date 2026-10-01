@@ -6,7 +6,7 @@
 // Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import { aluminium, concrete, galvanized, granite, hazard, lamp, machined, millScale, perforated, physical, rope, shiftUniform, stainless, standard, tiles, type Shift } from './finishes';
+import { aluminium, concrete, electroZinc, galvanized, granite, hazard, lamp, machined, millScale, perforated, physical, rope, shiftUniform, stainless, standard, tiles, type Shift } from './finishes';
 export type Side = 'front' | 'rear' | 'left' | 'right';
 export const SIDES: readonly Side[] = ['front', 'rear', 'left', 'right'];
 
@@ -45,6 +45,9 @@ export interface LiftMaterials {
   galv: THREE.MeshPhysicalNodeMaterial;
   /** extruded aluminium: sills, trims, skirting, door tracks */
   alu: THREE.MeshPhysicalNodeMaterial;
+  /** Panev's brackets and their fasteners: electro-galvanized; their laser-cut edges, bare steel */
+  zinc: THREE.MeshPhysicalNodeMaterial;
+  cut: THREE.MeshStandardNodeMaterial;
   /** handrail, operating panel, buttons: polished like the mirror */
   chrome: THREE.MeshPhysicalNodeMaterial;
   mirror: THREE.MeshPhysicalNodeMaterial;
@@ -96,6 +99,8 @@ export function createLiftMaterials(pit: number | null = null): LiftMaterials {
     railFoot: millScale('#3d434a'),
     roller: standard({ color: new THREE.Color('#1b1d20'), roughness: 0.42 }),
     alu: aluminium('#c4c9ce'),
+    zinc: electroZinc('#d2d7de'),
+    cut: standard({ color: new THREE.Color('#a9afb7'), metalness: 1, roughness: 0.62 }),
     car: stainless(),
     carLight: lamp(),
     carDoor: stainless('#c9ced3'),

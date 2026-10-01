@@ -68,6 +68,18 @@ export function galvanized(hex: string): THREE.MeshPhysicalNodeMaterial {
   return m;
 }
 
+/** Electro-galvanized sheet under its clear passivation (the brackets of Panev's catalogue and their fasteners):
+ *  bright zinc, the film's thin-layer play varying in broad patches, fine rolling lines. */
+export function electroZinc(hex: string): THREE.MeshPhysicalNodeMaterial {
+  const m = physical({ color: new THREE.Color(hex), metalness: 1, roughness: 0.3, iridescence: 0.12, iridescenceIOR: 1.55, iridescenceThicknessRange: [250, 330] });
+  const patch = mx_noise_float(positionWorld.mul(8)).mul(0.5).add(0.5);
+  const lines = mx_noise_float(vec3(positionWorld.x.mul(380), positionWorld.y.mul(380), positionWorld.z.mul(6))).mul(0.5).add(0.5);
+  m.colorNode = materialColor.mul(patch.mul(0.05).add(0.96));
+  m.roughnessNode = materialRoughness.mul(lines.mul(0.18).add(0.92));
+  m.iridescenceThicknessNode = mix(float(250), float(330), patch);
+  return m;
+}
+
 /** Stone tiles of the landings: 600 mm squares with their joints, a faint veining. */
 export function tiles(hex: string): THREE.MeshStandardNodeMaterial {
   const m = standard({ color: new THREE.Color(hex), roughness: 0.45 });

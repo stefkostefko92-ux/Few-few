@@ -42,22 +42,22 @@ function railFrame(r: Rail) {
 
 /** A sliding guide shoe round the blade (thickness k) of a rail at height z: cheeks with their liners, the back, and an
  *  oil cup on a top shoe. Heights in the guided part's own frame. */
-export function guideShoe(B: Batch, M: LiftMaterials, r: Rail, k: number, z: number, oil: boolean): void {
-  const { box } = railFrame(r);
+export function guideShoe(B: Batch, M: LiftMaterials, r: Rail, k: number, h: number, z: number, oil: boolean): void {
+  const { box } = railFrame(r), reach = Math.min(40, h - 18); // the jaws stay clear of the clips on the rail's foot
   for (const s of [-1, 1]) {
     const [c0, c1] = s > 0 ? [k / 2 + 3, 33] : [-33, -k / 2 - 3], [l0, l1] = s > 0 ? [k / 2 + 0.5, k / 2 + 3] : [-k / 2 - 3, -k / 2 - 0.5];
-    box(B, -40, 12, c0, c1, z, z + 110, M.galv);
-    box(B, -38, 10, l0, l1, z + 4, z + 106, M.rubber);
+    box(B, -reach, 12, c0, c1, z, z + 110, M.galv);
+    box(B, 2 - reach, 10, l0, l1, z + 4, z + 106, M.rubber);
   }
   box(B, 12, 24, -33, 33, z, z + 110, M.galv);
   if (!oil) return;
-  box(B, -30, 10, -22, 22, z + 110, z + 182, M.oil);
-  box(B, -32, 12, -24, 24, z + 182, z + 190, M.glass);
+  box(B, 10 - reach, 10, -22, 22, z + 110, z + 182, M.oil);
+  box(B, 8 - reach, 12, -24, 24, z + 182, z + 190, M.glass);
 }
 
 export function buildSling(L: Layout, M: LiftMaterials, B: Batch, hitch: Hitch | null, gov: GovernorSpot | null): readonly (readonly [number, number])[] {
   const I = L.inputs, V = I.vertical, c = L.car, f = L.frame, carRails = L.rails.filter((r) => r.kind === 'car');
-  const k = RAILS[I.carRail].k, zTop = V.frameTop, zLow = -V.frameBelow;
+  const { k, h } = RAILS[I.carRail], zTop = V.frameTop, zLow = -V.frameBelow;
 
   const upright = (r: Rail): void => {
     const F = railFrame(r), point = F.point;
@@ -71,8 +71,8 @@ export function buildSling(L: Layout, M: LiftMaterials, B: Batch, hitch: Hitch |
       box(17, 25, f0, f1, zLow, zTop, M.steel);
     }
     // sliding guide shoes, oil cups on the top ones
-    guideShoe(B, M, r, k, zLow + 60, false);
-    guideShoe(B, M, r, k, zTop - 130, true);
+    guideShoe(B, M, r, k, h, zLow + 60, false);
+    guideShoe(B, M, r, k, h, zTop - 130, true);
     // progressive safety gear above the lower shoe, its pull rod up the channel
     box(-52, 28, -33, 33, -150, -15, M.frame);
     box(-58, -52, -40, 40, -140, -25, M.galv);

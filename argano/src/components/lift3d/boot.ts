@@ -162,7 +162,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
   sizer.observe(canvas);
   resize();
   const first = opts.clock.frame();
-  if (first) world.update(first, camera.position);
+  if (first) world.update(first, camera.position, controls.target);
   place(view, false);
 
   let disposed = false, active = false, frames = 0, last = performance.now(), prevRendered = false, lastRendered = 0, slowRun = 0;
@@ -207,7 +207,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
     }
     if (governor.sample(dt * 1000, now)) resize();
     const f = opts.clock.frame();
-    if (f) world.update(f, camera.position);
+    if (f) world.update(f, camera.position, controls.target);
     if (glide) {
       const u = Math.min(1, Math.max(0, (now - glide.start) / GLIDE_MS)), k = u * u * (3 - 2 * u);
       camera.position.lerpVectors(glide.from, glide.to, k);
@@ -272,7 +272,7 @@ export async function bootLift(canvas: HTMLCanvasElement, dv: LiftDerived, opts:
       world = st.world;
       world.setZones(zonesOn);
       const f = opts.clock.frame();
-      if (f) world.update(f, camera.position);
+      if (f) world.update(f, camera.position, controls.target);
       release(old);
       wake();
     },

@@ -14,6 +14,7 @@ import { motor, handwheel, conduit } from './motor';
 import { sheave, ropes } from './sheave';
 
 export { DIM, ROPE_LENGTH } from './common';
+export { CONDUIT_END } from './motor';
 
 export interface Machine {
   group: THREE.Group;

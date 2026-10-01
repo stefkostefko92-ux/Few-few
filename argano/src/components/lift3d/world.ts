@@ -11,6 +11,7 @@ import type { Frame } from '@/sim';
 import { Batch, P, box, disposeTree } from './geom';
 import { createLiftMaterials, SIDES, type Side } from './materials';
 import { buildShaft } from './shaft';
+import { slabOpenings } from './slab';
 import { buildCar } from './car';
 import { buildCounterweight } from './counterweight';
 import { buildRails } from './rails';
@@ -35,7 +36,8 @@ export interface Focus {
 
 export interface LiftWorld {
   scene: THREE.Scene;
-  update(f: Frame, camera: THREE.Vector3): void;
+  /** the state of the run, the camera and the point it looks at */
+  update(f: Frame, camera: THREE.Vector3, target: THREE.Vector3): void;
   focus(view: 'car' | 'shaft' | 'room' | 'pit', f: Frame | null): Focus;
   setZones(on: boolean): void;
   /** compiles the pipelines of every part, in view or not: a part coming into view later does not stall a frame */
@@ -56,35 +58,33 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const M = createLiftMaterials(S.pitFloor / 1000);
 
   const rig = ropeRig(dv);
-  const carDrop = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2], cwDrop = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
-  const pad = 320 + N.D / 2;
-  const holes = [
-    Math.max(0, Math.min(carDrop[0], cwDrop[0]) - pad), Math.max(0, Math.min(carDrop[1], cwDrop[1]) - pad),
-    Math.min(I.W, Math.max(carDrop[0], cwDrop[0]) + pad), Math.min(I.D, Math.max(carDrop[1], cwDrop[1]) + pad),
-  ] as const;
-  const shaft = buildShaft(L, S, M, holes);
+  const gov = governorSpot(L), slab = (I.room?.slab ?? 250) / 1000, sim = dv.sim;
+  const travel = [sim.levels[0], sim.levels[sim.levels.length - 1]].map((s) => [s, sim.cw0 - s] as const);
+  const openings = slabOpenings(rig, N.n, N.d, S.ceiling / 1000, S.ceiling / 1000 + slab, travel, gov);
+  const shaft = buildShaft(L, S, M, openings);
   // the ropes end on the car: a 1:1 hitch on the crosshead, or the car pulley of a 2:1 roping
   const two = dv.analysis.ctx.I.r === 2;
   const [hx, hy] = rig.origin, across = [-rig.dir[1], rig.dir[0]] as const, Rp = dv.analysis.ctx.I.Dp / 2, width = N.n * Math.max(N.d + 6, 1.7 * N.d) + 30;
   const hitchAt = (u: number): Hitch => (two
     ? { kind: 'pulley', x: hx + u * 1000 * rig.dir[0], y: hy + u * 1000 * rig.dir[1], across, r: Rp, width }
     : { kind: 'ropes', at: hitchSpots(rig, N.n, u) });
-  const labels = dv.sim.labels, gov = governorSpot(L);
+  const labels = dv.sim.labels;
   const car = buildCar(L, M, hitchAt(0), gov, labels);
   const cw = buildCounterweight(L, M, hitchAt(rig.calata));
   const rails = buildRails(L, S, M);
   const buffers = buildBuffers(L, S, M, car.bufferSpots);
   const ropes = buildRopes(rig, N.n, N.d, M, !two);
-  const machine = buildRoom(L, rig, N.n, N.d, N.D, M);
+  const machine = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, openings, gov);
   // the fittings of the shaft and the pit, the governor's loop, the travelling cable
   const fit = new Batch(), fittings = new THREE.Group();
   buildPit(L, S, M, fit);
-  if (gov) buildGovernor(L, S, gov, rig.bottom ? null : rig.roomFloor * 1000, M, fit);
+  const governor = gov ? buildGovernor(L, S, gov, rig.bottom ? null : rig.roomFloor * 1000, M, fit) : null;
   fit.into(fittings);
   const cable = buildCable(L, S, M, gov);
   for (const side of SIDES) scene.add(shaft.sides[side], machine.sides[side]);
   scene.add(shaft.common, car.group, cw, rails, buffers.group, ropes.group, machine.common, machine.roof, fittings);
   if (cable) scene.add(cable.group);
+  if (governor) scene.add(governor.group);
 
   // spaces of the checks: the refuge on the car roof (rides with the car) and in the pit
   const status = (id: string) => L.checks.find((c) => c.id === id)?.status ?? 'ok';
@@ -116,7 +116,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const at = (u: number, y: number, out: THREE.Vector3): THREE.Vector3 => out.set(ox / 1000 + u * dx, y, -(oy / 1000 + u * dy));
   return {
     scene,
-    update(f, cam) {
+    update(f, cam, target) {
       car.group.position.y = f.s;
       cw.position.y = f.cw;
       car.setDoor(f.door);
@@ -128,6 +128,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
       car.setDisplay(labels[near] ?? '', f.v > 0.05 ? 1 : f.v < -0.05 ? -1 : 0);
       buffers.set(f.bufCar, f.bufCw);
       cable?.set(f.s);
+      governor?.set(f.s);
       ropes.set(f.s, f.cw);
       M.ropeShift.value = f.rope;
       // 2:1: the car pulley is the first wheel of the rope, the counterweight pulley the last
@@ -139,19 +140,22 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
       key.target.position.set(cx / 1000, f.s + 1, -cy / 1000);
       rim.position.set(cx / 1000 - 4, f.s + 3, -cy / 1000 - 5);
       rim.target.position.copy(key.target.position);
-      // x-ray: the walls with the camera outside them turn faint
-      const out: Record<Side, boolean> = { front: cam.z > wall * 0.5, rear: cam.z < -(D + wall * 0.5), left: cam.x < -wall * 0.5, right: cam.x > W + wall * 0.5 };
+      // x-ray: the walls with the camera outside them turn faint, and those the camera looks through at something past
+      // them (the room of a machine below, behind the shaft)
+      const outside = (p: THREE.Vector3, m: number): Record<Side, boolean> => ({ front: p.z > m, rear: p.z < -(D + m), left: p.x < -m, right: p.x > W + m });
+      const out = outside(cam, wall * 0.5), beyond = outside(target, wall);
       for (const side of SIDES) {
-        M.ghost(M.walls[side], out[side]);
-        M.ghost(M.landing[side], out[side], 0.35);
-        M.ghost(M.floors[side], out[side], 0.2);
+        const faint = out[side] || beyond[side];
+        M.ghost(M.walls[side], faint);
+        M.ghost(M.landing[side], faint, 0.35);
+        M.ghost(M.floors[side], faint, 0.2);
       }
-      if (R) {
-        const rx0 = -R.shaftX / 1000, ry0 = -R.shaftY / 1000;
-        const roomOut: Record<Side, boolean> = { front: cam.z > -ry0, rear: cam.z < -(ry0 + R.D / 1000), left: cam.x < rx0, right: cam.x > rx0 + R.W / 1000 };
+      const rb = machine.bounds;
+      if (rb) {
+        const roomOut: Record<Side, boolean> = { front: cam.z > -rb.y0 / 1000, rear: cam.z < -rb.y1 / 1000, left: cam.x < rb.x0 / 1000, right: cam.x > rb.x1 / 1000 };
         for (const side of SIDES) M.ghost(M.roomWalls[side], roomOut[side], 0.1);
       }
-      M.ghost(M.roof, cam.y > (S.ceiling + (R?.slab ?? 250) + (R?.H ?? 2400)) / 1000, 0.08);
+      M.ghost(M.roof, cam.y > (rb?.top ?? S.ceiling + 2600) / 1000, 0.08);
     },
     focus(view, f) {
       const s = f?.s ?? 0;
