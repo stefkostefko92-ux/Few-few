@@ -36,6 +36,8 @@ async function main(): Promise<void> {
       viewport: { width: 1400, height: 1000 },
       deviceScaleFactor: 2,
     });
+    // the first frames bake the decors on the GPU; on a software renderer that holds the page for minutes
+    page.setDefaultTimeout(5 * 60 * 1000);
     page.on('dialog', (dialog) => void dialog.accept());
     await page.goto(`${base}/login?lang=bg`);
     await page.fill('#email', email);
