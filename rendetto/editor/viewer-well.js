@@ -77,6 +77,8 @@ export function wellMesh(mats, metal, w, hIn, round) {
     m.normalScale = new THREE.Vector2(1, 1);
     m.aoMap = aoMap;
     m.aoMapIntensity = 1;
+    // kept only while a model uses it (MaterialCache.trim)
+    m.userData.transient = true;
     m.addEventListener('dispose', () => {
       normalMap.dispose();
       aoMap.dispose();

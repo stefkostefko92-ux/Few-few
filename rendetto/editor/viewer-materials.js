@@ -80,6 +80,12 @@ export class MaterialCache {
     return b;
   }
 
+  // a new model is being built: what it uses is pinned or live again
+  begin() {
+    this.pinned = new Set();
+    this.live = new Set();
+  }
+
   // most recently used last
   touch(key) {
     const b = this.bakes.get(key);
@@ -89,7 +95,8 @@ export class MaterialCache {
   }
 
   // After a model or the room is built (never during: a decor needed further on would be baked twice): free the
-  // least recently used decors that no live mesh needs, down to MAX_BAKES; their materials go with them.
+  // least recently used decors that no live mesh needs, down to MAX_BAKES, with their materials; and the materials
+  // of no decor (the cups of recessed pulls) that the model on screen no longer uses.
   trim() {
     for (const [key, b] of this.bakes) {
       if (this.bakes.size <= MAX_BAKES) return;
@@ -102,6 +109,11 @@ export class MaterialCache {
           this.materials.delete(mk);
         }
     }
+    for (const [key, m] of this.materials)
+      if (m.userData.transient && !this.live?.has(key)) {
+        m.dispose();
+        this.materials.delete(key);
+      }
   }
 
   // after a lost WebGL context the baked textures are gone: forget everything, the next model bakes again
@@ -115,6 +127,7 @@ export class MaterialCache {
   get(key, make) {
     if (!this.materials.has(key)) this.materials.set(key, make());
     const m = this.materials.get(key);
+    this.live?.add(key);
     if (m.userData.bake) {
       this.pinned?.add(m.userData.bake);
       this.touch(m.userData.bake);

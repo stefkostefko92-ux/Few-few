@@ -31,8 +31,16 @@ export class PhotoMode {
     }
     if (!this.wanted || this.renderer) return true;
     this.target = mod.TARGET_SAMPLES;
-    this.renderer = new mod.PhotoRenderer(this.v);
-    this.renderer.start();
+    let r = null;
+    try {
+      r = new mod.PhotoRenderer(this.v);
+      r.start();
+    } catch (err) {
+      r?.dispose();
+      this.wanted = false;
+      throw err;
+    }
+    this.renderer = r;
     this.v.invalidate();
     return true;
   }

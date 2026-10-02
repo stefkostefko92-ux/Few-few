@@ -128,7 +128,7 @@ export class Viewer {
       child.traverse((o) => o.geometry?.dispose());
       this.root.remove(child);
     }
-    this.mats.pinned = new Set();
+    this.mats.begin();
     const ext = extents(model);
     this.ext = ext;
     this.off = [-(ext.x0 + ext.x1) / 2, 0, -(ext.z0 + ext.z1) / 2];

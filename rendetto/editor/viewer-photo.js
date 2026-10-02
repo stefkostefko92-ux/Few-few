@@ -120,11 +120,28 @@ export class PhotoRenderer {
     return new Promise((resolve) => this.v.renderer.domElement.toBlob(resolve, 'image/png'));
   }
 
+  // pt.dispose() frees only its own targets and quad; the scene it uploaded (BVH, attribute, material and light
+  // textures, the texture array, the environment) and the low resolution tracer stay on the GPU, and garbage
+  // collection does not see GPU memory. Private fields of three-gpu-pathtracer 0.0.26 (the version is pinned).
   dispose() {
     this.stop();
-    this.pt.dispose();
+    const pt = this.pt;
+    const materials = new Set([pt._pathTracer?.material, pt._lowResPathTracer?.material]);
+    pt.dispose();
+    pt._lowResPathTracer?.dispose();
+    for (const m of materials) if (m) freeMaterial(m);
     this.envTarget.dispose();
   }
+}
+
+function freeMaterial(material) {
+  for (const { value } of Object.values(material.uniforms ?? {})) {
+    if (!value || typeof value !== 'object') continue;
+    if (value.isTexture && value.renderTarget) value.renderTarget.dispose();
+    else if (typeof value.dispose === 'function') value.dispose();
+    else if (value.tex?.isTexture) value.tex.dispose();
+  }
+  material.dispose();
 }
 
 function countTextures(scene) {
