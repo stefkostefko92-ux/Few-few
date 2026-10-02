@@ -1,17 +1,18 @@
 import 'server-only';
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
+import type { ProjectKind } from '@/lib/schemas';
 import { DESIGN_SELECT } from './drawing-compose';
 
 // Reads, always scoped to the company of the signed-in user: an id from another company is "not found".
 
-export function listProjects(user: SessionUser, archived: boolean) {
+export function listProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null) {
   return prisma.project.findMany({
-    where: { companyId: user.companyId, archivedAt: archived ? { not: null } : null },
+    where: { companyId: user.companyId, archivedAt: archived ? { not: null } : null, ...(kind ? { kind } : {}) },
     orderBy: { updatedAt: 'desc' },
     take: 500,
     select: {
-      id: true, name: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true, archivedAt: true,
+      id: true, kind: true, name: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true, archivedAt: true,
       _count: { select: { calculations: true } },
       calculations: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true } },
     },

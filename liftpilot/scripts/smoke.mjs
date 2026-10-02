@@ -1,6 +1,7 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
-//   health → public page (no console or CSP errors) → sign-in → installation → calculation → saved snapshot with
-//   reproduced hash → calculation report (PDF) → shaft design by hand (a distance changed on its plan, the landing door
+//   health → public page (no console or CSP errors) → sign-in → the two modules → a machine replacement → its
+//   calculation → saved snapshot with reproduced hash → calculation report (PDF) → the replacement becomes a whole
+//   project → shaft design by hand (a distance changed on its plan, the landing door
 //   set apart from the car door), its DXF, a calculation from it with the plan in its report → data of the installation,
 //   client and company logos, drawing set issued from
 //   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation and a SICOR
@@ -79,14 +80,17 @@ try {
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);
-  await page.goto(`${BASE}/it/app/projects/new`);
+  // the dashboard offers the two modules; a machine replacement opens straight on its calculation
+  await page.goto(`${BASE}/it/app`);
+  assert.equal(await page.locator('.app-modules .app-module').count(), 2, 'two modules');
+  await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
+  assert.ok(await page.isChecked('input[name="kind"][value="REPLACEMENT"]'), 'replacement chosen');
   await page.fill('input[name="name"]', `Smoke ${stamp}`);
   await page.fill('input[name="city"]', 'Milano');
-  await Promise.all([page.waitForURL(/\/projects\/(?!new)[a-z0-9]+$/), page.click('main form button[type="submit"]')]);
-  const projectUrl = page.url();
+  await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
+  const projectUrl = page.url().replace(/\/calc$/, '');
 
   step('calculation');
-  await page.click('a[href$="/calc"]');
   await page.waitForSelector('.verdict .big');
   await page.fill('#n_D', '600');
   await page.waitForTimeout(300);
@@ -101,6 +105,14 @@ try {
   assert.equal(pdf.headers()['content-type'], 'application/pdf');
   const body = await pdf.body();
   assert.equal(body.subarray(0, 5).toString('latin1'), '%PDF-');
+
+  step('the replacement becomes a whole project');
+  await page.goto(projectUrl);
+  assert.match(await page.textContent('.titles'), /Sostituzione argano/);
+  assert.equal(await page.locator('.lift-home').count(), 0, 'no whole-project sections on a replacement');
+  await Promise.all([page.waitForURL(/\/progetto$/, { timeout: 30000 }), page.click('button:has-text("Passa a progetto completo")')]);
+  await page.goto(projectUrl);
+  assert.match(await page.textContent('.titles'), /Progetto completo/);
 
   step('shaft design by hand, its DXF, a calculation from it and its report');
   await page.goto(`${projectUrl}/vano`);

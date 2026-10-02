@@ -145,10 +145,18 @@ model AuthToken {
 }
 
 /// A lift installation (impianto) of a company.
+/// What an installation is for: the machine replacement alone (the calculation and its report), or a whole project
+/// (shaft, car, doors, machine, drawing set, 3D). A replacement can become a whole project, never the reverse.
+enum ProjectKind {
+  REPLACEMENT
+  FULL
+}
+
 model Project {
   id           String        @id @default(cuid())
   companyId    String
   company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  kind         ProjectKind   @default(FULL)
   name         String
   address      String?
   city         String?
@@ -174,6 +182,7 @@ model Project {
   liftDesigns  LiftDesign[]
 
   @@index([companyId, archivedAt])
+  @@index([companyId, kind])
   @@index([createdById])
 }
 

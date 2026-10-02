@@ -59,6 +59,9 @@ export const projectSchema = z.object({
   notes: optionalText(4000),
 });
 export type ProjectInput = z.infer<typeof projectSchema>;
+/** What the installation is for (Project.kind): the machine replacement alone, or a whole project. */
+export const projectKindSchema = z.enum(['REPLACEMENT', 'FULL']);
+export type ProjectKind = z.infer<typeof projectKindSchema>;
 
 export const roleSchema = z.enum(['VIEWER', 'TECHNICIAN', 'ENGINEER', 'MANAGER', 'ADMIN', 'OWNER']);
 

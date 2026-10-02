@@ -3,6 +3,7 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
+import type { ProjectKind } from '@/lib/schemas';
 import { listProjects } from '@/server/queries';
 import VerdictPill from '@/components/VerdictPill';
 
@@ -11,35 +12,57 @@ export async function generateMetadata() {
   return { title: t('title') };
 }
 
+/** The two modules: the machine replacement alone, or a whole project; their slug in the address. */
+const MODULES: readonly { kind: ProjectKind; slug: string }[] = [{ kind: 'REPLACEMENT', slug: 'replacement' }, { kind: 'FULL', slug: 'full' }];
+const kindOf = (slug: string | undefined): ProjectKind | null => MODULES.find((m) => m.slug === slug)?.kind ?? null;
+
 export default async function ProjectsPage({ params, searchParams }: {
-  params: Promise<{ locale: string }>; searchParams: Promise<{ archived?: string }>;
+  params: Promise<{ locale: string }>; searchParams: Promise<{ archived?: string; kind?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'projects:view');
-  const archived = (await searchParams).archived === '1';
-  const [t, projects] = await Promise.all([getTranslations('projects'), listProjects(user, archived)]);
+  const sp = await searchParams, archived = sp.archived === '1', kind = kindOf(sp.kind);
+  const [t, projects] = await Promise.all([getTranslations('projects'), listProjects(user, archived, kind)]);
   const fd = dateFormat(locale);
   const canEdit = can(user.role, 'projects:edit');
+  const listHref = (slug: string | null, arch = archived): string => {
+    const q = [arch ? 'archived=1' : '', slug ? `kind=${slug}` : ''].filter(Boolean).join('&');
+    return q ? `/app?${q}` : '/app';
+  };
   return (
     <main className="page">
       <div className="page-head">
         <div className="titles"><h1>{archived ? t('archivedTitle') : t('title')}</h1></div>
         <div className="actions">
-          <Link className="btn" href={archived ? '/app' : '/app?archived=1'}>{archived ? t('showActive') : t('showArchived')}</Link>
-          {canEdit ? <Link className="btn btn-primary" href="/app/projects/new">{t('new')}</Link> : null}
+          <Link className="btn" href={listHref(sp.kind && kind ? sp.kind : null, !archived)}>{archived ? t('showActive') : t('showArchived')}</Link>
         </div>
       </div>
+      {canEdit && !archived ? (
+        <div className="app-modules">
+          {MODULES.map((m) => (
+            <Link key={m.kind} href={`/app/projects/new?kind=${m.slug}`} className={`app-module app-module-${m.slug}`}>
+              <span className="eyebrow">{t(`kind_${m.kind}`)}</span>
+              <strong>{t(`module_${m.kind}_title`)}</strong>
+              <span className="note">{t(`module_${m.kind}_lead`)}</span>
+              <span className="btn btn-primary">{t(`module_${m.kind}_new`)}</span>
+            </Link>
+          ))}
+        </div>
+      ) : null}
+      <nav className="seg-row" aria-label={t('col_kind')}>
+        <Link href={listHref(null)} aria-current={kind === null ? 'page' : undefined}>{t('filter_all')}</Link>
+        {MODULES.map((m) => <Link key={m.kind} href={listHref(m.slug)} aria-current={kind === m.kind ? 'page' : undefined}>{t(`filter_${m.kind}`)}</Link>)}
+      </nav>
       {projects.length === 0 ? (
         <div className="panel items-start">
           <p>{archived ? t('emptyArchived') : t('empty')}</p>
-          {canEdit && !archived ? <Link className="btn btn-primary" href="/app/projects/new">{t('new')}</Link> : null}
         </div>
       ) : (
         <div className="table-panel">
           <table className="data-table stack">
             <thead>
-              <tr><th>{t('col_name')}</th><th>{t('col_place')}</th><th>{t('col_plantNumber')}</th><th>{t('col_last')}</th><th className="text-right">{t('col_count')}</th></tr>
+              <tr><th>{t('col_name')}</th><th>{t('col_kind')}</th><th>{t('col_place')}</th><th>{t('col_plantNumber')}</th><th>{t('col_last')}</th><th className="text-right">{t('col_count')}</th></tr>
             </thead>
             <tbody>
               {projects.map((p) => {
@@ -47,6 +70,7 @@ export default async function ProjectsPage({ params, searchParams }: {
                 return (
                   <tr key={p.id}>
                     <td className="row-title"><Link href={`/app/projects/${p.id}`} className="font-semibold">{p.name}</Link></td>
+                    <td data-label={t('col_kind')}><span className={`kind-tag kind-${p.kind.toLowerCase()}`}>{t(`kind_${p.kind}`)}</span></td>
                     <td data-label={t('col_place')}>{[p.address, p.city, p.province].filter(Boolean).join(', ') || '—'}</td>
                     <td data-label={t('col_plantNumber')} className="num">{p.plantNumber ?? '—'}</td>
                     <td data-label={t('col_last')}>

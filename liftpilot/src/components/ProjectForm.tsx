@@ -4,6 +4,7 @@ import { useActionState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { createProjectAction, updateProjectAction } from '@/server/project-actions';
 import { initialFormState } from '@/server/form';
+import type { ProjectKind } from '@/lib/schemas';
 
 export interface ProjectValues {
   id?: string;
@@ -20,7 +21,10 @@ const FIELDS = [
   ['name', 160, true], ['plantNumber', 80, false], ['address', 200, false], ['city', 120, false], ['province', 40, false], ['client', 160, false],
 ] as const;
 
-export default function ProjectForm({ initial }: { initial?: ProjectValues }) {
+const KINDS: readonly ProjectKind[] = ['REPLACEMENT', 'FULL'];
+
+/** A new installation says what it is for (`kind`: the module chosen on the dashboard); an existing one keeps it. */
+export default function ProjectForm({ initial, kind = 'FULL' }: { initial?: ProjectValues; kind?: ProjectKind }) {
   const t = useTranslations('projects'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(initial?.id ? updateProjectAction : createProjectAction, initialFormState);
   const bad = new Set(state.fields ?? []);
@@ -29,6 +33,21 @@ export default function ProjectForm({ initial }: { initial?: ProjectValues }) {
       <input type="hidden" name="locale" value={locale} />
       {initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
       {state.error ? <p className="alert alert-bad" role="alert">{te(state.error)}</p> : null}
+      {initial?.id ? null : (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="field-legend">{t('field_kind')}</legend>
+          <div className="app-modules">
+            {KINDS.map((k) => (
+              <label key={k} className="app-module">
+                <input type="radio" name="kind" value={k} defaultChecked={k === kind} />
+                <span className="eyebrow">{t(`kind_${k}`)}</span>
+                <strong>{t(`module_${k}_title`)}</strong>
+                <span className="note">{t(`module_${k}_lead`)}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <div className="form-grid">
         {FIELDS.map(([name, max, required]) => (
           <label key={name} className={`field${name === 'name' ? ' span-2' : ''}`}>

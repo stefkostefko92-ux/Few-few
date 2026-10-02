@@ -8,11 +8,12 @@ export async function generateMetadata() {
   return { title: t('newTitle') };
 }
 
-export default async function NewProjectPage({ params }: { params: Promise<{ locale: string }> }) {
+// the module comes from the dashboard (?kind=replacement|full); it can still be changed here
+export default async function NewProjectPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ kind?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requireCapability(locale, 'projects:edit');
-  const t = await getTranslations('projects');
+  const t = await getTranslations('projects'), kind = (await searchParams).kind === 'replacement' ? 'REPLACEMENT' : 'FULL';
   return (
     <main className="page page-narrow">
       <Crumbs items={[{ href: '/app', label: t('title') }, { label: t('newTitle') }]} />
@@ -22,7 +23,7 @@ export default async function NewProjectPage({ params }: { params: Promise<{ loc
           <p className="lead">{t('newLead')}</p>
         </div>
       </div>
-      <ProjectForm />
+      <ProjectForm kind={kind} />
     </main>
   );
 }
