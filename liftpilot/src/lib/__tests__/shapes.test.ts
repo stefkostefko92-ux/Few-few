@@ -1,7 +1,8 @@
 // The SICOR machines as they are (src/lib/catalog/shapes.ts, src/shaft/machine-shape.ts): every current model with a
 // CAD model has its shape with the sheet's dimensions; our bedframe keeps the sheave's rim over its underside and its
 // beams clear of the sheave and the ropes; nothing of the body crosses the sheave's rim; the generic machine keeps its
-// numbers; a proposal from SICOR brings the shape into the drawings and the axis the calculation counts.
+// numbers; a proposal from SICOR brings the shape into the drawings and the axis the calculation counts; the details
+// the drawings and the 3D share (src/shaft/machine-detail.ts) sit where they belong.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { MACHINES } from '@/lib/catalog/machines';
@@ -10,6 +11,7 @@ import { defaultLift, deriveLift, KL, type LiftInputs } from '@/lib/lift';
 import { KV_VERT, roomGeo, roomPlanEntities, roomSectionEntities } from '@/shaft';
 import { MACHINE_A, MACHINE_X } from '@/shaft/machine-outline';
 import { bodyBox, machineFrame, partBox, sheaveOf } from '@/shaft/machine-shape';
+import { SPOKE_ANGLES, brakeOf, ribsOf, sheaveDims, spokeOutline } from '@/shaft/machine-detail';
 import { ownAxis } from '@/shaft/support';
 import { PRESETS } from '@/calc/presets';
 import { buildReport } from '../report/build';
@@ -122,4 +124,29 @@ test('relazione: le quote dell\'argano SICOR proposto, per il montaggio', () => 
   const rows = new Map(doc.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));
   assert.equal(rows.get('Fissaggio'), '4 × M20 su 220 × 200 mm; piedi 320 × 246 mm');
   assert.equal(rows.get('Assi sul piano dei piedi'), 'puleggia 166 mm, vite senza fine 300 mm');
+});
+
+test('dettagli disegnati come nel 3D: freno a tamburo intero, razze curve tra mozzo e corona, nervature dietro le fusioni', () => {
+  for (const S of SHAPES) {
+    const B = brakeOf(S);
+    assert.ok(B, `${S.model}: freno`);
+    assert.deepEqual(B.levers.map((l) => l.side).sort(), [-1, 1], `${S.model}: due leve`);
+    // the tie rod with the springs passes over the drum, through the levers' tops
+    assert.ok(B.rodY > B.y + B.r, `${S.model}: tirante sopra il tamburo (${B.rodY} ≤ ${B.y + B.r})`);
+    for (const L of B.levers) {
+      assert.ok(L.z1 > L.z0 && L.z0 > 0, `${S.model}: leva`);
+      const ys = L.outline.map((p) => p[1]);
+      assert.ok(Math.min(...ys) <= L.pivot[1] && Math.max(...ys) >= B.rodY, `${S.model}: leva dal perno al tirante`);
+    }
+    for (const [D] of S.sheaves) {
+      // from inside the hub into the rim, never past the grooves' bottom
+      const { R, rh, rIn } = sheaveDims(D);
+      for (const a of SPOKE_ANGLES) {
+        const rs = spokeOutline(D, a).map((p) => Math.hypot(p[0], p[1]));
+        assert.ok(Math.min(...rs) >= 0.6 * rh && Math.min(...rs) < rh && Math.max(...rs) > rIn && Math.max(...rs) < R - 6,
+          `${S.model} Ø${D}: razza da ${Math.min(...rs).toFixed(1)} a ${Math.max(...rs).toFixed(1)}`);
+      }
+    }
+  }
+  assert.ok(SHAPES.some((S) => S.parts.some((p) => ribsOf(S, p))), 'nervature');
 });

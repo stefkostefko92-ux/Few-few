@@ -1,8 +1,10 @@
 // The traction sheave of a maker's machine at the calculation's size: pitch diameter D, width E, the grooves of n
 // ropes of diameter d; a rim on three curved spokes from the hub, cast in one piece and painted yellow as the maker
-// delivers it, the shaft's end plate with its screws. Our own drawing of a three-spoke sheave, sized by the sheet.
-// Loaded only through boot.ts (lazy).
+// delivers it, the shaft's end plate with its screws. Our own drawing of a three-spoke sheave, sized by the sheet; the
+// spokes' outline and the hub's sizes are the drawings' own (src/shaft/machine-detail.ts). Loaded only through boot.ts
+// (lazy).
 import * as THREE from 'three/webgpu';
+import { SPOKE_ANGLES, sheaveDims, spokeOutline } from '@/shaft/machine-detail';
 import type { MachineMaterials } from '../materials';
 import { V, P3, bolts, circle, latheZ, mesh, slab } from '../parts/common';
 
@@ -26,28 +28,22 @@ function rim(rp: number, w: number, n: number, d: number, rIn: number): THREE.Bu
   return latheZ(pts, 160);
 }
 
-/** One spoke from the hub to the rim, curved, tapering outward; drawn along +X and turned into place. */
-function spoke(rh: number, rIn: number, t: number): THREE.BufferGeometry {
-  const a0 = 0.5 * rh, a1 = 0.32 * rh, bend = 0.14 * (rIn - rh), x0 = rh * 0.7, x1 = rIn + 0.006, s = new THREE.Shape();
-  s.moveTo(x0, -a0);
-  s.quadraticCurveTo((x0 + x1) / 2, -a1 + bend, x1, -a1 * 1.6);
-  s.lineTo(x1, a1 * 1.6);
-  s.quadraticCurveTo((x0 + x1) / 2, a1 + bend, x0, a0);
-  s.closePath();
+/** One spoke from the hub to the rim at the angle a, its outline the drawings' (machine-detail.ts). */
+function spoke(D: number, a: number, t: number): THREE.BufferGeometry {
+  const s = new THREE.Shape(spokeOutline(D, a, 24).map(([x, y]) => new THREE.Vector2(x / 1000, y / 1000)));
   return slab(s, t, Math.min(0.006, t / 5), 24);
 }
 
 /** The sheave centred on its axis (local Z), the rope plane at z = 0. */
 export function shapedSheave(M: MachineMaterials, D: number, E: number, n: number, d: number): THREE.Group {
-  const g = new THREE.Group(), rp = D / 2000, w = E / 1000, rIn = rp - Math.max(0.032, 0.09 * rp), rh = Math.max(0.055, 0.2 * rp), t = Math.min(0.7 * w, 0.075);
+  const dims = sheaveDims(D), g = new THREE.Group(), rp = D / 2000, w = E / 1000, rIn = dims.rIn / 1000, rh = dims.rh / 1000, t = Math.min(0.7 * w, 0.075);
   g.add(mesh(rim(rp, w, n, d, rIn), M.yellow));
-  const one = spoke(rh, rIn, t);
-  for (let i = 0; i < 3; i++) g.add(mesh(one.clone().rotateZ(Math.PI / 2 + (i * 2 * Math.PI) / 3), M.yellow));
+  for (const a of SPOKE_ANGLES) g.add(mesh(spoke(D, a, t), M.yellow));
   const hl = w / 2 + 0.01;
   g.add(mesh(latheZ([V(0.0001, -hl), V(rh - 0.006, -hl), V(rh, -hl + 0.006), V(rh, hl - 0.006), V(rh - 0.006, hl), V(0.0001, hl)], 72), M.yellow));
   // the shaft's end plate clamping the sheave on the output shaft, with its screws
-  const pr = 0.62 * rh, plate = latheZ([V(0.0001, hl), V(pr, hl), V(pr, hl + 0.01), V(pr - 0.003, hl + 0.013), V(0.0001, hl + 0.013)], 64);
+  const pr = dims.plate / 1000, plate = latheZ([V(0.0001, hl), V(pr, hl), V(pr, hl + 0.01), V(pr - 0.003, hl + 0.013), V(0.0001, hl + 0.013)], 64);
   plate.computeTangents();
-  g.add(mesh(plate, M.machined), bolts(M.steel, circle(P3(0, 0, hl + 0.013), pr * 0.68, 6, 'z'), '+z', 0.0075));
+  g.add(mesh(plate, M.machined), bolts(M.steel, circle(P3(0, 0, hl + 0.013), dims.screws / 1000, 6, 'z'), '+z', 0.0075));
   return g;
 }
