@@ -3,7 +3,7 @@
 Software per installatori (B2B, Italia): verifica l'argano offerto per la sostituzione, oppure ne
 propone uno, e produce la relazione di calcolo per il fascicolo tecnico. Profilo normativo
 italiano: DPR 162/1999 e s.m.i., UNI EN 81-20:2020, UNI EN 81-50:2020, UNI 10411-1:2024.
-Ricerca: `research/argano-geared/`.
+Ricerca: `research/argano-geared/`. Storia dello sviluppo, giro per giro: `CHANGELOG.md` (in bulgaro).
 
 ## Che cosa c'è
 
