@@ -52,4 +52,4 @@ export const FILLS: Readonly<Record<FillName, Fill>> = {
 };
 
 /** Lettering sizes on paper [mm]. */
-export const TEXT = { dim: 2.5, label: 2.2, small: 1.6, note: 1.9, title: 3.6, subtitle: 2.4 } as const;
+export const TEXT = { dim: 2.8, label: 2.5, small: 1.6, note: 1.9, title: 3.6, subtitle: 2.4 } as const;

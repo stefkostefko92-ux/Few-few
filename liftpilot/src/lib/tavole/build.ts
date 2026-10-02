@@ -3,7 +3,7 @@
 // in plan and in section B-B; the pit in plan with its loads. Each view at the largest standard scale that fits with
 // its dimensions; the count adapts (no machine room: no sheets of it; main floor = lowest floor: one plan less).
 import {
-  A4, COND, PALETTE, concreteTile, drawingArea, frame, sheetTitle, strip, toPaper,
+  A4, COND, PALETTE, concreteTile, drawingArea, frame, shapeBox, sheetTitle, strip, toPaper,
   type Box, type DrawingDoc, type Hit, type Page, type Place, type Pt, type Shape, type SheetMeta,
 } from '@/drawing';
 import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
@@ -13,7 +13,7 @@ import type { Layout } from '@/shaft/types';
 import { analyse, type Analysis } from '../present/analysis';
 import { dataSheet, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
-import { legendColumn, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
+import { legendColumn, legendHeight, legendRow, scaleLabel, sectionMarks, sideLabels } from './extras';
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { OVER_DOWN, OVER_UP, spaceLegend, type LegendItem } from './notes';
 import { makeFmt } from '../present/tr';
@@ -69,13 +69,33 @@ interface Drawn {
   hits: Hit[];
 }
 
+/** Whether nothing of `shapes` reaches into the box. */
+const clear = (shapes: readonly Shape[], b: Box): boolean => shapes.every((s) => {
+  const o = shapeBox(s);
+  return o.x1 < b.x0 || o.x0 > b.x1 || o.y1 < b.y0 || o.y0 > b.y1;
+});
+
 function planSheet(L: Layout, s: Extract<Spec, { k: 'plan' }>, area: Box): Drawn {
-  // room around the view for the legend, the "LATO FERMATE" labels (rotated on a side wall) and the section marks
-  const lg = legendRow(s.legend, area), side = (w: 'left' | 'right'): number => (L.doors.some((d) => d.wall === w) ? 9 : 4);
-  const { r, place } = planView(L, s.level, s.floor, s.total, inset(area, side('left'), side('right'), lg.height + 7, 6));
-  const px = toPaper(place, [L.car.x + L.car.w / 2, 0])[0];
-  const marks = sectionMarks([px, r.extent.y1 + 3.5], [px, r.extent.y0 - 3.5], 'left', 'A');
-  return { shapes: [...r.shapes, ...sideLabels(L, r.extent), ...marks, ...lg.shapes], scale: place.scale, hits: r.hits };
+  // room around the view for the "LATO FERMATE" labels (rotated on a side wall) and the section marks
+  const side = (w: 'left' | 'right'): number => (L.doors.some((d) => d.wall === w) ? 11 : 4);
+  const drawn = (a: Box): Drawn => {
+    const { r, place } = planView(L, s.level, s.floor, s.total, inset(a, side('left'), side('right'), 9, 8));
+    const px = toPaper(place, [L.car.x + L.car.w / 2, 0])[0];
+    const marks = sectionMarks([px, r.extent.y1 + 3.5], [px, r.extent.y0 - 3.5], 'left', 'A');
+    return { shapes: [...r.shapes, ...sideLabels(L, r.extent), ...marks], scale: place.scale, hits: r.hits };
+  };
+  // the legend's boxes as the trade's sheets have them: in a free corner on the right of the drawing, the first ones
+  // at the top and the rest at the foot when one corner cannot take them all; else in a row under a smaller drawing
+  const d = drawn(area), x0 = area.x1 - LEGEND_W, fits = (items: readonly LegendItem[], top: boolean): Box | null => {
+    const h = legendHeight(items, LEGEND_W), b = top ? { x0, y0: area.y1 - h, x1: area.x1, y1: area.y1 } : { x0, y0: area.y0, x1: area.x1, y1: area.y0 + h };
+    return clear(d.shapes, b) ? b : null;
+  };
+  const all = fits(s.legend, true) ?? fits(s.legend, false), head = s.legend.slice(0, 1), rest = s.legend.slice(1);
+  if (all) return { ...d, shapes: [...d.shapes, ...legendColumn(s.legend, all, LEGEND_W)] };
+  const a = fits(head, true), b = fits(rest, false);
+  if (a && b) return { ...d, shapes: [...d.shapes, ...legendColumn(head, a, LEGEND_W), ...legendColumn(rest, b, LEGEND_W)] };
+  const lg = legendRow(s.legend, area), small = drawn(inset(area, 0, 0, lg.height + 7, 0));
+  return { ...small, shapes: [...small.shapes, ...lg.shapes] };
 }
 
 function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box): Drawn {

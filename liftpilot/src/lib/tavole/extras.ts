@@ -5,7 +5,7 @@ import { FRAME, STRIP_H, STYLES, boxW, sectionMark, symbol, wrap, type Box, type
 import type { Layout, Wall } from '@/shaft/types';
 import type { LegendItem } from './notes';
 
-const SIZE = 1.75, LEAD = 1.2;
+const SIZE = 2.7, LEAD = 1.18;
 
 /** Legend boxes in a row from the bottom-left of `area`; returns the shapes and the height they take. */
 export function legendRow(items: readonly LegendItem[], area: Box): { shapes: Shape[]; height: number } {
@@ -21,6 +21,11 @@ export function legendRow(items: readonly LegendItem[], area: Box): { shapes: Sh
     out.push(...symbol(it.sym, [x0 + w / 2, y0 + boxH + 3.4], 3.2));
   });
   return { shapes: out, height };
+}
+
+/** How tall a column of legend boxes `width` wide stands (legendColumn). */
+export function legendHeight(items: readonly LegendItem[], width: number): number {
+  return items.reduce((h, it) => h + 5 + wrap(it.text, width - 3, { size: SIZE, cond: true }).length * SIZE * LEAD + 2.6 + 6, 0);
 }
 
 /** Legend boxes in a column from the top-left of `area`, `width` wide; returns the shapes. */
@@ -49,7 +54,7 @@ export function servedBy(L: Layout): { wall: Wall; text: string }[] {
 
 /** The "LATO FERMATE" labels just outside the extent of a plan (the front wall is at the bottom of the sheet). */
 export function sideLabels(L: Layout, extent: Box): Shape[] {
-  const size = 2.6, midY = (extent.y0 + extent.y1) / 2;
+  const size = 3.8, midY = (extent.y0 + extent.y1) / 2;
   return servedBy(L).map(({ wall, text }): Shape => {
     if (wall === 'front') return { t: 'text', at: [extent.x0, extent.y0 - 2 - size], text, size, cond: true };
     if (wall === 'rear') return { t: 'text', at: [extent.x0, extent.y1 + 2], text, size, cond: true };

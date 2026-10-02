@@ -2,7 +2,7 @@
 // the DejaVu metrics, shapes moved on paper, entities clipped to a band.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { chain, chainShapes, clipBand, fitView, line, moveShapes, rect, renderView, textWidth, wrap, type Shape } from '@/drawing';
+import { TEXT, chain, chainShapes, clipBand, fitView, line, moveShapes, rect, renderView, textWidth, wrap, type Shape } from '@/drawing';
 
 test('fitView: la scala normalizzata più grande che entra, con le file delle quote', () => {
   const model = { x0: 0, y0: 0, x1: 2000, y1: 1500 };
@@ -21,14 +21,14 @@ test('quote: il testo che non entra si stringe, poi esce dalla parte che resta n
   const text = (s: Shape[]) => s.filter((x): x is Extract<Shape, { t: 'text' }> => x.t === 'text');
   // 330 mm at 1:50 = 6,6 mm: "330 Ammortizzatore" shrinks, then goes past the upper end, inside the drawing
   const [t] = text(chainShapes({ dir: 'y', pts: [0, 330], side: 'left', row: 0, text: ['{v} Ammortizzatore'] }, place, edges));
-  assert.ok(t && t.size < 2.5 && t.size >= 1.8, `${t?.size}`);
+  assert.ok(t && t.size < TEXT.dim && t.size >= 1.8, `${t?.size}`);
   assert.equal(t?.align, 'l');
   // a lowest segment near the bottom edge does not go below the drawing
   const [u] = text(chainShapes({ dir: 'y', pts: [0, 300, 5000], side: 'left', row: 0, text: ['{v} Base Ammortizzatore', '{v}'] }, place, edges));
   assert.ok(u && u.at[1] >= -1, `${u?.at[1]}`);
   // a segment wide enough keeps its text centred at full size
   const [w] = text(chainShapes({ dir: 'x', pts: [0, 3000], side: 'bottom', row: 0 }, place, edges));
-  assert.deepEqual([w?.size, w?.align, w?.text], [2.5, 'c', '3000']);
+  assert.deepEqual([w?.size, w?.align, w?.text], [TEXT.dim, 'c', '3000']);
 });
 
 test('lettere: larghezze DejaVu, condensato, a capo', () => {
