@@ -129,16 +129,25 @@ export class PhotoRenderer {
     const materials = new Set([pt._pathTracer?.material, pt._lowResPathTracer?.material]);
     pt.dispose();
     pt._lowResPathTracer?.dispose();
-    for (const m of materials) if (m) freeMaterial(m);
+    // the background it makes from the scene's colour
+    pt._colorBackground?.dispose();
+    pt._internalBackground?.dispose();
+    for (const m of materials) if (m) freeMaterial(m, this.v.renderer);
     this.envTarget.dispose();
   }
 }
 
-function freeMaterial(material) {
+// The texture arrays (the scene's textures, IES profiles) are linked to their render target only through the setter
+// they carry: three r186 does not set texture.renderTarget on an array target, and dispose() on the texture alone
+// never reaches the GPU (72 MB left until garbage collection). Shrinking the target frees it, as a resize does.
+function freeMaterial(material, renderer) {
   for (const { value } of Object.values(material.uniforms ?? {})) {
     if (!value || typeof value !== 'object') continue;
     if (value.isTexture && value.renderTarget) value.renderTarget.dispose();
-    else if (typeof value.dispose === 'function') value.dispose();
+    else if (typeof value.setTextures === 'function') {
+      value.setTextures(renderer, [], 1, 1);
+      value.dispose();
+    } else if (typeof value.dispose === 'function') value.dispose();
     else if (value.tex?.isTexture) value.tex.dispose();
   }
   material.dispose();

@@ -101,7 +101,7 @@ export class MaterialCache {
   // of no decor (the cups of recessed pulls) that the model on screen no longer uses.
   trim() {
     for (const [key, b] of this.bakes) {
-      if (this.bakes.size <= MAX_BAKES) return;
+      if (this.bakes.size <= MAX_BAKES) break;
       if (this.pinned?.has(key)) continue;
       disposeBake(b);
       this.bakes.delete(key);
