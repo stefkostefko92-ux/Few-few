@@ -60,8 +60,8 @@ test('proposta dal catalogo: il più piccolo argano che passa, con il suo rappor
     }
     assert.deepEqual(valueMarks(base.auto, d).catalog, { brand, model: f.machine.model, ratio: f.ratio, staticKg: f.machine.staticKg, src: f.machine.src });
   }
-  // Montanari's M83 takes the example (1/69 within the inverter's ±10 %): the M73 has 1/60 and 1/75 only around it
-  assert.equal(deriveLift({ ...base, catalog: { brand: 'Montanari' } }).catalog?.fit?.machine.model, 'M83');
+  // Montanari's PENTA takes the example on the bedplate with the diverting pulley (1/55 within the inverter's ±10 %)
+  assert.equal(deriveLift({ ...base, catalog: { brand: 'Montanari' } }).catalog?.fit?.machine.model, 'PENTA');
   // a model that takes nothing: the grid's proposal, said so
   const miss = deriveLift({ ...base, catalog: { brand: 'Montanari', model: 'M73' } });
   assert.ok(miss.catalog?.miss && miss.catalog.fit === null);

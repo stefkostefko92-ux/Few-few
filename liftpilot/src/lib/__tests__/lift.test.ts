@@ -4,7 +4,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readInputs, sizeMachine } from '@/calc/index';
-import { travel } from '@/shaft';
+import { roomGeo, travel } from '@/shaft';
+import { ownAxis } from '@/shaft/support';
+import { KV_VERT } from '@/shaft/norme-vert';
+import { rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
 import { formValuesSchema, visibleBad } from '@/lib/calc-input';
 import { shaftInputsSchema } from '@/lib/shaft-input';
 import { liftInputsSchema } from '@/lib/lift-input';
@@ -54,7 +57,32 @@ test('distanza del rinvio e fune oltre la corsa, a mano', () => {
   assert.equal(V.dx, Math.round(calata - D / 2 - Dp / 2) / 1000);
   const vt = d.shaft.vertical, room = d.shaft.room;
   assert.ok(room);
-  assert.equal(V.L0, Math.round(vt.headroom - vt.frameTop + room.slab + KL.sheaveAxisPerD * D) / 1000);
+  // the machine on the bedplate with the diverting pulley (registry locale.rinvio): its top, then the machine
+  const axis = rinvioTopOf(Dp) + ownAxis(D);
+  assert.equal(d.machine.axis, axis);
+  assert.equal(V.L0, Math.round(vt.headroom - vt.frameTop + room.slab + axis) / 1000);
+});
+
+test('il rinvio sta nel locale, nel telaio dell\'argano: mai nel vano', () => {
+  const base = defaultLift();
+  for (const calc of [base.calc, { ...base.calc, r: '2' }, { ...base.calc, Dp: 600 }]) {
+    const d = deriveLift({ ...base, calc }), M = d.machine, rf = M.rinvio, Dp = Number(d.values.Dp);
+    assert.ok(rf && rf.on === 'frame', 'telaio con rinvio quando nessun basamento è scelto');
+    assert.equal(rf.pulleyAxis, rinvioAxisOf(Dp));
+    assert.ok(rf.pulleyAxis - Dp / 2 >= KV_VERT.rinvioRim, 'il bordo del rinvio sopra il pavimento');
+    assert.ok(rf.top >= rf.pulleyAxis + Dp / 2 + KV_VERT.rinvioOver - 1e-9, 'il rinvio sotto le travi');
+    // h is the sheave's axis over the pulley's
+    assert.ok(Math.abs(Number(d.values.h) - Math.round(M.axis - rf.pulleyAxis) / 1000) < 1e-9, `h ${d.values.h}`);
+    const G = roomGeo(d.layout, M);
+    assert.ok(G && G.pulleyZ - Dp / 2 >= 0);
+  }
+  // another support chosen: the pulley on its own stand, at the same height; an h by hand under the floor is an issue
+  const room = base.shaft.room;
+  assert.ok(room);
+  const stand = deriveLift({ ...base, shaft: { ...base.shaft, room: { ...room, support: { kind: 'plinth' } } } });
+  assert.equal(stand.machine.rinvio?.on, 'stand');
+  const low = deriveLift({ ...base, auto: { ...base.auto, dx: false }, calc: { ...base.calc, h: 2.5 } });
+  assert.ok(low.issues.includes('rinvio'));
 });
 
 test('rinvio dalla pianta: semplice o inverso come lo legge l\'angolo di avvolgimento; 2:1 dal lato interno delle pulegge', () => {

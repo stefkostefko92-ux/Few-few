@@ -6,6 +6,7 @@
 @import './shaft.css';
 @import './edit.css';
 @import './lift.css';
+@import './advice.css';
 
 @tailwind base;
 @tailwind components;

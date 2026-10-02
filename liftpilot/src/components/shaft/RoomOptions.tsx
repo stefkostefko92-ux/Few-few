@@ -2,21 +2,24 @@
 
 // The machine room over the shaft: whether the design has one, its size and where the shaft lies in it, the height
 // (and the ridge of a pitched roof), the slab, the door and the control panel, and what the machine stands on (its
-// support: shims, a frame, beams that may stand clear of the floor, plates or a plinth, with the profile and height).
-// It is drawn in plan and in section B-B and checked (height, free area in front of the panel, door, beams).
+// support: shims, a frame, beams that may stand clear of the floor, plates, a plinth or, with a diverting pulley, the
+// bedplate that holds it — the pulley stays in the room, never in the shaft — with the profile and height). It is drawn
+// in plan and in section B-B and checked (height, free area in front of the panel, door, beams).
 import { useTranslations } from 'next-intl';
 import { DEFAULT_ROOM, type RoomInputs, type ShaftInputs } from '@/shaft';
 import { PROFILE_NAMES } from '@/shaft/profiles';
 import { SUPPORT_KINDS, hasProfile, profileOf, supportHeight, supportLength, supportOf, type MachineSupport } from '@/shaft/support';
 import type { MachineShape } from '@/shaft/machine-shape';
+import type { RinvioFrame } from '@/shaft/rinvio';
 
 interface Props {
   I: ShaftInputs;
   set(patch: Partial<ShaftInputs>): void;
   /** unfolded at first (the one form of an installation) */
   open?: boolean;
-  /** the machine's sheave and the axis the software takes on shims [mm]: the support's fields; missing: none shown */
-  machine?: { D: number; shimsAxis: number; shape?: MachineShape | null };
+  /** the machine's sheave and the axis the software takes on shims [mm], where its diverting pulley turns (null: none):
+   *  the support's fields; missing: none shown */
+  machine?: { D: number; shimsAxis: number; shape?: MachineShape | null; rinvio?: RinvioFrame | null };
 }
 
 type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support'>;
@@ -40,7 +43,7 @@ export default function RoomOptions({ I, set, open = false, machine }: Props) {
       </select>
     </label>
   );
-  const sup = supportOf(R), putSup = (patch: Partial<MachineSupport>): void => put({ support: { ...sup, ...patch } });
+  const rf = machine?.rinvio ?? null, sup = supportOf(R, rf !== null), putSup = (patch: Partial<MachineSupport>): void => put({ support: { ...sup, ...patch } });
   const num = (label: string, value: number, min: number, max: number, apply: (v: number) => void) => (
     <label className="field">
       <span>{label}</span>
@@ -56,8 +59,8 @@ export default function RoomOptions({ I, set, open = false, machine }: Props) {
           <span>{t('sp_kind')}</span>
           <select className="input" value={sup.kind} onChange={(e) => {
             const kind = SUPPORT_KINDS.find((k) => k === e.target.value);
-            // a new kind starts from its typical profile, height and length
-            if (kind) put({ support: kind === 'shims' ? undefined : { kind } });
+            // a new kind starts from its typical profile, height and length; the one the software takes is left unset
+            if (kind) put({ support: kind === (rf ? 'rinvio' : 'shims') ? undefined : { kind } });
           }}>
             {SUPPORT_KINDS.map((k) => <option key={k} value={k}>{t(`sp_${k}`)}</option>)}
           </select>
@@ -73,10 +76,14 @@ export default function RoomOptions({ I, set, open = false, machine }: Props) {
             </select>
           </label>
         ) : null}
-        {num(t('sp_height'), supportHeight(sup, machine.D, machine.shimsAxis, machine.shape ?? null), 0, 3000, (v) => putSup({ height: v }))}
+        {sup.kind === 'rinvio' && rf?.maker ? null
+          : num(t('sp_height'), sup.kind === 'rinvio' && rf ? rf.top : supportHeight(sup, machine.D, machine.shimsAxis, machine.shape ?? null), 0, 3000, (v) => putSup({ height: v }))}
         {supportLength(sup, machine.D, machine.shape ?? null) !== null
           ? num(t('sp_length'), supportLength(sup, machine.D, machine.shape ?? null) ?? 0, 300, 5000, (v) => putSup({ length: v })) : null}
       </div>
+      {rf ? <p className="note">{rf.on === 'stand' ? t('sp_rinvio_stand', { axis: Math.round(rf.pulleyAxis) })
+        : rf.maker ? t('sp_rinvio_maker', { code: rf.maker.code, mass: rf.maker.mass, axis: rf.maker.pulleyAxis, A: rf.maker.sheaveAxis })
+          : t('sp_rinvio_ours', { axis: Math.round(rf.pulleyAxis), top: Math.round(rf.top) })}</p> : null}
       <p className="note">{t('sp_hint')}</p>
     </>
   ) : null;

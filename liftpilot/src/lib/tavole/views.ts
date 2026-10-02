@@ -78,9 +78,10 @@ export function sectionView(L: Layout, kind: SectionKind, floor: number, area: B
 }
 
 /** The machine as the calculation and the data of the installation describe it, on the room's support: the maker's as
- *  it is when the proposal took one from a catalogue (`catalog` of the marks), else the generic machine. */
+ *  it is when the proposal took one from a catalogue (`catalog` of the marks; its bedplate with the diverting pulley),
+ *  else the generic machine. */
 export function machineOf(a: Analysis, plant: Plant, L: Layout, catalog: { brand: string; model: string } | null = null): MachineSpec {
-  return machineSpec(a.ctx, plant.massMachine ?? a.ctx.N.mass, plant.machine ?? '', L.inputs.room, catalog ? shapeOf(catalog.brand, catalog.model) : null);
+  return machineSpec(a.ctx, plant.massMachine ?? a.ctx.N.mass, plant.machine ?? '', L.inputs.room, catalog ? shapeOf(catalog.brand, catalog.model) : null, catalog);
 }
 
 /** The machine room in plan or in section B-B; null when the design has no machine room. */

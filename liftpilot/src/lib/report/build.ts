@@ -23,7 +23,7 @@ import { shaftBlocks, type ReportDesign } from './shaft';
 import { EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
 import { machineSpec } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
-import { shapeRows } from './machine-shape';
+import { rinvioRow, shapeRows } from './machine-shape';
 import { supportChecks, supportLoad } from '../lift/support';
 
 /** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
@@ -107,10 +107,13 @@ export function buildReport(r: ReportInput): ReportDoc {
       + "dell'impianto, costruttore della cabina o prova di bilanciamento) e ripetere il calcolo." });
   }
 
-  const beams = r.design ? supportChecks(r.design.layout, machineSpec(ctx, N.mass, '', r.design.layout.inputs.room), supportLoad(ctx, res.Mcw)) : [];
+  const made = m.catalog ? { brand: m.catalog.brand, model: m.catalog.model } : null;
+  const machine = r.design ? machineSpec(ctx, N.mass, '', r.design.layout.inputs.room, made ? shapeOf(made.brand, made.model) : null, made) : null;
+  const beams = r.design && machine ? supportChecks(r.design.layout, machine, supportLoad(ctx, res.Mcw)) : [];
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
+    if (machine?.rinvio) B.push({ t: 'kv', rows: [rinvioRow(machine.rinvio, fmt)] });
   }
 
   section('Argano verificato');
@@ -194,7 +197,7 @@ export function buildReport(r: ReportInput): ReportDoc {
       + `(fonte: ${m.catalog.src}). Il calcolo usa questo rapporto, il carico statico e la massa del catalogo; i dati vanno verificati sulla scheda del `
       + 'costruttore prima dell\'ordine.' });
     const S = shapeOf(m.catalog.brand, m.catalog.model);
-    if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt) });
+    if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt, machine?.rinvio ?? null) });
   }
   if (sizing.pick) {
     B.push({ t: 'kv', rows: X.proposalRows(sizing.pick, N, sizing.fixedD, !!sizing.keep) });

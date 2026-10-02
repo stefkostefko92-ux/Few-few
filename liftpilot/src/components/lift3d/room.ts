@@ -11,6 +11,7 @@
 import * as THREE from 'three/webgpu';
 import { supportOf, type Layout, type MachineSupport } from '@/shaft';
 import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
+import type { RinvioFrame } from '@/shaft/rinvio';
 import { KL, planeAt, type RopePlane, type RopeRig } from '@/lib/lift';
 import { buildMachine, CONDUIT_END, DIM, ROPE_LENGTH } from '../machine/parts';
 import { buildShaped } from '../machine/shape';
@@ -65,9 +66,10 @@ export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F:
 }
 
 /** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot;
- *  `shape`: the maker's machine as it is (null: the generic one scaled to the sheave). */
+ *  `shape`: the maker's machine as it is (null: the generic one scaled to the sheave); `rinvio`: where the diverting
+ *  pulley turns in the room (src/shaft/rinvio.ts). */
 export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
-  shape: MachineShape | null = null): RoomModel {
+  shape: MachineShape | null = null, rinvio: RinvioFrame | null = null): RoomModel {
   const I = L.inputs, sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
   const roof = new THREE.Group(), common = new THREE.Group();
   const at = (p: RopePlane, u: number, y: number): THREE.Vector3 => {
@@ -79,7 +81,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
 
   // the machine: the generic one scaled to the sheave or the maker's as it is, its rope plane on the sheave's, the
   // sheave's centre where the rig puts it
-  const MM: MachineMaterials = createMaterials(ROPE_LENGTH), F = machineFrame(D, shape);
+  const MM: MachineMaterials = createMaterials(ROPE_LENGTH), F = machineFrame(D, shape, rinvio?.bed ?? null);
   const shaped = F.shape ? buildShaped(MM, F, D, n, d) : null, machine = shaped ?? buildMachine(MM, false);
   // the group's own units: the generic machine's metres at Ø 560 (scaled by s), the maker's in metres as they are
   const s = F.shape ? 1 : D / 560, pose = machinePose(rig, I.wall, n, d, F), e = pose.ext / 1000 / s;
@@ -100,9 +102,12 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   common.add(machine.group);
   // what the machine stands on, down to the floor (the sheave's axis sits at its height over the floor): above the
   // shaft the room's support (shims, frame, beams, plates, plinth), below it levelling shims
-  const gap = F.shape ? rig.sheave.y - rig.roomFloor - yAxis : ((rig.sheave.y - rig.roomFloor) / s - DIM.yWheel) * s, sup = rig.bottom ? SHIMS : supportOf(I.room);
+  const gap = F.shape ? rig.sheave.y - rig.roomFloor - yAxis : ((rig.sheave.y - rig.roomFloor) / s - DIM.yWheel) * s, sup = rig.bottom ? SHIMS : supportOf(I.room, rinvio !== null);
   const walls = R ? wallsAlong([machine.group.position.x * 1000, -machine.group.position.z * 1000], pose.xDir, { x0: -R.shaftX, y0: -R.shaftY, x1: R.W - R.shaftX, y1: R.D - R.shaftY }) : null;
-  const base = buildSupport(sup, F, D, gap, walls, M);
+  // the diverting pulley in the bedplate: along the machine from the sheave, as the rig places it
+  const defl = rig.wheels.find((w) => w.role === 'deflector'), framed = !rig.bottom && rinvio?.on === 'frame' && defl !== undefined;
+  const inFrame = framed && defl && rinvio ? { x: defl.u - rig.sheave.u, r: defl.r, half: ropeWidths(n, d).pulley, frame: rinvio } : null;
+  const base = buildSupport(sup, F, D, gap, walls, M, inFrame);
   base.position.copy(machine.group.position);
   base.rotation.copy(machine.group.rotation);
   common.add(base);
@@ -118,7 +123,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     // the bedframe (and a frame or plinth under it), the pulleys' stands on the floor, the governor, the way through
     // the door (it opens outward)
     base.updateMatrixWorld(true);
-    const foot = new THREE.Box3().setFromObject(base), wide = sup.kind === 'frame' || sup.kind === 'plinth';
+    const foot = new THREE.Box3().setFromObject(base), wide = sup.kind === 'frame' || sup.kind === 'plinth' || sup.kind === 'rinvio';
     const [fz0, fz1] = F.shape ? [F.beams[0] / 1000 - 0.07, F.beams[1] / 1000 + 0.07] : [-0.2, 0.2], [fx0, fx1] = F.shape ? [F.x[0] / 1000, F.x[1] / 1000] : [-0.52, 1.12];
     blocked.push(rectOf([[fx0, fz0], [fx1, fz0], [fx1, fz1], [fx0, fz1]].map(([x, zz]) => {
       const p = new THREE.Vector3(x, 0, zz).applyMatrix4(machine.group.matrixWorld);
@@ -157,7 +162,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     common.add(p);
   }
   const over = !rig.bottom ? z0 : rig.scheme?.scheme === 'room' ? ceiling + (I.room?.slab ?? KL.slab) : null;
-  pulleyFrames(frames, M, rig, n, d, over, ceiling);
+  pulleyFrames(frames, M, rig, n, d, over, ceiling, framed);
   frames.into(common);
   const pcs = rig.pieces(0, 0), first = pcs[0], last = pcs[pcs.length - 1];
   const moving = (pc: typeof first, e: (typeof first.els)[number] | undefined): THREE.Group | null =>

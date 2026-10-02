@@ -16,7 +16,9 @@ import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import { saveCalculationAction } from '@/server/calc-actions';
 import { collaudoOf, type Collaudo } from '@/lib/lift';
+import { valuesAdvice, type MachineCandidate } from '@/lib/lift/advice';
 import CollaudoOptions from '@/components/lift/CollaudoOptions';
+import MachineAdvice from '@/components/lift/MachineAdvice';
 import { asCalcDict } from './dict';
 import CalcForm, { type Prefix } from './CalcForm';
 import Diagram from './Diagram';
@@ -26,6 +28,11 @@ import LegalNotice from './LegalNotice';
 
 type PresetKey = 'A' | 'B' | 'C';
 const num = (V: FormValues, id: string): number => { const x = parseFloat(String(V[id] ?? '').replace(',', '.')); return Number.isFinite(x) ? x : 0; };
+/** A value of the form as the calculation reads it: the same number however it was typed. */
+const sameValue = (a: FormValues[string], b: FormValues[string]): boolean => {
+  const n = (x: FormValues[string]): number => (typeof x === 'number' ? x : typeof x === 'string' ? parseFloat(x.replace(',', '.')) : NaN);
+  return String(a) === String(b) || (Number.isFinite(n(a)) && n(a) === n(b));
+};
 
 interface Props {
   projectId: string;
@@ -58,6 +65,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
 
   const deferred = useDeferredValue(values);
   const a = useMemo(() => analyse(deferred), [deferred]);
+  const advice = useMemo(() => valuesAdvice(deferred), [deferred]);
   const bad = useMemo(() => new Set(visibleBad(a.ctx.bad, deferred)), [a, deferred]);
   const anyBad = a.ctx.bad.length > 0;
 
@@ -90,6 +98,12 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
     edit(proposalValues(o));
     setPropMsg(t('p_applied'));
   };
+  // the machine of the advice: its sheave, ropes, ratio, static load and mass into the new machine's fields
+  const takeMachine = (c: MachineCandidate): void => {
+    edit(c.values);
+    setPropMsg(t('p_applied'));
+  };
+  const machineInUse = (c: MachineCandidate): boolean => Object.entries(c.values).every(([k, v]) => sameValue(values[k], v));
   const save = (): void => {
     setSaveError(null);
     startSaving(async () => {
@@ -128,6 +142,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
         </section>
         <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} onUse={onUse} propMsg={propMsg} />
       </div>
+      <MachineAdvice advice={advice} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} saved="calc" />
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={tc('labelPlaceholder')} aria-label={tc('label')} />

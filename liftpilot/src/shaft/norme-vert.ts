@@ -88,6 +88,19 @@ export const KV_VERT = {
   supportPlinth: 250,
   supportOverhang: 100,
   supportBearing: 150,
+  // the diverting pulley in the machine room, never in the shaft (registry locale.rinvio): in the machine's bedplate as
+  // the makers' (SICOR XTE3022/XTE6026: the pulley's axis 320 mm over the floor, the top 736 mm), its rim at least 60 mm
+  // over the floor and 176 mm under the top; legs of 80 mm square tube on dampers 28 mm high, beams UPN 160, 100 mm past
+  // the machine and the pulley at each end, 655 mm wide at least [mm]
+  rinvioAxis: 320,
+  rinvioRim: 60,
+  rinvioTop: 736,
+  rinvioOver: 176,
+  rinvioLeg: 80,
+  rinvioPads: 28,
+  rinvioBeam: 'UPN 160',
+  rinvioOverhang: 100,
+  rinvioWidth: 655,
   // a maker's machine on our bedframe (registry locale.telaio): its least height under the feet, the sheave's rim over
   // its underside, past the machine at each end [mm]
   machineBed: 80,
@@ -273,5 +286,6 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'distanze.testata': ['headRun'],
   'locale.basamento': ['supportPads', 'supportFrame', 'supportBeam', 'supportPlate', 'supportPlinth', 'supportOverhang', 'supportBearing'],
   'locale.telaio': ['machineBed', 'machineRimClear', 'machineBedOverhang'],
+  'locale.rinvio': ['rinvioAxis', 'rinvioRim', 'rinvioTop', 'rinvioOver', 'rinvioLeg', 'rinvioPads', 'rinvioBeam', 'rinvioOverhang', 'rinvioWidth'],
   'locale.putrelle': ['steelFyk', 'steelGammaM0', 'steelE', 'beamDeflection'],
 };

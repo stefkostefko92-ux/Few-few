@@ -57,6 +57,18 @@ async function hydrated(page, selector) {
     return !!el && Object.keys(el).some((k) => k.startsWith('__reactProps'));
   }, selector);
 }
+// the draft order of the page's record: a Word document (a ZIP with its main part) and a PDF
+async function orderFiles(page, prefix) {
+  for (const [format, magic, type] of [['docx', 'PK', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'], ['pdf', '%PDF-', 'application/pdf']]) {
+    const res = await page.request.get(`${BASE}${await page.getAttribute(`a[href^="${prefix}"][href$="/order/${format}"]`, 'href')}`);
+    assert.equal(res.status(), 200, `order ${format}`);
+    assert.equal(res.headers()['content-type'], type, `order ${format}`);
+    const body = await res.body();
+    assert.equal(body.subarray(0, magic.length).toString('latin1'), magic, `order ${format}`);
+    if (format === 'docx') assert.ok(body.includes('word/document.xml'), 'order docx: main part');
+  }
+}
+
 async function logout(page) {
   await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
 }
@@ -95,6 +107,10 @@ try {
   await page.fill('#n_D', '600');
   // a second standard for the acceptance test, on top of UNI 10411-1: its own result, kept with the calculation
   await page.check('.collaudo label:has-text("tutto l’impianto") input');
+  // the machine advised among SICOR's and Montanari's, taken into the new machine's fields
+  await page.waitForSelector('.advice .advice-card.best button');
+  await page.click('.advice .advice-card.best button');
+  await page.waitForSelector('.advice .advice-card.best button[disabled]');
   await page.waitForTimeout(300);
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const calcUrl = page.url();
@@ -108,6 +124,10 @@ try {
   assert.equal(pdf.headers()['content-type'], 'application/pdf');
   const body = await pdf.body();
   assert.equal(body.subarray(0, 5).toString('latin1'), '%PDF-');
+
+  step('draft order of the advised machine (Word and PDF)');
+  assert.match(await page.textContent('main'), /l’argano verificato in questo calcolo/, 'the order is for the machine the calculation verified');
+  await orderFiles(page, '/api/calculations/');
 
   step('the replacement becomes a whole project');
   await page.goto(projectUrl);
@@ -209,6 +229,7 @@ try {
   await page.waitForSelector('.sim-chart svg path.line');
   await page.check('#auto-P');
   await page.waitForSelector('.lift-calc .auto-value .badge');
+  await page.waitForSelector('.lift-work .advice .advice-card');
   // the acceptance test: UNI 10411-11 with the machine and the ropes replaced; the checks of what stays are existing
   await page.selectOption('.collaudo select', '10411-11');
   await page.check('.collaudo .parti-grid label:nth-child(2) input');
@@ -239,6 +260,9 @@ try {
   assert.equal((await liftRel.body()).subarray(0, 5).toString('latin1'), '%PDF-');
   const liftDxfHref = await page.getAttribute('.doc-links a[href$="/dxf"]', 'href');
   assert.equal((await page.request.get(`${BASE}${liftDxfHref}`)).status(), 200);
+  // the draft order of the machine the design verified
+  assert.match(await page.textContent('main'), /l’argano verificato in questo progetto/, 'the order is for the machine the design verified');
+  await orderFiles(page, '/api/lift-designs/');
   // the saved project exported: the drawing set as a draft PDF, every view as DXF and DWG
   for (const [format, magic] of [['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015']]) {
     const res = await page.request.get(`${BASE}${await page.getAttribute(`a[href^="/api/lift-designs/"][href$="/${format}"]`, 'href')}`);

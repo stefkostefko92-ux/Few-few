@@ -4,7 +4,7 @@
 // proposed by the sizing (and the geometry again with its sheave). Every automatic value can be switched off and
 // entered by hand (AutoFlags); one the plan cannot give is reported (issues) and must be entered. Pure: the browser and
 // the server derive the same.
-import { SHEAVE_GRID, compareOptions, readInputs, sizeMachine } from '@/calc/index';
+import { SHEAVE_GRID, readInputs, sizeMachine } from '@/calc/index';
 import { deflectorAngle } from '@/calc/geometry';
 import type { FormValues, SizingOption } from '@/calc/types';
 import { layout, section, travel, type Layout, type ShaftCheck, type ShaftInputs } from '@/shaft';
@@ -12,10 +12,11 @@ import type { MachineSpec } from '@/shaft/machine-room';
 import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import { simModel, type SimModel } from '@/sim';
 import { bottomGapNeeded, bottomGeo, extraBends, type BottomScheme } from './bottom';
-import { bestFit, catalogValues, type CatalogChoice } from './catalog';
+import { bestFit, catalogValues, pickOption, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
-import { machineShapeOf, machineSpec, sheaveAxis, sheaveAxisBelow } from './machine';
+import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
+import type { RinvioFrame } from '@/shaft/rinvio';
 import { supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
@@ -44,8 +45,9 @@ export interface LiftInputs {
 
 export type Origin = 'entered' | 'auto' | 'estimate';
 export type DerivedKey = 'Q' | 'v' | 'H' | 'P' | 'L0' | 'dx' | 'Hv' | 'machine';
-/** What the plan cannot give or contradicts: the diverting pulley's distance, a direct pull's falls (calata). */
-export type IssueKey = DerivedKey | 'calata';
+/** What the plan cannot give or contradicts: the diverting pulley's distance, a direct pull's falls (calata), a pulley
+ *  the h entered by hand puts under the room's floor (rinvio: it stays in the room). */
+export type IssueKey = DerivedKey | 'calata' | 'rinvio';
 
 export interface LiftDerived {
   shaft: ShaftInputs;
@@ -89,10 +91,11 @@ const m3 = (x: number): number => Math.round(x * 1000) / 1000;
 export const carMassEstimate = (Q: number): number => Math.ceil((KL.carMassRatio * Q) / KL.carMassStep - 1e-9) * KL.carMassStep;
 
 /** Rope beyond the travel: from the crosshead at the top floor to the sheave axis, with the machine below to the axes of
- *  the head pulleys (registry impianto.L0); the axis of the maker's machine as it is (`shape`). */
-function ropeBeyond(S: ShaftInputs, V: FormValues, headOver: number | null, shape: MachineShape | null): number {
+ *  the head pulleys (registry impianto.L0); the axis of the maker's machine as it is (`shape`), on the bedplate with
+ *  the diverting pulley when there is one (`rinvio`). */
+function ropeBeyond(S: ShaftInputs, V: FormValues, headOver: number | null, shape: MachineShape | null, rinvio: RinvioFrame | null): number {
   const vt = S.vertical, D = num(V, 'n_D');
-  const above = headOver !== null ? headOver : S.room ? S.room.slab + sheaveAxis(S.room, D, shape) : 0;
+  const above = headOver !== null ? headOver : S.room ? S.room.slab + sheaveAxis(S.room, D, shape, rinvio) : 0;
   return Math.max(0.1, m3((vt.headroom - vt.frameTop + above) / 1000));
 }
 
@@ -137,12 +140,7 @@ function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormVal
       if (!fitOf || fit) found.push({ o, V: W, fit });
     }
   }
-  const first = new Map<number, (typeof found)[number]>();
-  for (const x of found) {
-    const y = first.get(x.o.d);
-    if (!y || x.o.n < y.o.n || (x.o.n === y.o.n && x.o.D < y.o.D)) first.set(x.o.d, x);
-  }
-  const best = (c0.rope ? found : [...first.values()]).sort((a, b) => compareOptions(a.o, b.o))[0];
+  const best = pickOption(found, !!c0.rope);
   return best ? { V: geometry(mirrorRopes({ ...best.V, ...proposalValues(best.o), ...(best.fit ? catalogValues(best.fit) : {}) })), fit: best.fit } : null;
 }
 
@@ -154,14 +152,20 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   // from their axes to the sheave's (both with the sheave of each sizing step)
   const scheme: BottomScheme | null = V.layout === 'bottom' ? inp.bottom ?? 'head' : null, npsEntered = num(inp.calc, 'nps');
   if (inp.auto.Hv && !scheme) V = { ...V, Hv: m3((rise + vt.headroom) / 1000) };
-  // the maker's machine the proposal takes, as it is: its own axis over the floor; null (the generic machine) while the
-  // proposal runs
-  let shape: MachineShape | null = null;
+  // the maker's machine the proposal takes, as it is: its own axis over the floor (and the maker's bedplate with the
+  // diverting pulley); null (the generic machine) while the proposal runs
+  let shape: MachineShape | null = null, made: Made | null = null;
+  // the diverting pulley in the room, in the machine's bedplate or on its stand: its h is the sheave's axis over its own
+  // (registry locale.rinvio), with the distance dx from the plan; an h entered by hand stays
+  const rinvioFor = (X: FormValues): RinvioFrame | null =>
+    (X.layout === 'topDefl' ? rinvioOf(S.room, num(X, 'n_D'), num(X, 'Dp'), shape, made, inp.auto.dx ? null : num(X, 'h') * 1000) : null);
   const geometry = (W: FormValues): FormValues => {
     let X = W;
     const D = num(X, 'n_D'), g = scheme ? bottomGeo(L, scheme, D, num(X, 'Dp'), num(X, 'n_n'), num(X, 'n_d'), num(X, 'r'), sheaveAxisBelow(D, shape)) : null;
+    const rf = rinvioFor(X);
     if (g) X = { ...X, nps: npsEntered + extraBends(g), ...(inp.auto.Hv ? { Hv: m3((g.zHead - g.zSheave) / 1000) } : {}) };
-    if (inp.auto.L0) X = { ...X, L0: ropeBeyond(S, X, g ? g.zHead - Sec.ceiling : null, shape) };
+    if (inp.auto.L0) X = { ...X, L0: ropeBeyond(S, X, g ? g.zHead - Sec.ceiling : null, shape, rf) };
+    if (inp.auto.dx && rf) X = { ...X, h: m3((sheaveAxis(S.room, D, shape, rf) - rf.pulleyAxis) / 1000) };
     if (inp.auto.dx) X = { ...X, dx: deflectorDx(L, X).dx };
     return X;
   };
@@ -185,14 +189,17 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
     // the maker's machine stands on our bedframe: where its own axis is higher than the generic machine's, the rope
     // beyond the travel (and a machine below's Hv) follow it
     shape = proposed && fromCat ? machineShapeOf(fromCat.fit) : null;
-    if (shape) V = geometry(V);
+    made = proposed && fromCat?.fit ? fromCat.fit.machine : null;
+    if (shape || made) V = geometry(V);
   }
   const analysis = analyse(V), { I, N, O } = analysis.ctx;
   // a distance the plan cannot give is reported: it must be measured and entered; falls of a direct pull that are not
   // the sheave's diameter apart contradict the plan (registry impianto.calata)
   const calata = direct ? fallSpacing(L, V) : null;
+  const rinvio = rinvioFor(V), pulleyRim = rinvio ? sheaveAxis(S.room, N.D, shape, rinvio) - I.h * 1000 - I.Dp / 2 : 0;
   const issues: IssueKey[] = [
     ...(planned && !deflectorDx(L, V).fits ? ['dx' as const] : []),
+    ...(rinvio && pulleyRim < 0 ? ['rinvio' as const] : []),
     ...(calata !== null && Math.abs(calata - (oldHitches ? O.D : N.D)) > KL.calataTol ? ['calata' as const] : []),
   ];
   const origin: Record<DerivedKey, Origin> = {
@@ -200,7 +207,8 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
     L0: inp.auto.L0 ? 'auto' : 'entered', dx: inp.auto.dx ? 'auto' : 'entered', Hv: inp.auto.Hv ? 'auto' : 'entered',
     machine: inp.auto.machine && !noProposal ? 'auto' : 'entered',
   };
-  const machine: MachineSpec = machineSpec(analysis.ctx, analysis.ctx.N.mass, '', S.room, shape);
+  const spec = machineSpec(analysis.ctx, analysis.ctx.N.mass, '', S.room, shape, made);
+  const machine: MachineSpec = spec.rinvio ? { ...spec, rinvio: { ...spec.rinvio, auto: inp.auto.dx } } : spec;
   const supportCk = supportChecks(L, machine, supportLoad(analysis.ctx, analysis.res.Mcw));
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;

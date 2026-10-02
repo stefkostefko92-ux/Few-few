@@ -11,6 +11,7 @@ import { snapshotHash } from '@/lib/snapshot-hash';
 import { deriveLift, LIFT_ENGINE_VERSION } from '@/lib/lift';
 import { snapshotOf } from '@/calc/snapshot';
 import { shaftSnapshot } from '@/shaft';
+import { designOrder } from '@/lib/order/machine';
 import { getLiftDesign } from '@/server/queries';
 import LiftView from '@/components/lift/LiftView';
 import IssueForm from '@/components/tavole/IssueForm';
@@ -33,7 +34,7 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
   if (!parsedId.success) notFound();
   const d = await getLiftDesign(user, parsedId.data);
   if (!d) notFound();
-  const [t, tp, tt] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole')]);
+  const [t, tp, tt, ta] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'), getTranslations('advice')]);
   const fd = dateFormat(locale);
   const inputs = liftInputsSchema.safeParse(d.inputs);
   // the running engines give the same records? (else the documents are refused: a new save is needed)
@@ -44,6 +45,8 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
       && snapshotHash(snapshotOf(dv.values)) === d.calculation.sha256;
   }
   const editable = can(user.role, 'calc:create') && !d.project.archivedAt;
+  // the machine of the draft order: the one the design verified, or the advice's first among SICOR and Montanari
+  const order = same && inputs.success && can(user.role, 'report:download') ? designOrder(inputs.data) : null;
   return (
     <main className="page page-wide">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.project.id}`, label: d.project.name }, { label: t('designTitle') }]} />
@@ -78,6 +81,21 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
               <a className="btn" href={`/api/lift-designs/${d.id}/dxf`}>{t('doc_dxf_all')}</a>
               <a className="btn" href={`/api/lift-designs/${d.id}/dwg`}>{t('doc_dwg')}</a>
             </div>
+          </div>
+        ) : null}
+        {same && inputs.success && can(user.role, 'report:download') ? (
+          <div className="panel">
+            <h3>{ta('order_title')}</h3>
+            <p className="note">{ta('order_lead')}</p>
+            {order ? (
+              <>
+                <p className="order-machine">{ta(order.recorded ? 'order_chosen_design' : 'order_advised_design', { machine: `${order.machine.brand} ${order.machine.model}` })}</p>
+                <div className="doc-links">
+                  <a className="btn" href={`/api/lift-designs/${d.id}/order/docx`}>{ta('order_docx')}</a>
+                  <a className="btn" href={`/api/lift-designs/${d.id}/order/pdf`}>{ta('order_pdf')}</a>
+                </div>
+              </>
+            ) : <p className="note">{ta('order_none')}</p>}
           </div>
         ) : null}
         {same && editable ? (

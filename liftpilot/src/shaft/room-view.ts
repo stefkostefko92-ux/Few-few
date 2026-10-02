@@ -7,6 +7,7 @@
 import { chain, circle, edit as E, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
 import { ownAxis, padsOf, supportOf } from './support';
+import { rinvioHEdit } from './rinvio-view';
 import { supportPlan, supportSection } from './support-view';
 import { governorSpot } from './governor';
 import { MACHINE_A, machineElevation, machinePlan } from './machine-outline';
@@ -171,13 +172,14 @@ export function roomSectionEntities(L: Layout, M: MachineSpec, G: RoomGeo): { en
   } else out.push(rect(r0 - WALL, top, r1 + WALL, top + WALL, 'wall', 'concrete'));
   // the machine on its support (shims, frame, beams, plates or plinth, with pads), its sheave's axis at the height the
   // calculation counts
-  const k = 1000 * G.s, F = G.frame, base = F.shape ? M.axis - F.axis : M.axis - MACHINE_A.yWheel * k, zs = M.axis, D = M.D, sup = supportOf(R);
+  const k = 1000 * G.s, F = G.frame, base = F.shape ? M.axis - F.axis : M.axis - MACHINE_A.yWheel * k, zs = M.axis, D = M.D, sup = supportOf(R, M.Dp > 0), rf = M.rinvio ?? null;
   out.push(...supportSection(M, G, r0, r1));
   out.push(...(F.shape ? shapeElevation(F, D, (x, y) => [G.sheaveAt + x, base + y]) : machineElevation((x, y) => [G.sheaveAt + x * k, base + y * k])));
   const centre = (c: Pt, r: number): void => { out.push(line([c[0] - r - 40, c[1]], [c[0] + r + 40, c[1]], 'axis'), line([c[0], c[1] - r - 40], [c[0], c[1] + r + 40], 'axis')); };
   centre([G.sheaveAt, zs], D / 2);
-  // the ropes as they run with the car halfway, cut at the drawing's foot; the pulley on its stand or hung under the
-  // slab; the dead ends of a 2:1 roping
+  // the ropes as they run with the car halfway, cut at the drawing's foot; the pulley in the bedplate (drawn with it), on
+  // its stand, or — an h entered by hand that takes it under the floor (an issue of the form) — hung under the slab; the
+  // dead ends of a 2:1 roping
   const [carD, cwD] = hitchDepths(L).mid;
   for (const [p, q] of roomRopes(M, G, carD, cwD)) {
     if (p[1] < foot && q[1] < foot) continue;
@@ -188,11 +190,13 @@ export function roomSectionEntities(L: Layout, M: MachineSpec, G: RoomGeo): { en
     const pu = G.pulleyAt, zp = G.pulleyZ, r = M.Dp / 2;
     out.push(circle([pu, zp], r, 'outline', 'paper'), circle([pu, zp], r - M.d, 'thin'), circle([pu, zp], r * 0.28, 'outline', 'steel'));
     centre([pu, zp], r);
-    if (zp > -R.slab) {
+    // in the bedplate its plates hold it (rinvio-view.ts)
+    const framed = rf?.on === 'frame' && zp - r >= 0;
+    if (!framed && zp > -R.slab) {
       const u0 = pu - r - 110, u1 = pu + r + 110;
       out.push(rect(u0, 0, u1, 140, 'outline'), rect(pu - 80, Math.min(0, zp - 70), pu + 80, Math.max(140, zp + 70), 'thin'));
       for (const x of [u0, u1 - 70]) out.push(rect(x, 0, x + 70, 12, 'outline', 'steel'));
-    } else out.push(rect(pu - 140, -R.slab - 14, pu + 140, -R.slab, 'outline', 'steel'), rect(pu - 80, zp - 70, pu + 80, -R.slab - 14, 'thin'));
+    } else if (!framed) out.push(rect(pu - 140, -R.slab - 14, pu + 140, -R.slab, 'outline', 'steel'), rect(pu - 80, zp - 70, pu + 80, -R.slab - 14, 'thin'));
     out.push({ e: 'text', at: [pu + r + 60, Math.min(zp - r, -R.slab) - 160], text: `Ø${M.Dp}`, size: 2.2 });
   }
   if (M.ropeIn > 0) {
@@ -204,11 +208,14 @@ export function roomSectionEntities(L: Layout, M: MachineSpec, G: RoomGeo): { en
   out.push(chain({ dir: 'y', pts: [0, R.doorH], side: 'right', row: 0, text: ['{v} H. Porta'], edit: [E('room.doorH')] }));
   out.push(chain({ dir: 'y', pts: [0, R.panelH], side: 'right', row: 1, text: ['{v} H. Quadro'], edit: [E('room.panelH')] }));
   // the sheave's axis: the support's height takes the change (pads and the machine's own height stay)
-  out.push(chain({ dir: 'y', pts: [0, zs], at: G.frame0 - 120, from: [null, G.sheaveAt], text: ['Asse {v}'], edit: [E('sup.height', -(padsOf(sup) + ownAxis(D, F.shape)))] }));
+  const axisEdit = rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -ownAxis(D, F.shape))) : E('sup.height', -(padsOf(sup) + ownAxis(D, F.shape)));
+  out.push(chain({ dir: 'y', pts: [0, zs], at: G.frame0 - 120, from: [null, G.sheaveAt], text: ['Asse {v}'], edit: [axisEdit] }));
   if (M.Dp > 0) {
     const low = G.pulleyZ < zs, ue = Math.max(G.pulleyAt + M.Dp / 2, G.frame1) + 160, left = G.sheaveAt < G.pulleyAt;
     // the pulley's height below the sheave is the calculation's h; its distance dx follows the rope drop
-    if (Math.abs(M.h) > 1) out.push(chain({ dir: 'y', pts: low ? [G.pulleyZ, zs] : [zs, G.pulleyZ], at: ue, from: low ? [G.pulleyAt, G.sheaveAt] : [G.sheaveAt, G.pulleyAt], text: ['h {v}'], edit: [E('calc.h', 0, low ? 1 : -1)] }));
+    // on the bedplate whose h the calculation took, a change of h is a change of the bedplate's top
+    const hEdit = rf?.on === 'frame' && rf.auto ? (low ? rinvioHEdit(M, rf) : null) : E('calc.h', 0, low ? 1 : -1);
+    if (Math.abs(M.h) > 1) out.push(chain({ dir: 'y', pts: low ? [G.pulleyZ, zs] : [zs, G.pulleyZ], at: ue, from: low ? [G.pulleyAt, G.sheaveAt] : [G.sheaveAt, G.pulleyAt], text: ['h {v}'], edit: [hEdit] }));
     const less = 2 * M.ropeIn + M.D / 2 + (M.reverse ? -M.Dp / 2 : M.Dp / 2);
     out.push(chain({ dir: 'x', pts: left ? [G.sheaveAt, G.pulleyAt] : [G.pulleyAt, G.sheaveAt], at: zs + 0.8 * k + 260, from: left ? [zs, G.pulleyZ] : [G.pulleyZ, zs], text: ['dx {v}'],
       edit: [left ? calataEdit(L, less, true) : null] }));

@@ -7,6 +7,7 @@ import { check } from './checks';
 import { MACHINE_A, MACHINE_X, MACHINE_Z } from './machine-outline';
 import { machineFrame, type MachineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
+import type { RinvioFrame } from './rinvio';
 import { cwPlateAt, section } from './section';
 import type { Layout, ShaftCheck } from './types';
 import type { RoomInputs } from './room';
@@ -32,6 +33,8 @@ export interface MachineSpec {
   ropeIn: number;
   /** the maker's machine as it is (machine-shape.ts); missing or null: the generic machine scaled to the sheave */
   shape?: MachineShape | null;
+  /** where the diverting pulley turns in the room (rinvio.ts); missing or null: no pulley, or no room */
+  rinvio?: RinvioFrame | null;
 }
 
 export interface RoomGeo {
@@ -86,7 +89,7 @@ export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
   const dx = cw[0] - car[0], dy = cw[1] - car[1], calata = Math.hypot(dx, dy) || 1, s = M.D / (2000 * MACHINE_A.rp);
   const sheaveAt = M.ropeIn + M.D / 2, u1 = calata - M.ropeIn;
   const pulleyAt = M.Dp > 0 ? (M.reverse ? u1 + M.Dp / 2 : u1 - M.Dp / 2) : sheaveAt;
-  const v = (z: number): number => (MACHINE_A.zSheave - z) * 1000 * s, F = machineFrame(M.D, M.shape ?? null);
+  const v = (z: number): number => (MACHINE_A.zSheave - z) * 1000 * s, F = machineFrame(M.D, M.shape ?? null, M.rinvio?.bed ?? null);
   // the generic machine's numbers as they have always been computed (a drawing set's hash covers them); a maker's from
   // its frame
   const [frame0, frame1, across]: [number, number, readonly [number, number]] = F.shape

@@ -11,6 +11,7 @@ import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { ENGINE_VERSION } from '@/calc/snapshot';
 import { SHAFT_ENGINE_VERSION } from '@/shaft';
+import { calcOrder } from '@/lib/order/machine';
 import { getCalculation, listDrawingSets } from '@/server/queries';
 import IssueForm from '@/components/tavole/IssueForm';
 import VerdictPill from '@/components/VerdictPill';
@@ -36,8 +37,10 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const chosen = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null, norme = normeOf(collaudoOf(values.data, chosen?.success ? chosen.data : undefined));
   // the report draws the plan of the shaft design too: it needs that design reproduced as well
   const designSame = !c.shaftDesign || reproduceDesign(c.shaftDesign) !== null;
-  const [t, tp, tr, ts, tt, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
-    getTranslations('tavole'), listDrawingSets(user, c.projectId)]);
+  const [t, tp, tr, ts, tt, ta, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
+    getTranslations('tavole'), getTranslations('advice'), listDrawingSets(user, c.projectId)]);
+  // the machine of the draft order: the catalogue's machine these values are, or the advice's first among SICOR and Montanari
+  const download = same && can(user.role, 'report:download'), order = download ? calcOrder(values.data) : null;
   const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
   return (
@@ -68,6 +71,21 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
         ) : null}
         <div className="wide"><dt>{t('col_hash')}</dt><dd className="hash">{c.sha256}{same ? ` · ${t('hashOk')}` : ''}</dd></div>
       </dl>
+      {download ? (
+        <section className="panel">
+          <h2>{ta('order_title')}</h2>
+          <p className="note">{ta('order_lead')}</p>
+          {order ? (
+            <>
+              <p className="order-machine">{ta(order.recorded ? 'order_chosen_calc' : 'order_advised_calc', { machine: `${order.machine.brand} ${order.machine.model}` })}</p>
+              <div className="doc-links">
+                <a className="btn" href={`/api/calculations/${c.id}/order/docx`}>{ta('order_docx')}</a>
+                <a className="btn" href={`/api/calculations/${c.id}/order/pdf`}>{ta('order_pdf')}</a>
+              </div>
+            </>
+          ) : <p className="note">{ta('order_none')}</p>}
+        </section>
+      ) : null}
       <section className="panel">
         <h2>{t('reviewsTitle')}</h2>
         {c.reviews.length ? (

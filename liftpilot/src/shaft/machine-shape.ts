@@ -101,7 +101,9 @@ export interface MachineFrame {
   s: number;
 }
 
-export function machineFrame(D: number, S: MachineShape | null): MachineFrame {
+/** The machine of the sheave D: the generic one scaled to it, or the maker's `S` on our bedframe (bedOf), or on the seat
+ *  of the maker's bedplate with the diverting pulley (`seat`, rinvio.ts). */
+export function machineFrame(D: number, S: MachineShape | null, seat: number | null = null): MachineFrame {
   const s = D / (2000 * MACHINE_A.rp);
   if (!S) {
     // the same products as the drawings have always taken (a drawing set's hash covers every number)
@@ -109,7 +111,7 @@ export function machineFrame(D: number, S: MachineShape | null): MachineFrame {
       z: [MACHINE_Z[0] * 1000 * s, MACHINE_Z[1] * 1000 * s], mounts: [-360 * s, 950 * s], beams: [-160 * s, 160 * s], plinth: [[-200 * s - 100, 200 * s + 100]],
       bed: 0, face: 200 * s, shape: null, s };
   }
-  const { P, E } = sheaveOf(S, D), b = bodyBox(S), bed = bedOf(S, D), ov = KV_VERT.machineBedOverhang;
+  const { P, E } = sheaveOf(S, D), b = bodyBox(S), bed = seat ?? bedOf(S, D), ov = KV_VERT.machineBedOverhang;
   const x0 = Math.min(S.feet[0], b[0]) - ov, x1 = Math.max(S.feet[2], b[3]) + ov;
   const face = Math.max(...S.parts.filter((p) => p.role === 'housing' || p.role === 'cover').map((p) => partBox(p)[5]).filter((z) => z < P));
   const zs = S.holes.map((h) => h[1]), beams: [number, number] = [Math.min(...zs), Math.max(...zs)];

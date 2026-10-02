@@ -169,7 +169,8 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
           {V.layout === 'topDefl' ? toggle('dx', t('auto_dx')) : null}
           {row('dx', auto.dx ? { value: fmt(num('dx'), 3), badge: t('badge_auto') } : null)}
           {derived.issues.includes('dx') ? <p className="hint bad" role="alert">{t('hint_dx_tight')}</p> : null}
-          {row('h')}
+          {row('h', auto.dx && derived.machine.rinvio ? { value: fmt(num('h'), 3), badge: t('badge_auto') } : null)}
+          {derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t('hint_rinvio_floor')}</p> : null}
           {V.layout === 'bottom' ? toggle('Hv', t('auto_Hv')) : null}
           {row('Hv', auto.Hv ? { value: fmt(num('Hv'), 2), badge: t('badge_auto') } : null)}
           {['Dp', 'Jp', 'nps', 'npr', 'etaShaft'].map((id) => row(id))}

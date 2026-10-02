@@ -1,7 +1,9 @@
 // The pulleys of the rope rig other than the sheave and what holds them. A diverting or top pulley turns on an axle
-// with a nut at each end, between two cheeks: standing on the room's floor across the slab's opening (side members
-// with their feet bolted down beyond its ends) when its axle is over the slab's underside, otherwise hung under the
-// slab from a top plate anchored to it. The car and counterweight pulleys of a 2:1 roping ride with the car and the
+// with a nut at each end, between two cheeks: in the machine's bedplate (its plates: support.ts), standing on the
+// room's floor across the slab's opening (side members with their feet bolted down beyond its ends) when its axle is
+// over the slab's underside, otherwise hung under the slab from a top plate anchored to it (a machine below's head
+// pulleys; never a diverting pulley of a machine above, registry locale.rinvio, unless an h entered by hand puts it
+// there). The car and counterweight pulleys of a 2:1 roping ride with the car and the
 // counterweight; its dead ends hang from a plate under the slab, each rope in its socket. Plan and heights in
 // millimetres. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
@@ -28,8 +30,9 @@ export function pulley(r: number, width: number, dir: readonly [number, number],
 }
 
 /** The frames of the fixed pulleys and the dead ends of a 2:1 roping, each in the plane of its wheel or rope.
- *  floor: the floor of the room over the slab [mm], null without one; ceiling: the slab's underside [mm]. */
-export function pulleyFrames(B: Batch, M: LiftMaterials, rig: RopeRig, n: number, d: number, floor: number | null, ceiling: number): void {
+ *  floor: the floor of the room over the slab [mm], null without one; ceiling: the slab's underside [mm]; `framed`:
+ *  the diverting pulley turns in the machine's bedplate, which holds it. */
+export function pulleyFrames(B: Batch, M: LiftMaterials, rig: RopeRig, n: number, d: number, floor: number | null, ceiling: number, framed = false): void {
   const wd = ropeWidths(n, d), half = wd.pulley;
   const frame = (p: RopePlane) => {
     const [ox, oy] = p.origin, [dx, dy] = p.dir, turn = Math.atan2(dy, dx);
@@ -52,6 +55,7 @@ export function pulleyFrames(B: Batch, M: LiftMaterials, rig: RopeRig, n: number
     const { at, ob, bolt } = frame(w.plane), uc = w.u * 1000, yc = w.y * 1000, R = w.r * 1000;
     B.rod(at(uc, -half - 22, yc), at(uc, half + 22, yc), 20, M.rail, 16);
     for (const s of [-1, 1]) B.rod(at(uc, s * (half + 4), yc), at(uc, s * (half + 22), yc), 26, M.galv, 6);
+    if (framed && w.role === 'deflector') continue;
     if (floor !== null && yc > ceiling) {
       const u0 = uc - R - 110, u1 = uc + R + 110, zb = Math.min(floor, yc - 70), zt = Math.max(floor + 140, yc + 70);
       for (const s of [-1, 1]) {

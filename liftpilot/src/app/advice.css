@@ -1,0 +1,26 @@
+/* The machine to order among SICOR's and Montanari's: the makers' proposals side by side, the first one marked, the
+   reason under them. */
+.advice-head { display: flex; flex-direction: column; gap: 4px; }
+.advice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 12px; }
+.advice-card { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.advice-card.best { border-color: var(--ok); box-shadow: inset 4px 0 0 var(--ok); }
+.advice-card header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.advice-card h3 { margin: 0; font-size: 16px; line-height: 1.25; margin-right: auto; }
+.advice-card .badge.ok { color: var(--ok); background: var(--ok-bg); }
+.advice-card dl { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+.advice-card dl > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.advice-card dl > .wide { grid-column: 1 / -1; }
+.advice-card dt { font-size: 12px; line-height: 1.2; color: var(--muted); }
+.advice-card dd { margin: 0; font-size: 13.5px; font-weight: 600; line-height: 1.35; color: var(--ink); overflow-wrap: anywhere; }
+.advice-card dd.res.ok { color: var(--ok); }
+.advice-card dd.res.warn { color: var(--warn); }
+.advice-card dd.res.fail { color: var(--fail); }
+.advice-card > .btn { align-self: flex-start; margin-top: auto; }
+.advice-why { margin: 0; padding: 10px 12px; border-radius: 9px; background: var(--accent-soft); color: var(--ink); font-size: 13.5px; line-height: 1.45; max-width: 90ch; }
+.order-machine { margin: 0; font-size: 14px; line-height: 1.45; }
+@media (max-width: 420px) {
+  .advice-card dl { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 1079px) {
+  .lift-work .advice { order: 3; }
+}

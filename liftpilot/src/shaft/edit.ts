@@ -67,7 +67,7 @@ function floorKey(I: ShaftInputs, head: string, sub: string): number | null {
 export const editKeys = (): string[] => [
   ...SIZES, ...Object.keys(DEFAULTS), ...PLAN_KEYS.map((k) => `plan.${k}`), ...V_KEYS.map((k) => `v.${k}`), ...R_KEYS.map((k) => `room.${k}`),
   ...N_KEYS.map((k) => `n.0.${k}`), ...CS_KEYS.map((k) => `cs.${k}`), ...H_KEYS.map((k) => `head.${k}`), 'f.0.rise', ...IMB_KEYS.map((k) => `imb.${k}`),
-  ...SUP_KEYS.map((k) => `sup.${k}`), ...PICK_KEYS, ...CALC_KEYS,
+  ...SUP_KEYS.map((k) => `sup.${k}`), 'rinvio.height', ...PICK_KEYS, ...CALC_KEYS,
 ];
 
 /** The message (namespace shaft) naming the input behind an edit's key as the form calls it; the rail's distance reads
@@ -83,6 +83,7 @@ export function editLabel(key: string, cantilever: boolean): string {
   if (head === 'f') return 'fl_rise';
   if (head === 'imb') return `im_${sub}`;
   if (head === 'sup') return `su_${sub}`;
+  if (head === 'rinvio') return `ri_${sub}`;
   if (head === 'calc') return `calc_${sub}`;
   return isAllowance(key) ? `a_${key}` : key;
 }
@@ -107,6 +108,8 @@ export function withValue(I: ShaftInputs, key: string, value: number): ShaftInpu
   if (r && I.room) return { ...I, room: { ...I.room, [r]: value } };
   const m = head === 'imb' ? pick(IMB_KEYS, sub) : undefined;
   if (m) return m === 'marble' ? withMarbleWidth(I, value) : m === 'height' ? withMarbleHeight(I, value) : withImbotti(I, { ...imbottiOf(I), [m]: value });
+  // the top of the bedplate with the diverting pulley: that support, ours, at that height
+  if (head === 'rinvio' && sub === 'height' && I.room) return value < 0 ? null : { ...I, room: { ...I.room, support: { kind: 'rinvio', height: value } } };
   const su = head === 'sup' ? pick(SUP_KEYS, sub) : undefined;
   // a support below the floor or a frame or plinth shorter than the zod range is no support
   if (su && I.room) return value < (su === 'length' ? 300 : 0) ? null : { ...I, room: { ...I.room, support: { ...supportOf(I.room), [su]: value } } };

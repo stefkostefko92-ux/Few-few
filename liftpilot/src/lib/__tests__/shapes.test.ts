@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { MACHINES } from '@/lib/catalog/machines';
 import { SHAPES, shapeOf } from '@/lib/catalog/shapes';
-import { defaultLift, deriveLift, KL, type LiftInputs } from '@/lib/lift';
+import { defaultLift, deriveLift, type LiftInputs } from '@/lib/lift';
 import { KV_VERT, roomGeo, roomPlanEntities, roomSectionEntities } from '@/shaft';
 import { MACHINE_A, MACHINE_X } from '@/shaft/machine-outline';
 import { bodyBox, machineFrame, partBox, sheaveOf } from '@/shaft/machine-shape';
@@ -98,8 +98,9 @@ test('proposta da SICOR: la forma nei disegni, l\'asse del suo telaio nel tratto
     const dv = deriveLift(sicor(model, support)), M = dv.machine, D = M.D, S = shapeOf('SICOR', model);
     assert.equal(dv.catalog?.fit?.machine.model, model, `${model}: presa dal catalogo`);
     assert.equal(M.shape, S, model);
-    // on shims the software's axis, unless the machine on its bedframe needs it higher
-    if (!support) assert.equal(M.axis, Math.max(KL.sheaveAxisPerD * D, machineFrame(D, S).axis), `${model}: asse`);
+    // with the diverting pulley of the example and no support chosen, on the bedplate that holds it: SICOR's own for the
+    // SH140 (XTE6026, A 1016 mm), ours for the MR21 (its top and the machine on our bedframe)
+    if (!support) assert.equal(M.axis, model === 'SH140' ? 1016 : (M.rinvio?.top ?? NaN) + machineFrame(D, S).axis, `${model}: asse sul telaio con rinvio`);
     const vt = dv.shaft.vertical, room = dv.shaft.room;
     assert.ok(room);
     assert.ok(Math.abs(Number(dv.values.L0) - Math.round(vt.headroom - vt.frameTop + room.slab + M.axis) / 1000) < 1e-9, `${model}: L0 con l'asse ${M.axis}`);
@@ -112,6 +113,19 @@ test('proposta da SICOR: la forma nei disegni, l\'asse del suo telaio nel tratto
   }
   // the generic machine when the proposal does not take a SICOR model
   assert.equal(deriveLift(defaultLift()).machine.shape ?? null, null);
+});
+
+test('basamento SICOR con rinvio: le sue quote e il suo codice; un h a mano che sposta il rinvio prende il nostro, su misura', () => {
+  const L = sicor('SH140'), auto = deriveLift(L), rf = auto.machine.rinvio;
+  assert.equal(rf?.maker?.code, 'XTE6026');
+  assert.equal(rf?.pulleyAxis, 320);
+  assert.equal(Number(auto.values.h), 0.696, 'h = A − asse del rinvio (1016 − 320)');
+  const byHand = (h: number) => deriveLift({ ...L, auto: { ...L.auto, dx: false }, calc: { ...L.calc, h } });
+  const other = byHand(0.6);
+  assert.equal(other.catalog?.fit?.machine.model, 'SH140');
+  assert.equal(other.machine.rinvio?.on, 'frame');
+  assert.equal(other.machine.rinvio?.maker ?? null, null, 'il basamento del costruttore tiene il rinvio alla sua quota');
+  assert.equal(byHand(0.696).machine.rinvio?.maker?.code, 'XTE6026');
 });
 
 test('relazione: le quote dell\'argano SICOR proposto, per il montaggio', () => {

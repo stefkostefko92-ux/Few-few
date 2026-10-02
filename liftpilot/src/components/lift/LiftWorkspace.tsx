@@ -10,6 +10,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
 import { KL, collaudoOf, deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { liftAdvice, type MachineCandidate } from '@/lib/lift/advice';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
@@ -35,6 +36,7 @@ import LiftCalcFields from './LiftCalcFields';
 import LiftFacts from './LiftFacts';
 import LiftChecks from './LiftChecks';
 import LiftSimulator, { type SimApi } from './LiftSimulator';
+import MachineAdvice from './MachineAdvice';
 
 interface Props {
   projectId: string;
@@ -66,6 +68,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
   const [saving, startSaving] = useTransition();
   const deferred = useDeferredValue(inp);
   const derived = useMemo(() => deriveLift(deferred), [deferred]);
+  const advice = useMemo(() => liftAdvice(deferred), [deferred]);
   const bad = useMemo(() => new Set(visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values)), [derived]);
   useEffect(() => { onDerived?.(deferred, derived); }, [deferred, derived, onDerived]);
   const sim = useRef<SimApi>(null);
@@ -93,7 +96,9 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
   useImperativeHandle(api, () => ({
     edit(e, length) {
       if (e.key.startsWith('calc.')) return setCalcFromDrawing(e.key, editValue(e, length));
-      const r = editShaft(inp.shaft, e, length);
+      // the support the drawings show: the bedplate with the diverting pulley when none was chosen
+      const R = inp.shaft.room, shaft = R && !R.support && derived.machine.rinvio ? { ...inp.shaft, room: { ...R, support: { kind: 'rinvio' as const } } } : inp.shaft;
+      const r = editShaft(shaft, e, length);
       if (!r.ok) return r;
       setShaft(r.inputs);
       return null;
@@ -115,6 +120,13 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     });
     setSaveError(null);
   };
+  // the machine of the advice: its maker and model, proposed by the software
+  const takeMachine = (c: MachineCandidate): void => {
+    setInp((p) => ({ ...p, catalog: { brand: c.brand, model: c.model }, auto: { ...p.auto, machine: true } }));
+    setSaveError(null);
+  };
+  const machineInUse = (c: MachineCandidate): boolean =>
+    derived.origin.machine === 'auto' && derived.catalog?.fit?.machine.brand === c.brand && derived.catalog.fit.machine.model === c.model;
   // a value switched to entered starts from the one the software showed, so nothing jumps
   const setAuto = (patch: Partial<AutoFlags>): void => {
     const pick = derived.analysis.sizing.pick;
@@ -178,12 +190,13 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
         <ImbottiOptions I={inp.shaft} set={setShaft} />
         <h2>{t('s_floors')}</h2>
         <VerticalOptions I={inp.shaft} set={setShaft} open />
-        {above ? <RoomOptions I={inp.shaft} set={setShaft} machine={{ D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null }} /> : null}
+        {above ? <RoomOptions I={inp.shaft} set={setShaft} machine={{ D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null }} /> : null}
         <h2>{t('s_drive')}</h2>
         <LiftCalcFields P={P} X={X} inp={inp} derived={derived} bad={bad} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} setCatalog={setCatalog} t={(k, v) => t(k, v)} />
       </form>
       <div className="lift-main">
         <LiftFacts derived={derived} X={X} fmt={P.fmt} />
+        <MachineAdvice advice={advice} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} saved="design" />
         <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
         <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
         <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
