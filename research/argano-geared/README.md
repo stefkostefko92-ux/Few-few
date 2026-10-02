@@ -91,6 +91,9 @@ estratti dei motori di ricerca (capitolo 11)._
 13. [Limitatori di velocità e tenditori: PFB, Montanari](13-limitatori-e-tenditori.md) — con il secondo giro: gamma Montanari, quote PFB R10BF, R12BF, R1-LR
 14. [Operatori di cabina, sospensioni di piano e soglie](14-porte-e-soglie.md) — con il secondo giro: Wittur, Sematic, Prisma, Dapa, CMM
 15. [Funi con la macchina in basso: i tre schemi](15-funi-macchina-in-basso.md)
+16. [Quadro normativo completo: leggi, norme armonizzate, esistenti, collaudo con più norme](16-quadro-normativo-completo.md)
+17. [Argani geared di tutti i costruttori: SICOR, Sassi, GEM, FAER, Montanari e altri](17-argani-tutti-i-costruttori.md)
+18. [Porte, sospensioni, limitatori e tenditori di tutti i costruttori](18-porte-limitatori-tenditori-tutti.md)
 
 ## Decisioni
 
