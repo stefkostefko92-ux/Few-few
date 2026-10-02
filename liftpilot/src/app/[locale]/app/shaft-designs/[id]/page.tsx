@@ -10,6 +10,7 @@ import { shaftInputsSchema, shaftSourceSchema } from '@/lib/shaft-input';
 import { verifyShaftStored } from '@/lib/shaft-hash';
 import { SHAFT_ENGINE_VERSION } from '@/shaft';
 import { getShaftDesign } from '@/server/queries';
+import { visiblePrices } from '@/server/prices';
 import VerdictPill from '@/components/VerdictPill';
 import Crumbs from '@/components/Crumbs';
 import ShaftViews from '@/components/shaft/ShaftViews';
@@ -32,14 +33,14 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
   const { layout: L, same } = verifyShaftStored(inputs.data, d.sha256);
   const [t, tc, tp] = await Promise.all([getTranslations('shaft'), getTranslations('calculations'), getTranslations('projects')]);
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const open = !d.project.archivedAt && can(user.role, 'calc:create');
+  const open = !d.project.archivedAt && can(user, 'calc:create');
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.projectId}`, label: d.project.name }, { label: t('title') }]} />
       <div className="page-head">
         <div className="titles"><h1>{t('title')}{d.label ? ` · ${d.label}` : ''}</h1></div>
         <div className="actions">
-          {same && can(user.role, 'report:download') ? <a className="btn btn-primary" href={`/api/shaft-designs/${d.id}/dxf`}>{t('downloadDxf')}</a> : null}
+          {same && can(user, 'report:download') ? <a className="btn btn-primary" href={`/api/shaft-designs/${d.id}/dxf`}>{t('downloadDxf')}</a> : null}
           {same && open ? <Link className="btn" href={`/app/projects/${d.projectId}/calc?design=${d.id}`}>{t('calcFrom')}</Link> : null}
           {open ? <Link className="btn" href={`/app/projects/${d.projectId}/vano?from=${d.id}`}>{t('editAsNew')}</Link> : null}
         </div>
@@ -60,7 +61,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
         <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
         <p className="note">{t('limits')}</p>
       </section>
-      <PanevBom L={L} fmt={fmt} />
+      <PanevBom L={L} fmt={fmt} prices={await visiblePrices(user)} />
     </main>
   );
 }

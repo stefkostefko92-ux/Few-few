@@ -25,9 +25,11 @@ import SurveyPanel, { type SurveyResult } from './SurveyPanel';
 interface Props {
   projectId: string;
   initial: ShaftInputs;
+  /** the company's prices [cents by key] for whoever may see them; null: none shown */
+  prices: Readonly<Record<string, number>> | null;
 }
 
-export default function ShaftDesigner({ projectId, initial }: Props) {
+export default function ShaftDesigner({ projectId, initial, prices }: Props) {
   const t = useTranslations('shaft'), te = useTranslations('errors'), locale = useLocale();
   const router = useRouter();
   const fmt = useMemo(() => makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']), [locale]);
@@ -112,7 +114,7 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
           <h2>{t('result')}</h2>
           <PlanEditor I={I} onChange={set} machine={null} id="live" titleAs="h3" />
           <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
-          <PanevBom L={L} fmt={fmt} framed={false} />
+          <PanevBom L={L} fmt={fmt} framed={false} prices={prices} />
           <p className="note">{t('limits')}</p>
         </section>
       </div>

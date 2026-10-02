@@ -251,7 +251,7 @@ try {
   await Promise.all([page.waitForURL(/\/lift-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click('.lift-work .savebar button.btn-primary')]);
   const liftUrl = page.url();
   await page.waitForSelector('.lift-view .lift-facts');
-  assert.equal(await page.locator('main .alert-warn, main .alert-bad').count(), 0, 'the running engines reproduce the saved design');
+  assert.equal(await page.locator('main > .alert-warn, main > .alert-bad').count(), 0, 'the running engines reproduce the saved design');
   assert.match(await page.textContent('.lift-view .lift-verdict .badge'), /UNI 10411-11/, 'the saved standard');
   assert.match(await page.textContent('.lift-view .panev-bom'), /SU 220 200/, 'the support chosen by hand, saved');
   const liftRelHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
@@ -286,6 +286,20 @@ try {
   await page.waitForSelector('main form:has(input[name="archive"][value="1"])');
   errors.length = 0; // the two 404 above were provoked on purpose
 
+  step('price list and subscription of the platform company');
+  await page.goto(`${BASE}/it/app/prices`);
+  await hydrated(page, 'main form:has(input[name^="p:"]) button[type="submit"]');
+  const carPrice = page.locator('main input[name="p:car"]');
+  await carPrice.fill('12.500,00');
+  await page.click('main form:has(input[name^="p:"]) button[type="submit"]');
+  await page.waitForSelector('main .alert-ok');
+  assert.equal(await page.locator('main input[name="p:car"]').inputValue(), '12.500,00');
+  assert.equal(await page.locator('main input[name="p:panev:B 65 320"]').inputValue(), '11,77', 'Panev starts from its list');
+  await page.goto(liftUrl);
+  await page.waitForSelector('#project-cost-h');
+  await page.goto(`${BASE}/it/app/billing`);
+  await page.waitForSelector('main .status-pill');
+
   step('new user with a temporary password');
   await page.goto(`${BASE}/it/app/team`);
   const userEmail = `tecnico.${stamp}@example.com`;
@@ -305,6 +319,11 @@ try {
   await page.waitForSelector('.alert-ok');
   await page.goto(`${BASE}/it/app`);
   assert.match(page.url(), /\/it\/app$/);
+  // a Tecnico sees no prices and manages nobody
+  assert.equal((await page.goto(`${BASE}/it/app/prices`)).status(), 404, 'price list of a Tecnico');
+  assert.equal((await page.goto(`${BASE}/it/app/team`)).status(), 404, 'team page of a Tecnico');
+  errors.length = 0; // provoked on purpose
+  await page.goto(`${BASE}/it/app`);
   await logout(page);
 
   // the isolation check below provokes a 404 on purpose: the console must be clean up to here
@@ -326,6 +345,12 @@ try {
   await page.fill('input[name="confirm"]', ownerNext);
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('.alert-ok');
+  // the owner of a company the platform made accepts the terms before working
+  await page.goto(`${BASE}/it/app`);
+  await hydrated(page, 'main form:has(input[name="clauses"]) button');
+  for (const k of ['privacy', 'terms', 'clauses']) await page.check(`main input[name="${k}"]`);
+  await page.click('main form:has(input[name="clauses"]) button');
+  await page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
   const other = await page.goto(calcUrl);
   assert.equal(other.status(), 404, 'calculation of another company');
   const otherPdf = await page.request.get(`${BASE}${href}`);

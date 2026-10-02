@@ -25,7 +25,7 @@ export default async function ProjectsPage({ params, searchParams }: {
   const sp = await searchParams, archived = sp.archived === '1', kind = kindOf(sp.kind);
   const [t, projects] = await Promise.all([getTranslations('projects'), listProjects(user, archived, kind)]);
   const fd = dateFormat(locale);
-  const canEdit = can(user.role, 'projects:edit');
+  const canEdit = can(user, 'projects:edit');
   const listHref = (slug: string | null, arch = archived): string => {
     const q = [arch ? 'archived=1' : '', slug ? `kind=${slug}` : ''].filter(Boolean).join('&');
     return q ? `/app?${q}` : '/app';

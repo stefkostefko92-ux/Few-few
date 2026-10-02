@@ -17,7 +17,7 @@ export type ClientLogoResult = { ok: true } | { ok: false; error: string };
 
 async function editor(): Promise<SessionUser | null> {
   const user = await getSessionUser();
-  return user && !user.mustChangePassword && can(user.role, 'projects:edit') ? user : null;
+  return user && !user.mustChangePassword && can(user, 'projects:edit') ? user : null;
 }
 
 export async function uploadClientLogoAction(fd: FormData): Promise<ClientLogoResult> {

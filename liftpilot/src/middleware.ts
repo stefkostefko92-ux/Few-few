@@ -17,7 +17,8 @@ function policy(nonce: string): string {
     `connect-src 'self'${dev ? ' ws: wss:' : ''}`,
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    // Stripe's hosted pages: the subscription's payment and portal, reached by a redirect after the owner's form
+    "form-action 'self' https://checkout.stripe.com https://billing.stripe.com",
     "frame-ancestors 'none'",
   ].join('; ');
 }

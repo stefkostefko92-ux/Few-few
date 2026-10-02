@@ -10,7 +10,7 @@ import Footer from '@/components/Footer';
 
 // The privacy notice and the terms of use: one page, each answer under its question (the registration links here).
 const PRIVACY = ['controller', 'data', 'projects', 'recipients', 'cookies', 'retention', 'rights'] as const;
-const TERMS = ['service', 'results', 'accounts', 'law'] as const;
+const TERMS = ['service', 'results', 'accounts', 'subscription', 'liability', 'changes', 'contact', 'law'] as const;
 const loc = (l: string): Locale => (isLocale(l) ? l : 'it');
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {

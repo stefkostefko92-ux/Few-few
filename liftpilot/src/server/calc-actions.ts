@@ -30,7 +30,7 @@ const fmt = makeFmt('it-IT');
 export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; designId?: unknown; collaudo?: unknown }): Promise<SaveResult> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
-  if (user.mustChangePassword || !can(user.role, 'calc:create')) return { ok: false, error: 'forbidden' };
+  if (user.mustChangePassword || !can(user, 'calc:create')) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`calc:${user.id}`, 60, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const projectId = idSchema.safeParse(input.projectId), label = calcLabelSchema.safeParse(input.label ?? ''), values = formValuesSchema.safeParse(input.values);
   const collaudo = input.collaudo == null ? null : collaudoSchema.safeParse(input.collaudo);
@@ -71,7 +71,7 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
 export async function reviewCalculationAction(input: { calculationId: unknown; note: unknown }): Promise<{ ok: boolean; error?: string }> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
-  if (user.mustChangePassword || !can(user.role, 'calc:review')) return { ok: false, error: 'forbidden' };
+  if (user.mustChangePassword || !can(user, 'calc:review')) return { ok: false, error: 'forbidden' };
   const id = idSchema.safeParse(input.calculationId), note = reviewSchema.safeParse({ note: input.note ?? '' });
   if (!id.success || !note.success) return { ok: false, error: 'invalidFields' };
   const calc = await prisma.calculation.findFirst({ where: { id: id.data, companyId: user.companyId }, select: { id: true } });

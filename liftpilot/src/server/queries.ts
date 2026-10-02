@@ -1,5 +1,8 @@
 import 'server-only';
 import { prisma } from '@/lib/db';
+import { companyAccess } from '@/lib/billing';
+import { BILLING_SELECT } from '@/lib/billing-access';
+import { billingConfigured } from '@/lib/billing-config';
 import type { SessionUser } from '@/lib/auth';
 import type { ProjectKind } from '@/lib/schemas';
 import { DESIGN_SELECT } from './drawing-compose';
@@ -76,11 +79,15 @@ export function listUsers(user: SessionUser) {
   });
 }
 
-export function listCompanies() {
-  return prisma.company.findMany({
+/** The platform's companies with their subscription's state now. */
+export async function listCompanies() {
+  const rows = await prisma.company.findMany({
     orderBy: { createdAt: 'desc' },
-    select: { id: true, name: true, vatNumber: true, city: true, active: true, createdAt: true, _count: { select: { users: true, projects: true, calculations: true } } },
+    select: { id: true, name: true, vatNumber: true, city: true, active: true, createdAt: true, ...BILLING_SELECT,
+      _count: { select: { users: true, projects: true, calculations: true } } },
   });
+  const now = new Date(), on = billingConfigured();
+  return rows.map((c) => ({ ...c, access: companyAccess(c, now, on) }));
 }
 
 export function listAudit(user: SessionUser) {

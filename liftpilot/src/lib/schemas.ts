@@ -32,6 +32,8 @@ export const registerSchema = z
     confirm: z.string().max(200),
     privacy: checked,
     terms: checked,
+    /** the specific approval of the clauses of arts. 1341–1342 c.c. (limits of liability, renewal, law and court) */
+    clauses: checked,
   })
   .refine((v) => passwordPolicyOk(v.password), { path: ['password'], message: 'weakPassword' })
   .refine((v) => v.password === v.confirm, { path: ['confirm'], message: 'passwordMismatch' });
@@ -63,7 +65,8 @@ export type ProjectInput = z.infer<typeof projectSchema>;
 export const projectKindSchema = z.enum(['REPLACEMENT', 'FULL']);
 export type ProjectKind = z.infer<typeof projectKindSchema>;
 
-export const roleSchema = z.enum(['VIEWER', 'TECHNICIAN', 'ENGINEER', 'MANAGER', 'ADMIN', 'OWNER']);
+/** The roles a company's owner gives to the colleagues: Progettista, Commerciale, Tecnico (src/lib/rbac.ts). */
+export const roleSchema = z.enum(['ENGINEER', 'SALES', 'TECHNICIAN']);
 
 export const userCreateSchema = z.object({
   email: emailSchema,

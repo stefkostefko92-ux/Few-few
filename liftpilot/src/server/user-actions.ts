@@ -1,16 +1,18 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { Prisma, type Role } from '@prisma/client';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
-import { assignableRoles, can, outranks, type Capability } from '@/lib/rbac';
+import { MEMBER_ROLES, assignableRoles, can, outranks, type Capability } from '@/lib/rbac';
 import { mailConfigured } from '@/lib/mail';
 import { hashPassword, temporaryPassword } from '@/lib/password';
 import { rateLimit } from '@/lib/ratelimit';
 import { companyCreateSchema, idSchema, roleSchema, userCreateSchema } from '@/lib/schemas';
+import { seatAvailable } from './billing';
 import { str, type FormState } from './form';
 
 const localeOf = (fd: FormData): string => { const l = str(fd, 'locale'); return isLocale(l) ? l : DEFAULT_LOCALE; };
@@ -19,7 +21,7 @@ const emailTaken = (e: unknown): boolean => e instanceof Prisma.PrismaClientKnow
 
 async function actor(capability: Capability): Promise<SessionUser | null> {
   const user = await getSessionUser();
-  if (!user || user.mustChangePassword || !can(user.role, capability)) return null;
+  if (!user || user.mustChangePassword || !can(user, capability)) return null;
   return user;
 }
 
@@ -42,16 +44,21 @@ export async function createUserAction(_prev: FormState, fd: FormData): Promise<
   const vouched = me.role === 'SUPERADMIN';
   if (!vouched && !mailConfigured()) return { error: 'mailUnavailable' };
   if (await prisma.user.findUnique({ where: { email: parsed.data.email }, select: { id: true } })) return { error: 'emailTaken' };
-  const password = temporaryPassword();
+  const password = temporaryPassword(), passwordHash = await hashPassword(password);
   let user;
   try {
-    user = await prisma.user.create({
-      data: { ...parsed.data, companyId: me.companyId, passwordHash: await hashPassword(password), mustChangePassword: true, locale: localeOf(fd), emailVerifiedAt: vouched ? new Date() : null },
+    // every colleague takes a slot of the subscription: the company is locked while the slots are counted
+    user = await prisma.$transaction(async (tx) => {
+      if (!(await seatAvailable(tx, me.companyId))) return null;
+      return tx.user.create({
+        data: { ...parsed.data, companyId: me.companyId, passwordHash, mustChangePassword: true, locale: localeOf(fd), emailVerifiedAt: vouched ? new Date() : null },
+      });
     });
   } catch (e) {
     if (emailTaken(e)) return { error: 'emailTaken' };
     throw e;
   }
+  if (!user) return { error: 'noSeats' };
   await audit({ companyId: me.companyId, userId: me.id, action: 'USER_CREATED', entity: 'User', entityId: user.id, meta: { role: user.role } });
   revalidatePath(`/${localeOf(fd)}/app/team`);
   return { ok: true, secret: password, message: user.email, pending: !vouched };
@@ -72,7 +79,14 @@ export async function updateUserAction(fd: FormData): Promise<void> {
     if (!data.active) data.tokenVersion = { increment: 1 }; // ends the sessions of a deactivated user at once
   }
   if (!Object.keys(data).length) return;
-  await prisma.user.update({ where: { id: target.id }, data });
+  // a colleague brought back takes a slot again
+  const seat = data.active === true && !target.active && MEMBER_ROLES.includes(data.role ?? target.role);
+  const done = await prisma.$transaction(async (tx) => {
+    if (seat && !(await seatAvailable(tx, me.companyId))) return false;
+    await tx.user.update({ where: { id: target.id }, data });
+    return true;
+  });
+  if (!done) redirect(`/${localeOf(fd)}/app/team?e=noSeats`);
   await audit({ companyId: me.companyId, userId: me.id, action: 'USER_UPDATED', entity: 'User', entityId: target.id,
     meta: { ...(data.role ? { role: data.role } : {}), ...(data.active !== undefined ? { active: data.active } : {}) } });
   revalidatePath(`/${localeOf(fd)}/app/team`);
@@ -129,5 +143,16 @@ export async function setCompanyActiveAction(fd: FormData): Promise<void> {
     ...(active ? [] : [prisma.user.updateMany({ where: { companyId: id.data }, data: { tokenVersion: { increment: 1 } } })]),
   ]);
   await audit({ companyId: id.data, userId: me.id, action: 'COMPANY_UPDATED', entity: 'Company', entityId: id.data, meta: { active } });
+  revalidatePath(`/${localeOf(fd)}/app/admin`);
+}
+
+/** Platform: a company that is never billed (a partner, the platform's own) or billed again. */
+export async function setCompanyExemptAction(fd: FormData): Promise<void> {
+  const me = await actor('platform:admin');
+  const id = idSchema.safeParse(str(fd, 'id'));
+  if (!me || !id.success || id.data === me.companyId) return;
+  const exempt = str(fd, 'exempt') === '1';
+  await prisma.company.updateMany({ where: { id: id.data }, data: { billingExempt: exempt } });
+  await audit({ companyId: id.data, userId: me.id, action: 'COMPANY_UPDATED', entity: 'Company', entityId: id.data, meta: { billingExempt: exempt } });
   revalidatePath(`/${localeOf(fd)}/app/admin`);
 }

@@ -23,6 +23,16 @@ const schema = z.object({
   SMTP_USER: optional,
   SMTP_PASS: optional,
   MAIL_FROM: optional,
+  /** the subscription (Stripe): without the secret key, the webhook's secret, the monthly price and the product of the
+   *  slots the subscription stays off and every company works as before (src/lib/billing.ts) */
+  STRIPE_SECRET_KEY: optional,
+  STRIPE_WEBHOOK_SECRET: optional,
+  STRIPE_PRICE_MONTHLY: optional,
+  STRIPE_PRODUCT_SEATS: optional,
+  /** Stripe Tax on the subscription (it needs the account's tax settings) */
+  STRIPE_AUTOMATIC_TAX: z.enum(['true', 'false']).default('false'),
+  /** days of trial of a new company before its projects become read-only without a subscription */
+  BILLING_TRIAL_DAYS: z.coerce.number().int().min(0).max(365).default(14),
 });
 
 export type Env = z.infer<typeof schema>;

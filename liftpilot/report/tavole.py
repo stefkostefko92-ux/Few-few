@@ -164,6 +164,12 @@ class Painter:
             raise ValueError("unknown shape " + t)
 
 
+# Printed under the frame of every sheet of the PDF, outside the drawing (and its hash): what the sheets are and who
+# answers for them.
+NOTICE = ("Elaborato generato con LiftPilot (software di Carbon Stealth VCC): da verificare e firmare dal tecnico incaricato, "
+          "che ne risponde; quote e dati da confermare in sito e sui documenti dei costruttori.")
+
+
 def main():
     fonts.register()
     doc = json.load(sys.stdin)
@@ -182,6 +188,9 @@ def main():
         c.setLineJoin(1)
         for s in page["shapes"]:
             painter.shape(s)
+        c.setFont("DejaVu", 5.2)
+        c.setFillColorRGB(0.38, 0.38, 0.38)
+        c.drawString(8 * K, 3.2 * K, NOTICE)
         c.showPage()
     c.save()
     sys.stdout.buffer.write(out.getvalue())

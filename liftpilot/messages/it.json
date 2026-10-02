@@ -43,7 +43,9 @@
     "verifyWrongPassword": "La password non è corretta.",
     "invalidLink": "Il link non è valido, è già stato usato o è scaduto: chiedine uno nuovo.",
     "mailUnavailable": "L’invio delle e-mail non è ancora attivo: riprova più tardi o scrivi a info@carbonstealth.eu.",
-    "consentRequired": "Per registrarti spunta le due conferme."
+    "consentRequired": "Per registrarti spunta le due conferme.",
+    "noSeats": "Non ci sono posti liberi: acquista un pacchetto di posti o disattiva un collega.",
+    "invalidPrices": "Alcuni prezzi non sono validi."
   },
   "auth": {
     "title": "Accesso",
@@ -68,14 +70,14 @@
     "logout": "Esci",
     "menu": "Menu",
     "breadcrumb": "Percorso",
-    "company": "Azienda"
+    "company": "Azienda",
+    "billing": "Abbonamento",
+    "prices": "Listino"
   },
   "roles": {
-    "VIEWER": "Osservatore",
+    "ENGINEER": "Progettista",
+    "SALES": "Commerciale",
     "TECHNICIAN": "Tecnico",
-    "ENGINEER": "Ingegnere",
-    "MANAGER": "Responsabile",
-    "ADMIN": "Amministratore",
     "OWNER": "Titolare",
     "SUPERADMIN": "Amministratore della piattaforma"
   },
@@ -298,7 +300,7 @@
   },
   "team": {
     "title": "Utenti",
-    "lead": "Gli utenti della tua azienda. Puoi gestire solo i ruoli inferiori al tuo.",
+    "lead": "Gli account dei colleghi della tua azienda: il titolare li crea e dà a ciascuno un ruolo; ogni collega attivo occupa un posto dell’abbonamento.",
     "name": "Nome",
     "email": "E-mail",
     "role": "Ruolo",
@@ -318,7 +320,15 @@
     "tempPassword": "Password temporanea per {email} (mostrata una sola volta):",
     "tempPasswordNote": "Consegnala di persona o con un canale sicuro. Al primo accesso l’utente sceglie la propria password.",
     "confirmNote": "Al primo accesso il nuovo utente conferma l’indirizzo con il link che riceve per e-mail e la password temporanea.",
-    "pendingEmail": "deve confermare l’e-mail"
+    "pendingEmail": "deve confermare l’e-mail",
+    "seats": "Colleghi attivi: {used} su {limit} posti.",
+    "buySeats": "Acquista o cambia i posti",
+    "noSeats": "Non ci sono posti liberi: acquista un pacchetto di posti o disattiva un collega.",
+    "roleNote": {
+      "ENGINEER": "progetta e calcola, mette il visto ai calcoli e archivia gli impianti; non vede i prezzi.",
+      "SALES": "consulta e scarica progetti, relazioni e bozze d'ordine e vede i prezzi; non modifica nulla.",
+      "TECHNICIAN": "progetta e calcola; non mette il visto, non archivia e non vede i prezzi."
+    }
   },
   "admin": {
     "title": "Aziende",
@@ -338,7 +348,10 @@
     "city": "Comune",
     "ownerName": "Titolare: nome",
     "ownerEmail": "Titolare: e-mail",
-    "add": "Crea azienda"
+    "add": "Crea azienda",
+    "billing": "Abbonamento",
+    "exempt": "Esenta dal pagamento",
+    "bill": "Torna a pagamento"
   },
   "norme": {
     "title": "Registro delle norme",
@@ -396,7 +409,13 @@
       "PROJECT_EXPORTED": "Progetto esportato",
       "CLIENT_LOGO_UPLOADED": "Logo del committente caricato",
       "CLIENT_LOGO_REMOVED": "Logo del committente tolto",
-      "ORDER_EXPORTED": "Bozza d’ordine scaricata"
+      "ORDER_EXPORTED": "Bozza d’ordine scaricata",
+      "SUBSCRIPTION_CHECKOUT": "Pagamento dell'abbonamento avviato",
+      "SUBSCRIPTION_UPDATED": "Abbonamento aggiornato da Stripe",
+      "SUBSCRIPTION_PACK_CHANGED": "Pacchetto di posti cambiato",
+      "SEATS_ENFORCED": "Colleghi disattivati oltre i posti",
+      "PRICES_UPDATED": "Listino prezzi aggiornato",
+      "TERMS_ACCEPTED": "Condizioni accettate"
     },
     "entities": {
       "User": "Utente",
@@ -1058,7 +1077,8 @@
     "g_esistenti": "Miglioramento dell’esistente",
     "g_nazionali": "Obblighi nazionali",
     "avviso_en81-71": "La UNI EN 81-71:2022 non è citata in GUUE: nessuna presunzione di conformità (la dà la 2005+A1:2006).",
-    "avviso_en81-80": "Scelta volontaria: nessun obbligo nazionale di adeguamento risulta in vigore."
+    "avviso_en81-80": "Scelta volontaria: nessun obbligo nazionale di adeguamento risulta in vigore.",
+    "sim_note": "Simulazione con le stesse forze delle verifiche, per capire il comportamento dell'impianto: non sostituisce le prove e le verifiche in sito, e la scena 3D è una rappresentazione, non un rilievo."
   },
   "register": {
     "title": "Registra la tua azienda",
@@ -1082,7 +1102,8 @@
     "sentText": "Abbiamo scritto a {email}. Apri il link del messaggio e inserisci la password che hai scelto: così l’account si attiva. Il link vale {hours, plural, one {un’ora} other {# ore}}; se non arriva, controlla lo spam.",
     "haveAccount": "Hai già un account?",
     "login": "Accedi",
-    "closed": "La registrazione non è ancora attiva: per un account scrivi a info@carbonstealth.eu."
+    "closed": "La registrazione non è ancora attiva: per un account scrivi a info@carbonstealth.eu.",
+    "clauses": "Ai sensi degli artt. 1341 e 1342 del codice civile approvo specificamente le clausole delle condizioni d’uso su limiti di responsabilità e manleva, rinnovo automatico, cessazione e sospensione dell’abbonamento e degli account, modifiche delle condizioni, legge applicabile e foro competente."
   },
   "verify": {
     "title": "Conferma l’indirizzo e-mail",
@@ -1122,25 +1143,36 @@
     "controllerTitle": "Chi è il titolare del trattamento?",
     "controllerText": "Carbon Stealth VCC, ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria. Per la privacy e per esercitare i tuoi diritti scrivi a info@carbonstealth.eu.",
     "dataTitle": "Quali dati trattiamo e perché?",
-    "dataText": "Account: nome, e-mail, ragione sociale, partita IVA e città (se le inserisci), password (solo come hash Argon2id), lingua, data dell’ultimo accesso, conferma dell’indirizzo e accettazione di queste condizioni (data e versione). Servono a fornire il servizio (art. 6(1)(b) GDPR, contratto).\n\nRegistro attività: chi della tua azienda ha fatto cosa e quando (accessi, calcoli salvati, tavole emesse), per la sicurezza e la tracciabilità dei documenti tecnici (art. 6(1)(f) GDPR, interesse legittimo).\n\nE-mail di servizio: la conferma dell’indirizzo e i link per una nuova password, inviati solo quando ti registri o li chiedi tu.\n\nSicurezza: l’indirizzo IP serve, solo in memoria, a limitare i tentativi ripetuti e l’applicazione non lo salva; i log tecnici del server web (IP, pagina, ora) sono conservati per un periodo limitato a fini di sicurezza (art. 6(1)(f) GDPR).",
+    "dataText": "Account: nome, e-mail, ragione sociale, partita IVA e città (se le inserisci), password (solo come hash Argon2id), ruolo, lingua, data dell’ultimo accesso, conferma dell’indirizzo e accettazione di queste condizioni (data e versione). Servono a fornire il servizio (art. 6(1)(b) GDPR, contratto).\n\nAbbonamento: gli identificativi del cliente e dell’abbonamento presso Stripe, lo stato, il pacchetto di posti e la fine del periodo pagato. I dati di fatturazione (intestazione, indirizzo, partita IVA, e-mail) li inserisci nel pagamento di Stripe; i dati della carta non arrivano mai a LiftPilot. Base: il contratto e gli obblighi fiscali (art. 6(1)(b) e (c) GDPR).\n\nRegistro attività: chi della tua azienda ha fatto cosa e quando (accessi, calcoli salvati, tavole emesse, prezzi e abbonamento cambiati), per la sicurezza e la tracciabilità dei documenti tecnici (art. 6(1)(f) GDPR, interesse legittimo).\n\nE-mail di servizio: la conferma dell’indirizzo e i link per una nuova password, inviati solo quando ti registri o li chiedi tu.\n\nSicurezza: l’indirizzo IP serve, solo in memoria, a limitare i tentativi ripetuti e l’applicazione non lo salva; i log tecnici del server web (IP, pagina, ora) sono conservati per un periodo limitato a fini di sicurezza (art. 6(1)(f) GDPR).",
     "projectsTitle": "E i dati degli impianti?",
-    "projectsText": "Gli impianti, i calcoli e le tavole che la tua azienda inserisce possono contenere dati personali, per esempio il nome di un cliente o l’indirizzo di un impianto. Li trattiamo per conto della tua azienda e solo per fornire il servizio (art. 28 GDPR), mai per altri scopi.",
+    "projectsText": "Gli impianti, i calcoli, le tavole e il listino che la tua azienda inserisce possono contenere dati personali, per esempio il nome di un cliente o l’indirizzo di un impianto. Per questi dati l’azienda è titolare e Carbon Stealth VCC è responsabile del trattamento (art. 28 GDPR): queste condizioni valgono come accordo sul trattamento.\n\nLi trattiamo solo per fornire il servizio, secondo le istruzioni dell’azienda, che sono l’uso del servizio stesso; chi vi accede è tenuto alla riservatezza. Misure di sicurezza: server nell’Unione europea, connessioni cifrate (TLS), password solo come hash, accesso per ruolo dentro l’azienda e separato fra aziende, registro attività.\n\nSub-responsabili: Hetzner Online GmbH (Germania, server) e Brevo (Francia, e-mail di servizio). Un nuovo sub-responsabile è annunciato almeno 30 giorni prima e l’azienda può opporsi disdicendo. Ti aiutiamo a rispondere alle richieste degli interessati e ti avvisiamo senza ingiustificato ritardo di una violazione dei dati che riguardi l’azienda. Alla cessazione, su richiesta del titolare, cancelliamo i dati dell’azienda, salvo quelli da conservare per legge; prima puoi scaricare relazioni, tavole e progetti. Le informazioni che dimostrano il rispetto dell’art. 28 sono disponibili su richiesta a info@carbonstealth.eu.",
     "recipientsTitle": "A chi vengono comunicati?",
-    "recipientsText": "Il server è presso Hetzner Online GmbH (Germania), nell’Unione europea; le e-mail di servizio passano da Brevo (Francia). Nessun altro: non vendiamo dati e non usiamo pubblicità né strumenti di tracciamento.",
+    "recipientsText": "Il server è presso Hetzner Online GmbH (Germania), nell’Unione europea; le e-mail di servizio passano da Brevo (Francia); i pagamenti dell’abbonamento da Stripe Payments Europe Ltd. (Irlanda), che tratta i dati di pagamento secondo la propria informativa sulla privacy, anche per i trasferimenti fuori dall’Unione europea. Nessun altro: non vendiamo dati e non usiamo pubblicità né strumenti di tracciamento.",
     "cookiesTitle": "Quali cookie usa LiftPilot?",
-    "cookiesText": "Solo cookie tecnici: uno httpOnly per la sessione dopo l’accesso (al massimo 12 ore) e uno di sessione (NEXT_LOCALE) che ricorda la lingua scelta quando è diversa da quella del browser. Nessun cookie di analisi, pubblicità o profilazione, per questo non serve un banner di consenso.",
+    "cookiesText": "Solo cookie tecnici: uno httpOnly per la sessione dopo l’accesso (al massimo 12 ore) e uno di sessione (NEXT_LOCALE) che ricorda la lingua scelta quando è diversa da quella del browser. Nessun cookie di analisi, pubblicità o profilazione, per questo non serve un banner di consenso. Il pagamento si fa sulle pagine di Stripe, che usano i propri cookie secondo la loro informativa.",
     "retentionTitle": "Per quanto tempo li conserviamo?",
-    "retentionText": "Account e dati finché l’account esiste; un account mai confermato né usato (una registrazione o un utente aggiunto da un’azienda) viene cancellato dopo {days} giorni. Il registro attività resta finché esiste l’account dell’azienda. Puoi chiedere la cancellazione in qualsiasi momento a info@carbonstealth.eu.",
+    "retentionText": "Account e dati finché l’account esiste; un account mai confermato né usato (una registrazione o un utente aggiunto da un’azienda) viene cancellato dopo {days} giorni. Il registro attività resta finché esiste l’account dell’azienda. I dati dell’abbonamento e le fatture sono conservati per il tempo richiesto dalla normativa fiscale e contabile. Puoi chiedere la cancellazione in qualsiasi momento a info@carbonstealth.eu.",
     "rightsTitle": "Quali sono i tuoi diritti?",
     "rightsText": "Accesso, rettifica, cancellazione, limitazione, portabilità e opposizione (artt. 15–21 GDPR): scrivi a info@carbonstealth.eu. Puoi presentare reclamo all’autorità bulgara per la protezione dei dati (www.cpdp.bg) o al Garante per la protezione dei dati personali (www.garanteprivacy.it). Non prendiamo decisioni automatizzate che ti riguardano (art. 22 GDPR).",
     "serviceTitle": "Che cos’è il servizio?",
-    "serviceText": "LiftPilot è un software di Carbon Stealth VCC per installatori e tecnici di ascensori, a uso professionale: verifica dell’argano geared, progetto del vano, simulazione e tavole. È in validazione: i valori normativi sono in verifica da parte di un ingegnere e il servizio può cambiare.",
+    "serviceText": "LiftPilot è un software di Carbon Stealth VCC per installatori e tecnici di ascensori, riservato a imprese e professionisti, non ai consumatori: verifica e scelta dell’argano geared, progetto del vano, simulazione, tavole, bozze d’ordine e listino dei prezzi. È in validazione: i valori normativi sono in verifica da parte di un ingegnere e il servizio può cambiare.",
     "resultsTitle": "Chi risponde dei risultati?",
-    "resultsText": "Calcoli, tavole e relazioni di LiftPilot sono bozze: diventano documenti solo quando un tecnico abilitato li verifica e li firma, e la responsabilità del progetto resta sua. LiftPilot non sostituisce le norme né il giudizio del tecnico.",
+    "resultsText": "Calcoli, tavole, relazioni, simulazioni, consigli sugli argani, bozze d’ordine e costi di LiftPilot sono strumenti di lavoro e bozze: diventano documenti solo quando un tecnico abilitato li verifica e li firma, e la responsabilità del progetto e delle scelte resta sua. I dati dei costruttori vengono dai loro documenti, con la fonte indicata, e vanno confermati sulla scheda tecnica e sull’offerta prima dell’ordine. LiftPilot non sostituisce le norme, il giudizio del tecnico né le prove in sito.",
     "accountsTitle": "Come funzionano gli account?",
-    "accountsText": "Chi registra l’azienda ne è il titolare: aggiunge i colleghi, ne sceglie i ruoli e risponde degli account della sua azienda. Ognuno tiene segreta la propria password. Possiamo sospendere un account in caso di abuso o di rischio per la sicurezza.",
+    "accountsText": "Chi registra l’azienda ne è il titolare: crea gli account dei colleghi con il ruolo di Progettista, Commerciale o Tecnico, nei posti dell’abbonamento, e risponde degli account e dell’uso del servizio nella sua azienda. Ognuno tiene segreta la propria password. Possiamo sospendere un account in caso di abuso, di mancato pagamento o di rischio per la sicurezza.",
     "lawTitle": "Quale legge si applica?",
-    "lawText": "La legge bulgara; sono competenti i tribunali bulgari. Per domande: info@carbonstealth.eu."
+    "lawText": "Il contratto è regolato dalla legge bulgara; per le controversie sono competenti i tribunali bulgari, salve le norme inderogabili. Per domande: info@carbonstealth.eu.",
+    "subscriptionTitle": "Quanto costa e come si paga?",
+    "subscriptionText": "Il prezzo mensile dell’abbonamento comprende il titolare ed è indicato nella pagina Abbonamento prima del pagamento; i colleghi occupano i posti dei pacchetti, acquistati in aggiunta: 5 posti per il 50 %, 10 posti per l’80 %, posti illimitati per il 100 % del prezzo mensile. L’IVA, quando dovuta, è indicata in fattura.\n\nUna nuova azienda ha un periodo di prova gratuito; finita la prova, senza abbonamento i progetti restano consultabili e scaricabili in sola lettura. L’abbonamento si paga in anticipo tramite Stripe e si rinnova automaticamente a ogni periodo; si disdice in qualsiasi momento da «Pagamento, fatture e disdetta», con effetto alla fine del periodo già pagato, senza rimborso della parte non usata. Un pacchetto più grande è addebitato subito per la parte restante del periodo, uno più piccolo lascia un credito sulle fatture successive; se l’abbonamento finisce o i posti diminuiscono, i colleghi in eccesso sono disattivati a partire dai più recenti.\n\nUn cambiamento del prezzo è comunicato al titolare almeno 30 giorni prima del rinnovo da cui si applica: chi non lo accetta può disdire prima. Se un pagamento non riesce, Stripe lo riprova per un periodo; nel frattempo non si possono aggiungere colleghi e, se non riesce, l’abbonamento termina.",
+    "liabilityTitle": "Quali sono i limiti di responsabilità?",
+    "liabilityText": "Il servizio è fornito con la diligenza professionale, così com’è e come è disponibile: possono esserci interruzioni per manutenzione o guasti e non garantiamo che sia sempre privo di errori.\n\nNei limiti consentiti dalla legge, Carbon Stealth VCC risponde dei danni causati dal servizio solo fino all’importo pagato dall’azienda per l’abbonamento nei 12 mesi precedenti il fatto, e non risponde di danni indiretti, mancato guadagno, perdita di commesse o di dati che l’azienda poteva conservare scaricandoli. Questi limiti non valgono per il dolo e la colpa grave, né negli altri casi in cui la legge non consente di limitare la responsabilità.\n\nL’azienda tiene indenne Carbon Stealth VCC dalle pretese di terzi derivanti dall’uso dei risultati del servizio come documenti senza la verifica e la firma di un tecnico abilitato.",
+    "changesTitle": "Come cambiano queste condizioni?",
+    "changesText": "Le modifiche sono annunciate con almeno 30 giorni di anticipo; il titolare le accetta al primo accesso dopo l’entrata in vigore e, se non le accetta, può disdire l’abbonamento. La versione in vigore e la sua data sono in cima a questa pagina.",
+    "contactTitle": "Come contattarci, anche per segnalazioni?",
+    "contactText": "Carbon Stealth VCC, ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria — info@carbonstealth.eu, in italiano, inglese o bulgaro. È anche il punto di contatto per le autorità e per gli utenti ai sensi degli artt. 11 e 12 del Regolamento (UE) 2022/2065 (DSA) e l’indirizzo per segnalare contenuti illeciti.",
+    "gateTitle": "Condizioni aggiornate",
+    "gateLead": "Le condizioni d’uso e l’informativa sulla privacy sono cambiate il {date} (abbonamento, limiti di responsabilità, trattamento dei dati per conto dell’azienda): per continuare, il titolare dell’azienda le accetta.",
+    "gateSubmit": "Accetto e continuo"
   },
   "mail": {
     "greeting": "Buongiorno,",
@@ -1169,14 +1201,14 @@
     "qty": "Q.tà",
     "price": "Prezzo",
     "amount": "Importo",
-    "total": "Totale indicativo, IVA esclusa",
+    "total": "Totale, IVA esclusa",
     "page": "cat. p. {page}",
     "cut": "tagliata a {mm} mm",
     "short": "più corta della soglia: da verificare",
     "drawing": "su disegno esecutivo",
     "quote": "a preventivo",
     "missing": "{n, plural, one {# staffa} other {# staffe}} delle guide del contrappeso senza un articolo a catalogo: vedi la verifica delle staffe",
-    "note": "Prezzi di listino Panev {year} (catalogo, p. {page}), IVA esclusa, indicativi e salvo variazioni. Due bride N1 per staffa, tasselli e bulloneria non inclusi; le soluzioni su disegno sono quotate a preventivo.",
+    "note": "Prezzi del listino dell’azienda, IVA esclusa (gli articoli Panev partono dal listino Panev {year}, catalogo p. {page}, salvo variazioni). Due bride N1 per staffa, tasselli e bulloneria non inclusi; le soluzioni su disegno sono quotate a preventivo.",
     "k_plateA": "Piastra A",
     "k_bracketB": "Staffa B",
     "k_supportSU": "Supporto universale SU",
@@ -1187,7 +1219,8 @@
     "k_madeSG": "Guida a misura",
     "k_cornerSN": "Staffa d'angolo SN",
     "k_squareSN": "Staffa a squadra SN",
-    "k_arm": "Braccio rigido regolabile"
+    "k_arm": "Braccio rigido regolabile",
+    "noteQty": "Due bride N1 per staffa, tasselli e bulloneria non inclusi; le soluzioni su disegno sono quotate a preventivo."
   },
   "advice": {
     "title": "Argano consigliato dal software",
@@ -1260,5 +1293,186 @@
     "order_none": "Nessun argano SICOR o Montanari a catalogo prende questo impianto: niente bozza d’ordine.",
     "order_docx": "Bozza d’ordine Word (DOCX)",
     "order_pdf": "Bozza d’ordine PDF"
+  },
+  "billing": {
+    "title": "Abbonamento",
+    "lead": "Il prezzo mensile comprende il titolare; i colleghi occupano i posti dei pacchetti, acquistati in aggiunta al prezzo mensile.",
+    "done": "Pagamento completato: l'abbonamento si attiva appena Stripe lo conferma, di solito in pochi secondi. Ricarica la pagina se lo stato non è cambiato.",
+    "changed": "Pacchetto cambiato.",
+    "statusTitle": "Stato",
+    "access": {
+      "free": "Senza fatturazione",
+      "trial": "In prova",
+      "active": "Attivo",
+      "grace": "Pagamento in sospeso",
+      "readonly": "Sola lettura"
+    },
+    "off": "La fatturazione non è attiva su questo server: tutte le funzioni sono disponibili, senza limiti di utenti.",
+    "exempt": "Questa azienda non è soggetta all'abbonamento.",
+    "trial": "Prova gratuita fino al {date} ({days, plural, one {# giorno rimasto} other {# giorni rimasti}}). Durante la prova non si possono aggiungere colleghi.",
+    "renewsOn": "Abbonamento attivo: si rinnova il {date}.",
+    "endsOn": "Abbonamento disdetto: resta attivo fino al {date}, poi i progetti passano in sola lettura.",
+    "activeNoDate": "Abbonamento attivo.",
+    "grace": "Il pagamento non è riuscito e Stripe lo sta riprovando: aggiorna il metodo di pagamento. Nel frattempo non si possono aggiungere colleghi.",
+    "readonly": "Nessun abbonamento attivo: i progetti sono in sola lettura (si possono consultare e scaricare, non modificare).",
+    "seatsUsed": "Colleghi attivi: {used} su {limit} posti.",
+    "subscribeTitle": "Attiva l'abbonamento",
+    "changeTitle": "Cambia il pacchetto di posti",
+    "priceNote": "Prezzo per il titolare: {base}.",
+    "tax": {
+      "exclusive": "Prezzi IVA esclusa.",
+      "inclusive": "Prezzi IVA inclusa.",
+      "unspecified": "Le imposte, se dovute, sono indicate in fattura."
+    },
+    "per1": {
+      "day": "al giorno",
+      "week": "alla settimana",
+      "month": "al mese",
+      "year": "all'anno"
+    },
+    "perPeriod": "ogni {n} {unit}",
+    "unit": {
+      "day": "giorni",
+      "week": "settimane",
+      "month": "mesi",
+      "year": "anni"
+    },
+    "ownerOnly": "Solo il titolare",
+    "seatsN": "Titolare + {n} colleghi",
+    "seatsUnlimited": "Titolare + colleghi senza limite",
+    "pack": {
+      "NONE": "Titolare",
+      "FIVE": "5 posti",
+      "TEN": "10 posti",
+      "UNLIMITED": "Posti illimitati"
+    },
+    "current": "attuale",
+    "packShare": "+{pct} % del prezzo mensile ({amount})",
+    "tooSmall": "Hai {used} colleghi attivi: disattivane alcuni prima di scegliere questo pacchetto.",
+    "changeNote": "Un pacchetto più grande è addebitato subito per la parte restante del periodo; uno più piccolo lascia un credito sulle fatture successive.",
+    "change": "Cambia pacchetto",
+    "accept": "Accetto le <terms>condizioni dell'abbonamento</terms> e confermo di agire come impresa o professionista.",
+    "subscribe": "Vai al pagamento",
+    "portal": "Pagamento, fatture e disdetta",
+    "portalNote": "Si apre il portale sicuro di Stripe.",
+    "termsTitle": "Condizioni in breve",
+    "terms": {
+      "t1": "Il prezzo mensile comprende il titolare; ogni collega attivo occupa un posto di un pacchetto: 5 posti (+50 % del prezzo mensile), 10 posti (+80 %) o posti illimitati (+100 %).",
+      "t2": "L'abbonamento si rinnova automaticamente a ogni periodo finché non viene disdetto; la disdetta si fa in qualsiasi momento da «Pagamento, fatture e disdetta» e ha effetto alla fine del periodo già pagato.",
+      "t3": "Un pacchetto più grande è fatturato subito per la parte restante del periodo; uno più piccolo lascia un credito sulle fatture successive. Per passare a un pacchetto più piccolo disattiva prima i colleghi in eccesso.",
+      "t4": "Senza un abbonamento attivo, dopo la prova i progetti restano consultabili e scaricabili in sola lettura; i colleghi oltre i posti pagati sono disattivati, a partire dai più recenti, e il titolare può riattivarli quando c’è posto.",
+      "t5": "I pagamenti sono gestiti da Stripe: LiftPilot non vede né conserva i dati della carta. Le fatture riportano i dati fiscali inseriti nel pagamento.",
+      "t6": "Il servizio è riservato a imprese e professionisti: non si applica il diritto di recesso previsto per i consumatori. Valgono le condizioni d'uso, compresi i limiti di responsabilità."
+    },
+    "e": {
+      "forbidden": "Solo il titolare gestisce l'abbonamento.",
+      "billingOff": "La fatturazione non è attiva su questo server.",
+      "rateLimited": "Troppi tentativi: riprova tra qualche minuto.",
+      "invalid": "Scegli un pacchetto.",
+      "terms": "Per continuare accetta le condizioni dell'abbonamento.",
+      "subscribed": "L'azienda ha già un abbonamento: cambia il pacchetto qui sotto.",
+      "tooManyMembers": "Il pacchetto scelto ha meno posti dei colleghi attivi: disattivane alcuni dalla pagina Utenti o scegli un pacchetto più grande.",
+      "priceUnavailable": "Il prezzo dell'abbonamento non è disponibile in questo momento: riprova più tardi.",
+      "stripe": "Stripe non ha risposto come previsto: riprova più tardi. Se il problema continua scrivi a info@carbonstealth.eu.",
+      "noSubscription": "Non c'è un abbonamento attivo da cambiare.",
+      "samePack": "È già il pacchetto attuale.",
+      "paymentFailed": "Il pagamento della differenza non è riuscito e il pacchetto non è cambiato: aggiorna il metodo di pagamento e riprova.",
+      "noCustomer": "Non ci sono ancora pagamenti per questa azienda."
+    },
+    "bannerTrial": "Prova gratuita: {days, plural, one {# giorno rimasto} other {# giorni rimasti}}.",
+    "bannerGrace": "Il pagamento dell'abbonamento non è riuscito: Stripe lo sta riprovando.",
+    "bannerReadonly": "Abbonamento non attivo: i progetti sono in sola lettura.",
+    "bannerAction": "Abbonamento",
+    "bannerAskOwner": "Lo gestisce il titolare dell'azienda."
+  },
+  "prices": {
+    "title": "Listino prezzi",
+    "lead": "I prezzi dell’azienda per ogni articolo che il software mette nei progetti, IVA esclusa. Gli articoli Panev partono dal listino Panev 2026; gli altri li inserisci tu. Li vedono solo il titolare e i commerciali.",
+    "leadView": "I prezzi dell’azienda, IVA esclusa: li modifica il titolare.",
+    "scope": "Il costo di un progetto conta gli articoli che il software progetta; non comprende quadro di manovra, impianto elettrico, cavo flessibile, fune del limitatore, opere murarie e manodopera.",
+    "filter": "Cerca un articolo",
+    "save": "Salva i prezzi",
+    "saved": "Prezzi salvati ({n, plural, =0 {nessuna modifica} one {# modifica} other {# modifiche}}).",
+    "invalid": "Prezzi non validi in {n, plural, one {# riga} other {# righe}}: scrivi cifre con al massimo due decimali, per esempio 1.250,50.",
+    "priced": "{n} su {of} con prezzo",
+    "none": "Nessun articolo corrisponde alla ricerca.",
+    "article": "Articolo",
+    "price": "Prezzo",
+    "source": "Origine",
+    "qty": "Quantità",
+    "unitPrice": "Prezzo unitario",
+    "amount": "Importo",
+    "srcOwn": "prezzo dell’azienda",
+    "srcStart": "listino {src}",
+    "perUnit": {
+      "pz": "€/pz",
+      "m": "€/m",
+      "kg": "€/kg"
+    },
+    "unit": {
+      "pz": "pz",
+      "m": "m",
+      "kg": "kg"
+    },
+    "groups": {
+      "machines": "Argani",
+      "bedplates": "Basamenti SICOR con puleggia di rinvio",
+      "supports": "Basamenti e supporti dell’argano",
+      "ropes": "Funi",
+      "rails": "Guide e piastre di giunzione",
+      "brackets": "Staffe delle guide",
+      "panev": "Staffe e supporti Panev",
+      "doors": "Porte",
+      "safety": "Limitatori, tenditori e ammortizzatori",
+      "car": "Cabina, arcata e contrappeso"
+    },
+    "items": {
+      "machine": "Argano {name}",
+      "machine_other": "Argano non di catalogo",
+      "bedplate": "Basamento con puleggia di rinvio {name}",
+      "support_shims": "Spessori di livellamento sotto l’argano",
+      "support_frame": "Telaio dell’argano su due profilati",
+      "support_beams": "Putrelle sotto l’argano",
+      "support_plates": "Piastre d’acciaio sotto l’argano",
+      "support_plinth": "Basamento in calcestruzzo",
+      "support_rinvio": "Basamento con puleggia di rinvio (su misura)",
+      "support_stand": "Puleggia di rinvio sul suo supporto",
+      "rope": "Fune Ø {name} mm",
+      "rail": "Guida {name}",
+      "fishplate": "Piastra di giunzione della guida {name}",
+      "bracket_car": "Staffa della guida di cabina",
+      "bracket_cw": "Staffa della guida di contrappeso (generica)",
+      "panev_plateA": "Panev, piastra {name}",
+      "panev_bracketB": "Panev, staffa {name}",
+      "panev_supportSU": "Panev, supporto universale {name}",
+      "panev_supportSD": "Panev, supporto decentrato {name}",
+      "panev_supportSC": "Panev, supporto scorrevole {name}",
+      "panev_guideSG": "Panev, staffa di giunzione {name}",
+      "panev_madeSC": "Panev, supporto a misura {name}",
+      "panev_madeSG": "Panev, guida a misura {name}",
+      "panev_cornerSN": "Panev, staffa d’angolo {name}",
+      "panev_squareSN": "Panev, staffa a squadra {name}",
+      "panev_arm": "Panev, braccio rigido regolabile {name}",
+      "door_landing_T2": "Porta di piano telescopica a 2 ante",
+      "door_landing_C2": "Porta di piano centrale a 2 ante",
+      "door_car_T2": "Porta di cabina telescopica a 2 ante con operatore",
+      "door_car_C2": "Porta di cabina centrale a 2 ante con operatore",
+      "governor": "Limitatore di velocità {name}",
+      "tension": "Tenditore della fune del limitatore",
+      "buffer_spring": "Ammortizzatore a molla",
+      "buffer_pu": "Tampone in poliuretano",
+      "buffer_oil": "Ammortizzatore idraulico",
+      "car": "Cabina",
+      "sling": "Arcata della cabina",
+      "cw": "Contrappeso completo"
+    },
+    "costTitle": "Costo degli articoli (listino dell’azienda)",
+    "total": "Totale, IVA esclusa",
+    "totalPartial": "Totale degli articoli con prezzo, IVA esclusa",
+    "notListed": "non a listino",
+    "missing": "{n, plural, one {# articolo} other {# articoli}} senza prezzo: il totale non li conta.",
+    "toList": "Completa il listino",
+    "costNoteDesign": "Quantità dal progetto: funi sulle pulegge da attacco ad attacco, guide dal fondo fossa al solaio con una giunzione ogni 5 m, una staffa ogni 2 m più la prima e l’ultima. Non comprende quadro di manovra, impianto elettrico, cavo flessibile, fune del limitatore, opere murarie e manodopera.",
+    "costNoteCalc": "Sostituzione dell’argano: l’argano di catalogo verificato dal calcolo e il basamento con rinvio del costruttore, quando c’è."
   }
 }

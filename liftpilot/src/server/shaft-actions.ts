@@ -21,7 +21,7 @@ const VERDICT = { ok: 'OK', warn: 'WARN', fail: 'FAIL' } as const;
 export async function saveShaftDesignAction(input: { projectId: unknown; inputs: unknown; source: unknown; label: unknown }): Promise<ShaftSaveResult> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
-  if (user.mustChangePassword || !can(user.role, 'calc:create')) return { ok: false, error: 'forbidden' };
+  if (user.mustChangePassword || !can(user, 'calc:create')) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`shaft:${user.id}`, 60, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const projectId = idSchema.safeParse(input.projectId), label = calcLabelSchema.safeParse(input.label ?? '');
   const inputs = shaftInputsSchema.safeParse(input.inputs), source = input.source == null ? null : shaftSourceSchema.safeParse(input.source);

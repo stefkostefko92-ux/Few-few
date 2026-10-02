@@ -9,6 +9,9 @@
 #                             the secrets file once the application is healthy (the account exists by then)
 #   LIFTPILOT_SMTP_USER, LIFTPILOT_SMTP_PASS  Brevo SMTP login and key: registration and forgotten password send e-mail
 #   LIFTPILOT_MAIL_FROM       sender (default "LiftPilot <noreply@carbonstealth.eu>", a sender verified in Brevo)
+#   LIFTPILOT_STRIPE_SECRET_KEY, LIFTPILOT_STRIPE_WEBHOOK_SECRET, LIFTPILOT_STRIPE_PRICE_MONTHLY,
+#   LIFTPILOT_STRIPE_PRODUCT_SEATS  the subscription (all four, or billing stays off); LIFTPILOT_STRIPE_AUTOMATIC_TAX
+#                             (true|false), LIFTPILOT_BILLING_TRIAL_DAYS (default 14)
 #   LIFTPILOT_TLS=0           leave nginx and certbot alone; CERTBOT_EMAIL (default admin@carbonstealth.eu)
 set -euo pipefail
 
@@ -85,6 +88,19 @@ if [ -n "${LIFTPILOT_SMTP_USER:-}" ] && [ -n "${LIFTPILOT_SMTP_PASS:-}" ]; then
 fi
 if [ -z "$(env_get SMTP_HOST)" ] || [ -z "$(env_get SMTP_USER)" ] || [ -z "$(env_get SMTP_PASS)" ]; then
   warn "no mail settings in $ENV_FILE: registration and forgotten password stay closed (give LIFTPILOT_SMTP_USER and LIFTPILOT_SMTP_PASS)"
+fi
+# the subscription: Stripe's values are written only when given; without all four, billing stays off
+for k in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET STRIPE_PRICE_MONTHLY STRIPE_PRODUCT_SEATS; do
+  v="LIFTPILOT_$k"
+  if [ -n "${!v:-}" ]; then env_put_q "$k" "${!v}"; fi
+done
+case "${LIFTPILOT_STRIPE_AUTOMATIC_TAX:-}" in true|false) env_put STRIPE_AUTOMATIC_TAX "$LIFTPILOT_STRIPE_AUTOMATIC_TAX";; '') ;; *) die "LIFTPILOT_STRIPE_AUTOMATIC_TAX: true or false";; esac
+if [ -n "${LIFTPILOT_BILLING_TRIAL_DAYS:-}" ]; then
+  case "$LIFTPILOT_BILLING_TRIAL_DAYS" in *[!0-9]*) die "LIFTPILOT_BILLING_TRIAL_DAYS: whole days";; esac
+  env_put BILLING_TRIAL_DAYS "$LIFTPILOT_BILLING_TRIAL_DAYS"
+fi
+if [ -z "$(env_get STRIPE_SECRET_KEY)" ] || [ -z "$(env_get STRIPE_WEBHOOK_SECRET)" ] || [ -z "$(env_get STRIPE_PRICE_MONTHLY)" ] || [ -z "$(env_get STRIPE_PRODUCT_SEATS)" ]; then
+  warn "no Stripe settings in $ENV_FILE: the subscription stays off and every company works without limits"
 fi
 PORT="$(env_get APP_PORT | tr -dc '0-9' || true)"
 PORT="${PORT:-4320}"

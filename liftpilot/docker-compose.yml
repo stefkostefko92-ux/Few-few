@@ -49,6 +49,13 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       MAIL_FROM: ${MAIL_FROM:-}
+      # the subscription (Stripe): without all four the billing stays off (every company works without limits)
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_MONTHLY: ${STRIPE_PRICE_MONTHLY:-}
+      STRIPE_PRODUCT_SEATS: ${STRIPE_PRODUCT_SEATS:-}
+      STRIPE_AUTOMATIC_TAX: ${STRIPE_AUTOMATIC_TAX:-false}
+      BILLING_TRIAL_DAYS: ${BILLING_TRIAL_DAYS:-14}
       TZ: UTC
     ports:
       - "127.0.0.1:${APP_PORT:-4320}:3000"

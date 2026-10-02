@@ -46,6 +46,8 @@ interface Props {
   onDerived?(inputs: LiftInputs, derived: LiftDerived): void;
   /** changes from outside the form: a dimension of the sheets (the standalone page) */
   api?: Ref<WorkspaceApi>;
+  /** the company's prices [cents by key] for whoever may see them; null: none shown */
+  prices: Readonly<Record<string, number>> | null;
 }
 
 /** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
@@ -68,7 +70,7 @@ export interface WorkspaceApi {
   edit(e: Edit, length: number): Refusal | null;
 }
 
-export default function LiftWorkspace({ projectId, initial, onDerived, api }: Props) {
+export default function LiftWorkspace({ projectId, initial, onDerived, api, prices }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -239,7 +241,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
         <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
         <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
         <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
-        <PanevBom L={derived.layout} fmt={P.fmt} />
+        <PanevBom L={derived.layout} fmt={P.fmt} prices={prices} />
       </div>
       <div className="savebar">
         <div className="inner">

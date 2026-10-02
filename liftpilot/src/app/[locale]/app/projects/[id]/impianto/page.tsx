@@ -23,7 +23,7 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
   if (!p) notFound();
   const [t, tp] = await Promise.all([getTranslations('tavole'), getTranslations('projects')]);
   const plant = plantSchema.safeParse(p.plant ?? {});
-  const readOnly = !can(user.role, 'projects:edit') || p.archivedAt !== null;
+  const readOnly = !can(user, 'projects:edit') || p.archivedAt !== null;
   const cl = p.clientLogo, clientLogo = cl ? `data:${cl.mime};base64,${Buffer.from(cl.data).toString('base64')}` : null;
   return (
     <main className="page">

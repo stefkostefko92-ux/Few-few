@@ -43,7 +43,9 @@
     "verifyWrongPassword": "The password is not correct.",
     "invalidLink": "The link is not valid, has already been used or has expired: ask for a new one.",
     "mailUnavailable": "Sending e-mail is not active yet: try again later or write to info@carbonstealth.eu.",
-    "consentRequired": "To register, tick both confirmations."
+    "consentRequired": "To register, tick both confirmations.",
+    "noSeats": "No free slot: buy a pack of slots or deactivate a colleague.",
+    "invalidPrices": "Some prices are not valid."
   },
   "auth": {
     "title": "Sign in",
@@ -68,14 +70,14 @@
     "logout": "Sign out",
     "menu": "Menu",
     "breadcrumb": "Breadcrumb",
-    "company": "Company"
+    "company": "Company",
+    "billing": "Subscription",
+    "prices": "Price list"
   },
   "roles": {
-    "VIEWER": "Viewer",
+    "ENGINEER": "Design engineer",
+    "SALES": "Sales",
     "TECHNICIAN": "Technician",
-    "ENGINEER": "Engineer",
-    "MANAGER": "Manager",
-    "ADMIN": "Administrator",
     "OWNER": "Owner",
     "SUPERADMIN": "Platform administrator"
   },
@@ -298,7 +300,7 @@
   },
   "team": {
     "title": "Users",
-    "lead": "The users of your company. You can manage only roles below yours.",
+    "lead": "Your company's colleagues: the owner creates their accounts and gives each a role; every active colleague takes a slot of the subscription.",
     "name": "Name",
     "email": "E-mail",
     "role": "Role",
@@ -318,7 +320,15 @@
     "tempPassword": "Temporary password for {email} (shown only once):",
     "tempPasswordNote": "Hand it over in person or through a secure channel. At the first sign-in the user chooses their own password.",
     "confirmNote": "At the first sign-in the new user confirms the address with the link received by e-mail and the temporary password.",
-    "pendingEmail": "must confirm the e-mail"
+    "pendingEmail": "must confirm the e-mail",
+    "seats": "Active colleagues: {used} of {limit} slots.",
+    "buySeats": "Buy or change slots",
+    "noSeats": "No free slot: buy a pack of slots or deactivate a colleague.",
+    "roleNote": {
+      "ENGINEER": "designs and calculates, signs off calculations and archives installations; does not see prices.",
+      "SALES": "views and downloads projects, reports and order drafts and sees prices; changes nothing.",
+      "TECHNICIAN": "designs and calculates; does not sign off, archive or see prices."
+    }
   },
   "admin": {
     "title": "Companies",
@@ -338,7 +348,10 @@
     "city": "Municipality",
     "ownerName": "Owner: name",
     "ownerEmail": "Owner: e-mail",
-    "add": "Create company"
+    "add": "Create company",
+    "billing": "Subscription",
+    "exempt": "Exempt from payment",
+    "bill": "Bill again"
   },
   "norme": {
     "title": "Standards registry",
@@ -396,7 +409,13 @@
       "PROJECT_EXPORTED": "Project exported",
       "CLIENT_LOGO_UPLOADED": "Client logo uploaded",
       "CLIENT_LOGO_REMOVED": "Client logo removed",
-      "ORDER_EXPORTED": "Draft order downloaded"
+      "ORDER_EXPORTED": "Draft order downloaded",
+      "SUBSCRIPTION_CHECKOUT": "Subscription payment started",
+      "SUBSCRIPTION_UPDATED": "Subscription updated by Stripe",
+      "SUBSCRIPTION_PACK_CHANGED": "Pack of slots changed",
+      "SEATS_ENFORCED": "Colleagues beyond the slots deactivated",
+      "PRICES_UPDATED": "Price list updated",
+      "TERMS_ACCEPTED": "Terms accepted"
     },
     "entities": {
       "User": "User",
@@ -1058,7 +1077,8 @@
     "g_esistenti": "Improving the existing lift",
     "g_nazionali": "National obligations",
     "avviso_en81-71": "UNI EN 81-71:2022 is not cited in the OJEU: no presumption of conformity (the 2005+A1:2006 edition gives it).",
-    "avviso_en81-80": "A voluntary choice: no national upgrade obligation appears to be in force."
+    "avviso_en81-80": "A voluntary choice: no national upgrade obligation appears to be in force.",
+    "sim_note": "A simulation with the same forces as the checks, to understand how the installation behaves: it does not replace the tests and checks on site, and the 3D scene is a depiction, not a survey."
   },
   "register": {
     "title": "Register your company",
@@ -1082,7 +1102,8 @@
     "sentText": "We have written to {email}. Open the link in the message and enter the password you chose: that activates the account. The link is valid for {hours, plural, one {one hour} other {# hours}}; if nothing arrives, check the spam folder.",
     "haveAccount": "Already have an account?",
     "login": "Sign in",
-    "closed": "Registration is not active yet: for an account write to info@carbonstealth.eu."
+    "closed": "Registration is not active yet: for an account write to info@carbonstealth.eu.",
+    "clauses": "Under arts. 1341 and 1342 of the Italian Civil Code I specifically approve the clauses of the terms of use on limits of liability and indemnity, automatic renewal, termination and suspension of the subscription and of accounts, changes to the terms, governing law and jurisdiction."
   },
   "verify": {
     "title": "Confirm your e-mail address",
@@ -1122,25 +1143,36 @@
     "controllerTitle": "Who is the data controller?",
     "controllerText": "Carbon Stealth VCC, Company ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria. For privacy questions and to exercise your rights, write to info@carbonstealth.eu.",
     "dataTitle": "What data do we process, and why?",
-    "dataText": "Account: name, e-mail, company name, VAT number and city (if you enter them), password (only as an Argon2id hash), language, date of the last sign-in, confirmation of the address and acceptance of these terms (date and version). They are needed to provide the service (Art. 6(1)(b) GDPR, contract).\n\nActivity log: who in your company did what and when (sign-ins, saved calculations, issued drawings), for security and for the traceability of technical documents (Art. 6(1)(f) GDPR, legitimate interest).\n\nService e-mails: the confirmation of the address and the links for a new password, sent only when you register or ask for them.\n\nSecurity: the IP address is used, in memory only, to limit repeated attempts and the application does not store it; the web server’s technical logs (IP, page, time) are kept for a limited time for security (Art. 6(1)(f) GDPR).",
+    "dataText": "Account: name, e-mail, company name, VAT number and city (if you enter them), password (only as an Argon2id hash), role, language, date of the last sign-in, confirmation of the address and acceptance of these terms (date and version). They are needed to provide the service (art. 6(1)(b) GDPR, contract).\n\nSubscription: the identifiers of the customer and of the subscription at Stripe, its status, the pack of slots and the end of the paid period. You enter the billing data (name, address, VAT number, e-mail) in Stripe’s payment; card data never reach LiftPilot. Basis: the contract and tax obligations (art. 6(1)(b) and (c) GDPR).\n\nActivity log: who in your company did what and when (sign-ins, saved calculations, issued drawing sets, changed prices and subscription), for security and the traceability of technical documents (art. 6(1)(f) GDPR, legitimate interest).\n\nService e-mails: the address confirmation and the links for a new password, sent only when you register or ask for them.\n\nSecurity: the IP address is used, in memory only, to limit repeated attempts, and the application does not store it; the web server’s technical logs (IP, page, time) are kept for a limited period for security (art. 6(1)(f) GDPR).",
     "projectsTitle": "And the data of the installations?",
-    "projectsText": "The installations, calculations and drawings your company enters may contain personal data, for example a client’s name or an installation’s address. We process them on your company’s behalf and only to provide the service (Art. 28 GDPR), never for other purposes.",
+    "projectsText": "The installations, calculations, drawing sets and price list your company enters may contain personal data, for example a client’s name or an installation’s address. For these data the company is the controller and Carbon Stealth VCC the processor (art. 28 GDPR): these terms serve as the data processing agreement.\n\nWe process them only to provide the service, on the company’s instructions, which are its use of the service; whoever accesses them is bound to confidentiality. Security measures: servers in the European Union, encrypted connections (TLS), passwords only as hashes, access by role within the company and separated between companies, activity log.\n\nSub-processors: Hetzner Online GmbH (Germany, servers) and Brevo (France, service e-mails). A new sub-processor is announced at least 30 days in advance and the company may object by cancelling. We help you answer data subjects’ requests and notify you without undue delay of a personal data breach concerning the company. On termination, at the owner’s request, we delete the company’s data, except what must be kept by law; before that you can download reports, drawing sets and projects. The information showing compliance with art. 28 is available on request at info@carbonstealth.eu.",
     "recipientsTitle": "Who receives them?",
-    "recipientsText": "The server is hosted by Hetzner Online GmbH (Germany), in the European Union; the service e-mails go through Brevo (France). Nobody else: we do not sell data and use no advertising or tracking tools.",
+    "recipientsText": "The server is at Hetzner Online GmbH (Germany), in the European Union; service e-mails go through Brevo (France); subscription payments through Stripe Payments Europe Ltd. (Ireland), which processes payment data under its own privacy policy, including for transfers outside the European Union. Nobody else: we do not sell data and use no advertising or tracking tools.",
     "cookiesTitle": "Which cookies does LiftPilot use?",
-    "cookiesText": "Technical cookies only: an httpOnly one for the session after sign-in (12 hours at most) and a session cookie (NEXT_LOCALE) that remembers the chosen language when it differs from the browser’s. No analytics, advertising or profiling cookies, which is why no consent banner is needed.",
+    "cookiesText": "Technical cookies only: an httpOnly one for the session after sign-in (12 hours at most) and a session one (NEXT_LOCALE) that remembers the chosen language when it differs from the browser’s. No analytics, advertising or profiling cookies, so no consent banner is needed. Payment takes place on Stripe’s pages, which use their own cookies under their policy.",
     "retentionTitle": "How long do we keep them?",
-    "retentionText": "The account and its data as long as the account exists; an account that is never confirmed or used (a registration, or a user added by a company) is deleted after {days} days. The activity log stays as long as the company’s account exists. You can ask for deletion at any time at info@carbonstealth.eu.",
+    "retentionText": "Account and data for as long as the account exists; an account never confirmed nor used (a registration or a user added by a company) is deleted after {days} days. The activity log stays as long as the company’s account exists. Subscription data and invoices are kept for the time required by tax and accounting law. You can ask for deletion at any time at info@carbonstealth.eu.",
     "rightsTitle": "What are your rights?",
     "rightsText": "Access, rectification, erasure, restriction, portability and objection (Arts. 15–21 GDPR): write to info@carbonstealth.eu. You can lodge a complaint with the Bulgarian data protection authority (www.cpdp.bg) or with the authority of your country, in Italy the Garante per la protezione dei dati personali (www.garanteprivacy.it). We take no automated decisions about you (Art. 22 GDPR).",
     "serviceTitle": "What is the service?",
-    "serviceText": "LiftPilot is software by Carbon Stealth VCC for lift installers and technicians, for professional use: geared machine check, shaft design, simulation and drawings. It is in validation: an engineer is checking the normative values and the service may change.",
+    "serviceText": "LiftPilot is software by Carbon Stealth VCC for lift installers and technicians, for businesses and professionals only, not for consumers: checking and choosing the geared machine, shaft design, simulation, drawing sets, order drafts and price list. It is under validation: the normative values are being checked by an engineer and the service may change.",
     "resultsTitle": "Who is responsible for the results?",
-    "resultsText": "LiftPilot’s calculations, drawings and reports are drafts: they become documents only when a qualified technician checks and signs them, and the responsibility for the design stays with that technician. LiftPilot replaces neither the standards nor the technician’s judgement.",
+    "resultsText": "LiftPilot’s calculations, drawing sets, reports, simulations, machine advice, order drafts and costs are working tools and drafts: they become documents only when a qualified technician checks and signs them, and the responsibility for the design and the choices remains theirs. The makers’ data come from their documents, with the source stated, and must be confirmed on the data sheet and the offer before ordering. LiftPilot does not replace the standards, the technician’s judgement or the tests on site.",
     "accountsTitle": "How do accounts work?",
-    "accountsText": "Whoever registers the company is its owner: they add colleagues, choose their roles and answer for the accounts of their company. Everyone keeps their own password secret. We may suspend an account in case of abuse or a security risk.",
+    "accountsText": "Whoever registers the company is its owner: they create the colleagues’ accounts with the role of Design engineer, Sales or Technician, within the subscription’s slots, and answer for the accounts and the use of the service in their company. Everyone keeps their password secret. We may suspend an account in case of abuse, non-payment or a security risk.",
     "lawTitle": "Which law applies?",
-    "lawText": "Bulgarian law; the Bulgarian courts have jurisdiction. Questions: info@carbonstealth.eu."
+    "lawText": "The contract is governed by Bulgarian law; the Bulgarian courts have jurisdiction over disputes, without prejudice to mandatory rules. For questions: info@carbonstealth.eu.",
+    "subscriptionTitle": "What does it cost and how is it paid?",
+    "subscriptionText": "The subscription’s monthly price covers the owner and is shown on the Subscription page before payment; colleagues take the slots of the packs, bought on top: 5 slots for 50 %, 10 slots for 80 %, unlimited slots for 100 % of the monthly price. VAT, where due, is shown on the invoice.\n\nA new company has a free trial; after the trial, without a subscription, the projects remain viewable and downloadable, read-only. The subscription is paid in advance through Stripe and renews automatically every period; it can be cancelled at any time from “Payment, invoices and cancellation”, effective at the end of the period already paid, with no refund of the unused part. A larger pack is charged at once for the rest of the period, a smaller one leaves a credit for the next invoices; when the subscription ends or the slots decrease, the colleagues in excess are deactivated, newest first.\n\nA price change is notified to the owner at least 30 days before the renewal it applies from: whoever does not accept it can cancel before then. If a payment fails, Stripe retries it for a period; meanwhile colleagues cannot be added and, if it does not succeed, the subscription ends.",
+    "liabilityTitle": "What are the limits of liability?",
+    "liabilityText": "The service is provided with professional diligence, as is and as available: there may be interruptions for maintenance or faults, and we do not warrant that it is always free of errors.\n\nTo the extent permitted by law, Carbon Stealth VCC is liable for damage caused by the service only up to the amount the company paid for the subscription in the 12 months before the event, and is not liable for indirect damage, lost profit, lost orders or data the company could have kept by downloading it. These limits do not apply to wilful misconduct and gross negligence, nor in the other cases where the law does not allow liability to be limited.\n\nThe company holds Carbon Stealth VCC harmless from third-party claims arising from the use of the service’s results as documents without the check and signature of a qualified technician.",
+    "changesTitle": "How do these terms change?",
+    "changesText": "Changes are announced at least 30 days in advance; the owner accepts them at the first sign-in after they take effect and, if they do not accept them, can cancel the subscription. The version in force and its date are at the top of this page.",
+    "contactTitle": "How to contact us, including for reports?",
+    "contactText": "Carbon Stealth VCC, Company ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria — info@carbonstealth.eu, in Italian, English or Bulgarian. It is also the point of contact for authorities and users under arts. 11 and 12 of Regulation (EU) 2022/2065 (DSA) and the address to report illegal content.",
+    "gateTitle": "Updated terms",
+    "gateLead": "The terms of use and the privacy notice changed on {date} (subscription, limits of liability, processing of data on the company’s behalf): to continue, the company’s owner accepts them.",
+    "gateSubmit": "Accept and continue"
   },
   "mail": {
     "greeting": "Hello,",
@@ -1169,14 +1201,14 @@
     "qty": "Qty",
     "price": "Price",
     "amount": "Amount",
-    "total": "Indicative total, VAT excluded",
+    "total": "Total, VAT excluded",
     "page": "cat. p. {page}",
     "cut": "cut to {mm} mm",
     "short": "shorter than the sill: to be checked",
     "drawing": "to the site drawing",
     "quote": "quoted to order",
     "missing": "{n, plural, one {# counterweight rail bracket} other {# counterweight rail brackets}} with no catalogue article: see the bracket check",
-    "note": "Panev {year} list prices (catalogue, p. {page}), VAT excluded, indicative and subject to change. Two N1 clips per bracket, anchors and bolts not included; solutions to drawing are quoted to order.",
+    "note": "Prices from the company’s list, VAT excluded (Panev’s articles start from Panev’s {year} list, catalogue p. {page}, subject to change). Two N1 clips per bracket, anchors and bolts not included; the solutions to drawing are quoted to order.",
     "k_plateA": "Plate A",
     "k_bracketB": "Bracket B",
     "k_supportSU": "Universal support SU",
@@ -1187,7 +1219,8 @@
     "k_madeSG": "Made-to-measure guide",
     "k_cornerSN": "Corner bracket SN",
     "k_squareSN": "Square bracket SN",
-    "k_arm": "Adjustable rigid arm"
+    "k_arm": "Adjustable rigid arm",
+    "noteQty": "Two N1 clips per bracket, anchors and bolts not included; the solutions to drawing are quoted to order."
   },
   "advice": {
     "title": "Machine the software advises",
@@ -1260,5 +1293,186 @@
     "order_none": "No SICOR or Montanari catalogue machine takes this installation: no draft order.",
     "order_docx": "Draft order, Word (DOCX)",
     "order_pdf": "Draft order, PDF"
+  },
+  "billing": {
+    "title": "Subscription",
+    "lead": "The monthly price covers the owner; colleagues take the slots of the packs, bought on top of the monthly price.",
+    "done": "Payment completed: the subscription starts as soon as Stripe confirms it, usually within seconds. Reload the page if the status has not changed.",
+    "changed": "Pack changed.",
+    "statusTitle": "Status",
+    "access": {
+      "free": "No billing",
+      "trial": "Trial",
+      "active": "Active",
+      "grace": "Payment pending",
+      "readonly": "Read-only"
+    },
+    "off": "Billing is not enabled on this server: every feature is available, with no limit on users.",
+    "exempt": "This company is not subject to the subscription.",
+    "trial": "Free trial until {date} ({days, plural, one {# day left} other {# days left}}). Colleagues cannot be added during the trial.",
+    "renewsOn": "Subscription active: it renews on {date}.",
+    "endsOn": "Subscription cancelled: it stays active until {date}, then the projects become read-only.",
+    "activeNoDate": "Subscription active.",
+    "grace": "The payment failed and Stripe is retrying it: update the payment method. Colleagues cannot be added meanwhile.",
+    "readonly": "No active subscription: the projects are read-only (they can be viewed and downloaded, not changed).",
+    "seatsUsed": "Active colleagues: {used} of {limit} slots.",
+    "subscribeTitle": "Start the subscription",
+    "changeTitle": "Change the pack of slots",
+    "priceNote": "Price for the owner: {base}.",
+    "tax": {
+      "exclusive": "Prices exclude VAT.",
+      "inclusive": "Prices include VAT.",
+      "unspecified": "Taxes, where due, are shown on the invoice."
+    },
+    "per1": {
+      "day": "per day",
+      "week": "per week",
+      "month": "per month",
+      "year": "per year"
+    },
+    "perPeriod": "every {n} {unit}",
+    "unit": {
+      "day": "days",
+      "week": "weeks",
+      "month": "months",
+      "year": "years"
+    },
+    "ownerOnly": "Owner only",
+    "seatsN": "Owner + {n} colleagues",
+    "seatsUnlimited": "Owner + unlimited colleagues",
+    "pack": {
+      "NONE": "Owner",
+      "FIVE": "5 slots",
+      "TEN": "10 slots",
+      "UNLIMITED": "Unlimited slots"
+    },
+    "current": "current",
+    "packShare": "+{pct} % of the monthly price ({amount})",
+    "tooSmall": "You have {used} active colleagues: deactivate some before choosing this pack.",
+    "changeNote": "A larger pack is charged at once for the rest of the period; a smaller one leaves a credit for the next invoices.",
+    "change": "Change pack",
+    "accept": "I accept the <terms>subscription terms</terms> and confirm that I act as a business or a professional.",
+    "subscribe": "Go to payment",
+    "portal": "Payment, invoices and cancellation",
+    "portalNote": "Opens Stripe's secure portal.",
+    "termsTitle": "Terms in short",
+    "terms": {
+      "t1": "The monthly price covers the owner; each active colleague takes a slot of a pack: 5 slots (+50 % of the monthly price), 10 slots (+80 %) or unlimited slots (+100 %).",
+      "t2": "The subscription renews automatically every period until cancelled; you can cancel at any time from “Payment, invoices and cancellation”, effective at the end of the period already paid.",
+      "t3": "A larger pack is invoiced at once for the rest of the period; a smaller one leaves a credit for the next invoices. To move to a smaller pack, first deactivate the colleagues in excess.",
+      "t4": "Without an active subscription, after the trial the projects stay viewable and downloadable, read-only; colleagues beyond the paid slots are deactivated, newest first, and the owner can reactivate them when there is room.",
+      "t5": "Payments are handled by Stripe: LiftPilot neither sees nor stores card data. Invoices carry the tax details entered at payment.",
+      "t6": "The service is for businesses and professionals only: the consumer right of withdrawal does not apply. The terms of use apply, including the limits of liability."
+    },
+    "e": {
+      "forbidden": "Only the owner manages the subscription.",
+      "billingOff": "Billing is not enabled on this server.",
+      "rateLimited": "Too many attempts: try again in a few minutes.",
+      "invalid": "Choose a pack.",
+      "terms": "Accept the subscription terms to continue.",
+      "subscribed": "The company already has a subscription: change the pack below.",
+      "tooManyMembers": "The chosen pack has fewer slots than the active colleagues: deactivate some on the Users page or choose a larger pack.",
+      "priceUnavailable": "The subscription price is not available right now: try again later.",
+      "stripe": "Stripe did not answer as expected: try again later. If the problem persists, write to info@carbonstealth.eu.",
+      "noSubscription": "There is no active subscription to change.",
+      "samePack": "This is already the current pack.",
+      "paymentFailed": "The payment of the difference failed and the pack did not change: update the payment method and try again.",
+      "noCustomer": "There are no payments for this company yet."
+    },
+    "bannerTrial": "Free trial: {days, plural, one {# day left} other {# days left}}.",
+    "bannerGrace": "The subscription payment failed: Stripe is retrying it.",
+    "bannerReadonly": "Subscription not active: the projects are read-only.",
+    "bannerAction": "Subscription",
+    "bannerAskOwner": "The company's owner manages it."
+  },
+  "prices": {
+    "title": "Price list",
+    "lead": "The company’s prices of every article the software puts in projects, VAT excluded. Panev’s articles start from Panev’s 2026 list; you enter the others. Only the owner and the sales staff see them.",
+    "leadView": "The company’s prices, VAT excluded: the owner changes them.",
+    "scope": "A project’s cost counts the articles the software designs; it leaves out the controller, wiring, travelling cable, governor rope, building works and labour.",
+    "filter": "Search an article",
+    "save": "Save prices",
+    "saved": "Prices saved ({n, plural, =0 {no change} one {# change} other {# changes}}).",
+    "invalid": "Invalid prices in {n, plural, one {# row} other {# rows}}: write digits with at most two decimals, for example 1,250.50.",
+    "priced": "{n} of {of} priced",
+    "none": "No article matches the search.",
+    "article": "Article",
+    "price": "Price",
+    "source": "Source",
+    "qty": "Quantity",
+    "unitPrice": "Unit price",
+    "amount": "Amount",
+    "srcOwn": "the company’s price",
+    "srcStart": "list {src}",
+    "perUnit": {
+      "pz": "€/pc",
+      "m": "€/m",
+      "kg": "€/kg"
+    },
+    "unit": {
+      "pz": "pc",
+      "m": "m",
+      "kg": "kg"
+    },
+    "groups": {
+      "machines": "Machines",
+      "bedplates": "SICOR bedplates with diverting pulley",
+      "supports": "Machine bedplates and supports",
+      "ropes": "Ropes",
+      "rails": "Rails and fishplates",
+      "brackets": "Rail brackets",
+      "panev": "Panev brackets and supports",
+      "doors": "Doors",
+      "safety": "Governors, tension pulleys and buffers",
+      "car": "Car, sling and counterweight"
+    },
+    "items": {
+      "machine": "Machine {name}",
+      "machine_other": "Machine not in a catalogue",
+      "bedplate": "Bedplate with diverting pulley {name}",
+      "support_shims": "Levelling shims under the machine",
+      "support_frame": "Machine frame on two sections",
+      "support_beams": "Beams under the machine",
+      "support_plates": "Steel plates under the machine",
+      "support_plinth": "Concrete plinth",
+      "support_rinvio": "Bedplate with diverting pulley (made to measure)",
+      "support_stand": "Diverting pulley on its stand",
+      "rope": "Rope Ø {name} mm",
+      "rail": "Rail {name}",
+      "fishplate": "Fishplate of rail {name}",
+      "bracket_car": "Car rail bracket",
+      "bracket_cw": "Counterweight rail bracket (generic)",
+      "panev_plateA": "Panev, plate {name}",
+      "panev_bracketB": "Panev, bracket {name}",
+      "panev_supportSU": "Panev, universal support {name}",
+      "panev_supportSD": "Panev, offset support {name}",
+      "panev_supportSC": "Panev, sliding support {name}",
+      "panev_guideSG": "Panev, joining bracket {name}",
+      "panev_madeSC": "Panev, made-to-measure support {name}",
+      "panev_madeSG": "Panev, made-to-measure guide {name}",
+      "panev_cornerSN": "Panev, corner bracket {name}",
+      "panev_squareSN": "Panev, square bracket {name}",
+      "panev_arm": "Panev, adjustable rigid arm {name}",
+      "door_landing_T2": "Landing door, 2-panel telescopic",
+      "door_landing_C2": "Landing door, 2-panel centre opening",
+      "door_car_T2": "Car door, 2-panel telescopic, with operator",
+      "door_car_C2": "Car door, 2-panel centre opening, with operator",
+      "governor": "Overspeed governor {name}",
+      "tension": "Governor rope tension pulley",
+      "buffer_spring": "Spring buffer",
+      "buffer_pu": "Polyurethane buffer",
+      "buffer_oil": "Hydraulic buffer",
+      "car": "Car",
+      "sling": "Car sling",
+      "cw": "Complete counterweight"
+    },
+    "costTitle": "Cost of the articles (company price list)",
+    "total": "Total, VAT excluded",
+    "totalPartial": "Total of the priced articles, VAT excluded",
+    "notListed": "not in the list",
+    "missing": "{n, plural, one {# article} other {# articles}} without a price: the total leaves them out.",
+    "toList": "Complete the price list",
+    "costNoteDesign": "Quantities from the design: ropes on the pulleys from hitch to hitch, rails from the pit floor to the slab with a joint every 5 m, a bracket every 2 m plus the first and the last. It leaves out the controller, wiring, travelling cable, governor rope, building works and labour.",
+    "costNoteCalc": "Machine replacement: the catalogue machine the calculation verified and the maker’s bedplate with the diverting pulley, when there is one."
   }
 }

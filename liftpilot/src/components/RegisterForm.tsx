@@ -15,7 +15,7 @@ export default function RegisterForm() {
   const t = useTranslations('register'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(registerAction, initialFormState);
   const [v, setV] = useState<Record<Text, string>>({ company: '', vatNumber: '', city: '', name: '', email: '' });
-  const [agreed, setAgreed] = useState({ privacy: false, terms: false });
+  const [agreed, setAgreed] = useState({ privacy: false, terms: false, clauses: false });
   const bad = (f: string): true | undefined => (state.fields?.includes(f) ? true : undefined);
   if (state.ok) {
     return (
@@ -65,6 +65,10 @@ export default function RegisterForm() {
       <label className="check consent">
         <input type="checkbox" name="terms" checked={agreed.terms} onChange={(e) => setAgreed({ ...agreed, terms: e.target.checked })} aria-invalid={bad('terms')} />
         <span>{t('terms')}</span>
+      </label>
+      <label className="check consent">
+        <input type="checkbox" name="clauses" checked={agreed.clauses} onChange={(e) => setAgreed({ ...agreed, clauses: e.target.checked })} aria-invalid={bad('clauses')} />
+        <span>{t('clauses')}</span>
       </label>
       <div><button type="submit" className="btn btn-primary" disabled={pending}>{pending ? t('submitting') : t('submit')}</button></div>
       <p className="note">{t('haveAccount')} <Link href="/login">{t('login')}</Link></p>

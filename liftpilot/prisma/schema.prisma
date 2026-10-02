@@ -12,14 +12,22 @@ datasource db {
 }
 
 /// Seven levels, strictly ordered: a higher level includes the lower ones (src/lib/rbac.ts).
+/// The company's owner, the colleagues with one of three roles (Progettista, Commerciale, Tecnico: src/lib/rbac.ts),
+/// the platform's administrator.
 enum Role {
-  VIEWER
+  SALES
   TECHNICIAN
   ENGINEER
-  MANAGER
-  ADMIN
   OWNER
   SUPERADMIN
+}
+
+/// The slots for colleagues bought on top of the monthly subscription (src/lib/billing.ts): none, 5, 10, unlimited.
+enum SeatPack {
+  NONE
+  FIVE
+  TEN
+  UNLIMITED
 }
 
 enum Verdict {
@@ -29,26 +37,39 @@ enum Verdict {
 }
 
 model Company {
-  id              String           @id @default(cuid())
-  name            String
-  vatNumber       String?
-  city            String?
-  active          Boolean          @default(true)
+  id                   String           @id @default(cuid())
+  name                 String
+  vatNumber            String?
+  city                 String?
+  active               Boolean          @default(true)
   /// the logo in the title block of the drawing sets (one of the company's logos; null = the name in letters)
-  logoId          String?          @unique
-  logo            CompanyLogo?     @relation("CurrentLogo", fields: [logoId], references: [id], onDelete: SetNull)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  users           User[]
-  projects        Project[]
-  calculations    Calculation[]
-  shaftDesigns    ShaftDesign[]
-  auditLogs       AuditLog[]
-  logos           CompanyLogo[]    @relation("CompanyLogos")
-  clientLogos     ClientLogo[]
-  drawingSets     DrawingSet[]
-  drawingCounters DrawingCounter[]
-  liftDesigns     LiftDesign[]
+  logoId               String?          @unique
+  logo                 CompanyLogo?     @relation("CurrentLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  /// the subscription (Stripe): the customer and the subscription, their state as Stripe last gave it (webhook or API
+  /// with the server's key), the slots for colleagues it pays, the end of the paid period; the trial's end (null: not
+  /// started — it starts at the company's first sign-in with billing on)
+  stripeCustomerId     String?          @unique
+  stripeSubscriptionId String?          @unique
+  subscriptionStatus   String?
+  seatPack             SeatPack         @default(NONE)
+  periodEnd            DateTime?
+  cancelAtPeriodEnd    Boolean          @default(false)
+  trialEndsAt          DateTime?
+  /// the platform's own company: never billed
+  billingExempt        Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  users                User[]
+  priceItems           PriceItem[]
+  projects             Project[]
+  calculations         Calculation[]
+  shaftDesigns         ShaftDesign[]
+  auditLogs            AuditLog[]
+  logos                CompanyLogo[]    @relation("CompanyLogos")
+  clientLogos          ClientLogo[]
+  drawingSets          DrawingSet[]
+  drawingCounters      DrawingCounter[]
+  liftDesigns          LiftDesign[]
 }
 
 /// A logo uploaded by a company, immutable: a drawing set keeps the one it was issued with. PNG or JPEG, checked by
@@ -377,4 +398,28 @@ model AuditLog {
 
   @@index([companyId, createdAt])
   @@index([userId])
+}
+
+/// A Stripe event already processed: the webhook acts on each one once (Stripe delivers at least once).
+model StripeEvent {
+  id        String   @id
+  type      String
+  createdAt DateTime @default(now())
+}
+
+/// The company's price list: its own price of each article of the catalogues (machines, bedplates, Panev's articles,
+/// doors, governors, ropes and rails by the metre, buffers), in euro cents without VAT. Seen by the owner and the
+/// Commerciale, set by the owner; Panev's articles show Panev's list price until the company sets its own.
+model PriceItem {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  /// the article (src/lib/prices/catalog.ts): "machine:SICOR SH140", "panev:SU 220 160", "rope:10"…
+  key         String
+  cents       Int
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  @@unique([companyId, key])
+  @@index([companyId])
 }

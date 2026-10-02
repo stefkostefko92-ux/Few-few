@@ -21,7 +21,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   try {
     const user = await getSessionUser();
     if (!user || user.mustChangePassword) return text(401, 'Unauthorized');
-    if (!can(user.role, 'report:download')) return text(403, 'Forbidden');
+    if (!can(user, 'report:download')) return text(403, 'Forbidden');
     if (!rateLimit(`dxf:${user.id}`, 60, 10 * 60 * 1000)) return text(429, 'Too many requests');
     const id = idSchema.safeParse((await params).id);
     if (!id.success) return text(404, 'Not found');

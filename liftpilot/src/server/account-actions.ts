@@ -39,7 +39,7 @@ export async function registerAction(_prev: FormState, fd: FormData): Promise<Fo
   if (!rateLimit(`register-ip:${await clientIp()}`, 5, HOUR)) return { error: 'rateLimited' };
   const parsed = registerSchema.safeParse({
     company: str(fd, 'company'), vatNumber: str(fd, 'vatNumber'), city: str(fd, 'city'), name: str(fd, 'name'), email: str(fd, 'email'),
-    password: str(fd, 'password'), confirm: str(fd, 'confirm'), privacy: str(fd, 'privacy'), terms: str(fd, 'terms'),
+    password: str(fd, 'password'), confirm: str(fd, 'confirm'), privacy: str(fd, 'privacy'), terms: str(fd, 'terms'), clauses: str(fd, 'clauses'),
   });
   if (!parsed.success) return formError(parsed.error.issues);
   const d = parsed.data;

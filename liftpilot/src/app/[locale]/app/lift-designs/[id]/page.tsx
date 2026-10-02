@@ -11,6 +11,10 @@ import { designMachine, designOrder } from '@/lib/order/machine';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { getLiftDesign } from '@/server/queries';
+import { visiblePrices } from '@/server/prices';
+import { designBom } from '@/lib/prices/bom';
+import { costOf } from '@/lib/prices/cost';
+import ProjectCost from '@/components/prices/ProjectCost';
 import LiftView from '@/components/lift/LiftView';
 import AdviceView from '@/components/lift/AdviceView';
 import IssueForm from '@/components/tavole/IssueForm';
@@ -37,12 +41,14 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
   const fd = dateFormat(locale);
   // the running engines give the same records? (else the documents are refused: a new save is needed)
   const r = liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256), same = r?.same ?? false, dv = r?.dv ?? null;
-  const editable = can(user.role, 'calc:create') && !d.project.archivedAt;
+  const editable = can(user, 'calc:create') && !d.project.archivedAt;
   // the advice among SICOR and Montanari for the saved inputs, and the machine of the draft order: the one the design
   // verified, or the advice's first
   const advice = r ? liftAdvice(r.inputs) : null, alt = r && advice ? liftAlternative(r.inputs, advice) : null;
   const own = dv ? designMachine(dv) : null, fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const order = same && r && advice && can(user.role, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
+  const order = same && r && advice && can(user, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
+  // the cost of its articles with the company's prices: only for whoever sees prices
+  const prices = await visiblePrices(user), cost = prices && dv ? costOf(designBom(dv), new Map(Object.entries(prices))) : null;
   return (
     <main className="page page-wide">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.project.id}`, label: d.project.name }, { label: t('designTitle') }]} />
@@ -56,7 +62,8 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
         </div>
       </div>
       {!same ? <p className="alert alert-warn" role="status">{t('engineChanged')}</p> : null}
-      {r ? <LiftView inputs={r.inputs} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
+      {r ? <LiftView inputs={r.inputs} prices={prices} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
+      {cost ? <ProjectCost cost={cost} locale={locale} scope="design" editable={can(user, 'prices:edit')} /> : null}
       {advice ? (
         <AdviceView advice={advice} alt={alt && dv ? { advice: alt, sheave: dv.machine.D } : null} fmt={fmt} where="design"
           inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model && own.I.layout === c.I.layout} />
@@ -66,13 +73,13 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
         <p className="note">{t('docs_lead')}</p>
         {same ? (
           <div className="doc-links">
-            {can(user.role, 'report:download') ? <a className="btn" href={`/api/calculations/${d.calculation.id}/relazione`}>{t('doc_relazione')}</a> : null}
-            {can(user.role, 'report:download') ? <a className="btn" href={`/api/shaft-designs/${d.shaftDesign.id}/dxf`}>{t('doc_dxf')}</a> : null}
+            {can(user, 'report:download') ? <a className="btn" href={`/api/calculations/${d.calculation.id}/relazione`}>{t('doc_relazione')}</a> : null}
+            {can(user, 'report:download') ? <a className="btn" href={`/api/shaft-designs/${d.shaftDesign.id}/dxf`}>{t('doc_dxf')}</a> : null}
             <Link className="btn" href={`/app/calculations/${d.calculation.id}`}>{t('doc_calc')}</Link>
             <Link className="btn" href={`/app/shaft-designs/${d.shaftDesign.id}`}>{t('doc_shaft')}</Link>
           </div>
         ) : <p className="note">{t('docs_refused')}</p>}
-        {same && can(user.role, 'report:download') ? (
+        {same && can(user, 'report:download') ? (
           <div className="panel">
             <h3>{t('doc_export')}</h3>
             <p className="note">{t('export_lead')}</p>
@@ -83,7 +90,7 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
             </div>
           </div>
         ) : null}
-        {same && can(user.role, 'report:download') ? (
+        {same && can(user, 'report:download') ? (
           <div className="panel">
             <h3>{ta('order_title')}</h3>
             <p className="note">{ta('order_lead')}</p>

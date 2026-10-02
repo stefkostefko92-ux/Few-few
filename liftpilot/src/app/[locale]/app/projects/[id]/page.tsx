@@ -6,6 +6,7 @@ import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { getProject, latestLiftDesign, listCalculations, listDrawingSets, listLiftDesigns, listShaftDesigns } from '@/server/queries';
 import { liftInputsSchema } from '@/lib/lift-input';
+import { visiblePrices } from '@/server/prices';
 import LiftView from '@/components/lift/LiftView';
 import { setProjectArchivedAction, upgradeProjectAction } from '@/server/project-actions';
 import VerdictPill from '@/components/VerdictPill';
@@ -28,7 +29,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const latestInputs = latest ? liftInputsSchema.safeParse(latest.inputs) : null;
   const fd = dateFormat(locale);
   const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
-  const editable = can(user.role, 'projects:edit') && !p.archivedAt;
+  const editable = can(user, 'projects:edit') && !p.archivedAt;
   // a machine replacement shows its calculations and the way to a whole project; a whole project its one form first
   const replacement = p.kind === 'REPLACEMENT';
   return (
@@ -46,7 +47,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
             ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/calc`}>{calcs.length ? tc('new') : t('startReplacement')}</Link>
             : <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{latest ? tl('edit') : tl('start')}</Link>) : null}
           {editable ? <Link className="btn" href={`/app/projects/${p.id}/edit`}>{t('edit')}</Link> : null}
-          {can(user.role, 'projects:archive') ? (
+          {can(user, 'projects:archive') ? (
             <form action={setProjectArchivedAction}>
               <input type="hidden" name="locale" value={lang} />
               <input type="hidden" name="id" value={p.id} />
@@ -72,7 +73,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
             <h2>{tl('homeTitle')}</h2>
             {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
           </div>
-          {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} /> : (
+          {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} prices={await visiblePrices(user)} /> : (
             <div className="panel items-start">
               <p>{tl('homeEmpty')}</p>
               {editable ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{tl('start')}</Link> : null}

@@ -37,7 +37,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   const sheet = doc?.pages[page - 1];
   const history = await listRevisions(user, s.year, s.seq);
   const revs = revisionsSchema.safeParse(s.revisions);
-  const editable = can(user.role, 'calc:create') && !s.project.archivedAt;
+  const editable = can(user, 'calc:create') && !s.project.archivedAt;
   // only a calculation made from a shaft design gives a drawing set
   const calcs = editable ? (await listCalculations(user, s.projectId)).filter((c) => c.shaftDesignId).map((c) => ({ id: c.id, label: `${fd.dateTime(c.createdAt)}${c.label ? ` · ${c.label}` : ''} · ${c.summary}` })) : [];
   return (
@@ -49,7 +49,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
           <p className="lead">{t('issuedBy', { date: fd.dateTime(s.createdAt), name: s.user?.name ?? s.authorInitials })} · {t('pages', { n: s.pages })}</p>
         </div>
         <div className="actions">
-          {doc && can(user.role, 'report:download') ? <a className="btn btn-primary" href={`/api/drawing-sets/${s.id}/pdf`}>{t('download')}</a> : null}
+          {doc && can(user, 'report:download') ? <a className="btn btn-primary" href={`/api/drawing-sets/${s.id}/pdf`}>{t('download')}</a> : null}
           <Link className="btn" href={`/app/calculations/${s.calculationId}`}>{tc('viewTitle')}</Link>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { idSchema } from '@/lib/schemas';
 import { getProject } from '@/server/queries';
+import { visiblePrices } from '@/server/prices';
 import { liftStart } from '@/server/lift-start';
 import LiftWorkspace from '@/components/lift/LiftWorkspace';
 import Crumbs from '@/components/Crumbs';
@@ -32,7 +33,7 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
           <p className="lead">{t('workLead')}</p>
         </div>
       </div>
-      <LiftWorkspace projectId={p.id} initial={initial} />
+      <LiftWorkspace projectId={p.id} initial={initial} prices={await visiblePrices(user)} />
     </main>
   );
 }

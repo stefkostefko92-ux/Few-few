@@ -2,7 +2,7 @@ import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { dateFormat } from '@/lib/dates';
 import { listCompanies } from '@/server/queries';
-import { setCompanyActiveAction } from '@/server/user-actions';
+import { setCompanyActiveAction, setCompanyExemptAction } from '@/server/user-actions';
 import CreateCompanyForm from '@/components/CreateCompanyForm';
 
 export async function generateMetadata() {
@@ -14,7 +14,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const me = await requireCapability(locale, 'platform:admin');
-  const [t, companies, lang] = await Promise.all([getTranslations('admin'), listCompanies(), getLocale()]);
+  const [t, tb, companies, lang] = await Promise.all([getTranslations('admin'), getTranslations('billing'), listCompanies(), getLocale()]);
   const fd = dateFormat(locale);
   return (
     <main className="page">
@@ -26,7 +26,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
       </div>
       <div className="table-panel">
         <table className="data-table stack">
-          <thead><tr><th>{t('company')}</th><th>{t('created')}</th><th className="text-right">{t('users')}</th><th className="text-right">{t('projects')}</th><th className="text-right">{t('calculations')}</th><th>{t('status')}</th></tr></thead>
+          <thead><tr><th>{t('company')}</th><th>{t('created')}</th><th className="text-right">{t('users')}</th><th className="text-right">{t('projects')}</th><th className="text-right">{t('calculations')}</th><th>{t('billing')}</th><th>{t('status')}</th></tr></thead>
           <tbody>
             {companies.map((c) => (
               <tr key={c.id}>
@@ -35,6 +35,19 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
                 <td data-label={t('users')} className="num text-right">{c._count.users}</td>
                 <td data-label={t('projects')} className="num text-right">{c._count.projects}</td>
                 <td data-label={t('calculations')} className="num text-right">{c._count.calculations}</td>
+                <td data-label={t('billing')}>
+                  <div className="cell-stack">
+                    <span className="note">{tb(`access.${c.access}`)}{c.seatPack !== 'NONE' ? ` · ${tb(`pack.${c.seatPack}`)}` : ''}</span>
+                    {c.id === me.companyId ? null : (
+                      <form action={setCompanyExemptAction}>
+                        <input type="hidden" name="locale" value={lang} />
+                        <input type="hidden" name="id" value={c.id} />
+                        <input type="hidden" name="exempt" value={c.billingExempt ? '0' : '1'} />
+                        <button type="submit" className="btn btn-sm">{c.billingExempt ? t('bill') : t('exempt')}</button>
+                      </form>
+                    )}
+                  </div>
+                </td>
                 <td data-label={t('status')}>
                   {c.id === me.companyId ? <span className="status-pill ok">{t('active')}</span> : (
                     <form action={setCompanyActiveAction} className="flex items-center gap-2">

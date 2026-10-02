@@ -18,7 +18,11 @@ import { calcOrder, designOrder } from '@/lib/order/machine';
 import { renderPdf, renderPictures } from '@/lib/report/render';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { verifyStored } from '@/lib/snapshot-hash';
+import { can } from '@/lib/rbac';
+import { bedplateKey, machineKey } from '@/lib/prices/articles';
+import type { OrderMachine } from '@/lib/order/machine';
 import { getCalculation, getCompanyLetterhead, getLiftDesign } from './queries';
+import { companyPrices } from './prices';
 
 export const ORDER_FORMATS = ['docx', 'pdf'] as const;
 export type OrderFormat = (typeof ORDER_FORMATS)[number];
@@ -51,6 +55,13 @@ async function letterhead(user: SessionUser): Promise<Pick<OrderInput, 'company'
   return { company: c?.name ?? user.companyName, companyCity: c?.city ?? null, logo };
 }
 
+/** The company's prices of the ordered machine and bedplate, for a downloader who sees prices (else none: blank). */
+async function orderPrices(user: SessionUser, order: OrderMachine): Promise<Pick<OrderInput, 'prices'>> {
+  if (!can(user, 'prices:view')) return {};
+  const p = await companyPrices(user.companyId), m = order.machine;
+  return { prices: { machine: p.get(machineKey(m.brand, m.model)) ?? null, bedplate: m.bedplate ? p.get(bedplateKey(m.bedplate.code)) ?? null : null } };
+}
+
 /** The order of a saved lift design. */
 export async function exportDesignOrder(user: SessionUser, id: string, format: OrderFormat): Promise<OrderExport> {
   const d = await getLiftDesign(user, id), r = d ? liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256) : null;
@@ -61,7 +72,7 @@ export async function exportDesignOrder(user: SessionUser, id: string, format: O
   const project = await prisma.project.findFirst({ where: { id: d.project.id, companyId: user.companyId }, select: PROJECT });
   if (!project) return { ok: false, error: 'notFound' };
   return render({
-    ...await letterhead(user), author: user.name, project, order, collaudo: dv.collaudo, pEstimate: dv.origin.P === 'estimate', generatedAt: new Date(),
+    ...await letterhead(user), ...await orderPrices(user, order), author: user.name, project, order, collaudo: dv.collaudo, pEstimate: dv.origin.P === 'estimate', generatedAt: new Date(),
     room: designRoom(inputs, dv, order.machine, order.recorded),
     record: { kind: 'design', id: d.id, sha256: d.sha256, createdAt: d.createdAt, label: d.label },
   }, format);
@@ -81,7 +92,7 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   // the machine room of the shaft design the calculation comes from, when the running engine reproduces it
   const design = c.shaftDesign ? reproduceDesign(c.shaftDesign) : null;
   return render({
-    ...await letterhead(user), author: user.name, project: { name, address, city, province, plantNumber, client }, order,
+    ...await letterhead(user), ...await orderPrices(user, order), author: user.name, project: { name, address, city, province, plantNumber, client }, order,
     collaudo: collaudoOf(values.data, own?.success ? own.data : undefined), generatedAt: new Date(),
     room: design?.layout.inputs.room ? calcRoom(design.layout, order.machine) : [],
     record: { kind: 'calc', id: c.id, sha256: c.sha256, createdAt: c.createdAt, label: c.label },

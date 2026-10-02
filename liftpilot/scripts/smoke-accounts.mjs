@@ -25,6 +25,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink }) {
   await page.fill('input[name="confirm"]', password);
   await page.check('input[name="privacy"]');
   await page.check('input[name="terms"]');
+  await page.check('input[name="clauses"]');
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('main [role="status"] h2');
   const first = await sink.next(email, since);
@@ -119,6 +120,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink }) {
   for (const [k, v] of [['company', 'Doppione srl'], ['name', 'Qualcuno'], ['email', email], ['password', next], ['confirm', next]]) await page.fill(`input[name="${k}"]`, v);
   await page.check('input[name="privacy"]');
   await page.check('input[name="terms"]');
+  await page.check('input[name="clauses"]');
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('main [role="status"] h2');
   const exists = await sink.next(email, since);

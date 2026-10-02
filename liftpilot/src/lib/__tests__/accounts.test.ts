@@ -10,7 +10,7 @@ import { TOKEN_TTL_MS, tokenShapeOk } from '../token-shape';
 
 const form = {
   company: '  Elevatori Brianza srl ', vatNumber: '', city: 'Monza', name: 'Giulia Ferrari', email: ' Giulia@Example.COM ',
-  password: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro', privacy: 'on', terms: 'on',
+  password: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro', privacy: 'on', terms: 'on', clauses: 'on',
 };
 const codes = (r: { success: boolean; error?: { issues: { message: string }[] } }): string[] => r.error?.issues.map((i) => i.message) ?? [];
 

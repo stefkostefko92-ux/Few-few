@@ -17,6 +17,10 @@ import { liftRecord } from '@/lib/lift-record';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { getCalculation, listDrawingSets } from '@/server/queries';
+import { visiblePrices } from '@/server/prices';
+import { calcBom, designBom } from '@/lib/prices/bom';
+import { costOf } from '@/lib/prices/cost';
+import ProjectCost from '@/components/prices/ProjectCost';
 import IssueForm from '@/components/tavole/IssueForm';
 import VerdictPill from '@/components/VerdictPill';
 import ReviewForm from '@/components/ReviewForm';
@@ -54,8 +58,11 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const advice = lift ? liftAdvice(lift.inputs) : valuesAdvice(values.data), alt = lift ? liftAlternative(lift.inputs, advice) : null;
   const own = lift ? designMachine(lift.dv) : calcMachine(values.data), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   // a calculation of a design the running engines no longer reproduce has no order: the design is saved again
-  const download = same && can(user.role, 'report:download') && (!c.liftDesign || !!lift?.same);
+  const download = same && can(user, 'report:download') && (!c.liftDesign || !!lift?.same);
   const order = !download ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(values.data, advice);
+  // the cost with the company's prices (only for whoever sees prices): the design's articles, or the replacement's machine
+  const prices = await visiblePrices(user);
+  const cost = prices ? costOf(lift ? designBom(lift.dv) : calcBom(values.data), new Map(Object.entries(prices))) : null;
   const where = lift ? 'design' : 'calc';
   const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
@@ -65,10 +72,10 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
       <div className="page-head">
         <div className="titles"><h1>{t('viewTitle')}{c.label ? ` · ${c.label}` : ''}</h1></div>
         <div className="actions">
-          {same && designSame && can(user.role, 'report:download') ? (
+          {same && designSame && can(user, 'report:download') ? (
             <a className="btn btn-primary" href={`/api/calculations/${c.id}/relazione?locale=${locale}`}>{t('downloadReport')}</a>
           ) : null}
-          {can(user.role, 'calc:create') && !c.project.archivedAt ? (
+          {can(user, 'calc:create') && !c.project.archivedAt ? (
             <Link className="btn" href={`/app/projects/${c.projectId}/calc?from=${c.id}`}>{t('newFrom')}</Link>
           ) : null}
         </div>
@@ -89,6 +96,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
       </dl>
       <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
         inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />
+      {cost ? <ProjectCost cost={cost} locale={locale} scope={lift ? 'design' : 'calc'} editable={can(user, 'prices:edit')} /> : null}
       {download ? (
         <section className="panel">
           <h2>{ta('order_title')}</h2>
@@ -116,7 +124,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
             ))}
           </ul>
         ) : <p className="note">{t('noReviews')}</p>}
-        {can(user.role, 'calc:review') ? <ReviewForm calculationId={c.id} /> : null}
+        {can(user, 'calc:review') ? <ReviewForm calculationId={c.id} /> : null}
       </section>
       <section className="panel">
         <h2>{tt('title')}</h2>
@@ -129,7 +137,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
           </ul>
         ) : null}
         {!c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
-          : same && designSame && can(user.role, 'calc:create') && !c.project.archivedAt ? <IssueForm calculationId={c.id} /> : null}
+          : same && designSame && can(user, 'calc:create') && !c.project.archivedAt ? <IssueForm calculationId={c.id} /> : null}
       </section>
       <CalculationView values={values.data} brand={user.companyName} collaudo={C} />
     </main>

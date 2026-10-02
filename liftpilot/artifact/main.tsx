@@ -15,7 +15,11 @@ import { defaultLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import Calculator from '@/components/calc/Calculator';
 import LiftWorkspace, { type WorkspaceApi } from '@/components/lift/LiftWorkspace';
 import { LOGO } from '@/lib/brand';
+import { PANEV_ARTICLES } from '@/lib/catalog/panev';
 import Sheets from './Sheets';
+
+// The standalone page shows Panev's 2026 list prices of its articles (public, VAT excluded): no company list here.
+const PANEV_PRICES: Readonly<Record<string, number>> = Object.fromEntries(PANEV_ARTICLES.flatMap((a) => (a.price === null ? [] : [[`panev:${a.code}`, Math.round(a.price * 100)]])));
 
 type Locale = 'it' | 'en' | 'bg';
 type Tab = 'calcolo' | 'progetto';
@@ -118,7 +122,7 @@ function Tools({ locale, setLocale }: { locale: Locale; setLocale(l: Locale): vo
         ) : null}
         {opened.progetto ? (
           <div hidden={tab !== 'progetto'} className="ar-lift">
-            <LiftWorkspace projectId="" initial={defaultLift()} onDerived={onDerived} api={work} />
+            <LiftWorkspace projectId="" initial={defaultLift()} onDerived={onDerived} api={work} prices={PANEV_PRICES} />
             {design ? <Sheets inputs={design.inputs} derived={design.derived} lead={S.sheetsLead}
               onEdit={(e, length) => work.current?.edit(e, length) ?? { min: null, max: null }} /> : null}
           </div>

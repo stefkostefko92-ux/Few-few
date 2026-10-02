@@ -2,9 +2,9 @@
 // it as a Word document. On the buyer's letterhead (logo, name, city) to the maker's sales office (its site from the
 // catalogue's sources): the machine with what it must be built to (sheave and grooves, ratio, motor, brake, load on the
 // shaft, the bedplate with the diverting pulley), the installation it is for, the machine room in plan and in section
-// with this machine, and the outcome of the software's check with it; the fields the buyer completes (hand, price,
-// delivery, the maker's address) left blank. Every value comes from the calculation and the catalogue, whose source
-// the note names. Pure.
+// with this machine, and the outcome of the software's check with it; the fields the buyer completes (hand, delivery,
+// the maker's address) left blank, the price too unless the downloader sees prices (then the company's list's). Every
+// value comes from the calculation and the catalogue, whose source the note names. Pure.
 import calcIt from '../../../messages/calc/it.json';
 import type { SheetImage } from '@/drawing';
 import { CATALOG_READ_ON, MAKER_SITE } from '@/lib/catalog/machines';
@@ -32,6 +32,9 @@ export interface OrderInput {
   collaudo: Collaudo;
   /** the car's mass is the software's estimate (not entered): the maker is told */
   pEstimate?: boolean;
+  /** the company's prices of the machine and of the maker's bedplate [cents, VAT excluded], for a downloader who sees
+   *  prices; missing: the price is left blank (null: not in the company's list) */
+  prices?: { machine: number | null; bedplate: number | null };
   generatedAt: Date;
 }
 
@@ -135,7 +138,16 @@ export function buildOrder(o: OrderInput): ReportDoc {
   if (c.fails) B.push({ t: 'box', text: `Con questo argano almeno una verifica non passa: non ordinarlo prima di aver risolto (punto ${verdictAt}).` });
 
   section('Condizioni (da completare)');
-  B.push({ t: 'kv', rows: [['Prezzo unitario', `€ ${BLANK}`], ['Consegna richiesta', BLANK], ['Resa e imballo', BLANK], ['Pagamento', BLANK], ['Validità dell’offerta', BLANK]] });
+  const eur = (cents: number | null): string => (cents === null ? `€ ${BLANK} (non nel listino dell’azienda)` : `€ ${fmt(cents / 100, 2)}`);
+  const withBed = I.layout === 'topDefl' && c.bedplate !== null, cost = o.prices;
+  const priced: [string, string][] = !cost ? [['Prezzo unitario', `€ ${BLANK}`]] : [
+    ['Prezzo unitario dell’argano', eur(cost.machine)],
+    ...(withBed ? [['Prezzo del basamento con rinvio', eur(cost.bedplate)] as [string, string]] : []),
+    ['Totale (IVA esclusa)', cost.machine !== null && (!withBed || cost.bedplate !== null)
+      ? `€ ${fmt((cost.machine + (withBed ? cost.bedplate ?? 0 : 0)) / 100, 2)}` : `€ ${BLANK}`],
+  ];
+  B.push({ t: 'kv', rows: [...priced, ['Consegna richiesta', BLANK], ['Resa e imballo', BLANK], ['Pagamento', BLANK], ['Validità dell’offerta', BLANK]] });
+  if (cost) B.push({ t: 'p', style: 'note', text: 'Prezzi dal listino dell’azienda in LiftPilot, IVA esclusa: da confermare con l’offerta del costruttore.' });
   const main = c.sources[0];
   B.push({ t: 'p', style: 'note', text: `Dati di catalogo letti il ${CATALOG_READ_ON}${main ? ` ${SOURCE[main]}` : ''} (la fonte al punto 2): confermarli con la scheda tecnica `
     + 'e l’offerta del costruttore prima dell’ordine. Questa è una bozza generata da LiftPilot: diventa un ordine con timbro e firma del committente, '

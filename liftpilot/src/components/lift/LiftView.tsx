@@ -14,7 +14,8 @@ import LiftChecks from './LiftChecks';
 import LiftSimulator, { type SimApi } from './LiftSimulator';
 import PanevBom from '../shaft/PanevBom';
 
-export default function LiftView({ inputs, checks = true }: { inputs: LiftInputs; checks?: boolean }) {
+/** `prices`: the company's [cents by key] for whoever may see them; null: none shown. */
+export default function LiftView({ inputs, prices, checks = true }: { inputs: LiftInputs; prices: Readonly<Record<string, number>> | null; checks?: boolean }) {
   const locale = useLocale(), messages = useMessages();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
   const X = useMemo(() => textsFor(P), [P]);
@@ -30,7 +31,7 @@ export default function LiftView({ inputs, checks = true }: { inputs: LiftInputs
       <LiftFacts derived={derived} X={X} fmt={P.fmt} />
       <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
       {checks ? <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} /> : null}
-      <PanevBom L={derived.layout} fmt={P.fmt} />
+      <PanevBom L={derived.layout} fmt={P.fmt} prices={prices} />
     </div>
   );
 }

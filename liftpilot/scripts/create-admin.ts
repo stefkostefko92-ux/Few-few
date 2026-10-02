@@ -1,5 +1,5 @@
-// Creates the platform administrator (role SUPERADMIN) and its company, once. Idempotent: an existing account is
-// left untouched unless ADMIN_RESET=1, which sets the password again.
+// Creates the platform administrator (role SUPERADMIN) and its company, once; the platform's company is never billed.
+// Idempotent: an existing account is left untouched unless ADMIN_RESET=1, which sets the password again.
 //   ADMIN_EMAIL, ADMIN_PASSWORD (at least 8 characters), ADMIN_NAME, ADMIN_COMPANY
 // A password below the application's rule (12 characters, letters and digits) works once: the first sign-in asks
 // for a new one.
@@ -19,6 +19,7 @@ async function main(): Promise<void> {
     const hash = await argon2.hash(password, { type: argon2.argon2id, memoryCost: 19456, timeCost: 2, parallelism: 1 });
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
+      await prisma.company.update({ where: { id: existing.companyId }, data: { billingExempt: true } });
       if (process.env.ADMIN_RESET === '1') {
         await prisma.user.update({ where: { id: existing.id }, data: { passwordHash: hash, role: 'SUPERADMIN', active: true, mustChangePassword, tokenVersion: { increment: 1 } } });
         process.stdout.write(`admin password reset: ${email}\n`);
@@ -28,7 +29,7 @@ async function main(): Promise<void> {
       return;
     }
     await prisma.$transaction(async (tx) => {
-      const company = await tx.company.create({ data: { name: companyName } });
+      const company = await tx.company.create({ data: { name: companyName, billingExempt: true } });
       await tx.user.create({ data: { companyId: company.id, email, name, role: 'SUPERADMIN', passwordHash: hash, mustChangePassword, emailVerifiedAt: new Date() } });
     });
     process.stdout.write(`admin created: ${email}\n`);

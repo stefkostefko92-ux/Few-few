@@ -29,7 +29,7 @@ class ComposeRefused extends Error {
 
 async function actor(capability: Capability): Promise<SessionUser | null> {
   const user = await getSessionUser();
-  return user && !user.mustChangePassword && can(user.role, capability) ? user : null;
+  return user && !user.mustChangePassword && can(user, capability) ? user : null;
 }
 
 /** Year of an issue in Italy, for the drawing number. */

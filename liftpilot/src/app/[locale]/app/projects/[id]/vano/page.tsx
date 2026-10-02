@@ -6,6 +6,7 @@ import { idSchema } from '@/lib/schemas';
 import { shaftInputsSchema } from '@/lib/shaft-input';
 import { defaultInputs } from '@/shaft';
 import { getProject } from '@/server/queries';
+import { visiblePrices } from '@/server/prices';
 import ShaftDesigner from '@/components/shaft/ShaftDesigner';
 import Crumbs from '@/components/Crumbs';
 
@@ -35,7 +36,7 @@ export default async function ShaftNewPage({ params, searchParams }: { params: P
           <p className="lead">{t('newLead')}</p>
         </div>
       </div>
-      <ShaftDesigner projectId={p.id} initial={parsed?.success ? parsed.data : defaultInputs(1600, 1750)} />
+      <ShaftDesigner projectId={p.id} initial={parsed?.success ? parsed.data : defaultInputs(1600, 1750)} prices={await visiblePrices(user)} />
     </main>
   );
 }

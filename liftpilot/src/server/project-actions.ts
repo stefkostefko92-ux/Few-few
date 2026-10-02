@@ -15,7 +15,7 @@ const localeOf = (fd: FormData): string => { const l = str(fd, 'locale'); return
 async function actor(fd: FormData, capability: Capability): Promise<{ user: SessionUser; locale: string } | null> {
   const locale = localeOf(fd), user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
-  if (user.mustChangePassword || !can(user.role, capability)) return null;
+  if (user.mustChangePassword || !can(user, capability)) return null;
   return { user, locale };
 }
 

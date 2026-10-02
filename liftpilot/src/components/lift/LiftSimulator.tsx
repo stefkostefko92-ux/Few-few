@@ -187,6 +187,7 @@ export default function LiftSimulator({ derived, fmt, api }: Props) {
         <p>{summary(run, t, fmt, m.labels)}</p>
       </div>
       <SimCharts specs={specs} run={run} clock={clock} fmt={fmt} timeLabel={t('time')} />
+      <p className="note">{t('sim_note')}</p>
     </section>
   );
 }
