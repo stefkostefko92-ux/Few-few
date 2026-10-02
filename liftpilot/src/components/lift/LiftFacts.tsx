@@ -1,8 +1,9 @@
 // What the software worked out from the one form, in one strip: the car and its load, the car mass (with its origin),
 // the counterweight, travel and speed, the machine; and the verdict of the acceptance test: every check that the
-// intervention touches (all of them for a new lift), with how many concern parts that stay as they are.
+// intervention touches under any of its standards (all of them for a new lift), with how many concern parts that stay
+// as they are, and a badge with each standard's own result.
 import { useTranslations } from 'next-intl';
-import { NORMA_BREVE, ambitoOf, collaudoVerdict, type LiftDerived } from '@/lib/lift';
+import { NORMA_BREVE, NORMA_SIGLA, ambitoOf, collaudoVerdict, esitiNorme, type LiftDerived } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
 
 interface Props {
@@ -22,7 +23,11 @@ export default function LiftFacts({ derived, X, fmt }: Props) {
       <div className={`lift-verdict ${verdict}`}>
         <span className={`status-pill ${verdict}`}>{t(`verdict_${verdict}`)}</span>
         <span>{fails ? t('facts_fail', { n: fails }) : warns ? t('facts_warn', { n: warns }) : t('facts_ok')}{existing ? ` ${t('facts_existing', { n: existing })}` : ''}</span>
-        <span className="badge">{NORMA_BREVE[C.norma]}</span>
+        <span className="norms">
+          {esitiNorme(C, all).map((e) => (
+            <span key={e.norma} className={`badge ${e.ids.length ? e.verdict : ''}`} title={`${NORMA_SIGLA[e.norma]}: ${t('norma_checks', { n: e.ids.length })}`}>{NORMA_BREVE[e.norma]}</span>
+          ))}
+        </span>
       </div>
       <dl className="facts">
         <div><dt>{t('d_car')}</dt><dd className="num">{fmt(L.A, 0)} × {fmt(L.B, 0)} mm</dd></div>

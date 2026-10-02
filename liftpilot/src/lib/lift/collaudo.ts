@@ -1,23 +1,31 @@
-// The reference standard of the lift's acceptance test (collaudo) and what the intervention replaces or changes. A new
-// lift is tested to UNI EN 81-20:2020 and UNI EN 81-50:2020: every check applies. A modification of an existing lift is
-// tested to UNI 10411-1:2024 (a lift not built to the directives) or UNI 10411-11:2024 (built to 95/16/CE or
-// 2014/33/UE): a check applies only when the intervention touches what it checks — a part replaced, a change of speed,
-// load or travel —; the others concern what stays as it is ("esistente": shown with their value, not counted in the
-// verdict). Which parts each check concerns is the software's reading (registry impianto.collaudo), to be confirmed by
-// the engineer on the standard in force. Pure.
+// The standards of the lift's acceptance test (collaudo) and what the intervention replaces or changes. The test has a
+// base standard: a new lift is tested to UNI EN 81-20:2020 and UNI EN 81-50:2020, every check applies; a modification
+// of an existing lift to UNI 10411-1:2024 (a lift not built to the directives) or UNI 10411-11:2024 (built to
+// 95/16/CE or 2014/33/UE), where a check applies only when the intervention touches what it checks — a part replaced, a
+// change of speed, load or travel —, the others concerning what stays as it is ("esistente": shown with their value,
+// not counted). The designer can add standards to the base one: EN 81-20/50 as a whole on a modification, the
+// accessibility of DM 236/1989 (its checks are the shaft's, computed for the case chosen there). Each standard has its
+// own result; the test's result is the worst of them. Which parts each check concerns is the software's reading
+// (registry impianto.collaudo), to be confirmed by the engineer on the standard in force. Pure.
 import type { CheckId, FormValues } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
 
+/** The base standard of the test: one, by the context. */
 export const NORME_COLLAUDO = ['en81', '10411-1', '10411-11'] as const;
 export type NormaCollaudo = (typeof NORME_COLLAUDO)[number];
+/** Standards added to the base one, in the order the documents list them. */
+export const NORME_AGGIUNTIVE = ['en81', 'dm236'] as const;
+export type NormaAggiuntiva = (typeof NORME_AGGIUNTIVE)[number];
+export type Norma = NormaCollaudo | NormaAggiuntiva;
 
 /** The standard as the documents name it. */
-export const NORMA_SIGLA: Readonly<Record<NormaCollaudo, string>> = {
+export const NORMA_SIGLA: Readonly<Record<Norma, string>> = {
   en81: 'UNI EN 81-20:2020 e UNI EN 81-50:2020', '10411-1': 'UNI 10411-1:2024', '10411-11': 'UNI 10411-11:2024',
+  dm236: 'DM 236/1989 (barriere architettoniche)',
 };
 
 /** The standard in a few characters (the verdict's badge). */
-export const NORMA_BREVE: Readonly<Record<NormaCollaudo, string>> = { en81: 'EN 81-20/50', '10411-1': 'UNI 10411-1', '10411-11': 'UNI 10411-11' };
+export const NORMA_BREVE: Readonly<Record<Norma, string>> = { en81: 'EN 81-20/50', '10411-1': 'UNI 10411-1', '10411-11': 'UNI 10411-11', dm236: 'DM 236/89' };
 
 /** What an intervention can replace (the parts) or change (speed, rated load, travel). */
 export const PARTI = ['machine', 'ropes', 'car', 'sling', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers', 'governor', 'controller', 'speed', 'load', 'travel'] as const;
@@ -25,6 +33,8 @@ export type Parte = (typeof PARTI)[number];
 
 export interface Collaudo {
   norma: NormaCollaudo;
+  /** standards added to the base one (absent: the base alone) */
+  aggiuntive?: readonly NormaAggiuntiva[];
   /** replaced or changed by the intervention (a new lift: everything) */
   parti: readonly Parte[];
 }
@@ -61,25 +71,63 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'],
 };
 
+/** The accessibility checks of DM 236/1989: the shaft's, present when its case is chosen in the shaft's data. */
+export const VERIFICHE_DM236: readonly ShaftCheckId[] = ['v_acc_car', 'v_acc_door', 'v_acc_side'];
+
 const isNorma = (x: unknown): x is NormaCollaudo => NORME_COLLAUDO.some((n) => n === x);
 
-/** The acceptance standard of the one form: a new lift is tested to EN 81-20/50 whatever was chosen; a replacement as
- *  chosen, by default UNI 10411-1 with the machine replaced (the intervention the software is made for). */
+/** The test's standards in order: the base one, then those added. */
+export const normeOf = (C: Collaudo): Norma[] => [C.norma, ...(C.aggiuntive ?? [])];
+
+/** Whether a check enters the test under one of its standards. */
+export function underNorma(C: Collaudo, n: Norma, id: CheckId | ShaftCheckId): boolean {
+  if (n === 'en81') return true;
+  if (n === 'dm236') return VERIFICHE_DM236.some((x) => x === id);
+  return AMBITO_VERIFICHE[id].some((p) => C.parti.includes(p));
+}
+
+/** The acceptance standards of the one form: a new lift is tested to EN 81-20/50 whatever was chosen; a replacement as
+ *  chosen, by default UNI 10411-1 with the machine replaced (the intervention the software is made for). The standards
+ *  added stay, in their order, once each (EN 81-20/50 only on top of another base). */
 export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
-  if (calc.context === 'new') return { norma: 'en81', parti: PARTI };
-  if (chosen && isNorma(chosen.norma)) return chosen.norma === 'en81' ? { norma: 'en81', parti: PARTI } : { norma: chosen.norma, parti: PARTI.filter((p) => chosen.parti.includes(p)) };
+  const added = (base: NormaCollaudo): NormaAggiuntiva[] => NORME_AGGIUNTIVE.filter((n) => chosen?.aggiuntive?.includes(n) && !(n === 'en81' && base === 'en81'));
+  const withAdded = (c: Collaudo): Collaudo => {
+    const a = added(c.norma);
+    return a.length ? { ...c, aggiuntive: a } : c;
+  };
+  if (calc.context === 'new') return withAdded({ norma: 'en81', parti: PARTI });
+  if (chosen && isNorma(chosen.norma)) {
+    return withAdded(chosen.norma === 'en81' ? { norma: 'en81', parti: PARTI } : { norma: chosen.norma, parti: PARTI.filter((p) => chosen.parti.includes(p)) });
+  }
   return { norma: '10411-1', parti: ['machine'] };
 }
 
-/** Whether a check applies to the acceptance test of this intervention. */
-export const ambitoOf = (C: Collaudo, id: CheckId | ShaftCheckId): Ambito =>
-  C.norma === 'en81' || AMBITO_VERIFICHE[id].some((p) => C.parti.includes(p)) ? 'applies' : 'existing';
+/** Whether a check applies to the acceptance test of this intervention: under any of its standards. */
+export const ambitoOf = (C: Collaudo, id: CheckId | ShaftCheckId): Ambito => (normeOf(C).some((n) => underNorma(C, n, id)) ? 'applies' : 'existing');
 
 /** The adaptations a machine replaced under UNI 10411-1 brings (registry sostituzione.adeguamenti); none otherwise. */
 export const adeguamentiDovuti = (C: Collaudo): boolean => C.norma === '10411-1' && C.parti.includes('machine');
 
-/** The lift's verdict for its acceptance test: the worst status of the checks that apply, and how many fail or warn. */
-export function collaudoVerdict(C: Collaudo, checks: readonly { id: CheckId | ShaftCheckId; status: string }[]): { verdict: 'ok' | 'warn' | 'fail'; fails: number; warns: number } {
-  const on = checks.filter((c) => ambitoOf(C, c.id) === 'applies'), fails = on.filter((c) => c.status === 'fail').length, warns = on.filter((c) => c.status === 'warn').length;
+type Verdict = { verdict: 'ok' | 'warn' | 'fail'; fails: number; warns: number };
+const verdictOf = (on: readonly { status: string }[]): Verdict => {
+  const fails = on.filter((c) => c.status === 'fail').length, warns = on.filter((c) => c.status === 'warn').length;
   return { verdict: fails ? 'fail' : warns ? 'warn' : 'ok', fails, warns };
+};
+
+/** The lift's verdict for its acceptance test: the worst status of the checks that apply under any of its standards,
+ *  and how many fail or warn. */
+export const collaudoVerdict = (C: Collaudo, checks: readonly { id: CheckId | ShaftCheckId; status: string }[]): Verdict =>
+  verdictOf(checks.filter((c) => ambitoOf(C, c.id) === 'applies'));
+
+/** The result under one standard: its checks among those computed (none computed: `ids` empty). */
+export interface EsitoNorma extends Verdict {
+  norma: Norma;
+  ids: (CheckId | ShaftCheckId)[];
 }
+
+/** The result of each of the test's standards, in their order. */
+export const esitiNorme = (C: Collaudo, checks: readonly { id: CheckId | ShaftCheckId; status: string }[]): EsitoNorma[] =>
+  normeOf(C).map((norma) => {
+    const on = checks.filter((c) => underNorma(C, norma, c.id));
+    return { norma, ids: on.map((c) => c.id), ...verdictOf(on) };
+  });

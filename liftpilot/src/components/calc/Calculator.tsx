@@ -1,7 +1,8 @@
 'use client';
 
-// The calculator of a project: form, live results from src/calc in the browser (preview), and the save that
-// sends the values to the server, which recomputes and stores the official snapshot.
+// The calculator of a project: form, live results from src/calc in the browser (preview), the standards of the
+// acceptance test, and the save that sends the values to the server, which recomputes and stores the official
+// snapshot (the standards beside it).
 import { useDeferredValue, useMemo, useState, useTransition } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -14,6 +15,8 @@ import { textsFor } from '@/lib/present/texts';
 import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import { saveCalculationAction } from '@/server/calc-actions';
+import { collaudoOf, type Collaudo } from '@/lib/lift';
+import CollaudoOptions from '@/components/lift/CollaudoOptions';
 import { asCalcDict } from './dict';
 import CalcForm, { type Prefix } from './CalcForm';
 import Diagram from './Diagram';
@@ -32,9 +35,11 @@ interface Props {
   brand: string;
   /** shaft design the calculation starts from: the rated load comes from it and the report shows its plan */
   design?: { id: string; Q: number } | null;
+  /** the standards of the acceptance test of the calculation it starts from (absent: by the context) */
+  collaudo?: Collaudo | null;
 }
 
-export default function Calculator({ projectId, initial, preset: initialPreset, brand, design = null }: Props) {
+export default function Calculator({ projectId, initial, preset: initialPreset, brand, design = null, collaudo: initialCollaudo = null }: Props) {
   const locale = useLocale(), messages = useMessages(), tc = useTranslations('calculations'), te = useTranslations('errors');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -49,6 +54,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const [label, setLabel] = useState('');
   const [saveError, setSaveError] = useState<{ error: string; fields: string[] } | null>(null);
   const [saving, startSaving] = useTransition();
+  const [collaudo, setCollaudo] = useState<Collaudo | undefined>(initialCollaudo ?? undefined);
 
   const deferred = useDeferredValue(values);
   const a = useMemo(() => analyse(deferred), [deferred]);
@@ -87,7 +93,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const save = (): void => {
     setSaveError(null);
     startSaving(async () => {
-      const r = await saveCalculationAction({ projectId, values, label, designId: design?.id ?? null });
+      const r = await saveCalculationAction({ projectId, values, label, designId: design?.id ?? null, collaudo: collaudo ?? null });
       if (r.ok) router.push(`/app/calculations/${r.id}`);
       else setSaveError({ error: r.error, fields: r.fields ?? [] });
     });
@@ -118,6 +124,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
         <section className="summary">
           <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
           <Verdict P={P} X={X} a={a} badCount={bad.size} />
+          <CollaudoOptions P={P} isNew={values.context === 'new'} chosen={collaudo} value={collaudoOf(values, collaudo)} set={setCollaudo} />
         </section>
         <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} onUse={onUse} propMsg={propMsg} />
       </div>

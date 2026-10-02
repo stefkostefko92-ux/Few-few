@@ -6,6 +6,8 @@ import { formValuesSchema } from '@/lib/calc-input';
 import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { calcMarks } from '@/lib/lift-marks';
+import { collaudoSchema } from '@/lib/lift-input';
+import { collaudoOf } from '@/lib/lift/collaudo';
 import { buildReport } from '@/lib/report/build';
 import { renderPdf } from '@/lib/report/render';
 import { audit } from '@/lib/audit';
@@ -36,9 +38,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!verifyStored(values.data, c.sha256).same) return text(409, 'The running engine does not reproduce this calculation');
     const design = c.shaftDesign ? reproduceDesign(c.shaftDesign) : null;
     if (c.shaftDesign && !design) return text(409, 'The running engine does not reproduce the shaft design of this calculation');
+    // the standards: those of the lift design it comes from, else those chosen with the calculation
+    const marks = calcMarks(c.liftDesign, c.sha256), own = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null;
     const doc = buildReport({
       calc: { id: c.id, label: c.label, createdAt: c.createdAt, sha256: c.sha256, engineVersion: c.engineVersion, profileId: c.profileId, author: c.user?.name ?? null },
-      project: c.project, company: user.companyName, values: values.data, design, marks: calcMarks(c.liftDesign, c.sha256), generatedAt: new Date(),
+      project: c.project, company: user.companyName, values: values.data, design, generatedAt: new Date(),
+      marks: !marks.collaudo && own?.success ? { ...marks, collaudo: collaudoOf(values.data, own.data) } : marks,
       reviews: c.reviews.map((r) => ({ name: r.user?.name ?? null, role: r.user && isRole(r.user.role) ? r.user.role : null, note: r.note, createdAt: r.createdAt })),
     });
     const pdf = await renderPdf(doc);

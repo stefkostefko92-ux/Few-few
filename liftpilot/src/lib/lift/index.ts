@@ -13,6 +13,7 @@ export { BOTTOM_SCHEMES, bottomGeo, extraBends } from './bottom';
 export type { BottomGeo, BottomScheme } from './bottom';
 export { LIFT_ENGINE_VERSION } from './version';
 export { NO_MARKS, P_ESTIMATE_RULE, valueMarks } from './marks';
-export { AMBITO_VERIFICHE, NORMA_BREVE, NORMA_SIGLA, NORME_COLLAUDO, PARTI, adeguamentiDovuti, ambitoOf, collaudoOf, collaudoVerdict } from './collaudo';
-export type { Ambito, Collaudo, NormaCollaudo, Parte } from './collaudo';
+export { AMBITO_VERIFICHE, NORMA_BREVE, NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, VERIFICHE_DM236, adeguamentiDovuti, ambitoOf, collaudoOf, collaudoVerdict,
+  esitiNorme, normeOf, underNorma } from './collaudo';
+export type { Ambito, Collaudo, EsitoNorma, Norma, NormaAggiuntiva, NormaCollaudo, Parte } from './collaudo';
 export type { GeometryKey, ValueMarks } from './marks';

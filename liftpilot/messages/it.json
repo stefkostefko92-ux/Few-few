@@ -277,7 +277,8 @@
     "reviewNote": "Nota (facoltativa)",
     "reviewAction": "Metti il visto",
     "reviewHint": "Il visto registra chi ha controllato il calcolo; non è una firma.",
-    "fromDesign": "Portata dal progetto del vano: {q} kg. La relazione conterrà la sua pianta."
+    "fromDesign": "Portata dal progetto del vano: {q} kg. La relazione conterrà la sua pianta.",
+    "norme": "Normative di collaudo"
   },
   "account": {
     "title": "Account",
@@ -1014,7 +1015,13 @@
     "doc_pdf": "PDF delle tavole (bozza)",
     "doc_dxf_all": "DXF (tutte le viste)",
     "doc_dwg": "DWG (tutte le viste)",
-    "export_lead": "Le tavole e tutte le viste del progetto salvato: in PDF come bozza non emessa, in DXF e DWG in millimetri, a grandezza naturale, con i layer per tipo di parte."
+    "export_lead": "Le tavole e tutte le viste del progetto salvato: in PDF come bozza non emessa, in DXF e DWG in millimetri, a grandezza naturale, con i layer per tipo di parte.",
+    "aggiuntive_title": "Altre normative di collaudo",
+    "aggiunta_en81": "UNI EN 81-20/50:2020 — tutto l’impianto",
+    "aggiunta_dm236": "DM 236/1989 — accessibilità",
+    "aggiuntive_hint": "Ogni normativa scelta ha il suo esito e la sua sezione nella relazione; l’esito del collaudo è il peggiore.",
+    "aggiunta_dm236_case": "Scegli il caso del DM 236 nei dati del vano: le sue verifiche dipendono da quello.",
+    "norma_checks": "{n, plural, =0 {nessuna verifica calcolata} one {# verifica} other {# verifiche}}"
   },
   "register": {
     "title": "Registra la tua azienda",

@@ -7,6 +7,8 @@ import { can } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import { calcLabelSchema, idSchema, reviewSchema } from '@/lib/schemas';
 import { formValuesSchema } from '@/lib/calc-input';
+import { collaudoSchema } from '@/lib/lift-input';
+import { collaudoOf } from '@/lib/lift/collaudo';
 import { snapshotHash } from '@/lib/snapshot-hash';
 import { log } from '@/lib/log';
 import { snapshotOf } from '@/calc/snapshot';
@@ -23,13 +25,16 @@ const fmt = makeFmt('it-IT');
 
 // The browser only shows a preview: the server validates the values, recomputes everything with the same engine
 // and stores the immutable snapshot with its hash. The browser's result is never trusted.
-export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; designId?: unknown }): Promise<SaveResult> {
+// The standards of the acceptance test chosen with it are stored beside the snapshot (they are what the report sets
+// out, not the physics): checked, and normalised as the documents read them.
+export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; designId?: unknown; collaudo?: unknown }): Promise<SaveResult> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
   if (user.mustChangePassword || !can(user.role, 'calc:create')) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`calc:${user.id}`, 60, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const projectId = idSchema.safeParse(input.projectId), label = calcLabelSchema.safeParse(input.label ?? ''), values = formValuesSchema.safeParse(input.values);
-  if (!projectId.success || !label.success) return { ok: false, error: 'invalidFields' };
+  const collaudo = input.collaudo == null ? null : collaudoSchema.safeParse(input.collaudo);
+  if (!projectId.success || !label.success || (collaudo && !collaudo.success)) return { ok: false, error: 'invalidFields' };
   if (!values.success) return { ok: false, error: 'invalidFields', fields: values.error.issues.map((i) => String(i.path[0] ?? '')) };
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
@@ -52,6 +57,7 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
       engineVersion: snapshot.engine, profileId: snapshot.profile, inputs: snapshot.values ?? {}, results: snapshot.results,
       sha256: snapshotHash(snapshot), verdict: VERDICT[verdictStatus(res)],
       failCount: res.fails.length, warnCount: res.checks.filter((c) => c.status === 'warn').length, summary, shaftDesignId: design?.id ?? null,
+      ...(collaudo?.success ? { collaudo: { ...collaudoOf(V, collaudo.data) } } : {}),
     },
     select: { id: true },
   });

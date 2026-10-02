@@ -277,7 +277,8 @@
     "reviewNote": "Note (optional)",
     "reviewAction": "Mark as reviewed",
     "reviewHint": "A review records who checked the calculation; it is not a signature.",
-    "fromDesign": "Rated load from the shaft design: {q} kg. The report will include its plan."
+    "fromDesign": "Rated load from the shaft design: {q} kg. The report will include its plan.",
+    "norme": "Test standards"
   },
   "account": {
     "title": "Account",
@@ -1014,7 +1015,13 @@
     "doc_pdf": "Drawing set PDF (draft)",
     "doc_dxf_all": "DXF (all views)",
     "doc_dwg": "DWG (all views)",
-    "export_lead": "The drawing set and every view of the saved project: as PDF, a draft not issued; as DXF and DWG in millimetres, at full size, with a layer for each kind of part."
+    "export_lead": "The drawing set and every view of the saved project: as PDF, a draft not issued; as DXF and DWG in millimetres, at full size, with a layer for each kind of part.",
+    "aggiuntive_title": "Other test standards",
+    "aggiunta_en81": "UNI EN 81-20/50:2020 — the whole lift",
+    "aggiunta_dm236": "DM 236/1989 — accessibility",
+    "aggiuntive_hint": "Each standard chosen has its own result and its own section in the report; the test’s result is the worst of them.",
+    "aggiunta_dm236_case": "Choose the DM 236 case in the shaft’s data: its checks depend on it.",
+    "norma_checks": "{n, plural, =0 {no check computed} one {# check} other {# checks}}"
   },
   "register": {
     "title": "Register your company",

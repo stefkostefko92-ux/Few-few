@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { formValuesSchema } from '@/lib/calc-input';
+import { collaudoSchema } from '@/lib/lift-input';
 import { idSchema } from '@/lib/schemas';
 import { PRESETS } from '@/calc/presets';
 import type { FormValues } from '@/calc/types';
@@ -29,9 +30,9 @@ export default async function CalcPage({ params, searchParams }: { params: Promi
   const source = await prisma.calculation.findFirst({
     where: { projectId: p.id, companyId: user.companyId, ...(from.success ? { id: from.data } : {}) },
     orderBy: { createdAt: 'desc' },
-    select: { inputs: true },
+    select: { inputs: true, collaudo: true },
   });
-  const parsed = source ? formValuesSchema.safeParse(source.inputs) : null;
+  const parsed = source ? formValuesSchema.safeParse(source.inputs) : null, chosen = source?.collaudo ? collaudoSchema.safeParse(source.collaudo) : null;
   // a calculation started from a shaft design takes its rated load (the design's layout decided it)
   const designRow = designId.success
     ? await prisma.shaftDesign.findFirst({ where: { id: designId.data, projectId: p.id, companyId: user.companyId }, select: { id: true, results: true } })
@@ -50,7 +51,8 @@ export default async function CalcPage({ params, searchParams }: { params: Promi
           <p className="lead">{t('newLead')}</p>
         </div>
       </div>
-      <Calculator projectId={p.id} initial={initial} preset={parsed?.success || design ? null : 'B'} brand={user.companyName} design={design} />
+      <Calculator projectId={p.id} initial={initial} preset={parsed?.success || design ? null : 'B'} brand={user.companyName} design={design}
+        collaudo={chosen?.success ? chosen.data : null} />
     </main>
   );
 }

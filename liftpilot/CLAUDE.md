@@ -181,7 +181,8 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      3_lift_designs (LiftDesign: въведеното + връзки към проекта на шахтата и изчислението; неизменим),
                      4_self_service (emailVerifiedAt, приемането на условията, AuthToken), 5_client_logo (ClientLogo,
                      неизменим; DrawingSet.clientLogoId пази логото на издадения комплект), 6_project_kind (Project.kind:
-                     REPLACEMENT/FULL; старите съоръжения само с изчисления станаха подмяна).
+                     REPLACEMENT/FULL; старите съоръжения само с изчисления станаха подмяна), 7_calculation_collaudo
+                     (Calculation.collaudo: нормите на изпитването на изчислението, извън хеша).
 deploy/              deploy.sh (сървърът: тайни, поща, бекъп, compose, health, nginx), nginx/liftpilot.conf. Dockerfile,
                      docker-compose.yml, docker-entrypoint.sh.
 brand/               liftpilot-logo.webp — изходното лого; scripts/brand-assets.py прави от него public/favicon.ico,
@@ -270,9 +271,14 @@ artifact/            Самостоятелната страница: калку
   10411-1 със сменена машина. Всяка проверка (на изчислението и на шахтата) има в `AMBITO_VERIFICHE` частите, които
   засяга; ако интервенцията не пипа нито една, проверката е „esistente“: вижда се с изчислената стойност, но не влиза
   в `verdict/failCount/warnCount` на `LiftDesign` (записите `ShaftDesign`/`Calculation` пазят физичния си резултат).
-  Нова проверка → запис в `AMBITO_VERIFICHE` (типът `Record` го изисква). Изборът е в `LiftInputs.collaudo` (влиза в
-  хеша), минава през `ValueMarks.collaudo` към relazione (`report/collaudo.ts`) и лист 1. Регистър `impianto.collaudo`
-  (да се провери: текстът на UNI 10411:2024 не е четен).
+  Нова проверка → запис в `AMBITO_VERIFICHE` (типът `Record` го изисква). Към основната норма проектантът добавя други
+  (`aggiuntive`): UNI EN 81-20/50 за цялото съоръжение при изменение и достъпността на DM 236/89 (проверките `VERIFICHE_DM236`
+  на шахтата, за случая, избран там). Всяка норма има свой резултат (`esitiNorme`), общият е най-лошият (`collaudoVerdict`
+  брои проверките, които влизат под която и да е норма); relazione има секция „Esito del collaudo per normativa“. Празен
+  списък не се пише (`collaudoOf`), за да останат старите хешове. Изборът е в `LiftInputs.collaudo` (влиза в хеша), минава
+  през `ValueMarks.collaudo` към relazione (`report/collaudo.ts`) и лист 1; модулът „Подмяна“ го пази в `Calculation.collaudo`
+  (извън snapshot-а и хеша: изборът на документа, не физиката). Регистър `impianto.collaudo` (да се провери: текстът на
+  UNI 10411:2024 не е четен).
 - **Числата на екрана** минават през `makeFmt` (фиксирани разделители, не ICU на средата): Node и браузърът
   трябва да дават един и същ текст, иначе хидратацията на React пада (ICU 78: 2500, Chromium 141: 2.500).
 - **Комплект чертежи:** издаденият комплект е неизменим (тригер) и пази снимка на данните на съоръжението, проекта,

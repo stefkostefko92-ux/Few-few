@@ -20,7 +20,7 @@ import { textsFor, verdictStatus } from '../present/texts';
 import { makePres, type CalcKey } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { shaftBlocks, type ReportDesign } from './shaft';
-import { EXISTING_NOTE, adaptSection, collaudoRows, collaudoText, esitoOf } from './collaudo';
+import { EXISTING_NOTE, adaptSection, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
 import { machineSpec } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { shapeRows } from './machine-shape';
@@ -107,9 +107,9 @@ export function buildReport(r: ReportInput): ReportDoc {
       + "dell'impianto, costruttore della cabina o prova di bilanciamento) e ripetere il calcolo." });
   }
 
+  const beams = r.design ? supportChecks(r.design.layout, machineSpec(ctx, N.mass, '', r.design.layout.inputs.room), supportLoad(ctx, res.Mcw)) : [];
   if (r.design) {
     section('Vano e cabina');
-    const beams = supportChecks(r.design.layout, machineSpec(ctx, N.mass, '', r.design.layout.inputs.room), supportLoad(ctx, res.Mcw));
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
   }
 
@@ -141,6 +141,11 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (res.checks.some((c) => ambitoOf(C, c.id) === 'existing')) {
     B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
   }
+
+  // each standard of the test with its own result, and the test's: the calculation's checks and, with a shaft design,
+  // the shaft's and the beams'
+  section('Esito del collaudo per normativa');
+  B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? [...r.design.layout.checks, ...beams] : [])], (x) => st(x)));
 
   section("Aderenza: tutti i casi di calcolo");
   const caseHead = ['Caso', 'α [°]', 'μ', 'f', 'e^(f·α)', 'T1 [N]', 'T2 [N]', 'T1/T2', 'Utilizzo'];

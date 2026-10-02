@@ -206,6 +206,9 @@ model Calculation {
   warnCount     Int
   /// machine in one line, e.g. "D 520 mm · 4 × Ø11 · 1:39 · 7,5 kW"
   summary       String
+  /// the standards of the acceptance test as chosen ({norma, aggiuntive?, parti}, src/lib/lift/collaudo.ts; null: the
+  /// default by the context): what the report sets out, not the physics, so outside the hash; as immutable as the row
+  collaudo      Json?
   /// shaft design the calculation was started from (its plan goes into the report)
   shaftDesignId String?
   shaftDesign   ShaftDesign?        @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)

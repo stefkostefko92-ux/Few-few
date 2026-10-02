@@ -5,6 +5,8 @@ import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { formValuesSchema } from '@/lib/calc-input';
+import { collaudoSchema } from '@/lib/lift-input';
+import { NORMA_BREVE, collaudoOf, normeOf } from '@/lib/lift/collaudo';
 import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { ENGINE_VERSION } from '@/calc/snapshot';
@@ -30,6 +32,8 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const values = formValuesSchema.safeParse(c.inputs);
   if (!values.success) notFound();
   const { same } = verifyStored(values.data, c.sha256);
+  // the standards of the acceptance test chosen with it (else by the context), as the report sets them out
+  const chosen = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null, norme = normeOf(collaudoOf(values.data, chosen?.success ? chosen.data : undefined));
   // the report draws the plan of the shaft design too: it needs that design reproduced as well
   const designSame = !c.shaftDesign || reproduceDesign(c.shaftDesign) !== null;
   const [t, tp, tr, ts, tt, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
@@ -58,6 +62,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
         <div><dt>{t('col_author')}</dt><dd>{c.user?.name ?? '—'}</dd></div>
         <div><dt>{t('col_machine')}</dt><dd className="num">{c.summary}</dd></div>
         <div><dt>{t('engine')}</dt><dd className="num">{c.engineVersion} · {c.profileId}</dd></div>
+        <div><dt>{t('norme')}</dt><dd>{norme.map((n) => NORMA_BREVE[n]).join(' · ')}</dd></div>
         {c.shaftDesign ? (
           <div><dt>{ts('linked')}</dt><dd><Link href={`/app/shaft-designs/${c.shaftDesign.id}`} className="num">{c.shaftDesign.summary}</Link></dd></div>
         ) : null}

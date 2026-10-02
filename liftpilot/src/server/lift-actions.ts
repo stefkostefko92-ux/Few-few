@@ -65,7 +65,7 @@ export async function saveLiftDesignAction(input: { projectId: unknown; inputs: 
       data: {
         companyId: user.companyId, projectId: project.id, userId: user.id, label: label.data, engineVersion: calcSnap.engine, profileId: calcSnap.profile,
         inputs: calcSnap.values ?? {}, results: calcSnap.results, sha256: calcSha, verdict: VERDICT[verdictStatus(res)], failCount: res.fails.length,
-        warnCount: calcWarns, summary: machine, shaftDesignId: shaft.id,
+        warnCount: calcWarns, summary: machine, shaftDesignId: shaft.id, collaudo: { ...d.collaudo },
       },
       select: { id: true },
     });

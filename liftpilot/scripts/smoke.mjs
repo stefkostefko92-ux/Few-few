@@ -93,9 +93,12 @@ try {
   step('calculation');
   await page.waitForSelector('.verdict .big');
   await page.fill('#n_D', '600');
+  // a second standard for the acceptance test, on top of UNI 10411-1: its own result, kept with the calculation
+  await page.check('.collaudo label:has-text("tutto l’impianto") input');
   await page.waitForTimeout(300);
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const calcUrl = page.url();
+  assert.match(await page.textContent('dl.cartiglio'), /UNI 10411-1 · EN 81-20\/50/, 'test standards kept');
   assert.match(await page.textContent('dl.cartiglio'), /riprodotto/, 'hash reproduced');
 
   step('calculation report (PDF)');

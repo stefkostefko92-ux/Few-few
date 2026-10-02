@@ -159,7 +159,8 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
             <button key={c} type="button" role="radio" aria-checked={context === c} className={context === c ? 'on' : undefined} onClick={() => setCalc({ context: c })}>{t(`context_${c}`)}</button>
           ))}
         </div>
-        <CollaudoOptions P={P} isNew={context === 'new'} chosen={inp.collaudo} value={collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo} />
+        <CollaudoOptions P={P} isNew={context === 'new'} chosen={inp.collaudo} value={collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo}
+          access={{ value: inp.shaft.access, set: (access) => setShaft({ access }) }} />
         <h2>{t('s_shaft')}</h2>
         <div className="form-grid">
           <label className="field"><span>{ts('W')}</span><input className="input num" type="number" inputMode="numeric" min={500} max={10000} step={10} value={inp.shaft.W} onChange={(e) => setSize('W', e.target.value)} /></label>

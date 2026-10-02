@@ -1,6 +1,7 @@
-// The acceptance test's standard: a new lift is tested to EN 81-20/50 whatever was chosen, a modification as chosen
+// The acceptance test's standards: a new lift is tested to EN 81-20/50 whatever was chosen, a modification as chosen
 // (by default UNI 10411-1 with the machine replaced); a check applies when the intervention touches what it checks,
-// the others stay "existing", shown and out of the verdict; the choice goes through the server's schema, the
+// the others stay "existing", shown and out of the verdict; standards added to the base one (EN 81-20/50 as a whole,
+// DM 236/1989) each have their result, the test's is the worst; the choice goes through the server's schema, the
 // derivation, the relazione and sheet 1.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,7 +9,7 @@ import type { CheckId } from '@/calc/types';
 import { PRESETS } from '@/calc/presets';
 import { defaultInputs, layout, type ShaftCheckId, type ShaftInputs } from '@/shaft';
 import { liftInputsSchema } from '@/lib/lift-input';
-import { AMBITO_VERIFICHE, PARTI, adeguamentiDovuti, ambitoOf, collaudoOf, collaudoVerdict, defaultLift, deriveLift, type Collaudo } from '@/lib/lift';
+import { AMBITO_VERIFICHE, PARTI, adeguamentiDovuti, ambitoOf, collaudoOf, collaudoVerdict, defaultLift, deriveLift, esitiNorme, type Collaudo } from '@/lib/lift';
 import { buildReport } from '../report/build';
 import type { ReportDoc } from '../report/model';
 import { buildTavole } from '../tavole/build';
@@ -114,4 +115,56 @@ test('foglio 1: normativa del collaudo, esito «ESISTENTE» e la sua nota', () =
   assert.ok(machine.includes('UNI 10411-1:2024') && machine.includes('ESISTENTE') && machine.includes('COLLAUDO'), 'modifica con la macchina');
   assert.ok(asNew.includes('UNI EN 81-20:2020') && !asNew.includes('ESISTENTE') && !asNew.includes('COLLAUDO'), 'come nuovo');
   assert.ok(eleven.includes('UNI 10411-11:2024'), 'UNI 10411-11');
+});
+
+test('più normative: in ordine e una volta; EN 81-20/50 si aggiunge solo a un’altra base', () => {
+  const C = collaudoOf(REPL, { norma: '10411-1', aggiuntive: ['dm236', 'en81', 'dm236'], parti: ['machine'] });
+  assert.deepEqual(C, { norma: '10411-1', parti: ['machine'], aggiuntive: ['en81', 'dm236'] });
+  assert.deepEqual(collaudoOf(NEW, { norma: '10411-1', aggiuntive: ['en81', 'dm236'], parti: [] }), { norma: 'en81', parti: PARTI, aggiuntive: ['dm236'] });
+  // none added: the same object as before the standards could be added (the saved designs keep their hash)
+  assert.deepEqual(collaudoOf(REPL, { norma: '10411-11', aggiuntive: [], parti: ['ropes'] }), { norma: '10411-11', parti: ['ropes'] });
+  // the schema: known standards only, at most each once
+  const base = defaultLift();
+  assert.ok(liftInputsSchema.safeParse({ ...base, collaudo: { norma: '10411-1', aggiuntive: ['en81', 'dm236'], parti: ['machine'] } }).success);
+  for (const bad of [['en81-70'], ['dm236', 'dm236', 'en81']]) {
+    assert.equal(liftInputsSchema.safeParse({ ...base, collaudo: { norma: '10411-1', aggiuntive: bad, parti: [] } }).success, false, JSON.stringify(bad));
+  }
+});
+
+test('più normative: ognuna con il suo esito, quello del collaudo è il peggiore', () => {
+  const checks = [{ id: 'tr_load', status: 'ok' }, { id: 'p_refuge', status: 'fail' }, { id: 'v_acc_door', status: 'warn' }] as const;
+  const M: Collaudo = { norma: '10411-1', parti: ['machine'] };
+  // the accessibility and the pit concern parts that stay: out of the base standard's result
+  assert.deepEqual(collaudoVerdict(M, checks), { verdict: 'ok', fails: 0, warns: 0 });
+  // DM 236 added: its checks enter whatever the parts; the pit stays out
+  const D: Collaudo = { ...M, aggiuntive: ['dm236'] };
+  assert.equal(ambitoOf(D, 'v_acc_door'), 'applies');
+  assert.equal(ambitoOf(D, 'p_refuge'), 'existing');
+  assert.deepEqual(collaudoVerdict(D, checks), { verdict: 'warn', fails: 0, warns: 1 });
+  assert.deepEqual(esitiNorme(D, checks).map((e) => [e.norma, e.ids.length, e.verdict]), [['10411-1', 1, 'ok'], ['dm236', 1, 'warn']]);
+  // EN 81-20/50 added: everything enters, the test fails with the pit
+  const E: Collaudo = { ...M, aggiuntive: ['en81', 'dm236'] };
+  assert.deepEqual(collaudoVerdict(E, checks), { verdict: 'fail', fails: 1, warns: 1 });
+  assert.deepEqual(esitiNorme(E, checks).map((e) => e.verdict), ['ok', 'fail', 'warn']);
+  // DM 236 without its case chosen in the shaft: no check computed under it
+  assert.deepEqual(esitiNorme(D, checks.filter((c) => c.id !== 'v_acc_door')).map((e) => e.ids.length), [1, 0]);
+});
+
+test('relazione e foglio 1 con più normative: righe, sezione degli esiti, nota', () => {
+  const doc = report({ norma: '10411-1', parti: ['machine'], aggiuntive: ['en81', 'dm236'] });
+  assert.equal(kv(doc).get('Altre normative di collaudo'), 'UNI EN 81-20:2020 e UNI EN 81-50:2020; DM 236/1989 (barriere architettoniche)');
+  assert.ok(heads(doc).includes('Esito del collaudo per normativa'));
+  const g = doc.blocks.find((b) => b.t === 'grid' && b.head[0] === 'Normativa');
+  assert.ok(g && g.t === 'grid');
+  assert.deepEqual(g.rows.map((r) => r[1]), ['base', 'aggiunta', 'aggiunta']);
+  // the calculation alone has no shaft: DM 236 has no check computed, and the report says why
+  assert.equal(g.rows[2]?.[5], 'non calcolata');
+  assert.ok(doc.blocks.some((b) => b.t === 'p' && b.text.startsWith('DM 236/1989: nessuna verifica calcolata')));
+  assert.ok(doc.blocks.some((b) => b.t === 'verdict' && b.text.startsWith('Esito del collaudo:')));
+  // without standards added the section is there with the base one alone
+  const one = report(), g1 = one.blocks.find((b) => b.t === 'grid' && b.head[0] === 'Normativa');
+  assert.ok(g1 && g1.t === 'grid' && g1.rows.length === 1 && !kv(one).has('Altre normative di collaudo'));
+  // sheet 1: tested as new with DM 236 added has its note
+  const asNew = sheet1({ norma: 'en81', parti: [], aggiuntive: ['dm236'] });
+  assert.ok(asNew.includes('COLLAUDO'), 'nota del collaudo');
 });
