@@ -9,6 +9,10 @@ import { studioScene, disposeScene, KEY, KEY_DIR } from './viewer-studio.js';
 export const TARGET_SAMPLES = 360;
 const BOX = 1.8; // diameter of the key soft box, m
 const REST_MS = 220; // the camera must rest this long before path tracing starts
+// The bounce light of the studio corner, which the normal view folds into its environment map, comes on top here:
+// measured on a front (Egger H1145), the path traced image was a third brighter. All light a quarter down keeps the
+// decors at their catalogue colour, as in the normal view.
+const LIGHT = 0.75;
 
 export function photoSupported(renderer) {
   return renderer.extensions.has('EXT_color_buffer_float');
@@ -52,10 +56,15 @@ export class PhotoRenderer {
     this.area.position.copy(target).addScaledVector(KEY_DIR, d);
     this.area.lookAt(target);
     // as bright as the key light on the furniture: E = L · A / d²
-    this.area.intensity = (KEY * d * d) / ((Math.PI / 4) * BOX * BOX);
+    this.area.intensity = (LIGHT * KEY * d * d) / ((Math.PI / 4) * BOX * BOX);
     if (!this.area.parent) scene.add(this.area);
-    const saved = { environment: scene.environment, fog: scene.fog };
+    const saved = {
+      environment: scene.environment,
+      intensity: scene.environmentIntensity,
+      fog: scene.fog,
+    };
     scene.environment = this.envTarget.texture;
+    scene.environmentIntensity = saved.intensity * LIGHT;
     scene.fog = null;
     stage.key.visible = false;
     this.area.visible = true;
@@ -66,6 +75,7 @@ export class PhotoRenderer {
       this.pt.setScene(scene, camera);
     } finally {
       scene.environment = saved.environment;
+      scene.environmentIntensity = saved.intensity;
       scene.fog = saved.fog;
       stage.key.visible = true;
       this.area.visible = false;

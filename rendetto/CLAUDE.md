@@ -44,7 +44,8 @@ src/
   seo/                JSON-LD
 engine/               двигателят (модел, разкрой, пробиване, CAM, DXF, чертежи)
 editor/               UI на редактора (браузър); 3D: viewer.js (сцена) · viewer-render.js (AO + натрупване, докато
-                      камерата стои) · viewer-studio.js (студио, ключова светлина) · viewer-photo.js (path tracing)
+                      камерата стои) · viewer-studio.js (студио, ключова светлина) · viewer-photo.js (path tracing;
+                      viewer-photo-mode.js го включва, зарежда при първо натискане и освобождава)
                       · tex-*.js (декорите се „изпичат“ процедурно на видеокартата: цвят, релеф, грапавост)
 views/                EJS: landing/, legal/ (съдържанието по език в legal/<страница>/<език>.ejs),
                       auth/, app/, account/, admin/, partials/
