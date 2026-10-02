@@ -129,17 +129,21 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   key.shadow.radius = quality.shadowRadius;
   const rim = new THREE.DirectionalLight(0xc9d5f0, 1.1);
   scene.add(key, key.target, rim, rim.target);
-  // a wall or roof turned into a ghost casts no shadow: it is not there for the camera, so not for the key light either
-  // (three.js draws every caster into the shadow map, transparent or not)
-  const casters = new Map<THREE.Material, THREE.Mesh[]>();
-  scene.traverse((o) => {
-    if (!(o instanceof THREE.Mesh) || !o.castShadow || Array.isArray(o.material)) return;
-    const list = casters.get(o.material) ?? [];
-    list.push(o);
-    casters.set(o.material, list);
-  });
-  const ghost = (m: THREE.Material, faint: boolean, opacity?: number): void => {
-    if (M.ghost(m, faint, opacity)) for (const o of casters.get(m) ?? []) o.castShadow = !faint;
+  // a wall or roof turned into a ghost casts no shadow, nor what hangs on a shaft wall (portals, call stations, landing
+  // doors and floors): it is not there for the camera, so not for the key light either (three.js draws every caster
+  // into the shadow map, transparent or not)
+  const casters = (root: THREE.Object3D, keep: (o: THREE.Mesh) => boolean = () => true): THREE.Mesh[] => {
+    const list: THREE.Mesh[] = [];
+    root.traverse((o) => {
+      if (o instanceof THREE.Mesh && o.castShadow && keep(o)) list.push(o);
+    });
+    return list;
+  };
+  const perSide = <T,>(f: (s: Side) => T): Record<Side, T> => ({ front: f('front'), rear: f('rear'), left: f('left'), right: f('right') });
+  const ofMaterial = (m: THREE.Material): THREE.Mesh[] => casters(scene, (o) => o.material === m);
+  const onWall = perSide((s) => casters(shaft.sides[s])), roomWalls = perSide((s) => ofMaterial(M.roomWalls[s])), roof = ofMaterial(M.roof);
+  const cast = (list: readonly THREE.Mesh[], on: boolean): void => {
+    for (const o of list) o.castShadow = on;
   };
 
   const W = I.W / 1000, D = I.D / 1000, wall = I.wall / 1000, R = I.room;
@@ -180,16 +184,17 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
       const out = outside(cam, wall * 0.5), beyond = outside(target, wall);
       for (const side of SIDES) {
         const faint = out[side] || beyond[side];
-        ghost(M.walls[side], faint);
-        ghost(M.landing[side], faint, 0.35);
-        ghost(M.floors[side], faint, 0.2);
+        if (M.ghost(M.walls[side], faint)) cast(onWall[side], !faint);
+        M.ghost(M.landing[side], faint, 0.35);
+        M.ghost(M.floors[side], faint, 0.2);
       }
       const rb = machine.bounds;
       if (rb) {
         const roomOut: Record<Side, boolean> = { front: cam.z > -rb.y0 / 1000, rear: cam.z < -rb.y1 / 1000, left: cam.x < rb.x0 / 1000, right: cam.x > rb.x1 / 1000 };
-        for (const side of SIDES) ghost(M.roomWalls[side], roomOut[side], 0.1);
+        for (const side of SIDES) if (M.ghost(M.roomWalls[side], roomOut[side], 0.1)) cast(roomWalls[side], !roomOut[side]);
       }
-      ghost(M.roof, cam.y > (rb?.top ?? S.ceiling + 2600) / 1000, 0.08);
+      const above = cam.y > (rb?.top ?? S.ceiling + 2600) / 1000;
+      if (M.ghost(M.roof, above, 0.08)) cast(roof, !above);
     },
     focus(view, f) {
       const s = f?.s ?? 0;
