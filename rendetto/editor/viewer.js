@@ -1,20 +1,33 @@
 // 3D view: boards with decor materials, doors swinging on their hinge edge, drawers sliding on their slides,
-// exploded assembly, drilled holes, purchased items, and an optional room around the furniture.
+// exploded assembly, drilled holes, purchased items — in a photo studio corner or in a room.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { MaterialCache } from './viewer-materials.js';
 import { S } from './viewer-hw.js';
-import { extents, addSymbols, lightFor, buildRoom } from './viewer-scene.js';
+import { extents, addSymbols } from './viewer-scene.js';
+import { Stage, TONE_MAPPING } from './viewer-studio.js';
+import { Pipeline } from './viewer-render.js';
+import { addSlides } from './viewer-slides.js';
 import { reduceMotion } from './dom.js';
-import { addHinges, addHoles, faceMaterials, remapUv } from './viewer-parts.js';
+import {
+  addHinges,
+  addHingeArms,
+  addHoles,
+  addShelfPins,
+  boardMeshes,
+  faceMaterials,
+} from './viewer-parts.js';
 
 export class Viewer {
   constructor(host) {
     this.host = host;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // no canvas antialiasing: the frames are multisampled off screen and refined while the camera rests
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: false,
+      powerPreference: 'high-performance',
+    });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.toneMapping = THREE.NeutralToneMapping;
+    this.renderer.toneMapping = TONE_MAPPING;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     host.appendChild(this.renderer.domElement);
@@ -24,11 +37,6 @@ export class Viewer {
       '3D изглед на мебелта: влачи за въртене, колелце за мащаб',
     );
     this.scene = new THREE.Scene();
-    this.scene.environment = new THREE.PMREMGenerator(this.renderer).fromScene(
-      new RoomEnvironment(),
-      0.04,
-    ).texture;
-    this.scene.environmentIntensity = 0.85;
     this.camera = new THREE.PerspectiveCamera(32, 1, 0.01, 60);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = !reduceMotion.matches;
@@ -38,39 +46,40 @@ export class Viewer {
     this.controls.addEventListener('start', () => {
       this.userMoved = true;
     });
-    this.sun = new THREE.DirectionalLight(0xffffff, 1.6);
-    this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
-    this.sun.shadow.radius = 5;
-    this.sun.shadow.bias = -0.0004;
-    this.sun.shadow.normalBias = 0.01;
-    this.scene.add(this.sun, this.sun.target, new THREE.HemisphereLight(0xffffff, 0x8a8170, 0.35));
-    this.ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(20, 20),
-      new THREE.ShadowMaterial({ opacity: 0.2 }),
-    );
-    this.ground.rotation.x = -Math.PI / 2;
-    this.ground.receiveShadow = true;
-    this.scene.add(this.ground);
-    this.roomGroup = new THREE.Group();
-    this.roomGroup.visible = false;
-    this.scene.add(this.roomGroup);
+    this.mats = new MaterialCache(this.renderer);
+    this.stage = new Stage(this);
     this.root = new THREE.Group();
     this.scene.add(this.root);
-    this.mats = new MaterialCache(this.renderer);
+    this.pipeline = new Pipeline(this.renderer, this.scene, this.camera);
     this.open = 0;
     this.explode = 0;
     this.showOps = true;
     this.dirty = true;
+    // a lost and restored WebGL context loses the baked textures: rebake them with the model on screen
+    this.renderer.domElement.addEventListener('webglcontextrestored', () => {
+      this.mats.reset();
+      if (this.model) this.setModel(this.model);
+    });
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(host);
     this.resize();
+    const light = (k) => this.stage.jitter(k);
     const loop = () => {
       const moved = this.controls.update();
       if (this.dirty || moved) {
-        this.renderer.render(this.scene, this.camera);
+        this.pipeline.reset();
+        this.stage.updateFog(this.camera, this.controls.target);
+        if (this.photo?.active) this.photo.moved();
         this.dirty = false;
       }
+      // a changed scene is handed to the path tracer once it settles (sliders send many changes)
+      if (this.photoStale && performance.now() - this.photoStale > 160) {
+        this.photoStale = 0;
+        this.photo.start();
+      }
+      if (this.photo?.active && !this.photoStale) {
+        if (this.photo.render()) this.onPhoto?.(this.photo.samples);
+      } else if (!this.pipeline.done) this.pipeline.render(light);
       this.raf = requestAnimationFrame(loop);
     };
     this.raf = requestAnimationFrame(loop);
@@ -80,11 +89,37 @@ export class Viewer {
     this.dirty = true;
   }
 
+  // Something in the scene changed: the photorealistic view rebuilds its copy (debounced in the loop).
+  changed() {
+    this.invalidate();
+    if (this.photo?.active) this.photoStale = performance.now();
+  }
+
+  // Photorealistic view on/off. The path tracer is loaded on first use; resolves to false if it cannot run here.
+  async setPhoto(on) {
+    if (!on) {
+      this.photo?.stop();
+      this.photoStale = 0;
+      this.invalidate();
+      return true;
+    }
+    if (!this.photo) {
+      const mod = await import('./viewer-photo.js');
+      if (!mod.photoSupported(this.renderer)) return false;
+      this.photo = new mod.PhotoRenderer(this);
+      this.photoTarget = mod.TARGET_SAMPLES;
+    }
+    this.photo.start();
+    this.invalidate();
+    return true;
+  }
+
   resize() {
     const w = this.host.clientWidth;
     const h = this.host.clientHeight;
     if (!w || !h) return;
     this.renderer.setSize(w, h, false);
+    this.pipeline.setSize(w, h, this.renderer.getPixelRatio());
     const changed = Math.abs(this.camera.aspect - w / h) > 0.05;
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
@@ -98,10 +133,12 @@ export class Viewer {
   }
 
   setModel(model) {
+    this.model = model;
     for (const child of [...this.root.children]) {
       child.traverse((o) => o.geometry?.dispose());
       this.root.remove(child);
     }
+    this.mats.pinned = new Set();
     const ext = extents(model);
     this.ext = ext;
     this.off = [-(ext.x0 + ext.x1) / 2, 0, -(ext.z0 + ext.z1) / 2];
@@ -116,12 +153,10 @@ export class Viewer {
     for (const part of model.parts) {
       const size = [0, 1, 2].map((i) => (part.box.max[i] - part.box.min[i]) * S);
       const centre = this.P(...[0, 1, 2].map((i) => (part.box.max[i] + part.box.min[i]) / 2));
-      const geo = new THREE.BoxGeometry(...size);
-      remapUv(geo, part);
-      const mesh = new THREE.Mesh(geo, faceMaterials(this.mats, part));
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
+      const mesh = new THREE.Group();
+      mesh.add(...boardMeshes(part, size, faceMaterials(this.mats, part)));
       mesh.userData.centre = centre.clone();
+      mesh.userData.part = part;
       meshOf.set(part.id, mesh);
       const door = doors.get(part.id);
       const drawer = drawerOf.get(part.id);
@@ -166,18 +201,21 @@ export class Viewer {
         });
       }
       addHoles(this, mesh, part, centre, holeGeo);
+      addHingeArms(this, mesh, part, centre);
     }
+    addShelfPins(this, model, meshOf);
+    addSlides(this, model, meshOf, drawerHolders);
+    holeGeo.dispose(); // only its merged copies are on screen
     addSymbols(this, model, meshOf);
     this.applyPose();
-    lightFor(this, ext);
-    buildRoom(this, ext);
+    this.stage.fit(ext, this.off);
     if (!this.framed || this.lastType !== model.spec.type) {
       this.userMoved = false;
       this.frame();
     }
     this.lastType = model.spec.type;
     this.framed = true;
-    this.invalidate();
+    this.changed();
   }
 
   frame() {
@@ -223,13 +261,12 @@ export class Viewer {
     this.root.traverse((o) => {
       if (o.userData.ops) o.visible = on;
     });
-    this.invalidate();
+    this.changed();
   }
 
   setRoom(on) {
-    this.roomGroup.visible = on;
-    this.ground.visible = !on;
-    this.invalidate();
+    this.stage.setRoom(on);
+    this.changed();
   }
 
   applyPose() {
@@ -246,7 +283,8 @@ export class Viewer {
         it.holder.rotation.y =
           (it.part.hingeSide === 'left' ? -1 : 1) * THREE.MathUtils.degToRad(105 * this.open);
       if (it.kind === 'drawer') it.holder.position.z += it.travel * S * this.open;
+      if (it.kind === 'slide') it.holder.position.z += it.travel * S * this.open * 0.5;
     }
-    this.invalidate();
+    this.changed();
   }
 }

@@ -18,6 +18,9 @@ const email = process.env.BROCHURE_EMAIL ?? '';
 const password = process.env.BROCHURE_PASSWORD ?? '';
 /** Колко стъпки с колелцето приближават сцената, за да запълни кухнята кадъра. */
 const ZOOM_STEPS = 4;
+/** Изгледът се доизчиства, докато камерата стои; снимката се прави, когато два поредни кадъра съвпаднат. */
+const SETTLE_MS = 12000;
+const SETTLE_LIMIT_MS = 15 * 60 * 1000;
 
 async function main(): Promise<void> {
   if (!email || !password) {
@@ -54,14 +57,22 @@ async function main(): Promise<void> {
       await page.mouse.wheel(0, -240);
       await page.waitForTimeout(200);
     }
-    await page.waitForTimeout(800);
+    const clip = { x: box.x + 2, y: box.y + 2, width: box.width - 4, height: box.height - 4 };
+    const started = Date.now();
+    let last = await page.screenshot({ clip });
+    for (;;) {
+      await page.waitForTimeout(SETTLE_MS);
+      const next = await page.screenshot({ clip });
+      if (next.equals(last) || Date.now() - started > SETTLE_LIMIT_MS) break;
+      last = next;
+    }
     mkdirSync(join(ROOT, 'print', 'assets'), { recursive: true });
     const file = join(ROOT, 'print', 'assets', 'kitchen-3d.jpg');
     await page.screenshot({
       path: file,
       type: 'jpeg',
       quality: 88,
-      clip: { x: box.x + 2, y: box.y + 2, width: box.width - 4, height: box.height - 4 },
+      clip,
     });
     await page.goto(`${base}/app`);
     await page.click(`form[action="/app/p/${id}/delete"] button[type=submit]`);

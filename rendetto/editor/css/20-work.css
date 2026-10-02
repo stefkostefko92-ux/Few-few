@@ -81,6 +81,16 @@
   min-width: 40px;
   color: var(--ink-2);
 }
+/* the photorealistic view: the toggle shows when it is on, the status reads as a sentence */
+.viewbar #photo[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.viewbar #photo-state {
+  font: 400 13px var(--f-ui);
+  min-width: 0;
+}
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));

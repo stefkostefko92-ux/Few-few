@@ -72,6 +72,8 @@
     "playwright": "1.56.1",
     "prettier": "^3.9.9",
     "three": "0.186.1",
+    "three-gpu-pathtracer": "0.0.26",
+    "three-mesh-bvh": "0.9.15",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   }

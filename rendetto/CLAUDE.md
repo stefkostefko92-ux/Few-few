@@ -11,7 +11,8 @@ Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · EJS (сърв�
 CSP с nonce, `style-src-attr 'none'`) · Prisma 6 + PostgreSQL · zod на всеки външен вход · pino (без
 PII) · Argon2id · TOTP (RFC 6238, без зависимости) · DB-IP Lite за държава по IP. Двигателят
 (`engine/`, обикновен ESM JS) е общ за сървъра и редактора; редакторът (`editor/`) се събира с
-esbuild заедно с three.js в `public/editor/` — без CDN.
+esbuild заедно с three.js в `public/editor/` — без CDN. Фотореалистичният изглед (three-gpu-pathtracer +
+three-mesh-bvh) е отделно парче в `public/editor/chunks/`, зарежда се само при натискане на бутона.
 
 ## Команди (гейтът)
 
@@ -42,7 +43,9 @@ src/
   plans/              ценоразпис (цели центове) и състояние на плана
   seo/                JSON-LD
 engine/               двигателят (модел, разкрой, пробиване, CAM, DXF, чертежи)
-editor/               UI на редактора (браузър)
+editor/               UI на редактора (браузър); 3D: viewer.js (сцена) · viewer-render.js (AO + натрупване, докато
+                      камерата стои) · viewer-studio.js (студио, ключова светлина) · viewer-photo.js (path tracing)
+                      · tex-*.js (декорите се „изпичат“ процедурно на видеокартата: цвят, релеф, грапавост)
 views/                EJS: landing/, legal/ (съдържанието по език в legal/<страница>/<език>.ejs),
                       auth/, app/, account/, admin/, partials/
 locales/<език>/       common · auth · account · admin · mail · editor · landing (.json); bg е източникът,

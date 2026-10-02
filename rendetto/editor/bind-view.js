@@ -1,5 +1,6 @@
 // The 3D view and its controls: open the fronts, explode the assembly (animated unless reduced motion is on),
-// show the drilled holes, put the furniture in a room. Without WebGL the other tabs still work.
+// show the drilled holes, put the furniture in a room, the photorealistic view and its PNG. Without WebGL the other
+// tabs still work.
 import { $, esc, reduceMotion } from './dom.js';
 import { Viewer } from './viewer.js';
 
@@ -22,6 +23,7 @@ export function createViewer(text) {
   });
   $('#ops').addEventListener('change', (ev) => viewer?.setShowOps(ev.target.checked));
   $('#room').addEventListener('change', (ev) => viewer?.setRoom(ev.target.checked));
+  bindPhoto(viewer, text);
   $('#explode-play').addEventListener('click', () => {
     const el = $('#explode');
     const target = Number(el.value) > 50 ? 0 : 100;
@@ -42,4 +44,58 @@ export function createViewer(text) {
     requestAnimationFrame(step);
   });
   return viewer;
+}
+
+function bindPhoto(viewer, text) {
+  const button = $('#photo');
+  const save = $('#photo-save');
+  const state = $('#photo-state');
+  if (!viewer) {
+    button.hidden = true;
+    return;
+  }
+  let on = false;
+  let shown = -1;
+  // announced in steps of 10 % (the status is a polite live region)
+  viewer.onPhoto = (samples) => {
+    const pct = Math.min(100, Math.floor((samples / viewer.photoTarget) * 10) * 10);
+    if (pct === shown || !on) return;
+    shown = pct;
+    state.textContent =
+      pct >= 100 ? text.photoReady : text.photoProgress.replace('{pct}', String(pct));
+  };
+  button.addEventListener('click', async () => {
+    on = !on;
+    shown = -1;
+    button.setAttribute('aria-pressed', String(on));
+    save.hidden = !on;
+    state.textContent = on ? text.photoPreparing : '';
+    try {
+      const ok = await viewer.setPhoto(on);
+      if (!ok) {
+        on = false;
+        button.setAttribute('aria-pressed', 'false');
+        button.disabled = true;
+        save.hidden = true;
+        state.textContent = text.photoUnsupported;
+      }
+    } catch {
+      on = false;
+      button.setAttribute('aria-pressed', 'false');
+      save.hidden = true;
+      state.textContent = text.photoFailed;
+      await viewer.setPhoto(false);
+    }
+  });
+  save.addEventListener('click', async () => {
+    const blob = await viewer.photo?.snapshot();
+    if (!blob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `rendetto-${new Date().toISOString().slice(0, 10)}.png`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  });
 }

@@ -1,7 +1,7 @@
 <%- include('../partials/head', { title: project.name + ' — Rendetto', styles: ['app'], noindex: true, extraHead: '<link rel="stylesheet" href="/static/editor/editor.css?v=' + v + '">' }) %>
 <body class="appbody editor-body">
 <%- include('../partials/app-header') %>
-<main class="editor" id="main" lang="bg" data-readonly="<%= readOnly ? 'true' : 'false' %>" data-csrf="<%= csrfToken %>" data-text="<%= JSON.stringify({ saving: te('editor.saving'), unsaved: te('editor.unsaved'), saved: te('editor.saved'), saveFailed: te('editor.saveFailed'), noWebgl: te('editor.noWebgl') }) %>">
+<main class="editor" id="main" lang="bg" data-readonly="<%= readOnly ? 'true' : 'false' %>" data-csrf="<%= csrfToken %>" data-text="<%= JSON.stringify({ saving: te('editor.saving'), unsaved: te('editor.unsaved'), saved: te('editor.saved'), saveFailed: te('editor.saveFailed'), noWebgl: te('editor.noWebgl'), photoPreparing: te('editor.photoPreparing'), photoProgress: te('editor.photoProgress'), photoReady: te('editor.photoReady'), photoUnsupported: te('editor.photoUnsupported'), photoFailed: te('editor.photoFailed') }) %>">
   <div class="ed-top">
     <a class="btn btn-quiet btn-small" href="/app"><%- include('../partials/icon', { name: 'back' }) %><span><%= te('editor.back') %></span></a>
     <div class="ed-title">
@@ -111,6 +111,9 @@
           <button type="button" class="btn btn-small" id="explode-play"><%= te('editor.explodePlay') %></button>
           <label class="check" for="ops"><input type="checkbox" id="ops" checked><span><%= te('editor.showHoles') %></span></label>
           <label class="check" for="room"><input type="checkbox" id="room"><span><%= te('editor.room') %></span></label>
+          <button type="button" class="btn btn-small" id="photo" aria-pressed="false"><%= te('editor.photo') %></button>
+          <button type="button" class="btn btn-small" id="photo-save" hidden><%= te('editor.photoSave') %></button>
+          <output id="photo-state" class="hint" aria-live="polite"></output>
         </div>
         <p class="hint"><%= te('editor.viewHint') %></p>
       </section>

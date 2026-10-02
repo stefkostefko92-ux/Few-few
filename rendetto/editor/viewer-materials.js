@@ -1,215 +1,219 @@
-// Procedural board materials for the 3D view: decor colour from the catalog (hex, and a darker tone for wood),
-// wood grain or fine speckle drawn on a canvas, gloss from the decor finish. No photographs are used.
+// Physical materials for the 3D view. Every decor is baked on the GPU from its kind and name (wood, stone,
+// concrete, metal look, fabric, plain) into colour, normal and roughness maps at real size, its average colour
+// calibrated to the catalogue. Lacquered MDF, the raw chipboard edge, HDF, the metals of the hardware, the mattress
+// cover and the room are built the same way. No photographs are used.
 import * as THREE from 'three';
 import { decor } from '../engine/materials.js';
+import { Baker, disposeBake } from './tex-bake.js';
+import { woodSpec } from './tex-wood.js';
+import { stoneSpec } from './tex-stone.js';
+import { surfaceSpec, decorSurface } from './tex-surface.js';
+import { metalLook } from './viewer-metals.js';
+import { surfaceMaterial } from './viewer-surfaces.js';
 
-function rng(seed) {
-  let s = seed >>> 0 || 1;
-  return () => {
-    s ^= s << 13;
-    s ^= s >>> 17;
-    s ^= s << 5;
-    return (s >>> 0) / 4294967296;
-  };
-}
 const hashStr = (str) => [...str].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-
-function shade(hex, f) {
-  const c = new THREE.Color(hex);
-  c.multiplyScalar(f);
-  return `#${c.getHexString()}`;
-}
-
-function woodCanvas(base, dark, seed, w = 1024, h = 512) {
-  const c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
-  const g = c.getContext('2d');
-  g.fillStyle = base;
-  g.fillRect(0, 0, w, h);
-  const r = rng(seed);
-  for (let i = 0; i < 900; i++) {
-    const y0 = r() * h;
-    const amp = 0.3 + r() * 2.2;
-    const freq = (0.001 + r() * 0.003) * Math.PI * 2;
-    const ph = r() * 10;
-    g.beginPath();
-    for (let x = 0; x <= w; x += 16) {
-      const y = y0 + Math.sin(x * freq + ph) * amp + Math.sin(x * freq * 0.37 + ph * 2) * amp * 0.6;
-      if (x === 0) g.moveTo(x, y);
-      else g.lineTo(x, y);
-    }
-    g.strokeStyle = dark;
-    g.globalAlpha = 0.03 + r() * 0.11;
-    g.lineWidth = 0.3 + r() * 1.4;
-    g.stroke();
-  }
-  g.fillStyle = dark;
-  for (let i = 0; i < 4200; i++) {
-    g.globalAlpha = 0.07 + r() * 0.18;
-    g.fillRect(r() * w, r() * h, 2 + r() * 7, 0.5 + r() * 0.5);
-  }
-  g.globalAlpha = 1;
-  return c;
-}
-
-function speckCanvas(base, amount, seed, size = 256) {
-  const c = document.createElement('canvas');
-  c.width = size;
-  c.height = size;
-  const g = c.getContext('2d');
-  g.fillStyle = base;
-  g.fillRect(0, 0, size, size);
-  const r = rng(seed);
-  for (let i = 0; i < size * size * amount; i++) {
-    g.fillStyle = r() > 0.5 ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)';
-    g.globalAlpha = 0.02 + r() * 0.05;
-    g.fillRect(r() * size, r() * size, 1 + r() * 1.5, 1 + r() * 1.5);
-  }
-  return c;
-}
-
-function chipCanvas() {
-  const size = 256;
-  const c = document.createElement('canvas');
-  c.width = size;
-  c.height = size;
-  const g = c.getContext('2d');
-  g.fillStyle = '#c9ad84';
-  g.fillRect(0, 0, size, size);
-  const r = rng(17);
-  for (let i = 0; i < 2600; i++) {
-    const t = r();
-    g.fillStyle = t < 0.4 ? '#8e7350' : t < 0.75 ? '#e2c9a0' : '#a88a60';
-    g.globalAlpha = 0.5 + r() * 0.5;
-    g.fillRect(r() * size, r() * size, 1 + r() * 4, 1 + r() * 3);
-  }
-  return c;
-}
-
-const ROUGH = {
-  gloss: 0.14,
-  'high-gloss': 0.1,
-  satin: 0.34,
-  pearl: 0.36,
-  matt: 0.52,
-  'super-matt': 0.62,
+const LACQUER = {
+  gloss: { roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.03 },
+  'high-gloss': { roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 },
+  satin: { roughness: 0.4, clearcoat: 0.35, clearcoatRoughness: 0.35 },
+  matt: { roughness: 0.62, clearcoat: 0, clearcoatRoughness: 0.5 },
 };
-
-// Finish → metal look for handles and hardware.
-const FINISH = [
-  [
-    /черен|black|графит|graphite|антрацит|anthracite/i,
-    { color: 0x1d1d1f, metalness: 0.55, roughness: 0.5 },
+// tile size (mm) and texture size per surface style: fine structures need small tiles to be resolved
+const SURFACE_TILE = {
+  pearl: [
+    [220, 220],
+    [512, 512],
   ],
-  [/злат|gold|месинг|brass|шампан|champagne/i, { color: 0xc6a15b, metalness: 1, roughness: 0.3 }],
-  [
-    /бронз|bronze|антик|antique|мед|copper|кафяв|brown/i,
-    { color: 0x6e4b2a, metalness: 0.9, roughness: 0.42 },
+  groove: [
+    [240, 240],
+    [512, 512],
   ],
-  [/бял|white/i, { color: 0xf0efea, metalness: 0, roughness: 0.4 }],
-  [/хром|chrome|гланц/i, { color: 0xdfe2e4, metalness: 1, roughness: 0.12 }],
-];
+  linen: [
+    [160, 160],
+    [1024, 1024],
+  ],
+  canvas: [
+    [200, 200],
+    [1024, 1024],
+  ],
+  oxidized: [
+    [900, 900],
+    [1024, 1024],
+  ],
+  sparkle: [
+    [260, 260],
+    [1024, 1024],
+  ],
+};
+const MAX_BAKES = 10; // decors kept on the GPU; the oldest unused one is freed first
 
 export class MaterialCache {
   constructor(renderer) {
-    this.renderer = renderer;
-    this.textures = new Map();
+    this.baker = new Baker(renderer);
+    this.bakes = new Map();
     this.materials = new Map();
   }
 
-  texture(key, make, repeat) {
-    if (!this.textures.has(key)) {
-      const t = new THREE.CanvasTexture(make());
-      t.colorSpace = THREE.SRGBColorSpace;
-      t.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-      t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping;
-      if (repeat) t.repeat.set(repeat[0], repeat[1]);
-      this.textures.set(key, t);
+  // the decors of the model on screen are never evicted (`pinned` is reset by the viewer for each model)
+  baked(key, spec) {
+    this.pinned?.add(key);
+    let b = this.bakes.get(key);
+    if (b) {
+      this.bakes.delete(key);
+      this.bakes.set(key, b);
+      return b;
     }
-    return this.textures.get(key);
+    b = this.baker.bake(typeof spec === 'function' ? spec() : spec);
+    this.bakes.set(key, b);
+    if (this.bakes.size > MAX_BAKES) this.evict();
+    return b;
+  }
+
+  // free the least recently used decor that no live mesh needs (materials keyed by it are dropped too)
+  evict() {
+    for (const [key, b] of this.bakes) {
+      if (this.pinned?.has(key)) continue;
+      disposeBake(b);
+      this.bakes.delete(key);
+      for (const [mk, m] of this.materials)
+        if (m.userData.bake === key) {
+          m.dispose();
+          this.materials.delete(mk);
+        }
+      return;
+    }
+  }
+
+  // after a lost WebGL context the baked textures are gone: forget everything, the next model bakes again
+  reset() {
+    for (const b of this.bakes.values()) disposeBake(b);
+    for (const m of this.materials.values()) m.dispose();
+    this.bakes.clear();
+    this.materials.clear();
   }
 
   get(key, make) {
     if (!this.materials.has(key)) this.materials.set(key, make());
-    return this.materials.get(key);
+    const m = this.materials.get(key);
+    if (m.userData.bake) this.pinned?.add(m.userData.bake);
+    return m;
   }
 
-  // Board face or edge band in a decor (or a RAL lacquer).
+  textured(bakeKey, spec, params) {
+    const b = this.baked(bakeKey, spec);
+    const m = new THREE.MeshPhysicalMaterial({
+      map: b.map,
+      normalMap: b.normalMap ?? null,
+      roughnessMap: b.ormMap ?? null,
+      metalnessMap: b.ormMap ?? null,
+      roughness: 1,
+      metalness: 1,
+      ...params,
+    });
+    m.userData.bake = bakeKey;
+    return m;
+  }
+
+  decorBake(d, id) {
+    const seed = hashStr(id);
+    if (d.category === 'wood') return [`wood:${id}`, () => woodSpec(d, seed)];
+    if (d.category === 'stone' || d.category === 'concrete')
+      return [`stone:${id}`, () => stoneSpec(d, seed)];
+    const look = decorSurface(d);
+    const [span, size] = SURFACE_TILE[look.style] ?? [
+      [300, 300],
+      [1024, 1024],
+    ];
+    return [`surf:${id}`, () => surfaceSpec({ ...look, hex: d.hex, seed, span, size })];
+  }
+
+  // Board face or edge band in a decor, or a RAL lacquer (MDF fronts are painted on the edges too).
   board(decorId, edge = false) {
     return this.get(`${edge ? 'band' : 'face'}:${decorId}`, () => {
       const d = decor(decorId);
-      const rough = ROUGH[d.finish] ?? 0.45;
-      if (d.painted)
-        return new THREE.MeshPhysicalMaterial({
-          color: d.hex,
-          roughness: 0.32,
-          clearcoat: 0.35,
-          clearcoatRoughness: 0.35,
-        });
-      const seed = hashStr(decorId);
-      let map;
-      if (d.category === 'wood')
-        map = this.texture(`wood:${decorId}`, () =>
-          woodCanvas(d.hex, d.hexDark ?? shade(d.hex, 0.68), seed),
-        );
-      else if (d.category === 'stone' || d.category === 'concrete')
-        map = this.texture(`stone:${decorId}`, () => speckCanvas(d.hex, 0.45, seed), [9, 4.5]);
-      else map = this.texture(`uni:${decorId}`, () => speckCanvas(d.hex, 0.025, seed), [9, 4.5]);
-      return new THREE.MeshPhysicalMaterial({
-        map,
-        roughness: edge ? Math.max(0.1, rough - 0.08) : rough,
-        metalness: 0,
-        clearcoat: rough < 0.2 ? 0.6 : 0.08,
-        clearcoatRoughness: 0.5,
+      if (d.painted) return this.lacquer(d);
+      const [key, spec] = this.decorBake(d, decorId);
+      const gloss = d.finish === 'gloss' || d.finish === 'high-gloss';
+      // the ABS band is extruded, a touch smoother than the pressed face; plain decors have only a fine pearl
+      const relief =
+        (key.startsWith('surf:') && decorSurface(d).style === 'pearl' ? 0.45 : 1) *
+        (edge ? 0.5 : 1);
+      return this.textured(key, spec, {
+        normalScale: new THREE.Vector2(relief, relief),
+        roughness: edge ? 0.9 : 1,
+        clearcoat: gloss ? 1 : 0,
+        clearcoatRoughness: 0.04,
       });
     });
   }
 
-  raw() {
-    return this.get(
-      'raw',
+  lacquer(d) {
+    const finish = LACQUER[d.finish] ?? LACQUER.satin;
+    const m = this.textured(
+      'pearl:lacquer',
       () =>
-        new THREE.MeshStandardMaterial({
-          map: this.texture('chip', chipCanvas, [13, 6.5]),
-          roughness: 0.9,
+        surfaceSpec({
+          style: 'pearl',
+          hex: '#ffffff',
+          span: [160, 160],
+          size: [512, 512],
+          gloss: 1,
+          match: false,
         }),
+      {
+        map: null,
+        color: new THREE.Color(d.hex),
+        roughness: finish.roughness,
+        metalness: 0,
+        metalnessMap: null,
+        ...finish,
+      },
     );
+    m.normalScale.set(0.35, 0.35);
+    return m;
+  }
+
+  raw() {
+    return surfaceMaterial(this, 'raw');
   }
 
   hdf(face) {
-    return this.get(
-      `hdf:${face}`,
-      () =>
-        new THREE.MeshStandardMaterial({
-          map: this.texture(
-            `hdf:${face}`,
-            () => speckCanvas(face ? '#f1f0ec' : '#8b6b4e', face ? 0.02 : 0.12, face ? 9 : 11, 128),
-            [18, 9],
-          ),
-          roughness: face ? 0.5 : 0.85,
-        }),
-    );
+    return surfaceMaterial(this, face ? 'hdfFace' : 'hdfBack');
   }
 
-  metal(finish = '') {
-    const hit = FINISH.find(([re]) => re.test(finish));
-    const p = hit ? hit[1] : { color: 0xb9bec2, metalness: 1, roughness: 0.32 };
-    return this.get(`metal:${p.color}`, () => new THREE.MeshPhysicalMaterial(p));
+  metal(finish = '', color = '') {
+    const look = metalLook(finish, color);
+    return this.get(`metal:${look.key}`, () => {
+      if (look.wood) return this.board('demo:walnut');
+      return new THREE.MeshPhysicalMaterial(look.params);
+    });
   }
 
   floor() {
-    return this.get(
-      'floor',
-      () =>
-        new THREE.MeshStandardMaterial({
-          map: this.texture('floor', () => woodCanvas('#b89a74', '#7d6447', 99), [2, 4]),
-          roughness: 0.62,
-        }),
-    );
+    return surfaceMaterial(this, 'floor');
+  }
+
+  wall() {
+    return surfaceMaterial(this, 'wall');
+  }
+
+  skirting() {
+    return this.get('skirting', () => this.lacquer({ hex: '#f1f0ea', finish: 'satin' }));
+  }
+
+  fabric() {
+    return surfaceMaterial(this, 'fabric');
+  }
+
+  border() {
+    return surfaceMaterial(this, 'border');
+  }
+
+  beech() {
+    return surfaceMaterial(this, 'beech');
   }
 
   plain(key, params) {
-    return this.get(key, () => new THREE.MeshStandardMaterial(params));
+    return this.get(key, () => new THREE.MeshPhysicalMaterial(params));
   }
 }

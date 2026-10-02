@@ -1,14 +1,20 @@
-// Scene helpers for the 3D view: model extents, purchased items around the boards, sun and shadow bounds, room.
+// Scene helpers for the 3D view: model extents and the purchased items around the boards.
 import * as THREE from 'three';
-import {
-  S,
-  handleMesh,
-  legMesh,
-  railMesh,
-  slatsMesh,
-  mattressMesh,
-  worktopMesh,
-} from './viewer-hw.js';
+import { S, legMesh, railMesh, slatsMesh, mattressMesh, worktopMesh } from './viewer-hw.js';
+import { handleMesh } from './viewer-handles.js';
+
+// What a handle needs to know about its front: thickness, and for an edge handle the distance (handle-local, across
+// the handle) to the edge it hooks over — the top edge of a drawer front, the opening edge of a door.
+function frontOf(part, s) {
+  const out = { T: part.T * S, edge: 0.03 };
+  if (s.model.type !== 'edge') return out;
+  if (s.horizontal) out.edge = (part.box.max[1] - s.y) * S;
+  else {
+    const x = part.hingeSide === 'left' ? part.box.max[0] : part.box.min[0];
+    out.edge = -(x - s.x) * S;
+  }
+  return out;
+}
 
 export function extents(model) {
   const e = { x0: Infinity, x1: -Infinity, y1: 0, z0: Infinity, z1: -Infinity };
@@ -29,7 +35,7 @@ export function addSymbols(v, model, meshOf) {
     if (s.type === 'handle') {
       const mesh = meshOf.get(s.partId);
       if (!mesh) continue;
-      const g = handleMesh(v.mats, s);
+      const g = handleMesh(v.mats, s, frontOf(mesh.userData.part, s));
       g.position.copy(v.P(s.x, s.y, s.z).sub(mesh.userData.centre));
       mesh.add(g);
     } else if (s.type === 'leg') {
@@ -86,40 +92,4 @@ export function addSymbols(v, model, meshOf) {
     base: new THREE.Vector3(),
     explode: [0, -0.2, 0],
   });
-}
-
-export function lightFor(v, ext) {
-  const W = ext.x1 - ext.x0;
-  const D = ext.z1 - ext.z0;
-  const r = Math.hypot(W, ext.y1, D) * S * 0.5;
-  v.sun.position.set(r * 2.2, r * 3.2, r * 2.6);
-  v.sun.target.position.set(0, (ext.y1 * S) / 2, 0);
-  const cam = v.sun.shadow.camera;
-  cam.left = cam.bottom = -r * 1.8;
-  cam.right = cam.top = r * 1.8;
-  cam.near = 0.1;
-  cam.far = r * 10;
-  cam.updateProjectionMatrix();
-}
-
-export function buildRoom(v, ext) {
-  for (const c of [...v.roomGroup.children]) {
-    c.geometry?.dispose();
-    v.roomGroup.remove(c);
-  }
-  const W = Math.max(4.2, (ext.x1 - ext.x0) * S + 2.4);
-  const back = (ext.z0 + v.off[2]) * S - 0.002;
-  const wall = v.mats.plain('wall', { color: 0xe9e5dc, roughness: 0.92 });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, 4.2), v.mats.floor());
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.set(0, 0, back + 2.1);
-  floor.receiveShadow = true;
-  const bw = new THREE.Mesh(new THREE.PlaneGeometry(W, 2.7), wall);
-  bw.position.set(0, 1.35, back);
-  bw.receiveShadow = true;
-  const sw = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 2.7), wall);
-  sw.rotation.y = Math.PI / 2;
-  sw.position.set(-W / 2, 1.35, back + 2.1);
-  sw.receiveShadow = true;
-  v.roomGroup.add(floor, bw, sw);
 }

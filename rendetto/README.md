@@ -27,5 +27,7 @@ npm run dev                      # http://127.0.0.1:4320
 
 ## Лицензи на трети страни
 
-three.js (MIT, в `public/editor/editor.LEGAL.txt`), Geologica и JetBrains Mono (SIL OFL 1.1,
-`public/fonts/`), DB-IP Lite (CC BY 4.0 — „IP Geolocation by DB-IP“ в панела и в политиката).
+three.js, three-gpu-pathtracer и three-mesh-bvh (MIT — пълните текстове в
+`public/editor/THIRD-PARTY-LICENSES.txt`, сборката ги събира от всеки вграден пакет), Geologica и
+JetBrains Mono (SIL OFL 1.1, `public/fonts/`), DB-IP Lite (CC BY 4.0 — „IP Geolocation by DB-IP“ в
+панела и в политиката).
