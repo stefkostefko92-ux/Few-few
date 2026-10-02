@@ -5,6 +5,8 @@ on stdout. Layout only: every text and number arrives already written and format
 Fonts: DejaVu Sans registered from REPORT_FONT_DIR (Cyrillic, Greek and technical symbols); never the built-in
 Helvetica/Times. Works with ReportLab 3.6 (Debian bookworm) and later.
 """
+import base64
+import io
 import json
 import re
 import sys
@@ -16,7 +18,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
-from reportlab.platypus import CondPageBreak, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import CondPageBreak, Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 import fonts
 from plan_drawing import Plan
@@ -43,6 +46,7 @@ H2 = ParagraphStyle("h2", parent=BODY, fontName="DejaVu-Bold", fontSize=10.8, le
 H3 = ParagraphStyle("h3", parent=BODY, fontName="DejaVu-Bold", fontSize=9, leading=12, spaceBefore=5, spaceAfter=2)
 BOX = ParagraphStyle("box", parent=BODY, fontSize=8.4, leading=11.2, textColor=colors.HexColor("#6b4000"))
 VERDICT = ParagraphStyle("verdict", parent=BODY, fontName="DejaVu-Bold", fontSize=11, leading=14, spaceBefore=4)
+LETTER_NAME = ParagraphStyle("lettername", parent=BODY, fontName="DejaVu-Bold", fontSize=10, leading=13)
 
 PAGE_W, PAGE_H = A4
 MARGIN = 16 * mm
@@ -132,6 +136,27 @@ def sign(labels):
 
 
 DRAWING = {}  # colours, patterns and lettering of the views, from the model (ReportDoc.drawing)
+LOGO_W, LOGO_H = 42 * mm, 16 * mm  # the letterhead's logo box
+
+
+def letterhead(b):
+    """The sender on the left (its logo over its name and lines), the recipient on the right."""
+    left = []
+    img = (DRAWING.get("images") or {}).get(b["logo"]) if b.get("logo") else None
+    if img:
+        data = base64.b64decode(img["data"])
+        iw, ih = ImageReader(io.BytesIO(data)).getSize()
+        k = min(LOGO_W / iw, LOGO_H / ih)
+        left += [Image(io.BytesIO(data), width=iw * k, height=ih * k, hAlign="LEFT"), Spacer(1, 2.5 * mm)]
+    left += [p(x, LETTER_NAME if i == 0 else NOTE) for i, x in enumerate(b["from"])]
+    right = [p(x, LETTER_NAME if i == 1 else BODY) for i, x in enumerate(b["to"])]
+    t = Table([[left, right]], colWidths=[FRAME_W * 0.56, FRAME_W * 0.44])
+    t.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    return [t, Spacer(1, 7 * mm)]
 
 
 def room_under(blocks, i):
@@ -177,6 +202,8 @@ def flow(blocks):
             out.append(sign(b["labels"]))
         elif kind == "plan":
             out += [Spacer(1, 4), Plan(b, FRAME_W, DRAWING), Spacer(1, 4)]
+        elif kind == "letterhead":
+            out += letterhead(b)
         else:
             raise ValueError("unknown block " + kind)
     return out

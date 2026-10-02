@@ -209,7 +209,7 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   };
   const spec = machineSpec(analysis.ctx, analysis.ctx.N.mass, '', S.room, shape, made);
   const machine: MachineSpec = spec.rinvio ? { ...spec, rinvio: { ...spec.rinvio, auto: inp.auto.dx } } : spec;
-  const supportCk = supportChecks(L, machine, supportLoad(analysis.ctx, analysis.res.Mcw));
+  const supportCk = supportChecks(L, machine, supportLoad(analysis.ctx, analysis.res.Mcw), I.layout !== 'bottom');
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {

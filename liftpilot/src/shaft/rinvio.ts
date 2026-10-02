@@ -5,6 +5,7 @@
 // 736 mm); a maker's own, when the machine is one of its models with a bedplate in the catalogue
 // (src/lib/catalog/bedplates.ts), gives its heights, its code and the rope drops it takes. Millimetres over the room's
 // floor, along the rope drop line from the sheave's centre. Pure.
+import { ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
 import { machineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
 import type { MachineSupport } from './support';
@@ -69,3 +70,21 @@ export const sheaveAxisIn = (rf: RinvioFrame, D: number, shape: MachineShape | n
  *  pulley at `pu` (radius r) by KV_VERT.rinvioOverhang. */
 export const rinvioSpan = (x0: number, x1: number, pu: number, r: number): readonly [number, number] =>
   [Math.min(x0, pu - r) - KV_VERT.rinvioOverhang, Math.max(x1, pu + r) + KV_VERT.rinvioOverhang];
+
+/** Along the drop line: where the bedplate runs [u0, u1] (absolute u, as the room's drawings measure it). */
+export const rinvioRun = (M: MachineSpec, G: RoomGeo): readonly [number, number] => rinvioSpan(G.frame0, G.frame1, G.pulleyAt, M.Dp / 2);
+
+/** Across the drop line: where the bedplate runs [v0, v1], round the machine and the pulley, at least its width. */
+export function rinvioAcross(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): readonly [number, number] {
+  const half = ropeWidths(M.n, M.d).pulley, w = rf.maker?.width ?? KV_VERT.rinvioWidth;
+  let v0 = Math.min(G.across[0], -half) - 60, v1 = Math.max(G.across[1], half) + 60;
+  if (v1 - v0 < w) [v0, v1] = [(v0 + v1) / 2 - w / 2, (v0 + v1) / 2 + w / 2];
+  return [v0, v1];
+}
+
+/** The pulley's own stand on the floor (another support carries the machine): its ends along the drop line and across,
+ *  as the room's drawings draw it. */
+export function standBox(M: MachineSpec, G: RoomGeo): readonly [number, number, number, number] {
+  const r = M.Dp / 2, half = ropeWidths(M.n, M.d).pulley;
+  return [G.pulleyAt - r - 110, -half - 40, G.pulleyAt + r + 110, half + 40];
+}

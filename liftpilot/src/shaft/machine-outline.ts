@@ -107,3 +107,7 @@ export function machinePlan(at: (x: number, z: number) => Pt): Entity[] {
  *  the sheave's outer face. */
 export const MACHINE_X: readonly [number, number] = [-0.52, 1.12];
 export const MACHINE_Z: readonly [number, number] = [-0.2, MACHINE_A.zSheave + 0.05];
+
+/** The generic machine's top over its bedplate's underside, at Ø 560 [m]: the highest point of its elevation. */
+export const MACHINE_TOP: number = machineElevation((x, y) => [x, y]).reduce((top, e) => Math.max(top,
+  e.e === 'path' ? Math.max(...e.pts.map((p) => p[1])) : e.e === 'line' ? Math.max(e.a[1], e.b[1]) : e.e === 'circle' || e.e === 'arc' ? e.c[1] + e.r : top), 0);

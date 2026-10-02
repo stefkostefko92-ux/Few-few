@@ -6,7 +6,7 @@ import calcIt from '../../../messages/calc/it.json';
 import appIt from '../../../messages/it.json';
 import { deg } from '@/calc/math';
 import { PROFILO, VOCI, type Stato } from '@/calc/norme';
-import { COND, PALETTE, concreteTile } from '@/drawing';
+import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
 import { vociOfDesign } from '@/shaft';
 import type { BrakeCase, CheckId, CheckStatus, FormValues, TractionCase } from '@/calc/types';
 import type { BottomScheme } from '../lift/bottom';
@@ -25,6 +25,9 @@ import { machineSpec } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { rinvioRow, shapeRows } from './machine-shape';
 import { supportChecks, supportLoad } from '../lift/support';
+import { adviceBlocks } from './advice';
+import type { MachineAdvice } from '../lift/advice';
+import { catalogMachineOf } from '../order/machine';
 
 /** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
 const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
@@ -37,6 +40,11 @@ export interface ReportInput {
   calc: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; profileId: string; author: string | null };
   project: { name: string; address: string | null; city: string | null; province: string | null; plantNumber: string | null; client: string | null };
   company: string;
+  /** the letterhead: the company's city and logo */
+  companyCity?: string | null;
+  logo?: SheetImage | null;
+  /** the machine to order among SICOR's and Montanari's for this installation (src/lib/lift/advice.ts) */
+  advice?: MachineAdvice | null;
   reviews: readonly { name: string | null; role: keyof typeof appIt.roles | null; note: string | null; createdAt: Date }[];
   values: FormValues;
   /** the shaft design the calculation comes from, when there is one */
@@ -71,6 +79,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const counts = [...VOCI, ...vano].reduce<Partial<Record<Stato, number>>>((acc, v) => ({ ...acc, [v.stato]: (acc[v.stato] ?? 0) + 1 }), {});
   const countText = (Object.keys(STATO) as Stato[]).filter((s) => counts[s]).map((s) => `${counts[s]} ${STATO[s]}`).join(' · ');
 
+  B.push({ t: 'letterhead', logo: r.logo ? 'logo' : null, from: [r.company, ...(r.companyCity ? [r.companyCity] : [])], to: [] });
   B.push({ t: 'h1', text: `Relazione di calcolo — ${repl ? "sostituzione dell'argano" : "argano per impianto nuovo"}` });
   B.push({ t: 'sub', text: place ? `${pr.name} · ${place}` : pr.name });
   B.push({ t: 'box', text: `BOZZA DA VERIFICARE E FIRMARE. Documento generato dal software LiftPilot: diventa relazione di calcolo quando il tecnico incaricato lo verifica e lo firma, e la responsabilità è sua. I valori normativi marcati ⚠ provengono da fonti secondarie e attendono la verifica sul testo vigente (lista di verifica normativa del profilo ${PROFILO.id}; voci del registro: ${countText}).` });
@@ -109,7 +118,7 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   const made = m.catalog ? { brand: m.catalog.brand, model: m.catalog.model } : null;
   const machine = r.design ? machineSpec(ctx, N.mass, '', r.design.layout.inputs.room, made ? shapeOf(made.brand, made.model) : null, made) : null;
-  const beams = r.design && machine ? supportChecks(r.design.layout, machine, supportLoad(ctx, res.Mcw)) : [];
+  const beams = r.design && machine ? supportChecks(r.design.layout, machine, supportLoad(ctx, res.Mcw), I.layout !== 'bottom') : [];
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
@@ -117,7 +126,12 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
 
   section('Argano verificato');
-  B.push({ t: 'kv', rows: X.machineRows(N, res) });
+  // the maker and model: chosen from a catalogue in the one form, else recognised by the values (ratio, static load,
+  // mass, sheave)
+  const known = m.catalog ? null : catalogMachineOf(I, N)?.machine ?? null;
+  const named: [string, string][] = m.catalog ? [['Costruttore e modello', `${m.catalog.brand} ${m.catalog.model} (dal catalogo, scelto nel progetto)`]]
+    : known ? [['Costruttore e modello', `${known.brand} ${known.model} (riconosciuto dal catalogo: rapporto, carico statico, massa e puleggia coincidono; fonte: ${known.src})`]] : [];
+  B.push({ t: 'kv', rows: [...named, ...X.machineRows(N, res)] });
   if (m.machineProposed) {
     B.push({ t: 'p', style: 'note', text: 'Argano proposto dal dimensionamento del software: la prima opzione che passa ogni verifica, su una griglia di calcolo e '
       + 'non su un catalogo. Il modello reale va scelto con il costruttore con questi valori e la verifica ripetuta con i suoi dati di targa.' });
@@ -208,6 +222,11 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
   B.push({ t: 'p', text: X.critText(sizing), style: 'note' });
 
+  if (r.advice) {
+    section('Argano consigliato fra SICOR e Montanari (informativa)');
+    B.push(...adviceBlocks(r.advice, fmt));
+  }
+
   const adapt = adaptSection(C, repl, t);
   section(adapt.title);
   B.push(...adapt.blocks);
@@ -245,7 +264,7 @@ export function buildReport(r: ReportInput): ReportDoc {
       code: `SHA-256 ${r.calc.sha256}`,
     },
     blocks: B,
-    // the plan of the shaft design is drawn by the drawing kernel: its colours, concrete speckle and lettering
-    ...(r.design ? { drawing: { palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: {} } } : {}),
+    // the plan of the shaft design is drawn by the drawing kernel: its colours, concrete speckle and lettering; the logo
+    ...(r.design || r.logo ? { drawing: { palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: r.logo ? { logo: r.logo } : {} } } : {}),
   };
 }

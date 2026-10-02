@@ -55,7 +55,9 @@ export function seatRail(l: number, want: number, lo: number, hi: number, half: 
   const runs = flangeRuns(l), min = half - N1.pad + 0.5, max = half + N1.nose - 4;
   const miss = (s: number, side: number): number => {
     const heel = s + side * N1.heel;
-    return Math.min(...runs.map(([a, b]) => Math.max(a + 5 - s, s - (b - 5), 0))) + Math.max(0, -heel, heel - l);
+    let out = Infinity;
+    for (const [a, b] of runs) out = Math.min(out, Math.max(a + 5 - s, s - (b - 5), 0));
+    return out + Math.max(0, -heel, heel - l);
   };
   const clipAt = (c: number, side: number): { d: number; m: number; score: number } => {
     let pick = { d: min, m: Infinity, score: Infinity };

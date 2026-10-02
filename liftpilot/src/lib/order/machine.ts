@@ -6,7 +6,7 @@ import type { FormValues, Machine, Plant } from '@/calc/types';
 import { makerBedplate } from '@/lib/catalog/bedplates';
 import { MACHINES, ratioValue, type CatalogFit, type CatalogMachine } from '@/lib/catalog/machines';
 import { ADVICE_BRANDS, candidateOf, derivedCandidate, liftAdvice, valuesAdvice, type MachineAdvice, type MachineCandidate } from '@/lib/lift/advice';
-import { deriveLift, type LiftInputs } from '@/lib/lift/derive';
+import { deriveLift, type LiftDerived, type LiftInputs } from '@/lib/lift/derive';
 import { analyse } from '@/lib/present/analysis';
 
 export interface OrderMachine {
@@ -19,11 +19,12 @@ export interface OrderMachine {
 const pick = (machine: MachineCandidate | null | undefined, recorded: boolean, advice: MachineAdvice): OrderMachine | null =>
   (machine ? { machine, recorded, advice } : null);
 
-/** The order of a saved design (the one form's inputs). */
-export function designOrder(inp: LiftInputs): OrderMachine | null {
-  const advice = liftAdvice(inp), d = deriveLift(inp);
-  const own = d.origin.machine === 'auto' ? derivedCandidate(d) : null;
-  return pick(own, true, advice) ?? pick(advice.candidates[0], false, advice);
+/** The machine a saved design verified, when the software proposed it from a catalogue. */
+export const designMachine = (d: LiftDerived): MachineCandidate | null => (d.origin.machine === 'auto' ? derivedCandidate(d) : null);
+
+/** The order of a saved design (the one form's inputs); the advice and the derivation when the caller has them. */
+export function designOrder(inp: LiftInputs, advice: MachineAdvice = liftAdvice(inp), d: LiftDerived = deriveLift(inp)): OrderMachine | null {
+  return pick(designMachine(d), true, advice) ?? pick(advice.best[0], false, advice);
 }
 
 /** The catalogue's machine whose values the calculator holds: the ratio as the calculator takes it (to the thousandth),
@@ -40,10 +41,14 @@ export function catalogMachineOf(I: Plant, N: Machine): CatalogFit | null {
   return found.sort((a, b) => rank(a.machine) - rank(b.machine))[0] ?? null;
 }
 
-/** The order of a saved calculation (the calculator's values). */
-export function calcOrder(V: FormValues): OrderMachine | null {
-  const advice = valuesAdvice(V), a = analyse(V), { I, N } = a.ctx, fit = catalogMachineOf(I, N);
-  const own = fit ? candidateOf(fit, I, N, a.res, a.res.fails.length, a.res.checks.filter((c) => c.status === 'warn').length,
+/** The machine a saved calculation verified, when its values are a catalogue machine's. */
+export function calcMachine(V: FormValues): MachineCandidate | null {
+  const a = analyse(V), { I, N } = a.ctx, fit = catalogMachineOf(I, N);
+  return fit ? candidateOf(fit, I, N, a.res, a.res.fails.length, a.res.checks.filter((c) => c.status === 'warn').length,
     I.layout === 'topDefl' ? makerBedplate(fit.machine.brand, fit.machine.model, N.D, I.Dp) : null, {}) : null;
-  return pick(own, true, advice) ?? pick(advice.candidates[0], false, advice);
+}
+
+/** The order of a saved calculation (the calculator's values); the advice when the caller has it. */
+export function calcOrder(V: FormValues, advice: MachineAdvice = valuesAdvice(V)): OrderMachine | null {
+  return pick(calcMachine(V), true, advice) ?? pick(advice.best[0], false, advice);
 }

@@ -11,6 +11,7 @@ import { impactFactor, railForces } from '../tavole/forces';
 import { buildTavole } from '../tavole/build';
 import { revisionsSchema, setNumber, storedInput, projectDataSchema } from '../tavole/compose';
 import type { TavoleInput } from '../tavole/input';
+import { NO_MARKS } from '../lift/marks';
 import { readLogo } from '../logo';
 import { shaftInputsSchema } from '../shaft-input';
 
@@ -127,6 +128,15 @@ test('peso della cabina stimato dal software: segnato nel foglio 1 con la sua no
   for (const s of marked.doc.pages[0]?.shapes ?? []) for (const [x, y] of points(s)) assert.ok(x > -0.5 && x < A4.w + 0.5 && y > -0.5 && y < A4.h + 0.5, `${s.t} a ${x}, ${y}`);
   // the rated load of the calculation (630 kg) is not the shaft's (400 kg)
   assert.deepEqual(plain.warnings.filter((w) => w.what === 'load'), [{ what: 'load', calc: 630, shaft: 400 }]);
+});
+
+test('argano nel foglio 1: come scritto nei dati dell’impianto, altrimenti il modello del catalogo del progetto', () => {
+  const I: ShaftInputs = { ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null };
+  const sheet1 = (r: ReturnType<typeof buildTavole>): string[] => r.doc.pages[0]?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
+  const marks = { ...NO_MARKS, catalog: { brand: 'SICOR', model: 'SH140', ratio: '1/37', staticKg: 3300, src: 'D: prova' } };
+  assert.ok(sheet1(buildTavole({ ...input(I), marks })).includes('M 73 (Sx)'), 'il testo dei dati dell’impianto resta');
+  const blank = buildTavole({ ...input(I), plant: { ...input(I).plant, machine: undefined }, marks });
+  assert.ok(sheet1(blank).includes('SICOR SH140'), 'senza testo, il modello del catalogo');
 });
 
 test('parti conservate delle tavole: si rileggono, altrimenti nessuna tavola', () => {

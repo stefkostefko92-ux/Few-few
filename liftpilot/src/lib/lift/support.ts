@@ -4,7 +4,7 @@
 import type { ParsedInputs } from '@/calc/types';
 import { roomGeo, type Layout, type MachineSpec, type ShaftCheck } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { beamChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { beamChecks, fitChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 
 /** Length of each traction rope [m]: the roping times the travel and twice the rope beyond it, with the diverting
  *  pulley's drop or, with the machine below, the runs to it. */
@@ -25,8 +25,9 @@ export function supportLoad({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number
 }
 
 /** The checks of the machine's support (the beams' stress and deflection, none for the other supports; the reach of
- *  a maker's bedplate with the diverting pulley). */
-export const supportChecks = (L: Layout, M: MachineSpec, load: SupportLoad): ShaftCheck[] => {
+ *  a maker's bedplate with the diverting pulley) and of the machine in the room (it fits; `above`: the machine stands in
+ *  the room over the shaft, not below). */
+export const supportChecks = (L: Layout, M: MachineSpec, load: SupportLoad, above = true): ShaftCheck[] => {
   const G = roomGeo(L, M);
-  return [...beamChecks(G, load), ...rinvioChecks(G, M)];
+  return [...beamChecks(G, load), ...rinvioChecks(G, M), ...(above ? fitChecks(G, M) : [])];
 };

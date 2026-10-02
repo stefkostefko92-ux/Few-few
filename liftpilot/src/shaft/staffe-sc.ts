@@ -58,18 +58,20 @@ export interface ScPlace { s: number; a: number; c: number; seats: [number, numb
 export function scPlace(sc: ScSupport, u: number, gap: number, lo: number, hi: number, half: number): ScPlace | null {
   const { L } = sc, l = sc.sg.l, [r0, r1] = sc.range, inGap = Math.min(gap - sc.gap[0], sc.gap[1] - gap);
   if (inGap < 0) return null;
-  let best: ScPlace | null = null;
+  // the place with the most room (the first of equals); the rail is seated on its SG there only, the seat not changing it
+  let best: { s: number; aLo: number; aHi: number; slack: number } | null = null;
   for (let s = Math.ceil(Math.max(lo, u - r1)); s <= Math.min(hi - L, u - L + r1); s += 1) {
     // the rail's axis from the SC's nearer end, as the printed range measures it (the SC is ambidextrous)
     const fromEnd = Math.max(u - s, s + L - u), along = Math.min(s - lo, hi - L - s, r1 - fromEnd, fromEnd - r0);
     if (along < 0) continue;
     const aLo = Math.max(s - 10, lo), aHi = Math.min(s + L - l + 70, hi - l);
     if (aLo > aHi || u - aHi > l || u - aLo < 0) continue;
-    const seat = seatRail(l, l / 2, u - aHi, u - aLo, half), a = u - seat.c;
     const slack = Math.min(along, inGap);
-    if (!best || slack > best.slack) best = { s, a, c: seat.c, seats: seat.seats, slack };
+    if (!best || slack > best.slack) best = { s, aLo, aHi, slack };
   }
-  return best;
+  if (!best) return null;
+  const seat = seatRail(l, l / 2, u - best.aHi, u - best.aLo, half);
+  return { s: best.s, a: u - seat.c, c: seat.c, seats: seat.seats, slack: best.slack };
 }
 
 /** How near an SC comes to taking the rail [mm]: below 0 by how much it misses the gap or the room along the wall. */

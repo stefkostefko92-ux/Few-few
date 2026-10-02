@@ -14,8 +14,20 @@ export const renderPdf = (doc: ReportDoc): Promise<Buffer> => runRenderer('relaz
 /** The drawing set: report/tavole.py paints the sheets laid out by the drawing kernel. */
 export const renderTavole = (doc: DrawingDoc): Promise<Buffer> => runRenderer('tavole.py', doc);
 
-// A renderer of report/ draws the model (JSON on stdin, PDF on stdout); no shell, fixed arguments, bounded time and size.
-function runRenderer(name: 'relazione.py' | 'tavole.py', doc: ReportDoc | DrawingDoc): Promise<Buffer> {
+/** The views of a report as PNG pictures, one per plan block in their order (report/raster.py): the Word document's. */
+export async function renderPictures(doc: ReportDoc): Promise<Uint8Array[]> {
+  if (!doc.blocks.some((b) => b.t === 'plan')) return [];
+  const out = await runRenderer('raster.py', doc, (b) => b.subarray(0, 1).toString('latin1') === '[');
+  const list: unknown = JSON.parse(out.toString('utf8'));
+  if (!Array.isArray(list) || !list.every((x): x is string => typeof x === 'string')) throw new Error('raster renderer: unexpected output');
+  return list.map((s) => new Uint8Array(Buffer.from(s, 'base64')));
+}
+
+const isPdf = (b: Buffer): boolean => b.subarray(0, 5).toString('latin1') === '%PDF-';
+
+// A renderer of report/ draws the model (JSON on stdin, the document on stdout, which `ok` recognises); no shell,
+// fixed arguments, bounded time and size.
+function runRenderer(name: 'relazione.py' | 'tavole.py' | 'raster.py', doc: ReportDoc | DrawingDoc, ok: (b: Buffer) => boolean = isPdf): Promise<Buffer> {
   const { PYTHON_BIN, REPORT_FONT_DIR } = env();
   const script = path.join(process.cwd(), 'report', name);
   return new Promise((resolve, reject) => {
@@ -42,7 +54,7 @@ function runRenderer(name: 'relazione.py' | 'tavole.py', doc: ReportDoc | Drawin
     child.on('error', (e) => finish(e));
     child.on('close', (code) => {
       const pdf = Buffer.concat(out);
-      if (code === 0 && pdf.subarray(0, 5).toString('latin1') === '%PDF-') finish(null, pdf);
+      if (code === 0 && ok(pdf)) finish(null, pdf);
       else finish(new Error(`report renderer failed (${code}): ${Buffer.concat(err).toString('utf8').slice(-500)}`));
     });
     child.stdin.on('error', (e) => finish(e));

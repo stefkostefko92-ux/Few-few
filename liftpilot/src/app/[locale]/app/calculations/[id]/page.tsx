@@ -11,13 +11,17 @@ import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { ENGINE_VERSION } from '@/calc/snapshot';
 import { SHAFT_ENGINE_VERSION } from '@/shaft';
-import { calcOrder } from '@/lib/order/machine';
+import { calcMachine, calcOrder } from '@/lib/order/machine';
+import { valuesAdvice } from '@/lib/lift/advice';
+import { INTL_LOCALE, isLocale } from '@/i18n/locales';
+import { makeFmt } from '@/lib/present/tr';
 import { getCalculation, listDrawingSets } from '@/server/queries';
 import IssueForm from '@/components/tavole/IssueForm';
 import VerdictPill from '@/components/VerdictPill';
 import ReviewForm from '@/components/ReviewForm';
 import Crumbs from '@/components/Crumbs';
 import CalculationView from '@/components/calc/CalculationView';
+import AdviceView from '@/components/lift/AdviceView';
 
 export async function generateMetadata() {
   const t = await getTranslations('calculations');
@@ -39,8 +43,10 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const designSame = !c.shaftDesign || reproduceDesign(c.shaftDesign) !== null;
   const [t, tp, tr, ts, tt, ta, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
     getTranslations('tavole'), getTranslations('advice'), listDrawingSets(user, c.projectId)]);
-  // the machine of the draft order: the catalogue's machine these values are, or the advice's first among SICOR and Montanari
-  const download = same && can(user.role, 'report:download'), order = download ? calcOrder(values.data) : null;
+  // the advice among SICOR and Montanari for the saved values, and the machine of the draft order: the catalogue's
+  // machine these values are, or the advice's first
+  const advice = valuesAdvice(values.data), own = calcMachine(values.data), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
+  const download = same && can(user.role, 'report:download'), order = download ? calcOrder(values.data, advice) : null;
   const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
   return (
@@ -71,6 +77,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
         ) : null}
         <div className="wide"><dt>{t('col_hash')}</dt><dd className="hash">{c.sha256}{same ? ` · ${t('hashOk')}` : ''}</dd></div>
       </dl>
+      <AdviceView advice={advice} fmt={fmt} where="calc" inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model} />
       {download ? (
         <section className="panel">
           <h2>{ta('order_title')}</h2>

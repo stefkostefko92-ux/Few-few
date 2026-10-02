@@ -143,6 +143,11 @@ export function listRevisions(user: SessionUser, year: number, seq: number) {
   });
 }
 
+/** The company's name, city and current logo, for the letterhead of its documents. */
+export function getCompanyLetterhead(user: SessionUser) {
+  return prisma.company.findUnique({ where: { id: user.companyId }, select: { name: true, city: true, logo: { select: { mime: true, data: true } } } });
+}
+
 export function getCompanyLogo(user: SessionUser) {
   return prisma.company.findUnique({
     where: { id: user.companyId },

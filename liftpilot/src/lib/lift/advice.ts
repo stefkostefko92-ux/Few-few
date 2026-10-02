@@ -1,21 +1,40 @@
 // The machine to order among the makers whose whole range of geared machines the software holds (SICOR and Montanari,
-// src/lib/catalog/machines.ts): for each, its proposal for the installation — the smallest of its machines that takes
-// the option of the sizing, as the proposal from a catalogue takes it (catalog.ts) —, the calculation's outcome with it
-// and, with a diverting pulley, the maker's bedplate that carries machine and pulley (src/lib/catalog/bedplates.ts);
-// then which to order. The ranking, criterion after criterion: no check failed, fewer warnings, the maker's bedplate
-// with the pulley when there is one (one supply, the maker's heights), the smallest machine that suffices (the static
-// load it allows: price and mass follow the size), the speed nearest the rated one, the lighter. Pure.
+// src/lib/catalog/machines.ts). Every model of theirs is verified on its own: its proposal for the installation (the
+// option of the sizing it takes, as the proposal from a catalogue takes it, catalog.ts), the calculation's outcome with
+// it, the room it must fit, and with a diverting pulley the maker's bedplate that carries machine and pulley
+// (src/lib/catalog/bedplates.ts). Then the ranking, on the data alone (no price), criterion after criterion: no check
+// failed; data from the maker's documents rather than from extracts of its pages; the maker's bedplate with the pulley
+// (one supply, the maker's heights); the smallest machine that suffices (static load: an oversized machine loads the
+// building and the room for nothing, and passing checks are what makes one acceptable — a bigger one is not taken for
+// its margins); fewer values at the limit; drawn as it is (the maker's dimensions: the drawings and the room's check
+// exact); the speed nearest the rated one (to 1 %); the lighter. Pure: the screens may spread the models over time
+// (ADVICE_MODELS, one candidate each).
 import type { CheckStatus, FormValues, Machine, Plant, Results } from '@/calc/types';
 import { makerBedplate } from '@/lib/catalog/bedplates';
-import { catalogFit, catalogOf, type Brand, type CatalogFit } from '@/lib/catalog/machines';
-import { analyse, mirrorRopes, proposalValues } from '@/lib/present/analysis';
+import { catalogOf, type Brand, type CatalogFit } from '@/lib/catalog/machines';
+import { shapeOf } from '@/lib/catalog/shapes';
+import { analyse, mirrorRopes, proposalValues, type Analysis } from '@/lib/present/analysis';
 import type { MakerBedplate } from '@/shaft/rinvio';
 import { bestFit, catalogValues, pickOption } from './catalog';
 import { deriveLift, type LiftDerived, type LiftInputs } from './derive';
-import { KL } from './norme';
 
-/** The makers the advice compares. */
+/** The makers the advice compares, and every model of theirs it verifies (those proposed only by name are out). */
 export const ADVICE_BRANDS: readonly Brand[] = ['SICOR', 'Montanari'];
+export interface AdviceModel { brand: Brand; model: string }
+export const ADVICE_MODELS: readonly AdviceModel[] =
+  ADVICE_BRANDS.flatMap((brand) => catalogOf(brand).filter((c) => !c.byName).map((c) => ({ brand, model: c.model })));
+
+/** Where the catalogue's data of a machine come from, as its `src` marks them: a document of the maker (D), the maker's
+ *  pages or extracts of them (E), a dealer (R), an earlier round (P). */
+export type DataSource = 'D' | 'E' | 'R' | 'P';
+export function sourcesOf(src: string): DataSource[] {
+  const out: DataSource[] = [];
+  for (const m of src.matchAll(/(?:^|;\s*)([DERP]):/g)) {
+    const c = m[1] as DataSource;
+    if (!out.includes(c)) out.push(c);
+  }
+  return out;
+}
 
 export interface MachineCandidate {
   brand: Brand;
@@ -38,98 +57,108 @@ export interface MachineCandidate {
   kWmax: number | null;
   /** the maker's bedplate that carries the machine and the diverting pulley; null: none, or no pulley */
   bedplate: MakerBedplate | null;
+  /** drawn as it is: the maker's dimensions (src/lib/catalog/shapes.ts) */
+  drawn: boolean;
   fails: number;
   warns: number;
-  /** the brand's other machines that take the same sheave, ropes, load and motor, the smallest first */
-  others: string[];
   src: string;
+  /** where its data come from, the main one first */
+  sources: DataSource[];
   /** the calculator's values that load it (the replacement's calculator); empty for the one form, which takes the brand
    *  and model */
   values: FormValues;
 }
 
-/** Why the first comes before the second: the first criterion that tells them apart; 'only' with one candidate. */
-export type AdviceReason = 'checks' | 'warns' | 'bedplate' | 'smaller' | 'speed' | 'lighter' | 'only';
+/** Why the first comes before the second: the first criterion that tells them apart; 'only' with one maker. */
+export type AdviceReason = 'checks' | 'documented' | 'bedplate' | 'smaller' | 'warns' | 'drawn' | 'speed' | 'lighter' | 'only';
 
 export interface MachineAdvice {
-  /** best first */
+  /** every model that takes the installation, best first */
   candidates: MachineCandidate[];
-  /** the makers none of whose machines takes an option of the sizing */
+  /** the first of each maker, best first */
+  best: MachineCandidate[];
+  /** the makers none of whose machines takes the installation */
   none: Brand[];
+  /** why best[0] comes before best[1] */
   why: AdviceReason | null;
 }
 
 const count = (checks: readonly { status: CheckStatus }[], s: CheckStatus): number => checks.filter((c) => c.status === s).length;
 
 /** The criteria in order: negative when `a` ranks first. */
-const CRITERIA: readonly [Exclude<AdviceReason, 'only'>, (a: MachineCandidate, b: MachineCandidate) => number][] = [
+export const CRITERIA: readonly [Exclude<AdviceReason, 'only'>, (a: MachineCandidate, b: MachineCandidate) => number][] = [
   ['checks', (a, b) => a.fails - b.fails],
-  ['warns', (a, b) => a.warns - b.warns],
+  ['documented', (a, b) => Number(b.sources[0] === 'D') - Number(a.sources[0] === 'D')],
   ['bedplate', (a, b) => Number(b.bedplate !== null) - Number(a.bedplate !== null)],
   ['smaller', (a, b) => a.staticKg - b.staticKg],
-  ['speed', (a, b) => Math.abs(a.dv) - Math.abs(b.dv)],
+  ['warns', (a, b) => a.warns - b.warns],
+  ['drawn', (a, b) => Number(b.drawn) - Number(a.drawn)],
+  ['speed', (a, b) => Math.round(Math.abs(a.dv) * 100) - Math.round(Math.abs(b.dv) * 100)],
   ['lighter', (a, b) => (a.mass ?? Infinity) - (b.mass ?? Infinity)],
 ];
 
-export function rankCandidates(found: readonly MachineCandidate[], none: readonly Brand[]): MachineAdvice {
-  const by = (a: MachineCandidate, b: MachineCandidate): number => {
-    for (const [, f] of CRITERIA) { const d = f(a, b); if (d) return d; }
-    return 0;
-  };
-  const candidates = [...found].sort(by), [a, b] = candidates;
+const rank = (a: MachineCandidate, b: MachineCandidate): number => {
+  for (const [, f] of CRITERIA) { const d = f(a, b); if (d) return d; }
+  return 0;
+};
+
+/** The advice from the candidates found (any order). */
+export function adviceOf(found: readonly MachineCandidate[]): MachineAdvice {
+  const candidates = [...found].sort(rank);
+  const best = ADVICE_BRANDS.flatMap((b) => candidates.find((c) => c.brand === b) ?? []).sort(rank), [a, b] = best;
   const why = !a ? null : !b ? 'only' : CRITERIA.find(([, f]) => f(a, b) < 0)?.[0] ?? null;
-  return { candidates, none: [...none], why };
+  return { candidates, best, none: ADVICE_BRANDS.filter((x) => !candidates.some((c) => c.brand === x)), why };
 }
 
 /** The candidate of the machine `fit` of the catalogue, verified with the installation I and the machine N (results
  *  `res`, its failures and warnings), on `bedplate`; `values`: what loads it into the calculator. */
-export function candidateOf(fit: CatalogFit, I: Plant, N: Machine, res: Results, fails: number, warns: number, bedplate: MakerBedplate | null, values: FormValues): MachineCandidate | null {
+export function candidateOf(fit: CatalogFit, I: Plant, N: Machine, res: Results, fails: number, warns: number, bedplate: MakerBedplate | null,
+  values: FormValues): MachineCandidate | null {
   const c = fit.machine;
   if (!fit.ratio) return null;
-  // the same sheave, ropes, load and motor taken by the brand's other machines (as the proposal reads the catalogue)
-  const iIdeal = fit.i * (1 + fit.dv), testKg = res.shaft.testKg;
-  const others = catalogOf(c.brand).filter((x) => !x.byName && x.model !== c.model)
-    .map((x) => catalogFit(x, { D: N.D, iIdeal, Pn: N.Pn, staticKg: testKg, Q: I.Q, r: I.r }, KL.catalogRatioTol))
-    .filter((f) => f.fails.length === 0).sort((x, y) => x.machine.staticKg - y.machine.staticKg).map((f) => f.machine.model);
   return {
-    brand: c.brand, model: c.model, ratio: fit.ratio, i: fit.i, dv: fit.dv, I, N, Mcw: res.Mcw, testKg, staticKg: c.staticKg, mass: c.mass, kWmax: c.kWmax,
-    bedplate, fails, warns, others, src: c.src, values,
+    brand: c.brand, model: c.model, ratio: fit.ratio, i: fit.i, dv: fit.dv, I, N, Mcw: res.Mcw, testKg: res.shaft.testKg, staticKg: c.staticKg,
+    mass: c.mass, kWmax: c.kWmax, bedplate, drawn: shapeOf(c.brand, c.model) !== null, fails, warns, src: c.src, sources: sourcesOf(c.src), values,
   };
 }
 
-/** The machine of the catalogue the one form derived (`d.catalog`), as a candidate: its checks with the support's, an
- *  issue of the geometry as a failure, the bedplate it stands on; null without one. */
+/** The machine of the catalogue the one form derived (`d.catalog`), as a candidate: its checks with the support's and
+ *  the room's, an issue of the geometry as a failure, the bedplate it stands on; null without one. */
 export function derivedCandidate(d: LiftDerived): MachineCandidate | null {
   const fit = d.catalog?.fit, { I, N } = d.analysis.ctx, res = d.analysis.res, checks = [...res.checks, ...d.supportChecks], rf = d.machine.rinvio;
   return fit ? candidateOf(fit, I, N, res, count(checks, 'fail') + d.issues.length, count(checks, 'warn'), rf?.on === 'frame' ? rf.maker : null, {}) : null;
 }
 
-/** The advice for the one form: each maker's proposal derived as the form derives it with that maker chosen (the
- *  machine proposed even when entered by hand). */
-export function liftAdvice(inp: LiftInputs): MachineAdvice {
-  const found: MachineCandidate[] = [], none: Brand[] = [];
-  for (const brand of ADVICE_BRANDS) {
-    const c = derivedCandidate(deriveLift({ ...inp, catalog: { brand }, auto: { ...inp.auto, machine: true } }));
-    if (c) found.push(c);
-    else none.push(brand);
-  }
-  return rankCandidates(found, none);
+/** One model for the one form: derived as the form derives it with that model chosen (proposed even when the machine
+ *  is entered by hand). */
+export const liftCandidate = (inp: LiftInputs, m: AdviceModel): MachineCandidate | null =>
+  derivedCandidate(deriveLift({ ...inp, catalog: { brand: m.brand, model: m.model }, auto: { ...inp.auto, machine: true } }));
+
+/** One model for the calculator's values `V` (their analysis `a`): the option of the sizing it takes, the calculation
+ *  with its values, the maker's bedplate by the sheave and the diverting pulley of the values. */
+export function valuesCandidate(V: FormValues, a: Analysis, m: AdviceModel): MachineCandidate | null {
+  const { I } = a.ctx;
+  const fits = a.sizing.options.flatMap((o) => { const fit = bestFit(m, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
+  const best = pickOption(fits, a.sizing.keep !== null);
+  if (!best) return null;
+  const values = { ...proposalValues(best.o), ...catalogValues(best.fit) }, b = analyse(mirrorRopes({ ...V, ...values })), N = b.ctx.N;
+  return candidateOf(best.fit, b.ctx.I, N, b.res, b.res.fails.length, count(b.res.checks, 'warn'),
+    b.ctx.I.layout === 'topDefl' ? makerBedplate(m.brand, m.model, N.D, b.ctx.I.Dp) : null, values);
 }
 
-/** The advice for the calculator's values (the replacement): each maker's machine for the options of the sizing, as
- *  the proposal from a catalogue takes it, and the calculation with its values; the maker's bedplate by the sheave and
- *  the diverting pulley of the values. */
+/** The whole advice at once (the server, the documents, the tests). */
+export const liftAdvice = (inp: LiftInputs): MachineAdvice => adviceOf(ADVICE_MODELS.flatMap((m) => liftCandidate(inp, m) ?? []));
+
+/** With direct pull the sheave is the rope drop of the plan: the same inputs with the diverting pulley in the machine
+ *  room (on the machine's bedplate), whose traction sheave is then free; null when the layout is not direct pull. */
+export const deflectorInputs = (inp: LiftInputs): LiftInputs | null => (inp.calc.layout === 'top' ? { ...inp, calc: { ...inp.calc, layout: 'topDefl' } } : null);
+
+/** The advice with the diverting pulley when direct pull finds no machine of the advice's makers; null otherwise. */
+export function liftAlternative(inp: LiftInputs, advice: MachineAdvice): MachineAdvice | null {
+  const d = advice.candidates.length ? null : deflectorInputs(inp);
+  return d ? liftAdvice(d) : null;
+}
 export function valuesAdvice(V: FormValues): MachineAdvice {
-  const a = analyse(V), { I } = a.ctx, found: MachineCandidate[] = [], none: Brand[] = [];
-  for (const brand of ADVICE_BRANDS) {
-    const fits = a.sizing.options.flatMap((o) => { const fit = bestFit({ brand }, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
-    const best = pickOption(fits, a.sizing.keep !== null);
-    const values = best ? { ...proposalValues(best.o), ...catalogValues(best.fit) } : null;
-    const b = values ? analyse(mirrorRopes({ ...V, ...values })) : null;
-    const c = best && values && b ? candidateOf(best.fit, b.ctx.I, b.ctx.N, b.res, b.res.fails.length, count(b.res.checks, 'warn'),
-      b.ctx.I.layout === 'topDefl' ? makerBedplate(brand, best.fit.machine.model, b.ctx.N.D, b.ctx.I.Dp) : null, values) : null;
-    if (c) found.push(c);
-    else none.push(brand);
-  }
-  return rankCandidates(found, none);
+  const a = analyse(V);
+  return adviceOf(ADVICE_MODELS.flatMap((m) => valuesCandidate(V, a, m) ?? []));
 }

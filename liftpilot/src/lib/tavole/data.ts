@@ -19,7 +19,7 @@ import type { DataSheet, Row } from './datasheet';
 import { railForces } from './forces';
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { loads } from './loads';
-import { machineOf } from './views';
+import { machineOf, machineText } from './views';
 import { clientNotes, estimateNote, spaceLegend } from './notes';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
 import { collaudoNote } from '../report/collaudo';
@@ -91,7 +91,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const room = L.inputs.room, govLen = (2 * (V.pit + S.top + V.headroom + (room ? room.slab + KV_VERT.governorAbove : 0))) / 1000;
   const g = N.groove, fRated = res.kin.fRated;
   const specs: Row[] = [
-    ['ARGANO', 'tipo', txt(Pl.machine)],
+    ['ARGANO', 'tipo', txt(machineText(Pl, x.marks?.catalog ?? null))],
     ['RAPPORTO DI RIDUZIONE', '', `1 : ${num(N.i)}`],
     ['PULEGGIA DI TRAZIONE Ø', 'mm', fmt(N.D, 0)],
     ['PULEGGIA DI RINVIO/TAGLIA Ø', 'mm', I.layout === 'top' && I.r === 1 ? '—' : fmt(I.Dp, 0)],
@@ -149,7 +149,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet
-  const all = [...L.checks, ...supportChecks(L, machineOf(a, Pl, L, x.marks?.catalog ?? null), { machine, static: ld.static, dyn })];
+  const all = [...L.checks, ...supportChecks(L, machineOf(a, Pl, L, x.marks?.catalog ?? null), { machine, static: ld.static, dyn }, a.ctx.I.layout !== 'bottom')];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)

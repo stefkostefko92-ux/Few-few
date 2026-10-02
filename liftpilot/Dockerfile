@@ -1,4 +1,5 @@
-# LiftPilot: Next.js 15 + Prisma (PostgreSQL) + the report renderer (Python ReportLab with the DejaVu fonts).
+# LiftPilot: Next.js 15 + Prisma (PostgreSQL) + the report renderer (Python ReportLab with the DejaVu fonts; Pillow
+# rasterizes the drawings the Word draft order carries).
 FROM node:22-bookworm-slim AS base
 ENV TZ=UTC NEXT_TELEMETRY_DISABLED=1
 RUN apt-get update \
@@ -19,7 +20,7 @@ RUN npx prisma generate && npx next build
 FROM base AS runner
 ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 PYTHON_BIN=python3 REPORT_FONT_DIR=/usr/share/fonts/truetype/dejavu
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 python3-reportlab fonts-dejavu-core \
+  && apt-get install -y --no-install-recommends python3 python3-reportlab python3-pil fonts-dejavu-core \
   && rm -rf /var/lib/apt/lists/*
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/.next ./.next

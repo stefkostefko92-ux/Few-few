@@ -7,6 +7,9 @@ import { PRESETS } from '@/calc/presets';
 import { compute } from '@/calc/compute';
 import { readInputs } from '@/calc/inputs';
 import { SHAFT_ENGINE_VERSION, defaultInputs, shaftSnapshot, type ShaftInputs } from '@/shaft';
+import { readFileSync } from 'node:fs';
+import { mirrorRopes } from '@/lib/present/analysis';
+import { ADVICE_MODELS, valuesAdvice } from '@/lib/lift/advice';
 import { buildReport } from '../report/build';
 import type { ReportDoc } from '../report/model';
 import type { ReportDesign } from '../report/shaft';
@@ -30,6 +33,7 @@ const texts = (doc: ReportDoc): string[] => doc.blocks.flatMap((b) => {
     case 'list': return b.items;
     case 'sign': return b.labels;
     case 'plan': return [b.scale, ...b.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : []))];
+    case 'letterhead': return [...b.from, ...b.to];
     default: return [b.text];
   }
 });
@@ -101,6 +105,33 @@ test('calcolo da un progetto del vano: pianta in scala, verifiche in pianta, voc
   const mismatch = (doc: ReportDoc): boolean => doc.blocks.some((b) => b.t === 'box' && b.text.startsWith('La portata del calcolo'));
   assert.ok(!mismatch(same));
   assert.ok(mismatch(buildReport({ ...base, design: design({ ...defaultInputs(1600, 1750), Q: Q + 75 }) })));
+});
+
+test('carta intestata, argano riconosciuto dal catalogo, argano consigliato fra SICOR e Montanari', () => {
+  const logo = { mime: 'image/png' as const, data: readFileSync(path.join(process.cwd(), 'public', 'img', 'liftpilot-logo-480.png')).toString('base64') };
+  const advice = valuesAdvice(PRESETS.A), first = advice.best[0];
+  assert.ok(first);
+  // the calculator's values of the advice's first: the relazione names the machine
+  const doc = buildReport({ ...input('A'), values: mirrorRopes({ ...PRESETS.A, ...first.values }), companyCity: 'Milano', logo, advice });
+  const head = doc.blocks[0];
+  assert.ok(head?.t === 'letterhead' && head.logo === 'logo' && head.from.join(' ') === 'Ditta di prova Milano');
+  assert.equal(doc.drawing?.images.logo?.data, logo.data);
+  const machine = doc.blocks.find((b) => b.t === 'kv' && b.rows[0]?.[0] === 'Costruttore e modello');
+  assert.ok(machine?.t === 'kv' && machine.rows[0]?.[1].startsWith(`${first.brand} ${first.model} (riconosciuto dal catalogo`));
+  const sec = doc.blocks.findIndex((b) => b.t === 'h2' && b.text.endsWith('Argano consigliato fra SICOR e Montanari (informativa)'));
+  assert.ok(sec > 0);
+  const grid = doc.blocks.slice(sec).find((b) => b.t === 'grid');
+  assert.ok(grid?.t === 'grid' && grid.rows.length === advice.candidates.length && grid.rows[0]?.[0] === `1. ★ ${first.brand} ${first.model}`);
+  assert.ok(texts(doc).some((x) => x.startsWith(`Perché ${first.brand} ${first.model}`)), 'il perché del primo');
+  // the models whose catalogue does not take the installation, named
+  const left = ADVICE_MODELS.filter((m) => !advice.candidates.some((c) => c.brand === m.brand && c.model === m.model));
+  assert.ok(left.length > 0 && left.length + advice.candidates.length === ADVICE_MODELS.length);
+  const note = texts(doc).find((x) => x.startsWith('Esclusi prima del calcolo'));
+  assert.ok(note && left.every((m) => note.includes(m.model)), 'gli esclusi');
+  // values that are no catalogue machine's: no name; no advice given: no section
+  const plain = buildReport(input('A'));
+  assert.ok(!plain.blocks.some((b) => b.t === 'kv' && b.rows[0]?.[0] === 'Costruttore e modello'));
+  assert.ok(!plain.blocks.some((b) => b.t === 'h2' && b.text.includes('Argano consigliato')));
 });
 
 // PDF with the renderer when Python and ReportLab are present (the production image has them).

@@ -4,24 +4,11 @@
 // dimensions: the pulley's axis and the top over the floor (the top changes with the dimension on our bedplate; a
 // maker's has its own), its length, the maker's code. Model entities.
 import { chain, edit as E, path, rect, type Entity, type Pt } from '../drawing';
-import type { MachineSpec, RoomGeo } from './machine-room';
+import { ropeWidths, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
-import { rinvioSpan, type RinvioFrame } from './rinvio';
+import { rinvioAcross, rinvioRun, type RinvioFrame } from './rinvio';
 import { ownAxis } from './support';
-
-/** Along the drop line: where the bedplate runs [u0, u1] (absolute u, as the room's drawings measure it). */
-export function rinvioRun(M: MachineSpec, G: RoomGeo): readonly [number, number] {
-  return rinvioSpan(G.frame0, G.frame1, G.pulleyAt, M.Dp / 2);
-}
-
-/** Across the drop line: where the bedplate runs [v0, v1], round the machine and the pulley, at least its width. */
-export function rinvioAcross(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): readonly [number, number] {
-  const half = (M.n * Math.max(M.d + 6, 1.7 * M.d) + 30) / 2 + 18, w = rf.maker?.width ?? KV_VERT.rinvioWidth;
-  let v0 = Math.min(G.across[0], -half) - 60, v1 = Math.max(G.across[1], half) + 60;
-  if (v1 - v0 < w) [v0, v1] = [(v0 + v1) / 2 - w / 2, (v0 + v1) / 2 + w / 2];
-  return [v0, v1];
-}
 
 /** Section B-B: the bedplate, its legs and dampers, the pulley's plates; its heights left of it. */
 export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): Entity[] {
@@ -41,16 +28,23 @@ export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): Enti
   // left of the bedplate, past the sheave's axis (room-view.ts draws it at the machine's end less 120)
   out.push(chain({ dir: 'y', pts: [0, zp], at: u0 - 220, from: [null, pu], text: ['Asse rinvio {v}'], edit: [null] }));
   out.push(chain({ dir: 'y', pts: [0, top], at: u0 - 420, from: [null, u0], text: [`{v} ${fixed ? rf.maker?.code : 'Telaio'}`], edit: [fixed ? null : E('rinvio.height')] }));
-  out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 1, text: ['{v} Telaio con rinvio'] }));
+  // over the room past dx and the machine's frame (room-view.ts)
+  out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 2, text: ['{v} Telaio con rinvio'] }));
   return out;
 }
 
-/** Plan: the bedplate's outline under the machine and the pulley, its legs at the corners. */
+/** Plan: the bedplate's outline under the machine and the pulley, its legs at the corners, the two plates the pulley's
+ *  axle turns in; its length and width (the plan's own chains, after the machine's). */
 export function rinvioPlan(M: MachineSpec, G: RoomGeo, rf: RinvioFrame, onDrop: (u: number, v: number) => Pt): Entity[] {
   const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(M, G, rf), leg = KV_VERT.rinvioLeg, b = PROFILES[KV_VERT.rinvioBeam].b;
   const quad = (a0: number, w0: number, a1: number, w1: number): Pt[] => [onDrop(a0, w0), onDrop(a1, w0), onDrop(a1, w1), onDrop(a0, w1)];
-  const out: Entity[] = [path(quad(u0, v0, u1, v0 + b), true, 'hidden'), path(quad(u0, v1 - b, u1, v1), true, 'hidden')];
+  // the beams along the drop line and the channels across its ends, under the machine (hidden)
+  const out: Entity[] = [path(quad(u0, v0, u1, v0 + b), true, 'hidden'), path(quad(u0, v1 - b, u1, v1), true, 'hidden'),
+    path(quad(u0, v0 + b, u0 + b, v1 - b), true, 'hidden'), path(quad(u1 - b, v0 + b, u1, v1 - b), true, 'hidden')];
   for (const u of [u0, u1 - leg]) for (const v of [v0, v1 - leg]) out.push(path(quad(u, v, u + leg, v + leg), true, 'outline', 'steel'));
+  // the axle's plates either side of the pulley, 160 mm along the drop line, 10 mm thick
+  const half = ropeWidths(M.n, M.d).pulley, pu = G.pulleyAt;
+  for (const s of [-1, 1]) out.push(path(quad(pu - 80, s * half, pu + 80, s * (half + 10)), true, 'outline', 'steel'));
   return out;
 }
 

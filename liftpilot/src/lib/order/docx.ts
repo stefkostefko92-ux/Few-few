@@ -1,8 +1,11 @@
 // A report model (src/lib/report/model.ts: the blocks report/relazione.py draws as a PDF) as a Word document (Office
-// Open XML, ECMA-376): the same headings, tables and notes, A4 with the PDF's margins, the header and footer with the
-// page "N di M", in styles the reader can change. No views (the PDF draws them). Pure: the same bytes in the browser
-// and on the server; zip.ts packs it.
+// Open XML, ECMA-376): the same letterhead, headings, tables and notes, A4 with the PDF's margins, the header and footer
+// with the page "N di M", in styles the reader can change; the views as pictures (report/raster.py paints them, the
+// caller passes them in the order of the plan blocks). Pure: the same bytes in the browser and on the server; zip.ts
+// packs it.
+import { readLogo } from '@/lib/logo';
 import type { BlockStatus, ReportBlock, ReportDoc } from '@/lib/report/model';
+import { A_NS, IMAGE_REL, PIC_NS, WP_NS, fromBase64, pictures } from './docx-pic';
 import { zipStore } from './zip';
 
 const W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
@@ -69,38 +72,61 @@ function table(widths: readonly number[], rows: readonly { cells: readonly strin
 /** A spacer paragraph after a table, so two tables in a row do not merge. */
 const gap = (pt: number): string => `<w:p><w:pPr><w:spacing w:before="0" w:after="${pt * 20}"/><w:rPr><w:sz w:val="4"/></w:rPr></w:pPr></w:p>`;
 
-function block(b: ReportBlock): string {
-  switch (b.t) {
-    case 'h1': return para(b.text, 'Title');
-    case 'sub': return para(b.text, 'Subtitle');
-    case 'h2': return para(b.text, 'Heading2');
-    case 'h3': return para(b.text, 'Heading3');
-    case 'p': return para(b.text, b.style === 'note' ? 'Note' : null);
-    case 'box': return para(b.text, 'Box');
-    case 'list': return b.items.map((x) => para(`•\t${x}`, 'ListItem')).join('');
-    case 'verdict': return para(b.text, 'Verdict', '', b.status ? `<w:color w:val="${STATUS[b.status]}"/>` : '');
-    case 'kv': return table([FRAME * 0.34, FRAME * 0.66], b.rows.map(([k, v]) => ({ cells: [para(k, 'CellKey'), para(v, 'Cell')] }))) + gap(4);
-    case 'grid': {
-      const n = b.head.length, align = b.align ?? ['l', ...Array<'r'>(Math.max(0, n - 1)).fill('r')];
-      const widths = b.widths ? b.widths.map((w) => FRAME * w) : n > 1 ? [FRAME * 0.34, ...Array<number>(n - 1).fill((FRAME * 0.66) / (n - 1))] : [FRAME];
-      const right = (j: number): string => (align[j] === 'r' ? '<w:jc w:val="right"/>' : '');
-      const scol = b.statusCol ?? n - 1, st = b.status ?? [];
-      return table(widths, [
-        { head: true, cells: b.head.map((h, j) => para(h, 'CellHead', right(j))) },
-        ...b.rows.map((row, i) => ({
-          cells: row.map((c, j) => {
-            const s = st[i];
-            return para(c, 'Cell', right(j), j === scol && s ? `<w:b/><w:color w:val="${STATUS[s]}"/>` : '');
-          }),
-        })),
-      ]) + gap(4);
+/** The letterhead's logo box [mm]. */
+const LOGO_BOX = { w: 42, h: 16 };
+
+/** The writer of the blocks: pictures added as they come (`views`: the PNG of each plan block, in their order). */
+function blocks(doc: ReportDoc, views: readonly Uint8Array[], pics: ReturnType<typeof pictures>): (b: ReportBlock) => string {
+  let view = 0;
+  const logo = (): string => {
+    const img = doc.drawing?.images.logo, data = img ? fromBase64(img.data) : null, info = data ? readLogo(data) : null;
+    if (!data || !info) return '';
+    const k = Math.min(LOGO_BOX.w / info.width, LOGO_BOX.h / info.height);
+    return `<w:p><w:pPr><w:spacing w:after="80"/></w:pPr>${pics.inline(data, info.mime, info.width * k, info.height * k, 'Logo')}</w:p>`;
+  };
+  return (b) => {
+    switch (b.t) {
+      case 'h1': return para(b.text, 'Title');
+      case 'sub': return para(b.text, 'Subtitle');
+      case 'h2': return para(b.text, 'Heading2');
+      case 'h3': return para(b.text, 'Heading3');
+      case 'p': return para(b.text, b.style === 'note' ? 'Note' : null);
+      case 'box': return para(b.text, 'Box');
+      case 'list': return b.items.map((x) => para(`•\t${x}`, 'ListItem')).join('');
+      case 'verdict': return para(b.text, 'Verdict', '', b.status ? `<w:color w:val="${STATUS[b.status]}"/>` : '');
+      case 'kv': return table([FRAME * 0.34, FRAME * 0.66], b.rows.map(([k, v]) => ({ cells: [para(k, 'CellKey'), para(v, 'Cell')] }))) + gap(4);
+      case 'grid': {
+        const n = b.head.length, align = b.align ?? ['l', ...Array<'r'>(Math.max(0, n - 1)).fill('r')];
+        const widths = b.widths ? b.widths.map((w) => FRAME * w) : n > 1 ? [FRAME * 0.34, ...Array<number>(n - 1).fill((FRAME * 0.66) / (n - 1))] : [FRAME];
+        const right = (j: number): string => (align[j] === 'r' ? '<w:jc w:val="right"/>' : '');
+        const scol = b.statusCol ?? n - 1, st = b.status ?? [];
+        return table(widths, [
+          { head: true, cells: b.head.map((h, j) => para(h, 'CellHead', right(j))) },
+          ...b.rows.map((row, i) => ({
+            cells: row.map((c, j) => {
+              const s = st[i];
+              return para(c, 'Cell', right(j), j === scol && s ? `<w:b/><w:color w:val="${STATUS[s]}"/>` : '');
+            }),
+          })),
+        ]) + gap(4);
+      }
+      case 'sign': {
+        const w = [0.46, 0.3, 0.24].map((x) => FRAME * x);
+        return `<w:p><w:pPr><w:keepNext/><w:spacing w:before="1250" w:after="0"/></w:pPr></w:p>${table(w, [{ cells: b.labels.map((l) => para(l, 'Note')) }], { lines: false, topLine: true })}`;
+      }
+      case 'letterhead': {
+        const from = (b.logo ? logo() : '') + b.from.map((l, i) => para(l, i === 0 ? 'LetterName' : 'Note')).join('');
+        const to = b.to.map((l, i) => para(l, i === 1 ? 'LetterName' : 'Cell')).join('');
+        return table([FRAME * 0.56, FRAME * 0.44], [{ cells: [from, to] }], { lines: false }) + gap(14);
+      }
+      case 'plan': {
+        const png = views[view++];
+        if (!png) return para(`[${b.scale}: disegno nel PDF]`, 'Note');
+        return `<w:p><w:pPr><w:keepNext/><w:spacing w:before="60" w:after="20"/><w:jc w:val="center"/></w:pPr>${pics.inline(png, 'image/png', b.w, b.h, b.scale)}</w:p>`
+          + para(b.scale, 'Note', '<w:jc w:val="right"/>');
+      }
     }
-    case 'sign': {
-      const w = [0.46, 0.3, 0.24].map((x) => FRAME * x);
-      return `<w:p><w:pPr><w:keepNext/><w:spacing w:before="1250" w:after="0"/></w:pPr></w:p>${table(w, [{ cells: b.labels.map((l) => para(l, 'Note')) }], { lines: false, topLine: true })}`;
-    }
-    case 'plan': return para(`[${b.scale}: disegno nel PDF]`, 'Note');
-  }
+  };
 }
 
 const style = (id: string, name: string, pPr: string, rPr: string, extra = ''): string =>
@@ -121,6 +147,7 @@ const STYLES = `${XML}<w:styles xmlns:w="${W_NS}">`
   + style('ListItem', 'List item', '<w:tabs><w:tab w:val="left" w:pos="227"/></w:tabs><w:ind w:left="227" w:hanging="227"/>', '')
   + style('Verdict', 'Verdict', '<w:spacing w:before="80"/>', '<w:b/><w:sz w:val="22"/><w:szCs w:val="22"/>')
   + style('Cell', 'Table text', '<w:spacing w:after="0"/>', '<w:sz w:val="16"/><w:szCs w:val="16"/>')
+  + style('LetterName', 'Letterhead name', '<w:spacing w:after="20"/>', '<w:b/><w:sz w:val="20"/><w:szCs w:val="20"/>')
   + style('CellKey', 'Table key', '<w:spacing w:after="0"/>', `<w:color w:val="${MUTED}"/><w:sz w:val="16"/><w:szCs w:val="16"/>`)
   + style('CellHead', 'Table head', '<w:keepNext/><w:spacing w:after="0"/>', `<w:b/><w:color w:val="${HEAD_INK}"/><w:sz w:val="16"/><w:szCs w:val="16"/>`)
   + style('PageBand', 'Page band', `<w:tabs><w:tab w:val="right" w:pos="${FRAME}"/></w:tabs><w:spacing w:after="0"/>`, `<w:color w:val="${MUTED}"/><w:sz w:val="14"/><w:szCs w:val="14"/>`)
@@ -128,14 +155,14 @@ const STYLES = `${XML}<w:styles xmlns:w="${W_NS}">`
 
 const field = (instr: string): string => `<w:fldSimple w:instr=" ${instr} "><w:r><w:t>1</w:t></w:r></w:fldSimple>`;
 
-/** The document of `doc` as a .docx, dated `when`. */
-export function toDocx(doc: ReportDoc, when: Date): Uint8Array {
-  const m = doc.meta, iso = when.toISOString().replace(/\.\d{3}Z$/, 'Z');
+/** The document of `doc` as a .docx, dated `when`; `views`: the PNG of each plan block, in their order. */
+export function toDocx(doc: ReportDoc, when: Date, views: readonly Uint8Array[] = []): Uint8Array {
+  const m = doc.meta, iso = when.toISOString().replace(/\.\d{3}Z$/, 'Z'), pics = pictures(esc);
   // the body ends on a paragraph, as Word writes it
-  const body = `${doc.blocks.map(block).join('')}<w:p/>`;
+  const body = `${doc.blocks.map(blocks(doc, views, pics)).join('')}<w:p/>`;
   const sect = `<w:sectPr><w:headerReference w:type="default" r:id="rId3"/><w:footerReference w:type="default" r:id="rId4"/>`
     + `<w:pgSz w:w="${PAGE.w}" w:h="${PAGE.h}"/><w:pgMar w:top="964" w:right="${PAGE.margin}" w:bottom="964" w:left="${PAGE.margin}" w:header="454" w:footer="340" w:gutter="0"/></w:sectPr>`;
-  const document = `${XML}<w:document xmlns:w="${W_NS}" xmlns:r="${R_NS}"><w:body>${body}${sect}</w:body></w:document>`;
+  const document = `${XML}<w:document xmlns:w="${W_NS}" xmlns:r="${R_NS}" xmlns:wp="${WP_NS}" xmlns:a="${A_NS}" xmlns:pic="${PIC_NS}"><w:body>${body}${sect}</w:body></w:document>`;
   const header = `${XML}<w:hdr xmlns:w="${W_NS}" xmlns:r="${R_NS}"><w:p><w:pPr><w:pStyle w:val="PageBand"/><w:pBdr>${border('bottom', 3, RULE)}</w:pBdr></w:pPr>`
     + `${runs(m.header)}<w:r><w:tab/><w:t xml:space="preserve">Pagina </w:t></w:r>${field('PAGE')}<w:r><w:t xml:space="preserve"> di </w:t></w:r>${field('NUMPAGES')}</w:p></w:hdr>`;
   const footer = `${XML}<w:ftr xmlns:w="${W_NS}" xmlns:r="${R_NS}"><w:p><w:pPr><w:pStyle w:val="PageBand"/><w:pBdr>${border('top', 3, RULE)}</w:pBdr></w:pPr>`
@@ -150,6 +177,7 @@ export function toDocx(doc: ReportDoc, when: Date): Uint8Array {
   const app = `${XML}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>LiftPilot · Carbon Stealth VCC</Application></Properties>`;
   const types = `${XML}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`
     + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>'
+    + '<Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/>'
     + '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
     + '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
     + '<Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>'
@@ -162,11 +190,12 @@ export function toDocx(doc: ReportDoc, when: Date): Uint8Array {
     + `${rel('rId2', 'http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties', 'docProps/core.xml')}`
     + `${rel('rId3', `${OFFICE_REL}/extended-properties`, 'docProps/app.xml')}</Relationships>`;
   const docRels = `${XML}<Relationships xmlns="${PKG_REL}">${rel('rId1', `${OFFICE_REL}/styles`, 'styles.xml')}${rel('rId2', `${OFFICE_REL}/settings`, 'settings.xml')}`
-    + `${rel('rId3', `${OFFICE_REL}/header`, 'header1.xml')}${rel('rId4', `${OFFICE_REL}/footer`, 'footer1.xml')}</Relationships>`;
+    + `${rel('rId3', `${OFFICE_REL}/header`, 'header1.xml')}${rel('rId4', `${OFFICE_REL}/footer`, 'footer1.xml')}`
+    + `${pics.media.map((x) => rel(x.rel, IMAGE_REL, x.name)).join('')}</Relationships>`;
   const enc = new TextEncoder(), part = (name: string, xml: string) => ({ name, data: enc.encode(xml) });
   return zipStore([
     part('[Content_Types].xml', types), part('_rels/.rels', rels), part('word/document.xml', document), part('word/_rels/document.xml.rels', docRels),
     part('word/styles.xml', STYLES), part('word/settings.xml', settings), part('word/header1.xml', header), part('word/footer1.xml', footer),
-    part('docProps/core.xml', core), part('docProps/app.xml', app),
+    part('docProps/core.xml', core), part('docProps/app.xml', app), ...pics.media.map((x) => ({ name: `word/${x.name}`, data: x.data })),
   ], when);
 }

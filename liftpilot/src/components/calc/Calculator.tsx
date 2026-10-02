@@ -3,7 +3,7 @@
 // The calculator of a project: form, live results from src/calc in the browser (preview), the standards of the
 // acceptance test, and the save that sends the values to the server, which recomputes and stores the official
 // snapshot (the standards beside it).
-import { useDeferredValue, useMemo, useState, useTransition } from 'react';
+import { useCallback, useDeferredValue, useMemo, useState, useTransition } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
@@ -16,7 +16,7 @@ import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import { saveCalculationAction } from '@/server/calc-actions';
 import { collaudoOf, type Collaudo } from '@/lib/lift';
-import { valuesAdvice, type MachineCandidate } from '@/lib/lift/advice';
+import { valuesCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import CollaudoOptions from '@/components/lift/CollaudoOptions';
 import MachineAdvice from '@/components/lift/MachineAdvice';
 import { asCalcDict } from './dict';
@@ -65,7 +65,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
 
   const deferred = useDeferredValue(values);
   const a = useMemo(() => analyse(deferred), [deferred]);
-  const advice = useMemo(() => valuesAdvice(deferred), [deferred]);
+  const evaluate = useCallback((m: AdviceModel) => valuesCandidate(deferred, a, m), [deferred, a]);
   const bad = useMemo(() => new Set(visibleBad(a.ctx.bad, deferred)), [a, deferred]);
   const anyBad = a.ctx.bad.length > 0;
 
@@ -142,7 +142,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
         </section>
         <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} onUse={onUse} propMsg={propMsg} />
       </div>
-      <MachineAdvice advice={advice} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} saved="calc" />
+      <MachineAdvice evaluate={evaluate} alternative={null} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" />
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={tc('labelPlaceholder')} aria-label={tc('label')} />

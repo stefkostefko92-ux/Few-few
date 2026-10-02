@@ -67,7 +67,10 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
   // round each other, in the order of the chains
   const parts: Shape[][] = entities.map(() => []), taken: Box[] = [];
   entities.forEach((e, i) => {
-    if (e.e === 'text') parts[i] = [{ t: 'text', at: toPaper(place, e.at), text: e.text, size: e.size ?? TEXT.label, angle: e.angle, align: e.align, bold: e.bold, ink: e.ink, cond: true, halo: e.halo }];
+    if (e.e === 'text') {
+      const size = e.size ?? TEXT.label, w = e.fit ? textWidth(e.text, { size, bold: e.bold, cond: true }) : 0, room = e.fit ? e.fit / place.scale : 0;
+      parts[i] = [{ t: 'text', at: toPaper(place, e.at), text: e.text, size: w > room && room > 0 ? (size * room) / w : size, angle: e.angle, align: e.align, bold: e.bold, ink: e.ink, cond: true, halo: e.halo }];
+    }
     else if (e.e === 'mark') parts[i] = symbol(e.sym, toPaper(place, e.at), e.size);
     else if (e.e === 'tag') parts[i] = tag(toPaper(place, e.at), e.text, e.to ? toPaper(place, e.to) : null);
     for (const s of parts[i]) if (s.t !== 'line') taken.push(shapeBox(s));

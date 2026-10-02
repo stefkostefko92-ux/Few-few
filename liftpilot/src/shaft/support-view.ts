@@ -25,8 +25,13 @@ const profilePick = (s: MachineSupport): Edit => pickEdit('sup.profile', PROFILE
 export const supportTop = (M: MachineSpec, s: MachineSupport): number =>
   (s.kind === 'rinvio' && M.rinvio?.on === 'frame' ? M.rinvio.top : M.axis - padsOf(s) - ownAxis(M.D, M.shape ?? null));
 
-/** Section B-B: the support under the machine, its pads, its dimensions. `r0`, `r1`: the room's walls along u. */
-export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: number): Entity[] {
+/** The u of the support's height chain right of the machine in section B-B (its profile's 260 past it). */
+const dimsRight = (G: RoomGeo, span: readonly [number, number] | null): number =>
+  Math.max(G.frame.shape ? G.sheaveAt + G.frame.x[1] : G.sheaveAt + 1.12 * 1000 * G.s, span ? G.sheaveAt + span[1] : -Infinity) + 220;
+
+/** Section B-B: the support under the machine, its pads, its dimensions. `r0`, `r1`: the room's walls along u; `after`:
+ *  a chain right of the machine (the pulley's h, room-view.ts) the support's heights stand past. */
+export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: number, after: number | null = null): Entity[] {
   const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, top = supportTop(M, s), pads = padsOf(s), out: Entity[] = [], F = G.frame;
   const at = (x: number): number => G.sheaveAt + x * k, span = supportSpan(s, M.D, F.shape);
   if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return rinvioSection(M, G, M.rinvio);
@@ -47,16 +52,18 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   }
   // dimensions: the support's height (the sheave's axis follows it), a profile, a frame's or a plinth's length, the
   // beams' span between the walls
-  const right = Math.max(F.shape ? G.sheaveAt + F.x[1] : at(1.12), span ? G.sheaveAt + span[1] : -Infinity) + 220;
+  const right = Math.max(dimsRight(G, span), after === null ? -Infinity : after + 260);
   if (top > 0.5) out.push(chain({ dir: 'y', pts: [0, top], at: right, text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.height')] }));
   if (hasProfile(s)) {
     const h = PROFILES[profileOf(s)].h;
     out.push(chain({ dir: 'y', pts: [top - h, top], at: right + 260, text: [`${profileOf(s)} {v}`], edit: [profilePick(s)] }));
   }
-  if (span) out.push(chain({ dir: 'x', pts: [G.sheaveAt + span[0], G.sheaveAt + span[1]], side: 'top', row: 1, text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.length')] }));
+  // over the room past the machine's frame, and past dx with a diverting pulley (room-view.ts)
+  const row = M.Dp > 0 ? 2 : 1;
+  if (span) out.push(chain({ dir: 'x', pts: [G.sheaveAt + span[0], G.sheaveAt + span[1]], side: 'top', row, text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.length')] }));
   if (s.kind === 'beams') {
     const along = Math.abs(G.uy) > 0.999 ? 'room.D' : Math.abs(G.ux) > 0.999 ? 'room.W' : null;
-    out.push(chain({ dir: 'x', pts: [r0, r1], side: 'top', row: 1, text: ['Luce putrelle {v}'], edit: [along ? E(along) : null] }));
+    out.push(chain({ dir: 'x', pts: [r0, r1], side: 'top', row, text: ['Luce putrelle {v}'], edit: [along ? E(along) : null] }));
   }
   return out;
 }

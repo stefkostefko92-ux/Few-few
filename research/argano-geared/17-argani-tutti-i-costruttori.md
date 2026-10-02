@@ -37,6 +37,7 @@ dice con «(sign. ⚠️)».
 | SA-12 | cap. 12 §§ 3, 11, 12: estratti di ricerca delle pagine sassi.it (2026-10-01/02) | [12-catalogo-argani.md](12-catalogo-argani.md) |
 | MO-12 | cap. 12 §§ 10, 12: estratti di ricerca delle pagine e dei PDF Montanari (2026-10-01/02) | [12-catalogo-argani.md](12-catalogo-argani.md) |
 | MO-B | Montanari, «General brochure» 2015, copia su itasia.it | https://www.itasia.it/wp-content/uploads/2019/05/Montanari-General-Brochure-1.pdf |
+| MO-C | Montanari, catalogo tecnico «ARGANO • GEARBOX …» Mod. RA – CG/17/07 (PDF 2018-01-30, 86 pagine), copia del distributore ITASIA | https://www.itasia.it/wp-content/uploads/2019/05/Montanari-Technical-Catalogue.pdf |
 | MO-D | Donati (rivenditore), argani Montanari M73 e M73S | https://www.donati.it/en/products/geared-motors-bedframes-pulleys-brakes-accessories/montanari-gear-motors/montanari-gear |
 | GE-S | GEM, schede modello (pagine del catalogo 2019) | https://gem-ita.com/wp-content/uploads/2020/12/HW134.pdf (e HW134B, HW134L, HW134VF, HW135VF, HW135L-VF, HW140C, HW175 .pdf) |
 | GE-C | GEM, «Catalogo prodotti» REV2021, 13 pagine | https://gem-ita.com/wp-content/uploads/2020/12/GEM_Catalogo-Prodotti_REV2021.pdf |
@@ -317,10 +318,10 @@ attacco encoder sono alle pagine 14, 21, 25, 28, 46 di SA-C ✅.
 
 ## 4. Montanari Giulio & C.
 
-Sito bloccato da qui (§ 1): **nessun documento Montanari letto oggi** oltre alla brochure generale 2015 e
-alle pagine di un rivenditore. I dati di modello vengono dagli estratti di ricerca del cap. 12 (MO-12),
-quindi **tutti ⚠️**; varianti: H = alto carico statico senza supporto, S = con supporto, AL = albero lungo,
-B = freno sull'albero lento.
+Sito bloccato da qui (§ 1). Il 2 ottobre 2026 è stato letto il **catalogo tecnico del costruttore** (MO-C, § 4.1),
+copia del distributore ITASIA: i valori di modello del software vengono da lì; la tabella qui sotto resta come
+confronto con gli estratti di ricerca del cap. 12 (MO-12, ⚠️). Varianti: H = alto carico statico senza supporto,
+S = con supporto, AL = albero lungo, B = freno sull'albero lento.
 
 | Modello | Statico max (kg) | Rapporti | Pulegge (mm) · gole × fune | Motori (kW) | Portata max (kg) | Massa riduttore (kg) | Olio | Fonte |
 |---|---|---|---|---|---|---|---|---|
@@ -339,8 +340,34 @@ B = freno sull'albero lento.
 
 **Freno (✅ MO-B p.3):** tutta la gamma può avere, o essere predisposta per, il dispositivo «Brake» contro la
 sovravelocità in salita; nelle versioni B è sull'albero lento (MO-12 ⚠️). Elettromagnete 48/60 V sugli M73
-del rivenditore ✅ MO-D. **Quote d'ingombro, asse puleggia, fori: ❓** (solo numeri senza etichetta ⚠️, cap. 12
-§ 10.5). **CAD: ❓.**
+del rivenditore ✅ MO-D. **CAD: ❓.**
+
+### 4.1 Dal catalogo tecnico 2018 (MO-C)
+
+Riquadri dati dal testo del PDF (esatti); quote dei disegni lette sulle pagine (le etichette sono contorni, non
+testo). Pagine stampate (= pagina del PDF + 8).
+
+| Modello | Statico (kg) | Massa (kg) | Pulegge nelle tabelle (mm) | Asse puleggia sul piano dei piedi (mm) | Pagina |
+|---|---|---|---|---|---|
+| M65 | 2200 ✅ | 80 ✅ | 360–600 | 150 | 22 |
+| M73 / M73H / M73S / M73AL | **2000** / 2700 / 3200 / 2500 ✅ | 110 / 110 / 115 / 145 ✅ | 360–700 | 150 | 25–29 |
+| M75 / M75H / M75S / M75AL | 2000 / 2700 / 3200 / 2500 ✅ | 115 / 115 / 120 / 150 ✅ | 360–700 | 150 | 30–34 |
+| PENTA | 3000 ✅ | 210 ✅ | 360–600 | 150 (pos. 1), 225 (pos. 2) | 35–36 |
+| M83 / M83AL / M85 | 3200 / 3000 / 4000 ✅ | 169 / 199 / 181 ✅ | 450–700 | 170 | 39–41 |
+| PENTA 830 | 3200 ✅ | 180 ✅ | 400–700 | 170 (pos. 1), 265 (pos. 2) | 45–46 |
+| M93 / M93AL / M95 | 5000 / 3600 / 5000 ✅ | 250 / 329 / **250** ✅ | 450–800 | 200 | 51–53 |
+| M98 / M98H / M98HAL | 7000 / 7000 / 5100 ✅ | 480 / 402 / 460 ✅ | 450–800 | 230 | 58–60 |
+| M109 | 15000 ✅ | 890 (B3 940) ✅ | 450–800 | 350 | 76–77 |
+
+I rapporti coincidono con quelli del cap. 12. **Differenze:** M73 statico 2000 nel catalogo, 2200 negli estratti
+della pagina del costruttore e da Elva (rivenditore): il software usa 2000 (il minore); M95 massa 250 nel
+catalogo, 253 negli estratti; M65 2300 kg / 95 kg da Donati (rivenditore). **M105 non è nel catalogo** (resta
+⚠️). **Telai con puleggia di rinvio** (pp. 83–84, senza codici né masse): tipo 3 per M65/M73/M73S/PENTA (H 786,
+asse del rinvio 298, 1230 × 510; I + K = 781 ≠ H: incoerenza stampata) e per M83/M85/PENTA 830 (H 854, rinvio
+315, 1230 × 586), ØDR max 520; M93 (piano d'appoggio 1091, rinvio 328, 1180 × 665, C max 1115); M98/M104
+(piano 1040, rinvio 400, 1780 × 770/796, C max 1250, ØDR max 650). Il software non li usa ancora: mancano
+codice, massa e, per il tipo 3, una quota coerente; l'argano Montanari resta disegnato con la sagoma generica sul
+telaio del software.
 
 ## 5. GEM – General Elevator Machines (e Uberlift)
 
@@ -473,9 +500,10 @@ Da verificare prima di modificare il codice (questo capitolo non cambia nulla):
 
 ## 10. Lacune
 
-1. **Montanari**: nessun documento del costruttore aperto (sito con catena TLS incompleta; .in e .com USA con
-   verifica anti-bot). Dati solo ⚠️; quote, asse puleggia, fori e CAD ❓. Da chiedere al costruttore o a un
-   rivenditore: le schede «MONTANARI_SCHEDA_GEARBOX-…_REV21_05_2024.pdf» e i PDF «Montanari-Gearbox-M73/M75/…».
+1. **Montanari**: il sito non si apre (catena TLS incompleta; .in e .com USA con verifica anti-bot); letto il
+   catalogo tecnico 2018 nella copia di un distributore (MO-C, § 4.1). Restano da avere: le schede 2024
+   («MONTANARI_SCHEDA_GEARBOX-…_REV21_05_2024.pdf», l'archivio web non risponde da qui), M105, i codici e le masse
+   dei telai con rinvio, il CAD.
 2. **Sassi**: il sito non si apre (stessa causa); dati dal catalogo 2022/03 in copia. Il catalogo 2023/01
    citato nel cap. 12 non è stato confrontato. DXF/STEP solo con login «MY SASSI». Portate per taglia ⚠️ (dal
    sito, non dal catalogo).

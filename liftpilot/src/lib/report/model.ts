@@ -1,5 +1,5 @@
 // The report as layout-free blocks: written and formatted in TypeScript, drawn by report/relazione.py.
-import type { DrawingDoc, Shape } from '@/drawing';
+import type { DrawingDoc, ImageRef, Shape } from '@/drawing';
 
 export type BlockStatus = 'ok' | 'warn' | 'fail' | 'info' | '';
 
@@ -16,7 +16,9 @@ export type ReportBlock =
   | { t: 'verdict'; text: string; status: BlockStatus }
   | { t: 'sign'; labels: string[] }
   /** a view laid out by the drawing kernel: paper shapes in a box w × h [mm], and its scale in words */
-  | { t: 'plan'; shapes: Shape[]; w: number; h: number; scale: string };
+  | { t: 'plan'; shapes: Shape[]; w: number; h: number; scale: string }
+  /** the sender's letterhead — its logo (`drawing.images`), its name first — and the recipient's lines on the right */
+  | { t: 'letterhead'; logo: ImageRef | null; from: string[]; to: string[] };
 
 export interface ReportDoc {
   meta: { title: string; subject: string; author: string; header: string; footer: string; code: string };

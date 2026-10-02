@@ -44,6 +44,15 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
     stato: 'scelta', verifiche: ['m_rinvio'],
   },
   {
+    id: 'locale.ingombro', gruppo: 'locale', titolo: 'L\'argano dentro il locale del macchinario',
+    valore: 'l\'argano sul suo basamento — con il telaio del rinvio o con il supporto del rinvio — sta dentro il locale in pianta e sotto il '
+      + 'soffitto: la distanza minima dai muri e dal soffitto non è negativa; ingombri dalle quote del costruttore per gli argani disegnati com\'è, '
+      + 'dall\'argano generico del software (scalato alla puleggia) per gli altri; la puleggia di rinvio sul suo supporto sotto l\'argano '
+      + 'libera il basamento dell\'argano sopra di essa (solo le putrelle sollevate la scavalcano)',
+    riferimento: '—', fonte: 'geometria del progetto: la pianta e l\'altezza del locale inserite, gli ingombri dell\'argano e del basamento',
+    stato: 'derivazione', verifiche: ['m_fit', 'm_stand'],
+  },
+  {
     id: 'locale.putrelle', gruppo: 'locale', titolo: 'Verifica delle putrelle sotto l\'argano',
     valore: 'ognuna delle due putrelle porta metà del carico dell\'argano (il suo peso più il carico statico sull\'asse per il coefficiente dinamico) '
       + 'come forza concentrata in mezzeria, più il proprio peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): '

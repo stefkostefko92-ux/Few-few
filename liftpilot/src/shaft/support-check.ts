@@ -4,9 +4,11 @@
 // Stress σ = M/Wel,y ≤ fyk/γM0 and elastic deflection ≤ 1/1500 of the clear span. Pure.
 import { check } from './checks';
 import { dropSpan, type MachineSpec, type RoomGeo } from './machine-room';
+import { MACHINE_TOP } from './machine-outline';
 import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
-import { profileOf, supportOf } from './support';
+import { rinvioAcross, rinvioRun, standBox } from './rinvio';
+import { padsOf, profileOf, supportOf } from './support';
 import type { ShaftCheck } from './types';
 
 const G = 9.81;
@@ -62,4 +64,45 @@ export function beamChecks(Gm: RoomGeo | null, load: SupportLoad): ShaftCheck[] 
     check('m_beam', b.sigma <= b.sigmaMax, b.sigma, b.sigmaMax, 0, 'MPa'),
     check('m_beamf', b.f <= b.fMax, b.f, b.fMax, 1, 'mm'),
   ];
+}
+
+/** The top of the machine over the room's floor [mm]: a maker's by its sheet (its height over the feet), the generic
+ *  one by its elevation scaled to the sheave. */
+export function machineTop(M: MachineSpec, G: RoomGeo): number {
+  const F = G.frame, S = F.shape;
+  return S ? M.axis - S.yWheel + S.overall[2] : M.axis - F.axis + MACHINE_TOP * 1000 * F.s;
+}
+
+/** The diverting pulley on its own stand under the machine (registry locale.ingombro): what is left between the pulley's
+ *  rim and the underside of the machine's support over it [mm] — raised beams span over it, the other supports stand on
+ *  the floor (0); null when the stand is beside the machine or there is none. */
+export function standClearance(Gm: RoomGeo, M: MachineSpec): number | null {
+  const R = Gm.room, rf = M.rinvio ?? null;
+  if (rf?.on !== 'stand' || M.Dp <= 0 || Gm.pulleyZ <= -R.slab) return null;
+  const [a0, b0, a1, b1] = standBox(M, Gm);
+  if (!(a0 < Gm.frame1 && Gm.frame0 < a1 && b0 < Gm.across[1] && Gm.across[0] < b1)) return null;
+  const s = supportOf(R, true), top = M.axis - padsOf(s) - Gm.frame.axis;
+  return (s.kind === 'beams' ? top - PROFILES[profileOf(s)].h : 0) - (Gm.pulleyZ + M.Dp / 2);
+}
+
+/** The checks m_fit and m_stand (registry locale.ingombro): the machine on its support — with the bedplate of the
+ *  diverting pulley or the pulley's own stand — inside the room in plan and under its ceiling: the least distance left to
+ *  a wall or to the ceiling, at least 0 [mm]; the pulley on its stand under the machine clear of the support over it. */
+export function fitChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
+  if (!Gm) return [];
+  const R = Gm.room, rf = M.rinvio ?? null;
+  const boxes: (readonly [number, number, number, number])[] = [[Gm.frame0, Gm.across[0], Gm.frame1, Gm.across[1]]];
+  if (rf?.on === 'frame') {
+    const [u0, u1] = rinvioRun(M, Gm), [v0, v1] = rinvioAcross(M, Gm, rf);
+    boxes.push([u0, v0, u1, v1]);
+  } else if (M.Dp > 0 && Gm.pulleyZ > -R.slab) boxes.push(standBox(M, Gm));
+  let clear = R.H - machineTop(M, Gm);
+  for (const [u0, v0, u1, v1] of boxes) {
+    for (const [u, v] of [[u0, v0], [u1, v0], [u1, v1], [u0, v1]] as const) {
+      const x = Gm.carDrop[0] + u * Gm.ux - v * Gm.uy, y = Gm.carDrop[1] + u * Gm.uy + v * Gm.ux;
+      clear = Math.min(clear, x, R.W - x, y, R.D - y);
+    }
+  }
+  const stand = standClearance(Gm, M);
+  return [check('m_fit', clear >= 0, Math.round(clear), 0, 0, 'mm'), ...(stand === null ? [] : [check('m_stand', stand >= 0, Math.round(stand), 0, 0, 'mm')])];
 }

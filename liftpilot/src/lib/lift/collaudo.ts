@@ -84,7 +84,7 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   p_refuge: PIT, p_apron: [...PIT, 'carDoors'], p_screen: ['cw'],
   b_runby: BUFFERS, b_type: ['buffers', 'speed'], b_car: ['buffers', 'speed'], b_cw: ['buffers', 'speed'],
   // the machine room is the building's; the panel's space follows a new controller; the beams under a new machine
-  m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_rinvio: ['machine'],
+  m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_stand: ['machine'],
 };
 
 /** The accessibility checks of DM 236/1989: the shaft's, present when its case is chosen in the shaft's data. */

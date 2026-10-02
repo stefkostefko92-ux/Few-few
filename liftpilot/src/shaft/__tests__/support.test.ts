@@ -1,11 +1,11 @@
-// The machine's support: the typical height of each kind, the sheave's axis it gives (pads on all but the shims), and
-// the check of the beams against a calculation by hand (IPE 200, 3 m between the walls, machine 400 kg, static load
-// 2000 kg × 1,5).
+// The machine's support: the typical height of each kind, the sheave's axis it gives (pads on all but the shims), the
+// check of the beams against a calculation by hand (IPE 200, 3 m between the walls, machine 400 kg, static load
+// 2000 kg × 1,5), and the machine inside the room (walls and ceiling).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, layout, padsOf, roomGeo, sheaveAxisOn, supportHeight, type MachineSpec, type MachineSupport } from '../index';
 import { ownAxis } from '../support';
-import { beamChecks, beamResult } from '../support-check';
+import { beamChecks, beamResult, fitChecks, machineTop } from '../support-check';
 
 const D = 400, SHIMS_AXIS = 0.55 * D;
 const M: MachineSpec = { D, Dp: 0, n: 5, d: 8, mass: 400, label: '', axis: 600, h: 0, reverse: false, ropeIn: 0 };
@@ -45,4 +45,39 @@ test('putrelle: tensione e freccia come il calcolo a mano', () => {
 
 test('putrelle: nessuna verifica sugli altri basamenti', () => {
   for (const kind of ['shims', 'frame', 'plates', 'plinth'] as const) assert.deepEqual(beamChecks(geo({ kind }), { machine: 400, static: 2000, dyn: 1.5 }), []);
+});
+
+test('ingombro: l’argano dentro il locale, il margine minimo da muri e soffitto', () => {
+  const G = geo({ kind: 'frame' }), R = G.room, [c] = fitChecks(G, M);
+  assert.ok(c && c.id === 'm_fit' && c.status === 'ok' && c.unit === 'mm');
+  // the least distance: the ceiling over the machine's top, or a corner of its frame to a wall
+  const corners = [[G.frame0, G.across[0]], [G.frame1, G.across[0]], [G.frame1, G.across[1]], [G.frame0, G.across[1]]].map(([u, v]) => [
+    G.carDrop[0] + u * G.ux - v * G.uy, G.carDrop[1] + u * G.uy + v * G.ux]);
+  const expected = Math.min(R.H - machineTop(M, G), ...corners.flatMap(([x, y]) => [x, R.W - x, y, R.D - y]));
+  assert.equal(c.value, Math.round(expected));
+  // a room lower than the machine, a room whose wall cuts the frame: the check fails by as much
+  const low = roomGeo(layout({ ...defaultInputs(1600, 1750), room: { ...DEFAULT_ROOM, support: { kind: 'frame' }, H: Math.floor(machineTop(M, G)) - 40 } }), M);
+  assert.ok(low);
+  const [l] = fitChecks(low, M);
+  assert.ok(l && l.status === 'fail' && l.value !== null && l.value <= -40);
+  const narrow = roomGeo(layout({ ...defaultInputs(1600, 1750), room: { ...DEFAULT_ROOM, support: { kind: 'frame' }, W: 2000, D: 2300 } }), M);
+  assert.ok(narrow);
+  const [n] = fitChecks(narrow, M);
+  assert.ok(n && n.value !== null && n.value < (c.value ?? 0));
+  assert.deepEqual(fitChecks(null, M), [], 'senza locale nessuna verifica');
+});
+
+test('rinvio sul suo supporto sotto l’argano: lo scavalcano solo le putrelle sollevate', async () => {
+  const { defaultLift, deriveLift } = await import('../../lib/lift');
+  const L = { ...defaultLift(), catalog: { brand: 'SICOR' as const, model: 'SH140' } };
+  const withSupport = (support: MachineSupport) => deriveLift({ ...L, shaft: { ...L.shaft, room: { ...(L.shaft.room ?? DEFAULT_ROOM), support } } });
+  const stand = (s: MachineSupport) => withSupport(s).supportChecks.find((c) => c.id === 'm_stand');
+  // a frame on the floor over the pulley's stand: they clash by the pulley's top
+  const onFrame = stand({ kind: 'frame' });
+  assert.ok(onFrame && onFrame.status === 'fail' && onFrame.value !== null && onFrame.value < 0);
+  // beams raised over it: clear
+  const raised = stand({ kind: 'beams', height: 1400 });
+  assert.ok(raised && raised.status === 'ok' && raised.value !== null && raised.value > 0);
+  // on the bedplate with the pulley (the default) there is no stand
+  assert.equal(deriveLift(L).supportChecks.find((c) => c.id === 'm_stand'), undefined);
 });

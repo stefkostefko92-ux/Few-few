@@ -3,14 +3,14 @@
 // The installation in one screen: the one form on the left (the shaft, the floors, the machine room, the lift and its
 // machine), everything the software works out and the 3D simulation on the right, live; every check with a button
 // that replays it; the save, after which the server derives everything again and stores it.
-import { useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type Ref } from 'react';
+import { useCallback, useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type Ref } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
 import { KL, collaudoOf, deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
-import { liftAdvice, type MachineCandidate } from '@/lib/lift/advice';
+import { deflectorInputs, liftCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
@@ -68,7 +68,13 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
   const [saving, startSaving] = useTransition();
   const deferred = useDeferredValue(inp);
   const derived = useMemo(() => deriveLift(deferred), [deferred]);
-  const advice = useMemo(() => liftAdvice(deferred), [deferred]);
+  // the advice verifies every model of SICOR and Montanari with the inputs as they settle; with direct pull also with
+  // the diverting pulley, for when no machine takes the sheave of the rope drop
+  const evaluate = useCallback((m: AdviceModel) => liftCandidate(deferred, m), [deferred]);
+  const alternative = useMemo(() => {
+    const d = deflectorInputs(deferred);
+    return d ? { evaluate: (m: AdviceModel) => liftCandidate(d, m), sheave: derived.machine.D } : null;
+  }, [deferred, derived]);
   const bad = useMemo(() => new Set(visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values)), [derived]);
   useEffect(() => { onDerived?.(deferred, derived); }, [deferred, derived, onDerived]);
   const sim = useRef<SimApi>(null);
@@ -120,13 +126,17 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     });
     setSaveError(null);
   };
-  // the machine of the advice: its maker and model, proposed by the software
+  // the machine of the advice: its maker and model, proposed by the software (with the diverting pulley when the
+  // advice found it with one)
   const takeMachine = (c: MachineCandidate): void => {
-    setInp((p) => ({ ...p, catalog: { brand: c.brand, model: c.model }, auto: { ...p.auto, machine: true } }));
+    setInp((p) => ({
+      ...p, calc: p.calc.layout === c.I.layout ? p.calc : mirrorRopes({ ...p.calc, layout: c.I.layout }),
+      catalog: { brand: c.brand, model: c.model }, auto: { ...p.auto, machine: true },
+    }));
     setSaveError(null);
   };
-  const machineInUse = (c: MachineCandidate): boolean =>
-    derived.origin.machine === 'auto' && derived.catalog?.fit?.machine.brand === c.brand && derived.catalog.fit.machine.model === c.model;
+  const machineInUse = (c: MachineCandidate): boolean => derived.origin.machine === 'auto' && derived.values.layout === c.I.layout
+    && derived.catalog?.fit?.machine.brand === c.brand && derived.catalog.fit.machine.model === c.model;
   // a value switched to entered starts from the one the software showed, so nothing jumps
   const setAuto = (patch: Partial<AutoFlags>): void => {
     const pick = derived.analysis.sizing.pick;
@@ -196,7 +206,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
       </form>
       <div className="lift-main">
         <LiftFacts derived={derived} X={X} fmt={P.fmt} />
-        <MachineAdvice advice={advice} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} saved="design" />
+        <MachineAdvice evaluate={evaluate} alternative={alternative} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="design" />
         <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
         <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
         <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
