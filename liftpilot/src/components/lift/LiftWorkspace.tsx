@@ -9,7 +9,7 @@ import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
-import { KL, deriveLift, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { KL, collaudoOf, deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
@@ -29,6 +29,7 @@ import NicheOptions from '../shaft/NicheOptions';
 import PlanEditor from '../shaft/PlanEditor';
 import type { Refusal } from '../drawing/EditableDrawing';
 import SurveyPanel, { type SurveyResult } from '../shaft/SurveyPanel';
+import CollaudoOptions from './CollaudoOptions';
 import LiftCalcFields from './LiftCalcFields';
 import LiftFacts from './LiftFacts';
 import LiftChecks from './LiftChecks';
@@ -101,6 +102,10 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     setInp((p) => ({ ...p, bottom }));
     setSaveError(null);
   };
+  const setCollaudo = (collaudo: Collaudo): void => {
+    setInp((p) => ({ ...p, collaudo }));
+    setSaveError(null);
+  };
   const setCatalog = (catalog: CatalogChoice | undefined): void => {
     setInp((p) => {
       const { catalog: _drop, ...rest } = p;
@@ -154,6 +159,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
             <button key={c} type="button" role="radio" aria-checked={context === c} className={context === c ? 'on' : undefined} onClick={() => setCalc({ context: c })}>{t(`context_${c}`)}</button>
           ))}
         </div>
+        <CollaudoOptions P={P} isNew={context === 'new'} chosen={inp.collaudo} value={collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo} />
         <h2>{t('s_shaft')}</h2>
         <div className="form-grid">
           <label className="field"><span>{ts('W')}</span><input className="input num" type="number" inputMode="numeric" min={500} max={10000} step={10} value={inp.shaft.W} onChange={(e) => setSize('W', e.target.value)} /></label>

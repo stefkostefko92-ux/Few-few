@@ -64,14 +64,16 @@ export const govSize = (v: number, model?: string): Governor => {
   return chosen && v <= chosen.vMax + 1e-9 ? chosen : GOVERNORS.slice(0, 4).find((g) => v <= g.vMax + 1e-9) ?? GOVERNORS[3];
 };
 
-/** How far the lever kind of tension weight reaches past its pulley's centre along the rope's plane [mm]: PFB R4K,
- *  700 mm over all with the pulley 255 mm from the hinge's end. */
+/** How far the lever kind of tension weight reaches past its pulley's centre along the rope's plane [mm]: 700 mm over
+ *  all (dimension "A" of the PFB R4KE for the LK200 in a reseller's listing, its meaning not stated) with the pulley
+ *  255 mm from the hinge's end — the software's choice, no source (registry ingombri.limitatore). */
 export const LEVER_REACH = 445;
 
 /** The tension weight [mm]: the lever's hinge past the clip, its bars' inner face and thickness; the weights in cast
- *  iron (7,2 kg/dm³) across × along the rope's plane × high — the lever's 113 × 150 × 185 ≈ 22 kg (PFB R4KE for the
- *  LK200), the vertical kind's 150 × 160 × 250 ≈ 43 kg (PFB R4R, 44 kg) — and the lever weight's middle, as far out
- *  as the lever reaches. */
+ *  iron (7,2 kg/dm³) across × along the rope's plane × high — the lever's 113 × 150 × 185 ≈ 22 kg (the masses are PFB's
+ *  for the LK200; 113 is dimension "C" of the R4KE in a reseller's listing, 150 and 185 are chosen to give the mass),
+ *  the vertical kind's 150 × 160 × 250 ≈ 43 kg (PFB R4R, 44 kg; sizes chosen to give the mass) — and the lever
+ *  weight's middle, as far out as the lever reaches. */
 export const TENSION = {
   hinge: 80, bar: 26, barT: 8, lever: [113, 150, 185], hang: [150, 160, 250], weightAt: LEVER_REACH - 150 / 2 - 40, leverKg: 22, hangKg: 44,
 } as const;

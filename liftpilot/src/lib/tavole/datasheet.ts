@@ -96,7 +96,7 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
     const rows: Cell[][] = [
       [{ text: 'VERIFICHE DEL PROGETTO DEL VANO (UNI EN 81-20:2020)', size: Math.min(2.4, rowH * 0.72) }],
       [{ text: 'VERIFICA', size: cs }, { text: 'VALORE', align: 'r', size: cs }, { text: 'LIMITE', align: 'r', size: cs }, { text: 'ESITO', align: 'c', size: cs }],
-      ...d.checks.map(([l, v, lim, o]): Cell[] => [{ text: l, size: cs }, { text: v, size: cs }, { text: lim, size: cs }, { text: o, align: 'c', size: cs, bold: o !== 'OK' }]),
+      ...d.checks.map(([l, v, lim, o]): Cell[] => [{ text: l, size: cs }, { text: v, size: cs }, { text: lim, size: cs }, { text: o, align: 'c', size: cs, bold: o !== 'OK' && o !== 'ESISTENTE' }]),
     ];
     const t2 = table(xM, y - 1.6, [w - 57, 18, 18, 21], rowH, rows, cs);
     out.push(...t2.shapes);

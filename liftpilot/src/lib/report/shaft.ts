@@ -6,6 +6,8 @@ import type { CheckStatus } from '@/calc/types';
 import { fitView, renderView, moveShapes, type Box } from '@/drawing';
 import { DEFAULTS, PLAN_KEYS, isUpperLimit, planDims, planEntities, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheck, type ShaftCheckId } from '@/shaft';
 import type { ShaftSource } from '../shaft-input';
+import { ambitoOf, type Collaudo } from '../lift/collaudo';
+import { EXISTING_NOTE, esitoOf } from './collaudo';
 import type { ReportBlock } from './model';
 
 export interface ReportDesign {
@@ -49,10 +51,12 @@ export function planBlock(L: Layout): ReportBlock {
   return { t: 'plan', shapes: moveShapes(r.shapes, 0, PAD - r.extent.y0), w: PLAN_W, h: r.extent.y1 - r.extent.y0 + 2 * PAD, scale: `Scala 1:${place.scale} sul foglio A4 stampato al 100%` };
 }
 
-/** `extra`: the checks that need the calculation's machine (the beams under it), after the shaft's own. */
-export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra: readonly ShaftCheck[] = []): ReportBlock[] {
+/** `extra`: the checks that need the calculation's machine (the beams under it), after the shaft's own. `collaudo`: the
+ *  acceptance test of a lift design, whose checks of the parts that stay as they are show as existing, out of the result. */
+export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra: readonly ShaftCheck[] = [], collaudo?: Collaudo): ReportBlock[] {
   const L = d.layout, I = L.inputs, src = d.source, { fmt, st } = x, checks = [...L.checks, ...extra];
-  const verdict = checks.some((c) => c.status === 'fail') ? 'fail' : checks.some((c) => c.status === 'warn') ? 'warn' : verdictOf(L);
+  const on = collaudo ? checks.filter((c) => ambitoOf(collaudo, c.id) === 'applies') : checks, existing = checks.length - on.length;
+  const verdict = on.some((c) => c.status === 'fail') ? 'fail' : on.some((c) => c.status === 'warn') ? 'warn' : collaudo ? 'ok' : verdictOf(L);
   const B: ReportBlock[] = [];
   if (Math.abs(calcQ - L.Q) > 0.5) {
     B.push({ t: 'box', text: `La portata del calcolo (${fmt(calcQ, 0)} kg) è diversa da quella del progetto del vano (${fmt(L.Q, 0)} kg): la pianta e le verifiche in pianta valgono per ${fmt(L.Q, 0)} kg.` });
@@ -74,7 +78,7 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra
     ['Fermate · corsa · velocità', `${V.floors.length} fermate · ${fmt(travel(V.floors) / 1000, 2)} m · ${fmt(V.v, 2)} m/s`],
     ['Fossa · testata', `${fmt(V.pit, 0)} mm · ${fmt(V.headroom, 0)} mm`],
     ['Accessibilità', S[`access_${I.access}` as const]],
-    ['Esito delle verifiche del vano', VERDICT[verdict]],
+    ['Esito delle verifiche del vano', `${VERDICT[verdict]}${existing ? ` (${existing} ${existing === 1 ? 'verifica riguarda' : 'verifiche riguardano'} parti esistenti, fuori dall'esito)` : ''}`],
     ['Motore del progetto', `LiftPilot vano ${d.engineVersion} · profilo normativo ${d.profileId}`],
     ['Impronta SHA-256 del progetto', d.sha256],
   ] });
@@ -82,10 +86,12 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra
   const refOf = (id: ShaftCheckId): string => [...new Set(voci.filter((v) => v.verifiche?.includes(id)).flatMap((v) => v.riferimento.split('; '))
     .map((r) => r.trim()).filter((r) => r && r !== '—'))].join('; ') || 'modello di calcolo del software';
   B.push({ t: 'h3', text: 'Verifiche del vano: pianta, sezione e locale macchina' });
-  B.push({ t: 'grid', head: x.head, rows: checks.map((c) => {
+  const esiti = checks.map((c) => (collaudo ? esitoOf(collaudo, c.id, st(c.status), c.status) : { text: st(c.status), status: c.status }));
+  B.push({ t: 'grid', head: x.head, rows: checks.map((c, i) => {
     const unit = c.unit ? ` ${c.unit}` : '';
-    return [plain(S[`c_${c.id}` as const]), c.value === null ? '—' : `${fmt(c.value, c.dec)}${unit}`, c.limit === null ? '' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}`, st(c.status), refOf(c.id)];
-  }), status: checks.map((c) => c.status), statusCol: 3, widths: [0.34, 0.11, 0.11, 0.12, 0.32], align: ['l', 'r', 'r', 'l', 'l'] });
+    return [plain(S[`c_${c.id}` as const]), c.value === null ? '—' : `${fmt(c.value, c.dec)}${unit}`, c.limit === null ? '' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}`, esiti[i]?.text ?? '', refOf(c.id)];
+  }), status: esiti.map((e) => e.status), statusCol: 3, widths: [0.34, 0.11, 0.11, 0.12, 0.32], align: ['l', 'r', 'r', 'l', 'l'] });
+  if (existing) B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
 
   B.push({ t: 'h3', text: 'Ingombri considerati' });
   B.push({ t: 'kv', rows: (Object.keys(DEFAULTS) as Allowance[]).map((k): [string, string] => [S[`a_${k}` as const], `${fmt(I[k], 0)} mm${I[k] === DEFAULTS[k] ? ' (valore tipico)' : ''}`]) });

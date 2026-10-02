@@ -87,7 +87,8 @@ export const PROFILO = {
     { sigla: 'DPR 162/1999 e s.m.i. (DPR 8/2015, DPR 23/2017)', ambito: 'sostituzione del macchinario come modifica costruttiva; verifica straordinaria (art. 14)' },
     { sigla: 'UNI EN 81-20:2020', ambito: 'funi (5.5), freno (5.9.2.2), distanze nel vano (5.2.5) e superficie della cabina (5.4.2)' },
     { sigla: 'UNI EN 81-50:2020', ambito: 'aderenza (5.11) e coefficiente di sicurezza delle funi (5.12)' },
-    { sigla: 'UNI 10411-1:2024', ambito: 'modifiche e sostituzioni su ascensori elettrici esistenti non conformi alle direttive' },
+    { sigla: 'UNI 10411-1:2024', ambito: 'modifiche e sostituzioni su ascensori elettrici esistenti non conformi alla Direttiva Ascensori: collaudo delle parti modificate' },
+    { sigla: 'UNI 10411-11:2024', ambito: 'modifiche e sostituzioni su ascensori elettrici esistenti conformi alla 95/16/CE o alla 2014/33/UE: collaudo delle parti modificate' },
     { sigla: 'DM 236/1989', ambito: 'accessibilità: cabina e porta minime (8.1.12), per il progetto del vano' },
   ],
 } as const;

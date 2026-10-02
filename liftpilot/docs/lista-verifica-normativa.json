@@ -21,7 +21,11 @@
       },
       {
         "sigla": "UNI 10411-1:2024",
-        "ambito": "modifiche e sostituzioni su ascensori elettrici esistenti non conformi alle direttive"
+        "ambito": "modifiche e sostituzioni su ascensori elettrici esistenti non conformi alla Direttiva Ascensori: collaudo delle parti modificate"
+      },
+      {
+        "sigla": "UNI 10411-11:2024",
+        "ambito": "modifiche e sostituzioni su ascensori elettrici esistenti conformi alla 95/16/CE o alla 2014/33/UE: collaudo delle parti modificate"
       },
       {
         "sigla": "DM 236/1989",
@@ -832,7 +836,7 @@
       "fonte": "pagine pfb.it e montanarigiulio.com, schede di elevatorequipment.co.uk (altezze, basi), estratti di ricerca del 1° ottobre 2026",
       "stato": "da verificare",
       "verifiche": "",
-      "nota": "per le RQ-A Montanari 0,15–3,0 m/s è il campo della famiglia: il limite di ogni taglia va letto sul manuale; delle basi pubblicate non è detto quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200)"
+      "nota": "per le RQ-A Montanari 0,15–3,0 m/s è il campo della famiglia: il limite di ogni taglia va letto sul manuale; delle basi pubblicate non è detto quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200). Tenditore a leva: lungo 700 mm (quota «A» del PFB R4KE per LK200 in un listino di rivenditore, senza definizione), puleggia a 255 mm dalla cerniera e blocco di 150 × 185 mm: scelte del software; le masse di 22 e 44 kg sono quelle delle tabelle PFB"
     },
     {
       "n": 68,
@@ -1148,6 +1152,18 @@
     },
     {
       "n": 94,
+      "id": "impianto.collaudo",
+      "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
+      "voce": "Normativa di collaudo e parti sostituite o modificate",
+      "valore": "impianto nuovo: UNI EN 81-20:2020 e UNI EN 81-50:2020, ogni verifica entra nell'esito; modifica di un impianto esistente: UNI 10411-1:2024 (ascensore elettrico non conforme alla Direttiva Ascensori) o UNI 10411-11:2024 (conforme alla 95/16/CE o alla 2014/33/UE), a scelta dell'utente: entrano nell'esito le verifiche che riguardano le parti sostituite o modificate (comprese le variazioni di velocità, portata e corsa), le altre sono riportate come «esistente» con il valore calcolato. Quali parti riguarda ciascuna verifica è una lettura del software",
+      "riferimento": "DPR 162/1999 e s.m.i.; UNI 10411-1:2024; UNI 10411-11:2024; UNI EN 81-20:2020; UNI EN 81-50:2020",
+      "fonte": "schede UNI delle norme (scopo, data 31/10/2024); schema ICIM delle verifiche (la verifica straordinaria si limita di norma alle modifiche); sintesi secondarie; ricerca, capitoli 2.4 e 6.6",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": "il testo delle UNI 10411 del 2024 non è stato letto: le verifiche per parte e i requisiti per la sostituzione del macchinario (edizione 2021: freno in due elementi, temporizzatore, velocità eccessiva in salita, arresto entro 1 m dalla macchina, interruzione se il freno non si apre) vanno confermati sul testo vigente"
+    },
+    {
+      "n": 95,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -1159,7 +1175,7 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto"
     },
     {
-      "n": 95,
+      "n": 96,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -1171,7 +1187,7 @@
       "nota": ""
     },
     {
-      "n": 96,
+      "n": 97,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
@@ -1183,7 +1199,7 @@
       "nota": ""
     },
     {
-      "n": 97,
+      "n": 98,
       "id": "impianto.calata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Tiro diretto (senza rinvio): calata uguale al diametro della puleggia",
@@ -1195,7 +1211,7 @@
       "nota": "con un diametro diverso dalla calata le funi si inclinano verso gli attacchi: nella sostituzione con il confronto il calcolo ne tiene conto per la nuova puleggia; oltre pochi millimetri servono una puleggia di rinvio o il contrappeso spostato (quota «Calata» in pianta)"
     },
     {
-      "n": 98,
+      "n": 99,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
@@ -1207,7 +1223,7 @@
       "nota": ""
     },
     {
-      "n": 99,
+      "n": 100,
       "id": "impianto.basso.schema",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: schema delle funi",
@@ -1219,7 +1235,7 @@
       "nota": "lo schema reale va rilevato sull'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori"
     },
     {
-      "n": 100,
+      "n": 101,
       "id": "impianto.catalogo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta dal catalogo di un costruttore",
@@ -1231,7 +1247,7 @@
       "nota": "i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell'ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
     },
     {
-      "n": 101,
+      "n": 102,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1243,7 +1259,7 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 102,
+      "n": 103,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1255,7 +1271,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 103,
+      "n": 104,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1267,7 +1283,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi"
     },
     {
-      "n": 104,
+      "n": 105,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1279,7 +1295,7 @@
       "nota": ""
     },
     {
-      "n": 105,
+      "n": 106,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1291,7 +1307,7 @@
       "nota": ""
     },
     {
-      "n": 106,
+      "n": 107,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -1303,7 +1319,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione"
     },
     {
-      "n": 107,
+      "n": 108,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1315,7 +1331,7 @@
       "nota": ""
     },
     {
-      "n": 108,
+      "n": 109,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",

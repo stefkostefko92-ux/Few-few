@@ -223,7 +223,9 @@ export const VOCI_VANO: readonly VoceVano[] = [
     riferimento: 'dati del fornitore del limitatore', stato: 'da_verificare',
     fonte: 'pagine pfb.it e montanarigiulio.com, schede di elevatorequipment.co.uk (altezze, basi), estratti di ricerca del 1° ottobre 2026',
     nota: 'per le RQ-A Montanari 0,15–3,0 m/s è il campo della famiglia: il limite di ogni taglia va letto sul manuale; delle basi pubblicate non è detto '
-      + 'quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200)',
+      + 'quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200). Tenditore a leva: lungo 700 mm (quota «A» '
+      + 'del PFB R4KE per LK200 in un listino di rivenditore, senza definizione), puleggia a 255 mm dalla cerniera e blocco di 150 × 185 mm: scelte del '
+      + 'software; le masse di 22 e 44 kg sono quelle delle tabelle PFB',
   },
   {
     id: 'modello.passo', gruppo: 'modello_vano', titolo: 'Dimensioni proposte della cabina',

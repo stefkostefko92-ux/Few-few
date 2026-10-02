@@ -1130,3 +1130,60 @@ Ricerche senza risultati utili:
 - russo (“габаритные размеры”): due ricerche;
 - docplayer e scribd per SICOR;
 - MODY “PESO / WEIGHT”.
+
+## 12. Terzo giro (2 ottobre 2026): ancora nessuna quota, dati nuovi e i documenti da scaricare
+
+Ricerche in più lingue (russo, persiano, turco, cinese, polacco, spagnolo, francese), su marketplace, copie di
+documenti e GitHub: **nessuna quota con la sua etichetta** (L × W × H, altezza dell'asse, sbalzo della puleggia,
+impronta e fori del basamento) per nessuno dei 41 modelli. Le quote sono solo nei PDF e negli ZIP dei costruttori,
+bloccati da questo ambiente. I numeri senza etichetta dei manuali Montanari («0 120 185 30 485 4 0,5 · 733 max · 385 ·
+Ø max 491», 7 edizioni) **non si usano**: due riassunti li avevano «etichettati» ripetendo la domanda.
+
+Gradi come nei giri precedenti: E costruttore, D copia di un documento del costruttore, R rivenditore.
+
+| Marca | Dato nuovo | Grado | Fonte |
+|---|---|---|---|
+| SICOR | MR26: motori 4 poli VVVF 13,5–43 kW a 50 Hz; MR35: 20–90 kW a 50 Hz (ora nel catalogo del software) | E ⚠️ attribuzione tra pagina e ficha ES | https://sicoritaly.com/en/geared-series/geared-mr26/ · https://sicoritaly.com/en/geared-series/geared-mr35/ |
+| SICOR | MR21: 9–30 kW a 50 Hz, in conflitto con 7,5–30 kW della MR21 SSB | E ⚠️ | https://sicoritaly.com/en/geared-series/geared-mr21/ |
+| SICOR | coppia in uscita e rendimenti per rapporto: MR12C 1/52 963 Nm (0,73–0,77) … 2/43 856 Nm (0,82–0,86); SH140 1/59 1260 Nm (0,72–0,76) … 3/47 1240 Nm (0,83–0,88); SH110B 670–750 Nm, rendimento 0,71–0,84 complessivo. Se la coppia sia massima o nominale e il verso del rendimento: non indicati ⚠️ | E | schede tecniche 2025 (URL nel § 11, punto 5, e nel § 12.1) |
+| SICOR | puleggia Ø400 × 70 con 4 gole per funi Ø9–10 «V35° β105-90°» per SH110B e SH130; larghezza 70 mm anche per Ø450 | R, titoli | https://www.donati.it/en/catalogo-prodotti/geared-traction-machine-sicor-spare-parts |
+| SICOR | telaio basso XTE0456 (SH110B), kit di fissaggio XGE0002 (SH110B/SH130B), paracorda su SV110, SH110B e SH130B, microinterruttore del freno sull'SV110 | R, titoli | come sopra |
+| SICOR | «2D and 3D technical drawings (ZIP)» confermato sulle pagine SH130, MR21 e MR26 (URL dello ZIP non emerso) | E | pagine modello |
+| Sassi | DXF e STEP 3D nell'area riservata MY SASSI: account dal commerciale | E | https://www.sassi.it/en/brakes/df/ |
+| Sassi | catalogo 2023/01: tabelle dei volani, pulegge MF48-84-94, telai MODY/LEO/TORO (valori non estratti) | E | https://www.sassi.it/tabelle/file/Catalogue%20Gearbox%202023_01.pdf |
+| Sassi | freni DF (1, 2 o 3 dischi) su MODY, LEO e MF48; DQ03 di serie sul TORO; certificati Liftinstituut (coppie non trovate) | E | https://www.sassi.it/en/brakes/df/ · https://www.sassi.it/en/brakes/dq/ |
+| Montanari | versioni B con freno sull'albero lento: M65B, M73B, M75B, M83B, M93B, M98HB, M105B; il freno ferma la cabina vuota in salita limitando la decelerazione a 1 g e da solo non protegge dalla sovravelocità | E | https://www.montanarigiulio.com/wp-content/uploads/2021/02/Annex-Gearbox-With-Brake-ENG.pdf |
+| Montanari | M73: 1/75 750 Nm, rendimento 0,58 (1500/1800 giri) e 0,54 (1000/1200); 1/60 940 Nm 0,71/0,68; 1/52 809 Nm 0,73/0,70; 1/46 1059 Nm 0,74/0,71 | E ⚠️ regime per colonna dal riassunto | https://www.montanarigiulio.com/wp-content/uploads/2019/10/Montanari-Gearbox-M73.pdf |
+| Montanari | componenti dal manuale: riduttore a vite, freno a ceppi con leva, elettromagnete, molle e vite di registro, volantino per girare la puleggia di 360°, volano, golfari; rivestimento fino a 140 °C | E | https://www.montanarigiulio.com/wp-content/uploads/2013/06/manuale_argani_REV14_01_2024_ENG.pdf |
+| GEM | interassi 134 (HW134, HW134L), 140 (HW140C) e 173 mm (HW175 ⚠️ il nome dice 175); olio sintetico 3 / 3,5 / 8,5 l (HW134 e HW175 lubrificati a vita); due punti di appoggio; rotore dell'HW175 sull'albero della vite | E | https://gem-ita.com/en/hw134-camel-2/ · https://gem-ita.com/hw140c-lion/ · https://gem-ita.com/en/hw175-elephant-2/ |
+| GEM | HW140C fino a 8 persone e 2 m/s, statico 3100 kg, massa 240 kg ⚠️ (pagine HW140C e HW140CL insieme); HW175 fino a 1200 kg e 2 m/s | E | come sopra |
+| GEM | HW134B: coppia frenante 780 Nm (albero non indicato ⚠️); HW175: rendimento medio 0,74, coppia massima 1985 Nm; 2480 Nm è dell'HW175C, non dell'HW175 | E/D | https://gem-ita.com/en/hw134b-brake-2/ · catalogo GEM |
+| FAER | serie F con supporto esterno e basamento integrato; P58S senza supporto, più compatta; corpo in ghisa, vite rettificata su cuscinetti a rulli conici, corona in bronzo centrifugato; P60F 1,9 m/s, statico 3500 kg, portata 720 kg, stessa base della P58F | E | https://www.faer.net/en/geared-machines-for-elevators-catalog/geared-machine-p58f-ii-serie/ · …/geared-machine-p58s-ii-serie/ |
+
+Conflitti segnalati e non usati: coppia massima HW134 1094 Nm (gem-ita.com) contro 1012 Nm (copia del catalogo su
+scribd); M73H 115 kg (rivenditore) contro 110 kg (costruttore); rendimenti M83 uguali a quelli dell'M73 (probabile
+copia del riassunto); catalogo Montanari USA 2025 in libbre con etichette implausibili.
+
+### 12.1 Documenti da scaricare per disegnare le macchine come sono
+
+Da una rete normale (qui sono bloccati). In ordine di utilità:
+
+1. **SICOR, ZIP «2D and 3D technical drawings»** dalle pagine modello: SH130, MR21, MR26 (confermati), poi SV110,
+   SH110B, MR12C, SH130G, SH140, SH160, SH190, MR35 (`https://sicoritaly.com/en/geared-series/geared-<modello>/`).
+2. **Sassi, account MY SASSI** (DXF e STEP) dal commerciale; intanto il catalogo argani 2023/01 e il disegno quotato
+   https://www.sassi.it/tabelle/file/mf84_dq_sx_2019_04.PDF.
+3. **SICOR, schede 2025**: cartella https://www.sicoritaly.com/wp-content/uploads/2025/03/ (Technical-Sheet-SH110B,
+   MR12C, SH140, SH160, SH190 «-Geared-EN-2025.pdf»; Technisches-Datenblatt-MR21-Geared-DE.pdf;
+   ficha-tecnica-MR26-geared-ES-2025.pdf); SH130G https://www.sicoritaly.com/wp-content/uploads/2024/02/Scheda-Singola-SH130G_Geared-ENG.pdf.
+4. **Montanari, schede per gamma**: https://www.montanarigiulio.com/wp-content/uploads/2019/10/Montanari-Gearbox-M73.pdf,
+   …/Montanari-Gearbox-M75.pdf, …/Montanari-Gearbox-M83-M85.pdf; https://www.montanarigiulio.in/wp-content/uploads/2019/10/Montanari-Gearbox-M65.pdf,
+   …/Montanari-Gearbox-M109.pdf; https://www.montanarigiulio.com/pdf/catalogo/MONTANARI_SCHEDA_GEARBOX-M93-M95_da_cat_REV21_05_2024.pdf,
+   …/MONTANARI_SCHEDA_GEARBOX-M98_da_cat_REV21_05_2024.pdf; l'annesso freni (sopra).
+5. **GEM**: https://gem-ita.com/wp-content/uploads/2020/12/HW175.pdf; catalogo e certificato HW134
+   https://innolift.hu/wp-content/uploads/2022/05/GEM-HW134-KatCert.pdf; catalogo 2017 http://www.asb.pl/uploads/pdf/GEM.pdf.
+6. **Manuali SICOR su manualslib**: MR12 p. 12 (https://www.manualslib.com/manual/3437508/Sicor-Mr12.html), MR16, MR17,
+   MR26, SH110B; catalogo tecnico storico MR7…MR35 http://docplayer.it/9626148-Catalogo-tecnico-technical-catalogue.html.
+7. **FAER**: nessun PDF con disegni trovato; il disegno quotato di P58F e P58S va chiesto al costruttore.
+
+Le quote lette da questi documenti entrano nel catalogo del software come dati (con la fonte), non i file del
+costruttore, che non vanno nel repository pubblico.

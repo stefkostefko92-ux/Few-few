@@ -57,5 +57,5 @@ test('i testi delle voci riportano i numeri usati dal motore', () => {
 
 test('profilo normativo italiano', () => {
   const sigle = PROFILO.documenti.map((d) => d.sigla).join(' | ');
-  for (const doc of ['Direttiva 2014/33/UE', 'DPR 162/1999', 'UNI EN 81-20:2020', 'UNI EN 81-50:2020', 'UNI 10411-1:2024']) assert.ok(sigle.includes(doc), doc);
+  for (const doc of ['Direttiva 2014/33/UE', 'DPR 162/1999', 'UNI EN 81-20:2020', 'UNI EN 81-50:2020', 'UNI 10411-1:2024', 'UNI 10411-11:2024']) assert.ok(sigle.includes(doc), doc);
 });

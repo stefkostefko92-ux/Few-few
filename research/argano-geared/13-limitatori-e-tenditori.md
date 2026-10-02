@@ -519,3 +519,36 @@ Tutte consultate il 2026-10-01 **solo come estratto del motore di ricerca**. Con
   4. pagine dei tenditori TEV e TEL20;
   5. pagine Donati dei tenditori orizzontali Montanari;
   6. manuale PFB R1 (manualslib).
+
+## 9. Terzo giro (2 ottobre 2026): PFB, Montanari e le costanti del tenditore
+
+Solo estratti di ricerca; i manuali e i PDF dei costruttori restano bloccati da questo ambiente. Gradi: E costruttore,
+D copia di un documento, R rivenditore.
+
+| Modello | Dato nuovo | Grado | Fonte |
+|---|---|---|---|
+| PFB LK200 / LK250 / LK300 | «Pulley diameter» 207 / 257 / 307 mm; funi 6–6,5 / 6–8 / 6–8 mm. **Non dice** se sia il diametro primitivo o l'esterno: il software resta sul diametro nominale | R ⚠️ | https://www.donati.it/en/catalogo-prodotti/overspeed-governors-tension-weights-safety-gears/overspeed-governor-lk-0 |
+| PFB LK Ø200 … Ø300 | sette tarature dai titoli (es. Ø250 1,08–1,20 m/s → intervento 1,50; Ø300 1,02–1,12 → 1,40), tutte nei limiti di pfb.it | R, titoli | pagine catalogo Donati «limitatori LK» |
+| PFB R5 (Ø200, solo discesa) | alto 261 mm, base 150 × 204 mm, 10 kg | R | https://www.elevatorequipment.co.uk/lift-equipment/overspeed-governor-ranges/r5-200mm-pulley-overspeed-governor-down-directional-only |
+| PFB R6 (Ø300, solo discesa) | alto 335 mm, base 150 × 238 mm, 16 kg | R | https://www.elevatorequipment.co.uk/lift-equipment/overspeed-governor-ranges/pfb-r6-clockwise-down-only-direction-overspeed-governor-300mm-pulley |
+| PFB LK200 | conforme a EN 81-20/50, 2014/33/UE e Gost TP TC 011/2011; approvato TÜV SÜD (numero non trovato) | E | https://pfb.it/en/product/3264/overspeed-governors/lk-200-bidirectional |
+| PFB R4K | orizzontale reversibile: Ø200 con contrappeso 10 kg, Ø300 con 22 kg | R, titoli | https://www.donati.it/it/prodotti/limitatori-tenditori-paracadute/tenditori-pfb/pfb-tenditore-oriz-r4k-rev-pul-ghisa-o300-0 |
+| PFB R4V | verticale «R5/LK200» con 30 kg, in conflitto con la tabella PFB (60 kg ↓, 104 kg ↓↑) ⚠️ | R | https://www.donati.it/en/products/overspeed-governors-tension-weights-safety-gears/vertical-tension-weights/pfb-vert-tension |
+| Montanari RQ250 | A 270, B 230, C 370 mm, 14,12 kg, sgancio a distanza 48 V (lettere non definite ⚠️) | R | https://www.elevatorshop.de/en/montanari-overspeed-governor-rq250-incl.remote-tripping-48v-va-1.3m-s-6790043.html |
+| Montanari RQ300 | A 325 (il manuale dà 320 ⚠️), B 230, C 370 mm, 13,74 kg | R | https://www.elevatorshop.de/en/montanari-overspeed-governor-rq300-a-right-standard-base-ts-1.4m-s-6790117.html |
+| Montanari RH300 | la sigla esiste (Ts 1,4 m/s) | R, titolo | https://www.elevatorshop.de/en/montanari-overspeed-governor-rh300-ts-1.4m-s-6790047.html |
+
+**Le costanti del tenditore nel software** (`src/shaft/governor.ts`, voce `ingombri.limitatore`), riviste in questo
+giro: le masse 22 kg (a leva) e 44 kg (verticale) sono delle tabelle PFB; 700 mm di lunghezza e il blocco di 113 mm
+coincidono con le quote «A» e «C» dell'R4KE per LK200 in un listino di rivenditore, lettere senza definizione; la
+puleggia a 255 mm dalla cerniera e il blocco di 150 × 185 mm sono **scelte del software**, senza fonte. Il codice e il
+registro ora lo dicono.
+
+Ancora non trovati: diametro primitivo dichiarato, fori e altezza dell'asse di ogni limitatore; ingombri e masse dei
+gruppi R4K, R4R e R4V dal costruttore; il numero del certificato TÜV SÜD.
+
+Documenti da scaricare: manuale LK200 con il disegno di posa
+https://www.elevatorequipment.co.uk/files/ww/LK200%20Overspeed%20Governor%20Manual.pdf; manuale LK200–LK315
+https://download.pfb.it/api/pdf/5801; manuale R4M/R4MS https://www.elevatorequipment.co.uk/files/ww/R4M%20Spring%20Tension%20Weight%20Manual.pdf;
+manuale Montanari RQ/RQ-A https://www.montanarigiulio.com/wp-content/uploads/2019/02/MANUALE_RQ-RQA_rev10_02_2025-ENG.pdf;
+manuale NOR e RG https://www.montanarigiulio.com/wp-content/uploads/2018/05/MANUALE_NOR_RG_ENG.pdf.

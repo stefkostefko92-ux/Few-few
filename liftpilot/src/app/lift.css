@@ -27,6 +27,16 @@
 .lift-form details.survey > summary { cursor: pointer; width: fit-content; font-size: 14px; font-weight: 500; color: var(--accent); padding-block: 2px; }
 .lift-form .cad-canvas { height: clamp(260px, 42vh, 460px); }
 .lift-form .form-grid { align-items: end; }
+/* the acceptance test: its standard, the parts replaced or changed, the adaptations they bring */
+.collaudo { display: flex; flex-direction: column; gap: 8px; }
+.collaudo .parti { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.collaudo .parti legend { padding: 0 0 2px; font-size: 13.5px; font-weight: 500; }
+.collaudo .parti-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr)); gap: 2px 12px; }
+.collaudo .parti-grid label { display: flex; align-items: center; gap: 8px; min-width: 0; padding-block: 4px; font-size: 13.5px; cursor: pointer; }
+.collaudo .parti-grid input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--accent); }
+.collaudo .adapt { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 9px; background: var(--warn-bg); color: var(--ink); font-size: 13px; }
+.collaudo .adapt strong { color: var(--warn); font-size: 13.5px; }
+.collaudo .adapt ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 3px; }
 .calc.lift-calc { gap: 10px; }
 .calc .row.auto { grid-template-columns: minmax(0, 1fr) auto 3.2rem; }
 .auto-value { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 7.2rem; font: 500 13.5px/1.2 var(--font-mono); color: var(--ink);
@@ -189,6 +199,12 @@ html.sim-full-open { overflow: hidden; }
 .lift-checks tbody tr:last-child th { border-bottom: 0; }
 .lift-checks td.num, .lift-checks th.num { text-align: right; font-family: var(--font-mono); white-space: nowrap; }
 .lift-checks td:last-child { text-align: right; white-space: nowrap; }
+/* a check of a part that stays as it is: out of the acceptance test's result, with what the calculation gives */
+.lift-checks tr.existing th, .lift-checks tr.existing td { color: var(--muted); }
+.status-pill.existing { color: var(--muted); background: var(--surface2); box-shadow: inset 0 0 0 1px var(--rule); }
+.ambito { display: inline-flex; align-items: center; gap: 6px; }
+.ambito-calc { font: 600 11.5px/1.2 var(--font-body); color: var(--muted); }
+.ambito-calc.fail { color: var(--fail); } .ambito-calc.warn { color: var(--warn); }
 @media (max-width: 719px) {
   .lift-checks tbody th { display: block; min-width: 0; padding: 0 0 6px; border: 0; }
   .lift-checks .data-table.stack td:last-child { display: block; padding-top: 6px; }

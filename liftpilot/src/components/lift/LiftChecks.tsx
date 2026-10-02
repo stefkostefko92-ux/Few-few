@@ -2,10 +2,11 @@
 
 // Every check of the installation in one list: the machine's (traction, ropes, drive, brake, rescue) and the
 // shaft's (plan, section, machine room and the beams under the machine), with value, limit and result; where the
-// simulation can replay a check, a button runs it in 3D.
+// simulation can replay a check, a button runs it in 3D. Under UNI 10411 a check of a part that stays as it is shows
+// "existing" with what the calculation gives beside it, and stays out of the acceptance test's result.
 import { useTranslations } from 'next-intl';
-import type { Check } from '@/calc/types';
-import type { LiftDerived } from '@/lib/lift';
+import type { Check, CheckStatus } from '@/calc/types';
+import { NORMA_SIGLA, ambitoOf, type LiftDerived } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
 import { isUpperLimit, type ShaftCheck } from '@/shaft';
 import { scenarioForCheck } from './scenarios';
@@ -27,6 +28,10 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
   };
   // as in the report: the limit without a sign (its sense is in the check's name and clause)
   const calcLimit = (c: Check): string => (c.limit === null ? '' : fmt(c.limit, c.dec));
+  const C = derived.collaudo, existing = (id: Check['id'] | ShaftCheck['id']): boolean => ambitoOf(C, id) === 'existing';
+  const result = (id: Check['id'] | ShaftCheck['id'], status: CheckStatus, text: string) => (existing(id)
+    ? <span className="ambito" title={t('ambito_note', { norma: NORMA_SIGLA[C.norma], status: text })}><span className="status-pill existing">{t('ambito_existing')}</span><span className={`ambito-calc ${status}`}>{text}</span></span>
+    : <span className={`status-pill ${status}`}>{text}</span>);
   return (
     <section className="lift-checks">
       <h2>{t('checks_title')}</h2>
@@ -35,22 +40,22 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
           <thead><tr><th>{t('col_check')}</th><th className="num">{t('col_value')}</th><th className="num">{t('col_limit')}</th><th>{t('col_result')}</th><th /></tr></thead>
           <tbody>
             {res.checks.map((c) => (
-              <tr key={c.id}>
+              <tr key={c.id} className={existing(c.id) ? 'existing' : undefined}>
                 <th scope="row">{X.checkText(c)}</th>
                 <td className="num" data-label={t('col_value')}>{c.value === null ? '—' : fmt(c.value, c.dec)}</td>
                 <td className="num note" data-label={t('col_limit')}>{calcLimit(c)}</td>
-                <td data-label={t('col_result')}><span className={`status-pill ${c.status}`}>{X.st(c.status)}</span></td>
+                <td data-label={t('col_result')}>{result(c.id, c.status, X.st(c.status))}</td>
                 <td>{simulate(c.id)}</td>
               </tr>
             ))}
             {[...L.checks, ...derived.supportChecks].map((c) => {
               const unit = c.unit ? ` ${c.unit}` : '';
               return (
-                <tr key={c.id}>
+                <tr key={c.id} className={existing(c.id) ? 'existing' : undefined}>
                   <th scope="row">{ts(`c_${c.id}`)}</th>
                   <td className="num" data-label={t('col_value')}>{c.value === null ? '—' : `${fmt(c.value, c.dec)}${unit}`}</td>
                   <td className="num note" data-label={t('col_limit')}>{c.limit === null ? '' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}`}</td>
-                  <td data-label={t('col_result')}><span className={`status-pill ${c.status}`}>{ts(`st_${c.status}`)}</span></td>
+                  <td data-label={t('col_result')}>{result(c.id, c.status, ts(`st_${c.status}`))}</td>
                   <td>{simulate(c.id)}</td>
                 </tr>
               );

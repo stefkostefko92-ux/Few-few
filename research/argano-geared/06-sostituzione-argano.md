@@ -108,6 +108,11 @@ in vigore). Per la sostituzione della macchina sono richiesti:
   non si aprono, richiesto solo in assenza di protezione contro i movimenti incontrollati della
   cabina a porte aperte e in presenza di un dispositivo di rallentamento controllato.
 
+Ricerca del 2 ottobre 2026 (capitolo 2.4.1): il testo 2024 sul macchinario non è stato trovato; la lista qui sopra
+resta quella della 2021. Un estratto non attribuito aggiunge che anche un nuovo inverter senza protezione UCMP
+richiede il freno in due elementi ⚠️. Per un impianto **conforme** alla direttiva vale la UNI 10411-11:2024, i cui
+requisiti per la sostituzione del macchinario non sono stati trovati: il software lo dichiara nella relazione.
+
 Conseguenza per il software: nella sostituzione il **profilo normativo è la UNI 10411-1** con i
 suoi rimandi a EN 81-20, non l'intero EN 81-20 degli impianti nuovi; la regola del capitolo 4.10
 (freno sull'albero motore ammesso solo con dispositivo esterno per UCMP) vale per gli impianti

@@ -21,7 +21,7 @@ export default function Sheets({ inputs, derived, lead, onEdit }: Props) {
   const t = useTranslations('tavole'), texts = useEditTexts(derived.layout);
   const [page, setPage] = useState(1);
   const { doc, hits } = useMemo(() => buildTavole({
-    values: derived.values, layout: derived.layout, plant: {}, marks: valueMarks(inputs.auto, derived),
+    values: derived.values, layout: derived.layout, plant: {}, marks: valueMarks(inputs.auto, derived, derived.bottom, derived.collaudo),
     project: { name: '—', address: null, city: null, province: null, plantNumber: null, client: null },
     company: { name: 'LiftPilot', logo: null },
     set: { number: '—', issuedAt: new Date(), author: '—', revisions: [] },

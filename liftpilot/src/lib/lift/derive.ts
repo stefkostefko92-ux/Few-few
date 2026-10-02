@@ -16,6 +16,7 @@ import { bestFit, catalogValues, type CatalogChoice } from './catalog';
 import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineSpec, sheaveAxis } from './machine';
 import { supportChecks, supportLoad } from './support';
+import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
 
 /** Values the software fills in (true) or takes as entered (false). */
@@ -36,6 +37,8 @@ export interface LiftInputs {
   bottom?: BottomScheme;
   /** the maker (and model) the proposal takes the machine from (catalog.ts); missing: the calculation grid */
   catalog?: CatalogChoice;
+  /** the acceptance test's standard and what the intervention replaces (collaudo.ts); missing: by the intervention */
+  collaudo?: Collaudo;
 }
 
 export type Origin = 'entered' | 'auto' | 'estimate';
@@ -70,6 +73,8 @@ export interface LiftDerived {
   headPulleys: number;
   /** the proposal from a catalogue: the maker's machine taken, or none of the choice passing (the grid's proposal) */
   catalog: { fit: CatalogFit | null; miss: boolean } | null;
+  /** the standard the lift is tested to and what the intervention replaces: which checks apply (collaudo.ts) */
+  collaudo: Collaudo;
   sim: SimModel;
 }
 
@@ -193,7 +198,7 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {
     shaft: L.inputs, values: V, layout: L, analysis, origin, noProposal, issues, calata, machine, supportChecks: supportCk, bottom: scheme, bottomGap,
-    headPulleys: g ? 2 + extraBends(g) : 0, catalog,
+    headPulleys: g ? 2 + extraBends(g) : 0, catalog, collaudo: collaudoOf(V, inp.collaudo),
     sim: simModel(I, N, analysis.res, Sec, vt),
   };
 }

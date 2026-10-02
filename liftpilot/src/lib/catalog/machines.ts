@@ -1,6 +1,6 @@
 // Geared traction machines of the makers the engineer can pick (research/argano-geared/12-catalogo-argani.md): the
 // ratios, the sheaves, the static load allowed on the shaft, the payloads the maker states, the largest motor and the
-// mass. Every value comes from the search engines' extracts of the makers' and dealers' pages read on 2026-10-01 (the
+// mass. Every value comes from the search engines' extracts of the makers' and dealers' pages read on 2026-10-01/02 (the
 // documents themselves could not be opened): it is to be checked on the maker's sheet before an order. Speeds: SICOR
 // gives the car's (synchronous), Sassi the sheave's. Montanari's mass is the gearbox's (without motor, sheave and
 // flywheel), and its sheaves are those of the maker's typical configurations. GEM's mass is the machine's average.
@@ -45,8 +45,8 @@ export const MACHINES: readonly CatalogMachine[] = [
   m('SICOR', 'SH160', '1/55 1/43 1/35 2/53 2/43 3/41', [450, 650], 4300, null, null, 20, 450, 'E: Technical Sheet SH160 2025'),
   m('SICOR', 'SH190', '1/40 1/51 1/62 2/59 3/47', [520, 750], 5200, null, null, 30, 620, 'E: Technical Sheet SH190 2025'),
   m('SICOR', 'MR21', '1/62 1/51 1/40 2/63 2/51 3/47', null, 5600, null, null, 30, 1000, 'E: pagina Geared MR21'),
-  m('SICOR', 'MR26', '1/72 1/57 1/44 2/63 2/45 3/55', null, 6600, null, null, null, 1600, 'E: pagina Geared MR26'),
-  m('SICOR', 'MR35', '1/58 1/53 2/73 2/60 3/70 3/53', null, 14200, null, null, null, 1900, 'E: pagina Geared MR35'),
+  m('SICOR', 'MR26', '1/72 1/57 1/44 2/63 2/45 3/55', null, 6600, null, null, 43, 1600, 'E: pagina Geared MR26; motore 13,5–43 kW a 50 Hz (pagina o ficha técnica ES, 2 ottobre 2026)'),
+  m('SICOR', 'MR35', '1/58 1/53 2/73 2/60 3/70 3/53', null, 14200, null, null, 90, 1900, 'E: pagina Geared MR35; motore 20–90 kW a 50 Hz (2 ottobre 2026)'),
   m('SICOR', 'MR12 (storico)', '1/52 1/43 2/53 2/43', [480, 600], 2600, null, null, null, 240, 'R: copie di terzi del listino MR12'),
   m('SICOR', 'MR16 (storico)', '1/55 1/43 1/35 2/53 2/43 3/41', null, 4300, null, null, 20, 450, 'R: schede di rivenditori'),
   m('SICOR', 'MR17 (storico)', '1/55 1/43 1/35 2/43 3/41', null, 5200, null, null, 15, 550, 'R: schede di rivenditori'),

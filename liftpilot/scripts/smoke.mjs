@@ -184,11 +184,17 @@ try {
   await page.waitForSelector('.sim-chart svg path.line');
   await page.check('#auto-P');
   await page.waitForSelector('.lift-calc .auto-value .badge');
+  // the acceptance test: UNI 10411-11 with the machine and the ropes replaced; the checks of what stays are existing
+  await page.selectOption('.collaudo select', '10411-11');
+  await page.check('.collaudo .parti-grid label:nth-child(2) input');
+  await page.waitForSelector('.lift-checks tr.existing .status-pill.existing');
+  assert.match(await page.textContent('.lift-work .lift-verdict .badge'), /UNI 10411-11/, 'standard of the acceptance test');
   await page.fill('.lift-work .savebar input', 'Progetto di prova');
   await Promise.all([page.waitForURL(/\/lift-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click('.lift-work .savebar button.btn-primary')]);
   const liftUrl = page.url();
   await page.waitForSelector('.lift-view .lift-facts');
   assert.equal(await page.locator('main .alert-warn, main .alert-bad').count(), 0, 'the running engines reproduce the saved design');
+  assert.match(await page.textContent('.lift-view .lift-verdict .badge'), /UNI 10411-11/, 'the saved standard');
   const liftRelHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
   const liftRel = await page.request.get(`${BASE}${liftRelHref}`);
   assert.equal(liftRel.status(), 200);

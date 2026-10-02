@@ -1,7 +1,8 @@
 // The tension weight of the governor's rope in the pit, after the makers' kits (PFB R4K, Dynatech): its pulley as
 // large as the governor's (PFB), clamped to the car rail by two forged clips. Where the shaft is deep enough the
 // horizontal kind: a lever hinged on the rail's bracket, the pulley on it and the cast-iron weight at its far end —
-// 22 kg for a governor that trips both ways, about 700 × 330 × 113 over all (PFB R4KE for LK200) — and the slack-rope
+// 22 kg for a governor that trips both ways, about 700 × 330 × 113 over all (700 and 113: dimensions "A" and "C" of
+// the PFB R4KE for LK200 in a reseller's listing, their meaning not stated; governor.ts) — and the slack-rope
 // switch under the lever by the hinge. Where it is not, the vertical kind: the pulley's carriage sliding on a channel
 // clamped to the rail, the weight of 44 kg hung straight under it (PFB R4R, the vertical kit PFB pairs with a governor
 // that trips both ways). Millimetres in the pulley's frame — a

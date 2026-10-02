@@ -21,6 +21,8 @@ import { dateIt, placeLines, type TavoleInput } from './input';
 import { loads } from './loads';
 import { machineOf } from './views';
 import { clientNotes, estimateNote, spaceLegend } from './notes';
+import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
+import { collaudoNote } from '../report/collaudo';
 
 /** The buffers by type as the data sheet writes them: the car's (plural) and the counterweight's. */
 const BUFFER_TEXT: Readonly<Record<BufferType, readonly [string, string]>> = {
@@ -46,6 +48,8 @@ export interface DataSheetResult {
 
 export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheetResult {
   const { ctx, res } = a, { I, N } = ctx, L = x.layout, Pl = x.plant, V = L.inputs.vertical, S = section(L), pEstimate = x.marks?.pEstimate ?? false;
+  // the acceptance test of the lift design (without one, the software's default for the intervention)
+  const C = x.marks?.collaudo ?? collaudoOf({ context: I.context });
   const warnings: Mismatch[] = [];
   const travel = S.top / 1000;
   if (Math.abs(travel - I.H) > 0.05) warnings.push({ what: 'travel', calc: I.H, shaft: travel });
@@ -58,7 +62,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const access = L.inputs.entrances === 'one' ? '1 ACCESSO' : L.inputs.entrances === 'opposite' ? '2 ACCESSI OPPOSTI' : '2 ACCESSI ADIACENTI A 90°';
   const doors = L.inputs.door === 'T2' ? 'AUTOMATICHE TELESCOPICHE 2 ANTE' : 'AUTOMATICHE CENTRALI 2 ANTE';
   const base: Row[] = [
-    ['NORMATIVA DI RIFERIMENTO', '', I.context === 'repl' ? 'UNI 10411-1:2024' : 'UNI EN 81-20:2020'],
+    ['NORMATIVA DI RIFERIMENTO', '', C.norma === 'en81' ? 'UNI EN 81-20:2020' : NORMA_SIGLA[C.norma]],
     ['PORTATA', 'kg', fmt(I.Q, 0)],
     ['PERSONE', 'N°', fmt(L.persons, 0)],
     ['CORSA', 'm', fmt(travel, 2)],
@@ -148,11 +152,15 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const all = [...L.checks, ...supportChecks(L, machineOf(a, Pl, L), { machine, static: ld.static, dyn })];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
-    if (c.id === 'm_door' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, OUTCOME[c.status]];
-    return [label, withUnit(c.value, c.dec, c.unit), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, OUTCOME[c.status]];
+    // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
+    const outcome = ambitoOf(C, c.id) === 'existing' ? 'ESISTENTE' : OUTCOME[c.status];
+    if (c.id === 'm_door' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, outcome];
+    return [label, withUnit(c.value, c.dec, c.unit), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
   const sp = spaceLegend(L, fmt), notes = clientNotes(L);
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
+  const test = collaudoNote(C, `NOTA ${notes.length + 1}`);
+  if (test) notes.push(test);
 
   return {
     warnings,

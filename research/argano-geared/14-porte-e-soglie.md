@@ -1210,3 +1210,39 @@ sopra la luce, massa, architrave, stipiti, luce tra le soglie.
 - https://www.davenportliftcontrol.com/kone/sill/6060271: Kone ADV1, soglia C2, CO 800, L 1650 (R).
 - https://www.davenportliftcontrol.com/universal-components/sill/6082048: Kleindienst, soglia a 2 gole,
   L 1200, CO 800 (T).
+
+## 13. Terzo giro su Wittur (2 ottobre 2026)
+
+Canale nuovo e più utile: la vetrina di **Wittur Elevator Components India** su IndiaMART (testi del costruttore, E);
+poi PDF su igilift, ricambi Davenport e liftway.ru (R). Ricerche in tedesco, turco, cinese e persiano senza risultati
+utili. **La regola della lunghezza dell'operatore in funzione della luce (a·L + b) non è stata trovata per nessuna
+famiglia Wittur**: nel software gli operatori Wittur restano senza regola (`doorOpMakers`).
+
+| Famiglia | Dato nuovo | Grado | Fonte |
+|---|---|---|---|
+| Hydra Plus MIDI | operatore tipo 02/C, luce 800, con serratura di cabina: **75 kg** (non è detto se netto o di spedizione ⚠️) | R | https://liftway.ru/catalog/privod-dverei-wittur-selcom-hydra-plus-midi-co800mm-02c-s-zamkom-dk-i-s-samoo-11730 |
+| Hydra Plus UD 300 | altezza totale = LH + 300 mm (LH non definita nel testo) | E | https://www.indiamart.com/proddetail/hydra-plus-ud-300-car-door-operator-8005149391.html |
+| MDS1 (famiglia nuova) | altezza dell'operatore CH + 345, del meccanismo CH + 170; pacchetto 105 / 185 mm ⚠️; profondità della soglia fissa per la gamma MDS | E | https://www.indiamart.com/proddetail/mds1-landing-door-8004995791.html |
+| Hydra 3000 (piano) | soglie 50 / 75 / 116 mm; telai spessi 30 / 40 mm, larghi 80–200 a richiesta ⚠️; 2, 3 o 4 ante; luce 500–1200 mm, contro 600–1200 di wittur.com ⚠️ | E | https://www.indiamart.com/proddetail/hydra-3000-landing-door-8005056112.html |
+| Fineline | pacchetto di 115 mm confermato; altezza dell'operatore non trovata (una sintesi le attribuiva CH + 345, che è dell'MDS1) | E | https://www.indiamart.com/proddetail/fineline-car-door-8005197130.html |
+| Hydra Plus | 9 tipi di porta di cabina; la porta di piano Hydra si abbina a Hydra Plus, Pegasus Plus, Eco Piuma e Hydra 3000 Plus; 11 configurazioni della porta di piano | E / D | https://www.indiamart.com/proddetail/hydra-plus-car-door-8005134062.html · https://www.indiamart.com/proddetail/hydra-landing-door-8005010212.html |
+| Sematic 2000 B-G (merci) | testata 280 mm; montanti scatolati 120 × 90 (min. 80 × 90); altezza dell'operatore 446 / 340 / 400 ⚠️ (quale sia la standard non è chiaro) | D | https://igilift.com/webiste%20pdf/Spare%20Parts%20Category/Doors/WITTUR/Landing%20doors/Sematic%202000%20B-G%20EN.pdf |
+| Soglie Selcom/Wittur | tipi 11/12 e 41/42: 90 × 1200 × 35 × 12,8 mm; luce 800: 75,6 × 1200 × 35 mm | R | https://www.davenportliftcontrol.com/selcom/typ-11-12-u-41-42--l-1200mm/6082011 |
+
+Ancora non trovati: lunghezza dell'operatore per luce (Hydra Plus, ECO+/MIDI+/SUPRA, AMD), profondità dell'operatore
+sul tetto della cabina, luce tra le soglie, lunghezza e profondità delle sospensioni di piano; per Fermator
+VVVF4+/VF5+, Dapa, CMM e Prisma nessun dato nuovo.
+
+Documenti che chiuderebbero le lacune (da una rete normale):
+
+- manuale Hydra Plus, 77 pagine, con le lunghezze dell'operatore per luce alle pp. 47–51:
+  https://www.manualslib.com/manual/1284889/Wittur-Hydra-Plus.html?page=47 (copie: https://pdfcoffee.com/wittur-hydra-plus-manual-pdf-free.html,
+  https://idoc.pub/documents/wittur-hydra-plus-manual-gen5jkxeep4o);
+- tabelle «overall dimensions» ECO-MIDI e MIDI-SUPRA: http://www.modernlifttech.com/UserFiles/215File55165.pdf;
+- brochure Hydra Plus (profondità e altezza dell'operatore): https://igilift.com/webiste%20pdf/Spare%20Parts%20Category/Doors/WITTUR/Car%20doors/Hydra%20Plus%20car%20door.pdf;
+- manuale UD 300 (significato di LH): https://www.manualslib.com/manual/2766725/Wittur-Hydra-Plus-Ud300.html;
+- istruzioni MIDI/SUPRA: https://docplayer.net/31253733-wittur-gmbh-door-drive-midi-supra-operating-instructions-d823mgb.html;
+- porte di piano Hydra / Hydra EVO: https://docplayer.net/23921871-hydra-hydra-evo-the-versatile-door.html;
+- catalogo ricambi Hydra 3000: https://www.scribd.com/document/866035854/SM-2-000027-EN-01;
+- catalogo tecnico Hydra Plus, codice TC.2.001981.EN ⚠️: da chiedere a Wittur;
+- Fermator 40/10: https://www.fermator.com/wp-content/uploads/2024/07/model-4010.pdf; Dapa: https://dapasrl.com/catalogo-tecnico-dapa-ita/.

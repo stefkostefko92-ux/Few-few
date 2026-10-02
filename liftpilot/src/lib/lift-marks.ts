@@ -10,5 +10,5 @@ export function calcMarks(lift: { inputs: unknown } | null, calcSha256: string):
   const p = liftInputsSchema.safeParse(lift.inputs);
   if (!p.success) return NO_MARKS;
   const dv = deriveLift(p.data);
-  return valueMarks(p.data.auto, verifyStored(dv.values, calcSha256).same ? dv : null, dv.bottom);
+  return valueMarks(p.data.auto, verifyStored(dv.values, calcSha256).same ? dv : null, dv.bottom, dv.collaudo);
 }

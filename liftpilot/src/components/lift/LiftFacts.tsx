@@ -1,9 +1,9 @@
 // What the software worked out from the one form, in one strip: the car and its load, the car mass (with its origin),
-// the counterweight, travel and speed, the machine; and the verdict of every check together.
+// the counterweight, travel and speed, the machine; and the verdict of the acceptance test: every check that the
+// intervention touches (all of them for a new lift), with how many concern parts that stay as they are.
 import { useTranslations } from 'next-intl';
-import type { LiftDerived } from '@/lib/lift';
+import { NORMA_BREVE, ambitoOf, collaudoVerdict, type LiftDerived } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
-import { verdictOf } from '@/shaft';
 
 interface Props {
   derived: LiftDerived;
@@ -14,16 +14,15 @@ interface Props {
 export default function LiftFacts({ derived, X, fmt }: Props) {
   const t = useTranslations('lift');
   const L = derived.layout, res = derived.analysis.res, { I, N } = derived.analysis.ctx, o = derived.origin;
-  const shaftChecks = [...L.checks, ...derived.supportChecks];
-  const fails = res.fails.length + shaftChecks.filter((c) => c.status === 'fail').length;
-  const warns = res.checks.filter((c) => c.status === 'warn').length + shaftChecks.filter((c) => c.status === 'warn').length;
-  const verdict = fails ? 'fail' : warns || verdictOf(L) === 'warn' ? 'warn' : 'ok';
+  const all = [...res.checks, ...L.checks, ...derived.supportChecks], C = derived.collaudo;
+  const { verdict, fails, warns } = collaudoVerdict(C, all), existing = all.filter((c) => ambitoOf(C, c.id) === 'existing').length;
   const badge = (k: keyof typeof o) => (o[k] === 'estimate' ? <span className="badge est">{t('badge_estimate')}</span> : o[k] === 'auto' ? <span className="badge">{t('badge_auto')}</span> : null);
   return (
     <section className="lift-facts" aria-label={t('facts')}>
       <div className={`lift-verdict ${verdict}`}>
         <span className={`status-pill ${verdict}`}>{t(`verdict_${verdict}`)}</span>
-        <span>{fails ? t('facts_fail', { n: fails }) : warns ? t('facts_warn', { n: warns }) : t('facts_ok')}</span>
+        <span>{fails ? t('facts_fail', { n: fails }) : warns ? t('facts_warn', { n: warns }) : t('facts_ok')}{existing ? ` ${t('facts_existing', { n: existing })}` : ''}</span>
+        <span className="badge">{NORMA_BREVE[C.norma]}</span>
       </div>
       <dl className="facts">
         <div><dt>{t('d_car')}</dt><dd className="num">{fmt(L.A, 0)} × {fmt(L.B, 0)} mm</dd></div>
