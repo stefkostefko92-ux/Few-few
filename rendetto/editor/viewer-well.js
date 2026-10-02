@@ -65,7 +65,8 @@ function cupMaps(w, h, round, wall) {
 }
 
 // The cup insert, w × h mm (round: diameter w) facing +z; the caller lays it on the frame's face.
-export function wellMesh(mats, metal, w, h, round) {
+export function wellMesh(mats, metal, w, hIn, round) {
+  const h = round ? w : hIn;
   const key = `well:${metal.uuid}:${round ? `o${Math.round(w)}` : `${Math.round(w)}x${Math.round(h)}`}`;
   const material = mats.get(key, () => {
     const { normalMap, aoMap, cavityMap } = cupMaps(w, h, round, round ? w * 0.11 : 4.5);

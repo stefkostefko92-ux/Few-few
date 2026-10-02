@@ -58,32 +58,35 @@ function bindPhoto(viewer, text) {
   let shown = -1;
   // announced in steps of 10 % (the status is a polite live region)
   viewer.onPhoto = (samples) => {
-    const pct = Math.min(100, Math.floor((samples / viewer.photoTarget) * 10) * 10);
+    const pct = Math.min(100, Math.floor((samples / viewer.photoMode.target) * 10) * 10);
     if (pct === shown || !on) return;
     shown = pct;
     state.textContent =
       pct >= 100 ? text.photoReady : text.photoProgress.replace('{pct}', String(pct));
   };
+  const fail = (message) => {
+    on = false;
+    button.setAttribute('aria-pressed', 'false');
+    save.hidden = true;
+    state.textContent = message;
+  };
+  // the path tracer stopped by itself (lost GPU, failed hand-over): back to the normal view
+  viewer.onPhotoError = () => fail(text.photoFailed);
   button.addEventListener('click', async () => {
     on = !on;
+    const want = on;
     shown = -1;
     button.setAttribute('aria-pressed', String(on));
     save.hidden = !on;
     state.textContent = on ? text.photoPreparing : '';
     try {
-      const ok = await viewer.setPhoto(on);
-      if (!ok) {
-        on = false;
-        button.setAttribute('aria-pressed', 'false');
+      if (!(await viewer.setPhoto(want))) {
+        fail(text.photoUnsupported);
         button.disabled = true;
-        save.hidden = true;
-        state.textContent = text.photoUnsupported;
       }
     } catch {
-      on = false;
-      button.setAttribute('aria-pressed', 'false');
-      save.hidden = true;
-      state.textContent = text.photoFailed;
+      if (on !== want) return; // clicked again meanwhile: that click decides
+      fail(text.photoFailed);
       await viewer.setPhoto(false);
     }
   });

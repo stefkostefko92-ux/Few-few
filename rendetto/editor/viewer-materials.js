@@ -47,6 +47,19 @@ const SURFACE_TILE = {
 };
 const MAX_BAKES = 10; // decors kept on the GPU; the oldest unused one is freed first
 
+// The baked textures repeat mirrored, so every other tile runs backwards: its normals must turn round with it, or
+// a groove there lights up as a ridge.
+const MIRRORED_NORMALS = THREE.ShaderChunk.normal_fragment_maps.replace(
+  'mapN.xy *= normalScale;',
+  'mapN.xy *= normalScale * (1.0 - 2.0 * mod(floor(vNormalMapUv), 2.0));',
+);
+function mirrorNormals(shader) {
+  shader.fragmentShader = shader.fragmentShader.replace(
+    '#include <normal_fragment_maps>',
+    MIRRORED_NORMALS,
+  );
+}
+
 export class MaterialCache {
   constructor(renderer) {
     this.baker = new Baker(renderer);
@@ -59,19 +72,27 @@ export class MaterialCache {
     this.pinned?.add(key);
     let b = this.bakes.get(key);
     if (b) {
-      this.bakes.delete(key);
-      this.bakes.set(key, b);
+      this.touch(key);
       return b;
     }
     b = this.baker.bake(typeof spec === 'function' ? spec() : spec);
     this.bakes.set(key, b);
-    if (this.bakes.size > MAX_BAKES) this.evict();
     return b;
   }
 
-  // free the least recently used decor that no live mesh needs (materials keyed by it are dropped too)
-  evict() {
+  // most recently used last
+  touch(key) {
+    const b = this.bakes.get(key);
+    if (!b) return;
+    this.bakes.delete(key);
+    this.bakes.set(key, b);
+  }
+
+  // After a model or the room is built (never during: a decor needed further on would be baked twice): free the
+  // least recently used decors that no live mesh needs, down to MAX_BAKES; their materials go with them.
+  trim() {
     for (const [key, b] of this.bakes) {
+      if (this.bakes.size <= MAX_BAKES) return;
       if (this.pinned?.has(key)) continue;
       disposeBake(b);
       this.bakes.delete(key);
@@ -80,7 +101,6 @@ export class MaterialCache {
           m.dispose();
           this.materials.delete(mk);
         }
-      return;
     }
   }
 
@@ -95,7 +115,10 @@ export class MaterialCache {
   get(key, make) {
     if (!this.materials.has(key)) this.materials.set(key, make());
     const m = this.materials.get(key);
-    if (m.userData.bake) this.pinned?.add(m.userData.bake);
+    if (m.userData.bake) {
+      this.pinned?.add(m.userData.bake);
+      this.touch(m.userData.bake);
+    }
     return m;
   }
 
@@ -111,6 +134,7 @@ export class MaterialCache {
       ...params,
     });
     m.userData.bake = bakeKey;
+    m.onBeforeCompile = mirrorNormals;
     return m;
   }
 

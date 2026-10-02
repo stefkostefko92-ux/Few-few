@@ -5,8 +5,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MaterialCache } from './viewer-materials.js';
 import { S } from './viewer-hw.js';
 import { extents, addSymbols } from './viewer-scene.js';
-import { Stage, TONE_MAPPING } from './viewer-studio.js';
+import { Stage, TONE_MAPPING, studioEnvironment } from './viewer-studio.js';
 import { Pipeline } from './viewer-render.js';
+import { PhotoMode } from './viewer-photo-mode.js';
 import { addSlides } from './viewer-slides.js';
 import { reduceMotion } from './dom.js';
 import {
@@ -51,14 +52,20 @@ export class Viewer {
     this.root = new THREE.Group();
     this.scene.add(this.root);
     this.pipeline = new Pipeline(this.renderer, this.scene, this.camera);
+    this.photoMode = new PhotoMode(this);
     this.open = 0;
     this.explode = 0;
     this.showOps = true;
     this.dirty = true;
-    // a lost and restored WebGL context loses the baked textures: rebake them with the model on screen
+    // a lost and restored WebGL context loses all that was drawn on the GPU: the studio environment, the baked
+    // decors, the path tracer's buffers. Rebuild them with the model on screen.
     this.renderer.domElement.addEventListener('webglcontextrestored', () => {
+      this.scene.environment?.renderTarget?.dispose();
+      this.scene.environment = studioEnvironment(this.renderer);
+      this.photoMode.drop();
       this.mats.reset();
       if (this.model) this.setModel(this.model);
+      if (this.photoMode.wanted) this.photoMode.set(true).catch((err) => this.onPhotoError?.(err));
     });
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(host);
@@ -69,17 +76,10 @@ export class Viewer {
       if (this.dirty || moved) {
         this.pipeline.reset();
         this.stage.updateFog(this.camera, this.controls.target);
-        if (this.photo?.active) this.photo.moved();
+        this.photoMode.moved();
         this.dirty = false;
       }
-      // a changed scene is handed to the path tracer once it settles (sliders send many changes)
-      if (this.photoStale && performance.now() - this.photoStale > 160) {
-        this.photoStale = 0;
-        this.photo.start();
-      }
-      if (this.photo?.active && !this.photoStale) {
-        if (this.photo.render()) this.onPhoto?.(this.photo.samples);
-      } else if (!this.pipeline.done) this.pipeline.render(light);
+      if (!this.photoMode.frame() && !this.pipeline.done) this.pipeline.render(light);
       this.raf = requestAnimationFrame(loop);
     };
     this.raf = requestAnimationFrame(loop);
@@ -89,29 +89,19 @@ export class Viewer {
     this.dirty = true;
   }
 
-  // Something in the scene changed: the photorealistic view rebuilds its copy (debounced in the loop).
+  // Something in the scene changed: the photorealistic view gets it again once the changes settle.
   changed() {
     this.invalidate();
-    if (this.photo?.active) this.photoStale = performance.now();
+    this.photoMode.changed();
   }
 
-  // Photorealistic view on/off. The path tracer is loaded on first use; resolves to false if it cannot run here.
-  async setPhoto(on) {
-    if (!on) {
-      this.photo?.stop();
-      this.photoStale = 0;
-      this.invalidate();
-      return true;
-    }
-    if (!this.photo) {
-      const mod = await import('./viewer-photo.js');
-      if (!mod.photoSupported(this.renderer)) return false;
-      this.photo = new mod.PhotoRenderer(this);
-      this.photoTarget = mod.TARGET_SAMPLES;
-    }
-    this.photo.start();
-    this.invalidate();
-    return true;
+  // Photorealistic view on/off (viewer-photo-mode.js); resolves to false if it cannot run here.
+  setPhoto(on) {
+    return this.photoMode.set(on);
+  }
+
+  get photo() {
+    return this.photoMode.renderer;
   }
 
   resize() {
@@ -209,6 +199,7 @@ export class Viewer {
     addSymbols(this, model, meshOf);
     this.applyPose();
     this.stage.fit(ext, this.off);
+    this.mats.trim();
     if (!this.framed || this.lastType !== model.spec.type) {
       this.userMoved = false;
       this.frame();
@@ -266,6 +257,7 @@ export class Viewer {
 
   setRoom(on) {
     this.stage.setRoom(on);
+    this.mats.trim();
     this.changed();
   }
 

@@ -57,9 +57,15 @@ function glslType(v) {
 
 const toLinear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 
-function target(width, height, { srgb = false, type = THREE.UnsignedByteType, mips = true } = {}) {
+// Anisotropy goes in with the target: three sets a render target's sampling parameters once, when it is created.
+function target(
+  width,
+  height,
+  { srgb = false, type = THREE.UnsignedByteType, mips = true, anisotropy = 1 } = {},
+) {
   const rt = new THREE.WebGLRenderTarget(width, height, {
     type,
+    anisotropy,
     depthBuffer: false,
     generateMipmaps: mips,
     minFilter: mips ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter,
@@ -130,20 +136,20 @@ export class Baker {
     const [w, h] = spec.size;
     const out = { span: [spec.span[0] / 1000, spec.span[1] / 1000], targets: [] };
     const finish = (rt) => {
-      rt.texture.anisotropy = this.anisotropy;
       rt.texture.repeat.set(1000 / spec.span[0], 1000 / spec.span[1]);
       out.targets.push(rt);
       return rt.texture;
     };
     m.uniforms.uMode.value = 0;
-    const map = target(w, h, { srgb: true });
+    const aniso = this.anisotropy;
+    const map = target(w, h, { srgb: true, anisotropy: aniso });
     this.draw(m, map);
     out.map = finish(map);
     if (spec.normal) {
       const height = target(w, h, { type: THREE.HalfFloatType, mips: false });
       m.uniforms.uMode.value = 1;
       this.draw(m, height);
-      const nm = target(w, h);
+      const nm = target(w, h, { anisotropy: aniso });
       const u = this.normalMaterial.uniforms;
       u.tHeight.value = height.texture;
       u.uTexel.value.set(1 / w, 1 / h);
@@ -153,7 +159,7 @@ export class Baker {
       out.normalMap = finish(nm);
     }
     if (spec.orm) {
-      const orm = target(Math.max(64, w >> 1), Math.max(64, h >> 1));
+      const orm = target(Math.max(64, w >> 1), Math.max(64, h >> 1), { anisotropy: aniso });
       m.uniforms.uMode.value = 2;
       this.draw(m, orm);
       out.ormMap = finish(orm);

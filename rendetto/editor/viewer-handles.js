@@ -150,7 +150,7 @@ function recessed(h, metal, well) {
     const rim = new THREE.Mesh(new THREE.CylinderGeometry(D / 2, D / 2, 0.0012, 48), metal);
     rim.rotation.x = Math.PI / 2;
     rim.position.z = 0.0006;
-    const cup = well(D / S - 8, 0, true);
+    const cup = well(D / S - 8, D / S - 8, true);
     cup.position.z = 0.0013;
     g.add(rim, cup);
     return g;

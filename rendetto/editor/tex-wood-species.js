@@ -2,22 +2,41 @@
 // many planks are flat sawn, and the tone between planks; and the dark and light tones around the catalogue colour.
 import * as THREE from 'three';
 
+// A name part matches at the start of a word, as Bulgarian stems take endings („дъбов“, „орехов“), never inside one
+// („Касела“ is not fir, „Gold“ is not old); a trailing $ ends the word as well.
+const words = (...parts) =>
+  new RegExp(
+    `(?:^|[^\\p{L}])(?:${parts.map((p) => p.replace(/\$$/, '(?!\\p{L})')).join('|')})`,
+    'iu',
+  );
+
 const SPECIES = [
   // re, ring mm, contrast, pores, rays, knots, figure, cathedral, plank [w, jitter], plank tone
   [
-    /орех|walnut|ноче|noce/i,
+    words('орех', 'walnut', 'ноче', 'noce'),
     { ring: 3.6, contrast: 0.92, pores: 0.42, figure: 0.8, cathedral: 0.7, tone: 0.16 },
   ],
   [
-    /хикори|hickory/i,
+    words('хикори', 'hickory'),
     { ring: 4.6, contrast: 0.95, pores: 0.35, figure: 0.45, cathedral: 0.6, tone: 0.28 },
   ],
   [
-    /бор|pine|смърч|spruce|ела|\bfir\b|larch|лиственица/i,
+    words(
+      'бор$',
+      'боров',
+      'pine',
+      'смърч',
+      'spruce',
+      'ела$',
+      'елов',
+      'fir$',
+      'larch',
+      'лиственица',
+    ),
     { ring: 7.5, contrast: 1.05, pores: 0, knots: 0.45, figure: 0.35, cathedral: 0.8, tone: 0.1 },
   ],
   [
-    /бук|beech/i,
+    words('бук', 'beech'),
     {
       ring: 3.2,
       contrast: 0.38,
@@ -29,35 +48,47 @@ const SPECIES = [
     },
   ],
   [
-    /ясен|\bash\b|frassino/i,
+    words('ясен', 'ash$', 'frassino'),
     { ring: 5.2, contrast: 0.82, pores: 0.5, figure: 0.4, cathedral: 0.75, tone: 0.1 },
   ],
   [
-    /бряст|\belm\b|olmo/i,
+    words('бряст', 'elm$', 'olmo'),
     { ring: 5, contrast: 0.85, pores: 0.45, figure: 0.9, cathedral: 0.85, tone: 0.14 },
   ],
   [
-    /череш|cherry|клен|maple|бреза|birch|круша|pear|липа/i,
+    words(
+      'череш',
+      'cherry',
+      'клен',
+      'maple',
+      'бреза',
+      'брезов',
+      'birch',
+      'круш',
+      'pear$',
+      'липа',
+      'липов',
+    ),
     { ring: 3, contrast: 0.32, pores: 0.06, figure: 0.3, cathedral: 0.45, tone: 0.06 },
   ],
   [
-    /тик|teak|ироко|iroko/i,
+    words('тик', 'teak', 'ироко', 'iroko'),
     { ring: 4.2, contrast: 0.7, pores: 0.25, figure: 0.25, cathedral: 0.3, tone: 0.14 },
   ],
   [
-    /венге|wenge|зебрано|zebrano|абанос|ebony/i,
+    words('венге', 'wenge', 'зебрано', 'zebrano', 'абанос', 'ebony'),
     { ring: 2.4, contrast: 1.15, pores: 0.3, figure: 0.15, cathedral: 0.1, tone: 0.06 },
   ],
   [
-    /акация|acacia/i,
+    words('акаци', 'acacia'),
     { ring: 3.8, contrast: 0.95, pores: 0.2, figure: 0.7, cathedral: 0.6, tone: 0.32 },
   ],
   [
-    /кестен|chestnut|castagno/i,
+    words('кестен', 'chestnut', 'castagno'),
     { ring: 5, contrast: 0.85, pores: 0.45, figure: 0.5, cathedral: 0.75, tone: 0.14 },
   ],
   [
-    /дъб|oak|rovere/i,
+    words('дъб', 'oak', 'rovere'),
     {
       ring: 4.4,
       contrast: 0.78,
@@ -69,9 +100,41 @@ const SPECIES = [
     },
   ],
 ];
-const RUSTIC =
-  /халифакс|halifax|гладстон|gladstone|ланкастър|lancaster|шерууд|sherwood|див |wild|rustic|рустик|craft|крафт|винтидж|vintage|old|стар|knotty|чвор|мадейра|tobacco|табак|вотан|wotan|кендал|kendal|бардолино|bardolino|ateliers?|atelier|lefkas|лефкас/i;
-const FINELINE = /fineline|файнлайн|линеа|linea|фино|fine line/i;
+const RUSTIC = words(
+  'халифакс',
+  'halifax',
+  'гладстон',
+  'gladstone',
+  'ланкастър',
+  'lancaster',
+  'шерууд',
+  'sherwood',
+  'див$',
+  'wild',
+  'rustic',
+  'рустик',
+  'craft',
+  'крафт',
+  'винтидж',
+  'vintage',
+  'old$',
+  'стар',
+  'knotty',
+  'чвор',
+  'мадейра',
+  'tobacco',
+  'табак',
+  'вотан',
+  'wotan',
+  'кендал',
+  'kendal',
+  'бардолино',
+  'bardolino',
+  'atelier',
+  'lefkas',
+  'лефкас',
+);
+const FINELINE = words('fineline', 'файнлайн', 'линеа', 'linea', 'фино', 'fine line');
 
 // The look of a wood decor from its name: species values, then the style (rustic: knots, cracks and saw marks;
 // fineline: reconstituted veneer in fine straight lines).
