@@ -24,6 +24,8 @@ const result = await build({
   outdir: outDir,
   charset: 'utf8',
   legalComments: 'none',
+  // the packages' own licence headers are stripped: every output file points to the full texts instead
+  banner: { js: '/*! Open-source licences: /static/editor/THIRD-PARTY-LICENSES.txt */' },
   metafile: true,
 });
 for (const file of result.outputFiles) {
