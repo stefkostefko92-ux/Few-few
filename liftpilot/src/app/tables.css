@@ -31,7 +31,7 @@
 .panev-bom td .note.bad { color: var(--fail); }
 .panev-bom .bom-total, .bom-total { display: flex; justify-content: flex-end; align-items: baseline; gap: 16px; margin: 0; padding: 10px 12px; border-top: 1px solid var(--rule-strong); }
 .panev-bom .bom-total span, .bom-total span { font: 600 12px/1.2 var(--font-body); color: var(--muted); letter-spacing: .02em; }
-.panev-bom .bom-total strong, .bom-total strong { font: 600 16px/1.2 var(--font-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.panev-bom .bom-total strong, .bom-total strong { font: 600 16px/1.2 var(--font-mono); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 @media (max-width: 719px) {
   .panev-bom .data-table.stack td.num { text-align: left; }
   .panev-bom .data-table.stack td.num::before { font-family: var(--font-body); }
@@ -42,3 +42,11 @@
 .price-cell { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
 .price-cell .note { white-space: nowrap; }
 .price-cell .input { width: 9.5em; text-align: right; font-variant-numeric: tabular-nums; }
+/* the price list's free lines (components/prices/CustomRows.tsx): on a phone each field under its name, as wide as the
+   card, the button without one */
+@media (max-width: 719px) {
+  .free-lines.data-table.stack td { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .free-lines.data-table.stack td.act::before { content: none; }
+  .free-lines td.act .btn { justify-self: start; }
+  .free-lines .price-cell { justify-content: flex-start; }
+}

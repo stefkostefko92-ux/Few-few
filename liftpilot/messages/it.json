@@ -46,7 +46,9 @@
     "mailUnavailable": "L’invio delle e-mail non è ancora attivo: riprova più tardi o scrivi a info@carbonstealth.eu.",
     "consentRequired": "Per continuare spunta tutte le conferme.",
     "noSeats": "Non ci sono posti liberi: acquista un pacchetto di posti o disattiva un collega.",
-    "invalidPrices": "Alcuni prezzi non sono validi."
+    "invalidPrices": "Alcuni prezzi non sono validi.",
+    "notReplacement": "Il rilievo del locale macchine è della sola sostituzione dell’argano: un progetto completo disegna il locale dal progetto del vano.",
+    "roomIssues": "Il rilievo ha un problema da correggere."
   },
   "auth": {
     "title": "Accesso",
@@ -417,7 +419,8 @@
       "SEATS_ENFORCED": "Colleghi disattivati oltre i posti",
       "PRICES_UPDATED": "Listino prezzi aggiornato",
       "TERMS_ACCEPTED": "Condizioni accettate",
-      "DATA_EXPORTED": "Dati dell’azienda esportati"
+      "DATA_EXPORTED": "Dati dell’azienda esportati",
+      "ROOM_DESIGN_SAVED": "Rilievo del locale macchine salvato"
     },
     "entities": {
       "User": "Utente",
@@ -746,6 +749,7 @@
     "c_m_rinvio": "Telaio con rinvio del costruttore: calata del contrappeso entro L max",
     "c_m_fit": "L’argano sta nel locale: distanza minima da muri e soffitto",
     "c_m_stand": "La puleggia di rinvio sul suo supporto: distanza dal basamento dell’argano sopra",
+    "c_m_calata": "Calate della nuova macchina sulle calate esistenti: scarto",
     "sp_title": "Basamento dell’argano",
     "sp_kind": "Basamento",
     "sp_shims": "spessori di livellamento",
@@ -865,7 +869,9 @@
     "exportTitle": "Dati dell’azienda",
     "exportText": "Tutti i dati inseriti dall’azienda — impianti, calcoli, progetti, tavole, listino, colleghi e registro attività — in un file JSON, strutturato e leggibile da macchina. Serve anche per passare a un altro fornitore.",
     "exportButton": "Scarica i dati (JSON)",
-    "logoReadOnly": "Il logo si cambia quando l’azienda non è in sola lettura."
+    "logoReadOnly": "Il logo si cambia quando l’azienda non è in sola lettura.",
+    "reviseRoom": "Rilievo del locale da cui disegnare la revisione",
+    "roomTitle": "Progetto della sostituzione"
   },
   "lift": {
     "workTitle": "Progetto e simulazione",
@@ -1430,11 +1436,11 @@
     "title": "Listino prezzi",
     "lead": "I prezzi dell’azienda per ogni articolo che il software mette nei progetti, IVA esclusa. Gli articoli Panev partono dal listino Panev 2026; gli altri li inserisci tu. Li vedono solo il titolare e i commerciali.",
     "leadView": "I prezzi dell’azienda, IVA esclusa: li modifica il titolare.",
-    "scope": "Il costo di un progetto conta gli articoli che il software progetta; non comprende quadro di manovra, impianto elettrico, cavo flessibile, fune del limitatore, opere murarie e manodopera.",
+    "scope": "Il costo di un progetto conta gli articoli che il software progetta e quelli che conta dal progetto (quadro, impianto elettrico, segnalazioni, manodopera), con le quantità calcolate in automatico, più le voci libere. Non comprende la fune del limitatore e le opere murarie.",
     "filter": "Cerca un articolo",
     "save": "Salva i prezzi",
     "saved": "Prezzi salvati ({n, plural, =0 {nessuna modifica} one {# modifica} other {# modifiche}}).",
-    "invalid": "Prezzi non validi in {n, plural, one {# riga} other {# righe}}: scrivi cifre con al massimo due decimali, per esempio 1.250,50.",
+    "invalid": "{n, plural, one {# riga non valida} other {# righe non valide}}: scrivi i prezzi in cifre con al massimo due decimali, per esempio 1.250,50; ogni voce libera vuole una descrizione e un prezzo.",
     "priced": "{n} su {of} con prezzo",
     "none": "Nessun articolo corrisponde alla ricerca.",
     "article": "Articolo",
@@ -1448,12 +1454,16 @@
     "perUnit": {
       "pz": "€/pz",
       "m": "€/m",
-      "kg": "€/kg"
+      "kg": "€/kg",
+      "stop": "€/fermata",
+      "lot": "€ a corpo"
     },
     "unit": {
       "pz": "pz",
       "m": "m",
-      "kg": "kg"
+      "kg": "kg",
+      "stop": "{n, plural, one {# fermata} other {# fermate}}",
+      "lot": "a corpo"
     },
     "groups": {
       "machines": "Argani",
@@ -1465,7 +1475,9 @@
       "panev": "Staffe e supporti Panev",
       "doors": "Porte",
       "safety": "Limitatori, tenditori e ammortizzatori",
-      "car": "Cabina, arcata e contrappeso"
+      "car": "Cabina, arcata e contrappeso",
+      "electrical": "Quadro, impianto elettrico e segnalazioni",
+      "labour": "Manodopera e lavori"
     },
     "items": {
       "machine": "Argano {name}",
@@ -1505,7 +1517,28 @@
       "buffer_oil": "Ammortizzatore idraulico",
       "car": "Cabina",
       "sling": "Arcata della cabina",
-      "cw": "Contrappeso completo"
+      "cw": "Contrappeso completo",
+      "controller": "Quadro di manovra",
+      "electrical_panel": "Quadretto elettrico completo",
+      "cable_travelling": "Cavo flessibile di cabina",
+      "wiring": "Fili del vano (cablaggio)",
+      "trunking": "Canalina portacavi",
+      "push_landing": "Bottoniera di piano",
+      "push_car": "Bottoniera di cabina",
+      "push_inspection": "Bottoniera di manutenzione (tetto di cabina)",
+      "stop_pit": "Stop fossa",
+      "stop_room": "Stop locale macchine",
+      "light_emergency": "Luce di emergenza",
+      "light_shaft": "Luce vano",
+      "alarm_siren": "Sirena di allarme",
+      "alarm_remote": "Telesoccorso completo",
+      "buffer_support_spring": "Supporto delle molle",
+      "buffer_support_pu": "Supporto dei tamponi",
+      "shoes_car": "Pattino di scorrimento della cabina",
+      "labour_installer": "Cottimista (montaggio)",
+      "labour_replacement": "Cottimista (sostituzione dell’argano)",
+      "labour_rails": "Pulizia guide",
+      "custom": "{name}"
     },
     "costTitle": "Costo degli articoli (listino dell’azienda)",
     "total": "Totale, IVA esclusa",
@@ -1513,7 +1546,87 @@
     "notListed": "non a listino",
     "missing": "{n, plural, one {# articolo} other {# articoli}} senza prezzo: il totale non li conta.",
     "toList": "Completa il listino",
-    "costNoteDesign": "Quantità dal progetto: funi sulle pulegge da attacco ad attacco, guide dal fondo fossa al solaio con una giunzione ogni 5 m, una staffa ogni 2 m più la prima e l’ultima. Non comprende quadro di manovra, impianto elettrico, cavo flessibile, fune del limitatore, opere murarie e manodopera.",
-    "costNoteCalc": "Sostituzione dell’argano: l’argano di catalogo verificato dal calcolo e il basamento con rinvio del costruttore, quando c’è."
+    "costNoteDesign": "Quantità dal progetto: funi sulle pulegge da attacco ad attacco; guide dal fondo fossa al solaio con una giunzione ogni 5 m; una staffa ogni 2 m più la prima e l’ultima; cavo flessibile metà corsa + 3 m; fili e canalina dal fondo fossa al pavimento del locale macchine (la canalina anche dal quadro all’argano, ad angolo retto); luce vano per l’altezza del vano; una bottoniera a ogni porta di piano; due pattini per guida di cabina; un supporto sotto ogni molla o tampone; cottimista per fermata; pulizia di ogni metro di guida. Le lunghezze sono stime: sostituiscile con le misure in sito. Non comprende la fune del limitatore e le opere murarie.",
+    "costNoteCalc": "Sostituzione dell’argano: l’argano di catalogo verificato dal calcolo; il basamento con rinvio del costruttore, quando c’è (con il locale macchine rilevato, quello scelto nel rilievo e il supporto della puleggia); le funi e il quadro quando il collaudo li indica come sostituiti (tutte le funi, per la lunghezza del calcolo); il cottimista a corpo; le voci libere delle sostituzioni.",
+    "bases": {
+      "LOT": "A corpo (una volta per progetto)",
+      "STOP": "Per fermata",
+      "TRAVEL": "Per metro di corsa"
+    },
+    "scopes": {
+      "ALL": "Tutti i progetti",
+      "FULL": "Progetti completi",
+      "REPLACEMENT": "Sostituzioni dell’argano"
+    },
+    "freeTitle": "Voci a stesura libera",
+    "freeLead": "Le tue voci, con la descrizione e il prezzo: il software le aggiunge da solo al costo dei progetti che scegli, con la quantità calcolata — una volta, per fermata o per metro di corsa. Una riga vuota si elimina quando salvi.",
+    "freeCount": "{n, plural, =0 {nessuna voce} one {# voce} other {# voci}}",
+    "freeText": "Descrizione",
+    "freePlaceholder": "Per esempio: trasporto e scarico in cantiere",
+    "freeBasis": "Quantità",
+    "freeScope": "Progetti",
+    "freeActions": "Azioni",
+    "freeRow": "Riga {n}",
+    "freeRemove": "Elimina",
+    "freeRemoveRow": "Elimina la voce {name}",
+    "freeAdd": "Aggiungi una voce",
+    "freeMax": "Al massimo {n} voci.",
+    "freeNone": "Nessuna voce libera.",
+    "skipped": "Voci libere per fermata non contate (la sostituzione dell’argano non conosce le fermate): {list}.",
+    "freeLeadView": "Le voci dell’azienda, con il prezzo: il software le aggiunge da solo al costo dei progetti indicati, con la quantità calcolata — una volta, per fermata o per metro di corsa. Le modifica il titolare."
+  },
+  "room": {
+    "newTitle": "Rilievo del locale macchine",
+    "newLead": "Il locale sopra il vano, il vano sotto e le calate esistenti, misurati in sito: la nuova macchina del calcolo vi si sistema e si verifica dal vivo. Il rilievo salvato dà la relazione tecnica e le tavole della sostituzione.",
+    "viewTitle": "Progetto della sostituzione",
+    "example": "Valori di esempio del software (locale 3000 × 3000 mm, vano 1600 × 1750 mm): sostituiscili con le misure del locale prima di salvare.",
+    "calcChanged": "Il motore in uso non riproduce questo calcolo: rifai il calcolo prima del rilievo.",
+    "roomTitle": "Locale del macchinario",
+    "shaftTitle": "Vano sotto il locale",
+    "wall": "Spessore dei muri del vano (mm)",
+    "dropsTitle": "Calate esistenti",
+    "dropsHint": "Centro delle funi lato cabina e lato contrappeso dove attraversano la soletta, misurato dall’angolo interno del vano sul lato dell’ingresso A: x lungo quella parete, y verso il fondo del vano.",
+    "carX": "Funi lato cabina: x (mm)",
+    "carY": "Funi lato cabina: y (mm)",
+    "cwX": "Funi lato contrappeso: x (mm)",
+    "cwY": "Funi lato contrappeso: y (mm)",
+    "calata": "Calate: {calc} mm dal calcolo, {measured} mm rilevate.",
+    "dr_x": "Calate dal muro del vano (x)",
+    "dr_y": "Calate dal muro del vano (y)",
+    "issue_bottom": "Argano in basso: il locale sopra il vano non contiene la macchina e il software non lo disegna (come nel progetto completo). Relazione di calcolo e bozza d’ordine restano disponibili.",
+    "issue_drops": "Calate non valide: quella della cabina e quella del contrappeso coincidono o stanno fuori dal vano.",
+    "issue_rinvio": "La puleggia di rinvio non trova posto con h = {h} mm del calcolo: finisce sotto il pavimento del locale o contro l’argano sopra di essa. Ripeti il calcolo con h di almeno {hMin} mm, o scegli un altro basamento.",
+    "issuesStop": "Il rilievo non si salva finché resta un problema segnalato sopra.",
+    "drawTitle": "Pianta e sezione del locale",
+    "noDrawing": "Il locale non si può disegnare con questi valori.",
+    "checksTitle": "Verifiche del locale, del basamento e delle calate",
+    "check": "Verifica",
+    "value": "Valore",
+    "limit": "Limite",
+    "outcome": "Esito",
+    "checksNote": "Nel progetto salvato le verifiche delle parti che restano come sono (locale, porta, quadro esistenti) compaiono come «esistente» e non entrano nell’esito del collaudo della sostituzione.",
+    "existing": "Esistente",
+    "existingNote": "Le verifiche «esistente» riguardano parti che restano come sono: non entrano nell’esito del collaudo della sostituzione.",
+    "saveTitle": "Salva il rilievo",
+    "label": "Etichetta (facoltativa)",
+    "save": "Salva il rilievo",
+    "saving": "Salvataggio…",
+    "saveNote": "Il server ricalcola tutto dal rilievo e dal calcolo e salva un record non modificabile con la sua impronta SHA-256; una variante è un nuovo rilievo.",
+    "newFrom": "Nuovo rilievo da questo",
+    "engineChanged": "Il motore in uso ({current}) non riproduce questo rilievo (salvato con {stored}) o il suo calcolo: rifai il rilievo per avere i documenti.",
+    "docsTitle": "Documenti della sostituzione",
+    "docsLead": "Relazione tecnica (italiano), tavole in bozza (dati, pianta e sezione B-B del locale), pianta e sezione in DXF e DWG, relazione di calcolo dell’argano.",
+    "docTecnica": "Relazione tecnica (PDF)",
+    "docDraft": "Tavole in bozza (PDF)",
+    "setsLead": "Le tavole emesse da questo rilievo hanno un numero AA-NNN e le loro revisioni.",
+    "calcTitle": "Progetto della sostituzione (argano e locale macchine)",
+    "calcLead": "Rileva il locale macchine e le calate esistenti: il software sistema la nuova macchina, verifica locale, basamento e calate e prepara relazione tecnica e tavole.",
+    "calcBelow": "Argano in basso: il software non disegna il locale della macchina (come nel progetto completo). Relazione di calcolo e bozza d’ordine restano disponibili.",
+    "start": "Rileva il locale macchine",
+    "again": "Nuovo rilievo",
+    "setsFromRoom": "Nella sostituzione le tavole si emettono dal rilievo del locale macchine.",
+    "projectTitle": "Progetto della sostituzione",
+    "projectEmpty": "Nessun rilievo del locale macchine. Aprilo da un calcolo salvato: «Rileva il locale macchine».",
+    "col_room": "Locale e argano"
   }
 }

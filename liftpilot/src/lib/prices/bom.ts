@@ -3,14 +3,16 @@
 // ours, or the support chosen, the pulley on its stand), the ropes (their length on the pulleys from the rope rig of the
 // 3D, every rope), the rails from the pit floor to under the slab with a joint every 5 m, a bracket every 2 m plus the
 // first and the last, Panev's articles (panevBom), the doors of every stop and of the car, the governor with its tension
-// pulley, the buffers, the car, its sling and the counterweight's mass. Not counted: what the software does not design
-// (controller, wiring, travelling cable, governor rope, labour). Pure.
+// pulley, the buffers, the car, its sling and the counterweight's mass; then what it counts from the design without
+// drawing it (the electrical system, the signalling, the buffers' supports, the car's shoes, the labour: plant-bom.ts).
+// Not counted: the governor rope and the building works. Pure.
 import type { FormValues } from '@/calc/types';
 import { panevBom } from '@/lib/catalog/panev';
 import { belt } from '@/lib/lift/belt';
 import type { LiftDerived } from '@/lib/lift/derive';
 import { ropeRig } from '@/lib/lift/rig';
 import { calcMachine } from '@/lib/order/machine';
+import { analyse } from '@/lib/present/analysis';
 import { RAIL_LENGTH, bracketHeights, cwBracketsOf, railSpan, section } from '@/shaft';
 import { bufferType } from '@/shaft/buffers';
 import { govSize } from '@/shaft/governor';
@@ -18,6 +20,10 @@ import { railLabel } from '@/shaft/rails';
 import { supportOf } from '@/shaft/support';
 import { bedplateKey, governorKey, machineKey, ropeKey } from './articles';
 import type { BomLine } from './cost';
+import { plantLines } from './plant-bom';
+import type { Collaudo } from '@/lib/lift/collaudo';
+import { ropeLength as ropeRun } from '@/lib/lift/support';
+import type { RoomDerived } from '@/lib/room/derive';
 
 const tenth = (x: number): number => Math.ceil(x * 10 - 1e-9) / 10;
 const sizeText = (d: number): string => String(d).replace('.', ',');
@@ -63,8 +69,10 @@ export function designBom(dv: LiftDerived): BomLine[] {
   if (rope !== null) L.push({ key: ropeKey(M.d), label: { item: 'rope', name: sizeText(M.d) }, qty: rope * M.n, unit: 'm' });
   const S = section(dv.layout), [z0, z1] = railSpan(S), span = Math.max(0, z1 - z0), joints = Math.max(0, Math.ceil(span / RAIL_LENGTH - 1e-9) - 1);
   const pb = panevBom(dv.layout);
+  let rails = 0;
   for (const kind of ['car', 'cw'] as const) {
     const n = dv.layout.rails.filter((r) => r.kind === kind).length, type = kind === 'car' ? I.carRail : I.cwRail;
+    rails += (n * span) / 1000;
     L.push({ key: `rail:${type}`, label: { item: 'rail', name: railLabel(type) }, qty: (n * span) / 1000, unit: 'm' });
     L.push({ key: `fishplate:${type}`, label: { item: 'fishplate', name: railLabel(type) }, qty: n * joints, unit: 'pz' });
     if (kind === 'car' || cwBracketsOf(I) !== 'panev') {
@@ -84,16 +92,27 @@ export function designBom(dv: LiftDerived): BomLine[] {
   L.push({ key: `buffer:${wt}`, label: { item: `buffer_${wt}` }, qty: 1, unit: 'pz' });
   L.push({ key: 'car', label: { item: 'car' }, qty: 1, unit: 'pz' }, { key: 'sling', label: { item: 'sling' }, qty: 1, unit: 'pz' });
   L.push({ key: 'cw', label: { item: 'cw' }, qty: Math.round(dv.analysis.res.Mcw), unit: 'kg' });
-  return merged(L);
+  return merged([...L, ...plantLines(dv, rails)]);
 }
 
-/** The replacement of the machine: the machine (the catalogue's whose values the calculator holds) and the maker's
- *  bedplate with the pulley, when it has one. */
-export function calcBom(V: FormValues): BomLine[] {
-  const c = calcMachine(V);
-  if (!c) return [{ key: null, label: { item: 'machine_other' }, qty: 1, unit: 'pz' }];
-  return merged([
-    { key: machineKey(c.brand, c.model), label: { item: 'machine', name: `${c.brand} ${c.model}` }, qty: 1, unit: 'pz' },
-    ...(c.bedplate ? [{ key: bedplateKey(c.bedplate.code), label: { item: 'bedplate', name: `${c.bedplate.brand} ${c.bedplate.code}` }, qty: 1, unit: 'pz' as const }] : []),
-  ]);
+/** The replacement of the machine: the machine (the catalogue's whose values the calculator holds), what it stands on
+ *  (the maker's bedplate with the pulley; with the machine room surveyed `room`, the support chosen there and the pulley's
+ *  stand), the ropes and the controller when the acceptance test `C` names them replaced (every rope, the calculation's
+ *  length), and the installer as a lump sum. */
+export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDerived | null = null): BomLine[] {
+  const c = calcMachine(V), a = room?.analysis ?? analyse(V), { I, N } = a.ctx, parts = C?.parti ?? ['machine'];
+  const L: BomLine[] = [c ? { key: machineKey(c.brand, c.model), label: { item: 'machine', name: `${c.brand} ${c.model}` }, qty: 1, unit: 'pz' } : { key: null, label: { item: 'machine_other' }, qty: 1, unit: 'pz' }];
+  // with the room surveyed, what stands there (the maker's frame, ours, or the support with the pulley's stand); else
+  // the maker's bedplate the calculation's machine takes
+  const rf = room?.M.rinvio ?? null, mk = room ? (rf?.on === 'frame' ? rf.maker : null) : c?.bedplate ?? null;
+  if (mk) L.push({ key: bedplateKey(mk.code), label: { item: 'bedplate', name: `${mk.brand} ${mk.code}` }, qty: 1, unit: 'pz' });
+  else if (room?.G) {
+    const sup = supportOf(room.G.room, room.M.Dp > 0);
+    L.push({ key: `support:${sup.kind}`, label: { item: `support_${sup.kind}` }, qty: 1, unit: 'pz' });
+  }
+  if (rf?.on === 'stand') L.push({ key: 'support:stand', label: { item: 'support_stand' }, qty: 1, unit: 'pz' });
+  if (parts.includes('ropes')) L.push({ key: ropeKey(N.d), label: { item: 'rope', name: sizeText(N.d) }, qty: N.n * ropeRun(I), unit: 'm' });
+  if (parts.includes('controller')) L.push({ key: 'controller', label: { item: 'controller' }, qty: 1, unit: 'pz' });
+  L.push({ key: 'labour:replacement', label: { item: 'labour_replacement' }, qty: 1, unit: 'lot' });
+  return merged(L);
 }

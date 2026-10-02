@@ -61,7 +61,7 @@ export function specs(L: Layout, room: boolean): Spec[] {
   return out;
 }
 
-const inset = (b: Box, l: number, r: number, bottom: number, top: number): Box => ({ x0: b.x0 + l, y0: b.y0 + bottom, x1: b.x1 - r, y1: b.y1 - top });
+export const inset = (b: Box, l: number, r: number, bottom: number, top: number): Box => ({ x0: b.x0 + l, y0: b.y0 + bottom, x1: b.x1 - r, y1: b.y1 - top });
 
 interface Drawn {
   shapes: Shape[];
@@ -107,7 +107,7 @@ function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box):
 }
 
 /** Section line B-B on the room plan: along the rope drops, beyond the drawing at both ends, looking across them. */
-function roomMarks(G: RoomGeo, p: Place, edges: Box): Shape[] {
+export function roomMarks(G: RoomGeo, p: Place, edges: Box): Shape[] {
   const at = (u: number): Pt => toPaper(p, [G.carDrop[0] + u * G.ux, G.carDrop[1] + u * G.uy]);
   const a = at(0), b = at(G.calata), dx = b[0] - a[0], dy = b[1] - a[1], n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n;
   // from the middle of the drops out to the edges of the drawing, 5 mm beyond

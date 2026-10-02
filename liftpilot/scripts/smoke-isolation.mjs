@@ -1,11 +1,12 @@
 // The smoke test's second company: made by the platform's administrator, its owner changes the password, accepts the
-// terms and downloads the company's data (no secrets in it), and opens nothing of the first company (404 everywhere).
+// terms and downloads the company's data (no secrets in it), and opens nothing of the first company (404 everywhere),
+// its replacement's machine room and documents included.
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
 export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   const { login, logout, hydrated } = kit;
-  const { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref } = urls;
+  const { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId } = urls;
   step('second company cannot see the first one');
   await login(page, ADMIN.email, ADMIN.password);
   await page.goto(`${BASE}/it/app/admin`);
@@ -46,4 +47,6 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   assert.equal((await page.goto(liftUrl)).status(), 404, 'lift design of another company');
   assert.equal((await page.request.get(`${BASE}${liftRelHref}`)).status(), 404, 'report of the lift design of another company');
   for (const format of ['pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}${new URL(liftUrl).pathname.replace(/^\/it\/app/, '/api')}/${format}`)).status(), 404, `${format} export of another company`);
+  assert.equal((await page.goto(roomUrl)).status(), 404, 'machine room of another company');
+  for (const format of ['relazione', 'pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/${format}`)).status(), 404, `machine room ${format} of another company`);
 }

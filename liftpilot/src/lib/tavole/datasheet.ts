@@ -111,8 +111,18 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
     if (col > 0 && row === 0) out.push(L([x0, yd - 4.6], [x0, yd - gridH], 0.2));
   }
 
-  // title block
-  const yb = yd - gridH - 1.6, y0 = FRAME.y0, r1 = yb - 9, r2 = r1 - 18, c1 = 150;
+  out.push(...titleBlock(d, yd - gridH - 1.6));
+  return out.filter((s) => s.t !== 'text' || s.text !== '');
+}
+
+/** What the title block writes. */
+export type TitleData = Pick<DataSheet, 'client' | 'location' | 'author' | 'date' | 'revisions' | 'number' | 'pages' | 'plant' | 'company' | 'logo' | 'clientLogo'>;
+
+/** The title block at the foot of sheet 1, its top at `yb`: client (and its logo), location, author, date, approval,
+ *  revisions, the company's logo or name, plant number, drawing number. */
+export function titleBlock(d: TitleData, yb: number): Shape[] {
+  const out: Shape[] = [], xL = FRAME.x0, xR = FRAME.x1;
+  const y0 = FRAME.y0, r1 = yb - 9, r2 = r1 - 18, c1 = 150;
   out.push(box(xL, y0, xR, yb, 0.3), L([xL, r1], [xR, r1], 0.3), L([xL, r2], [xR, r2], 0.3), L([c1, r1], [c1, y0], 0.3), L([c1, r1 - 9], [xR, r1 - 9], 0.2));
   // the client's name, and its logo at the end of the row when there is one
   const clientW = d.clientLogo ? 40 : 0;
@@ -138,5 +148,5 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
   if (d.logo) out.push({ t: 'image', ref: 'logo', box: { x0: cA + 3, y0: y0 + 2, x1: c1 - 3, y1: r2 - 15.5 } });
   else out.push(fitted([(cA + c1) / 2, (y0 + r2 - 13.5) / 2 - 1.5], d.company, 5, c1 - cA - 6, { align: 'c', bold: true }));
   out.push(T([(c1 + xR) / 2, r1 - 13.2], '', 1), T([(c1 + xR) / 2, r2 - 4.5], 'MATRICOLA N°', 2.6, { align: 'c' }), fitted([(c1 + xR) / 2, y0 + 8], d.plant, 7, xR - c1 - 4, { align: 'c' }));
-  return out.filter((s) => s.t !== 'text' || s.text !== '');
+  return out;
 }

@@ -106,6 +106,9 @@ export const KV_VERT = {
   machineBed: 80,
   machineRimClear: 30,
   machineBedOverhang: 40,
+  // a machine replacement (registry locale.calate): the existing rope drops measured in the room and those the
+  // calculation's new machine hangs its ropes at may differ by this much [mm]
+  dropTol: 10,
   steelFyk: 275,
   steelGammaM0: 1.05,
   steelE: 210000,
@@ -288,4 +291,5 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'locale.telaio': ['machineBed', 'machineRimClear', 'machineBedOverhang'],
   'locale.rinvio': ['rinvioAxis', 'rinvioRim', 'rinvioTop', 'rinvioOver', 'rinvioLeg', 'rinvioPads', 'rinvioBeam', 'rinvioOverhang', 'rinvioWidth'],
   'locale.putrelle': ['steelFyk', 'steelGammaM0', 'steelE', 'beamDeflection'],
+  'locale.calate': ['dropTol'],
 };

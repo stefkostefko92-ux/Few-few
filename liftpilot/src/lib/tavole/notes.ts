@@ -37,19 +37,7 @@ export function clientNotes(L: Layout, below = false): Note[] {
         + "protetta dalle infiltrazioni d'acqua, con accesso sicuro dalla porta di piano più bassa. Riferimenti: UNI EN 81-20:2020, punto 5.2; DPR 162/1999.",
     },
   ];
-  if (room) {
-    notes.push({
-      title: below ? 'LOCALE DELLE PULEGGE DI RINVIO' : 'LOCALE DEL MACCHINARIO E DELLE PULEGGE DI RINVIO', tag: 'NOTA 2',
-      text: 'Accesso sicuro e agevole, riservato alle persone autorizzate; porta di almeno '
-        + `${K.doorMinW} × ${K.doorMinH} mm con serratura a chiave, apribile dall'interno senza chiave. Altezza libera di almeno ${K.roomH} mm `
-        + `nelle zone di lavoro; davanti al quadro una superficie libera profonda almeno ${K.panelFreeDepth} mm e larga almeno ${K.panelFreeWidth} mm. `
-        + `Illuminazione fissa di almeno ${K.roomLux} lux al pavimento nelle zone di lavoro. Temperatura ambiente tra +${K.tempMin} °C e +${K.tempMax} °C, `
-        + "con ventilazione che protegga motore e apparecchiature da polvere e umidità; l'aria di locali estranei all'ascensore non va convogliata nel "
-        + `locale, che contiene solo l'impianto. Sopra ${below ? 'le pulegge' : 'la macchina'} un gancio o una trave di sollevamento con il carico ammesso `
-        + `indicato; ${below ? 'il locale della macchina, in basso, ha gli stessi requisiti; ' : ''}interruttore generale e comando della luce vicino all'accesso. `
-        + 'Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10.',
-    });
-  }
+  if (room) notes.push({ ...roomNote(below), tag: 'NOTA 2' });
   notes.push({
     title: 'ARMADIO DEL QUADRO (SE PRESENTE)', tag: room ? 'NOTA 3' : 'NOTA 2',
     text: "Il quadro di manovra fuori dal locale del macchinario va in un armadio chiuso a chiave, accessibile solo alle persone autorizzate, "
@@ -57,6 +45,23 @@ export function clientNotes(L: Layout, below = false): Note[] {
       + "davanti all'armadio aperto. Riferimenti: UNI EN 81-20:2020, punto 5.2.",
   });
   return notes;
+}
+
+/** The note on the room of the machinery (`below`: the machine stands below, the room over the shaft holds the
+ *  diverting pulleys only): access, door, heights, free area at the panel, light, temperature, lifting point. */
+export function roomNote(below: boolean): Omit<Note, 'tag'> {
+  const K = KV_VERT;
+  return {
+    title: below ? 'LOCALE DELLE PULEGGE DI RINVIO' : 'LOCALE DEL MACCHINARIO E DELLE PULEGGE DI RINVIO',
+    text: 'Accesso sicuro e agevole, riservato alle persone autorizzate; porta di almeno '
+      + `${K.doorMinW} × ${K.doorMinH} mm con serratura a chiave, apribile dall'interno senza chiave. Altezza libera di almeno ${K.roomH} mm `
+      + `nelle zone di lavoro; davanti al quadro una superficie libera profonda almeno ${K.panelFreeDepth} mm e larga almeno ${K.panelFreeWidth} mm. `
+      + `Illuminazione fissa di almeno ${K.roomLux} lux al pavimento nelle zone di lavoro. Temperatura ambiente tra +${K.tempMin} °C e +${K.tempMax} °C, `
+      + "con ventilazione che protegga motore e apparecchiature da polvere e umidità; l'aria di locali estranei all'ascensore non va convogliata nel "
+      + `locale, che contiene solo l'impianto. Sopra ${below ? 'le pulegge' : 'la macchina'} un gancio o una trave di sollevamento con il carico ammesso `
+      + `indicato; ${below ? 'il locale della macchina, in basso, ha gli stessi requisiti; ' : ''}interruttore generale e comando della luce vicino all'accesso. `
+      + 'Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10.',
+  };
 }
 
 /** The car weight was not entered: the sheet carries the software's estimate, to be replaced before the works. */

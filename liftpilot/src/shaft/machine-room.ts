@@ -80,14 +80,21 @@ export function ropeWidths(n: number, d: number): { ropes: number; pulley: numbe
   return { ropes: ((n - 1) / 2) * pitch + d / 2, pulley: (n * pitch + 30) / 2 + 18 };
 }
 
-/** Room coordinates: origin at the room's inner corner; the shaft's inner corner of entrance A lies at (shaftX, shaftY). */
-export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
-  const R = L.inputs.room;
-  if (!R) return null;
-  const car: [number, number] = [R.shaftX + L.car.x + L.car.w / 2, R.shaftY + L.car.y + L.car.h / 2];
-  const cw: [number, number] = [R.shaftX + L.cw.x + L.cw.w / 2, R.shaftY + L.cw.y + L.cw.h / 2];
-  const dx = cw[0] - car[0], dy = cw[1] - car[1], calata = Math.hypot(dx, dy) || 1, s = M.D / (2000 * MACHINE_A.rp);
-  const sheaveAt = M.ropeIn + M.D / 2, u1 = calata - M.ropeIn;
+/** The rope drops in the room (room coordinates): the car's and the counterweight's, the unit vector from the one to the
+ *  other and their spacing (calata) [mm]. */
+export interface Drops {
+  car: readonly [number, number];
+  cw: readonly [number, number];
+  ux: number;
+  uy: number;
+  calata: number;
+}
+
+/** The machine over the drops `P`: the sheave's car side over the car's drop (`sheaveAt`: its centre elsewhere on the
+ *  drop line, as a direct pull centred between drops wider than the sheave hangs it), the diverting pulley where the
+ *  counterweight's drop leaves it. */
+export function geoOn(R: RoomInputs, P: Drops, M: MachineSpec, sheaveAt = M.ropeIn + M.D / 2): RoomGeo {
+  const calata = P.calata, s = M.D / (2000 * MACHINE_A.rp), u1 = calata - M.ropeIn;
   const pulleyAt = M.Dp > 0 ? (M.reverse ? u1 + M.Dp / 2 : u1 - M.Dp / 2) : sheaveAt;
   const v = (z: number): number => (MACHINE_A.zSheave - z) * 1000 * s, F = machineFrame(M.D, M.shape ?? null, M.rinvio?.bed ?? null);
   // the generic machine's numbers as they have always been computed (a drawing set's hash covers them); a maker's from
@@ -96,8 +103,19 @@ export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
     ? [sheaveAt + F.x[0], sheaveAt + F.x[1], [F.zSheave - F.z[1], F.zSheave - F.z[0]]]
     : [sheaveAt + MACHINE_X[0] * 1000 * s, sheaveAt + MACHINE_X[1] * 1000 * s, [v(MACHINE_Z[1]), v(MACHINE_Z[0])]];
   return {
-    room: R, carDrop: car, cwDrop: cw, ux: dx / calata, uy: dy / calata, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h, frame0, frame1, across, s, frame: F,
+    room: R, carDrop: P.car, cwDrop: P.cw, ux: P.ux, uy: P.uy, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h, frame0, frame1, across, s, frame: F,
   };
+}
+
+/** Room coordinates: origin at the room's inner corner; the shaft's inner corner of entrance A lies at (shaftX, shaftY).
+ *  The drops are the car's and the counterweight's centres of the design's layout. */
+export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
+  const R = L.inputs.room;
+  if (!R) return null;
+  const car: [number, number] = [R.shaftX + L.car.x + L.car.w / 2, R.shaftY + L.car.y + L.car.h / 2];
+  const cw: [number, number] = [R.shaftX + L.cw.x + L.cw.w / 2, R.shaftY + L.cw.y + L.cw.h / 2];
+  const dx = cw[0] - car[0], dy = cw[1] - car[1], calata = Math.hypot(dx, dy) || 1;
+  return geoOn(R, { car, cw, ux: dx / calata, uy: dy / calata, calata }, M);
 }
 
 type P2 = readonly [number, number];
@@ -159,9 +177,10 @@ export function hitchDepths(L: Layout): { ends: [number, number][]; mid: [number
   return { ends: [at(0), at(S.top)], mid: at(S.top / 2) };
 }
 
-export function roomChecks(L: Layout): ShaftCheck[] {
-  const R = L.inputs.room;
-  if (!R) return [];
+export const roomChecks = (L: Layout): ShaftCheck[] => (L.inputs.room ? roomChecksOf(L.inputs.room) : []);
+
+/** The checks of the room itself: its height, the free area in front of the control panel, its door. */
+export function roomChecksOf(R: RoomInputs): ShaftCheck[] {
   const across = R.panelWall === 'front' || R.panelWall === 'rear' ? R.D : R.W;
   const free = across - R.panelD;
   return [

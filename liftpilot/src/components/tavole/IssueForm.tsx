@@ -1,31 +1,35 @@
 'use client';
 
-// Issue of a drawing set from a calculation: the drafter's initials go into the title block, the number comes from
-// the server (YY-NNN of the company and year). A revision instead keeps the number and adds a note.
+// Issue of a drawing set from a calculation (a whole project) or from a saved machine room (a replacement): the
+// drafter's initials go into the title block, the number comes from the server (YY-NNN of the company and year). A
+// revision instead keeps the number and adds a note.
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import { issueDrawingSetAction, reviseDrawingSetAction } from '@/server/drawing-actions';
+import { issueDrawingSetAction, issueRoomSetAction, reviseDrawingSetAction } from '@/server/drawing-actions';
 
 interface Props {
-  /** the calculation to issue from; for a revision, the calculations of the installation to choose from */
+  /** the calculation, or the replacement's saved machine room, to issue from; for a revision, the calculations (or the
+   *  rooms) of the installation to choose from */
   calculationId?: string;
-  revise?: { drawingSetId: string; calculations: { id: string; label: string }[] };
+  roomDesignId?: string;
+  revise?: { drawingSetId: string; calculations?: { id: string; label: string }[]; rooms?: { id: string; label: string }[] };
 }
 
-export default function IssueForm({ calculationId, revise }: Props) {
+export default function IssueForm({ calculationId, roomDesignId, revise }: Props) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter();
   const [initials, setInitials] = useState('');
   const [note, setNote] = useState('');
-  const [calc, setCalc] = useState(revise?.calculations[0]?.id ?? calculationId ?? '');
+  const options = revise?.rooms ?? revise?.calculations ?? [];
+  const [calc, setCalc] = useState(options[0]?.id ?? roomDesignId ?? calculationId ?? '');
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const submit = (): void => {
     setError(null);
     start(async () => {
       const r = revise
-        ? await reviseDrawingSetAction({ drawingSetId: revise.drawingSetId, calculationId: calc, note, authorInitials: initials })
-        : await issueDrawingSetAction({ calculationId: calc, authorInitials: initials });
+        ? await reviseDrawingSetAction({ drawingSetId: revise.drawingSetId, ...(revise.rooms ? { roomDesignId: calc } : { calculationId: calc }), note, authorInitials: initials })
+        : roomDesignId ? await issueRoomSetAction({ roomDesignId: calc, authorInitials: initials }) : await issueDrawingSetAction({ calculationId: calc, authorInitials: initials });
       if (r.ok && r.id) router.push(`/app/drawing-sets/${r.id}`);
       else if (!r.ok) setError(te(r.error));
     });
@@ -35,9 +39,9 @@ export default function IssueForm({ calculationId, revise }: Props) {
       <div className="form-grid">
         {revise ? (
           <label className="field">
-            <span>{t('reviseCalc')}</span>
+            <span>{t(revise.rooms ? 'reviseRoom' : 'reviseCalc')}</span>
             <select className="input" value={calc} onChange={(e) => setCalc(e.target.value)} required>
-              {revise.calculations.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+              {options.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
           </label>
         ) : null}

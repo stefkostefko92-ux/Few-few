@@ -1,6 +1,7 @@
 // The articles a company prices: every one the software can put in a project — the machines of the catalogues, SICOR's
 // bedplates with the diverting pulley, the supports of the machine, the ropes and the rails by size, the brackets, Panev's
-// 48 articles, the doors, the governors and the tension pulley, the buffers, the car, its sling and the counterweight.
+// 48 articles, the doors, the governors and the tension pulley, the buffers and their supports, the car, its sling, its
+// guide shoes and the counterweight, the electrical system and the signalling, the labour (bom.ts counts them).
 // Each company keeps its own prices (PriceItem); Panev's start from the 2026 list price (p. 65, VAT excluded), the
 // others from none. The names are the makers' and the catalogues'; what an article is, the screens say in their
 // language (messages `prices.items`). Pure.
@@ -36,6 +37,21 @@ export interface PriceArticle {
 export const ROPE_SIZES: readonly number[] = [6, 6.5, 8, 9, 10, 11, 12, 13, 16];
 export const DOOR_KINDS: readonly DoorKind[] = ['T2', 'C2'];
 export const BUFFER_KINDS: readonly BufferType[] = ['spring', 'pu', 'oil'];
+/** The buffers that stand on a support of their own in the pit: springs and polyurethane pads. */
+export const BUFFER_SUPPORTS: readonly BufferType[] = ['spring', 'pu'];
+
+/** The electrical system and the signalling: key, words, unit. */
+const ELECTRICAL: readonly (readonly [string, string, PriceUnit])[] = [
+  ['controller', 'controller', 'pz'], ['electrical:panel', 'electrical_panel', 'pz'], ['cable:travelling', 'cable_travelling', 'm'], ['wiring', 'wiring', 'm'],
+  ['trunking', 'trunking', 'm'], ['push:landing', 'push_landing', 'pz'], ['push:car', 'push_car', 'pz'], ['push:inspection', 'push_inspection', 'pz'],
+  ['stop:pit', 'stop_pit', 'pz'], ['stop:room', 'stop_room', 'pz'], ['light:emergency', 'light_emergency', 'pz'], ['light:shaft', 'light_shaft', 'm'],
+  ['alarm:siren', 'alarm_siren', 'pz'], ['alarm:remote', 'alarm_remote', 'pz'],
+];
+/** The labour and the works: the installer by the stop (a whole project) or a lump sum (a machine replacement), the
+ *  cleaning of the rails by the metre. */
+const LABOUR: readonly (readonly [string, string, PriceUnit])[] = [
+  ['labour:installer', 'labour_installer', 'stop'], ['labour:replacement', 'labour_replacement', 'lot'], ['labour:rails', 'labour_rails', 'm'],
+];
 
 export const machineKey = (brand: string, model: string): string => `machine:${brand}:${model}`;
 export const bedplateKey = (code: string): string => `bedplate:${code}`;
@@ -66,9 +82,13 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   ...GOVERNORS.map((g): PriceArticle => ({ key: governorKey(g.brand, g.model), group: 'safety', label: { item: 'governor', name: `${g.brand} ${g.model}` }, unit: 'pz' })),
   { key: 'tension', group: 'safety', label: { item: 'tension' }, unit: 'pz' },
   ...BUFFER_KINDS.map((k): PriceArticle => ({ key: `buffer:${k}`, group: 'safety', label: { item: `buffer_${k}` }, unit: 'pz' })),
+  ...BUFFER_SUPPORTS.map((k): PriceArticle => ({ key: `buffer-support:${k}`, group: 'safety', label: { item: `buffer_support_${k}` }, unit: 'pz' })),
   { key: 'car', group: 'car', label: { item: 'car' }, unit: 'pz' },
   { key: 'sling', group: 'car', label: { item: 'sling' }, unit: 'pz' },
+  { key: 'shoes:car', group: 'car', label: { item: 'shoes_car' }, unit: 'pz' },
   { key: 'cw', group: 'car', label: { item: 'cw' }, unit: 'kg' },
+  ...ELECTRICAL.map(([key, item, unit]): PriceArticle => ({ key, group: 'electrical', label: { item }, unit })),
+  ...LABOUR.map(([key, item, unit]): PriceArticle => ({ key, group: 'labour', label: { item }, unit })),
 ];
 
 const BY_KEY = new Map(PRICE_ARTICLES.map((a) => [a.key, a]));

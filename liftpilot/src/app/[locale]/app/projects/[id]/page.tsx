@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
-import { getProject, latestLiftDesign, listCalculations, listDrawingSets, listLiftDesigns, listShaftDesigns } from '@/server/queries';
+import { getProject, latestLiftDesign, listCalculations, listDrawingSets, listLiftDesigns, listRoomDesigns, listShaftDesigns } from '@/server/queries';
 import { liftInputsReadSchema } from '@/lib/lift-input';
 import { visiblePrices } from '@/server/prices';
 import LiftView from '@/components/lift/LiftView';
@@ -23,9 +23,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const user = await requireCapability(locale, 'projects:view');
   const p = await getProject(user, id);
   if (!p) notFound();
-  const [t, tc, ts, tt, tl, calcs, designs, sets, lifts, latest, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('shaft'),
-    getTranslations('tavole'), getTranslations('lift'), listCalculations(user, p.id), listShaftDesigns(user, p.id), listDrawingSets(user, p.id),
-    listLiftDesigns(user, p.id), latestLiftDesign(user, p.id), getLocale()]);
+  const [t, tc, ts, tt, tl, tm, calcs, designs, sets, lifts, latest, rooms, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('shaft'),
+    getTranslations('tavole'), getTranslations('lift'), getTranslations('room'), listCalculations(user, p.id), listShaftDesigns(user, p.id), listDrawingSets(user, p.id),
+    listLiftDesigns(user, p.id), latestLiftDesign(user, p.id), listRoomDesigns(user, p.id), getLocale()]);
   const latestInputs = latest ? liftInputsReadSchema.safeParse(latest.inputs) : null;
   const fd = dateFormat(locale);
   const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
@@ -198,6 +198,37 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
           </div>
         )}
       </section>
+      {replacement ? (
+        <section className="flex flex-col gap-3" aria-labelledby="project-rooms">
+          <h2 id="project-rooms">{tm('projectTitle')}</h2>
+          {rooms.length === 0 ? <p className="note">{tm('projectEmpty')}</p> : (
+            <div className="table-panel">
+              <table className="data-table stack">
+                <thead><tr><th>{tc('col_date')}</th><th>{tc('col_result')}</th><th>{tm('col_room')}</th><th>{tc('col_author')}</th></tr></thead>
+                <tbody>
+                  {rooms.map((x) => (
+                    <tr key={x.id}>
+                      <td className="row-title">
+                        <Link href={`/app/room-designs/${x.id}`} className="font-semibold">{fd.dateTime(x.createdAt)}</Link>
+                        {x.label ? <div className="note">{x.label}</div> : null}
+                      </td>
+                      <td data-label={tc('col_result')}><VerdictPill verdict={x.verdict} fails={x.failCount} warns={x.warnCount} /></td>
+                      <td data-label={tm('col_room')} className="spec">{x.summary}</td>
+                      <td data-label={tc('col_author')}>{x.user?.name ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {sets.length ? (
+            <ul className="m-0 flex list-none flex-col gap-1 p-0" aria-label={tt('list')}>
+              {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{tt('number')} {x.number}{x.revision ? ` R${x.revision}` : ''}</Link> · <span className="note">{fd.dateTime(x.createdAt)}</span></li>)}
+            </ul>
+          ) : null}
+          <div><Link className="btn" href={`/app/projects/${p.id}/impianto`}>{tt('plantTitle')}</Link></div>
+        </section>
+      ) : null}
       {replacement && editable ? (
         <section className="panel items-start">
           <h2>{t('upgradeTitle')}</h2>

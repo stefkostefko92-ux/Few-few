@@ -10,8 +10,11 @@ import { beamChecks, fitChecks, rinvioChecks, type SupportLoad } from '@/shaft/s
  *  pulley's drop or, with the machine below, the runs to it. */
 export const ropeLength = (I: ParsedInputs['I']): number => I.r * (I.H + 2 * I.L0) + (I.layout === 'topDefl' ? I.h : I.layout === 'bottom' ? 2 * I.Hv : 0);
 
+/** The travelling cable's length the software counts [m]: half the travel plus 3 m (registry carichi.cavi). */
+export const cableLength = (travel: number): number => travel / 2 + 3;
+
 /** Travelling cables [kg]: as given, or KV_VERT.cableKgM over half the travel [m] plus 3 m (registry carichi.cavi). */
-export const cablesMass = (travel: number, given?: number): number => given ?? KV_VERT.cableKgM * (travel / 2 + 3);
+export const cablesMass = (travel: number, given?: number): number => given ?? KV_VERT.cableKgM * cableLength(travel);
 
 /** A machine below: what the head pulleys carry with the car at the lowest floor with its rated load [kg] (research,
  *  funi in basso, §8): both falls of each side, 2·(T_c + T_w), each T the ropes' static pull at the head (the mass

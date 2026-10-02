@@ -8,7 +8,8 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { revisionsSchema } from '@/lib/tavole/compose';
 import { composeStored } from '@/server/drawing-compose';
-import { getDrawingSet, listCalculations, listRevisions } from '@/server/queries';
+import { composeStoredRoom } from '@/server/room-compose';
+import { getDrawingSet, listCalculations, listRevisions, listRoomDesigns } from '@/server/queries';
 import Crumbs from '@/components/Crumbs';
 import IssueForm from '@/components/tavole/IssueForm';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
@@ -20,7 +21,7 @@ export async function generateMetadata() {
 
 // An issued drawing set: its number and revision, the PDF, one sheet at a time drawn again from what the set was made
 // of (the same drawing, or a warning that the engines no longer reproduce it), where its calculation and shaft design
-// disagree, the revisions and a new revision.
+// disagree, the revisions and a new revision. A replacement's set is drawn from its saved machine room.
 export default async function DrawingSetPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ p?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -29,17 +30,19 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   if (!s) notFound();
   const [t, tp, tc] = await Promise.all([getTranslations('tavole'), getTranslations('projects'), getTranslations('calculations')]);
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const r = composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo });
-  const doc = 'doc' in r ? r.doc : null;
+  const full = s.shaftDesign ? composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
+  const room = s.roomDesign ? composeStoredRoom({ ...s, calculation: s.calculation, roomDesign: s.roomDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
+  const doc = full && 'doc' in full ? full.doc : room && 'doc' in room ? room.doc : null;
   const DEC = { travel: 2, speed: 2, load: 0 } as const;
-  const mismatch = 'doc' in r ? r.warnings.map((w) => t(`mm_${w.what}`, { calc: fmt(w.calc, DEC[w.what]), shaft: fmt(w.shaft, DEC[w.what]) })) : [];
+  const mismatch = full && 'doc' in full ? full.warnings.map((w) => t(`mm_${w.what}`, { calc: fmt(w.calc, DEC[w.what]), shaft: fmt(w.shaft, DEC[w.what]) })) : [];
   const total = doc?.pages.length ?? s.pages, page = Math.min(Math.max(1, Number((await searchParams).p) || 1), total);
   const sheet = doc?.pages[page - 1];
   const history = await listRevisions(user, s.year, s.seq);
   const revs = revisionsSchema.safeParse(s.revisions);
   const editable = can(user, 'calc:create') && !s.project.archivedAt;
-  // only a calculation made from a shaft design gives a drawing set
-  const calcs = editable ? (await listCalculations(user, s.projectId)).filter((c) => c.shaftDesignId).map((c) => ({ id: c.id, label: `${fd.dateTime(c.createdAt)}${c.label ? ` · ${c.label}` : ''} · ${c.summary}` })) : [];
+  // a whole project's set comes from a calculation made from a shaft design, a replacement's from a saved machine room
+  const calcs = editable && !s.roomDesign ? (await listCalculations(user, s.projectId)).filter((c) => c.shaftDesignId).map((c) => ({ id: c.id, label: `${fd.dateTime(c.createdAt)}${c.label ? ` · ${c.label}` : ''} · ${c.summary}` })) : [];
+  const rooms = editable && s.roomDesign ? (await listRoomDesigns(user, s.projectId)).map((x) => ({ id: x.id, label: `${fd.dateTime(x.createdAt)}${x.label ? ` · ${x.label}` : ''} · ${x.summary}` })) : [];
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${s.projectId}`, label: s.project.name }, { label: `${t('number')} ${s.number}` }]} />
@@ -50,6 +53,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
         </div>
         <div className="actions">
           {doc && can(user, 'report:download') ? <a className="btn btn-primary" href={`/api/drawing-sets/${s.id}/pdf`}>{t('download')}</a> : null}
+          {s.roomDesign ? <Link className="btn" href={`/app/room-designs/${s.roomDesign.id}`}>{t('roomTitle')}</Link> : null}
           <Link className="btn" href={`/app/calculations/${s.calculationId}`}>{tc('viewTitle')}</Link>
         </div>
       </div>
@@ -79,10 +83,10 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
             </li>
           ))}
         </ul>
-        {editable && calcs.length ? (
+        {editable && (calcs.length || rooms.length) ? (
           <>
             <h3>{t('revise')}</h3>
-            <IssueForm revise={{ drawingSetId: s.id, calculations: calcs }} />
+            <IssueForm revise={rooms.length ? { drawingSetId: s.id, rooms } : { drawingSetId: s.id, calculations: calcs }} />
           </>
         ) : null}
       </section>

@@ -6,11 +6,12 @@ import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity,
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
 import { planEntities, wallsAt, type PlanLevel } from '@/shaft/plan-view';
-import { roomPlanEntities, roomSectionEntities } from '@/shaft/room-view';
+import { roomPlanEntities, roomPlanOn, roomSectionEntities, roomSectionOn } from '@/shaft/room-view';
 import { section } from '@/shaft/section';
 import { sectionDims, type SectionKind } from '@/shaft/section-dims';
 import { sectionEntities, type SectionView } from '@/shaft/section-view';
 import type { Layout } from '@/shaft/types';
+import type { RoomDerived } from '../room/derive';
 import { machineSpec } from '../lift/machine';
 import type { Plant } from '../plant';
 import type { Analysis } from '../present/analysis';
@@ -96,6 +97,15 @@ export function roomView(L: Layout, M: MachineSpec, kind: 'plan' | 'section', ar
   const { entities, bounds } = kind === 'plan' ? roomPlanEntities(L, M, G) : roomSectionEntities(L, M, G);
   const place = placeIn(bounds, entities, area, DETAIL_SCALES);
   return { r: renderView(entities, place), place, G };
+}
+
+/** The machine room of a replacement (its survey) in plan or in section B-B, the machine `M` (the derived one, or the
+ *  same with the name the data of the installation give it); null with the machine below. */
+export function surveyView(d: RoomDerived, kind: 'plan' | 'section', area: Box, M = d.M): (View & { G: RoomGeo }) | null {
+  if (!d.G) return null;
+  const { entities, bounds } = kind === 'plan' ? roomPlanOn(d.site, M, d.G) : roomSectionOn(d.site, M, d.G);
+  const place = placeIn(bounds, entities, area, DETAIL_SCALES);
+  return { r: renderView(entities, place), place, G: d.G };
 }
 
 /** A view cropped to its extent with a margin, for the screens: shapes in a box w × h [mm], the scale, the editable

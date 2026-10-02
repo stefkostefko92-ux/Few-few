@@ -66,4 +66,13 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
     verifiche: ['m_beam', 'm_beamf'],
     nota: 'verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal progettista',
   },
+  {
+    id: 'locale.calate', gruppo: 'locale', titolo: 'Sostituzione dell\'argano: calate esistenti e calate della nuova macchina',
+    valore: 'nella sola sostituzione dell\'argano la cabina e il contrappeso restano dove sono: le funi della nuova macchina devono scendere sulle '
+      + 'calate esistenti, rilevate nel locale dall\'angolo interno del vano. La distanza tra le calate data dal calcolo (rinvio: D/2 + dx ± Dp/2, '
+      + 'più Dp in taglia 2:1; tiro diretto: il diametro della puleggia esistente, se inserita, altrimenti della nuova, più Dp in taglia 2:1) e quella '
+      + 'misurata differiscono al più di 10 mm; oltre, il calcolo va ripetuto con la geometria misurata (dx, puleggia esistente)',
+    riferimento: '—', fonte: 'tolleranza scelta dal software per il rilievo in sito (le funi a qualche metro dal basamento): da confermare con l\'installatore',
+    stato: 'scelta', verifiche: ['m_calata'],
+  },
 ];

@@ -6,6 +6,7 @@ import { renderTavole } from '@/lib/report/render';
 import { audit } from '@/lib/audit';
 import { log } from '@/lib/log';
 import { composeStored } from '@/server/drawing-compose';
+import { composeStoredRoom } from '@/server/room-compose';
 import { getDrawingSet } from '@/server/queries';
 
 export const runtime = 'nodejs';
@@ -25,7 +26,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!id.success) return text(404, 'Not found');
     const s = await getDrawingSet(user, id.data);
     if (!s) return text(404, 'Not found');
-    const r = composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo });
+    // a whole project's set from its shaft design, a replacement's from its machine room
+    const r = s.roomDesign ? composeStoredRoom({ ...s, calculation: s.calculation, roomDesign: s.roomDesign, logo: s.logo, clientLogo: s.clientLogo })
+      : s.shaftDesign ? composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
+    if (!r) return text(404, 'Not found');
     if ('ok' in r) return text(r.error === 'engineChanged' ? 409 : 404, r.error === 'engineChanged' ? 'The running engines do not reproduce this drawing set' : 'Not found');
     const pdf = await renderTavole(r.doc);
     await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_DOWNLOADED', entity: 'DrawingSet', entityId: s.id });

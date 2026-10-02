@@ -61,6 +61,8 @@ model Company {
   updatedAt            DateTime         @updatedAt
   users                User[]
   priceItems           PriceItem[]
+  customPrices         CustomPriceItem[]
+  roomDesigns          RoomDesign[]
   projects             Project[]
   calculations         Calculation[]
   shaftDesigns         ShaftDesign[]
@@ -140,6 +142,7 @@ model User {
   reviews            CalculationReview[]
   drawingSets        DrawingSet[]
   liftDesigns        LiftDesign[]
+  roomDesigns        RoomDesign[]
   authTokens         AuthToken[]
 
   @@index([companyId])
@@ -201,6 +204,7 @@ model Project {
   shaftDesigns ShaftDesign[]
   drawingSets  DrawingSet[]
   liftDesigns  LiftDesign[]
+  roomDesigns  RoomDesign[]
 
   @@index([companyId, archivedAt])
   @@index([companyId, kind])
@@ -237,6 +241,7 @@ model Calculation {
   reviews       CalculationReview[]
   drawingSets   DrawingSet[]
   liftDesign    LiftDesign?
+  roomDesigns   RoomDesign[]
 
   @@index([projectId, createdAt])
   @@index([companyId])
@@ -314,9 +319,45 @@ model LiftDesign {
   @@index([userId])
 }
 
+/// The machine room of a machine replacement as surveyed (immutable, like a calculation): the room, the shaft under it
+/// and the existing rope drops (src/lib/room/survey.ts), the calculation whose machine it places, the version of the
+/// derivation and the SHA-256 of the canonical record (src/lib/room). The replacement's drawing set and its relazione
+/// tecnica are drawn from it and from its calculation.
+model RoomDesign {
+  id            String       @id @default(cuid())
+  companyId     String
+  company       Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  calculationId String
+  calculation   Calculation  @relation(fields: [calculationId], references: [id], onDelete: NoAction)
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  label         String?
+  /// the survey as entered (src/lib/room/survey.ts)
+  inputs        Json
+  /// what the derivation gives: the machine placed, the drops, the checks, the load (src/lib/room/snapshot.ts)
+  results       Json
+  engineVersion String
+  sha256        String
+  verdict       Verdict
+  failCount     Int
+  warnCount     Int
+  /// e.g. "Locale 3000 × 3000 · SICOR SH140 su telaio con rinvio · calate 780 mm"
+  summary       String
+  createdAt     DateTime     @default(now())
+  drawingSets   DrawingSet[]
+
+  @@index([projectId, createdAt])
+  @@index([companyId])
+  @@index([calculationId])
+  @@index([userId])
+}
+
 /// An issued drawing set (tavole di progetto), immutable like a calculation: the number YY-NNN of the company and
 /// year, the revision (0 = first issue; a revision is a new row with the same number), what it was made of (the
-/// calculation, the shaft design, the data of the installation, the project and the company as they were, the logo)
+/// calculation and the shaft design of a whole project, or the machine room surveyed for a replacement — one of the
+/// two, a check in the database —, the data of the installation, the project and the company as they were, the logo)
 /// and the SHA-256 of the canonical drawing, so that the PDF is drawn again the same or refused (409).
 model DrawingSet {
   id             String       @id @default(cuid())
@@ -326,8 +367,10 @@ model DrawingSet {
   project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   calculationId  String
   calculation    Calculation  @relation(fields: [calculationId], references: [id], onDelete: NoAction)
-  shaftDesignId  String
-  shaftDesign    ShaftDesign  @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
+  shaftDesignId  String?
+  shaftDesign    ShaftDesign? @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
+  roomDesignId   String?
+  roomDesign     RoomDesign?  @relation(fields: [roomDesignId], references: [id], onDelete: NoAction)
   userId         String?
   user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
   logoId         String?
@@ -355,6 +398,7 @@ model DrawingSet {
   @@index([projectId, createdAt])
   @@index([calculationId])
   @@index([shaftDesignId])
+  @@index([roomDesignId])
   @@index([userId])
   @@index([logoId])
   @@index([clientLogoId])
@@ -422,4 +466,37 @@ model PriceItem {
 
   @@unique([companyId, key])
   @@index([companyId])
+}
+
+/// How a free line of the price list counts in a project: once (a corpo), once per stop, per metre of travel.
+enum PriceBasis {
+  LOT
+  STOP
+  TRAVEL
+}
+
+/// Which projects a free line goes into: every one, the whole projects, the machine replacements.
+enum PriceScope {
+  ALL
+  FULL
+  REPLACEMENT
+}
+
+/// A line of the company's price list written by the company (voce a stesura libera): its words, its price in euro
+/// cents without VAT, how its quantity counts and which projects take it; every project's cost adds it by itself.
+model CustomPriceItem {
+  id          String     @id @default(cuid())
+  companyId   String
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  text        String
+  cents       Int
+  basis       PriceBasis @default(LOT)
+  scope       PriceScope @default(ALL)
+  /// the order of the lines in the list
+  position    Int
+  updatedById String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([companyId, position])
 }

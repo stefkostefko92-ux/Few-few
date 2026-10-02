@@ -46,7 +46,9 @@
     "mailUnavailable": "Sending e-mail is not active yet: try again later or write to info@carbonstealth.eu.",
     "consentRequired": "To continue, tick all the confirmations.",
     "noSeats": "No free slot: buy a pack of slots or deactivate a colleague.",
-    "invalidPrices": "Some prices are not valid."
+    "invalidPrices": "Some prices are not valid.",
+    "notReplacement": "The machine room survey belongs to a machine replacement: a whole project draws its room from the shaft design.",
+    "roomIssues": "The survey has a problem to correct."
   },
   "auth": {
     "title": "Sign in",
@@ -417,7 +419,8 @@
       "SEATS_ENFORCED": "Colleagues beyond the slots deactivated",
       "PRICES_UPDATED": "Price list updated",
       "TERMS_ACCEPTED": "Terms accepted",
-      "DATA_EXPORTED": "Company data exported"
+      "DATA_EXPORTED": "Company data exported",
+      "ROOM_DESIGN_SAVED": "Machine room survey saved"
     },
     "entities": {
       "User": "User",
@@ -746,6 +749,7 @@
     "c_m_rinvio": "Maker’s bedplate with diverting pulley: counterweight drop within L max",
     "c_m_fit": "The machine fits the room: least distance to the walls and the ceiling",
     "c_m_stand": "The diverting pulley on its stand: clearance to the machine’s support above",
+    "c_m_calata": "The new machine's rope drops on the existing ones: offset",
     "sp_title": "Machine support",
     "sp_kind": "Support",
     "sp_shims": "levelling shims",
@@ -865,7 +869,9 @@
     "exportTitle": "Company data",
     "exportText": "All the data the company entered — installations, calculations, designs, drawing sets, price list, colleagues and activity log — in one structured, machine-readable JSON file. It also serves to switch to another provider.",
     "exportButton": "Download the data (JSON)",
-    "logoReadOnly": "The logo can be changed when the company is not read-only."
+    "logoReadOnly": "The logo can be changed when the company is not read-only.",
+    "reviseRoom": "Machine room survey to draw the revision from",
+    "roomTitle": "Replacement project"
   },
   "lift": {
     "workTitle": "Design and simulation",
@@ -1430,11 +1436,11 @@
     "title": "Price list",
     "lead": "The company’s prices of every article the software puts in projects, VAT excluded. Panev’s articles start from Panev’s 2026 list; you enter the others. Only the owner and the sales staff see them.",
     "leadView": "The company’s prices, VAT excluded: the owner changes them.",
-    "scope": "A project’s cost counts the articles the software designs; it leaves out the controller, wiring, travelling cable, governor rope, building works and labour.",
+    "scope": "A project’s cost counts the articles the software designs and those it counts from the design (controller, electrical system, signalling, labour), with the quantities computed automatically, plus the free lines. It leaves out the governor rope and the building works.",
     "filter": "Search an article",
     "save": "Save prices",
     "saved": "Prices saved ({n, plural, =0 {no change} one {# change} other {# changes}}).",
-    "invalid": "Invalid prices in {n, plural, one {# row} other {# rows}}: write digits with at most two decimals, for example 1,250.50.",
+    "invalid": "{n, plural, one {# invalid row} other {# invalid rows}}: write prices in digits with at most two decimals, for example 1,250.50; every free line needs a description and a price.",
     "priced": "{n} of {of} priced",
     "none": "No article matches the search.",
     "article": "Article",
@@ -1448,12 +1454,16 @@
     "perUnit": {
       "pz": "€/pc",
       "m": "€/m",
-      "kg": "€/kg"
+      "kg": "€/kg",
+      "stop": "€/stop",
+      "lot": "€ lump sum"
     },
     "unit": {
       "pz": "pc",
       "m": "m",
-      "kg": "kg"
+      "kg": "kg",
+      "stop": "{n, plural, one {# stop} other {# stops}}",
+      "lot": "lump sum"
     },
     "groups": {
       "machines": "Machines",
@@ -1465,7 +1475,9 @@
       "panev": "Panev brackets and supports",
       "doors": "Doors",
       "safety": "Governors, tension pulleys and buffers",
-      "car": "Car, sling and counterweight"
+      "car": "Car, sling and counterweight",
+      "electrical": "Controller, electrical system and signalling",
+      "labour": "Labour and works"
     },
     "items": {
       "machine": "Machine {name}",
@@ -1505,7 +1517,28 @@
       "buffer_oil": "Hydraulic buffer",
       "car": "Car",
       "sling": "Car sling",
-      "cw": "Complete counterweight"
+      "cw": "Complete counterweight",
+      "controller": "Controller",
+      "electrical_panel": "Complete electrical sub-panel",
+      "cable_travelling": "Travelling cable",
+      "wiring": "Shaft wiring",
+      "trunking": "Cable trunking",
+      "push_landing": "Landing push-button panel",
+      "push_car": "Car operating panel",
+      "push_inspection": "Inspection control station (car roof)",
+      "stop_pit": "Pit stop switch",
+      "stop_room": "Machine room stop switch",
+      "light_emergency": "Emergency light",
+      "light_shaft": "Shaft lighting",
+      "alarm_siren": "Alarm siren",
+      "alarm_remote": "Complete remote alarm system",
+      "buffer_support_spring": "Spring buffer support",
+      "buffer_support_pu": "Polyurethane buffer support",
+      "shoes_car": "Car guide shoe",
+      "labour_installer": "Installer, piecework (installation)",
+      "labour_replacement": "Installer, piecework (machine replacement)",
+      "labour_rails": "Rail cleaning",
+      "custom": "{name}"
     },
     "costTitle": "Cost of the articles (company price list)",
     "total": "Total, VAT excluded",
@@ -1513,7 +1546,87 @@
     "notListed": "not in the list",
     "missing": "{n, plural, one {# article} other {# articles}} without a price: the total leaves them out.",
     "toList": "Complete the price list",
-    "costNoteDesign": "Quantities from the design: ropes on the pulleys from hitch to hitch, rails from the pit floor to the slab with a joint every 5 m, a bracket every 2 m plus the first and the last. It leaves out the controller, wiring, travelling cable, governor rope, building works and labour.",
-    "costNoteCalc": "Machine replacement: the catalogue machine the calculation verified and the maker’s bedplate with the diverting pulley, when there is one."
+    "costNoteDesign": "Quantities from the design: ropes on the pulleys from hitch to hitch; rails from the pit floor to the slab with a joint every 5 m; a bracket every 2 m plus the first and the last; travelling cable half the travel + 3 m; wiring and trunking from the pit floor to the machine room floor (the trunking also from the controller to the machine, square to the walls); shaft lighting over the shaft’s height; a push-button panel at every landing door; two guide shoes on each car rail; a support under each spring or polyurethane buffer; the installer by the stop; cleaning of every metre of rail. The lengths are estimates: replace them with the site’s measures. It leaves out the governor rope and the building works.",
+    "costNoteCalc": "Machine replacement: the catalogue machine the calculation verified; the maker’s bedplate with the diverting pulley, when there is one (with the machine room surveyed, the one chosen in the survey and the pulley’s stand); the ropes and the controller when the acceptance test names them replaced (every rope, the calculation’s length); the installer as a lump sum; the free lines for replacements.",
+    "bases": {
+      "LOT": "Lump sum (once per project)",
+      "STOP": "By the stop",
+      "TRAVEL": "By the metre of travel"
+    },
+    "scopes": {
+      "ALL": "All projects",
+      "FULL": "Whole projects",
+      "REPLACEMENT": "Machine replacements"
+    },
+    "freeTitle": "Free lines",
+    "freeLead": "Your own lines, with a description and a price: the software adds them by itself to the cost of the projects you choose, with the quantity counted — once, by the stop or by the metre of travel. An empty row is deleted when you save.",
+    "freeCount": "{n, plural, =0 {no line} one {# line} other {# lines}}",
+    "freeText": "Description",
+    "freePlaceholder": "For example: transport and unloading on site",
+    "freeBasis": "Quantity",
+    "freeScope": "Projects",
+    "freeActions": "Actions",
+    "freeRow": "Row {n}",
+    "freeRemove": "Remove",
+    "freeRemoveRow": "Remove the line {name}",
+    "freeAdd": "Add a line",
+    "freeMax": "At most {n} lines.",
+    "freeNone": "No free lines.",
+    "skipped": "Free lines by the stop not counted (a machine replacement does not know the stops): {list}.",
+    "freeLeadView": "The company’s own lines, with their price: the software adds them by itself to the cost of the projects shown, with the quantity counted — once, by the stop or by the metre of travel. The owner changes them."
+  },
+  "room": {
+    "newTitle": "Machine room survey",
+    "newLead": "The room over the shaft, the shaft under it and the existing rope drops, measured on site: the calculation’s new machine is placed in it and checked live. The saved survey gives the replacement’s technical report and drawing set.",
+    "viewTitle": "Replacement project",
+    "example": "The software’s example values (room 3000 × 3000 mm, shaft 1600 × 1750 mm): replace them with the room’s measures before saving.",
+    "calcChanged": "The running engine does not reproduce this calculation: redo the calculation before the survey.",
+    "roomTitle": "Machine room",
+    "shaftTitle": "Shaft under the room",
+    "wall": "Shaft wall thickness (mm)",
+    "dropsTitle": "Existing rope drops",
+    "dropsHint": "Centre of the car-side and counterweight-side ropes where they cross the slab, measured from the shaft’s inner corner on the side of entrance A: x along that wall, y towards the back of the shaft.",
+    "carX": "Car-side ropes: x (mm)",
+    "carY": "Car-side ropes: y (mm)",
+    "cwX": "Counterweight-side ropes: x (mm)",
+    "cwY": "Counterweight-side ropes: y (mm)",
+    "calata": "Rope drops: {calc} mm from the calculation, {measured} mm surveyed.",
+    "dr_x": "Rope drops from the shaft wall (x)",
+    "dr_y": "Rope drops from the shaft wall (y)",
+    "issue_bottom": "Machine below: the room over the shaft does not hold the machine and the software does not draw it (as in the whole project). The calculation report and the draft order remain available.",
+    "issue_drops": "Invalid rope drops: the car’s and the counterweight’s coincide or lie outside the shaft.",
+    "issue_rinvio": "The diverting pulley has no place with the calculation’s h = {h} mm: it ends under the room’s floor or against the machine above it. Redo the calculation with h of at least {hMin} mm, or choose another support.",
+    "issuesStop": "The survey cannot be saved while a problem reported above remains.",
+    "drawTitle": "Plan and section of the room",
+    "noDrawing": "The room cannot be drawn with these values.",
+    "checksTitle": "Checks of the room, the support and the rope drops",
+    "check": "Check",
+    "value": "Value",
+    "limit": "Limit",
+    "outcome": "Result",
+    "checksNote": "In the saved project, the checks of parts that stay as they are (existing room, door, control panel) show as “existing” and do not count in the replacement’s acceptance test.",
+    "existing": "Existing",
+    "existingNote": "“Existing” checks concern parts that stay as they are: they do not count in the replacement’s acceptance test.",
+    "saveTitle": "Save the survey",
+    "label": "Label (optional)",
+    "save": "Save the survey",
+    "saving": "Saving…",
+    "saveNote": "The server recomputes everything from the survey and the calculation and saves an unchangeable record with its SHA-256 fingerprint; a variant is a new survey.",
+    "newFrom": "New survey from this one",
+    "engineChanged": "The running engine ({current}) does not reproduce this survey (saved with {stored}) or its calculation: redo the survey to get the documents.",
+    "docsTitle": "Replacement documents",
+    "docsLead": "Technical report (Italian), draft drawing set (data, plan and section B-B of the room), plan and section as DXF and DWG, the machine’s calculation report.",
+    "docTecnica": "Technical report (PDF)",
+    "docDraft": "Draft drawing set (PDF)",
+    "setsLead": "Drawing sets issued from this survey get a number YY-NNN and their revisions.",
+    "calcTitle": "Replacement project (machine and machine room)",
+    "calcLead": "Survey the machine room and the existing rope drops: the software places the new machine, checks the room, the support and the drops, and prepares the technical report and the drawing set.",
+    "calcBelow": "Machine below: the software does not draw the machine’s room (as in the whole project). The calculation report and the draft order remain available.",
+    "start": "Survey the machine room",
+    "again": "New survey",
+    "setsFromRoom": "For a replacement, drawing sets are issued from the machine room survey.",
+    "projectTitle": "Replacement project",
+    "projectEmpty": "No machine room survey yet. Open it from a saved calculation: “Survey the machine room”.",
+    "col_room": "Room and machine"
   }
 }

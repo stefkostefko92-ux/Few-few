@@ -1,6 +1,7 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
 //   health → public page (no console or CSP errors) → sign-in → the two modules → a machine replacement → its
-//   calculation → saved snapshot with reproduced hash → calculation report (PDF) → the replacement becomes a whole
+//   calculation → saved snapshot with reproduced hash → calculation report (PDF) → its machine room surveyed, the
+//   relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a whole
 //   project → shaft design by hand (a distance changed on its plan, the landing door
 //   set apart from the car door), its DXF, a calculation from it with the plan in its report → data of the installation,
 //   client and company logos, drawing set issued from
@@ -18,6 +19,8 @@ import { startMailSink } from './mail-sink.mjs';
 import { accountFlows } from './smoke-accounts.mjs';
 import { secondCompany } from './smoke-isolation.mjs';
 import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
+import { priceList } from './smoke-prices.mjs';
+import { replacementRoom } from './smoke-replacement.mjs';
 
 const { chromium } = loadPlaywright();
 
@@ -85,6 +88,7 @@ try {
   step('draft order of the advised machine (Word and PDF)');
   assert.match(await page.textContent('main'), /l’argano verificato in questo calcolo/, 'the order is for the machine the calculation verified');
   await orderFiles(page, '/api/calculations/');
+  const { roomUrl, roomId } = await replacementRoom({ BASE, page, hydrated, calcUrl, stamp });
 
   step('the replacement becomes a whole project');
   await page.goto(projectUrl);
@@ -243,19 +247,7 @@ try {
   await page.waitForSelector('main form:has(input[name="archive"][value="1"])');
   errors.length = 0; // the two 404 above were provoked on purpose
 
-  step('price list and subscription of the platform company');
-  await page.goto(`${BASE}/it/app/prices`);
-  await hydrated(page, 'main form:has(input[name^="p:"]) button[type="submit"]');
-  const carPrice = page.locator('main input[name="p:car"]');
-  await carPrice.fill('12.500,00');
-  await page.click('main form:has(input[name^="p:"]) button[type="submit"]');
-  await page.waitForSelector('main .alert-ok');
-  assert.equal(await page.locator('main input[name="p:car"]').inputValue(), '12.500,00');
-  assert.equal(await page.locator('main input[name="p:panev:B 65 320"]').inputValue(), '11,77', 'Panev starts from its list');
-  await page.goto(liftUrl);
-  await page.waitForSelector('#project-cost-h');
-  await page.goto(`${BASE}/it/app/billing`);
-  await page.waitForSelector('main .status-pill');
+  await priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl });
 
   step('new user with a temporary password');
   await page.goto(`${BASE}/it/app/team`);
@@ -287,7 +279,7 @@ try {
   // the isolation check below provokes a 404 on purpose: the console must be clean up to here
   assert.deepEqual(errors, [], 'browser errors');
   await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
-    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref } });
+    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId } });
 
   if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser) });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');

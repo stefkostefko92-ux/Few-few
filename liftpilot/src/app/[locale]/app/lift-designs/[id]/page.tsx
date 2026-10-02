@@ -11,9 +11,9 @@ import { designMachine, designOrder } from '@/lib/order/machine';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { getLiftDesign } from '@/server/queries';
-import { visiblePrices } from '@/server/prices';
+import { projectCost, visiblePrices } from '@/server/prices';
+import { designBasis } from '@/lib/prices/plant-bom';
 import { designBom } from '@/lib/prices/bom';
-import { costOf } from '@/lib/prices/cost';
 import ProjectCost from '@/components/prices/ProjectCost';
 import LiftView from '@/components/lift/LiftView';
 import AdviceView from '@/components/lift/AdviceView';
@@ -48,7 +48,7 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
   const own = dv ? designMachine(dv) : null, fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const order = same && r && advice && can(user, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
   // the cost of its articles with the company's prices: only for whoever sees prices
-  const prices = await visiblePrices(user), cost = prices && dv ? costOf(designBom(dv), new Map(Object.entries(prices))) : null;
+  const prices = await visiblePrices(user), costed = dv ? await projectCost(user, designBom(dv), 'full', designBasis(dv)) : null;
   return (
     <main className="page page-wide">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.project.id}`, label: d.project.name }, { label: t('designTitle') }]} />
@@ -63,7 +63,7 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
       </div>
       {!same ? <p className="alert alert-warn" role="status">{t('engineChanged')}</p> : null}
       {r ? <LiftView inputs={r.inputs} prices={prices} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
-      {cost ? <ProjectCost cost={cost} locale={locale} scope="design" editable={can(user, 'prices:edit')} /> : null}
+      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope="design" editable={can(user, 'prices:edit')} /> : null}
       {advice ? (
         <AdviceView advice={advice} alt={alt && dv ? { advice: alt, sheave: dv.machine.D } : null} fmt={fmt} where="design"
           inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model && own.I.layout === c.I.layout} />

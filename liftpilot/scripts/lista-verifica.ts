@@ -47,6 +47,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   p_apron: 'grembiule sugli ammortizzatori compressi', b_runby: 'extracorsa di cabina e contrappeso', b_type: 'tipo di ammortizzatori per la velocità', b_car: 'corsa degli ammortizzatori di cabina',
   b_cw: 'corsa dell\'ammortizzatore del contrappeso', m_height: 'altezza del locale macchina', m_panel: 'superficie libera davanti al quadro',
   m_door: 'porta del locale macchina', m_beam: 'tensione nelle putrelle sotto l\'argano', m_beamf: 'freccia delle putrelle sotto l\'argano', m_rinvio: 'calata del contrappeso nel telaio con rinvio del costruttore', m_fit: 'argano dentro il locale (muri e soffitto)', m_stand: 'puleggia di rinvio sul suo supporto sotto l\'argano',
+  m_calata: 'sostituzione: calate della nuova macchina sulle calate esistenti',
 };
 const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
 const IMPIANTO = 'Impianto: valori calcolati dai dati inseriti una volta', SIMULAZIONE = 'Simulazione nel tempo (3D e grafici)';

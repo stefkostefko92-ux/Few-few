@@ -16,10 +16,11 @@ import { liftAdvice, liftAlternative, valuesAdvice } from '@/lib/lift/advice';
 import { liftRecord } from '@/lib/lift-record';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
-import { getCalculation, listDrawingSets } from '@/server/queries';
-import { visiblePrices } from '@/server/prices';
+import { getCalculation, listDrawingSets, listRoomDesigns } from '@/server/queries';
+import { projectCost } from '@/server/prices';
+import { designBasis } from '@/lib/prices/plant-bom';
+import { analyse } from '@/lib/present/analysis';
 import { calcBom, designBom } from '@/lib/prices/bom';
-import { costOf } from '@/lib/prices/cost';
 import ProjectCost from '@/components/prices/ProjectCost';
 import IssueForm from '@/components/tavole/IssueForm';
 import VerdictPill from '@/components/VerdictPill';
@@ -50,8 +51,12 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const C = lift?.dv.collaudo ?? collaudoOf(values.data, chosen?.success ? chosen.data : undefined), norme = normeOf(C);
   // the report draws the plan of the shaft design too: it needs that design reproduced as well
   const designSame = !c.shaftDesign || reproduceDesign(c.shaftDesign) !== null;
-  const [t, tp, tr, ts, tt, ta, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
-    getTranslations('tavole'), getTranslations('advice'), listDrawingSets(user, c.projectId)]);
+  const [t, tp, tr, ts, tt, ta, tm, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
+    getTranslations('tavole'), getTranslations('advice'), getTranslations('room'), listDrawingSets(user, c.projectId)]);
+  // a replacement's project: the machine room surveyed on this calculation, its relazione tecnica and drawing sets
+  const replacement = c.project.kind === 'REPLACEMENT' && !c.liftDesign;
+  const rooms = replacement ? (await listRoomDesigns(user, c.projectId)).filter((x) => x.calculationId === c.id) : [];
+  const below = values.data.layout === 'bottom';
   // the advice among SICOR and Montanari and the machine of the draft order: those of the lift design the calculation
   // was made from (its machine room, the sheave direct pull needs), as the design's page and the report give them; else
   // for the saved values: the catalogue's machine these values are, or the advice's first
@@ -61,8 +66,8 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const download = same && can(user, 'report:download') && (!c.liftDesign || !!lift?.same);
   const order = !download ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(values.data, advice);
   // the cost with the company's prices (only for whoever sees prices): the design's articles, or the replacement's machine
-  const prices = await visiblePrices(user);
-  const cost = prices ? costOf(lift ? designBom(lift.dv) : calcBom(values.data), new Map(Object.entries(prices))) : null;
+  const costed = await projectCost(user, lift ? designBom(lift.dv) : calcBom(values.data, C), lift ? 'full' : 'replacement',
+    lift ? designBasis(lift.dv) : { stops: null, travel: analyse(values.data).ctx.I.H });
   const where = lift ? 'design' : 'calc';
   const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
@@ -96,7 +101,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
       </dl>
       <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
         inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />
-      {cost ? <ProjectCost cost={cost} locale={locale} scope={lift ? 'design' : 'calc'} editable={can(user, 'prices:edit')} /> : null}
+      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={lift ? 'design' : 'calc'} editable={can(user, 'prices:edit')} /> : null}
       {download ? (
         <section className="panel">
           <h2>{ta('order_title')}</h2>
@@ -126,9 +131,25 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
         ) : <p className="note">{t('noReviews')}</p>}
         {can(user, 'calc:review') ? <ReviewForm calculationId={c.id} /> : null}
       </section>
+      {replacement ? (
+        <section className="panel" aria-labelledby="calc-room">
+          <h2 id="calc-room">{tm('calcTitle')}</h2>
+          <p className="note">{below ? tm('calcBelow') : tm('calcLead')}</p>
+          {rooms.length ? (
+            <ul className="m-0 flex list-none flex-col gap-1 p-0">
+              {rooms.map((x) => (
+                <li key={x.id}><Link href={`/app/room-designs/${x.id}`}>{fd.dateTime(x.createdAt)}{x.label ? ` · ${x.label}` : ''}</Link> · <span className="note">{x.summary}</span></li>
+              ))}
+            </ul>
+          ) : null}
+          {!below && same && can(user, 'calc:create') && !c.project.archivedAt ? (
+            <div><Link className="btn btn-primary" href={`/app/calculations/${c.id}/locale`}>{rooms.length ? tm('again') : tm('start')}</Link></div>
+          ) : null}
+        </section>
+      ) : null}
       <section className="panel">
         <h2>{tt('title')}</h2>
-        <p className="note">{tt('lead')}</p>
+        <p className="note">{replacement ? tm('setsFromRoom') : tt('lead')}</p>
         {mine.length ? (
           <ul className="m-0 flex list-none flex-col gap-1 p-0">
             {mine.map((x) => (
@@ -136,7 +157,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
             ))}
           </ul>
         ) : null}
-        {!c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
+        {replacement ? null : !c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
           : same && designSame && can(user, 'calc:create') && !c.project.archivedAt ? <IssueForm calculationId={c.id} /> : null}
       </section>
       <CalculationView values={values.data} brand={user.companyName} collaudo={C} />

@@ -17,7 +17,8 @@ const css = path.join(out, 'app.css');
 execFileSync(path.join(root, 'node_modules/.bin/tailwindcss'), ['-i', 'src/app/globals.css', '-o', css, '--minify',
   '--content', './src/**/*.{ts,tsx},./artifact/**/*.tsx'], { cwd: root, stdio: 'inherit' });
 const styles = readFileSync(css, 'utf8').replaceAll('url(/fonts/', 'url(fonts/').replaceAll('url("/fonts/', 'url("fonts/');
-writeFileSync(css, `${styles}\n${readFileSync(path.join(root, 'artifact/artifact.css'), 'utf8')}`);
+// declared UTF-8: a static host that sends no charset would read the "−" of the open sections as Windows-1252
+writeFileSync(css, `@charset "UTF-8";\n${styles.replace(/^@charset "UTF-8";\s*/i, '')}\n${readFileSync(path.join(root, 'artifact/artifact.css'), 'utf8')}`);
 for (const f of readdirSync(path.join(root, 'public/fonts'))) if (f.endsWith('.woff2') || f === 'OFL.txt') copyFileSync(path.join(root, 'public/fonts', f), path.join(out, 'fonts', f));
 for (const w of [120, 240, 360]) copyFileSync(path.join(root, `public/img/liftpilot-logo-${w}.webp`), path.join(out, `img/liftpilot-logo-${w}.webp`));
 

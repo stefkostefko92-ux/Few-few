@@ -123,7 +123,9 @@ export function listDrawingSets(user: SessionUser, projectId: string) {
     where: { projectId, companyId: user.companyId },
     orderBy: [{ year: 'desc' }, { seq: 'desc' }, { revision: 'desc' }],
     take: 200,
-    select: { id: true, number: true, revision: true, pages: true, createdAt: true, calculationId: true, authorInitials: true, user: { select: { name: true } } },
+    select: {
+      id: true, number: true, revision: true, pages: true, createdAt: true, calculationId: true, roomDesignId: true, authorInitials: true, user: { select: { name: true } },
+    },
   });
 }
 
@@ -135,8 +137,9 @@ export function getDrawingSet(user: SessionUser, id: string) {
       user: { select: { name: true } },
       logo: { select: { mime: true, data: true } },
       clientLogo: { select: { mime: true, data: true } },
-      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, liftDesign: { select: { inputs: true } } } },
+      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, collaudo: true, liftDesign: { select: { inputs: true } } } },
       shaftDesign: { select: DESIGN_SELECT },
+      roomDesign: { select: ROOM_SELECT },
     },
   });
 }
@@ -192,3 +195,28 @@ export function latestLiftDesign(user: SessionUser, projectId: string) {
     select: { id: true, inputs: true, label: true, createdAt: true, calculationId: true, shaftDesignId: true, verdict: true },
   });
 }
+
+/** What a saved machine room of a replacement needs to be derived again and named. */
+export const ROOM_SELECT = { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, summary: true, user: { select: { name: true } } } as const;
+
+export function listRoomDesigns(user: SessionUser, projectId: string) {
+  return prisma.roomDesign.findMany({
+    where: { projectId, companyId: user.companyId },
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+    select: { id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, createdAt: true, calculationId: true, user: { select: { name: true } } },
+  });
+}
+
+/** A saved machine room with its calculation (values, hash, the standards chosen) and its project. */
+export function getRoomDesign(user: SessionUser, id: string) {
+  return prisma.roomDesign.findFirst({
+    where: { id, companyId: user.companyId },
+    include: {
+      project: true,
+      user: { select: { name: true } },
+      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, collaudo: true, summary: true, user: { select: { name: true } } } },
+    },
+  });
+}
+

@@ -1,10 +1,11 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { startTransition, useActionState, useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { PRICE_GROUPS, type PriceGroup, type PriceUnit } from '@/lib/prices/groups';
 import { savePricesAction } from '@/server/price-actions';
 import { initialFormState } from '@/server/form';
+import CustomRows, { type CustomRow } from './CustomRows';
 
 /** An article of the list as the page sends it: what it is, its unit, where its price starts from, whether the company
  *  set its own. */
@@ -18,9 +19,9 @@ export interface PriceRow {
   own: boolean;
 }
 
-// The company's price list by group, with a search; the owner edits every price in place (the search only hides rows:
-// a hidden row is not sent and keeps its price), the Commerciale reads it.
-export default function PriceList({ rows, values, editable }: { rows: PriceRow[]; values: Record<string, string>; editable: boolean }) {
+// The company's price list by group, with a search, and its free lines; the owner edits every price in place (the search
+// only hides articles: a hidden row is not sent and keeps its price), the Commerciale reads it.
+export default function PriceList({ rows, values, custom, editable }: { rows: PriceRow[]; values: Record<string, string>; custom: CustomRow[]; editable: boolean }) {
   const t = useTranslations('prices'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(savePricesAction, initialFormState);
   const [v, setV] = useState(values), [q, setQ] = useState('');
@@ -29,8 +30,16 @@ export default function PriceList({ rows, values, editable }: { rows: PriceRow[]
   const find = q.trim().toLowerCase();
   const shown = find ? rows.filter((r) => label(r).toLowerCase().includes(find)) : rows;
   const save = editable ? <button type="submit" className="btn btn-primary" disabled={pending}>{t('save')}</button> : null;
+  // sent by hand: after its own form action React resets the form, which puts every select back to the option it was
+  // first drawn with (a free line's basis and projects) while the state keeps the chosen one; without JavaScript the
+  // action still posts the form
+  const submit = (e: FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    startTransition(() => action(fd));
+  };
   return (
-    <form action={action} className="flex flex-col gap-4" noValidate>
+    <form action={action} onSubmit={submit} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="locale" value={locale} />
       <div className="flex flex-wrap items-center gap-3">
         <input type="search" className="input w-auto grow" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('filter')} aria-label={t('filter')} />
@@ -70,6 +79,7 @@ export default function PriceList({ rows, values, editable }: { rows: PriceRow[]
         );
       })}
       {shown.length ? null : <p className="note">{t('none')}</p>}
+      <CustomRows rows={custom} editable={editable} bad={bad} />
       {save ? <div>{save}</div> : null}
     </form>
   );

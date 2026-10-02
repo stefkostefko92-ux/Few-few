@@ -49,18 +49,27 @@ export interface StoredSet {
   companyName: string;
 }
 
+/** What every stored set keeps beside what it was made of: the data of the installation, the project, the company and
+ *  its logo, the client's logo, the identity of the issue; null when a stored part does not read back. */
+export function storedParts(
+  s: StoredSet, logo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null, clientLogo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null = null,
+): Omit<TavoleInput, 'values' | 'layout' | 'marks'> | null {
+  const plant = plantReadSchema.safeParse(s.plant ?? {}), project = projectDataSchema.safeParse(s.projectData), revs = revisionsSchema.safeParse(s.revisions);
+  if (!plant.success || !project.success || !revs.success) return null;
+  const revisions: TavoleRevision[] = revs.data.map((r) => ({ mark: r.mark, text: r.text, date: new Date(r.date) }));
+  return {
+    plant: plant.data, project: project.data,
+    company: { name: s.companyName, logo: logo ? { mime: logo.mime, data: Buffer.from(logo.data).toString('base64') } : null },
+    clientLogo: clientLogo ? { mime: clientLogo.mime, data: Buffer.from(clientLogo.data).toString('base64') } : null,
+    set: { number: s.number, issuedAt: s.createdAt, author: s.authorInitials, revisions },
+  };
+}
+
 /** The input of the drawing set of a stored set; null when a stored part does not read back. */
 export function storedInput(
   values: FormValues, layout: Layout, s: StoredSet, logo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null, marks: ValueMarks = NO_MARKS,
   clientLogo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null = null,
 ): TavoleInput | null {
-  const plant = plantReadSchema.safeParse(s.plant ?? {}), project = projectDataSchema.safeParse(s.projectData), revs = revisionsSchema.safeParse(s.revisions);
-  if (!plant.success || !project.success || !revs.success) return null;
-  const revisions: TavoleRevision[] = revs.data.map((r) => ({ mark: r.mark, text: r.text, date: new Date(r.date) }));
-  return {
-    values, layout, plant: plant.data, marks, project: project.data,
-    company: { name: s.companyName, logo: logo ? { mime: logo.mime, data: Buffer.from(logo.data).toString('base64') } : null },
-    clientLogo: clientLogo ? { mime: clientLogo.mime, data: Buffer.from(clientLogo.data).toString('base64') } : null,
-    set: { number: s.number, issuedAt: s.createdAt, author: s.authorInitials, revisions },
-  };
+  const p = storedParts(s, logo, clientLogo);
+  return p ? { values, layout, marks, ...p } : null;
 }

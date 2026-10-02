@@ -15,7 +15,9 @@ import { idSchema } from '@/lib/schemas';
 import { log } from '@/lib/log';
 import { plantSchema } from '@/lib/plant';
 import { LOGO_MAX_BYTES, readLogo } from '@/lib/logo';
-import { composeFromCalculation, type ComposeError } from './drawing-compose';
+import { composeFromCalculation, type ComposeError, type Composed } from './drawing-compose';
+import { composeFromRoom, type RoomComposed } from './room-compose';
+import type { TavoleRevision } from '@/lib/tavole/input';
 import { initialsSchema, revisionNoteSchema, revisionsSchema, setNumber } from '@/lib/tavole/compose';
 
 export type DrawingResult = { ok: true; id?: string } | { ok: false; error: string };
@@ -77,12 +79,18 @@ export async function removeLogoAction(): Promise<DrawingResult> {
   return { ok: true };
 }
 
-export async function issueDrawingSetAction(input: { calculationId: unknown; authorInitials: unknown }): Promise<DrawingResult> {
-  const user = await actor('calc:create');
-  if (!user) return { ok: false, error: 'forbidden' };
-  if (!rateLimit(`tavole:${user.id}`, 30, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
-  const calcId = idSchema.safeParse(input.calculationId), initials = initialsSchema.safeParse(input.authorInitials);
-  if (!calcId.success || !initials.success) return { ok: false, error: 'invalidFields' };
+/** A set drawn for an issue or a revision: of a whole project's calculation and shaft design, or of a replacement's room. */
+type Drawn = (Composed & { calculationId: string; roomDesignId?: undefined }) | RoomComposed;
+type Compose = (tx: Prisma.TransactionClient, set: { number: string; issuedAt: Date; author: string; revisions: TavoleRevision[] }) => Promise<Drawn | ComposeError>;
+
+/** The row of a set: what it was made of (one design of the two, a check in the database) and its snapshots. */
+const madeOf = (c: Drawn) => ({
+  projectId: c.projectId, calculationId: c.calculationId, ...(c.roomDesignId !== undefined ? { roomDesignId: c.roomDesignId } : { shaftDesignId: c.shaftDesignId }),
+  logoId: c.logoId, clientLogoId: c.clientLogoId, plant: c.plant, projectData: c.projectData, companyName: c.companyName, sha256: c.sha256, pages: c.pages,
+});
+
+/** A first issue: a new number YY-NNN of the company and year, given in the transaction that stores the set. */
+async function issueNew(user: SessionUser, author: string, compose: Compose): Promise<DrawingResult> {
   const issuedAt = new Date(), year = yearIt(issuedAt);
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -91,14 +99,10 @@ export async function issueDrawingSetAction(input: { calculationId: unknown; aut
           where: { companyId_year: { companyId: user.companyId, year } }, create: { companyId: user.companyId, year, last: 1 }, update: { last: { increment: 1 } },
         });
         const seq = counter.last, number = setNumber(year, seq);
-        const c = await composeFromCalculation(tx, user, calcId.data, { number, issuedAt, author: initials.data, revisions: [] });
+        const c = await compose(tx, { number, issuedAt, author, revisions: [] });
         if (!c.ok) throw new ComposeRefused(c.error);
         const set = await tx.drawingSet.create({
-          data: {
-            companyId: user.companyId, projectId: c.projectId, calculationId: calcId.data, shaftDesignId: c.shaftDesignId, userId: user.id, logoId: c.logoId, clientLogoId: c.clientLogoId,
-            number, year, seq, revision: 0, authorInitials: initials.data, revisions: [], plant: c.plant, projectData: c.projectData,
-            companyName: c.companyName, sha256: c.sha256, pages: c.pages, createdAt: issuedAt,
-          },
+          data: { companyId: user.companyId, userId: user.id, number, year, seq, revision: 0, authorInitials: author, revisions: [], createdAt: issuedAt, ...madeOf(c) },
           select: { id: true },
         });
         return { id: set.id, number };
@@ -116,15 +120,48 @@ export async function issueDrawingSetAction(input: { calculationId: unknown; aut
   return { ok: false, error: 'conflict' };
 }
 
-export async function reviseDrawingSetAction(input: { drawingSetId: unknown; calculationId: unknown; note: unknown; authorInitials: unknown }): Promise<DrawingResult> {
+export async function issueDrawingSetAction(input: { calculationId: unknown; authorInitials: unknown }): Promise<DrawingResult> {
   const user = await actor('calc:create');
   if (!user) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`tavole:${user.id}`, 30, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
-  const setId = idSchema.safeParse(input.drawingSetId), calcId = idSchema.safeParse(input.calculationId);
-  const note = revisionNoteSchema.safeParse(input.note), initials = initialsSchema.safeParse(input.authorInitials);
-  if (!setId.success || !calcId.success || !note.success || !initials.success) return { ok: false, error: 'invalidFields' };
-  const base = await prisma.drawingSet.findFirst({ where: { id: setId.data, companyId: user.companyId }, select: { year: true, seq: true, number: true, projectId: true } });
+  const calcId = idSchema.safeParse(input.calculationId), initials = initialsSchema.safeParse(input.authorInitials);
+  if (!calcId.success || !initials.success) return { ok: false, error: 'invalidFields' };
+  return issueNew(user, initials.data, async (tx, set) => {
+    const c = await composeFromCalculation(tx, user, calcId.data, set);
+    return c.ok ? { ...c, calculationId: calcId.data } : c;
+  });
+}
+
+/** The drawing set of a machine replacement, from its saved machine room. */
+export async function issueRoomSetAction(input: { roomDesignId: unknown; authorInitials: unknown }): Promise<DrawingResult> {
+  const user = await actor('calc:create');
+  if (!user) return { ok: false, error: 'forbidden' };
+  if (!rateLimit(`tavole:${user.id}`, 30, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
+  const roomId = idSchema.safeParse(input.roomDesignId), initials = initialsSchema.safeParse(input.authorInitials);
+  if (!roomId.success || !initials.success) return { ok: false, error: 'invalidFields' };
+  return issueNew(user, initials.data, (tx, set) => composeFromRoom(tx, user, roomId.data, set));
+}
+
+/** A revision of a set (same number, revision + 1, with a note), drawn again from the calculation given (a whole
+ *  project) or from the saved machine room given (a replacement). */
+export async function reviseDrawingSetAction(input: { drawingSetId: unknown; calculationId?: unknown; roomDesignId?: unknown; note: unknown; authorInitials: unknown }): Promise<DrawingResult> {
+  const user = await actor('calc:create');
+  if (!user) return { ok: false, error: 'forbidden' };
+  if (!rateLimit(`tavole:${user.id}`, 30, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
+  const setId = idSchema.safeParse(input.drawingSetId), note = revisionNoteSchema.safeParse(input.note), initials = initialsSchema.safeParse(input.authorInitials);
+  const calcId = input.calculationId == null ? null : idSchema.safeParse(input.calculationId), roomId = input.roomDesignId == null ? null : idSchema.safeParse(input.roomDesignId);
+  if (!setId.success || !note.success || !initials.success || (calcId === null) === (roomId === null) || calcId?.success === false || roomId?.success === false) {
+    return { ok: false, error: 'invalidFields' };
+  }
+  const base = await prisma.drawingSet.findFirst({ where: { id: setId.data, companyId: user.companyId }, select: { year: true, seq: true, number: true, projectId: true, roomDesignId: true } });
   if (!base) return { ok: false, error: 'notFound' };
+  // a set stays of its kind: a replacement's is revised from a room, a whole project's from a calculation
+  if ((base.roomDesignId !== null) !== (roomId !== null)) return { ok: false, error: 'invalidFields' };
+  const compose: Compose = roomId?.data ? ((id) => (tx, set) => composeFromRoom(tx, user, id, set))(roomId.data)
+    : ((id) => async (tx, set) => {
+      const c = await composeFromCalculation(tx, user, id, set);
+      return c.ok ? { ...c, calculationId: id } : c;
+    })(calcId?.data ?? '');
   const issuedAt = new Date();
   try {
     const out = await prisma.$transaction(async (tx) => {
@@ -135,17 +172,14 @@ export async function reviseDrawingSetAction(input: { drawingSetId: unknown; cal
       if (!last || !prev.success) return { ok: false as const, error: 'notFound' };
       const revision = last.revision + 1;
       const revisions = [...prev.data, { mark: `R${revision}`, text: note.data, date: issuedAt.toISOString() }];
-      const c = await composeFromCalculation(tx, user, calcId.data, {
-        number: base.number, issuedAt, author: initials.data, revisions: revisions.map((r) => ({ mark: r.mark, text: r.text, date: new Date(r.date) })),
-      });
+      const c = await compose(tx, { number: base.number, issuedAt, author: initials.data, revisions: revisions.map((r) => ({ mark: r.mark, text: r.text, date: new Date(r.date) })) });
       if (!c.ok) return c;
       // a revision stays on its installation
       if (c.projectId !== base.projectId) return { ok: false as const, error: 'notFound' };
       const set = await tx.drawingSet.create({
         data: {
-          companyId: user.companyId, projectId: c.projectId, calculationId: calcId.data, shaftDesignId: c.shaftDesignId, userId: user.id, logoId: c.logoId, clientLogoId: c.clientLogoId,
-          number: base.number, year: base.year, seq: base.seq, revision, authorInitials: initials.data, revisions, plant: c.plant, projectData: c.projectData,
-          companyName: c.companyName, sha256: c.sha256, pages: c.pages, createdAt: issuedAt,
+          companyId: user.companyId, userId: user.id, number: base.number, year: base.year, seq: base.seq, revision, authorInitials: initials.data, revisions,
+          createdAt: issuedAt, ...madeOf(c),
         },
         select: { id: true },
       });

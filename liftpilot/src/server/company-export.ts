@@ -20,7 +20,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
       subscriptionStatus: true, seatPack: true, periodEnd: true, cancelAtPeriodEnd: true, trialEndsAt: true },
   });
   if (!company) return null;
-  const [users, logos, projects, priceItems, auditLog] = await Promise.all([
+  const [users, logos, projects, priceItems, customPrices, auditLog] = await Promise.all([
     prisma.user.findMany({
       where: { companyId }, orderBy: { createdAt: 'asc' },
       select: { id: true, name: true, email: true, role: true, active: true, locale: true, createdAt: true, lastLoginAt: true, emailVerifiedAt: true,
@@ -35,12 +35,14 @@ export async function companyExport(companyId: string): Promise<Record<string, u
           reviews: { orderBy: { createdAt: 'asc' }, select: { id: true, userId: true, note: true, createdAt: true } } } },
         shaftDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, profileId: true, source: true, results: true } },
         liftDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, source: true, shaftDesignId: true, calculationId: true } },
+        roomDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, results: true, calculationId: true } },
         drawingSets: { orderBy: { createdAt: 'asc' }, select: { id: true, number: true, revision: true, authorInitials: true, revisions: true, plant: true,
-          projectData: true, companyName: true, sha256: true, pages: true, calculationId: true, shaftDesignId: true, logoId: true, clientLogoId: true,
+          projectData: true, companyName: true, sha256: true, pages: true, calculationId: true, shaftDesignId: true, roomDesignId: true, logoId: true, clientLogoId: true,
           userId: true, createdAt: true } },
       },
     }),
     prisma.priceItem.findMany({ where: { companyId }, orderBy: { key: 'asc' }, select: { key: true, cents: true, updatedById: true, updatedAt: true } }),
+    prisma.customPriceItem.findMany({ where: { companyId }, orderBy: { position: 'asc' }, select: { text: true, cents: true, basis: true, scope: true, position: true, updatedById: true, updatedAt: true } }),
     prisma.auditLog.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, select: { createdAt: true, userId: true, action: true, entity: true, entityId: true, meta: true } }),
   ]);
   return {
@@ -48,6 +50,6 @@ export async function companyExport(companyId: string): Promise<Record<string, u
     note: 'Data entered by the company in LiftPilot (Carbon Stealth VCC). Amounts in euro cents; lengths in millimetres unless stated; logos in base64.',
     company, users, logos: logos.map(image),
     projects: projects.map(({ clientLogos, ...p }) => ({ ...p, clientLogos: clientLogos.map(image) })),
-    priceItems, auditLog,
+    priceItems, customPrices, auditLog,
   };
 }
