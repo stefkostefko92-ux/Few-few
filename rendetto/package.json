@@ -76,5 +76,8 @@
     "three-mesh-bvh": "0.9.15",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.2"
   }
 }
