@@ -17,7 +17,10 @@ export function createViewer(text) {
     viewer?.setOpen(Number(ev.target.value) / 100);
     $('#open-out').textContent = `${ev.target.value}%`;
   });
+  // the explode animation running now (its number); a new click or a hand on the slider takes over from it
+  let playing = 0;
   $('#explode').addEventListener('input', (ev) => {
+    if (ev.isTrusted) playing += 1;
     viewer?.setExplode(Number(ev.target.value) / 100);
     $('#explode-out').textContent = `${ev.target.value}%`;
   });
@@ -28,6 +31,7 @@ export function createViewer(text) {
     const el = $('#explode');
     const target = Number(el.value) > 50 ? 0 : 100;
     const from = Number(el.value);
+    const run = ++playing;
     if (reduceMotion.matches || !viewer) {
       el.value = String(target);
       el.dispatchEvent(new Event('input'));
@@ -35,6 +39,7 @@ export function createViewer(text) {
     }
     const t0 = performance.now();
     const step = (now) => {
+      if (run !== playing) return;
       const t = Math.min(1, (now - t0) / 900);
       const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
       el.value = String(Math.round(from + (target - from) * e));
