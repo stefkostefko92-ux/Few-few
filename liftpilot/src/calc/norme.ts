@@ -184,7 +184,7 @@ export const VOCI: readonly Voce[] = [
   },
   {
     id: 'funi.numero', gruppo: 'funi', titolo: 'Numero minimo di funi', valore: 'almeno 2 funi indipendenti, ciascuna con il suo attacco',
-    riferimento: 'Direttiva 2014/33/UE, Allegato I; UNI EN 81-20:2020, 5.5', fonte: 'fonte secondaria', stato: 'da_verificare',
+    riferimento: 'DPR 162/1999, All. I 1.3 (Direttiva 2014/33/UE, All. I); UNI EN 81-20:2020, 5.5', fonte: 'DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02 (ricerca, cap. 16), All. I 1.3', stato: 'confermato',
     costanti: ['ropesMin'], verifiche: ['r_nd'],
   },
   {
@@ -312,8 +312,9 @@ export const VOCI: readonly Voce[] = [
   // ---------- replacement (Italy) ----------
   {
     id: 'sostituzione.modifica', gruppo: 'sostituzione', titolo: 'La sostituzione del macchinario è una modifica costruttiva',
-    valore: 'adeguamento della parte sostituita, comunicazione al Comune e al soggetto delle verifiche, verifica straordinaria prima del servizio',
-    riferimento: 'DPR 162/1999 e s.m.i., art. 2 (dopo il DPR 23/2017) e art. 14', fonte: 'testi consolidati non ufficiali; fonti secondarie concordi', stato: 'da_verificare',
+    valore: 'modifica costruttiva (art. 2 c.1 lett. cc), n. 5): adeguamento della parte sostituita e delle altre parti interessate, comunicazione al Comune e '
+      + 'al soggetto delle verifiche periodiche, verifica straordinaria prima del servizio',
+    riferimento: 'DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), art. 12 c.4–5, art. 14 c.3', fonte: 'DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02 (ricerca, cap. 16), §3.2', stato: 'confermato',
   },
   {
     id: 'sostituzione.adeguamenti', gruppo: 'sostituzione', titolo: 'Adeguamenti richiesti per la sostituzione del macchinario', valore: 'elenco del capitolo 6.6 della ricerca (tra cui freno a due gruppi)',

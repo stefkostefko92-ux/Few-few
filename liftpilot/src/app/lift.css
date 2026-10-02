@@ -220,3 +220,5 @@ html.sim-full-open { overflow: hidden; }
 .lift-verdict .badge.ok { color: var(--ok); background: var(--ok-bg); }
 .lift-verdict .badge.warn { color: var(--warn); background: var(--warn-bg); }
 .lift-verdict .badge.fail { color: var(--fail); background: var(--fail-bg); }
+.collaudo .norm-group { display: flex; flex-direction: column; gap: 2px; }
+.collaudo .norm-group-title { font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted); padding-top: 4px; }

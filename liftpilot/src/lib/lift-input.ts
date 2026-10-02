@@ -10,7 +10,7 @@ import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI } from '@/lib/lift/collaudo';
 /** The acceptance test: its base standard, the standards added (absent: none) and the parts replaced or changed. */
 export const collaudoSchema = z.object({
   norma: z.enum(NORME_COLLAUDO),
-  aggiuntive: z.array(z.enum(NORME_AGGIUNTIVE)).max(NORME_AGGIUNTIVE.length).optional(),
+  aggiuntive: z.array(z.enum(NORME_AGGIUNTIVE)).max(NORME_AGGIUNTIVE.length).refine((a) => new Set(a).size === a.length, 'each standard once').optional(),
   parti: z.array(z.enum(PARTI)).max(PARTI.length),
 }).strict();
 

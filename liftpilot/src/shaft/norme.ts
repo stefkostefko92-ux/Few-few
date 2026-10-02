@@ -108,7 +108,7 @@ export interface VoceVano {
 }
 
 const EW = 'Elevator World, «Rated Load and Maximum Available Car Area» (fonte secondaria)';
-const DM = 'sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi';
+const DM = 'DM 236/1989, 8.1.12, letto per intero su Normattiva il 2026-10-02 (ricerca, cap. 16, §4.1)';
 
 export const VOCI_VANO: readonly VoceVano[] = [
   {
@@ -149,20 +149,20 @@ export const VOCI_VANO: readonly VoceVano[] = [
   },
   {
     id: 'accessibilita.residenziale', gruppo: 'accessibilita', titolo: 'Edifici residenziali nuovi: cabina e porta minime',
-    valore: 'cabina larga 950 mm e profonda 1300 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (non verificata)',
-    riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'da_verificare',
+    valore: 'cabina larga 950 mm e profonda 1300 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (fuori dal vano: da verificare in sito)',
+    riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'confermato',
     costanti: ['dm236Residential'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side'],
   },
   {
     id: 'accessibilita.non.residenziale', gruppo: 'accessibilita', titolo: 'Edifici non residenziali nuovi: cabina e porta minime',
-    valore: 'cabina larga 1100 mm e profonda 1400 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (non verificata)',
-    riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'da_verificare',
+    valore: 'cabina larga 1100 mm e profonda 1400 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (fuori dal vano: da verificare in sito)',
+    riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'confermato',
     costanti: ['dm236Public'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side'],
   },
   {
     id: 'accessibilita.esistenti', gruppo: 'accessibilita', titolo: 'Adeguamento di edifici esistenti: cabina e porta minime',
-    valore: 'cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (non verificata)',
-    riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'da_verificare',
+    valore: 'cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (fuori dal vano: da verificare in sito)',
+    riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'confermato',
     costanti: ['dm236Existing'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side'],
   },
   {

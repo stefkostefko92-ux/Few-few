@@ -8,6 +8,8 @@ import type { CheckId, Gruppo, Stato } from '../src/calc/index';
 import { VOCI_VANO } from '../src/shaft/index';
 import type { GruppoVano, ShaftCheckId } from '../src/shaft/index';
 import { VOCI_IMPIANTO } from '../src/lib/lift/norme';
+import { ADEMPIMENTI, NORME_INFO, type PuntoInSito } from '../src/lib/lift/norme-collaudo';
+import { NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COLLAUDO, VERIFICHE_DM236, VERIFICHE_NTC } from '../src/lib/lift/collaudo';
 import { VOCI_SIM } from '../src/sim/norme';
 
 const STATO: Record<Stato, string> = {
@@ -63,8 +65,18 @@ const rows = [
   ...[...VOCI_IMPIANTO.map((v) => ({ v, gruppo: IMPIANTO })), ...VOCI_SIM.map((v) => ({ v, gruppo: SIMULAZIONE }))].map(({ v, gruppo }) => ({
     id: v.id, gruppo, voce: v.titolo, valore: v.valore, riferimento: v.riferimento, fonte: v.fonte, stato: STATO[v.stato], verifiche: '', nota: v.nota ?? '',
   })),
+  // the acceptance test: what DPR 162/1999 asks, then each standard's points checked on site (src/lib/lift/norme-collaudo.ts)
+  ...[...(['nuovo', 'modifica'] as const).map((a) => ({ key: `adempimenti.${a}`, gruppo: `Collaudo: adempimenti del DPR 162/1999 (${a === 'nuovo' ? 'impianto nuovo' : 'modifica'})`, punti: ADEMPIMENTI[a], verifiche: '' })),
+    ...[...NORME_COLLAUDO, ...NORME_AGGIUNTIVE.filter((n) => !NORME_COLLAUDO.some((b) => b === n))].map((n) => ({
+      key: n, gruppo: `Collaudo: ${NORMA_SIGLA[n]}`, punti: NORME_INFO[n].punti,
+      verifiche: (n === 'dm236' ? VERIFICHE_DM236 : n === 'ntc2018' ? VERIFICHE_NTC : []).map((c) => VERIFICA_VANO[c]).join('; '),
+    }))].flatMap(({ key, gruppo, punti, verifiche }) => punti.map((p: PuntoInSito, i) => ({
+    id: `collaudo.${key}.${i + 1}`, gruppo, voce: p.rif, valore: p.testo, riferimento: p.rif, fonte: 'ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)',
+    stato: STATO[p.stato], verifiche, nota: '',
+  }))),
 ].map((r, j) => ({ n: j + 1, ...r }));
 const ALL = [...VOCI, ...VOCI_VANO, ...VOCI_IMPIANTO, ...VOCI_SIM];
+const PUNTI = rows.filter((r) => r.id.startsWith('collaudo.'));
 const count = (s: Stato): number => ALL.filter((v) => v.stato === s).length;
 
 const md: string[] = [
@@ -84,10 +96,11 @@ const md: string[] = [
   ...PROFILO.documenti.map((d) => `- **${d.sigla}** — ${d.ambito}`),
   '',
   `Voci: ${ALL.length} (argano ${VOCI.length}, vano ${VOCI_VANO.length}, impianto ${VOCI_IMPIANTO.length}, simulazione ${VOCI_SIM.length}) — da verificare ${count('da_verificare')}, confermate ${count('confermato')}, scelte del software ${count('scelta')}, ` +
-    `stime ${count('stima')}, derivazioni ${count('derivazione')}, prassi ${count('prassi')}.`,
+    `stime ${count('stima')}, derivazioni ${count('derivazione')}, prassi ${count('prassi')}. Collaudo: ${PUNTI.length} punti da verificare in sito per normativa ` +
+    `(${PUNTI.filter((r) => r.stato === STATO.confermato).length} letti sul testo ufficiale), riportati nella relazione per le normative scelte.`,
   '',
 ];
-for (const title of [...ORDER.map((g) => GRUPPO[g]), ...ORDER_VANO.map((g) => GRUPPO_VANO[g]), IMPIANTO, SIMULAZIONE]) {
+for (const title of [...ORDER.map((g) => GRUPPO[g]), ...ORDER_VANO.map((g) => GRUPPO_VANO[g]), IMPIANTO, SIMULAZIONE, ...new Set(PUNTI.map((r) => r.gruppo))]) {
   const group = rows.filter((r) => r.gruppo === title);
   if (!group.length) continue;
   md.push(`## ${title}`, '', '| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |', '|---|---|---|---|---|---|---|');

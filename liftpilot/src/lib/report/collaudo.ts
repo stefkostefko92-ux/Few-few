@@ -4,7 +4,8 @@
 import appIt from '../../../messages/it.json';
 import type { CheckId } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
-import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, type Collaudo } from '../lift/collaudo';
+import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo } from '../lift/collaudo';
+import { ADEMPIMENTI, NORME_INFO, type PuntoInSito } from '../lift/norme-collaudo';
 import type { CalcKey } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 
@@ -92,6 +93,31 @@ export function esitiBlocks(C: Collaudo, checks: readonly { id: CheckId | ShaftC
   ];
   if (E.some((e) => e.norma === 'dm236' && !e.ids.length)) {
     out.push({ t: 'p', style: 'note', text: 'DM 236/1989: nessuna verifica calcolata, perché nei dati del vano non è scelto il caso (edificio esistente, residenziale o non residenziale nuovo).' });
+  }
+  if (E.some((e) => e.norma !== 'dm236' && !e.ids.length)) {
+    out.push({ t: 'p', style: 'note', text: '«Non calcolata»: la normativa non ha verifiche che il software calcola; i suoi punti si verificano in sito (sezione «Adempimenti e punti da verificare in sito»).' });
+  }
+  return out;
+}
+
+const punto = (p: PuntoInSito): string => `${p.rif}: ${p.testo}${p.stato === 'da_verificare' ? ' (da verificare sul testo vigente)' : ''}.`;
+
+/** The section of what the law asks of the intervention (DPR 162/1999: a new lift, or a modification) and, for each
+ *  standard of the test, its citation in the Official Journal and the points the engineer checks on site. */
+export function adempimentiBlocks(C: Collaudo, repl: boolean): ReportBlock[] {
+  const out: ReportBlock[] = [
+    { t: 'p', text: repl
+      ? "L'intervento modifica un impianto esistente: il DPR 162/1999 e s.m.i. chiede gli adempimenti che seguono. Per ogni normativa del collaudo, "
+        + 'sotto, la sua citazione e i punti che il tecnico verifica in sito, con il riferimento e il valore (parafrasati: il testo delle norme non è riportato).'
+      : "Impianto nuovo: il DPR 162/1999 e s.m.i. chiede gli adempimenti che seguono. Per ogni normativa del collaudo, sotto, la sua citazione e i punti "
+        + 'che il tecnico verifica in sito, con il riferimento e il valore (parafrasati: il testo delle norme non è riportato).' },
+    { t: 'h3', text: 'Adempimenti (DPR 162/1999)' },
+    { t: 'list', items: ADEMPIMENTI[repl ? 'modifica' : 'nuovo'].map(punto) },
+  ];
+  for (const n of normeOf(C)) {
+    const info = NORME_INFO[n];
+    out.push({ t: 'h3', text: NORMA_SIGLA[n] }, { t: 'p', style: 'note', text: `Citazione: ${info.citazione}.${info.avviso ? ` Attenzione: ${info.avviso}.` : ''}` });
+    if (info.punti.length) out.push({ t: 'list', items: info.punti.map(punto) });
   }
   return out;
 }

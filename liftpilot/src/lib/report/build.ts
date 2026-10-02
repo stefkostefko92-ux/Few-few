@@ -20,7 +20,7 @@ import { textsFor, verdictStatus } from '../present/texts';
 import { makePres, type CalcKey } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { shaftBlocks, type ReportDesign } from './shaft';
-import { EXISTING_NOTE, adaptSection, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
+import { EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
 import { machineSpec } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { shapeRows } from './machine-shape';
@@ -146,6 +146,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   // the shaft's and the beams'
   section('Esito del collaudo per normativa');
   B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? [...r.design.layout.checks, ...beams] : [])], (x) => st(x)));
+  section('Adempimenti e punti da verificare in sito');
+  B.push(...adempimentiBlocks(C, repl));
 
   section("Aderenza: tutti i casi di calcolo");
   const caseHead = ['Caso', 'α [°]', 'μ', 'f', 'e^(f·α)', 'T1 [N]', 'T2 [N]', 'T1/T2', 'Utilizzo'];

@@ -55,7 +55,11 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     valore: "impianto nuovo: UNI EN 81-20:2020 e UNI EN 81-50:2020, ogni verifica entra nell'esito; modifica di un impianto esistente: UNI 10411-1:2024 "
       + "(ascensore elettrico non conforme alla Direttiva Ascensori) o UNI 10411-11:2024 (conforme alla 95/16/CE o alla 2014/33/UE), a scelta dell'utente: "
       + "entrano nell'esito le verifiche che riguardano le parti sostituite o modificate (comprese le variazioni di velocità, portata e corsa), le altre "
-      + 'sono riportate come «esistente» con il valore calcolato. Quali parti riguarda ciascuna verifica è una lettura del software',
+      + 'sono riportate come «esistente» con il valore calcolato. Quali parti riguarda ciascuna verifica è una lettura del software. Alla norma base si '
+      + 'aggiungono le norme compatibili (matrice della ricerca, cap. 16 §5.2): sull\'impianto nuovo le EN 81 supplementari (21, 28, 58, 70, 71, 72, '
+      + '73, 76, 77), sulla modifica la EN 81-20/50 intera, le EN 81-28, 58, 73 e il miglioramento (80, 82, 83), su entrambi DM 236/1989, antincendio '
+      + '(DM 15/09/2005 o Codice V.3) e NTC 2018 (con le verifiche delle putrelle). Ogni norma ha il suo esito («non calcolata» se il software non ne '
+      + 'calcola verifiche) e i suoi punti da verificare in sito nella relazione, con gli adempimenti del DPR 162/1999',
     riferimento: 'DPR 162/1999 e s.m.i.; UNI 10411-1:2024; UNI 10411-11:2024; UNI EN 81-20:2020; UNI EN 81-50:2020',
     fonte: 'schede UNI delle norme (scopo, data 31/10/2024); schema ICIM delle verifiche (la verifica straordinaria si limita di norma alle modifiche); '
       + 'sintesi secondarie; ricerca, capitoli 2.4 e 6.6', stato: 'da_verificare',

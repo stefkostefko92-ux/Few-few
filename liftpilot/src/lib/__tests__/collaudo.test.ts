@@ -126,7 +126,7 @@ test('pi√π normative: in ordine e una volta; EN 81-20/50 si aggiunge solo a un‚Ä
   // the schema: known standards only, at most each once
   const base = defaultLift();
   assert.ok(liftInputsSchema.safeParse({ ...base, collaudo: { norma: '10411-1', aggiuntive: ['en81', 'dm236'], parti: ['machine'] } }).success);
-  for (const bad of [['en81-70'], ['dm236', 'dm236', 'en81']]) {
+  for (const bad of [['en81-99'], ['dm236', 'dm236', 'en81']]) {
     assert.equal(liftInputsSchema.safeParse({ ...base, collaudo: { norma: '10411-1', aggiuntive: bad, parti: [] } }).success, false, JSON.stringify(bad));
   }
 });

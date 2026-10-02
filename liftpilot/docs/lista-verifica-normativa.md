@@ -19,7 +19,7 @@ calcolo, lista e relazione.
 - **UNI 10411-11:2024** — modifiche e sostituzioni su ascensori elettrici esistenti conformi alla 95/16/CE o alla 2014/33/UE: collaudo delle parti modificate
 - **DM 236/1989** — accessibilità: cabina e porta minime (8.1.12), per il progetto del vano
 
-Voci: 112 (argano 47, vano 47, impianto 11, simulazione 7) — da verificare 57, confermate 5, scelte del software 34, stime 5, derivazioni 9, prassi 2.
+Voci: 112 (argano 47, vano 47, impianto 11, simulazione 7) — da verificare 52, confermate 10, scelte del software 34, stime 5, derivazioni 9, prassi 2. Collaudo: 52 punti da verificare in sito per normativa (42 letti sul testo ufficiale), riportati nella relazione per le normative scelte.
 
 ## Aderenza
 
@@ -51,7 +51,7 @@ Voci: 112 (argano 47, vano 47, impianto 11, simulazione 7) — da verificare 57,
 |---|---|---|---|---|---|---|
 | 15 | Rapporto D/d della puleggia di trazione | D/d ≥ 40 | UNI EN 81-20:2020, 5.5.2.1 | ELA 2026 e fonti concordi | confermato | D/d della puleggia |
 | 16 | Rapporto D/d delle pulegge di rinvio | Dp/d ≥ 40 | UNI EN 81-20:2020, 5.5.2.1 | fonti secondarie | da verificare | Dp/d dei rinvii |
-| 17 | Numero minimo di funi | almeno 2 funi indipendenti, ciascuna con il suo attacco | Direttiva 2014/33/UE, Allegato I; UNI EN 81-20:2020, 5.5 | fonte secondaria | da verificare | numero e diametro delle funi |
+| 17 | Numero minimo di funi | almeno 2 funi indipendenti, ciascuna con il suo attacco | DPR 162/1999, All. I 1.3 (Direttiva 2014/33/UE, All. I); UNI EN 81-20:2020, 5.5 | DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02 (ricerca, cap. 16), All. I 1.3 | confermato | numero e diametro delle funi |
 | 18 | Diametro nominale minimo | d ≥ 8 mm (salvo approvazione di un organismo notificato) | UNI EN 81-20:2020, 5.5 | fonti secondarie | da verificare | numero e diametro delle funi |
 | 19 | Coefficiente di sicurezza minimo | 12 con tre o più funi; 16 con due funi | UNI EN 81-20:2020, 5.5 | fonti secondarie | da verificare | coefficiente di sicurezza delle funi |
 | 20 | Coefficiente di sicurezza richiesto S_f | S_f = 10^[2,6834 − log10(695,85·10^6·N_equiv/(D/d)^8,567) / log10(77,09·(D/d)^−2,894)] | UNI EN 81-50:2020, 5.12 (ex EN 81-1 Allegato N) | riprodotto su due casi pubblicati (liftdesign.it S_f 16,69; Mellor) | confermato | coefficiente di sicurezza delle funi |
@@ -100,7 +100,7 @@ Voci: 112 (argano 47, vano 47, impianto 11, simulazione 7) — da verificare 57,
 
 | N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
 |---|---|---|---|---|---|---|
-| 41 | La sostituzione del macchinario è una modifica costruttiva | adeguamento della parte sostituita, comunicazione al Comune e al soggetto delle verifiche, verifica straordinaria prima del servizio | DPR 162/1999 e s.m.i., art. 2 (dopo il DPR 23/2017) e art. 14 | testi consolidati non ufficiali; fonti secondarie concordi | da verificare | — |
+| 41 | La sostituzione del macchinario è una modifica costruttiva | modifica costruttiva (art. 2 c.1 lett. cc), n. 5): adeguamento della parte sostituita e delle altre parti interessate, comunicazione al Comune e al soggetto delle verifiche periodiche, verifica straordinaria prima del servizio | DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), art. 12 c.4–5, art. 14 c.3 | DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02 (ricerca, cap. 16), §3.2 | confermato | — |
 | 42 | Adeguamenti richiesti per la sostituzione del macchinario | elenco del capitolo 6.6 della ricerca (tra cui freno a due gruppi) | UNI 10411-1:2024 | sintesi pubblicate della UNI 10411-1:2021 (edizione superata) | da verificare | gruppi del freno |
 | 43 | Funi nella sostituzione | di norma funi nuove con lo stesso numero e diametro di quelle montate; la proposta le tiene fisse | — | indicazione di Panev Ascensori (29 settembre 2026) | prassi di cantiere | — |
 
@@ -133,9 +133,9 @@ Voci: 112 (argano 47, vano 47, impianto 11, simulazione 7) — da verificare 57,
 
 | N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
 |---|---|---|---|---|---|---|
-| 54 | Edifici residenziali nuovi: cabina e porta minime | cabina larga 950 mm e profonda 1300 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (non verificata) | DM 236/1989, 8.1.12 | sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi | da verificare | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
-| 55 | Edifici non residenziali nuovi: cabina e porta minime | cabina larga 1100 mm e profonda 1400 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (non verificata) | DM 236/1989, 8.1.12 | sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi | da verificare | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
-| 56 | Adeguamento di edifici esistenti: cabina e porta minime | cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (non verificata) | DM 236/1989, 8.1.12 | sintesi pubblicate del DM 236/1989 (disabili.com, studiomadera.it), fonti secondarie concordi | da verificare | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 54 | Edifici residenziali nuovi: cabina e porta minime | cabina larga 950 mm e profonda 1300 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (fuori dal vano: da verificare in sito) | DM 236/1989, 8.1.12 | DM 236/1989, 8.1.12, letto per intero su Normattiva il 2026-10-02 (ricerca, cap. 16, §4.1) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 55 | Edifici non residenziali nuovi: cabina e porta minime | cabina larga 1100 mm e profonda 1400 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (fuori dal vano: da verificare in sito) | DM 236/1989, 8.1.12 | DM 236/1989, 8.1.12, letto per intero su Normattiva il 2026-10-02 (ricerca, cap. 16, §4.1) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 56 | Adeguamento di edifici esistenti: cabina e porta minime | cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (fuori dal vano: da verificare in sito) | DM 236/1989, 8.1.12 | DM 236/1989, 8.1.12, letto per intero su Normattiva il 2026-10-02 (ricerca, cap. 16, §4.1) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
 
 ## Vano: porte
 
@@ -184,7 +184,7 @@ Voci: 112 (argano 47, vano 47, impianto 11, simulazione 7) — da verificare 57,
 | 82 | Temperatura dei locali del macchinario e degli armadi | temperatura ambiente mantenuta tra +5 °C e +40 °C: ipotesi della norma, da garantire nell'edificio | UNI EN 81-20:2020, introduzione (ipotesi) | sintesi della UNI EN 81-20:2020 di costruttori e organismi notificati (KONE, Sodimas, MCCAA), fonti secondarie concordi | da verificare | — |
 | 83 | Basamento dell'argano | su spessori di livellamento sotto gli appoggi (l'asse della puleggia dove lo mette il software), su telaio di due profilati sul pavimento (tipico UPN 200, alto quanto il profilato come i telai bassi universali), su due putrelle da muro a muro che possono stare sollevate dal pavimento (tipiche IPE 200, appoggio nei muri 150 mm), su piastre d'acciaio sotto gli appoggi (tipiche 20 mm) o su plinto in calcestruzzo (tipico 250 mm); tamponi antivibranti di 30 mm sotto gli appoggi, salvo sugli spessori; telaio e plinto 100 mm oltre il telaio dell'argano a ogni estremità; l'altezza del basamento porta l'asse della puleggia, che il calcolo (tratto di fune oltre la corsa) e il 3D seguono | UNI EN 81-20:2020, 5.2.1.8 (carichi sull'edificio); scelta del costruttore | telaio basso universale per argano alto 200 mm (lift-store.it); tamponi antivibranti 25–30 mm (catalogo Donati); piastre di 20 mm e plinto di 250–300 mm nella pratica di installazione (fonti estere, da confermare); estratti di ricerca del 1° ottobre 2026 | scelta del software | — |
 | 84 | Telaio sotto l'argano di un costruttore | l'argano di catalogo poggia con i suoi piedi su un telaio di due travi sotto le file di fori, con antivibranti alle estremità e 40 mm oltre l'argano a ogni estremità; il telaio è alto quanto serve per tenere l'asse della puleggia dove lo tiene l'argano generico del software, almeno 80 mm e con il bordo della puleggia 30 mm sopra il suo piano d'appoggio (gli argani compatti hanno la puleggia a sbalzo, sotto il piano dei piedi); se l'argano non lo permette l'asse sale e il calcolo segue | — | quote dei piedi, dei fori e dell'asse della puleggia dalle schede tecniche del costruttore; altezza del telaio scelta dal software, da adattare al telaio fornito | scelta del software | — |
-| 85 | Verifica delle putrelle sotto l'argano — verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal progettista | ognuna delle due putrelle porta metà del carico dell'argano (il suo peso più il carico statico sull'asse per il coefficiente dinamico) come forza concentrata in mezzeria, più il proprio peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e γM0 = 1,05; freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 della luce libera con E = 210000 MPa; proprietà dei profili EN 10365 | NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E); DPR 1497/1963, art. 5 (carichi fissi più 1,5 volte il carico statico delle funi; freccia ≤ 1/1500 della luce libera: regola storica, da confermare) | NTC 2018 (DM 17/01/2018); catalogo dei profilati ArcelorMittal (EN 10365) confrontato con due tabelle indipendenti; DPR 1497/1963 letto per intero (research/argano-geared, cap. 15, §1.1) | da verificare | tensione nelle putrelle sotto l'argano; freccia delle putrelle sotto l'argano |
+| 85 | Verifica delle putrelle sotto l'argano — verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal progettista | ognuna delle due putrelle porta metà del carico dell'argano (il suo peso più il carico statico sull'asse per il coefficiente dinamico) come forza concentrata in mezzeria, più il proprio peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e γM0 = 1,05; freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 della luce libera con E = 210000 MPa; proprietà dei profili EN 10365 | NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E), §3.1.4 (carichi del macchinario); DPR 1497/1963, art. 5.1–5.2 (carichi fissi più 1,5 volte il carico statico delle funi, sicurezza ≥ 6, freccia ≤ 1/1500 della luce libera: regola storica degli impianti esistenti, letta su Normattiva) | NTC 2018 (DM 17/01/2018); catalogo dei profilati ArcelorMittal (EN 10365) confrontato con due tabelle indipendenti; DPR 1497/1963 letto per intero (research/argano-geared, cap. 15, §1.1) | da verificare | tensione nelle putrelle sotto l'argano; freccia delle putrelle sotto l'argano |
 
 ## Carichi sull'edificio e spinte sulle guide
 
@@ -211,7 +211,7 @@ Voci: 112 (argano 47, vano 47, impianto 11, simulazione 7) — da verificare 57,
 |---|---|---|---|---|---|---|
 | 95 | Corsa | somma delle altezze tra i piani, dal più basso al più alto | — | dati dei piani inseriti | derivazione | — |
 | 96 | Portata e velocità | la portata inserita, oppure quella della cabina più grande che entra nel vano (Tabella 6); la velocità è una sola per il vano e per la macchina | UNI EN 81-20:2020, 5.4.2.1 | progetto del vano | derivazione | — |
-| 97 | Normativa di collaudo e parti sostituite o modificate — il testo delle UNI 10411 del 2024 non è stato letto: le verifiche per parte e i requisiti per la sostituzione del macchinario (edizione 2021: freno in due elementi, temporizzatore, velocità eccessiva in salita, arresto entro 1 m dalla macchina, interruzione se il freno non si apre) vanno confermati sul testo vigente | impianto nuovo: UNI EN 81-20:2020 e UNI EN 81-50:2020, ogni verifica entra nell'esito; modifica di un impianto esistente: UNI 10411-1:2024 (ascensore elettrico non conforme alla Direttiva Ascensori) o UNI 10411-11:2024 (conforme alla 95/16/CE o alla 2014/33/UE), a scelta dell'utente: entrano nell'esito le verifiche che riguardano le parti sostituite o modificate (comprese le variazioni di velocità, portata e corsa), le altre sono riportate come «esistente» con il valore calcolato. Quali parti riguarda ciascuna verifica è una lettura del software | DPR 162/1999 e s.m.i.; UNI 10411-1:2024; UNI 10411-11:2024; UNI EN 81-20:2020; UNI EN 81-50:2020 | schede UNI delle norme (scopo, data 31/10/2024); schema ICIM delle verifiche (la verifica straordinaria si limita di norma alle modifiche); sintesi secondarie; ricerca, capitoli 2.4 e 6.6 | da verificare | — |
+| 97 | Normativa di collaudo e parti sostituite o modificate — il testo delle UNI 10411 del 2024 non è stato letto: le verifiche per parte e i requisiti per la sostituzione del macchinario (edizione 2021: freno in due elementi, temporizzatore, velocità eccessiva in salita, arresto entro 1 m dalla macchina, interruzione se il freno non si apre) vanno confermati sul testo vigente | impianto nuovo: UNI EN 81-20:2020 e UNI EN 81-50:2020, ogni verifica entra nell'esito; modifica di un impianto esistente: UNI 10411-1:2024 (ascensore elettrico non conforme alla Direttiva Ascensori) o UNI 10411-11:2024 (conforme alla 95/16/CE o alla 2014/33/UE), a scelta dell'utente: entrano nell'esito le verifiche che riguardano le parti sostituite o modificate (comprese le variazioni di velocità, portata e corsa), le altre sono riportate come «esistente» con il valore calcolato. Quali parti riguarda ciascuna verifica è una lettura del software. Alla norma base si aggiungono le norme compatibili (matrice della ricerca, cap. 16 §5.2): sull'impianto nuovo le EN 81 supplementari (21, 28, 58, 70, 71, 72, 73, 76, 77), sulla modifica la EN 81-20/50 intera, le EN 81-28, 58, 73 e il miglioramento (80, 82, 83), su entrambi DM 236/1989, antincendio (DM 15/09/2005 o Codice V.3) e NTC 2018 (con le verifiche delle putrelle). Ogni norma ha il suo esito («non calcolata» se il software non ne calcola verifiche) e i suoi punti da verificare in sito nella relazione, con gli adempimenti del DPR 162/1999 | DPR 162/1999 e s.m.i.; UNI 10411-1:2024; UNI 10411-11:2024; UNI EN 81-20:2020; UNI EN 81-50:2020 | schede UNI delle norme (scopo, data 31/10/2024); schema ICIM delle verifiche (la verifica straordinaria si limita di norma alle modifiche); sintesi secondarie; ricerca, capitoli 2.4 e 6.6 | da verificare | — |
 | 98 | Massa della cabina non inserita — va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto | P = 1,1·Q arrotondata per eccesso a 10 kg: valore di partenza per far girare il calcolo | ricerca, capitoli 3 e 6 (origine della massa della cabina) | scelta del software, senza fonte | stima | — |
 | 99 | Fune oltre la corsa (L0) | dalla sommità dell'arcata con la cabina all'ultimo piano fino all'asse della puleggia: testata − sommità dell'arcata + solaio del locale + asse della puleggia a 0,9·D sul pavimento del locale (macchina in basso o senza locale: fino al soffitto del vano) | — | dati verticali del vano; altezza dell'asse scelta dal software | scelta del software | — |
 | 100 | Distanza orizzontale della puleggia di rinvio (dx) | calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2 (rinvio semplice: la fune scende dal lato esterno della puleggia di rinvio); se la fune deve rientrare, − D/2 + Dp/2 (rinvio inverso: dal lato interno); con taglia 2:1 la calata è minore di Dp, perché le funi salgono dal lato interno delle pulegge di cabina e di contrappeso. La puleggia di trazione sopra la cabina, il rinvio sopra il contrappeso; se nessuna delle due geometrie torna con l'angolo di avvolgimento, la distanza va misurata sull'impianto | ricerca, capitolo 5.3 | pianta del vano | derivazione | — |
@@ -232,3 +232,155 @@ Voci: 112 (argano 47, vano 47, impianto 11, simulazione 7) — da verificare 57,
 | 110 | Urto sugli ammortizzatori — la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione | velocità d'urto 1,15 volte la nominale; molle e tamponi in poliuretano come ammortizzatori lineari con la corsa piena a 4 volte il carico statico (lo stesso valore dei carichi sulla fossa; per i tamponi la corsa utile è 0,9·H); ammortizzatori idraulici con decelerazione costante v₀²/(2·corsa) su tutta la corsa; la cabina e il contrappeso si separano all'urto | UNI EN 81-20:2020, 5.8.2 | sintesi della norma di costruttori e organismi notificati (fonti secondarie) | da verificare | — |
 | 111 | Cabina bloccata: rotazione in salita | la macchina gira in salita a 0,3 m/s finché il contrappeso poggia sui suoi ammortizzatori; poi le funi devono slittare (T1/T2 ≥ e^(f·α), μ della cabina bloccata) | UNI EN 81-50:2020, 5.11.2 | motore di calcolo; velocità scelta dal software | scelta del software | — |
 | 112 | Passo di campionamento | 0,02 s; tra due campioni i valori sono interpolati linearmente | — | scelta del software | scelta del software | — |
+
+## Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 113 | DPR 162/1999, art. 4-bis | progetto, fabbricazione, installazione e prove conformi all'All. I; documentazione tecnica e dichiarazione di conformità conservate per 10 anni | DPR 162/1999, art. 4-bis | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 114 | DPR 162/1999, artt. 6-bis e 7 c.3 | procedura con un organismo notificato (All. V, VIII, X, XI o XII); marcatura CE in cabina con il numero dell'organismo | DPR 162/1999, artt. 6-bis e 7 c.3 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 115 | DPR 162/1999, art. 12 c.1–3 | comunicazione al Comune entro 60 giorni dalla dichiarazione di conformità (oltre: con il verbale di una verifica straordinaria di attivazione); matricola entro 30 giorni | DPR 162/1999, art. 12 c.1–3 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 116 | DPR 162/1999, artt. 13, 15 c.4 e 16 c.3 | verifiche periodiche ogni 2 anni; controllo dei dispositivi di sicurezza, delle funi e dell'isolamento almeno ogni 6 mesi; targa in cabina | DPR 162/1999, artt. 13, 15 c.4 e 16 c.3 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: adempimenti del DPR 162/1999 (modifica)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 117 | DPR 162/1999, art. 2 c.1 lett. cc) | la modifica è costruttiva: la sostituzione del macchinario ne è il caso n. 5) | DPR 162/1999, art. 2 c.1 lett. cc) | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 118 | DPR 162/1999, art. 12 c.4 | prima della comunicazione, adeguamento della parte modificata o sostituita e delle altre parti interessate | DPR 162/1999, art. 12 c.4 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 119 | DPR 162/1999, art. 12 c.4–5 | comunicazione al Comune e al soggetto delle verifiche periodiche; l'impianto non resta in esercizio senza le comunicazioni aggiornate | DPR 162/1999, art. 12 c.4–5 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 120 | DPR 162/1999, art. 14 c.3 | verifica straordinaria da uno dei soggetti dell'art. 13 c.1, di norma limitata ai controlli sulle modifiche, con la documentazione delle modifiche e dei componenti sostituiti | DPR 162/1999, art. 14 c.3 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 121 | DPR 162/1999, All. V 3.3 (All. VIII 4) | prove dell'organismo notificato: funzionamento a vuoto e a pieno carico, in mancanza di energia, prova statica a 1,25 volte la portata e controllo che non restino deformazioni | DPR 162/1999, All. V 3.3 (All. VIII 4) | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 122 | DPR 162/1999, All. VIII 3 e), g), h) | documentazione tecnica con i risultati dei calcoli di progetto, le relazioni sulle prove e l'elenco delle norme armonizzate applicate, anche in parte | DPR 162/1999, All. VIII 3 e), g), h) | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 123 | Regolamento (UE) 2023/1230, art. 51 par. 2 | per gli ascensori dichiarati conformi dal 20/01/2027: requisiti dell'All. III del Regolamento macchine (tra cui 1.1.9 e 1.2.1), con una valutazione aggiuntiva per i requisiti nuovi o cambiati | Regolamento (UE) 2023/1230, art. 51 par. 2 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI 10411-1:2024
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 124 | UNI 10411-1:2024, scopo | ascensori elettrici a frizione non conformi alla 95/16/CE né alla 2014/33/UE; esclude le modifiche che cambiano le misure antincendio (valgono il DM 15/09/2005 o il Codice V.3) | UNI 10411-1:2024, scopo | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI 10411-11:2024
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 125 | UNI 10411-11:2024, scopo | ascensori elettrici a frizione conformi alla Direttiva Ascensori; esclude le modifiche che cambiano le misure antincendio (valgono il DM 15/09/2005 o il Codice V.3) | UNI 10411-11:2024, scopo | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 126 | UNI EN 81-21:2022, scopo | impianto nuovo o sostituzione completa in un edificio esistente; non copre le modifiche parziali (letto sull'edizione 2018) | UNI EN 81-21:2022, scopo | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+| 127 | DPR 162/1999, art. 17-bis; DM 19/03/2015; linee guida MIMIT 2022 | spazi di rifugio ridotti solo con l'accordo preventivo: in edificio esistente PEC al Ministero con la certificazione dell'organismo prima dell'installazione (Procedura 2: dichiarazione dei punti della EN 81-21 applicati); la EN 81-21 da sola non giustifica la deroga | DPR 162/1999, art. 17-bis; DM 19/03/2015; linee guida MIMIT 2022 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI EN 81-28:2022 (teleallarme)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 128 | UNI EN 81-28:2022 | teleallarme verso un servizio di soccorso: requisiti da verificare sul testo della norma; il suo uso sugli impianti esistenti non è stato verificato | UNI EN 81-28:2022 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+
+## Collaudo: UNI EN 81-58:2022 (resistenza al fuoco delle porte di piano)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 129 | UNI EN 81-58:2022; DM 15/09/2005, 3.2–3.3 e art. 1 c.2 lett. c) | porte di piano resistenti al fuoco (classi E, EI, EW) provate secondo la norma, quando fanno parte della compartimentazione del vano; sostituirle con modelli diversi è una modifica sostanziale ai fini antincendio | UNI EN 81-58:2022; DM 15/09/2005, 3.2–3.3 e art. 1 c.2 lett. c) | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI EN 81-70:2022 (accessibilità)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 130 | UNI EN 81-70:2022, 5.3.1 | tipi di cabina (larghezza × profondità, luce della porta): 1) 1000 × 1300, 800; 2) 1100 × 1400, 900; 3) 1100 × 2100, 900; 4) 1600 × 1400 o 1400 × 1600, 900; 5) 2000 × 1400 o 1400 × 2000, 1100 mm | UNI EN 81-70:2022, 5.3.1 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+| 131 | UNI EN 81-70:2022, 5.3.2 e 5.4 | specchio nei tipi 1–3; finiture che riducono le misure nominali al massimo di 15 mm per parete; segnale acustico regolabile 35–65 dB(A), fino a 80 in ambienti rumorosi; contrasto di Michelson con la A1:2022 | UNI EN 81-70:2022, 5.3.2 e 5.4 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+| 132 | UNI EN 81-70:2022, scopo | si usa con la UNI EN 81-20:2020; per gli impianti esistenti vale la UNI EN 81-82 | UNI EN 81-70:2022, scopo | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI EN 81-71 (ascensori antivandalo)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 133 | UNI EN 81-71 | categoria antivandalo da concordare con il committente; per la presunzione di conformità vale l'edizione 2005+A1:2006 | UNI EN 81-71 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI EN 81-72:2020 (ascensori antincendio)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 134 | DM 15/09/2005, punto 7; Codice V.3.3.4 | ascensore antincendio: tutti i piani serviti; vano e porte di piano almeno REI 60; cabina interna almeno 1,10 × 2,10 m con accesso sul lato corto; botola sul tetto almeno 0,50 × 0,70 m; area dedicata almeno 5 m² a ogni piano; luce d'emergenza almeno 5 lux con 1 h di autonomia; IPX3 dove arriva l'acqua; linea dedicata con alimentazione di sicurezza | DM 15/09/2005, punto 7; Codice V.3.3.4 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 135 | Codice S.10, Tab. S.10-2 | alimentazione di sicurezza dell'ascensore antincendio: interruzione al massimo 15 s, autonomia oltre 30 min | Codice S.10, Tab. S.10-2 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 136 | UNI EN 81-72:2020 | requisiti propri della norma (cabina, tempi, protezione dall'acqua) da verificare sul testo | UNI EN 81-72:2020 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+
+## Collaudo: UNI EN 81-73:2020 (comportamento in caso d'incendio)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 137 | DM 15/09/2005, punto 6; Codice V.3.3.1 | su comando della rivelazione incendio la cabina va al piano prestabilito e lascia uscire i passeggeri; con il Codice l'ascensore «dovrebbe» essere conforme alla UNI EN 81-73 | DM 15/09/2005, punto 6; Codice V.3.3.1 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 138 | UNI EN 81-73:2020 | segnali e comportamento della manovra da verificare sul testo; la norma serve anche da base per migliorare gli esistenti | UNI EN 81-73:2020 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+
+## Collaudo: UNI EN 81-76:2025 (evacuazione delle persone con disabilità)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 139 | UNI EN 81-76:2025 | evacuazione delle persone con disabilità con l'ascensore: requisiti aggiuntivi alla EN 81-20 (manovra, alimentazione) da verificare sul testo | UNI EN 81-76:2025 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+
+## Collaudo: UNI EN 81-77:2022 (azioni sismiche)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 140 | UNI EN 81-77:2022, 1 | con accelerazione di progetto a_d fino a 1 m/s² nessuna prescrizione specifica; a_d e la posizione dei rilevatori si concordano con il progettista dell'edificio | UNI EN 81-77:2022, 1 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 141 | UNI EN 81-77:2022, 5.4–5.10, All. A, B, D | oltre 1 m/s²: massa della cabina nei calcoli (5.4.1), ritegni della cabina (5.4.2) e del contrappeso (5.5), protezione delle pulegge (5.6.1), tensioni e frecce delle guide (5.8.2, All. D), rilevazione e modo sismico (5.10.3, 5.10.4); soglie delle categorie dell'All. A da verificare sul testo | UNI EN 81-77:2022, 5.4–5.10, All. A, B, D | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+| 142 | UNI EN 81-77:2022, 0.3 | non si applica agli impianti installati prima della sua pubblicazione | UNI EN 81-77:2022, 0.3 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 143 | UNI EN 81-80:2019 | analisi dei rischi dell'impianto esistente e piano di miglioramento per priorità, scelta volontaria del proprietario | UNI EN 81-80:2019 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | — |
+
+## Collaudo: UNI EN 81-82:2026 (accessibilità degli esistenti)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 144 | UNI EN 81-82:2026 | miglioramento dell'accessibilità di un impianto esistente secondo i requisiti della EN 81-70 | UNI EN 81-82:2026 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: UNI EN 81-83:2026 (antivandalo degli esistenti)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 145 | UNI EN 81-83:2026 | miglioramento della resistenza agli atti vandalici di un impianto esistente secondo la EN 81-71:2022 (voce 1.2 della Tab. A.1 della EN 81-80) | UNI EN 81-83:2026 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: DM 236/1989 (barriere architettoniche)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 146 | DM 236/1989, 8.1.12 | piattaforma di distribuzione davanti alla porta di cabina: 1,50 × 1,50 m negli edifici nuovi, 1,40 × 1,40 m nell'adeguamento (fuori dal vano: in sito) | DM 236/1989, 8.1.12 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 147 | DM 236/1989, 8.1.12 | porte di cabina e di piano a scorrimento automatico (nell'adeguamento la porta di piano può essere a battente se ad apertura automatica); porte aperte almeno 8 s, chiusura in almeno 4 s | DM 236/1989, 8.1.12 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 148 | DM 236/1989, 8.1.12 | arresto ai piani con autolivellamento entro ± 2 cm; sosta ai piani con le porte chiuse | DM 236/1989, 8.1.12 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 149 | DM 236/1989, 8.1.12 e 8.0.1 | pulsanti di cabina e di piano: il più alto tra 1,10 e 1,40 m, misurato all'asse del comando; bottoniera di cabina su una parete laterale ad almeno 0,35 m dalla porta | DM 236/1989, 8.1.12 e 8.0.1 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | da verificare | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 150 | DM 236/1989, 8.1.12 e 4.1.12 | citofono in cabina tra 1,10 e 1,30 m; luce d'emergenza con almeno 3 h di autonomia; campanello d'allarme e segnale luminoso di allarme ricevuto; arresto e inversione della chiusura; segnale acustico d'arrivo; numeri in rilievo e Braille, targa Braille di piano; sedile ribaltabile dove possibile | DM 236/1989, 8.1.12 e 4.1.12 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 151 | DM 236/1989, 3.2; L. 13/1989, art. 1 c.3 lett. d) | ascensore obbligatorio oltre il terzo livello (contati interrati e porticati); negli immobili con più di tre livelli fuori terra un ascensore per ogni scala principale | DM 236/1989, 3.2; L. 13/1989, art. 1 c.3 lett. d) | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+| 152 | DM 236/1989, 7.5; DPR 503/1996, art. 19 | nelle ristrutturazioni deroghe per impossibilità tecnica strutturale o impiantistica (privati: concesse dal Sindaco); edifici vincolati: deroga se le opere pregiudicano il bene | DM 236/1989, 7.5; DPR 503/1996, art. 19 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto |
+
+## Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 153 | DM 3/8/2015, art. 5 c.1-bis lett. e) | il progettista applica il DM 15/09/2005 oppure la RTV V.3 del Codice: dove si usa il Codice il DM 2005 non si applica | DM 3/8/2015, art. 5 c.1-bis lett. e) | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 154 | DM 15/09/2005, art. 1 c.2 | sugli impianti esistenti vale per le modifiche sostanziali: nuovo impianto; più fermate o altro azionamento; pareti del vano, porte di piano, locale macchine o pulegge sostituiti con materiali, modelli, dimensioni o criteri diversi; solai o scale rifatti che coinvolgono l'impianto; sopraelevazione; cambio di destinazione d'uso | DM 15/09/2005, art. 1 c.2 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 155 | DM 15/09/2005, 3.1–3.3; Codice V.3.2 | tipo di vano: aperto, protetto o a prova di fumo (Codice: classi da SA a SE) | DM 15/09/2005, 3.1–3.3; Codice V.3.2 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 156 | DM 15/09/2005, punto 2 | pareti del vano, locale macchine e pulegge, setti e arcata non combustibili; pareti, pavimento e tetto della cabina in classe di reazione al fuoco non oltre 1 | DM 15/09/2005, punto 2 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 157 | DM 15/09/2005, punto 5 | aerazione permanente in alto verso spazi scoperti di almeno il 3 % della pianta (vano almeno 0,20 m², locale macchine o pulegge almeno 0,05 m²), con una protezione che non lascia passare una sfera oltre 15 mm; non serve se il vano è aperto su spazi scoperti | DM 15/09/2005, punto 5 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 158 | DM 15/09/2005, punto 6; Codice V.3.3.1 c.5 | estintore 21A89BC vicino all'accesso al macchinario; richiamo della cabina al piano prestabilito su comando della rivelazione quando la compartimentazione lo richiede | DM 15/09/2005, punto 6; Codice V.3.3.1 c.5 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+| 159 | Codice S.9, Tab. S.9-3 | piani tra 32 e 54 m: almeno un ascensore antincendio; oltre 54 m: almeno uno di soccorso; interrati tra −10 e −15 m: antincendio; sotto −15 m: soccorso | Codice S.9, Tab. S.9-3 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | — |
+
+## Collaudo: NTC 2018 (strutture e azioni sismiche)
+
+| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |
+|---|---|---|---|---|---|---|
+| 160 | NTC 2018, §3.1.4 | carichi del macchinario valutati caso per caso sui massimi prevedibili e riportati nel progetto e nel collaudo statico | NTC 2018, §3.1.4 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | tensione nelle putrelle sotto l'argano; freccia delle putrelle sotto l'argano |
+| 161 | NTC 2018, §8.4.1 | su un edificio esistente l'intervento è locale: verifica limitata alle parti interessate, senza ridurre la sicurezza preesistente | NTC 2018, §8.4.1 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | tensione nelle putrelle sotto l'argano; freccia delle putrelle sotto l'argano |
+| 162 | NTC 2018, §11.4.1 | ancoranti per uso strutturale qualificati; con azioni sismiche categoria C2 per tutte le classi d'uso | NTC 2018, §11.4.1 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | tensione nelle putrelle sotto l'argano; freccia delle putrelle sotto l'argano |
+| 163 | NTC 2018, §7.2.3–7.2.4 | forza sismica sull'elemento non strutturale Fa = Sa·Wa/qa; nessun vincolo ad attrito; studio specifico oltre il 30 % del carico permanente del solaio o il 10 % di quello dell'intera struttura; progetto antisismico dell'impianto del produttore, dei collegamenti dell'installatore, dei solai e delle pareti d'ancoraggio del progettista strutturale | NTC 2018, §7.2.3–7.2.4 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | tensione nelle putrelle sotto l'argano; freccia delle putrelle sotto l'argano |
+| 164 | NTC 2018, Tab. 7.3.III e §7.3.6.3 | impianti: stabilità allo SLV per tutte le classi d'uso; nelle classi III e IV anche funzionamento allo SLO | NTC 2018, Tab. 7.3.III e §7.3.6.3 | ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02) | confermato | tensione nelle putrelle sotto l'argano; freccia delle putrelle sotto l'argano |

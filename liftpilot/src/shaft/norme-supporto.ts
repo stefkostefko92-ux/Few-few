@@ -30,8 +30,9 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'come forza concentrata in mezzeria, più il proprio peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): '
       + 'σ = M/Wel,y ≤ fyk/γM0 con acciaio S275 (fyk 275 MPa) e γM0 = 1,05; freccia elastica f = F·L³/(48·E·I) + 5·q·L⁴/(384·E·I) ≤ 1/1500 '
       + 'della luce libera con E = 210000 MPa; proprietà dei profili EN 10365',
-    riferimento: 'NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E); DPR 1497/1963, art. 5 (carichi fissi più 1,5 volte il carico '
-      + 'statico delle funi; freccia ≤ 1/1500 della luce libera: regola storica, da confermare)',
+    riferimento: 'NTC 2018, §4.2.4.1.1 (γM0), Tab. 11.3.IX (S275), §11.3.4.1 (E), §3.1.4 (carichi del macchinario); DPR 1497/1963, art. 5.1–5.2 '
+      + '(carichi fissi più 1,5 volte il carico statico delle funi, sicurezza ≥ 6, freccia ≤ 1/1500 della luce libera: regola storica degli impianti '
+      + 'esistenti, letta su Normattiva)',
     fonte: 'NTC 2018 (DM 17/01/2018); catalogo dei profilati ArcelorMittal (EN 10365) confrontato con due tabelle indipendenti; DPR 1497/1963 letto '
       + 'per intero (research/argano-geared, cap. 15, §1.1)', stato: 'da_verificare',
     verifiche: ['m_beam', 'm_beamf'],
