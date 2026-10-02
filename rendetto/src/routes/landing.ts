@@ -5,6 +5,7 @@ import { applyLocale } from '../http/locale.js';
 import { LOCALES, translatorFor, type Locale } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
+import { LEGAL, legalPath, PATHS } from '../seo/paths.js';
 import { FAQ_IDS, landingStructuredData, legalStructuredData } from '../seo/structured-data.js';
 import { furnitureByGroup } from '../services/furniture.js';
 import { landingAssets } from '../services/landing-assets.js';
@@ -14,14 +15,6 @@ import { landingAssets } from '../services/landing-assets.js';
  * поотделно (hreflang). Страницата е еднаква за всички — без сесия и без JavaScript, затова се кешира.
  */
 export const landingRouter: Router = Router();
-
-export const PATHS: Record<Locale, string> = { bg: '/', en: '/en/', it: '/it/' };
-const LEGAL = ['privacy', 'terms'] as const;
-type LegalPage = (typeof LEGAL)[number];
-
-export function legalPath(locale: Locale, page: LegalPage): string {
-  return locale === 'bg' ? `/${page}` : `/${locale}/${page}`;
-}
 
 function alternates(pathFor: (locale: Locale) => string) {
   const base = config().PUBLIC_BASE_URL;

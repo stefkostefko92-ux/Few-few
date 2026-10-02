@@ -34,6 +34,7 @@
     "lint": "prettier --check .",
     "test": "tsx --test tests/*.test.ts",
     "test:engine": "node --test tests/engine/*.test.mjs",
+    "brochure": "node --import tsx print/build-brochure.ts",
     "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts",
     "test:e2e": "node tests/e2e/run.mjs",
     "prisma:generate": "prisma generate",

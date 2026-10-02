@@ -6,7 +6,7 @@ import { CONTENT_UPDATED, LEGAL_UPDATED } from '../company.js';
 import { LOCALES } from '../i18n.js';
 import { ROOT } from '../paths.js';
 import { priceTable } from '../plans/pricing.js';
-import { legalPath, PATHS } from './landing.js';
+import { legalPath, PATHS } from '../seo/paths.js';
 
 export const seoRouter: Router = Router();
 

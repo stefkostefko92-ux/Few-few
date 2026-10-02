@@ -34,9 +34,12 @@ test('placeholders match between languages and no text is empty', () => {
   }
 });
 
-test('every literal key used in the templates exists', () => {
+test('every literal key used in the templates and the brochure exists', () => {
   const missing: string[] = [];
-  for (const file of files(join(ROOT, 'views'), /\.ejs$/)) {
+  for (const file of [
+    ...files(join(ROOT, 'views'), /\.ejs$/),
+    ...files(join(ROOT, 'print'), /\.ts$/),
+  ]) {
     const source = readFileSync(file, 'utf8');
     for (const match of source.matchAll(/\bte?\('([a-zA-Z][\w.]*)'\s*[,)]/g)) {
       const key = match[1]!;
@@ -96,7 +99,7 @@ test('no stock marketing phrases in the public copy', () => {
   const banned =
     /революци|безпрецедент|иновативн|seamless|unleash|cutting-edge|game.?changer|revolutionary|next.?level|supercharge|rivoluzionari|all-in-one|всичко в едно/i;
   for (const locale of LOCALES) {
-    for (const key of keysOf(locale).filter((k) => k.startsWith('landing.'))) {
+    for (const key of keysOf(locale).filter((k) => /^(landing|brochure)\./.test(k))) {
       assert.ok(
         !banned.test(translate(locale, key)),
         `${locale}.${key}: ${translate(locale, key)}`,

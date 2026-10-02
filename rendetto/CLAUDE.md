@@ -27,6 +27,7 @@ npm run dev              # локален сървър на :4320
 npm run owner:create     # първият собственик — OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD от средата
 npm run geoip:update     # DB-IP Lite → data/dbip-country-lite.mmdb (месечно)
 node scripts/og-image.mjs # public/img/og.png — ръчно, след промяна на вида или двигателя
+npm run brochure         # print/rendetto-brochure-<език>.pdf — брошурата A4 за клиенти (print/README.md)
 ```
 
 ## Подредба
@@ -47,6 +48,7 @@ views/                EJS: landing/, legal/ (съдържанието по ез�
 locales/<език>/       common · auth · account · admin · mail · editor · landing (.json); bg е източникът,
                       en/it — огледала; паритетът на ключовете се гейтва от теста
 tests/                unit · engine/ · integration/ (реален Postgres)
+print/                брошурата за клиенти: build-brochure.ts → PDF на трите езика; locales/*/brochure.json
 ```
 
 ## Правила, които не се нарушават

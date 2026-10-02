@@ -117,7 +117,8 @@ const catalogShape = z
 
 let catalogJson: string | null = null;
 
-export async function loadEngine(): Promise<void> {
+/** `catalogPath` е за инструментите извън сървъра (брошурата): те не носят цялата конфигурация на процеса. */
+export async function loadEngine(catalogPath: string = config().CATALOG_PATH): Promise<void> {
   const [model, types, bom, drill, nest, cam, dxf, assembly, part, util, catalog] =
     await Promise.all([
       load('model.js'),
@@ -134,7 +135,7 @@ export async function loadEngine(): Promise<void> {
     ]);
   const registerCatalog = fn<(data: unknown) => unknown>(catalog, 'registerCatalog');
   const baseCatalogData = fn<() => unknown>(catalog, 'baseCatalogData');
-  const file = fromRoot(config().CATALOG_PATH);
+  const file = fromRoot(catalogPath);
   if (existsSync(file)) {
     const raw = readFileSync(file, 'utf8');
     const parsed = catalogShape.safeParse(JSON.parse(raw) as unknown);

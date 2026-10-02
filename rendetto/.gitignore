@@ -10,3 +10,4 @@ data/*
 public/editor/
 test-results/
 tests/e2e/shots/
+print/build/

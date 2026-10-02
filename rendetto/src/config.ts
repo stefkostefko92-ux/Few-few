@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { COMPANY } from './company.js';
 
 const hexKey = (name: string) =>
   z.string().regex(/^[0-9a-fA-F]{64}$/, `${name} трябва да е 32 байта в hex (64 знака)`);
@@ -31,7 +32,7 @@ const schema = z
     SMTP_USER: z.string().min(1).optional(),
     SMTP_PASS: z.string().min(1).optional(),
     MAIL_FROM: z.string().min(3).default('Rendetto <no-reply@carbonstealth.eu>'),
-    CONTACT_EMAIL: z.string().email().default('info@carbonstealth.eu'),
+    CONTACT_EMAIL: z.string().email().default(COMPANY.email),
     PRIVACY_EMAIL: z.string().email().default('privacy@carbonstealth.eu'),
     /** Каталогът от магазините — само на сървъра, извън репото. Без него продуктът работи с основните материали. */
     CATALOG_PATH: z.string().min(1).default('data/catalog.json'),
