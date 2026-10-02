@@ -50,7 +50,7 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   s_force: ['machine', 'car', 'cw', 'load'], s_uplift: ['machine', 'car', 'cw', 'load'],
   // the shaft in plan: the car and its rated load, the doors, the counterweight and the rails
   v_fit: ['car'], v_area: ['car', 'load'], v_acc_car: ['car'], v_acc_door: DOORS, v_acc_side: ['car', ...DOORS],
-  v_door: ['landingDoors'], v_door2: ['landingDoors'], v_op: ['carDoors'], v_wall: ['car', ...DOORS], v_sill: ['car', ...DOORS],
+  v_door: ['landingDoors'], v_door2: ['landingDoors'], v_land: DOORS, v_land2: DOORS, v_op: ['carDoors'], v_wall: ['car', ...DOORS], v_sill: ['car', ...DOORS],
   v_cw: ['car', 'cw', 'rails'], v_cwlen: ['cw'], v_place: ['car', 'cw', 'rails', ...DOORS], v_doorcar: ['car', ...DOORS],
   v_buffer: ['buffers'], v_niche: ['cw'], v_staffa: ['cw', 'rails'], v_head: ['car', 'cw', 'rails'],
   // the headroom and the pit: their spaces follow the car, its frame, the buffers and the speed

@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { KV, callStationAt, defaultInputs, layout, planDims, planEntities, sectionDims, section, type DoorLayout } from '../index';
 
-const door = (wall: DoorLayout['wall']): DoorLayout => ({ side: 'A', wall, kind: 'T2', width: 800, height: 2000, u0: 400, u1: 1200, frame0: 345, frame1: 1655, stack: 'high', op0: 375, op1: 1625 });
+const door = (wall: DoorLayout['wall']): DoorLayout => ({ side: 'A', wall, kind: 'T2', width: 800, height: 2000, u0: 400, u1: 1200, l0: 400, l1: 1200, frame0: 345, frame1: 1655, stack: 'high', op0: 375, op1: 1625 });
 
 test('lato visto dal pianerottolo: a destra sulla parete davanti è verso x crescenti, sulle altre pareti secondo chi guarda', () => {
   const cs = (side: 'left' | 'right') => ({ side, offset: 150, height: 1100 });

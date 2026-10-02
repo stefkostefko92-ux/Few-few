@@ -19,7 +19,7 @@ export function hasImbotti(I: ShaftInputs): boolean {
  *  and the side linings at lower and at higher u (which is left or right depends on the wall) [mm]. */
 export function marbleOpening(I: ShaftInputs, d: DoorLayout): { u0: number; u1: number; h: number; low: number; high: number } {
   const m = imbottiOf(I), [low, high] = lowIsLeft(d.wall) ? [m.left, m.right] : [m.right, m.left];
-  return { u0: d.u0 - KV.doorPortal - low, u1: d.u1 + KV.doorPortal + high, h: d.height + KV.doorHead + m.top, low, high };
+  return { u0: d.l0 - KV.doorPortal - low, u1: d.l1 + KV.doorPortal + high, h: d.height + KV.doorHead + m.top, low, high };
 }
 
 /** Distance between the marbles and height under the top marble of the landing doors [mm]. */

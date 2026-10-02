@@ -1,7 +1,8 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
 //   health → public page (no console or CSP errors) → sign-in → installation → calculation → saved snapshot with
-//   reproduced hash → calculation report (PDF) → shaft design by hand (a distance changed on its plan), its DXF, a
-//   calculation from it with the plan in its report → data of the installation, client and company logos, drawing set issued from
+//   reproduced hash → calculation report (PDF) → shaft design by hand (a distance changed on its plan, the landing door
+//   set apart from the car door), its DXF, a calculation from it with the plan in its report → data of the installation,
+//   client and company logos, drawing set issued from
 //   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation and a SICOR
 //   machine from the catalogue (drawn as it is), saved
 //   in one go (shaft design and calculation together), with its documents → new user who must change the password → a
@@ -115,6 +116,14 @@ try {
   await page.fill('.shaft-output .ed-pop input', String(was + 20));
   await page.press('.shaft-output .ed-pop input', 'Enter');
   await page.waitForSelector('.shaft-output table.fixes tr.hand');
+  // the landing door 30 mm apart from the car door, on the drawing; the distance between their axes then reads it
+  const land = page.locator('.shaft-output .ed-hits .hit[aria-label*="Porta di piano A: inizio della luce"]').first();
+  const landWas = Number(/^(\d+)/.exec((await land.getAttribute('aria-label')) ?? '')?.[1]);
+  assert.ok(landWas > 0, 'landing door drawn');
+  await land.click();
+  await page.fill('.shaft-output .ed-pop input', String(landWas + 30));
+  await page.press('.shaft-output .ed-pop input', 'Enter');
+  await page.waitForSelector('.shaft-output .ed-hits .hit[aria-label^="30 mm"][aria-label*="Porta di piano A"]');
   // the pit in plan: the car buffers 40 mm further apart, on the drawing; the dimension then reads it
   await page.click('.shaft-output [role="tab"]:has-text("Pianta della fossa")');
   const span = page.locator('.shaft-output .ed-hits .hit[aria-label*="Ammortizzatori di cabina: interasse"]').first();

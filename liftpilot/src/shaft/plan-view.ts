@@ -1,13 +1,15 @@
 // A plan of the shaft at one level, as model entities for the drawing kernel: concrete walls with the landing door
 // openings of that level and their jambs (plan-walls.ts; at the top floor and in the headroom where head.ts puts
-// them), landing doors, car with its doors and operator, car frame, T rails with brackets reaching the walls,
-// counterweight (on a side: its bridge bracket), axes, and what the level shows: the spaces on the car roof at the
-// top, buffers and the space in the pit at the bottom. Dimensions are added by plan-dims.ts.
+// them), landing doors (where landing.ts puts them, with both axes when one stands apart from its car door), car with
+// its doors and operator, car frame, T rails with brackets reaching the walls, counterweight (on a side: its bridge
+// bracket), axes, and what the level shows: the spaces on the car roof at the top, buffers and the space in the pit at
+// the bottom. Dimensions are added by plan-dims.ts.
 import { circle, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
 import { KV } from './norme';
 import { callStationAt, callStationOf } from './callstation';
 import { headBox, headOf, headRail, mainBox, type WallBox } from './head';
 import { governorPlan } from './plan-governor';
+import { landingOf, shiftAxes } from './landing';
 import { onWall, quad, walls } from './plan-walls';
 import { genericBracketPlan, panevSupportPlan } from './plan-staffe';
 import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from './sill';
@@ -48,10 +50,10 @@ function sillAndPanels(L: Layout, d: DoorLayout, u0: number, u1: number, v0: num
   return out;
 }
 
-/** Landing door in front of the wall: the suspension's length over it (dashed, above the cut), the sill with its
- *  grooves on Panev's brackets, the two panels closed. */
-function landingDoor(L: Layout, d: DoorLayout): Entity[] {
-  const depth = L.inputs.landingDepth;
+/** Landing door in front of the wall, where it stands (landing.ts): the suspension's length over it (dashed, above the
+ *  cut), the sill with its grooves on Panev's brackets, the two panels closed. */
+function landingDoor(L: Layout, door: DoorLayout): Entity[] {
+  const depth = L.inputs.landingDepth, d = landingOf(door);
   return [path(quad(L, d.wall, d.frame0, 0, d.frame1, depth), true, 'hidden'),
     ...sillAndPanels(L, d, d.u0 - 40, d.u1 + 40, 0, depth, landingTracks(depth), LANDING_PANEL)];
 }
@@ -155,7 +157,8 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     out.push(rect(c.x, c.y, c.x + c.w, c.y + c.h, 'hidden'), rect(w.x, w.y, w.x + w.w, w.y + w.h, 'hidden'));
     if (L.bridge) out.push(...counterweight(L).slice(-1));
   } else {
-    out.push(...carBody(L, level), ...counterweight(L), ...carFrame(L));
+    // a landing door set apart from its car door: the axes of both
+    out.push(...carBody(L, level), ...counterweight(L), ...carFrame(L), ...shiftAxes(L, open));
   }
   L.rails.forEach((r, i) => out.push(...rail(L, r, level !== 'pit', r.kind === 'cw' && L.rails.findIndex((x) => x.kind === 'cw') === i, level === 'top')));
   out.push(...axes(L), ...governorPlan(L, level === 'pit'));

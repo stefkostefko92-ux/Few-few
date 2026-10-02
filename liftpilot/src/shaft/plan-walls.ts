@@ -93,9 +93,9 @@ export function walls(L: Layout, open: readonly DoorLayout[], box: WallBox = mai
       out.push(path([onWall(L, d.wall, u, 0, box), onWall(L, d.wall, u, -T, box), onWall(L, d.wall, u + s * 60, -T, box)], false, 'jamb'));
     }
     if (m.low > 0 || m.high > 0) {
-      for (const [a, b] of [[d.u0 - p, d.u0], [d.u1, d.u1 + p]] as const) out.push(path(quad(L, d.wall, a, -T, b, 0, box), true, 'thin', 'door'));
-      if (m.low > 0) out.push(path(quad(L, d.wall, m.u0, -T, d.u0 - p, 0, box), true, 'outline', 'steel'));
-      if (m.high > 0) out.push(path(quad(L, d.wall, d.u1 + p, -T, m.u1, 0, box), true, 'outline', 'steel'));
+      for (const [a, b] of [[d.l0 - p, d.l0], [d.l1, d.l1 + p]] as const) out.push(path(quad(L, d.wall, a, -T, b, 0, box), true, 'thin', 'door'));
+      if (m.low > 0) out.push(path(quad(L, d.wall, m.u0, -T, d.l0 - p, 0, box), true, 'outline', 'steel'));
+      if (m.high > 0) out.push(path(quad(L, d.wall, d.l1 + p, -T, m.u1, 0, box), true, 'outline', 'steel'));
     }
   }
   return out;

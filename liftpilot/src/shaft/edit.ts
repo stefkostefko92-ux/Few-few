@@ -22,7 +22,7 @@ import type { VerticalInputs } from './vertical';
 /** The keys of T whose values are plain numbers (set or not). */
 type NumKey<T> = { [K in keyof T]-?: NonNullable<T[K]> extends number ? (number extends NonNullable<T[K]> ? K : never) : never }[keyof T];
 
-export const PLAN_KEYS: readonly PlanKey[] = ['A', 'B', 'carX', 'doorA', 'doorB', 'opLen', 'railY', 'dbg', 'cwLen', 'cwPos', 'bufX', 'bufY', 'bufSpan', 'cwBufPos'];
+export const PLAN_KEYS: readonly PlanKey[] = ['A', 'B', 'carX', 'doorA', 'doorB', 'landA', 'landB', 'opLen', 'railY', 'dbg', 'cwLen', 'cwPos', 'bufX', 'bufY', 'bufSpan', 'cwBufPos'];
 const V_KEYS = ['pit', 'headroom', 'carH', 'carOutH', 'platform', 'opTop', 'frameTop', 'frameBelow', 'parapet', 'carBufferH', 'carBufferStroke',
   'carBufferBase', 'cwH', 'cwBufferH', 'cwBufferStroke', 'cwBufferBase', 'cwRunby', 'cwScreen', 'standW', 'standD'] as const satisfies readonly NumKey<VerticalInputs>[];
 const R_KEYS = ['W', 'D', 'shaftX', 'shaftY', 'H', 'ridge', 'slab', 'doorAt', 'doorW', 'doorH', 'panelAt', 'panelW', 'panelD', 'panelH'] as const satisfies readonly NumKey<RoomInputs>[];
@@ -37,9 +37,10 @@ const PICK_KEYS = ['carRail', 'cwRail', 'v.topRefuge', 'v.pitRefuge', 'sup.profi
 /** Inputs of the calculation a drawing of the machine room shows (applied by the screen that holds them). */
 export const CALC_KEYS = ['calc.h'] as const;
 // the arrangement's distances: they mean something else once the entrances or the counterweight's side change
-const ARRANGEMENT: readonly PlanKey[] = ['doorB', 'railY', 'dbg', 'cwLen', 'cwPos', 'cwBufPos'];
-// a door's place along its wall and its operator: kept when the shaft changes size while the door still opens on the car
-const DOORS: readonly PlanKey[] = ['doorA', 'doorB', 'opLen'];
+const ARRANGEMENT: readonly PlanKey[] = ['doorB', 'landB', 'railY', 'dbg', 'cwLen', 'cwPos', 'cwBufPos'];
+// a door's place along its wall (the car's and the landing's) and its operator: kept when the shaft changes size while
+// the door still opens on the car
+const DOORS: readonly PlanKey[] = ['doorA', 'doorB', 'landA', 'landB', 'opLen'];
 
 const pick = <K extends string>(keys: readonly K[], k: string): K | undefined => keys.find((x) => x === k);
 const isAllowance = (k: string): k is Allowance => Object.hasOwn(DEFAULTS, k);
@@ -176,10 +177,13 @@ export function valueOf(I: ShaftInputs, key: string): number | null {
 export function planValues(L: Layout): Partial<Record<PlanKey, number>> {
   const [d0, d1] = L.doors, rail = L.rails.find((r) => r.kind === 'car');
   const out: Partial<Record<PlanKey, number>> = {
-    A: L.A, B: L.B, carX: L.car.x, doorA: d0.u0, opLen: d0.op1 - d0.op0,
+    A: L.A, B: L.B, carX: L.car.x, doorA: d0.u0, landA: d0.l0, opLen: d0.op1 - d0.op0,
     railY: L.frame.kind === 'central' ? L.frame.axis : rail?.y, cwLen: L.cwSide === 'rear' ? L.cw.w : L.cw.h, cwPos: L.cwSide === 'rear' ? L.cw.x : L.cw.y,
   };
-  if (d1) out.doorB = d1.u0;
+  if (d1) {
+    out.doorB = d1.u0;
+    out.landB = d1.l0;
+  }
   if (L.frame.kind === 'cantilever') out.dbg = L.frame.dbg;
   // where the buffers stand (pit.ts)
   const bp = bufferPlan(L);

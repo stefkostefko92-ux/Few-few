@@ -28,8 +28,9 @@ export const TRACK_TOP = 75, ROLLER_R = 34, HANGER_TOP = TRACK_TOP + ROLLER_R + 
 /** What rides on the leading panel, by the edge of the car's sill at `v0` from the wall: the landing lock's lever and
  *  rollers, or the car's coupler with its vanes and the belt clamp up to the belt's lower strand at `belt` (height),
  *  which runs just in front of the hanger plate (carOperator). The vanes reach from v0 − 14, the lock's rollers up to
- *  v0 − 6: they overlap by 8 mm whatever the sill gap, and the rollers go between the vanes. */
-export type Lead = { kind: 'lock'; v0: number } | { kind: 'coupler'; v0: number; belt: number };
+ *  v0 − 6: they overlap by 8 mm whatever the sill gap, and the rollers go between the vanes. `du`: a landing door set
+ *  apart from its car door carries its lever that far along the wall, so the rollers stay where the coupler is. */
+export type Lead = { kind: 'lock'; v0: number; du?: number } | { kind: 'coupler'; v0: number; belt: number };
 
 /** The side of the panels' centre plane their hanger plates are on, toward the sill gap: away from the wall at a
  *  landing (+1), toward the landing on the car (−1). */
@@ -85,10 +86,12 @@ export function doorPanels(wall: Side, W: number, D: number, d: DoorLayout, z0: 
       const e = leading === 'low' ? lo : hi, k = leading === 'low' ? 1 : -1, ue = (a: number, b: number): [number, number] => [e + k * a, e + k * b];
       if (lead.kind === 'lock') {
         // the lock's lever under the hanger plate, its two rollers reaching into the gap between the coupler's vanes
-        B.wallBox(wall, W, D, ...ue(45, 155), face, back, zt - 112, zt - 40, M.galv);
+        const du = lead.du ?? 0, [a0, a1] = ue(45, 155);
+        B.wallBox(wall, W, D, a0 + du, a1 + du, face, back, zt - 112, zt - 40, M.galv);
         for (const off of [70, 130]) {
-          B.rod(pt(e + k * off, back, zt - 70), pt(e + k * off, lead.v0 - 18, zt - 70), 6, M.rail, 10);
-          B.rod(pt(e + k * off, lead.v0 - 20, zt - 70), pt(e + k * off, lead.v0 - 6, zt - 70), 16, M.roller, 18);
+          const u = e + k * off + du;
+          B.rod(pt(u, back, zt - 70), pt(u, lead.v0 - 18, zt - 70), 6, M.rail, 10);
+          B.rod(pt(u, lead.v0 - 20, zt - 70), pt(u, lead.v0 - 6, zt - 70), 16, M.roller, 18);
         }
       } else {
         // the coupler: its body on the hanger plate, the two vanes on it hanging in front of the panel, the pivots of

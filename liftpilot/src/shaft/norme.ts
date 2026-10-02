@@ -24,6 +24,8 @@ export const KV = {
   wallFacingEntranceMax: 150,
   sillGapMax: 35,
   carCwMin: 50,
+  // the landing door's clear opening at most this far past the car door's on either side (registry porte.disassamento)
+  landingShiftMax: 50,
   // DM 236/1989, 8.1.12: car width × depth and door clear width [mm]
   dm236Residential: [950, 1300, 800],
   dm236Public: [1100, 1400, 800],

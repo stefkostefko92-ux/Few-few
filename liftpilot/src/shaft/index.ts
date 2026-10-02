@@ -31,6 +31,7 @@ export type { BufferPlan, BufferSpot } from './pit';
 export type { PlanLevel } from './plan-view';
 export { planDims } from './plan-dims';
 export { callStationAt, callStationOf } from './callstation';
+export { landingKey, landingOf, landingShift } from './landing';
 export { PANEV_BACK, cwBracketsOf, cwSupport, supportMargin } from './staffe';
 export { GOVERNORS, LEVER_REACH, freeSides, govSize, governorSpot } from './governor';
 export type { Governor, GovernorSpot } from './governor';

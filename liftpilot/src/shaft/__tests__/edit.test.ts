@@ -27,6 +27,11 @@ const CASES: readonly (readonly [string, (I: ShaftInputs) => ShaftInputs])[] = [
   ['contrappeso a sinistra in nicchia', (I) => ({ ...I, cw: 'left', niches: [{ use: 'cw', wall: 'left', at: 400, width: 1000, depth: 120 }] })],
   ['imbotti tra i marmi, porta più piccola', (I) => ({ ...I, imbotti: { left: 120, right: 85, top: 140 } })],
   ['imbotti, accessi opposti', (I) => ({ ...I, entrances: 'opposite', D: 2000, imbotti: { left: 60, right: 60, top: 0 } })],
+  ['porta di piano spostata di 30 mm, imbotti', (I) => ({ ...I, imbotti: { left: 80, right: 40, top: 0 }, plan: { landA: layout(I).doors[0].u0 + 30 } })],
+  ['accessi opposti, porta di piano B spostata di 40 mm', (I) => {
+    const J: ShaftInputs = { ...I, entrances: 'opposite', D: 2000 };
+    return { ...J, plan: { landB: (layout(J).doors[1]?.u0 ?? 0) - 40 } };
+  }],
   ['un ammortizzatore di cabina', (I) => ({ ...I, vertical: { ...I.vertical, carBuffers: 1 } })],
   ['quattro ammortizzatori di cabina messi a mano, contrappeso a destra', (I) => ({ ...I, cw: 'right', vertical: { ...I.vertical, carBuffers: 4 },
     plan: { bufX: 760, bufY: 840, bufSpan: 820, cwBufPos: 900 } })],

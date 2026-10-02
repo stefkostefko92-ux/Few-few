@@ -24,9 +24,13 @@ export interface PlanFix {
   B?: number;
   /** the platform's side from the left wall */
   carX?: number;
-  /** clear opening of entrance A, of entrance B, from the corner of its wall where its axis starts */
+  /** clear opening of the car door of entrance A, of entrance B, from the corner of its wall where its axis starts */
   doorA?: number;
   doorB?: number;
+  /** clear opening of the landing door of entrance A, of entrance B, the same way and the same at every floor (absent:
+   *  in line with the car door) */
+  landA?: number;
+  landB?: number;
   /** length of the car door operator */
   opLen?: number;
   /** central sling: the car rails' axis from the front wall; cantilever: the tip of the front car rail */
@@ -132,7 +136,7 @@ export type ShaftInputs = {
 } & Record<Allowance, number>;
 
 export type ShaftCheckId =
-  | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_door' | 'v_door2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
+  | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_door' | 'v_door2' | 'v_land' | 'v_land2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
   | 'v_place' | 'v_doorcar' | 'v_buffer' | 'v_niche' | 'v_staffa' | 'v_head'
   | 'h_refuge' | 'h_clear' | 'h_parapet' | 'h_stand' | 'p_refuge' | 'p_apron' | 'p_screen' | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
   | 'm_beam' | 'm_beamf';
@@ -174,9 +178,12 @@ export interface DoorLayout {
   /** clear width and height [mm] */
   width: number;
   height: number;
-  /** clear opening along the wall (x on front and rear walls, y on side walls) */
+  /** clear opening of the car door along the wall (x on front and rear walls, y on side walls) */
   u0: number;
   u1: number;
+  /** clear opening of the landing door along the wall: the car door's, or where the plan sets it apart */
+  l0: number;
+  l1: number;
   /** landing door frame along the wall, panels stacked */
   frame0: number;
   frame1: number;

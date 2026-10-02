@@ -3,8 +3,9 @@
 // with its track and lock, the aluminium sill on Panev's brackets), the landings outside with the call station, the pit
 // floor, the slab over the shaft with its openings and a label at each floor. From the top floor to the slab the walls
 // stand where src/shaft/head.ts puts them (an old building's may stand elsewhere); the landing door of the top floor
-// stays in line with the car. Plan and heights in millimetres (geom.ts turns them into metres); static parts merged by
-// material. Loaded only through boot.ts (lazy).
+// stays in line with the car. A landing door the plan sets apart from its car door (src/shaft/landing.ts) stands where
+// it is set, with everything of the landing; its lock's rollers stay in the line of the car's coupler. Plan and heights
+// in millimetres (geom.ts turns them into metres); static parts merged by material. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { DoorLayout, Layout } from '@/shaft';
@@ -13,6 +14,7 @@ import { KV } from '@/shaft/norme';
 import { callStationAt, callStationOf } from '@/shaft/callstation';
 import { headOf } from '@/shaft/head';
 import { hasImbotti, marbleOpening } from '@/shaft/imbotti';
+import { landingOf } from '@/shaft/landing';
 import { lampHeights, nichesOf } from '@/shaft/niche';
 import { Batch, P, onWall } from './geom';
 import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
@@ -39,11 +41,13 @@ export function doorsOf(L: Layout, door: 'A' | 'B' | 'AB'): DoorLayout[] {
 }
 
 /** The hardware of a landing entrance at the level z, on the shaft side of the wall: the suspension, the panels (by
- *  the car's across the sill gap), the sill on Panev's brackets, the stone threshold through the wall. */
-export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number): DoorPanels {
-  const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth);
+ *  the car's across the sill gap), the sill on Panev's brackets, the stone threshold through the wall; where the landing
+ *  door stands, the lock's rollers where the car door's coupler takes them. */
+export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], car: DoorLayout, z: number): DoorPanels {
+  const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth), d = landingOf(car);
   landingHeader(C, M, d.wall, W, D, d, tracks, LANDING_PANEL, z + d.height, I.landingDepth);
-  const panels = doorPanels(d.wall, W, D, d, z, tracks, LANDING_PANEL, M.landing[d.wall], M, { kind: 'lock', v0: I.landingDepth + I.sillGap });
+  const lock = { kind: 'lock', v0: I.landingDepth + I.sillGap, du: car.u0 - d.u0 } as const;
+  const panels = doorPanels(d.wall, W, D, d, z, tracks, LANDING_PANEL, M.landing[d.wall], M, lock);
   sill(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, -25, I.landingDepth, z, trackPlanes(d, tracks, LANDING_PANEL));
   doorBrackets(C, M, d.wall, W, D, d.u0 + 10, d.u1 - 10, z, I.landingDepth, SILL_H);
   C.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -I.wall, -25, z - 30, z, M.stone);
@@ -164,8 +168,8 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
   // landing doors: the portal through the wall, the panels on the shaft side of the wall; the landing floor outside
   V.floors.forEach((f, i) => {
     const z = S.levels[i];
-    for (const d of doorsOf(L, f.door)) {
-      const g = byside[d.wall], frame = M.landing[d.wall], len = d.wall === 'front' || d.wall === 'rear' ? W : D, zh = z + d.height;
+    for (const car of doorsOf(L, f.door)) {
+      const d = landingOf(car), g = byside[d.wall], frame = M.landing[d.wall], len = d.wall === 'front' || d.wall === 'rear' ? W : D, zh = z + d.height;
       // the portal and the landing on the wall where it stands at this floor; the door itself in line with the car
       const s = i === top ? head[d.wall] : 0;
       g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30 + s, 10 + s, z, zh + 60, frame);
@@ -173,7 +177,7 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
       g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, zh, zh + 60, frame);
       if (imb) imbotti(g, M, I, d, z, s, frame);
       callStation(g, M, I, d, z, frame, i === 0 ? 'up' : i === V.floors.length - 1 ? 'down' : 'both', s);
-      const panels = landingEntrance(C, M, I, d, z);
+      const panels = landingEntrance(C, M, I, car, z);
       sides[d.wall].add(panels.group);
       landings.push({ floor: i, panels });
       g.wallBox(d.wall, W, D, -wall - 400, len + wall + 400, -wall - LANDING + s, -wall + s, z - SLAB, z, M.floors[d.wall]);

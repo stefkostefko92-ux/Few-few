@@ -86,6 +86,8 @@ export const planSchema = z.object({
   carX: mm(0, 10000).optional(),
   doorA: mm(0, 10000).optional(),
   doorB: mm(0, 10000).optional(),
+  landA: mm(0, 10000).optional(),
+  landB: mm(0, 10000).optional(),
   opLen: mm(300, 6000).optional(),
   railY: mm(0, 10000).optional(),
   dbg: mm(100, 10000).optional(),

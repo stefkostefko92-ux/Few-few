@@ -4,7 +4,8 @@
 // counterweight to the car rail, the axes, the car with its space to a side counterweight, and the shaft; on the side
 // walls (plan-dims-walls.ts) the depth from the landing sill to the end of the car, the car inside with its walls, the
 // car with its sill to a counterweight at the back, the counterweight rails, the bracket, and the shaft; inside the car
-// the clear door opening; the spaces with their sizes and the rope drop; in the pit where the buffers stand
+// the clear door opening and, for a landing door set apart, the distance between its axis and the car door's
+// (landing.ts); the spaces with their sizes and the rope drop; in the pit where the buffers stand
 // (plan-dims-pit.ts). Each dimension says which input its new
 // length changes (edit.ts), so the screens can change any of them where it is drawn: a distance of the plan set by
 // hand (plan.*), an allowance, the shaft's or the doors' size, the linings; a rail's profile and a refuge space's type
@@ -16,6 +17,7 @@ import { RAILS } from './rails';
 import { railPick, refugePick } from './plan-picks';
 import { callStationAt, callStationOf, lowIsLeft } from './callstation';
 import { hasImbotti, marbleOpening } from './imbotti';
+import { landingKey, shiftDims } from './landing';
 import { cwNiche, nichesOf } from './niche';
 import { calataEdit } from './drop';
 import { doorsAt, roofSpaces, wallsAt, type PlanLevel } from './plan-view';
@@ -92,16 +94,17 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
   // the side of the landing door at this level: door, operator (it moves with its door), the linings between the
   // marbles, car inside, platform, shaft
   const horizDoor = doorSide === 'top' || doorSide === 'bottom';
-  const dAxis = horizDoor ? 'x' : 'y', len = horizDoor ? W : D, dk = doorKey(door);
-  if (open.length) push(doorSide, dAxis, [0, door.u0, door.u1, len], [null, `Porta Piano ${door.width}x H.${door.height}`, null], [E(dk), E('doorWidth'), E(dk, len - door.width, -1)]);
+  const dAxis = horizDoor ? 'x' : 'y', len = horizDoor ? W : D, dk = doorKey(door), lk = landingKey(door);
+  // the landing door where it stands: its place moves it alone (the car door stays; landing.ts)
+  if (open.length) push(doorSide, dAxis, [0, door.l0, door.l1, len], [null, `Porta Piano ${door.width}x H.${door.height}`, null], [E(lk), E('doorWidth'), E(lk, len - door.width, -1)]);
   push(doorSide, dAxis, [0, door.op0, door.op1, len], [null, '{v} Ingombro Operatore porta cabina', null],
     [E(dk, door.u0 - door.op0), E('plan.opLen'), E(dk, len - (door.op1 - door.u0), -1)]);
   if (open.length && hasImbotti(I)) {
     // the old opening: the wall to the marble, a lining, the portal with the door, the other lining, the marble to the
     // wall; the distance between the marbles shares itself between the two linings
     const m = marbleOpening(I, door), p = KV.doorPortal, [lowKey, highKey] = lowIsLeft(door.wall) ? ['imb.left', 'imb.right'] : ['imb.right', 'imb.left'];
-    push(doorSide, dAxis, [0, m.u0, door.u0 - p, door.u1 + p, m.u1, len], [null, 'Imb. {v}', '{v}', 'Imb. {v}', null],
-      [E(dk, p + m.low), E(lowKey), E('doorWidth', -2 * p), E(highKey), E(dk, len - m.high - p - door.width, -1)]);
+    push(doorSide, dAxis, [0, m.u0, door.l0 - p, door.l1 + p, m.u1, len], [null, 'Imb. {v}', '{v}', 'Imb. {v}', null],
+      [E(lk, p + m.low), E(lowKey), E('doorWidth', -2 * p), E(highKey), E(lk, len - m.high - p - door.width, -1)]);
     push(doorSide, dAxis, [m.u0, m.u1], ['{v} Distanza tra i marmi'], [E('imb.marble')]);
   }
   if (horizDoor) {
@@ -184,6 +187,8 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
       out.push(chain({ dir: 'y', pts: [ci.y, d.u0, d.u1, ci.y + ci.h], at: x, text, edit: [E(k, ci.y), E('doorWidth'), E(k, ci.y + ci.h - d.width, -1)] }));
     }
   }
+  // a landing door set apart from its car door: the distance between their axes
+  out.push(...shiftDims(L, open));
   const c = L.cw;
   if (L.cwSide === 'rear') {
     // the counterweight moves with its wall gap; the car keeps its depth

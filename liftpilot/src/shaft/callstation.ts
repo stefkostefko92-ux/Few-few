@@ -10,8 +10,9 @@ export const callStationOf = (I: ShaftInputs): CallStation => I.callStation ?? {
 /** Whether lower u along the wall is on the left of someone on its landing facing the shaft. */
 export const lowIsLeft = (w: Wall): boolean => w === 'front' || w === 'right';
 
-/** Middle of the call station along the door's wall [mm], and the edge of the door's portal it is measured from. */
+/** Middle of the call station along the door's wall [mm], and the edge of the landing door's portal it is measured
+ *  from. */
 export function callStationAt(d: DoorLayout, cs: CallStation): { u: number; from: number } {
-  const low = (cs.side === 'left') === lowIsLeft(d.wall), from = low ? d.u0 - KV.doorPortal : d.u1 + KV.doorPortal;
+  const low = (cs.side === 'left') === lowIsLeft(d.wall), from = low ? d.l0 - KV.doorPortal : d.l1 + KV.doorPortal;
   return { u: low ? from - cs.offset : from + cs.offset, from };
 }

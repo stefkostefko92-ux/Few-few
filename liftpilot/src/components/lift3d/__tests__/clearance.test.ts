@@ -67,8 +67,14 @@ function entrances(L: Layout, d: DoorLayout): { car: THREE.Group; landing: THREE
   return { car, landing };
 }
 
+// where the car door of a variant starts along its wall: a landing door is set apart from there
+const carDoorAt = (extra: Partial<Layout['inputs']>, i = 0): number => layout({ ...defaultInputs(1600, 1750), ...extra }).doors[i]?.u0 ?? 0;
+
 const VARIANTS: readonly [string, Partial<Layout['inputs']>][] = [
   ['una porta T2', {}],
+  ['porta di piano spostata di 40 mm', { plan: { landA: carDoorAt({}) + 40 } }],
+  ['porta di piano centrale spostata di −50 mm', { door: 'C2', plan: { landA: carDoorAt({ door: 'C2' }) - 50 } }],
+  ['accessi opposti, porta di piano B spostata di 30 mm', { entrances: 'opposite', plan: { landB: carDoorAt({ entrances: 'opposite' }, 1) + 30 } }],
   ['porta centrale C2', { door: 'C2' }],
   ['due accessi opposti', { entrances: 'opposite' }],
   ['due accessi adiacenti', { entrances: 'adjacent', side2: 'right' }],

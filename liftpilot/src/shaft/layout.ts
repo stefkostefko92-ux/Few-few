@@ -69,13 +69,14 @@ function doorOn(I: ShaftInputs, side: 'A' | 'B', wall: Wall, lo: number, hi: num
   const base = { side, wall, kind: I.door, width: L, height: I.doorHeight };
   if (I.door === 'C2') {
     const mid = (lo + hi) / 2, overall = KV.doorStackC2 * L + KV.doorFrame;
-    return { ...base, u0: mid - L / 2, u1: mid + L / 2, frame0: mid - overall / 2, frame1: mid + overall / 2, stack: 'both', op0: mid - opLen / 2, op1: mid + opLen / 2 };
+    return { ...base, u0: mid - L / 2, u1: mid + L / 2, l0: mid - L / 2, l1: mid + L / 2, frame0: mid - overall / 2, frame1: mid + overall / 2, stack: 'both',
+      op0: mid - opLen / 2, op1: mid + opLen / 2 };
   }
   // telescopic: the opening flush with one side of the car, the panels stacking toward the other side; the operator's
   // closing side just past the opening, the rest over the stack
   const overall = KV.doorStackT2 * L + KV.doorFrame, ext = KV.doorOpClose;
-  const high: DoorLayout = { ...base, u0: lo, u1: lo + L, frame0: lo - half, frame1: lo - half + overall, stack: 'high', op0: lo - ext, op1: lo - ext + opLen };
-  const low: DoorLayout = { ...base, u0: hi - L, u1: hi, frame0: hi + half - overall, frame1: hi + half, stack: 'low', op0: hi + ext - opLen, op1: hi + ext };
+  const high: DoorLayout = { ...base, u0: lo, u1: lo + L, l0: lo, l1: lo + L, frame0: lo - half, frame1: lo - half + overall, stack: 'high', op0: lo - ext, op1: lo - ext + opLen };
+  const low: DoorLayout = { ...base, u0: hi - L, u1: hi, l0: hi - L, l1: hi, frame0: hi + half - overall, frame1: hi + half, stack: 'low', op0: hi + ext - opLen, op1: hi + ext };
   if (flush) return flush === 'lo' ? high : low;
   const margin = (d: DoorLayout): number => Math.min(d.frame0, wallLen - d.frame1);
   return margin(low) > margin(high) ? low : high;
@@ -95,17 +96,20 @@ function clash(a: readonly [number, number, number, number], b: readonly [number
   return ix > 0 && iy > 0 ? Math.round(Math.max(ix, iy)) : 0;
 }
 
-/** A door moved along its wall to `at` (its clear opening's start), and with an operator `opLen` long. */
-function placed(d: DoorLayout, at: number | undefined, opLen: number | undefined): DoorLayout {
+/** A door moved along its wall to `at` (its clear opening's start), with an operator `opLen` long and its landing door
+ *  at `land` (where that one's clear opening starts; absent: in line with the car door). */
+function placed(d: DoorLayout, at: number | undefined, opLen: number | undefined, land: number | undefined): DoorLayout {
   const dd = at === undefined ? 0 : at - d.u0;
-  let r: DoorLayout = { ...d, u0: d.u0 + dd, u1: d.u1 + dd, frame0: d.frame0 + dd, frame1: d.frame1 + dd, op0: d.op0 + dd, op1: d.op1 + dd };
+  let r: DoorLayout = { ...d, u0: d.u0 + dd, u1: d.u1 + dd, l0: d.l0 + dd, l1: d.l1 + dd, frame0: d.frame0 + dd, frame1: d.frame1 + dd, op0: d.op0 + dd, op1: d.op1 + dd };
   if (opLen !== undefined) {
     const ext = KV.doorOpClose, mid = (r.u0 + r.u1) / 2;
     if (r.stack === 'both') r = { ...r, op0: mid - opLen / 2, op1: mid + opLen / 2 };
     else if (r.stack === 'high') r = { ...r, op0: r.u0 - ext, op1: r.u0 - ext + opLen };
     else r = { ...r, op0: r.u1 + ext - opLen, op1: r.u1 + ext };
   }
-  return r;
+  // the landing door apart from the car door, with its frame
+  const s = land === undefined ? 0 : land - r.l0;
+  return s === 0 ? r : { ...r, l0: r.l0 + s, l1: r.l1 + s, frame0: r.frame0 + s, frame1: r.frame1 + s };
 }
 
 export function layout(I: ShaftInputs): Layout {
@@ -154,9 +158,9 @@ export function layout(I: ShaftInputs): Layout {
   const carInner: Rect = { x: car.x + carWall, y: car.y + carWall, w: A, h: B };
   // two adjacent entrances keep a corner post of the car between them: each opening away from the shared corner
   const adj = I.entrances === 'adjacent';
-  const doors: DoorLayout[] = [placed(doorOn(I, 'A', 'front', carInner.x, carInner.x + A, W, adj ? (I.side2 === 'right' ? 'lo' : 'hi') : undefined), fix.doorA, fix.opLen)];
-  if (I.entrances === 'opposite') doors.push(placed(doorOn(I, 'B', 'rear', carInner.x, carInner.x + A, W), fix.doorB, fix.opLen));
-  if (adj) doors.push(placed(doorOn(I, 'B', I.side2, carInner.y, carInner.y + B, D, 'hi'), fix.doorB, fix.opLen));
+  const doors: DoorLayout[] = [placed(doorOn(I, 'A', 'front', carInner.x, carInner.x + A, W, adj ? (I.side2 === 'right' ? 'lo' : 'hi') : undefined), fix.doorA, fix.opLen, fix.landA)];
+  if (I.entrances === 'opposite') doors.push(placed(doorOn(I, 'B', 'rear', carInner.x, carInner.x + A, W), fix.doorB, fix.opLen, fix.landB));
+  if (adj) doors.push(placed(doorOn(I, 'B', I.side2, carInner.y, carInner.y + B, D, 'hi'), fix.doorB, fix.opLen, fix.landB));
 
   // car rails: central sling on the two side walls, facing each other at the middle of the car; for two adjacent
   // entrances a cantilever sling with both rails on the wall opposite the side entrance and the counterweight between
@@ -229,16 +233,20 @@ export function layout(I: ShaftInputs): Layout {
     const len = d.wall === 'front' || d.wall === 'rear' ? W : D;
     return Math.min(d.frame0, len - d.frame1, d.op0, len - d.op1);
   };
+  // a landing door set apart from its car door: its clear opening past the car door's on one side by as much, and the
+  // passage through both what their openings share
+  const shifted = doors.filter((d) => (d.side === 'A' ? fix.landA : fix.landB) !== undefined), passage = Math.min(...doors.map((d) => d.width - Math.abs(d.l0 - d.u0)));
   const checks: ShaftCheck[] = [
     check('v_fit', fits, Math.min(maxA - minA, maxB - minB), 0, 0, 'mm'),
     check('v_area', area <= areaMax + 1e-9, area, areaMax, 2, 'm²'),
     ...(acc ? [
       check('v_acc_car', A >= acc[0] && B >= acc[1], Math.min(A - acc[0], B - acc[1]), 0, 0, 'mm'),
-      check('v_acc_door', I.doorWidth >= acc[2], I.doorWidth, acc[2], 0, 'mm'),
+      check('v_acc_door', passage >= acc[2], passage, acc[2], 0, 'mm'),
       ...(shortSide ? [check('v_acc_side', A <= B, B - A, 0, 0, 'mm')] : []),
     ] : []),
     check('v_door', doorMargin(doors[0]) >= 0, doorMargin(doors[0]), 0, 0, 'mm'),
     ...(doors[1] ? [check('v_door2', doorMargin(doors[1]) >= 0, doorMargin(doors[1]), 0, 0, 'mm')] : []),
+    ...shifted.map((d) => ((x: number) => check(d.side === 'A' ? 'v_land' : 'v_land2', x <= KV.landingShiftMax, x, KV.landingShiftMax, 0, 'mm'))(Math.abs(d.l0 - d.u0))),
     // two adjacent entrances: the operators on the car roof must not run into each other at the shared corner
     ...(adj && doors[1] ? [((x: number) => check('v_op', x <= 0, x, 0, 0, 'mm', true))(clash(operatorBox(I, doors[0]), operatorBox(I, doors[1])))] : []),
     check('v_wall', facing <= KV.wallFacingEntranceMax, facing, KV.wallFacingEntranceMax, 0, 'mm'),
