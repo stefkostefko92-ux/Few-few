@@ -10,7 +10,7 @@ import type { MachineShape, ShapePart, ShapeRole } from '@/shaft/machine-shape';
 const B = (role: ShapeRole, x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): ShapePart => ({ role, box: [x0, y0, z0, x1, y1, z1] });
 /** a cylinder along X at height y, across z */
 const CX = (role: ShapeRole, y: number, z: number, r: number, x0: number, x1: number): ShapePart => ({ role, cyl: 'x', at: [y, z], r, span: [x0, x1] });
-/** a cylinder along Z at (x, y) */
+/** a cylinder along Z at (x, y); an output shaft ends inside the sheave's hub, at P + E/2 */
 const CZ = (role: ShapeRole, x: number, y: number, r: number, z0: number, z1: number): ShapePart => ({ role, cyl: 'z', at: [x, y], r, span: [z0, z1] });
 /** a cylinder along Y at (x, z) */
 const CY = (role: ShapeRole, x: number, z: number, r: number, y0: number, y1: number): ShapePart => ({ role, cyl: 'y', at: [x, z], r, span: [y0, y1] });
@@ -59,19 +59,19 @@ export const SHAPES: readonly MachineShape[] = [
     model: 'SH110B', yWheel: 162, yWorm: 272, sheaves: rows(187, '320/76/190 360/70 400/70 450/70 480/70 520/70 550/70 600/70'), feet: [-162, -98, 155, 98],
     holes: grid([-102, 103], [-75, 75]), hole: 'M20', overall: [162, 537, 549],
     box: [-162, 155, 328, 98], worm: [40, 155, 200, 464, 112], motor: [140, 155, 357], foot: [187, 337, 93, 147, 86], terminal: [169, 279, 402, 477, 100],
-    brake: [138, 357, 433], arms: [361, 123, 81, 418, 485, 170], magnet: B('magnet', 279, 422, -77, 443, 558, 77), wheel: [172, 433, 508], shaft: [30, 230],
+    brake: [138, 357, 433], arms: [361, 123, 81, 418, 485, 170], magnet: B('magnet', 279, 422, -77, 443, 558, 77), wheel: [172, 433, 508], shaft: [30, 222],
   }),
   compact({
     model: 'SH130', yWheel: 166, yWorm: 300, sheaves: rows(192, '320/76/195 360/70 400/70 450/70 480/70 520/70 550/70 600/70 650/70 700/70'),
     feet: [-166, -112, 165, 112], holes: grid([-110, 110], [-90, 90]), hole: 'M20', overall: [166, 583, 577],
     box: [-166, 165, 345, 112], worm: [60, 165, 200, 501, 130], motor: [138, 165, 388], foot: [219, 369, 121, 175, 86], terminal: [181, 295, 430, 505, 102],
-    brake: [138, 388, 456], arms: [393, 151, 81, 450, 513, 170], magnet: CZ('magnet', 422, 503, 54, -60, 60), wheel: [172, 456, 539], shaft: [30, 232],
+    brake: [138, 388, 456], arms: [393, 151, 81, 450, 513, 170], magnet: CZ('magnet', 422, 503, 54, -60, 60), wheel: [172, 456, 539], shaft: [30, 227],
   }),
   compact({
     model: 'SH130G', yWheel: 166, yWorm: 300, sheaves: rows(197, '480/90 520/90 550/90 600/70/192'), feet: [-166, -112, 165, 112],
     holes: grid([-110, 110], [-90, 90]), hole: 'M20', overall: [166, 583, 584],
     box: [-166, 160, 357, 123], worm: [70, 160, 200, 503, 137], motor: [143, 160, 435], foot: [259, 409, 111, 165, 86], terminal: [181, 295, 437, 512, 102],
-    brake: [155, 435, 525], arms: [438, 152, 90, 492, 522, 186], magnet: CZ('magnet', 465, 510, 54, -60, 60), wheel: [189, 525, 583], shaft: [30, 245],
+    brake: [155, 435, 525], arms: [438, 152, 90, 492, 522, 186], magnet: CZ('magnet', 465, 510, 54, -60, 60), wheel: [189, 525, 583], shaft: [30, 242],
   }),
   compact({
     model: 'SH140', yWheel: 166, yWorm: 300, sheaves: rows(210, '360/100 400/100 450/100 480/100 520/100 560/100 600/100'), feet: [-165, -123, 155, 123],
@@ -83,14 +83,14 @@ export const SHAPES: readonly MachineShape[] = [
     model: 'SH160', yWheel: 225, yWorm: 400, sheaves: rows(248.5, '450/115 520/115 560/115 600/115 650/115 700/115'), feet: [-225, -158, 239, 158],
     holes: grid([-117.5, 117.5], [-130, 130]), hole: 'M24', overall: [257, 768, 733],
     box: [-225, 239, 480, 158], worm: [120, 239, 220, 582, 164], motor: [176, 239, 517], foot: [313, 413, 160, 233, 60], terminal: [258, 443, 576, 652, 110],
-    brake: [189, 517, 606], arms: [514, 204, 100, 572, 665, 229], magnet: CZ('magnet', 528, 652, 60, -78, 78), wheel: [239, 606, 656], shaft: [50, 315],
+    brake: [189, 517, 606], arms: [514, 204, 100, 572, 665, 229], magnet: CZ('magnet', 528, 652, 60, -78, 78), wheel: [239, 606, 656], shaft: [50, 306],
     rear: [44, -257],
   }),
   compact({
     model: 'SH190', yWheel: 209, yWorm: 399, sheaves: rows(271, '520/176/279 600/160 650/160 690/160 750/160'), feet: [-245, -181, 245, 181],
     holes: grid([-190, 190], [-115, 115]), hole: 'M24', overall: [289, 769, 732],
     box: [-252, 246, 503, 181], worm: [80, 246, 230, 623, 181], motor: [160, 246, 560], foot: [300, 500, 168, 240, 110], terminal: [262, 509, 559, 654, 110],
-    brake: [200, 560, 680], arms: [590, 203, 120, 650, 731, 229], magnet: CZ('magnet', 620, 680, 50, -80, 80), wheel: [239, 680, 737], shaft: [55, 360],
+    brake: [200, 560, 680], arms: [590, 203, 120, 650, 731, 229], magnet: CZ('magnet', 620, 680, 50, -80, 80), wheel: [239, 680, 737], shaft: [55, 351],
     rear: [50, -289],
   }),
   {
@@ -98,7 +98,7 @@ export const SHAPES: readonly MachineShape[] = [
     brand: 'SICOR', model: 'MR12C', yWheel: 172, yWorm: 306, sheaves: rows(197, '340/76/195 400/70 450/70 480/70 550/70 600/68/232'),
     feet: [-145, -115, 145, 115], holes: grid([-110, 110], [-90, 90]), hole: 'Ø22', overall: [348, 542, 555], src: SRC,
     parts: [
-      B('base', -145, 0, -115, 145, 22, 115), B('housing', -165, 22, -140, 140, 405, 140), CZ('cover', 0, 172, 66, 140, 158), CZ('shaft', 0, 172, 32, 158, 240),
+      B('base', -145, 0, -115, 145, 22, 115), B('housing', -165, 22, -140, 140, 405, 140), CZ('cover', 0, 172, 66, 140, 158), CZ('shaft', 0, 172, 32, 158, 232),
       CX('cover', 306, 0, 100, 140, 200), CX('motor', 306, 0, 142, 200, 542), B('terminal', 141, 448, -82, 341, 525, 82),
       CX('brake', 306, 0, 113, -300, -165), ...pair('arm', -223, 186, 55, -157, 493, 146), CZ('magnet', -190, 481, 54, -60, 60), B('arm', -221, 405, -44, -21, 440, 44),
       CX('handwheel', 306, 0, 170, -348, -300),
@@ -111,7 +111,7 @@ export const SHAPES: readonly MachineShape[] = [
     feet: [-230, -200, 520, 200], holes: grid([-190, -145, 145, 190], [-165, 165]), hole: 'Ø24', overall: [317, 1216, 727], src: SRC,
     parts: [
       B('base', -230, 0, -200, 520, 45, 200), arch(-240, 262, 45, 475, 235, -190, 190), CZ('cover', 0, 475, 126, -208, -190), B('cover', -125, 350, 190, 125, 665, 216),
-      CZ('shaft', 0, 475, 53, 216, 380), B('housing', -90, 700, -75, 90, 727, 75),
+      CZ('shaft', 0, 475, 53, 216, 370), B('housing', -90, 700, -75, 90, 727, 75),
       CX('cover', 260, 0, 89, -286, -240), CX('cover', 260, 0, 66, -308, -286), CX('cover', 260, 0, 117, 236, 276), CX('shaft', 260, 0, 55, 276, 355),
       CX('brake', 260, 0, 127, 355, 465), ...pair('arm', 359, 109, 97, 464, 571, 190), CZ('magnet', 410, 550, 60, -78, 78),
       B('pedestal', 482, 45, -67, 518, 640, 67), CY('eye', 500, 0, 24, 640, 690), CX('cover', 260, 0, 200, 525, 545),
@@ -123,7 +123,7 @@ export const SHAPES: readonly MachineShape[] = [
     feet: [-275, -210, 570, 210], holes: grid([-230, -180, 180, 230], [-175, 175]), hole: 'Ø24', overall: [387, 1410, 827], src: SRC,
     parts: [
       B('base', -275, 0, -210, 570, 45, 210), arch(-305, 305, 45, 540, 285, -200, 200), CZ('cover', 0, 540, 130, -222, -200), B('cover', -140, 400, 200, 140, 730, 230),
-      CZ('shaft', 0, 540, 60, 230, 420), B('housing', -90, 800, -75, 90, 827, 75),
+      CZ('shaft', 0, 540, 60, 230, 410), B('housing', -90, 800, -75, 90, 827, 75),
       CX('cover', 280, 0, 95, -375, -305), CX('shaft', 280, 0, 20, -387, -375), CX('cover', 280, 0, 136, 305, 336), CX('shaft', 280, 0, 65, 336, 405),
       CX('brake', 280, 0, 140, 405, 515), ...pair('arm', 409, 110, 109, 511, 620, 206), CZ('magnet', 460, 600, 60, -78, 78),
       B('pedestal', 532, 45, -67, 568, 670, 67), CY('eye', 550, 0, 25, 670, 720), CX('cover', 280, 0, 225, 575, 593),
