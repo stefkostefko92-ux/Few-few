@@ -20,14 +20,17 @@ export const VOCI_PORTE: readonly VoceVano[] = [
   {
     id: 'porte.operatore', gruppo: 'porte', titolo: 'Vano porta di piano e operatore della porta di cabina',
     valore: 'vano nel muro: luce netta + 2 × 50 mm di portale; operatore della porta di cabina lungo 1,5·L + 50 mm con porta telescopica '
-      + '(il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 150 mm, dentro il vano; con il fornitore scelto: '
-      + '2SG FLY/LIKE 1,5·L + 40 mm (telescopica) e 2·L + 20 mm (centrale), Fermator 40/10 1,5·L + 50 mm e 2·L + 50 mm; con due accessi adiacenti '
-      + 'gli operatori non devono sovrapporsi all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
+      + '(il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 220 mm, dentro il vano; con il fornitore scelto: '
+      + '2SG FLY/LIKE 1,5·L + 40 mm (telescopica) e 2·L + 20 mm (centrale), profondo 220 mm; Fermator 40/10 1,5·L + 50 mm e 2·L + 50 mm, profondo '
+      + '144 mm; Dapa LOWER 1,5·L + 47 mm e 2·L + 50 mm, profondo 217 mm; con due accessi adiacenti gli operatori non devono sovrapporsi '
+      + 'all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
     riferimento: 'dato del fornitore delle porte',
-    fonte: 'cataloghi 2SG FLY 2AT (1,5·A + 40) e 2AO (2·A + 20), Fermator 40/10 VF (1,5·PL + 40/50; 2·PL + 50; chiusura a 25 mm dalla luce), '
-      + 'letti da estratti di ricerca: presi i valori più lunghi, da confermare con il fornitore. Le formule con + 40 danno esattamente la lunghezza '
-      + 'delle soglie Fermator di catalogo (2 ante telescopiche, luce 900: 1390 mm; 2 ante centrali, luce 700: 1440 mm): potrebbero essere la '
-      + 'soglia e non la trave dell\'operatore. Wittur, Prisma, Dapa e CMM: lunghezza dell\'operatore non trovata',
+    fonte: 'schede PDF 2SG FLY 2AT (ingombro massimo 1,5·A + 10; soglia 1,5·A + 20, + 40 con l\'extracorsa: presa la più lunga) e 2AO (2·A + 20), '
+      + 'profondità 220 letta sul disegno; catalogo tecnico Dapa LOWER (1,5·AP + 47, 2·AP + 50, profondità 217); Fermator 40/10 PM in copie presso '
+      + 'terzi (1,5·PL + 50 e 2·PL + 50, le soglie + 40; profondità 120–144 sul disegno, con le staffe 183–280; chiusura a 15 mm dalla luce, il '
+      + 'software ne tiene 25); Wittur Hydra Plus da una copia del catalogo Selcom (1,5·PL + 25 e 2·PL + 50, profondo 200); letti il 2 ottobre 2026 '
+      + '(research/argano-geared/18-porte-limitatori-tenditori-tutti.md). Il generico è l\'inviluppo: il più lungo (Fermator, Dapa) e il più '
+      + 'profondo (2SG FLY). Hydra Plus può superarlo dove la sua quota GM supera la GW; Prisma e CMM: lunghezza e profondità non trovate',
     stato: 'da_verificare',
     costanti: ['doorPortal', 'doorOpT2', 'doorOpC2', 'doorOpClose', 'doorOpDepth', 'doorOpMakers'], verifiche: ['v_door', 'v_door2', 'v_op'],
   },

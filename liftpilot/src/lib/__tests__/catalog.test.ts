@@ -1,6 +1,6 @@
 // The makers' machines: the data read as numbers, the fit of an option of the sizing (ratio nearest the ideal one,
-// sheave, static load, motor, payload), and the proposal that takes the smallest machine of the maker chosen or, when
-// none passes, the calculation grid's.
+// sheave, static load, motor, payload), and the proposal that takes the smallest machine of the maker chosen (a
+// historic machine or a special variant only when named) or, when none passes, the calculation grid's.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { BRANDS, MACHINES, catalogFit, ratioValue } from '@/lib/catalog/machines';
@@ -17,8 +17,20 @@ test('catalogo degli argani: rapporti, pulegge, carichi e potenze leggibili', ()
     if (c.kWmax !== null) assert.ok(c.kWmax > 0, `${c.model}: potenza`);
     assert.ok(c.staticKg > 0 && c.src.length > 0, c.model);
   }
-  for (const b of BRANDS) assert.ok(MACHINES.some((c) => c.brand === b), `${b}: nessun argano`);
+  for (const b of BRANDS) assert.ok(MACHINES.some((c) => c.brand === b && !c.byName), `${b}: nessun argano proposto`);
   assert.equal(ratioValue('2/43'), 21.5);
+  // the documents read on 2 October 2026: SICOR's payloads at 1:1 (brochure p. 9), Sassi's MB, FAER's range in HP
+  const of = (model: string) => MACHINES.find((c) => c.model === model);
+  assert.deepEqual(['SV110', 'MR12C', 'SH130G', 'SH140', 'SH160', 'MR35'].map((x) => of(x)?.payload.r1), [450, 550, 630, 875, 1250, 5500]);
+  assert.ok(MACHINES.filter((c) => c.brand === 'SICOR' && !c.byName).every((c) => c.payload.r1 !== null && c.src.startsWith('D: ')));
+  assert.deepEqual(['MB94', 'MB95', 'MB108'].map((x) => of(x)?.staticKg), [8000, 12000, 15000]);
+  assert.deepEqual(of('MF94')?.sheaves, [450, 800]);
+  assert.deepEqual(['P58S', 'P60F', 'P68F', 'P70F', 'P80F'].map((x) => of(x)?.kWmax), [7.5, 7.5, 11.9, 18.7, 22.4]);
+  assert.deepEqual(of('P58F')?.ratios, ['1/76', '1/66', '1/58', '1/52', '1/44', '1/37']);
+  assert.equal(of('HW140C')?.kWmax, 10.8);
+  // only by name: the machines no longer built, the long shafts, another market
+  assert.deepEqual(MACHINES.filter((c) => c.byName).map((c) => c.model), ['SH140LS', 'SH160LS', 'MR12 (storico)', 'MR16 (storico)', 'MR17 (storico)',
+    'M73AL', 'M83AL', 'M93AL', 'M98HAL', 'M77', 'M77H', 'M87', 'M104']);
 });
 
 test('un argano del catalogo accetta un\'opzione: rapporto più vicino, scarto di velocità, i motivi del no', () => {
@@ -40,8 +52,9 @@ test('proposta dal catalogo: il più piccolo argano che passa, con il suo rappor
     assert.equal(Number(d.values.n_i), Math.round(f.i * 1000) / 1000);
     assert.equal(Number(d.values.n_shaftMax), f.machine.staticKg);
     assert.ok(Math.abs(f.dv) <= KL.catalogRatioTol);
+    assert.ok(!f.machine.byName, `${brand}: ${f.machine.model} si propone solo per nome`);
     // a smaller machine of the brand that takes the same option does not exist
-    for (const c of MACHINES.filter((x) => x.brand === brand && x.staticKg < f.machine.staticKg)) {
+    for (const c of MACHINES.filter((x) => x.brand === brand && !x.byName && x.staticKg < f.machine.staticKg)) {
       const o = { D: Number(d.values.n_D), iIdeal: f.i * (1 + f.dv), Pn: Number(d.values.n_Pn), staticKg: d.analysis.res.shaft.testKg, Q: d.layout.Q, r: 1 };
       assert.ok(catalogFit(c, o, KL.catalogRatioTol).fails.length > 0, `${c.model} passerebbe`);
     }
@@ -55,5 +68,9 @@ test('proposta dal catalogo: il più piccolo argano che passa, con il suo rappor
   assert.deepEqual(miss.values, grid.values);
   assert.ok(liftInputsSchema.safeParse({ ...base, catalog: { brand: 'Sassi', model: 'LEO' } }).success);
   assert.ok(liftInputsSchema.safeParse({ ...base, catalog: { brand: 'FAER', model: 'P58F' } }).success);
+  assert.ok(liftInputsSchema.safeParse({ ...base, catalog: { brand: 'ITG', model: 'ITG 127' } }).success);
+  // a machine proposed only by name is taken when named
+  const named = deriveLift({ ...base, catalog: { brand: 'SICOR', model: 'SH140LS' } });
+  assert.ok(named.catalog && (named.catalog.miss || named.catalog.fit?.machine.model === 'SH140LS'));
   assert.ok(!liftInputsSchema.safeParse({ ...base, catalog: { brand: 'Ignota' } }).success);
 });

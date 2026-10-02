@@ -12,9 +12,9 @@ export interface CatalogChoice {
 }
 
 /** The machine of the choice that takes an option: no failure, the lowest static load (the smallest machine), then
- *  the ratio nearest the ideal one; null when none does. */
+ *  the ratio nearest the ideal one; null when none does. Without a model, the machines proposed only by name are out. */
 export function bestFit(choice: CatalogChoice, o: SizingOption, Q: number, r: number): CatalogFit | null {
-  const fits = catalogOf(choice.brand, choice.model)
+  const fits = catalogOf(choice.brand, choice.model).filter((c) => choice.model || !c.byName)
     .map((c) => catalogFit(c, { D: o.D, iIdeal: o.iIdeal, Pn: o.Pn, staticKg: o.res.shaft.testKg, Q, r }, KL.catalogRatioTol))
     .filter((f) => f.fails.length === 0);
   return fits.sort((a, b) => a.machine.staticKg - b.machine.staticKg || Math.abs(a.dv) - Math.abs(b.dv))[0] ?? null;

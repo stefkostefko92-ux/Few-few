@@ -46,19 +46,22 @@ export const KV = {
   cantCwGap: 70,
   // cantilever sling: the car 10 mm clear of the clips on the car rails' feet (the clips' reach: src/shaft/rails.ts)
   cantClipGap: 10,
-  // doors in plan: jambs of the landing door opening; car door operator by door kind (catalogues 2SG FLY, Fermator
-  // 40/10 VF, taken on the long side): telescopic 1,5·L + 50, its closing side 25 mm past the opening; centre opening
-  // 2·L + 60; 150 mm deep
+  // doors in plan: jambs of the landing door opening; car door operator by door kind, the longest of the catalogues
+  // (2SG FLY, Fermator 40/10, Dapa LOWER): telescopic 1,5·L + 50, its closing side 25 mm past the opening; centre opening
+  // 2·L + 60; 220 mm deep (the deepest of the drawings: 2SG FLY 220, Dapa 217, Wittur Hydra Plus 200)
   doorPortal: 50,
   // the portal's head over the clear opening on the landing (registry porte.imbotti)
   doorHead: 60,
   doorOpT2: [1.5, 50],
   doorOpC2: [2, 60],
   doorOpClose: 25,
-  doorOpDepth: 150,
-  // the operator of the supplier chosen (same extracts): 2SG FLY/LIKE 2AT 1,5·A + 40 and 2AO 2·A + 20; Fermator 40/10
-  // 1,5·PL + 50 and 2·PL + 50
-  doorOpMakers: { '2sg': { T2: [1.5, 40], C2: [2, 20] }, fermator: { T2: [1.5, 50], C2: [2, 50] } },
+  doorOpDepth: 220,
+  // the operator of the supplier chosen (research/argano-geared/18-*.md): 2SG FLY/LIKE 2AT 1,5·A + 40 (the sill with
+  // its overtravel; the operator is at most 1,5·A + 10) and 2AO 2·A + 20, 220 deep; Fermator 40/10 1,5·PL + 50 and
+  // 2·PL + 50, 144 deep; Dapa LOWER 1,5·AP + 47 and 2·AP + 50, 217 deep
+  doorOpMakers: {
+    '2sg': { T2: [1.5, 40], C2: [2, 20], depth: 220 }, fermator: { T2: [1.5, 50], C2: [2, 50], depth: 144 }, dapa: { T2: [1.5, 47], C2: [2, 50], depth: 217 },
+  },
   // niches in the walls: the wall left behind a niche, the counterweight's rails clear of a niche's sides, the recess
   // of a lamp; the lamps of the shaft 1,5 m over each floor and the top one 80 mm under the slab
   nicheBackMin: 50,
@@ -233,16 +236,25 @@ export const VOCI_VANO: readonly VoceVano[] = [
   {
     id: 'ingombri.limitatore', gruppo: 'ingombri', titolo: 'Limitatore di velocità e tenditore (pianta, locale macchina, 3D)',
     valore: 'per velocità il più piccolo PFB che la regge: LK200 (Ø 200, fune 6) fino a 1,48 m/s, LK250 fino a 1,74, LK300 fino a 2,93, R12BF fino a '
-      + '4,00; oppure il modello scelto se regge la velocità: PFB (LX, LK, R1, R10BF) o Montanari (RQ-A 200, 250 e 300, NOR fino a 1,50 m/s, RG 200 '
-      + 'fino a 0,30). Disegnati nelle proporzioni del LK200 (alto 370 mm, base 220 × 165) salvo LX120 alto 178, R10BF 488 su base 460 × 196, '
-      + 'R12BF 524 su base 520 × 116, R1-LR 344 su base 285 × 80. Tenditore in fossa sulla guida di cabina: a leva con 22 kg (come PFB R4K) o '
+      + '4,00; oppure il modello scelto se regge la velocità: PFB (LX, LK, R1, R3LR, R5, R6, R10BF), Bode (GB 7 fino a 2,98 m/s, GB 8 fino a 1,29), '
+      + 'Dynatech (VEGA 200 fino a 2,40), Wittur (OL20 fino a 1,75, OL35 fino a 3,00, EOS fino a 2,50, OL100 fino a 10,00) o Montanari (RQ-A 200, 250 e '
+      + '300, RC 200 e 300, NOR fino a 1,50 m/s, RG 200 fino a 0,30). Con le quote dei disegni dei costruttori (altezza totale, tra parentesi l\'asse '
+      + 'dalla base): LK200, LK250, LK300 e LK315 415 (165) su base 220 × 165 (LK315 220 × 130); LX120 178 (70,5), LK120 270 (71), LX150 274 (86), '
+      + 'LX180 322 (107), LX200 349 (110); R1 344 (190,5) su base 285 × 80; R3LR 348 (157); R5 261 (120); R6 335 (168); R10BF 488 (303) su base '
+      + '460 × 196; R12BF 524 (337) su base 520 × 116; Bode GB 7 360 (205) e GB 8 315 (205); Dynatech VEGA 200 332 (199,5); Wittur e Montanari nelle '
+      + 'proporzioni del software (Ø 200: alto 370, asse a 240). Tenditore in fossa sulla guida di cabina: a leva con 22 kg (come PFB R4K) o '
       + 'verticale con 44 kg (come PFB R4R)',
     riferimento: 'dati del fornitore del limitatore', stato: 'da_verificare',
-    fonte: 'pagine pfb.it e montanarigiulio.com, schede di elevatorequipment.co.uk (altezze, basi), estratti di ricerca del 1° ottobre 2026',
-    nota: 'per le RQ-A Montanari 0,15–3,0 m/s è il campo della famiglia: il limite di ogni taglia va letto sul manuale; delle basi pubblicate non è detto '
-      + 'quale lato stia nel piano della puleggia (il lato lungo è disegnato in quel piano, come nel LK200). Tenditore a leva: lungo 700 mm (quota «A» '
-      + 'del PFB R4KE per LK200 in un listino di rivenditore, senza definizione), puleggia a 255 mm dalla cerniera e blocco di 150 × 185 mm: scelte del '
-      + 'software; le masse di 22 e 44 kg sono quelle delle tabelle PFB',
+    fonte: 'manuali d\'uso PFB con i disegni quotati (download.pfb.it), brochure Bode e Wittur, manuale Dynatech VEGA e disegni Bode in copia '
+      + 'presso un rivenditore (elevatorequipment.co.uk), letti il 2 ottobre 2026; basi delle LK da un listino di rivenditore; Montanari da estratti '
+      + 'di ricerca del 1° ottobre 2026 (research/argano-geared/18-porte-limitatori-tenditori-tutti.md)',
+    nota: 'il disegno unico delle LK200–LK315 dà due altezze non spiegate (230 e 415 mm; un rivenditore scrive 370): è presa la maggiore. Per Bode '
+      + 'la velocità nominale massima è nostra: la velocità di scatto massima diviso 1,15 (scatto ≥ 115 % della nominale), del GB 8 con 1,49 m/s del '
+      + 'disegno invece dei 2,04 della brochure. Per le RQ-A e le RC Montanari 0,15–3,0 e 1,60–4,2 m/s sono i campi della famiglia: il limite di ogni '
+      + 'taglia va letto sul manuale. Delle basi pubblicate non sempre è detto quale lato stia nel piano della puleggia (il lato lungo è disegnato in '
+      + 'quel piano, come nel LK200). Tenditore a leva: lungo 700 mm (quota «A» del PFB R4KE per LK200 in un listino di rivenditore, senza '
+      + 'definizione), puleggia a 255 mm dalla cerniera e blocco di 150 × 185 mm: scelte del software; le masse di 22 e 44 kg sono quelle delle '
+      + 'tabelle PFB (tenditori R4K e R4R per LK200, confermate dalla brochure)',
   },
   {
     id: 'modello.passo', gruppo: 'modello_vano', titolo: 'Dimensioni proposte della cabina',

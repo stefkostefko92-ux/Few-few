@@ -3,8 +3,8 @@
 // and what they must keep clear of — the car and the counterweight running past them, the landing doors of the top
 // floor in line with the car, the rails' feet (registry distanze.testata). Pure.
 import { check } from './checks';
-import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
+import { doorOpDepthOf } from './operator';
 import { RAILS } from './rails';
 import type { DoorLayout, HeadWalls, Layout, Rail, ShaftCheck, ShaftInputs, Wall } from './types';
 
@@ -67,7 +67,7 @@ export function headClearances(L: Layout): { moving: number; fixed: number } {
   const moving: Box4[] = [[car.x, car.y, car.x + car.w, car.y + car.h], [cw.x, cw.y, cw.x + cw.w, cw.y + cw.h]];
   const fixed: Box4[] = L.rails.map((r) => railBox(I, r));
   for (const d of L.doors) {
-    moving.push(onWall(I, d.wall, Math.min(d.op0, d.u0 - 40), v0, Math.max(d.op1, d.u1 + 40), v0 + KV.doorOpDepth));
+    moving.push(onWall(I, d.wall, Math.min(d.op0, d.u0 - 40), v0, Math.max(d.op1, d.u1 + 40), v0 + doorOpDepthOf(I)));
     if (served.includes(d.side)) fixed.push(onWall(I, d.wall, d.frame0, 0, d.frame1, I.landingDepth));
   }
   if (L.bridge) fixed.push([L.bridge.x - 25, L.bridge.y0, L.bridge.x + 25, L.bridge.y1]);

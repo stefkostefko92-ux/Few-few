@@ -14,6 +14,7 @@ import { onWall, quad, walls } from './plan-walls';
 import { cwPlanCode, genericBracketPlan, panevSupportPlan, specialPlanLabel } from './plan-staffe';
 import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from './sill';
 import { KV_VERT } from './norme-vert';
+import { doorOpDepthOf } from './operator';
 import { bufferPlan, pitSpace } from './pit';
 import { standOf } from './section';
 import { RAILS } from './rails';
@@ -74,7 +75,7 @@ function carBody(L: Layout, level: PlanLevel): Entity[] {
     out.push(path(quad(L, d.wall, d.u0, v0 + L.inputs.carDoorDepth, d.u1, v0 + L.inputs.carDoorDepth + L.inputs.carWall), true, undefined, 'paper'));
     out.push(...sillAndPanels(L, d, d.u0 - 40, d.u1 + 40, v0, v0 + L.inputs.carDoorDepth + L.inputs.carWall, carTracks(v0), CAR_PANEL));
     // car door operator on the car roof: seen at the top, hidden below
-    out.push(path(quad(L, d.wall, d.op0, v0, d.op1, v0 + KV.doorOpDepth), true, level === 'top' ? 'thin' : 'hidden'));
+    out.push(path(quad(L, d.wall, d.op0, v0, d.op1, v0 + doorOpDepthOf(L.inputs)), true, level === 'top' ? 'thin' : 'hidden'));
   }
   return out;
 }

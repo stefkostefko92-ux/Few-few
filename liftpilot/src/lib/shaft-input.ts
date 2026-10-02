@@ -142,7 +142,7 @@ export const shaftInputsSchema = z.object({
   cwBrackets: z.enum(['panev', 'generic']).optional(),
   /** Panev's articles chosen by hand (src/shaft/staffe-ids.ts); absent: the software's choice */
   panev: z.object({ door: z.enum(DOOR_PAIRS).optional(), cw: z.enum(CW_CHOICES).optional() }).strict().optional(),
-  doorMaker: z.enum(['generic', '2sg', 'fermator']).optional(),
+  doorMaker: z.enum(['generic', '2sg', 'fermator', 'dapa']).optional(),
   governor: z.string().refine((g) => GOVERNORS.some((x) => x.model === g)).optional(),
   /** the walls at the top floor and in the headroom, in from the main floor's (src/shaft/head.ts) */
   head: z.object({ front: mm(-500, 500), rear: mm(-500, 500), left: mm(-500, 500), right: mm(-500, 500) }).strict().optional(),

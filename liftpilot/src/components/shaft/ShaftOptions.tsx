@@ -69,7 +69,7 @@ export default function ShaftOptions({ I, set, lastQ }: Props) {
       <label className="field">
         <span>{t('dm_title')}</span>
         <select className="input" value={I.doorMaker ?? 'generic'} onChange={(e) => set({ doorMaker: e.target.value as NonNullable<ShaftInputs['doorMaker']> })}>
-          {(['generic', '2sg', 'fermator'] as const).map((m) => <option key={m} value={m}>{t(`dm_${m}`)}</option>)}
+          {(['generic', '2sg', 'fermator', 'dapa'] as const).map((m) => <option key={m} value={m}>{t(`dm_${m}`)}</option>)}
         </select>
       </label>
       <fieldset className="field call-station">

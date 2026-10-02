@@ -14,6 +14,7 @@ import { cwNiche, nicheMargin } from './niche';
 import { hasHead, headCheck, headFacingExtra, headOf } from './head';
 import { PANEV_BACK, cwBracketsOf } from './staffe';
 import { cwBracketMargin, cwSpecialOf } from './staffe-scelta';
+import { doorOpDepthOf, doorOpOf } from './operator';
 import type { Access, CwSide, DoorLayout, Layout, Rail, Rect, ShaftCheck, ShaftInputs, Wall } from './types';
 
 const ACCESS: Readonly<Record<Exclude<Access, 'none'>, readonly [number, number, number]>> = {
@@ -57,12 +58,6 @@ function carSize(I: ShaftInputs, maxA: number, maxB: number, minA: number, minB:
   return best ? { ...best, Q: I.Q } : { A: fixedA ? maxA : minA, B: fixedB ? maxB : minB, Q: I.Q };
 }
 
-/** The car door operator's length as f·L + e: the supplier's catalogue when one is chosen, else the longest of them. */
-export function doorOpOf(I: ShaftInputs): readonly [number, number] {
-  const m = I.doorMaker && I.doorMaker !== 'generic' ? KV.doorOpMakers[I.doorMaker] : null;
-  return m ? m[I.door] : I.door === 'C2' ? KV.doorOpC2 : KV.doorOpT2;
-}
-
 /** A door on a wall, along that wall's axis between `lo` and `hi` (the car inside). A telescopic door goes flush with
  *  the side of the car that leaves the walls more room, or with the side `flush` asks for. */
 function doorOn(I: ShaftInputs, side: 'A' | 'B', wall: Wall, lo: number, hi: number, wallLen: number, flush?: 'lo' | 'hi'): DoorLayout {
@@ -85,7 +80,7 @@ function doorOn(I: ShaftInputs, side: 'A' | 'B', wall: Wall, lo: number, hi: num
 
 /** Plan box of a car door operator: on the car roof, over the car sill, along the door's wall. */
 function operatorBox(I: ShaftInputs, d: DoorLayout): readonly [number, number, number, number] {
-  const v0 = I.landingDepth + I.sillGap, v1 = v0 + KV.doorOpDepth;
+  const v0 = I.landingDepth + I.sillGap, v1 = v0 + doorOpDepthOf(I);
   if (d.wall === 'front') return [d.op0, v0, d.op1, v1];
   if (d.wall === 'rear') return [d.op0, I.D - v1, d.op1, I.D - v0];
   return d.wall === 'left' ? [v0, d.op0, v1, d.op1] : [I.W - v1, d.op0, I.W - v0, d.op1];

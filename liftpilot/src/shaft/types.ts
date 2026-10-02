@@ -130,7 +130,7 @@ export type ShaftInputs = {
    *  absent: the software's choice */
   panev?: { door?: DoorPairId; cw?: CwChoice };
   /** the car door operator's supplier (its catalogue's length); missing: the longest of the catalogues */
-  doorMaker?: 'generic' | '2sg' | 'fermator';
+  doorMaker?: 'generic' | '2sg' | 'fermator' | 'dapa';
   /** the overspeed governor's model (governor.ts); missing: by the rated speed */
   governor?: string;
   /** the walls at the top floor and in the headroom (head.ts); missing: as at the main floor */
