@@ -78,7 +78,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const rails = buildRails(L, S, M);
   const buffers = buildBuffers(L, S, M, car.bufferSpots);
   const ropes = buildRopes(rig, N.n, N.d, M, !two);
-  const machine = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, openings, gov);
+  const machine = buildRoom(L, rig, N.n, N.d, N.D, S.ceiling, M, openings, gov, dv.machine.shape ?? null);
   // the fittings of the shaft and the pit, the governor's loop, the travelling cable
   const fit = new Batch(), fittings = new THREE.Group();
   buildPit(L, S, M, fit);

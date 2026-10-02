@@ -22,6 +22,8 @@ import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { shaftBlocks, type ReportDesign } from './shaft';
 import { EXISTING_NOTE, adaptSection, collaudoRows, collaudoText, esitoOf } from './collaudo';
 import { machineSpec } from '../lift/machine';
+import { shapeOf } from '../catalog/shapes';
+import { shapeRows } from './machine-shape';
 import { supportChecks, supportLoad } from '../lift/support';
 
 /** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
@@ -182,8 +184,10 @@ export function buildReport(r: ReportInput): ReportDoc {
   section(`${t('c_prop')} (informativa)`);
   if (m.catalog) {
     B.push({ t: 'p', text: `Argano a catalogo: ${m.catalog.brand} ${m.catalog.model}, rapporto ${m.catalog.ratio}, carico statico ammesso ${fmt(m.catalog.staticKg, 0)} kg `
-      + `(fonte: ${m.catalog.src}). Il calcolo usa questo rapporto, il carico statico e la massa del catalogo; i dati vengono da estratti delle pagine del `
-      + 'costruttore e vanno verificati sulla scheda prima dell\'ordine.' });
+      + `(fonte: ${m.catalog.src}). Il calcolo usa questo rapporto, il carico statico e la massa del catalogo; i dati vanno verificati sulla scheda del `
+      + 'costruttore prima dell\'ordine.' });
+    const S = shapeOf(m.catalog.brand, m.catalog.model);
+    if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt) });
   }
   if (sizing.pick) {
     B.push({ t: 'kv', rows: X.proposalRows(sizing.pick, N, sizing.fixedD, !!sizing.keep) });

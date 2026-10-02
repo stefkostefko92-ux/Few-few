@@ -1,9 +1,11 @@
 // Machine room above the shaft: where the machine sits (its sheave's car side over the car's rope drop, the diverting
 // pulley where the counterweight's drop leaves it), the checks of the room (height, free area in front of the control
 // panel, door), and the geometry both drawings of the room share: the ropes' straight runs between the wheels and the
-// slab's openings round them, as the 3D cuts them (components/lift3d/slab.ts). The machine is the 3D's (machine-outline).
+// slab's openings round them, as the 3D cuts them (components/lift3d/slab.ts). The machine is the 3D's (machine-outline) or a
+// maker's as it is (machine-shape).
 import { check } from './checks';
 import { MACHINE_A, MACHINE_X, MACHINE_Z } from './machine-outline';
+import { machineFrame, type MachineFrame, type MachineShape } from './machine-shape';
 import { KV_VERT } from './norme-vert';
 import { cwPlateAt, section } from './section';
 import type { Layout, ShaftCheck } from './types';
@@ -28,6 +30,8 @@ export interface MachineSpec {
   reverse: boolean;
   /** 2:1: the ropes rise to the machine half a pulley in from the car's and the counterweight's drops; 1:1: 0 */
   ropeIn: number;
+  /** the maker's machine as it is (machine-shape.ts); missing or null: the generic machine scaled to the sheave */
+  shape?: MachineShape | null;
 }
 
 export interface RoomGeo {
@@ -51,6 +55,8 @@ export interface RoomGeo {
   across: readonly [number, number];
   /** the machine's scale on the 3D's Ø 560 */
   s: number;
+  /** where the machine is in its own frame: its axis, its sheave, its bedplate (machine-shape.ts) */
+  frame: MachineFrame;
 }
 
 /** Where the drop line runs inside the rectangle [x0, x1] × [y0, y1] of the room: the range of u. */
@@ -80,10 +86,14 @@ export function roomGeo(L: Layout, M: MachineSpec): RoomGeo | null {
   const dx = cw[0] - car[0], dy = cw[1] - car[1], calata = Math.hypot(dx, dy) || 1, s = M.D / (2000 * MACHINE_A.rp);
   const sheaveAt = M.ropeIn + M.D / 2, u1 = calata - M.ropeIn;
   const pulleyAt = M.Dp > 0 ? (M.reverse ? u1 + M.Dp / 2 : u1 - M.Dp / 2) : sheaveAt;
-  const v = (z: number): number => (MACHINE_A.zSheave - z) * 1000 * s;
+  const v = (z: number): number => (MACHINE_A.zSheave - z) * 1000 * s, F = machineFrame(M.D, M.shape ?? null);
+  // the generic machine's numbers as they have always been computed (a drawing set's hash covers them); a maker's from
+  // its frame
+  const [frame0, frame1, across]: [number, number, readonly [number, number]] = F.shape
+    ? [sheaveAt + F.x[0], sheaveAt + F.x[1], [F.zSheave - F.z[1], F.zSheave - F.z[0]]]
+    : [sheaveAt + MACHINE_X[0] * 1000 * s, sheaveAt + MACHINE_X[1] * 1000 * s, [v(MACHINE_Z[1]), v(MACHINE_Z[0])]];
   return {
-    room: R, carDrop: car, cwDrop: cw, ux: dx / calata, uy: dy / calata, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h,
-    frame0: sheaveAt + MACHINE_X[0] * 1000 * s, frame1: sheaveAt + MACHINE_X[1] * 1000 * s, across: [v(MACHINE_Z[1]), v(MACHINE_Z[0])], s,
+    room: R, carDrop: car, cwDrop: cw, ux: dx / calata, uy: dy / calata, calata, sheaveAt, pulleyAt, pulleyZ: M.axis - M.h, frame0, frame1, across, s, frame: F,
   };
 }
 

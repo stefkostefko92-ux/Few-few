@@ -60,7 +60,7 @@ export function exitAlong(p: P2, d: P2, W: number, D: number): number {
  *  counterweight as near the wall as the rope pack allows; the counterweight's run as far from its drop along the
  *  wall as a 180° pulley needs (none when the gap is deep enough), on the side with more room, the car's run D
  *  further toward the drop line (the sheave's plane along the wall). */
-export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: number, d: number, r: number): BottomGeo {
+export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: number, d: number, r: number, axis: number = KL.sheaveAxisPerD * D): BottomGeo {
   const I = L.inputs, S = section(L), car: P2 = [L.car.x + L.car.w / 2, L.car.y + L.car.h / 2], cw: P2 = [L.cw.x + L.cw.w / 2, L.cw.y + L.cw.h / 2];
   const cal = Math.hypot(cw[0] - car[0], cw[1] - car[1]) || 1, dir: P2 = [(cw[0] - car[0]) / cal, (cw[1] - car[1]) / cal], across: P2 = [-dir[1], dir[0]];
   const wallAt = exitAlong(car, dir, I.W, I.D), ropes = ropeWidths(n, d).ropes, c = KL.bottomClear, side = r === 2 ? Dp / 2 : 0;
@@ -89,7 +89,7 @@ export function bottomGeo(L: Layout, s: BottomScheme, D: number, Dp: number, n: 
   const zHead = s === 'room' ? S.ceiling + (I.room?.slab ?? KL.slab) + KL.pulleyRoomAxis : S.ceiling - Dp / 2 - KL.headFrame;
   const roomFloor = s === 'under' ? S.pitFloor - KL.underSlab - KL.underRoomH : 0;
   return {
-    scheme: s, car, cw, dir, across, mc, mw, zHead, zSheave: roomFloor + KL.sheaveAxisPerD * D, roomFloor,
+    scheme: s, car, cw, dir, across, mc, mw, zHead, zSheave: roomFloor + axis, roomFloor,
     sCar, sCw, carPulleys: sCar > Dp + 1 ? 2 : 1, cwPulleys: sCw > Dp + 1 ? 2 : 1, wallAt, fits, gap,
   };
 }

@@ -88,6 +88,11 @@ export const KV_VERT = {
   supportPlinth: 250,
   supportOverhang: 100,
   supportBearing: 150,
+  // a maker's machine on our bedframe (registry locale.telaio): its least height under the feet, the sheave's rim over
+  // its underside, past the machine at each end [mm]
+  machineBed: 80,
+  machineRimClear: 30,
+  machineBedOverhang: 40,
   steelFyk: 275,
   steelGammaM0: 1.05,
   steelE: 210000,
@@ -267,5 +272,6 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'guide.staffe': ['bracketPitch', 'bracketFirst', 'bracketLast'],
   'distanze.testata': ['headRun'],
   'locale.basamento': ['supportPads', 'supportFrame', 'supportBeam', 'supportPlate', 'supportPlinth', 'supportOverhang', 'supportBearing'],
+  'locale.telaio': ['machineBed', 'machineRimClear', 'machineBedOverhang'],
   'locale.putrelle': ['steelFyk', 'steelGammaM0', 'steelE', 'beamDeflection'],
 };

@@ -75,6 +75,10 @@ export interface MachineMaterials {
   paintDark: THREE.MeshPhysicalNodeMaterial;
   frame: THREE.MeshPhysicalNodeMaterial;
   sheavePaint: THREE.MeshPhysicalNodeMaterial;
+  /** a maker's machine (shape/): black cast iron, yellow sheave, bright aluminium brake */
+  black: THREE.MeshPhysicalNodeMaterial;
+  yellow: THREE.MeshPhysicalNodeMaterial;
+  alu: THREE.MeshPhysicalNodeMaterial;
   handwheel: THREE.MeshPhysicalNodeMaterial;
   red: THREE.MeshPhysicalNodeMaterial;
   steel: THREE.MeshPhysicalNodeMaterial;
@@ -147,6 +151,9 @@ export function createMaterials(ropeLength: number): MachineMaterials {
     paintDark: enamel('#2e4a40', { roughness: 0.5 }),
     frame: enamel('#262d36', { roughness: 0.72, clearcoat: 0.08, scale: 30 }),
     sheavePaint: enamel('#2c3432', { roughness: 0.46, clearcoat: 0.4 }),
+    black: enamel('#1e2124', { roughness: 0.46, clearcoat: 0.35 }),
+    yellow: enamel('#e9b10f', { roughness: 0.36, clearcoat: 0.6 }),
+    alu: steel('#cfd4d9', 0.3),
     handwheel: enamel('#e0a526', { roughness: 0.34, clearcoat: 0.7, ink: travelArrows() }),
     red: enamel('#b8231b', { roughness: 0.3, clearcoat: 0.8 }),
     steel: steel('#c3c9d0', 0.22),

@@ -149,7 +149,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet
-  const all = [...L.checks, ...supportChecks(L, machineOf(a, Pl, L), { machine, static: ld.static, dyn })];
+  const all = [...L.checks, ...supportChecks(L, machineOf(a, Pl, L, x.marks?.catalog ?? null), { machine, static: ld.static, dyn })];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)

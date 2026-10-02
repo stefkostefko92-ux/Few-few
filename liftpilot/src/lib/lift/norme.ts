@@ -121,10 +121,13 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     valore: `tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, `
       + `carico statico sull'albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più `
       + `vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del ${it(KL.catalogRatioTol * 100)} % (l'inverter adatta `
-      + `la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo`,
-    riferimento: 'ricerca, capitolo 12 (catalogo degli argani)', fonte: 'estratti delle pagine dei costruttori (SICOR, Sassi, Montanari, GEM, FAER) e dei rivenditori, 1° ottobre 2026',
+      + `la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo; i disegni e il 3D mostrano l'argano SICOR `
+      + `com'è (ingombri, piedi e fori, asse della puleggia, P ed E della scheda), sul telaio del software`,
+    riferimento: 'ricerca, capitolo 12 (catalogo degli argani)',
+    fonte: 'SICOR: schede tecniche 2025 e modelli CAD scaricati da sicoritaly.com il 2 ottobre 2026 (solo le quote); Sassi, Montanari, GEM, FAER: '
+      + 'estratti delle pagine dei costruttori e dei rivenditori, 1° ottobre 2026',
     stato: 'da_verificare', costanti: ['catalogRatioTol'],
-    nota: 'i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell\'ordine; '
+    nota: 'i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell\'ordine; '
       + 'per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; '
       + 'GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce',
   },

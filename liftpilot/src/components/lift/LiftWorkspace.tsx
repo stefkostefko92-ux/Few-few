@@ -176,7 +176,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
         <ImbottiOptions I={inp.shaft} set={setShaft} />
         <h2>{t('s_floors')}</h2>
         <VerticalOptions I={inp.shaft} set={setShaft} open />
-        {above ? <RoomOptions I={inp.shaft} set={setShaft} machine={{ D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D }} /> : null}
+        {above ? <RoomOptions I={inp.shaft} set={setShaft} machine={{ D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null }} /> : null}
         <h2>{t('s_drive')}</h2>
         <LiftCalcFields P={P} X={X} inp={inp} derived={derived} bad={bad} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} setCatalog={setCatalog} t={(k, v) => t(k, v)} />
       </form>

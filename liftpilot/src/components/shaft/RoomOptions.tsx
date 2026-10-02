@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { DEFAULT_ROOM, type RoomInputs, type ShaftInputs } from '@/shaft';
 import { PROFILE_NAMES } from '@/shaft/profiles';
 import { SUPPORT_KINDS, hasProfile, profileOf, supportHeight, supportLength, supportOf, type MachineSupport } from '@/shaft/support';
+import type { MachineShape } from '@/shaft/machine-shape';
 
 interface Props {
   I: ShaftInputs;
@@ -15,7 +16,7 @@ interface Props {
   /** unfolded at first (the one form of an installation) */
   open?: boolean;
   /** the machine's sheave and the axis the software takes on shims [mm]: the support's fields; missing: none shown */
-  machine?: { D: number; shimsAxis: number };
+  machine?: { D: number; shimsAxis: number; shape?: MachineShape | null };
 }
 
 type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support'>;
@@ -72,8 +73,9 @@ export default function RoomOptions({ I, set, open = false, machine }: Props) {
             </select>
           </label>
         ) : null}
-        {num(t('sp_height'), supportHeight(sup, machine.D, machine.shimsAxis), 0, 3000, (v) => putSup({ height: v }))}
-        {supportLength(sup, machine.D) !== null ? num(t('sp_length'), supportLength(sup, machine.D) ?? 0, 300, 5000, (v) => putSup({ length: v })) : null}
+        {num(t('sp_height'), supportHeight(sup, machine.D, machine.shimsAxis, machine.shape ?? null), 0, 3000, (v) => putSup({ height: v }))}
+        {supportLength(sup, machine.D, machine.shape ?? null) !== null
+          ? num(t('sp_length'), supportLength(sup, machine.D, machine.shape ?? null) ?? 0, 300, 5000, (v) => putSup({ length: v })) : null}
       </div>
       <p className="note">{t('sp_hint')}</p>
     </>

@@ -16,6 +16,15 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
     stato: 'scelta',
   },
   {
+    id: 'locale.telaio', gruppo: 'locale', titolo: 'Telaio sotto l\'argano di un costruttore',
+    valore: 'l\'argano di catalogo poggia con i suoi piedi su un telaio di due travi sotto le file di fori, con antivibranti alle estremità e 40 mm '
+      + 'oltre l\'argano a ogni estremità; il telaio è alto quanto serve per tenere l\'asse della puleggia dove lo tiene l\'argano generico del '
+      + 'software, almeno 80 mm e con il bordo della puleggia 30 mm sopra il suo piano d\'appoggio (gli argani compatti hanno la puleggia a sbalzo, '
+      + 'sotto il piano dei piedi); se l\'argano non lo permette l\'asse sale e il calcolo segue',
+    riferimento: '—', fonte: 'quote dei piedi, dei fori e dell\'asse della puleggia dalle schede tecniche del costruttore; altezza del telaio scelta '
+      + 'dal software, da adattare al telaio fornito', stato: 'scelta',
+  },
+  {
     id: 'locale.putrelle', gruppo: 'locale', titolo: 'Verifica delle putrelle sotto l\'argano',
     valore: 'ognuna delle due putrelle porta metà del carico dell\'argano (il suo peso più il carico statico sull\'asse per il coefficiente dinamico) '
       + 'come forza concentrata in mezzeria, più il proprio peso, sulla luce tra i centri degli appoggi nei muri (luce libera più 150 mm): '

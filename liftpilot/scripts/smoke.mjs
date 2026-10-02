@@ -2,7 +2,8 @@
 //   health → public page (no console or CSP errors) → sign-in → installation → calculation → saved snapshot with
 //   reproduced hash → calculation report (PDF) → shaft design by hand (a distance changed on its plan), its DXF, a
 //   calculation from it with the plan in its report → data of the installation, client and company logos, drawing set issued from
-//   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation, saved
+//   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation and a SICOR
+//   machine from the catalogue (drawn as it is), saved
 //   in one go (shaft design and calculation together), with its documents → new user who must change the password → a
 //   second company that cannot open the first company's calculation, shaft design, DXF, drawing set or lift design →
 //   with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the server
@@ -189,6 +190,12 @@ try {
   await page.check('.collaudo .parti-grid label:nth-child(2) input');
   await page.waitForSelector('.lift-checks tr.existing .status-pill.existing');
   assert.match(await page.textContent('.lift-work .lift-verdict .badge'), /UNI 10411-11/, 'standard of the acceptance test');
+  // the machine from SICOR's catalogue: the proposal takes one of its models, which the room's drawings, the 3D and the
+  // relazione show as it is (src/lib/catalog/shapes.ts); the saved design must reproduce it on the server
+  await page.evaluate(() => { const d = globalThis.document.querySelector('#auto-machine')?.closest('details'); if (d) d.open = true; });
+  await page.check('#auto-machine');
+  await page.selectOption('#cat-brand', 'SICOR');
+  await page.waitForFunction(() => [...globalThis.document.querySelectorAll('.lift-calc p.hint')].some((p) => /SICOR (SH|MR)\d/.test(p.textContent ?? '')));
   await page.fill('.lift-work .savebar input', 'Progetto di prova');
   await Promise.all([page.waitForURL(/\/lift-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click('.lift-work .savebar button.btn-primary')]);
   const liftUrl = page.url();

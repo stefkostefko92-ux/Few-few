@@ -1008,6 +1008,18 @@
     },
     {
       "n": 82,
+      "id": "vano.locale.telaio",
+      "gruppo": "Locale del macchinario",
+      "voce": "Telaio sotto l'argano di un costruttore",
+      "valore": "l'argano di catalogo poggia con i suoi piedi su un telaio di due travi sotto le file di fori, con antivibranti alle estremità e 40 mm oltre l'argano a ogni estremità; il telaio è alto quanto serve per tenere l'asse della puleggia dove lo tiene l'argano generico del software, almeno 80 mm e con il bordo della puleggia 30 mm sopra il suo piano d'appoggio (gli argani compatti hanno la puleggia a sbalzo, sotto il piano dei piedi); se l'argano non lo permette l'asse sale e il calcolo segue",
+      "riferimento": "—",
+      "fonte": "quote dei piedi, dei fori e dell'asse della puleggia dalle schede tecniche del costruttore; altezza del telaio scelta dal software, da adattare al telaio fornito",
+      "stato": "scelta del software",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 83,
       "id": "vano.locale.putrelle",
       "gruppo": "Locale del macchinario",
       "voce": "Verifica delle putrelle sotto l'argano",
@@ -1019,7 +1031,7 @@
       "nota": "verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal progettista"
     },
     {
-      "n": 83,
+      "n": 84,
       "id": "vano.carichi.fossa",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carichi sul pavimento della fossa",
@@ -1031,7 +1043,7 @@
       "nota": ""
     },
     {
-      "n": 84,
+      "n": 85,
       "id": "vano.guide.spinte",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Spinte sulle guide di cabina",
@@ -1043,7 +1055,7 @@
       "nota": ""
     },
     {
-      "n": 85,
+      "n": 86,
       "id": "vano.carichi.macchina",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carico della macchina sulla soletta",
@@ -1055,7 +1067,7 @@
       "nota": ""
     },
     {
-      "n": 86,
+      "n": 87,
       "id": "vano.carichi.cavi",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Massa dei cavi flessibili",
@@ -1067,7 +1079,7 @@
       "nota": ""
     },
     {
-      "n": 87,
+      "n": 88,
       "id": "vano.guide.staffe",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Numero e posizione delle staffe delle guide",
@@ -1079,7 +1091,7 @@
       "nota": "il passo delle staffe va confermato con la verifica delle guide (UNI EN 81-50:2020, 5.10), che usa la distanza tra le staffe"
     },
     {
-      "n": 88,
+      "n": 89,
       "id": "vano.foglio.stime",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Lunghezze stimate nel foglio dei dati",
@@ -1091,7 +1103,7 @@
       "nota": ""
     },
     {
-      "n": 89,
+      "n": 90,
       "id": "vano.modello.passo",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Dimensioni proposte della cabina",
@@ -1103,7 +1115,7 @@
       "nota": ""
     },
     {
-      "n": 90,
+      "n": 91,
       "id": "vano.modello.quote",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Quote della pianta fissate a mano",
@@ -1115,7 +1127,7 @@
       "nota": ""
     },
     {
-      "n": 91,
+      "n": 92,
       "id": "vano.modello.limiti",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Limiti del modello del vano",
@@ -1127,7 +1139,7 @@
       "nota": ""
     },
     {
-      "n": 92,
+      "n": 93,
       "id": "impianto.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Corsa",
@@ -1139,7 +1151,7 @@
       "nota": ""
     },
     {
-      "n": 93,
+      "n": 94,
       "id": "impianto.portata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Portata e velocità",
@@ -1151,7 +1163,7 @@
       "nota": ""
     },
     {
-      "n": 94,
+      "n": 95,
       "id": "impianto.collaudo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Normativa di collaudo e parti sostituite o modificate",
@@ -1163,7 +1175,7 @@
       "nota": "il testo delle UNI 10411 del 2024 non è stato letto: le verifiche per parte e i requisiti per la sostituzione del macchinario (edizione 2021: freno in due elementi, temporizzatore, velocità eccessiva in salita, arresto entro 1 m dalla macchina, interruzione se il freno non si apre) vanno confermati sul testo vigente"
     },
     {
-      "n": 95,
+      "n": 96,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -1175,7 +1187,7 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto"
     },
     {
-      "n": 96,
+      "n": 97,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -1187,7 +1199,7 @@
       "nota": ""
     },
     {
-      "n": 97,
+      "n": 98,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
@@ -1199,7 +1211,7 @@
       "nota": ""
     },
     {
-      "n": 98,
+      "n": 99,
       "id": "impianto.calata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Tiro diretto (senza rinvio): calata uguale al diametro della puleggia",
@@ -1211,7 +1223,7 @@
       "nota": "con un diametro diverso dalla calata le funi si inclinano verso gli attacchi: nella sostituzione con il confronto il calcolo ne tiene conto per la nuova puleggia; oltre pochi millimetri servono una puleggia di rinvio o il contrappeso spostato (quota «Calata» in pianta)"
     },
     {
-      "n": 99,
+      "n": 100,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
@@ -1223,7 +1235,7 @@
       "nota": ""
     },
     {
-      "n": 100,
+      "n": 101,
       "id": "impianto.basso.schema",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: schema delle funi",
@@ -1235,19 +1247,19 @@
       "nota": "lo schema reale va rilevato sull'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori"
     },
     {
-      "n": 101,
+      "n": 102,
       "id": "impianto.catalogo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta dal catalogo di un costruttore",
-      "valore": "tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, carico statico sull'albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del 10 % (l'inverter adatta la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo",
+      "valore": "tra le opzioni del dimensionamento solo quelle che un argano del costruttore scelto accetta: puleggia nella gamma del modello, carico statico sull'albero non oltre quello del catalogo, motore non oltre il più grande del catalogo, portata dichiarata; il rapporto è quello del catalogo più vicino al rapporto ideale, se la velocità che dà non si scosta da quella nominale più del 10 % (l'inverter adatta la frequenza); il calcolo usa quel rapporto, il carico statico ammesso e la massa del catalogo; i disegni e il 3D mostrano l'argano SICOR com'è (ingombri, piedi e fori, asse della puleggia, P ed E della scheda), sul telaio del software",
       "riferimento": "ricerca, capitolo 12 (catalogo degli argani)",
-      "fonte": "estratti delle pagine dei costruttori (SICOR, Sassi, Montanari, GEM, FAER) e dei rivenditori, 1° ottobre 2026",
+      "fonte": "SICOR: schede tecniche 2025 e modelli CAD scaricati da sicoritaly.com il 2 ottobre 2026 (solo le quote); Sassi, Montanari, GEM, FAER: estratti delle pagine dei costruttori e dei rivenditori, 1° ottobre 2026",
       "stato": "da verificare",
       "verifiche": "",
-      "nota": "i dati di catalogo vengono da estratti dei motori di ricerca, non dai documenti: vanno confermati sulla scheda del costruttore prima dell'ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
+      "nota": "i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell'ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
     },
     {
-      "n": 102,
+      "n": 103,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1259,7 +1271,7 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 103,
+      "n": 104,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1271,7 +1283,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 104,
+      "n": 105,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1283,7 +1295,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi"
     },
     {
-      "n": 105,
+      "n": 106,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1295,7 +1307,7 @@
       "nota": ""
     },
     {
-      "n": 106,
+      "n": 107,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1307,7 +1319,7 @@
       "nota": ""
     },
     {
-      "n": 107,
+      "n": 108,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -1319,7 +1331,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione"
     },
     {
-      "n": 108,
+      "n": 109,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1331,7 +1343,7 @@
       "nota": ""
     },
     {
-      "n": 109,
+      "n": 110,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",

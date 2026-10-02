@@ -1,6 +1,7 @@
 // The views of the drawing set without the paper around them: a plan of the shaft at a level, section A-A whole or in
 // a detail, the machine room in plan or in section B-B, each laid out at the largest standard scale that fits an area
 // with its dimensions. The sheets add titles, legends and marks; the screens show the views alone.
+import { shapeOf } from '@/lib/catalog/shapes';
 import { boxH, fitView, moveHits, moveShapes, renderView, type Box, type Entity, type Hit, type Place, type Shape, type ViewResult } from '@/drawing';
 import { roomGeo, type MachineSpec, type RoomGeo } from '@/shaft/machine-room';
 import { planDims } from '@/shaft/plan-dims';
@@ -76,9 +77,10 @@ export function sectionView(L: Layout, kind: SectionKind, floor: number, area: B
   return { r: renderView(ents, place), place };
 }
 
-/** The machine as the calculation and the data of the installation describe it, on the room's support. */
-export function machineOf(a: Analysis, plant: Plant, L: Layout): MachineSpec {
-  return machineSpec(a.ctx, plant.massMachine ?? a.ctx.N.mass, plant.machine ?? '', L.inputs.room);
+/** The machine as the calculation and the data of the installation describe it, on the room's support: the maker's as
+ *  it is when the proposal took one from a catalogue (`catalog` of the marks), else the generic machine. */
+export function machineOf(a: Analysis, plant: Plant, L: Layout, catalog: { brand: string; model: string } | null = null): MachineSpec {
+  return machineSpec(a.ctx, plant.massMachine ?? a.ctx.N.mass, plant.machine ?? '', L.inputs.room, catalog ? shapeOf(catalog.brand, catalog.model) : null);
 }
 
 /** The machine room in plan or in section B-B; null when the design has no machine room. */

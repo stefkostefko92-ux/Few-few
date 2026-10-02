@@ -1,7 +1,8 @@
 // The machine and its room: the room's shell (roomshell.ts) — above the shaft; with the machine below, a room past the
 // wall behind the counterweight at the lowest floor (the machine's front through an opening in that wall, its sheave
 // in the gap behind the counterweight) and, for a pulley room, that room over the slab; or a room under the pit — the
-// geared machine of the landing page scaled to the sheave of the calculation and turned onto the sheave's rope plane,
+// geared machine of the landing page scaled to the sheave of the calculation, or the maker's machine the proposal took
+// as it is (machine/shape), turned onto the sheave's rope plane,
 // its anti-vibration mounts on levelling shims on the floor beside the rope openings (slab.ts); its cable in a floor
 // trunking to the controller and the main switch's feed (wiring.ts); the lifting hook over it; the diverting and head
 // pulleys on their frames, each in its rope's plane, the car and counterweight pulleys of a 2:1 roping and its dead
@@ -9,8 +10,10 @@
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { supportOf, type Layout, type MachineSupport } from '@/shaft';
+import { machineFrame, type MachineFrame, type MachineShape } from '@/shaft/machine-shape';
 import { KL, planeAt, type RopePlane, type RopeRig } from '@/lib/lift';
 import { buildMachine, CONDUIT_END, DIM, ROPE_LENGTH } from '../machine/parts';
+import { buildShaped } from '../machine/shape';
 import { createMaterials, type MachineMaterials } from '../machine/materials';
 import { Batch } from './geom';
 import { pulley, pulleyFrames } from './pulleys';
@@ -52,17 +55,19 @@ export function machinePassage(rig: RopeRig, D: number): { side: Side; u0: numbe
 /** Where the machine stands in plan: the direction of its worm (local X), its sheave's centre [world m] and, beside the
  *  shaft, how much longer its slow shaft is to carry the sheave through the wall into the gap behind the counterweight
  *  [mm] (the gearbox in the room, 50 mm clear of the wall). */
-export function machinePose(rig: RopeRig, wall: number, n: number, d: number, D: number): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
-  const g = rig.scheme, S = rig.sheave, [px, py] = planeAt(S.plane, S.u), s = D / 560;
+export function machinePose(rig: RopeRig, wall: number, n: number, d: number, F: MachineFrame): { xDir: readonly [number, number]; centre: THREE.Vector3; ext: number } {
+  const g = rig.scheme, S = rig.sheave, [px, py] = planeAt(S.plane, S.u);
   // above: the worm along the drops' plane; below: along the wall, the gearbox past the sheave away from the shaft
   // (through the wall) or, under the pit, toward the car
   const xDir = !g ? rig.dir : g.scheme === 'under' ? g.across : ([-g.across[0], -g.across[1]] as const);
-  const ext = g && g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + wall + 50 - (DIM.zSheave - 0.2) * s * 1000) : 0;
+  const ext = g && g.scheme !== 'under' ? Math.max(0, KL.bottomClear + ropeWidths(n, d).ropes + wall + 50 - (F.zSheave - F.face)) : 0;
   return { xDir, centre: new THREE.Vector3(px / 1000, S.y, -py / 1000), ext };
 }
 
-/** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot. */
-export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null): RoomModel {
+/** `ceiling`: the slab's underside over the shaft [mm]; `openings`: the slab's (slab.ts); `gov`: the governor's spot;
+ *  `shape`: the maker's machine as it is (null: the generic one scaled to the sheave). */
+export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: number, ceiling: number, M: LiftMaterials, openings: readonly Opening[], gov: GovernorSpot | null,
+  shape: MachineShape | null = null): RoomModel {
   const I = L.inputs, sides = { front: new THREE.Group(), rear: new THREE.Group(), left: new THREE.Group(), right: new THREE.Group() } as Record<Side, THREE.Group>;
   const roof = new THREE.Group(), common = new THREE.Group();
   const at = (p: RopePlane, u: number, y: number): THREE.Vector3 => {
@@ -72,34 +77,38 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
   const z0 = rig.roomFloor * 1000, shells = shellsOf(L, rig), shell = shells.find((sh) => sh.kind === 'machine') ?? null, R = shell?.room ?? null;
   for (const sh of shells) buildShell(sh, M, sides, roof, common);
 
-  // the machine: scaled to the sheave, its rope plane on the sheave's, the sheave's centre where the rig puts it
-  const MM: MachineMaterials = createMaterials(ROPE_LENGTH);
-  const machine = buildMachine(MM, false), s = D / 560, pose = machinePose(rig, I.wall, n, d, D), e = pose.ext / 1000 / s;
+  // the machine: the generic one scaled to the sheave or the maker's as it is, its rope plane on the sheave's, the
+  // sheave's centre where the rig puts it
+  const MM: MachineMaterials = createMaterials(ROPE_LENGTH), F = machineFrame(D, shape);
+  const shaped = F.shape ? buildShaped(MM, F, D, n, d) : null, machine = shaped ?? buildMachine(MM, false);
+  // the group's own units: the generic machine's metres at Ø 560 (scaled by s), the maker's in metres as they are
+  const s = F.shape ? 1 : D / 560, pose = machinePose(rig, I.wall, n, d, F), e = pose.ext / 1000 / s;
+  const yAxis = F.shape ? F.axis / 1000 : DIM.yWheel, zSh = F.shape ? F.zSheave / 1000 : DIM.zSheave, face = F.shape ? F.face / 1000 : 0.2;
   machine.group.scale.setScalar(s);
   machine.group.rotation.y = Math.atan2(pose.xDir[1], pose.xDir[0]);
   const centre = pose.centre;
   if (e > 0) {
     // the sheave on the longer slow shaft, out through the wall
     machine.sheave.position.z += e;
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, DIM.zSheave + e - 0.2, 24).rotateX(Math.PI / 2), MM.machined);
-    shaft.position.set(0, DIM.yWheel, (0.2 + DIM.zSheave + e) / 2);
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, zSh + e - face, 24).rotateX(Math.PI / 2), MM.machined);
+    shaft.position.set(0, yAxis, (face + zSh + e) / 2);
     shaft.castShadow = true;
     machine.group.add(shaft);
   }
-  const local = new THREE.Vector3(0, DIM.yWheel * s, (DIM.zSheave + e) * s).applyEuler(machine.group.rotation);
+  const local = new THREE.Vector3(0, yAxis * s, (zSh + e) * s).applyEuler(machine.group.rotation);
   machine.group.position.copy(centre).sub(local);
   common.add(machine.group);
   // what the machine stands on, down to the floor (the sheave's axis sits at its height over the floor): above the
   // shaft the room's support (shims, frame, beams, plates, plinth), below it levelling shims
-  const gap = ((rig.sheave.y - rig.roomFloor) / s - DIM.yWheel) * s, sup = rig.bottom ? SHIMS : supportOf(I.room);
+  const gap = F.shape ? rig.sheave.y - rig.roomFloor - yAxis : ((rig.sheave.y - rig.roomFloor) / s - DIM.yWheel) * s, sup = rig.bottom ? SHIMS : supportOf(I.room);
   const walls = R ? wallsAlong([machine.group.position.x * 1000, -machine.group.position.z * 1000], pose.xDir, { x0: -R.shaftX, y0: -R.shaftY, x1: R.W - R.shaftX, y1: R.D - R.shaftY }) : null;
-  const base = buildSupport(sup, s, D, gap, walls, M);
+  const base = buildSupport(sup, F, D, gap, walls, M);
   base.position.copy(machine.group.position);
   base.rotation.copy(machine.group.rotation);
   common.add(base);
   // the motor's cable: in a floor trunking to the controller's cabinet, or into the floor; the main switch's feed
   machine.group.updateMatrixWorld(true);
-  const end = new THREE.Vector3(...CONDUIT_END).applyMatrix4(machine.group.matrixWorld), wires = new Batch();
+  const end = new THREE.Vector3(...(shaped ? shaped.conduitEnd : CONDUIT_END)).applyMatrix4(machine.group.matrixWorld), wires = new Batch();
   const tip = [end.x * 1000, -end.z * 1000] as const, tipH = end.y * 1000 - z0;
   if (R) {
     const x0 = -R.shaftX, y0 = -R.shaftY, pw = R.panelWall, across = pw === 'front' || pw === 'rear' ? 0 : 1;
@@ -110,7 +119,8 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     // the door (it opens outward)
     base.updateMatrixWorld(true);
     const foot = new THREE.Box3().setFromObject(base), wide = sup.kind === 'frame' || sup.kind === 'plinth';
-    blocked.push(rectOf([[-0.52, -0.2], [1.12, -0.2], [1.12, 0.2], [-0.52, 0.2]].map(([x, zz]) => {
+    const [fz0, fz1] = F.shape ? [F.beams[0] / 1000 - 0.07, F.beams[1] / 1000 + 0.07] : [-0.2, 0.2], [fx0, fx1] = F.shape ? [F.x[0] / 1000, F.x[1] / 1000] : [-0.52, 1.12];
+    blocked.push(rectOf([[fx0, fz0], [fx1, fz0], [fx1, fz1], [fx0, fz1]].map(([x, zz]) => {
       const p = new THREE.Vector3(x, 0, zz).applyMatrix4(machine.group.matrixWorld);
       return [p.x * 1000, -p.z * 1000] as const;
     })));

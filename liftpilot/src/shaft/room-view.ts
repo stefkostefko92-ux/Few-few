@@ -2,14 +2,16 @@
 // pulley on its stand, the governor, the control panel with its free area, the main switch) and section B-B along the
 // rope drops (the floor slab over the shaft with its openings, walls and roof, the machine on its levelling shims, the
 // pulley, the ropes as they run halfway through the travel). The machine is the 3D's (machine-outline.ts) scaled to
-// the sheave; the sheave's axis and the pulley stand where the calculation puts them (machine-room.ts). Model entities
-// for the drawing kernel; dimensions included.
+// the sheave, or a maker's as it is (machine-shape-view.ts); the sheave's axis and the pulley stand where the
+// calculation puts them (machine-room.ts). Model entities for the drawing kernel; dimensions included.
 import { chain, circle, edit as E, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
 import { calataEdit } from './drop';
 import { ownAxis, padsOf, supportOf } from './support';
 import { supportPlan, supportSection } from './support-view';
 import { governorSpot } from './governor';
 import { MACHINE_A, machineElevation, machinePlan } from './machine-outline';
+import { bodyBox } from './machine-shape';
+import { shapeElevation, shapePlan } from './machine-shape-view';
 import { dropSpan as span, hitchDepths, roomRopes, ropeWidths, slabHoles, type MachineSpec, type RoomGeo } from './machine-room';
 import type { Layout } from './types';
 
@@ -64,7 +66,9 @@ export function roomPlanEntities(L: Layout, M: MachineSpec, G: RoomGeo): { entit
   }
   const [p0, p1] = span(G, 0, 0, R.W, R.D);
   out.push(...supportPlan(M, G, (u, v) => onDrop(G, u, v), p0, p1));
-  out.push(...machinePlan((x, z) => onDrop(G, G.sheaveAt + x * k, (MACHINE_A.zSheave - z) * k)));
+  const F = G.frame;
+  out.push(...(F.shape ? shapePlan(F, M.D, M.n, M.d, (x, z) => onDrop(G, G.sheaveAt + x, F.zSheave - z))
+    : machinePlan((x, z) => onDrop(G, G.sheaveAt + x * k, (MACHINE_A.zSheave - z) * k))));
   if (pulley) out.push(path(pulley, true, 'hidden'));
   // control panel with its free area, main switch by the door
   const pan = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD), free = wallBox(R, R.panelWall, R.panelAt, R.panelW, R.panelD + 700);
@@ -78,7 +82,7 @@ export function roomPlanEntities(L: Layout, M: MachineSpec, G: RoomGeo): { entit
   out.push({ e: 'text', at: onDrop(G, G.sheaveAt, side - 70), text: `${M.label ? `${M.label} · ` : ''}Ø ${M.D}`, size: 1.8, align: 'c', halo: true });
   const inRoom = (p: Pt): boolean => p[0] > 250 && p[0] < R.W - 250 && p[1] > 250 && p[1] < R.D - 250;
   const spots = [onDrop(G, G.sheaveAt, G.across[1] + 380), onDrop(G, G.frame1 + 380, G.across[1] / 2), onDrop(G, G.frame0 - 380, G.across[1] / 2), onDrop(G, um, side - 700)];
-  out.push({ e: 'tag', at: spots.find((p) => inRoom(p) && !inBox(p, free)) ?? spots[0], text: 'P1', to: onDrop(G, 0.1 * k + G.sheaveAt, MACHINE_A.zSheave * k) });
+  out.push({ e: 'tag', at: spots.find((p) => inRoom(p) && !inBox(p, free)) ?? spots[0], text: 'P1', to: F.shape ? onDrop(G, G.sheaveAt, F.zSheave) : onDrop(G, 0.1 * k + G.sheaveAt, MACHINE_A.zSheave * k) });
   governor(L, R, out);
   // dimensions: room, door, bedframe, rope drops
   const dimSide = R.doorWall === 'front' ? 'bottom' : R.doorWall === 'rear' ? 'top' : R.doorWall;
@@ -162,9 +166,9 @@ export function roomSectionEntities(L: Layout, M: MachineSpec, G: RoomGeo): { en
   } else out.push(rect(r0 - WALL, top, r1 + WALL, top + WALL, 'wall', 'concrete'));
   // the machine on its support (shims, frame, beams, plates or plinth, with pads), its sheave's axis at the height the
   // calculation counts
-  const k = 1000 * G.s, base = M.axis - MACHINE_A.yWheel * k, zs = M.axis, D = M.D, sup = supportOf(R);
+  const k = 1000 * G.s, F = G.frame, base = F.shape ? M.axis - F.axis : M.axis - MACHINE_A.yWheel * k, zs = M.axis, D = M.D, sup = supportOf(R);
   out.push(...supportSection(M, G, r0, r1));
-  out.push(...machineElevation((x, y) => [G.sheaveAt + x * k, base + y * k]));
+  out.push(...(F.shape ? shapeElevation(F, D, (x, y) => [G.sheaveAt + x, base + y]) : machineElevation((x, y) => [G.sheaveAt + x * k, base + y * k])));
   const centre = (c: Pt, r: number): void => { out.push(line([c[0] - r - 40, c[1]], [c[0] + r + 40, c[1]], 'axis'), line([c[0], c[1] - r - 40], [c[0], c[1] + r + 40], 'axis')); };
   centre([G.sheaveAt, zs], D / 2);
   // the ropes as they run with the car halfway, cut at the drawing's foot; the pulley on its stand or hung under the
@@ -195,7 +199,7 @@ export function roomSectionEntities(L: Layout, M: MachineSpec, G: RoomGeo): { en
   out.push(chain({ dir: 'y', pts: [0, R.doorH], side: 'right', row: 0, text: ['{v} H. Porta'], edit: [E('room.doorH')] }));
   out.push(chain({ dir: 'y', pts: [0, R.panelH], side: 'right', row: 1, text: ['{v} H. Quadro'], edit: [E('room.panelH')] }));
   // the sheave's axis: the support's height takes the change (pads and the machine's own height stay)
-  out.push(chain({ dir: 'y', pts: [0, zs], at: G.frame0 - 120, from: [null, G.sheaveAt], text: ['Asse {v}'], edit: [E('sup.height', -(padsOf(sup) + ownAxis(D)))] }));
+  out.push(chain({ dir: 'y', pts: [0, zs], at: G.frame0 - 120, from: [null, G.sheaveAt], text: ['Asse {v}'], edit: [E('sup.height', -(padsOf(sup) + ownAxis(D, F.shape)))] }));
   if (M.Dp > 0) {
     const low = G.pulleyZ < zs, ue = Math.max(G.pulleyAt + M.Dp / 2, G.frame1) + 160, left = G.sheaveAt < G.pulleyAt;
     // the pulley's height below the sheave is the calculation's h; its distance dx follows the rope drop
@@ -209,8 +213,8 @@ export function roomSectionEntities(L: Layout, M: MachineSpec, G: RoomGeo): { en
   const along = Math.abs(G.uy) > 0.999 ? 'D' : Math.abs(G.ux) > 0.999 ? 'W' : null;
   out.push(chain({ dir: 'x', pts: [s0, s1], at: foot + 420, text: ['Vano {v}'], edit: [along ? E(along) : null] }));
   out.push({ e: 'text', at: [G.sheaveAt - D / 2 - 40, zs + D / 2 + 60], text: `Ø${M.D}`, size: 2.2, align: 'r' });
-  const um = G.sheaveAt + 0.53 * k;
-  out.push({ e: 'tag', at: [um, top - 350], text: 'P1', to: [um, base + 0.55 * k] });
+  const body = F.shape ? bodyBox(F.shape) : null, um = body ? G.sheaveAt + (body[0] + body[3]) / 2 : G.sheaveAt + 0.53 * k;
+  out.push({ e: 'tag', at: [um, top - 350], text: 'P1', to: [um, body ? base + F.bed + 0.9 * body[4] : base + 0.55 * k] });
   out.push({ e: 'text', at: [(s0 + s1) / 2, foot - 250], text: 'VANO', size: 2.2, align: 'c' });
   return { entities: out, bounds: { x0: r0 - WALL, y0: foot, x1: r1 + WALL, y1: Math.max(top, ridge) + WALL } };
 }

@@ -1187,3 +1187,57 @@ Da una rete normale (qui sono bloccati). In ordine di utilità:
 
 Le quote lette da questi documenti entrano nel catalogo del software come dati (con la fonte), non i file del
 costruttore, che non vanno nel repository pubblico.
+
+## 13. Quarto giro (2 ottobre 2026): le schede e i modelli CAD SICOR, letti
+
+Con la rete aperta (autorizzazione del committente a scaricare dai link del § 12.1) sono state lette le **11 schede
+tecniche SICOR 2025** (SV110, SH110B, MR12C, SH130, SH130G, SH140, SH160, SH190, MR21, MR26, MR35) e i **modelli CAD
+STEP** delle dieci macchine che ne hanno uno (non la SV110). Grado: **D** (documento del costruttore).
+
+Dei disegni e dei modelli si usano **solo le quote**: le schede dicono «Questo disegno è di proprietà della Sicor e non
+può essere copiato…», quindi né i file né la geometria entrano nel software o nel repository. Il software disegna la
+macchina con forme sue (scatole, cilindri, il profilo della cassa), dimensionate con queste quote
+(`liftpilot/src/lib/catalog/shapes.ts`). I file restano solo nello spazio di lavoro temporaneo.
+
+### 13.1 Quote dalle schede (piano dei piedi = 0; P = piano medio della puleggia dal piano della vite)
+
+| Modello | Asse puleggia | Ingombri: sinistra · destra max · altezza | Piedi (L × W) | Fori | P · E per Ø (CSW) |
+|---|---|---|---|---|---|
+| MR12C | 172 (19 + 153) | 306–348 · 542 · 555 | 290 × 230 | 4 × Ø22 su 220 × 180 | 197 · 70 (Ø400–550); 195 · 76 e 202 · 100 (Ø340); 232 · 68 (Ø600) |
+| MR21 | 475 (vite 260) | 317 · 525 + 691 max · 727 | 750 × 400 | 8 × Ø24 su ±145/±190 × 330 | 290 · 176 (Ø520), 290 · 160 (Ø600–750) |
+| MR26 | 540 (vite 280) | 387 · 575 + 835 max · 827 | 845 × 420 | 8 × Ø24 su ±180/±230 × 350 | 330 · 160 (Ø600–800) |
+| MR35 | 685 (vite 350) | 443 · 700 + 1025 max · 1062 | base 600 × 861 con supporto esterno | 6 × Ø28 su 480 (lungo la vite) | 275 · 208 (Ø690, 800, 885), 275 · 252 (Ø770) |
+| SH110B | 162 | 162 · 537 max · 549 | 317 × 196 | 4 × M20 su 205 × 150 | 187 · 70 (Ø360–600); 190 · 76 (Ø320) |
+| SH130 | 166 | 166 · 583 max · 577 | 331 × 224 | 4 × M20 su 220 × 180 | 192 · 70 (Ø360–700); 195 · 76 (Ø320) |
+| SH130G | 166 | 166 · 583 max · 584 | 331 × 224 | 4 × M20 su 220 × 180 | 197 · 90 (Ø480–550); 192 · 70 (Ø600) |
+| SH140 | 166 | 166 · 583 max · 584 | 320 × 246 | 4 × M20 su 220 × 200 | 210 · 100 (Ø360–600) |
+| SH160 | 225 | 257 · 768 max · 733 | 225 a sinistra dell'asse · 316 | 4 × M24 su 235 × 260 | 248,5 · 115 (Ø450–700) |
+| SH190 | 209 | 289 · 769 max · 732 | 490 × 362 | 4 × M24 su 380 × 230 | 271 · 160 (Ø600–750); 279 · 176 (Ø520) |
+| SV110 | 144 (solo verticale: motore sopra) | 172 dal piano della vite al lato opposto · 261 alla faccia esterna della puleggia · 591; larga 445 | base larga 200 | 4 × M20 su 150 × 205 | 187 · 70 (Ø480–600) |
+
+Le macchine SH e la MR12C hanno la puleggia **a sbalzo accanto alla cassa e sotto il piano dei piedi** (asse a
+162–225 mm, raggio 160–375 mm): si montano su un telaio rialzato. Le MR21, MR26 e MR35 hanno la vite sotto la ruota e la
+puleggia sopra i piedi; la MR35 porta la puleggia tra la cassa e un supporto esterno.
+
+### 13.2 Dati di catalogo corretti dalle schede
+
+| Modello | Prima (estratti) | Dalla scheda 2025 |
+|---|---|---|
+| SV110 | pulegge 480–520, motore 4 kW | pulegge 480–600, motore fino a 5,5 kW (50 Hz, 4 poli VVVF) |
+| SH110B | massa 210 kg | 200 kg |
+| MR12C | rapporti 1/52 1/45 1/43 2/53 2/43, pulegge 340–550, 5,5 kW | 1/55 1/43 2/43 2/55, pulegge 340–600, 6,7 kW |
+| SH130 | rapporti con 2/53 e 3/47, 260 kg | 1/52 1/45 1/43 1/37 2/43, 250 kg |
+| SH130G | pulegge non trovate | 480–600 |
+| SH160 | pulegge 450–650 | 450–700 |
+| MR21 | pulegge non trovate, massa 1000 | 520–750; massa 770–1000 kg (il software tiene la maggiore) |
+| MR26 | pulegge non trovate | 600–800; massa 1200–1600 kg |
+| MR35 | pulegge non trovate | 690–885; massa 1600–1900 kg; statico 14200 kg |
+
+Rapporti, statici e motori degli altri modelli coincidono con il catalogo del software.
+
+### 13.3 Non raggiungibili da questo ambiente
+
+- **Sassi** (sassi.it) e **Montanari** (montanarigiulio.com): certificato TLS con catena incompleta, il download
+  fallisce; non si aggira. Montanari .in e montanarina.com e igilift.com: pagina di verifica anti-bot, non si aggira.
+- Restano da leggere, se il committente li fornisce: il catalogo Sassi 2022/2023 e il disegno MF84, il manuale M73
+  (montanari.cn), le schede GEM HW134/HW175, la scheda FAER.
