@@ -1,6 +1,6 @@
 // Bakes a procedural surface on the GPU into the textures a physical material uses: colour (sRGB), normal map from
 // the height, and roughness/metalness (glTF layout: G roughness, B metal). The colour is calibrated: a small preview
-// is read back and the gain makes its average equal to the decor colour of the catalogue (the median colour of the
+// is read back and the gain makes its median equal to the decor colour of the catalogue (the median colour of the
 // manufacturer's sample). Each pattern is GLSL `void pattern(vec2 p, inout Surface s)` with p in millimetres.
 import * as THREE from 'three';
 import { DEVICE } from './viewer-device.js';
@@ -57,6 +57,20 @@ function glslType(v) {
 }
 
 const toLinear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+
+// The median of channel c of RGBA bytes, 0–1, read from a histogram and interpolated inside its step (dark colours
+// span few steps of 1/255).
+function median(px, c) {
+  const hist = new Uint32Array(256);
+  for (let i = c; i < px.length; i += 4) hist[px[i]]++;
+  const half = px.length / 8;
+  let below = 0;
+  for (let v = 0; v < 256; v++) {
+    if (below + hist[v] >= half) return Math.max(0, v - 0.5 + (half - below) / hist[v]) / 255;
+    below += hist[v];
+  }
+  return 1;
+}
 
 // Anisotropy goes in with the target: three sets a render target's sampling parameters once, when it is created.
 function target(
@@ -168,7 +182,8 @@ export class Baker {
     return out;
   }
 
-  // Average colour of a small preview → per-channel gain towards the catalogue colour (linear light).
+  // Median colour of a small preview → per-channel gain towards the catalogue colour (linear light). The median, as
+  // in the catalogue: an average would let the white veins of a black marble pull the ground down to near black.
   gain(m, hex) {
     const W = 96;
     const H = 48;
@@ -178,13 +193,11 @@ export class Baker {
     const px = new Uint8Array(W * H * 4);
     this.renderer.readRenderTargetPixels(rt, 0, 0, W, H, px);
     rt.dispose();
-    const sum = [0, 0, 0];
-    for (let i = 0; i < W * H; i++)
-      for (let c = 0; c < 3; c++) sum[c] += toLinear(px[i * 4 + c] / 255);
     const want = new THREE.Color(hex);
-    const tgt = [want.r, want.g, want.b];
     return new THREE.Vector3(
-      ...sum.map((s, c) => Math.min(4, Math.max(0.25, tgt[c] / Math.max(1e-4, s / (W * H))))),
+      ...[want.r, want.g, want.b].map((t, c) =>
+        Math.min(4, Math.max(0.25, t / Math.max(1e-4, toLinear(median(px, c))))),
+      ),
     );
   }
 

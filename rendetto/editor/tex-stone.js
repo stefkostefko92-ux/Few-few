@@ -100,8 +100,12 @@ export function stoneSpec(d, seed) {
   const lum = 0.2126 * base.r + 0.7152 * base.g + 0.0722 * base.b;
   let vein;
   if (/злат|gold|oro|calacatta/i.test(name) && lum > 0.3) vein = new THREE.Color('#9c8152');
-  else if (lum < 0.12) vein = new THREE.Color().setRGB(0.55, 0.53, 0.5);
-  else vein = base.clone().multiplyScalar(style === 0 ? 0.35 : 0.42);
+  else if (lum < 0.12) {
+    vein = new THREE.Color().setRGB(0.55, 0.53, 0.5);
+    // the light crystals of a near-black granite are greys, at most ten times as bright as the ground (linear
+    // light): white ones over a third of the slab would turn a black stone grey
+    if (style === 1) vein.multiplyScalar(Math.min(1, (lum * 10) / 0.53));
+  } else vein = base.clone().multiplyScalar(style === 0 ? 0.35 : 0.42);
   const gloss =
     { gloss: 0.12, 'high-gloss': 0.08, satin: 0.32 }[d.finish] ?? (style === 3 ? 0.55 : 0.5);
   return {

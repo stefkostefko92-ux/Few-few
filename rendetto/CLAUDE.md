@@ -47,7 +47,8 @@ editor/               UI на редактора (браузър); 3D: viewer.js
                       камерата стои) · viewer-studio.js (студио, ключова светлина) · viewer-photo.js (path tracing;
                       viewer-photo-mode.js го включва, зарежда при първо натискане и освобождава)
                       · viewer-device.js (по-лек изглед на телефон и таблет: пиксели, MSAA, размер на текстурите)
-                      · tex-*.js (декорите се „изпичат“ процедурно на видеокартата: цвят, релеф, грапавост)
+                      · tex-*.js (декорите се „изпичат“ процедурно на видеокартата: цвят, релеф, грапавост;
+                      цветът се сверява по медианата, както е изчислен и каталогът)
 views/                EJS: landing/, legal/ (съдържанието по език в legal/<страница>/<език>.ejs),
                       auth/, app/, account/, admin/, partials/
 locales/<език>/       common · auth · account · admin · mail · editor · landing (.json); bg е източникът,
