@@ -116,7 +116,9 @@ export const nicheSchema = z.object({
   depth: mm(10, 1000),
 }).strict();
 
-export const shaftInputsSchema = z.object({
+/** The shaft as stored: what an earlier engine saved is read back even when today's form would refuse it (the running
+ *  engine then says whether it reproduces the record). */
+export const shaftInputsReadSchema = z.object({
   W: mm(500, 10000),
   D: mm(500, 10000),
   Q: z.number().int().min(100).max(10000).nullable(),
@@ -155,7 +157,10 @@ export const shaftInputsSchema = z.object({
   head: z.object({ front: mm(-500, 500), rear: mm(-500, 500), left: mm(-500, 500), right: mm(-500, 500) }).strict().optional(),
   /** linings of the landing doors in an old opening between the marbles (src/shaft/imbotti.ts) */
   imbotti: z.object({ left: mm(0, IMBOTTI_MAX), right: mm(0, IMBOTTI_MAX), top: mm(0, IMBOTTI_MAX) }).strict().optional(),
-}).strict().superRefine((S, ctx) => {
+}).strict();
+
+/** The shaft as the form saves it: the stored shape and the rules a new record must meet. */
+export const shaftInputsSchema = shaftInputsReadSchema.superRefine((S, ctx) => {
   // the next stop above, a door's height up at least when both have a door on the same side (the doors of one wall do not
   // overlap), above it in any case
   const sides = (d: 'A' | 'B' | 'AB'): string[] => (d === 'AB' ? ['A', 'B'] : [d]), F = S.vertical.floors;

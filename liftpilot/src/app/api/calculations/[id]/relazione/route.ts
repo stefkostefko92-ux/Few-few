@@ -6,7 +6,7 @@ import { formValuesSchema } from '@/lib/calc-input';
 import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { calcMarks } from '@/lib/lift-marks';
-import { collaudoSchema, liftInputsSchema } from '@/lib/lift-input';
+import { collaudoSchema, liftInputsReadSchema } from '@/lib/lift-input';
 import { collaudoOf } from '@/lib/lift/collaudo';
 import { liftAdvice, valuesAdvice } from '@/lib/lift/advice';
 import { buildReport } from '@/lib/report/build';
@@ -42,7 +42,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     // the standards: those of the lift design it comes from, else those chosen with the calculation
     const marks = calcMarks(c.liftDesign, c.sha256), own = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null;
     // the advice among SICOR and Montanari: from the lift design's inputs when it has one, else from the values
-    const lift = c.liftDesign ? liftInputsSchema.safeParse(c.liftDesign.inputs) : null;
+    const lift = c.liftDesign ? liftInputsReadSchema.safeParse(c.liftDesign.inputs) : null;
     const advice = lift?.success ? liftAdvice(lift.data) : valuesAdvice(values.data);
     const head = await getCompanyLetterhead(user), mime = head?.logo?.mime;
     const logo = head?.logo && (mime === 'image/png' || mime === 'image/jpeg') ? { mime, data: Buffer.from(head.logo.data).toString('base64') } as const : null;

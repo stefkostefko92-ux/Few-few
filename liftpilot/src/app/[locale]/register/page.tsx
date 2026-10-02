@@ -4,6 +4,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
 import { mailConfigured } from '@/lib/mail';
+import { billingConfig } from '@/lib/billing-config';
+import { termsDateText } from '@/lib/legal';
 import { pageMetadata } from '@/lib/seo';
 import AuthPage from '@/components/AuthPage';
 import RegisterForm from '@/components/RegisterForm';
@@ -23,7 +25,9 @@ export default async function RegisterPage({ params }: { params: Promise<{ local
   const t = await getTranslations('register');
   return (
     <AuthPage title={t('title')} lead={t('lead')}>
-      {mailConfigured() ? <RegisterForm /> : <p className="alert alert-warn" role="status">{t('closed')}</p>}
+      {mailConfigured()
+        ? <RegisterForm date={termsDateText(locale)} trialDays={billingConfig()?.trialDays ?? null} />
+        : <p className="alert alert-warn" role="status">{t('closed')}</p>}
     </AuthPage>
   );
 }

@@ -2,7 +2,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { canon } from '@/calc/snapshot';
 import { shaftSnapshot, type Layout, type ShaftInputs, type ShaftSnapshot } from '@/shaft';
-import { shaftInputsSchema, shaftSourceSchema } from './shaft-input';
+import { shaftInputsReadSchema, shaftSourceSchema } from './shaft-input';
 import type { ReportDesign } from './report/shaft';
 
 /** SHA-256 of the canonical shaft record: engine, profile, inputs and layout together. */
@@ -28,7 +28,7 @@ export interface StoredDesign {
 
 /** A saved design as the report takes it, recomputed by the running engine; null when that engine does not reproduce it. */
 export function reproduceDesign(d: StoredDesign): ReportDesign | null {
-  const inputs = shaftInputsSchema.safeParse(d.inputs);
+  const inputs = shaftInputsReadSchema.safeParse(d.inputs);
   if (!inputs.success) return null;
   const { layout, same } = verifyShaftStored(inputs.data, d.sha256);
   if (!same) return null;

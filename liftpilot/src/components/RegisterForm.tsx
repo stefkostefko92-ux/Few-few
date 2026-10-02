@@ -7,16 +7,21 @@ import { registerAction } from '@/server/account-actions';
 import { initialFormState } from '@/server/form';
 import { PASSWORD_MIN_LENGTH } from '@/lib/password-policy';
 import { TOKEN_TTL_MS } from '@/lib/token-shape';
+import { TERMS_VERSION, legalValues } from '@/lib/legal';
+import { CONSENTS, type Consent } from '@/lib/consents';
 
 type Text = 'company' | 'vatNumber' | 'city' | 'name' | 'email';
 
 // The typed values are kept by React (controlled), so an error does not empty the form; the passwords are typed again.
-export default function RegisterForm() {
+// The owner gives the four confirmations of src/lib/consents.ts for the company; `date` is the terms' day as the server
+// writes it, `trialDays` the free trial when the subscription is on (null: no billing on this server).
+export default function RegisterForm({ date, trialDays }: { date: string; trialDays: number | null }) {
   const t = useTranslations('register'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(registerAction, initialFormState);
   const [v, setV] = useState<Record<Text, string>>({ company: '', vatNumber: '', city: '', name: '', email: '' });
-  const [agreed, setAgreed] = useState({ privacy: false, terms: false, clauses: false });
+  const [agreed, setAgreed] = useState<Record<Consent, boolean>>({ accept: false, business: false, drafts: false, clauses: false });
   const bad = (f: string): true | undefined => (state.fields?.includes(f) ? true : undefined);
+  const values = { ...legalValues(), version: TERMS_VERSION, date };
   if (state.ok) {
     return (
       <div className="panel" role="status">
@@ -58,18 +63,16 @@ export default function RegisterForm() {
         </label>
         <p className="note">{t('rule', { min: PASSWORD_MIN_LENGTH })}</p>
       </fieldset>
-      <label className="check consent">
-        <input type="checkbox" name="privacy" checked={agreed.privacy} onChange={(e) => setAgreed({ ...agreed, privacy: e.target.checked })} aria-invalid={bad('privacy')} />
-        <span>{t.rich('privacy', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</span>
-      </label>
-      <label className="check consent">
-        <input type="checkbox" name="terms" checked={agreed.terms} onChange={(e) => setAgreed({ ...agreed, terms: e.target.checked })} aria-invalid={bad('terms')} />
-        <span>{t('terms')}</span>
-      </label>
-      <label className="check consent">
-        <input type="checkbox" name="clauses" checked={agreed.clauses} onChange={(e) => setAgreed({ ...agreed, clauses: e.target.checked })} aria-invalid={bad('clauses')} />
-        <span>{t('clauses')}</span>
-      </label>
+      {trialDays !== null ? <p className="note">{t('trial', { days: trialDays })}</p> : null}
+      <p className="note">{t.rich('privacyNote', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</p>
+      {CONSENTS.map((k) => (
+        <label key={k} className="check consent">
+          <input type="checkbox" name={k} checked={agreed[k]} onChange={(e) => setAgreed({ ...agreed, [k]: e.target.checked })} aria-invalid={bad(k)} />
+          <span>{k === 'accept'
+            ? t.rich('accept', { ...values, link: (chunks) => <Link href="/privacy#terms" target="_blank">{chunks}</Link> })
+            : t(k, values)}</span>
+        </label>
+      ))}
       <div><button type="submit" className="btn btn-primary" disabled={pending}>{pending ? t('submitting') : t('submit')}</button></div>
       <p className="note">{t('haveAccount')} <Link href="/login">{t('login')}</Link></p>
     </form>

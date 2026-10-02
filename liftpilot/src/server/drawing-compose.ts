@@ -8,7 +8,7 @@ import type { Prisma } from '@prisma/client';
 import type { SessionUser } from '@/lib/auth';
 import { formValuesSchema } from '@/lib/calc-input';
 import { calcMarks } from '@/lib/lift-marks';
-import { plantSchema } from '@/lib/plant';
+import { plantReadSchema } from '@/lib/plant';
 import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { buildTavole } from '@/lib/tavole/build';
@@ -77,7 +77,7 @@ export async function composeFromCalculation(
   if (!r.ok) return r;
   const company = await tx.company.findUnique({ where: { id: user.companyId }, select: { name: true, logo: { select: { id: true, mime: true, data: true } } } });
   if (!company) return { ok: false, error: 'notFound' };
-  const plant = plantSchema.safeParse(c.project.plant ?? {}), pd = projectData(c.project), logo = logoOf(company.logo), clientLogo = logoOf(c.project.clientLogo);
+  const plant = plantReadSchema.safeParse(c.project.plant ?? {}), pd = projectData(c.project), logo = logoOf(company.logo), clientLogo = logoOf(c.project.clientLogo);
   const stored: StoredSet = {
     number: set.number, createdAt: set.issuedAt, authorInitials: set.author, companyName: company.name, projectData: pd,
     plant: plant.success ? plant.data : {}, revisions: set.revisions.map((x) => ({ mark: x.mark, text: x.text, date: x.date.toISOString() })),

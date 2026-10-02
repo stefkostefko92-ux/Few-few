@@ -6,7 +6,7 @@ import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
-import { shaftInputsSchema, shaftSourceSchema } from '@/lib/shaft-input';
+import { shaftInputsReadSchema, shaftSourceSchema } from '@/lib/shaft-input';
 import { verifyShaftStored } from '@/lib/shaft-hash';
 import { SHAFT_ENGINE_VERSION } from '@/shaft';
 import { getShaftDesign } from '@/server/queries';
@@ -27,7 +27,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:view');
   const d = await getShaftDesign(user, id);
-  const inputs = d ? shaftInputsSchema.safeParse(d.inputs) : null;
+  const inputs = d ? shaftInputsReadSchema.safeParse(d.inputs) : null;
   if (!d || !inputs?.success) notFound();
   const source = d.source ? shaftSourceSchema.safeParse(d.source) : null;
   const { layout: L, same } = verifyShaftStored(inputs.data, d.sha256);

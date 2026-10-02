@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { FormValues } from '@/calc/types';
 import type { Layout } from '@/shaft/types';
 import { NO_MARKS, type ValueMarks } from '../lift/marks';
-import { plantSchema } from '../plant';
+import { plantReadSchema } from '../plant';
 import type { TavoleInput, TavoleRevision } from './input';
 
 const text = (max: number) => z.string().trim().max(max);
@@ -54,7 +54,7 @@ export function storedInput(
   values: FormValues, layout: Layout, s: StoredSet, logo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null, marks: ValueMarks = NO_MARKS,
   clientLogo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null = null,
 ): TavoleInput | null {
-  const plant = plantSchema.safeParse(s.plant ?? {}), project = projectDataSchema.safeParse(s.projectData), revs = revisionsSchema.safeParse(s.revisions);
+  const plant = plantReadSchema.safeParse(s.plant ?? {}), project = projectDataSchema.safeParse(s.projectData), revs = revisionsSchema.safeParse(s.revisions);
   if (!plant.success || !project.success || !revs.success) return null;
   const revisions: TavoleRevision[] = revs.data.map((r) => ({ mark: r.mark, text: r.text, date: new Date(r.date) }));
   return {

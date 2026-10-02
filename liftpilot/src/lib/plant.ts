@@ -62,3 +62,15 @@ export const plantSchema = z.object({
 export type Plant = z.infer<typeof plantSchema>;
 
 export const EMPTY_PLANT: Plant = {};
+
+/** The data as stored: a number an earlier form allowed outside today's range is dropped (printed as a dash), the rest
+ *  is read as saved. */
+export const plantReadSchema = z.preprocess((raw) => {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return raw;
+  const range: Readonly<Record<string, readonly [number, number]>> = PLANT_RANGE;
+  const outside = ([k, v]: [string, unknown]): boolean => {
+    const r = range[k];
+    return r !== undefined && typeof v === 'number' && (!Number.isFinite(v) || v < r[0] || v > r[1]);
+  };
+  return Object.fromEntries(Object.entries(raw).filter((e) => !outside(e)));
+}, plantSchema);

@@ -13,20 +13,12 @@
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… [MAILBOX_PORT=2526] node scripts/smoke.mjs
 // Playwright is not a dependency of the app: the local install is used, else the global one.
 import { Buffer } from 'node:buffer';
-import { createRequire } from 'node:module';
-import { execSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { startMailSink } from './mail-sink.mjs';
 import { accountFlows } from './smoke-accounts.mjs';
+import { secondCompany } from './smoke-isolation.mjs';
+import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
 
-const require = createRequire(import.meta.url);
-function loadPlaywright() {
-  try {
-    return require('playwright');
-  } catch {
-    return require(`${execSync('npm root -g').toString().trim()}/playwright`);
-  }
-}
 const { chromium } = loadPlaywright();
 
 const BASE = (process.env.BASE_URL ?? 'http://localhost:3100').replace(/\/+$/, '');
@@ -35,43 +27,8 @@ if (!ADMIN.password) throw new Error('ADMIN_PASSWORD is required');
 const stamp = Date.now().toString(36);
 // a 96 × 32 PNG, made for this test
 const LOGO_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAGAAAAAgCAIAAABiouoDAAAAfUlEQVR42u3aywmAMBBFUSO2YDlWZR1WZTkWMS7cDRgQowieu8n+8t6QX4mIDuf0FNQZjmWcFi4S2zpLkIq1qljK1Z9J00aCVIwggr40pOsT64mNhgSpGEEEgSCCCCKIIIIIIgjXDqsuGCWIIIJenUFeECWIoKYUvzsk6BY7X3sSQy3KvssAAAAASUVORK5CYII=';
-const step = (s) => process.stdout.write(`▸ ${s}\n`);
 
-async function newPage(browser) {
-  const page = await browser.newPage({ viewport: { width: 1360, height: 900 } });
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(`pageerror ${e.message}`));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push(`console ${m.text()}`); });
-  return { page, errors };
-}
-async function login(page, email, password) {
-  await page.goto(`${BASE}/it/login`);
-  await page.fill('input[name="email"]', email);
-  await page.fill('input[name="password"]', password);
-  await Promise.all([page.waitForURL(/\/it\/app(\/account\?first=1)?$/), page.click('main form button[type="submit"]')]);
-}
-/** Waits until React has hydrated the element (its props are attached): a click before that is lost. */
-async function hydrated(page, selector) {
-  await page.waitForFunction((sel) => {
-    const el = globalThis.document.querySelector(sel);
-    return !!el && Object.keys(el).some((k) => k.startsWith('__reactProps'));
-  }, selector);
-}
-// the draft order of the page's record: a Word document (a ZIP with its main part) and a PDF
-async function orderFiles(page, prefix) {
-  for (const [format, magic, type] of [['docx', 'PK', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'], ['pdf', '%PDF-', 'application/pdf']]) {
-    const res = await page.request.get(`${BASE}${await page.getAttribute(`a[href^="${prefix}"][href$="/order/${format}"]`, 'href')}`);
-    assert.equal(res.status(), 200, `order ${format}`);
-    assert.equal(res.headers()['content-type'], type, `order ${format}`);
-    const body = await res.body();
-    assert.equal(body.subarray(0, magic.length).toString('latin1'), magic, `order ${format}`);
-    if (format === 'docx') assert.ok(body.includes('word/document.xml'), 'order docx: main part');
-  }
-}
-
-async function logout(page) {
-  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
-}
+const { newPage, login, hydrated, orderFiles, logout } = smokeKit(BASE);
 
 const MAILBOX = Number(process.env.MAILBOX_PORT ?? 0);
 const sink = MAILBOX ? startMailSink(MAILBOX) : null;
@@ -322,46 +279,15 @@ try {
   // a Tecnico sees no prices and manages nobody
   assert.equal((await page.goto(`${BASE}/it/app/prices`)).status(), 404, 'price list of a Tecnico');
   assert.equal((await page.goto(`${BASE}/it/app/team`)).status(), 404, 'team page of a Tecnico');
+  assert.equal((await page.request.get(`${BASE}/api/company/export`)).status(), 403, 'company export by a Tecnico');
   errors.length = 0; // provoked on purpose
   await page.goto(`${BASE}/it/app`);
   await logout(page);
 
   // the isolation check below provokes a 404 on purpose: the console must be clean up to here
   assert.deepEqual(errors, [], 'browser errors');
-  step('second company cannot see the first one');
-  await login(page, ADMIN.email, ADMIN.password);
-  await page.goto(`${BASE}/it/app/admin`);
-  const ownerEmail = `titolare.${stamp}@example.com`;
-  await page.fill('input[name="name"]', `Ditta ${stamp}`);
-  await page.fill('input[name="ownerName"]', 'Titolare di prova');
-  await page.fill('input[name="ownerEmail"]', ownerEmail);
-  await page.click('main form:has(input[name="ownerEmail"]) button[type="submit"]');
-  const ownerTemp = (await page.locator('.secret').first().textContent())?.trim() ?? '';
-  await logout(page);
-  await login(page, ownerEmail, ownerTemp);
-  const ownerNext = `Titolare${stamp}Password9`;
-  await page.fill('input[name="current"]', ownerTemp);
-  await page.fill('input[name="next"]', ownerNext);
-  await page.fill('input[name="confirm"]', ownerNext);
-  await page.click('main form button[type="submit"]');
-  await page.waitForSelector('.alert-ok');
-  // the owner of a company the platform made accepts the terms before working
-  await page.goto(`${BASE}/it/app`);
-  await hydrated(page, 'main form:has(input[name="clauses"]) button');
-  for (const k of ['privacy', 'terms', 'clauses']) await page.check(`main input[name="${k}"]`);
-  await page.click('main form:has(input[name="clauses"]) button');
-  await page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
-  const other = await page.goto(calcUrl);
-  assert.equal(other.status(), 404, 'calculation of another company');
-  const otherPdf = await page.request.get(`${BASE}${href}`);
-  assert.equal(otherPdf.status(), 404, 'report of another company');
-  assert.equal((await page.goto(designUrl)).status(), 404, 'shaft design of another company');
-  assert.equal((await page.request.get(`${BASE}${dxfHref}`)).status(), 404, 'DXF of another company');
-  assert.equal((await page.goto(setUrl)).status(), 404, 'drawing set of another company');
-  assert.equal((await page.request.get(`${BASE}${setPdfHref}`)).status(), 404, 'drawing set PDF of another company');
-  assert.equal((await page.goto(liftUrl)).status(), 404, 'lift design of another company');
-  assert.equal((await page.request.get(`${BASE}${liftRelHref}`)).status(), 404, 'report of the lift design of another company');
-  for (const format of ['pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}${new URL(liftUrl).pathname.replace(/^\/it\/app/, '/api')}/${format}`)).status(), 404, `${format} export of another company`);
+  await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
+    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref } });
 
   if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser) });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');

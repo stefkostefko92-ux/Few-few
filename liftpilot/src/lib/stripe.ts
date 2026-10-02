@@ -53,9 +53,25 @@ export function packPriceData(pack: SeatPack, m: MonthlyPrice, productSeats: str
   };
 }
 
-/** What of a Stripe error may go to the log: its kind and code, never its message (it may carry the customer's data). */
+/** What of an error may go to the log: a Stripe error's kind and code, another error's name and code — never a
+ *  message (it may carry the customer's data). */
 export function stripeErrorOf(err: unknown): { type: string; code?: string; status?: number } {
-  return err instanceof Stripe.errors.StripeError ? { type: err.type, code: err.code, status: err.statusCode } : { type: 'unknown' };
+  if (err instanceof Stripe.errors.StripeError) return { type: err.type, code: err.code, status: err.statusCode };
+  if (err instanceof Error) {
+    const code = 'code' in err && typeof err.code === 'string' ? err.code : undefined;
+    return { type: err.name, ...(code ? { code } : {}) };
+  }
+  return { type: 'unknown' };
+}
+
+/** The monthly price this subscription pays for the owner (its line that is not the slots'), from Stripe; null: none or
+ *  not readable. The packs of a live subscription are priced on it, not on today's Price. */
+export async function subscriptionPrice(subscriptionId: string, productSeats: string): Promise<MonthlyPrice | null> {
+  const s = stripeClient();
+  if (!s) return null;
+  const sub = await s.subscriptions.retrieve(subscriptionId);
+  const owner = sub.items.data.find((i) => (typeof i.price.product === 'string' ? i.price.product : i.price.product.id) !== productSeats);
+  return owner ? priceOfItem(owner.price) : null;
 }
 
 /** The monthly price of a subscription's own line for the owner (the packs are priced on what this company pays). */

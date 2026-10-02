@@ -23,7 +23,7 @@ export interface OrderInput {
   /** the company's logo on the letterhead; null: the name alone */
   logo: SheetImage | null;
   author: string | null;
-  project: { name: string; address: string | null; city: string | null; province: string | null; plantNumber: string | null; client: string | null };
+  project: { name: string; address: string | null; city: string | null; province: string | null; plantNumber: string | null };
   /** the saved record the order comes from */
   record: { kind: 'design' | 'calc'; id: string; sha256: string; createdAt: Date; label: string | null };
   order: OrderMachine;
@@ -75,7 +75,6 @@ export function buildOrder(o: OrderInput): ReportDoc {
     ['Committente', [o.company, o.companyCity].filter(Boolean).join(', ')],
     ['Impianto', `${pr.name}${pr.plantNumber ? ` · matricola ${pr.plantNumber}` : ''}`],
     ['Indirizzo dell’impianto', [pr.address, pr.city, pr.province].filter(Boolean).join(', ') || BLANK],
-    ...(pr.client ? [['Proprietario o amministratore', pr.client] as [string, string]] : []),
     ['Riferimento', `${o.record.kind === 'design' ? 'Progetto' : 'Calcolo'} LiftPilot ${o.record.id}${o.record.label ? ` («${o.record.label}»)` : ''} del ${when(o.record.createdAt)}`],
     ['Impronta SHA-256', o.record.sha256],
   ] });

@@ -56,10 +56,15 @@ export async function companySubscription(companyId: string): Promise<CompanySub
   };
 }
 
-/** In a transaction: locks the company (two colleagues added at once do not both take the last slot) and says whether
- *  one more colleague may be activated. */
-export async function seatAvailable(tx: Prisma.TransactionClient, companyId: string): Promise<boolean> {
+/** In a transaction: locks the company until the transaction ends (two colleagues added or brought back at once do not
+ *  both take the last slot; whatever is read after it is current). */
+export async function lockCompany(tx: Prisma.TransactionClient, companyId: string): Promise<void> {
   await tx.$queryRaw`SELECT "id" FROM "Company" WHERE "id" = ${companyId} FOR UPDATE`;
+}
+
+/** In a transaction: locks the company and says whether one more colleague may be activated. */
+export async function seatAvailable(tx: Prisma.TransactionClient, companyId: string): Promise<boolean> {
+  await lockCompany(tx, companyId);
   const c = await tx.company.findUnique({ where: { id: companyId }, select: BILLING_SELECT });
   if (!c) return false;
   return seatFree(c, companyAccess(c, new Date(), billingConfigured()), await seatsUsed(companyId, tx));
@@ -71,10 +76,10 @@ export async function enforceSeats(companyId: string): Promise<number> {
     await tx.$queryRaw`SELECT "id" FROM "Company" WHERE "id" = ${companyId} FOR UPDATE`;
     const c = await tx.company.findUnique({ where: { id: companyId }, select: BILLING_SELECT });
     if (!c) return [];
-    // in the trial nobody new joins, but colleagues already there (a company older than the billing) stay until the
-    // subscription says how many slots it pays
+    // in a first trial nobody new joins, but colleagues already there (a company older than the billing) stay until a
+    // subscription says how many slots it pays; a subscription that ended during the trial counts as one
     const access = companyAccess(c, new Date(), billingConfigured()), limit = seatLimit(c, access);
-    if (access === 'trial' || !Number.isFinite(limit)) return [];
+    if ((access === 'trial' && !c.subscriptionStatus) || !Number.isFinite(limit)) return [];
     const members = await tx.user.findMany({
       where: { companyId, active: true, role: { in: [...MEMBER_ROLES] } }, orderBy: { createdAt: 'desc' }, select: { id: true },
     });

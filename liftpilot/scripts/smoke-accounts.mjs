@@ -23,13 +23,12 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink }) {
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
   await page.fill('input[name="confirm"]', password);
-  await page.check('input[name="privacy"]');
-  await page.check('input[name="terms"]');
-  await page.check('input[name="clauses"]');
+  for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`input[name="${k}"]`);
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('main [role="status"] h2');
   const first = await sink.next(email, since);
   assert.ok(first, 'registration e-mail');
+  assert.ok(/\/it\/privacy#terms/.test(first.text), 'the terms accepted, in the registration e-mail');
   const old = link(first.text, 'verify-email');
 
   // signing in before the confirmation: refused, and a new link replaces the first one
@@ -118,9 +117,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink }) {
   since = Date.now();
   await page.goto(`${BASE}/it/register`);
   for (const [k, v] of [['company', 'Doppione srl'], ['name', 'Qualcuno'], ['email', email], ['password', next], ['confirm', next]]) await page.fill(`input[name="${k}"]`, v);
-  await page.check('input[name="privacy"]');
-  await page.check('input[name="terms"]');
-  await page.check('input[name="clauses"]');
+  for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`input[name="${k}"]`);
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('main [role="status"] h2');
   const exists = await sink.next(email, since);

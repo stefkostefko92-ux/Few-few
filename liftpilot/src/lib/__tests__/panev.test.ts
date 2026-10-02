@@ -1,9 +1,10 @@
 // Panev's catalogue in the software (48 articles, list 2026) and the bill of a design: the door pairs under every
-// landing sill, the counterweight rail's supports with their SG at every bracket's height, the total.
+// landing sill, the counterweight rail's supports with their SG at every bracket's height; the list prices apart.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PANEV_ARTICLES, panevArticle, panevBom } from '../catalog/panev';
 import { CW_CHOICES, DOOR_PAIRS, bracketCount, defaultInputs, doorBracketCount, landingOf, layout, railSpan, section, type ShaftInputs } from '@/shaft';
+import { PANEV_LIST_PRICE } from '../catalog/panev-prices';
 
 const base = defaultInputs(1600, 1750);
 
@@ -14,9 +15,12 @@ test('catalogo Panev: 48 articoli, codici unici, prezzi di listino tranne le sol
   assert.deepEqual([count('plateA'), count('bracketB'), count('supportSU'), count('supportSD'), count('supportSC'), count('guideSG')], [5, 6, 3, 6, 8, 15]);
   for (const a of PANEV_ARTICLES) {
     assert.ok(a.page >= 14 && a.page <= 62, a.code);
-    assert.equal(a.price === null, ['madeSC', 'madeSG', 'cornerSN', 'squareSN', 'arm'].includes(a.kind), a.code);
+    assert.equal(PANEV_LIST_PRICE[a.code] === undefined, ['madeSC', 'madeSG', 'cornerSN', 'squareSN', 'arm'].includes(a.kind), a.code);
   }
-  assert.equal(panevArticle('SC 50 200')?.price, 7.64);
+  assert.ok(panevArticle('SC 50 200'));
+  assert.equal(PANEV_LIST_PRICE['SC 50 200'], 7.64);
+  // every list price is an article of the catalogue
+  for (const code of Object.keys(PANEV_LIST_PRICE)) assert.ok(panevArticle(code), code);
   // every article a design can name is in the catalogue
   for (const c of [...DOOR_PAIRS, ...CW_CHOICES]) for (const code of c.split(' + ')) assert.ok(panevArticle(code), code);
 });
@@ -34,7 +38,6 @@ test('distinta: coppie A + B per soglia e per fermata, supporti e SG per ogni st
   assert.equal(qty('SG 80 150'), 2 * n);
   assert.equal(bom.rows.find((r) => r.article.code === 'A 65 170 7')?.cut, 73);
   assert.equal(bom.missing, 0);
-  assert.ok(Math.abs(bom.total - bom.rows.reduce((s, r) => s + (r.article.price ?? 0) * r.qty, 0)) < 1e-9);
   // generic brackets: only the doors' pairs
   assert.deepEqual(panevBom(layout({ ...base, cwBrackets: 'generic' })).rows.map((r) => r.article.code), ['A 65 170 7', 'B 65 320']);
 });
@@ -44,6 +47,6 @@ test('distinta: SC in un angolo, soluzione su disegno a preventivo, staffe senza
   const codes = panevBom(layout(corner)).rows.map((r) => r.article.code);
   assert.ok(codes.includes('SC 60 200') && codes.includes('SG 60 190') && codes.includes('SU 220 160'));
   const special = panevBom(layout({ ...base, panev: { cw: 'SN 60 65 + SN 65 200 + BRACCIO 160 190' } }));
-  assert.ok(special.rows.filter((r) => r.use === 'cw').every((r) => r.drawing && r.article.price === null));
+  assert.ok(special.rows.filter((r) => r.use === 'cw').every((r) => r.drawing && PANEV_LIST_PRICE[r.article.code] === undefined));
   assert.ok(panevBom(layout({ ...base, panev: { cw: 'SC 50 200' } })).missing > 0);
 });

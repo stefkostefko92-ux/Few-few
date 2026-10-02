@@ -16,15 +16,17 @@ test('ruoli e capacità', () => {
   // Progettista: also reviews and archives, no prices
   assert.ok(can('ENGINEER', 'calc:review') && can('ENGINEER', 'projects:archive') && !can('ENGINEER', 'prices:view'));
   // the owner: everything of the company; the platform above
-  for (const c of ['users:manage', 'billing:manage', 'prices:edit', 'prices:view', 'company:edit', 'audit:view'] as const) assert.ok(can('OWNER', c), c);
+  for (const c of ['users:manage', 'billing:manage', 'prices:edit', 'prices:view', 'company:edit', 'company:export', 'audit:view'] as const) assert.ok(can('OWNER', c), c);
   assert.ok(can('SUPERADMIN', 'platform:admin') && !can('OWNER', 'platform:admin'));
-  for (const r of MEMBER_ROLES) assert.ok(!can(r, 'users:manage') && !can(r, 'billing:manage') && !can(r, 'audit:view'), r);
+  for (const r of MEMBER_ROLES) assert.ok(!can(r, 'users:manage') && !can(r, 'billing:manage') && !can(r, 'audit:view') && !can(r, 'company:export'), r);
 });
 
 test('senza abbonamento dopo la prova: si legge, si scarica e si paga, non si scrive', () => {
   const ro = (role: 'OWNER' | 'TECHNICIAN') => ({ role, readOnly: true });
   assert.ok(can(ro('OWNER'), 'projects:view') && can(ro('OWNER'), 'report:download') && can(ro('OWNER'), 'billing:manage'));
   assert.ok(can(ro('OWNER'), 'users:manage') && can(ro('OWNER'), 'prices:view'));
+  // the company's data leave it also read-only (terms of use, «exit»), the logo does not change
+  assert.ok(can(ro('OWNER'), 'company:export') && !can(ro('OWNER'), 'company:edit'));
   for (const c of ['projects:edit', 'calc:create', 'calc:review', 'projects:archive', 'prices:edit'] as const) {
     assert.ok(!can(ro('OWNER'), c) && !can(ro('TECHNICIAN'), c), c);
   }

@@ -9,6 +9,8 @@ import { audit } from '@/lib/audit';
 import { startSession } from '@/lib/auth';
 import { mailAccount } from '@/lib/account-mail';
 import { TERMS_VERSION } from '@/lib/legal';
+import { legalSha256 } from '@/lib/legal-text';
+import { CONSENTS } from '@/lib/consents';
 import { log } from '@/lib/log';
 import { mailConfigured } from '@/lib/mail';
 import { hashPassword, verifyPassword } from '@/lib/password';
@@ -39,7 +41,7 @@ export async function registerAction(_prev: FormState, fd: FormData): Promise<Fo
   if (!rateLimit(`register-ip:${await clientIp()}`, 5, HOUR)) return { error: 'rateLimited' };
   const parsed = registerSchema.safeParse({
     company: str(fd, 'company'), vatNumber: str(fd, 'vatNumber'), city: str(fd, 'city'), name: str(fd, 'name'), email: str(fd, 'email'),
-    password: str(fd, 'password'), confirm: str(fd, 'confirm'), privacy: str(fd, 'privacy'), terms: str(fd, 'terms'), clauses: str(fd, 'clauses'),
+    password: str(fd, 'password'), confirm: str(fd, 'confirm'), ...Object.fromEntries(CONSENTS.map((k) => [k, str(fd, k)])),
   });
   if (!parsed.success) return formError(parsed.error.issues);
   const d = parsed.data;
@@ -84,11 +86,11 @@ async function register(d: RegisterInput, locale: Locale): Promise<void> {
     mailAccount(d.email, locale, { kind: 'exists' });
     return;
   }
-  if (made.created) {
-    await audit({ companyId: made.companyId, userId: made.id, action: 'USER_REGISTERED', entity: 'User', entityId: made.id });
-    log.info({ userId: made.id }, 'registered');
-  }
-  mailAccount(d.email, locale, { kind: 'verify', token: await issueToken(made.id, 'VERIFY_EMAIL') });
+  // what was accepted, kept for every registration (a new one replaces an unconfirmed one, with its acceptance)
+  await audit({ companyId: made.companyId, userId: made.id, action: 'USER_REGISTERED', entity: 'User', entityId: made.id,
+    meta: { terms: TERMS_VERSION, sha256: legalSha256(locale), locale, consents: [...CONSENTS], replaced: !made.created } });
+  if (made.created) log.info({ userId: made.id }, 'registered');
+  mailAccount(d.email, locale, { kind: 'verify', token: await issueToken(made.id, 'VERIFY_EMAIL'), terms: true });
 }
 
 // The link of the e-mail and the account's password: the address is proven by the inbox, the account by the password

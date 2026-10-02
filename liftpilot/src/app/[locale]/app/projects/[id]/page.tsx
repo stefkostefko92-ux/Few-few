@@ -5,7 +5,7 @@ import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { getProject, latestLiftDesign, listCalculations, listDrawingSets, listLiftDesigns, listShaftDesigns } from '@/server/queries';
-import { liftInputsSchema } from '@/lib/lift-input';
+import { liftInputsReadSchema } from '@/lib/lift-input';
 import { visiblePrices } from '@/server/prices';
 import LiftView from '@/components/lift/LiftView';
 import { setProjectArchivedAction, upgradeProjectAction } from '@/server/project-actions';
@@ -26,7 +26,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const [t, tc, ts, tt, tl, calcs, designs, sets, lifts, latest, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('shaft'),
     getTranslations('tavole'), getTranslations('lift'), listCalculations(user, p.id), listShaftDesigns(user, p.id), listDrawingSets(user, p.id),
     listLiftDesigns(user, p.id), latestLiftDesign(user, p.id), getLocale()]);
-  const latestInputs = latest ? liftInputsSchema.safeParse(latest.inputs) : null;
+  const latestInputs = latest ? liftInputsReadSchema.safeParse(latest.inputs) : null;
   const fd = dateFormat(locale);
   const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
   const editable = can(user, 'projects:edit') && !p.archivedAt;

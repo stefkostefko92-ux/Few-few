@@ -1,7 +1,7 @@
 // Panev's 48 brackets as the 2026 catalogue lists them (panev/docs/catalogo-staffe-panev-2026.pdf in the monorepo): the
-// code, what the part is, its size, the sheet's thickness, the page and the list price of p. 65 (euro, VAT excluded,
-// "salvo variazioni"; null: quoted to order). And the bill of materials of a design: the articles its landing doors and
-// counterweight rails take, as many as the software places (src/shaft/staffe-*.ts), with their prices. Pure.
+// code, what the part is, its size, the sheet's thickness and the page (the list prices of p. 65 are in panev-prices.ts,
+// never in the screens' code). And the bill of materials of a design: the articles its landing doors and counterweight
+// rails take, as many as the software places (src/shaft/staffe-*.ts). Pure.
 import {
   bracketCode, bracketHeights, cwBracket, cwBracketsOf, cwSpecialOf, doorBracketCount, doorPairOf, landingOf, plateReach, railSpan, type Layout,
 } from '@/shaft';
@@ -19,35 +19,34 @@ export interface PanevArticle {
   /** sheet thickness [mm] */
   t: 4 | 5;
   page: number;
-  /** list price 2026 [€, VAT excluded]; null: quoted to order */
-  price: number | null;
 }
 
 /** The list the prices come from. */
 export const PANEV_LISTINO = { year: 2026, page: 65 } as const;
 
-const a = (code: string, kind: PanevKind, size: string, t: 4 | 5, page: number, price: number | null): PanevArticle => ({ code, kind, size, t, page, price });
+// the list prices are in panev-prices.ts, out of the pages' code (they are the company's price list's start, server side)
+const a = (code: string, kind: PanevKind, size: string, t: 4 | 5, page: number): PanevArticle => ({ code, kind, size, t, page });
 
 export const PANEV_ARTICLES: readonly PanevArticle[] = [
   // section 01 — landing doors (pp. 14-18)
-  a('A 65 170 7', 'plateA', '170 × 75', 5, 14, 13.68), a('A 45 170 7', 'plateA', '170 × 70', 5, 15, 12.46), a('A 45 175 2', 'plateA', '175 × 60', 5, 16, 11.77),
-  a('A 37 150 7', 'plateA', '150 × 70', 4, 17, 12.0), a('A 37 170 2', 'plateA', '170 × 60', 4, 18, 10.74),
-  a('B 65 320', 'bracketB', '320 × 65 × 65', 5, 14, 11.77), a('B 65 220', 'bracketB', '220 × 65 × 65', 5, 14, 10.48),
-  a('B 45 320', 'bracketB', '320 × 45 × 60', 5, 15, 11.48), a('B 45 220', 'bracketB', '220 × 45 × 60', 5, 15, 10.21),
-  a('B 37 320', 'bracketB', '320 × 37 × 60', 4, 17, 11.33), a('B 37 220', 'bracketB', '220 × 37 × 60', 4, 17, 10.0),
+  a('A 65 170 7', 'plateA', '170 × 75', 5, 14), a('A 45 170 7', 'plateA', '170 × 70', 5, 15), a('A 45 175 2', 'plateA', '175 × 60', 5, 16),
+  a('A 37 150 7', 'plateA', '150 × 70', 4, 17), a('A 37 170 2', 'plateA', '170 × 60', 4, 18),
+  a('B 65 320', 'bracketB', '320 × 65 × 65', 5, 14), a('B 65 220', 'bracketB', '220 × 65 × 65', 5, 14),
+  a('B 45 320', 'bracketB', '320 × 45 × 60', 5, 15), a('B 45 220', 'bracketB', '220 × 45 × 60', 5, 15),
+  a('B 37 320', 'bracketB', '320 × 37 × 60', 4, 17), a('B 37 220', 'bracketB', '220 × 37 × 60', 4, 17),
   // sections 02-04 — counterweight rail supports (pp. 20-55)
-  a('SU 220 160', 'supportSU', '220 × 160', 5, 20, 10.92), a('SU 220 180', 'supportSU', '220 × 180', 5, 22, 11.33), a('SU 220 200', 'supportSU', '220 × 200', 5, 24, 11.6),
-  a('SD 150 160', 'supportSD', '150 × 160', 5, 27, 9.69), a('SD 150 180', 'supportSD', '150 × 180', 5, 29, 9.96), a('SD 150 200', 'supportSD', '150 × 200', 5, 31, 10.24),
-  a('SD 220 160', 'supportSD', '220 × 160', 5, 33, 10.92), a('SD 220 180', 'supportSD', '220 × 180', 5, 35, 11.19), a('SD 220 200', 'supportSD', '220 × 200', 5, 37, 11.47),
-  a('SC 50 200', 'supportSC', '50 × 200', 4, 40, 7.64), a('SC 60 200', 'supportSC', '60 × 200', 4, 42, 7.92), a('SC 80 200', 'supportSC', '80 × 200', 4, 44, 10.24),
-  a('SC 90 200', 'supportSC', '90 × 200', 4, 46, 10.51), a('SC 50 220', 'supportSC', '50 × 220', 4, 48, 7.92), a('SC 60 220', 'supportSC', '60 × 220', 4, 50, 8.19),
-  a('SC 80 220', 'supportSC', '80 × 220', 4, 52, 10.92), a('SC 90 220', 'supportSC', '90 × 220', 4, 54, 11.33),
+  a('SU 220 160', 'supportSU', '220 × 160', 5, 20), a('SU 220 180', 'supportSU', '220 × 180', 5, 22), a('SU 220 200', 'supportSU', '220 × 200', 5, 24),
+  a('SD 150 160', 'supportSD', '150 × 160', 5, 27), a('SD 150 180', 'supportSD', '150 × 180', 5, 29), a('SD 150 200', 'supportSD', '150 × 200', 5, 31),
+  a('SD 220 160', 'supportSD', '220 × 160', 5, 33), a('SD 220 180', 'supportSD', '220 × 180', 5, 35), a('SD 220 200', 'supportSD', '220 × 200', 5, 37),
+  a('SC 50 200', 'supportSC', '50 × 200', 4, 40), a('SC 60 200', 'supportSC', '60 × 200', 4, 42), a('SC 80 200', 'supportSC', '80 × 200', 4, 44),
+  a('SC 90 200', 'supportSC', '90 × 200', 4, 46), a('SC 50 220', 'supportSC', '50 × 220', 4, 48), a('SC 60 220', 'supportSC', '60 × 220', 4, 50),
+  a('SC 80 220', 'supportSC', '80 × 220', 4, 52), a('SC 90 220', 'supportSC', '90 × 220', 4, 54),
   // section 05 — SG guide brackets (pp. 57-59)
-  ...([[50, [8.6, 8.74, 9.01, 9.15, 9.28]], [60, [8.6, 8.87, 9.15, 9.42, 9.56]], [80, [9.56, 9.96, 10.1, 10.24, 10.51]]] as const).flatMap(([w, prices]) =>
-    ([130, 150, 170, 190, 220] as const).map((l, i) => a(`SG ${w} ${l}`, 'guideSG', `${w} × ${l}`, 4, l <= 150 ? 57 : l <= 190 ? 58 : 59, prices[i]))),
+  ...([50, 60, 80] as const).flatMap((w) =>
+    ([130, 150, 170, 190, 220] as const).map((l) => a(`SG ${w} ${l}`, 'guideSG', `${w} × ${l}`, 4, l <= 150 ? 57 : l <= 190 ? 58 : 59))),
   // section 06 — to the site's drawing (pp. 61-62)
-  a('SC 50 170', 'madeSC', '50 × 170', 4, 61, null), a('SG 225 50', 'madeSG', '150 + 30', 5, 61, null),
-  a('SN 60 65', 'cornerSN', '65 × 65 × 60', 5, 62, null), a('SN 65 200', 'squareSN', '65 × 200 × 50', 5, 62, null), a('BRACCIO 160 190', 'arm', '190', 5, 62, null),
+  a('SC 50 170', 'madeSC', '50 × 170', 4, 61), a('SG 225 50', 'madeSG', '150 + 30', 5, 61),
+  a('SN 60 65', 'cornerSN', '65 × 65 × 60', 5, 62), a('SN 65 200', 'squareSN', '65 × 200 × 50', 5, 62), a('BRACCIO 160 190', 'arm', '190', 5, 62),
 ];
 
 export const panevArticle = (code: string): PanevArticle | undefined => PANEV_ARTICLES.find((x) => x.code === code);
@@ -58,8 +57,6 @@ export interface BomRow { article: PanevArticle; qty: number; use: 'door' | 'cw'
 
 export interface PanevBom {
   rows: BomRow[];
-  /** the priced lines' total [€, VAT excluded] */
-  total: number;
   /** brackets of the counterweight rails no article of the catalogue takes */
   missing: number;
 }
@@ -95,6 +92,5 @@ export function panevBom(L: Layout): PanevBom {
       }
     }
   }
-  const list = [...rows.values()];
-  return { rows: list, total: list.reduce((s, x) => s + (x.article.price ?? 0) * x.qty, 0), missing };
+  return { rows: [...rows.values()], missing };
 }

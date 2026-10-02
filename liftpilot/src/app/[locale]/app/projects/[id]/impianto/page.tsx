@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
-import { plantSchema } from '@/lib/plant';
+import { plantReadSchema } from '@/lib/plant';
 import { getProject } from '@/server/queries';
 import Crumbs from '@/components/Crumbs';
 import PlantForm from '@/components/tavole/PlantForm';
@@ -22,7 +22,7 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
   const p = await getProject(user, id);
   if (!p) notFound();
   const [t, tp] = await Promise.all([getTranslations('tavole'), getTranslations('projects')]);
-  const plant = plantSchema.safeParse(p.plant ?? {});
+  const plant = plantReadSchema.safeParse(p.plant ?? {});
   const readOnly = !can(user, 'projects:edit') || p.archivedAt !== null;
   const cl = p.clientLogo, clientLogo = cl ? `data:${cl.mime};base64,${Buffer.from(cl.data).toString('base64')}` : null;
   return (

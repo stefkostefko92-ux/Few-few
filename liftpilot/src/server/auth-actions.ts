@@ -6,6 +6,7 @@ import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { endSession, getSessionUser, startSession } from '@/lib/auth';
+import { TERMS_VERSION } from '@/lib/legal';
 import { mailAccount } from '@/lib/account-mail';
 import { mailConfigured } from '@/lib/mail';
 import { purgeUnconfirmed } from '@/lib/purge';
@@ -42,7 +43,7 @@ export async function loginAction(_prev: FormState, fd: FormData): Promise<FormS
   // a self-registered account whose address is not confirmed yet: a new link instead of a session (at most 3 an hour)
   if (!user.emailVerifiedAt) {
     if (mailConfigured() && rateLimit(`verify-mail:${user.id}`, 3, 60 * 60 * 1000)) {
-      mailAccount(user.email, locale, { kind: 'verify', token: await issueToken(user.id, 'VERIFY_EMAIL') });
+      mailAccount(user.email, locale, { kind: 'verify', token: await issueToken(user.id, 'VERIFY_EMAIL'), terms: user.termsVersion === TERMS_VERSION });
     }
     return { error: 'unverified' };
   }

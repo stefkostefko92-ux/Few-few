@@ -30,9 +30,11 @@ export const registerSchema = z
     email: emailSchema,
     password: z.string().max(200),
     confirm: z.string().max(200),
-    privacy: checked,
-    terms: checked,
-    /** the specific approval of the clauses of arts. 1341–1342 c.c. (limits of liability, renewal, law and court) */
+    /** the terms of use (with the processing agreement), the declaration of acting as a business, the results as drafts
+     *  and the specific approval of the clauses of arts. 1341–1342 c.c.: the four confirmations of src/lib/consents.ts */
+    accept: checked,
+    business: checked,
+    drafts: checked,
     clauses: checked,
   })
   .refine((v) => passwordPolicyOk(v.password), { path: ['password'], message: 'weakPassword' })

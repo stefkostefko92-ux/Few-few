@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { idSchema } from '@/lib/schemas';
-import { shaftInputsSchema } from '@/lib/shaft-input';
+import { shaftInputsReadSchema } from '@/lib/shaft-input';
 import { defaultInputs } from '@/shaft';
 import { getProject } from '@/server/queries';
 import { visiblePrices } from '@/server/prices';
@@ -25,7 +25,7 @@ export default async function ShaftNewPage({ params, searchParams }: { params: P
   if (!p || p.archivedAt) notFound();
   const from = idSchema.safeParse((await searchParams).from);
   const src = from.success ? await prisma.shaftDesign.findFirst({ where: { id: from.data, projectId: p.id, companyId: user.companyId }, select: { inputs: true } }) : null;
-  const parsed = src ? shaftInputsSchema.safeParse(src.inputs) : null;
+  const parsed = src ? shaftInputsReadSchema.safeParse(src.inputs) : null;
   const [t, tp] = await Promise.all([getTranslations('shaft'), getTranslations('projects')]);
   return (
     <main className="page">

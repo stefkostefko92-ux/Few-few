@@ -3,20 +3,21 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { SeatPack } from '@prisma/client';
 import { requireCapability } from '@/lib/auth';
 import { PACK, SEAT_PACKS, packAmount } from '@/lib/billing';
-import { billingConfigured } from '@/lib/billing-config';
-import { monthlyPrice, stripeErrorOf, type MonthlyPrice } from '@/lib/stripe';
+import { billingConfig } from '@/lib/billing-config';
+import { monthlyPrice, stripeErrorOf, subscriptionPrice, type MonthlyPrice } from '@/lib/stripe';
 import { dateFormat } from '@/lib/dates';
 import { log } from '@/lib/log';
 import { money } from '@/lib/money';
 import { companySubscription } from '@/server/billing';
 import { changePackAction, portalAction, startCheckoutAction } from '@/server/billing-actions';
+import { Link } from '@/i18n/routing';
 
 export async function generateMetadata() {
   const t = await getTranslations('billing');
   return { title: t('title') };
 }
 
-const ERRORS = ['forbidden', 'billingOff', 'rateLimited', 'invalid', 'terms', 'subscribed', 'tooManyMembers', 'priceUnavailable', 'stripe',
+const ERRORS = ['forbidden', 'billingOff', 'rateLimited', 'invalid', 'terms', 'termsDue', 'subscribed', 'tooManyMembers', 'priceUnavailable', 'stripe',
   'noSubscription', 'samePack', 'paymentFailed', 'noCustomer'] as const;
 type BillingError = (typeof ERRORS)[number];
 const isError = (x: unknown): x is BillingError => typeof x === 'string' && (ERRORS as readonly string[]).includes(x);
@@ -30,10 +31,13 @@ export default async function BillingPage({ params, searchParams }: {
   const me = await requireCapability(locale, 'billing:manage');
   const [q, t, sub] = await Promise.all([searchParams, getTranslations('billing'), companySubscription(me.companyId)]);
   if (!sub) notFound();
-  const on = billingConfigured();
+  const cfg = billingConfig(), on = cfg !== null;
   let price: MonthlyPrice | null = null;
-  if (on) {
-    try { price = await monthlyPrice(); } catch (err) { log.warn({ err: stripeErrorOf(err) }, 'monthly price not read'); }
+  if (cfg) {
+    // a live subscription's packs are priced on what it pays for the owner; a new one on today's Price
+    try { price = sub.subscriptionId ? await subscriptionPrice(sub.subscriptionId, cfg.productSeats) : await monthlyPrice(); } catch (err) {
+      log.warn({ err: stripeErrorOf(err) }, 'monthly price not read');
+    }
   }
   const fd = dateFormat(locale), err = isError(q.e) ? q.e : null;
   const eur = (cents: number): string => (price ? money(cents, price.currency, locale) : '—');
@@ -85,7 +89,9 @@ export default async function BillingPage({ params, searchParams }: {
       {on ? (
         <section className="panel">
           <h2>{live ? t('changeTitle') : t('subscribeTitle')}</h2>
-          {price ? (
+          {me.terms !== 'ok' ? (
+            <p className="alert alert-warn">{t('e.termsDue')} <Link href="/app/terms">{t('termsAction')}</Link></p>
+          ) : price ? (
             <>
               <p className="note">{t('priceNote', { base: `${eur(price.cents)} ${per}` })} {t(`tax.${price.taxBehavior ?? 'unspecified'}`)}</p>
               {live ? (
@@ -101,7 +107,7 @@ export default async function BillingPage({ params, searchParams }: {
                   {packChoice(null)}
                   <label className="check consent">
                     <input type="checkbox" name="terms" value="1" required />
-                    <span>{t.rich('accept', { terms: (c) => <a href={`/${locale}/privacy#q-subscription`} target="_blank" rel="noopener">{c}</a> })}</span>
+                    <span>{t.rich('accept', { terms: (c) => <a href={`/${locale}/privacy#terms`} target="_blank" rel="noopener">{c}</a> })}</span>
                   </label>
                   <div><button type="submit" className="btn btn-primary">{t('subscribe')}</button></div>
                 </form>
@@ -120,7 +126,7 @@ export default async function BillingPage({ params, searchParams }: {
       <section className="panel">
         <h2>{t('termsTitle')}</h2>
         <ul className="list-disc pl-5 flex flex-col gap-1">
-          {(['t1', 't2', 't3', 't4', 't5', 't6'] as const).map((k) => <li key={k}>{t(`terms.${k}`)}</li>)}
+          {(['t1', 't2', 't3', 't7', 't4', 't5', 't6'] as const).map((k) => <li key={k}>{t(`terms.${k}`)}</li>)}
         </ul>
       </section>
     </main>

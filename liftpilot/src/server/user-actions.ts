@@ -12,7 +12,8 @@ import { mailConfigured } from '@/lib/mail';
 import { hashPassword, temporaryPassword } from '@/lib/password';
 import { rateLimit } from '@/lib/ratelimit';
 import { companyCreateSchema, idSchema, roleSchema, userCreateSchema } from '@/lib/schemas';
-import { seatAvailable } from './billing';
+import { BILLING_SELECT, accessOf } from '@/lib/billing-access';
+import { enforceSeats, lockCompany, seatAvailable } from './billing';
 import { str, type FormState } from './form';
 
 const localeOf = (fd: FormData): string => { const l = str(fd, 'locale'); return isLocale(l) ? l : DEFAULT_LOCALE; };
@@ -79,9 +80,12 @@ export async function updateUserAction(fd: FormData): Promise<void> {
     if (!data.active) data.tokenVersion = { increment: 1 }; // ends the sessions of a deactivated user at once
   }
   if (!Object.keys(data).length) return;
-  // a colleague brought back takes a slot again
-  const seat = data.active === true && !target.active && MEMBER_ROLES.includes(data.role ?? target.role);
   const done = await prisma.$transaction(async (tx) => {
+    // a colleague brought back takes a slot again: decided on the user as it is once the company is locked
+    await lockCompany(tx, me.companyId);
+    const now = await tx.user.findFirst({ where: { id: target.id, companyId: me.companyId }, select: { active: true, role: true } });
+    if (!now) return true;
+    const seat = data.active === true && !now.active && MEMBER_ROLES.includes(data.role ?? now.role);
     if (seat && !(await seatAvailable(tx, me.companyId))) return false;
     await tx.user.update({ where: { id: target.id }, data });
     return true;
@@ -154,5 +158,11 @@ export async function setCompanyExemptAction(fd: FormData): Promise<void> {
   const exempt = str(fd, 'exempt') === '1';
   await prisma.company.updateMany({ where: { id: id.data }, data: { billingExempt: exempt } });
   await audit({ companyId: id.data, userId: me.id, action: 'COMPANY_UPDATED', entity: 'Company', entityId: id.data, meta: { billingExempt: exempt } });
+  // billed again: its trial starts now if it never had one, and the colleagues beyond the slots it pays are deactivated
+  if (!exempt) {
+    const c = await prisma.company.findUnique({ where: { id: id.data }, select: BILLING_SELECT });
+    if (c) await accessOf(id.data, c);
+    await enforceSeats(id.data);
+  }
   revalidatePath(`/${localeOf(fd)}/app/admin`);
 }

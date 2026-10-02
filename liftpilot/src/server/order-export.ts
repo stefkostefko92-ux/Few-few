@@ -37,7 +37,7 @@ export type OrderExport =
 
 const slug = (s: string): string => s.normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[\s_]+/g, '-').toLowerCase().slice(0, 60) || 'impianto';
 
-const PROJECT = { name: true, address: true, city: true, province: true, plantNumber: true, client: true } as const;
+const PROJECT = { name: true, address: true, city: true, province: true, plantNumber: true } as const;
 
 async function render(input: OrderInput, format: OrderFormat): Promise<OrderExport> {
   const doc = buildOrder(input), m = input.order.machine;
@@ -88,11 +88,11 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   const order = calcOrder(values.data);
   if (!order) return { ok: false, error: 'noMachine' };
   const own = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null;
-  const { name, address, city, province, plantNumber, client } = c.project;
+  const { name, address, city, province, plantNumber } = c.project;
   // the machine room of the shaft design the calculation comes from, when the running engine reproduces it
   const design = c.shaftDesign ? reproduceDesign(c.shaftDesign) : null;
   return render({
-    ...await letterhead(user), ...await orderPrices(user, order), author: user.name, project: { name, address, city, province, plantNumber, client }, order,
+    ...await letterhead(user), ...await orderPrices(user, order), author: user.name, project: { name, address, city, province, plantNumber }, order,
     collaudo: collaudoOf(values.data, own?.success ? own.data : undefined), generatedAt: new Date(),
     room: design?.layout.inputs.room ? calcRoom(design.layout, order.machine) : [],
     record: { kind: 'calc', id: c.id, sha256: c.sha256, createdAt: c.createdAt, label: c.label },

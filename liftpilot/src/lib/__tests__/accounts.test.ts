@@ -5,16 +5,17 @@ import { randomBytes } from 'node:crypto';
 import { LOCALES } from '@/i18n/locales';
 import { accountMail } from '../mail-templates';
 import { forgotSchema, registerSchema, resetSchema, verifySchema } from '../schemas';
+import { CONSENTS } from '../consents';
 import { hashToken } from '../token-hash';
 import { TOKEN_TTL_MS, tokenShapeOk } from '../token-shape';
 
 const form = {
   company: '  Elevatori Brianza srl ', vatNumber: '', city: 'Monza', name: 'Giulia Ferrari', email: ' Giulia@Example.COM ',
-  password: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro', privacy: 'on', terms: 'on', clauses: 'on',
+  password: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro', accept: 'on', business: 'on', drafts: 'on', clauses: 'on',
 };
 const codes = (r: { success: boolean; error?: { issues: { message: string }[] } }): string[] => r.error?.issues.map((i) => i.message) ?? [];
 
-test('registrazione: dati puliti, password secondo la regola, le due conferme obbligatorie', () => {
+test('registrazione: dati puliti, password secondo la regola, le quattro conferme obbligatorie', () => {
   const ok = registerSchema.safeParse(form);
   assert.ok(ok.success);
   assert.equal(ok.data.email, 'giulia@example.com');
@@ -23,8 +24,10 @@ test('registrazione: dati puliti, password secondo la regola, le due conferme ob
   assert.ok(codes(registerSchema.safeParse({ ...form, password: 'corta1', confirm: 'corta1' })).includes('weakPassword'));
   assert.ok(codes(registerSchema.safeParse({ ...form, password: 'solamentelettere', confirm: 'solamentelettere' })).includes('weakPassword'));
   assert.ok(codes(registerSchema.safeParse({ ...form, confirm: 'Ascensore2026diverso' })).includes('passwordMismatch'));
-  assert.ok(codes(registerSchema.safeParse({ ...form, privacy: '' })).includes('consentRequired'));
-  assert.ok(codes(registerSchema.safeParse({ ...form, terms: 'yes' })).includes('consentRequired'));
+  for (const k of CONSENTS) {
+    assert.ok(codes(registerSchema.safeParse({ ...form, [k]: '' })).includes('consentRequired'), k);
+    assert.ok(codes(registerSchema.safeParse({ ...form, [k]: 'yes' })).includes('consentRequired'), k);
+  }
   assert.ok(!registerSchema.safeParse({ ...form, email: 'non-una-mail' }).success);
   assert.ok(!forgotSchema.safeParse({ email: 'x' }).success && forgotSchema.safeParse({ email: 'A@B.it' }).success);
 });

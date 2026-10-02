@@ -33,12 +33,13 @@ export type Capability =
   | 'users:manage'
   | 'billing:manage'
   | 'company:edit'
+  | 'company:export'
   | 'platform:admin';
 
 const READ: readonly Capability[] = ['projects:view', 'calc:view', 'report:download'];
 const WORK: readonly Capability[] = [...READ, 'projects:edit', 'calc:create'];
 const OWNER: readonly Capability[] = [...WORK, 'calc:review', 'projects:archive', 'prices:view', 'prices:edit', 'audit:view', 'users:manage',
-  'billing:manage', 'company:edit'];
+  'billing:manage', 'company:edit', 'company:export'];
 
 /** What each role may do: the Commerciale sees, downloads and sees the prices; the Tecnico also edits the projects and
  *  makes the calculations; the Progettista also reviews them and archives projects; the owner everything of the company. */
@@ -50,8 +51,9 @@ const CAPS: Readonly<Record<Role, ReadonlySet<Capability>>> = {
   SUPERADMIN: new Set([...OWNER, 'platform:admin']),
 };
 
-/** What a company without a subscription after its trial may not do: it keeps reading, downloading and paying. */
-const WRITES: ReadonlySet<Capability> = new Set(['projects:edit', 'calc:create', 'calc:review', 'projects:archive', 'prices:edit']);
+/** What a company in read-only mode (no subscription after its trial, or the terms in force not accepted by its owner)
+ *  may not do: it keeps reading, downloading, exporting its data, managing its colleagues and paying or cancelling. */
+const WRITES: ReadonlySet<Capability> = new Set(['projects:edit', 'calc:create', 'calc:review', 'projects:archive', 'prices:edit', 'company:edit']);
 
 /** Who asks: a role, or a signed-in user with the company's state (read only without a subscription). */
 export interface Principal {

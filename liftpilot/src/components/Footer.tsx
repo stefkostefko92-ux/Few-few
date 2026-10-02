@@ -14,6 +14,7 @@ export default async function Footer() {
             <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>
           </span>
         </span>
+        <span className="footer-provider">{t('provider')}</span>
       </div>
     </footer>
   );

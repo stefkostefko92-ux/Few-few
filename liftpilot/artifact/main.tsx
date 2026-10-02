@@ -15,11 +15,11 @@ import { defaultLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import Calculator from '@/components/calc/Calculator';
 import LiftWorkspace, { type WorkspaceApi } from '@/components/lift/LiftWorkspace';
 import { LOGO } from '@/lib/brand';
-import { PANEV_ARTICLES } from '@/lib/catalog/panev';
+import { PANEV_LIST_PRICE } from '@/lib/catalog/panev-prices';
 import Sheets from './Sheets';
 
 // The standalone page shows Panev's 2026 list prices of its articles (public, VAT excluded): no company list here.
-const PANEV_PRICES: Readonly<Record<string, number>> = Object.fromEntries(PANEV_ARTICLES.flatMap((a) => (a.price === null ? [] : [[`panev:${a.code}`, Math.round(a.price * 100)]])));
+const PANEV_PRICES: Readonly<Record<string, number>> = Object.fromEntries(Object.entries(PANEV_LIST_PRICE).map(([code, eur]) => [`panev:${code}`, Math.round(eur * 100)]));
 
 type Locale = 'it' | 'en' | 'bg';
 type Tab = 'calcolo' | 'progetto';

@@ -8,6 +8,7 @@ import en from '../../messages/en.json';
 import bg from '../../messages/bg.json';
 import { MAIL_LOGO } from './brand';
 import { TOKEN_TTL_MS } from './token-shape';
+import { TERMS_VERSION, termsDateText } from './legal';
 
 export interface AccountMail {
   subject: string;
@@ -16,7 +17,8 @@ export interface AccountMail {
 }
 
 export type AccountMailKind =
-  | { kind: 'verify'; token: string }
+  /** `terms`: the person registered the company, accepting the terms in force (their version and link in the mail) */
+  | { kind: 'verify'; token: string; terms?: boolean }
   | { kind: 'reset'; token: string }
   | { kind: 'exists' };
 
@@ -43,7 +45,8 @@ function parts(m: AccountMailKind, locale: Locale, base: string, t: Translate): 
   switch (m.kind) {
     case 'verify':
       return { subject: t('verifySubject'), intro: t('verifyIntro'), button: t('verifyButton'), link: `${page('verify-email')}#${m.token}`,
-        notes: [t('verifyTtl', { hours: hours('VERIFY_EMAIL') }), t('verifyIgnore')] };
+        notes: [t('verifyTtl', { hours: hours('VERIFY_EMAIL') }), t('verifyIgnore'),
+          ...(m.terms ? [t('verifyTerms', { version: TERMS_VERSION, date: termsDateText(locale), link: `${page('privacy')}#terms` })] : [])] };
     case 'reset':
       return { subject: t('resetSubject'), intro: t('resetIntro'), button: t('resetButton'), link: `${page('reset-password')}#${m.token}`,
         notes: [t('resetTtl', { hours: hours('RESET_PASSWORD') }), t('resetIgnore')] };

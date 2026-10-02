@@ -5,8 +5,8 @@ import 'server-only';
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
 import { formValuesSchema } from '@/lib/calc-input';
-import { liftInputsSchema } from '@/lib/lift-input';
-import { shaftInputsSchema } from '@/lib/shaft-input';
+import { liftInputsReadSchema } from '@/lib/lift-input';
+import { shaftInputsReadSchema } from '@/lib/shaft-input';
 import { AUTO_ALL, defaultLift, type LiftInputs } from '@/lib/lift';
 
 export async function liftStart(user: SessionUser, projectId: string, fromId: string | null): Promise<LiftInputs> {
@@ -17,14 +17,14 @@ export async function liftStart(user: SessionUser, projectId: string, fromId: st
   });
   // an id not of this installation (or not the company's) counts as none: the latest is taken
   const lift = (fromId ? await find(fromId) : null) ?? await find(null);
-  const parsed = lift ? liftInputsSchema.safeParse(lift.inputs) : null;
+  const parsed = lift ? liftInputsReadSchema.safeParse(lift.inputs) : null;
   if (parsed?.success) return parsed.data;
   const base = defaultLift();
   const [shaft, calc] = await Promise.all([
     prisma.shaftDesign.findFirst({ where: { projectId, companyId: user.companyId }, orderBy: { createdAt: 'desc' }, select: { inputs: true } }),
     prisma.calculation.findFirst({ where: { projectId, companyId: user.companyId }, orderBy: { createdAt: 'desc' }, select: { inputs: true } }),
   ]);
-  const S = shaft ? shaftInputsSchema.safeParse(shaft.inputs) : null, C = calc ? formValuesSchema.safeParse(calc.inputs) : null;
+  const S = shaft ? shaftInputsReadSchema.safeParse(shaft.inputs) : null, C = calc ? formValuesSchema.safeParse(calc.inputs) : null;
   if (!S?.success && !C?.success) return base;
   const calcValues = C?.success ? C.data : base.calc;
   const q = Number(calcValues.Q), v = Number(calcValues.v), H = Number(calcValues.H);

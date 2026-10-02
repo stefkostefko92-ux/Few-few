@@ -3,6 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PANEV_ARTICLES, panevBom } from '../catalog/panev';
+import { PANEV_LIST_PRICE } from '../catalog/panev-prices';
 import { MACHINES } from '../catalog/machines';
 import { deriveLift } from '../lift/derive';
 import { defaultLift } from '../lift/defaults';
@@ -18,7 +19,8 @@ test('the list: one row per article, every machine of the catalogues, Panev from
   for (const a of PANEV_ARTICLES) {
     const p = priceArticle(`panev:${a.code}`);
     assert.ok(p, a.code);
-    assert.equal(p.start?.cents, a.price === null ? undefined : Math.round(a.price * 100), a.code);
+    const list = PANEV_LIST_PRICE[a.code];
+    assert.equal(p.start?.cents, list === undefined ? undefined : Math.round(list * 100), a.code);
   }
   // nothing else starts with a price: the company enters it
   assert.ok(PRICE_ARTICLES.filter((a) => a.start).every((a) => a.group === 'panev'));

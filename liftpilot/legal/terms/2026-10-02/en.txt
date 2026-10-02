@@ -1,0 +1,61 @@
+Privacy and terms of use
+Last updated: 2 October 2026
+
+Privacy notice
+
+Who is the data controller?
+Carbon Stealth VCC, Company ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria. For privacy questions and to exercise your rights, write to info@carbonstealth.eu.
+
+What data do we process, and why?
+Account: name, e-mail, company name, VAT number and city (if you enter them), password (only as an Argon2id hash), role, language, date of the last sign-in, confirmation of the address and acceptance of these terms (date and version). They are needed to provide the service (art. 6(1)(b) GDPR, contract).
+Subscription: the identifiers of the customer and of the subscription at Stripe, its status, the pack of slots and the end of the paid period. You enter the billing data (name, address, VAT number, e-mail) in Stripe’s payment; card data never reach LiftPilot. Basis: the contract and tax obligations (art. 6(1)(b) and (c) GDPR).
+Activity log: who in your company did what and when (sign-ins, saved calculations, issued drawing sets, changed prices and subscription), for security and the traceability of technical documents (art. 6(1)(f) GDPR, legitimate interest).
+Service e-mails: the address confirmation and the links for a new password, sent only when you register or ask for them.
+Security: the IP address is used, in memory only, to limit repeated attempts, and the application does not store it; the web server’s technical logs (IP, page, time) are kept for a limited period for security (art. 6(1)(f) GDPR).
+
+And the data of the installations?
+The installations, calculations, drawing sets and price list your company enters may contain personal data, for example a client’s name or an installation’s address. For these data the company is the controller and Carbon Stealth VCC the processor (art. 28 GDPR): these terms serve as the data processing agreement.
+We process them only to provide the service, on the company’s instructions, which are its use of the service; whoever accesses them is bound to confidentiality. Security measures: servers in the European Union, encrypted connections (TLS), passwords only as hashes, access by role within the company and separated between companies, activity log.
+Sub-processors: Hetzner Online GmbH (Germany, servers) and Brevo (France, service e-mails). A new sub-processor is announced at least 30 days in advance and the company may object by cancelling. We help you answer data subjects’ requests and notify you without undue delay of a personal data breach concerning the company. On termination, at the owner’s request, we delete the company’s data, except what must be kept by law; before that you can download reports, drawing sets and projects. The information showing compliance with art. 28 is available on request at info@carbonstealth.eu.
+
+Who receives them?
+The server is at Hetzner Online GmbH (Germany), in the European Union; service e-mails go through Brevo (France); subscription payments through Stripe Payments Europe Ltd. (Ireland), which processes payment data under its own privacy policy, including for transfers outside the European Union. Nobody else: we do not sell data and use no advertising or tracking tools.
+
+Which cookies does LiftPilot use?
+Technical cookies only: an httpOnly one for the session after sign-in (12 hours at most) and a session one (NEXT_LOCALE) that remembers the chosen language when it differs from the browser’s. No analytics, advertising or profiling cookies, so no consent banner is needed. Payment takes place on Stripe’s pages, which use their own cookies under their policy.
+
+How long do we keep them?
+Account and data for as long as the account exists; an account never confirmed nor used (a registration or a user added by a company) is deleted after 30 days. The activity log stays as long as the company’s account exists. Subscription data and invoices are kept for the time required by tax and accounting law. You can ask for deletion at any time at info@carbonstealth.eu.
+
+What are your rights?
+Access, rectification, erasure, restriction, portability and objection (Arts. 15–21 GDPR): write to info@carbonstealth.eu. You can lodge a complaint with the Bulgarian data protection authority (www.cpdp.bg) or with the authority of your country, in Italy the Garante per la protezione dei dati personali (www.garanteprivacy.it). We take no automated decisions about you (Art. 22 GDPR).
+
+Terms of use
+
+What is the service?
+LiftPilot is software by Carbon Stealth VCC for lift installers and technicians, for businesses and professionals only, not for consumers: checking and choosing the geared machine, shaft design, simulation, drawing sets, order drafts and price list. It is under validation: the normative values are being checked by an engineer and the service may change.
+
+Who is responsible for the results?
+LiftPilot’s calculations, drawing sets, reports, simulations, machine advice, order drafts and costs are working tools and drafts: they become documents only when a qualified technician checks and signs them, and the responsibility for the design and the choices remains theirs. The makers’ data come from their documents, with the source stated, and must be confirmed on the data sheet and the offer before ordering. LiftPilot does not replace the standards, the technician’s judgement or the tests on site.
+
+How do accounts work?
+Whoever registers the company is its owner: they create the colleagues’ accounts with the role of Design engineer, Sales or Technician, within the subscription’s slots, and answer for the accounts and the use of the service in their company. Everyone keeps their password secret. We may suspend an account in case of abuse, non-payment or a security risk.
+
+What does it cost and how is it paid?
+The subscription’s monthly price covers the owner and is shown on the Subscription page before payment; colleagues take the slots of the packs, bought on top: 5 slots for 50 %, 10 slots for 80 %, unlimited slots for 100 % of the monthly price. VAT, where due, is shown on the invoice.
+A new company has a free trial; after the trial, without a subscription, the projects remain viewable and downloadable, read-only. The subscription is paid in advance through Stripe and renews automatically every period; it can be cancelled at any time from “Payment, invoices and cancellation”, effective at the end of the period already paid, with no refund of the unused part. A larger pack is charged at once for the rest of the period, a smaller one leaves a credit for the next invoices; when the subscription ends or the slots decrease, the colleagues in excess are deactivated, newest first.
+A price change is notified to the owner at least 30 days before the renewal it applies from: whoever does not accept it can cancel before then. If a payment fails, Stripe retries it for a period; meanwhile colleagues cannot be added and, if it does not succeed, the subscription ends.
+
+What are the limits of liability?
+The service is provided with professional diligence, as is and as available: there may be interruptions for maintenance or faults, and we do not warrant that it is always free of errors.
+To the extent permitted by law, Carbon Stealth VCC is liable for damage caused by the service only up to the amount the company paid for the subscription in the 12 months before the event, and is not liable for indirect damage, lost profit, lost orders or data the company could have kept by downloading it. These limits do not apply to wilful misconduct and gross negligence, nor in the other cases where the law does not allow liability to be limited.
+The company holds Carbon Stealth VCC harmless from third-party claims arising from the use of the service’s results as documents without the check and signature of a qualified technician.
+
+How do these terms change?
+Changes are announced at least 30 days in advance; the owner accepts them at the first sign-in after they take effect and, if they do not accept them, can cancel the subscription. The version in force and its date are at the top of this page.
+
+How to contact us, including for reports?
+Carbon Stealth VCC, Company ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria — info@carbonstealth.eu, in Italian, English or Bulgarian. It is also the point of contact for authorities and users under arts. 11 and 12 of Regulation (EU) 2022/2065 (DSA) and the address to report illegal content.
+
+Which law applies?
+The contract is governed by Bulgarian law; the Bulgarian courts have jurisdiction over disputes, without prejudice to mandatory rules. For questions: info@carbonstealth.eu.

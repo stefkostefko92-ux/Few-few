@@ -21,7 +21,8 @@ export type ReportBlock =
   | { t: 'letterhead'; logo: ImageRef | null; from: string[]; to: string[] };
 
 export interface ReportDoc {
-  meta: { title: string; subject: string; author: string; header: string; footer: string; code: string };
+  /** `notice`: a third footer line on every page (the relazione's: valid only with the technician's signature) */
+  meta: { title: string; subject: string; author: string; header: string; footer: string; code: string; notice?: string };
   blocks: ReportBlock[];
   /** colours, patterns and lettering of the views (present when there is one) */
   drawing?: Pick<DrawingDoc, 'palette' | 'patterns' | 'cond' | 'images'>;

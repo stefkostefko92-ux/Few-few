@@ -96,7 +96,8 @@ for k in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET STRIPE_PRICE_MONTHLY STRIPE_PRO
 done
 case "${LIFTPILOT_STRIPE_AUTOMATIC_TAX:-}" in true|false) env_put STRIPE_AUTOMATIC_TAX "$LIFTPILOT_STRIPE_AUTOMATIC_TAX";; '') ;; *) die "LIFTPILOT_STRIPE_AUTOMATIC_TAX: true or false";; esac
 if [ -n "${LIFTPILOT_BILLING_TRIAL_DAYS:-}" ]; then
-  case "$LIFTPILOT_BILLING_TRIAL_DAYS" in *[!0-9]*) die "LIFTPILOT_BILLING_TRIAL_DAYS: whole days";; esac
+  case "$LIFTPILOT_BILLING_TRIAL_DAYS" in ''|*[!0-9]*) die "LIFTPILOT_BILLING_TRIAL_DAYS: whole days";; esac
+  [ "$LIFTPILOT_BILLING_TRIAL_DAYS" -le 365 ] || die "LIFTPILOT_BILLING_TRIAL_DAYS: at most 365 days"
   env_put BILLING_TRIAL_DAYS "$LIFTPILOT_BILLING_TRIAL_DAYS"
 fi
 if [ -z "$(env_get STRIPE_SECRET_KEY)" ] || [ -z "$(env_get STRIPE_WEBHOOK_SECRET)" ] || [ -z "$(env_get STRIPE_PRICE_MONTHLY)" ] || [ -z "$(env_get STRIPE_PRODUCT_SEATS)" ]; then
@@ -159,6 +160,24 @@ fi
 if [ "${LIFTPILOT_TLS:-1}" = "1" ] && command -v nginx >/dev/null; then
   conf=/etc/nginx/sites-available/liftpilot.conf
   install -d /var/www/certbot
+  # the vhost's logs in their own directory, out of the system's /var/log/nginx/*.log rotation: daily, deleted after
+  # 14 days (LOG_DAYS in src/lib/legal.ts: the privacy notice states it)
+  install -d -m 750 /var/log/nginx/liftpilot
+  cat > /etc/logrotate.d/liftpilot-nginx <<'ROTATE'
+/var/log/nginx/liftpilot/*.log {
+    daily
+    rotate 13
+    maxage 14
+    missingok
+    notifempty
+    compress
+    delaycompress
+    sharedscripts
+    postrotate
+        if [ -f /run/nginx.pid ]; then kill -USR1 "$(cat /run/nginx.pid)"; fi
+    endscript
+}
+ROTATE
   if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
     # HTTP only until the certificate exists: the ACME challenge must be reachable
     cat > "$conf" <<NGINX
@@ -166,6 +185,8 @@ server {
     listen 80;
     listen [::]:80;
     server_name $DOMAIN;
+    access_log /var/log/nginx/liftpilot/access.log;
+    error_log  /var/log/nginx/liftpilot/error.log;
     location /.well-known/acme-challenge/ { root /var/www/certbot; }
     location / {
         proxy_pass http://127.0.0.1:$PORT;

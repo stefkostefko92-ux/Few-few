@@ -3,7 +3,7 @@
 // again from these (src/lib/lift/derive.ts); nothing computed in the browser is taken.
 import { z } from 'zod';
 import { formValuesSchema } from './calc-input';
-import { shaftInputsSchema } from './shaft-input';
+import { shaftInputsReadSchema, shaftInputsSchema } from './shaft-input';
 import { BRANDS } from '@/lib/catalog/machines';
 import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI } from '@/lib/lift/collaudo';
 
@@ -22,13 +22,18 @@ export const autoSchema = z.object({
   Hv: z.boolean(),
 }).strict();
 
-export const liftInputsSchema = z.object({
-  shaft: shaftInputsSchema,
+const liftObject = <S extends z.ZodTypeAny>(shaft: S) => z.object({
+  shaft,
   calc: formValuesSchema,
   auto: autoSchema,
   bottom: z.enum(['head', 'room', 'under']).optional(),
   catalog: z.object({ brand: z.enum(BRANDS), model: z.string().min(1).max(40).optional() }).strict().optional(),
   collaudo: collaudoSchema.optional(),
 }).strict();
+
+/** The one form as it is saved (today's rules). */
+export const liftInputsSchema = liftObject(shaftInputsSchema);
+/** A saved one form read back (the shaft as stored: shaftInputsReadSchema). */
+export const liftInputsReadSchema = liftObject(shaftInputsReadSchema);
 
 export type LiftInputsParsed = z.infer<typeof liftInputsSchema>;

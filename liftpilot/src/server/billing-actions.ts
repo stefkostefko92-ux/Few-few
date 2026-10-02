@@ -53,6 +53,8 @@ export async function startCheckoutAction(fd: FormData): Promise<void> {
   const cfg = billingConfig(), s = stripeClient();
   if (!cfg || !s) redirect(page(locale, 'e=billingOff'));
   if (!rateLimit(`billing:${me.companyId}`, 20, HOUR)) redirect(page(locale, 'e=rateLimited'));
+  // a subscription is started or changed under the terms in force only: the owner accepts them first (cancelling stays open)
+  if (me.terms !== 'ok') redirect(page(locale, 'e=termsDue'));
   const pack = packSchema.safeParse(str(fd, 'pack'));
   if (!pack.success) redirect(page(locale, 'e=invalid'));
   if (str(fd, 'terms') !== '1') redirect(page(locale, 'e=terms'));
@@ -95,6 +97,7 @@ export async function changePackAction(fd: FormData): Promise<void> {
   const cfg = billingConfig(), s = stripeClient();
   if (!cfg || !s) redirect(page(locale, 'e=billingOff'));
   if (!rateLimit(`billing:${me.companyId}`, 20, HOUR)) redirect(page(locale, 'e=rateLimited'));
+  if (me.terms !== 'ok') redirect(page(locale, 'e=termsDue'));
   const pack = packSchema.safeParse(str(fd, 'pack'));
   if (!pack.success) redirect(page(locale, 'e=invalid'));
   const sub = await companySubscription(me.companyId);

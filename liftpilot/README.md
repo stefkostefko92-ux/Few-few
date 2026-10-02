@@ -9,7 +9,7 @@ Ricerca: `research/argano-geared/`. Storia dello sviluppo, giro per giro: `CHANG
 
 - **Motore di calcolo** (`src/calc/`): TypeScript puro, identico numero per numero al calcolatore
   prototipo pubblicato per Panev Ascensori (versione 12), con il registro delle voci normative.
-- **Applicazione web** (Next.js 15): aziende e utenti con sette ruoli, impianti, calcolatore con i
+- **Applicazione web** (Next.js 15): aziende e utenti con ruoli distinti (titolare, progettista, commerciale, tecnico), impianti, calcolatore con i
   risultati in tempo reale, calcoli salvati come snapshot immutabili con impronta SHA-256 (il server
   ricalcola sempre, non si fida del browser), visto interno dell'ingegnere, registro attività.
 - **Relazione di calcolo in PDF** (in italiano) da ogni calcolo salvato: dati, verifiche con le

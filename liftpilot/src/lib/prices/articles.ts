@@ -7,6 +7,7 @@
 import { BEDPLATE_CODES } from '@/lib/catalog/bedplates';
 import { MACHINES } from '@/lib/catalog/machines';
 import { PANEV_ARTICLES, PANEV_LISTINO } from '@/lib/catalog/panev';
+import { PANEV_LIST_PRICE } from '@/lib/catalog/panev-prices';
 import { GOVERNORS } from '@/shaft/governor';
 import { RAIL_TYPES, railLabel } from '@/shaft/rails';
 import { SUPPORT_KINDS } from '@/shaft/support';
@@ -53,10 +54,13 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
   ...RAIL_TYPES.map((t): PriceArticle => ({ key: `fishplate:${t}`, group: 'rails', label: { item: 'fishplate', name: railLabel(t) }, unit: 'pz' })),
   { key: 'bracket:car', group: 'brackets', label: { item: 'bracket_car' }, unit: 'pz' },
   { key: 'bracket:cw', group: 'brackets', label: { item: 'bracket_cw' }, unit: 'pz' },
-  ...PANEV_ARTICLES.map((a): PriceArticle => ({
-    key: `panev:${a.code}`, group: 'panev', label: { item: `panev_${a.kind}`, name: `${a.code} (${a.size})` }, unit: 'pz',
-    ...(a.price !== null ? { start: { cents: Math.round(a.price * 100), src: PANEV_SRC } } : {}),
-  })),
+  ...PANEV_ARTICLES.map((a): PriceArticle => {
+    const list = PANEV_LIST_PRICE[a.code];
+    return {
+      key: `panev:${a.code}`, group: 'panev', label: { item: `panev_${a.kind}`, name: `${a.code} (${a.size})` }, unit: 'pz',
+      ...(list !== undefined ? { start: { cents: Math.round(list * 100), src: PANEV_SRC } } : {}),
+    };
+  }),
   ...DOOR_KINDS.map((k): PriceArticle => ({ key: `door:landing:${k}`, group: 'doors', label: { item: `door_landing_${k}` }, unit: 'pz' })),
   ...DOOR_KINDS.map((k): PriceArticle => ({ key: `door:car:${k}`, group: 'doors', label: { item: `door_car_${k}` }, unit: 'pz' })),
   ...GOVERNORS.map((g): PriceArticle => ({ key: governorKey(g.brand, g.model), group: 'safety', label: { item: 'governor', name: `${g.brand} ${g.model}` }, unit: 'pz' })),

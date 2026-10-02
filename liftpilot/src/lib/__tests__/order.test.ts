@@ -54,7 +54,7 @@ const sample = (catalog: { brand: 'SICOR' | 'Montanari'; model: string } | null,
   assert.ok(order);
   return {
     company: 'Ascensori di prova S.r.l.', companyCity: 'Milano', logo: LOGO, author: 'Mario Bianchi',
-    project: { name: 'Condominio Via Roma 12', address: 'Via Roma 12', city: 'Milano', province: 'MI', plantNumber: 'MI 12345', client: null },
+    project: { name: 'Condominio Via Roma 12', address: 'Via Roma 12', city: 'Milano', province: 'MI', plantNumber: 'MI 12345' },
     record: { kind: 'design', id: 'cmtestorder01', sha256: 'a'.repeat(64), createdAt: new Date('2026-10-02T08:00:00Z'), label: null },
     order, room: designRoom(L, d, order.machine, order.recorded), collaudo: collaudoOf(L.calc), generatedAt: new Date('2026-10-02T10:00:00Z'), ...o,
   };

@@ -17,7 +17,7 @@ import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
 import { techTables, type Cell } from '../present/tables';
 import { textsFor, verdictStatus } from '../present/texts';
-import { makePres, type CalcKey } from '../present/tr';
+import { makePres } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { refsOf, refsText, shaftBlocks, type ReportDesign } from './shaft';
 import { EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
@@ -55,7 +55,6 @@ export interface ReportInput {
 }
 
 const STATO: Record<Stato, string> = { confermato: 'confermato', da_verificare: 'da verificare', stima: 'stima', derivazione: 'derivazione', scelta: 'scelta del software', prassi: 'prassi di cantiere' };
-const LEGAL: readonly CalcKey[] = ['lg_1', 'lg_2', 'lg_3', 'lg_4', 'lg_5', 'lg_6'];
 const CASE_W = [0.3, 0.07, 0.08, 0.08, 0.08, 0.1, 0.1, 0.09, 0.1];
 
 const cellText = (c: Cell | undefined): string => (c === undefined ? '' : typeof c === 'string' ? c : `${c.text}${c.flag ? ' ⚠' : ''}${c.sub ? `\n${c.sub}` : ''}`);
@@ -271,10 +270,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   B.push({ t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),
     status: listed.map((v) => (v.stato === 'confermato' ? 'ok' : v.stato === 'da_verificare' ? 'warn' : 'info')), widths: [0.27, 0.33, 0.26, 0.14], align: ['l', 'l', 'l', 'l'] });
 
-  section(t('lg_title'));
-  B.push({ t: 'p', text: t('lg_short') });
-  B.push({ t: 'list', items: LEGAL.map((k) => t(k)) });
-  B.push({ t: 'p', text: t('disclaimer'), style: 'note' });
+  // what the software is in the document, said once before the signature: the technician who signs makes it theirs
+  section(t('rep_legal_title'));
+  B.push({ t: 'p', text: t('rep_legal') });
   B.push({ t: 'sign', labels: [t('rep_sign'), t('rep_signature'), t('rep_date')] });
 
   const short = pr.name.length > 70 ? `${pr.name.slice(0, 69)}…` : pr.name;
@@ -282,7 +280,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     meta: {
       title: `Relazione di calcolo — ${pr.name}`, subject: "Verifica dell'argano geared", author: r.company,
       header: `LiftPilot · Relazione di calcolo · ${short}`, footer: `Calcolo ${r.calc.id} · motore ${r.calc.engineVersion} · profilo ${r.calc.profileId}`,
-      code: `SHA-256 ${r.calc.sha256}`,
+      code: `SHA-256 ${r.calc.sha256}`, notice: t('rep_footer'),
     },
     blocks: B,
     // the plan of the shaft design is drawn by the drawing kernel: its colours, concrete speckle and lettering; the logo

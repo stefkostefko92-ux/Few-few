@@ -6,7 +6,7 @@ import 'server-only';
 import { snapshotOf } from '@/calc/snapshot';
 import { LIFT_ENGINE_VERSION, deriveLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { shaftSnapshot } from '@/shaft';
-import { liftInputsSchema } from './lift-input';
+import { liftInputsReadSchema } from './lift-input';
 import { shaftHash } from './shaft-hash';
 import { snapshotHash } from './snapshot-hash';
 
@@ -18,7 +18,7 @@ export interface LiftRecord {
 }
 
 export function liftRecord(d: { inputs: unknown; engineVersion: string }, shaftSha256: string | null | undefined, calcSha256: string): LiftRecord | null {
-  const p = liftInputsSchema.safeParse(d.inputs);
+  const p = liftInputsReadSchema.safeParse(d.inputs);
   if (!p.success) return null;
   const dv = deriveLift(p.data);
   const same = d.engineVersion === LIFT_ENGINE_VERSION && shaftHash(shaftSnapshot(dv.shaft).snapshot) === shaftSha256

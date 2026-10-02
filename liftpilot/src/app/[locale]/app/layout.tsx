@@ -5,6 +5,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { getSessionUser } from '@/lib/auth';
 import AppTopbar from '@/components/AppTopbar';
 import BillingBanner from '@/components/BillingBanner';
+import TermsBanner from '@/components/TermsBanner';
 import Footer from '@/components/Footer';
 
 // The application is never indexed. Each page checks the session and the rights itself (requireUser).
@@ -18,6 +19,7 @@ export default async function AppLayout({ children, params }: { children: ReactN
   return (
     <>
       <AppTopbar user={user} />
+      <TermsBanner user={user} />
       <BillingBanner user={user} />
       {children}
       <Footer />

@@ -2,7 +2,7 @@ import { getSessionUser } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import { idSchema } from '@/lib/schemas';
-import { shaftInputsSchema } from '@/lib/shaft-input';
+import { shaftInputsReadSchema } from '@/lib/shaft-input';
 import { verifyShaftStored } from '@/lib/shaft-hash';
 import { planToDxf } from '@/lib/cad/export';
 import { audit } from '@/lib/audit';
@@ -26,7 +26,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const id = idSchema.safeParse((await params).id);
     if (!id.success) return text(404, 'Not found');
     const d = await getShaftDesign(user, id.data);
-    const inputs = d ? shaftInputsSchema.safeParse(d.inputs) : null;
+    const inputs = d ? shaftInputsReadSchema.safeParse(d.inputs) : null;
     if (!d || !inputs?.success) return text(404, 'Not found');
     const stored = verifyShaftStored(inputs.data, d.sha256);
     if (!stored.same) return text(409, 'The running engine does not reproduce this design');

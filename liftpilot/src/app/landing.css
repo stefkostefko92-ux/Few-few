@@ -153,4 +153,10 @@ label.check.consent input { flex: none; margin-top: 2px; }
 .legal p { margin: 0; max-width: 70ch; }
 .footer-links { display: inline-flex; flex-wrap: wrap; gap: 8px 18px; }
 .legal section { display: flex; flex-direction: column; gap: 8px; }
+.legal-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+@media print {
+  .topbar, .site-footer, .print-hide { display: none !important; }
+  .legal { max-width: none; padding: 0; }
+  .legal p { max-width: none; }
+}
 label.check.consent a { text-decoration: underline; text-underline-offset: 2px; }

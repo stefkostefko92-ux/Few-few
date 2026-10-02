@@ -2,7 +2,7 @@ import type Stripe from 'stripe';
 import { prisma } from '@/lib/db';
 import { log } from '@/lib/log';
 import { billingConfig } from '@/lib/billing-config';
-import { stripeClient } from '@/lib/stripe';
+import { stripeClient, stripeErrorOf } from '@/lib/stripe';
 import { syncSubscription } from '@/server/billing';
 
 export const runtime = 'nodejs';
@@ -47,7 +47,7 @@ export async function POST(req: Request): Promise<Response> {
     await prisma.stripeEvent.create({ data: { id: event.id, type: event.type } }).catch(() => undefined);
     return text(200, 'OK');
   } catch (err) {
-    log.error({ err, type: event.type }, 'stripe webhook failed');
+    log.error({ err: stripeErrorOf(err), type: event.type }, 'stripe webhook failed');
     return text(500, 'Failed');
   }
 }
