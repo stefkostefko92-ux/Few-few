@@ -3,7 +3,10 @@
 // The choices of a shaft design: rated load (the largest car, or a given load), entrances, doors and their landing
 // call stations, counterweight, rails, walls, accessibility and, folded away, the allowances with their typical values.
 import { useTranslations } from 'next-intl';
-import { DEFAULTS, GOVERNORS, RAIL_TYPES, callStationOf, counterweightSide, cwBracketsOf, govSize, railLabel, type Allowance, type RailType, type ShaftInputs } from '@/shaft';
+import {
+  CW_SPECIALS, CW_SUPPORTS, DEFAULTS, DOOR_PAIRS, DOOR_PAIR_DEFAULT, GOVERNORS, RAIL_TYPES, callStationOf, counterweightSide, cwBracketsOf, govSize, railLabel,
+  type Allowance, type CwChoice, type DoorPairId, type RailType, type ShaftInputs,
+} from '@/shaft';
 
 interface Props {
   I: ShaftInputs;
@@ -13,6 +16,16 @@ interface Props {
 }
 
 const ALLOWANCES = Object.keys(DEFAULTS) as Allowance[];
+const isDoorPair = (x: string): x is DoorPairId => DOOR_PAIRS.some((p) => p === x);
+const isCwChoice = (x: string): x is CwChoice => CW_SUPPORTS.some((p) => p === x) || CW_SPECIALS.some((p) => p === x);
+
+/** Panev's articles with one choice changed: absent when nothing is chosen by hand (the inputs stay as before). */
+function withPanev(I: ShaftInputs, patch: { door?: DoorPairId; cw?: CwChoice }): ShaftInputs['panev'] {
+  const next = { ...I.panev, ...patch }, out: NonNullable<ShaftInputs['panev']> = {};
+  if (next.door) out.door = next.door;
+  if (next.cw) out.cw = next.cw;
+  return out.door || out.cw ? out : undefined;
+}
 const int = (s: string): number => Math.round(Number(s.replace(',', '.')));
 
 function Seg<T extends string>({ name, value, options, label, onChange }: { name: string; value: T; options: readonly { v: T; label: string }[]; label: string; onChange(v: T): void }) {
@@ -103,6 +116,24 @@ export default function ShaftOptions({ I, set, lastQ }: Props) {
       </label>
       <Seg name="cw-brackets" label={t('cb_title')} value={cwBracketsOf(I)} onChange={(cwBrackets) => set({ cwBrackets })}
         options={[{ v: 'panev', label: t('cb_panev') }, { v: 'generic', label: t('cb_generic') }]} />
+      {cwBracketsOf(I) === 'panev' ? (
+        <label className="field">
+          <span>{t('pv_cw')}</span>
+          <select className="input" value={I.panev?.cw ?? ''} onChange={(e) => { const v = e.target.value; set({ panev: withPanev(I, { cw: isCwChoice(v) ? v : undefined }) }); }}>
+            <option value="">{t('pv_cw_auto')}</option>
+            <optgroup label="SU · SD">{CW_SUPPORTS.filter((c) => !c.startsWith('SC')).map((c) => <option key={c} value={c}>{c}</option>)}</optgroup>
+            <optgroup label="SC">{CW_SUPPORTS.filter((c) => c.startsWith('SC')).map((c) => <option key={c} value={c}>{c}</option>)}</optgroup>
+            <optgroup label={t('pv_special')}>{CW_SPECIALS.map((c) => <option key={c} value={c}>{`${c} · ${t('pv_drawing')}`}</option>)}</optgroup>
+          </select>
+        </label>
+      ) : null}
+      <label className="field">
+        <span>{t('pv_door')}</span>
+        <select className="input" value={I.panev?.door ?? ''} onChange={(e) => { const v = e.target.value; set({ panev: withPanev(I, { door: isDoorPair(v) ? v : undefined }) }); }}>
+          <option value="">{t('pv_door_auto', { code: DOOR_PAIR_DEFAULT })}</option>
+          {DOOR_PAIRS.map((p) => <option key={p} value={p}>{p}</option>)}
+        </select>
+      </label>
       <label className="field">
         <span>{t('access')}</span>
         <select className="input" value={I.access} onChange={(e) => set({ access: e.target.value as ShaftInputs['access'] })}>

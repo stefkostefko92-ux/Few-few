@@ -1,5 +1,6 @@
 // Types of the shaft module. Plan coordinates in millimetres: origin at the inner corner of the shaft on the main
 // landing side (entrance A), on the left as seen from that landing; x along the front wall, y into the shaft.
+import type { CwChoice, DoorPairId } from './staffe-ids';
 import type { CheckStatus } from '../calc/types';
 import type { Allowance } from './norme';
 import type { RailType } from './rails';
@@ -125,6 +126,9 @@ export type ShaftInputs = {
   callStation?: CallStation;
   /** brackets of the counterweight rails: Panev's supports SU/SD with the SG (absent), or generic ones */
   cwBrackets?: 'panev' | 'generic';
+  /** Panev's articles chosen by hand (staffe-ids.ts): the landing doors' pair A + B, the counterweight rails' support;
+   *  absent: the software's choice */
+  panev?: { door?: DoorPairId; cw?: CwChoice };
   /** the car door operator's supplier (its catalogue's length); missing: the longest of the catalogues */
   doorMaker?: 'generic' | '2sg' | 'fermator';
   /** the overspeed governor's model (governor.ts); missing: by the rated speed */

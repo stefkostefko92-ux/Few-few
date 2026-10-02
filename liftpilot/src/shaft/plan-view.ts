@@ -11,7 +11,7 @@ import { headBox, headOf, headRail, mainBox, type WallBox } from './head';
 import { governorPlan } from './plan-governor';
 import { landingOf, shiftAxes } from './landing';
 import { onWall, quad, walls } from './plan-walls';
-import { genericBracketPlan, panevSupportPlan } from './plan-staffe';
+import { cwPlanCode, genericBracketPlan, panevSupportPlan, specialPlanLabel } from './plan-staffe';
 import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from './sill';
 import { KV_VERT } from './norme-vert';
 import { bufferPlan, pitSpace } from './pit';
@@ -89,9 +89,9 @@ function rail(L: Layout, r0: Rail, shoes: boolean, label = false, head = false):
   const at = (u: number, v: number): Pt => [r.x + u * ux - v * uy, r.y + u * uy + v * ux];
   const out: Entity[] = [path(local.map(([u, v]) => at(u, v)), true, 'steel', 'steel')];
   // the bracket under the rail: Panev's support, or the generic one out to the wall or the bridge
-  const br = panevSupportPlan(L, r0, label, head ? headOf(L.inputs) : undefined) ?? genericBracketPlan(L, r);
+  const hw = head ? headOf(L.inputs) : undefined, br = panevSupportPlan(L, r0, label, hw) ?? genericBracketPlan(L, r);
   out.unshift(...br.under);
-  out.push(...br.over);
+  out.push(...br.over, ...specialPlanLabel(L, r, label ? cwPlanCode(L, r0, hw) : null));
   // guide shoe of the guided part, at the tip
   if (shoes) out.push(rect(...shoe(at), 'thin'));
   return out;
@@ -160,7 +160,12 @@ export function planEntities(L: Layout, level: PlanLevel, floor: number): Entity
     // a landing door set apart from its car door: the axes of both
     out.push(...carBody(L, level), ...counterweight(L), ...carFrame(L), ...shiftAxes(L, open));
   }
-  L.rails.forEach((r, i) => out.push(...rail(L, r, level !== 'pit', r.kind === 'cw' && L.rails.findIndex((x) => x.kind === 'cw') === i, level === 'top')));
+  // the counterweight rails' bracket codes: on the first, and on another whose bracket differs
+  const cws = L.rails.filter((x) => x.kind === 'cw'), codes = cws.map((x) => cwPlanCode(L, x, level === 'top' ? headOf(L.inputs) : undefined));
+  L.rails.forEach((r) => {
+    const k = cws.indexOf(r);
+    out.push(...rail(L, r, level !== 'pit', k === 0 || (k > 0 && codes[k] !== codes[0]), level === 'top'));
+  });
   out.push(...axes(L), ...governorPlan(L, level === 'pit'));
   if (level === 'top') {
     const { refuge: r, free: f } = roofSpaces(L);

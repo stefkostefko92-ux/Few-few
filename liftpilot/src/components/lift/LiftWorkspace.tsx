@@ -26,6 +26,7 @@ import RoomOptions from '../shaft/RoomOptions';
 import HeadOptions from '../shaft/HeadOptions';
 import ImbottiOptions from '../shaft/ImbottiOptions';
 import NicheOptions from '../shaft/NicheOptions';
+import PanevBom from '../shaft/PanevBom';
 import PlanEditor from '../shaft/PlanEditor';
 import type { Refusal } from '../drawing/EditableDrawing';
 import SurveyPanel, { type SurveyResult } from '../shaft/SurveyPanel';
@@ -186,6 +187,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
         <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
         <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
         <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
+        <PanevBom L={derived.layout} fmt={P.fmt} />
       </div>
       <div className="savebar">
         <div className="inner">

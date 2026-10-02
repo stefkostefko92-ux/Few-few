@@ -15,6 +15,7 @@ import { callStationAt, callStationOf } from '@/shaft/callstation';
 import { headOf } from '@/shaft/head';
 import { hasImbotti, marbleOpening } from '@/shaft/imbotti';
 import { landingOf } from '@/shaft/landing';
+import { doorPairOf } from '@/shaft/staffe-porte';
 import { lampHeights, nichesOf } from '@/shaft/niche';
 import { Batch, P, onWall } from './geom';
 import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
@@ -49,7 +50,7 @@ export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'],
   const lock = { kind: 'lock', v0: I.landingDepth + I.sillGap, du: car.u0 - d.u0 } as const;
   const panels = doorPanels(d.wall, W, D, d, z, tracks, LANDING_PANEL, M.landing[d.wall], M, lock);
   sill(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, -25, I.landingDepth, z, trackPlanes(d, tracks, LANDING_PANEL));
-  doorBrackets(C, M, d.wall, W, D, d.u0 + 10, d.u1 - 10, z, I.landingDepth, SILL_H);
+  doorBrackets(C, M, d.wall, W, D, d.u0 + 10, d.u1 - 10, z, I.landingDepth, SILL_H, doorPairOf(I));
   C.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -I.wall, -25, z - 30, z, M.stone);
   return panels;
 }

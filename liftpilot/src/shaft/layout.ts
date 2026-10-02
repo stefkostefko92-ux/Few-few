@@ -12,7 +12,8 @@ import { check } from './checks';
 import { bufferChecks } from './pit';
 import { cwNiche, nicheMargin } from './niche';
 import { hasHead, headCheck, headFacingExtra, headOf } from './head';
-import { PANEV_BACK, cwBracketsOf, supportMargin } from './staffe';
+import { PANEV_BACK, cwBracketsOf } from './staffe';
+import { cwBracketMargin, cwSpecialOf } from './staffe-scelta';
 import type { Access, CwSide, DoorLayout, Layout, Rail, Rect, ShaftCheck, ShaftInputs, Wall } from './types';
 
 const ACCESS: Readonly<Record<Exclude<Access, 'none'>, readonly [number, number, number]>> = {
@@ -223,8 +224,9 @@ export function layout(I: ShaftInputs): Layout {
   const niches = nicheMargin(I, doors, cwSide, { lo: cwLo, hi: cwHi });
   // Panev's supports for the counterweight rails: one of the catalogue's must take each rail (on its wall, or in its niche)
   const span = niche ? [niche.at, niche.at + niche.width] as const : undefined, heads = hasHead(I) ? [undefined, headOf(I)] : [undefined];
-  const staffe = cwBracketsOf(I) === 'panev'
-    ? Math.min(...rails.filter((r) => r.kind === 'cw').flatMap((r) => heads.map((h) => supportMargin(r, wr.h, W, D, span, h) ?? Infinity))) : null;
+  // (a solution to the site's drawing chosen by hand: to be verified on it)
+  const special = cwBracketsOf(I) === 'panev' && cwSpecialOf(I) !== null, staffe = cwBracketsOf(I) === 'panev' && !special
+    ? Math.min(...rails.filter((r) => r.kind === 'cw').flatMap((r) => heads.map((h) => cwBracketMargin(I, doors, r, span, h) ?? Infinity))) : null;
   // the walls of the top floor's entrances further out in the headroom: the car stands that much further from them
   const facing = I.landingDepth + I.sillGap + headFacingExtra(I, doors);
 
@@ -261,6 +263,7 @@ export function layout(I: ShaftInputs): Layout {
     ] : []),
     ...(niches !== null ? [check('v_niche', niches >= 0, Math.round(niches), 0, 0, 'mm')] : []),
     ...(staffe !== null && Number.isFinite(staffe) ? [check('v_staffa', staffe >= 0, Math.round(staffe), 0, 0, 'mm')] : []),
+    ...(special ? [check('v_staffa', false, null, null, 0, 'mm', true)] : []),
   ];
 
   const L: Layout = {

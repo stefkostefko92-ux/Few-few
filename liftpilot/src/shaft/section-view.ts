@@ -14,6 +14,8 @@ import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
 import { lampHeights, nichesOf } from './niche';
 import { CAR_PANEL, LANDING_PANEL, carTracks, landingTracks, sillSection, trackPlanes } from './sill';
+import { doorPairSection } from './section-staffe';
+import { doorPairOf } from './staffe-porte';
 import { roofSpaces } from './plan-view';
 import { bufferPlan, pitSpace } from './pit';
 import { RAILS } from './rails';
@@ -114,8 +116,10 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
       } else {
         out.push(box(ext[0], zf - SLAB, ext[1], zf, 'wall', 'concrete'));
         const s = side === 'front' ? 1 : -1, w0 = side === 'front' ? 0 : D, dl = I.landingDepth, X = (v: number): number => w0 + s * v;
-        // the sill's section with a groove under each panel's track, the panels on their tracks (sill.ts, as the 3D)
+        // Panev's brackets under the sill (section-staffe.ts); the sill's section with a groove under each panel's track,
+        // the panels on their tracks (sill.ts, as the 3D)
         const door = L.doors.find((d) => d.wall === side), grooves = door ? trackPlanes(door, landingTracks(dl), LANDING_PANEL) : [];
+        out.push(...doorPairSection(doorPairOf(I), dl, zf, (v, z) => P(X(v), z)));
         out.push(path(sillSection(-25, dl, grooves, false).map(([v, z]) => P(X(v), zf + z)), true, 'outline', 'steel'));
         for (const g of grooves) out.push(box(X(g - LANDING_PANEL / 2), zf, X(g + LANDING_PANEL / 2), zf + I.doorHeight, 'thin', 'door'));
         out.push(box(w0, zf + I.doorHeight, w0 + s * dl, zf + I.doorHeight + 150, 'thin'));

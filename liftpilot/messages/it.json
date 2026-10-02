@@ -733,7 +733,13 @@
     "sp_hint": "L’altezza del basamento porta l’asse della puleggia: il calcolo, i disegni del locale e il 3D lo seguono. Le putrelle possono stare sollevate dal pavimento (argano non a terra) e si verificano a tensione e freccia.",
     "su_height": "Basamento: altezza sul pavimento",
     "su_length": "Basamento: lunghezza lungo la calata",
-    "su_profile": "Basamento: profilato"
+    "su_profile": "Basamento: profilato",
+    "pv_door": "Staffe delle porte di piano (Panev)",
+    "pv_door_auto": "Automatico: {code}",
+    "pv_cw": "Supporto delle guide del contrappeso",
+    "pv_cw_auto": "Automatico: SU o SD, SC in un angolo",
+    "pv_special": "Su disegno esecutivo",
+    "pv_drawing": "su disegno"
   },
   "tavole": {
     "title": "Tavole di progetto",
@@ -1124,5 +1130,32 @@
     "existsIgnore": "Se la richiesta non è tua, ignora questo messaggio: il tuo account non è cambiato.",
     "linkHint": "Se il pulsante non funziona, copia questo indirizzo nel browser:",
     "footer": "LiftPilot · Carbon Stealth VCC · carbonstealth.eu — messaggio automatico, non rispondere."
+  },
+  "bom": {
+    "title": "Distinta staffe Panev",
+    "code": "Codice",
+    "part": "Articolo",
+    "qty": "Q.tà",
+    "price": "Prezzo",
+    "amount": "Importo",
+    "total": "Totale indicativo, IVA esclusa",
+    "page": "cat. p. {page}",
+    "cut": "tagliata a {mm} mm",
+    "short": "più corta della soglia: da verificare",
+    "drawing": "su disegno esecutivo",
+    "quote": "a preventivo",
+    "missing": "{n, plural, one {# staffa} other {# staffe}} delle guide del contrappeso senza un articolo a catalogo: vedi la verifica delle staffe",
+    "note": "Prezzi di listino Panev {year} (catalogo, p. {page}), IVA esclusa, indicativi e salvo variazioni. Due bride N1 per staffa, tasselli e bulloneria non inclusi; le soluzioni su disegno sono quotate a preventivo.",
+    "k_plateA": "Piastra A",
+    "k_bracketB": "Staffa B",
+    "k_supportSU": "Supporto universale SU",
+    "k_supportSD": "Supporto decentrato SD",
+    "k_supportSC": "Supporto scorrevole SC",
+    "k_guideSG": "Staffa di giunzione SG",
+    "k_madeSC": "Supporto a misura, sporgenza A su disegno",
+    "k_madeSG": "Guida a misura",
+    "k_cornerSN": "Staffa d'angolo SN",
+    "k_squareSN": "Staffa a squadra SN",
+    "k_arm": "Braccio rigido regolabile"
   }
 }

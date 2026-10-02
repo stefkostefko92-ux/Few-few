@@ -220,12 +220,19 @@ try {
   await page.check('#auto-machine');
   await page.selectOption('#cat-brand', 'SICOR');
   await page.waitForFunction(() => [...globalThis.document.querySelectorAll('.lift-calc p.hint')].some((p) => /SICOR (SH|MR)\d/.test(p.textContent ?? '')));
+  // Panev's brackets: the bill shows the landing doors' pair; a counterweight rail support chosen by hand follows into
+  // the bill and into the saved design
+  await page.waitForSelector('.lift-work .panev-bom tbody td.code');
+  assert.match(await page.textContent('.lift-work .panev-bom'), /A 65 170 7[\s\S]*B 65 320/, 'door pair in the bill');
+  await page.selectOption('.lift-form select:has(option[value="SU 220 200"])', 'SU 220 200');
+  await page.waitForFunction(() => /SU 220 200[\s\S]*SG 80 190/.test(globalThis.document.querySelector('.lift-work .panev-bom')?.textContent ?? ''));
   await page.fill('.lift-work .savebar input', 'Progetto di prova');
   await Promise.all([page.waitForURL(/\/lift-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click('.lift-work .savebar button.btn-primary')]);
   const liftUrl = page.url();
   await page.waitForSelector('.lift-view .lift-facts');
   assert.equal(await page.locator('main .alert-warn, main .alert-bad').count(), 0, 'the running engines reproduce the saved design');
   assert.match(await page.textContent('.lift-view .lift-verdict .badge'), /UNI 10411-11/, 'the saved standard');
+  assert.match(await page.textContent('.lift-view .panev-bom'), /SU 220 200/, 'the support chosen by hand, saved');
   const liftRelHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
   const liftRel = await page.request.get(`${BASE}${liftRelHref}`);
   assert.equal(liftRel.status(), 200);

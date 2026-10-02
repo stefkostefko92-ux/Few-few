@@ -1,25 +1,27 @@
 // Panev's brackets in place, as the catalogue pairs and adjusts them. Under every landing sill the landing-door
-// brackets: B anchored to the wall below the opening, A bolted to its rib through the joint and the lock, its platform
-// under the sill, cut to the sill's depth. On a counterweight rail at each height of the bracket rule
-// (src/shaft/brackets.ts): the SU or SD support anchored to the wall, the SG guide bracket bolted on its arm and the
-// rail clamped to the SG's flange by two N1 clips whose shanks stand in the flange's slots. The support is the shortest whose printed range takes the rail's distance from the
-// wall and whose flange fits behind the rail. Millimetres in an assembly frame (x along the wall, y up, z into the
-// shaft), placed in metres. Loaded only through boot.ts (lazy).
+// brackets of the design's pair (src/shaft/staffe-porte.ts): B anchored to the wall below the opening, A bolted to its
+// rib through the joint and the lock, its platform under the sill, cut to the sill's depth. On a counterweight rail at
+// each height of the bracket rule (src/shaft/brackets.ts), the bracket src/shaft/staffe-scelta.ts chooses: the SU or SD
+// support anchored to the wall with the SG bolted on its arm, or the SC on the wall behind the rail's foot with the SG
+// along it; the rail clamped to the SG's flange by two N1 clips whose shanks stand in the flange's slots. Millimetres
+// in an assembly frame (x along the wall, y up, z into the shaft), placed in metres. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { seatRail, type Support } from '@/shaft/staffe';
+import { SC_RUNS, scBoltRow } from '@/shaft/staffe-sc';
+import { doorBracketCount, plateReach, type DoorPair } from '@/shaft/staffe-porte';
+import type { SlideBracket } from '@/shaft/staffe-scelta';
 import { onWall, type Batch } from './geom';
 import { fastener, frameAt, place, type Fastener } from './hardware';
 import type { LiftMaterials, Side } from './materials';
 import type { Frame } from './sheet/face';
 import type { Sheet } from './sheet/part';
-import { A_LEGS, B_SECTIONS, PLATES, SG_FLANGE, SG_T, STATIONS, SUPPORT_H, bracketB, guideSG, plateA, supportArm } from './sheet/panev';
-
-export { cwSupport } from '@/shaft/staffe';
+import { A_LEGS, B_SECTIONS, PLATES, SG_FLANGE, SG_T, STATIONS, SUPPORT_H, bracketB, guideSG, plateA, supportArm, supportSliding } from './sheet/panev';
 
 const WALL: Frame = { o: [0, 0, 0], u: [1, 0, 0], v: [0, 1, 0], n: [0, 0, 1] };
 const PLATFORM: Frame = { o: [0, 0, 0], u: [0, 0, 1], v: [1, 0, 0], n: [0, 1, 0] };
 const ALONG_ARM: Frame = { o: [0, 0, 0], u: [0, 0, 1], v: [-1, 0, 0], n: [0, 1, 0] };
+const ALONG_WALL: Frame = { o: [0, 0, 0], u: [1, 0, 0], v: [0, 0, -1], n: [0, 1, 0] };
 
 const cache = new Map<string, readonly [THREE.BufferGeometry, THREE.BufferGeometry]>();
 /** A part's coated and cut geometries in its assembly pose [m], built once. */
@@ -59,14 +61,14 @@ function assembly(B: Batch, M: LiftMaterials, frame: THREE.Matrix4) {
 
 // ---- landing doors
 
-/** A + B under the sill of a landing door at level z: section 65, B 320 (the catalogue's A 65 170 7 + B 65 320),
- *  A cut to the sill's `depth`; sill on the platform at z − sillH; brackets along it from u0 to u1. */
-export function doorBrackets(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, u0: number, u1: number, z: number, depth: number, sillH: number): void {
-  const s = B_SECTIONS[65], g = A_LEGS[65], L = 320;
+/** The pair A + B under the sill of a landing door at level z, A cut to the sill's `depth`; sill on the platform at
+ *  z − sillH; brackets along it from u0 to u1. */
+export function doorBrackets(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, u0: number, u1: number, z: number, depth: number, sillH: number, pair: DoorPair): void {
+  const { a: pa, b: pb } = pair, sec = pa.section, s = B_SECTIONS[sec], g = A_LEGS[sec], L = pb.length;
   const [hx, hy] = g.holes[0], [lx, ly] = g.holes[1], pivotY = L - s.pivot, aY = pivotY - (g.t - hy), zA = s.col - hx;
-  const cut = Math.round(depth - zA - 4), base = z - sillH - (aY + g.t);
-  const geoB = part(`B65-${L}`, () => bracketB(65, L), WALL), geoA = part(`A65-${cut}`, () => plateA(65, 170, 75, 'cross', 7, cut), PLATFORM);
-  const n = Math.max(3, Math.ceil((u1 - u0) / 400) + 1);
+  const { cut } = plateReach(pa, depth), base = z - sillH - (aY + g.t);
+  const geoB = part(`B${sec}-${L}`, () => bracketB(sec, L), WALL), geoA = part(`${pa.code}-${cut}`, () => plateA(sec, pa.length, pa.width, pa.slots, pa.count, cut), PLATFORM);
+  const n = doorBracketCount(u0, u1);
   for (let i = 0; i < n; i++) {
     // the right-hand end's bracket is the mirror (SX), its rib facing out like the left one's
     const uc = u0 + ((u1 - u0) * i) / (n - 1), mirror = i === n - 1, x0 = mirror ? uc + s.face / 2 : uc - s.face / 2;
@@ -107,5 +109,26 @@ export function railSupport(B: Batch, M: LiftMaterials, wall: Side, W: number, D
     const at = [xf, SUPPORT_H + SG_FLANGE / 2, reach + side * d] as const;
     a.fix('clip', at, [1, 0, 0], [0, 0, side]);
     a.fix('nut', [xf - SG_T, at[1], at[2]], [-1, 0, 0], [0, 0, side]);
+  }
+}
+
+/** An SC on the wall behind a counterweight rail's foot at height z, with its SG along the wall and the clips. */
+export function railSliding(B: Batch, M: LiftMaterials, W: number, D: number, br: SlideBracket, z: number): void {
+  const { sc, place: p, gap } = br, { w, l } = sc.sg, a = assembly(B, M, wallFrame(br.wall, W, D, p.s, z, false, br.inset));
+  a.part(part(`SC${sc.W}-${sc.L}`, () => supportSliding(sc.W, sc.L), WALL));
+  for (const [x0, x1] of SC_RUNS[sc.L].flange) a.fix('anchor', [(x0 + x1) / 2, SUPPORT_H / 2, 4], [0, 0, 1]);
+  // the SG on the SC's plate along the wall, its flange under the rail's foot
+  const x0 = p.a - p.s, st = STATIONS[l], row = scBoltRow(sc, gap);
+  a.part(part(`SG${w}-${l}`, () => guideSG(w, l), ALONG_WALL), x0, SUPPORT_H, gap);
+  // its two bolts through the stations into the SC's slots, the nuts under the plate
+  for (const s of [st[1], st[st.length - 2]]) {
+    a.fix('head', [x0 + s, SUPPORT_H + SG_T, row], [0, 1, 0], [1, 0, 0]);
+    a.fix('nut', [x0 + s, SUPPORT_H - 4, row], [0, -1, 0], [1, 0, 0]);
+  }
+  // the clips over the foot's edges, their nuts behind the flange
+  for (const [side, d] of p.seats) {
+    const at = [x0 + p.c + side * d, SUPPORT_H + SG_FLANGE / 2, gap] as const;
+    a.fix('clip', at, [0, 0, 1], [side, 0, 0]);
+    a.fix('nut', [at[0], at[1], gap - SG_T], [0, 0, -1], [side, 0, 0]);
   }
 }

@@ -7,22 +7,17 @@
 // Loaded only through boot.ts (lazy).
 // Motion: none, static geometry; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import { sheet, type Sheet } from './part';
-import { Path, circle, rect, slotX, slotY, type Loop, type V2 } from './path';
+import { Path, circle, rect, slotX, slotY, type Loop } from './path';
 import { PLATES, SG_FLANGE, SG_SLOT, SG_T, STATIONS, SUPPORT_H, flangeRuns, type ArmKind, type SgLength } from '@/shaft/staffe';
+import { SC_RUNS } from '@/shaft/staffe-sc';
+import { A_LEGS, B_SECTIONS, type DoorSection as Section } from '@/shaft/staffe-porte';
+
+export { A_LEGS, B_SECTIONS };
 
 export { PLATES, SG_FLANGE, SG_SLOT, SG_T, STATIONS, SUPPORT_H, flangeRuns, type ArmKind, type SgLength };
 
 const ANCHOR = 12; // wall anchor slots
 const BOLT = 10.5; // M10 joint and locking bolts
-
-/** Rib 15 of B by section (pp. 14-18): full width down to `full` from the top, then a taper to `foot`; joint hole
- *  `pivot` below the top at `col` from the wall, locking slot `drop` below it. */
-export const B_SECTIONS = {
-  65: { t: 5, rib: 65, face: 65, full: 160, foot: 20, pivot: 20, col: 33.5, drop: 115, lock: 35, lockAt: 34 },
-  45: { t: 5, rib: 45, face: 60, full: 138, foot: 15, pivot: 18, col: 23.5, drop: 95, lock: 26, lockAt: 25 },
-  37: { t: 4, rib: 37, face: 60, full: 134, foot: 20, pivot: 16, col: 20, drop: 85, lock: 20, lockAt: 21 },
-} as const;
-export type Section = keyof typeof B_SECTIONS;
 
 /** B section L: root = the fixing face (x across from the mould-line corner, y up the length). */
 export function bracketB(section: Section, L: number): Sheet {
@@ -36,14 +31,6 @@ export function bracketB(section: Section, L: number): Sheet {
   p.bend('fixing', 'rib', { from: [0, 0], to: [0, L], dir: 'up' });
   return p;
 }
-
-/** Rib 16 of A (x from the wall end along the platform, y down from the mould line): strip, chamfer, the leg bolted
- *  to rib 15 of B; its holes [x, y, slot length] (pp. 14-18). */
-export const A_LEGS = {
-  65: { t: 5, strip: 30, chamfer: [80, 50, 60], legIn: [50, 165], legOut: [10, 165], holes: [[30, 33, 22], [30, 149, 22]] },
-  45: { t: 5, strip: 29, chamfer: [64, 40, 69], legIn: [29, 140], legOut: [8, 140], holes: [[19, 31, 0], [19, 125, 14]] },
-  37: { t: 4, strip: 25, chamfer: [49, 28, 69], legIn: [27, 120], legOut: [4, 120], holes: [[15, 25, 0], [15, 110, 14]] },
-} as const;
 
 /** The part of a polygon with x ≤ xs (one cut across it). */
 function clipX(poly: Loop, xs: number): Loop {
@@ -92,13 +79,6 @@ export function supportArm(kind: ArmKind, Lp: number): Sheet {
   p.bend('plate', 'apron', { from: [k.arm[1], y0], to: [k.arm[1], Lp], dir: 'up' });
   return p;
 }
-
-/** Slot runs along the SC plate and flange (pp. 40-55, 61). */
-const SC_RUNS: Record<170 | 200 | 220, { plate: readonly V2[]; flange: readonly V2[] }> = {
-  170: { plate: [[11, 50], [65, 105], [120, 159]], flange: [[10, 75], [95, 160]] },
-  200: { plate: [[11, 61], [70, 130], [139, 189]], flange: [[10, 90], [110, 190]] },
-  220: { plate: [[11, 70], [80, 140], [150, 209]], flange: [[10, 100], [120, 210]] },
-};
 
 /** SC W L — 4 mm; W the plate's depth from the wall. */
 export function supportSliding(W: 50 | 60 | 80 | 90, L: 200 | 220): Sheet {

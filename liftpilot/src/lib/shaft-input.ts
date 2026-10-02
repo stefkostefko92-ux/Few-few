@@ -4,6 +4,7 @@
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
 import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS } from '@/shaft';
+import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
 
@@ -139,6 +140,8 @@ export const shaftInputsSchema = z.object({
   niches: z.array(nicheSchema).max(8).optional(),
   callStation: z.object({ side: z.enum(['left', 'right']), offset: mm(0, 2000), height: mm(600, 2000) }).strict().optional(),
   cwBrackets: z.enum(['panev', 'generic']).optional(),
+  /** Panev's articles chosen by hand (src/shaft/staffe-ids.ts); absent: the software's choice */
+  panev: z.object({ door: z.enum(DOOR_PAIRS).optional(), cw: z.enum(CW_CHOICES).optional() }).strict().optional(),
   doorMaker: z.enum(['generic', '2sg', 'fermator']).optional(),
   governor: z.string().refine((g) => GOVERNORS.some((x) => x.model === g)).optional(),
   /** the walls at the top floor and in the headroom, in from the main floor's (src/shaft/head.ts) */

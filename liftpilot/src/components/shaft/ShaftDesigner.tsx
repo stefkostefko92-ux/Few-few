@@ -19,6 +19,7 @@ import ShaftOptions from './ShaftOptions';
 import PlanEditor from './PlanEditor';
 import VerticalOptions from './VerticalOptions';
 import ShaftResults from './ShaftResults';
+import PanevBom from './PanevBom';
 import SurveyPanel, { type SurveyResult } from './SurveyPanel';
 
 interface Props {
@@ -111,6 +112,7 @@ export default function ShaftDesigner({ projectId, initial }: Props) {
           <h2>{t('result')}</h2>
           <PlanEditor I={I} onChange={set} machine={null} id="live" titleAs="h3" />
           <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
+          <PanevBom L={L} fmt={fmt} framed={false} />
           <p className="note">{t('limits')}</p>
         </section>
       </div>

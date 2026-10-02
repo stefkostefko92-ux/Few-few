@@ -12,6 +12,7 @@ import { asCalcDict } from '../calc/dict';
 import LiftFacts from './LiftFacts';
 import LiftChecks from './LiftChecks';
 import LiftSimulator, { type SimApi } from './LiftSimulator';
+import PanevBom from '../shaft/PanevBom';
 
 export default function LiftView({ inputs, checks = true }: { inputs: LiftInputs; checks?: boolean }) {
   const locale = useLocale(), messages = useMessages();
@@ -29,6 +30,7 @@ export default function LiftView({ inputs, checks = true }: { inputs: LiftInputs
       <LiftFacts derived={derived} X={X} fmt={P.fmt} />
       <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
       {checks ? <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} /> : null}
+      <PanevBom L={derived.layout} fmt={P.fmt} />
     </div>
   );
 }

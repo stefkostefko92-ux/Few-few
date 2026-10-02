@@ -14,6 +14,7 @@ import VerdictPill from '@/components/VerdictPill';
 import Crumbs from '@/components/Crumbs';
 import ShaftViews from '@/components/shaft/ShaftViews';
 import ShaftResults from '@/components/shaft/ShaftResults';
+import PanevBom from '@/components/shaft/PanevBom';
 
 export async function generateMetadata() {
   const t = await getTranslations('shaft');
@@ -59,6 +60,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
         <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
         <p className="note">{t('limits')}</p>
       </section>
+      <PanevBom L={L} fmt={fmt} />
     </main>
   );
 }

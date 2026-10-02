@@ -5,7 +5,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type * as THREE from 'three/webgpu';
-import { bracketB, guideSG, plateA, supportArm, supportSliding } from '../sheet/panev';
+import { A_LEGS, B_SECTIONS, bracketB, guideSG, plateA, supportArm, supportSliding } from '../sheet/panev';
+import { DOOR_PAIRS, SC_SUPPORTS, doorPair } from '@/shaft';
 import type { Sheet } from '../sheet/part';
 
 /** Welded vertex count, open and non-manifold edges, volume [mm³] and size [mm] of the part's two geometries. */
@@ -74,4 +75,16 @@ test('staffe Panev: supporti SU, SD, SC e staffa guida SG', () => {
   solid('SC 80 220', supportSliding(80, 220), [220, 80, 65]);
   solid('SG 80 150', guideSG(80, 150), [150, 80, 50]);
   solid('SG 50 190', guideSG(50, 190), [190, 50, 50]);
+});
+
+test('staffe Panev: ogni articolo che un progetto può prendere è un corpo chiuso delle misure del catalogo', () => {
+  for (const id of DOOR_PAIRS) {
+    const { a, b } = doorPair(id), s = B_SECTIONS[a.section];
+    solid(a.code, plateA(a.section, a.length, a.width, a.slots, a.count), [a.length, a.width, A_LEGS[a.section].legIn[1]]);
+    solid(b.code, bracketB(a.section, b.length), [s.face, b.length, s.rib]);
+  }
+  for (const sc of SC_SUPPORTS) {
+    solid(sc.code, supportSliding(sc.W, sc.L), [sc.L, sc.W, 65]);
+    solid(`SG ${sc.sg.w} ${sc.sg.l}`, guideSG(sc.sg.w, sc.sg.l), [sc.sg.l, sc.sg.w, 50]);
+  }
 });

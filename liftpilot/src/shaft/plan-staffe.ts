@@ -2,62 +2,64 @@
 // it: the anchors through the flange's slots into the wall (below the plate: hidden), the galvanized plate folded off
 // the flange's top with the two slots of its arm and the apron folded down along it, the SG laid on the arm with its
 // slots and its flange seen edge-on behind the rail's foot, the two bolts holding the SG, the two N1 clips over the
-// foot's edges with their bolts through the flange and the nuts behind it; and, on the first rail, its catalogue code
-// with the count per rail (brackets.ts). Null when the design uses generic brackets or no support of the catalogue
-// takes the rail (then the check v_staffa says so). A generic bracket as the 3D's railfix.ts builds it: the plate
+// foot's edges with their bolts through the flange and the nuts behind it; an SC along the wall behind the foot
+// (plan-staffe-sc.ts); and its catalogue code with the count per rail (brackets.ts). Null when the design uses generic
+// brackets or none of the catalogue takes the rail (then the check v_staffa says so); a solution to the site's drawing
+// keeps the generic bracket with its articles' code. A generic bracket as the 3D's railfix.ts builds it: the plate
 // behind the foot with its two clips, one angle out to the wall (two bolted together past 150 mm), the wall plate and
 // its anchors.
 import { circle, line, path, type Entity, type Pt } from '../drawing';
 import { bracketCount, railSpan } from './brackets';
 import { cwNiche } from './niche';
+import { ANCHOR, HEAD, hex, slot, type BracketPlan } from './plan-parts';
+import { slidePlan } from './plan-staffe-sc';
 import { onWall } from './plan-walls';
 import { GENERIC_BRACKET as GB, RAILS, railClip } from './rails';
 import { section } from './section';
-import { N1, PLATES, SG_T, STATIONS, cwBracketsOf, cwSupport, seatRail, supportCode } from './staffe';
+import { N1, PLATES, SG_T, STATIONS, cwBracketsOf, seatRail } from './staffe';
+import { bracketCode, cwBracket, cwSpecialOf, type CwBracket } from './staffe-scelta';
 import type { HeadWalls, Layout, Rail, Wall } from './types';
 
-const SHEET = 5, SG_W = 80, ANCHOR = 12, HEAD = 9.8;
+export type { BracketPlan } from './plan-parts';
+
+const SHEET = 5, SG_W = 80;
+
+/** The bracket of a counterweight rail on Panev's catalogue, in its niche if it runs in one (`head`: the walls where
+ *  they stand in the headroom); null with generic brackets or when none takes it. */
+function panevOf(L: Layout, r: Rail, head?: HeadWalls): CwBracket | null {
+  const I = L.inputs, n = cwNiche(I, L.cwSide);
+  return r.kind === 'cw' && cwBracketsOf(I) === 'panev' ? cwBracket(I, L.doors, r, n ? [n.at, n.at + n.width] : undefined, head) : null;
+}
+
+/** The articles of a counterweight rail's bracket with their count per rail, as the plan writes them: Panev's support
+ *  with its SG, or the solution to the site's drawing chosen; null with generic brackets or when none takes it. */
+export function cwPlanCode(L: Layout, r: Rail, head?: HeadWalls): string | null {
+  const I = L.inputs, special = cwSpecialOf(I);
+  if (r.kind !== 'cw' || cwBracketsOf(I) !== 'panev') return null;
+  const [z0, z1] = railSpan(section(L)), n = bracketCount(z1 - z0), g = special ? null : panevOf(L, r, head);
+  if (special) return `${n}× ${special.startsWith('SN') ? 'SN + BRACCIO 160 190' : special}`;
+  return g ? `${n}× ${bracketCode(g)}` : null;
+}
 
 /** How far along its wall the bracket of a counterweight rail reaches [mm in the wall's own u]: Panev's plate with
  *  its SG and clips, or a generic bracket as wide as the rail's foot and its clips. */
 export function bracketSpan(L: Layout, r: Rail): { wall: Wall; u0: number; u1: number } | null {
-  const I = L.inputs, s = RAILS[I.cwRail], n = cwNiche(I, L.cwSide);
+  const I = L.inputs, s = RAILS[I.cwRail];
   if (r.kind !== 'cw') return null;
-  const g = cwBracketsOf(I) === 'panev' ? cwSupport(r, s.h, I.W, I.D, n ? [n.at, n.at + n.width] : undefined) : null;
+  const g = panevOf(L, r);
   if (!g) {
     const wall: Wall = L.cwSide, along = wall === 'rear' ? r.x : r.y;
     return { wall, u0: along - s.b / 2 - 40, u1: along + s.b / 2 + 40 };
   }
+  if (g.kind === 'slide') return { wall: g.wall, u0: Math.min(g.place.s, g.place.a), u1: Math.max(g.place.s + g.sc.L, g.place.a + g.sc.sg.l) };
   const k = PLATES[g.sup.kind], sx = g.mirror ? -1 : 1, u0 = g.foot - sx * k.arm[1], ends = [u0, u0 + sx * k.flange, u0 + sx * (k.arm[1] + N1.top)];
   return { wall: g.wall, u0: Math.min(...ends), u1: Math.max(...ends) };
 }
 
-/** A slot from (x0, y) to (x1, y) or (x, y0) to (x, y1), w wide, as a closed outline in the part's frame. */
-function slot(a: readonly [number, number], b: readonly [number, number], w: number): [number, number][] {
-  const r = w / 2, dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len, out: [number, number][] = [];
-  for (const [c, a0] of [[b, -Math.PI / 2], [a, Math.PI / 2]] as const) {
-    for (let i = 0; i <= 6; i++) {
-      const t = Math.atan2(uy, ux) + a0 + (i / 6) * Math.PI;
-      out.push([c[0] + r * Math.cos(t), c[1] + r * Math.sin(t)]);
-    }
-  }
-  return out;
-}
-
-/** A hexagon of circumradius r round (x, y), a flat side along x. */
-const hex = (x: number, y: number, r: number): [number, number][] => Array.from({ length: 6 }, (_, i) => [x + r * Math.cos((i * Math.PI) / 3), y + r * Math.sin((i * Math.PI) / 3)]);
-
-/** A bracket's parts under the rail and over it (the clips on the foot's edges). */
-export interface BracketPlan {
-  under: Entity[];
-  over: Entity[];
-}
-
 export function panevSupportPlan(L: Layout, r: Rail, label: boolean, head?: HeadWalls): BracketPlan | null {
-  const I = L.inputs, s = RAILS[I.cwRail], n = cwNiche(I, L.cwSide);
-  if (r.kind !== 'cw' || cwBracketsOf(I) !== 'panev') return null;
-  const g = cwSupport(r, s.h, I.W, I.D, n ? [n.at, n.at + n.width] : undefined, head);
+  const I = L.inputs, s = RAILS[I.cwRail], g = panevOf(L, r, head), code = label ? cwPlanCode(L, r, head) : null;
   if (!g) return null;
+  if (g.kind === 'slide') return slidePlan(L, g, code);
   // the support's frame: x along the wall from its flange's end, y out from the wall's face
   const k = PLATES[g.sup.kind], xf = k.arm[1], sx = g.mirror ? -1 : 1, u0 = g.foot - sx * xf, Lp = g.sup.Lp;
   const P = (x: number, y: number): Pt => onWall(L, g.wall, u0 + sx * x, y - g.inset);
@@ -88,15 +90,24 @@ export function panevSupportPlan(L: Layout, r: Rail, label: boolean, head?: Head
     over.push(path(box(xf, Math.min(a, b), xf + N1.top, Math.max(a, b)), true, 'thin', 'zinc'), line(P(xf, y), P(xf + N1.top, y), 'fine'));
     out.push(path(box(xf - SG_T - 8, y - 8.5, xf - SG_T, y + 8.5), true, 'thin', 'paper'), line(P(xf - SG_T - 12, y), P(xf - SG_T, y), 'fine'));
   }
-  if (label) {
+  if (code) {
     // the code and the count per rail, along the wall in its thickness behind the support (clear of what runs)
-    const [z0, z1] = railSpan(section(L)), behind = (I.wall - Math.max(0, g.inset)) / 2, along = g.wall === 'front' || g.wall === 'rear';
+    const behind = (I.wall - Math.max(0, g.inset)) / 2, along = g.wall === 'front' || g.wall === 'rear';
     // from the support's end nearer the corner, toward the middle of the wall
     const ends = [u0, u0 + sx * k.flange], lo = Math.min(...ends), hi = Math.max(...ends), first = lo + hi < 2 * (along ? I.W : I.D) / 2;
-    over.push({ e: 'text', at: P(((first ? lo : hi) - u0) / sx, -behind), text: `${bracketCount(z1 - z0)}× ${supportCode(g.sup)} + SG 80 ${l}`,
-      size: 1.6, align: first ? 'l' : 'r', halo: true, angle: along ? 0 : 90 });
+    over.push({ e: 'text', at: P(((first ? lo : hi) - u0) / sx, -behind), text: code, size: 1.6, align: first ? 'l' : 'r', halo: true, angle: along ? 0 : 90 });
   }
   return { under: out, over };
+}
+
+/** The code of a solution to the site's drawing by the rail's generic bracket, in the thickness of the wall it reaches,
+ *  from the rail toward the middle of the wall. */
+export function specialPlanLabel(L: Layout, r: Rail, code: string | null): Entity[] {
+  const I = L.inputs;
+  if (!code || !cwSpecialOf(I)) return [];
+  const x = r.bracketAxis === 'x', wall: Wall = x ? (r.bracketTo > I.W / 2 ? 'right' : 'left') : r.bracketTo > I.D / 2 ? 'rear' : 'front';
+  const u = x ? r.y : r.x, first = 2 * u < (x ? I.D : I.W);
+  return [{ e: 'text', at: onWall(L, wall, u, -I.wall / 2), text: code, size: 1.6, align: first ? 'l' : 'r', halo: true, angle: x ? 90 : 0 }];
 }
 
 /** A generic bracket of a rail seen from above, reaching the wall (or the bridge) at the rail's bracketTo. */

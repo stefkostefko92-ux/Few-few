@@ -93,7 +93,7 @@ export function supportFor(reach: number, back: number, ahead: number): Support 
  *  behind the foot and in front of it (inside the niche: `span` along the wall). Null when the blade does not run
  *  along the wall: the catalogue's supports carry the rail's foot square to it. `h`: blade height; `head`: the walls
  *  where they stand in the headroom (head.ts), else as at the main floor. */
-function onItsWall(r: Rail, h: number, W: number, D: number, span?: readonly [number, number], head?: HeadWalls) {
+export function onItsWall(r: Rail, h: number, W: number, D: number, span?: readonly [number, number], head?: HeadWalls) {
   const across = r.bracketAxis === 'y', along = across ? r.dir === 'left' || r.dir === 'right' : r.dir === 'back' || r.dir === 'front';
   const far = across ? D : W, high = r.bracketTo > far / 2, inset = high ? r.bracketTo - far : -r.bracketTo;
   if (!along || inset < -1) return null;
@@ -104,22 +104,9 @@ function onItsWall(r: Rail, h: number, W: number, D: number, span?: readonly [nu
   return { wall, foot, reach, mirror: sign < 0, inset: Math.max(0, inset) - shift, back, ahead: hi - lo - back };
 }
 
-/** Where a counterweight rail's Panev support goes, with the support: the shortest whose printed range takes the rail's
- *  distance from its wall (or from the back of its niche) and whose plate fits on the wall; null when none does. */
-export function cwSupport(r: Rail, h: number, W: number, D: number, span?: readonly [number, number], head?: HeadWalls): { wall: Wall; foot: number; reach: number; mirror: boolean; sup: Support; inset: number } | null {
-  const g = onItsWall(r, h, W, D, span, head), sup = g && supportFor(g.reach, g.back, g.ahead);
-  return g && sup ? { wall: g.wall, foot: g.foot, reach: g.reach, mirror: g.mirror, sup, inset: g.inset } : null;
-}
-
-/** How well the catalogue takes a rail [mm]: the tightest margin (range, room for the plate) of the support chosen;
- *  when none fits, below 0 by how much the nearest misses; null when its blade does not run along its wall. */
-export function supportMargin(r: Rail, h: number, W: number, D: number, span?: readonly [number, number], head?: HeadWalls): number | null {
-  const g = onItsWall(r, h, W, D, span, head);
-  if (!g) return null;
-  const margin = (s: Support): number => Math.min(g.reach - s.range[0], s.range[1] - g.reach, g.back - (PLATES[s.kind].arm[1] + 10), g.ahead - (PLATES[s.kind].flange - PLATES[s.kind].arm[1] + 10));
-  const sup = supportFor(g.reach, g.back, g.ahead);
-  return sup ? margin(sup) : Math.max(...SUPPORTS.map(margin));
-}
+/** How well a support takes a rail on its wall [mm]: the tightest of its range and the room for its plate. */
+export const armMargin = (g: { reach: number; back: number; ahead: number }, s: Support): number =>
+  Math.min(g.reach - s.range[0], s.range[1] - g.reach, g.back - (PLATES[s.kind].arm[1] + 10), g.ahead - (PLATES[s.kind].flange - PLATES[s.kind].arm[1] + 10));
 
 /** The brackets of the counterweight rails the design uses: Panev's supports unless generic ones are chosen. */
 export const cwBracketsOf = (I: ShaftInputs): 'panev' | 'generic' => I.cwBrackets ?? 'panev';

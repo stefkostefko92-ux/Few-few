@@ -210,10 +210,25 @@ export const VOCI_VANO: readonly VoceVano[] = [
     id: 'ingombri.staffe.contrappeso', gruppo: 'ingombri', titolo: 'Staffe delle guide del contrappeso (catalogo Panev)',
     valore: 'per default il supporto Panev SU o SD con la guida SG, la guida serrata sulla flangia della SG da due bride N1: il supporto più corto il '
       + 'cui campo stampato prende la distanza della guida dalla parete (o dal fondo della nicchia) e la cui piastra sta sulla parete: SU, SD 150 '
-      + 'e SD 220 lunghi 160 mm da 45 a 155 mm (SD 220 da 50), lunghi 180 mm da 45 a 195 mm, lunghi 200 mm da 45 a 215 mm; nessuno adatto: '
-      + '«Non conforme» (si possono scegliere staffe generiche, da dimensionare a parte)',
-    riferimento: 'catalogo staffe Panev 2026, pp. 20-59', fonte: 'catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf)', stato: 'confermato',
+      + 'e SD 220 lunghi 160 mm da 45 a 155 mm (SD 220 da 50), lunghi 180 mm da 45 a 195 mm, lunghi 200 mm da 45 a 215 mm; quando nessuno sta, '
+      + 'vicino a un angolo, il supporto scorrevole SC sulla parete dietro il piede della guida con la SG lungo la parete: la flangia della SG da 2 mm '
+      + 'oltre il bordo dell\'SC fino a 70, 88, 130 e 140 mm dalla parete per SC 50, 60, 80 e 90, l\'asse della guida entro il campo stampato da '
+      + 'un\'estremità dell\'SC (lunghi 200 mm: 210, 213, 215 e 215 mm; lunghi 220 mm: 235, 235, 255 e 235 mm), fuori dai telai delle porte e dalle '
+      + 'nicchie. Il progettista può scegliere l\'articolo a mano (se non prende la guida: «Non conforme») o una soluzione su disegno esecutivo, '
+      + 'SC 50 170 + SG 225 50 a misura o SN 60 65 + SN 65 200 + BRACCIO 160 190 all\'angolo del vano: «Da verificare» sul disegno; nessuno '
+      + 'adatto: «Non conforme» (si possono scegliere staffe generiche, da dimensionare a parte)',
+    riferimento: 'catalogo staffe Panev 2026, pp. 20-62', fonte: 'catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf); le corse '
+      + 'dell\'SC lontano dalla parete lette sui disegni di montaggio (pp. 41-55)', stato: 'confermato',
     verifiche: ['v_staffa'],
+  },
+  {
+    id: 'ingombri.staffe.porte', gruppo: 'ingombri', titolo: 'Staffe delle porte di piano (catalogo Panev)',
+    valore: 'sotto ogni soglia di piano la coppia A + B della stessa sezione (65, 45 o 37 mm: le serie non sono intercambiabili): per default '
+      + 'A 65 170 7 + B 65 320 (5 mm, regolazione ±8°), oppure quella scelta dal progettista; la piastra A tagliata alla profondità della soglia, '
+      + '4 mm prima del suo bordo (se la piastra è più corta della soglia: da verificare); una coppia ogni 400 mm della luce, almeno tre, le estreme '
+      + 'a 10 mm dai bordi della luce',
+    riferimento: 'catalogo staffe Panev 2026, pp. 14-18 (coppie) e p. 05 (taglio della piastra)',
+    fonte: 'catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf); il passo e il numero minimo sono scelta del software', stato: 'scelta',
   },
   {
     id: 'ingombri.limitatore', gruppo: 'ingombri', titolo: 'Limitatore di velocità e tenditore (pianta, locale macchina, 3D)',

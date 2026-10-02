@@ -13,11 +13,12 @@ import { RAILS, RAIL_LENGTH, bracketHeights, railSpan, type Layout, type RailTyp
 import type { Section } from '@/shaft/section';
 import { cwNiche } from '@/shaft/niche';
 import { cwBracketsOf } from '@/shaft/staffe';
+import { cwBracket } from '@/shaft/staffe-scelta';
 import { hasHead, headOf, headRail } from '@/shaft/head';
 import { Batch } from './geom';
 import type { LiftMaterials } from './materials';
 import { clippedPlate, fishplate, railFrameOf, wallArm } from './railfix';
-import { cwSupport, railSupport } from './staffe';
+import { railSliding, railSupport } from './staffe';
 
 const JOINT_GAP = 0.6;
 
@@ -74,11 +75,15 @@ export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group
     // a counterweight rail on Panev's supports (staffe.ts) when the design takes them and one fits; otherwise the plate
     // with its two clips and the arm out to the wall (or to the bridge)
     const isPanev = r.kind === 'cw' && cwBracketsOf(I) === 'panev';
-    const panevMain = isPanev ? cwSupport(r, h, I.W, I.D, span) : null, panevHead = isPanev ? cwSupport(r, h, I.W, I.D, span, headOf(I)) : null;
+    const panevMain = isPanev ? cwBracket(I, L.doors, r, span) : null, panevHead = isPanev ? cwBracket(I, L.doors, r, span, headOf(I)) : null;
     for (const z of brackets) {
       const up = z >= zHead, panev = up ? panevHead : panevMain;
-      if (panev) {
+      if (panev?.kind === 'arm') {
         railSupport(B, M, panev.wall, I.W, I.D, panev.foot, panev.reach, z, panev.mirror, b / 2, panev.sup, panev.inset);
+        continue;
+      }
+      if (panev) {
+        railSliding(B, M, I.W, I.D, panev, z);
         continue;
       }
       const outer = clippedPlate(B, M, RF, type, z + 75, galv), to = (up ? headRail(I, r) : r).bracketTo;

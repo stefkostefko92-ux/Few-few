@@ -733,7 +733,13 @@
     "sp_hint": "The support's height sets the sheave's axis: the calculation, the machine room drawings and the 3D follow it. Beams may stand clear of the floor (machine not on the floor) and are checked for stress and deflection.",
     "su_height": "Support: height above the floor",
     "su_length": "Support: length along the rope drop",
-    "su_profile": "Support: profile"
+    "su_profile": "Support: profile",
+    "pv_door": "Landing door brackets (Panev)",
+    "pv_door_auto": "Automatic: {code}",
+    "pv_cw": "Counterweight rail support",
+    "pv_cw_auto": "Automatic: SU or SD, SC at a corner",
+    "pv_special": "To the site drawing",
+    "pv_drawing": "to drawing"
   },
   "tavole": {
     "title": "Drawing set",
@@ -1124,5 +1130,32 @@
     "existsIgnore": "If it was not you, ignore this message: your account has not changed.",
     "linkHint": "If the button does not work, copy this address into your browser:",
     "footer": "LiftPilot · Carbon Stealth VCC · carbonstealth.eu — automatic message, please do not reply."
+  },
+  "bom": {
+    "title": "Panev bracket list",
+    "code": "Code",
+    "part": "Article",
+    "qty": "Qty",
+    "price": "Price",
+    "amount": "Amount",
+    "total": "Indicative total, VAT excluded",
+    "page": "cat. p. {page}",
+    "cut": "cut to {mm} mm",
+    "short": "shorter than the sill: to be checked",
+    "drawing": "to the site drawing",
+    "quote": "quoted to order",
+    "missing": "{n, plural, one {# counterweight rail bracket} other {# counterweight rail brackets}} with no catalogue article: see the bracket check",
+    "note": "Panev {year} list prices (catalogue, p. {page}), VAT excluded, indicative and subject to change. Two N1 clips per bracket, anchors and bolts not included; solutions to drawing are quoted to order.",
+    "k_plateA": "Plate A",
+    "k_bracketB": "Bracket B",
+    "k_supportSU": "Universal support SU",
+    "k_supportSD": "Offset support SD",
+    "k_supportSC": "Sliding support SC",
+    "k_guideSG": "Junction bracket SG",
+    "k_madeSC": "Made-to-measure support, projection A to drawing",
+    "k_madeSG": "Made-to-measure guide",
+    "k_cornerSN": "Corner bracket SN",
+    "k_squareSN": "Square bracket SN",
+    "k_arm": "Adjustable rigid arm"
   }
 }
