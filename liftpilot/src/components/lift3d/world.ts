@@ -1,6 +1,7 @@
 // The installation as a scene: shaft, car, counterweight, rails, buffers, ropes, machine and room, the spaces of the
-// checks; lights and room reflections; every frame the state of the simulation moves the parts, and the walls
-// between the camera and the shaft turn into ghosts. Loaded only through boot.ts (lazy).
+// checks; lights and room reflections — the sky and a key light with its shadows where the camera looks, the car's own
+// downlights riding with it, the machine room's ceiling lamp —; every frame the state of the simulation moves the parts,
+// and the walls between the camera and the shaft turn into ghosts. Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -54,7 +55,7 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   scene.background = new THREE.Color(LIFT_BG);
   const pmrem = new THREE.PMREMGenerator(renderer), room = new RoomEnvironment(), env = pmrem.fromScene(room, 0.04);
   scene.environment = env.texture;
-  scene.environmentIntensity = 0.85;
+  scene.environmentIntensity = 0.7;
   const M = createLiftMaterials(S.pitFloor / 1000);
 
   const rig = ropeRig(dv);
@@ -104,16 +105,42 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const setZones = (on: boolean): void => { zones.visible = on; top.visible = on; };
   setZones(false);
 
-  // lights: sky and ground, a warm key from the front with shadows around the car, a cool rim from behind
-  scene.add(new THREE.HemisphereLight(0xd8dde6, 0x2a2420, 0.95));
+  // lights: sky and ground, a warm key from the front with shadows round what the camera looks at, a cool rim from
+  // behind; the car's two downlights under its ceiling (they ride with it and pour out of its door), the machine room's
+  // lamp under its ceiling: falling off with the distance, as lamps do
+  scene.add(new THREE.HemisphereLight(0xd8dde6, 0x2a2420, 0.78));
+  for (const k of [-1, 1]) {
+    const ci = L.carInner, sp = new THREE.SpotLight(0xfff0d8, 16, 4, 1.1, 0.7, 2), x = ci.x + ci.w / 2 + (k * ci.w) / 5, y = ci.y + ci.h / 2;
+    sp.position.copy(P(x, y, V.carH - 40));
+    sp.target.position.copy(P(x, y, 0));
+    car.group.add(sp, sp.target);
+  }
+  if (machine.bounds) {
+    const b = machine.bounds, lamp = new THREE.PointLight(0xfff3e2, 22, 7, 2);
+    lamp.position.copy(P((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, b.top - 450));
+    scene.add(lamp);
+  }
   const key = new THREE.DirectionalLight(0xffe6cc, 2.2);
   key.castShadow = quality.ao;
   key.shadow.mapSize.set(quality.shadowMap, quality.shadowMap);
-  Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 20 });
-  key.shadow.bias = -0.0005;
+  Object.assign(key.shadow.camera, { left: -4.5, right: 4.5, top: 4.5, bottom: -4.5, near: 0.5, far: 26 });
+  key.shadow.bias = -0.0004;
+  key.shadow.normalBias = 0.02;
   key.shadow.radius = quality.shadowRadius;
   const rim = new THREE.DirectionalLight(0xc9d5f0, 1.1);
   scene.add(key, key.target, rim, rim.target);
+  // a wall or roof turned into a ghost casts no shadow: it is not there for the camera, so not for the key light either
+  // (three.js draws every caster into the shadow map, transparent or not)
+  const casters = new Map<THREE.Material, THREE.Mesh[]>();
+  scene.traverse((o) => {
+    if (!(o instanceof THREE.Mesh) || !o.castShadow || Array.isArray(o.material)) return;
+    const list = casters.get(o.material) ?? [];
+    list.push(o);
+    casters.set(o.material, list);
+  });
+  const ghost = (m: THREE.Material, faint: boolean, opacity?: number): void => {
+    if (M.ghost(m, faint, opacity)) for (const o of casters.get(m) ?? []) o.castShadow = !faint;
+  };
 
   const W = I.W / 1000, D = I.D / 1000, wall = I.wall / 1000, R = I.room;
   const levels = S.levels;
@@ -142,27 +169,27 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
       // 2:1: the car pulley is the first wheel of the rope, the counterweight pulley the last
       const now = rig.pieces(f.s, f.cw), p0 = now[0], p1 = now[now.length - 1], cp = p0.els[1], wp = p1.els[p1.els.length - 2];
       machine.set(f.theta, N.i, two && cp?.kind === 'wheel' ? at(p0.plane, cp.u, cp.y, carPos) : null, two && wp?.kind === 'wheel' ? at(p1.plane, wp.u, wp.y, cwPos) : null);
-      // key light follows the car so its shadows stay sharp
-      key.position.set(cx / 1000 + 3, f.s + 5, -cy / 1000 + 6);
-      key.target.position.set(cx / 1000, f.s + 1, -cy / 1000);
-      rim.position.set(cx / 1000 - 4, f.s + 3, -cy / 1000 - 5);
-      rim.target.position.copy(key.target.position);
+      // the key light follows what the camera looks at (the car, the machine, the pit) so its shadows stay sharp there
+      key.position.set(target.x + 4, target.y + 7, target.z + 8);
+      key.target.position.copy(target);
+      rim.position.set(target.x - 4, target.y + 3, target.z - 5);
+      rim.target.position.copy(target);
       // x-ray: the walls with the camera outside them turn faint, and those the camera looks through at something past
       // them (the room of a machine below, behind the shaft)
       const outside = (p: THREE.Vector3, m: number): Record<Side, boolean> => ({ front: p.z > m, rear: p.z < -(D + m), left: p.x < -m, right: p.x > W + m });
       const out = outside(cam, wall * 0.5), beyond = outside(target, wall);
       for (const side of SIDES) {
         const faint = out[side] || beyond[side];
-        M.ghost(M.walls[side], faint);
-        M.ghost(M.landing[side], faint, 0.35);
-        M.ghost(M.floors[side], faint, 0.2);
+        ghost(M.walls[side], faint);
+        ghost(M.landing[side], faint, 0.35);
+        ghost(M.floors[side], faint, 0.2);
       }
       const rb = machine.bounds;
       if (rb) {
         const roomOut: Record<Side, boolean> = { front: cam.z > -rb.y0 / 1000, rear: cam.z < -rb.y1 / 1000, left: cam.x < rb.x0 / 1000, right: cam.x > rb.x1 / 1000 };
-        for (const side of SIDES) M.ghost(M.roomWalls[side], roomOut[side], 0.1);
+        for (const side of SIDES) ghost(M.roomWalls[side], roomOut[side], 0.1);
       }
-      M.ghost(M.roof, cam.y > (rb?.top ?? S.ceiling + 2600) / 1000, 0.08);
+      ghost(M.roof, cam.y > (rb?.top ?? S.ceiling + 2600) / 1000, 0.08);
     },
     focus(view, f) {
       const s = f?.s ?? 0;
