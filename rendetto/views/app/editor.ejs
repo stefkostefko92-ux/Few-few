@@ -1,4 +1,4 @@
-<%- include('../partials/head', { title: project.name + ' — Rendetto', styles: ['app'], noindex: true, extraHead: '<link rel="stylesheet" href="/static/editor/editor.css?v=' + v + '">' }) %>
+<%- include('../partials/head', { title: project.name + ' — Rendetto', styles: ['app'], noindex: true, extraHead: '<link rel="stylesheet" href="/static/editor/editor.css?v=' + v + '">' + editorPreload.map((p) => '<link rel="modulepreload" href="/static/editor/' + p + '">').join('') }) %>
 <body class="appbody editor-body">
 <%- include('../partials/app-header') %>
 <main class="editor" id="main" lang="bg" data-readonly="<%= readOnly ? 'true' : 'false' %>" data-csrf="<%= csrfToken %>" data-text="<%= JSON.stringify({ saving: te('editor.saving'), unsaved: te('editor.unsaved'), saved: te('editor.saved'), saveFailed: te('editor.saveFailed'), noWebgl: te('editor.noWebgl'), photoPreparing: te('editor.photoPreparing'), photoProgress: te('editor.photoProgress'), photoReady: te('editor.photoReady'), photoUnsupported: te('editor.photoUnsupported'), photoFailed: te('editor.photoFailed') }) %>">

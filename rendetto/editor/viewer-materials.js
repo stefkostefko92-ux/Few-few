@@ -10,6 +10,7 @@ import { stoneSpec } from './tex-stone.js';
 import { surfaceSpec, decorSurface } from './tex-surface.js';
 import { metalLook } from './viewer-metals.js';
 import { surfaceMaterial } from './viewer-surfaces.js';
+import { DEVICE } from './viewer-device.js';
 
 const hashStr = (str) => [...str].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 const LACQUER = {
@@ -45,7 +46,8 @@ const SURFACE_TILE = {
     [1024, 1024],
   ],
 };
-const MAX_BAKES = 10; // decors kept on the GPU; the oldest unused one is freed first
+// decors kept on the GPU (6 on a phone or tablet); the oldest unused one is freed first
+const MAX_BAKES = DEVICE.maxBakes;
 
 // The baked textures repeat mirrored, so every other tile runs backwards: its normals must turn round with it, or
 // a groove there lights up as a ridge.

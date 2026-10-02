@@ -33,6 +33,12 @@ for (const file of result.outputFiles) {
   mkdirSync(dirname(join(outDir, name)), { recursive: true });
   writeFileSync(join(outDir, name), file.text);
 }
+// the chunks editor.js imports up front (three.js): the page preloads them next to it instead of after it
+const entry = Object.entries(result.metafile.outputs).find(([, o]) => o.entryPoint);
+const preload = (entry?.[1].imports ?? [])
+  .filter((i) => i.kind === 'import-statement')
+  .map((i) => relative(outDir, join(process.cwd(), i.path))); // metafile paths are relative to the cwd
+writeFileSync(join(outDir, 'preload.json'), `${JSON.stringify(preload)}\n`);
 // the licences of every package that ends up in the bundle, in full (MIT asks for the notice with the code)
 const packages = new Set(
   Object.keys(result.metafile.inputs)

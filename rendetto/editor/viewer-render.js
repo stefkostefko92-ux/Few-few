@@ -9,6 +9,7 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { halton } from './viewer-studio.js';
+import { DEVICE } from './viewer-device.js';
 
 const AVERAGE = {
   uniforms: { tDiffuse: { value: null }, weight: { value: 1 } },
@@ -34,7 +35,10 @@ export class Pipeline {
     this.maxSamples = samples;
     this.count = 0;
     this.size = new THREE.Vector2(1, 1);
-    const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+    const target = new THREE.WebGLRenderTarget(1, 1, {
+      type: THREE.HalfFloatType,
+      samples: DEVICE.samples,
+    });
     this.composer = new EffectComposer(renderer, target);
     this.composer.renderToScreen = false;
     this.composer.addPass(new RenderPass(scene, camera));

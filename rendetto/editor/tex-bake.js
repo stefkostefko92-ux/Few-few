@@ -3,6 +3,7 @@
 // is read back and the gain makes its average equal to the decor colour of the catalogue (the median colour of the
 // manufacturer's sample). Each pattern is GLSL `void pattern(vec2 p, inout Surface s)` with p in millimetres.
 import * as THREE from 'three';
+import { DEVICE } from './viewer-device.js';
 import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { NOISE, SURFACE } from './tex-glsl.js';
 
@@ -133,7 +134,7 @@ export class Baker {
     m.uniforms.uSpan.value.set(spec.span[0], spec.span[1]);
     m.uniforms.uGain.value.set(1, 1, 1);
     if (spec.color) m.uniforms.uGain.value.copy(this.gain(m, spec.color));
-    const [w, h] = spec.size;
+    const [w, h] = spec.size.map((n) => Math.max(64, Math.round(n * DEVICE.texScale)));
     const out = { span: [spec.span[0] / 1000, spec.span[1] / 1000], targets: [] };
     const finish = (rt) => {
       rt.texture.repeat.set(1000 / spec.span[0], 1000 / spec.span[1]);

@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import cookieParser from 'cookie-parser';
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
@@ -38,10 +38,21 @@ function assetVersion(): string {
   return hash.digest('hex').slice(0, 10);
 }
 
+/** Парчетата, които editor.js внася веднага (three.js) — страницата ги зарежда успоредно с него. */
+function editorPreload(): string[] {
+  const file = join(ROOT, 'public', 'editor', 'preload.json');
+  if (!existsSync(file)) return [];
+  const list: unknown = JSON.parse(readFileSync(file, 'utf8'));
+  return Array.isArray(list)
+    ? list.filter((p): p is string => typeof p === 'string' && /^chunks\/[\w-]+\.js$/.test(p))
+    : [];
+}
+
 export function createServer(): Express {
   const cfg = config();
   const app = express();
   const version = assetVersion();
+  const preload = editorPreload();
   app.disable('x-powered-by');
   app.set('trust proxy', cfg.TRUST_PROXY);
   app.set('view engine', 'ejs');
@@ -50,6 +61,7 @@ export function createServer(): Express {
   app.use((_req, res, next) => {
     res.locals.cspNonce = randomBytes(16).toString('base64');
     res.locals.v = version;
+    res.locals.editorPreload = preload;
     next();
   });
   app.use(

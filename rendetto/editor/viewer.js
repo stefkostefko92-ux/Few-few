@@ -9,6 +9,7 @@ import { Stage, TONE_MAPPING, studioEnvironment } from './viewer-studio.js';
 import { Pipeline } from './viewer-render.js';
 import { PhotoMode } from './viewer-photo-mode.js';
 import { addSlides } from './viewer-slides.js';
+import { pixelRatio } from './viewer-device.js';
 import { reduceMotion } from './dom.js';
 import {
   addHinges,
@@ -27,7 +28,6 @@ export class Viewer {
       antialias: false,
       powerPreference: 'high-performance',
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.toneMapping = TONE_MAPPING;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -72,6 +72,9 @@ export class Viewer {
     this.resize();
     const light = (k) => this.stage.jitter(k);
     const loop = () => {
+      this.raf = requestAnimationFrame(loop);
+      // a hidden panel (another tab of the editor) draws nothing; it goes on where it stopped when shown again
+      if (!this.visible) return;
       const moved = this.controls.update();
       if (this.dirty || moved) {
         this.pipeline.reset();
@@ -80,7 +83,6 @@ export class Viewer {
         this.dirty = false;
       }
       if (!this.photoMode.frame() && !this.pipeline.done) this.pipeline.render(light);
-      this.raf = requestAnimationFrame(loop);
     };
     this.raf = requestAnimationFrame(loop);
   }
@@ -107,9 +109,12 @@ export class Viewer {
   resize() {
     const w = this.host.clientWidth;
     const h = this.host.clientHeight;
-    if (!w || !h) return;
+    this.visible = w > 0 && h > 0;
+    if (!this.visible) return;
+    const ratio = pixelRatio(w, h);
+    this.renderer.setPixelRatio(ratio);
     this.renderer.setSize(w, h, false);
-    this.pipeline.setSize(w, h, this.renderer.getPixelRatio());
+    this.pipeline.setSize(w, h, ratio);
     const changed = Math.abs(this.camera.aspect - w / h) > 0.05;
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
