@@ -51,9 +51,9 @@
     </ol>
     <div class="outputs">
       <figure class="output">
-        <div class="table-wrap">
+        <div class="table-wrap" tabindex="0" role="region" aria-labelledby="cut-caption">
           <table class="cut">
-            <caption class="sr-only"><%= t('landing.cut.caption', { shown: assets.cutRows.length, total: assets.example.parts }) %></caption>
+            <caption class="sr-only" id="cut-caption"><%= t('landing.cut.caption', { shown: assets.cutRows.length, total: assets.example.parts }) %></caption>
             <thead>
               <tr>
                 <th scope="col"><%= t('landing.cut.id') %></th>
@@ -83,8 +83,8 @@
         <figcaption><%= t('landing.cut.note', { shown: assets.cutRows.length, total: assets.example.parts }) %></figcaption>
       </figure>
       <figure class="output">
-        <pre><code><%= assets.gcode.join('\n') %></code></pre>
-        <figcaption><%= t('landing.gcode.note', { no: sheet.no, count: sheet.count }) %></figcaption>
+        <pre tabindex="0" role="region" aria-labelledby="gcode-note"><code><%= assets.gcode.join('\n') %></code></pre>
+        <figcaption id="gcode-note"><%= t('landing.gcode.note', { no: sheet.no, count: sheet.count }) %></figcaption>
       </figure>
     </div>
   </div>

@@ -34,6 +34,48 @@
     });
   });
 
+  // a table wider than its box scrolls sideways: then the box is a named, focusable region, so the keyboard can
+  // scroll it too; checked again when the window is resized
+  var wraps = document.querySelectorAll('.table-wrap');
+  var labelOf = function (wrap) {
+    var caption = wrap.querySelector('caption');
+    if (caption) return caption.textContent.trim();
+    for (var el = wrap.previousElementSibling; el; el = el.previousElementSibling)
+      if (/^H[1-6]$/.test(el.tagName)) return el.textContent.trim();
+    return '';
+  };
+  var regions = function () {
+    Array.prototype.forEach.call(wraps, function (wrap) {
+      var scrolls = wrap.scrollWidth > wrap.clientWidth + 1;
+      if (scrolls && !wrap.hasAttribute('tabindex')) {
+        var label = labelOf(wrap);
+        wrap.setAttribute('tabindex', '0');
+        wrap.setAttribute('data-region', '');
+        if (label) {
+          wrap.setAttribute('role', 'region');
+          wrap.setAttribute('aria-label', label);
+        }
+      } else if (!scrolls && wrap.hasAttribute('data-region')) {
+        ['tabindex', 'data-region', 'role', 'aria-label'].forEach(function (name) {
+          wrap.removeAttribute(name);
+        });
+      }
+    });
+  };
+  if (wraps.length) {
+    var pending = 0;
+    regions();
+    // the web fonts can arrive later and widen the cells
+    if (document.fonts) document.fonts.ready.then(regions);
+    window.addEventListener('resize', function () {
+      if (pending) return;
+      pending = window.requestAnimationFrame(function () {
+        pending = 0;
+        regions();
+      });
+    });
+  }
+
   // plan forms: show only the fields of the chosen plan
   Array.prototype.forEach.call(document.querySelectorAll('[data-plan-form]'), function (form) {
     var select = form.querySelector('[data-plan-select]');

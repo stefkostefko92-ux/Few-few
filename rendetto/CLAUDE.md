@@ -24,6 +24,8 @@ npm test                 # unit (node:test през tsx) — без база
 npm run test:engine      # двигателят: всички видове мебели, изходи, G-code, DXF (ezdxf, ако го има)
 npm run build            # prisma generate + tsc + редакторът
 npm run test:integration # иска жива PostgreSQL (TEST_DATABASE_URL или локалната rendetto_test)
+npm run test:e2e         # достъпност (axe, WCAG 2.1 AA) на работещ сайт: RENDETTO_URL; с E2E_EMAIL/E2E_PASSWORD
+                         # (тестов акаунт без 2FA) и проектите, акаунтът и редакторът
 npm run dev              # локален сървър на :4320
 npm run owner:create     # първият собственик — OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD от средата
 npm run geoip:update     # DB-IP Lite → data/dbip-country-lite.mmdb (месечно)
