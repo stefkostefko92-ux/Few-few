@@ -1,0 +1,275 @@
+/* Rendetto public page — the sections between the hero and the prices. */
+
+/* sections */
+.band {
+  padding-block: clamp(48px, 7vw, 96px);
+  border-top: 1px solid var(--rule);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+/* a link straight to a section (/#faq): the bands above it render in full, so the jump lands on the heading */
+.band:has(~ .band:target) {
+  content-visibility: visible;
+}
+.band h2 {
+  font-size: clamp(1.8rem, 3.6vw, 2.75rem);
+  letter-spacing: -0.03em;
+  font-weight: 720;
+  font-variation-settings: 'SHRP' 60;
+  max-width: 22ch;
+  margin-bottom: 18px;
+}
+.band-lead {
+  max-width: var(--measure);
+  font-size: 1.08rem;
+  color: var(--ink-2);
+  margin-bottom: 34px;
+}
+
+/* the four outputs: a real sequence, so numbered */
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 0;
+  border-top: 2px solid var(--ink);
+}
+.steps li {
+  padding: 18px 22px 22px 0;
+  border-right: 1px solid var(--rule);
+}
+.steps li + li {
+  padding-left: 22px;
+}
+.steps li:last-child {
+  border-right: 0;
+}
+@media (max-width: 1100px) {
+  .steps li,
+  .steps li + li {
+    padding-left: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+}
+/* the step numbers are position balloons, the way an assembly drawing points at its parts */
+.step-n {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  font: 650 1rem/1 var(--f-text);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 14px;
+}
+.steps h3 {
+  font-size: 1.18rem;
+  margin-bottom: 8px;
+}
+.steps p {
+  color: var(--ink-2);
+  margin: 0;
+}
+.outputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 34px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .outputs {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  }
+}
+.output {
+  margin: 0;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.output figcaption {
+  padding: 10px 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 0.86rem;
+  color: var(--ink-2);
+}
+.output .table-wrap {
+  border: 0;
+  border-radius: 0;
+}
+.output table {
+  font-size: 0.86rem;
+}
+.output pre {
+  margin: 0;
+  padding: 14px 16px;
+  font: 400 0.8rem/1.6 var(--f-mono);
+  overflow-x: auto;
+  background: var(--panel-2);
+  color: var(--ink);
+  max-height: 27.5rem;
+}
+.output pre code {
+  font: inherit;
+  background: none;
+  padding: 0;
+}
+
+/* drilling */
+.drill-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+@media (min-width: 980px) {
+  .drill-grid {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 48px;
+  }
+}
+.facts {
+  list-style: none;
+  padding: 0;
+  margin: 22px 0 0;
+  display: grid;
+  gap: 14px;
+}
+.facts li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+}
+.facts .i {
+  color: var(--green);
+  margin-top: 3px;
+}
+.facts li:last-child .i {
+  color: var(--gold-ink);
+}
+.sheet-paper {
+  margin: 0;
+  background: #fbfcf9;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 6px;
+}
+.sheet-paper img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* the door at 1:5 and the hinge cup at 1:1, cut from the same drawing */
+.drill-views {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+  gap: 6px;
+  align-items: start;
+}
+@media (max-width: 560px) {
+  .drill-views {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .drill-views img + img {
+    max-width: 260px;
+  }
+}
+.sheet-paper figcaption {
+  padding: 8px 8px 4px;
+  font-size: 0.86rem;
+  color: #4f4a45;
+}
+.sheet-paper figcaption a {
+  color: #2c6a10;
+}
+
+/* furniture types */
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 26px 40px;
+}
+.kinds h3 {
+  font-size: 1.05rem;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ink);
+}
+.kinds ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.kinds li {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.kinds li small {
+  text-align: right;
+}
+.rules {
+  margin-top: 30px;
+  max-width: var(--measure);
+  color: var(--ink-2);
+}
+
+/* machine */
+.formats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 0 40px;
+}
+.formats dl {
+  margin: 0;
+}
+.formats div {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.formats dt {
+  font-weight: 650;
+  margin-bottom: 4px;
+}
+.formats dd {
+  margin: 0;
+  color: var(--ink-2);
+}
+.layers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.layers code {
+  font-size: 0.78rem;
+  padding: 2px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.caution {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 28px;
+  padding: 14px 18px;
+  border-left: 4px solid var(--gold);
+  background: var(--gold-soft);
+  border-radius: 0 8px 8px 0;
+  max-width: var(--measure);
+}
+.caution .i {
+  flex: none;
+  margin-top: 3px;
+  color: var(--gold-ink);
+}

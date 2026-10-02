@@ -1,0 +1,61 @@
+import type { NextFunction, Request, Response } from 'express';
+import { isProduction } from '../config.js';
+import { prisma } from '../db.js';
+import { DEFAULT_LOCALE, isLocale, localeFromHeader, translatorFor, type Locale } from '../i18n.js';
+import { viewHelpers } from './view.js';
+
+export const LOCALE_COOKIE = 'rd_lang';
+const YEAR = 365 * 24 * 3600 * 1000;
+
+/**
+ * Езикът на екрана, по ред на силата: `?lang=` (превключвателят) → профилът на вписания човек →
+ * бисквитката от предишен избор → браузърът → българският. Витрината не минава оттук — там езикът е
+ * в адреса (`/`, `/en/`, `/it/`), за да има всеки език свой URL за търсачките.
+ */
+function chooseLocale(req: Request): { locale: Locale; fromQuery: boolean } {
+  const asked = req.query.lang;
+  if (isLocale(asked)) return { locale: asked, fromQuery: true };
+  const userLocale = req.principal?.user.locale;
+  if (isLocale(userLocale)) return { locale: userLocale, fromQuery: false };
+  const cookie = ((req.cookies ?? {}) as Record<string, string | undefined>)[LOCALE_COOKIE];
+  if (isLocale(cookie)) return { locale: cookie, fromQuery: false };
+  return { locale: localeFromHeader(req.get('accept-language')), fromQuery: false };
+}
+
+export function applyLocale(res: Response, locale: Locale): void {
+  res.locals.locale = locale;
+  res.locals.t = translatorFor(locale);
+  res.locals.fmt = viewHelpers(locale);
+}
+
+/** Слага езика на заявката. `?lang=` пише само предпочитание — не иска CSRF и работи и преди вход. */
+export function attachLocale(req: Request, res: Response, next: NextFunction): void {
+  const { locale, fromQuery } = chooseLocale(req);
+  applyLocale(res, locale);
+  if (fromQuery) {
+    res.cookie(LOCALE_COOKIE, locale, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isProduction(),
+      path: '/',
+      maxAge: YEAR,
+    });
+    const principal = req.principal;
+    if (principal && principal.user.locale !== locale) {
+      principal.user.locale = locale;
+      void prisma.user
+        .update({ where: { id: principal.user.id }, data: { locale } })
+        .catch(() => undefined);
+    }
+  }
+  next();
+}
+
+/** Адресът на текущата страница със сменен език — за връзките на превключвателя. */
+export function localeSwitchUrl(req: Request, locale: Locale): string {
+  const url = new URL(req.originalUrl, 'http://placeholder.invalid');
+  url.searchParams.set('lang', locale);
+  return `${url.pathname}${url.search}`;
+}
+
+export { DEFAULT_LOCALE };

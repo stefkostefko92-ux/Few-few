@@ -1,0 +1,28 @@
+<%- include('../partials/page-top', { title: t('admin.requests.title') }) %>
+<div class="page-head"><h1><%= t('admin.requests.title') %></h1>
+  <p><a href="/admin/requests<%= status === 'all' ? '' : '?status=all' %>"><%= t(status === 'all' ? 'admin.requests.onlyOpen' : 'admin.requests.showAll') %></a></p></div>
+<%- include('../partials/admin-nav') %>
+<%- include('../partials/flash') %>
+<p class="muted"><%= t('admin.requests.how') %></p>
+<% if (!requests.length) { %><p class="empty"><%= t('admin.requests.none') %></p><% } else { %>
+<div class="table-wrap"><table class="stack">
+  <thead><tr><th><%= t('plan.col.date') %></th><th><%= t('admin.col.account') %></th><th><%= t('plan.col.option') %></th><th class="num"><%= t('plan.col.total') %></th><th><%= t('plan.message') %></th><th><%= t('plan.col.status') %></th><th></th></tr></thead>
+  <tbody>
+  <% for (const r of requests) { %>
+    <tr>
+      <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %></td>
+      <td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= r.user.id %>"><%= r.user.email %></a><small><%= r.user.name %>, <%= t('plan.name.' + r.user.plan) %></small></td>
+      <td data-label="<%= t('plan.col.option') %>"><%= r.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: r.months }) %></td>
+      <td data-label="<%= t('plan.col.total') %>" class="num"><%= fmt.money(r.listPriceCents) %></td>
+      <td data-label="<%= t('plan.message') %>" class="mini"><%= r.message || '—' %></td>
+      <td data-label="<%= t('plan.col.status') %>"><span class="chip <%= r.status === 'DONE' ? 'chip-ok' : r.status === 'OPEN' ? 'chip-gold' : '' %>"><%- include('../partials/icon', { name: r.status === 'DONE' ? 'check' : r.status === 'OPEN' ? 'clock' : 'x' }) %><%= t('plan.status.' + r.status) %></span><% if (r.handledByLabel) { %><br><small><%= fmt.label(r.handledByLabel) %></small><% } %></td>
+      <td><% if (r.status === 'OPEN') { %><div class="actions">
+        <% if (can('accounts:plan')) { %><a class="btn btn-small btn-primary" href="/admin/accounts/<%= r.user.id %>?request=<%= r.id %>#plan"><%= t('admin.requests.activate') %></a><% } %>
+        <% if (can('requests:handle')) { %><form method="post" action="/admin/requests/<%= r.id %>/reject" data-confirm="<%= t('admin.requests.rejectConfirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-small btn-quiet" type="submit"><%= t('admin.requests.reject') %></button></form><% } %>
+      </div><% } %></td>
+    </tr>
+  <% } %>
+  </tbody>
+</table></div>
+<% } %>
+<%- include('../partials/page-bottom') %>

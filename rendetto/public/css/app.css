@@ -1,0 +1,289 @@
+/* Rendetto — the signed-in product: header bar, auth cards, projects, account and the admin panel.
+   Quiet surfaces, one green action per screen; state is always an icon plus a word. */
+
+.appbody {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.appbody > main {
+  flex: 1 0 auto;
+}
+
+/* header bar */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  padding: 10px max(16px, env(safe-area-inset-left));
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+}
+.bar-nav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.bar-nav a {
+  padding: 7px 11px;
+  border-radius: var(--radius);
+  color: var(--ink-2);
+  text-decoration: none;
+  font-weight: 550;
+}
+.bar-nav a:hover {
+  color: var(--ink);
+  background: var(--panel-2);
+}
+.bar-nav a[aria-current='page'] {
+  color: var(--ink);
+  background: var(--panel-2);
+  box-shadow: inset 0 -2px 0 var(--gold);
+}
+.bar-end {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.bar-end .chip {
+  text-decoration: none;
+}
+form.inline {
+  display: inline;
+  margin: 0;
+}
+
+/* page */
+.page {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 26px 16px 48px;
+}
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.page-head h1 {
+  margin: 0;
+}
+.page-head p {
+  margin: 0;
+}
+.subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 22px;
+  border-bottom: 1px solid var(--rule);
+}
+.subnav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  color: var(--ink-2);
+  text-decoration: none;
+  font-weight: 550;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.subnav a:hover {
+  color: var(--ink);
+}
+.subnav a[aria-current='page'] {
+  color: var(--ink);
+  border-bottom-color: var(--green);
+}
+/* small phone: the four account tabs fit one row once the icons go */
+@media (max-width: 480px) {
+  .subnav {
+    gap: 0;
+  }
+  .subnav a {
+    padding-inline: 8px;
+  }
+  .subnav a .i {
+    display: none;
+  }
+}
+.section {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  margin: 0 0 18px;
+}
+.section > h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+/* sub-blocks inside a section: a table, a form or a list never sits glued to the next heading */
+.section h3 {
+  margin-top: 24px;
+}
+.section > h2 + h3,
+.section-grid > form > h3:first-of-type,
+.section > form > h3:first-child {
+  margin-top: 0;
+}
+.section .dl + form,
+.section .dl + .flash,
+.section .flash + form,
+.section form + form,
+.section .actions + form {
+  margin-top: 16px;
+}
+.section fieldset {
+  margin-top: 4px;
+}
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 18px;
+}
+.section-grid > .section {
+  margin: 0;
+}
+.form {
+  display: grid;
+  gap: 2px;
+}
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+.form-row .field {
+  flex: 1 1 200px;
+  margin-bottom: 0;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 6px;
+}
+.btn-wide {
+  width: 100%;
+  min-height: 48px;
+  font-size: 1rem;
+}
+.dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 18px;
+  margin: 0;
+}
+.dl dt {
+  color: var(--ink-2);
+}
+.dl dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* on a phone the term goes above its value: a long term would squeeze a status chip off the screen */
+@media (max-width: 480px) {
+  .dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .dl dd + dt {
+    margin-top: 10px;
+  }
+}
+.empty {
+  padding: 26px;
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-lg);
+  color: var(--ink-2);
+  text-align: center;
+}
+
+/* notices (expired plan, unverified email) */
+.notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel);
+  margin: 0 0 20px;
+}
+.notice > .i {
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+}
+.notice h2 {
+  font-size: 1.05rem;
+  margin: 0 0 4px;
+}
+.notice p {
+  margin: 0 0 10px;
+}
+.notice-bad {
+  border-color: var(--red);
+  background: var(--red-soft);
+}
+.notice-bad > .i {
+  color: var(--red);
+}
+.notice-warn {
+  border-color: var(--amber);
+  background: var(--amber-soft);
+}
+.notice-warn > .i {
+  color: var(--amber);
+}
+
+/* footer */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding: 18px max(16px, env(safe-area-inset-left)) 24px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 0.86rem;
+}
+.foot-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 16px;
+  }
+  .auth-card {
+    padding: 24px 18px 20px 34px;
+  }
+  .auth-card::before {
+    left: 12px;
+  }
+  .bar-end {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+  th,
+  td {
+    padding: 8px 10px;
+  }
+}

@@ -1,0 +1,51 @@
+<%- include('../partials/page-top', { title: t('admin.accounts.title') }) %>
+<div class="page-head"><h1><%= t('admin.accounts.title') %></h1><p class="muted"><%= t('admin.accounts.count', { n: total }) %></p></div>
+<%- include('../partials/admin-nav') %>
+<%- include('../partials/flash') %>
+<form method="get" action="/admin/accounts" class="filters" role="search">
+  <div class="field field-q"><label for="q"><%= t('admin.accounts.search') %></label><input id="q" name="q" type="search" value="<%= query.q %>" placeholder="<%= t('admin.accounts.searchPlaceholder') %>"></div>
+  <div class="field"><label for="plan"><%= t('admin.col.plan') %></label><select id="plan" name="plan">
+    <% for (const p of ['all', 'TRIAL', 'PREMIUM', 'LIFETIME']) { %><option value="<%= p %>"<%= query.plan === p ? ' selected' : '' %>><%= p === 'all' ? t('admin.accounts.all') : t('plan.name.' + p) %></option><% } %>
+  </select></div>
+  <div class="field"><label for="status"><%= t('admin.col.status') %></label><select id="status" name="status">
+    <% for (const s of statuses) { %><option value="<%= s %>"<%= query.status === s ? ' selected' : '' %>><%= t('admin.status.' + s) %></option><% } %>
+  </select></div>
+  <div class="field"><label for="sort"><%= t('admin.accounts.sort') %></label><select id="sort" name="sort">
+    <% for (const s of sorts) { %><option value="<%= s %>"<%= query.sort === s ? ' selected' : '' %>><%= t('admin.sort.' + s) %></option><% } %>
+  </select></div>
+  <div class="field"><label for="dir"><%= t('admin.accounts.dir') %></label><select id="dir" name="dir"><option value="desc"<%= query.dir === 'desc' ? ' selected' : '' %>><%= t('admin.accounts.desc') %></option><option value="asc"<%= query.dir === 'asc' ? ' selected' : '' %>><%= t('admin.accounts.asc') %></option></select></div>
+  <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('admin.accounts.apply') %></button>
+</form>
+
+<% if (!rows.length) { %><p class="empty"><%= t('admin.accounts.none') %></p><% } else { %>
+<div class="table-wrap"><table class="stack">
+  <thead><tr><th><%= t('admin.col.account') %></th><th><%= t('admin.col.plan') %></th><th><%= t('admin.col.status') %></th><th><%= t('admin.col.lastLogin') %></th><th class="num"><%= t('admin.col.projects') %></th><th><%= t('admin.col.created') %></th></tr></thead>
+  <tbody>
+  <% for (const u of rows) { const expired = u.plan !== 'LIFETIME' && u.planExpiresAt && u.planExpiresAt <= now; %>
+    <tr>
+      <td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= u.id %>"><%= u.email %></a><small><%= u.name %><% if (u.role !== 'CUSTOMER') { %>, <%= t('role.' + u.role) %><% } %></small></td>
+      <td data-label="<%= t('admin.col.plan') %>"><span class="chip <%= u.plan === 'LIFETIME' ? 'chip-gold' : expired ? 'chip-bad' : 'chip-ok' %>"><%- include('../partials/icon', { name: expired ? 'lock' : 'receipt' }) %><%= t('plan.name.' + u.plan) %></span>
+        <% if (u.planExpiresAt) { %><br><small class="nowrap"><%= t(expired ? 'plan.endedOn' : 'plan.endsOn', { date: fmt.shortDate(u.planExpiresAt) }) %></small><% } %></td>
+      <td data-label="<%= t('admin.col.status') %>"><div class="chips-row">
+        <% if (u.bannedAt) { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.status.banned') %></span><% } %>
+        <% if (u.lockedUntil && u.lockedUntil > now) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'lock' }) %><%= t('admin.status.locked') %></span><% } %>
+        <% if (!u.emailVerifiedAt) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'mail' }) %><%= t('admin.status.unverified') %></span><% } %>
+        <% if (u.totpEnabledAt) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'shield' }) %>2FA</span><% } %>
+      </div></td>
+      <td data-label="<%= t('admin.col.lastLogin') %>"><% if (u.lastLoginAt) { %><span class="nowrap"><%= fmt.relative(u.lastLoginAt) %></span><br><small class="mono-sm"><%= u.lastLoginIp || '' %></small><% if (u.lastLoginCountry) { %> <small><%= fmt.country(u.lastLoginCountry) %></small><% } %><% } else { %><span class="muted">—</span><% } %></td>
+      <td data-label="<%= t('admin.col.projects') %>" class="num"><%= fmt.num(u._count.projects) %></td>
+      <td data-label="<%= t('admin.col.created') %>" class="nowrap"><%= fmt.shortDate(u.createdAt) %></td>
+    </tr>
+  <% } %>
+  </tbody>
+</table></div>
+<% } %>
+<% const qs = (page) => '?' + new URLSearchParams({ q: query.q, plan: query.plan, status: query.status, sort: query.sort, dir: query.dir, page: String(page) }).toString(); %>
+<nav class="pager" aria-label="<%= t('admin.accounts.pages') %>">
+  <span class="muted"><%= t('admin.accounts.page', { page: query.page, pages: pages }) %></span>
+  <span class="actions">
+    <% if (query.page > 1) { %><a class="btn btn-small" href="/admin/accounts<%= qs(query.page - 1) %>"><%= t('admin.accounts.prev') %></a><% } %>
+    <% if (query.page < pages) { %><a class="btn btn-small" href="/admin/accounts<%= qs(query.page + 1) %>"><%= t('admin.accounts.next') %></a><% } %>
+  </span>
+</nav>
+<%- include('../partials/page-bottom') %>

@@ -1,0 +1,14 @@
+<%
+  const title = t('legal.termsTitle') + ' — Rendetto';
+  const description = t('legal.termsDescription');
+%><%- include('../partials/head', { title, description, styles: ['site'], extraHead: include('../partials/public-meta', { title, description, keywords: t('legal.keywords') }) }) %>
+<body class="site">
+<%- include('../partials/site-bar', { sections: false }) %>
+<main id="main" class="wrap legal">
+  <h1><%= t('legal.termsTitle') %></h1>
+  <p class="updated"><%= t('legal.updated', { date: fmt.date(new Date(updated + 'T12:00:00Z')) }) %></p>
+  <%- include('terms/' + locale) %>
+</main>
+<%- include('../partials/site-foot') %>
+</body>
+</html>

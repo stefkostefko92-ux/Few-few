@@ -1,0 +1,77 @@
+{
+  "name": "rendetto",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Rendetto by Carbon Stealth — проектиране на мебели в 3D със списък на материалите, чертежи с карти за пробиване и файлове за CNC машината.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "rendetto"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "Rendetto",
+    "furniture-design",
+    "cut-list",
+    "cnc",
+    "cabinet-design",
+    "programa-za-mebeli"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.json && node scripts/build-editor.mjs",
+    "build:editor": "node scripts/build-editor.mjs",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "prettier --check .",
+    "test": "tsx --test tests/*.test.ts",
+    "test:engine": "node --test tests/engine/*.test.mjs",
+    "test:integration": "tsx --test --test-concurrency=1 tests/integration/*.test.ts",
+    "test:e2e": "node tests/e2e/run.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "owner:create": "node dist/scripts/create-owner.js",
+    "geoip:update": "node dist/scripts/geoip-update.js",
+    "og:image": "node scripts/og-image.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "argon2": "^0.45.1",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^7.5.1",
+    "fflate": "^0.8.3",
+    "helmet": "^8.3.0",
+    "maxmind": "^4.3.29",
+    "nodemailer": "^9.1.1",
+    "pino": "^9.14.0",
+    "pino-http": "^10.5.0",
+    "prisma": "^6.19.3",
+    "qrcode": "^1.5.4",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.5",
+    "@types/nodemailer": "^8.0.2",
+    "@types/qrcode": "^1.5.6",
+    "axe-core": "^4.13.0",
+    "esbuild": "0.28.2",
+    "playwright": "1.56.1",
+    "prettier": "^3.9.9",
+    "three": "0.186.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

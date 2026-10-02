@@ -1,0 +1,23 @@
+<%- include('../partials/page-top', { title: t('data.title') }) %>
+<div class="page-head"><h1><%= t('data.title') %></h1></div>
+<%- include('../partials/account-nav') %>
+<%- include('../partials/flash') %>
+<section class="section" aria-labelledby="exp-h">
+  <h2 id="exp-h"><%- include('../partials/icon', { name: 'download' }) %><%= t('data.exportTitle') %></h2>
+  <p><%= t('data.exportText') %></p>
+  <form method="post" action="/account/data/export"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%= t('data.exportButton') %></button></form>
+</section>
+<section class="section danger" aria-labelledby="del-h">
+  <h2 id="del-h"><%- include('../partials/icon', { name: 'trash' }) %><%= t('data.deleteTitle') %></h2>
+  <p><%= t('data.deleteText') %></p>
+  <form method="post" action="/account/data/delete" class="form" data-confirm="<%= t('data.deleteConfirm') %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="form-row">
+      <div class="field"><label for="del-pw"><%= t('account.currentPassword') %></label><input id="del-pw" name="password" type="password" required autocomplete="current-password"></div>
+      <% if (user.totpEnabledAt) { %><div class="field"><label for="del-code"><%= t('security.currentCode') %></label><input id="del-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required maxlength="20"></div><% } %>
+    </div>
+    <label class="check"><input type="checkbox" name="confirm" value="yes" required><span><%= t('data.deleteCheck') %></span></label>
+    <div class="actions"><button class="btn btn-danger" type="submit"><%= t('data.deleteButton') %></button></div>
+  </form>
+</section>
+<%- include('../partials/page-bottom') %>

@@ -1,0 +1,19 @@
+<%- include('../partials/head', { title: t(titleKey) + ' — Rendetto', styles: ['app'], noindex: true }) %>
+<body class="auth">
+<%- include('../partials/sprite') %>
+<main class="auth-main" id="main">
+  <div class="auth-card">
+    <div class="auth-head">
+      <a class="brand" href="/"><%- include('../partials/mark') %><span>Rendetto</span></a>
+    </div>
+    <p class="status-code"><%= status %></p>
+    <h1><%= t(titleKey) %></h1>
+    <p><%= t(messageKey) %></p>
+    <div class="auth-links">
+      <a href="/"><%= t('error.toHome') %></a>
+      <a href="/app"><%= t('error.toProjects') %></a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

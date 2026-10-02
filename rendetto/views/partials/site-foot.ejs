@@ -1,0 +1,20 @@
+<footer class="site-foot">
+  <div class="wrap">
+    <div>
+      <a class="brand" href="<%= paths[locale] %>"><%- include('mark') %><span>Rendetto</span></a>
+      <p><%= t('landing.foot.about') %></p>
+      <p><%= company.name %>, <%= t('company.eikLabel') %> <%= company.eik %>, <%= t('company.vatLabel') %> <%= company.vat %><br><%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %></p>
+    </div>
+    <nav class="foot-legal" aria-label="<%= t('legal.nav') %>">
+      <a href="<%= legalPath(locale, 'privacy') %>"><%= t('legal.privacyTitle') %></a>
+      <a href="<%= legalPath(locale, 'terms') %>"><%= t('legal.termsTitle') %></a>
+      <a href="mailto:<%= contact %>"><%= contact %></a>
+    </nav>
+    <div class="foot-end">
+      <nav class="langs" aria-label="<%= t('common.language') %>">
+        <% for (const alt of alternates) { %><a href="<%= alt.path %>" hreflang="<%= alt.locale %>" lang="<%= alt.locale %>" aria-current="<%= alt.locale === locale ? 'true' : 'false' %>"><%= alt.locale.toUpperCase() %></a><% } %>
+      </nav>
+      <p class="credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+    </div>
+  </div>
+</footer>

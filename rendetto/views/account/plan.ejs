@@ -1,0 +1,63 @@
+<%- include('../partials/page-top', { title: t('plan.title') }) %>
+<div class="page-head"><h1><%= t('plan.title') %></h1></div>
+<%- include('../partials/account-nav') %>
+<%- include('../partials/flash') %>
+
+<section class="section" aria-labelledby="current-h">
+  <h2 id="current-h"><%= t('plan.current') %></h2>
+  <p><%- include('../partials/plan-chip', { plan }) %>
+  <% if (plan.expiresAt && plan.plan !== 'LIFETIME') { %><span class="muted"> <%= t(plan.state === 'expired' ? 'plan.endedOn' : 'plan.endsOn', { date: fmt.date(plan.expiresAt) }) %></span><% } %></p>
+  <p class="muted"><%= t('plan.expiredRule') %></p>
+</section>
+
+<% if (plan.plan !== 'LIFETIME' && plan.state !== 'staff') { %>
+<section class="section" aria-labelledby="buy-h">
+  <h2 id="buy-h"><%= t('plan.requestTitle') %></h2>
+  <p><%= t('plan.manualText') %></p>
+  <form method="post" action="/account/plan/request" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <fieldset>
+      <legend><%= t('plan.choose') %></legend>
+      <div class="table-wrap">
+        <table class="prices">
+          <thead><tr><th><%= t('plan.col.period') %></th><th class="num"><%= t('plan.col.total') %></th><th class="num"><%= t('plan.col.perMonth') %></th><th class="num"><%= t('plan.col.withVat', { vat: vatPercent }) %></th></tr></thead>
+          <tbody>
+          <% for (const row of prices) { %>
+            <tr>
+              <td><label class="price-option"><input type="radio" name="option" value="<%= row.id %>"<%= row.id === 'm12' ? ' checked' : '' %> required><span><%= row.id === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: row.months }) %><% if (row.discountPercent) { %> <span class="saving"><%= t('plan.discount', { pct: row.discountPercent }) %></span><% } %></span></label></td>
+              <td class="num"><b><%= fmt.money(row.totalCents) %></b></td>
+              <td class="num"><%= row.perMonthCents ? fmt.money(row.perMonthCents) : '—' %></td>
+              <td class="num muted"><%= fmt.money(row.totalWithVatCents) %></td>
+            </tr>
+          <% } %>
+          </tbody>
+        </table>
+      </div>
+    </fieldset>
+    <p class="hint"><%= t('plan.vatNote', { vat: vatPercent }) %></p>
+    <div class="field"><label for="message"><%= t('plan.message') %></label><textarea id="message" name="message" maxlength="1000" placeholder="<%= t('plan.messagePlaceholder') %>"></textarea></div>
+    <div class="actions"><button class="btn btn-primary" type="submit"><%= t('plan.send') %></button></div>
+  </form>
+</section>
+<% } %>
+
+<section class="section" aria-labelledby="req-h">
+  <h2 id="req-h"><%= t('plan.requestsTitle') %></h2>
+  <% if (!requests.length) { %><p class="muted"><%= t('plan.noRequests') %></p><% } else { %>
+  <div class="table-wrap"><table class="stack">
+    <thead><tr><th><%= t('plan.col.date') %></th><th><%= t('plan.col.option') %></th><th class="num"><%= t('plan.col.total') %></th><th><%= t('plan.col.status') %></th><th></th></tr></thead>
+    <tbody>
+    <% for (const r of requests) { %>
+      <tr>
+        <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %></td>
+        <td data-label="<%= t('plan.col.option') %>"><%= r.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: r.months }) %></td>
+        <td data-label="<%= t('plan.col.total') %>" class="num"><%= fmt.money(r.listPriceCents) %></td>
+        <td data-label="<%= t('plan.col.status') %>"><span class="chip <%= r.status === 'DONE' ? 'chip-ok' : r.status === 'OPEN' ? 'chip-gold' : '' %>"><%- include('../partials/icon', { name: r.status === 'DONE' ? 'check' : r.status === 'OPEN' ? 'clock' : 'x' }) %><%= t('plan.status.' + r.status) %></span></td>
+        <td><% if (r.status === 'OPEN') { %><form method="post" action="/account/plan/request/<%= r.id %>/cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-quiet btn-small" type="submit"><%= t('plan.cancel') %></button></form><% } %></td>
+      </tr>
+    <% } %>
+    </tbody>
+  </table></div>
+  <% } %>
+</section>
+<%- include('../partials/page-bottom') %>

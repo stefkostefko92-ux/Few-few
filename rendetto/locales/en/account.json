@@ -1,0 +1,135 @@
+{
+  "plan": {
+    "title": "Plan",
+    "current": "Current plan",
+    "endsOn": "until {date}",
+    "endedOn": "ended on {date}",
+    "expiredRule": "When the plan ends, your projects stay and can be downloaded. New projects and changes need an active plan.",
+    "requestTitle": "Request a plan",
+    "manualText": "Choose a term and send a request. We will email you the payment details and the invoice; the plan is activated manually once the payment arrives.",
+    "choose": "Term",
+    "col": {
+      "period": "Term",
+      "total": "Price excl. VAT",
+      "perMonth": "Per month",
+      "withVat": "With {vat}% VAT",
+      "date": "Date",
+      "option": "Option",
+      "status": "Status"
+    },
+    "months": {
+      "one": "1 month",
+      "other": "{n} months"
+    },
+    "lifetime": "Lifetime",
+    "discount": "{pct}% off",
+    "vatNote": "Prices exclude VAT. VAT is charged according to the rules for the buyer's country; in Bulgaria it is {vat}%.",
+    "message": "Message",
+    "messagePlaceholder": "Company name and VAT number for the invoice, or anything else we should know",
+    "send": "Send the request",
+    "requestsTitle": "Your requests",
+    "noRequests": "You have no requests yet.",
+    "cancel": "Withdraw",
+    "status": {
+      "OPEN": "Awaiting payment",
+      "DONE": "Activated",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Withdrawn"
+    },
+    "name": {
+      "TRIAL": "Trial",
+      "PREMIUM": "Premium",
+      "LIFETIME": "Lifetime"
+    },
+    "chip": {
+      "trialDays": {
+        "one": "Trial: 1 day",
+        "other": "Trial: {n} days"
+      },
+      "premiumDays": {
+        "one": "Premium: 1 day",
+        "other": "Premium: {n} days"
+      },
+      "lifetime": "Lifetime",
+      "expired": "Plan ended",
+      "pending": "Confirm your email"
+    },
+    "state": {
+      "staff": "Team",
+      "pending": "Email not confirmed",
+      "expired": "{plan} ended"
+    },
+    "request": {
+      "alreadyLifetime": "You already have Lifetime — there is nothing to request."
+    }
+  },
+  "account": {
+    "title": "Account",
+    "nav": {
+      "overview": "Profile",
+      "plan": "Plan",
+      "security": "Security",
+      "data": "Data"
+    },
+    "planTitle": "Plan",
+    "planStaff": "Team account, no end date.",
+    "planPending": "Your trial starts when you confirm your email.",
+    "planLifetime": "Lifetime, no end date.",
+    "planExpired": "Ended on {date}. Projects can be downloaded, but new projects and changes need an active plan.",
+    "planTrialLeft": {
+      "one": "1 day of your trial left, until {date}.",
+      "other": "{n} days of your trial left, until {date}."
+    },
+    "planPremiumLeft": {
+      "one": "1 day of Premium left, until {date}.",
+      "other": "{n} days of Premium left, until {date}."
+    },
+    "planProjects": "Projects: {n}",
+    "requestOpen": "You have a request awaiting payment",
+    "seePlans": "Plans and prices",
+    "profileTitle": "Profile",
+    "language": "Language",
+    "emailTitle": "Email",
+    "emailStatus": "Status",
+    "verified": "Confirmed",
+    "notVerified": "Not confirmed",
+    "changeEmail": "Change email",
+    "newEmail": "New email",
+    "currentPassword": "Current password",
+    "changeEmailHint": "We will send a link to the new address. The email changes when you open it; until then you sign in with the old one.",
+    "changeEmailButton": "Send link",
+    "delete": {
+      "confirmMissing": "Tick the box to confirm you understand that deletion is permanent.",
+      "lastOwner": "This is the last owner. Before deleting this account, give the role to someone else."
+    }
+  },
+  "app": {
+    "title": "Projects",
+    "lead": "Each project is one piece of furniture: sizes, materials, hardware and everything that comes out of them.",
+    "unverifiedTitle": "Confirm your email",
+    "unverifiedText": "We sent you a confirmation link. Your trial starts when you open it.",
+    "resend": "Send the link again",
+    "expiredTitle": "Your plan has ended",
+    "expiredText": "Your projects are here and you can download them. For new projects and changes, choose a plan.",
+    "seePlans": "Plans and prices",
+    "newTitle": "New project",
+    "type": "Furniture type",
+    "name": "Name",
+    "namePlaceholder": "for example Kitchen, flat 12",
+    "create": "Create project",
+    "listTitle": "Your projects ({n})",
+    "empty": "You have no projects yet. Choose a furniture type above and create the first one.",
+    "updated": "changed {when}",
+    "download": "Download ZIP",
+    "duplicate": "Copy",
+    "delete": "Delete",
+    "deleteConfirm": "Delete “{name}”? This cannot be undone.",
+    "errors": {
+      "name": "The name can be up to 80 characters.",
+      "planExpired": "Your plan has ended. Projects can be downloaded, but new projects and changes need an active plan.",
+      "spec": "The project cannot be saved: a value is outside the allowed range.",
+      "tooMany": "You have reached the maximum number of projects. Delete old ones to create new ones.",
+      "unverified": "Confirm your email to create and change projects."
+    }
+  }
+}

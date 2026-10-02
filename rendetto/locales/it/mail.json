@@ -1,0 +1,58 @@
+{
+  "mail": {
+    "signature": "—\nRendetto by Carbon Stealth\n{contact}",
+    "noExpiry": "senza scadenza",
+    "verify": {
+      "subject": "Confermate la vostra email per Rendetto",
+      "body": "Gentile {name},\n\naprite questo link per confermare la vostra email. Con la conferma inizia il periodo di prova:\n{link}\n\nIl link vale 48 ore. Se non vi siete registrati a Rendetto, non apritelo: un account non confermato viene eliminato dopo 7 giorni."
+    },
+    "alreadyRegistered": {
+      "subject": "Avete già un account Rendetto",
+      "body": "Gentile {name},\n\nqualcuno ha provato a registrare un nuovo account con questa email, ma voi avete già un account.\n\nAccesso: {login}\nPassword dimenticata: {reset}\n\nSe non siete stati voi, non dovete fare nulla."
+    },
+    "reset": {
+      "subject": "Nuova password per Rendetto",
+      "body": "Gentile {name},\n\nper impostare una nuova password aprite questo link:\n{link}\n\nIl link vale 1 ora e funziona una volta sola. Se non avete chiesto una nuova password, non fate nulla: resta quella vecchia."
+    },
+    "passwordChanged": {
+      "subject": "La vostra password Rendetto è stata cambiata",
+      "body": "Gentile {name},\n\nla password del vostro account è appena stata cambiata e tutte le altre sessioni sono state chiuse.\n\nSe non siete stati voi, impostate subito una nuova password: {reset}"
+    },
+    "codeFailures": {
+      "subject": "Codici di accesso errati su Rendetto",
+      "body": "Gentile {name},\n\nqualcuno ha inserito la vostra password corretta, ma non il codice giusto dell'app di autenticazione. Dopo diversi tentativi falliti, l'accesso all'account è sospeso per 15 minuti.\n\nSe non siete stati voi, qualcun altro conosce la vostra password. Cambiatela subito: {reset}"
+    },
+    "newDevice": {
+      "subject": "Accesso da un nuovo dispositivo su Rendetto",
+      "body": "Gentile {name},\n\nun nuovo dispositivo ha effettuato l'accesso al vostro account.\n\nQuando: {when}\nDispositivo: {device}\nIP: {ip}\nPaese: {country}\n\nSe siete stati voi, non dovete fare nulla. Altrimenti cambiate la password e chiudete le sessioni altrui: {security}"
+    },
+    "twoFactorOn": {
+      "subject": "La protezione a due fattori è attiva",
+      "body": "Gentile {name},\n\nla protezione a due fattori del vostro account Rendetto è attiva. Conservate i codici di recupero in un posto sicuro.\n\nSe non siete stati voi, cambiate subito la password: {security}"
+    },
+    "twoFactorOff": {
+      "subject": "La protezione a due fattori è disattivata",
+      "body": "Gentile {name},\n\nla protezione a due fattori del vostro account Rendetto è stata disattivata.\n\nSe non siete stati voi, cambiate la password e riattivatela: {security}"
+    },
+    "changeEmail": {
+      "subject": "Confermate la nuova email per Rendetto",
+      "body": "Gentile {name},\n\nper cambiare l'email del vostro account con questo indirizzo aprite il link:\n{link}\n\nIl link vale 24 ore. Finché non lo aprite, accedete con l'email vecchia."
+    },
+    "emailChangeNotice": {
+      "subject": "Richiesto il cambio della vostra email Rendetto",
+      "body": "Gentile {name},\n\nè stato richiesto il cambio dell'email del vostro account in {email}. L'email cambia solo quando il nuovo indirizzo viene confermato.\n\nSe non siete stati voi, cambiate subito la password: {security}"
+    },
+    "trialEnding": {
+      "subject": "Il vostro periodo di prova Rendetto finisce tra 3 giorni",
+      "body": "Gentile {name},\n\nil vostro periodo di prova finisce il {date}. Dopo, i progetti restano e si possono scaricare, ma nuovi progetti e modifiche richiedono un piano.\n\nPiani e prezzi: {plan}"
+    },
+    "planChanged": {
+      "subject": "Il vostro piano Rendetto è cambiato",
+      "body": "Gentile {name},\n\nil vostro piano ora è {plan}.\nValido fino a: {until}\n\nAccount: {account}"
+    },
+    "accountDeleted": {
+      "subject": "Il vostro account Rendetto è stato eliminato",
+      "body": "Gentile {name},\n\nil vostro account e tutti i suoi progetti sono stati eliminati definitivamente.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
+    }
+  }
+}

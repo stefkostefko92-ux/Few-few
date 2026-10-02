@@ -1,0 +1,135 @@
+{
+  "plan": {
+    "title": "Piano",
+    "current": "Piano attuale",
+    "endsOn": "fino al {date}",
+    "endedOn": "scaduto il {date}",
+    "expiredRule": "Quando il piano scade, i progetti restano e si possono scaricare. Nuovi progetti e modifiche richiedono un piano attivo.",
+    "requestTitle": "Richiesta di piano",
+    "manualText": "Scegliete la durata e inviate la richiesta. Vi scriveremo con i dati per il pagamento e la fattura; il piano viene attivato manualmente quando arriva il pagamento.",
+    "choose": "Durata",
+    "col": {
+      "period": "Durata",
+      "total": "Prezzo IVA esclusa",
+      "perMonth": "Al mese",
+      "withVat": "Con IVA {vat}%",
+      "date": "Data",
+      "option": "Opzione",
+      "status": "Stato"
+    },
+    "months": {
+      "one": "1 mese",
+      "other": "{n} mesi"
+    },
+    "lifetime": "Lifetime",
+    "discount": "sconto {pct}%",
+    "vatNote": "I prezzi sono IVA esclusa. L'IVA si applica secondo le regole del paese dell'acquirente; in Bulgaria è del {vat}%.",
+    "message": "Messaggio",
+    "messagePlaceholder": "Ragione sociale e partita IVA per la fattura, o altro che dobbiamo sapere",
+    "send": "Invia la richiesta",
+    "requestsTitle": "Le vostre richieste",
+    "noRequests": "Non avete ancora richieste.",
+    "cancel": "Ritira",
+    "status": {
+      "OPEN": "In attesa di pagamento",
+      "DONE": "Attivata",
+      "REJECTED": "Respinta",
+      "CANCELLED": "Ritirata"
+    },
+    "name": {
+      "TRIAL": "Periodo di prova",
+      "PREMIUM": "Premium",
+      "LIFETIME": "Lifetime"
+    },
+    "chip": {
+      "trialDays": {
+        "one": "Prova: 1 giorno",
+        "other": "Prova: {n} giorni"
+      },
+      "premiumDays": {
+        "one": "Premium: 1 giorno",
+        "other": "Premium: {n} giorni"
+      },
+      "lifetime": "Lifetime",
+      "expired": "Piano scaduto",
+      "pending": "Confermate l'email"
+    },
+    "state": {
+      "staff": "Team",
+      "pending": "Email non confermata",
+      "expired": "{plan} scaduto"
+    },
+    "request": {
+      "alreadyLifetime": "Avete già Lifetime: non c'è niente da richiedere."
+    }
+  },
+  "account": {
+    "title": "Account",
+    "nav": {
+      "overview": "Profilo",
+      "plan": "Piano",
+      "security": "Sicurezza",
+      "data": "Dati"
+    },
+    "planTitle": "Piano",
+    "planStaff": "Account del team, senza scadenza.",
+    "planPending": "Il periodo di prova inizia quando confermate l'email.",
+    "planLifetime": "Lifetime, senza scadenza.",
+    "planExpired": "Scaduto il {date}. I progetti si scaricano, ma nuovi progetti e modifiche richiedono un piano attivo.",
+    "planTrialLeft": {
+      "one": "Resta 1 giorno di prova, fino al {date}.",
+      "other": "Restano {n} giorni di prova, fino al {date}."
+    },
+    "planPremiumLeft": {
+      "one": "Resta 1 giorno di Premium, fino al {date}.",
+      "other": "Restano {n} giorni di Premium, fino al {date}."
+    },
+    "planProjects": "Progetti: {n}",
+    "requestOpen": "Avete una richiesta in attesa di pagamento",
+    "seePlans": "Piani e prezzi",
+    "profileTitle": "Profilo",
+    "language": "Lingua",
+    "emailTitle": "Email",
+    "emailStatus": "Stato",
+    "verified": "Confermata",
+    "notVerified": "Non confermata",
+    "changeEmail": "Cambia email",
+    "newEmail": "Nuova email",
+    "currentPassword": "Password attuale",
+    "changeEmailHint": "Invieremo un link al nuovo indirizzo. L'email cambia quando lo aprite; fino ad allora accedete con quella vecchia.",
+    "changeEmailButton": "Invia link",
+    "delete": {
+      "confirmMissing": "Spuntate la casella per confermare che l'eliminazione è definitiva.",
+      "lastOwner": "È l'ultimo proprietario. Prima di eliminare l'account, assegnate il ruolo a un'altra persona."
+    }
+  },
+  "app": {
+    "title": "Progetti",
+    "lead": "Ogni progetto è un mobile: misure, materiali, ferramenta e tutto ciò che ne deriva.",
+    "unverifiedTitle": "Confermate la vostra email",
+    "unverifiedText": "Vi abbiamo inviato un link di conferma. Il periodo di prova inizia quando lo aprite.",
+    "resend": "Invia di nuovo il link",
+    "expiredTitle": "Il vostro piano è scaduto",
+    "expiredText": "I vostri progetti sono qui e potete scaricarli. Per nuovi progetti e modifiche scegliete un piano.",
+    "seePlans": "Piani e prezzi",
+    "newTitle": "Nuovo progetto",
+    "type": "Tipo di mobile",
+    "name": "Nome",
+    "namePlaceholder": "per esempio Cucina, interno 12",
+    "create": "Crea il progetto",
+    "listTitle": "I vostri progetti ({n})",
+    "empty": "Non avete ancora progetti. Scegliete un tipo di mobile qui sopra e create il primo.",
+    "updated": "modificato {when}",
+    "download": "Scarica ZIP",
+    "duplicate": "Copia",
+    "delete": "Elimina",
+    "deleteConfirm": "Eliminare „{name}“? Non si può annullare.",
+    "errors": {
+      "name": "Il nome può avere al massimo 80 caratteri.",
+      "planExpired": "Il vostro piano è scaduto. I progetti si scaricano, ma nuovi progetti e modifiche richiedono un piano attivo.",
+      "spec": "Il progetto non può essere salvato: un valore è fuori dai limiti consentiti.",
+      "tooMany": "Avete raggiunto il numero massimo di progetti. Eliminate quelli vecchi per crearne di nuovi.",
+      "unverified": "Confermate l'email per creare e modificare progetti."
+    }
+  }
+}
