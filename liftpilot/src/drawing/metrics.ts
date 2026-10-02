@@ -1,6 +1,7 @@
 // Text measure with the metrics of DejaVu Sans, the font the PDF is drawn with: the kernel wraps, fits and centres
 // lettering itself, so the renderers only paint and the SVG preview and the PDF agree.
 import { BOLD, REGULAR } from './metrics-data';
+import type { Box, TextShape } from './types';
 
 /** Horizontal scale of condensed lettering (dimensions and labels of the drawings). */
 export const COND = 0.84;
@@ -42,6 +43,15 @@ export function wrap(text: string, width: number, f: Font): string[] {
     out.push(line);
   }
   return out;
+}
+
+/** Paper box of a lettering, level or turned 90°: its measured width, from a little under the baseline to its size
+ *  over it. */
+export function textBox(s: TextShape): Box {
+  const w = textWidth(s.text, { size: s.size, bold: s.bold, cond: s.cond }), h = s.size;
+  const lo = s.align === 'r' ? -w : s.align === 'c' ? -w / 2 : 0;
+  const [x, y] = s.at;
+  return (s.angle ?? 0) === 90 ? { x0: x - h, y0: y + lo, x1: x + 0.3 * h, y1: y + lo + w } : { x0: x + lo, y0: y - 0.3 * h, x1: x + lo + w, y1: y + h };
 }
 
 /** The largest size, not above `size`, at which the text fits in `width`. */

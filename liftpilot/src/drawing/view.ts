@@ -3,7 +3,7 @@
 // drawing with its dimension rows into an area is chosen here too.
 import { chainShapes, rowOffset } from './dims';
 import { boundsOf, boxH, boxW, grow, toPaper, union, type Place } from './geom';
-import { textWidth } from './metrics';
+import { textBox, textWidth } from './metrics';
 import type { Edit, Entity, Side } from './model';
 import { FILLS, STYLES, TEXT } from './style';
 import { symbol } from './symbols';
@@ -48,12 +48,7 @@ export function shapeBox(s: Shape): Box {
     case 'circle':
     case 'arc': return { x0: s.c[0] - s.r, y0: s.c[1] - s.r, x1: s.c[0] + s.r, y1: s.c[1] + s.r };
     case 'image': return s.box;
-    case 'text': {
-      const w = textWidth(s.text, { size: s.size, bold: s.bold, cond: s.cond }), h = s.size;
-      const lo = s.align === 'r' ? -w : s.align === 'c' ? -w / 2 : 0;
-      const [x, y] = s.at;
-      return (s.angle ?? 0) === 90 ? { x0: x - h, y0: y + lo, x1: x + 0.3 * h, y1: y + lo + w } : { x0: x + lo, y0: y - 0.3 * h, x1: x + lo + w, y1: y + h };
-    }
+    case 'text': return textBox(s);
   }
 }
 
@@ -68,21 +63,24 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
     if (!(e.e === 'line' && e.st === 'axis')) edges = union(edges, shapeBox(g));
   }
   const E = edges ?? { x0: place.ox, y0: place.oy, x1: place.ox, y1: place.oy };
-  for (const e of entities) {
-    if (e.e === 'text') {
-      notes.push({ t: 'text', at: toPaper(place, e.at), text: e.text, size: e.size ?? TEXT.label, angle: e.angle, align: e.align, bold: e.bold, ink: e.ink, cond: true, halo: e.halo });
-    } else if (e.e === 'mark') {
-      notes.push(...symbol(e.sym, toPaper(place, e.at), e.size));
-    } else if (e.e === 'tag') {
-      notes.push(...tag(toPaper(place, e.at), e.text, e.to ? toPaper(place, e.to) : null));
-    } else if (e.e === 'chain') {
-      const edit = e.c.edit;
-      notes.push(...chainShapes(e.c, place, E, edit ? (s, i, value) => {
-        const ed = edit[i];
-        if (ed) hits.push({ box: grow(shapeBox(s), 0.5), edit: ed, value: ed.value ?? value });
-      } : undefined));
-    }
-  }
+  // lettering, symbols and references first (their leaders aside): the figures of the dimensions step round them and
+  // round each other, in the order of the chains
+  const parts: Shape[][] = entities.map(() => []), taken: Box[] = [];
+  entities.forEach((e, i) => {
+    if (e.e === 'text') parts[i] = [{ t: 'text', at: toPaper(place, e.at), text: e.text, size: e.size ?? TEXT.label, angle: e.angle, align: e.align, bold: e.bold, ink: e.ink, cond: true, halo: e.halo }];
+    else if (e.e === 'mark') parts[i] = symbol(e.sym, toPaper(place, e.at), e.size);
+    else if (e.e === 'tag') parts[i] = tag(toPaper(place, e.at), e.text, e.to ? toPaper(place, e.to) : null);
+    for (const s of parts[i]) if (s.t !== 'line') taken.push(shapeBox(s));
+  });
+  entities.forEach((e, i) => {
+    if (e.e !== 'chain') return;
+    const edit = e.c.edit;
+    parts[i] = chainShapes(e.c, place, E, edit ? (s, k, value) => {
+      const ed = edit[k];
+      if (ed) hits.push({ box: grow(shapeBox(s), 0.5), edit: ed, value: ed.value ?? value });
+    } : undefined, taken);
+  });
+  notes.push(...parts.flat());
   const shapes = [...geo, ...notes];
   let extent: Box | null = null;
   for (const s of shapes) extent = union(extent, shapeBox(s));

@@ -2,7 +2,7 @@
 // the DejaVu metrics, shapes moved on paper, entities clipped to a band.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TEXT, chain, chainShapes, clipBand, fitView, line, moveShapes, rect, renderView, textWidth, wrap, type Shape } from '@/drawing';
+import { TEXT, chain, chainShapes, clipBand, fitView, line, moveShapes, rect, renderView, shapeBox, textWidth, wrap, type Shape } from '@/drawing';
 
 test('fitView: la scala normalizzata più grande che entra, con le file delle quote', () => {
   const model = { x0: 0, y0: 0, x1: 2000, y1: 1500 };
@@ -16,19 +16,34 @@ test('fitView: la scala normalizzata più grande che entra, con le file delle qu
   assert.ok(p && Math.abs(p.ox + 2000 / 20 / 2 - 95) < 1e-9);
 });
 
-test('quote: il testo che non entra si stringe, poi esce dalla parte che resta nel disegno', () => {
+test('quote: il testo che non entra si stringe un poco, o tiene la sola cifra, o esce dalla parte che resta nel disegno', () => {
   const place = { scale: 50, ox: 0, oy: 0 }, edges = { x0: 0, y0: 0, x1: 100, y1: 100 };
   const text = (s: Shape[]) => s.filter((x): x is Extract<Shape, { t: 'text' }> => x.t === 'text');
-  // 330 mm at 1:50 = 6,6 mm: "330 Ammortizzatore" shrinks, then goes past the upper end, inside the drawing
+  // 330 mm at 1:50 = 6,6 mm: "330 Ammortizzatore" keeps its figure, at full size, in the middle
   const [t] = text(chainShapes({ dir: 'y', pts: [0, 330], side: 'left', row: 0, text: ['{v} Ammortizzatore'] }, place, edges));
-  assert.ok(t && t.size < TEXT.dim && t.size >= 1.8, `${t?.size}`);
-  assert.equal(t?.align, 'l');
+  assert.deepEqual([t?.text, t?.size, t?.align], ['330', TEXT.dim, 'c']);
+  // a little too long: a little smaller, the words kept
+  const [m] = text(chainShapes({ dir: 'y', pts: [0, 2000], side: 'left', row: 0, text: ['{v} H. Protezione Contrappeso in Fossa'] }, place, edges));
+  assert.ok(m && m.text.endsWith('Fossa') && m.size < TEXT.dim && m.size >= 0.8 * TEXT.dim, `${m?.text} ${m?.size}`);
+  // 150 mm = 3 mm, not even the figure fits: past the upper end, inside the drawing
+  const [u] = text(chainShapes({ dir: 'y', pts: [0, 150], side: 'left', row: 0, text: ['{v} Ammortizzatore'] }, place, edges));
+  assert.equal(u?.align, 'l');
   // a lowest segment near the bottom edge does not go below the drawing
-  const [u] = text(chainShapes({ dir: 'y', pts: [0, 300, 5000], side: 'left', row: 0, text: ['{v} Base Ammortizzatore', '{v}'] }, place, edges));
-  assert.ok(u && u.at[1] >= -1, `${u?.at[1]}`);
+  const [v] = text(chainShapes({ dir: 'y', pts: [0, 300, 5000], side: 'left', row: 0, text: ['{v} Base Ammortizzatore', '{v}'] }, place, edges));
+  assert.ok(v && v.at[1] >= -1, `${v?.at[1]}`);
   // a segment wide enough keeps its text centred at full size
   const [w] = text(chainShapes({ dir: 'x', pts: [0, 3000], side: 'bottom', row: 0 }, place, edges));
   assert.deepEqual([w?.size, w?.align, w?.text], [TEXT.dim, 'c', '3000']);
+});
+
+test('quote: la cifra gira attorno alle scritte già sul foglio', () => {
+  // a label right where the figure of a level chain would go: the figure goes under its line
+  const r = renderView([line([0, 0], [1000, 0]), { e: 'text', at: [500, 100], text: 'QUADRO', size: 2.5, align: 'c' }, chain({ dir: 'x', pts: [0, 1000], at: 80 })], { scale: 10, ox: 0, oy: 0 });
+  const texts = r.shapes.filter((s): s is Extract<Shape, { t: 'text' }> => s.t === 'text');
+  const label = texts.find((s) => s.text === 'QUADRO'), fig = texts.find((s) => s.text === '1000');
+  assert.ok(label && fig);
+  const a = shapeBox(label), b = shapeBox(fig);
+  assert.ok(b.y1 < a.y0 && b.y1 < 8, `${JSON.stringify(b)}`);
 });
 
 test('lettere: larghezze DejaVu, condensato, a capo', () => {

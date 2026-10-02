@@ -76,13 +76,18 @@ export function roomPlanEntities(L: Layout, M: MachineSpec, G: RoomGeo): { entit
   out.push(path(pan, true, 'outline', 'paper'), { e: 'text', at: mid(pan), text: 'QUADRO MANOVRA', size: 1.8, align: 'c', halo: true });
   const sw = wallBox(R, R.doorWall, R.doorAt + R.doorW + 150, 200, 120);
   const inward: Pt = R.doorWall === 'front' ? [0, 1] : R.doorWall === 'rear' ? [0, -1] : R.doorWall === 'left' ? [1, 0] : [-1, 0];
-  out.push(path(sw, true, 'outline', 'paper'), { e: 'text', at: [mid(sw)[0] + inward[0] * 260, mid(sw)[1] + inward[1] * 260 - 30], text: 'INTERRUTTORE GENERALE', size: 1.5, align: 'c' });
-  // the sheave's size on the side away from the gearbox; the load P1 where the room is free, its leader to the gearbox
+  const swAt: Pt = [mid(sw)[0] + inward[0] * 260, mid(sw)[1] + inward[1] * 260 - 30];
+  out.push(path(sw, true, 'outline', 'paper'), { e: 'text', at: swAt, text: 'INTERRUTTORE GENERALE', size: 1.5, align: 'c' });
+  // the sheave's size on the side away from the gearbox, along the drop line (an upright one would cross the frame's
+  // dimension); the load P1 where the room is free, its leader to the gearbox
   const side = Math.min(G.across[0], -Math.max(w.ropes + 60, M.Dp > 0 ? w.pulley + 40 : 0)), um = (G.frame0 + G.frame1) / 2;
-  out.push({ e: 'text', at: onDrop(G, G.sheaveAt, side - 70), text: `${M.label ? `${M.label} · ` : ''}Ø ${M.D}`, size: 1.8, align: 'c', halo: true });
+  const ax = Math.abs(G.ux) > Math.abs(G.uy) ? 0 : 1;
+  out.push({ e: 'text', at: onDrop(G, G.sheaveAt, side - 70), text: `${M.label ? `${M.label} · ` : ''}Ø ${M.D}`, size: 1.8, align: 'c', angle: ax ? 90 : 0, halo: true });
+  // clear of the main switch's lettering too (wide enough for it at 1:50)
   const inRoom = (p: Pt): boolean => p[0] > 250 && p[0] < R.W - 250 && p[1] > 250 && p[1] < R.D - 250;
-  const spots = [onDrop(G, G.sheaveAt, G.across[1] + 380), onDrop(G, G.frame1 + 380, G.across[1] / 2), onDrop(G, G.frame0 - 380, G.across[1] / 2), onDrop(G, um, side - 700)];
-  out.push({ e: 'tag', at: spots.find((p) => inRoom(p) && !inBox(p, free)) ?? spots[0], text: 'P1', to: F.shape ? onDrop(G, G.sheaveAt, F.zSheave) : onDrop(G, 0.1 * k + G.sheaveAt, MACHINE_A.zSheave * k) });
+  const offSwitch = (p: Pt): boolean => Math.abs(p[0] - swAt[0]) > 600 || Math.abs(p[1] - swAt[1]) > 250;
+  const spots = [onDrop(G, G.sheaveAt, G.across[1] + 380), onDrop(G, G.frame1 + 380, G.across[1] / 2), onDrop(G, G.frame0 - 380, G.across[1] / 2), onDrop(G, um, side - 700), onDrop(G, um, side - 400)];
+  out.push({ e: 'tag', at: spots.find((p) => inRoom(p) && !inBox(p, free) && offSwitch(p)) ?? spots[0], text: 'P1', to: F.shape ? onDrop(G, G.sheaveAt, F.zSheave) : onDrop(G, 0.1 * k + G.sheaveAt, MACHINE_A.zSheave * k) });
   governor(L, R, out);
   // dimensions: room, door, bedframe, rope drops
   const dimSide = R.doorWall === 'front' ? 'bottom' : R.doorWall === 'rear' ? 'top' : R.doorWall;
@@ -96,14 +101,14 @@ export function roomPlanEntities(L: Layout, M: MachineSpec, G: RoomGeo): { entit
     edit: [E('room.shaftX'), E('W'), E('room.shaftX', R.W - I.W, -1)] }));
   out.push(chain({ dir: 'y', pts: [0, R.shaftY, R.shaftY + I.D, R.D], side: dimSide === 'right' ? 'left' : 'right', row: 1, text: [null, 'Vano {v}', null],
     edit: [E('room.shaftY'), E('D'), E('room.shaftY', R.D - I.D, -1)] }));
-  // the control panel along its wall and its depth into the room
-  const pw = R.panelWall, alongP = pw === 'front' || pw === 'rear', panelLen = alongP ? R.W : R.D, pm = mid(pan);
-  out.push(chain({ dir: alongP ? 'x' : 'y', pts: [0, R.panelAt, R.panelAt + R.panelW, panelLen], at: alongP ? pm[1] : pm[0], text: [null, '{v}', null],
+  // the control panel along its wall, in front of it (its name stays readable inside), and its depth into the room
+  const pw = R.panelWall, alongP = pw === 'front' || pw === 'rear', panelLen = alongP ? R.W : R.D;
+  const face = pw === 'front' ? 0 : pw === 'rear' ? R.D : pw === 'left' ? 0 : R.W, into = pw === 'rear' || pw === 'right' ? -1 : 1, inner = face + into * R.panelD;
+  out.push(chain({ dir: alongP ? 'x' : 'y', pts: [0, R.panelAt, R.panelAt + R.panelW, panelLen], at: inner + into * 150, text: [null, '{v}', null],
     edit: [E('room.panelAt'), E('room.panelW'), E('room.panelAt', panelLen - R.panelW, -1)] }));
-  const face = pw === 'front' ? 0 : pw === 'rear' ? R.D : pw === 'left' ? 0 : R.W, inner = pw === 'rear' || pw === 'right' ? face - R.panelD : face + R.panelD;
   out.push(chain({ dir: alongP ? 'y' : 'x', pts: [Math.min(face, inner), Math.max(face, inner)], at: R.panelAt + R.panelW + 120, edit: [E('room.panelD')] }));
   const [a, b] = [onDrop(G, G.frame0, side - 220), onDrop(G, G.frame1, side - 220)], drop = onDrop(G, 0, side - 420);
-  const ax = Math.abs(G.ux) > Math.abs(G.uy) ? 0 : 1, sorted = (p: number, q: number): number[] => [Math.min(p, q), Math.max(p, q)];
+  const sorted = (p: number, q: number): number[] => [Math.min(p, q), Math.max(p, q)];
   out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], text: ['{v} Telaio argano'] }));
   out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(G.carDrop[ax], G.cwDrop[ax]), at: drop[1 - ax], text: ['Calata Funi {v}'], edit: [calataEdit(L)] }));
   return { entities: out, bounds: { x0: -WALL, y0: -WALL, x1: R.W + WALL, y1: R.D + WALL } };
