@@ -13,6 +13,14 @@ export const ropeLength = (I: ParsedInputs['I']): number => I.r * (I.H + 2 * I.L
 /** Travelling cables [kg]: as given, or KV_VERT.cableKgM over half the travel [m] plus 3 m (registry carichi.cavi). */
 export const cablesMass = (travel: number, given?: number): number => given ?? KV_VERT.cableKgM * (travel / 2 + 3);
 
+/** A machine below: what the head pulleys carry with the car at the lowest floor with its rated load [kg] (research,
+ *  funi in basso, §8): both falls of each side, 2·(T_c + T_w), each T the ropes' static pull at the head (the mass
+ *  hanging under it over the roping, and the ropes down to it). The pulleys' own weight is not in it. */
+export const headStatic = ({ I, N }: Pick<ParsedInputs, 'I' | 'N'>, Mcw: number): number => {
+  const w = N.n * N.qf;
+  return 2 * ((I.P + I.Q) / I.r + w * (I.H + I.L0) + Mcw / I.r + w * I.L0);
+};
+
 /** Static load on the machine's axis [kg]. */
 export const axisStatic = (x: { P: number; Q: number; Mcw: number; roping: number; ropes: number; cables: number }): number =>
   (x.roping > 1 ? (x.P + x.Q + x.Mcw) / 2 : x.P + x.Q + x.Mcw) + x.ropes + x.cables;

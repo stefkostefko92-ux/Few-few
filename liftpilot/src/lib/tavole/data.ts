@@ -6,7 +6,7 @@
 import appIt from '../../../messages/it.json';
 import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
-import { cablesMass, ropeLength, supportChecks } from '../lift/support';
+import { cablesMass, headStatic, ropeLength, supportChecks } from '../lift/support';
 import { isUpperLimit } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { bracketCount } from '@/shaft/brackets';
@@ -62,7 +62,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const access = L.inputs.entrances === 'one' ? '1 ACCESSO' : L.inputs.entrances === 'opposite' ? '2 ACCESSI OPPOSTI' : '2 ACCESSI ADIACENTI A 90°';
   const doors = L.inputs.door === 'T2' ? 'AUTOMATICHE TELESCOPICHE 2 ANTE' : 'AUTOMATICHE CENTRALI 2 ANTE';
   const base: Row[] = [
-    ['NORMATIVA DI RIFERIMENTO', '', C.norma === 'en81' ? 'UNI EN 81-20:2020' : NORMA_SIGLA[C.norma]],
+    ['NORMATIVA DI RIFERIMENTO', '', C.norma === 'en81' ? 'UNI EN 81-20/50:2020' : NORMA_SIGLA[C.norma]],
     ['PORTATA', 'kg', fmt(I.Q, 0)],
     ['PERSONE', 'N°', fmt(L.persons, 0)],
     ['CORSA', 'm', fmt(travel, 2)],
@@ -100,7 +100,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['POTENZA MOTORE', 'kW', num(N.Pn)],
     ['POLI N° - GIRI/MINUTO', '', `${N.poles}/${fmt(N.nm, 0)}`],
     ['CORRENTE NOMINALE / AVVIAMENTO', 'A', Pl.currentIn || Pl.currentStart ? `${num(Pl.currentIn)} / ${num(Pl.currentStart)}` : '—'],
-    ['REGOLAZIONE FREQUENZA VVVF', 'Hz', fmt(fRated, 0)],
+    ['REGOLAZIONE FREQUENZA VVVF', 'Hz', fmt(fRated, 1)],
     ['REGOLAZIONE GIRI/MIN VVVF', '1/min', fmt((N.nm * fRated) / N.fn, 0)],
     ['ARCATA', 'tipo', txt(Pl.carFrame, L.frame.kind === 'central' ? 'CENTRALE' : 'A ZAINO')],
     ['GUIDE DI CABINA', 'tipo', rails(Pl.carRails, L.inputs.carRail)],
@@ -119,13 +119,18 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['AMMORTIZZATORE CONTRAPPESO', 'N°-tipo', `1 - ${txt(Pl.cwBuffers, BUFFER_TEXT[bufferType(V, 'cw')][1])}`],
   ];
 
-  // loads on the machine and on the building
+  // loads on the machine and on the building: the machine with its bedframe (the maker's bedplate with the diverting
+  // pulley counted when the data do not give it); a machine below pulls its anchors up and the head pulleys carry both
+  // falls of each side
+  const M = machineOf(a, Pl, L, x.marks?.catalog ?? null), below = I.layout === 'bottom';
   const ropesKg = N.n * N.qf * ropeLen, cablesKg = cablesMass(travel, Pl.massCables);
-  const machine = Pl.massMachine ?? N.mass, dyn = Pl.dynFactor ?? KV_VERT.dynFactor;
+  const bedplate = M.rinvio?.on === 'frame' ? M.rinvio.maker?.mass ?? 0 : 0;
+  const machine = Pl.massMachine ?? N.mass + bedplate, dyn = Pl.dynFactor ?? KV_VERT.dynFactor;
   const ld = loads({
     P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r,
     carRailQ: RAILS[L.inputs.carRail].q, carRailLen: railLen, cwRailQ: RAILS[L.inputs.cwRail].q, cwRailLen: railLen,
     safetyGear: Pl.safetyGear ?? 'progressive', dyn, carBuffers: V.carBuffers, cwBuffers: 1, governor: Pl.governorLoad ?? null,
+    below: below ? headStatic(a.ctx, res.Mcw) : null,
   });
   const kg = (v: number | undefined): string => (v == null ? '—' : fmt(v, 0));
   const loadRows: DataSheet['loads'] = [
@@ -137,19 +142,22 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['FUNI', fmt(ropesKg, 0), 'kg'],
     ['CAVI FLESSIBILI', fmt(cablesKg, 0), 'kg'],
     ['CONTRAPPESO', fmt(res.Mcw, 0), 'kg'],
-    ['CARICO STATICO SU ASSE ARGANO', fmt(ld.static, 0), 'kg'],
+    [below ? 'CARICO STATICO SULLE PULEGGE IN TESTATA' : 'CARICO STATICO SUL BASAMENTO DELL\'ARGANO', fmt(ld.static, 0), 'kg'],
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
     ['TOTALE CARICHI × 0,981', fmt(ld.P[0] ?? 0, 0), 'daN'],
-    ['ARGANO E TELAIO', fmt(machine, 0), 'kg'],
+    ...(below ? [
+      ['ARGANO IN BASSO (NON SUL SOLAIO)', fmt(machine, 0), 'kg'] as const,
+      ['SOLLEVAMENTO NETTO ANCORAGGI ARGANO, PROVA 1,25·Q', fmt(Math.max(0, res.shaft.uplift ?? 0), 0), 'kg'] as const,
+    ] : [[Pl.massMachine != null || !bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', fmt(machine, 0), 'kg'] as const]),
   ];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? '—' : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
   const F = railForces(L, I.P, I.Q, Pl.safetyGear ?? 'progressive');
-  const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON CONFORME', info: '—' } as const;
+  const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet
-  const all = [...L.checks, ...supportChecks(L, machineOf(a, Pl, L, x.marks?.catalog ?? null), { machine, static: ld.static, dyn }, a.ctx.I.layout !== 'bottom')];
+  const all = [...L.checks, ...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn }, !below)];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
@@ -157,7 +165,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     if (c.id === 'm_door' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, outcome];
     return [label, withUnit(c.value, c.dec, c.unit), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
-  const sp = spaceLegend(L, fmt), notes = clientNotes(L);
+  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below);
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   const test = collaudoNote(C, `NOTA ${notes.length + 1}`);
   if (test) notes.push(test);

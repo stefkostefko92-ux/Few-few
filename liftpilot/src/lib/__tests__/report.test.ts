@@ -60,7 +60,7 @@ test('valori riempiti dal software: massa della cabina stimata, geometria dal va
   const doc = buildReport({ ...input('A'), marks: { pEstimate: true, geometry: ['L0', 'dx'], machineProposed: true } }), all = texts(doc);
   assert.ok(doc.blocks.some((b) => b.t === 'box' && b.text.startsWith('MASSA DELLA CABINA STIMATA. La massa della cabina P = 700 kg')), 'avviso');
   assert.ok(all.includes('700 kg — stima del software, da sostituire con la massa reale'), 'riga della massa');
-  assert.ok(all.some((x) => x.endsWith('(L0 dal progetto del vano)')) && all.some((x) => x.endsWith('(dx dal progetto del vano)')), 'geometria dal vano');
+  assert.ok(all.some((x) => x.endsWith('(L0 dal progetto del vano)')) && all.some((x) => x.endsWith('(dx dal progetto del vano; h dal basamento o dal telaio del rinvio, salvo inserita a mano)')), 'geometria dal vano');
   assert.ok(all.some((x) => x.startsWith('Argano proposto dal dimensionamento del software')), 'argano proposto');
   assert.ok(all.some((x) => x.startsWith('⚠ Massa della cabina: è la stima del software (1,1 × portata')), 'valori da verificare');
   for (const v of ['Massa della cabina non inserita', 'Fune oltre la corsa (L0)', 'Distanza orizzontale della puleggia di rinvio (dx)', 'Macchina proposta']) assert.ok(all.includes(v), v);
@@ -117,8 +117,15 @@ test('carta intestata, argano riconosciuto dal catalogo, argano consigliato fra 
   assert.ok(head?.t === 'letterhead' && head.logo === 'logo' && head.from.join(' ') === 'Ditta di prova Milano');
   assert.equal(doc.drawing?.images.logo?.data, logo.data);
   const machine = doc.blocks.find((b) => b.t === 'kv' && b.rows[0]?.[0] === 'Costruttore e modello');
-  assert.ok(machine?.t === 'kv' && machine.rows[0]?.[1].startsWith(`${first.brand} ${first.model} (riconosciuto dal catalogo`));
-  const sec = doc.blocks.findIndex((b) => b.t === 'h2' && b.text.endsWith('Argano consigliato fra SICOR e Montanari (informativa)'));
+  assert.ok(machine?.t === 'kv' && machine.rows[0]?.[1].startsWith(`${first.brand} ${first.model} (preso dal catalogo nel calcolatore`));
+  assert.ok(texts(doc).some((x) => x.startsWith('Dal catalogo del costruttore: rapporto di riduzione')), 'what is the maker\'s, what the sizing\'s');
+  assert.ok(!texts(doc).some((x) => x.includes('non su un catalogo')), 'no note of a grid proposal for a catalogue machine');
+  // the same values without the name taken: recognised by its values
+  const { n_model: _taken, ...unnamed } = mirrorRopes({ ...PRESETS.A, ...first.values });
+  void _taken;
+  const known = buildReport({ ...input('A'), values: unnamed, advice }).blocks.find((b) => b.t === 'kv' && b.rows[0]?.[0] === 'Costruttore e modello');
+  assert.ok(known?.t === 'kv' && known.rows[0]?.[1].startsWith(`${first.brand} ${first.model} (riconosciuto dal catalogo`));
+  const sec = doc.blocks.findIndex((b) => b.t === 'h2' && b.text.endsWith('Confronto degli argani SICOR e Montanari (informativo)'));
   assert.ok(sec > 0);
   const grid = doc.blocks.slice(sec).find((b) => b.t === 'grid');
   assert.ok(grid?.t === 'grid' && grid.rows.length === advice.candidates.length && grid.rows[0]?.[0] === `1. ★ ${first.brand} ${first.model}`);
@@ -131,7 +138,7 @@ test('carta intestata, argano riconosciuto dal catalogo, argano consigliato fra 
   // values that are no catalogue machine's: no name; no advice given: no section
   const plain = buildReport(input('A'));
   assert.ok(!plain.blocks.some((b) => b.t === 'kv' && b.rows[0]?.[0] === 'Costruttore e modello'));
-  assert.ok(!plain.blocks.some((b) => b.t === 'h2' && b.text.includes('Argano consigliato')));
+  assert.ok(!plain.blocks.some((b) => b.t === 'h2' && b.text.includes('Confronto degli argani')));
 });
 
 // PDF with the renderer when Python and ReportLab are present (the production image has them).

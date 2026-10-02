@@ -36,7 +36,7 @@ function panevOf(L: Layout, r: Rail, head?: HeadWalls): CwBracket | null {
 export function cwPlanCode(L: Layout, r: Rail, head?: HeadWalls): string | null {
   const I = L.inputs, special = cwSpecialOf(I);
   if (r.kind !== 'cw' || cwBracketsOf(I) !== 'panev') return null;
-  const [z0, z1] = railSpan(section(L)), n = bracketCount(z1 - z0), g = special ? null : panevOf(L, r, head);
+  const [z0, z1] = railSpan(section(L)), n = bracketCount(z1 - z0, L.cwBracketPitch), g = special ? null : panevOf(L, r, head);
   if (special) return `${n}× ${special.startsWith('SN') ? 'SN + BRACCIO 160 190' : special}`;
   return g ? `${n}× ${bracketCode(g)}` : null;
 }

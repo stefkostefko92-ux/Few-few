@@ -113,7 +113,7 @@ const sheet1 = (collaudo?: Collaudo): string[] => {
 test('foglio 1: normativa del collaudo, esito «ESISTENTE» e la sua nota', () => {
   const machine = sheet1(), asNew = sheet1({ norma: 'en81', parti: [] }), eleven = sheet1({ norma: '10411-11', parti: ['machine', 'car'] });
   assert.ok(machine.includes('UNI 10411-1:2024') && machine.includes('ESISTENTE') && machine.includes('COLLAUDO'), 'modifica con la macchina');
-  assert.ok(asNew.includes('UNI EN 81-20:2020') && !asNew.includes('ESISTENTE') && !asNew.includes('COLLAUDO'), 'come nuovo');
+  assert.ok(asNew.includes('UNI EN 81-20/50:2020') && !asNew.includes('ESISTENTE') && !asNew.includes('COLLAUDO'), 'come nuovo');
   assert.ok(eleven.includes('UNI 10411-11:2024'), 'UNI 10411-11');
 });
 
@@ -153,14 +153,15 @@ test('più normative: ognuna con il suo esito, quello del collaudo è il peggior
 test('relazione e foglio 1 con più normative: righe, sezione degli esiti, nota', () => {
   const doc = report({ norma: '10411-1', parti: ['machine'], aggiuntive: ['en81', 'dm236'] });
   assert.equal(kv(doc).get('Altre normative di collaudo'), 'UNI EN 81-20:2020 e UNI EN 81-50:2020; DM 236/1989 (barriere architettoniche)');
-  assert.ok(heads(doc).includes('Esito del collaudo per normativa'));
+  assert.ok(heads(doc).includes('Esito delle verifiche di calcolo per normativa'));
   const g = doc.blocks.find((b) => b.t === 'grid' && b.head[0] === 'Normativa');
   assert.ok(g && g.t === 'grid');
   assert.deepEqual(g.rows.map((r) => r[1]), ['base', 'aggiunta', 'aggiunta']);
   // the calculation alone has no shaft: DM 236 has no check computed, and the report says why
   assert.equal(g.rows[2]?.[5], 'non calcolata');
   assert.ok(doc.blocks.some((b) => b.t === 'p' && b.text.startsWith('DM 236/1989: nessuna verifica calcolata')));
-  assert.ok(doc.blocks.some((b) => b.t === 'verdict' && b.text.startsWith('Esito del collaudo:')));
+  assert.ok(doc.blocks.some((b) => b.t === 'verdict' && b.text.startsWith('Esito delle verifiche di calcolo:')));
+  assert.ok(doc.blocks.some((b) => b.t === 'p' && b.text.startsWith('Non è l\'esito del collaudo')), 'the outcome is the software\'s checks, not the test\'s');
   // without standards added the section is there with the base one alone
   const one = report(), g1 = one.blocks.find((b) => b.t === 'grid' && b.head[0] === 'Normativa');
   assert.ok(g1 && g1.t === 'grid' && g1.rows.length === 1 && !kv(one).has('Altre normative di collaudo'));

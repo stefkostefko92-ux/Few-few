@@ -10,6 +10,32 @@ import { ambitoOf, type Collaudo } from '../lift/collaudo';
 import { EXISTING_NOTE, esitoOf } from './collaudo';
 import type { ReportBlock } from './model';
 
+/** The clauses of a registry entry, split at its "; " outside parentheses, each marked ⚠ when the entry is still to be
+ *  verified on the text in force (the box at the head of the relazione says what the mark means). */
+export function refsOf(v: { riferimento: string; stato: string }): string[] {
+  const out: string[] = [], r = v.riferimento;
+  let depth = 0, cur = '';
+  for (let i = 0; i < r.length; i++) {
+    const ch = r.charAt(i);
+    if (ch === '(') depth += 1;
+    else if (ch === ')') depth = Math.max(0, depth - 1);
+    if (depth === 0 && r.startsWith('; ', i)) { out.push(cur); cur = ''; i += 1; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out.map((x) => x.trim()).filter((x) => x && x !== '—').map((x) => (v.stato === 'da_verificare' ? `${x} ⚠` : x));
+}
+
+/** The clauses of the entries behind a check, each once (marked when any entry of it is to be verified). */
+export function refsText(list: readonly string[], max = Infinity): string {
+  const seen = new Map<string, string>();
+  for (const x of list) {
+    const base = x.replace(/ ⚠$/, '');
+    if (!seen.has(base) || x.endsWith('⚠')) seen.set(base, x);
+  }
+  return [...seen.values()].slice(0, max).join('; ');
+}
+
 export interface ReportDesign {
   id: string;
   label: string | null;
@@ -83,8 +109,7 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra
     ['Impronta SHA-256 del progetto', d.sha256],
   ] });
   const voci = vociOfDesign(I.access);
-  const refOf = (id: ShaftCheckId): string => [...new Set(voci.filter((v) => v.verifiche?.includes(id)).flatMap((v) => v.riferimento.split('; '))
-    .map((r) => r.trim()).filter((r) => r && r !== '—'))].join('; ') || 'modello di calcolo del software';
+  const refOf = (id: ShaftCheckId): string => refsText(voci.filter((v) => v.verifiche?.includes(id)).flatMap((v) => refsOf(v))) || 'modello di calcolo del software';
   B.push({ t: 'h3', text: 'Verifiche del vano: pianta, sezione e locale macchina' });
   const esiti = checks.map((c) => (collaudo ? esitoOf(collaudo, c.id, st(c.status), c.status) : { text: st(c.status), status: c.status }));
   B.push({ t: 'grid', head: x.head, rows: checks.map((c, i) => {

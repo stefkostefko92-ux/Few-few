@@ -94,7 +94,7 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
   if (n) {
     const rowH = Math.min(3.3, (y - 1.6 - yBlock) / (n + 2)), cs = Math.min(1.95, rowH * 0.62), w = xR - xM;
     const rows: Cell[][] = [
-      [{ text: 'VERIFICHE DEL PROGETTO DEL VANO (UNI EN 81-20:2020)', size: Math.min(2.4, rowH * 0.72) }],
+      [{ text: 'VERIFICHE DEL PROGETTO (TRA PARENTESI I PUNTI DELLA UNI EN 81-20:2020)', size: Math.min(2.4, rowH * 0.72) }],
       [{ text: 'VERIFICA', size: cs }, { text: 'VALORE', align: 'r', size: cs }, { text: 'LIMITE', align: 'r', size: cs }, { text: 'ESITO', align: 'c', size: cs }],
       ...d.checks.map(([l, v, lim, o]): Cell[] => [{ text: l, size: cs }, { text: v, size: cs }, { text: lim, size: cs }, { text: o, align: 'c', size: cs, bold: o !== 'OK' && o !== 'ESISTENTE' }]),
     ];

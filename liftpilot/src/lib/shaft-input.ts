@@ -78,7 +78,14 @@ export const roomSchema = z.object({
   support: supportSchema.optional(),
 }).strict();
 
-const allowance = <K extends keyof typeof DEFAULTS>(k: K, max: number) => mm(0, max).default(DEFAULTS[k]);
+/** The range the save accepts for each allowance [mm]: the form's fields take the same. */
+export const ALLOWANCE_RANGE: Readonly<Record<keyof typeof DEFAULTS, readonly [number, number]>> = {
+  landingDepth: [0, 500], sillGap: [0, 200], carDoorDepth: [0, 500], carWall: [0, 200], railZone: [0, 800], cwCarGap: [0, 500],
+  cwDepth: [50, 600], cwWallGap: [0, 800], rearGap: [0, 800], shoeGap: [0, 300], cwRailGap: [0, 500],
+};
+/** The longest lining of a landing door the save accepts [mm]. */
+export const IMBOTTI_MAX = 1500;
+const allowance = <K extends keyof typeof DEFAULTS>(k: K) => mm(ALLOWANCE_RANGE[k][0], ALLOWANCE_RANGE[k][1]).default(DEFAULTS[k]);
 
 /** Distances of the plan set by hand on the drawing (src/shaft/edit.ts); each one absent is worked out. */
 export const planSchema = z.object({
@@ -125,17 +132,17 @@ export const shaftInputsSchema = z.object({
   wall: mm(50, 1000).default(200),
   vertical: verticalSchema.default(DEFAULT_VERTICAL),
   room: roomSchema.nullable().default(null),
-  landingDepth: allowance('landingDepth', 500),
-  sillGap: allowance('sillGap', 200),
-  carDoorDepth: allowance('carDoorDepth', 500),
-  carWall: allowance('carWall', 200),
-  railZone: allowance('railZone', 800),
-  cwCarGap: allowance('cwCarGap', 500),
-  cwDepth: mm(50, 600).default(DEFAULTS.cwDepth),
-  cwWallGap: allowance('cwWallGap', 800),
-  rearGap: allowance('rearGap', 800),
-  shoeGap: allowance('shoeGap', 300),
-  cwRailGap: allowance('cwRailGap', 500),
+  landingDepth: allowance('landingDepth'),
+  sillGap: allowance('sillGap'),
+  carDoorDepth: allowance('carDoorDepth'),
+  carWall: allowance('carWall'),
+  railZone: allowance('railZone'),
+  cwCarGap: allowance('cwCarGap'),
+  cwDepth: allowance('cwDepth'),
+  cwWallGap: allowance('cwWallGap'),
+  rearGap: allowance('rearGap'),
+  shoeGap: allowance('shoeGap'),
+  cwRailGap: allowance('cwRailGap'),
   plan: planSchema.optional(),
   niches: z.array(nicheSchema).max(8).optional(),
   callStation: z.object({ side: z.enum(['left', 'right']), offset: mm(0, 2000), height: mm(600, 2000) }).strict().optional(),
@@ -147,8 +154,18 @@ export const shaftInputsSchema = z.object({
   /** the walls at the top floor and in the headroom, in from the main floor's (src/shaft/head.ts) */
   head: z.object({ front: mm(-500, 500), rear: mm(-500, 500), left: mm(-500, 500), right: mm(-500, 500) }).strict().optional(),
   /** linings of the landing doors in an old opening between the marbles (src/shaft/imbotti.ts) */
-  imbotti: z.object({ left: mm(0, 1500), right: mm(0, 1500), top: mm(0, 1500) }).strict().optional(),
-}).strict();
+  imbotti: z.object({ left: mm(0, IMBOTTI_MAX), right: mm(0, IMBOTTI_MAX), top: mm(0, IMBOTTI_MAX) }).strict().optional(),
+}).strict().superRefine((S, ctx) => {
+  // the next stop above, a door's height up at least when both have a door on the same side (the doors of one wall do not
+  // overlap), above it in any case
+  const sides = (d: 'A' | 'B' | 'AB'): string[] => (d === 'AB' ? ['A', 'B'] : [d]), F = S.vertical.floors;
+  F.forEach((f, i) => {
+    const up = F[i + 1];
+    if (!up) return;
+    const min = sides(f.door).some((x) => sides(up.door).includes(x)) ? S.doorHeight : 1;
+    if (f.rise < min) ctx.addIssue({ code: z.ZodIssueCode.too_small, minimum: min, inclusive: true, type: 'number', path: ['vertical', 'floors', i, 'rise'], message: 'stops too close' });
+  });
+});
 
 const finite = z.number().finite();
 const positive = finite.positive().max(1e9);

@@ -1,6 +1,9 @@
 // The maker's machine the engineer picks for the proposal (src/lib/catalog/machines.ts): among the options of the
 // sizing only those a machine of the catalogue takes, with the catalogue's ratio nearest the ideal one (the inverter
 // brings the speed back to the rated one within KL.catalogRatioTol), the static load it allows and its mass. Pure.
+import { compute } from '@/calc/compute';
+import { readInputs } from '@/calc/inputs';
+import { ceilTo } from '@/calc/math';
 import { compareOptions } from '@/calc/sizing';
 import type { FormValues, SizingOption } from '@/calc/types';
 import { catalogFit, catalogOf, type Brand, type CatalogFit } from '@/lib/catalog/machines';
@@ -21,10 +24,18 @@ export function bestFit(choice: CatalogChoice, o: SizingOption, Q: number, r: nu
   return fits.sort((a, b) => a.machine.staticKg - b.machine.staticKg || Math.abs(a.dv) - Math.abs(b.dv))[0] ?? null;
 }
 
-/** What the machine of the catalogue sets in the calculation: its ratio, the static load it allows, its mass. */
-export const catalogValues = (f: CatalogFit): FormValues => ({
-  n_i: Math.round(f.i * 1000) / 1000, n_shaftMax: f.machine.staticKg, ...(f.machine.mass !== null ? { n_mass: f.machine.mass } : {}),
-});
+/** What the machine of the catalogue sets in the calculation `V` (the sizing option's values already in it): its name
+ *  (two models of equal data stay apart), its ratio, the static load it allows, its mass, and the brake per set sized
+ *  again with its ratio by the sizing's rule (sizing.ts: the largest requirement, up to 5 N·m): the requirement on the
+ *  motor's shaft follows the ratio, the option's brake was sized for the grid's. */
+export function catalogValues(f: CatalogFit, V: FormValues): FormValues {
+  const own: FormValues = {
+    n_model: `${f.machine.brand} ${f.machine.model}`, n_i: Math.round(f.i * 1000) / 1000, n_shaftMax: f.machine.staticKg,
+    ...(f.machine.mass !== null ? { n_mass: f.machine.mass } : {}),
+  };
+  const { I, N } = readInputs({ ...V, ...own }), b = compute(I, { ...N, brakeNm: 0 }).brake;
+  return { ...own, n_brakeNm: ceilTo(Math.max(b.one, b.up, b.all / 2), 5) };
+}
 
 /** The sizing's own choice among the options found: per rope diameter the fewest ropes, then the smallest sheave
  *  (with the ropes kept, `keep`: every option), then compareOptions; null when none. */

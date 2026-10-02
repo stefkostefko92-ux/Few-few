@@ -2,6 +2,7 @@
 // share them, so a number reads the same everywhere. Pure: no DOM, no React.
 import { brakeWindow } from '@/calc/compute';
 import { ceilTo, G } from '@/calc/math';
+import { K } from '@/calc/norme';
 import type {
   BrakeCase, BrakeWindow, Check, CheckId, CheckStatus, Groove, Machine, Plant, Results, SensitivityVariant, Sizing, SizingOption, TractionCase,
 } from '@/calc/types';
@@ -17,6 +18,14 @@ export const verdictClass = (r: Results): 'ko' | 'warn' | 'ok' => ({ fail: 'ko',
 export const worstTraction = (r: Results): number => Math.max(r.load.util, r.dn.util, r.up.util);
 export const sensMeasured = (sens: readonly SensitivityVariant[]): boolean => !sens.some((s) => s.key === 'k');
 const isBrakeCase = (c: TractionCase | BrakeCase): c is BrakeCase => 'dir' in c;
+
+/** The sense of a check's limit: the value at most (≤) or at least (≥) the limit. */
+const AT_LEAST: ReadonlySet<CheckId> = new Set<CheckId>(['tr_stall', 'r_dd', 'r_ddp', 'r_nd', 'r_sfa', 'b_sets']);
+
+/** The unit of a check's value and limit; none for a ratio, a utilisation, a safety factor or a count. */
+export const CHECK_UNIT: Readonly<Partial<Record<CheckId, string>>> = {
+  g_geom: '°', d_pst: 'kW', d_mp: 'N·m', s_shaft: 'kg', b_all: 'N·m', b_one: 'N·m', b_up: 'N·m', b_amax: 'm/s²', s_force: 'N', s_uplift: 'kg',
+};
 
 export function textsFor(P: Pres) {
   const { t, fmt } = P;
@@ -90,13 +99,14 @@ export function textsFor(P: Pres) {
   const etaText = (M: Machine): string => `${fmt(M.etaI, 2)}${M.etaIest ? ` (${t('est')})` : ''}`;
   const windowText = (w: BrakeWindow): string =>
     `${fmt(w.lo / w.sets, 1)} N·m · ${w.hi == null ? t('b_win_none') : w.hi === Infinity ? '—' : `${fmt(w.hi / w.sets, 1)} N·m`}`;
-  const machineRows = (N: Machine, res: Results): Row2[] => [
+  // `old`: the existing machine (its ropes are the existing ones)
+  const machineRows = (N: Machine, res: Results, old = false): Row2[] => [
     [t('D'), `${fmt(N.D, 0)} mm`], [t('groove'), grooveText(N.groove)], [t('i'), fmt(N.i, 1)],
     [t('Pn'), `${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} 1/min · ${fmt(N.fn, 0)} Hz`],
     [`${t('etaD')} · ${t('etaI')}`, `${fmt(N.etaD, 2)} · ${etaText(N)}`],
     [`${t('brakeSets')} × ${t('brakeNm')}`, `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m`],
     [t('b_win'), windowText(brakeWindow(res))],
-    [t('g_ropes'), `${N.n} × Ø${fmt(N.d, 1)} mm · ${fmt(N.Fmin, 1)} kN · ${fmt(N.qf, 3)} kg/m`],
+    [t(old ? 'oldRopes' : 'g_ropes'), `${N.n} × Ø${fmt(N.d, 1)} mm · ${fmt(N.Fmin, 1)} kN · ${fmt(N.qf, 3)} kg/m`],
     [t('shaftMax'), N.shaftMax > 0 ? `${fmt(N.shaftMax, 0)} kg` : '—'],
     [t('MpCat'), N.MpCat > 0 ? `${fmt(N.MpCat, 0)} N·m` : '—'],
   ];
@@ -107,6 +117,15 @@ export function textsFor(P: Pres) {
     return `${t(grp)} · ${t(id)}`;
   }
   const checkText = (c: Check): string => `${checkLabel(c.id)}${c.cs ? ` — ${caseText(c.cs, c.id !== 'b_amax')}` : ''}`;
+  // a check's value and limit with their unit; the ropes as number × diameter (machine N), both are checked
+  const unitOf = (id: CheckId): string => (CHECK_UNIT[id] ? `\u00a0${CHECK_UNIT[id]}` : '');
+  const checkValue = (c: Check, N: Machine): string => (c.value == null ? '—' : c.id === 'r_nd' ? `${N.n} × Ø${dText(N.d)}\u00a0mm` : `${fmt(c.value, c.dec)}${unitOf(c.id)}`);
+  const checkLimit = (c: Check, N: Machine): string => {
+    if (c.id === 'g_geom') return grooveLimit(N.groove);
+    if (c.limit == null) return '';
+    const sense = AT_LEAST.has(c.id) ? '≥' : '≤';
+    return c.id === 'r_nd' ? `≥ ${K.ropesMin} × Ø${dText(K.ropeDiameterMin)}\u00a0mm` : `${sense} ${fmt(c.limit, c.dec)}${unitOf(c.id)}`;
+  };
   const verdictText = (r: Results): string => {
     const n = r.fails.length, w = r.checks.filter((c) => c.status === 'warn').length;
     return n ? (n === 1 ? t('verdict_ko1') : t('verdict_ko', { n })) : w ? (w === 1 ? t('verdict_warn1') : t('verdict_warn', { w })) : t('verdict_ok');
@@ -130,7 +149,7 @@ export function textsFor(P: Pres) {
 
   return {
     st, alphaText, grooveAngles, grooveText, grooveLimit, grooveShort, proposalShort, dText, noneText, critText, altText, proposalRows, proposalCells,
-    proposalHead, comparisonRows, verifyList, caseText, etaText, windowText, machineRows, checkLabel, checkText, verdictText, sensLabel, sensRows,
+    proposalHead, comparisonRows, verifyList, caseText, etaText, windowText, machineRows, checkLabel, checkText, checkValue, checkLimit, verdictText, sensLabel, sensRows,
     sensHead, sensTitle, sensLine, sensChanges,
   };
 }

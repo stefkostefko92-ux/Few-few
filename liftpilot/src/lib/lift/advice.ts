@@ -47,8 +47,14 @@ export interface MachineCandidate {
   /** the installation and the machine the calculation verified with it */
   I: Plant;
   N: Machine;
-  /** the counterweight's mass [kg] */
+  /** the counterweight's mass [kg] and the balance it gives (qeq/Q when the balance mass was entered, else k) */
   Mcw: number;
+  k: number;
+  /** the largest torque on the reducer's output shaft the calculation asks [N·m]; the least brake torque each set must
+   *  give [N·m]; a machine below: the net uplift on its anchors in the test [kg] (null above) */
+  mpMax: number;
+  brakeMin: number;
+  uplift: number | null;
   /** the load on the sheave's shaft in the test [kg] and what the machine allows */
   testKg: number;
   staticKg: number;
@@ -117,7 +123,8 @@ export function candidateOf(fit: CatalogFit, I: Plant, N: Machine, res: Results,
   const c = fit.machine;
   if (!fit.ratio) return null;
   return {
-    brand: c.brand, model: c.model, ratio: fit.ratio, i: fit.i, dv: fit.dv, I, N, Mcw: res.Mcw, testKg: res.shaft.testKg, staticKg: c.staticKg,
+    brand: c.brand, model: c.model, ratio: fit.ratio, i: fit.i, dv: fit.dv, I, N, Mcw: res.Mcw, k: res.k, mpMax: res.drive.MpMax,
+    brakeMin: Math.max(res.brake.all / Math.max(1, res.brake.sets), res.brake.one, res.brake.up), uplift: res.shaft.uplift, testKg: res.shaft.testKg, staticKg: c.staticKg,
     mass: c.mass, kWmax: c.kWmax, bedplate, drawn: shapeOf(c.brand, c.model) !== null, fails, warns, src: c.src, sources: sourcesOf(c.src), values,
   };
 }
@@ -141,7 +148,8 @@ export function valuesCandidate(V: FormValues, a: Analysis, m: AdviceModel): Mac
   const fits = a.sizing.options.flatMap((o) => { const fit = bestFit(m, o, I.Q, I.r); return fit ? [{ o, fit }] : []; });
   const best = pickOption(fits, a.sizing.keep !== null);
   if (!best) return null;
-  const values = { ...proposalValues(best.o), ...catalogValues(best.fit) }, b = analyse(mirrorRopes({ ...V, ...values })), N = b.ctx.N;
+  const option = proposalValues(best.o), values = { ...option, ...catalogValues(best.fit, mirrorRopes({ ...V, ...option })) };
+  const b = analyse(mirrorRopes({ ...V, ...values })), N = b.ctx.N;
   return candidateOf(best.fit, b.ctx.I, N, b.res, b.res.fails.length, count(b.res.checks, 'warn'),
     b.ctx.I.layout === 'topDefl' ? makerBedplate(m.brand, m.model, N.D, b.ctx.I.Dp) : null, values);
 }

@@ -7,7 +7,7 @@
 // the note names. Pure.
 import calcIt from '../../../messages/calc/it.json';
 import type { SheetImage } from '@/drawing';
-import { MAKER_SITE } from '@/lib/catalog/machines';
+import { CATALOG_READ_ON, MAKER_SITE } from '@/lib/catalog/machines';
 import type { DataSource, MachineCandidate } from '@/lib/lift/advice';
 import { NORMA_SIGLA, type Collaudo } from '@/lib/lift/collaudo';
 import { dvText, machineName } from '@/lib/present/advice';
@@ -30,6 +30,8 @@ export interface OrderInput {
   /** the machine room in plan and section B-B with the ordered machine (drawings.ts); empty without a machine room */
   room: ReportBlock[];
   collaudo: Collaudo;
+  /** the car's mass is the software's estimate (not entered): the maker is told */
+  pEstimate?: boolean;
   generatedAt: Date;
 }
 
@@ -46,7 +48,9 @@ export function buildOrder(o: OrderInput): ReportDoc {
   const when = (d: Date): string => new Intl.DateTimeFormat('it-IT', { dateStyle: 'long', timeZone: 'Europe/Rome' }).format(d);
   const what = o.record.kind === 'design' ? 'progetto' : 'calcolo', pr = o.project;
   const dText = (d: number): string => fmt(d, Number.isInteger(d) ? 0 : 1);
-  const status = (m: MachineCandidate): string => (m.fails ? `non conforme (${m.fails} verifiche non passano)` : m.warns ? `conforme con ${m.warns} avvisi` : 'conforme');
+  // the software's checks only: no statement of conformity of the machine or of the installation
+  const status = (m: MachineCandidate): string => (m.fails ? `non passa ${m.fails === 1 ? '1 verifica' : `${m.fails} verifiche`} del software`
+    : `passa le verifiche del software${m.warns ? `, con ${m.warns === 1 ? '1 avviso' : `${m.warns} avvisi`}` : ''}`);
   const B: ReportBlock[] = [];
   let n = 0;
   const section = (title: string): number => { n += 1; B.push({ t: 'h2', text: `${n}. ${title}` }); return n; };
@@ -58,7 +62,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   B.push({ t: 'h1', text: `Bozza d’ordine — argano ${machineName(c)}` });
   B.push({ t: 'sub', text: `${o.companyCity ? `${o.companyCity}, ` : ''}${when(o.generatedAt)} · bozza da completare e verificare prima dell’invio` });
   if (!recorded) {
-    B.push({ t: 'box', text: `Il ${what} salvato verifica un argano diverso da questo. ${machineName(c)} è l’argano consigliato fra SICOR e Montanari per lo stesso impianto, `
+    B.push({ t: 'box', text: `Il ${what} salvato verifica un argano diverso da questo. ${machineName(c)} è il primo del confronto fra SICOR e Montanari per lo stesso impianto, `
       + `verificato dal software con i suoi dati: per avere relazione e disegni coerenti con l’ordine, sceglierlo nel ${o.record.kind === 'design' ? 'progetto' : 'calcolatore'} `
       + '(«Usa questo argano») e salvare di nuovo.' });
   }
@@ -81,9 +85,12 @@ export function buildOrder(o: OrderInput): ReportDoc {
     ['Puleggia di trazione', `Ø ${fmt(N.D, 0)} mm primitivo; ${N.n} gole per funi Ø ${dText(N.d)} mm; ${X.grooveText(N.groove)}`],
     ['Motore', `${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} giri/min · ${fmt(N.fn, 0)} Hz${c.kWmax !== null ? ` (a catalogo fino a ${fmt(c.kWmax, 1)} kW)` : ''}`],
     ['Comando', `a frequenza variabile (inverter): con il rapporto ${c.ratio} la cabina va a ${fmt(vMains, 2)} m/s a ${fmt(N.fn, 0)} Hz (${dvText(c.dv, fmt)} %), l’inverter la porta a ${fmt(I.v, 2)} m/s`],
-    ['Freno', `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m sull’albero del motore, coppia minima per ganascia dal calcolo (UNI EN 81-20:2020, 5.9.2.2)`],
-    ['Carico statico sull’albero', `${fmt(c.testKg, 0)} kg nella prova; ammessi a catalogo ${fmt(c.staticKg, 0)} kg`],
-    ...(N.MpCat > 0 ? [['Coppia in uscita', `fino a ${fmt(N.MpCat, 0)} N·m sull’albero lento (dal calcolo)`] as [string, string]] : []),
+    ['Freno', `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m sull’albero del motore (taratura; minimo richiesto dal calcolo ${fmt(c.brakeMin, 1)} N·m per gruppo, `
+      + 'UNI EN 81-20:2020, 5.9.2.2)'],
+    ['Carico sull’albero nella prova con 1,25·Q', `${fmt(c.testKg, 0)} kg${I.layout === 'bottom' ? ' verso l’alto (macchina in basso)' : ''}; ammessi a catalogo ${fmt(c.staticKg, 0)} kg`
+      + (c.uplift !== null && c.uplift > 0 ? `; sollevamento netto sugli ancoraggi ${fmt(c.uplift, 0)} kg (peso della macchina dedotto)` : '')],
+    ['Coppia in uscita dal riduttore', `${fmt(c.mpMax, 0)} N·m al massimo sull’albero lento, richiesta dal calcolo: da confermare con il catalogo del riduttore`
+      + (N.MpCat > 0 ? ` (ammessa ${fmt(N.MpCat, 0)} N·m, dato inserito)` : '')],
     ['Massa (catalogo)', c.mass === null ? 'non indicata dal costruttore' : `${fmt(c.mass, 0)} kg`],
     ['Fonte dei dati di catalogo', c.src],
     ['Esecuzione (vista dal lato puleggia)', `☐ destra   ☐ sinistra${hand}`],
@@ -107,7 +114,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   B.push({ t: 'kv', rows: [
     ['Portata · velocità', `${fmt(I.Q, 0)} kg · ${fmt(I.v, 2)} m/s`],
     ['Taglia · corsa', `${I.r}:1 · ${fmt(I.H, 2)} m`],
-    ['Massa della cabina · contrappeso', `${fmt(I.P, 0)} kg · ${fmt(c.Mcw, 0)} kg (bilanciamento ${fmt(I.k, 2)})`],
+    ['Massa della cabina · contrappeso', `${fmt(I.P, 0)} kg${o.pEstimate ? ' (stima del software, da confermare)' : ''} · ${fmt(c.Mcw, 0)} kg (bilanciamento ${fmt(c.k, I.qeq > 0 ? 3 : 2)})`],
     ['Disposizione', t(`lay_${I.layout}`)],
     ['Funi (non comprese)', `${N.n} × Ø ${dText(N.d)} mm, carico di rottura minimo ${fmt(N.Fmin, 1)} kN`],
     ['Norma del collaudo', NORMA_SIGLA[o.collaudo.norma]],
@@ -130,8 +137,10 @@ export function buildOrder(o: OrderInput): ReportDoc {
   section('Condizioni (da completare)');
   B.push({ t: 'kv', rows: [['Prezzo unitario', `€ ${BLANK}`], ['Consegna richiesta', BLANK], ['Resa e imballo', BLANK], ['Pagamento', BLANK], ['Validità dell’offerta', BLANK]] });
   const main = c.sources[0];
-  B.push({ t: 'p', style: 'note', text: `Dati di catalogo letti il 2 ottobre 2026${main ? ` ${SOURCE[main]}` : ''} (la fonte al punto 2): confermarli con la scheda tecnica `
-    + 'e l’offerta del costruttore prima dell’ordine. Questa è una bozza generata da LiftPilot: diventa un ordine con timbro e firma del committente.' });
+  B.push({ t: 'p', style: 'note', text: `Dati di catalogo letti il ${CATALOG_READ_ON}${main ? ` ${SOURCE[main]}` : ''} (la fonte al punto 2): confermarli con la scheda tecnica `
+    + 'e l’offerta del costruttore prima dell’ordine. Questa è una bozza generata da LiftPilot: diventa un ordine con timbro e firma del committente, '
+    + 'che ne verifica il contenuto. Carbon Stealth VCC, che fornisce il software, non è parte dell’ordine né della fornitura. '
+    + `${c.brand} è un marchio del suo titolare, citato solo per identificare il prodotto.` });
   B.push({ t: 'sign', labels: [`Timbro e firma del committente (${o.company})`, 'Data', 'Accettazione del fornitore'] });
 
   return {

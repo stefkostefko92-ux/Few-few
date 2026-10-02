@@ -15,7 +15,8 @@ interface Props {
 }
 
 type NumKey = Exclude<keyof VerticalInputs, 'floors' | 'main' | 'topRefuge' | 'pitRefuge' | 'carBufferType' | 'cwBufferType'>;
-const num = (s: string): number => Number(s.replace(',', '.'));
+// an emptied field changes nothing (it is not a zero)
+const num = (s: string): number => (s.trim() === '' ? NaN : Number(s.replace(',', '.')));
 
 export default function VerticalOptions({ I, set, open = false }: Props) {
   const t = useTranslations('shaft'), V = I.vertical, floors = V.floors;

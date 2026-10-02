@@ -210,6 +210,9 @@ export interface CarFrame {
 
 export interface Layout {
   inputs: ShaftInputs;
+  /** the pitch of the counterweight rails' brackets a drawing set's data declare [mm]; absent: the rule's
+   *  (KV_VERT.bracketPitch). Sheet 1 and the plan's codes count with it. */
+  cwBracketPitch?: number;
   /** a car of the smallest admissible size fits in the shaft */
   fits: boolean;
   /** car inside: width along the front wall and depth [mm] */

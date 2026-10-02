@@ -2,7 +2,6 @@
 import { brakeWindow, compute, sensitivity } from '@/calc/compute';
 import { readInputs } from '@/calc/inputs';
 import { sizeMachine } from '@/calc/sizing';
-import { ceilTo } from '@/calc/math';
 import type { BrakeWindow, FormValues, ParsedInputs, Results, SensitivityVariant, Sizing, SizingOption } from '@/calc/types';
 
 export interface Analysis {
@@ -28,11 +27,13 @@ export function mirrorRopes(V: FormValues): FormValues {
   return V;
 }
 
-/** A proposal as values of the new-machine fields; poles, speed, η_d, inertias and mass stay as entered. */
+/** A proposal as values of the new-machine fields; poles, speed, η_d, inertias and mass stay as entered. Not a model of a
+ *  catalogue (no name), and neither the static load allowed on the shaft nor the output torque: those are a maker's
+ *  data, the sizing's numbers are only what the maker is asked for; their checks stay out until they are entered. */
 export function proposalValues(o: SizingOption): FormValues {
   const M = o.M;
   return {
-    n_D: M.D, n_groove: M.groove.type, n_beta: M.groove.beta, n_gamma: M.groove.gamma, n_i: M.i, n_Pn: M.Pn, n_brakeSets: 2,
-    n_brakeNm: M.brakeNm, n_shaftMax: M.shaftMax, n_MpCat: ceilTo(o.res.drive.MpMax, 10), n_n: M.n, n_d: M.d, n_Fmin: M.Fmin, n_qf: M.qf,
+    n_model: '', n_D: M.D, n_groove: M.groove.type, n_beta: M.groove.beta, n_gamma: M.groove.gamma, n_i: M.i, n_Pn: M.Pn, n_brakeSets: 2,
+    n_brakeNm: M.brakeNm, n_shaftMax: '', n_MpCat: '', n_n: M.n, n_d: M.d, n_Fmin: M.Fmin, n_qf: M.qf,
   };
 }

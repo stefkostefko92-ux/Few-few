@@ -27,7 +27,7 @@ export function orderRoute(kind: 'design' | 'calc') {
         return r.error === 'engineChanged' ? text(409, 'The running engines do not reproduce this record')
           : r.error === 'noMachine' ? text(422, 'No catalogue machine takes this installation') : text(404, 'Not found');
       }
-      await audit({ companyId: user.companyId, userId: user.id, action: 'ORDER_EXPORTED', entity: kind === 'design' ? 'LiftDesign' : 'Calculation', entityId: r.entityId, meta: { format: format.data } });
+      await audit({ companyId: user.companyId, userId: user.id, action: 'ORDER_EXPORTED', entity: r.entity, entityId: r.entityId, meta: { format: format.data } });
       return new Response(r.body, {
         headers: { 'Content-Type': r.mime, 'Content-Disposition': `attachment; filename="${r.name}"`, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
       });

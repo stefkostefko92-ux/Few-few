@@ -141,7 +141,9 @@ function propose(V0: FormValues, L: Layout, geometry: (W: FormValues) => FormVal
     }
   }
   const best = pickOption(found, !!c0.rope);
-  return best ? { V: geometry(mirrorRopes({ ...best.V, ...proposalValues(best.o), ...(best.fit ? catalogValues(best.fit) : {}) })), fit: best.fit } : null;
+  if (!best) return null;
+  const W = mirrorRopes({ ...best.V, ...proposalValues(best.o) });
+  return { V: geometry(best.fit ? { ...W, ...catalogValues(best.fit, W) } : W), fit: best.fit };
 }
 
 export function deriveLift(inp: LiftInputs): LiftDerived {

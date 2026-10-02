@@ -87,6 +87,10 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_stand: ['machine'],
 };
 
+/** Checks of the data, not of a part: the distances set by hand on the plan keep every part in its place
+ *  (layout.ts). They apply to every test, whatever the intervention replaces. */
+export const VERIFICHE_DATI: readonly ShaftCheckId[] = ['v_place', 'v_doorcar'];
+
 /** The accessibility checks of DM 236/1989: the shaft's, present when its case is chosen in the shaft's data. */
 export const VERIFICHE_DM236: readonly ShaftCheckId[] = ['v_acc_car', 'v_acc_door', 'v_acc_side'];
 /** The checks NTC 2018 computes: the beams under the machine (σ ≤ fyk/γM0, deflection). The other standards added
@@ -103,7 +107,7 @@ export function underNorma(C: Collaudo, n: Norma, id: CheckId | ShaftCheckId): b
   if (n === 'en81') return true;
   if (n === 'dm236') return VERIFICHE_DM236.some((x) => x === id);
   if (n === 'ntc2018') return VERIFICHE_NTC.some((x) => x === id);
-  if (n === '10411-1' || n === '10411-11') return AMBITO_VERIFICHE[id].some((p) => C.parti.includes(p));
+  if (n === '10411-1' || n === '10411-11') return VERIFICHE_DATI.some((x) => x === id) || AMBITO_VERIFICHE[id].some((p) => C.parti.includes(p));
   return false;
 }
 

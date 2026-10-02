@@ -47,7 +47,7 @@ export function getCalculation(user: SessionUser, id: string) {
       reviews: { orderBy: { createdAt: 'asc' }, include: { user: { select: { name: true, role: true } } } },
       shaftDesign: { select: { id: true, label: true, summary: true, inputs: true, source: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, user: { select: { name: true } } } },
       // the one form it was made from, if any: the documents mark what the software filled in
-      liftDesign: { select: { inputs: true } },
+      liftDesign: { select: { id: true, inputs: true, engineVersion: true } },
     },
   });
 }

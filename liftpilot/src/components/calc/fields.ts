@@ -50,7 +50,7 @@ export const MACHINE = (p: 'n_' | 'o_'): readonly Field[] => [
   num(p + 'fn', 'Hz', 1, { key: 'fn', adv: true }), num(p + 'nm', '1/min', 5, { key: 'nm' }),
   num(p + 'Pn', 'kW', 0.1, { key: 'Pn' }), num(p + 'Jm', 'kg·m²', 0.01, { key: 'Jm', adv: true }),
   num(p + 'Js', 'kg·m²', 0.1, { key: 'Js', adv: true }), num(p + 'brakeSets', '', 1, { key: 'brakeSets' }),
-  num(p + 'brakeNm', 'N·m', 1, { key: 'brakeNm' }), num(p + 'shaftMax', 'kg', 50, { key: 'shaftMax', adv: p === 'o_' }),
+  num(p + 'brakeNm', 'N·m', 1, { key: 'brakeNm' }), num(p + 'shaftMax', 'kg', 50, { key: 'shaftMax', hint: 'hint_shaftMax', adv: p === 'o_' }),
   num(p + 'MpCat', 'N·m', 10, { key: 'MpCat', hint: 'hint_MpCat', adv: p === 'o_' }),
   num(p + 'mass', 'kg', 10, { key: 'mass' }),
 ];
@@ -61,6 +61,8 @@ export const SERVICE: readonly Field[] = [num('aDesign', 'm/s²', 0.05), { id: '
 export const FIELD_IDS: readonly string[] = [
   ...[PLANT, LAYOUT, MACHINE('n_'), MACHINE('o_'), ROPES('n_'), ROPES('o_'), SERVICE].flat().map((f) => f.id),
   'compare', 'keepD', 'keepRopes',
+  // the catalogue's maker and model taken from the advice ("SICOR SH160"): two models of equal data stay apart
+  'n_model',
 ];
 
 const numOf = (V: FormValues, id: string): number => {

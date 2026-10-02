@@ -16,10 +16,11 @@ import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
-import type { ShaftSource } from '@/lib/shaft-input';
+import type { CalcKey } from '@/lib/present/tr';
+import { shaftInputsSchema, type ShaftSource } from '@/lib/shaft-input';
 import { editShaft } from '@/lib/shaft-edit';
 import { saveLiftDesignAction } from '@/server/lift-actions';
-import { editValue, keptPlan, type ShaftInputs } from '@/shaft';
+import { DEFAULTS, editValue, keptPlan, type ShaftInputs } from '@/shaft';
 import { asCalcDict } from '../calc/dict';
 import ShaftOptions from '../shaft/ShaftOptions';
 import VerticalOptions from '../shaft/VerticalOptions';
@@ -50,6 +51,18 @@ interface Props {
 /** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
 const CALC_H_MAX = 3000;
 
+/** The key of the shaft's form label for a value at `path` of the shaft's inputs (the path itself when none). */
+function shaftLabelKey(path: readonly PropertyKey[]): string {
+  const [a, b] = path.map(String);
+  if (b && a === 'vertical') return `vt_${b}`;
+  if (b && a === 'room') return `rm_${b}`;
+  if (b && a === 'imbotti') return `im_${b}`;
+  return a && a in DEFAULTS ? `a_${a}` : a ?? '';
+}
+
+/** An issue of the geometry as the field it is fixed in. */
+const ISSUE_FIELD: Readonly<Record<string, string>> = { calata: 'n_D', rinvio: 'h' };
+
 export interface WorkspaceApi {
   /** a dimension of the drawings given a new length: null when applied, else why not */
   edit(e: Edit, length: number): Refusal | null;
@@ -76,6 +89,21 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     return d ? { evaluate: (m: AdviceModel) => liftCandidate(d, m), sheave: derived.machine.D } : null;
   }, [deferred, derived]);
   const bad = useMemo(() => new Set(visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values)), [derived]);
+  // what the save would refuse, as the server refuses it, named as the form names it: every value of the calculation out
+  // of range (shown or not), each issue of the geometry, every value of the shaft out of the ranges the server accepts
+  const nameOf = useCallback((field: string): string => {
+    if (field.startsWith('shaft.')) {
+      const path = field.slice(6).split('.'), key = shaftLabelKey(path);
+      return ts.has(key) ? ts(key) : path.join('.');
+    }
+    const id = ISSUE_FIELD[field] ?? field.replace(/^calc\./, '');
+    return P.t(id.replace(/^[no]_/, '') as CalcKey) + (id.startsWith('o_') ? ` (${P.t('g_old')})` : '');
+  }, [P, ts]);
+  const refused = useMemo(() => {
+    const r = shaftInputsSchema.safeParse(deferred.shaft);
+    const shaft = r.success ? [] : r.error.issues.map((i) => `shaft.${i.path.map(String).join('.')}`);
+    return [...new Set([...derived.analysis.ctx.bad, ...derived.issues, ...shaft].map(nameOf))];
+  }, [deferred.shaft, derived, nameOf]);
   useEffect(() => { onDerived?.(deferred, derived); }, [deferred, derived, onDerived]);
   const sim = useRef<SimApi>(null);
 
@@ -92,10 +120,11 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     setInp((p) => ({ ...p, calc: mirrorRopes({ ...p.calc, ...patch }) }));
     setSaveError(null);
   };
-  // a value of the calculation a drawing of the machine room shows: the diverting pulley's height under the sheave [mm]
+  // a value of the calculation a drawing of the machine room shows: the diverting pulley's height under the sheave [mm],
+  // never below it (the calculation takes h ≥ 0)
   const setCalcFromDrawing = (key: string, value: number): Refusal | null => {
     if (key !== 'calc.h') return { min: null, max: null };
-    if (!Number.isFinite(value) || Math.abs(value) > CALC_H_MAX) return { min: -CALC_H_MAX, max: CALC_H_MAX };
+    if (!Number.isFinite(value) || value < 0 || value > CALC_H_MAX) return { min: 0, max: CALC_H_MAX };
     setCalc({ h: value / 1000 });
     return null;
   };
@@ -169,7 +198,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
     startSaving(async () => {
       const r = await saveLiftDesignAction({ projectId, inputs: inp, source, label });
       if (r.ok) router.push(`/app/lift-designs/${r.id}`);
-      else setSaveError(`${te(r.error)}${r.fields?.length ? `: ${r.fields.join(', ')}` : ''}`);
+      else setSaveError(`${te(r.error)}${r.fields?.length ? `: ${[...new Set(r.fields.map(nameOf))].join(', ')}` : ''}`);
     });
   };
   const context = inp.calc.context === 'new' ? 'new' : 'repl', above = derived.values.layout !== 'bottom';
@@ -215,8 +244,8 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api }: Pr
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={t('label')} aria-label={t('label')} />
-          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || bad.size > 0}>{saving ? t('saving') : t('save')}</button>
-          <span className="note">{bad.size ? t('fix_fields') : t('save_hint')}</span>
+          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || refused.length > 0}>{saving ? t('saving') : t('save')}</button>
+          <span className={refused.length ? 'note bad' : 'note'}>{refused.length ? t('fix_list', { list: refused.join(', ') }) : t('save_hint')}</span>
           {saveError ? <span className="note bad" role="alert">{saveError}</span> : null}
         </div>
       </div>

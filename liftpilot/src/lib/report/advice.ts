@@ -9,7 +9,7 @@ import type { BlockStatus, ReportBlock } from './model';
 type Fmt = (x: number, dec?: number) => string;
 
 const result = (c: MachineCandidate): string => (c.fails ? `${c.fails === 1 ? 'una verifica non passa' : `${c.fails} verifiche non passano`}`
-  : c.warns ? `passa, ${c.warns === 1 ? 'un avviso' : `${c.warns} avvisi`}` : 'passa ogni verifica');
+  : c.warns ? `passa, ${c.warns === 1 ? 'un avviso' : `${c.warns} avvisi`}` : 'passa le verifiche del software');
 const status = (c: MachineCandidate): BlockStatus => (c.fails ? 'fail' : c.warns ? 'warn' : 'ok');
 
 export function adviceBlocks(A: MachineAdvice, fmt: Fmt): ReportBlock[] {
@@ -26,8 +26,9 @@ export function adviceBlocks(A: MachineAdvice, fmt: Fmt): ReportBlock[] {
   const [a, b] = A.best, left = excludedText(A);
   return [
     { t: 'p', text: 'Ogni argano SICOR e Montanari a catalogo verificato con questo impianto, in ordine sui dati: verifiche, fonte dei dati, basamento con il '
-      + 'rinvio, taglia che basta, valori al limite, disegno, velocità, massa; il prezzo non entra nella scelta. ★ il primo di ogni costruttore. La verifica '
-      + 'di questa relazione resta quella dell’argano del calcolo.' },
+      + 'rinvio, taglia che basta, valori al limite, disegno, velocità, massa; il prezzo non entra nella scelta. ★ il primo di ogni costruttore. È un ordine '
+      + 'tecnico sui dati dei cataloghi, non un giudizio sulla qualità né una raccomandazione commerciale; SICOR e Montanari sono marchi dei rispettivi '
+      + 'titolari, citati solo per identificare i prodotti. La verifica di questa relazione resta quella dell’argano del calcolo.' },
     { t: 'grid', head, rows, status: A.candidates.map(status), statusCol: head.length - 1, widths, align: head.map((_, j) => (j === 3 || j === 4 ? 'r' : 'l')) },
     ...(a && A.why ? [{ t: 'p' as const, text: fillText(T[`why_${A.why}`], whyValues(a, b, fmt)) }] : []),
     ...A.none.map((brand) => ({ t: 'p' as const, style: 'note' as const, text: fillText(T.none_brand, { brand }) })),

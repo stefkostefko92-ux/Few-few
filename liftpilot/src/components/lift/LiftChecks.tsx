@@ -26,8 +26,8 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
     const req = onSimulate ? scenarioForCheck(id, res, derived.sim) : null;
     return req && onSimulate ? <button type="button" className="btn btn-sm" onClick={() => onSimulate(req)}>▶ {t('simulate')}</button> : null;
   };
-  // as in the report: the limit without a sign (its sense is in the check's name and clause)
-  const calcLimit = (c: Check): string => (c.limit === null ? '' : fmt(c.limit, c.dec));
+  // as in the report: the value and the limit with their unit, the limit with its sense
+  const N = derived.analysis.ctx.N;
   const C = derived.collaudo, existing = (id: Check['id'] | ShaftCheck['id']): boolean => ambitoOf(C, id) === 'existing';
   const result = (id: Check['id'] | ShaftCheck['id'], status: CheckStatus, text: string) => (existing(id)
     ? <span className="ambito" title={t('ambito_note', { norma: NORMA_SIGLA[C.norma], status: text })}><span className="status-pill existing">{t('ambito_existing')}</span><span className={`ambito-calc ${status}`}>{text}</span></span>
@@ -42,8 +42,8 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
             {res.checks.map((c) => (
               <tr key={c.id} className={existing(c.id) ? 'existing' : undefined}>
                 <th scope="row">{X.checkText(c)}</th>
-                <td className="num" data-label={t('col_value')}>{c.value === null ? '—' : fmt(c.value, c.dec)}</td>
-                <td className="num note" data-label={t('col_limit')}>{calcLimit(c)}</td>
+                <td className="num" data-label={t('col_value')}>{X.checkValue(c, N)}</td>
+                <td className="num note" data-label={t('col_limit')}>{X.checkLimit(c, N)}</td>
                 <td data-label={t('col_result')}>{result(c.id, c.status, X.st(c.status))}</td>
                 <td>{simulate(c.id)}</td>
               </tr>

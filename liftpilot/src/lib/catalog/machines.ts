@@ -46,7 +46,9 @@ const m = (brand: Brand, model: string, ratios: string, sheaves: readonly [numbe
 const named = (c: CatalogMachine): CatalogMachine => ({ ...c, byName: true });
 const hp = (x: number): number => Math.round(x * 0.746 * 10) / 10;
 
-const DAY = '2 ottobre 2026';
+/** The day the catalogues' values were read (the documents say it with their sources). */
+export const CATALOG_READ_ON = '2 ottobre 2026';
+const DAY = CATALOG_READ_ON;
 const sicor = (model: string, page: number, note = ''): string =>
   `D: scheda tecnica ${model} 2025 e brochure Geared 2026, p. 9 e ${page} (sicoritaly.com, ${DAY})${note}`;
 const sassi = (page: number, note: string): string => `D: catalogo argani Sassi REV 2022/03, p. ${page} (copia integrale, ${DAY}); ${note}; E: portate da sassi.it`;

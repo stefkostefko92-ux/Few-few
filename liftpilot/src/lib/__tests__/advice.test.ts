@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
 import { readInputs } from '@/calc/inputs';
 import { MACHINES, MAKER_SITE, BRANDS } from '@/lib/catalog/machines';
-import { mirrorRopes } from '@/lib/present/analysis';
+import { analyse, mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { KL, defaultLift } from '@/lib/lift';
 import { ADVICE_BRANDS, ADVICE_MODELS, CRITERIA, adviceOf, deflectorInputs, liftAdvice, liftAlternative, sourcesOf, valuesAdvice, type MachineCandidate } from '@/lib/lift/advice';
 import { calcMachine, calcOrder, catalogMachineOf, designOrder } from '@/lib/order/machine';
@@ -124,4 +124,32 @@ test('bozza d’ordine del progetto: l’argano scelto, altrimenti il primo del 
   const A = liftAdvice(L), grid = designOrder(L, A), first = A.best[0];
   assert.ok(grid && !grid.recorded && first);
   assert.equal(grid.machine.model, first.model);
+});
+
+test('argano a catalogo: il freno ridimensionato con il suo rapporto, il nome scelto tenuto', () => {
+  // tiro diretto 1:1, 320 kg a 1,6 m/s: il rapporto di catalogo 2/42 chiede più coppia al freno della griglia
+  const V = mirrorRopes({ ...PRESETS.A, Q: 320, P: 360, v: 1.6, layout: 'top', r: '1', alphaMode: 'geo' });
+  const A = valuesAdvice(V);
+  assert.ok(A.candidates.length > 0);
+  for (const c of A.candidates) {
+    const one = analyse(mirrorRopes({ ...V, ...c.values })).res.checks.find((x) => x.id === 'b_one');
+    assert.equal(one?.status, 'ok', `${c.model}: freno per il suo rapporto`);
+  }
+  // M93 e M95 hanno gli stessi dati: il preso resta quello
+  const B = valuesAdvice(PRESETS.A), m95 = [...B.candidates].find((c) => c.model === 'M95') ?? null;
+  const W = m95 ? mirrorRopes({ ...PRESETS.A, ...m95.values }) : null;
+  if (m95 && W) {
+    assert.equal(W.n_model, 'Montanari M95');
+    assert.equal(calcMachine(W)?.model, 'M95');
+    const { n_model: _drop, ...unnamed } = W;
+    void _drop;
+    assert.ok(['M93', 'M95'].includes(calcMachine(unnamed)?.model ?? ''), 'senza nome: riconosciuto dai valori');
+  }
+  // a proposal of the grid: no name, no output torque from a catalogue (the check waits for the reducer's data)
+  const g = analyse(PRESETS.B).sizing.pick;
+  assert.ok(g);
+  const P = proposalValues(g);
+  assert.equal(P.n_model, '');
+  assert.equal(P.n_MpCat, '');
+  assert.ok(!analyse(mirrorRopes({ ...PRESETS.B, ...P })).res.checks.some((c) => c.id === 'd_mp'));
 });

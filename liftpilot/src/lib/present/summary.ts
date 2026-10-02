@@ -21,7 +21,7 @@ export function summaryText(P: Pres, X: Texts, a: Analysis, opts: { badVisible: 
   L.push(`${t('g_new')}: ${X.verdictText(res)}${res.fails.length ? ': ' + res.fails.map((c) => X.checkLabel(c.id)).join('; ') : ''}`);
   for (const q of quickRows(P, X, N, res, sens)) L.push(`  ${t(q.key)} — ${X.st(q.status)}: ${q.text}`);
   for (const c of res.checks) {
-    const val = c.value == null ? '' : ` (${fmt(c.value, c.dec)}${c.limit != null ? ' / ' + fmt(c.limit, c.dec) : ''})`;
+    const val = c.value == null ? '' : ` (${X.checkValue(c, N)}${c.limit != null ? ' / ' + X.checkLimit(c, N) : ''})`;
     L.push(`- ${X.checkText(c)}: ${X.st(c.status)}${val}`);
   }
   L.push(X.sensLine(sens), ...X.sensChanges(sens).map((x) => `  ${x}`));

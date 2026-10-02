@@ -4,7 +4,16 @@
 import { z } from 'zod';
 
 const text = z.string().trim().max(80).optional();
-const num = (max: number) => z.number().finite().min(0).max(max).optional();
+
+/** The range of each number of the data [unit of the field]: the form's fields take the same. A bracket pitch is never
+ *  zero (the brackets are counted by it). */
+export const PLANT_RANGE = {
+  carBracketPitch: [300, 10000], cwBracketPitch: [300, 10000], governorLoad: [0, 5000], dynFactor: [1, 3], currentIn: [0, 1000], currentStart: [0, 5000],
+  voltage: [0, 1000], lightVoltage: [0, 1000], frequency: [0, 100], duty: [0, 100], massShell: [0, 10000], massFloor: [0, 10000], massDoors: [0, 10000],
+  massFrame: [0, 10000], massCables: [0, 1000], massMachine: [0, 20000],
+} as const satisfies Readonly<Record<string, readonly [number, number]>>;
+export type PlantNumber = keyof typeof PLANT_RANGE;
+const num = (k: PlantNumber) => z.number().finite().min(PLANT_RANGE[k][0]).max(PLANT_RANGE[k][1]).optional();
 
 export const plantSchema = z.object({
   /** machine as named on the drawings, e.g. "MONTANARI M 73 (Sx)" */
@@ -20,34 +29,34 @@ export const plantSchema = z.object({
   carBrackets: text,
   cwBrackets: text,
   /** spacing of the rail brackets [mm] */
-  carBracketPitch: num(10000),
-  cwBracketPitch: num(10000),
+  carBracketPitch: num('carBracketPitch'),
+  cwBracketPitch: num('cwBracketPitch'),
   governor: text,
   governorRope: text,
   /** load of the governor on the slab [daN] (P4) */
-  governorLoad: num(5000),
+  governorLoad: num('governorLoad'),
   carBuffers: text,
   cwBuffers: text,
   /** safety gear of the car: progressive, instantaneous roller type, instantaneous (impact factor of the rail loads) */
   safetyGear: z.enum(['progressive', 'roller', 'instantaneous']).optional(),
   /** dynamic coefficient on the machine's static load (practice; default 1,5) */
-  dynFactor: z.number().finite().min(1).max(3).optional(),
+  dynFactor: num('dynFactor'),
   /** rated and starting current [A] */
-  currentIn: num(1000),
-  currentStart: num(5000),
+  currentIn: num('currentIn'),
+  currentStart: num('currentStart'),
   /** supply: power and light voltage [V], frequency [Hz], duty [%] */
-  voltage: num(1000),
-  lightVoltage: num(1000),
-  frequency: num(100),
-  duty: num(100),
+  voltage: num('voltage'),
+  lightVoltage: num('lightVoltage'),
+  frequency: num('frequency'),
+  duty: num('duty'),
   /** parts of the car mass [kg]: shell, floor finish, operator and door panels, frame; travelling cables */
-  massShell: num(10000),
-  massFloor: num(10000),
-  massDoors: num(10000),
-  massFrame: num(10000),
-  massCables: num(1000),
+  massShell: num('massShell'),
+  massFloor: num('massFloor'),
+  massDoors: num('massDoors'),
+  massFrame: num('massFrame'),
+  massCables: num('massCables'),
   /** machine and bedframe [kg] */
-  massMachine: num(20000),
+  massMachine: num('massMachine'),
 }).strict();
 
 export type Plant = z.infer<typeof plantSchema>;

@@ -6,13 +6,11 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import type { Plant } from '@/lib/plant';
+import { PLANT_RANGE, type Plant, type PlantNumber } from '@/lib/plant';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { savePlantAction } from '@/server/drawing-actions';
 
 type TextKey = 'machine' | 'control' | 'shaft' | 'carFinish' | 'landingDoors' | 'carDoors' | 'carFrame' | 'carBrackets' | 'cwBrackets' | 'governor' | 'governorRope' | 'carBuffers' | 'cwBuffers';
-type NumKey = 'carBracketPitch' | 'cwBracketPitch' | 'governorLoad' | 'dynFactor' | 'currentIn' | 'currentStart' | 'voltage' | 'lightVoltage' | 'frequency' | 'duty'
-  | 'massShell' | 'massFloor' | 'massDoors' | 'massFrame' | 'massCables' | 'massMachine';
 
 export default function PlantForm({ projectId, initial, readOnly }: { projectId: string; initial: Plant; readOnly: boolean }) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter();
@@ -27,10 +25,11 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
       <input className="input" value={P[k] ?? ''} maxLength={80} disabled={readOnly} onChange={(e) => put({ [k]: e.target.value.trim() ? e.target.value : undefined })} />
     </label>
   );
-  const num = (k: NumKey, step = 1) => (
+  // the range the server accepts; any decimals (12,5 kg, 1750 mm)
+  const num = (k: PlantNumber) => (
     <label className="field" key={k}>
       <span>{t(`f_${k}`)}</span>
-      <input className="input num" type="number" inputMode="decimal" min={0} step={step} value={P[k] ?? ''} disabled={readOnly}
+      <input className="input num" type="number" inputMode="decimal" min={PLANT_RANGE[k][0]} max={PLANT_RANGE[k][1]} step="any" value={P[k] ?? ''} disabled={readOnly}
         placeholder={k === 'carBracketPitch' || k === 'cwBracketPitch' ? String(KV_VERT.bracketPitch) : undefined}
         onChange={(e) => { const v = e.target.value.replace(',', '.'); put({ [k]: v === '' ? undefined : Number(v) }); }} />
     </label>
@@ -64,10 +63,10 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
         <div className="form-grid">
           {rails('carRails')}
           {text('carBrackets')}
-          {num('carBracketPitch', 50)}
+          {num('carBracketPitch')}
           {rails('cwRails')}
           {text('cwBrackets')}
-          {num('cwBracketPitch', 50)}
+          {num('cwBracketPitch')}
         </div>
         <p className="note">{t('bracketRule', { pitch: KV_VERT.bracketPitch })}</p>
       </fieldset>
@@ -76,7 +75,7 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
         <div className="form-grid">
           {text('governor')}
           {text('governorRope')}
-          {num('governorLoad', 10)}
+          {num('governorLoad')}
           <label className="field">
             <span>{t('f_safetyGear')}</span>
             <select className="input" value={P.safetyGear ?? ''} disabled={readOnly}
@@ -91,11 +90,11 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
       </fieldset>
       <fieldset className="panel">
         <legend>{t('g_masses')}</legend>
-        <div className="form-grid">{(['massShell', 'massFloor', 'massDoors', 'massFrame', 'massCables', 'massMachine'] as const).map((k) => num(k))}{num('dynFactor', 0.1)}</div>
+        <div className="form-grid">{(['massShell', 'massFloor', 'massDoors', 'massFrame', 'massCables', 'massMachine'] as const).map((k) => num(k))}{num('dynFactor')}</div>
       </fieldset>
       <fieldset className="panel">
         <legend>{t('g_electric')}</legend>
-        <div className="form-grid">{num('currentIn', 0.01)}{num('currentStart', 0.01)}{num('voltage')}{num('lightVoltage')}{num('frequency')}{num('duty')}</div>
+        <div className="form-grid">{num('currentIn')}{num('currentStart')}{num('voltage')}{num('lightVoltage')}{num('frequency')}{num('duty')}</div>
       </fieldset>
       {readOnly ? null : (
         <div className="flex flex-wrap items-center gap-3">

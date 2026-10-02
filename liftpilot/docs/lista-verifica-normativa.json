@@ -1059,11 +1059,11 @@
       "id": "vano.locale.ingombro",
       "gruppo": "Locale del macchinario",
       "voce": "L'argano dentro il locale del macchinario",
-      "valore": "l'argano sul suo basamento — con il telaio del rinvio o con il supporto del rinvio — sta dentro il locale in pianta e sotto il soffitto: la distanza minima dai muri e dal soffitto non è negativa; ingombri dalle quote del costruttore per gli argani disegnati com'è, dall'argano generico del software (scalato alla puleggia) per gli altri",
+      "valore": "l'argano sul suo basamento — con il telaio del rinvio o con il supporto del rinvio — sta dentro il locale in pianta e sotto il soffitto: la distanza minima dai muri e dal soffitto non è negativa; ingombri dalle quote del costruttore per gli argani disegnati com'è, dall'argano generico del software (scalato alla puleggia) per gli altri; la puleggia di rinvio sul suo supporto sotto l'argano libera il basamento dell'argano sopra di essa (solo le putrelle sollevate la scavalcano)",
       "riferimento": "—",
       "fonte": "geometria del progetto: la pianta e l'altezza del locale inserite, gli ingombri dell'argano e del basamento",
       "stato": "derivazione",
-      "verifiche": "argano dentro il locale (muri e soffitto)",
+      "verifiche": "argano dentro il locale (muri e soffitto); puleggia di rinvio sul suo supporto sotto l'argano",
       "nota": ""
     },
     {
@@ -1239,7 +1239,7 @@
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
-      "valore": "dalla sommità dell'arcata con la cabina all'ultimo piano fino all'asse della puleggia: testata − sommità dell'arcata + solaio del locale + asse della puleggia a 0,9·D sul pavimento del locale (macchina in basso o senza locale: fino al soffitto del vano)",
+      "valore": "dalla sommità dell'arcata con la cabina all'ultimo piano fino all'asse della puleggia: testata − sommità dell'arcata + solaio del locale + asse della puleggia a 0,9·D sul pavimento del locale; con la puleggia di rinvio, l'asse sul basamento o sul telaio che la porta (voce locale.rinvio); macchina in basso o senza locale: fino al soffitto del vano",
       "riferimento": "—",
       "fonte": "dati verticali del vano; altezza dell'asse scelta dal software",
       "stato": "scelta del software",

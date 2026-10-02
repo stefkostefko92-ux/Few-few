@@ -140,7 +140,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
           <Verdict P={P} X={X} a={a} badCount={bad.size} />
           <CollaudoOptions P={P} isNew={values.context === 'new'} chosen={collaudo} value={collaudoOf(values, collaudo)} set={setCollaudo} />
         </section>
-        <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} onUse={onUse} propMsg={propMsg} />
+        <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudoOf(values, collaudo)} onUse={onUse} propMsg={propMsg} />
       </div>
       <MachineAdvice evaluate={evaluate} alternative={null} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" />
       <div className="savebar">

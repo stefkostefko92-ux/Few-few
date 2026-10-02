@@ -24,11 +24,13 @@ interface State {
   advice: Advice | null;
   alt: AdviceViewProps['alt'];
   running: { done: number; total: number } | null;
+  /** the inputs the advice was worked out for */
+  of: Evaluate | null;
 }
 
 export default function MachineAdvice({ evaluate, alternative, ...view }: Props) {
   const total = ADVICE_MODELS.length;
-  const [s, setS] = useState<State>({ advice: null, alt: null, running: { done: 0, total } });
+  const [s, setS] = useState<State>({ advice: null, alt: null, running: { done: 0, total }, of: null });
   useEffect(() => {
     let live = true, timer = 0;
     // one pass over the models, a slice at a time; `then` gets the advice
@@ -52,11 +54,14 @@ export default function MachineAdvice({ evaluate, alternative, ...view }: Props)
     timer = window.setTimeout(() => {
       setS((p) => ({ ...p, running: { done: 0, total } }));
       pass(evaluate, (advice) => {
-        if (advice.candidates.length || !alternative) { setS({ advice, alt: null, running: null }); return; }
-        pass(alternative.evaluate, (a) => setS({ advice, alt: { advice: a, sheave: alternative.sheave }, running: null }));
+        if (advice.candidates.length || !alternative) { setS({ advice, alt: null, running: null, of: evaluate }); return; }
+        pass(alternative.evaluate, (a) => setS({ advice, alt: { advice: a, sheave: alternative.sheave }, running: null, of: evaluate }));
       });
     }, SETTLE_MS);
     return () => { live = false; window.clearTimeout(timer); };
   }, [evaluate, alternative, total]);
-  return <AdviceView advice={s.advice} alt={s.alt} running={s.running} {...view} />;
+  // the advice on screen is for the inputs as they were from the first change on (not only once the models are being
+  // verified again): dimmed, and its machines are not taken
+  const running = s.running ?? (s.of !== evaluate ? { done: 0, total } : null);
+  return <AdviceView advice={s.advice} alt={s.alt} running={running} {...view} />;
 }

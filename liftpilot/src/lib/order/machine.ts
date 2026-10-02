@@ -16,6 +16,9 @@ export interface OrderMachine {
   advice: MachineAdvice;
 }
 
+/** The maker and model taken from the advice into the calculator's values (n_model), else empty. */
+export const modelOf = (V: FormValues): string => (typeof V.n_model === 'string' ? V.n_model : '');
+
 const pick = (machine: MachineCandidate | null | undefined, recorded: boolean, advice: MachineAdvice): OrderMachine | null =>
   (machine ? { machine, recorded, advice } : null);
 
@@ -28,11 +31,11 @@ export function designOrder(inp: LiftInputs, advice: MachineAdvice = liftAdvice(
 }
 
 /** The catalogue's machine whose values the calculator holds: the ratio as the calculator takes it (to the thousandth),
- *  the static load, the mass when the catalogue gives one, the sheave in its range; the advice's makers and an equal
- *  mass first. */
-export function catalogMachineOf(I: Plant, N: Machine): CatalogFit | null {
+ *  the static load, the mass when the catalogue gives one, the sheave in its range; the one taken from the advice by
+ *  name (`named`, "Montanari M95": two models of equal data), then the advice's makers and an equal mass first. */
+export function catalogMachineOf(I: Plant, N: Machine, named = ''): CatalogFit | null {
   const iIdeal = (Math.PI * (N.D / 1000) * N.nm) / (60 * I.v * I.r);
-  const rank = (c: CatalogMachine): number => (c.mass === N.mass ? 0 : 4) + (ADVICE_BRANDS.includes(c.brand) ? 0 : 2) + (c.byName ? 1 : 0);
+  const rank = (c: CatalogMachine): number => (`${c.brand} ${c.model}` === named ? 0 : 8) + (c.mass === N.mass ? 0 : 4) + (ADVICE_BRANDS.includes(c.brand) ? 0 : 2) + (c.byName ? 1 : 0);
   const found = MACHINES.flatMap((c): CatalogFit[] => {
     const ratio = c.ratios.find((r) => Math.abs(Math.round(ratioValue(r) * 1000) / 1000 - N.i) < 1e-9);
     const fits = ratio !== undefined && c.staticKg === N.shaftMax && (c.mass === null || c.mass === N.mass) && (!c.sheaves || (N.D >= c.sheaves[0] && N.D <= c.sheaves[1]));
@@ -43,7 +46,7 @@ export function catalogMachineOf(I: Plant, N: Machine): CatalogFit | null {
 
 /** The machine a saved calculation verified, when its values are a catalogue machine's. */
 export function calcMachine(V: FormValues): MachineCandidate | null {
-  const a = analyse(V), { I, N } = a.ctx, fit = catalogMachineOf(I, N);
+  const a = analyse(V), { I, N } = a.ctx, fit = catalogMachineOf(I, N, modelOf(V));
   return fit ? candidateOf(fit, I, N, a.res, a.res.fails.length, a.res.checks.filter((c) => c.status === 'warn').length,
     I.layout === 'topDefl' ? makerBedplate(fit.machine.brand, fit.machine.model, N.D, I.Dp) : null, {}) : null;
 }

@@ -7,6 +7,7 @@ import {
   CW_SPECIALS, CW_SUPPORTS, DEFAULTS, DOOR_PAIRS, DOOR_PAIR_DEFAULT, GOVERNORS, RAIL_TYPES, callStationOf, counterweightSide, cwBracketsOf, govSize, railLabel,
   type Allowance, type CwChoice, type DoorPairId, type RailType, type ShaftInputs,
 } from '@/shaft';
+import { ALLOWANCE_RANGE } from '@/lib/shaft-input';
 
 interface Props {
   I: ShaftInputs;
@@ -143,7 +144,7 @@ export default function ShaftOptions({ I, set, lastQ }: Props) {
       <details className="allowances">
         <summary>{t('allowances')}</summary>
         <div className="form-grid">
-          {ALLOWANCES.map((a) => <div key={a}>{num(a, t(`a_${a}`), 0, 800, 5)}</div>)}
+          {ALLOWANCES.map((a) => <div key={a}>{num(a, t(`a_${a}`), ALLOWANCE_RANGE[a][0], ALLOWANCE_RANGE[a][1], 5)}</div>)}
         </div>
         <button type="button" className="btn btn-sm" onClick={() => set({ ...DEFAULTS })}>{t('resetAllowances')}</button>
       </details>

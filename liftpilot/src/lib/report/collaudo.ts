@@ -29,7 +29,7 @@ export const collaudoRows = (C: Collaudo, repl: boolean): [string, string][] => 
 
 /** What the object of the relazione says of the standards added to the base one (empty: none). */
 const aggiunteSentence = (C: Collaudo): string => (C.aggiuntive?.length
-  ? ` Il collaudo considera anche: ${aggiunteText(C)}; ogni normativa ha il suo esito (sezione «Esito del collaudo per normativa») e l'esito del collaudo è il peggiore.`
+  ? ` Il collaudo considera anche: ${aggiunteText(C)}; ogni normativa ha il suo esito (sezione «Esito delle verifiche di calcolo per normativa») e l'esito complessivo è il peggiore.`
   : '');
 
 /** What the object of the relazione says of the intervention and its acceptance test (a new lift: only the standards
@@ -53,8 +53,8 @@ export const esitoOf = (C: Collaudo, id: CheckId | ShaftCheckId, st: string, sta
   (ambitoOf(C, id) === 'existing' ? { text: `Esistente\n(${st})`, status: 'info' } : { text: st, status });
 
 /** The note under a table of checks with some of the parts that stay as they are. */
-export const EXISTING_NOTE = "Le verifiche con esito «Esistente» riguardano parti che restano come sono e non entrano nell'esito del collaudo; tra "
-  + 'parentesi l\'esito del calcolo.';
+export const EXISTING_NOTE = "Le verifiche con esito «Esistente» riguardano parti che restano come sono e non entrano nell'esito delle verifiche per il "
+  + 'collaudo; tra parentesi l\'esito del calcolo, da valutare con il tecnico quando non passa.';
 
 /** The section of the adaptations: its title and blocks. `t` reads the calculator's texts. */
 export function adaptSection(C: Collaudo, repl: boolean, t: (k: CalcKey) => string): { title: string; blocks: ReportBlock[] } {
@@ -78,7 +78,7 @@ export function collaudoNote(C: Collaudo, tag: string): { title: string; tag: st
   const added = C.aggiuntive?.length ? ` Anche secondo ${(C.aggiuntive ?? []).map((n) => NORMA_BREVE[n]).join(' e ')}: ogni normativa ha il suo esito, quello del collaudo è il peggiore.` : '';
   if (C.norma === 'en81') return added ? { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA.en81}.${added}` } : null;
   return { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA[C.norma]}.${added} Parti sostituite o modificate: ${partiText(C)}. Le verifiche con esito `
-    + "«ESISTENTE» riguardano parti che restano come sono e non entrano nell'esito del collaudo." };
+    + "«ESISTENTE» riguardano parti che restano come sono e non entrano nell'esito delle verifiche." };
 }
 
 /** The section of the result under each standard of the test, and the test's: a standard without a check computed
@@ -89,7 +89,9 @@ export function esitiBlocks(C: Collaudo, checks: readonly { id: CheckId | ShaftC
   const out: ReportBlock[] = [
     { t: 'grid', head: ['Normativa', 'Ruolo', 'Verifiche', 'Non passano', 'Avvisi', 'Esito'], rows, status: E.map((e) => (e.ids.length ? e.verdict : 'info')), statusCol: 5,
       widths: [0.4, 0.1, 0.1, 0.12, 0.1, 0.18], align: ['l', 'l', 'r', 'r', 'r', 'l'] },
-    { t: 'verdict', text: `Esito del collaudo: ${st(all.verdict)}${all.fails ? ` — ${all.fails} ${all.fails === 1 ? 'verifica non passa' : 'verifiche non passano'}` : ''}`, status: all.verdict },
+    { t: 'verdict', text: `Esito delle verifiche di calcolo: ${st(all.verdict)}${all.fails ? ` — ${all.fails} ${all.fails === 1 ? 'verifica non passa' : 'verifiche non passano'}` : ''}`, status: all.verdict },
+    { t: 'p', style: 'note', text: "Non è l'esito del collaudo, che spetta al tecnico incaricato e all'organismo con le prove in sito. Quali verifiche entrano per ogni "
+      + 'normativa è la lettura del software (voce «impianto.collaudo» del registro), da confermare sul testo vigente delle norme.' },
   ];
   if (E.some((e) => e.norma === 'dm236' && !e.ids.length)) {
     out.push({ t: 'p', style: 'note', text: 'DM 236/1989: nessuna verifica calcolata, perché nei dati del vano non è scelto il caso (edificio esistente, residenziale o non residenziale nuovo).' });

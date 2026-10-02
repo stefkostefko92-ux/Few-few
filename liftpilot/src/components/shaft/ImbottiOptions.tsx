@@ -6,6 +6,7 @@
 // linings share the first equally, the top one takes the second (src/shaft/imbotti.ts). The plan and section A-A show
 // them with dimensions that can also be changed on the drawing.
 import { useTranslations } from 'next-intl';
+import { IMBOTTI_MAX } from '@/lib/shaft-input';
 import { hasImbotti, imbottiOf, marbleHeight, marbleWidth, withImbotti, withMarbleHeight, withMarbleWidth, type ShaftInputs } from '@/shaft';
 
 interface Props {
@@ -17,15 +18,16 @@ const int = (s: string): number => Math.round(Number(s.replace(',', '.')));
 
 export default function ImbottiOptions({ I, set }: Props) {
   const t = useTranslations('shaft'), m = imbottiOf(I), any = hasImbotti(I);
-  // the linings of the inputs `next`, never below zero (an opening narrower than the new door is refused)
+  // the linings of the inputs `next`, never below zero (an opening narrower than the new door is refused) nor longer
+  // than the save accepts
   const put = (next: ShaftInputs): void => {
-    const n = imbottiOf(next);
-    if (n.left >= 0 && n.right >= 0 && n.top >= 0) set({ imbotti: next.imbotti });
+    const n = imbottiOf(next), ok = (x: number): boolean => x >= 0 && x <= IMBOTTI_MAX;
+    if (ok(n.left) && ok(n.right) && ok(n.top)) set({ imbotti: next.imbotti });
   };
   const field = (key: 'left' | 'right' | 'top' | 'marble' | 'height', value: number, apply: (v: number) => ShaftInputs) => (
     <label className="field" key={key}>
       <span>{t(`im_${key}`)} (mm)</span>
-      <input className="input num" type="number" inputMode="numeric" min={0} max={key === 'marble' || key === 'height' ? 4000 : 1500} step={5} value={value}
+      <input className="input num" type="number" inputMode="numeric" min={0} max={key === 'marble' || key === 'height' ? 4000 : IMBOTTI_MAX} step={5} value={value}
         onChange={(e) => { const v = int(e.target.value); if (Number.isFinite(v)) put(apply(v)); }} />
     </label>
   );

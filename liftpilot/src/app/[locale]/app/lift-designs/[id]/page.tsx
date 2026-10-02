@@ -5,13 +5,8 @@ import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { idSchema } from '@/lib/schemas';
-import { liftInputsSchema } from '@/lib/lift-input';
-import { shaftHash } from '@/lib/shaft-hash';
-import { snapshotHash } from '@/lib/snapshot-hash';
-import { deriveLift, LIFT_ENGINE_VERSION } from '@/lib/lift';
+import { liftRecord } from '@/lib/lift-record';
 import { liftAdvice, liftAlternative } from '@/lib/lift/advice';
-import { snapshotOf } from '@/calc/snapshot';
-import { shaftSnapshot } from '@/shaft';
 import { designMachine, designOrder } from '@/lib/order/machine';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
@@ -40,17 +35,14 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
   if (!d) notFound();
   const [t, tp, tt, ta] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'), getTranslations('advice')]);
   const fd = dateFormat(locale);
-  const inputs = liftInputsSchema.safeParse(d.inputs);
   // the running engines give the same records? (else the documents are refused: a new save is needed)
-  const dv = inputs.success ? deriveLift(inputs.data) : null;
-  const same = !!dv && d.engineVersion === LIFT_ENGINE_VERSION && shaftHash(shaftSnapshot(dv.shaft).snapshot) === d.shaftDesign.sha256
-    && snapshotHash(snapshotOf(dv.values)) === d.calculation.sha256;
+  const r = liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256), same = r?.same ?? false, dv = r?.dv ?? null;
   const editable = can(user.role, 'calc:create') && !d.project.archivedAt;
   // the advice among SICOR and Montanari for the saved inputs, and the machine of the draft order: the one the design
   // verified, or the advice's first
-  const advice = inputs.success ? liftAdvice(inputs.data) : null, alt = inputs.success && advice ? liftAlternative(inputs.data, advice) : null;
+  const advice = r ? liftAdvice(r.inputs) : null, alt = r && advice ? liftAlternative(r.inputs, advice) : null;
   const own = dv ? designMachine(dv) : null, fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const order = same && inputs.success && dv && advice && can(user.role, 'report:download') ? designOrder(inputs.data, advice, dv) : null;
+  const order = same && r && advice && can(user.role, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
   return (
     <main className="page page-wide">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.project.id}`, label: d.project.name }, { label: t('designTitle') }]} />
@@ -64,7 +56,7 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
         </div>
       </div>
       {!same ? <p className="alert alert-warn" role="status">{t('engineChanged')}</p> : null}
-      {inputs.success ? <LiftView inputs={inputs.data} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
+      {r ? <LiftView inputs={r.inputs} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
       {advice ? (
         <AdviceView advice={advice} alt={alt && dv ? { advice: alt, sheave: dv.machine.D } : null} fmt={fmt} where="design"
           inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model && own.I.layout === c.I.layout} />
@@ -91,7 +83,7 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
             </div>
           </div>
         ) : null}
-        {same && inputs.success && can(user.role, 'report:download') ? (
+        {same && can(user.role, 'report:download') ? (
           <div className="panel">
             <h3>{ta('order_title')}</h3>
             <p className="note">{ta('order_lead')}</p>

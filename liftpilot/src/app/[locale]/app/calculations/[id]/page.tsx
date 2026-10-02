@@ -11,8 +11,9 @@ import { verifyStored } from '@/lib/snapshot-hash';
 import { reproduceDesign } from '@/lib/shaft-hash';
 import { ENGINE_VERSION } from '@/calc/snapshot';
 import { SHAFT_ENGINE_VERSION } from '@/shaft';
-import { calcMachine, calcOrder } from '@/lib/order/machine';
-import { valuesAdvice } from '@/lib/lift/advice';
+import { calcMachine, calcOrder, designMachine, designOrder } from '@/lib/order/machine';
+import { liftAdvice, liftAlternative, valuesAdvice } from '@/lib/lift/advice';
+import { liftRecord } from '@/lib/lift-record';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { getCalculation, listDrawingSets } from '@/server/queries';
@@ -37,16 +38,25 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
   const values = formValuesSchema.safeParse(c.inputs);
   if (!values.success) notFound();
   const { same } = verifyStored(values.data, c.sha256);
-  // the standards of the acceptance test chosen with it (else by the context), as the report sets them out
-  const chosen = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null, norme = normeOf(collaudoOf(values.data, chosen?.success ? chosen.data : undefined));
+  // the lift design it was made from, derived again (its advice and order follow it)
+  const lift = c.liftDesign ? liftRecord(c.liftDesign, c.shaftDesign?.sha256, c.sha256) : null;
+  // the standards of the acceptance test: the lift design's, else those chosen with it (else by the context), as the
+  // report sets them out
+  const chosen = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null;
+  const C = lift?.dv.collaudo ?? collaudoOf(values.data, chosen?.success ? chosen.data : undefined), norme = normeOf(C);
   // the report draws the plan of the shaft design too: it needs that design reproduced as well
   const designSame = !c.shaftDesign || reproduceDesign(c.shaftDesign) !== null;
   const [t, tp, tr, ts, tt, ta, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
     getTranslations('tavole'), getTranslations('advice'), listDrawingSets(user, c.projectId)]);
-  // the advice among SICOR and Montanari for the saved values, and the machine of the draft order: the catalogue's
-  // machine these values are, or the advice's first
-  const advice = valuesAdvice(values.data), own = calcMachine(values.data), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const download = same && can(user.role, 'report:download'), order = download ? calcOrder(values.data, advice) : null;
+  // the advice among SICOR and Montanari and the machine of the draft order: those of the lift design the calculation
+  // was made from (its machine room, the sheave direct pull needs), as the design's page and the report give them; else
+  // for the saved values: the catalogue's machine these values are, or the advice's first
+  const advice = lift ? liftAdvice(lift.inputs) : valuesAdvice(values.data), alt = lift ? liftAlternative(lift.inputs, advice) : null;
+  const own = lift ? designMachine(lift.dv) : calcMachine(values.data), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
+  // a calculation of a design the running engines no longer reproduce has no order: the design is saved again
+  const download = same && can(user.role, 'report:download') && (!c.liftDesign || !!lift?.same);
+  const order = !download ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(values.data, advice);
+  const where = lift ? 'design' : 'calc';
   const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
   return (
@@ -77,14 +87,15 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
         ) : null}
         <div className="wide"><dt>{t('col_hash')}</dt><dd className="hash">{c.sha256}{same ? ` · ${t('hashOk')}` : ''}</dd></div>
       </dl>
-      <AdviceView advice={advice} fmt={fmt} where="calc" inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model} />
+      <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
+        inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />
       {download ? (
         <section className="panel">
           <h2>{ta('order_title')}</h2>
           <p className="note">{ta('order_lead')}</p>
           {order ? (
             <>
-              <p className="order-machine">{ta(order.recorded ? 'order_chosen_calc' : 'order_advised_calc', { machine: `${order.machine.brand} ${order.machine.model}` })}</p>
+              <p className="order-machine">{ta(`${order.recorded ? 'order_chosen' : 'order_advised'}_${where}`, { machine: `${order.machine.brand} ${order.machine.model}` })}</p>
               <div className="doc-links">
                 <a className="btn" href={`/api/calculations/${c.id}/order/docx`}>{ta('order_docx')}</a>
                 <a className="btn" href={`/api/calculations/${c.id}/order/pdf`}>{ta('order_pdf')}</a>
@@ -120,7 +131,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
         {!c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
           : same && designSame && can(user.role, 'calc:create') && !c.project.archivedAt ? <IssueForm calculationId={c.id} /> : null}
       </section>
-      <CalculationView values={values.data} brand={user.companyName} />
+      <CalculationView values={values.data} brand={user.companyName} collaudo={C} />
     </main>
   );
 }

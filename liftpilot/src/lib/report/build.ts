@@ -19,7 +19,7 @@ import { techTables, type Cell } from '../present/tables';
 import { textsFor, verdictStatus } from '../present/texts';
 import { makePres, type CalcKey } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
-import { shaftBlocks, type ReportDesign } from './shaft';
+import { refsOf, refsText, shaftBlocks, type ReportDesign } from './shaft';
 import { EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
 import { machineSpec } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
@@ -27,7 +27,7 @@ import { rinvioRow, shapeRows } from './machine-shape';
 import { supportChecks, supportLoad } from '../lift/support';
 import { adviceBlocks } from './advice';
 import type { MachineAdvice } from '../lift/advice';
-import { catalogMachineOf } from '../order/machine';
+import { catalogMachineOf, modelOf } from '../order/machine';
 
 /** The rope schemes of a machine below, in the relazione's words (src/lib/lift/bottom.ts). */
 const BOTTOM_IT: Readonly<Record<BottomScheme, string>> = {
@@ -102,9 +102,10 @@ export function buildReport(r: ReportInput): ReportDoc {
     [t('context'), t(repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
     [t('P'), `${fmt(I.P, 0)} kg${m.pEstimate ? ' — stima del software, da sostituire con la massa reale' : ''}`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg${I.qeq > 0 ? ` (${t('qeq')}: ${fmt(I.qeq, 0)} kg)` : ''}`], [t('v'), `${fmt(I.v, 2)} m/s`],
-    [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 1)} m · ${fmt(I.L0, 1)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
-    ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')}`, `${fmt(I.dx, 2)} m · ${fmt(I.h, 2)} m${fromShaft('dx')}`] as [string, string]] : []),
-    ...(I.layout === 'bottom' ? [[t('Hv'), `${fmt(I.Hv, 1)} m${fromShaft('Hv', false)}`] as [string, string]] : []),
+    [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
+    ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')}`, `${fmt(I.dx, 3)} m · ${fmt(I.h, 3)} m${m.geometry.includes('dx')
+      ? ' (dx dal progetto del vano; h dal basamento o dal telaio del rinvio, salvo inserita a mano)' : ''}`] as [string, string]] : []),
+    ...(I.layout === 'bottom' ? [[t('Hv'), `${fmt(I.Hv, 2)} m${fromShaft('Hv', false)}`] as [string, string]] : []),
     ...(res.ropes.DpD != null ? [[t('Dp'), `${fmt(I.Dp, 0)} mm`] as [string, string]] : []),
     [t('etaShaft'), fmt(I.etaShaft, 2)], [`${t('aDesign')} · ${t('aBrake')}`, `${fmt(I.aDesign, 2)} · ${fmt(I.aBrake, 2)} m/s²`],
     [t('buffers'), I.ae > 0.5 ? 'sì' : 'no'], [t('rh'), `${fmt(I.rh, 2)} m`],
@@ -122,24 +123,38 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
+    if (beams.length) {
+      const ld = supportLoad(ctx, res.Mcw);
+      B.push({ t: 'p', style: 'note', text: `Travi sotto l'argano verificate con il carico di questo calcolo: argano ${fmt(ld.machine, 0)} kg, carico statico sull'asse `
+        + `${fmt(ld.static, 0)} kg (funi e cavi secondo il registro), coefficiente dinamico ${fmt(ld.dyn, 1)}. Le tavole usano i dati dell'impianto inseriti `
+        + "all'emissione (massa dell'argano con il telaio, cavi, coefficiente) e possono dare un altro esito: vale quello con i dati reali." });
+    }
     if (machine?.rinvio) B.push({ t: 'kv', rows: [rinvioRow(machine.rinvio, fmt)] });
   }
 
   section('Argano verificato');
   // the maker and model: chosen from a catalogue in the one form, else recognised by the values (ratio, static load,
   // mass, sheave)
-  const known = m.catalog ? null : catalogMachineOf(I, N)?.machine ?? null;
+  const known = m.catalog ? null : catalogMachineOf(I, N, modelOf(r.values))?.machine ?? null;
+  const taken = !!known && `${known.brand} ${known.model}` === modelOf(r.values);
   const named: [string, string][] = m.catalog ? [['Costruttore e modello', `${m.catalog.brand} ${m.catalog.model} (dal catalogo, scelto nel progetto)`]]
-    : known ? [['Costruttore e modello', `${known.brand} ${known.model} (riconosciuto dal catalogo: rapporto, carico statico, massa e puleggia coincidono; fonte: ${known.src})`]] : [];
+    : known ? [['Costruttore e modello', `${known.brand} ${known.model} (${taken ? 'preso dal catalogo nel calcolatore' : 'riconosciuto dal catalogo'}: `
+      + `rapporto, carico statico, massa e puleggia coincidono; fonte: ${known.src})`]] : [];
   B.push({ t: 'kv', rows: [...named, ...X.machineRows(N, res)] });
-  if (m.machineProposed) {
-    B.push({ t: 'p', style: 'note', text: 'Argano proposto dal dimensionamento del software: la prima opzione che passa ogni verifica, su una griglia di calcolo e '
-      + 'non su un catalogo. Il modello reale va scelto con il costruttore con questi valori e la verifica ripetuta con i suoi dati di targa.' });
+  if (m.catalog || known) {
+    // a catalogue's machine: what is the maker's and what the software's sizing (the sheave, the ropes, the groove, the
+    // motor and the brake), to be confirmed on its data sheet
+    B.push({ t: 'p', style: 'note', text: 'Dal catalogo del costruttore: rapporto di riduzione, carico statico ammesso sull\'albero e massa. Dal dimensionamento '
+      + 'del software: puleggia, funi, gola, potenza del motore e coppia minima del freno. Confermare tutti i valori con la scheda tecnica e l\'offerta '
+      + 'del costruttore e ripetere la verifica con i dati di targa.' });
+  } else if (m.machineProposed) {
+    B.push({ t: 'p', style: 'note', text: 'Argano proposto dal dimensionamento del software su una griglia di calcolo, non su un catalogo: il modello reale va '
+      + 'scelto con il costruttore con questi valori e la verifica ripetuta con i suoi dati di targa.' });
   }
   B.push({ t: 'verdict', text: `${X.verdictText(res)} — ${t('indicative')}`, status: verdictStatus(res) });
   if (old) {
     B.push({ t: 'h3', text: `${t('g_old')} (confronto)` });
-    B.push({ t: 'kv', rows: X.machineRows(ctx.O, old) });
+    B.push({ t: 'kv', rows: X.machineRows(ctx.O, old, true) });
     B.push({ t: 'verdict', text: X.verdictText(old), status: verdictStatus(old) });
   }
 
@@ -149,19 +164,18 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   section('Verifiche');
   // clauses of the registry entries behind a check, each once; entries without a clause are the calculation model
-  const refOf = (id: CheckId): string => [...new Set(VOCI.filter((v) => v.verifiche?.includes(id)).flatMap((v) => v.riferimento.split('; ')).map((x) => x.trim())
-    .filter((x) => x && x !== '—'))].slice(0, 3).join('; ') || 'modello di calcolo del software';
+  const refOf = (id: CheckId): string => refsText(VOCI.filter((v) => v.verifiche?.includes(id)).flatMap((v) => refsOf(v)), 3) || 'modello di calcolo del software';
   const esiti = res.checks.map((c) => esitoOf(C, c.id, st(c.status), c.status));
   B.push({ t: 'grid', head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'],
-    rows: res.checks.map((c, i) => [X.checkText(c), c.value == null ? '—' : fmt(c.value, c.dec), c.limit == null ? '' : fmt(c.limit, c.dec), esiti[i]?.text ?? '', refOf(c.id)]),
-    status: esiti.map((e) => e.status), statusCol: 3, widths: [0.36, 0.1, 0.1, 0.12, 0.32], align: ['l', 'r', 'r', 'l', 'l'] });
+    rows: res.checks.map((c, i) => [X.checkText(c), X.checkValue(c, N), X.checkLimit(c, N), esiti[i]?.text ?? '', refOf(c.id)]),
+    status: esiti.map((e) => e.status), statusCol: 3, widths: [0.33, 0.12, 0.14, 0.11, 0.3], align: ['l', 'r', 'r', 'l', 'l'] });
   if (res.checks.some((c) => ambitoOf(C, c.id) === 'existing')) {
     B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
   }
 
   // each standard of the test with its own result, and the test's: the calculation's checks and, with a shaft design,
   // the shaft's and the beams'
-  section('Esito del collaudo per normativa');
+  section('Esito delle verifiche di calcolo per normativa');
   B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? [...r.design.layout.checks, ...beams] : [])], (x) => st(x)));
   section('Adempimenti e punti da verificare in sito');
   B.push(...adempimentiBlocks(C, repl));
@@ -213,17 +227,24 @@ export function buildReport(r: ReportInput): ReportDoc {
     const S = shapeOf(m.catalog.brand, m.catalog.model);
     if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt, machine?.rinvio ?? null) });
   }
-  if (sizing.pick) {
+  if (m.catalog) {
+    // the machine verified is the catalogue's: the sizing's grid would describe another machine
+    B.push({ t: 'p', style: 'note', text: 'Il dimensionamento su griglia del software non si riporta: l\'argano verificato è quello del catalogo indicato sopra.' });
+  } else if (sizing.pick) {
     B.push({ t: 'kv', rows: X.proposalRows(sizing.pick, N, sizing.fixedD, !!sizing.keep) });
     B.push({ t: 'h3', text: X.altText(sizing) });
     B.push({ t: 'grid', head: X.proposalHead(), rows: sizing.options.map((o) => X.proposalCells(o, sizing.pick)), widths: [0.16, 0.14, 0.16, 0.1, 0.12, 0.16, 0.16] });
+    if (r.design) {
+      B.push({ t: 'p', style: 'note', text: `Le alternative sono calcolate con la geometria della puleggia verificata (Ø ${fmt(N.D, 0)} mm): con un'altra puleggia `
+        + 'la calata, la distanza del rinvio e l\'angolo di avvolgimento del progetto cambiano, e la verifica va ripetuta nel progetto.' });
+    }
   } else {
     B.push({ t: 'p', text: X.noneText(sizing) });
   }
   B.push({ t: 'p', text: X.critText(sizing), style: 'note' });
 
   if (r.advice) {
-    section('Argano consigliato fra SICOR e Montanari (informativa)');
+    section('Confronto degli argani SICOR e Montanari (informativo)');
     B.push(...adviceBlocks(r.advice, fmt));
   }
 

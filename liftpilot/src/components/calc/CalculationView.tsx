@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { useLocale, useMessages } from 'next-intl';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
+import type { Collaudo } from '@/lib/lift';
 import { analyse } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
@@ -15,7 +16,7 @@ import Verdict from './Verdict';
 import Results from './Results';
 import LegalNotice from './LegalNotice';
 
-export default function CalculationView({ values, brand }: { values: FormValues; brand: string }) {
+export default function CalculationView({ values, brand, collaudo }: { values: FormValues; brand: string; collaudo: Collaudo }) {
   const locale = useLocale(), messages = useMessages();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
   const X = useMemo(() => textsFor(P), [P]);
@@ -38,7 +39,7 @@ export default function CalculationView({ values, brand }: { values: FormValues;
           <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
           <Verdict P={P} X={X} a={a} badCount={0} />
         </section>
-        <Results P={P} X={X} a={a} mode={mode} badCount={0} brand={brand} />
+        <Results P={P} X={X} a={a} mode={mode} badCount={0} brand={brand} collaudo={collaudo} />
       </div>
     </div>
   );

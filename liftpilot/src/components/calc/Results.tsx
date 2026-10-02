@@ -1,6 +1,7 @@
 // Result column of the prototype v12 (renderResults): proposal, result in brief, then the technical tables
 // (folded in simple mode), UNI 10411-1 adaptations, values to check, copyable summary.
 import { useRef, useState, type ReactNode } from 'react';
+import { NORMA_SIGLA, adeguamentiDovuti, type Collaudo } from '@/lib/lift';
 import type { CalcKey, Pres } from '@/lib/present/tr';
 import type { Analysis } from '@/lib/present/analysis';
 import { quickRows } from '@/lib/present/quick';
@@ -19,6 +20,8 @@ interface Props {
   mode: 'simple' | 'expert';
   badCount: number;
   brand?: string;
+  /** the acceptance test: the adaptations follow its standard, as the report sets them out */
+  collaudo: Collaudo;
   /** loads a proposal into the new-machine fields; absent on a saved calculation */
   onUse?: (key: UseKey) => void;
   propMsg?: string;
@@ -96,9 +99,13 @@ export default function Results(props: Props) {
       <Note>{t('q_norm')}</Note>
     </Card>
   );
-  const adapt = I.context === 'repl'
-    ? <Card key="adapt" title={t('c_adapt')} refText="UNI 10411-1 ⚠"><ul className="plain">{ADAPT.map((k) => <li key={k}>{t(k)}</li>)}</ul><Note>{t('a_src')}</Note></Card>
-    : <Card key="adapt" title={t('c_ucmp')} refText="EN 81-20 ⚠"><Note>{t('n_new')}</Note></Card>;
+  // the adaptations the standard of the test asks (report/collaudo.ts adaptSection, the same cases)
+  const C = props.collaudo;
+  const adapt = I.context !== 'repl' ? <Card key="adapt" title={t('c_ucmp')} refText="EN 81-20 ⚠"><Note>{t('n_new')}</Note></Card>
+    : adeguamentiDovuti(C) ? <Card key="adapt" title={t('c_adapt')} refText="UNI 10411-1 ⚠"><ul className="plain">{ADAPT.map((k) => <li key={k}>{t(k)}</li>)}</ul><Note>{t('a_src')}</Note></Card>
+      : C.norma === 'en81' ? <Card key="adapt" title={t('c_adapt_en81')} refText="EN 81-20 ⚠"><Note>{t('a_en81')}</Note></Card>
+        : C.parti.includes('machine') ? <Card key="adapt" title={t('c_adapt_11')} refText="UNI 10411-11 ⚠"><Note>{t('a_11')}</Note></Card>
+          : <Card key="adapt" title={t('c_adapt_other')} refText={NORMA_SIGLA[C.norma]}><Note>{t('a_other', { norma: NORMA_SIGLA[C.norma] })}</Note></Card>;
   const verify = (
     <Card key="verify" title={t('c_verify')}>
       <ul className="plain">{X.verifyList(I, N, res).map((x) => <li key={x}><Flag /> {x}</li>)}</ul>

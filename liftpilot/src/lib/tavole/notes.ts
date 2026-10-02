@@ -22,7 +22,9 @@ export interface Note {
 }
 
 /** Notes for the client: the shaft always; the machine room when the design has one; the control cabinet. */
-export function clientNotes(L: Layout): Note[] {
+/** `below`: the machine stands below (its room at the lowest floor or under the pit): the room over the shaft holds the
+ *  diverting pulleys only. */
+export function clientNotes(L: Layout, below = false): Note[] {
   const K = KV_VERT, room = L.inputs.room !== null;
   const notes: Note[] = [
     {
@@ -37,14 +39,15 @@ export function clientNotes(L: Layout): Note[] {
   ];
   if (room) {
     notes.push({
-      title: 'LOCALE DEL MACCHINARIO E DELLE PULEGGE DI RINVIO', tag: 'NOTA 2',
+      title: below ? 'LOCALE DELLE PULEGGE DI RINVIO' : 'LOCALE DEL MACCHINARIO E DELLE PULEGGE DI RINVIO', tag: 'NOTA 2',
       text: 'Accesso sicuro e agevole, riservato alle persone autorizzate; porta di almeno '
         + `${K.doorMinW} × ${K.doorMinH} mm con serratura a chiave, apribile dall'interno senza chiave. Altezza libera di almeno ${K.roomH} mm `
         + `nelle zone di lavoro; davanti al quadro una superficie libera profonda almeno ${K.panelFreeDepth} mm e larga almeno ${K.panelFreeWidth} mm. `
         + `Illuminazione fissa di almeno ${K.roomLux} lux al pavimento nelle zone di lavoro. Temperatura ambiente tra +${K.tempMin} °C e +${K.tempMax} °C, `
         + "con ventilazione che protegga motore e apparecchiature da polvere e umidità; l'aria di locali estranei all'ascensore non va convogliata nel "
-        + "locale, che contiene solo l'impianto. Sopra la macchina un gancio o una trave di sollevamento con il carico ammesso indicato; interruttore "
-        + "generale e comando della luce vicino all'accesso. Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10.",
+        + `locale, che contiene solo l'impianto. Sopra ${below ? 'le pulegge' : 'la macchina'} un gancio o una trave di sollevamento con il carico ammesso `
+        + `indicato; ${below ? 'il locale della macchina, in basso, ha gli stessi requisiti; ' : ''}interruttore generale e comando della luce vicino all'accesso. `
+        + 'Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10.',
     });
   }
   notes.push({

@@ -65,7 +65,7 @@ export default function PlanEditor({ I, onChange, machine, onCalc, id, titleAs: 
           <figcaption>{t('scale', { n: v.scale })} · {t('ed_count', { n: v.hits.length })}</figcaption>
         </figure>
       ) : <p className="note">{t('ed_none')}</p>}
-      <PlanFixes I={I} L={L} name={(k) => texts.nameOf(`plan.${k}`)} onChange={onChange} check={checkedInputs} refused={texts.refused} />
+      <PlanFixes I={I} L={L} name={(k) => texts.nameOf(`plan.${k}`)} onChange={onChange} check={(next) => checkedInputs(next, I)} refused={texts.refused} />
     </div>
   );
 }

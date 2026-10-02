@@ -16,7 +16,7 @@ export const dvText = (dv: number, fmt: Fmt): string => `${dv >= 0 ? '+' : '−'
 /** The values the reasons take, for the first `a` and the second `b`. */
 export function whyValues(a: MachineCandidate, b: MachineCandidate | undefined, fmt: Fmt): Record<string, string | number> {
   return {
-    a: machineName(a), b: b ? machineName(b) : '', code: a.bedplate?.code ?? '', na: a.warns, nb: b?.warns ?? 0,
+    a: machineName(a), b: b ? machineName(b) : '', code: a.bedplate?.code ?? '', na: a.warns, nb: b?.warns ?? 0, fa: a.fails, fb: b?.fails ?? 0,
     sa: fmt(a.staticKg, 0), sb: b ? fmt(b.staticKg, 0) : '', test: fmt(a.testKg, 0), dva: dvText(a.dv, fmt), dvb: b ? dvText(b.dv, fmt) : '',
     ma: a.mass === null ? '—' : fmt(a.mass, 0), mb: b && b.mass !== null ? fmt(b.mass, 0) : '—',
   };

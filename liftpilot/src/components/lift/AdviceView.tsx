@@ -35,8 +35,9 @@ export default function AdviceView({ advice, alt = null, running = null, fmt, in
   const reason = (A: MachineAdvice): string => (A.best[0] && A.why ? t(`why_${A.why}`, whyValues(A.best[0], A.best[1], fmt)) : '');
   const button = (c: MachineCandidate, label: string, primary: boolean) => {
     if (!onUse) return null;
+    // an advice being worked out again is for the inputs as they were: its values are not taken
     const used = inUse(c);
-    return <button type="button" className={primary ? 'btn btn-primary' : 'btn'} onClick={() => onUse(c)} disabled={used}>{used ? t('using') : label}</button>;
+    return <button type="button" className={primary ? 'btn btn-primary' : 'btn'} onClick={() => onUse(c)} disabled={used || running !== null}>{used ? t('using') : label}</button>;
   };
 
   const card = (c: MachineCandidate, first: boolean, use: string) => (
