@@ -7,8 +7,10 @@
 // only those are shown. Every field is optional; the server validates the whole with the same zod schema before it
 // stores it on the project.
 import { useState, useTransition } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { useRouter } from '@/i18n/routing';
+import { makeFmt } from '@/lib/present/tr';
 import { PLANT_RANGE, type Plant, type PlantNumber } from '@/lib/plant';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { savePlantAction } from '@/server/drawing-actions';
@@ -16,7 +18,8 @@ import { savePlantAction } from '@/server/drawing-actions';
 type TextKey = 'machine' | 'control' | 'shaft' | 'carFinish';
 
 export default function PlantForm({ projectId, initial, readOnly, whole }: { projectId: string; initial: Plant; readOnly: boolean; whole: boolean }) {
-  const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter();
+  const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter(), locale = useLocale();
+  const fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const [P, setP] = useState<Plant>(initial);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
@@ -60,6 +63,7 @@ export default function PlantForm({ projectId, initial, readOnly, whole }: { pro
               <option value="">{t('r_unset')}</option>
               {(['progressive', 'roller', 'instantaneous'] as const).map((g) => <option key={g} value={g}>{t(`s_${g}`)}</option>)}
             </select>
+            <small className="note">{t('f_safetyGearHint', { v: fmt(KV_VERT.gearInstantV, 2) })}</small>
           </label>
           {num('governorLoad')}
         </div>

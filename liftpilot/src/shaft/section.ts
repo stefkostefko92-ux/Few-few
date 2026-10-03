@@ -83,11 +83,16 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
   const vmax = limits.length ? Math.min(...limits) : null, need = S.strokeNeeded;
   // the place to stand on the car roof and the counterweight's screen in the pit, as drawn
   const [sw, sd] = standOf(V), standArea = (sw * sd) / 1e6, screen = screenOf(V);
+  // the counterweight with the car on its compressed buffers: what its rails still guide past its top
+  const guided = S.ceiling - K.railTopGap - (cwPlateAt(S, -S.moveDown) + V.cwH), guide = (K.cwGuided + K.cwGuidedV2 * V.v * V.v) * 1000;
   return [
     check('h_refuge', S.ceiling - roof >= refugeTop, S.ceiling - roof, refugeTop, 0, 'mm'),
     check('h_clear', clear.v >= clear.lim, clear.v, clear.lim, 0, 'mm'),
     check('h_parapet', V.parapet >= needed, V.parapet, needed, 0, 'mm'),
     check('h_stand', standArea >= K.roofFreeArea - 1e-9 && Math.min(sw, sd) >= K.roofFreeSide, standArea, K.roofFreeArea, 2, 'm²'),
+    check('h_door', L.inputs.doorHeight >= K.entranceH, L.inputs.doorHeight, K.entranceH, 0, 'mm'),
+    check('h_car', V.carH >= K.carInnerH, V.carH, K.carInnerH, 0, 'mm'),
+    check('h_cw', guided >= guide - 1e-9, guided, Math.ceil(guide), 0, 'mm'),
     check('p_refuge', pitFree >= refugePit, pitFree, refugePit, 0, 'mm'),
     check('p_apron', apronFree >= K.apronClear, apronFree, K.apronClear, 0, 'mm', true),
     check('p_screen', screen >= K.cwScreen, screen, K.cwScreen, 0, 'mm'),

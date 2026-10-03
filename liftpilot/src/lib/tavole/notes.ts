@@ -6,6 +6,8 @@ import { KV_VERT } from '@/shaft/norme-vert';
 import type { Layout } from '@/shaft/types';
 import { P_ESTIMATE_RULE } from '../lift/marks';
 import type { Fmt } from '../present/tr';
+import type { SafetyGear } from './forces';
+import { railLimits, type RailCheck } from './rail-check';
 
 const POSTURE: Readonly<Record<1 | 2 | 3, string>> = { 1: 'IN PIEDI', 2: 'ACCUCCIATO', 3: 'DISTESO' };
 
@@ -80,6 +82,23 @@ export const safetyGearNote = (tag: string): Note => ({
     + `calcolati con il paracadute progressivo (coefficiente d'urto ${KV_VERT.k1Progressive}; a presa istantanea a rullo ${KV_VERT.k1Roller}, istantanea `
     + `${KV_VERT.k1Instant}: UNI EN 81-50:2020, 5.10). Con un paracadute diverso va indicato nei dati e le tavole vanno emesse di nuovo.`,
 });
+
+const GEAR: Readonly<Record<SafetyGear, string>> = { progressive: 'progressivo', roller: 'a presa istantanea a rullo', instantaneous: 'a presa istantanea' };
+
+/** The check of the car rails in numbers, with what it assumes and what it leaves out (registry guide.verifica). */
+export function railNote(R: RailCheck, rail: string, gear: SafetyGear, tag: string, fmt: Fmt): Note {
+  const K = KV_VERT, s = (x: number | null): string => (x === null ? '—' : fmt(x, 0)), lim = railLimits();
+  return {
+    title: 'VERIFICA DELLE GUIDE DI CABINA', tag,
+    text: `Guide ${rail} in acciaio con Rm ${K.railRm} N/mm² (ipotesi del software), staffe al più ogni ${fmt(R.l, 0)} mm: λ = ${fmt(R.lambda, 0)}, `
+      + `ω = ${R.omega === null ? 'oltre la tabella (λ > 250)' : fmt(R.omega, 2)}. Paracadute ${GEAR[gear]}: σm ${s(R.gear.sm)}, σ ${s(R.gear.s)}, σc `
+      + `${s(R.gear.sc)} N/mm² (ammissibile Rm/${fmt(K.railStGear, 1)} = ${s(lim.gear)}); marcia: σ ${s(R.run.s)}; carico al piano (${fmt(K.sillLoad, 1)}·g·Q `
+      + `alla soglia): σ ${s(R.load.s)} N/mm² (ammissibile Rm/${fmt(K.railStRun, 2)} = ${s(lim.use)}); suola σF ${s(R.flange.gear)} N/mm² col paracadute, `
+      + `${s(R.flange.use)} in uso; frecce δx ${fmt(R.dx, 1)} mm, δy ${fmt(R.dy, 1)} mm (al più ${K.railDeflection}). Non contate: la spinta di `
+      + 'scorrimento delle staffe, le apparecchiature appese alle guide, le frecce di staffe ed edificio e le guide del contrappeso. '
+      + 'Riferimenti: UNI EN 81-50:2020, 5.10; UNI EN 81-20:2020, 5.7.',
+  };
+}
 
 export interface LegendItem {
   sym: SymbolName;

@@ -1,0 +1,74 @@
+// Registry of the check of the car's guide rails (src/lib/tavole/rail-check.ts) and of the safety gear's type for the
+// speed: the constants are spread into KV_VERT (norme-vert.ts), the entries into VOCI_VERT. Same form as norme.ts;
+// Italian texts, clause numbers and values only.
+import type { VoceVano } from './norme';
+
+export const KV_GUIDE = {
+  // UNI EN 81-20:2020, 5.7.4.5 and 5.7.4.6: rails of steel Rm 370 N/mm² (the lowest of the standard: the software's
+  // choice), the permissible stress Rm/St with St in normal use (running, loading) and at the safety gear's operation
+  // (elongation A5 > 12 %); deflection of the T rails on which a safety gear acts, both directions [mm]
+  railRm: 370,
+  railStRun: 2.25,
+  railStGear: 1.8,
+  railDeflection: 5,
+  // 5.7.2: loading at a floor, the force on the middle of the car door's sill Fs = 0,4·g·Q (0,6 from 2500 kg)
+  sillLoad: 0.4,
+  sillLoadHeavy: 0.6,
+  sillHeavyQ: 2500,
+  // UNI EN 81-50:2020, 5.10: bending of a rail between two brackets M = 3·F·l/16; the omega method for buckling with
+  // the slenderness λ = l/i (Rm 370: [λ up to, a, exponent, b] of ω = a·λ^exponent + b, λ ≤ 250); σc = σk + 0,9·σm;
+  // flange bending σF = 1,85·Fx/c² (roller guide shoes); deflections δ = 0,7·F·l³/(48·E·I)
+  railBend: 0.1875,
+  omega370: [[60, 0.0001292, 1.89, 1], [85, 0.00004627, 2.14, 1], [115, 0.00001711, 2.35, 1.04], [250, 0.00016887, 2, 0]],
+  railCombine: 0.9,
+  railFlange: 1.85,
+  railDeflK: 0.7,
+  // UNI EN 81-20:2020, 5.6.2: instantaneous safety gear (also of the captive roller type) up to this rated speed [m/s]
+  gearInstantV: 0.63,
+} as const;
+
+export const COSTANTI_GUIDE = {
+  'guide.verifica': ['railRm', 'railStRun', 'railStGear', 'railDeflection', 'sillLoad', 'sillLoadHeavy', 'sillHeavyQ', 'railBend', 'omega370',
+    'railCombine', 'railFlange', 'railDeflK'],
+  'paracadute.tipo': ['gearInstantV'],
+} as const;
+
+export const VOCI_GUIDE: readonly VoceVano[] = [
+  {
+    id: 'guide.verifica', gruppo: 'carichi', titolo: 'Verifica delle guide di cabina',
+    valore: 'tra due staffe (l = distanza massima tra le staffe della guida) con le spinte della voce guide.spinte, portata spostata di 1/8 '
+      + 'della cabina in un senso e poi nell\'altro: flessione M = 3·F·l/16, σm = σx + σy; intervento del paracadute: forza verticale '
+      + 'Fv = k1·g·(P+Q)/n più il peso della guida, carico di punta con il metodo omega (λ = l/i con il raggio d\'inerzia minore √(I/A), '
+      + 'λ ≤ 250; acciaio Rm 370: ω = 0,0001292·λ^1,89 + 1 fino a λ 60, 0,00004627·λ^2,14 + 1 fino a 85, 0,00001711·λ^2,35 + 1,04 fino a 115, '
+      + '0,00016887·λ^2 fino a 250), σ = σm + Fv/A e σc = σk + 0,9·σm; marcia: k2 = 1,2 e il peso della guida; carico al piano: cabina vuota e '
+      + 'Fs = 0,4·g·Q (0,6·g·Q da 2500 kg) al centro della soglia di cabina, a ogni accesso; flessione della suola σF = 1,85·Fx/c² (pattini a '
+      + 'rotelle); frecce δx = 0,7·Fx·l³/(48·E·Iy) e δy = 0,7·Fy·l³/(48·E·Ix) ≤ 5 mm. Tensione ammissibile Rm/St con St = 2,25 in marcia e al '
+      + 'carico, 1,8 all\'intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164 e 205 N/mm²',
+    riferimento: 'UNI EN 81-50:2020, 5.10; UNI EN 81-20:2020, 5.7.2 (forza verticale 5.7.2.3.5, tensioni ammissibili 5.7.4.5, frecce 5.7.4.6: '
+      + 'sottoclausole da verificare sul testo)',
+    fonte: 'fonti secondarie concordi: Mellor, «Lift system calculations in EN 81-50» (2014) con l\'esempio T127-1/B; tesi VUT Brno (2024) con '
+      + 'pagine della ČSN EN 81-50:2021 e ČSN EN 81-20:2021; tesi ITU Istanbul sulla EN 81-1, appendice G; estratti di ricerca del 3 ottobre '
+      + '2026. Rm 370 è scelta del software (il valore più basso)',
+    stato: 'da_verificare', verifiche: ['gr_stress', 'gr_flange', 'gr_defl'],
+    nota: 'non contate: la spinta di scorrimento delle staffe (assestamento dell\'edificio), le apparecchiature appese alle guide, le frecce di '
+      + 'staffe ed edificio (la norma vuole la somma entro il limite) e le guide del contrappeso',
+  },
+  {
+    id: 'guide.sezioni', gruppo: 'carichi', titolo: 'Sezioni delle guide di cabina',
+    valore: 'area, momenti d\'inerzia e moduli di resistenza minimi attorno all\'asse parallelo alla suola (x) e all\'asse di simmetria (y), '
+      + 'spessore c del collo tra lama e suola, per ogni profilo del software; raggi d\'inerzia calcolati come √(I/A)',
+    riferimento: 'ISO 7465:2007 (ora ISO 8100-33:2022); EN 10055:1995 per il T 70×70×8 laminato',
+    fonte: 'tabella ISO 7465:2007 stampata da Savera (Standard Savera Guide, Rev 03/10; assi e c dalla Rev 08.26), anteprime ISO 7465:1997 e '
+      + 'ISO 8100-33:2022 (correzione dei raggi del T127-1/B, stampati nel 2007 uguali ai moduli), EN 10055:1995, Tabella 1. La EN 10055 non ha '
+      + 'il T 45: al T 45×45×5 il software dà la sezione del T45/A, delle stesse misure',
+    stato: 'da_verificare',
+  },
+  {
+    id: 'paracadute.tipo', gruppo: 'carichi', titolo: 'Tipo di paracadute per la velocità nominale',
+    valore: 'istantaneo (anche a rulli imprigionati) fino a 0,63 m/s; oltre, progressivo (la UNI EN 81-20 non ha più l\'istantaneo con '
+      + 'effetto ammortizzato fino a 1 m/s); il tipo viene dai dati dell\'impianto (se manca: progressivo, con la nota sul foglio)',
+    riferimento: 'UNI EN 81-20:2020, 5.6.2 (sottoclausola da verificare sul testo)',
+    fonte: 'corso UNI sulla UNI EN 81-50 (2021) e scheda dei paracadute PFB; la regola precedente in DM 587/1987 (UNI EN 81-1), 9.8.2',
+    stato: 'da_verificare', verifiche: ['sg_type'],
+  },
+];

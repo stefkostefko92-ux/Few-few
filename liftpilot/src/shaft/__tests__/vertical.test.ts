@@ -44,3 +44,24 @@ test('locale macchina: altezza, spazio davanti al quadro, porta', () => {
   assert.equal(check({ ...I, room: I.room && { ...I.room, doorW: 550 } }, 'm_door')?.status, 'fail');
   assert.equal(check({ ...I, room: null }, 'm_height'), undefined);
 });
+
+test('altezza libera degli accessi e della cabina: 2000 mm passano, meno no', () => {
+  const I = defaultInputs(1600, 1750);
+  assert.equal(check(I, 'h_door')?.status, 'ok');
+  assert.equal(check(I, 'h_car')?.status, 'ok');
+  assert.equal(check({ ...I, doorHeight: KV_VERT.entranceH }, 'h_door')?.status, 'ok');
+  assert.equal(check({ ...I, doorHeight: 1900 }, 'h_door')?.status, 'fail');
+  assert.equal(check({ ...I, vertical: { ...I.vertical, carH: 1950 } }, 'h_car')?.status, 'fail');
+  assert.equal(check({ ...I, vertical: { ...I.vertical, carH: 1950 } }, 'h_car')?.limit, KV_VERT.carInnerH);
+});
+
+test('contrappeso con la cabina sugli ammortizzatori compressi: corsa guidata 0,1 + 0,035·v² m', () => {
+  const I = defaultInputs(1600, 1750);
+  const need = Math.ceil((KV_VERT.cwGuided + KV_VERT.cwGuidedV2 * I.vertical.v ** 2) * 1000);
+  assert.equal(check(I, 'h_cw')?.status, 'ok');
+  assert.equal(check(I, 'h_cw')?.limit, need);
+  // a counterweight 1300 mm taller reaches the top of its rails
+  const tall = { ...I, vertical: { ...I.vertical, cwH: I.vertical.cwH + 1300 } };
+  assert.equal(check(tall, 'h_cw')?.status, 'fail');
+  assert.equal(Math.round((check(I, 'h_cw')?.value ?? 0) - (check(tall, 'h_cw')?.value ?? 0)), 1300);
+});

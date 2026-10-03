@@ -31,6 +31,43 @@ export const RAILS: Readonly<Record<RailType, RailSize>> = {
   'T70x70x8': { b: 70, h: 70, k: 8, q: 8.32, iso: false },
 };
 
+/** A rail's section for the check of UNI EN 81-50:2020, 5.10: area [mm²], second moments [mm⁴] and the least
+ *  section moduli [mm³] about the axis parallel to the foot (x: Fy bends the blade over it) and the axis of symmetry (y:
+ *  Fx), the thickness c of the neck between the blade and the foot [mm]. The radii of gyration are √(I/A): ISO 7465:2007
+ *  printed T127-1/B's wrong (its section moduli), ISO 8100-33:2022 corrected them. */
+export interface RailSection {
+  A: number;
+  Ix: number;
+  Wx: number;
+  Iy: number;
+  Wy: number;
+  c: number;
+}
+
+// ISO 7465:2007 as Savera prints it (Standard Savera Guide, Rev 03/10; the axes and c from its Rev 08.26): A [cm²], Ix,
+// Iy [cm⁴], Wx, Wy [cm³] and c [mm]; T45/A and T50/A have a flat foot as thick as the blade. The hot-rolled tee T 70×70×8
+// from EN 10055:1995, Table 1 (c its web); EN 10055 has no T 45, so T 45×45×5 takes T45/A's section (the same sizes).
+const cm = (A: number, Ix: number, Wx: number, Iy: number, Wy: number, c: number): RailSection =>
+  ({ A: A * 100, Ix: Ix * 1e4, Wx: Wx * 1e3, Iy: Iy * 1e4, Wy: Wy * 1e3, c });
+const T45A = cm(4.25, 8.08, 2.53, 3.84, 1.71, 5);
+export const RAIL_SECTIONS: Readonly<Record<RailType, RailSection>> = {
+  'T45/A': T45A,
+  'T50/A': cm(4.75, 11.24, 3.15, 5.25, 2.1, 5),
+  'T70-1/A': cm(9.4, 40.95, 9.169, 18.86, 5.389, 6),
+  'T75-3/B': cm(10.91, 40.29, 9.286, 26.47, 7.06, 8),
+  'T82/B': cm(10.91, 49.31, 10.27, 30.17, 7.358, 7.5),
+  'T89/B': cm(15.77, 59.83, 14.35, 52.41, 11.78, 10),
+  'T90/B': cm(17.25, 102, 20.86, 52.48, 11.66, 10),
+  'T114/B': cm(20.89, 179.3, 29.7, 108.6, 19.05, 9.5),
+  'T125/B': cm(22.82, 151, 26.16, 159.1, 25.46, 10),
+  'T127-1/B': cm(22.74, 187.9, 30.65, 149.9, 23.61, 10),
+  'T45x45x5': T45A,
+  'T70x70x8': cm(10.6, 44.5, 8.79, 22.1, 6.32, 8),
+};
+
+/** The least radius of gyration of a rail's section [mm]. */
+export const iMin = (S: RailSection): number => Math.sqrt(Math.min(S.Ix, S.Iy) / S.A);
+
 /** The fishplate at a joint of two lengths: its length, the rows of bolts at ± each distance from the joint, the
  *  holes ± across/2 from the rail's axis, its thickness and the bolts' size [mm]. */
 export interface Fishplate {

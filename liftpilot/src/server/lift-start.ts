@@ -2,14 +2,17 @@ import 'server-only';
 // Where the one form of an installation starts: a saved lift design of the same installation (?from=, else the
 // latest); an installation without one carries over its latest shaft design and calculation, entered as they were —
 // a replacement become a whole project also the standards chosen for its test and the shaft and the machine room of
-// its latest survey; else the example to start from, as a new lift (a whole project). Always the user's company.
+// its latest survey (a direct pull: the car and the counterweight under the drops it measured, drops.ts); else the
+// example to start from, as a new lift (a whole project). Always the user's company.
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
+import { readInputs } from '@/calc/index';
 import { formValuesSchema } from '@/lib/calc-input';
 import { liftInputsReadSchema } from '@/lib/lift-input';
 import { surveySchema } from '@/lib/room/survey';
 import { shaftInputsReadSchema } from '@/lib/shaft-input';
 import { AUTO_ALL, newLift, type LiftInputs } from '@/lib/lift';
+import { atSurveyDrops } from '@/lib/lift/drops';
 import { storedCollaudo } from './records';
 
 export async function liftStart(user: SessionUser, projectId: string, fromId: string | null): Promise<LiftInputs> {
@@ -43,9 +46,13 @@ export async function liftStart(user: SessionUser, projectId: string, fromId: st
     const n = Math.max(2, Math.round(H / 3) + 1), rise = Math.round((H * 1000) / (n - 1));
     shaftInputs = { ...shaftInputs, vertical: { ...shaftInputs.vertical, main: 0, floors: Array.from({ length: n }, (_, i) => ({ label: String(i), rise: i < n - 1 ? rise : 0, door: 'A' as const })) } };
   }
+  // the rated load of the calculation is the one the installation has: the shaft takes it as given
+  if (C?.success && Number.isFinite(q) && q > 0) shaftInputs = { ...shaftInputs, Q: Math.round(q) };
+  // a direct pull hangs the falls from the sheave's two sides: the plan's car and counterweight where the survey has
+  // the ropes, not where the example puts them
+  if (R?.success && C?.success && readInputs(C.data).I.layout === 'top') shaftInputs = atSurveyDrops(shaftInputs, R.data) ?? shaftInputs;
   return {
-    // the rated load of the calculation is the one the installation has: the shaft takes it as given
-    shaft: C?.success && Number.isFinite(q) && q > 0 ? { ...shaftInputs, Q: Math.round(q) } : shaftInputs,
+    shaft: shaftInputs,
     calc: calcValues,
     // what was entered stays entered
     auto: C?.success ? { P: false, machine: false, L0: false, dx: false, Hv: false } : AUTO_ALL,

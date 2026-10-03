@@ -206,6 +206,10 @@ try {
   assert.equal(await page.locator('.sheet-page svg.sheet-svg image').count(), 2, 'the company\'s and the client\'s logo on sheet 1');
   const sheets = await page.locator('nav.seg-row a').count();
   assert.ok(sheets >= 8, `sheets ${sheets}`);
+  // sheet 1 lists the check of the car rails (UNI EN 81-50, 5.10); here the rails stay (UNI 10411-11, machine and ropes
+  // replaced), so without the note of a new rail's check
+  const sheet1 = await page.textContent('.sheet-page svg.sheet-svg');
+  assert.ok(sheet1?.includes('Guide di cabina: tensioni') && !sheet1.includes('VERIFICA DELLE GUIDE DI CABINA'), 'the rails\' check on sheet 1');
   const setPdfHref = await page.getAttribute('a[href$="/pdf"]', 'href');
   const setPdf = await page.request.get(`${BASE}${setPdfHref}`);
   assert.equal(setPdf.status(), 200);

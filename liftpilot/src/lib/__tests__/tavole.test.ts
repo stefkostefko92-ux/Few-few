@@ -101,6 +101,15 @@ test('tavole: numero di fogli, tutto dentro il foglio A4, testi senza buchi', ()
   const texts = (i: number) => full.doc.pages[i]?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
   assert.ok(texts(0).includes('CARATTERISTICHE DI BASE') && texts(0).includes('26-007') && texts(0).includes('R1 02/10/2026'), 'foglio 1');
   assert.ok(full.doc.pages[0]?.shapes.some((s) => s.t === 'image'), 'logo nel cartiglio');
+  // the car rails checked on sheet 1: existing in a replacement (no note), new in a new lift with the note of what the
+  // check assumes
+  const fresh = buildTavole({ ...input({ ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null }), values: PRESETS.A });
+  const sheet1 = fresh.doc.pages[0]?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
+  assert.ok(sheet1.includes('VERIFICA DELLE GUIDE DI CABINA') && !texts(0).includes('VERIFICA DELLE GUIDE DI CABINA'), 'nota delle guide');
+  for (const t of [texts(0), sheet1]) {
+    assert.ok(['Guide di cabina: tensioni', 'Guide di cabina: frecce', 'Tipo di paracadute'].every((x) => t.some((y) => y.startsWith(x))), 'verifiche delle guide');
+  }
+  for (const s of fresh.doc.pages[0]?.shapes ?? []) for (const [x, y] of points(s)) assert.ok(x > -0.5 && x < A4.w + 0.5 && y > -0.5 && y < A4.h + 0.5, `${s.t} a ${x}, ${y}`);
   assert.ok(texts(4).includes('PAGINA N° 5/11') && texts(4).includes('SCALA 1:50'), 'striscia e scala della sezione');
   assert.ok(texts(1).some((t) => t.startsWith('LATO FERMAT')), 'lati delle fermate');
   // the same input gives the same drawing

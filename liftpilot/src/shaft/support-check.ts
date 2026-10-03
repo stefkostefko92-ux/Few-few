@@ -9,6 +9,7 @@ import { KV_VERT } from './norme-vert';
 import { PROFILES } from './profiles';
 import { rinvioAcross, rinvioRun, standBox } from './rinvio';
 import { padsOf, profileOf, supportOf } from './support';
+import type { RoomInputs } from './room';
 import type { ShaftCheck } from './types';
 
 const G = 9.81;
@@ -85,9 +86,30 @@ export function standClearance(Gm: RoomGeo, M: MachineSpec): number | null {
   return (s.kind === 'beams' ? top - PROFILES[profileOf(s)].h : 0) - (Gm.pulleyZ + M.Dp / 2);
 }
 
+/** The free area beside the machine for its maintenance and the manual emergency operation (registry locale.macchina):
+ *  on the side of the machine's outline `box` [x0, y0, x1, y1] (room axes, its bedplate and pulley stand with it) with
+ *  the most room, the strip to the wall or to the control panel — as deep as the area's longer side along a side at
+ *  least as long as its shorter, or the other way round. Its depth and the depth it needs there [mm]. */
+export function freeBeside(R: RoomInputs, box: readonly [number, number, number, number]): { depth: number; need: number } {
+  const [x0, y0, x1, y1] = box, K = KV_VERT, [a, b] = [Math.min(K.maintW, K.maintD), Math.max(K.maintW, K.maintD)];
+  const p = R.panelWall, pd = R.panelD, pa = R.panelAt, pe = R.panelAt + R.panelW;
+  const [px0, py0, px1, py1] = p === 'front' ? [pa, 0, pe, pd] : p === 'rear' ? [pa, R.D - pd, pe, R.D] : p === 'left' ? [0, pa, pd, pe] : [R.W - pd, pa, R.W, pe];
+  const overX = px0 < x1 && x0 < px1, overY = py0 < y1 && y0 < py1;
+  const sides = [
+    { depth: x0 - (overY && px1 <= x0 ? px1 : 0), len: y1 - y0 },
+    { depth: (overY && px0 >= x1 ? px0 : R.W) - x1, len: y1 - y0 },
+    { depth: y0 - (overX && py1 <= y0 ? py1 : 0), len: x1 - x0 },
+    { depth: (overX && py0 >= y1 ? py0 : R.D) - y1, len: x1 - x0 },
+  ];
+  const ways = sides.flatMap((s) => [...(s.len >= a ? [{ depth: s.depth, need: b }] : []), ...(s.len >= b ? [{ depth: s.depth, need: a }] : [])]);
+  const all = ways.length ? ways : sides.map((s) => ({ depth: s.depth, need: b }));
+  return all.reduce((best, w) => (w.depth - w.need > best.depth - best.need ? w : best));
+}
+
 /** The checks m_fit and m_stand (registry locale.ingombro): the machine on its support — with the bedplate of the
  *  diverting pulley or the pulley's own stand — inside the room in plan and under its ceiling: the least distance left to
- *  a wall or to the ceiling, at least 0 [mm]; the pulley on its stand under the machine clear of the support over it. */
+ *  a wall or to the ceiling, at least 0 [mm]; the pulley on its stand under the machine clear of the support over it; the
+ *  free area beside it (m_free). */
 export function fitChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
   if (!Gm) return [];
   const R = Gm.room, rf = M.rinvio ?? null;
@@ -97,12 +119,18 @@ export function fitChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
     boxes.push([u0, v0, u1, v1]);
   } else if (M.Dp > 0 && Gm.pulleyZ > -R.slab) boxes.push(standBox(M, Gm));
   let clear = R.H - machineTop(M, Gm);
+  const xs: number[] = [], ys: number[] = [];
   for (const [u0, v0, u1, v1] of boxes) {
     for (const [u, v] of [[u0, v0], [u1, v0], [u1, v1], [u0, v1]] as const) {
       const x = Gm.carDrop[0] + u * Gm.ux - v * Gm.uy, y = Gm.carDrop[1] + u * Gm.uy + v * Gm.ux;
       clear = Math.min(clear, x, R.W - x, y, R.D - y);
+      xs.push(x);
+      ys.push(y);
     }
   }
-  const stand = standClearance(Gm, M);
-  return [check('m_fit', clear >= 0, Math.round(clear), 0, 0, 'mm'), ...(stand === null ? [] : [check('m_stand', stand >= 0, Math.round(stand), 0, 0, 'mm')])];
+  const stand = standClearance(Gm, M), free = freeBeside(R, [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]);
+  return [
+    check('m_fit', clear >= 0, Math.round(clear), 0, 0, 'mm'), ...(stand === null ? [] : [check('m_stand', stand >= 0, Math.round(stand), 0, 0, 'mm')]),
+    check('m_free', free.depth >= free.need, Math.round(free.depth), free.need, 0, 'mm'),
+  ];
 }

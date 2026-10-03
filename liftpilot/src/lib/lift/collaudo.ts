@@ -80,11 +80,13 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   v_cw: ['car', 'cw', 'rails'], v_cwlen: ['cw'], v_place: ['car', 'cw', 'rails', ...DOORS], v_doorcar: ['car', ...DOORS],
   v_buffer: ['buffers'], v_niche: ['cw'], v_staffa: ['cw', 'rails'], v_head: ['car', 'cw', 'rails'],
   // the headroom and the pit: their spaces follow the car, its frame, the buffers and the speed
-  h_refuge: HEAD, h_clear: HEAD, h_top: [...HEAD, 'machine'], h_parapet: ['car'], h_stand: ['car'],
+  h_refuge: HEAD, h_clear: HEAD, h_top: [...HEAD, 'machine'], h_parapet: ['car'], h_stand: ['car'], h_door: DOORS, h_car: ['car'], h_cw: [...HEAD, 'travel'],
   p_refuge: PIT, p_apron: [...PIT, 'carDoors'], p_screen: ['cw'],
   b_runby: BUFFERS, b_type: ['buffers', 'speed'], b_car: ['buffers', 'speed'], b_cw: ['buffers', 'speed'],
   // the machine room is the building's; the panel's space follows a new controller; the beams under a new machine
-  m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_stand: ['machine'], m_calata: ['machine'],
+  m_height: [], m_panel: ['controller'], m_door: [], m_beam: ['machine'], m_beamf: ['machine'], m_rinvio: ['machine'], m_fit: ['machine'], m_stand: ['machine'], m_free: ['machine'], m_calata: ['machine'],
+  // the car's rails under the safety gear and in use (sheet 1 of the drawing set); the safety gear is on the sling
+  gr_stress: ['rails', 'car', 'sling', 'load'], gr_flange: ['rails', 'car', 'sling', 'load'], gr_defl: ['rails', 'car', 'sling', 'load'], sg_type: ['sling', 'speed'],
 };
 
 /** Checks of the data, not of a part: the distances set by hand on the plan keep every part in its place

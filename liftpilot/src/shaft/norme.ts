@@ -196,12 +196,11 @@ export const VOCI_VANO: readonly VoceVano[] = [
   },
   {
     id: 'modello.non.calcolate', gruppo: 'modello_vano', titolo: 'Verifiche che il software non calcola',
-    valore: 'da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle guide e delle staffe (UNI EN 81-50:2020, 5.10); '
-      + 'contrappeso e sua puleggia sotto il soffitto con la cabina sugli ammortizzatori compressi; tipo di paracadute per la velocità '
-      + '(a presa istantanea solo alle velocità basse ammesse dalla norma) e paracadute del contrappeso con spazi accessibili sotto il vano; '
-      + 'distanza tra le parti fisse più alte della fossa e quelle più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm '
-      + 'senza balaustra; altezza libera dei vani di porta; spazi di manovra davanti alla macchina e al volano; movimento incontrollato della '
-      + 'cabina (UCM) e velocità eccessiva in salita con la nuova macchina',
+    valore: 'da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle staffe e delle guide del contrappeso (UNI EN 81-50:2020, '
+      + '5.10: il software verifica le guide di cabina, sul foglio 1 delle tavole); puleggia del contrappeso in taglia 2:1 sotto il soffitto; '
+      + 'paracadute del contrappeso con spazi accessibili sotto il vano; distanza tra le parti fisse più alte della fossa e quelle più basse '
+      + 'della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; locale della macchina in basso (dimensioni e spazi '
+      + 'di manovra: il software non lo disegna); movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina',
     riferimento: 'UNI EN 81-20:2020 e UNI EN 81-50:2020 (clausole da individuare sul testo)', fonte: 'analisi delle lacune del 2026-10-03',
     stato: 'da_verificare',
   },

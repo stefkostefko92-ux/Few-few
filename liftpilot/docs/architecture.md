@@ -19,7 +19,8 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      предложението; pickOption — изборът на опция на оразмеряването), advice (препоръчаната машина сред
                      SICOR и Montanari: всеки модел, проверен с асансьора, подредбата и причината, sourcesOf — буквите на
                      източника, алтернативата с отклоняваща ролка), collaudo (нормата на
-                     изпитването и сменените части: AMBITO_VERIFICHE, ambitoOf, collaudoVerdict), norme (KL, VOCI_IMPIANTO),
+                     изпитването и сменените части: AMBITO_VERIFICHE, ambitoOf, collaudoVerdict), drops (подмяна → цял
+                     проект: кабината и противотежестта под калатите от рилевото), norme (KL, VOCI_IMPIANTO),
                      version (LIFT_ENGINE_VERSION). lift-input.ts (zod), lift-hash.ts.
 src/lib/order/       Черновата на поръчка на машината (италиански): machine (за коя машина: проверената в записа, иначе първата
                      от съвета), build (блоковете на relazione: бланка, машината, рамата с ролката, асансьорът, машинното,
@@ -76,12 +77,15 @@ src/shaft/           Чист двигател на шахтата: area (Таб
                      машината: подложки, рама, греди от стена до стена, плочи, постамент, рамата с отклоняващата ролка;
                      височината ѝ е оста на шайбата), rinvio + rinvio-view (отклоняващата ролка в машинното: в рамата на
                      машината — на производителя или наша — или на своя стойка; разрезът B-B и планът ѝ),
-                     profiles (валцувани профили EN 10365), support-check (гредите: σ и провисване), norme + norme-vert +
-                     norme-porte + norme-supporto + norme-ingombri + norme-spazi (KV, KV_VERT, DEFAULTS, регистърът; norme-fonti —
-                     общите източници), snapshot (SHAFT_ENGINE_VERSION).
+                     profiles (валцувани профили EN 10365), support-check (гредите: σ и провисване; свободната площ до
+                     машината), rails (профилите на водачите, сеченията им за EN 81-50 5.10), norme + norme-vert +
+                     norme-porte + norme-supporto + norme-ingombri + norme-spazi + norme-guide (KV, KV_VERT, DEFAULTS,
+                     регистърът; norme-fonti — общите източници), snapshot (SHAFT_ENGINE_VERSION).
                      Координати в план: x по стената на вход A, y навътре; в разреза x = y на плана, z от най-ниската спирка.
 src/lib/tavole/      Комплектът чертежи: build (листовете), views (изгледите без хартията), datasheet + data (лист 1),
-                     loads (P1–P9), forces (сили по водачите, EN 81-50 5.10), notes (наш текст на бележките), extras
+                     loads (P1–P9), forces (сили по водачите, EN 81-50 5.10: парашут, движение, товарене на прага),
+                     rail-check (напреженията и провисването на водачите на кабината, видът на парашута — на лист 1),
+                     notes (наш текст на бележките), extras
                      (легенди, „LATO FERMATE“, знаци на разрезите), compose (снимките на издадения комплект, zod);
                      survey-input + survey-data + survey-sheet + survey-build — комплектът на подмяната от заснемането
                      (лист 1 с данните на старата и новата машина, план и разрез B-B на машинното).
@@ -129,7 +133,7 @@ src/server/          Server actions ('use server') и заявки, винаги
                      обновяването), refresh-actions («Aggiorna con il software attuale»), drawing-pdf (PDF-ът на издадения
                      комплект, пазен какъвто е издаден), download (отказите и отговорите на сваляните документи), lift-start
                      (откъде тръгва формулярът: проект, последните проект на шахтата и изчисление, при подмяна — нормите на
-                     изпитването и рилевото).
+                     изпитването и рилевото; при директно окачване кабината и противотежестта под калатите му).
 src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
 src/components/shaft/ Шахтата в единния формуляр (записаният проект на шахтата — само за четене): SurveyPanel + CadViewer (canvas, pan/zoom, клик), опции (план, вертикални данни,
                      машинно), PlanEditor (план, разрез A-A и детайлите, машинно — всеки размер се сменя с клик) +

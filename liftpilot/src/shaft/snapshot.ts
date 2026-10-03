@@ -6,7 +6,7 @@ import { layout } from './layout';
 import type { Layout, ShaftInputs } from './types';
 
 /** Version of the shaft engine (semver): a change of rule or of a default is a minor or major version. */
-export const SHAFT_ENGINE_VERSION = '2.9.0';
+export const SHAFT_ENGINE_VERSION = '2.10.0';
 
 export interface ShaftSnapshot {
   engine: string;

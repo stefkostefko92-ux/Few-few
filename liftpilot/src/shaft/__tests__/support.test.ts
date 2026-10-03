@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_ROOM, KV_VERT, PROFILES, defaultInputs, layout, padsOf, roomGeo, sheaveAxisOn, supportHeight, type MachineSpec, type MachineSupport } from '../index';
 import { ownAxis } from '../support';
-import { beamChecks, beamResult, fitChecks, machineTop } from '../support-check';
+import { beamChecks, beamResult, fitChecks, freeBeside, machineTop } from '../support-check';
 
 const D = 400, SHIMS_AXIS = 0.55 * D;
 const M: MachineSpec = { D, Dp: 0, n: 5, d: 8, mass: 400, label: '', axis: 600, h: 0, reverse: false, ropeIn: 0 };
@@ -80,4 +80,20 @@ test('rinvio sul suo supporto sotto l’argano: lo scavalcano solo le putrelle s
   assert.ok(raised && raised.status === 'ok' && raised.value !== null && raised.value > 0);
   // on the bedplate with the pulley (the default) there is no stand
   assert.equal(deriveLift(L).supportChecks.find((c) => c.id === 'm_stand'), undefined);
+});
+
+test('superficie libera accanto all\'argano: 500 × 600 mm sul lato più libero, fino a muri e quadro', () => {
+  const R = DEFAULT_ROOM, K = KV_VERT;
+  // a machine 1000 × 600 mm near the left wall: the most room is behind its 1000 mm side, which takes 500 deep
+  assert.deepEqual(freeBeside(R, [500, 500, 1500, 1100]), { depth: R.D - 1100, need: K.maintW });
+  // a machine 550 × 500 mm: in front of a side shorter than 600 mm the area needs 600 deep
+  assert.deepEqual(freeBeside(R, [500, 500, 1050, 1000]), { depth: R.D - 1000, need: K.maintD });
+  // pushed into a corner, only 500 left in front of its 1000 mm side: enough the other way round (500 deep, ≥ 600 long)
+  assert.deepEqual(freeBeside({ ...R, W: 1500, D: 1600 }, [0, 0, 1500, 1100]), { depth: 500, need: K.maintW });
+  // the control panel in front of that side takes its depth
+  const panel = { ...R, W: 1500, D: 1700, panelWall: 'rear' as const, panelAt: 0, panelW: 1500, panelD: 300 };
+  assert.ok(freeBeside(panel, [0, 0, 1500, 1100]).depth < K.maintW);
+  // on the design: the default machine room leaves the area free
+  const L = layout(defaultInputs(1600, 1750)), G = roomGeo(L, M);
+  assert.equal(fitChecks(G, M).find((c) => c.id === 'm_free')?.status, 'ok');
 });

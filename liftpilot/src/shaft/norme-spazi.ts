@@ -65,6 +65,30 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     verifiche: ['h_stand'],
   },
   {
+    id: 'spazi.altezze', gruppo: 'sezione', titolo: 'Altezza libera degli accessi e della cabina',
+    valore: 'luce netta in altezza delle porte di piano e di cabina ≥ 2000 mm; altezza libera interna della cabina ≥ 2000 mm',
+    riferimento: 'UNI EN 81-20:2020, 5.3.2.1 e 5.4.1',
+    fonte: `${EN}; per la 5.3.2.1 anche le interpretazioni VDMA della serie EN 81 (DAfA 104, 16.09.2020); 2 m anche in DM 587/1987 (UNI EN 81-1), `
+      + '7.3.1, 8.1.1 e 8.1.2', stato: 'da_verificare',
+    verifiche: ['h_door', 'h_car'],
+    nota: 'negli impianti esistenti (DPR 1497/1963, artt. 24, 27 e 29) le porte possono essere alte 1,90 m e la cabina 2,00 m; con la sola '
+      + 'sostituzione della macchina le altezze restano (parti esistenti); la UNI 10411-1 ammette porte di piano sostituite più basse di 2 m se non '
+      + 'più basse delle esistenti (punti 18.1 e 21.3/21.4 dell\'edizione 2014, da verificare sulla 2024): il software non conosce le esistenti e '
+      + 'segnala ogni porta sotto 2000 mm',
+  },
+  {
+    id: 'contrappeso.guidato', gruppo: 'sezione', titolo: 'Corsa guidata del contrappeso in testata',
+    valore: 'con la cabina sugli ammortizzatori completamente compressi le guide del contrappeso lo guidano ancora per almeno 0,1 + 0,035·v² m '
+      + '(v velocità nominale): dalla sommità del contrappeso, salito della corsa sotto la cabina (extracorsa e corsa degli ammortizzatori), alla '
+      + 'sommità delle guide, che il software pone 50 mm sotto la soletta (voce foglio.stime)',
+    riferimento: 'UNI EN 81-1 (DM 587/1987), 5.7.1.2; nella UNI EN 81-20:2020 la posizione più alta del contrappeso è nella tabella delle '
+      + 'posizioni estreme (5.2.5.6.1: cabina sugli ammortizzatori compressi più 0,035·v²)',
+    fonte: 'DM 587/1987 (testo di legge); corso UNI sulla UNI EN 81-20 (2021) per le posizioni estreme. La clausola della UNI EN 81-20 sulla corsa '
+      + 'guidata ulteriore non è stata trovata nelle fonti secondarie: il software tiene il valore della UNI EN 81-1, più severo della sola posizione '
+      + 'estrema', stato: 'da_verificare',
+    verifiche: ['h_cw'],
+  },
+  {
     id: 'contrappeso.schermo', gruppo: 'sezione', titolo: 'Schermo del contrappeso in fossa',
     valore: 'dal punto più basso del contrappeso sugli ammortizzatori compressi fino ad almeno 2000 mm sopra il pavimento della fossa '
       + '(altezza dello schermo modificabile sul progetto, mai sotto questo valore)',

@@ -65,5 +65,8 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   await page.waitForSelector('.lift-facts .lift-verdict');
   await page.evaluate(() => { const d = globalThis.document.querySelector('.lift-form details.room-options'); if (d) d.open = true; });
   assert.equal(await page.locator('.lift-form details.room-options input[type="number"]').nth(4).inputValue(), '2700', 'the surveyed machine room carried over');
+  // a direct pull: the plan takes the car and the counterweight under the surveyed drops, so nothing is left to fix
+  // before the save (no «Calata» against the existing sheave)
+  assert.equal(await page.locator('.lift-work .savebar button.btn-primary').isDisabled(), false, 'the upgrade saves without a calata to fix');
   return { roomUrl, roomId, roomSetUrl };
 }

@@ -1,6 +1,7 @@
 // The machine room of a machine replacement (src/lib/room): the new machine over the existing drops as its calculation
 // places it, the bedplate made to the calculation's h, what stops a record, the checks and the verdict under the
 // acceptance test, and its drawings — every editable dimension reads back what is typed, none changes the calculation.
+// The whole project a direct pull becomes: its plan under the drops surveyed.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
@@ -11,6 +12,10 @@ import { rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
 import { roomPlanOn, roomSectionOn } from '@/shaft/room-view';
 import { ownAxis } from '@/shaft/support';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { layout } from '@/shaft';
+import { shaftInputsSchema } from '@/lib/shaft-input';
+import { deriveLift, newLift } from '@/lib/lift';
+import { atSurveyDrops } from '@/lib/lift/drops';
 import { deriveRoom } from '../room/derive';
 import { applySurveyEdit } from '../room/edit';
 import { roomVerdict } from '../room/snapshot';
@@ -119,3 +124,24 @@ for (const [name, V, s] of [
     for (const k of ['room.W', 'room.D', 'room.shaftX', 'room.shaftY', 'room.H', 'room.slab', 'W', 'D', 'drop.carX', 'drop.carY']) assert.ok(keys.has(k), k);
   });
 }
+
+test('sostituzione → progetto completo: tiro diretto, cabina e contrappeso sotto le calate rilevate', () => {
+  const calc: FormValues = { ...PRESETS.C }, base = newLift(), hand = { P: false, machine: false, L0: false, dx: false, Hv: false };
+  const S = { ...base.shaft, Q: 630 }, mid = (r: { x: number; y: number; w: number; h: number }) => [r.x + r.w / 2, r.y + r.h / 2];
+  // the example's plan: the falls are not the existing sheave apart, the save is refused
+  assert.ok(deriveLift({ ...base, shaft: S, calc, auto: hand }).issues.includes('calata'));
+  for (const s of [startSurvey(600), { ...startSurvey(600), car: { x: 1000, y: 800 }, cw: { x: 400, y: 800 } }]) {
+    const P = atSurveyDrops(S, s);
+    assert.ok(P, 'the plan takes the drops');
+    assert.ok(shaftInputsSchema.safeParse(P).success, 'within the ranges the save takes');
+    const L = layout(P);
+    assert.deepEqual(mid(L.car).map(Math.round), [s.car.x, s.car.y]);
+    assert.deepEqual(mid(L.cw).map(Math.round), [s.cw.x, s.cw.y]);
+    assert.equal(L.cwSide, s.cw.x === s.car.x ? 'rear' : 'left');
+    const d = deriveLift({ ...base, shaft: P, calc, auto: hand });
+    assert.equal(d.issues.includes('calata'), false);
+    assert.equal(Math.round(d.calata ?? 0), 600);
+  }
+  // a second entrance: the axes of the survey are entrance A's alone, the example's plan stays
+  assert.equal(atSurveyDrops({ ...S, entrances: 'opposite' }, startSurvey(600)), null);
+});

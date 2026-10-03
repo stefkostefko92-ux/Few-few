@@ -960,6 +960,30 @@
     },
     {
       "n": 78,
+      "id": "vano.spazi.altezze",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Altezza libera degli accessi e della cabina",
+      "valore": "luce netta in altezza delle porte di piano e di cabina ≥ 2000 mm; altezza libera interna della cabina ≥ 2000 mm",
+      "riferimento": "UNI EN 81-20:2020, 5.3.2.1 e 5.4.1",
+      "fonte": "sintesi della UNI EN 81-20:2020 di costruttori e organismi notificati (KONE, Sodimas, MCCAA), fonti secondarie concordi; per la 5.3.2.1 anche le interpretazioni VDMA della serie EN 81 (DAfA 104, 16.09.2020); 2 m anche in DM 587/1987 (UNI EN 81-1), 7.3.1, 8.1.1 e 8.1.2",
+      "stato": "da verificare",
+      "verifiche": "altezza libera degli accessi; altezza libera interna della cabina",
+      "nota": "negli impianti esistenti (DPR 1497/1963, artt. 24, 27 e 29) le porte possono essere alte 1,90 m e la cabina 2,00 m; con la sola sostituzione della macchina le altezze restano (parti esistenti); la UNI 10411-1 ammette porte di piano sostituite più basse di 2 m se non più basse delle esistenti (punti 18.1 e 21.3/21.4 dell'edizione 2014, da verificare sulla 2024): il software non conosce le esistenti e segnala ogni porta sotto 2000 mm"
+    },
+    {
+      "n": 79,
+      "id": "vano.contrappeso.guidato",
+      "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
+      "voce": "Corsa guidata del contrappeso in testata",
+      "valore": "con la cabina sugli ammortizzatori completamente compressi le guide del contrappeso lo guidano ancora per almeno 0,1 + 0,035·v² m (v velocità nominale): dalla sommità del contrappeso, salito della corsa sotto la cabina (extracorsa e corsa degli ammortizzatori), alla sommità delle guide, che il software pone 50 mm sotto la soletta (voce foglio.stime)",
+      "riferimento": "UNI EN 81-1 (DM 587/1987), 5.7.1.2; nella UNI EN 81-20:2020 la posizione più alta del contrappeso è nella tabella delle posizioni estreme (5.2.5.6.1: cabina sugli ammortizzatori compressi più 0,035·v²)",
+      "fonte": "DM 587/1987 (testo di legge); corso UNI sulla UNI EN 81-20 (2021) per le posizioni estreme. La clausola della UNI EN 81-20 sulla corsa guidata ulteriore non è stata trovata nelle fonti secondarie: il software tiene il valore della UNI EN 81-1, più severo della sola posizione estrema",
+      "stato": "da verificare",
+      "verifiche": "corsa guidata del contrappeso in testata",
+      "nota": ""
+    },
+    {
+      "n": 80,
       "id": "vano.contrappeso.schermo",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Schermo del contrappeso in fossa",
@@ -971,7 +995,7 @@
       "nota": ""
     },
     {
-      "n": 79,
+      "n": 81,
       "id": "vano.ammortizzatori.corsa",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori ad accumulo di energia lineari (molle)",
@@ -983,7 +1007,7 @@
       "nota": ""
     },
     {
-      "n": 80,
+      "n": 82,
       "id": "vano.ammortizzatori.poliuretano",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori ad accumulo di energia non lineari (tamponi in poliuretano)",
@@ -995,7 +1019,7 @@
       "nota": ""
     },
     {
-      "n": 81,
+      "n": 83,
       "id": "vano.ammortizzatori.idraulici",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
       "voce": "Ammortizzatori a dissipazione di energia (idraulici)",
@@ -1007,19 +1031,19 @@
       "nota": ""
     },
     {
-      "n": 82,
+      "n": 84,
       "id": "vano.locale.macchina",
       "gruppo": "Locale del macchinario",
       "voce": "Locale del macchinario",
-      "valore": "altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga ≥ 500 mm o quanto il quadro; porta di accesso ≥ 600 × 2000 mm",
+      "valore": "altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga ≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno 500 × 600 mm (il software la cerca accanto all'argano, sul lato più libero, fino a muri e quadro); porta di accesso ≥ 600 × 2000 mm",
       "riferimento": "UNI EN 81-20:2020, 5.2.6.3.2.1 e 5.2.3",
-      "fonte": "sintesi della UNI EN 81-20:2020 di costruttori e organismi notificati (KONE, Sodimas, MCCAA), fonti secondarie concordi",
+      "fonte": "sintesi della UNI EN 81-20:2020 di costruttori e organismi notificati (KONE, Sodimas, MCCAA), fonti secondarie concordi; le superfici libere anche in DM 587/1987 (UNI EN 81-1), 6.3.2.1",
       "stato": "da verificare",
-      "verifiche": "altezza del locale macchina; superficie libera davanti al quadro; porta del locale macchina",
+      "verifiche": "altezza del locale macchina; superficie libera davanti al quadro; superficie libera accanto all'argano; porta del locale macchina",
       "nota": ""
     },
     {
-      "n": 83,
+      "n": 85,
       "id": "vano.illuminazione",
       "gruppo": "Locale del macchinario",
       "voce": "Illuminazione del vano e del locale del macchinario",
@@ -1031,7 +1055,7 @@
       "nota": ""
     },
     {
-      "n": 84,
+      "n": 86,
       "id": "vano.locale.temperatura",
       "gruppo": "Locale del macchinario",
       "voce": "Temperatura dei locali del macchinario e degli armadi",
@@ -1043,7 +1067,7 @@
       "nota": ""
     },
     {
-      "n": 85,
+      "n": 87,
       "id": "vano.locale.basamento",
       "gruppo": "Locale del macchinario",
       "voce": "Basamento dell'argano",
@@ -1055,7 +1079,7 @@
       "nota": ""
     },
     {
-      "n": 86,
+      "n": 88,
       "id": "vano.locale.telaio",
       "gruppo": "Locale del macchinario",
       "voce": "Telaio sotto l'argano di un costruttore",
@@ -1067,7 +1091,7 @@
       "nota": ""
     },
     {
-      "n": 87,
+      "n": 89,
       "id": "vano.locale.rinvio",
       "gruppo": "Locale del macchinario",
       "voce": "Puleggia di rinvio nel locale del macchinario",
@@ -1079,7 +1103,7 @@
       "nota": ""
     },
     {
-      "n": 88,
+      "n": 90,
       "id": "vano.locale.ingombro",
       "gruppo": "Locale del macchinario",
       "voce": "L'argano dentro il locale del macchinario",
@@ -1091,7 +1115,7 @@
       "nota": ""
     },
     {
-      "n": 89,
+      "n": 91,
       "id": "vano.locale.putrelle",
       "gruppo": "Locale del macchinario",
       "voce": "Verifica delle putrelle sotto l'argano",
@@ -1103,7 +1127,7 @@
       "nota": "verifica semplice a carico concentrato in mezzeria su trave appoggiata; gli appoggi nei muri e la muratura vanno verificati dal progettista"
     },
     {
-      "n": 90,
+      "n": 92,
       "id": "vano.locale.calate",
       "gruppo": "Locale del macchinario",
       "voce": "Sostituzione dell'argano: calate esistenti e calate della nuova macchina",
@@ -1115,7 +1139,7 @@
       "nota": ""
     },
     {
-      "n": 91,
+      "n": 93,
       "id": "vano.carichi.fossa",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carichi sul pavimento della fossa",
@@ -1127,7 +1151,7 @@
       "nota": ""
     },
     {
-      "n": 92,
+      "n": 94,
       "id": "vano.guide.spinte",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Spinte sulle guide di cabina",
@@ -1139,7 +1163,7 @@
       "nota": ""
     },
     {
-      "n": 93,
+      "n": 95,
       "id": "vano.carichi.macchina",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Carico della macchina sulla soletta",
@@ -1151,7 +1175,7 @@
       "nota": ""
     },
     {
-      "n": 94,
+      "n": 96,
       "id": "vano.carichi.cavi",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Massa dei cavi flessibili",
@@ -1163,7 +1187,7 @@
       "nota": ""
     },
     {
-      "n": 95,
+      "n": 97,
       "id": "vano.guide.staffe",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Numero e posizione delle staffe delle guide",
@@ -1175,7 +1199,7 @@
       "nota": "il passo delle staffe va confermato con la verifica delle guide (UNI EN 81-50:2020, 5.10), che usa la distanza tra le staffe"
     },
     {
-      "n": 96,
+      "n": 98,
       "id": "vano.foglio.stime",
       "gruppo": "Carichi sull'edificio e spinte sulle guide",
       "voce": "Lunghezze stimate nel foglio dei dati",
@@ -1187,7 +1211,43 @@
       "nota": ""
     },
     {
-      "n": 97,
+      "n": 99,
+      "id": "vano.guide.verifica",
+      "gruppo": "Carichi sull'edificio e spinte sulle guide",
+      "voce": "Verifica delle guide di cabina",
+      "valore": "tra due staffe (l = distanza massima tra le staffe della guida) con le spinte della voce guide.spinte, portata spostata di 1/8 della cabina in un senso e poi nell'altro: flessione M = 3·F·l/16, σm = σx + σy; intervento del paracadute: forza verticale Fv = k1·g·(P+Q)/n più il peso della guida, carico di punta con il metodo omega (λ = l/i con il raggio d'inerzia minore √(I/A), λ ≤ 250; acciaio Rm 370: ω = 0,0001292·λ^1,89 + 1 fino a λ 60, 0,00004627·λ^2,14 + 1 fino a 85, 0,00001711·λ^2,35 + 1,04 fino a 115, 0,00016887·λ^2 fino a 250), σ = σm + Fv/A e σc = σk + 0,9·σm; marcia: k2 = 1,2 e il peso della guida; carico al piano: cabina vuota e Fs = 0,4·g·Q (0,6·g·Q da 2500 kg) al centro della soglia di cabina, a ogni accesso; flessione della suola σF = 1,85·Fx/c² (pattini a rotelle); frecce δx = 0,7·Fx·l³/(48·E·Iy) e δy = 0,7·Fy·l³/(48·E·Ix) ≤ 5 mm. Tensione ammissibile Rm/St con St = 2,25 in marcia e al carico, 1,8 all'intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164 e 205 N/mm²",
+      "riferimento": "UNI EN 81-50:2020, 5.10; UNI EN 81-20:2020, 5.7.2 (forza verticale 5.7.2.3.5, tensioni ammissibili 5.7.4.5, frecce 5.7.4.6: sottoclausole da verificare sul testo)",
+      "fonte": "fonti secondarie concordi: Mellor, «Lift system calculations in EN 81-50» (2014) con l'esempio T127-1/B; tesi VUT Brno (2024) con pagine della ČSN EN 81-50:2021 e ČSN EN 81-20:2021; tesi ITU Istanbul sulla EN 81-1, appendice G; estratti di ricerca del 3 ottobre 2026. Rm 370 è scelta del software (il valore più basso)",
+      "stato": "da verificare",
+      "verifiche": "tensioni nelle guide di cabina; flessione della suola delle guide di cabina; frecce delle guide di cabina",
+      "nota": "non contate: la spinta di scorrimento delle staffe (assestamento dell'edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le guide del contrappeso"
+    },
+    {
+      "n": 100,
+      "id": "vano.guide.sezioni",
+      "gruppo": "Carichi sull'edificio e spinte sulle guide",
+      "voce": "Sezioni delle guide di cabina",
+      "valore": "area, momenti d'inerzia e moduli di resistenza minimi attorno all'asse parallelo alla suola (x) e all'asse di simmetria (y), spessore c del collo tra lama e suola, per ogni profilo del software; raggi d'inerzia calcolati come √(I/A)",
+      "riferimento": "ISO 7465:2007 (ora ISO 8100-33:2022); EN 10055:1995 per il T 70×70×8 laminato",
+      "fonte": "tabella ISO 7465:2007 stampata da Savera (Standard Savera Guide, Rev 03/10; assi e c dalla Rev 08.26), anteprime ISO 7465:1997 e ISO 8100-33:2022 (correzione dei raggi del T127-1/B, stampati nel 2007 uguali ai moduli), EN 10055:1995, Tabella 1. La EN 10055 non ha il T 45: al T 45×45×5 il software dà la sezione del T45/A, delle stesse misure",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 101,
+      "id": "vano.paracadute.tipo",
+      "gruppo": "Carichi sull'edificio e spinte sulle guide",
+      "voce": "Tipo di paracadute per la velocità nominale",
+      "valore": "istantaneo (anche a rulli imprigionati) fino a 0,63 m/s; oltre, progressivo (la UNI EN 81-20 non ha più l'istantaneo con effetto ammortizzato fino a 1 m/s); il tipo viene dai dati dell'impianto (se manca: progressivo, con la nota sul foglio)",
+      "riferimento": "UNI EN 81-20:2020, 5.6.2 (sottoclausola da verificare sul testo)",
+      "fonte": "corso UNI sulla UNI EN 81-50 (2021) e scheda dei paracadute PFB; la regola precedente in DM 587/1987 (UNI EN 81-1), 9.8.2",
+      "stato": "da verificare",
+      "verifiche": "tipo di paracadute per la velocità",
+      "nota": ""
+    },
+    {
+      "n": 102,
       "id": "vano.modello.passo",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Dimensioni proposte della cabina",
@@ -1199,7 +1259,7 @@
       "nota": ""
     },
     {
-      "n": 98,
+      "n": 103,
       "id": "vano.modello.quote",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Quote della pianta fissate a mano",
@@ -1211,7 +1271,7 @@
       "nota": ""
     },
     {
-      "n": 99,
+      "n": 104,
       "id": "vano.modello.limiti",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Limiti del modello del vano",
@@ -1223,11 +1283,11 @@
       "nota": ""
     },
     {
-      "n": 100,
+      "n": 105,
       "id": "vano.modello.non.calcolate",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Verifiche che il software non calcola",
-      "valore": "da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle guide e delle staffe (UNI EN 81-50:2020, 5.10); contrappeso e sua puleggia sotto il soffitto con la cabina sugli ammortizzatori compressi; tipo di paracadute per la velocità (a presa istantanea solo alle velocità basse ammesse dalla norma) e paracadute del contrappeso con spazi accessibili sotto il vano; distanza tra le parti fisse più alte della fossa e quelle più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; altezza libera dei vani di porta; spazi di manovra davanti alla macchina e al volano; movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina",
+      "valore": "da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle staffe e delle guide del contrappeso (UNI EN 81-50:2020, 5.10: il software verifica le guide di cabina, sul foglio 1 delle tavole); puleggia del contrappeso in taglia 2:1 sotto il soffitto; paracadute del contrappeso con spazi accessibili sotto il vano; distanza tra le parti fisse più alte della fossa e quelle più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; locale della macchina in basso (dimensioni e spazi di manovra: il software non lo disegna); movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina",
       "riferimento": "UNI EN 81-20:2020 e UNI EN 81-50:2020 (clausole da individuare sul testo)",
       "fonte": "analisi delle lacune del 2026-10-03",
       "stato": "da verificare",
@@ -1235,7 +1295,7 @@
       "nota": ""
     },
     {
-      "n": 101,
+      "n": 106,
       "id": "impianto.corsa",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Corsa",
@@ -1247,7 +1307,7 @@
       "nota": ""
     },
     {
-      "n": 102,
+      "n": 107,
       "id": "impianto.portata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Portata e velocità",
@@ -1259,7 +1319,7 @@
       "nota": ""
     },
     {
-      "n": 103,
+      "n": 108,
       "id": "impianto.collaudo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Normativa di collaudo e parti sostituite o modificate",
@@ -1271,7 +1331,7 @@
       "nota": "il testo delle UNI 10411 del 2024 non è stato letto: le verifiche per parte e i requisiti per la sostituzione del macchinario (edizione 2021: freno in due elementi, temporizzatore, velocità eccessiva in salita, arresto entro 1 m dalla macchina, interruzione se il freno non si apre) vanno confermati sul testo vigente"
     },
     {
-      "n": 104,
+      "n": 109,
       "id": "impianto.massa.cabina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Massa della cabina non inserita",
@@ -1283,7 +1343,7 @@
       "nota": "va sostituita con la massa del libretto o con quella ricavata dalla prova di bilanciamento; la sensibilità ±10% ne mostra l'effetto"
     },
     {
-      "n": 105,
+      "n": 110,
       "id": "impianto.L0",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Fune oltre la corsa (L0)",
@@ -1295,7 +1355,7 @@
       "nota": ""
     },
     {
-      "n": 106,
+      "n": 111,
       "id": "impianto.dx",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Distanza orizzontale della puleggia di rinvio (dx)",
@@ -1307,7 +1367,7 @@
       "nota": ""
     },
     {
-      "n": 107,
+      "n": 112,
       "id": "impianto.calata",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Tiro diretto (senza rinvio): calata uguale al diametro della puleggia",
@@ -1319,7 +1379,7 @@
       "nota": "con un diametro diverso dalla calata le funi si inclinano verso gli attacchi: nella sostituzione con il confronto il calcolo ne tiene conto per la nuova puleggia; oltre pochi millimetri servono una puleggia di rinvio o il contrappeso spostato (quota «Calata» in pianta)"
     },
     {
-      "n": 108,
+      "n": 113,
       "id": "impianto.Hv",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: altezza fino alle pulegge in alto (Hv)",
@@ -1331,7 +1391,7 @@
       "nota": ""
     },
     {
-      "n": 109,
+      "n": 114,
       "id": "impianto.basso.schema",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina in basso: schema delle funi",
@@ -1343,7 +1403,7 @@
       "nota": "lo schema reale va rilevato sull'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori"
     },
     {
-      "n": 110,
+      "n": 115,
       "id": "impianto.catalogo",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta dal catalogo di un costruttore",
@@ -1355,7 +1415,7 @@
       "nota": "i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell'ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
     },
     {
-      "n": 111,
+      "n": 116,
       "id": "impianto.macchina",
       "gruppo": "Impianto: valori calcolati dai dati inseriti una volta",
       "voce": "Macchina proposta",
@@ -1367,7 +1427,7 @@
       "nota": "una griglia di calcolo, non un catalogo: il modello reale va scelto dal costruttore con questi valori. La puleggia cambia la geometria delle funi (fune oltre la corsa, distanza del rinvio): ogni puleggia della griglia è dimensionata con la propria, e con il rinvio dalla pianta solo le pulegge per cui la pianta sa posizionare il rinvio"
     },
     {
-      "n": 112,
+      "n": 117,
       "id": "sim.forze",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Forze nella simulazione",
@@ -1379,7 +1439,7 @@
       "nota": "agli estremi della corsa e alle accelerazioni della verifica i valori coincidono con quelli della verifica (test automatico)"
     },
     {
-      "n": 113,
+      "n": 118,
       "id": "sim.profilo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Profilo del moto tra i piani",
@@ -1391,7 +1451,7 @@
       "nota": "accelerazione e strappo sono dati di progetto dell'azionamento, non limiti normativi"
     },
     {
-      "n": 114,
+      "n": 119,
       "id": "sim.aderenza.marcia",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
@@ -1403,7 +1463,7 @@
       "nota": ""
     },
     {
-      "n": 115,
+      "n": 120,
       "id": "sim.porte",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Tempi delle porte",
@@ -1415,7 +1475,7 @@
       "nota": ""
     },
     {
-      "n": 116,
+      "n": 121,
       "id": "sim.ammortizzatori",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Urto sugli ammortizzatori",
@@ -1427,7 +1487,7 @@
       "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione"
     },
     {
-      "n": 117,
+      "n": 122,
       "id": "sim.bloccata",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
@@ -1439,7 +1499,7 @@
       "nota": ""
     },
     {
-      "n": 118,
+      "n": 123,
       "id": "sim.passo",
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Passo di campionamento",
@@ -1451,7 +1511,7 @@
       "nota": ""
     },
     {
-      "n": 119,
+      "n": 124,
       "id": "collaudo.adempimenti.nuovo.1",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999, art. 4-bis",
@@ -1463,7 +1523,7 @@
       "nota": ""
     },
     {
-      "n": 120,
+      "n": 125,
       "id": "collaudo.adempimenti.nuovo.2",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999, artt. 6-bis e 7 c.3",
@@ -1475,7 +1535,7 @@
       "nota": ""
     },
     {
-      "n": 121,
+      "n": 126,
       "id": "collaudo.adempimenti.nuovo.3",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999, art. 12 c.1–3",
@@ -1487,7 +1547,7 @@
       "nota": ""
     },
     {
-      "n": 122,
+      "n": 127,
       "id": "collaudo.adempimenti.nuovo.4",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
       "voce": "DPR 162/1999, artt. 13, 15 c.4 e 16 c.3",
@@ -1499,7 +1559,7 @@
       "nota": ""
     },
     {
-      "n": 123,
+      "n": 128,
       "id": "collaudo.adempimenti.modifica.1",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 2 c.1 lett. cc)",
@@ -1511,7 +1571,7 @@
       "nota": ""
     },
     {
-      "n": 124,
+      "n": 129,
       "id": "collaudo.adempimenti.modifica.2",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 12 c.4",
@@ -1523,7 +1583,7 @@
       "nota": ""
     },
     {
-      "n": 125,
+      "n": 130,
       "id": "collaudo.adempimenti.modifica.3",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 12 c.4–5",
@@ -1535,7 +1595,7 @@
       "nota": ""
     },
     {
-      "n": 126,
+      "n": 131,
       "id": "collaudo.adempimenti.modifica.4",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
       "voce": "DPR 162/1999, art. 14 c.3",
@@ -1547,7 +1607,7 @@
       "nota": ""
     },
     {
-      "n": 127,
+      "n": 132,
       "id": "collaudo.en81.1",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "DPR 162/1999, All. V 3.3 (All. VIII 4)",
@@ -1559,7 +1619,7 @@
       "nota": ""
     },
     {
-      "n": 128,
+      "n": 133,
       "id": "collaudo.en81.2",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "DPR 162/1999, All. VIII 3 e), g), h)",
@@ -1571,7 +1631,7 @@
       "nota": ""
     },
     {
-      "n": 129,
+      "n": 134,
       "id": "collaudo.en81.3",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "Regolamento (UE) 2023/1230, art. 51 par. 2",
@@ -1583,7 +1643,7 @@
       "nota": ""
     },
     {
-      "n": 130,
+      "n": 135,
       "id": "collaudo.en81.4",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-50:2020, 5.12.1 e 5.12.2.1",
@@ -1595,7 +1655,7 @@
       "nota": ""
     },
     {
-      "n": 131,
+      "n": 136,
       "id": "collaudo.en81.5",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.6.2 (sottoclausola da verificare)",
@@ -1607,7 +1667,7 @@
       "nota": ""
     },
     {
-      "n": 132,
+      "n": 137,
       "id": "collaudo.en81.6",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.8 (sottoclausola da verificare)",
@@ -1619,7 +1679,7 @@
       "nota": ""
     },
     {
-      "n": 133,
+      "n": 138,
       "id": "collaudo.en81.7",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.5.5.1",
@@ -1631,7 +1691,7 @@
       "nota": ""
     },
     {
-      "n": 134,
+      "n": 139,
       "id": "collaudo.en81.8",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.2 (sottoclausola da verificare)",
@@ -1643,7 +1703,7 @@
       "nota": ""
     },
     {
-      "n": 135,
+      "n": 140,
       "id": "collaudo.en81.9",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.1.5 (sottoclausola da verificare)",
@@ -1655,7 +1715,7 @@
       "nota": ""
     },
     {
-      "n": 136,
+      "n": 141,
       "id": "collaudo.en81.10",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.5.7 e 5.2.5.8",
@@ -1667,7 +1727,7 @@
       "nota": ""
     },
     {
-      "n": 137,
+      "n": 142,
       "id": "collaudo.en81.11",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.2.1.4.1",
@@ -1679,7 +1739,7 @@
       "nota": ""
     },
     {
-      "n": 138,
+      "n": 143,
       "id": "collaudo.en81.12",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.4.10 (sottoclausola da verificare)",
@@ -1691,7 +1751,7 @@
       "nota": ""
     },
     {
-      "n": 139,
+      "n": 144,
       "id": "collaudo.en81.13",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.4.4 (sottoclausola da verificare)",
@@ -1703,7 +1763,7 @@
       "nota": ""
     },
     {
-      "n": 140,
+      "n": 145,
       "id": "collaudo.en81.14",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-20:2020, 5.3 (sottoclausola da verificare)",
@@ -1715,7 +1775,7 @@
       "nota": ""
     },
     {
-      "n": 141,
+      "n": 146,
       "id": "collaudo.10411-1.1",
       "gruppo": "Collaudo: UNI 10411-1:2024",
       "voce": "UNI 10411-1:2024, scopo",
@@ -1727,7 +1787,7 @@
       "nota": ""
     },
     {
-      "n": 142,
+      "n": 147,
       "id": "collaudo.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI 10411-11:2024, scopo",
@@ -1739,7 +1799,7 @@
       "nota": ""
     },
     {
-      "n": 143,
+      "n": 148,
       "id": "collaudo.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024",
       "voce": "UNI EN 81-20:2020, 5.6.6 e 5.6.7",
@@ -1751,7 +1811,7 @@
       "nota": ""
     },
     {
-      "n": 144,
+      "n": 149,
       "id": "collaudo.en81-21.1",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "UNI EN 81-21:2022, scopo",
@@ -1763,7 +1823,7 @@
       "nota": ""
     },
     {
-      "n": 145,
+      "n": 150,
       "id": "collaudo.en81-21.2",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "DPR 162/1999, art. 17-bis; DM 19/03/2015; linee guida MIMIT 2022",
@@ -1775,7 +1835,7 @@
       "nota": ""
     },
     {
-      "n": 146,
+      "n": 151,
       "id": "collaudo.en81-28.1",
       "gruppo": "Collaudo: UNI EN 81-28:2022 (teleallarme)",
       "voce": "UNI EN 81-28:2022",
@@ -1787,7 +1847,7 @@
       "nota": ""
     },
     {
-      "n": 147,
+      "n": 152,
       "id": "collaudo.en81-58.1",
       "gruppo": "Collaudo: UNI EN 81-58:2022 (resistenza al fuoco delle porte di piano)",
       "voce": "UNI EN 81-58:2022; DM 15/09/2005, 3.2–3.3 e art. 1 c.2 lett. c)",
@@ -1799,7 +1859,7 @@
       "nota": ""
     },
     {
-      "n": 148,
+      "n": 153,
       "id": "collaudo.en81-70.1",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, 5.3.1",
@@ -1811,7 +1871,7 @@
       "nota": ""
     },
     {
-      "n": 149,
+      "n": 154,
       "id": "collaudo.en81-70.2",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, 5.3.2 e 5.4",
@@ -1823,7 +1883,7 @@
       "nota": ""
     },
     {
-      "n": 150,
+      "n": 155,
       "id": "collaudo.en81-70.3",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, scopo",
@@ -1835,7 +1895,7 @@
       "nota": ""
     },
     {
-      "n": 151,
+      "n": 156,
       "id": "collaudo.en81-71.1",
       "gruppo": "Collaudo: UNI EN 81-71 (ascensori antivandalo)",
       "voce": "UNI EN 81-71",
@@ -1847,7 +1907,7 @@
       "nota": ""
     },
     {
-      "n": 152,
+      "n": 157,
       "id": "collaudo.en81-72.1",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "DM 15/09/2005, punto 7; Codice V.3.3.4",
@@ -1859,7 +1919,7 @@
       "nota": ""
     },
     {
-      "n": 153,
+      "n": 158,
       "id": "collaudo.en81-72.2",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "Codice S.10, Tab. S.10-2",
@@ -1871,7 +1931,7 @@
       "nota": ""
     },
     {
-      "n": 154,
+      "n": 159,
       "id": "collaudo.en81-72.3",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "UNI EN 81-72:2020",
@@ -1883,7 +1943,7 @@
       "nota": ""
     },
     {
-      "n": 155,
+      "n": 160,
       "id": "collaudo.en81-73.1",
       "gruppo": "Collaudo: UNI EN 81-73:2020 (comportamento in caso d'incendio)",
       "voce": "DM 15/09/2005, punto 6; Codice V.3.3.1",
@@ -1895,7 +1955,7 @@
       "nota": ""
     },
     {
-      "n": 156,
+      "n": 161,
       "id": "collaudo.en81-73.2",
       "gruppo": "Collaudo: UNI EN 81-73:2020 (comportamento in caso d'incendio)",
       "voce": "UNI EN 81-73:2020",
@@ -1907,7 +1967,7 @@
       "nota": ""
     },
     {
-      "n": 157,
+      "n": 162,
       "id": "collaudo.en81-76.1",
       "gruppo": "Collaudo: UNI EN 81-76:2025 (evacuazione delle persone con disabilità)",
       "voce": "UNI EN 81-76:2025",
@@ -1919,7 +1979,7 @@
       "nota": ""
     },
     {
-      "n": 158,
+      "n": 163,
       "id": "collaudo.en81-77.1",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 1",
@@ -1931,7 +1991,7 @@
       "nota": ""
     },
     {
-      "n": 159,
+      "n": 164,
       "id": "collaudo.en81-77.2",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 5.4–5.10, All. A, B, D",
@@ -1943,7 +2003,7 @@
       "nota": ""
     },
     {
-      "n": 160,
+      "n": 165,
       "id": "collaudo.en81-77.3",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 0.3",
@@ -1955,7 +2015,7 @@
       "nota": ""
     },
     {
-      "n": 161,
+      "n": 166,
       "id": "collaudo.en81-80.1",
       "gruppo": "Collaudo: UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)",
       "voce": "UNI EN 81-80:2019",
@@ -1967,7 +2027,7 @@
       "nota": ""
     },
     {
-      "n": 162,
+      "n": 167,
       "id": "collaudo.en81-82.1",
       "gruppo": "Collaudo: UNI EN 81-82:2026 (accessibilità degli esistenti)",
       "voce": "UNI EN 81-82:2026",
@@ -1979,7 +2039,7 @@
       "nota": ""
     },
     {
-      "n": 163,
+      "n": 168,
       "id": "collaudo.en81-83.1",
       "gruppo": "Collaudo: UNI EN 81-83:2026 (antivandalo degli esistenti)",
       "voce": "UNI EN 81-83:2026",
@@ -1991,7 +2051,7 @@
       "nota": ""
     },
     {
-      "n": 164,
+      "n": 169,
       "id": "collaudo.dm236.1",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -2003,7 +2063,7 @@
       "nota": ""
     },
     {
-      "n": 165,
+      "n": 170,
       "id": "collaudo.dm236.2",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -2015,7 +2075,7 @@
       "nota": ""
     },
     {
-      "n": 166,
+      "n": 171,
       "id": "collaudo.dm236.3",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
@@ -2027,7 +2087,7 @@
       "nota": ""
     },
     {
-      "n": 167,
+      "n": 172,
       "id": "collaudo.dm236.4",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12 e 8.0.1",
@@ -2039,7 +2099,7 @@
       "nota": ""
     },
     {
-      "n": 168,
+      "n": 173,
       "id": "collaudo.dm236.5",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12 e 4.1.12",
@@ -2051,7 +2111,7 @@
       "nota": ""
     },
     {
-      "n": 169,
+      "n": 174,
       "id": "collaudo.dm236.6",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 3.2; L. 13/1989, art. 1 c.3 lett. d)",
@@ -2063,7 +2123,7 @@
       "nota": ""
     },
     {
-      "n": 170,
+      "n": 175,
       "id": "collaudo.dm236.7",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 7.5; DPR 503/1996, art. 19",
@@ -2075,7 +2135,7 @@
       "nota": ""
     },
     {
-      "n": 171,
+      "n": 176,
       "id": "collaudo.antincendio.1",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 3/8/2015, art. 5 c.1-bis lett. e)",
@@ -2087,7 +2147,7 @@
       "nota": ""
     },
     {
-      "n": 172,
+      "n": 177,
       "id": "collaudo.antincendio.2",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, art. 1 c.2",
@@ -2099,7 +2159,7 @@
       "nota": ""
     },
     {
-      "n": 173,
+      "n": 178,
       "id": "collaudo.antincendio.3",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, 3.1–3.3; Codice V.3.2",
@@ -2111,7 +2171,7 @@
       "nota": ""
     },
     {
-      "n": 174,
+      "n": 179,
       "id": "collaudo.antincendio.4",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 2",
@@ -2123,7 +2183,7 @@
       "nota": ""
     },
     {
-      "n": 175,
+      "n": 180,
       "id": "collaudo.antincendio.5",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 5",
@@ -2135,7 +2195,7 @@
       "nota": ""
     },
     {
-      "n": 176,
+      "n": 181,
       "id": "collaudo.antincendio.6",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 6; Codice V.3.3.1 c.5",
@@ -2147,7 +2207,7 @@
       "nota": ""
     },
     {
-      "n": 177,
+      "n": 182,
       "id": "collaudo.antincendio.7",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "Codice S.9, Tab. S.9-3",
@@ -2159,7 +2219,7 @@
       "nota": ""
     },
     {
-      "n": 178,
+      "n": 183,
       "id": "collaudo.ntc2018.1",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §3.1.4",
@@ -2171,7 +2231,7 @@
       "nota": ""
     },
     {
-      "n": 179,
+      "n": 184,
       "id": "collaudo.ntc2018.2",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §8.4.1",
@@ -2183,7 +2243,7 @@
       "nota": ""
     },
     {
-      "n": 180,
+      "n": 185,
       "id": "collaudo.ntc2018.3",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §11.4.1",
@@ -2195,7 +2255,7 @@
       "nota": ""
     },
     {
-      "n": 181,
+      "n": 186,
       "id": "collaudo.ntc2018.4",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §7.2.3–7.2.4",
@@ -2207,7 +2267,7 @@
       "nota": ""
     },
     {
-      "n": 182,
+      "n": 187,
       "id": "collaudo.ntc2018.5",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, Tab. 7.3.III e §7.3.6.3",

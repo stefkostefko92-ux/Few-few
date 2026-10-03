@@ -12,7 +12,7 @@ import { headTopChecks } from '../lift/head';
 import { cablesMass, headStatic, ropeLength, supportChecks } from '../lift/support';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { bracketCount } from '@/shaft/brackets';
+import { bracketCount, bracketHeights, railSpan } from '@/shaft/brackets';
 import { bufferType } from '@/shaft/buffers';
 import { govSize } from '@/shaft/governor';
 import { hasImbotti, imbottiOf } from '@/shaft/imbotti';
@@ -21,10 +21,11 @@ import { RAILS, railLabel, type RailType } from '@/shaft/rails';
 import { section } from '@/shaft/section';
 import type { DataSheet, Row } from './datasheet';
 import { railForces } from './forces';
+import { railCheck, railChecks } from './rail-check';
 import { dateIt, placeLines, type TavoleInput } from './input';
 import { loads } from './loads';
 import { machineOf, machineText } from './views';
-import { clientNotes, estimateNote, safetyGearNote, spaceLegend } from './notes';
+import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { NORMA_SIGLA, ambitoOf, collaudoOf } from '../lift/collaudo';
 import { collaudoNote } from '../report/collaudo';
 
@@ -166,13 +167,16 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   ];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? '—' : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
-  const F = railForces(L, I.P, I.Q, Pl.safetyGear ?? 'progressive');
+  const gear = Pl.safetyGear ?? 'progressive', F = railForces(L, I.P, I.Q, gear);
+  // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet
+  const [z0, z1] = railSpan(S), hs = bracketHeights(z0, z1, L.inputs.carRail, Pl.carBracketPitch);
+  const rc = railCheck(L, L.inputs.carRail, I.P, I.Q, gear, Math.max(...hs.slice(1).map((z, i) => z - hs[i])), z1 - z0);
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet
   const all = [...L.checks, ...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn }, !below),
-    ...headTopChecks(L, I.r, I.Dp, below ? x.marks?.bottom ?? 'head' : null)];
+    ...headTopChecks(L, I.r, I.Dp, below ? x.marks?.bottom ?? 'head' : null), ...railChecks(rc, gear, I.v)];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
@@ -183,6 +187,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const sp = spaceLegend(L, fmt), notes = clientNotes(L, below);
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));
+  if (!oldRails) notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, `NOTA ${notes.length + 1}`, fmt));
   const test = collaudoNote(C, `NOTA ${notes.length + 1}`);
   if (test) notes.push(test);
 

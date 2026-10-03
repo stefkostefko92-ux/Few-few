@@ -7,7 +7,8 @@ import type { Access, CostanteVano, CostanteVert, ShaftCheckId } from '../index'
 
 const CHECKS: readonly ShaftCheckId[] = [
   'v_fit', 'v_area', 'v_acc_car', 'v_acc_door', 'v_acc_side', 'v_door', 'v_door2', 'v_op', 'v_wall', 'v_sill', 'v_cw', 'v_cwlen', 'v_place', 'v_doorcar', 'v_head',
-  'h_refuge', 'h_clear', 'h_parapet', 'h_stand', 'p_refuge', 'p_apron', 'p_screen', 'b_runby', 'b_type', 'b_car', 'b_cw', 'm_height', 'm_panel', 'm_door', 'm_beam', 'm_beamf',
+  'h_refuge', 'h_clear', 'h_parapet', 'h_stand', 'h_door', 'h_car', 'h_cw', 'p_refuge', 'p_apron', 'p_screen', 'b_runby', 'b_type', 'b_car', 'b_cw', 'm_height', 'm_panel', 'm_door', 'm_beam', 'm_beamf', 'm_free',
+  'gr_stress', 'gr_flange', 'gr_defl', 'sg_type',
 ];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
 const voce = (id: string) => {
@@ -73,7 +74,8 @@ test('sezione, locale macchina e carichi: ogni costante ha la sua voce e la voce
     const text = voce(id).valore;
     for (const k of keys) {
       const v = KV_VERT[k];
-      const wanted = k === 'loadOffset' ? ['1/8'] : k === 'refugeH' ? Object.values(KV_VERT.refugeH).map((h) => `alto ${h} mm`)
+      const wanted = k === 'loadOffset' ? ['1/8'] : k === 'railBend' ? ['3·F·l/16']
+        : k === 'omega370' ? KV_VERT.omega370.map(([, a, e, b]) => `${it(a)}·λ^${it(e)}${b ? ` + ${it(b)}` : ''}`) : k === 'refugeH' ? Object.values(KV_VERT.refugeH).map((h) => `alto ${h} mm`)
         : k === 'refugePlan' ? Object.values(KV_VERT.refugePlan).map(([w, d]) => `${w} × ${d} mm`)
           : k === 'standDrawn' ? [`${KV_VERT.standDrawn[0]} × ${KV_VERT.standDrawn[1]} mm`]
             : k === 'oilTypical' ? KV_VERT.oilTypical.flatMap(([h, st]) => [`alto ${it(h)} mm`, `corsa ${it(st)} mm`]) : [it(v as number)];

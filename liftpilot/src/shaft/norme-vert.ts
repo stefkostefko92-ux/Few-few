@@ -4,10 +4,12 @@
 // (research of 30/09/2026, docs of the licensed text still to be checked).
 import type { VoceVano } from './norme';
 import { EN, EN50 } from './norme-fonti';
+import { COSTANTI_GUIDE, KV_GUIDE, VOCI_GUIDE } from './norme-guide';
 import { VOCI_SPAZI } from './norme-spazi';
 import { VOCI_SUPPORTO } from './norme-supporto';
 
 export const KV_VERT = {
+  ...KV_GUIDE,
   // UNI EN 81-20:2020, Tabella 3: refuge spaces by type, height and plan [mm] (type 3 in the pit only)
   refugeH: { 1: 2000, 2: 1000, 3: 500 },
   refugePlan: { 1: [400, 500], 2: [500, 700], 3: [700, 1000] },
@@ -29,6 +31,10 @@ export const KV_VERT = {
   parapetH2: 1100,
   // 5.2.5.5.1: screen of the counterweight in the pit up to ≥ 2000 mm above the pit floor
   cwScreen: 2000,
+  // UNI EN 81-1, 5.7.1.2: the counterweight's guided travel left past its highest point, the car on its fully compressed
+  // buffers: ≥ 0,1 + 0,035·v² [m]
+  cwGuided: 0.1,
+  cwGuidedV2: 0.035,
   // 5.8.2: energy accumulation buffers (linear: springs; non-linear: polyurethane pads) up to 1 m/s; linear: stroke
   // ≥ 0,135·v² m and ≥ 65 mm; non-linear: fully compressed at 90 % of the height; energy dissipation (hydraulic): any
   // speed, stroke ≥ 0,0674·v² m. Typical buffers of the catalogues: P+S Diepocell D pads 80 mm high; Oleo LSB10 and
@@ -44,10 +50,16 @@ export const KV_VERT = {
   roofFreeArea: 0.12,
   roofFreeSide: 250,
   standDrawn: [400, 300],
+  // 5.3.2.1 and 5.4.1: clear height of the entrances (landing and car doors) and inside the car [mm]
+  entranceH: 2000,
+  carInnerH: 2000,
   // 5.2.6.3.2.1 and 5.2.3: machine room: clear height of working areas, free area in front of the panel, access door [mm]
   roomH: 2100,
   panelFreeDepth: 700,
   panelFreeWidth: 500,
+  // 5.2.6.3.2.1: free area for the maintenance of moving parts and the manual emergency operation [mm]
+  maintW: 500,
+  maintD: 600,
   doorMinW: 600,
   doorMinH: 2000,
   // 5.2.1.8 and UNI EN 81-50:2020, 5.10: 4 × the static load under each buffer; impact factor of the safety gear on
@@ -149,9 +161,10 @@ export const VOCI_VERT: readonly VoceVano[] = [
   {
     id: 'locale.macchina', gruppo: 'locale', titolo: 'Locale del macchinario',
     valore: 'altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga '
-      + '≥ 500 mm o quanto il quadro; porta di accesso ≥ 600 × 2000 mm',
-    riferimento: 'UNI EN 81-20:2020, 5.2.6.3.2.1 e 5.2.3', fonte: EN, stato: 'da_verificare',
-    verifiche: ['m_height', 'm_panel', 'm_door'],
+      + '≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno '
+      + '500 × 600 mm (il software la cerca accanto all\'argano, sul lato più libero, fino a muri e quadro); porta di accesso ≥ 600 × 2000 mm',
+    riferimento: 'UNI EN 81-20:2020, 5.2.6.3.2.1 e 5.2.3', fonte: `${EN}; le superfici libere anche in DM 587/1987 (UNI EN 81-1), 6.3.2.1`,
+    stato: 'da_verificare', verifiche: ['m_height', 'm_panel', 'm_free', 'm_door'],
   },
   {
     id: 'carichi.fossa', gruppo: 'carichi', titolo: 'Carichi sul pavimento della fossa',
@@ -216,6 +229,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
     riferimento: '—', fonte: 'stima del software, da sostituire con le misure di cantiere', stato: 'stima',
   },
   ...VOCI_SUPPORTO,
+  ...VOCI_GUIDE,
 ];
 
 /** Constants of this registry, for the test that every one has its entry. */
@@ -226,11 +240,13 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'spazi.fossa': ['pitClear', 'apron', 'apronClear'],
   'spazi.balaustra': ['parapetGap1', 'parapetGap2', 'parapetH1', 'parapetH2'],
   'spazi.tetto.superficie': ['roofFreeArea', 'roofFreeSide', 'standDrawn'],
+  'spazi.altezze': ['entranceH', 'carInnerH'],
   'contrappeso.schermo': ['cwScreen'],
+  'contrappeso.guidato': ['cwGuided', 'cwGuidedV2'],
   'ammortizzatori.corsa': ['springMaxV', 'strokeK', 'strokeMin'],
   'ammortizzatori.poliuretano': ['puStroke', 'puTypical'],
   'ammortizzatori.idraulici': ['oilStrokeK', 'oilTypical'],
-  'locale.macchina': ['roomH', 'panelFreeDepth', 'panelFreeWidth', 'doorMinW', 'doorMinH'],
+  'locale.macchina': ['roomH', 'panelFreeDepth', 'panelFreeWidth', 'maintW', 'maintD', 'doorMinW', 'doorMinH'],
   'carichi.fossa': ['bufferFactor', 'k1Progressive', 'k1Roller', 'k1Instant'],
   'guide.spinte': ['k2Running', 'loadOffset'],
   'carichi.macchina': ['dynFactor'],
@@ -245,4 +261,5 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'locale.rinvio': ['rinvioAxis', 'rinvioRim', 'rinvioTop', 'rinvioOver', 'rinvioLeg', 'rinvioPads', 'rinvioBeam', 'rinvioOverhang', 'rinvioWidth'],
   'locale.putrelle': ['steelFyk', 'steelGammaM0', 'steelE', 'beamDeflection'],
   'locale.calate': ['dropTol'],
+  ...COSTANTI_GUIDE,
 };
