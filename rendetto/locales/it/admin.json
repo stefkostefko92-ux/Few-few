@@ -125,7 +125,8 @@
       "rank": "Non potete modificare un account con ruolo uguale o superiore.",
       "self": "Non potete farlo sul vostro account.",
       "requestGone": "L'ordine non è più aperto: il cliente lo ha ritirato, ha esercitato il recesso oppure è stato chiuso.",
-      "withdrawalPeriod": "Il consumatore non ha chiesto l'inizio anticipato: il periodo a pagamento può iniziare solo dopo la fine del periodo di recesso."
+      "withdrawalPeriod": "Il consumatore non ha chiesto l'inizio anticipato: il periodo a pagamento può iniziare solo dopo la fine del periodo di recesso.",
+      "orderMismatch": "L'ordine si esegue solo con il piano ordinato: Lifetime con Lifetime, Premium con lo stesso numero di mesi."
     },
     "account": {
       "since": "registrato il {date}",

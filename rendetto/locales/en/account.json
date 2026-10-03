@@ -88,7 +88,8 @@
     "withdrawnOn": "withdrawn: {date}",
     "errors": {
       "buyer": "Choose whether you are buying as a private individual or as a business.",
-      "unverified": "Confirm your email to order a plan — the order confirmation and the invoice are sent there."
+      "unverified": "Confirm your email to order a plan — the order confirmation and the invoice are sent there.",
+      "tooMany": "Too many orders in 24 hours. Try again later or write to us."
     },
     "withdraw": {
       "button": "Withdraw from contract here",

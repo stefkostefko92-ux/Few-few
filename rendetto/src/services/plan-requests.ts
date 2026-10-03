@@ -19,6 +19,9 @@ import {
 
 export type RequestResult = { ok: true } | { ok: false; key: string };
 
+/** Толкова поръчки за 24 часа на акаунт — истинският клиент прави една-две, поправката на грешка — още една. */
+export const ORDERS_PER_DAY = 5;
+
 const orderSchema = z.object({
   option: z.string().refine(isOptionId),
   buyer: z.enum(['consumer', 'business']),
@@ -46,6 +49,11 @@ export async function createUpgradeRequest(
   if (user.plan === 'LIFETIME') return { ok: false, key: 'plan.request.alreadyLifetime' };
   // договорът и отказът минават по имейла — само по адрес, който акаунтът е потвърдил
   if (!user.emailVerifiedAt) return { ok: false, key: 'plan.errors.unverified' };
+  // всяка поръчка праща писмо на човека и на екипа: таван на акаунт, за да не изчерпи квотата на пощата
+  const recent = await prisma.upgradeRequest.count({
+    where: { userId: user.id, createdAt: { gt: new Date(now.getTime() - 86_400_000) } },
+  });
+  if (recent >= ORDERS_PER_DAY) return { ok: false, key: 'plan.errors.tooMany' };
   const input = parsed.data;
   const option = input.option as Parameters<typeof optionPriceCents>[0];
   const buyerType = input.buyer === 'business' ? 'BUSINESS' : 'CONSUMER';
@@ -172,7 +180,18 @@ export async function withdrawFromOrder(
       activation.fromPlan !== null &&
       current.plan === activation.toPlan &&
       (current.planExpiresAt?.getTime() ?? null) === (activation.toExpiresAt?.getTime() ?? null);
-    if (!untouched || !activation.fromPlan) return 'manual';
+    // Друга поръчка на човека е отказана, а планът ѝ не е върнат автоматично: „преди“ на тази активация
+    // може да носи платеното от нея — не го връщаме, оправя го екипът.
+    const unsettled = await tx.upgradeRequest.count({
+      where: {
+        userId: user.id,
+        id: { not: requestId },
+        status: 'WITHDRAWN',
+        planChanges: { some: {} },
+        NOT: { planChanges: { some: { note: LABEL.withdrawal } } },
+      },
+    });
+    if (!untouched || !activation.fromPlan || unsettled > 0) return 'manual';
     await tx.user.update({
       where: { id: user.id },
       data: { plan: activation.fromPlan, planExpiresAt: activation.fromExpiresAt },

@@ -15,7 +15,7 @@ import {
 before(startApp);
 after(stopApp);
 
-const { changePlan } = await import('../../src/services/admin-actions.js');
+const { changePlan } = await import('../../src/services/admin-plan.js');
 const { LEGAL_UPDATED } = await import('../../src/company.js');
 const { resendOrderMail } = await import('../../src/services/plan-requests.js');
 const { exportOwnData } = await import('../../src/services/account-self.js');
@@ -85,9 +85,16 @@ test('a consumer order is confirmed on a durable medium with the model form; act
     manager.browser,
     `/admin/accounts/${row.userId}?request=${row.id}`,
   );
+  // тестът свършва след 2 дни — платеното би започнало в срока за отказ
+  await prisma.user.update({
+    where: { id: row.userId },
+    data: { planExpiresAt: new Date(Date.now() + 2 * DAY) },
+  });
   const early = await manager.browser.post(`/admin/accounts/${row.userId}/plan`, {
     _csrf: csrf,
-    plan: 'LIFETIME',
+    plan: 'PREMIUM',
+    mode: 'months',
+    months: '12',
     requestId: row.id,
   });
   assert.equal(early.status, 302);
@@ -101,15 +108,26 @@ test('a consumer order is confirmed on a durable medium with the model form; act
     label: 'Екип MANAGER',
     role: 'MANAGER' as const,
   };
+  const after = new Date(row.createdAt.getTime() + 25 * DAY);
+  assert.deepEqual(
+    await changePlan(
+      actor,
+      row.userId,
+      { plan: 'LIFETIME', notify: false, requestId: row.id },
+      after,
+    ),
+    { ok: false, key: 'admin.errors.orderMismatch' },
+    'a 12-month order is not fulfilled with Lifetime',
+  );
   const later = await changePlan(
     actor,
     row.userId,
-    { plan: 'LIFETIME', notify: false, requestId: row.id },
-    new Date(row.createdAt.getTime() + 25 * DAY),
+    { plan: 'PREMIUM', mode: 'months', months: 12, notify: false, requestId: row.id },
+    after,
   );
   assert.deepEqual(later, { ok: true });
   const change = await prisma.planChange.findFirstOrThrow({ where: { requestId: row.id } });
-  assert.equal(change.toPlan, 'LIFETIME');
+  assert.deepEqual([change.toPlan, change.months], ['PREMIUM', 12]);
 });
 
 test('a confirmation that did not go out is sent again by maintenance', async () => {

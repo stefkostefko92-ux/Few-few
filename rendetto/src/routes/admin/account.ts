@@ -14,7 +14,8 @@ import {
   accountLogins,
   linkedAccounts,
 } from '../../services/admin-insights.js';
-import { changePlan, changeRole, editAccount } from '../../services/admin-actions.js';
+import { changeRole, editAccount } from '../../services/admin-actions.js';
+import { changePlan } from '../../services/admin-plan.js';
 import {
   banAccount,
   deleteAccount,

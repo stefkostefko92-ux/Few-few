@@ -5,7 +5,7 @@ import { mailTo, placeOrder, prisma, sessionCsrf, staff, startApp, stopApp } fro
 before(startApp);
 after(stopApp);
 
-const { changePlan } = await import('../../src/services/admin-actions.js');
+const { changePlan } = await import('../../src/services/admin-plan.js');
 const STAFF_INBOX = 'info@carbonstealth.eu';
 const DAY = 86_400_000;
 
@@ -88,7 +88,7 @@ test('activation after a withdrawal is refused; a plan changed since activation 
   const refused = await changePlan(
     actor,
     row.userId,
-    { plan: 'LIFETIME', notify: false, requestId: row.id },
+    { plan: 'PREMIUM', mode: 'months', months: 3, notify: false, requestId: row.id },
     new Date(row.createdAt.getTime() + 25 * DAY),
   );
   assert.deepEqual(refused, { ok: false, key: 'admin.errors.requestGone' });

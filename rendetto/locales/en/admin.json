@@ -125,7 +125,8 @@
       "rank": "You cannot change an account with an equal or higher role.",
       "self": "You cannot do this to your own account.",
       "requestGone": "The order is no longer open: the customer cancelled it, withdrew from the contract, or it was closed.",
-      "withdrawalPeriod": "The consumer did not ask for an early start: the paid period can only start after the withdrawal period ends."
+      "withdrawalPeriod": "The consumer did not ask for an early start: the paid period can only start after the withdrawal period ends.",
+      "orderMismatch": "An order is fulfilled only with the plan ordered: Lifetime with Lifetime, Premium with the same number of months."
     },
     "account": {
       "since": "signed up on {date}",

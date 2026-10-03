@@ -88,7 +88,8 @@
     "withdrawnOn": "recesso: {date}",
     "errors": {
       "buyer": "Scegliete se acquistate come persona fisica o come azienda.",
-      "unverified": "Confermate l'email per ordinare un piano: lì arrivano la conferma dell'ordine e la fattura."
+      "unverified": "Confermate l'email per ordinare un piano: lì arrivano la conferma dell'ordine e la fattura.",
+      "tooMany": "Troppi ordini in 24 ore. Riprovate più tardi o scriveteci."
     },
     "withdraw": {
       "button": "Recedi dal contratto qui",
