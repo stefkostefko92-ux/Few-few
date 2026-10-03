@@ -125,6 +125,7 @@
     "delete": "Elimina",
     "deleteConfirm": "Eliminare „{name}“? Non si può annullare.",
     "errors": {
+      "conflict": "Il progetto è stato modificato in un'altra finestra o su un altro dispositivo. Ricaricate la pagina per vedere l'ultima versione: le modifiche qui non sono salvate.",
       "name": "Il nome può avere al massimo 80 caratteri.",
       "planExpired": "Il vostro piano è scaduto. I progetti si scaricano, ma nuovi progetti e modifiche richiedono un piano attivo.",
       "spec": "Il progetto non può essere salvato: un valore è fuori dai limiti consentiti.",

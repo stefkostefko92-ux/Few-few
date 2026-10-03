@@ -35,6 +35,11 @@ export interface EngineSheet {
   placements: unknown[];
 }
 
+export interface EngineNesting {
+  sheets: EngineSheet[];
+  errors: string[];
+}
+
 export interface DrawingMeta {
   product: string;
   hash: string;
@@ -65,7 +70,8 @@ interface EngineApi {
   cutListCsv(bom: unknown): string;
   hardwareCsv(bom: unknown): string;
   drillCsv(model: EngineModel): string;
-  nest(model: EngineModel): { sheets: EngineSheet[] };
+  nest(model: EngineModel): EngineNesting;
+  cncBlockers(model: EngineModel, nesting: EngineNesting): string[];
   toGcode(model: EngineModel, sheet: EngineSheet, meta: DrawingMeta): { text: string };
   toDxf(model: EngineModel, sheet: EngineSheet, meta: DrawingMeta): { text: string };
   drawingAssembly(
@@ -74,6 +80,7 @@ interface EngineApi {
     sheetNo: number,
     sheetCount: number,
   ): string;
+  drawingParts(model: EngineModel): EnginePart[];
   drawingPart(
     model: EngineModel,
     meta: DrawingMeta,
@@ -168,9 +175,11 @@ export async function loadEngine(catalogPath: string = config().CATALOG_PATH): P
     hardwareCsv: fn(bom, 'hardwareCsv'),
     drillCsv: fn(drill, 'drillCsv'),
     nest: fn(nest, 'nest'),
+    cncBlockers: fn(cam, 'cncBlockers'),
     toGcode: fn(cam, 'toGcode'),
     toDxf: fn(dxf, 'toDxf'),
     drawingAssembly: fn(assembly, 'drawingAssembly'),
+    drawingParts: fn(part, 'drawingParts'),
     drawingPart: fn(part, 'drawingPart'),
     canonicalJson: fn(util, 'canonicalJson'),
     asciiName: fn(util, 'asciiName'),

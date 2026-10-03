@@ -1,10 +1,9 @@
 // Пробиване tab: hardware cards (where every hinge, handle and slide goes and which holes it needs), the drilling
 // map of the selected part and its full hole table.
 import { $, esc, fmt, mm, stat, inlineSvg } from './dom.js';
-import { hardwareCards, partHoles } from '../engine/drill.js';
+import { hardwareCards, partHoles, edgeOpName, purposeOf } from '../engine/drill.js';
 import { drawingPart, holeLetters } from '../engine/drawing-part.js';
 import { edgeLabels } from '../engine/panel.js';
-import { neg } from '../engine/util.js';
 
 const ROLE_GROUP = [
   ['door', 'Врати'],
@@ -58,8 +57,11 @@ function cardHtml(c) {
       return `<li><span><b>${p.partId}</b> ${esc(p.name)}<small>чашка Ø${mm(p.cup.d)} × ${mm(p.cup.depth)}, на ${mm(p.cup.boring)} mm от ръба с пантите (център на ${mm(p.cup.boring + p.cup.d / 2)}); ${p.cup.side === 'left' ? 'ляв' : 'десен'} ръб</small></span><span class="vals">${p.cup.heights.map(mm).join(' · ')}<small>височини от ръб „${esc(p.edges.u0)}“</small></span></li>`;
     }
     if (p.handle) {
-      const h = p.holes.filter((x) => x.kind === 'handle');
-      return `<li><span><b>${p.partId}</b> ${esc(p.name)}<small>${p.handle.count} × Ø${mm(p.handle.d)} проходен${p.handle.spacing ? `, междуосие ${mm(p.handle.spacing)}` : ''}</small></span><span class="vals">${h.map((x) => `${mm(x.u)} ; ${mm(x.v)}`).join(' · ')}<small>u ; v от ъгъла „${esc(p.edges.u0)}“ / „${esc(p.edges.v0)}“</small></span></li>`;
+      const h = p.holes.filter((x) => x.kind === 'handle' || x.kind === 'handle-mark');
+      const what = p.handle.template
+        ? 'по шаблона на производителя — без отвори в G-кода'
+        : `${p.handle.count} × Ø${mm(p.handle.d)} проходен`;
+      return `<li><span><b>${p.partId}</b> ${esc(p.name)}<small>${what}${p.handle.spacing ? `, междуосие ${mm(p.handle.spacing)}` : ''}</small></span><span class="vals">${h.map((x) => `${mm(x.u)} ; ${mm(x.v)}`).join(' · ')}<small>u ; v от ъгъла „${esc(p.edges.u0)}“ / „${esc(p.edges.v0)}“</small></span></li>`;
     }
     const hs = p.holes.filter((x) => x.kind === 'plate' || x.kind === 'slide');
     const kind = hs[0]?.kind === 'slide' ? 'пилотни отвори' : 'отвори за планка';
@@ -93,15 +95,8 @@ export function renderDrillPart(state, meta) {
       .flatMap((op) =>
         op.at.map(
           ([u, v], i) =>
-            `<tr class="edge"><td class="num">Ч${i + 1}</td><td class="c"><b>Ч</b></td><td class="num">${mm(u)}</td><td class="num">${mm(v)}</td><td class="num">Ø${mm(op.d)}</td><td class="num">${mm(op.depth)} хоризонтално</td><td>в чело „${esc(edgeName(p, e, op.edge))}“</td><td>конфирмат</td></tr>`,
+            `<tr class="edge"><td class="num">Ч${i + 1}</td><td class="c"><b>Ч</b></td><td class="num">${mm(u)}</td><td class="num">${mm(v)}</td><td class="num">Ø${mm(op.d)}</td><td class="num">${mm(op.depth)} хоризонтално</td><td>в чело „${esc(edgeOpName(p, e, op.edge))}“</td><td>${esc(op.label ?? purposeOf(op.kind))}</td></tr>`,
         ),
       )
       .join('');
-}
-
-function edgeName(p, e, dir) {
-  if (dir === p.frame.eu) return e.u1;
-  if (dir === neg(p.frame.eu)) return e.u0;
-  if (dir === p.frame.ev) return e.v1;
-  return e.v0;
 }

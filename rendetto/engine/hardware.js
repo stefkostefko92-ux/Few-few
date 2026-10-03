@@ -54,23 +54,24 @@ export function bedFitting(id) {
   return bedFittings.get(id) ?? bedFittings.values().next().value ?? null;
 }
 
+// Door width: at most 600 mm — Blum FAQ 01.2025 (B4), p. 5 „The maximum door width is 600 mm“ and p. 6 „Can I design
+// my door to be wider than 600 mm? No … the warranty will be voided“. The older EASY ASSEMBLY page (B5) still allows
+// 650 mm with one more hinge; the stricter, newer document wins. Wider openings get two doors (fronts.js).
 // Hinge count. With the system's own table (Hettich p. 129, Blum B4 p. 6): the first row whose height and weight
 // both cover the door. Otherwise the larger of two Blum guidelines:
-// (1) CLIP top BLUMOTION (https://ea.blum.com/en/number-of-hinges/): 2 hinges for 4–6 kg, 3 hinges for 6–12 kg, valid
-//     for widths up to 600 mm; doors up to 650 mm wide need one more hinge.
+// (1) CLIP top BLUMOTION (https://ea.blum.com/en/number-of-hinges/): 2 hinges for 4–6 kg, 3 hinges for 6–12 kg.
 // (2) Blum Inc. catalogue 2016, p. 76 "Hinges per door": 2 hinges up to 40" (1016 mm) and < 15 lb (6.8 kg), 3 up to
 //     60" (1524 mm) and 15–30 lb, 4 up to 80" (2032 mm) and 30–45 lb, 5 up to 100" (2540 mm) and 45–60 lb (27.2 kg).
-export const HINGE_LIMITS = { maxWidth: 650, maxHeight: 2540, maxMassKg: 27.2 };
+export const HINGE_LIMITS = { maxWidth: 600, maxHeight: 2540, maxMassKg: 27.2 };
 
-export function hingeCount(massKg, doorWidth, doorHeight, sys = null) {
-  const extra = doorWidth > 600 ? 1 : 0;
+export function hingeCount(massKg, doorHeight, sys = null) {
   const rows = sys?.count?.rows;
   if (rows) {
     const row = rows.find(([, h, kg]) => doorHeight <= h && massKg <= kg) ?? rows.at(-1);
-    return row[0] + extra;
+    return row[0];
   }
   const byHeight = doorHeight <= 1016 ? 2 : doorHeight <= 1524 ? 3 : doorHeight <= 2032 ? 4 : 5;
-  const byMass = (massKg <= 6 ? 2 : massKg <= 12 ? 3 : massKg <= 20.4 ? 4 : 5) + extra;
+  const byMass = massKg <= 6 ? 2 : massKg <= 12 ? 3 : massKg <= 20.4 ? 4 : 5;
   return Math.max(byHeight, byMass);
 }
 

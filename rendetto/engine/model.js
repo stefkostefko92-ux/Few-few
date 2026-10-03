@@ -4,7 +4,8 @@ import { createCtx, cutSize } from './panel.js';
 import { TYPES, BUILDERS, normalizeParams, typeDims } from './types.js';
 import { STOCK, hasDecor, hasRal, decorName } from './materials.js';
 import { hingeList, handleList, slideList, bedFittingList } from './hardware.js';
-import { clamp, r1, plural, dimTxt } from './util.js';
+import { clamp, plural, dimTxt } from './util.js';
+import { purposeOf } from './drill.js';
 
 export const SPEC_VERSION = 2;
 export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
@@ -98,7 +99,7 @@ function checkModel(ctx, spec) {
     const loadKg = ((p.L / 100) * (p.W / 100)) * spec.shelfLoad;
     const sag = shelfSag(p.L, p.W, p.T, loadKg);
     p.sag = sag;
-    if (sag.ratio > 1) ctx.warn('warn', `${p.name}: провисване ≈ ${dimTxt(sag.mm)} mm при ${Math.round(loadKg)} kg (${dimTxt(spec.shelfLoad)} kg/dm²) — над 0,5 % от отвора (${dimTxt(sag.limit)} mm). Добави делител или стесни колоната.`);
+    if (sag.ratio > 1) ctx.warn('warn', `${p.name}: провисване ≈ ${dimTxt(sag.mm)} mm при ${Math.round(loadKg)} kg (${dimTxt(spec.shelfLoad)} kg/dm²) — над 0,5 % от разстоянието между опорите (${dimTxt(sag.limit)} mm). Добавете делител или стеснете колоната.`);
   }
   // sheet fit and small parts
   let small = 0;
@@ -111,15 +112,15 @@ function checkModel(ctx, spec) {
     if (!fits) ctx.warn('error', `${p.name}: ${cut.L} × ${cut.W} mm не се побира в лист ${SW} × ${SH} mm${p.grain ? ' по посоката на шарката' : ''}.`);
     if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) small += 1;
   }
-  if (small) ctx.warn('info', `${plural(small, 'малък детайл', 'малки детайла')} — режат се с тънка кора (onion skin) или табове; провери вакуума.`);
-  // hole clashes inside each part
-  for (const p of parts) checkHoles(ctx, p);
+  if (small) ctx.warn('info', `${plural(small, 'малък детайл', 'малки детайла')} — режат се с тънка кора (onion skin) или табове; проверете вакуума.`);
+  // holes inside the board (the cut part, without its edge band), apart from each other and from the grooves
+  for (const p of parts) checkHoles(ctx, p, spec);
   // hinge spread (Blum Inc. note) — reported for fronts wider than they are tall, where it matters
   const short = parts.filter((p) => p.hingeSpreadShort && p.box.max[0] - p.box.min[0] > p.box.max[1] - p.box.min[1]);
-  if (short.length) ctx.warn('info', `${plural(short.length, 'широка ниска врата', 'широки ниски врати')}: разстоянието между крайните панти е по-малко от ширината (бележка в каталога на Blum Inc.) — помисли за 2 врати или подемен механизъм.`);
+  if (short.length) ctx.warn('info', `${plural(short.length, 'широка ниска врата', 'широки ниски врати')}: разстоянието между крайните панти е по-малко от ширината (бележка в каталога на Blum Inc.) — помислете за 2 врати или подемен механизъм.`);
   // horizontal holes are not cut by the 3-axis router
   const edge = parts.reduce((a, p) => a + p.edgeOps.reduce((b, e) => b + e.count, 0), 0);
-  if (edge) ctx.warn('info', `${plural(edge, 'хоризонтален отвор', 'хоризонтални отвора')} в челата (конфирмати) — пробиват се на хоризонтална машина или с шаблон, не са в G-кода.`);
+  if (edge) ctx.warn('info', `${plural(edge, 'хоризонтален отвор', 'хоризонтални отвора')} в челата — пробиват се на хоризонтална машина или с шаблон, не са в G-кода.`);
   // confirmat heads on visible faces get caps in the colour of the panel
   const caps = new Map();
   for (const p of parts) {
@@ -130,21 +131,37 @@ function checkModel(ctx, spec) {
   for (const [decor, qty] of caps) ctx.hw(`caps:${decor}`, { name: `Капачка за конфирмат, ${decorName(decor)}`, qty, unit: 'бр.', group: 'Крепежи' });
 }
 
-function checkHoles(ctx, p) {
+// Distance from a point to a groove's centre line (a segment along u or v).
+function toSegment(u, v, g) {
+  const du = g.u2 - g.u1;
+  const dv = g.v2 - g.v1;
+  const len2 = du * du + dv * dv;
+  const t = len2 ? clamp(((u - g.u1) * du + (v - g.v1) * dv) / len2, 0, 1) : 0;
+  return Math.hypot(u - (g.u1 + t * du), v - (g.v1 + t * dv));
+}
+
+function checkHoles(ctx, p, spec) {
   const holes = p.features.filter((f) => f.type === 'hole');
+  const grooves = p.features.filter((f) => f.type === 'groove');
+  const cut = cutSize(p, spec.bandCompensation);
   for (const h of holes) {
-    const rim = Math.min(h.u, p.L - h.u, h.v, p.W - h.v) - h.d / 2;
-    if (rim < 0) ctx.warn('error', `${p.name}: отвор Ø${h.d} (${h.kind}) излиза извън детайла — u ${h.u}, v ${h.v}.`);
-    else if (rim < MIN_WEB && h.kind !== 'cup') ctx.warn('warn', `${p.name}: отвор Ø${h.d} (${h.kind}) е на ${r1(rim)} mm от ръба.`);
+    // the board itself: the edge band adds no material to drill into
+    const rim = Math.min(h.u - cut.du0, cut.du0 + cut.L - h.u, h.v - cut.dv0, cut.dv0 + cut.W - h.v) - h.d / 2;
+    if (rim < 0) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ излиза извън детайла — u ${dimTxt(h.u)}, v ${dimTxt(h.v)}.`);
+    else if (rim < MIN_WEB && h.kind !== 'cup') ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(rim)} mm от ръба.`);
+    for (const g of grooves) {
+      const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
+      if (web < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(Math.max(0, web))} mm от канала — преместете отвора.`);
+    }
   }
   for (let i = 0; i < holes.length; i++) {
     for (let j = i + 1; j < holes.length; j++) {
       const a = holes[i];
       const b = holes[j];
-      if (a.ref && a.ref === b.ref && a.hw === 'hinge' && b.hw === 'hinge') continue; // cup and its own dowels
+      if (a.hw === 'hinge' && b.hw === 'hinge' && a.ref === b.ref && a.hingeY === b.hingeY) continue; // one hinge: its cup and its own dowels
       const dist = Math.hypot(a.u - b.u, a.v - b.v);
       if (dist - (a.d + b.d) / 2 < MIN_WEB) {
-        ctx.warn('warn', `${p.name}: отворите Ø${a.d} (${a.kind}) и Ø${b.d} (${b.kind}) при u ${a.u}, v ${a.v} се застъпват — премести единия.`);
+        ctx.warn(a.kind === 'cup' && b.kind === 'cup' ? 'error' : 'warn', `${p.name}: отворите Ø${dimTxt(a.d)} „${purposeOf(a.kind)}“ и Ø${dimTxt(b.d)} „${purposeOf(b.kind)}“ при u ${dimTxt(a.u)}, v ${dimTxt(a.v)} се застъпват — преместете единия.`);
       }
     }
   }

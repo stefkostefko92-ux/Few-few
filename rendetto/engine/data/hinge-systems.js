@@ -40,7 +40,7 @@ export const HINGE_SYSTEMS = [
     plate: { setback: 37, holes: [-16, 16], d: 5, depth: 12, depthNote: 'евровинтове Ø5 × 12 (стр. 90–97)', plates: [0, 1.5, 3, 5, 8], productName: 'Монтажна планка Sensys 37/32' },
     overlay: { base: { full: 12.5, half: 3 } },
     count: { source: 'Hettich стр. 129', rows: [[2, 1000, 7.7], [3, 1700, 13.7], [4, 2200, 17.1], [5, 2400, 22], [6, 2600, 22], [7, 2800, 22]] },
-    positions: { fromEdge: 80, minSpacing: 280, note: 'Hettich: 60–100 mm от горния и долния ръб, между пантите ≥ 280 mm (стр. 129)' },
+    positions: { fromEdge: 80, edgeRange: [60, 100], minSpacing: 280, note: 'Hettich: 60–100 mm от горния и долния ръб, между пантите ≥ 280 mm, врата ≤ 600 mm (стр. 129)' },
     sources: SRC.hettich,
   },
   {

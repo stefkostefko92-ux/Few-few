@@ -63,7 +63,7 @@ export function plateDetail(p, holes, frontV, b) {
 export function handleDetail(p, holes, edges, b) {
   const hs = [...holes].sort((m, n) => m.u - n.u || m.v - n.v);
   const span = hs.length === 2 ? Math.hypot(hs[1].u - hs[0].u, hs[1].v - hs[0].v) : 0;
-  const scale = span > 2 * (b.w - 24) ? 4 : span > b.w - 24 ? 2 : 1;
+  const scale = [1, 2, 5, 10, 20].find((sc) => span / sc <= b.w - 24) ?? 20; // ISO 5455 scales
   const k = 1 / scale;
   const cu = hs.reduce((a, h) => a + h.u, 0) / hs.length;
   const cv = hs.reduce((a, h) => a + h.v, 0) / hs.length;

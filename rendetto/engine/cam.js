@@ -23,8 +23,47 @@ export const POSTS = {
   grbl: { id: 'grbl', name: 'GRBL (хоби, ръчна смяна на инструмента)', version: 'grbl-2.0' },
 };
 
-// Feature positions on the sheet: finished-part (u, v) → cut-part offset (edge band) → placement (with rotation).
+// Finished-part (u, v) → cut-part offset (edge band) → placement on the sheet (with rotation).
+function placer(part, pl, compensate) {
+  const cut = cutSize(part, compensate);
+  return (u, v) => {
+    const uc = u - cut.du0;
+    const vc = v - cut.dv0;
+    return pl.rot ? [r1(pl.x + cut.W - vc), r1(pl.y + uc)] : [r1(pl.x + uc), r1(pl.y + vc)];
+  };
+}
+
+// Holes whose circle would leave the cut contour of their part on this sheet.
+function strayHoles(model, sheet) {
+  const out = [];
+  const byId = new Map(model.parts.map((p) => [p.id, p]));
+  for (const pl of sheet.placements) {
+    const part = byId.get(pl.partId);
+    const map = placer(part, pl, model.spec.bandCompensation);
+    for (const f of part.features) {
+      if (f.type !== 'hole') continue;
+      const [X, Y] = map(f.u, f.v);
+      const r = f.d / 2 - 0.05;
+      if (X - r < pl.x || X + r > pl.x + pl.w || Y - r < pl.y || Y + r > pl.y + pl.h) out.push(`${part.name}: отвор Ø${dimTxt(f.d)} би излязъл извън детайла на лист ${sheet.index}.`);
+    }
+  }
+  return out;
+}
+
+// Why the CNC files must not be made: an error from the checks of the model (a hole outside its part, a part larger
+// than the sheet, a door outside the hinge maker's table…), a part the nesting could not place, a hole that would land
+// outside its part on the sheet. G-code and DXF are never written while one of these stands.
+export function cncBlockers(model, nesting) {
+  const out = model.warnings.filter((w) => w.level === 'error').map((w) => w.text);
+  out.push(...nesting.errors);
+  for (const sheet of nesting.sheets) out.push(...strayHoles(model, sheet));
+  return [...new Set(out)];
+}
+
+// Feature positions on the sheet. Refuses a model with a blocker: no caller can turn it into machine code.
 export function sheetOps(model, sheet) {
+  const blockers = cncBlockers(model, { sheets: [sheet], errors: [] });
+  if (blockers.length) throw new Error(`CNC blocked: ${blockers[0]}`);
   const T = STOCK[sheet.stock].thickness;
   const byId = new Map(model.parts.map((p) => [p.id, p]));
   const holes = new Map();
@@ -33,12 +72,7 @@ export function sheetOps(model, sheet) {
   const contours = [];
   for (const pl of sheet.placements) {
     const part = byId.get(pl.partId);
-    const cut = cutSize(part, model.spec.bandCompensation);
-    const map = (u, v) => {
-      const uc = u - cut.du0;
-      const vc = v - cut.dv0;
-      return pl.rot ? [r1(pl.x + cut.W - vc), r1(pl.y + uc)] : [r1(pl.x + uc), r1(pl.y + vc)];
-    };
+    const map = placer(part, pl, model.spec.bandCompensation);
     for (const f of part.features) {
       if (f.type === 'hole') {
         const [X, Y] = map(f.u, f.v);
@@ -135,19 +169,20 @@ export function toGcode(model, sheet, meta) {
     moves.push({ type: 'arc', from: pos, to: nxt, center: seg.center, tool, F: curF });
     pos = nxt;
   };
-  const title = `${meta.product.toUpperCase()} - SHEET ${sheet.index}/${meta.sheetCount}`;
+  const title = `${asciiName(meta.product)} - SHEET ${sheet.index}/${meta.sheetCount}`;
   if (iso) L.push('%', `O${String(1000 + sheet.index)} (${title})`);
   else L.push(`(${title})`);
   L.push(`(SPEC SHA256 ${meta.hash.slice(0, 16)} - POST ${post.version})`);
   L.push(`(STOCK ${sheet.stock.toUpperCase()} ${sheet.w}X${sheet.h}X${T} - Z0 TOP OF SHEET - XY0 LOWER LEFT)`);
   L.push('(SIMULATE AND DRY RUN BEFORE CUTTING)');
   if (ops.manual.length) L.push(`(${ops.manual.length} HOLES WITHOUT A TOOL IN THE LIBRARY - DRILL BY HAND)`);
-  L.push(iso ? 'G21 G17 G90 G40 G49 G80' : 'G21 G17 G90 G94');
+  L.push(iso ? 'G21 G17 G90 G94 G40 G49 G80' : 'G21 G17 G90 G94');
   if (iso) L.push('G54');
   const startTool = (tool, note) => {
     L.push(`(${tool.id} ${tool.label}${note ? ` - ${note}` : ''})`);
     if (iso) {
-      L.push(`${tool.id} M6`, `S${tool.rpm} M3`, `G43 H${tool.h} Z${num(safe)}`);
+      // Z to the machine's reference point before the change, then the length offset of the new tool
+      L.push('G91 G28 Z0', 'G90', `${tool.id} M6`, `S${tool.rpm} M3`, `G43 H${tool.h} Z${num(safe)}`);
       pos = { ...pos, Z: safe };
     } else {
       L.push('M5', `(INSERT ${tool.label} AND SET Z0 ON SHEET TOP, THEN RESUME)`, 'M0', `S${tool.rpm} M3`, 'G4 P2');

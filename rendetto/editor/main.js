@@ -1,31 +1,40 @@
 // Rendetto editor: a saved project in the browser. Spec → model → BOM, drilling, nesting, drawings, CNC preview.
 // The server keeps the spec (save) and makes the downloads from the SAVED spec; the preview here is computed live.
-import { registerCatalog, baseCatalogData } from '../engine/catalog.js';
+import { registerCatalog } from '../engine/catalog.js';
 import { TYPES } from '../engine/types.js';
 import { buildModel, normalizeSpec } from '../engine/model.js';
-import { buildBom, cutListCsv, hardwareCsv } from '../engine/bom.js';
-import { drillCsv } from '../engine/drill.js';
+import { buildBom } from '../engine/bom.js';
 import { nest } from '../engine/nest.js';
+import { cncBlockers } from '../engine/cam.js';
 import { canonicalJson } from '../engine/util.js';
-import { $, $$, sha256, copyText } from './dom.js';
+import { $, $$, sha256 } from './dom.js';
 import { renderTypes, renderParams, renderHardwareOptions, writeForm, bindForm } from './form.js';
 import { openPicker, bindPicker } from './pickers.js';
 import { renderBom } from './render-bom.js';
-import { renderDrill, renderDrillPart } from './render-drill.js';
+import { renderDrill } from './render-drill.js';
 import { renderNesting } from './render-nest.js';
 import { renderDrawing } from './render-draw.js';
-import { renderCnc, drawToolpath, toggleSim, stopSim } from './render-cnc.js';
+import { renderCnc, stopSim } from './render-cnc.js';
+import { bindPanels } from './bind-panels.js';
 import { renderCatalog, bindCatalog } from './render-catalog.js';
 import { createViewer } from './bind-view.js';
 import { bindFullscreens } from './fullscreen.js';
 import { createSaver } from './saver.js';
+import {
+  loadCatalog,
+  lockForReading,
+  showError,
+  bindDownloads,
+  showDownloads,
+  guardLeaving,
+} from './session.js';
 import { renderHeader } from './header.js';
 
 const TABS = ['view', 'bom', 'drill', 'nest', 'draw', 'cnc', 'cat'];
 const boot = JSON.parse($('#boot').textContent);
 const root = $('#main');
 const csrf = root.dataset.csrf;
-const readOnly = boot.readOnly === true;
+let readOnly = boot.readOnly === true; // also when the catalog fails to load (session.js)
 const text = JSON.parse(root.dataset.text || '{}');
 
 const form = $('#params');
@@ -39,7 +48,10 @@ const state = {
   dirty: new Set(TABS),
   savedHash: boot.hash,
   savedName: boot.name,
+  savedAt: boot.updatedAt, // the version this editor opened: the server saves only over it
   saving: false,
+  conflict: false,
+  blockers: [],
 };
 let viewer = null;
 let CATALOG = null;
@@ -74,7 +86,7 @@ const { isDirty, showState, save } = createSaver({
   state,
   boot,
   csrf,
-  readOnly,
+  isReadOnly: () => readOnly,
   text,
   beforeSave: flushPending,
 });
@@ -84,7 +96,21 @@ const { isDirty, showState, save } = createSaver({
 let seq = 0;
 async function recompute(writeFocused = false) {
   const mine = ++seq;
-  const model = buildModel(state.spec);
+  let model;
+  let nesting;
+  try {
+    model = buildModel(state.spec);
+    nesting = nest(model);
+  } catch {
+    // a value the engine cannot build is undone, so it is never saved; a first load has nothing to fall back to
+    showError(text.engineFailed);
+    if (!state.model) lockForReadingOnce(text.engineFailed);
+    else {
+      state.spec = state.model.spec;
+      writeForm(form, state.spec, true);
+    }
+    return;
+  }
   const hash = await sha256(canonicalJson(model.spec));
   if (mine !== seq) return;
   Object.assign(state, {
@@ -92,10 +118,12 @@ async function recompute(writeFocused = false) {
     model,
     hash,
     bom: buildBom(model),
-    nesting: nest(model),
+    nesting,
+    blockers: cncBlockers(model, nesting),
   });
   writeForm(form, model.spec, writeFocused);
   renderHeader(state.model);
+  showDownloads(state.blockers.length > 0, text.cncBlockedLink);
   for (const t of TABS) if (t !== 'cat') state.dirty.add(t);
   renderTab(state.tab);
   showState();
@@ -192,40 +220,7 @@ function bindUi() {
     });
   }
 
-  $('#copy-cut').addEventListener('click', (ev) =>
-    copyText(cutListCsv(state.bom), ev.currentTarget),
-  );
-  $('#copy-hw').addEventListener('click', (ev) =>
-    copyText(hardwareCsv(state.bom), ev.currentTarget),
-  );
-  $('#copy-drill').addEventListener('click', (ev) =>
-    copyText(drillCsv(state.model), ev.currentTarget),
-  );
-  $('#drill-part').addEventListener('change', (ev) => {
-    state.drillPart = ev.target.value;
-    renderDrillPart(state, meta());
-  });
-  $('#draw-part').addEventListener('change', (ev) => {
-    state.drawing = ev.target.value;
-    renderDrawing(state, meta());
-  });
-  $('#copy-svg').addEventListener('click', (ev) => copyText(state.svg ?? '', ev.currentTarget));
-  $('#cnc-sheet').addEventListener('change', (ev) => {
-    state.sheet = Number(ev.target.value);
-    renderCnc(state, meta());
-  });
-  $('#sim-progress').addEventListener('input', (ev) => {
-    stopSim();
-    state.progress = Number(ev.target.value) / 1000;
-    drawToolpath(state);
-  });
-  $('#sim-play').addEventListener('click', () => toggleSim(state));
-  $('#copy-gcode').addEventListener('click', (ev) =>
-    copyText(state.gcode?.text ?? '', ev.currentTarget, $('#gcode')),
-  );
-  $('#copy-dxf').addEventListener('click', (ev) =>
-    copyText(state.dxf?.text ?? '', ev.currentTarget, $('#dxf')),
-  );
+  bindPanels(state, meta);
   bindCatalog(CATALOG);
 
   // 3D, and full screen for it and the drawings
@@ -242,38 +237,28 @@ function bindUi() {
         void save();
       }
     });
-    window.addEventListener('beforeunload', (ev) => {
-      if (isDirty()) ev.preventDefault();
-    });
+    // a change still waiting for its recompute counts too
+    guardLeaving(() => isDirty() || pending !== null || state.saving);
   }
-  for (const a of $$('[data-export]')) {
-    a.addEventListener('click', async (ev) => {
-      if (!isDirty()) return;
-      ev.preventDefault();
-      if (await save()) location.href = a.href;
-    });
-  }
+  bindDownloads({ save, onBlocked: () => selectTab('cnc', true) });
+}
+
+let locked = false;
+function lockForReadingOnce(message) {
+  if (locked) return;
+  locked = true;
+  readOnly = true;
+  lockForReading(message);
 }
 
 /* ---------- boot ---------- */
 
-async function loadCatalog() {
-  try {
-    const res = await fetch('/app/catalog.json', {
-      credentials: 'same-origin',
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) throw new Error(String(res.status));
-    return await res.json();
-  } catch {
-    return baseCatalogData();
-  }
-}
-
 async function start() {
-  CATALOG = registerCatalog(await loadCatalog());
+  const catalog = await loadCatalog();
+  CATALOG = registerCatalog(catalog.data);
   state.spec = normalizeSpec(boot.spec ?? { type: 'base' });
   bindUi();
+  if (!catalog.ok && !readOnly) lockForReadingOnce(text.catalogFailed);
   writeForm(form, state.spec, true);
   const tabOfHash = () => location.hash.replace('#', '');
   selectTab(TABS.includes(tabOfHash()) ? tabOfHash() : 'view');

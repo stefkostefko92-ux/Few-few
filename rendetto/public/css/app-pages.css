@@ -60,6 +60,13 @@
   margin: 0 0 6px;
   font-variant-numeric: tabular-nums;
 }
+.error-details {
+  margin: 12px 0 0;
+  padding-left: 1.2em;
+  font-size: 0.93rem;
+  color: var(--red);
+  overflow-wrap: anywhere;
+}
 .banned {
   display: flex;
   gap: 12px;

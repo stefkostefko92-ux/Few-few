@@ -68,7 +68,10 @@
     "internalTitle": "Something broke",
     "internalText": "The error has been recorded. Try again in a little while.",
     "toHome": "Home page",
-    "toProjects": "Projects"
+    "toProjects": "Projects",
+    "cncBlockedTitle": "The CNC files are withheld",
+    "cncBlockedText": "The construction checks found errors, and G-code and DXF must never be wrong. Fix them in the editor — the download unlocks as soon as the errors are gone. The editor and the error list are in Bulgarian.",
+    "toProject": "Back to the project"
   },
   "flash": {
     "accountCreated": "The account has been created.",

@@ -2,7 +2,8 @@
 // dimensions, scale choice and the self-contained SVG wrapper (styles inside, prefixed so they never touch the page).
 import { esc, dimTxt } from './util.js';
 
-export const SCALES = [1, 2, 5, 10, 20, 25, 50];
+// ISO 5455: the recommended scales only (1:25 and 1:4 are not in the series)
+export const SCALES = [1, 2, 5, 10, 20, 50, 100];
 export const pickScale = (wMm, hMm, boxW, boxH) => SCALES.find((s) => wMm / s <= boxW && hMm / s <= boxH) ?? SCALES.at(-1);
 
 const INK = '#18200f';
@@ -29,6 +30,10 @@ svg.rdw .d-tv.d-big{font:600 3.6px 'IBM Plex Sans',system-ui,sans-serif}
 svg.rdw .d-open{fill:none;stroke:${INK};stroke-width:.16;stroke-dasharray:1.2 1}
 svg.rdw .d-gnd{stroke:${INK};stroke-width:.35}
 svg.rdw .d-cpl{stroke:${INK};stroke-width:.25;stroke-dasharray:6 1 1 1}
+svg.rdw .d-cplt{stroke:${INK};stroke-width:.7}
+svg.rdw .d-cpa{stroke:${INK};stroke-width:.25}
+svg.rdw .d-cpah{fill:${INK}}
+svg.rdw .d-alert{font:600 2.8px 'IBM Plex Sans',system-ui,sans-serif;fill:#b42318}
 svg.rdw .d-cl{stroke:${INK};stroke-width:.16;stroke-dasharray:1.5 .6 .3 .6}
 svg.rdw .d-hole{fill:none;stroke:${INK};stroke-width:.22}
 svg.rdw .d-thru{fill:rgba(24,32,15,.18);stroke:${INK};stroke-width:.22}
@@ -112,3 +117,10 @@ export function svgDoc(inner, label) {
 }
 
 export const fmt = dimTxt;
+
+// The line every drawing of a model with errors carries: it is not for production, the CNC files are withheld.
+export function errorAlert(model, x, y) {
+  const n = model.warnings.filter((w) => w.level === 'error').length;
+  if (!n) return '';
+  return `<text class="d-alert" x="${x}" y="${y}">ВНИМАНИЕ: ${n === 1 ? '1 грешка' : `${n} грешки`} в проверките на конструкцията — не е за производство; файловете за CNC не се издават.</text>`;
+}

@@ -63,7 +63,7 @@ export function buildDesk(ctx, s, common) {
   for (const e of ends) {
     const pts = [ym0 + 60, H - TT - 60].map((y) => [e.x, y, MODESTY.z + T / 2]);
     for (const p of pts) holeThrough(e.through, p, CONFIRMAT.face, 'confirmat', { hw: 'confirmat' });
-    edgeHoles(modesty, e.dir, pts, CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat');
+    edgeHoles(modesty, e.dir, pts, CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat', { label: 'конфирмат 7×50, за резбата' });
     ctx.hw('confirmat', { name: 'Конфирмат 7×50', qty: pts.length, unit: 'бр.', group: 'Крепежи' });
   }
   return { dims: { W, H, D } };

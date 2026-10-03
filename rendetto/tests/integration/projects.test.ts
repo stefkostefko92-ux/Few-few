@@ -12,6 +12,16 @@ async function newProject(b: Browser, type = 'base', name = 'Шкаф'): Promise
   return reply.location.split('/').pop() ?? '';
 }
 
+/** The version the editor opened: the server saves only over it. */
+function baseOf(editorHtml: string): string {
+  return (
+    /&#34;updatedAt&#34;:&#34;([^&]+)&#34;|"updatedAt":"([^"]+)"/
+      .exec(editorHtml)
+      ?.slice(1)
+      .find(Boolean) ?? ''
+  );
+}
+
 async function expire(email: string): Promise<void> {
   await prisma.user.update({
     where: { email },
@@ -26,7 +36,7 @@ test('during the trial: create, save, duplicate and export every format', async 
   assert.equal(editor.status, 200);
   const csrf = /data-csrf="([^"]+)"/.exec(editor.body)?.[1] ?? '';
   const save = await b.request('PUT', `/app/api/projects/${id}`, {
-    json: { spec: { type: 'base', width: 700 }, name: 'Шкаф 700' },
+    json: { spec: { type: 'base', width: 700 }, name: 'Шкаф 700', base: baseOf(editor.body) },
     headers: { 'x-csrf-token': csrf },
   });
   assert.equal(save.status, 200);
@@ -97,6 +107,63 @@ test('after the plan ends: projects download, but nothing new is created or chan
   assert.equal(await prisma.project.count({ where: { id } }), 0, 'deleting own data stays allowed');
 });
 
+test('a save over a newer version is refused, not silently overwritten', async () => {
+  const b = await customer('twotabs@example.test');
+  const id = await newProject(b);
+  const page = await b.get(`/app/p/${id}`);
+  const csrf = /data-csrf="([^"]+)"/.exec(page.body)?.[1] ?? '';
+  const base = baseOf(page.body);
+  const first = await b.request('PUT', `/app/api/projects/${id}`, {
+    json: { spec: { type: 'base', width: 650 }, base },
+    headers: { 'x-csrf-token': csrf },
+  });
+  assert.equal(first.status, 200);
+  const second = await b.request('PUT', `/app/api/projects/${id}`, {
+    json: { spec: { type: 'base', width: 900 }, base },
+    headers: { 'x-csrf-token': csrf },
+  });
+  assert.equal(second.status, 409);
+  assert.equal((JSON.parse(second.body) as { code: string }).code, 'app.errors.conflict');
+  const noBase = await b.request('PUT', `/app/api/projects/${id}`, {
+    json: { spec: { type: 'base', width: 900 } },
+    headers: { 'x-csrf-token': csrf },
+  });
+  assert.equal(noBase.status, 409);
+  const saved = (await prisma.project.findUniqueOrThrow({ where: { id } })).spec as {
+    width: number;
+  };
+  assert.equal(saved.width, 650, 'the first save stays');
+  const next = (JSON.parse(first.body) as { updatedAt: string }).updatedAt;
+  const third = await b.request('PUT', `/app/api/projects/${id}`, {
+    json: { spec: { type: 'base', width: 900 }, base: next },
+    headers: { 'x-csrf-token': csrf },
+  });
+  assert.equal(third.status, 200, 'saving over the version just saved works');
+});
+
+test('CNC files are withheld while the checks find an error; the project ZIP says why', async () => {
+  const b = await customer('blocked@example.test');
+  const id = await newProject(b, 'tv', 'ТВ');
+  const page = await b.get(`/app/p/${id}`);
+  const csrf = /data-csrf="([^"]+)"/.exec(page.body)?.[1] ?? '';
+  // 2600 mm in 2 columns with doors: each door over 600 mm — beyond what the hinge maker allows
+  const save = await b.request('PUT', `/app/api/projects/${id}`, {
+    json: {
+      spec: { type: 'tv', width: 2600, columns: 2, tvFronts: 'doors' },
+      base: baseOf(page.body),
+    },
+    headers: { 'x-csrf-token': csrf },
+  });
+  assert.equal(save.status, 200);
+  const cnc = await b.get(`/app/p/${id}/export/cnc.zip`);
+  assert.equal(cnc.status, 422);
+  assert.match(cnc.body, /над 600 mm/);
+  const zip = await b.get(`/app/p/${id}/export/project.zip`);
+  assert.equal(zip.status, 200);
+  const drawings = await b.get(`/app/p/${id}/export/drawings.zip`);
+  assert.equal(drawings.status, 200, 'drawings stay available, marked as not for production');
+});
+
 test('nobody reaches another person’s project', async () => {
   const owner = await customer('mine@example.test');
   const other = await customer('theirs@example.test');
@@ -116,14 +183,18 @@ test('nobody reaches another person’s project', async () => {
 test('the spec from the client is normalised and size-limited', async () => {
   const b = await customer('spec@example.test');
   const id = await newProject(b);
-  const csrf = /data-csrf="([^"]+)"/.exec((await b.get(`/app/p/${id}`)).body)?.[1] ?? '';
+  const page = await b.get(`/app/p/${id}`);
+  const csrf = /data-csrf="([^"]+)"/.exec(page.body)?.[1] ?? '';
   const big = await b.request('PUT', `/app/api/projects/${id}`, {
     json: { spec: { type: 'base', junk: 'x'.repeat(40_000) } },
     headers: { 'x-csrf-token': csrf },
   });
   assert.ok([400, 413].includes(big.status), `oversized spec: ${big.status}`);
   const odd = await b.request('PUT', `/app/api/projects/${id}`, {
-    json: { spec: { type: 'base', width: 99999, __proto__: { admin: true } } },
+    json: {
+      spec: { type: 'base', width: 99999, __proto__: { admin: true } },
+      base: baseOf(page.body),
+    },
     headers: { 'x-csrf-token': csrf },
   });
   assert.equal(odd.status, 200);

@@ -188,6 +188,27 @@ svg.sheet {
 .safety strong {
   color: var(--gold);
 }
+.blocked {
+  border-left: 3px solid var(--red);
+  background: var(--surface);
+  padding: 12px 16px;
+  border-radius: 0 var(--r) var(--r) 0;
+}
+.blocked h2 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--red);
+}
+.blocked p {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+.blocked ul {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
 .paperwrap {
   overflow-x: auto;
   border: 1px solid var(--line);

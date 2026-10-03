@@ -12,6 +12,7 @@ const WORKTOP_SCREW = { d: 5, label: 'винт за плота 4×30', bom: 'В�
 const RAIL_W = 100; // top rails of base cabinets
 const HINGE_CLEAR = 45; // shelves keep this distance (centre to centre) from hinges and their plates
 const RAIL_DROP = 90; // no shelves in the top 90 mm of a column with a hanging rail
+const MIN_PLINTH = 40; // lowest plinth board the generator makes
 
 export function buildCarcass(ctx, o) {
   const T = STOCK[o.stockCarcass ?? 'pb18'].thickness;
@@ -22,7 +23,12 @@ export function buildCarcass(ctx, o) {
   const mod = o.module ?? '';
   const nm = (s) => (mod ? `${mod} ${s}` : s);
   const key = (s) => `${mod}${s}`;
-  const plinthH = o.plinth && o.plinth.type !== 'none' ? o.plinth.h : 0;
+  let plinth = o.plinth ?? { type: 'none', h: 0 };
+  if (plinth.type === 'panel' && plinth.h > 0 && plinth.h < MIN_PLINTH) {
+    ctx.warn('info', `${nm('Цокъл')} под ${MIN_PLINTH} mm не се прави — корпусът стъпва направо на пода.`);
+    plinth = { type: 'none', h: 0 };
+  }
+  const plinthH = plinth.type !== 'none' ? plinth.h : 0;
   const c = y0 + plinthH;
   const Hc = H - plinthH;
   const top = o.top ?? 'between';
@@ -115,7 +121,7 @@ export function buildCarcass(ctx, o) {
   }
 
   buildBacks(ctx, { x0, W, T, c, Hc, z0, inGroove, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm });
-  buildPlinth(ctx, o, { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm });
+  buildPlinth(ctx, { ...o, plinth }, { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm });
   if (o.mount === 'wall') ctx.hw('hangers', { name: 'Окачвач за горен шкаф (чифт)', qty: 1, unit: 'чифт', group: 'Обков' });
 
   // interiors, pass 1: drawers and doors (slide pilots and hinge plates claim their holes first)
@@ -218,7 +224,8 @@ function buildPlinth(ctx, o, a) {
   for (const lx of xs) for (const lz of [(o.z0 ?? 0) + 60, zEnd - (o.plinth.type === 'panel' ? 90 : 70)]) ctx.symbols.push({ type: 'leg', x: lx, z: lz, y0, h: plinthH, module: mod });
   if (o.plinth.type === 'panel') {
     const fs = frontStock(o);
-    panel(ctx, { stock: fs.stock, decor: fs.decor, grain: hasGrain(fs.decor), module: mod, key: key('plinth'), name: nm('Цокъл'), role: 'plinth', box: { min: [x0, y0, zEnd - 50 - T], max: [x0 + W, y0 + plinthH - 3, zEnd - 50] }, n: '-z', L: 'x', bands: fs.banded ? { '+x': bc, '-x': bc, '+y': bc } : {}, explode: [0, -1, 1] });
+    // banded at the ends and along the floor (moisture); the top edge is hidden under the carcass
+    panel(ctx, { stock: fs.stock, decor: fs.decor, grain: hasGrain(fs.decor), module: mod, key: key('plinth'), name: nm('Цокъл'), role: 'plinth', box: { min: [x0, y0, zEnd - 50 - T], max: [x0 + W, y0 + plinthH - 3, zEnd - 50] }, n: '-z', L: 'x', bands: fs.banded ? { '+x': bc, '-x': bc, '-y': bc } : {}, explode: [0, -1, 1] });
     ctx.hw('plinthClips', { name: 'Клипс за цокъл', qty: 4, unit: 'бр.', group: 'Обков' });
   }
 }

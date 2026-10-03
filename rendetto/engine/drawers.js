@@ -2,12 +2,14 @@
 // corners, carcass holes where the slide manufacturer puts them. Side-mount ball-bearing slides take their clearance
 // on both sides; concealed (under-mount) slides set the inner width LW − 42, the bottom recess and a rear hook hole.
 import { panel, groove, edgeHoles } from './panel.js';
-import { r1 } from './util.js';
+import { r1, dimTxt } from './util.js';
 import { slideModel, slideSystemOf, slideLength } from './hardware.js';
-import { GROOVE, HDF_T, confirmat, addHoleOnce } from './joinery.js';
+import { GROOVE, HDF_T, CONFIRMAT, confirmat, addHoleOnce } from './joinery.js';
 import { mountHandle } from './fronts.js';
 
 const TOP_GAP = 28; // box top below the front top, room for the slide and the drawer above
+const MIN_BOX = 60; // lowest drawer box the generator makes
+const GROOVE_WEB = 3; // board left between the bottom groove and a confirmat hole in a 16 mm side
 
 export function buildDrawers(ctx, o, a) {
   const family = slideModel(o.slide);
@@ -50,8 +52,8 @@ export function buildDrawers(ctx, o, a) {
     const yb = Math.max(y0 + 12, c + T + 6);
     const yt = y1 - TOP_GAP;
     const hb = r1(yt - yb);
-    if (hb < 60) {
-      ctx.warn('warn', `${front.name}: кутията става ${hb} mm — увеличи фронта.`);
+    if (hb < MIN_BOX) {
+      ctx.warn('error', `${front.name}: кутията на чекмеджето би била ${dimTxt(hb)} mm (нужни са поне ${MIN_BOX}) — намалете броя на чекмеджетата или увеличете височината.`);
       continue;
     }
     const zf = zEnd - 2;
@@ -71,16 +73,17 @@ export function buildDrawers(ctx, o, a) {
     const into = GROOVE.depth - GROOVE.clearance;
     const bottomY = yb + sys.bottomUp;
     const bottom = panel(ctx, { stock: 'hdf3', decor: 'demo:white', grain: false, module: mod, key: `${dkey}bt`, name: nmk('дъно HDF'), role: 'drawer-bottom', box: { min: [xl + BOX_T - into, bottomY, zbk + BOX_T - into], max: [xr - BOX_T + into, bottomY + HDF_T, zf - BOX_T + into] }, n: '+y', L: 'x', explode: [0, -0.2, 1.6] });
-    // box corners: confirmat through the box sides into the front/back ends
-    const cy = [yb + 22, yt - 18].filter((y, idx, arr) => idx === 0 || y - arr[0] > 30);
+    // box corners: confirmat through the box sides into the front/back ends, clear of the bottom groove
+    const low = Math.max(yb + 22, gy + GROOVE.width / 2 + GROOVE_WEB + CONFIRMAT.face / 2);
+    const cy = [low, yt - 18].filter((y, idx, arr) => idx === 0 || y - arr[0] > 30);
     for (const [sd, end, zc, dir] of [[sideA, bfront, zf - BOX_T / 2, '-x'], [sideA, bback, zbk + BOX_T / 2, '-x'], [sideB, bfront, zf - BOX_T / 2, '+x'], [sideB, bback, zbk + BOX_T / 2, '+x']]) {
       confirmat(ctx, sd, end, dir, cy.map((y) => [sd === sideA ? xl + BOX_T : xr - BOX_T, y, zc]));
     }
     // concealed slides hook into a hole in the rear end of each box side
     if (sys.rearHook) {
       const h = sys.rearHook;
-      edgeHoles(sideA, '-z', [[xl + h.fromOuter, yb + h.fromBottom, zbk]], h.d, h.depth, 'slide', { label });
-      edgeHoles(sideB, '-z', [[xr - h.fromOuter, yb + h.fromBottom, zbk]], h.d, h.depth, 'slide', { label });
+      edgeHoles(sideA, '-z', [[xl + h.fromOuter, yb + h.fromBottom, zbk]], h.d, h.depth, 'slide-hook', { label });
+      edgeHoles(sideB, '-z', [[xr - h.fromOuter, yb + h.fromBottom, zbk]], h.d, h.depth, 'slide-hook', { label });
     }
     // carcass holes on the panels' inner faces; partitions get through holes so both faces work
     const ys = r1(sys.mount === 'under' ? bottomY + sys.axisAboveBottom : yb + sys.axisAboveBox);
@@ -88,7 +91,7 @@ export function buildDrawers(ctx, o, a) {
       for (const zf2 of sys.holes[NL]) addHoleOnce(cp, [fx, ys, zEnd - zf2], sys.hole.d, sys.hole.depth, 'slide', { hw: 'slide', ref: family.id, refName: family.name, label }, cp.role === 'partition');
     }
     ctx.hw(`slide:${family.id}:${NL}`, {
-      name: product ? product.name : `${family.name}, NL ${NL} mm (няма в каталога, поръчай отделно)`,
+      name: product ? product.name : `${family.name}, NL ${NL} mm (няма в каталога, поръчайте отделно)`,
       qty: 1, unit: 'компл.', group: 'Обков', sku: product?.sku, brand: product?.brand ?? family.brand, price: product?.price, currency: product?.currency, url: product?.url, shop: product?.shop,
     });
     ctx.groups.push({ type: 'drawer', id: front.id, partIds: [front.id, sideA.id, sideB.id, bfront.id, bback.id, bottom.id], travel: L * (sys.extension === 'full' ? 0.95 : 0.75) });

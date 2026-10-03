@@ -1,10 +1,10 @@
 // Чертежи tab: the assembly sheet and one sheet per part (with its drilling map); SVG can be copied as a file text.
 import { $, esc, inlineSvg } from './dom.js';
 import { drawingAssembly } from '../engine/drawing-assembly.js';
-import { drawingPart } from '../engine/drawing-part.js';
+import { drawingPart, drawingParts } from '../engine/drawing-part.js';
 
 export function renderDrawing(state, meta) {
-  const parts = state.model.parts.filter((p) => p.role !== 'back' && p.role !== 'drawer-bottom');
+  const parts = drawingParts(state.model);
   const n = parts.length + 1;
   if (state.drawing !== 'assembly' && !parts.some((p) => p.id === state.drawing))
     state.drawing = 'assembly';

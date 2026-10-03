@@ -1,7 +1,7 @@
 // Part drawing with its drilling map: face A up exactly as the part lies on the CNC table, every hole tagged with a
 // letter (one letter per kind, Ø and depth), ordinate dimensions for hinge, handle, plate, slide and joint holes,
 // horizontal edge holes as hidden lines, a grouped hole table and enlarged details of the hardware holes.
-import { pickScale, dimH, dimV, ordinates, frame, svgDoc, fmt } from './drawing-kit.js';
+import { pickScale, dimH, dimV, ordinates, frame, svgDoc, fmt, errorAlert } from './drawing-kit.js';
 import { hingeDetail, plateDetail, handleDetail, slideDetail } from './drawing-details.js';
 import { partHoles } from './drill.js';
 import { edgeLabels, cutSize } from './panel.js';
@@ -21,6 +21,10 @@ export function holeLetters(holes) {
   }
   return [...map.values()];
 }
+
+// The parts with a sheet of their own, in the model's order (sheet 1 is the assembly): all but the 3 mm HDF backs and
+// drawer bottoms — nothing is machined on them and their sizes are in the cut list. Editor and downloads share it.
+export const drawingParts = (model) => model.parts.filter((p) => p.role !== 'back' && p.role !== 'drawer-bottom');
 
 export function drawingPart(model, meta, partId, sheetNo = 2, sheetCount = 2) {
   const p = model.parts.find((x) => x.id === partId) ?? model.parts[0];
@@ -42,6 +46,7 @@ export function drawingPart(model, meta, partId, sheetNo = 2, sheetCount = 2) {
   const V = (v) => oy - v * k;
   let g = `<text class="d-vt" x="30" y="19">${esc(`${p.id} · ${p.name}`)} — лице А нагоре (обработваната страна)</text>`;
   g += `<text class="d-note" x="30" y="24.5">Координати от ъгъла u = 0 (ръб „${esc(edges.u0)}“), v = 0 (ръб „${esc(edges.v0)}“), от готовия ръб; CNC ги отмества с дебелината на канта.</text>`;
+  g += errorAlert(model, 30, 28.6);
   g += `<rect class="d-out" x="${U(0)}" y="${V(p.W)}" width="${p.L * k}" height="${p.W * k}"/>`;
   // edge banding: thick line just outside every banded edge
   const b = (dir) => p.bands[dir] || 0;

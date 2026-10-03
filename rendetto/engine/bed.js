@@ -8,6 +8,10 @@ import { bedFitting } from './hardware.js';
 const PILOT = { d: 3, depth: 10 };
 const LEDGER = { t: 18, h: 60, pitch: 200 };
 const CLEAR_D = 5; // clearance hole for a 4 mm screw, drilled with the Ø5 system bit
+// 4 × 30 through an 18 mm ledger leaves 12 mm in the 18 mm rail or beam: the tip stays 6 mm inside (a 4 × 40 would
+// come out of the visible face of the rail)
+const LEDGER_SCREW = { label: 'винт 4×30', bom: 'Винт за ПДЧ 4×30' };
+const STAGGER = 15; // the two centre ledgers are screwed into the beam from both faces, ± 15 mm apart along it
 const CONFIRMAT = { face: 7, edge: 5, edgeDepth: 50 };
 
 export function buildBed(ctx, s) {
@@ -50,10 +54,10 @@ export function buildBed(ctx, s) {
     const n = Math.max(3, Math.floor((Li - 4) / LEDGER.pitch) + 1);
     for (let k = 0; k < n; k++) {
       const z = r1(T + 2 + 40 + ((Li - 84) * k) / (n - 1));
-      hole(rail, [fx, yLedger - LEDGER.h / 2, z], PILOT.d, PILOT.depth, 'pilot', { hw: 'screw', label: 'винт 4×40' });
-      holeThrough(led, [fx === T ? T + LEDGER.t : Wt - T - LEDGER.t, yLedger - LEDGER.h / 2, z], CLEAR_D, 'screw', { hw: 'screw', label: 'винт 4×40' });
+      hole(rail, [fx, yLedger - LEDGER.h / 2, z], PILOT.d, PILOT.depth, 'pilot', { hw: 'screw', label: LEDGER_SCREW.label });
+      holeThrough(led, [fx === T ? T + LEDGER.t : Wt - T - LEDGER.t, yLedger - LEDGER.h / 2, z], CLEAR_D, 'screw', { hw: 'screw', label: LEDGER_SCREW.label });
     }
-    ctx.hw('ledgerScrews', { name: 'Винт за ПДЧ 4×40', qty: n, unit: 'бр.', group: 'Крепежи' });
+    ctx.hw('ledgerScrews', { name: LEDGER_SCREW.bom, qty: n, unit: 'бр.', group: 'Крепежи' });
   }
   // centre beam for two slatted bases
   let beam = null;
@@ -63,15 +67,17 @@ export function buildBed(ctx, s) {
     beam = panel(ctx, { ...body, key: 'beam', name: 'Средна греда', role: 'bed-beam', box: { min: [xc - T / 2, yr, T], max: [xc + T / 2, yLedger, zFootIn] }, n: '+x', L: 'z', explode: [0, -0.5, 0] });
     const lc1 = ledger(xc - T / 2 - LEDGER.t, xc - T / 2, 'Летва средна лява', 'ledgerC1', '+x', -0.2);
     const lc2 = ledger(xc + T / 2, xc + T / 2 + LEDGER.t, 'Летва средна дясна', 'ledgerC2', '-x', 0.2);
-    // the beam carries both centre ledgers: through pilots serve the two faces without turning the part
+    // the beam carries both centre ledgers, screwed from its two faces: through pilots serve either face without
+    // turning the part, and the two rows are staggered so the screws from both sides never meet
     const n = Math.max(3, Math.floor((Li - 4) / LEDGER.pitch) + 1);
     for (let k = 0; k < n; k++) {
-      const z = r1(T + 2 + 40 + ((Li - 84) * k) / (n - 1));
-      holeThrough(beam, [xc + T / 2, yLedger - LEDGER.h / 2, z], PILOT.d, 'pilot', { hw: 'screw', label: 'винт 4×40' });
-      holeThrough(lc1, [xc - T / 2 - LEDGER.t, yLedger - LEDGER.h / 2, z], CLEAR_D, 'screw', { hw: 'screw', label: 'винт 4×40' });
-      holeThrough(lc2, [xc + T / 2 + LEDGER.t, yLedger - LEDGER.h / 2, z], CLEAR_D, 'screw', { hw: 'screw', label: 'винт 4×40' });
+      const z = r1(T + 2 + 40 + STAGGER + ((Li - 84 - 2 * STAGGER) * k) / (n - 1));
+      for (const [led, x, dz] of [[lc1, xc - T / 2 - LEDGER.t, -STAGGER], [lc2, xc + T / 2 + LEDGER.t, STAGGER]]) {
+        holeThrough(beam, [xc + T / 2, yLedger - LEDGER.h / 2, z + dz], PILOT.d, 'pilot', { hw: 'screw', label: LEDGER_SCREW.label });
+        holeThrough(led, [x, yLedger - LEDGER.h / 2, z + dz], CLEAR_D, 'screw', { hw: 'screw', label: LEDGER_SCREW.label });
+      }
     }
-    ctx.hw('ledgerScrews', { name: 'Винт за ПДЧ 4×40', qty: 2 * n, unit: 'бр.', group: 'Крепежи' });
+    ctx.hw('ledgerScrews', { name: LEDGER_SCREW.bom, qty: 2 * n, unit: 'бр.', group: 'Крепежи' });
     ctx.hw('beamLegs', { name: `Краче за средна греда ${yr} mm`, qty: 2, unit: 'бр.', group: 'Обков' });
     ctx.symbols.push({ type: 'leg', x: xc, z: T + Li / 3, y0: 0, h: yr }, { type: 'leg', x: xc, z: T + (2 * Li) / 3, y0: 0, h: yr });
   }
@@ -95,7 +101,7 @@ export function buildBed(ctx, s) {
     for (const [board, zFace] of [[head, T], [foot, zFootIn]]) {
       // confirmat 7×50: Ø7 through the board, Ø5×50 into the beam end
       const p = [Wt / 2, yr + (yLedger - yr) / 2, zFace];
-      edgeHoles(beam, zFace === T ? '-z' : '+z', [p], CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat');
+      edgeHoles(beam, zFace === T ? '-z' : '+z', [p], CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat', { label: 'конфирмат 7×50, за резбата' });
       holeThrough(board, p, CONFIRMAT.face, 'confirmat', { hw: 'confirmat' });
     }
     ctx.hw('confirmat', { name: 'Конфирмат 7×50', qty: 2, unit: 'бр.', group: 'Крепежи' });

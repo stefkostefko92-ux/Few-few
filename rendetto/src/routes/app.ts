@@ -8,7 +8,12 @@ import { translatorFor, type Translator } from '../i18n.js';
 import { planView } from '../plans/plan.js';
 import { catalogInfo, isFurnitureType } from '../services/engine.js';
 import { furnitureKinds } from '../services/furniture.js';
-import { buildExport, contentDisposition, isExportKind } from '../services/exports.js';
+import {
+  buildExport,
+  CncBlockedError,
+  contentDisposition,
+  isExportKind,
+} from '../services/exports.js';
 import {
   createProject,
   deleteProject,
@@ -123,7 +128,13 @@ appRouter.put(
   async (req, res) => {
     const principal = principalOf(req);
     const body = (req.body ?? {}) as Record<string, unknown>;
-    const result = await saveProject(principal.user, String(req.params.id), body.spec, body.name);
+    const result = await saveProject(
+      principal.user,
+      String(req.params.id),
+      body.spec,
+      body.name,
+      body.base,
+    );
     if (!result.ok) {
       res
         .status(result.status)
@@ -166,7 +177,20 @@ appRouter.get('/app/p/:id/export/:kind', exportLimiter, async (req, res) => {
     });
     return;
   }
-  const file = buildExport(project, principal.user.name, kind);
+  let file;
+  try {
+    file = buildExport(project, principal.user.name, kind);
+  } catch (err) {
+    if (!(err instanceof CncBlockedError)) throw err;
+    res.status(422).render('errors/error', {
+      titleKey: 'error.cncBlockedTitle',
+      messageKey: 'error.cncBlockedText',
+      status: 422,
+      details: err.reasons,
+      back: { href: `/app/p/${project.id}#cnc`, key: 'error.toProject' },
+    });
+    return;
+  }
   res
     .set('Content-Type', file.mime)
     .set('Content-Disposition', contentDisposition(file.name))

@@ -111,11 +111,19 @@ export async function createProject(
   return { ok: true, project };
 }
 
+/** Версията, която редакторът е отворил: времето на последния запис, точно до милисекунда. */
+const baseSchema = z.string().datetime();
+
+/**
+ * Записва само върху версията, която редакторът е отворил (`base` = `updatedAt` при отваряне или след
+ * последния запис). Запис от друг прозорец или устройство междувременно не се презаписва тихо — 409.
+ */
 export async function saveProject(
   user: SessionUser,
   id: string,
   rawSpec: unknown,
   rawName: unknown,
+  rawBase: unknown,
 ): Promise<ProjectResult> {
   const blocked = canCreate(user);
   if (blocked) return blocked;
@@ -128,11 +136,22 @@ export async function saveProject(
       ? { success: true as const, data: project.name }
       : nameSchema.safeParse(rawName);
   if (!name.success) return { ok: false, key: 'app.errors.name', status: 400 };
+  const base = baseSchema.safeParse(rawBase);
+  if (!base.success) return { ok: false, key: 'app.errors.conflict', status: 409 };
   const type = typeof spec.type === 'string' ? spec.type : project.type;
-  const saved = await prisma.project.update({
-    where: { id: project.id },
-    data: { spec: spec as Prisma.InputJsonValue, specHash: hashOf(spec), name: name.data, type },
+  const written = await prisma.project.updateMany({
+    where: { id: project.id, userId: user.id, updatedAt: new Date(base.data) },
+    data: {
+      spec: spec as Prisma.InputJsonValue,
+      specHash: hashOf(spec),
+      name: name.data,
+      type,
+      updatedAt: new Date(),
+    },
   });
+  if (written.count !== 1) return { ok: false, key: 'app.errors.conflict', status: 409 };
+  const saved = await ownProject(user.id, project.id);
+  if (!saved) return { ok: false, key: 'error.notFoundText', status: 404 };
   return { ok: true, project: saved };
 }
 

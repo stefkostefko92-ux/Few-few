@@ -99,6 +99,16 @@ function pathsFor(g, progress) {
 
 export function renderCnc(state, meta) {
   stopSim();
+  // fail closed: with an error in the construction there is no G-code, no DXF and no simulation, only the reasons
+  const blocked = state.blockers.length > 0;
+  $('#cnc-blocked').hidden = !blocked;
+  $('#cnc-body').hidden = blocked;
+  if (blocked) {
+    $('#cnc-reasons').innerHTML = state.blockers.map((r) => `<li>${esc(r)}</li>`).join('');
+    state.gcode = null;
+    state.dxf = null;
+    return;
+  }
   const sheets = state.nesting.sheets;
   if (!sheets.length) return;
   state.sheet = Math.min(state.sheet, sheets.length - 1);

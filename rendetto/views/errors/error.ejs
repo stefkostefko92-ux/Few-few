@@ -9,7 +9,11 @@
     <p class="status-code"><%= status %></p>
     <h1><%= t(titleKey) %></h1>
     <p><%= t(messageKey) %></p>
+    <% if (typeof details !== 'undefined' && details.length) { %>
+    <ul class="error-details"><% for (const d of details) { %><li><%= d %></li><% } %></ul>
+    <% } %>
     <div class="auth-links">
+      <% if (typeof back !== 'undefined') { %><a href="<%= back.href %>"><%= t(back.key) %></a><% } %>
       <a href="/"><%= t('error.toHome') %></a>
       <a href="/app"><%= t('error.toProjects') %></a>
     </div>

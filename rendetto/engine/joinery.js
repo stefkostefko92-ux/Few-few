@@ -19,7 +19,7 @@ export function confirmatZs(z0, z1) {
 // Confirmat 7×50: Ø7 through the face of `face`, Ø5×50 into the end (`edgeDir`) of `end`.
 export function confirmat(ctx, face, end, edgeDir, points) {
   for (const p of points) holeThrough(face, p, CONFIRMAT.face, 'confirmat', { hw: 'confirmat' });
-  edgeHoles(end, edgeDir, points, CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat');
+  edgeHoles(end, edgeDir, points, CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat', { label: 'конфирмат 7×50, за резбата' });
   ctx.hw('confirmat', { name: 'Конфирмат 7×50', qty: points.length, unit: 'бр.', group: 'Крепежи' });
 }
 

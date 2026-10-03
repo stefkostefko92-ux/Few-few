@@ -68,7 +68,10 @@
     "internalTitle": "Qualcosa si è rotto",
     "internalText": "L'errore è stato registrato. Riprovate tra poco.",
     "toHome": "Pagina iniziale",
-    "toProjects": "Progetti"
+    "toProjects": "Progetti",
+    "cncBlockedTitle": "I file CNC non vengono generati",
+    "cncBlockedText": "I controlli della costruzione hanno trovato errori, e G-code e DXF non devono mai essere sbagliati. Correggeteli nell'editor: il download si sblocca appena gli errori spariscono. L'editor e l'elenco degli errori sono in bulgaro.",
+    "toProject": "Torna al progetto"
   },
   "flash": {
     "accountCreated": "L'account è stato creato.",

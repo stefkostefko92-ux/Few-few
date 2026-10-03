@@ -36,6 +36,11 @@ export function checkModel(m, label) {
     }
   }
   for (const d of parts.filter((p) => p.role === 'door')) {
+    if (!d.hingeYs) {
+      // no hinges only with an error in the model (no drilling data, or they do not fit): the CNC is withheld then
+      assert.ok(m.warnings.some((w) => w.level === 'error'), `${label}: ${d.name} has no hinges and no error`);
+      continue;
+    }
     const cups = d.features.filter((f) => f.kind === 'cup').length;
     assert.ok(cups >= 2, `${label}: ${d.name} has ${cups} hinge cups`);
     assert.equal(cups, d.hingeYs.length, `${label}: ${d.name} cups vs hinge heights`);
@@ -47,7 +52,7 @@ export function checkModel(m, label) {
   for (const h of m.hardware) assert.ok(h.qty > 0, `${label}: hardware ${h.key} qty ${h.qty}`);
   // every hinge plate screw has its own hole: no two plates share one (from either face of a partition)
   for (const panelPart of parts.filter((p) => p.role === 'partition' || p.role === 'side')) {
-    const doors = parts.filter((d) => d.role === 'door' && d.hingePanel === panelPart.id);
+    const doors = parts.filter((d) => d.role === 'door' && d.hingePanel === panelPart.id && d.hingeYs);
     const expected = doors.reduce((a, d) => a + d.hingeYs.length * d.plateHoles, 0);
     const actual = panelPart.features.filter((f) => f.kind === 'plate').length;
     assert.equal(actual, expected, `${label}: ${panelPart.name} has ${actual} plate holes, expected ${expected}`);

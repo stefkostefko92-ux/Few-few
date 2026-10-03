@@ -3,7 +3,7 @@
 // holes each hinge, handle and slide needs and where.
 import { edgeLabels } from './panel.js';
 import { toCsv } from './bom.js';
-import { r1 } from './util.js';
+import { r1, neg } from './util.js';
 
 export const PURPOSE = {
   system: 'Система 32 mm (рафтоносачи)',
@@ -12,11 +12,14 @@ export const PURPOSE = {
   'cup-screw': 'Винт на панта — без отвор',
   plate: 'Планка на панта',
   handle: 'Дръжка',
+  'handle-mark': 'Дръжка — по шаблона на производителя, без отвор',
   confirmat: 'Конфирмат (през плочата)',
   slide: 'Водач (пилотен)',
+  'slide-hook': 'Водач — заден отвор за закачване',
   pilot: 'Пилотен отвор',
   screw: 'Винт (проходен)',
   bedfit: 'Връзка за легло — само място',
+  'stack-pilot': 'Пилот Ø3 — на място, през отвора на горния корпус',
 };
 export const purposeOf = (kind) => PURPOSE[kind] ?? kind;
 
@@ -59,6 +62,14 @@ export function holeGroups(part) {
   return [...g.values()];
 }
 
+// The real-world name of the edge a horizontal hole goes into (op.edge is the edge's outward direction).
+export function edgeOpName(part, labels, dir) {
+  if (dir === part.frame.eu) return labels.u1;
+  if (dir === neg(part.frame.eu)) return labels.u0;
+  if (dir === part.frame.ev) return labels.v1;
+  return labels.v0;
+}
+
 export function drillCsv(model) {
   const head = ['Детайл №', 'Детайл', 'Модул', '№ отвор', 'X (u)', 'Y (v)', 'Ø', 'Дълбочина', 'Проходен', 'Предназначение', 'Обков', 'Ръб u=0', 'Ръб v=0'];
   const rows = [head];
@@ -69,7 +80,7 @@ export function drillCsv(model) {
       rows.push([p.id, p.name, p.module ?? '', h.no, dec(h.u), dec(h.v), dec(h.d), dec(h.depth), h.through ? 'да' : 'не', h.purpose, h.label, e.u0, e.v0]);
     }
     for (const op of p.edgeOps) {
-      op.at.forEach(([u, v], i) => rows.push([p.id, p.name, p.module ?? '', `Ч${i + 1}`, dec(u), dec(v), dec(op.d), dec(op.depth), 'не', `Хоризонтален в чело ${op.edge} (${purposeOf(op.kind)})`, '', e.u0, e.v0]));
+      op.at.forEach(([u, v], i) => rows.push([p.id, p.name, p.module ?? '', `Ч${i + 1}`, dec(u), dec(v), dec(op.d), dec(op.depth), 'не', `Хоризонтален в чело „${edgeOpName(p, e, op.edge)}“ (${purposeOf(op.kind)})`, op.label ?? '', e.u0, e.v0]));
     }
   }
   return toCsv(rows);
@@ -85,13 +96,13 @@ export function hardwareCards(model) {
   for (const p of model.parts) {
     const byRef = new Map();
     for (const h of partHoles(p)) {
-      if (!h.ref || !['cup', 'cup-dowel', 'cup-screw', 'plate', 'handle', 'slide'].includes(h.kind)) continue;
+      if (!h.ref || !['cup', 'cup-dowel', 'cup-screw', 'plate', 'handle', 'handle-mark', 'slide'].includes(h.kind)) continue;
       if (!byRef.has(h.ref)) byRef.set(h.ref, []);
       byRef.get(h.ref).push(h);
     }
     for (const [ref, holes] of byRef) {
       const k0 = holes[0].kind;
-      const type = k0 === 'handle' ? 'handle' : k0 === 'slide' ? 'slide' : 'hinge';
+      const type = k0 === 'handle' || k0 === 'handle-mark' ? 'handle' : k0 === 'slide' ? 'slide' : 'hinge';
       const c = card(ref, type, holes.find((h) => h.refName)?.refName ?? holes[0].label);
       const entry = { partId: p.id, name: p.name, L: p.L, W: p.W, edges: edgeLabels(p), holes };
       if (p.role === 'door') {
@@ -103,8 +114,8 @@ export function hardwareCards(model) {
         }
       }
       if (type === 'handle') {
-        const hs = holes.filter((h) => h.kind === 'handle').sort(byPos);
-        entry.handle = { count: hs.length, d: hs[0].d, spacing: hs.length === 2 ? r1(Math.hypot(hs[1].u - hs[0].u, hs[1].v - hs[0].v)) : null };
+        const hs = holes.filter((h) => h.kind === 'handle' || h.kind === 'handle-mark').sort(byPos);
+        entry.handle = { count: hs.length, d: hs[0].d, template: hs[0].mark, spacing: hs.length === 2 ? r1(Math.hypot(hs[1].u - hs[0].u, hs[1].v - hs[0].v)) : null };
       }
       c.parts.push(entry);
     }

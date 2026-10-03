@@ -3,8 +3,8 @@
 import { buildCarcass } from './carcass.js';
 import { buildBed } from './bed.js';
 import { buildDesk } from './desk.js';
-import { holeThrough } from './panel.js';
-import { STOCK } from './materials.js';
+import { holeThrough, mark } from './panel.js';
+import { STOCK, frontStock } from './materials.js';
 import { clamp, r1 } from './util.js';
 
 const R = (key, label, min, max, step, unit = 'mm') => ({ key, label, type: 'range', min, max, step, unit });
@@ -88,7 +88,11 @@ export function normalizeParams(type, input) {
   for (const p of t.params) {
     const v = input[p.key];
     if (v === undefined || v === null || v === '') continue;
-    if (p.type === 'range') s[p.key] = Math.round(clamp(Number(v) || p.min, p.min, p.max) / (p.step < 1 ? p.step : 1)) * (p.step < 1 ? p.step : 1);
+    if (p.type === 'range') {
+      // on the parameter's own step from its minimum: a plinth of 3 mm or a width of 601,5 cannot come in
+      const x = clamp(Number(v) || p.min, p.min, p.max);
+      s[p.key] = clamp(Math.round(Math.round((x - p.min) / p.step) * p.step * 1000) / 1000 + p.min, p.min, p.max);
+    }
     else if (p.type === 'seg') {
       const opt = p.options.find(([ov]) => String(ov) === String(v));
       if (opt) s[p.key] = opt[0];
@@ -126,22 +130,25 @@ export const BUILDERS = {
       baseCabinet(ctx, { ...s, width: s.moduleWidth, legs: 100, fronts, doors, drawers: 3, shelves: 1 }, { module: `М${i + 1}`, x0: i * s.moduleWidth });
       wallCabinet(ctx, { ...s, width: s.moduleWidth, height: s.wallHeight, depth: 320, doors, shelves: 2 }, { module: `Г${i + 1}`, x0: i * s.moduleWidth, y0: s.mount });
     }
-    ctx.hw('worktop', { name: `Работен плот 38 mm, ${n * s.moduleWidth} × 600 mm (поръчка)`, qty: 1, unit: 'бр.', group: 'Покупни' });
-    ctx.symbols.push({ type: 'worktop', x0: 0, x1: n * s.moduleWidth, y: s.height, z0: 0, z1: 600, t: 38 });
+    const wd = worktopDepth(s);
+    ctx.hw('worktop', { name: `Работен плот 38 mm, ${n * s.moduleWidth} × ${wd} mm (поръчка)`, qty: 1, unit: 'бр.', group: 'Покупни' });
+    ctx.symbols.push({ type: 'worktop', x0: 0, x1: n * s.moduleWidth, y: s.height, z0: 0, z1: wd, t: 38 });
   },
   wardrobe: (ctx, s) => {
-    // wide wardrobes become several carcasses side by side: transportable, and tops and bottoms fit the sheet
-    const m = Math.ceil(s.width / MAX_CARCASS_W);
-    const perW = Math.floor(s.width / m);
-    const perCols = Math.max(1, Math.round(s.columns / m));
-    if (m > 1) ctx.warn('info', `Гардеробът е разделен на ${m} корпуса по ≈ ${perW} mm — по-лесен транспорт, детайлите се побират в листа.`);
+    // wide wardrobes become several carcasses side by side (transportable, tops and bottoms fit the sheet); the columns
+    // are shared out exactly as asked and every carcass is as wide as its columns
+    const m = Math.min(s.columns, Math.ceil(s.width / MAX_CARCASS_W));
+    const counts = Array.from({ length: m }, (_, k) => Math.floor(s.columns / m) + (k < s.columns % m ? 1 : 0));
+    if (m > 1) ctx.warn('info', `Гардеробът е разделен на ${m} корпуса (${counts.join(' + ')} колони) — по-лесен транспорт, детайлите се побират в листа.`);
+    let x0 = 0;
     let ci = 0;
-    for (let k = 0; k < m; k++) {
-      const W = k === m - 1 ? s.width - perW * (m - 1) : perW;
-      const doors = s.doorsPerColumn || (columnWidth(W, perCols) + 24 > 600 ? 2 : 1);
-      const cols = Array.from({ length: perCols }, () => wardrobeColumn(s.layout, ci++, doors));
-      buildCarcass(ctx, { ...common(s), module: m > 1 ? `К${k + 1}` : '', x0: k * perW, W, H: s.height, D: s.depth, plinth: { type: s.legs ? 'panel' : 'none', h: s.legs }, top: 'between', back: 'groove', visibleTop: true, columns: cols });
-    }
+    counts.forEach((n, k) => {
+      const W = k === m - 1 ? s.width - x0 : Math.round((s.width * n) / s.columns);
+      const doors = s.doorsPerColumn || (columnWidth(W, n) + 24 > 600 ? 2 : 1);
+      const cols = Array.from({ length: n }, () => wardrobeColumn(s.layout, ci++, doors));
+      buildCarcass(ctx, { ...common(s), module: m > 1 ? `К${k + 1}` : '', x0, W, H: s.height, D: s.depth, plinth: { type: s.legs ? 'panel' : 'none', h: s.legs }, top: 'between', back: 'groove', visibleTop: true, columns: cols });
+      x0 += W;
+    });
   },
   chest: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', back: 'groove', columns: Array.from({ length: s.columns }, () => ({ drawers: s.drawers, drawerZone: s.height - s.legs - 18 })) }),
   nightstand: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', back: 'groove', columns: [{ drawers: s.drawers, drawerZone: s.height - s.legs - 18 }] }),
@@ -193,15 +200,26 @@ function columnWidth(W, n, T = STOCK.pb18.thickness) {
 }
 
 // Upper carcass standing on a lower one: 4 screws from inside the upper carcass through its bottom (Ø5 clearance)
-// into the top of the lower one.
+// into the top of the lower one. 4 × 30 through 18 mm leaves 12 mm in the 18 mm top: the tip stays inside it. The
+// pilot in the lower top is drilled on site through the clearance hole, after stacking (from below the CNC would
+// have to turn the part), so the drawing marks the place.
 function joinStacked(ctx, lower, upper) {
   if (!lower.panels.top) throw new Error('joinStacked: the lower carcass needs a top panel');
   const { x0, W, T, backFront, z0, D } = upper.dims;
   const y = upper.dims.c;
   const pts = [];
   for (const x of [x0 + T + 50, x0 + W - T - 50]) for (const z of [backFront + 50, z0 + D - 50]) pts.push([x, y + T, z]);
-  for (const p of pts) holeThrough(upper.panels.bottom, p, 5, 'screw', { hw: 'stack', label: 'винт 4×40 към долния корпус' });
-  ctx.hw('stackScrews', { name: 'Винт за ПДЧ 4×40 (горен към долен корпус)', qty: pts.length, unit: 'бр.', group: 'Крепежи' });
+  for (const p of pts) {
+    holeThrough(upper.panels.bottom, p, 5, 'screw', { hw: 'stack', label: 'винт 4×30 към долния корпус' });
+    mark(lower.panels.top, [p[0], y, p[2]], 'stack-pilot', { hw: 'stack', label: 'пилот Ø3 на място' });
+  }
+  ctx.hw('stackScrews', { name: 'Винт за ПДЧ 4×30 (горен към долен корпус)', qty: pts.length, unit: 'бр.', group: 'Крепежи' });
+}
+
+// The kitchen worktop reaches 20–29 mm past the closed fronts (carcass, 1 mm gap, front), in whole centimetres.
+const WORKTOP_OVERHANG = 20;
+function worktopDepth(s) {
+  return Math.ceil((s.depth + 1 + STOCK[frontStock(s).stock].thickness + WORKTOP_OVERHANG) / 10) * 10;
 }
 
 export function typeDims(type, s) {
@@ -209,7 +227,7 @@ export function typeDims(type, s) {
     case 'bed':
       return { W: s.mattressW + 10 + 36, H: s.headHeight, D: s.mattressL + 10 + 36 };
     case 'kitchen':
-      return { W: s.modules * s.moduleWidth, H: s.mount + s.wallHeight, D: 600 };
+      return { W: s.modules * s.moduleWidth, H: s.mount + s.wallHeight, D: worktopDepth(s) };
     case 'wall':
       return { W: s.width, H: s.mount + s.height, D: s.depth };
     default:

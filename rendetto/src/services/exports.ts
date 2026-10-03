@@ -1,12 +1,29 @@
 import type { Project } from '@prisma/client';
 import { zipSync, type Zippable } from 'fflate';
-import { engine, type DrawingMeta, type EngineModel, type Spec } from './engine.js';
+import {
+  engine,
+  type DrawingMeta,
+  type EngineModel,
+  type EngineNesting,
+  type Spec,
+} from './engine.js';
 
 /**
  * Изходите на проекта се смятат на СЪРВЪРА от ЗАПАЗЕНАТА спецификация — затова изтекъл акаунт
  * изтегля точно това, което е направил, но не и нещо ново. Нищо от клиента не влиза в изхода.
  */
 export type ExportFile = { name: string; mime: string; body: Buffer };
+
+/**
+ * CNC файловете не се издават, докато проверките на конструкцията намират грешка (отвор извън детайла, детайл
+ * по-голям от листа, врата извън таблицата на пантите…): G-code и DXF не бива никога да са грешни.
+ */
+export class CncBlockedError extends Error {
+  constructor(readonly reasons: string[]) {
+    super('CNC blocked');
+    this.name = 'CncBlockedError';
+  }
+}
 
 const CSV = 'text/csv; charset=utf-8';
 const BOM = '﻿'; // Excel разпознава UTF-8 (кирилицата) само с BOM
@@ -15,6 +32,8 @@ interface Built {
   model: EngineModel;
   meta: DrawingMeta;
   base: string;
+  nesting: EngineNesting;
+  blockers: string[];
 }
 
 function build(project: Project, owner: string): Built {
@@ -25,6 +44,7 @@ function build(project: Project, owner: string): Built {
       : {}
   ) as Spec;
   const model = api.buildModel(spec);
+  const nesting = api.nest(model);
   const meta: DrawingMeta = {
     product: 'Rendetto',
     hash: project.specHash,
@@ -38,7 +58,13 @@ function build(project: Project, owner: string): Built {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
       .slice(0, 40) || 'project';
-  return { model, meta, base: `rendetto-${slug}-${project.specHash.slice(0, 8)}` };
+  return {
+    model,
+    meta,
+    base: `rendetto-${slug}-${project.specHash.slice(0, 8)}`,
+    nesting,
+    blockers: api.cncBlockers(model, nesting),
+  };
 }
 
 function text(body: string): Buffer {
@@ -47,11 +73,11 @@ function text(body: string): Buffer {
 
 /** Всички листове от разкроя: DXF и G-code (постпроцесорът е от спецификацията). */
 function cncFiles(b: Built): Record<string, Buffer> {
+  if (b.blockers.length) throw new CncBlockedError(b.blockers);
   const api = engine();
-  const nesting = api.nest(b.model);
   const out: Record<string, Buffer> = {};
-  const meta = { ...b.meta, sheetCount: nesting.sheets.length };
-  for (const sheet of nesting.sheets) {
+  const meta = { ...b.meta, sheetCount: b.nesting.sheets.length };
+  for (const sheet of b.nesting.sheets) {
     const n = String(sheet.index).padStart(2, '0');
     out[`sheet-${n}.dxf`] = text(api.toDxf(b.model, sheet, meta).text);
     out[`sheet-${n}.nc`] = text(api.toGcode(b.model, sheet, meta).text);
@@ -59,9 +85,10 @@ function cncFiles(b: Built): Record<string, Buffer> {
   return out;
 }
 
+/** Номерата на листовете са същите като в редактора (`drawingParts`). */
 function drawingFiles(b: Built): Record<string, Buffer> {
   const api = engine();
-  const parts = b.model.parts;
+  const parts = api.drawingParts(b.model);
   const count = parts.length + 1;
   const out: Record<string, Buffer> = {
     '00-assembly.svg': text(api.drawingAssembly(b.model, b.meta, 1, count)),
@@ -133,15 +160,29 @@ export function buildExport(project: Project, owner: string, kind: ExportKind): 
       };
       for (const [name, body] of Object.entries(csvFiles(b))) files[name] = body;
       for (const [name, body] of Object.entries(drawingFiles(b))) files[`drawings/${name}`] = body;
-      for (const [name, body] of Object.entries(cncFiles(b))) files[`cnc/${name}`] = body;
+      // с грешка в конструкцията архивът се издава без cnc/ — README казва защо
+      if (!b.blockers.length) {
+        for (const [name, body] of Object.entries(cncFiles(b))) files[`cnc/${name}`] = body;
+      }
       files['README.txt'] = text(readme(project, b));
       return { name: `${b.base}.zip`, mime: 'application/zip', body: zip(files) };
     }
   }
 }
 
+const LEVEL: Record<string, string> = { error: 'грешка', warn: 'внимание', info: 'бележка' };
+
 function readme(project: Project, b: Built): string {
-  const warnings = b.model.warnings.map((w) => `- [${w.level}] ${w.text}`).join('\n') || '- няма';
+  const warnings =
+    b.model.warnings.map((w) => `- [${LEVEL[w.level] ?? w.level}] ${w.text}`).join('\n') ||
+    '- няма';
+  const cnc = b.blockers.length
+    ? [
+        'cnc/           НЕ Е ИЗДАДЕНА: проверките намериха грешки, а G-code и DXF не бива никога да са',
+        '               грешни. Поправете в редактора и изтеглете отново:',
+        ...b.blockers.map((r) => `               - ${r}`),
+      ]
+    : ['cnc/           DXF със слоеве и G-code за всеки лист от разкроя'];
   return [
     `Rendetto — ${project.name}`,
     `Спецификация SHA-256: ${project.specHash}`,
@@ -151,13 +192,14 @@ function readme(project: Project, b: Built): string {
     'hardware.csv   обковът и крепежите',
     'drilling.csv   всеки отвор: детайл, лице, координати, диаметър, дълбочина',
     'drawings/      сглобен чертеж и чертеж на всеки детайл с карта за пробиване (SVG, A3)',
-    'cnc/           DXF със слоеве и G-code за всеки лист от разкроя',
+    ...cnc,
     '',
     'Проверки на конструкцията:',
     warnings,
     '',
     'G-code е за примерен профил на машина (номера на инструментите, нулева точка в долния ляв ъгъл',
-    'на листа, Z0 на горната повърхност). Преди рязане: симулирай в софтуера на машината и пусни на сухо.',
+    'на листа, Z0 на горната повърхност). Преди рязане: симулирайте в софтуера на машината и пуснете',
+    'на празен ход.',
     '',
   ].join('\n');
 }
