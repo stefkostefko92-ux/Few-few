@@ -73,7 +73,7 @@ async function contextFor(locale: Locale, site: string): Promise<BrochureContext
   // етикетът и стойността (и телефонът) не се разделят на два реда
   const keep = (text: string) => text.replace(/ /g, '\u00a0');
   const company = [
-    COMPANY.name,
+    t('company.legalName'),
     t('company.legalForm'),
     keep(`${t('company.eikLabel')} ${COMPANY.eik}`),
     keep(`${t('company.vatLabel')} ${COMPANY.vat}`),

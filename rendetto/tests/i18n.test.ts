@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COMPANY } from '../src/company.js';
 import { hasKey, keysOf, LOCALES, translate } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
 import { TRIAL_DAYS } from '../src/plans/plan.js';
@@ -142,4 +143,10 @@ test('Italian elides the article before 1, 8 and 11', () => {
     translate('it', 'plan.endsOn', { date: '18 aprile 2026' }),
     'fino al 18 aprile 2026',
   );
+});
+
+test('the company is named as registered: Cyrillic and Latin in Bulgarian, Latin elsewhere', () => {
+  assert.equal(translate('bg', 'company.legalName'), `${COMPANY.nameBg} (${COMPANY.name})`);
+  for (const locale of LOCALES.filter((l) => l !== 'bg'))
+    assert.equal(translate(locale, 'company.legalName'), COMPANY.name, locale);
 });

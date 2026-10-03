@@ -8,7 +8,7 @@
 <p>These terms govern the use of Rendetto. By registering an account you accept them, and when you order a paid plan they become part of the contract for it.</p>
 
 <h2>Who provides the service</h2>
-<p><%= company.name %> — a <%= t('company.legalForm') %>, entered in the Commercial Register and Register of Non-Profit Legal Entities kept by the Registry Agency of Bulgaria under company number (EIK)&nbsp;<%= company.eik %>, VAT number&nbsp;<%= company.vat %>, represented by <%= t('company.representative') %>. Registered office and management address: ul. Samuil 3, <%= company.postalCode %> Bobov Dol, Kyustendil Province, Bulgaria. Phone: <a class="nowrap" href="<%= company.phoneHref %>"><%= company.phone %></a>, email: <a href="mailto:<%= contact %>"><%= contact %></a>. The email address is also our single point of contact for authorities and for users of the service under Regulation (EU) 2022/2065 on digital services — in Bulgarian or English.</p>
+<p><%= company.name %> (Bulgarian name: <span lang="bg"><%= company.nameBg %></span>) — a <%= t('company.legalForm') %>, entered in the Commercial Register and Register of Non-Profit Legal Entities kept by the Registry Agency of Bulgaria under company number (EIK)&nbsp;<%= company.eik %>, VAT number&nbsp;<%= company.vat %>, represented by <%= t('company.representative') %>. Registered office and management address: ul. Samuil 3, <%= company.postalCode %> Bobov Dol, Kyustendil Province, Bulgaria. Phone: <a class="nowrap" href="<%= company.phoneHref %>"><%= company.phone %></a>, email: <a href="mailto:<%= contact %>"><%= contact %></a>. The email address is also our single point of contact for authorities and for users of the service under Regulation (EU) 2022/2065 on digital services — in Bulgarian or English.</p>
 
 <h2>What Rendetto is</h2>
 <p>Rendetto is browser software for designing panel furniture. From one project it calculates a 3D model, a cut list with edge banding, a hardware list, drawings with a drilling map and files for a CNC machine (DXF and G-code). Everything is calculated from the data you enter and from the hardware manufacturers' documentation. The editor, drawings and tables are in Bulgarian for now; the website, account and emails are in Bulgarian, English and Italian.</p>
@@ -51,7 +51,7 @@
 <div class="model-form">
   <h3>Model withdrawal form</h3>
   <p>(complete and return this form only if you wish to withdraw from the contract)</p>
-  <p>— To <%= company.name %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, Kyustendil Province, Bulgaria, <%= contact %>:</p>
+  <p>— To <%= t('company.legalName') %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, Kyustendil Province, Bulgaria, <%= contact %>:</p>
   <p>— I/We (*) hereby give notice that I/We (*) withdraw from my/our (*) contract of sale of the following goods (*)/for the provision of the following service (*),</p>
   <p>— Ordered on (*)/received on (*),</p>
   <p>— Name of consumer(s),</p>

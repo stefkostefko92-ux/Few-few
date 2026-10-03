@@ -8,7 +8,7 @@
 <p>Queste condizioni regolano l'uso di Rendetto. Registrando un account le accettate e, quando ordinate un piano a pagamento, diventano parte del relativo contratto.</p>
 
 <h2>Chi fornisce il servizio</h2>
-<p><%= company.name %> — <%= t('company.legalForm') %>, iscritta nel Registro di commercio e delle persone giuridiche senza scopo di lucro tenuto dall'Agenzia delle iscrizioni della Bulgaria con codice EIK&nbsp;<%= company.eik %>, partita IVA&nbsp;<%= company.vat %>, rappresentata da <%= t('company.representative') %>. Sede legale e amministrativa: ul. Samuil 3, <%= company.postalCode %> Bobov Dol, provincia di Kyustendil, Bulgaria. Telefono: <a class="nowrap" href="<%= company.phoneHref %>"><%= company.phone %></a>, email: <a href="mailto:<%= contact %>"><%= contact %></a>. L'indirizzo email è anche il nostro punto di contatto unico per le autorità e per i destinatari del servizio ai sensi del Regolamento (UE) 2022/2065 sui servizi digitali, in bulgaro o in inglese.</p>
+<p><%= company.name %> (denominazione in bulgaro: <span lang="bg"><%= company.nameBg %></span>) — <%= t('company.legalForm') %>, iscritta nel Registro di commercio e delle persone giuridiche senza scopo di lucro tenuto dall'Agenzia delle iscrizioni della Bulgaria con codice EIK&nbsp;<%= company.eik %>, partita IVA&nbsp;<%= company.vat %>, rappresentata da <%= t('company.representative') %>. Sede legale e amministrativa: ul. Samuil 3, <%= company.postalCode %> Bobov Dol, provincia di Kyustendil, Bulgaria. Telefono: <a class="nowrap" href="<%= company.phoneHref %>"><%= company.phone %></a>, email: <a href="mailto:<%= contact %>"><%= contact %></a>. L'indirizzo email è anche il nostro punto di contatto unico per le autorità e per i destinatari del servizio ai sensi del Regolamento (UE) 2022/2065 sui servizi digitali, in bulgaro o in inglese.</p>
 
 <h2>Che cos'è Rendetto</h2>
 <p>Rendetto è un programma nel browser per progettare mobili in pannelli. Da un progetto calcola il modello 3D, la distinta di taglio con i bordi, l'elenco della ferramenta, i disegni con la mappa di foratura e i file per una macchina CNC (DXF e G-code). Tutto viene calcolato dai dati che inserite e dalla documentazione dei produttori di ferramenta. L'editor, i disegni e le tabelle per ora sono in bulgaro; il sito, l'account e le email sono in bulgaro, inglese e italiano.</p>
@@ -51,7 +51,7 @@
 <div class="model-form">
   <h3>Modulo di recesso tipo</h3>
   <p>(compilare e restituire il presente modulo solo se si desidera recedere dal contratto)</p>
-  <p>— Destinatario <%= company.name %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, provincia di Kyustendil, Bulgaria, <%= contact %>:</p>
+  <p>— Destinatario <%= t('company.legalName') %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, provincia di Kyustendil, Bulgaria, <%= contact %>:</p>
   <p>— Con la presente io/noi (*) notifichiamo il recesso dal mio/nostro (*) contratto di vendita dei seguenti beni/servizi (*)</p>
   <p>— Ordinato il (*)/ricevuto il (*)</p>
   <p>— Nome del/dei consumatore(i)</p>

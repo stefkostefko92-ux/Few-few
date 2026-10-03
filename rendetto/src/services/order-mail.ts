@@ -90,7 +90,7 @@ function companyAddress(locale: Locale): string {
 /** Образецът на формуляр за отказ (приложение I, част Б от Директивата) с нашите данни. */
 export function withdrawalForm(locale: Locale): string {
   return translate(locale, 'mail.withdrawalForm', {
-    to: `${COMPANY.name}, ${companyAddress(locale)}, ${config().CONTACT_EMAIL}`,
+    to: `${translate(locale, 'company.legalName')}, ${companyAddress(locale)}, ${config().CONTACT_EMAIL}`,
   });
 }
 
@@ -129,7 +129,7 @@ export function sendOrderConfirmation(order: OrderRecord, user: Customer): Promi
         })}\n\n${translate(locale, 'mail.order.consumerRights', { contact: config().CONTACT_EMAIL })}`
       : translate(locale, 'mail.order.withdrawalBusiness'),
     trader: translate(locale, 'mail.order.trader', {
-      company: COMPANY.name,
+      company: translate(locale, 'company.legalName'),
       form: translate(locale, 'company.legalForm'),
       eik: COMPANY.eik,
       address: companyAddress(locale),

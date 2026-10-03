@@ -64,6 +64,8 @@ function organization(t: Translator) {
     '@type': 'Organization',
     '@id': `${COMPANY.url}/#org`,
     name: COMPANY.name,
+    legalName: COMPANY.name,
+    alternateName: COMPANY.nameBg,
     url: COMPANY.url,
     email: config().CONTACT_EMAIL,
     telephone: COMPANY.phone,

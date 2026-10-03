@@ -121,7 +121,7 @@ seoRouter.get('/llms.txt', (_req, res) => {
         '- Languages: the website, account and admin pages are in Bulgarian, English and Italian; the editor, drawings and CSV tables are in Bulgarian for now.',
         '',
         '## Company',
-        `- [${COMPANY.name}](${COMPANY.url}), ${en('company.legalForm')}, company number (EIK) ${COMPANY.eik}, VAT number ${COMPANY.vat}; ${en('company.street')}, ${COMPANY.postalCode} ${en('company.city')}, ${en('company.country')}; phone ${COMPANY.phone}`,
+        `- [${COMPANY.name}](${COMPANY.url}) (in Bulgarian: ${COMPANY.nameBg}), ${en('company.legalForm')}, company number (EIK) ${COMPANY.eik}, VAT number ${COMPANY.vat}; ${en('company.street')}, ${COMPANY.postalCode} ${en('company.city')}, ${en('company.country')}; phone ${COMPANY.phone}`,
         '',
       ].join('\n'),
     );
