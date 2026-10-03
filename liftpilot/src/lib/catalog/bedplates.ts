@@ -42,9 +42,6 @@ export function makerBedplate(brand: string, model: string, D: number, Dp: numbe
   };
 }
 
-/** The models with a bedplate in the catalogue. */
-export const BEDPLATE_MODELS: readonly string[] = ROWS.flatMap((r) => r.models);
-
 /** Every code of the catalogue with the models it carries (SV110 and SH110B share theirs). */
 export const BEDPLATE_CODES: readonly { code: string; models: readonly string[] }[] = [...new Set(ROWS.flatMap((r) => r.codes.map((c) => c.code)))]
   .map((code) => ({ code, models: ROWS.filter((r) => r.codes.some((c) => c.code === code)).flatMap((r) => r.models) }));

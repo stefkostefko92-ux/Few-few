@@ -64,6 +64,8 @@ try {
 
   step('calculation');
   await page.waitForSelector('.verdict .big');
+  // the machine below the shaft (the calculator starts from the machine above: smoke-replacement.mjs)
+  await page.selectOption('#layout', 'bottom');
   await page.fill('#n_D', '600');
   // a second standard for the acceptance test, on top of UNI 10411-1: its own result, kept with the calculation
   await page.check('.collaudo label:has-text("tutto l’impianto") input');
@@ -98,100 +100,44 @@ try {
   await page.goto(projectUrl);
   assert.match(await page.textContent('.titles'), /Progetto completo/);
 
-  step('shaft design by hand, its DXF, a calculation from it and its report');
-  await page.goto(`${projectUrl}/vano`);
-  await page.click('.shaft-input [role="radio"]:nth-child(2)');
-  const size = page.locator('.shaft-input .form-grid input');
-  await size.nth(0).fill('1650');
-  await size.nth(1).fill('1800');
-  await page.waitForSelector('.shaft-output svg.sheet-svg');
+  step('the installation in one form: the plan edited on the drawing, live simulation, save');
+  await page.goto(`${projectUrl}/progetto`);
+  await page.waitForSelector('.lift-facts .lift-verdict');
+  await page.waitForSelector('.lift-main svg.sheet-svg');
   // a distance of the plan changed on the drawing itself: the platform 20 mm further from the left wall
-  const hit = page.locator('.shaft-output .ed-hits .hit[aria-label*="Piattaforma: distanza dalla parete sinistra"]').first();
+  const hit = page.locator('.lift-main .ed-hits .hit[aria-label*="Piattaforma: distanza dalla parete sinistra"]').first();
   const was = Number(/^(\d+)/.exec((await hit.getAttribute('aria-label')) ?? '')?.[1]);
   await hit.click();
-  await page.fill('.shaft-output .ed-pop input', String(was + 20));
-  await page.press('.shaft-output .ed-pop input', 'Enter');
-  await page.waitForSelector('.shaft-output table.fixes tr.hand');
+  await page.fill('.lift-main .ed-pop input', String(was + 20));
+  await page.press('.lift-main .ed-pop input', 'Enter');
+  await page.waitForSelector('.lift-main table.fixes tr.hand');
   // the landing door 30 mm apart from the car door, on the drawing; the distance between their axes then reads it
-  const land = page.locator('.shaft-output .ed-hits .hit[aria-label*="Porta di piano A: inizio della luce"]').first();
+  const land = page.locator('.lift-main .ed-hits .hit[aria-label*="Porta di piano A: inizio della luce"]').first();
   const landWas = Number(/^(\d+)/.exec((await land.getAttribute('aria-label')) ?? '')?.[1]);
   assert.ok(landWas > 0, 'landing door drawn');
   await land.click();
-  await page.fill('.shaft-output .ed-pop input', String(landWas + 30));
-  await page.press('.shaft-output .ed-pop input', 'Enter');
-  await page.waitForSelector('.shaft-output .ed-hits .hit[aria-label^="30 mm"][aria-label*="Porta di piano A"]');
+  await page.fill('.lift-main .ed-pop input', String(landWas + 30));
+  await page.press('.lift-main .ed-pop input', 'Enter');
+  await page.waitForSelector('.lift-main .ed-hits .hit[aria-label^="30 mm"][aria-label*="Porta di piano A"]');
   // the pit in plan: the car buffers 40 mm further apart, on the drawing; the dimension then reads it
-  await page.click('.shaft-output [role="tab"]:has-text("Pianta della fossa")');
-  const span = page.locator('.shaft-output .ed-hits .hit[aria-label*="Ammortizzatori di cabina: interasse"]').first();
+  await page.click('.lift-main [role="tab"]:has-text("Pianta della fossa")');
+  const span = page.locator('.lift-main .ed-hits .hit[aria-label*="Ammortizzatori di cabina: interasse"]').first();
   const spanWas = Number(/^(\d+)/.exec((await span.getAttribute('aria-label')) ?? '')?.[1]);
   assert.ok(spanWas > 0, 'distance between the car buffers drawn');
   await span.click();
-  await page.fill('.shaft-output .ed-pop input', String(spanWas + 40));
-  await page.press('.shaft-output .ed-pop input', 'Enter');
-  await page.waitForSelector(`.shaft-output .ed-hits .hit[aria-label^="${spanWas + 40}"][aria-label*="Ammortizzatori di cabina: interasse"]`);
-  await Promise.all([page.waitForURL(/\/shaft-designs\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.btn-primary')]);
-  const designUrl = page.url();
-  assert.match(await page.textContent('dl.cartiglio'), /riprodotto/, 'design hash reproduced');
-  const dxfHref = await page.getAttribute('a[href$="/dxf"]', 'href');
-  const dxf = await page.request.get(`${BASE}${dxfHref}`);
-  assert.equal(dxf.status(), 200);
-  const dxfText = await dxf.text();
-  assert.ok(dxfText.includes('CABINA') && dxfText.trimEnd().endsWith('EOF'), 'DXF with the layer of the car');
-  await page.click('a[href*="/calc?design="]');
-  await page.waitForSelector('.verdict .big');
-  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
-  assert.equal(await page.locator('dl.cartiglio a[href*="/shaft-designs/"]').count(), 1, 'calculation linked to the design');
-  const planPdf = await page.request.get(`${BASE}${await page.getAttribute('a[href*="/relazione"]', 'href')}`);
-  assert.equal(planPdf.status(), 200);
-  const planBody = await planPdf.body();
-  assert.equal(planBody.subarray(0, 5).toString('latin1'), '%PDF-');
-  assert.ok(planBody.length > body.length, 'the report with the plan is larger');
-  const designCalcUrl = page.url();
-
-  step('data of the installation, company logo, drawing set and its revision');
-  await page.goto(`${projectUrl}/impianto`);
-  await page.locator('.plant-form input').first().fill('M 73 (Sx)');
-  await page.click('.plant-form button[type="submit"]');
-  await page.waitForSelector('.plant-form [role="status"]');
-  // the client's logo, beside its name in the title block
-  await page.setInputFiles('.panel input[name="logo"]', { name: 'cliente.png', mimeType: 'image/png', buffer: Buffer.from(LOGO_PNG, 'base64') });
-  await page.click('.panel:has(input[name="logo"]) button[type="submit"]');
-  await page.waitForSelector('.logo-preview img');
-  await page.goto(`${BASE}/it/app/company`);
-  await page.setInputFiles('input[name="logo"]', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(LOGO_PNG, 'base64') });
-  await page.click('main form button[type="submit"]');
-  await page.waitForSelector('.logo-preview img');
-  await page.goto(designCalcUrl);
-  await page.fill('main form input[maxlength="12"]', 'S.T.');
-  await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
-  const setUrl = page.url();
-  await page.waitForSelector('.sheet-page svg.sheet-svg image');
-  assert.equal(await page.locator('.sheet-page svg.sheet-svg image').count(), 2, 'the company\'s and the client\'s logo on sheet 1');
-  const sheets = await page.locator('nav.seg-row a').count();
-  assert.ok(sheets >= 8, `sheets ${sheets}`);
-  const setPdfHref = await page.getAttribute('a[href$="/pdf"]', 'href');
-  const setPdf = await page.request.get(`${BASE}${setPdfHref}`);
-  assert.equal(setPdf.status(), 200);
-  const setBody = await setPdf.body();
-  assert.equal(setBody.subarray(0, 5).toString('latin1'), '%PDF-');
-  await page.goto(`${setUrl}?p=5`);
-  await page.waitForSelector('.sheet-page svg.sheet-svg');
-  await page.fill('main form input[maxlength="120"]', 'Seconda emissione di prova');
-  await page.fill('main form:has(input[maxlength="120"]) input[maxlength="12"]', 'S.T.');
-  const setPath = new URL(setUrl).pathname;
-  await Promise.all([page.waitForURL((u) => /\/drawing-sets\/[a-z0-9]+$/.test(u.pathname) && u.pathname !== setPath, { timeout: 60000 }), page.click('main form:has(input[maxlength="120"]) button[type="submit"]')]);
-  assert.match(await page.textContent('h1'), / R1$/, 'revision R1');
-
-  step('the installation in one form: live simulation, save, documents');
-  await page.goto(`${projectUrl}/progetto`);
-  await page.waitForSelector('.lift-facts .lift-verdict');
+  await page.fill('.lift-main .ed-pop input', String(spanWas + 40));
+  await page.press('.lift-main .ed-pop input', 'Enter');
+  await page.waitForSelector(`.lift-main .ed-hits .hit[aria-label^="${spanWas + 40}"][aria-label*="Ammortizzatori di cabina: interasse"]`);
   await page.waitForSelector('.lift-stage.live, .lift-stage.failed', { timeout: 120000 });
   await page.click('.scenario-tabs > button:nth-child(2)');
   await page.waitForSelector('.sim-chart svg path.line');
   await page.check('#auto-P');
   await page.waitForSelector('.lift-calc .auto-value .badge');
   await page.waitForSelector('.lift-work .advice .advice-card');
-  // the acceptance test: UNI 10411-11 with the machine and the ropes replaced; the checks of what stays are existing
+  // the acceptance test: the replacement's standards carried over (EN 81-20/50 for the whole installation on top), now
+  // UNI 10411-11 alone with the machine and the ropes replaced; the checks of what stays are existing
+  assert.ok(await page.isChecked('.collaudo label:has-text("tutto l’impianto") input'), 'the replacement\'s test standards carried over');
+  await page.uncheck('.collaudo label:has-text("tutto l’impianto") input');
   await page.selectOption('.collaudo select', '10411-11');
   await page.check('.collaudo .parti-grid label:nth-child(2) input');
   await page.waitForSelector('.lift-checks tr.existing .status-pill.existing');
@@ -215,12 +161,18 @@ try {
   assert.equal(await page.locator('main > .alert-warn, main > .alert-bad').count(), 0, 'the running engines reproduce the saved design');
   assert.match(await page.textContent('.lift-view .lift-verdict .badge'), /UNI 10411-11/, 'the saved standard');
   assert.match(await page.textContent('.lift-view .panev-bom'), /SU 220 200/, 'the support chosen by hand, saved');
+
+  step('its documents: report with the plan, DXF, order, export');
   const liftRelHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
   const liftRel = await page.request.get(`${BASE}${liftRelHref}`);
   assert.equal(liftRel.status(), 200);
-  assert.equal((await liftRel.body()).subarray(0, 5).toString('latin1'), '%PDF-');
-  const liftDxfHref = await page.getAttribute('.doc-links a[href$="/dxf"]', 'href');
-  assert.equal((await page.request.get(`${BASE}${liftDxfHref}`)).status(), 200);
+  const liftRelBody = await liftRel.body();
+  assert.equal(liftRelBody.subarray(0, 5).toString('latin1'), '%PDF-');
+  assert.ok(liftRelBody.length > body.length, 'the report with the plan is larger');
+  const dxfHref = await page.getAttribute('.doc-links a[href$="/dxf"]', 'href');
+  const dxfText = await (await page.request.get(`${BASE}${dxfHref}`)).text();
+  assert.ok(dxfText.includes('CABINA') && dxfText.trimEnd().endsWith('EOF'), 'DXF with the layer of the car');
+  const designUrl = `${BASE}${await page.getAttribute('.doc-links a[href*="/app/shaft-designs/"]', 'href')}`;
   // the draft order of the machine the design verified
   assert.match(await page.textContent('main'), /l’argano verificato in questo progetto/, 'the order is for the machine the design verified');
   await orderFiles(page, '/api/lift-designs/');
@@ -230,6 +182,41 @@ try {
     assert.equal(res.status(), 200, format);
     assert.equal((await res.body()).subarray(0, magic.length).toString('latin1'), magic, format);
   }
+
+  step('data of the installation, company logo, drawing set and its revision');
+  await page.goto(`${projectUrl}/impianto`);
+  await page.click('.plant-form details summary');
+  await page.locator('.plant-form details input').first().fill('M 73 (Sx)');
+  await page.click('.plant-form button[type="submit"]');
+  await page.waitForSelector('.plant-form [role="status"]');
+  // the client's logo, beside its name in the title block
+  await page.setInputFiles('.panel input[name="logo"]', { name: 'cliente.png', mimeType: 'image/png', buffer: Buffer.from(LOGO_PNG, 'base64') });
+  await page.click('.panel:has(input[name="logo"]) button[type="submit"]');
+  await page.waitForSelector('.logo-preview img');
+  await page.goto(`${BASE}/it/app/company`);
+  await page.setInputFiles('input[name="logo"]', { name: 'logo.png', mimeType: 'image/png', buffer: Buffer.from(LOGO_PNG, 'base64') });
+  await page.click('main form button[type="submit"]');
+  await page.waitForSelector('.logo-preview img');
+  await page.goto(liftUrl);
+  assert.notEqual(await page.inputValue('main form input[maxlength="12"]'), '', 'initials filled in from the name');
+  await page.fill('main form input[maxlength="12"]', 'S.T.');
+  await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
+  const setUrl = page.url();
+  await page.waitForSelector('.sheet-page svg.sheet-svg image');
+  assert.equal(await page.locator('.sheet-page svg.sheet-svg image').count(), 2, 'the company\'s and the client\'s logo on sheet 1');
+  const sheets = await page.locator('nav.seg-row a').count();
+  assert.ok(sheets >= 8, `sheets ${sheets}`);
+  const setPdfHref = await page.getAttribute('a[href$="/pdf"]', 'href');
+  const setPdf = await page.request.get(`${BASE}${setPdfHref}`);
+  assert.equal(setPdf.status(), 200);
+  assert.equal((await setPdf.body()).subarray(0, 5).toString('latin1'), '%PDF-');
+  await page.goto(`${setUrl}?p=5`);
+  await page.waitForSelector('.sheet-page svg.sheet-svg');
+  await page.fill('main form input[maxlength="120"]', 'Seconda emissione di prova');
+  await page.fill('main form:has(input[maxlength="120"]) input[maxlength="12"]', 'S.T.');
+  const setPath = new URL(setUrl).pathname;
+  await Promise.all([page.waitForURL((u) => /\/drawing-sets\/[a-z0-9]+$/.test(u.pathname) && u.pathname !== setPath, { timeout: 60000 }), page.click('main form:has(input[maxlength="120"]) button[type="submit"]')]);
+  assert.match(await page.textContent('h1'), / R1$/, 'revision R1');
   await page.goto(projectUrl);
   await page.waitForSelector('.lift-home .lift-facts');
 

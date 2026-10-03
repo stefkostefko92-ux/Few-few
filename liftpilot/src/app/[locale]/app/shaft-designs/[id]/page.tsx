@@ -45,11 +45,11 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
         <div className="titles"><h1>{t('title')}{d.label ? ` · ${d.label}` : ''}</h1></div>
         <div className="actions">
           {same && can(user, 'report:download') ? <a className="btn btn-primary" href={`/api/shaft-designs/${d.id}/dxf`}>{t('downloadDxf')}</a> : null}
-          {same && open ? <Link className="btn" href={`/app/projects/${d.projectId}/calc?design=${d.id}`}>{t('calcFrom')}</Link> : null}
-          {open ? <Link className="btn" href={`/app/projects/${d.projectId}/vano?from=${d.id}`}>{t('editAsNew')}</Link> : null}
+          {d.liftDesign ? <Link className="btn" href={`/app/lift-designs/${d.liftDesign.id}`}>{t('openLift')}</Link>
+            : open ? <Link className="btn" href={`/app/projects/${d.projectId}/progetto`}>{t('openForm')}</Link> : null}
         </div>
       </div>
-      {same ? null : <p className="alert alert-warn">{tc('engineChanged', { stored: d.engineVersion, current: SHAFT_ENGINE_VERSION })}</p>}
+      {same ? null : <p className="alert alert-warn">{t('engineChangedLift', { stored: d.engineVersion, current: SHAFT_ENGINE_VERSION })}</p>}
       <dl className="cartiglio">
         <div><dt>{tc('col_result')}</dt><dd><VerdictPill verdict={d.verdict} fails={d.failCount} warns={d.warnCount} /></dd></div>
         <div><dt>{tc('col_date')}</dt><dd>{fd.dateTime(d.createdAt)}</dd></div>

@@ -38,7 +38,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
         roomDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, results: true, calculationId: true } },
         drawingSets: { orderBy: { createdAt: 'asc' }, select: { id: true, number: true, revision: true, authorInitials: true, revisions: true, plant: true,
           projectData: true, companyName: true, sha256: true, pages: true, calculationId: true, shaftDesignId: true, roomDesignId: true, logoId: true, clientLogoId: true,
-          userId: true, createdAt: true } },
+          userId: true, createdAt: true, pdf: { select: { sha256: true, createdAt: true } } } },
       },
     }),
     prisma.priceItem.findMany({ where: { companyId }, orderBy: { key: 'asc' }, select: { key: true, cents: true, updatedById: true, updatedAt: true } }),

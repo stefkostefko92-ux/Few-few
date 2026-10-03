@@ -30,6 +30,11 @@ export const revisionsSchema = z.array(z.object({
 /** Initials in the title block: letters, dots and spaces, e.g. "A.C.". */
 export const initialsSchema = z.string().trim().min(1).max(12).regex(/^[\p{L}][\p{L}. '-]*$/u);
 
+/** The initials of a name, as the title block and the issue form take them: "Giulia Ferrari" → "G.F."; '' when no word
+ *  of the name starts with a letter. */
+export const initialsOf = (name: string): string =>
+  name.split(/\s+/).map((w) => /^\p{L}/u.exec(w)?.[0]?.toUpperCase() ?? '').filter(Boolean).slice(0, 3).map((c) => `${c}.`).join('');
+
 export const revisionNoteSchema = text(120).min(3);
 
 export const projectData = (p: ProjectData): ProjectData => ({

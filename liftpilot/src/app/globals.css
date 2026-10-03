@@ -77,6 +77,10 @@
   .note { font-size: 13px; color: var(--muted); }
   .note.bad { color: var(--fail); }
   .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+  /* a panel that folds: flex does not reach the content of a <details>, the gap is a margin */
+  details.panel { display: block; }
+  details.panel > summary { cursor: pointer; width: fit-content; font-weight: 600; }
+  details.panel > * + * { margin-top: 12px; }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: 500 14px/1 var(--font-body); color: var(--ink); background: var(--surface);
     border: 1px solid var(--rule); border-radius: 9px; padding: 10px 15px; cursor: pointer; text-decoration: none; white-space: nowrap; transition: border-color .15s, background-color .15s; }
   .btn:hover { border-color: var(--accent); }

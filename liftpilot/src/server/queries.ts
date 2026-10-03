@@ -4,10 +4,14 @@ import { companyAccess } from '@/lib/billing';
 import { BILLING_SELECT } from '@/lib/billing-access';
 import { billingConfigured } from '@/lib/billing-config';
 import type { SessionUser } from '@/lib/auth';
-import type { ProjectKind } from '@/lib/schemas';
+import { usableLogo, type LogoMime } from '@/lib/logo';
+import { idSchema, type ProjectKind } from '@/lib/schemas';
 import { DESIGN_SELECT } from './drawing-compose';
 
 // Reads, always scoped to the company of the signed-in user: an id from another company is "not found".
+
+/** The engine versions a lift design's records were saved with (records.ts, `outdated`). */
+const LIFT_VERSIONS = { engineVersion: true, calculation: { select: { engineVersion: true } }, shaftDesign: { select: { engineVersion: true } } } as const;
 
 export function listProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null) {
   return prisma.project.findMany({
@@ -17,7 +21,9 @@ export function listProjects(user: SessionUser, archived: boolean, kind: Project
     select: {
       id: true, kind: true, name: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true, archivedAt: true,
       _count: { select: { calculations: true } },
-      calculations: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true } },
+      calculations: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, engineVersion: true } },
+      // a whole project's result is its latest lift design's (the test's verdict, its parts only)
+      liftDesigns: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, ...LIFT_VERSIONS } },
     },
   });
 }
@@ -36,6 +42,7 @@ export function listCalculations(user: SessionUser, projectId: string) {
     take: 200,
     select: {
       id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, sha256: true, createdAt: true, engineVersion: true, shaftDesignId: true,
+      shaftDesign: { select: { engineVersion: true } }, liftDesign: { select: { id: true, engineVersion: true } },
       user: { select: { name: true } }, _count: { select: { reviews: true } },
     },
   });
@@ -60,14 +67,17 @@ export function listShaftDesigns(user: SessionUser, projectId: string) {
     where: { projectId, companyId: user.companyId },
     orderBy: { createdAt: 'desc' },
     take: 200,
-    select: { id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, sha256: true, createdAt: true, source: true, user: { select: { name: true } } },
+    select: {
+      id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, sha256: true, createdAt: true, source: true, engineVersion: true,
+      liftDesign: { select: { id: true } }, user: { select: { name: true } },
+    },
   });
 }
 
 export function getShaftDesign(user: SessionUser, id: string) {
   return prisma.shaftDesign.findFirst({
     where: { id, companyId: user.companyId },
-    include: { project: true, user: { select: { name: true } }, _count: { select: { calculations: true } } },
+    include: { project: true, user: { select: { name: true } }, liftDesign: { select: { id: true } }, _count: { select: { calculations: true } } },
   });
 }
 
@@ -137,9 +147,11 @@ export function getDrawingSet(user: SessionUser, id: string) {
       user: { select: { name: true } },
       logo: { select: { mime: true, data: true } },
       clientLogo: { select: { mime: true, data: true } },
-      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, collaudo: true, liftDesign: { select: { inputs: true } } } },
+      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, collaudo: true, liftDesign: { select: { inputs: true, engineVersion: true } } } },
       shaftDesign: { select: DESIGN_SELECT },
       roomDesign: { select: ROOM_SELECT },
+      // whether its PDF is kept as issued (not the bytes)
+      pdf: { select: { sha256: true } },
     },
   });
 }
@@ -153,9 +165,12 @@ export function listRevisions(user: SessionUser, year: number, seq: number) {
   });
 }
 
-/** The company's name, city and current logo, for the letterhead of its documents. */
-export function getCompanyLetterhead(user: SessionUser) {
-  return prisma.company.findUnique({ where: { id: user.companyId }, select: { name: true, city: true, logo: { select: { mime: true, data: true } } } });
+/** The letterhead of the company's documents: its name, city and current logo (one the renderers may decode, lib/logo.ts:
+ *  type and pixels checked again, an older oversized upload left out), in base64. */
+export async function getLetterhead(user: SessionUser): Promise<{ company: string; companyCity: string | null; logo: { mime: LogoMime; data: string } | null }> {
+  const c = await prisma.company.findUnique({ where: { id: user.companyId }, select: { name: true, city: true, logo: { select: { mime: true, data: true } } } });
+  const ok = usableLogo(c?.logo);
+  return { company: c?.name ?? user.companyName, companyCity: c?.city ?? null, logo: ok ? { mime: ok.mime, data: Buffer.from(ok.data).toString('base64') } : null };
 }
 
 export function getCompanyLogo(user: SessionUser) {
@@ -170,7 +185,7 @@ export function listLiftDesigns(user: SessionUser, projectId: string) {
     where: { projectId, companyId: user.companyId },
     orderBy: { createdAt: 'desc' },
     take: 100,
-    select: { id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, createdAt: true, engineVersion: true, user: { select: { name: true } } },
+    select: { id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, createdAt: true, user: { select: { name: true } }, ...LIFT_VERSIONS },
   });
 }
 
@@ -187,12 +202,24 @@ export function getLiftDesign(user: SessionUser, id: string) {
   });
 }
 
+const OUTCOME = { createdAt: true, verdict: true, failCount: true, warnCount: true } as const;
+
+/** The result of the record a newer one was made again from (?da=<id>, «Aggiorna con il software attuale»), on the same
+ *  installation of the company: for the banner that says whether the result changed. */
+export function refreshedFrom(user: SessionUser, kind: 'calculation' | 'liftDesign' | 'roomDesign', id: unknown, projectId: string) {
+  const parsed = idSchema.safeParse(id);
+  if (!parsed.success) return Promise.resolve(null);
+  const where = { id: parsed.data, companyId: user.companyId, projectId };
+  return kind === 'calculation' ? prisma.calculation.findFirst({ where, select: OUTCOME })
+    : kind === 'liftDesign' ? prisma.liftDesign.findFirst({ where, select: OUTCOME }) : prisma.roomDesign.findFirst({ where, select: OUTCOME });
+}
+
 /** The latest lift design of an installation (the project page shows it in 3D). */
 export function latestLiftDesign(user: SessionUser, projectId: string) {
   return prisma.liftDesign.findFirst({
     where: { projectId, companyId: user.companyId },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, inputs: true, label: true, createdAt: true, calculationId: true, shaftDesignId: true, verdict: true },
+    select: { id: true, inputs: true, label: true, createdAt: true, calculationId: true, shaftDesignId: true, verdict: true, ...LIFT_VERSIONS },
   });
 }
 
@@ -204,7 +231,10 @@ export function listRoomDesigns(user: SessionUser, projectId: string) {
     where: { projectId, companyId: user.companyId },
     orderBy: { createdAt: 'desc' },
     take: 100,
-    select: { id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, createdAt: true, calculationId: true, user: { select: { name: true } } },
+    select: {
+      id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, createdAt: true, calculationId: true, engineVersion: true,
+      calculation: { select: { engineVersion: true } }, user: { select: { name: true } },
+    },
   });
 }
 

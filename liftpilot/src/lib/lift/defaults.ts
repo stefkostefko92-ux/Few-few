@@ -15,3 +15,10 @@ const CALC_START: FormValues = {
 export function defaultLift(): LiftInputs {
   return { shaft: defaultInputs(1600, 1750), calc: CALC_START, auto: AUTO_ALL };
 }
+
+/** A new installation of the module «Progetto completo»: the same start, as a new lift (tested to UNI EN 81-20/50, every
+ *  check in its result; no existing ropes to keep). A machine replacement says so in the form. */
+export function newLift(): LiftInputs {
+  const d = defaultLift();
+  return { ...d, calc: { ...d.calc, context: 'new' } };
+}

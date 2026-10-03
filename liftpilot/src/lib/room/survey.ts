@@ -4,7 +4,6 @@
 // the shaft's inner corner on the side of entrance A (x along that wall, y into the shaft). Millimetres as whole
 // numbers; the browser's values are validated here as the save validates them.
 import { z } from 'zod';
-import type { FormValues } from '@/calc/types';
 import { roomSchema } from '@/lib/shaft-input';
 import { DEFAULT_ROOM } from '@/shaft/room';
 
@@ -30,9 +29,3 @@ export function startSurvey(calata: number): Survey {
     car: { x: W / 2, y: carY }, cw: { x: W / 2, y: Math.min(D - 100, Math.round(carY + calata)) },
   };
 }
-
-/** The spacing a calculation's values give the drops before any survey: what startSurvey needs [mm]. */
-export const startCalata = (V: FormValues): number => {
-  const n = (k: string, fb: number): number => (typeof V[k] === 'number' ? (V[k] as number) : Number.parseFloat(String(V[k] ?? '')) || fb);
-  return V.layout === 'topDefl' ? n('n_D', 560) / 2 + n('dx', 0.3) * 1000 + n('Dp', 400) / 2 : n('n_D', 560);
-};

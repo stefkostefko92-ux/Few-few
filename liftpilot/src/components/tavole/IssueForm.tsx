@@ -1,8 +1,8 @@
 'use client';
 
 // Issue of a drawing set from a calculation (a whole project) or from a saved machine room (a replacement): the
-// drafter's initials go into the title block, the number comes from the server (YY-NNN of the company and year). A
-// revision instead keeps the number and adds a note.
+// drafter's initials go into the title block (prefilled from the user's name), the number comes from the server (YY-NNN
+// of the company and year). A revision instead keeps the number and adds a note.
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -14,11 +14,13 @@ interface Props {
   calculationId?: string;
   roomDesignId?: string;
   revise?: { drawingSetId: string; calculations?: { id: string; label: string }[]; rooms?: { id: string; label: string }[] };
+  /** the signed-in user's initials (initialsOf) */
+  initials: string;
 }
 
-export default function IssueForm({ calculationId, roomDesignId, revise }: Props) {
+export default function IssueForm({ calculationId, roomDesignId, revise, initials: mine }: Props) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter();
-  const [initials, setInitials] = useState('');
+  const [initials, setInitials] = useState(mine);
   const [note, setNote] = useState('');
   const options = revise?.rooms ?? revise?.calculations ?? [];
   const [calc, setCalc] = useState(options[0]?.id ?? roomDesignId ?? calculationId ?? '');

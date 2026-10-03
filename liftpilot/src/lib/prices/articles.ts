@@ -93,4 +93,3 @@ export const PRICE_ARTICLES: readonly PriceArticle[] = [
 
 const BY_KEY = new Map(PRICE_ARTICLES.map((a) => [a.key, a]));
 export const priceArticle = (key: string): PriceArticle | undefined => BY_KEY.get(key);
-export const isPriceKey = (key: string): boolean => BY_KEY.has(key);

@@ -40,8 +40,6 @@ export function companyAccess(c: CompanyBilling, now: Date, configured: boolean)
   return 'readonly';
 }
 
-export const isReadOnly = (a: Access): boolean => a === 'readonly';
-
 /** How many colleagues the company may have active: unlimited without billing; the pack's while the subscription is in
  *  good standing or being retried; none otherwise (the trial is the owner's alone). */
 export function seatLimit(c: CompanyBilling, access: Access): number {

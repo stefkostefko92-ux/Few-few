@@ -31,7 +31,7 @@ await build({
   define: { 'process.env.NODE_ENV': '"production"' },
   alias: {
     'next-intl': shim('next-intl.ts'), '@/i18n/routing': shim('routing.tsx'), 'server-only': shim('empty.ts'),
-    '@/server/calc-actions': shim('actions.ts'), '@/server/lift-actions': shim('actions.ts'), '@/server/shaft-actions': shim('actions.ts'),
+    '@/server/calc-actions': shim('actions.ts'), '@/server/lift-actions': shim('actions.ts'),
   },
 });
 

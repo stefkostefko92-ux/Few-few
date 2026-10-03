@@ -9,9 +9,10 @@ import { A4, type Shape } from '@/drawing';
 import { loads } from '../tavole/loads';
 import { impactFactor, railForces } from '../tavole/forces';
 import { buildTavole } from '../tavole/build';
-import { revisionsSchema, setNumber, storedInput, projectDataSchema } from '../tavole/compose';
+import { initialsOf, revisionsSchema, setNumber, storedInput, projectDataSchema } from '../tavole/compose';
 import type { TavoleInput } from '../tavole/input';
 import { NO_MARKS } from '../lift/marks';
+import { PARTI } from '../lift/collaudo';
 import { readLogo } from '../logo';
 import { shaftInputsSchema } from '../shaft-input';
 
@@ -63,7 +64,7 @@ test('spinte sulle guide (UNI EN 81-50, 5.10): arcata centrale e a zaino', () =>
 });
 
 const input = (I: ShaftInputs, logo = false): TavoleInput => ({
-  values: PRESETS.C, layout: layout(I), plant: { machine: 'M 73 (Sx)', carRails: 'existing', governorLoad: 300, safetyGear: 'progressive' },
+  values: PRESETS.C, layout: layout(I), plant: { machine: 'M 73 (Sx)', governorLoad: 300, safetyGear: 'progressive' },
   project: { name: 'Impianto di prova', address: 'Via Roma 12', city: 'Milano', province: 'MI', plantNumber: 'MI 1/98', client: 'Condominio' },
   company: { name: 'Ascensori di prova', logo: logo ? { mime: 'image/png', data: LOGO } : null },
   set: { number: '26-007', issuedAt: new Date('2026-09-30T10:00:00Z'), author: 'A.C.', revisions: [{ mark: 'R1', text: 'Portata aggiornata', date: new Date('2026-10-02T09:00:00Z') }] },
@@ -130,6 +131,28 @@ test('peso della cabina stimato dal software: segnato nel foglio 1 con la sua no
   assert.deepEqual(plain.warnings.filter((w) => w.what === 'load'), [{ what: 'load', calc: 630, shaft: 400 }]);
 });
 
+test('foglio 1: ciò che il progetto sa viene dal progetto; le parti che restano sono esistenti; la massa della cabina e le sue parti', () => {
+  const I: ShaftInputs = { ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null };
+  const sheet1 = (r: ReturnType<typeof buildTavole>): string[] => r.doc.pages[0]?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
+  // a new lift: everything new, the governor the design takes by the speed (1 m/s: PFB LK200, rope Ø 6)
+  const nuovo = sheet1(buildTavole({ ...input(I), marks: { ...NO_MARKS, collaudo: { norma: 'en81', parti: [...PARTI] } } }));
+  assert.ok(nuovo.includes('PFB LK200'), 'limitatore dal progetto');
+  assert.ok(nuovo.some((t) => /^\d+ - 6$/.test(t)), 'fune del limitatore: lunghezza e diametro');
+  assert.ok(!nuovo.some((t) => t.startsWith('ESISTENT')), 'niente di esistente in un impianto nuovo');
+  // the machine replaced alone: rails, doors, governor and buffers stay
+  const sost = sheet1(buildTavole({ ...input(I), marks: { ...NO_MARKS, collaudo: { norma: '10411-1', parti: ['machine'] } } }));
+  assert.ok(sost.some((t) => t.startsWith('ESISTENTI T')), 'guide esistenti');
+  assert.ok(sost.includes('ESISTENTE') && sost.includes('ESISTENTI'), 'limitatore, porte e guide esistenti');
+  // the parts of the car mass are the calculation's P (700 kg): otherwise a warning
+  const parts = { massShell: 300, massFloor: 100, massDoors: 150, massFrame: 150 };
+  assert.deepEqual(buildTavole({ ...input(I), plant: { ...input(I).plant, ...parts } }).warnings.filter((w) => w.what === 'carMass'), []);
+  assert.deepEqual(buildTavole({ ...input(I), plant: { ...input(I).plant, ...parts, massFrame: 120 } }).warnings.filter((w) => w.what === 'carMass'),
+    [{ what: 'carMass', calc: 700, shaft: 670 }]);
+  // the safety gear not given: the note says which one the loads take
+  assert.ok(!sheet1(buildTavole(input(I))).includes('PARACADUTE DI CABINA'), 'dato: nessuna nota');
+  assert.ok(sheet1(buildTavole({ ...input(I), plant: { ...input(I).plant, safetyGear: undefined } })).includes('PARACADUTE DI CABINA'), 'non dato: la nota');
+});
+
 test('argano nel foglio 1: come scritto nei dati dell’impianto, altrimenti il modello del catalogo del progetto', () => {
   const I: ShaftInputs = { ...defaultInputs(1740, 1445), Q: 400, access: 'none', room: null };
   const sheet1 = (r: ReturnType<typeof buildTavole>): string[] => r.doc.pages[0]?.shapes.flatMap((s) => (s.t === 'text' ? [s.text] : [])) ?? [];
@@ -189,4 +212,12 @@ test('progetti del vano salvati prima dei dati verticali: si leggono con i valor
   assert.equal(layout(r.data).A, 1200);
   // a main floor past the floors is refused
   assert.ok(!shaftInputsSchema.safeParse({ ...v1, vertical: { ...r.data.vertical, main: 9 } }).success);
+});
+
+test('iniziali di chi disegna dal nome: lettere, al massimo tre, accenti e nomi composti', () => {
+  assert.equal(initialsOf('Giulia Ferrari'), 'G.F.');
+  assert.equal(initialsOf('  luca   de  bianchi '), 'L.D.B.');
+  assert.equal(initialsOf('Élodie Àlvarez Nuñez Otto'), 'É.À.N.');
+  assert.equal(initialsOf('Стефан Костадинов'), 'С.К.');
+  assert.equal(initialsOf('— 3D'), '');
 });

@@ -9,26 +9,14 @@ import { REVIEW_MAX } from '@/lib/review';
 import { calcLabelSchema, idSchema, reviewSchema } from '@/lib/schemas';
 import { formValuesSchema } from '@/lib/calc-input';
 import { collaudoSchema } from '@/lib/lift-input';
-import { collaudoOf } from '@/lib/lift/collaudo';
-import { snapshotHash } from '@/lib/snapshot-hash';
-import { log } from '@/lib/log';
-import { snapshotOf } from '@/calc/snapshot';
-import { compute } from '@/calc/compute';
-import { readInputs } from '@/calc/inputs';
-import { mirrorRopes } from '@/lib/present/analysis';
-import { verdictStatus } from '@/lib/present/texts';
-import { makeFmt } from '@/lib/present/tr';
+import { createCalculation, type Created } from './save';
 
-export type SaveResult = { ok: true; id: string } | { ok: false; error: string; fields?: string[] };
-
-const VERDICT = { ok: 'OK', warn: 'WARN', fail: 'FAIL' } as const;
-const fmt = makeFmt('it-IT');
+export type SaveResult = Created;
 
 // The browser only shows a preview: the server validates the values, recomputes everything with the same engine
-// and stores the immutable snapshot with its hash. The browser's result is never trusted.
-// The standards of the acceptance test chosen with it are stored beside the snapshot (they are what the report sets
-// out, not the physics): checked, and normalised as the documents read them.
-export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; designId?: unknown; collaudo?: unknown }): Promise<SaveResult> {
+// and stores the immutable snapshot with its hash (save.ts). The browser's result is never trusted. The standards of
+// the acceptance test chosen with it are stored beside the snapshot (they are what the report sets out, not the physics).
+export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; collaudo?: unknown }): Promise<SaveResult> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
   if (user.mustChangePassword || !can(user, 'calc:create')) return { ok: false, error: 'forbidden' };
@@ -39,33 +27,7 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   if (!values.success) return { ok: false, error: 'invalidFields', fields: values.error.issues.map((i) => String(i.path[0] ?? '')) };
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
-  // the shaft design it starts from, if any: of the same installation of the same company
-  const designId = input.designId == null ? null : idSchema.safeParse(input.designId);
-  if (designId && !designId.success) return { ok: false, error: 'invalidFields' };
-  const design = designId?.success
-    ? await prisma.shaftDesign.findFirst({ where: { id: designId.data, projectId: project.id, companyId: user.companyId }, select: { id: true } })
-    : null;
-  if (designId && !design) return { ok: false, error: 'notFound' };
-
-  const V = mirrorRopes(values.data);
-  const ctx = readInputs(V);
-  if (ctx.bad.length) return { ok: false, error: 'invalidInputs', fields: [...new Set(ctx.bad)] };
-  const snapshot = snapshotOf(V), res = compute(ctx.I, ctx.N), N = ctx.N;
-  const summary = `D ${fmt(N.D, 0)} mm · ${N.n} × Ø${fmt(N.d, Number.isInteger(N.d) ? 0 : 1)} · 1:${fmt(N.i, Number.isInteger(N.i) ? 0 : 1)} · ${fmt(N.Pn, 1)} kW`;
-  const calc = await prisma.calculation.create({
-    data: {
-      companyId: user.companyId, projectId: project.id, userId: user.id, label: label.data,
-      engineVersion: snapshot.engine, profileId: snapshot.profile, inputs: snapshot.values ?? {}, results: snapshot.results,
-      sha256: snapshotHash(snapshot), verdict: VERDICT[verdictStatus(res)],
-      failCount: res.fails.length, warnCount: res.checks.filter((c) => c.status === 'warn').length, summary, shaftDesignId: design?.id ?? null,
-      ...(collaudo?.success ? { collaudo: { ...collaudoOf(V, collaudo.data) } } : {}),
-    },
-    select: { id: true },
-  });
-  await prisma.project.update({ where: { id: project.id }, data: { updatedAt: new Date() } });
-  await audit({ companyId: user.companyId, userId: user.id, action: 'CALCULATION_SAVED', entity: 'Calculation', entityId: calc.id });
-  log.info({ userId: user.id, calculationId: calc.id }, 'calculation saved');
-  return { ok: true, id: calc.id };
+  return createCalculation(user, project.id, values.data, label.data, collaudo?.success ? collaudo.data : null);
 }
 
 /** Internal review ("visto") by an engineer of the company; the calculation itself stays untouched. Not on an archived

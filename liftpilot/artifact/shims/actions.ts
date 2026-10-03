@@ -5,4 +5,3 @@ const refused = async (): Promise<Refused> => ({ ok: false, error: 'forbidden' }
 
 export const saveCalculationAction = refused;
 export const saveLiftDesignAction = refused;
-export const saveShaftDesignAction = refused;

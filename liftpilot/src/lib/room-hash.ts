@@ -1,15 +1,14 @@
 import 'server-only';
 // The machine room of a replacement on the server: its record's hash, and a saved one derived again with the running
 // engines (its calculation's values and the survey), reproduced or not.
-import { createHash } from 'node:crypto';
-import { canon } from '@/calc/snapshot';
 import type { FormValues } from '@/calc/types';
+import { canonHash } from './canon-hash';
 import { deriveRoom, type RoomDerived } from './room/derive';
 import { roomSnapshot, type RoomSnapshot } from './room/snapshot';
 import { surveySchema, type Survey } from './room/survey';
 
 /** SHA-256 of the canonical record of a room: engine, calculation, survey and results together. */
-export const roomHash = (s: RoomSnapshot): string => createHash('sha256').update(JSON.stringify(canon(s))).digest('hex');
+export const roomHash = (s: RoomSnapshot): string => canonHash(s);
 
 export interface Reproduced {
   survey: Survey;

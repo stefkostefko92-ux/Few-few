@@ -14,9 +14,6 @@ type NumKey<T> = { [K in keyof T]-?: NonNullable<T[K]> extends number ? (number 
 const R_KEYS = ['W', 'D', 'shaftX', 'shaftY', 'H', 'ridge', 'slab', 'doorAt', 'doorW', 'doorH', 'panelAt', 'panelW', 'panelD', 'panelH'] as const satisfies readonly NumKey<RoomInputs>[];
 const pick = <K extends string>(keys: readonly K[], k: string): K | undefined => keys.find((x) => x === k);
 
-/** Every key a dimension of the replacement's room carries (the screens name each one). */
-export const ROOM_EDIT_KEYS: readonly string[] = [...R_KEYS.map((k) => `room.${k}`), 'sup.height', 'sup.length', 'sup.profile', 'rinvio.height', 'W', 'D', 'drop.carX', 'drop.carY'];
-
 /** The survey with the input `key` set to `value`; null for a key it does not have or a value no support takes. */
 export function withSurveyValue(s: Survey, key: string, value: number): Survey | null {
   if (key === 'W' || key === 'D') return { ...s, shaft: { ...s.shaft, [key]: value } };

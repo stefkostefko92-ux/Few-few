@@ -57,6 +57,7 @@ body > main { flex: 1 0 auto; }
 .page-head .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .page-head h1 { overflow-wrap: anywhere; }
 .chip { display: inline-flex; align-items: center; width: fit-content; font: 600 12px/1.2 var(--font-body); padding: 4px 9px; border-radius: 6px; color: var(--muted); background: var(--surface2); border: 1px solid var(--rule); }
+.chip.old { color: var(--warn); background: var(--warn-bg); border-color: var(--warn); }
 
 .cartiglio { margin: 0; display: flex; flex-wrap: wrap; background: var(--surface);
   border: 1.5px solid color-mix(in srgb, var(--ink) 55%, var(--rule)); border-radius: 10px; overflow: hidden; }

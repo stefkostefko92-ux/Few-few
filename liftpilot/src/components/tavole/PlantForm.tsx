@@ -1,8 +1,11 @@
 'use client';
 
-// The data of the installation for sheet 1 of the drawing sets: what the calculation and the shaft design do not say
-// (control, doors, frame, rails and brackets, governor, safety gear, buffers, masses, power supply). Every field is
-// optional; the server validates the whole with the same zod schema before it stores it on the project.
+// The data of the installation for sheet 1 of the drawing sets: only what the calculation and the shaft design do not
+// know (control, shaft, car finish, safety gear, the governor's load, the power supply), and folded the optional rest
+// (the machine's name off the catalogue, the bracket pitches, the parts of the car mass). Doors, frame, rails, brackets,
+// governor, buffers and masses come from the design (src/lib/plant.ts). A replacement's documents read fewer of them:
+// only those are shown. Every field is optional; the server validates the whole with the same zod schema before it
+// stores it on the project.
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -10,9 +13,9 @@ import { PLANT_RANGE, type Plant, type PlantNumber } from '@/lib/plant';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { savePlantAction } from '@/server/drawing-actions';
 
-type TextKey = 'machine' | 'control' | 'shaft' | 'carFinish' | 'landingDoors' | 'carDoors' | 'carFrame' | 'carBrackets' | 'cwBrackets' | 'governor' | 'governorRope' | 'carBuffers' | 'cwBuffers';
+type TextKey = 'machine' | 'control' | 'shaft' | 'carFinish';
 
-export default function PlantForm({ projectId, initial, readOnly }: { projectId: string; initial: Plant; readOnly: boolean }) {
+export default function PlantForm({ projectId, initial, readOnly, whole }: { projectId: string; initial: Plant; readOnly: boolean; whole: boolean }) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter();
   const [P, setP] = useState<Plant>(initial);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -34,16 +37,6 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
         onChange={(e) => { const v = e.target.value.replace(',', '.'); put({ [k]: v === '' ? undefined : Number(v) }); }} />
     </label>
   );
-  const rails = (k: 'carRails' | 'cwRails') => (
-    <label className="field" key={k}>
-      <span>{t(`f_${k}`)}</span>
-      <select className="input" value={P[k] ?? ''} disabled={readOnly} onChange={(e) => put({ [k]: e.target.value === 'new' || e.target.value === 'existing' ? e.target.value : undefined })}>
-        <option value="">{t('r_unset')}</option>
-        <option value="new">{t('r_new')}</option>
-        <option value="existing">{t('r_existing')}</option>
-      </select>
-    </label>
-  );
   const save = (): void => {
     start(async () => {
       // numbers typed out of range are refused by the server as a whole
@@ -56,26 +49,10 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
     <form className="plant-form flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); save(); }}>
       <fieldset className="panel">
         <legend>{t('g_plant')}</legend>
-        <div className="form-grid">{(['machine', 'control', 'shaft', 'carFinish', 'landingDoors', 'carDoors', 'carFrame'] as const).map(text)}</div>
-      </fieldset>
-      <fieldset className="panel">
-        <legend>{t('g_rails')}</legend>
         <div className="form-grid">
-          {rails('carRails')}
-          {text('carBrackets')}
-          {num('carBracketPitch')}
-          {rails('cwRails')}
-          {text('cwBrackets')}
-          {num('cwBracketPitch')}
-        </div>
-        <p className="note">{t('bracketRule', { pitch: KV_VERT.bracketPitch })}</p>
-      </fieldset>
-      <fieldset className="panel">
-        <legend>{t('g_safety')}</legend>
-        <div className="form-grid">
-          {text('governor')}
-          {text('governorRope')}
-          {num('governorLoad')}
+          {text('control')}
+          {whole ? text('shaft') : null}
+          {whole ? text('carFinish') : null}
           <label className="field">
             <span>{t('f_safetyGear')}</span>
             <select className="input" value={P.safetyGear ?? ''} disabled={readOnly}
@@ -84,18 +61,28 @@ export default function PlantForm({ projectId, initial, readOnly }: { projectId:
               {(['progressive', 'roller', 'instantaneous'] as const).map((g) => <option key={g} value={g}>{t(`s_${g}`)}</option>)}
             </select>
           </label>
-          {text('carBuffers')}
-          {text('cwBuffers')}
+          {num('governorLoad')}
         </div>
-      </fieldset>
-      <fieldset className="panel">
-        <legend>{t('g_masses')}</legend>
-        <div className="form-grid">{(['massShell', 'massFloor', 'massDoors', 'massFrame', 'massCables', 'massMachine'] as const).map((k) => num(k))}{num('dynFactor')}</div>
+        <p className="note">{t(whole ? 'fromDesign' : 'fromCalc')}</p>
       </fieldset>
       <fieldset className="panel">
         <legend>{t('g_electric')}</legend>
-        <div className="form-grid">{num('currentIn')}{num('currentStart')}{num('voltage')}{num('lightVoltage')}{num('frequency')}{num('duty')}</div>
+        <div className="form-grid">{whole ? <>{num('currentIn')}{num('currentStart')}</> : null}{num('voltage')}{num('lightVoltage')}{num('frequency')}{num('duty')}</div>
       </fieldset>
+      <details className="panel">
+        <summary>{t('g_optional')}</summary>
+        <div className="form-grid">
+          {text('machine')}
+          {whole ? <>{num('carBracketPitch')}{num('cwBracketPitch')}</> : null}
+        </div>
+        {whole ? <p className="note">{t('bracketRule', { pitch: KV_VERT.bracketPitch })}</p> : null}
+        {whole ? (
+          <>
+            <div className="form-grid">{(['massShell', 'massFloor', 'massDoors', 'massFrame'] as const).map((k) => num(k))}</div>
+            <p className="note">{t('partsNote')}</p>
+          </>
+        ) : null}
+      </details>
       {readOnly ? null : (
         <div className="flex flex-wrap items-center gap-3">
           <button type="submit" className="btn btn-primary" disabled={pending}>{pending ? t('saving') : t('save')}</button>

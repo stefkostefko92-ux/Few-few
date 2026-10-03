@@ -37,28 +37,28 @@ enum Verdict {
 }
 
 model Company {
-  id                   String           @id @default(cuid())
+  id                   String            @id @default(cuid())
   name                 String
   vatNumber            String?
   city                 String?
-  active               Boolean          @default(true)
+  active               Boolean           @default(true)
   /// the logo in the title block of the drawing sets (one of the company's logos; null = the name in letters)
-  logoId               String?          @unique
-  logo                 CompanyLogo?     @relation("CurrentLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  logoId               String?           @unique
+  logo                 CompanyLogo?      @relation("CurrentLogo", fields: [logoId], references: [id], onDelete: SetNull)
   /// the subscription (Stripe): the customer and the subscription, their state as Stripe last gave it (webhook or API
   /// with the server's key), the slots for colleagues it pays, the end of the paid period; the trial's end (null: not
   /// started — it starts at the company's first sign-in with billing on)
-  stripeCustomerId     String?          @unique
-  stripeSubscriptionId String?          @unique
+  stripeCustomerId     String?           @unique
+  stripeSubscriptionId String?           @unique
   subscriptionStatus   String?
-  seatPack             SeatPack         @default(NONE)
+  seatPack             SeatPack          @default(NONE)
   periodEnd            DateTime?
-  cancelAtPeriodEnd    Boolean          @default(false)
+  cancelAtPeriodEnd    Boolean           @default(false)
   trialEndsAt          DateTime?
   /// the platform's own company: never billed
-  billingExempt        Boolean          @default(false)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  billingExempt        Boolean           @default(false)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
   users                User[]
   priceItems           PriceItem[]
   customPrices         CustomPriceItem[]
@@ -67,7 +67,7 @@ model Company {
   calculations         Calculation[]
   shaftDesigns         ShaftDesign[]
   auditLogs            AuditLog[]
-  logos                CompanyLogo[]    @relation("CompanyLogos")
+  logos                CompanyLogo[]     @relation("CompanyLogos")
   clientLogos          ClientLogo[]
   drawingSets          DrawingSet[]
   drawingCounters      DrawingCounter[]
@@ -400,23 +400,23 @@ model RoomDesign {
 /// two, a check in the database —, the data of the installation, the project and the company as they were, the logo)
 /// and the SHA-256 of the canonical drawing, so that the PDF is drawn again the same or refused (409).
 model DrawingSet {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   companyId      String
-  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   projectId      String
-  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project        Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   calculationId  String
-  calculation    Calculation  @relation(fields: [calculationId], references: [id], onDelete: NoAction)
+  calculation    Calculation    @relation(fields: [calculationId], references: [id], onDelete: NoAction)
   shaftDesignId  String?
-  shaftDesign    ShaftDesign? @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
+  shaftDesign    ShaftDesign?   @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
   roomDesignId   String?
-  roomDesign     RoomDesign?  @relation(fields: [roomDesignId], references: [id], onDelete: NoAction)
+  roomDesign     RoomDesign?    @relation(fields: [roomDesignId], references: [id], onDelete: NoAction)
   userId         String?
-  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   logoId         String?
-  logo           CompanyLogo? @relation(fields: [logoId], references: [id], onDelete: SetNull)
+  logo           CompanyLogo?   @relation(fields: [logoId], references: [id], onDelete: SetNull)
   clientLogoId   String?
-  clientLogo     ClientLogo?  @relation(fields: [clientLogoId], references: [id], onDelete: SetNull)
+  clientLogo     ClientLogo?    @relation(fields: [clientLogoId], references: [id], onDelete: SetNull)
   /// e.g. 26-001
   number         String
   year           Int
@@ -432,7 +432,8 @@ model DrawingSet {
   companyName    String
   sha256         String
   pages          Int
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime       @default(now())
+  pdf            DrawingSetPdf?
 
   @@unique([companyId, year, seq, revision])
   @@index([projectId, createdAt])
@@ -442,6 +443,18 @@ model DrawingSet {
   @@index([userId])
   @@index([logoId])
   @@index([clientLogoId])
+}
+
+/// The PDF of an issued drawing set as it was issued: rendered once — right after the issue, or at the first download while
+/// the running engines still reproduce the set — and kept, so the set stays downloadable after an engine's change.
+/// Immutable (trigger), as the set.
+model DrawingSetPdf {
+  drawingSetId String     @id
+  drawingSet   DrawingSet @relation(fields: [drawingSetId], references: [id], onDelete: Cascade)
+  /// SHA-256 of the PDF's bytes
+  sha256       String
+  data         Bytes
+  createdAt    DateTime   @default(now())
 }
 
 /// Last drawing number given by a company in a year (26-001, 26-002, …), incremented in the transaction of the issue.

@@ -1,7 +1,8 @@
 // The smoke test's machine replacement project (only the machine and the machine room), in an installation of its own:
-// a calculation with the machine over the shaft (the calculator starts from a machine below, which has no machine room
-// to draw), the survey of the room on it, saved with a reproduced hash; its relazione tecnica, the drawing set as a draft
-// (PDF), the plan and section in DXF and DWG; a drawing set issued from it, its PDF and a revision from the same survey.
+// the main calculation has the machine below (no machine room to draw); the calculator starts from the machine over the
+// shaft, whose room is surveyed and saved with a reproduced hash; its relazione tecnica, the drawing set as a draft
+// (PDF), the plan and section in DXF and DWG; a drawing set issued from it, its PDF and a revision from the same survey;
+// the whole project it becomes starts from the survey.
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -13,9 +14,9 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   await page.fill('input[name="name"]', `Sostituzione ${stamp}`);
   await page.fill('input[name="city"]', 'Milano');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
+  const roomProjectUrl = page.url().replace(/\/calc$/, '');
   await page.waitForSelector('.verdict .big');
-  await page.selectOption('#layout', 'top');
-  await page.waitForTimeout(300);
+  assert.equal(await page.inputValue('#layout'), 'top', 'a replacement starts with the machine above');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const roomCalcUrl = page.url();
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+\/locale$/), page.click('section[aria-labelledby="calc-room"] a[href$="/locale"]')]);
@@ -57,5 +58,12 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   // the calculation lists its machine room and the sets
   await page.goto(roomCalcUrl);
   assert.equal(await page.locator('section[aria-labelledby="calc-room"] a[href*="/room-designs/"]').count(), 1, 'machine room on the calculation');
+
+  step('replacement: the whole project it becomes starts from the survey');
+  await page.goto(roomProjectUrl);
+  await Promise.all([page.waitForURL(/\/progetto$/, { timeout: 30000 }), page.click('button:has-text("Passa a progetto completo")')]);
+  await page.waitForSelector('.lift-facts .lift-verdict');
+  await page.evaluate(() => { const d = globalThis.document.querySelector('.lift-form details.room-options'); if (d) d.open = true; });
+  assert.equal(await page.locator('.lift-form details.room-options input[type="number"]').nth(4).inputValue(), '2700', 'the surveyed machine room carried over');
   return { roomUrl, roomId, roomSetUrl };
 }

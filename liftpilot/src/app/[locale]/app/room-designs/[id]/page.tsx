@@ -7,21 +7,22 @@ import { dateFormat } from '@/lib/dates';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { ambitoOf } from '@/lib/lift/collaudo';
 import { makeFmt } from '@/lib/present/tr';
-import { deriveRoom } from '@/lib/room/derive';
-import { ROOM_ENGINE_VERSION } from '@/lib/room/snapshot';
 import { cropped, surveyView } from '@/lib/tavole/views';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { prisma } from '@/lib/db';
 import { reproduceRoomRecord } from '@/server/room-compose';
-import { getRoomDesign } from '@/server/queries';
+import { getRoomDesign, refreshedFrom } from '@/server/queries';
 import { projectCost } from '@/server/prices';
 import { calcBom } from '@/lib/prices/bom';
+import { initialsOf } from '@/lib/tavole/compose';
 import ProjectCost from '@/components/prices/ProjectCost';
 import Crumbs from '@/components/Crumbs';
 import IssueForm from '@/components/tavole/IssueForm';
 import DrawingFigure from '@/components/drawing/DrawingFigure';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
 import VerdictPill from '@/components/VerdictPill';
+import RefreshForm from '@/components/RefreshForm';
+import Refreshed from '@/components/Refreshed';
 
 export async function generateMetadata() {
   const t = await getTranslations('room');
@@ -33,15 +34,16 @@ const AREA = { x0: 0, y0: 0, x1: 190, y1: 190 };
 // A saved machine room of a replacement: its result, its plan and section, the checks (those of the parts that stay
 // marked "esistente"), the documents — the relazione tecnica, the drawing set as a draft, DXF and DWG — and the drawing
 // sets issued from it, with the issue of a new one. Drawn again from the stored survey and calculation only when the
-// running engines reproduce them.
-export default async function RoomDesignPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+// running engines reproduce them; else «Aggiorna con il software attuale» saves it again.
+export default async function RoomDesignPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ da?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:view');
   const r = await getRoomDesign(user, id);
   if (!r) notFound();
-  const [t, tp, tc, tt, ts] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'), getTranslations('tavole'), getTranslations('shaft')]);
-  const rep = reproduceRoomRecord(r, r.calculation), d = rep.ok ? deriveRoom(rep.values, rep.survey) : null;
+  const [t, tp, tc, tt, ts, tf, before] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'), getTranslations('tavole'),
+    getTranslations('shaft'), getTranslations('refresh'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
+  const rep = reproduceRoomRecord(r, r.calculation), d = rep.ok ? rep.derived : null;
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const download = !!d && can(user, 'report:download'), editable = can(user, 'calc:create') && !r.project.archivedAt;
   const views = d ? (['plan', 'section'] as const).map((k) => {
@@ -66,7 +68,13 @@ export default async function RoomDesignPage({ params }: { params: Promise<{ loc
           {editable ? <Link className="btn" href={`/app/calculations/${r.calculationId}/locale?from=${r.id}`}>{t('newFrom')}</Link> : null}
         </div>
       </div>
-      {d ? null : <p className="alert alert-warn">{t('engineChanged', { stored: r.engineVersion, current: ROOM_ENGINE_VERSION })}</p>}
+      {before ? <Refreshed before={before} now={r} locale={locale} /> : null}
+      {d ? null : (
+        <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
+          <p className="m-0">{tf('room')}</p>
+          {editable ? <RefreshForm kind="room" id={r.id} /> : null}
+        </div>
+      )}
       <dl className="cartiglio">
         <div><dt>{tc('col_result')}</dt><dd><VerdictPill verdict={r.verdict} fails={r.failCount} warns={r.warnCount} /></dd></div>
         <div><dt>{tc('col_date')}</dt><dd>{fd.dateTime(r.createdAt)}</dd></div>
@@ -123,7 +131,7 @@ export default async function RoomDesignPage({ params }: { params: Promise<{ loc
             {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link> · <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>)}
           </ul>
         ) : null}
-        {d && editable ? <IssueForm roomDesignId={r.id} /> : null}
+        {d && editable ? <IssueForm roomDesignId={r.id} initials={initialsOf(user.name)} /> : null}
       </section>
     </main>
   );

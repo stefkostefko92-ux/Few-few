@@ -10,18 +10,21 @@ import { savedLiftAdvice, savedLiftAlternative } from '@/lib/lift/advice-cache';
 import { designMachine, designOrder } from '@/lib/order/machine';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
-import { getLiftDesign } from '@/server/queries';
+import { getLiftDesign, refreshedFrom } from '@/server/queries';
 import { projectCost, visiblePrices } from '@/server/prices';
 import { designBasis } from '@/lib/prices/plant-bom';
 import { pitchesOf } from '@/lib/plant';
 import { withPitches } from '@/shaft/brackets';
 import { designBom } from '@/lib/prices/bom';
+import { initialsOf } from '@/lib/tavole/compose';
 import ProjectCost from '@/components/prices/ProjectCost';
 import LiftView from '@/components/lift/LiftView';
 import AdviceView from '@/components/lift/AdviceView';
 import IssueForm from '@/components/tavole/IssueForm';
 import Crumbs from '@/components/Crumbs';
 import VerdictPill from '@/components/VerdictPill';
+import RefreshForm from '@/components/RefreshForm';
+import Refreshed from '@/components/Refreshed';
 
 export async function generateMetadata() {
   const t = await getTranslations('lift');
@@ -30,8 +33,8 @@ export async function generateMetadata() {
 
 // A saved installation: the 3D simulation and every check, derived again from the form as entered; the documents
 // made from its calculation and shaft design (report, plan in DXF, drawing sets), which exist only while the running
-// engines reproduce their hashes.
-export default async function LiftDesignPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+// engines reproduce their hashes; else «Aggiorna con il software attuale» saves it again.
+export default async function LiftDesignPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ da?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'projects:view');
@@ -39,7 +42,8 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
   if (!parsedId.success) notFound();
   const d = await getLiftDesign(user, parsedId.data);
   if (!d) notFound();
-  const [t, tp, tt, ta] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'), getTranslations('advice')]);
+  const [t, tp, tt, ta, tf, before] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'), getTranslations('advice'),
+    getTranslations('refresh'), refreshedFrom(user, 'liftDesign', (await searchParams).da, d.project.id)]);
   const fd = dateFormat(locale);
   // the running engines give the same records? (else the documents are refused: a new save is needed)
   // the bracket pitches of the installation's data count the brackets of the list and place them in 3D, as on sheet 1
@@ -65,7 +69,13 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
           {editable ? <Link className="btn btn-primary" href={`/app/projects/${d.project.id}/progetto?from=${d.id}`}>{t('edit')}</Link> : null}
         </div>
       </div>
-      {!same ? <p className="alert alert-warn" role="status">{t('engineChanged')}</p> : null}
+      {before ? <Refreshed before={before} now={d} locale={locale} /> : null}
+      {same ? null : (
+        <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
+          <p className="m-0">{tf('design')}</p>
+          {editable && r ? <RefreshForm kind="lift" id={d.id} /> : null}
+        </div>
+      )}
       {r ? <LiftView inputs={r.inputs} prices={prices} pitches={pitches} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
       {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope="design" editable={can(user, 'prices:edit')} /> : null}
       {advice ? (
@@ -113,7 +123,7 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
           <div className="panel">
             <h3>{tt('title')}</h3>
             <p className="note">{tt('lead')}</p>
-            <IssueForm calculationId={d.calculation.id} />
+            <IssueForm calculationId={d.calculation.id} initials={initialsOf(user.name)} />
           </div>
         ) : null}
       </section>

@@ -4,23 +4,19 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
-import { formValuesSchema } from '@/lib/calc-input';
-import { collaudoSchema } from '@/lib/lift-input';
-import { NORMA_BREVE, collaudoOf, normeOf } from '@/lib/lift/collaudo';
-import { verifyStored } from '@/lib/snapshot-hash';
-import { reproduceDesign } from '@/lib/shaft-hash';
-import { ENGINE_VERSION } from '@/calc/snapshot';
-import { SHAFT_ENGINE_VERSION } from '@/shaft';
+import { NORMA_BREVE, normeOf } from '@/lib/lift/collaudo';
 import { calcMachine, calcOrder, designMachine, designOrder } from '@/lib/order/machine';
 import { savedLiftAdvice, savedLiftAlternative, savedValuesAdvice } from '@/lib/lift/advice-cache';
-import { liftRecord } from '@/lib/lift-record';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
-import { getCalculation, listDrawingSets, listRoomDesigns } from '@/server/queries';
+import { getCalculation, listDrawingSets, listRoomDesigns, refreshedFrom } from '@/server/queries';
 import { projectCost } from '@/server/prices';
+import { calcRecord, storedCollaudo } from '@/server/records';
 import { designBasis } from '@/lib/prices/plant-bom';
 import { analyse } from '@/lib/present/analysis';
 import { calcBom, designBom } from '@/lib/prices/bom';
+import { initialsOf } from '@/lib/tavole/compose';
+import { idSchema } from '@/lib/schemas';
 import ProjectCost from '@/components/prices/ProjectCost';
 import IssueForm from '@/components/tavole/IssueForm';
 import VerdictPill from '@/components/VerdictPill';
@@ -28,6 +24,8 @@ import ReviewForm from '@/components/ReviewForm';
 import { REVIEW_MAX } from '@/lib/review';
 import Crumbs from '@/components/Crumbs';
 import CalculationView from '@/components/calc/CalculationView';
+import RefreshForm from '@/components/RefreshForm';
+import Refreshed from '@/components/Refreshed';
 import AdviceView from '@/components/lift/AdviceView';
 import { pitchesOf } from '@/lib/plant';
 import { withPitches } from '@/shaft/brackets';
@@ -37,40 +35,44 @@ export async function generateMetadata() {
   return { title: t('viewTitle') };
 }
 
-export default async function CalculationPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
-  const { locale, id } = await params;
+export default async function CalculationPage({ params, searchParams }: {
+  params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ da?: string; rilievo?: string }>;
+}) {
+  const { locale, id } = await params, sp = await searchParams;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:view');
   const c = await getCalculation(user, id);
   if (!c) notFound();
-  const values = formValuesSchema.safeParse(c.inputs);
-  if (!values.success) notFound();
-  const { same } = verifyStored(values.data, c.sha256);
-  // the lift design it was made from, derived again (its advice and order follow it)
-  const lift = c.liftDesign ? liftRecord(c.liftDesign, c.shaftDesign?.sha256, c.sha256) : null;
+  // the calculation with the records it was made from (its advice and order follow its lift design): its documents need
+  // all of them reproduced (src/server/records.ts)
+  const rec = calcRecord(c);
+  if (!rec) notFound();
+  const { lift, calcSame: same, values: V } = rec;
   // the standards of the acceptance test: the lift design's, else those chosen with it (else by the context), as the
   // report sets them out
-  const chosen = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null;
-  const C = lift?.dv.collaudo ?? collaudoOf(values.data, chosen?.success ? chosen.data : undefined), norme = normeOf(C);
-  // the report draws the plan of the shaft design too: it needs that design reproduced as well
-  const designSame = !c.shaftDesign || reproduceDesign(c.shaftDesign) !== null;
-  const [t, tp, tr, ts, tt, ta, tm, sets] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'), getTranslations('shaft'),
-    getTranslations('tavole'), getTranslations('advice'), getTranslations('room'), listDrawingSets(user, c.projectId)]);
+  const C = lift?.dv.collaudo ?? storedCollaudo(rec.values, c.collaudo), norme = normeOf(C);
+  const [t, tp, tr, ts, tt, ta, tm, tf, sets, before] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'),
+    getTranslations('shaft'), getTranslations('tavole'), getTranslations('advice'), getTranslations('room'), getTranslations('refresh'), listDrawingSets(user, c.projectId),
+    refreshedFrom(user, 'calculation', sp.da, c.projectId)]);
   // a replacement's project: the machine room surveyed on this calculation, its relazione tecnica and drawing sets
   const replacement = c.project.kind === 'REPLACEMENT' && !c.liftDesign;
   const rooms = replacement ? (await listRoomDesigns(user, c.projectId)).filter((x) => x.calculationId === c.id) : [];
-  const below = values.data.layout === 'bottom';
+  const below = V.layout === 'bottom', open = can(user, 'calc:create') && !c.project.archivedAt;
+  // a calculation of a shaft design saved before the installation design (no lift design) is made again from the form
+  const legacy = !!c.shaftDesign && !lift;
+  // the survey of the calculation updated that the new one did not take (refresh-actions.ts): to be redone from it
+  const redo = before && replacement && rooms.length === 0 ? idSchema.safeParse(sp.rilievo) : null;
   // the advice among SICOR and Montanari and the machine of the draft order: those of the lift design the calculation
   // was made from (its machine room, the sheave direct pull needs), as the design's page and the report give them; else
   // for the saved values: the catalogue's machine these values are, or the advice's first
-  const advice = lift ? savedLiftAdvice(lift.inputs) : savedValuesAdvice(values.data), alt = lift ? savedLiftAlternative(lift.inputs, advice) : null;
-  const own = lift ? designMachine(lift.dv) : calcMachine(values.data), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
+  const advice = lift ? savedLiftAdvice(lift.inputs) : savedValuesAdvice(V), alt = lift ? savedLiftAlternative(lift.inputs, advice) : null;
+  const own = lift ? designMachine(lift.dv) : calcMachine(V), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   // a calculation of a design the running engines no longer reproduce has no order: the design is saved again
-  const download = same && can(user, 'report:download') && (!c.liftDesign || !!lift?.same);
-  const order = !download ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(values.data, advice);
+  const download = rec.ok && can(user, 'report:download');
+  const order = !download ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(V, advice);
   // the cost with the company's prices (only for whoever sees prices): the design's articles, or the replacement's machine
-  const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }) : calcBom(values.data, C), lift ? 'full' : 'replacement',
-    lift ? designBasis(lift.dv) : { stops: null, travel: analyse(values.data).ctx.I.H });
+  const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }) : calcBom(V, C), lift ? 'full' : 'replacement',
+    lift ? designBasis(lift.dv) : { stops: null, travel: analyse(V).ctx.I.H });
   const where = lift ? 'design' : 'calc';
   const mine = sets.filter((x) => x.calculationId === c.id);
   const fd = dateFormat(locale);
@@ -80,16 +82,23 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
       <div className="page-head">
         <div className="titles"><h1>{t('viewTitle')}{c.label ? ` · ${c.label}` : ''}</h1></div>
         <div className="actions">
-          {same && designSame && can(user, 'report:download') ? (
+          {rec.ok && can(user, 'report:download') ? (
             <a className="btn btn-primary" href={`/api/calculations/${c.id}/relazione?locale=${locale}`}>{t('downloadReport')}</a>
           ) : null}
-          {can(user, 'calc:create') && !c.project.archivedAt ? (
-            <Link className="btn" href={`/app/projects/${c.projectId}/calc?from=${c.id}`}>{t('newFrom')}</Link>
-          ) : null}
+          {c.liftDesign ? <Link className="btn" href={`/app/lift-designs/${c.liftDesign.id}`}>{ts('openLift')}</Link>
+            : replacement && open ? <Link className="btn" href={`/app/projects/${c.projectId}/calc?from=${c.id}`}>{t('newFrom')}</Link> : null}
         </div>
       </div>
-      {same ? null : <p className="alert alert-warn">{t('engineChanged', { stored: c.engineVersion, current: ENGINE_VERSION })}</p>}
-      {c.shaftDesign && !designSame ? <p className="alert alert-warn">{ts('designChanged', { stored: c.shaftDesign.engineVersion, current: SHAFT_ENGINE_VERSION })}</p> : null}
+      {before ? <Refreshed before={before} now={c} locale={locale} /> : null}
+      {redo?.success ? (
+        <p className="alert alert-warn" role="status">{tf('roomRedo')} <Link href={`/app/calculations/${c.id}/locale?from=${redo.data}`}>{tf('roomOpen')}</Link></p>
+      ) : null}
+      {rec.ok ? null : (
+        <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
+          <p className="m-0">{tf(lift ? 'design' : legacy ? 'legacy' : 'calc')}</p>
+          {open && !legacy ? <RefreshForm kind="calc" id={c.id} /> : null}
+        </div>
+      )}
       <dl className="cartiglio">
         <div><dt>{t('col_result')}</dt><dd><VerdictPill verdict={c.verdict} fails={c.failCount} warns={c.warnCount} /></dd></div>
         <div><dt>{t('col_date')}</dt><dd>{fd.dateTime(c.createdAt)}</dd></div>
@@ -145,7 +154,7 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
               ))}
             </ul>
           ) : null}
-          {!below && same && can(user, 'calc:create') && !c.project.archivedAt ? (
+          {!below && same && open ? (
             <div><Link className="btn btn-primary" href={`/app/calculations/${c.id}/locale`}>{rooms.length ? tm('again') : tm('start')}</Link></div>
           ) : null}
         </section>
@@ -161,9 +170,9 @@ export default async function CalculationPage({ params }: { params: Promise<{ lo
           </ul>
         ) : null}
         {replacement ? null : !c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
-          : same && designSame && can(user, 'calc:create') && !c.project.archivedAt ? <IssueForm calculationId={c.id} /> : null}
+          : rec.ok && open ? <IssueForm calculationId={c.id} initials={initialsOf(user.name)} /> : null}
       </section>
-      <CalculationView values={values.data} brand={user.companyName} collaudo={C} />
+      <CalculationView values={V} brand={user.companyName} collaudo={C} />
     </main>
   );
 }

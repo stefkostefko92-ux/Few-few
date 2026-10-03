@@ -6,7 +6,7 @@ import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
-import { revisionsSchema } from '@/lib/tavole/compose';
+import { initialsOf, revisionsSchema } from '@/lib/tavole/compose';
 import { composeStored } from '@/server/drawing-compose';
 import { composeStoredRoom } from '@/server/room-compose';
 import { getDrawingSet, listCalculations, listRevisions, listRoomDesigns } from '@/server/queries';
@@ -20,9 +20,9 @@ export async function generateMetadata() {
   return { title: t('title') };
 }
 
-// An issued drawing set: its number and revision, the PDF, one sheet at a time drawn again from what the set was made
-// of (the same drawing, or a warning that the engines no longer reproduce it), where its calculation and shaft design
-// disagree, the revisions and a new revision. A replacement's set is drawn from its saved machine room.
+// An issued drawing set: its number and revision, the PDF (kept as issued), one sheet at a time drawn again from what
+// the set was made of (the same drawing, or a warning that the engines no longer reproduce it), where its calculation
+// and shaft design disagree, the revisions and a new revision. A replacement's set is drawn from its saved machine room.
 export default async function DrawingSetPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ p?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -34,7 +34,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   const full = s.shaftDesign ? composeStored({ ...s, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
   const room = s.roomDesign ? composeStoredRoom({ ...s, calculation: s.calculation, roomDesign: s.roomDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
   const doc = full && 'doc' in full ? full.doc : room && 'doc' in room ? room.doc : null;
-  const DEC = { travel: 2, speed: 2, load: 0 } as const;
+  const DEC = { travel: 2, speed: 2, load: 0, carMass: 0 } as const;
   const mismatch = full && 'doc' in full ? full.warnings.map((w) => t(`mm_${w.what}`, { calc: fmt(w.calc, DEC[w.what]), shaft: fmt(w.shaft, DEC[w.what]) })) : [];
   const total = doc?.pages.length ?? s.pages, page = Math.min(Math.max(1, Number((await searchParams).p) || 1), total);
   const sheet = doc?.pages[page - 1];
@@ -53,12 +53,12 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
           <p className="lead">{t('issuedBy', { date: fd.dateTime(s.createdAt), name: s.user?.name ?? s.authorInitials })} · {t('pages', { n: s.pages })}</p>
         </div>
         <div className="actions">
-          {doc && can(user, 'report:download') ? <a className="btn btn-primary" href={`/api/drawing-sets/${s.id}/pdf`}>{t('download')}</a> : null}
+          {(doc || s.pdf) && can(user, 'report:download') ? <a className="btn btn-primary" href={`/api/drawing-sets/${s.id}/pdf`}>{t('download')}</a> : null}
           {s.roomDesign ? <Link className="btn" href={`/app/room-designs/${s.roomDesign.id}`}>{t('roomTitle')}</Link> : null}
           <Link className="btn" href={`/app/calculations/${s.calculationId}`}>{tc('viewTitle')}</Link>
         </div>
       </div>
-      {doc ? null : <p className="alert alert-warn">{t('engineChanged')}</p>}
+      {doc ? null : <p className="alert alert-warn">{t(s.pdf ? 'engineChangedKept' : 'engineChanged')}</p>}
       {mismatch.length ? <p className="alert alert-warn" role="status">{t('mismatch', { list: mismatch.join('; ') })}</p> : null}
       {doc && sheet ? (
         <section className="flex flex-col gap-3">
@@ -86,7 +86,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
         {editable && (calcs.length || rooms.length) ? (
           <>
             <h3>{t('revise')}</h3>
-            <IssueForm revise={rooms.length ? { drawingSetId: s.id, rooms } : { drawingSetId: s.id, calculations: calcs }} />
+            <IssueForm revise={rooms.length ? { drawingSetId: s.id, rooms } : { drawingSetId: s.id, calculations: calcs }} initials={initialsOf(user.name)} />
           </>
         ) : null}
       </section>

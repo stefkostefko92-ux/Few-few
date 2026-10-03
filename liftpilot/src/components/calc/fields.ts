@@ -79,7 +79,9 @@ export function shown(id: string, V: FormValues): boolean {
     case 'Hv': return V.layout === 'bottom';
     case 'Dp': return V.layout !== 'top' || V.r === '2' || numOf(V, 'nps') + numOf(V, 'npr') > 0;
     case 'Jp': return V.layout !== 'top';
-    case 'n_mass': case 'o_mass': return V.layout === 'bottom';
+    // the new machine's mass is the load on the slab and the beams of the machine room (survey, sheet 1, relazione
+    // tecnica) wherever it stands; the old one counts only below (its anchors)
+    case 'o_mass': return V.layout === 'bottom';
     case 'n_beta': return V.n_groove === 'UU' || V.n_groove === 'VN';
     case 'o_beta': return V.o_groove === 'UU' || V.o_groove === 'VN';
     case 'keepD': return !!V.compare && V.context === 'repl';

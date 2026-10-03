@@ -1,5 +1,4 @@
-import { notFound } from 'next/navigation';
-import { z } from 'zod';
+import { notFound, redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { prisma } from '@/lib/db';
@@ -7,7 +6,6 @@ import { formValuesSchema } from '@/lib/calc-input';
 import { collaudoSchema } from '@/lib/lift-input';
 import { idSchema } from '@/lib/schemas';
 import { PRESETS } from '@/calc/presets';
-import type { FormValues } from '@/calc/types';
 import { getProject } from '@/server/queries';
 import Calculator from '@/components/calc/Calculator';
 import Crumbs from '@/components/Crumbs';
@@ -17,30 +15,23 @@ export async function generateMetadata() {
   return { title: t('newTitle') };
 }
 
-// A new calculation starts from the values of the chosen saved calculation (?from=), else from the latest one of
-// the project, else from example B of the research (replacement) with a note to replace the values.
-export default async function CalcPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; design?: string }> }) {
+// The calculator of a machine replacement: it starts from the values of the chosen saved calculation (?from=), else
+// from the latest one of the project, else from example C of the research (the machine above, a replacement) with a
+// note to replace the values. A whole project has one form, which saves its calculation with it.
+export default async function CalcPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:create');
   const p = await getProject(user, id);
   if (!p || p.archivedAt) notFound();
-  const query = await searchParams;
-  const from = idSchema.safeParse(query.from), designId = idSchema.safeParse(query.design);
+  if (p.kind === 'FULL') redirect(`/${locale}/app/projects/${p.id}/progetto`);
+  const from = idSchema.safeParse((await searchParams).from);
   const source = await prisma.calculation.findFirst({
     where: { projectId: p.id, companyId: user.companyId, ...(from.success ? { id: from.data } : {}) },
     orderBy: { createdAt: 'desc' },
     select: { inputs: true, collaudo: true },
   });
   const parsed = source ? formValuesSchema.safeParse(source.inputs) : null, chosen = source?.collaudo ? collaudoSchema.safeParse(source.collaudo) : null;
-  // a calculation started from a shaft design takes its rated load (the design's layout decided it)
-  const designRow = designId.success
-    ? await prisma.shaftDesign.findFirst({ where: { id: designId.data, projectId: p.id, companyId: user.companyId }, select: { id: true, results: true } })
-    : null;
-  const designQ = designRow ? z.object({ Q: z.number() }).safeParse(designRow.results) : null;
-  const design = designRow && designQ?.success ? { id: designRow.id, Q: designQ.data.Q } : null;
-  const base: FormValues = parsed?.success ? parsed.data : PRESETS.B;
-  const initial: FormValues = design ? { ...base, Q: design.Q } : base;
   const [t, tp] = await Promise.all([getTranslations('calculations'), getTranslations('projects')]);
   return (
     <main className="page">
@@ -51,7 +42,7 @@ export default async function CalcPage({ params, searchParams }: { params: Promi
           <p className="lead">{t('newLead')}</p>
         </div>
       </div>
-      <Calculator projectId={p.id} initial={initial} preset={parsed?.success || design ? null : 'B'} brand={user.companyName} design={design}
+      <Calculator projectId={p.id} initial={parsed?.success ? parsed.data : PRESETS.C} preset={parsed?.success ? null : 'C'} brand={user.companyName}
         collaudo={chosen?.success ? chosen.data : null} />
     </main>
   );

@@ -40,13 +40,11 @@ interface Props {
   /** example loaded at start (a new calculation), null when continuing from a saved one */
   preset: PresetKey | null;
   brand: string;
-  /** shaft design the calculation starts from: the rated load comes from it and the report shows its plan */
-  design?: { id: string; Q: number } | null;
   /** the standards of the acceptance test of the calculation it starts from (absent: by the context) */
   collaudo?: Collaudo | null;
 }
 
-export default function Calculator({ projectId, initial, preset: initialPreset, brand, design = null, collaudo: initialCollaudo = null }: Props) {
+export default function Calculator({ projectId, initial, preset: initialPreset, brand, collaudo: initialCollaudo = null }: Props) {
   const locale = useLocale(), messages = useMessages(), tc = useTranslations('calculations'), te = useTranslations('errors');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -107,7 +105,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const save = (): void => {
     setSaveError(null);
     startSaving(async () => {
-      const r = await saveCalculationAction({ projectId, values, label, designId: design?.id ?? null, collaudo: collaudo ?? null });
+      const r = await saveCalculationAction({ projectId, values, label, collaudo: collaudo ?? null });
       if (r.ok) router.push(`/app/calculations/${r.id}`);
       else setSaveError({ error: r.error, fields: r.fields ?? [] });
     });
@@ -131,7 +129,6 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
         </div>
       </div>
       {preset ? <p className="note" role="status">{t('loaded', { name: t(`ex${preset}name`) })} {tc('replaceExample')}</p> : null}
-      {design ? <p className="note" role="status">{tc('fromDesign', { q: design.Q })}</p> : null}
       <LegalNotice P={P} />
       <div className="layout">
         <CalcForm P={P} V={values} bad={bad} set={set} onEstimate={onEstimate} estMsg={estMsg} keepRopesHint={keepRopesHint} />

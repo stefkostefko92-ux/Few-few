@@ -72,6 +72,15 @@ export const estimateNote = (P: string, tag: string): Note => ({
     + 'della cabina o prova di bilanciamento) e il calcolo va ripetuto.',
 });
 
+/** The car's safety gear not given in the data of the installation: P5 and the forces on the rails are those of a
+ *  progressive one (UNI EN 81-50:2020, 5.10). */
+export const safetyGearNote = (tag: string): Note => ({
+  title: 'PARACADUTE DI CABINA', tag,
+  text: `Il tipo di paracadute della cabina non è indicato nei dati dell'impianto: il carico P5 e le forze sulle guide di questo foglio sono `
+    + `calcolati con il paracadute progressivo (coefficiente d'urto ${KV_VERT.k1Progressive}; a presa istantanea a rullo ${KV_VERT.k1Roller}, istantanea `
+    + `${KV_VERT.k1Instant}: UNI EN 81-50:2020, 5.10). Con un paracadute diverso va indicato nei dati e le tavole vanno emesse di nuovo.`,
+});
+
 export interface LegendItem {
   sym: SymbolName;
   text: string;

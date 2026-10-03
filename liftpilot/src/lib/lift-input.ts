@@ -35,5 +35,3 @@ const liftObject = <S extends z.ZodTypeAny>(shaft: S) => z.object({
 export const liftInputsSchema = liftObject(shaftInputsSchema);
 /** A saved one form read back (the shaft as stored: shaftInputsReadSchema). */
 export const liftInputsReadSchema = liftObject(shaftInputsReadSchema);
-
-export type LiftInputsParsed = z.infer<typeof liftInputsSchema>;

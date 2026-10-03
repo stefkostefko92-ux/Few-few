@@ -3,7 +3,8 @@
 // The drawing sets of an installation and what they need: the data of the installation on the project, the logo of the
 // company, the issue of a set from a calculation made from a shaft design (a new number YY-NNN of the company and
 // year, in the transaction that stores it) and its revisions (same number, revision + 1, with a note). As for the
-// calculations: the server rebuilds everything with the running engines and stores the hash of the drawing.
+// calculations: the server rebuilds everything with the running engines and stores the hash of the drawing; the PDF
+// is rendered once the answer is sent and kept as issued (drawing-pdf.ts).
 import type { Prisma } from '@prisma/client';
 import { createHash } from 'node:crypto';
 import { prisma } from '@/lib/db';
@@ -17,6 +18,7 @@ import { plantSchema } from '@/lib/plant';
 import { LOGO_MAX_BYTES, readLogo } from '@/lib/logo';
 import { composeFromCalculation, type ComposeError, type Composed } from './drawing-compose';
 import { composeFromRoom, type RoomComposed } from './room-compose';
+import { keepSetPdfLater } from './drawing-pdf';
 import type { TavoleRevision } from '@/lib/tavole/input';
 import { initialsSchema, revisionNoteSchema, revisionsSchema, setNumber } from '@/lib/tavole/compose';
 import { entry } from './form';
@@ -106,8 +108,9 @@ async function issueNew(user: SessionUser, author: string, compose: Compose): Pr
           data: { companyId: user.companyId, userId: user.id, number, year, seq, revision: 0, authorInitials: author, revisions: [], createdAt: issuedAt, ...madeOf(c) },
           select: { id: true },
         });
-        return { id: set.id, number };
+        return { id: set.id, number, doc: c.doc };
       });
+      keepSetPdfLater(out.id, out.doc);
       await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_ISSUED', entity: 'DrawingSet', entityId: out.id, meta: { number: out.number } });
       log.info({ userId: user.id, drawingSetId: out.id }, 'drawing set issued');
       return { ok: true, id: out.id };
@@ -184,9 +187,10 @@ export async function reviseDrawingSetAction(input: { drawingSetId: unknown; cal
         },
         select: { id: true },
       });
-      return { ok: true as const, id: set.id, revision };
+      return { ok: true as const, id: set.id, revision, doc: c.doc };
     });
     if (!out.ok) return out;
+    keepSetPdfLater(out.id, out.doc);
     await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_REVISED', entity: 'DrawingSet', entityId: out.id, meta: { number: base.number, revision: out.revision } });
     return { ok: true, id: out.id };
   } catch (err) {

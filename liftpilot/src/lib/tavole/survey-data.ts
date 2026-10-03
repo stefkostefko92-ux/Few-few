@@ -70,15 +70,14 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
   ];
 };
 
-/** The load on the machine's support and on the slab as sheet 1 counts it — the machine with its frame (the maker's
- *  bedplate counted when the data do not give it), the ropes and the cables, the dynamic coefficient, as a whole design's
- *  sheet counts them; the data of the installation may change the mass and the coefficient — and the checks of the
- *  room, of the machine in it and of the drops, the beams again at this load: the sheet and the relazione tecnica print
- *  the same. */
+/** The load on the machine's support and on the slab as sheet 1 counts it — the machine's mass of the calculation with
+ *  its frame (the maker's bedplate counted), the ropes and the cables, the dynamic coefficient of the registry, as a whole
+ *  design's sheet counts them — and the checks of the room, of the machine in it and of the drops, the beams again at
+ *  this load: the sheet and the relazione tecnica print the same. */
 export function surveyLoad(d: RoomDerived, Pl: Plant) {
   const { ctx, res } = d.analysis, { I, N } = ctx, rf = d.M.rinvio;
-  const ropesKg = N.n * N.qf * ropeLength(I), cablesKg = cablesMass(I.H, Pl.massCables);
-  const bedplate = rf?.on === 'frame' ? rf.maker?.mass ?? 0 : 0, machine = Pl.massMachine ?? N.mass + bedplate, dyn = Pl.dynFactor ?? KV_VERT.dynFactor;
+  const ropesKg = N.n * N.qf * ropeLength(I), cablesKg = cablesMass(I.H);
+  const bedplate = rf?.on === 'frame' ? rf.maker?.mass ?? 0 : 0, machine = N.mass + bedplate, dyn = KV_VERT.dynFactor;
   const ld = loads({
     P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r, carRailQ: 0, carRailLen: 0, cwRailQ: 0, cwRailLen: 0,
     safetyGear: Pl.safetyGear ?? 'progressive', dyn, carBuffers: 1, cwBuffers: 1, governor: Pl.governorLoad ?? null,
@@ -125,7 +124,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ['CAVI FLESSIBILI', fmt(cablesKg, 0), 'kg'],
     ['CARICO STATICO SUL BASAMENTO DELL\'ARGANO', fmt(ld.static, 0), 'kg'],
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
-    [Pl.massMachine != null || !bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', machine > 0 ? fmt(machine, 0) : 'NON INSERITA', 'kg'],
+    [!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', machine > 0 ? fmt(machine, 0) : 'NON INSERITA', 'kg'],
     ...(supportOf(R).kind === 'beams' ? [['PUTRELLE (DUE)', `${profileOf(supportOf(R))}, ${fmt(2 * PROFILES[profileOf(supportOf(R))].mass, 1)} kg/m`, ''] as const] : []),
   ];
   const P: SurveySheet['P'] = [

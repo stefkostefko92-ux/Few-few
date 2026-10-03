@@ -35,7 +35,7 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
         </div>
       </div>
       <ClientLogoForm projectId={p.id} current={clientLogo} readOnly={readOnly} />
-      <PlantForm projectId={p.id} initial={plant.success ? plant.data : {}} readOnly={readOnly} />
+      <PlantForm projectId={p.id} initial={plant.success ? plant.data : {}} readOnly={readOnly} whole={p.kind === 'FULL'} />
     </main>
   );
 }
