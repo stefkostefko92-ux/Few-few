@@ -45,7 +45,10 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
     getTranslations('shaft'), getTranslations('refresh'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
   const rep = reproduceRoomRecord(r, r.calculation), d = rep.ok ? rep.derived : null;
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
+  // a machine room is a replacement's: one in the archive of a whole project is read only (its project is made again
+  // from the form)
   const download = !!d && can(user, 'report:download'), editable = can(user, 'calc:create') && !r.project.archivedAt;
+  const replacement = r.project.kind === 'REPLACEMENT';
   const views = d ? (['plan', 'section'] as const).map((k) => {
     try {
       const v = surveyView(d, k, AREA);
@@ -65,14 +68,14 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
         <div className="titles"><h1>{t('viewTitle')}{r.label ? `\u00a0· ${r.label}` : ''}</h1><p className="lead">{r.summary}</p></div>
         <div className="actions">
           {download ? <a className="btn btn-primary" href={`/api/room-designs/${r.id}/relazione`}>{t('docTecnica')}</a> : null}
-          {editable ? <Link className="btn" href={`/app/calculations/${r.calculationId}/locale?from=${r.id}`}>{t('newFrom')}</Link> : null}
+          {editable && replacement ? <Link className="btn" href={`/app/calculations/${r.calculationId}/locale?from=${r.id}`}>{t('newFrom')}</Link> : null}
         </div>
       </div>
       {before ? <Refreshed before={before} now={r} locale={locale} /> : null}
       {d ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
-          <p className="m-0">{tf('room')}</p>
-          {editable ? <RefreshForm kind="room" id={r.id} /> : null}
+          <p className="m-0">{tf(replacement ? 'room' : 'archive')}</p>
+          {editable && replacement ? <RefreshForm kind="room" id={r.id} /> : null}
         </div>
       )}
       <dl className="cartiglio">

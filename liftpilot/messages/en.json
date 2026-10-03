@@ -1623,11 +1623,11 @@
     "design": "The software has changed since this design was saved: the values below are recomputed, the documents are not regenerated. “Update with the current software” saves the same data again with the current software and says whether the result changes.",
     "calc": "The software has changed since this calculation was saved: the report is not regenerated. “Update with the current software” redoes the calculation from the same data, with the installation design or the machine room survey it comes from, and says whether the result changes.",
     "room": "The software has changed since this survey was saved: the documents are not regenerated. “Update with the current software” saves it again from the same measures (and, if needed, its calculation) and says whether the result changes.",
-    "legacy": "The software has changed since the shaft design of this calculation was saved: the report is not regenerated. The design is redone from the installation design form.",
     "same": "Redone with the current software from the data saved on {date}: the result does not change.",
     "changed": "Redone with the current software from the data saved on {date}: the result changes. Before and now:",
     "roomRedo": "The machine room survey saved with the previous calculation does not pass with the current software: redo it starting from that survey.",
     "roomOpen": "Open the survey",
-    "outdated": "to update"
+    "outdated": "to update",
+    "archive": "The software has changed since this was saved: the documents are not regenerated. It is in the archive of the installation, now a whole project: the design is updated from its form."
   }
 }

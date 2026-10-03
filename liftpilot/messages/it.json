@@ -1623,11 +1623,11 @@
     "design": "Il software è cambiato da quando questo progetto è stato salvato: i valori qui sotto sono ricalcolati, i documenti non si rigenerano. «Aggiorna con il software attuale» salva di nuovo gli stessi dati con il software attuale e dice se l’esito cambia.",
     "calc": "Il software è cambiato da quando questo calcolo è stato salvato: la relazione non si rigenera. «Aggiorna con il software attuale» rifà il calcolo dagli stessi dati, con il progetto dell’impianto o il rilievo del locale macchine da cui viene, e dice se l’esito cambia.",
     "room": "Il software è cambiato da quando questo rilievo è stato salvato: i documenti non si rigenerano. «Aggiorna con il software attuale» lo salva di nuovo dalle stesse misure (e, se serve, il suo calcolo) e dice se l’esito cambia.",
-    "legacy": "Il software è cambiato da quando il progetto del vano di questo calcolo è stato salvato: la relazione non si rigenera. Il progetto si rifà dal modulo del progetto dell’impianto.",
     "same": "Rifatto con il software attuale dai dati salvati il {date}: l’esito non cambia.",
     "changed": "Rifatto con il software attuale dai dati salvati il {date}: l’esito cambia. Prima e ora:",
     "roomRedo": "Il rilievo del locale macchine salvato con il calcolo precedente non passa con il software attuale: rifallo partendo da quel rilievo.",
     "roomOpen": "Apri il rilievo",
-    "outdated": "da aggiornare"
+    "outdated": "da aggiornare",
+    "archive": "Il software è cambiato da quando questo è stato salvato: i documenti non si rigenerano. È nell’archivio dell’impianto, ora un progetto completo: il progetto si aggiorna dal suo modulo."
   }
 }

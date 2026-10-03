@@ -21,7 +21,10 @@ export function listProjects(user: SessionUser, archived: boolean, kind: Project
     select: {
       id: true, kind: true, name: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true, archivedAt: true,
       _count: { select: { calculations: true } },
-      calculations: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, engineVersion: true } },
+      calculations: {
+        orderBy: { createdAt: 'desc' }, take: 1,
+        select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, engineVersion: true, shaftDesign: { select: { engineVersion: true } } },
+      },
       // a whole project's result is its latest lift design's (the test's verdict, its parts only)
       liftDesigns: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, verdict: true, failCount: true, warnCount: true, createdAt: true, summary: true, ...LIFT_VERSIONS } },
     },
@@ -236,6 +239,11 @@ export function listRoomDesigns(user: SessionUser, projectId: string) {
       calculation: { select: { engineVersion: true } }, user: { select: { name: true } },
     },
   });
+}
+
+/** The latest machine room surveyed on a calculation of the company (one its update could not carry over). */
+export function latestRoomOf(user: SessionUser, calculationId: string) {
+  return prisma.roomDesign.findFirst({ where: { calculationId, companyId: user.companyId }, orderBy: { createdAt: 'desc' }, select: { id: true } });
 }
 
 /** A saved machine room with its calculation (values, hash, the standards chosen) and its project. */

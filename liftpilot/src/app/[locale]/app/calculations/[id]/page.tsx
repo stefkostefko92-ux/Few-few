@@ -9,7 +9,7 @@ import { calcMachine, calcOrder, designMachine, designOrder } from '@/lib/order/
 import { savedLiftAdvice, savedLiftAlternative, savedValuesAdvice } from '@/lib/lift/advice-cache';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
-import { getCalculation, listDrawingSets, listRoomDesigns, refreshedFrom } from '@/server/queries';
+import { getCalculation, latestRoomOf, listDrawingSets, listRoomDesigns, refreshedFrom } from '@/server/queries';
 import { projectCost } from '@/server/prices';
 import { calcRecord, storedCollaudo } from '@/server/records';
 import { designBasis } from '@/lib/prices/plant-bom';
@@ -36,9 +36,9 @@ export async function generateMetadata() {
 }
 
 export default async function CalculationPage({ params, searchParams }: {
-  params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ da?: string; rilievo?: string }>;
+  params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ da?: string }>;
 }) {
-  const { locale, id } = await params, sp = await searchParams;
+  const { locale, id } = await params, da = idSchema.safeParse((await searchParams).da);
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'calc:view');
   const c = await getCalculation(user, id);
@@ -53,15 +53,16 @@ export default async function CalculationPage({ params, searchParams }: {
   const C = lift?.dv.collaudo ?? storedCollaudo(rec.values, c.collaudo), norme = normeOf(C);
   const [t, tp, tr, ts, tt, ta, tm, tf, sets, before] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'),
     getTranslations('shaft'), getTranslations('tavole'), getTranslations('advice'), getTranslations('room'), getTranslations('refresh'), listDrawingSets(user, c.projectId),
-    refreshedFrom(user, 'calculation', sp.da, c.projectId)]);
+    refreshedFrom(user, 'calculation', da.data, c.projectId)]);
   // a replacement's project: the machine room surveyed on this calculation, its relazione tecnica and drawing sets
   const replacement = c.project.kind === 'REPLACEMENT' && !c.liftDesign;
   const rooms = replacement ? (await listRoomDesigns(user, c.projectId)).filter((x) => x.calculationId === c.id) : [];
   const below = V.layout === 'bottom', open = can(user, 'calc:create') && !c.project.archivedAt;
-  // a calculation of a shaft design saved before the installation design (no lift design) is made again from the form
-  const legacy = !!c.shaftDesign && !lift;
-  // the survey of the calculation updated that the new one did not take (refresh-actions.ts): to be redone from it
-  const redo = before && replacement && rooms.length === 0 ? idSchema.safeParse(sp.rilievo) : null;
+  // made again in one click: a lift design's calculation with the design, a replacement's with its machine room; one in
+  // the archive of a whole project is made again from the project's form (refresh-actions.ts)
+  const refreshable = open && (!!c.liftDesign || replacement);
+  // the machine room of the calculation it was made again from, which the new one did not take: to be redone from it
+  const lost = before && da.success && replacement && rooms.length === 0 ? await latestRoomOf(user, da.data) : null;
   // the advice among SICOR and Montanari and the machine of the draft order: those of the lift design the calculation
   // was made from (its machine room, the sheave direct pull needs), as the design's page and the report give them; else
   // for the saved values: the catalogue's machine these values are, or the advice's first
@@ -90,13 +91,14 @@ export default async function CalculationPage({ params, searchParams }: {
         </div>
       </div>
       {before ? <Refreshed before={before} now={c} locale={locale} /> : null}
-      {redo?.success ? (
-        <p className="alert alert-warn" role="status">{tf('roomRedo')} <Link href={`/app/calculations/${c.id}/locale?from=${redo.data}`}>{tf('roomOpen')}</Link></p>
+      {lost ? (
+        <p className="alert alert-warn" role="status">{tf('roomRedo')} <Link href={`/app/calculations/${c.id}/locale?from=${lost.id}`}>{tf('roomOpen')}</Link></p>
       ) : null}
       {rec.ok ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
-          <p className="m-0">{tf(lift ? 'design' : legacy ? 'legacy' : 'calc')}</p>
-          {open && !legacy ? <RefreshForm kind="calc" id={c.id} /> : null}
+          <p className="m-0">{tf(c.liftDesign ? 'design' : replacement ? 'calc' : 'archive')}</p>
+          {refreshable ? <RefreshForm kind="calc" id={c.id} />
+            : open ? <Link className="btn" href={`/app/projects/${c.projectId}/progetto`}>{ts('openForm')}</Link> : null}
         </div>
       )}
       <dl className="cartiglio">
