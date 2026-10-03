@@ -16,8 +16,12 @@ three-mesh-bvh) е отделно парче в `public/editor/chunks/`, зар�
 
 ## Команди (гейтът)
 
+CI в GitHub няма (решение на собственика): преди всеки push се пуска локално `npm run check`, а при
+промяна по сървъра или базата — и `npm run test:integration`.
+
 ```bash
 npm ci
+npm run check            # целият гейт: prisma generate, format:check, typecheck, test, test:engine, build
 npm run typecheck        # tsc над src + tests
 npm run format:check     # prettier (= npm run lint)
 npm test                 # unit (node:test през tsx) — без база
