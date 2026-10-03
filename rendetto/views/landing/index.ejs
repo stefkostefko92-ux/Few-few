@@ -41,8 +41,8 @@
     <h2 id="how-title"><%= t('landing.how.title') %></h2>
     <p class="band-lead"><%= t('landing.how.lead') %></p>
     <ol class="steps">
-      <% for (const n of [1, 2, 3, 4]) { %>
-      <li>
+      <% for (const n of howSteps) { %>
+      <li id="how-<%= n %>">
         <span class="step-n" aria-hidden="true"><%= n %></span>
         <h3><%= t('landing.how.s' + n + '.title') %></h3>
         <p><%= t('landing.how.s' + n + '.text') %></p>

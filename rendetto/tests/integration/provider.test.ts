@@ -62,9 +62,9 @@ test('the privacy policy, the footer, JSON-LD and llms.txt carry the same names,
   const ld = /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/.exec(home)?.[1] ?? '';
   const org = (
     JSON.parse(ld) as {
-      '@graph': Array<Record<string, unknown> & { '@type': string }>;
+      '@graph': Array<Record<string, unknown> & { '@type': string | string[] }>;
     }
-  )['@graph'].find((node) => node['@type'] === 'Organization');
+  )['@graph'].find((node) => [node['@type']].flat().includes('Organization'));
   assert.deepEqual(
     [org?.legalName, org?.alternateName, org?.telephone],
     [COMPANY.name, COMPANY.nameBg, COMPANY.phone],

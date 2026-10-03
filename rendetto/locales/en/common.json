@@ -12,6 +12,7 @@
     "city": "Bobov Dol",
     "region": "Kyustendil Province",
     "country": "Bulgaria",
+    "areaServed": "European Union",
     "legalName": "Carbon Stealth VCC",
     "legalForm": "variable capital company (VCC) under Bulgarian law",
     "eikLabel": "Company no. (EIK)",
@@ -28,6 +29,7 @@
   },
   "legal": {
     "nav": "Legal information",
+    "crumbs": "Breadcrumb",
     "privacyTitle": "Privacy policy",
     "termsTitle": "Terms of use",
     "openSource": "Open-source licences",

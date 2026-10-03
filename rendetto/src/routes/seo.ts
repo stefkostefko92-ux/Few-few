@@ -135,3 +135,39 @@ const INDEXNOW_KEY = readFileSync(join(ROOT, 'public', 'indexnow-key.txt'), 'utf
 seoRouter.get(['/indexnow-key.txt', `/${INDEXNOW_KEY}.txt`], (_req, res) => {
   res.type('text/plain').set('Cache-Control', 'public, max-age=86400').send(INDEXNOW_KEY);
 });
+
+/**
+ * Иконите в корена: браузърите и търсачките ги искат на тези адреси и без `<link>`. Google Search не
+ * приема SVG за иконка — ICO и PNG се правят от favicon.svg със `scripts/favicons.mjs`.
+ */
+const IMG = join(ROOT, 'public', 'img');
+const ICON_CACHE = 'public, max-age=604800';
+seoRouter.get('/favicon.ico', (_req, res) => {
+  res.type('image/x-icon').set('Cache-Control', ICON_CACHE).sendFile(join(IMG, 'favicon.ico'));
+});
+seoRouter.get('/apple-touch-icon.png', (_req, res) => {
+  res
+    .type('image/png')
+    .set('Cache-Control', ICON_CACHE)
+    .sendFile(join(IMG, 'apple-touch-icon.png'));
+});
+seoRouter.get('/site.webmanifest', (_req, res) => {
+  res
+    .type('application/manifest+json')
+    .set('Cache-Control', 'public, max-age=86400')
+    .send(
+      JSON.stringify({
+        name: 'Rendetto',
+        short_name: 'Rendetto',
+        start_url: '/',
+        display: 'browser',
+        background_color: '#f6f7f1',
+        theme_color: '#f6f7f1',
+        icons: [192, 512].map((size) => ({
+          src: `/static/img/icon-${size}.png`,
+          sizes: `${size}x${size}`,
+          type: 'image/png',
+        })),
+      }),
+    );
+});

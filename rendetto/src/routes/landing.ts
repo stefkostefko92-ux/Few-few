@@ -9,6 +9,7 @@ import { REFUND_DAYS, WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
 import { LEGAL, legalPath, PATHS } from '../seo/paths.js';
 import {
   FAQ_IDS,
+  HOW_STEPS,
   landingStructuredData,
   landingTextParams,
   legalStructuredData,
@@ -68,6 +69,7 @@ function landing(locale: Locale) {
       assets: landingAssets(),
       kinds: furnitureByGroup(),
       faqIds: FAQ_IDS,
+      howSteps: HOW_STEPS,
       texts: landingTextParams(locale, prices),
       jsonLd: landingStructuredData(locale, translatorFor(locale), canonical, prices),
     });

@@ -2,7 +2,7 @@ import { COMPANY, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { LOCALE_TAG, type Locale, type Translator } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
-import { formatMoney, type PriceRow } from '../plans/pricing.js';
+import { formatMoney, priceTable, type PriceRow } from '../plans/pricing.js';
 
 /**
  * JSON-LD за публичните страници. Текстовете идват от същите преводи, които страницата показва —
@@ -21,6 +21,9 @@ export const FAQ_IDS = [
 ] as const;
 
 export type FaqId = (typeof FAQ_IDS)[number];
+
+/** Стъпките в „Как работи“ (`landing.how.s1…s4`) — витрината и HowTo ги вземат оттук. */
+export const HOW_STEPS = [1, 2, 3, 4] as const;
 
 /**
  * Числата в текстовете на витрината — от ценоразписа и срока на теста, не написани на ръка. Едни и
@@ -59,9 +62,15 @@ function decimal(cents: number): string {
   return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`;
 }
 
-function organization(t: Translator) {
+/**
+ * Фирмата — един възел и за Organization, и за LocalBusiness (едно `@id`, без раздвояване на субекта).
+ * Работно време няма, защото фирмата не е обявила такова; `geo` е същото като в geo мета таговете, а
+ * ценовият диапазон идва от ценоразписа (от месечния план до Lifetime, с ДДС).
+ */
+function organization(t: Translator, locale: Locale) {
+  const gross = priceTable().map((row) => row.totalWithVatCents);
   return {
-    '@type': 'Organization',
+    '@type': ['Organization', 'LocalBusiness'],
     '@id': `${COMPANY.url}/#org`,
     name: COMPANY.name,
     legalName: COMPANY.name,
@@ -86,6 +95,13 @@ function organization(t: Translator) {
       postalCode: COMPANY.postalCode,
       addressCountry: COMPANY.country,
     },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: COMPANY.geo.latitude,
+      longitude: COMPANY.geo.longitude,
+    },
+    areaServed: { '@type': 'Place', name: t('company.areaServed') },
+    priceRange: `${formatMoney(Math.min(...gross), locale)} – ${formatMoney(Math.max(...gross), locale)}`,
   };
 }
 
@@ -134,7 +150,7 @@ export function landingStructuredData(
   const base = config().PUBLIC_BASE_URL;
   const params = landingTextParams(locale, prices);
   const graph = [
-    organization(t),
+    organization(t, locale),
     website(base),
     {
       '@type': 'WebPage',
@@ -165,8 +181,23 @@ export function landingStructuredData(
       description: t('landing.meta.description', params.description),
       inLanguage: ['bg', 'en', 'it'],
       publisher: { '@id': `${COMPANY.url}/#org` },
-      featureList: [1, 2, 3, 4].map((n) => t(`landing.how.s${n}.title`)),
+      featureList: HOW_STEPS.map((n) => t(`landing.how.s${n}.title`)),
       offers: offers(t, prices, `${canonical}#prices`),
+    },
+    {
+      // стъпките от „Как работи“ дума по дума, всяка със своята котва на страницата
+      '@type': 'HowTo',
+      '@id': `${canonical}#how`,
+      name: t('landing.how.title'),
+      description: t('landing.how.lead'),
+      inLanguage: LOCALE_TAG[locale],
+      step: HOW_STEPS.map((n) => ({
+        '@type': 'HowToStep',
+        position: n,
+        name: t(`landing.how.s${n}.title`),
+        text: t(`landing.how.s${n}.text`),
+        url: `${canonical}#how-${n}`,
+      })),
     },
     {
       '@type': 'FAQPage',
@@ -192,7 +223,7 @@ export function legalStructuredData(
   return jsonLdScript({
     '@context': 'https://schema.org',
     '@graph': [
-      organization(t),
+      organization(t, locale),
       website(base),
       {
         '@type': 'WebPage',

@@ -5,6 +5,7 @@
 <body class="site">
 <%- include('../partials/site-bar', { sections: false }) %>
 <main id="main" class="wrap legal">
+  <%- include('crumbs', { current: t('legal.termsTitle') }) %>
   <h1><%= t('legal.termsTitle') %></h1>
   <p class="updated"><%= t('legal.updated', { date: fmt.date(new Date(updated + 'T12:00:00Z')) }) %></p>
   <%- include('terms/' + locale) %>

@@ -170,6 +170,22 @@
 .legal .updated {
   color: var(--ink-2);
 }
+/* breadcrumbs: the same two steps as the BreadcrumbList in the JSON-LD */
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+.crumbs li + li::before {
+  content: '›';
+  content: '›' / '';
+  margin-right: 8px;
+}
 .legal .table-wrap {
   margin: 12px 0;
 }

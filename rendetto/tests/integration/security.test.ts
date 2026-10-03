@@ -246,15 +246,17 @@ test('public SEO files', async () => {
   assert.match(llms, /30-day trial/);
   const home = await (await fetch(`${BASE}/en/`)).text();
   const ld = /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/.exec(home)?.[1] ?? '';
-  const graph = (JSON.parse(ld) as { '@graph': Array<{ '@type': string }> })['@graph'].map(
-    (n) => n['@type'],
-  );
+  const graph = (JSON.parse(ld) as { '@graph': Array<{ '@type': string | string[] }> })[
+    '@graph'
+  ].flatMap((n) => n['@type']);
   for (const type of [
     'Organization',
+    'LocalBusiness',
     'WebSite',
     'WebPage',
     'BreadcrumbList',
     'SoftwareApplication',
+    'HowTo',
     'FAQPage',
   ])
     assert.ok(graph.includes(type), type);
