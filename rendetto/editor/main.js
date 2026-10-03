@@ -17,6 +17,7 @@ import { renderDrawing } from './render-draw.js';
 import { renderCnc, drawToolpath, toggleSim, stopSim } from './render-cnc.js';
 import { renderCatalog, bindCatalog } from './render-catalog.js';
 import { createViewer } from './bind-view.js';
+import { bindFullscreens } from './fullscreen.js';
 import { createSaver } from './saver.js';
 import { renderHeader } from './header.js';
 
@@ -227,8 +228,9 @@ function bindUi() {
   );
   bindCatalog(CATALOG);
 
-  // 3D
+  // 3D, and full screen for it and the drawings
   viewer = createViewer(text);
+  bindFullscreens(text);
 
   // saving and downloads
   if (!readOnly) {
@@ -273,8 +275,12 @@ async function start() {
   state.spec = normalizeSpec(boot.spec ?? { type: 'base' });
   bindUi();
   writeForm(form, state.spec, true);
-  const hashTab = location.hash.replace('#', '');
-  selectTab(TABS.includes(hashTab) ? hashTab : 'view');
+  const tabOfHash = () => location.hash.replace('#', '');
+  selectTab(TABS.includes(tabOfHash()) ? tabOfHash() : 'view');
+  // a link or the address bar can change the tab later too (replaceState in selectTab fires no hashchange)
+  window.addEventListener('hashchange', () => {
+    if (TABS.includes(tabOfHash()) && tabOfHash() !== state.tab) selectTab(tabOfHash());
+  });
   await recompute(true);
   // what was just loaded counts as saved, even if this browser's catalog normalizes it slightly differently
   state.savedHash = state.hash;

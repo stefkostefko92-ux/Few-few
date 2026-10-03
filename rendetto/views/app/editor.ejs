@@ -1,7 +1,7 @@
 <%- include('../partials/head', { title: project.name + ' — Rendetto', styles: ['app'], noindex: true, extraHead: '<link rel="stylesheet" href="/static/editor/editor.css?v=' + v + '">' + editorPreload.map((p) => '<link rel="modulepreload" href="/static/editor/' + p + '">').join('') }) %>
 <body class="appbody editor-body">
 <%- include('../partials/app-header') %>
-<main class="editor" id="main" lang="bg" data-readonly="<%= readOnly ? 'true' : 'false' %>" data-csrf="<%= csrfToken %>" data-text="<%= JSON.stringify({ saving: te('editor.saving'), unsaved: te('editor.unsaved'), saved: te('editor.saved'), saveFailed: te('editor.saveFailed'), noWebgl: te('editor.noWebgl'), photoPreparing: te('editor.photoPreparing'), photoProgress: te('editor.photoProgress'), photoReady: te('editor.photoReady'), photoUnsupported: te('editor.photoUnsupported'), photoFailed: te('editor.photoFailed') }) %>">
+<main class="editor" id="main" lang="bg" data-readonly="<%= readOnly ? 'true' : 'false' %>" data-csrf="<%= csrfToken %>" data-text="<%= JSON.stringify({ saving: te('editor.saving'), unsaved: te('editor.unsaved'), saved: te('editor.saved'), saveFailed: te('editor.saveFailed'), noWebgl: te('editor.noWebgl'), photoPreparing: te('editor.photoPreparing'), photoProgress: te('editor.photoProgress'), photoReady: te('editor.photoReady'), photoUnsupported: te('editor.photoUnsupported'), photoFailed: te('editor.photoFailed'), fullscreen: te('editor.fullscreen'), zoomIn: te('editor.zoomIn'), zoomOut: te('editor.zoomOut'), zoomFit: te('editor.zoomFit'), zoomHint: te('editor.zoomHint') }) %>">
   <div class="ed-top">
     <a class="btn btn-quiet btn-small" href="/app"><%- include('../partials/icon', { name: 'back' }) %><span><%= te('editor.back') %></span></a>
     <div class="ed-title">
@@ -114,6 +114,7 @@
           <button type="button" class="btn btn-small" id="photo" aria-pressed="false"><%= te('editor.photo') %></button>
           <button type="button" class="btn btn-small" id="photo-save" hidden><%= te('editor.photoSave') %></button>
           <output id="photo-state" class="hint" aria-live="polite"></output>
+          <button type="button" class="btn btn-small fs-btn" data-fs="panel-view" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button>
         </div>
         <p class="hint"><%= te('editor.viewHint') %></p>
       </section>
@@ -135,9 +136,11 @@
         <div class="stats" id="drill-summary"></div>
         <div class="row"><h2><%= te('editor.drillTitle') %></h2><button type="button" class="btn btn-small" id="copy-drill"><%= te('editor.copyDrill') %></button></div>
         <div class="cols" id="drill-cards"></div>
-        <div class="row"><h2><%= te('editor.drillMap') %></h2><select id="drill-part" class="pick" aria-label="<%= te('editor.part') %>"></select></div>
-        <p class="hint" id="drill-axes"></p>
-        <div class="paperwrap" id="drill-map"></div>
+        <div class="fs" id="drill-fs">
+          <div class="row"><h2><%= te('editor.drillMap') %></h2><div class="acts"><select id="drill-part" class="pick" aria-label="<%= te('editor.part') %>"></select><button type="button" class="btn btn-small fs-btn" data-fs="drill-fs" data-fs-zoom="drill-map" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
+          <p class="hint" id="drill-axes"></p>
+          <div class="paperwrap" id="drill-map"></div>
+        </div>
         <div class="tablewrap"><table id="drill-table"><thead><tr><th>№</th><th><%= te('editor.col.letter') %></th><th>X (u)</th><th>Y (v)</th><th>Ø</th><th><%= te('editor.col.depth') %></th><th><%= te('editor.col.purpose') %></th><th><%= te('editor.col.hardware') %></th></tr></thead><tbody></tbody></table></div>
         <p class="note"><%= te('editor.drillNote') %></p>
       </section>
@@ -150,8 +153,10 @@
       </section>
 
       <section id="panel-draw" role="tabpanel" aria-labelledby="tab-draw" hidden>
-        <div class="row"><h2><%= te('editor.drawings') %></h2><div class="acts"><select id="draw-part" class="pick" aria-label="<%= te('editor.sheet') %>"></select><button type="button" class="btn btn-small" id="copy-svg"><%= te('editor.copySvg') %></button></div></div>
-        <div class="paperwrap" id="drawing"></div>
+        <div class="fs" id="draw-fs">
+          <div class="row"><h2><%= te('editor.drawings') %></h2><div class="acts"><select id="draw-part" class="pick" aria-label="<%= te('editor.sheet') %>"></select><button type="button" class="btn btn-small" id="copy-svg"><%= te('editor.copySvg') %></button><button type="button" class="btn btn-small fs-btn" data-fs="draw-fs" data-fs-zoom="drawing" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
+          <div class="paperwrap" id="drawing"></div>
+        </div>
         <p class="note"><%= te('editor.drawNote') %></p>
       </section>
 
@@ -159,8 +164,8 @@
         <div class="row"><select id="cnc-sheet" class="pick" aria-label="<%= te('editor.cncSheet') %>"></select></div>
         <div class="stats" id="cnc-stats"></div>
         <div id="cnc-manual"></div>
-        <div class="card">
-          <div class="sim"><button type="button" class="btn btn-primary btn-small" id="sim-play" aria-pressed="false"><%= te('editor.simulate') %></button><input type="range" id="sim-progress" min="0" max="1000" value="1000" aria-label="<%= te('editor.progress') %>"><output id="sim-label" for="sim-progress">100%</output></div>
+        <div class="card fs" id="cnc-fs">
+          <div class="sim"><button type="button" class="btn btn-primary btn-small" id="sim-play" aria-pressed="false"><%= te('editor.simulate') %></button><input type="range" id="sim-progress" min="0" max="1000" value="1000" aria-label="<%= te('editor.progress') %>"><output id="sim-label" for="sim-progress">100%</output><button type="button" class="btn btn-small fs-btn" data-fs="cnc-fs" data-fs-zoom="toolpath" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div>
           <div id="toolpath"></div>
           <div class="legend" id="cnc-tools"></div>
         </div>
