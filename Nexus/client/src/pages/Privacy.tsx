@@ -10,17 +10,19 @@ export default function Privacy(): React.ReactElement {
       </header>
       <article>
         <h1>Privacy Policy</h1>
-        <p className="muted">Last updated: 2026-06-26</p>
+        <p className="muted">Last updated: 2026-10-03</p>
 
         <h2>1. Controller (data fiduciary)</h2>
         <p>
           The controller for personal data processed by Nexus Dominion is:
         </p>
         <address style={{ fontStyle: 'normal' }}>
-          <strong>{OPERATOR.legalName}</strong><br />
+          <strong>{OPERATOR.legalName}</strong> (Bulgarian name: <span lang="bg">{OPERATOR.legalNameBg}</span>), a {OPERATOR.legalForm}<br />
           {OPERATOR.address.street}<br />
           {OPERATOR.address.postal} {OPERATOR.address.city}, {OPERATOR.address.country}<br />
-          VAT/EIK: {OPERATOR.vat} · Registry: {OPERATOR.registry}<br />
+          Company no. (EIK): {OPERATOR.eik} · VAT no.: {OPERATOR.vat}<br />
+          Registered in the {OPERATOR.registry}<br />
+          Phone: <a href={`tel:${OPERATOR.phone.replace(/\s/g, '')}`}>{OPERATOR.phone}</a><br />
           Email: <a href={`mailto:${OPERATOR.email.privacy}`}>{OPERATOR.email.privacy}</a><br />
           Data-protection contact: <a href={`mailto:${OPERATOR.email.dpo}`}>{OPERATOR.email.dpo}</a>
         </address>
