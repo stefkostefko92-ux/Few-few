@@ -15,7 +15,7 @@
     <figcaption><%= t('plan.withdraw.statementLabel') %></figcaption>
     <blockquote><%= statement %></blockquote>
   </figure>
-  <p><%= t(order.earlyStartRequestedAt ? 'plan.withdraw.effectEarly' : 'plan.withdraw.effect') %></p>
+  <p><%= t(order.earlyStartRequestedAt ? 'plan.withdraw.effectEarly' : 'plan.withdraw.effect', { refundDays }) %></p>
   <form method="post" action="/account/plan/withdraw/<%= order.id %>" class="form">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="actions"><button class="btn btn-danger" type="submit"><%= t('plan.withdraw.confirm') %></button><a class="btn btn-quiet" href="/account/plan"><%= t('plan.withdraw.back') %></a></div>

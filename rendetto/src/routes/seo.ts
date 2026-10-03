@@ -7,6 +7,7 @@ import { LOCALES } from '../i18n.js';
 import { ROOT } from '../paths.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
+import { WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
 import { legalPath, PATHS } from '../seo/paths.js';
 
 export const seoRouter: Router = Router();
@@ -113,7 +114,7 @@ seoRouter.get('/llms.txt', (_req, res) => {
         '',
         '## Facts',
         `- Price for consumers (incl. ${VAT_BG_PERCENT}% Bulgarian VAT): ${eur(monthly?.totalWithVatCents ?? 0)} per month (${eur(monthly?.totalCents ?? 0)} excl. VAT); ${terms}; Lifetime ${eur(lifetime?.totalWithVatCents ?? 0)} (${eur(lifetime?.totalCents ?? 0)} excl. VAT), 2.5 times the yearly price without the 12-month discount, valid for as long as Rendetto is offered. Plans do not renew automatically.`,
-        '- Ordering: from the account, with an order button that states the obligation to pay; payment by bank transfer against an invoice. Consumers may withdraw within 14 days with the "Withdraw from contract here" button.',
+        `- Ordering: from the account, with an order button that states the obligation to pay; payment by bank transfer against an invoice. Consumers may withdraw within ${WITHDRAWAL_DAYS} days with the "Withdraw from contract here" button.`,
         '- After the trial ends, existing projects stay available for download; creating or changing projects needs Premium or Lifetime.',
         "- Hinge drilling follows the manufacturers' documents: Blum CLIP top, Hettich Sensys, GTV and Salice Series 200. Drawer slides: GTV H45 PRESTIGE, Blum TANDEM 560H and Blum MOVENTO 760H.",
         '- Languages: the website, account and admin pages are in Bulgarian, English and Italian; the editor, drawings and CSV tables are in Bulgarian for now.',

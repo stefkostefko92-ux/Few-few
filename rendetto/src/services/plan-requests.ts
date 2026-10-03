@@ -155,7 +155,14 @@ export async function withdrawFromOrder(
       where: { requestId },
       orderBy: { createdAt: 'desc' },
     });
-    if (!activation) return 'open';
+    if (!activation) {
+      // Активирана, но без връзка към промяната (или планът е сменен на ръка след поръчката) — не
+      // гадаем какво да върнем: оправя го екипът.
+      const changedSince = await tx.planChange.count({
+        where: { userId: user.id, createdAt: { gt: before.createdAt } },
+      });
+      return before.status === 'DONE' || changedSince > 0 ? 'manual' : 'open';
+    }
     const [latest, current] = await Promise.all([
       tx.planChange.findFirst({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } }),
       tx.user.findUniqueOrThrow({ where: { id: user.id } }),

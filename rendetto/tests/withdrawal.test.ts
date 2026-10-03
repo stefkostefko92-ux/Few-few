@@ -70,6 +70,7 @@ test('who may withdraw and when the paid period may start', () => {
     createdAt,
     earlyStartRequestedAt: null,
     withdrawnAt: null,
+    termsVersion: '2026-10-03',
   };
   assert.equal(canWithdraw(order, new Date('2026-10-19T20:00:00Z')), true);
   assert.equal(canWithdraw(order, new Date('2026-10-20T04:00:00Z')), false);
@@ -80,4 +81,7 @@ test('who may withdraw and when the paid period may start', () => {
   assert.equal(paidStartAllowedFrom(order).toISOString(), '2026-10-20T04:00:00.000Z');
   assert.equal(paidStartAllowedFrom({ ...order, earlyStartRequestedAt: createdAt }), createdAt);
   assert.equal(paidStartAllowedFrom({ ...order, buyerType: 'BUSINESS' }), createdAt);
+  // заявка отпреди поръчките: не е договор по тези правила — без бутон за отказ и без изчакване
+  assert.equal(canWithdraw({ ...order, termsVersion: null }, createdAt), false);
+  assert.equal(paidStartAllowedFrom({ ...order, termsVersion: null }), createdAt);
 });

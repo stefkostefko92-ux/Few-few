@@ -158,3 +158,30 @@ test('an account with an unconfirmed email cannot order: the contract goes by em
     0,
   );
 });
+
+test('a team member’s export keeps their actions on other accounts, without the other person’s details', async () => {
+  const support = await staff('SUPPORT', 'support.export@example.test');
+  await customer('banned.export@example.test');
+  const victim = await prisma.user.findUniqueOrThrow({
+    where: { email: 'banned.export@example.test' },
+  });
+  const { banAccount } = await import('../../src/services/admin-security.js');
+  const actor = {
+    type: 'HUMAN' as const,
+    id: support.id,
+    label: 'Екип SUPPORT',
+    role: 'SUPPORT' as const,
+  };
+  assert.deepEqual(
+    await banAccount(actor, victim.id, { reason: 'Споделен акаунт с друга фирма' }),
+    {
+      ok: true,
+    },
+  );
+  const data = (await exportOwnData(support.id)) as {
+    auditLog: Array<{ action: string; detail: unknown; target: unknown }>;
+  };
+  const ban = data.auditLog.find((a) => a.action === 'admin.account.banned');
+  assert.ok(ban, 'the action itself is listed');
+  assert.deepEqual([ban.detail, ban.target], [null, null]);
+});

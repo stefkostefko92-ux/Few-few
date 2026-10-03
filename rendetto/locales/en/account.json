@@ -68,14 +68,14 @@
       "legend": "You are buying as",
       "consumer": "A private individual (consumer)",
       "business": "A business or self-employed person, for professional purposes",
-      "hint": "Consumers may withdraw within 14 days. Business purchases carry no right of withdrawal; put the invoice details in the message.",
+      "hint": "Consumers may withdraw within {days} days. Business purchases carry no right of withdrawal; put the invoice details in the message.",
       "consumerShort": "consumer",
       "businessShort": "business"
     },
     "early": {
       "legend": "When the plan starts",
-      "label": "I want the plan to start right after payment, before the 14-day withdrawal period ends. I understand that if I withdraw, I will pay for the time the plan was active.",
-      "hint": "Consumers only. If you leave this unticked, the paid period starts after the 14-day withdrawal period ends.",
+      "label": "I want the plan to start right after payment, before the {days}-day withdrawal period ends. I understand that if I withdraw, I will pay for the time the plan was active.",
+      "hint": "Consumers only. If you leave this unticked, the paid period starts after the {days}-day withdrawal period ends.",
       "short": "early start"
     },
     "accept": "By ordering, you accept the {terms} and the information on the {withdrawal}.",
@@ -93,7 +93,7 @@
     "withdraw": {
       "button": "Withdraw from contract here",
       "until": "until {date}",
-      "where": "If you are a consumer, you may withdraw from an order within 14 days of placing it, without giving any reason — use the “Withdraw from contract here” button next to it.",
+      "where": "If you are a consumer, you may withdraw from an order within {days} days of placing it, without giving any reason — use the “Withdraw from contract here” button next to it.",
       "title": "Withdrawal from the contract",
       "intro": "Check the details and confirm. The withdrawal period ends on {date}, and you will get the confirmation by email straight away.",
       "name": "Name",
@@ -101,8 +101,8 @@
       "orderNo": "order no. {id}",
       "email": "Confirmation goes to",
       "statementLabel": "The statement you are sending",
-      "effect": "If you have already paid, we will refund all payments received within 14 days, using the same means of payment and at no cost to you. If the plan has already been activated, we return it to what it was before the order.",
-      "effectEarly": "If you have already paid, we will refund the payments received within 14 days, using the same means of payment and at no cost to you — minus the part for the time the plan was active, because you asked for an early start. If the plan has already been activated, we return it to what it was before the order.",
+      "effect": "If you have already paid, we will refund all payments received within {refundDays} days, using the same means of payment and at no cost to you. If the plan has already been activated, we return it to what it was before the order.",
+      "effectEarly": "If you have already paid, we will refund the payments received within {refundDays} days, using the same means of payment and at no cost to you — minus the part for the time the plan was active, because you asked for an early start. If the plan has already been activated, we return it to what it was before the order.",
       "confirm": "Confirm withdrawal",
       "back": "Back, without withdrawing",
       "unavailable": "The withdrawal period for this order has ended or the order is already closed."

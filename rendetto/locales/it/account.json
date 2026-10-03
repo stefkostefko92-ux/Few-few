@@ -68,14 +68,14 @@
       "legend": "Acquistate come",
       "consumer": "Persona fisica (consumatore)",
       "business": "Azienda o professionista, per scopi professionali",
-      "hint": "Il consumatore può recedere entro 14 giorni. Per gli acquisti delle aziende il recesso non è previsto; scrivete i dati per la fattura nel messaggio.",
+      "hint": "Il consumatore può recedere entro {days} giorni. Per gli acquisti delle aziende il recesso non è previsto; scrivete i dati per la fattura nel messaggio.",
       "consumerShort": "consumatore",
       "businessShort": "azienda"
     },
     "early": {
       "legend": "Quando inizia il piano",
-      "label": "Voglio che il piano inizi subito dopo il pagamento, prima della fine dei 14 giorni per il recesso. So che, se recedo, pagherò la parte del prezzo per il periodo in cui il piano è stato attivo.",
-      "hint": "Solo per i consumatori. Se non la spuntate, il periodo a pagamento inizia dopo la fine dei 14 giorni per il recesso.",
+      "label": "Voglio che il piano inizi subito dopo il pagamento, prima della fine dei {days} giorni per il recesso. So che, se recedo, pagherò la parte del prezzo per il periodo in cui il piano è stato attivo.",
+      "hint": "Solo per i consumatori. Se non la spuntate, il periodo a pagamento inizia dopo la fine dei {days} giorni per il recesso.",
       "short": "inizio anticipato"
     },
     "accept": "Con l'ordine accettate le {terms} e le informazioni sul {withdrawal}.",
@@ -93,7 +93,7 @@
     "withdraw": {
       "button": "Recedi dal contratto qui",
       "until": "scadenza: {date}",
-      "where": "Se siete consumatori, potete recedere da un ordine entro 14 giorni, senza indicarne il motivo, con il pulsante «Recedi dal contratto qui» accanto all'ordine.",
+      "where": "Se siete consumatori, potete recedere da un ordine entro {days} giorni, senza indicarne il motivo, con il pulsante «Recedi dal contratto qui» accanto all'ordine.",
       "title": "Recesso dal contratto",
       "intro": "Controllate i dati e confermate. Ultimo giorno del periodo di recesso: {date}. La conferma vi arriverà subito per email.",
       "name": "Nome",
@@ -101,8 +101,8 @@
       "orderNo": "ordine n. {id}",
       "email": "La conferma va a",
       "statementLabel": "La dichiarazione che inviate",
-      "effect": "Se avete già pagato, vi rimborseremo tutti i pagamenti ricevuti entro 14 giorni, con lo stesso mezzo di pagamento e senza costi per voi. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
-      "effectEarly": "Se avete già pagato, vi rimborseremo i pagamenti ricevuti entro 14 giorni, con lo stesso mezzo di pagamento e senza costi per voi, meno la parte per il periodo in cui il piano è stato attivo, perché avete chiesto l'inizio anticipato. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
+      "effect": "Se avete già pagato, vi rimborseremo tutti i pagamenti ricevuti entro {refundDays} giorni, con lo stesso mezzo di pagamento e senza costi per voi. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
+      "effectEarly": "Se avete già pagato, vi rimborseremo i pagamenti ricevuti entro {refundDays} giorni, con lo stesso mezzo di pagamento e senza costi per voi, meno la parte per il periodo in cui il piano è stato attivo, perché avete chiesto l'inizio anticipato. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
       "confirm": "Conferma recesso",
       "back": "Indietro, senza recedere",
       "unavailable": "Il periodo di recesso per questo ordine è scaduto o l'ordine è già chiuso."

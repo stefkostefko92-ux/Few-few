@@ -5,6 +5,7 @@ import { applyLocale } from '../http/locale.js';
 import { LOCALES, translatorFor, type Locale } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
+import { REFUND_DAYS, WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
 import { LEGAL, legalPath, PATHS } from '../seo/paths.js';
 import {
   FAQ_IDS,
@@ -94,6 +95,8 @@ for (const page of LEGAL) {
         trialDays: TRIAL_DAYS,
         prices: priceTable(),
         vatPercent: VAT_BG_PERCENT,
+        withdrawalDays: WITHDRAWAL_DAYS,
+        refundDays: REFUND_DAYS,
         updated: LEGAL_UPDATED[page],
         jsonLd: legalStructuredData(
           locale,

@@ -231,13 +231,18 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
     })),
     // Одитът за човека: неговите действия и действията на екипа върху акаунта, поръчките и проектите
     // му. Името и IP адресът на служителя не са негови данни — остава само „екипът“.
-    auditLog: auditEntries.map((a) => ({
-      at: a.at,
-      action: a.action,
-      by: a.actorId === user.id ? 'you' : a.actorType === 'SYSTEM' ? 'system' : 'team',
-      target: a.targetType,
-      detail: a.detail,
-      ip: a.actorId === user.id ? a.ip : null,
-    })),
+    auditLog: auditEntries.map((a) => {
+      // Действие на служител върху чужд акаунт: подробностите (причина за бан, хеш на имейл) са за
+      // другия човек, не за този (чл. 15, пар. 4 ОРЗД) — остава само какво и кога.
+      const aboutOthers = a.actorId === user.id && a.targetId !== null && !own.includes(a.targetId);
+      return {
+        at: a.at,
+        action: a.action,
+        by: a.actorId === user.id ? 'you' : a.actorType === 'SYSTEM' ? 'system' : 'team',
+        target: aboutOthers ? null : a.targetType,
+        detail: aboutOthers ? null : a.detail,
+        ip: a.actorId === user.id ? a.ip : null,
+      };
+    }),
   };
 }

@@ -143,3 +143,47 @@ test('after the period there is no withdrawal button; an unpaid order can still 
     'CANCELLED',
   );
 });
+
+test('a request from before the orders is no contract under these rules; a plan changed by hand is left to the team', async () => {
+  const manager = await staff('MANAGER', 'orders.manager4@example.test');
+  const actor = {
+    type: 'HUMAN' as const,
+    id: manager.id,
+    label: 'Екип MANAGER',
+    role: 'MANAGER' as const,
+  };
+  const { c, row } = await placeOrder('legacy@example.test', { option: 'm1', buyer: 'consumer' });
+  await prisma.upgradeRequest.update({ where: { id: row.id }, data: { termsVersion: null } });
+  assert.doesNotMatch((await c.get('/account/plan')).body, /Откажете се от договора тук<\/a>/);
+  assert.deepEqual(
+    await changePlan(actor, row.userId, {
+      plan: 'PREMIUM',
+      mode: 'months',
+      months: 1,
+      notify: false,
+      requestId: row.id,
+    }),
+    { ok: true },
+    'activated without waiting for a withdrawal period it never had',
+  );
+
+  const { c: c2, row: second } = await placeOrder('byhand@example.test', {
+    option: 'm1',
+    buyer: 'consumer',
+    early: 'yes',
+  });
+  assert.deepEqual(
+    await changePlan(actor, second.userId, {
+      plan: 'PREMIUM',
+      mode: 'months',
+      months: 1,
+      notify: false,
+    }),
+    { ok: true },
+  );
+  await c2.post(`/account/plan/withdraw/${second.id}`, {
+    _csrf: await sessionCsrf(c2, `/account/plan/withdraw/${second.id}`),
+  });
+  const notice = await mailTo(STAFF_INBOX, /Отказ от договора в Rendetto: byhand@example\.test/);
+  assert.match(notice.text, /Планът НЕ е върнат автоматично/);
+});

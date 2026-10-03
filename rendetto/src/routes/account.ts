@@ -8,7 +8,13 @@ import { rawField, requestMeta, stringField } from '../http/meta.js';
 import { LOCALES, type Locale } from '../i18n.js';
 import { planView } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
-import { canWithdraw, paidStartAllowedFrom, withdrawalLastDay } from '../plans/withdrawal.js';
+import {
+  canWithdraw,
+  paidStartAllowedFrom,
+  REFUND_DAYS,
+  WITHDRAWAL_DAYS,
+  withdrawalLastDay,
+} from '../plans/withdrawal.js';
 import { deleteOwnAccount, exportOwnData, updateProfile } from '../services/account-self.js';
 import { orderPlanName, withdrawalStatement } from '../services/order-mail.js';
 import {
@@ -108,6 +114,7 @@ accountRouter.get('/account/plan', async (req, res) => {
       activationFrom: paidStartAllowedFrom(r),
     })),
     now,
+    withdrawalDays: WITHDRAWAL_DAYS,
     section: 'plan',
   });
 });
@@ -147,6 +154,7 @@ accountRouter.get('/account/plan/withdraw/:id', async (req, res) => {
     planName: orderPlanName(order, res.locals.locale as Locale),
     statement: withdrawalStatement(order, user, res.locals.locale as Locale),
     lastDay: withdrawalLastDay(order.createdAt),
+    refundDays: REFUND_DAYS,
     section: 'plan',
   });
 });

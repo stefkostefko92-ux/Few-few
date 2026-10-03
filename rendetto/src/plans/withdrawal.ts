@@ -35,11 +35,14 @@ export interface OrderTerms {
   createdAt: Date;
   earlyStartRequestedAt: Date | null;
   withdrawnAt: Date | null;
+  /** null = заявка отпреди поръчките (без договор по тези правила): нито бутон за отказ, нито изчакване. */
+  termsVersion: string | null;
 }
 
-/** Може ли потребителят да се откаже сега: поръчка на потребител, жива, в срока. */
+/** Може ли потребителят да се откаже сега: поръчка на потребител по тези правила, жива, в срока. */
 export function canWithdraw(order: OrderTerms, now: Date = new Date()): boolean {
   return (
+    order.termsVersion !== null &&
     order.buyerType === 'CONSUMER' &&
     (order.status === 'OPEN' || order.status === 'DONE') &&
     order.withdrawnAt === null &&
@@ -52,7 +55,9 @@ export function canWithdraw(order: OrderTerms, now: Date = new Date()): boolean 
  * иначе при отказ той не дължи нищо за вече даденото (чл. 14, пар. 4 от Директивата).
  */
 export function paidStartAllowedFrom(order: OrderTerms): Date {
-  return order.buyerType === 'CONSUMER' && !order.earlyStartRequestedAt
+  return order.termsVersion !== null &&
+    order.buyerType === 'CONSUMER' &&
+    !order.earlyStartRequestedAt
     ? withdrawalOpenUntil(order.createdAt)
     : order.createdAt;
 }

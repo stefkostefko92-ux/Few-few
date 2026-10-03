@@ -14,7 +14,7 @@
 <% if (requests.length) { %>
 <section class="section" aria-labelledby="req-h">
   <h2 id="req-h"><%= t('plan.requestsTitle') %></h2>
-  <p class="muted"><%= t('plan.withdraw.where') %></p>
+  <p class="muted"><%= t('plan.withdraw.where', { days: withdrawalDays }) %></p>
   <div class="table-wrap"><table class="stack">
     <thead><tr><th><%= t('plan.col.date') %></th><th><%= t('plan.col.option') %></th><th class="num"><%= t('plan.col.price') %></th><th><%= t('plan.col.status') %></th><th><%= t('plan.col.actions') %></th></tr></thead>
     <tbody>
@@ -64,12 +64,12 @@
       <legend><%= t('plan.buyer.legend') %></legend>
       <label class="check"><input type="radio" name="buyer" value="consumer" checked required><span><%= t('plan.buyer.consumer') %></span></label>
       <label class="check"><input type="radio" name="buyer" value="business"><span><%= t('plan.buyer.business') %></span></label>
-      <p class="hint"><%= t('plan.buyer.hint') %></p>
+      <p class="hint"><%= t('plan.buyer.hint', { days: withdrawalDays }) %></p>
     </fieldset>
     <fieldset class="order-who">
       <legend><%= t('plan.early.legend') %></legend>
-      <label class="check"><input type="checkbox" name="early" value="yes"><span><%= t('plan.early.label') %></span></label>
-      <p class="hint"><%= t('plan.early.hint') %></p>
+      <label class="check"><input type="checkbox" name="early" value="yes"><span><%= t('plan.early.label', { days: withdrawalDays }) %></span></label>
+      <p class="hint"><%= t('plan.early.hint', { days: withdrawalDays }) %></p>
     </fieldset>
     <div class="field"><label for="message"><%= t('plan.message') %></label><textarea id="message" name="message" maxlength="1000" placeholder="<%= t('plan.messagePlaceholder') %>"></textarea></div>
     <p class="order-accept"><%- t('plan.accept', { terms: '<a href="' + termsHref + '" target="_blank" rel="noopener">' + t('plan.termsLink') + '</a>', withdrawal: '<a href="' + termsHref + '#withdrawal" target="_blank" rel="noopener">' + t('plan.withdrawalLink') + '</a>' }) %></p>

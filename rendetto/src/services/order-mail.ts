@@ -9,7 +9,12 @@ import {
   mailWithdrawalReceived,
 } from '../mail/templates.js';
 import { formatMoney, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
-import { paidStartAllowedFrom, REFUND_DAYS, withdrawalLastDay } from '../plans/withdrawal.js';
+import {
+  paidStartAllowedFrom,
+  REFUND_DAYS,
+  WITHDRAWAL_DAYS,
+  withdrawalLastDay,
+} from '../plans/withdrawal.js';
 import { legalPath } from '../seo/paths.js';
 
 /**
@@ -91,7 +96,8 @@ export function withdrawalForm(locale: Locale): string {
 
 function paymentText(order: OrderRecord, locale: Locale): string {
   if (order.buyerType === 'BUSINESS') return translate(locale, 'mail.order.paymentBusiness');
-  if (order.earlyStartRequestedAt) return translate(locale, 'mail.order.paymentEarly');
+  if (order.earlyStartRequestedAt)
+    return translate(locale, 'mail.order.paymentEarly', { days: WITHDRAWAL_DAYS });
   return translate(locale, 'mail.order.paymentWait', {
     date: longDate(withdrawalLastDay(order.createdAt), locale),
   });
@@ -118,6 +124,7 @@ export function sendOrderConfirmation(order: OrderRecord, user: Customer): Promi
       ? `${translate(locale, 'mail.order.withdrawalConsumer', {
           date: longDate(withdrawalLastDay(order.createdAt), locale),
           contact: config().CONTACT_EMAIL,
+          refundDays: REFUND_DAYS,
           form: withdrawalForm(locale),
         })}\n\n${translate(locale, 'mail.order.consumerRights', { contact: config().CONTACT_EMAIL })}`
       : translate(locale, 'mail.order.withdrawalBusiness'),
