@@ -12,8 +12,11 @@
     "city": "Бобов дол",
     "region": "обл. Кюстендил",
     "country": "България",
+    "legalForm": "дружество с променлив капитал (VCC)",
     "eikLabel": "ЕИК",
-    "vatLabel": "ДДС №"
+    "vatLabel": "ДДС №",
+    "representative": "Стефан Костадинов",
+    "phoneLabel": "тел."
   },
   "nav": {
     "main": "Основно меню",

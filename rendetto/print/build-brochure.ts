@@ -70,14 +70,18 @@ async function contextFor(locale: Locale, site: string): Promise<BrochureContext
   });
   const landing = `${site}${PATHS[locale]}`;
   const groups = furnitureLineup();
+  // етикетът и стойността (и телефонът) не се разделят на два реда
+  const keep = (text: string) => text.replace(/ /g, '\u00a0');
   const company = [
     COMPANY.name,
-    `${t('company.eikLabel')} ${COMPANY.eik}`,
-    `${t('company.vatLabel')} ${COMPANY.vat}`,
+    t('company.legalForm'),
+    keep(`${t('company.eikLabel')} ${COMPANY.eik}`),
+    keep(`${t('company.vatLabel')} ${COMPANY.vat}`),
     t('company.street'),
     `${COMPANY.postalCode} ${t('company.city')}`,
     t('company.region'),
     t('company.country'),
+    keep(`${t('company.phoneLabel')} ${COMPANY.phone}`),
   ].join(', ');
   return {
     locale,

@@ -3,7 +3,7 @@
     <div>
       <a class="brand" href="<%= paths[locale] %>"><%- include('mark') %><span>Rendetto</span></a>
       <p><%= t('landing.foot.about') %></p>
-      <p><%= company.name %>, <%= t('company.eikLabel') %> <%= company.eik %>, <%= t('company.vatLabel') %> <%= company.vat %><br><%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %></p>
+      <p><%= company.name %>, <%= t('company.legalForm') %>, <span class="nowrap"><%= t('company.eikLabel') %> <%= company.eik %></span>, <span class="nowrap"><%= t('company.vatLabel') %> <%= company.vat %></span><br><%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %>, <%= t('company.phoneLabel') %>&nbsp;<a class="nowrap" href="<%= company.phoneHref %>"><%= company.phone %></a></p>
     </div>
     <nav class="foot-legal" aria-label="<%= t('legal.nav') %>">
       <a href="<%= legalPath(locale, 'privacy') %>"><%= t('legal.privacyTitle') %></a>

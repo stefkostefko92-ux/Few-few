@@ -75,6 +75,11 @@ test('a consumer order is confirmed on a durable medium with the model form; act
   assert.match(mail.text, /Стандартен формуляр за отказ/);
   assert.match(mail.text, /Ненужното се зачертава\./);
   assert.match(mail.text, /Не поискахте ранно начало/);
+  // търговецът — с правната форма и телефона (чл. 6, пар. 1, б. „в“ от Директива 2011/83)
+  assert.match(
+    mail.text,
+    /Търговец: Carbon Stealth VCC, дружество с променлив капитал \(VCC\), ЕИК 208725180, ул\. „Самуил“ № 3, 2670 Бобов дол, обл\. Кюстендил, България, тел\. \+359 877 414 874, info@carbonstealth\.eu\./,
+  );
   assert.match(mail.text, /\(в сила от \d+ \S+ \d{4} г\.\): http:\/\/127\.0\.0\.1:\d+\/terms\n/);
   assert.ok(
     (await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: row.id } })).confirmationSentAt,

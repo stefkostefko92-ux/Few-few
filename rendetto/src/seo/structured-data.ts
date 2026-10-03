@@ -66,10 +66,12 @@ function organization(t: Translator) {
     name: COMPANY.name,
     url: COMPANY.url,
     email: config().CONTACT_EMAIL,
+    telephone: COMPANY.phone,
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer support',
       email: config().CONTACT_EMAIL,
+      telephone: COMPANY.phone,
       availableLanguage: ['bg', 'en', 'it'],
     },
     taxID: COMPANY.eik,

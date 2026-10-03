@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Router } from 'express';
 import { config } from '../config.js';
-import { CONTENT_UPDATED, LEGAL_UPDATED } from '../company.js';
-import { LOCALES } from '../i18n.js';
+import { COMPANY, CONTENT_UPDATED, LEGAL_UPDATED } from '../company.js';
+import { LOCALES, translate } from '../i18n.js';
 import { ROOT } from '../paths.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
@@ -83,6 +83,7 @@ seoRouter.get('/sitemap.xml', (_req, res) => {
 /** llms.txt — кратко описание за AI търсачките, само с факти, които витрината също казва. */
 seoRouter.get('/llms.txt', (_req, res) => {
   const base = config().PUBLIC_BASE_URL;
+  const en = (key: string) => translate('en', key);
   // цените идват от ценоразписа — същия, от който смятат витрината, JSON-LD и заявките
   const eur = (cents: number) =>
     `EUR ${cents % 100 === 0 ? cents / 100 : (cents / 100).toFixed(2)}`;
@@ -120,7 +121,7 @@ seoRouter.get('/llms.txt', (_req, res) => {
         '- Languages: the website, account and admin pages are in Bulgarian, English and Italian; the editor, drawings and CSV tables are in Bulgarian for now.',
         '',
         '## Company',
-        '- [Carbon Stealth VCC](https://carbonstealth.eu)',
+        `- [${COMPANY.name}](${COMPANY.url}), ${en('company.legalForm')}, company number (EIK) ${COMPANY.eik}, VAT number ${COMPANY.vat}; ${en('company.street')}, ${COMPANY.postalCode} ${en('company.city')}, ${en('company.country')}; phone ${COMPANY.phone}`,
         '',
       ].join('\n'),
     );

@@ -69,7 +69,7 @@
       "durationTerm": "Durata: {term}; Premium non si rinnova da solo: scade alla fine della durata.",
       "durationLifetime": "Durata: Lifetime vale finché Rendetto è offerto.",
       "consumerRights": "Come consumatori avete anche la garanzia legale di conformità dei servizi digitali. I reclami vanno a {contact}; per la risoluzione extragiudiziale potete rivolgervi alla Commissione bulgara per la tutela dei consumatori (www.kzp.bg).",
-      "trader": "Professionista: {company}, codice EIK {eik}, {address}, {contact}."
+      "trader": "Professionista: {company}, {form}, codice EIK {eik}, {address}, tel. {phone}, {contact}."
     },
     "withdrawalForm": "Modulo di recesso tipo\n(compilare e restituire il presente modulo solo se si desidera recedere dal contratto)\n— Destinatario {to}:\n— Con la presente io/noi (*) notifichiamo il recesso dal mio/nostro (*) contratto di vendita dei seguenti beni/servizi (*)\n— Ordinato il (*)/ricevuto il (*)\n— Nome del/dei consumatore(i)\n— Indirizzo del/dei consumatore(i)\n— Firma del/dei consumatore(i) (solo se il presente modulo è notificato in versione cartacea)\n— Data\n(*) Cancellare la dicitura inutile.",
     "withdrawn": {

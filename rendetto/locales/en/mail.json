@@ -69,7 +69,7 @@
       "durationTerm": "Term: {term}; Premium does not renew by itself — it ends at the end of the term.",
       "durationLifetime": "Term: Lifetime is valid for as long as Rendetto is offered.",
       "consumerRights": "As a consumer you also have the legal guarantee of conformity for digital services. Complaints go to {contact}; for out-of-court settlement you can turn to the Bulgarian Commission for Consumer Protection (www.kzp.bg).",
-      "trader": "Trader: {company}, company number (EIK) {eik}, {address}, {contact}."
+      "trader": "Trader: {company}, {form}, company number (EIK) {eik}, {address}, phone {phone}, {contact}."
     },
     "withdrawalForm": "Model withdrawal form\n(complete and return this form only if you wish to withdraw from the contract)\n— To {to}:\n— I/We (*) hereby give notice that I/We (*) withdraw from my/our (*) contract of sale of the following goods (*)/for the provision of the following service (*),\n— Ordered on (*)/received on (*),\n— Name of consumer(s),\n— Address of consumer(s),\n— Signature of consumer(s) (only if this form is notified on paper),\n— Date\n(*) Delete as appropriate.",
     "withdrawn": {

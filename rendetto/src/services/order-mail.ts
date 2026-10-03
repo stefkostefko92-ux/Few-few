@@ -130,8 +130,10 @@ export function sendOrderConfirmation(order: OrderRecord, user: Customer): Promi
       : translate(locale, 'mail.order.withdrawalBusiness'),
     trader: translate(locale, 'mail.order.trader', {
       company: COMPANY.name,
+      form: translate(locale, 'company.legalForm'),
       eik: COMPANY.eik,
       address: companyAddress(locale),
+      phone: COMPANY.phone,
       contact: config().CONTACT_EMAIL,
     }),
     termsDate: longDate(new Date(`${order.termsVersion ?? LEGAL_UPDATED.terms}T12:00:00Z`), locale),

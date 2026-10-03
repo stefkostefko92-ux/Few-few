@@ -12,8 +12,11 @@
     "city": "Bobov Dol",
     "region": "provincia di Kyustendil",
     "country": "Bulgaria",
+    "legalForm": "società a capitale variabile (VCC) di diritto bulgaro",
     "eikLabel": "Codice EIK",
-    "vatLabel": "P. IVA"
+    "vatLabel": "P. IVA",
+    "representative": "Stefan Kostadinov",
+    "phoneLabel": "tel."
   },
   "nav": {
     "main": "Menu principale",
