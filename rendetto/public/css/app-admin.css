@@ -1,0 +1,126 @@
+/* Rendetto — the admin panel: numbers, filters, the account sheet. */
+
+/* admin */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+  margin: 0 0 22px;
+}
+.stat {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  text-decoration: none;
+  color: var(--ink);
+}
+a.stat:hover {
+  border-color: var(--ink-3);
+}
+.stat-v {
+  font: 650 1.6rem/1.1 var(--f-text);
+  font-variant-numeric: tabular-nums;
+}
+.stat-k {
+  font-size: 0.86rem;
+  color: var(--ink-2);
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin: 0 0 16px;
+}
+.filters .field {
+  margin: 0;
+  flex: 1 1 160px;
+}
+.filters .field-q {
+  flex: 3 1 260px;
+}
+.who {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.who a {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.who small {
+  overflow-wrap: anywhere;
+}
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.acc-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.acc-head h1 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.acc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+@media (min-width: 1000px) {
+  .acc-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+/* the inner column is a grid too: without an explicit shrinkable track a wide table sets its width */
+.acc-grid > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  min-width: 0;
+}
+.acc-grid .section {
+  margin: 0;
+}
+.danger {
+  border-color: var(--red);
+}
+.danger h2 {
+  color: var(--red);
+}
+.mini {
+  font-size: 0.86rem;
+}
+.mono-sm {
+  font: 400 0.84rem/1.4 var(--f-mono);
+}
+.hwid {
+  font: 500 0.86rem/1.3 var(--f-mono);
+  color: var(--gold-ink);
+  white-space: nowrap;
+}
+.ok-text {
+  color: var(--green);
+  font-weight: 600;
+}
+.bad-text {
+  color: var(--red);
+  font-weight: 600;
+}

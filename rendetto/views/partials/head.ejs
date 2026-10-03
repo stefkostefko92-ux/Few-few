@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="<%= locale %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title><%= title %></title>
+<% if (typeof description !== 'undefined' && description) { %><meta name="description" content="<%= description %>"><% } %>
+<% if (typeof noindex !== 'undefined' && noindex) { %><meta name="robots" content="noindex, nofollow"><% } %>
+<meta name="theme-color" content="#f6f7f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#2a2c2f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/static/img/favicon.svg?v=<%= v %>" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preload" href="/static/fonts/<%= locale === 'bg' ? 'geologica-cyrillic' : 'geologica-latin' %>.woff2" as="font" type="font/woff2" crossorigin>
+<%
+  // Every stylesheet stays under 300 lines; a page asks for a bundle, the bundle lists the files.
+  const bundles = { app: ['app', 'app-pages', 'app-admin', 'app-orders', 'stack'], site: ['site', 'site-content', 'site-pricing', 'stack'] };
+  const sheets = ['base', 'controls'].concat(...(typeof styles !== 'undefined' ? styles : []).map((name) => bundles[name] || [name]));
+%><% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
+<% } %>
+<%- typeof extraHead !== 'undefined' ? extraHead : '' %>
+</head>

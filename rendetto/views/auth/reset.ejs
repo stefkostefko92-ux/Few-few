@@ -1,0 +1,20 @@
+<%- include('_top', { titleKey: 'auth.resetTitle' }) %>
+<h1><%= t(fromVerify ? 'auth.setPasswordTitle' : 'auth.resetTitle') %></h1>
+<% if (fromVerify && valid) { %><p><%= t('auth.setPasswordText') %></p><% } %>
+<% if (!valid) { %>
+<p><%= t('auth.errors.linkExpired') %></p>
+<div class="auth-links"><a href="/forgot"><%= t('auth.forgotLinkAgain') %></a></div>
+<% } else { %>
+<%- include('_error') %>
+<form method="post" action="/reset" class="form">
+  <input type="hidden" name="_csrf" value="<%= pre %>">
+  <input type="hidden" name="token" value="<%= token %>">
+  <div class="field">
+    <label for="password"><%= t('auth.newPassword') %></label>
+    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="256" aria-describedby="pw-rules">
+    <p class="hint" id="pw-rules"><%= t('password.rules') %></p>
+  </div>
+  <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.resetButton') %></button>
+</form>
+<% } %>
+<%- include('_bottom') %>

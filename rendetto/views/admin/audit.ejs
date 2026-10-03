@@ -1,0 +1,27 @@
+<%- include('../partials/page-top', { title: t('admin.audit.title') }) %>
+<div class="page-head"><h1><%= t('admin.audit.title') %></h1>
+  <% if (chain.ok) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('admin.audit.chainOk', { n: chain.count }) %></span><% } else { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'alert' }) %><%= t('admin.audit.chainBroken', { id: chain.brokenAt }) %></span><% } %>
+</div>
+<%- include('../partials/admin-nav') %>
+<% if (chain.ok && chain.head) { %><p class="hint"><%= t('admin.audit.head', { id: chain.head.id, hash: chain.head.hash }) %></p><% } %>
+<form method="get" action="/admin/audit" class="filters" role="search">
+  <div class="field field-q"><label for="action"><%= t('admin.audit.filter') %></label><input id="action" name="action" type="search" value="<%= action %>" placeholder="admin. / auth. / account."></div>
+  <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('admin.accounts.apply') %></button>
+</form>
+<div class="table-wrap"><table class="stack">
+  <thead><tr><th>#</th><th><%= t('security.col.when') %></th><th><%= t('admin.audit.action') %></th><th><%= t('admin.audit.actor') %></th><th><%= t('admin.audit.target') %></th><th>IP</th></tr></thead>
+  <tbody>
+  <% for (const a of rows) { %>
+    <tr>
+      <td data-label="#" class="num mono-sm"><%= a.id %></td>
+      <td data-label="<%= t('security.col.when') %>" class="nowrap"><%= fmt.dateTime(a.at) %></td>
+      <td data-label="<%= t('admin.audit.action') %>"><code><%= a.action %></code><% if (a.detail) { %><br><small class="mono-sm"><%= JSON.stringify(a.detail).slice(0, 160) %></small><% } %></td>
+      <td data-label="<%= t('admin.audit.actor') %>" class="mini"><%= fmt.label(a.actorLabel) %></td>
+      <td data-label="<%= t('admin.audit.target') %>" class="mini"><% if (a.targetType === 'user' && a.targetId) { %><a href="/admin/accounts/<%= a.targetId %>"><%= a.targetId %></a><% } else { %><%= a.targetType || '' %> <%= a.targetId || '' %><% } %></td>
+      <td data-label="IP" class="mono-sm"><%= a.ip || '' %></td>
+    </tr>
+  <% } %>
+  </tbody>
+</table></div>
+<% if (rows.length === 100) { %><nav class="pager"><span></span><a class="btn btn-small" href="/admin/audit?before=<%= rows[rows.length - 1].id %><%= action ? '&action=' + encodeURIComponent(action) : '' %>"><%= t('admin.accounts.next') %></a></nav><% } %>
+<%- include('../partials/page-bottom') %>

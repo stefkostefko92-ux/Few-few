@@ -1,0 +1,24 @@
+<%- include('../partials/page-top', { title: t('plan.withdraw.title') }) %>
+<div class="page-head"><h1><%= t('plan.withdraw.title') %></h1></div>
+<%- include('../partials/account-nav') %>
+<%- include('../partials/flash') %>
+
+<section class="section" aria-labelledby="w-h">
+  <h2 id="w-h"><%= planName %></h2>
+  <p><%= t('plan.withdraw.intro', { date: fmt.date(lastDay) }) %></p>
+  <dl class="dl">
+    <dt><%= t('plan.withdraw.name') %></dt><dd><%= user.name %></dd>
+    <dt><%= t('plan.withdraw.contract') %></dt><dd><%= planName %>, <%= t('plan.withdraw.orderNo', { id: order.id }) %>, <%= fmt.dateTime(order.createdAt) %></dd>
+    <dt><%= t('plan.withdraw.email') %></dt><dd><%= user.email %></dd>
+  </dl>
+  <figure class="statement">
+    <figcaption><%= t('plan.withdraw.statementLabel') %></figcaption>
+    <blockquote><%= statement %></blockquote>
+  </figure>
+  <p><%= t(order.earlyStartRequestedAt ? 'plan.withdraw.effectEarly' : 'plan.withdraw.effect', { refundDays }) %></p>
+  <form method="post" action="/account/plan/withdraw/<%= order.id %>" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="actions"><button class="btn btn-danger" type="submit"><%= t('plan.withdraw.confirm') %></button><a class="btn btn-quiet" href="/account/plan"><%= t('plan.withdraw.back') %></a></div>
+  </form>
+</section>
+<%- include('../partials/page-bottom') %>
