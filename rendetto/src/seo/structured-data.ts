@@ -1,7 +1,8 @@
 import { COMPANY, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { LOCALE_TAG, type Locale, type Translator } from '../i18n.js';
-import type { PriceRow } from '../plans/pricing.js';
+import { TRIAL_DAYS } from '../plans/plan.js';
+import { formatMoney, type PriceRow } from '../plans/pricing.js';
 
 /**
  * JSON-LD за публичните страници. Текстовете идват от същите преводи, които страницата показва —
@@ -18,6 +19,35 @@ export const FAQ_IDS = [
   'data',
   'delete',
 ] as const;
+
+export type FaqId = (typeof FAQ_IDS)[number];
+
+/**
+ * Числата в текстовете на витрината — от ценоразписа и срока на теста, не написани на ръка. Едни и
+ * същи за страницата и за JSON-LD, затова отговорът в FAQPage е дума по дума този от екрана.
+ */
+export function landingTextParams(locale: Locale, prices: PriceRow[]) {
+  const row = (id: string): PriceRow => {
+    const found = prices.find((p) => p.id === id);
+    if (!found) throw new Error(`няма ред ${id} в ценоразписа`);
+    return found;
+  };
+  const money = (cents: number) => formatMoney(cents, locale);
+  const or = new Intl.ListFormat(LOCALE_TAG[locale], { type: 'disjunction' });
+  const terms = prices.filter((p) => p.discountPercent > 0);
+  const percent = (n: number) => (locale === 'bg' ? `${n}\u00a0%` : `${n}%`);
+  const faq: Partial<Record<FaqId, Record<string, string>>> = {
+    price: {
+      month: money(row('m1').totalWithVatCents),
+      monthNet: money(row('m1').totalCents),
+      terms: or.format(terms.map((p) => String(p.months))),
+      discounts: or.format(terms.map((p) => percent(p.discountPercent))),
+      life: money(row('lifetime').totalWithVatCents),
+      lifeNet: money(row('lifetime').totalCents),
+    },
+  };
+  return { description: { days: TRIAL_DAYS }, faq };
+}
 
 /** Вграждане в <script type="application/ld+json">: `<` не може да затвори блока. */
 export function jsonLdScript(data: unknown): string {
@@ -74,13 +104,13 @@ function offers(t: Translator, prices: PriceRow[], url: string) {
       row.id === 'lifetime'
         ? t('landing.price.lifetime')
         : t('landing.price.months', { n: row.months ?? 0 }),
-    price: decimal(row.totalCents),
+    price: decimal(row.totalWithVatCents),
     priceCurrency: 'EUR',
     priceSpecification: {
       '@type': 'UnitPriceSpecification',
-      price: decimal(row.totalCents),
+      price: decimal(row.totalWithVatCents),
       priceCurrency: 'EUR',
-      valueAddedTaxIncluded: false,
+      valueAddedTaxIncluded: true,
       ...(row.months
         ? {
             referenceQuantity: { '@type': 'QuantitativeValue', value: row.months, unitCode: 'MON' },
@@ -98,6 +128,7 @@ export function landingStructuredData(
   prices: PriceRow[],
 ): string {
   const base = config().PUBLIC_BASE_URL;
+  const params = landingTextParams(locale, prices);
   const graph = [
     organization(t),
     website(base),
@@ -106,7 +137,7 @@ export function landingStructuredData(
       '@id': `${canonical}#page`,
       url: canonical,
       name: t('landing.meta.title'),
-      description: t('landing.meta.description'),
+      description: t('landing.meta.description', params.description),
       inLanguage: LOCALE_TAG[locale],
       isPartOf: { '@id': `${base}/#website` },
       about: { '@id': `${base}/#app` },
@@ -127,7 +158,7 @@ export function landingStructuredData(
       operatingSystem: 'Web',
       browserRequirements: t('landing.meta.browser'),
       url: canonical,
-      description: t('landing.meta.description'),
+      description: t('landing.meta.description', params.description),
       inLanguage: ['bg', 'en', 'it'],
       publisher: { '@id': `${COMPANY.url}/#org` },
       featureList: [1, 2, 3, 4].map((n) => t(`landing.how.s${n}.title`)),
@@ -139,7 +170,7 @@ export function landingStructuredData(
       mainEntity: FAQ_IDS.map((id) => ({
         '@type': 'Question',
         name: t(`landing.faq.${id}.q`),
-        acceptedAnswer: { '@type': 'Answer', text: t(`landing.faq.${id}.a`) },
+        acceptedAnswer: { '@type': 'Answer', text: t(`landing.faq.${id}.a`, params.faq[id]) },
       })),
     },
   ];

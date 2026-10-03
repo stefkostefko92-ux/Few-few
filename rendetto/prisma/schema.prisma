@@ -169,9 +169,9 @@ model LoginEvent {
 
 /// История на плана: кой, кога, от какво към какво. Справочната цена е по ценоразписа, не плащане.
 model PlanChange {
-  id             String    @id @default(cuid())
+  id             String          @id @default(cuid())
   userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// null = системата (регистрация, потвърждаване на имейла).
   actorId        String?
   actorLabel     String
@@ -182,9 +182,13 @@ model PlanChange {
   months         Int?
   listPriceCents Int?
   note           String?
-  createdAt      DateTime  @default(now())
+  /// Поръчката, която промяната изпълнява — при отказ от договора планът се връща оттук.
+  requestId      String?
+  request        UpgradeRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  createdAt      DateTime        @default(now())
 
   @@index([userId, createdAt])
+  @@index([requestId])
 }
 
 /// Бановете с историята им. Текущият бан стои и в User.bannedAt/banReason за бърза проверка.
@@ -209,23 +213,45 @@ enum RequestStatus {
   DONE
   REJECTED
   CANCELLED
+  /// потребителят се е отказал от договора в срока за отказ (чл. 11а от Директива 2011/83)
+  WITHDRAWN
 }
 
-/// Заявка от клиента за Premium/Lifetime. Цената се смята на сървъра от ценоразписа в момента на заявката.
+/// Кой купува: потребителят има право на отказ; фирмата или самонаетият за професионални цели — не.
+enum BuyerType {
+  CONSUMER
+  BUSINESS
+}
+
+/// Поръчка на Premium/Lifetime (със задължение за плащане). Цената се смята на сървъра от
+/// ценоразписа в момента на поръчката; договорът се сключва с потвърждението по имейл веднага след нея.
 model UpgradeRequest {
-  id             String        @id @default(cuid())
-  userId         String
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String        @id @default(cuid())
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// m1 | m3 | m6 | m12 | lifetime
-  option         String
-  months         Int?
-  listPriceCents Int
-  message        String?
-  status         RequestStatus @default(OPEN)
-  handledById    String?
-  handledByLabel String?
-  handledAt      DateTime?
-  createdAt      DateTime      @default(now())
+  option                String
+  months                Int?
+  /// без ДДС, цели евроценти
+  listPriceCents        Int
+  message               String?
+  buyerType             BuyerType     @default(CONSUMER)
+  /// Изричното искане на потребителя планът да започне преди края на срока за отказ (неотметната отметка).
+  earlyStartRequestedAt DateTime?
+  /// Версията на общите условия, приети с поръчката (LEGAL_UPDATED.terms).
+  termsVersion          String?
+  /// Кога тръгна потвърждението на договора по имейл (траен носител); null = поддръжката опитва пак.
+  confirmationSentAt    DateTime?
+  /// Кога потребителят е потвърдил отказа си от договора.
+  withdrawnAt           DateTime?
+  /// Кога тръгна потвърждението, че отказът е получен; null след отказ = поддръжката опитва пак.
+  withdrawalAckSentAt   DateTime?
+  status                RequestStatus @default(OPEN)
+  handledById           String?
+  handledByLabel        String?
+  handledAt             DateTime?
+  createdAt             DateTime      @default(now())
+  planChanges           PlanChange[]
 
   @@index([status, createdAt])
   @@index([userId])

@@ -181,3 +181,17 @@
   border-radius: 0 8px 8px 0;
   font-size: 0.92rem;
 }
+/* the model withdrawal form in the terms: an official text, set apart from the clauses */
+.model-form {
+  margin: 16px 0;
+  padding: 14px 18px;
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius);
+}
+.model-form h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+.model-form p {
+  margin: 0 0 4px;
+}

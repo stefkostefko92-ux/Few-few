@@ -2,7 +2,7 @@
   "landing": {
     "meta": {
       "title": "Rendetto — software per mobili: taglio, disegni e CNC",
-      "description": "Progettate mobili in pannelli in 3D e ottenete distinta di taglio, ferramenta, disegni con mappa di foratura e file CNC. 30 giorni di prova per ogni account.",
+      "description": "Progettate mobili in pannelli in 3D: distinta di taglio, ferramenta, disegni con mappa di foratura e file CNC. {days} giorni di prova dalla conferma dell'email.",
       "keywords": "software per mobili, progettazione mobili, distinta di taglio, mappa di foratura, CNC, G-code, DXF, Rendetto, Carbon Stealth",
       "imageAlt": "Pannello di truciolare nobilitato del nesting di una cucina con il percorso della fresa CNC",
       "browser": "Un browser con WebGL 2: Chrome, Edge, Firefox o Safari."
@@ -25,8 +25,8 @@
       "line1": "Dall'idea",
       "line2": "alla fresa.",
       "lead": "Rendetto progetta mobili in pannelli nel browser e dallo stesso progetto ricava tutto ciò che serve al laboratorio: distinta di taglio con i bordi, elenco della ferramenta, disegni con la mappa di foratura di ogni pezzo e file per la macchina CNC.",
-      "trial": "Ogni nuovo account riceve {days} giorni di prova per provare il software. Senza carta e senza pagamenti automatici.",
-      "caption": "Pannello {no} di {count} di una cucina di {modules} moduli da {width} mm: {parts} pezzi e {holes} fori. Risultato del programma, non un'illustrazione.",
+      "trial": "Ogni nuovo account riceve {days} giorni di prova dalla conferma dell'email per valutare il software. Senza carta e senza pagamenti automatici.",
+      "caption": "Pannello {no} di {count} di una cucina di {modules} moduli da {width} mm: {parts} pezzi e {holes} fori. Risultato del programma, non un'illustrazione.",
       "keyContour": "contorno, fresa Ø{d}",
       "keyGroove": "scanalatura dello schienale, fresa Ø{d}",
       "keyDrill": "fori {list}"
@@ -79,22 +79,22 @@
     "drilling": {
       "title": "Dove si fora esattamente?",
       "lead": "Sul disegno di ogni pezzo: coordinate, diametro e profondità di ogni foro, secondo la documentazione del produttore della ferramenta — Blum, Hettich, GTV e Salice per le cerniere, GTV e Blum per le guide.",
-      "cup": "Tazza Ø35 a {c} mm dal bordo dell'anta: è quanto dà la tabella di Blum CLIP top per una sovrapposizione di {overlay} mm con basetta da {plate} mm.",
-      "system32": "Basette e reggipiani seguono il sistema 32 mm: la prima fila è a 37 mm dal bordo anteriore.",
+      "cup": "Tazza Ø35 a {c} mm dal bordo dell'anta: è quanto dà la tabella di Blum CLIP top per una sovrapposizione di {overlay} mm con basetta da {plate} mm.",
+      "system32": "Basette e reggipiani seguono il sistema 32 mm: la prima fila è a 37 mm dal bordo anteriore.",
       "handles": "Le maniglie si forano all'interasse del modello scelto, le guide secondo la dima del produttore.",
       "edges": "I fori orizzontali nelle teste (per le viti confirmat) sono nella tabella del disegno, separati dal G-code.",
-      "checks": "Se una cerniera, una guida o un foro esce dalla tabella del produttore, il programma dice cosa cambiare.",
-      "imageAlt": "Disegno di un'anta {h} × {w} mm con misure, bordo e mappa di foratura delle tazze delle cerniere",
-      "cupAlt": "Dettaglio della tazza della cerniera in scala 1:1: Ø35 a {c} mm dal bordo",
-      "caption": "L'anta sinistra del primo mobile base, {h} × {w} mm: misure, bordo e mappa di foratura. Le etichette del disegno sono in bulgaro.",
+      "checks": "Se una cerniera, una guida o un foro esce dalla tabella del produttore, il programma dice cosa cambiare. Dove il documento non dice nulla, il programma sceglie da sé e indica il valore come «наш избор» (nostra scelta).",
+      "imageAlt": "Disegno di un'anta {h} × {w} mm con misure, bordo e mappa di foratura delle tazze delle cerniere",
+      "cupAlt": "Dettaglio della tazza della cerniera in scala 1:1: Ø35 a {c} mm dal bordo",
+      "caption": "L'anta sinistra del primo mobile base, {h} × {w} mm: misure, bordo e mappa di foratura. Le etichette del disegno sono in bulgaro.",
       "open": "Apri tutto il disegno"
     },
     "kinds": {
       "title": "Che cosa si può progettare?",
       "lead": "Mobili in pannelli per cucina, camera, soggiorno e studio: da un singolo mobile a una cucina intera.",
-      "width": "larghezza {min}–{max} mm",
-      "modules": "{min}–{max} moduli da {wmin}–{wmax} mm",
-      "mattress": "materasso {min}–{max} cm",
+      "width": "larghezza {min}–{max} mm",
+      "modules": "{min}–{max} moduli da {wmin}–{wmax} mm",
+      "mattress": "materasso {min}–{max} cm",
       "rules": "La costruzione segue le regole del laboratorio: fondo e cielo stanno tra i fianchi, lo schienale in HDF entra in una scanalatura, i mobili base hanno i traversi per il piano di lavoro e le misure di taglio sono ridotte del bordo."
     },
     "machine": {
@@ -128,10 +128,10 @@
     },
     "prices": {
       "title": "Quanto costa?",
-      "trial": "Ogni account riceve {days} giorni di prova per provare il nostro software: con tutte le funzioni, senza carta e senza pagamenti automatici.",
-      "vat": "I prezzi sono in euro, IVA esclusa. L'IVA si applica secondo le regole del paese dell'acquirente; in Bulgaria è del {vat}%.",
-      "lifetime": "Lifetime costa 2,5 volte il prezzo annuale senza lo sconto per 12 mesi e non scade.",
-      "manual": "Il piano si richiede dall'account e viene attivato manualmente quando arriva il pagamento.",
+      "trial": "Ogni account riceve {days} giorni di prova dalla conferma dell'email per valutare il nostro software: con tutte le funzioni, senza carta e senza pagamenti automatici.",
+      "vat": "Per i consumatori i prezzi sono finali, IVA {vat}% inclusa. Per le aziende è indicato anche il prezzo IVA esclusa; l'IVA si applica secondo le regole del paese dell'acquirente.",
+      "lifetime": "Lifetime costa 2,5 volte il prezzo annuale senza lo sconto per 12 mesi e vale finché Rendetto è offerto: dettagli nelle condizioni.",
+      "manual": "Il piano si ordina dall'account e viene attivato manualmente quando arriva il pagamento.",
       "expired": "Quando finisce la prova o il periodo pagato, i progetti restano scaricabili. Nuovi progetti e modifiche richiedono un piano attivo."
     },
     "price": {
@@ -141,15 +141,15 @@
       },
       "lifetime": "Lifetime",
       "perMonth": "{amount} al mese",
-      "once": "pagamento unico, senza scadenza",
-      "withVat": "{amount} con IVA {vat}%",
-      "off": "sconto {pct}%"
+      "once": "una tantum, per la durata del servizio",
+      "off": "sconto {pct}%",
+      "withoutVat": "{amount} IVA esclusa"
     },
     "faq": {
       "title": "Domande e risposte",
       "price": {
         "q": "Quanto costa Rendetto?",
-        "a": "25 € al mese IVA esclusa (30 € IVA inclusa). Pagando 3, 6 o 12 mesi in una volta lo sconto è del 5%, 10% o 20%. Lifetime costa 750 € IVA esclusa (900 € IVA inclusa), si paga una volta e non scade."
+        "a": "{month} al mese IVA inclusa ({monthNet} IVA esclusa). Pagando {terms} mesi in una volta lo sconto è del {discounts}. Lifetime costa {life} IVA inclusa ({lifeNet} IVA esclusa), si paga una volta e vale finché Rendetto è offerto."
       },
       "afterTrial": {
         "q": "Che cosa succede quando finisce il periodo di prova?",
@@ -173,7 +173,7 @@
       },
       "twofa": {
         "q": "Posso attivare la protezione a due fattori?",
-        "a": "Sì. In „Sicurezza“ nell'account attivate i codici di un'app come Google Authenticator, Aegis o 1Password e ricevete 10 codici di recupero nel caso perdiate il telefono."
+        "a": "Sì. In «Sicurezza» nell'account attivate i codici di un'app come Google Authenticator, Aegis o 1Password e ricevete 10 codici di recupero nel caso perdiate il telefono."
       },
       "data": {
         "q": "Dove sono conservati i miei dati?",
@@ -181,7 +181,7 @@
       },
       "delete": {
         "q": "Posso eliminare il mio account?",
-        "a": "Sì, da „Dati“ nell'account. Prima potete scaricare tutti i vostri dati; l'eliminazione è definitiva e rimuove anche i progetti."
+        "a": "Sì, da «Dati» nell'account. Prima potete scaricare tutti i vostri dati; l'eliminazione è definitiva e rimuove anche i progetti."
       }
     },
     "closing": {

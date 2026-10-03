@@ -42,9 +42,25 @@ test('every row of the table is an integer and lifetime has no monthly price', (
     ['m1', 'm3', 'm6', 'm12', 'lifetime'],
   );
   for (const r of rows) {
-    for (const v of [r.totalCents, r.totalWithVatCents, r.perMonthCents ?? 0])
+    for (const v of [
+      r.totalCents,
+      r.totalWithVatCents,
+      r.perMonthCents ?? 0,
+      r.perMonthWithVatCents ?? 0,
+    ])
       assert.ok(Number.isInteger(v));
   }
+  // крайните цени за потребители: 30 € на месец, 3 месеца 85,50 € = 28,50 € на месец, Lifetime 900 €
+  assert.deepEqual(
+    rows.map((r) => [r.totalWithVatCents, r.perMonthWithVatCents]),
+    [
+      [3000, 3000],
+      [8550, 2850],
+      [16200, 2700],
+      [28800, 2400],
+      [90000, null],
+    ],
+  );
   assert.equal(rows.at(-1)?.perMonthCents, null);
   assert.equal(optionMonths('lifetime'), null);
   assert.equal(optionMonths('m6'), 6);

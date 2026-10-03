@@ -6,6 +6,7 @@ import { stringField } from '../../http/meta.js';
 import { LOCALES } from '../../i18n.js';
 import { planView } from '../../plans/plan.js';
 import { optionPriceCents, priceTable } from '../../plans/pricing.js';
+import { paidStartAllowedFrom } from '../../plans/withdrawal.js';
 import { accountDetail } from '../../services/admin-accounts.js';
 import {
   accountAudit,
@@ -44,8 +45,8 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     remainingRecoveryCodes(account.id),
   ]);
   const requestId = typeof req.query.request === 'string' ? req.query.request : '';
-  const request =
-    account.upgradeRequests.find((r) => r.id === requestId && r.status === 'OPEN') ?? null;
+  const open = account.upgradeRequests.find((r) => r.id === requestId && r.status === 'OPEN');
+  const request = open ? { ...open, allowedFrom: paidStartAllowedFrom(open) } : null;
   res.render('admin/account', {
     account,
     plan: planView(account),

@@ -6,7 +6,12 @@ import { LOCALES, translatorFor, type Locale } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
 import { LEGAL, legalPath, PATHS } from '../seo/paths.js';
-import { FAQ_IDS, landingStructuredData, legalStructuredData } from '../seo/structured-data.js';
+import {
+  FAQ_IDS,
+  landingStructuredData,
+  landingTextParams,
+  legalStructuredData,
+} from '../seo/structured-data.js';
 import { furnitureByGroup } from '../services/furniture.js';
 import { landingAssets } from '../services/landing-assets.js';
 
@@ -62,6 +67,7 @@ function landing(locale: Locale) {
       assets: landingAssets(),
       kinds: furnitureByGroup(),
       faqIds: FAQ_IDS,
+      texts: landingTextParams(locale, prices),
       jsonLd: landingStructuredData(locale, translatorFor(locale), canonical, prices),
     });
   };
@@ -86,6 +92,8 @@ for (const page of LEGAL) {
         alternates: alternates((l) => legalPath(l, page)),
         privacyEmail: config().PRIVACY_EMAIL,
         trialDays: TRIAL_DAYS,
+        prices: priceTable(),
+        vatPercent: VAT_BG_PERCENT,
         updated: LEGAL_UPDATED[page],
         jsonLd: legalStructuredData(
           locale,

@@ -88,9 +88,9 @@
     "projectDeleted": "The project has been deleted.",
     "projectDuplicated": "The project has been copied.",
     "recoveryUsed": "You signed in with a recovery code. If you are running out, create new ones under “Security”.",
-    "requestCancelled": "The request has been withdrawn.",
-    "requestRejected": "The request has been rejected.",
-    "requestSent": "Request sent. We will email you the payment details.",
+    "requestCancelled": "The order has been cancelled.",
+    "requestRejected": "The order has been rejected.",
+    "requestSent": "Your order has been accepted. We have emailed you a confirmation; the invoice with the payment details follows.",
     "resetSent": "We sent a link to set a new password.",
     "roleChanged": "The role has been changed and the account's sessions have ended.",
     "sessionRevoked": "The session has ended.",
@@ -106,7 +106,8 @@
     "verificationNotSent": "We did not send a new link — wait a little and try again.",
     "verificationResent": "We sent a new confirmation link.",
     "wrongCode": "Wrong code.",
-    "wrongPassword": "Wrong password."
+    "wrongPassword": "Wrong password.",
+    "withdrawn": "Your withdrawal has been received. We have emailed you a confirmation."
   },
   "furniture": {
     "base": "Base cabinet",

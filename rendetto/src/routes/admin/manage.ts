@@ -6,6 +6,9 @@ import { prisma } from '../../db.js';
 import { exportLimiter } from '../../http/limits.js';
 import { rawField, stringField } from '../../http/meta.js';
 import { LOCALES } from '../../i18n.js';
+import { LABEL } from '../../labels.js';
+import { withVatCents } from '../../plans/pricing.js';
+import { paidStartAllowedFrom, REFUND_DAYS, withdrawalLastDay } from '../../plans/withdrawal.js';
 import { createAccount } from '../../services/admin-create.js';
 import { closeRequest } from '../../services/admin-security.js';
 import { buildExport, contentDisposition } from '../../services/exports.js';
@@ -45,15 +48,25 @@ manageRouter.post('/admin/accounts-new', requireStaff('accounts:create'), async 
 
 manageRouter.get('/admin/requests', requireStaff('accounts:view'), async (req, res) => {
   const status = req.query.status === 'all' ? 'all' : 'OPEN';
-  const requests = await prisma.upgradeRequest.findMany({
+  const rows = await prisma.upgradeRequest.findMany({
     where: status === 'all' ? {} : { status: 'OPEN' },
     orderBy: { createdAt: 'desc' },
     take: 200,
     include: {
       user: { select: { id: true, email: true, name: true, plan: true, planExpiresAt: true } },
+      planChanges: { where: { note: LABEL.withdrawal }, select: { id: true }, take: 1 },
     },
   });
-  res.render('admin/requests', { requests, status });
+  const now = new Date();
+  const requests = rows.map((r) => ({
+    ...r,
+    withVatCents: withVatCents(r.listPriceCents),
+    activationFrom: paidStartAllowedFrom(r),
+    lastDay: withdrawalLastDay(r.createdAt),
+    refundBy: r.withdrawnAt ? new Date(r.withdrawnAt.getTime() + REFUND_DAYS * 86_400_000) : null,
+    planReverted: r.planChanges.length > 0,
+  }));
+  res.render('admin/requests', { requests, status, now });
 });
 
 manageRouter.post(

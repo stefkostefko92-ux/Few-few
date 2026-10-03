@@ -1,0 +1,83 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { isBgWorkingDay, orthodoxEaster, sofiaDay } from '../src/plans/bg-calendar.js';
+import {
+  canWithdraw,
+  paidStartAllowedFrom,
+  withdrawalLastDay,
+  withdrawalOpenUntil,
+} from '../src/plans/withdrawal.js';
+
+const day = (iso: string) => Date.parse(`${iso}T00:00:00Z`);
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+test('Orthodox Easter falls on the known dates', () => {
+  assert.equal(orthodoxEaster(2024), day('2024-05-05'));
+  assert.equal(orthodoxEaster(2025), day('2025-04-20'));
+  assert.equal(orthodoxEaster(2026), day('2026-04-12'));
+  assert.equal(orthodoxEaster(2027), day('2027-05-02'));
+});
+
+test('Bulgarian non-working days: holidays, Easter and the days moved off a weekend', () => {
+  const off = [
+    '2026-01-01',
+    '2026-03-03',
+    '2026-04-10', // Велики петък
+    '2026-04-11',
+    '2026-04-12',
+    '2026-04-13', // понеделник след Великден
+    '2026-05-01',
+    '2026-05-06',
+    '2026-05-25', // 24 май е в неделя
+    '2026-09-07', // 6 септември е в неделя
+    '2026-09-22',
+    '2026-12-24',
+    '2026-12-25',
+    '2026-12-28', // 26 декември е в събота
+    '2022-12-27', // 24 и 25 декември 2022 са в събота и неделя
+    '2022-12-28',
+    '2023-01-02', // 1 януари 2023 е в неделя
+  ];
+  for (const date of off) assert.equal(isBgWorkingDay(day(date)), false, date);
+  for (const date of ['2026-04-14', '2026-05-26', '2026-12-29', '2022-12-29', '2026-10-05'])
+    assert.equal(isBgWorkingDay(day(date)), true, date);
+});
+
+test('the day is taken by the Sofia calendar', () => {
+  assert.equal(sofiaDay(new Date('2026-10-05T21:30:00Z')), day('2026-10-06'));
+  assert.equal(sofiaDay(new Date('2026-01-15T21:59:00Z')), day('2026-01-15'));
+});
+
+test('the period ends 14 days after the day of the contract, moved past non-working days', () => {
+  // 3 октомври 2026 (събота) + 14 = 17 октомври (събота) → понеделник 19 октомври
+  assert.equal(iso(withdrawalLastDay(new Date('2026-10-03T10:00:00Z'))), '2026-10-19');
+  // 21:30 UTC на 5 октомври е вече 6 октомври по София → 20 октомври (вторник)
+  assert.equal(iso(withdrawalLastDay(new Date('2026-10-05T21:30:00Z'))), '2026-10-20');
+  // 10 декември + 14 = 24 декември → 24, 25, 26 (събота), 27, 28 (преместен) → 29 декември
+  assert.equal(iso(withdrawalLastDay(new Date('2026-12-10T09:00:00Z'))), '2026-12-29');
+});
+
+test('the function stays open to the end of the last day in every EU time zone', () => {
+  const at = new Date('2026-10-05T10:00:00Z');
+  assert.equal(withdrawalOpenUntil(at).toISOString(), '2026-10-20T04:00:00.000Z');
+});
+
+test('who may withdraw and when the paid period may start', () => {
+  const createdAt = new Date('2026-10-05T10:00:00Z');
+  const order = {
+    buyerType: 'CONSUMER' as const,
+    status: 'OPEN' as const,
+    createdAt,
+    earlyStartRequestedAt: null,
+    withdrawnAt: null,
+  };
+  assert.equal(canWithdraw(order, new Date('2026-10-19T20:00:00Z')), true);
+  assert.equal(canWithdraw(order, new Date('2026-10-20T04:00:00Z')), false);
+  assert.equal(canWithdraw({ ...order, status: 'DONE' }, createdAt), true);
+  assert.equal(canWithdraw({ ...order, buyerType: 'BUSINESS' }, createdAt), false);
+  assert.equal(canWithdraw({ ...order, status: 'CANCELLED' }, createdAt), false);
+  assert.equal(canWithdraw({ ...order, withdrawnAt: createdAt }, createdAt), false);
+  assert.equal(paidStartAllowedFrom(order).toISOString(), '2026-10-20T04:00:00.000Z');
+  assert.equal(paidStartAllowedFrom({ ...order, earlyStartRequestedAt: createdAt }), createdAt);
+  assert.equal(paidStartAllowedFrom({ ...order, buyerType: 'BUSINESS' }), createdAt);
+});

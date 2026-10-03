@@ -4,6 +4,7 @@ import { logger } from '../logger.js';
 import { purgeExpiredSessions } from '../auth/sessions.js';
 import { isLocale, LOCALE_TAG } from '../i18n.js';
 import { greetingName, mailTrialEnding } from '../mail/templates.js';
+import { resendOrderMail } from './plan-requests.js';
 
 const DAY = 24 * 60 * 60 * 1000;
 /**
@@ -55,6 +56,14 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
     const ipCutoff = new Date(now.getTime() - LOGIN_RETENTION_DAYS * DAY);
     const logins = await prisma.loginEvent.deleteMany({ where: { createdAt: { lt: ipCutoff } } });
     const devices = await prisma.device.deleteMany({ where: { lastSeenAt: { lt: ipCutoff } } });
+    // отпечатъкът и устройството от регистрацията — също 180 дни, както казва политиката
+    const signups = await prisma.user.updateMany({
+      where: {
+        createdAt: { lt: ipCutoff },
+        OR: [{ signupDeviceHash: { not: null } }, { signupFingerprint: { not: null } }],
+      },
+      data: { signupDeviceHash: null, signupFingerprint: null },
+    });
     const auditIps = await prisma.auditLog.updateMany({
       where: { at: { lt: ipCutoff }, ip: { not: null } },
       data: { ip: null },
@@ -63,6 +72,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
       where: { expiresAt: { lt: new Date(now.getTime() - 7 * DAY) } },
     });
     const reminders = await sendTrialReminders(now);
+    const orderMail = await resendOrderMail(now);
     const chain = await verifyAuditChain({ full: true });
     if (!chain.ok) logger.error({ brokenAt: chain.brokenAt }, 'одитната верига е скъсана');
     const auditPruned = await pruneAudit(chain, now);
@@ -78,9 +88,11 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
         unverified: unverified.count,
         logins: logins.count,
         devices: devices.count,
+        signups: signups.count,
         auditIps: auditIps.count,
         tokens: tokens.count,
         reminders,
+        orderMail,
         auditEntries: chain.count,
         auditPruned,
       },

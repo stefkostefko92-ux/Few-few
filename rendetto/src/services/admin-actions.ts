@@ -8,6 +8,7 @@ import { revokeEmailTokens } from '../auth/tokens.js';
 import { isLocale, LOCALE_TAG, translate } from '../i18n.js';
 import { greetingName, mailPlanChanged } from '../mail/templates.js';
 import { addDays, premiumUntil, trialEndsAt } from '../plans/plan.js';
+import { paidStartAllowedFrom } from '../plans/withdrawal.js';
 import { optionPriceCents, TERM_OPTIONS } from '../plans/pricing.js';
 import { emailSchema, nameSchema } from './auth-common.js';
 import {
@@ -160,17 +161,17 @@ export async function changePlan(
 
   let expiresAt: Date | null = null;
   let months: number | null = null;
+  // Откъде тръгва платеното: месеците на Premium — след оставащото време, всичко друго — веднага.
+  let paidStart = now;
   if (input.plan === 'TRIAL') {
     expiresAt = addDays(now, input.days);
   } else if (input.plan === 'PREMIUM') {
     if (input.mode === 'months') {
       months = input.months;
       // Платените месеци започват след оставащото време (тестово или платено), не го изяждат.
-      expiresAt = premiumUntil(
-        target.plan === 'LIFETIME' ? null : target.planExpiresAt,
-        months,
-        now,
-      );
+      const current = target.plan === 'LIFETIME' ? null : target.planExpiresAt;
+      expiresAt = premiumUntil(current, months, now);
+      if (current && current.getTime() > now.getTime()) paidStart = current;
     } else {
       if (!input.until) return fail('admin.errors.input');
       // Краят на избрания ден по София ≈ 21:59 UTC; пазим 23:59:59 UTC, за да е включен целият ден.
@@ -180,7 +181,26 @@ export async function changePlan(
     }
   }
 
-  await prisma.$transaction(async (tx) => {
+  const refused = await prisma.$transaction(async (tx) => {
+    // Поръчката се заключва първа (както при отказа): отказ и активиране едновременно не се разминават.
+    if (input.requestId) {
+      const order = await tx.upgradeRequest.findFirst({
+        where: { id: input.requestId, userId: id, status: 'OPEN' },
+      });
+      if (!order) return 'admin.errors.requestGone';
+      if (paidStart.getTime() < paidStartAllowedFrom(order).getTime())
+        return 'admin.errors.withdrawalPeriod';
+      const locked = await tx.upgradeRequest.updateMany({
+        where: { id: order.id, userId: id, status: 'OPEN' },
+        data: {
+          status: 'DONE',
+          handledById: actor.id,
+          handledByLabel: actor.label,
+          handledAt: now,
+        },
+      });
+      if (locked.count !== 1) return 'admin.errors.requestGone';
+    }
     await tx.user.update({
       where: { id },
       data: {
@@ -201,25 +221,23 @@ export async function changePlan(
         months,
         listPriceCents: listPriceFor(input.plan, months),
         note: input.note || null,
+        requestId: input.requestId ?? null,
       },
     });
-    if (input.requestId) {
-      await tx.upgradeRequest.updateMany({
-        where: { id: input.requestId, userId: id, status: 'OPEN' },
-        data: {
-          status: 'DONE',
-          handledById: actor.id,
-          handledByLabel: actor.label,
-          handledAt: now,
-        },
-      });
-    }
+    return null;
   });
+  if (refused) return fail(refused);
   await audit(actor, {
     action: 'admin.plan.changed',
     targetType: 'user',
     targetId: id,
-    detail: { from: target.plan, to: input.plan, until: expiresAt?.toISOString() ?? null, months },
+    detail: {
+      from: target.plan,
+      to: input.plan,
+      until: expiresAt?.toISOString() ?? null,
+      months,
+      request: input.requestId ?? null,
+    },
   });
   if (input.notify) {
     const locale = localeOf(target);

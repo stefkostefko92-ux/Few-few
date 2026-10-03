@@ -16,7 +16,7 @@
       "lifetime": "Lifetime",
       "unverified": "Non confermati",
       "banned": "Bloccati",
-      "openRequests": "Richieste aperte",
+      "openRequests": "Ordini aperti",
       "newAccounts": "Nuovi in 7 / 30 giorni",
       "logins24h": "Accessi in 24 ore",
       "recent": "Ultime registrazioni",
@@ -94,19 +94,23 @@
       "head": "L'ultima voce: n. {id}, hash {hash}. Conservate questa riga anche fuori dal server (per esempio a ogni controllo mensile): così si scopre perfino una fine della catena cancellata."
     },
     "requests": {
-      "title": "Richieste di piano",
-      "onlyOpen": "Solo aperte",
-      "showAll": "Mostra tutte",
-      "how": "La richiesta arriva dall'account del cliente. Quando arriva il pagamento, premete „Attiva“: il piano cambia e la richiesta viene chiusa.",
-      "none": "Nessuna richiesta.",
+      "title": "Ordini di piani",
+      "onlyOpen": "Solo aperti",
+      "showAll": "Mostra tutti",
+      "how": "L'ordine arriva dall'account del cliente ed è già confermato per email. Inviate la fattura con i dati per il pagamento. Quando arriva il pagamento, premete «Attiva»: il piano cambia e l'ordine viene chiuso. Per l'ordine di un consumatore senza richiesta di inizio anticipato il periodo a pagamento può iniziare solo dopo la fine del periodo di recesso: il pannello non lo consente prima.",
+      "none": "Nessun ordine.",
       "activate": "Attiva",
       "reject": "Respingi",
-      "rejectConfirm": "Respingere la richiesta?"
+      "rejectConfirm": "Respingere l'ordine?",
+      "refundBy": "Se pagato, rimborso entro: {date}",
+      "planReverted": "Il piano è stato riportato automaticamente.",
+      "planManual": "Il piano non è stato riportato automaticamente: controllatelo.",
+      "notConfirmed": "La conferma per email non è partita: la manutenzione riprova."
     },
     "new": {
       "title": "Nuovo account",
       "password": "Password (facoltativa)",
-      "passwordHint": "Con una password l'account è confermato subito. Senza, la persona riceve un'email per impostare la password (il link vale 1 ora, poi funziona „Password dimenticata“); un account mai attivato viene eliminato dopo 7 giorni.",
+      "passwordHint": "Con una password l'account è confermato subito. Senza, la persona riceve un'email per impostare la password (il link vale 1 ora, poi funziona «Password dimenticata»); un account mai attivato viene eliminato dopo 7 giorni.",
       "create": "Crea l'account"
     },
     "errors": {
@@ -119,7 +123,9 @@
       "notFound": "Account inesistente.",
       "pastDate": "La data deve essere nel futuro.",
       "rank": "Non potete modificare un account con ruolo uguale o superiore.",
-      "self": "Non potete farlo sul vostro account."
+      "self": "Non potete farlo sul vostro account.",
+      "requestGone": "L'ordine non è più aperto: il cliente lo ha ritirato, ha esercitato il recesso oppure è stato chiuso.",
+      "withdrawalPeriod": "Il consumatore non ha chiesto l'inizio anticipato: il periodo a pagamento può iniziare solo dopo la fine del periodo di recesso."
     },
     "account": {
       "since": "registrato il {date}",
@@ -133,7 +139,7 @@
         "one": "resta 1 giorno",
         "other": "restano {n} giorni"
       },
-      "fromRequest": "Da una richiesta: {option}, {price} IVA esclusa.",
+      "fromRequest": "Da un ordine: {option}, {price} IVA esclusa.",
       "newPlan": "Nuovo piano",
       "trialDays": "Giorni di prova",
       "premiumMode": "Durata",
@@ -202,15 +208,20 @@
       "deleteText": "L'account, i progetti, le sessioni e i dispositivi vengono eliminati definitivamente. Nel registro di controllo resta solo un hash dell'email.",
       "typeEmail": "Scrivete {email} per confermare",
       "deleteButton": "Elimina l'account per sempre",
-      "deleteConfirm": "Ultimo controllo: eliminare l'account per sempre?"
+      "deleteConfirm": "Ultimo controllo: eliminare l'account per sempre?",
+      "orderTerms": "Acquirente: {buyer}; inizio anticipato: {early}; il periodo a pagamento può iniziare da: {date}.",
+      "yes": "sì",
+      "no": "no"
     }
   },
   "label": {
     "system": "sistema",
     "customer": "cliente {id}",
-    "superseded": "sostituita da una nuova richiesta",
-    "cancelledByCustomer": "annullata dal cliente",
+    "superseded": "sostituito da un nuovo ordine",
+    "cancelledByCustomer": "ritirato dal cliente",
     "signup": "registrazione",
-    "trialStarted": "periodo di prova iniziato (email confermata)"
+    "trialStarted": "periodo di prova iniziato (email confermata)",
+    "withdrawal": "recesso dal contratto",
+    "createdByStaff": "creato dal team"
   }
 }

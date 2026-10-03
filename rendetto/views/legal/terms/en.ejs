@@ -1,38 +1,68 @@
-<p>These terms govern the use of Rendetto. By registering an account you accept them.</p>
+<%
+  const row = (id) => prices.find((p) => p.id === id);
+  const m1 = row('m1');
+  const life = row('lifetime');
+  const terms = prices.filter((p) => p.discountPercent);
+  const list = (items) => items.slice(0, -1).join(', ') + ' or ' + items[items.length - 1];
+%>
+<p>These terms govern the use of Rendetto. By registering an account you accept them, and when you order a paid plan they become part of the contract for it.</p>
 
 <h2>Who provides the service</h2>
-<p><%= company.name %>, company number (EIK) <%= company.eik %>, VAT number <%= company.vat %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, Kyustendil Province, Bulgaria. Contact: <a href="mailto:<%= contact %>"><%= contact %></a>.</p>
+<p><%= company.name %>, company number (EIK) <%= company.eik %>, VAT number <%= company.vat %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, Kyustendil Province, Bulgaria. Contact: <a href="mailto:<%= contact %>"><%= contact %></a>. The same address is our single point of contact for authorities and for users of the service under Regulation (EU) 2022/2065 on digital services — in Bulgarian or English.</p>
 
 <h2>What Rendetto is</h2>
-<p>Rendetto is browser software for designing panel furniture. From one project it calculates a 3D model, a cut list with edge banding, a hardware list, drawings with a drilling map and files for a CNC machine (DXF and G-code). Everything is calculated from the data you enter and from the hardware manufacturers' documentation.</p>
+<p>Rendetto is browser software for designing panel furniture. From one project it calculates a 3D model, a cut list with edge banding, a hardware list, drawings with a drilling map and files for a CNC machine (DXF and G-code). Everything is calculated from the data you enter and from the hardware manufacturers' documentation. The editor, drawings and tables are in Bulgarian for now; the website, account and emails are in Bulgarian, English and Italian.</p>
 
 <h2>Account</h2>
 <ul>
   <li>An account is personal: do not share it. Create a separate account for each person on your team.</li>
-  <li>Use a real email address — confirmations, new passwords and security warnings go there.</li>
+  <li>Use a real email address — confirmations, new passwords, order confirmations and security warnings go there.</li>
   <li>Keep your password safe. You can turn on two-factor protection under “Security” in your account.</li>
   <li>If you suspect someone else has access, change your password and write to us.</li>
 </ul>
 
 <h2>Trial</h2>
-<p>Every new account gets a <%= trialDays %>-day trial from the moment the email is confirmed, with all features. We do not ask for payment details. There is one trial per person or company: several accounts for more trials are not allowed and may be blocked.</p>
+<p>Every new account gets a <%= trialDays %>-day trial from the moment the email is confirmed, with all features. We do not ask for payment details, and nothing is charged automatically after it. There is one trial per person or company: several accounts for more trials are not allowed and may be blocked.</p>
 
 <h2>Plans and prices</h2>
 <ul>
-  <li>Premium: €25 per month excluding VAT. Paying for 3, 6 or 12 months at once gives a 5%, 10% or 20% discount.</li>
-  <li>Lifetime: €750 excluding VAT, one payment — 2.5 times the yearly price without the 12-month discount. It does not expire for as long as we offer Rendetto.</li>
-  <li>VAT is charged according to the rules for the buyer's country; in Bulgaria it is 20%.</li>
-  <li>We may change prices for future periods. A period already paid for does not change.</li>
+  <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> per month including VAT (<%= fmt.money(m1.totalCents) %> excluding VAT). Paying for <%= list(terms.map((p) => String(p.months))) %> months at once gives a <%= list(terms.map((p) => p.discountPercent + '%')) %> discount. Premium does not renew by itself — it ends at the end of the paid term.</li>
+  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> including VAT (<%= fmt.money(life.totalCents) %> excluding VAT), one payment — 2.5 times the yearly price without the 12-month discount. Lifetime is valid for as long as Rendetto is offered.</li>
+  <li>For consumers, prices are final and include <%= vatPercent %>% VAT. For businesses, VAT is charged under the rules of the buyer's country.</li>
+  <li>We may change prices for future orders. A plan already ordered does not change.</li>
 </ul>
 
+<h2>How the contract is concluded</h2>
+<p>A paid plan is ordered under “Plan” in your account. Before ordering you choose the term, whether you are buying as a consumer or as a business and — if you are a consumer — whether you want the plan to start before the withdrawal period ends. Check your choices before you press the “Order with obligation to pay” button; after ordering you can correct a mistake by cancelling the order and ordering again.</p>
+<p>The contract is concluded with the order. Straight after it we email you a confirmation with what you ordered, the price, these terms as of the day of the order, the information on the right of withdrawal and the model withdrawal form. Your orders stay under “Plan” in your account. The contract is concluded in the language of the page: Bulgarian, English or Italian.</p>
+
 <h2>Payment and activation</h2>
-<p>You request a plan under “Plan” in your account. We send you payment details and an invoice. The plan is activated manually once the payment arrives, and you get an email. If you pay while your trial or paid period is still running, the new months start after it ends.</p>
+<p>Payment is by bank transfer, using the invoice with the payment details that we send you after the order. The plan is activated manually once the payment arrives, and you get an email. If you are a consumer and did not ask for an early start, the paid period starts after the withdrawal period ends. If you pay while your trial or paid period is still running, the new months start after it ends. If the payment does not arrive, the plan is not activated and we may reject the order.</p>
 
 <h2>When the plan ends</h2>
 <p>After the trial or paid period ends, the account stays and its projects can still be opened and downloaded in every format. New projects, saving changes and copying projects need an active plan. You can always delete projects.</p>
 
-<h2>Right of withdrawal</h2>
-<p>If you are a consumer, you can withdraw from a paid plan within 14 days of payment without giving a reason, by writing to <a href="mailto:<%= contact %>"><%= contact %></a>. If, at your request, the plan started before that period ended, you owe the part of the price for the time it was active; we refund the rest within 14 days. The right of withdrawal does not apply to purchases by businesses.</p>
+<h2 id="withdrawal">Right of withdrawal</h2>
+<p>If you are a consumer, you have the right to withdraw from the contract within 14 days without giving any reason. The period ends 14 days after the day the contract was concluded; if the last day is a Saturday, a Sunday or a public holiday, it ends at the end of the next working day.</p>
+<p>To exercise this right, use the “Withdraw from contract here” button next to the order under “Plan” in your account — it is there for the whole period, and the confirmation that we have received your withdrawal arrives by email straight away. You may also inform us by an unequivocal statement sent to <a href="mailto:<%= contact %>"><%= contact %></a> or by letter to the address above — for example using the model form below, but you do not have to. To meet the deadline, it is enough to send your statement before the period has expired.</p>
+<p>If you withdraw, we will reimburse all payments received from you without undue delay and in any event not later than 14 days from the day on which we are informed of your withdrawal, using the same means of payment, unless we expressly agree otherwise; in any event you will not incur any fees as a result of the reimbursement. If the plan has already been activated, we return it to what it was before the order.</p>
+<p>If you asked for the plan to start during the withdrawal period, you shall pay an amount in proportion to what has been provided until you inform us of your withdrawal, in comparison with the full coverage of the contract. Without such a request the paid period starts after the withdrawal period ends, and if you withdraw you owe nothing.</p>
+<p>The right of withdrawal does not apply to purchases by businesses or by self-employed persons for professional purposes.</p>
+<div class="model-form">
+  <h3>Model withdrawal form</h3>
+  <p>(complete and return this form only if you wish to withdraw from the contract)</p>
+  <p>— To <%= company.name %>, ul. Samuil 3, <%= company.postalCode %> Bobov Dol, Kyustendil Province, Bulgaria, <%= contact %>:</p>
+  <p>— I/We (*) hereby give notice that I/We (*) withdraw from my/our (*) contract of sale of the following goods (*)/for the provision of the following service (*),</p>
+  <p>— Ordered on (*)/received on (*),</p>
+  <p>— Name of consumer(s),</p>
+  <p>— Address of consumer(s),</p>
+  <p>— Signature of consumer(s) (only if this form is notified on paper),</p>
+  <p>— Date</p>
+  <p>(*) Delete as appropriate.</p>
+</div>
+
+<h2>Legal guarantee</h2>
+<p>As a consumer you have the legal guarantee of conformity for digital services for the whole term of the contract. If Rendetto does not conform to the contract, write to us: we will bring it into conformity, and if we cannot, you are entitled to a price reduction or to terminate the contract.</p>
 
 <h2>What is not allowed</h2>
 <ul>
@@ -43,19 +73,21 @@
 </ul>
 
 <h2>Blocking</h2>
-<p>If these terms are breached, we may block an account. The reason is shown when you try to sign in. If you think the block is a mistake, write to us — if it is, we restore access.</p>
+<p>If these terms are breached, we may block an account. The reason is shown when you try to sign in. If you think the block is a mistake, write to us — we consider every objection and, if it is a mistake, we restore access.</p>
 
 <h2>Outputs and liability</h2>
-<p class="disclaimer">Rendetto calculates from the data you enter. Before production, check the sizes, the construction and the drawings, and run the G-code first in a simulation and as a dry run: the post-processors are generic and do not know your particular machine. To the extent the law allows, we are not liable for material, tools or machines damaged by using outputs that were not checked. Nothing in these terms limits liability that the law does not allow to be limited, for example for damage caused intentionally or by gross negligence. If you are a consumer, you also keep your legal rights when the service does not conform to the contract.</p>
+<p class="disclaimer">Rendetto calculates from the data you enter. Where the manufacturer's documentation says nothing, the value is our choice and is marked “наш избор” (our choice). Before production, check the sizes, the construction and the drawings, and run the G-code first in a simulation and as a dry run: the post-processors are generic and do not know your particular machine. To the extent the law allows, we are not liable for material, tools or machines damaged by using outputs that were not checked. Nothing in these terms limits liability that the law does not allow to be limited, for example for damage caused intentionally or by gross negligence. If you are a consumer, you also keep your legal rights when the service does not conform to the contract.</p>
 
 <h2>Availability</h2>
 <p>We aim to keep Rendetto running without interruption but do not guarantee it: there is occasional maintenance. Keep important projects as downloaded files too.</p>
 
 <h2>Rights in the software and the projects</h2>
-<p>The software, its design and the catalogues in it belong to <%= company.name %>, except for the open-source libraries we use under their own licences (<a href="/static/editor/THIRD-PARTY-LICENSES.txt">list and full texts</a>). Your projects and their outputs are yours. We store and process projects only to provide the service — details in the <a href="<%= legalPath(locale, 'privacy') %>">privacy policy</a>.</p>
+<p>The software and its design belong to <%= company.name %>, except for the open-source libraries we use under their own licences (<a href="/static/editor/THIRD-PARTY-LICENSES.txt">list and full texts</a>). The selection and arrangement of the catalogues are ours. Blum, Hettich, GTV, Salice, Egger and other manufacturer and product names are trademarks of their respective owners; we use them only to indicate compatibility. Rendetto is not affiliated with or endorsed by these manufacturers.</p>
+<p>Your projects and their outputs are yours. We store and process projects only to provide the service — details in the <a href="<%= legalPath(locale, 'privacy') %>">privacy policy</a>.</p>
 
 <h2>Changes to these terms</h2>
-<p>For a material change we will write to you at least 30 days before it takes effect. If you do not agree, you can stop using Rendetto and delete your account.</p>
+<p>For a material change we will write to you at least 30 days before it takes effect. If the change is to your detriment and you have a paid plan, you may terminate the contract free of charge within 30 days of the notice and get back the unused part of the price. If you do not agree, you can also stop using Rendetto and delete your account.</p>
 
 <h2>Governing law and disputes</h2>
-<p>Bulgarian law applies. Disputes are settled by the competent Bulgarian court. If you are a consumer, you keep the protection of the mandatory rules of the country where you live, and you can turn to the Bulgarian Commission for Consumer Protection and to its general conciliation commissions for out-of-court settlement of the dispute (<a href="https://www.kzp.bg" target="_blank" rel="noopener">www.kzp.bg</a>).</p>
+<p>Bulgarian law applies. If you are a consumer, this does not deprive you of the protection of the mandatory rules of the country where you live. Disputes are settled by the competent Bulgarian court; if you are a consumer living in the EU, you may also sue in the courts where you live, and we may sue you only there.</p>
+<p>You can turn to the Bulgarian Commission for Consumer Protection and its conciliation commissions for out-of-court settlement of the dispute (<a href="https://www.kzp.bg" target="_blank" rel="noopener">www.kzp.bg</a>). The bodies for alternative dispute resolution across the EU are listed at <a href="https://consumer-redress.ec.europa.eu" target="_blank" rel="noopener">consumer-redress.ec.europa.eu</a>.</p>

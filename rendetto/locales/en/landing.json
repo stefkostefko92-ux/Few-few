@@ -2,7 +2,7 @@
   "landing": {
     "meta": {
       "title": "Rendetto — furniture software: cut lists, drawings, CNC",
-      "description": "Design panel furniture in 3D and get the cut list, hardware, drawings with drilling maps and CNC files. Every account gets a 30-day trial.",
+      "description": "Design panel furniture in 3D and get the cut list, hardware, drawings with drilling maps and CNC files. A {days}-day trial from email confirmation.",
       "keywords": "furniture design software, cabinet design, cut list, drilling map, CNC, G-code, DXF, Rendetto, Carbon Stealth",
       "imageAlt": "A nested sheet of melamine board for a kitchen with the CNC router path",
       "browser": "A browser with WebGL 2: Chrome, Edge, Firefox or Safari."
@@ -25,8 +25,8 @@
       "line1": "From idea",
       "line2": "to router.",
       "lead": "Rendetto designs panel furniture in the browser and turns the same project into everything the workshop needs: a cut list with edge banding, a hardware list, drawings with a drilling map for every part, and files for the CNC machine.",
-      "trial": "Every new account gets a {days}-day trial to try the software. No card and no automatic payment.",
-      "caption": "Sheet {no} of {count} for a kitchen of {modules} units, {width} mm each: {parts} parts and {holes} holes. Program output, not an illustration.",
+      "trial": "Every new account gets a {days}-day trial, starting when the email is confirmed, to try the software. No card and no automatic payment.",
+      "caption": "Sheet {no} of {count} for a kitchen of {modules} units, {width} mm each: {parts} parts and {holes} holes. Program output, not an illustration.",
       "keyContour": "contour, Ø{d} cutter",
       "keyGroove": "back panel groove, Ø{d} cutter",
       "keyDrill": "holes {list}"
@@ -79,22 +79,22 @@
     "drilling": {
       "title": "Where exactly do the holes go?",
       "lead": "On the drawing of every part: coordinates, diameter and depth of every hole, following the hardware manufacturer's documentation — Blum, Hettich, GTV and Salice for hinges, GTV and Blum for slides.",
-      "cup": "A Ø35 cup {c} mm from the door edge: that is what the Blum CLIP top table gives for a {overlay} mm overlay with a {plate} mm plate.",
-      "system32": "Mounting plates and shelf supports follow the 32 mm system: the first row is 37 mm from the front edge.",
+      "cup": "A Ø35 cup {c} mm from the door edge: that is what the Blum CLIP top table gives for a {overlay} mm overlay with a {plate} mm plate.",
+      "system32": "Mounting plates and shelf supports follow the 32 mm system: the first row is 37 mm from the front edge.",
       "handles": "Handles are drilled at the hole spacing of the chosen model, slides to the manufacturer's template.",
       "edges": "Horizontal holes in the edges (for confirmat screws) are in the drawing's table, separate from the G-code.",
-      "checks": "If a hinge, slide or hole falls outside the manufacturer's table, the program tells you what to change.",
-      "imageAlt": "Drawing of a {h} × {w} mm door with sizes, edge banding and the drilling map for the hinge cups",
-      "cupAlt": "Hinge cup detail at 1:1 scale: Ø35 at {c} mm from the edge",
-      "caption": "The left door of the first base unit, {h} × {w} mm: sizes, edge banding and drilling map. Drawing labels are in Bulgarian.",
+      "checks": "If a hinge, slide or hole falls outside the manufacturer's table, the program tells you what to change. Where the document says nothing, the program decides and marks the value “наш избор” (our choice).",
+      "imageAlt": "Drawing of a {h} × {w} mm door with sizes, edge banding and the drilling map for the hinge cups",
+      "cupAlt": "Hinge cup detail at 1:1 scale: Ø35 at {c} mm from the edge",
+      "caption": "The left door of the first base unit, {h} × {w} mm: sizes, edge banding and drilling map. Drawing labels are in Bulgarian.",
       "open": "Open the whole drawing"
     },
     "kinds": {
       "title": "What can you design?",
       "lead": "Panel furniture for the kitchen, bedroom, living room and study — from a single cabinet to a whole kitchen.",
-      "width": "width {min}–{max} mm",
-      "modules": "{min}–{max} units of {wmin}–{wmax} mm",
-      "mattress": "mattress {min}–{max} cm",
+      "width": "width {min}–{max} mm",
+      "modules": "{min}–{max} units of {wmin}–{wmax} mm",
+      "mattress": "mattress {min}–{max} cm",
       "rules": "The construction follows workshop practice: the bottom and top sit between the sides, the HDF back goes into a groove, base cabinets have rails for the worktop, and cut sizes are reduced by the edge banding."
     },
     "machine": {
@@ -128,10 +128,10 @@
     },
     "prices": {
       "title": "How much does it cost?",
-      "trial": "Every account gets a {days}-day trial to try our software — with all features, no card and no automatic payment.",
-      "vat": "Prices are in euros, excluding VAT. VAT is charged according to the rules for the buyer's country; in Bulgaria it is {vat}%.",
-      "lifetime": "Lifetime costs 2.5 times the yearly price without the 12-month discount and never ends.",
-      "manual": "You request a plan from your account, and it is activated manually once the payment arrives.",
+      "trial": "Every account gets a {days}-day trial, starting when the email is confirmed, to try our software — with all features, no card and no automatic payment.",
+      "vat": "For consumers, prices are final and include {vat}% VAT. For businesses the price without VAT is also shown; VAT is charged under the rules of the buyer's country.",
+      "lifetime": "Lifetime costs 2.5 times the yearly price without the 12-month discount and is valid for as long as Rendetto is offered — details in the terms.",
+      "manual": "You order a plan from your account, and it is activated manually once the payment arrives.",
       "expired": "When the trial or a paid period ends, your projects stay available to download. New projects and changes need an active plan."
     },
     "price": {
@@ -141,15 +141,15 @@
       },
       "lifetime": "Lifetime",
       "perMonth": "{amount} per month",
-      "once": "one payment, no end date",
-      "withVat": "{amount} with {vat}% VAT",
-      "off": "{pct}% off"
+      "once": "one-off, for the life of the service",
+      "off": "{pct}% off",
+      "withoutVat": "{amount} excl. VAT"
     },
     "faq": {
       "title": "Questions and answers",
       "price": {
         "q": "How much does Rendetto cost?",
-        "a": "€25 per month excluding VAT (€30 with VAT). Paying for 3, 6 or 12 months at once gives a 5%, 10% or 20% discount. Lifetime costs €750 excluding VAT (€900 with VAT), is paid once and never ends."
+        "a": "{month} per month including VAT ({monthNet} excluding VAT). Paying for {terms} months at once gives a {discounts} discount. Lifetime costs {life} including VAT ({lifeNet} excluding VAT), is paid once and is valid for as long as Rendetto is offered."
       },
       "afterTrial": {
         "q": "What happens when the trial ends?",

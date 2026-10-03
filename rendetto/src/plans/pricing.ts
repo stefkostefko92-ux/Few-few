@@ -2,7 +2,7 @@ import { LOCALE_TAG, type Locale } from '../i18n.js';
 
 /**
  * Ценоразписът. Парите са ЦЕЛИ ЕВРОЦЕНТИ — никога float. Сумата се смята само тук, на сървъра;
- * нищо от клиента не определя цена. Всички цени са без ДДС.
+ * нищо от клиента не определя цена. Основата е без ДДС; крайната цена за потребители е с ДДС.
  */
 export const MONTHLY_CENTS = 2500;
 
@@ -83,6 +83,8 @@ export interface PriceRow {
   totalCents: number;
   perMonthCents: number | null;
   totalWithVatCents: number;
+  /** Месечната част от крайната цена (с ДДС) — за потребителите. */
+  perMonthWithVatCents: number | null;
 }
 
 /** Целият ценоразпис за витрината и за страницата на плана. */
@@ -94,6 +96,7 @@ export function priceTable(): PriceRow[] {
     totalCents: termPriceCents(option),
     perMonthCents: perMonthCents(option),
     totalWithVatCents: withVatCents(termPriceCents(option)),
+    perMonthWithVatCents: divideRoundHalfUp(withVatCents(termPriceCents(option)), option.months),
   }));
   return [
     ...terms,
@@ -104,6 +107,7 @@ export function priceTable(): PriceRow[] {
       totalCents: lifetimePriceCents(),
       perMonthCents: null,
       totalWithVatCents: withVatCents(lifetimePriceCents()),
+      perMonthWithVatCents: null,
     },
   ];
 }

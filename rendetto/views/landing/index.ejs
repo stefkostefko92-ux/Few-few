@@ -1,6 +1,6 @@
 <%
   const title = t('landing.meta.title');
-  const description = t('landing.meta.description');
+  const description = t('landing.meta.description', texts.description);
   const edges = (list) => (list.length ? list.map((value) => fmt.num(value)).join(' + ') : '—');
   const mm = (value) => fmt.num(value);
   const sheet = assets.sheet;
@@ -159,9 +159,9 @@
       <% for (const row of prices) { const lifetime = row.id === 'lifetime'; %>
       <li class="price<%= lifetime ? ' price-lifetime' : '' %>">
         <span class="price-period"><%= lifetime ? t('landing.price.lifetime') : t('landing.price.months', { n: row.months }) %></span>
-        <span class="price-total"><%= fmt.money(row.totalCents) %></span>
-        <span class="price-month"><%= lifetime ? t('landing.price.once') : t('landing.price.perMonth', { amount: fmt.money(row.perMonthCents) }) %></span>
-        <span class="price-vat"><%= t('landing.price.withVat', { amount: fmt.money(row.totalWithVatCents), vat: vatPercent }) %></span>
+        <span class="price-total"><%= fmt.money(row.totalWithVatCents) %></span>
+        <span class="price-month"><%= lifetime ? t('landing.price.once') : t('landing.price.perMonth', { amount: fmt.money(row.perMonthWithVatCents) }) %></span>
+        <span class="price-vat"><%= t('landing.price.withoutVat', { amount: fmt.money(row.totalCents) }) %></span>
         <% if (row.discountPercent) { %><span class="price-off"><%= t('landing.price.off', { pct: row.discountPercent }) %></span><% } %>
       </li>
       <% } %>
@@ -183,7 +183,7 @@
       <% for (const id of faqIds) { %>
       <details>
         <summary><h3><%= t('landing.faq.' + id + '.q') %></h3></summary>
-        <p><%= t('landing.faq.' + id + '.a') %></p>
+        <p><%= t('landing.faq.' + id + '.a', texts.faq[id]) %></p>
       </details>
       <% } %>
     </div>

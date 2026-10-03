@@ -5,17 +5,19 @@
     "endsOn": "fino al {date}",
     "endedOn": "scaduto il {date}",
     "expiredRule": "Quando il piano scade, i progetti restano e si possono scaricare. Nuovi progetti e modifiche richiedono un piano attivo.",
-    "requestTitle": "Richiesta di piano",
-    "manualText": "Scegliete la durata e inviate la richiesta. Vi scriveremo con i dati per il pagamento e la fattura; il piano viene attivato manualmente quando arriva il pagamento.",
+    "requestTitle": "Ordine di un piano",
+    "manualText": "Scegliete la durata. Il pagamento è con bonifico: dopo l'ordine vi inviamo la fattura con i dati per il pagamento e il piano viene attivato all'arrivo del pagamento. Premium non si rinnova da solo: scade alla fine della durata. Lifetime è un pagamento una tantum e vale finché Rendetto è offerto.",
     "choose": "Durata",
     "col": {
       "period": "Durata",
-      "total": "Prezzo IVA esclusa",
-      "perMonth": "Al mese",
-      "withVat": "Con IVA {vat}%",
+      "total": "IVA esclusa",
+      "perMonth": "Al mese IVA inclusa",
+      "withVat": "IVA {vat}% inclusa",
       "date": "Data",
       "option": "Opzione",
-      "status": "Stato"
+      "status": "Stato",
+      "price": "Prezzo",
+      "actions": "Azione"
     },
     "months": {
       "one": "1 mese",
@@ -23,18 +25,18 @@
     },
     "lifetime": "Lifetime",
     "discount": "sconto {pct}%",
-    "vatNote": "I prezzi sono IVA esclusa. L'IVA si applica secondo le regole del paese dell'acquirente; in Bulgaria è del {vat}%.",
+    "vatNote": "Per i consumatori i prezzi sono finali, IVA {vat}% inclusa. Per le aziende è indicato anche il prezzo IVA esclusa; l'IVA si applica secondo le regole del paese dell'acquirente.",
     "message": "Messaggio",
-    "messagePlaceholder": "Ragione sociale e partita IVA per la fattura, o altro che dobbiamo sapere",
-    "send": "Invia la richiesta",
-    "requestsTitle": "Le vostre richieste",
-    "noRequests": "Non avete ancora richieste.",
-    "cancel": "Ritira",
+    "messagePlaceholder": "Ragione sociale, numero di registrazione e partita IVA per la fattura, o altro che dobbiamo sapere",
+    "send": "Ordine con obbligo di pagamento",
+    "requestsTitle": "I vostri ordini",
+    "cancel": "Ritira l'ordine",
     "status": {
       "OPEN": "In attesa di pagamento",
-      "DONE": "Attivata",
-      "REJECTED": "Respinta",
-      "CANCELLED": "Ritirata"
+      "DONE": "Attivato",
+      "REJECTED": "Respinto",
+      "CANCELLED": "Ritirato",
+      "WITHDRAWN": "Recesso esercitato"
     },
     "name": {
       "TRIAL": "Periodo di prova",
@@ -60,7 +62,50 @@
       "expired": "{plan} scaduto"
     },
     "request": {
-      "alreadyLifetime": "Avete già Lifetime: non c'è niente da richiedere."
+      "alreadyLifetime": "Avete già Lifetime: non c'è niente da ordinare."
+    },
+    "buyer": {
+      "legend": "Acquistate come",
+      "consumer": "Persona fisica (consumatore)",
+      "business": "Azienda o professionista, per scopi professionali",
+      "hint": "Il consumatore può recedere entro 14 giorni. Per gli acquisti delle aziende il recesso non è previsto; scrivete i dati per la fattura nel messaggio.",
+      "consumerShort": "consumatore",
+      "businessShort": "azienda"
+    },
+    "early": {
+      "legend": "Quando inizia il piano",
+      "label": "Voglio che il piano inizi subito dopo il pagamento, prima della fine dei 14 giorni per il recesso. So che, se recedo, pagherò la parte del prezzo per il periodo in cui il piano è stato attivo.",
+      "hint": "Solo per i consumatori. Se non la spuntate, il periodo a pagamento inizia dopo la fine dei 14 giorni per il recesso.",
+      "short": "inizio anticipato"
+    },
+    "accept": "Con l'ordine accettate le {terms} e le informazioni sul {withdrawal}.",
+    "termsLink": "condizioni",
+    "withdrawalLink": "diritto di recesso",
+    "orderName": "Premium per {term}",
+    "withVatShort": "IVA inclusa",
+    "netShort": "IVA esclusa",
+    "activationAfter": "periodo a pagamento dopo: {date}",
+    "withdrawnOn": "recesso: {date}",
+    "errors": {
+      "buyer": "Scegliete se acquistate come persona fisica o come azienda.",
+      "unverified": "Confermate l'email per ordinare un piano: lì arrivano la conferma dell'ordine e la fattura."
+    },
+    "withdraw": {
+      "button": "Recedi dal contratto qui",
+      "until": "scadenza: {date}",
+      "where": "Se siete consumatori, potete recedere da un ordine entro 14 giorni, senza indicarne il motivo, con il pulsante «Recedi dal contratto qui» accanto all'ordine.",
+      "title": "Recesso dal contratto",
+      "intro": "Controllate i dati e confermate. Ultimo giorno del periodo di recesso: {date}. La conferma vi arriverà subito per email.",
+      "name": "Nome",
+      "contract": "Contratto",
+      "orderNo": "ordine n. {id}",
+      "email": "La conferma va a",
+      "statementLabel": "La dichiarazione che inviate",
+      "effect": "Se avete già pagato, vi rimborseremo tutti i pagamenti ricevuti entro 14 giorni, con lo stesso mezzo di pagamento e senza costi per voi. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
+      "effectEarly": "Se avete già pagato, vi rimborseremo i pagamenti ricevuti entro 14 giorni, con lo stesso mezzo di pagamento e senza costi per voi, meno la parte per il periodo in cui il piano è stato attivo, perché avete chiesto l'inizio anticipato. Se il piano è già stato attivato, lo riportiamo com'era prima dell'ordine.",
+      "confirm": "Conferma recesso",
+      "back": "Indietro, senza recedere",
+      "unavailable": "Il periodo di recesso per questo ordine è scaduto o l'ordine è già chiuso."
     }
   },
   "account": {
@@ -85,7 +130,7 @@
       "other": "Restano {n} giorni di Premium, fino al {date}."
     },
     "planProjects": "Progetti: {n}",
-    "requestOpen": "Avete una richiesta in attesa di pagamento",
+    "requestOpen": "Avete un ordine in attesa di pagamento",
     "seePlans": "Piani e prezzi",
     "profileTitle": "Profilo",
     "language": "Lingua",
@@ -99,7 +144,7 @@
     "changeEmailHint": "Invieremo un link al nuovo indirizzo. L'email cambia quando lo aprite; fino ad allora accedete con quella vecchia.",
     "changeEmailButton": "Invia link",
     "delete": {
-      "confirmMissing": "Spuntate la casella per confermare che l'eliminazione è definitiva.",
+      "confirmMissing": "Spuntate la casella per confermare di aver capito che l'eliminazione è definitiva.",
       "lastOwner": "È l'ultimo proprietario. Prima di eliminare l'account, assegnate il ruolo a un'altra persona."
     }
   },
@@ -123,7 +168,7 @@
     "download": "Scarica ZIP",
     "duplicate": "Copia",
     "delete": "Elimina",
-    "deleteConfirm": "Eliminare „{name}“? Non si può annullare.",
+    "deleteConfirm": "Eliminare «{name}»? Non si può annullare.",
     "errors": {
       "conflict": "Il progetto è stato modificato in un'altra finestra o su un altro dispositivo. Ricaricate la pagina per vedere l'ultima versione: le modifiche qui non sono salvate.",
       "name": "Il nome può avere al massimo 80 caratteri.",

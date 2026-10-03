@@ -87,10 +87,10 @@
     "profileSaved": "Profilo salvato.",
     "projectDeleted": "Il progetto è stato eliminato.",
     "projectDuplicated": "Il progetto è stato copiato.",
-    "recoveryUsed": "Avete effettuato l'accesso con un codice di recupero. Se i codici stanno finendo, createne di nuovi in „Sicurezza“.",
-    "requestCancelled": "La richiesta è stata ritirata.",
-    "requestRejected": "La richiesta è stata respinta.",
-    "requestSent": "Richiesta inviata. Vi scriveremo con i dati per il pagamento.",
+    "recoveryUsed": "Avete effettuato l'accesso con un codice di recupero. Se i codici stanno finendo, createne di nuovi in «Sicurezza».",
+    "requestCancelled": "L'ordine è stato ritirato.",
+    "requestRejected": "L'ordine è stato respinto.",
+    "requestSent": "L'ordine è stato accettato. Vi abbiamo inviato una conferma per email; seguirà la fattura con i dati per il pagamento.",
     "resetSent": "Abbiamo inviato un link per una nuova password.",
     "roleChanged": "Il ruolo è stato cambiato e le sessioni dell'account sono state chiuse.",
     "sessionRevoked": "La sessione è stata chiusa.",
@@ -106,7 +106,8 @@
     "verificationNotSent": "Non abbiamo inviato un nuovo link: aspettate un momento e riprovate.",
     "verificationResent": "Abbiamo inviato un nuovo link di conferma.",
     "wrongCode": "Codice sbagliato.",
-    "wrongPassword": "Password sbagliata."
+    "wrongPassword": "Password sbagliata.",
+    "withdrawn": "Il vostro recesso è stato ricevuto. Vi abbiamo inviato una conferma per email."
   },
   "furniture": {
     "base": "Mobile base",

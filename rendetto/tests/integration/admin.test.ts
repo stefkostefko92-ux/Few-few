@@ -134,6 +134,7 @@ test('a plan request is priced on the server and closed when the plan is activat
   await c.post('/account/plan/request', {
     _csrf: csrf,
     option: 'm6',
+    buyer: 'business',
     message: 'Фирма ЕООД',
     price: '1',
   });

@@ -10,7 +10,8 @@ import { canonicalJson } from '../audit.js';
  * показва (видеокарта, ядра, памет, екран). Ползва се само за сигурност: входове, свързани акаунти,
  * известие за ново устройство. Описано е в политиката за поверителност.
  */
-const DEVICE_COOKIE_MAX_AGE = 400 * 24 * 60 * 60 * 1000;
+/** Колкото живее и записът за устройството (180 дни без вход) — бисквитката не надживява целта си. */
+const DEVICE_COOKIE_MAX_AGE = 180 * 24 * 60 * 60 * 1000;
 
 export function deviceCookieName(): string {
   return isProduction() ? '__Host-rd_dev' : 'rd_dev';
@@ -29,11 +30,12 @@ export function readDeviceCookie(req: Request): string | null {
   return safeEqual(signature, sign(id)) ? id : null;
 }
 
-/** Връща id на устройството; ако няма валидна бисквитка, издава нова. */
+/**
+ * Връща id на устройството; ако няма валидна бисквитка, издава нова. Срокът се плъзга: всеки вход го
+ * подновява, както и записът за устройството живее 180 дни от последното ползване.
+ */
 export function ensureDeviceCookie(req: Request, res: Response): string {
-  const existing = readDeviceCookie(req);
-  if (existing) return existing;
-  const id = randomToken(16);
+  const id = readDeviceCookie(req) ?? randomToken(16);
   res.cookie(deviceCookieName(), `${id}.${sign(id)}`, {
     httpOnly: true,
     sameSite: 'lax',
@@ -52,7 +54,10 @@ export function deviceCookieHash(id: string): string {
 const text = (max: number) => z.string().trim().max(max).optional();
 const count = (max: number) => z.number().finite().min(0).max(max).optional();
 
-/** Сигналите от `public/js/auth.js`. Всичко е ограничено по дължина и стойност. */
+/**
+ * Сигналите от `public/js/auth.js`. Всичко е ограничено по дължина и стойност. `ratio` и `langs` вече не
+ * се събират (не влизат нито в хеша, нито в описанието); схемата ги приема само заради кеширан стар скрипт.
+ */
 export const fingerprintSchema = z
   .object({
     platform: text(40),

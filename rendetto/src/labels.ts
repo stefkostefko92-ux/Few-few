@@ -11,6 +11,8 @@ export const LABEL = {
   cancelledByCustomer: '@cancelled-by-customer',
   signup: '@signup',
   trialStarted: '@trial-started',
+  withdrawal: '@withdrawal',
+  createdByStaff: '@created-by-staff',
 } as const;
 
 export function customerLabel(userId: string): string {
@@ -23,6 +25,8 @@ const KEYS: Readonly<Record<string, string>> = {
   'cancelled-by-customer': 'label.cancelledByCustomer',
   signup: 'label.signup',
   'trial-started': 'label.trialStarted',
+  withdrawal: 'label.withdrawal',
+  'created-by-staff': 'label.createdByStaff',
   customer: 'label.customer',
 };
 

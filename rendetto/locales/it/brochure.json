@@ -5,7 +5,7 @@
     "sheet": "Foglio {n} di {total}",
     "cover": {
       "for": "Per i laboratori di mobili in pannelli, con un centro di lavoro CNC o con una sezionatrice.",
-      "proof": "Tutti i disegni, le tabelle e i file di questa brochure sono output del programma da un unico progetto: una cucina di {modules} moduli da {width} mm."
+      "proof": "Tutti i disegni, le tabelle e i file di questa brochure sono output del programma da un unico progetto: una cucina di {modules} moduli da {width} mm."
     },
     "model": {
       "caption": "La stessa cucina in 3D, come la vedete nell'editor."
@@ -17,9 +17,9 @@
       "scale": "Tutti i {n} tipi in scala 1:{scale}, con le misure con cui il programma li propone. I pensili sono alla loro altezza dal pavimento."
     },
     "prices": {
-      "once": "pagamento unico",
-      "lifetime": "Lifetime è un pagamento unico: 2,5 volte il prezzo annuale senza lo sconto per 12 mesi.",
-      "asOf": "Prezzi aggiornati al {date}; condizioni complete: {terms}"
+      "once": "una tantum, per la durata del servizio",
+      "lifetime": "Lifetime è un pagamento unico, pari a 2,5 volte il prezzo annuale senza lo sconto per 12 mesi, e vale finché Rendetto è offerto.",
+      "asOf": "Prezzi validi alla data: {date}; condizioni complete: {terms}"
     },
     "contact": {
       "scan": "Inquadrate il codice o aprite {url}",

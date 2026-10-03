@@ -24,7 +24,7 @@
       <dt><%= t('admin.col.plan') %></dt><dd><%= t('plan.name.' + account.plan) %></dd>
       <dt><%= t('admin.account.until') %></dt><dd><%= account.plan === 'LIFETIME' ? t('admin.account.forever') : account.planExpiresAt ? fmt.dateTime(account.planExpiresAt) : t('admin.account.notStarted') %><% if (plan.daysLeft) { %> <small>(<%= t('admin.account.daysLeft', { n: plan.daysLeft }) %>)</small><% } %></dd>
     </dl>
-    <% if (request) { %><div class="flash flash-info" role="status"><%- include('../partials/icon', { name: 'receipt' }) %><span><%= t('admin.account.fromRequest', { option: request.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: request.months }), price: fmt.money(request.listPriceCents) }) %></span></div><% } %>
+    <% if (request) { %><div class="flash flash-info" role="status"><%- include('../partials/icon', { name: 'receipt' }) %><span><%= t('admin.account.fromRequest', { option: request.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: request.months }), price: fmt.money(request.listPriceCents) }) %> <%= t('admin.account.orderTerms', { buyer: t(request.buyerType === 'CONSUMER' ? 'plan.buyer.consumerShort' : 'plan.buyer.businessShort'), early: t(request.earlyStartRequestedAt ? 'admin.account.yes' : 'admin.account.no'), date: fmt.dateTime(request.allowedFrom) }) %></span></div><% } %>
     <% if (manageable && can('accounts:plan')) { %>
     <form method="post" action="/admin/accounts/<%= account.id %>/plan#plan" class="form" data-plan-form>
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">

@@ -12,7 +12,7 @@
 <link rel="preload" href="/static/fonts/<%= locale === 'bg' ? 'geologica-cyrillic' : 'geologica-latin' %>.woff2" as="font" type="font/woff2" crossorigin>
 <%
   // Every stylesheet stays under 300 lines; a page asks for a bundle, the bundle lists the files.
-  const bundles = { app: ['app', 'app-pages', 'app-admin', 'stack'], site: ['site', 'site-content', 'site-pricing', 'stack'] };
+  const bundles = { app: ['app', 'app-pages', 'app-admin', 'app-orders', 'stack'], site: ['site', 'site-content', 'site-pricing', 'stack'] };
   const sheets = ['base', 'controls'].concat(...(typeof styles !== 'undefined' ? styles : []).map((name) => bundles[name] || [name]));
 %><% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
 <% } %>

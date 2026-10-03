@@ -73,11 +73,11 @@ export function prices(c: BrochureContext): string {
         : t('landing.price.months', { n: row.months ?? 0 });
       const per = lifetime
         ? t('brochure.prices.once')
-        : t('landing.price.perMonth', { amount: c.money(row.perMonthCents ?? 0) });
+        : t('landing.price.perMonth', { amount: c.money(row.perMonthWithVatCents ?? 0) });
       const off = row.discountPercent
         ? `<span class="b-off">${esc(t('landing.price.off', { pct: row.discountPercent }))}</span>`
         : '';
-      return `<li class="b-price${lifetime ? ' b-lifetime' : ''}"><span class="b-period">${esc(period)}</span><span class="b-total">${esc(c.money(row.totalCents))}</span><span>${esc(per)}</span><span class="b-vat">${esc(t('landing.price.withVat', { amount: c.money(row.totalWithVatCents), vat: c.vatPercent }))}</span>${off}</li>`;
+      return `<li class="b-price${lifetime ? ' b-lifetime' : ''}"><span class="b-period">${esc(period)}</span><span class="b-total">${esc(c.money(row.totalWithVatCents))}</span><span>${esc(per)}</span><span class="b-vat">${esc(t('landing.price.withoutVat', { amount: c.money(row.totalCents) }))}</span>${off}</li>`;
     })
     .join('');
   const notes = [

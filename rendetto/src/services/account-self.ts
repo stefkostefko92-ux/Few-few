@@ -143,6 +143,16 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       sessions: true,
     },
   });
+  const own = [
+    user.id,
+    ...user.upgradeRequests.map((r) => r.id),
+    ...user.projects.map((p) => p.id),
+  ];
+  const auditEntries = await prisma.auditLog.findMany({
+    where: { OR: [{ actorId: user.id }, { targetId: { in: own } }] },
+    orderBy: { id: 'asc' },
+    take: 20_000,
+  });
   return {
     generatedAt: new Date().toISOString(),
     account: {
@@ -161,6 +171,7 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       lastLoginCountry: user.lastLoginCountry,
       signupIp: user.signupIp,
       signupCountry: user.signupCountry,
+      signupHwid: user.signupFingerprint ? hwidLabel(user.signupFingerprint) : null,
       bannedAt: user.bannedAt,
       banReason: user.banReason,
     },
@@ -181,11 +192,19 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       note: c.note,
     })),
     bans: user.bans.map((b) => ({ at: b.createdAt, reason: b.reason, liftedAt: b.liftedAt })),
-    upgradeRequests: user.upgradeRequests.map((r) => ({
+    orders: user.upgradeRequests.map((r) => ({
+      id: r.id,
       at: r.createdAt,
       option: r.option,
-      listPriceCents: r.listPriceCents,
+      months: r.months,
+      priceWithoutVatCents: r.listPriceCents,
+      buyer: r.buyerType,
+      earlyStartRequestedAt: r.earlyStartRequestedAt,
+      termsVersion: r.termsVersion,
+      message: r.message,
       status: r.status,
+      closedAt: r.handledAt,
+      withdrawnAt: r.withdrawnAt,
     })),
     devices: user.devices.map((d) => ({
       hwid: hwidLabel(d.fingerprintHash),
@@ -194,18 +213,31 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       lastSeenAt: d.lastSeenAt,
       lastIp: d.lastIp,
       lastCountry: d.lastCountry,
+      userAgent: d.userAgent,
     })),
     logins: user.logins.map((l) => ({
       at: l.createdAt,
       outcome: l.outcome,
       ip: l.ip,
       country: l.country,
+      userAgent: l.userAgent,
     })),
     activeSessions: user.sessions.map((s) => ({
       createdAt: s.createdAt,
       lastSeenAt: s.lastSeenAt,
       ip: s.ip,
       country: s.country,
+      userAgent: s.userAgent,
+    })),
+    // Одитът за човека: неговите действия и действията на екипа върху акаунта, поръчките и проектите
+    // му. Името и IP адресът на служителя не са негови данни — остава само „екипът“.
+    auditLog: auditEntries.map((a) => ({
+      at: a.at,
+      action: a.action,
+      by: a.actorId === user.id ? 'you' : a.actorType === 'SYSTEM' ? 'system' : 'team',
+      target: a.targetType,
+      detail: a.detail,
+      ip: a.actorId === user.id ? a.ip : null,
     })),
   };
 }

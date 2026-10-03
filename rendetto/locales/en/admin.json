@@ -16,7 +16,7 @@
       "lifetime": "Lifetime",
       "unverified": "Unconfirmed",
       "banned": "Blocked",
-      "openRequests": "Open requests",
+      "openRequests": "Open orders",
       "newAccounts": "New in 7 / 30 days",
       "logins24h": "Sign-ins in 24 hours",
       "recent": "Recent sign-ups",
@@ -94,14 +94,18 @@
       "head": "The latest entry: No. {id}, hash {hash}. Keep this line outside the server too (for example at each monthly check) — that way even a deleted end of the chain is caught."
     },
     "requests": {
-      "title": "Plan requests",
+      "title": "Plan orders",
       "onlyOpen": "Open only",
       "showAll": "Show all",
-      "how": "Requests come from the customer's account. When the payment arrives, press “Activate”: the plan changes and the request is closed.",
-      "none": "No requests.",
+      "how": "Orders come from the customer's account and have already been confirmed by email. Send an invoice with the payment details. When the payment arrives, press “Activate”: the plan changes and the order is closed. For a consumer order without an early-start request the paid period can only start after the withdrawal period ends — the panel does not allow it earlier.",
+      "none": "No orders.",
       "activate": "Activate",
       "reject": "Reject",
-      "rejectConfirm": "Reject this request?"
+      "rejectConfirm": "Reject this order?",
+      "refundBy": "If paid, refund by {date}",
+      "planReverted": "The plan was returned automatically.",
+      "planManual": "The plan was not returned automatically — check it.",
+      "notConfirmed": "The email confirmation has not gone out — maintenance keeps trying."
     },
     "new": {
       "title": "New account",
@@ -119,7 +123,9 @@
       "notFound": "No such account.",
       "pastDate": "The date must be in the future.",
       "rank": "You cannot change an account with an equal or higher role.",
-      "self": "You cannot do this to your own account."
+      "self": "You cannot do this to your own account.",
+      "requestGone": "The order is no longer open: the customer cancelled it, withdrew from the contract, or it was closed.",
+      "withdrawalPeriod": "The consumer did not ask for an early start: the paid period can only start after the withdrawal period ends."
     },
     "account": {
       "since": "signed up on {date}",
@@ -133,7 +139,7 @@
         "one": "1 day left",
         "other": "{n} days left"
       },
-      "fromRequest": "From a request: {option}, {price} excl. VAT.",
+      "fromRequest": "From an order: {option}, {price} excl. VAT.",
       "newPlan": "New plan",
       "trialDays": "Trial days",
       "premiumMode": "Term",
@@ -202,15 +208,20 @@
       "deleteText": "The account, projects, sessions and devices are deleted permanently. Only a hash of the email stays in the audit log.",
       "typeEmail": "Type {email} to confirm",
       "deleteButton": "Delete the account for good",
-      "deleteConfirm": "Last check: delete this account for good?"
+      "deleteConfirm": "Last check: delete this account for good?",
+      "orderTerms": "Buyer: {buyer}; early start: {early}; the paid period may start from {date} on.",
+      "yes": "yes",
+      "no": "no"
     }
   },
   "label": {
     "system": "system",
     "customer": "customer {id}",
-    "superseded": "replaced by a new request",
+    "superseded": "replaced by a new order",
     "cancelledByCustomer": "cancelled by the customer",
     "signup": "sign-up",
-    "trialStarted": "trial started (email confirmed)"
+    "trialStarted": "trial started (email confirmed)",
+    "withdrawal": "withdrawal from the contract",
+    "createdByStaff": "created by the team"
   }
 }

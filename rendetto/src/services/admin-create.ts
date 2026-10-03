@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { audit } from '../audit.js';
 import { prisma } from '../db.js';
+import { LABEL } from '../labels.js';
 import { hashPassword } from '../auth/password.js';
 import { can, outranks } from '../auth/rbac.js';
 import { issueEmailToken } from '../auth/tokens.js';
@@ -78,7 +79,7 @@ export async function createAccount(actor: StaffActor, raw: unknown): Promise<Ac
       toPlan: input.plan,
       toExpiresAt: expiresAt,
       months: input.plan === 'PREMIUM' ? input.months : null,
-      note: 'създаден от персонала',
+      note: LABEL.createdByStaff,
     },
   });
   if (!password) {

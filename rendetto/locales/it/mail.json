@@ -55,6 +55,53 @@
     "accountDeleted": {
       "subject": "Il vostro account Rendetto è stato eliminato",
       "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
+    },
+    "order": {
+      "subject": "Conferma del vostro ordine Rendetto",
+      "body": "confermiamo il vostro ordine.\n\nContratto concluso: {when}\nOrdine n. {id}\nPiano: {plan}\nPrezzo: {price}\nAcquistate come: {buyer}\n{duration}\n\n{payment}\n\n{withdrawal}\n\n{trader}\nLe condizioni accettate con l'ordine (versione: {termsDate}): {terms}\nI vostri ordini: {orders}",
+      "priceConsumer": "{gross} IVA {vat}% inclusa ({net} IVA esclusa)",
+      "priceBusiness": "{net} IVA esclusa; l'IVA si applica secondo le regole del vostro paese ed è indicata in fattura",
+      "paymentEarly": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Avete chiesto che il piano inizi subito dopo il pagamento, prima della fine dei 14 giorni per il recesso. Se recedete, pagherete la parte del prezzo per il periodo in cui il piano è stato attivo.",
+      "paymentWait": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Non avete chiesto l'inizio anticipato, quindi il periodo a pagamento inizierà dopo la fine del periodo di recesso (ultimo giorno: {date}).",
+      "paymentBusiness": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Il piano viene attivato all'arrivo del pagamento.",
+      "withdrawalConsumer": "Diritto di recesso: potete recedere dal contratto senza indicarne il motivo (ultimo giorno: {date}) con il pulsante «Recedi dal contratto qui» in «Piano» del vostro account oppure con una dichiarazione esplicita a {contact}, ad esempio con il modulo tipo qui sotto. Se recedete, vi rimborseremo tutti i pagamenti ricevuti entro 14 giorni, con lo stesso mezzo di pagamento e senza costi per voi. Se avete chiesto l'inizio anticipato, tratteniamo la parte del prezzo per il periodo in cui il piano è stato attivo.\n\n{form}",
+      "withdrawalBusiness": "Acquistate come azienda o professionista per scopi professionali, quindi il diritto di recesso dei consumatori non si applica.",
+      "durationTerm": "Durata: {term}; Premium non si rinnova da solo: scade alla fine della durata.",
+      "durationLifetime": "Durata: Lifetime vale finché Rendetto è offerto.",
+      "consumerRights": "Come consumatori avete anche la garanzia legale di conformità dei servizi digitali. I reclami vanno a {contact}; per la risoluzione extragiudiziale potete rivolgervi alla Commissione bulgara per la tutela dei consumatori (www.kzp.bg).",
+      "trader": "Professionista: {company}, codice EIK {eik}, {address}, {contact}."
+    },
+    "withdrawalForm": "Modulo di recesso tipo\n(compilare e restituire il presente modulo solo se si desidera recedere dal contratto)\n— Destinatario {to}:\n— Con la presente io/noi (*) notifichiamo il recesso dal mio/nostro (*) contratto di vendita dei seguenti beni/servizi (*)\n— Ordinato il (*)/ricevuto il (*)\n— Nome del/dei consumatore(i)\n— Indirizzo del/dei consumatore(i)\n— Firma del/dei consumatore(i) (solo se il presente modulo è notificato in versione cartacea)\n— Data\n(*) Cancellare la dicitura inutile.",
+    "withdrawn": {
+      "subject": "Abbiamo ricevuto il vostro recesso dal contratto Rendetto",
+      "body": "abbiamo ricevuto la vostra dichiarazione di recesso dal contratto.\nData e ora: {when}\n\nLa dichiarazione:\n{statement}\n\n{plan}\n{refund}\n\nI vostri ordini: {orders}",
+      "statement": "Con la presente notifico il recesso dal mio contratto per la prestazione del seguente servizio: Rendetto — {plan}, ordine n. {id} (data dell'ordine: {date}), nome del consumatore: {name}, conferma a {email}.",
+      "plan": {
+        "open": "L'ordine è chiuso.",
+        "reverted": "Il vostro piano è stato riportato com'era prima dell'ordine.",
+        "manual": "Chiuderemo il piano ricevuto con questo ordine."
+      },
+      "refund": "Se avete già pagato, vi rimborseremo tutti i pagamenti ricevuti con lo stesso mezzo di pagamento e senza costi per voi (termine: {date}).",
+      "refundEarly": "Se avete già pagato, vi rimborseremo i pagamenti ricevuti con lo stesso mezzo di pagamento e senza costi per voi (termine: {date}). Poiché avete chiesto l'inizio anticipato, tratteniamo la parte del prezzo per il periodo in cui il piano è stato attivo."
+    },
+    "staffOrder": {
+      "subject": "Nuovo ordine Rendetto: {plan}",
+      "body": "nuovo ordine n. {id} da {email} ({buyer}).\nPiano: {plan}\nPrezzo: {price}\nInizio anticipato: {early}\n{activation}\n\nInviate la fattura con i dati per il pagamento. Pannello: {admin}",
+      "yes": "sì",
+      "no": "no",
+      "activationNow": "Si può attivare all'arrivo del pagamento.",
+      "activationAfter": "Attivare non prima di: {date} (consumatore senza richiesta di inizio anticipato)."
+    },
+    "staffWithdrawal": {
+      "subject": "Recesso da un contratto Rendetto: {email}",
+      "body": "{email} ha esercitato il recesso dall'ordine n. {id} ({plan}).\nData e ora: {when}\n{planState}\nSe è arrivato un pagamento, rimborsatelo con lo stesso mezzo di pagamento (termine: {date}). {early}\n\nPannello: {admin}",
+      "plan": {
+        "open": "L'ordine non era stato attivato.",
+        "reverted": "Il piano è stato riportato automaticamente allo stato precedente all'ordine.",
+        "manual": "Il piano NON è stato riportato automaticamente (è stato modificato dopo): sistematelo a mano."
+      },
+      "early": "Il cliente ha chiesto l'inizio anticipato: trattenete la parte per il periodo in cui il piano è stato attivo.",
+      "full": "Senza inizio anticipato: rimborsate l'intero importo."
     }
   }
 }

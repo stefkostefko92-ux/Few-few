@@ -5,11 +5,18 @@ import { clearSessionCookie } from '../auth/sessions.js';
 import { setFlash } from '../http/flash.js';
 import { resendLimiter, sensitiveLimiter } from '../http/limits.js';
 import { rawField, requestMeta, stringField } from '../http/meta.js';
-import { LOCALES } from '../i18n.js';
+import { LOCALES, type Locale } from '../i18n.js';
 import { planView } from '../plans/plan.js';
-import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
+import { priceTable, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
+import { canWithdraw, paidStartAllowedFrom, withdrawalLastDay } from '../plans/withdrawal.js';
 import { deleteOwnAccount, exportOwnData, updateProfile } from '../services/account-self.js';
-import { cancelOwnRequest, createUpgradeRequest } from '../services/plan-requests.js';
+import { orderPlanName, withdrawalStatement } from '../services/order-mail.js';
+import {
+  cancelOwnRequest,
+  createUpgradeRequest,
+  withdrawableOrder,
+  withdrawFromOrder,
+} from '../services/plan-requests.js';
 import { resendVerification } from '../services/registration.js';
 import { back, me } from './account-common.js';
 import { accountSecurityRouter } from './account-security.js';
@@ -87,24 +94,26 @@ accountRouter.get('/account/plan', async (req, res) => {
     orderBy: { createdAt: 'desc' },
     take: 10,
   });
+  const now = new Date();
   res.render('account/plan', {
     user,
-    plan: planView(user),
+    plan: planView(user, now),
     prices: priceTable(),
     vatPercent: VAT_BG_PERCENT,
-    requests,
+    requests: requests.map((r) => ({
+      ...r,
+      withVatCents: withVatCents(r.listPriceCents),
+      canWithdraw: canWithdraw(r, now),
+      lastDay: withdrawalLastDay(r.createdAt),
+      activationFrom: paidStartAllowedFrom(r),
+    })),
+    now,
     section: 'plan',
   });
 });
 
 accountRouter.post('/account/plan/request', sensitiveLimiter, async (req, res) => {
-  const body = req.body as Record<string, unknown>;
-  const result = await createUpgradeRequest(
-    await me(req),
-    body.option,
-    body.message,
-    requestMeta(req),
-  );
+  const result = await createUpgradeRequest(await me(req), req.body, requestMeta(req));
   back(
     res,
     '/account/plan',
@@ -120,6 +129,35 @@ accountRouter.post('/account/plan/request/:id/cancel', async (req, res) => {
     '/account/plan',
     ok ? 'ok' : 'error',
     ok ? 'flash.requestCancelled' : 'error.notFoundText',
+  );
+});
+
+/* -------------------- отказ от договора (чл. 11а от Директива 2011/83) -------------------- */
+
+accountRouter.get('/account/plan/withdraw/:id', async (req, res) => {
+  const user = await me(req);
+  const order = await withdrawableOrder(user, String(req.params.id));
+  if (!order) {
+    back(res, '/account/plan', 'error', 'plan.withdraw.unavailable');
+    return;
+  }
+  res.render('account/withdraw', {
+    user,
+    order,
+    planName: orderPlanName(order, res.locals.locale as Locale),
+    statement: withdrawalStatement(order, user, res.locals.locale as Locale),
+    lastDay: withdrawalLastDay(order.createdAt),
+    section: 'plan',
+  });
+});
+
+accountRouter.post('/account/plan/withdraw/:id', sensitiveLimiter, async (req, res) => {
+  const result = await withdrawFromOrder(await me(req), String(req.params.id), requestMeta(req));
+  back(
+    res,
+    '/account/plan',
+    result.ok ? 'ok' : 'error',
+    result.ok ? 'flash.withdrawn' : result.key,
   );
 });
 

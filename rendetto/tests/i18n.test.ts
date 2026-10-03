@@ -4,6 +4,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { hasKey, keysOf, LOCALES, translate } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
+import { TRIAL_DAYS } from '../src/plans/plan.js';
 
 function files(dir: string, ext: RegExp): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -76,7 +77,9 @@ test('the sites carry at least five keywords, one of them “Carbon Stealth”',
 test('titles and descriptions fit search results', () => {
   for (const locale of LOCALES) {
     assert.ok(translate(locale, 'landing.meta.title').length < 60, `${locale} title`);
-    assert.ok(translate(locale, 'landing.meta.description').length < 160, `${locale} description`);
+    const description = translate(locale, 'landing.meta.description', { days: TRIAL_DAYS });
+    assert.ok(!description.includes('{'), `${locale} description has an unfilled placeholder`);
+    assert.ok(description.length < 160, `${locale} description`);
     for (const key of ['legal.privacyDescription', 'legal.termsDescription']) {
       assert.ok(translate(locale, key).length < 160, `${locale}.${key}`);
     }
@@ -109,6 +112,34 @@ test('no stock marketing phrases in the public copy', () => {
 });
 
 test('a Bulgarian date is never followed by a period: the date already ends with „г.“', () => {
-  const offenders = keysOf('bg').filter((key) => /\{date\}\./.test(translate('bg', key)));
+  const offenders = keysOf('bg').filter((key) =>
+    /\{(date|until|\w*Date)\}\./.test(translate('bg', key)),
+  );
   assert.deepEqual(offenders, []);
+});
+
+test('a number never breaks away from its unit, and Italian uses its own quotation marks', () => {
+  const split = /[\d}] (€|%|мм|mm|см|cm)(?![A-Za-zА-Яа-я])/;
+  for (const locale of LOCALES) {
+    for (const key of keysOf(locale)) {
+      const text = translate(locale, key);
+      assert.ok(!split.test(text), `${locale}.${key}: ${text}`);
+      if (locale === 'it') assert.ok(!text.includes('„'), `it.${key}: ${text}`);
+    }
+  }
+});
+
+test('Italian elides the article before 1, 8 and 11', () => {
+  assert.equal(
+    translate('it', 'plan.endsOn', { date: '8 ottobre 2026' }),
+    "fino all'8 ottobre 2026",
+  );
+  assert.equal(
+    translate('it', 'plan.endedOn', { date: '11 marzo 2026' }),
+    "scaduto l'11 marzo 2026",
+  );
+  assert.equal(
+    translate('it', 'plan.endsOn', { date: '18 aprile 2026' }),
+    'fino al 18 aprile 2026',
+  );
 });

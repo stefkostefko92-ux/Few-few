@@ -30,12 +30,8 @@
       memory: typeof n.deviceMemory === 'number' ? n.deviceMemory : undefined,
       screen: screen.width + 'x' + screen.height,
       depth: screen.colorDepth,
-      ratio: Math.round((window.devicePixelRatio || 1) * 100) / 100,
       touch: typeof n.maxTouchPoints === 'number' ? n.maxTouchPoints : 0,
       tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || '').slice(0, 64),
-      langs: (n.languages && n.languages.length ? n.languages : [n.language])
-        .join(',')
-        .slice(0, 80),
     };
     var g = gpu();
     if (g.gpu) values.gpu = g.gpu;

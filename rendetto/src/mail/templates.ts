@@ -4,10 +4,11 @@ import { sendMail } from './mailer.js';
 
 /**
  * Писмата към човека. Текстът идва от речниците (`mail.*`) на езика на акаунта; връзките са
- * абсолютни от PUBLIC_BASE_URL. Само обикновен текст — нищо не се зарежда от чужд сървър.
+ * абсолютни от PUBLIC_BASE_URL и носят езика (`lang=`), за да се отворят на същия език и на друго
+ * устройство. Само обикновен текст — нищо не се зарежда от чужд сървър.
  */
-function link(path: string): string {
-  return `${config().PUBLIC_BASE_URL}${path}`;
+function link(path: string, locale: Locale): string {
+  return `${config().PUBLIC_BASE_URL}${path}${path.includes('?') ? '&' : '?'}lang=${locale}`;
 }
 
 function signature(locale: Locale): string {
@@ -39,7 +40,7 @@ async function send(
 
 /** До адрес, който още никой не е потвърдил — без име. */
 export function mailVerifyEmail(to: string, locale: Locale, token: string): Promise<boolean> {
-  return send(to, locale, 'verify', { link: link(`/verify-email?token=${token}`) }, null);
+  return send(to, locale, 'verify', { link: link(`/verify-email?token=${token}`, locale) }, null);
 }
 
 export function mailAlreadyRegistered(
@@ -51,7 +52,7 @@ export function mailAlreadyRegistered(
     to,
     locale,
     'alreadyRegistered',
-    { login: link('/login'), reset: link('/forgot') },
+    { login: link('/login', locale), reset: link('/forgot', locale) },
     name,
   );
 }
@@ -62,7 +63,7 @@ export function mailResetPassword(
   name: string | null,
   token: string,
 ): Promise<boolean> {
-  return send(to, locale, 'reset', { link: link(`/reset?token=${token}`) }, name);
+  return send(to, locale, 'reset', { link: link(`/reset?token=${token}`, locale) }, name);
 }
 
 export function mailPasswordChanged(
@@ -70,7 +71,7 @@ export function mailPasswordChanged(
   locale: Locale,
   name: string | null,
 ): Promise<boolean> {
-  return send(to, locale, 'passwordChanged', { reset: link('/forgot') }, name);
+  return send(to, locale, 'passwordChanged', { reset: link('/forgot', locale) }, name);
 }
 
 /** Вярна парола, но грешни кодове от приложението — входът е спрян; паролата явно е известна на друг. */
@@ -79,7 +80,7 @@ export function mailCodeFailures(
   locale: Locale,
   name: string | null,
 ): Promise<boolean> {
-  return send(to, locale, 'codeFailures', { reset: link('/forgot') }, name);
+  return send(to, locale, 'codeFailures', { reset: link('/forgot', locale) }, name);
 }
 
 export function mailNewDevice(
@@ -88,7 +89,13 @@ export function mailNewDevice(
   name: string | null,
   params: { when: string; device: string; ip: string; country: string },
 ): Promise<boolean> {
-  return send(to, locale, 'newDevice', { ...params, security: link('/account/security') }, name);
+  return send(
+    to,
+    locale,
+    'newDevice',
+    { ...params, security: link('/account/security', locale) },
+    name,
+  );
 }
 
 export function mailTwoFactor(
@@ -101,7 +108,7 @@ export function mailTwoFactor(
     to,
     locale,
     enabled ? 'twoFactorOn' : 'twoFactorOff',
-    { security: link('/account/security') },
+    { security: link('/account/security', locale) },
     name,
   );
 }
@@ -112,7 +119,7 @@ export function mailChangeEmail(to: string, locale: Locale, token: string): Prom
     to,
     locale,
     'changeEmail',
-    { link: link(`/verify-email?token=${token}&change=1`) },
+    { link: link(`/verify-email?token=${token}&change=1`, locale) },
     null,
   );
 }
@@ -128,7 +135,7 @@ export function mailEmailChangeNotice(
     to,
     locale,
     'emailChangeNotice',
-    { email: newEmail, security: link('/account/security') },
+    { email: newEmail, security: link('/account/security', locale) },
     name,
   );
 }
@@ -139,7 +146,7 @@ export function mailTrialEnding(
   name: string | null,
   date: string,
 ): Promise<boolean> {
-  return send(to, locale, 'trialEnding', { date, plan: link('/account/plan') }, name);
+  return send(to, locale, 'trialEnding', { date, plan: link('/account/plan', locale) }, name);
 }
 
 export function mailPlanChanged(
@@ -148,7 +155,7 @@ export function mailPlanChanged(
   name: string | null,
   params: { plan: string; until: string },
 ): Promise<boolean> {
-  return send(to, locale, 'planChanged', { ...params, account: link('/account') }, name);
+  return send(to, locale, 'planChanged', { ...params, account: link('/account', locale) }, name);
 }
 
 export function mailAccountDeleted(
@@ -157,4 +164,42 @@ export function mailAccountDeleted(
   name: string | null,
 ): Promise<boolean> {
   return send(to, locale, 'accountDeleted', {}, name);
+}
+
+/**
+ * Потвърждението на договора на траен носител (чл. 8, пар. 7 от Директива 2011/83): какво е поръчано,
+ * цената, плащането, правото на отказ с образеца и общите условия към деня на поръчката. Текстовете
+ * на частите са сглобени в `services/order-mail.ts`.
+ */
+export function mailOrderConfirmed(
+  to: string,
+  locale: Locale,
+  name: string | null,
+  params: Record<string, string>,
+): Promise<boolean> {
+  return send(to, locale, 'order', { ...params, orders: link('/account/plan', locale) }, name);
+}
+
+/** Потвърждението, че изявлението за отказ е получено — със съдържанието и часа му (чл. 11а, пар. 4). */
+export function mailWithdrawalReceived(
+  to: string,
+  locale: Locale,
+  name: string | null,
+  params: Record<string, string>,
+): Promise<boolean> {
+  return send(to, locale, 'withdrawn', { ...params, orders: link('/account/plan', locale) }, name);
+}
+
+/** Известие до екипа (CONTACT_EMAIL), на български: нова поръчка или отказ със срок за връщане. */
+export function mailStaffNotice(
+  kind: 'staffOrder' | 'staffWithdrawal',
+  params: Record<string, string>,
+): Promise<boolean> {
+  return send(
+    config().CONTACT_EMAIL,
+    'bg',
+    kind,
+    { ...params, admin: `${config().PUBLIC_BASE_URL}/admin/requests?status=all` },
+    null,
+  );
 }

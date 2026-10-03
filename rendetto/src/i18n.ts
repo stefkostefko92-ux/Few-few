@@ -89,6 +89,28 @@ function pluralKey(locale: Locale, key: string, count: number): [string, string]
   return [`${key}.${rules.select(count)}`, `${key}.other`];
 }
 
+const IT_MONTHS =
+  'gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre';
+/** В италианския членът се слива пред 1, 8 и 11: „l'8 ottobre“, „dall'11 marzo“ — не „il 8“, „dal 11“. */
+const IT_ELISION = new RegExp(`\\b(il|dal|al|del|nel|sul) (1|8|11) (${IT_MONTHS})\\b`, 'gi');
+const IT_ELIDED: Readonly<Record<string, string>> = {
+  il: "l'",
+  dal: "dall'",
+  al: "all'",
+  del: "dell'",
+  nel: "nell'",
+  sul: "sull'",
+};
+
+function elideItalian(text: string): string {
+  return text.replace(IT_ELISION, (match, article: string, day: string, month: string) => {
+    const elided = IT_ELIDED[article.toLowerCase()];
+    if (!elided) return match;
+    const head = article[0] === article[0]?.toUpperCase() ? elided[0]?.toUpperCase() : elided[0];
+    return `${head ?? ''}${elided.slice(1)}${day} ${month}`;
+  });
+}
+
 /**
  * Превежда `key`. Ако ключът има форми за брой (`.one`/`.other`), формата се избира по `params.n`.
  * Липсващ превод пада към българския, после към самия ключ — екранът не остава празен, а липсата
@@ -105,9 +127,10 @@ export function translate(
     const [exact, other] = pluralKey(locale, key, params.n);
     template = dicts[locale][exact] ?? dicts[locale][other] ?? dicts[DEFAULT_LOCALE][other];
   }
-  return (template ?? key).replace(/\{(\w+)\}/g, (match, name: string) =>
+  const text = (template ?? key).replace(/\{(\w+)\}/g, (match, name: string) =>
     name in params ? String(params[name]) : match,
   );
+  return locale === 'it' ? elideItalian(text) : text;
 }
 
 export type Translator = (key: string, params?: Record<string, string | number>) => string;

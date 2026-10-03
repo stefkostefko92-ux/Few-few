@@ -257,6 +257,21 @@ export async function staff(
   return { browser, id: user.id, secret };
 }
 
+/** A verified customer who places a plan order through the real form; returns the browser and the order row. */
+export async function placeOrder(email: string, form: Record<string, string>) {
+  const c = await customer(email);
+  const reply = await c.post('/account/plan/request', {
+    _csrf: await sessionCsrf(c, '/account/plan'),
+    ...form,
+  });
+  assert.equal(reply.status, 302);
+  const row = await prisma.upgradeRequest.findFirstOrThrow({
+    where: { user: { email } },
+    orderBy: { createdAt: 'desc' },
+  });
+  return { c, row };
+}
+
 /** The session CSRF token from any signed-in page. */
 export async function sessionCsrf(browser: Browser, path = '/account'): Promise<string> {
   return Browser.csrf((await browser.get(path)).body);
