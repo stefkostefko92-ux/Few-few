@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma rendetto}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -148,6 +148,13 @@ PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
 # сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
 # инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
 PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
+
+# rendetto (Rendetto — Docker Compose: db + app на 127.0.0.1:4320 зад nginx на хоста). Стъпките са
+# в rendetto/deploy/deploy.sh — същият скрипт и за ръчния деплой, затова двата пътя не се разминават:
+# тайните от /opt/few-few/shared/rendetto/.env, бекъп преди миграция, сонда с маркер, vhost-ът от
+# репото, IndexNow при променен sitemap. Тук остава откатът: пътят на последния release, който е
+# отговорил, стои на стабилно място извън releases/.
+RENDETTO_LAST_GOOD="${RENDETTO_LAST_GOOD:-/opt/few-few/shared/rendetto/last-good}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -1313,6 +1320,53 @@ deploy_piuma() {
   fi
 }
 
+# ── 3й) rendetto — Docker Compose (db + app); стъпките са в rendetto/deploy/deploy.sh ──
+# Кодовете на deploy.sh: 0 — жив; 3 — няма .env (машината още не е настроена: пропуск, не провал,
+# както при piuma); 4 — контейнерите са сменени, но Rendetto не отговаря → откат; друго — спрян
+# преди смяната на контейнерите (работещите не са пипани).
+deploy_rendetto() {
+  local d="$SRC/rendetto" rc=0
+  [ -d "$d" ] || { warn "Няма rendetto/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "rendetto: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам rendetto (Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  bash "$d/deploy/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      install -d -m 700 "$(dirname "$RENDETTO_LAST_GOOD")"
+      printf '%s\n' "$d" > "$RENDETTO_LAST_GOOD.tmp" && mv -f "$RENDETTO_LAST_GOOD.tmp" "$RENDETTO_LAST_GOOD"
+      ;;
+    3) warn "rendetto: тази машина още не е настроена (няма .env) — пропускам, не е провал." ;;
+    4) deploy_failed=1; rendetto_rollback "$d" || true ;;
+    *) deploy_failed=1; warn "rendetto: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
+  esac
+}
+
+# Откат САМО на кода: deploy.sh на последния release, който е отговорил, вдига неговия код със същото
+# compose име. Базата остава — миграциите са адитивни по правило (skill prisma-migrate), значи старият
+# код работи с нея. Кандидатите: пътят от RENDETTO_LAST_GOOD, после `current`; никога провалилият се.
+rendetto_rollback() {
+  local failed prev="" cand
+  failed="$(readlink -f "$1" || true)"
+  for cand in "$(cat "$RENDETTO_LAST_GOOD" 2>/dev/null || true)" "$CURRENT_LINK/rendetto"; do
+    [ -n "$cand" ] && [ -f "$cand/deploy/deploy.sh" ] || continue
+    [ "$(readlink -f "$cand" || true)" = "$failed" ] && continue
+    prev="$cand"
+    break
+  done
+  if [ -z "$prev" ]; then
+    warn "rendetto: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "rendetto: връщам предишния код ($prev)…"
+  if bash "$prev/deploy/deploy.sh"; then
+    ok "rendetto: предишният код отговаря."
+  else
+    warn "rendetto: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
 # Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
 # рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
@@ -1616,6 +1670,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
+    rendetto)   deploy_rendetto ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
