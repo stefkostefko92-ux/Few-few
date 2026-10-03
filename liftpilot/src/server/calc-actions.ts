@@ -5,6 +5,7 @@ import { audit } from '@/lib/audit';
 import { getSessionUser } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
+import { REVIEW_MAX } from '@/lib/review';
 import { calcLabelSchema, idSchema, reviewSchema } from '@/lib/schemas';
 import { formValuesSchema } from '@/lib/calc-input';
 import { collaudoSchema } from '@/lib/lift-input';
@@ -67,15 +68,21 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   return { ok: true, id: calc.id };
 }
 
-/** Internal review ("visto") by an engineer of the company; the calculation itself stays untouched. */
+/** Internal review ("visto") by an engineer of the company; the calculation itself stays untouched. Not on an archived
+ *  installation (read-only, as its calculations). */
 export async function reviewCalculationAction(input: { calculationId: unknown; note: unknown }): Promise<{ ok: boolean; error?: string }> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
   if (user.mustChangePassword || !can(user, 'calc:review')) return { ok: false, error: 'forbidden' };
+  if (!rateLimit(`review:${user.id}`, 30, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const id = idSchema.safeParse(input.calculationId), note = reviewSchema.safeParse({ note: input.note ?? '' });
   if (!id.success || !note.success) return { ok: false, error: 'invalidFields' };
-  const calc = await prisma.calculation.findFirst({ where: { id: id.data, companyId: user.companyId }, select: { id: true } });
+  const calc = await prisma.calculation.findFirst({
+    where: { id: id.data, companyId: user.companyId, project: { archivedAt: null } },
+    select: { id: true, _count: { select: { reviews: true } } },
+  });
   if (!calc) return { ok: false, error: 'notFound' };
+  if (calc._count.reviews >= REVIEW_MAX) return { ok: false, error: 'tooManyReviews' };
   await prisma.calculationReview.create({ data: { calculationId: calc.id, userId: user.id, note: note.data.note } });
   await audit({ companyId: user.companyId, userId: user.id, action: 'CALCULATION_REVIEWED', entity: 'Calculation', entityId: calc.id });
   return { ok: true };

@@ -9,6 +9,7 @@ import { rateLimit } from '@/lib/ratelimit';
 import { can } from '@/lib/rbac';
 import { idSchema } from '@/lib/schemas';
 import { ORDER_FORMATS, exportCalcOrder, exportDesignOrder } from './order-export';
+import { RendererBusy, busyResponse } from '@/lib/report/render';
 
 const text = (status: number, body: string): Response => new Response(body, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
 const formatSchema = z.enum(ORDER_FORMATS);
@@ -32,6 +33,7 @@ export function orderRoute(kind: 'design' | 'calc') {
         headers: { 'Content-Type': r.mime, 'Content-Disposition': `attachment; filename="${r.name}"`, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
       });
     } catch (err) {
+      if (err instanceof RendererBusy) return busyResponse();
       log.error({ err }, 'order export failed');
       return text(500, 'Export failed');
     }

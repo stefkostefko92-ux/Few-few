@@ -12,6 +12,7 @@ import { can } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import { idSchema } from '@/lib/schemas';
 import { LOGO_MAX_BYTES, readLogo } from '@/lib/logo';
+import { entry } from './form';
 
 export type ClientLogoResult = { ok: true } | { ok: false; error: string };
 
@@ -24,7 +25,7 @@ export async function uploadClientLogoAction(fd: FormData): Promise<ClientLogoRe
   const user = await editor();
   if (!user) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`logo:${user.id}`, 20, 60 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
-  const id = idSchema.safeParse(fd.get('projectId')), file = fd.get('logo');
+  const id = idSchema.safeParse(entry(fd, 'projectId')), file = entry(fd, 'logo');
   if (!id.success || !(file instanceof File) || file.size === 0) return { ok: false, error: 'invalidFields' };
   if (file.size > LOGO_MAX_BYTES) return { ok: false, error: 'logoTooLarge' };
   const bytes = new Uint8Array(await file.arrayBuffer()), info = readLogo(bytes);

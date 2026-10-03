@@ -17,6 +17,7 @@ import type { CatalogFit } from '@/lib/catalog/machines';
 import { machineShapeOf, machineSpec, rinvioOf, sheaveAxis, sheaveAxisBelow, type Made } from './machine';
 import type { MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
+import { headTopChecks } from './head';
 import { supportChecks, supportLoad } from './support';
 import { collaudoOf, type Collaudo } from './collaudo';
 import { KL } from './norme';
@@ -211,7 +212,8 @@ export function deriveLift(inp: LiftInputs): LiftDerived {
   };
   const spec = machineSpec(analysis.ctx, analysis.ctx.N.mass, '', S.room, shape, made);
   const machine: MachineSpec = spec.rinvio ? { ...spec, rinvio: { ...spec.rinvio, auto: inp.auto.dx } } : spec;
-  const supportCk = supportChecks(L, machine, supportLoad(analysis.ctx, analysis.res.Mcw), I.layout !== 'bottom');
+  // the beams under the machine and the machine in its room; the car's highest part under what hangs over it
+  const supportCk = [...supportChecks(L, machine, supportLoad(analysis.ctx, analysis.res.Mcw), I.layout !== 'bottom'), ...headTopChecks(L, I.r, I.Dp, scheme)];
   const g = scheme ? bottomGeo(L, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveAxisBelow(N.D, shape)) : null;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r) } : null;
   return {

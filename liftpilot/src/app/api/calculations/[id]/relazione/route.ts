@@ -8,13 +8,15 @@ import { reproduceDesign } from '@/lib/shaft-hash';
 import { calcMarks } from '@/lib/lift-marks';
 import { collaudoSchema, liftInputsReadSchema } from '@/lib/lift-input';
 import { collaudoOf } from '@/lib/lift/collaudo';
-import { liftAdvice, valuesAdvice } from '@/lib/lift/advice';
+import { savedLiftAdvice, savedValuesAdvice } from '@/lib/lift/advice-cache';
 import { buildReport } from '@/lib/report/build';
 import { renderPdf } from '@/lib/report/render';
 import { audit } from '@/lib/audit';
 import { log } from '@/lib/log';
 import { isRole } from '@/lib/rbac';
 import { getCalculation, getCompanyLetterhead } from '@/server/queries';
+import { usableLogo } from '@/lib/logo';
+import { RendererBusy, busyResponse } from '@/lib/report/render';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,9 +45,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const marks = calcMarks(c.liftDesign, c.sha256), own = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null;
     // the advice among SICOR and Montanari: from the lift design's inputs when it has one, else from the values
     const lift = c.liftDesign ? liftInputsReadSchema.safeParse(c.liftDesign.inputs) : null;
-    const advice = lift?.success ? liftAdvice(lift.data) : valuesAdvice(values.data);
-    const head = await getCompanyLetterhead(user), mime = head?.logo?.mime;
-    const logo = head?.logo && (mime === 'image/png' || mime === 'image/jpeg') ? { mime, data: Buffer.from(head.logo.data).toString('base64') } as const : null;
+    const advice = lift?.success ? savedLiftAdvice(lift.data) : savedValuesAdvice(values.data);
+    const head = await getCompanyLetterhead(user), ok = usableLogo(head?.logo);
+    const logo = ok ? { mime: ok.mime, data: Buffer.from(ok.data).toString('base64') } as const : null;
     const doc = buildReport({
       calc: { id: c.id, label: c.label, createdAt: c.createdAt, sha256: c.sha256, engineVersion: c.engineVersion, profileId: c.profileId, author: c.user?.name ?? null },
       project: c.project, company: head?.name ?? user.companyName, companyCity: head?.city ?? null, logo, advice, values: values.data, design, generatedAt: new Date(),
@@ -59,6 +61,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${name}"`, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
     });
   } catch (err) {
+    if (err instanceof RendererBusy) return busyResponse();
     log.error({ err }, 'report failed');
     return text(500, 'Report generation failed');
   }

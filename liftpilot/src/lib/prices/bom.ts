@@ -76,7 +76,7 @@ export function designBom(dv: LiftDerived): BomLine[] {
     L.push({ key: `rail:${type}`, label: { item: 'rail', name: railLabel(type) }, qty: (n * span) / 1000, unit: 'm' });
     L.push({ key: `fishplate:${type}`, label: { item: 'fishplate', name: railLabel(type) }, qty: n * joints, unit: 'pz' });
     if (kind === 'car' || cwBracketsOf(I) !== 'panev') {
-      L.push({ key: `bracket:${kind}`, label: { item: `bracket_${kind}` }, qty: n * bracketHeights(z0, z1, type).length, unit: 'pz' });
+      L.push({ key: `bracket:${kind}`, label: { item: `bracket_${kind}` }, qty: n * bracketHeights(z0, z1, type, kind === 'car' ? dv.layout.carBracketPitch : dv.layout.cwBracketPitch).length, unit: 'pz' });
     } else L.push({ key: 'bracket:cw', label: { item: 'bracket_cw' }, qty: pb.missing, unit: 'pz' });
   }
   for (const r of pb.rows) L.push({ key: `panev:${r.article.code}`, label: { item: `panev_${r.article.kind}`, name: `${r.article.code} (${r.article.size})` }, qty: r.qty, unit: 'pz' });

@@ -119,7 +119,7 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     riferimento: 'ricerca, funi con la macchina in basso, capitoli 2–5; DPR 1497/1963 artt. 5–9, 33', fonte: 'geometria ricostruita dal software',
     stato: 'scelta', costanti: ['bottomClear', 'headFrame', 'pulleyRoomAxis', 'underSlab', 'underRoomH', 'slab'],
     nota: 'lo schema reale va rilevato sull\'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del '
-      + 'contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori',
+      + 'contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori',
   },
   {
     id: 'impianto.catalogo', titolo: 'Macchina proposta dal catalogo di un costruttore',

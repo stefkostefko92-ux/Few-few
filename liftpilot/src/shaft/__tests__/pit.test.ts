@@ -21,11 +21,11 @@ test('ammortizzatori: posizioni del software (uno al centro, due a 160 mm dai la
   assert.deepEqual(sw.spots.find((s) => s.kind === 'cw')?.c, [S.cw.x + S.cw.w / 2, S.cw.y + S.cw.h / 2]);
 });
 
-test('ammortizzatori a mano: si spostano, la verifica guarda solo ciò che è fissato', () => {
+test('ammortizzatori: quelli del software e quelli a mano, la verifica li guarda tutti', () => {
   const I = defaultInputs(1600, 1750), L = layout(I), v = planValues(L);
-  // none set: no check (a saved design keeps its record)
-  assert.equal(bufferMargin(L), null);
-  assert.ok(!L.checks.some((c) => c.id === 'v_buffer'));
+  // none set: the software's places, checked too (out of the refuge space in the pit, UNI EN 81-20 5.2.5.8.1)
+  assert.ok(bufferMargin(L) >= 0);
+  assert.equal(L.checks.find((c) => c.id === 'v_buffer')?.status, 'ok');
   assert.ok(!L.checks.some((c) => c.id === 'v_place'), 'le quote dei soli ammortizzatori non aggiungono le verifiche della pianta');
   // the same places set by hand: the same buffers, conforming
   const same = layout({ ...I, plan: { bufX: v.bufX, bufY: v.bufY, bufSpan: v.bufSpan, cwBufPos: v.cwBufPos } });

@@ -1,7 +1,9 @@
 // Smoke steps of the accounts without an administrator (scripts/smoke.mjs runs them when MAILBOX_PORT is set and the
 // server sends its mail to scripts/mail-sink.mjs): a company registers, signs in only after confirming the address
-// with the newest link and its own password, forgets the password and sets a new one through the e-mail; a second
-// registration with the same address and a forgotten password for an unknown one answer the same as any other.
+// with the newest link and its own password, forgets the password and sets a new one through the e-mail; a sign-out
+// ends the session on the server; a registration with the address of a colleague never confirmed changes nothing until
+// the inbox confirms it; a second registration with the same address and a forgotten password for an unknown one answer
+// the same as any other.
 import assert from 'node:assert/strict';
 
 const link = (text, path) => {
@@ -88,6 +90,59 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink }) {
   await page.goto(link(invite.text, 'verify-email').url);
   await page.fill('input[name="password"]', temp);
   await Promise.all([page.waitForURL(/\/it\/app\/account\?first=1$/), page.click('main form button[type="submit"]')]);
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+
+  step('a sign-out ends the session on the server: a copied cookie no longer opens the app');
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', password);
+  await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
+  const copied = await page.context().cookies();
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  const { page: other } = await newPage();
+  await other.context().addCookies(copied);
+  await other.goto(`${BASE}/it/app`);
+  assert.match(new URL(other.url()).pathname, /^\/it\/login/, 'the copied cookie after the sign-out');
+  await other.close();
+
+  step('a registration with the address of a colleague never confirmed: nothing changes until the inbox confirms it');
+  const held = `trattenuto.${stamp}@example.com`, heldPw = `Trattenuto${stamp}Pw9`;
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', password);
+  await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
+  await page.goto(`${BASE}/it/app/team`);
+  await page.fill('main form input[name="name"]', 'Collega mai confermato');
+  await page.fill('main form input[name="email"]', held);
+  await page.click('main form:has(input[name="email"]) button[type="submit"]');
+  await page.waitForSelector('main form .note[role="status"]');
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  since = Date.now();
+  await page.goto(`${BASE}/it/register`);
+  for (const [k, v] of [['company', `Azienda trattenuta ${stamp}`], ['name', 'Titolare della casella'], ['email', held], ['password', heldPw], ['confirm', heldPw]]) await page.fill(`input[name="${k}"]`, v);
+  for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`input[name="${k}"]`);
+  await page.click('main form button[type="submit"]');
+  await page.waitForSelector('main [role="status"] h2');
+  const offer = await sink.next(held, since);
+  assert.ok(offer && /mai confermato/.test(offer.text), 'the e-mail says that the account never confirmed goes with the confirmation');
+  // the colleague is still in the company: a registration alone takes nothing
+  await page.goto(`${BASE}/it/login`);
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', password);
+  await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
+  await page.goto(`${BASE}/it/app/team`);
+  assert.match(await page.textContent('main table'), new RegExp(held.replace(/\./g, '\\.')), 'the colleague before the confirmation');
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  // the inbox's owner confirms: their company is made, the colleague never confirmed is released
+  await page.goto('about:blank');
+  await page.goto(link(offer.text, 'verify-email').url);
+  await page.fill('input[name="password"]', heldPw);
+  await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
+  assert.match(await page.textContent('header'), new RegExp(`Azienda trattenuta ${stamp}`), 'signed in, in the new company');
+  await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', password);
+  await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
+  await page.goto(`${BASE}/it/app/team`);
+  assert.doesNotMatch(await page.textContent('main table'), new RegExp(held.replace(/\./g, '\\.')), 'the colleague released by the confirmation');
   await Promise.all([page.waitForURL(/\/it\/login$/), page.click('header form button[type="submit"]')]);
 
   step('forgotten password: the e-mail link, a new password, the old one refused');

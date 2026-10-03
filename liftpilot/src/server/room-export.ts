@@ -16,6 +16,7 @@ import { inset } from '@/lib/tavole/build';
 import { machineText, surveyView } from '@/lib/tavole/views';
 import { composeFromRoom, reproduceRoomRecord } from './room-compose';
 import { getCompanyLetterhead, getRoomDesign } from './queries';
+import { usableLogo } from '@/lib/logo';
 
 export const ROOM_FORMATS = ['relazione', 'pdf', 'dxf', 'dwg'] as const;
 export type RoomFormat = (typeof ROOM_FORMATS)[number];
@@ -41,8 +42,8 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
   }
   const d = deriveRoom(rep.values, rep.survey), plant = plantReadSchema.safeParse(r.project.plant ?? {}), P = plant.success ? plant.data : {};
   if (format === 'relazione') {
-    const head = await getCompanyLetterhead(user), mime = head?.logo?.mime;
-    const logo = head?.logo && (mime === 'image/png' || mime === 'image/jpeg') ? { mime, data: Buffer.from(head.logo.data).toString('base64') } as const : null;
+    const head = await getCompanyLetterhead(user), ok = usableLogo(head?.logo);
+    const logo = ok ? { mime: ok.mime, data: Buffer.from(ok.data).toString('base64') } as const : null;
     const sets = await prisma.drawingSet.findMany({ where: { companyId: user.companyId, roomDesignId: r.id }, orderBy: [{ seq: 'asc' }, { revision: 'asc' }], select: { number: true, revision: true } });
     const doc = buildTecnica({
       room: { id: r.id, label: r.label, createdAt: r.createdAt, sha256: r.sha256, engineVersion: r.engineVersion, author: r.user?.name ?? null },

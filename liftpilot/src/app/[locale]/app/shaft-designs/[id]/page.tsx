@@ -16,6 +16,8 @@ import Crumbs from '@/components/Crumbs';
 import ShaftViews from '@/components/shaft/ShaftViews';
 import ShaftResults from '@/components/shaft/ShaftResults';
 import PanevBom from '@/components/shaft/PanevBom';
+import { pitchesOf } from '@/lib/plant';
+import { withPitches } from '@/shaft/brackets';
 
 export async function generateMetadata() {
   const t = await getTranslations('shaft');
@@ -30,7 +32,9 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
   const inputs = d ? shaftInputsReadSchema.safeParse(d.inputs) : null;
   if (!d || !inputs?.success) notFound();
   const source = d.source ? shaftSourceSchema.safeParse(d.source) : null;
-  const { layout: L, same } = verifyShaftStored(inputs.data, d.sha256);
+  const { layout: stored, same } = verifyShaftStored(inputs.data, d.sha256);
+  // the bracket pitches of the installation's data: the plan's codes and the list count with them, as sheet 1
+  const L = withPitches(stored, pitchesOf(d.project.plant));
   const [t, tc, tp] = await Promise.all([getTranslations('shaft'), getTranslations('calculations'), getTranslations('projects')]);
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const open = !d.project.archivedAt && can(user, 'calc:create');

@@ -88,6 +88,7 @@ export async function updateUserAction(fd: FormData): Promise<void> {
     const seat = data.active === true && !now.active && MEMBER_ROLES.includes(data.role ?? now.role);
     if (seat && !(await seatAvailable(tx, me.companyId))) return false;
     await tx.user.update({ where: { id: target.id }, data });
+    if (data.active === false) await tx.session.deleteMany({ where: { userId: target.id } });
     return true;
   });
   if (!done) redirect(`/${localeOf(fd)}/app/team?e=noSeats`);
@@ -104,7 +105,11 @@ export async function resetUserPasswordAction(_prev: FormState, fd: FormData): P
   const target = await manageable(me, id.data);
   if (!target) return { error: 'forbidden' };
   const password = temporaryPassword();
-  await prisma.user.update({ where: { id: target.id }, data: { passwordHash: await hashPassword(password), mustChangePassword: true, tokenVersion: { increment: 1 } } });
+  const passwordHash = await hashPassword(password);
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: target.id }, data: { passwordHash, mustChangePassword: true, tokenVersion: { increment: 1 } } }),
+    prisma.session.deleteMany({ where: { userId: target.id } }),
+  ]);
   await audit({ companyId: me.companyId, userId: me.id, action: 'USER_PASSWORD_RESET', entity: 'User', entityId: target.id });
   return { ok: true, secret: password, message: target.email };
 }

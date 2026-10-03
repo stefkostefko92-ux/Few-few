@@ -12,6 +12,7 @@ import { composeStoredRoom } from '@/server/room-compose';
 import { getDrawingSet, listCalculations, listRevisions, listRoomDesigns } from '@/server/queries';
 import Crumbs from '@/components/Crumbs';
 import IssueForm from '@/components/tavole/IssueForm';
+import DrawingFigure from '@/components/drawing/DrawingFigure';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
 
 export async function generateMetadata() {
@@ -66,10 +67,9 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
               <Link key={i} href={`/app/drawing-sets/${s.id}?p=${i + 1}`} className={i + 1 === page ? 'on' : undefined} aria-current={i + 1 === page ? 'page' : undefined}>{i + 1}</Link>
             ))}
           </nav>
-          <figure className="sheet-page">
+          <DrawingFigure className="sheet-page" w={sheet.w} h={sheet.h} label={t('sheet', { n: page, total })} caption={t('sheet', { n: page, total })}>
             <ShapesSvg shapes={sheet.shapes} w={sheet.w} h={sheet.h} id={`sheet-${page}`} label={t('sheet', { n: page, total })} images={doc.images} />
-            <figcaption className="note">{t('sheet', { n: page, total })}</figcaption>
-          </figure>
+          </DrawingFigure>
         </section>
       ) : null}
       <section className="panel">

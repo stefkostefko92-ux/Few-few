@@ -7,6 +7,7 @@ import { visiblePrices } from '@/server/prices';
 import { liftStart } from '@/server/lift-start';
 import LiftWorkspace from '@/components/lift/LiftWorkspace';
 import Crumbs from '@/components/Crumbs';
+import { pitchesOf } from '@/lib/plant';
 
 export async function generateMetadata() {
   const t = await getTranslations('lift');
@@ -33,7 +34,7 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
           <p className="lead">{t('workLead')}</p>
         </div>
       </div>
-      <LiftWorkspace projectId={p.id} initial={initial} prices={await visiblePrices(user)} />
+      <LiftWorkspace projectId={p.id} initial={initial} prices={await visiblePrices(user)} pitches={pitchesOf(p.plant)} />
     </main>
   );
 }

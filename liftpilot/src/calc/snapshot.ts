@@ -8,7 +8,7 @@ import { PROFILO } from './norme';
 import type { Check, FormValues, Results, Sizing } from './types';
 
 /** Engine version (semver): a change of formula is a minor or major version and regenerates the golden file. */
-export const ENGINE_VERSION = '1.0.0';
+export const ENGINE_VERSION = '1.1.0';
 
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 

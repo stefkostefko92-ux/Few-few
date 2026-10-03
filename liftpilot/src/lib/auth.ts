@@ -11,7 +11,8 @@ import { daysLeft, type Access } from './billing';
 import { BILLING_SELECT, accessOf } from './billing-access';
 import { TERMS_VERSION } from './legal';
 
-// Session: a short JWT (HS256) in an httpOnly cookie. Every request re-reads the user from the database, so a
+// Session: a short JWT (HS256) in an httpOnly cookie naming a session kept on the server (Session): signing out deletes
+// it, so a copied cookie stops at once. Every request re-reads the session and the user from the database, so a
 // deactivated user, a changed role or a password change (tokenVersion) takes effect at once — and so do the company's
 // subscription (read-only without one after the trial) and its owner's acceptance of the terms in force (read-only for
 // the whole company until the owner accepts a new version; an owner who never accepted any goes to the terms first).
@@ -44,8 +45,28 @@ const termsState = (v: string | null): TermsState => (v === TERMS_VERSION ? 'ok'
 
 const key = (): Uint8Array => new TextEncoder().encode(env().AUTH_SECRET);
 
+interface Claims {
+  /** the user, the user's tokenVersion when the session began, the session */
+  sub: string;
+  tv: number;
+  sid: string;
+}
+
+async function readToken(token: string | undefined): Promise<Claims | null> {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, key(), { algorithms: ['HS256'], issuer: ISSUER, audience: ISSUER });
+    const { sub, tv, sid } = payload;
+    return typeof sub === 'string' && typeof tv === 'number' && typeof sid === 'string' ? { sub, tv, sid } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A new session of the user (signing in, an address confirmed, a new password), kept on the server. */
 export async function startSession(user: { id: string; tokenVersion: number }): Promise<void> {
-  const token = await new SignJWT({ tv: user.tokenVersion })
+  const { id: sid } = await prisma.session.create({ data: { userId: user.id, expiresAt: new Date(Date.now() + MAX_AGE * 1000) }, select: { id: true } });
+  const token = await new SignJWT({ tv: user.tokenVersion, sid })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(user.id)
     .setIssuer(ISSUER)
@@ -62,28 +83,28 @@ export async function startSession(user: { id: string; tokenVersion: number }): 
   });
 }
 
+/** Signing out: the session ends on the server, and the cookie goes. */
 export async function endSession(): Promise<void> {
-  (await cookies()).delete(COOKIE);
+  const jar = await cookies();
+  const c = await readToken(jar.get(COOKIE)?.value);
+  if (c) await prisma.session.deleteMany({ where: { id: c.sid, userId: c.sub } });
+  jar.delete(COOKIE);
 }
 
 // cache(): one database read per request, however many components ask.
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
-  const token = (await cookies()).get(COOKIE)?.value;
-  if (!token) return null;
-  let sub: string, tv: number;
-  try {
-    const { payload } = await jwtVerify(token, key(), { algorithms: ['HS256'], issuer: ISSUER, audience: ISSUER });
-    if (typeof payload.sub !== 'string' || typeof payload.tv !== 'number') return null;
-    sub = payload.sub;
-    tv = payload.tv;
-  } catch {
-    return null;
-  }
-  const user = await prisma.user.findUnique({
-    where: { id: sub },
-    include: { company: { select: { name: true, active: true, ...BILLING_SELECT, users: { where: { role: 'OWNER' }, select: { termsVersion: true }, take: 1 } } } },
+  const c = await readToken((await cookies()).get(COOKIE)?.value);
+  if (!c) return null;
+  const session = await prisma.session.findUnique({
+    where: { id: c.sid },
+    select: {
+      userId: true, expiresAt: true,
+      user: { include: { company: { select: { name: true, active: true, ...BILLING_SELECT, users: { where: { role: 'OWNER' }, select: { termsVersion: true }, take: 1 } } } } },
+    },
   });
-  if (!user || !user.active || !user.company.active || user.tokenVersion !== tv) return null;
+  if (!session || session.userId !== c.sub || session.expiresAt <= new Date()) return null;
+  const { user } = session;
+  if (!user.active || !user.company.active || user.tokenVersion !== c.tv) return null;
   const { access, billing } = await accessOf(user.companyId, user.company);
   // a colleague of a company in read-only mode has just lost the slot (billing-access.ts)
   if (access === 'readonly' && MEMBER_ROLES.includes(user.role)) return null;

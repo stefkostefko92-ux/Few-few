@@ -6,13 +6,15 @@ import { can } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { idSchema } from '@/lib/schemas';
 import { liftRecord } from '@/lib/lift-record';
-import { liftAdvice, liftAlternative } from '@/lib/lift/advice';
+import { savedLiftAdvice, savedLiftAlternative } from '@/lib/lift/advice-cache';
 import { designMachine, designOrder } from '@/lib/order/machine';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { makeFmt } from '@/lib/present/tr';
 import { getLiftDesign } from '@/server/queries';
 import { projectCost, visiblePrices } from '@/server/prices';
 import { designBasis } from '@/lib/prices/plant-bom';
+import { pitchesOf } from '@/lib/plant';
+import { withPitches } from '@/shaft/brackets';
 import { designBom } from '@/lib/prices/bom';
 import ProjectCost from '@/components/prices/ProjectCost';
 import LiftView from '@/components/lift/LiftView';
@@ -40,11 +42,13 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
   const [t, tp, tt, ta] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'), getTranslations('advice')]);
   const fd = dateFormat(locale);
   // the running engines give the same records? (else the documents are refused: a new save is needed)
-  const r = liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256), same = r?.same ?? false, dv = r?.dv ?? null;
+  // the bracket pitches of the installation's data count the brackets of the list and place them in 3D, as on sheet 1
+  const pitches = pitchesOf(d.project.plant), r = liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256), same = r?.same ?? false;
+  const dv = r ? { ...r.dv, layout: withPitches(r.dv.layout, pitches) } : null;
   const editable = can(user, 'calc:create') && !d.project.archivedAt;
   // the advice among SICOR and Montanari for the saved inputs, and the machine of the draft order: the one the design
   // verified, or the advice's first
-  const advice = r ? liftAdvice(r.inputs) : null, alt = r && advice ? liftAlternative(r.inputs, advice) : null;
+  const advice = r ? savedLiftAdvice(r.inputs) : null, alt = r && advice ? savedLiftAlternative(r.inputs, advice) : null;
   const own = dv ? designMachine(dv) : null, fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const order = same && r && advice && can(user, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
   // the cost of its articles with the company's prices: only for whoever sees prices
@@ -62,7 +66,7 @@ export default async function LiftDesignPage({ params }: { params: Promise<{ loc
         </div>
       </div>
       {!same ? <p className="alert alert-warn" role="status">{t('engineChanged')}</p> : null}
-      {r ? <LiftView inputs={r.inputs} prices={prices} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
+      {r ? <LiftView inputs={r.inputs} prices={prices} pitches={pitches} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
       {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope="design" editable={can(user, 'prices:edit')} /> : null}
       {advice ? (
         <AdviceView advice={advice} alt={alt && dv ? { advice: alt, sheave: dv.machine.D } : null} fmt={fmt} where="design"

@@ -177,24 +177,22 @@ inversa; la regola su quando una flessione inversa va contata (distanza tra le p
 va presa dalla norma ⚠️. La definizione di T_max,fune (cabina ferma al piano più basso con
 la portata) è quella di EN 81-1 ⚠️.
 
-Valori di N_equiv(t):
+Valori di N_equiv(t) (UNI EN 81-50:2020, 5.12.2.2, tabella 2; verificati il 2026-10-03 sull'estratto
+pubblico del testo BS EN 81-50:2020, p. 55):
 
-| Gola | N_equiv(t) | Stato |
+| Gola | Angolo → N_equiv(t) | Stato |
 |---|---|---|
 | semicircolare senza sottosquadro | 1 | ✅ |
-| semicircolare con sottosquadro β = 90° | 5,0 | ⚠️ indiretto (vita della fune ridotta dell'80%) |
-| semicircolare con sottosquadro β = 105° | 15,2 | ✅ |
-| a V, γ = 35° | 18,5 | ✅ |
-| altri angoli (β 75–100°, γ 36–45°) | tabella 2 di EN 81-50 | ⚠️ da trascrivere dal testo acquistato |
+| semicircolare con sottosquadro | β 75° → 2,5; 80° → 3,0; 85° → 3,8; 90° → 5,0; 95° → 6,7; 100° → 10,0; 105° → 15,2 | ✅ |
+| a V | γ 35° → 18,5; 36° → 16; 38° → 12; 40° → 10; 42° → 8; 45° → 6,5; 50° → 5 | ✅ |
 
-Il calcolatore prototipo usa per gli altri angoli valori **provvisori, non verificati**:
-β 75° → 2,5; 80° → 3,0; 85° → 3,8; 95° → 6,7; 100° → 10,0; γ 36° → 15,2; 38° → 10,5; 40° → 7,1;
-42° → 5,6; 45° → 4,0 ⚠️. Tra due punti **non interpola**: prende il valore del punto più
-sfavorevole (il β superiore, il γ inferiore), perché la tabella non dà una regola di
-interpolazione e quella lineare sottostimerebbe N_equiv (β = 96°: 7,36 invece di 10,0).
-Fuori tabella prende il valore più sfavorevole (β < 75° → 2,5; γ > 45° → 4,0), rifiuta γ < 35° e
-tra 105° e il limite di 106° estrapola dall'ultimo tratto, segnalando il valore come non
-verificato. I valori vanno sostituiti con la tabella 2 prima dell'uso.
+I valori della gola a V sono **diversi** da quelli dell'Allegato N della EN 81-1 (γ 36° 15,2; 38° 10,5;
+40° 7,1; 42° 5,6; 45° 4,0), che il prototipo usava come provvisori: con quelli il S_f richiesto per una
+gola a V usciva più basso del dovuto (corretto nel motore 1.1.0). Per gli angoli tra due punti la norma
+consente l'interpolazione lineare, e il motore la usa (β = 96°: 7,36). Fuori tabella il motore prende il
+valore dell'estremo dal lato della sicurezza (β < 75° → 2,5; γ > 50° → 5, perché N_equiv cresce con β e
+cala con γ), rifiuta γ < 35° e tra 105° e il limite di 106° estrapola dall'ultimo tratto, segnalando il
+valore come fuori tabella.
 
 Pressione specifica nella gola: presente in EN 81-1 fino all'edizione 1986, sostituita dal
 calcolo del coefficiente di sicurezza dell'Allegato N nell'edizione 1998 (Elevator World,

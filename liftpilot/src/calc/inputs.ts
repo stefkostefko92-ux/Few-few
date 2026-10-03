@@ -3,6 +3,7 @@
 // official while any is flagged.
 import { deflectorAngle } from './geometry';
 import type { AlphaMode, Context, DropAlign, FormValues, GrooveType, Layout, Machine, ParsedInputs, Plant } from './types';
+import { K } from './norme';
 
 const LAYOUTS: readonly Layout[] = ['top', 'topDefl', 'bottom'];
 const GROOVES: readonly GrooveType[] = ['U', 'UU', 'VH', 'VN'];
@@ -43,7 +44,7 @@ export function readInputs(V: FormValues): ParsedInputs {
     v: pos('v', 1), H: pos('H', 18), L0: field('L0', 2, 0.1, Infinity, false), r: roping, layout, alphaMode: (manual ? 'manual' : 'geo') as AlphaMode,
     alphaManual: field('alphaManual', 180, 0, 360, true, manual), dx: nonneg('dx', 0.3), h: nonneg('h', 0.6),
     Hv: nonneg('Hv', 24), Dp: pos('Dp', 400), Jp: nonneg('Jp', 0), nps: count('nps', 0, 0), npr: count('npr', 0, 0), etaShaft: pos('etaShaft', 0.85, 1),
-    aDesign: pos('aDesign', 0.8), ae: V.buffers ? 0.8 : 0.5, aBrake: pos('aBrake', 0.5), rh: pos('rh', 0.2),
+    aDesign: pos('aDesign', 0.8), ae: V.buffers ? K.aeReducedStroke : K.aeMin, aBrake: pos('aBrake', 0.5), rh: pos('rh', 0.2),
     dropAlign: (V.dropAlign === 'car' ? 'car' : 'center') as DropAlign, drops: 0,
   };
   // the motor's poles: 2, 4, 6 or 8 (blank: 4), else flagged

@@ -19,6 +19,7 @@ import { composeFromCalculation, type ComposeError, type Composed } from './draw
 import { composeFromRoom, type RoomComposed } from './room-compose';
 import type { TavoleRevision } from '@/lib/tavole/input';
 import { initialsSchema, revisionNoteSchema, revisionsSchema, setNumber } from '@/lib/tavole/compose';
+import { entry } from './form';
 
 export type DrawingResult = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -55,7 +56,7 @@ export async function uploadLogoAction(fd: FormData): Promise<DrawingResult> {
   const user = await actor('company:edit');
   if (!user) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`logo:${user.id}`, 20, 60 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
-  const file = fd.get('logo');
+  const file = entry(fd, 'logo');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'invalidFields' };
   if (file.size > LOGO_MAX_BYTES) return { ok: false, error: 'logoTooLarge' };
   const bytes = new Uint8Array(await file.arrayBuffer()), info = readLogo(bytes);

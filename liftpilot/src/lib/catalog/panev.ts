@@ -84,7 +84,7 @@ export function panevBom(L: Layout): PanevBom {
     const zHead = hasHead(I) ? S.levels[I.vertical.floors.length - 1] ?? Infinity : Infinity, [z0, z1] = railSpan(S);
     for (const r of L.rails.filter((x) => x.kind === 'cw')) {
       const main = special ? null : cwBracket(I, L.doors, r, span), head = special ? null : cwBracket(I, L.doors, r, span, headOf(I));
-      for (const z of bracketHeights(z0, z1, I.cwRail)) {
+      for (const z of bracketHeights(z0, z1, I.cwRail, L.cwBracketPitch)) {
         const br = z >= zHead ? head : main;
         if (special) for (const code of special.split(' + ')) add(code, 1, 'cw', { drawing: true });
         else if (br) for (const code of bracketCode(br).split(' + ')) add(code, 1, 'cw');

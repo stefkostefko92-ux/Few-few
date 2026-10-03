@@ -179,7 +179,7 @@ export function getLiftDesign(user: SessionUser, id: string) {
   return prisma.liftDesign.findFirst({
     where: { id, companyId: user.companyId },
     include: {
-      project: { select: { id: true, name: true, archivedAt: true } },
+      project: { select: { id: true, name: true, archivedAt: true, plant: true } },
       user: { select: { name: true } },
       calculation: { select: { id: true, sha256: true, engineVersion: true } },
       shaftDesign: { select: { id: true, sha256: true, engineVersion: true } },

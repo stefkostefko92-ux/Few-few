@@ -4,7 +4,7 @@
 import appIt from '../../../messages/it.json';
 import type { CheckStatus } from '@/calc/types';
 import { fitView, renderView, moveShapes, type Box } from '@/drawing';
-import { DEFAULTS, PLAN_KEYS, isUpperLimit, planDims, planEntities, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheck, type ShaftCheckId } from '@/shaft';
+import { DEFAULTS, PLAN_KEYS, isUpperLimit, planDims, planEntities, shownValue, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheck, type ShaftCheckId } from '@/shaft';
 import type { ShaftSource } from '../shaft-input';
 import { ambitoOf, type Collaudo } from '../lift/collaudo';
 import { EXISTING_NOTE, esitoOf } from './collaudo';
@@ -114,7 +114,7 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra
   const esiti = checks.map((c) => (collaudo ? esitoOf(collaudo, c.id, st(c.status), c.status) : { text: st(c.status), status: c.status }));
   B.push({ t: 'grid', head: x.head, rows: checks.map((c, i) => {
     const unit = c.unit ? ` ${c.unit}` : '';
-    return [plain(S[`c_${c.id}` as const]), c.value === null ? '—' : `${fmt(c.value, c.dec)}${unit}`, c.limit === null ? '' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}`, esiti[i]?.text ?? '', refOf(c.id)];
+    return [plain(S[`c_${c.id}` as const]), c.value === null ? '—' : `${shownValue(c, fmt)}${unit}`, c.limit === null ? '' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}`, esiti[i]?.text ?? '', refOf(c.id)];
   }), status: esiti.map((e) => e.status), statusCol: 3, widths: [0.34, 0.11, 0.11, 0.12, 0.32], align: ['l', 'r', 'r', 'l', 'l'] });
   if (existing) B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
 

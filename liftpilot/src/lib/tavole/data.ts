@@ -6,8 +6,9 @@
 import appIt from '../../../messages/it.json';
 import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
+import { headTopChecks } from '../lift/head';
 import { cablesMass, headStatic, ropeLength, supportChecks } from '../lift/support';
-import { isUpperLimit } from '@/shaft/checks';
+import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { bracketCount } from '@/shaft/brackets';
 import { bufferType } from '@/shaft/buffers';
@@ -157,13 +158,14 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet
-  const all = [...L.checks, ...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn }, !below)];
+  const all = [...L.checks, ...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn }, !below),
+    ...headTopChecks(L, I.r, I.Dp, below ? x.marks?.bottom ?? 'head' : null)];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     // a check of a part that stays as it is is out of the acceptance test (note on the sheet)
     const outcome = ambitoOf(C, c.id) === 'existing' ? 'ESISTENTE' : OUTCOME[c.status];
     if (c.id === 'm_door' && room) return [label.replace(', margine', ''), `${room.doorW} × ${room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, outcome];
-    return [label, withUnit(c.value, c.dec, c.unit), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
+    return [label, c.value == null ? '—' : `${shownValue(c, fmt)}${c.unit ? ` ${c.unit}` : ''}`, c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
   const sp = spaceLegend(L, fmt), notes = clientNotes(L, below);
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));

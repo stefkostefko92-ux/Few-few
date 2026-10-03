@@ -3,6 +3,7 @@
 import { brakeWindow } from '@/calc/compute';
 import { ceilTo, G } from '@/calc/math';
 import { K } from '@/calc/norme';
+import { decimalsShown } from '@/shaft/checks';
 import type {
   BrakeCase, BrakeWindow, Check, CheckId, CheckStatus, Groove, Machine, Plant, Results, SensitivityVariant, Sizing, SizingOption, TractionCase,
 } from '@/calc/types';
@@ -119,7 +120,13 @@ export function textsFor(P: Pres) {
   const checkText = (c: Check): string => `${checkLabel(c.id)}${c.cs ? ` — ${caseText(c.cs, c.id !== 'b_amax')}` : ''}`;
   // a check's value and limit with their unit; the ropes as number × diameter (machine N), both are checked
   const unitOf = (id: CheckId): string => (CHECK_UNIT[id] ? `\u00a0${CHECK_UNIT[id]}` : '');
-  const checkValue = (c: Check, N: Machine): string => (c.value == null ? '—' : c.id === 'r_nd' ? `${N.n} × Ø${dText(N.d)}\u00a0mm` : `${fmt(c.value, c.dec)}${unitOf(c.id)}`);
+  // a value that does not meet its limit never reads as meeting it: more decimals when it would round onto it
+  const checkValue = (c: Check, N: Machine): string => {
+    if (c.value == null) return '—';
+    if (c.id === 'r_nd') return `${N.n} × Ø${dText(N.d)}\u00a0mm`;
+    const dec = c.limit == null || c.id === 'g_geom' ? c.dec : decimalsShown(c.value, c.limit, !AT_LEAST.has(c.id), c.status === 'ok', c.dec) ?? c.dec;
+    return `${fmt(c.value, dec)}${unitOf(c.id)}`;
+  };
   const checkLimit = (c: Check, N: Machine): string => {
     if (c.id === 'g_geom') return grooveLimit(N.groove);
     if (c.limit == null) return '';

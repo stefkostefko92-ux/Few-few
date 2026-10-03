@@ -14,7 +14,7 @@ import { KL } from '@/lib/lift/norme';
 import { makeFmt } from '@/lib/present/tr';
 import { deriveRoom } from '@/lib/room/derive';
 import type { Survey } from '@/lib/room/survey';
-import { isUpperLimit } from '@/shaft/checks';
+import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { saveRoomDesignAction } from '@/server/room-actions';
 import RoomFields from '../shaft/RoomFields';
 import SurveyDrawings from './SurveyDrawings';
@@ -86,7 +86,7 @@ export default function RoomSurvey({ calculationId, values, initial }: Props) {
                 {d.checks.map((c) => (
                   <tr key={c.id}>
                     <td className="row-title">{ts(`c_${c.id}`)}</td>
-                    <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${fmt(c.value, c.dec)} ${c.unit}`}</td>
+                    <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${shownValue(c, fmt)} ${c.unit}`}</td>
                     <td className="num" data-label={t('limit')}>{c.limit === null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)} ${c.unit}`}</td>
                     <td data-label={t('outcome')}><span className={`status-pill ${c.status}`}>{ts(`st_${c.status}`)}</span></td>
                   </tr>

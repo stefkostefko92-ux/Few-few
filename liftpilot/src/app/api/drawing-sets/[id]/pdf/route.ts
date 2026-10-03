@@ -8,6 +8,7 @@ import { log } from '@/lib/log';
 import { composeStored } from '@/server/drawing-compose';
 import { composeStoredRoom } from '@/server/room-compose';
 import { getDrawingSet } from '@/server/queries';
+import { RendererBusy, busyResponse } from '@/lib/report/render';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${name}"`, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
     });
   } catch (err) {
+    if (err instanceof RendererBusy) return busyResponse();
     log.error({ err }, 'drawing set pdf failed');
     return text(500, 'Drawing set generation failed');
   }

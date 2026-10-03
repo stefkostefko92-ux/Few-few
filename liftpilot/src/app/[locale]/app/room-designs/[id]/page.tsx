@@ -10,7 +10,7 @@ import { makeFmt } from '@/lib/present/tr';
 import { deriveRoom } from '@/lib/room/derive';
 import { ROOM_ENGINE_VERSION } from '@/lib/room/snapshot';
 import { cropped, surveyView } from '@/lib/tavole/views';
-import { isUpperLimit } from '@/shaft/checks';
+import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { prisma } from '@/lib/db';
 import { reproduceRoomRecord } from '@/server/room-compose';
 import { getRoomDesign } from '@/server/queries';
@@ -19,6 +19,7 @@ import { calcBom } from '@/lib/prices/bom';
 import ProjectCost from '@/components/prices/ProjectCost';
 import Crumbs from '@/components/Crumbs';
 import IssueForm from '@/components/tavole/IssueForm';
+import DrawingFigure from '@/components/drawing/DrawingFigure';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
 import VerdictPill from '@/components/VerdictPill';
 
@@ -87,10 +88,10 @@ export default async function RoomDesignPage({ params }: { params: Promise<{ loc
         </section>
       ) : null}
       {views.map(({ k, c }) => (
-        <figure key={k} className="sheet-view">
+        <DrawingFigure key={k} className="sheet-view" w={c.w} h={c.h} label={ts(k === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')}
+          caption={`${ts(k === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')} · ${ts('scale', { n: c.scale })}`}>
           <ShapesSvg shapes={c.shapes} w={c.w} h={c.h} id={`room-${k}`} label={ts(k === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')} />
-          <figcaption>{ts(k === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')} · {ts('scale', { n: c.scale })}</figcaption>
-        </figure>
+        </DrawingFigure>
       ))}
       {d && rep.ok ? (
         <section className="panel" aria-labelledby="room-checks">
@@ -102,7 +103,7 @@ export default async function RoomDesignPage({ params }: { params: Promise<{ loc
                 {d.checks.map((c) => (
                   <tr key={c.id}>
                     <td className="row-title">{ts(`c_${c.id}`)}</td>
-                    <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${fmt(c.value, c.dec)} ${c.unit}`}</td>
+                    <td className="num" data-label={t('value')}>{c.value === null ? '—' : `${shownValue(c, fmt)} ${c.unit}`}</td>
                     <td className="num" data-label={t('limit')}>{c.limit === null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)} ${c.unit}`}</td>
                     <td data-label={t('outcome')}>{ambitoOf(rep.collaudo, c.id) === 'existing' ? <span className="status-pill">{t('existing')}</span> : <span className={`status-pill ${c.status}`}>{ts(`st_${c.status}`)}</span>}</td>
                   </tr>

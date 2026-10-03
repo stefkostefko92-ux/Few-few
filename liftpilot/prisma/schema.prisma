@@ -144,8 +144,48 @@ model User {
   liftDesigns        LiftDesign[]
   roomDesigns        RoomDesign[]
   authTokens         AuthToken[]
+  sessions           Session[]
 
   @@index([companyId])
+}
+
+/// A signed-in session: the cookie's token names it and works only while it is here, so signing out ends it on the
+/// server too (a copied cookie stops at once); a new password ends the user's others. Gone at its end (12 h).
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// A self-registration waiting for the proof of its address: no account exists until the link of the e-mail and the
+/// password chosen confirm it, so a registration with somebody else's address holds and takes nothing. Several may wait
+/// for one address, none replacing another: the first confirmed makes the company and its owner, releases an account
+/// of the address never confirmed nor used (a colleague a company added) and drops the others. Gone with its link, at
+/// the latest UNCONFIRMED_DAYS after it was made (src/lib/purge.ts).
+model PendingRegistration {
+  id           String   @id @default(cuid())
+  email        String
+  /// SHA-256 of the newest link's token (src/lib/tokens.ts): a new link ends the earlier one
+  tokenHash    String   @unique
+  expiresAt    DateTime
+  passwordHash String
+  name         String
+  company      String
+  vatNumber    String?
+  city         String?
+  locale       String
+  /// the terms accepted at the registration: their version and the SHA-256 of the text shown (src/lib/legal-text.ts)
+  termsVersion String
+  termsSha256  String
+  createdAt    DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([expiresAt])
 }
 
 enum AuthTokenKind {

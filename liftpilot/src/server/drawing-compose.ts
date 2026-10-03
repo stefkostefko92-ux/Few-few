@@ -17,6 +17,7 @@ import { projectData, storedInput, type ProjectData, type StoredSet } from '@/li
 import type { TavoleInput, TavoleRevision } from '@/lib/tavole/input';
 import { tavoleHash } from '@/lib/tavole-hash';
 import type { DrawingDoc } from '@/drawing';
+import { usableLogo } from '@/lib/logo';
 
 type Tx = Prisma.TransactionClient;
 
@@ -42,8 +43,8 @@ export interface Composed {
   pages: number;
 }
 
-const logoOf = (l: { mime: string; data: Uint8Array } | null): { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null =>
-  l && (l.mime === 'image/png' || l.mime === 'image/jpeg') ? { mime: l.mime, data: l.data } : null;
+// a logo the renderers may decode (lib/logo.ts: type and pixels checked again, an older oversized upload left out)
+const logoOf = usableLogo;
 
 /** The values of a calculation and the layout of its shaft design, both reproduced by the running engines. */
 function reproduce(c: { inputs: unknown; sha256: string; shaftDesign: Parameters<typeof reproduceDesign>[0] | null }) {

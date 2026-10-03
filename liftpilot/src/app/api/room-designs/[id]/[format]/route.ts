@@ -6,6 +6,7 @@ import { idSchema } from '@/lib/schemas';
 import { audit } from '@/lib/audit';
 import { log } from '@/lib/log';
 import { ROOM_FORMATS, exportRoomDesign } from '@/server/room-export';
+import { RendererBusy, busyResponse } from '@/lib/report/render';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,6 +31,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       headers: { 'Content-Type': r.mime, 'Content-Disposition': `attachment; filename="${r.name}"`, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
     });
   } catch (err) {
+    if (err instanceof RendererBusy) return busyResponse();
     log.error({ err }, 'room export failed');
     return text(500, 'Export failed');
   }

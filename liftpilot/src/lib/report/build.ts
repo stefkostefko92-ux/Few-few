@@ -255,7 +255,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const estimated = [
     ...(m.pEstimate ? [`Massa della cabina: è la stima del software (${P_ESTIMATE_RULE}); sostituirla con quella reale e ripetere il calcolo`] : []),
     ...(I.layout === 'bottom' && m.bottom ? [`Schema delle funi con la macchina in basso (${BOTTOM_IT[m.bottom]}): rinvii, rami e passaggi ricostruiti dal software; rilevarli sull'impianto`] : []),
-    ...(I.layout === 'bottom' && m.bottom === 'under' ? ['Spazio accessibile sotto il vano: paracadute del contrappeso o pilastro pieno fino al terreno (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori'] : []),
+    ...(I.layout === 'bottom' && m.bottom === 'under' ? ['Spazio accessibile sotto il vano: paracadute del contrappeso, obbligatorio (la EN 81-20 non ammette più il pilastro pieno fino al terreno; UNI EN 81-20:2020, 5.2.5.4), e fondo della fossa per le reazioni degli ammortizzatori'] : []),
   ];
   B.push({ t: 'list', items: [...estimated, ...X.verifyList(I, N, res)].map((x) => `⚠ ${x}`) });
 

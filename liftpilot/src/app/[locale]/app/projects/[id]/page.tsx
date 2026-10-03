@@ -11,6 +11,7 @@ import LiftView from '@/components/lift/LiftView';
 import { setProjectArchivedAction, upgradeProjectAction } from '@/server/project-actions';
 import VerdictPill from '@/components/VerdictPill';
 import Crumbs from '@/components/Crumbs';
+import { pitchesOf } from '@/lib/plant';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const t = await getTranslations('projects');
@@ -73,7 +74,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
             <h2>{tl('homeTitle')}</h2>
             {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
           </div>
-          {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} prices={await visiblePrices(user)} /> : (
+          {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} prices={await visiblePrices(user)} pitches={pitchesOf(p.plant)} /> : (
             <div className="panel items-start">
               <p>{tl('homeEmpty')}</p>
               {editable ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{tl('start')}</Link> : null}

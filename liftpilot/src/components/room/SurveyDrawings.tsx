@@ -12,6 +12,7 @@ import { editSurvey } from '@/lib/room/edit';
 import type { RoomDerived } from '@/lib/room/derive';
 import type { Survey } from '@/lib/room/survey';
 import { cropped, surveyView } from '@/lib/tavole/views';
+import DrawingFigure from '../drawing/DrawingFigure';
 import EditableDrawing, { type EditTexts, type Refusal } from '../drawing/EditableDrawing';
 
 const AREA = { x0: 0, y0: 0, x1: 190, y1: 190 };
@@ -57,10 +58,9 @@ export default function SurveyDrawings({ survey, derived, onChange, id }: Props)
         ))}
       </div>
       {v ? (
-        <figure className="sheet-view">
+        <DrawingFigure className="sheet-view" w={v.w} h={v.h} label={t(kind === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')} caption={<>{t('scale', { n: v.scale })} · {t('ed_count', { n: v.hits.length })}</>}>
           <EditableDrawing shapes={v.shapes} w={v.w} h={v.h} hits={v.hits} id={`${id}-${kind}`} label={t(kind === 'plan' ? 'ed_v_room_plan' : 'ed_v_room_section')} manual={manual} onEdit={onEdit} texts={texts} />
-          <figcaption>{t('scale', { n: v.scale })} · {t('ed_count', { n: v.hits.length })}</figcaption>
-        </figure>
+        </DrawingFigure>
       ) : <p className="note">{tr('noDrawing')}</p>}
     </div>
   );

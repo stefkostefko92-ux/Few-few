@@ -3,14 +3,13 @@ import 'server-only';
 // draws the same blocks; report/raster.py paints the views for Word): only while the running engines reproduce the
 // record (else refused, like its documents), for the machine the record verified or the advice's first among SICOR and
 // Montanari (src/lib/order/machine.ts), on the company's letterhead, with the machine room drawn with that machine.
-import type { SheetImage } from '@/drawing';
 import type { SessionUser } from '@/lib/auth';
 import { formValuesSchema } from '@/lib/calc-input';
 import { prisma } from '@/lib/db';
 import { collaudoOf } from '@/lib/lift';
 import { collaudoSchema } from '@/lib/lift-input';
 import { liftRecord } from '@/lib/lift-record';
-import { liftAdvice } from '@/lib/lift/advice';
+import { savedLiftAdvice, savedValuesAdvice } from '@/lib/lift/advice-cache';
 import { buildOrder, type OrderInput } from '@/lib/order/build';
 import { toDocx } from '@/lib/order/docx';
 import { calcRoom, designRoom } from '@/lib/order/drawings';
@@ -23,6 +22,7 @@ import { bedplateKey, machineKey } from '@/lib/prices/articles';
 import type { OrderMachine } from '@/lib/order/machine';
 import { getCalculation, getCompanyLetterhead, getLiftDesign } from './queries';
 import { companyPrices } from './prices';
+import { usableLogo } from '@/lib/logo';
 
 export const ORDER_FORMATS = ['docx', 'pdf'] as const;
 export type OrderFormat = (typeof ORDER_FORMATS)[number];
@@ -46,12 +46,11 @@ async function render(input: OrderInput, format: OrderFormat): Promise<OrderExpo
   return { ok: true, body, mime: MIME[format], name, entity: input.record.kind === 'design' ? 'LiftDesign' : 'Calculation', entityId: input.record.id };
 }
 
-/** The letterhead: the company's name, city and logo (a PNG or JPEG checked at the upload). */
-const imageMime = (m: string | undefined): SheetImage['mime'] | null => (m === 'image/png' || m === 'image/jpeg' ? m : null);
+/** The letterhead: the company's name, city and logo (a PNG or JPEG checked at the upload and again here). */
 
 async function letterhead(user: SessionUser): Promise<Pick<OrderInput, 'company' | 'companyCity' | 'logo'>> {
-  const c = await getCompanyLetterhead(user), mime = imageMime(c?.logo?.mime);
-  const logo = c?.logo && mime ? { mime, data: Buffer.from(c.logo.data).toString('base64') } : null;
+  const c = await getCompanyLetterhead(user), ok = usableLogo(c?.logo);
+  const logo = ok ? { mime: ok.mime, data: Buffer.from(ok.data).toString('base64') } : null;
   return { company: c?.name ?? user.companyName, companyCity: c?.city ?? null, logo };
 }
 
@@ -67,7 +66,7 @@ export async function exportDesignOrder(user: SessionUser, id: string, format: O
   const d = await getLiftDesign(user, id), r = d ? liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256) : null;
   if (!d || !r) return { ok: false, error: 'notFound' };
   if (!r.same) return { ok: false, error: 'engineChanged' };
-  const { inputs, dv } = r, order = designOrder(inputs, liftAdvice(inputs), dv);
+  const { inputs, dv } = r, order = designOrder(inputs, savedLiftAdvice(inputs), dv);
   if (!order) return { ok: false, error: 'noMachine' };
   const project = await prisma.project.findFirst({ where: { id: d.project.id, companyId: user.companyId }, select: PROJECT });
   if (!project) return { ok: false, error: 'notFound' };
@@ -85,7 +84,7 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   if (!c || !values?.success) return { ok: false, error: 'notFound' };
   if (!verifyStored(values.data, c.sha256).same) return { ok: false, error: 'engineChanged' };
   if (c.liftDesign) return exportDesignOrder(user, c.liftDesign.id, format);
-  const order = calcOrder(values.data);
+  const order = calcOrder(values.data, savedValuesAdvice(values.data));
   if (!order) return { ok: false, error: 'noMachine' };
   const own = c.collaudo ? collaudoSchema.safeParse(c.collaudo) : null;
   const { name, address, city, province, plantNumber } = c.project;

@@ -142,7 +142,7 @@ export type ShaftInputs = {
 export type ShaftCheckId =
   | 'v_fit' | 'v_area' | 'v_acc_car' | 'v_acc_door' | 'v_acc_side' | 'v_door' | 'v_door2' | 'v_land' | 'v_land2' | 'v_op' | 'v_wall' | 'v_sill' | 'v_cw' | 'v_cwlen'
   | 'v_place' | 'v_doorcar' | 'v_buffer' | 'v_niche' | 'v_staffa' | 'v_head'
-  | 'h_refuge' | 'h_clear' | 'h_parapet' | 'h_stand' | 'p_refuge' | 'p_apron' | 'p_screen' | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
+  | 'h_refuge' | 'h_clear' | 'h_top' | 'h_parapet' | 'h_stand' | 'p_refuge' | 'p_apron' | 'p_screen' | 'b_runby' | 'b_type' | 'b_car' | 'b_cw' | 'm_height' | 'm_panel' | 'm_door'
   | 'm_beam' | 'm_beamf' | 'm_rinvio' | 'm_fit' | 'm_stand' | 'm_calata';
 
 export interface ShaftCheck {
@@ -210,8 +210,10 @@ export interface CarFrame {
 
 export interface Layout {
   inputs: ShaftInputs;
-  /** the pitch of the counterweight rails' brackets a drawing set's data declare [mm]; absent: the rule's
-   *  (KV_VERT.bracketPitch). Sheet 1 and the plan's codes count with it. */
+  /** the pitch of the car's and of the counterweight's rail brackets the data of the installation declare [mm];
+   *  absent: the rule's (KV_VERT.bracketPitch). Sheet 1, the plan's codes, the lists of articles and the 3D count with
+   *  it (brackets.ts `withPitches`). */
+  carBracketPitch?: number;
   cwBracketPitch?: number;
   /** a car of the smallest admissible size fits in the shaft */
   fits: boolean;

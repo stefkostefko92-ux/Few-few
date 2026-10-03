@@ -47,12 +47,8 @@ test('i testi delle voci riportano i numeri usati dal motore', () => {
     ['modello.g', `g = ${it(K.g)} m/s²`],
   ];
   for (const [id, text] of pairs) assert.ok(voce(id).valore.includes(text), `${id}: manca «${text}» in «${voce(id).valore}»`);
-  // N_equiv(t) table: confirmed and provisional points, as in the engine
-  const confirmed = new Set(['105', '35']);
-  for (const [a, n] of [...K.neqU, ...K.neqV]) {
-    const id = confirmed.has(String(a)) ? 'funi.Nequiv.gola.confermati' : 'funi.Nequiv.gola.provvisori';
-    assert.ok(voce(id).valore.includes(`${a}° ${it(n, 1)}`), `${id}: manca ${a}° ${it(n, 1)}`);
-  }
+  // N_equiv(t) table: every point, as in the engine (UNI EN 81-50:2020, table 2)
+  for (const [a, n] of [...K.neqU, ...K.neqV]) assert.ok(voce('funi.Nequiv.gola').valore.includes(`${a}° ${it(n, 1)}`), `manca ${a}° ${it(n, 1)}`);
 });
 
 test('profilo normativo italiano', () => {

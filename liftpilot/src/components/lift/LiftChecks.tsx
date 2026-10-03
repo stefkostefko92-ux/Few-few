@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import type { Check, CheckStatus } from '@/calc/types';
 import { NORMA_SIGLA, ambitoOf, type LiftDerived } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
-import { isUpperLimit, type ShaftCheck } from '@/shaft';
+import { isUpperLimit, shownValue, type ShaftCheck } from '@/shaft';
 import { scenarioForCheck } from './scenarios';
 import type { SimRequest } from './LiftSimulator';
 
@@ -53,7 +53,7 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
               return (
                 <tr key={c.id} className={existing(c.id) ? 'existing' : undefined}>
                   <th scope="row">{ts(`c_${c.id}`)}</th>
-                  <td className="num" data-label={t('col_value')}>{c.value === null ? '—' : `${fmt(c.value, c.dec)}${unit}`}</td>
+                  <td className="num" data-label={t('col_value')}>{c.value === null ? '—' : `${shownValue(c, fmt)}${unit}`}</td>
                   <td className="num note" data-label={t('col_limit')}>{c.limit === null ? '' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}`}</td>
                   <td data-label={t('col_result')}>{result(c.id, c.status, ts(`st_${c.status}`))}</td>
                   <td>{simulate(c.id)}</td>

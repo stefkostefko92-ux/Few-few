@@ -10,6 +10,7 @@ import { RAILS, bufferPlan, type Layout, type Rail } from '@/shaft';
 import { P, type Batch } from './geom';
 import type { GovernorSpot } from './governor';
 import type { LiftMaterials } from './materials';
+import { CAR_PULLEY_GAP } from '@/lib/lift/head';
 
 /** Where the ropes end on the car: the sockets of a 1:1 roping (plan positions), or the car pulley of a 2:1. */
 export type Hitch =
@@ -133,7 +134,7 @@ export function buildSling(L: Layout, M: LiftMaterials, B: Batch, hitch: Hitch |
     spring.dispose();
   } else if (hitch?.kind === 'pulley') {
     // the cheeks that carry the car pulley's axle over the crosshead
-    const [ax, ay] = hitch.across, zAxle = zTop + hitch.r + 30;
+    const [ax, ay] = hitch.across, zAxle = zTop + hitch.r + CAR_PULLEY_GAP;
     for (const s of [-1, 1]) {
       const o = s * (hitch.width / 2 + 14), x = hitch.x + ax * o, y = hitch.y + ay * o;
       const [dx, dy] = [Math.abs(ay) * hitch.r * 0.55 + Math.abs(ax) * 6, Math.abs(ax) * hitch.r * 0.55 + Math.abs(ay) * 6];

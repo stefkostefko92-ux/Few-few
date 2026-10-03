@@ -10,12 +10,18 @@ import { TOKEN_TTL_MS, tokenShapeOk } from './token-shape';
 
 export { TOKEN_TTL_MS, tokenShapeOk };
 
+/** A link's token and what the database keeps of it. */
+export function newToken(): { token: string; tokenHash: string } {
+  const token = randomBytes(32).toString('base64url');
+  return { token, tokenHash: hashToken(token) };
+}
+
 /** A new token for the user, valid for its kind's time; the earlier ones of the same kind stop working. */
 export async function issueToken(userId: string, kind: AuthTokenKind): Promise<string> {
-  const token = randomBytes(32).toString('base64url');
+  const { token, tokenHash } = newToken();
   await prisma.$transaction([
     prisma.authToken.deleteMany({ where: { userId, kind } }),
-    prisma.authToken.create({ data: { userId, kind, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + TOKEN_TTL_MS[kind]) } }),
+    prisma.authToken.create({ data: { userId, kind, tokenHash, expiresAt: new Date(Date.now() + TOKEN_TTL_MS[kind]) } }),
   ]);
   return token;
 }

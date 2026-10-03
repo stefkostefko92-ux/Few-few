@@ -4,6 +4,7 @@
 // correction made on the purchased text changes the engine, the checklist and the report together.
 // Texts are in Italian: they go to the engineer and into the report.
 
+import { VOCI_FUNI } from './norme-funi';
 import type { CheckId } from './types';
 
 /** Numeric constants of the engine. Values are the ones of the prototype (research, chapter 4). */
@@ -23,7 +24,7 @@ export const K = {
   betaRecommended: 90,
   gammaMin: 35,
   neqU: [[75, 2.5], [80, 3.0], [85, 3.8], [90, 5.0], [95, 6.7], [100, 10.0], [105, 15.2]] as const,
-  neqV: [[35, 18.5], [36, 15.2], [38, 10.5], [40, 7.1], [42, 5.6], [45, 4.0]] as const,
+  neqV: [[35, 18.5], [36, 16], [38, 12], [40, 10], [42, 8], [45, 6.5], [50, 5]] as const,
   // ropes (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12)
   ddMin: 40,
   ropesMin: 2,
@@ -103,24 +104,27 @@ export const VOCI: readonly Voce[] = [
   },
   {
     id: 'trazione.mu.caricamento', gruppo: 'trazione', titolo: 'Coefficiente di attrito, caricamento', valore: 'μ = 0,1',
-    riferimento: 'UNI EN 81-50:2020, 5.11.2 (sottoclausola da individuare)', fonte: 'fonti secondarie concordi', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-50:2020, 5.11.2.3.2', fonte: 'BS EN 81-50:2020, estratto pubblico del testo, p. 50', stato: 'confermato',
     costanti: ['muLoading'], verifiche: ['tr_load'],
   },
   {
     id: 'trazione.mu.frenatura', gruppo: 'trazione', titolo: 'Coefficiente di attrito, frenatura di emergenza', valore: 'μ = 0,1 / (1 + v_f/10), v_f = velocità delle funi',
-    riferimento: 'UNI EN 81-50:2020, 5.11.2', fonte: 'fonti secondarie concordi', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-50:2020, 5.11.2.3.2', fonte: 'BS EN 81-50:2020, estratto pubblico del testo, p. 50 (v_f: velocità delle funi alla '
+      + 'velocità nominale della cabina)', stato: 'confermato',
     costanti: ['muBrakingBase', 'muBrakingSpeed'], verifiche: ['tr_dn', 'tr_up', 'tr_real'],
   },
   {
     id: 'trazione.mu.bloccata', gruppo: 'trazione', titolo: 'Coefficiente di attrito, cabina bloccata', valore: 'μ = 0,2',
-    riferimento: 'UNI EN 81-50:2020, 5.11.2', fonte: 'fonti secondarie concordi', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-50:2020, 5.11.2.3.2', fonte: 'BS EN 81-50:2020, estratto pubblico del testo, p. 50', stato: 'confermato',
     costanti: ['muStalled'], verifiche: ['tr_stall'],
   },
   {
     id: 'trazione.carico.caricamento', gruppo: 'trazione', titolo: 'Carico della verifica di caricamento', valore: '1,25·Q, cabina in basso e in alto',
-    riferimento: 'UNI EN 81-50:2020, 5.11.2.3.2', fonte: 'campione BSI di EN 81-50:2020 (p. 50)', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-50:2020, 5.11.3', fonte: 'BS EN 81-50:2020, estratto pubblico del testo, p. 52 (al caricamento e con la cabina '
+      + 'bloccata a = 0)', stato: 'confermato',
     costanti: ['loadTestFactor'], verifiche: ['tr_load'],
-    nota: 'Il campione cita anche il peso dei dispositivi di movimentazione, dove usati: non modellato.',
+    nota: 'La norma aggiunge il peso dei dispositivi di movimentazione, dove usati negli ascensori per merci e persone: non modellato. Le due '
+      + 'posizioni della cabina sono quelle più sfavorevoli che il software verifica.',
   },
   {
     id: 'trazione.decelerazione.minima', gruppo: 'trazione', titolo: 'Decelerazione della verifica di frenatura', valore: '0,5 m/s²; 0,8 m/s² con ammortizzatori a corsa ridotta',
@@ -172,69 +176,7 @@ export const VOCI: readonly Voce[] = [
     costanti: ['gammaMin'], verifiche: ['g_geom'],
   },
   // ---------- ropes ----------
-  {
-    id: 'funi.Dd', gruppo: 'funi', titolo: 'Rapporto D/d della puleggia di trazione', valore: 'D/d ≥ 40',
-    riferimento: 'UNI EN 81-20:2020, 5.5.2.1', fonte: 'ELA 2026 e fonti concordi', stato: 'confermato',
-    costanti: ['ddMin'], verifiche: ['r_dd'],
-  },
-  {
-    id: 'funi.Dpd', gruppo: 'funi', titolo: 'Rapporto D/d delle pulegge di rinvio', valore: 'Dp/d ≥ 40',
-    riferimento: 'UNI EN 81-20:2020, 5.5.2.1', fonte: 'fonti secondarie', stato: 'da_verificare',
-    costanti: ['ddMin'], verifiche: ['r_ddp'],
-  },
-  {
-    id: 'funi.numero', gruppo: 'funi', titolo: 'Numero minimo di funi', valore: 'almeno 2 funi indipendenti, ciascuna con il suo attacco',
-    riferimento: 'DPR 162/1999, All. I 1.3 (Direttiva 2014/33/UE, All. I); UNI EN 81-20:2020, 5.5', fonte: 'DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02 (ricerca, cap. 16), All. I 1.3', stato: 'confermato',
-    costanti: ['ropesMin'], verifiche: ['r_nd'],
-  },
-  {
-    id: 'funi.diametro', gruppo: 'funi', titolo: 'Diametro nominale minimo', valore: 'd ≥ 8 mm (salvo approvazione di un organismo notificato)',
-    riferimento: 'UNI EN 81-20:2020, 5.5', fonte: 'fonti secondarie', stato: 'da_verificare',
-    costanti: ['ropeDiameterMin'], verifiche: ['r_nd'],
-  },
-  {
-    id: 'funi.Sf.minimo', gruppo: 'funi', titolo: 'Coefficiente di sicurezza minimo', valore: '12 con tre o più funi; 16 con due funi',
-    riferimento: 'UNI EN 81-20:2020, 5.5', fonte: 'fonti secondarie', stato: 'da_verificare',
-    costanti: ['sfMin3', 'sfMin2'], verifiche: ['r_sfa'],
-  },
-  {
-    id: 'funi.Sf.formula', gruppo: 'funi', titolo: 'Coefficiente di sicurezza richiesto S_f',
-    valore: 'S_f = 10^[2,6834 − log10(695,85·10^6·N_equiv/(D/d)^8,567) / log10(77,09·(D/d)^−2,894)]',
-    riferimento: 'UNI EN 81-50:2020, 5.12 (ex EN 81-1 Allegato N)', fonte: 'riprodotto su due casi pubblicati (liftdesign.it S_f 16,69; Mellor)', stato: 'confermato',
-    costanti: ['sfC0', 'sfC1', 'sfE1', 'sfC2', 'sfE2'], verifiche: ['r_sfa'],
-  },
-  {
-    id: 'funi.Nequiv.pulegge', gruppo: 'funi', titolo: 'N_equiv delle pulegge', valore: 'N_equiv(p) = K_p·(N_ps + 4·N_pr), K_p = (D/Dp)^4',
-    riferimento: 'UNI EN 81-50:2020, 5.12', fonte: 'fonti secondarie', stato: 'da_verificare',
-    costanti: ['kpExponent', 'reverseBendWeight'], verifiche: ['r_sfa'],
-    nota: 'Da confermare anche quando una flessione conta come inversa (distanza tra le pulegge): oggi la classifica il progettista.',
-  },
-  {
-    id: 'funi.Nequiv.gola.confermati', gruppo: 'funi', titolo: 'N_equiv(t) della gola: valori confermati', valore: 'U senza sottosquadro 1; U β 105° 15,2; V γ 35° 18,5',
-    riferimento: 'UNI EN 81-50:2020, 5.12, tabella 2', fonte: 'fonti concordi', stato: 'confermato',
-    costanti: ['neqU', 'neqV'], verifiche: ['r_sfa'],
-  },
-  {
-    id: 'funi.Nequiv.gola.provvisori', gruppo: 'funi', titolo: 'N_equiv(t) della gola: altri valori (provvisori)',
-    valore: 'β 75° 2,5; 80° 3,0; 85° 3,8; 90° 5,0; 95° 6,7; 100° 10,0 · γ 36° 15,2; 38° 10,5; 40° 7,1; 42° 5,6; 45° 4,0',
-    riferimento: 'UNI EN 81-50:2020, 5.12, tabella 2', fonte: 'fonti secondarie (β 90° indiretto); gli altri non verificati', stato: 'da_verificare',
-    costanti: ['neqU', 'neqV'], verifiche: ['r_sfa'],
-  },
-  {
-    id: 'funi.Nequiv.gola.regola', gruppo: 'funi', titolo: 'Uso della tabella di N_equiv(t)',
-    valore: 'nessuna interpolazione: punto più sfavorevole (β superiore, γ inferiore); oltre 105° estrapolazione dall\'ultimo tratto, segnalata',
-    riferimento: 'UNI EN 81-50:2020, 5.12', fonte: 'scelta prudente del software (la tabella non dà una regola)', stato: 'scelta',
-    verifiche: ['r_sfa'],
-  },
-  {
-    id: 'funi.Tmax', gruppo: 'funi', titolo: 'Tiro massimo per fune', valore: 'cabina con portata ferma al piano più basso; con la macchina in basso sul primo tratto verso la testata',
-    riferimento: 'UNI EN 81-50:2020, 5.12', fonte: 'definizione di EN 81-1 da fonte secondaria', stato: 'da_verificare',
-    verifiche: ['r_sfa'],
-  },
-  {
-    id: 'funi.stima', gruppo: 'funi', titolo: 'Stima di carico di rottura e massa delle funi', valore: '8×19 Seale anima tessile 1570 N/mm²: 8 mm = 30,4 kN e 0,215 kg/m, poi in proporzione a d²',
-    riferimento: '—', fonte: 'tabella Pfeifer 8×19S NFC; usata solo con il pulsante di stima e nella proposta libera', stato: 'stima',
-  },
+  ...VOCI_FUNI,
   // ---------- brake ----------
   {
     id: 'freno.gruppi', gruppo: 'freno', titolo: 'Gruppi meccanici del freno', valore: 'almeno 2',

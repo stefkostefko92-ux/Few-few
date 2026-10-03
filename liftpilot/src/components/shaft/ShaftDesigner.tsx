@@ -21,15 +21,18 @@ import VerticalOptions from './VerticalOptions';
 import ShaftResults from './ShaftResults';
 import PanevBom from './PanevBom';
 import SurveyPanel, { type SurveyResult } from './SurveyPanel';
+import { withPitches, type BracketPitches } from '@/shaft/brackets';
 
 interface Props {
   projectId: string;
   initial: ShaftInputs;
   /** the company's prices [cents by key] for whoever may see them; null: none shown */
   prices: Readonly<Record<string, number>> | null;
+  /** the bracket pitches of the installation's data: the plan's codes and the list count with them (as sheet 1) */
+  pitches?: BracketPitches;
 }
 
-export default function ShaftDesigner({ projectId, initial, prices }: Props) {
+export default function ShaftDesigner({ projectId, initial, prices, pitches }: Props) {
   const t = useTranslations('shaft'), te = useTranslations('errors'), locale = useLocale();
   const router = useRouter();
   const fmt = useMemo(() => makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']), [locale]);
@@ -66,7 +69,8 @@ export default function ShaftDesigner({ projectId, initial, prices }: Props) {
     setSaveError(null);
   }, []);
 
-  const L = useMemo(() => layout(I), [I]);
+  const car = pitches?.car, cw = pitches?.cw;
+  const L = useMemo(() => withPitches(layout(I), { car, cw }), [I, car, cw]);
   const valid = I.W >= 500 && I.W <= 10000 && I.D >= 500 && I.D <= 10000;
 
   const save = (): void => {

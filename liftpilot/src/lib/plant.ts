@@ -74,3 +74,9 @@ export const plantReadSchema = z.preprocess((raw) => {
   };
   return Object.fromEntries(Object.entries(raw).filter((e) => !outside(e)));
 }, plantSchema);
+
+/** The bracket pitches of the stored data of an installation (src/shaft/brackets.ts `withPitches`). */
+export function pitchesOf(raw: unknown): { car?: number; cw?: number } {
+  const p = plantReadSchema.safeParse(raw ?? {});
+  return p.success ? { car: p.data.carBracketPitch, cw: p.data.cwBracketPitch } : {};
+}

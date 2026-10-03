@@ -61,6 +61,12 @@ services:
       - "127.0.0.1:${APP_PORT:-4320}:3000"
     security_opt:
       - no-new-privileges:true
+    # a Node process on an unprivileged port needs no capability; the renderers (report/*.py) are bounded in number by
+    # the application (two at a time) and here in memory and processes, so a burst cannot starve the rest of the host
+    cap_drop:
+      - ALL
+    mem_limit: 2g
+    pids_limit: 256
 
 volumes:
   db-data:

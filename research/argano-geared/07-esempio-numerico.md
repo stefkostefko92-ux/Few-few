@@ -43,7 +43,7 @@ Rendimento del vano 0,85 (capitolo 5.6) → η = 0,70 · 0,85 = 0,595.
 
 | Altre verifiche | Risultato |
 |---|---|
-| funi: D/d · N_equiv · S_f richiesto · S_f effettivo | 56 · 8,84 (5,0 ⚠️ + K_p 3,84) · max(11,17; 12) = 12 · 47 500 / 3 328 N = **14,27** |
+| funi: D/d · N_equiv · S_f richiesto · S_f effettivo | 56 · 8,84 (5,0 + K_p 3,84) · max(11,17; 12) = 12 · 47 500 / 3 328 N = **14,27** |
 | rinvio: Dp/d | 400 / 10 = **40**, al limite: con funi Ø11 sarebbe 36,4 → KO |
 | potenza statica (squilibrio 3 335 N, cabina vuota in discesa dall'alto; con la cabina carica in salita dal basso 3 320 N) | 3 335 · 1,0 / 0,595 = **5,61 kW**: il motore da 5,5 kW è al 102% → **KO**; con 7,5 kW al 75% |
 | formula semplificata (1 − k)·Q·g·v/η | 5,19 kW: sottostima del 7,5% per il peso delle funi non compensate |
@@ -61,8 +61,8 @@ Rendimento del vano 0,85 (capitolo 5.6) → η = 0,70 · 0,85 = 0,595.
 |---|---|---|---|---|
 | togliere il rinvio | α ≥ 169,6°; con α = 180° e^(f·α) = 1,696 | OK (0,97) | funi verticali: albero **2 532 kg > 2 500** | **KO** |
 | zavorra in cabina, k costante | P ≥ 766 kg (+66 kg) | OK (1,00) | albero **2 626 kg > 2 500** | **KO** |
-| sottosquadro maggiore | β ≥ 97,3° → β = 100°: e^(f·α) = 1,664 | OK (0,99) | oltre i 90° raccomandati; N_equiv(t) 10 ⚠️ → S_f richiesto 12,87 (effettivo 14,27); più usura | OK, margini minimi |
-| gola a V temprata γ = 40° | e^(f·α) = 2,101 | OK (0,78) | N_equiv(t) 7,1 ⚠️ → S_f,calc 11,95; incertezze sulla tempra, più usura | OK |
+| sottosquadro maggiore | β ≥ 97,3° → β = 100°: e^(f·α) = 1,664 | OK (0,99) | oltre i 90° raccomandati; N_equiv(t) 10 → S_f richiesto 12,87 (effettivo 14,27); più usura | OK, margini minimi |
+| gola a V temprata γ = 40° | e^(f·α) = 2,101 | OK (0,78) | N_equiv(t) 10 (EN 81-50:2020, tab. 2) → S_f,calc 12,87 (effettivo 14,27); incertezze sulla tempra, più usura | OK |
 
 Due correzioni “ovvie” su quattro rompono la verifica dell'albero; le due che passano spingono
 la gola oltre l'intervallo raccomandato o verso la gola a V temprata. L'ordinamento del capitolo

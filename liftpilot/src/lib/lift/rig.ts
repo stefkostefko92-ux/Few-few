@@ -12,6 +12,7 @@ import { KL } from './norme';
 import type { BeltEl } from './belt';
 import { bottomGeo, exitAlong, type BottomGeo, type BottomScheme } from './bottom';
 import type { LiftDerived } from './derive';
+import { CAR_PULLEY_GAP } from './head';
 
 type P2 = readonly [number, number];
 
@@ -82,7 +83,7 @@ export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'he
       mid.push({ kind: 'wheel', u: pulley.u, y: pulley.y, r: Rp, cw: !rev });
     }
     const start = (s: number): BeltEl[] => (two
-      ? [{ kind: 'pt', u: -Rp, y: deadY }, { kind: 'wheel', u: 0, y: carHitch(s) + Rp + 0.03, r: Rp, cw: false }]
+      ? [{ kind: 'pt', u: -Rp, y: deadY }, { kind: 'wheel', u: 0, y: carHitch(s) + Rp + CAR_PULLEY_GAP / 1000, r: Rp, cw: false }]
       : [{ kind: 'pt', u: 0, y: carHitch(s) }]);
     const end = (w: number): BeltEl[] => (two
       ? [{ kind: 'wheel', u: cm, y: cwHitch(w) + Rp, r: Rp, cw: false }, { kind: 'pt', u: cm + Rp, y: deadY }]
@@ -111,7 +112,7 @@ export function ropeRig(dv: LiftDerived, scheme: BottomScheme = dv.bottom ?? 'he
     : [{ role: 'top', u: side + Rp, y: yH, r: Rp, plane: pw }];
   const wheel = (h: Wheel, cwise: boolean): BeltEl => ({ kind: 'wheel', u: h.u, y: h.y, r: h.r, cw: cwise });
   const start = (s: number): BeltEl[] => (two
-    ? [{ kind: 'pt', u: -Rp, y: deadY }, { kind: 'wheel', u: 0, y: carHitch(s) + Rp + 0.03, r: Rp, cw: false }]
+    ? [{ kind: 'pt', u: -Rp, y: deadY }, { kind: 'wheel', u: 0, y: carHitch(s) + Rp + CAR_PULLEY_GAP / 1000, r: Rp, cw: false }]
     : [{ kind: 'pt', u: 0, y: carHitch(s) }]);
   // toward the sheave the counterweight's plane runs backwards (u grows toward the run): its wheels turn the other way
   const end = (w: number): BeltEl[] => (two

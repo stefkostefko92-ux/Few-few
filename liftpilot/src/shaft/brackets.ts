@@ -4,6 +4,7 @@
 import { KV_VERT } from './norme-vert';
 import { FISHPLATES, type RailType } from './rails';
 import type { Section } from './section';
+import type { Layout } from './types';
 
 /** Rails come in lengths of 5 m from the pit floor: a joint with its fishplate every 5 m [mm]. */
 export const RAIL_LENGTH = 5000;
@@ -29,3 +30,13 @@ export function bracketHeights(z0: number, z1: number, type: RailType, pitch?: n
     return j === undefined ? z : j + (z + MID >= j ? keep : -keep) - MID;
   });
 }
+
+/** The pitches of the rail brackets the data of the installation declare [mm]; absent: the rule's. */
+export interface BracketPitches {
+  car?: number;
+  cw?: number;
+}
+
+/** The layout with the pitches of the data of the installation, for whatever counts or places the brackets. */
+export const withPitches = (L: Layout, p: BracketPitches | null | undefined): Layout =>
+  p && (p.car || p.cw) ? { ...L, ...(p.car ? { carBracketPitch: p.car } : {}), ...(p.cw ? { cwBracketPitch: p.cw } : {}) } : L;

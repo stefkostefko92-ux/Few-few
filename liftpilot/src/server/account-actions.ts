@@ -2,20 +2,19 @@
 
 import { after } from 'next/server';
 import { redirect } from 'next/navigation';
-import { Prisma } from '@prisma/client';
+import { Prisma, type PendingRegistration } from '@prisma/client';
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { startSession } from '@/lib/auth';
 import { mailAccount } from '@/lib/account-mail';
-import { TERMS_VERSION } from '@/lib/legal';
-import { legalSha256 } from '@/lib/legal-text';
 import { CONSENTS } from '@/lib/consents';
 import { log } from '@/lib/log';
 import { mailConfigured } from '@/lib/mail';
 import { hashPassword, verifyPassword } from '@/lib/password';
-import { purgeUnconfirmed } from '@/lib/purge';
+import { pastConfirmDeadline, purgeStale } from '@/lib/purge';
 import { clientIp, rateLimit } from '@/lib/ratelimit';
+import { addPending, confirmPending, pendingOf, type Confirmed } from '@/lib/registrations';
 import { forgotSchema, registerSchema, resetSchema, verifySchema, type RegisterInput } from '@/lib/schemas';
 import { consumeToken, issueToken, tokenUser } from '@/lib/tokens';
 import { str, type FormState } from './form';
@@ -50,51 +49,25 @@ export async function registerAction(_prev: FormState, fd: FormData): Promise<Fo
   return { ok: true, message: d.email };
 }
 
-/** The registration, after the answer. An account that is confirmed or was ever used never changes: its owner hears
- *  that it exists. A registration never confirmed is replaced by the newest one, and a user added by a company who
- *  never confirmed gives the address back: only the inbox's owner can confirm either. */
+/** The registration, after the answer. An address whose account is confirmed or was ever used: its owner hears that
+ *  it exists. Otherwise the registration waits for the proof of the address beside any other (src/lib/registrations.ts):
+ *  nothing changes until the inbox's owner confirms one with its password — then, and only then, an account of the
+ *  address never confirmed nor used (a colleague a company added) is released, and the e-mail says so beforehand. */
 async function register(d: RegisterInput, locale: Locale): Promise<void> {
-  await purgeUnconfirmed();
-  const passwordHash = await hashPassword(d.password);
-  const accepted = { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION };
-  const company = { name: d.company, vatNumber: d.vatNumber, city: d.city };
-  const unused = { emailVerifiedAt: null, lastLoginAt: null };
-  let made: { id: string; companyId: string; created: boolean } | null;
-  try {
-    made = await prisma.$transaction(async (tx) => {
-      const old = await tx.user.findUnique({ where: { email: d.email }, select: { id: true, companyId: true, emailVerifiedAt: true, lastLoginAt: true, termsAcceptedAt: true } });
-      if (old && (old.emailVerifiedAt || old.lastLoginAt)) return null;
-      if (old?.termsAcceptedAt) {
-        const n = await tx.user.updateMany({ where: { id: old.id, ...unused }, data: { name: d.name, passwordHash, locale, ...accepted, tokenVersion: { increment: 1 } } });
-        if (n.count !== 1) return null;
-        await tx.company.update({ where: { id: old.companyId }, data: company });
-        await tx.authToken.deleteMany({ where: { userId: old.id } });
-        return { id: old.id, companyId: old.companyId, created: false };
-      }
-      if (old && (await tx.user.deleteMany({ where: { id: old.id, ...unused } })).count !== 1) return null;
-      const c = await tx.company.create({ data: company });
-      const u = await tx.user.create({
-        data: { companyId: c.id, email: d.email, name: d.name, role: 'OWNER', passwordHash, mustChangePassword: false, locale, ...accepted },
-      });
-      return { id: u.id, companyId: c.id, created: true };
-    });
-  } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') return; // the same address at the same moment
-    throw e;
-  }
-  if (!made) {
+  await purgeStale();
+  const old = await prisma.user.findUnique({ where: { email: d.email }, select: { emailVerifiedAt: true, lastLoginAt: true } });
+  if (old && (old.emailVerifiedAt || old.lastLoginAt)) {
     mailAccount(d.email, locale, { kind: 'exists' });
     return;
   }
-  // what was accepted, kept for every registration (a new one replaces an unconfirmed one, with its acceptance)
-  await audit({ companyId: made.companyId, userId: made.id, action: 'USER_REGISTERED', entity: 'User', entityId: made.id,
-    meta: { terms: TERMS_VERSION, sha256: legalSha256(locale), locale, consents: [...CONSENTS], replaced: !made.created } });
-  if (made.created) log.info({ userId: made.id }, 'registered');
-  mailAccount(d.email, locale, { kind: 'verify', token: await issueToken(made.id, 'VERIFY_EMAIL'), terms: true });
+  const token = await addPending(d, await hashPassword(d.password), locale);
+  mailAccount(d.email, locale, { kind: 'verify', token, terms: true, releases: old !== null });
 }
 
-// The link of the e-mail and the account's password: the address is proven by the inbox, the account by the password
-// (a link alone would confirm an account somebody else made with this address).
+// The link of the e-mail and the password: the address is proven by the inbox, the account or the registration by the
+// password (a link alone would confirm what somebody else made with this address). A link of an account (a colleague
+// a company added, a registration from before they waited apart) confirms it; a link of a waiting registration makes
+// the company and its owner.
 export async function verifyEmailAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const locale = localeOf(fd);
   if (!rateLimit(`verify-ip:${await clientIp()}`, 20, WINDOW)) return { error: 'rateLimited' };
@@ -102,7 +75,12 @@ export async function verifyEmailAction(_prev: FormState, fd: FormData): Promise
   if (!parsed.success) return { error: 'invalidLink' };
   const { token, password } = parsed.data;
   const id = await tokenUser(token, 'VERIFY_EMAIL');
-  if (!id) return { error: 'invalidLink' };
+  if (id) return confirmAccount(id, token, password, locale);
+  const pending = await pendingOf(token);
+  return pending ? confirmRegistration(pending, token, password, locale) : { error: 'invalidLink' };
+}
+
+async function confirmAccount(id: string, token: string, password: string, locale: Locale): Promise<FormState> {
   if (!rateLimit(`verify-user:${id}`, 8, WINDOW)) return { error: 'rateLimited' };
   const user = await prisma.user.findUnique({ where: { id }, include: { company: { select: { active: true } } } });
   if (!user || !user.active || !user.company.active) return { error: 'invalidLink' };
@@ -110,13 +88,37 @@ export async function verifyEmailAction(_prev: FormState, fd: FormData): Promise
   const now = new Date();
   const done = await prisma.$transaction(async (tx) => {
     if ((await consumeToken(tx, token, 'VERIFY_EMAIL')) !== user.id) return false;
-    // the password checked above must still be the account's: a registration replaced meanwhile confirms nothing
+    // the password checked above must still be the account's: one changed meanwhile confirms nothing
     const n = await tx.user.updateMany({ where: { id: user.id, emailVerifiedAt: null, passwordHash: user.passwordHash }, data: { emailVerifiedAt: now, lastLoginAt: now } });
     return n.count === 1;
   });
   if (!done) return { error: 'invalidLink' };
   await startSession(user);
   await audit({ companyId: user.companyId, userId: user.id, action: 'EMAIL_VERIFIED', entity: 'User', entityId: user.id });
+  redirect(`/${locale}/app`);
+}
+
+async function confirmRegistration(p: PendingRegistration, token: string, password: string, locale: Locale): Promise<FormState> {
+  if (!rateLimit(`verify-pending:${p.id}`, 8, WINDOW)) return { error: 'rateLimited' };
+  if (!(await verifyPassword(password, p.passwordHash))) return { error: 'verifyWrongPassword' };
+  let done: Confirmed;
+  try {
+    done = await confirmPending(p, token);
+  } catch (e) {
+    // two registrations of the address confirmed at the same moment: the other one made the account
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') return { error: 'emailTaken' };
+    throw e;
+  }
+  if (!done.ok) return { error: done.reason === 'taken' ? 'emailTaken' : 'invalidLink' };
+  const { user, released } = done;
+  // the company that had added the address hears why its colleague is gone
+  if (released?.companyId) await audit({ companyId: released.companyId, userId: null, action: 'USER_RELEASED', entity: 'User', entityId: released.id });
+  // what was accepted at the registration, kept with the account
+  await audit({ companyId: user.companyId, userId: user.id, action: 'USER_REGISTERED', entity: 'User', entityId: user.id,
+    meta: { terms: p.termsVersion, sha256: p.termsSha256, locale: p.locale, consents: [...CONSENTS], registeredAt: p.createdAt.toISOString(), released: released !== null } });
+  await audit({ companyId: user.companyId, userId: user.id, action: 'EMAIL_VERIFIED', entity: 'User', entityId: user.id });
+  log.info({ userId: user.id }, 'registered');
+  await startSession(user);
   redirect(`/${locale}/app`);
 }
 
@@ -135,9 +137,11 @@ export async function forgotPasswordAction(_prev: FormState, fd: FormData): Prom
  *  registered by that person. A user added by a company who never confirmed gets none: the link would put the inbox's
  *  owner inside somebody else's company. */
 async function sendReset(email: string, locale: Locale): Promise<void> {
-  await purgeUnconfirmed();
+  await purgeStale();
   const user = await prisma.user.findUnique({ where: { email }, include: { company: { select: { active: true } } } });
   if (!user || !user.active || !user.company.active || !(user.emailVerifiedAt || user.termsAcceptedAt)) return;
+  // a registration never confirmed is past its time: no link keeps it (src/lib/purge.ts)
+  if (!user.emailVerifiedAt && pastConfirmDeadline(user.createdAt)) return;
   mailAccount(email, locale, { kind: 'reset', token: await issueToken(user.id, 'RESET_PASSWORD') });
   await audit({ companyId: user.companyId, userId: user.id, action: 'PASSWORD_RESET_REQUESTED', entity: 'User', entityId: user.id });
 }
@@ -156,6 +160,7 @@ export async function resetPasswordAction(_prev: FormState, fd: FormData): Promi
     const u = await tx.user.update({ where: { id }, data: { passwordHash, mustChangePassword: false, tokenVersion: { increment: 1 } } });
     if (!u.emailVerifiedAt) await tx.user.update({ where: { id }, data: { emailVerifiedAt: now } });
     await tx.authToken.deleteMany({ where: { userId: id } });
+    await tx.session.deleteMany({ where: { userId: id } });
     return u;
   });
   if (!user) return { error: 'invalidLink' };

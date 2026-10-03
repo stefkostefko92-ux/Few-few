@@ -8,7 +8,7 @@ import calcIt from '../../../messages/calc/it.json';
 import appIt from '../../../messages/it.json';
 import type { FormValues } from '@/calc/types';
 import type { SheetImage } from '@/drawing';
-import { isUpperLimit } from '@/shaft/checks';
+import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf, type Collaudo } from '../lift/collaudo';
@@ -18,7 +18,7 @@ import { makePres } from '../present/tr';
 import type { RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
 import { machineText } from '../tavole/views';
-import { surveySheetData } from '../tavole/survey-data';
+import { surveyLoad, surveySheetData } from '../tavole/survey-data';
 import { EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
 import { shapeRows } from './machine-shape';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
@@ -113,13 +113,14 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   section('Verifiche del locale, del basamento e delle calate');
   const sheet = surveySheetData({ ...r, set: { number: '', issuedAt: r.generatedAt, author: '', revisions: [] }, company: { name: r.company, logo: null } }, d, 1);
   const labels: Readonly<Record<string, string>> = appIt.shaft;
-  const checks: ShaftCheck[] = d.checks;
+  // the checks as sheet 1 prints them: the beams at the sheet's load (the data of the installation may change it)
+  const checks: readonly ShaftCheck[] = surveyLoad(d, r.plant).checks;
   const out = (c: ShaftCheck): { text: string; status: BlockStatus } => esitoOf(C, c.id, st(c.status), c.status);
-  const unit = (v: number | null, c: ShaftCheck): string => (v == null ? '—' : `${fmt(v, c.dec)}${c.unit ? ` ${c.unit}` : ''}`);
+  const withUnit = (v: string, c: ShaftCheck): string => `${v}${c.unit ? ` ${c.unit}` : ''}`;
   // the room's door in its sizes, as sheet 1 writes it
   const row = (c: ShaftCheck): string[] => (c.id === 'm_door'
     ? [(labels.c_m_door ?? c.id).replace(', margine', ''), `${s.room.doorW} × ${s.room.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, out(c).text]
-    : [labels[`c_${c.id}`] ?? c.id, unit(c.value, c), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${unit(c.limit, c)}`, out(c).text]);
+    : [labels[`c_${c.id}`] ?? c.id, c.value == null ? '—' : withUnit(shownValue(c, fmt), c), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(fmt(c.limit, c.dec), c)}`, out(c).text]);
   B.push({ t: 'grid', head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res')], widths: [0.52, 0.16, 0.16, 0.16], align: ['l', 'r', 'r', 'l'], statusCol: 3,
     rows: checks.map(row),
     status: checks.map((c) => out(c).status) });

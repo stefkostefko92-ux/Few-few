@@ -4,14 +4,16 @@
 // Italian, like the drawings. Pure.
 import appIt from '../../../messages/it.json';
 import type { Machine } from '@/calc/types';
-import { isUpperLimit } from '@/shaft/checks';
+import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { PROFILES } from '@/shaft/profiles';
 import { profileOf, supportOf } from '@/shaft/support';
 import { beamChecks } from '@/shaft/support-check';
+import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf } from '../lift/collaudo';
 import { ADEMPIMENTI } from '../lift/norme-collaudo';
 import { cablesMass, ropeLength } from '../lift/support';
+import type { Plant } from '../plant';
 import { makeFmt } from '../present/tr';
 import { collaudoNote, partiText } from '../report/collaudo';
 import type { RoomDerived } from '../room/derive';
@@ -68,6 +70,24 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
   ];
 };
 
+/** The load on the machine's support and on the slab as sheet 1 counts it — the machine with its frame (the maker's
+ *  bedplate counted when the data do not give it), the ropes and the cables, the dynamic coefficient, as a whole design's
+ *  sheet counts them; the data of the installation may change the mass and the coefficient — and the checks of the
+ *  room, of the machine in it and of the drops, the beams again at this load: the sheet and the relazione tecnica print
+ *  the same. */
+export function surveyLoad(d: RoomDerived, Pl: Plant) {
+  const { ctx, res } = d.analysis, { I, N } = ctx, rf = d.M.rinvio;
+  const ropesKg = N.n * N.qf * ropeLength(I), cablesKg = cablesMass(I.H, Pl.massCables);
+  const bedplate = rf?.on === 'frame' ? rf.maker?.mass ?? 0 : 0, machine = Pl.massMachine ?? N.mass + bedplate, dyn = Pl.dynFactor ?? KV_VERT.dynFactor;
+  const ld = loads({
+    P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r, carRailQ: 0, carRailLen: 0, cwRailQ: 0, cwRailLen: 0,
+    safetyGear: Pl.safetyGear ?? 'progressive', dyn, carBuffers: 1, cwBuffers: 1, governor: Pl.governorLoad ?? null,
+  });
+  const beams = d.G ? beamChecks(d.G, { machine, static: ld.static, dyn }) : [];
+  const checks: ShaftCheck[] = [...d.checks.filter((c) => c.id !== 'm_beam' && c.id !== 'm_beamf'), ...beams];
+  return { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks };
+}
+
 export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: number): SurveySheet {
   const { ctx, res } = d.analysis, { I, N } = ctx, Pl = x.plant, C = x.collaudo, s = x.survey, R = s.room, M = d.M;
   const base: Row[] = [
@@ -99,14 +119,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ...(M.Dp > 0 && G ? [['PULEGGIA DI RINVIO Ø - h - dx', 'mm', `${mm(M.Dp)} - ${mm(M.h)} - ${mm(G.pulleyAt - G.sheaveAt)}`] as Row] : []),
     ...(rf ? [['ASSE DEL RINVIO SUL PAVIMENTO', 'mm', mm(G ? G.pulleyZ : rf.pulleyAxis)] as Row] : []),
   ];
-  // the load on the support and on the slab: the machine with its bedframe (the maker's bedplate counted when the
-  // data do not give it), the ropes and the cables, the dynamic coefficient, as a whole design's sheet counts them
-  const ropesKg = N.n * N.qf * ropeLength(I), cablesKg = cablesMass(I.H, Pl.massCables);
-  const bedplate = rf?.on === 'frame' ? rf.maker?.mass ?? 0 : 0, machine = Pl.massMachine ?? N.mass + bedplate, dyn = Pl.dynFactor ?? KV_VERT.dynFactor;
-  const ld = loads({
-    P: I.P, Q: I.Q, Mcw: res.Mcw, ropes: ropesKg, cables: cablesKg, machine, roping: I.r, carRailQ: 0, carRailLen: 0, cwRailQ: 0, cwRailLen: 0,
-    safetyGear: Pl.safetyGear ?? 'progressive', dyn, carBuffers: 1, cwBuffers: 1, governor: Pl.governorLoad ?? null,
-  });
+  const { ropesKg, cablesKg, bedplate, machine, dyn, ld, checks: all } = surveyLoad(d, Pl);
   const loadRows: SurveySheet['loads'] = [
     ['FUNI', fmt(ropesKg, 0), 'kg'],
     ['CAVI FLESSIBILI', fmt(cablesKg, 0), 'kg'],
@@ -120,16 +133,13 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     ['P3 ATTACCO FUNI CONTRAPPESO', ld.P[2] == null ? '—' : fmt(ld.P[2], 0)], ['P4 LIMITATORE', ld.P[3] == null ? '—' : fmt(ld.P[3], 0)],
     ['P9 TOTALE SUL SOLAIO', fmt(ld.P[8] ?? 0, 0)],
   ];
-  // the checks of the room, of the machine in it and of the drops; the beams again at this sheet's load
-  const beams = G ? beamChecks(G, { machine, static: ld.static, dyn }) : [];
-  const all = [...d.checks.filter((c) => c.id !== 'm_beam' && c.id !== 'm_beamf'), ...beams];
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
   const withUnit = (v: number | null, dp: number, u: string): string => (v == null ? '—' : `${fmt(v, dp)}${u ? ` ${u}` : ''}`);
   const checks: SurveySheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
     const outcome = ambitoOf(C, c.id) === 'existing' ? 'ESISTENTE' : OUTCOME[c.status];
     if (c.id === 'm_door') return [label.replace(', margine', ''), `${R.doorW} × ${R.doorH} mm`, `≥ ${KV_VERT.doorMinW} × ${KV_VERT.doorMinH} mm`, outcome];
-    return [label, withUnit(c.value, c.dec, c.unit), c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
+    return [label, c.value == null ? '—' : `${shownValue(c, fmt)}${c.unit ? ` ${c.unit}` : ''}`, c.limit == null ? '—' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${withUnit(c.limit, c.dec, c.unit)}`, outcome];
   });
   const notes: Note[] = [
     { ...roomNote(false), tag: 'NOTA 1' },

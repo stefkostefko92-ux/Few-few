@@ -12,6 +12,7 @@ import type { Edit } from '@/drawing';
 import { screenView, type ScreenView } from '@/lib/tavole/views';
 import { checkedInputs, editShaft } from '@/lib/shaft-edit';
 import { editValue, layout, valueOf, type MachineSpec, type ShaftInputs } from '@/shaft';
+import DrawingFigure from '../drawing/DrawingFigure';
 import EditableDrawing, { type Refusal } from '../drawing/EditableDrawing';
 import { useEditTexts } from './edit-texts';
 import PlanFixes from './PlanFixes';
@@ -60,10 +61,9 @@ export default function PlanEditor({ I, onChange, machine, onCalc, id, titleAs: 
         ))}
       </div>
       {v ? (
-        <figure className="sheet-view">
+        <DrawingFigure className="sheet-view" w={v.w} h={v.h} label={t(`ed_v_${shown.replace('-', '_')}`)} caption={<>{t('scale', { n: v.scale })} · {t('ed_count', { n: v.hits.length })}</>}>
           <EditableDrawing shapes={v.shapes} w={v.w} h={v.h} hits={v.hits} id={`${id}-${shown}`} label={t(`ed_v_${shown.replace('-', '_')}`)} manual={manual} onEdit={onEdit} texts={texts} />
-          <figcaption>{t('scale', { n: v.scale })} · {t('ed_count', { n: v.hits.length })}</figcaption>
-        </figure>
+        </DrawingFigure>
       ) : <p className="note">{t('ed_none')}</p>}
       <PlanFixes I={I} L={L} name={(k) => texts.nameOf(`plan.${k}`)} onChange={onChange} check={(next) => checkedInputs(next, I)} refused={texts.refused} />
     </div>

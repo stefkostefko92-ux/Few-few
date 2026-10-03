@@ -39,6 +39,19 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
       ok('DPR 162/1999, All. V 3.3 (All. VIII 4)', 'prove dell\'organismo notificato: funzionamento a vuoto e a pieno carico, in mancanza di energia, prova statica a 1,25 volte la portata e controllo che non restino deformazioni'),
       ok('DPR 162/1999, All. VIII 3 e), g), h)', 'documentazione tecnica con i risultati dei calcoli di progetto, le relazioni sulle prove e l\'elenco delle norme armonizzate applicate, anche in parte'),
       ok('Regolamento (UE) 2023/1230, art. 51 par. 2', 'per gli ascensori dichiarati conformi dal 20/01/2027: requisiti dell\'All. III del Regolamento macchine (tra cui 1.1.9 e 1.2.1), con una valutazione aggiuntiva per i requisiti nuovi o cambiati'),
+      // in sito, in our words (EN 81-50 from the public extract of the text; the others from secondary sources: Otis and
+      // KONE notes on EN 81-20/50, research chapter 16)
+      ok('UNI EN 81-50:2020, 5.12.1 e 5.12.2.1', 'il metodo del coefficiente di sicurezza delle funi vale solo per pulegge di acciaio o ghisa e funi d\'acciaio secondo EN 12385-5; la flessione è semplice se il raggio della gola non supera 0,53 volte il diametro della fune: rilevare il materiale della puleggia e il raggio delle gole'),
+      dv('UNI EN 81-20:2020, 5.6.2 (sottoclausola da verificare)', 'il limitatore di velocità fa intervenire il paracadute entro 250 mm di corsa verso il basso della cabina o del contrappeso'),
+      dv('UNI EN 81-20:2020, 5.8 (sottoclausola da verificare)', 'ammortizzatori: decelerazione di picco non oltre 6 g per tempi sotto 0,04 s (dato del fornitore)'),
+      dv('UNI EN 81-20:2020, 5.2.5.5.1', 'sullo schermo del contrappeso un cartello con le distanze di progetto sotto l\'ammortizzatore, per la regolazione e la rifunatura'),
+      dv('UNI EN 81-20:2020, 5.2.2 (sottoclausola da verificare)', 'fossa più profonda di 2,50 m: porta di accesso alla base; fino a 2,50 m la scala di accesso come la definisce la norma'),
+      dv('UNI EN 81-20:2020, 5.2.1.5 (sottoclausola da verificare)', 'in fossa una pulsantiera di ispezione per comandare l\'ascensore, vicino agli spazi di rifugio'),
+      dv('UNI EN 81-20:2020, 5.2.5.7 e 5.2.5.8', 'un rifugio per ogni persona che lavora in quella zona, tutti dello stesso tipo, con un cartello che dice quale'),
+      dv('UNI EN 81-20:2020, 5.2.1.4.1', 'illuminazione del vano: almeno 50 lux a 1 m sopra il tetto della cabina nella sua proiezione e a 1 m sopra il fondo della fossa dove si sta o si lavora; almeno 20 lux altrove'),
+      dv('UNI EN 81-20:2020, 5.4.10 (sottoclausola da verificare)', 'illuminazione in cabina almeno 100 lux; illuminazione di emergenza di 5 lux per un\'ora in cabina e sul tetto della cabina'),
+      dv('UNI EN 81-20:2020, 5.4.4 (sottoclausola da verificare)', 'materiali della cabina secondo EN 13501-1: pavimento Cfl-s2, pareti C-s2,d1, soffitto C-s2,d0'),
+      dv('UNI EN 81-20:2020, 5.3 (sottoclausola da verificare)', 'porte con le trattenute dei pannelli e la prova d\'urto; protezione a cortina di luce (le fotocellule singole non bastano); la porta di cabina non si apre dall\'interno fuori dalla zona di sblocco'),
     ],
   },
   '10411-1': {
@@ -47,7 +60,10 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
   },
   '10411-11': {
     ambiti: [], citazione: 'norma nazionale volontaria, in vigore dal 31/10/2024 (sostituisce UNI 10411-3:2016 e 10411-5:2017); il DPR 162/1999 non la richiama',
-    punti: [ok('UNI 10411-11:2024, scopo', 'ascensori elettrici a frizione conformi alla Direttiva Ascensori; esclude le modifiche che cambiano le misure antincendio (valgono il DM 15/09/2005 o il Codice V.3)')],
+    punti: [
+      ok('UNI 10411-11:2024, scopo', 'ascensori elettrici a frizione conformi alla Direttiva Ascensori; esclude le modifiche che cambiano le misure antincendio (valgono il DM 15/09/2005 o il Codice V.3)'),
+      dv('UNI EN 81-20:2020, 5.6.6 e 5.6.7', 'cambiando la macchina: se la protezione contro il movimento incontrollato della cabina o contro la velocità eccessiva in salita usava il freno della macchina, la combinazione certificata decade; serve un elemento di arresto certificato per la nuova macchina, con il certificato e i suoi limiti nella documentazione'),
+    ],
   },
   'en81-21': {
     ambiti: NEW, citazione: D2023,

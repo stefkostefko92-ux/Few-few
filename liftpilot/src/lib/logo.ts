@@ -1,9 +1,10 @@
 // A company logo as uploaded: PNG or JPEG recognised by its magic bytes (never by the name or the declared type), at
 // most 300 KB, with sensible dimensions read from the image header. Nothing else is accepted: the bytes end up in
-// the PDF of the drawing sets and in data: URIs of the previews.
+// the PDF of the drawing sets and in data: URIs of the previews. The pixels are bounded too: a small file can hold a
+// huge flat image, which the renderers decode whole (a 6000 × 6000 PNG of 150 KB takes about half a gigabyte).
 
 export const LOGO_MAX_BYTES = 300 * 1024;
-const MIN_SIDE = 16, MAX_SIDE = 6000;
+const MIN_SIDE = 16, MAX_SIDE = 4000, MAX_PIXELS = 4_000_000;
 
 export type LogoMime = 'image/png' | 'image/jpeg';
 
@@ -50,6 +51,14 @@ export function readLogo(b: Uint8Array): LogoInfo | null {
   } else return null;
   if (!size) return null;
   const [width, height] = size;
-  if (width < MIN_SIDE || height < MIN_SIDE || width > MAX_SIDE || height > MAX_SIDE) return null;
+  if (width < MIN_SIDE || height < MIN_SIDE || width > MAX_SIDE || height > MAX_SIDE || width * height > MAX_PIXELS) return null;
   return { mime, width, height };
+}
+
+/** A stored logo as the documents may embed it: one that passes today's rules (an older upload above the bounds is
+ *  left out of the document rather than decoded). */
+export function usableLogo(l: { mime: string; data: Uint8Array } | null | undefined): { mime: LogoMime; data: Uint8Array } | null {
+  if (!l) return null;
+  const info = readLogo(l.data);
+  return info && info.mime === l.mime ? { mime: info.mime, data: l.data } : null;
 }

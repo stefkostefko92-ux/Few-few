@@ -10,6 +10,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
 import { KL, collaudoOf, deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { withPitches, type BracketPitches } from '@/shaft/brackets';
 import { deflectorInputs, liftCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
@@ -48,6 +49,8 @@ interface Props {
   api?: Ref<WorkspaceApi>;
   /** the company's prices [cents by key] for whoever may see them; null: none shown */
   prices: Readonly<Record<string, number>> | null;
+  /** the bracket pitches of the installation's data: the list and the 3D count with them (as sheet 1) */
+  pitches?: BracketPitches;
 }
 
 /** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
@@ -70,7 +73,7 @@ export interface WorkspaceApi {
   edit(e: Edit, length: number): Refusal | null;
 }
 
-export default function LiftWorkspace({ projectId, initial, onDerived, api, prices }: Props) {
+export default function LiftWorkspace({ projectId, initial, onDerived, api, prices, pitches }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -82,7 +85,11 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api, pric
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, startSaving] = useTransition();
   const deferred = useDeferredValue(inp);
-  const derived = useMemo(() => deriveLift(deferred), [deferred]);
+  const car = pitches?.car, cw = pitches?.cw;
+  const derived = useMemo(() => {
+    const d = deriveLift(deferred);
+    return { ...d, layout: withPitches(d.layout, { car, cw }) };
+  }, [deferred, car, cw]);
   // the advice verifies every model of SICOR and Montanari with the inputs as they settle; with direct pull also with
   // the diverting pulley, for when no machine takes the sheave of the rope drop
   const evaluate = useCallback((m: AdviceModel) => liftCandidate(deferred, m), [deferred]);

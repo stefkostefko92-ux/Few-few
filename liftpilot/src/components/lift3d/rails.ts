@@ -69,7 +69,7 @@ export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group
       const [p, q] = [F.plan(a0, c0), F.plan(a1, c1)];
       B.box(p[0], p[1], za, q[0], q[1], zb, M.galv);
     };
-    const brackets = bracketHeights(z0, z1, type);
+    const brackets = bracketHeights(z0, z1, type, r.kind === 'car' ? L.carBracketPitch : L.cwBracketPitch);
     // the fishplates behind the joints (the brackets keep clear of them)
     for (const j of joints) fishplate(B, M, RF, type, j, galv);
     // a counterweight rail on Panev's supports (staffe.ts) when the design takes them and one fits; otherwise the plate
@@ -102,7 +102,7 @@ export function buildRails(L: Layout, S: Section, M: LiftMaterials): THREE.Group
   }
   if (L.bridge) {
     const bridge = L.bridge;
-    for (const z of bracketHeights(z0, z1, I.cwRail)) B.box(bridge.x - 40, bridge.y0, z, bridge.x + 40, bridge.y1, z + 120, M.steel);
+    for (const z of bracketHeights(z0, z1, I.cwRail, L.cwBracketPitch)) B.box(bridge.x - 40, bridge.y0, z, bridge.x + 40, bridge.y1, z + 120, M.steel);
   }
   B.into(g);
   return g;

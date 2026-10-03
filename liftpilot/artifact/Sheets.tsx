@@ -6,6 +6,7 @@ import type { Edit } from '@/drawing';
 import { valueMarks, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { buildTavole } from '@/lib/tavole/build';
 import { valueOf } from '@/shaft';
+import DrawingFigure from '@/components/drawing/DrawingFigure';
 import EditableDrawing, { type Refusal } from '@/components/drawing/EditableDrawing';
 import { useEditTexts } from '@/components/shaft/edit-texts';
 
@@ -37,11 +38,10 @@ export default function Sheets({ inputs, derived, lead, onEdit }: Props) {
         ))}
       </nav>
       {sheet ? (
-        <figure className="sheet-page">
+        <DrawingFigure className="sheet-page" w={sheet.w} h={sheet.h} label={t('sheet', { n, total })} caption={t('sheet', { n, total })}>
           <EditableDrawing shapes={sheet.shapes} w={sheet.w} h={sheet.h} id={`ar-sheet-${n}`} label={t('sheet', { n, total })} hits={hits[n - 1] ?? []} fit="width"
             manual={(e) => e.key.startsWith('plan.') && valueOf(inputs.shaft, e.key) !== null} onEdit={onEdit} texts={texts} />
-          <figcaption className="note">{t('sheet', { n, total })}</figcaption>
-        </figure>
+        </DrawingFigure>
       ) : null}
     </section>
   );

@@ -9,6 +9,7 @@ import { getProject } from '@/server/queries';
 import { visiblePrices } from '@/server/prices';
 import ShaftDesigner from '@/components/shaft/ShaftDesigner';
 import Crumbs from '@/components/Crumbs';
+import { pitchesOf } from '@/lib/plant';
 
 export async function generateMetadata() {
   const t = await getTranslations('shaft');
@@ -36,7 +37,7 @@ export default async function ShaftNewPage({ params, searchParams }: { params: P
           <p className="lead">{t('newLead')}</p>
         </div>
       </div>
-      <ShaftDesigner projectId={p.id} initial={parsed?.success ? parsed.data : defaultInputs(1600, 1750)} prices={await visiblePrices(user)} />
+      <ShaftDesigner projectId={p.id} initial={parsed?.success ? parsed.data : defaultInputs(1600, 1750)} prices={await visiblePrices(user)} pitches={pitchesOf(p.plant)} />
     </main>
   );
 }

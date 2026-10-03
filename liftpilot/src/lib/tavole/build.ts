@@ -10,6 +10,7 @@ import type { MachineSpec, RoomGeo } from '@/shaft/machine-room';
 import type { PlanLevel } from '@/shaft/plan-view';
 import type { SectionKind } from '@/shaft/section-dims';
 import type { Layout } from '@/shaft/types';
+import { withPitches } from '@/shaft/brackets';
 import { analyse, type Analysis } from '../present/analysis';
 import { dataSheet, type Mismatch } from './data';
 import { dataSheetShapes } from './datasheet';
@@ -133,7 +134,7 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
 
 export function buildTavole(x: TavoleInput): TavoleResult {
   // the counterweight brackets' pitch the data declare: the plan's codes count as sheet 1 does
-  const L: Layout = x.plant.cwBracketPitch ? { ...x.layout, cwBracketPitch: x.plant.cwBracketPitch } : x.layout, a: Analysis = analyse(x.values), list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom'), pages = list.length + 1, M = machineOf(a, x.plant, L, x.marks?.catalog ?? null);
+  const L: Layout = withPitches(x.layout, { car: x.plant.carBracketPitch, cw: x.plant.cwBracketPitch }), a: Analysis = analyse(x.values), list = specs(L, L.inputs.room !== null && a.ctx.I.layout !== 'bottom'), pages = list.length + 1, M = machineOf(a, x.plant, L, x.marks?.catalog ?? null);
   const [l1, l2] = placeLines(x.project), last = x.set.revisions[x.set.revisions.length - 1];
   const meta = (page: number): SheetMeta => ({
     number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',

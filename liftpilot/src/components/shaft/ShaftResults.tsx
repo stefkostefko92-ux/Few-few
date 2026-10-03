@@ -1,6 +1,6 @@
 // The proposal of a shaft design: the car, its load and persons, the area against the one the load admits, and the
 // checks with their values and limits. No state: used by the designer and by the page of a saved design.
-import { isUpperLimit, type Layout } from '@/shaft';
+import { isUpperLimit, shownValue, type Layout } from '@/shaft';
 
 export interface ResultTexts {
   t(key: string, values?: Record<string, string | number>): string;
@@ -27,7 +27,7 @@ export default function ShaftResults({ L, texts }: { L: Layout; texts: ResultTex
             return (
               <tr key={c.id}>
                 <th scope="row">{t(`c_${c.id}`)}</th>
-                <td className="num">{c.value === null ? '—' : `${fmt(c.value, c.dec)}${unit}`}</td>
+                <td className="num">{c.value === null ? '—' : `${shownValue(c, fmt)}${unit}`}</td>
                 <td className="num note">{limit}</td>
                 <td><span className={`status-pill ${c.status}`}>{t(`st_${c.status}`)}</span></td>
               </tr>

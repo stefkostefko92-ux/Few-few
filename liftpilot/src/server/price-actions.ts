@@ -12,7 +12,7 @@ import { rateLimit } from '@/lib/ratelimit';
 import { PRICE_ARTICLES } from '@/lib/prices/articles';
 import { parseCents } from '@/lib/prices/cost';
 import { CUSTOM_MAX, customRowSchema } from '@/lib/prices/custom';
-import { str, type FormState } from './form';
+import { entry, sent as wasSent, str, type FormState } from './form';
 
 export async function savePricesAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const me = await getSessionUser();
@@ -21,7 +21,7 @@ export async function savePricesAction(_prev: FormState, fd: FormData): Promise<
   const l = str(fd, 'locale'), locale = isLocale(l) ? l : DEFAULT_LOCALE;
   const typed = new Map<string, number | null>(), bad: string[] = [];
   for (const a of PRICE_ARTICLES) {
-    const raw = fd.get(`p:${a.key}`);
+    const raw = entry(fd, `p:${a.key}`);
     if (typeof raw !== 'string') continue;
     const cents = parseCents(raw.slice(0, 32), locale);
     if (cents === undefined) bad.push(a.key);
@@ -31,7 +31,7 @@ export async function savePricesAction(_prev: FormState, fd: FormData): Promise<
   // the free lines in their order: a row left empty is dropped; a form without them (a page from before they existed)
   // leaves them as they are
   const rows: { text: string; cents: number; basis: 'LOT' | 'STOP' | 'TRAVEL'; scope: 'ALL' | 'FULL' | 'REPLACEMENT' }[] = [];
-  const sent = fd.has('c:count'), count = Math.min(CUSTOM_MAX, Math.max(0, Math.trunc(Number(str(fd, 'c:count')) || 0)));
+  const sent = wasSent(fd, 'c:count'), count = Math.min(CUSTOM_MAX, Math.max(0, Math.trunc(Number(str(fd, 'c:count')) || 0)));
   for (let i = 0; i < count; i++) {
     const text = str(fd, `c:${i}:text`).slice(0, 200), price = str(fd, `c:${i}:price`).slice(0, 32);
     if (!text.trim() && !price.trim()) continue;

@@ -21,6 +21,7 @@ import { buildSurveyTavole } from '@/lib/tavole/survey-build';
 import type { SurveyTavoleInput } from '@/lib/tavole/survey-input';
 import { tavoleHash } from '@/lib/tavole-hash';
 import type { ComposeError } from './drawing-compose';
+import { usableLogo } from '@/lib/logo';
 
 type Tx = Prisma.TransactionClient;
 type Logo = { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null;
@@ -41,7 +42,8 @@ export interface RoomComposed {
   pages: number;
 }
 
-const logoOf = (l: { mime: string; data: Uint8Array } | null): Logo => (l && (l.mime === 'image/png' || l.mime === 'image/jpeg') ? { mime: l.mime, data: l.data } : null);
+// a logo the renderers may decode (lib/logo.ts: type and pixels checked again, an older oversized upload left out)
+const logoOf = (l: { mime: string; data: Uint8Array } | null): Logo => usableLogo(l);
 
 /** A saved room and its calculation, both reproduced by the running engines: the values, the survey, the standards. */
 export function reproduceRoomRecord(r: { inputs: unknown; sha256: string }, c: { inputs: unknown; sha256: string; collaudo: unknown }):

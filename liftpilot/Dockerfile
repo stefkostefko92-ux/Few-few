@@ -22,7 +22,8 @@ ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 PYTHON_BIN=python3 REPORT_FON
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 python3-reportlab python3-pil fonts-dejavu-core \
   && rm -rf /var/lib/apt/lists/*
-COPY --from=build --chown=node:node /app/node_modules ./node_modules
+# the dependencies belong to root (the application only reads them); .next to the application, as Next.js writes its cache
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/prisma ./prisma

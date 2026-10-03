@@ -19,9 +19,10 @@ const failsOnceApplied = (V: FormValues, o: SizingOption): string[] => {
 test('esempio B: con le funi esistenti una proposta per ogni puleggia, tutte 4 × Ø11', () => {
   const c = readInputs(PRESETS.B), s = sizeMachine(c.I, c.N, c.fixedD, c.rope);
   assert.deepEqual(c.rope && [c.rope.n, c.rope.d], [4, 11]);
-  assert.deepEqual(s.options.map((o) => o.D), [520, 560, 600, 640, 680, 720, 760, 800]);
+  // β 98° between the table's 95° and 100°: N_equiv(t) interpolated (8,68), as UNI EN 81-50:2020 5.12.2.2 allows
+  assert.deepEqual(s.options.map((o) => o.D), [480, 520, 560, 600, 640, 680, 720, 760, 800]);
   assert.ok(s.options.every((o) => o.n === 4 && o.d === 11));
-  assert.equal(s.pick?.D, 520);
+  assert.equal(s.pick?.D, 480);
   assert.deepEqual(s.pick?.groove, { type: 'UU', beta: 98, gamma: 35 });
   for (const o of s.options) assert.deepEqual(failsOnceApplied(PRESETS.B, o), [], `D ${o.D}`);
 });

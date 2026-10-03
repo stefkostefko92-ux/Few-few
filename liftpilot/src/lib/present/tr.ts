@@ -44,7 +44,8 @@ export function makeFmt(intlLocale: string): Fmt {
       f = new Intl.NumberFormat('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec, useGrouping: false });
       formats.set(dec, f);
     }
-    const plain = f.format(x), sign = plain.startsWith('-') ? '-' : '';
+    // a value that rounds to zero is zero, never "-0"
+    const plain = f.format(x), sign = plain.startsWith('-') && /[1-9]/.test(plain) ? '-' : '';
     const [int = '', frac] = plain.slice(sign.length).split('.');
     const grouped = int.length >= 3 + sep.minGroup ? int.replace(/\B(?=(\d{3})+$)/g, sep.group) : int;
     return `${sign}${grouped}${frac ? sep.dec + frac : ''}`;

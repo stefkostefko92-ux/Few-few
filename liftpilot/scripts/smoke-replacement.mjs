@@ -23,14 +23,14 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   await hydrated(page, save);
   // the example room is replaced with the measures: a higher room, the existing drops as measured
   await page.locator('section[aria-labelledby="room-fields"] input[type="number"]').nth(4).fill('2700');
-  await page.waitForSelector('figure.sheet-view svg');
+  await page.waitForSelector('figure.sheet-view .draw-stage svg');
   assert.equal(await page.locator('main .alert-bad').count(), 0, 'nothing stops the survey');
   assert.match(await page.textContent('section[aria-labelledby="room-checks"]'), /Calate della nuova macchina/, 'the drops checked');
   await page.fill('section[aria-labelledby="room-save"] input', 'Rilievo di prova');
   await Promise.all([page.waitForURL(/\/room-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click(save)]);
   const roomUrl = page.url(), roomId = roomUrl.split('/').pop();
   assert.equal(await page.locator('main > .alert-warn').count(), 0, 'the running engines reproduce the machine room');
-  assert.equal(await page.locator('figure.sheet-view svg').count(), 2, 'plan and section of the machine room');
+  assert.equal(await page.locator('figure.sheet-view .draw-stage svg').count(), 2, 'plan and section of the machine room');
 
   step('replacement: relazione tecnica, drawing set draft, DXF and DWG');
   for (const [format, magic] of [['relazione', '%PDF-'], ['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015']]) {

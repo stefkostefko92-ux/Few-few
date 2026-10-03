@@ -5,6 +5,7 @@
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import { bufferPlan, bufferType, type BufferType, type Layout } from '@/shaft';
+import { bufferFoot } from '@/shaft/pit';
 import type { Section } from '@/shaft/section';
 import { Batch, P } from './geom';
 import { coil } from './sling';
@@ -30,7 +31,8 @@ export function buildBuffers(L: Layout, S: Section, M: LiftMaterials, carSpots: 
   const plungerGeo = new THREE.CylinderGeometry(0.028, 0.028, 1, 24).translate(0, -0.5, 0);
   const one = (x: number, y: number, base: number, h: number, car: boolean, type: BufferType): void => {
     if (base > 0) {
-      B.box(x - 150, y - 150, z0, x + 150, y + 150, z0 + 12, M.steel);
+      const f = bufferFoot(base);
+      B.box(x - f, y - f, z0, x + f, y + f, z0 + 12, M.steel);
       B.box(x - 125, y - 125, z0 + 12, x + 125, y + 125, z0 + base - 12, M.hazard);
       B.box(x - 140, y - 140, z0 + base - 12, x + 140, y + 140, z0 + base, M.steel);
     }

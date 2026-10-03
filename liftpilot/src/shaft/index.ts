@@ -2,7 +2,7 @@
 // their checks, as numbers and as model entities for the drawing kernel. No I/O, no framework: it runs in the browser
 // and on the server.
 export { layout, defaultInputs, verdictOf, counterweightSide } from './layout';
-export { isUpperLimit } from './checks';
+export { decimalsShown, isUpperLimit, shownValue } from './checks';
 export { maxArea, loadForArea, passengers } from './area';
 export { SHAFT_ENGINE_VERSION, shaftSnapshot, projectLayout } from './snapshot';
 export type { ShaftSnapshot } from './snapshot';
@@ -11,7 +11,7 @@ export type { Allowance, CostanteVano, GruppoVano, VoceVano } from './norme';
 export { KV_VERT, VOCI_VERT, COSTANTI_VERT } from './norme-vert';
 export type { CostanteVert } from './norme-vert';
 export { FISHPLATES, GENERIC_BRACKET, RAILS, RAIL_TYPES, railClip, railLabel } from './rails';
-export { RAIL_LENGTH, bracketCount, bracketHeights, railSpan } from './brackets';
+export { RAIL_LENGTH, bracketCount, bracketHeights, railSpan, withPitches, type BracketPitches } from './brackets';
 export { NO_HEAD, hasHead, headBox, headCheck, headClearances, headOf, mainBox, type WallBox } from './head';
 export type { Fishplate, RailClip, RailSize, RailType } from './rails';
 export { DEFAULT_FLOORS, DEFAULT_VERTICAL, levels, travel } from './vertical';
