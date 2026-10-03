@@ -13,11 +13,13 @@ import {
   issueEmailToken,
   peekEmailToken,
   recentTokenCount,
+  revokeEmailTokens,
 } from '../auth/tokens.js';
 import { generateTotpSecret, otpauthUrl, verifyTotp } from '../auth/totp.js';
 import { isLocale, type Locale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import {
+  greetingName,
   mailChangeEmail,
   mailEmailChangeNotice,
   mailPasswordChanged,
@@ -25,6 +27,7 @@ import {
   mailTwoFactor,
 } from '../mail/templates.js';
 import { claimTotpStep, customerActor, emailSchema, newPasswordProblem } from './auth-common.js';
+import { reauthFailed } from './lockout.js';
 import { markEmailVerified } from './registration.js';
 
 const HOUR = 60 * 60 * 1000;
@@ -59,8 +62,10 @@ export async function changePassword(
   sessionId: string,
   meta: RequestMeta,
 ): Promise<PasswordChange> {
-  if (!(await verifyPassword(current, user.passwordHash)))
+  if (!(await verifyPassword(current, user.passwordHash))) {
+    await reauthFailed(user, meta);
     return { ok: false, key: 'flash.wrongPassword' };
+  }
   const problem = await newPasswordProblem(next, [user.email, user.name]);
   if (problem) return { ok: false, key: problem };
   await prisma.user.update({
@@ -68,12 +73,14 @@ export async function changePassword(
     data: { passwordHash: await hashPassword(next) },
   });
   await destroyAllSessions(user.id, sessionId);
+  // връзка за нова парола или за смяна на имейла, поискана преди това, вече не върши работа
+  await revokeEmailTokens(user.id, ['RESET_PASSWORD', 'CHANGE_EMAIL']);
   await audit(customerActor(user, meta), {
     action: 'auth.password.changed',
     targetType: 'user',
     targetId: user.id,
   });
-  void mailPasswordChanged(user.email, localeOf(user), user.name);
+  void mailPasswordChanged(user.email, localeOf(user), greetingName(user));
   return { ok: true };
 }
 
@@ -85,7 +92,7 @@ export async function requestPasswordReset(rawEmail: string, meta: RequestMeta):
   if (!user || user.bannedAt) return;
   if ((await recentTokenCount(user.id, 'RESET_PASSWORD', HOUR)) >= 3) return;
   const token = await issueEmailToken(user.id, 'RESET_PASSWORD');
-  void mailResetPassword(user.email, localeOf(user), user.name, token);
+  void mailResetPassword(user.email, localeOf(user), greetingName(user), token);
   await audit(customerActor(user, meta), {
     action: 'auth.reset.requested',
     targetType: 'user',
@@ -117,12 +124,13 @@ export async function resetPassword(
   });
   await markEmailVerified(user, meta);
   await destroyAllSessions(user.id);
+  await revokeEmailTokens(user.id);
   await audit(customerActor(user, meta), {
     action: 'auth.password.reset',
     targetType: 'user',
     targetId: user.id,
   });
-  void mailPasswordChanged(user.email, localeOf(user), user.name);
+  void mailPasswordChanged(user.email, localeOf(user), greetingName(user));
   return { ok: true };
 }
 
@@ -168,7 +176,7 @@ export async function confirmTotp(
     targetType: 'user',
     targetId: user.id,
   });
-  void mailTwoFactor(user.email, localeOf(user), user.name, true);
+  void mailTwoFactor(user.email, localeOf(user), greetingName(user), true);
   return codes;
 }
 
@@ -182,9 +190,14 @@ export async function disableTotp(
   meta: RequestMeta,
 ): Promise<TotpDisable> {
   if (isStaff(user.role)) return { ok: false, key: 'flash.staffKeeps2fa' };
-  if (!(await verifyPassword(password, user.passwordHash)))
+  if (!(await verifyPassword(password, user.passwordHash))) {
+    await reauthFailed(user, meta);
     return { ok: false, key: 'flash.wrongPassword' };
-  if (!(await checkSecondFactor(user, code))) return { ok: false, key: 'flash.wrongCode' };
+  }
+  if (!(await checkSecondFactor(user, code))) {
+    await reauthFailed(user, meta);
+    return { ok: false, key: 'flash.wrongCode' };
+  }
   await prisma.$transaction([
     prisma.user.update({
       where: { id: user.id },
@@ -197,7 +210,7 @@ export async function disableTotp(
     targetType: 'user',
     targetId: user.id,
   });
-  void mailTwoFactor(user.email, localeOf(user), user.name, false);
+  void mailTwoFactor(user.email, localeOf(user), greetingName(user), false);
   return { ok: true };
 }
 
@@ -207,7 +220,10 @@ export async function regenerateRecoveryCodes(
   meta: RequestMeta,
 ): Promise<string[] | null> {
   if (!user.totpEnabledAt) return null;
-  if (!(await checkSecondFactor(user, code))) return null;
+  if (!(await checkSecondFactor(user, code))) {
+    await reauthFailed(user, meta);
+    return null;
+  }
   const codes = await issueRecoveryCodes(user.id);
   await audit(customerActor(user, meta), {
     action: 'auth.recovery.regenerated',
@@ -228,20 +244,30 @@ export async function requestEmailChange(
   password: string,
   meta: RequestMeta,
 ): Promise<EmailChange> {
-  if (!(await verifyPassword(password, user.passwordHash)))
+  if (!(await verifyPassword(password, user.passwordHash))) {
+    await reauthFailed(user, meta);
     return { ok: false, key: 'flash.wrongPassword' };
+  }
   const email = emailSchema.safeParse(rawEmail);
   if (!email.success || email.data === user.email) return { ok: false, key: 'auth.errors.email' };
-  if ((await recentTokenCount(user.id, 'CHANGE_EMAIL', HOUR)) >= 3)
-    return { ok: false, key: 'error.tooMany' };
+  // Таванът брои ИСКАНИЯТА (одита), не пратените връзки: за зает адрес връзка не тръгва, и броят
+  // на връзките би издал кой адрес вече има акаунт.
+  const asked = await prisma.auditLog.count({
+    where: {
+      action: 'account.email.change.requested',
+      targetId: user.id,
+      at: { gte: new Date(Date.now() - HOUR) },
+    },
+  });
+  if (asked >= 3) return { ok: false, key: 'error.tooMany' };
   // Зает адрес не се издава: писмо не тръгва, но отговорът е същият.
   const taken = await prisma.user.findUnique({ where: { email: email.data } });
   if (!taken) {
     const token = await issueEmailToken(user.id, 'CHANGE_EMAIL', email.data);
-    void mailChangeEmail(email.data, localeOf(user), user.name, token);
+    void mailChangeEmail(email.data, localeOf(user), token);
   }
   // Старият адрес научава винаги — смяна с откраднатата парола не минава тихо.
-  void mailEmailChangeNotice(user.email, localeOf(user), user.name, email.data);
+  void mailEmailChangeNotice(user.email, localeOf(user), greetingName(user), email.data);
   await audit(customerActor(user, meta), {
     action: 'account.email.change.requested',
     targetType: 'user',

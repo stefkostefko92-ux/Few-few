@@ -42,9 +42,27 @@ export interface LinkedAccount {
   reasons: Array<'device' | 'hwid' | 'ip'>;
 }
 
+/** Отпечатък или IP, общ за повече акаунти от това, е твърде общ, за да свързва някого. */
+const MAX_SHARED = 10;
+const LOOKUP = MAX_SHARED + 1;
+
+/** Само стойностите, които стигат до най-много MAX_SHARED акаунта (по една справка на стойност). */
+async function rare(
+  values: string[],
+  owners: (value: string) => Promise<string[]>,
+): Promise<string[]> {
+  const out: string[] = [];
+  for (const value of values.slice(0, 50)) {
+    if (new Set(await owners(value)).size <= MAX_SHARED) out.push(value);
+  }
+  return out;
+}
+
 /**
  * Други акаунти от същото устройство (бисквитка), същия хардуерен отпечатък (HWID) или същото IP.
- * Устройството и HWID са силни сигнали за повторен тестов период; общото IP е слаб (офис, мобилен оператор).
+ * Бисквитката е силен сигнал за повторен тестов период. HWID и IP са по-слаби: еднакви телефони дават
+ * еднакъв отпечатък, мобилен оператор и офис — общо IP. Затова отпечатък или IP, общ за повече от
+ * MAX_SHARED акаунта, не свързва никого, и всяка справка е с таван.
  */
 export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
   const user = await prisma.user.findUnique({
@@ -73,20 +91,49 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
       ),
     ),
   ];
-  const prints = [
-    ...new Set(
-      [user.signupFingerprint, ...devices.map((d) => d.fingerprintHash)].filter((v): v is string =>
-        Boolean(v),
+  const prints = await rare(
+    [
+      ...new Set(
+        [user.signupFingerprint, ...devices.map((d) => d.fingerprintHash)].filter(
+          (v): v is string => Boolean(v),
+        ),
       ),
-    ),
-  ];
-  const ips = [
-    ...new Set(
-      [user.signupIp, user.lastLoginIp, ...recentIps.map((r) => r.ip)].filter((v): v is string =>
-        Boolean(v),
+    ],
+    async (fp) => [
+      ...(
+        await prisma.device.findMany({
+          where: { fingerprintHash: fp },
+          select: { userId: true },
+          distinct: ['userId'],
+          take: LOOKUP,
+        })
+      ).map((d) => d.userId),
+      ...(
+        await prisma.user.findMany({
+          where: { signupFingerprint: fp },
+          select: { id: true },
+          take: LOOKUP,
+        })
+      ).map((u) => u.id),
+    ],
+  );
+  const ips = await rare(
+    [
+      ...new Set(
+        [user.signupIp, user.lastLoginIp, ...recentIps.map((r) => r.ip)].filter((v): v is string =>
+          Boolean(v),
+        ),
       ),
-    ),
-  ];
+    ],
+    async (ip) =>
+      (
+        await prisma.user.findMany({
+          where: { OR: [{ signupIp: ip }, { lastLoginIp: ip }] },
+          select: { id: true },
+          take: LOOKUP,
+        })
+      ).map((u) => u.id),
+  );
 
   const reasons = new Map<string, Set<'device' | 'hwid' | 'ip'>>();
   const add = (id: string | null, reason: 'device' | 'hwid' | 'ip') => {
@@ -98,11 +145,13 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
     for (const d of await prisma.device.findMany({
       where: { cookieHash: { in: cookies } },
       select: { userId: true },
+      take: 200,
     }))
       add(d.userId, 'device');
     for (const u of await prisma.user.findMany({
       where: { signupDeviceHash: { in: cookies } },
       select: { id: true },
+      take: 200,
     }))
       add(u.id, 'device');
   }
@@ -110,11 +159,13 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
     for (const d of await prisma.device.findMany({
       where: { fingerprintHash: { in: prints } },
       select: { userId: true },
+      take: 200,
     }))
       add(d.userId, 'hwid');
     for (const u of await prisma.user.findMany({
       where: { signupFingerprint: { in: prints } },
       select: { id: true },
+      take: 200,
     }))
       add(u.id, 'hwid');
   }
@@ -122,6 +173,7 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
     for (const u of await prisma.user.findMany({
       where: { OR: [{ signupIp: { in: ips } }, { lastLoginIp: { in: ips } }] },
       select: { id: true },
+      take: 200,
     }))
       add(u.id, 'ip');
   }

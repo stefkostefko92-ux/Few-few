@@ -2,7 +2,7 @@ import type { Device, User } from '@prisma/client';
 import { countryName } from '../auth/geoip.js';
 import { isLocale, LOCALE_TAG, translate } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
-import { mailNewDevice } from '../mail/templates.js';
+import { greetingName, mailNewDevice } from '../mail/templates.js';
 
 /** Писмото „нов вход от непознато устройство“ — на езика на акаунта, с час по София. */
 export async function notifyNewDevice(
@@ -17,8 +17,7 @@ export async function notifyNewDevice(
     timeStyle: 'short',
     timeZone: 'Europe/Sofia',
   }).format(new Date());
-  return mailNewDevice(user.email, locale, {
-    name: user.name,
+  return mailNewDevice(user.email, locale, greetingName(user), {
     when,
     device: device.summary,
     ip: meta.ip ?? '—',

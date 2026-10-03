@@ -1,5 +1,6 @@
 <%- include('_top', { titleKey: 'auth.resetTitle' }) %>
-<h1><%= t('auth.resetTitle') %></h1>
+<h1><%= t(fromVerify ? 'auth.setPasswordTitle' : 'auth.resetTitle') %></h1>
+<% if (fromVerify && valid) { %><p><%= t('auth.setPasswordText') %></p><% } %>
 <% if (!valid) { %>
 <p><%= t('auth.errors.linkExpired') %></p>
 <div class="auth-links"><a href="/forgot"><%= t('auth.forgotLinkAgain') %></a></div>

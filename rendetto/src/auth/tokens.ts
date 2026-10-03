@@ -35,6 +35,20 @@ export async function issueEmailToken(
   return token;
 }
 
+/**
+ * Анулира чакащите връзки на акаунта. След смяна на парола или имейл връзка, пратена преди това (може
+ * би на стар или чужд адрес), не бива да върши работа.
+ */
+export async function revokeEmailTokens(
+  userId: string,
+  purposes: TokenPurpose[] = ['VERIFY_EMAIL', 'RESET_PASSWORD', 'CHANGE_EMAIL'],
+): Promise<void> {
+  await prisma.emailToken.updateMany({
+    where: { userId, purpose: { in: purposes }, usedAt: null },
+    data: { usedAt: new Date() },
+  });
+}
+
 /** Колко връзки за целта са пратени скоро — за таван срещу засипване на чужда поща. */
 export async function recentTokenCount(
   userId: string,

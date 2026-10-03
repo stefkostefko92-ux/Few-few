@@ -4,8 +4,9 @@ import { audit } from '../audit.js';
 import { prisma } from '../db.js';
 import { outranks } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
+import { revokeEmailTokens } from '../auth/tokens.js';
 import { isLocale, LOCALE_TAG, translate } from '../i18n.js';
-import { mailPlanChanged } from '../mail/templates.js';
+import { greetingName, mailPlanChanged } from '../mail/templates.js';
 import { addDays, premiumUntil, trialEndsAt } from '../plans/plan.js';
 import { optionPriceCents, TERM_OPTIONS } from '../plans/pricing.js';
 import { emailSchema, nameSchema } from './auth-common.js';
@@ -68,6 +69,8 @@ export async function editAccount(
       ...(startTrial ? { planExpiresAt: trialEndsAt(new Date()) } : {}),
     },
   });
+  // нов имейл: връзките, пратени до стария адрес, вече не вършат работа
+  if (input.email !== target.email) await revokeEmailTokens(id);
   await audit(actor, {
     action: 'admin.account.edited',
     targetType: 'user',
@@ -224,8 +227,7 @@ export async function changePlan(
       dateStyle: 'long',
       timeZone: 'Europe/Sofia',
     });
-    void mailPlanChanged(target.email, locale, {
-      name: target.name,
+    void mailPlanChanged(target.email, locale, greetingName(target), {
       plan: translate(locale, `plan.name.${input.plan}`),
       until: expiresAt ? fmt.format(expiresAt) : translate(locale, 'mail.noExpiry'),
     });

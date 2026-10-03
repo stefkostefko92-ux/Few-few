@@ -36,10 +36,12 @@ adminRouter.use(
   },
 );
 
-adminRouter.get('/admin', async (_req, res) => {
+adminRouter.get('/admin', async (req, res) => {
+  // неуспешните входове носят IP — само за роля, която вижда входовете
+  const seesLogins = can(req.principal!.user.role, 'logins:view');
   const [counts, events, chain] = await Promise.all([
     dashboardCounts(),
-    recentSecurityEvents(),
+    seesLogins ? recentSecurityEvents() : Promise.resolve([]),
     verifyAuditChain(),
   ]);
   const recent = await prisma.user.findMany({
@@ -81,7 +83,7 @@ adminRouter.get('/admin/accounts', async (req, res) => {
     dir: pick<'asc' | 'desc'>(req.query.dir, ['asc', 'desc'], 'desc'),
     page: Math.max(1, Math.min(10_000, Number.parseInt(String(req.query.page ?? '1'), 10) || 1)),
   };
-  const result = await listAccounts(query);
+  const result = await listAccounts(query, can(req.principal!.user.role, 'logins:view'));
   res.render('admin/accounts', {
     query,
     ...result,

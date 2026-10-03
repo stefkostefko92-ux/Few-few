@@ -3,11 +3,16 @@ import { audit } from '../audit.js';
 import { prisma } from '../db.js';
 import { deviceCookieHash, fingerprintHash } from '../auth/device.js';
 import { dummyHash, hashPassword, verifyPassword } from '../auth/password.js';
-import { consumeEmailToken, issueEmailToken, recentTokenCount } from '../auth/tokens.js';
+import {
+  consumeEmailToken,
+  issueEmailToken,
+  recentTokenCount,
+  revokeEmailTokens,
+} from '../auth/tokens.js';
 import { isLocale, type Locale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import { LABEL } from '../labels.js';
-import { mailAlreadyRegistered, mailVerifyEmail } from '../mail/templates.js';
+import { greetingName, mailAlreadyRegistered, mailVerifyEmail } from '../mail/templates.js';
 import { trialEndsAt } from '../plans/plan.js';
 import { customerActor, emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import type { DeviceContext } from './devices.js';
@@ -67,7 +72,7 @@ export async function registerAccount(
     });
     if (recentNotices === 0) {
       const target = isLocale(existing.locale) ? existing.locale : locale;
-      void mailAlreadyRegistered(existing.email, target, existing.name);
+      void mailAlreadyRegistered(existing.email, target, greetingName(existing));
     }
     return { ok: true };
   }
@@ -90,7 +95,7 @@ export async function registerAccount(
     data: { userId: user.id, actorLabel: LABEL.system, toPlan: 'TRIAL', note: LABEL.signup },
   });
   const token = await issueEmailToken(user.id, 'VERIFY_EMAIL');
-  void mailVerifyEmail(user.email, locale, user.name, token);
+  void mailVerifyEmail(user.email, locale, token);
   await audit(customerActor(user, meta), {
     action: 'account.registered',
     targetType: 'user',
@@ -105,13 +110,16 @@ export async function resendVerification(user: User): Promise<boolean> {
   if ((await recentTokenCount(user.id, 'VERIFY_EMAIL', HOUR)) >= 3) return false;
   const token = await issueEmailToken(user.id, 'VERIFY_EMAIL');
   const locale = isLocale(user.locale) ? user.locale : 'bg';
-  void mailVerifyEmail(user.email, locale, user.name, token);
+  void mailVerifyEmail(user.email, locale, token);
   return true;
 }
 
 /* ------------------------------ потвърждаване на имейл ------------------------------ */
 
-export type VerifyResult = { ok: true; kind: 'verified' | 'changed' } | { ok: false };
+export type VerifyResult =
+  | { ok: true; kind: 'verified' | 'changed' }
+  | { ok: true; kind: 'setPassword'; resetToken: string }
+  | { ok: false };
 
 /**
  * Отбелязва имейла като потвърден. При първото потвърждаване тръгват 30-те дни тестов период.
@@ -144,8 +152,20 @@ export async function markEmailVerified(user: User, meta: RequestMeta): Promise<
   });
 }
 
-/** Потвърждава имейла по връзката от писмото (или смяната на имейл). */
-export async function verifyEmailToken(token: string, meta: RequestMeta): Promise<VerifyResult> {
+/**
+ * Потвърждава имейла по връзката от писмото (или смяната на имейл). `deviceHash` е устройството, на което
+ * е отворена връзката.
+ *
+ * Връзката доказва пощата, не паролата. Отворена на устройство, различно от това на регистрацията,
+ * тя може да е собственикът на адреса, който намира акаунт, създаден от друг с неговия имейл
+ * (pre-hijacking): тогава паролата от регистрацията не оцелява — човекът задава своя веднага, а
+ * имейлът се потвърждава с нея.
+ */
+export async function verifyEmailToken(
+  token: string,
+  meta: RequestMeta,
+  deviceHash: string,
+): Promise<VerifyResult> {
   const change = await consumeEmailToken(token, 'CHANGE_EMAIL');
   if (change?.newEmail) {
     const taken = await prisma.user.findUnique({ where: { email: change.newEmail } });
@@ -154,6 +174,8 @@ export async function verifyEmailToken(token: string, meta: RequestMeta): Promis
       where: { id: change.userId },
       data: { email: change.newEmail },
     });
+    // връзки, пратени преди смяната (и до стария адрес), вече не вършат работа
+    await revokeEmailTokens(user.id);
     await audit(customerActor(user, meta), {
       action: 'account.email.changed',
       targetType: 'user',
@@ -165,6 +187,15 @@ export async function verifyEmailToken(token: string, meta: RequestMeta): Promis
   if (!row) return { ok: false };
   const user = await prisma.user.findUnique({ where: { id: row.userId } });
   if (!user) return { ok: false };
+  if (!user.emailVerifiedAt && user.signupDeviceHash !== deviceHash) {
+    const resetToken = await issueEmailToken(user.id, 'RESET_PASSWORD');
+    await audit(customerActor(user, meta), {
+      action: 'account.email.verify.otherDevice',
+      targetType: 'user',
+      targetId: user.id,
+    });
+    return { ok: true, kind: 'setPassword', resetToken };
+  }
   await markEmailVerified(user, meta);
   return { ok: true, kind: 'verified' };
 }

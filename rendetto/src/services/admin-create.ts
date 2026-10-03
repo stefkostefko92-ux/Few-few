@@ -6,7 +6,7 @@ import { hashPassword } from '../auth/password.js';
 import { can, outranks } from '../auth/rbac.js';
 import { issueEmailToken } from '../auth/tokens.js';
 import { isLocale } from '../i18n.js';
-import { mailResetPassword } from '../mail/templates.js';
+import { greetingName, mailResetPassword } from '../mail/templates.js';
 import { addDays, premiumUntil } from '../plans/plan.js';
 import { emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import { roleSchema } from './admin-actions.js';
@@ -83,7 +83,7 @@ export async function createAccount(actor: StaffActor, raw: unknown): Promise<Ac
   });
   if (!password) {
     const token = await issueEmailToken(user.id, 'RESET_PASSWORD');
-    void mailResetPassword(user.email, localeOf(user), user.name, token);
+    void mailResetPassword(user.email, localeOf(user), greetingName(user), token);
   }
   await audit(actor, {
     action: 'admin.account.created',

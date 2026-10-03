@@ -8,6 +8,7 @@ import { dummyHash, hashPassword, needsRehash, verifyPassword } from '../auth/pa
 import { consumeRecoveryCode } from '../auth/recovery.js';
 import { createSession, markMfaPassed, type NewSession } from '../auth/sessions.js';
 import { verifyTotp } from '../auth/totp.js';
+import { ipNetwork } from '../http/ip.js';
 import type { RequestMeta } from '../http/meta.js';
 import { claimTotpStep, customerActor, emailSchema, recordLogin } from './auth-common.js';
 import {
@@ -16,13 +17,12 @@ import {
   touchDevice,
   type DeviceContext,
 } from './devices.js';
-import { mailCodeFailures } from '../mail/templates.js';
+import { greetingName, mailCodeFailures } from '../mail/templates.js';
 import { isLocale } from '../i18n.js';
 import { notifyNewDevice } from './notify.js';
 import { resendVerification } from './registration.js';
+import { countFailure, MAX_FAILED_LOGINS } from './lockout.js';
 
-const MAX_FAILED_LOGINS = 5;
-const LOCK_MS = 15 * 60 * 1000;
 const IP_WINDOW_MS = 15 * 60 * 1000;
 const IP_MAX_FAILURES = 20;
 const MAX_MFA_FAILURES = 5;
@@ -36,41 +36,13 @@ export type LoginResult =
   | { kind: 'banned'; reason: string }
   | { kind: 'unverified'; resent: boolean };
 
-/**
- * Грешна парола или грешен код. Броячът расте атомно в базата — паралелни опити не могат да прочетат
- * една и съща стойност и да го заобиколят. На петия неуспех акаунтът се заключва за 15 минути; заключва
- * го точно една от заявките, тя пише и в одита.
- */
-async function countFailure(
-  user: User,
-  meta: RequestMeta,
-): Promise<{ count: number; locked: boolean; lockedNow: boolean }> {
-  const { failedLogins } = await prisma.user.update({
-    where: { id: user.id },
-    data: { failedLogins: { increment: 1 } },
-    select: { failedLogins: true },
-  });
-  if (failedLogins < MAX_FAILED_LOGINS)
-    return { count: failedLogins, locked: false, lockedNow: false };
-  const lock = await prisma.user.updateMany({
-    where: { id: user.id, failedLogins: { gte: MAX_FAILED_LOGINS } },
-    data: { failedLogins: 0, lockedUntil: new Date(Date.now() + LOCK_MS) },
-  });
-  if (lock.count === 1)
-    await audit(customerActor(user, meta), {
-      action: 'auth.locked',
-      targetType: 'user',
-      targetId: user.id,
-    });
-  return { count: failedLogins, locked: true, lockedNow: lock.count === 1 };
-}
-
-/** Колко неуспешни опита е имало от това IP в последните 15 минути. */
+/** Колко неуспешни опита е имало от тази мрежа (IPv4 адрес или IPv6 /64) в последните 15 минути. */
 async function ipFailures(ip: string | null): Promise<number> {
-  if (!ip) return 0;
+  const ipNet = ipNetwork(ip);
+  if (!ipNet) return 0;
   return prisma.loginEvent.count({
     where: {
-      ip,
+      ipNet,
       createdAt: { gte: new Date(Date.now() - IP_WINDOW_MS) },
       outcome: { in: ['BAD_PASSWORD', 'UNKNOWN_EMAIL', 'LOCKED', 'MFA_FAILED'] },
     },
@@ -228,7 +200,11 @@ export async function completeMfa(
         targetId: user.id,
       });
       if (account.lockedNow)
-        void mailCodeFailures(user.email, isLocale(user.locale) ? user.locale : 'bg', user.name);
+        void mailCodeFailures(
+          user.email,
+          isLocale(user.locale) ? user.locale : 'bg',
+          greetingName(user),
+        );
       return { kind: 'reset' };
     }
     return {

@@ -12,10 +12,16 @@
 ## 1. Тайните (веднъж, на сървъра)
 
 ```bash
-sudo install -d -m 700 /opt/few-few/shared/rendetto /opt/few-few/shared/rendetto/data
+sudo install -d -m 700 /opt/few-few/shared/rendetto
+# data/ е единствената папка, в която приложението пише (GeoIP базата, котвата на одита) — за uid 1000
+sudo install -d -m 700 -o 1000 -g 1000 /opt/few-few/shared/rendetto/data
 sudo install -m 600 /dev/null /opt/few-few/shared/rendetto/.env
 sudoedit /opt/few-few/shared/rendetto/.env    # по образеца .env.example
 ```
+
+Контейнерите са с файлова система само за четене, без Linux capabilities и с `no-new-privileges`
+(`docker-compose.yml`); образите са заковани по digest. Затова командите в контейнера по-долу са
+`node dist/scripts/…`, не `npm run …` — npm иска да пише в домашната папка.
 
 `ENC_KEY` и `HMAC_KEY` — `openssl rand -hex 32`, два различни. `POSTGRES_PASSWORD` — дълга случайна.
 SMTP: Brevo на порт 2525 (Hetzner блокира 25/465/587).
@@ -50,7 +56,7 @@ Entrypoint-ът чака базата и пуска `prisma migrate deploy` (н�
 ## 4. GeoIP (веднъж, после месечно)
 
 ```bash
-sudo docker compose exec -T app npm run geoip:update && sudo docker compose restart app
+sudo docker compose exec -T app node dist/scripts/geoip-update.js && sudo docker compose restart app
 ```
 
 Cron на хоста (1-во число, 04:10): същите две команди.
@@ -60,7 +66,7 @@ Cron на хоста (1-во число, 04:10): същите две коман�
 ```bash
 read -rp 'Имейл: ' OWNER_EMAIL; read -rp 'Име: ' OWNER_NAME; read -rsp 'Парола: ' OWNER_PASSWORD; echo
 sudo docker compose exec -T -e OWNER_EMAIL="$OWNER_EMAIL" -e OWNER_NAME="$OWNER_NAME" \
-  -e OWNER_PASSWORD="$OWNER_PASSWORD" app npm run owner:create
+  -e OWNER_PASSWORD="$OWNER_PASSWORD" app node dist/scripts/create-owner.js
 unset OWNER_PASSWORD
 ```
 
@@ -77,7 +83,16 @@ curl -sI https://rendetto.carbonstealth.eu/ | grep -i -E 'content-security-polic
 node tools/seo/indexnow.mjs https://rendetto.carbonstealth.eu   # от корена на репото, след деплой
 ```
 
-## 7. Връщане назад
+## 7. Одитът
+
+Одитната верига е HMAC с ключ, изведен от `HMAC_KEY` (не е в базата). Последният запис се пише и в
+`data/audit-head.json` извън базата — изтрит край на веригата се хваща. Панелът (`/admin/audit`)
+показва номера и хеша на последния запис: веднъж месечно ги запишете и извън сървъра.
+
+Срокът за пазене е `AUDIT_RETENTION_DAYS` (по подразбиране 1825 дни = 5 години — решение на
+собственика). По-старите записи се трият от поддръжката, без да се чупи веригата.
+
+## 8. Връщане назад
 
 Предишният release е в `/opt/few-few/releases/`. Ако миграцията е счупила данни:
 `gunzip -c pre-deploy-….sql.gz | sudo docker compose exec -T db psql -U rendetto rendetto`, после

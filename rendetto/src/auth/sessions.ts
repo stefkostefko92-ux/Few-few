@@ -89,6 +89,19 @@ export async function markMfaPassed(sessionId: string, role: Role): Promise<void
   });
 }
 
+/**
+ * Нов токен и нов CSRF за същата сесия. След смяна на паролата старата бисквитка (ако е изтекла
+ * някъде) вече не отваря нищо, а човекът остава вътре.
+ */
+export async function rotateSessionToken(sessionId: string, role: Role): Promise<NewSession> {
+  const token = randomToken(32);
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: { tokenHash: sha256Hex(token), csrfToken: randomToken(24) },
+  });
+  return { token, id: sessionId, maxAgeMs: sessionLimits(role).absoluteMs };
+}
+
 export async function destroySessionById(id: string): Promise<void> {
   await prisma.session.deleteMany({ where: { id } });
 }

@@ -5,7 +5,7 @@ import { prisma } from '../db.js';
 import { can } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { issueEmailToken } from '../auth/tokens.js';
-import { mailResetPassword, mailTwoFactor } from '../mail/templates.js';
+import { greetingName, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
 import {
   fail,
   isResult,
@@ -92,7 +92,7 @@ export async function resetTwoFactor(actor: StaffActor, id: string): Promise<Act
     prisma.session.deleteMany({ where: { userId: id } }),
   ]);
   await audit(actor, { action: 'admin.totp.reset', targetType: 'user', targetId: id });
-  void mailTwoFactor(target.email, localeOf(target), target.name, false);
+  void mailTwoFactor(target.email, localeOf(target), greetingName(target), false);
   return { ok: true };
 }
 
@@ -121,7 +121,7 @@ export async function sendPasswordReset(actor: StaffActor, id: string): Promise<
   const target = await targetFor(actor, id, 'accounts:security');
   if (isResult(target)) return target;
   const token = await issueEmailToken(id, 'RESET_PASSWORD');
-  void mailResetPassword(target.email, localeOf(target), target.name, token);
+  void mailResetPassword(target.email, localeOf(target), greetingName(target), token);
   await audit(actor, { action: 'admin.reset.sent', targetType: 'user', targetId: id });
   return { ok: true };
 }

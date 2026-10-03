@@ -81,6 +81,7 @@
   color: var(--ink-2);
   font-size: 0.86rem;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 input[type='text'],
 input[type='email'],

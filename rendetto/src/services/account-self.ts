@@ -5,8 +5,9 @@ import { verifyPassword } from '../auth/password.js';
 import { describeUserAgent, hwidLabel } from '../auth/device.js';
 import { isLocale, type Locale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
-import { mailAccountDeleted } from '../mail/templates.js';
+import { greetingName, mailAccountDeleted } from '../mail/templates.js';
 import { customerActor, nameSchema } from './auth-common.js';
+import { reauthFailed } from './lockout.js';
 import { checkSecondFactor } from './security.js';
 
 export interface SessionRow {
@@ -105,9 +106,14 @@ export async function deleteOwnAccount(
   meta: RequestMeta,
 ): Promise<DeleteResult> {
   if (!input.confirmed) return { ok: false, key: 'account.delete.confirmMissing' };
-  if (!(await verifyPassword(input.password, user.passwordHash)))
+  if (!(await verifyPassword(input.password, user.passwordHash))) {
+    await reauthFailed(user, meta);
     return { ok: false, key: 'flash.wrongPassword' };
-  if (!(await checkSecondFactor(user, input.code))) return { ok: false, key: 'flash.wrongCode' };
+  }
+  if (!(await checkSecondFactor(user, input.code))) {
+    await reauthFailed(user, meta);
+    return { ok: false, key: 'flash.wrongCode' };
+  }
   if (user.role === 'OWNER' && (await prisma.user.count({ where: { role: 'OWNER' } })) <= 1) {
     return { ok: false, key: 'account.delete.lastOwner' };
   }
@@ -117,7 +123,7 @@ export async function deleteOwnAccount(
     { ...SYSTEM_ACTOR, ip: meta.ip },
     { action: 'account.deleted.self', targetType: 'user', targetId: user.id },
   );
-  void mailAccountDeleted(user.email, locale, user.name);
+  void mailAccountDeleted(user.email, locale, greetingName(user));
   return { ok: true };
 }
 

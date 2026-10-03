@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { config, isProduction } from '../config.js';
 import { randomToken, safeEqual } from '../crypto.js';
-import { ensureDeviceCookie, parseFingerprint } from '../auth/device.js';
+import { deviceCookieHash, ensureDeviceCookie, parseFingerprint } from '../auth/device.js';
 import { PRE_CSRF_COOKIE, requirePreAuthCsrf } from '../auth/guards.js';
 import { clearSessionCookie, destroySessionById, setSessionCookie } from '../auth/sessions.js';
 import { isRole } from '../auth/rbac.js';
@@ -206,7 +206,15 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
 
 authRouter.get('/verify-email', async (req, res) => {
   const token = typeof req.query.token === 'string' ? req.query.token : '';
-  const result = token ? await verifyEmailToken(token, requestMeta(req)) : ({ ok: false } as const);
+  const device = deviceCookieHash(ensureDeviceCookie(req, res));
+  const result = token
+    ? await verifyEmailToken(token, requestMeta(req), device)
+    : ({ ok: false } as const);
+  if (result.ok && result.kind === 'setPassword') {
+    // на друго устройство: потвърждението минава през нова парола (виж verifyEmailToken)
+    res.redirect(303, `/reset?token=${encodeURIComponent(result.resetToken)}&from=verify`);
+    return;
+  }
   authPage(res, 'auth/verified', { result }, result.ok ? 200 : 400);
 });
 
@@ -227,7 +235,7 @@ authRouter.get('/reset', async (req, res) => {
   authPage(
     res,
     'auth/reset',
-    { pre: preCsrf(req, res), token, valid, error: null },
+    { pre: preCsrf(req, res), token, valid, error: null, fromVerify: req.query.from === 'verify' },
     valid ? 200 : 400,
   );
 });
@@ -237,7 +245,12 @@ authRouter.post('/reset', forgotLimiter, requirePreAuthCsrf, async (req, res) =>
   const result = await resetPassword(token, rawField(req.body, 'password'), requestMeta(req));
   if (!result.ok) {
     const valid = await resetTokenValid(token);
-    authPage(res, 'auth/reset', { pre: preCsrf(req, res), token, valid, error: result.key }, 400);
+    authPage(
+      res,
+      'auth/reset',
+      { pre: preCsrf(req, res), token, valid, error: result.key, fromVerify: false },
+      400,
+    );
     return;
   }
   clearSessionCookie(res);

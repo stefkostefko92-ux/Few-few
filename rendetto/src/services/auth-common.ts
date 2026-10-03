@@ -5,17 +5,26 @@ import { config } from '../config.js';
 import { prisma } from '../db.js';
 import { isBreachedPassword } from '../auth/breached.js';
 import { passwordProblem } from '../auth/password.js';
+import { ipNetwork } from '../http/ip.js';
 import type { RequestMeta } from '../http/meta.js';
 import { customerLabel } from '../labels.js';
 
 export const emailSchema = z.string().trim().toLowerCase().max(254).email();
+
+/**
+ * Име на човек или фирма. Без адреси и връзки: името стига до писма и до панела, а не бива да носи
+ * „кликни тук“ от чужда ръка.
+ */
+const LINK_LIKE =
+  /(:\/\/|www\.|@|\bhttps?\b|\.(com|net|org|info|xyz|top|ru|bg|eu|io|me|link|click)\b)/i;
 
 export const nameSchema = z
   .string()
   .trim()
   .min(2)
   .max(80)
-  .regex(/^[^<>{}\n\r]+$/);
+  .regex(/^[^<>{}\n\r]+$/)
+  .refine((value) => !LINK_LIKE.test(value));
 
 export function customerActor(user: { id: string }, meta?: RequestMeta): AuditActor {
   return { type: 'HUMAN', id: user.id, label: customerLabel(user.id), ip: meta?.ip ?? null };
@@ -45,6 +54,7 @@ export async function recordLogin(
       deviceId: extra.deviceId ?? null,
       fingerprintHash: extra.fingerprint ?? null,
       ip: meta.ip,
+      ipNet: ipNetwork(meta.ip),
       country: meta.country,
       userAgent: meta.userAgent,
     },

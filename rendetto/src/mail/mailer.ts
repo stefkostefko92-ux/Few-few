@@ -43,8 +43,16 @@ export async function sendMail(message: MailMessage): Promise<boolean> {
     }
     return true;
   } catch (error) {
-    // Без адресата в лога — само че пращането е паднало.
-    logger.error({ err: (error as Error).message, subject: message.subject }, 'писмото не тръгна');
+    // Само кодовете на грешката: текстът от SMTP сървъра често цитира адреса на получателя.
+    const e = error as { code?: unknown; responseCode?: unknown; command?: unknown };
+    logger.error(
+      {
+        code: typeof e.code === 'string' ? e.code : undefined,
+        responseCode: typeof e.responseCode === 'number' ? e.responseCode : undefined,
+        command: typeof e.command === 'string' ? e.command : undefined,
+      },
+      'писмото не тръгна',
+    );
     return false;
   }
 }

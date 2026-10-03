@@ -90,7 +90,8 @@
         "one": "Catena integra: 1 voce",
         "other": "Catena integra: {n} voci"
       },
-      "chainBroken": "La catena si interrompe alla voce {id}"
+      "chainBroken": "La catena si interrompe alla voce {id}",
+      "head": "L'ultima voce: n. {id}, hash {hash}. Conservate questa riga anche fuori dal server (per esempio a ogni controllo mensile): così si scopre perfino una fine della catena cancellata."
     },
     "requests": {
       "title": "Richieste di piano",
@@ -157,7 +158,7 @@
       "firstSeen": "visto per la prima volta il {date}",
       "loginsTitle": "Ultimi tentativi di accesso",
       "linkedTitle": "Account collegati",
-      "linkedHint": "Altri account con lo stesso dispositivo, lo stesso HWID o lo stesso indirizzo IP: segno di una prova ripetuta o di un account condiviso. Un IP in comune da solo non è una prova: uffici e operatori mobili condividono gli indirizzi.",
+      "linkedHint": "Altri account con lo stesso dispositivo, lo stesso HWID o lo stesso indirizzo IP: segno di una prova ripetuta o di un account condiviso. Telefoni identici danno lo stesso HWID, e uffici e operatori mobili condividono gli indirizzi, quindi un HWID o un IP comune a più di 10 account non collega nessuno; un IP in comune da solo non è una prova.",
       "noLinked": "Nessun account collegato.",
       "sharedBy": "In comune",
       "shared": {

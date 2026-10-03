@@ -149,6 +149,9 @@ model LoginEvent {
   user            User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
   outcome         LoginOutcome
   ip              String?
+  /// Мрежата на адреса: IPv4 както е, IPv6 — неговата /64 (един човек държи цялата /64). По нея се броят
+  /// неуспешните опити, за да не се заобикалят със смяна на последните 64 бита.
+  ipNet           String?
   country         String?
   userAgent       String?
   deviceId        String?
@@ -158,6 +161,7 @@ model LoginEvent {
 
   @@index([userId, createdAt])
   @@index([ip, createdAt])
+  @@index([ipNet, createdAt])
   @@index([deviceId])
   @@index([fingerprintHash])
   @@index([createdAt])
@@ -242,6 +246,14 @@ model Project {
   @@index([userId, updatedAt])
 }
 
+/// Началото на веригата след изтриване на стари записи по срока за пазене: последният изтрит запис.
+model AuditBase {
+  id       Int      @id @default(1)
+  lastId   Int
+  lastHash String
+  prunedAt DateTime @default(now())
+}
+
 enum TokenPurpose {
   VERIFY_EMAIL
   RESET_PASSWORD
@@ -292,6 +304,8 @@ model AuditLog {
   ipHmac     String?
   prevHash   String
   hash       String
+  /// 1 — SHA-256 (записите преди ключа); 2 — HMAC-SHA-256 с ключ извън базата, с името на извършителя.
+  v          Int      @default(1)
 
   @@index([targetType, targetId])
   @@index([actorId])

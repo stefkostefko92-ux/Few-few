@@ -32,7 +32,7 @@
         <% if (!u.emailVerifiedAt) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'mail' }) %><%= t('admin.status.unverified') %></span><% } %>
         <% if (u.totpEnabledAt) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'shield' }) %>2FA</span><% } %>
       </div></td>
-      <td data-label="<%= t('admin.col.lastLogin') %>"><% if (u.lastLoginAt) { %><span class="nowrap"><%= fmt.relative(u.lastLoginAt) %></span><br><small class="mono-sm"><%= u.lastLoginIp || '' %></small><% if (u.lastLoginCountry) { %> <small><%= fmt.country(u.lastLoginCountry) %></small><% } %><% } else { %><span class="muted">—</span><% } %></td>
+      <td data-label="<%= t('admin.col.lastLogin') %>"><% if (u.lastLoginAt) { %><span class="nowrap"><%= fmt.relative(u.lastLoginAt) %></span><% if (can('logins:view')) { %><br><small class="mono-sm"><%= u.lastLoginIp || '' %></small><% } %><% if (u.lastLoginCountry) { %> <small><%= fmt.country(u.lastLoginCountry) %></small><% } %><% } else { %><span class="muted">—</span><% } %></td>
       <td data-label="<%= t('admin.col.projects') %>" class="num"><%= fmt.num(u._count.projects) %></td>
       <td data-label="<%= t('admin.col.created') %>" class="nowrap"><%= fmt.shortDate(u.createdAt) %></td>
     </tr>

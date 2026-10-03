@@ -11,6 +11,7 @@ import { ROOT } from './paths.js';
 import { attachSession } from './auth/sessions.js';
 import { isStaff } from './auth/rbac.js';
 import { renderError } from './auth/guards.js';
+import { accountWriteLimiter } from './http/limits.js';
 import { readFlash } from './http/flash.js';
 import { attachLocale, localeSwitchUrl } from './http/locale.js';
 import { LOCALE_LABEL, LOCALES, isLocale } from './i18n.js';
@@ -47,6 +48,9 @@ function editorPreload(): string[] {
     ? list.filter((p): p is string => typeof p === 'string' && /^chunks\/[\w-]+\.js$/.test(p))
     : [];
 }
+
+/** Грешките на body-parser и http-errors носят статус; останалите са 500. */
+type HttpError = Error & { status?: number; statusCode?: number; type?: string };
 
 export function createServer(): Express {
   const cfg = config();
@@ -142,6 +146,7 @@ export function createServer(): Express {
     res.locals.trialDays = TRIAL_DAYS;
     next();
   });
+  app.use(['/app', '/account', '/admin'], accountWriteLimiter);
   app.use(authRouter);
   app.use(accountRouter);
   app.use(appRouter);
@@ -156,7 +161,20 @@ export function createServer(): Express {
     renderError(res, 404, 'error.notFoundTitle', 'error.notFoundText');
   });
 
-  app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
+  app.use((error: HttpError, req: Request, res: Response, _next: NextFunction) => {
+    // Грешка на заявката (счупен JSON, твърде голямо тяло…) остава 4xx и не е тревога: без стек.
+    const status = error.status ?? error.statusCode ?? 500;
+    if (status >= 400 && status < 500) {
+      logger.warn({ status, type: error.type, path: req.path }, 'отказана заявка');
+      if (res.headersSent) return;
+      if (req.path.includes('/api/')) {
+        res.status(status).json({ error: status === 413 ? 'too large' : 'bad request' });
+        return;
+      }
+      if (!res.locals.t) attachLocale(req, res, () => undefined);
+      renderError(res, status, 'error.title', status === 413 ? 'error.tooLarge' : 'error.badInput');
+      return;
+    }
     logger.error(
       {
         err: error.message,

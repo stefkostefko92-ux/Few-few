@@ -1,6 +1,8 @@
 # Многослоен билд за Rendetto (Express + Prisma + EJS). Крайният образ носи само каквото тича:
 # нула компилатори, нула изходен код на TypeScript, непривилегирован потребител.
-FROM node:22-slim AS base
+# Образът е закован по digest (индексът за всички архитектури): същият таг утре не носи тихо друг образ.
+# Обновяване: `docker buildx imagetools inspect node:22-slim` → новият Digest тук.
+FROM node:22-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c AS base
 ENV TZ=UTC
 # openssl е за Prisma; ca-certificates — за изходящите заявки (SMTP, проверката на паролите).
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \

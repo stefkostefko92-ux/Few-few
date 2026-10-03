@@ -71,7 +71,8 @@
     "toProjects": "Projects",
     "cncBlockedTitle": "The CNC files are withheld",
     "cncBlockedText": "The construction checks found errors, and G-code and DXF must never be wrong. Fix them in the editor — the download unlocks as soon as the errors are gone. The editor and the error list are in Bulgarian.",
-    "toProject": "Back to the project"
+    "toProject": "Back to the project",
+    "tooLarge": "What was sent is too large."
   },
   "flash": {
     "accountCreated": "The account has been created.",

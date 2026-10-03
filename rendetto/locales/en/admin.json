@@ -90,7 +90,8 @@
         "one": "Chain intact: 1 entry",
         "other": "Chain intact: {n} entries"
       },
-      "chainBroken": "The chain breaks at entry {id}"
+      "chainBroken": "The chain breaks at entry {id}",
+      "head": "The latest entry: No. {id}, hash {hash}. Keep this line outside the server too (for example at each monthly check) — that way even a deleted end of the chain is caught."
     },
     "requests": {
       "title": "Plan requests",
@@ -157,7 +158,7 @@
       "firstSeen": "first seen on {date}",
       "loginsTitle": "Recent sign-in attempts",
       "linkedTitle": "Linked accounts",
-      "linkedHint": "Other accounts with the same device, the same HWID or the same IP address — a sign of a repeated trial or a shared account. A shared IP alone is no proof: offices and mobile networks share addresses.",
+      "linkedHint": "Other accounts with the same device, the same HWID or the same IP address — a sign of a repeated trial or a shared account. Identical phones give the same HWID, and offices and mobile networks share addresses, so an HWID or IP shared by more than 10 accounts links nobody; a shared IP alone is no proof.",
       "noLinked": "No linked accounts.",
       "sharedBy": "Shared",
       "shared": {

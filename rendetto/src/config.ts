@@ -4,6 +4,9 @@ import { COMPANY } from './company.js';
 const hexKey = (name: string) =>
   z.string().regex(/^[0-9a-fA-F]{64}$/, `${name} трябва да е 32 байта в hex (64 знака)`);
 const flag = z.enum(['true', 'false']).transform((value) => value === 'true');
+/** Незадължителен текст: празната стойност (`SMTP_USER=` или `${SMTP_USER:-}` в compose) значи „няма“. */
+const optionalText = () =>
+  z.preprocess((value) => (value === '' ? undefined : value), z.string().min(1).optional());
 
 /** Всяка външна настройка минава през zod — процесът не тръгва с полуготов конфиг. */
 const schema = z
@@ -25,12 +28,12 @@ const schema = z
     /** HMAC за бисквитката на устройството и резервните кодове. Различен от ENC_KEY. */
     HMAC_KEY: hexKey('HMAC_KEY'),
     TOTP_ISSUER: z.string().min(1).max(40).default('Rendetto'),
-    SMTP_HOST: z.string().min(1).optional(),
+    SMTP_HOST: optionalText(),
     /** Brevo приема 2525 — Hetzner блокира 25/465/587. */
     SMTP_PORT: z.coerce.number().int().positive().default(2525),
     SMTP_SECURE: flag.default('false'),
-    SMTP_USER: z.string().min(1).optional(),
-    SMTP_PASS: z.string().min(1).optional(),
+    SMTP_USER: optionalText(),
+    SMTP_PASS: optionalText(),
     MAIL_FROM: z.string().min(3).default('Rendetto <no-reply@carbonstealth.eu>'),
     CONTACT_EMAIL: z.string().email().default(COMPANY.email),
     PRIVACY_EMAIL: z.string().email().default('privacy@carbonstealth.eu'),
@@ -40,6 +43,13 @@ const schema = z
     GEOIP_PATH: z.string().min(1).default('data/dbip-country-lite.mmdb'),
     /** Проверка на новата парола срещу изтекли бази (Have I Been Pwned, k-анонимност). */
     BREACH_CHECK: flag.default('true'),
+    /**
+     * Котвата на одитната верига — файл извън базата с последния запис. По подразбиране в продукция
+     * `data/audit-head.json`; извън продукция само ако е зададена.
+     */
+    AUDIT_ANCHOR_PATH: optionalText(),
+    /** Срок за пазене на одита, в дни (решение на собственика; по подразбиране 5 години). */
+    AUDIT_RETENTION_DAYS: z.coerce.number().int().min(365).max(3650).default(1825),
     /** Само за разработка: `/__dev/outbox` показва изпратените писма. В продукция се пренебрегва. */
     RENDETTO_DEV_OUTBOX: z.enum(['0', '1']).default('0'),
   })

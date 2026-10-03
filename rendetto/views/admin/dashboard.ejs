@@ -30,6 +30,7 @@
       </tbody>
     </table></div>
   </section>
+  <% if (can('logins:view')) { %>
   <section class="section" aria-labelledby="sec-h">
     <h2 id="sec-h"><%- include('../partials/icon', { name: 'shield' }) %><%= t('admin.dashboard.security') %></h2>
     <% if (!events.length) { %><p class="muted"><%= t('admin.dashboard.noEvents') %></p><% } else { %>
@@ -45,6 +46,7 @@
     </table></div>
     <% } %>
   </section>
+  <% } %>
 </div>
 
 <section class="section" aria-labelledby="sys-h">

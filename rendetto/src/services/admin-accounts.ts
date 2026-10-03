@@ -50,11 +50,15 @@ function statusWhere(status: StatusFilter, now: Date): Prisma.UserWhereInput {
   }
 }
 
-/** Търсене: имейл, име или id; IP адрес търси и в историята на входовете. */
-async function searchWhere(q: string): Promise<Prisma.UserWhereInput> {
+/**
+ * Търсене: имейл, име или id; IP адрес търси и в историята на входовете — само за роля, която вижда
+ * входовете (`logins:view`). За останалите IP не е ключ за търсене.
+ */
+async function searchWhere(q: string, byIp: boolean): Promise<Prisma.UserWhereInput> {
   const term = q.trim().slice(0, 120);
   if (!term) return {};
   if (isIP(term)) {
+    if (!byIp) return { id: '' };
     const logins = await prisma.loginEvent.findMany({
       where: { ip: term, userId: { not: null } },
       select: { userId: true },
@@ -86,10 +90,10 @@ function orderBy(sort: SortKey, dir: 'asc' | 'desc'): Prisma.UserOrderByWithRela
   }
 }
 
-export async function listAccounts(query: AccountQuery, now: Date = new Date()) {
+export async function listAccounts(query: AccountQuery, byIp: boolean, now: Date = new Date()) {
   const where: Prisma.UserWhereInput = {
     AND: [
-      await searchWhere(query.q),
+      await searchWhere(query.q, byIp),
       query.plan === 'all' ? {} : { plan: query.plan },
       statusWhere(query.status, now),
     ],

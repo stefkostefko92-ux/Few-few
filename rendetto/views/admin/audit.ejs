@@ -3,6 +3,7 @@
   <% if (chain.ok) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('admin.audit.chainOk', { n: chain.count }) %></span><% } else { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'alert' }) %><%= t('admin.audit.chainBroken', { id: chain.brokenAt }) %></span><% } %>
 </div>
 <%- include('../partials/admin-nav') %>
+<% if (chain.ok && chain.head) { %><p class="hint"><%= t('admin.audit.head', { id: chain.head.id, hash: chain.head.hash }) %></p><% } %>
 <form method="get" action="/admin/audit" class="filters" role="search">
   <div class="field field-q"><label for="action"><%= t('admin.audit.filter') %></label><input id="action" name="action" type="search" value="<%= action %>" placeholder="admin. / auth. / account."></div>
   <button class="btn" type="submit"><%- include('../partials/icon', { name: 'search' }) %><%= t('admin.accounts.apply') %></button>

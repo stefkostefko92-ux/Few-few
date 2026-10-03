@@ -1,9 +1,9 @@
-import { audit, SYSTEM_ACTOR, verifyAuditChain } from '../audit.js';
+import { audit, pruneAudit, SYSTEM_ACTOR, verifyAuditChain } from '../audit.js';
 import { prisma } from '../db.js';
 import { logger } from '../logger.js';
 import { purgeExpiredSessions } from '../auth/sessions.js';
 import { isLocale, LOCALE_TAG } from '../i18n.js';
-import { mailTrialEnding } from '../mail/templates.js';
+import { greetingName, mailTrialEnding } from '../mail/templates.js';
 
 const DAY = 24 * 60 * 60 * 1000;
 /**
@@ -34,7 +34,7 @@ export async function sendTrialReminders(now: Date = new Date()): Promise<number
       timeZone: 'Europe/Sofia',
     }).format(user.planExpiresAt ?? now);
     await prisma.user.update({ where: { id: user.id }, data: { trialReminderAt: now } });
-    await mailTrialEnding(user.email, locale, user.name, date);
+    await mailTrialEnding(user.email, locale, greetingName(user), date);
   }
   return users.length;
 }
@@ -65,6 +65,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
     const reminders = await sendTrialReminders(now);
     const chain = await verifyAuditChain({ full: true });
     if (!chain.ok) logger.error({ brokenAt: chain.brokenAt }, 'одитната верига е скъсана');
+    const auditPruned = await pruneAudit(chain, now);
     if (unverified.count > 0) {
       await audit(SYSTEM_ACTOR, {
         action: 'system.unverified.purged',
@@ -81,6 +82,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
         tokens: tokens.count,
         reminders,
         auditEntries: chain.count,
+        auditPruned,
       },
       'поддръжка',
     );

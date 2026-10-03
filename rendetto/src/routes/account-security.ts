@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { prisma } from '../db.js';
 import { principalOf } from '../auth/guards.js';
 import { remainingRecoveryCodes } from '../auth/recovery.js';
+import { rotateSessionToken, setSessionCookie } from '../auth/sessions.js';
 import { isStaff } from '../auth/rbac.js';
 import { sensitiveLimiter } from '../http/limits.js';
 import { rawField, requestMeta, stringField } from '../http/meta.js';
@@ -63,13 +64,16 @@ accountSecurityRouter.get('/account/security', async (req, res) => {
 });
 
 accountSecurityRouter.post('/account/security/password', sensitiveLimiter, async (req, res) => {
+  const user = await me(req);
   const result = await changePassword(
-    await me(req),
+    user,
     rawField(req.body, 'current'),
     rawField(req.body, 'next'),
     principalOf(req).session.id,
     requestMeta(req),
   );
+  if (result.ok)
+    setSessionCookie(res, await rotateSessionToken(principalOf(req).session.id, user.role));
   back(
     res,
     '/account/security',

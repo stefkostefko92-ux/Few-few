@@ -156,7 +156,7 @@
     <dl class="dl">
       <dt>2FA</dt><dd><%= account.totpEnabledAt ? t('admin.account.twofaOn', { date: fmt.shortDate(account.totpEnabledAt), n: recoveryLeft }) : t('admin.account.twofaOff') %></dd>
       <dt><%= t('admin.account.sessions') %></dt><dd><%= fmt.num(account.sessions.length) %></dd>
-      <dt><%= t('admin.account.lastLogin') %></dt><dd><%= account.lastLoginAt ? fmt.dateTime(account.lastLoginAt) : '—' %><% if (account.lastLoginIp) { %><br><small class="mono-sm"><%= account.lastLoginIp %></small><% if (account.lastLoginCountry) { %> <small><%= fmt.country(account.lastLoginCountry) %></small><% } %><% } %></dd>
+      <dt><%= t('admin.account.lastLogin') %></dt><dd><%= account.lastLoginAt ? fmt.dateTime(account.lastLoginAt) : '—' %><% if (showLogins && account.lastLoginIp) { %><br><small class="mono-sm"><%= account.lastLoginIp %></small><% } %><% if (account.lastLoginCountry) { %> <small><%= fmt.country(account.lastLoginCountry) %></small><% } %></dd>
       <dt><%= t('admin.account.failed') %></dt><dd><%= fmt.num(account.failedLogins) %><% if (locked) { %>, <%= t('admin.account.lockedUntil', { time: fmt.dateTime(account.lockedUntil) }) %><% } %></dd>
     </dl>
     <% if (manageable && can('accounts:security')) { %>
