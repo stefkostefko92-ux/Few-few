@@ -29,29 +29,43 @@ SMTP: Brevo на порт 2525 (Hetzner блокира 25/465/587).
 Каталогът от магазините се слага в `/opt/few-few/shared/rendetto/data/catalog.json` (подава го
 собственикът; не е в репото). Без него продуктът тръгва с основния каталог.
 
-## 2. nginx + TLS (веднъж)
+## 2. TLS сертификат (веднъж)
+
+Когато DNS вече сочи насам:
 
 ```bash
-sudo cp rendetto/deploy/nginx/rendetto.carbonstealth.eu.conf /etc/nginx/sites-available/rendetto
-sudo ln -sfn /etc/nginx/sites-available/rendetto /etc/nginx/sites-enabled/rendetto
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d rendetto.carbonstealth.eu
+sudo certbot certonly --nginx -d rendetto.carbonstealth.eu --deploy-hook 'systemctl reload nginx'
 ```
+
+Само сертификат, без пипане на конфига: certbot сам вдига временен блок за проверката. Vhost-ът
+(`deploy/nginx/rendetto.carbonstealth.eu.conf`) го слага деплоят, щом сертификатът го има — преди
+това `nginx -t` би отказал заради липсващите файлове. `--deploy-hook` презарежда nginx след всяко
+подновяване; без него подновеният сертификат стига до nginx чак при следващ reload.
 
 ## 3. Деплой
 
-От release папката (архивът от `deploy/fetch-deploy.sh`):
+Автоматично: `deploy/autodeploy.sh` (и `deploy/fetch-deploy.sh`) разгръща Rendetto заедно с другите
+продукти. Само Rendetto: `sudo PROJECTS="rendetto" bash deploy/fetch-deploy.sh`. Ръчно, от release
+папка — същият скрипт:
 
 ```bash
-cd /opt/few-few/current/rendetto
-sudo cp -a /opt/few-few/shared/rendetto/.env .env
-# бекъп преди миграция (при повторен деплой)
-sudo docker compose exec -T db pg_dump -U rendetto rendetto | gzip > /opt/few-few/shared/rendetto/pre-deploy-$(date +%Y%m%d%H%M).sql.gz
-sudo docker compose up -d --build
-curl -fsS http://127.0.0.1:4320/health     # {"status":"ok"}
+sudo bash /opt/few-few/current/rendetto/deploy/deploy.sh
 ```
 
-Entrypoint-ът чака базата и пуска `prisma migrate deploy` (никога `db push`).
+`deploy/deploy.sh` прави всичко по реда:
+
+1. копира тайните от `/opt/few-few/shared/rendetto/` (без тях спира с код 3 — тайни не се
+   измислят) и проверява, че `RENDETTO_DATA` е `/opt/few-few/shared/rendetto/data`;
+2. бекъп на базата преди миграция в `/opt/few-few/shared/rendetto/backups/` (пази последните 5);
+   без бекъп не мигрира;
+3. `docker compose build` и `up` — entrypoint-ът чака базата и пуска `prisma migrate deploy`
+   (никога `db push`);
+4. чака `/health` да върне `{"status":"ok","app":"rendetto"}` — маркерът доказва, че на порта
+   отговаря Rendetto, а не друго приложение (иначе код 4 и `autodeploy.sh` връща последния
+   работещ release);
+5. слага vhost-а от репото в nginx (`nginx -t`, после reload; при грешка връща стария), щом има
+   сертификат;
+6. подава sitemap-а към IndexNow (Bing, Yandex, Seznam, Naver, Yep), само ако се е променил.
 
 ## 4. GeoIP (веднъж, после месечно)
 
@@ -80,8 +94,10 @@ unset OWNER_PASSWORD
 ```bash
 curl -fsS https://rendetto.carbonstealth.eu/health
 curl -sI https://rendetto.carbonstealth.eu/ | grep -i -E 'content-security-policy|strict-transport'
-node tools/seo/indexnow.mjs https://rendetto.carbonstealth.eu   # от корена на репото, след деплой
 ```
+
+IndexNow тръгва сам от деплоя. Google не участва в IndexNow: в Search Console потвърдете домейна
+веднъж и подайте `https://rendetto.carbonstealth.eu/sitemap.xml`.
 
 ## 7. Одитът
 
@@ -94,9 +110,9 @@ node tools/seo/indexnow.mjs https://rendetto.carbonstealth.eu   # от коре�
 
 ## 8. Връщане назад
 
-Предишният release е в `/opt/few-few/releases/`. Ако миграцията е счупила данни:
-`gunzip -c pre-deploy-….sql.gz | sudo docker compose exec -T db psql -U rendetto rendetto`, после
-`docker compose up -d --build` от предишния release.
+Кодът: `autodeploy.sh` го връща сам, ако новият release не отговори — пуска `deploy/deploy.sh` на
+последния работещ (пътят му е в `/opt/few-few/shared/rendetto/last-good`). Ръчно — същият скрипт от
+папката на предишния release в `/opt/few-few/releases/`.
 
-Включването в `deploy/autodeploy.sh` (функция по модела на `deploy_piuma`) е отделна задача на
-VPS-аджията.
+Данните — само ако миграцията ги е счупила:
+`gunzip -c /opt/few-few/shared/rendetto/backups/pre-deploy-….sql.gz | sudo docker compose exec -T db psql -U rendetto rendetto`.

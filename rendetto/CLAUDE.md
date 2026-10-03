@@ -122,4 +122,7 @@ print/                брошурата за клиенти: build-brochure.ts 
 
 ## Деплой
 
-Docker Compose (db + app) + nginx на хоста — `DEPLOY.md`. Тайните са само в `.env` на сървъра (mode 600).
+Docker Compose (db + app) + nginx на хоста — `DEPLOY.md`. Един път за ръчния и за автоматичния деплой:
+`deploy/deploy.sh` (вика го и `deploy/autodeploy.sh`) — тайните от `/opt/few-few/shared/rendetto/.env`,
+бекъп преди миграция, сонда с маркер `"app":"rendetto"`, vhost-ът от репото, IndexNow само при промяна на
+sitemap-а; тестван е в `tests/deploy-script.test.ts`. Тайните са само на сървъра (mode 600).

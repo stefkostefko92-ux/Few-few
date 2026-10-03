@@ -118,6 +118,13 @@ test('CSRF: no token, a wrong token or a foreign origin is refused', async () =>
   );
 });
 
+test('/health names the app: the deploy tells Rendetto apart from another process on the port', async () => {
+  const res = await fetch(`${BASE}/health`);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(await res.json(), { status: 'ok', app: 'rendetto' });
+});
+
 test('security headers on every kind of page', async () => {
   for (const path of ['/', '/login', '/health']) {
     const res = await fetch(`${BASE}${path}`);
