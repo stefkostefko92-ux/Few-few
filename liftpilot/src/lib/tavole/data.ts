@@ -187,7 +187,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const sp = spaceLegend(L, fmt), notes = clientNotes(L, below);
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));
-  if (!oldRails) notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, `NOTA ${notes.length + 1}`, fmt));
+  // the note of the rails' check wherever the check enters the acceptance test (new rails, or a change of load, car or sling)
+  if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, `NOTA ${notes.length + 1}`, fmt));
   const test = collaudoNote(C, `NOTA ${notes.length + 1}`);
   if (test) notes.push(test);
 

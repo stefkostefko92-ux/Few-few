@@ -43,7 +43,7 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
       + '0,00016887·λ^2 fino a 250), σ = σm + Fv/A e σc = σk + 0,9·σm; marcia: k2 = 1,2 e il peso della guida; carico al piano: cabina vuota e '
       + 'Fs = 0,4·g·Q (0,6·g·Q da 2500 kg) al centro della soglia di cabina, a ogni accesso; flessione della suola σF = 1,85·Fx/c² (pattini a '
       + 'rotelle); frecce δx = 0,7·Fx·l³/(48·E·Iy) e δy = 0,7·Fy·l³/(48·E·Ix) ≤ 5 mm. Tensione ammissibile Rm/St con St = 2,25 in marcia e al '
-      + 'carico, 1,8 all\'intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164 e 205 N/mm²',
+      + 'carico, 1,8 all\'intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164,4 e 205,6 N/mm²',
     riferimento: 'UNI EN 81-50:2020, 5.10; UNI EN 81-20:2020, 5.7.2 (forza verticale 5.7.2.3.5, tensioni ammissibili 5.7.4.5, frecce 5.7.4.6: '
       + 'sottoclausole da verificare sul testo)',
     fonte: 'fonti secondarie concordi: Mellor, «Lift system calculations in EN 81-50» (2014) con l\'esempio T127-1/B; tesi VUT Brno (2024) con '

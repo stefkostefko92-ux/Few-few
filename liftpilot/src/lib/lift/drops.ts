@@ -3,9 +3,10 @@
 // example plan the form starts from puts the car and the counterweight elsewhere; the plan takes them where the ropes
 // hang: the car's middle under its drop (its depth from the entrance, its place across), the counterweight's middle
 // under its own, at the back or on the side the drop is. A direct pull's falls are then the existing sheave's
-// diameter apart as measured (registry impianto.calata), and the drawings show the installation as it is. null: a
-// second entrance or a niche, or a plan that cannot have them there (out of the save's ranges, or moved by the
-// shaft's rules); the example's plan stays.
+// diameter apart as measured (registry impianto.calata), and the drawings show the installation as it is. The shaft's
+// checks say what the drops impose — a car the drop makes shallower than the example's, a counterweight in the car — and
+// are resolved on the plan, as any. null: a second entrance or a niche, or a plan that cannot have them there (out of
+// the save's ranges, or moved by the shaft's rules); the example's plan stays.
 import { layout } from '@/shaft';
 import type { Rect, ShaftInputs } from '@/shaft/types';
 import type { Survey } from '@/lib/room/survey';
@@ -22,7 +23,7 @@ export function atSurveyDrops(S: ShaftInputs, s: Pick<Survey, 'car' | 'cw'>): Sh
   const gap = Math.round(side === 'rear' ? S.D - S.cwDepth / 2 - s.cw.y : side === 'left' ? s.cw.x - S.cwDepth / 2 : S.W - S.cwDepth / 2 - s.cw.x);
   const cwPos = Math.round((side === 'rear' ? s.cw.x : s.cw.y) - len / 2);
   // the ranges the save takes (src/lib/shaft-input.ts)
-  if (B < 300 || carX < 0 || gap < 0 || gap > 800 || len < 100 || len > 3000 || cwPos < 0) return null;
+  if (B < 300 || B > 6000 || carX < 0 || carX > 10000 || gap < 0 || gap > 800 || len < 100 || len > 3000 || cwPos < 0 || cwPos > 10000) return null;
   const out: ShaftInputs = { ...S, cw: side, cwWallGap: gap, plan: { ...S.plan, A, B, carX, cwLen: Math.round(len), cwPos } };
   const P = layout(out), [cx, cy] = middle(P.car), [wx, wy] = middle(P.cw);
   return near(cx, s.car.x) && near(cy, s.car.y) && near(wx, s.cw.x) && near(wy, s.cw.y) ? out : null;

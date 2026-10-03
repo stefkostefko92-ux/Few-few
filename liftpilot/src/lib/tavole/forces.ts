@@ -56,11 +56,13 @@ export function railForces(L: Layout, P: number, Q: number, gear: SafetyGear): R
   return { fx, fy, k, h };
 }
 
+/** The factor of the force on the car door's sill while loading, by the rated load Q [kg]. */
+export const sillFactor = (Q: number): number => (Q >= KV_VERT.sillHeavyQ ? KV_VERT.sillLoadHeavy : KV_VERT.sillLoad);
+
 /** The forces on a rail [N] while the car is loaded at a floor: the empty car and the force Fs = 0,4·g·Q (0,6 from
  *  2500 kg) on the middle of the car door's sill, at each entrance in turn; no impact factor (UNI EN 81-20:2020, 5.7.2). */
 export function loadingCases(L: Layout, P: number, Q: number): readonly { fx: number; fy: number }[] {
-  const { n, h, xP, yP } = arms(L), at = offsets(L), c = L.car, K = KV_VERT;
-  const fs = (Q >= K.sillHeavyQ ? K.sillLoadHeavy : K.sillLoad) * G * Q;
+  const { n, h, xP, yP } = arms(L), at = offsets(L), c = L.car, fs = sillFactor(Q) * G * Q;
   return L.doors.map((d) => {
     const u = (d.u0 + d.u1) / 2;
     const [xi, yi] = at(d.wall === 'front' ? [u, c.y] : d.wall === 'rear' ? [u, c.y + c.h] : d.wall === 'left' ? [c.x, u] : [c.x + c.w, u]);

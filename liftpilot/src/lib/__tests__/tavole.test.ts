@@ -152,6 +152,10 @@ test('foglio 1: ciò che il progetto sa viene dal progetto; le parti che restano
   const sost = sheet1(buildTavole({ ...input(I), marks: { ...NO_MARKS, collaudo: { norma: '10411-1', parti: ['machine'] } } }));
   assert.ok(sost.some((t) => t.startsWith('ESISTENTI T')), 'guide esistenti');
   assert.ok(sost.includes('ESISTENTE') && sost.includes('ESISTENTI'), 'limitatore, porte e guide esistenti');
+  // the rails kept: their check is not this test's, no note; kept under a new rated load, the check and its note enter it
+  assert.ok(!sost.includes('VERIFICA DELLE GUIDE DI CABINA'), 'guide esistenti: nessuna nota');
+  assert.ok(sheet1(buildTavole({ ...input(I), marks: { ...NO_MARKS, collaudo: { norma: '10411-1', parti: ['machine', 'load'] } } }))
+    .includes('VERIFICA DELLE GUIDE DI CABINA'), 'portata cambiata: la nota delle guide');
   // the parts of the car mass are the calculation's P (700 kg): otherwise a warning
   const parts = { massShell: 300, massFloor: 100, massDoors: 150, massFrame: 150 };
   assert.deepEqual(buildTavole({ ...input(I), plant: { ...input(I).plant, ...parts } }).warnings.filter((w) => w.what === 'carMass'), []);

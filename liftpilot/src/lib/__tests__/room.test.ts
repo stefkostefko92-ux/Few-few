@@ -144,4 +144,8 @@ test('sostituzione → progetto completo: tiro diretto, cabina e contrappeso sot
   }
   // a second entrance: the axes of the survey are entrance A's alone, the example's plan stays
   assert.equal(atSurveyDrops({ ...S, entrances: 'opposite' }, startSurvey(600)), null);
+  // a drop that makes the car deeper than the save takes (6150 mm): the example's plan stays; 100 mm nearer, the plan takes it
+  const big = { ...S, W: 5000, D: 9000 }, deep = (y: number): Survey => ({ ...startSurvey(600), car: { x: 2500, y }, cw: { x: 400, y } });
+  assert.equal(atSurveyDrops(big, deep(3300)), null);
+  assert.ok(shaftInputsSchema.safeParse(atSurveyDrops(big, deep(3200))).success);
 });

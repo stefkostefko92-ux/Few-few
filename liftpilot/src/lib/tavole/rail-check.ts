@@ -9,7 +9,7 @@ import { check } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { RAILS, RAIL_SECTIONS, iMin, type RailType } from '@/shaft/rails';
 import type { Layout, ShaftCheck } from '@/shaft/types';
-import { impactFactor, loadCases, loadingCases, type SafetyGear } from './forces';
+import { impactFactor, loadCases, loadingCases, sillFactor, type SafetyGear } from './forces';
 
 const G = 9.81;
 
@@ -28,7 +28,8 @@ export interface RailCheck {
    *  σm and σ [N/mm²] */
   gear: { sm: number; s: number; sk: number | null; sc: number | null };
   run: { sm: number; s: number };
-  load: { sm: number; s: number };
+  /** while loading at a floor, and the factor of the sill's force Fs = factor·g·Q */
+  load: { sm: number; s: number; sill: number };
   /** the bending of the foot at the safety gear's operation and the worst in normal use [N/mm²]; the deflections across
    *  and along the rails' line, the worst of every case [mm] */
   flange: { gear: number; use: number };
@@ -56,7 +57,7 @@ export function railCheck(L: Layout, type: RailType, P: number, Q: number, gear:
     l, lambda, omega: w,
     gear: { sm: smGear, s: smGear + fv / S.A, sk, sc: sk === null ? null : sk + K.railCombine * smGear },
     run: { sm: smRun, s: smRun + own / S.A },
-    load: { sm: smLoad, s: smLoad + own / S.A },
+    load: { sm: smLoad, s: smLoad + own / S.A, sill: sillFactor(Q) },
     flange: { gear: flange(worst(g.cases, (c) => c.fx)), use: flange(worst([...run, ...load], (c) => c.fx)) },
     dx: defl(worst(all, (c) => c.fx), S.Iy),
     dy: defl(worst(all, (c) => c.fy), S.Ix),
@@ -77,8 +78,8 @@ export function railChecks(R: RailCheck, gear: SafetyGear, v: number): ShaftChec
   ]);
   const fl = nearest([{ s: R.flange.gear, lim: lim.gear }, { s: R.flange.use, lim: lim.use }]), d = Math.max(R.dx, R.dy), instant = gear !== 'progressive';
   return [
-    check('gr_stress', st.s !== null && st.s <= st.lim, st.s, st.lim, 0, 'MPa'),
-    check('gr_flange', fl.s !== null && fl.s <= fl.lim, fl.s, fl.lim, 0, 'MPa'),
+    check('gr_stress', st.s !== null && st.s <= st.lim, st.s, st.lim, 1, 'MPa'),
+    check('gr_flange', fl.s !== null && fl.s <= fl.lim, fl.s, fl.lim, 1, 'MPa'),
     check('gr_defl', d <= K.railDeflection, d, K.railDeflection, 1, 'mm'),
     check('sg_type', !instant || v <= K.gearInstantV + 1e-9, v, instant ? K.gearInstantV : null, 2, 'm/s'),
   ];

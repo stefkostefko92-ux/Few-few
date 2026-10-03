@@ -7,6 +7,8 @@ import { KV_VERT, RAILS, defaultInputs, layout } from '@/shaft';
 import { RAIL_SECTIONS, RAIL_TYPES, iMin } from '@/shaft/rails';
 import { impactFactor, loadCases, loadingCases, railForces } from '../tavole/forces';
 import { omega, railCheck, railChecks, railLimits } from '../tavole/rail-check';
+import { railNote } from '../tavole/notes';
+import { makeFmt } from '../present/tr';
 
 const near = (a: number, b: number, eps: number) => assert.ok(Math.abs(a - b) <= eps, `${a} ≠ ${b}`);
 
@@ -66,6 +68,10 @@ test('carico al piano: Fs = 0,4·g·Q al centro della soglia, cabina vuota, ness
   // Rm 370 with St 1,8 and 2,25
   near(railLimits().gear, 370 / 1.8, 1e-9);
   near(railLimits().use, 370 / 2.25, 1e-9);
+  // the note says the factor the check took and the permissible stresses as the registry does
+  const note = (q: number): string => railNote(railCheck(L, L.inputs.carRail, P, q, 'progressive', 2000, 18000), 'T70-1/A', 'progressive', 'NOTA 1', makeFmt('it')).text;
+  assert.ok(note(Q).includes('carico al piano (0,4·g·Q') && note(2500).includes('carico al piano (0,6·g·Q'));
+  assert.ok(note(Q).includes('Rm/1,8 = 205,6') && note(Q).includes('Rm/2,25 = 164,4'));
 });
 
 test('esiti sul foglio 1: tensioni, suola, frecce; paracadute istantaneo solo fino a 0,63 m/s', () => {
