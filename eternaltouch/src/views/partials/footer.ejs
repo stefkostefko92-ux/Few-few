@@ -26,7 +26,7 @@
           <li><a href="tel:+359877876709">+359 87 787 6709 · Simona</a></li>
           <li><a href="tel:+393936943854">+39 393 694 3854 · Ivy</a></li>
           <li><a href="tel:+393921806719">+39 392 180 6719 · Maya</a></li>
-          <li style="margin-top: 0.625rem; font-style: italic; color: var(--gold-200);">Ул. Самуил 3<br>Бобов дол 2670, BG</li>
+          <li style="margin-top: 0.625rem; font-style: italic; color: var(--gold-200);"><% if (lang === 'bg') { %>ул. „Самуил“ № 3<br>2670 Бобов дол, BG<% } else { %>ul. Samuil 3<br>2670 Bobov Dol, BG<% } %></li>
         </ul>
       </div>
 
@@ -60,7 +60,7 @@
 
     <div class="footer-bottom">
       <div>© <%= currentYear %> Eternal Touch · <%= t('footer.rights') %><br>
-        <span style="font-size: 0.78rem; opacity: 0.7;"><a href="https://carbonstealth.eu" target="_blank" rel="noopener" style="color: inherit; text-decoration: none; border-bottom: 1px solid currentColor;">Carbon Stealth VCC</a> · EIK BG208725180 · Ул. Самуил 3, 2670 Бобов дол, BG</span>
+        <span style="font-size: 0.78rem; opacity: 0.7;"><a href="https://carbonstealth.eu" target="_blank" rel="noopener" style="color: inherit; text-decoration: none; border-bottom: 1px solid currentColor;"><%= lang === 'bg' ? 'Карбон Стелт ЕДПК (Carbon Stealth VCC)' : 'Carbon Stealth VCC' %></a> · <% if (lang === 'bg') { %>ЕИК 208725180 · ДДС № BG208725180 · ул. „Самуил“ № 3, 2670 Бобов дол, BG<% } else if (lang === 'it') { %>EIK 208725180 · P. IVA BG208725180 · ul. Samuil 3, 2670 Bobov Dol, BG<% } else { %>EIK 208725180 · VAT BG208725180 · ul. Samuil 3, 2670 Bobov Dol, BG<% } %></span>
       </div>
       <div><a href="https://carbonstealth.eu" target="_blank" rel="noopener" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(201,169,110,0.3);"><%= t('footer.by') %></a></div>
     </div>
