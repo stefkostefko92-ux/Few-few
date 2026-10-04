@@ -131,13 +131,15 @@ ZIP отпреди месец.
 - **rendetto** (мебели в 3D, разкрой, CNC): Docker Compose (db + app на `127.0.0.1:4320`).
   Стъпките са в `rendetto/deploy/deploy.sh` — същият скрипт и за ръчния деплой: тайните от
   `/opt/few-few/shared/rendetto/.env` (не се генерират; без тях rendetto се пропуска като „още
-  ненастроен“), `pg_dump` преди миграцията (последните 5; провален дъмп спира деплоя), `build` +
+  ненастроен“), `build`, `pg_dump` точно преди смяната (последните 5; провален дъмп спира деплоя),
   `up -d` (миграциите — от entrypoint-а), сонда с маркер `"app":"rendetto"`, vhost-ът от репото
   в nginx щом има сертификат, IndexNow само при променен sitemap. Ако новият код не отговори,
   `autodeploy.sh` пуска `deploy.sh` на последния работещ release (`RENDETTO_LAST_GOOD`; чистенето
   на releases не го трие) с `RENDETTO_SKIP_BACKUP=1` — откатът не изтласква дъмпа отпреди
   миграцията. Изключение: провалена миграция (`P3018`/`P3009` в лога на app) — старият код спира на
-  същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `rendetto/DEPLOY.md`.
+  същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `rendetto/DEPLOY.md`:
+  обикновено `migrate resolve --rolled-back` (PostgreSQL е върнал миграцията цялата), а
+  възстановяване от дъмпа — само ако данните трябва да се върнат.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,

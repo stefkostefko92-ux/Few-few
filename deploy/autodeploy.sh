@@ -1361,11 +1361,16 @@ rendetto_migration_failed() {
 # Базата не се пипа автоматично: възстановяването от бекъп е решение на човек. Тук само казваме кой
 # дъмп е отпреди миграцията и къде е процедурата.
 rendetto_migration_help() {
-  local dump
+  local dump good
   dump="$(ls -1t "$RENDETTO_SHARED/backups"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
+  good="$(head -n 1 "$RENDETTO_LAST_GOOD" 2>/dev/null || true)"
   warn "rendetto: миграцията на базата се провали — откат само на кода не помага (старият код спира на P3009)."
   warn "rendetto: бекъпът отпреди миграцията: ${dump:-(няма — виж $RENDETTO_SHARED/backups)}"
-  warn "rendetto: нужен е човек — rendetto/DEPLOY.md, раздел за отката: възстанови бекъпа, после deploy.sh на предишния release с RENDETTO_SKIP_BACKUP=1."
+  # Първо а): PostgreSQL връща паднала миграция цялата, затова възстановяването (б) не е обичайният път.
+  warn "rendetto: нужен е човек — rendetto/DEPLOY.md, „Провалена миграция“, от ${good:-папката на последния работещ release}:"
+  warn "rendetto:   а) данните са цели (обичайното): migrate resolve --rolled-back <миграцията>;"
+  warn "rendetto:   б) данните трябва да се върнат: възстановяване от бекъпа по-горе;"
+  warn "rendetto:   после deploy.sh оттам с RENDETTO_SKIP_BACKUP=1."
 }
 
 # Откат САМО на кода: deploy.sh на последния release, който е отговорил, вдига неговия код със същото

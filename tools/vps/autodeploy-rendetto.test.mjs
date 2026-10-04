@@ -111,6 +111,11 @@ test("код 4 от провалена миграция (P3009/P3018): без о
     assert.match(log, /миграцията на базата се провали/);
     assert.match(log, /pre-deploy-20261004-101500\.sql\.gz/);
     assert.match(log, /нужен е човек/);
+    // първо а) от DEPLOY.md (без загуба на данни), възстановяването е само б); командите — от работещия
+    assert.match(log, /а\) данните са цели \(обичайното\): migrate resolve --rolled-back/);
+    assert.match(log, /б\) данните трябва да се върнат/);
+    assert.ok(log.includes(`от ${join(old, "rendetto")}:`), "сочи папката на последния работещ release");
+    assert.match(log, /RENDETTO_SKIP_BACKUP=1/);
     assert.match(log, /failed=1/);
   }
 }));
