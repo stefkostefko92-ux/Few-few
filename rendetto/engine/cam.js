@@ -14,6 +14,7 @@ const DRILLS = DRILL_SET.map(([h, d]) => ({
 export const GROOVE_MILL = { id: 'T4', h: 4, kind: 'mill', d: 4, rpm: 18000, flutes: 2, fz: 0.08, plunge: 1000, label: 'MILL D4' };
 const CONTOUR_MILL = { id: 'T5', h: 5, kind: 'mill', rpm: 18000, flutes: 2, fz: 0.25, plunge: 3000 };
 export const SPOIL = 0.3; // final contour depth below the sheet, mm
+export const CLEAR = 3; // R plane: rapids end and feeds start this high above the sheet top, mm
 const ONION = 0.3; // skin left by the first contour pass, mm
 const drillFor = (d) => DRILLS.find((t) => Math.abs(t.d - d) < 0.01) ?? null;
 const contourTool = (d) => ({ ...CONTOUR_MILL, d, label: `COMPRESSION D${d}` });
@@ -141,7 +142,6 @@ export function toGcode(model, sheet, meta) {
   const ops = sheetOps(model, sheet);
   const { T } = ops;
   const safe = 20;
-  const clear = 3;
   const iso = post.id === 'iso';
   const L = [];
   const moves = [];
@@ -204,16 +204,16 @@ export function toGcode(model, sheet, meta) {
       holes.forEach((h, i) => {
         moves.push({ type: 'rapid', from: pos, to: { X: h.X, Y: h.Y, Z: safe } }, { type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id });
         pos = { X: h.X, Y: h.Y, Z: safe };
-        L.push(`${i === 0 ? 'G98 G81 ' : ''}X${num(h.X)} Y${num(h.Y)} Z${num(-h.depth)} R${num(clear)}${i === 0 ? ` F${tool.feed}` : ''}`);
+        L.push(`${i === 0 ? 'G98 G81 ' : ''}X${num(h.X)} Y${num(h.Y)} Z${num(-h.depth)} R${num(CLEAR)}${i === 0 ? ` F${tool.feed}` : ''}`);
       });
       L.push('G80');
     } else {
       for (const h of holes) {
         rapid(h.X, h.Y);
-        rapid(undefined, undefined, clear);
+        rapid(undefined, undefined, CLEAR);
         feed(undefined, undefined, -h.depth, tool.feed, tool.id);
         moves.push({ type: 'drill', at: [h.X, h.Y], depth: h.depth, tool: tool.id });
-        rapid(undefined, undefined, clear);
+        rapid(undefined, undefined, CLEAR);
       }
     }
     endTool();
@@ -226,7 +226,7 @@ export function toGcode(model, sheet, meta) {
     for (const g of ops.grooves) {
       const passes = Math.ceil(g.depth / 4);
       rapid(g.X1, g.Y1);
-      rapid(undefined, undefined, clear);
+      rapid(undefined, undefined, CLEAR);
       let atStart = true;
       for (let k = 1; k <= passes; k++) {
         feed(undefined, undefined, -Math.min(g.depth, (g.depth * k) / passes), tool.plunge, tool.id);
@@ -234,7 +234,7 @@ export function toGcode(model, sheet, meta) {
         else feed(g.X1, g.Y1, undefined, F, tool.id);
         atStart = !atStart;
       }
-      rapid(undefined, undefined, clear);
+      rapid(undefined, undefined, CLEAR);
     }
     endTool();
   }
@@ -251,7 +251,7 @@ export function toGcode(model, sheet, meta) {
       const first = path[0];
       L.push(`(${c.partId} ${asciiName(c.name)} ${dimTxt(c.w).replace(',', '.')}X${dimTxt(c.h).replace(',', '.')})`);
       rapid(first.from[0], first.from[1]);
-      rapid(undefined, undefined, clear);
+      rapid(undefined, undefined, CLEAR);
       const rampLen = Math.min(80, Math.abs(first.to[1] - first.from[1]));
       if (pi === 0) {
         feed(undefined, undefined, 0, tool.plunge, tool.id);
@@ -265,7 +265,7 @@ export function toGcode(model, sheet, meta) {
         else arc(seg, z, tool.id);
       }
       if (pi === 0) feed(first.from[0], first.from[1] + rampLen, undefined, undefined, tool.id); // clean the ramp wedge
-      rapid(undefined, undefined, clear);
+      rapid(undefined, undefined, CLEAR);
     }
   });
   endTool();

@@ -1,11 +1,16 @@
 // CNC tab: per-sheet G-code and DXF, the tool table, time estimate and the toolpath simulation.
 import { $, esc, fmt, stat, reduceMotion, setHtml } from './dom.js';
-import { toGcode, POSTS } from '../engine/cam.js';
+import { toGcode, POSTS, GROOVE_MILL, CLEAR } from '../engine/cam.js';
 import { toDxf } from '../engine/dxf.js';
 import { sheetSvg, sheetTitle } from './render-nest.js';
 
 const RAPID_MM_MIN = 30000; // assumption for the time estimate
 const TOOL_CHANGE_S = 15; // assumption for the time estimate
+const HOLE_EXTRA_S = 0.4; // assumption for the time estimate: positioning and dwell per hole
+// simulation pace: a hole counts as this many mm of path, a rapid at this share of its length; the whole run takes SIM_MS
+const SIM_HOLE_MM = 30;
+const SIM_RAPID_SHARE = 0.25;
+const SIM_MS = 14000;
 // tool colours are classes (.tc1 … .tc8 set --c in editor.css): no style attributes under the CSP
 const PALETTE = ['tc1', 'tc2', 'tc3', 'tc4', 'tc5', 'tc6', 'tc7', 'tc8'];
 
@@ -23,15 +28,18 @@ function estimate(g) {
   let rapid = 0;
   let seconds = 0;
   let drills = 0;
-  const feedOf = new Map(g.tools.map((t) => [t.id, t.feed ?? 2000]));
+  const drillFeed = new Map(g.tools.filter((t) => t.kind === 'drill').map((t) => [t.id, t.feed]));
   for (const m of g.moves) {
+    // GRBL writes the plunge of every hole as a feed move: the drill move below already counts it
+    if (m.type === 'feed' && drillFeed.has(m.tool)) continue;
     const len = moveLength(m);
     if (m.type === 'rapid') {
       rapid += len;
       seconds += (len / RAPID_MM_MIN) * 60;
     } else if (m.type === 'drill') {
       drills += 1;
-      seconds += (((m.depth + 3) * 2) / (feedOf.get(m.tool) ?? 2000)) * 60 + 0.4;
+      // in from the R plane and back out, at the drill's feed
+      seconds += (((m.depth + CLEAR) * 2) / drillFeed.get(m.tool)) * 60 + HOLE_EXTRA_S;
     } else {
       cut += len;
       seconds += (len / (m.F || 3000)) * 60;
@@ -77,6 +85,7 @@ function pathsFor(g, progress) {
     const c = g.color.get(m.tool) ?? 'tc0';
     if (m.type === 'drill') {
       marks += `<circle cx="${m.at[0]}" cy="${fy(m.at[1])}" r="${Math.max(g.dia.get(m.tool) / 2, 3)}" class="drill ${c}${end <= limit ? ' on' : ''}"/>`;
+      if (start < limit && end > limit) tool = { X: m.at[0], Y: m.at[1] }; // the tool stays over the hole it drills
       return;
     }
     if (cache)
@@ -127,7 +136,8 @@ export function renderCnc(state, meta) {
   g.lengths = [];
   let acc = 0;
   for (const m of g.moves) {
-    acc += m.type === 'drill' ? 30 : moveLength(m) * (m.type === 'rapid' ? 0.25 : 1);
+    acc +=
+      m.type === 'drill' ? SIM_HOLE_MM : moveLength(m) * (m.type === 'rapid' ? SIM_RAPID_SHARE : 1);
     g.lengths.push(acc);
   }
   state.gcode = g;
@@ -146,7 +156,7 @@ export function renderCnc(state, meta) {
     g.tools
       .map(
         (t) =>
-          `<span class="${g.color.get(t.id)}">${t.id} ${esc(t.kind === 'drill' ? `свредло Ø${String(t.d).replace('.', ',')}` : t.id === 'T4' ? 'фреза Ø4, канали' : `фреза Ø${t.d}, контур`)}</span>`,
+          `<span class="${g.color.get(t.id)}">${t.id} ${esc(t.kind === 'drill' ? `свредло Ø${String(t.d).replace('.', ',')}` : t.id === GROOVE_MILL.id ? `фреза Ø${t.d}, канали` : `фреза Ø${t.d}, контур`)}</span>`,
       )
       .join(''),
   );
@@ -198,7 +208,7 @@ export function toggleSim(state) {
   let last = performance.now();
   const step = (now) => {
     if (!sim.playing) return;
-    state.progress = Math.min(1, state.progress + (now - last) / 14000);
+    state.progress = Math.min(1, state.progress + (now - last) / SIM_MS);
     last = now;
     drawToolpath(state);
     if (state.progress >= 1) stopSim();
