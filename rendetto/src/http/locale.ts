@@ -9,6 +9,7 @@ import {
   type Locale,
   type Translator,
 } from '../i18n.js';
+import { readCookie } from './cookies.js';
 import { viewHelpers } from './view.js';
 
 export const LOCALE_COOKIE = 'rd_lang';
@@ -24,7 +25,7 @@ function chooseLocale(req: Request): { locale: Locale; fromQuery: boolean } {
   if (isLocale(asked)) return { locale: asked, fromQuery: true };
   const userLocale = req.principal?.user.locale;
   if (isLocale(userLocale)) return { locale: userLocale, fromQuery: false };
-  const cookie = ((req.cookies ?? {}) as Record<string, string | undefined>)[LOCALE_COOKIE];
+  const cookie = readCookie(req, LOCALE_COOKIE);
   if (isLocale(cookie)) return { locale: cookie, fromQuery: false };
   return { locale: localeFromHeader(req.get('accept-language')), fromQuery: false };
 }

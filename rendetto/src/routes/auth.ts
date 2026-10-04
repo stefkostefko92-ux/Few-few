@@ -12,6 +12,7 @@ import {
 import { clearSessionCookie, destroySessionById, setSessionCookie } from '../auth/sessions.js';
 import { isStaff } from '../auth/rbac.js';
 import { linkHours } from '../auth/tokens.js';
+import { readCookie } from '../http/cookies.js';
 import { setFlash } from '../http/flash.js';
 import {
   forgotLimiter,
@@ -22,7 +23,6 @@ import {
   verifyLimiter,
 } from '../http/limits.js';
 import { rawField, requestMeta, safeNext, stringField } from '../http/meta.js';
-import { isLocale } from '../i18n.js';
 import { PATHS } from '../seo/paths.js';
 import { audit } from '../audit.js';
 import { attemptLogin, completeMfa } from '../services/login.js';
@@ -35,7 +35,7 @@ export const authRouter: Router = Router();
 
 /** CSRF токен за формите преди вход: двойна бисквитка (стойността е и в скритото поле). */
 function preCsrf(req: Request, res: Response): string {
-  const existing = ((req.cookies ?? {}) as Record<string, string | undefined>)[PRE_CSRF_COOKIE];
+  const existing = readCookie(req, PRE_CSRF_COOKIE);
   if (existing && isPreCsrfToken(existing)) return existing;
   const token = newPreCsrfToken();
   res.cookie(PRE_CSRF_COOKIE, token, {
@@ -198,7 +198,6 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
     email: stringField(req.body, 'email', 254),
     name: stringField(req.body, 'name', 80),
   };
-  const locale = isLocale(res.locals.locale) ? res.locals.locale : 'bg';
   const result = await registerAccount(
     {
       ...values,
@@ -207,7 +206,7 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
     },
     requestMeta(req),
     deviceContext(req, res),
-    locale,
+    res.locals.locale,
   );
   if (!result.ok) {
     authPage(

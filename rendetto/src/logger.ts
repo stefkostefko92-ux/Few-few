@@ -33,6 +33,11 @@ export const REDACT = {
 
 export const logger = pino({ level: process.env.LOG_LEVEL ?? 'info', redact: REDACT });
 
+/** Причината за лога от каквото е хвърлено — и когато не е Error (низ, обект от библиотека). */
+export function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /** Позитивен списък на хедърите, които стигат до лога — новият носител на тайна не изтича по подразбиране. */
 const REQ_HEADERS = [
   'host',

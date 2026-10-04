@@ -6,13 +6,13 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { config, isProduction } from './config.js';
-import { logger, httpLogOptions } from './logger.js';
+import { errorMessage, logger, httpLogOptions } from './logger.js';
 import { ROOT } from './paths.js';
 import { attachSession } from './auth/sessions.js';
 import { LOCK_MINUTES, MAX_FAILED_LOGINS } from './auth/lock.js';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { isStaff } from './auth/rbac.js';
-import { renderError } from './auth/guards.js';
+import { sendError } from './auth/guards.js';
 import { accountWriteLimiter } from './http/limits.js';
 import { readFlash } from './http/flash.js';
 import { attachLocale, localeSwitchUrl } from './http/locale.js';
@@ -53,8 +53,35 @@ function editorPreload(): string[] {
     : [];
 }
 
-/** Грешките на body-parser и http-errors носят статус; останалите са 500. */
-type HttpError = Error & { status?: number; statusCode?: number; type?: string };
+/** Грешките на body-parser и http-errors носят статус; останалите (и не-Error) са 500. */
+function errorStatus(error: unknown): number {
+  if (typeof error !== 'object' || error === null) return 500;
+  if ('status' in error && typeof error.status === 'number') return error.status;
+  if ('statusCode' in error && typeof error.statusCode === 'number') return error.statusCode;
+  return 500;
+}
+
+/** Видът грешка на body-parser (`entity.too.large`, `entity.parse.failed`…) — за лога. */
+function errorType(error: unknown): string | undefined {
+  if (typeof error !== 'object' || error === null || !('type' in error)) return undefined;
+  return typeof error.type === 'string' ? error.type : undefined;
+}
+
+/**
+ * Последната линия: JSON по общия договор `{ error, code }` или страница за грешка. Грешка преди
+ * `attachLocale` (твърде голямо тяло на формата) още няма език — слага се тук.
+ */
+function failRequest(
+  req: Request,
+  res: Response,
+  status: number,
+  titleKey: string,
+  messageKey: string,
+): void {
+  if (res.headersSent) return;
+  if (!Object.hasOwn(res.locals, 't')) attachLocale(req, res, () => undefined);
+  sendError(req, res, status, titleKey, messageKey);
+}
 
 export function createServer(): Express {
   const cfg = config();
@@ -81,10 +108,7 @@ export function createServer(): Express {
         useDefaults: false,
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: [
-            "'self'",
-            (_req, res) => `'nonce-${(res as Response).locals.cspNonce as string}'`,
-          ],
+          scriptSrc: ["'self'", (_req, res) => `'nonce-${(res as Response).locals.cspNonce}'`],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'"],
           styleSrcAttr: ["'none'"],
@@ -171,42 +195,33 @@ export function createServer(): Express {
   if (!isProduction() && cfg.RENDETTO_DEV_OUTBOX === '1') app.use(devRouter);
 
   app.use((req: Request, res: Response) => {
-    if (req.path.includes('/api/')) {
-      res.status(404).json({ error: 'not found' });
-      return;
-    }
-    renderError(res, 404, 'error.notFoundTitle', 'error.notFoundText');
+    failRequest(req, res, 404, 'error.notFoundTitle', 'error.notFoundText');
   });
 
-  app.use((error: HttpError, req: Request, res: Response, _next: NextFunction) => {
+  app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
     // Грешка на заявката (счупен JSON, твърде голямо тяло…) остава 4xx и не е тревога: без стек.
-    const status = error.status ?? error.statusCode ?? 500;
+    const status = errorStatus(error);
     if (status >= 400 && status < 500) {
-      logger.warn({ status, type: error.type, path: req.path }, 'отказана заявка');
-      if (res.headersSent) return;
-      if (req.path.includes('/api/')) {
-        res.status(status).json({ error: status === 413 ? 'too large' : 'bad request' });
-        return;
-      }
-      if (!res.locals.t) attachLocale(req, res, () => undefined);
-      renderError(res, status, 'error.title', status === 413 ? 'error.tooLarge' : 'error.badInput');
+      logger.warn({ status, type: errorType(error), path: req.path }, 'отказана заявка');
+      failRequest(
+        req,
+        res,
+        status,
+        'error.title',
+        status === 413 ? 'error.tooLarge' : 'error.badInput',
+      );
       return;
     }
     logger.error(
       {
-        err: error.message,
-        stack: error.stack?.split('\n').slice(0, 4).join(' | '),
+        err: errorMessage(error),
+        stack:
+          error instanceof Error ? error.stack?.split('\n').slice(0, 4).join(' | ') : undefined,
         path: req.path,
       },
       'необработена грешка',
     );
-    if (res.headersSent) return;
-    if (req.path.includes('/api/')) {
-      res.status(500).json({ error: 'internal' });
-      return;
-    }
-    if (!res.locals.t) attachLocale(req, res, () => undefined);
-    renderError(res, 500, 'error.internalTitle', 'error.internalText');
+    failRequest(req, res, 500, 'error.internalTitle', 'error.internalText');
   });
 
   return app;

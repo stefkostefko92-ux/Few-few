@@ -1,5 +1,5 @@
 import { prisma } from '../db.js';
-import { logger } from '../logger.js';
+import { errorMessage, logger } from '../logger.js';
 import { hashPassword } from '../auth/password.js';
 import { emailSchema, nameSchema, newPasswordProblem } from '../services/auth-common.js';
 import { audit, SYSTEM_ACTOR } from '../audit.js';
@@ -44,7 +44,7 @@ async function main(): Promise<void> {
 
 main()
   .catch((error: unknown) => {
-    logger.error({ err: (error as Error).message }, 'собственикът не е създаден');
+    logger.error({ err: errorMessage(error) }, 'собственикът не е създаден');
     process.exitCode = 1;
   })
   .finally(() => void prisma.$disconnect());

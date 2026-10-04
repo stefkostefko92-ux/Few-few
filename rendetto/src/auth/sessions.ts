@@ -3,6 +3,7 @@ import type { Prisma, Role } from '@prisma/client';
 import { isProduction } from '../config.js';
 import { prisma } from '../db.js';
 import { randomToken, sha256Hex } from '../crypto.js';
+import { readCookie } from '../http/cookies.js';
 import { isStaff } from './rbac.js';
 import type { Principal } from '../types.js';
 
@@ -185,8 +186,7 @@ export async function attachSession(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const cookies = (req.cookies ?? {}) as Record<string, string | undefined>;
-  const principal = await resolveSession(cookies[sessionCookieName()]);
+  const principal = await resolveSession(readCookie(req, sessionCookieName()));
   if (principal) {
     req.principal = principal;
     res.locals.currentUser = principal.user;

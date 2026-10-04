@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { isProduction } from '../config.js';
 import { DEFAULT_LOCALE, hasKey } from '../i18n.js';
+import { readCookie } from './cookies.js';
 
 const FLASH_COOKIE = 'rd_flash';
 
@@ -61,7 +62,7 @@ export function setFlash(
 
 export function readFlash(req: Request, res: Response, next: NextFunction): void {
   res.locals.flash = null;
-  const raw = ((req.cookies ?? {}) as Record<string, string | undefined>)[FLASH_COOKIE];
+  const raw = readCookie(req, FLASH_COOKIE);
   if (raw) {
     res.locals.flash = parseFlash(raw);
     res.clearCookie(FLASH_COOKIE, { path: '/' });

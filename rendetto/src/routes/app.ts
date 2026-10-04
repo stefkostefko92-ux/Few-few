@@ -1,10 +1,10 @@
 import express, { Router } from 'express';
-import { principalOf, renderError, requireCsrf, requireUser } from '../auth/guards.js';
+import { jsonError, principalOf, renderError, requireCsrf, requireUser } from '../auth/guards.js';
 import { setFlash } from '../http/flash.js';
 import { jsonForScript } from '../http/json-script.js';
 import { apiLimiter, exportLimiter } from '../http/limits.js';
 import { requestMeta, stringField } from '../http/meta.js';
-import { translatorFor, type Translator } from '../i18n.js';
+import { translatorFor } from '../i18n.js';
 import { planView } from '../plans/plan.js';
 import { catalogInfo, isFurnitureType } from '../services/engine.js';
 import { furnitureKinds } from '../services/furniture.js';
@@ -35,7 +35,7 @@ appRouter.use('/app', requireUser, requireCsrf, (_req, res, next) => {
 appRouter.get('/app', async (req, res) => {
   const principal = principalOf(req);
   const projects = await listOwnProjects(principal.user.id);
-  const t = res.locals.t as Translator;
+  const { t } = res.locals;
   res.render('app/projects', {
     plan: planView(principal.user),
     projects: projects.map((p) => ({ ...p, summary: projectSummary(p) })),
@@ -53,7 +53,7 @@ appRouter.post('/app/projects', async (req, res) => {
   // Без име проектът се казва като вида мебел — на езика на човека, не на двигателя.
   const name =
     stringField(req.body, 'name', 80) ||
-    (isFurnitureType(type) ? (res.locals.t as Translator)(`furniture.${type}`) : '');
+    (isFurnitureType(type) ? res.locals.t(`furniture.${type}`) : '');
   const result = await createProject(principal.user, name, type, requestMeta(req));
   if (!result.ok) {
     setFlash(res, 'error', result.key);
@@ -124,9 +124,7 @@ appRouter.put(
       body.base,
     );
     if (!result.ok) {
-      res
-        .status(result.status)
-        .json({ error: res.locals.t(result.key) as string, code: result.key });
+      jsonError(res, result.status, result.key);
       return;
     }
     res.json({

@@ -5,7 +5,6 @@ import { clearSessionCookie } from '../auth/sessions.js';
 import { setFlash } from '../http/flash.js';
 import { resendLimiter, sensitiveLimiter } from '../http/limits.js';
 import { rawField, requestMeta, stringField } from '../http/meta.js';
-import type { Locale } from '../i18n.js';
 import { planView } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
@@ -149,8 +148,8 @@ accountRouter.get('/account/plan/withdraw/:id', async (req, res) => {
   res.render('account/withdraw', {
     user,
     order,
-    planName: orderPlanName(order, res.locals.locale as Locale),
-    statement: withdrawalStatement(order, user, res.locals.locale as Locale),
+    planName: orderPlanName(order, res.locals.locale),
+    statement: withdrawalStatement(order, user, res.locals.locale),
     lastDay: withdrawalLastDay(order.createdAt),
     refundDays: REFUND_DAYS,
     section: 'plan',

@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { config, isProduction } from '../config.js';
 import { canonicalJson, hmacHex, randomToken, safeEqual, sha256Hex } from '../crypto.js';
+import { readCookie } from '../http/cookies.js';
 import { LOGIN_RETENTION_DAYS } from '../retention.js';
 
 /**
@@ -23,7 +24,7 @@ function sign(id: string): string {
 
 /** id от валидна бисквитка или null (подправената се отхвърля). */
 export function readDeviceCookie(req: Request): string | null {
-  const raw = ((req.cookies ?? {}) as Record<string, string | undefined>)[deviceCookieName()];
+  const raw = readCookie(req, deviceCookieName());
   if (!raw || raw.length > 80) return null;
   const [id, signature] = raw.split('.');
   if (!id || !signature || !/^[A-Za-z0-9_-]{22}$/.test(id)) return null;

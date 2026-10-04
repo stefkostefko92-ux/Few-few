@@ -1,6 +1,6 @@
 import type { Request } from 'express';
 import rateLimit, { type Options } from 'express-rate-limit';
-import { renderError, SAFE_METHODS, wantsJson } from '../auth/guards.js';
+import { SAFE_METHODS, sendError } from '../auth/guards.js';
 import { ipNetwork } from './ip.js';
 
 /** Ключът е мрежата на адреса (IPv6 — цялата /64), не самият адрес. */
@@ -21,13 +21,7 @@ function limiter(
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     keyGenerator: networkKey,
-    handler: (req, res) => {
-      if (wantsJson(req)) {
-        res.status(429).json({ error: res.locals.t('error.tooMany') as string, code: 'rate' });
-        return;
-      }
-      renderError(res, 429, 'error.tooManyTitle', 'error.tooMany');
-    },
+    handler: (req, res) => sendError(req, res, 429, 'error.tooManyTitle', 'error.tooMany', 'rate'),
     ...extra,
   };
   return rateLimit(options);

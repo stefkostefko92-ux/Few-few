@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { config, isProduction } from './config.js';
-import { logger } from './logger.js';
+import { errorMessage, logger } from './logger.js';
 import { fromRoot } from './paths.js';
 
 export interface AnchorPoint {
@@ -56,7 +56,7 @@ export function saveAnchor(change: Partial<Anchor>): Promise<void> {
       renameSync(`${file}.tmp`, file);
     })
     .catch((error: unknown) => {
-      if (!warned) logger.error({ err: (error as Error).message }, 'котвата на одита не се записа');
+      if (!warned) logger.error({ err: errorMessage(error) }, 'котвата на одита не се записа');
       warned = true;
     });
   return writing;

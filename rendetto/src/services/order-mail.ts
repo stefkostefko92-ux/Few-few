@@ -2,7 +2,7 @@ import type { UpgradeRequest, User } from '@prisma/client';
 import { COMPANY, LEGAL_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { isLocale, LOCALE_TAG, translate, type Locale } from '../i18n.js';
-import { logger } from '../logger.js';
+import { errorMessage, logger } from '../logger.js';
 import type { MailAttachment } from '../mail/mailer.js';
 import {
   greetingName,
@@ -121,10 +121,7 @@ async function acceptedTermsCopy(
   try {
     return await termsCopy(locale, config().PUBLIC_BASE_URL, config().CONTACT_EMAIL);
   } catch (error) {
-    logger.error(
-      { err: error instanceof Error ? error.message : String(error) },
-      'копието на общите условия не се събра',
-    );
+    logger.error({ err: errorMessage(error) }, 'копието на общите условия не се събра');
     return null;
   }
 }

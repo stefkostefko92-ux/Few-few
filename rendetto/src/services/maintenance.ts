@@ -1,6 +1,6 @@
 import { audit, pruneAudit, SYSTEM_ACTOR, verifyAuditChain } from '../audit.js';
 import { prisma } from '../db.js';
-import { logger } from '../logger.js';
+import { errorMessage, logger } from '../logger.js';
 import { purgeExpiredSessions } from '../auth/sessions.js';
 import { isLocale, LOCALE_TAG } from '../i18n.js';
 import { greetingName, mailTrialEnding } from '../mail/templates.js';
@@ -105,7 +105,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
       'поддръжка',
     );
   } catch (error) {
-    logger.error({ err: (error as Error).message }, 'поддръжката се провали');
+    logger.error({ err: errorMessage(error) }, 'поддръжката се провали');
   }
 }
 

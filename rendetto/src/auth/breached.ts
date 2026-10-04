@@ -28,7 +28,10 @@ export async function isBreachedPassword(password: string): Promise<boolean | nu
     }
     return false;
   } catch (error) {
-    logger.warn({ err: (error as Error).name }, 'проверката за изтекли пароли е недостъпна');
+    logger.warn(
+      { err: error instanceof Error ? error.name : typeof error },
+      'проверката за изтекли пароли е недостъпна',
+    );
     return null;
   }
 }

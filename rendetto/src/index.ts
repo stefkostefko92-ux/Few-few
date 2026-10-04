@@ -1,6 +1,6 @@
 import { config } from './config.js';
 import { prisma } from './db.js';
-import { logger } from './logger.js';
+import { errorMessage, logger } from './logger.js';
 import { loadGeoIp } from './auth/geoip.js';
 import { loadEngine } from './services/engine.js';
 import { startMaintenance } from './services/maintenance.js';
@@ -26,6 +26,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  logger.fatal({ err: (error as Error).message }, 'процесът не тръгна');
+  logger.fatal({ err: errorMessage(error) }, 'процесът не тръгна');
   process.exit(1);
 });

@@ -5,7 +5,7 @@ import { pipeline } from 'node:stream/promises';
 import { createGunzip } from 'node:zlib';
 import maxmind, { type CountryResponse } from 'maxmind';
 import { config } from '../config.js';
-import { logger } from '../logger.js';
+import { errorMessage, logger } from '../logger.js';
 import { fromRoot } from '../paths.js';
 
 /**
@@ -53,9 +53,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  logger.error(
-    { err: (error as Error).message },
-    'обновяването на базата за държава по IP се провали',
-  );
+  logger.error({ err: errorMessage(error) }, 'обновяването на базата за държава по IP се провали');
   process.exitCode = 1;
 });

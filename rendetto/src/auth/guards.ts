@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { config } from '../config.js';
 import { randomToken, safeEqual } from '../crypto.js';
+import { readCookie } from '../http/cookies.js';
 import { setFlash } from '../http/flash.js';
 import { can, isStaff, type Capability } from './rbac.js';
 import type { Principal } from '../types.js';
@@ -22,12 +23,29 @@ export function renderError(
   res.status(status).render('errors/error', { titleKey, messageKey, status });
 }
 
-function deny(req: Request, res: Response, status: number, key: string): void {
+/** Грешка за API клиента: преведеният текст и стабилен код (по подразбиране — самият ключ). */
+export function jsonError(res: Response, status: number, key: string, code: string = key): void {
+  res.status(status).json({ error: res.locals.t(key), code });
+}
+
+/** Една грешка, два вида отговор: JSON за API заявка (`wantsJson`), иначе страница за грешка. */
+export function sendError(
+  req: Request,
+  res: Response,
+  status: number,
+  titleKey: string,
+  messageKey: string,
+  code: string = messageKey,
+): void {
   if (wantsJson(req)) {
-    res.status(status).json({ error: res.locals.t(key) as string, code: key });
+    jsonError(res, status, messageKey, code);
     return;
   }
-  renderError(res, status, status === 403 ? 'error.forbiddenTitle' : 'error.title', key);
+  renderError(res, status, titleKey, messageKey);
+}
+
+function deny(req: Request, res: Response, status: number, key: string): void {
+  sendError(req, res, status, status === 403 ? 'error.forbiddenTitle' : 'error.title', key);
 }
 
 /** Вписан човек с минат втори фактор (ако е включен). Без това — към входа. */
@@ -35,7 +53,7 @@ export function requireUser(req: Request, res: Response, next: NextFunction): vo
   const principal = req.principal;
   if (!principal) {
     if (wantsJson(req)) {
-      res.status(401).json({ error: res.locals.t('error.loginNeeded') as string, code: 'login' });
+      jsonError(res, 401, 'error.loginNeeded', 'login');
       return;
     }
     res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
@@ -43,7 +61,7 @@ export function requireUser(req: Request, res: Response, next: NextFunction): vo
   }
   if (!principal.session.mfaPassed) {
     if (wantsJson(req)) {
-      res.status(401).json({ error: res.locals.t('error.mfaNeeded') as string, code: 'mfa' });
+      jsonError(res, 401, 'error.mfaNeeded', 'mfa');
       return;
     }
     res.redirect('/login/2fa');
@@ -129,7 +147,7 @@ export function isPreCsrfToken(value: string): boolean {
 }
 
 export function requirePreAuthCsrf(req: Request, res: Response, next: NextFunction): void {
-  const cookie = ((req.cookies ?? {}) as Record<string, string | undefined>)[PRE_CSRF_COOKIE] ?? '';
+  const cookie = readCookie(req, PRE_CSRF_COOKIE) ?? '';
   const sent = (req.body as Record<string, unknown> | undefined)?._csrf;
   const ok =
     fromOurOrigin(req, false) &&
