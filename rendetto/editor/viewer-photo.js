@@ -33,7 +33,7 @@ export class PhotoRenderer {
     pt.multipleImportanceSampling = true;
     pt.tiles.set(2, 2);
     // until the first sample: the normal (raster) view of the viewer
-    pt.rasterizeSceneCallback = () => viewer.pipeline.render((k) => viewer.stage.jitter(k));
+    pt.rasterizeSceneCallback = () => viewer.pipeline.render(viewer.light);
     this.pt = pt;
     // the studio for the path tracer: the same soft boxes, as a cube map
     this.envTarget = new THREE.WebGLCubeRenderTarget(512, { type: THREE.HalfFloatType });
@@ -42,7 +42,6 @@ export class PhotoRenderer {
     disposeScene(env);
     this.area = new ShapedAreaLight(0xffffff, 1, BOX, BOX);
     this.area.isCircular = true;
-    this.active = false;
     this.restAt = 0;
   }
 
@@ -81,13 +80,11 @@ export class PhotoRenderer {
       this.area.visible = false;
     }
     this.pt.pausePathTracing = false;
-    this.active = true;
     this.restAt = performance.now();
   }
 
   stop() {
     this.area.removeFromParent();
-    this.active = false;
   }
 
   moved() {
@@ -106,7 +103,7 @@ export class PhotoRenderer {
   // One frame: the raster view while the camera moves, otherwise one more slice of path tracing.
   render() {
     if (performance.now() - this.restAt < REST_MS) {
-      if (!this.v.pipeline.done) this.v.pipeline.render((k) => this.v.stage.jitter(k));
+      this.v.rasterFrame();
       return false;
     }
     if (this.done) return false;

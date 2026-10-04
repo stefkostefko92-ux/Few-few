@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { S, hingeMesh, hingeArmMesh, merged, shelfPinGeometry } from './viewer-hw.js';
 import { panelGeometry } from './viewer-panel.js';
+import { hashStr } from './viewer-materials.js';
 
 const IDX = { x: 0, y: 1, z: 2 };
 
@@ -56,7 +57,7 @@ function boardGeometry(part, size, materials, faces) {
   const L = IDX[part.frame.eu[1]];
   const T = IDX[part.frame.n[1]];
   const Wd = 3 - L - T;
-  const seed = [...part.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const seed = hashStr(part.id);
   const tIndex = DIRS.indexOf(part.frame.n);
   const [su, sv] = spanOf(materials[tIndex]);
   const ou = ((seed % 97) / 97) * Math.max(0, su - size[L]) + size[L] / 2;

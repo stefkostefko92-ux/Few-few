@@ -1,10 +1,20 @@
 // Hardware finishes from the catalogue words („хром“, „мат хром“, „инокс“, „злато антик“, „черен мат“…) to
 // physical metal: reflectance of the real metal (chromium ~55 %, aluminium ~92 %, gold, copper), roughness of the
 // finish, and a brushing direction for satin and brushed ones (along the handle). Powder coats are not metal.
+
+// A word of `a` and one of `b` in either order („злато антик“, „антик злато“), so both orders always list the same
+// words. Latin „old“ only as a whole word: it is inside „gold“.
+const either = (a, b) => new RegExp(`(?:${a}).*(?:${b})|(?:${b}).*(?:${a})`);
+const AGED = 'антик|антич|antique|стар|\\bold\\b|патин';
+const SATIN = 'мат|matt|сатен|satin|четк|brushed';
+const GOLD = 'злат|gold|месинг|brass';
+const COPPER = 'мед|copper';
+
 const LOOKS = [
-  [/дърв|wood|орех|бук/, { key: 'wood', wood: true }],
+  [/бук|beech/, { key: 'beech', wood: 'beech' }],
+  [/дърв|wood|орех/, { key: 'wood', wood: 'walnut' }],
   [
-    /бял|white|бяла/,
+    /бял|white/,
     {
       key: 'white',
       params: {
@@ -17,7 +27,7 @@ const LOOKS = [
     },
   ],
   [
-    /черн|black|графит|graphite|антрацит|anthracite|титан|titan/,
+    /черн|черен|black|графит|graphite|антрацит|anthracite|титан|titan/,
     {
       key: 'black',
       params: {
@@ -30,11 +40,11 @@ const LOOKS = [
     },
   ],
   [
-    /(антик|антич|antique|стар|old|патин).*(злат|gold|месинг|brass)|(злат|gold|месинг|brass).*(антик|антич|antique|стар|old)/,
+    either(AGED, GOLD),
     { key: 'brass-antique', params: { color: 0x9a7642, metalness: 1, roughness: 0.42 } },
   ],
   [
-    /(мат|matt|сатен|satin|четк|brushed).*(злат|gold|месинг|brass)|(злат|gold|месинг|brass).*(мат|matt|сатен|satin|четк|brushed)/,
+    either(SATIN, GOLD),
     {
       key: 'brass-satin',
       params: { color: 0xe2c27e, metalness: 1, roughness: 0.34, anisotropy: 0.55 },
@@ -45,7 +55,7 @@ const LOOKS = [
     { key: 'gold', params: { color: 0xf0cf86, metalness: 1, roughness: 0.16 } },
   ],
   [
-    /(антик|антич|antique|стар|old).*(мед|copper)|(мед|copper).*(антик|антич|antique|стар)/,
+    either(AGED, COPPER),
     { key: 'copper-antique', params: { color: 0x7a4a2e, metalness: 1, roughness: 0.45 } },
   ],
   [/мед|copper/, { key: 'copper', params: { color: 0xf3c3aa, metalness: 1, roughness: 0.22 } }],

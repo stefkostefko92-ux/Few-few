@@ -2,8 +2,9 @@
 // (brushed, cross-brushed, oxidised, sparkle), fabrics (linen, canvas), the raw chipboard edge (fine outer layers,
 // coarse core), the brown back of HDF, wall plaster, grooved decors and the quilted mattress cover.
 import * as THREE from 'three';
+import { words } from './tex-wood-species.js';
 
-export const STYLES = {
+const STYLES = {
   pearl: 0,
   brushed: 1,
   crossed: 2,
@@ -18,7 +19,7 @@ export const STYLES = {
   quilt: 11,
 };
 
-export const SURFACE_GLSL = /* glsl */ `
+const SURFACE_GLSL = /* glsl */ `
 float weave(vec2 p, float pitch, out float warpUp) {
   vec2 c = floor(p / pitch);
   vec2 f = fract(p / pitch);
@@ -145,8 +146,6 @@ export function surfaceSpec({
     span,
     size,
     color: match ? hex : null,
-    normal: true,
-    orm: true,
     uniforms: {
       uBase: { value: base },
       uAccent: { value: new THREE.Color(accent ?? hex) },
@@ -157,6 +156,32 @@ export function surfaceSpec({
     },
   };
 }
+
+// Names of plain decors with a sparkle or a weathered look, matched at the start of a word as the wood species are
+// („Mustard“ is not a star).
+const SPARKLE = words(
+  'galaxy',
+  'галакси',
+  'star',
+  'metallic',
+  'металик',
+  'pearl',
+  'перл',
+  'matrix',
+);
+const WEATHERED = words(
+  'oxidi[sz]ed',
+  'окисл',
+  'vintage',
+  'винтидж',
+  'mist',
+  'lotus',
+  'trend',
+  'тренд',
+  'aris',
+  'арис',
+  'ivy',
+);
 
 // Metal-look and other non-wood, non-stone decors → style and look. Metal-look decors are prints with metallic
 // pigment under the melamine, not sheet metal: half metallic, so the board keeps its catalogue colour in any light.
@@ -190,9 +215,9 @@ export function decorSurface(d) {
     return { style: 'linen', gloss: gloss ?? 0.6 };
   }
   if (/groove|грув|набразд/i.test(name)) return { style: 'groove', gloss: gloss ?? 0.45 };
-  if (/galaxy|галакси|star|metallic|металик|pearl|перл|matrix/i.test(name))
+  if (SPARKLE.test(name))
     return { style: 'sparkle', gloss: gloss ?? 0.42, metal: 0.2, accent: '#ffffff' };
-  if (/oxidi[sz]ed|окисл|vintage|винтидж|mist|lotus|trend|тренд|aris|арис|ivy/i.test(name))
+  if (WEATHERED.test(name))
     return { style: 'oxidized', gloss: gloss ?? 0.5, metal: 0, accent: d.hex };
   return { style: 'pearl', gloss: gloss ?? 0.56 };
 }

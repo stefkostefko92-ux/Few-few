@@ -1,7 +1,8 @@
 // Physical materials for the 3D view. Every decor is baked on the GPU from its kind and name (wood, stone,
-// concrete, metal look, fabric, plain) into colour, normal and roughness maps at real size, its average colour
-// calibrated to the catalogue. Lacquered MDF, the raw chipboard edge, HDF, the metals of the hardware, the mattress
-// cover and the room are built the same way. No photographs are used.
+// concrete, metal look, fabric, plain) into colour, normal and roughness maps at real size, its median colour
+// calibrated to the catalogue. Lacquered MDF, the raw chipboard edge, HDF, the mattress cover and the room are built
+// the same way. The metals of the hardware are plain physical materials with the values of viewer-metals.js, no
+// textures. No photographs are used.
 import * as THREE from 'three';
 import { decor } from '../engine/materials.js';
 import { Baker, disposeBake } from './tex-bake.js';
@@ -12,7 +13,7 @@ import { metalLook } from './viewer-metals.js';
 import { surfaceMaterial } from './viewer-surfaces.js';
 import { DEVICE } from './viewer-device.js';
 
-const hashStr = (str) => [...str].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+export const hashStr = (str) => [...str].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 const LACQUER = {
   gloss: { roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.03 },
   'high-gloss': { roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.02 },
@@ -141,9 +142,9 @@ export class MaterialCache {
     const b = this.baked(bakeKey, spec);
     const m = new THREE.MeshPhysicalMaterial({
       map: b.map,
-      normalMap: b.normalMap ?? null,
-      roughnessMap: b.ormMap ?? null,
-      metalnessMap: b.ormMap ?? null,
+      normalMap: b.normalMap,
+      roughnessMap: b.ormMap,
+      metalnessMap: b.ormMap,
       roughness: 1,
       metalness: 1,
       ...params,
@@ -188,10 +189,11 @@ export class MaterialCache {
 
   lacquer(d) {
     const finish = LACQUER[d.finish] ?? LACQUER.satin;
+    // the colour is the RAL's own: only the relief and the roughness of the structure are baked
     const m = this.textured(
       'pearl:lacquer',
-      () =>
-        surfaceSpec({
+      () => ({
+        ...surfaceSpec({
           style: 'pearl',
           hex: '#ffffff',
           span: [160, 160],
@@ -199,10 +201,11 @@ export class MaterialCache {
           gloss: 1,
           match: false,
         }),
+        map: false,
+      }),
       {
         map: null,
         color: new THREE.Color(d.hex),
-        roughness: finish.roughness,
         metalness: 0,
         metalnessMap: null,
         ...finish,
@@ -223,7 +226,7 @@ export class MaterialCache {
   metal(finish = '', color = '') {
     const look = metalLook(finish, color);
     return this.get(`metal:${look.key}`, () => {
-      if (look.wood) return this.board('demo:walnut');
+      if (look.wood) return look.wood === 'beech' ? this.beech() : this.board('demo:walnut');
       return new THREE.MeshPhysicalMaterial(look.params);
     });
   }

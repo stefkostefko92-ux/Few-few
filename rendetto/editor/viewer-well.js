@@ -3,6 +3,7 @@
 // walls and on the wall next to the key light, which the frame shades (the upper one; on a vertical pull, turned a
 // quarter, the left one), and ambient occlusion deepens into the corners. In the finish of the frame.
 import * as THREE from 'three';
+import { S } from './viewer-hw.js';
 
 const PX_PER_MM = 6;
 
@@ -93,7 +94,7 @@ export function wellMesh(mats, metal, w, hIn, round) {
     return m;
   });
   const geo = round
-    ? new THREE.CircleGeometry((w / 2) * 0.001, 48)
-    : new THREE.PlaneGeometry(w * 0.001, h * 0.001);
+    ? new THREE.CircleGeometry((w / 2) * S, 48)
+    : new THREE.PlaneGeometry(w * S, h * S);
   return new THREE.Mesh(geo, material);
 }

@@ -52,7 +52,6 @@ function glslType(v) {
   if (typeof v === 'number') return 'float';
   if (v.isColor || v.isVector3) return 'vec3';
   if (v.isVector2) return 'vec2';
-  if (v.isVector4) return 'vec4';
   throw new Error('tex-bake: unsupported uniform');
 }
 
@@ -141,10 +140,11 @@ export class Baker {
     r.setRenderTarget(prev);
   }
 
-  // spec: kind, glsl, uniforms, span [mmU, mmV], size [w, h], color (#hex to match, optional), normal (bool),
-  // orm (bool). Returns the textures and the span in metres (UVs of the boards are in metres).
+  // spec: kind, glsl, uniforms, span [mmU, mmV], size [w, h], color (#hex to match, optional), map (false: no
+  // colour map, for a material that brings its own colour). Always a normal and a roughness/metalness map. Returns
+  // the textures and the span in metres (UVs of the boards are in metres).
   bake(spec) {
-    const m = this.material(spec.kind, spec.glsl, spec.uniforms ?? {});
+    const m = this.material(spec.kind, spec.glsl, spec.uniforms);
     m.uniforms.uSpan.value.set(spec.span[0], spec.span[1]);
     m.uniforms.uGain.value.set(1, 1, 1);
     if (spec.color) m.uniforms.uGain.value.copy(this.gain(m, spec.color));
@@ -155,30 +155,28 @@ export class Baker {
       out.targets.push(rt);
       return rt.texture;
     };
-    m.uniforms.uMode.value = 0;
     const aniso = this.anisotropy;
-    const map = target(w, h, { srgb: true, anisotropy: aniso });
-    this.draw(m, map);
-    out.map = finish(map);
-    if (spec.normal) {
-      const height = target(w, h, { type: THREE.HalfFloatType, mips: false });
-      m.uniforms.uMode.value = 1;
-      this.draw(m, height);
-      const nm = target(w, h, { anisotropy: aniso });
-      const u = this.normalMaterial.uniforms;
-      u.tHeight.value = height.texture;
-      u.uTexel.value.set(1 / w, 1 / h);
-      u.uMm.value.set(spec.span[0] / w, spec.span[1] / h);
-      this.draw(this.normalMaterial, nm);
-      height.dispose();
-      out.normalMap = finish(nm);
+    if (spec.map !== false) {
+      const map = target(w, h, { srgb: true, anisotropy: aniso });
+      m.uniforms.uMode.value = 0;
+      this.draw(m, map);
+      out.map = finish(map);
     }
-    if (spec.orm) {
-      const orm = target(Math.max(64, w >> 1), Math.max(64, h >> 1), { anisotropy: aniso });
-      m.uniforms.uMode.value = 2;
-      this.draw(m, orm);
-      out.ormMap = finish(orm);
-    }
+    const height = target(w, h, { type: THREE.HalfFloatType, mips: false });
+    m.uniforms.uMode.value = 1;
+    this.draw(m, height);
+    const nm = target(w, h, { anisotropy: aniso });
+    const u = this.normalMaterial.uniforms;
+    u.tHeight.value = height.texture;
+    u.uTexel.value.set(1 / w, 1 / h);
+    u.uMm.value.set(spec.span[0] / w, spec.span[1] / h);
+    this.draw(this.normalMaterial, nm);
+    height.dispose();
+    out.normalMap = finish(nm);
+    const orm = target(Math.max(64, w >> 1), Math.max(64, h >> 1), { anisotropy: aniso });
+    m.uniforms.uMode.value = 2;
+    this.draw(m, orm);
+    out.ormMap = finish(orm);
     return out;
   }
 
@@ -199,12 +197,6 @@ export class Baker {
         Math.min(4, Math.max(0.25, t / Math.max(1e-4, toLinear(median(px, c))))),
       ),
     );
-  }
-
-  dispose() {
-    this.quad.dispose();
-    this.normalMaterial.dispose();
-    for (const m of this.programs.values()) m.dispose();
   }
 }
 

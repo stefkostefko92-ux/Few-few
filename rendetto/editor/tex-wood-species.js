@@ -4,14 +4,15 @@ import * as THREE from 'three';
 
 // A name part matches at the start of a word, as Bulgarian stems take endings („дъбов“, „орехов“), never inside one
 // („Касела“ is not fir, „Gold“ is not old); a trailing $ ends the word as well.
-const words = (...parts) =>
+export const words = (...parts) =>
   new RegExp(
     `(?:^|[^\\p{L}])(?:${parts.map((p) => p.replace(/\$$/, '(?!\\p{L})')).join('|')})`,
     'iu',
   );
 
 const SPECIES = [
-  // re, ring mm, contrast, pores, rays, knots, figure, cathedral, plank [w, jitter], plank tone
+  // re, ring mm, contrast, pores, rays, knots, figure, cathedral, tone between planks (the plank width comes from
+  // the style, tex-wood.js)
   [
     words('орех', 'walnut', 'ноче', 'noce'),
     { ring: 3.6, contrast: 0.92, pores: 0.42, figure: 0.8, cathedral: 0.7, tone: 0.16 },
@@ -36,7 +37,8 @@ const SPECIES = [
     { ring: 7.5, contrast: 1.05, pores: 0, knots: 0.45, figure: 0.35, cathedral: 0.8, tone: 0.1 },
   ],
   [
-    words('бук', 'beech'),
+    // not „Букмач“ (bookmatched oak)
+    words('бук$', 'буков', 'beech'),
     {
       ring: 3.2,
       contrast: 0.38,

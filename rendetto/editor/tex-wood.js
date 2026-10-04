@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { tones, woodLook } from './tex-wood-species.js';
 
-export const WOOD_GLSL = /* glsl */ `
+const WOOD_GLSL = /* glsl */ `
 float plankAt(float y, out float y0, out float w) {
   float pw = uPlank.x;
   float c = floor(y / pw);
@@ -105,7 +105,7 @@ void pattern(vec2 p, inout Surface s) {
   // colour drift along the plank and between planks (heartwood, sapwood, mineral streaks)
   float drift = fbm(vec2(x * 0.0007, p.y * 0.0045) + h.yz * 70.0, 3);
   float t = (h.x - 0.5) * 2.0 * uPlankTone + drift * 0.5 * (0.5 + uRustic) + streak * 0.75 * uContrast
-    - late * ringK * lateW * 1.0 * uContrast + fib * 0.32 + fine * 0.14 - halo * 0.3 * uContrast;
+    - late * ringK * lateW * uContrast + fib * 0.32 + fine * 0.14 - halo * 0.3 * uContrast;
   // pores: open in the early wood, finer and scattered in the late wood
   float pores = 0.0;
   if (uPores > 0.0) {
@@ -158,7 +158,7 @@ void pattern(vec2 p, inout Surface s) {
   s.albedo = col;
   s.height = -pores * 0.045 - crack * 0.35 + late * lateW * uRelief + fib * 0.012 - seam * 0.08
     - knot * (0.02 + knotLine * 0.05) - saw * 0.008;
-  s.rough = clamp(uGloss + pores * 0.18 + crack * 0.3 - late * 0.03 + rays * -0.05, 0.05, 1.0);
+  s.rough = clamp(uGloss + pores * 0.18 + crack * 0.3 - late * 0.03 - rays * 0.05, 0.05, 1.0);
   s.metal = 0.0;
 }
 `;
@@ -178,8 +178,6 @@ export function woodSpec(d, seed) {
     span: [2400, 800],
     size: [2048, 1024],
     color: d.hex,
-    normal: true,
-    orm: true,
     uniforms: {
       uMid: { value: mid },
       uLight: { value: light },

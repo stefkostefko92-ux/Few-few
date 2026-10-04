@@ -73,7 +73,8 @@ export class Viewer {
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(host);
     this.resize();
-    const light = (k) => this.stage.jitter(k);
+    // sample k of the still image moves the key light (soft shadows)
+    this.light = (k) => this.stage.jitter(k);
     const loop = () => {
       this.raf = requestAnimationFrame(loop);
       // a hidden panel (another tab of the editor) draws nothing; it goes on where it stopped when shown again
@@ -85,13 +86,18 @@ export class Viewer {
         this.photoMode.moved();
         this.dirty = false;
       }
-      if (!this.photoMode.frame() && !this.pipeline.done) this.pipeline.render(light);
+      if (!this.photoMode.frame()) this.rasterFrame();
     };
     this.raf = requestAnimationFrame(loop);
   }
 
   invalidate() {
     this.dirty = true;
+  }
+
+  // One more sample of the normal (raster) view, until its still image is done.
+  rasterFrame() {
+    if (!this.pipeline.done) this.pipeline.render(this.light);
   }
 
   // Something in the scene changed: the photorealistic view gets it again once the changes settle.
@@ -263,8 +269,14 @@ export class Viewer {
     this.changed();
   }
 
+  // The room's decors are baked when it is switched on; switched off, the model is built again without it, so that
+  // only the model's decors stay pinned and the room's may be freed.
   setRoom(on) {
     this.stage.setRoom(on);
+    if (!on && this.model) {
+      this.setModel(this.model);
+      return;
+    }
     this.mats.trim();
     this.changed();
   }

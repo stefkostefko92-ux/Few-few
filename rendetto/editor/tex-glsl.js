@@ -46,7 +46,7 @@ float gnoise(vec2 p) {
   float vd = dot(gd, f - vec2(1.0, 1.0));
   return mix(mix(va, vb, u.x), mix(vc, vd, u.x), u.y);
 }
-// fractal sums with a fixed loop bound; octaves beyond n are skipped
+// fractal sum with a fixed loop bound; octaves beyond n are skipped
 float fbm(vec2 p, int n) {
   float s = 0.0;
   float a = 0.5;
@@ -54,30 +54,6 @@ float fbm(vec2 p, int n) {
     if (i >= n) break;
     s += a * gnoise(p);
     p = mat2(1.6, 1.2, -1.2, 1.6) * p + 17.3;
-    a *= 0.5;
-  }
-  return s;
-}
-float vfbm(vec2 p, int n) {
-  float s = 0.0;
-  float a = 0.5;
-  float t = 0.0;
-  for (int i = 0; i < 7; i++) {
-    if (i >= n) break;
-    s += a * vnoise(p);
-    t += a;
-    p = mat2(1.6, 1.2, -1.2, 1.6) * p + 11.7;
-    a *= 0.5;
-  }
-  return s / t;
-}
-float ridged(vec2 p, int n) {
-  float s = 0.0;
-  float a = 0.5;
-  for (int i = 0; i < 6; i++) {
-    if (i >= n) break;
-    s += a * (1.0 - abs(gnoise(p) * 2.0));
-    p = mat2(1.6, 1.2, -1.2, 1.6) * p + 5.1;
     a *= 0.5;
   }
   return s;
@@ -104,12 +80,6 @@ vec3 worley(vec2 p) {
     }
   }
   return vec3(d1, d2, id);
-}
-vec3 srgbToLinear(vec3 c) {
-  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c));
-}
-float luma(vec3 c) {
-  return dot(c, vec3(0.2126, 0.7152, 0.0722));
 }
 `;
 

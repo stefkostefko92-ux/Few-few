@@ -138,7 +138,8 @@ export class Stage {
     this.v.scene.fog.color.setHex(t.background);
   }
 
-  // After a new model: the studio corner behind it, the room, the key light and the shadow frustum around it.
+  // After a new model: the studio corner behind it, the room (only while it shows: its floor and plaster are big
+  // bakes), the key light and the shadow frustum around it.
   fit(ext, off) {
     const W = (ext.x1 - ext.x0) * S;
     const D = (ext.z1 - ext.z0) * S;
@@ -167,6 +168,7 @@ export class Stage {
   }
 
   setRoom(on) {
+    if (!on) clearRoom(this.room);
     this.room.visible = on;
     this.studio.visible = !on;
     this.updateRoom();

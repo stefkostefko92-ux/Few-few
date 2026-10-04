@@ -3,7 +3,7 @@
 // The style comes from the name, the colour from the catalogue.
 import * as THREE from 'three';
 
-export const STONE_GLSL = /* glsl */ `
+const STONE_GLSL = /* glsl */ `
 void pattern(vec2 p, inout Surface s) {
   vec2 q = p + uSeed * 37.0;
   float cloud = fbm(q * 0.0035, 5);
@@ -114,8 +114,6 @@ export function stoneSpec(d, seed) {
     span: [2400, 1200],
     size: [2048, 1024],
     color: d.hex,
-    normal: true,
-    orm: true,
     uniforms: {
       uBase: { value: base },
       uVein: { value: vein },
