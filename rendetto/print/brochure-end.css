@@ -16,7 +16,6 @@
   display: flex;
   align-items: flex-start;
   gap: 4.5mm;
-  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -43,7 +42,7 @@
   border-bottom: 0.4mm solid var(--ink);
 }
 .b-elev .l-body {
-  fill: #fbfbf8;
+  fill: var(--panel);
   stroke: var(--ink);
   stroke-width: 0.6px;
   vector-effect: non-scaling-stroke;
@@ -106,7 +105,6 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 3.5mm;
-  margin: 0;
   padding: 0;
   list-style: none;
 }

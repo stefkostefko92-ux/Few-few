@@ -31,14 +31,14 @@
   stroke-width: 4;
 }
 .sheet-art .part {
-  fill: #fbfbf8;
-  stroke: #34302f;
+  fill: var(--panel);
+  stroke: var(--ink);
   stroke-width: 3;
 }
 .sheet-art .pid {
   font-family: var(--f-mono);
   font-weight: 500;
-  fill: #6f6963;
+  fill: var(--ink-3);
 }
 .sheet-art .cut {
   fill: none;
