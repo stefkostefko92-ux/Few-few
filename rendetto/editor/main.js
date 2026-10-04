@@ -7,7 +7,14 @@ import { nest } from '../engine/nest.js';
 import { cncBlockers } from '../engine/cam.js';
 import { canonicalJson } from '../engine/util.js';
 import { $, $$, sha256, localDate } from './dom.js';
-import { renderTypes, renderParams, renderHardwareOptions, writeForm, bindForm } from './form.js';
+import {
+  renderTypes,
+  renderParams,
+  renderHardwareOptions,
+  writeForm,
+  bindForm,
+  bindRailbox,
+} from './form.js';
 import { openPicker, bindPicker } from './pickers.js';
 import { renderBom } from './render-bom.js';
 import { renderDrill } from './render-drill.js';
@@ -33,7 +40,8 @@ const TABS = ['view', 'bom', 'drill', 'nest', 'draw', 'cnc', 'cat'];
 const boot = JSON.parse($('#boot').textContent);
 const root = $('#main');
 const csrf = root.dataset.csrf;
-let readOnly = boot.readOnly === true; // also when the catalog fails to load (session.js)
+// also when the catalog does not load or the engine cannot build the project on opening (lockForReadingOnce)
+let readOnly = boot.readOnly === true;
 const text = JSON.parse(root.dataset.text || '{}');
 
 const form = $('#params');
@@ -92,14 +100,20 @@ const { isDirty, showState, save } = createSaver({
 
 /* ---------- model ---------- */
 
+// Never rejects: an engine error undoes the value, a failure to show the result is reported; callers use `void`.
 let seq = 0;
 async function recompute(writeFocused = false) {
   const mine = ++seq;
+  const spec = state.spec;
   let model;
   let nesting;
+  let bom;
+  let blockers;
   try {
-    model = buildModel(state.spec);
+    model = buildModel(spec);
     nesting = nest(model);
+    bom = buildBom(model);
+    blockers = cncBlockers(model, nesting);
   } catch {
     // a value the engine cannot build is undone, so it is never saved; a first load has nothing to fall back to
     showError(text.engineFailed);
@@ -110,22 +124,21 @@ async function recompute(writeFocused = false) {
     }
     return;
   }
-  const hash = await sha256(canonicalJson(model.spec));
-  if (mine !== seq) return;
-  Object.assign(state, {
-    spec: model.spec,
-    model,
-    hash,
-    bom: buildBom(model),
-    nesting,
-    blockers: cncBlockers(model, nesting),
-  });
-  writeForm(form, model.spec, writeFocused);
-  renderHeader(state.model);
-  showDownloads(state.blockers.length > 0, text.cncBlockedLink);
-  for (const t of TABS) if (t !== 'cat') state.dirty.add(t);
-  renderTab(state.tab);
-  showState();
+  try {
+    const hash = await sha256(canonicalJson(model.spec));
+    // a newer recompute, or an edit made while the hash was computed (its own recompute follows), wins
+    if (mine !== seq || state.spec !== spec) return;
+    Object.assign(state, { spec: model.spec, model, hash, bom, nesting, blockers });
+    writeForm(form, model.spec, writeFocused);
+    renderHeader(state.model);
+    showDownloads(state.blockers.length > 0, text.cncBlockedLink);
+    for (const t of TABS) if (t !== 'cat') state.dirty.add(t);
+    renderTab(state.tab);
+  } catch {
+    showError(text.showFailed);
+  } finally {
+    showState();
+  }
 }
 
 let timer = 0;
@@ -168,16 +181,18 @@ function bindUi() {
   renderTypes($('#type-picker'));
   renderParams($('#param-fields'), state.spec.type);
   renderHardwareOptions();
+  bindRailbox($('.railbox', form));
   bindForm(form, (key, value, commit) => {
     if (readOnly) return;
     if (key === 'type') {
       state.spec = withType(state.spec, value);
       renderParams($('#param-fields'), value);
-      recompute(true);
+      void recompute(true);
       return;
     }
     state.spec = { ...state.spec, [key]: value };
-    if (commit) schedule(40);
+    // a final change shows the value as the engine took it (limits, step), also in a field still focused (Enter)
+    if (commit) schedule(40, true);
     else schedule(400);
   });
   for (const b of $$('[data-pick]')) {
@@ -191,7 +206,7 @@ function bindUi() {
           [key]: id,
           ...(key === 'frontRal' ? { frontMaterial: 'ral' } : {}),
         };
-        recompute();
+        void recompute();
       });
     });
   }
@@ -199,7 +214,7 @@ function bindUi() {
   $('#reset').addEventListener('click', () => {
     if (readOnly) return;
     state.spec = normalizeSpec({ type: state.spec.type });
-    recompute(true);
+    void recompute(true);
   });
 
   for (const t of $$('[role="tab"]')) {
@@ -225,7 +240,9 @@ function bindUi() {
     $('#save').addEventListener('click', () => void save());
     $('#project-name').addEventListener('input', showState);
     document.addEventListener('keydown', (ev) => {
-      if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's') {
+      // S by its letter, or by its place when the layout puts no Latin letter there (Cyrillic „с“)
+      const s = ev.key.toLowerCase() === 's' || (ev.code === 'KeyS' && !/^[a-z]$/i.test(ev.key));
+      if ((ev.ctrlKey || ev.metaKey) && s) {
         ev.preventDefault();
         void save();
       }
@@ -265,4 +282,4 @@ async function start() {
   showState();
 }
 
-void start();
+start().catch(() => lockForReadingOnce(text.showFailed));

@@ -8,6 +8,7 @@
     "saveFailed": "Not saved. Try again.",
     "catalogFailed": "The catalogue did not load, so the project is open for viewing only — otherwise its hardware and decors would quietly change to the basic ones. Reload the page.",
     "engineFailed": "This value cannot be computed and the previous one is back. Try another; if the error stays, write to us.",
+    "showFailed": "The project cannot be shown. Reload the page; if the error stays, write to us.",
     "noWebgl": "This browser does not support WebGL 2, so the 3D view cannot be shown. The other tabs work.",
     "save": "Save",
     "download": "Download",

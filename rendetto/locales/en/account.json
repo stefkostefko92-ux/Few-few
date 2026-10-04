@@ -173,7 +173,7 @@
     "deleteConfirm": "Delete “{name}”? This cannot be undone.",
     "errors": {
       "conflict": "The project was changed in another window or on another device. Reload the page to see the latest version — the changes here are not saved.",
-      "name": "The name can be up to 80 characters.",
+      "name": "The name can be up to 80 characters, without the < and > signs.",
       "planExpired": "Your plan has ended. Projects can be downloaded, but new projects and changes need an active plan.",
       "spec": "The project cannot be saved: a value is outside the allowed range.",
       "tooMany": "You have reached the maximum number of projects. Delete old ones to create new ones.",

@@ -13,12 +13,13 @@
   padding: 12px 16px;
   font: 600 15px var(--f-display);
 }
+/* wide: the parameters stay open (form.js keeps them so); a closed panel keeps its clickable summary */
 @media (min-width: 1040px) {
-  .railbox > summary {
+  .railbox[open] > summary {
     cursor: default;
     pointer-events: none;
   }
-  .railbox > summary::marker {
+  .railbox[open] > summary::marker {
     content: '';
   }
 }

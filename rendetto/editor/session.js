@@ -4,15 +4,23 @@
 import { baseCatalogData } from '../engine/catalog.js';
 import { $, $$ } from './dom.js';
 
+// A request with no answer at all is given up after this long; a slow but running download of the body is not cut.
+const ANSWER_TIMEOUT_MS = 20000;
+
 export async function loadCatalog() {
   for (let attempt = 0; attempt < 2; attempt++) {
+    const abort = new AbortController();
+    const timer = window.setTimeout(() => abort.abort(), ANSWER_TIMEOUT_MS);
     try {
       const res = await fetch('/app/catalog.json', {
         credentials: 'same-origin',
         headers: { accept: 'application/json' },
+        signal: abort.signal,
       });
+      window.clearTimeout(timer);
       if (res.ok) return { data: await res.json(), ok: true };
     } catch {
+      window.clearTimeout(timer);
       // one more try, then the base catalog for reading only
     }
   }

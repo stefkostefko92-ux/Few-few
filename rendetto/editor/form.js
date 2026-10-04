@@ -160,3 +160,19 @@ export function bindForm(form, onField) {
   });
   form.addEventListener('submit', (ev) => ev.preventDefault());
 }
+
+// From 1040 px the parameters are always open and their summary is a plain heading (10-rail.css): neither a key nor a
+// click closes them there, and a panel closed on a narrower screen opens again when the screen widens.
+export function bindRailbox(box) {
+  const wide = window.matchMedia('(min-width: 1040px)');
+  const summary = box.querySelector(':scope > summary');
+  summary.addEventListener('click', (ev) => {
+    if (wide.matches) ev.preventDefault();
+  });
+  const sync = () => {
+    if (wide.matches) box.open = true;
+    summary.tabIndex = wide.matches ? -1 : 0;
+  };
+  wide.addEventListener('change', sync);
+  sync();
+}

@@ -3,6 +3,7 @@
 // the save already on its way — and the server refuses a save over a newer version (another window or device), so
 // nothing is overwritten unseen. An expired plan or a lost session reloads the page, which then shows why.
 import { $ } from './dom.js';
+import { showError } from './session.js';
 
 export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = async () => {} }) {
   const nameInput = $('#project-name');
@@ -10,11 +11,11 @@ export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = 
   const errorBox = $('#save-error');
   let chain = Promise.resolve(true);
 
+  // an emptied name field is not a change: the save keeps the saved name (write)
+  const nameOnScreen = () => nameInput.value.trim() || state.savedName;
+
   function isDirty() {
-    return (
-      !isReadOnly() &&
-      (state.hash !== state.savedHash || nameInput.value.trim() !== state.savedName)
-    );
+    return !isReadOnly() && (state.hash !== state.savedHash || nameOnScreen() !== state.savedName);
   }
 
   function showState() {
@@ -24,8 +25,7 @@ export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = 
   }
 
   function fail(message) {
-    errorBox.textContent = message;
-    errorBox.hidden = false;
+    showError(message);
     return false;
   }
 
@@ -44,7 +44,7 @@ export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = 
         credentials: 'same-origin',
         body: JSON.stringify({
           spec: state.spec,
-          name: nameInput.value.trim() || state.savedName,
+          name: nameOnScreen(),
           base: state.savedAt,
         }),
       });
@@ -58,6 +58,7 @@ export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = 
       state.savedHash = body.hash;
       state.savedName = body.name;
       state.savedAt = body.updatedAt;
+      if (!nameInput.value.trim()) nameInput.value = body.name;
       return true;
     } catch {
       return fail(text.saveFailed);
