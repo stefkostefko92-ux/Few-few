@@ -21,6 +21,10 @@ const VIEWPORTS = {
 };
 const PUBLIC = ['/', '/privacy', '/terms', '/login', '/register', '/forgot', '/no-such-page'];
 const CUSTOMER = ['/app', '/account', '/account/plan', '/account/security', '/account/data'];
+// a page that is not ready in this time is a finding for that screen, not a five-minute stall of the run
+const READY_MS = 30000;
+// unique per run: cleanup finds the project by name even if the editor never opened
+const PROJECT_NAME = `e2e — достъпност ${Date.now().toString(36)}`;
 
 // the landing and the legal pages have a path per language, the rest take ?lang=
 function localized(path, locale) {
@@ -39,7 +43,11 @@ async function check(browser, storageState, path, locale, scheme, viewport) {
     if (m.type() === 'error' && !/status of 404/.test(m.text())) errors.push(m.text());
   });
   try {
-    await page.goto(base + localized(path, locale), { waitUntil: 'networkidle', timeout: 300000 });
+    try {
+      await ready(page, path, locale);
+    } catch (err) {
+      return [`not ready in ${READY_MS / 1000} s: ${firstLine(err)}`, ...errors];
+    }
     // sections below the fold are skipped (content-visibility: auto) and laid out at a placeholder height
     // until they are seen: scroll through once, as a reader would, so axe measures the real layout
     await page.evaluate(async () => {
@@ -65,21 +73,61 @@ async function check(browser, storageState, path, locale, scheme, viewport) {
   }
 }
 
-async function signIn(browser) {
-  const ctx = await browser.newContext();
-  const page = await ctx.newPage();
+const firstLine = (err) => (err instanceof Error ? err.message : String(err)).split('\n')[0];
+
+// 'networkidle' never settles on a page that keeps a connection open; wait for the document and its
+// <main> instead, and in the editor for the first computed model (the title line is filled from it)
+async function ready(page, path, locale) {
+  await page.goto(base + localized(path, locale), { waitUntil: 'load', timeout: READY_MS });
+  await page.locator('main#main').waitFor({ state: 'visible', timeout: READY_MS });
+  if (path.startsWith('/app/p/'))
+    await page.waitForFunction(
+      () => document.getElementById('title-spec')?.textContent?.trim(),
+      undefined,
+      { timeout: READY_MS },
+    );
+}
+
+// fills the session in place: whatever fails after the project is created, main's finally still
+// holds the context and deletes the project
+async function signIn(session) {
+  const { ctx, page } = session;
+  page.setDefaultTimeout(READY_MS);
   await page.goto(`${base}/login`);
   await page.fill('#email', email);
   await page.fill('#password', password);
   await Promise.all([page.waitForURL(/\/app/), page.click('button[type=submit]')]);
   await page.selectOption('#type', 'chest');
-  await page.fill('#pname', 'e2e — достъпност');
+  await page.fill('#pname', PROJECT_NAME);
   await Promise.all([
     page.waitForURL(/\/app\/p\//),
     page.click('.newproj-form button[type=submit]'),
   ]);
-  const editor = new URL(page.url()).pathname;
-  return { ctx, page, state: await ctx.storageState(), editor };
+  session.editor = new URL(page.url()).pathname;
+  session.state = await ctx.storageState();
+}
+
+// deletes every project of this run by its name, then closes the context; a failure here is reported
+// (the test account would keep the project) but does not hide the error that ended the run
+async function cleanUp({ ctx, page }) {
+  try {
+    page.on('dialog', (d) => void d.accept());
+    await page.goto(`${base}/app`);
+    for (let i = 0; i < 5; i++) {
+      const row = page.locator('li.proj', { hasText: PROJECT_NAME }).first();
+      if (!(await row.count())) return;
+      await Promise.all([
+        page.waitForURL(/\/app$/),
+        row.locator('form[action$="/delete"] button').click(),
+      ]);
+    }
+    throw new Error('the project is still listed after five deletions');
+  } catch (err) {
+    process.stderr.write(`the test project „${PROJECT_NAME}“ was not deleted: ${firstLine(err)}\n`);
+    process.exitCode = 1;
+  } finally {
+    await ctx.close();
+  }
 }
 
 async function main() {
@@ -90,7 +138,9 @@ async function main() {
   try {
     const groups = [[undefined, PUBLIC]];
     if (email && password) {
-      session = await signIn(browser);
+      const ctx = await browser.newContext();
+      session = { ctx, page: await ctx.newPage(), state: undefined, editor: null };
+      await signIn(session);
       groups.push([session.state, [...CUSTOMER, session.editor]]);
     } else {
       process.stdout.write('E2E_EMAIL/E2E_PASSWORD не са зададени — само публичните страници.\n');
@@ -105,16 +155,7 @@ async function main() {
               for (const f of found) failures.push(`${path} ${locale} ${scheme} ${name} — ${f}`);
             }
   } finally {
-    if (session) {
-      const { page, editor } = session;
-      page.on('dialog', (d) => void d.accept());
-      await page.goto(`${base}/app`);
-      await Promise.all([
-        page.waitForURL(/\/app$/),
-        page.click(`form[action="${editor}/delete"] button`),
-      ]);
-      await session.ctx.close();
-    }
+    if (session) await cleanUp(session);
     await browser.close();
   }
   process.stdout.write(`${screens} екрана, ${failures.length} нарушения\n`);
