@@ -1,14 +1,10 @@
 // Каталог tab: everything the catalog agents collected from Bulgarian shops and manufacturers, searchable, with CSV
 // and JSON copies of the filtered view. Products without drilling data are listed but cannot be fitted.
-import { $, esc, fmt, money, swatchStyle, copyText, setHtml } from './dom.js';
+import { $, esc, externalLink, fmt, money, swatchStyle, copyText, setHtml } from './dom.js';
 import { toCsv } from '../engine/bom.js';
 import { CATEGORY_BG, HANDLE_TYPE_BG } from './pickers.js';
 
 const PAGE = 300;
-const link = (u, text) =>
-  typeof u === 'string' && /^https:\/\//.test(u)
-    ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(text)}</a>`
-    : esc(text);
 const yes = (v) => (v === true ? 'да' : v === false ? 'не' : '—');
 
 const VIEWS = {
@@ -41,7 +37,7 @@ const VIEWS = {
       yes(h.drillable),
     ],
     html: (h) =>
-      `<td>${link(h.url, h.name)}</td><td>${esc(h.brand ?? '—')}</td><td class="num">${esc(h.sku ?? '—')}</td><td>${esc(HANDLE_TYPE_BG[h.type] ?? h.type ?? '—')}</td><td class="num">${h.holes ?? '—'}</td><td class="num">${h.spacing ? `${h.spacing} mm` : '—'}</td><td class="num">${h.length ? `${h.length} mm` : '—'}</td><td>${esc(h.finish ?? '—')}</td><td class="num">${money(h.price, h.currency)}</td><td>${esc(h.shop ?? '—')}</td><td class="c">${h.drillable ? '✓' : '—'}</td>`,
+      `<td>${externalLink(h.url, h.name)}</td><td>${esc(h.brand ?? '—')}</td><td class="num">${esc(h.sku ?? '—')}</td><td>${esc(HANDLE_TYPE_BG[h.type] ?? h.type ?? '—')}</td><td class="num">${h.holes ?? '—'}</td><td class="num">${h.spacing ? `${h.spacing} mm` : '—'}</td><td class="num">${h.length ? `${h.length} mm` : '—'}</td><td>${esc(h.finish ?? '—')}</td><td class="num">${money(h.price, h.currency)}</td><td>${esc(h.shop ?? '—')}</td><td class="c">${h.drillable ? '✓' : '—'}</td>`,
     text: (h) => `${h.name} ${h.brand ?? ''} ${h.sku ?? ''} ${h.finish ?? ''} ${h.shop ?? ''}`,
   },
   hinges: {
@@ -71,7 +67,7 @@ const VIEWS = {
       yes(h.drillable),
     ],
     html: (h) =>
-      `<td>${link(h.url, h.name)}</td><td>${esc(h.brand ?? '—')}</td><td class="num">${esc(h.mfrSku ?? h.sku ?? '—')}</td><td>${esc(h.systemName ?? '—')}</td><td class="num">${h.angle ? `${h.angle}°` : '—'}</td><td>${esc(h.overlay ?? '—')}</td><td class="c">${yes(h.softClose)}</td><td class="num">${money(h.price, h.currency)}</td><td>${esc(h.shop ?? '—')}</td><td class="c">${h.drillable ? '✓' : '—'}</td>`,
+      `<td>${externalLink(h.url, h.name)}</td><td>${esc(h.brand ?? '—')}</td><td class="num">${esc(h.mfrSku ?? h.sku ?? '—')}</td><td>${esc(h.systemName ?? '—')}</td><td class="num">${h.angle ? `${h.angle}°` : '—'}</td><td>${esc(h.overlay ?? '—')}</td><td class="c">${yes(h.softClose)}</td><td class="num">${money(h.price, h.currency)}</td><td>${esc(h.shop ?? '—')}</td><td class="c">${h.drillable ? '✓' : '—'}</td>`,
     text: (h) =>
       `${h.name} ${h.brand ?? ''} ${h.mfrSku ?? ''} ${h.sku ?? ''} ${h.systemName ?? ''} ${h.shop ?? ''}`,
   },
@@ -100,7 +96,7 @@ const VIEWS = {
       yes(s.drillable),
     ],
     html: (s) =>
-      `<td>${link(s.url, s.name)}</td><td>${esc(s.brand ?? '—')}</td><td class="num">${esc(s.sku ?? '—')}</td><td>${esc(s.kind ?? '—')}</td><td class="num">${esc((s.lengths ?? []).join(' / ') || '—')}</td><td class="num">${s.loadKg ? `${s.loadKg} kg` : '—'}</td><td class="num">${money(s.price, s.currency)}</td><td>${esc(s.shop ?? '—')}</td><td class="c">${s.drillable ? '✓' : '—'}</td>`,
+      `<td>${externalLink(s.url, s.name)}</td><td>${esc(s.brand ?? '—')}</td><td class="num">${esc(s.sku ?? '—')}</td><td>${esc(s.kind ?? '—')}</td><td class="num">${esc((s.lengths ?? []).join(' / ') || '—')}</td><td class="num">${s.loadKg ? `${s.loadKg} kg` : '—'}</td><td class="num">${money(s.price, s.currency)}</td><td>${esc(s.shop ?? '—')}</td><td class="c">${s.drillable ? '✓' : '—'}</td>`,
     text: (s) => `${s.name} ${s.brand ?? ''} ${s.sku ?? ''} ${s.kind ?? ''} ${s.shop ?? ''}`,
   },
   bed: {
@@ -115,7 +111,7 @@ const VIEWS = {
       b.shop ?? '',
     ],
     html: (b) =>
-      `<td>${link(b.url, b.name)}</td><td>${esc(b.brand ?? '—')}</td><td class="num">${esc(b.sku ?? '—')}</td><td>${esc(b.kind ?? '—')}</td><td class="num">${money(b.price, b.currency)}</td><td>${esc(b.shop ?? '—')}</td>`,
+      `<td>${externalLink(b.url, b.name)}</td><td>${esc(b.brand ?? '—')}</td><td class="num">${esc(b.sku ?? '—')}</td><td>${esc(b.kind ?? '—')}</td><td class="num">${money(b.price, b.currency)}</td><td>${esc(b.shop ?? '—')}</td>`,
     text: (b) => `${b.name} ${b.brand ?? ''} ${b.sku ?? ''} ${b.kind ?? ''} ${b.shop ?? ''}`,
   },
   decors: {
@@ -131,7 +127,7 @@ const VIEWS = {
       yes(d.availableBg),
     ],
     html: (d) =>
-      `<td><i class="sw" data-css="${esc(swatchStyle(d))}"></i> ${esc(d.manufacturer)}</td><td class="num">${link(d.url, d.code)}</td><td>${esc(d.name)}</td><td>${esc(CATEGORY_BG[d.category] ?? d.category)}</td><td>${esc(d.finish ?? '—')}</td><td class="num">${esc(d.hex)}</td><td class="c">${yes(d.availableBg)}</td>`,
+      `<td><i class="sw" data-css="${esc(swatchStyle(d))}"></i> ${esc(d.manufacturer)}</td><td class="num">${externalLink(d.url, d.code)}</td><td>${esc(d.name)}</td><td>${esc(CATEGORY_BG[d.category] ?? d.category)}</td><td>${esc(d.finish ?? '—')}</td><td class="num">${esc(d.hex)}</td><td class="c">${yes(d.availableBg)}</td>`,
     text: (d) => `${d.manufacturer} ${d.code} ${d.name} ${d.nameEn ?? ''}`,
   },
   ral: {

@@ -6,7 +6,7 @@ import { buildBom } from '../engine/bom.js';
 import { nest } from '../engine/nest.js';
 import { cncBlockers } from '../engine/cam.js';
 import { canonicalJson } from '../engine/util.js';
-import { $, $$, sha256 } from './dom.js';
+import { $, $$, sha256, localDate } from './dom.js';
 import { renderTypes, renderParams, renderHardwareOptions, writeForm, bindForm } from './form.js';
 import { openPicker, bindPicker } from './pickers.js';
 import { renderBom } from './render-bom.js';
@@ -59,14 +59,14 @@ const meta = () => ({
   product: 'Rendetto',
   hash: state.hash,
   owner: boot.owner,
-  date: new Date().toISOString().slice(0, 10),
+  date: localDate(),
 });
 
 const RENDER = {
   view: () => viewer?.setModel(state.model),
   bom: () => renderBom(state),
   drill: () => renderDrill(state, meta()),
-  nest: () => renderNesting(state),
+  nest: () => renderNesting(state, text.fullscreen),
   draw: () => renderDrawing(state, meta()),
   cnc: () => renderCnc(state, meta()),
   cat: () => renderCatalog(CATALOG),

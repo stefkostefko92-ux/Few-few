@@ -12,11 +12,25 @@
     true,
   );
 
-  // copy the text of an element (recovery codes)
+  // copy the text of an element (recovery codes); when the browser refuses, the text is selected for Ctrl+C
   Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function (button) {
+    var label = button.lastChild;
+    var original = label.textContent; // kept once: a click during the "copied" label cannot replace it
+    var timer = 0;
     button.addEventListener('click', function () {
       var target = document.querySelector(button.getAttribute('data-copy'));
-      if (!target || !navigator.clipboard) return;
+      if (!target) return;
+      var select = function () {
+        var range = document.createRange();
+        range.selectNodeContents(target);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      };
+      if (!navigator.clipboard) {
+        select();
+        return;
+      }
       var text =
         Array.prototype.map
           .call(target.querySelectorAll('li'), function (li) {
@@ -24,13 +38,12 @@
           })
           .join('\n') || target.textContent;
       navigator.clipboard.writeText(text).then(function () {
-        var label = button.lastChild;
-        var before = label.textContent;
-        label.textContent = button.getAttribute('data-done') || before;
-        window.setTimeout(function () {
-          label.textContent = before;
+        label.textContent = button.getAttribute('data-done') || original;
+        window.clearTimeout(timer);
+        timer = window.setTimeout(function () {
+          label.textContent = original;
         }, 1800);
-      });
+      }, select);
     });
   });
 

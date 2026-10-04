@@ -76,6 +76,7 @@
     "photoReady": "L'immagine è pronta.",
     "photoUnsupported": "Questo browser non può mostrare la vista fotorealistica.",
     "photoFailed": "La vista fotorealistica non è partita. La vista normale funziona.",
+    "photoSaveFailed": "L'immagine non è stata salvata. Riprovate.",
     "viewHint": "Trascinate per ruotare, rotellina o pizzico per lo zoom, tasto destro per spostare. I colori dei decorativi sono indicativi e la texture è procedurale.",
     "parts": "Pezzi",
     "copyCut": "Copia la distinta di taglio (CSV)",

@@ -50,11 +50,12 @@ export function sheetSvg(sh, opts = {}) {
 export const sheetTitle = (sh) =>
   `${STOCK[sh.stock].name} ${STOCK[sh.stock].thickness} mm · ${sh.stock === 'hdf3' ? 'бял' : decorName(sh.decor)}`;
 
-// one sheet on full screen (fullscreen.js binds the click)
-const FS_BUTTON =
-  '<button type="button" class="btn btn-small fs-btn" data-fs-sheet aria-pressed="false"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-expand"/></svg><span>Цял екран</span></button>';
+// one sheet on full screen (fullscreen.js binds the click); the label is the page's own (editor.fullscreen)
+const fsButton = (label) =>
+  `<button type="button" class="btn btn-small fs-btn" data-fs-sheet aria-pressed="false"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-expand"/></svg><span>${esc(label)}</span></button>`;
 
-export function renderNesting(state) {
+export function renderNesting(state, fullscreenLabel) {
+  const button = fsButton(fullscreenLabel);
   const { sheets, errors, spacing } = state.nesting;
   const total = sheets.reduce((a, s) => a + s.w * s.h, 0);
   const used = sheets.reduce((a, s) => a + s.yield * s.w * s.h, 0);
@@ -68,7 +69,7 @@ export function renderNesting(state) {
   $('#nest-sheets').innerHTML = sheets
     .map(
       (sh) =>
-        `<figure class="sheetcard"><figcaption><strong>Лист ${sh.index}</strong> · ${esc(sheetTitle(sh))}<span class="num">${sh.placements.length} дет. · ${fmt(sh.yield * 100, 1)}%</span>${FS_BUTTON}</figcaption>${sheetSvg(sh)}</figure>`,
+        `<figure class="sheetcard"><figcaption><strong>Лист ${sh.index}</strong> · ${esc(sheetTitle(sh))}<span class="num">${sh.placements.length} дет. · ${fmt(sh.yield * 100, 1)}%</span>${button}</figcaption>${sheetSvg(sh)}</figure>`,
     )
     .join('');
 }

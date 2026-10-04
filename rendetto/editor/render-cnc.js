@@ -166,7 +166,8 @@ export function drawToolpath(state) {
   const sh = state.nesting.sheets[state.sheet];
   if (!sh || !state.gcode) return;
   setHtml($('#toolpath'), sheetSvg(sh, { paths: pathsFor(state.gcode, state.progress) }));
-  $('#sim-progress').value = String(Math.round(state.progress * 1000));
+  const slider = $('#sim-progress');
+  slider.value = String(Math.round(state.progress * Number(slider.max)));
   $('#sim-label').textContent = `${Math.round(state.progress * 100)}%`;
 }
 

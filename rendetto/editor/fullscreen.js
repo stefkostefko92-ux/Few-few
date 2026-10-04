@@ -46,6 +46,8 @@ async function enter(entry) {
     entry.overlay = true;
   }
   if (active === entry) setState(entry, true);
+  // left again while the browser was still granting it (a quick second click): close what it granted
+  else if (fsElement() === entry.host) void exitNative();
 }
 
 function onChange() {
@@ -92,15 +94,19 @@ function zoomBar(pz, text) {
   return bar;
 }
 
-// One full screen button: `host` goes full screen; `box` (optional) holds the drawing that zooms.
-export function bindFullscreen(button, host, box, text) {
+// The state of one full screen button: `host` goes full screen; `box` (optional) holds the drawing that zooms.
+function createEntry(button, host, box, text) {
   const entry = { host, button, overlay: false, pz: box ? new PanZoom(box) : null };
   if (entry.pz) button.after(zoomBar(entry.pz, text));
+  return entry;
+}
+
+function bindFullscreen(button, host, box, text) {
+  const entry = createEntry(button, host, box, text);
   button.addEventListener('click', () => {
     if (active === entry) void leave();
     else void enter(entry);
   });
-  return entry;
 }
 
 // The buttons in the page (data-fs = the element that goes full screen, data-fs-zoom = the drawing inside it) and
@@ -120,14 +126,8 @@ export function bindFullscreens(text) {
       void leave();
       return;
     }
-    const entry = card.fsEntry ?? (card.fsEntry = bindSheet(b, card, text));
+    // a nesting sheet: the card is redrawn with every change of the model, so its entry lives on the card
+    const entry = card.fsEntry ?? (card.fsEntry = createEntry(b, card, card, text));
     void enter(entry);
   });
-}
-
-// a nesting sheet: the card is redrawn with every change of the model, so its entry lives on the card
-function bindSheet(button, card, text) {
-  const entry = { host: card, button, overlay: false, pz: new PanZoom(card) };
-  button.after(zoomBar(entry.pz, text));
-  return entry;
 }

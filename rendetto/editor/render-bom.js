@@ -1,10 +1,9 @@
 // Разкрой tab: totals, the cut list, boards and edge band, hardware with prices and shop links.
-import { $, esc, fmt, mm, money, stat } from './dom.js';
+import { $, esc, externalLink, fmt, mm, money, stat } from './dom.js';
 import { STOCK } from '../engine/materials.js';
 
 const edgeText = (arr) =>
   arr.length ? arr.map((t) => String(t).replace('.', ',')).join(' + ') : '—';
-const safeUrl = (u) => (typeof u === 'string' && /^https:\/\//.test(u) ? u : null);
 
 export function renderBom(state) {
   const { bom, nesting, spec } = state;
@@ -50,10 +49,7 @@ export function renderBom(state) {
   $('#bom-hardware').innerHTML =
     hardware
       .map((h) => {
-        const url = safeUrl(h.url);
-        const name = url
-          ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(h.name)}</a>`
-          : esc(h.name);
+        const name = externalLink(h.url, h.name);
         const sub = [h.brand, h.sku, h.shop].filter(Boolean).join(' · ');
         return `<li><span>${name}${sub ? `<small>${esc(sub)}</small>` : ''}</span><span class="num">${h.qty} ${esc(h.unit)}${Number.isFinite(h.price) ? `<small>${money(h.price * h.qty, h.currency)}</small>` : ''}</span></li>`;
       })

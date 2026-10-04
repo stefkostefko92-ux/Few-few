@@ -5,7 +5,7 @@ export const fmt = (v, d = 0) =>
   Number(v).toLocaleString('bg-BG', { minimumFractionDigits: d, maximumFractionDigits: d });
 
 // CSP forbids style attributes in markup; inline values are written as data-css and applied through the CSSOM.
-export function hydrateStyles(root) {
+function hydrateStyles(root) {
   for (const el of root.querySelectorAll('[data-css]')) {
     el.style.cssText = el.getAttribute('data-css');
     el.removeAttribute('data-css');
@@ -39,9 +39,10 @@ export async function sha256(text) {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Copy to the clipboard; when the browser refuses, select the text in `fallback` so Ctrl+C works.
+// Copy to the clipboard; when the browser refuses, select the text in `fallback` so Ctrl+C works (without one,
+// say that it failed). The button's own label is kept once, so a second click in the meantime cannot replace it.
 export async function copyText(text, btn, fallback) {
-  const label = btn.textContent;
+  btn.dataset.label ??= btn.textContent;
   try {
     await navigator.clipboard.writeText(text);
     btn.textContent = 'Копирано';
@@ -53,11 +54,27 @@ export async function copyText(text, btn, fallback) {
       sel.removeAllRanges();
       sel.addRange(range);
     }
-    btn.textContent = 'Маркирано — Ctrl+C';
+    btn.textContent = fallback ? 'Маркирано — Ctrl+C' : 'Копирането не успя';
   }
-  window.setTimeout(() => {
-    btn.textContent = label;
-  }, 1800);
+  window.clearTimeout(Number(btn.dataset.timer));
+  btn.dataset.timer = String(
+    window.setTimeout(() => {
+      btn.textContent = btn.dataset.label;
+    }, 1800),
+  );
+}
+
+// A link out to a shop or a manufacturer: https only (catalog data comes from third parties), otherwise plain text.
+export const externalLink = (url, text) =>
+  typeof url === 'string' && /^https:\/\//.test(url)
+    ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(text)}</a>`
+    : esc(text);
+
+// Today's date where the user is (YYYY-MM-DD); toISOString() gives the UTC date, in Europe the day before for the
+// first hours after midnight.
+export function localDate(d = new Date()) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
 export const stat = (k, v) =>

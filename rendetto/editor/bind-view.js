@@ -1,7 +1,7 @@
 // The 3D view and its controls: open the fronts, explode the assembly (animated unless reduced motion is on),
 // show the drilled holes, put the furniture in a room, the photorealistic view and its PNG. Without WebGL the other
 // tabs still work.
-import { $, esc, reduceMotion } from './dom.js';
+import { $, esc, localDate, reduceMotion } from './dom.js';
 import { Viewer } from './viewer.js';
 
 export function createViewer(text) {
@@ -92,18 +92,27 @@ function bindPhoto(viewer, text) {
     } catch {
       if (on !== want) return; // clicked again meanwhile: that click decides
       fail(text.photoFailed);
-      await viewer.setPhoto(false);
+      await viewer.setPhoto(false).catch(() => {}); // freeing what is left: nothing more to report
     }
   });
   save.addEventListener('click', async () => {
-    const blob = await viewer.photo?.snapshot();
-    if (!blob) return;
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `rendetto-${new Date().toISOString().slice(0, 10)}.png`;
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    // still preparing: there is no picture yet
+    if (!viewer.photo) {
+      state.textContent = text.photoPreparing;
+      return;
+    }
+    try {
+      const blob = await viewer.photo.snapshot();
+      if (!blob) throw new Error('no image');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `rendetto-${localDate()}.png`;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    } catch {
+      state.textContent = text.photoSaveFailed;
+    }
   });
 }

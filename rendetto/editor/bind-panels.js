@@ -31,7 +31,7 @@ export function bindPanels(state, meta) {
   });
   $('#sim-progress').addEventListener('input', (ev) => {
     stopSim();
-    state.progress = Number(ev.target.value) / 1000;
+    state.progress = Number(ev.target.value) / Number(ev.target.max); // the scale is the slider's own max
     drawToolpath(state);
   });
   $('#sim-play').addEventListener('click', () => toggleSim(state));

@@ -76,6 +76,7 @@
     "photoReady": "The image is ready.",
     "photoUnsupported": "This browser cannot show the photorealistic view.",
     "photoFailed": "The photorealistic view did not start. The normal view still works.",
+    "photoSaveFailed": "The picture was not saved. Please try again.",
     "viewHint": "Drag to rotate, scroll or pinch to zoom, right button to move. Decor colours are approximate and the texture is procedural.",
     "parts": "Parts",
     "copyCut": "Copy the cut list (CSV)",
