@@ -79,6 +79,7 @@
       "short": "inizio anticipato"
     },
     "accept": "Con l'ordine accettate le {terms} e le informazioni sul {withdrawal}.",
+    "replacesOpen": "Avete un ordine in attesa di pagamento. Un nuovo ordine lo sostituirà e quello vecchio verrà annullato. Se lo avete già pagato, scriveteci a {contact} prima di ordinare di nuovo.",
     "termsLink": "condizioni",
     "withdrawalLink": "diritto di recesso",
     "orderName": "Premium per {term}",

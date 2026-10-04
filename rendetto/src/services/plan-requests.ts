@@ -38,7 +38,7 @@ const orderSchema = z.object({
  * Поръчка на Premium или Lifetime — със задължение за плащане. Договорът се сключва с нея и
  * потвърждението тръгва веднага по имейл. Цената се смята тук, от ценоразписа — от клиента идват
  * само изборите. Искането за ранно начало се приема само от потребител и само с отметката му.
- * Една неплатена поръчка на акаунт: новата заменя старата.
+ * Една неизпълнена поръчка на акаунт: новата заменя старата — екипът и клиентът научават коя.
  */
 export async function createUpgradeRequest(
   user: User,
@@ -54,21 +54,26 @@ export async function createUpgradeRequest(
   if (user.plan === 'LIFETIME') return { ok: false, key: 'plan.request.alreadyLifetime' };
   // договорът и отказът минават по имейла — само по адрес, който акаунтът е потвърдил
   if (!user.emailVerifiedAt) return { ok: false, key: 'plan.errors.unverified' };
-  // всяка поръчка праща писмо на човека и на екипа: таван на акаунт, за да не изчерпи квотата на пощата
-  const recent = await prisma.upgradeRequest.count({
-    where: { userId: user.id, createdAt: { gt: new Date(now.getTime() - 86_400_000) } },
-  });
-  if (recent >= ORDERS_PER_DAY) return { ok: false, key: 'plan.errors.tooMany' };
   const input = parsed.data;
   const option = input.option;
   const buyerType = input.buyer === 'business' ? 'BUSINESS' : 'CONSUMER';
   const message = (input.message ?? '').trim().slice(0, 1000);
-  const order = await prisma.$transaction(async (tx) => {
-    await tx.upgradeRequest.updateMany({
+  const created = await prisma.$transaction(async (tx) => {
+    // Поръчките на един акаунт — една след друга, и при паралелни заявки: таванът и „една неизпълнена
+    // поръчка“ не се заобикалят. Ключът е само за поръчките (двете числа не се засичат с ключа на одита)
+    // и се взима преди редовете — редът на заключване спрямо активирането и отказа не се обръща.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(7241021, hashtext(${user.id}))`;
+    // всяка поръчка праща писмо на човека и на екипа: таван на акаунт, за да не изчерпи квотата на пощата
+    const recent = await tx.upgradeRequest.count({
+      where: { userId: user.id, createdAt: { gt: new Date(now.getTime() - 86_400_000) } },
+    });
+    if (recent >= ORDERS_PER_DAY) return null;
+    const replaced = await tx.upgradeRequest.updateManyAndReturn({
       where: { userId: user.id, status: 'OPEN' },
       data: { status: 'CANCELLED', handledAt: now, handledByLabel: LABEL.superseded },
+      select: { id: true },
     });
-    return tx.upgradeRequest.create({
+    const order = await tx.upgradeRequest.create({
       data: {
         userId: user.id,
         option,
@@ -81,7 +86,10 @@ export async function createUpgradeRequest(
         createdAt: now,
       },
     });
+    return { order, replaced: replaced.map((row) => row.id) };
   });
+  if (!created) return { ok: false, key: 'plan.errors.tooMany' };
+  const { order, replaced } = created;
   await audit(customerActor(user, meta), {
     action: 'plan.request.created',
     targetType: 'request',
@@ -91,15 +99,16 @@ export async function createUpgradeRequest(
       buyer: buyerType,
       earlyStart: order.earlyStartRequestedAt !== null,
       terms: LEGAL_UPDATED.terms,
+      replaced,
     },
   });
-  if (await sendOrderConfirmation(order, user)) {
+  if (await sendOrderConfirmation(order, user, replaced)) {
     await prisma.upgradeRequest.update({
       where: { id: order.id },
       data: { confirmationSentAt: new Date() },
     });
   }
-  void notifyStaffOfOrder(order, user);
+  void notifyStaffOfOrder(order, user, replaced);
   return { ok: true };
 }
 

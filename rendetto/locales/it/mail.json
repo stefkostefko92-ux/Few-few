@@ -58,7 +58,7 @@
     },
     "order": {
       "subject": "Conferma del vostro ordine Rendetto",
-      "body": "confermiamo il vostro ordine.\n\nContratto concluso: {when}\nOrdine n. {id}\nPiano: {plan}\nPrezzo: {price}\nAcquistate come: {buyer}\n{duration}\n\n{payment}\n\n{withdrawal}\n\n{trader}\nLe condizioni accettate con l'ordine (versione: {termsDate}): {terms}\nI vostri ordini: {orders}",
+      "body": "confermiamo il vostro ordine.\n\nContratto concluso: {when}\nOrdine n. {id}\nPiano: {plan}\nPrezzo: {price}\nAcquistate come: {buyer}\n{duration}{replaces}\n\n{payment}\n\n{withdrawal}\n\n{trader}\nLe condizioni accettate con l'ordine (versione: {termsDate}): {terms}\nI vostri ordini: {orders}",
       "priceConsumer": "{gross} IVA {vat}% inclusa ({net} IVA esclusa)",
       "priceBusiness": "{net} IVA esclusa; l'IVA si applica secondo le regole del vostro paese ed è indicata in fattura",
       "paymentEarly": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Avete chiesto che il piano inizi subito dopo il pagamento, prima della fine dei {days} giorni per il recesso. Se recedete, pagherete la parte del prezzo per il periodo in cui il piano è stato attivo.",
@@ -68,6 +68,7 @@
       "withdrawalBusiness": "Acquistate come azienda o professionista per scopi professionali, quindi il diritto di recesso dei consumatori non si applica.",
       "durationTerm": "Durata: {term}; Premium non si rinnova da solo: scade alla fine della durata.",
       "durationLifetime": "Durata: Lifetime vale finché Rendetto è offerto.",
+      "replaces": "Questo ordine sostituisce l'ordine n. {ids}, che è stato annullato. Se lo avete già pagato, scriveteci a {contact}.",
       "consumerRights": "Come consumatori avete anche la garanzia legale di conformità dei servizi digitali. I reclami vanno a {contact}; per la risoluzione extragiudiziale potete rivolgervi alla Commissione bulgara per la tutela dei consumatori (www.kzp.bg).",
       "trader": "Professionista: {company}, {form}, codice EIK {eik}, {address}, tel. {phone}, {contact}."
     },
@@ -86,11 +87,12 @@
     },
     "staffOrder": {
       "subject": "Nuovo ordine Rendetto: {plan}",
-      "body": "nuovo ordine n. {id} da {email} ({buyer}).\nPiano: {plan}\nPrezzo: {price}\nInizio anticipato: {early}\n{activation}\n\nInviate la fattura con i dati per il pagamento. Pannello: {admin}",
+      "body": "nuovo ordine n. {id} da {email} ({buyer}).\nPiano: {plan}\nPrezzo: {price}\nInizio anticipato: {early}\n{activation}{replaces}\n\nInviate la fattura con i dati per il pagamento. Pannello: {admin}",
       "yes": "sì",
       "no": "no",
       "activationNow": "Si può attivare all'arrivo del pagamento.",
-      "activationAfter": "Attivare non prima di: {date} (consumatore senza richiesta di inizio anticipato)."
+      "activationAfter": "Attivare non prima di: {date} (consumatore senza richiesta di inizio anticipato).",
+      "replaces": "Sostituisce l'ordine n. {ids} (annullato): verificate se è arrivato un pagamento."
     },
     "staffWithdrawal": {
       "subject": "Recesso da un contratto Rendetto: {email}",

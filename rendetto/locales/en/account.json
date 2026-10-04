@@ -79,6 +79,7 @@
       "short": "early start"
     },
     "accept": "By ordering, you accept the {terms} and the information on the {withdrawal}.",
+    "replacesOpen": "You have an order awaiting payment. A new order will replace it and the old one will be cancelled. If you have already paid for it, write to us at {contact} before ordering again.",
     "termsLink": "terms",
     "withdrawalLink": "right of withdrawal",
     "orderName": "Premium for {term}",

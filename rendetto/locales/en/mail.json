@@ -58,7 +58,7 @@
     },
     "order": {
       "subject": "Confirmation of your Rendetto order",
-      "body": "We confirm your order. The contract was concluded on {when}.\n\nOrder no. {id}\nPlan: {plan}\nPrice: {price}\nBuying as: {buyer}\n{duration}\n\n{payment}\n\n{withdrawal}\n\n{trader}\nThe terms you accepted with the order (in force from {termsDate}): {terms}\nYour orders: {orders}",
+      "body": "We confirm your order. The contract was concluded on {when}.\n\nOrder no. {id}\nPlan: {plan}\nPrice: {price}\nBuying as: {buyer}\n{duration}{replaces}\n\n{payment}\n\n{withdrawal}\n\n{trader}\nThe terms you accepted with the order (in force from {termsDate}): {terms}\nYour orders: {orders}",
       "priceConsumer": "{gross} incl. {vat}% VAT ({net} excl. VAT)",
       "priceBusiness": "{net} excl. VAT; VAT is charged under the rules of your country and shown on the invoice",
       "paymentEarly": "Payment: by bank transfer, using the invoice with the payment details that we will send you. You asked for the plan to start right after payment, before the {days}-day withdrawal period ends. If you withdraw, you will pay for the time the plan was active.",
@@ -68,6 +68,7 @@
       "withdrawalBusiness": "You are buying as a business or self-employed person for professional purposes, so the consumer right of withdrawal does not apply.",
       "durationTerm": "Term: {term}; Premium does not renew by itself — it ends at the end of the term.",
       "durationLifetime": "Term: Lifetime is valid for as long as Rendetto is offered.",
+      "replaces": "This order replaces order no. {ids}, which has been cancelled. If you have already paid for it, write to us at {contact}.",
       "consumerRights": "As a consumer you also have the legal guarantee of conformity for digital services. Complaints go to {contact}; for out-of-court settlement you can turn to the Bulgarian Commission for Consumer Protection (www.kzp.bg).",
       "trader": "Trader: {company}, {form}, company number (EIK) {eik}, {address}, phone {phone}, {contact}."
     },
@@ -86,11 +87,12 @@
     },
     "staffOrder": {
       "subject": "New Rendetto order: {plan}",
-      "body": "New order no. {id} from {email} ({buyer}).\nPlan: {plan}\nPrice: {price}\nEarly start: {early}\n{activation}\n\nSend an invoice with the payment details. Panel: {admin}",
+      "body": "New order no. {id} from {email} ({buyer}).\nPlan: {plan}\nPrice: {price}\nEarly start: {early}\n{activation}{replaces}\n\nSend an invoice with the payment details. Panel: {admin}",
       "yes": "yes",
       "no": "no",
       "activationNow": "Can be activated once the payment arrives.",
-      "activationAfter": "Activate no earlier than {date} — a consumer without an early-start request."
+      "activationAfter": "Activate no earlier than {date} — a consumer without an early-start request.",
+      "replaces": "Replaces order no. {ids} (cancelled) — check whether a payment has arrived for it."
     },
     "staffWithdrawal": {
       "subject": "Withdrawal from a Rendetto contract: {email}",

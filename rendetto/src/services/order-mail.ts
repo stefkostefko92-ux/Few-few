@@ -106,8 +106,15 @@ function paymentText(order: OrderRecord, locale: Locale): string {
   });
 }
 
-/** Потвърждението на сключения договор — веднага след поръчката (и пак от поддръжката, ако не тръгне). */
-export function sendOrderConfirmation(order: OrderRecord, user: Customer): Promise<boolean> {
+/**
+ * Потвърждението на сключения договор — веднага след поръчката (и пак от поддръжката, ако не тръгне).
+ * `replaced` — неизпълнените поръчки, които тази е заменила и отменила.
+ */
+export function sendOrderConfirmation(
+  order: OrderRecord,
+  user: Customer,
+  replaced: readonly string[] = [],
+): Promise<boolean> {
   const locale = localeOf(user);
   const consumer = order.buyerType === 'CONSUMER';
   return mailOrderConfirmed(user.email, locale, greetingName(user), {
@@ -123,6 +130,9 @@ export function sendOrderConfirmation(order: OrderRecord, user: Customer): Promi
         : translate(locale, 'mail.order.durationTerm', {
             term: translate(locale, 'plan.months', { n: order.months ?? 0 }),
           }),
+    replaces: replaced.length
+      ? `\n\n${translate(locale, 'mail.order.replaces', { ids: replaced.join(', '), contact: config().CONTACT_EMAIL })}`
+      : '',
     withdrawal: consumer
       ? `${translate(locale, 'mail.order.withdrawalConsumer', {
           date: longDate(withdrawalLastDay(order.createdAt), locale),
@@ -175,8 +185,15 @@ export function withdrawalStatement(order: OrderRecord, user: Customer, locale: 
   });
 }
 
-/** Известие до екипа за нова поръчка: кога може да се активира и какво да се изпрати. */
-export function notifyStaffOfOrder(order: OrderRecord, user: Customer): Promise<boolean> {
+/**
+ * Известие до екипа за нова поръчка: кога може да се активира и какво да се изпрати. Заменената
+ * поръчка вече не може да се активира — екипът проверява дали по нея не е платено.
+ */
+export function notifyStaffOfOrder(
+  order: OrderRecord,
+  user: Customer,
+  replaced: readonly string[] = [],
+): Promise<boolean> {
   const allowed = paidStartAllowedFrom(order);
   return mailStaffNotice('staffOrder', {
     id: order.id,
@@ -195,6 +212,9 @@ export function notifyStaffOfOrder(order: OrderRecord, user: Customer): Promise<
       allowed.getTime() > order.createdAt.getTime()
         ? translate('bg', 'mail.staffOrder.activationAfter', { date: sofiaDateTime(allowed, 'bg') })
         : translate('bg', 'mail.staffOrder.activationNow'),
+    replaces: replaced.length
+      ? `\n${translate('bg', 'mail.staffOrder.replaces', { ids: replaced.join(', ') })}`
+      : '',
   });
 }
 

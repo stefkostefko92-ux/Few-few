@@ -72,6 +72,7 @@
       <p class="hint"><%= t('plan.early.hint', { days: withdrawalDays }) %></p>
     </fieldset>
     <div class="field"><label for="message"><%= t('plan.message') %></label><textarea id="message" name="message" maxlength="1000" placeholder="<%= t('plan.messagePlaceholder') %>"></textarea></div>
+    <% if (requests.some((r) => r.status === 'OPEN')) { %><div class="notice notice-warn"><%- include('../partials/icon', { name: 'clock' }) %><p><%= t('plan.replacesOpen', { contact }) %></p></div><% } %>
     <p class="order-accept"><%- t('plan.accept', { terms: '<a href="' + termsHref + '" target="_blank" rel="noopener">' + t('plan.termsLink') + '</a>', withdrawal: '<a href="' + termsHref + '#withdrawal" target="_blank" rel="noopener">' + t('plan.withdrawalLink') + '</a>' }) %></p>
     <div class="actions"><button class="btn btn-primary" type="submit"><%= t('plan.send') %></button></div>
   </form>
