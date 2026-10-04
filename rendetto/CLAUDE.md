@@ -28,9 +28,10 @@ npm test                 # unit (node:test през tsx) — без база
 npm run test:engine      # двигателят: всички видове мебели, изходи, G-code, DXF (ezdxf, ако го има)
 npm run build            # prisma generate + tsc + редакторът
 npm run test:integration # иска жива PostgreSQL (TEST_DATABASE_URL или локалната rendetto_test)
+npx playwright install chromium # веднъж: браузърът за test:e2e, брошурата, og-image и favicons (npm ci не го сваля)
 npm run test:e2e         # достъпност (axe, WCAG 2.1 AA) на работещ сайт: RENDETTO_URL; с E2E_EMAIL/E2E_PASSWORD
                          # (тестов акаунт без 2FA) и проектите, акаунтът и редакторът
-npm run dev              # локален сървър на :4320
+npm run dev              # локален сървър на :4320; чете .env (README, „Локално“: NODE_ENV=development, DATABASE_URL)
 npm run owner:create     # първият собственик — OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD от средата
 npm run geoip:update     # DB-IP Lite → data/dbip-country-lite.mmdb (месечно)
 npm run og:image         # public/img/og.png — ръчно, след промяна на вида или двигателя (листът е от витрината)
@@ -124,5 +125,7 @@ print/                брошурата за клиенти: build-brochure.ts 
 
 Docker Compose (db + app) + nginx на хоста — `DEPLOY.md`. Един път за ръчния и за автоматичния деплой:
 `deploy/deploy.sh` (вика го и `deploy/autodeploy.sh`) — тайните от `/opt/few-few/shared/rendetto/.env`,
-бекъп преди миграция, сонда с маркер `"app":"rendetto"`, vhost-ът от репото, IndexNow само при промяна на
-sitemap-а; тестван е в `tests/deploy-script.test.ts`. Тайните са само на сървъра (mode 600).
+бекъп преди миграция (`RENDETTO_SKIP_BACKUP=1` при откат), сонда с маркер `"app":"rendetto"`, `last-good`,
+vhost-ът от репото с порта от `HTTP_PORT`, IndexNow само при промяна на sitemap-а; след сондата нищо не сменя
+изхода 0. Тестван е в `tests/deploy-script.test.ts` и `tests/deploy-nginx.test.ts`. Тайните са само на
+сървъра (mode 600).

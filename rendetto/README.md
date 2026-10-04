@@ -15,13 +15,27 @@
 
 ## Локално
 
+Нужни са Node ≥ 22 и PostgreSQL 16 (например в контейнер — същия потребител и парола очакват и
+интеграционните тестове):
+
 ```bash
 npm ci
-cp .env.example .env            # попълни; ключове: openssl rand -hex 32 (два различни)
-npx prisma migrate deploy
-npm run geoip:update             # по желание — държава по IP
-npm run dev                      # http://127.0.0.1:4320
+docker run -d --name rendetto-dev-db -p 127.0.0.1:5432:5432 -e POSTGRES_USER=rendetto \
+  -e POSTGRES_PASSWORD=rendetto_dev -e POSTGRES_DB=rendetto postgres:16-alpine
+docker exec rendetto-dev-db createdb -U rendetto rendetto_test   # за npm run test:integration
+cp .env.example .env    # ключове: openssl rand -hex 32 (два различни); после смени/добави редовете:
+#   NODE_ENV=development
+#   DATABASE_URL=postgresql://rendetto:rendetto_dev@127.0.0.1:5432/rendetto
+#   PUBLIC_BASE_URL=http://127.0.0.1:4320
+#   SMTP_HOST=
+#   RENDETTO_DEV_OUTBOX=1
+npx prisma migrate deploy   # Prisma чете .env сама
+npm run dev                 # http://127.0.0.1:4320 — .env се зарежда с --env-file
 ```
+
+`NODE_ENV=development` е нужен: по подразбиране е `production` (бисквитки `__Host-`, HSTS и задължителен
+SMTP — не за `http://127.0.0.1`). С празен `SMTP_HOST` писмата не напускат машината и се виждат на
+`/__dev/outbox`. GeoIP по желание: `npm run build && node --env-file=.env dist/scripts/geoip-update.js`.
 
 Гейтът и подредбата: `CLAUDE.md`. Сигурност: `SECURITY.md`. Продукция: `DEPLOY.md`.
 

@@ -15,6 +15,7 @@
 ## Пресъбиране
 
 ```bash
+npx playwright install chromium   # веднъж — PDF-ът се печата с Chromium, npm ci не го сваля
 npm run brochure     # print/rendetto-brochure-<език>.pdf; HTML за преглед в print/build/ (не е в git)
 ```
 
