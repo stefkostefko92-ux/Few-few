@@ -59,7 +59,7 @@ export async function revokeOtherSessions(
   user: User,
   currentId: string,
   meta: RequestMeta,
-): Promise<number> {
+): Promise<void> {
   const result = await prisma.session.deleteMany({
     where: { userId: user.id, id: { not: currentId } },
   });
@@ -69,7 +69,6 @@ export async function revokeOtherSessions(
     targetId: user.id,
     detail: { count: result.count },
   });
-  return result.count;
 }
 
 export type ProfileUpdate = { ok: true } | { ok: false; key: string };

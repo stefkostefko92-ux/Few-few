@@ -3,7 +3,7 @@ import { prisma } from '../db.js';
 import { randomToken, sha256Hex } from '../crypto.js';
 import { HOUR } from '../time.js';
 
-export const TOKEN_TTL_MS: Record<TokenPurpose, number> = {
+const TOKEN_TTL_MS: Record<TokenPurpose, number> = {
   VERIFY_EMAIL: 48 * HOUR,
   RESET_PASSWORD: 1 * HOUR,
   CHANGE_EMAIL: 24 * HOUR,

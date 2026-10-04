@@ -46,7 +46,7 @@ export type WithdrawnOrder = OrderRecord & { withdrawnAt: Date };
 type Customer = Pick<User, 'email' | 'name' | 'locale' | 'emailVerifiedAt'>;
 
 /** Дата и час по София с отместването спрямо UTC — за момента на сключване и на отказа. */
-export function sofiaDateTime(at: Date, locale: Locale): string {
+function sofiaDateTime(at: Date, locale: Locale): string {
   const when = longDateTime(at, locale);
   const offset =
     new Intl.DateTimeFormat('en', { timeZone: BUSINESS_TZ, timeZoneName: 'longOffset' })
@@ -81,7 +81,7 @@ function companyAddress(locale: Locale): string {
 }
 
 /** Образецът на формуляр за отказ (приложение I, част Б от Директивата) с нашите данни. */
-export function withdrawalForm(locale: Locale): string {
+function withdrawalForm(locale: Locale): string {
   return translate(locale, 'mail.withdrawalForm', {
     to: `${translate(locale, 'company.legalName')}, ${companyAddress(locale)}, ${config().CONTACT_EMAIL}`,
   });

@@ -40,10 +40,7 @@ function key(): string {
  * v1 — SHA-256 (записите отпреди ключа); v2 — HMAC-SHA-256 с ключ, изведен от HMAC_KEY: който пише
  * само в базата, не може да пресметне верига наново, за да скрие подмяна.
  */
-export function auditDigest(
-  parts: Array<string | number | null | undefined>,
-  v = AUDIT_VERSION,
-): string {
+function auditDigest(parts: Array<string | number | null | undefined>, v = AUDIT_VERSION): string {
   const data = parts
     .map((part) => (part === null || part === undefined ? '' : String(part)))
     .join('|');
@@ -51,7 +48,7 @@ export function auditDigest(
 }
 
 /** HMAC на IP адреса — влиза във веригата вместо самия адрес, който поддръжката заличава след срока. */
-export function auditIpHmac(ip: string | null | undefined): string | null {
+function auditIpHmac(ip: string | null | undefined): string | null {
   return ip ? hmacHex(config().HMAC_KEY, `audit-ip:${ip}`) : null;
 }
 

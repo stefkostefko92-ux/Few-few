@@ -21,7 +21,7 @@ const note = z
 
 const requestId = z.string().max(40).optional();
 
-export const planSchema = z.discriminatedUnion('plan', [
+const planSchema = z.discriminatedUnion('plan', [
   z.object({
     plan: z.literal('TRIAL'),
     days: z.coerce.number().int().min(1).max(365),

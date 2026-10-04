@@ -21,7 +21,7 @@ const TRIAL_REMINDER_DAYS = 3;
  * Писмата за наближаващия край на тестовия период. Отбелязва се само пратеното: при отказ на SMTP
  * следващата поддръжка опитва пак. Връща колко писма са тръгнали.
  */
-export async function sendTrialReminders(now: Date = new Date()): Promise<number> {
+async function sendTrialReminders(now: Date = new Date()): Promise<number> {
   const users = await prisma.user.findMany({
     where: {
       role: 'CUSTOMER',

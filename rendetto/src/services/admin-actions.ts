@@ -23,7 +23,7 @@ import {
 /** Ролите, които панелът приема от формата — същите като в схемата на базата. */
 export const roleSchema = z.nativeEnum(Role);
 
-export const editSchema = z.object({
+const editSchema = z.object({
   name: nameSchema,
   email: emailSchema,
   locale: z.string().refine(isLocale),

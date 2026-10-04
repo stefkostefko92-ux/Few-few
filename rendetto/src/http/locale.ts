@@ -13,7 +13,7 @@ import { DAY } from '../time.js';
 import { readCookie } from './cookies.js';
 import { viewHelpers } from './view.js';
 
-export const LOCALE_COOKIE = 'rd_lang';
+const LOCALE_COOKIE = 'rd_lang';
 const YEAR = 365 * DAY;
 
 /**

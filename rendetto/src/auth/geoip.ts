@@ -28,7 +28,7 @@ export function geoIpReady(): boolean {
 }
 
 /** Локален или частен адрес — за тях държава няма. */
-export function isPrivateIp(ip: string): boolean {
+function isPrivateIp(ip: string): boolean {
   if (isIP(ip) === 4) {
     const [a = 0, b = 0] = ip.split('.').map(Number);
     return (

@@ -15,7 +15,7 @@ import { DAY } from '../time.js';
 /** Колкото живее и записът за устройството (без вход) — бисквитката не надживява целта си. */
 const DEVICE_COOKIE_MAX_AGE = LOGIN_RETENTION_DAYS * DAY;
 
-export function deviceCookieName(): string {
+function deviceCookieName(): string {
   return isProduction() ? '__Host-rd_dev' : 'rd_dev';
 }
 
@@ -24,7 +24,7 @@ function sign(id: string): string {
 }
 
 /** id от валидна бисквитка или null (подправената се отхвърля). */
-export function readDeviceCookie(req: Request): string | null {
+function readDeviceCookie(req: Request): string | null {
   const raw = readCookie(req, deviceCookieName());
   if (!raw || raw.length > 80) return null;
   const [id, signature] = raw.split('.');
@@ -67,7 +67,7 @@ const count = (max: number) => z.number().finite().min(0).max(max).optional();
  * Сигналите от `public/js/auth.js`. Всичко е ограничено по дължина и стойност. `ratio` и `langs` вече не
  * се събират (не влизат нито в хеша, нито в описанието); схемата ги приема само заради кеширан стар скрипт.
  */
-export const fingerprintSchema = z
+const fingerprintSchema = z
   .object({
     platform: text(40),
     cores: count(1024),

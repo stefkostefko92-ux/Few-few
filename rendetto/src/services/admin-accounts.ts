@@ -3,7 +3,7 @@ import { isIP } from 'node:net';
 import { prisma } from '../db.js';
 import { addDays } from '../plans/plan.js';
 
-export const PAGE_SIZE = 25;
+const PAGE_SIZE = 25;
 
 type PlanOrAll = Plan | 'all';
 export const PLAN_FILTERS = [

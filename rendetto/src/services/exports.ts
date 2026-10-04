@@ -125,7 +125,7 @@ function zip(files: Record<string, Buffer>): Buffer {
   return Buffer.from(zipSync(entries, { level: 6, mtime: new Date('2026-01-01T00:00:00Z') }));
 }
 
-export const EXPORT_KINDS = [
+const EXPORT_KINDS = [
   'cut-list.csv',
   'hardware.csv',
   'drilling.csv',

@@ -4,7 +4,7 @@ import type { Role } from '@prisma/client';
  * Седем нива, строго подредени — по-високото включва по-ниските. CUSTOMER е клиентът; от VIEWER
  * нагоре е персоналът. Правата се проверяват по СПОСОБНОСТ, не по име на роля.
  */
-export const ROLE_LEVEL: Record<Role, number> = {
+const ROLE_LEVEL: Record<Role, number> = {
   CUSTOMER: 0,
   VIEWER: 1,
   ANALYST: 2,

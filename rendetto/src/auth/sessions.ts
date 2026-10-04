@@ -21,15 +21,15 @@ export function sessionLimits(role: Role): { idleMs: number; absoluteMs: number 
 }
 
 /** Входът по пароля чака втория фактор най-много толкова. */
-export const MFA_PENDING_MS = 10 * 60 * 1000;
+const MFA_PENDING_MS = 10 * 60 * 1000;
 const SLIDE_MIN_INTERVAL_MS = 60 * 1000;
 
 /** `__Host-` иска Secure + Path=/ без Domain — бисквитка от поддомейн не може да я подмени. */
-export function sessionCookieName(): string {
+function sessionCookieName(): string {
   return isProduction() ? '__Host-rd_sid' : 'rd_sid';
 }
 
-export function sessionCookieOptions(maxAgeMs: number): CookieOptions {
+function sessionCookieOptions(maxAgeMs: number): CookieOptions {
   return {
     httpOnly: true,
     sameSite: 'strict',
@@ -127,7 +127,7 @@ export async function destroyAllSessions(
   return result.count;
 }
 
-export async function resolveSession(token: string | undefined): Promise<Principal | null> {
+async function resolveSession(token: string | undefined): Promise<Principal | null> {
   if (!token || token.length < 32 || token.length > 64) return null;
   const session = await prisma.session.findUnique({
     where: { tokenHash: sha256Hex(token) },

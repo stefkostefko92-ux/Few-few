@@ -26,7 +26,7 @@ import { settlePlanAfterWithdrawal } from './withdrawal-plan.js';
 export type RequestResult = { ok: true } | { ok: false; key: string };
 
 /** Толкова поръчки за 24 часа на акаунт — истинският клиент прави една-две, поправката на грешка — още една. */
-export const ORDERS_PER_DAY = 5;
+const ORDERS_PER_DAY = 5;
 
 const orderSchema = z.object({
   option: z.string().refine(isOptionId),

@@ -4,7 +4,7 @@ import { hmacHex } from '../crypto.js';
 import { prisma } from '../db.js';
 
 const ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
-export const RECOVERY_CODE_COUNT = 10;
+const RECOVERY_CODE_COUNT = 10;
 const CODE_LENGTH = 10;
 
 /** Видът, в който кодът се показва и хешира: „xxxxx-xxxxx“. */

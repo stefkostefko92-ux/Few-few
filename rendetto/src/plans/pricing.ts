@@ -33,7 +33,7 @@ export const TERM_OPTIONS: readonly TermOption[] = [
 
 export type OptionId = TermOption['id'] | 'lifetime';
 
-export const OPTION_IDS: readonly OptionId[] = ['m1', 'm3', 'm6', 'm12', 'lifetime'];
+const OPTION_IDS: readonly OptionId[] = ['m1', 'm3', 'm6', 'm12', 'lifetime'];
 
 export function isOptionId(value: unknown): value is OptionId {
   return typeof value === 'string' && (OPTION_IDS as readonly string[]).includes(value);

@@ -2,8 +2,8 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 /** TOTP по RFC 6238 (HMAC-SHA1, 6 цифри, 30 s), нула зависимости. Приема ±1 стъпка за часовников дрейф. */
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-export const TOTP_STEP_SECONDS = 30;
-export const TOTP_DIGITS = 6;
+const TOTP_STEP_SECONDS = 30;
+const TOTP_DIGITS = 6;
 const CODE_RE = new RegExp(`^\\d{${TOTP_DIGITS}}$`);
 
 export function base32Encode(bytes: Buffer): string {
@@ -46,7 +46,7 @@ export function totpStep(timeSeconds: number): number {
   return Math.floor(timeSeconds / TOTP_STEP_SECONDS);
 }
 
-export function totpCodeAt(secretBase32: string, step: number): string {
+function totpCodeAt(secretBase32: string, step: number): string {
   const message = Buffer.alloc(8);
   message.writeBigUInt64BE(BigInt(step));
   const digest = createHmac('sha1', base32Decode(secretBase32)).update(message).digest();

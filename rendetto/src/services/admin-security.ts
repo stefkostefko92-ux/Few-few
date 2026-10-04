@@ -9,7 +9,7 @@ import { fail, isResult, targetFor, type ActionResult, type StaffActor } from '.
 
 /* -------------------------------------- бан -------------------------------------- */
 
-export const banSchema = z.object({ reason: z.string().trim().min(3).max(500) });
+const banSchema = z.object({ reason: z.string().trim().min(3).max(500) });
 
 /** Бан с причина: всички сесии падат веднага, причината се показва на човека при опит за вход. */
 export async function banAccount(

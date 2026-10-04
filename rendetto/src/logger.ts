@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import pino from 'pino';
 
 /** URL без query низа: токените за потвърждаване и смяна на парола пътуват в него. */
-export function stripQuery(url: unknown): unknown {
+function stripQuery(url: unknown): unknown {
   return typeof url === 'string' ? url.split('?')[0] : url;
 }
 
@@ -11,7 +11,7 @@ export function stripQuery(url: unknown): unknown {
  * Структурирани логове без лични данни: нито имейл, нито IP, нито бисквитка стигат до лога.
  * IP и устройството се пазят в базата (LoginEvent), където има срок и права за достъп.
  */
-export const REDACT = {
+const REDACT = {
   paths: [
     'password',
     '*.password',
@@ -49,7 +49,7 @@ const REQ_HEADERS = [
 ];
 const RES_HEADERS = ['content-type', 'content-length', 'location', 'x-request-id', 'cache-control'];
 
-export function pickHeaders(headers: unknown, allow: readonly string[]): Record<string, unknown> {
+function pickHeaders(headers: unknown, allow: readonly string[]): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   if (!headers || typeof headers !== 'object') return out;
   for (const [key, value] of Object.entries(headers as Record<string, unknown>)) {
