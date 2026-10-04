@@ -8,7 +8,7 @@ import { registerFixtures } from './fixtures.mjs';
 import { buildModel } from '../../engine/model.js';
 import { TYPE_ORDER } from '../../engine/types.js';
 import { drawingAssembly } from '../../engine/drawing-assembly.js';
-import { drawingPart, drawingParts } from '../../engine/drawing-part.js';
+import { drawingPart, drawingParts, drawingSheets } from '../../engine/drawing-part.js';
 import { PAPER, STYLE } from '../../engine/drawing-kit.js';
 
 registerFixtures();
@@ -76,4 +76,14 @@ test('every drawing of a model with errors carries the red „not for production
   const good = buildModel({ type: 'tv' });
   assert.ok(!good.warnings.some((w) => w.level === 'error'), 'the default model has an error');
   for (const svg of [drawingAssembly(good, meta), drawingPart(good, meta, good.parts[0].id)]) assert.ok(!svg.includes('class="d-alert"'), 'red line on a good model');
+});
+
+test('sheet numbers: 1 is the assembly, then every drawing part in order', () => {
+  for (const type of TYPE_ORDER) {
+    const model = buildModel({ type });
+    const { count, parts } = drawingSheets(model);
+    assert.deepEqual(parts.map((s) => s.part), drawingParts(model), type);
+    assert.deepEqual(parts.map((s) => s.no), parts.map((_, i) => i + 2), type);
+    assert.equal(count, parts.length + 1, type);
+  }
 });

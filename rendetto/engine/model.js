@@ -36,6 +36,11 @@ const SPEC_DEFAULTS = {
 const KITCHEN_TYPES = new Set(['base', 'wall', 'tall', 'kitchen']);
 export const SHELF_LOADS = [1, 1.5, 2];
 const SHELF_SAG_LIMIT = 0.005;
+// Edge bands, front gap and router diameters that normalizeSpec accepts; the editor builds its controls from these.
+export const BAND_CARCASS = [0, 0.8, 1, 2];
+export const BAND_FRONT = [0.8, 1, 2];
+export const GAP_RANGE = [2, 4];
+export const TOOL_DIAMETERS = [6, 8, 10, 12];
 
 // The app replaces the built-in demo decors with real catalog decors once the catalog is registered.
 export function setSpecDefaults(over) {
@@ -54,15 +59,15 @@ export function normalizeSpec(raw = {}) {
   s.frontDecor = hasDecor(input.frontDecor) ? input.frontDecor : d.frontDecor;
   s.frontRal = hasRal(input.frontRal) ? input.frontRal : hasRal(d.frontRal) ? d.frontRal : null;
   s.frontMaterial = input.frontMaterial === 'ral' && s.frontRal ? 'ral' : 'decor';
-  s.bandCarcass = pick(Number(input.bandCarcass ?? d.bandCarcass), [0, 0.8, 1, 2], d.bandCarcass);
-  s.bandFront = pick(Number(input.bandFront ?? d.bandFront), [0.8, 1, 2], d.bandFront);
-  s.gap = clamp(Number(input.gap) || d.gap, 2, 4);
+  s.bandCarcass = pick(Number(input.bandCarcass ?? d.bandCarcass), BAND_CARCASS, d.bandCarcass);
+  s.bandFront = pick(Number(input.bandFront ?? d.bandFront), BAND_FRONT, d.bandFront);
+  s.gap = clamp(Number(input.gap) || d.gap, ...GAP_RANGE);
   s.hinge = pickId(input.hinge, hingeList());
   s.handle = input.handle === 'none' ? 'none' : pickId(input.handle, handleList());
   s.slide = pickId(input.slide, slideList());
   s.bedFitting = pickId(input.bedFitting, bedFittingList());
   s.bandCompensation = input.bandCompensation !== false;
-  s.tool = pick(Number(input.tool ?? d.tool), [6, 8, 10, 12], d.tool);
+  s.tool = pick(Number(input.tool ?? d.tool), TOOL_DIAMETERS, d.tool);
   s.post = input.post === 'grbl' ? 'grbl' : 'iso';
   s.onion = input.onion !== false;
   s.shelfLoad = SHELF_LOADS.includes(Number(input.shelfLoad)) ? Number(input.shelfLoad) : KITCHEN_TYPES.has(type) ? 1.5 : 1;
@@ -78,6 +83,30 @@ export function withType(spec, type) {
   const sizes = TYPES[spec.type]?.defaults ?? {};
   const keep = Object.entries(spec).filter(([k]) => !(k in sizes) && !TYPE_DEPENDENT.includes(k));
   return { ...Object.fromEntries(keep), type };
+}
+
+// Catalog choices of a saved spec that normalizeSpec had to replace because the item has left the catalog — only
+// those the model really uses. An export built from them would drill and cut for something the customer never chose.
+const usesHw = (model, hw) => model.parts.some((p) => p.features.some((f) => f.hw === hw));
+const usesDecor = (model, id) => model.parts.some((p) => p.decor === id);
+const CATALOG_FIELDS = [
+  ['hinge', 'панта', (m) => usesHw(m, 'hinge')],
+  ['handle', 'дръжка', (m) => usesHw(m, 'handle')],
+  ['slide', 'водач', (m) => usesHw(m, 'slide')],
+  ['bedFitting', 'връзка за легло', (m) => m.spec.type === 'bed'],
+  ['carcassDecor', 'декор на корпуса', (m) => usesDecor(m, m.spec.carcassDecor)],
+  ['frontDecor', 'декор на фронтовете', (m) => m.spec.frontMaterial === 'decor' && usesDecor(m, m.spec.frontDecor)],
+  ['frontRal', 'цвят RAL на фронтовете', (m, input) => input.frontMaterial === 'ral'],
+];
+
+export function catalogDrift(input, model) {
+  const out = [];
+  for (const [key, label, used] of CATALOG_FIELDS) {
+    const saved = input?.[key];
+    if (typeof saved !== 'string' || saved === model.spec[key] || !used(model, input)) continue;
+    out.push(`Вече не е в каталога: ${label} „${saved}“ (заместител: „${model.spec[key] || '—'}“). Изберете наново в редактора и запазете проекта.`);
+  }
+  return out;
 }
 
 export function buildModel(input) {

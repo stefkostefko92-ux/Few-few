@@ -78,6 +78,7 @@ export function renderDrillPart(state, meta) {
     $('#drill-table tbody').innerHTML = '';
     return;
   }
+  // the engine numbers the sheet (drawingSheets): the same „Лист n/N“ as in the Чертежи tab and drawings.zip
   $('#drill-map').innerHTML = inlineSvg(drawingPart(state.model, meta, p.id));
   const holes = partHoles(p);
   holeLetters(holes);

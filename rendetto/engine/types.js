@@ -232,6 +232,9 @@ function worktopDepth(s) {
   return Math.ceil((s.depth + FRONT_GAP_Z + STOCK[frontStock(s).stock].thickness + WORKTOP_OVERHANG) / 10) * 10;
 }
 
+// The overall size people read (title bar, drawing frame, project list): a wall cabinet shows its own height, not its
+// top edge above the floor; a kitchen, from the floor to the top of its wall cabinets. Numbers only — every caller adds
+// its own words.
 export function typeDims(type, s) {
   switch (type) {
     case 'bed': {

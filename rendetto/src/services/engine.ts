@@ -50,6 +50,12 @@ export interface EngineNesting {
   errors: string[];
 }
 
+/** Листовете на чертежите: лист 1 е сглобката, после по един за всеки детайл в `parts`. */
+export interface DrawingSheets {
+  count: number;
+  parts: Array<{ part: EnginePart; no: number }>;
+}
+
 export interface DrawingMeta {
   product: string;
   hash: string;
@@ -70,7 +76,9 @@ export interface TypeParam {
 interface EngineApi {
   buildModel(spec: Spec): EngineModel;
   normalizeSpec(spec: Spec): Spec;
-  dimsText(type: string, spec: Spec): string;
+  /** Изборите от каталога в запазената спецификация, които двигателят е сменил, защото вече ги няма там. */
+  catalogDrift(saved: Spec, model: EngineModel): string[];
+  typeLabel(type: string): string;
   typeDims(type: string, spec: Spec): { W: number; H: number; D: number };
   typeOrder: readonly string[];
   typeGroups: Record<string, string>;
@@ -83,20 +91,12 @@ interface EngineApi {
   cncBlockers(model: EngineModel, nesting: EngineNesting): string[];
   toGcode(model: EngineModel, sheet: EngineSheet, meta: DrawingMeta): { text: string };
   toDxf(model: EngineModel, sheet: EngineSheet, meta: DrawingMeta): { text: string };
-  drawingAssembly(
-    model: EngineModel,
-    meta: DrawingMeta,
-    sheetNo: number,
-    sheetCount: number,
-  ): string;
-  drawingParts(model: EngineModel): EnginePart[];
-  drawingPart(
-    model: EngineModel,
-    meta: DrawingMeta,
-    partId: string,
-    sheetNo: number,
-    sheetCount: number,
-  ): string;
+  /** Номерът на фрезата за каналите в G-кода (`GROOVE_MILL`); другите фрези са за контура. */
+  grooveToolId: string;
+  /** Листът и броят листове в рамката идват от двигателя (`drawingSheets`). */
+  drawingAssembly(model: EngineModel, meta: DrawingMeta): string;
+  drawingSheets(model: EngineModel): DrawingSheets;
+  drawingPart(model: EngineModel, meta: DrawingMeta, partId: string): string;
   canonicalJson(value: unknown): string;
   asciiName(name: string): string;
 }
@@ -173,10 +173,13 @@ export async function loadEngine(catalogPath: string = config().CATALOG_PATH): P
     Record<string, { label: string; group: string; params?: TypeParam[] }> | undefined;
   const ORDER = types.TYPE_ORDER as readonly string[] | undefined;
   if (!TYPES || !ORDER) throw new Error('двигателят няма TYPES/TYPE_ORDER');
+  const grooveMill = cam.GROOVE_MILL as { id?: unknown } | undefined;
+  if (typeof grooveMill?.id !== 'string') throw new Error('двигателят няма GROOVE_MILL');
   api = {
     buildModel: fn(model, 'buildModel'),
     normalizeSpec: fn(model, 'normalizeSpec'),
-    dimsText: fn(types, 'dimsText'),
+    catalogDrift: fn(model, 'catalogDrift'),
+    typeLabel: fn(model, 'typeLabel'),
     typeDims: fn(types, 'typeDims'),
     typeOrder: ORDER,
     typeGroups: Object.fromEntries(ORDER.map((id) => [id, TYPES[id]?.group ?? ''])),
@@ -189,8 +192,9 @@ export async function loadEngine(catalogPath: string = config().CATALOG_PATH): P
     cncBlockers: fn(cam, 'cncBlockers'),
     toGcode: fn(cam, 'toGcode'),
     toDxf: fn(dxf, 'toDxf'),
+    grooveToolId: grooveMill.id,
     drawingAssembly: fn(assembly, 'drawingAssembly'),
-    drawingParts: fn(part, 'drawingParts'),
+    drawingSheets: fn(part, 'drawingSheets'),
     drawingPart: fn(part, 'drawingPart'),
     canonicalJson: fn(util, 'canonicalJson'),
     asciiName: fn(util, 'asciiName'),
@@ -204,11 +208,6 @@ export function engine(): EngineApi {
 
 export function catalogInfo(): { mode: 'shop' | 'base'; json: string; etag: string } {
   return { mode: catalogMode, json: catalogJson ?? '{}', etag: catalogEtag };
-}
-
-/** Типовете мебели в реда на двигателя. */
-export function furnitureTypes(): string[] {
-  return [...engine().typeOrder];
 }
 
 export function isFurnitureType(value: unknown): value is string {

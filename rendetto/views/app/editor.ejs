@@ -62,9 +62,9 @@
           </div>
           <div id="row-frontDecor"><button type="button" class="pickbtn" data-pick="frontDecor"></button></div>
           <div id="row-frontRal"><button type="button" class="pickbtn" data-pick="frontRal"></button></div>
-          <div class="field sel"><label for="f-bandCarcass"><%= te('editor.bandCarcass') %></label><select id="f-bandCarcass" data-field="bandCarcass"><option value="0"><%= te('editor.none') %></option><option value="0.8">0,8 mm</option><option value="1">1 mm</option><option value="2">2 mm</option></select></div>
-          <div class="field sel"><label for="f-bandFront"><%= te('editor.bandFront') %></label><select id="f-bandFront" data-field="bandFront"><option value="0.8">0,8 mm</option><option value="1">1 mm</option><option value="2">2 mm</option></select></div>
-          <div class="field"><label for="f-gap"><%= te('editor.gap') %></label><output data-for="gap" data-unit="mm" for="f-gap">3 mm</output><input type="range" id="f-gap" data-field="gap" min="2" max="4" step="0.5"></div>
+          <div class="field sel"><label for="f-bandCarcass"><%= te('editor.bandCarcass') %></label><select id="f-bandCarcass" data-field="bandCarcass" data-none="<%= te('editor.none') %>"></select></div>
+          <div class="field sel"><label for="f-bandFront"><%= te('editor.bandFront') %></label><select id="f-bandFront" data-field="bandFront"></select></div>
+          <div class="field"><label for="f-gap"><%= te('editor.gap') %></label><output data-for="gap" data-unit="mm" for="f-gap">3 mm</output><input type="range" id="f-gap" data-field="gap" step="0.5"></div>
         </div>
         <div class="group">
           <h3><%= te('editor.hardware') %></h3>
@@ -76,7 +76,7 @@
         </div>
         <div class="group">
           <h3><%= te('editor.machine') %></h3>
-          <div class="field sel"><label for="f-tool"><%= te('editor.tool') %></label><select id="f-tool" data-field="tool"><option value="6">Ø6 mm</option><option value="8">Ø8 mm</option><option value="10">Ø10 mm</option><option value="12">Ø12 mm</option></select></div>
+          <div class="field sel"><label for="f-tool"><%= te('editor.tool') %></label><select id="f-tool" data-field="tool"></select></div>
           <span class="lbl" id="l-post"><%= te('editor.post') %></span>
           <div class="seg" role="radiogroup" aria-labelledby="l-post">
             <label><input type="radio" name="post" value="iso" data-field="post"><span>ISO / Fanuc</span></label>

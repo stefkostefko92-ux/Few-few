@@ -10,7 +10,13 @@ import {
   handleHoles,
   hingeSystemOf,
 } from '../engine/hardware.js';
-import { SHELF_LOADS } from '../engine/model.js';
+import {
+  SHELF_LOADS,
+  BAND_CARCASS,
+  BAND_FRONT,
+  GAP_RANGE,
+  TOOL_DIAMETERS,
+} from '../engine/model.js';
 import { $, $$, esc, money, swatchStyle, setHtml } from './dom.js';
 import { typeIcon, handleIcon } from './icons.js';
 
@@ -88,6 +94,21 @@ export function renderHardwareOptions() {
     (v) =>
       `<label><input type="radio" name="shelfLoad" value="${v}" data-field="shelfLoad"><span>${String(v).replace('.', ',')} kg/dm²</span></label>`,
   ).join('');
+  // the values normalizeSpec accepts — the select can neither offer more nor miss one
+  const mm = (v) => `${String(v).replace('.', ',')} mm`;
+  const band = $('#f-bandCarcass');
+  band.innerHTML = BAND_CARCASS.map(
+    (v) => `<option value="${v}">${esc(v === 0 ? band.dataset.none : mm(v))}</option>`,
+  ).join('');
+  $('#f-bandFront').innerHTML = BAND_FRONT.map(
+    (v) => `<option value="${v}">${mm(v)}</option>`,
+  ).join('');
+  $('#f-tool').innerHTML = TOOL_DIAMETERS.map(
+    (v) => `<option value="${v}">Ø${mm(v)}</option>`,
+  ).join('');
+  const gap = $('#f-gap');
+  gap.min = String(GAP_RANGE[0]);
+  gap.max = String(GAP_RANGE[1]);
 }
 
 function groupOptions(list, groupOf, labelOf) {

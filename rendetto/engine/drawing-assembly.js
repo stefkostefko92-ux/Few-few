@@ -8,13 +8,14 @@ import { GROOVE, HDF_T } from './joinery.js';
 import { typeLabel } from './model.js';
 import { dimsText } from './types.js';
 import { esc } from './util.js';
-import { drawingParts } from './drawing-part.js';
+import { drawingSheets } from './drawing-part.js';
 
 const FRONTS = new Set(['door', 'drawer-front']);
 const HW_KIND = [['hinge:', 'панта'], ['slide:', 'водач'], ['handle:', 'дръжка']];
 const VARIANT_NOTE = { full: ', покрит кант', half: ', полупокрит кант', inset: ', открит кант' };
 
-export function drawingAssembly(model, meta, sheetNo = 1, sheetCount = drawingParts(model).length + 1) {
+// Sheet 1 of the drawing set (drawingSheets).
+export function drawingAssembly(model, meta) {
   const { parts, symbols, spec } = model;
   const ext = extents(parts, symbols);
   const W = ext.x1 - ext.x0;
@@ -98,7 +99,7 @@ export function drawingAssembly(model, meta, sheetNo = 1, sheetCount = drawingPa
   g += `<text class="d-vt" x="${Z((ext.z0 + ext.z1) / 2)}" y="${Y(0) + (both ? 27 : 20)}" text-anchor="middle">Разрез A–A</text>`;
   g += notes(model);
   const material = materialLine(parts);
-  return svgDoc(g + frame(`${typeLabel(spec.type)} ${dimsText(spec.type, spec)}`, meta, scale, sheetNo, sheetCount, material), `Сглобен чертеж: ${typeLabel(spec.type)}`);
+  return svgDoc(g + frame(`${typeLabel(spec.type)} ${dimsText(spec.type, spec)}`, meta, scale, 1, drawingSheets(model).count, material), `Сглобен чертеж: ${typeLabel(spec.type)}`);
 }
 
 function extents(parts, symbols) {

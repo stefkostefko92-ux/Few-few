@@ -103,10 +103,10 @@ const WAVES = 6;
 
 let cached: LandingAssets | null = null;
 
-/** Инструментът по вид — същото правило като в редактора: T4 е фрезата за каналите. */
+/** Инструментът по вид — същото правило като в редактора: фрезата за каналите е `GROOVE_MILL` на двигателя. */
 function toolClass(tool: Tool | undefined): 'tdrill' | 'tgroove' | 'tcontour' {
   if (!tool || tool.kind === 'drill') return 'tdrill';
-  return tool.id === 'T4' ? 'tgroove' : 'tcontour';
+  return tool.id === engine().grooveToolId ? 'tgroove' : 'tcontour';
 }
 
 function sheetArt(model: EngineModel, sheet: SheetLike, meta: DrawingMeta) {
@@ -228,17 +228,15 @@ export function landingAssets(): LandingAssets {
   const sheetMeta = { ...meta, sheetCount: nesting.sheets.length };
   const art = sheetArt(model, sheet, sheetMeta);
   const dxf = api.toDxf(model, sheet, sheetMeta) as unknown as { layers: string[] };
-  const index = model.parts.findIndex((p) => p.role === 'door');
-  const door = model.parts[index] as
+  const door = model.parts.find((p) => p.role === 'door') as
     | (EngineModel['parts'][number] & {
         L: number;
         W: number;
         hinge?: { c: number; overlay: number; plate: number };
       })
     | undefined;
-  const doorSvg = door
-    ? api.drawingPart(model, meta, door.id, index + 2, model.parts.length + 1)
-    : '';
+  // двигателят номерира листа на вратата сам — като в редактора и в изтегления проект
+  const doorSvg = door ? api.drawingPart(model, meta, door.id) : '';
   cached = {
     example: {
       modules: EXAMPLE.modules,

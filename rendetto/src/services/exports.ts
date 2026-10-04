@@ -26,20 +26,28 @@ export class CncBlockedError extends Error {
 }
 
 const CSV = 'text/csv; charset=utf-8';
-const BOM = '﻿'; // Excel разпознава UTF-8 (кирилицата) само с BOM
+const BOM = '\uFEFF'; // Excel разпознава UTF-8 (кирилицата) само с BOM
 
 interface Built {
   model: EngineModel;
   meta: DrawingMeta;
   base: string;
+}
+
+interface Machining {
   nesting: EngineNesting;
   blockers: string[];
 }
 
 function build(project: Project, owner: string): Built {
   const api = engine();
-  const model = api.buildModel(specOf(project.spec));
-  const nesting = api.nest(model);
+  const spec = specOf(project.spec);
+  const model = api.buildModel(spec);
+  // Обков или декор, който вече го няма в каталога, двигателят тихо сменя с първия от списъка. Като грешка в
+  // проверките това спира CNC, а чертежите и README го показват: изходът не е за избраното от клиента.
+  for (const reason of api.catalogDrift(spec, model)) {
+    model.warnings.push({ level: 'error', text: reason });
+  }
   const meta: DrawingMeta = {
     product: 'Rendetto',
     hash: project.specHash,
@@ -57,9 +65,14 @@ function build(project: Project, owner: string): Built {
     model,
     meta,
     base: `rendetto-${slug}-${project.specHash.slice(0, 8)}`,
-    nesting,
-    blockers: api.cncBlockers(model, nesting),
   };
+}
+
+/** Разкроят и проверките за CNC — само за изходите, които ги ползват (CSV и чертежите не ги чакат). */
+function machining(b: Built): Machining {
+  const api = engine();
+  const nesting = api.nest(b.model);
+  return { nesting, blockers: api.cncBlockers(b.model, nesting) };
 }
 
 function text(body: string): Buffer {
@@ -67,12 +80,12 @@ function text(body: string): Buffer {
 }
 
 /** Всички листове от разкроя: DXF и G-code (постпроцесорът е от спецификацията). */
-function cncFiles(b: Built): Record<string, Buffer> {
-  if (b.blockers.length) throw new CncBlockedError(b.blockers);
+function cncFiles(b: Built, m: Machining): Record<string, Buffer> {
+  if (m.blockers.length) throw new CncBlockedError(m.blockers);
   const api = engine();
   const out: Record<string, Buffer> = {};
-  const meta = { ...b.meta, sheetCount: b.nesting.sheets.length };
-  for (const sheet of b.nesting.sheets) {
+  const meta = { ...b.meta, sheetCount: m.nesting.sheets.length };
+  for (const sheet of m.nesting.sheets) {
     const n = String(sheet.index).padStart(2, '0');
     out[`sheet-${n}.dxf`] = text(api.toDxf(b.model, sheet, meta).text);
     out[`sheet-${n}.nc`] = text(api.toGcode(b.model, sheet, meta).text);
@@ -80,23 +93,23 @@ function cncFiles(b: Built): Record<string, Buffer> {
   return out;
 }
 
-/** Номерата на листовете са същите като в редактора (`drawingParts`). */
+/** Двигателят номерира листовете сам (`drawingSheets`) — същите номера като в редактора и на витрината. */
 function drawingFiles(b: Built): Record<string, Buffer> {
   const api = engine();
-  const parts = api.drawingParts(b.model);
-  const count = parts.length + 1;
   const out: Record<string, Buffer> = {
-    '00-assembly.svg': text(api.drawingAssembly(b.model, b.meta, 1, count)),
+    '00-assembly.svg': text(api.drawingAssembly(b.model, b.meta)),
   };
-  parts.forEach((part, i) => {
-    out[`${String(i + 2).padStart(2, '0')}-${part.id}.svg`] = text(
-      api.drawingPart(b.model, b.meta, part.id, i + 2, count),
+  for (const { part, no } of api.drawingSheets(b.model).parts) {
+    out[`${String(no).padStart(2, '0')}-${part.id}.svg`] = text(
+      api.drawingPart(b.model, b.meta, part.id),
     );
-  });
+  }
   return out;
 }
 
-function csvFiles(b: Built): Record<string, Buffer> {
+type CsvKind = Extract<ExportKind, `${string}.csv`>;
+
+function csvFiles(b: Built): Record<CsvKind, Buffer> {
   const api = engine();
   const bom = api.buildBom(b.model);
   return {
@@ -132,7 +145,7 @@ export function buildExport(project: Project, owner: string, kind: ExportKind): 
     case 'cut-list.csv':
     case 'hardware.csv':
     case 'drilling.csv':
-      return { name: `${b.base}-${kind}`, mime: CSV, body: csvFiles(b)[kind]! };
+      return { name: `${b.base}-${kind}`, mime: CSV, body: csvFiles(b)[kind] };
     case 'drawings.zip':
       return {
         name: `${b.base}-drawings.zip`,
@@ -140,8 +153,13 @@ export function buildExport(project: Project, owner: string, kind: ExportKind): 
         body: zip(drawingFiles(b)),
       };
     case 'cnc.zip':
-      return { name: `${b.base}-cnc.zip`, mime: 'application/zip', body: zip(cncFiles(b)) };
+      return {
+        name: `${b.base}-cnc.zip`,
+        mime: 'application/zip',
+        body: zip(cncFiles(b, machining(b))),
+      };
     case 'project.zip': {
+      const m = machining(b);
       const spec = {
         schema: 'rendetto.project/1',
         name: project.name,
@@ -156,10 +174,10 @@ export function buildExport(project: Project, owner: string, kind: ExportKind): 
       for (const [name, body] of Object.entries(csvFiles(b))) files[name] = body;
       for (const [name, body] of Object.entries(drawingFiles(b))) files[`drawings/${name}`] = body;
       // с грешка в конструкцията архивът се издава без cnc/ — README казва защо
-      if (!b.blockers.length) {
-        for (const [name, body] of Object.entries(cncFiles(b))) files[`cnc/${name}`] = body;
+      if (!m.blockers.length) {
+        for (const [name, body] of Object.entries(cncFiles(b, m))) files[`cnc/${name}`] = body;
       }
-      files['README.txt'] = text(readme(project, b));
+      files['README.txt'] = text(readme(project, b, m.blockers));
       return { name: `${b.base}.zip`, mime: 'application/zip', body: zip(files) };
     }
   }
@@ -167,15 +185,15 @@ export function buildExport(project: Project, owner: string, kind: ExportKind): 
 
 const LEVEL: Record<string, string> = { error: 'грешка', warn: 'внимание', info: 'бележка' };
 
-function readme(project: Project, b: Built): string {
+function readme(project: Project, b: Built, blockers: string[]): string {
   const warnings =
     b.model.warnings.map((w) => `- [${LEVEL[w.level] ?? w.level}] ${w.text}`).join('\n') ||
     '- няма';
-  const cnc = b.blockers.length
+  const cnc = blockers.length
     ? [
         'cnc/           НЕ Е ИЗДАДЕНА: проверките намериха грешки, а G-code и DXF не бива никога да са',
         '               грешни. Поправете в редактора и изтеглете отново:',
-        ...b.blockers.map((r) => `               - ${r}`),
+        ...blockers.map((r) => `               - ${r}`),
       ]
     : ['cnc/           DXF със слоеве и G-code за всеки лист от разкроя'];
   return [

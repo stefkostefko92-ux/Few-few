@@ -13,7 +13,7 @@ const GROUP_KEY: Record<string, FurnitureGroup> = {
   'Хол и кабинет': 'living',
 };
 
-export function furnitureGroup(type: string): FurnitureGroup {
+function furnitureGroup(type: string): FurnitureGroup {
   return GROUP_KEY[engine().typeGroups[type] ?? ''] ?? 'other';
 }
 
@@ -33,7 +33,7 @@ function range(params: readonly TypeParam[], key: string): { min: number; max: n
   return values.length ? { min: Math.min(...values), max: Math.max(...values) } : null;
 }
 
-export function furnitureRange(type: string): FurnitureRange | null {
+function furnitureRange(type: string): FurnitureRange | null {
   const params = engine().typeParams[type] ?? [];
   const modules = range(params, 'modules');
   const moduleWidth = range(params, 'moduleWidth');
@@ -78,7 +78,10 @@ export function furnitureByGroup(): Array<{ group: FurnitureGroup; kinds: Furnit
   return groups;
 }
 
-/** Габаритът като текст без думи, за да се чете еднакво на всеки език. */
+/**
+ * Габаритът като текст без думи, за да се чете еднакво на всеки език. Числата са същите като в заглавната
+ * лента на редактора и в рамката на чертежа (горен шкаф — собствената му височина, не ръбът над пода).
+ */
 export function dimensionsText(type: string, spec: Spec): string {
   const d = engine().typeDims(type, spec);
   const round = (value: number) => Math.round(value * 10) / 10;

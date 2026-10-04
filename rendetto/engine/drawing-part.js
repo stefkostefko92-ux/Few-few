@@ -26,13 +26,18 @@ export function holeLetters(holes) {
 // drawer bottoms — nothing is machined on them and their sizes are in the cut list. Editor and downloads share it.
 export const drawingParts = (model) => model.parts.filter((p) => p.role !== 'back' && p.role !== 'drawer-bottom');
 
-// Sheet numbers come from drawingParts unless the caller passes them; a part without a sheet of its own gets none.
-export function drawingPart(model, meta, partId, sheetNo, sheetCount) {
+// The sheet numbers of the drawing set — the one rule for the editor, the downloads and the landing page: sheet 1 is
+// the assembly, then one sheet per drawing part in order.
+export function drawingSheets(model) {
+  const parts = drawingParts(model);
+  return { count: parts.length + 1, parts: parts.map((part, i) => ({ part, no: i + 2 })) };
+}
+
+// A part without a sheet of its own (an HDF back, a drawer bottom) gets no sheet number.
+export function drawingPart(model, meta, partId) {
   const p = model.parts.find((x) => x.id === partId) ?? model.parts[0];
-  const own = drawingParts(model);
-  const i = own.findIndex((x) => x.id === p.id);
-  const no = sheetNo ?? (i < 0 ? null : i + 2);
-  const count = sheetCount ?? own.length + 1;
+  const { count, parts } = drawingSheets(model);
+  const no = parts.find((s) => s.part === p)?.no ?? null;
   const holes = partHoles(p);
   const groups = holeLetters(holes);
   const edges = edgeLabels(p);
