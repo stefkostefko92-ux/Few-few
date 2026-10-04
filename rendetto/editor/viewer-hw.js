@@ -3,11 +3,12 @@
 // worktop. Handles are in viewer-handles.js. Sizes in metres; S converts from the model's mm.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { panelGeometry } from './viewer-panel.js';
 
 export const S = 0.001;
 
-function shadowed(o) {
+export function shadowed(o) {
   o.traverse((m) => {
     if (m.isMesh) {
       m.castShadow = true;
@@ -17,11 +18,18 @@ function shadowed(o) {
   return o;
 }
 
-function lathe(profile, segments = 32) {
+// Turned profile [[radius, axial], …] around the y axis.
+export function lathe(profile, segments = 40) {
   return new THREE.LatheGeometry(
-    profile.map(([r, y]) => new THREE.Vector2(r, y)),
+    profile.map(([r, y]) => new THREE.Vector2(Math.max(0, r), y)),
     segments,
   );
+}
+
+// Copies of one small geometry merged into a single mesh (the path tracer of the photo view does not read
+// instanced meshes, and a few hundred small pieces merge in no time).
+export function merged(geo, matrices) {
+  return mergeGeometries(matrices.map((m) => geo.clone().applyMatrix4(m)));
 }
 
 // Hinge cup seen on the back of a door: the Ø35 cup is sunk into the board, its flange and screw ears show.
@@ -48,7 +56,8 @@ export function hingeMesh(mats, cupD) {
 }
 
 // Mounting plate on the carcass side and the hinge arm reaching forward to the door. `inward` is the x direction
-// into the cabinet, `front` the z of the carcass front edge, origin at the plate centre on the side face.
+// into the cabinet, `reach` the distance (m) from the plate centre to the carcass front edge, origin at the plate
+// centre on the side face.
 export function hingeArmMesh(mats, inward, reach) {
   const metal = mats.metal('никел');
   const g = new THREE.Group();
@@ -148,12 +157,14 @@ export function slatsMesh(mats, s) {
   const beech = mats.beech();
   const rubber = mats.plain('rubber', { color: 0x161617, roughness: 0.75 });
   const g = new THREE.Group();
-  const bases = s.split
-    ? [
-        [s.x0, s.split],
-        [s.split, s.x1],
-      ]
-    : [[s.x0, s.x1]];
+  // split: x of the joint between the two frames (null for one); centred on the furniture it is exactly 0
+  const bases =
+    typeof s.split === 'number'
+      ? [
+          [s.x0, s.split],
+          [s.split, s.x1],
+        ]
+      : [[s.x0, s.x1]];
   const L = (s.z1 - s.z0 - 6) * S;
   for (const [a, b] of bases) {
     const w = (b - a - 6) * S;
@@ -171,16 +182,21 @@ export function slatsMesh(mats, s) {
     }
     slatGeo.computeVertexNormals();
     const capGeo = new RoundedBoxGeometry(0.03, 0.016, 0.06, 2, 0.004);
+    // a few dozen slats with two holders each: one mesh for the slats and one for the holders of this frame
+    const slats = [];
+    const caps = [];
     for (let z = -L / 2 + 0.05; z < L / 2 - 0.03; z += 0.07) {
-      const slat = new THREE.Mesh(slatGeo, beech);
-      slat.position.set(cx, 0.056, z);
-      g.add(slat);
-      for (const dx of [-w / 2 + 0.0125, w / 2 - 0.0125]) {
-        const cap = new THREE.Mesh(capGeo, rubber);
-        cap.position.set(cx + dx, 0.054, z);
-        g.add(cap);
-      }
+      slats.push(new THREE.Matrix4().makeTranslation(cx, 0.056, z));
+      for (const dx of [-w / 2 + 0.0125, w / 2 - 0.0125])
+        caps.push(new THREE.Matrix4().makeTranslation(cx + dx, 0.054, z));
     }
+    if (slats.length)
+      g.add(
+        new THREE.Mesh(merged(slatGeo, slats), beech),
+        new THREE.Mesh(merged(capGeo, caps), rubber),
+      );
+    slatGeo.dispose();
+    capGeo.dispose();
   }
   g.position.set(0, s.y * S, ((s.z0 + s.z1) / 2) * S);
   return shadowed(g);
@@ -228,15 +244,17 @@ export function mattressMesh(mats, s) {
   return shadowed(g);
 }
 
-// Worktop 38 mm, postformed: the decor wraps a rounded front edge; grain along the run.
+// Worktop 38 mm, postformed: the decor wraps a rounded front edge; grain along the run, and along the depth on the
+// two ends (their u along x would be one column of the texture).
 export function worktopMesh(mats, s, material) {
   const size = [(s.x1 - s.x0) * S, s.t * S, (s.z1 - s.z0) * S];
-  const geo = panelGeometry(
-    size,
-    0.003,
-    (a, sgn, p) => (a === 1 ? [p[0] + size[0], p[2] + 0.3] : [p[0] + size[0], p[1] + 0.3]),
-    3,
-  );
+  const uv = (a, sgn, p) =>
+    a === 1
+      ? [p[0] + size[0], p[2] + 0.3]
+      : a === 0
+        ? [p[2] + 0.3, p[1] + 0.3]
+        : [p[0] + size[0], p[1] + 0.3];
+  const geo = panelGeometry(size, 0.003, uv, 3);
   const m = new THREE.Mesh(geo, material);
   m.position.set(((s.x0 + s.x1) / 2) * S, (s.y + s.t / 2) * S, ((s.z0 + s.z1) / 2) * S);
   return shadowed(m);

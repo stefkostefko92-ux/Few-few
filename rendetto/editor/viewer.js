@@ -20,6 +20,9 @@ import {
   faceMaterials,
 } from './viewer-parts.js';
 
+// How much farther the camera stands for an exploded assembly (e: 0 assembled … 1 fully exploded).
+const explodeZoom = (e) => 1 + 0.55 * e;
+
 export class Viewer {
   constructor(host) {
     this.host = host;
@@ -222,7 +225,7 @@ export class Viewer {
     const radius = Math.hypot(W, H, D) * 0.5;
     const vHalf = THREE.MathUtils.degToRad(this.camera.fov / 2);
     const hHalf = Math.atan(Math.tan(vHalf) * Math.max(this.camera.aspect, 0.2));
-    const dist = (radius / Math.sin(Math.min(vHalf, hHalf))) * 1.06 * (1 + 0.55 * this.explode);
+    const dist = (radius / Math.sin(Math.min(vHalf, hHalf))) * 1.06 * explodeZoom(this.explode);
     const dir = new THREE.Vector3(0.62, 0.42, 1).normalize();
     this.controls.target.set(0, H / 2, 0);
     this.camera.position.copy(this.controls.target).addScaledVector(dir, dist);
@@ -240,9 +243,9 @@ export class Viewer {
   }
 
   setExplode(e) {
-    const prev = 1 + 0.55 * this.explode;
+    const prev = explodeZoom(this.explode);
     this.explode = e;
-    const next = 1 + 0.55 * e;
+    const next = explodeZoom(e);
     const offset = this.camera.position.clone().sub(this.controls.target);
     this.camera.position.copy(this.controls.target).addScaledVector(offset, next / prev);
     this.controls.maxDistance = Math.max(

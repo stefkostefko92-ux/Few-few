@@ -31,6 +31,14 @@ export function extents(model) {
 
 export function addSymbols(v, model, meshOf) {
   const statics = new THREE.Group();
+  // a symbol's footprint (mm) moved like the boards, centred on the furniture
+  const centred = (s) => ({
+    ...s,
+    x0: s.x0 + v.off[0],
+    x1: s.x1 + v.off[0],
+    z0: s.z0 + v.off[2],
+    z1: s.z1 + v.off[2],
+  });
   for (const s of model.symbols) {
     if (s.type === 'handle') {
       const mesh = meshOf.get(s.partId);
@@ -48,41 +56,17 @@ export function addSymbols(v, model, meshOf) {
       statics.add(g);
     } else if (s.type === 'slats') {
       const g = slatsMesh(v.mats, {
-        ...s,
-        x0: s.x0 + v.off[0],
-        x1: s.x1 + v.off[0],
+        ...centred(s),
         split: s.split === null ? null : s.split + v.off[0],
-        z0: s.z0 + v.off[2],
-        z1: s.z1 + v.off[2],
       });
       statics.add(g);
     } else if (s.type === 'mattress') {
-      statics.add(
-        mattressMesh(v.mats, {
-          ...s,
-          x0: s.x0 + v.off[0],
-          x1: s.x1 + v.off[0],
-          z0: s.z0 + v.off[2],
-          z1: s.z1 + v.off[2],
-        }),
-      );
+      statics.add(mattressMesh(v.mats, centred(s)));
     } else if (s.type === 'worktop') {
       const mat = v.mats.board(
         model.spec.frontMaterial === 'ral' ? model.spec.carcassDecor : model.spec.frontDecor,
       );
-      statics.add(
-        worktopMesh(
-          v.mats,
-          {
-            ...s,
-            x0: s.x0 + v.off[0],
-            x1: s.x1 + v.off[0],
-            z0: s.z0 + v.off[2],
-            z1: s.z1 + v.off[2],
-          },
-          mat,
-        ),
-      );
+      statics.add(worktopMesh(v.mats, centred(s), mat));
     }
   }
   v.root.add(statics);

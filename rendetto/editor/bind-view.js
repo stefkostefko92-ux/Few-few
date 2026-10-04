@@ -26,6 +26,12 @@ export function createViewer(text) {
   });
   $('#ops').addEventListener('change', (ev) => viewer?.setShowOps(ev.target.checked));
   $('#room').addEventListener('change', (ev) => viewer?.setRoom(ev.target.checked));
+  // a reload or a step back in the history can bring the controls back as they were left (the browser restores them
+  // without an event): the view and the percentages start from what the controls show
+  for (const el of [$('#open'), $('#explode')])
+    if (el.value !== el.defaultValue) el.dispatchEvent(new Event('input'));
+  for (const el of [$('#ops'), $('#room')])
+    if (el.checked !== el.defaultChecked) el.dispatchEvent(new Event('change'));
   bindPhoto(viewer, text);
   $('#explode-play').addEventListener('click', () => {
     const el = $('#explode');

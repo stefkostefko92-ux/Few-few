@@ -47,10 +47,16 @@ function cupMaps(w, h, round, wall) {
           (t < 1 ? 1 - 0.68 * t : 0.32 + 0.1 * THREE.MathUtils.smoothstep(t, 1, 2.6)) *
           (1 + 0.55 * Math.min(ny, 0));
       }
+      // straight into the bytes: no temporary arrays per pixel (a long pull has half a million pixels)
       const k = (j * W + i) * 4;
-      normal.set([(nx * 0.5 + 0.5) * 255, (ny * 0.5 + 0.5) * 255, (nz * 0.5 + 0.5) * 255, 255], k);
-      ao.set([occ * 255, occ * 255, occ * 255, 255], k);
-      cavity.set([cav * 255, cav * 255, cav * 255, 255], k);
+      normal[k] = (nx * 0.5 + 0.5) * 255;
+      normal[k + 1] = (ny * 0.5 + 0.5) * 255;
+      normal[k + 2] = (nz * 0.5 + 0.5) * 255;
+      normal[k + 3] = 255;
+      ao[k] = ao[k + 1] = ao[k + 2] = occ * 255;
+      ao[k + 3] = 255;
+      cavity[k] = cavity[k + 1] = cavity[k + 2] = cav * 255;
+      cavity[k + 3] = 255;
     }
   }
   const tex = (data) => {

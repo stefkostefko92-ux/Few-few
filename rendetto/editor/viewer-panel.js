@@ -1,6 +1,6 @@
 // A board as it comes off the edge bander: a box whose twelve edges are rounded with the radius of the band (raw and
-// HDF edges almost sharp), smooth normals over the round, and six material groups in BoxGeometry order
-// (+x, -x, +y, -y, +z, -z) so the faces, bands and raw edges keep their own materials. Sizes in metres.
+// HDF edges almost sharp), smooth normals over the round. The faces go in BoxGeometry order (+x, -x, +y, -y, +z, -z)
+// and `faces` picks some: the caller makes one mesh per material (face, band, raw edge). Sizes in metres.
 import * as THREE from 'three';
 
 const FACES = [
@@ -23,7 +23,7 @@ function lines(half, r, steps) {
 
 // uvFor(axis, sign, position[3]) → [u, v] in metres; called for every vertex of the face (axis, sign).
 // steps: segments per face over each round (2 for boards; more for big radii such as a mattress).
-// faces: which of the six faces to build (indices in the order above); a part of the box gets no groups.
+// faces: which of the six faces to build (indices in the order above); all six when null.
 export function panelGeometry(size, radius, uvFor, steps = 2, faces = null) {
   const h = size.map((s) => s / 2);
   const r = Math.max(0, Math.min(radius, ...h.map((x) => x * 0.9)));
@@ -33,9 +33,8 @@ export function panelGeometry(size, radius, uvFor, steps = 2, faces = null) {
   const uv = [];
   const index = [];
   const geo = new THREE.BufferGeometry();
-  let start = 0;
-  FACES.forEach(([a, s], group) => {
-    if (faces && !faces.includes(group)) return;
+  FACES.forEach(([a, s], face) => {
+    if (faces && !faces.includes(face)) return;
     const b = (a + 1) % 3;
     const c = (a + 2) % 3;
     const gb = lines(h[b], r, steps);
@@ -70,9 +69,6 @@ export function panelGeometry(size, radius, uvFor, steps = 2, faces = null) {
         else index.push(v0, v1, v2, v1, v3, v2);
       }
     }
-    const count = (gc.length - 1) * (nb - 1) * 6;
-    if (!faces) geo.addGroup(start, count, group);
-    start += count;
   });
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));

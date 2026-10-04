@@ -1,6 +1,7 @@
 // Drawer slides, seen when a drawer is pulled out. Side-mounted ball-bearing slides fill the clearance between the box
 // and the carcass side with three telescopic members (fixed on the carcass, middle at half the travel, inner on the
-// box); concealed slides run under the bottom near each side. Geometry from the slide system of the catalogue.
+// box); concealed slides run under the bottom near each side. The side slide's clearance and height come from the slide
+// system of the catalogue, as in the engine; the profiles themselves are a visual approximation.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { slideModel, slideSystemOf } from '../engine/hardware.js';
@@ -50,7 +51,7 @@ export function addSlides(viewer, model, meshOf, drawerHolders) {
       const zc = (sd.box.max[2] + sd.box.min[2]) / 2;
       if (sys.mount === 'side') {
         const gap = sys.sideClearance;
-        const y = sd.box.min[1] + (sys.axisAboveBox ?? 22);
+        const y = sd.box.min[1] + sys.axisAboveBox;
         const carcass = carcassAt(model, meshOf, out + dir * gap, y);
         place(viewer, carcass, rail(gap * 0.36, 45, len, steel), [out + dir * gap * 0.8, y, zc]);
         const mid = new THREE.Group();

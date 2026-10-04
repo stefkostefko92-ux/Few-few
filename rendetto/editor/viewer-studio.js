@@ -2,7 +2,8 @@
 // reflections and the soft fill), one key light that casts the shadows, and what the furniture stands in —
 // a seamless studio corner (floor and back wall that fade into the background) or a furnished room.
 import * as THREE from 'three';
-import { buildRoom } from './viewer-room.js';
+import { S } from './viewer-hw.js';
+import { buildRoom, clearRoom } from './viewer-room.js';
 
 // Studio levels, linear radiance. Calibrated so that a front facing the camera shows its decor colour as printed
 // (the tone mapping below keeps colours up to ~0.8 untouched); the top reads lighter, the far side darker.
@@ -139,7 +140,6 @@ export class Stage {
 
   // After a new model: the studio corner behind it, the room, the key light and the shadow frustum around it.
   fit(ext, off) {
-    const S = 0.001;
     const W = (ext.x1 - ext.x0) * S;
     const D = (ext.z1 - ext.z0) * S;
     const H = ext.y1 * S;
@@ -148,7 +148,9 @@ export class Stage {
     this.floor.position.set(0, 0, back + 30);
     this.wall.scale.set(60, 14, 1);
     this.wall.position.set(0, 7, back);
-    buildRoom(this.v, this.room, { W, D, H, back });
+    this.roomSize = { W, back };
+    clearRoom(this.room);
+    this.updateRoom();
     const r = Math.hypot(W, H, D) * 0.5;
     this.radius = r;
     const target = new THREE.Vector3(0, H / 2, back + D / 2);
@@ -167,6 +169,14 @@ export class Stage {
   setRoom(on) {
     this.room.visible = on;
     this.studio.visible = !on;
+    this.updateRoom();
+  }
+
+  // The room is built only while it is shown, once per model: its floor, plaster and skirting are baked textures
+  // (tens of MB on the GPU) that the studio view never needs.
+  updateRoom() {
+    if (this.room.visible && this.roomSize && !this.room.children.length)
+      buildRoom(this.v, this.room, this.roomSize);
   }
 
   // Fog starts behind the furniture, so only the far floor and wall melt into the background.

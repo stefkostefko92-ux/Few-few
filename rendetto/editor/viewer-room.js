@@ -13,11 +13,15 @@ function metric(geo, w, h, du = 0, dv = 0) {
 const SKIRT_H = 0.07;
 const SKIRT_T = 0.014;
 
-export function buildRoom(v, group, { W, back }) {
+export function clearRoom(group) {
   for (const c of [...group.children]) {
     c.geometry?.dispose();
     group.remove(c);
   }
+}
+
+export function buildRoom(v, group, { W, back }) {
+  clearRoom(group);
   const width = Math.max(4.4, W + 2.6);
   const depth = 4.6;
   const left = -width / 2;

@@ -1,8 +1,8 @@
 // Per-part 3D helpers for the viewer: the rounded board with face materials by edge banding and UVs that follow the
-// grain, the drilled holes (instanced) and the hinge cups. `viewer` gives the materials, the scale and the ops toggle.
+// grain, the drilled holes (copies merged into one mesh per part, not instanced: the photo view's path tracer does
+// not read instanced meshes) and the hinge cups. `viewer` gives the materials, the scale and the ops toggle.
 import * as THREE from 'three';
-import { S, hingeMesh, hingeArmMesh, shelfPinGeometry } from './viewer-hw.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { S, hingeMesh, hingeArmMesh, merged, shelfPinGeometry } from './viewer-hw.js';
 import { panelGeometry } from './viewer-panel.js';
 
 const IDX = { x: 0, y: 1, z: 2 };
@@ -14,7 +14,7 @@ const isRaw = (part, d) =>
   part.stock !== 'hdf3' && part.stock !== 'mdf18' && d[1] !== part.frame.n[1] && !part.bands[d];
 
 export function faceMaterials(mats, part) {
-  // panelGeometry groups: +x, -x, +y, -y, +z, -z
+  // in panelGeometry's face order: +x, -x, +y, -y, +z, -z
   const tAxis = part.frame.n[1];
   return DIRS.map((d) => {
     if (part.stock === 'hdf3') return mats.hdf(d === part.frame.n);
@@ -71,12 +71,6 @@ function boardGeometry(part, size, materials, faces) {
     return [p[Wd] + ov, p[T] + halfT];
   };
   return panelGeometry(size, radiusOf(part), uvFor, 2, faces);
-}
-
-// Copies of one small geometry merged into a single mesh (the path tracer of the photo view does not read
-// instanced meshes, and a few hundred small cylinders merge in no time).
-function merged(geo, matrices) {
-  return mergeGeometries(matrices.map((m) => geo.clone().applyMatrix4(m)));
 }
 
 export function addHoles(viewer, mesh, part, centre, holeGeo) {

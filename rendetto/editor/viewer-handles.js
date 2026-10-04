@@ -5,17 +5,9 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { wellMesh } from './viewer-well.js';
+import { S, lathe, shadowed } from './viewer-hw.js';
 
-const S = 0.001;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-
-// Turned profile [[radius, axial], …] around the y axis, then laid along x (bar) or z (knob).
-function lathe(profile, segments = 40) {
-  return new THREE.LatheGeometry(
-    profile.map(([r, y]) => new THREE.Vector2(Math.max(0, r), y)),
-    segments,
-  );
-}
 
 // tube with chamfered ends, along y, length L, radius r
 function tube(L, r) {
@@ -187,7 +179,7 @@ function shell(h, metal) {
 
 // sym: the handle symbol; front: { T, edge } — thickness of the front and, for edge handles, how far the nearest
 // edge of the front is from the handle centre (across the handle).
-export function handleMesh(mats, sym, front = { T: 0.018, edge: 0.03 }) {
+export function handleMesh(mats, sym, front) {
   const h = sym.model;
   const metal = mats.metal(h.finish ?? '', h.color ?? '');
   let g;
@@ -199,11 +191,5 @@ export function handleMesh(mats, sym, front = { T: 0.018, edge: 0.03 }) {
   else if (h.type === 'shell') g = shell(h, metal);
   else g = barHandle(h, metal);
   if (!sym.horizontal) g.rotation.z = Math.PI / 2;
-  g.traverse((o) => {
-    if (o.isMesh) {
-      o.castShadow = true;
-      o.receiveShadow = true;
-    }
-  });
-  return g;
+  return shadowed(g);
 }

@@ -29,10 +29,10 @@ const AVERAGE = {
 };
 
 export class Pipeline {
-  constructor(renderer, scene, camera, { samples = 32 } = {}) {
+  constructor(renderer, scene, camera) {
     this.renderer = renderer;
     this.camera = camera;
-    this.maxSamples = samples;
+    this.maxSamples = 32;
     this.count = 0;
     this.size = new THREE.Vector2(1, 1);
     const target = new THREE.WebGLRenderTarget(1, 1, {
@@ -40,6 +40,7 @@ export class Pipeline {
       samples: DEVICE.samples,
     });
     this.composer = new EffectComposer(renderer, target);
+    this.composer.setPixelRatio(1); // setSize gives it drawing-buffer pixels
     this.composer.renderToScreen = false;
     this.composer.addPass(new RenderPass(scene, camera));
     // occlusion within ~a hand's width: corners of the carcass, under shelves, behind the legs, on the floor
@@ -83,12 +84,12 @@ export class Pipeline {
   }
 
   setSize(width, height, ratio) {
-    // the jitter is in drawing-buffer pixels
-    this.size.set(Math.round(width * ratio), Math.round(height * ratio));
-    this.composer.setPixelRatio(ratio);
-    this.composer.setSize(width, height);
-    this.acc.setSize(Math.round(width * ratio), Math.round(height * ratio));
-    this.output.setSize(Math.round(width * ratio), Math.round(height * ratio));
+    // Drawing-buffer pixels, rounded down as WebGLRenderer sizes the canvas: every target matches it pixel for pixel
+    // (no resampling on the way to the screen), and the jitter is in these pixels.
+    const { x, y } = this.size.set(Math.floor(width * ratio), Math.floor(height * ratio));
+    this.composer.setSize(x, y);
+    this.acc.setSize(x, y);
+    this.output.setSize(x, y);
     this.reset();
   }
 
@@ -122,13 +123,5 @@ export class Pipeline {
     r.autoClear = clear;
     this.output.render(r, null, this.acc);
     this.count = k + 1;
-  }
-
-  dispose() {
-    this.composer.dispose();
-    this.ao.dispose();
-    this.acc.dispose();
-    this.average.dispose();
-    this.output.dispose();
   }
 }
