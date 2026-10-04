@@ -1,0 +1,142 @@
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { ROOT } from '../src/paths.js';
+
+/**
+ * deploy/deploy.sh се пуска истински (bash), върху временна файлова система: docker, curl, nginx,
+ * systemctl и node са заместени с функции, които пишат в дневник какво са извикани.
+ */
+export const DOMAIN = 'rendetto.carbonstealth.eu';
+export const VHOST = join(ROOT, 'deploy', 'nginx', `${DOMAIN}.conf`);
+
+export interface Layout {
+  base: string;
+  app: string;
+  shared: string;
+  le: string;
+  site: string;
+  link: string;
+  log: string;
+}
+
+function layout(): Layout {
+  const base = mkdtempSync(join(tmpdir(), 'rendetto-deploy-'));
+  const app = join(base, 'release', 'rendetto');
+  mkdirSync(join(app, 'deploy', 'nginx'), { recursive: true });
+  copyFileSync(join(ROOT, 'deploy', 'deploy.sh'), join(app, 'deploy', 'deploy.sh'));
+  copyFileSync(VHOST, join(app, 'deploy', 'nginx', `${DOMAIN}.conf`));
+  mkdirSync(join(base, 'release', 'tools', 'seo'), { recursive: true });
+  writeFileSync(join(base, 'release', 'tools', 'seo', 'indexnow.mjs'), '');
+  mkdirSync(join(base, 'nginx', 'sites-available'), { recursive: true });
+  mkdirSync(join(base, 'nginx', 'sites-enabled'), { recursive: true });
+  return {
+    base,
+    app,
+    shared: join(base, 'shared'),
+    le: join(base, 'le'),
+    site: join(base, 'nginx', 'sites-available', 'rendetto'),
+    link: join(base, 'nginx', 'sites-enabled', 'rendetto'),
+    log: join(base, 'log.txt'),
+  };
+}
+
+export function sharedEnv(L: Layout, data = join(L.shared, 'data'), extra = ''): void {
+  mkdirSync(L.shared, { recursive: true });
+  writeFileSync(
+    join(L.shared, '.env'),
+    `PUBLIC_BASE_URL=https://${DOMAIN}\nPOSTGRES_PASSWORD=pw\nRENDETTO_DATA=${data}\n${extra}`,
+  );
+}
+
+/** Сертификат (и renewal без кука за reload) — с него деплоят слага vhost-а. */
+export function certificate(L: Layout): void {
+  mkdirSync(join(L.le, 'live', DOMAIN), { recursive: true });
+  writeFileSync(join(L.le, 'live', DOMAIN, 'fullchain.pem'), '');
+  mkdirSync(join(L.le, 'renewal'), { recursive: true });
+  writeFileSync(
+    join(L.le, 'renewal', `${DOMAIN}.conf`),
+    '[renewalparams]\nauthenticator = nginx\n',
+  );
+}
+
+const STUBS = `
+id() { echo 0; }
+sleep() { :; }
+install() {
+  local a=()
+  while [ $# -gt 0 ]; do case "$1" in -o|-g) shift 2 ;; *) a+=("$1"); shift ;; esac; done
+  command install "\${a[@]}"
+}
+docker() {
+  echo "docker $*" >> "$LOG"
+  case "$*" in
+    "volume inspect rendetto_db-data") return "$VOLUME_RC" ;;
+    "compose exec -T db pg_dump"*) [ "$DUMP_RC" = 0 ] && echo "-- dump"; return "$DUMP_RC" ;;
+    "compose exec -T db psql"*) echo 1 ;;
+    "compose build app") return "$BUILD_RC" ;;
+  esac
+  return 0
+}
+curl() {
+  local url="\${*: -1}"
+  echo "curl $url" >> "$LOG"
+  case "$url" in
+    */health) printf '%s' "$HEALTH_BODY" ;;
+    */sitemap.xml) printf '%s' "$SITEMAP" ;;
+  esac
+}
+nginx() { echo "nginx $*" >> "$LOG"; if [ "$1" = -t ]; then return "$NGINX_T_RC"; fi; }
+systemctl() { echo "systemctl $*" >> "$LOG"; return "$SYSTEMCTL_RC"; }
+node() { echo "node $*" >> "$LOG"; }
+`;
+
+export function deploy(L: Layout, env: Record<string, string> = {}) {
+  const res = spawnSync('bash', ['-c', `source "$SCRIPT"\n${STUBS}\nmain`], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      SCRIPT: join(L.app, 'deploy', 'deploy.sh'),
+      LOG: L.log,
+      RENDETTO_SHARED: L.shared,
+      RENDETTO_LE_DIR: L.le,
+      RENDETTO_NGINX_SITE: L.site,
+      RENDETTO_NGINX_LINK: L.link,
+      RENDETTO_HEALTH_WAIT: '0',
+      VOLUME_RC: '1',
+      DUMP_RC: '0',
+      BUILD_RC: '0',
+      NGINX_T_RC: '0',
+      SYSTEMCTL_RC: '0',
+      HEALTH_BODY: '{"status":"ok","app":"rendetto"}',
+      SITEMAP: '<urlset/>',
+      ...env,
+    },
+  });
+  const log = existsSync(L.log) ? readFileSync(L.log, 'utf8') : '';
+  writeFileSync(L.log, '');
+  return { status: res.status, stdout: res.stdout, stderr: res.stderr, log };
+}
+
+export const mode = (path: string) => (statSync(path).mode & 0o777).toString(8);
+export const sha = (text: string) => createHash('sha256').update(text).digest('hex');
+
+export function withLayout(run: (L: Layout) => void): void {
+  const L = layout();
+  try {
+    run(L);
+  } finally {
+    rmSync(L.base, { recursive: true, force: true });
+  }
+}

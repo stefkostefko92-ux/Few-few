@@ -23,8 +23,10 @@ sudoedit /opt/few-few/shared/rendetto/.env    # по образеца .env.examp
 (`docker-compose.yml`); образите са заковани по digest. Затова командите в контейнера по-долу са
 `node dist/scripts/…`, не `npm run …` — npm иска да пише в домашната папка.
 
-`ENC_KEY` и `HMAC_KEY` — `openssl rand -hex 32`, два различни. `POSTGRES_PASSWORD` — дълга случайна.
-SMTP: Brevo на порт 2525 (Hetzner блокира 25/465/587).
+`POSTGRES_PASSWORD`, `ENC_KEY` и `HMAC_KEY` — `openssl rand -hex 32`, три различни. Паролата влиза
+некодирана в `DATABASE_URL`: „/“, „?“, „#“ и „%“ (напр. от `openssl rand -base64`) чупят адреса, затова
+`deploy.sh` ги отказва. `RENDETTO_DATA` е точно `/opt/few-few/shared/rendetto/data` — с друг път
+`deploy.sh` не тръгва. SMTP: Brevo на порт 2525 (Hetzner блокира 25/465/587).
 
 Каталогът от магазините се слага в `/opt/few-few/shared/rendetto/data/catalog.json` (подава го
 собственикът; не е в репото). Без него продуктът тръгва с основния каталог.
@@ -56,35 +58,54 @@ sudo bash /opt/few-few/current/rendetto/deploy/deploy.sh
 
 1. копира тайните от `/opt/few-few/shared/rendetto/` (без тях спира с код 3 — тайни не се
    измислят) и проверява, че `RENDETTO_DATA` е `/opt/few-few/shared/rendetto/data`;
-2. бекъп на базата преди миграция в `/opt/few-few/shared/rendetto/backups/` (пази последните 5);
-   без бекъп не мигрира;
+2. бекъп на базата преди миграция в `/opt/few-few/shared/rendetto/backups/` (пази последните 5;
+   `pg_dump --clean --if-exists`); без бекъп не мигрира. С `RENDETTO_SKIP_BACKUP=1` (откатът) — без нов
+   дъмп, за да не изтласка от ротацията дъмпа отпреди счупената миграция;
 3. `docker compose build` и `up` — entrypoint-ът чака базата и пуска `prisma migrate deploy`
    (никога `db push`);
 4. чака `/health` да върне `{"status":"ok","app":"rendetto"}` — маркерът доказва, че на порта
    отговаря Rendetto, а не друго приложение (иначе код 4 и `autodeploy.sh` връща последния
-   работещ release);
-5. слага vhost-а от репото в nginx (`nginx -t`, после reload; при грешка връща стария), щом има
-   сертификат;
+   работещ release); после записва папката на release-а в `/opt/few-few/shared/rendetto/last-good`;
+5. слага vhost-а от репото в nginx с порта от `HTTP_PORT` (`nginx -t`, после reload; при грешка
+   връща стария), щом има сертификат;
 6. подава sitemap-а към IndexNow (Bing, Yandex, Seznam, Naver, Yep), само ако се е променил.
+
+Изход: 0 — жив; 3 — няма `.env`; 4 — контейнерите са сменени, но Rendetto не отговаря; 1 — спрян преди
+смяната (работещите не са пипани). Стъпки 5–6 след успешната сонда само предупреждават.
+
+Командите `docker compose` по-долу се пускат от папката на работещия release — там са
+`docker-compose.yml` и `.env` (`/opt/few-few/shared/rendetto/` е само за root, затова `sudo cat`):
+
+```bash
+cd "$(sudo cat /opt/few-few/shared/rendetto/last-good)"
+```
 
 ## 4. GeoIP (веднъж, после месечно)
 
 ```bash
+cd "$(sudo cat /opt/few-few/shared/rendetto/last-good)"
 sudo docker compose exec -T app node dist/scripts/geoip-update.js && sudo docker compose restart app
 ```
 
-Cron на хоста (1-во число, 04:10): същите две команди.
+Cron на хоста (1-во число, 04:10) — `/etc/cron.d/rendetto-geoip`, един ред:
+
+```
+10 4 1 * * root cd "$(cat /opt/few-few/shared/rendetto/last-good)" && docker compose exec -T app node dist/scripts/geoip-update.js && docker compose restart app
+```
 
 ## 5. Първият собственик (веднъж)
 
 ```bash
+cd "$(sudo cat /opt/few-few/shared/rendetto/last-good)"
 read -rp 'Имейл: ' OWNER_EMAIL; read -rp 'Име: ' OWNER_NAME; read -rsp 'Парола: ' OWNER_PASSWORD; echo
-sudo docker compose exec -T -e OWNER_EMAIL="$OWNER_EMAIL" -e OWNER_NAME="$OWNER_NAME" \
-  -e OWNER_PASSWORD="$OWNER_PASSWORD" app node dist/scripts/create-owner.js
+printf '%s\n' "$OWNER_PASSWORD" | sudo docker compose exec -T -e OWNER_EMAIL="$OWNER_EMAIL" \
+  -e OWNER_NAME="$OWNER_NAME" app sh -c \
+  'IFS= read -r OWNER_PASSWORD && export OWNER_PASSWORD && exec node dist/scripts/create-owner.js'
 unset OWNER_PASSWORD
 ```
 
-Паролата се въвежда скрито и не остава в историята на шела.
+Паролата се въвежда скрито и минава през stdin (`printf` е вграден в bash): не остава в историята на
+шела и не е в командния ред на `sudo`/`docker` (`ps`, `/proc/<pid>/cmdline`).
 
 Паролата минава същата проверка като всички: поне 12 знака, без името на продукта, без част от
 имейла/името. При първи вход панелът иска включване на двуфакторна защита.
@@ -112,9 +133,58 @@ IndexNow тръгва сам от деплоя. Google не участва в In
 
 ## 8. Връщане назад
 
-Кодът: `autodeploy.sh` го връща сам, ако новият release не отговори — пуска `deploy/deploy.sh` на
-последния работещ (пътят му е в `/opt/few-few/shared/rendetto/last-good`). Ръчно — същият скрипт от
-папката на предишния release в `/opt/few-few/releases/`.
+**Кодът.** `autodeploy.sh` го връща сам, ако новият release не отговори: пуска `deploy/deploy.sh` на
+последния работещ (`/opt/few-few/shared/rendetto/last-good`) с `RENDETTO_SKIP_BACKUP=1`. Ръчно — същото:
 
-Данните — само ако миграцията ги е счупила:
-`gunzip -c /opt/few-few/shared/rendetto/backups/pre-deploy-….sql.gz | sudo docker compose exec -T db psql -U rendetto rendetto`.
+```bash
+sudo RENDETTO_SKIP_BACKUP=1 bash "$(sudo cat /opt/few-few/shared/rendetto/last-good)/deploy/deploy.sh"
+```
+
+**Провалена миграция** — в `docker compose logs app` има `P3018`, а при всеки следващ старт `P3009`.
+Откат само на кода не помага: entrypoint-ът и на стария release пуска `prisma migrate deploy`, а Prisma
+отказва, докато в базата има неуредена миграция. Затова autodeploy тогава не връща кода, а казва кой е
+последният дъмп. Командите са от папката на последния работещ release (`last-good` още сочи него):
+
+```bash
+cd "$(sudo cat /opt/few-few/shared/rendetto/last-good)"
+sudo docker compose stop app
+sudo docker compose exec -T db psql -U rendetto -d rendetto -c \
+  'SELECT migration_name FROM _prisma_migrations WHERE finished_at IS NULL AND rolled_back_at IS NULL'
+```
+
+а) **Данните са цели** — обичайният случай: PostgreSQL прилага файла на миграцията като една транзакция и
+при грешка връща всичко; остава само записът, че миграцията е паднала. Той се отбелязва като върнат и
+тръгва предишният код (нищо не се губи):
+
+```bash
+sudo docker compose run --rm --no-deps --entrypoint ./node_modules/.bin/prisma app \
+  migrate resolve --rolled-back <име_на_миграцията>
+sudo RENDETTO_SKIP_BACKUP=1 bash "$PWD/deploy/deploy.sh"
+```
+
+б) **Данните трябва да се върнат** — миграцията е минала, но ги е развалила, или не си сигурен. Дъмпът е
+отпреди build-а: записите след него (минутите на build-а) се губят. Възстановяването е една транзакция —
+при грешка базата остава каквато е. `DROP SCHEMA` е нужен, защото таблица от новата миграция с външен
+ключ към стара спира триенето в дъмпа. Дъмпът връща и `_prisma_migrations`, затова `migrate resolve`
+след него не трябва (дава P3011):
+
+```bash
+DUMP=/opt/few-few/shared/rendetto/backups/pre-deploy-<дата-час>.sql.gz   # последният преди провала
+gunzip -c "$DUMP" | sudo docker compose exec -T db psql -v ON_ERROR_STOP=1 --single-transaction \
+  -U rendetto -d rendetto -c 'DROP SCHEMA public CASCADE' -c 'CREATE SCHEMA public' -f -
+```
+
+Одитът: ако номерът в котвата (`"head":{"id":…}` в `/opt/few-few/shared/rendetto/data/audit-head.json`)
+е по-голям от `SELECT max(id) FROM "AuditLog"`, краят на веригата е изрязан с възстановяването и панелът
+би го показал като скъсана верига. Тогава запиши случая извън сървъра и премести котвата встрани
+(доказателство — не се трие); новата се пише от следващия запис:
+
+```bash
+sudo mv /opt/few-few/shared/rendetto/data/audit-head.json \
+  "/opt/few-few/shared/rendetto/data/audit-head.pre-restore-$(date +%Y%m%d-%H%M%S).json"
+```
+
+Накрая — предишният код: `sudo RENDETTO_SKIP_BACKUP=1 bash "$PWD/deploy/deploy.sh"`.
+
+Проверено с PostgreSQL 16 и Prisma 6: след а) и след б) `prisma migrate deploy` на стария код казва
+„No pending migrations“. Поправената миграция идва с нов release.

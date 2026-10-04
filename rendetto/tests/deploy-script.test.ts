@@ -1,139 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import {
-  copyFileSync,
   existsSync,
   mkdirSync,
-  mkdtempSync,
   readdirSync,
   readFileSync,
-  readlinkSync,
-  rmSync,
-  statSync,
+  realpathSync,
   utimesSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { ROOT } from '../src/paths.js';
-
-/**
- * deploy/deploy.sh се пуска истински (bash), върху временна файлова система: docker, curl, nginx,
- * systemctl и node са заместени с функции, които пишат в дневник какво са извикани.
- */
-const DOMAIN = 'rendetto.carbonstealth.eu';
-const VHOST = join(ROOT, 'deploy', 'nginx', `${DOMAIN}.conf`);
-
-interface Layout {
-  base: string;
-  app: string;
-  shared: string;
-  le: string;
-  site: string;
-  link: string;
-  log: string;
-}
-
-function layout(): Layout {
-  const base = mkdtempSync(join(tmpdir(), 'rendetto-deploy-'));
-  const app = join(base, 'release', 'rendetto');
-  mkdirSync(join(app, 'deploy', 'nginx'), { recursive: true });
-  copyFileSync(join(ROOT, 'deploy', 'deploy.sh'), join(app, 'deploy', 'deploy.sh'));
-  copyFileSync(VHOST, join(app, 'deploy', 'nginx', `${DOMAIN}.conf`));
-  mkdirSync(join(base, 'release', 'tools', 'seo'), { recursive: true });
-  writeFileSync(join(base, 'release', 'tools', 'seo', 'indexnow.mjs'), '');
-  mkdirSync(join(base, 'nginx', 'sites-available'), { recursive: true });
-  mkdirSync(join(base, 'nginx', 'sites-enabled'), { recursive: true });
-  return {
-    base,
-    app,
-    shared: join(base, 'shared'),
-    le: join(base, 'le'),
-    site: join(base, 'nginx', 'sites-available', 'rendetto'),
-    link: join(base, 'nginx', 'sites-enabled', 'rendetto'),
-    log: join(base, 'log.txt'),
-  };
-}
-
-function sharedEnv(L: Layout, data = join(L.shared, 'data')): void {
-  mkdirSync(L.shared, { recursive: true });
-  writeFileSync(
-    join(L.shared, '.env'),
-    `PUBLIC_BASE_URL=https://${DOMAIN}\nPOSTGRES_PASSWORD=pw\nRENDETTO_DATA=${data}\n`,
-  );
-}
-
-const STUBS = `
-id() { echo 0; }
-sleep() { :; }
-install() {
-  local a=()
-  while [ $# -gt 0 ]; do case "$1" in -o|-g) shift 2 ;; *) a+=("$1"); shift ;; esac; done
-  command install "\${a[@]}"
-}
-docker() {
-  echo "docker $*" >> "$LOG"
-  case "$*" in
-    "volume inspect rendetto_db-data") return "$VOLUME_RC" ;;
-    "compose exec -T db pg_dump"*) [ "$DUMP_RC" = 0 ] && echo "-- dump"; return "$DUMP_RC" ;;
-    "compose exec -T db psql"*) echo 1 ;;
-    "compose build app") return "$BUILD_RC" ;;
-  esac
-  return 0
-}
-curl() {
-  local url="\${*: -1}"
-  echo "curl $url" >> "$LOG"
-  case "$url" in
-    */health) printf '%s' "$HEALTH_BODY" ;;
-    */sitemap.xml) printf '%s' "$SITEMAP" ;;
-  esac
-}
-nginx() { echo "nginx $*" >> "$LOG"; if [ "$1" = -t ]; then return "$NGINX_T_RC"; fi; }
-systemctl() { echo "systemctl $*" >> "$LOG"; }
-node() { echo "node $*" >> "$LOG"; }
-`;
-
-function deploy(L: Layout, env: Record<string, string> = {}) {
-  const res = spawnSync('bash', ['-c', `source "$SCRIPT"\n${STUBS}\nmain`], {
-    encoding: 'utf8',
-    env: {
-      ...process.env,
-      SCRIPT: join(L.app, 'deploy', 'deploy.sh'),
-      LOG: L.log,
-      RENDETTO_SHARED: L.shared,
-      RENDETTO_LE_DIR: L.le,
-      RENDETTO_NGINX_SITE: L.site,
-      RENDETTO_NGINX_LINK: L.link,
-      RENDETTO_HEALTH_WAIT: '0',
-      VOLUME_RC: '1',
-      DUMP_RC: '0',
-      BUILD_RC: '0',
-      NGINX_T_RC: '0',
-      HEALTH_BODY: '{"status":"ok","app":"rendetto"}',
-      SITEMAP: '<urlset/>',
-      ...env,
-    },
-  });
-  const log = existsSync(L.log) ? readFileSync(L.log, 'utf8') : '';
-  writeFileSync(L.log, '');
-  return { status: res.status, stderr: res.stderr, log };
-}
-
-const mode = (path: string) => (statSync(path).mode & 0o777).toString(8);
-const sha = (text: string) => createHash('sha256').update(text).digest('hex');
-
-function withLayout(run: (L: Layout) => void): void {
-  const L = layout();
-  try {
-    run(L);
-  } finally {
-    rmSync(L.base, { recursive: true, force: true });
-  }
-}
+import { deploy, mode, sha, sharedEnv, withLayout } from './deploy-harness.js';
 
 test('without a .env anywhere it stops with code 3 and builds nothing', () => {
   withLayout((L) => {
@@ -185,7 +63,12 @@ test('a redeploy dumps the database before the build, keeps five dumps and skips
     writeFileSync(join(L.shared, 'indexnow-sitemap.sha256'), `${sha('<urlset/>')}\n`);
     const r = deploy(L, { VOLUME_RC: '0' });
     assert.equal(r.status, 0, r.stderr);
-    const order = ['volume inspect', 'compose up -d --wait db', 'pg_dump', 'compose build app'];
+    const order = [
+      'volume inspect',
+      'compose up -d --no-recreate --wait db',
+      'pg_dump --clean --if-exists -U rendetto -d rendetto',
+      'compose build app',
+    ];
     const at = order.map((step) => r.log.indexOf(step));
     assert.deepEqual(
       at,
@@ -233,47 +116,44 @@ test('a 200 without the Rendetto marker is another app on the port: code 4', () 
   });
 });
 
-test('with a certificate the vhost from the repo is installed and reloaded; a refused one is rolled back', () => {
+test('a rollback (RENDETTO_SKIP_BACKUP=1) makes no new dump and rotates nothing', () => {
   withLayout((L) => {
     sharedEnv(L);
-    mkdirSync(join(L.le, 'live', DOMAIN), { recursive: true });
-    writeFileSync(join(L.le, 'live', DOMAIN, 'fullchain.pem'), '');
-    mkdirSync(join(L.le, 'renewal'), { recursive: true });
+    const backups = join(L.shared, 'backups');
+    mkdirSync(backups, { recursive: true });
+    writeFileSync(join(backups, 'pre-deploy-19990101-000000.sql.gz'), 'before the migration');
+    const r = deploy(L, { VOLUME_RC: '0', RENDETTO_SKIP_BACKUP: '1' });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /RENDETTO_SKIP_BACKUP=1/);
+    assert.doesNotMatch(r.log, /pg_dump|--wait db|volume inspect/);
+    assert.match(r.log, /docker compose build app\n/);
+    assert.deepEqual(readdirSync(backups), ['pre-deploy-19990101-000000.sql.gz']);
+  });
+});
+
+test('a database password that breaks DATABASE_URL is refused before anything runs', () => {
+  withLayout((L) => {
+    sharedEnv(L);
+    const env = readFileSync(join(L.shared, '.env'), 'utf8');
     writeFileSync(
-      join(L.le, 'renewal', `${DOMAIN}.conf`),
-      '[renewalparams]\nauthenticator = nginx\n',
+      join(L.shared, '.env'),
+      env.replace('POSTGRES_PASSWORD=pw', 'POSTGRES_PASSWORD=ab/cd'),
     );
+    const r = deploy(L, { VOLUME_RC: '0' });
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /POSTGRES_PASSWORD.*openssl rand -hex 32/);
+    assert.doesNotMatch(r.log, /pg_dump|compose (build|up)/);
+  });
+});
 
-    const first = deploy(L);
-    assert.equal(first.status, 0, first.stderr);
-    assert.equal(readFileSync(L.site, 'utf8'), readFileSync(VHOST, 'utf8'));
-    assert.equal(readlinkSync(L.link), L.site);
-    assert.match(first.log, /nginx -t\nsystemctl reload nginx\n/);
-    assert.match(first.stderr, /certbot не презарежда nginx след подновяване/);
-
-    writeFileSync(
-      join(L.le, 'renewal', `${DOMAIN}.conf`),
-      '[renewalparams]\nauthenticator = nginx\nrenew_hook = systemctl reload nginx\n',
-    );
-    const same = deploy(L);
-    assert.doesNotMatch(same.log, /nginx -t|systemctl reload/, 'in sync: nothing to reload');
-    assert.doesNotMatch(same.stderr, /certbot не презарежда/);
-
-    const changed = join(L.app, 'deploy', 'nginx', `${DOMAIN}.conf`);
-    writeFileSync(changed, `${readFileSync(VHOST, 'utf8')}# промяна\n`);
-    const refused = deploy(L, { NGINX_T_RC: '1' });
-    assert.equal(refused.status, 0, 'the app is live; only nginx kept the old vhost');
-    assert.equal(
-      readFileSync(L.site, 'utf8'),
-      readFileSync(VHOST, 'utf8'),
-      'the old vhost is back',
-    );
-    assert.doesNotMatch(refused.log, /systemctl reload/);
-    assert.match(refused.stderr, /nginx -t отказа новия vhost/);
-    assert.deepEqual(
-      readdirSync(join(L.base, 'nginx', 'sites-available')),
-      ['rendetto'],
-      'no backup copy left behind',
-    );
+test('a live release is remembered as last-good by its real path; a failed one is not', () => {
+  withLayout((L) => {
+    sharedEnv(L);
+    const failed = deploy(L, { HEALTH_BODY: '' });
+    assert.equal(failed.status, 4);
+    assert.equal(existsSync(join(L.shared, 'last-good')), false);
+    const live = deploy(L);
+    assert.equal(live.status, 0, live.stderr);
+    assert.equal(readFileSync(join(L.shared, 'last-good'), 'utf8'), `${realpathSync(L.app)}\n`);
   });
 });

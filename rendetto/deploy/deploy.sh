@@ -11,7 +11,11 @@
 #
 # Тайни не се измислят. Изход: 0 — жив; 3 — няма .env (машината не е настроена);
 # 4 — контейнерите са сменени, но Rendetto не отговаря (autodeploy връща предишния код);
-# 1 — спрян преди смяната на контейнерите (работещите не са пипани). Идемпотентен.
+# 1 — спрян преди смяната на контейнерите (работещите не са пипани). След успешната сонда нищо не
+# сменя изхода 0: nginx и IndexNow само предупреждават. Идемпотентен.
+#
+# RENDETTO_SKIP_BACKUP=1 — без нов дъмп (откатът на autodeploy): иначе всеки провал гори слот от
+# ротацията и изтласква дъмпа отпреди счупената миграция.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 umask 077
@@ -25,6 +29,8 @@ LE_DIR="${RENDETTO_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${RENDETTO_HEALTH_WAIT:-90}"
 KEEP_BACKUPS="${RENDETTO_KEEP_BACKUPS:-5}"
 INDEXNOW="${RENDETTO_INDEXNOW:-1}"
+SKIP_BACKUP="${RENDETTO_SKIP_BACKUP:-0}"
+LAST_GOOD="${RENDETTO_LAST_GOOD:-$SHARED/last-good}"
 TS="$(date +%Y%m%d-%H%M%S)"
 
 log()  { printf '\033[1;36m▸ rendetto: %s\033[0m\n' "$*"; }
@@ -71,9 +77,22 @@ ensure_data() {
   install -d -m 700 -o 1000 -g 1000 "$data"
 }
 
+# POSTGRES_PASSWORD влиза некодирана в DATABASE_URL (docker-compose.yml): „/“, „?“, „#“ и „%“ чупят
+# адреса и приложението никога не стига до базата. По-добре отказ сега, отколкото сонда и откат.
+check_db_password() {
+  case "$(env_value POSTGRES_PASSWORD)" in
+    *[/?#%]*) fail 1 "POSTGRES_PASSWORD съдържа някой от знаците / ? # % — те чупят DATABASE_URL. Нова: openssl rand -hex 32 (DEPLOY.md, т. 1)." ;;
+  esac
+}
+
 # Бекъп ПРЕДИ миграцията, щом томът с базата съществува (при пръв деплой няма какво). Без бекъп няма
-# миграция: провалът тук спира деплоя, преди контейнерът на приложението да е сменен.
+# миграция: провалът тук спира деплоя, преди контейнерът на приложението да е сменен. Дъмпът е с
+# --clean --if-exists: възстановява се в съществуващата база (DEPLOY.md, т. 8).
 backup_db() {
+  if [ "$SKIP_BACKUP" = "1" ]; then
+    log "RENDETTO_SKIP_BACKUP=1 (откат) — без нов бекъп; последният дъмп отпреди миграцията остава"
+    return 0
+  fi
   if ! docker volume inspect rendetto_db-data >/dev/null 2>&1; then
     log "няма том с база (пръв деплой) — няма какво да се бекъпва"
     return 0
@@ -81,9 +100,12 @@ backup_db() {
   local dir="$SHARED/backups" file
   file="$dir/pre-deploy-$TS.sql.gz"
   install -d -m 700 "$dir"
-  # базата може да е спряна (рестарт на машината, срив) — вдига се само тя, за да се дъмпне
-  docker compose up -d --wait db >/dev/null || fail 1 "базата не тръгна за бекъпа — не мигрирам без бекъп."
-  if docker compose exec -T db pg_dump -U rendetto -d rendetto | gzip >"$file.partial"; then
+  # базата може да е спряна (рестарт на машината, срив) — вдига се само тя, за да се дъмпне. Без
+  # --no-recreate compose би пресъздал работещата база по дефиницията на НОВИЯ release още тук, преди
+  # бекъпа; новата дефиниция влиза с `up` след build-а.
+  docker compose up -d --no-recreate --wait db >/dev/null ||
+    fail 1 "базата не тръгна за бекъпа — не мигрирам без бекъп."
+  if docker compose exec -T db pg_dump --clean --if-exists -U rendetto -d rendetto | gzip >"$file.partial"; then
     mv -f "$file.partial" "$file"
     ok "бекъп преди миграция → $file ($(du -h "$file" | cut -f1))"
   else
@@ -108,10 +130,19 @@ wait_healthy() {
   done
 }
 
-# Vhost-ът е файл в репото: щом има сертификат, сървърът носи точно него (nginx -t, после reload; при
-# грешка се връща старият). Сертификатът се взема веднъж на ръка, когато DNS вече сочи насам.
+# Последният release, който е отговорил — целта на отката и папката за командите от DEPLOY.md. Пише
+# се и при ръчен деплой; истинският път (без symlink-а current), за да не се мести сам.
+remember_live() {
+  local real
+  real="$(cd "$APP_DIR" && pwd -P)" && install -d -m 700 "$(dirname "$LAST_GOOD")" &&
+    printf '%s\n' "$real" >"$LAST_GOOD.tmp" && mv -f "$LAST_GOOD.tmp" "$LAST_GOOD"
+}
+
+# Vhost-ът е файл в репото: щом има сертификат, сървърът носи точно него, с порта от HTTP_PORT (nginx -t,
+# после reload; при грешка се връща старият). Сертификатът се взема веднъж на ръка, когато DNS вече
+# сочи насам. Тече след сондата: всяка грешка е предупреждение и код ≠ 0 само към main.
 sync_nginx() {
-  local port="$1" conf="$APP_DIR/deploy/nginx/$DOMAIN.conf" bak="$NGINX_SITE.bak-$TS" renewal
+  local port="$1" conf="$APP_DIR/deploy/nginx/$DOMAIN.conf" bak="$NGINX_SITE.bak-$TS" new renewal why=""
   if ! command -v nginx >/dev/null 2>&1; then
     warn "няма nginx на хоста — Rendetto отговаря само на 127.0.0.1:$port"
     return 0
@@ -125,7 +156,15 @@ sync_nginx() {
     warn "няма $conf в release-а — nginx не е пипан"
     return 0
   fi
-  grep -q "127.0.0.1:$port;" "$conf" || warn "vhost-ът в репото сочи друг порт, не $port (HTTP_PORT в .env)"
+  # vhost-ът в репото е за 127.0.0.1:4320; друг HTTP_PORT се вписва тук — иначе домейнът би сочил порт,
+  # на който не е Rendetto (чуждо приложение или 502)
+  new="$(mktemp)" || return 1
+  sed "s/127\.0\.0\.1:4320;/127.0.0.1:$port;/g" "$conf" >"$new"
+  if ! grep -q "127.0.0.1:$port;" "$new"; then
+    rm -f "$new"
+    warn "vhost-ът в репото не сочи 127.0.0.1:4320 — nginx не е пипан"
+    return 1
+  fi
   # подновеният сертификат стига до nginx само след reload: кука на сертификата, nginx като installer
   # или изпълним файл в renewal-hooks/deploy (certbot го пуска след всяко подновяване)
   renewal="$LE_DIR/renewal/$DOMAIN.conf"
@@ -133,20 +172,29 @@ sync_nginx() {
     [ -z "$(find "$LE_DIR/renewal-hooks/deploy" -type f -perm -u+x 2>/dev/null)" ]; then
     warn "certbot не презарежда nginx след подновяване — новият сертификат ще стигне до nginx чак при следващ reload."
   fi
-  if [ -f "$NGINX_SITE" ] && cmp -s "$conf" "$NGINX_SITE" && [ "$(readlink "$NGINX_LINK" || true)" = "$NGINX_SITE" ]; then
+  if [ -f "$NGINX_SITE" ] && cmp -s "$new" "$NGINX_SITE" && [ "$(readlink "$NGINX_LINK" || true)" = "$NGINX_SITE" ]; then
+    rm -f "$new"
     return 0
   fi
-  if [ -f "$NGINX_SITE" ]; then cp -a "$NGINX_SITE" "$bak"; fi
-  install -m 644 "$conf" "$NGINX_SITE"
-  ln -sfn "$NGINX_SITE" "$NGINX_LINK"
-  if nginx -t >/dev/null 2>&1; then
-    systemctl reload nginx
+  if [ -f "$NGINX_SITE" ] && ! cp -a "$NGINX_SITE" "$bak"; then
+    rm -f "$new"
+    warn "старият vhost не се запази в $bak — nginx не е пипан"
+    return 1
+  fi
+  { install -m 644 "$new" "$NGINX_SITE" && ln -sfn "$NGINX_SITE" "$NGINX_LINK"; } || why="vhost-ът не се записа в $NGINX_SITE"
+  [ -n "$why" ] || nginx -t >/dev/null 2>&1 || why="nginx -t отказа новия vhost (виж: nginx -t)"
+  # неуспешен reload (напр. неактивен nginx) оставя заредения стар конфиг — затова и на диска се връща
+  # старият, а следващият деплой опитва пак
+  [ -n "$why" ] || systemctl reload nginx || why="reload на nginx не мина (виж: systemctl status nginx)"
+  rm -f "$new"
+  if [ -z "$why" ]; then
     rm -f "$bak"
     ok "nginx носи vhost-а от репото ($NGINX_SITE)"
-  else
-    if [ -f "$bak" ]; then mv -f "$bak" "$NGINX_SITE"; else rm -f "$NGINX_SITE" "$NGINX_LINK"; fi
-    warn "nginx -t отказа новия vhost — върнах стария, nginx не е презареждан. Виж: nginx -t"
+    return 0
   fi
+  if [ -f "$bak" ]; then mv -f "$bak" "$NGINX_SITE"; else rm -f "$NGINX_SITE" "$NGINX_LINK"; fi
+  warn "$why — върнах стария vhost; следващият деплой опитва пак."
+  return 1
 }
 
 # IndexNow (Bing, Yandex, Seznam, Naver, Yep — Google не участва): само когато sitemap-ът се е
@@ -198,6 +246,7 @@ main() {
   cd "$APP_DIR"
   sync_env
   ensure_data
+  check_db_password
   port="$(env_value HTTP_PORT | tr -dc '0-9')"
   port="${port:-4320}"
   backup_db
@@ -208,9 +257,12 @@ main() {
   wait_healthy "$port" ||
     fail 4 "на 127.0.0.1:$port не отговаря Rendetto след ${HEALTH_WAIT} s. Виж: cd $APP_DIR && docker compose logs --tail=80 app"
   ok "жив на 127.0.0.1:$port"
-  sync_nginx "$port"
-  ping_indexnow "$port"
-  hints
+  # Новият код вече работи: оттук нататък нищо не сменя изхода 0 (за autodeploy 1 значи „спрян преди
+  # смяната“, а това вече не е вярно).
+  remember_live || warn "не записах $LAST_GOOD — откатът и DEPLOY.md сочат предишния release"
+  sync_nginx "$port" || warn "nginx не е обновен — Rendetto е жив на 127.0.0.1:$port"
+  ping_indexnow "$port" || warn "IndexNow не мина — следващият деплой опитва пак"
+  hints || true
 }
 
 # Изпълнен — разгръща; зареден със `source` (тестовете) — само дефинира функциите.
