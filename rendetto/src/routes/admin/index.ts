@@ -18,6 +18,7 @@ import {
   type StatusFilter,
 } from '../../services/admin-accounts.js';
 import { catalogInfo } from '../../services/engine.js';
+import { withoutUnsafeChars } from '../../services/names.js';
 import { accountAdminRouter } from './account.js';
 import { manageRouter } from './manage.js';
 
@@ -75,7 +76,7 @@ function pick<T extends string>(value: unknown, allowed: readonly T[], fallback:
 
 adminRouter.get('/admin/accounts', async (req, res) => {
   const query: AccountQuery = {
-    q: typeof req.query.q === 'string' ? req.query.q.slice(0, 120) : '',
+    q: typeof req.query.q === 'string' ? withoutUnsafeChars(req.query.q.slice(0, 120)) : '',
     plan: pick<PlanFilter>(req.query.plan, PLAN_FILTERS, 'all'),
     status: pick<StatusFilter>(req.query.status, STATUS_FILTERS, 'all'),
     sort: pick<SortKey>(req.query.sort, SORTS, 'created'),

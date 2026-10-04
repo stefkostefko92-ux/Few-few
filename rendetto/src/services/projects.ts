@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { audit } from '../audit.js';
 import { sha256Hex } from '../crypto.js';
 import { prisma } from '../db.js';
-import type { RequestMeta } from '../http/meta.js';
+import { isRecordId, type RequestMeta } from '../http/meta.js';
 import { planView } from '../plans/plan.js';
 import type { SessionUser } from '../types.js';
 import { customerActor } from './auth-common.js';
@@ -90,7 +90,7 @@ export async function listOwnProjects(userId: string) {
 
 /** Собствен проект — чужд не съществува за този човек (404, не 403: не издаваме, че id-то е истинско). */
 export async function ownProject(userId: string, id: string): Promise<Project | null> {
-  if (!/^[a-z0-9]{20,40}$/.test(id)) return null;
+  if (!isRecordId(id)) return null;
   return prisma.project.findFirst({ where: { id, userId } });
 }
 

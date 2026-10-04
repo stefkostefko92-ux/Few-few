@@ -6,10 +6,18 @@ import { issueEmailToken } from '../auth/tokens.js';
 import { accountLocale } from '../i18n.js';
 import { greetingName, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
+import { hasUnsafeChars, hasUnsafeTextChars } from './names.js';
 
 /* -------------------------------------- бан -------------------------------------- */
 
-const banSchema = z.object({ reason: z.string().trim().min(3).max(500) });
+const banSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(3)
+    .max(500)
+    .refine((value) => !hasUnsafeTextChars(value)),
+});
 
 /** Бан с причина: всички сесии падат веднага, причината се показва на човека при опит за вход. */
 export async function banAccount(
@@ -20,7 +28,11 @@ export async function banAccount(
   const target = await targetFor(actor, id, 'accounts:ban');
   if (isResult(target)) return target;
   const parsed = banSchema.safeParse(raw);
-  if (!parsed.success) return fail('admin.errors.banReason');
+  if (!parsed.success) {
+    // дължината има свой текст; управляващ знак в причината — общият „грешно поле“
+    const unsafe = parsed.error.issues.some((issue) => issue.code === 'custom');
+    return fail(unsafe ? 'admin.errors.input' : 'admin.errors.banReason');
+  }
   const now = new Date();
   const banned = await audited(
     actor,
@@ -65,7 +77,17 @@ export async function unbanAccount(
   const target = await targetFor(actor, id, 'accounts:ban');
   if (isResult(target)) return target;
   if (!target.bannedAt) return fail('admin.errors.notBanned');
-  const note = z.object({ note: z.string().trim().max(500).default('') }).safeParse(raw);
+  const note = z
+    .object({
+      note: z
+        .string()
+        .trim()
+        .max(500)
+        .refine((value) => !hasUnsafeChars(value))
+        .default(''),
+    })
+    .safeParse(raw);
+  if (!note.success) return fail('admin.errors.input');
   const now = new Date();
   await audited(
     actor,
@@ -77,7 +99,7 @@ export async function unbanAccount(
           liftedAt: now,
           liftedById: actor.id,
           liftedByLabel: actor.label,
-          liftNote: note.success ? note.data.note || null : null,
+          liftNote: note.data.note || null,
         },
       });
     },

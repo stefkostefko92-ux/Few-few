@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { renderError, requireStaff } from '../../auth/guards.js';
 import { assignableRoles, can, outranks } from '../../auth/rbac.js';
 import { remainingRecoveryCodes } from '../../auth/recovery.js';
-import { stringField } from '../../http/meta.js';
+import { idParam, stringField } from '../../http/meta.js';
 import { planView } from '../../plans/plan.js';
 import { optionPriceCents, priceTable } from '../../plans/pricing.js';
 import { paidStartAllowedFrom } from '../../plans/withdrawal.js';
@@ -24,7 +24,7 @@ import {
   unbanAccount,
   unlockAccount,
 } from '../../services/admin-security.js';
-import { bool, finish, idParam, staffActor } from './common.js';
+import { bool, finish, staffActor } from './common.js';
 
 export const accountAdminRouter: Router = Router();
 

@@ -5,7 +5,7 @@ import { assignableRoles, outranks } from '../../auth/rbac.js';
 import { linkHours } from '../../auth/tokens.js';
 import { prisma } from '../../db.js';
 import { exportLimiter } from '../../http/limits.js';
-import { rawField, stringField } from '../../http/meta.js';
+import { idParam, rawField, stringField } from '../../http/meta.js';
 import { LABEL } from '../../labels.js';
 import { withVatCents } from '../../plans/pricing.js';
 import {
@@ -18,7 +18,8 @@ import { UNVERIFIED_RETENTION_DAYS } from '../../retention.js';
 import { createAccount } from '../../services/admin-create.js';
 import { rejectRequest } from '../../services/admin-plan.js';
 import { buildExport, contentDisposition } from '../../services/exports.js';
-import { finish, idParam, staffActor } from './common.js';
+import { withoutUnsafeChars } from '../../services/names.js';
+import { finish, staffActor } from './common.js';
 
 export const manageRouter: Router = Router();
 
@@ -100,7 +101,8 @@ manageRouter.get('/admin/audit', requireStaff('audit:view'), async (req, res) =>
   const before = Number.parseInt(String(req.query.before ?? ''), 10);
   // id е INT4: по-голямо число Prisma отказва с грешка (500) — такава стойност не е страница
   const cursor = Number.isSafeInteger(before) && before > 0 && before <= INT4_MAX ? before : null;
-  const action = typeof req.query.action === 'string' ? req.query.action.slice(0, 60) : '';
+  const action =
+    typeof req.query.action === 'string' ? withoutUnsafeChars(req.query.action.slice(0, 60)) : '';
   const rows = await prisma.auditLog.findMany({
     where: {
       ...(cursor !== null ? { id: { lt: cursor } } : {}),

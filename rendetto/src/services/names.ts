@@ -1,13 +1,27 @@
 /**
- * Правила за имена (на човек и на проект), общи за схемите. Чист модул — без база.
+ * Правила за имена (на човек и на проект) и за свободния текст, общи за схемите. Чист модул — без база.
  *
  * Не се приемат управляващи знаци (NUL и сие: PostgreSQL `text` не пази 0x00 и записът би дал 500) и
  * знаците за посока U+202A–U+202E и U+2066–U+2069, които обръщат текста в списъците и писмата.
  */
 const UNSAFE = /[\p{Cc}\u202A-\u202E\u2066-\u2069]/u;
+const UNSAFE_ALL = new RegExp(UNSAFE.source, 'gu');
 
 export function hasUnsafeChars(value: string): boolean {
   return UNSAFE.test(value);
+}
+
+/**
+ * Текст на няколко реда (съобщение към поръчка, причина за блокиране): като името, но новият ред и
+ * табулацията са позволени.
+ */
+export function hasUnsafeTextChars(value: string): boolean {
+  return hasUnsafeChars(value.replace(/[\t\n\r]/g, ''));
+}
+
+/** Търсене и филтър от адреса: опасните знаци се махат, вместо да стигнат до заявката към базата. */
+export function withoutUnsafeChars(value: string): string {
+  return value.replace(UNSAFE_ALL, '');
 }
 
 const COPY_SUFFIX = ' (2)';

@@ -25,11 +25,6 @@ export function finish(res: Response, result: ActionResult, okKey: string, path:
   res.redirect(path);
 }
 
-export function idParam(req: Request): string {
-  const id = String(req.params.id ?? '');
-  return /^[a-z0-9]{20,40}$/.test(id) ? id : '';
-}
-
 export function bool(body: unknown, key: string): boolean {
   const value = (body as Record<string, unknown> | undefined)?.[key];
   return value === 'yes' || value === 'on' || value === 'true';

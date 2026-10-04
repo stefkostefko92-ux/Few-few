@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { audited } from '../audit.js';
 import { prisma } from '../db.js';
 import { can } from '../auth/rbac.js';
+import { isRecordId } from '../http/meta.js';
 import { accountLocale, translate } from '../i18n.js';
 import { longDate } from '../mail/dates.js';
 import { greetingName, mailPlanChanged } from '../mail/templates.js';
@@ -11,15 +12,17 @@ import { addDays, premiumUntil } from '../plans/plan.js';
 import { optionPriceCents, TERM_OPTIONS } from '../plans/pricing.js';
 import { paidStartAllowedFrom } from '../plans/withdrawal.js';
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
+import { hasUnsafeChars } from './names.js';
 
 /** Бележката на служителя е свободен текст: не може да започва с „@“ — така се пишат знаците на системата. */
 const note = z
   .string()
   .max(500)
+  .refine((value) => !hasUnsafeChars(value))
   .default('')
   .transform((value) => value.replace(/^@+/, ''));
 
-const requestId = z.string().max(40).optional();
+const requestId = z.string().refine(isRecordId).optional();
 
 const planSchema = z.discriminatedUnion('plan', [
   z.object({

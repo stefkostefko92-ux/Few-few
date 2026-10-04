@@ -4,7 +4,7 @@ import { principalOf, requireCsrf, requireUser } from '../auth/guards.js';
 import { clearSessionCookie } from '../auth/sessions.js';
 import { setFlash } from '../http/flash.js';
 import { resendLimiter, sensitiveLimiter } from '../http/limits.js';
-import { rawField, requestMeta, stringField } from '../http/meta.js';
+import { idParam, rawField, requestMeta, stringField } from '../http/meta.js';
 import { planView } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
@@ -127,7 +127,7 @@ accountRouter.post('/account/plan/request', sensitiveLimiter, async (req, res) =
 });
 
 accountRouter.post('/account/plan/request/:id/cancel', async (req, res) => {
-  const ok = await cancelOwnRequest(await me(req), String(req.params.id), requestMeta(req));
+  const ok = await cancelOwnRequest(await me(req), idParam(req), requestMeta(req));
   back(
     res,
     '/account/plan',
@@ -140,7 +140,7 @@ accountRouter.post('/account/plan/request/:id/cancel', async (req, res) => {
 
 accountRouter.get('/account/plan/withdraw/:id', async (req, res) => {
   const user = await me(req);
-  const order = await withdrawableOrder(user, String(req.params.id));
+  const order = await withdrawableOrder(user, idParam(req));
   if (!order) {
     back(res, '/account/plan', 'error', 'plan.withdraw.unavailable');
     return;
@@ -157,7 +157,7 @@ accountRouter.get('/account/plan/withdraw/:id', async (req, res) => {
 });
 
 accountRouter.post('/account/plan/withdraw/:id', sensitiveLimiter, async (req, res) => {
-  const result = await withdrawFromOrder(await me(req), String(req.params.id), requestMeta(req));
+  const result = await withdrawFromOrder(await me(req), idParam(req), requestMeta(req));
   back(
     res,
     '/account/plan',

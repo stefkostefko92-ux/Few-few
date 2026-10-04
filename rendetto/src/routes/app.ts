@@ -3,7 +3,7 @@ import { jsonError, principalOf, renderError, requireCsrf, requireUser } from '.
 import { setFlash } from '../http/flash.js';
 import { jsonForScript } from '../http/json-script.js';
 import { apiLimiter, exportLimiter } from '../http/limits.js';
-import { requestMeta, stringField } from '../http/meta.js';
+import { idParam, requestMeta, stringField } from '../http/meta.js';
 import { translatorFor } from '../i18n.js';
 import { planView } from '../plans/plan.js';
 import { catalogInfo, isFurnitureType } from '../services/engine.js';
@@ -74,7 +74,7 @@ appRouter.post('/app/p/:id/duplicate', async (req, res) => {
 });
 
 appRouter.post('/app/p/:id/delete', async (req, res) => {
-  const ok = await deleteProject(principalOf(req).user, String(req.params.id), requestMeta(req));
+  const ok = await deleteProject(principalOf(req).user, idParam(req), requestMeta(req));
   setFlash(res, ok ? 'ok' : 'error', ok ? 'flash.projectDeleted' : 'error.notFoundText');
   res.redirect('/app');
 });

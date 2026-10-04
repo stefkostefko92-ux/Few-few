@@ -5,7 +5,7 @@ import { remainingRecoveryCodes } from '../auth/recovery.js';
 import { rotateSessionToken, setSessionCookie } from '../auth/sessions.js';
 import { isStaff } from '../auth/rbac.js';
 import { sensitiveLimiter } from '../http/limits.js';
-import { rawField, requestMeta, stringField } from '../http/meta.js';
+import { idParam, rawField, requestMeta, stringField } from '../http/meta.js';
 import { listSessions, revokeOtherSessions, revokeOwnSession } from '../services/account-self.js';
 import {
   changePassword,
@@ -140,7 +140,7 @@ accountSecurityRouter.post('/account/security/recovery', sensitiveLimiter, async
 });
 
 accountSecurityRouter.post('/account/security/sessions/:id/revoke', async (req, res) => {
-  const ok = await revokeOwnSession(await me(req), String(req.params.id), requestMeta(req));
+  const ok = await revokeOwnSession(await me(req), idParam(req), requestMeta(req));
   back(
     res,
     '/account/security',

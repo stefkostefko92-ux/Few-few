@@ -15,6 +15,7 @@ import {
   type PlanOutcome,
 } from '../plans/withdrawal.js';
 import { customerActor } from './auth-common.js';
+import { hasUnsafeTextChars } from './names.js';
 import {
   notifyStaffOfOrder,
   notifyStaffOfWithdrawal,
@@ -32,7 +33,10 @@ const orderSchema = z.object({
   option: z.string().refine(isOptionId),
   buyer: z.enum(['consumer', 'business']),
   early: z.literal('yes').optional(),
-  message: z.string().optional(),
+  message: z
+    .string()
+    .refine((value) => !hasUnsafeTextChars(value))
+    .optional(),
 });
 
 /**

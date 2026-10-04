@@ -8,6 +8,17 @@ export interface RequestMeta {
   userAgent: string | null;
 }
 
+/** id на запис в базата (cuid) — всичко друго от адреса не стига до заявка (NUL в `text` дава 500). */
+export function isRecordId(value: string): boolean {
+  return /^[a-z0-9]{20,40}$/.test(value);
+}
+
+/** `:id` от адреса, ако е id на запис; иначе празно — заявката не намира нищо, вместо да падне. */
+export function idParam(req: Request): string {
+  const id = String(req.params.id ?? '');
+  return isRecordId(id) ? id : '';
+}
+
 /** IP (през `trust proxy`), държава и User-Agent на заявката — за входовете и сесиите. */
 export function requestMeta(req: Request): RequestMeta {
   const ip = normalizeIp(req.ip);
