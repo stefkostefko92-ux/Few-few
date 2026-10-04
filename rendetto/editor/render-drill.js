@@ -1,7 +1,7 @@
 // Пробиване tab: hardware cards (where every hinge, handle and slide goes and which holes it needs), the drilling
 // map of the selected part and its full hole table.
 import { $, esc, fmt, mm, stat, inlineSvg } from './dom.js';
-import { hardwareCards, partHoles, edgeOpName, purposeOf } from '../engine/drill.js';
+import { hardwareCards, partHoles, edgeOpName, edgePurposeOf } from '../engine/drill.js';
 import { drawingPart, holeLetters } from '../engine/drawing-part.js';
 import { edgeLabels } from '../engine/panel.js';
 
@@ -82,6 +82,7 @@ export function renderDrillPart(state, meta) {
   const holes = partHoles(p);
   holeLetters(holes);
   const e = edgeLabels(p);
+  let ch = 0; // Ч1…Чn run over the whole part, as in drilling.csv
   $('#drill-axes').textContent =
     `X (u) от ръб „${e.u0}“ към „${e.u1}“ · Y (v) от ръб „${e.v0}“ към „${e.v1}“ · лице А нагоре`;
   $('#drill-table tbody').innerHTML =
@@ -94,8 +95,8 @@ export function renderDrillPart(state, meta) {
     p.edgeOps
       .flatMap((op) =>
         op.at.map(
-          ([u, v], i) =>
-            `<tr class="edge"><td class="num">Ч${i + 1}</td><td class="c"><b>Ч</b></td><td class="num">${mm(u)}</td><td class="num">${mm(v)}</td><td class="num">Ø${mm(op.d)}</td><td class="num">${mm(op.depth)} хоризонтално</td><td>в чело „${esc(edgeOpName(p, e, op.edge))}“</td><td>${esc(op.label ?? purposeOf(op.kind))}</td></tr>`,
+          ([u, v]) =>
+            `<tr class="edge"><td class="num">Ч${++ch}</td><td class="c"><b>Ч</b></td><td class="num">${mm(u)}</td><td class="num">${mm(v)}</td><td class="num">Ø${mm(op.d)}</td><td class="num">${mm(op.depth)} хоризонтално</td><td>в чело „${esc(edgeOpName(p, e, op.edge))}“</td><td>${esc(op.label ?? edgePurposeOf(op.kind))}</td></tr>`,
         ),
       )
       .join('');

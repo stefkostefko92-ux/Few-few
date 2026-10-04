@@ -3,9 +3,9 @@
 // holes each hinge, handle and slide needs and where.
 import { edgeLabels } from './panel.js';
 import { toCsv } from './bom.js';
-import { r1, neg } from './util.js';
+import { r1, neg, dimTxt } from './util.js';
 
-export const PURPOSE = {
+const PURPOSE = {
   system: 'Система 32 mm (рафтоносачи)',
   cup: 'Чашка на панта',
   'cup-dowel': 'Дюбел на панта',
@@ -22,8 +22,9 @@ export const PURPOSE = {
   'stack-pilot': 'Пилот Ø3 — на място, през отвора на горния корпус',
 };
 export const purposeOf = (kind) => PURPOSE[kind] ?? kind;
-
-const dec = (v) => String(r1(v)).replace('.', ',');
+// A horizontal hole in an edge is the other half of the joint: PURPOSE describes the hole through the face.
+const EDGE_PURPOSE = { confirmat: 'Конфирмат, за резбата' };
+export const edgePurposeOf = (kind) => EDGE_PURPOSE[kind] ?? purposeOf(kind);
 const byPos = (a, b) => a.u - b.u || a.v - b.v;
 
 // Holes of a part numbered 1…n in a stable order (by purpose, then position); marks (no drilling) come last.
@@ -49,19 +50,6 @@ export function partHoles(part) {
   }));
 }
 
-// Per part: one line per (purpose, Ø, depth) with the count.
-export function holeGroups(part) {
-  const g = new Map();
-  for (const h of partHoles(part)) {
-    if (h.mark) continue;
-    const k = `${h.kind}|${h.d}|${h.depth}`;
-    const cur = g.get(k) ?? { kind: h.kind, purpose: h.purpose, d: h.d, depth: h.depth, through: h.through, label: h.label, count: 0 };
-    cur.count += 1;
-    g.set(k, cur);
-  }
-  return [...g.values()];
-}
-
 // The real-world name of the edge a horizontal hole goes into (op.edge is the edge's outward direction).
 export function edgeOpName(part, labels, dir) {
   if (dir === part.frame.eu) return labels.u1;
@@ -77,10 +65,11 @@ export function drillCsv(model) {
     const e = edgeLabels(p);
     for (const h of partHoles(p)) {
       if (h.mark) continue;
-      rows.push([p.id, p.name, p.module ?? '', h.no, dec(h.u), dec(h.v), dec(h.d), dec(h.depth), h.through ? 'да' : 'не', h.purpose, h.label, e.u0, e.v0]);
+      rows.push([p.id, p.name, p.module ?? '', h.no, dimTxt(h.u), dimTxt(h.v), dimTxt(h.d), dimTxt(h.depth), h.through ? 'да' : 'не', h.purpose, h.label, e.u0, e.v0]);
     }
+    let ch = 0; // Ч1…Чn run over all the edges of the part, so a number names one hole
     for (const op of p.edgeOps) {
-      op.at.forEach(([u, v], i) => rows.push([p.id, p.name, p.module ?? '', `Ч${i + 1}`, dec(u), dec(v), dec(op.d), dec(op.depth), 'не', `Хоризонтален в чело „${edgeOpName(p, e, op.edge)}“ (${purposeOf(op.kind)})`, op.label ?? '', e.u0, e.v0]));
+      for (const [u, v] of op.at) rows.push([p.id, p.name, p.module ?? '', `Ч${++ch}`, dimTxt(u), dimTxt(v), dimTxt(op.d), dimTxt(op.depth), 'не', `Хоризонтален в чело „${edgeOpName(p, e, op.edge)}“ (${edgePurposeOf(op.kind)})`, op.label ?? '', e.u0, e.v0]);
     }
   }
   return toCsv(rows);

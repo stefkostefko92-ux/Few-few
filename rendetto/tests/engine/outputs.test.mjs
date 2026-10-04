@@ -93,6 +93,12 @@ for (const [ci, input] of specs.entries()) {
     const holesInCsv = drillCsv(model).split('\r\n').length - 2;
     const holesInModel = model.parts.reduce((a, p) => a + p.features.filter((f) => f.type === 'hole').length + p.edgeOps.reduce((b, o) => b + o.count, 0), 0);
     assert.equal(holesInCsv, holesInModel, `${label}: drill CSV rows vs holes`);
+    const drillRows = drillCsv(model).split('\r\n').slice(1, -1).map((l) => l.split(';'));
+    for (const p of model.parts) {
+      const nos = drillRows.filter((r) => r[0] === p.id).map((r) => r[3]);
+      assert.equal(new Set(nos).size, nos.length, `${label}: ${p.id} repeats a hole number in drilling.csv`);
+    }
+    assert.ok(!drillRows.some((r) => r[3].startsWith('Ч') && r[9].includes('през плочата')), `${label}: an edge hole described as the hole through the face`);
 
     for (const card of hardwareCards(model)) {
       for (const p of card.parts) {
@@ -167,6 +173,14 @@ test('DXF files pass the ezdxf audit (skipped without Python and ezdxf)', (t) =>
   } finally {
     rmSync(dxfDir, { recursive: true, force: true });
   }
+});
+
+test('hardware.csv prints prices with cents; the hardware total is summed in whole cents', () => {
+  const hw = (price, qty) => ({ group: 'Обков', name: `Артикул ${price}`, qty, unit: 'бр.', price, currency: 'EUR' });
+  const bom = buildBom({ parts: [], spec: {}, hardware: [hw(0.83, 3), hw(0.1, 3), hw(0.2, 1), hw(2.76, 1)] });
+  const prices = hardwareCsv(bom).split('\r\n').slice(1, -1).map((l) => l.split(';')[6]);
+  assert.deepEqual(prices.sort(), ['0,10', '0,20', '0,83', '2,76']);
+  assert.equal(bom.hardwareTotals.EUR, 5.75); // 249 + 30 + 20 + 276 cents
 });
 
 test('a CSV cell never starts a spreadsheet formula, numbers stay numbers', () => {

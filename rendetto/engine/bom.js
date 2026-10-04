@@ -2,7 +2,7 @@
 // stock and decor, hardware grouped for purchase, and the CSV exports of all three.
 import { cutSize, edgeSummary } from './panel.js';
 import { STOCK, decorName } from './materials.js';
-import { axisOf, r1 } from './util.js';
+import { axisOf, dimTxt } from './util.js';
 
 const GROUP_ORDER = ['Обков', 'Крепежи', 'Покупни'];
 
@@ -17,7 +17,8 @@ export const csvCell = (v) => {
 };
 // Semicolon CSV with CRLF (opens directly in a Bulgarian-locale Excel / LibreOffice).
 export const toCsv = (rows) => `${rows.map((r) => r.map(csvCell).join(';')).join('\r\n')}\r\n`;
-const dec = (v) => String(r1(v)).replace('.', ',');
+// Money in the CSV: always two decimals with a decimal comma (0.83 → "0,83"), as on the screen.
+const price2 = (v) => v.toFixed(2).replace('.', ',');
 
 export function buildBom(model) {
   const { parts, spec } = model;
@@ -29,7 +30,6 @@ export function buildBom(model) {
       key: p.key,
       name: p.name,
       module: p.module ?? '',
-      role: p.role,
       qty: 1,
       L: p.L,
       W: p.W,
@@ -43,7 +43,6 @@ export function buildBom(model) {
       grain: Boolean(p.grain),
       edgesL: e.L,
       edgesW: e.W,
-      area: (p.L * p.W) / 1e6,
       holes: p.features.filter((f) => f.type === 'hole').length,
       grooves: p.features.filter((f) => f.type === 'groove').length,
       edgeHoles: p.edgeOps.reduce((a, o) => a + o.count, 0),
@@ -72,17 +71,19 @@ export function buildBom(model) {
   }
   const hardware = [...model.hardware].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group) || a.name.localeCompare(b.name, 'bg'));
   const priced = hardware.filter((h) => Number.isFinite(h.price) && h.currency);
-  const totals = {};
-  for (const h of priced) totals[h.currency] = (totals[h.currency] ?? 0) + h.price * h.qty;
+  // money is summed in whole cents (never float euros) and turned back into euros once, for display
+  const cents = {};
+  for (const h of priced) cents[h.currency] = (cents[h.currency] ?? 0) + Math.round(h.price * 100) * h.qty;
+  const totals = Object.fromEntries(Object.entries(cents).map(([cur, c]) => [cur, c / 100]));
   return { rows, bands: [...bands.values()], boards: [...boards.values()], hardware, hardwareTotals: totals, unpriced: hardware.length - priced.length };
 }
 
 export function cutListCsv(bom) {
   const head = ['№', 'Детайл', 'Модул', 'Материал', 'Декор', 'Дебелина', 'Дължина', 'Ширина', 'Дължина за разкрой', 'Ширина за разкрой', 'Бр.', 'Шарка по дължината', 'Кант по дължината', 'Кант по ширината', 'Отвори', 'Канали', 'Хоризонтални отвори'];
-  return toCsv([head, ...bom.rows.map((r) => [r.id, r.name, r.module, r.stockName, r.decorName, r.T, dec(r.L), dec(r.W), dec(r.cutL), dec(r.cutW), r.qty, r.grain ? 'да' : 'не', r.edgesL.map(dec).join('+'), r.edgesW.map(dec).join('+'), r.holes, r.grooves, r.edgeHoles])]);
+  return toCsv([head, ...bom.rows.map((r) => [r.id, r.name, r.module, r.stockName, r.decorName, r.T, dimTxt(r.L), dimTxt(r.W), dimTxt(r.cutL), dimTxt(r.cutW), r.qty, r.grain ? 'да' : 'не', r.edgesL.map(dimTxt).join('+'), r.edgesW.map(dimTxt).join('+'), r.holes, r.grooves, r.edgeHoles])]);
 }
 
 export function hardwareCsv(bom) {
   const head = ['Група', 'Артикул', 'Марка', 'Код', 'Бр.', 'Мярка', 'Ед. цена', 'Валута', 'Магазин', 'Линк'];
-  return toCsv([head, ...bom.hardware.map((h) => [h.group, h.name, h.brand ?? '', h.sku ?? '', h.qty, h.unit, Number.isFinite(h.price) ? dec(h.price) : '', h.currency ?? '', h.shop ?? '', h.url ?? ''])]);
+  return toCsv([head, ...bom.hardware.map((h) => [h.group, h.name, h.brand ?? '', h.sku ?? '', h.qty, h.unit, Number.isFinite(h.price) ? price2(h.price) : '', h.currency ?? '', h.shop ?? '', h.url ?? ''])]);
 }
