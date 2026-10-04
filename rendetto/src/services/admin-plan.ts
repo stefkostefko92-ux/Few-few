@@ -4,6 +4,7 @@ import { audit } from '../audit.js';
 import { prisma } from '../db.js';
 import { LOCALE_TAG, translate } from '../i18n.js';
 import { greetingName, mailPlanChanged } from '../mail/templates.js';
+import { sofiaEndOfDay } from '../plans/bg-calendar.js';
 import { addDays, premiumUntil } from '../plans/plan.js';
 import { optionPriceCents, TERM_OPTIONS } from '../plans/pricing.js';
 import { paidStartAllowedFrom } from '../plans/withdrawal.js';
@@ -90,11 +91,10 @@ function nextState(
       paidStart: remaining && remaining.getTime() > now.getTime() ? remaining : now,
     };
   }
-  if (!input.until) return { error: 'admin.errors.input' };
-  // Краят на избрания ден по София ≈ 21:59 UTC; пазим 23:59:59 UTC, за да е включен целият ден.
-  const expiresAt = new Date(`${input.until}T23:59:59.000Z`);
-  if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= now.getTime())
-    return { error: 'admin.errors.pastDate' };
+  // Включен е целият избран ден по София — писмото и панелът показват същата дата.
+  const expiresAt = input.until ? sofiaEndOfDay(input.until) : null;
+  if (!expiresAt) return { error: 'admin.errors.input' };
+  if (expiresAt.getTime() <= now.getTime()) return { error: 'admin.errors.pastDate' };
   return { expiresAt, months: null, paidStart: now };
 }
 

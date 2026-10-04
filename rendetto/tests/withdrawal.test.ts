@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isBgWorkingDay, orthodoxEaster, sofiaDay } from '../src/plans/bg-calendar.js';
+import {
+  isBgWorkingDay,
+  orthodoxEaster,
+  sofiaDay,
+  sofiaEndOfDay,
+} from '../src/plans/bg-calendar.js';
 import {
   canWithdraw,
   paidStartAllowedFrom,
@@ -47,6 +52,20 @@ test('Bulgarian non-working days: holidays, Easter and the days moved off a week
 test('the day is taken by the Sofia calendar', () => {
   assert.equal(sofiaDay(new Date('2026-10-05T21:30:00Z')), day('2026-10-06'));
   assert.equal(sofiaDay(new Date('2026-01-15T21:59:00Z')), day('2026-01-15'));
+});
+
+test('the end of a chosen day is 23:59:59.999 in Sofia, summer and winter; a non-existent date is refused', () => {
+  const end = (date: string) => sofiaEndOfDay(date)?.toISOString() ?? null;
+  assert.equal(end('2026-12-31'), '2026-12-31T21:59:59.999Z');
+  assert.equal(end('2026-07-31'), '2026-07-31T20:59:59.999Z');
+  // денят на смяната на часа: лятното време е в сила в края на 28 март, зимното — в края на 25 октомври
+  assert.equal(end('2027-03-28'), '2027-03-28T20:59:59.999Z');
+  assert.equal(end('2026-10-25'), '2026-10-25T21:59:59.999Z');
+  for (const date of ['2026-12-31', '2026-07-31', '2027-03-28', '2026-10-25'])
+    assert.equal(sofiaDay(sofiaEndOfDay(date)!), day(date), date);
+  for (const date of ['2026-02-30', '2026-02-29', '2026-13-01', '2026-04-31', 'не е дата'])
+    assert.equal(sofiaEndOfDay(date), null, date);
+  assert.equal(end('2028-02-29'), '2028-02-29T21:59:59.999Z');
 });
 
 test('the period ends 14 days after the day of the contract, moved past non-working days', () => {

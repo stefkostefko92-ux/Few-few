@@ -77,4 +77,15 @@ export function sofiaDay(at: Date): number {
   return Date.UTC(part('year'), part('month') - 1, part('day'));
 }
 
+/**
+ * Последният миг на датата `ГГГГ-ММ-ДД` по София (23:59:59.999 местно време — UTC+2 зиме, UTC+3 лете);
+ * null за дата, която не съществува (2026-02-30 не се прелива тихо в март).
+ */
+export function sofiaEndOfDay(date: string): Date | null {
+  const day = Date.parse(`${date}T00:00:00Z`);
+  if (Number.isNaN(day) || new Date(day).toISOString().slice(0, 10) !== date) return null;
+  const winter = day + DAY - 2 * 3_600_000 - 1;
+  return new Date(sofiaDay(new Date(winter)) === day ? winter : winter - 3_600_000);
+}
+
 export { DAY };
