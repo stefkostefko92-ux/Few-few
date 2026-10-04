@@ -151,17 +151,16 @@ seoRouter.get(['/indexnow-key.txt', `/${INDEXNOW_KEY}.txt`], (_req, res) => {
 /**
  * Иконите в корена: браузърите и търсачките ги искат на тези адреси и без `<link>`. Google Search не
  * приема SVG за иконка — ICO и PNG се правят от favicon.svg със `scripts/favicons.mjs`.
+ * Файлът се дава спрямо `root`: с пълен път `send` отказва (404) всеки път с папка, започваща с точка
+ * (`/srv/.releases/…`), защото проверява за „скрити“ файлове целия път, не само името.
  */
-const IMG = join(ROOT, 'public', 'img');
+const IMG = { root: join(ROOT, 'public', 'img') };
 const ICON_CACHE = 'public, max-age=604800';
 seoRouter.get('/favicon.ico', (_req, res) => {
-  res.type('image/x-icon').set('Cache-Control', ICON_CACHE).sendFile(join(IMG, 'favicon.ico'));
+  res.type('image/x-icon').set('Cache-Control', ICON_CACHE).sendFile('favicon.ico', IMG);
 });
 seoRouter.get('/apple-touch-icon.png', (_req, res) => {
-  res
-    .type('image/png')
-    .set('Cache-Control', ICON_CACHE)
-    .sendFile(join(IMG, 'apple-touch-icon.png'));
+  res.type('image/png').set('Cache-Control', ICON_CACHE).sendFile('apple-touch-icon.png', IMG);
 });
 seoRouter.get('/site.webmanifest', (_req, res) => {
   res
