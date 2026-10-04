@@ -27,6 +27,7 @@ import ShaftOptions from '../shaft/ShaftOptions';
 import VerticalOptions from '../shaft/VerticalOptions';
 import RoomOptions from '../shaft/RoomOptions';
 import HeadOptions from '../shaft/HeadOptions';
+import FrameOptions from '../shaft/FrameOptions';
 import ImbottiOptions from '../shaft/ImbottiOptions';
 import NicheOptions from '../shaft/NicheOptions';
 import PanevBom from '../shaft/PanevBom';
@@ -62,6 +63,7 @@ function shaftLabelKey(path: readonly PropertyKey[]): string {
   if (b && a === 'vertical') return `vt_${b}`;
   if (b && a === 'room') return `rm_${b}`;
   if (b && a === 'imbotti') return `im_${b}`;
+  if (b && a === 'frame') return `fr_${b}`;
   return a && a in DEFAULTS ? `a_${a}` : a ?? '';
 }
 
@@ -235,6 +237,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api, pric
         <ShaftOptions I={inp.shaft} set={setShaft} lastQ={lastQ} />
         <NicheOptions I={inp.shaft} set={setShaft} />
         <HeadOptions I={inp.shaft} set={setShaft} />
+        <FrameOptions I={inp.shaft} set={setShaft} />
         <ImbottiOptions I={inp.shaft} set={setShaft} />
         <h2>{t('s_floors')}</h2>
         <VerticalOptions I={inp.shaft} set={setShaft} open />

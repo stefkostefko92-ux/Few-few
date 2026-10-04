@@ -1,6 +1,7 @@
 // Panev's brackets in place, as the catalogue pairs and adjusts them. Under every landing sill the landing-door
 // brackets of the design's pair (src/shaft/staffe-porte.ts): B anchored to the wall below the opening, A bolted to its
-// rib through the joint and the lock, its platform under the sill, cut to the sill's depth. On a counterweight rail at
+// rib through the joint and the lock, its platform under the sill, cut to the sill's depth; over the door the same pair
+// upside down, the suspension hanging from A. On a counterweight rail at
 // each height of the bracket rule (src/shaft/brackets.ts), the bracket src/shaft/staffe-scelta.ts chooses: the SU or SD
 // support anchored to the wall with the SG bolted on its arm, or the SC on the wall behind the rail's foot with the SG
 // along it; the rail clamped to the SG's flange by two N1 clips whose shanks stand in the flange's slots. Millimetres
@@ -9,7 +10,7 @@
 import * as THREE from 'three/webgpu';
 import { seatRail, type Support } from '@/shaft/staffe';
 import { SC_RUNS, scBoltRow } from '@/shaft/staffe-sc';
-import { doorBracketCount, plateReach, type DoorPair } from '@/shaft/staffe-porte';
+import { plateReach, type DoorPair } from '@/shaft/staffe-porte';
 import type { SlideBracket } from '@/shaft/staffe-scelta';
 import { onWall, type Batch } from './geom';
 import { fastener, frameAt, place, type Fastener } from './hardware';
@@ -61,18 +62,21 @@ function assembly(B: Batch, M: LiftMaterials, frame: THREE.Matrix4) {
 
 // ---- landing doors
 
-/** The pair A + B under the sill of a landing door at level z, A cut to the sill's `depth`; sill on the platform at
- *  z − sillH; brackets along it from u0 to u1. */
-export function doorBrackets(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, u0: number, u1: number, z: number, depth: number, sillH: number, pair: DoorPair): void {
+const TURN = new THREE.Matrix4().makeRotationZ(Math.PI);
+
+/** Pairs A + B at the along-wall positions `at`, A cut to the sill's `depth`, the face of its platform at the height
+ *  `face`: under a landing's sill, the sill on it; or `over` a landing door upside down, B on the wall over the
+ *  suspension that hangs from A. */
+export function doorBrackets(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, at: readonly number[], face: number, depth: number, pair: DoorPair, over = false): void {
   const { a: pa, b: pb } = pair, sec = pa.section, s = B_SECTIONS[sec], g = A_LEGS[sec], L = pb.length;
   const [hx, hy] = g.holes[0], [lx, ly] = g.holes[1], pivotY = L - s.pivot, aY = pivotY - (g.t - hy), zA = s.col - hx;
-  const { cut } = plateReach(pa, depth), base = z - sillH - (aY + g.t);
+  const { cut } = plateReach(pa, depth), base = over ? face + (aY + g.t) : face - (aY + g.t);
   const geoB = part(`B${sec}-${L}`, () => bracketB(sec, L), WALL), geoA = part(`${pa.code}-${cut}`, () => plateA(sec, pa.length, pa.width, pa.slots, pa.count, cut), PLATFORM);
-  const n = doorBracketCount(u0, u1);
-  for (let i = 0; i < n; i++) {
-    // the right-hand end's bracket is the mirror (SX), its rib facing out like the left one's
-    const uc = u0 + ((u1 - u0) * i) / (n - 1), mirror = i === n - 1, x0 = mirror ? uc + s.face / 2 : uc - s.face / 2;
-    const a = assembly(B, M, wallFrame(wall, W, D, x0, base, mirror));
+  at.forEach((uc, i) => {
+    // the bracket at the right-hand end is the mirror (SX), its rib facing out like the left one's; upside down, the
+    // left-hand end's
+    const mirror = over ? i === 0 : i === at.length - 1, x0 = mirror !== over ? uc + s.face / 2 : uc - s.face / 2;
+    const frame = wallFrame(wall, W, D, x0, base, mirror), a = assembly(B, M, over ? frame.multiply(TURN) : frame);
     a.part(geoB);
     a.part(geoA, -g.t, aY, zA);
     // the joint and the lock: bolt heads on A's rib, nuts on B's
@@ -82,7 +86,7 @@ export function doorBrackets(B: Batch, M: LiftMaterials, wall: Side, W: number, 
     }
     // the anchors in the fixing face's slots
     for (const y of [L - 95, 70]) a.fix('anchor', [s.face / 2, y, s.t], [0, 0, 1]);
-  }
+  });
 }
 
 // ---- counterweight rails

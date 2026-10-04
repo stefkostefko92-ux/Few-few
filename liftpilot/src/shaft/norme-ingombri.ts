@@ -66,9 +66,14 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
     valore: 'sotto ogni soglia di piano la coppia A + B della stessa sezione (65, 45 o 37 mm: le serie non sono intercambiabili): per default '
       + 'A 65 170 7 + B 65 320 (5 mm, regolazione ±8°), oppure quella scelta dal progettista; la piastra A tagliata alla profondità della soglia, '
       + '4 mm prima del suo bordo (se la piastra è più corta della soglia: da verificare); una coppia ogni 400 mm della luce, almeno tre, le estreme '
-      + 'a 10 mm dai bordi della luce',
-    riferimento: 'catalogo staffe Panev 2026, pp. 14-18 (coppie) e p. 05 (taglio della piastra)',
-    fonte: 'catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf); il passo e il numero minimo sono scelta del software', stato: 'scelta',
+      + 'a 10 mm dai bordi della luce. Sopra ogni porta di piano la stessa coppia capovolta: B sulla parete sopra il vano con lo snodo in basso, la '
+      + 'sospensione della porta appesa sotto la piattaforma di A con bulloni nei suoi fori, A tagliata come sotto la soglia; una coppia ogni 400 mm '
+      + 'lungo la sospensione (la corsa delle ante e 30 mm per parte), almeno tre, le estreme a 10 mm dalle sue estremità; se le coppie della soglia '
+      + 'del piano sopra arrivano alla stessa altezza, quella che cadrebbe su una di esse si sposta accanto (la faccia di B e 10 mm), dentro la '
+      + 'sospensione',
+    riferimento: 'catalogo staffe Panev 2026, pp. 14-18 (coppie), p. 05 (taglio della piastra) e p. 04 (soglia o elemento portante della porta di piano)',
+    fonte: 'catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf); il passo, il numero minimo, il montaggio capovolto sopra la porta e '
+      + 'lo spostamento sono scelta del software (il montaggio sopra la porta va confermato con il costruttore della porta)', stato: 'scelta',
   },
   {
     id: 'ingombri.limitatore', gruppo: 'ingombri', titolo: 'Limitatore di velocità e tenditore (pianta, locale macchina, 3D)',

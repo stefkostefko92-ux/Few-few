@@ -120,10 +120,11 @@ export function shapeElevation(F: MachineFrame, D: number, at: At): Entity[] {
   const layers: Layer[] = S.parts.filter((p) => !lever(p)).map((p) => ({ z: partBox(p)[5], draw: () => drawElevation(p, turned(p), out) }));
   if (B) layers.push(...brakeLayers(B, Y, out));
   for (const l of layers.sort((a, b) => a.z - b.z)) l.draw();
-  // the worm's (and the motor's) axis along the machine, inclined with the parts on it
+  // the worm's (and the motor's) axis along the machine, inclined with the parts on it; a vertical worm's upright
   const b = partBox(S.parts[0]), xs = S.parts.map(partBox), lo = Math.min(b[0], ...xs.map((q) => q[0])) - 25, hi = Math.max(b[3], ...xs.map((q) => q[3])) + 25;
   const t = S.parts.find((p) => p.tilt)?.tilt;
-  if (t) {
+  if (S.wormX !== undefined) out.push(line(Y(S.wormX, S.yWheel - 60), Y(S.wormX, Math.max(...xs.map((q) => q[4])) + 25), 'axis'));
+  else if (t) {
     const along = S.parts.filter((p) => p.tilt).map((p) => [p, partBox({ ...p, tilt: undefined })] as const), x1 = Math.max(...along.map(([, q]) => q[3])) + 25;
     out.push(line(Y(...tilted(t, lo, t.at[1])), Y(...tilted(t, x1, t.at[1])), 'axis'));
   } else out.push(line(Y(lo, S.yWorm), Y(hi, S.yWorm), 'axis'));

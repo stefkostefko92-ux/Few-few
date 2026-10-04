@@ -85,6 +85,14 @@ export interface Imbotti {
   top: number;
 }
 
+/** The landing doors' own frame (telaio di piano), the same at every landing door: its jambs' width beside the clear
+ *  opening, its header's height over it (between the jambs) and its depth from the landing face of the wall [mm]. */
+export interface DoorFrame {
+  jamb: number;
+  head: number;
+  depth: number;
+}
+
 /** The inner faces of the shaft at the top floor and in the headroom, where an old building may have them elsewhere
  *  than at the main floor: how far each stands in from the main floor's (negative: further out) [mm]. The car, its
  *  rails and the counterweight run plumb; the landing door of the top floor stays in line with the car. */
@@ -137,6 +145,8 @@ export type ShaftInputs = {
   head?: HeadWalls;
   /** linings of the landing doors' openings (imbotti.ts); missing: none, the opening is the portal's */
   imbotti?: Imbotti;
+  /** the landing doors' own frame (frame.ts); missing: the portal round the clear opening */
+  frame?: DoorFrame;
 } & Record<Allowance, number>;
 
 export type ShaftCheckId =

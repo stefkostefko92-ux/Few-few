@@ -93,6 +93,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['PORTE DI CABINA', 'tipo', kept('carDoors') ? 'ESISTENTI' : doors],
     // the linings of an old opening between the marbles round a smaller new door
     ...(hasImbotti(L.inputs) ? [((m) => ['IMBOTTI PORTE DI PIANO (SX - DX - SUP)', 'mm', `${m.left} - ${m.right} - ${m.top}`] as Row)(imbottiOf(L.inputs))] : []),
+    // the landing doors' own frame
+    ...(L.inputs.frame ? [((f) => ['TELAIO PORTE DI PIANO (MONT. - FRONT. - SPESS.)', 'mm', `${f.jamb} - ${f.head} - ${f.depth}`] as Row)(L.inputs.frame)] : []),
   ];
 
   // rails from the pit floor to under the slab, new or existing as the acceptance test says; brackets one every pitch

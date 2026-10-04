@@ -1,7 +1,8 @@
 // Panev's landing-door brackets in the section A-A, as the 3D places them (staffe-porte.ts): under a landing's sill the
 // fixing face of B against the wall seen edge-on with its anchors into the wall (hidden), the profile of its rib (full
 // width below the joint, tapering to the foot), A's platform edge-on under the sill, cut to the sill's depth, and the
-// profile of its rib down to the leg bolted to B's, with the joint and lock bolts. Pure.
+// profile of its rib down to the leg bolted to B's, with the joint and lock bolts; over the door the same pair upside
+// down on the suspension's top. Pure.
 import { circle, path, type Entity, type Pt } from '../drawing';
 import { SILL_H } from './sill';
 import { A_LEGS, B_SECTIONS, pairPose, plateReach, type DoorPair } from './staffe-porte';
@@ -37,3 +38,7 @@ export function doorPairSection(pair: DoorPair, depth: number, zf: number, P: (v
   for (const [v, z] of [[s.col, pivot], [s.col + lx - hx, pivot - (ly - hy)]] as const) out.push(circle(P(v, z), 8, 'thin', 'paper'), circle(P(v, z), 4, 'fine'));
   return out;
 }
+
+/** The same pair upside down over a landing door, A's platform on the suspension's top at zTop, B on the wall over it. */
+export const doorTopPairSection = (pair: DoorPair, depth: number, zTop: number, P: (v: number, z: number) => Pt): Entity[] =>
+  doorPairSection(pair, depth, zTop + SILL_H, (v, z) => P(v, 2 * zTop - z));

@@ -5,8 +5,8 @@
 // the side ones), so doors and niches keep their places whichever box the walls stand on.
 import { path, type Entity, type Pt } from '../drawing';
 import { mainBox, type WallBox } from './head';
-import { KV } from './norme';
 import { chasesOn, nichesOf } from './niche';
+import { portalOf } from './frame';
 import { marbleOpening } from './imbotti';
 import type { DoorLayout, Layout, Wall } from './types';
 
@@ -85,15 +85,17 @@ export function walls(L: Layout, open: readonly DoorLayout[], box: WallBox = mai
       if (hw > 5 && d > 5) out.push(path(quad(L, n.wall, n.at + n.width / 2 - hw, -n.depth, n.at + n.width / 2 + hw, -n.depth + d, box), true, 'thin', 'steel'));
     }
   }
-  // jambs of the openings (the marbles of an old one): along the reveal and returning on the outer face; in an old
-  // opening the new door's portal through the wall and the linings beside it
+  // jambs of the openings (the marbles of an old one): along the reveal and returning on the outer face; the door's own
+  // frame in the opening from the landing face (frame.ts); in an old opening the new door's portal through the wall (or
+  // its frame) and the linings beside it
   for (const d of open) {
-    const m = marbleOpening(L.inputs, d), p = KV.doorPortal;
+    const m = marbleOpening(L.inputs, d), { jamb: p, depth } = portalOf(L.inputs);
     for (const [u, s] of [[m.u0, -1], [m.u1, 1]] as const) {
       out.push(path([onWall(L, d.wall, u, 0, box), onWall(L, d.wall, u, -T, box), onWall(L, d.wall, u + s * 60, -T, box)], false, 'jamb'));
     }
+    if (depth !== null) for (const [a, b] of [[d.l0 - p, d.l0], [d.l1, d.l1 + p]] as const) out.push(path(quad(L, d.wall, a, -T, b, Math.min(depth - T, 0), box), true, 'thin', 'door'));
     if (m.low > 0 || m.high > 0) {
-      for (const [a, b] of [[d.l0 - p, d.l0], [d.l1, d.l1 + p]] as const) out.push(path(quad(L, d.wall, a, -T, b, 0, box), true, 'thin', 'door'));
+      if (depth === null) for (const [a, b] of [[d.l0 - p, d.l0], [d.l1, d.l1 + p]] as const) out.push(path(quad(L, d.wall, a, -T, b, 0, box), true, 'thin', 'door'));
       if (m.low > 0) out.push(path(quad(L, d.wall, m.u0, -T, d.l0 - p, 0, box), true, 'outline', 'steel'));
       if (m.high > 0) out.push(path(quad(L, d.wall, d.l1 + p, -T, m.u1, 0, box), true, 'outline', 'steel'));
     }

@@ -3,7 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS } from '@/shaft';
+import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, KV, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS } from '@/shaft';
 import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
 
 const mm = (min: number, max: number) => z.number().int().min(min).max(max);
@@ -85,6 +85,8 @@ export const ALLOWANCE_RANGE: Readonly<Record<keyof typeof DEFAULTS, readonly [n
 };
 /** The longest lining of a landing door the save accepts [mm]. */
 export const IMBOTTI_MAX = 1500;
+/** The largest jamb, header and depth of a landing door's own frame the form takes [mm]. */
+export const FRAME_MAX = 600;
 const allowance = <K extends keyof typeof DEFAULTS>(k: K) => mm(ALLOWANCE_RANGE[k][0], ALLOWANCE_RANGE[k][1]).default(DEFAULTS[k]);
 
 /** Distances of the plan set by hand on the drawing (src/shaft/edit.ts); each one absent is worked out. */
@@ -157,6 +159,8 @@ export const shaftInputsReadSchema = z.object({
   head: z.object({ front: mm(-500, 500), rear: mm(-500, 500), left: mm(-500, 500), right: mm(-500, 500) }).strict().optional(),
   /** linings of the landing doors in an old opening between the marbles (src/shaft/imbotti.ts) */
   imbotti: z.object({ left: mm(0, IMBOTTI_MAX), right: mm(0, IMBOTTI_MAX), top: mm(0, IMBOTTI_MAX) }).strict().optional(),
+  /** the landing doors' own frame (src/shaft/frame.ts): jambs and header from KV.frameMin, depth within the wall's range */
+  frame: z.object({ jamb: mm(KV.frameMin, FRAME_MAX), head: mm(KV.frameMin, FRAME_MAX), depth: mm(KV.frameMin, FRAME_MAX) }).strict().optional(),
 }).strict();
 
 /** The shaft as the form saves it: the stored shape and the rules a new record must meet. */

@@ -53,6 +53,10 @@ export const KV = {
   doorPortal: 50,
   // the portal's head over the clear opening on the landing (registry porte.imbotti)
   doorHead: 60,
+  // the landing doors' own frame, the standard one (2SG): jambs, header over the clear opening, depth; the narrowest
+  // jambs and header of a frame made to measure (registry porte.telaio)
+  frameStd: [120, 220, 50],
+  frameMin: 25,
   doorOpT2: [1.5, 50],
   doorOpC2: [2, 60],
   doorOpClose: 25,

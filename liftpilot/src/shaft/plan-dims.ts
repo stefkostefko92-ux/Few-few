@@ -16,6 +16,7 @@ import { KV } from './norme';
 import { RAILS } from './rails';
 import { railPick, refugePick } from './plan-picks';
 import { callStationAt, callStationOf, lowIsLeft } from './callstation';
+import { portalOf } from './frame';
 import { hasImbotti, marbleOpening } from './imbotti';
 import { landingKey, shiftDims } from './landing';
 import { cwNiche, nichesOf } from './niche';
@@ -80,10 +81,10 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
     for (const r of pit) if (!placed.has(r) && r.side === side && r.dir === dir) pitRow(r);
     push(side, dir, [0, dir === 'x' ? W : D], [`{v} Vano ${dir === 'x' ? labels.level : ''}`.trim()], [E(dir === 'x' ? 'W' : 'D')]);
   };
-  // the call station of each landing door at this level, from the door's portal, nearest the drawing
-  const cs = callStationOf(I);
+  // the call station of each landing door at this level, from the door's portal (or frame), nearest the drawing
+  const cs = callStationOf(I), fr = portalOf(I);
   for (const d of open) {
-    const { u, from } = callStationAt(d, cs);
+    const { u, from } = callStationAt(d, cs, fr.jamb);
     push(sideOf[d.wall], d.wall === 'front' || d.wall === 'rear' ? 'x' : 'y', [Math.min(u, from), Math.max(u, from)], ['{v} Bottoniera'], [E('cs.offset')]);
   }
   // from the front wall: the landing door with the sill gap, then the car door; the platform across y
@@ -99,10 +100,15 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
   if (open.length) push(doorSide, dAxis, [0, door.l0, door.l1, len], [null, `Porta Piano ${door.width}x H.${door.height}`, null], [E(lk), E('doorWidth'), E(lk, len - door.width, -1)]);
   push(doorSide, dAxis, [0, door.op0, door.op1, len], [null, '{v} Ingombro Operatore porta cabina', null],
     [E(dk, door.u0 - door.op0), E('plan.opLen'), E(dk, len - (door.op1 - door.u0), -1)]);
+  if (open.length && fr.depth !== null && !hasImbotti(I)) {
+    // the door's own frame: its jambs beside the clear opening, the opening in the wall across them
+    push(doorSide, dAxis, [door.l0 - fr.jamb, door.l0, door.l1, door.l1 + fr.jamb], ['Tel. {v}', null, 'Tel. {v}'], [E('frame.jamb'), E('doorWidth'), E('frame.jamb')]);
+    push(doorSide, dAxis, [door.l0 - fr.jamb, door.l1 + fr.jamb], ['{v} Vano telaio'], [E('doorWidth', -2 * fr.jamb)]);
+  }
   if (open.length && hasImbotti(I)) {
-    // the old opening: the wall to the marble, a lining, the portal with the door, the other lining, the marble to the
-    // wall; the distance between the marbles shares itself between the two linings
-    const m = marbleOpening(I, door), p = KV.doorPortal, [lowKey, highKey] = lowIsLeft(door.wall) ? ['imb.left', 'imb.right'] : ['imb.right', 'imb.left'];
+    // the old opening: the wall to the marble, a lining, the portal (or frame) with the door, the other lining, the
+    // marble to the wall; the distance between the marbles shares itself between the two linings
+    const m = marbleOpening(I, door), p = fr.jamb, [lowKey, highKey] = lowIsLeft(door.wall) ? ['imb.left', 'imb.right'] : ['imb.right', 'imb.left'];
     push(doorSide, dAxis, [0, m.u0, door.l0 - p, door.l1 + p, m.u1, len], [null, 'Imb. {v}', '{v}', 'Imb. {v}', null],
       [E(lk, p + m.low), E(lowKey), E('doorWidth', -2 * p), E(highKey), E(lk, len - m.high - p - door.width, -1)]);
     push(doorSide, dAxis, [m.u0, m.u1], ['{v} Distanza tra i marmi'], [E('imb.marble')]);

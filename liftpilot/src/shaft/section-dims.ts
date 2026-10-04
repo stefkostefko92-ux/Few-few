@@ -10,8 +10,8 @@ import { bufferType } from './buffers';
 import { cwNiche } from './niche';
 import { bufferPlan } from './pit';
 import { callStationOf } from './callstation';
+import { portalOf } from './frame';
 import { hasImbotti, marbleHeight } from './imbotti';
-import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
 import { refugePick } from './plan-picks';
 import { mapZ, type ZMap } from './section-view';
@@ -62,11 +62,16 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
     side('left', [zf, zf + V.opTop], ['{v} H. Ingombro Max Operatore'], [E('v.opTop')]);
     side('left', [zf, zf + I.doorHeight], ['{v} H. Luce Porta di piano'], [E('doorHeight')]);
     side('left', [zf, zf + callStationOf(I).height], ['{v} H. Bottoniera'], [E('cs.height')]);
+    const fr = portalOf(I);
     if (hasImbotti(I)) {
-      // over the landing door: the portal's head and the top lining up to the marble
+      // over the landing door: the portal's head (or its own frame's) and the top lining up to the marble
       const h = marbleHeight(I);
-      side('left', [zf, zf + I.doorHeight + KV.doorHead, zf + h], ['{v}', 'Imb. sup. {v}'], [E('doorHeight', -KV.doorHead), E('imb.top')]);
+      side('left', [zf, zf + I.doorHeight + fr.head, zf + h], ['{v}', 'Imb. sup. {v}'], [E('doorHeight', -fr.head), E('imb.top')]);
       side('left', [zf, zf + h], ['{v} H. sotto il marmo'], [E('imb.height')]);
+    } else if (fr.depth !== null) {
+      // the door's own frame: its header over the clear opening, the opening in the wall
+      side('left', [zf + I.doorHeight, zf + I.doorHeight + fr.head], ['Tel. {v}'], [E('frame.head')]);
+      side('left', [zf, zf + I.doorHeight + fr.head], ['{v} H. vano telaio'], [E('doorHeight', -fr.head)]);
     }
     if (kind === 'top') side('left', [zf, S.ceiling], ['Testata {v}'], [E('v.headroom', -(S.top - zf))]);
     side('right', [zf, roof], ['{v} H. Esterno Cabina'], [E('v.carOutH')]);

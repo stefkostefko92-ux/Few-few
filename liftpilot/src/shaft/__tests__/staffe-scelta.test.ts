@@ -1,9 +1,12 @@
 // Panev's articles chosen for a design: the counterweight rail's bracket by default (SU or SD, an SC on the wall
 // behind the foot near a corner), by hand (where it takes the rail, else the check fails), a solution to the site's
-// drawing (the check asks for the drawing); the landing doors' pair, the plate cut to the sill.
+// drawing (the check asks for the drawing); the landing doors' pair, the plate cut to the sill, the pairs over the door.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DOOR_PAIRS, SC_SUPPORTS, cwBracket, defaultInputs, doorPair, doorPairOf, layout, planEntities, plateReach, type ShaftInputs } from '../index';
+import {
+  DOOR_PAIRS, SC_SUPPORTS, bracketsAlong, cwBracket, defaultInputs, doorPair, doorPairOf, landingOf, layout, planEntities, plateReach, topBracketSpan, topBracketsAt,
+  type ShaftInputs,
+} from '../index';
 import { scPlace } from '../staffe-sc';
 
 const base = defaultInputs(1600, 1750);
@@ -67,4 +70,21 @@ test('porte di piano: coppie della stessa sezione, la piastra tagliata alla sogl
   // the default sill (80 mm): A 65 cut to 73 mm; a 300 mm sill is deeper than any plate
   assert.deepEqual(plateReach(doorPair('A 65 170 7 + B 65 320').a, 80), { offset: 3.5, cut: 73, short: false });
   assert.equal(plateReach(doorPair('A 45 175 2 + B 45 320').a, 300).short, true);
+});
+
+test('porte di piano: coppie sopra la porta lungo la sospensione, accanto a quelle della soglia del piano sopra se vicine', () => {
+  const L = layout(base), d = landingOf(L.doors[0]), len = d.wall === 'front' || d.wall === 'rear' ? base.W : base.D, pair = doorPairOf(base);
+  const [u0, u1] = topBracketSpan(d, len), plain = topBracketsAt(pair, d, len, 0);
+  assert.deepEqual(plain, bracketsAlong(u0, u1));
+  assert.ok(plain.length >= 3 && u1 - u0 > d.u1 - d.u0, 'la sospensione è più lunga della luce');
+  // the floor above far enough (B 320 over a 2000 mm door: 2000 + 230 + 333 + 357 = 2920 mm): the plain rule
+  assert.deepEqual(topBracketsAt(pair, d, len, 0, 2920), plain);
+  // nearer: no pair over the door falls on one under the sill above, each stays within the suspension, as many
+  const below = bracketsAlong(d.u0 + 10, d.u1 - 10), near = topBracketsAt(pair, d, len, 0, 2700);
+  assert.equal(near.length, plain.length);
+  assert.notDeepEqual(near, plain);
+  for (const u of near) {
+    assert.ok(u >= u0 && u <= u1);
+    for (const b of below) assert.ok(Math.abs(u - b) >= 75, `${u} accanto a ${b}`);
+  }
 });

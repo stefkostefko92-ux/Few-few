@@ -13,9 +13,11 @@ import type { Section } from '@/shaft/section';
 import { KV } from '@/shaft/norme';
 import { callStationAt, callStationOf } from '@/shaft/callstation';
 import { headOf } from '@/shaft/head';
+import { portalOf } from '@/shaft/frame';
 import { hasImbotti, marbleOpening } from '@/shaft/imbotti';
 import { landingOf } from '@/shaft/landing';
-import { doorPairOf } from '@/shaft/staffe-porte';
+import { bracketsAlong, doorPairOf, topBracketsAt } from '@/shaft/staffe-porte';
+import { HEADER } from '@/shaft/sill';
 import { lampHeights, nichesOf } from '@/shaft/niche';
 import { Batch, P, onWall } from './geom';
 import { LANDING_PANEL, doorPanels, landingTracks, trackPlanes, type DoorPanels } from './doors';
@@ -41,17 +43,21 @@ export function doorsOf(L: Layout, door: 'A' | 'B' | 'AB'): DoorLayout[] {
   return L.doors.filter((d) => door === 'AB' || d.side === door);
 }
 
-/** The hardware of a landing entrance at the level z, on the shaft side of the wall: the suspension, the panels (by
- *  the car's across the sill gap), the sill on Panev's brackets, the stone threshold through the wall; where the landing
- *  door stands, the lock's rollers where the car door's coupler takes them. */
-export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], car: DoorLayout, z: number): DoorPanels {
-  const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth), d = landingOf(car);
+/** The hardware of a landing entrance at the level z, on the shaft side of the wall: the suspension on Panev's brackets,
+ *  the panels (by the car's across the sill gap), the sill on Panev's brackets, the stone threshold through the wall;
+ *  where the landing door stands, the lock's rollers where the car door's coupler takes them. `up`: the level of the
+ *  floor above when its door is on the same wall (its sill's brackets may stand by those over this door). */
+export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], car: DoorLayout, z: number, up?: number): DoorPanels {
+  const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth), d = landingOf(car), pair = doorPairOf(I);
   landingHeader(C, M, d.wall, W, D, d, tracks, LANDING_PANEL, z + d.height, I.landingDepth);
+  const len = d.wall === 'front' || d.wall === 'rear' ? W : D;
+  doorBrackets(C, M, d.wall, W, D, topBracketsAt(pair, d, len, z, up), z + d.height + HEADER.top, I.landingDepth, pair, true);
   const lock = { kind: 'lock', v0: I.landingDepth + I.sillGap, du: car.u0 - d.u0 } as const;
   const panels = doorPanels(d.wall, W, D, d, z, tracks, LANDING_PANEL, M.landing[d.wall], M, lock);
   sill(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, -25, I.landingDepth, z, trackPlanes(d, tracks, LANDING_PANEL));
-  doorBrackets(C, M, d.wall, W, D, d.u0 + 10, d.u1 - 10, z, I.landingDepth, SILL_H, doorPairOf(I));
-  C.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -I.wall, -25, z - 30, z, M.stone);
+  doorBrackets(C, M, d.wall, W, D, bracketsAlong(d.u0 + 10, d.u1 - 10), z - SILL_H, I.landingDepth, pair);
+  const jamb = portalOf(I).jamb;
+  C.wallBox(d.wall, W, D, d.u0 - jamb, d.u1 + jamb, -I.wall, -25, z - 30, z, M.stone);
   return panels;
 }
 
@@ -59,7 +65,7 @@ export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'],
  *  plate on the landing face of the wall (`s` mm into the shaft in the headroom), the floor display at its top, the
  *  buttons with their lit rings (one at the ends of the travel, up and down between). */
 function callStation(g: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number, plate: THREE.Material, calls: 'up' | 'down' | 'both', s = 0): void {
-  const cs = callStationOf(I), { u } = callStationAt(d, cs), [w, h, t] = KV.callPanel, f = -I.wall - t + s, zc = z + cs.height;
+  const cs = callStationOf(I), { u } = callStationAt(d, cs, portalOf(I).jamb), [w, h, t] = KV.callPanel, f = -I.wall - t + s, zc = z + cs.height;
   g.wallBox(d.wall, I.W, I.D, u - w / 2, u + w / 2, f, -I.wall + s, zc - h / 2, zc + h / 2, plate);
   g.wallBox(d.wall, I.W, I.D, u - 40, u + 40, f - 1, f, zc + 75, zc + 115, M.glass);
   g.wallBox(d.wall, I.W, I.D, u - 14, u + 14, f - 1.5, f - 1, zc + 85, zc + 105, M.led);
@@ -103,11 +109,11 @@ export interface MachineCuts {
   pit: readonly Opening[];
 }
 
-/** The linings (imbotti) of an old opening round the new door at the level z: brushed sheet beside the portal and over
- *  its head (the portal's stainless), a little behind the portal's face, from the landing face of the wall to the
- *  shaft; the marbles round the old opening. */
+/** The linings (imbotti) of an old opening round the new door at the level z: brushed sheet beside the portal (or the
+ *  door's own frame) and over its head (the portal's stainless), a little behind the portal's face, from the landing
+ *  face of the wall to the shaft; the marbles round the old opening. */
 function imbotti(g: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number, s: number, sheet: THREE.Material): void {
-  const m = marbleOpening(I, d), p = KV.doorPortal, zh = z + d.height + KV.doorHead, top = z + m.h, f = -I.wall - 15 + s, b = s;
+  const m = marbleOpening(I, d), { jamb: p, head } = portalOf(I), zh = z + d.height + head, top = z + m.h, f = -I.wall - 15 + s, b = s;
   if (m.u0 < d.u0 - p - 0.5) g.wallBox(d.wall, I.W, I.D, m.u0, d.u0 - p, f, b, z, top, sheet);
   if (m.u1 > d.u1 + p + 0.5) g.wallBox(d.wall, I.W, I.D, d.u1 + p, m.u1, f, b, z, top, sheet);
   if (top > zh + 0.5) g.wallBox(d.wall, I.W, I.D, m.u0, m.u1, f, b, zh, top, sheet);
@@ -126,11 +132,11 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
 
   // openings per wall: the clear opening with its jambs, from the floor to the head of the door; an old opening between
   // the marbles round a smaller new door, up to the top marble
-  const imb = hasImbotti(I), openings: Record<Side, { u0: number; u1: number; z0: number; z1: number }[]> = { front: [], rear: [], left: [], right: [] };
+  const imb = hasImbotti(I), fr = portalOf(I), openings: Record<Side, { u0: number; u1: number; z0: number; z1: number }[]> = { front: [], rear: [], left: [], right: [] };
   V.floors.forEach((f, i) => {
     for (const d of doorsOf(L, f.door)) {
       const m = marbleOpening(I, d);
-      openings[d.wall].push({ u0: m.u0, u1: m.u1, z0: S.levels[i], z1: S.levels[i] + (imb ? Math.max(m.h, d.height + KV.doorHead) : d.height + 120) });
+      openings[d.wall].push({ u0: m.u0, u1: m.u1, z0: S.levels[i], z1: S.levels[i] + (imb ? Math.max(m.h, d.height + fr.head) : fr.depth !== null ? d.height + fr.head : d.height + 120) });
     }
   });
   // each wall in columns between the edges of its openings and niches; in each column the runs of the same inner face
@@ -171,14 +177,23 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
     const z = S.levels[i];
     for (const car of doorsOf(L, f.door)) {
       const d = landingOf(car), g = byside[d.wall], frame = M.landing[d.wall], len = d.wall === 'front' || d.wall === 'rear' ? W : D, zh = z + d.height;
-      // the portal and the landing on the wall where it stands at this floor; the door itself in line with the car
+      // the portal (or the door's own frame from the landing face: its jambs full height, its header between them) and
+      // the landing on the wall where it stands at this floor; the door itself in line with the car
       const s = i === top ? head[d.wall] : 0;
-      g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30 + s, 10 + s, z, zh + 60, frame);
-      g.wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, z, zh + 60, frame);
-      g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, zh, zh + 60, frame);
+      if (fr.depth === null) {
+        g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30 + s, 10 + s, z, zh + 60, frame);
+        g.wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, z, zh + 60, frame);
+        g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, zh, zh + 60, frame);
+      } else {
+        const v1 = Math.min(-wall + fr.depth, 0) + s, zf = zh + fr.head;
+        g.wallBox(d.wall, W, D, d.u0 - fr.jamb, d.u0, -wall + s, v1, z, zf, frame);
+        g.wallBox(d.wall, W, D, d.u1, d.u1 + fr.jamb, -wall + s, v1, z, zf, frame);
+        g.wallBox(d.wall, W, D, d.u0, d.u1, -wall + s, v1, zh, zf, frame);
+      }
       if (imb) imbotti(g, M, I, d, z, s, frame);
       callStation(g, M, I, d, z, frame, i === 0 ? 'up' : i === V.floors.length - 1 ? 'down' : 'both', s);
-      const panels = landingEntrance(C, M, I, car, z);
+      const up = V.floors[i + 1]?.door.includes(car.side) ? S.levels[i + 1] : undefined;
+      const panels = landingEntrance(C, M, I, car, z, up);
       sides[d.wall].add(panels.group);
       landings.push({ floor: i, panels });
       g.wallBox(d.wall, W, D, -wall - 400, len + wall + 400, -wall - LANDING + s, -wall + s, z - SLAB, z, M.floors[d.wall]);

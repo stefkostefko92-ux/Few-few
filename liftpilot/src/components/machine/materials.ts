@@ -2,7 +2,10 @@
 // materials with procedural surface detail instead of texture files, so the scene loads nothing but code.
 // Loaded only through boot.ts, after the prefers-reduced-motion and save-data gate of MachineStage.tsx.
 import * as THREE from 'three/webgpu';
-import { uv, vec2, vec3, float, sin, abs, atan, mix, step, floor, clamp, smoothstep, fract, length, positionLocal, positionWorld, normalLocal, mx_noise_float, materialColor, materialRoughness, uniform } from 'three/tsl';
+import {
+  uv, vec2, vec3, float, sin, abs, atan, mix, step, floor, clamp, smoothstep, fract, length, positionLocal, positionWorld, positionView, normalLocal, normalView, mx_noise_float,
+  materialColor, materialRoughness, uniform, dFdx, dFdy, cross, dot, sign, normalize, faceDirection,
+} from 'three/tsl';
 
 const TAU = Math.PI * 2;
 const physical = (p: THREE.MeshPhysicalNodeMaterialParameters) => new THREE.MeshPhysicalNodeMaterial(p);
@@ -11,20 +14,35 @@ const standard = (p: THREE.MeshStandardNodeMaterialParameters) => new THREE.Mesh
 // Years in a machine room: dust and oil mist settle low, so the paint darkens and dulls toward the bedplate.
 const grime = smoothstep(0.13, 0.34, positionWorld.y);
 
-/** Old machine enamel: orange peel and a slightly uneven tone under a thin clear coat; ink: lettering painted on it. */
+/** The surface bent by a computed height h [m]: Mikkelsen's surface gradient from the screen derivatives (three's
+ *  BumpMapNode does the same for a height sampled from a texture). */
+function bumped(h: THREE.Node<'float'>) {
+  const sx = dFdx(positionView), sy = dFdy(positionView), r1 = cross(sy, normalView), r2 = cross(normalView, sx), det = dot(sx, r1).mul(faceDirection);
+  return normalize(abs(det).mul(normalView).sub(sign(det).mul(dFdx(h).mul(r1).add(dFdy(h).mul(r2)))));
+}
+
+/** Old machine enamel: orange peel and a slightly uneven tone under a thin clear coat; ink: lettering painted on it;
+ *  cast: over a sand-cast surface, its gentle waves and the orange peel bending the reflections. */
 interface EnamelOptions {
   roughness?: number;
   clearcoat?: number;
   scale?: number;
   ink?: THREE.Node<'float'>;
+  cast?: boolean;
 }
-function enamel(hex: string, { roughness = 0.42, clearcoat = 0.5, scale = 22, ink }: EnamelOptions = {}) {
+function enamel(hex: string, { roughness = 0.42, clearcoat = 0.5, scale = 22, ink, cast = false }: EnamelOptions = {}) {
   const m = physical({ color: new THREE.Color(hex), roughness, metalness: 0, clearcoat, clearcoatRoughness: 0.22 });
   const n = mx_noise_float(positionLocal.mul(scale));
   const blot = mx_noise_float(positionLocal.mul(3.1)).mul(0.5).add(0.5);
   const paint = materialColor.mul(n.mul(0.035).add(blot.mul(0.08)).add(0.95)).mul(mix(float(0.8), float(1), grime));
   m.colorNode = ink ? mix(paint, vec3(0.018, 0.018, 0.02), ink) : paint;
   m.roughnessNode = materialRoughness.mul(n.mul(0.3).add(1)).mul(mix(float(1.25), float(1), grime));
+  if (cast) {
+    // waves of about 15 mm and 0,25 mm deep, the peel of about 4 mm: TRAA averages what is finer than a pixel
+    const surface = bumped(mx_noise_float(positionLocal.mul(68)).mul(0.00025).add(mx_noise_float(positionLocal.mul(240)).mul(0.00005)));
+    m.normalNode = surface;
+    m.clearcoatNormalNode = surface;
+  }
   return m;
 }
 
@@ -80,6 +98,7 @@ export interface MachineMaterials {
   black: THREE.MeshPhysicalNodeMaterial;
   blue: THREE.MeshPhysicalNodeMaterial;
   greyBlue: THREE.MeshPhysicalNodeMaterial;
+  navy: THREE.MeshPhysicalNodeMaterial;
   yellow: THREE.MeshPhysicalNodeMaterial;
   alu: THREE.MeshPhysicalNodeMaterial;
   handwheel: THREE.MeshPhysicalNodeMaterial;
@@ -150,14 +169,15 @@ export function createMaterials(ropeLength: number): MachineMaterials {
   floorMat.colorNode = materialColor.mul(mx_noise_float(positionWorld.xz.mul(5)).mul(0.12).add(0.94)).mul(mix(float(1), float(1.8), pool));
 
   const all = {
-    paint: enamel('#3d5f53'),
-    paintDark: enamel('#2e4a40', { roughness: 0.5 }),
+    paint: enamel('#3d5f53', { cast: true }),
+    paintDark: enamel('#2e4a40', { roughness: 0.5, cast: true }),
     frame: enamel('#262d36', { roughness: 0.72, clearcoat: 0.08, scale: 30 }),
-    sheavePaint: enamel('#2c3432', { roughness: 0.46, clearcoat: 0.4 }),
-    black: enamel('#1e2124', { roughness: 0.46, clearcoat: 0.35 }),
-    // the makers' blues, sampled off the photos of their sheets and catalogue: Montanari's, Sassi's grey-blue
-    blue: enamel('#2a4d8a', { roughness: 0.42, clearcoat: 0.4 }),
-    greyBlue: enamel('#466e9b', { roughness: 0.44, clearcoat: 0.35 }),
+    sheavePaint: enamel('#2c3432', { roughness: 0.46, clearcoat: 0.4, cast: true }),
+    black: enamel('#1e2124', { roughness: 0.46, clearcoat: 0.35, cast: true }),
+    // the makers' blues, sampled off the photos of their sheets and catalogue: Montanari's, Sassi's grey-blue, GEM's navy
+    blue: enamel('#2a4d8a', { roughness: 0.42, clearcoat: 0.4, cast: true }),
+    greyBlue: enamel('#466e9b', { roughness: 0.44, clearcoat: 0.35, cast: true }),
+    navy: enamel('#233b72', { roughness: 0.4, clearcoat: 0.45, cast: true }),
     yellow: enamel('#e9b10f', { roughness: 0.36, clearcoat: 0.6 }),
     alu: steel('#cfd4d9', 0.3),
     handwheel: enamel('#e0a526', { roughness: 0.34, clearcoat: 0.7, ink: travelArrows() }),

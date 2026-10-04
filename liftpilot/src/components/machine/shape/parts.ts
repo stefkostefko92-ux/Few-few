@@ -1,12 +1,13 @@
 // The parts of a maker's machine (src/shaft/machine-shape.ts) as the 3D finishes them by what they are: cast parts in
-// black enamel (or the maker's colour) with rounded edges and the ribs on their backs (src/shaft/machine-detail.ts), a turned motor frame with
-// its end shields or a box one with its cooling fins, the motor's rating plate, the terminal box with its lid and
+// black enamel (or the maker's colour) with rounded edges and the ribs on their backs (src/shaft/machine-detail.ts), a
+// turned motor frame finned between its end shields with the fan's cowl and grille, or a box one with its cooling fins,
+// the motor's rating plate, the terminal box with its lid and
 // glands, turned covers with their bolt rings, shafts in bright steel, the yellow handwheel with the directions of
 // travel, the lifting eyes. The drum brake is built whole (brake.ts). Metres, the machine's frame (y up from the feet's
 // plane). Loaded only through boot.ts (lazy).
 import * as THREE from 'three/webgpu';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import type { MachineShape, ShapePart } from '@/shaft/machine-shape';
+import { partBox, type MachineShape, type ShapePart } from '@/shaft/machine-shape';
 import { coverBolts as boltCircle, endShields, ribsOf } from '@/shaft/machine-detail';
 import type { MachineMaterials } from '../materials';
 import { V, P3, bolts, circle, cylZ, hexZ, latheX, latheZ, mesh, slab } from '../parts/common';
@@ -34,17 +35,50 @@ function ratingPlate(x: number, y: number, z: number, M: MachineMaterials): THRE
 }
 
 /** The castings' enamel: black, or the maker's colour. */
-const castOf = (S: MachineShape, M: MachineMaterials): THREE.Material => (S.paint === 'blue' ? M.blue : S.paint === 'grey-blue' ? M.greyBlue : M.black);
+const castOf = (S: MachineShape, M: MachineMaterials): THREE.Material =>
+  S.paint === 'blue' ? M.blue : S.paint === 'grey-blue' ? M.greyBlue : S.paint === 'navy' ? M.navy : M.black;
 
-/** The motor's frame: a turned one smooth with its two end shields; a box one finned. The rating plate on its side. */
-function motor(p: ShapePart, M: MachineMaterials, body: THREE.Material): THREE.Object3D {
+/** Cooling fins round a turned frame of core radius r from x0 to x1 (its axis at y, z), `h` tall: plates standing out
+ *  radially all round but on top (the terminal box), toward the sheave (the rating plate's pad) and underneath. */
+function fins(r: number, h: number, x0: number, x1: number, y: number, z: number, mat: THREE.Material): THREE.InstancedMesh {
+  const n = Math.max(24, Math.round((2 * Math.PI * r) / 0.026)), angles: number[] = [];
+  for (let i = 0; i < n; i++) {
+    // from +Z toward +Y: 90° on top, 0° toward the sheave, 270° underneath
+    const a = (i / n) * Math.PI * 2 + Math.PI / n, deg = ((a * 180) / Math.PI) % 360;
+    const near = (c: number, span: number): boolean => Math.abs(((deg - c + 540) % 360) - 180) < span;
+    if (!(near(90, 28) || near(0, 17) || near(270, 30))) angles.push(a);
+  }
+  const inst = new THREE.InstancedMesh(new RoundedBoxGeometry(x1 - x0, h, 0.006, 2, 0.0022), mat, angles.length);
+  const mm = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), axis = new THREE.Vector3(1, 0, 0), rc = r + h / 2 - 0.002;
+  angles.forEach((a, i) => {
+    // the plate's Y turned onto the radius (0, sin a, cos a)
+    q.setFromAxisAngle(axis, Math.PI / 2 - a);
+    inst.setMatrixAt(i, mm.compose(P3((x0 + x1) / 2, y + Math.sin(a) * rc, z + Math.cos(a) * rc), q, one));
+  });
+  inst.castShadow = true;
+  inst.receiveShadow = true;
+  return inst;
+}
+
+/** The motor's frame: a turned one finned between its end shields, the fan's cowl with its grille at the outer end
+ *  (`cowl`: nothing of the brake beyond it); a box one finned. The rating plate on its side. */
+function motor(p: ShapePart, M: MachineMaterials, body: THREE.Material, cowl: boolean): THREE.Object3D {
   const g = new THREE.Group(), fin = 0.016;
   if ('cyl' in p && p.cyl === 'x') {
-    const r = m(p.r), [x0, x1] = [m(p.span[0]), m(p.span[1])], y = m(p.at[0]), z = m(p.at[1]);
-    g.add(mesh(turnedAlong('x', r, x0, x1), body, 0, y, z));
-    for (const [a, b, rr] of endShields(p)) g.add(mesh(turnedAlong('x', m(rr), m(a), m(b)), body, 0, y, z));
-    // the plate flat on the frame's side, clear of its curve at the plate's edges
-    g.add(ratingPlate((x0 + x1) / 2, y, z + r + 0.0015, M));
+    const r = m(p.r), [x0, x1] = [m(p.span[0]), m(p.span[1])], y = m(p.at[0]), z = m(p.at[1]), h = Math.min(0.022, 0.16 * r), core = r - h;
+    const out = Math.abs(x1) >= Math.abs(x0) ? 1 : -1, c = cowl ? Math.max(0.04, 0.18 * (x1 - x0)) : 0, [f0, f1] = out > 0 ? [x0, x1 - c] : [x0 + c, x1];
+    const shields = endShields(p).map(([a, b, rr]) => [m(a), m(b), m(rr)] as const), w = shields.length ? shields[0][1] - shields[0][0] : 0;
+    g.add(mesh(turnedAlong('x', core, x0, x1), body, 0, y, z));
+    for (const [a, b, rr] of shields) if (!c || (out > 0 ? b <= f1 + 1e-6 : a >= f0 - 1e-6)) g.add(mesh(turnedAlong('x', rr, a, b), body, 0, y, z));
+    if (f1 - f0 > 2 * w + 0.04) g.add(fins(core, h, f0 + w + 0.004, f1 - w - 0.004, y, z, body));
+    if (c) {
+      // the fan's cowl past the frame, the grille on its end; the shaft runs on through it to what is beyond
+      const [c0, c1] = out > 0 ? [f1, x1] : [x0, f0], rc = r - 0.3 * h;
+      g.add(mesh(turnedAlong('x', rc, c0, c1), body, 0, y, z));
+      g.add(mesh(new THREE.CircleGeometry(0.82 * rc, 64).rotateY((out * Math.PI) / 2), M.grille, out > 0 ? c1 + 0.0008 : c0 - 0.0008, y, z));
+    }
+    // the plate flat on its pad between the fins, on the frame's side toward the sheave
+    g.add(ratingPlate((f0 + f1) / 2, y, z + core + 0.0015, M));
     return g;
   }
   if ('box' in p) {
@@ -120,7 +154,12 @@ function coverBolts(axis: 'x' | 'z', c: THREE.Vector3, r: number, face: 1 | -1, 
 /** A part of the body as the 3D shows it; `worm` collects what turns with the worm (the brake drum, the handwheel). */
 export function buildPart(S: MachineShape, p: ShapePart, M: MachineMaterials, worm: THREE.Object3D[]): THREE.Object3D {
   const body = castOf(S, M);
-  if (p.role === 'motor') return motor(p, M, body);
+  if (p.role === 'motor') {
+    // the fan's cowl at the motor's outer end unless the brake sits there (on the motor's shaft past it)
+    const b = partBox(p), out = Math.abs(b[3]) >= Math.abs(b[0]) ? 1 : -1;
+    const beyond = S.parts.some((q) => q.role === 'brake' && (out > 0 ? partBox(q)[0] >= b[3] - 1 : partBox(q)[3] <= b[0] + 1));
+    return motor(p, M, body, !beyond);
+  }
   if ('box' in p) {
     const b = p.box.map(m);
     if (p.role === 'terminal') return terminal(p.box, M, body);
@@ -138,7 +177,18 @@ export function buildPart(S: MachineShape, p: ShapePart, M: MachineMaterials, wo
   }
   const r = m(p.r), [s0, s1] = [m(p.span[0]), m(p.span[1])], [a, b] = [m(p.at[0]), m(p.at[1])];
   if (p.role === 'eye') return eye(a, b, r, s0, s1, M);
-  if (p.cyl === 'y') return mesh(new THREE.CylinderGeometry(r, r, s1 - s0, 40), body, a, (s0 + s1) / 2, b);
+  if (p.cyl === 'y') {
+    // upright parts (a vertical worm's: SICOR SV110), built along X and stood up: the frame's X is the world's Y, so
+    // what turns with the worm spins about it as on the others
+    const outer = new THREE.Group(), spin = new THREE.Group(), len = s1 - s0;
+    outer.position.set(a, (s0 + s1) / 2, b);
+    outer.rotation.z = Math.PI / 2;
+    outer.add(spin);
+    if (p.role === 'handwheel') spin.add(handwheel(r, -len / 2, len / 2, M));
+    else spin.add(mesh(turnedAlong('x', r, -len / 2, len / 2), p.role === 'shaft' ? M.machined : p.role === 'brake' || p.role === 'magnet' ? M.alu : body));
+    if (p.role === 'handwheel' || p.role === 'brake' || p.role === 'shaft') worm.push(spin);
+    return outer;
+  }
   if (p.role === 'handwheel' && p.cyl === 'x') {
     const g = new THREE.Group(), w = handwheel(r, s0 - (s0 + s1) / 2, s1 - (s0 + s1) / 2, M);
     g.position.set((s0 + s1) / 2, a, b);

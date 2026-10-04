@@ -1,14 +1,15 @@
 // Changing a distance where it is drawn. The key of a dimension's edit (src/drawing/model.ts) names an input of the
 // shaft: its size (W, D), the doors' size, an allowance, a distance of the plan set by hand (plan.*), a niche's place
 // and size (n.<index>.*), the call stations' place (cs.*), a height of section A-A (v.*), a floor's rise (f.<index>.rise)
-// or a size of the machine room (room.*), where a wall stands in the headroom (head.*), the doors' linings (imb.*), the
-// machine's support (sup.*); the new length of the dimension gives its value. A length a catalogue or a table gives is
+// or a size of the machine room (room.*), where a wall stands in the headroom (head.*), the doors' linings (imb.*) and
+// own frame (frame.*), the machine's support (sup.*); the new length of the dimension gives its value. A length a catalogue or a table gives is
 // changed by choice (carRail, cwRail, v.topRefuge, v.pitRefuge, sup.profile): the edit lists the entries. Keys of the calculation (calc.*) are
 // applied by the screen that holds it. Pure: the screens validate the result as the save does (src/lib/shaft-edit.ts).
 import type { Edit } from '../drawing';
 import { callStationOf } from './callstation';
 import { DEFAULTS, type Allowance } from './norme';
 import { headOf } from './head';
+import { FRAME_STD, withFrame } from './frame';
 import { imbottiOf, marbleHeight, marbleWidth, withImbotti, withMarbleHeight, withMarbleWidth } from './imbotti';
 import { counterweightSide, layout } from './layout';
 import { bufferPlan } from './pit';
@@ -31,6 +32,7 @@ const N_KEYS = ['at', 'width', 'depth'] as const;
 const CS_KEYS = ['offset', 'height'] as const;
 const H_KEYS = ['front', 'rear', 'left', 'right'] as const;
 const IMB_KEYS = ['left', 'right', 'top', 'marble', 'height'] as const;
+const FR_KEYS = ['jamb', 'head', 'depth'] as const;
 const SUP_KEYS = ['height', 'length'] as const;
 /** Inputs changed by choosing an entry of a catalogue or a table. */
 const PICK_KEYS = ['carRail', 'cwRail', 'v.topRefuge', 'v.pitRefuge', 'sup.profile'] as const;
@@ -67,6 +69,7 @@ function floorKey(I: ShaftInputs, head: string, sub: string): number | null {
 export const editKeys = (): string[] => [
   ...SIZES, ...Object.keys(DEFAULTS), ...PLAN_KEYS.map((k) => `plan.${k}`), ...V_KEYS.map((k) => `v.${k}`), ...R_KEYS.map((k) => `room.${k}`),
   ...N_KEYS.map((k) => `n.0.${k}`), ...CS_KEYS.map((k) => `cs.${k}`), ...H_KEYS.map((k) => `head.${k}`), 'f.0.rise', ...IMB_KEYS.map((k) => `imb.${k}`),
+  ...FR_KEYS.map((k) => `frame.${k}`),
   ...SUP_KEYS.map((k) => `sup.${k}`), 'rinvio.height', ...PICK_KEYS, ...CALC_KEYS,
 ];
 
@@ -82,6 +85,7 @@ export function editLabel(key: string, cantilever: boolean): string {
   if (head === 'head') return `hd_${sub}`;
   if (head === 'f') return 'fl_rise';
   if (head === 'imb') return `im_${sub}`;
+  if (head === 'frame') return `fr_${sub}`;
   if (head === 'sup') return `su_${sub}`;
   if (head === 'rinvio') return `ri_${sub}`;
   if (head === 'calc') return `calc_${sub}`;
@@ -108,6 +112,9 @@ export function withValue(I: ShaftInputs, key: string, value: number): ShaftInpu
   if (r && I.room) return { ...I, room: { ...I.room, [r]: value } };
   const m = head === 'imb' ? pick(IMB_KEYS, sub) : undefined;
   if (m) return m === 'marble' ? withMarbleWidth(I, value) : m === 'height' ? withMarbleHeight(I, value) : withImbotti(I, { ...imbottiOf(I), [m]: value });
+  // a size of the door's own frame: the standard one where none is set yet
+  const fr = head === 'frame' ? pick(FR_KEYS, sub) : undefined;
+  if (fr) return withFrame(I, { ...(I.frame ?? FRAME_STD), [fr]: value });
   // the top of the bedplate with the diverting pulley: that support, ours, at that height
   if (head === 'rinvio' && sub === 'height' && I.room) return value < 0 ? null : { ...I, room: { ...I.room, support: { kind: 'rinvio', height: value } } };
   const su = head === 'sup' ? pick(SUP_KEYS, sub) : undefined;
@@ -170,6 +177,8 @@ export function valueOf(I: ShaftInputs, key: string): number | null {
   if (r) return I.room ? I.room[r] : null;
   const m = head === 'imb' ? pick(IMB_KEYS, sub) : undefined;
   if (m) return m === 'marble' ? marbleWidth(I) : m === 'height' ? marbleHeight(I) : imbottiOf(I)[m];
+  const fr = head === 'frame' ? pick(FR_KEYS, sub) : undefined;
+  if (fr) return I.frame?.[fr] ?? null;
   const su = head === 'sup' ? pick(SUP_KEYS, sub) : undefined;
   if (su) return I.room?.support?.[su] ?? null;
   const w = head === 'head' ? pick(H_KEYS, sub) : undefined;

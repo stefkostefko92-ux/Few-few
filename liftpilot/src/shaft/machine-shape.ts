@@ -46,9 +46,18 @@ export interface MachineShape {
   src: string;
   /** the worm's axis not dimensioned on the sheet: measured on the scaled drawing (the relazione says so) */
   wormScaled?: true;
+  /** a vertical worm (SICOR SV110): its axis upright at this x from the sheave's axis (yWorm: where it meets the wheel) */
+  wormX?: number;
+  /** the overall height not dimensioned on the sheet: measured on the scaled drawing */
+  heightScaled?: true;
+  /** the sheave's width E not dimensioned on the sheet: measured on the scaled drawing */
+  sheaveScaled?: true;
+  /** the model whose sheet gives the body and the sheave's width, where this model's own sheet dimensions only its
+   *  differences (GEM HW140CL: the HW140C's) */
+  bodyFrom?: string;
   /** the castings' enamel when it is not black: the maker's colour, as its photos show it (Montanari's blue, Sassi's
-   *  grey-blue) */
-  paint?: 'blue' | 'grey-blue';
+   *  grey-blue, GEM's navy) */
+  paint?: 'blue' | 'grey-blue' | 'navy';
 }
 
 /** The sheave's mid-plane P and width E for the diameter D: the sheet's row nearest D. */

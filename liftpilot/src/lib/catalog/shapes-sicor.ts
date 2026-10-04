@@ -3,8 +3,9 @@
 // mid-plane P and width E by diameter (the conventional single wrap), the overall sizes — and where the gearbox, the
 // motor, the brake and the handwheel stand, read off the maker's CAD model and rounded to the millimetre. Only
 // dimensions: the parts are our own boxes and cylinders, nothing of the maker's geometry is kept. Read on 2 October 2026
-// from the technical sheets (Scheda tecnica … Geared 2025) and the CAD downloads of sicoritaly.com; the SV110 has no
-// CAD model and keeps the generic machine. Pure.
+// from the technical sheets (Scheda tecnica … Geared 2025) and the CAD downloads of sicoritaly.com. The SV110 has no CAD
+// model: its sheet's dimensions, and where its vertical worm, motor, brake and disc stand read on the sheet's drawing in
+// scale (±10 mm). Pure.
 import type { MachineShape, ShapePart } from '@/shaft/machine-shape';
 import { B, CX, CY, CZ, arch, grid, pair, rows } from './shape-kit';
 
@@ -122,6 +123,20 @@ export const SICOR_SHAPES: readonly MachineShape[] = [
       B('pedestal', 640, 106, -120, 700, 590, 120), CX('cover', 350, 0, 225, 640, 700),
       B('motor', 700, 185, -165, 1255, 515, 165), B('terminal', 1020, 515, -100, 1180, 592, 130), CX('cover', 350, 0, 150, 1255, 1330), CX('shaft', 350, 0, 59, 1330, 1375),
       CX('handwheel', 350, 0, 214, 1375, 1430),
+    ],
+  },
+  {
+    // the SV110 stands vertical: the gearbox on its feet, the worm upright beside the wheel with the motor over it, the
+    // brake over the motor with its levers across, the disc on top; 445 along the machine, 591 high, 261 from the
+    // worm's plane to the slow shaft's end and 172 to the far side; 4 × M20 on 205 × 150
+    brand: 'SICOR', model: 'SV110', yWheel: 144, yWorm: 144, wormX: -110, wormScaled: true, sheaves: rows(187, '480/70 520/70 600/70'),
+    feet: [-135, -100, 135, 100], holes: grid([-102.5, 102.5], [-75, 75]), hole: 'M20', overall: [278, 169, 591], src: `scheda tecnica SICOR 2025 (sicoritaly.com, 2 ottobre 2026), disegno in scala`,
+    parts: [
+      B('base', -135, 0, -100, 135, 26, 100), B('housing', -150, 26, -75, 135, 276, 68), CZ('cover', 0, 144, 90, 68, 132), CZ('cover', 0, 144, 70, -86, -75),
+      CZ('shaft', 0, 144, 40, 132, 261), B('motor', -215, 284, -100, -5, 408, 100), B('terminal', -160, 321, -169, -60, 438, -105),
+      CY('brake', -110, 0, 120, 434, 520), ...pair('arm', -135, 470, 120, -85, 505, 173), B('magnet', -172, 423, -64, -48, 536, 64),
+      B('arm', -270, 461, -15, 60, 505, 15), CZ('cover', 56, 482, 25, -20, 20), B('arm', 150, 382, -8, 169, 492, 8),
+      CY('cover', -110, 0, 128, 536, 554), CY('handwheel', -110, 0, 167, 554, 581), CY('shaft', -110, 0, 8, 581, 591),
     ],
   },
 ];

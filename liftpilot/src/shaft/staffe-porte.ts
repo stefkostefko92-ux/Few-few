@@ -2,10 +2,16 @@
 // the support plate A bolted to its rib through the joint and the lock, under the sill, of the same section. The plate
 // is cut to the sill's depth on site (p. 05: "l'elemento di supporto può essere tagliato a misura"); the software puts
 // one pair every 400 mm of the opening, at least three, the end ones 10 mm in from its edges. Without a choice the
-// strongest pair, A 65 170 7 + B 65 320 (5 mm, ±8°). Pure: the 3D builds them (components/lift3d/staffe.ts), the section
-// draws them (section-staffe.ts), the bill of materials counts them.
+// strongest pair, A 65 170 7 + B 65 320 (5 mm, ±8°). Over the door the same pair turned upside down carries the
+// suspension (p. 04: the brackets hold the sill "o l'elemento portante della porta di piano"; the mounting is the
+// software's): B on the wall over the opening with its joint at the foot, A's platform on the suspension's top,
+// which hangs from it on bolts through A's holes; along the suspension, by the same rule. Where the floor above is near
+// enough for its sill's pairs to stand at the same heights, an upper pair falling on one of them moves beside it. Pure:
+// the 3D builds them (components/lift3d/staffe.ts), the section draws them (section-staffe.ts), the bill of materials
+// counts them.
+import { HEADER, SILL_H, headerSpan } from './sill';
 import { DOOR_PAIRS, type DoorPairId } from './staffe-ids';
-import type { ShaftInputs } from './types';
+import type { DoorLayout, ShaftInputs } from './types';
 
 export type DoorSection = 65 | 45 | 37;
 
@@ -40,6 +46,19 @@ export const doorPairOf = (I: ShaftInputs): DoorPair => doorPair(I.panev?.door ?
 /** Brackets under one sill from u0 to u1 along the wall [mm]: one every 400 mm, at least three. */
 export const doorBracketCount = (u0: number, u1: number): number => Math.max(3, Math.ceil((u1 - u0) / 400) + 1);
 
+/** Where the pairs over a landing door `d` (its landing layout) stand along its wall of length `len`: the
+ *  suspension's span 10 mm in from its ends [mm]. */
+export function topBracketSpan(d: DoorLayout, len: number): readonly [number, number] {
+  const [lo, hi] = headerSpan(d, len);
+  return [lo + 10, hi - 10];
+}
+
+/** Along-wall positions of the pairs from u0 to u1 [mm]: one every 400 mm, at least three, the end ones at u0 and u1. */
+export function bracketsAlong(u0: number, u1: number): number[] {
+  const n = doorBracketCount(u0, u1);
+  return Array.from({ length: n }, (_, i) => u0 + ((u1 - u0) * i) / (n - 1));
+}
+
 /** Rib 15 of B by section (pp. 14-18): full width down to `full` from the top, then a taper to `foot`; joint hole
  *  `pivot` below the top at `col` from the wall, locking slot `drop` below it; the fixing face `face` wide, sheet `t`. */
 export const B_SECTIONS = {
@@ -70,4 +89,19 @@ export function pairPose(p: DoorPair, sillBottom: number): { base: number; pivot
 export function plateReach(p: PlateA, depth: number): { offset: number; cut: number; short: boolean } {
   const offset = B_SECTIONS[p.section].col - A_LEGS[p.section].holes[0][0], need = Math.round(depth - offset - 4);
   return { offset, cut: Math.min(need, p.length), short: need > p.length };
+}
+
+/** The pairs over a landing door `d` at the level zf, on its wall of length `len`, along the suspension (topBracketSpan).
+ *  `up`: the level of the floor above when its door is on the same wall; if its sill's pairs reach down to the heights
+ *  of these, a pair falling on one of them (closer than B's face and 10 mm) moves beside it, on the nearer side within
+ *  the span. Along-wall positions [mm]. */
+export function topBracketsAt(p: DoorPair, d: DoorLayout, len: number, zf: number, up?: number): number[] {
+  const [u0, u1] = topBracketSpan(d, len), at = bracketsAlong(u0, u1), { base, aTop } = pairPose(p, 0), h = aTop - base;
+  if (up === undefined || zf + d.height + HEADER.top + h <= up - SILL_H - h) return at;
+  const below = bracketsAlong(d.u0 + 10, d.u1 - 10), gap = B_SECTIONS[p.a.section].face + 10;
+  return at.map((u) => {
+    const hit = below.find((b) => Math.abs(b - u) < gap);
+    if (hit === undefined) return u;
+    return [hit - gap, hit + gap].filter((x) => x >= u0 && x <= u1).sort((x, y) => Math.abs(x - u) - Math.abs(y - u))[0] ?? u;
+  });
 }

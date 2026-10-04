@@ -23,6 +23,18 @@ export const trackPlanes = (d: DoorLayout, tr: Tracks, t: number): number[] => (
 export const SILL_H = 24, GROOVE = 11, GROOVE_D = 14;
 const RIB = 4, RIB_D = 0.9;
 
+/** A landing door's suspension over the clear opening's top [mm]: its header plate from `foot`, its top at `top`. */
+export const HEADER = { foot: 15, top: 230 } as const;
+
+/** Span of a landing door's suspension along its wall: the panels' whole travel and 30 mm, kept inside the shaft
+ *  (`len`: the wall's length). */
+export function headerSpan(d: DoorLayout, len: number, ext = 30): readonly [number, number] {
+  const L = d.width;
+  const [h0, h1] = d.kind === 'C2' ? [(d.u0 + d.u1) / 2 - L - ext, (d.u0 + d.u1) / 2 + L + ext]
+    : d.stack === 'low' ? [d.u1 - 1.5 * L - 20 - ext, d.u1 + ext] : [d.u0 - ext, d.u0 + 1.5 * L + 20 + ext];
+  return [Math.max(h0, 20), Math.min(h1, len - 20)];
+}
+
 /** The section across a sill from v0 (inner edge) to v1 (nosing), top at 0, as [v, z] points; a groove at each of
  *  `grooves`. `flip`: the nosing at v0 instead (a car sill faces the landing, toward the wall). */
 export function sillSection(v0: number, v1: number, grooves: readonly number[], flip: boolean): [number, number][] {

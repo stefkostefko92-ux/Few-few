@@ -10,6 +10,7 @@
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
 import type { DoorLayout } from '@/shaft';
+import { HEADER, headerSpan } from '@/shaft/sill';
 import { extrudeAlong, onWall, type Batch, type Point } from './geom';
 import { TRACK_TOP, trackPlanes, type Tracks } from './doors';
 import type { LiftMaterials, Side } from './materials';
@@ -17,13 +18,6 @@ import type { LiftMaterials, Side } from './materials';
 // over the panels' top [mm]: the running bar's foot, the shelf the webs hang from; the web behind the rollers
 const BAR = 50, SHELF = 150, WEB0 = 12.5, WEB1 = 15.5;
 
-/** Span of the header along the wall: the panels' whole travel and a margin, kept inside the shaft. */
-export function headerSpan(d: DoorLayout, len: number, ext = 40): readonly [number, number] {
-  const L = d.width;
-  const [h0, h1] = d.kind === 'C2' ? [(d.u0 + d.u1) / 2 - L - ext, (d.u0 + d.u1) / 2 + L + ext]
-    : d.stack === 'low' ? [d.u1 - 1.5 * L - 20 - ext, d.u1 + ext] : [d.u0 - ext, d.u0 + 1.5 * L + 20 + ext];
-  return [Math.max(h0, 20), Math.min(h1, len - 20)];
-}
 
 /** The running bar of a track centred on vc: its foot at zt + BAR, its rounded top at zt + TRACK_TOP (metres, from zt). */
 function barSection(vc: number): THREE.Shape {
@@ -92,9 +86,9 @@ export function carOperator(B: Batch, M: LiftMaterials, wall: Side, W: number, D
 
 /** The suspension of a landing door over its panels' top zt (the landing's level + the door's height). */
 export function landingHeader(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, d: DoorLayout, tr: Tracks, t: number, zt: number, depth: number): void {
-  const len = wall === 'front' || wall === 'rear' ? W : D, [lo, hi] = headerSpan(d, len, 30), top = zt + 230;
+  const len = wall === 'front' || wall === 'rear' ? W : D, [lo, hi] = headerSpan(d, len), top = zt + HEADER.top;
   // the cover reaches 6 mm past the sill's edge, over the nuts of the hangers: the car's parts pass beyond it
-  B.wallBox(wall, W, D, lo, hi, 0, 3, zt + 15, top, M.galv);
+  B.wallBox(wall, W, D, lo, hi, 0, 3, zt + HEADER.foot, top, M.galv);
   B.wallBox(wall, W, D, lo, hi, 0, depth + 6, top - 7, top, M.galv);
   B.wallBox(wall, W, D, lo, hi, depth + 3, depth + 6, top - 40, top - 7, M.galv);
   tracks(B, M, wall, W, D, trackPlanes(d, tr, t), 1, lo + 10, hi - 10, zt, 3);

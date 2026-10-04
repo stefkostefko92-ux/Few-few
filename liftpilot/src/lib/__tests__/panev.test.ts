@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PANEV_ARTICLES, panevArticle, panevBom } from '../catalog/panev';
-import { CW_CHOICES, DOOR_PAIRS, bracketCount, defaultInputs, doorBracketCount, landingOf, layout, railSpan, section, type ShaftInputs } from '@/shaft';
+import { CW_CHOICES, DOOR_PAIRS, bracketCount, defaultInputs, doorBracketCount, landingOf, layout, railSpan, section, topBracketSpan, type ShaftInputs } from '@/shaft';
 import { PANEV_LIST_PRICE } from '../catalog/panev-prices';
 
 const base = defaultInputs(1600, 1750);
@@ -25,11 +25,13 @@ test('catalogo Panev: 48 articoli, codici unici, prezzi di listino tranne le sol
   for (const c of [...DOOR_PAIRS, ...CW_CHOICES]) for (const code of c.split(' + ')) assert.ok(panevArticle(code), code);
 });
 
-test('distinta: coppie A + B per soglia e per fermata, supporti e SG per ogni staffa delle guide', () => {
+test('distinta: coppie A + B sotto la soglia e sopra la porta per fermata, supporti e SG per ogni staffa delle guide', () => {
   const L = layout(base), bom = panevBom(L), qty = (c: string) => bom.rows.find((r) => r.article.code === c)?.qty ?? 0;
+  // under the sill and over the door: along the suspension, wider than the opening
   const doors = L.doors.reduce((s, d) => {
-    const l = landingOf(d);
-    return s + doorBracketCount(l.u0 + 10, l.u1 - 10) * base.vertical.floors.filter((f) => f.door.includes(d.side)).length;
+    const l = landingOf(d), top = doorBracketCount(...topBracketSpan(l, l.wall === 'front' || l.wall === 'rear' ? base.W : base.D));
+    assert.ok(top >= doorBracketCount(l.u0 + 10, l.u1 - 10));
+    return s + (doorBracketCount(l.u0 + 10, l.u1 - 10) + top) * base.vertical.floors.filter((f) => f.door.includes(d.side)).length;
   }, 0);
   const [z0, z1] = railSpan(section(L)), n = bracketCount(z1 - z0);
   assert.equal(qty('A 65 170 7'), doors);

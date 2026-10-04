@@ -1,11 +1,12 @@
 // Panev's 48 brackets as the 2026 catalogue lists them (panev/docs/catalogo-staffe-panev-2026.pdf in the monorepo): the
 // code, what the part is, its size, the sheet's thickness and the page (the list prices of p. 65 are in panev-prices.ts,
-// never in the screens' code). And the bill of materials of a design: the articles its landing doors and counterweight
-// rails take, as many as the software places (src/shaft/staffe-*.ts). Pure.
+// never in the screens' code). And the bill of materials of a design: the articles its landing doors (under the sills
+// and over the doors) and counterweight rails take, as many as the software places (src/shaft/staffe-*.ts). Pure.
 import {
-  bracketCode, bracketHeights, cwBracket, cwBracketsOf, cwSpecialOf, doorBracketCount, doorPairOf, landingOf, plateReach, railSpan, type Layout,
+  bracketCode, bracketHeights, cwBracket, cwBracketsOf, cwSpecialOf, doorBracketCount, doorPairOf, landingOf, plateReach, railSpan, topBracketSpan,
+  type Layout,
 } from '@/shaft';
-import { cwNiche } from '@/shaft/niche';
+import { cwNiche, wallLength } from '@/shaft/niche';
 import { hasHead, headOf } from '@/shaft/head';
 import { section } from '@/shaft/section';
 
@@ -61,8 +62,9 @@ export interface PanevBom {
   missing: number;
 }
 
-/** The articles of a design: under every landing sill the pair of its doors, one every 400 mm (staffe-porte.ts); on the
- *  counterweight rails, at every bracket's height, the support with its SG or the solution to drawing chosen. */
+/** The articles of a design: under every landing sill and over every landing door the pair of its doors, one every
+ *  400 mm (staffe-porte.ts); on the counterweight rails, at every bracket's height, the support with its SG or the
+ *  solution to drawing chosen. */
 export function panevBom(L: Layout): PanevBom {
   const I = L.inputs, S = section(L), pair = doorPairOf(I), rows = new Map<string, BomRow>();
   const add = (code: string, qty: number, use: BomRow['use'], extra: Partial<BomRow> = {}): void => {
@@ -73,7 +75,9 @@ export function panevBom(L: Layout): PanevBom {
     else rows.set(code, { article, qty, use, ...extra });
   };
   for (const d of L.doors) {
-    const ld = landingOf(d), stops = I.vertical.floors.filter((f) => f.door.includes(d.side)).length, n = doorBracketCount(ld.u0 + 10, ld.u1 - 10) * stops;
+    // under the sill and over the door, at every stop the entrance serves
+    const ld = landingOf(d), stops = I.vertical.floors.filter((f) => f.door.includes(d.side)).length;
+    const n = (doorBracketCount(ld.u0 + 10, ld.u1 - 10) + doorBracketCount(...topBracketSpan(ld, wallLength(I, ld.wall)))) * stops;
     const reach = plateReach(pair.a, I.landingDepth);
     add(pair.a.code, n, 'door', { cut: reach.cut < pair.a.length ? reach.cut : undefined, short: reach.short || undefined });
     add(pair.b.code, n, 'door');

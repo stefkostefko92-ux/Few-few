@@ -16,6 +16,7 @@ import { SPOKE_ANGLES, brakeOf, ribsOf, sheaveDims, spokeOutline } from '@/shaft
 import { ownAxis } from '@/shaft/support';
 import { PRESETS } from '@/calc/presets';
 import { buildReport } from '../report/build';
+import { shapeRows } from '../report/machine-shape';
 
 // as the sheets dimension them: the sheave's axis over the feet, P at the sheave D, the spacing of the outer holes along
 // the worm and across, the feet's width across (null: not dimensioned), the holes, the overall height
@@ -47,9 +48,30 @@ const SHEET: readonly (readonly [string, string, number, number, number, number,
   ['Sassi', 'MF94', 260, 600, 310, 435, 610, 700, 'Ø25', 950],
   ['Sassi', 'MB94', 260, 600, 310, 435, 610, 700, 'Ø25', 985],
   ['Sassi', 'MB95', 315, 600, 420, 450, 830, null, 'Ø25', 1180],
+  // SICOR SV110 (no CAD model): its sheet's drawing
+  ['SICOR', 'SV110', 144, 520, 187, 205, 150, 200, 'M20', 591],
+  // GEM: the Ø 600 with its own P; the L and CL versions' holes and feet across reach their support's
+  ['GEM', 'HW134', 153, 480, 191, 224, 184, 230, 'Ø21', 552],
+  ['GEM', 'HW134 Ø600', 153, 600, 200, 224, 184, 230, 'Ø21', 552],
+  ['GEM', 'HW134L', 153, 550, 191, 224, 408, null, 'Ø21', 552],
+  ['GEM', 'HW134L Ø600', 153, 600, 200, 224, 408, null, 'Ø21', 552],
+  ['GEM', 'HW134VF', 153, 600, 200, 224, 184, 230, 'Ø21', 552],
+  ['GEM', 'HW134VF con supporto', 153, 480, 191, 224, 408, null, 'Ø21', 552],
+  ['GEM', 'HW135VF', 153, 480, 191, 224, 184, 230, 'Ø22', 562],
+  ['GEM', 'HW135L-VF', 153, 550, 191, 224, 408, null, 'Ø22', 562],
+  ['GEM', 'HW140C', 153, 560, 215, 224, 184, 230, 'Ø21', 590],
+  ['GEM', 'HW140CL', 153, 600, 215, 224, 430, null, 'Ø21', 590],
+  ['GEM', 'HW175', 200, 560, 265, 391, 260, 310, 'Ø25', 750],
+  // FAER: the height measured in scale; the F versions' holes across reach their support's
+  ['FAER', 'P58S', 348, 480, 215, 360, 270, null, 'Ø17', 520],
+  ['FAER', 'P58F', 469, 480, 225, 360, 470, null, 'Ø17', 641],
+  ['FAER', 'P60F', 469, 600, 225, 360, 470, null, 'Ø17', 641],
+  ['FAER', 'P68F', 458, 600, 250, 420, 540, null, 'Ø20', 710],
+  ['FAER', 'P70F', 497, 650, 250, 420, 540, null, 'Ø20', 730],
+  ['FAER', 'P80F', 497, 550, 275, 420, 580, null, 'Ø20', 730],
 ];
 
-test('ogni argano SICOR con modello CAD, Montanari e Sassi con disegno quotato ha la sua forma, con le quote della scheda', () => {
+test('ogni argano SICOR, Montanari, Sassi, GEM e FAER con disegno quotato ha la sua forma, con le quote della scheda', () => {
   assert.equal(SHAPES.length, SHEET.length);
   for (const [brand, model, yWheel, D, P, hx, hz, w, hole, H] of SHEET) {
     const S = shapeOf(brand, model);
@@ -67,12 +89,14 @@ test('ogni argano SICOR con modello CAD, Montanari e Sassi con disegno quotato h
     // may stand out of the gearbox)
     const b = bodyBox(S), left = Math.min(...S.parts.filter((p) => p.role !== 'base' && p.role !== 'pedestal').map((p) => partBox(p)[0]));
     assert.ok(Math.abs(b[4] - H) <= 25, `${model}: altezza ${b[4]} contro ${H}`);
-    assert.ok(Math.abs(-left - S.overall[0]) <= 15, `${model}: ingombro a sinistra ${-left} contro ${S.overall[0]}`);
+    // to the body's end, or to the feet's where the sheet measures there (FAER's cast feet, angles and beams)
+    assert.ok(Math.abs(-left - S.overall[0]) <= 15 || S.overall[0] === -S.feet[0], `${model}: ingombro a sinistra ${-left} contro ${S.overall[0]}`);
     // the sheet's sheaves are the catalogue's range
     const c = MACHINES.find((m) => m.brand === brand && m.model === model), Ds = S.sheaves.map((r) => r[0]);
     assert.deepEqual(c?.sheaves, [Math.min(...Ds), Math.max(...Ds)], `${model}: pulegge`);
   }
-  assert.equal(shapeOf('SICOR', 'SV110'), null, 'senza modello CAD: la macchina generica');
+  // the SV110 stands vertical: its worm upright, measured in scale, and so said
+  assert.ok(shapeOf('SICOR', 'SV110')?.wormX !== undefined && shapeOf('SICOR', 'SV110')?.wormScaled, 'SV110: vite verticale');
   for (const m of ['PENTA', 'M83', 'M73AL']) assert.equal(shapeOf('Montanari', m), null, `${m}: senza disegno quotato, la macchina generica`);
   assert.equal(shapeOf('Sassi', 'MB108'), null, 'MB108: i fori del piedistallo non si leggono, la macchina generica');
   // the M73 / M75 table: the sheave's width B and its mid-plane past the row of holes A by diameter
@@ -92,8 +116,14 @@ test('telaio: il bordo della puleggia sopra il suo piano, le travi lontane da pu
       for (const [a, b] of F.plinth) assert.ok(b <= z0 - 20 + 1e-9 || a >= z1 + 20 - 1e-9, `${S.model} Ø${D}: plinto sotto le funi`);
       for (const p of S.parts) {
         if (p.role === 'shaft') continue;
-        const [x0, y0, pz0, x1, y1, pz1] = partBox(p);
+        const box = partBox(p), [x0, , pz0, x1, , pz1] = box;
         if (pz1 <= z0 || pz0 >= z1) continue;
+        // a cylinder along X reaches into the sheave's band only with its chord there (a handwheel beside it)
+        let [y0, y1] = [box[1], box[4]];
+        if ('cyl' in p && p.cyl === 'x' && !p.tilt) {
+          const [yc, zc] = p.at, zq = Math.min(Math.max(zc, z0), z1), hc = Math.sqrt(Math.max(0, p.r ** 2 - (zq - zc) ** 2));
+          [y0, y1] = [yc - hc, yc + hc];
+        }
         // the part's nearest and farthest points from the sheave's axis, in the sheave's plane
         const dx = Math.max(x0, Math.min(0, x1)), dy = Math.max(y0 - S.yWheel, Math.min(0, y1 - S.yWheel)), near = Math.hypot(dx, dy);
         const far = Math.max(...[[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => Math.hypot(x, y - S.yWheel)));
@@ -143,8 +173,9 @@ test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l\'asse del su
   assert.equal(deriveLift(defaultLift()).machine.shape ?? null, null);
 });
 
-test('supporto esterno (Montanari S, SICOR MR35, Sassi MF94 MB94 MB95): una trave sotto ogni fila di fori, l\'ingombro fino ai suoi piedi', () => {
-  for (const [brand, model] of [['Montanari', 'M73S'], ['Montanari', 'M95'], ['Montanari', 'M98'], ['SICOR', 'MR35'], ['Sassi', 'MF94'], ['Sassi', 'MB94'], ['Sassi', 'MB95']] as const) {
+test('supporto esterno (Montanari S, SICOR MR35, Sassi MF94 MB94 MB95, GEM L e CL, FAER F): una trave sotto ogni fila di fori, l\'ingombro fino ai suoi piedi', () => {
+  for (const [brand, model] of [['Montanari', 'M73S'], ['Montanari', 'M95'], ['Montanari', 'M98'], ['SICOR', 'MR35'], ['Sassi', 'MF94'], ['Sassi', 'MB94'], ['Sassi', 'MB95'],
+    ['GEM', 'HW134L'], ['GEM', 'HW135L-VF'], ['GEM', 'HW140CL'], ['FAER', 'P58F'], ['FAER', 'P68F'], ['FAER', 'P80F']] as const) {
     const S = shapeOf(brand, model);
     assert.ok(S, model);
     const F = machineFrame(S.sheaves[0][0], S), rows = [...new Set(S.holes.map((h) => h[1]))].sort((a, b) => a - b);
@@ -218,11 +249,23 @@ test('relazione: le quote dell\'argano SICOR, Montanari o Sassi proposto, per il
   const lr = new Map(leo.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));
   assert.equal(lr.get('Assi sul piano dei piedi'), 'puleggia 135 mm, vite senza fine ≈ 228 mm, inclinata di 15° (misurato sul disegno in scala)');
   assert.match(lr.get('Ingombri (scheda del costruttore)') ?? '', /altezza 405 mm sul piano dei piedi, fino a 80 mm sotto$/);
+  // FAER: the height and the sheave's width read on the drawing in scale; GEM HW140CL: the body and E of the HW140C
+  const rowsOf = (brand: string, model: string, D: number): Map<string, string> => {
+    const S = shapeOf(brand, model);
+    assert.ok(S, `${brand} ${model}`);
+    return new Map(shapeRows(S, D, (x, dp = 0) => x.toFixed(dp)));
+  };
+  const p68 = rowsOf('FAER', 'P68F', 600), cl = rowsOf('GEM', 'HW140CL', 560);
+  assert.match(p68.get('Puleggia') ?? '', /larghezza E ≈ 110 mm \(misurato sul disegno in scala\)$/);
+  assert.match(p68.get('Ingombri (scheda del costruttore)') ?? '', /altezza ≈ 710 mm \(misurato sul disegno in scala\) sul piano dei piedi/);
+  assert.match(cl.get('Puleggia') ?? '', /larghezza E = 100 mm \(come la HW140C\)$/);
+  assert.ok(cl.has('Ingombri (scheda del costruttore; corpo come la HW140C)'));
 });
 
 test('dettagli disegnati come nel 3D: freno a tamburo intero, razze curve tra mozzo e corona, nervature dietro le fusioni', () => {
   // the drum brake whole where its levers are drawn: all but the Sassi MODY (its brake on the motor) and the inclined worms
-  assert.deepEqual(SHAPES.filter((S) => !brakeOf(S)).map((S) => S.model), ['MODY', 'LEO', 'TORO']);
+  // (the SV110's on its upright worm)
+  assert.deepEqual(SHAPES.filter((S) => !brakeOf(S)).map((S) => S.model), ['SV110', 'MODY', 'LEO', 'TORO']);
   for (const S of SHAPES) {
     const B = brakeOf(S);
     if (!B) continue;

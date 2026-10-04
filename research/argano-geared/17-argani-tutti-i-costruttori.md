@@ -199,6 +199,10 @@ Disegno della scheda SC-S SV110 p.2 = SC-B p.10. La scala del disegno è stata v
 | Telaio | XTE0456, 49 kg con antivibranti | ✅ SC-B p.15 |
 | CAD | nessuno ZIP sulla pagina SV110 (solo scheda, manuale, brochure) | ✅ SC-W sv110 |
 
+**Nel software** (4 ottobre 2026): la SV110 è disegnata come è (`liftpilot/src/lib/catalog/shapes-sicor.ts`) con
+queste quote; l'asse della vite a ≈ 110 mm e la posizione di motore, freno e disco sono le letture in scala ⚠️, e la
+relazione lo dice («misurato sul disegno in scala»).
+
 ### 2.5 Versioni
 
 | Versione | Modelli | Dati | Fonte |
@@ -466,6 +470,13 @@ la puleggia è a sbalzo, salvo le versioni L/CL con supporto esterno.
 | HW140CL | 153 ✅ | +140 ✅ | — | P 215 ✅; supporto 2 × Ø17 a 160 (piastra 230), 22,5 e 74; piano medio → fori supporto 123, → fori piedi 123 ✅ | ❓ | — | 4 × Ø21 su 224 × 184 ✅ | ❓ | ❓ |
 | HW175 | 200 ✅ | +173 ✅ | 550–667 (lato volantino) + 206 ✅ | 566 totale; P 265 ✅ (sign. ⚠️) | 750 ✅ | 477 × 310 ✅ | 4 × Ø25: 242 + 149 dall'asse lento (non simmetrici) × 260 ✅ | 135 ✅ | Ø440 ✅ |
 
+**Nel software** (4 ottobre 2026): tutte le HW della tabella sono disegnate come sono
+(`liftpilot/src/lib/catalog/shapes-gem.ts`) con queste quote; dove stanno cassa, motore, freno con il magnete e
+morsettiera è letto sul disegno in scala (±10 mm) ⚠️. La scheda della HW140CL quota solo P, i fori e il supporto:
+il corpo e la larghezza della puleggia sono presi dalla HW140C ⚠️ ipotesi, e la relazione lo dice («corpo come la
+HW140C», «come la HW140C»). Colore: blu scuro, dalle
+foto delle schede.
+
 **Uberlift.** Su DO il marchio compare con: freni di ricambio «per argano RR1» 48/60/80/110 V, «telaio alto per
 argano HW134», pulegge, carter e antiscarrucolamento «Uberlift e GEM», telai universali L = 765 e 990 mm «per
 qualsiasi argano» fino a 480 kg (codice FL00992 per argani GEM e Uberlift) ✅ DO. **Macchine con dati propri: ❓**;
@@ -511,6 +522,11 @@ frenante: ❓.**
 | P70F | come P68F ma asse lento 217 sopra la vite (497 ⚠️) ✅ | max 660 + 470 ✅ | come P68F ✅ | come P68F ⚠️ | — |
 | P80F | asse vite 280; asse lento +217 ✅ | max 590 + 470 ✅ | Ø20: 210 + 210 (420); file a −155, +100, +425 (150 · 175 · 100 · 155; 325 e 255) ✅ (sign. ⚠️) | piano medio a +275 ⚠️ somma | — |
 
+**Nel software** (4 ottobre 2026): tutte disegnate come sono (`liftpilot/src/lib/catalog/shapes-faer.ts`) con
+queste quote; la larghezza della puleggia, le altezze e la posizione delle parti sono lette sul disegno in scala
+(±10 mm) ⚠️, e la relazione dice per l'altezza e la larghezza della puleggia «misurato sul disegno in scala».
+Colore non noto (schede in grigio): nero.
+
 **CAD FAER:** nessuno; schede PDF e un modulo di selezione (https://www.faer.net/wp-content/uploads/2020/07/Datasheet.pdf) ✅.
 
 ## 7. Italian Top Gears (ITG) — costruttore nuovo
@@ -538,9 +554,9 @@ Sede: Via Martiri della Romania 47C, Borzano di Albinea (RE) ✅ IT-E; produce a
 ## 9. Differenze rispetto al catalogo del software (`liftpilot/src/lib/catalog/machines.ts`)
 
 Da verificare prima di modificare il codice (questo capitolo non cambia nulla). **Aggiornamento del 4 ottobre
-2026:** il software disegna come sono le SICOR con modello CAD, le Sassi tranne la MB108 e le Montanari con disegno
-quotato (M65, M73, M73H, M73S, M75, M75H, M75S, M93, M95, M98, M98H); GEM, FAER, ITG, la SV110 e le Montanari senza
-disegno restano con la sagoma generica.
+2026:** il software disegna come sono tutte le SICOR (con modello CAD; la SV110 dalla scheda, § 2.4), le Sassi tranne
+la MB108, le Montanari con disegno quotato (M65, M73, M73H, M73S, M75, M75H, M75S, M93, M95, M98, M98H), tutte le GEM
+HW (§ 5.2) e tutte le FAER P (§ 6.2); ITG e le Montanari senza disegno restano con la sagoma generica.
 
 1. **SICOR, portate 1:1** (SC-B p.9) oggi assenti nel software salvo SH110B: SV110 450, MR12C 550, SH130 550,
    SH130G 630, SH140 875, SH160 1250, SH190 1800, MR21 2000, MR26 3000, MR35 5500 kg ✅.
@@ -582,9 +598,10 @@ disegno restano con la sagoma generica.
 5. **Profili delle gole** (angoli γ e β): SICOR li disegna ma i valori non sono nel testo ❓; FAER V 35°/105° ✅;
    Sassi, GEM ❓.
 6. **Masse**: FAER ❓; Sassi con definizioni diverse (senza volano, puleggia o motore).
-7. **SV110**: nessun CAD; posizione di motore, freno e disco solo in scala ⚠️ (§ 2.4).
+7. **SV110**: nessun CAD; posizione di motore, freno e disco solo in scala ⚠️ (§ 2.4), e così nel software.
 8. **Significato di alcune quote** (marcato «sign. ⚠️»): nelle Sassi P, mano e ingombri di traverso sono letti da noi
-   (§ 3.3), e così le quote della MB108; FAER P68F/P70F/P80F: da confermare sul disegno prima di disegnarle.
+   (§ 3.3), e così le quote della MB108; FAER P68F/P70F/P80F: il software le disegna con queste letture, da confermare
+   sul disegno del costruttore prima dell'ordine; GEM HW140CL: corpo preso dalla HW140C (§ 5.2).
 9. **Modelli storici** (SICOR MR10–MR17, Sassi GEKO e RF18, Montanari M68/M71/M76, FAER P35F–P56F, Volpi): solo
    nomi o pochi dati.
 10. **Uberlift**: ruolo (costruttore o marchio di ricambi) non chiarito; «RR1» ❓.

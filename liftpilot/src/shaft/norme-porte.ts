@@ -62,9 +62,25 @@ export const VOCI_PORTE: readonly VoceVano[] = [
     valore: 'quando la porta nuova ha una luce più piccola del vano esistente tra i marmi, gli imbotti laterali (a sinistra e a destra '
       + 'guardando la porta dal pianerottolo) e quello superiore coprono la differenza: distanza tra i marmi = imbotto sinistro + luce + '
       + '2 × 50 mm di portale + imbotto destro; altezza sotto il marmo superiore = altezza della luce + 60 mm di architrave del portale + '
-      + 'imbotto superiore; gli stessi imbotti per tutte le porte di piano, in lamiera sul filo del muro verso il pianerottolo, disegnati in '
-      + 'pianta, in sezione e nel 3D',
+      + 'imbotto superiore (con il telaio proprio della porta, i suoi montanti e il suo frontalino al posto del portale); gli stessi imbotti '
+      + 'per tutte le porte di piano, in lamiera sul filo del muro verso il pianerottolo, disegnati in pianta, in sezione e nel 3D',
     riferimento: 'dato del fornitore delle porte (imbotti su misura)', fonte: 'scelta del software', stato: 'scelta',
     costanti: ['doorHead'],
+  },
+  {
+    id: 'porte.telaio', gruppo: 'porte', titolo: 'Telaio proprio delle porte di piano',
+    valore: 'a scelta del progettista, al posto del portale (2 × 50 mm, architrave 60 mm): il telaio della porta, uguale a tutti i piani, per '
+      + 'default il telaio standard con montanti da 120 mm a tutta altezza, frontalino da 220 mm sopra la luce tra i montanti e spessore 50 mm; '
+      + 'montanti, frontalino e spessore modificabili su ogni progetto, montanti e frontalino da 25 mm (telai su misura). Il telaio sta sul '
+      + 'pavimento finito del pianerottolo, nel vano del muro a filo della parete verso il pianerottolo, profondo il suo spessore; il vano nel '
+      + 'muro è il suo ingombro esterno (luce + 2 montanti, altezza della luce + frontalino), disegnato in pianta, in sezione e nel 3D, e la '
+      + 'bottoniera si misura dal suo bordo',
+    riferimento: 'dato del fornitore delle porte',
+    fonte: '2SG, pagina del telaio standard (montanti 120, frontalino 220, spessore 50; lamiera autoportante 1/1,2 mm; montaggio sul pavimento '
+      + 'finito, staffe e tasselli per il muro) e disegno del telaio (larghezza luce + 240) letti il 2 ottobre 2026; telai di dimensioni speciali '
+      + 'con montanti e frontalino da 25 mm (research/argano-geared/14-porte-e-soglie.md, 18-porte-limitatori-tenditori-tutti.md). La posa nel '
+      + 'vano a filo della parete è scelta del software: va confermata con il fornitore delle porte',
+    stato: 'scelta',
+    costanti: ['frameStd', 'frameMin'],
   },
 ];
