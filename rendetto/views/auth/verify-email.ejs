@@ -1,4 +1,4 @@
-<% const change = kind === 'change'; %>
+<% const change = kind === 'change'; -%>
 <%- include('_top', { titleKey: change ? 'auth.confirmChangeTitle' : 'auth.confirmEmailTitle' }) %>
 <h1><%= t(change ? 'auth.confirmChangeTitle' : 'auth.confirmEmailTitle') %></h1>
 <p><%= t(change ? 'auth.confirmChangeText' : 'auth.confirmEmailText') %></p>
