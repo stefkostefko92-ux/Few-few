@@ -13,6 +13,7 @@ import { addDays, premiumUntil, TRIAL_DAYS } from '../plans/plan.js';
 import { emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import { roleSchema } from './admin-actions.js';
 import { fail, isUniqueViolation, type ActionResult, type StaffActor } from './admin-common.js';
+import { ADMIN_LIMITS } from './admin-limits.js';
 
 /* ------------------------------------ създаване ------------------------------------ */
 
@@ -21,8 +22,18 @@ export const createSchema = z.object({
   name: nameSchema,
   role: roleSchema,
   plan: z.nativeEnum(Plan),
-  trialDays: z.coerce.number().int().min(1).max(365).default(TRIAL_DAYS),
-  months: z.coerce.number().int().min(1).max(120).default(1),
+  trialDays: z.coerce
+    .number()
+    .int()
+    .min(ADMIN_LIMITS.trialDays.min)
+    .max(ADMIN_LIMITS.trialDays.max)
+    .default(TRIAL_DAYS),
+  months: z.coerce
+    .number()
+    .int()
+    .min(ADMIN_LIMITS.months.min)
+    .max(ADMIN_LIMITS.months.max)
+    .default(1),
   password: z.string().max(256).optional(),
   locale: z.string().refine(isLocale).default(DEFAULT_LOCALE),
 });

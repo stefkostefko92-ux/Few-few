@@ -12,12 +12,13 @@ import { addDays, premiumUntil } from '../plans/plan.js';
 import { optionPriceCents, TERM_OPTIONS } from '../plans/pricing.js';
 import { paidStartAllowedFrom } from '../plans/withdrawal.js';
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
+import { ADMIN_LIMITS } from './admin-limits.js';
 import { hasUnsafeChars } from './names.js';
 
 /** Бележката на служителя е свободен текст: не може да започва с „@“ — така се пишат знаците на системата. */
 const note = z
   .string()
-  .max(500)
+  .max(ADMIN_LIMITS.noteMax)
   .refine((value) => !hasUnsafeChars(value))
   .default('')
   .transform((value) => value.replace(/^@+/, ''));
@@ -27,7 +28,7 @@ const requestId = z.string().refine(isRecordId).optional();
 const planSchema = z.discriminatedUnion('plan', [
   z.object({
     plan: z.literal('TRIAL'),
-    days: z.coerce.number().int().min(1).max(365),
+    days: z.coerce.number().int().min(ADMIN_LIMITS.trialDays.min).max(ADMIN_LIMITS.trialDays.max),
     note,
     notify: z.boolean(),
     requestId,
@@ -35,7 +36,12 @@ const planSchema = z.discriminatedUnion('plan', [
   z.object({
     plan: z.literal('PREMIUM'),
     mode: z.enum(['months', 'date']),
-    months: z.coerce.number().int().min(1).max(120).default(1),
+    months: z.coerce
+      .number()
+      .int()
+      .min(ADMIN_LIMITS.months.min)
+      .max(ADMIN_LIMITS.months.max)
+      .default(1),
     until: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)

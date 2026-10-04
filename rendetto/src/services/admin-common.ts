@@ -9,9 +9,15 @@ export interface StaffActor extends AuditActor {
   role: Role;
 }
 
-export type ActionResult = { ok: true; id?: string } | { ok: false; key: string };
+export type ActionResult =
+  { ok: true; id?: string } | { ok: false; key: string; params?: Record<string, string | number> };
 
-export const fail = (key: string): ActionResult => ({ ok: false, key });
+/** Отказ с ключ от речника; числата в текста (граници, срокове) идват като параметри. */
+export const fail = (key: string, params?: Record<string, string | number>): ActionResult => ({
+  ok: false,
+  key,
+  ...(params ? { params } : {}),
+});
 
 /**
  * Зает уникален ключ (P2002): проверката „имейлът свободен ли е“ и записът не са атомни — адрес,

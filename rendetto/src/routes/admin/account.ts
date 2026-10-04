@@ -14,6 +14,7 @@ import {
   linkedAccounts,
 } from '../../services/admin-insights.js';
 import { changeRole, editAccount } from '../../services/admin-actions.js';
+import { ADMIN_LIMITS } from '../../services/admin-limits.js';
 import { changePlan } from '../../services/admin-plan.js';
 import {
   banAccount,
@@ -103,7 +104,7 @@ accountAdminRouter.post(
     const id = idParam(req);
     const plan = stringField(req.body, 'plan', 10);
     const common = {
-      note: stringField(req.body, 'note', 500),
+      note: stringField(req.body, 'note', ADMIN_LIMITS.noteMax),
       notify: bool(req.body, 'notify'),
       requestId: stringField(req.body, 'requestId', 40) || undefined,
     };
@@ -130,7 +131,9 @@ accountAdminRouter.post(
     const id = idParam(req);
     finish(
       res,
-      await banAccount(staffActor(req), id, { reason: stringField(req.body, 'reason', 500) }),
+      await banAccount(staffActor(req), id, {
+        reason: stringField(req.body, 'reason', ADMIN_LIMITS.banReason.max),
+      }),
       'flash.banned',
       path(id),
     );
@@ -144,7 +147,9 @@ accountAdminRouter.post(
     const id = idParam(req);
     finish(
       res,
-      await unbanAccount(staffActor(req), id, { note: stringField(req.body, 'note', 500) }),
+      await unbanAccount(staffActor(req), id, {
+        note: stringField(req.body, 'note', ADMIN_LIMITS.noteMax),
+      }),
       'flash.unbanned',
       path(id),
     );

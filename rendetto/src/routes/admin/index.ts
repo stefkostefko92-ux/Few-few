@@ -17,6 +17,7 @@ import {
   type SortKey,
   type StatusFilter,
 } from '../../services/admin-accounts.js';
+import { ADMIN_LIMITS } from '../../services/admin-limits.js';
 import { catalogInfo } from '../../services/engine.js';
 import { withoutUnsafeChars } from '../../services/names.js';
 import { accountAdminRouter } from './account.js';
@@ -33,6 +34,7 @@ adminRouter.use(
     res.set('Cache-Control', 'no-store');
     const role = principalOf(req).user.role;
     res.locals.can = (capability: Parameters<typeof can>[1]) => can(role, capability);
+    res.locals.limits = ADMIN_LIMITS;
     next();
   },
 );

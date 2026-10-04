@@ -119,7 +119,7 @@
     },
     "errors": {
       "alreadyBanned": "The account is already blocked.",
-      "banReason": "The reason must be 3 to 500 characters.",
+      "banReason": "The reason must be {min} to {max} characters.",
       "confirmEmail": "The confirmation email does not match.",
       "emailTaken": "There is already an account with this email.",
       "input": "A field is filled in incorrectly.",

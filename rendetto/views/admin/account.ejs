@@ -38,7 +38,7 @@
               <option value="LIFETIME"<%= request && request.option === 'lifetime' ? ' selected' : '' %>><%= t('plan.name.LIFETIME') %></option>
             </select>
           </div>
-          <div class="field" data-for-plan="TRIAL"><label for="p-days"><%= t('admin.account.trialDays') %></label><input id="p-days" name="days" type="number" min="1" max="365" value="<%= trialDays %>"></div>
+          <div class="field" data-for-plan="TRIAL"><label for="p-days"><%= t('admin.account.trialDays') %></label><input id="p-days" name="days" type="number" min="<%= limits.trialDays.min %>" max="<%= limits.trialDays.max %>" value="<%= trialDays %>"></div>
           <div class="field" data-for-plan="PREMIUM"><label for="p-mode"><%= t('admin.account.premiumMode') %></label>
             <select id="p-mode" name="mode"><option value="months"><%= t('admin.account.byMonths') %></option><option value="date"><%= t('admin.account.byDate') %></option></select>
           </div>
@@ -49,7 +49,7 @@
         </div>
         <p class="hint" data-for-plan="LIFETIME"><%= t('admin.account.lifetimeHint', { price: fmt.money(lifetimeCents) }) %></p>
         <p class="hint" data-for-plan="PREMIUM"><%= t('admin.account.premiumHint') %></p>
-        <div class="field"><label for="p-note"><%= t('admin.account.note') %></label><input id="p-note" name="note" type="text" maxlength="500" placeholder="<%= t('admin.account.notePlaceholder') %>"></div>
+        <div class="field"><label for="p-note"><%= t('admin.account.note') %></label><input id="p-note" name="note" type="text" maxlength="<%= limits.noteMax %>" placeholder="<%= t('admin.account.notePlaceholder') %>"></div>
         <label class="check"><input type="checkbox" name="notify" value="yes" checked><span><%= t('admin.account.notify') %></span></label>
       </fieldset>
       <div class="actions"><button class="btn btn-primary" type="submit"><%= t('admin.account.applyPlan') %></button></div>
@@ -125,7 +125,7 @@
       <% if (manageable && can('accounts:ban')) { %>
       <form method="post" action="/admin/accounts/<%= account.id %>/unban#access" class="form">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="field"><label for="unban-note"><%= t('admin.account.unbanNote') %></label><input id="unban-note" name="note" type="text" maxlength="500"></div>
+        <div class="field"><label for="unban-note"><%= t('admin.account.unbanNote') %></label><input id="unban-note" name="note" type="text" maxlength="<%= limits.noteMax %>"></div>
         <div class="actions"><button class="btn btn-primary" type="submit"><%- include('../partials/icon', { name: 'unlock' }) %><%= t('admin.account.unban') %></button></div>
       </form>
       <% } %>
@@ -134,7 +134,7 @@
       <% if (manageable && can('accounts:ban')) { %>
       <form method="post" action="/admin/accounts/<%= account.id %>/ban#access" class="form" data-confirm="<%= t('admin.account.banConfirm') %>">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="field"><label for="ban-reason"><%= t('admin.account.banReason') %></label><textarea id="ban-reason" name="reason" required minlength="3" maxlength="500" aria-describedby="ban-hint"></textarea><p class="hint" id="ban-hint"><%= t('admin.account.banHint') %></p></div>
+        <div class="field"><label for="ban-reason"><%= t('admin.account.banReason') %></label><textarea id="ban-reason" name="reason" required minlength="<%= limits.banReason.min %>" maxlength="<%= limits.banReason.max %>" aria-describedby="ban-hint"></textarea><p class="hint" id="ban-hint"><%= t('admin.account.banHint') %></p></div>
         <div class="actions"><button class="btn btn-danger" type="submit"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.account.ban') %></button></div>
       </form>
       <% } %>

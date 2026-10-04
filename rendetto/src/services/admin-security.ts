@@ -6,6 +6,7 @@ import { issueEmailToken } from '../auth/tokens.js';
 import { accountLocale } from '../i18n.js';
 import { greetingName, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
 import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
+import { ADMIN_LIMITS } from './admin-limits.js';
 import { hasUnsafeChars, hasUnsafeTextChars } from './names.js';
 
 /* -------------------------------------- бан -------------------------------------- */
@@ -14,8 +15,8 @@ const banSchema = z.object({
   reason: z
     .string()
     .trim()
-    .min(3)
-    .max(500)
+    .min(ADMIN_LIMITS.banReason.min)
+    .max(ADMIN_LIMITS.banReason.max)
     .refine((value) => !hasUnsafeTextChars(value)),
 });
 
@@ -31,7 +32,9 @@ export async function banAccount(
   if (!parsed.success) {
     // дължината има свой текст; управляващ знак в причината — общият „грешно поле“
     const unsafe = parsed.error.issues.some((issue) => issue.code === 'custom');
-    return fail(unsafe ? 'admin.errors.input' : 'admin.errors.banReason');
+    return unsafe
+      ? fail('admin.errors.input')
+      : fail('admin.errors.banReason', ADMIN_LIMITS.banReason);
   }
   const now = new Date();
   const banned = await audited(
@@ -82,7 +85,7 @@ export async function unbanAccount(
       note: z
         .string()
         .trim()
-        .max(500)
+        .max(ADMIN_LIMITS.noteMax)
         .refine((value) => !hasUnsafeChars(value))
         .default(''),
     })
