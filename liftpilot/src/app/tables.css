@@ -1,0 +1,52 @@
+/* Data tables. On a phone a table with class `stack` becomes one record per row: the first cell (`.row-title`)
+   is the record's title, every other cell shows its column name from data-label. */
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table th { text-align: left; font: 600 12px/1.2 var(--font-body); color: var(--muted); letter-spacing: .02em; padding: 10px 12px; border-bottom: 1px solid var(--rule); white-space: nowrap; background: var(--surface2); }
+.data-table td { padding: 11px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table tbody tr:hover td { background: color-mix(in srgb, var(--surface2) 60%, transparent); }
+.data-table .spec { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.data-table .cell-stack { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.table-panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; overflow-x: auto; }
+
+@media (max-width: 719px) {
+  .data-table.stack thead { display: none; }
+  .data-table.stack, .data-table.stack tbody, .data-table.stack tr, .data-table.stack td { display: block; width: 100%; }
+  .data-table.stack tr { padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+  .data-table.stack tbody tr:last-child { border-bottom: 0; }
+  .data-table.stack tbody tr:hover td { background: none; }
+  .data-table.stack td { border: 0; padding: 4px 0; display: grid; grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr); gap: 12px; text-align: left !important; }
+  .data-table.stack td::before { content: attr(data-label); color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+  .data-table.stack td.row-title { display: block; padding-bottom: 8px; font-size: 16px; }
+  .data-table.stack td.row-title::before { content: none; }
+  .data-table.stack .spec { white-space: normal; }
+}
+
+/* Panev's bill of brackets (components/shaft/PanevBom.tsx) */
+.panev-bom { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.panev-bom .table-scroll { overflow-x: auto; }
+.panev-bom th.num, .panev-bom td.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.panev-bom td.code { font: 500 13px/1.3 var(--font-mono); color: var(--ink); white-space: nowrap; }
+.panev-bom td .note { color: var(--muted); font-size: 12.5px; }
+.panev-bom td .note.bad { color: var(--fail); }
+.panev-bom .bom-total, .bom-total { display: flex; justify-content: flex-end; align-items: baseline; gap: 16px; margin: 0; padding: 10px 12px; border-top: 1px solid var(--rule-strong); }
+.panev-bom .bom-total span, .bom-total span { font: 600 12px/1.2 var(--font-body); color: var(--muted); letter-spacing: .02em; }
+.panev-bom .bom-total strong, .bom-total strong { font: 600 16px/1.2 var(--font-mono); color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 719px) {
+  .panev-bom .data-table.stack td.num { text-align: left; }
+  .panev-bom .data-table.stack td.num::before { font-family: var(--font-body); }
+  .panev-bom .bom-total { justify-content: space-between; padding-inline: 0; }
+}
+
+/* The price list: the price typed in place with its unit. */
+.price-cell { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.price-cell .note { white-space: nowrap; }
+.price-cell .input { width: 9.5em; text-align: right; font-variant-numeric: tabular-nums; }
+/* the price list's free lines (components/prices/CustomRows.tsx): on a phone each field under its name, as wide as the
+   card, the button without one */
+@media (max-width: 719px) {
+  .free-lines.data-table.stack td { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .free-lines.data-table.stack td.act::before { content: none; }
+  .free-lines td.act .btn { justify-self: start; }
+  .free-lines .price-cell { justify-content: flex-start; }
+}

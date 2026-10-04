@@ -1,0 +1,25 @@
+/* Drawings that open on the whole screen (components/drawing/DrawingFigure.tsx): on the page the figure as before, a
+   small button beside its caption; on the screen a bar with the zoom, the drawing fitted to the rest of it, a line of
+   help. The viewport scrolls: zoomed, the drawing is drawn wider, so its lettering stays sharp. No motion. */
+.draw-frame { position: relative; }
+.draw-foot { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
+.draw-foot figcaption { margin-left: auto; }
+.draw-open svg, .draw-bar .btn svg { flex: none; }
+html.draw-full-open { overflow: hidden; }
+.draw-frame.full { position: fixed; inset: 0; z-index: 90; width: 100%; height: 100%; max-width: none; margin: 0; gap: 0; display: flex; flex-direction: column;
+  background: var(--bg); color: var(--ink); padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+.draw-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.draw-title { flex: 1 1 12rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.draw-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.draw-tools .btn { min-width: 2.25rem; }
+.draw-zoom { min-width: 4.4em; text-align: center; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.draw-frame.full .draw-viewport { flex: 1 1 auto; min-height: 0; display: flex; overflow: auto; container-type: size; touch-action: none; overscroll-behavior: contain; cursor: grab; outline: none; }
+.draw-frame.full .draw-viewport:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.draw-frame.full .draw-stage { flex: none; margin: auto; padding: 12px; width: calc(min(100cqw - 24px, (100cqh - 24px) * var(--ratio)) * var(--zoom)); }
+.draw-frame.full .sheet-svg { width: 100%; height: auto; max-height: none; }
+.draw-frame.full .ed-wrap { max-width: none !important; }
+.draw-hint { margin: 0; padding: 6px 12px; font-size: 12.5px; color: var(--muted); background: var(--surface); border-top: 1px solid var(--rule); }
+@media (max-width: 719px) {
+  .draw-hint { display: none; }
+  .draw-tools .btn span { display: none; }
+}

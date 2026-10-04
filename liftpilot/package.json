@@ -1,0 +1,83 @@
+{
+  "name": "liftpilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LiftPilot — scelta e verifica dell'argano geared nella sostituzione, con il profilo normativo italiano (DPR 162/1999, UNI EN 81-20:2020, UNI EN 81-50:2020, UNI 10411-1:2024).",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "liftpilot"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "LiftPilot",
+    "argano geared",
+    "sostituzione argano",
+    "ascensori",
+    "UNI EN 81-50",
+    "UNI 10411-1",
+    "relazione di calcolo",
+    "Panev Ascensori"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/calc/__tests__/*.test.ts src/shaft/__tests__/*.test.ts src/sim/__tests__/*.test.ts src/lib/__tests__/*.test.ts src/components/lift3d/__tests__/*.test.ts src/components/drawing/__tests__/*.test.ts && tsx --conditions=react-server --test src/server/__tests__/*.test.ts",
+    "lista": "tsx scripts/lista-verifica.ts",
+    "legal:archive": "tsx scripts/legal-archive.ts",
+    "artifact": "node scripts/build-artifact.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "admin:create": "tsx scripts/create-admin.ts",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@next/eslint-plugin-next": "^15.5.26",
+    "@types/node": "^22.20.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "0.186.0",
+    "autoprefixer": "^10.6.1",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "postcss": "^8.5.28",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0"
+  },
+  "homepage": "https://liftpilot.carbonstealth.eu",
+  "dependencies": {
+    "@node-projects/acad-ts": "3.2.0",
+    "@prisma/client": "^6.19.3",
+    "argon2": "^0.45.1",
+    "jose": "^6.2.12",
+    "next": "^15.5.26",
+    "next-intl": "^4.14.8",
+    "nodemailer": "^10.0.13",
+    "pino": "^10.3.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "server-only": "^0.0.1",
+    "stripe": "23.0.0",
+    "three": "0.186.0",
+    "zod": "^3.25.76"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "$postcss"
+    },
+    "deepmerge-ts": "^8.0.0"
+  }
+}

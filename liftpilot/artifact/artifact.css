@@ -1,0 +1,18 @@
+/* The standalone page (artifact/main.tsx): the header carries the two tools and the languages; nothing is saved
+   here, so the save bars of the tools step aside. */
+.ar-top { top: env(safe-area-inset-top, 0px); }
+.ar-top .inner { flex-wrap: wrap; }
+.ar-top .ar-tabs { flex: 1 1 auto; min-width: 0; }
+.ar-top .langs { margin-left: auto; }
+.ar-top .langs a { cursor: pointer; }
+@media (max-width: 860px) {
+  .ar-top .inner { gap: 8px 12px; padding-block: 8px; }
+  .ar-top .brand span { display: none; }
+  .ar-top .ar-tabs { order: 3; flex-basis: 100%; overflow-x: auto; scrollbar-width: none; }
+  .ar-top .ar-tabs a { flex: 1 0 auto; text-align: center; }
+}
+.calc > .savebar, .lift-work > .savebar { display: none; }
+.ar-local { margin-top: 6px; }
+.ar-lift { display: flex; flex-direction: column; gap: 20px; }
+.ar-sheets { gap: 12px; }
+.ar-sheets .sheet-page svg { display: block; width: 100%; height: auto; }

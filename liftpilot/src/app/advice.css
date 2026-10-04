@@ -1,0 +1,74 @@
+/* The machine to order among SICOR's and Montanari's: the first of each maker side by side, the first one marked, the
+   reason under them, every model verified in a table; the progress while the models are verified again. */
+.advice-head { display: flex; flex-direction: column; gap: 4px; }
+.advice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 12px; }
+.advice-card { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.advice-card.best { border-color: var(--ok); box-shadow: inset 4px 0 0 var(--ok); }
+.advice-card header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.advice-card h3 { margin: 0; font-size: 16px; line-height: 1.25; margin-right: auto; }
+.advice-card .badge.ok { color: var(--ok); background: var(--ok-bg); }
+.advice-card dl { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+.advice-card dl > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.advice-card dl > .wide { grid-column: 1 / -1; }
+.advice-card dt { font-size: 12px; line-height: 1.2; color: var(--muted); }
+.advice-card dd { margin: 0; font-size: 13.5px; font-weight: 600; line-height: 1.35; color: var(--ink); overflow-wrap: anywhere; }
+.advice-card dd.res.ok { color: var(--ok); }
+.advice-card dd.res.warn { color: var(--warn); }
+.advice-card dd.res.fail { color: var(--fail); }
+.advice-card > .btn { align-self: flex-start; margin-top: auto; }
+.advice-why { margin: 0; padding: 10px 12px; border-radius: 9px; background: var(--accent-soft); color: var(--ink); font-size: 13.5px; line-height: 1.45; max-width: 90ch; }
+.order-machine { margin: 0; font-size: 14px; line-height: 1.45; }
+.advice-run { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.advice-run progress { flex: 0 1 12rem; height: 6px; appearance: none; border: 0; border-radius: 99px; background: var(--surface2); overflow: hidden; }
+.advice-run progress::-webkit-progress-bar { background: var(--surface2); }
+.advice-run progress::-webkit-progress-value { background: var(--accent); border-radius: 99px; }
+.advice-run progress::-moz-progress-bar { background: var(--accent); }
+.advice-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.advice.stale .advice-body { opacity: .55; transition: opacity .2s; }
+.advice-alt { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid var(--rule); min-width: 0; }
+.advice-alt h3 { margin: 0; font-size: 15px; }
+.advice-all { min-width: 0; }
+.advice-all summary { cursor: pointer; width: fit-content; padding: 6px 0; font-size: 14px; font-weight: 600; color: var(--accent); }
+.advice-all .table-scroll { overflow-x: auto; margin-top: 6px; border: 1px solid var(--rule); border-radius: 10px; }
+.advice-all th.num, .advice-all td.num { text-align: right; }
+.advice-all .res { font-weight: 600; }
+.advice-all .res.ok { color: var(--ok); }
+.advice-all .res.warn { color: var(--warn); }
+.advice-all .res.fail { color: var(--fail); }
+.advice-all .res-line { display: block; margin: 3px 0 0 1.75em; font-size: 12.5px; line-height: 1.3; }
+.advice-all .rank { display: inline-block; min-width: 1.4em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.advice-all td .btn { padding: 5px 10px; font-size: 13px; }
+.advice-all abbr { justify-self: start; text-decoration: none; border-bottom: 1px dotted var(--muted); cursor: help; }
+.advice-all td.row-title, .advice-all .res { white-space: nowrap; }
+.advice-all th[title] { cursor: help; }
+.advice-all > .note { margin: 8px 0 0; max-width: 90ch; }
+/* inside the replacement's calculator its own button rules (calc.css, outside the cascade layers) would win over the
+   app's .btn: the panel keeps the app's buttons */
+.calc .advice .btn { font: 500 14px/1 var(--font-body); border-radius: 9px; padding: 10px 15px; }
+.calc .advice .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.calc .advice .btn-primary:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
+.calc .advice-all td .btn { padding: 5px 10px; font-size: 13px; }
+@media (max-width: 420px) {
+  .advice-card dl { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 720px) {
+  /* the live panel is narrower than the saved pages: tighter cells keep every column in view */
+  .advice-all .data-table { font-size: 13.5px; }
+  .advice-all .data-table th, .advice-all .data-table td { padding: 8px 9px; }
+  .advice-all .res-cell { display: none; }
+}
+@media (max-width: 719px) {
+  .advice-all .data-table.stack td.num { text-align: left; }
+  .advice-all .data-table.stack td.use { display: block; padding-top: 8px; }
+  .advice-all .data-table.stack td.use::before { content: none; }
+  .advice-all .res-line { display: none; }
+  .advice-all .data-table.stack td.res-cell { white-space: normal; }
+  .advice-all .data-table.stack td.res-cell::before { font-weight: 400; }
+  .advice-all abbr { align-self: start; line-height: 1.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .advice.stale .advice-body { transition: none; }
+}
+@media (max-width: 1079px) {
+  .lift-work .advice { order: 3; }
+}
