@@ -9,6 +9,8 @@
     "catalogFailed": "The catalogue did not load, so the project is open for viewing only — otherwise its hardware and decors would quietly change to the basic ones. Reload the page.",
     "engineFailed": "This value cannot be computed and the previous one is back. Try another; if the error stays, write to us.",
     "showFailed": "The project cannot be shown. Reload the page; if the error stays, write to us.",
+    "driftTitle": "Part of this project is no longer in the catalogue",
+    "driftText": "The editor shows the substitute listed below. Choose again, or save the project as it is — until then the CNC files cannot be downloaded and the drawings are marked as not for production.",
     "noWebgl": "This browser does not support WebGL 2, so the 3D view cannot be shown. The other tabs work.",
     "save": "Save",
     "download": "Download",

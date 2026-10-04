@@ -134,6 +134,11 @@
 .ed-notice {
   margin: 0;
 }
+/* the reasons under the notice about hardware or decors that have left the catalog */
+.ed-notice ul {
+  margin: 0;
+  padding-left: 18px;
+}
 /* the download list and the checks open under the whole header, right-aligned to it: anchored to their own
    button, they ran off the left edge of a phone once the actions wrapped onto a second row. `start` keeps the
    header as tall as its content, so a list never opens far below the buttons on a short page */

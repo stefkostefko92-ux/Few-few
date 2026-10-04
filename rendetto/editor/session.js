@@ -1,8 +1,10 @@
 // The editor's session with the server: the catalog (a failed load opens the project for reading only, instead of
-// quietly swapping its hardware and decors for the base catalog's and saving that), downloads that wait for the save
-// of what is on screen, and the question before leaving with work that is not saved yet.
+// quietly swapping its hardware and decors for the base catalog's and saving that), the notice about hardware and
+// decors that have left it, downloads that wait for the save of what is on screen, and the question before leaving
+// with work that is not saved yet.
 import { baseCatalogData } from '../engine/catalog.js';
-import { $, $$ } from './dom.js';
+import { buildModel, catalogDrift } from '../engine/model.js';
+import { $, $$, esc } from './dom.js';
 
 // A request with no answer at all is given up after this long; a slow but running download of the body is not cut.
 const ANSWER_TIMEOUT_MS = 20000;
@@ -25,6 +27,35 @@ export async function loadCatalog() {
     }
   }
   return { data: baseCatalogData(), ok: false };
+}
+
+// Catalog choices of the saved project that the editor had to replace (the reasons the server gives when it refuses
+// CNC for the saved project). An engine error is left to the first recompute, which reports it.
+export function driftOf(saved, spec) {
+  try {
+    return catalogDrift(saved ?? {}, buildModel(spec));
+  } catch {
+    return [];
+  }
+}
+
+// A warning that does not block editing: what has left the catalog, its substitute on screen, and why the CNC files
+// stay withheld until the project is saved. No reasons removes it.
+export function showDrift(reasons, { title, text } = {}) {
+  let box = $('#drift');
+  if (!reasons.length) {
+    box?.remove();
+    return;
+  }
+  if (!box) {
+    box = document.createElement('section');
+    box.id = 'drift';
+    box.className = 'notice notice-warn ed-notice';
+    box.setAttribute('role', 'status');
+    $('#save-error').before(box);
+  }
+  const items = reasons.map((r) => `<li>${esc(r)}</li>`).join('');
+  box.innerHTML = `<svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg><div><h2>${esc(title)}</h2><p>${esc(text)}</p><ul>${items}</ul></div>`;
 }
 
 export function showError(message) {

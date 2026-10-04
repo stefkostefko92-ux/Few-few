@@ -1,11 +1,21 @@
 // Saving the project: the spec, the name and the version this editor opened go to the server with the session CSRF
 // token; the state label says saved / unsaved / saving. Saves run one after another — Ctrl+S or a download waits for
 // the save already on its way — and the server refuses a save over a newer version (another window or device), so
-// nothing is overwritten unseen. An expired plan or a lost session reloads the page, which then shows why.
+// nothing is overwritten unseen. An expired plan or a lost session reloads the page, which then shows why. A project
+// whose hardware or decors have left the catalog (state.drift) shows as not saved; only Save or Ctrl+S stores the
+// substitute (a download does not), and onSaved runs once it is stored.
 import { $ } from './dom.js';
 import { showError } from './session.js';
 
-export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = async () => {} }) {
+export function createSaver({
+  state,
+  boot,
+  csrf,
+  isReadOnly,
+  text,
+  beforeSave = async () => {},
+  onSaved = () => {},
+}) {
   const nameInput = $('#project-name');
   const stateLabel = $('#save-state');
   const errorBox = $('#save-error');
@@ -20,8 +30,9 @@ export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = 
 
   function showState() {
     if (isReadOnly()) return;
-    stateLabel.textContent = state.saving ? text.saving : isDirty() ? text.unsaved : text.saved;
-    stateLabel.dataset.state = state.saving ? 'saving' : isDirty() ? 'dirty' : 'saved';
+    const dirty = isDirty() || state.drift.length > 0;
+    stateLabel.textContent = state.saving ? text.saving : dirty ? text.unsaved : text.saved;
+    stateLabel.dataset.state = state.saving ? 'saving' : dirty ? 'dirty' : 'saved';
   }
 
   function fail(message) {
@@ -59,6 +70,10 @@ export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = 
       state.savedName = body.name;
       state.savedAt = body.updatedAt;
       if (!nameInput.value.trim()) nameInput.value = body.name;
+      if (state.drift.length) {
+        state.drift = [];
+        onSaved();
+      }
       return true;
     } catch {
       return fail(text.saveFailed);
@@ -68,12 +83,13 @@ export function createSaver({ state, boot, csrf, isReadOnly, text, beforeSave = 
     }
   }
 
-  // true when what is on screen is saved (or there is nothing to save); false when it is not
-  function save() {
+  // true when what is on screen is saved (or there is nothing to save); false when it is not. `explicit` (Save,
+  // Ctrl+S) also stores a substitute for what has left the catalog.
+  function save(explicit = false) {
     const run = chain.then(async () => {
       await beforeSave();
       if (state.conflict) return false;
-      if (isReadOnly() || !isDirty()) return true;
+      if (isReadOnly() || !(isDirty() || (explicit && state.drift.length > 0))) return true;
       return write();
     });
     chain = run.catch(() => false);

@@ -28,6 +28,8 @@ import { bindFullscreens } from './fullscreen.js';
 import { createSaver } from './saver.js';
 import {
   loadCatalog,
+  driftOf,
+  showDrift,
   lockForReading,
   showError,
   bindDownloads,
@@ -59,6 +61,7 @@ const state = {
   saving: false,
   conflict: false,
   blockers: [],
+  drift: [], // hardware and decors of the saved project that have left the catalog, until it is saved
 };
 let viewer = null;
 let CATALOG = null;
@@ -96,6 +99,10 @@ const { isDirty, showState, save } = createSaver({
   isReadOnly: () => readOnly,
   text,
   beforeSave: flushPending,
+  onSaved: () => {
+    showDrift([]);
+    void recompute();
+  },
 });
 
 /* ---------- model ---------- */
@@ -111,6 +118,8 @@ async function recompute(writeFocused = false) {
   let blockers;
   try {
     model = buildModel(spec);
+    // as on the server: the saved project drills and cuts for what it chose, not for the substitute on screen
+    for (const reason of state.drift) model.warnings.push({ level: 'error', text: reason });
     nesting = nest(model);
     bom = buildBom(model);
     blockers = cncBlockers(model, nesting);
@@ -237,14 +246,14 @@ function bindUi() {
 
   // saving and downloads
   if (!readOnly) {
-    $('#save').addEventListener('click', () => void save());
+    $('#save').addEventListener('click', () => void save(true));
     $('#project-name').addEventListener('input', showState);
     document.addEventListener('keydown', (ev) => {
       // S by its letter, or by its place when the layout puts no Latin letter there (Cyrillic „с“)
       const s = ev.key.toLowerCase() === 's' || (ev.code === 'KeyS' && !/^[a-z]$/i.test(ev.key));
       if ((ev.ctrlKey || ev.metaKey) && s) {
         ev.preventDefault();
-        void save();
+        void save(true);
       }
     });
     // a change still waiting for its recompute counts too
@@ -267,8 +276,11 @@ async function start() {
   const catalog = await loadCatalog();
   CATALOG = registerCatalog(catalog.data);
   state.spec = normalizeSpec(boot.spec ?? { type: 'base' });
+  // a catalog that did not load is not a change of the catalog: that project opens for reading only
+  if (catalog.ok) state.drift = driftOf(boot.spec, state.spec);
   bindUi();
   if (!catalog.ok && !readOnly) lockForReadingOnce(text.catalogFailed);
+  showDrift(state.drift, { title: text.driftTitle, text: text.driftText });
   writeForm(form, state.spec, true);
   const tabOfHash = () => location.hash.replace('#', '');
   selectTab(TABS.includes(tabOfHash()) ? tabOfHash() : 'view');
