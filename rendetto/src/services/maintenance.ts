@@ -11,7 +11,10 @@ const DAY = 24 * 60 * 60 * 1000;
 /** Изтеклите връзки от писмата се пазят още толкова дни, после се трият. */
 const EXPIRED_TOKEN_DAYS = 7;
 
-/** Писмо 3 дни преди края на тестовия период — веднъж на акаунт. */
+/**
+ * Писмо 3 дни преди края на тестовия период — веднъж на акаунт. Отбелязва се само пратеното: при отказ
+ * на SMTP следващата поддръжка опитва пак. Връща колко писма са тръгнали.
+ */
 export async function sendTrialReminders(now: Date = new Date()): Promise<number> {
   const users = await prisma.user.findMany({
     where: {
@@ -24,16 +27,18 @@ export async function sendTrialReminders(now: Date = new Date()): Promise<number
     },
     take: 200,
   });
+  let sent = 0;
   for (const user of users) {
     const locale = isLocale(user.locale) ? user.locale : 'bg';
     const date = new Intl.DateTimeFormat(LOCALE_TAG[locale], {
       dateStyle: 'long',
       timeZone: 'Europe/Sofia',
     }).format(user.planExpiresAt ?? now);
+    if (!(await mailTrialEnding(user.email, locale, greetingName(user), date))) continue;
     await prisma.user.update({ where: { id: user.id }, data: { trialReminderAt: now } });
-    await mailTrialEnding(user.email, locale, greetingName(user), date);
+    sent++;
   }
-  return users.length;
+  return sent;
 }
 
 export async function runMaintenance(now: Date = new Date()): Promise<void> {

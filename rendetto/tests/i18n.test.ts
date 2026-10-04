@@ -74,6 +74,7 @@ test('link lifetimes and the password length in the texts come from the code', (
     'admin.new.passwordHint',
     'mail.verify.body',
     'mail.reset.body',
+    'mail.invite.body',
     'mail.changeEmail.body',
   ];
   for (const locale of LOCALES) {

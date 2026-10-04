@@ -119,6 +119,7 @@
       "confirmEmail": "L'email di conferma non corrisponde.",
       "emailTaken": "Esiste già un account con questa email.",
       "input": "Un campo è compilato in modo errato.",
+      "inviteTrialDays": "Senza password la prova inizia quando la persona la imposta e ha la durata standard. Per un'altra durata impostate una password o cambiate il piano dopo.",
       "notBanned": "L'account non è bloccato.",
       "notFound": "Account inesistente.",
       "pastDate": "La data deve essere nel futuro.",

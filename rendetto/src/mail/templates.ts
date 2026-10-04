@@ -94,6 +94,25 @@ export function mailResetPassword(
   );
 }
 
+/**
+ * Покана: акаунт, създаден от екипа без парола. До адрес, който още никой не е потвърдил — без име.
+ * Връзката е като за нова парола, но текстът казва какво е станало, вместо „ако не сте поискали —
+ * не правете нищо“.
+ */
+export function mailInvite(to: string, locale: Locale, token: string): Promise<boolean> {
+  return send(
+    to,
+    locale,
+    'invite',
+    {
+      link: link(`/reset?token=${token}`, locale),
+      hours: validFor(locale, 'RESET_PASSWORD'),
+      reset: link('/forgot', locale),
+    },
+    null,
+  );
+}
+
 export function mailPasswordChanged(
   to: string,
   locale: Locale,

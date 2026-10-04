@@ -8,7 +8,7 @@ import { hashPassword } from '../auth/password.js';
 import { can, outranks } from '../auth/rbac.js';
 import { issueEmailToken } from '../auth/tokens.js';
 import { isLocale } from '../i18n.js';
-import { greetingName, mailResetPassword } from '../mail/templates.js';
+import { mailInvite } from '../mail/templates.js';
 import { addDays, premiumUntil, TRIAL_DAYS } from '../plans/plan.js';
 import { emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import { roleSchema } from './admin-actions.js';
@@ -34,7 +34,7 @@ export const createSchema = z.object({
 });
 
 /**
- * Нов акаунт от персонала. Без парола акаунтът получава писмо с връзка за задаване на парола —
+ * Нов акаунт от персонала. Без парола акаунтът получава писмо-покана с връзка за задаване на парола —
  * тя потвърждава и имейла. С парола акаунтът е готов веднага и имейлът се смята за потвърден.
  */
 export async function createAccount(actor: StaffActor, raw: unknown): Promise<ActionResult> {
@@ -54,6 +54,10 @@ export async function createAccount(actor: StaffActor, raw: unknown): Promise<Ac
   if (password) {
     const problem = await newPasswordProblem(password, [input.email, input.name]);
     if (problem) return fail(problem);
+  } else if (input.plan === 'TRIAL' && input.trialDays !== TRIAL_DAYS) {
+    // Без парола тестът тръгва, когато човекът зададе паролата, и е стандартният — друг избран срок
+    // би се загубил тихо. За друг срок: с парола или със смяна на плана след това.
+    return fail('admin.errors.inviteTrialDays');
   }
   const now = new Date();
   const verified = Boolean(password);
@@ -113,6 +117,6 @@ export async function createAccount(actor: StaffActor, raw: unknown): Promise<Ac
   });
   if (!created) return fail('admin.errors.emailTaken');
   const { user, token } = created;
-  if (token) void mailResetPassword(user.email, localeOf(user), greetingName(user), token);
+  if (token) void mailInvite(user.email, localeOf(user), token);
   return { ok: true, id: user.id };
 }

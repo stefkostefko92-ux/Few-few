@@ -6,8 +6,10 @@ import {
   premiumUntil,
   TRIAL_DAYS,
   trialEndsAt,
+  trialStart,
   type PlanSubject,
 } from '../src/plans/plan.js';
+import { LABEL } from '../src/labels.js';
 
 const NOW = new Date('2026-10-02T12:00:00Z');
 const DAY = 86_400_000;
@@ -27,6 +29,27 @@ test('a new account gets a 30-day trial from the email confirmation', () => {
     [view.state, view.daysLeft, view.canCreate, view.blockedBy],
     ['active', 30, true, null],
   );
+});
+
+test('the trial starts once, on confirmation, with a line in the plan history', () => {
+  const system = { id: null, label: LABEL.system };
+  const start = trialStart({ id: 'u1', plan: 'TRIAL', planExpiresAt: null }, NOW, system);
+  assert.equal(start?.planExpiresAt.toISOString(), trialEndsAt(NOW).toISOString());
+  assert.deepEqual(start?.change, {
+    userId: 'u1',
+    actorId: null,
+    actorLabel: LABEL.system,
+    fromPlan: 'TRIAL',
+    toPlan: 'TRIAL',
+    toExpiresAt: trialEndsAt(NOW),
+    note: LABEL.trialStarted,
+  });
+  const staff = { id: 's1', label: 'Служител <s@example.test>' };
+  const byStaff = trialStart({ id: 'u2', plan: 'TRIAL', planExpiresAt: null }, NOW, staff);
+  assert.deepEqual([byStaff?.change.actorId, byStaff?.change.actorLabel], [staff.id, staff.label]);
+  const running = { id: 'u3', plan: 'TRIAL' as const, planExpiresAt: trialEndsAt(NOW) };
+  assert.equal(trialStart(running, NOW, system), null, 'a running trial is not restarted');
+  assert.equal(trialStart({ id: 'u4', plan: 'PREMIUM', planExpiresAt: null }, NOW, system), null);
 });
 
 test('an unconfirmed email blocks creating, not the account', () => {

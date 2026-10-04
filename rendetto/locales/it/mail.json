@@ -16,6 +16,10 @@
       "subject": "Nuova password per Rendetto",
       "body": "per impostare una nuova password aprite questo link:\n{link}\n\nIl link vale {hours} e funziona una volta sola. Se non avete chiesto una nuova password, non fate nulla: resta quella vecchia."
     },
+    "invite": {
+      "subject": "Abbiamo creato un account Rendetto per voi",
+      "body": "il team di Rendetto ha creato un account per voi con questa email. Per accedere, impostate la vostra password con questo link:\n{link}\n\nIl link vale {hours} e funziona una volta sola; se scade, chiedetene uno nuovo da «Password dimenticata»: {reset}\n\nSe non vi aspettavate questo account, non aprite il link e scriveteci all'indirizzo qui sotto."
+    },
     "passwordChanged": {
       "subject": "La vostra password Rendetto è stata cambiata",
       "body": "la password del vostro account è appena stata cambiata e tutte le altre sessioni sono state chiuse.\n\nSe non siete stati voi, impostate subito una nuova password: {reset}"

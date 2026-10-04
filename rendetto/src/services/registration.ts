@@ -15,7 +15,7 @@ import { isLocale, type Locale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import { LABEL } from '../labels.js';
 import { greetingName, mailAlreadyRegistered, mailVerifyEmail } from '../mail/templates.js';
-import { trialEndsAt } from '../plans/plan.js';
+import { trialStart } from '../plans/plan.js';
 import { customerActor, emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import type { DeviceContext } from './devices.js';
 
@@ -128,23 +128,14 @@ export type VerifyResult =
 export async function markEmailVerified(user: User, meta: RequestMeta): Promise<void> {
   if (user.emailVerifiedAt) return;
   const now = new Date();
-  const startTrial = user.plan === 'TRIAL' && !user.planExpiresAt;
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { emailVerifiedAt: now, ...(startTrial ? { planExpiresAt: trialEndsAt(now) } : {}) },
-  });
-  if (startTrial) {
-    await prisma.planChange.create({
-      data: {
-        userId: user.id,
-        actorLabel: LABEL.system,
-        fromPlan: 'TRIAL',
-        toPlan: 'TRIAL',
-        toExpiresAt: trialEndsAt(now),
-        note: LABEL.trialStarted,
-      },
-    });
-  }
+  const trial = trialStart(user, now, { id: null, label: LABEL.system });
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: now, ...(trial ? { planExpiresAt: trial.planExpiresAt } : {}) },
+    }),
+    ...(trial ? [prisma.planChange.create({ data: trial.change })] : []),
+  ]);
   await audit(customerActor(user, meta), {
     action: 'account.email.verified',
     targetType: 'user',

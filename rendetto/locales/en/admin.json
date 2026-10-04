@@ -119,6 +119,7 @@
       "confirmEmail": "The confirmation email does not match.",
       "emailTaken": "There is already an account with this email.",
       "input": "A field is filled in incorrectly.",
+      "inviteTrialDays": "Without a password the trial starts when the person sets one and has the standard length. For another length, set a password or change the plan afterwards.",
       "notBanned": "The account is not blocked.",
       "notFound": "No such account.",
       "pastDate": "The date must be in the future.",

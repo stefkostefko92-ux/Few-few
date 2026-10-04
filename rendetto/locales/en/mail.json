@@ -16,6 +16,10 @@
       "subject": "New password for Rendetto",
       "body": "To set a new password, open this link:\n{link}\n\nThe link is valid for {hours} and works once. If you did not ask for a new password, do nothing — your old one stays."
     },
+    "invite": {
+      "subject": "An account has been created for you in Rendetto",
+      "body": "The Rendetto team has created an account for you with this email. To sign in, set your password with this link:\n{link}\n\nThe link is valid for {hours} and works once; if it expires, ask for a new one under “Forgot password”: {reset}\n\nIf you were not expecting this account, do not open the link and write to us at the address below."
+    },
     "passwordChanged": {
       "subject": "Your Rendetto password was changed",
       "body": "The password of your account was just changed and all other sessions were signed out.\n\nIf it was not you, set a new password right away: {reset}"

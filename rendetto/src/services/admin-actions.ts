@@ -7,7 +7,7 @@ import { destroyAllSessions } from '../auth/sessions.js';
 import { revokeEmailTokens } from '../auth/tokens.js';
 import { isLocale } from '../i18n.js';
 import { greetingName, mailEmailChangedByStaff } from '../mail/templates.js';
-import { trialEndsAt } from '../plans/plan.js';
+import { trialStart } from '../plans/plan.js';
 import { emailSchema, nameSchema } from './auth-common.js';
 import {
   fail,
@@ -45,8 +45,10 @@ export async function editAccount(
   if (emailChanged && (await prisma.user.findUnique({ where: { email: input.email } }))) {
     return fail('admin.errors.emailTaken');
   }
+  const now = new Date();
   const verifyNow = input.emailVerified && !target.emailVerifiedAt;
-  const startTrial = verifyNow && target.plan === 'TRIAL' && !target.planExpiresAt;
+  // Потвърждаване от панела пуска теста по същото правило като връзката от писмото — с ред в историята.
+  const trial = verifyNow ? trialStart(target, now, { id: actor.id, label: actor.label }) : null;
   const saved = await audited(
     actor,
     async (tx) => {
@@ -58,10 +60,11 @@ export async function editAccount(
           locale: input.locale,
           // Веднъж потвърден имейл не става пак непотвърден: поддръжката трие непотвърдени акаунти, а
           // изтриването иска отделна способност и потвърждение.
-          emailVerifiedAt: target.emailVerifiedAt ?? (input.emailVerified ? new Date() : null),
-          ...(startTrial ? { planExpiresAt: trialEndsAt(new Date()) } : {}),
+          emailVerifiedAt: target.emailVerifiedAt ?? (input.emailVerified ? now : null),
+          ...(trial ? { planExpiresAt: trial.planExpiresAt } : {}),
         },
       });
+      if (trial) await tx.planChange.create({ data: trial.change });
       // Нов имейл: връзките, пратени до стария адрес, вече не вършат работа. В същата транзакция —
       // при повторно „Запази“ имейлът вече е новият и до анулирането не би се стигнало.
       if (emailChanged) await revokeEmailTokens(id, undefined, tx);
