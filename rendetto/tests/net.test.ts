@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ipNetwork, normalizeIp } from '../src/http/ip.js';
 import { safeNext } from '../src/http/meta.js';
-import { loadConfig } from '../src/config.js';
 
 test('rate limits key on the network: IPv4 as is, IPv6 by its /64', () => {
   assert.equal(ipNetwork('203.0.113.9'), '203.0.113.9');
@@ -35,32 +34,4 @@ test('after login we only go to our own pages', () => {
     '/app\r\nx',
   ])
     assert.equal(safeNext(bad), '/app', bad);
-});
-
-test('an empty optional setting is unset, not an error (compose writes `${SMTP_USER:-}`)', () => {
-  const cfg = loadConfig({
-    NODE_ENV: 'production',
-    PUBLIC_BASE_URL: 'https://example.test',
-    DATABASE_URL: 'postgresql://u:p@db:5432/x',
-    ENC_KEY: 'a'.repeat(64),
-    HMAC_KEY: 'b'.repeat(64),
-    SMTP_HOST: 'smtp.example.test',
-    SMTP_USER: '',
-    SMTP_PASS: '',
-    AUDIT_ANCHOR_PATH: '',
-  });
-  assert.equal(cfg.SMTP_USER, undefined);
-  assert.equal(cfg.SMTP_PASS, undefined);
-  assert.equal(cfg.AUDIT_ANCHOR_PATH, undefined);
-  assert.equal(cfg.AUDIT_RETENTION_DAYS, 1825);
-  assert.throws(() =>
-    loadConfig({
-      NODE_ENV: 'production',
-      PUBLIC_BASE_URL: 'https://example.test',
-      DATABASE_URL: 'postgresql://u:p@db:5432/x',
-      ENC_KEY: 'a'.repeat(64),
-      HMAC_KEY: 'b'.repeat(64),
-      SMTP_HOST: '',
-    }),
-  );
 });

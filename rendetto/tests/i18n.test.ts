@@ -56,6 +56,27 @@ test('every literal key used in the templates and the brochure exists', () => {
   assert.deepEqual(missing, []);
 });
 
+test('every literal key the server hands to a view, a flash or a mail exists', () => {
+  // `fail('admin.errors.rank')`, `key: 'app.errors.conflict'`, `setFlash(res, 'flash.saved')`: a typo
+  // would reach the page as a raw key (or a flash that flash.ts silently drops). Audit action names
+  // (`action: 'auth.login'`) share the shape but are not texts.
+  const namespaces = new Set(keysOf('bg').map((key) => key.split('.')[0]));
+  const missing: string[] = [];
+  let checked = 0;
+  for (const file of files(join(ROOT, 'src'), /\.ts$/)) {
+    const source = readFileSync(file, 'utf8');
+    for (const match of source.matchAll(/(\baction:\s*)?'([a-z]+)\.([\w.]*\w)'/g)) {
+      const key = `${match[2]}.${match[3]}`;
+      if (match[1] || !namespaces.has(match[2]!)) continue;
+      checked++;
+      if (!hasKey('bg', key) && !hasKey('bg', `${key}.other`))
+        missing.push(`${file.slice(ROOT.length + 1)}: ${key}`);
+    }
+  }
+  assert.deepEqual(missing, []);
+  assert.ok(checked > 100, `only ${checked} keys found — the scan no longer sees the server code`);
+});
+
 test('counts pick the right form in every language', () => {
   assert.equal(translate('bg', 'plan.months', { n: 1 }), '1 месец');
   assert.equal(translate('bg', 'plan.months', { n: 3 }), '3 месеца');

@@ -85,9 +85,12 @@ test('only known options are accepted from the client', () => {
 });
 
 test('money is formatted per language and refuses fractions of a cent', () => {
-  assert.equal(formatMoney(7125, 'bg').replace(/\s/g, ' '), '71,25 €');
+  // bg/it keep the number and € on one line: U+00A0, not a plain space
+  assert.equal(formatMoney(7125, 'bg'), '71,25 €');
   assert.equal(formatMoney(7125, 'en'), '€71.25');
-  assert.equal(formatMoney(2500, 'it').replace(/\s/g, ' '), '25 €');
+  assert.equal(formatMoney(2500, 'it'), '25 €');
+  for (const locale of LOCALES)
+    assert.doesNotMatch(formatMoney(1080050, locale), / /, `${locale}: a plain space can break`);
   assert.throws(() => formatMoney(12.5, 'bg'));
 });
 

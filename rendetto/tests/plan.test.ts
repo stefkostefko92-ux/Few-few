@@ -55,6 +55,29 @@ test('the trial starts once, on confirmation, with a line in the plan history', 
 test('an unconfirmed email blocks creating, not the account', () => {
   const view = planView(subject({ emailVerifiedAt: null }), NOW);
   assert.deepEqual([view.state, view.canCreate, view.blockedBy], ['pending', false, 'unverified']);
+  // the confirmation comes before the plan: Lifetime and an expired Premium wait for the email too
+  for (const over of [
+    { plan: 'LIFETIME' as const },
+    { plan: 'PREMIUM' as const, planExpiresAt: new Date(NOW.getTime() - DAY) },
+  ]) {
+    const unverified = planView(subject({ ...over, emailVerifiedAt: null }), NOW);
+    assert.deepEqual(
+      [unverified.state, unverified.canCreate, unverified.blockedBy],
+      ['pending', false, 'unverified'],
+      over.plan,
+    );
+  }
+});
+
+test('a paid or trial plan without an end date is blocked, not endless', () => {
+  for (const plan of ['TRIAL', 'PREMIUM'] as const) {
+    const view = planView(subject({ plan, planExpiresAt: null }), NOW);
+    assert.deepEqual(
+      [view.state, view.daysLeft, view.canCreate, view.blockedBy],
+      ['pending', null, false, 'expired'],
+      plan,
+    );
+  }
 });
 
 test('after the end the account is read-only (download stays allowed elsewhere)', () => {
@@ -91,6 +114,19 @@ test('calendar months clamp to the last day of the month', () => {
   assert.equal(
     addMonths(new Date('2026-10-02T12:00:00Z'), 12).toISOString(),
     '2027-10-02T12:00:00.000Z',
+  );
+  // across the year end and into a 30-day month
+  assert.equal(
+    addMonths(new Date('2026-11-30T08:00:00Z'), 3).toISOString(),
+    '2027-02-28T08:00:00.000Z',
+  );
+  assert.equal(
+    addMonths(new Date('2026-12-15T23:30:00Z'), 1).toISOString(),
+    '2027-01-15T23:30:00.000Z',
+  );
+  assert.equal(
+    addMonths(new Date('2026-08-31T10:00:00Z'), 1).toISOString(),
+    '2026-09-30T10:00:00.000Z',
   );
 });
 
