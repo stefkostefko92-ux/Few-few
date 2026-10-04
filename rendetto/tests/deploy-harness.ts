@@ -86,6 +86,8 @@ docker() {
     "compose exec -T db pg_dump"*) [ "$DUMP_RC" = 0 ] && echo "-- dump"; return "$DUMP_RC" ;;
     "compose exec -T db psql"*) echo 1 ;;
     "compose build app") return "$BUILD_RC" ;;
+    "compose up -d --no-recreate --wait db") return "$DB_UP_RC" ;;
+    "compose up -d --remove-orphans") return "$UP_RC" ;;
   esac
   return 0
 }
@@ -117,6 +119,8 @@ export function deploy(L: Layout, env: Record<string, string> = {}) {
       VOLUME_RC: '1',
       DUMP_RC: '0',
       BUILD_RC: '0',
+      DB_UP_RC: '0',
+      UP_RC: '0',
       NGINX_T_RC: '0',
       SYSTEMCTL_RC: '0',
       HEALTH_BODY: '{"status":"ok","app":"rendetto"}',

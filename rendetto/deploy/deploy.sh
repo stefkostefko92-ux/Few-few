@@ -5,9 +5,10 @@
 #   sudo bash /opt/few-few/current/rendetto/deploy/deploy.sh    # ръчно (DEPLOY.md)
 #   deploy/autodeploy.sh го вика за всеки release с rendetto/    # автоматично — същият път
 #
-# Ред: тайните от стабилния път → бекъп на базата преди миграция → build → up (entrypoint-ът
-# прилага `prisma migrate deploy`) → чака, докато на порта отговори именно Rendetto → nginx
-# vhost-ът от репото, щом има сертификат → IndexNow, само ако sitemap-ът се е променил.
+# Ред: тайните от стабилния път → build → бекъп на базата преди миграция (след build-а: дъмпът е
+# отпреди самата смяна и не губи записите от минутите на build-а) → up (entrypoint-ът прилага
+# `prisma migrate deploy`) → чака, докато на порта отговори именно Rendetto → nginx vhost-ът от
+# репото, щом има сертификат → IndexNow, само ако sitemap-ът се е променил.
 #
 # Тайни не се измислят. Изход: 0 — жив; 3 — няма .env (машината не е настроена);
 # 4 — контейнерите са сменени, но Rendetto не отговаря (autodeploy връща предишния код);
@@ -85,9 +86,10 @@ check_db_password() {
   esac
 }
 
-# Бекъп ПРЕДИ миграцията, щом томът с базата съществува (при пръв деплой няма какво). Без бекъп няма
-# миграция: провалът тук спира деплоя, преди контейнерът на приложението да е сменен. Дъмпът е с
-# --clean --if-exists: възстановява се в съществуващата база (DEPLOY.md, т. 8).
+# Бекъп ПРЕДИ миграцията, щом томът с базата съществува (при пръв деплой няма какво). Тече след
+# build-а, точно преди `up`: възстановяването губи само секундите до смяната, не минутите на build-а.
+# Без бекъп няма миграция: провалът тук спира деплоя, преди контейнерът на приложението да е сменен.
+# Дъмпът е с --clean --if-exists: възстановява се в съществуващата база (DEPLOY.md, т. 8).
 backup_db() {
   if [ "$SKIP_BACKUP" = "1" ]; then
     log "RENDETTO_SKIP_BACKUP=1 (откат) — без нов бекъп; последният дъмп отпреди миграцията остава"
@@ -102,7 +104,7 @@ backup_db() {
   install -d -m 700 "$dir"
   # базата може да е спряна (рестарт на машината, срив) — вдига се само тя, за да се дъмпне. Без
   # --no-recreate compose би пресъздал работещата база по дефиницията на НОВИЯ release още тук, преди
-  # бекъпа; новата дефиниция влиза с `up` след build-а.
+  # бекъпа; новата дефиниция влиза едва с `up` след него.
   docker compose up -d --no-recreate --wait db >/dev/null ||
     fail 1 "базата не тръгна за бекъпа — не мигрирам без бекъп."
   if docker compose exec -T db pg_dump --clean --if-exists -U rendetto -d rendetto | gzip >"$file.partial"; then
@@ -249,9 +251,9 @@ main() {
   check_db_password
   port="$(env_value HTTP_PORT | tr -dc '0-9')"
   port="${port:-4320}"
-  backup_db
   log "build…"
   docker compose build app || fail 1 "build се провали — работещите контейнери не са пипани."
+  backup_db
   log "up (entrypoint-ът прилага миграциите)…"
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
   wait_healthy "$port" ||
