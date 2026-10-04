@@ -51,7 +51,11 @@
   <% } else { %>
     <p><span class="chip chip-warn"><%- include('../partials/icon', { name: 'alert' }) %><%= t('security.twofaOff') %></span></p>
     <p><%= t(staff ? 'security.staffMust' : 'security.whyTwofa') %></p>
-    <form method="post" action="/account/security/2fa/start"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-primary" type="submit"><%= t('security.startButton') %></button></form>
+    <form method="post" action="/account/security/2fa/start" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field"><label for="tfa-pw"><%= t('account.currentPassword') %></label><input id="tfa-pw" name="password" type="password" required autocomplete="current-password"></div>
+      <div class="actions"><button class="btn btn-primary" type="submit"><%= t('security.startButton') %></button></div>
+    </form>
   <% } %>
 </section>
 

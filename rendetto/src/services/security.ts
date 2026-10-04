@@ -124,35 +124,52 @@ export interface TotpSetup {
   qrDataUrl: string;
 }
 
-/** Започва настройка: тайната се пази криптирана, но не е активна, докато кодът не бъде потвърден. */
-export async function startTotp(user: User): Promise<TotpSetup | null> {
-  if (user.totpEnabledAt) return null;
+export type TotpStart = { ok: true; setup: TotpSetup } | { ok: false; key: string };
+
+/**
+ * Започва настройка: тайната се пази криптирана, но не е активна, докато кодът не бъде потвърден. Иска
+ * паролата — иначе чужда (открадната) сесия би включила 2FA със свое приложение, а собственикът не би
+ * могъл да влезе: новата парола по имейл не маха втория фактор.
+ */
+export async function startTotp(
+  user: User,
+  password: string,
+  meta: RequestMeta,
+): Promise<TotpStart> {
+  if (user.totpEnabledAt) return { ok: false, key: 'flash.twoFactorAlreadyOn' };
+  const denied = await reauthPassword(user, password, meta);
+  if (denied) return { ok: false, key: denied };
   const secret = generateTotpSecret();
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      totpSecretEnc: encryptSecret(secret, config().ENC_KEY),
-      totpEnabledAt: null,
-      totpLastStep: null,
-    },
+  // само докато 2FA не е включена: паралелно потвърждение не се подменя с нова тайна
+  const started = await prisma.user.updateMany({
+    where: { id: user.id, totpEnabledAt: null },
+    data: { totpSecretEnc: encryptSecret(secret, config().ENC_KEY), totpLastStep: null },
   });
+  if (started.count !== 1) return { ok: false, key: 'flash.twoFactorAlreadyOn' };
   const url = otpauthUrl(config().TOTP_ISSUER, user.email, secret);
-  return { secret, qrDataUrl: await QRCode.toDataURL(url, { margin: 1, width: 232 }) };
+  const setup = { secret, qrDataUrl: await QRCode.toDataURL(url, { margin: 1, width: 232 }) };
+  return { ok: true, setup };
 }
 
-/** Връща резервните кодове (показват се веднъж) или null при грешен код. */
+export type TotpConfirm = { ok: true; codes: string[] } | { ok: false; key: string };
+
+/** Включва 2FA и връща резервните кодове (показват се веднъж). */
 export async function confirmTotp(
   user: User,
   code: string,
   meta: RequestMeta,
-): Promise<string[] | null> {
-  if (user.totpEnabledAt || !user.totpSecretEnc) return null;
+): Promise<TotpConfirm> {
+  if (user.totpEnabledAt) return { ok: false, key: 'flash.twoFactorAlreadyOn' };
+  if (!user.totpSecretEnc) return { ok: false, key: 'flash.codeMismatch' };
   const step = verifyTotp(decryptSecret(user.totpSecretEnc, config().ENC_KEY), code, null);
-  if (step === null) return null;
-  await prisma.user.update({
-    where: { id: user.id },
+  if (step === null) return { ok: false, key: 'flash.codeMismatch' };
+  // Включва я само една заявка и само с тайната, показана на човека: при двойно изпращане втората не
+  // издава втори комплект кодове — иначе на екрана биха останали кодове, които вече ги няма в базата.
+  const enabled = await prisma.user.updateMany({
+    where: { id: user.id, totpEnabledAt: null, totpSecretEnc: user.totpSecretEnc },
     data: { totpEnabledAt: new Date(), totpLastStep: step },
   });
+  if (enabled.count !== 1) return { ok: false, key: 'flash.twoFactorAlreadyOn' };
   const codes = await issueRecoveryCodes(user.id);
   await audit(customerActor(user, meta), {
     action: 'auth.totp.enabled',
@@ -160,7 +177,7 @@ export async function confirmTotp(
     targetId: user.id,
   });
   void mailTwoFactor(user.email, localeOf(user), greetingName(user), true);
-  return codes;
+  return { ok: true, codes };
 }
 
 export type TotpDisable = { ok: true } | { ok: false; key: string };
@@ -173,6 +190,8 @@ export async function disableTotp(
   meta: RequestMeta,
 ): Promise<TotpDisable> {
   if (isStaff(user.role)) return { ok: false, key: 'flash.staffKeeps2fa' };
+  // вече изключена (двоен клик, повторно изпращане): нищо не се пише в одита и писмо не тръгва
+  if (!user.totpEnabledAt) return { ok: true };
   const denied =
     (await reauthPassword(user, password, meta)) ?? (await reauthCode(user, code, meta));
   if (denied) return { ok: false, key: denied };

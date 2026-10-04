@@ -278,10 +278,13 @@ export async function sessionCsrf(browser: Browser, path = '/account'): Promise<
 }
 
 /** Turns two-factor protection on through the real forms; returns the secret and the recovery codes. */
-export async function enable2fa(b: Browser): Promise<{ secret: string; codes: string[] }> {
+export async function enable2fa(
+  b: Browser,
+  password = 'Shelf-Hinge-Groove-42',
+): Promise<{ secret: string; codes: string[] }> {
   const { totpCode } = await import('../../src/auth/totp.js');
   const csrf = await sessionCsrf(b, '/account/security');
-  const page = await b.post('/account/security/2fa/start', { _csrf: csrf });
+  const page = await b.post('/account/security/2fa/start', { _csrf: csrf, password });
   assert.equal(
     page.status,
     200,

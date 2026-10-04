@@ -82,28 +82,33 @@ accountSecurityRouter.post('/account/security/password', sensitiveLimiter, async
   );
 });
 
+/** „Вече е включена“ е сведение, не грешка (например второто изпращане на същата форма). */
+function totpRefusal(res: Response, key: string): void {
+  back(res, '/account/security', key === 'flash.twoFactorAlreadyOn' ? 'info' : 'error', key);
+}
+
 accountSecurityRouter.post('/account/security/2fa/start', sensitiveLimiter, async (req, res) => {
-  const setup = await startTotp(await me(req));
-  if (!setup) {
-    back(res, '/account/security', 'info', 'flash.twoFactorAlreadyOn');
+  const result = await startTotp(await me(req), rawField(req.body, 'password'), requestMeta(req));
+  if (!result.ok) {
+    totpRefusal(res, result.key);
     return;
   }
-  await renderSecurity(req, res, { setup });
+  await renderSecurity(req, res, { setup: result.setup });
 });
 
 accountSecurityRouter.post('/account/security/2fa/confirm', sensitiveLimiter, async (req, res) => {
-  const codes = await confirmTotp(
+  const result = await confirmTotp(
     await me(req),
     stringField(req.body, 'code', 12),
     requestMeta(req),
   );
-  if (!codes) {
-    back(res, '/account/security', 'error', 'flash.codeMismatch');
+  if (!result.ok) {
+    totpRefusal(res, result.key);
     return;
   }
   // Показва се на същата страница с кодовете — не чака следващата.
   res.locals.flash = { kind: 'ok', key: 'flash.twoFactorOn', params: {} };
-  await renderSecurity(req, res, { codes });
+  await renderSecurity(req, res, { codes: result.codes });
 });
 
 accountSecurityRouter.post('/account/security/2fa/disable', sensitiveLimiter, async (req, res) => {
