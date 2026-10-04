@@ -13,7 +13,7 @@ export class PanZoom {
     this.on = false;
     this.svg = null;
     this.base = null; // the drawing's own viewBox
-    this.key = null; // the drawing's name
+    this.name = null; // the drawing's name (not `key`: an own property would hide the key() handler)
     this.view = null; // the part of it on screen
     this.pointers = new Map();
     this.pinch = null;
@@ -40,9 +40,9 @@ export class PanZoom {
     const base = { x: vb.x, y: vb.y, w: vb.width, h: vb.height };
     const key = svg.getAttribute('aria-label');
     const same =
-      this.base && this.key === key && ['x', 'y', 'w', 'h'].every((k) => this.base[k] === base[k]);
+      this.base && this.name === key && ['x', 'y', 'w', 'h'].every((k) => this.base[k] === base[k]);
     this.base = base;
-    this.key = key;
+    this.name = key;
     if (!same || !this.view) this.view = { ...base };
     if (this.on) this.apply();
   }
