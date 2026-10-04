@@ -86,3 +86,42 @@ test('the bed: a footboard lower than the rail is raised to it, with a notice', 
   assert.ok(!notice(buildModel({ type: 'bed', footHeight: 450 })), 'a notice for a footboard above the rail');
   assert.ok(!notice(buildModel({ type: 'bed', footHeight: 0 })), 'a notice for a bed without a footboard');
 });
+
+test('back panels: nails only where two backs meet behind a partition, about one per 150 mm', () => {
+  const nailsOf = (m) => m.hardware.find((h) => h.key === 'nails')?.qty ?? 0;
+  for (const spec of [{ type: 'base' }, { type: 'nightstand' }, { type: 'tall' }]) assert.equal(nailsOf(buildModel(spec)), 0, `${spec.type}: a back in grooves all round got nails`);
+  for (const spec of [{ type: 'wardrobe' }, { type: 'wardrobe', width: 3000, columns: 5 }, { type: 'bookcase', columns: 4 }, { type: 'tv' }, { type: 'chest', columns: 2 }]) {
+    const m = buildModel(spec);
+    const partitions = m.parts.filter((p) => p.role === 'partition');
+    const inside = (x) => partitions.some((p) => x > p.box.min[0] && x < p.box.max[0]);
+    // the length of back edge that meets a partition, and how many backs have such an edge
+    let edge = 0;
+    let backs = 0;
+    for (const b of m.parts.filter((p) => p.role === 'back')) {
+      const n = [b.box.min[0], b.box.max[0]].filter(inside).length;
+      edge += n * b.L;
+      backs += n ? 1 : 0;
+    }
+    const nails = nailsOf(m);
+    assert.ok(edge > 0, `${spec.type}: no back meets a partition`);
+    assert.ok(nails >= edge / 150 && nails < edge / 150 + backs, `${spec.type}: ${nails} nails for ${edge} mm of partition edges`);
+  }
+});
+
+test('drawer boxes are cut from board as thick as the slide system wants, or the drawer is not made', async () => {
+  // registered last: the extra slide systems never become a default for the tests above
+  const { registerSlideSystems, registerSlides } = await import('../../engine/hardware.js');
+  const { SLIDE_SYSTEMS } = await import('../../engine/data/slide-systems.js');
+  const gtv = SLIDE_SYSTEMS.find((s) => s.id === 'gtv_h45');
+  registerSlideSystems([18, 15].map((t) => ({ ...gtv, id: `test_box${t}`, boxSide: t })));
+  registerSlides([18, 15].map((t) => ({ id: `test:box${t}`, system: `test_box${t}`, brand: 'Test', name: `Водач (тест), кутия ${t} mm`, products: {} })));
+  for (const [slide, stock, T] of [[SLIDES.find((s) => s.includes('gtv_h45')), 'pb16', 16], ['test:box18', 'pb18', 18]]) {
+    const m = buildModel({ type: 'nightstand', slide });
+    const box = m.parts.filter((p) => p.role === 'drawer-side' || p.role === 'drawer-back');
+    assert.ok(box.length > 0, `${slide}: no drawer box`);
+    for (const p of box) assert.ok(p.stock === stock && p.T === T, `${slide}: ${p.name} is ${p.stock} ${p.T} mm`);
+  }
+  const m = buildModel({ type: 'nightstand', slide: 'test:box15' });
+  assert.equal(m.parts.filter((p) => p.role === 'drawer-side').length, 0, 'a 15 mm box was made from another board');
+  assert.ok(errorsOf(m).some((e) => e.text.includes('15 mm')), 'no error for a box side without its board');
+});

@@ -6,10 +6,12 @@ import { r1, dimTxt } from './util.js';
 import { slideModel, slideSystemOf, slideLength } from './hardware.js';
 import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, confirmat, addHoleOnce, hasHole } from './joinery.js';
 import { mountHandle } from './fronts.js';
+import { STOCK } from './materials.js';
 
 const TOP_GAP = 28; // box top below the front top, room for the slide and the drawer above
 const MIN_BOX = 60; // lowest drawer box the generator makes
 const GROOVE_WEB = 3; // board left between the bottom groove and a confirmat hole in a 16 mm side
+const BOX_STOCKS = [STOCK.pb16, STOCK.pb18]; // drawer boxes: particleboard as thick as the slide system's box side
 
 export function buildDrawers(ctx, o, a) {
   const family = slideModel(o.slide);
@@ -24,7 +26,12 @@ export function buildDrawers(ctx, o, a) {
     ctx.warn('error', `${nm(`Колона ${i + 1}`)}: ${sys.name} няма дължина за вътрешна дълбочина ${Math.round(zEnd - backFront)} mm.`);
     return;
   }
-  const BOX_T = sys.boxSide;
+  const boxStock = BOX_STOCKS.find((st) => st.thickness === sys.boxSide);
+  if (!boxStock) {
+    ctx.warn('error', `${sys.name}: страницата на кутията е ${dimTxt(sys.boxSide)} mm — няма ЛПДЧ с такава дебелина.`);
+    return;
+  }
+  const BOX_T = boxStock.thickness;
   // outer faces of the box sides: concealed slides set the inner width LW − innerWidthMinus, whatever the column width
   const side = sys.mount === 'under' ? (sys.innerWidthMinus - 2 * BOX_T) / 2 : sys.sideClearance;
   const xl = xa + side;
@@ -35,7 +42,7 @@ export function buildDrawers(ctx, o, a) {
   }
   const L = sys.drawerLength(NL);
   const fh = r1((dzH - drawers * gap) / drawers);
-  const box = { stock: 'pb16', decor: 'demo:white', grain: false, module: mod };
+  const box = { stock: boxStock.id, decor: 'demo:white', grain: false, module: mod };
   const product = family.products?.[NL] ?? null;
   const label = product ? `${product.brand ?? family.brand} ${product.sku ?? ''}`.trim() : `${family.brand} ${NL} mm`;
   for (let k = 0; k < drawers; k++) {

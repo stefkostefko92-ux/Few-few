@@ -210,8 +210,9 @@ function buildBacks(ctx, a) {
     const right = i === n - 1 ? x0 + W - T + into : partitions[i].box.min[0] + T / 2 - 1;
     const zb = [z0 + GROOVE.inset, z0 + GROOVE.inset + HDF_T];
     panel(ctx, { stock: 'hdf3', decor: 'demo:white', grain: false, module: mod, key: key(`back${i + 1}`), name: nm(n > 1 ? `Гръб HDF ${i + 1}` : 'Гръб HDF'), role: 'back', box: { min: [left, yb0, zb[0]], max: [right, yb1, zb[1]] }, n: '+z', L: 'y', explode: [0, 0, -1.2] });
-    // backs of several columns meet behind a partition and are nailed to it
-    if (n > 1) ctx.hw('nails', { name: 'Скоби/пирони за гръб HDF', qty: Math.ceil((2 * (right - left + yb1 - yb0)) / 150), unit: 'бр.', group: 'Крепежи' });
+    // backs of several columns meet behind a partition and are nailed to it every 150 mm; other edges sit in grooves
+    const partitionEdges = (i > 0 ? 1 : 0) + (i < n - 1 ? 1 : 0);
+    if (partitionEdges) ctx.hw('nails', { name: 'Скоби/пирони за гръб HDF', qty: Math.ceil((partitionEdges * (yb1 - yb0)) / 150), unit: 'бр.', group: 'Крепежи' });
   }
 }
 
