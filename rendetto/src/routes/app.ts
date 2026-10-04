@@ -1,7 +1,7 @@
-import { createHash } from 'node:crypto';
 import express, { Router } from 'express';
-import { principalOf, requireCsrf, requireUser } from '../auth/guards.js';
+import { principalOf, renderError, requireCsrf, requireUser } from '../auth/guards.js';
 import { setFlash } from '../http/flash.js';
+import { jsonForScript } from '../http/json-script.js';
 import { apiLimiter, exportLimiter } from '../http/limits.js';
 import { requestMeta, stringField } from '../http/meta.js';
 import { translatorFor, type Translator } from '../i18n.js';
@@ -29,14 +29,6 @@ appRouter.use('/app', requireUser, requireCsrf, (_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
-
-/** JSON вътре в `<script type="application/json">`: `<` се екранира, иначе `</script>` в име на проект би затворил блока. */
-function jsonForScript(value: unknown): string {
-  return JSON.stringify(value)
-    .replace(/</g, '\\u003c')
-    .replace(/\u2028/g, '\\u2028')
-    .replace(/\u2029/g, '\\u2029');
-}
 
 /* ------------------------------------- проекти ------------------------------------- */
 
@@ -93,11 +85,7 @@ appRouter.get('/app/p/:id', async (req, res) => {
   const principal = principalOf(req);
   const project = await ownProject(principal.user.id, String(req.params.id));
   if (!project) {
-    res.status(404).render('errors/error', {
-      titleKey: 'error.notFoundTitle',
-      messageKey: 'error.notFoundText',
-      status: 404,
-    });
+    renderError(res, 404, 'error.notFoundTitle', 'error.notFoundText');
     return;
   }
   const plan = planView(principal.user);
@@ -151,8 +139,7 @@ appRouter.put(
 
 /** Каталогът за редактора — само за вписани (данните от магазините не са публични). */
 appRouter.get('/app/catalog.json', (req, res) => {
-  const { json } = catalogInfo();
-  const etag = `"${createHash('sha256').update(json).digest('base64url').slice(0, 27)}"`;
+  const { json, etag } = catalogInfo();
   res.set('Cache-Control', 'private, max-age=3600').set('ETag', etag);
   if (req.get('if-none-match') === etag) {
     res.status(304).end();
@@ -170,11 +157,7 @@ appRouter.get('/app/p/:id/export/:kind', exportLimiter, async (req, res) => {
   const kind = String(req.params.kind);
   const project = await ownProject(principal.user.id, String(req.params.id));
   if (!project || !isExportKind(kind)) {
-    res.status(404).render('errors/error', {
-      titleKey: 'error.notFoundTitle',
-      messageKey: 'error.notFoundText',
-      status: 404,
-    });
+    renderError(res, 404, 'error.notFoundTitle', 'error.notFoundText');
     return;
   }
   let file;
@@ -194,6 +177,5 @@ appRouter.get('/app/p/:id/export/:kind', exportLimiter, async (req, res) => {
   res
     .set('Content-Type', file.mime)
     .set('Content-Disposition', contentDisposition(file.name))
-    .set('X-Content-Type-Options', 'nosniff')
     .send(file.body);
 });

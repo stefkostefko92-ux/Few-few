@@ -2,10 +2,10 @@ import type { Project } from '@prisma/client';
 import { zipSync, type Zippable } from 'fflate';
 import {
   engine,
+  specOf,
   type DrawingMeta,
   type EngineModel,
   type EngineNesting,
-  type Spec,
 } from './engine.js';
 
 /**
@@ -38,12 +38,7 @@ interface Built {
 
 function build(project: Project, owner: string): Built {
   const api = engine();
-  const spec = (
-    project.spec && typeof project.spec === 'object' && !Array.isArray(project.spec)
-      ? project.spec
-      : {}
-  ) as Spec;
-  const model = api.buildModel(spec);
+  const model = api.buildModel(specOf(project.spec));
   const nesting = api.nest(model);
   const meta: DrawingMeta = {
     product: 'Rendetto',

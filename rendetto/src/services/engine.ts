@@ -1,6 +1,8 @@
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { config } from '../config.js';
 import { logger } from '../logger.js';
@@ -12,6 +14,14 @@ import { fromRoot, ROOT } from '../paths.js';
  * Типовете тук са тесни нарочно: сървърът само подава спецификацията и взима текст.
  */
 export type Spec = Record<string, unknown>;
+
+/**
+ * Запазената спецификация (Json в базата) като Spec. Повредена или не-обект → празна: двигателят
+ * дава подразбиращите се стойности. Едно правило за списъка с проекти и за изходите.
+ */
+export function specOf(json: Prisma.JsonValue): Spec {
+  return (json && typeof json === 'object' && !Array.isArray(json) ? json : {}) as Spec;
+}
 
 export interface EngineWarning {
   level: 'error' | 'warn' | 'info';
@@ -60,7 +70,6 @@ export interface TypeParam {
 interface EngineApi {
   buildModel(spec: Spec): EngineModel;
   normalizeSpec(spec: Spec): Spec;
-  typeLabel(type: string): string;
   dimsText(type: string, spec: Spec): string;
   typeDims(type: string, spec: Spec): { W: number; H: number; D: number };
   typeOrder: readonly string[];
@@ -123,6 +132,8 @@ const catalogShape = z
   .passthrough();
 
 let catalogJson: string | null = null;
+/** ETag на каталога — смята се веднъж при зареждане, не при всяка заявка (каталогът е няколко MB). */
+let catalogEtag = '""';
 
 /** `catalogPath` е за инструментите извън сървъра (брошурата): те не носят цялата конфигурация на процеса. */
 export async function loadEngine(catalogPath: string = config().CATALOG_PATH): Promise<void> {
@@ -157,6 +168,7 @@ export async function loadEngine(catalogPath: string = config().CATALOG_PATH): P
     catalogJson = JSON.stringify(base);
     catalogMode = 'base';
   }
+  catalogEtag = `"${createHash('sha256').update(catalogJson).digest('base64url').slice(0, 27)}"`;
   const TYPES = types.TYPES as
     Record<string, { label: string; group: string; params?: TypeParam[] }> | undefined;
   const ORDER = types.TYPE_ORDER as readonly string[] | undefined;
@@ -164,7 +176,6 @@ export async function loadEngine(catalogPath: string = config().CATALOG_PATH): P
   api = {
     buildModel: fn(model, 'buildModel'),
     normalizeSpec: fn(model, 'normalizeSpec'),
-    typeLabel: fn(model, 'typeLabel'),
     dimsText: fn(types, 'dimsText'),
     typeDims: fn(types, 'typeDims'),
     typeOrder: ORDER,
@@ -191,8 +202,8 @@ export function engine(): EngineApi {
   return api;
 }
 
-export function catalogInfo(): { mode: 'shop' | 'base'; json: string } {
-  return { mode: catalogMode, json: catalogJson ?? '{}' };
+export function catalogInfo(): { mode: 'shop' | 'base'; json: string; etag: string } {
+  return { mode: catalogMode, json: catalogJson ?? '{}', etag: catalogEtag };
 }
 
 /** Типовете мебели в реда на двигателя. */

@@ -8,6 +8,7 @@ import { passwordProblem } from '../auth/password.js';
 import { ipNetwork } from '../http/ip.js';
 import type { RequestMeta } from '../http/meta.js';
 import { customerLabel } from '../labels.js';
+import { hasUnsafeChars } from './names.js';
 
 export const emailSchema = z.string().trim().toLowerCase().max(254).email();
 
@@ -24,6 +25,7 @@ export const nameSchema = z
   .min(2)
   .max(80)
   .regex(/^[^<>{}\n\r]+$/)
+  .refine((value) => !hasUnsafeChars(value))
   .refine((value) => !LINK_LIKE.test(value));
 
 export function customerActor(user: { id: string }, meta?: RequestMeta): AuditActor {

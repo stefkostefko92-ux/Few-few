@@ -1,5 +1,6 @@
 import { COMPANY, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
+import { jsonForScript } from '../http/json-script.js';
 import { LOCALE_TAG, type Locale, type Translator } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { formatMoney, priceTable, type PriceRow } from '../plans/pricing.js';
@@ -51,11 +52,6 @@ export function landingTextParams(locale: Locale, prices: PriceRow[]) {
     },
   };
   return { description: { days: TRIAL_DAYS }, faq };
-}
-
-/** Вграждане в <script type="application/ld+json">: `<` не може да затвори блока. */
-export function jsonLdScript(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
 /** Сума в центове като десетичен низ за schema.org — без float. */
@@ -210,7 +206,7 @@ export function landingStructuredData(
       })),
     },
   ];
-  return jsonLdScript({ '@context': 'https://schema.org', '@graph': graph });
+  return jsonForScript({ '@context': 'https://schema.org', '@graph': graph });
 }
 
 export function legalStructuredData(
@@ -221,7 +217,7 @@ export function legalStructuredData(
   updated: string,
 ): string {
   const base = config().PUBLIC_BASE_URL;
-  return jsonLdScript({
+  return jsonForScript({
     '@context': 'https://schema.org',
     '@graph': [
       organization(t, locale),

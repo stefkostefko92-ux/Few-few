@@ -7,11 +7,13 @@ import type { RequestMeta } from '../http/meta.js';
 import { planView } from '../plans/plan.js';
 import type { SessionUser } from '../types.js';
 import { customerActor } from './auth-common.js';
-import { engine, isFurnitureType, type Spec } from './engine.js';
+import { engine, isFurnitureType, specOf, type Spec } from './engine.js';
 import { dimensionsText } from './furniture.js';
+import { copyName, hasUnsafeChars } from './names.js';
 
 export const MAX_PROJECTS = 500;
 const MAX_SPEC_BYTES = 32 * 1024;
+const NAME_MAX = 80;
 
 export type ProjectResult<T = Project> =
   { ok: true; project: T } | { ok: false; key: string; status: number };
@@ -20,8 +22,9 @@ const nameSchema = z
   .string()
   .trim()
   .min(1)
-  .max(80)
-  .regex(/^[^<>\n\r]+$/);
+  .max(NAME_MAX)
+  .regex(/^[^<>\n\r]+$/)
+  .refine((value) => !hasUnsafeChars(value));
 
 /**
  * Спецификацията от редактора е плосък обект от прости стойности. Всичко друго се отхвърля още тук;
@@ -48,10 +51,27 @@ function hashOf(spec: Spec): string {
 }
 
 export function normalizedSpec(raw: unknown): Spec | null {
-  if (JSON.stringify(raw ?? null).length > MAX_SPEC_BYTES) return null;
+  // Първо схемата: плоският обект отхвърля вложеното без рекурсия. JSON.stringify върху дълбоко вложен
+  // вход хвърля RangeError — това би било 500 вместо 400.
   const parsed = specSchema.safeParse(raw);
   if (!parsed.success) return null;
+  if (JSON.stringify(parsed.data).length > MAX_SPEC_BYTES) return null;
   return engine().normalizeSpec(parsed.data);
+}
+
+/**
+ * Нов проект под тавана MAX_PROJECTS. Броенето и записът са в една транзакция под ключа на човека —
+ * паралелни заявки не могат да прочетат един и същ брой и така да минат тавана.
+ */
+async function createUnderCap(
+  userId: string,
+  data: Omit<Prisma.ProjectUncheckedCreateInput, 'userId'>,
+): Promise<Project | null> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT 1 FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    if ((await tx.project.count({ where: { userId } })) >= MAX_PROJECTS) return null;
+    return tx.project.create({ data: { ...data, userId } });
+  });
 }
 
 export async function listOwnProjects(userId: string) {
@@ -85,24 +105,17 @@ export async function createProject(
   const blocked = canCreate(user);
   if (blocked) return blocked;
   if (!isFurnitureType(rawType)) return { ok: false, key: 'error.badInput', status: 400 };
-  const fallbackName = engine().typeLabel(rawType);
-  const name = nameSchema.safeParse(
-    typeof rawName === 'string' && rawName.trim() ? rawName : fallbackName,
-  );
+  // Празно име не стига дотук: рутерът дава името на вида мебел на езика на човека.
+  const name = nameSchema.safeParse(rawName);
   if (!name.success) return { ok: false, key: 'app.errors.name', status: 400 };
-  if ((await prisma.project.count({ where: { userId: user.id } })) >= MAX_PROJECTS) {
-    return { ok: false, key: 'app.errors.tooMany', status: 409 };
-  }
   const spec = engine().normalizeSpec({ type: rawType });
-  const project = await prisma.project.create({
-    data: {
-      userId: user.id,
-      name: name.data,
-      type: rawType,
-      spec: spec as Prisma.InputJsonValue,
-      specHash: hashOf(spec),
-    },
+  const project = await createUnderCap(user.id, {
+    name: name.data,
+    type: rawType,
+    spec: spec as Prisma.InputJsonValue,
+    specHash: hashOf(spec),
   });
+  if (!project) return { ok: false, key: 'app.errors.tooMany', status: 409 };
   await audit(customerActor(user, meta), {
     action: 'project.created',
     targetType: 'project',
@@ -164,18 +177,13 @@ export async function duplicateProject(
   if (blocked) return blocked;
   const project = await ownProject(user.id, id);
   if (!project) return { ok: false, key: 'error.notFoundText', status: 404 };
-  if ((await prisma.project.count({ where: { userId: user.id } })) >= MAX_PROJECTS) {
-    return { ok: false, key: 'app.errors.tooMany', status: 409 };
-  }
-  const copy = await prisma.project.create({
-    data: {
-      userId: user.id,
-      name: `${project.name} (2)`.slice(0, 80),
-      type: project.type,
-      spec: project.spec as Prisma.InputJsonValue,
-      specHash: project.specHash,
-    },
+  const copy = await createUnderCap(user.id, {
+    name: copyName(project.name, NAME_MAX),
+    type: project.type,
+    spec: project.spec as Prisma.InputJsonValue,
+    specHash: project.specHash,
   });
+  if (!copy) return { ok: false, key: 'app.errors.tooMany', status: 409 };
   await audit(customerActor(user, meta), {
     action: 'project.duplicated',
     targetType: 'project',
@@ -208,11 +216,7 @@ export function projectSummary(project: { type: string; spec: Prisma.JsonValue }
   dims: string;
 } {
   const api = engine();
-  const spec = (
-    project.spec && typeof project.spec === 'object' && !Array.isArray(project.spec)
-      ? project.spec
-      : {}
-  ) as Spec;
+  const spec = specOf(project.spec);
   try {
     return { type: project.type, dims: dimensionsText(project.type, api.normalizeSpec(spec)) };
   } catch {
