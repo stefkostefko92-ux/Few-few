@@ -4,9 +4,9 @@ export default {
   catalogPage: {
     kicker: 'Technical & commercial catalogue',
     title: 'Catalogue 2026 — browse and download',
-    lead: '69 pages with 3D views of the brackets, installation drawings dimensioned in millimetres, code legend, comparison chart and the complete price list. Browse it right here or download the PDF.',
+    lead: '72 pages with 3D views of the brackets, installation drawings dimensioned in millimetres, code legend, comparison chart, the complete price list and an overview of the whole range. Browse it right here or download the PDF.',
     edition: '2026 edition',
-    pages: '69 pages',
+    pages: '72 pages',
     sizeNote: 'PDF · 8 MB · dimensions in mm',
     download: 'Download the catalogue (PDF, 8 MB)',
     view: 'Open full screen',

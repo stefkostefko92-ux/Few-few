@@ -45,7 +45,7 @@ export default {
     },
     catalog: {
       title: 'Catalogo tecnico 2026 (PDF) — sfoglia e scarica | Panev Ascensori',
-      description: 'Catalogo tecnico e commerciale Panev Ascensori 2026: 69 pagine con viste 3D, quote in mm, codici e listino completo. Consultalo online o scaricalo in PDF.',
+      description: 'Catalogo tecnico e commerciale Panev Ascensori 2026: 72 pagine con viste 3D, quote in mm, codici e listino completo. Consultalo online o scaricalo in PDF.',
       keywords: [
         'catalogo staffe ascensori PDF',
         'catalogo tecnico ascensori 2026',
