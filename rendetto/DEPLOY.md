@@ -179,13 +179,27 @@ gunzip -c "$DUMP" | sudo docker compose exec -T db psql -v ON_ERROR_STOP=1 --sin
 
 Одитът: ако номерът в котвата (`"head":{"id":…}` в `/opt/few-few/shared/rendetto/data/audit-head.json`)
 е по-голям от `SELECT max(id) FROM "AuditLog"`, краят на веригата е изрязан с възстановяването и панелът
-би го показал като скъсана верига. Тогава запиши случая извън сървъра и премести котвата встрани
-(доказателство — не се трие); новата се пише от следващия запис:
+би го показал като скъсана верига. Тогава запиши случая извън сървъра и нулирай само края на котвата.
+Началото ѝ (`"base"`) остава: без него първата проверка след изтриване по срок вдига трайна тревога и
+спира самото изтриване. Старата котва се копира встрани като доказателство и не се трие. Докато `app`
+е спрян, от папката на release-а:
 
 ```bash
-sudo mv /opt/few-few/shared/rendetto/data/audit-head.json \
-  "/opt/few-few/shared/rendetto/data/audit-head.pre-restore-$(date +%Y%m%d-%H%M%S).json"
+sudo docker compose run --rm --no-deps --entrypoint node app -e "
+const fs = require('fs'), f = 'data/audit-head.json';
+if (!fs.existsSync(f)) { console.log('няма котва'); process.exit(0); }
+const a = JSON.parse(fs.readFileSync(f, 'utf8'));
+fs.copyFileSync(f, f + '.pre-restore-' + new Date().toISOString().replace(/[:.]/g, '-'));
+fs.writeFileSync(f + '.tmp', JSON.stringify({ head: null, base: a.base ?? null }), { mode: 0o600 });
+fs.renameSync(f + '.tmp', f);
+console.log('base в котвата:', JSON.stringify(a.base ?? null));"
+sudo docker compose exec -T db psql -U rendetto -d rendetto -tAc 'SELECT "lastId", "lastHash" FROM "AuditBase"'
 ```
+
+Двете трябва да казват едно и също: `base` `null` и празен отговор от базата, или същите номер и хеш.
+Ако се различават, между дъмпа и възстановяването е минало изтриване по срок. Тогава котвата не се
+пипа повече, случаят се записва извън сървъра и решава човек: панелът ще показва скъсана верига, докато
+решението не е взето.
 
 Накрая — предишният код: `sudo RENDETTO_SKIP_BACKUP=1 bash "$PWD/deploy/deploy.sh"`.
 
