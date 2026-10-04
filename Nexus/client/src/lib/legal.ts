@@ -25,7 +25,7 @@ export const OPERATOR = {
   representative: 'Stefan Kostadinov',
   hosting: {
     name: 'Hetzner Online GmbH',
-    region: 'EU (Германия/Финландия)',
+    region: 'EU (Germany/Finland)',
   },
   // Само реално съществуващи пощи от фирмения запис (info/privacy/security) —
   // непотвърдени кутии (support@/dpo@/legal@) биха гълтали писма на играчи.
