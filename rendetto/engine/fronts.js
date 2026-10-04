@@ -75,6 +75,9 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   }
   if (!sol.exact) ctx.warn('warn', `${door.name}: наслагване ${dimTxt(wanted)} mm е извън обхвата на ${sys.name} — реално ${dimTxt(sol.overlay)} mm (C = ${dimTxt(sol.c)}, планка ${dimTxt(sol.plate)} mm).`);
   door.hinge = { variant, c: sol.c, plate: sol.plate, overlay: sol.overlay, wanted, system: sys.id };
+  // our own rule (the hinge makers give no minimum width): the cup stays in the hinge half of the door and leaves the
+  // other half to the handle; such doors are reported together in model.js
+  door.narrowForCup = Wd < 2 * (sol.c + sys.cup.d);
   const mass = (Wd / 1000) * (Hd / 1000) * (door.T / 1000) * DENSITY + HANDLE_KG;
   const lim = hingeLimits(sys);
   const cnt = hingeCount(mass, Hd, sys);

@@ -21,7 +21,8 @@ const FIT_AT = 30; // centre of each half of a bed fitting from the face of the 
 // choice: the catalog gives no fitting size; 80 mm clears a plate up to 100 mm wide centred FIT_AT from the board)
 const FIT_CLEAR = 80;
 
-// Outer size of the bed: the mattress with its clearance between two 18 mm boards each way. Also the model's dims.
+// Outer size of the bed: the mattress with its clearance between two 18 mm boards each way. Also the size shown for
+// the project (typeDims).
 export function bedOuter(s) {
   const T = STOCK.pb18.thickness;
   return { W: s.mattressW + MATTRESS_CLEAR + 2 * T, D: s.mattressL + MATTRESS_CLEAR + 2 * T };

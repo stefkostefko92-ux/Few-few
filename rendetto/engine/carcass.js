@@ -12,7 +12,7 @@ const WORKTOP_SCREW = { d: 5, label: 'винт за плота 4×30', bom: 'В�
 const RAIL_W = 100; // top rails of base cabinets
 const HINGE_CLEAR = 45; // shelves keep this distance (centre to centre) from hinges and their plates
 const RAIL_DROP = 90; // no shelves in the top 90 mm of a column with a hanging rail
-const MIN_PLINTH = 40; // lowest plinth board the generator makes
+const MIN_PLINTH = 40; // lowest plinth board or legs the generator makes
 const PIN_RISE = 4; // a shelf rests on its pins, this far above the axis of the pin holes
 const CARCASS = STOCK.pb18; // every carcass board; the back is HDF in grooves
 
@@ -26,8 +26,9 @@ export function buildCarcass(ctx, o) {
   const nm = (s) => (mod ? `${mod} ${s}` : s);
   const key = (s) => `${mod}${s}`;
   let plinth = o.plinth ?? { type: 'none', h: 0 };
-  if (plinth.type === 'panel' && plinth.h > 0 && plinth.h < MIN_PLINTH) {
-    ctx.warn('info', `${nm('Цокъл')} под ${MIN_PLINTH} mm не се прави — корпусът стъпва направо на пода.`);
+  if ((plinth.type === 'panel' || plinth.type === 'legs') && plinth.h > 0 && plinth.h < MIN_PLINTH) {
+    const what = plinth.type === 'panel' ? `${nm('Цокъл')} под ${MIN_PLINTH} mm не се прави` : `${nm('Крачета')} под ${MIN_PLINTH} mm не се слагат`;
+    ctx.warn('info', `${what} — корпусът стъпва направо на пода.`);
     plinth = { type: 'none', h: 0 };
   }
   const plinthH = plinth.type !== 'none' ? plinth.h : 0;

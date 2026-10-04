@@ -1,7 +1,7 @@
 // Desk: 25 mm top on a gable and a drawer pedestal (or two gables), modesty panel at the back.
 import { buildCarcass } from './carcass.js';
 import { panel, hole } from './panel.js';
-import { hasGrain, STOCK } from './materials.js';
+import { hasGrain, boardTopDecor, STOCK } from './materials.js';
 import { PILOT, confirmat } from './joinery.js';
 
 const MODESTY = { h: 350, z: 60 };
@@ -12,7 +12,7 @@ export function buildDesk(ctx, s, common) {
   const TT = STOCK.pb25.thickness;
   const { width: W, depth: D, height: H } = s;
   const body = { stock: 'pb18', decor: s.carcassDecor, grain: hasGrain(s.carcassDecor) };
-  const topDecor = s.frontMaterial === 'ral' ? s.carcassDecor : s.frontDecor;
+  const topDecor = boardTopDecor(s);
   const bf = s.bandFront;
   const top = panel(ctx, { stock: 'pb25', decor: topDecor, grain: hasGrain(topDecor), key: 'deskTop', name: 'Плот на бюрото', role: 'top', box: { min: [0, H - TT, 0], max: [W, H, D] }, n: '-y', L: 'x', bands: { '+z': bf, '-z': bf, '-x': bf, '+x': bf }, explode: [0, 1, 0] });
   const pedW = s.pedestal === 'none' ? 0 : 450;

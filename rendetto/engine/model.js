@@ -1,20 +1,20 @@
 // Model: normalized spec → parts, hardware, movable groups and symbols, then the checks that need the whole model
 // (shelf sag, sheet fit, small parts, hole clashes, confirmat caps, horizontal holes).
 import { createCtx, cutSize } from './panel.js';
-import { TYPES, BUILDERS, normalizeParams, typeDims } from './types.js';
+import { TYPES, BUILDERS, normalizeParams } from './types.js';
 import { STOCK, hasDecor, hasRal, decorName } from './materials.js';
 import { hingeList, handleList, slideList, bedFittingList } from './hardware.js';
 import { clamp, plural, dimTxt } from './util.js';
 import { purposeOf } from './drill.js';
+import { MIN_WEB } from './joinery.js';
 
-export const SPEC_VERSION = 2;
+const SPEC_VERSION = 2;
 export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
-const MIN_WEB = 2; // material left between two holes or a hole and an edge, mm
 const SMALL_PART = { w: 50, area: 0.02 }; // narrower or smaller parts are hard to hold on a vacuum table
 const CAP_ROLES = new Set(['side', 'top', 'bed-head', 'bed-foot']);
 const CAP_KEYS = new Set(['footRail']); // a bed without a footboard: the foot rail's outer face shows the confirmat heads
 
-export const SPEC_DEFAULTS = {
+const SPEC_DEFAULTS = {
   type: 'base',
   carcassDecor: 'demo:white',
   frontDecor: 'demo:oak',
@@ -30,10 +30,12 @@ export const SPEC_DEFAULTS = {
 };
 
 // Shelf test loads behind the 0.5 % deflection criterion: 1.0 kg/dm² (EN 16121 level 1, UNI 11663 other use) and
-// 1.5 kg/dm² (UNI 11663 kitchen), per the CATAS comparison table of furniture standards (February 2024).
+// 1.5 kg/dm² (UNI 11663 kitchen), per the CATAS comparison table of furniture standards (February 2024); 2.0 kg/dm²
+// is EN 16121:2013 level 2, which the 2023 edition lowered to 1.5 (CATAS, "Non-domestic furniture", January 2024) —
+// kept as the heavier option.
 const KITCHEN_TYPES = new Set(['base', 'wall', 'tall', 'kitchen']);
 export const SHELF_LOADS = [1, 1.5, 2];
-export const SHELF_SAG_LIMIT = 0.005;
+const SHELF_SAG_LIMIT = 0.005;
 
 // The app replaces the built-in demo decors with real catalog decors once the catalog is registered.
 export function setSpecDefaults(over) {
@@ -43,8 +45,9 @@ export function setSpecDefaults(over) {
 const pick = (v, allowed, dflt) => (allowed.includes(v) ? v : dflt);
 const pickId = (v, list) => (list.some((x) => x.id === v) ? v : list[0]?.id ?? '');
 
-export function normalizeSpec(input = {}) {
-  const type = TYPES[input.type] ? input.type : SPEC_DEFAULTS.type;
+export function normalizeSpec(raw = {}) {
+  const input = raw && typeof raw === 'object' ? raw : {};
+  const type = Object.hasOwn(TYPES, input.type) ? input.type : SPEC_DEFAULTS.type;
   const d = SPEC_DEFAULTS;
   const s = { v: SPEC_VERSION, type, ...normalizeParams(type, input) };
   s.carcassDecor = hasDecor(input.carcassDecor) ? input.carcassDecor : d.carcassDecor;
@@ -89,19 +92,18 @@ export function buildModel(input) {
     groups: ctx.groups,
     symbols: ctx.symbols,
     hardware: ctx.hardwareLines(),
-    dims: typeDims(spec.type, spec),
   };
 }
 
 // Short-term deflection of a simply supported shelf under a uniform load (no creep), against 0.5 % of the span.
 // E = 1600 N/mm² is the EN 312 P2 minimum for 13–20 mm particleboard (manufacturer data sheet, report source [43]).
-export function shelfSag(spanMm, depthMm, tMm, loadKg) {
+function shelfSag(spanMm, depthMm, tMm, loadKg) {
   const E = 1600;
   const I = (depthMm * tMm ** 3) / 12;
   const w = (loadKg * 9.81) / spanMm;
   const mm = (5 * w * spanMm ** 4) / (384 * E * I);
   const limit = spanMm * SHELF_SAG_LIMIT;
-  return { mm, limit, ratio: limit > 0 ? mm / limit : 0, E, loadKg };
+  return { mm, limit, ratio: limit > 0 ? mm / limit : 0 };
 }
 
 function checkModel(ctx, spec) {
@@ -110,7 +112,6 @@ function checkModel(ctx, spec) {
   for (const p of parts.filter((x) => x.role === 'shelf')) {
     const loadKg = ((p.L / 100) * (p.W / 100)) * spec.shelfLoad;
     const sag = shelfSag(p.L, p.W, p.T, loadKg);
-    p.sag = sag;
     if (sag.ratio > 1) ctx.warn('warn', `${p.name}: провисване ≈ ${dimTxt(sag.mm)} mm при ${Math.round(loadKg)} kg (${dimTxt(spec.shelfLoad)} kg/dm²) — над 0,5 % от разстоянието между опорите (${dimTxt(sag.limit)} mm). Добавете делител или стеснете колоната.`);
   }
   // sheet fit and small parts
@@ -121,7 +122,7 @@ function checkModel(ctx, spec) {
     const fw = SW - 2 * SHEET_TRIM;
     const fh = SH - 2 * SHEET_TRIM;
     const fits = (cut.L <= fw && cut.W <= fh) || (!p.grain && cut.L <= fh && cut.W <= fw);
-    if (!fits) ctx.warn('error', `${p.name}: ${cut.L} × ${cut.W} mm не се побира в лист ${SW} × ${SH} mm${p.grain ? ' по посоката на шарката' : ''}.`);
+    if (!fits) ctx.warn('error', `${p.name}: ${cut.L} × ${cut.W} mm не се побира в лист ${SW} × ${SH} mm${p.grain ? ' по посоката на шарката' : ''}${p.fitHint ? ` — ${p.fitHint}` : ''}.`);
     if (cut.W < SMALL_PART.w || (cut.L * cut.W) / 1e6 < SMALL_PART.area) small += 1;
   }
   if (small) ctx.warn('info', `${plural(small, 'малък детайл', 'малки детайла')} — режат се с тънка кора (onion skin) или табове; проверете вакуума.`);
@@ -130,6 +131,12 @@ function checkModel(ctx, spec) {
   // hinge spread (Blum Inc. note) — reported for fronts wider than they are tall, where it matters
   const short = parts.filter((p) => p.hingeSpreadShort && p.box.max[0] - p.box.min[0] > p.box.max[1] - p.box.min[1]);
   if (short.length) ctx.warn('info', `${plural(short.length, 'широка ниска врата', 'широки ниски врати')}: разстоянието между крайните панти е по-малко от ширината (бележка в каталога на Blum Inc.) — помислете за 2 врати или подемен механизъм.`);
+  // doors too narrow for their own hinge cup (fronts.js)
+  const narrow = parts.filter((p) => p.narrowForCup);
+  if (narrow.length) {
+    const minW = Math.min(...narrow.map((p) => p.box.max[0] - p.box.min[0]));
+    ctx.warn('warn', `${plural(narrow.length, 'тясна врата', 'тесни врати')} (най-тясната ${dimTxt(minW)} mm): чашката на пантата заема повече от половината от ширината — намалете броя на колоните или на вратите.`);
+  }
   // horizontal holes are not cut by the 3-axis router
   const edge = parts.reduce((a, p) => a + p.edgeOps.reduce((b, e) => b + e.count, 0), 0);
   if (edge) ctx.warn('info', `${plural(edge, 'хоризонтален отвор', 'хоризонтални отвора')} в челата — пробиват се на хоризонтална машина или с шаблон, не са в G-кода.`);

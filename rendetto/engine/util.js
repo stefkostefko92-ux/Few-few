@@ -34,7 +34,8 @@ export function canonicalJson(value) {
 // Bulgarian count phrase: plural(1, 'врата', 'врати') → '1 врата', plural(3, …) → '3 врати'.
 export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+// Text and attribute values for HTML/SVG (either quote style); null and undefined become empty text.
+export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 // Bulgarian-friendly number for drawings: 12.5 → "12,5", 12 → "12".
 export const dimTxt = (v) => {

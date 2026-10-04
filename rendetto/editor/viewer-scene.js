@@ -1,5 +1,6 @@
 // Scene helpers for the 3D view: model extents and the purchased items around the boards.
 import * as THREE from 'three';
+import { boardTopDecor } from '../engine/materials.js';
 import { S, legMesh, railMesh, slatsMesh, mattressMesh, worktopMesh } from './viewer-hw.js';
 import { handleMesh } from './viewer-handles.js';
 
@@ -63,9 +64,7 @@ export function addSymbols(v, model, meshOf) {
     } else if (s.type === 'mattress') {
       statics.add(mattressMesh(v.mats, centred(s)));
     } else if (s.type === 'worktop') {
-      const mat = v.mats.board(
-        model.spec.frontMaterial === 'ral' ? model.spec.carcassDecor : model.spec.frontDecor,
-      );
+      const mat = v.mats.board(boardTopDecor(model.spec));
       statics.add(worktopMesh(v.mats, centred(s), mat));
     }
   }

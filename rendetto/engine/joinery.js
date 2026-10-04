@@ -7,7 +7,7 @@ export const CONFIRMAT = { face: 7, edge: 5, edgeDepth: 50, maxPitch: 220 };
 export const GROOVE = { inset: 16, width: 4, depth: 8, clearance: 1 };
 export const HDF_T = 3;
 export const PILOT = { d: 3, depth: 10 };
-export const MIN_WEB = 2; // material left between two holes, mm
+export const MIN_WEB = 2; // material left between two holes, or a hole and an edge or a groove, mm
 export const FRONT_GAP_Z = 1; // doors and drawer fronts stand this far in front of the carcass, mm
 
 // Evenly spaced confirmat positions between z0 and z1, at most maxPitch apart.

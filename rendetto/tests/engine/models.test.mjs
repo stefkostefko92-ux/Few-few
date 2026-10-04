@@ -48,6 +48,11 @@ test('unknown input is normalised, not trusted', () => {
   assert.ok(model.spec.width <= 1200 && model.spec.width >= 300, `width ${model.spec.width}`);
   assert.ok(model.spec.height >= 600, `height ${model.spec.height}`);
   assert.ok(['iso', 'grbl'].includes(model.spec.post), `post ${model.spec.post}`);
+  // only the engine's own types: names inherited from Object.prototype fall back to the default type
+  for (const type of ['constructor', '__proto__', 'toString', 'hasOwnProperty']) {
+    assert.equal(buildModel({ type }).spec.type, 'base', type);
+  }
+  for (const input of [null, undefined, 42, 'wall']) assert.equal(buildModel(input).spec.type, 'base', String(input));
 });
 
 test('changing the type keeps materials, hardware and machine settings, not the sizes or the shelf load', () => {

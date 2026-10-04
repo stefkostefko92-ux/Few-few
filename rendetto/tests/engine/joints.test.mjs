@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerCatalog, baseCatalogData } from '../../engine/catalog.js';
 import { buildModel } from '../../engine/model.js';
-import { TYPES } from '../../engine/types.js';
+import { TYPES, typeDims } from '../../engine/types.js';
 import { nest } from '../../engine/nest.js';
 import { cncBlockers } from '../../engine/cam.js';
 
@@ -22,8 +22,9 @@ test('the bed: dimensions in the title bar are the outer size of its boards', ()
     for (const [mattressL] of TYPES.bed.params.find((p) => p.key === 'mattressL').options) {
       const m = buildModel({ type: 'bed', mattressW, mattressL });
       const box = outerBox(m);
-      assert.equal(m.dims.W, box.W, `${mattressW}×${mattressL}: width ${m.dims.W} vs boards ${box.W}`);
-      assert.equal(m.dims.D, box.D, `${mattressW}×${mattressL}: length ${m.dims.D} vs boards ${box.D}`);
+      const dims = typeDims('bed', m.spec);
+      assert.equal(dims.W, box.W, `${mattressW}×${mattressL}: width ${dims.W} vs boards ${box.W}`);
+      assert.equal(dims.D, box.D, `${mattressW}×${mattressL}: length ${dims.D} vs boards ${box.D}`);
     }
   }
 });

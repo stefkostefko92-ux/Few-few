@@ -1,4 +1,6 @@
 // DOM and formatting helpers shared by the app modules.
+import { esc } from '../engine/util.js';
+
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 export const fmt = (v, d = 0) =>
@@ -23,11 +25,7 @@ export const mm = (v) => {
   const x = Math.round(v * 10) / 10;
   return fmt(x, Number.isInteger(x) ? 0 : 1);
 };
-export const esc = (s) =>
-  String(s ?? '').replace(
-    /[&<>"']/g,
-    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
-  );
+export { esc };
 export const money = (v, cur) =>
   Number.isFinite(v)
     ? `${fmt(v, 2)} ${cur === 'EUR' ? '€' : cur === 'BGN' ? 'лв.' : (cur ?? '')}`.trim()

@@ -5,8 +5,9 @@ import { buildBed, bedOuter } from './bed.js';
 import { buildDesk } from './desk.js';
 import { holeThrough, mark } from './panel.js';
 import { STOCK, frontStock } from './materials.js';
+import { HINGE_LIMITS } from './hardware.js';
+import { CONFIRMAT, FRONT_GAP_Z } from './joinery.js';
 import { clamp, r1 } from './util.js';
-import { FRONT_GAP_Z } from './joinery.js';
 
 const R = (key, label, min, max, step, unit = 'mm') => ({ key, label, type: 'range', min, max, step, unit });
 const S = (key, label, options) => ({ key, label, type: 'seg', options });
@@ -122,7 +123,7 @@ function wallCabinet(ctx, s, at = {}) {
 export const BUILDERS = {
   base: (ctx, s) => baseCabinet(ctx, s),
   wall: (ctx, s) => wallCabinet(ctx, s),
-  tall: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: [{ shelves: s.shelves, doors: s.doors, drawers: s.drawers, drawerZone: s.drawers ? s.drawers * 180 : 0 }] }),
+  tall: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: [{ shelves: s.shelves, doors: s.doors, drawers: s.drawers }] }),
   kitchen: (ctx, s) => {
     const n = s.modules;
     for (let i = 0; i < n; i++) {
@@ -145,7 +146,7 @@ export const BUILDERS = {
     let ci = 0;
     counts.forEach((n, k) => {
       const W = k === m - 1 ? s.width - x0 : Math.round((s.width * n) / s.columns);
-      const doors = s.doorsPerColumn || (columnWidth(W, n) + 24 > 600 ? 2 : 1);
+      const doors = s.doorsPerColumn || doorsFor(columnWidth(W, n));
       const cols = Array.from({ length: n }, () => wardrobeColumn(s.layout, ci++, doors));
       buildCarcass(ctx, { ...common(s), module: m > 1 ? `К${k + 1}` : '', x0, W, H: s.height, D: s.depth, plinth: { type: s.legs ? 'panel' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: cols });
       x0 += W;
@@ -161,7 +162,7 @@ export const BUILDERS = {
     if (s.doorZone > 0 && !zone) ctx.warn('info', 'Етажерката е твърде ниска за долен корпус с врати — направена е изцяло отворена.');
     if (!zone) return buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth, top: 'between', visibleTop: true, columns: open(s.shelves) });
     // two stacked carcasses: lower one with doors, open upper one screwed onto it (no confirmat clash at partitions)
-    const doors = columnWidth(s.width, s.columns) + 24 > 600 ? 2 : 1;
+    const doors = doorsFor(columnWidth(s.width, s.columns));
     const lowH = s.legs + zone;
     const lower = buildCarcass(ctx, { ...common(s), module: 'Д', W: s.width, H: lowH, D: s.depth, plinth, top: 'between', columns: Array.from({ length: s.columns }, (_, i) => ({ shelves: 1, doors, hingeSide: i % 2 === 0 ? 'left' : 'right' })) });
     const upper = buildCarcass(ctx, { ...common(s), module: 'Г', y0: lowH, W: s.width, H: s.height - lowH, D: s.depth, plinth: { type: 'none', h: 0 }, top: 'between', visibleTop: true, columns: open(s.shelves) });
@@ -176,17 +177,23 @@ export const BUILDERS = {
   wallunit: (ctx, s) => {
     const sw = s.sideWidth;
     const mid = s.width - 2 * sw;
-    const tall = { ...s, width: sw, height: s.height, depth: s.depth, legs: 100, doors: 1, drawers: 0, shelves: 5 };
-    buildCarcass(ctx, { ...common(s), module: 'Л', x0: 0, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: tall.shelves, doors: 1, hingeSide: 'left' }] });
-    buildCarcass(ctx, { ...common(s), module: 'Д', x0: s.width - sw, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: tall.shelves, doors: 1, hingeSide: 'right' }] });
+    buildCarcass(ctx, { ...common(s), module: 'Л', x0: 0, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: SIDE_SHELVES, doors: 1, hingeSide: 'left' }] });
+    buildCarcass(ctx, { ...common(s), module: 'Д', x0: s.width - sw, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: SIDE_SHELVES, doors: 1, hingeSide: 'right' }] });
     const tvCols = mid > 1600 ? 3 : 2;
-    buildCarcass(ctx, { ...common(s), module: 'ТВ', x0: sw, W: mid, H: s.tvHeight, D: s.depth + 20, plinth: { type: 'legs', h: 100 }, top: 'over', columns: Array.from({ length: tvCols }, (_, i) => (i === 1 && tvCols === 3 ? { shelves: 1 } : { drawers: 2, drawerZone: s.tvHeight - 100 - 18 })) });
+    const tv = buildCarcass(ctx, { ...common(s), module: 'ТВ', x0: sw, W: mid, H: s.tvHeight, D: s.depth + 20, plinth: { type: 'legs', h: 100 }, top: 'over', columns: Array.from({ length: tvCols }, (_, i) => (i === 1 && tvCols === 3 ? { shelves: 1 } : { drawers: 2, drawerZone: s.tvHeight - 100 - 18 })) });
+    // the TV top spans the whole gap between the columns: if it outgrows the sheet, the sheet-fit error says why
+    tv.panels.top.fitHint = 'увеличете ширината на колоните или намалете общата ширина';
     const shelfH = 350;
     buildCarcass(ctx, { ...common(s), module: 'Р', x0: sw, y0: s.height - shelfH - 150, W: mid, H: shelfH, D: 300, plinth: { type: 'none', h: 0 }, top: 'between', mount: 'wall', visibleTop: true, columns: Array.from({ length: Math.max(2, Math.round(mid / 600)) }, () => ({ shelves: 0 })) });
   },
 };
 
 const MAX_CARCASS_W = 2400; // wider wardrobes are split into several carcasses
+const SIDE_SHELVES = 5; // shelves in each side column of a wall unit
+// A door is about 24 mm wider than the inner width of its column (full overlay on the side, half overlay on the
+// partition, less the 3 mm gap). One door up to the hinge maker's width, two above it; fronts.js checks the real width.
+const DOOR_OVERHANG = 24;
+const doorsFor = (innerW) => (innerW + DOOR_OVERHANG > HINGE_LIMITS.maxWidth ? 2 : 1);
 
 // Column of a wardrobe: hanging, shelves, or hanging above three drawers (drawer fronts outside, doors above them).
 function wardrobeColumn(layout, i, doors) {
@@ -203,13 +210,15 @@ function columnWidth(W, n, T = STOCK.pb18.thickness) {
 // Upper carcass standing on a lower one: 4 screws from inside the upper carcass through its bottom (Ø5 clearance)
 // into the top of the lower one. 4 × 30 through 18 mm leaves 12 mm in the 18 mm top: the tip stays inside it. The
 // pilot in the lower top is drilled on site through the clearance hole, after stacking (from below the CNC would
-// have to turn the part), so the drawing marks the place.
+// have to turn the part), so the drawing marks the place. Both boards carry Ø5 × 50 confirmat bores in from the sides,
+// the front ones at the depth (z) of the front screws: the screws sit 10 mm past the end of the bores, not in them.
+const STACK_INSET = CONFIRMAT.edgeDepth + 10;
 function joinStacked(ctx, lower, upper) {
   if (!lower.panels.top) throw new Error('joinStacked: the lower carcass needs a top panel');
   const { x0, W, T, backFront, z0, D } = upper.dims;
   const y = upper.dims.c;
   const pts = [];
-  for (const x of [x0 + T + 50, x0 + W - T - 50]) for (const z of [backFront + 50, z0 + D - 50]) pts.push([x, y + T, z]);
+  for (const x of [x0 + T + STACK_INSET, x0 + W - T - STACK_INSET]) for (const z of [backFront + 50, z0 + D - 50]) pts.push([x, y + T, z]);
   for (const p of pts) {
     holeThrough(upper.panels.bottom, p, 5, 'screw', { hw: 'stack', label: 'винт 4×30 към долния корпус' });
     mark(lower.panels.top, [p[0], y, p[2]], 'stack-pilot', { hw: 'stack', label: 'пилот Ø3 на място' });
@@ -231,8 +240,6 @@ export function typeDims(type, s) {
     }
     case 'kitchen':
       return { W: s.modules * s.moduleWidth, H: s.mount + s.wallHeight, D: worktopDepth(s) };
-    case 'wall':
-      return { W: s.width, H: s.mount + s.height, D: s.depth };
     default:
       return { W: s.width, H: s.height, D: s.depth };
   }
@@ -241,5 +248,5 @@ export function typeDims(type, s) {
 export const dimsText = (type, s) => {
   const d = typeDims(type, s);
   if (type === 'bed') return `${s.mattressW / 10}×${s.mattressL / 10} см матрак · ${d.W} × ${d.D} mm`;
-  return `${r1(d.W)} × ${r1(type === 'wall' ? s.height : d.H)} × ${r1(d.D)} mm`;
+  return `${r1(d.W)} × ${r1(d.H)} × ${r1(d.D)} mm`;
 };

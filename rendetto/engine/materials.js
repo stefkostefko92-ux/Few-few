@@ -66,3 +66,6 @@ export const decorName = (id) => {
 export function frontStock(spec) {
   return spec.frontMaterial === 'ral' ? { stock: 'mdf18', decor: spec.frontRal, banded: false } : { stock: 'pb18', decor: spec.frontDecor, banded: true };
 }
+
+// Desk top and kitchen worktop: in the front decor, or in the carcass decor when the fronts are lacquered in RAL.
+export const boardTopDecor = (spec) => (spec.frontMaterial === 'ral' ? spec.carcassDecor : spec.frontDecor);
