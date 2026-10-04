@@ -134,8 +134,10 @@ ZIP отпреди месец.
   ненастроен“), `pg_dump` преди миграцията (последните 5; провален дъмп спира деплоя), `build` +
   `up -d` (миграциите — от entrypoint-а), сонда с маркер `"app":"rendetto"`, vhost-ът от репото
   в nginx щом има сертификат, IndexNow само при променен sitemap. Ако новият код не отговори,
-  `autodeploy.sh` пуска `deploy.sh` на последния работещ release (`RENDETTO_LAST_GOOD`) →
-  `rendetto/DEPLOY.md`.
+  `autodeploy.sh` пуска `deploy.sh` на последния работещ release (`RENDETTO_LAST_GOOD`; чистенето
+  на releases не го трие) с `RENDETTO_SKIP_BACKUP=1` — откатът не изтласква дъмпа отпреди
+  миграцията. Изключение: провалена миграция (`P3018`/`P3009` в лога на app) — старият код спира на
+  същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `rendetto/DEPLOY.md`.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
@@ -159,7 +161,7 @@ ZIP отпреди месец.
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
 | `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
 | `RENDETTO_LAST_GOOD` | `/opt/few-few/shared/rendetto/last-good` | пътят на последния release на rendetto, който е отговорил — към него е откатът |
-| `RENDETTO_SHARED` · `RENDETTO_HEALTH_WAIT` · `RENDETTO_INDEXNOW` | `/opt/few-few/shared/rendetto` · `90` · `1` | за `rendetto/deploy/deploy.sh`: тайни/бекъпи/данни, секунди за сондата, IndexNow |
+| `RENDETTO_SHARED` · `RENDETTO_HEALTH_WAIT` · `RENDETTO_INDEXNOW` | `/opt/few-few/shared/rendetto` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
