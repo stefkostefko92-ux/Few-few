@@ -94,18 +94,20 @@ function projectionSymbol(x, y) {
   return `<g class="d-proj" transform="translate(${x} ${y})"><path d="M0 -2.4 L6 -3.6 L6 3.6 L0 2.4 Z"/><line x1="-1" y1="0" x2="7" y2="0" class="d-cl"/><circle cx="12" cy="0" r="3.6"/><circle cx="12" cy="0" r="2.4"/><line x1="7.6" y1="0" x2="16.4" y2="0" class="d-cl"/></g>`;
 }
 
-// Frame (20 mm binding margin left, 10 mm elsewhere) and a 180 × 36 title block at the bottom right.
+// Frame (20 mm binding margin left, 10 mm elsewhere) and a 180 × 36 title block at the bottom right. sheetNo null:
+// a part without a sheet of its own (its drilling map only) — the drawing number has no sheet and the sheet is „—“.
 export function frame(title, meta, scale, sheetNo, sheetCount, material) {
   const x = 230;
   const y = 251;
+  const drawingNo = meta.hash.slice(0, 8).toUpperCase() + (sheetNo == null ? '' : `-${sheetNo}`);
   const cell = (cx, cy, label, value, cls = 'd-tv') => `<text class="d-tl" x="${cx + 2}" y="${cy + 3.6}">${label}</text><text class="${cls}" x="${cx + 2}" y="${cy + 9.2}">${esc(value)}</text>`;
   return `<rect class="d-frm" x="20" y="10" width="390" height="277"/>
 <g class="d-tb"><rect x="${x}" y="${y}" width="180" height="36"/>
 <line x1="${x}" y1="${y + 12}" x2="${x + 180}" y2="${y + 12}"/><line x1="${x}" y1="${y + 24}" x2="${x + 180}" y2="${y + 24}"/>
 <line x1="${x + 60}" y1="${y + 12}" x2="${x + 60}" y2="${y + 36}"/><line x1="${x + 110}" y1="${y + 12}" x2="${x + 110}" y2="${y + 36}"/><line x1="${x + 145}" y1="${y + 12}" x2="${x + 145}" y2="${y + 36}"/>
 ${cell(x, y, 'Наименование', title.length > 58 ? `${title.slice(0, 57)}…` : title, 'd-tv d-big')}
-${cell(x, y + 12, 'Собственик', meta.owner)}${cell(x + 60, y + 12, 'Чертеж №', `${meta.hash.slice(0, 8).toUpperCase()}-${sheetNo}`)}
-${cell(x + 110, y + 12, 'Мащаб', `1:${scale}`)}${cell(x + 145, y + 12, 'Лист', `${sheetNo}/${sheetCount}`)}
+${cell(x, y + 12, 'Собственик', meta.owner)}${cell(x + 60, y + 12, 'Чертеж №', drawingNo)}
+${cell(x + 110, y + 12, 'Мащаб', `1:${scale}`)}${cell(x + 145, y + 12, 'Лист', sheetNo == null ? '—' : `${sheetNo}/${sheetCount}`)}
 ${cell(x, y + 24, 'Материал', material.length > 30 ? `${material.slice(0, 29)}…` : material)}${cell(x + 60, y + 24, 'Дата', meta.date)}
 ${cell(x + 110, y + 24, 'Размери', 'mm')}<text class="d-tl" x="${x + 147}" y="${y + 27.6}">Проекция</text>${projectionSymbol(x + 158, y + 31.2)}</g>`;
 }

@@ -1,9 +1,11 @@
 // Enlarged details for part drawings: hinge cup with its dowels or screws, hinge mounting plate, handle holes and
 // slide pilots. Each detail draws into a box on the sheet at its own scale, oriented like the main view
 // (u to the right, v up), so the numbers read the same way.
-import { dimH, dimV, fmt } from './drawing-kit.js';
+import { dimH, dimV, fmt, SCALES } from './drawing-kit.js';
 import { esc } from './util.js';
 
+// The first ISO 5455 scale between 1:min and 1:max at which `span` mm takes at most `room` mm of paper, else 1:max.
+const detailScale = (span, room, min, max) => SCALES.find((s) => s >= min && s <= max && span / s <= room) ?? max;
 const box = (b, title, scale) => `<rect class="d-box" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/><text class="d-tag" x="${b.x + 1.5}" y="${b.y + 3.6}">${esc(title)} · М ${scale === 1 ? '1:1' : `1:${scale}`}</text>`;
 
 // Hinge cup: hinge edge, cup, fixings; dimensions from the hinge edge.
@@ -39,14 +41,13 @@ export function hingeDetail(p, cup, fixings, b) {
 }
 
 // Mounting plate holes on the carcass panel: distance from the front edge and the vertical spacing.
-export function plateDetail(p, holes, frontV, b) {
+export function plateDetail(holes, frontV, b) {
   const [a, c] = [...holes].sort((m, n) => m.u - n.u);
-  const k = 1;
   const cx = b.x + b.w / 2;
   const sgn = frontV === 0 ? 1 : -1;
   const ey = b.y + b.h - 12;
   const mid = (a.u + c.u) / 2;
-  const P = (u, v) => [cx + (u - mid) * k, ey - sgn * (v - frontV) * k];
+  const P = (u, v) => [cx + (u - mid), ey - sgn * (v - frontV)];
   const [ax, ay] = P(a.u, a.v);
   const [bx, by] = P(c.u, c.v);
   let s = box(b, 'Планка на панта', 1);
@@ -63,7 +64,7 @@ export function plateDetail(p, holes, frontV, b) {
 export function handleDetail(p, holes, edges, b) {
   const hs = [...holes].sort((m, n) => m.u - n.u || m.v - n.v);
   const span = hs.length === 2 ? Math.hypot(hs[1].u - hs[0].u, hs[1].v - hs[0].v) : 0;
-  const scale = [1, 2, 5, 10, 20].find((sc) => span / sc <= b.w - 24) ?? 20; // ISO 5455 scales
+  const scale = detailScale(span, b.w - 24, 1, 20);
   const k = 1 / scale;
   const cu = hs.reduce((a, h) => a + h.u, 0) / hs.length;
   const cv = hs.reduce((a, h) => a + h.v, 0) / hs.length;
@@ -93,10 +94,10 @@ export function handleDetail(p, holes, edges, b) {
 }
 
 // Slide pilots: positions from the front edge and the height of the row.
-export function slideDetail(p, holes, frontV, b) {
+export function slideDetail(holes, frontV, b) {
   const hs = [...holes].sort((m, n) => Math.abs(m.v - frontV) - Math.abs(n.v - frontV));
   const far = Math.abs(hs.at(-1).v - frontV);
-  const scale = far > 300 ? 10 : far > 120 ? 5 : 2;
+  const scale = detailScale(far, 60, 2, 10); // the row within 60 mm of paper from the front edge
   const k = 1 / scale;
   const x0 = b.x + 8;
   const yRow = b.y + b.h / 2 + 4;

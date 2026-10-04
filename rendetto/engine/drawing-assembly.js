@@ -8,12 +8,13 @@ import { GROOVE, HDF_T } from './joinery.js';
 import { typeLabel } from './model.js';
 import { dimsText } from './types.js';
 import { esc } from './util.js';
+import { drawingParts } from './drawing-part.js';
 
 const FRONTS = new Set(['door', 'drawer-front']);
 const HW_KIND = [['hinge:', 'панта'], ['slide:', 'водач'], ['handle:', 'дръжка']];
 const VARIANT_NOTE = { full: ', покрит кант', half: ', полупокрит кант', inset: ', открит кант' };
 
-export function drawingAssembly(model, meta, sheetNo = 1, sheetCount = 2) {
+export function drawingAssembly(model, meta, sheetNo = 1, sheetCount = drawingParts(model).length + 1) {
   const { parts, symbols, spec } = model;
   const ext = extents(parts, symbols);
   const W = ext.x1 - ext.x0;

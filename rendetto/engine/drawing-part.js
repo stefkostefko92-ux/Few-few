@@ -3,7 +3,7 @@
 // horizontal edge holes as hidden lines, a grouped hole table and enlarged details of the hardware holes.
 import { pickScale, dimH, dimV, ordinates, frame, svgDoc, fmt, errorAlert } from './drawing-kit.js';
 import { hingeDetail, plateDetail, handleDetail, slideDetail } from './drawing-details.js';
-import { partHoles } from './drill.js';
+import { partHoles, edgeOpName } from './drill.js';
 import { edgeLabels, cutSize } from './panel.js';
 import { STOCK, decorName } from './materials.js';
 import { esc, neg } from './util.js';
@@ -26,8 +26,13 @@ export function holeLetters(holes) {
 // drawer bottoms — nothing is machined on them and their sizes are in the cut list. Editor and downloads share it.
 export const drawingParts = (model) => model.parts.filter((p) => p.role !== 'back' && p.role !== 'drawer-bottom');
 
-export function drawingPart(model, meta, partId, sheetNo = 2, sheetCount = 2) {
+// Sheet numbers come from drawingParts unless the caller passes them; a part without a sheet of its own gets none.
+export function drawingPart(model, meta, partId, sheetNo, sheetCount) {
   const p = model.parts.find((x) => x.id === partId) ?? model.parts[0];
+  const own = drawingParts(model);
+  const i = own.findIndex((x) => x.id === p.id);
+  const no = sheetNo ?? (i < 0 ? null : i + 2);
+  const count = sheetCount ?? own.length + 1;
   const holes = partHoles(p);
   const groups = holeLetters(holes);
   const edges = edgeLabels(p);
@@ -131,7 +136,7 @@ export function drawingPart(model, meta, partId, sheetNo = 2, sheetCount = 2) {
   ty += 5;
   g += `<text class="d-tl" x="${tx}" y="${ty}">Бук.</text><text class="d-tl" x="${tx + 9}" y="${ty}">Ø × дълбочина</text><text class="d-tl" x="${tx + 42}" y="${ty}">Бр.</text><text class="d-tl" x="${tx + 52}" y="${ty}">Предназначение · обков</text>`;
   const rows = [...groups.map((gr) => [gr.letter, gr.mark ? 'без отвор' : `Ø${fmt(gr.d)} × ${gr.through ? `${fmt(gr.depth)} (проходен)` : fmt(gr.depth)}`, gr.count, `${gr.purpose}${gr.label ? ` · ${gr.label}` : ''}`])];
-  for (const op of p.edgeOps) rows.push(['Ч', `Ø${fmt(op.d)} × ${fmt(op.depth)}`, op.count, `хоризонтален в ръб „${edges[edgeKey(p, op.edge)]}“`]);
+  for (const op of p.edgeOps) rows.push(['Ч', `Ø${fmt(op.d)} × ${fmt(op.depth)}`, op.count, `хоризонтален в ръб „${edgeOpName(p, edges, op.edge)}“`]);
   for (const gr of p.features.filter((f) => f.type === 'groove')) {
     const alongU = Math.abs(gr.v1 - gr.v2) < 0.01;
     const at = alongU ? `${fmt(gr.v1 - gr.w / 2)} от ръб „${edges.v0}“` : `${fmt(gr.u1 - gr.w / 2)} от ръб „${edges.u0}“`;
@@ -153,14 +158,7 @@ export function drawingPart(model, meta, partId, sheetNo = 2, sheetCount = 2) {
   g += `<text class="d-note" x="30" y="267">Кант: ${bandsTxt.length ? `${bandsTxt.map(fmt).join(' / ')} mm ABS — дебелата линия` : 'няма'}. Хоризонталните отвори „Ч“ не са в G-кода.</text>`;
   g += `<text class="d-note" x="30" y="272">Отворите с буква A… са пробиване отгоре; пълните кръгове са проходни.</text>`;
   const material = `${STOCK[p.stock].name} ${fmt(p.T)} · ${decorName(p.decor)}`;
-  return svgDoc(g + frame(`${p.id} ${p.name} ${fmt(p.L)}×${fmt(p.W)}`, meta, scale, sheetNo, sheetCount, material), `Чертеж с карта за пробиване: ${p.name}`);
-}
-
-function edgeKey(p, dir) {
-  if (dir === p.frame.eu) return 'u1';
-  if (dir === neg(p.frame.eu)) return 'u0';
-  if (dir === p.frame.ev) return 'v1';
-  return 'v0';
+  return svgDoc(g + frame(`${p.id} ${p.name} ${fmt(p.L)}×${fmt(p.W)}`, meta, scale, no, count, material), `Чертеж с карта за пробиване: ${p.name}`);
 }
 
 // Which enlarged details the part needs, most useful first.
@@ -177,12 +175,12 @@ function pickDetails(p, holes, edges) {
   const plates = holes.filter((h) => h.kind === 'plate');
   if (plates.length >= 2 && front !== null) {
     const first = plates.sort((a, c) => a.u - c.u).slice(0, 2);
-    out.push((b) => plateDetail(p, first, front, b));
+    out.push((b) => plateDetail(first, front, b));
   }
   const slides = holes.filter((h) => h.kind === 'slide');
   if (slides.length && front !== null) {
     const u0 = Math.min(...slides.map((h) => h.u));
-    out.push((b) => slideDetail(p, slides.filter((h) => h.u === u0), front, b));
+    out.push((b) => slideDetail(slides.filter((h) => h.u === u0), front, b));
   }
   return out;
 }
