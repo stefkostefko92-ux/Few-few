@@ -12,6 +12,7 @@ export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
 const MIN_WEB = 2; // material left between two holes or a hole and an edge, mm
 const SMALL_PART = { w: 50, area: 0.02 }; // narrower or smaller parts are hard to hold on a vacuum table
 const CAP_ROLES = new Set(['side', 'top', 'bed-head', 'bed-foot']);
+const CAP_KEYS = new Set(['footRail']); // a bed without a footboard: the foot rail's outer face shows the confirmat heads
 
 export const SPEC_DEFAULTS = {
   type: 'base',
@@ -135,7 +136,7 @@ function checkModel(ctx, spec) {
   // confirmat heads on visible faces get caps in the colour of the panel
   const caps = new Map();
   for (const p of parts) {
-    if (!CAP_ROLES.has(p.role)) continue;
+    if (!CAP_ROLES.has(p.role) && !CAP_KEYS.has(p.key)) continue;
     const n = p.features.filter((f) => f.type === 'hole' && f.kind === 'confirmat').length;
     if (n) caps.set(p.decor, (caps.get(p.decor) ?? 0) + n);
   }

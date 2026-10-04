@@ -46,3 +46,43 @@ test('drawer slides on the two faces of a partition never share a hole; when the
     }
   }
 });
+
+const bedSpecs = () => {
+  const out = [];
+  for (const [mattressW] of TYPES.bed.params.find((p) => p.key === 'mattressW').options) {
+    for (const footHeight of [0, 450]) for (const railHeight of [200, 250, 350]) out.push({ type: 'bed', mattressW, footHeight, railHeight });
+  }
+  return out;
+};
+
+test('the bed: every confirmat head on the outside gets a cap, with or without a footboard', () => {
+  for (const spec of bedSpecs()) {
+    const m = buildModel(spec);
+    const heads = m.parts.reduce((a, p) => a + p.features.filter((f) => f.type === 'hole' && f.kind === 'confirmat').length, 0);
+    const caps = m.hardware.filter((h) => h.key.startsWith('caps:')).reduce((a, h) => a + h.qty, 0);
+    assert.equal(caps, heads, `${JSON.stringify(spec)}: ${caps} caps for ${heads} confirmat heads`);
+  }
+});
+
+test('the bed: both halves of every bed fitting sit clear of the ledgers', () => {
+  // distance from a point to a part's box, mm
+  const toBox = (w, b) => Math.hypot(...[0, 1, 2].map((i) => Math.max(b.min[i] - w[i], 0, w[i] - b.max[i])));
+  for (const spec of bedSpecs()) {
+    const m = buildModel(spec);
+    const ledgers = m.parts.filter((p) => p.role === 'bed-ledger');
+    const marks = m.parts.flatMap((p) => p.features.filter((f) => f.kind === 'bedfit').map((f) => ({ part: p, w: f.world })));
+    assert.equal(marks.length, 8, `${JSON.stringify(spec)}: ${marks.length} fitting halves`);
+    for (const { part, w } of marks) {
+      for (const l of ledgers) assert.ok(toBox(w, l.box) >= 40, `${JSON.stringify(spec)}: fitting on ${part.name} ${toBox(w, l.box).toFixed(1)} mm from ${l.name}`);
+    }
+  }
+});
+
+test('the bed: a footboard lower than the rail is raised to it, with a notice', () => {
+  const notice = (m) => m.warnings.some((w) => w.level === 'info' && w.text.startsWith('Таблата при краката'));
+  const low = buildModel({ type: 'bed', footHeight: 100, railBottom: 150, railHeight: 250 });
+  assert.equal(low.parts.find((p) => p.key === 'foot').box.max[1], 400);
+  assert.ok(notice(low), 'a raised footboard without a notice');
+  assert.ok(!notice(buildModel({ type: 'bed', footHeight: 450 })), 'a notice for a footboard above the rail');
+  assert.ok(!notice(buildModel({ type: 'bed', footHeight: 0 })), 'a notice for a bed without a footboard');
+});
