@@ -113,12 +113,14 @@ ${cell(x + 110, y + 24, 'Размери', 'mm')}<text class="d-tl" x="${x + 147}
 }
 
 let seq = 0;
-export function svgDoc(inner, label) {
+// `sheet` — the sheet's own id (the part id, or `assembly`): two parts may share a name (the left and right side of a
+// drawer), and the full-screen view tells sheets apart by it.
+export function svgDoc(inner, label, sheet = '') {
   seq += 1;
   const uid = `r${seq}`;
   const body = inner.replaceAll('url(#ARW)', `url(#arw-${uid})`).replaceAll('url(#HATCH)', `url(#hatch-${uid})`);
   const defs = DEFS.replace('id="ARW"', `id="arw-${uid}"`).replace('id="HATCH"', `id="hatch-${uid}"`);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 297" class="rdw" role="img" aria-label="${esc(label)}"><style>${STYLE}</style><defs>${defs}</defs><rect class="d-paper" x="0" y="0" width="420" height="297"/>${body}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 297" class="rdw" role="img" aria-label="${esc(label)}"${sheet ? ` data-sheet="${esc(sheet)}"` : ''}><style>${STYLE}</style><defs>${defs}</defs><rect class="d-paper" x="0" y="0" width="420" height="297"/>${body}</svg>`;
 }
 
 export const fmt = dimTxt;

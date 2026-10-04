@@ -99,7 +99,7 @@ export function drawingAssembly(model, meta) {
   g += `<text class="d-vt" x="${Z((ext.z0 + ext.z1) / 2)}" y="${Y(0) + (both ? 27 : 20)}" text-anchor="middle">Разрез A–A</text>`;
   g += notes(model);
   const material = materialLine(parts);
-  return svgDoc(g + frame(`${typeLabel(spec.type)} ${dimsText(spec.type, spec)}`, meta, scale, 1, drawingSheets(model).count, material), `Сглобен чертеж: ${typeLabel(spec.type)}`);
+  return svgDoc(g + frame(`${typeLabel(spec.type)} ${dimsText(spec.type, spec)}`, meta, scale, 1, drawingSheets(model).count, material), `Сглобен чертеж: ${typeLabel(spec.type)}`, 'assembly');
 }
 
 function extents(parts, symbols) {

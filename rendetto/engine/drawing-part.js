@@ -163,7 +163,7 @@ export function drawingPart(model, meta, partId) {
   g += `<text class="d-note" x="30" y="267">Кант: ${bandsTxt.length ? `${bandsTxt.map(fmt).join(' / ')} mm ABS — дебелата линия` : 'няма'}. Хоризонталните отвори „Ч“ не са в G-кода.</text>`;
   g += `<text class="d-note" x="30" y="272">Отворите с буква A… са пробиване отгоре; пълните кръгове са проходни.</text>`;
   const material = `${STOCK[p.stock].name} ${fmt(p.T)} · ${decorName(p.decor)}`;
-  return svgDoc(g + frame(`${p.id} ${p.name} ${fmt(p.L)}×${fmt(p.W)}`, meta, scale, no, count, material), `Чертеж с карта за пробиване: ${p.name}`);
+  return svgDoc(g + frame(`${p.id} ${p.name} ${fmt(p.L)}×${fmt(p.W)}`, meta, scale, no, count, material), `Чертеж с карта за пробиване: ${p.id} ${p.name}`, p.id);
 }
 
 // Which enlarged details the part needs, most useful first.

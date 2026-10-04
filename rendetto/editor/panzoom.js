@@ -7,7 +7,8 @@ const STEP = 1.25;
 export class PanZoom {
   // box: the element whose own <svg> child is the drawing (it is redrawn in place: a new <svg> of the same sheet
   // keeps the view — the CNC simulation redraws every frame — another sheet starts whole). All drawings share one
-  // A3 viewBox, so a sheet is told by its viewBox and its name (aria-label: the part or the sheet).
+  // A3 viewBox, so a sheet is told by its viewBox and its id: data-sheet (the part id; two parts may share a name,
+  // as the two sides of a drawer do), or the aria-label where a drawing has no id (nesting and CNC sheets).
   constructor(box) {
     this.box = box;
     this.on = false;
@@ -38,7 +39,7 @@ export class PanZoom {
       return;
     }
     const base = { x: vb.x, y: vb.y, w: vb.width, h: vb.height };
-    const key = svg.getAttribute('aria-label');
+    const key = svg.getAttribute('data-sheet') ?? svg.getAttribute('aria-label');
     const same =
       this.base && this.name === key && ['x', 'y', 'w', 'h'].every((k) => this.base[k] === base[k]);
     this.base = base;

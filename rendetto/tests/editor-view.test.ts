@@ -31,10 +31,11 @@ let shown = ''; // the viewBox the drawing shows
 let current: object | null = null; // the <svg> in the box
 const listeners = new Map<string, (ev: object) => void>();
 
-function sheet(label: string) {
+function sheet(label: string, id: string | null = null) {
   return {
     viewBox: { baseVal: { x: 0, y: 0, width: 420, height: 297 } },
-    getAttribute: (name: string) => (name === 'aria-label' ? label : null),
+    getAttribute: (name: string) =>
+      name === 'aria-label' ? label : name === 'data-sheet' ? id : null,
     setAttribute: (name: string, value: string) => {
       if (name === 'viewBox') shown = value;
     },
@@ -81,8 +82,8 @@ const { localDate, externalLink } = await editorModule<DomModule>('dom.js', [
   'externalLink',
 ]);
 
-function openSheet(label = 'Лист 1'): PanZoomLike {
-  current = sheet(label);
+function openSheet(label = 'Лист 1', id: string | null = null): PanZoomLike {
+  current = sheet(label, id);
   shown = '';
   const pz = new PanZoom(box);
   pz.enable(true);
@@ -178,6 +179,19 @@ test('a redraw of the same sheet keeps the view; another sheet starts whole', ()
   pz.adopt();
   assert.deepEqual(viewOf(pz), zoomed);
   current = sheet('Лист 2');
+  pz.adopt();
+  assert.deepEqual(viewOf(pz), { x: 0, y: 0, w: 420, h: 297 });
+});
+
+test('two parts with the same name are two sheets: the id tells them apart', () => {
+  const name = 'Чертеж с карта за пробиване: М2 Чекмедже 1 страница';
+  const pz = openSheet(name, 'P26');
+  pz.zoomAt(2, 100, 100);
+  const zoomed = { ...viewOf(pz) };
+  current = sheet(name, 'P26'); // redrawn: the same part keeps the view
+  pz.adopt();
+  assert.deepEqual(viewOf(pz), zoomed);
+  current = sheet(name, 'P27'); // the other side of the drawer, same name
   pz.adopt();
   assert.deepEqual(viewOf(pz), { x: 0, y: 0, w: 420, h: 297 });
 });
