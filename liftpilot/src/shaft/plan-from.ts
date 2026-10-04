@@ -30,21 +30,13 @@ export function wallArea(L: Layout, w: Wall, u0: number, v0: number, u1: number,
 
 const dirOf = (r: Rail): readonly [number, number] => (r.dir === 'right' ? [1, 0] : r.dir === 'left' ? [-1, 0] : r.dir === 'back' ? [0, 1] : [0, -1]);
 
-/** A rail seen from a side across its length: the end of its flange (`foot`) or of its blade (`tip`) nearest that
- *  side, for a chain that runs along the rail's direction. */
+/** A rail seen from a side: the edge nearest that side of its flange (`foot`) or of its blade's tip (`tip`), across
+ *  the rail's direction (a chain on that side measures where its foot or its tip stands along the rail). */
 export function railFace(L: Layout, r: Rail, side: Side, part: 'foot' | 'tip'): number {
   const s = RAILS[r.kind === 'car' ? L.inputs.carRail : L.inputs.cwRail], half = (part === 'foot' ? s.b : s.k) / 2, [ux] = dirOf(r);
   // a rail pointing along x has its flange across y, and the other way round
   const c = ux !== 0 ? r.y : r.x, up = side === 'top' || side === 'right';
   return up ? c + half : c - half;
-}
-
-/** A rail seen from a side along its length: its foot or its tip, whichever is nearer that side, for a chain across
- *  the rail's direction. */
-export function railEnd(L: Layout, r: Rail, side: Side): number {
-  const h = RAILS[r.kind === 'car' ? L.inputs.carRail : L.inputs.cwRail].h, [ux, uy] = dirOf(r);
-  const tip = ux !== 0 ? r.x : r.y, foot = tip - h * (ux !== 0 ? ux : uy), up = side === 'top' || side === 'right';
-  return up ? Math.max(tip, foot) : Math.min(tip, foot);
 }
 
 /** The outer end toward a side of an axis drawn across the plan past its walls: the car's, the rails' (plan-view.ts). */

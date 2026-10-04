@@ -155,11 +155,15 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
     : pick([side - 220, side - 370, side - 520, vFrame + 200, vFrame + 350], 0, G.calata);
   const [a, b] = [onDrop(G, G.frame0, vFrame), onDrop(G, G.frame1, vFrame)], drop = onDrop(G, 0, vDrop);
   const sorted = (p: number, q: number): number[] => [Math.min(p, q), Math.max(p, q)];
-  // from the bedframe's side toward the chain, and from the rope drops on their line
+  // from the bedframe's side toward the chain
   const edgeV = vFrame < G.across[0] ? G.across[0] : G.across[1], edge = onDrop(G, G.frame0, edgeV)[1 - ax];
   out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], from: [edge, edge], text: ['{v} Telaio argano'] }));
-  out.push(chain({ dir: ax ? 'y' : 'x', pts: sorted(G.carDrop[ax], G.cwDrop[ax]), at: drop[1 - ax], from: [G.carDrop[1 - ax], G.cwDrop[1 - ax]], text: ['Calata Funi {v}'],
-    edit: [S.calata(0, false)] }));
+  // the rope drop between the ropes, from each of them: along an axis on a chain there; askew, along the drop line
+  // itself (the rows outside give where each drop stands)
+  const [r0, r1] = G.carDrop[ax] <= G.cwDrop[ax] ? [G.carDrop, G.cwDrop] : [G.cwDrop, G.carDrop];
+  out.push(chain(Math.max(Math.abs(G.ux), Math.abs(G.uy)) > 0.999
+    ? { dir: ax ? 'y' : 'x', pts: [r0[ax], r1[ax]], at: drop[1 - ax], from: [r0[1 - ax], r1[1 - ax]], text: ['Calata Funi {v}'], edit: [S.calata(0, false)] }
+    : { dir: ax ? 'y' : 'x', on: { o: G.carDrop, u: [G.ux, G.uy] }, pts: [0, G.calata], at: vDrop, from: [0, 0], text: ['Calata Funi {v}'], edit: [S.calata(0, false)] }));
   // the bedplate with the diverting pulley: its length and width beside the machine, away from the drop's chains
   if (bed) {
     const [c, d] = [onDrop(G, bed.u0, bed.v1 + 220), onDrop(G, bed.u1, bed.v1 + 220)], side1 = onDrop(G, bed.u0, bed.v1)[1 - ax];
@@ -168,16 +172,19 @@ export function roomPlanOn(S: RoomSite, M: MachineSpec, G: RoomGeo): { entities:
   return { entities: out, bounds: { x0: -WALL, y0: -WALL, x1: R.W + WALL, y1: R.D + WALL } };
 }
 
-/** A survey's rope drops from the shaft's walls, one chain along each axis beyond the shaft's own (row 2): the car's
- *  drop changes with its segment from the nearer wall; the counterweight's follows the calculation. */
+/** A survey's rope drops from the shaft's walls, one chain along each axis nearest the drawing (row 0, inside the
+ *  shaft's own): the car's drop changes with its segment from the nearer wall; the counterweight's follows the
+ *  calculation. */
 function dropChains(S: RoomSite, d: { car: Pt; cw: Pt }, R: RoomGeo['room'], dimSide: 'top' | 'bottom' | 'left' | 'right'): Entity[] {
   const out: Entity[] = [];
   for (const [ax, len, at0, side] of [[0, S.W, R.shaftX, dimSide === 'top' ? 'bottom' : 'top'], [1, S.D, R.shaftY, dimSide === 'right' ? 'left' : 'right']] as const) {
     const car = Math.round(d.car[ax] * 2) / 2, cw = Math.round(d.cw[ax] * 2) / 2, mid = Math.abs(cw - car) < 1 ? [car] : [Math.min(car, cw), Math.max(car, cw)];
     const key = ax ? 'drop.carY' : 'drop.carX', pts = [0, ...mid, len];
     const edit = pts.slice(1).map((p, i): Edit | null => (i === 0 && p === car ? E(key) : i === pts.length - 2 && pts[i] === car ? E(key, len, -1) : null));
-    // each drop's extension line from the drop itself, the shaft's walls from the drawing's edge
-    const other = ax ? R.shaftX : R.shaftY, dropAt = (p: number): number => other + (Math.abs(p - car) < 1 ? d.car : d.cw)[1 - ax];
+    // each drop's extension line from the drop itself (two drops on one line: from the farther, through the nearer), the
+    // shaft's walls from the drawing's edge
+    const other = ax ? R.shaftX : R.shaftY, across = (q: Pt): number => other + q[1 - ax], up = side === 'top' || side === 'right';
+    const dropAt = (p: number): number => (mid.length === 1 ? (up ? Math.min : Math.max)(across(d.car), across(d.cw)) : across(Math.abs(p - car) < 1 ? d.car : d.cw));
     const from = pts.map((p, i) => (i === 0 || i === pts.length - 1 ? undefined : dropAt(p)));
     out.push(chain({ dir: ax ? 'y' : 'x', pts: pts.map((p) => at0 + p), side, row: 0, edit, from }));
   }

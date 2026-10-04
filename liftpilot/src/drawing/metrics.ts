@@ -45,13 +45,18 @@ export function wrap(text: string, width: number, f: Font): string[] {
   return out;
 }
 
-/** Paper box of a lettering, level or turned 90°: its measured width, from a little under the baseline to its size
- *  over it. */
+/** Paper box of a lettering: its measured width, from a little under the baseline to its size over it; turned, the box
+ *  round it. */
 export function textBox(s: TextShape): Box {
   const w = textWidth(s.text, { size: s.size, bold: s.bold, cond: s.cond }), h = s.size;
   const lo = s.align === 'r' ? -w : s.align === 'c' ? -w / 2 : 0;
-  const [x, y] = s.at;
-  return (s.angle ?? 0) === 90 ? { x0: x - h, y0: y + lo, x1: x + 0.3 * h, y1: y + lo + w } : { x0: x + lo, y0: y - 0.3 * h, x1: x + lo + w, y1: y + h };
+  const [x, y] = s.at, angle = s.angle ?? 0;
+  if (angle === 0) return { x0: x + lo, y0: y - 0.3 * h, x1: x + lo + w, y1: y + h };
+  if (angle === 90) return { x0: x - h, y0: y + lo, x1: x + 0.3 * h, y1: y + lo + w };
+  const r = (angle * Math.PI) / 180, [c, sn] = [Math.cos(r), Math.sin(r)];
+  const pts = [[lo, -0.3 * h], [lo + w, -0.3 * h], [lo + w, h], [lo, h]].map(([u, v]) => [x + u * c - v * sn, y + u * sn + v * c]);
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
 }
 
 /** The largest size, not above `size`, at which the text fits in `width`. */

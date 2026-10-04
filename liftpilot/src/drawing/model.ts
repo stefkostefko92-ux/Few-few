@@ -46,6 +46,10 @@ export interface Chain {
   text?: readonly (string | null)[];
   /** what editing each segment changes (null: it cannot be changed there) */
   edit?: readonly (Edit | null)[];
+  /** a chain along a line across the axes, from `o` in the unit direction `u`: its points are distances along that line,
+   *  `at` is where its dimension line stands to the line's left and `from` where the extension lines start, across it
+   *  (oblique.ts; `dir` and `side` are not read) */
+  on?: { o: Pt; u: Pt };
 }
 
 export type Entity =

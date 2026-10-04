@@ -10,7 +10,7 @@ import { edit as E, type Edit, type Side } from '../drawing';
 import { KV } from './norme';
 import { RAILS } from './rails';
 import { railPick } from './plan-picks';
-import { areaOf, axisEnd, faceOf, railEnd, railFace, wallArea } from './plan-from';
+import { areaOf, axisEnd, faceOf, railFace, wallArea } from './plan-from';
 import { landingOf } from './landing';
 import type { PushChain } from './plan-dims';
 import type { DoorLayout, Layout } from './types';
@@ -41,8 +41,9 @@ export function sideWallDims({ L, push, total, open, doorSide, carY, nd }: SideW
       const [a, b] = L.rails.filter((r) => r.kind === 'cw'), n = L.cw.h, sh = KV.cwShoe, pick = railPick('cwRail', I.cwRail);
       if (L.frame.kind === 'cantilever') {
         const [p, q] = L.rails.filter((r) => r.kind === 'car');
+        // the blades face each other along the wall: the distance between their tips, from the tips
         push(side, 'y', [0, p.y, q.y, D], [null, '{v} D.F.G. Arcata', null], [E('plan.railY'), E('plan.dbg'), E('plan.railY', D - (q.y - p.y), -1)],
-          { from: [undefined, railEnd(L, p, side), railEnd(L, q, side), undefined] });
+          { from: [undefined, railFace(L, p, side, 'tip'), railFace(L, q, side, 'tip'), undefined] });
       }
       push(side, 'y', [0, a.y - wr.h, a.y, b.y, b.y + wr.h, D], [null, '{v}', 'D.F.G {v}', '{v}', null],
         [E('plan.cwPos', sh + wr.h), pick, E('plan.cwLen', -2 * sh), pick, E('plan.cwPos', D - n - sh - wr.h, -1)],

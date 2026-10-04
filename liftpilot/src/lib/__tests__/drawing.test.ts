@@ -30,6 +30,9 @@ test('quote: il valore tiene le sue parole e la sua misura, fuori dal tratto sul
   // a lowest segment near the bottom edge does not go below the drawing: its figure alone, in its middle
   const [v] = text(chainShapes({ dir: 'y', pts: [0, 300, 5000], side: 'left', row: 0, text: ['{v} Base Ammortizzatore', '{v}'] }, place, edges));
   assert.ok(v && v.at[1] >= -1 && v.text === '300', `${v?.text} ${v?.at[1]}`);
+  // a name with numbers of its own (a beam's profile): the figure alone is the segment's value, not the name's
+  const [h] = text(chainShapes({ dir: 'y', pts: [0, 300, 5000], side: 'left', row: 0, text: ['HEA 140 {v}', '{v}'] }, place, edges));
+  assert.equal(h?.text, '300');
   // a segment wide enough keeps its text centred at full size
   const [w] = text(chainShapes({ dir: 'x', pts: [0, 3000], side: 'bottom', row: 0 }, place, edges));
   assert.deepEqual([w?.size, w?.align, w?.text], [TEXT.dim, 'c', '3000']);
@@ -48,6 +51,23 @@ test('quote: il valore tiene le sue parole e la sua misura, fuori dal tratto sul
   // the extension line starts a gap off the element measured; a point on the wall starts from the drawing's edge
   const ext = lines(chainShapes({ dir: 'x', pts: [0, 1000], side: 'top', row: 1, from: [200, undefined] }, place, edges)).filter((l) => l.a[0] === l.b[0]);
   assert.deepEqual(ext.map((l) => [l.a[0], +Math.min(l.a[1], l.b[1]).toFixed(3)]), [[0, 200 / 50 + DIM.gap], [20, 100 + DIM.gap]]);
+});
+
+test('quota di sbieco: lungo la sua linea, il valore vero, letto da sinistra o dal basso', () => {
+  for (const u of [[0.6, 0.8], [-0.6, -0.8]] as const) {
+    const r = renderView([chain({ dir: 'x', on: { o: [0, 0], u }, pts: [0, 1000], at: -200, from: [0, 0], text: ['Calata {v}'] })], { scale: 20, ox: 0, oy: 0 });
+    const t = r.shapes.find((s): s is Extract<Shape, { t: 'text' }> => s.t === 'text');
+    assert.equal(t?.text, 'Calata 1000');
+    assert.ok(t && Math.abs((t.angle ?? 0) - (Math.atan2(0.8, 0.6) * 180) / Math.PI) < 1e-9, `${t?.angle}`);
+    // on the side of its dimension line away from the line measured
+    assert.ok(t.at[0] * -u[1] + t.at[1] * u[0] < -200 / 20, `${t.at}`);
+    // its extension lines square to the line, from a gap off the drops to a little past the dimension line
+    const ext = r.shapes.filter((s): s is Extract<Shape, { t: 'line' }> => s.t === 'line').slice(0, 2);
+    for (const l of ext) {
+      const d = [l.b[0] - l.a[0], l.b[1] - l.a[1]], len = Math.hypot(d[0], d[1]);
+      assert.ok(Math.abs(d[0] * u[0] + d[1] * u[1]) < 1e-9 && Math.abs(len - (200 / 20 - DIM.gap + DIM.over)) < 1e-9, `${len}`);
+    }
+  }
 });
 
 test('quote: la cifra gira attorno alle scritte già sul foglio', () => {

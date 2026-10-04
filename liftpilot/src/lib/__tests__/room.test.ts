@@ -149,3 +149,22 @@ test('sostituzione → progetto completo: tiro diretto, cabina e contrappeso sot
   assert.equal(atSurveyDrops(big, deep(3300)), null);
   assert.ok(shaftInputsSchema.safeParse(atSurveyDrops(big, deep(3200))).success);
 });
+
+test('pianta del locale: la calata fra le funi, dalle funi; di sbieco lungo la loro linea, col valore vero', () => {
+  const calataOf = (car: { x: number; y: number }, cw: { x: number; y: number }) => {
+    const d = deriveRoom(DEFL, { ...startSurvey(780), car, cw }), G = d.G;
+    assert.ok(G, 'locale');
+    const c = chains(roomPlanOn(d.site, d.M, G).entities).find((x) => x.text?.[0] === 'Calata Funi {v}');
+    assert.ok(c && typeof c.from === 'object', 'la calata');
+    return { G, c, from: c.from };
+  };
+  // almost along y, the counterweight's drop first: each extension line from its own drop
+  const near = calataOf({ x: 800, y: 1150 }, { x: 810, y: 450 }), ax = near.c.dir === 'y' ? 1 : 0;
+  assert.equal(near.c.on, undefined);
+  near.c.pts.forEach((p, i) => assert.equal(near.from[i], (Math.abs(p - near.G.carDrop[ax]) < 1e-9 ? near.G.carDrop : near.G.cwDrop)[1 - ax], `punto ${i}`));
+  // askew: along the drop line, the distance between the ropes, from the ropes
+  for (const [car, cw] of [[{ x: 800, y: 1150 }, { x: 700, y: 450 }], [{ x: 1100, y: 800 }, { x: 400, y: 700 }]]) {
+    const { G, c, from } = calataOf(car, cw);
+    assert.deepEqual([c.on?.o, c.on?.u, c.pts, from], [G.carDrop, [G.ux, G.uy], [0, G.calata], [0, 0]]);
+  }
+});

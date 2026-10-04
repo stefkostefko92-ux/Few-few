@@ -149,7 +149,8 @@ export function planDims(L: Layout, level: PlanLevel, floor: number, labels: Pla
     if (L.frame.kind === 'central') {
       const [l, r] = carRails, footL = l.x - cr.h, footR = r.x + cr.h, sg = I.shoeGap, rp = railPick('carRail', I.carRail);
       const [lf, lt, rt, rf] = [railFace(L, l, rs, 'foot'), railFace(L, l, rs, 'tip'), railFace(L, r, rs, 'tip'), railFace(L, r, rs, 'foot')];
-      push(rs, 'x', [0, footL, l.x, car.x, car.x + car.w, r.x, footR, W], [null, '{v}', '{v}', '{v}', '{v}', '{v}', null],
+      // the car between the shoes without its width: the platform's row by the door gives it
+      push(rs, 'x', [0, footL, l.x, car.x, car.x + car.w, r.x, footR, W], [null, '{v}', '{v}', '', '{v}', '{v}', null],
         [E('plan.carX', cr.h + sg), rp, E('shoeGap'), E('plan.A', -2 * cw), E('shoeGap'), rp, E('plan.carX', W - car.w - sg - cr.h, -1)],
         { from: [undefined, lf, lt, carR, carR, rt, rf, undefined] });
       push(rs, 'x', [0, l.x, r.x, W], [null, '{v} D.F.G. Arcata', null], [E('plan.carX', sg), E('plan.A', -2 * (sg + cw)), E('plan.carX', W - car.w - sg, -1)],

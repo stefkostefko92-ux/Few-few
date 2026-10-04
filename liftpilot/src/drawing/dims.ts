@@ -25,11 +25,17 @@ const isShort = (len: number): boolean => len < 2 * DIM.arrow + 0.6;
 
 const fmt = (v: number): string => String(Math.round(v));
 
-/** The figure of a text with words round it ("Interpiano 3000" → "3000"); null for a bare figure or no figure. */
-const figureOf = (text: string): string | null => {
-  const m = /\d+(?:[.,]\d+)?/.exec(text);
-  return m && m[0] !== text.trim() ? m[0] : null;
-};
+/** A text with words round its figure ("Interpiano 3000" → "3000" and "Interpiano"): the figure is the segment's value
+ *  where the text says it (a profile's name may carry numbers of its own), else the text's first number; null for a
+ *  bare figure or no figure. */
+function splitFigure(text: string, value: string): { fig: string; words: string } | null {
+  const t = text.trim(), own = new RegExp(`(^|\\D)(${value})(?!\\d)`).exec(t), first = /\d+(?:[.,]\d+)?/.exec(t);
+  const [fig, at] = own ? [own[2], own.index + own[1].length] : first ? [first[0], first.index] : [null, 0];
+  if (fig === null || fig === t) return null;
+  // the words left round it, without the brackets that held it ("Calata (768)" → "Calata")
+  const words = `${t.slice(0, at)} ${t.slice(at + fig.length)}`.replace(/\(\s*\)/g, ' ').replace(/\s+/g, ' ').trim();
+  return { fig, words };
+}
 
 /** Boxes closer than 0.2 mm on both axes. */
 const clash = (a: Box, b: Box): boolean => Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) > -0.2 && Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) > -0.2;
@@ -37,6 +43,8 @@ const clash = (a: Box, b: Box): boolean => Math.min(a.x1, b.x1) - Math.max(a.x0,
 /** One segment's lettering on its dimension line (paper coordinates along the chain and across it). */
 interface Seg {
   text: string;
+  /** its value as the lettering writes it */
+  written: string;
   /** the segment's ends along the chain, the line across, the paper range along the chain a value past its end may
    *  take (the drawing's, and the rows' room beyond its corners) */
   a: number;
@@ -44,8 +52,9 @@ interface Seg {
   line: number;
   lo: number;
   hi: number;
-  first: boolean;
-  last: boolean;
+  /** the segment ends the chain at its low or its high end along it */
+  atLo: boolean;
+  atHi: boolean;
   /** a neighbour long enough to carry this lettering beside it, before and after */
   roomBefore: boolean;
   roomAfter: boolean;
@@ -77,7 +86,7 @@ function spotsOf(g: Seg, horiz: boolean, mk: Mk): Spot[] {
   const width = (t: string, s: number): number => textWidth(t, { size: s, cond: true });
   // the usual side of the line (over a level line, left of an upright one) and the other, for a lettering of size s
   const near = g.line + (horiz ? DIM.textGap : -DIM.textGap), far = (s: number): number => (horiz ? g.line - DIM.textGap - s : g.line + DIM.textGap + s);
-  const fig = figureOf(g.text), fits = (t: string, s: number): boolean => width(t, s) + 0.6 <= len + 1e-9;
+  const split = splitFigure(g.text, g.written), fig = split?.fig ?? null, fits = (t: string, s: number): boolean => width(t, s) + 0.6 <= len + 1e-9;
   const small = Math.min(size, (len - 0.6) / Math.max(width(g.text, 1), 1e-9)), shrinks = small >= DIM.minText && small < size;
   const inside = (side: (s: number) => number): Spot[] => {
     const r: Spot[] = [];
@@ -89,13 +98,13 @@ function spotsOf(g: Seg, horiz: boolean, mk: Mk): Spot[] {
   // past the end of the chain: the arrowhead from outside of a short end segment first, then the lettering
   const past = (t: string): Spot[] => {
     const w = width(t, size), gap = isShort(len) ? DIM.arrow + 0.5 : 0.8, r: Spot[] = [];
-    if (g.last && hi + gap + w <= g.hi) r.push({ s: mk(t, size, P(hi + gap, near), 'l'), run: [P(hi, g.line), P(hi + gap + w + 0.3, g.line)] });
-    if (g.first && lo - gap - w >= g.lo) r.push({ s: mk(t, size, P(lo - gap, near), 'r'), run: [P(lo, g.line), P(lo - gap - w - 0.3, g.line)] });
+    if (g.atHi && hi + gap + w <= g.hi) r.push({ s: mk(t, size, P(hi + gap, near), 'l'), run: [P(hi, g.line), P(hi + gap + w + 0.3, g.line)] });
+    if (g.atLo && lo - gap - w >= g.lo) r.push({ s: mk(t, size, P(lo - gap, near), 'r'), run: [P(lo, g.line), P(lo - gap - w - 0.3, g.line)] });
     return r;
   };
   out.push(...inside(() => near), ...past(g.text));
   // the figure over the line and its words under it, both in the segment
-  const words = fig ? g.text.replace(fig, ' ').replace(/\s+/g, ' ').trim() : '';
+  const words = split?.words ?? '';
   if (fig && words && fits(fig, size) && width(words, DIM.minText) <= len + 0.4) {
     out.push({ s: mk(fig, size, P(mid, near), 'c'), words: mk(words, DIM.minText, P(mid, far(DIM.minText)), 'c') });
   }
@@ -159,7 +168,7 @@ export function chainShapes(c: Chain, place: Place, edges: Box, onText?: (s: Tex
   const rot = horiz ? 0 : 90, lo = horiz ? edges.x0 - reach('left') : edges.y0 - reach('bottom'), hi = horiz ? edges.x1 + reach('right') : edges.y1 + reach('top');
   const angleOf = (sign: number): number => (horiz ? (sign > 0 ? 0 : Math.PI) : sign > 0 ? Math.PI / 2 : -Math.PI / 2);
   const mk: Mk = (text, size, at, align) => ({ t: 'text', at, text, size, angle: rot, align, cond: true, halo: true });
-  const dots = new Set<number>(), lens = along.slice(1).map((b, i) => Math.abs(b - along[i]));
+  const dots = new Set<number>(), lens = along.slice(1).map((b, i) => Math.abs(b - along[i])), [ends0, ends1] = [Math.min(...along), Math.max(...along)];
   const segs: (Seg & { i: number; value: number })[] = [];
   for (let i = 0; i + 1 < n; i++) {
     const a = along[i], b = along[i + 1], len = lens[i], s = Math.sign(b - a) || 1;
@@ -176,7 +185,8 @@ export function chainShapes(c: Chain, place: Place, edges: Box, onText?: (s: Tex
     const text = tpl == null ? fmt(value) : tpl.replace('{v}', fmt(value));
     if (!text) continue;
     const room = (k: number): boolean => k >= 0 && k < n - 1 && !isShort(lens[k]);
-    segs.push({ i, value, text, a, b, line, lo, hi, first: i === 0, last: i === n - 2, roomBefore: room(i - 1), roomAfter: room(i + 1) });
+    segs.push({ i, value, written: fmt(value), text, a, b, line, lo, hi, atLo: Math.min(a, b) <= ends0 + 1e-6, atHi: Math.max(a, b) >= ends1 - 1e-6, roomBefore: room(i - 1),
+      roomAfter: room(i + 1) });
   }
   // the long segments first, each value in its middle; then the short ones round them, in order
   const order = [...segs].sort((p, q) => Number(isShort(Math.abs(p.b - p.a))) - Number(isShort(Math.abs(q.b - q.a))) || p.i - q.i);

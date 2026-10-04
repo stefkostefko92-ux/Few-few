@@ -5,9 +5,10 @@ import { chainShapes, rowOffset } from './dims';
 import { boundsOf, boxH, boxW, grow, toPaper, union, type Place } from './geom';
 import { textBox, textWidth } from './metrics';
 import type { Edit, Entity, Side } from './model';
+import { obliqueShapes } from './oblique';
 import { FILLS, STYLES, TEXT } from './style';
 import { symbol } from './symbols';
-import type { Box, Pt, Shape } from './types';
+import type { Box, Pt, Shape, TextShape } from './types';
 
 /** ISO 5455 reductions, with the 1:25 of lift layouts. */
 export const SCALES = [5, 10, 20, 25, 50, 100, 200, 500] as const;
@@ -82,10 +83,12 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
   entities.forEach((e, i) => {
     if (e.e !== 'chain') return;
     const edit = e.c.edit;
-    parts[i] = chainShapes(e.c, place, E, edit ? (s, k, value) => {
+    const onText = edit ? (s: TextShape, k: number, value: number): void => {
       const ed = edit[k];
       if (ed) hits.push({ box: grow(shapeBox(s), 0.5), edit: ed, value: ed.value ?? value });
-    } : undefined, taken, room);
+    } : undefined;
+    const { on } = e.c;
+    parts[i] = on ? obliqueShapes({ ...e.c, on }, place, onText, taken) : chainShapes(e.c, place, E, onText, taken, room);
   });
   // the lettering over every line of the annotations, so that a line crossing it stops at its band of paper
   for (const s of parts.flat()) if (s.t !== 'text') notes.push(s);

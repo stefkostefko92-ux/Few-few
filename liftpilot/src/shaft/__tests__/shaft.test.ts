@@ -108,6 +108,10 @@ test('due accessi adiacenti: arcata a zaino con le lame affacciate lungo la pare
   assert.deepEqual(L.doors.map((d) => [d.side, d.wall]), [['A', 'front'], ['B', 'right']]);
   // the operators of the two doors run into each other at the corner: a warning, not a failure
   assert.equal(status(I).v_op, 'warn');
+  // the D.F.G. on the counterweight's wall: its extension lines start at the blades' tips, by the rails
+  const dfg = planDims(L, 'main', 0, { level: '' }).flatMap((e) => (e.e === 'chain' ? [e.c] : [])).find((c) => c.text?.[1] === '{v} D.F.G. Arcata');
+  assert.ok(dfg && typeof dfg.from === 'object', 'D.F.G. Arcata');
+  for (const k of [1, 2]) near(dfg.from[k] ?? NaN, a.x - cr.k / 2);
 });
 test('porta centrale troppo larga per il vano e distanze fuori limite', () => {
   const s = status({ ...defaultInputs(1400, 2000), door: 'C2', doorWidth: 900, access: 'none', sillGap: 40, cwCarGap: 40, landingDepth: 120 });
