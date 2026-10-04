@@ -28,10 +28,13 @@ async function download(target: string): Promise<string> {
       continue;
     }
     const tmp = `${target}.download`;
+    // Правата — изрично, не от umask-а: `docker compose exec` (DEPLOY.md, т. 4) може да върви с umask
+    // 0000 и файлът би станал 666. Остатък от прекъснато сваляне се прави наново, не с правата си.
+    rmSync(tmp, { force: true });
     await pipeline(
       Readable.fromWeb(res.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>),
       createGunzip(),
-      createWriteStream(tmp),
+      createWriteStream(tmp, { mode: 0o600 }),
     );
     return tmp;
   }
@@ -40,7 +43,7 @@ async function download(target: string): Promise<string> {
 
 async function main(): Promise<void> {
   const target = fromRoot(config().GEOIP_PATH);
-  mkdirSync(dirname(target), { recursive: true });
+  mkdirSync(dirname(target), { recursive: true, mode: 0o700 });
   const tmp = await download(target);
   const reader = await maxmind.open<CountryResponse>(tmp);
   const probe = reader.get('8.8.8.8')?.country?.iso_code;
