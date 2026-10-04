@@ -44,6 +44,10 @@
       "subject": "Richiesto il cambio della vostra email Rendetto",
       "body": "è stato richiesto il cambio dell'email del vostro account in {email}. L'email cambia solo quando il nuovo indirizzo viene confermato.\n\nSe non siete stati voi, cambiate subito la password: {security}"
     },
+    "emailChangedByStaff": {
+      "subject": "L'email del vostro account Rendetto è stata cambiata",
+      "body": "il team di Rendetto ha cambiato l'email del vostro account in {email}. D'ora in poi accedete con il nuovo indirizzo e i link inviati a questo indirizzo non valgono più.\n\nSe non l'avete chiesto voi, scriveteci subito all'indirizzo qui sotto."
+    },
     "trialEnding": {
       "subject": "Il vostro periodo di prova Rendetto finisce tra 3 giorni",
       "body": "il vostro periodo di prova finisce il {date}. Dopo, i progetti restano e si possono scaricare, ma nuovi progetti e modifiche richiedono un piano.\n\nPiani e prezzi: {plan}"

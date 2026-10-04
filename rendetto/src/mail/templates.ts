@@ -146,6 +146,16 @@ export function mailEmailChangeNotice(
   );
 }
 
+/** До СТАРИЯ адрес: екипът е сменил имейла — смяната вече е станала, човекът научава веднага. */
+export function mailEmailChangedByStaff(
+  to: string,
+  locale: Locale,
+  name: string | null,
+  newEmail: string,
+): Promise<boolean> {
+  return send(to, locale, 'emailChangedByStaff', { email: newEmail }, name);
+}
+
 export function mailTrialEnding(
   to: string,
   locale: Locale,

@@ -44,6 +44,10 @@
       "subject": "A change of your Rendetto email was requested",
       "body": "A change of your account's email to {email} was requested. The email changes only when the new address is confirmed.\n\nIf it was not you, change your password right away: {security}"
     },
+    "emailChangedByStaff": {
+      "subject": "Your Rendetto email was changed",
+      "body": "The Rendetto team changed your account's email to {email}. From now on you sign in with the new address, and links sent to this address no longer work.\n\nIf you did not ask for this, write to us right away at the address below."
+    },
     "trialEnding": {
       "subject": "Your Rendetto trial ends in 3 days",
       "body": "Your trial ends on {date}. After that your projects stay and can be downloaded, but new projects and changes need a plan.\n\nPlans and prices: {plan}"

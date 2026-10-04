@@ -5,9 +5,18 @@ import { outranks } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { revokeEmailTokens } from '../auth/tokens.js';
 import { isLocale } from '../i18n.js';
+import { greetingName, mailEmailChangedByStaff } from '../mail/templates.js';
 import { trialEndsAt } from '../plans/plan.js';
 import { emailSchema, nameSchema } from './auth-common.js';
-import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
+import {
+  fail,
+  isResult,
+  isUniqueViolation,
+  localeOf,
+  targetFor,
+  type ActionResult,
+  type StaffActor,
+} from './admin-common.js';
 
 /* ----------------------------------- редакция ----------------------------------- */
 
@@ -39,33 +48,47 @@ export async function editAccount(
   const parsed = editSchema.safeParse(raw);
   if (!parsed.success) return fail('admin.errors.input');
   const input = parsed.data;
-  if (
-    input.email !== target.email &&
-    (await prisma.user.findUnique({ where: { email: input.email } }))
-  ) {
+  const emailChanged = input.email !== target.email;
+  if (emailChanged && (await prisma.user.findUnique({ where: { email: input.email } }))) {
     return fail('admin.errors.emailTaken');
   }
   const verifyNow = input.emailVerified && !target.emailVerifiedAt;
   const startTrial = verifyNow && target.plan === 'TRIAL' && !target.planExpiresAt;
-  await prisma.user.update({
-    where: { id },
-    data: {
-      name: input.name,
-      email: input.email,
-      locale: input.locale,
-      // Веднъж потвърден имейл не става пак непотвърден: поддръжката трие непотвърдени акаунти, а
-      // изтриването иска отделна способност и потвърждение.
-      emailVerifiedAt: target.emailVerifiedAt ?? (input.emailVerified ? new Date() : null),
-      ...(startTrial ? { planExpiresAt: trialEndsAt(new Date()) } : {}),
-    },
-  });
-  // нов имейл: връзките, пратени до стария адрес, вече не вършат работа
-  if (input.email !== target.email) await revokeEmailTokens(id);
+  const saved = await prisma
+    .$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id },
+        data: {
+          name: input.name,
+          email: input.email,
+          locale: input.locale,
+          // Веднъж потвърден имейл не става пак непотвърден: поддръжката трие непотвърдени акаунти, а
+          // изтриването иска отделна способност и потвърждение.
+          emailVerifiedAt: target.emailVerifiedAt ?? (input.emailVerified ? new Date() : null),
+          ...(startTrial ? { planExpiresAt: trialEndsAt(new Date()) } : {}),
+        },
+      });
+      // Нов имейл: връзките, пратени до стария адрес, вече не вършат работа. В същата транзакция —
+      // при повторно „Запази“ имейлът вече е новият и до анулирането не би се стигнало.
+      if (emailChanged) await revokeEmailTokens(id, undefined, tx);
+      return true;
+    })
+    .catch((error: unknown) => {
+      if (isUniqueViolation(error)) return false;
+      throw error;
+    });
+  if (!saved) return fail('admin.errors.emailTaken');
+  // Старият адрес научава, както при смяната от самия човек — смяна от екипа не минава тихо. Само до
+  // потвърден адрес: непотвърденият може да е чужд (грешно изписан) и не бива да научава новия.
+  if (emailChanged && target.emailVerifiedAt) {
+    void mailEmailChangedByStaff(target.email, localeOf(target), greetingName(target), input.email);
+  }
   await audit(actor, {
     action: 'admin.account.edited',
     targetType: 'user',
     targetId: id,
-    detail: { emailChanged: input.email !== target.email, verified: input.emailVerified },
+    // какво е направено сега: отметката на вече потвърден акаунт е изключена и не идва с формата
+    detail: { emailChanged, verifiedNow: verifyNow },
   });
   return { ok: true };
 }
