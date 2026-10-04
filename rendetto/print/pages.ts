@@ -1,5 +1,6 @@
 import type { Locale, Translator } from '../src/i18n.js';
 import type { PriceRow } from '../src/plans/pricing.js';
+import { HOW_STEPS } from '../src/seo/structured-data.js';
 import type { LandingAssets } from '../src/services/landing-assets.js';
 import type { LineupGroup } from './lineup.js';
 
@@ -49,11 +50,11 @@ export function titleBlock(c: BrochureContext, n: number): string {
 }
 
 /** Svg от чертеж на програмата с ширина в мм на хартията; класът `rdw` остава — стилът на чертежа е по него. */
-export function drawing(svg: string, widthMm: number): string {
+function drawing(svg: string, widthMm: number): string {
   return svg.replace('class="rdw"', `class="rdw" style="width:${widthMm}mm;height:auto"`);
 }
 
-export function viewBoxOf(svg: string): [number, number, number, number] {
+function viewBoxOf(svg: string): [number, number, number, number] {
   const box = /viewBox="([^"]+)"/.exec(svg)?.[1]?.split(/\s+/).map(Number) ?? [0, 0, 420, 297];
   return [box[0] ?? 0, box[1] ?? 0, box[2] ?? 420, box[3] ?? 297];
 }
@@ -87,12 +88,10 @@ export function cover(c: BrochureContext): string {
 
 export function how(c: BrochureContext): string {
   const { t, assets } = c;
-  const steps = [1, 2, 3, 4]
-    .map(
-      (n) =>
-        `<li><span class="b-n">${n}</span><h3>${esc(t(`landing.how.s${n}.title`))}</h3><p>${esc(t(`landing.how.s${n}.text`))}</p></li>`,
-    )
-    .join('');
+  const steps = HOW_STEPS.map(
+    (n) =>
+      `<li><span class="b-n">${n}</span><h3>${esc(t(`landing.how.s${n}.title`))}</h3><p>${esc(t(`landing.how.s${n}.text`))}</p></li>`,
+  ).join('');
   const edges = (list: number[]) => (list.length ? list.map((v) => c.num(v)).join(' + ') : '—');
   const rows = assets.cutRows
     .map(

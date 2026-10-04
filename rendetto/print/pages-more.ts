@@ -1,6 +1,10 @@
 import { COMPANY } from '../src/company.js';
+import type { FaqId } from '../src/seo/structured-data.js';
 import type { FurnitureRange } from '../src/services/furniture.js';
-import { esc, icon, titleBlock, type BrochureContext } from './pages.js';
+import { esc, icon, PAGES, titleBlock, type BrochureContext } from './pages.js';
+
+/** Въпросите от витрината, които влизат и в брошурата. */
+const BROCHURE_FAQ: readonly FaqId[] = ['install', 'languages', 'data'];
 
 export function machine(c: BrochureContext): string {
   const { t, assets } = c;
@@ -94,12 +98,10 @@ export function prices(c: BrochureContext): string {
   <p class="b-trial-big">${esc(t('landing.prices.trial', { days: c.trialDays }))}</p>
   <ul class="b-prices">${cards}</ul>
   <ul class="b-notes">${notes}<li>${esc(t('brochure.prices.asOf', { date: c.priceDate, terms: '§' })).replace('§', terms)}</li></ul>
-  <dl class="b-faq">${['install', 'languages', 'data']
-    .map(
-      (id) =>
-        `<div><dt>${esc(t(`landing.faq.${id}.q`))}</dt><dd>${esc(t(`landing.faq.${id}.a`))}</dd></div>`,
-    )
-    .join('')}</dl>
+  <dl class="b-faq">${BROCHURE_FAQ.map(
+    (id) =>
+      `<div><dt>${esc(t(`landing.faq.${id}.q`))}</dt><dd>${esc(t(`landing.faq.${id}.a`))}</dd></div>`,
+  ).join('')}</dl>
   <div class="b-close">
     <div>
       <h3>${esc(t('landing.closing.title'))}</h3>
@@ -109,6 +111,6 @@ export function prices(c: BrochureContext): string {
     </div>
     <a class="b-qr" href="${esc(c.url.site)}">${c.qr}</a>
   </div>
-  <footer class="b-company"><p>${esc(c.company)}</p><p>Created and Designed by <a href="${COMPANY.url}" target="_blank" rel="noopener">Carbon Stealth VCC</a></p><span>${esc(t('brochure.sheet', { n: 6, total: 6 }))}</span></footer>
+  <footer class="b-company"><p>${esc(c.company)}</p><p>Created and Designed by <a href="${COMPANY.url}" target="_blank" rel="noopener">Carbon Stealth VCC</a></p><span>${esc(t('brochure.sheet', { n: PAGES, total: PAGES }))}</span></footer>
 </section>`;
 }

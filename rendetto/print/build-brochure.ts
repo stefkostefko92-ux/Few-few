@@ -58,7 +58,23 @@ function renderImage(): string | null {
     : null;
 }
 
-async function contextFor(locale: Locale, site: string): Promise<BrochureContext> {
+type SharedContext = Pick<BrochureContext, 'lineup' | 'render' | 'mark'>;
+
+/** Частите, които не зависят от езика — смятат се веднъж за трите брошури. */
+function sharedContext(): SharedContext {
+  const groups = furnitureLineup();
+  return {
+    lineup: { groups, scale: LINEUP_SCALE, count: groups.reduce((n, g) => n + g.items.length, 0) },
+    render: renderImage(),
+    mark: readFileSync(join(ROOT, 'views', 'partials', 'mark.ejs'), 'utf8').trim(),
+  };
+}
+
+async function contextFor(
+  locale: Locale,
+  site: string,
+  shared: SharedContext,
+): Promise<BrochureContext> {
   const t = translatorFor(locale);
   const tag = LOCALE_TAG[locale];
   const number = new Intl.NumberFormat(tag);
@@ -69,7 +85,6 @@ async function contextFor(locale: Locale, site: string): Promise<BrochureContext
     timeZone: 'Europe/Sofia',
   });
   const landing = `${site}${PATHS[locale]}`;
-  const groups = furnitureLineup();
   // етикетът и стойността (и телефонът) не се разделят на два реда
   const keep = (text: string) => text.replace(/ /g, '\u00a0');
   const company = [
@@ -84,6 +99,7 @@ async function contextFor(locale: Locale, site: string): Promise<BrochureContext
     keep(`${t('company.phoneLabel')} ${COMPANY.phone}`),
   ].join(', ');
   return {
+    ...shared,
     locale,
     t,
     num: (value) => number.format(value),
@@ -94,19 +110,16 @@ async function contextFor(locale: Locale, site: string): Promise<BrochureContext
       terms: `${site}${legalPath(locale, 'terms')}`,
     },
     assets: landingAssets(),
-    lineup: { groups, scale: LINEUP_SCALE, count: groups.reduce((n, g) => n + g.items.length, 0) },
     prices: priceTable(),
     trialDays: TRIAL_DAYS,
     vatPercent: VAT_BG_PERCENT,
     priceDate: date.format(new Date(`${CONTENT_UPDATED}T12:00:00Z`)),
-    render: renderImage(),
     qr: await QRCode.toString(landing, {
       type: 'svg',
       margin: 0,
       errorCorrectionLevel: 'M',
       color: { dark: '#34302f', light: '#0000' },
     }),
-    mark: readFileSync(join(ROOT, 'views', 'partials', 'mark.ejs'), 'utf8').trim(),
     email: COMPANY.email,
     company,
   };
@@ -137,11 +150,12 @@ async function main(): Promise<void> {
     .map((file) => readFileSync(join(HERE, file), 'utf8'))
     .join('\n')
     .replace('/*FONTS*/', fontFaces());
+  const shared = sharedContext();
   mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch();
   try {
     for (const locale of LOCALES) {
-      const html = documentFor(await contextFor(locale, site), css);
+      const html = documentFor(await contextFor(locale, site, shared), css);
       writeFileSync(join(OUT, `brochure-${locale}.html`), html);
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'load' });

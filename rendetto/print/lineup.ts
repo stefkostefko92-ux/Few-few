@@ -110,7 +110,7 @@ function frontView(model: Model, rowHeight: number): string {
 }
 
 /** Габаритът отпред: с краката, ако ги има; горен шкаф — само собствената му височина. */
-function extents(model: Model): { x0: number; x1: number; y0: number; y1: number; legs: boolean } {
+function extents(model: Model): { x0: number; x1: number; y0: number; y1: number } {
   const xs = model.parts.flatMap((p) => [p.box.min[0], p.box.max[0]]);
   const ys = model.parts.flatMap((p) => [p.box.min[1], p.box.max[1]]);
   for (const s of model.symbols.filter((sy) => sy.type === 'worktop')) {
@@ -123,7 +123,6 @@ function extents(model: Model): { x0: number; x1: number; y0: number; y1: number
     x1: Math.max(...xs),
     y0: legs ? 0 : Math.min(...ys),
     y1: Math.max(...ys),
-    legs,
   };
 }
 

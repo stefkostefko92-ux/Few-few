@@ -49,36 +49,41 @@ async function main(): Promise<void> {
       page.waitForURL(/\/app\/p\//),
       page.click('.newproj-form button[type=submit]'),
     ]);
-    const id = /\/app\/p\/([a-z0-9]+)/.exec(page.url())?.[1] ?? '';
-    await page.waitForTimeout(2500);
-    const stage = page.locator('.stage');
-    const box = await stage.boundingBox();
-    if (!box) throw new Error('няма 3D сцена на страницата');
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    for (let i = 0; i < ZOOM_STEPS; i++) {
-      await page.mouse.wheel(0, -240);
-      await page.waitForTimeout(200);
-    }
-    const clip = { x: box.x + 2, y: box.y + 2, width: box.width - 4, height: box.height - 4 };
-    const started = Date.now();
-    let last = await page.screenshot({ clip });
-    for (;;) {
-      await page.waitForTimeout(SETTLE_MS);
-      const next = await page.screenshot({ clip });
-      if (next.equals(last) || Date.now() - started > SETTLE_LIMIT_MS) break;
-      last = next;
-    }
-    mkdirSync(join(ROOT, 'print', 'assets'), { recursive: true });
+    const id = /\/app\/p\/([a-z0-9]+)/.exec(page.url())?.[1];
+    if (!id) throw new Error('не се вижда номерът на новия проект');
     const file = join(ROOT, 'print', 'assets', 'kitchen-3d.jpg');
-    await page.screenshot({
-      path: file,
-      type: 'jpeg',
-      quality: 88,
-      clip,
-    });
-    await page.goto(`${base}/app`);
-    await page.click(`form[action="/app/p/${id}/delete"] button[type=submit]`);
-    await page.waitForLoadState('networkidle');
+    try {
+      await page.waitForTimeout(2500);
+      const stage = page.locator('.stage');
+      const box = await stage.boundingBox();
+      if (!box) throw new Error('няма 3D сцена на страницата');
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      for (let i = 0; i < ZOOM_STEPS; i++) {
+        await page.mouse.wheel(0, -240);
+        await page.waitForTimeout(200);
+      }
+      const clip = { x: box.x + 2, y: box.y + 2, width: box.width - 4, height: box.height - 4 };
+      const started = Date.now();
+      let last = await page.screenshot({ clip });
+      for (;;) {
+        await page.waitForTimeout(SETTLE_MS);
+        const next = await page.screenshot({ clip });
+        if (next.equals(last) || Date.now() - started > SETTLE_LIMIT_MS) break;
+        last = next;
+      }
+      mkdirSync(join(ROOT, 'print', 'assets'), { recursive: true });
+      await page.screenshot({
+        path: file,
+        type: 'jpeg',
+        quality: 88,
+        clip,
+      });
+    } finally {
+      // the project goes away even when the capture fails — the test account does not pile up copies
+      await page.goto(`${base}/app`);
+      await page.click(`form[action="/app/p/${id}/delete"] button[type=submit]`);
+      await page.waitForLoadState('networkidle');
+    }
     process.stdout.write(`${file}\n`);
   } finally {
     await browser.close();
