@@ -122,16 +122,16 @@ accountSecurityRouter.post('/account/security/2fa/disable', sensitiveLimiter, as
 });
 
 accountSecurityRouter.post('/account/security/recovery', sensitiveLimiter, async (req, res) => {
-  const codes = await regenerateRecoveryCodes(
+  const result = await regenerateRecoveryCodes(
     await me(req),
     stringField(req.body, 'code', 20),
     requestMeta(req),
   );
-  if (!codes) {
-    back(res, '/account/security', 'error', 'flash.wrongCode');
+  if (!result.ok) {
+    back(res, '/account/security', 'error', result.key);
     return;
   }
-  await renderSecurity(req, res, { codes });
+  await renderSecurity(req, res, { codes: result.codes });
 });
 
 accountSecurityRouter.post('/account/security/sessions/:id/revoke', async (req, res) => {

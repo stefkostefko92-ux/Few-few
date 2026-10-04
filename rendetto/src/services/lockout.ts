@@ -11,9 +11,26 @@ export const MAX_FAILED_LOGINS = 5;
 export const LOCK_MS = 15 * 60 * 1000;
 
 /**
+ * Заключва акаунта, ако грешките са стигнали тавана. Заключва го точно една от паралелните заявки —
+ * тя пише и в одита и само за нея резултатът е true.
+ */
+async function lockAccount(user: User, meta: RequestMeta): Promise<boolean> {
+  const lock = await prisma.user.updateMany({
+    where: { id: user.id, failedLogins: { gte: MAX_FAILED_LOGINS } },
+    data: { failedLogins: 0, lockedUntil: new Date(Date.now() + LOCK_MS) },
+  });
+  if (lock.count !== 1) return false;
+  await audit(customerActor(user, meta), {
+    action: 'auth.locked',
+    targetType: 'user',
+    targetId: user.id,
+  });
+  return true;
+}
+
+/**
  * Грешна парола или грешен код. Броячът расте атомно в базата — паралелни опити не могат да прочетат
- * една и съща стойност и да го заобиколят. На петия неуспех акаунтът се заключва за 15 минути; заключва
- * го точно една от заявките, тя пише и в одита.
+ * една и съща стойност и да го заобиколят. На петия неуспех акаунтът се заключва за 15 минути.
  */
 export async function countFailure(
   user: User,
@@ -26,27 +43,16 @@ export async function countFailure(
   });
   if (failedLogins < MAX_FAILED_LOGINS)
     return { count: failedLogins, locked: false, lockedNow: false };
-  const lock = await prisma.user.updateMany({
-    where: { id: user.id, failedLogins: { gte: MAX_FAILED_LOGINS } },
-    data: { failedLogins: 0, lockedUntil: new Date(Date.now() + LOCK_MS) },
-  });
-  if (lock.count === 1)
-    await audit(customerActor(user, meta), {
-      action: 'auth.locked',
-      targetType: 'user',
-      targetId: user.id,
-    });
-  return { count: failedLogins, locked: true, lockedNow: lock.count === 1 };
+  return { count: failedLogins, locked: true, lockedNow: await lockAccount(user, meta) };
 }
 
 /**
- * Грешна парола или код при потвърждение на чувствително действие (смяна на парола или имейл, 2FA,
- * изтриване) — броят се към същия брояч като входа. Отворена сесия не дава безкрайни опити: на петия
- * акаунтът се заключва, всички сесии падат и собственикът получава писмо.
+ * Неуспешно повторно удостоверяване, вече отчетено в брояча (опитът се заема преди проверката —
+ * reauth.ts). Отворена сесия не дава безкрайни опити: на петия акаунтът се заключва, всички сесии
+ * падат и собственикът получава писмо.
  */
-export async function reauthFailed(user: User, meta: RequestMeta): Promise<void> {
-  const result = await countFailure(user, meta);
-  if (!result.lockedNow) return;
+export async function lockOnReauthFailure(user: User, meta: RequestMeta): Promise<void> {
+  if (!(await lockAccount(user, meta))) return;
   await destroyAllSessions(user.id);
   void mailCodeFailures(user.email, isLocale(user.locale) ? user.locale : 'bg', greetingName(user));
 }

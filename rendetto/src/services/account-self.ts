@@ -1,14 +1,12 @@
 import type { User } from '@prisma/client';
 import { audit, SYSTEM_ACTOR } from '../audit.js';
 import { prisma } from '../db.js';
-import { verifyPassword } from '../auth/password.js';
 import { describeUserAgent, hwidLabel } from '../auth/device.js';
 import { isLocale, type Locale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import { greetingName, mailAccountDeleted } from '../mail/templates.js';
 import { customerActor, nameSchema } from './auth-common.js';
-import { reauthFailed } from './lockout.js';
-import { checkSecondFactor } from './security.js';
+import { reauthCode, reauthPassword } from './reauth.js';
 
 export interface SessionRow {
   id: string;
@@ -106,14 +104,10 @@ export async function deleteOwnAccount(
   meta: RequestMeta,
 ): Promise<DeleteResult> {
   if (!input.confirmed) return { ok: false, key: 'account.delete.confirmMissing' };
-  if (!(await verifyPassword(input.password, user.passwordHash))) {
-    await reauthFailed(user, meta);
-    return { ok: false, key: 'flash.wrongPassword' };
-  }
-  if (!(await checkSecondFactor(user, input.code))) {
-    await reauthFailed(user, meta);
-    return { ok: false, key: 'flash.wrongCode' };
-  }
+  const denied =
+    (await reauthPassword(user, input.password, meta)) ??
+    (await reauthCode(user, input.code, meta));
+  if (denied) return { ok: false, key: denied };
   if (user.role === 'OWNER' && (await prisma.user.count({ where: { role: 'OWNER' } })) <= 1) {
     return { ok: false, key: 'account.delete.lastOwner' };
   }

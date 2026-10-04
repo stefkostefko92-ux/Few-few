@@ -4,8 +4,8 @@ import { audit } from '../audit.js';
 import { config } from '../config.js';
 import { decryptSecret, encryptSecret } from '../crypto.js';
 import { prisma } from '../db.js';
-import { hashPassword, verifyPassword } from '../auth/password.js';
-import { consumeRecoveryCode, issueRecoveryCodes } from '../auth/recovery.js';
+import { hashPassword } from '../auth/password.js';
+import { issueRecoveryCodes } from '../auth/recovery.js';
 import { isStaff } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import {
@@ -15,7 +15,7 @@ import {
   recentTokenCount,
   revokeEmailTokens,
 } from '../auth/tokens.js';
-import { generateTotpSecret, isTotpCode, otpauthUrl, verifyTotp } from '../auth/totp.js';
+import { generateTotpSecret, otpauthUrl, verifyTotp } from '../auth/totp.js';
 import { isLocale, type Locale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import {
@@ -26,29 +26,14 @@ import {
   mailResetPassword,
   mailTwoFactor,
 } from '../mail/templates.js';
-import { claimTotpStep, customerActor, emailSchema, newPasswordProblem } from './auth-common.js';
-import { reauthFailed } from './lockout.js';
+import { customerActor, emailSchema, newPasswordProblem } from './auth-common.js';
+import { reauthCode, reauthPassword } from './reauth.js';
 import { markEmailVerified } from './registration.js';
 
 const HOUR = 60 * 60 * 1000;
 
 function localeOf(user: User): Locale {
   return isLocale(user.locale) ? user.locale : 'bg';
-}
-
-/** Проверка на втория фактор за чувствително действие: код от приложението или резервен код. */
-export async function checkSecondFactor(user: User, input: string): Promise<boolean> {
-  if (!user.totpEnabledAt || !user.totpSecretEnc) return true;
-  const code = input.trim();
-  if (isTotpCode(code)) {
-    const step = verifyTotp(
-      decryptSecret(user.totpSecretEnc, config().ENC_KEY),
-      code,
-      user.totpLastStep,
-    );
-    return step !== null && claimTotpStep(user.id, step);
-  }
-  return consumeRecoveryCode(user.id, code);
 }
 
 /* ----------------------------------- пароли ----------------------------------- */
@@ -62,10 +47,8 @@ export async function changePassword(
   sessionId: string,
   meta: RequestMeta,
 ): Promise<PasswordChange> {
-  if (!(await verifyPassword(current, user.passwordHash))) {
-    await reauthFailed(user, meta);
-    return { ok: false, key: 'flash.wrongPassword' };
-  }
+  const denied = await reauthPassword(user, current, meta);
+  if (denied) return { ok: false, key: denied };
   const problem = await newPasswordProblem(next, [user.email, user.name]);
   if (problem) return { ok: false, key: problem };
   await prisma.user.update({
@@ -190,14 +173,9 @@ export async function disableTotp(
   meta: RequestMeta,
 ): Promise<TotpDisable> {
   if (isStaff(user.role)) return { ok: false, key: 'flash.staffKeeps2fa' };
-  if (!(await verifyPassword(password, user.passwordHash))) {
-    await reauthFailed(user, meta);
-    return { ok: false, key: 'flash.wrongPassword' };
-  }
-  if (!(await checkSecondFactor(user, code))) {
-    await reauthFailed(user, meta);
-    return { ok: false, key: 'flash.wrongCode' };
-  }
+  const denied =
+    (await reauthPassword(user, password, meta)) ?? (await reauthCode(user, code, meta));
+  if (denied) return { ok: false, key: denied };
   await prisma.$transaction([
     prisma.user.update({
       where: { id: user.id },
@@ -214,23 +192,23 @@ export async function disableTotp(
   return { ok: true };
 }
 
+export type RecoveryCodes = { ok: true; codes: string[] } | { ok: false; key: string };
+
 export async function regenerateRecoveryCodes(
   user: User,
   code: string,
   meta: RequestMeta,
-): Promise<string[] | null> {
-  if (!user.totpEnabledAt) return null;
-  if (!(await checkSecondFactor(user, code))) {
-    await reauthFailed(user, meta);
-    return null;
-  }
+): Promise<RecoveryCodes> {
+  if (!user.totpEnabledAt) return { ok: false, key: 'flash.wrongCode' };
+  const denied = await reauthCode(user, code, meta);
+  if (denied) return { ok: false, key: denied };
   const codes = await issueRecoveryCodes(user.id);
   await audit(customerActor(user, meta), {
     action: 'auth.recovery.regenerated',
     targetType: 'user',
     targetId: user.id,
   });
-  return codes;
+  return { ok: true, codes };
 }
 
 /* ------------------------------------ имейл ------------------------------------ */
@@ -244,10 +222,8 @@ export async function requestEmailChange(
   password: string,
   meta: RequestMeta,
 ): Promise<EmailChange> {
-  if (!(await verifyPassword(password, user.passwordHash))) {
-    await reauthFailed(user, meta);
-    return { ok: false, key: 'flash.wrongPassword' };
-  }
+  const denied = await reauthPassword(user, password, meta);
+  if (denied) return { ok: false, key: denied };
   const email = emailSchema.safeParse(rawEmail);
   if (!email.success || email.data === user.email) return { ok: false, key: 'auth.errors.email' };
   // Таванът брои ИСКАНИЯТА (одита), не пратените връзки: за зает адрес връзка не тръгва, и броят

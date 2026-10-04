@@ -78,8 +78,8 @@ export function verifyTotp(
   lastStep: number | null,
   nowSeconds: number = Math.floor(Date.now() / 1000),
 ): number | null {
+  if (!isTotpCode(code)) return null;
   const given = code.replace(/\s+/g, '');
-  if (!CODE_RE.test(given)) return null;
   const current = totpStep(nowSeconds);
   for (const drift of [-1, 0, 1]) {
     const step = current + drift;

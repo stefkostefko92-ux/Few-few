@@ -51,6 +51,18 @@ test('an app code is told apart from a recovery code by its digits', () => {
   assert.equal(isTotpCode('abcde-fghjk'), false);
 });
 
+test('a code typed the way the app shows it ("123 456") is a code, not a recovery code', () => {
+  const t = 1234567890;
+  const code = totpCode(SECRET, t);
+  const spaced = `${code.slice(0, 3)} ${code.slice(3)}`;
+  assert.ok(isTotpCode(spaced));
+  assert.ok(isTotpCode(` ${code} `));
+  assert.equal(verifyTotp(SECRET, spaced, null, t), totpStep(t));
+  assert.ok(!isTotpCode('12345'));
+  assert.ok(!isTotpCode('1234567'));
+  assert.ok(!isTotpCode('abcde-fghjk'), 'a recovery code goes to the recovery check');
+});
+
 test('a used code cannot be replayed', () => {
   const t = 2000000000;
   const accepted = verifyTotp(SECRET, totpCode(SECRET, t), null, t);
