@@ -24,6 +24,7 @@ interface PanZoomModule {
 interface DomModule {
   localDate(d?: Date): string;
   externalLink(url: unknown, text: string): string;
+  money(v: unknown, cur?: string): string;
 }
 
 const SCREEN = { left: 0, top: 0, width: 840, height: 594 };
@@ -77,9 +78,10 @@ const { PanZoom, ZOOM_STEP } = await editorModule<PanZoomModule>('panzoom.js', [
   'PanZoom',
   'ZOOM_STEP',
 ]);
-const { localDate, externalLink } = await editorModule<DomModule>('dom.js', [
+const { localDate, externalLink, money } = await editorModule<DomModule>('dom.js', [
   'localDate',
   'externalLink',
+  'money',
 ]);
 
 function openSheet(label = 'Лист 1', id: string | null = null): PanZoomLike {
@@ -120,6 +122,15 @@ test('only an https address becomes a link; the rest is escaped text', () => {
   );
   for (const url of ['http://shop.example', 'javascript:alert(1)', ' https://x', '', null, 7])
     assert.equal(externalLink(url, 'Панта <b>'), 'Панта &lt;b&gt;', String(url));
+});
+
+test('a price keeps its amount and currency on one line (no-break space)', () => {
+  const nbsp = String.fromCharCode(0xa0);
+  assert.match(money(2.5, 'EUR'), new RegExp(`^\\S+${nbsp}€$`));
+  assert.match(money(12, 'BGN'), new RegExp(`${nbsp}лв\\.$`));
+  assert.ok(!money(3, 'EUR').includes(' '), 'no plain space');
+  assert.equal(money(Number.NaN, 'EUR'), '—');
+  assert.ok(!money(4, undefined).endsWith(nbsp), 'no currency, no trailing space');
 });
 
 test('a drawing opens whole and zooms at the pointer, keeping that point still', () => {

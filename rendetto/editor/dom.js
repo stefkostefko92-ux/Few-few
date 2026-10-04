@@ -26,9 +26,10 @@ export const mm = (v) => {
   return fmt(x, Number.isInteger(x) ? 0 : 1);
 };
 export { esc };
+// amount and currency are kept on one line (U+00A0), as in every text of the product
 export const money = (v, cur) =>
   Number.isFinite(v)
-    ? `${fmt(v, 2)} ${cur === 'EUR' ? '€' : cur === 'BGN' ? 'лв.' : (cur ?? '')}`.trim()
+    ? `${fmt(v, 2)}\u00a0${cur === 'EUR' ? '€' : cur === 'BGN' ? 'лв.' : (cur ?? '')}`.trim()
     : '—';
 export const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
