@@ -5,6 +5,7 @@ import {
   deviceSummary,
   fingerprintHash,
   hwidLabel,
+  mailDeviceSummary,
   parseFingerprint,
 } from '../src/auth/device.js';
 
@@ -30,6 +31,12 @@ test('the fingerprint is parsed strictly', () => {
   assert.equal(parseFingerprint('not json'), null);
   assert.equal(parseFingerprint('x'.repeat(3000)), null);
   assert.equal(parseFingerprint(42), null);
+  // free text cannot carry new lines or bidi overrides into the panel or a mail
+  assert.equal(
+    parseFingerprint(JSON.stringify({ ...FP, gpu: 'ANGLE\n\nRendetto team: ok' })),
+    null,
+  );
+  assert.equal(parseFingerprint(JSON.stringify({ ...FP, tz: 'Europe/\u202eSofia' })), null);
 });
 
 test('HWID follows the hardware, not the language, time zone or screen', () => {
@@ -51,4 +58,7 @@ test('browser and system are named from the user agent', () => {
   assert.equal(describeUserAgent(safari).os, 'iOS');
   assert.equal(describeUserAgent(safari).browser, 'Safari 18');
   assert.match(deviceSummary(FP, edge), /Windows/);
+  // the security mail names only what was recognised from the user agent, never the client's free text
+  assert.equal(mailDeviceSummary(edge), 'Windows, Edge 141');
+  assert.equal(mailDeviceSummary('Totally legit https://evil.example'), '—');
 });

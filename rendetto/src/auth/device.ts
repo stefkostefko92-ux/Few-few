@@ -50,7 +50,14 @@ export function deviceCookieHash(id: string): string {
   return sha256Hex(`device:${id}`);
 }
 
-const text = (max: number) => z.string().trim().max(max).optional();
+/** Свободен текст от браузъра — без управляващи и форматиращи знаци (нов ред, обръщане на посоката). */
+const text = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .regex(/^[^\p{Cc}\p{Cf}]*$/u)
+    .optional();
 const count = (max: number) => z.number().finite().min(0).max(max).optional();
 
 /**
@@ -144,7 +151,7 @@ export function describeUserAgent(ua: string | null | undefined): { browser: str
   return { browser, os };
 }
 
-/** Четимото описание на устройството за панела и за писмото „нов вход“. */
+/** Четимото описание на устройството за панела (писмото — `mailDeviceSummary`). */
 export function deviceSummary(fp: Fingerprint | null, ua: string | null | undefined): string {
   const { browser, os } = describeUserAgent(ua);
   const parts = [
@@ -157,4 +164,13 @@ export function deviceSummary(fp: Fingerprint | null, ua: string | null | undefi
     fp?.tz ?? '',
   ].filter(Boolean);
   return parts.join(', ').slice(0, 300) || '—';
+}
+
+/**
+ * Описанието за писмото „нов вход“: само система и браузър, разпознати от User-Agent по списък.
+ * Свободният текст от браузъра (видеокарта, система, часова зона) не влиза — писмото до собственика не
+ * бива да носи текст, написан от някой друг (например от нападател с открадната парола).
+ */
+export function mailDeviceSummary(ua: string | null | undefined): string {
+  return deviceSummary(null, ua);
 }

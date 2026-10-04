@@ -1,4 +1,5 @@
 import type { Device, User } from '@prisma/client';
+import { mailDeviceSummary } from '../auth/device.js';
 import { countryName } from '../auth/geoip.js';
 import { isLocale, LOCALE_TAG, translate } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
@@ -19,7 +20,7 @@ export async function notifyNewDevice(
   }).format(new Date());
   return mailNewDevice(user.email, locale, greetingName(user), {
     when,
-    device: device.summary,
+    device: mailDeviceSummary(device.userAgent),
     ip: meta.ip ?? '—',
     country: meta.country ? countryName(meta.country, tag) : translate(locale, 'common.unknown'),
   });
