@@ -47,8 +47,10 @@ COPY views ./views
 COPY locales ./locales
 COPY package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
-# data/ (каталогът от магазините и GeoIP базата) идва като volume от сървъра — не е в образа.
-RUN mkdir -p data && chmod +x ./docker-entrypoint.sh && chown -R node:node /app
+# data/ (каталогът от магазините, GeoIP базата, котвата на одита) идва като volume от сървъра — не е в
+# образа; тя е единствената папка на node. Кодът остава на root, node само го чете: `chown -R` тук би
+# копирал всеки файл в нов слой (двоен образ) и би дал на процеса право да пише собствения си код.
+RUN chmod 755 ./docker-entrypoint.sh && install -d -o node -g node -m 700 data
 USER node
 EXPOSE 4320
 # /health пита базата; при недостъпна база връща 503 и контейнерът се маркира нездрав.

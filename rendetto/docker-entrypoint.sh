@@ -14,7 +14,12 @@ SQL
 do
   ATTEMPTS=$((ATTEMPTS + 1))
   if [ "$ATTEMPTS" -ge 30 ]; then
-    echo "✖ Базата не отговори за ~60 секунди."
+    echo "✖ Базата не отговори за ~60 секунди. Последната грешка:"
+    # Без пренасочване: Prisma казва причината (P1013 — счупен DATABASE_URL, напр. „/“ в паролата;
+    # P1000 — грешна парола; P1001 — няма връзка), без да печата адреса или паролата.
+    "$PRISMA" db execute --schema prisma/schema.prisma --stdin <<'SQL' || true
+SELECT 1;
+SQL
     exit 1
   fi
   sleep 2
