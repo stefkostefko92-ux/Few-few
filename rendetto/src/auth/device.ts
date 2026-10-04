@@ -1,8 +1,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { config, isProduction } from '../config.js';
-import { hmacHex, randomToken, safeEqual, sha256Hex } from '../crypto.js';
-import { canonicalJson } from '../audit.js';
+import { canonicalJson, hmacHex, randomToken, safeEqual, sha256Hex } from '../crypto.js';
 
 /**
  * Устройството („HWID“ в панела). Браузърът не дава хардуерен номер, затова устройството се

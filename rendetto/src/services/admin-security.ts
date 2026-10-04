@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { audit } from '../audit.js';
+import { audited } from '../audit.js';
 import { sha256Hex } from '../crypto.js';
-import { prisma } from '../db.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { issueEmailToken } from '../auth/tokens.js';
 import { greetingName, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
@@ -29,32 +28,38 @@ export async function banAccount(
   const parsed = banSchema.safeParse(raw);
   if (!parsed.success) return fail('admin.errors.banReason');
   const now = new Date();
-  const banned = await prisma.$transaction(async (tx) => {
-    // Условието „още няма бан“ е в самия запис, не в реда, прочетен преди транзакцията: два
-    // паралелни бана (двоен клик) не пишат два активни бана и два реда в одита.
-    const claimed = await tx.user.updateMany({
-      where: { id, bannedAt: null },
-      data: { bannedAt: now, banReason: parsed.data.reason },
-    });
-    if (claimed.count !== 1) return false;
-    await tx.accountBan.create({
-      data: {
-        userId: id,
-        reason: parsed.data.reason,
-        bannedById: actor.id,
-        bannedByLabel: actor.label,
-      },
-    });
-    await tx.session.deleteMany({ where: { userId: id } });
-    return true;
-  });
+  const banned = await audited(
+    actor,
+    async (tx) => {
+      // Условието „още няма бан“ е в самия запис, не в реда, прочетен преди транзакцията: два
+      // паралелни бана (двоен клик) не пишат два активни бана и два реда в одита.
+      const claimed = await tx.user.updateMany({
+        where: { id, bannedAt: null },
+        data: { bannedAt: now, banReason: parsed.data.reason },
+      });
+      if (claimed.count !== 1) return false;
+      await tx.accountBan.create({
+        data: {
+          userId: id,
+          reason: parsed.data.reason,
+          bannedById: actor.id,
+          bannedByLabel: actor.label,
+        },
+      });
+      await tx.session.deleteMany({ where: { userId: id } });
+      return true;
+    },
+    (ok) =>
+      ok
+        ? {
+            action: 'admin.account.banned',
+            targetType: 'user',
+            targetId: id,
+            detail: { reason: parsed.data.reason },
+          }
+        : null,
+  );
   if (!banned) return fail('admin.errors.alreadyBanned');
-  await audit(actor, {
-    action: 'admin.account.banned',
-    targetType: 'user',
-    targetId: id,
-    detail: { reason: parsed.data.reason },
-  });
   return { ok: true };
 }
 
@@ -68,19 +73,22 @@ export async function unbanAccount(
   if (!target.bannedAt) return fail('admin.errors.notBanned');
   const note = z.object({ note: z.string().trim().max(500).default('') }).safeParse(raw);
   const now = new Date();
-  await prisma.$transaction([
-    prisma.user.update({ where: { id }, data: { bannedAt: null, banReason: null } }),
-    prisma.accountBan.updateMany({
-      where: { userId: id, liftedAt: null },
-      data: {
-        liftedAt: now,
-        liftedById: actor.id,
-        liftedByLabel: actor.label,
-        liftNote: note.success ? note.data.note || null : null,
-      },
-    }),
-  ]);
-  await audit(actor, { action: 'admin.account.unbanned', targetType: 'user', targetId: id });
+  await audited(
+    actor,
+    async (tx) => {
+      await tx.user.update({ where: { id }, data: { bannedAt: null, banReason: null } });
+      await tx.accountBan.updateMany({
+        where: { userId: id, liftedAt: null },
+        data: {
+          liftedAt: now,
+          liftedById: actor.id,
+          liftedByLabel: actor.label,
+          liftNote: note.success ? note.data.note || null : null,
+        },
+      });
+    },
+    { action: 'admin.account.unbanned', targetType: 'user', targetId: id },
+  );
   return { ok: true };
 }
 
@@ -89,15 +97,18 @@ export async function unbanAccount(
 export async function resetTwoFactor(actor: StaffActor, id: string): Promise<ActionResult> {
   const target = await targetFor(actor, id, 'accounts:security');
   if (isResult(target)) return target;
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id },
-      data: { totpSecretEnc: null, totpEnabledAt: null, totpLastStep: null },
-    }),
-    prisma.recoveryCode.deleteMany({ where: { userId: id } }),
-    prisma.session.deleteMany({ where: { userId: id } }),
-  ]);
-  await audit(actor, { action: 'admin.totp.reset', targetType: 'user', targetId: id });
+  await audited(
+    actor,
+    async (tx) => {
+      await tx.user.update({
+        where: { id },
+        data: { totpSecretEnc: null, totpEnabledAt: null, totpLastStep: null },
+      });
+      await tx.recoveryCode.deleteMany({ where: { userId: id } });
+      await tx.session.deleteMany({ where: { userId: id } });
+    },
+    { action: 'admin.totp.reset', targetType: 'user', targetId: id },
+  );
   void mailTwoFactor(target.email, localeOf(target), greetingName(target), false);
   return { ok: true };
 }
@@ -105,30 +116,39 @@ export async function resetTwoFactor(actor: StaffActor, id: string): Promise<Act
 export async function revokeSessions(actor: StaffActor, id: string): Promise<ActionResult> {
   const target = await targetFor(actor, id, 'accounts:security');
   if (isResult(target)) return target;
-  const count = await destroyAllSessions(id);
-  await audit(actor, {
-    action: 'admin.sessions.revoked',
-    targetType: 'user',
-    targetId: id,
-    detail: { count },
-  });
+  await audited(
+    actor,
+    (tx) => destroyAllSessions(id, undefined, tx),
+    (count) => ({
+      action: 'admin.sessions.revoked',
+      targetType: 'user',
+      targetId: id,
+      detail: { count },
+    }),
+  );
   return { ok: true };
 }
 
 export async function unlockAccount(actor: StaffActor, id: string): Promise<ActionResult> {
   const target = await targetFor(actor, id, 'accounts:security');
   if (isResult(target)) return target;
-  await prisma.user.update({ where: { id }, data: { lockedUntil: null, failedLogins: 0 } });
-  await audit(actor, { action: 'admin.account.unlocked', targetType: 'user', targetId: id });
+  await audited(
+    actor,
+    (tx) => tx.user.update({ where: { id }, data: { lockedUntil: null, failedLogins: 0 } }),
+    { action: 'admin.account.unlocked', targetType: 'user', targetId: id },
+  );
   return { ok: true };
 }
 
 export async function sendPasswordReset(actor: StaffActor, id: string): Promise<ActionResult> {
   const target = await targetFor(actor, id, 'accounts:security');
   if (isResult(target)) return target;
-  const token = await issueEmailToken(id, 'RESET_PASSWORD');
+  const token = await audited(actor, (tx) => issueEmailToken(id, 'RESET_PASSWORD', undefined, tx), {
+    action: 'admin.reset.sent',
+    targetType: 'user',
+    targetId: id,
+  });
   void mailResetPassword(target.email, localeOf(target), greetingName(target), token);
-  await audit(actor, { action: 'admin.reset.sent', targetType: 'user', targetId: id });
   return { ok: true };
 }
 
@@ -143,9 +163,8 @@ export async function deleteAccount(
   const target = await targetFor(actor, id, 'accounts:delete');
   if (isResult(target)) return target;
   if (confirmEmail.trim().toLowerCase() !== target.email) return fail('admin.errors.confirmEmail');
-  await prisma.user.delete({ where: { id } });
   // В одита не остава имейл — само хеш, за да може да се провери при нужда.
-  await audit(actor, {
+  await audited(actor, (tx) => tx.user.delete({ where: { id } }), {
     action: 'admin.account.deleted',
     targetType: 'user',
     targetId: id,

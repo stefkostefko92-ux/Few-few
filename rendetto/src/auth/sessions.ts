@@ -1,5 +1,5 @@
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
-import type { Role } from '@prisma/client';
+import type { Prisma, Role } from '@prisma/client';
 import { isProduction } from '../config.js';
 import { prisma } from '../db.js';
 import { randomToken, sha256Hex } from '../crypto.js';
@@ -106,9 +106,16 @@ export async function destroySessionById(id: string): Promise<void> {
   await prisma.session.deleteMany({ where: { id } });
 }
 
-/** Прекратява всички сесии на акаунта; `exceptId` оставя текущата (смяна на парола от самия човек). */
-export async function destroyAllSessions(userId: string, exceptId?: string): Promise<number> {
-  const result = await prisma.session.deleteMany({
+/**
+ * Прекратява всички сесии на акаунта; `exceptId` оставя текущата (смяна на парола от самия човек).
+ * `db` — транзакцията на действието, ако е част от нея.
+ */
+export async function destroyAllSessions(
+  userId: string,
+  exceptId?: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<number> {
+  const result = await db.session.deleteMany({
     where: { userId, ...(exceptId ? { id: { not: exceptId } } : {}) },
   });
   return result.count;

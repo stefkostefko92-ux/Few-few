@@ -1,4 +1,4 @@
-import type { Prisma, TokenPurpose } from '@prisma/client';
+import { TokenPurpose, type Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { randomToken, sha256Hex } from '../crypto.js';
 
@@ -11,21 +11,22 @@ export const TOKEN_TTL_MS: Record<TokenPurpose, number> = {
 };
 
 /**
- * Нова еднократна връзка. Предишните неизползвани за същата цел се анулират. С `db` (клиента на вече
- * отворена транзакция) връзката се записва заедно с останалите записи на извикващия.
+ * Нова еднократна връзка. Предишните неизползвани за същата цел се анулират. С `tx` — вътре в
+ * транзакцията на действието (напр. заедно със записа в одита).
  */
 export async function issueEmailToken(
   userId: string,
   purpose: TokenPurpose,
   newEmail?: string,
-  db?: Prisma.TransactionClient,
+  tx?: Prisma.TransactionClient,
 ): Promise<string> {
+  if (!tx) return prisma.$transaction((inner) => issueEmailToken(userId, purpose, newEmail, inner));
   const token = randomToken(32);
-  const revoke = {
+  await tx.emailToken.updateMany({
     where: { userId, purpose, usedAt: null },
     data: { usedAt: new Date() },
-  };
-  const row = {
+  });
+  await tx.emailToken.create({
     data: {
       userId,
       purpose,
@@ -33,16 +34,7 @@ export async function issueEmailToken(
       newEmail: newEmail ?? null,
       expiresAt: new Date(Date.now() + TOKEN_TTL_MS[purpose]),
     },
-  };
-  if (db) {
-    await db.emailToken.updateMany(revoke);
-    await db.emailToken.create(row);
-  } else {
-    await prisma.$transaction([
-      prisma.emailToken.updateMany(revoke),
-      prisma.emailToken.create(row),
-    ]);
-  }
+  });
   return token;
 }
 
@@ -52,7 +44,7 @@ export async function issueEmailToken(
  */
 export async function revokeEmailTokens(
   userId: string,
-  purposes: TokenPurpose[] = ['VERIFY_EMAIL', 'RESET_PASSWORD', 'CHANGE_EMAIL'],
+  purposes: TokenPurpose[] = Object.values(TokenPurpose),
   db: Prisma.TransactionClient = prisma,
 ): Promise<void> {
   await db.emailToken.updateMany({

@@ -1,6 +1,6 @@
 import type { Plan, User } from '@prisma/client';
 import { z } from 'zod';
-import { audit } from '../audit.js';
+import { audited } from '../audit.js';
 import { prisma } from '../db.js';
 import { can } from '../auth/rbac.js';
 import { LOCALE_TAG, translate } from '../i18n.js';
@@ -122,74 +122,80 @@ export async function changePlan(
   if (!parsed.success) return fail('admin.errors.input');
   const input = parsed.data;
 
-  const outcome = await prisma.$transaction(async (tx) => {
-    // Редът на заключване е като при отказа — поръчката, после човекът: двете не се разминават и не се
-    // блокират взаимно. Сегашният план се чете наново под ключа, не от прочетеното преди транзакцията.
-    if (input.requestId) {
-      const open = await tx.$queryRaw<Array<{ id: string }>>`
+  const outcome = await audited(
+    actor,
+    async (tx) => {
+      // Редът на заключване е като при отказа — поръчката, после човекът: двете не се разминават и не се
+      // блокират взаимно. Сегашният план се чете наново под ключа, не от прочетеното преди транзакцията.
+      if (input.requestId) {
+        const open = await tx.$queryRaw<Array<{ id: string }>>`
         SELECT "id" FROM "UpgradeRequest"
         WHERE "id" = ${input.requestId} AND "userId" = ${id} AND "status" = 'OPEN'
         FOR UPDATE`;
-      if (open.length !== 1) return { error: 'admin.errors.requestGone' };
-    }
-    await tx.$executeRaw`SELECT 1 FROM "User" WHERE "id" = ${id} FOR UPDATE`;
-    const user = await tx.user.findUniqueOrThrow({ where: { id } });
-    const next = nextState(input, user, now);
-    if ('error' in next) return next;
-    if (input.requestId) {
-      const order = await tx.upgradeRequest.findUniqueOrThrow({ where: { id: input.requestId } });
-      if (!matchesOrder(input, order.option, order.months))
-        return { error: 'admin.errors.orderMismatch' };
-      if (next.paidStart.getTime() < paidStartAllowedFrom(order).getTime())
-        return { error: 'admin.errors.withdrawalPeriod' };
-      await tx.upgradeRequest.update({
-        where: { id: order.id },
+        if (open.length !== 1) return { error: 'admin.errors.requestGone' };
+      }
+      await tx.$executeRaw`SELECT 1 FROM "User" WHERE "id" = ${id} FOR UPDATE`;
+      const user = await tx.user.findUniqueOrThrow({ where: { id } });
+      const next = nextState(input, user, now);
+      if ('error' in next) return next;
+      if (input.requestId) {
+        const order = await tx.upgradeRequest.findUniqueOrThrow({ where: { id: input.requestId } });
+        if (!matchesOrder(input, order.option, order.months))
+          return { error: 'admin.errors.orderMismatch' };
+        if (next.paidStart.getTime() < paidStartAllowedFrom(order).getTime())
+          return { error: 'admin.errors.withdrawalPeriod' };
+        await tx.upgradeRequest.update({
+          where: { id: order.id },
+          data: {
+            status: 'DONE',
+            handledById: actor.id,
+            handledByLabel: actor.label,
+            handledAt: now,
+          },
+        });
+      }
+      await tx.user.update({
+        where: { id },
         data: {
-          status: 'DONE',
-          handledById: actor.id,
-          handledByLabel: actor.label,
-          handledAt: now,
+          plan: input.plan,
+          planExpiresAt: next.expiresAt,
+          ...(user.emailVerifiedAt ? {} : { emailVerifiedAt: now }),
         },
       });
-    }
-    await tx.user.update({
-      where: { id },
-      data: {
-        plan: input.plan,
-        planExpiresAt: next.expiresAt,
-        ...(user.emailVerifiedAt ? {} : { emailVerifiedAt: now }),
-      },
-    });
-    await tx.planChange.create({
-      data: {
-        userId: id,
-        actorId: actor.id,
-        actorLabel: actor.label,
-        fromPlan: user.plan,
-        toPlan: input.plan,
-        fromExpiresAt: user.planExpiresAt,
-        toExpiresAt: next.expiresAt,
-        months: next.months,
-        listPriceCents: listPriceFor(input.plan, next.months),
-        note: input.note || null,
-        requestId: input.requestId ?? null,
-      },
-    });
-    return { from: user.plan, expiresAt: next.expiresAt, months: next.months };
-  });
-  if ('error' in outcome) return fail(outcome.error);
-  await audit(actor, {
-    action: 'admin.plan.changed',
-    targetType: 'user',
-    targetId: id,
-    detail: {
-      from: outcome.from,
-      to: input.plan,
-      until: outcome.expiresAt?.toISOString() ?? null,
-      months: outcome.months,
-      request: input.requestId ?? null,
+      await tx.planChange.create({
+        data: {
+          userId: id,
+          actorId: actor.id,
+          actorLabel: actor.label,
+          fromPlan: user.plan,
+          toPlan: input.plan,
+          fromExpiresAt: user.planExpiresAt,
+          toExpiresAt: next.expiresAt,
+          months: next.months,
+          listPriceCents: listPriceFor(input.plan, next.months),
+          note: input.note || null,
+          requestId: input.requestId ?? null,
+        },
+      });
+      return { from: user.plan, expiresAt: next.expiresAt, months: next.months };
     },
-  });
+    (done) =>
+      'error' in done
+        ? null
+        : {
+            action: 'admin.plan.changed',
+            targetType: 'user',
+            targetId: id,
+            detail: {
+              from: done.from,
+              to: input.plan,
+              until: done.expiresAt?.toISOString() ?? null,
+              months: done.months,
+              request: input.requestId ?? null,
+            },
+          },
+  );
+  if ('error' in outcome) return fail(outcome.error);
   if (input.notify) {
     const locale = localeOf(target);
     const fmt = new Intl.DateTimeFormat(LOCALE_TAG[locale], {
@@ -219,20 +225,23 @@ export async function rejectRequest(actor: StaffActor, requestId: string): Promi
   if (!order) return fail('admin.errors.notFound');
   const target = await targetFor(actor, order.userId, 'requests:handle');
   if (isResult(target)) return target;
-  const result = await prisma.upgradeRequest.updateMany({
-    where: { id: requestId, status: 'OPEN' },
-    data: {
-      status: 'REJECTED',
-      handledById: actor.id,
-      handledByLabel: actor.label,
-      handledAt: new Date(),
-    },
-  });
+  const result = await audited(
+    actor,
+    (tx) =>
+      tx.upgradeRequest.updateMany({
+        where: { id: requestId, status: 'OPEN' },
+        data: {
+          status: 'REJECTED',
+          handledById: actor.id,
+          handledByLabel: actor.label,
+          handledAt: new Date(),
+        },
+      }),
+    (closed) =>
+      closed.count === 1
+        ? { action: 'admin.request.rejected', targetType: 'request', targetId: requestId }
+        : null,
+  );
   if (result.count !== 1) return fail('admin.errors.notFound');
-  await audit(actor, {
-    action: 'admin.request.rejected',
-    targetType: 'request',
-    targetId: requestId,
-  });
   return { ok: true };
 }

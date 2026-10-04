@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { Plan } from '@prisma/client';
 import { z } from 'zod';
-import { audit } from '../audit.js';
+import { audited } from '../audit.js';
 import { prisma } from '../db.js';
 import { LABEL } from '../labels.js';
 import { hashPassword } from '../auth/password.js';
@@ -68,10 +68,11 @@ export async function createAccount(actor: StaffActor, raw: unknown): Promise<Ac
   // Хешът е бавен (Argon2id) — смята се преди транзакцията, за да не държи връзката към базата.
   // Без парола: случаен хеш, който никой не знае, докато човекът не зададе своя по връзката.
   const passwordHash = await hashPassword(password || randomBytes(32).toString('base64url'));
-  // Акаунтът, първият ред в историята на плана и поканата — заедно или нищо: иначе остава акаунт
-  // без история или без покана, а повторният опит връща „имейлът е зает“.
-  const created = await prisma
-    .$transaction(async (tx) => {
+  // Акаунтът, първият ред в историята на плана, поканата и записът в одита — заедно или нищо: иначе
+  // остава акаунт без история или без покана, а повторният опит връща „имейлът е зает“.
+  const created = await audited(
+    actor,
+    async (tx) => {
       const user = await tx.user.create({
         data: {
           email: input.email,
@@ -99,19 +100,19 @@ export async function createAccount(actor: StaffActor, raw: unknown): Promise<Ac
         ? null
         : await issueEmailToken(user.id, 'RESET_PASSWORD', undefined, tx);
       return { user, token };
-    })
-    .catch((error: unknown) => {
-      if (isUniqueViolation(error)) return null;
-      throw error;
-    });
+    },
+    ({ user }) => ({
+      action: 'admin.account.created',
+      targetType: 'user',
+      targetId: user.id,
+      detail: { role: input.role, plan: input.plan, invited: !password },
+    }),
+  ).catch((error: unknown) => {
+    if (isUniqueViolation(error)) return null;
+    throw error;
+  });
   if (!created) return fail('admin.errors.emailTaken');
   const { user, token } = created;
   if (token) void mailResetPassword(user.email, localeOf(user), greetingName(user), token);
-  await audit(actor, {
-    action: 'admin.account.created',
-    targetType: 'user',
-    targetId: user.id,
-    detail: { role: input.role, plan: input.plan, invited: !password },
-  });
   return { ok: true, id: user.id };
 }

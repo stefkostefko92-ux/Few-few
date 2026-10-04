@@ -1,12 +1,11 @@
-import { createHash, createHmac } from 'node:crypto';
-import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { createHmac } from 'node:crypto';
 import { Prisma } from '@prisma/client';
-import { config, isProduction } from './config.js';
-import { hmacHex } from './crypto.js';
+import { anchorBreak, readAnchor, saveAnchor, type AnchorPoint } from './audit-anchor.js';
+import { config } from './config.js';
+import { canonicalJson, hmacHex, sha256Hex } from './crypto.js';
 import { prisma } from './db.js';
 import { LABEL } from './labels.js';
 import { logger } from './logger.js';
-import { fromRoot } from './paths.js';
 
 export type ActorType = 'HUMAN' | 'SYSTEM';
 
@@ -26,21 +25,6 @@ export interface AuditEntry {
 }
 
 export const SYSTEM_ACTOR: AuditActor = { type: 'SYSTEM', id: null, label: LABEL.system };
-
-/**
- * jsonb в PostgreSQL НЕ пази реда на ключовете — затова хешираме канонична форма
- * (ключове сортирани рекурсивно), еднаква при запис и при проверка.
- */
-export function canonicalJson(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
-  if (value !== null && typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>)
-      .filter(([, v]) => v !== undefined)
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`).join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
 
 /** Версията на веригата за новите записи: HMAC с ключ, който не е в базата. */
 export const AUDIT_VERSION = 2;
@@ -62,9 +46,7 @@ export function auditDigest(
   const data = parts
     .map((part) => (part === null || part === undefined ? '' : String(part)))
     .join('|');
-  return v === 1
-    ? createHash('sha256').update(data).digest('hex')
-    : createHmac('sha256', key()).update(data).digest('hex');
+  return v === 1 ? sha256Hex(data) : createHmac('sha256', key()).update(data).digest('hex');
 }
 
 /** HMAC на IP адреса — влиза във веригата вместо самия адрес, който поддръжката заличава след срока. */
@@ -98,100 +80,67 @@ function chainParts(prevHash: string, row: ChainRow, detailJson: string | null, 
   ];
 }
 
-/* ------------------------------ котва извън базата ------------------------------ */
-
-interface Anchor {
-  head: { id: number; hash: string } | null;
-  base: { id: number; hash: string } | null;
-}
-
-/**
- * Котвата е файл на сървъра извън базата: последният запис (и началото след изтриване по срок). Изтрит
- * край на веригата или подменено начало в базата не съвпада с нея. По подразбиране — само в продукция.
- */
-function anchorFile(): string | null {
-  const path = config().AUDIT_ANCHOR_PATH ?? (isProduction() ? 'data/audit-head.json' : null);
-  return path ? fromRoot(path) : null;
-}
-
-export function readAnchor(): Anchor | null {
-  const file = anchorFile();
-  if (!file || !existsSync(file)) return null;
-  try {
-    const raw = JSON.parse(readFileSync(file, 'utf8')) as Partial<Anchor>;
-    const point = (p: unknown) =>
-      p &&
-      typeof p === 'object' &&
-      Number.isInteger((p as { id: unknown }).id) &&
-      typeof (p as { hash: unknown }).hash === 'string'
-        ? { id: (p as { id: number }).id, hash: (p as { hash: string }).hash }
-        : null;
-    return { head: point(raw.head), base: point(raw.base) };
-  } catch {
-    return null;
-  }
-}
-
-let writing: Promise<void> = Promise.resolve();
-let warned = false;
-
-/** Записва котвата атомно (временен файл и преименуване), само напред по номер на записа. */
-function saveAnchor(change: Partial<Anchor>): Promise<void> {
-  const file = anchorFile();
-  if (!file) return Promise.resolve();
-  writing = writing
-    .then(() => {
-      const current = readAnchor() ?? { head: null, base: null };
-      if (change.head && current.head && current.head.id >= change.head.id) return;
-      const next = { ...current, ...change };
-      writeFileSync(`${file}.tmp`, JSON.stringify(next), { mode: 0o600 });
-      renameSync(`${file}.tmp`, file);
-    })
-    .catch((error: unknown) => {
-      if (!warned) logger.error({ err: (error as Error).message }, 'котвата на одита не се записа');
-      warned = true;
-    });
-  return writing;
-}
-
 /* ------------------------------------ запис ------------------------------------ */
 
 /**
  * Верига, която издава подправяне: hash = HMAC(prevHash | at | извършител | действие | цел | detail |
  * HMAC(ip)). Записите се пишат един по един под advisory lock, за да е стабилен `prevHash`.
  */
-export async function audit(actor: AuditActor, entry: AuditEntry): Promise<void> {
+async function writeEntry(
+  tx: Prisma.TransactionClient,
+  actor: AuditActor,
+  entry: AuditEntry,
+): Promise<AnchorPoint> {
   const detailJson = entry.detail ? canonicalJson(entry.detail) : null;
   const ipHmac = auditIpHmac(actor.ip);
-  const written = await prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(7241020)`;
-    const last = await tx.auditLog.findFirst({ orderBy: { id: 'desc' }, select: { hash: true } });
-    const base = last ? null : await tx.auditBase.findUnique({ where: { id: 1 } });
-    const prevHash = last?.hash ?? base?.lastHash ?? '';
-    const row: ChainRow = {
-      at: new Date(),
-      actorType: actor.type,
-      actorId: actor.id,
-      actorLabel: actor.label,
-      action: entry.action,
-      targetType: entry.targetType ?? null,
-      targetId: entry.targetId ?? null,
-      ipHmac,
-    };
-    const hash = auditDigest(chainParts(prevHash, row, detailJson, AUDIT_VERSION));
-    return tx.auditLog.create({
-      data: {
-        ...row,
-        detail: detailJson ? (JSON.parse(detailJson) as Prisma.InputJsonValue) : undefined,
-        ip: actor.ip ?? null,
-        prevHash,
-        hash,
-        v: AUDIT_VERSION,
-      },
-      select: { id: true, hash: true },
-    });
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(7241020)`;
+  const last = await tx.auditLog.findFirst({ orderBy: { id: 'desc' }, select: { hash: true } });
+  const base = last ? null : await tx.auditBase.findUnique({ where: { id: 1 } });
+  const prevHash = last?.hash ?? base?.lastHash ?? '';
+  const row: ChainRow = {
+    at: new Date(),
+    actorType: actor.type,
+    actorId: actor.id,
+    actorLabel: actor.label,
+    action: entry.action,
+    targetType: entry.targetType ?? null,
+    targetId: entry.targetId ?? null,
+    ipHmac,
+  };
+  const hash = auditDigest(chainParts(prevHash, row, detailJson, AUDIT_VERSION));
+  return tx.auditLog.create({
+    data: {
+      ...row,
+      detail: detailJson ? (JSON.parse(detailJson) as Prisma.InputJsonValue) : undefined,
+      ip: actor.ip ?? null,
+      prevHash,
+      hash,
+      v: AUDIT_VERSION,
+    },
+    select: { id: true, hash: true },
   });
-  await saveAnchor({ head: written });
+}
+
+/**
+ * Действието и записът му в одита — в една транзакция: ако записът не мине, и действието не остава.
+ * `entry` може да зависи от резултата; null — действието се е отказало и няма какво да се пише.
+ */
+export async function audited<T>(
+  actor: AuditActor,
+  work: (tx: Prisma.TransactionClient) => Promise<T>,
+  entry: AuditEntry | ((value: T) => AuditEntry | null),
+): Promise<T> {
+  const done = await prisma.$transaction(async (tx) => {
+    const value = await work(tx);
+    const next = typeof entry === 'function' ? entry(value) : entry;
+    return { value, head: next ? await writeEntry(tx, actor, next) : null };
+  });
+  if (done.head) await saveAnchor({ head: done.head });
+  return done.value;
+}
+
+export async function audit(actor: AuditActor, entry: AuditEntry): Promise<void> {
+  await audited(actor, async () => undefined, entry);
 }
 
 /* ---------------------------------- проверка ---------------------------------- */
@@ -217,16 +166,31 @@ async function broken(id: number): Promise<ChainState> {
   return { ok: false, brokenAt, count: await prisma.auditLog.count(), head: null };
 }
 
+/** Проверката и изтриването по срок не се застъпват: иначе началото и котвата се сменят по средата. */
+let exclusive: Promise<unknown> = Promise.resolve();
+function serial<T>(work: () => Promise<T>): Promise<T> {
+  const run = exclusive.then(work, work);
+  exclusive = run.catch(() => undefined);
+  return run;
+}
+
 /**
  * Проверява веригата на партиди. Панелът проверява само новите записи след последната проверена точка;
  * поддръжката веднъж на час (`full`) минава цялата верига от началото (или от началото след изтриване
  * по срок). Хваща подменен запис, пропуснат запис, запис v1 след v2 (връщане към версия без ключ) и,
  * с котвата извън базата, изрязан край или подменено начало.
  */
-export async function verifyAuditChain(options: { full?: boolean } = {}): Promise<ChainState> {
+export function verifyAuditChain(options: { full?: boolean } = {}): Promise<ChainState> {
+  return serial(() => verifyChain(options.full === true));
+}
+
+async function verifyChain(full: boolean): Promise<ChainState> {
   if (brokenAt !== null) return broken(brokenAt);
+  // Котвата — ПРЕДИ базата: тя сочи само записи след commit, затова сканирането след нея ги вижда.
+  // Прочетена след сканирането, би изпреварила запис, дошъл междувременно, и би вдигнала лъжлива тревога.
+  const anchor = readAnchor();
   const base = await prisma.auditBase.findUnique({ where: { id: 1 } });
-  const start = options.full ? null : checkpoint;
+  const start = full ? null : checkpoint;
   let prevHash = start?.hash ?? base?.lastHash ?? '';
   let lastId = start?.id ?? base?.lastId ?? 0;
   let count = start?.count ?? 0;
@@ -249,22 +213,15 @@ export async function verifyAuditChain(options: { full?: boolean } = {}): Promis
     }
     if (rows.length < BATCH) break;
   }
-  const anchor = readAnchor();
-  if (anchor?.head) {
-    // котвата е напред от базата (изрязан край) или записът на нейния номер е друг
-    if (anchor.head.id > lastId) return broken(anchor.head.id);
-    const at = await prisma.auditLog.findUnique({
-      where: { id: anchor.head.id },
-      select: { hash: true },
-    });
-    if (at && at.hash !== anchor.head.hash) return broken(anchor.head.id);
-    if (!at && (base?.lastId ?? 0) < anchor.head.id) return broken(anchor.head.id);
-  }
-  if (
-    anchor?.base &&
-    (!base || base.lastId !== anchor.base.id || base.lastHash !== anchor.base.hash)
-  )
-    return broken(anchor.base.id);
+  const at = anchor?.head
+    ? await prisma.auditLog.findUnique({ where: { id: anchor.head.id }, select: { hash: true } })
+    : null;
+  const breakAt = anchorBreak(anchor, {
+    base: base && { id: base.lastId, hash: base.lastHash },
+    lastId,
+    headHash: at?.hash ?? null,
+  });
+  if (breakAt !== null) return broken(breakAt);
   checkpoint = { id: lastId, hash: prevHash, count, v2: sawV2 };
   return { ok: true, brokenAt: null, count, head: lastId ? { id: lastId, hash: prevHash } : null };
 }
@@ -274,7 +231,11 @@ export async function verifyAuditChain(options: { full?: boolean } = {}): Promis
  * изтрит запис става начало (AuditBase и котвата). `chain` е току-що направена пълна проверка — при
  * скъсана верига не се пипа нищо (доказателството остава).
  */
-export async function pruneAudit(chain: ChainState, now: Date = new Date()): Promise<number> {
+export function pruneAudit(chain: ChainState, now: Date = new Date()): Promise<number> {
+  return serial(() => prune(chain, now));
+}
+
+async function prune(chain: ChainState, now: Date): Promise<number> {
   if (!chain.ok) return 0;
   const cutoff = new Date(now.getTime() - config().AUDIT_RETENTION_DAYS * 86_400_000);
   const last = await prisma.auditLog.findFirst({

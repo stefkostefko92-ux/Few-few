@@ -1,6 +1,6 @@
 import { Role } from '@prisma/client';
 import { z } from 'zod';
-import { audit } from '../audit.js';
+import { audited } from '../audit.js';
 import { prisma } from '../db.js';
 import { outranks } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
@@ -47,8 +47,9 @@ export async function editAccount(
   }
   const verifyNow = input.emailVerified && !target.emailVerifiedAt;
   const startTrial = verifyNow && target.plan === 'TRIAL' && !target.planExpiresAt;
-  const saved = await prisma
-    .$transaction(async (tx) => {
+  const saved = await audited(
+    actor,
+    async (tx) => {
       await tx.user.update({
         where: { id },
         data: {
@@ -65,24 +66,24 @@ export async function editAccount(
       // при повторно „Запази“ имейлът вече е новият и до анулирането не би се стигнало.
       if (emailChanged) await revokeEmailTokens(id, undefined, tx);
       return true;
-    })
-    .catch((error: unknown) => {
-      if (isUniqueViolation(error)) return false;
-      throw error;
-    });
+    },
+    {
+      action: 'admin.account.edited',
+      targetType: 'user',
+      targetId: id,
+      // какво е направено сега: отметката на вече потвърден акаунт е изключена и не идва с формата
+      detail: { emailChanged, verifiedNow: verifyNow },
+    },
+  ).catch((error: unknown) => {
+    if (isUniqueViolation(error)) return false;
+    throw error;
+  });
   if (!saved) return fail('admin.errors.emailTaken');
   // Старият адрес научава, както при смяната от самия човек — смяна от екипа не минава тихо. Само до
   // потвърден адрес: непотвърденият може да е чужд (грешно изписан) и не бива да научава новия.
   if (emailChanged && target.emailVerifiedAt) {
     void mailEmailChangedByStaff(target.email, localeOf(target), greetingName(target), input.email);
   }
-  await audit(actor, {
-    action: 'admin.account.edited',
-    targetType: 'user',
-    targetId: id,
-    // какво е направено сега: отметката на вече потвърден акаунт е изключена и не идва с формата
-    detail: { emailChanged, verifiedNow: verifyNow },
-  });
   return { ok: true };
 }
 
@@ -96,14 +97,19 @@ export async function changeRole(
   const parsed = roleSchema.safeParse(role);
   if (!parsed.success) return fail('admin.errors.input');
   if (!outranks(actor.role, parsed.data)) return fail('admin.errors.rank');
-  await prisma.user.update({ where: { id }, data: { role: parsed.data } });
-  // Смяната на права иска нов вход: старите сесии носят старата роля в главата на човека.
-  await destroyAllSessions(id);
-  await audit(actor, {
-    action: 'admin.role.changed',
-    targetType: 'user',
-    targetId: id,
-    detail: { from: target.role, to: parsed.data },
-  });
+  await audited(
+    actor,
+    async (tx) => {
+      await tx.user.update({ where: { id }, data: { role: parsed.data } });
+      // Смяната на права иска нов вход: старите сесии носят старата роля в главата на човека.
+      await destroyAllSessions(id, undefined, tx);
+    },
+    {
+      action: 'admin.role.changed',
+      targetType: 'user',
+      targetId: id,
+      detail: { from: target.role, to: parsed.data },
+    },
+  );
   return { ok: true };
 }

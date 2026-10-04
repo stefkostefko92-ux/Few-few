@@ -35,6 +35,22 @@ export function decryptSecret(payload: string, hexKey: string): string {
   return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
 }
 
+/**
+ * Канонична JSON форма за хеширане: ключовете сортирани рекурсивно (jsonb в PostgreSQL НЕ пази реда им),
+ * ключ със стойност undefined се пропуска. Не е взаимозаменяема с `canonicalJson` на двигателя
+ * (`engine/util.js`), който не пропуска undefined — размяна тихо сменя хешовете (одит, HWID).
+ */
+export function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value !== null && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
 export function sha256Hex(value: string): string {
   return createHash('sha256').update(value).digest('hex');
 }
