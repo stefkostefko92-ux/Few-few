@@ -17,8 +17,7 @@
       "scale": "Tutti i {n} tipi in scala 1:{scale}, con le misure con cui il programma li propone. I pensili sono alla loro altezza dal pavimento."
     },
     "prices": {
-      "once": "una tantum, per la durata del servizio",
-      "lifetime": "Lifetime è un pagamento unico, pari a {times} volte il prezzo annuale senza lo sconto per 12 mesi, e vale finché Rendetto è offerto.",
+      "lifetime": "Lifetime è un pagamento unico, pari a {multiple} volte il prezzo annuale senza lo sconto per {months} mesi, e vale finché Rendetto è offerto.",
       "asOf": "Prezzi validi alla data: {date}; condizioni complete: {terms}"
     },
     "contact": {

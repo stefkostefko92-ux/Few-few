@@ -42,10 +42,10 @@
     "nav": "Legal information",
     "crumbs": "Breadcrumb",
     "privacyTitle": "Privacy policy",
-    "termsTitle": "Terms of use",
+    "termsTitle": "Terms and conditions",
     "openSource": "Open-source licences",
     "privacyDescription": "Which personal data Rendetto processes, why, how long we keep it and what rights you have under the GDPR.",
-    "termsDescription": "The terms of use of Rendetto: account, trial, plans and prices, payment, right of withdrawal and liability.",
+    "termsDescription": "The terms and conditions of Rendetto: account, trial, plans and prices, payment, right of withdrawal and liability.",
     "updated": "Last changed: {date}",
     "retention": {
       "years": {
@@ -57,7 +57,7 @@
         "other": "{n} days"
       }
     },
-    "keywords": "Rendetto, privacy policy, terms of use, GDPR, personal data, Carbon Stealth"
+    "keywords": "Rendetto, privacy policy, terms and conditions, GDPR, personal data, Carbon Stealth"
   },
   "role": {
     "CUSTOMER": "Customer",

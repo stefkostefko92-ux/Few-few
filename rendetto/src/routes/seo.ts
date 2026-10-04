@@ -6,7 +6,7 @@ import { COMPANY, CONTENT_UPDATED, LEGAL_UPDATED } from '../company.js';
 import { LOCALE_LABEL, LOCALES, translate, type Locale } from '../i18n.js';
 import { ROOT } from '../paths.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
-import { formatLifetimeTimes, priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
+import { lifetimeRuleParams, priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
 import { WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
 import { LEGAL, legalPath, PATHS, type LegalPage } from '../seo/paths.js';
 
@@ -86,7 +86,7 @@ const LLMS_LANDING_NOTE: Record<Locale, string> = {
 };
 const LLMS_LEGAL_TITLE: Record<LegalPage, string> = {
   privacy: 'Privacy policy',
-  terms: 'Terms of use',
+  terms: 'Terms and conditions',
 };
 
 /** llms.txt — кратко описание за AI търсачките, само с факти, които витрината също казва. */
@@ -106,6 +106,7 @@ seoRouter.get('/llms.txt', (_req, res) => {
     .join('; ');
   const monthly = prices.find((row) => row.months === 1);
   const lifetime = prices.find((row) => row.id === 'lifetime');
+  const rule = lifetimeRuleParams('en');
   res
     .type('text/plain')
     .set('Cache-Control', 'public, max-age=3600')
@@ -125,7 +126,7 @@ seoRouter.get('/llms.txt', (_req, res) => {
         ),
         '',
         '## Facts',
-        `- Price for consumers (incl. ${VAT_BG_PERCENT}% Bulgarian VAT): ${eur(monthly?.totalWithVatCents ?? 0)} per month (${eur(monthly?.totalCents ?? 0)} excl. VAT); ${terms}; Lifetime ${eur(lifetime?.totalWithVatCents ?? 0)} (${eur(lifetime?.totalCents ?? 0)} excl. VAT), ${formatLifetimeTimes('en')} times the yearly price without the 12-month discount, valid for as long as Rendetto is offered. Plans do not renew automatically.`,
+        `- Price for consumers (incl. ${VAT_BG_PERCENT}% Bulgarian VAT): ${eur(monthly?.totalWithVatCents ?? 0)} per month (${eur(monthly?.totalCents ?? 0)} excl. VAT); ${terms}; Lifetime ${eur(lifetime?.totalWithVatCents ?? 0)} (${eur(lifetime?.totalCents ?? 0)} excl. VAT), ${rule.multiple} times the yearly price without the ${rule.months}-month discount, valid for as long as Rendetto is offered. Plans do not renew automatically.`,
         `- Ordering: from the account, with an order button that states the obligation to pay; payment by bank transfer against an invoice. Consumers may withdraw within ${WITHDRAWAL_DAYS} days with the "Withdraw from contract here" button.`,
         '- After the trial ends, existing projects stay available for download; creating or changing projects needs Premium or Lifetime.',
         "- Hinge drilling follows the manufacturers' documents: Blum CLIP top, Hettich Sensys, GTV and Salice Series 200. Drawer slides: GTV H45 PRESTIGE, Blum TANDEM 560H and Blum MOVENTO 760H.",

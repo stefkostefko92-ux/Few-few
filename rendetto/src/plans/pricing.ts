@@ -12,6 +12,9 @@ export const LIFETIME_PERCENT_OF_YEAR = 250;
 /** Същото правило като число за текста („2,5 пъти“) — витрината, условията, брошурата и llms.txt. */
 export const LIFETIME_MULTIPLE = LIFETIME_PERCENT_OF_YEAR / 100;
 
+/** Месеците на годината, от която се смята Lifetime. */
+export const YEAR_MONTHS = 12;
+
 /** ДДС в България — само за показ на крайната цена за потребители в България. */
 export const VAT_BG_PERCENT = 20;
 
@@ -46,7 +49,15 @@ export function termPriceCents(option: TermOption): number {
 }
 
 export function lifetimePriceCents(): number {
-  return divideRoundHalfUp(MONTHLY_CENTS * 12 * LIFETIME_PERCENT_OF_YEAR, 100);
+  return divideRoundHalfUp(MONTHLY_CENTS * YEAR_MONTHS * LIFETIME_PERCENT_OF_YEAR, 100);
+}
+
+/**
+ * Правилото за Lifetime в текстовете („{multiple} пъти годишната цена без отстъпката за {months}
+ * месеца“) — от ценоразписа, не написано на ръка. Само за показ, затова дробното число е допустимо.
+ */
+export function lifetimeRuleParams(locale: Locale): { multiple: string; months: number } {
+  return { multiple: formatLifetimeTimes(locale), months: YEAR_MONTHS };
 }
 
 export function perMonthCents(option: TermOption): number {

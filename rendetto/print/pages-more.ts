@@ -1,5 +1,5 @@
 import { COMPANY } from '../src/company.js';
-import { formatLifetimeTimes } from '../src/plans/pricing.js';
+import { lifetimeRuleParams } from '../src/plans/pricing.js';
 import type { FaqId } from '../src/seo/structured-data.js';
 import type { FurnitureRange } from '../src/services/furniture.js';
 import { esc, icon, PAGES, titleBlock, type BrochureContext } from './pages.js';
@@ -77,7 +77,7 @@ export function prices(c: BrochureContext): string {
         ? t('landing.price.lifetime')
         : t('landing.price.months', { n: row.months ?? 0 });
       const per = lifetime
-        ? t('brochure.prices.once')
+        ? t('landing.price.once')
         : t('landing.price.perMonth', { amount: c.money(row.perMonthWithVatCents ?? 0) });
       const off = row.discountPercent
         ? `<span class="b-off">${esc(t('landing.price.off', { pct: row.discountPercent }))}</span>`
@@ -87,7 +87,7 @@ export function prices(c: BrochureContext): string {
     .join('');
   const notes = [
     t('landing.prices.vat', { vat: c.vatPercent }),
-    t('brochure.prices.lifetime', { times: formatLifetimeTimes(c.locale) }),
+    t('brochure.prices.lifetime', lifetimeRuleParams(c.locale)),
     t('landing.prices.manual'),
     t('landing.prices.expired'),
   ]

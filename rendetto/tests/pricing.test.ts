@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { LOCALES, translate } from '../src/i18n.js';
 import {
   formatLifetimeTimes,
   formatMoney,
@@ -7,6 +8,7 @@ import {
   LIFETIME_PERCENT_OF_YEAR,
   LIFETIME_MULTIPLE,
   lifetimePriceCents,
+  lifetimeRuleParams,
   MONTHLY_CENTS,
   optionMonths,
   optionPriceCents,
@@ -15,6 +17,7 @@ import {
   TERM_OPTIONS,
   termPriceCents,
   withVatCents,
+  YEAR_MONTHS,
 } from '../src/plans/pricing.js';
 
 test('the price list the owner asked for: 25 € a month, 5/10/20 % off, lifetime 2.5 × a year', () => {
@@ -93,4 +96,23 @@ test('the texts state the Lifetime multiplier from the price rule, in each langu
   assert.equal(formatLifetimeTimes('bg'), '2,5');
   assert.equal(formatLifetimeTimes('en'), '2.5');
   assert.equal(formatLifetimeTimes('it'), '2,5');
+});
+
+test('the Lifetime rule in the public texts comes from the price list, not from the copy', () => {
+  assert.equal(
+    lifetimePriceCents(),
+    (MONTHLY_CENTS * YEAR_MONTHS * LIFETIME_PERCENT_OF_YEAR) / 100,
+  );
+  assert.deepEqual(lifetimeRuleParams('bg'), { multiple: '2,5', months: 12 });
+  assert.deepEqual(lifetimeRuleParams('en'), { multiple: '2.5', months: 12 });
+  assert.deepEqual(lifetimeRuleParams('it'), { multiple: '2,5', months: 12 });
+  for (const locale of LOCALES) {
+    const rule = lifetimeRuleParams(locale);
+    for (const key of ['landing.prices.lifetime', 'brochure.prices.lifetime']) {
+      const text = translate(locale, key, rule);
+      assert.ok(!text.includes('{'), `${locale}.${key}: ${text}`);
+      assert.ok(text.includes(rule.multiple), `${locale}.${key}: ${text}`);
+      assert.ok(text.includes(String(rule.months)), `${locale}.${key}: ${text}`);
+    }
+  }
 });

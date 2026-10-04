@@ -130,7 +130,7 @@
       "title": "Quanto costa?",
       "trial": "Ogni account riceve {days} giorni di prova dalla conferma dell'email per valutare il nostro software: con tutte le funzioni, senza carta e senza pagamenti automatici.",
       "vat": "Per i consumatori i prezzi sono finali, IVA {vat}% inclusa. Per le aziende è indicato anche il prezzo IVA esclusa; l'IVA si applica secondo le regole del paese dell'acquirente.",
-      "lifetime": "Lifetime costa {times} volte il prezzo annuale senza lo sconto per 12 mesi e vale finché Rendetto è offerto: dettagli nelle condizioni.",
+      "lifetime": "Lifetime costa {multiple} volte il prezzo annuale senza lo sconto per {months} mesi e vale finché Rendetto è offerto: dettagli nelle condizioni generali.",
       "manual": "Il piano si ordina dall'account e viene attivato manualmente quando arriva il pagamento.",
       "expired": "Quando finisce la prova o il periodo pagato, i progetti restano scaricabili. Nuovi progetti e modifiche richiedono un piano attivo."
     },

@@ -17,8 +17,7 @@
       "scale": "All {n} types at 1:{scale}, with the sizes the program starts them with. Wall cabinets hang at their height above the floor."
     },
     "prices": {
-      "once": "one-off, for the life of the service",
-      "lifetime": "Lifetime is a single payment — {times} times the yearly price without the 12-month discount — and is valid for as long as Rendetto is offered.",
+      "lifetime": "Lifetime is a single payment — {multiple} times the yearly price without the {months}-month discount — and is valid for as long as Rendetto is offered.",
       "asOf": "Prices as of {date}; full terms: {terms}"
     },
     "contact": {

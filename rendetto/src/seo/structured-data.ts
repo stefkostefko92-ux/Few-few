@@ -3,7 +3,7 @@ import { config } from '../config.js';
 import { jsonForScript } from '../http/json-script.js';
 import { LOCALE_TAG, type Locale, type Translator } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
-import { formatMoney, priceTable, type PriceRow } from '../plans/pricing.js';
+import { formatMoney, lifetimeRuleParams, priceTable, type PriceRow } from '../plans/pricing.js';
 import { PATHS } from './paths.js';
 
 /**
@@ -51,7 +51,7 @@ export function landingTextParams(locale: Locale, prices: PriceRow[]) {
       lifeNet: money(row('lifetime').totalCents),
     },
   };
-  return { description: { days: TRIAL_DAYS }, faq };
+  return { description: { days: TRIAL_DAYS }, lifetime: lifetimeRuleParams(locale), faq };
 }
 
 /** Сума в центове като десетичен низ за schema.org — без float. */

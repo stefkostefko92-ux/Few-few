@@ -50,7 +50,7 @@
     "post": "Post-processore",
     "onion": "Onion skin 0,3 mm: i pezzi piccoli non si spostano",
     "compensation": "Le misure di taglio compensano il bordo",
-    "shelfLoad": "Carico sul ripiano (verifica 0,5% della luce)",
+    "shelfLoad": "Carico sul ripiano (verifica: freccia fino allo 0,5% della luce tra gli appoggi)",
     "reset": "Ripristina i valori predefiniti",
     "outputs": "Risultati",
     "tab": {

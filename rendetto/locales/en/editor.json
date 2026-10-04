@@ -50,7 +50,7 @@
     "post": "Post-processor",
     "onion": "Onion skin 0.3 mm — small parts do not move",
     "compensation": "Cut sizes compensate for the edge banding",
-    "shelfLoad": "Shelf load (0.5% of span check)",
+    "shelfLoad": "Shelf load (check: deflection up to 0.5% of the span between supports)",
     "reset": "Restore the defaults",
     "outputs": "Outputs",
     "tab": {

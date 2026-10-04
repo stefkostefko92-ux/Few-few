@@ -75,12 +75,12 @@
     "early": {
       "legend": "Quando inizia il piano",
       "label": "Voglio che il piano inizi subito dopo il pagamento, prima della fine dei {days} giorni per il recesso. So che, se recedo, pagherò la parte del prezzo per il periodo in cui il piano è stato attivo.",
-      "hint": "Solo per i consumatori. Se non la spuntate, il periodo a pagamento inizia dopo la fine dei {days} giorni per il recesso.",
+      "hint": "Solo per i consumatori. Se non spuntate questa casella, il periodo a pagamento inizia dopo la fine dei {days} giorni per il recesso.",
       "short": "inizio anticipato"
     },
     "accept": "Con l'ordine accettate le {terms} e le informazioni sul {withdrawal}.",
     "replacesOpen": "Avete un ordine in attesa di pagamento. Un nuovo ordine lo sostituirà e quello vecchio verrà annullato. Se lo avete già pagato, scriveteci a {contact} prima di ordinare di nuovo.",
-    "termsLink": "condizioni",
+    "termsLink": "condizioni generali",
     "withdrawalLink": "diritto di recesso",
     "orderName": "Premium per {term}",
     "withVatShort": "IVA inclusa",
@@ -95,7 +95,7 @@
     "withdraw": {
       "button": "Recedi dal contratto qui",
       "until": "scadenza: {date}",
-      "where": "Se siete consumatori, potete recedere da un ordine entro {days} giorni, senza indicarne il motivo, con il pulsante «Recedi dal contratto qui» accanto all'ordine.",
+      "where": "Se siete consumatori, potete recedere da un ordine entro {days} giorni dal suo invio, senza indicarne il motivo, con il pulsante «Recedi dal contratto qui» accanto all'ordine.",
       "title": "Recesso dal contratto",
       "intro": "Controllate i dati e confermate. Ultimo giorno del periodo di recesso: {date}. La conferma vi arriverà subito per email.",
       "name": "Nome",
