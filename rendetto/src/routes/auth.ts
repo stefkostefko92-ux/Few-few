@@ -247,6 +247,8 @@ authRouter.post('/verify-email', verifyLimiter, requirePreAuthCsrf, async (req, 
     res.redirect(303, `/reset?token=${encodeURIComponent(result.resetToken)}&from=verify`);
     return;
   }
+  // токенът вече е изразходван: същият адрес с друг език би показал „връзката не работи“
+  res.locals.hideLangs = true;
   authPage(res, 'auth/verified', { result }, result.ok ? 200 : 400);
 });
 

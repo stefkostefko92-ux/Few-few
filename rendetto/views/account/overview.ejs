@@ -27,7 +27,7 @@
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field"><label for="name"><%= t('auth.name') %></label><input id="name" name="name" type="text" required minlength="2" maxlength="80" autocomplete="name" value="<%= user.name %>"></div>
       <div class="field"><label for="locale"><%= t('account.language') %></label>
-        <select id="locale" name="locale"><% for (const l of locales) { %><option value="<%= l %>"<%= user.locale === l ? ' selected' : '' %>><%= localeLabel[l] %></option><% } %></select>
+        <select id="locale" name="locale"><% for (const l of locales) { %><option value="<%= l %>" lang="<%= l %>"<%= user.locale === l ? ' selected' : '' %>><%= localeLabel[l] %></option><% } %></select>
       </div>
       <div class="actions"><button class="btn btn-primary" type="submit"><%= t('common.save') %></button></div>
     </form>

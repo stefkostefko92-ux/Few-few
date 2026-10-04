@@ -2,6 +2,7 @@
 <body class="appbody editor-body">
 <%- include('../partials/app-header') %>
 <main class="editor" id="main" lang="bg" data-readonly="<%= readOnly ? 'true' : 'false' %>" data-csrf="<%= csrfToken %>" data-text="<%= JSON.stringify({ saving: te('editor.saving'), unsaved: te('editor.unsaved'), saved: te('editor.saved'), saveFailed: te('editor.saveFailed'), noWebgl: te('editor.noWebgl'), photoPreparing: te('editor.photoPreparing'), photoProgress: te('editor.photoProgress'), photoReady: te('editor.photoReady'), photoUnsupported: te('editor.photoUnsupported'), photoFailed: te('editor.photoFailed'), photoSaveFailed: te('editor.photoSaveFailed'), fullscreen: te('editor.fullscreen'), zoomIn: te('editor.zoomIn'), zoomOut: te('editor.zoomOut'), zoomFit: te('editor.zoomFit'), zoomHint: te('editor.zoomHint'), cncBlockedLink: te('editor.cncBlockedLink'), catalogFailed: te('editor.catalogFailed'), engineFailed: te('editor.engineFailed'), showFailed: te('editor.showFailed') }) %>">
+  <h1 class="sr-only"><%= project.name %></h1>
   <div class="ed-top">
     <a class="btn btn-quiet btn-small" href="/app"><%- include('../partials/icon', { name: 'back' }) %><span><%= te('editor.back') %></span></a>
     <div class="ed-title">
@@ -14,13 +15,13 @@
       <% if (!readOnly) { %><button class="btn btn-primary btn-small" type="button" id="save"><%- include('../partials/icon', { name: 'save' }) %><span><%= te('editor.save') %></span></button><% } %>
       <details class="menu">
         <summary class="btn btn-small"><%- include('../partials/icon', { name: 'download' }) %><span><%= te('editor.download') %></span></summary>
-        <div class="menu-list" role="menu">
-          <a role="menuitem" data-export href="/app/p/<%= project.id %>/export/project.zip"><%= te('editor.export.project') %></a>
-          <a role="menuitem" data-export href="/app/p/<%= project.id %>/export/cut-list.csv"><%= te('editor.export.cutlist') %></a>
-          <a role="menuitem" data-export href="/app/p/<%= project.id %>/export/hardware.csv"><%= te('editor.export.hardware') %></a>
-          <a role="menuitem" data-export href="/app/p/<%= project.id %>/export/drilling.csv"><%= te('editor.export.drilling') %></a>
-          <a role="menuitem" data-export href="/app/p/<%= project.id %>/export/drawings.zip"><%= te('editor.export.drawings') %></a>
-          <a role="menuitem" data-export="cnc" href="/app/p/<%= project.id %>/export/cnc.zip"><%= te('editor.export.cnc') %></a>
+        <div class="menu-list">
+          <a data-export href="/app/p/<%= project.id %>/export/project.zip"><%= te('editor.export.project') %></a>
+          <a data-export href="/app/p/<%= project.id %>/export/cut-list.csv"><%= te('editor.export.cutlist') %></a>
+          <a data-export href="/app/p/<%= project.id %>/export/hardware.csv"><%= te('editor.export.hardware') %></a>
+          <a data-export href="/app/p/<%= project.id %>/export/drilling.csv"><%= te('editor.export.drilling') %></a>
+          <a data-export href="/app/p/<%= project.id %>/export/drawings.zip"><%= te('editor.export.drawings') %></a>
+          <a data-export="cnc" href="/app/p/<%= project.id %>/export/cnc.zip"><%= te('editor.export.cnc') %></a>
           <p class="menu-note"><%= te('editor.export.note') %></p>
         </div>
       </details>
@@ -49,33 +50,33 @@
       <fieldset<%= readOnly ? ' disabled' : '' %>>
       <details class="railbox" open>
         <summary><%= te('editor.project') %></summary>
-        <div class="group"><h3><%= te('editor.furniture') %></h3><div id="type-picker" role="radiogroup" aria-label="<%= te('editor.furnitureType') %>"></div></div>
-        <div class="group"><h3><%= te('editor.sizes') %></h3><div id="param-fields" class="group group-flat"></div></div>
+        <div class="group"><h2><%= te('editor.furniture') %></h2><div id="type-picker" role="radiogroup" aria-label="<%= te('editor.furnitureType') %>"></div></div>
+        <div class="group"><h2><%= te('editor.sizes') %></h2><div id="param-fields" class="group group-flat"></div></div>
         <div class="group">
-          <h3><%= te('editor.materials') %></h3>
-          <span class="lbl"><%= te('editor.carcass') %></span>
-          <button type="button" class="pickbtn" data-pick="carcassDecor"></button>
+          <h2><%= te('editor.materials') %></h2>
+          <span class="lbl" id="l-carcass"><%= te('editor.carcass') %></span>
+          <button type="button" class="pickbtn" id="pick-carcass" aria-labelledby="l-carcass pick-carcass" data-pick="carcassDecor"></button>
           <span class="lbl" id="l-front"><%= te('editor.front') %></span>
           <div class="seg" role="radiogroup" aria-labelledby="l-front">
             <label><input type="radio" name="frontMaterial" value="decor" data-field="frontMaterial"><span><%= te('editor.frontDecor') %></span></label>
             <label><input type="radio" name="frontMaterial" id="f-frontMaterial-ral" value="ral" data-field="frontMaterial"><span><%= te('editor.frontRal') %></span></label>
           </div>
-          <div id="row-frontDecor"><button type="button" class="pickbtn" data-pick="frontDecor"></button></div>
-          <div id="row-frontRal"><button type="button" class="pickbtn" data-pick="frontRal"></button></div>
+          <div id="row-frontDecor"><button type="button" class="pickbtn" id="pick-front" aria-labelledby="l-front pick-front" data-pick="frontDecor"></button></div>
+          <div id="row-frontRal"><button type="button" class="pickbtn" id="pick-ral" aria-labelledby="l-front pick-ral" data-pick="frontRal"></button></div>
           <div class="field sel"><label for="f-bandCarcass"><%= te('editor.bandCarcass') %></label><select id="f-bandCarcass" data-field="bandCarcass" data-none="<%= te('editor.none') %>"></select></div>
           <div class="field sel"><label for="f-bandFront"><%= te('editor.bandFront') %></label><select id="f-bandFront" data-field="bandFront"></select></div>
           <div class="field"><label for="f-gap"><%= te('editor.gap') %></label><output data-for="gap" data-unit="mm" for="f-gap">3 mm</output><input type="range" id="f-gap" data-field="gap" step="0.5"></div>
         </div>
         <div class="group">
-          <h3><%= te('editor.hardware') %></h3>
+          <h2><%= te('editor.hardware') %></h2>
           <div class="field wide"><label for="f-hinge"><%= te('editor.hinge') %></label><select id="f-hinge" data-field="hinge"></select></div>
-          <span class="lbl"><%= te('editor.handle') %></span>
-          <button type="button" class="pickbtn" data-pick="handle"></button>
+          <span class="lbl" id="l-handle"><%= te('editor.handle') %></span>
+          <button type="button" class="pickbtn" id="pick-handle" aria-labelledby="l-handle pick-handle" data-pick="handle"></button>
           <div class="field wide"><label for="f-slide"><%= te('editor.slide') %></label><select id="f-slide" data-field="slide"></select></div>
           <div class="field wide" id="row-bedFitting"><label for="f-bedFitting"><%= te('editor.bedFitting') %></label><select id="f-bedFitting" data-field="bedFitting"></select></div>
         </div>
         <div class="group">
-          <h3><%= te('editor.machine') %></h3>
+          <h2><%= te('editor.machine') %></h2>
           <div class="field sel"><label for="f-tool"><%= te('editor.tool') %></label><select id="f-tool" data-field="tool"></select></div>
           <span class="lbl" id="l-post"><%= te('editor.post') %></span>
           <div class="seg" role="radiogroup" aria-labelledby="l-post">
@@ -121,8 +122,8 @@
 
       <section id="panel-bom" role="tabpanel" aria-labelledby="tab-bom" hidden>
         <div class="stats" id="bom-summary"></div>
-        <div class="row"><h2><%= te('editor.parts') %></h2><div class="acts"><button type="button" class="btn btn-small" id="copy-cut"><%= te('editor.copyCut') %></button><button type="button" class="btn btn-small" id="copy-hw"><%= te('editor.copyHw') %></button></div></div>
-        <div class="tablewrap" tabindex="0" role="region" aria-label="<%= te('editor.parts') %>">
+        <div class="row"><h2 id="bom-h"><%= te('editor.parts') %></h2><div class="acts"><button type="button" class="btn btn-small" id="copy-cut"><%= te('editor.copyCut') %></button><button type="button" class="btn btn-small" id="copy-hw"><%= te('editor.copyHw') %></button></div></div>
+        <div class="tablewrap" tabindex="0" role="region" aria-labelledby="bom-h">
           <table id="bom-parts"><thead><tr><th>№</th><th><%= te('editor.col.part') %></th><th><%= te('editor.col.finished') %></th><th><%= te('editor.col.cut') %></th><th><%= te('editor.col.material') %></th><th><%= te('editor.col.bandL') %></th><th><%= te('editor.col.bandW') %></th><th><%= te('editor.col.grain') %></th><th><%= te('editor.col.holes') %></th><th><%= te('editor.col.edgeHoles') %></th></tr></thead><tbody></tbody></table>
         </div>
         <div class="cols">
@@ -137,11 +138,11 @@
         <div class="row"><h2><%= te('editor.drillTitle') %></h2><button type="button" class="btn btn-small" id="copy-drill"><%= te('editor.copyDrill') %></button></div>
         <div class="cols" id="drill-cards"></div>
         <div class="fs" id="drill-fs">
-          <div class="row"><h2><%= te('editor.drillMap') %></h2><div class="acts"><select id="drill-part" class="pick" aria-label="<%= te('editor.part') %>"></select><button type="button" class="btn btn-small fs-btn" data-fs="drill-fs" data-fs-zoom="drill-map" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
+          <div class="row"><h2 id="drill-map-h"><%= te('editor.drillMap') %></h2><div class="acts"><select id="drill-part" class="pick" aria-label="<%= te('editor.part') %>"></select><button type="button" class="btn btn-small fs-btn" data-fs="drill-fs" data-fs-zoom="drill-map" aria-pressed="false"><%- include('../partials/icon', { name: 'expand' }) %><span><%= te('editor.fullscreen') %></span></button></div></div>
           <p class="hint" id="drill-axes"></p>
           <div class="paperwrap" id="drill-map"></div>
         </div>
-        <div class="tablewrap" tabindex="0" role="region" aria-label="<%= te('editor.col.holes') %>"><table id="drill-table"><thead><tr><th>№</th><th><%= te('editor.col.letter') %></th><th>X (u)</th><th>Y (v)</th><th>Ø</th><th><%= te('editor.col.depth') %></th><th><%= te('editor.col.purpose') %></th><th><%= te('editor.col.hardware') %></th></tr></thead><tbody></tbody></table></div>
+        <div class="tablewrap" tabindex="0" role="region" aria-labelledby="drill-map-h"><table id="drill-table"><thead><tr><th>№</th><th><%= te('editor.col.letter') %></th><th>X (u)</th><th>Y (v)</th><th>Ø</th><th><%= te('editor.col.depth') %></th><th><%= te('editor.col.purpose') %></th><th><%= te('editor.col.hardware') %></th></tr></thead><tbody></tbody></table></div>
         <p class="note"><%= te('editor.drillNote') %></p>
       </section>
 
@@ -173,8 +174,8 @@
         </div>
         <p class="safety"><strong><%= te('editor.safetyTitle') %></strong> <%= te('editor.safetyText') %></p>
         <div class="cols">
-          <div class="codecard"><header><h3>G-code</h3><span class="meta" id="gcode-meta"></span><button type="button" class="btn btn-small" id="copy-gcode"><%= te('editor.copy') %></button></header><pre id="gcode" tabindex="0"></pre></div>
-          <div class="codecard"><header><h3><%= te('editor.dxf') %></h3><span class="meta" id="dxf-meta"></span><button type="button" class="btn btn-small" id="copy-dxf"><%= te('editor.copy') %></button></header><pre id="dxf" tabindex="0"></pre><div class="layers" id="dxf-layers"></div></div>
+          <div class="codecard"><header><h3 id="gcode-h">G-code</h3><span class="meta" id="gcode-meta"></span><button type="button" class="btn btn-small" id="copy-gcode"><%= te('editor.copy') %></button></header><pre id="gcode" tabindex="0" role="region" aria-labelledby="gcode-h"></pre></div>
+          <div class="codecard"><header><h3 id="dxf-h"><%= te('editor.dxf') %></h3><span class="meta" id="dxf-meta"></span><button type="button" class="btn btn-small" id="copy-dxf"><%= te('editor.copy') %></button></header><pre id="dxf" tabindex="0" role="region" aria-labelledby="dxf-h"></pre><div class="layers" id="dxf-layers"></div></div>
         </div>
         </div>
       </section>

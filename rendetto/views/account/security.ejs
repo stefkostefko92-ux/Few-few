@@ -8,7 +8,7 @@
   <h2 id="codes-h"><%- include('../partials/icon', { name: 'key' }) %><%= t('security.codesTitle') %></h2>
   <p><%= t('security.codesText') %></p>
   <ul class="recovery" id="recovery-codes"><% for (const c of codes) { %><li><%= c %></li><% } %></ul>
-  <div class="actions"><button class="btn" type="button" data-copy="#recovery-codes" data-done="<%= t('common.copied') %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('security.copyCodes') %></button></div>
+  <div class="actions"><button class="btn" type="button" data-copy="#recovery-codes" data-status="#copy-status" data-done="<%= t('common.copied') %>" data-failed="<%= t('security.copyFailed') %>"><%- include('../partials/icon', { name: 'copy' }) %><%= t('security.copyCodes') %></button><span class="hint" role="status" id="copy-status"></span></div>
 </section>
 <% } %>
 
@@ -76,7 +76,7 @@
 <section class="section" aria-labelledby="ses-h">
   <h2 id="ses-h"><%- include('../partials/icon', { name: 'device' }) %><%= t('security.sessionsTitle') %></h2>
   <div class="table-wrap"><table class="stack">
-    <thead><tr><th><%= t('security.col.device') %></th><th><%= t('security.col.place') %></th><th><%= t('security.col.lastSeen') %></th><th></th></tr></thead>
+    <thead><tr><th><%= t('security.col.device') %></th><th><%= t('security.col.place') %></th><th><%= t('security.col.lastSeen') %></th><th><span class="sr-only"><%= t('plan.col.actions') %></span></th></tr></thead>
     <tbody>
     <% for (const s of sessions) { %>
       <tr>

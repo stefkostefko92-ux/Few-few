@@ -11,7 +11,7 @@
     </div>
     <div class="form-row">
       <div class="field"><label for="n-role"><%= t('admin.account.role') %></label><select id="n-role" name="role"><% for (const r of roles) { %><option value="<%= r %>"><%= t('role.' + r) %></option><% } %></select></div>
-      <div class="field"><label for="n-locale"><%= t('account.language') %></label><select id="n-locale" name="locale"><% for (const l of locales) { %><option value="<%= l %>"><%= localeLabel[l] %></option><% } %></select></div>
+      <div class="field"><label for="n-locale"><%= t('account.language') %></label><select id="n-locale" name="locale"><% for (const l of locales) { %><option value="<%= l %>" lang="<%= l %>"><%= localeLabel[l] %></option><% } %></select></div>
     </div>
     <div class="form-row">
       <div class="field"><label for="n-plan"><%= t('admin.col.plan') %></label><select id="n-plan" name="plan" data-plan-select><option value="TRIAL"><%= t('plan.name.TRIAL') %></option><option value="PREMIUM"><%= t('plan.name.PREMIUM') %></option><option value="LIFETIME"><%= t('plan.name.LIFETIME') %></option></select></div>

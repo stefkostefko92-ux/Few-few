@@ -111,7 +111,7 @@
     <h2 id="proj-h"><%- include('../partials/icon', { name: 'folder' }) %><%= t('admin.account.projectsTitle', { n: account._count.projects }) %></h2>
     <% if (!account.projects.length) { %><p class="muted"><%= t('admin.account.noProjects') %></p><% } else { %>
     <div class="table-wrap"><table class="stack">
-      <thead><tr><th><%= t('app.name') %></th><th><%= t('app.type') %></th><th><%= t('admin.col.last') %></th><th></th></tr></thead>
+      <thead><tr><th><%= t('app.name') %></th><th><%= t('app.type') %></th><th><%= t('admin.col.last') %></th><th><span class="sr-only"><%= t('plan.col.actions') %></span></th></tr></thead>
       <tbody><% for (const p of account.projects) { %><tr><td data-label="<%= t('app.name') %>"><%= p.name %></td><td data-label="<%= t('app.type') %>"><%= t('furniture.' + p.type) %></td><td data-label="<%= t('admin.col.last') %>" class="nowrap"><%= fmt.dateTime(p.updatedAt) %></td><td><% if (can('accounts:security')) { %><a class="btn btn-small" href="/admin/projects/<%= p.id %>/export"><%- include('../partials/icon', { name: 'download' }) %>ZIP</a><% } %></td></tr><% } %></tbody>
     </table></div>
     <% } %>
@@ -177,7 +177,7 @@
       <fieldset<%= manageable && can('accounts:edit') ? '' : ' disabled' %>>
         <div class="field"><label for="e-name"><%= t('auth.name') %></label><input id="e-name" name="name" type="text" required minlength="2" maxlength="80" value="<%= account.name %>"></div>
         <div class="field"><label for="e-email"><%= t('auth.email') %></label><input id="e-email" name="email" type="email" required maxlength="254" value="<%= account.email %>"></div>
-        <div class="field"><label for="e-locale"><%= t('account.language') %></label><select id="e-locale" name="locale"><% for (const l of locales) { %><option value="<%= l %>"<%= account.locale === l ? ' selected' : '' %>><%= localeLabel[l] %></option><% } %></select></div>
+        <div class="field"><label for="e-locale"><%= t('account.language') %></label><select id="e-locale" name="locale"><% for (const l of locales) { %><option value="<%= l %>" lang="<%= l %>"<%= account.locale === l ? ' selected' : '' %>><%= localeLabel[l] %></option><% } %></select></div>
         <label class="check"><input type="checkbox" name="emailVerified" value="yes"<%= account.emailVerifiedAt ? ' checked disabled' : '' %>><span><%= t('admin.account.verifiedBox') %></span></label>
         <div class="actions"><button class="btn" type="submit"><%= t('common.save') %></button></div>
       </fieldset>

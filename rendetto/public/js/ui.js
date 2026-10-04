@@ -12,23 +12,35 @@
     true,
   );
 
-  // copy the text of an element (recovery codes); when the browser refuses, the text is selected for Ctrl+C
+  // copy the text of an element (recovery codes); the result, success or failure, goes to the live region
+  // named by data-status, so a screen reader says it too; when the browser refuses, the text is also selected
+  // for Ctrl+C
   Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function (button) {
-    var label = button.lastChild;
-    var original = label.textContent; // kept once: a click during the "copied" label cannot replace it
+    var statusSelector = button.getAttribute('data-status');
+    var status = statusSelector ? document.querySelector(statusSelector) : null;
     var timer = 0;
+    var say = function (message, clearAfter) {
+      if (!status) return;
+      window.clearTimeout(timer);
+      status.textContent = message;
+      if (clearAfter)
+        timer = window.setTimeout(function () {
+          status.textContent = '';
+        }, clearAfter);
+    };
     button.addEventListener('click', function () {
       var target = document.querySelector(button.getAttribute('data-copy'));
       if (!target) return;
-      var select = function () {
+      var failed = function () {
         var range = document.createRange();
         range.selectNodeContents(target);
         var selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
+        say(button.getAttribute('data-failed') || '', 0);
       };
       if (!navigator.clipboard) {
-        select();
+        failed();
         return;
       }
       var text =
@@ -37,13 +49,10 @@
             return li.textContent.trim();
           })
           .join('\n') || target.textContent;
+      say('', 0);
       navigator.clipboard.writeText(text).then(function () {
-        label.textContent = button.getAttribute('data-done') || original;
-        window.clearTimeout(timer);
-        timer = window.setTimeout(function () {
-          label.textContent = original;
-        }, 1800);
-      }, select);
+        say(button.getAttribute('data-done') || '', 4000);
+      }, failed);
     });
   });
 

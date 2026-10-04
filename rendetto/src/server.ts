@@ -143,8 +143,13 @@ export function createServer(): Express {
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.locals.locales = LOCALES;
     res.locals.localeLabel = LOCALE_LABEL;
-    res.locals.langUrl = (locale: string) =>
-      isLocale(locale) ? localeSwitchUrl(req, locale) : req.originalUrl;
+    // Страница след POST (QR, резервните кодове) или с изразходван токен не се отваря пак с GET —
+    // там превключвател няма (null), иначе смяната на езика води към 404 или към „връзката не работи“.
+    res.locals.langUrl = (locale: string): string | null => {
+      if ((req.method !== 'GET' && req.method !== 'HEAD') || res.locals.hideLangs === true)
+        return null;
+      return isLocale(locale) ? localeSwitchUrl(req, locale) : req.originalUrl;
+    };
     res.locals.path = req.path;
     res.locals.isStaff = isStaff;
     res.locals.isGoodLogin = isSuccessfulLogin;
