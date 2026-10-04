@@ -71,16 +71,21 @@ export const VOCI_PORTE: readonly VoceVano[] = [
     id: 'porte.telaio', gruppo: 'porte', titolo: 'Telaio proprio delle porte di piano',
     valore: 'a scelta del progettista, al posto del portale (2 × 50 mm, architrave 60 mm): il telaio della porta, uguale a tutti i piani, per '
       + 'default il telaio standard con montanti da 120 mm a tutta altezza, frontalino da 220 mm sopra la luce tra i montanti e spessore 50 mm; '
-      + 'montanti, frontalino e spessore modificabili su ogni progetto, montanti e frontalino da 25 mm (telai su misura). Il telaio sta sul '
-      + 'pavimento finito del pianerottolo, nel vano del muro a filo della parete verso il pianerottolo, profondo il suo spessore; il vano nel '
-      + 'muro è il suo ingombro esterno (luce + 2 montanti, altezza della luce + frontalino), disegnato in pianta, in sezione e nel 3D, e la '
-      + 'bottoniera si misura dal suo bordo',
+      + 'montanti, frontalino e spessore modificabili su ogni progetto, montanti e frontalino da 25 mm (telai su misura). Il telaio sta tutto '
+      + 'nel vano di corsa, contro la parete e sulla soglia: soglia e sospensione della porta sono fissate al telaio e le coppie Panev (sotto la '
+      + 'soglia e sopra la sospensione) lo tengono alla parete; il vano nel muro è il suo ingombro esterno (luce + 2 montanti, altezza della '
+      + 'luce + frontalino), gli imbotti stanno sul pavimento del pianerottolo. Lo spessore del telaio è dentro la profondità della porta di '
+      + 'piano: le ante scorrono dietro il telaio, il binario più vicino alla parete (68 mm prima del bordo della soglia nelle porte '
+      + 'telescopiche, 30 mm nelle centrali) almeno a filo del telaio, altrimenti «Attenzione» (si aumenta la profondità della porta di '
+      + 'piano). Disegnato in pianta, in sezione e nel 3D; la bottoniera si misura dal bordo del vano nel muro',
     riferimento: 'dato del fornitore delle porte',
     fonte: '2SG, pagina del telaio standard (montanti 120, frontalino 220, spessore 50; lamiera autoportante 1/1,2 mm; montaggio sul pavimento '
       + 'finito, staffe e tasselli per il muro) e disegno del telaio (larghezza luce + 240) letti il 2 ottobre 2026; telai di dimensioni speciali '
-      + 'con montanti e frontalino da 25 mm (research/argano-geared/14-porte-e-soglie.md, 18-porte-limitatori-tenditori-tutti.md). La posa nel '
-      + 'vano a filo della parete è scelta del software: va confermata con il fornitore delle porte',
+      + 'con montanti e frontalino da 25 mm (research/argano-geared/14-porte-e-soglie.md, 18-porte-limitatori-tenditori-tutti.md). Il telaio '
+      + 'nel vano di corsa con soglia e sospensione fissate, tenuto dalle coppie Panev, il vano nel muro della misura del telaio, lo spessore '
+      + 'dentro la profondità della porta e gli imbotti sul pavimento del pianerottolo: indicazione del cliente (4 ottobre 2026)',
     stato: 'scelta',
     costanti: ['frameStd', 'frameMin'],
+    verifiche: ['v_telaio'],
   },
 ];

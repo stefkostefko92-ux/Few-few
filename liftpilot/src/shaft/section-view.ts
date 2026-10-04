@@ -125,11 +125,12 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
         out.push(...doorPairSection(pair, dl, zf, Q), ...(over ? doorTopPairSection(pair, dl, zh + HEADER.top, Q) : []));
         out.push(path(sillSection(-25, dl, grooves, false).map(([v, z]) => P(X(v), zf + z)), true, 'outline', 'steel'));
         for (const g of grooves) out.push(box(X(g - LANDING_PANEL / 2), zf, X(g + LANDING_PANEL / 2), zh, 'thin', 'door'));
-        out.push(box(w0, zh + HEADER.foot, w0 + s * (dl + 6), zh + HEADER.top, 'thin'));
+        out.push(box(w0 + s * (fr.depth ?? 0), zh + HEADER.foot, w0 + s * (dl + 6), zh + HEADER.top, 'thin'));
         if (opening > I.doorHeight) {
-          // the portal's head across the wall (the door's own frame's from the landing face), the top lining up to the marble
-          const head = zh + fr.head, back = fr.depth === null ? w0 : w0 - s * Math.max(T - fr.depth, 0);
-          out.push(box(w0 - s * T, zh, back, head, 'outline', 'steel'));
+          // the portal's head across the wall, or the door's own frame's header in the shaft against the wall (the
+          // suspension behind it); the top lining up to the marble
+          const head = zh + fr.head;
+          out.push(fr.depth === null ? box(w0 - s * T, zh, w0, head, 'outline', 'steel') : box(w0, zh, w0 + s * fr.depth, head, 'outline', 'steel'));
           if (hasImbotti(I)) out.push(box(w0 - s * T, head, w0, zf + opening, 'outline', 'paper'));
         }
       }

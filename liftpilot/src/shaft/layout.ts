@@ -15,6 +15,7 @@ import { hasHead, headCheck, headFacingExtra, headOf } from './head';
 import { PANEV_BACK, cwBracketsOf } from './staffe';
 import { cwBracketMargin, cwSpecialOf } from './staffe-scelta';
 import { doorOpDepthOf, doorOpOf } from './operator';
+import { frameRoom } from './frame';
 import type { Access, CwSide, DoorLayout, Layout, Rail, Rect, ShaftCheck, ShaftInputs, Wall } from './types';
 
 const ACCESS: Readonly<Record<Exclude<Access, 'none'>, readonly [number, number, number]>> = {
@@ -233,6 +234,8 @@ export function layout(I: ShaftInputs): Layout {
   // a landing door set apart from its car door: its clear opening past the car door's on one side by as much, and the
   // passage through both what their openings share
   const shifted = doors.filter((d) => (d.side === 'A' ? fix.landA : fix.landB) !== undefined), passage = Math.min(...doors.map((d) => d.width - Math.abs(d.l0 - d.u0)));
+  // the landing doors' own frame in the shaft: their panels behind it (frame.ts)
+  const behind = frameRoom(I, doors);
   const checks: ShaftCheck[] = [
     check('v_fit', fits, Math.min(maxA - minA, maxB - minB), 0, 0, 'mm'),
     check('v_area', area <= areaMax + 1e-9, area, areaMax, 2, 'm²'),
@@ -259,6 +262,7 @@ export function layout(I: ShaftInputs): Layout {
     ...(niches !== null ? [check('v_niche', niches >= 0, Math.round(niches), 0, 0, 'mm')] : []),
     ...(staffe !== null && Number.isFinite(staffe) ? [check('v_staffa', staffe >= 0, Math.round(staffe), 0, 0, 'mm')] : []),
     ...(special ? [check('v_staffa', false, null, null, 0, 'mm', true)] : []),
+    ...(behind !== null ? [check('v_telaio', behind >= 0, behind, 0, 0, 'mm', true)] : []),
   ];
 
   const L: Layout = {

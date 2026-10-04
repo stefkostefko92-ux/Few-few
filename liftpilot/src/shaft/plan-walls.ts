@@ -86,14 +86,14 @@ export function walls(L: Layout, open: readonly DoorLayout[], box: WallBox = mai
     }
   }
   // jambs of the openings (the marbles of an old one): along the reveal and returning on the outer face; the door's own
-  // frame in the opening from the landing face (frame.ts); in an old opening the new door's portal through the wall (or
-  // its frame) and the linings beside it
+  // frame in the shaft against the wall, behind the opening (frame.ts); in an old opening the new door's portal through
+  // the wall and the linings beside it (or beside the frame's outside)
   for (const d of open) {
     const m = marbleOpening(L.inputs, d), { jamb: p, depth } = portalOf(L.inputs);
     for (const [u, s] of [[m.u0, -1], [m.u1, 1]] as const) {
       out.push(path([onWall(L, d.wall, u, 0, box), onWall(L, d.wall, u, -T, box), onWall(L, d.wall, u + s * 60, -T, box)], false, 'jamb'));
     }
-    if (depth !== null) for (const [a, b] of [[d.l0 - p, d.l0], [d.l1, d.l1 + p]] as const) out.push(path(quad(L, d.wall, a, -T, b, Math.min(depth - T, 0), box), true, 'thin', 'door'));
+    if (depth !== null) for (const [a, b] of [[d.l0 - p, d.l0], [d.l1, d.l1 + p]] as const) out.push(path(quad(L, d.wall, a, 0, b, depth, box), true, 'thin', 'door'));
     if (m.low > 0 || m.high > 0) {
       if (depth === null) for (const [a, b] of [[d.l0 - p, d.l0], [d.l1, d.l1 + p]] as const) out.push(path(quad(L, d.wall, a, -T, b, 0, box), true, 'thin', 'door'));
       if (m.low > 0) out.push(path(quad(L, d.wall, m.u0, -T, d.l0 - p, 0, box), true, 'outline', 'steel'));

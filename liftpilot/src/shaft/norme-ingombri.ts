@@ -70,7 +70,8 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
       + 'sospensione della porta appesa sotto la piattaforma di A con bulloni nei suoi fori, A tagliata come sotto la soglia; una coppia ogni 400 mm '
       + 'lungo la sospensione (la corsa delle ante e 30 mm per parte), almeno tre, le estreme a 10 mm dalle sue estremità; se le coppie della soglia '
       + 'del piano sopra arrivano alla stessa altezza, quella che cadrebbe su una di esse si sposta accanto (la faccia di B e 10 mm), dentro la '
-      + 'sospensione. B vuole il muro dalla sommità della sospensione (230 mm sopra la luce) in su: se il vano nel muro (telaio o marmi) sale più '
+      + 'sospensione. Con il telaio proprio della porta le coppie tengono il telaio, a cui sono fissate soglia e sospensione (porte.telaio). '
+      + 'B vuole il muro dalla sommità della sospensione (230 mm sopra la luce) in su: se il vano nel muro (telaio o marmi) sale più '
       + 'in alto, o la coppia arriva alla soglia del piano sopra, a quel piano le coppie sopra la porta non sono poste né contate, e la verifica lo '
       + 'segnala come «Attenzione» (il fissaggio della sospensione va definito con il costruttore della porta)',
     riferimento: 'catalogo staffe Panev 2026, pp. 14-18 (coppie), p. 05 (taglio della piastra) e p. 04 (soglia o elemento portante della porta di piano)',

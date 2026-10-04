@@ -50,7 +50,7 @@ export function doorsOf(L: Layout, door: 'A' | 'B' | 'AB'): DoorLayout[] {
  *  leave no wall for them). */
 export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], car: DoorLayout, z: number, up?: number): DoorPanels {
   const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth), d = landingOf(car), pair = doorPairOf(I);
-  landingHeader(C, M, d.wall, W, D, d, tracks, LANDING_PANEL, z + d.height, I.landingDepth);
+  landingHeader(C, M, d.wall, W, D, d, tracks, LANDING_PANEL, z + d.height, I.landingDepth, portalOf(I).depth ?? 0);
   const len = d.wall === 'front' || d.wall === 'rear' ? W : D;
   doorBrackets(C, M, d.wall, W, D, topBracketsAt(pair, d, len, z, wallOpeningHeight(I) - I.doorHeight, up), z + d.height + HEADER.top, I.landingDepth, pair, true);
   const lock = { kind: 'lock', v0: I.landingDepth + I.sillGap, du: car.u0 - d.u0 } as const;
@@ -178,18 +178,18 @@ export function buildShaft(L: Layout, S: Section, M: LiftMaterials, cuts: readon
     const z = S.levels[i];
     for (const car of doorsOf(L, f.door)) {
       const d = landingOf(car), g = byside[d.wall], frame = M.landing[d.wall], len = d.wall === 'front' || d.wall === 'rear' ? W : D, zh = z + d.height;
-      // the portal (or the door's own frame from the landing face: its jambs full height, its header between them) and
-      // the landing on the wall where it stands at this floor; the door itself in line with the car
+      // the portal (or the door's own frame in the shaft against the wall, on the sill: its jambs full height, its header
+      // between them) and the landing on the wall where it stands at this floor; the door itself in line with the car
       const s = i === top ? head[d.wall] : 0;
       if (fr.depth === null) {
         g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u0, -wall - 30 + s, 10 + s, z, zh + 60, frame);
         g.wallBox(d.wall, W, D, d.u1, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, z, zh + 60, frame);
         g.wallBox(d.wall, W, D, d.u0 - KV.doorPortal, d.u1 + KV.doorPortal, -wall - 30 + s, 10 + s, zh, zh + 60, frame);
       } else {
-        const v1 = Math.min(-wall + fr.depth, 0) + s, zf = zh + fr.head;
-        g.wallBox(d.wall, W, D, d.u0 - fr.jamb, d.u0, -wall + s, v1, z, zf, frame);
-        g.wallBox(d.wall, W, D, d.u1, d.u1 + fr.jamb, -wall + s, v1, z, zf, frame);
-        g.wallBox(d.wall, W, D, d.u0, d.u1, -wall + s, v1, zh, zf, frame);
+        const v1 = fr.depth + s, zf = zh + fr.head;
+        g.wallBox(d.wall, W, D, d.u0 - fr.jamb, d.u0, s, v1, z, zf, frame);
+        g.wallBox(d.wall, W, D, d.u1, d.u1 + fr.jamb, s, v1, z, zf, frame);
+        g.wallBox(d.wall, W, D, d.u0, d.u1, s, v1, zh, zf, frame);
       }
       if (imb) imbotti(g, M, I, d, z, s, frame);
       callStation(g, M, I, d, z, frame, i === 0 ? 'up' : i === V.floors.length - 1 ? 'down' : 'both', s);

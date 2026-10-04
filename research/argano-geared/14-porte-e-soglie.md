@@ -131,6 +131,13 @@ oltre il lato di chiusura e oltre il lato di impacchettamento. La scheda tecnica
 | Telai di piano | — | montanti (stipiti) fino a **25 mm**, solo in esecuzione speciale; larghezza standard non trovata | — | E1 |
 
 Sospensione 2AT (etichette E1): fissaggio a telaio o a muro, chiusura a molla, staffe della soglia incluse.
+
+**Porta con telaio proprio — indicazione del cliente (4 ottobre 2026):** soglia e sospensione della porta di piano
+sono fissate al telaio; il telaio sta tutto nel vano di corsa, contro la parete; gli imbotti stanno sul pavimento del
+pianerottolo. Scelte del cliente sulla stessa domanda: il vano nel muro è l'ingombro esterno del telaio, le staffe
+Panev (sotto la soglia e sopra la sospensione) tengono il telaio, lo spessore del telaio è dentro la profondità della
+porta di piano. Concorda con il «fissaggio a telaio» della 2AT qui sopra e con la profondità di Fermator con telaio,
+20 + 90 + FD (cap. 18). Nel software: `liftpilot/src/shaft/frame.ts`, voce `porte.telaio`.
 **Non trovati:** lunghezza complessiva della sospensione rispetto alla luce; profondità nel vano dal filo
 del muro di piano; altezza dell'architrave o testata sopra la luce; distanza dal muro di piano al bordo
 della soglia; testata minima.

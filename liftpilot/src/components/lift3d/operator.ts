@@ -84,18 +84,19 @@ export function carOperator(B: Batch, M: LiftMaterials, wall: Side, W: number, D
   B.wallBox(wall, W, D, box0 + 20, box0 + 60, vCar + 6, vCar + 10, roof + 70, roof + 90, M.led);
 }
 
-/** The suspension of a landing door over its panels' top zt (the landing's level + the door's height). */
-export function landingHeader(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, d: DoorLayout, tr: Tracks, t: number, zt: number, depth: number): void {
+/** The suspension of a landing door over its panels' top zt (the landing's level + the door's height); `back`: where it
+ *  starts from the wall — behind the door's own frame, which it is fixed to (src/shaft/frame.ts). */
+export function landingHeader(B: Batch, M: LiftMaterials, wall: Side, W: number, D: number, d: DoorLayout, tr: Tracks, t: number, zt: number, depth: number, back = 0): void {
   const len = wall === 'front' || wall === 'rear' ? W : D, [lo, hi] = headerSpan(d, len), top = zt + HEADER.top;
   // the cover reaches 6 mm past the sill's edge, over the nuts of the hangers: the car's parts pass beyond it
-  B.wallBox(wall, W, D, lo, hi, 0, 3, zt + HEADER.foot, top, M.galv);
-  B.wallBox(wall, W, D, lo, hi, 0, depth + 6, top - 7, top, M.galv);
+  B.wallBox(wall, W, D, lo, hi, back, back + 3, zt + HEADER.foot, top, M.galv);
+  B.wallBox(wall, W, D, lo, hi, back, depth + 6, top - 7, top, M.galv);
   B.wallBox(wall, W, D, lo, hi, depth + 3, depth + 6, top - 40, top - 7, M.galv);
   tracks(B, M, wall, W, D, trackPlanes(d, tr, t), 1, lo + 10, hi - 10, zt, 3);
   // the lock on the shelf over the closing edge, its label under the cover's lip; the closer at the stack's end
   const e = d.kind === 'C2' ? (d.u0 + d.u1) / 2 : d.stack === 'low' ? d.u1 : d.u0, k = d.kind === 'C2' || d.stack === 'low' ? -1 : 1;
-  B.wallBox(wall, W, D, e - k * 30, e + k * 120, 3, depth + 3, zt + SHELF + 8, zt + 215, M.frame);
+  B.wallBox(wall, W, D, e - k * 30, e + k * 120, back + 3, depth + 3, zt + SHELF + 8, zt + 215, M.frame);
   B.wallBox(wall, W, D, e, e + k * 70, depth + 3, depth + 4, zt + SHELF + 15, zt + SHELF + 35, M.base);
   const c = d.kind === 'C2' ? hi - 150 : d.stack === 'low' ? lo + 20 : hi - 150;
-  B.wallBox(wall, W, D, c, c + 130, 3, 40, zt + SHELF + 8, zt + 215, M.frame);
+  B.wallBox(wall, W, D, c, c + 130, back + 3, back + 40, zt + SHELF + 8, zt + 215, M.frame);
 }
