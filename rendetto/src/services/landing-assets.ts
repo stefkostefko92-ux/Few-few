@@ -79,8 +79,6 @@ export interface LandingAssets {
     count: number;
     parts: number;
     holes: number;
-    widthMm: number;
-    heightMm: number;
   };
   tools: { contour: number | null; groove: number | null; drills: number[] };
   cutRows: CutRow[];
@@ -164,11 +162,18 @@ function sheetArt(model: EngineModel, sheet: SheetLike, meta: DrawingMeta) {
   };
 }
 
+/** Целият лист, когато няма какво да се изреже: размерът идва от viewBox на чертежа (двигателят рисува A3). */
+function wholeSheet(svg: string, scale: number): DrawingView {
+  const box = /viewBox="[-\d.]+ [-\d.]+ ([\d.]+) ([\d.]+)"/.exec(svg);
+  const [w, h] = box ? [Number(box[1]), Number(box[2])] : [420, 297];
+  return { svg, width: Math.round(w * scale), height: Math.round(h * scale) };
+}
+
 /**
  * Изрязва изглед от чертежа по първия правоъгълник с даден клас (`d-out` — контурът на вратата, `d-box` —
  * рамката на детайла на пантата). Ако подредбата на чертежа се смени, изгледът следва контура.
  */
-function cropView(
+export function cropView(
   svg: string,
   rectClass: string,
   pad: { x: number; top: number; bottom: number },
@@ -177,7 +182,7 @@ function cropView(
   const rect = new RegExp(
     `<rect class="${rectClass}" x="([\\d.]+)" y="([\\d.]+)" width="([\\d.]+)" height="([\\d.]+)"`,
   ).exec(svg);
-  if (!rect) return { svg, width: 1260, height: 891 };
+  if (!rect) return wholeSheet(svg, scale);
   const [x, y, w, h] = rect.slice(1, 5).map(Number) as [number, number, number, number];
   const box = [x - pad.x, y - pad.top, w + 2 * pad.x, h + pad.top + pad.bottom].map(
     (v) => Math.round(v * 10) / 10,
@@ -246,8 +251,6 @@ export function landingAssets(): LandingAssets {
       count: nesting.sheets.length,
       parts: sheet.placements.length,
       holes: art.holes,
-      widthMm: sheet.w,
-      heightMm: sheet.h,
     },
     tools: art.tools,
     cutRows: cutRows(model),

@@ -15,6 +15,7 @@ import { setFlash } from '../http/flash.js';
 import { forgotLimiter, loginLimiter, mfaLimiter, registerLimiter } from '../http/limits.js';
 import { rawField, requestMeta, safeNext, stringField } from '../http/meta.js';
 import { isLocale } from '../i18n.js';
+import { PATHS } from '../seo/paths.js';
 import { audit } from '../audit.js';
 import { attemptLogin, completeMfa } from '../services/login.js';
 import { registerAccount, verifyEmailToken } from '../services/registration.js';
@@ -51,7 +52,7 @@ function authPage(res: Response, view: string, data: Record<string, unknown>, st
   res
     .status(status)
     .set('Cache-Control', 'no-store')
-    .render(view, { noindex: true, ...data });
+    .render(view, { noindex: true, paths: PATHS, ...data });
 }
 
 /* -------------------------------------- вход -------------------------------------- */

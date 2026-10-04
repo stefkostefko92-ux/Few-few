@@ -3,6 +3,7 @@ import { config } from '../config.js';
 import { LOCALE_TAG, type Locale, type Translator } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { formatMoney, priceTable, type PriceRow } from '../plans/pricing.js';
+import { PATHS } from './paths.js';
 
 /**
  * JSON-LD за публичните страници. Текстовете идват от същите преводи, които страницата показва —
@@ -243,7 +244,7 @@ export function legalStructuredData(
             '@type': 'ListItem',
             position: 1,
             name: 'Rendetto',
-            item: `${base}${locale === 'bg' ? '/' : `/${locale}/`}`,
+            item: `${base}${PATHS[locale]}`,
           },
           { '@type': 'ListItem', position: 2, name: title, item: canonical },
         ],

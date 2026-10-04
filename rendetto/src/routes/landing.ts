@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express';
-import { COMPANY, CONTENT_UPDATED, LEGAL_UPDATED } from '../company.js';
+import { COMPANY, LEGAL_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { applyLocale } from '../http/locale.js';
 import { LOCALES, translatorFor, type Locale } from '../i18n.js';
@@ -46,16 +46,21 @@ function publicPage(
     paths: PATHS,
     legalPath,
     company: COMPANY,
-    updated: CONTENT_UPDATED,
     ...data,
   });
+}
+
+/** Пренасочване към каноничния адрес със същия query низ — UTM/gclid от кампанията не се губят. */
+function toCanonical(req: Request, res: Response, path: string): void {
+  const query = req.originalUrl.indexOf('?');
+  res.redirect(301, query === -1 ? path : path + req.originalUrl.slice(query));
 }
 
 function landing(locale: Locale) {
   return (req: Request, res: Response) => {
     // Express не различава `/en` от `/en/` и `/EN/` — пренасочваме, за да има един адрес на език.
     if (req.path !== PATHS[locale]) {
-      res.redirect(301, PATHS[locale]);
+      toCanonical(req, res, PATHS[locale]);
       return;
     }
     const canonical = `${config().PUBLIC_BASE_URL}${PATHS[locale]}`;
@@ -85,7 +90,7 @@ for (const page of LEGAL) {
     landingRouter.get(legalPath(locale, page), (req, res) => {
       // `/privacy/` и `/Privacy` са същата страница за Express — един адрес за търсачката
       if (req.path !== legalPath(locale, page)) {
-        res.redirect(301, legalPath(locale, page));
+        toCanonical(req, res, legalPath(locale, page));
         return;
       }
       const canonical = `${config().PUBLIC_BASE_URL}${legalPath(locale, page)}`;

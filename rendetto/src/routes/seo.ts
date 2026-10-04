@@ -3,12 +3,12 @@ import { join } from 'node:path';
 import { Router } from 'express';
 import { config } from '../config.js';
 import { COMPANY, CONTENT_UPDATED, LEGAL_UPDATED } from '../company.js';
-import { LOCALES, translate } from '../i18n.js';
+import { LOCALE_LABEL, LOCALES, translate, type Locale } from '../i18n.js';
 import { ROOT } from '../paths.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
 import { WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
-import { legalPath, PATHS } from '../seo/paths.js';
+import { LEGAL, legalPath, PATHS, type LegalPage } from '../seo/paths.js';
 
 export const seoRouter: Router = Router();
 
@@ -16,6 +16,8 @@ export const seoRouter: Router = Router();
  * Публичното е витрината и правните страници; приложението, акаунтът и панелът са забранени за обхождане.
  * Входът, регистрацията и забравената парола НЕ са тук: те носят `noindex`, а търсачката го вижда само ако
  * може да отвори страницата. Връзките с токени (`/reset`, `/verify-email`) не се обхождат изобщо.
+ * `Disallow` сравнява по началото на адреса — `/app` хваща и `/apple-touch-icon.png`, затова иконката
+ * е разрешена изрично (по-дългото правило печели).
  */
 seoRouter.get('/robots.txt', (_req, res) => {
   const base = config().PUBLIC_BASE_URL;
@@ -26,6 +28,7 @@ seoRouter.get('/robots.txt', (_req, res) => {
       [
         'User-agent: *',
         'Allow: /',
+        'Allow: /apple-touch-icon.png',
         'Disallow: /app',
         'Disallow: /account',
         'Disallow: /admin',
@@ -41,24 +44,19 @@ seoRouter.get('/robots.txt', (_req, res) => {
 seoRouter.get('/sitemap.xml', (_req, res) => {
   const base = config().PUBLIC_BASE_URL;
   const pages: Array<{
-    path: (l: (typeof LOCALES)[number]) => string;
+    path: (l: Locale) => string;
     priority: string;
     freq: string;
     updated: string;
   }> = [
     { path: (l) => PATHS[l], priority: '1.0', freq: 'weekly', updated: CONTENT_UPDATED },
-    {
-      path: (l) => legalPath(l, 'privacy'),
+    // правните страници — от същия списък, от който се правят и маршрутите им
+    ...LEGAL.map((page) => ({
+      path: (l: Locale) => legalPath(l, page),
       priority: '0.3',
       freq: 'yearly',
-      updated: LEGAL_UPDATED.privacy,
-    },
-    {
-      path: (l) => legalPath(l, 'terms'),
-      priority: '0.3',
-      freq: 'yearly',
-      updated: LEGAL_UPDATED.terms,
-    },
+      updated: LEGAL_UPDATED[page],
+    })),
   ];
   const urls = pages.flatMap((page) =>
     LOCALES.map((locale) => {
@@ -79,6 +77,17 @@ seoRouter.get('/sitemap.xml', (_req, res) => {
       `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join('\n')}\n</urlset>\n`,
     );
 });
+
+/** Адресите в llms.txt идват от `seo/paths.ts`, както в sitemap — тук са само надписите им. */
+const LLMS_LANDING_NOTE: Record<Locale, string> = {
+  bg: 'product, prices, questions',
+  en: 'product, prices, questions',
+  it: 'prodotto, prezzi, domande',
+};
+const LLMS_LEGAL_TITLE: Record<LegalPage, string> = {
+  privacy: 'Privacy policy',
+  terms: 'Terms of use',
+};
 
 /** llms.txt — кратко описание за AI търсачките, само с факти, които витрината също казва. */
 seoRouter.get('/llms.txt', (_req, res) => {
@@ -107,11 +116,13 @@ seoRouter.get('/llms.txt', (_req, res) => {
         `> Rendetto is browser software for designing panel furniture in 3D. From one project it produces the cut list with edge banding, the hardware list, assembly drawings, a drilling map for every part (hinge cups, mounting plates, handles, drawer slides) and CNC files: layered DXF and G-code (ISO/Fanuc style and GRBL). Every new account gets a ${TRIAL_DAYS}-day trial, starting when the email is confirmed.`,
         '',
         '## Pages',
-        `- [Rendetto (Български)](${base}/): product, prices, questions`,
-        `- [Rendetto (English)](${base}/en/): product, prices, questions`,
-        `- [Rendetto (Italiano)](${base}/it/): prodotto, prezzi, domande`,
-        `- [Privacy policy](${base}/en/privacy) ([BG](${base}/privacy), [IT](${base}/it/privacy))`,
-        `- [Terms of use](${base}/en/terms) ([BG](${base}/terms), [IT](${base}/it/terms))`,
+        ...LOCALES.map(
+          (l) => `- [Rendetto (${LOCALE_LABEL[l]})](${base}${PATHS[l]}): ${LLMS_LANDING_NOTE[l]}`,
+        ),
+        ...LEGAL.map(
+          (page) =>
+            `- [${LLMS_LEGAL_TITLE[page]}](${base}${legalPath('en', page)}) ([BG](${base}${legalPath('bg', page)}), [IT](${base}${legalPath('it', page)}))`,
+        ),
         '',
         '## Facts',
         `- Price for consumers (incl. ${VAT_BG_PERCENT}% Bulgarian VAT): ${eur(monthly?.totalWithVatCents ?? 0)} per month (${eur(monthly?.totalCents ?? 0)} excl. VAT); ${terms}; Lifetime ${eur(lifetime?.totalWithVatCents ?? 0)} (${eur(lifetime?.totalCents ?? 0)} excl. VAT), 2.5 times the yearly price without the 12-month discount, valid for as long as Rendetto is offered. Plans do not renew automatically.`,

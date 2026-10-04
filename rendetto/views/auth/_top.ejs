@@ -4,7 +4,7 @@
 <main class="auth-main" id="main">
   <div class="auth-card">
     <div class="auth-head">
-      <a class="brand" href="<%= locale === 'bg' ? '/' : '/' + locale + '/' %>"><%- include('../partials/mark') %><span>Rendetto</span></a>
+      <a class="brand" href="<%= paths[locale] %>"><%- include('../partials/mark') %><span>Rendetto</span></a>
       <%- include('../partials/langs') %>
     </div>
     <%- include('../partials/flash') %>
