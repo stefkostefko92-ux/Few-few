@@ -5,7 +5,6 @@ import {
   BASE,
   Browser,
   customer,
-  enable2fa,
   linkIn,
   mailTo,
   prisma,
@@ -13,6 +12,7 @@ import {
   startApp,
   stopApp,
 } from './harness.js';
+import { enable2fa } from './twofa.js';
 
 before(startApp);
 after(stopApp);

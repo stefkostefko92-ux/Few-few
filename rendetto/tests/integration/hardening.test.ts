@@ -4,7 +4,6 @@ import { totpCode } from '../../src/auth/totp.js';
 import {
   Browser,
   customer,
-  enable2fa,
   mailTo,
   prisma,
   sessionCsrf,
@@ -12,6 +11,7 @@ import {
   startApp,
   stopApp,
 } from './harness.js';
+import { enable2fa } from './twofa.js';
 
 before(startApp);
 after(stopApp);
