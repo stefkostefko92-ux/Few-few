@@ -5,7 +5,7 @@ import { prisma } from '../db.js';
 import { outranks } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { revokeEmailTokens } from '../auth/tokens.js';
-import { isLocale } from '../i18n.js';
+import { accountLocale, isLocale } from '../i18n.js';
 import { greetingName, mailEmailChangedByStaff } from '../mail/templates.js';
 import { trialStart } from '../plans/plan.js';
 import { emailSchema, nameSchema } from './auth-common.js';
@@ -13,7 +13,6 @@ import {
   fail,
   isResult,
   isUniqueViolation,
-  localeOf,
   targetFor,
   type ActionResult,
   type StaffActor,
@@ -85,7 +84,12 @@ export async function editAccount(
   // Старият адрес научава, както при смяната от самия човек — смяна от екипа не минава тихо. Само до
   // потвърден адрес: непотвърденият може да е чужд (грешно изписан) и не бива да научава новия.
   if (emailChanged && target.emailVerifiedAt) {
-    void mailEmailChangedByStaff(target.email, localeOf(target), greetingName(target), input.email);
+    void mailEmailChangedByStaff(
+      target.email,
+      accountLocale(target),
+      greetingName(target),
+      input.email,
+    );
   }
   return { ok: true };
 }

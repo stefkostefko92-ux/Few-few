@@ -1,9 +1,9 @@
 import type { Plan, Prisma, Role } from '@prisma/client';
 import { isStaff } from '../auth/rbac.js';
 import { LABEL } from '../labels.js';
+import { DAY } from '../time.js';
 
 export const TRIAL_DAYS = 30;
-const DAY = 24 * 60 * 60 * 1000;
 
 export type PlanState = 'staff' | 'pending' | 'active' | 'expired';
 

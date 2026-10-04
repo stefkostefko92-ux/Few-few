@@ -74,6 +74,11 @@ export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 }
 
+/** Езикът на акаунта (писмата, страниците след вход); непознат запис — подразбиращият се език. */
+export function accountLocale(user: { locale: string }): Locale {
+  return isLocale(user.locale) ? user.locale : DEFAULT_LOCALE;
+}
+
 export function keysOf(locale: Locale): string[] {
   return Object.keys(dictionaries()[locale]).sort();
 }

@@ -1,5 +1,6 @@
 import type { Plan } from '@prisma/client';
 import { prisma } from '../db.js';
+import { addDays } from '../plans/plan.js';
 import { SUCCESSFUL_LOGINS } from './login-outcome.js';
 
 /**
@@ -80,7 +81,7 @@ export async function linkedAccounts(userId: string): Promise<LinkedAccount[]> {
     where: {
       userId,
       ip: { not: null },
-      createdAt: { gte: new Date(Date.now() - 90 * 86_400_000) },
+      createdAt: { gte: addDays(new Date(), -90) },
     },
     select: { ip: true },
     distinct: ['ip'],

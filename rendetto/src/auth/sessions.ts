@@ -3,12 +3,10 @@ import type { Prisma, Role } from '@prisma/client';
 import { isProduction } from '../config.js';
 import { prisma } from '../db.js';
 import { randomToken, sha256Hex } from '../crypto.js';
+import { DAY, HOUR } from '../time.js';
 import { readCookie } from '../http/cookies.js';
 import { isStaff } from './rbac.js';
 import type { Principal } from '../types.js';
-
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
 
 const CUSTOMER_ABSOLUTE_MS = 30 * DAY;
 const STAFF_ABSOLUTE_MS = DAY;

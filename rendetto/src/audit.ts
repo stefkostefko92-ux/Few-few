@@ -6,6 +6,7 @@ import { canonicalJson, hmacHex, sha256Hex } from './crypto.js';
 import { prisma } from './db.js';
 import { LABEL } from './labels.js';
 import { logger } from './logger.js';
+import { DAY } from './time.js';
 
 export type ActorType = 'HUMAN' | 'SYSTEM';
 
@@ -237,7 +238,7 @@ export function pruneAudit(chain: ChainState, now: Date = new Date()): Promise<n
 
 async function prune(chain: ChainState, now: Date): Promise<number> {
   if (!chain.ok) return 0;
-  const cutoff = new Date(now.getTime() - config().AUDIT_RETENTION_DAYS * 86_400_000);
+  const cutoff = new Date(now.getTime() - config().AUDIT_RETENTION_DAYS * DAY);
   const last = await prisma.auditLog.findFirst({
     where: { at: { lt: cutoff } },
     orderBy: { id: 'desc' },

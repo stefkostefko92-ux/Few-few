@@ -2,12 +2,13 @@ import { audit, pruneAudit, SYSTEM_ACTOR, verifyAuditChain } from '../audit.js';
 import { prisma } from '../db.js';
 import { errorMessage, logger } from '../logger.js';
 import { purgeExpiredSessions } from '../auth/sessions.js';
-import { isLocale, LOCALE_TAG } from '../i18n.js';
+import { accountLocale } from '../i18n.js';
+import { longDate } from '../mail/dates.js';
 import { greetingName, mailTrialEnding } from '../mail/templates.js';
 import { LOGIN_RETENTION_DAYS, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
+import { DAY, HOUR } from '../time.js';
 import { resendOrderMail } from './plan-requests.js';
 
-const DAY = 24 * 60 * 60 * 1000;
 /** Изтеклите връзки от писмата се пазят още толкова дни, после се трият. */
 const EXPIRED_TOKEN_DAYS = 7;
 /**
@@ -34,11 +35,8 @@ export async function sendTrialReminders(now: Date = new Date()): Promise<number
   });
   let sent = 0;
   for (const user of users) {
-    const locale = isLocale(user.locale) ? user.locale : 'bg';
-    const date = new Intl.DateTimeFormat(LOCALE_TAG[locale], {
-      dateStyle: 'long',
-      timeZone: 'Europe/Sofia',
-    }).format(user.planExpiresAt ?? now);
+    const locale = accountLocale(user);
+    const date = longDate(user.planExpiresAt ?? now, locale);
     if (!(await mailTrialEnding(user.email, locale, greetingName(user), date))) continue;
     await prisma.user.update({ where: { id: user.id }, data: { trialReminderAt: now } });
     sent++;
@@ -112,7 +110,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
 /** Пуска поддръжката веднъж на час (и веднага при старт). Таймерът не държи процеса жив. */
 export function startMaintenance(): NodeJS.Timeout {
   void runMaintenance();
-  const timer = setInterval(() => void runMaintenance(), 60 * 60 * 1000);
+  const timer = setInterval(() => void runMaintenance(), HOUR);
   timer.unref();
   return timer;
 }

@@ -3,8 +3,7 @@ import { countryName } from '../auth/geoip.js';
 import { hwidLabel } from '../auth/device.js';
 import { formatMoney } from '../plans/pricing.js';
 import { displayLabel } from '../labels.js';
-
-const DAY = 24 * 60 * 60 * 1000;
+import { BUSINESS_TZ, DAY, HOUR } from '../time.js';
 
 /** Форматиране за шаблоните, наточено за езика на заявката. Всичко е за показ — сметките са другаде. */
 function buildViewHelpers(locale: Locale) {
@@ -13,13 +12,13 @@ function buildViewHelpers(locale: Locale) {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-    timeZone: 'Europe/Sofia',
+    timeZone: BUSINESS_TZ,
   });
   const shortDateFmt = new Intl.DateTimeFormat(tag, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-    timeZone: 'Europe/Sofia',
+    timeZone: BUSINESS_TZ,
   });
   const dateTimeFmt = new Intl.DateTimeFormat(tag, {
     day: '2-digit',
@@ -27,7 +26,7 @@ function buildViewHelpers(locale: Locale) {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Europe/Sofia',
+    timeZone: BUSINESS_TZ,
   });
   const numberFmt = new Intl.NumberFormat(tag);
   const relativeFmt = new Intl.RelativeTimeFormat(tag, { numeric: 'auto' });
@@ -49,8 +48,8 @@ function buildViewHelpers(locale: Locale) {
       const diff = value.getTime() - Date.now();
       const abs = Math.abs(diff);
       if (abs < 60_000) return relativeFmt.format(Math.round(diff / 1000), 'second');
-      if (abs < 3_600_000) return relativeFmt.format(Math.round(diff / 60_000), 'minute');
-      if (abs < DAY) return relativeFmt.format(Math.round(diff / 3_600_000), 'hour');
+      if (abs < HOUR) return relativeFmt.format(Math.round(diff / 60_000), 'minute');
+      if (abs < DAY) return relativeFmt.format(Math.round(diff / HOUR), 'hour');
       return relativeFmt.format(Math.round(diff / DAY), 'day');
     },
   };

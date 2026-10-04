@@ -1,9 +1,9 @@
 /**
  * Българският календар на неработните дни — за сроковете по Регламент 1182/71 (срок, който изтича в
  * събота, неделя или официален празник, изтича в края на следващия работен ден). Дните са UTC полунощ
- * на датата (без часови зони): аритметика с цели дни.
+ * на датата (без часови зони): аритметика с цели дни (`DAY`).
  */
-const DAY = 86_400_000;
+import { BUSINESS_TZ, DAY, HOUR } from '../time.js';
 
 /** Официалните празници с фиксирана дата (чл. 154, ал. 1 от Кодекса на труда): [месец, ден]. */
 const FIXED_HOLIDAYS: ReadonlyArray<readonly [number, number]> = [
@@ -67,7 +67,7 @@ export function isBgWorkingDay(day: number): boolean {
 /** Датата по София на момента `at` — като UTC полунощ. */
 export function sofiaDay(at: Date): number {
   const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Sofia',
+    timeZone: BUSINESS_TZ,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -84,8 +84,6 @@ export function sofiaDay(at: Date): number {
 export function sofiaEndOfDay(date: string): Date | null {
   const day = Date.parse(`${date}T00:00:00Z`);
   if (Number.isNaN(day) || new Date(day).toISOString().slice(0, 10) !== date) return null;
-  const winter = day + DAY - 2 * 3_600_000 - 1;
-  return new Date(sofiaDay(new Date(winter)) === day ? winter : winter - 3_600_000);
+  const winter = day + DAY - 2 * HOUR - 1;
+  return new Date(sofiaDay(new Date(winter)) === day ? winter : winter - HOUR);
 }
-
-export { DAY };

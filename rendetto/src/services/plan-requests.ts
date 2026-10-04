@@ -6,6 +6,7 @@ import { prisma } from '../db.js';
 import type { RequestMeta } from '../http/meta.js';
 import { LABEL } from '../labels.js';
 import { logger } from '../logger.js';
+import { addDays } from '../plans/plan.js';
 import { isOptionId, optionMonths, optionPriceCents } from '../plans/pricing.js';
 import {
   canWithdraw,
@@ -65,7 +66,7 @@ export async function createUpgradeRequest(
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(7241021, hashtext(${user.id}))`;
     // всяка поръчка праща писмо на човека и на екипа: таван на акаунт, за да не изчерпи квотата на пощата
     const recent = await tx.upgradeRequest.count({
-      where: { userId: user.id, createdAt: { gt: new Date(now.getTime() - 86_400_000) } },
+      where: { userId: user.id, createdAt: { gt: addDays(now, -1) } },
     });
     if (recent >= ORDERS_PER_DAY) return null;
     const replaced = await tx.upgradeRequest.updateManyAndReturn({
@@ -204,7 +205,7 @@ export async function withdrawFromOrder(
  * Само за поръчки от последните дни и не по-млади от 10 минути — тези още ги праща самата заявка.
  */
 export async function resendOrderMail(now: Date = new Date()): Promise<number> {
-  const recent = new Date(now.getTime() - (WITHDRAWAL_DAYS + 16) * 86_400_000);
+  const recent = addDays(now, -(WITHDRAWAL_DAYS + 16));
   const settled = new Date(now.getTime() - 10 * 60_000);
   const pending = await prisma.upgradeRequest.findMany({
     where: {

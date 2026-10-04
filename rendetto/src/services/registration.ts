@@ -5,17 +5,17 @@ import { deviceCookieHash, fingerprintHash } from '../auth/device.js';
 import { dummyHash, hashPassword, verifyPassword } from '../auth/password.js';
 import {
   consumeEmailToken,
-  HOUR,
   issueEmailToken,
   MAIL_CAP_PER_HOUR,
   peekEmailToken,
   recentTokenCount,
   revokeEmailTokens,
 } from '../auth/tokens.js';
-import { isLocale, type Locale } from '../i18n.js';
+import { accountLocale, isLocale, type Locale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import { LABEL } from '../labels.js';
 import { greetingName, mailAlreadyRegistered, mailVerifyEmail } from '../mail/templates.js';
+import { HOUR } from '../time.js';
 import { trialStart } from '../plans/plan.js';
 import { isUniqueViolation } from './admin-common.js';
 import { customerActor, emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
@@ -124,8 +124,7 @@ export async function resendVerification(user: User): Promise<boolean> {
   if (user.emailVerifiedAt) return false;
   if ((await recentTokenCount(user.id, 'VERIFY_EMAIL', HOUR)) >= MAIL_CAP_PER_HOUR) return false;
   const token = await issueEmailToken(user.id, 'VERIFY_EMAIL');
-  const locale = isLocale(user.locale) ? user.locale : 'bg';
-  void mailVerifyEmail(user.email, locale, token);
+  void mailVerifyEmail(user.email, accountLocale(user), token);
   return true;
 }
 

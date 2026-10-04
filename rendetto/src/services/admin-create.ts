@@ -7,18 +7,12 @@ import { LABEL } from '../labels.js';
 import { hashPassword } from '../auth/password.js';
 import { can, outranks } from '../auth/rbac.js';
 import { issueEmailToken } from '../auth/tokens.js';
-import { isLocale } from '../i18n.js';
+import { accountLocale, DEFAULT_LOCALE, isLocale } from '../i18n.js';
 import { mailInvite } from '../mail/templates.js';
 import { addDays, premiumUntil, TRIAL_DAYS } from '../plans/plan.js';
 import { emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import { roleSchema } from './admin-actions.js';
-import {
-  fail,
-  isUniqueViolation,
-  localeOf,
-  type ActionResult,
-  type StaffActor,
-} from './admin-common.js';
+import { fail, isUniqueViolation, type ActionResult, type StaffActor } from './admin-common.js';
 
 /* ------------------------------------ създаване ------------------------------------ */
 
@@ -30,7 +24,7 @@ export const createSchema = z.object({
   trialDays: z.coerce.number().int().min(1).max(365).default(TRIAL_DAYS),
   months: z.coerce.number().int().min(1).max(120).default(1),
   password: z.string().max(256).optional(),
-  locale: z.string().refine(isLocale).default('bg'),
+  locale: z.string().refine(isLocale).default(DEFAULT_LOCALE),
 });
 
 /**
@@ -117,6 +111,6 @@ export async function createAccount(actor: StaffActor, raw: unknown): Promise<Ac
   });
   if (!created) return fail('admin.errors.emailTaken');
   const { user, token } = created;
-  if (token) void mailInvite(user.email, localeOf(user), token);
+  if (token) void mailInvite(user.email, accountLocale(user), token);
   return { ok: true, id: user.id };
 }

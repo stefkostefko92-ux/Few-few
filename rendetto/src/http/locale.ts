@@ -9,11 +9,12 @@ import {
   type Locale,
   type Translator,
 } from '../i18n.js';
+import { DAY } from '../time.js';
 import { readCookie } from './cookies.js';
 import { viewHelpers } from './view.js';
 
 export const LOCALE_COOKIE = 'rd_lang';
-const YEAR = 365 * 24 * 3600 * 1000;
+const YEAR = 365 * DAY;
 
 /**
  * Езикът на екрана, по ред на силата: `?lang=` (превключвателят) → профилът на вписания човек →

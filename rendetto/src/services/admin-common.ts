@@ -2,7 +2,6 @@ import { Prisma, type Role, type User } from '@prisma/client';
 import type { AuditActor } from '../audit.js';
 import { prisma } from '../db.js';
 import { can, outranks, type Capability } from '../auth/rbac.js';
-import { isLocale, type Locale } from '../i18n.js';
 
 /** Човекът от персонала, който действа: ролята му решава какво може. */
 export interface StaffActor extends AuditActor {
@@ -41,8 +40,4 @@ export async function targetFor(
 
 export function isResult(value: User | ActionResult): value is ActionResult {
   return 'ok' in value;
-}
-
-export function localeOf(user: User): Locale {
-  return isLocale(user.locale) ? user.locale : 'bg';
 }

@@ -6,7 +6,7 @@ import { consumeRecoveryCode } from '../auth/recovery.js';
 import { isTotpCode, verifyTotp } from '../auth/totp.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import type { RequestMeta } from '../http/meta.js';
-import { isLocale } from '../i18n.js';
+import { accountLocale } from '../i18n.js';
 import { greetingName, mailLocked } from '../mail/templates.js';
 import { claimTotpStep } from './auth-common.js';
 import { attemptFailed, attemptSucceeded, reserveAttempt } from './lockout.js';
@@ -17,12 +17,7 @@ import { attemptFailed, attemptSucceeded, reserveAttempt } from './lockout.js';
  */
 async function lockedBySession(user: User): Promise<void> {
   await destroyAllSessions(user.id);
-  void mailLocked(
-    'reauthFailures',
-    user.email,
-    isLocale(user.locale) ? user.locale : 'bg',
-    greetingName(user),
-  );
+  void mailLocked('reauthFailures', user.email, accountLocale(user), greetingName(user));
 }
 
 /**

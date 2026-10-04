@@ -10,7 +10,6 @@ import { isStaff } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import {
   consumeEmailToken,
-  HOUR,
   issueEmailToken,
   MAIL_CAP_PER_HOUR,
   peekEmailToken,
@@ -18,7 +17,7 @@ import {
   revokeEmailTokens,
 } from '../auth/tokens.js';
 import { generateTotpSecret, otpauthUrl, verifyTotp } from '../auth/totp.js';
-import { isLocale, type Locale } from '../i18n.js';
+import { accountLocale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import {
   greetingName,
@@ -28,13 +27,10 @@ import {
   mailResetPassword,
   mailTwoFactor,
 } from '../mail/templates.js';
+import { HOUR } from '../time.js';
 import { customerActor, emailSchema, newPasswordProblem } from './auth-common.js';
 import { reauthCode, reauthPassword } from './reauth.js';
 import { markEmailVerified } from './registration.js';
-
-function localeOf(user: User): Locale {
-  return isLocale(user.locale) ? user.locale : 'bg';
-}
 
 /* ----------------------------------- пароли ----------------------------------- */
 
@@ -63,7 +59,7 @@ export async function changePassword(
     },
     { action: 'auth.password.changed', targetType: 'user', targetId: user.id },
   );
-  void mailPasswordChanged(user.email, localeOf(user), greetingName(user));
+  void mailPasswordChanged(user.email, accountLocale(user), greetingName(user));
   return { ok: true };
 }
 
@@ -75,7 +71,7 @@ export async function requestPasswordReset(rawEmail: string, meta: RequestMeta):
   if (!user || user.bannedAt) return;
   if ((await recentTokenCount(user.id, 'RESET_PASSWORD', HOUR)) >= MAIL_CAP_PER_HOUR) return;
   const token = await issueEmailToken(user.id, 'RESET_PASSWORD');
-  void mailResetPassword(user.email, localeOf(user), greetingName(user), token);
+  void mailResetPassword(user.email, accountLocale(user), greetingName(user), token);
   await audit(customerActor(user, meta), {
     action: 'auth.reset.requested',
     targetType: 'user',
@@ -116,7 +112,7 @@ export async function resetPassword(
     targetType: 'user',
     targetId: user.id,
   });
-  void mailPasswordChanged(user.email, localeOf(user), greetingName(user));
+  void mailPasswordChanged(user.email, accountLocale(user), greetingName(user));
   return { ok: true };
 }
 
@@ -179,7 +175,7 @@ export async function confirmTotp(
     targetType: 'user',
     targetId: user.id,
   });
-  void mailTwoFactor(user.email, localeOf(user), greetingName(user), true);
+  void mailTwoFactor(user.email, accountLocale(user), greetingName(user), true);
   return { ok: true, codes };
 }
 
@@ -210,7 +206,7 @@ export async function disableTotp(
     targetType: 'user',
     targetId: user.id,
   });
-  void mailTwoFactor(user.email, localeOf(user), greetingName(user), false);
+  void mailTwoFactor(user.email, accountLocale(user), greetingName(user), false);
   return { ok: true };
 }
 
@@ -262,10 +258,10 @@ export async function requestEmailChange(
   const taken = await prisma.user.findUnique({ where: { email: email.data } });
   if (!taken) {
     const token = await issueEmailToken(user.id, 'CHANGE_EMAIL', email.data);
-    void mailChangeEmail(email.data, localeOf(user), token);
+    void mailChangeEmail(email.data, accountLocale(user), token);
   }
   // Старият адрес научава винаги — смяна с откраднатата парола не минава тихо.
-  void mailEmailChangeNotice(user.email, localeOf(user), greetingName(user), email.data);
+  void mailEmailChangeNotice(user.email, accountLocale(user), greetingName(user), email.data);
   await audit(customerActor(user, meta), {
     action: 'account.email.change.requested',
     targetType: 'user',

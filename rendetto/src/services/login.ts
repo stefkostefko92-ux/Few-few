@@ -19,7 +19,7 @@ import {
   type DeviceContext,
 } from './devices.js';
 import { greetingName, mailLocked } from '../mail/templates.js';
-import { isLocale } from '../i18n.js';
+import { accountLocale } from '../i18n.js';
 import { notifyNewDevice } from './notify.js';
 import { resendVerification } from './registration.js';
 import { attemptFailed, attemptSucceeded, reserveAttempt } from './lockout.js';
@@ -146,12 +146,7 @@ async function finishLogin(
 
 /** Вярна парола, но грешни кодове заключиха акаунта: паролата явно е известна на друг — писмо. */
 function mailCodeFailures(user: User): void {
-  void mailLocked(
-    'codeFailures',
-    user.email,
-    isLocale(user.locale) ? user.locale : 'bg',
-    greetingName(user),
-  );
+  void mailLocked('codeFailures', user.email, accountLocale(user), greetingName(user));
 }
 
 export type MfaResult =

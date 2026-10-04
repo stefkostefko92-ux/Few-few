@@ -1,5 +1,6 @@
 import type { BuyerType, RequestStatus } from '@prisma/client';
-import { DAY, isBgWorkingDay, sofiaDay } from './bg-calendar.js';
+import { DAY, HOUR } from '../time.js';
+import { isBgWorkingDay, sofiaDay } from './bg-calendar.js';
 
 /**
  * Правото на отказ от договор от разстояние (чл. 9 и 11а от Директива 2011/83; чл. 50 и 52а ЗЗП):
@@ -14,7 +15,7 @@ export const WITHDRAWAL_DAYS = 14;
 export function withdrawalLastDay(concludedAt: Date): Date {
   let day = sofiaDay(concludedAt) + WITHDRAWAL_DAYS * DAY;
   while (!isBgWorkingDay(day)) day += DAY;
-  return new Date(day + 12 * 3_600_000);
+  return new Date(day + 12 * HOUR);
 }
 
 /**
@@ -23,7 +24,7 @@ export function withdrawalLastDay(concludedAt: Date): Date {
  */
 export function withdrawalOpenUntil(concludedAt: Date): Date {
   const last = withdrawalLastDay(concludedAt);
-  return new Date(last.getTime() - 12 * 3_600_000 + DAY + 4 * 3_600_000);
+  return new Date(last.getTime() - 12 * HOUR + DAY + 4 * HOUR);
 }
 
 /** Толкова дни имаме да върнем парите след отказа (чл. 13 от Директивата; чл. 54 ЗЗП). */
@@ -35,7 +36,7 @@ export const REFUND_DAYS = 14;
  * Не се мести за неработни дни. Едно правило за писмото до клиента, известието до екипа и панела.
  */
 export function refundDeadline(withdrawnAt: Date): Date {
-  return new Date(sofiaDay(withdrawnAt) + REFUND_DAYS * DAY + 12 * 3_600_000);
+  return new Date(sofiaDay(withdrawnAt) + REFUND_DAYS * DAY + 12 * HOUR);
 }
 
 /** Какво стана с плана при отказа: поръчката не е активирана, планът е върнат или го оправя екипът. */

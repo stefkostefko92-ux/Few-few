@@ -2,7 +2,7 @@ import type { User } from '@prisma/client';
 import { audit, SYSTEM_ACTOR } from '../audit.js';
 import { prisma } from '../db.js';
 import { describeUserAgent, hwidLabel } from '../auth/device.js';
-import { isLocale, type Locale } from '../i18n.js';
+import { accountLocale, isLocale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import { greetingName, mailAccountDeleted } from '../mail/templates.js';
 import { customerActor, nameSchema } from './auth-common.js';
@@ -124,7 +124,7 @@ export async function deleteOwnAccount(
     return true;
   });
   if (!deleted) return { ok: false, key: 'account.delete.lastOwner' };
-  const locale: Locale = isLocale(user.locale) ? user.locale : 'bg';
+  const locale = accountLocale(user);
   await audit(
     { ...SYSTEM_ACTOR, ip: meta.ip },
     { action: 'account.deleted.self', targetType: 'user', targetId: user.id },

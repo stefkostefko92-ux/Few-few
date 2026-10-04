@@ -1,8 +1,7 @@
 import { TokenPurpose, type Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { randomToken, sha256Hex } from '../crypto.js';
-
-export const HOUR = 60 * 60 * 1000;
+import { HOUR } from '../time.js';
 
 export const TOKEN_TTL_MS: Record<TokenPurpose, number> = {
   VERIFY_EMAIL: 48 * HOUR,

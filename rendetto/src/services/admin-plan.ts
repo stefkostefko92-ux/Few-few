@@ -3,20 +3,14 @@ import { z } from 'zod';
 import { audited } from '../audit.js';
 import { prisma } from '../db.js';
 import { can } from '../auth/rbac.js';
-import { LOCALE_TAG, translate } from '../i18n.js';
+import { accountLocale, translate } from '../i18n.js';
+import { longDate } from '../mail/dates.js';
 import { greetingName, mailPlanChanged } from '../mail/templates.js';
 import { sofiaEndOfDay } from '../plans/bg-calendar.js';
 import { addDays, premiumUntil } from '../plans/plan.js';
 import { optionPriceCents, TERM_OPTIONS } from '../plans/pricing.js';
 import { paidStartAllowedFrom } from '../plans/withdrawal.js';
-import {
-  fail,
-  isResult,
-  localeOf,
-  targetFor,
-  type ActionResult,
-  type StaffActor,
-} from './admin-common.js';
+import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
 
 /** Бележката на служителя е свободен текст: не може да започва с „@“ — така се пишат знаците на системата. */
 const note = z
@@ -197,14 +191,12 @@ export async function changePlan(
   );
   if ('error' in outcome) return fail(outcome.error);
   if (input.notify) {
-    const locale = localeOf(target);
-    const fmt = new Intl.DateTimeFormat(LOCALE_TAG[locale], {
-      dateStyle: 'long',
-      timeZone: 'Europe/Sofia',
-    });
+    const locale = accountLocale(target);
     void mailPlanChanged(target.email, locale, greetingName(target), {
       plan: translate(locale, `plan.name.${input.plan}`),
-      until: outcome.expiresAt ? fmt.format(outcome.expiresAt) : translate(locale, 'mail.noExpiry'),
+      until: outcome.expiresAt
+        ? longDate(outcome.expiresAt, locale)
+        : translate(locale, 'mail.noExpiry'),
     });
   }
   return { ok: true };

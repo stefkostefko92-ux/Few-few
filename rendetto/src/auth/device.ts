@@ -4,6 +4,7 @@ import { config, isProduction } from '../config.js';
 import { canonicalJson, hmacHex, randomToken, safeEqual, sha256Hex } from '../crypto.js';
 import { readCookie } from '../http/cookies.js';
 import { LOGIN_RETENTION_DAYS } from '../retention.js';
+import { DAY } from '../time.js';
 
 /**
  * Устройството („HWID“ в панела). Браузърът не дава хардуерен номер, затова устройството се
@@ -12,7 +13,7 @@ import { LOGIN_RETENTION_DAYS } from '../retention.js';
  * известие за ново устройство. Описано е в политиката за поверителност.
  */
 /** Колкото живее и записът за устройството (без вход) — бисквитката не надживява целта си. */
-const DEVICE_COOKIE_MAX_AGE = LOGIN_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+const DEVICE_COOKIE_MAX_AGE = LOGIN_RETENTION_DAYS * DAY;
 
 export function deviceCookieName(): string {
   return isProduction() ? '__Host-rd_dev' : 'rd_dev';

@@ -1,7 +1,9 @@
 import type { UpgradeRequest, User } from '@prisma/client';
 import { COMPANY, LEGAL_UPDATED } from '../company.js';
 import { config } from '../config.js';
-import { isLocale, LOCALE_TAG, translate, type Locale } from '../i18n.js';
+import { accountLocale, translate, type Locale } from '../i18n.js';
+import { longDate, longDateTime } from '../mail/dates.js';
+import { BUSINESS_TZ } from '../time.js';
 import { errorMessage, logger } from '../logger.js';
 import type { MailAttachment } from '../mail/mailer.js';
 import {
@@ -26,8 +28,6 @@ import { termsCopy } from './terms-copy.js';
  * Текстовете на писмата за поръчката и отказа. Всичко се смята от записа на поръчката — същите
  * числа и дати, които показват страницата „План“ и панелът.
  */
-const TZ = 'Europe/Sofia';
-
 export type OrderRecord = Pick<
   UpgradeRequest,
   | 'id'
@@ -45,24 +45,11 @@ export type OrderRecord = Pick<
 export type WithdrawnOrder = OrderRecord & { withdrawnAt: Date };
 type Customer = Pick<User, 'email' | 'name' | 'locale' | 'emailVerifiedAt'>;
 
-const localeOf = (user: Pick<User, 'locale'>): Locale =>
-  isLocale(user.locale) ? user.locale : 'bg';
-
-function longDate(at: Date, locale: Locale): string {
-  return new Intl.DateTimeFormat(LOCALE_TAG[locale], { dateStyle: 'long', timeZone: TZ }).format(
-    at,
-  );
-}
-
 /** Дата и час по София с отместването спрямо UTC — за момента на сключване и на отказа. */
 export function sofiaDateTime(at: Date, locale: Locale): string {
-  const when = new Intl.DateTimeFormat(LOCALE_TAG[locale], {
-    dateStyle: 'long',
-    timeStyle: 'short',
-    timeZone: TZ,
-  }).format(at);
+  const when = longDateTime(at, locale);
   const offset =
-    new Intl.DateTimeFormat('en', { timeZone: TZ, timeZoneName: 'longOffset' })
+    new Intl.DateTimeFormat('en', { timeZone: BUSINESS_TZ, timeZoneName: 'longOffset' })
       .formatToParts(at)
       .find((part) => part.type === 'timeZoneName')?.value ?? 'GMT';
   return `${when} (${offset.replace('GMT', 'UTC')})`;
@@ -135,7 +122,7 @@ export async function sendOrderConfirmation(
   user: Customer,
   replaced: readonly string[] = [],
 ): Promise<boolean> {
-  const locale = localeOf(user);
+  const locale = accountLocale(user);
   const consumer = order.buyerType === 'CONSUMER';
   const copy = await acceptedTermsCopy(order, locale);
   return mailOrderConfirmed(
@@ -189,7 +176,7 @@ export function sendWithdrawalReceipt(
   user: Customer,
   outcome: PlanOutcome,
 ): Promise<boolean> {
-  const locale = localeOf(user);
+  const locale = accountLocale(user);
   const refundBy = longDate(refundDeadline(order.withdrawnAt), locale);
   return mailWithdrawalReceived(user.email, locale, greetingName(user), {
     when: sofiaDateTime(order.withdrawnAt, locale),

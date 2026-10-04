@@ -1,6 +1,7 @@
 import { Prisma, type Plan } from '@prisma/client';
 import { isIP } from 'node:net';
 import { prisma } from '../db.js';
+import { addDays } from '../plans/plan.js';
 
 export const PAGE_SIZE = 25;
 
@@ -150,8 +151,8 @@ export async function listAccounts(query: AccountQuery, byIp: boolean, now: Date
 export async function dashboardCounts(now: Date = new Date()) {
   const count = (plan: PlanFilter, status: StatusFilter) =>
     prisma.user.count({ where: filterWhere(plan, status, now) });
-  const week = new Date(now.getTime() - 7 * 86_400_000);
-  const month = new Date(now.getTime() - 30 * 86_400_000);
+  const week = addDays(now, -7);
+  const month = addDays(now, -30);
   const [
     trialActive,
     trialExpired,
@@ -176,7 +177,7 @@ export async function dashboardCounts(now: Date = new Date()) {
     prisma.user.count({ where: { createdAt: { gte: month } } }),
     prisma.upgradeRequest.count({ where: { status: 'OPEN' } }),
     prisma.loginEvent.count({
-      where: { createdAt: { gte: new Date(now.getTime() - 86_400_000) } },
+      where: { createdAt: { gte: addDays(now, -1) } },
     }),
   ]);
   return {

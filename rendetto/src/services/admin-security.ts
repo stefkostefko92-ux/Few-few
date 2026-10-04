@@ -3,15 +3,9 @@ import { audited } from '../audit.js';
 import { sha256Hex } from '../crypto.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { issueEmailToken } from '../auth/tokens.js';
+import { accountLocale } from '../i18n.js';
 import { greetingName, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
-import {
-  fail,
-  isResult,
-  localeOf,
-  targetFor,
-  type ActionResult,
-  type StaffActor,
-} from './admin-common.js';
+import { fail, isResult, targetFor, type ActionResult, type StaffActor } from './admin-common.js';
 
 /* -------------------------------------- бан -------------------------------------- */
 
@@ -109,7 +103,7 @@ export async function resetTwoFactor(actor: StaffActor, id: string): Promise<Act
     },
     { action: 'admin.totp.reset', targetType: 'user', targetId: id },
   );
-  void mailTwoFactor(target.email, localeOf(target), greetingName(target), false);
+  void mailTwoFactor(target.email, accountLocale(target), greetingName(target), false);
   return { ok: true };
 }
 
@@ -148,7 +142,7 @@ export async function sendPasswordReset(actor: StaffActor, id: string): Promise<
     targetType: 'user',
     targetId: id,
   });
-  void mailResetPassword(target.email, localeOf(target), greetingName(target), token);
+  void mailResetPassword(target.email, accountLocale(target), greetingName(target), token);
   return { ok: true };
 }
 
