@@ -7,8 +7,8 @@ import { SHEET_TRIM } from './model.js';
 const intersects = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 const contains = (a, b) => b.x >= a.x && b.y >= a.y && b.x + b.w <= a.x + a.w && b.y + b.h <= a.y + a.h;
 
-export function nest(model, opts = {}) {
-  const spacing = opts.spacing ?? model.spec.tool;
+export function nest(model) {
+  const spacing = model.spec.tool; // one cutter diameter: the contours of both neighbours are offset by its radius
   const groups = new Map();
   for (const p of model.parts) {
     const k = `${p.stock}|${p.decor}`;
@@ -51,7 +51,7 @@ export function nest(model, opts = {}) {
   sheets.forEach((sh, i) => {
     sh.index = i + 1;
   });
-  return { sheets, errors, spacing, trim: SHEET_TRIM };
+  return { sheets, errors, spacing };
 }
 
 function findPosition(free, w, h, canRotate) {

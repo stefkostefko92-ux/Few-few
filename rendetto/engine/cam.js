@@ -5,18 +5,18 @@ import { STOCK } from './materials.js';
 import { r1, asciiName, dimTxt } from './util.js';
 
 const DRILL_SET = [[1, 5], [2, 7], [3, 35], [6, 8], [7, 3], [8, 10], [9, 15], [10, 20], [11, 26], [12, 12], [13, 6], [14, 4.5], [15, 4], [16, 25], [17, 30], [18, 40]];
-export const DRILLS = DRILL_SET.map(([h, d]) => ({
+const DRILLS = DRILL_SET.map(([h, d]) => ({
   id: `T${h}`, h, kind: 'drill', d,
   rpm: d <= 10 ? 6000 : d <= 20 ? 5000 : 4000,
   feed: d <= 10 ? 2000 : d <= 20 ? 1500 : 1200,
   label: d >= 15 ? `BORING BIT D${d}` : `DRILL D${d}`,
 }));
 export const GROOVE_MILL = { id: 'T4', h: 4, kind: 'mill', d: 4, rpm: 18000, flutes: 2, fz: 0.08, plunge: 1000, label: 'MILL D4' };
-export const CONTOUR_MILL = { id: 'T5', h: 5, kind: 'mill', rpm: 18000, flutes: 2, fz: 0.25, plunge: 3000 };
+const CONTOUR_MILL = { id: 'T5', h: 5, kind: 'mill', rpm: 18000, flutes: 2, fz: 0.25, plunge: 3000 };
 export const SPOIL = 0.3; // final contour depth below the sheet, mm
-export const ONION = 0.3; // skin left by the first contour pass, mm
-export const drillFor = (d) => DRILLS.find((t) => Math.abs(t.d - d) < 0.01) ?? null;
-export const contourTool = (d) => ({ ...CONTOUR_MILL, d, label: `COMPRESSION D${d}` });
+const ONION = 0.3; // skin left by the first contour pass, mm
+const drillFor = (d) => DRILLS.find((t) => Math.abs(t.d - d) < 0.01) ?? null;
+const contourTool = (d) => ({ ...CONTOUR_MILL, d, label: `COMPRESSION D${d}` });
 
 export const POSTS = {
   iso: { id: 'iso', name: 'ISO / Fanuc-стил (G81, G43, смяна T…M6)', version: 'iso-2.1' },
@@ -117,7 +117,7 @@ function nearestNeighbour(points) {
 }
 
 // Tool-centre path of an outside profile: rectangle offset by r, clockwise (climb milling with an M3 spindle).
-export function profilePath(c, r) {
+function profilePath(c, r) {
   const [x0, y0, x1, y1] = [c.x, c.y, c.x + c.w, c.y + c.h];
   return [
     { kind: 'line', from: [x0 - r, y0], to: [x0 - r, y1] },
@@ -273,5 +273,5 @@ export function toGcode(model, sheet, meta) {
   L.push('M30');
   if (iso) L.push('%');
   const tools = [...ops.drillOps.map((o) => o.tool), ...(ops.grooves.length ? [GROOVE_MILL] : []), tool];
-  return { text: `${L.join('\n')}\n`, moves, ops, post, tools, feedContour: Fc };
+  return { text: `${L.join('\n')}\n`, moves, ops, tools };
 }

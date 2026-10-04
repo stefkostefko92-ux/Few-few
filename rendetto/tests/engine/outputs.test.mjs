@@ -9,7 +9,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { registerFixtures, FIXTURE } from './fixtures.mjs';
-import { buildModel } from '../../engine/model.js';
+import { buildModel, SHEET_TRIM } from '../../engine/model.js';
 import { TYPE_ORDER } from '../../engine/types.js';
 import { buildBom, csvCell, cutListCsv, hardwareCsv } from '../../engine/bom.js';
 import { drillCsv, hardwareCards, partHoles } from '../../engine/drill.js';
@@ -17,6 +17,7 @@ import { nest } from '../../engine/nest.js';
 import { toGcode } from '../../engine/cam.js';
 import { toDxf } from '../../engine/dxf.js';
 import { cutSize } from '../../engine/panel.js';
+import { STOCK } from '../../engine/materials.js';
 import { canonicalJson } from '../../engine/util.js';
 
 registerFixtures();
@@ -77,14 +78,12 @@ specs.push(
   { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
 );
 
-const dxfDir = mkdtempSync(join(tmpdir(), 'rendetto-dxf-'));
-let dxfCount = 0;
+const metaOf = (model) => ({ product: 'Rendetto', hash: createHash('sha256').update(canonicalJson(model.spec)).digest('hex'), owner: 'Carbon Stealth VCC', date: '2026-10-02' });
 
 for (const [ci, input] of specs.entries()) {
   test(`outputs ${ci + 1}: ${input.type}${Object.keys(input).length > 1 ? ' variant' : ''}`, () => {
     const model = buildModel(input);
-    const hash = createHash('sha256').update(canonicalJson(model.spec)).digest('hex');
-    const meta = { product: 'Rendetto', hash, owner: 'Carbon Stealth VCC', date: '2026-10-02' };
+    const meta = metaOf(model);
     const label = `${ci + 1}-${model.spec.type}`;
 
     const bom = buildBom(model);
@@ -119,10 +118,11 @@ for (const [ci, input] of specs.entries()) {
     const nesting = nest(model);
     assert.equal(nesting.errors.length, 0, `${label}: ${nesting.errors.join('; ')}`);
     assert.equal(nesting.sheets.reduce((a, s) => a + s.placements.length, 0), model.parts.length, `${label}: not every part is placed`);
+    const edge = SHEET_TRIM - 0.01;
     for (const sh of nesting.sheets) {
       const pls = sh.placements;
       for (const p of pls) {
-        assert.ok(p.x >= 9.99 && p.y >= 9.99 && p.x + p.w <= sh.w - 9.99 && p.y + p.h <= sh.h - 9.99, `${label}: placement outside trim: ${p.name}`);
+        assert.ok(p.x >= edge && p.y >= edge && p.x + p.w <= sh.w - edge && p.y + p.h <= sh.h - edge, `${label}: placement outside trim: ${p.name}`);
         const part = model.parts.find((q) => q.id === p.partId);
         if (part.grain) assert.equal(p.rot, false, `${label}: ${p.name} rotated against grain`);
         assert.equal(p.rot ? p.w : p.h, cutSize(part, model.spec.bandCompensation).W, `${label}: placement size mismatch`);
@@ -146,14 +146,11 @@ for (const [ci, input] of specs.entries()) {
         const g43 = g.text.split('\n').filter((l) => l.includes('G43'));
         assert.ok(g43.length > 0 && g43.every((l) => l.startsWith('G0 G43 ')), `${label}: G43 approach without an explicit G0`);
       }
-      const T = sh.stock === 'hdf3' ? 3 : sh.stock === 'pb16' ? 16 : sh.stock === 'pb25' ? 25 : 18;
-      checkGcode(g.text, sh, T, model.spec.tool);
+      checkGcode(g.text, sh, STOCK[sh.stock].thickness, model.spec.tool);
       const dxf = toDxf(model, sh, meta);
       assert.match(dxf.text, /^ *0\nSECTION\n/);
       assert.match(dxf.text, /\n *0\nEOF\n$/);
       for (const layer of dxf.layers) assert.match(layer, /^[A-Z0-9$_-]{1,31}$/, `${label}: layer name not valid in DXF R12`);
-      writeFileSync(join(dxfDir, `${label}-s${sh.index}.dxf`), dxf.text);
-      dxfCount += 1;
     }
   });
 }
@@ -174,14 +171,24 @@ test('DXF files pass the ezdxf audit (skipped without Python and ezdxf)', (t) =>
     execFileSync('python3', ['-c', 'import ezdxf'], { stdio: 'ignore' });
   } catch {
     t.skip('python3 with ezdxf is not available');
-    rmSync(dxfDir, { recursive: true, force: true });
     return;
   }
+  // the test writes its own files, so it runs alone and in any order
+  const dir = mkdtempSync(join(tmpdir(), 'rendetto-dxf-'));
   try {
-    assert.ok(dxfCount > 0, 'no DXF files were written');
-    execFileSync('python3', ['-c', py, dxfDir], { encoding: 'utf8' });
+    let count = 0;
+    for (const [ci, input] of specs.entries()) {
+      const model = buildModel(input);
+      const meta = metaOf(model);
+      for (const sh of nest(model).sheets) {
+        writeFileSync(join(dir, `${ci + 1}-${model.spec.type}-s${sh.index}.dxf`), toDxf(model, sh, meta).text);
+        count += 1;
+      }
+    }
+    assert.ok(count > 0, 'no DXF files were written');
+    execFileSync('python3', ['-c', py, dir], { encoding: 'utf8' });
   } finally {
-    rmSync(dxfDir, { recursive: true, force: true });
+    rmSync(dir, { recursive: true, force: true });
   }
 });
 
