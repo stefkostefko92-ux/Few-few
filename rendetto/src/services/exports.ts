@@ -87,7 +87,7 @@ function cncFiles(b: Built, m: Machining): Record<string, Buffer> {
   const meta = { ...b.meta, sheetCount: m.nesting.sheets.length };
   for (const sheet of m.nesting.sheets) {
     const n = String(sheet.index).padStart(2, '0');
-    out[`sheet-${n}.dxf`] = text(api.toDxf(b.model, sheet, meta).text);
+    out[`sheet-${n}.dxf`] = text(api.toDxf(b.model, sheet).text);
     out[`sheet-${n}.nc`] = text(api.toGcode(b.model, sheet, meta).text);
   }
   return out;

@@ -129,7 +129,7 @@ export function renderCnc(state, meta) {
   $('#cnc-sheet').value = String(state.sheet);
   const sh = sheets[state.sheet];
   const g = toGcode(state.model, sh, { ...meta, sheetCount: sheets.length });
-  const dxf = toDxf(state.model, sh, meta);
+  const dxf = toDxf(state.model, sh);
   g.sheetH = sh.h;
   g.color = new Map(g.tools.map((t, i) => [t.id, PALETTE[i % PALETTE.length]]));
   g.dia = new Map(g.tools.map((t) => [t.id, t.d]));

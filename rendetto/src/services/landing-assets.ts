@@ -227,7 +227,7 @@ export function landingAssets(): LandingAssets {
   const sheet = nesting.sheets[0] as SheetLike;
   const sheetMeta = { ...meta, sheetCount: nesting.sheets.length };
   const art = sheetArt(model, sheet, sheetMeta);
-  const dxf = api.toDxf(model, sheet, sheetMeta) as unknown as { layers: string[] };
+  const dxf = api.toDxf(model, sheet);
   const door = model.parts.find((p) => p.role === 'door') as
     | (EngineModel['parts'][number] & {
         L: number;

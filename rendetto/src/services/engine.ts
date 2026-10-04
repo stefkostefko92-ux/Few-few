@@ -90,7 +90,7 @@ interface EngineApi {
   nest(model: EngineModel): EngineNesting;
   cncBlockers(model: EngineModel, nesting: EngineNesting): string[];
   toGcode(model: EngineModel, sheet: EngineSheet, meta: DrawingMeta): { text: string };
-  toDxf(model: EngineModel, sheet: EngineSheet, meta: DrawingMeta): { text: string };
+  toDxf(model: EngineModel, sheet: EngineSheet): { text: string; layers: string[] };
   /** Номерът на фрезата за каналите в G-кода (`GROOVE_MILL`); другите фрези са за контура. */
   grooveToolId: string;
   /** Листът и броят листове в рамката идват от двигателя (`drawingSheets`). */

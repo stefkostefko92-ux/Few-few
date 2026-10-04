@@ -25,7 +25,7 @@ test('a good model has no blockers and gives G-code and DXF for every sheet', ()
   assert.deepEqual(cncBlockers(m, n), []);
   for (const sheet of n.sheets) {
     assert.doesNotThrow(() => toGcode(m, sheet, { ...meta, sheetCount: n.sheets.length }));
-    assert.doesNotThrow(() => toDxf(m, sheet, meta));
+    assert.doesNotThrow(() => toDxf(m, sheet));
   }
 });
 
@@ -37,7 +37,7 @@ test('a hole that would leave its part on the sheet blocks G-code and DXF', () =
   const blockers = cncBlockers(m, n);
   assert.ok(blockers.some((b) => b.startsWith(`${part.name}: отвор`)), blockers.join(' | '));
   assert.throws(() => toGcode(m, sheet, { ...meta, sheetCount: n.sheets.length }), /CNC blocked/);
-  assert.throws(() => toDxf(m, sheet, meta), /CNC blocked/);
+  assert.throws(() => toDxf(m, sheet), /CNC blocked/);
 });
 
 test('an error from the model checks blocks G-code and DXF on every sheet', () => {
@@ -49,7 +49,7 @@ test('an error from the model checks blocks G-code and DXF on every sheet', () =
   assert.ok(n.sheets.length > 0);
   for (const sheet of n.sheets) {
     assert.throws(() => toGcode(m, sheet, { ...meta, sheetCount: n.sheets.length }), /CNC blocked/);
-    assert.throws(() => toDxf(m, sheet, meta), /CNC blocked/);
+    assert.throws(() => toDxf(m, sheet), /CNC blocked/);
   }
 });
 

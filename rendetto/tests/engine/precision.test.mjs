@@ -179,7 +179,7 @@ test('every hole lands inside its part on the sheet; no G-code or DXF while a ch
           // sheetOps refuses the model's own errors; a nesting error is refused by the callers through cncBlockers()
           if (errorsOf(m).length) {
             assert.throws(() => toGcode(m, n.sheets[0], { ...meta, sheetCount: n.sheets.length }), /CNC blocked/);
-            assert.throws(() => toDxf(m, n.sheets[0], meta), /CNC blocked/);
+            assert.throws(() => toDxf(m, n.sheets[0]), /CNC blocked/);
           }
           continue;
         }

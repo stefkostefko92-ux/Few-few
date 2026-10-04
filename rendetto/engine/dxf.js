@@ -7,7 +7,7 @@ import { asciiName } from './util.js';
 const COLORS = [3, 4, 5, 6, 1, 2, 30, 40, 140, 200, 210, 230];
 const zTxt = (v) => num(v).replace(/\.$/, '').replace('.', '_');
 
-export function toDxf(model, sheet, meta) {
+export function toDxf(model, sheet) {
   const ops = sheetOps(model, sheet);
   const { T } = ops;
   const tool = model.spec.tool;
@@ -62,5 +62,5 @@ export function toDxf(model, sheet, meta) {
   }
   g(0, 'ENDSEC');
   g(0, 'EOF');
-  return { text: `${out.join('\n')}\n`, layers: [...layers.keys()], hash: meta.hash };
+  return { text: `${out.join('\n')}\n`, layers: [...layers.keys()] };
 }

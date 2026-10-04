@@ -147,7 +147,7 @@ for (const [ci, input] of specs.entries()) {
         assert.ok(g43.length > 0 && g43.every((l) => l.startsWith('G0 G43 ')), `${label}: G43 approach without an explicit G0`);
       }
       checkGcode(g.text, sh, STOCK[sh.stock].thickness, model.spec.tool);
-      const dxf = toDxf(model, sh, meta);
+      const dxf = toDxf(model, sh);
       assert.match(dxf.text, /^ *0\nSECTION\n/);
       assert.match(dxf.text, /\n *0\nEOF\n$/);
       for (const layer of dxf.layers) assert.match(layer, /^[A-Z0-9$_-]{1,31}$/, `${label}: layer name not valid in DXF R12`);
@@ -181,7 +181,7 @@ test('DXF files pass the ezdxf audit (skipped without Python and ezdxf)', (t) =>
       const model = buildModel(input);
       const meta = metaOf(model);
       for (const sh of nest(model).sheets) {
-        writeFileSync(join(dir, `${ci + 1}-${model.spec.type}-s${sh.index}.dxf`), toDxf(model, sh, meta).text);
+        writeFileSync(join(dir, `${ci + 1}-${model.spec.type}-s${sh.index}.dxf`), toDxf(model, sh).text);
         count += 1;
       }
     }
