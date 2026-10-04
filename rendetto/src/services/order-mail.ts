@@ -12,6 +12,7 @@ import { formatMoney, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
   paidStartAllowedFrom,
   REFUND_DAYS,
+  refundDeadline,
   WITHDRAWAL_DAYS,
   withdrawalLastDay,
 } from '../plans/withdrawal.js';
@@ -22,7 +23,6 @@ import { legalPath } from '../seo/paths.js';
  * числа и дати, които показват страницата „План“ и панелът.
  */
 const TZ = 'Europe/Sofia';
-const DAY = 86_400_000;
 
 export type OrderRecord = Pick<
   UpgradeRequest,
@@ -37,6 +37,8 @@ export type OrderRecord = Pick<
   | 'createdAt'
   | 'withdrawnAt'
 >;
+/** Поръчка, от която потребителят се е отказал — моментът на отказа е задължителен за писмата. */
+export type WithdrawnOrder = OrderRecord & { withdrawnAt: Date };
 type Customer = Pick<User, 'email' | 'name' | 'locale' | 'emailVerifiedAt'>;
 
 const localeOf = (user: Pick<User, 'locale'>): Locale =>
@@ -145,15 +147,14 @@ export type PlanOutcome = 'open' | 'reverted' | 'manual';
 
 /** Потвърждението, че отказът е получен: съдържанието на изявлението, датата и часа му. */
 export function sendWithdrawalReceipt(
-  order: OrderRecord,
+  order: WithdrawnOrder,
   user: Customer,
   outcome: PlanOutcome,
 ): Promise<boolean> {
   const locale = localeOf(user);
-  const withdrawnAt = order.withdrawnAt ?? new Date();
-  const refundBy = longDate(new Date(withdrawnAt.getTime() + REFUND_DAYS * DAY), locale);
+  const refundBy = longDate(refundDeadline(order.withdrawnAt), locale);
   return mailWithdrawalReceived(user.email, locale, greetingName(user), {
-    when: sofiaDateTime(withdrawnAt, locale),
+    when: sofiaDateTime(order.withdrawnAt, locale),
     statement: withdrawalStatement(order, user, locale),
     plan: translate(locale, `mail.withdrawn.plan.${outcome}`),
     refund: translate(
@@ -200,18 +201,17 @@ export function notifyStaffOfOrder(order: OrderRecord, user: Customer): Promise<
 
 /** Известие до екипа за отказ: срокът за връщане на парите тече от момента на отказа. */
 export function notifyStaffOfWithdrawal(
-  order: OrderRecord,
+  order: WithdrawnOrder,
   user: Customer,
   outcome: PlanOutcome,
 ): Promise<boolean> {
-  const withdrawnAt = order.withdrawnAt ?? new Date();
   return mailStaffNotice('staffWithdrawal', {
     id: order.id,
     email: user.email,
     plan: orderPlanName(order, 'bg'),
-    when: sofiaDateTime(withdrawnAt, 'bg'),
+    when: sofiaDateTime(order.withdrawnAt, 'bg'),
     planState: translate('bg', `mail.staffWithdrawal.plan.${outcome}`),
-    date: longDate(new Date(withdrawnAt.getTime() + REFUND_DAYS * DAY), 'bg'),
+    date: longDate(refundDeadline(order.withdrawnAt), 'bg'),
     early: translate(
       'bg',
       order.earlyStartRequestedAt ? 'mail.staffWithdrawal.early' : 'mail.staffWithdrawal.full',

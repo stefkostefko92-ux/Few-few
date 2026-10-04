@@ -55,7 +55,7 @@ export async function createUpgradeRequest(
   });
   if (recent >= ORDERS_PER_DAY) return { ok: false, key: 'plan.errors.tooMany' };
   const input = parsed.data;
-  const option = input.option as Parameters<typeof optionPriceCents>[0];
+  const option = input.option;
   const buyerType = input.buyer === 'business' ? 'BUSINESS' : 'CONSUMER';
   const message = (input.message ?? '').trim().slice(0, 1000);
   const order = await prisma.$transaction(async (tx) => {
@@ -177,7 +177,6 @@ export async function withdrawFromOrder(
     ]);
     const untouched =
       latest?.id === activation.id &&
-      activation.fromPlan !== null &&
       current.plan === activation.toPlan &&
       (current.planExpiresAt?.getTime() ?? null) === (activation.toExpiresAt?.getTime() ?? null);
     // Друга поръчка на човека е отказана, а планът ѝ не е върнат автоматично: „преди“ на тази активация
@@ -258,12 +257,15 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
   let sent = 0;
   for (const order of pending) {
     if (order.status === 'WITHDRAWN') {
+      // заявката взима само поръчки с момент на отказа; проверката стеснява типа
+      const { withdrawnAt } = order;
+      if (!withdrawnAt) continue;
       const outcome: PlanOutcome = order.planChanges.length
         ? 'reverted'
         : order.handledById
           ? 'manual'
           : 'open';
-      if (await sendWithdrawalReceipt(order, order.user, outcome)) {
+      if (await sendWithdrawalReceipt({ ...order, withdrawnAt }, order.user, outcome)) {
         await prisma.upgradeRequest.update({
           where: { id: order.id },
           data: { withdrawalAckSentAt: now },

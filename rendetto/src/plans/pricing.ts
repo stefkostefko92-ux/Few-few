@@ -61,8 +61,8 @@ export function optionMonths(id: OptionId): number | null {
   return id === 'lifetime' ? null : (TERM_OPTIONS.find((item) => item.id === id)?.months ?? null);
 }
 
-export function withVatCents(cents: number, percent = VAT_BG_PERCENT): number {
-  return divideRoundHalfUp(cents * (100 + percent), 100);
+export function withVatCents(cents: number): number {
+  return divideRoundHalfUp(cents * (100 + VAT_BG_PERCENT), 100);
 }
 
 /** Само за показ: центовете стават низ с валута на езика на екрана. */

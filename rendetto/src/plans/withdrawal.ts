@@ -29,6 +29,15 @@ export function withdrawalOpenUntil(concludedAt: Date): Date {
 /** Толкова дни имаме да върнем парите след отказа (чл. 13 от Директивата; чл. 54 ЗЗП). */
 export const REFUND_DAYS = 14;
 
+/**
+ * Последният ден за връщане на парите (по София), като 12:00 UTC: календарни дни от деня на отказа,
+ * който не се брои — като срока за отказ, не 14 × 24 часа (през смяната на часа излиза друга дата).
+ * Не се мести за неработни дни. Едно правило за писмото до клиента, известието до екипа и панела.
+ */
+export function refundDeadline(withdrawnAt: Date): Date {
+  return new Date(sofiaDay(withdrawnAt) + REFUND_DAYS * DAY + 12 * 3_600_000);
+}
+
 export interface OrderTerms {
   buyerType: BuyerType;
   status: RequestStatus;

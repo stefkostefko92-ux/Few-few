@@ -8,7 +8,7 @@ import { rawField, stringField } from '../../http/meta.js';
 import { LOCALES } from '../../i18n.js';
 import { LABEL } from '../../labels.js';
 import { withVatCents } from '../../plans/pricing.js';
-import { paidStartAllowedFrom, REFUND_DAYS, withdrawalLastDay } from '../../plans/withdrawal.js';
+import { paidStartAllowedFrom, refundDeadline, withdrawalLastDay } from '../../plans/withdrawal.js';
 import { createAccount } from '../../services/admin-create.js';
 import { closeRequest } from '../../services/admin-security.js';
 import { buildExport, contentDisposition } from '../../services/exports.js';
@@ -63,7 +63,7 @@ manageRouter.get('/admin/requests', requireStaff('accounts:view'), async (req, r
     withVatCents: withVatCents(r.listPriceCents),
     activationFrom: paidStartAllowedFrom(r),
     lastDay: withdrawalLastDay(r.createdAt),
-    refundBy: r.withdrawnAt ? new Date(r.withdrawnAt.getTime() + REFUND_DAYS * 86_400_000) : null,
+    refundBy: r.withdrawnAt ? refundDeadline(r.withdrawnAt) : null,
     planReverted: r.planChanges.length > 0,
   }));
   res.render('admin/requests', { requests, status, now });

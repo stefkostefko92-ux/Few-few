@@ -4,6 +4,7 @@ import { isBgWorkingDay, orthodoxEaster, sofiaDay } from '../src/plans/bg-calend
 import {
   canWithdraw,
   paidStartAllowedFrom,
+  refundDeadline,
   withdrawalLastDay,
   withdrawalOpenUntil,
 } from '../src/plans/withdrawal.js';
@@ -60,6 +61,15 @@ test('the period ends 14 days after the day of the contract, moved past non-work
 test('the function stays open to the end of the last day in every EU time zone', () => {
   const at = new Date('2026-10-05T10:00:00Z');
   assert.equal(withdrawalOpenUntil(at).toISOString(), '2026-10-20T04:00:00.000Z');
+});
+
+test('the refund deadline counts calendar days by Sofia, also across the clock change', () => {
+  // 23:30 по София на 15 март 2027; 14 × 24 часа през смяната на часа (28 март) биха дали 30 март
+  assert.equal(iso(refundDeadline(new Date('2027-03-15T21:30:00Z'))), '2027-03-29');
+  // 21:30 UTC на 5 октомври е вече 6 октомври по София — срокът тече от него
+  assert.equal(iso(refundDeadline(new Date('2026-10-05T21:30:00Z'))), '2026-10-20');
+  // не се мести за неработни дни: 10 декември + 14 = 24 декември
+  assert.equal(iso(refundDeadline(new Date('2026-12-10T09:00:00Z'))), '2026-12-24');
 });
 
 test('who may withdraw and when the paid period may start', () => {

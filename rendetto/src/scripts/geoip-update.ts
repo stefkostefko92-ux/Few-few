@@ -1,4 +1,4 @@
-import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
+import { createWriteStream, mkdirSync, renameSync, rmSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -48,7 +48,6 @@ async function main(): Promise<void> {
     rmSync(tmp, { force: true });
     throw new Error('файлът не дава държава за проверовъчен адрес');
   }
-  if (existsSync(target)) rmSync(target);
   renameSync(tmp, target);
   logger.info({ probe }, 'базата за държава по IP е обновена');
 }
