@@ -84,6 +84,7 @@
 }
 .faq summary::after {
   content: '+';
+  content: '+' / '';
   position: absolute;
   right: 6px;
   top: 14px;
@@ -92,6 +93,7 @@
 }
 .faq details[open] summary::after {
   content: '−';
+  content: '−' / '';
 }
 .faq details p {
   margin: 0 0 18px;
@@ -100,9 +102,6 @@
 }
 
 /* closing */
-.closing {
-  text-align: left;
-}
 .closing p {
   max-width: var(--measure);
   color: var(--ink-2);

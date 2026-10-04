@@ -1,5 +1,6 @@
-/* Rendetto — the signed-in product: header bar, auth cards, projects, account and the admin panel.
-   Quiet surfaces, one green action per screen; state is always an icon plus a word. */
+/* Rendetto — the frame of the signed-in product: header bar, page, sub-navigation, sections, forms, notices and
+   the footer (sign-in cards and projects: app-pages.css; admin: app-admin.css). Quiet surfaces, one green action
+   per screen; state is always an icon plus a word. */
 
 .appbody {
   min-height: 100vh;
@@ -61,7 +62,7 @@ form.inline {
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 26px 16px 48px;
+  padding: 26px max(16px, env(safe-area-inset-right)) 48px max(16px, env(safe-area-inset-left));
 }
 .page-head {
   display: flex;
@@ -131,9 +132,7 @@ form.inline {
 .section h3 {
   margin-top: 24px;
 }
-.section > h2 + h3,
-.section-grid > form > h3:first-of-type,
-.section > form > h3:first-child {
+.section-grid > form > h3:first-of-type {
   margin-top: 0;
 }
 .section .dl + form,
@@ -270,12 +269,6 @@ form.inline {
 @media (max-width: 640px) {
   .section {
     padding: 16px;
-  }
-  .auth-card {
-    padding: 24px 18px 20px 34px;
-  }
-  .auth-card::before {
-    left: 12px;
   }
   .bar-end {
     margin-left: 0;

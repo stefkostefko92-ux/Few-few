@@ -103,6 +103,11 @@
   border: 0;
   border-radius: 0;
 }
+/* the scrollable cut list and G-code sit flush in the figure, which clips: the focus ring goes inside them */
+.output .table-wrap:focus-visible,
+.output pre:focus-visible {
+  outline-offset: -3px;
+}
 .output table {
   font-size: 0.86rem;
 }
@@ -187,6 +192,10 @@
 }
 .sheet-paper figcaption a {
   color: #2c6a10;
+}
+/* the paper stays light in the dark theme too, where the light --focus would vanish on it */
+.sheet-paper :focus-visible {
+  outline-color: #2c6a10;
 }
 
 /* furniture types */

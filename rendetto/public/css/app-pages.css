@@ -32,6 +32,15 @@
   background: radial-gradient(circle at 3px 3px, var(--rule-strong) 2.4px, transparent 2.9px) 0 0 /
     6px 32px repeat-y;
 }
+/* phone: here and not in app.css, which loads before this file and would lose at the same specificity */
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 24px 18px 20px 34px;
+  }
+  .auth-card::before {
+    left: 12px;
+  }
+}
 .auth-head {
   display: flex;
   justify-content: space-between;
@@ -81,19 +90,27 @@
   color: var(--ink);
   margin: 0;
 }
-.ban-reason {
+/* a quoted text: the ban reason, and the withdrawal statement in the orders */
+.ban-reason,
+.statement {
   margin: 16px 0;
   padding: 12px 16px;
-  border-left: 3px solid var(--red);
-  background: var(--red-soft);
+  border-left: 3px solid var(--rule-strong);
+  background: var(--panel);
   border-radius: 0 var(--radius) var(--radius) 0;
 }
-.ban-reason figcaption {
+.ban-reason {
+  border-left-color: var(--red);
+  background: var(--red-soft);
+}
+.ban-reason figcaption,
+.statement figcaption {
   font-size: 0.85rem;
   color: var(--ink-2);
   margin-bottom: 4px;
 }
-.ban-reason blockquote {
+.ban-reason blockquote,
+.statement blockquote {
   margin: 0;
   font-weight: 550;
   white-space: pre-wrap;
@@ -198,9 +215,6 @@
 }
 .planbox-big {
   font: 650 1.45rem/1.2 var(--f-text);
-}
-.prices {
-  width: 100%;
 }
 .prices td,
 .prices th {

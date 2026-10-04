@@ -1,4 +1,4 @@
-/* Rendetto — base: fonts, tokens, type, controls. Colours are named after the board decors they come from:
+/* Rendetto — base: fonts, tokens, type. Colours are named after the board decors they come from:
    W1000 (premium white) is the paper, U961 (graphite) the ink, H1145 (Bardolino oak) the material, spoilboard MDF
    the machine bed; green is the drawing ink, gold the router path. */
 
@@ -68,7 +68,6 @@
   --gold-ink: #865c04;
   --gold-soft: #f4ead2;
   --oak: #c2a588;
-  --oak-deep: #94714a;
   --mdf: #c9a97c;
   --red: #a8261b;
   --red-soft: #f6e1dd;
@@ -99,8 +98,6 @@
     --gold: #e2b33d;
     --gold-ink: #e8c060;
     --gold-soft: #4a3f22;
-    --oak: #c2a588;
-    --oak-deep: #d9bd9d;
     --mdf: #5f4f39;
     --red: #ff9b8f;
     --red-soft: #4d2c28;

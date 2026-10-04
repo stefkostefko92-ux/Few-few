@@ -42,16 +42,14 @@ a.stat:hover {
 .filters .field-q {
   flex: 3 1 260px;
 }
-.who {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
-}
+/* the account cell (td.who) stays a table cell: a grid td drops out of the row and cuts its lines short (only the
+   phone card in stack.css makes it a grid); the name goes under the e-mail as a block */
 .who a {
   font-weight: 600;
   overflow-wrap: anywhere;
 }
 .who small {
+  display: block;
   overflow-wrap: anywhere;
 }
 .chips-row {

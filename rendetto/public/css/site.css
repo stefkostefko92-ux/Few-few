@@ -127,6 +127,11 @@
 
 /* the machine bed with the nested sheet */
 .bed {
+  /* the operation colours of the sheet and its legend: the sheet is always a light board on the bed, so they
+     stay the same in the dark theme */
+  --op-contour: #a87406;
+  --op-groove: #2c6a10;
+  --op-drill: #0f6e86;
   margin: 0;
   background: var(--mdf);
   border-radius: 14px;
@@ -174,18 +179,14 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.sheet-art .hole {
-  stroke: none;
-}
-/* the sheet is always a light board on the bed, so the operation colours do not change with the theme */
 .sheet-art .tcontour {
-  stroke: #a87406;
+  stroke: var(--op-contour);
 }
 .sheet-art .tgroove {
-  stroke: #2c6a10;
+  stroke: var(--op-groove);
 }
 .sheet-art .hole.tdrill {
-  fill: #0f6e86;
+  fill: var(--op-drill);
 }
 /* the one moment of motion: the router path draws itself once, in cutting order, in six waves */
 @media (prefers-reduced-motion: no-preference) {
@@ -240,30 +241,23 @@
   width: 20px;
   height: 3px;
   border-radius: 2px;
+  /* each key sits on a bit of the board, the way its stroke sits on the sheet: same colour, readable on the bed */
+  box-shadow: 0 0 0 3px #f2efe7;
 }
 .key-contour {
-  background: #a87406;
+  background: var(--op-contour);
 }
 .key-groove {
-  background: #2c6a10;
+  background: var(--op-groove);
 }
 .key-drill {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #0f6e86;
+  background: var(--op-drill);
 }
 @media (prefers-color-scheme: dark) {
   .bed figcaption {
     color: #efe7da;
-  }
-  .key-contour {
-    background: #e2b33d;
-  }
-  .key-groove {
-    background: #9cc97b;
-  }
-  .key-drill {
-    background: #7cc6d8;
   }
 }

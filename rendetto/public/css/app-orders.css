@@ -1,4 +1,4 @@
-/* orders: who buys, the early-start request, the withdrawal button and statement */
+/* orders: who buys, the early-start request, the withdrawal deadline (the quoted statement: app-pages.css) */
 .order-who {
   display: grid;
   gap: 8px;
@@ -12,21 +12,4 @@
   margin-top: 4px;
   color: var(--ink-2);
   white-space: nowrap;
-}
-.statement {
-  margin: 16px 0;
-  padding: 12px 16px;
-  border-left: 3px solid var(--rule-strong);
-  background: var(--panel);
-  border-radius: 0 var(--radius) var(--radius) 0;
-}
-.statement figcaption {
-  font-size: 0.85rem;
-  color: var(--ink-2);
-  margin-bottom: 4px;
-}
-.statement blockquote {
-  margin: 0;
-  font-weight: 550;
-  white-space: pre-wrap;
 }

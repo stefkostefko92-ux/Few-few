@@ -49,10 +49,10 @@
   stroke: none;
 }
 .sheet-art .tcontour {
-  stroke: #a87406;
+  stroke: var(--gold);
 }
 .sheet-art .tgroove {
-  stroke: #2c6a10;
+  stroke: var(--green);
 }
 .sheet-art .hole.tdrill {
   fill: var(--drill);
@@ -79,10 +79,10 @@
   border-radius: 0.5mm;
 }
 .k-contour::before {
-  background: #a87406;
+  background: var(--gold);
 }
 .k-groove::before {
-  background: #2c6a10;
+  background: var(--green);
 }
 .b-keys .k-drill::before {
   width: 2mm;

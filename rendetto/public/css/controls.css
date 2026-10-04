@@ -55,16 +55,6 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
-.linkbtn {
-  background: none;
-  border: 0;
-  padding: 0;
-  font: inherit;
-  color: var(--green);
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-  cursor: pointer;
-}
 
 /* forms */
 .field {
@@ -72,8 +62,7 @@
   gap: 6px;
   margin: 0 0 16px;
 }
-.field > label,
-.label {
+.field > label {
   font-weight: 550;
   font-size: 0.93rem;
 }
@@ -94,7 +83,8 @@ textarea {
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
-  border: 1px solid var(--rule-strong);
+  /* the edge is the only thing that marks a field: --ink-3 keeps it above 3:1 on the panel and the paper */
+  border: 1px solid var(--ink-3);
   border-radius: var(--radius);
   background: var(--panel);
   color: var(--ink);
@@ -108,13 +98,15 @@ textarea {
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: var(--ink-3);
+  border-color: var(--ink-2);
 }
 input[aria-invalid='true'] {
   border-color: var(--red);
 }
-.code-input {
-  font: 500 1.4rem/1 var(--f-mono);
+/* `input.` outranks input[type='text'] above; at 1.3rem a recovery code (xxxxx-xxxxx) still fits the field on a
+   320px phone */
+input.code-input {
+  font: 500 1.3rem/1 var(--f-mono);
   letter-spacing: 0.3em;
   text-align: center;
 }
