@@ -79,6 +79,8 @@ model User {
   @@index([signupDeviceHash])
   @@index([signupFingerprint])
   @@index([signupIp])
+  /// Свързаните акаунти и търсенето по IP питат `signupIp ИЛИ lastLoginIp` — без двата индекса е пълно обхождане.
+  @@index([lastLoginIp])
 }
 
 /// Сесия в базата (не JWT): банът, смяната на парола и „излез навсякъде“ я прекратяват веднага.
@@ -128,6 +130,8 @@ model Device {
   @@unique([userId, cookieHash])
   @@index([cookieHash])
   @@index([fingerprintHash])
+  /// Поддръжката на всеки час трие устройствата след срока за пазене.
+  @@index([lastSeenAt])
 }
 
 enum LoginOutcome {
@@ -163,7 +167,6 @@ model LoginEvent {
   @@index([ip, createdAt])
   @@index([ipNet, createdAt])
   @@index([deviceId])
-  @@index([fingerprintHash])
   @@index([createdAt])
 }
 
@@ -246,6 +249,9 @@ model UpgradeRequest {
   withdrawnAt           DateTime?
   /// Кога тръгна потвърждението, че отказът е получен; null след отказ = поддръжката опитва пак.
   withdrawalAckSentAt   DateTime?
+  /// Какво стана с плана при отказа: open | reverted | manual — решено и записано при самия отказ.
+  /// null = отказ отпреди записа (изходът се извежда от историята, plans/withdrawal.ts).
+  withdrawalOutcome     String?
   status                RequestStatus @default(OPEN)
   handledById           String?
   handledByLabel        String?
@@ -333,7 +339,8 @@ model AuditLog {
   /// 1 — SHA-256 (записите преди ключа); 2 — HMAC-SHA-256 с ключ извън базата, с името на извършителя.
   v          Int      @default(1)
 
-  @@index([targetType, targetId])
+  /// Справките търсят по targetId (често в ИЛИ с actorId) — без targetType.
+  @@index([targetId])
   @@index([actorId])
   @@index([action])
   @@index([at])

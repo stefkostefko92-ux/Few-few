@@ -15,6 +15,7 @@ import {
   refundDeadline,
   WITHDRAWAL_DAYS,
   withdrawalLastDay,
+  type PlanOutcome,
 } from '../plans/withdrawal.js';
 import { legalPath } from '../seo/paths.js';
 
@@ -142,8 +143,6 @@ export function sendOrderConfirmation(order: OrderRecord, user: Customer): Promi
     terms: `${config().PUBLIC_BASE_URL}${legalPath(locale, 'terms')}`,
   });
 }
-
-export type PlanOutcome = 'open' | 'reverted' | 'manual';
 
 /** Потвърждението, че отказът е получен: съдържанието на изявлението, датата и часа му. */
 export function sendWithdrawalReceipt(

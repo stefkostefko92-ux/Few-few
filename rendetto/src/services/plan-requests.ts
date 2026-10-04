@@ -4,18 +4,23 @@ import { audit } from '../audit.js';
 import { LEGAL_UPDATED } from '../company.js';
 import { prisma } from '../db.js';
 import type { RequestMeta } from '../http/meta.js';
-import { customerLabel, LABEL } from '../labels.js';
+import { LABEL } from '../labels.js';
 import { logger } from '../logger.js';
 import { isOptionId, optionMonths, optionPriceCents } from '../plans/pricing.js';
-import { canWithdraw, WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
+import {
+  canWithdraw,
+  WITHDRAWAL_DAYS,
+  withdrawalOutcomeOf,
+  type PlanOutcome,
+} from '../plans/withdrawal.js';
 import { customerActor } from './auth-common.js';
 import {
   notifyStaffOfOrder,
   notifyStaffOfWithdrawal,
   sendOrderConfirmation,
   sendWithdrawalReceipt,
-  type PlanOutcome,
 } from './order-mail.js';
+import { settlePlanAfterWithdrawal } from './withdrawal-plan.js';
 
 export type RequestResult = { ok: true } | { ok: false; key: string };
 
@@ -159,56 +164,13 @@ export async function withdrawFromOrder(
     });
     if (locked.count !== 1) return null;
     await tx.$executeRaw`SELECT 1 FROM "User" WHERE "id" = ${user.id} FOR UPDATE`;
-    const activation = await tx.planChange.findFirst({
-      where: { requestId },
-      orderBy: { createdAt: 'desc' },
+    const result = await settlePlanAfterWithdrawal(tx, user, before);
+    // изходът се пази: повторното писмо и панелът го четат, вместо да го извеждат наново
+    await tx.upgradeRequest.update({
+      where: { id: requestId },
+      data: { withdrawalOutcome: result },
     });
-    if (!activation) {
-      // Активирана, но без връзка към промяната (или планът е сменен на ръка след поръчката) — не
-      // гадаем какво да върнем: оправя го екипът.
-      const changedSince = await tx.planChange.count({
-        where: { userId: user.id, createdAt: { gt: before.createdAt } },
-      });
-      return before.status === 'DONE' || changedSince > 0 ? 'manual' : 'open';
-    }
-    const [latest, current] = await Promise.all([
-      tx.planChange.findFirst({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } }),
-      tx.user.findUniqueOrThrow({ where: { id: user.id } }),
-    ]);
-    const untouched =
-      latest?.id === activation.id &&
-      current.plan === activation.toPlan &&
-      (current.planExpiresAt?.getTime() ?? null) === (activation.toExpiresAt?.getTime() ?? null);
-    // Друга поръчка на човека е отказана, а планът ѝ не е върнат автоматично: „преди“ на тази активация
-    // може да носи платеното от нея — не го връщаме, оправя го екипът.
-    const unsettled = await tx.upgradeRequest.count({
-      where: {
-        userId: user.id,
-        id: { not: requestId },
-        status: 'WITHDRAWN',
-        planChanges: { some: {} },
-        NOT: { planChanges: { some: { note: LABEL.withdrawal } } },
-      },
-    });
-    if (!untouched || !activation.fromPlan || unsettled > 0) return 'manual';
-    await tx.user.update({
-      where: { id: user.id },
-      data: { plan: activation.fromPlan, planExpiresAt: activation.fromExpiresAt },
-    });
-    await tx.planChange.create({
-      data: {
-        userId: user.id,
-        actorId: user.id,
-        actorLabel: customerLabel(user.id),
-        fromPlan: current.plan,
-        toPlan: activation.fromPlan,
-        fromExpiresAt: current.planExpiresAt,
-        toExpiresAt: activation.fromExpiresAt,
-        note: LABEL.withdrawal,
-        requestId,
-      },
-    });
-    return 'reverted';
+    return result;
   });
   if (!outcome) return { ok: false, key: 'plan.withdraw.unavailable' };
   const order = { ...before, status: 'WITHDRAWN' as const, withdrawnAt: now };
@@ -260,11 +222,7 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
       // заявката взима само поръчки с момент на отказа; проверката стеснява типа
       const { withdrawnAt } = order;
       if (!withdrawnAt) continue;
-      const outcome: PlanOutcome = order.planChanges.length
-        ? 'reverted'
-        : order.handledById
-          ? 'manual'
-          : 'open';
+      const outcome = withdrawalOutcomeOf(order);
       if (await sendWithdrawalReceipt({ ...order, withdrawnAt }, order.user, outcome)) {
         await prisma.upgradeRequest.update({
           where: { id: order.id },

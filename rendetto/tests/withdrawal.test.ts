@@ -12,6 +12,7 @@ import {
   refundDeadline,
   withdrawalLastDay,
   withdrawalOpenUntil,
+  withdrawalOutcomeOf,
 } from '../src/plans/withdrawal.js';
 
 const day = (iso: string) => Date.parse(`${iso}T00:00:00Z`);
@@ -113,4 +114,21 @@ test('who may withdraw and when the paid period may start', () => {
   // заявка отпреди поръчките: не е договор по тези правила — без бутон за отказ и без изчакване
   assert.equal(canWithdraw({ ...order, termsVersion: null }, createdAt), false);
   assert.equal(paidStartAllowedFrom({ ...order, termsVersion: null }), createdAt);
+});
+
+test('the stored withdrawal outcome wins; only legacy rows derive it from the history', () => {
+  const handledAt = new Date('2026-10-05T10:00:00Z');
+  // отворена поръчка, но планът е сменен на ръка след нея: при отказа е решено „manual“
+  const open = { withdrawalOutcome: 'manual', handledAt: null, planChanges: [] };
+  assert.equal(withdrawalOutcomeOf(open), 'manual');
+  assert.equal(withdrawalOutcomeOf({ ...open, withdrawalOutcome: 'open' }), 'open');
+  // отказ отпреди записа: както досега — върнат, активиран без връщане, неактивиран
+  const legacy = { withdrawalOutcome: null, handledAt: null, planChanges: [] };
+  assert.equal(withdrawalOutcomeOf({ ...legacy, planChanges: [{ id: 'x' }] }), 'reverted');
+  assert.equal(withdrawalOutcomeOf({ ...legacy, handledAt }), 'manual');
+  assert.equal(withdrawalOutcomeOf(legacy), 'open');
+  assert.equal(
+    withdrawalOutcomeOf({ ...legacy, withdrawalOutcome: 'непознат', handledAt }),
+    'manual',
+  );
 });

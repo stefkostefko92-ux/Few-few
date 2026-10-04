@@ -38,6 +38,27 @@ export function refundDeadline(withdrawnAt: Date): Date {
   return new Date(sofiaDay(withdrawnAt) + REFUND_DAYS * DAY + 12 * 3_600_000);
 }
 
+/** Какво стана с плана при отказа: поръчката не е активирана, планът е върнат или го оправя екипът. */
+export const PLAN_OUTCOMES = ['open', 'reverted', 'manual'] as const;
+export type PlanOutcome = (typeof PLAN_OUTCOMES)[number];
+
+const isPlanOutcome = (value: unknown): value is PlanOutcome =>
+  typeof value === 'string' && (PLAN_OUTCOMES as readonly string[]).includes(value);
+
+/**
+ * Изходът на отказа — записаният при самия отказ. Само за откази отпреди записа (null) се извежда както
+ * тогава: върнатият план личи по промяната с бележката за отказ, активираната поръчка без нея е за екипа.
+ */
+export function withdrawalOutcomeOf(order: {
+  withdrawalOutcome: string | null;
+  handledAt: Date | null;
+  /** промените на плана с бележката за отказ (LABEL.withdrawal) */
+  planChanges: readonly unknown[];
+}): PlanOutcome {
+  if (isPlanOutcome(order.withdrawalOutcome)) return order.withdrawalOutcome;
+  return order.planChanges.length ? 'reverted' : order.handledAt ? 'manual' : 'open';
+}
+
 export interface OrderTerms {
   buyerType: BuyerType;
   status: RequestStatus;
