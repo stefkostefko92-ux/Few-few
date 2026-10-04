@@ -1,6 +1,6 @@
 import type { Request } from 'express';
 import rateLimit, { type Options } from 'express-rate-limit';
-import { renderError, wantsJson } from '../auth/guards.js';
+import { renderError, SAFE_METHODS, wantsJson } from '../auth/guards.js';
 import { ipNetwork } from './ip.js';
 
 /** Ключът е мрежата на адреса (IPv6 — цялата /64), не самият адрес. */
@@ -48,5 +48,5 @@ export const exportLimiter = limiter(60_000, 30);
  */
 export const accountWriteLimiter = limiter(60_000, 60, {
   keyGenerator: (req) => (req.principal ? `u:${req.principal.user.id}` : networkKey(req)),
-  skip: (req) => req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS',
+  skip: (req) => SAFE_METHODS.has(req.method),
 });

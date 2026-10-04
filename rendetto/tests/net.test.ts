@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ipNetwork } from '../src/http/ip.js';
+import { ipNetwork, normalizeIp } from '../src/http/ip.js';
+import { safeNext } from '../src/http/meta.js';
 import { loadConfig } from '../src/config.js';
 
 test('rate limits key on the network: IPv4 as is, IPv6 by its /64', () => {
@@ -13,6 +14,27 @@ test('rate limits key on the network: IPv4 as is, IPv6 by its /64', () => {
   assert.equal(ipNetwork('fe80::1%eth0'), 'fe80:0000:0000:0000::/64');
   for (const bad of ['', 'nope', '1.2.3', '2001:db8:::1', null, undefined])
     assert.equal(ipNetwork(bad), null);
+});
+
+test('the client address is one rule for sessions, logins and limits', () => {
+  assert.equal(normalizeIp('::FFFF:203.0.113.9'), '203.0.113.9');
+  assert.equal(normalizeIp(' 2001:db8::1 '), '2001:db8::1');
+  assert.equal(normalizeIp('::ffff:999.1.1.1'), null);
+  assert.equal(normalizeIp(''), null);
+  assert.equal(ipNetwork(' ::ffff:203.0.113.9 '), normalizeIp('::ffff:203.0.113.9'));
+});
+
+test('after login we only go to our own pages', () => {
+  assert.equal(safeNext('/app/projects?x=1'), '/app/projects?x=1');
+  assert.equal(safeNext('/admin'), '/admin');
+  for (const bad of [
+    '//evil.example',
+    '/\\evil.example',
+    'https://evil.example',
+    '/apps',
+    '/app\r\nx',
+  ])
+    assert.equal(safeNext(bad), '/app', bad);
 });
 
 test('an empty optional setting is unset, not an error (compose writes `${SMTP_USER:-}`)', () => {

@@ -5,18 +5,24 @@ import { prisma } from '../db.js';
 
 const ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 export const RECOVERY_CODE_COUNT = 10;
+const CODE_LENGTH = 10;
+
+/** Видът, в който кодът се показва и хешира: „xxxxx-xxxxx“. */
+function formatCode(clean: string): string {
+  return `${clean.slice(0, CODE_LENGTH / 2)}-${clean.slice(CODE_LENGTH / 2)}`;
+}
 
 /** Код от 10 знака без двусмислени букви (без i, l, o, 0, 1), показан като „xxxxx-xxxxx“ — ~49 бита. */
 function generateCode(): string {
   let code = '';
   // randomInt е без отместване по модул — всеки знак е равновероятен.
-  for (let i = 0; i < 10; i++) code += ALPHABET[randomInt(ALPHABET.length)];
-  return `${code.slice(0, 5)}-${code.slice(5)}`;
+  for (let i = 0; i < CODE_LENGTH; i++) code += ALPHABET[randomInt(ALPHABET.length)];
+  return formatCode(code);
 }
 
 export function normalizeRecoveryCode(input: string): string {
   const clean = input.toLowerCase().replace(/[^a-z0-9]/g, '');
-  return clean.length === 10 ? `${clean.slice(0, 5)}-${clean.slice(5)}` : '';
+  return clean.length === CODE_LENGTH ? formatCode(clean) : '';
 }
 
 function hashCode(code: string): string {

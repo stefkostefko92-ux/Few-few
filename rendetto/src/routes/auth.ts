@@ -1,8 +1,13 @@
 import { Router, type Request, type Response } from 'express';
 import { config, isProduction } from '../config.js';
-import { randomToken, safeEqual } from '../crypto.js';
+import { safeEqual } from '../crypto.js';
 import { deviceCookieHash, ensureDeviceCookie, parseFingerprint } from '../auth/device.js';
-import { PRE_CSRF_COOKIE, requirePreAuthCsrf } from '../auth/guards.js';
+import {
+  isPreCsrfToken,
+  newPreCsrfToken,
+  PRE_CSRF_COOKIE,
+  requirePreAuthCsrf,
+} from '../auth/guards.js';
 import { clearSessionCookie, destroySessionById, setSessionCookie } from '../auth/sessions.js';
 import { isRole } from '../auth/rbac.js';
 import { setFlash } from '../http/flash.js';
@@ -21,8 +26,8 @@ export const authRouter: Router = Router();
 /** CSRF токен за формите преди вход: двойна бисквитка (стойността е и в скритото поле). */
 function preCsrf(req: Request, res: Response): string {
   const existing = ((req.cookies ?? {}) as Record<string, string | undefined>)[PRE_CSRF_COOKIE];
-  if (existing && /^[A-Za-z0-9_-]{32}$/.test(existing)) return existing;
-  const token = randomToken(24);
+  if (existing && isPreCsrfToken(existing)) return existing;
+  const token = newPreCsrfToken();
   res.cookie(PRE_CSRF_COOKIE, token, {
     httpOnly: true,
     sameSite: 'strict',

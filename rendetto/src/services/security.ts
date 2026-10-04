@@ -15,7 +15,7 @@ import {
   recentTokenCount,
   revokeEmailTokens,
 } from '../auth/tokens.js';
-import { generateTotpSecret, otpauthUrl, verifyTotp } from '../auth/totp.js';
+import { generateTotpSecret, isTotpCode, otpauthUrl, verifyTotp } from '../auth/totp.js';
 import { isLocale, type Locale } from '../i18n.js';
 import type { RequestMeta } from '../http/meta.js';
 import {
@@ -40,7 +40,7 @@ function localeOf(user: User): Locale {
 export async function checkSecondFactor(user: User, input: string): Promise<boolean> {
   if (!user.totpEnabledAt || !user.totpSecretEnc) return true;
   const code = input.trim();
-  if (/^\d{6}$/.test(code)) {
+  if (isTotpCode(code)) {
     const step = verifyTotp(
       decryptSecret(user.totpSecretEnc, config().ENC_KEY),
       code,

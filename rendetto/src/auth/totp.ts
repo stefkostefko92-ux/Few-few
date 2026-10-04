@@ -4,6 +4,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 export const TOTP_STEP_SECONDS = 30;
 export const TOTP_DIGITS = 6;
+const CODE_RE = new RegExp(`^\\d{${TOTP_DIGITS}}$`);
 
 export function base32Encode(bytes: Buffer): string {
   let bits = 0;
@@ -62,6 +63,11 @@ export function totpCode(secretBase32: string, timeSeconds: number): string {
   return totpCodeAt(secretBase32, totpStep(timeSeconds));
 }
 
+/** Код от приложението (TOTP_DIGITS цифри, интервалите не се броят), а не резервен код. */
+export function isTotpCode(code: string): boolean {
+  return CODE_RE.test(code.replace(/\s+/g, ''));
+}
+
 /**
  * Връща приетата стъпка или null. Стъпка, по-малка или равна на последно приетата, се отхвърля —
  * така прихванат код не може да се ползва втори път в същия прозорец.
@@ -73,7 +79,7 @@ export function verifyTotp(
   nowSeconds: number = Math.floor(Date.now() / 1000),
 ): number | null {
   const given = code.replace(/\s+/g, '');
-  if (!/^\d{6}$/.test(given)) return null;
+  if (!CODE_RE.test(given)) return null;
   const current = totpStep(nowSeconds);
   for (const drift of [-1, 0, 1]) {
     const step = current + drift;

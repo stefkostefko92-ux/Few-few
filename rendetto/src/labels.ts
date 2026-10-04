@@ -19,14 +19,11 @@ export function customerLabel(userId: string): string {
   return `@customer:${userId}`;
 }
 
+/** Знакът (без „@“) → ключът на превода: `@trial-started` → `label.trialStarted`. Изведено от LABEL. */
 const KEYS: Readonly<Record<string, string>> = {
-  system: 'label.system',
-  superseded: 'label.superseded',
-  'cancelled-by-customer': 'label.cancelledByCustomer',
-  signup: 'label.signup',
-  'trial-started': 'label.trialStarted',
-  withdrawal: 'label.withdrawal',
-  'created-by-staff': 'label.createdByStaff',
+  ...Object.fromEntries(
+    Object.entries(LABEL).map(([name, token]) => [token.slice(1), `label.${name}`]),
+  ),
   customer: 'label.customer',
 };
 

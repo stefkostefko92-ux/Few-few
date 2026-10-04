@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { translatorFor } from '../src/i18n.js';
+import { LOCALES, translatorFor } from '../src/i18n.js';
 import { customerLabel, displayLabel, LABEL } from '../src/labels.js';
 
 test('history labels are stored as tokens and shown in the language of the page', () => {
@@ -14,6 +14,19 @@ test('history labels are stored as tokens and shown in the language of the page'
   );
   assert.equal(displayLabel(LABEL.withdrawal, translatorFor('bg')), 'отказ от договора');
   assert.equal(displayLabel(LABEL.createdByStaff, translatorFor('en')), 'created by the team');
+});
+
+test('every label the system writes has a translation in every language', () => {
+  for (const locale of LOCALES) {
+    const t = translatorFor(locale);
+    for (const token of Object.values(LABEL)) {
+      const shown = displayLabel(token, t);
+      assert.ok(
+        shown && !shown.startsWith('@') && !shown.startsWith('label.'),
+        `${locale} ${token}`,
+      );
+    }
+  }
 });
 
 test('a person’s name and unknown tokens stay as written', () => {

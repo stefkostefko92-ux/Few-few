@@ -7,7 +7,7 @@ import { displayLabel } from '../labels.js';
 const DAY = 24 * 60 * 60 * 1000;
 
 /** Форматиране за шаблоните, наточено за езика на заявката. Всичко е за показ — сметките са другаде. */
-export function viewHelpers(locale: Locale) {
+function buildViewHelpers(locale: Locale) {
   const tag = LOCALE_TAG[locale];
   const dateFmt = new Intl.DateTimeFormat(tag, {
     day: 'numeric',
@@ -56,4 +56,16 @@ export function viewHelpers(locale: Locale) {
   };
 }
 
-export type ViewHelpers = ReturnType<typeof viewHelpers>;
+export type ViewHelpers = ReturnType<typeof buildViewHelpers>;
+
+const cache = new Map<Locale, ViewHelpers>();
+
+/** Зависят само от езика (`relative` чете часа при всяко извикване) — един комплект на език. */
+export function viewHelpers(locale: Locale): ViewHelpers {
+  let helpers = cache.get(locale);
+  if (!helpers) {
+    helpers = buildViewHelpers(locale);
+    cache.set(locale, helpers);
+  }
+  return helpers;
+}

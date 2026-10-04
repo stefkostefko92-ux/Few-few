@@ -1,11 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
 import { config } from '../config.js';
-import { safeEqual } from '../crypto.js';
+import { randomToken, safeEqual } from '../crypto.js';
 import { setFlash } from '../http/flash.js';
 import { can, isStaff, type Capability } from './rbac.js';
 import type { Principal } from '../types.js';
 
-const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+/** Методите, които не променят нищо: без CSRF проверка и извън тавана на записите. */
+export const SAFE_METHODS: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 export function wantsJson(req: Request): boolean {
   return req.path.includes('/api/') || req.get('accept')?.includes('application/json') === true;
@@ -83,6 +84,18 @@ export function requireStaff(capability: Capability) {
 }
 
 /**
+ * Заявката е от нашия адрес: Origin, ако браузърът го е пратил; иначе (с `referer`) и Referer. Без
+ * двата — да: тогава пазят токенът и SameSite.
+ */
+function fromOurOrigin(req: Request, referer: boolean): boolean {
+  const expected = new URL(config().PUBLIC_BASE_URL).origin;
+  const origin = req.get('origin');
+  if (origin) return origin === expected;
+  const from = referer ? req.get('referer') : undefined;
+  return from ? from.startsWith(`${expected}/`) : true;
+}
+
+/**
  * CSRF: synchronizer token, обвързан със сесията (скрито поле `_csrf` или `x-csrf-token`), плюс
  * проверка на Origin/Referer спрямо нашия адрес. Бисквитката на сесията е и SameSite=Strict.
  */
@@ -91,14 +104,7 @@ export function requireCsrf(req: Request, res: Response, next: NextFunction): vo
     next();
     return;
   }
-  const expectedOrigin = new URL(config().PUBLIC_BASE_URL).origin;
-  const origin = req.get('origin');
-  const referer = req.get('referer');
-  const sameOrigin = origin
-    ? origin === expectedOrigin
-    : referer
-      ? referer.startsWith(`${expectedOrigin}/`)
-      : true;
+  const sameOrigin = fromOurOrigin(req, true);
   const body = req.body as Record<string, unknown> | undefined;
   const sent =
     (typeof body?._csrf === 'string' ? body._csrf : null) ?? req.get('x-csrf-token') ?? '';
@@ -112,15 +118,23 @@ export function requireCsrf(req: Request, res: Response, next: NextFunction): vo
 
 /** CSRF за формите ПРЕДИ вход (вход, регистрация): двойна бисквитка + проверка на Origin. */
 export const PRE_CSRF_COOKIE = 'rd_pre';
+
+/** Токенът на бисквитката преди вход: 24 случайни байта = 32 знака base64url. */
+export function newPreCsrfToken(): string {
+  return randomToken(24);
+}
+
+export function isPreCsrfToken(value: string): boolean {
+  return /^[A-Za-z0-9_-]{32}$/.test(value);
+}
+
 export function requirePreAuthCsrf(req: Request, res: Response, next: NextFunction): void {
-  const expectedOrigin = new URL(config().PUBLIC_BASE_URL).origin;
-  const origin = req.get('origin');
   const cookie = ((req.cookies ?? {}) as Record<string, string | undefined>)[PRE_CSRF_COOKIE] ?? '';
   const sent = (req.body as Record<string, unknown> | undefined)?._csrf;
   const ok =
-    (!origin || origin === expectedOrigin) &&
+    fromOurOrigin(req, false) &&
     typeof sent === 'string' &&
-    cookie.length >= 20 &&
+    isPreCsrfToken(cookie) &&
     safeEqual(sent, cookie);
   if (!ok) {
     deny(req, res, 403, 'error.csrf');

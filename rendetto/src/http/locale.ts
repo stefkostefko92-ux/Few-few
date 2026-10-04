@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { isProduction } from '../config.js';
 import { prisma } from '../db.js';
-import { DEFAULT_LOCALE, isLocale, localeFromHeader, translatorFor, type Locale } from '../i18n.js';
+import { isLocale, localeFromHeader, translatorFor, type Locale } from '../i18n.js';
 import { viewHelpers } from './view.js';
 
 export const LOCALE_COOKIE = 'rd_lang';
@@ -57,5 +57,3 @@ export function localeSwitchUrl(req: Request, locale: Locale): string {
   url.searchParams.set('lang', locale);
   return `${url.pathname}${url.search}`;
 }
-
-export { DEFAULT_LOCALE };

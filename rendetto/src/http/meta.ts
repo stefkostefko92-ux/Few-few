@@ -1,5 +1,6 @@
 import type { Request } from 'express';
-import { countryOf, normalizeIp } from '../auth/geoip.js';
+import { countryOf } from '../auth/geoip.js';
+import { normalizeIp } from './ip.js';
 
 export interface RequestMeta {
   ip: string | null;
@@ -21,7 +22,7 @@ export function requestMeta(req: Request): RequestMeta {
 export function safeNext(value: unknown, fallback = '/app'): string {
   if (typeof value !== 'string' || value.length > 300) return fallback;
   if (!/^\/(app|account|admin)(\/|\?|$)/.test(value)) return fallback;
-  if (value.startsWith('//') || value.includes('\\') || /[\r\n]/.test(value)) return fallback;
+  if (value.includes('\\') || /[\r\n]/.test(value)) return fallback;
   return value;
 }
 

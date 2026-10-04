@@ -1,14 +1,22 @@
 import { isIP } from 'node:net';
 
+/** Адресът на клиента: IPv4, записан като IPv6 (`::ffff:1.2.3.4`), става IPv4; невалиден — null. */
+export function normalizeIp(ip: string | null | undefined): string | null {
+  if (!ip) return null;
+  const trimmed = ip.trim();
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(trimmed);
+  const value = mapped ? mapped[1]! : trimmed;
+  return isIP(value) ? value : null;
+}
+
 /**
  * Мрежата на адреса — ключът за таваните на заявки и за броене на неуспешни опити. IPv4 (и IPv4,
  * записан като IPv6) остава както е. IPv6 става своята /64: един абонат обикновено държи цялата /64 и
  * би заобиколил таван по адрес просто като сменя последните 64 бита.
  */
-export function ipNetwork(ip: string | null | undefined): string | null {
+export function ipNetwork(raw: string | null | undefined): string | null {
+  const ip = normalizeIp(raw);
   if (!ip) return null;
-  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(ip);
-  if (mapped?.[1] && isIP(mapped[1]) === 4) return mapped[1];
   const kind = isIP(ip);
   if (kind === 4) return ip;
   if (kind !== 6) return null;

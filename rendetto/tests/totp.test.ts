@@ -4,6 +4,7 @@ import {
   base32Decode,
   base32Encode,
   generateTotpSecret,
+  isTotpCode,
   otpauthUrl,
   totpCode,
   totpStep,
@@ -40,6 +41,14 @@ test('one step of clock drift is accepted, two are not', () => {
   assert.equal(verifyTotp(SECRET, totpCode(SECRET, t - 60), null, t), null);
   assert.equal(verifyTotp(SECRET, 'abcdef', null, t), null);
   assert.equal(verifyTotp(SECRET, '12345', null, t), null);
+  assert.equal(verifyTotp(SECRET, totpCode(SECRET, t).replace(/^(\d{3})/, '$1 '), null, t), step);
+});
+
+test('an app code is told apart from a recovery code by its digits', () => {
+  assert.equal(isTotpCode('123456'), true);
+  assert.equal(isTotpCode(' 123 456 '), true);
+  assert.equal(isTotpCode('12345'), false);
+  assert.equal(isTotpCode('abcde-fghjk'), false);
 });
 
 test('a used code cannot be replayed', () => {

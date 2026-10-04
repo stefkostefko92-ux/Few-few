@@ -57,16 +57,15 @@ export function outranks(actor: Role, target: Role): boolean {
   return ROLE_LEVEL[actor] > ROLE_LEVEL[target];
 }
 
-/** Ролите, които `actor` може да раздава — само под своята. */
-export function assignableRoles(actor: Role): Role[] {
-  return (Object.keys(ROLE_LEVEL) as Role[])
-    .filter((role) => outranks(actor, role))
-    .sort((a, b) => ROLE_LEVEL[b] - ROLE_LEVEL[a]);
-}
-
-export const ALL_ROLES: Role[] = (Object.keys(ROLE_LEVEL) as Role[]).sort(
+/** Всички роли, от най-високата надолу. */
+export const ALL_ROLES: readonly Role[] = (Object.keys(ROLE_LEVEL) as Role[]).sort(
   (a, b) => ROLE_LEVEL[b] - ROLE_LEVEL[a],
 );
+
+/** Ролите, които `actor` може да раздава — само под своята. */
+export function assignableRoles(actor: Role): Role[] {
+  return ALL_ROLES.filter((role) => outranks(actor, role));
+}
 
 export function isRole(value: unknown): value is Role {
   // Object.hasOwn: `in` би приело и наследени имена като „toString“.

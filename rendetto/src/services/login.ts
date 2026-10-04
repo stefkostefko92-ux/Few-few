@@ -7,7 +7,7 @@ import { fingerprintHash } from '../auth/device.js';
 import { dummyHash, hashPassword, needsRehash, verifyPassword } from '../auth/password.js';
 import { consumeRecoveryCode } from '../auth/recovery.js';
 import { createSession, markMfaPassed, type NewSession } from '../auth/sessions.js';
-import { verifyTotp } from '../auth/totp.js';
+import { isTotpCode, verifyTotp } from '../auth/totp.js';
 import { ipNetwork } from '../http/ip.js';
 import type { RequestMeta } from '../http/meta.js';
 import { claimTotpStep, customerActor, emailSchema, recordLogin } from './auth-common.js';
@@ -175,7 +175,7 @@ export async function completeMfa(
   const code = input.trim();
   let recovery = false;
   let step: number | null = null;
-  if (/^\d{6}$/.test(code.replace(/\s+/g, ''))) {
+  if (isTotpCode(code)) {
     step = verifyTotp(decryptSecret(user.totpSecretEnc, config().ENC_KEY), code, user.totpLastStep);
   } else if (await consumeRecoveryCode(user.id, code)) {
     recovery = true;

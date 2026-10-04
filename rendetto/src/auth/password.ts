@@ -47,7 +47,7 @@ export function passwordProblem(
   if (password.length < PASSWORD_MIN_LENGTH) return 'tooShort';
   if (password.length > PASSWORD_MAX_LENGTH) return 'tooLong';
   const lower = password.toLowerCase();
-  if (/^(.)\1+$/.test(password) || new Set(password).size < 4) return 'repetitive';
+  if (new Set(password).size < 4) return 'repetitive';
   const squashed = lower.replace(/[^a-zа-я0-9]/g, '');
   // Обща дума, която е половината от паролата или повече („password2026“, „qwerty123456“).
   if (COMMON.some((word) => squashed.includes(word) && word.length * 2 >= squashed.length)) {
