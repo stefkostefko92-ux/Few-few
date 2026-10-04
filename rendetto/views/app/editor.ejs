@@ -122,7 +122,7 @@
       <section id="panel-bom" role="tabpanel" aria-labelledby="tab-bom" hidden>
         <div class="stats" id="bom-summary"></div>
         <div class="row"><h2><%= te('editor.parts') %></h2><div class="acts"><button type="button" class="btn btn-small" id="copy-cut"><%= te('editor.copyCut') %></button><button type="button" class="btn btn-small" id="copy-hw"><%= te('editor.copyHw') %></button></div></div>
-        <div class="tablewrap">
+        <div class="tablewrap" tabindex="0" role="region" aria-label="<%= te('editor.parts') %>">
           <table id="bom-parts"><thead><tr><th>№</th><th><%= te('editor.col.part') %></th><th><%= te('editor.col.finished') %></th><th><%= te('editor.col.cut') %></th><th><%= te('editor.col.material') %></th><th><%= te('editor.col.bandL') %></th><th><%= te('editor.col.bandW') %></th><th><%= te('editor.col.grain') %></th><th><%= te('editor.col.holes') %></th><th><%= te('editor.col.edgeHoles') %></th></tr></thead><tbody></tbody></table>
         </div>
         <div class="cols">
@@ -141,7 +141,7 @@
           <p class="hint" id="drill-axes"></p>
           <div class="paperwrap" id="drill-map"></div>
         </div>
-        <div class="tablewrap"><table id="drill-table"><thead><tr><th>№</th><th><%= te('editor.col.letter') %></th><th>X (u)</th><th>Y (v)</th><th>Ø</th><th><%= te('editor.col.depth') %></th><th><%= te('editor.col.purpose') %></th><th><%= te('editor.col.hardware') %></th></tr></thead><tbody></tbody></table></div>
+        <div class="tablewrap" tabindex="0" role="region" aria-label="<%= te('editor.col.holes') %>"><table id="drill-table"><thead><tr><th>№</th><th><%= te('editor.col.letter') %></th><th>X (u)</th><th>Y (v)</th><th>Ø</th><th><%= te('editor.col.depth') %></th><th><%= te('editor.col.purpose') %></th><th><%= te('editor.col.hardware') %></th></tr></thead><tbody></tbody></table></div>
         <p class="note"><%= te('editor.drillNote') %></p>
       </section>
 
@@ -185,7 +185,7 @@
           <input type="search" id="cat-q" placeholder="<%= te('editor.catSearch') %>" aria-label="<%= te('editor.catSearch') %>">
           <div class="row"><p class="hint" id="cat-meta"></p><div class="acts"><button type="button" class="btn btn-small" id="cat-csv"><%= te('editor.copyCsv') %></button><button type="button" class="btn btn-small" id="cat-json"><%= te('editor.copyJson') %></button></div></div>
         </div>
-        <div class="tablewrap"><table id="cat-table"><thead></thead><tbody></tbody></table></div>
+        <div class="tablewrap" tabindex="0" role="region" aria-label="<%= te('editor.tab.catalog') %>"><table id="cat-table"><thead></thead><tbody></tbody></table></div>
         <button type="button" class="btn btn-small more" id="cat-more" hidden><%= te('editor.showMore') %></button>
         <p class="note"><%= te('editor.catNote') %></p>
       </section>

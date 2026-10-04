@@ -48,7 +48,9 @@ dialog.picker::backdrop {
   flex-wrap: wrap;
   gap: 6px;
 }
-.editor .chip {
+/* the filter chips of the catalog tab and of the picker dialog (outside main.editor); the plan chip in the header
+   keeps its own look */
+:is(.editor, .picker) .chip {
   font: 500 12px var(--f-ui);
   color: var(--ink);
   background: var(--surface-2);
@@ -57,15 +59,15 @@ dialog.picker::backdrop {
   padding: 4px 10px;
   cursor: pointer;
 }
-.editor .chip small {
+:is(.editor, .picker) .chip small {
   color: var(--ink-2);
 }
-.editor .chip[aria-pressed='true'] {
+:is(.editor, .picker) .chip[aria-pressed='true'] {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
 }
-.editor .chip[aria-pressed='true'] small {
+:is(.editor, .picker) .chip[aria-pressed='true'] small {
   color: inherit;
   opacity: 0.8;
 }

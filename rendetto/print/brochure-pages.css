@@ -76,7 +76,7 @@
   padding: 2mm;
   border: 0.3mm solid var(--rule-strong);
   border-radius: 2mm;
-  background: #fbfcf9;
+  background: var(--drawing-paper);
 }
 .b-sheet svg {
   display: block;

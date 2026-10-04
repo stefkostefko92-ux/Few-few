@@ -69,6 +69,8 @@
   --gold-soft: #f4ead2;
   --oak: #c2a588;
   --mdf: #c9a97c;
+  /* the paper of a drawing (PAPER in engine/drawing-kit.js); always light, so the dark theme keeps it */
+  --drawing-paper: #fbfcf9;
   --red: #a8261b;
   --red-soft: #f6e1dd;
   --amber: #8a5a00;

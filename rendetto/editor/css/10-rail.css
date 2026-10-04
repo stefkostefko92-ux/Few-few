@@ -29,6 +29,10 @@
   display: grid;
   gap: 10px;
 }
+.group.group-flat {
+  border: 0;
+  padding: 0;
+}
 .group h3 {
   margin: 0;
   font: 600 11px/1 var(--f-ui);
@@ -90,6 +94,7 @@
   grid-template-columns: minmax(0, 1fr) 80px;
   gap: 4px 10px;
   align-items: center;
+  margin: 0;
 }
 .rail .field label,
 .rail .lbl {
@@ -227,6 +232,5 @@ td .sw {
   margin: 0;
 }
 .note {
-  font-size: 13px;
   max-width: 80ch;
 }

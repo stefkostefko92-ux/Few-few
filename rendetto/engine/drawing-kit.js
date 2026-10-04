@@ -8,10 +8,13 @@ export const pickScale = (wMm, hMm, boxW, boxH) => SCALES.find((s) => wMm / s <=
 
 const INK = '#18200f';
 const DIM = '#2c6a10';
+// the paper; whatever frames a drawing on a page matches it (--drawing-paper in public/css/base.css and
+// print/brochure.css)
+export const PAPER = '#fbfcf9';
 export const STYLE = `svg.rdw{font-family:'Geologica','IBM Plex Sans',Inter,system-ui,sans-serif}
-svg.rdw .d-paper{fill:#fbfcf9}
+svg.rdw .d-paper{fill:${PAPER}}
 svg.rdw .d-frm,svg.rdw .d-tb rect,svg.rdw .d-tb line{fill:none;stroke:${INK};stroke-width:.5}
-svg.rdw .d-vis{fill:#fbfcf9;stroke:${INK};stroke-width:.35}
+svg.rdw .d-vis{fill:${PAPER};stroke:${INK};stroke-width:.35}
 svg.rdw .d-front{fill:#f3efe6;stroke:${INK};stroke-width:.5}
 svg.rdw .d-out{fill:none;stroke:${INK};stroke-width:.5}
 svg.rdw .d-hid{fill:none;stroke:${INK};stroke-width:.2;stroke-dasharray:2 1.2}

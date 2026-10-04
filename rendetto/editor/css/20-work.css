@@ -27,6 +27,10 @@
   color: var(--ink);
   border-bottom-color: var(--accent);
 }
+/* the tab list scrolls sideways and clips: the focus ring goes inside the tab */
+[role='tab']:focus-visible {
+  outline-offset: -2px;
+}
 /* phone: seven tabs wrap to a second row instead of hiding behind a sideways scroll */
 @media (max-width: 640px) {
   [role='tablist'] {

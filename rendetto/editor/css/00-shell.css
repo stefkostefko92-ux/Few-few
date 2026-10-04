@@ -90,7 +90,8 @@
   flex: 1 1 260px;
   min-width: 0;
 }
-.ed-name {
+/* .ed-title raises it above the global input[type='text'] (controls.css), which would draw a full field */
+.ed-title .ed-name {
   font: 650 1.25rem/1.2 var(--f-text);
   border: 1px solid transparent;
   background: transparent;
@@ -130,8 +131,12 @@
 .ed-notice {
   margin: 0;
 }
-.menu {
+/* the download list and the checks open under the whole header, right-aligned to it: anchored to their own
+   button, they ran off the left edge of a phone once the actions wrapped onto a second row. `start` keeps the
+   header as tall as its content, so a list never opens far below the buttons on a short page */
+.ed-top {
   position: relative;
+  align-self: start;
 }
 .menu > summary {
   list-style: none;
@@ -179,15 +184,8 @@
     grid-template-areas: 'rail work';
   }
 }
-.group-flat {
-  border: 0 !important;
-  padding: 0 !important;
-}
 .rail fieldset[disabled] {
   opacity: 0.72;
-}
-.dfm {
-  position: relative;
 }
 .dfm summary {
   list-style: none;

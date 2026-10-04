@@ -2,11 +2,13 @@
 // with no broken numbers, and carry the drawing metadata.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { registerFixtures } from './fixtures.mjs';
 import { buildModel } from '../../engine/model.js';
 import { TYPE_ORDER } from '../../engine/types.js';
 import { drawingAssembly } from '../../engine/drawing-assembly.js';
 import { drawingPart } from '../../engine/drawing-part.js';
+import { PAPER, STYLE } from '../../engine/drawing-kit.js';
 
 registerFixtures();
 const meta = { product: 'Rendetto', hash: 'a'.repeat(64), owner: 'Carbon Stealth VCC', date: '2026-10-02' };
@@ -39,3 +41,11 @@ for (const type of TYPE_ORDER) {
     }
   });
 }
+
+test('what frames a drawing on a page has the paper colour of the drawing', () => {
+  assert.ok(STYLE.includes(`.d-paper{fill:${PAPER}}`), 'the drawing paper comes from PAPER');
+  for (const file of ['public/css/base.css', 'print/brochure.css']) {
+    const css = readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8');
+    assert.match(css, new RegExp(`--drawing-paper: ${PAPER};`), `${file}: --drawing-paper is not ${PAPER}`);
+  }
+});

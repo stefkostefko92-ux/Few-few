@@ -163,6 +163,10 @@ svg.sheet {
   font: 400 12px/1.55 var(--f-mono);
   background: var(--surface-2);
 }
+/* the card clips and the code fills it edge to edge: the focus ring goes inside */
+.codecard pre:focus-visible {
+  outline-offset: -2px;
+}
 .layers {
   display: flex;
   flex-wrap: wrap;
@@ -186,7 +190,7 @@ svg.sheet {
   margin: 0;
 }
 .safety strong {
-  color: var(--gold);
+  color: var(--gold-ink);
 }
 .blocked {
   border-left: 3px solid var(--red);
@@ -213,7 +217,7 @@ svg.sheet {
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--r);
-  background: #fbfcf9;
+  background: var(--drawing-paper);
 }
 .paperwrap svg.rdw {
   display: block;
