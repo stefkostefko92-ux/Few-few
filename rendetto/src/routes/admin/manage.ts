@@ -15,7 +15,7 @@ import {
   withdrawalOutcomeOf,
 } from '../../plans/withdrawal.js';
 import { createAccount } from '../../services/admin-create.js';
-import { closeRequest } from '../../services/admin-security.js';
+import { rejectRequest } from '../../services/admin-plan.js';
 import { buildExport, contentDisposition } from '../../services/exports.js';
 import { finish, idParam, staffActor } from './common.js';
 
@@ -80,7 +80,7 @@ manageRouter.post(
   async (req, res) => {
     finish(
       res,
-      await closeRequest(staffActor(req), idParam(req), 'REJECTED'),
+      await rejectRequest(staffActor(req), idParam(req)),
       'flash.requestRejected',
       '/admin/requests',
     );

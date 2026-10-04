@@ -2,6 +2,7 @@ import type { Plan, User } from '@prisma/client';
 import { z } from 'zod';
 import { audit } from '../audit.js';
 import { prisma } from '../db.js';
+import { can } from '../auth/rbac.js';
 import { LOCALE_TAG, translate } from '../i18n.js';
 import { greetingName, mailPlanChanged } from '../mail/templates.js';
 import { sofiaEndOfDay } from '../plans/bg-calendar.js';
@@ -200,5 +201,38 @@ export async function changePlan(
       until: outcome.expiresAt ? fmt.format(outcome.expiresAt) : translate(locale, 'mail.noExpiry'),
     });
   }
+  return { ok: true };
+}
+
+/**
+ * Отхвърляне на поръчка. Като всяко действие върху акаунт: способност И по-висок ранг от човека, който
+ * е поръчал, и никога своята поръчка. Поръчка се затваря като изпълнена само от `changePlan`.
+ */
+export async function rejectRequest(actor: StaffActor, requestId: string): Promise<ActionResult> {
+  if (!can(actor.role, 'requests:handle')) return fail('error.noCapability');
+  const order = requestId
+    ? await prisma.upgradeRequest.findUnique({
+        where: { id: requestId },
+        select: { userId: true },
+      })
+    : null;
+  if (!order) return fail('admin.errors.notFound');
+  const target = await targetFor(actor, order.userId, 'requests:handle');
+  if (isResult(target)) return target;
+  const result = await prisma.upgradeRequest.updateMany({
+    where: { id: requestId, status: 'OPEN' },
+    data: {
+      status: 'REJECTED',
+      handledById: actor.id,
+      handledByLabel: actor.label,
+      handledAt: new Date(),
+    },
+  });
+  if (result.count !== 1) return fail('admin.errors.notFound');
+  await audit(actor, {
+    action: 'admin.request.rejected',
+    targetType: 'request',
+    targetId: requestId,
+  });
   return { ok: true };
 }

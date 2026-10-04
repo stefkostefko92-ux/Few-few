@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { audit } from '../audit.js';
 import { sha256Hex } from '../crypto.js';
 import { prisma } from '../db.js';
-import { can } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { issueEmailToken } from '../auth/tokens.js';
 import { greetingName, mailResetPassword, mailTwoFactor } from '../mail/templates.js';
@@ -29,20 +28,27 @@ export async function banAccount(
   if (isResult(target)) return target;
   const parsed = banSchema.safeParse(raw);
   if (!parsed.success) return fail('admin.errors.banReason');
-  if (target.bannedAt) return fail('admin.errors.alreadyBanned');
   const now = new Date();
-  await prisma.$transaction([
-    prisma.user.update({ where: { id }, data: { bannedAt: now, banReason: parsed.data.reason } }),
-    prisma.accountBan.create({
+  const banned = await prisma.$transaction(async (tx) => {
+    // Условието „още няма бан“ е в самия запис, не в реда, прочетен преди транзакцията: два
+    // паралелни бана (двоен клик) не пишат два активни бана и два реда в одита.
+    const claimed = await tx.user.updateMany({
+      where: { id, bannedAt: null },
+      data: { bannedAt: now, banReason: parsed.data.reason },
+    });
+    if (claimed.count !== 1) return false;
+    await tx.accountBan.create({
       data: {
         userId: id,
         reason: parsed.data.reason,
         bannedById: actor.id,
         bannedByLabel: actor.label,
       },
-    }),
-    prisma.session.deleteMany({ where: { userId: id } }),
-  ]);
+    });
+    await tx.session.deleteMany({ where: { userId: id } });
+    return true;
+  });
+  if (!banned) return fail('admin.errors.alreadyBanned');
   await audit(actor, {
     action: 'admin.account.banned',
     targetType: 'user',
@@ -144,27 +150,6 @@ export async function deleteAccount(
     targetType: 'user',
     targetId: id,
     detail: { emailSha256: sha256Hex(target.email) },
-  });
-  return { ok: true };
-}
-
-/* ------------------------------- заявки за план ------------------------------- */
-
-export async function closeRequest(
-  actor: StaffActor,
-  requestId: string,
-  status: 'DONE' | 'REJECTED',
-): Promise<ActionResult> {
-  if (!can(actor.role, 'requests:handle')) return fail('error.noCapability');
-  const result = await prisma.upgradeRequest.updateMany({
-    where: { id: requestId, status: 'OPEN' },
-    data: { status, handledById: actor.id, handledByLabel: actor.label, handledAt: new Date() },
-  });
-  if (result.count !== 1) return fail('admin.errors.notFound');
-  await audit(actor, {
-    action: `admin.request.${status.toLowerCase()}`,
-    targetType: 'request',
-    targetId: requestId,
   });
   return { ok: true };
 }
