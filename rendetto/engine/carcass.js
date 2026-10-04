@@ -1,10 +1,11 @@
 // Carcass furniture: sides, bottom, top (between / over / rails), partitions, a back per column, plinth or legs,
 // then the column interiors in two passes — fronts first (slide pilots, hinge plates), then the 32 mm system holes
-// that avoid them and the shelves that sit on those holes.
+// that avoid them and the shelves that sit on those holes — and last the confirmats into the edges of the panels the
+// interiors drilled, placed clear of every hole there.
 import { panel, groove, holeThrough } from './panel.js';
 import { r1, clamp } from './util.js';
 import { hasGrain, frontStock, STOCK } from './materials.js';
-import { GROOVE, HDF_T, SYSTEM, confirmat, confirmatZs, addHoleOnce, hasHole, clashes, systemRows } from './joinery.js';
+import { GROOVE, HDF_T, SYSTEM, confirmat, confirmatZs, addHoleOnce, hasHole, clashes, boreClear, systemRows } from './joinery.js';
 import { buildDoors } from './fronts.js';
 import { buildDrawers } from './drawers.js';
 
@@ -82,12 +83,6 @@ export function buildCarcass(ctx, o) {
     confirmat(ctx, sideL, h.part, '-x', h.zs.map((z) => [x0 + T, h.y, z]));
     confirmat(ctx, sideR, h.part, '+x', h.zs.map((z) => [x0 + W - T, h.y, z]));
   }
-  if (top === 'over') {
-    // the top sits on the sides: confirmat through the top into the side ends
-    const zs = confirmatZs(z0 + 50, zEnd - 50);
-    confirmat(ctx, topPart, sideL, '+y', zs.map((z) => [x0 + T / 2, c + Hc - T, z]));
-    confirmat(ctx, topPart, sideR, '+y', zs.map((z) => [x0 + W - T / 2, c + Hc - T, z]));
-  }
 
   // columns and partitions
   const cols = o.columns?.length ? o.columns : [{}];
@@ -114,13 +109,6 @@ export function buildCarcass(ctx, o) {
   out.columns.forEach((col, i) => {
     if (!col.left) col.left = partitions[i - 1];
   });
-  for (const p of partitions) {
-    const pc = p.box.min[0] + T / 2;
-    const zs = confirmatZs(Math.max(backFront + 30, z0 + 50), zEnd - 50);
-    confirmat(ctx, bottom, p, '-y', zs.map((z) => [pc, c + T, z]));
-    if (topPart) confirmat(ctx, topPart, p, '+y', zs.map((z) => [pc, c + Hc - T, z]));
-    else for (const r of rails) confirmat(ctx, r, p, '+y', [[pc, c + Hc - T, (r.box.min[2] + r.box.max[2]) / 2]]);
-  }
 
   buildBacks(ctx, { x0, W, T, c, Hc, z0, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm });
   buildPlinth(ctx, { ...o, plinth }, { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm });
@@ -165,7 +153,32 @@ export function buildCarcass(ctx, o) {
       ctx.hw('railHolders', { name: 'Държач за лост', qty: 2, unit: 'бр.', group: 'Обков' });
     }
   }
+  joinEdges(ctx, { x0, W, T, c, Hc, z0, zEnd, backFront, top, topPart, rails, sideL, sideR, bottom, partitions });
   return out;
+}
+
+// Confirmats into the edges of the panels the interiors drill (the sides under a top that sits on them, the
+// partitions), made last: each one moves off the slide, hinge plate and system holes already there, so the bore
+// running 50 mm into the panel keeps MIN_WEB to them. Rails take one confirmat in their middle, which has nowhere to go.
+function joinEdges(ctx, a) {
+  const { x0, W, T, c, Hc, z0, zEnd, backFront, top, topPart, rails, sideL, sideR, bottom, partitions } = a;
+  const yTop = c + Hc - T;
+  const joint = (face, end, dir, x, y, zStart) => {
+    const zs = confirmatZs(zStart, zEnd - 50, (z) => boreClear(end, dir, [x, y, z]));
+    confirmat(ctx, face, end, dir, zs.map((z) => [x, y, z]));
+  };
+  if (top === 'over') {
+    // the top sits on the sides: confirmat through the top into the side ends
+    joint(topPart, sideL, '+y', x0 + T / 2, yTop, z0 + 50);
+    joint(topPart, sideR, '+y', x0 + W - T / 2, yTop, z0 + 50);
+  }
+  for (const p of partitions) {
+    const pc = p.box.min[0] + T / 2;
+    const zStart = Math.max(backFront + 30, z0 + 50);
+    joint(bottom, p, '-y', pc, c + T, zStart);
+    if (topPart) joint(topPart, p, '+y', pc, yTop, zStart);
+    else for (const r of rails) confirmat(ctx, r, p, '+y', [[pc, yTop, (r.box.min[2] + r.box.max[2]) / 2]]);
+  }
 }
 
 function placeShelves(ctx, a) {

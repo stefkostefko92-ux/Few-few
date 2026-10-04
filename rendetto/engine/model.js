@@ -1,12 +1,12 @@
 // Model: normalized spec → parts, hardware, movable groups and symbols, then the checks that need the whole model
-// (shelf sag, sheet fit, small parts, hole clashes, confirmat caps, horizontal holes).
+// (shelf sag, sheet fit, small parts, holes against each other, grooves and edge bores, confirmat caps, horizontal holes).
 import { createCtx, cutSize } from './panel.js';
 import { TYPES, BUILDERS, normalizeParams } from './types.js';
 import { STOCK, hasDecor, hasRal, decorName } from './materials.js';
 import { hingeList, handleList, slideList, bedFittingList } from './hardware.js';
 import { clamp, plural, dimTxt } from './util.js';
-import { purposeOf } from './drill.js';
-import { MIN_WEB } from './joinery.js';
+import { purposeOf, edgePurposeOf } from './drill.js';
+import { MIN_WEB, toSegment, edgeBores, boreWeb } from './joinery.js';
 
 const SPEC_VERSION = 2;
 export const SHEET_TRIM = 10; // sheet edge trim for nesting, mm
@@ -179,18 +179,10 @@ function checkModel(ctx, spec) {
   for (const [decor, qty] of caps) ctx.hw(`caps:${decor}`, { name: `Капачка за конфирмат, ${decorName(decor)}`, qty, unit: 'бр.', group: 'Крепежи' });
 }
 
-// Distance from a point to a groove's centre line (a segment along u or v).
-function toSegment(u, v, g) {
-  const du = g.u2 - g.u1;
-  const dv = g.v2 - g.v1;
-  const len2 = du * du + dv * dv;
-  const t = len2 ? clamp(((u - g.u1) * du + (v - g.v1) * dv) / len2, 0, 1) : 0;
-  return Math.hypot(u - (g.u1 + t * du), v - (g.v1 + t * dv));
-}
-
 function checkHoles(ctx, p, spec) {
   const holes = p.features.filter((f) => f.type === 'hole');
   const grooves = p.features.filter((f) => f.type === 'groove');
+  const bores = edgeBores(p);
   const cut = cutSize(p, spec.bandCompensation);
   for (const h of holes) {
     // the board itself: the edge band adds no material to drill into
@@ -200,6 +192,12 @@ function checkHoles(ctx, p, spec) {
     for (const g of grooves) {
       const web = toSegment(h.u, h.v, g) - (g.w + h.d) / 2;
       if (web < MIN_WEB) ctx.warn('warn', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ е на ${dimTxt(Math.max(0, web))} mm от канала — преместете отвора.`);
+    }
+    // a bore from the edge (the thread of a confirmat from the joining panel, a slide hook): the drill or the screw
+    // would break into it, so the part is not cut (fail closed)
+    for (const b of bores) {
+      const web = boreWeb(h, b);
+      if (web < MIN_WEB) ctx.warn('error', `${p.name}: отвор Ø${dimTxt(h.d)} „${purposeOf(h.kind)}“ при u ${dimTxt(h.u)}, v ${dimTxt(h.v)} е на ${dimTxt(Math.max(0, web))} mm от хоризонталния отвор Ø${dimTxt(b.d)} „${edgePurposeOf(b.kind)}“ в челото — преместете единия.`);
     }
   }
   for (let i = 0; i < holes.length; i++) {

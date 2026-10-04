@@ -1,6 +1,7 @@
 // Construction rules kept in one place and checked on the built model: the sizes shown for a project, the front
-// material, stacked carcasses screwed clear of the confirmat bores, legs, doors too narrow for their hinge cup, the
-// advice on a top that outgrows the sheet, and the one HTML escaper shared by the drawings and the editor.
+// material, stacked carcasses screwed clear of the confirmat bores, confirmat bores clear of the holes in the panel
+// they go into, legs, doors too narrow for their hinge cup, the advice on a top that outgrows the sheet, and the one
+// HTML escaper shared by the drawings and the editor.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerCatalog, baseCatalogData } from '../../engine/catalog.js';
@@ -76,6 +77,48 @@ test('stacked carcasses: the screws and their pilots stay clear of the confirmat
       }
     }
   }
+});
+
+// Before the fix each of these drilled a slide pilot or a system hole less than MIN_WEB from a confirmat bore that runs
+// into the partition from the bottom or the top panel (the first: the slide pilot at u 28,3, v 192 on „Делител 2“
+// and the bore at v 197,7, 1,7 mm apart). Partition holes go through, so the plan distance is the whole story.
+const BORE_CASES = [
+  { type: 'wardrobe', slide: 'base:gtv_h45' },
+  { type: 'wardrobe', slide: 'base:blum_tandem_560h', depth: 450 },
+  { type: 'wardrobe', slide: 'base:gtv_h45', width: 3000, columns: 5, depth: 650 },
+  { type: 'chest', slide: 'base:gtv_h45', depth: 520, columns: 2 },
+  { type: 'chest', slide: 'base:blum_tandem_560h', columns: 2 },
+  { type: 'bookcase', slide: 'base:gtv_h45', depth: 285 },
+  { type: 'tv', slide: 'base:blum_tandem_560h', depth: 445 },
+  { type: 'tv', slide: 'base:blum_tandem_560h', depth: 450 },
+  { type: 'wallunit', slide: 'base:blum_tandem_560h', depth: 425 },
+  { type: 'wallunit', slide: 'base:gtv_h45', depth: 450 },
+  { type: 'nightstand', slide: 'base:gtv_h45', drawers: 3 },
+];
+
+test('confirmat bores keep MIN_WEB from the slide, hinge plate and system holes of the panel they go into', () => {
+  const wardrobe = buildModel(BORE_CASES[0]).parts.find((p) => p.name === 'Делител 2');
+  assert.ok(wardrobe.features.some((f) => f.kind === 'slide' && f.u === 28.3 && f.v === 192), 'the slide pilot moved: update the case');
+  for (const spec of BORE_CASES) {
+    const m = buildModel(spec);
+    const label = JSON.stringify(spec);
+    let checked = 0;
+    for (const p of m.parts) {
+      const bs = bores(p);
+      for (const f of p.features.filter((x) => x.type === 'hole')) {
+        for (const b of bs) {
+          const web = toSegment(f.u, f.v, b) - (f.d + b.d) / 2;
+          assert.ok(web >= MIN_WEB, `${label} ${p.name}: ${f.kind} Ø${f.d} at ${f.u},${f.v} is ${web.toFixed(1)} mm from a bore`);
+          checked += 1;
+        }
+      }
+    }
+    assert.ok(checked > 0, `${label}: nothing to check`);
+    assert.ok(!m.warnings.some((w) => w.text.includes('хоризонталния отвор')), `${label}: ${m.warnings.map((w) => w.text).join(' | ')}`);
+  }
+  // the system holes stay where the shelves need them: the bore moves, not the hole
+  const shelfHoles = (m) => m.parts.reduce((a, p) => a + p.features.filter((f) => f.kind === 'system').length, 0);
+  assert.equal(shelfHoles(buildModel({ type: 'bookcase', depth: 285 })), 284);
 });
 
 test('legs under 40 mm are not made: no 5 mm adjustable leg in the hardware list', () => {
