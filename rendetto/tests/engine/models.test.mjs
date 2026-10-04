@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerFixtures } from './fixtures.mjs';
-import { checkModel } from './check.mjs';
+import { checkModel, paramVariants } from './check.mjs';
 import { buildModel, normalizeSpec, withType } from '../../engine/model.js';
 import { TYPE_ORDER, TYPES } from '../../engine/types.js';
 import { handleHoles, registerHandles } from '../../engine/hardware.js';
@@ -12,21 +12,9 @@ import { decor, decorList, decorName, isBaseDecor } from '../../engine/materials
 
 registerFixtures();
 
-function casesFor(type) {
-  const cases = [[`${type} defaults`, { type }]];
-  for (const p of TYPES[type].params) {
-    if (p.type === 'range') {
-      cases.push([`${type} ${p.key}=min`, { type, [p.key]: p.min }], [`${type} ${p.key}=max`, { type, [p.key]: p.max }]);
-    } else {
-      for (const [v] of p.options) cases.push([`${type} ${p.key}=${v}`, { type, [p.key]: v }]);
-    }
-  }
-  return cases;
-}
-
 for (const type of TYPE_ORDER) {
   test(`${type}: defaults and parameter extremes build valid models`, () => {
-    for (const [label, spec] of casesFor(type)) {
+    for (const [label, spec] of paramVariants(type)) {
       const model = buildModel(spec);
       const errors = checkModel(model, label);
       if (label.endsWith('defaults')) assert.equal(errors.length, 0, `${label}: ${errors.map((e) => e.text).join(' | ')}`);

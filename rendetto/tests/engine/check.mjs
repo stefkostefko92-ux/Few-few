@@ -1,5 +1,30 @@
-// Shared model checks: positive sizes, holes inside parts, no overlapping boards, hinge/handle counts, plate holes.
+// Shared model checks: positive sizes, holes inside parts, no overlapping boards, hinge/handle counts, plate holes;
+// and the parameter variants every engine test walks through.
 import assert from 'node:assert/strict';
+import { TYPES } from '../../engine/types.js';
+
+// A type at its defaults, at the min and max of every range and at every option of the others: [label, spec].
+export function paramVariants(type) {
+  const cases = [[`${type} defaults`, { type }]];
+  for (const p of TYPES[type].params) {
+    if (p.type === 'range') {
+      cases.push([`${type} ${p.key}=min`, { type, [p.key]: p.min }], [`${type} ${p.key}=max`, { type, [p.key]: p.max }]);
+    } else {
+      for (const [v] of p.options) cases.push([`${type} ${p.key}=${v}`, { type, [p.key]: v }]);
+    }
+  }
+  return cases;
+}
+
+// Every hinge plate screw has its own hole: no two plates share one (from either face of a partition).
+export function assertPlateHoles(m, label) {
+  for (const panelPart of m.parts.filter((p) => p.role === 'partition' || p.role === 'side')) {
+    const doors = m.parts.filter((d) => d.role === 'door' && d.hingePanel === panelPart.id && d.hingeYs);
+    const expected = doors.reduce((a, d) => a + d.hingeYs.length * d.plateHoles, 0);
+    const actual = panelPart.features.filter((f) => f.kind === 'plate').length;
+    assert.equal(actual, expected, `${label}: ${panelPart.name} has ${actual} plate holes, expected ${expected}`);
+  }
+}
 
 const IN_GROOVE = [
   ['back', new Set(['side', 'bottom', 'top'])],
@@ -50,13 +75,7 @@ export function checkModel(m, label) {
     assert.ok(n === 0 || n === 1 || n === 2, `${label}: ${f.name} has ${n} handle holes`);
   }
   for (const h of m.hardware) assert.ok(h.qty > 0, `${label}: hardware ${h.key} qty ${h.qty}`);
-  // every hinge plate screw has its own hole: no two plates share one (from either face of a partition)
-  for (const panelPart of parts.filter((p) => p.role === 'partition' || p.role === 'side')) {
-    const doors = parts.filter((d) => d.role === 'door' && d.hingePanel === panelPart.id && d.hingeYs);
-    const expected = doors.reduce((a, d) => a + d.hingeYs.length * d.plateHoles, 0);
-    const actual = panelPart.features.filter((f) => f.kind === 'plate').length;
-    assert.equal(actual, expected, `${label}: ${panelPart.name} has ${actual} plate holes, expected ${expected}`);
-  }
+  assertPlateHoles(m, label);
   // shelf pins sit in plain system holes on both sides
   for (const sh of parts.filter((p) => p.role === 'shelf')) assert.ok(Number.isFinite(sh.pinY), `${label}: ${sh.name} without pin height`);
   const errors = m.warnings.filter((w) => w.level === 'error');

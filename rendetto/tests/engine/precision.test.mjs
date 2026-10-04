@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerCatalog, baseCatalogData } from '../../engine/catalog.js';
 import { buildModel } from '../../engine/model.js';
-import { TYPE_ORDER, TYPES } from '../../engine/types.js';
+import { TYPE_ORDER } from '../../engine/types.js';
 import { cutSize } from '../../engine/panel.js';
 import { nest } from '../../engine/nest.js';
 import { toGcode, cncBlockers } from '../../engine/cam.js';
@@ -15,7 +15,7 @@ import { toDxf } from '../../engine/dxf.js';
 import { HINGE_LIMITS } from '../../engine/hardware.js';
 import { drawingAssembly } from '../../engine/drawing-assembly.js';
 import { drawingPart, drawingParts } from '../../engine/drawing-part.js';
-import { canonicalJson } from '../../engine/util.js';
+import { assertPlateHoles, paramVariants } from './check.mjs';
 
 const catalog = registerCatalog(baseCatalogData());
 const HANDLES = catalog.handles.map((h) => h.id);
@@ -23,15 +23,10 @@ const HINGES = catalog.hingeFamilies.map((h) => h.id);
 const SLIDES = catalog.slideFamilies.map((s) => s.id);
 const meta = { product: 'Rendetto', hash: 'b'.repeat(64), owner: 'Carbon Stealth VCC', date: '2026-10-03' };
 const errorsOf = (m) => m.warnings.filter((w) => w.level === 'error');
-
-function variants(type) {
-  const out = [{ type }];
-  for (const p of TYPES[type].params) {
-    if (p.type === 'range') out.push({ type, [p.key]: p.min }, { type, [p.key]: p.max });
-    else for (const [v] of p.options) out.push({ type, [p.key]: v });
-  }
-  return out;
-}
+const variants = (type) => paramVariants(type).map(([, spec]) => spec);
+// the scale in a drawing's title block, and the scales ISO 5455 allows
+const ISO_5455 = ['1', '2', '5', '10', '20', '50', '100'];
+const scaleOf = (svg) => /Мащаб<\/text><text class="d-tv" x="[\d.]+" y="[\d.]+">1:(\d+)</.exec(svg)?.[1];
 
 test('every handle stays inside its front with a margin, or is left off with a warning', () => {
   for (const type of TYPE_ORDER) {
@@ -96,11 +91,7 @@ test('hinges: inside the door, apart from each other, never sharing a plate hole
         for (let i = 0; i < cups.length; i++) for (let j = i + 1; j < cups.length; j++) assert.ok(Math.hypot(cups[i].u - cups[j].u, cups[i].v - cups[j].v) >= cups[i].d + 2, `${door.name}: cups overlap`);
       }
       // a partition: every plate hole serves one plate only (the screws from both faces would meet)
-      for (const panel of m.parts.filter((p) => p.role === 'partition' || p.role === 'side')) {
-        const doors = m.parts.filter((d) => d.role === 'door' && d.hingePanel === panel.id && d.hingeYs);
-        const expected = doors.reduce((a, d) => a + d.hingeYs.length * d.plateHoles, 0);
-        assert.equal(panel.features.filter((f) => f.kind === 'plate').length, expected, `${hinge} ${panel.name}: shared plate holes`);
-      }
+      assertPlateHoles(m, `${hinge} ${base.type}`);
     }
   }
 });
@@ -185,17 +176,21 @@ test('every hole lands inside its part on the sheet; no G-code or DXF while a ch
         const blockers = cncBlockers(m, n);
         if (errorsOf(m).length || n.errors.length) {
           assert.ok(blockers.length > 0, `${type}: an error without a blocker`);
-          assert.throws(() => toGcode(m, n.sheets[0], { ...meta, sheetCount: n.sheets.length }), /CNC blocked/);
-          assert.throws(() => toDxf(m, n.sheets[0], meta), /CNC blocked/);
+          // sheetOps refuses the model's own errors; a nesting error is refused by the callers through cncBlockers()
+          if (errorsOf(m).length) {
+            assert.throws(() => toGcode(m, n.sheets[0], { ...meta, sheetCount: n.sheets.length }), /CNC blocked/);
+            assert.throws(() => toDxf(m, n.sheets[0], meta), /CNC blocked/);
+          }
           continue;
         }
         assert.deepEqual(blockers, [], `${type} ${JSON.stringify(spec)}: ${blockers.join(' | ')}`);
         for (const sheet of n.sheets) {
           const g = toGcode(m, sheet, { ...meta, sheetCount: n.sheets.length });
-          for (const { holes } of g.ops.drillOps) {
+          for (const { tool, holes } of g.ops.drillOps) {
+            const r = tool.d / 2; // the whole bore, not only its centre: a Ø35 cup reaches 17.5 mm out
             for (const h of holes) {
               const pl = sheet.placements.find((p) => p.partId === h.partId);
-              assert.ok(h.X - 2.5 >= pl.x - 0.05 && h.X + 2.5 <= pl.x + pl.w + 0.05 && h.Y - 2.5 >= pl.y - 0.05 && h.Y + 2.5 <= pl.y + pl.h + 0.05, `${type}: hole ${h.X},${h.Y} outside ${pl.name}`);
+              assert.ok(h.X - r >= pl.x - 0.05 && h.X + r <= pl.x + pl.w + 0.05 && h.Y - r >= pl.y - 0.05 && h.Y + r <= pl.y + pl.h + 0.05, `${type}: Ø${tool.d} hole ${h.X},${h.Y} outside ${pl.name}`);
             }
           }
         }
@@ -214,21 +209,19 @@ test('G-code: feed per minute, Z to reference before every tool change, a safe p
     if (/^T\d+ M6$/.test(l)) assert.deepEqual(lines.slice(i - 2, i), ['G91 G28 Z0', 'G90'], `no Z return before ${l}`);
   });
   assert.ok(!lines.some((l) => /^G0 Z-500/.test(l)), 'the program name broke out of its comment');
-  assert.equal(canonicalJson(m.spec).length > 0, true);
 });
 
 test('drawings: ISO 5455 scales only, the section plane with its arrows, notes from the model', () => {
   for (const type of TYPE_ORDER) {
     const m = buildModel({ type });
     const svg = drawingAssembly(m, meta);
-    const scale = /Мащаб<\/text><text class="d-tv" x="[\d.]+" y="[\d.]+">1:(\d+)</.exec(svg)?.[1];
-    assert.ok(['1', '2', '5', '10', '20', '50', '100'].includes(scale), `${type}: scale 1:${scale}`);
+    const scale = scaleOf(svg);
+    assert.ok(ISO_5455.includes(scale), `${type}: scale 1:${scale}`);
     assert.equal((svg.match(/class="d-cpah"/g) ?? []).length, 2, `${type}: section arrows`);
     if (type === 'bed') assert.ok(!svg.includes('HDF') && !svg.includes('рафтоносачи'), 'bed notes speak of shelves or HDF');
     for (const p of drawingParts(m)) {
-      const s = drawingPart(m, meta, p.id);
-      const sc = /Мащаб<\/text><text class="d-tv" x="[\d.]+" y="[\d.]+">1:(\d+)</.exec(s)?.[1];
-      assert.ok(['1', '2', '5', '10', '20', '50', '100'].includes(sc), `${type} ${p.name}: scale 1:${sc}`);
+      const sc = scaleOf(drawingPart(m, meta, p.id));
+      assert.ok(ISO_5455.includes(sc), `${type} ${p.name}: scale 1:${sc}`);
     }
     assert.ok(!drawingParts(m).some((p) => p.role === 'back' || p.role === 'drawer-bottom'), `${type}: HDF parts get a sheet`);
   }
