@@ -3,7 +3,8 @@ import { prisma } from '../db.js';
 
 /**
  * Разследването на акаунт в панела: входове, откъде влиза (IP и държава), свързани акаунти по
- * устройство, HWID и IP, одит. Само четене — действията са в admin-actions/admin-security.
+ * устройство, HWID и IP, одит. Само четене — действията са в admin-actions, admin-create,
+ * admin-plan и admin-security.
  */
 export async function accountLogins(userId: string, take = 100) {
   return prisma.loginEvent.findMany({

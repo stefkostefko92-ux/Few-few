@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import type { Plan } from '@prisma/client';
-import { requireCsrf, requireStaff, requireUser } from '../../auth/guards.js';
-import { can, isStaff } from '../../auth/rbac.js';
+import { Plan } from '@prisma/client';
+import { principalOf, requireCsrf, requireStaff, requireUser } from '../../auth/guards.js';
+import { can } from '../../auth/rbac.js';
 import { prisma } from '../../db.js';
 import { verifyAuditChain } from '../../audit.js';
 import { geoIpReady } from '../../auth/geoip.js';
@@ -28,36 +28,33 @@ adminRouter.use(
   requireStaff('admin:access'),
   (req, res, next) => {
     res.set('Cache-Control', 'no-store');
-    const role = req.principal?.user.role;
-    res.locals.can = (capability: Parameters<typeof can>[1]) =>
-      role && isStaff(role) ? can(role, capability) : false;
-    res.locals.adminNav = req.path;
+    const role = principalOf(req).user.role;
+    res.locals.can = (capability: Parameters<typeof can>[1]) => can(role, capability);
     next();
   },
 );
 
 adminRouter.get('/admin', async (req, res) => {
   // неуспешните входове носят IP — само за роля, която вижда входовете
-  const seesLogins = can(req.principal!.user.role, 'logins:view');
-  const [counts, events, chain] = await Promise.all([
+  const seesLogins = can(principalOf(req).user.role, 'logins:view');
+  const [counts, events, chain, recent] = await Promise.all([
     dashboardCounts(),
     seesLogins ? recentSecurityEvents() : Promise.resolve([]),
     verifyAuditChain(),
+    prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 8,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        plan: true,
+        emailVerifiedAt: true,
+        createdAt: true,
+        signupCountry: true,
+      },
+    }),
   ]);
-  const recent = await prisma.user.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 8,
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      plan: true,
-      planExpiresAt: true,
-      emailVerifiedAt: true,
-      createdAt: true,
-      signupCountry: true,
-    },
-  });
   res.render('admin/dashboard', {
     counts,
     events,
@@ -77,13 +74,13 @@ function pick<T extends string>(value: unknown, allowed: readonly T[], fallback:
 adminRouter.get('/admin/accounts', async (req, res) => {
   const query: AccountQuery = {
     q: typeof req.query.q === 'string' ? req.query.q.slice(0, 120) : '',
-    plan: pick<Plan | 'all'>(req.query.plan, ['all', 'TRIAL', 'PREMIUM', 'LIFETIME'], 'all'),
+    plan: pick<Plan | 'all'>(req.query.plan, ['all', ...Object.values(Plan)], 'all'),
     status: pick<StatusFilter>(req.query.status, STATUS_FILTERS, 'all'),
     sort: pick<SortKey>(req.query.sort, SORTS, 'created'),
     dir: pick<'asc' | 'desc'>(req.query.dir, ['asc', 'desc'], 'desc'),
     page: Math.max(1, Math.min(10_000, Number.parseInt(String(req.query.page ?? '1'), 10) || 1)),
   };
-  const result = await listAccounts(query, can(req.principal!.user.role, 'logins:view'));
+  const result = await listAccounts(query, can(principalOf(req).user.role, 'logins:view'));
   res.render('admin/accounts', {
     query,
     ...result,

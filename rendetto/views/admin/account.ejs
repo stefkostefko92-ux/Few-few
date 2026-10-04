@@ -39,7 +39,7 @@
               <option value="LIFETIME"<%= request && request.option === 'lifetime' ? ' selected' : '' %>><%= t('plan.name.LIFETIME') %></option>
             </select>
           </div>
-          <div class="field" data-for-plan="TRIAL"><label for="p-days"><%= t('admin.account.trialDays') %></label><input id="p-days" name="days" type="number" min="1" max="365" value="30"></div>
+          <div class="field" data-for-plan="TRIAL"><label for="p-days"><%= t('admin.account.trialDays') %></label><input id="p-days" name="days" type="number" min="1" max="365" value="<%= trialDays %>"></div>
           <div class="field" data-for-plan="PREMIUM"><label for="p-mode"><%= t('admin.account.premiumMode') %></label>
             <select id="p-mode" name="mode"><option value="months"><%= t('admin.account.byMonths') %></option><option value="date"><%= t('admin.account.byDate') %></option></select>
           </div>

@@ -199,9 +199,7 @@ export async function accountDetail(id: string) {
         select: { id: true, name: true, type: true, updatedAt: true, createdAt: true },
       },
       upgradeRequests: { orderBy: { createdAt: 'desc' }, take: 20 },
-      _count: {
-        select: { projects: true, logins: true, recoveryCodes: { where: { usedAt: null } } },
-      },
+      _count: { select: { projects: true } },
     },
   });
 }

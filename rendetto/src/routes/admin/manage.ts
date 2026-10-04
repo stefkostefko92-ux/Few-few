@@ -21,6 +21,8 @@ import { finish, idParam, staffActor } from './common.js';
 
 export const manageRouter: Router = Router();
 
+const INT4_MAX = 2_147_483_647;
+
 /* --------------------------------- нов акаунт --------------------------------- */
 
 manageRouter.get('/admin/accounts-new', requireStaff('accounts:create'), (req, res) => {
@@ -36,10 +38,11 @@ manageRouter.post('/admin/accounts-new', requireStaff('accounts:create'), async 
     name: stringField(req.body, 'name', 80),
     role: stringField(req.body, 'role', 20) || 'CUSTOMER',
     plan: stringField(req.body, 'plan', 10) || 'TRIAL',
-    trialDays: stringField(req.body, 'trialDays', 4) || '30',
-    months: stringField(req.body, 'months', 4) || '1',
+    // празно поле → стойността по подразбиране от схемата (тестовите дни идват от TRIAL_DAYS)
+    trialDays: stringField(req.body, 'trialDays', 4) || undefined,
+    months: stringField(req.body, 'months', 4) || undefined,
     password: rawField(req.body, 'password') || undefined,
-    locale: stringField(req.body, 'locale', 5) || 'bg',
+    locale: stringField(req.body, 'locale', 5) || undefined,
   });
   finish(
     res,
@@ -91,10 +94,12 @@ manageRouter.post(
 
 manageRouter.get('/admin/audit', requireStaff('audit:view'), async (req, res) => {
   const before = Number.parseInt(String(req.query.before ?? ''), 10);
+  // id е INT4: по-голямо число Prisma отказва с грешка (500) — такава стойност не е страница
+  const cursor = Number.isSafeInteger(before) && before > 0 && before <= INT4_MAX ? before : null;
   const action = typeof req.query.action === 'string' ? req.query.action.slice(0, 60) : '';
   const rows = await prisma.auditLog.findMany({
     where: {
-      ...(Number.isFinite(before) ? { id: { lt: before } } : {}),
+      ...(cursor !== null ? { id: { lt: cursor } } : {}),
       ...(action ? { action: { startsWith: action } } : {}),
     },
     orderBy: { id: 'desc' },

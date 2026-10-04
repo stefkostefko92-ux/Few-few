@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { z } from 'zod';
 import { audit } from '../audit.js';
 import { prisma } from '../db.js';
@@ -20,16 +21,8 @@ import {
 
 /* ----------------------------------- редакция ----------------------------------- */
 
-/** Ролите, които панелът приема от формата. */
-export const roleSchema = z.enum([
-  'CUSTOMER',
-  'VIEWER',
-  'ANALYST',
-  'SUPPORT',
-  'MANAGER',
-  'ADMIN',
-  'OWNER',
-]);
+/** Ролите, които панелът приема от формата — същите като в схемата на базата. */
+export const roleSchema = z.nativeEnum(Role);
 
 export const editSchema = z.object({
   name: nameSchema,

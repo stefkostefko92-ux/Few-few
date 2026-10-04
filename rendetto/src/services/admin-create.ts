@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { Plan } from '@prisma/client';
 import { z } from 'zod';
 import { audit } from '../audit.js';
 import { prisma } from '../db.js';
@@ -8,7 +9,7 @@ import { can, outranks } from '../auth/rbac.js';
 import { issueEmailToken } from '../auth/tokens.js';
 import { isLocale } from '../i18n.js';
 import { greetingName, mailResetPassword } from '../mail/templates.js';
-import { addDays, premiumUntil } from '../plans/plan.js';
+import { addDays, premiumUntil, TRIAL_DAYS } from '../plans/plan.js';
 import { emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import { roleSchema } from './admin-actions.js';
 import {
@@ -25,8 +26,8 @@ export const createSchema = z.object({
   email: emailSchema,
   name: nameSchema,
   role: roleSchema,
-  plan: z.enum(['TRIAL', 'PREMIUM', 'LIFETIME']),
-  trialDays: z.coerce.number().int().min(1).max(365).default(30),
+  plan: z.nativeEnum(Plan),
+  trialDays: z.coerce.number().int().min(1).max(365).default(TRIAL_DAYS),
   months: z.coerce.number().int().min(1).max(120).default(1),
   password: z.string().max(256).optional(),
   locale: z.string().refine(isLocale).default('bg'),
