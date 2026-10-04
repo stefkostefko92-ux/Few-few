@@ -4,9 +4,10 @@
 // an opaque background, the web manifest 192 and 512 px. Run after changing favicon.svg:
 // `node scripts/favicons.mjs` (needs the Playwright dev dependency).
 import { readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
-const here = (f) => new URL(f, import.meta.url).pathname;
+const here = (f) => fileURLToPath(new URL(f, import.meta.url));
 const svg = readFileSync(here('../public/img/favicon.svg'), 'utf8');
 // --paper of the light theme (public/css/base.css): the opaque icons sit on the same paper as the site
 const PAPER = '#f6f7f1';

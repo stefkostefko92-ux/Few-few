@@ -33,7 +33,7 @@ npm run test:e2e         # достъпност (axe, WCAG 2.1 AA) на рабо
 npm run dev              # локален сървър на :4320
 npm run owner:create     # първият собственик — OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD от средата
 npm run geoip:update     # DB-IP Lite → data/dbip-country-lite.mmdb (месечно)
-node scripts/og-image.mjs # public/img/og.png — ръчно, след промяна на вида или двигателя
+npm run og:image         # public/img/og.png — ръчно, след промяна на вида или двигателя (листът е от витрината)
 node scripts/favicons.mjs # favicon.ico (16/32/48/192), apple-touch-icon, иконите на манифеста — след промяна на
                           # favicon.svg (Google Search не приема SVG за иконка)
 npm run brochure         # print/rendetto-brochure-<език>.pdf — брошурата A4 за клиенти (print/README.md)

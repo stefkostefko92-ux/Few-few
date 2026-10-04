@@ -42,7 +42,7 @@
     "prisma:migrate": "prisma migrate deploy",
     "owner:create": "node dist/scripts/create-owner.js",
     "geoip:update": "node dist/scripts/geoip-update.js",
-    "og:image": "node scripts/og-image.mjs"
+    "og:image": "node --import tsx scripts/og-image.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

@@ -3,10 +3,11 @@
 // (editor/css/*.css + the drawing rules that standalone SVG files carry in their own <style>).
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { STYLE as DRAWING_CSS } from '../engine/drawing-kit.js';
 
-const here = (f) => new URL(f, import.meta.url).pathname;
+const here = (f) => fileURLToPath(new URL(f, import.meta.url));
 const outDir = here('../public/editor/');
 mkdirSync(outDir, { recursive: true });
 
@@ -59,7 +60,7 @@ const parts = readdirSync(here('../editor/css/'))
   .sort()
   .map((f) => readFileSync(here(`../editor/css/${f}`), 'utf8'));
 const css = `${parts.join('\n')}\n/* drawings (engine/drawing-kit.js STYLE) */\n${DRAWING_CSS}\n`;
-writeFileSync(outDir + 'editor.css', css);
+writeFileSync(join(outDir, 'editor.css'), css);
 const kb = (n) => `${(n / 1024).toFixed(0)} KB`;
 console.log(
   result.outputFiles
