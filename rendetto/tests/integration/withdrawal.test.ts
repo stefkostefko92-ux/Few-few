@@ -1,12 +1,12 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mailTo, placeOrder, prisma, sessionCsrf, staff, startApp, stopApp } from './harness.js';
+import { mailTo, prisma, STAFF_INBOX, startApp, stopApp } from './harness.js';
+import { placeOrder, sessionCsrf, staff, withdraw } from './people.js';
 
 before(startApp);
 after(stopApp);
 
 const { changePlan } = await import('../../src/services/admin-plan.js');
-const STAFF_INBOX = 'info@carbonstealth.eu';
 const DAY = 86_400_000;
 
 test('withdrawal: a button, a confirmation step, the plan goes back, and a receipt with the date and time', async () => {
@@ -41,9 +41,7 @@ test('withdrawal: a button, a confirmation step, the plan goes back, and a recei
   assert.equal(page.status, 200);
   assert.match(page.body, /С настоящото уведомявам, че се отказвам/);
   assert.match(page.body, />Потвърждавам отказа<\/button>/);
-  const done = await c.post(`/account/plan/withdraw/${row.id}`, {
-    _csrf: await sessionCsrf(c, `/account/plan/withdraw/${row.id}`),
-  });
+  const done = await withdraw(c, row.id);
   assert.equal(done.status, 302);
 
   const closed = await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: row.id } });
@@ -74,17 +72,9 @@ test('withdrawal: a button, a confirmation step, the plan goes back, and a recei
 });
 
 test('activation after a withdrawal is refused; a plan changed since activation is left to the team', async () => {
-  const manager = await staff('MANAGER', 'orders.manager3@example.test');
-  const actor = {
-    type: 'HUMAN' as const,
-    id: manager.id,
-    label: 'Екип MANAGER',
-    role: 'MANAGER' as const,
-  };
+  const { actor } = await staff('MANAGER', 'orders.manager3@example.test');
   const { c, row } = await placeOrder('race@example.test', { option: 'm3', buyer: 'consumer' });
-  await c.post(`/account/plan/withdraw/${row.id}`, {
-    _csrf: await sessionCsrf(c, `/account/plan/withdraw/${row.id}`),
-  });
+  await withdraw(c, row.id);
   const refused = await changePlan(
     actor,
     row.userId,
@@ -113,9 +103,7 @@ test('activation after a withdrawal is refused; a plan changed since activation 
     await changePlan(actor, second.userId, { plan: 'TRIAL', days: 5, notify: false }),
     { ok: true },
   );
-  await c2.post(`/account/plan/withdraw/${second.id}`, {
-    _csrf: await sessionCsrf(c2, `/account/plan/withdraw/${second.id}`),
-  });
+  await withdraw(c2, second.id);
   const user = await prisma.user.findUniqueOrThrow({ where: { id: second.userId } });
   assert.equal(user.plan, 'TRIAL', 'the later change by the team stays');
   const notice = await mailTo(STAFF_INBOX, /Отказ от договора в Rendetto: manual@example\.test/);
@@ -145,13 +133,7 @@ test('after the period there is no withdrawal button; an unpaid order can still 
 });
 
 test('a request from before the orders is no contract under these rules; a plan changed by hand is left to the team', async () => {
-  const manager = await staff('MANAGER', 'orders.manager4@example.test');
-  const actor = {
-    type: 'HUMAN' as const,
-    id: manager.id,
-    label: 'Екип MANAGER',
-    role: 'MANAGER' as const,
-  };
+  const { actor } = await staff('MANAGER', 'orders.manager4@example.test');
   const { c, row } = await placeOrder('legacy@example.test', { option: 'm1', buyer: 'consumer' });
   await prisma.upgradeRequest.update({ where: { id: row.id }, data: { termsVersion: null } });
   assert.doesNotMatch((await c.get('/account/plan')).body, /Откажете се от договора тук<\/a>/);
@@ -181,9 +163,69 @@ test('a request from before the orders is no contract under these rules; a plan 
     }),
     { ok: true },
   );
-  await c2.post(`/account/plan/withdraw/${second.id}`, {
-    _csrf: await sessionCsrf(c2, `/account/plan/withdraw/${second.id}`),
-  });
+  await withdraw(c2, second.id);
   const notice = await mailTo(STAFF_INBOX, /Отказ от договора в Rendetto: byhand@example\.test/);
   assert.match(notice.text, /Планът НЕ е върнат автоматично/);
+});
+
+test('another customer can neither withdraw from nor cancel someone else’s order', async () => {
+  const { actor } = await staff('MANAGER', 'orders.manager5@example.test');
+  const { row: paid } = await placeOrder('victim-order@example.test', {
+    option: 'm1',
+    buyer: 'consumer',
+    early: 'yes',
+  });
+  assert.deepEqual(
+    await changePlan(actor, paid.userId, {
+      plan: 'PREMIUM',
+      mode: 'months',
+      months: 1,
+      notify: false,
+      requestId: paid.id,
+    }),
+    { ok: true },
+  );
+  const firm = await placeOrder('victim-firm@example.test', { option: 'm3', buyer: 'business' });
+  const before = await prisma.user.findUniqueOrThrow({ where: { id: paid.userId } });
+  const { c: other } = await placeOrder('other-customer@example.test', {
+    option: 'm1',
+    buyer: 'consumer',
+  });
+
+  const page = await other.get(`/account/plan/withdraw/${paid.id}`);
+  assert.equal(page.status, 302);
+  assert.equal(other.flash(), 'plan.withdraw.unavailable');
+  assert.doesNotMatch(page.body, /victim-order@example\.test/);
+  const csrf = await sessionCsrf(other, '/account/plan');
+  const tried = await other.post(`/account/plan/withdraw/${paid.id}`, { _csrf: csrf });
+  assert.equal(tried.status, 302);
+  assert.equal(other.flash(), 'plan.withdraw.unavailable');
+  const cancel = await other.post(`/account/plan/request/${firm.row.id}/cancel`, { _csrf: csrf });
+  assert.equal(cancel.status, 302);
+  assert.equal(other.flash(), 'error.notFoundText');
+
+  assert.equal(
+    (await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: paid.id } })).status,
+    'DONE',
+  );
+  assert.equal(
+    (await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: firm.row.id } })).status,
+    'OPEN',
+  );
+  const after = await prisma.user.findUniqueOrThrow({ where: { id: paid.userId } });
+  assert.deepEqual(
+    [after.plan, after.planExpiresAt?.getTime()],
+    [before.plan, before.planExpiresAt?.getTime()],
+    'the paid plan stays',
+  );
+  assert.equal(
+    await prisma.auditLog.count({
+      where: {
+        action: { in: ['plan.request.withdrawn', 'plan.request.cancelled'] },
+        targetId: { in: [paid.id, firm.row.id] },
+      },
+    }),
+    0,
+  );
+  await assert.rejects(mailTo('victim-order@example.test', /Получихме отказа ви/, 300));
 });

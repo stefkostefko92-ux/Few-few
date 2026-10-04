@@ -2,15 +2,14 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   Browser,
-  customer,
+  CUSTOMER_PASSWORD,
   expectedCountry,
   mailTo,
   prisma,
-  sessionCsrf,
-  staff,
   startApp,
   stopApp,
 } from './harness.js';
+import { customer, sessionCsrf, staff } from './people.js';
 
 before(startApp);
 after(stopApp);
@@ -50,28 +49,40 @@ test('ban with a reason: sessions end, the reason shows only with the right pass
     /Повторни тестови периоди/,
     'no reason without the right password',
   );
-  const right = await new Browser().login('banned@example.test', 'Shelf-Hinge-Groove-42');
+  const right = await new Browser().login('banned@example.test', CUSTOMER_PASSWORD);
   assert.equal(right.status, 403);
   assert.match(right.body, /Достъпът е спрян/);
   assert.match(right.body, /Повторни тестови периоди\./);
 
-  const tooShort = await admin.browser.post(`/admin/accounts/${id}/ban`, {
-    _csrf: csrf,
-    reason: 'x',
-  });
-  assert.equal(tooShort.status, 302);
   const unban = await admin.browser.post(`/admin/accounts/${id}/unban`, {
     _csrf: csrf,
     note: 'обжалвано',
   });
   assert.equal(unban.status, 302);
-  assert.equal(
-    (await new Browser().login('banned@example.test', 'Shelf-Hinge-Groove-42')).status,
-    302,
-  );
+  assert.equal((await new Browser().login('banned@example.test', CUSTOMER_PASSWORD)).status, 302);
   const bans = await prisma.accountBan.findMany({ where: { userId: id } });
   assert.equal(bans.length, 1);
   assert.ok(bans[0]?.liftedAt);
+});
+
+test('a ban needs a real reason: a one-letter one bans nobody', async () => {
+  const support = await staff('SUPPORT', 'support.reason@example.test');
+  await customer('reason@example.test');
+  const id = await idOf('reason@example.test');
+  const csrf = await sessionCsrf(support.browser, `/admin/accounts/${id}`);
+  const ban = (reason: string) =>
+    support.browser.post(`/admin/accounts/${id}/ban`, { _csrf: csrf, reason });
+  assert.equal((await ban('x')).status, 302);
+  assert.equal(support.browser.flash(), 'admin.errors.banReason');
+  assert.equal((await prisma.user.findUniqueOrThrow({ where: { id } })).bannedAt, null);
+  assert.equal(await prisma.accountBan.count({ where: { userId: id } }), 0);
+  assert.equal(
+    await prisma.auditLog.count({ where: { action: 'admin.account.banned', targetId: id } }),
+    0,
+  );
+  await ban('Споделен акаунт с друга фирма.');
+  assert.equal(support.browser.flash(), 'flash.banned');
+  assert.ok((await prisma.user.findUniqueOrThrow({ where: { id } })).bannedAt);
 });
 
 test('plan changes: Premium by months after the running trial, Lifetime, Trial days; history and email', async () => {

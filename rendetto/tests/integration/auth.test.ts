@@ -2,7 +2,7 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   Browser,
-  customer,
+  CUSTOMER_PASSWORD,
   expectedCountry,
   linkIn,
   mailTo,
@@ -10,6 +10,7 @@ import {
   startApp,
   stopApp,
 } from './harness.js';
+import { customer } from './people.js';
 
 before(startApp);
 after(stopApp);
@@ -18,7 +19,7 @@ const DAY = 86_400_000;
 
 test('sign-up → email confirmation → a 30-day trial that starts at the confirmation', async () => {
   const b = new Browser('8.8.8.8');
-  const reply = await b.register('Иван Петров', 'ivan@example.test', 'Shelf-Hinge-Groove-42');
+  const reply = await b.register('Иван Петров', 'ivan@example.test', CUSTOMER_PASSWORD);
   assert.equal(reply.status, 200);
   assert.match(reply.body, /Проверете пощата си/);
   const before = await prisma.user.findUniqueOrThrow({ where: { email: 'ivan@example.test' } });
@@ -30,7 +31,7 @@ test('sign-up → email confirmation → a 30-day trial that starts at the confi
     before.signupDeviceHash && before.signupFingerprint,
     'device cookie hash and HWID stored at sign-up',
   );
-  assert.notEqual(before.passwordHash, 'Shelf-Hinge-Groove-42');
+  assert.notEqual(before.passwordHash, CUSTOMER_PASSWORD);
   assert.match(before.passwordHash, /^\$argon2id\$/);
 
   const verified = await b.confirmEmail(
@@ -46,7 +47,7 @@ test('sign-up → email confirmation → a 30-day trial that starts at the confi
 
 test('a confirmation link works once', async () => {
   const b = new Browser();
-  await b.register('Мария', 'maria@example.test', 'Shelf-Hinge-Groove-42');
+  await b.register('Мария', 'maria@example.test', CUSTOMER_PASSWORD);
   const link = linkIn(
     (await mailTo('maria@example.test', /Потвърдете/)).text,
     '/verify-email?token=',
@@ -82,25 +83,14 @@ test('signing in records IP, country, device and HWID', async () => {
 
 test('the same answer for a new and an existing email (no account enumeration)', async () => {
   await customer('taken@example.test');
-  const fresh = await new Browser().register(
-    'Някой',
-    'nobody-yet@example.test',
-    'Shelf-Hinge-Groove-42',
-  );
-  const taken = await new Browser().register(
-    'Някой',
-    'taken@example.test',
-    'Shelf-Hinge-Groove-42',
-  );
+  const fresh = await new Browser().register('Някой', 'nobody-yet@example.test', CUSTOMER_PASSWORD);
+  const taken = await new Browser().register('Някой', 'taken@example.test', CUSTOMER_PASSWORD);
   assert.equal(fresh.status, taken.status);
   assert.equal(
     fresh.body.replace('nobody-yet@example.test', 'X'),
     taken.body.replace('taken@example.test', 'X'),
   );
-  assert.match(
-    (await mailTo('taken@example.test', /Вече имате акаунт/)).subject,
-    /Вече имате акаунт/,
-  );
+  await mailTo('taken@example.test', /Вече имате акаунт/);
   const wrongPassword = await new Browser().login('taken@example.test', 'Wrong-Password-000');
   const unknownEmail = await new Browser().login(
     'nobody-at-all@example.test',
@@ -122,13 +112,13 @@ test('five wrong passwords lock the account; the right one does not get in while
     user.lockedUntil && user.lockedUntil.getTime() > Date.now() + 14 * 60_000,
     'locked for about 15 minutes',
   );
-  const right = await b.login('lock@example.test', 'Shelf-Hinge-Groove-42');
+  const right = await b.login('lock@example.test', CUSTOMER_PASSWORD);
   assert.equal(right.status, 401, 'a locked account answers like a wrong password');
   await prisma.user.update({
     where: { id: user.id },
     data: { lockedUntil: new Date(Date.now() - 1000) },
   });
-  assert.equal((await b.login('lock@example.test', 'Shelf-Hinge-Groove-42')).status, 302);
+  assert.equal((await b.login('lock@example.test', CUSTOMER_PASSWORD)).status, 302);
 });
 
 test('weak passwords are refused at sign-up', async () => {
@@ -160,10 +150,7 @@ test('password reset: one-time link, all sessions end, the new password works', 
     (await new Browser().login('reset@example.test', 'New-Oak-Plank-2026x')).status,
     302,
   );
-  assert.equal(
-    (await new Browser().login('reset@example.test', 'Shelf-Hinge-Groove-42')).status,
-    401,
-  );
+  assert.equal((await new Browser().login('reset@example.test', CUSTOMER_PASSWORD)).status, 401);
 });
 
 test('pages after sign-in are never cached and redirect when signed out', async () => {

@@ -1,16 +1,15 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { totpCode } from '../../src/auth/totp.js';
 import {
+  assertTestDatabase,
   Browser,
-  customer,
+  CUSTOMER_PASSWORD,
   mailTo,
   prisma,
-  sessionCsrf,
-  staff,
   startApp,
   stopApp,
 } from './harness.js';
+import { customer, newProject, sessionCsrf, staff } from './people.js';
 import { enable2fa } from './twofa.js';
 
 before(startApp);
@@ -53,7 +52,7 @@ test('the panel cannot turn a confirmed email back into unconfirmed, and the pur
     data: { emailVerifiedAt: null, createdAt: old },
   });
   // a sign-up that was never confirmed is purged after 7 days
-  await new Browser().register('Забравен', 'never-confirmed@example.test', 'Shelf-Hinge-Groove-42');
+  await new Browser().register('Забравен', 'never-confirmed@example.test', CUSTOMER_PASSWORD);
   await prisma.user.update({
     where: { email: 'never-confirmed@example.test' },
     data: { createdAt: old },
@@ -75,16 +74,16 @@ test('wrong passwords sent at the same moment still lock the account after five'
   assert.ok(tries.every((r) => r.status === 401));
   const user = await prisma.user.findUniqueOrThrow({ where: { email: 'parallel@example.test' } });
   assert.ok(user.lockedUntil && user.lockedUntil > new Date(), 'locked');
-  const right = await new Browser().login('parallel@example.test', 'Shelf-Hinge-Groove-42');
+  const right = await new Browser().login('parallel@example.test', CUSTOMER_PASSWORD);
   assert.equal(right.status, 401, 'even the right password waits for the lock to pass');
 });
 
 test('wrong codes count for the account: new sign-ins with the password give no new tries', async () => {
   const owner = await customer('codes@example.test');
-  const { secret } = await enable2fa(owner);
+  await enable2fa(owner);
   for (let i = 0; i < 5; i++) {
     const b = new Browser();
-    const login = await b.login('codes@example.test', 'Shelf-Hinge-Groove-42');
+    const login = await b.login('codes@example.test', CUSTOMER_PASSWORD);
     assert.match(login.location, /^\/login\/2fa/, `attempt ${i + 1} reaches the code step`);
     const page = await b.get(login.location);
     await b.post('/login/2fa', { _csrf: Browser.csrf(page.body), next: '/app', code: '000000' });
@@ -94,9 +93,8 @@ test('wrong codes count for the account: new sign-ins with the password give no 
   assert.match((await mailTo('codes@example.test', /Грешни кодове/)).text, /сменете я веднага/);
 
   const late = new Browser();
-  const login = await late.login('codes@example.test', 'Shelf-Hinge-Groove-42');
+  const login = await late.login('codes@example.test', CUSTOMER_PASSWORD);
   assert.equal(login.status, 401, 'the password alone does not open a new round');
-  assert.ok(secret.length >= 32);
 });
 
 test('one authenticator step is accepted once, even when sent twice at the same moment', async () => {
@@ -107,31 +105,37 @@ test('one authenticator step is accepted once, even when sent twice at the same 
   assert.deepEqual(both.sort(), [false, true]);
   assert.equal(await claimTotpStep(id, 999), false, 'an older step is refused');
   assert.equal(await claimTotpStep(id, 1001), true);
-  assert.ok(totpCode('JBSWY3DPEHPK3PXP', 0).length === 6);
 });
 
 test('the team downloads only projects of people below them', async () => {
   const top = await staff('OWNER', 'top@example.test');
   const support = await staff('SUPPORT', 'support@example.test');
-  const created = await top.browser.post('/app/projects', {
-    _csrf: await sessionCsrf(top.browser, '/app'),
-    type: 'base',
-    name: 'Проект на собственика',
-  });
-  const ownerProject = /\/app\/p\/([a-z0-9]+)/.exec(created.location)?.[1] ?? '';
-  assert.ok(ownerProject, 'the owner made a project');
+  const ownerProject = await newProject(top.browser, 'base', 'Проект на собственика');
+  const refused = await support.browser.get(`/admin/projects/${ownerProject}/export`);
+  assert.equal(refused.status, 403, 'support cannot take the owner’s project');
   assert.equal(
-    (await support.browser.get(`/admin/projects/${ownerProject}/export`)).status,
-    403,
-    'support cannot take the owner’s project',
+    await prisma.auditLog.count({
+      where: { action: 'admin.project.exported', targetId: ownerProject },
+    }),
+    0,
+    'a refused export is not recorded as done',
   );
 
   const client = await customer('client-project@example.test');
-  const made = await client.post('/app/projects', {
-    _csrf: await sessionCsrf(client, '/app'),
-    type: 'base',
-    name: 'Кухня',
-  });
-  const clientProject = /\/app\/p\/([a-z0-9]+)/.exec(made.location)?.[1] ?? '';
+  const clientProject = await newProject(client, 'base', 'Кухня');
   assert.equal((await support.browser.get(`/admin/projects/${clientProject}/export`)).status, 200);
+});
+
+test('the suite empties only a database named for tests', () => {
+  for (const name of ['rendetto_test', 'rendetto_ci_p2d', 'shop_ci', 'TEST_rendetto'])
+    assert.doesNotThrow(() => assertTestDatabase(`postgresql://u:secret@127.0.0.1:5432/${name}`));
+  for (const name of ['rendetto', 'rendetto_dev', 'contest', 'rendetto_citest', 'postgres']) {
+    assert.throws(
+      () => assertTestDatabase(`postgresql://u:secret@db:5432/${name}`),
+      (error: unknown) =>
+        error instanceof Error && error.message.includes(name) && !error.message.includes('secret'),
+      name,
+    );
+  }
+  assert.throws(() => assertTestDatabase('not a url'), /not a valid URL/);
 });

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { totpCode } from '../../src/auth/totp.js';
-import { Browser, sessionCsrf } from './harness.js';
+import { Browser, CUSTOMER_PASSWORD } from './harness.js';
+import { sessionCsrf } from './people.js';
 
 /**
  * Turns two-factor protection on through the real forms (the start asks for the current password);
@@ -8,7 +9,7 @@ import { Browser, sessionCsrf } from './harness.js';
  */
 export async function enable2fa(
   b: Browser,
-  password = 'Shelf-Hinge-Groove-42',
+  password = CUSTOMER_PASSWORD,
 ): Promise<{ secret: string; codes: string[] }> {
   const csrf = await sessionCsrf(b, '/account/security');
   const page = await b.post('/account/security/2fa/start', { _csrf: csrf, password });

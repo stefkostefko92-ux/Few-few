@@ -4,14 +4,15 @@ import { totpCode } from '../../src/auth/totp.js';
 import {
   BASE,
   Browser,
-  customer,
+  CUSTOMER_PASSWORD,
   linkIn,
   mailTo,
   prisma,
-  sessionCsrf,
   startApp,
   stopApp,
 } from './harness.js';
+import { graph } from './json-ld.js';
+import { customer, newProject, sessionCsrf } from './people.js';
 import { enable2fa } from './twofa.js';
 
 before(startApp);
@@ -28,13 +29,10 @@ test('two-factor sign-in: the code is required, a used code cannot be replayed, 
     stored.totpSecretEnc && !stored.totpSecretEnc.includes(secret),
     'secret encrypted at rest',
   );
-  assert.match(
-    (await mailTo('twofa@example.test', /Двуфакторната защита е включена/)).subject,
-    /включена/,
-  );
+  await mailTo('twofa@example.test', /Двуфакторната защита е включена/);
 
   const c = new Browser();
-  const login = await c.login('twofa@example.test', 'Shelf-Hinge-Groove-42');
+  const login = await c.login('twofa@example.test', CUSTOMER_PASSWORD);
   assert.match(login.location, /^\/login\/2fa/);
   assert.equal((await c.get('/app')).status, 302, 'no access before the second factor');
   const page = await c.get(login.location);
@@ -53,7 +51,7 @@ test('two-factor sign-in: the code is required, a used code cannot be replayed, 
   assert.equal((await c.get('/app')).status, 200);
 
   const d = new Browser();
-  const again = await d.login('twofa@example.test', 'Shelf-Hinge-Groove-42');
+  const again = await d.login('twofa@example.test', CUSTOMER_PASSWORD);
   const page2 = await d.get(again.location);
   assert.equal(
     (
@@ -72,7 +70,7 @@ test('five wrong codes end the half-open session', async () => {
   const b = await customer('mfa-reset@example.test');
   await enable2fa(b);
   const c = new Browser();
-  const login = await c.login('mfa-reset@example.test', 'Shelf-Hinge-Groove-42');
+  const login = await c.login('mfa-reset@example.test', CUSTOMER_PASSWORD);
   const page = await c.get(login.location);
   const csrf = Browser.csrf(page.body);
   let last = 0;
@@ -151,11 +149,11 @@ test('session and device cookies are HttpOnly and SameSite', async () => {
   const b = new Browser();
   const login = await b.get('/login');
   const cookies = login.headers.getSetCookie().join('\n');
-  assert.match(cookies, /rd_dev=[^;]+;[^\n]*HttpOnly/i);
+  assert.match(cookies, /rd_dev=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Lax/i);
   assert.match(cookies, /rd_pre=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Strict/i);
   await customer('cookies@example.test');
   const c = new Browser();
-  const signed = await c.login('cookies@example.test', 'Shelf-Hinge-Groove-42');
+  const signed = await c.login('cookies@example.test', CUSTOMER_PASSWORD);
   assert.match(
     signed.headers.getSetCookie().join('\n'),
     /rd_sid=[^;]+;[^\n]*HttpOnly[^\n]*SameSite=Strict/i,
@@ -181,7 +179,7 @@ test('email change: the old address is told, the new one confirms', async () => 
   const sent = await b.post('/account/email', {
     _csrf: csrf,
     email: 'new@example.test',
-    password: 'Shelf-Hinge-Groove-42',
+    password: CUSTOMER_PASSWORD,
   });
   assert.equal(sent.status, 302);
   assert.match((await mailTo('old@example.test', /смяна на имейла/)).text, /new@example\.test/);
@@ -200,7 +198,7 @@ test('email change: the old address is told, the new one confirms', async () => 
 
 test('deleting your own account needs the password and the tick, and removes the projects', async () => {
   const b = await customer('gone@example.test');
-  await b.post('/app/projects', { _csrf: await sessionCsrf(b, '/app'), type: 'base', name: 'X' });
+  await newProject(b, 'base', 'X');
   const csrf = await sessionCsrf(b, '/account/data');
   assert.equal(
     (
@@ -218,7 +216,7 @@ test('deleting your own account needs the password and the tick, and removes the
   );
   const done = await b.post('/account/data/delete', {
     _csrf: csrf,
-    password: 'Shelf-Hinge-Groove-42',
+    password: CUSTOMER_PASSWORD,
     confirm: 'yes',
   });
   assert.equal(done.location, '/login');
@@ -252,10 +250,7 @@ test('public SEO files', async () => {
   const llms = await (await fetch(`${BASE}/llms.txt`)).text();
   assert.match(llms, /30-day trial/);
   const home = await (await fetch(`${BASE}/en/`)).text();
-  const ld = /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/.exec(home)?.[1] ?? '';
-  const graph = (JSON.parse(ld) as { '@graph': Array<{ '@type': string | string[] }> })[
-    '@graph'
-  ].flatMap((n) => n['@type']);
+  const types = graph(home).flatMap((node) => node['@type']);
   for (const type of [
     'Organization',
     'LocalBusiness',
@@ -266,7 +261,7 @@ test('public SEO files', async () => {
     'HowTo',
     'FAQPage',
   ])
-    assert.ok(graph.includes(type), type);
+    assert.ok(types.includes(type), type);
   assert.match(
     home,
     /<link rel="alternate" hreflang="it" href="http:\/\/127\.0\.0\.1:4399\/it\/">/,

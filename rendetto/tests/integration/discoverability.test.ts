@@ -1,6 +1,7 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { BASE, startApp, stopApp } from './harness.js';
+import { graph, ofType } from './json-ld.js';
 
 before(startApp);
 after(stopApp);
@@ -8,8 +9,6 @@ after(stopApp);
 const { COMPANY } = await import('../../src/company.js');
 const { translate } = await import('../../src/i18n.js');
 const { formatMoney, priceTable } = await import('../../src/plans/pricing.js');
-
-type LdNode = Record<string, unknown> & { '@type': string | string[] };
 
 const get = (path: string) => fetch(`${BASE}${path}`);
 const html = async (path: string) => (await get(path)).text();
@@ -28,18 +27,6 @@ const ENTITIES: Record<string, string> = {
   "'": '&#39;',
 };
 const esc = (text: string) => text.replace(/[&<>"']/g, (c) => ENTITIES[c] ?? c);
-
-function graph(page: string): LdNode[] {
-  const ld = /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/.exec(page)?.[1];
-  assert.ok(ld, 'JSON-LD on the page');
-  return (JSON.parse(ld) as { '@graph': LdNode[] })['@graph'];
-}
-
-function ofType(nodes: LdNode[], type: string): LdNode {
-  const found = nodes.find((node) => [node['@type']].flat().includes(type));
-  assert.ok(found, type);
-  return found;
-}
 
 /** Ширина и височина от IHDR на PNG. */
 function pngSize(buf: Buffer): string {

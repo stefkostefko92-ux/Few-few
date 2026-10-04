@@ -1,16 +1,7 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  Browser,
-  customer,
-  mailTo,
-  placeOrder,
-  prisma,
-  sessionCsrf,
-  staff,
-  startApp,
-  stopApp,
-} from './harness.js';
+import { Browser, mailTo, prisma, STAFF_INBOX, startApp, stopApp } from './harness.js';
+import { customer, placeOrder, sessionCsrf, staff } from './people.js';
 
 before(startApp);
 after(stopApp);
@@ -19,7 +10,6 @@ const { changePlan } = await import('../../src/services/admin-plan.js');
 const { LEGAL_UPDATED } = await import('../../src/company.js');
 const { resendOrderMail } = await import('../../src/services/plan-requests.js');
 const { exportOwnData } = await import('../../src/services/account-self.js');
-const STAFF_INBOX = 'info@carbonstealth.eu';
 const DAY = 86_400_000;
 
 test('the order form says it is an order with an obligation to pay; the early-start box is not ticked', async () => {
@@ -112,12 +102,7 @@ test('a consumer order is confirmed on a durable medium with the model form; act
   assert.equal(still.status, 'OPEN', 'not activated inside the withdrawal period');
   assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: row.userId } })).plan, 'TRIAL');
 
-  const actor = {
-    type: 'HUMAN' as const,
-    id: manager.id,
-    label: 'Екип MANAGER',
-    role: 'MANAGER' as const,
-  };
+  const { actor } = manager;
   const after = new Date(row.createdAt.getTime() + 25 * DAY);
   assert.deepEqual(
     await changePlan(
@@ -194,14 +179,8 @@ test('a team member’s export keeps their actions on other accounts, without th
     where: { email: 'banned.export@example.test' },
   });
   const { banAccount } = await import('../../src/services/admin-security.js');
-  const actor = {
-    type: 'HUMAN' as const,
-    id: support.id,
-    label: 'Екип SUPPORT',
-    role: 'SUPPORT' as const,
-  };
   assert.deepEqual(
-    await banAccount(actor, victim.id, { reason: 'Споделен акаунт с друга фирма' }),
+    await banAccount(support.actor, victim.id, { reason: 'Споделен акаунт с друга фирма' }),
     {
       ok: true,
     },

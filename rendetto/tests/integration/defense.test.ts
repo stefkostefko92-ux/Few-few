@@ -1,22 +1,18 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  BASE,
   Browser,
-  customer,
+  CUSTOMER_PASSWORD,
   linkIn,
   mailTo,
   prisma,
-  sessionCsrf,
-  staff,
   startApp,
   stopApp,
 } from './harness.js';
+import { customer, newProject, sessionCsrf, staff } from './people.js';
 
 before(startApp);
 after(stopApp);
-
-const PASSWORD = 'Shelf-Hinge-Groove-42';
 
 test('a confirmation link opened on another device asks for a new password (no pre-hijacking)', async () => {
   const email = 'victim@example.test';
@@ -49,7 +45,7 @@ test('a confirmation link opened on another device asks for a new password (no p
 test('a confirmation link on the device that signed up confirms directly', async () => {
   const email = 'samedevice@example.test';
   const b = new Browser();
-  await b.register('Същото Устройство', email, PASSWORD);
+  await b.register('Същото Устройство', email, CUSTOMER_PASSWORD);
   const link = linkIn((await mailTo(email, /Потвърдете имейла/)).text, '/verify-email?token=');
   const opened = await b.confirmEmail(link);
   assert.equal(opened.status, 200);
@@ -64,10 +60,10 @@ test('names with links or addresses are refused; no name in mail to an unconfirm
     'пиши на a@b.example',
     'Иван evil.com',
   ]) {
-    const reply = await b.register(name, 'links@example.test', PASSWORD);
+    const reply = await b.register(name, 'links@example.test', CUSTOMER_PASSWORD);
     assert.equal(reply.status, 400, name);
   }
-  await b.register('Мебели 2000 ЕООД', 'company@example.test', PASSWORD);
+  await b.register('Мебели 2000 ЕООД', 'company@example.test', CUSTOMER_PASSWORD);
   const mail = await mailTo('company@example.test', /Потвърдете имейла/);
   assert.ok(!mail.text.includes('Мебели 2000'), 'the name went to an unconfirmed address');
   assert.match(mail.text, /^Здравейте,\n/);
@@ -116,7 +112,7 @@ test('a password change gives the session a new token and voids links sent befor
   const reset = linkIn((await mailTo(email, /Нова парола/)).text, '/reset?token=');
   const changed = await b.post('/account/security/password', {
     _csrf: await sessionCsrf(b, '/account/security'),
-    current: PASSWORD,
+    current: CUSTOMER_PASSWORD,
     next: 'Spruce-Cabinet-Lumber-31',
   });
   assert.equal(changed.status, 302);
@@ -128,43 +124,38 @@ test('a password change gives the session a new token and voids links sent befor
   assert.equal((await outsider.get(reset)).status, 400, 'the earlier reset link is void');
 });
 
-test('the email change limit counts requests, so a taken address cannot be told apart', async () => {
+test('the email change limit counts requests: a taken address and a free one get the same answers', async () => {
   await customer('taken@example.test');
-  const b = await customer('changer@example.test');
-  const replies: number[] = [];
-  for (let k = 0; k < 4; k++) {
-    const r = await b.post('/account/email', {
-      _csrf: await sessionCsrf(b, '/account'),
-      email: 'taken@example.test',
-      password: PASSWORD,
-    });
-    replies.push(r.status);
-  }
-  const flash = await b.get('/account');
-  assert.match(flash.body, /Твърде много|Изчакайте/, `fourth request: ${replies.join(',')}`);
+  const steps = async (b: Browser, email: (k: number) => string) => {
+    const seen: Array<[number, string | null]> = [];
+    for (let k = 0; k < 4; k++) {
+      const r = await b.post('/account/email', {
+        _csrf: await sessionCsrf(b, '/account'),
+        email: email(k),
+        password: CUSTOMER_PASSWORD,
+      });
+      seen.push([r.status, b.flash()]);
+    }
+    return seen;
+  };
+  const toTaken = await steps(await customer('changer@example.test'), () => 'taken@example.test');
+  const toFree = await steps(
+    await customer('changer2@example.test'),
+    (k) => `free-${k}@example.test`,
+  );
+  assert.deepEqual(toTaken, toFree, 'a taken address can be told apart');
+  assert.deepEqual(
+    toTaken.map(([, key]) => key),
+    ['flash.emailChangeSent', 'flash.emailChangeSent', 'flash.emailChangeSent', 'error.tooMany'],
+  );
 });
 
 test('a broken JSON body and an oversized one are client errors, not 500', async () => {
   const b = await customer('json@example.test');
-  const created = await b.post('/app/projects', {
-    _csrf: await sessionCsrf(b, '/app'),
-    type: 'base',
-    name: 'Шкаф',
-  });
-  const id = created.location.split('/').pop() ?? '';
+  const id = await newProject(b);
   const csrf = await sessionCsrf(b, `/app/p/${id}`);
-  const send = (body: string) =>
-    fetch(`${BASE}/app/api/projects/${id}`, {
-      method: 'PUT',
-      headers: {
-        'content-type': 'application/json',
-        'x-csrf-token': csrf,
-        origin: BASE,
-        'x-forwarded-for': b.ip,
-        cookie: [...b.cookies].map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('; '),
-      },
-      body,
-    });
+  const send = (raw: string) =>
+    b.request('PUT', `/app/api/projects/${id}`, { raw, headers: { 'x-csrf-token': csrf } });
   assert.equal((await send('{"spec":')).status, 400);
   assert.equal(
     (await send(JSON.stringify({ spec: { type: 'base', x: 'y'.repeat(70_000) } }))).status,
@@ -174,22 +165,19 @@ test('a broken JSON body and an oversized one are client errors, not 500', async
 
 test('writes of one account are capped per minute, whatever its address', async () => {
   const b = await customer('writer@example.test');
-  const created = await b.post('/app/projects', {
-    _csrf: await sessionCsrf(b, '/app'),
-    type: 'base',
-    name: 'Шкаф',
-  });
-  const id = created.location.split('/').pop() ?? '';
+  const id = await newProject(b);
   const csrf = await sessionCsrf(b, `/app/p/${id}`);
-  let limited = 0;
+  const limited: string[] = [];
   for (let k = 0; k < 62; k++) {
     const r = await b.request('PUT', `/app/api/projects/${id}`, {
       json: { spec: { type: 'nope' } },
       headers: { 'x-csrf-token': csrf, 'x-forwarded-for': `9.200.${k}.9` },
     });
-    if (r.status === 429) limited += 1;
+    if (r.status === 429) limited.push(r.body);
   }
-  assert.ok(limited >= 1, 'no 429 after 62 writes in a minute');
+  assert.ok(limited.length >= 1, 'no 429 after 62 writes in a minute');
+  // the editor reads the refusal as JSON, like every other answer of the API
+  assert.equal((JSON.parse(limited[0] ?? '{}') as { code?: string }).code, 'rate');
 });
 
 test('staff without access to sign-ins see no IP addresses and cannot search by IP', async () => {

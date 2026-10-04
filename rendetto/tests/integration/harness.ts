@@ -6,28 +6,52 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import type { Server } from 'node:http';
-import type { AddressInfo } from 'node:net';
+import { unzipSync } from 'fflate';
 
 export const PORT = 4399;
 export const BASE = `http://127.0.0.1:${PORT}`;
+/** The password customer() signs up with and the one staff() signs in with. */
+export const CUSTOMER_PASSWORD = 'Shelf-Hinge-Groove-42';
+export const STAFF_PASSWORD = 'Oak-Router-Plane-37';
+/** The team's inbox for order and withdrawal notices — pinned, whatever the shell exports. */
+export const STAFF_INBOX = 'info@carbonstealth.eu';
+
+/**
+ * startApp() empties every table, so the database has to say by its name that it is for tests
+ * (`rendetto_test`, `rendetto_ci_…`): a production or development URL in TEST_DATABASE_URL wipes nothing.
+ * The message names the database only — the URL carries the password.
+ */
+export function assertTestDatabase(url: string): void {
+  let name = '';
+  try {
+    name = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''));
+  } catch {
+    throw new Error('refusing to run: TEST_DATABASE_URL is not a valid URL');
+  }
+  if (!/(^|_)(test|ci)(_|$)/i.test(name))
+    throw new Error(
+      `refusing to empty the database "${name}": the name of a test database contains _test or _ci`,
+    );
+}
 
 process.env.NODE_ENV = 'test';
 process.env.PUBLIC_BASE_URL = BASE;
 process.env.DATABASE_URL =
   process.env.TEST_DATABASE_URL ??
   'postgresql://rendetto:rendetto_dev@127.0.0.1:5432/rendetto_test';
+assertTestDatabase(process.env.DATABASE_URL);
 process.env.ENC_KEY = randomBytes(32).toString('hex');
 process.env.HMAC_KEY = randomBytes(32).toString('hex');
 process.env.BREACH_CHECK = 'false';
 process.env.RENDETTO_DEV_OUTBOX = '0';
 process.env.LOG_LEVEL = 'silent';
+process.env.CONTACT_EMAIL = STAFF_INBOX;
 
 const { prisma } = await import('../../src/db.js');
 const { createServer } = await import('../../src/server.js');
 const { loadEngine } = await import('../../src/services/engine.js');
-const { loadGeoIp } = await import('../../src/auth/geoip.js');
+const { loadGeoIp, geoIpReady } = await import('../../src/auth/geoip.js');
 const { outbox } = await import('../../src/mail/mailer.js');
-const { geoIpReady } = await import('../../src/auth/geoip.js');
 export { prisma, outbox };
 
 /** The expected country of 8.8.8.8 — or null when the GeoIP base is not present (then nothing is looked up). */
@@ -49,11 +73,14 @@ export async function startApp(): Promise<void> {
     );
   await loadEngine();
   await loadGeoIp();
-  await new Promise<void>((resolve) => {
-    server = createServer().listen(PORT, '127.0.0.1', () => resolve());
+  // a taken port fails the file here, loudly: otherwise the tests would talk to whatever listens there
+  await new Promise<void>((resolve, reject) => {
+    const app = createServer().listen(PORT, '127.0.0.1', () => resolve());
+    app.once('error', (error) =>
+      reject(new Error(`the test app cannot listen on ${PORT}: ${error.message}`)),
+    );
+    server = app;
   });
-  const address = server?.address() as AddressInfo | null;
-  if (!address) throw new Error('server did not start');
 }
 
 export async function stopApp(): Promise<void> {
@@ -64,7 +91,9 @@ export async function stopApp(): Promise<void> {
 export interface Reply {
   status: number;
   location: string;
+  /** The text of the answer; empty for a ZIP (its bytes are in `bytes`). */
   body: string;
+  bytes: Buffer;
   headers: Headers;
 }
 
@@ -74,6 +103,20 @@ let ipCounter = 0;
 export function nextIp(): string {
   ipCounter += 1;
   return `9.${Math.floor(ipCounter / 250) + 10}.${ipCounter % 250}.7`;
+}
+
+export interface RequestInit {
+  form?: Record<string, string>;
+  json?: unknown;
+  /** A JSON body sent as it is — for keys like `__proto__` that JSON.stringify would not send. */
+  raw?: string;
+  headers?: Record<string, string>;
+}
+
+/** Where a browser goes: the app's address and the origin it sends (PUBLIC_BASE_URL of that app). */
+export interface Site {
+  base: string;
+  origin: string;
 }
 
 export class Browser {
@@ -88,6 +131,7 @@ export class Browser {
       depth: 24,
       gpu: 'ANGLE (Intel)',
     },
+    readonly site: Site = { base: BASE, origin: BASE },
   ) {}
 
   private store(res: Response): void {
@@ -102,11 +146,7 @@ export class Browser {
     }
   }
 
-  async request(
-    method: string,
-    path: string,
-    init: { form?: Record<string, string>; json?: unknown; headers?: Record<string, string> } = {},
-  ): Promise<Reply> {
+  async request(method: string, path: string, init: RequestInit = {}): Promise<Reply> {
     const headers: Record<string, string> = {
       'x-forwarded-for': this.ip,
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/141.0 Safari/537.36',
@@ -116,20 +156,26 @@ export class Browser {
     let body: string | undefined;
     if (init.form) {
       headers['content-type'] = 'application/x-www-form-urlencoded';
-      headers.origin ??= BASE;
+      headers.origin ??= this.site.origin;
       body = new URLSearchParams(init.form).toString();
-    } else if (init.json !== undefined) {
+    } else if (init.json !== undefined || init.raw !== undefined) {
       headers['content-type'] = 'application/json';
-      headers.origin ??= BASE;
-      body = JSON.stringify(init.json);
+      headers.origin ??= this.site.origin;
+      body = init.raw ?? JSON.stringify(init.json);
     }
-    const res = await fetch(`${BASE}${path}`, { method, headers, body, redirect: 'manual' });
+    const res = await fetch(`${this.site.base}${path}`, {
+      method,
+      headers,
+      body,
+      redirect: 'manual',
+    });
     this.store(res);
-    const text = res.headers.get('content-type')?.includes('zip') ? '' : await res.text();
+    const bytes = Buffer.from(await res.arrayBuffer());
     return {
       status: res.status,
       location: res.headers.get('location') ?? '',
-      body: text,
+      body: res.headers.get('content-type')?.includes('zip') ? '' : bytes.toString('utf8'),
+      bytes,
       headers: res.headers,
     };
   }
@@ -144,6 +190,14 @@ export class Browser {
     headers?: Record<string, string>,
   ): Promise<Reply> {
     return this.request('POST', path, { form, headers });
+  }
+
+  /** The key of the one-time message the last answer left (the flash cookie), or null. */
+  flash(): string | null {
+    const raw = this.cookies.get('rd_flash');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { key?: unknown };
+    return typeof parsed.key === 'string' ? parsed.key : null;
   }
 
   /** The CSRF token of the page: the hidden `_csrf` field (pre-login cookie value or session token). */
@@ -187,16 +241,10 @@ export class Browser {
   }
 }
 
-export function lastMailTo(email: string): { subject: string; text: string } | undefined {
-  return [...outbox].reverse().find((m) => m.to === email);
-}
+export type SentMail = (typeof outbox)[number];
 
 /** Mail goes out after the response (fire and forget), so wait for it a little. */
-export async function mailTo(
-  email: string,
-  subject: RegExp,
-  timeoutMs = 3000,
-): Promise<{ subject: string; text: string }> {
+export async function mailTo(email: string, subject: RegExp, timeoutMs = 3000): Promise<SentMail> {
   const start = Date.now();
   for (;;) {
     const found = [...outbox].reverse().find((m) => m.to === email && subject.test(m.subject));
@@ -206,81 +254,23 @@ export async function mailTo(
   }
 }
 
+/** Forgets the mail sent so far to the address — so a later mailTo() finds only a new one. */
+export function forgetMailTo(email: string): void {
+  for (let i = outbox.length - 1; i >= 0; i--) if (outbox[i]?.to === email) outbox.splice(i, 1);
+}
+
 export function linkIn(text: string | undefined, path: string): string {
   const match = new RegExp(`https?://[^\\s]+(${path.replace('?', '\\?')}[^\\s]*)`).exec(text ?? '');
   if (!match?.[1]) throw new Error(`no ${path} link in the email`);
   return match[1];
 }
 
-/** A verified customer with a signed-in browser. */
-export async function customer(
-  email: string,
-  password = 'Shelf-Hinge-Groove-42',
-  ip = nextIp(),
-): Promise<Browser> {
-  const browser = new Browser(ip);
-  await browser.register('Тест Клиент', email, password);
-  await browser.confirmEmail(
-    linkIn((await mailTo(email, /Потвърдете имейла/)).text, '/verify-email?token='),
+/** The files of a ZIP answer by name, as text (README, CSV, SVG, DXF and G-code are all text). */
+export function unzip(reply: Reply): Map<string, string> {
+  assert.equal(reply.status, 200, 'the ZIP was not served');
+  assert.match(reply.headers.get('content-type') ?? '', /zip/);
+  const files = unzipSync(new Uint8Array(reply.bytes));
+  return new Map(
+    Object.entries(files).map(([name, data]) => [name, Buffer.from(data).toString('utf8')]),
   );
-  const login = await browser.login(email, password);
-  if (login.status !== 302) throw new Error(`login failed with ${login.status}`);
-  return browser;
-}
-
-/** A team member with two-factor protection already on, signed in through the real login and 2FA forms. */
-export async function staff(
-  role: 'VIEWER' | 'ANALYST' | 'SUPPORT' | 'MANAGER' | 'ADMIN' | 'OWNER',
-  email: string,
-  password = 'Oak-Router-Plane-37',
-): Promise<{ browser: Browser; id: string; secret: string }> {
-  const { hashPassword } = await import('../../src/auth/password.js');
-  const { encryptSecret } = await import('../../src/crypto.js');
-  const { generateTotpSecret, totpCode } = await import('../../src/auth/totp.js');
-  const { config } = await import('../../src/config.js');
-  const secret = generateTotpSecret();
-  const user = await prisma.user.create({
-    data: {
-      email,
-      name: `Екип ${role}`,
-      role,
-      passwordHash: await hashPassword(password),
-      emailVerifiedAt: new Date(),
-      plan: 'LIFETIME',
-      totpSecretEnc: encryptSecret(secret, config().ENC_KEY),
-      totpEnabledAt: new Date(),
-    },
-  });
-  const browser = new Browser('1.1.1.1');
-  const login = await browser.login(email, password);
-  if (!login.location.startsWith('/login/2fa'))
-    throw new Error(`staff login: ${login.status} ${login.location}`);
-  const page = await browser.get(login.location);
-  const done = await browser.post('/login/2fa', {
-    _csrf: Browser.csrf(page.body),
-    next: '/admin',
-    code: totpCode(secret, Math.floor(Date.now() / 1000)),
-  });
-  if (done.status !== 302) throw new Error(`staff 2FA: ${done.status}`);
-  return { browser, id: user.id, secret };
-}
-
-/** A verified customer who places a plan order through the real form; returns the browser and the order row. */
-export async function placeOrder(email: string, form: Record<string, string>) {
-  const c = await customer(email);
-  const reply = await c.post('/account/plan/request', {
-    _csrf: await sessionCsrf(c, '/account/plan'),
-    ...form,
-  });
-  assert.equal(reply.status, 302);
-  const row = await prisma.upgradeRequest.findFirstOrThrow({
-    where: { user: { email } },
-    orderBy: { createdAt: 'desc' },
-  });
-  return { c, row };
-}
-
-/** The session CSRF token from any signed-in page. */
-export async function sessionCsrf(browser: Browser, path = '/account'): Promise<string> {
-  return Browser.csrf((await browser.get(path)).body);
 }

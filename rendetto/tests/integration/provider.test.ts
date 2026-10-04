@@ -1,6 +1,7 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { BASE, startApp, stopApp } from './harness.js';
+import { graph, ofType } from './json-ld.js';
 
 before(startApp);
 after(stopApp);
@@ -58,15 +59,9 @@ test('the privacy policy, the footer, JSON-LD and llms.txt carry the same names,
     assert.ok(foot.includes(provider), `${path}: footer names and legal form`);
     assert.ok(foot.includes(phoneLink), `${path}: footer phone`);
   }
-  const home = await page('/en/');
-  const ld = /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/.exec(home)?.[1] ?? '';
-  const org = (
-    JSON.parse(ld) as {
-      '@graph': Array<Record<string, unknown> & { '@type': string | string[] }>;
-    }
-  )['@graph'].find((node) => [node['@type']].flat().includes('Organization'));
+  const org = ofType(graph(await page('/en/')), 'Organization');
   assert.deepEqual(
-    [org?.legalName, org?.alternateName, org?.telephone],
+    [org.legalName, org.alternateName, org.telephone],
     [COMPANY.name, COMPANY.nameBg, COMPANY.phone],
   );
   const llms = await page('/llms.txt');
