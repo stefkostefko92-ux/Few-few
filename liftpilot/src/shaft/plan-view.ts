@@ -7,6 +7,7 @@
 import { circle, line, path, rect, type Box, type Entity, type Pt } from '../drawing';
 import { KV } from './norme';
 import { callStationAt, callStationOf } from './callstation';
+import { portalOf } from './frame';
 import { headBox, headOf, headRail, mainBox, type WallBox } from './head';
 import { governorPlan } from './plan-governor';
 import { landingOf, shiftAxes } from './landing';
@@ -61,7 +62,7 @@ function landingDoor(L: Layout, door: DoorLayout): Entity[] {
 
 /** The landing call station beside a landing door, on the landing face of the wall standing on `box`. */
 function callPanel(L: Layout, d: DoorLayout, box: WallBox): Entity[] {
-  const { u } = callStationAt(d, callStationOf(L.inputs)), [w, , t] = KV.callPanel, T = L.inputs.wall;
+  const { u } = callStationAt(d, callStationOf(L.inputs), portalOf(L.inputs).jamb), [w, , t] = KV.callPanel, T = L.inputs.wall;
   return [path(quad(L, d.wall, u - w / 2, -T - t, u + w / 2, -T, box), true, 'outline', 'steel')];
 }
 

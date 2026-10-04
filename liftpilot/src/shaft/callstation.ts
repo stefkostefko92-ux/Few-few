@@ -12,7 +12,7 @@ export const lowIsLeft = (w: Wall): boolean => w === 'front' || w === 'right';
 
 /** Middle of the call station along the door's wall [mm], and the edge of the landing door's portal (`jamb` wide; its
  *  own frame's: frame.ts) it is measured from. */
-export function callStationAt(d: DoorLayout, cs: CallStation, jamb: number = KV.doorPortal): { u: number; from: number } {
+export function callStationAt(d: DoorLayout, cs: CallStation, jamb: number): { u: number; from: number } {
   const low = (cs.side === 'left') === lowIsLeft(d.wall), from = low ? d.l0 - jamb : d.l1 + jamb;
   return { u: low ? from - cs.offset : from + cs.offset, from };
 }

@@ -237,7 +237,7 @@ test('relazione: le quote dell\'argano SICOR, Montanari o Sassi proposto, per il
     marks: { pEstimate: false, geometry: [], machineProposed: true, catalog: { brand: 'Montanari', model: 'M93', ratio: '1/50', staticKg: 5000, src: 'scheda' } },
   });
   const mr = new Map(mt.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));
-  assert.equal(mr.get('Assi sul piano dei piedi'), 'puleggia 200 mm, vite senza fine ≈ 362 mm (misurato sul disegno in scala)');
+  assert.equal(mr.get('Assi sul piano dei piedi'), 'puleggia 200 mm, vite senza fine ≈ 362 mm (valore misurato sul disegno in scala)');
   assert.equal(mr.get('Fissaggio'), '6 × Ø24,5 su 575 × 300 mm; piedi 644 × 350 mm');
   // Sassi LEO: the inclined worm and the flywheel under the feet's plane
   const leo = buildReport({
@@ -247,7 +247,7 @@ test('relazione: le quote dell\'argano SICOR, Montanari o Sassi proposto, per il
     marks: { pEstimate: false, geometry: [], machineProposed: true, catalog: { brand: 'Sassi', model: 'LEO', ratio: '1/55', staticKg: 3000, src: 'catalogo' } },
   });
   const lr = new Map(leo.blocks.flatMap((b) => (b.t === 'kv' ? b.rows : [])));
-  assert.equal(lr.get('Assi sul piano dei piedi'), 'puleggia 135 mm, vite senza fine ≈ 228 mm, inclinata di 15° (misurato sul disegno in scala)');
+  assert.equal(lr.get('Assi sul piano dei piedi'), 'puleggia 135 mm, vite senza fine ≈ 228 mm, inclinata di 15° (valore misurato sul disegno in scala)');
   assert.match(lr.get('Ingombri (scheda del costruttore)') ?? '', /altezza 405 mm sul piano dei piedi, fino a 80 mm sotto$/);
   // FAER: the height and the sheave's width read on the drawing in scale; GEM HW140CL: the body and E of the HW140C
   const rowsOf = (brand: string, model: string, D: number): Map<string, string> => {
@@ -256,8 +256,8 @@ test('relazione: le quote dell\'argano SICOR, Montanari o Sassi proposto, per il
     return new Map(shapeRows(S, D, (x, dp = 0) => x.toFixed(dp)));
   };
   const p68 = rowsOf('FAER', 'P68F', 600), cl = rowsOf('GEM', 'HW140CL', 560);
-  assert.match(p68.get('Puleggia') ?? '', /larghezza E ≈ 110 mm \(misurato sul disegno in scala\)$/);
-  assert.match(p68.get('Ingombri (scheda del costruttore)') ?? '', /altezza ≈ 710 mm \(misurato sul disegno in scala\) sul piano dei piedi/);
+  assert.match(p68.get('Puleggia') ?? '', /larghezza E ≈ 110 mm \(valore misurato sul disegno in scala\)$/);
+  assert.match(p68.get('Ingombri (scheda del costruttore)') ?? '', /altezza ≈ 710 mm sul piano dei piedi \(valore misurato sul disegno in scala\)$/);
   assert.match(cl.get('Puleggia') ?? '', /larghezza E = 100 mm \(come la HW140C\)$/);
   assert.ok(cl.has('Ingombri (scheda del costruttore; corpo come la HW140C)'));
 });

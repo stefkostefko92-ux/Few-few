@@ -35,7 +35,9 @@ export { landingKey, landingOf, landingShift } from './landing';
 export { PANEV_BACK, cwBracketsOf } from './staffe';
 export { CW_CHOICES, CW_SPECIALS, CW_SUPPORTS, DOOR_PAIRS, isCwSpecial } from './staffe-ids';
 export type { CwChoice, CwSpecial, CwSupportCode, DoorPairId } from './staffe-ids';
-export { DOOR_PAIR_DEFAULT, PLATES_A, bracketsAlong, doorBracketCount, doorPair, doorPairOf, plateReach, topBracketSpan, topBracketsAt } from './staffe-porte';
+export {
+  DOOR_PAIR_DEFAULT, PLATES_A, bracketsAlong, doorBracketCount, doorPair, doorPairOf, plateReach, topBracketSpan, topBracketsAt, topPairRoom, topPairStops,
+} from './staffe-porte';
 export type { DoorPair, DoorSection, PlateA } from './staffe-porte';
 export { SC_SUPPORTS } from './staffe-sc';
 export type { ScPlace, ScSupport } from './staffe-sc';
@@ -45,7 +47,9 @@ export { GOVERNORS, LEVER_REACH, freeSides, govSize, governorSpot } from './gove
 export type { Governor, GovernorSpot } from './governor';
 export { CALC_KEYS, PLAN_KEYS, applyEdit, editKeys, editLabel, editValue, keptPlan, planValues, valueOf, withChoice, withValue, withoutFix } from './edit';
 export { FRAME_STD, portalOf, withFrame } from './frame';
-export { NO_IMBOTTI, hasImbotti, imbottiOf, marbleHeight, marbleOpening, marbleWidth, withImbotti, withMarbleHeight, withMarbleWidth } from './imbotti';
+export {
+  NO_IMBOTTI, hasImbotti, imbottiOf, marbleHeight, marbleOpening, marbleWidth, wallOpeningHeight, withImbotti, withMarbleHeight, withMarbleWidth,
+} from './imbotti';
 export type { PlanLabels } from './plan-dims';
 export { sectionEntities, mapZ } from './section-view';
 export type { SectionView, ZMap } from './section-view';

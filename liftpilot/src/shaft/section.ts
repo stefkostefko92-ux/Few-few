@@ -4,6 +4,7 @@
 import { bufferStroke, bufferType, maxSpeed, strokeNeeded } from './buffers';
 import { check } from './checks';
 import { KV_VERT } from './norme-vert';
+import { topPairStops } from './staffe-porte';
 import { levels, type VerticalInputs } from './vertical';
 import type { Layout, ShaftCheck } from './types';
 
@@ -85,12 +86,16 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
   const [sw, sd] = standOf(V), standArea = (sw * sd) / 1e6, screen = screenOf(V);
   // the counterweight with the car on its compressed buffers: what its rails still guide past its top
   const guided = S.ceiling - K.railTopGap - (cwPlateAt(S, -S.moveDown) + V.cwH), guide = (K.cwGuided + K.cwGuidedV2 * V.v * V.v) * 1000;
+  // the wall the pairs over the landing doors need, at the tightest stop (staffe-porte.ts): a warning, the mounting is
+  // the software's
+  const tops = topPairStops(L, S.levels), room = tops.length ? Math.min(...tops.map((t) => t.room)) : null;
   return [
     check('h_refuge', S.ceiling - roof >= refugeTop, S.ceiling - roof, refugeTop, 0, 'mm'),
     check('h_clear', clear.v >= clear.lim, clear.v, clear.lim, 0, 'mm'),
     check('h_parapet', V.parapet >= needed, V.parapet, needed, 0, 'mm'),
     check('h_stand', standArea >= K.roofFreeArea - 1e-9 && Math.min(sw, sd) >= K.roofFreeSide, standArea, K.roofFreeArea, 2, 'm²'),
     check('h_door', L.inputs.doorHeight >= K.entranceH, L.inputs.doorHeight, K.entranceH, 0, 'mm'),
+    ...(room !== null ? [check('h_staffe', room >= 0, room, 0, 0, 'mm', true)] : []),
     check('h_car', V.carH >= K.carInnerH, V.carH, K.carInnerH, 0, 'mm'),
     check('h_cw', guided >= guide - 1e-9, guided, Math.ceil(guide), 0, 'mm'),
     check('p_refuge', pitFree >= refugePit, pitFree, refugePit, 0, 'mm'),

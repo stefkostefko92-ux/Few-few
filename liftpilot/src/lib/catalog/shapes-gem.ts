@@ -93,9 +93,9 @@ const HW140C: Hw = {
 };
 // HW175 ELEPHANT: slow shaft 200 over the feet, the worm 173 over it; feet 477 × 310, 4 × Ø25 at 242 and 149 from the
 // slow shaft (not symmetric) × 260; 550–667 to the handwheel Ø 440 past the motor and the brake, 206 on the other side,
-// 750 high; P 265, E 135, 566 wide (225 to the far side, the handwheel's radius)
+// 750 high; P 265, E 135, 566 wide: the handwheel's radius on the far side, so the slow shaft's end 346 (in scale ≈ 344)
 const HW175: Hw = {
-  yWheel: 200, yWorm: 373, foot: [-192, -155, 285, 155], base: 60, holes: grid([-149, 242], [-130, 130]), hole: 'Ø25', overall: [206, 667, 750], end: 341,
+  yWheel: 200, yWorm: 373, foot: [-192, -155, 285, 155], base: 60, holes: grid([-149, 242], [-130, 130]), hole: 'Ø25', overall: [206, 667, 750], end: 346,
   wheel: [-193, 250, 300, 150], worm: [-190, 188, 532, 130], motor: [161, 225, 500], flange: [150, 188], terminal: [249, 446, 577, 70],
   brake: [110, 510, 600], arms: [528, 164, 95, 603, 540, 125], magnet: [569, 627, 57, 60], lever: [433, 600, 692], wheelHand: [220, 630, 667],
   extra: [CX('cover', 373, 0, 80, -206, -190), B('cover', 113, 524, -80, 235, 750, 80)],

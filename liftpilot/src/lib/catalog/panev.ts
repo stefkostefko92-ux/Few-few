@@ -3,7 +3,7 @@
 // never in the screens' code). And the bill of materials of a design: the articles its landing doors (under the sills
 // and over the doors) and counterweight rails take, as many as the software places (src/shaft/staffe-*.ts). Pure.
 import {
-  bracketCode, bracketHeights, cwBracket, cwBracketsOf, cwSpecialOf, doorBracketCount, doorPairOf, landingOf, plateReach, railSpan, topBracketSpan,
+  bracketCode, bracketHeights, cwBracket, cwBracketsOf, cwSpecialOf, doorBracketCount, doorPairOf, landingOf, plateReach, railSpan, topBracketSpan, topPairStops,
   type Layout,
 } from '@/shaft';
 import { cwNiche, wallLength } from '@/shaft/niche';
@@ -62,9 +62,9 @@ export interface PanevBom {
   missing: number;
 }
 
-/** The articles of a design: under every landing sill and over every landing door the pair of its doors, one every
- *  400 mm (staffe-porte.ts); on the counterweight rails, at every bracket's height, the support with its SG or the
- *  solution to drawing chosen. */
+/** The articles of a design: under every landing sill and over every landing door where they find the wall the pair of
+ *  its doors, one every 400 mm (staffe-porte.ts); on the counterweight rails, at every bracket's height, the support with
+ *  its SG or the solution to drawing chosen. */
 export function panevBom(L: Layout): PanevBom {
   const I = L.inputs, S = section(L), pair = doorPairOf(I), rows = new Map<string, BomRow>();
   const add = (code: string, qty: number, use: BomRow['use'], extra: Partial<BomRow> = {}): void => {
@@ -74,10 +74,11 @@ export function panevBom(L: Layout): PanevBom {
     if (row) row.qty += qty;
     else rows.set(code, { article, qty, use, ...extra });
   };
+  const tops = topPairStops(L, S.levels);
   for (const d of L.doors) {
-    // under the sill and over the door, at every stop the entrance serves
-    const ld = landingOf(d), stops = I.vertical.floors.filter((f) => f.door.includes(d.side)).length;
-    const n = (doorBracketCount(ld.u0 + 10, ld.u1 - 10) + doorBracketCount(...topBracketSpan(ld, wallLength(I, ld.wall)))) * stops;
+    // under the sill at every stop the entrance serves, over the door where its pairs find the wall (staffe-porte.ts)
+    const ld = landingOf(d), stops = tops.filter((s) => s.d === d), over = stops.filter((s) => s.room >= 0).length;
+    const n = doorBracketCount(ld.u0 + 10, ld.u1 - 10) * stops.length + doorBracketCount(...topBracketSpan(ld, wallLength(I, ld.wall))) * over;
     const reach = plateReach(pair.a, I.landingDepth);
     add(pair.a.code, n, 'door', { cut: reach.cut < pair.a.length ? reach.cut : undefined, short: reach.short || undefined });
     add(pair.b.code, n, 'door');

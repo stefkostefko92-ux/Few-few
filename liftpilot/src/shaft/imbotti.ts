@@ -29,6 +29,10 @@ export const marbleWidth = (I: ShaftInputs): number => {
 };
 export const marbleHeight = (I: ShaftInputs): number => I.doorHeight + portalOf(I).head + imbottiOf(I).top;
 
+/** The opening in the wall at a landing door, its height over the landing floor [mm]: between the marbles round the
+ *  linings, the door's own frame's outside, or the door's clear height (the portal stands on the wall's face). */
+export const wallOpeningHeight = (I: ShaftInputs): number => (hasImbotti(I) ? marbleHeight(I) : I.frame ? I.doorHeight + I.frame.head : I.doorHeight);
+
 /** The linings for a distance between the marbles, shared by the two sides (the odd millimetre on the right). */
 export function withMarbleWidth(I: ShaftInputs, w: number): ShaftInputs {
   const m = imbottiOf(I), rest = w - I.doorWidth - 2 * portalOf(I).jamb, left = Math.floor(rest / 2);

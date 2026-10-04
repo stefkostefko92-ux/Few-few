@@ -21,8 +21,9 @@ export default function FrameOptions({ I, set }: Props) {
       <span>{t(`fr_${key}`)} (mm)</span>
       <input className="input num" type="number" inputMode="numeric" min={KV.frameMin} max={FRAME_MAX} step={5} value={value}
         onChange={(e) => {
+          // what is typed on the way (1 of 150) stays in the field; the form's schema marks a size out of bounds
           const v = int(e.target.value);
-          if (f && Number.isFinite(v) && v >= KV.frameMin && v <= FRAME_MAX) set({ frame: withFrame(I, { ...f, [key]: v }).frame });
+          if (f && Number.isFinite(v) && v >= 0) set({ frame: withFrame(I, { ...f, [key]: v }).frame });
         }} />
     </label>
   );

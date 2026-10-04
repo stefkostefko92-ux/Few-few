@@ -4,9 +4,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DOOR_PAIRS, SC_SUPPORTS, bracketsAlong, cwBracket, defaultInputs, doorPair, doorPairOf, landingOf, layout, planEntities, plateReach, topBracketSpan, topBracketsAt,
-  type ShaftInputs,
+  DOOR_PAIRS, FRAME_STD, SC_SUPPORTS, bracketsAlong, cwBracket, defaultInputs, doorPair, doorPairOf, landingOf, layout, planEntities, plateReach, section,
+  sectionChecks, topBracketSpan, topBracketsAt, topPairStops, type ShaftInputs,
 } from '../index';
+import { HEADER } from '../sill';
 import { scPlace } from '../staffe-sc';
 
 const base = defaultInputs(1600, 1750);
@@ -74,17 +75,35 @@ test('porte di piano: coppie della stessa sezione, la piastra tagliata alla sogl
 
 test('porte di piano: coppie sopra la porta lungo la sospensione, accanto a quelle della soglia del piano sopra se vicine', () => {
   const L = layout(base), d = landingOf(L.doors[0]), len = d.wall === 'front' || d.wall === 'rear' ? base.W : base.D, pair = doorPairOf(base);
-  const [u0, u1] = topBracketSpan(d, len), plain = topBracketsAt(pair, d, len, 0);
+  const [u0, u1] = topBracketSpan(d, len), plain = topBracketsAt(pair, d, len, 0, 0, undefined);
   assert.deepEqual(plain, bracketsAlong(u0, u1));
   assert.ok(plain.length >= 3 && u1 - u0 > d.u1 - d.u0, 'la sospensione è più lunga della luce');
   // the floor above far enough (B 320 over a 2000 mm door: 2000 + 230 + 333 + 357 = 2920 mm): the plain rule
-  assert.deepEqual(topBracketsAt(pair, d, len, 0, 2920), plain);
+  assert.deepEqual(topBracketsAt(pair, d, len, 0, 0, 2920), plain);
   // nearer: no pair over the door falls on one under the sill above, each stays within the suspension, as many
-  const below = bracketsAlong(d.u0 + 10, d.u1 - 10), near = topBracketsAt(pair, d, len, 0, 2700);
+  const below = bracketsAlong(d.u0 + 10, d.u1 - 10), near = topBracketsAt(pair, d, len, 0, 0, 2700);
   assert.equal(near.length, plain.length);
   assert.notDeepEqual(near, plain);
   for (const u of near) {
     assert.ok(u >= u0 && u <= u1);
     for (const b of below) assert.ok(Math.abs(u - b) >= 75, `${u} accanto a ${b}`);
   }
+});
+
+test('porte di piano: le coppie sopra la porta dove B trova il muro, altrimenti nessuna lì e la verifica avverte', () => {
+  const h = (I: ShaftInputs) => { const c = sectionChecks(layout(I)).find((x) => x.id === 'h_staffe'); return [c?.status, c?.value]; };
+  const over = (I: ShaftInputs) => { const L = layout(I); return topPairStops(L, section(L).levels).map((s) => s.room >= 0); };
+  // the portal: the wall from the suspension's top up; the standard frame's head under it
+  assert.deepEqual(h(base), ['ok', HEADER.top]);
+  assert.deepEqual(h({ ...base, frame: FRAME_STD }), ['ok', HEADER.top - FRAME_STD.head]);
+  // a frame's head (or the marbles) above the suspension: no pair over any door, a warning
+  const tall: ShaftInputs = { ...base, frame: { ...FRAME_STD, head: 300 } }, d = landingOf(layout(tall).doors[0]);
+  assert.deepEqual(h(tall), ['warn', HEADER.top - 300]);
+  assert.ok(over(tall).every((x) => !x));
+  assert.deepEqual(topBracketsAt(doorPairOf(tall), d, base.W, 0, 300, undefined), []);
+  assert.deepEqual(h({ ...base, imbotti: { left: 0, right: 0, top: 200 } })[0], 'warn');
+  // a floor near above (2400 over a 2000 mm door): that stop's pairs would reach its sill
+  const low: ShaftInputs = { ...base, vertical: { ...base.vertical, floors: base.vertical.floors.map((f, i) => (i === 1 ? { ...f, rise: 2400 } : f)) } };
+  assert.equal(h(low)[0], 'warn');
+  assert.deepEqual(over(low), base.vertical.floors.map((_, i) => i !== 1));
 });

@@ -6,12 +6,14 @@
 // suspension (p. 04: the brackets hold the sill "o l'elemento portante della porta di piano"; the mounting is the
 // software's): B on the wall over the opening with its joint at the foot, A's platform on the suspension's top,
 // which hangs from it on bolts through A's holes; along the suspension, by the same rule. Where the floor above is near
-// enough for its sill's pairs to stand at the same heights, an upper pair falling on one of them moves beside it. Pure:
-// the 3D builds them (components/lift3d/staffe.ts), the section draws them (section-staffe.ts), the bill of materials
-// counts them.
+// enough for its sill's pairs to stand at the same heights, an upper pair falling on one of them moves beside it; where B
+// finds no wall (the opening in it reaches above the suspension, or the sill above is in the way) none is placed and the
+// check h_staffe says so. Pure: the 3D builds them (components/lift3d/staffe.ts), the section draws them
+// (section-staffe.ts), the bill of materials counts them.
+import { wallOpeningHeight } from './imbotti';
 import { HEADER, SILL_H, headerSpan } from './sill';
 import { DOOR_PAIRS, type DoorPairId } from './staffe-ids';
-import type { DoorLayout, ShaftInputs } from './types';
+import type { DoorLayout, Layout, ShaftInputs } from './types';
 
 export type DoorSection = 65 | 45 | 37;
 
@@ -91,11 +93,32 @@ export function plateReach(p: PlateA, depth: number): { offset: number; cut: num
   return { offset, cut: Math.min(need, p.length), short: need > p.length };
 }
 
-/** The pairs over a landing door `d` at the level zf, on its wall of length `len`, along the suspension (topBracketSpan).
- *  `up`: the level of the floor above when its door is on the same wall; if its sill's pairs reach down to the heights
- *  of these, a pair falling on one of them (closer than B's face and 10 mm) moves beside it, on the nearer side within
- *  the span. Along-wall positions [mm]. */
-export function topBracketsAt(p: DoorPair, d: DoorLayout, len: number, zf: number, up?: number): number[] {
+/** Room for the pairs over a landing door at the level zf [mm]: B needs the wall from the suspension's top up (A carries
+ *  it HEADER.top over the clear height), so over the opening in the wall (`opening`: its height over the clear one —
+ *  none with the portal, the door's own frame's head, the marbles' round the linings) and, when the floor above has its
+ *  door on the same wall (`up`: its level), under that sill. The smaller of the two; negative: no pair there. */
+export function topPairRoom(p: DoorPair, d: DoorLayout, zf: number, opening: number, up: number | undefined): number {
+  const { base, aTop } = pairPose(p, 0), over = HEADER.top - opening;
+  return up === undefined ? over : Math.min(over, up - SILL_H - (zf + d.height + HEADER.top + aTop - base));
+}
+
+/** Every stop each landing door of a design serves: the floor above's level when its door is on the same wall, the room
+ *  for the pairs over the door there (topPairRoom). */
+export function topPairStops(L: Layout, levels: readonly number[]): { d: DoorLayout; i: number; up: number | undefined; room: number }[] {
+  const I = L.inputs, p = doorPairOf(I), opening = wallOpeningHeight(I) - I.doorHeight, F = I.vertical.floors;
+  return L.doors.flatMap((d) => F.flatMap((f, i) => {
+    if (!f.door.includes(d.side)) return [];
+    const up = F[i + 1]?.door.includes(d.side) ? levels[i + 1] : undefined;
+    return [{ d, i, up, room: topPairRoom(p, d, levels[i], opening, up) }];
+  }));
+}
+
+/** The pairs over a landing door `d` at the level zf, on its wall of length `len`, along the suspension (topBracketSpan);
+ *  none where they find no wall (topPairRoom, `opening` and `up` as there). If the sill's pairs of the floor above reach
+ *  down to the heights of these, a pair falling on one of them (closer than B's face and 10 mm) moves beside it, on the
+ *  nearer side within the span. Along-wall positions [mm]. */
+export function topBracketsAt(p: DoorPair, d: DoorLayout, len: number, zf: number, opening: number, up: number | undefined): number[] {
+  if (topPairRoom(p, d, zf, opening, up) < 0) return [];
   const [u0, u1] = topBracketSpan(d, len), at = bracketsAlong(u0, u1), { base, aTop } = pairPose(p, 0), h = aTop - base;
   if (up === undefined || zf + d.height + HEADER.top + h <= up - SILL_H - h) return at;
   const below = bracketsAlong(d.u0 + 10, d.u1 - 10), gap = B_SECTIONS[p.a.section].face + 10;

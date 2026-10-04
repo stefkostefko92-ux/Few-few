@@ -22,8 +22,11 @@ test('telaio proprio: standard 120/220/50, il vano nel muro è il suo ingombro e
   assert.equal(m.h, framed.doorHeight + 220);
   assert.equal(marbleWidth(framed), framed.doorWidth + 240);
   assert.equal(marbleHeight(framed), framed.doorHeight + 220);
-  // the call station from the frame's edge
-  assert.equal(callStationAt(d, callStationOf(framed), portalOf(framed).jamb).from, d.l1 + 120);
+  // the call station from the frame's edge, in the plan where its dimension says
+  const cs = callStationAt(d, callStationOf(framed), portalOf(framed).jamb), [w, , t] = KV.callPanel;
+  assert.equal(cs.from, d.l1 + 120);
+  assert.ok(planEntities(layout(framed), 'main', framed.vertical.main).some((e) => e.e === 'path' && e.fill === 'steel'
+    && e.pts.some(([x, y]) => x === cs.u - w / 2 && y === -framed.wall - t)), 'bottoniera dal montante del telaio');
 });
 
 test('telaio proprio: in pianta i montanti e le quote che lo cambiano, in sezione il frontalino', () => {

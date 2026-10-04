@@ -159,7 +159,8 @@ export const shaftInputsReadSchema = z.object({
   head: z.object({ front: mm(-500, 500), rear: mm(-500, 500), left: mm(-500, 500), right: mm(-500, 500) }).strict().optional(),
   /** linings of the landing doors in an old opening between the marbles (src/shaft/imbotti.ts) */
   imbotti: z.object({ left: mm(0, IMBOTTI_MAX), right: mm(0, IMBOTTI_MAX), top: mm(0, IMBOTTI_MAX) }).strict().optional(),
-  /** the landing doors' own frame (src/shaft/frame.ts): jambs and header from KV.frameMin, depth within the wall's range */
+  /** the landing doors' own frame (src/shaft/frame.ts): jambs, header and depth from KV.frameMin (the depth no more than
+   *  the wall's thickness: shaftInputsSchema) */
   frame: z.object({ jamb: mm(KV.frameMin, FRAME_MAX), head: mm(KV.frameMin, FRAME_MAX), depth: mm(KV.frameMin, FRAME_MAX) }).strict().optional(),
 }).strict();
 
@@ -174,6 +175,10 @@ export const shaftInputsSchema = shaftInputsReadSchema.superRefine((S, ctx) => {
     const min = sides(f.door).some((x) => sides(up.door).includes(x)) ? S.doorHeight : 1;
     if (f.rise < min) ctx.addIssue({ code: z.ZodIssueCode.too_small, minimum: min, inclusive: true, type: 'number', path: ['vertical', 'floors', i, 'rise'], message: 'stops too close' });
   });
+  // the door's own frame stands in the wall's opening: no deeper than the wall
+  if (S.frame && S.frame.depth > S.wall) {
+    ctx.addIssue({ code: z.ZodIssueCode.too_big, maximum: S.wall, inclusive: true, type: 'number', path: ['frame', 'depth'], message: 'frame deeper than the wall' });
+  }
 });
 
 const finite = z.number().finite();

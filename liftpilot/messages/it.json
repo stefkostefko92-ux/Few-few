@@ -732,6 +732,7 @@
     "calc_h": "Puleggia di rinvio: dislivello sotto la puleggia di trazione (h)",
     "c_h_stand": "Superficie per stare sul tetto di cabina (UNI EN 81-20, 5.2.5.7.3)",
     "c_h_door": "Altezza libera degli accessi, porte di piano e di cabina (UNI EN 81-20, 5.3.2.1)",
+    "c_h_staffe": "Staffe Panev sopra le porte di piano: muro libero tra il vano della porta e la soglia del piano sopra (margine)",
     "c_h_car": "Altezza libera interna della cabina (UNI EN 81-20, 5.4.1)",
     "c_h_cw": "Corsa guidata del contrappeso oltre la sua posizione più alta (UNI EN 81-1, 5.7.1.2)",
     "c_p_screen": "Protezione del contrappeso in fossa (UNI EN 81-20, 5.2.5.5.1)",

@@ -201,7 +201,7 @@ Disegno della scheda SC-S SV110 p.2 = SC-B p.10. La scala del disegno è stata v
 
 **Nel software** (4 ottobre 2026): la SV110 è disegnata come è (`liftpilot/src/lib/catalog/shapes-sicor.ts`) con
 queste quote; l'asse della vite a ≈ 110 mm e la posizione di motore, freno e disco sono le letture in scala ⚠️, e la
-relazione lo dice («misurato sul disegno in scala»).
+relazione lo dice («valore misurato sul disegno in scala»).
 
 ### 2.5 Versioni
 
@@ -329,7 +329,7 @@ opposta); MF48, MF84, MB94 e MB95 come sono stampate.
 | MB108 (p.65) | 737 = 333 + 404 dalla base del piedistallo ⚠️ somma | 323 sopra ✅ | L 1872 = 500 + 390 + 982 ⚠️ somma; H 1635 ✅ | 5 × Ø30 + 3 × Ø30 passanti; 1000 / 870 / 630 / 320 / 180 ✅ (sign. ⚠️) | Ø520–800 ✅ | ❓ | **resta generica nel software**: il disegno non dice quali fori del piedistallo stanno dove |
 
 Le quote «in scala» (posizione di cassa, motore, freno e volano; asse della vite di LEO e TORO e il suo angolo) sono
-lette sul disegno con un errore di circa ±10 mm ⚠️: la relazione del software scrive «misurato sul disegno in scala».
+lette sul disegno con un errore di circa ±10 mm ⚠️: la relazione del software scrive «valore misurato sul disegno in scala».
 Varianti con supporto esterno, alberi allungati (LEO: tabelle a, b, statico 1150–3000 kg per lunghezza) e
 attacco encoder sono alle pagine 14, 21, 25, 28, 46 di SA-C ✅.
 
@@ -524,7 +524,7 @@ frenante: ❓.**
 
 **Nel software** (4 ottobre 2026): tutte disegnate come sono (`liftpilot/src/lib/catalog/shapes-faer.ts`) con
 queste quote; la larghezza della puleggia, le altezze e la posizione delle parti sono lette sul disegno in scala
-(±10 mm) ⚠️, e la relazione dice per l'altezza e la larghezza della puleggia «misurato sul disegno in scala».
+(±10 mm) ⚠️, e la relazione dice per l'altezza e la larghezza della puleggia «valore misurato sul disegno in scala».
 Colore non noto (schede in grigio): nero.
 
 **CAD FAER:** nessuno; schede PDF e un modulo di selezione (https://www.faer.net/wp-content/uploads/2020/07/Datasheet.pdf) ✅.

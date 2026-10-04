@@ -42,6 +42,12 @@ test('distinta: coppie A + B sotto la soglia e sopra la porta per fermata, suppo
   assert.equal(bom.missing, 0);
   // generic brackets: only the doors' pairs
   assert.deepEqual(panevBom(layout({ ...base, cwBrackets: 'generic' })).rows.map((r) => r.article.code), ['A 65 170 7', 'B 65 320']);
+  // no pairs over a door where they find no wall (staffe-porte.ts): a frame's head above the suspension
+  const tall = layout({ ...base, frame: { jamb: 120, head: 300, depth: 50 } }), sills = L.doors.reduce((s, d) => {
+    const l = landingOf(d);
+    return s + doorBracketCount(l.u0 + 10, l.u1 - 10) * base.vertical.floors.filter((f) => f.door.includes(d.side)).length;
+  }, 0);
+  assert.equal(panevBom(tall).rows.find((r) => r.article.code === 'A 65 170 7')?.qty, sills);
 });
 
 test('distinta: SC in un angolo, soluzione su disegno a preventivo, staffe senza articolo', () => {

@@ -14,7 +14,7 @@ import { KV } from '@/shaft/norme';
 import { callStationAt, callStationOf } from '@/shaft/callstation';
 import { headOf } from '@/shaft/head';
 import { portalOf } from '@/shaft/frame';
-import { hasImbotti, marbleOpening } from '@/shaft/imbotti';
+import { hasImbotti, marbleOpening, wallOpeningHeight } from '@/shaft/imbotti';
 import { landingOf } from '@/shaft/landing';
 import { bracketsAlong, doorPairOf, topBracketsAt } from '@/shaft/staffe-porte';
 import { HEADER } from '@/shaft/sill';
@@ -46,12 +46,13 @@ export function doorsOf(L: Layout, door: 'A' | 'B' | 'AB'): DoorLayout[] {
 /** The hardware of a landing entrance at the level z, on the shaft side of the wall: the suspension on Panev's brackets,
  *  the panels (by the car's across the sill gap), the sill on Panev's brackets, the stone threshold through the wall;
  *  where the landing door stands, the lock's rollers where the car door's coupler takes them. `up`: the level of the
- *  floor above when its door is on the same wall (its sill's brackets may stand by those over this door). */
+ *  floor above when its door is on the same wall (its sill's brackets may stand by those over this door, its sill may
+ *  leave no wall for them). */
 export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'], car: DoorLayout, z: number, up?: number): DoorPanels {
   const W = I.W, D = I.D, tracks = landingTracks(I.landingDepth), d = landingOf(car), pair = doorPairOf(I);
   landingHeader(C, M, d.wall, W, D, d, tracks, LANDING_PANEL, z + d.height, I.landingDepth);
   const len = d.wall === 'front' || d.wall === 'rear' ? W : D;
-  doorBrackets(C, M, d.wall, W, D, topBracketsAt(pair, d, len, z, up), z + d.height + HEADER.top, I.landingDepth, pair, true);
+  doorBrackets(C, M, d.wall, W, D, topBracketsAt(pair, d, len, z, wallOpeningHeight(I) - I.doorHeight, up), z + d.height + HEADER.top, I.landingDepth, pair, true);
   const lock = { kind: 'lock', v0: I.landingDepth + I.sillGap, du: car.u0 - d.u0 } as const;
   const panels = doorPanels(d.wall, W, D, d, z, tracks, LANDING_PANEL, M.landing[d.wall], M, lock);
   sill(C, M, d.wall, W, D, d.u0 - 40, d.u1 + 40, -25, I.landingDepth, z, trackPlanes(d, tracks, LANDING_PANEL));

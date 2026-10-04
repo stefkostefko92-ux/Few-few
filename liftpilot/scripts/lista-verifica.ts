@@ -43,6 +43,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   v_doorcar: 'quote fissate a mano: porte dentro la cabina', v_buffer: 'ammortizzatori fissati a mano: sotto cabina e contrappeso, fuori dal rifugio',
   v_niche: 'nicchie nelle pareti', v_staffa: 'staffe del catalogo per le guide del contrappeso', v_head: 'pareti in testata diverse dal piano principale', h_refuge: 'spazio di rifugio in testata',
   h_clear: 'distanze libere dal soffitto', h_top: 'parte più alta della cabina sotto ciò che pende sopra', h_parapet: 'balaustra sul tetto di cabina', h_stand: 'superficie per stare sul tetto di cabina',
+  h_staffe: 'staffe Panev sopra le porte di piano: muro tra il vano della porta e la soglia del piano sopra',
   h_door: 'altezza libera degli accessi', h_car: 'altezza libera interna della cabina', h_cw: 'corsa guidata del contrappeso in testata',
   p_refuge: 'spazio di rifugio in fossa', p_screen: 'protezione del contrappeso in fossa',
   p_apron: 'grembiule sugli ammortizzatori compressi', b_runby: 'extracorsa di cabina e contrappeso', b_type: 'tipo di ammortizzatori per la velocità', b_car: 'corsa degli ammortizzatori di cabina',

@@ -732,6 +732,7 @@
     "calc_h": "Diverting pulley: height below the traction sheave (h)",
     "c_h_stand": "Standing area on the car roof (UNI EN 81-20, 5.2.5.7.3)",
     "c_h_door": "Clear height of the entrances, landing and car doors (UNI EN 81-20, 5.3.2.1)",
+    "c_h_staffe": "Panev brackets over the landing doors: free wall between the door opening and the sill above (margin)",
     "c_h_car": "Clear inside height of the car (UNI EN 81-20, 5.4.1)",
     "c_h_cw": "Guided travel of the counterweight past its highest position (UNI EN 81-1, 5.7.1.2)",
     "c_p_screen": "Counterweight screen in the pit (UNI EN 81-20, 5.2.5.5.1)",

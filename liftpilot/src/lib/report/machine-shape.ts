@@ -12,7 +12,7 @@ export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: numb
   const span = (v: number[]): string => fmt(Math.max(...v) - Math.min(...v), 0);
   // an inclined worm (its angle) and what hangs under the feet's plane, as the drawing has them
   const tilt = S.parts.find((p) => p.tilt)?.tilt, below = Math.round(-bodyBox(S)[1]);
-  const scaled = (v: string, on: boolean | undefined): string => (on ? `≈ ${v} (misurato sul disegno in scala)` : v);
+  const SCALED = ' (valore misurato sul disegno in scala)', scaled = (v: string, on: boolean | undefined): string => (on ? `≈ ${v}${SCALED}` : v);
   const worm = S.wormX !== undefined
     ? `verticale, ${scaled(`${fmt(Math.abs(S.wormX), 0)} mm dall'asse della puleggia`, S.wormScaled)}`
     : scaled(`${fmt(S.yWorm, 0)} mm${tilt ? `, inclinata di ${fmt(Math.abs((tilt.a * 180) / Math.PI), 0)}°` : ''}`, S.wormScaled);
@@ -20,8 +20,8 @@ export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: numb
   const sides = S.wormX !== undefined ? `${fmt(S.overall[0], 0)} e ${fmt(S.overall[1], 0)} mm dall'asse della puleggia ai due lati`
     : `${fmt(S.overall[0], 0)} mm dall'asse della puleggia sul lato opposto al motore, ${fmt(S.overall[1], 0)} mm verso il motore (motore più grande)`;
   return [
-    [`Ingombri (scheda del costruttore${S.bodyFrom ? `; corpo come la ${S.bodyFrom}` : ''})`, `${sides}, altezza ${scaled(`${fmt(S.overall[2], 0)} mm`, S.heightScaled)} sul piano dei piedi`
-      + `${below > 0 ? `, fino a ${fmt(below, 0)} mm sotto` : ''}`],
+    [`Ingombri (scheda del costruttore${S.bodyFrom ? `; corpo come la ${S.bodyFrom}` : ''})`, `${sides}, altezza ${S.heightScaled ? '≈ ' : ''}`
+      + `${fmt(S.overall[2], 0)} mm sul piano dei piedi${below > 0 ? `, fino a ${fmt(below, 0)} mm sotto` : ''}${S.heightScaled ? SCALED : ''}`],
     ['Assi sul piano dei piedi', `puleggia ${fmt(S.yWheel, 0)} mm, vite senza fine ${worm}`],
     ['Puleggia', `Ø ${fmt(D, 0)} mm, piano medio a P = ${fmt(P, 1)} mm dal piano della vite, larghezza E `
       + (S.sheaveScaled ? scaled(`${fmt(E, 0)} mm`, true) : `= ${fmt(E, 0)} mm${S.bodyFrom ? ` (come la ${S.bodyFrom})` : ''}`)],

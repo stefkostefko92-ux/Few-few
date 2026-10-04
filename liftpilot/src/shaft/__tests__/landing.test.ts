@@ -52,7 +52,7 @@ test('pianta: vano nel muro, portale, soglia e bottoniera con la porta di piano;
   const I = at(defaultInputs(1600, 1750), 35), L = layout(I), [d] = L.doors, floor = I.vertical.main;
   const m = marbleOpening(I, d);
   assert.deepEqual([m.u0, m.u1], [d.l0 - KV.doorPortal, d.l1 + KV.doorPortal]);
-  assert.equal(callStationAt(d, callStationOf(I)).from, d.l1 + KV.doorPortal);
+  assert.equal(callStationAt(d, callStationOf(I), KV.doorPortal).from, d.l1 + KV.doorPortal);
   const es = planEntities(L, 'main', floor), axes = es.filter((e) => e.e === 'line' && e.st === 'axis' && e.a[0] === e.b[0]).map((e) => (e.e === 'line' ? e.a[0] : 0));
   for (const u of [(d.u0 + d.u1) / 2, (d.l0 + d.l1) / 2]) assert.ok(axes.includes(u), `asse a ${u}`);
   const cs = chains(planDims(L, 'main', floor, { level: 'x' }));

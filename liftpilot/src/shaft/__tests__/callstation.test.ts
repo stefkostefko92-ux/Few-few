@@ -9,12 +9,12 @@ const door = (wall: DoorLayout['wall']): DoorLayout => ({ side: 'A', wall, kind:
 test('lato visto dal pianerottolo: a destra sulla parete davanti è verso x crescenti, sulle altre pareti secondo chi guarda', () => {
   const cs = (side: 'left' | 'right') => ({ side, offset: 150, height: 1100 });
   const hi = 1200 + KV.doorPortal + 150, lo = 400 - KV.doorPortal - 150;
-  assert.equal(callStationAt(door('front'), cs('right')).u, hi);
-  assert.equal(callStationAt(door('front'), cs('left')).u, lo);
-  assert.equal(callStationAt(door('rear'), cs('right')).u, lo);
-  assert.equal(callStationAt(door('left'), cs('right')).u, lo);
-  assert.equal(callStationAt(door('right'), cs('right')).u, hi);
-  assert.equal(callStationAt(door('front'), cs('right')).from, 1200 + KV.doorPortal);
+  assert.equal(callStationAt(door('front'), cs('right'), KV.doorPortal).u, hi);
+  assert.equal(callStationAt(door('front'), cs('left'), KV.doorPortal).u, lo);
+  assert.equal(callStationAt(door('rear'), cs('right'), KV.doorPortal).u, lo);
+  assert.equal(callStationAt(door('left'), cs('right'), KV.doorPortal).u, lo);
+  assert.equal(callStationAt(door('right'), cs('right'), KV.doorPortal).u, hi);
+  assert.equal(callStationAt(door('front'), cs('right'), KV.doorPortal).from, 1200 + KV.doorPortal);
 });
 
 test('bottoniera in pianta e in sezione, con le sue quote', () => {

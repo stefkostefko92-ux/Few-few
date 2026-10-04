@@ -10,13 +10,13 @@ import { bufferType } from './buffers';
 import { buffer } from './section-buffer';
 import { headOf } from './head';
 import { portalOf } from './frame';
-import { hasImbotti, marbleHeight } from './imbotti';
+import { hasImbotti, wallOpeningHeight } from './imbotti';
 import { KV } from './norme';
 import { KV_VERT } from './norme-vert';
 import { lampHeights, nichesOf } from './niche';
 import { CAR_PANEL, HEADER, LANDING_PANEL, carTracks, landingTracks, sillSection, trackPlanes } from './sill';
 import { doorPairSection, doorTopPairSection } from './section-staffe';
-import { doorPairOf } from './staffe-porte';
+import { doorPairOf, topPairRoom } from './staffe-porte';
 import { roofSpaces } from './plan-view';
 import { bufferPlan, pitSpace } from './pit';
 import { RAILS } from './rails';
@@ -100,7 +100,7 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
       if (zb > z + 1) piece(chase, z, zb);
     };
     // the opening in the wall: the door's, its own frame's (frame.ts) or the old one between the marbles round its linings
-    const fr = portalOf(I), opening = hasImbotti(I) ? marbleHeight(I) : fr.depth !== null ? I.doorHeight + fr.head : I.doorHeight;
+    const fr = portalOf(I), opening = wallOpeningHeight(I);
     const gaps = served(side).map((i) => S.levels[i]).filter((z) => inWin(z) && !compressed(z)).map((z) => [z, z + opening] as const);
     let z = zBot;
     for (const [a, b] of [...gaps, [zTop, zTop] as const]) {
@@ -120,8 +120,9 @@ export function sectionEntities(L: Layout, v: SectionView): { entities: Entity[]
         // Panev's brackets under the sill and over the suspension (section-staffe.ts); the sill's section with a groove
         // under each panel's track, the panels on their tracks, the suspension over them (sill.ts, as the 3D)
         const door = L.doors.find((d) => d.wall === side), grooves = door ? trackPlanes(door, landingTracks(dl), LANDING_PANEL) : [];
-        const zh = zf + I.doorHeight, Q = (v: number, z: number): Pt => P(X(v), z);
-        out.push(...doorPairSection(doorPairOf(I), dl, zf, Q), ...doorTopPairSection(doorPairOf(I), dl, zh + HEADER.top, Q));
+        const zh = zf + I.doorHeight, Q = (v: number, z: number): Pt => P(X(v), z), pair = doorPairOf(I);
+        const up = served(side).includes(i + 1) ? S.levels[i + 1] : undefined, over = door ? topPairRoom(pair, door, zf, opening - I.doorHeight, up) >= 0 : false;
+        out.push(...doorPairSection(pair, dl, zf, Q), ...(over ? doorTopPairSection(pair, dl, zh + HEADER.top, Q) : []));
         out.push(path(sillSection(-25, dl, grooves, false).map(([v, z]) => P(X(v), zf + z)), true, 'outline', 'steel'));
         for (const g of grooves) out.push(box(X(g - LANDING_PANEL / 2), zf, X(g + LANDING_PANEL / 2), zh, 'thin', 'door'));
         out.push(box(w0, zh + HEADER.foot, w0 + s * (dl + 6), zh + HEADER.top, 'thin'));
