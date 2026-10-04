@@ -8,24 +8,29 @@ import { passwordProblem } from '../auth/password.js';
 import { ipNetwork } from '../http/ip.js';
 import type { RequestMeta } from '../http/meta.js';
 import { customerLabel } from '../labels.js';
-import { hasUnsafeChars } from './names.js';
 
 export const emailSchema = z.string().trim().toLowerCase().max(254).email();
 
 /**
  * Име на човек или фирма. Без адреси и връзки: името стига до писма и до панела, а не бива да носи
- * „кликни тук“ от чужда ръка.
+ * „кликни тук“ от чужда ръка. Домейните са тези, които пощенските програми правят на връзки (и
+ * съкращаващите bit.ly, goo.gl), и IP адрес; съкращения като „Dott.ssa“ и „Sig.ra“ остават.
  */
 const LINK_LIKE =
-  /(:\/\/|www\.|@|\bhttps?\b|\.(com|net|org|info|xyz|top|ru|bg|eu|io|me|link|click)\b)/i;
+  /(:\/\/|www\.|@|\bhttps?\b|\d{1,3}(?:\.\d{1,3}){3}|\.(?:com|net|org|info|biz|xyz|top|ru|su|bg|бг|eu|io|me|ly|co|uk|us|de|it|fr|es|nl|pl|ro|gr|at|ch|cz|ua|tk|cc|gl|link|click|app|dev|site|online|shop|store|live)(?![\p{L}\p{N}]))/iu;
+/**
+ * Невидими и управляващи знаци: NUL, нов ред, табулация (базата отказва NUL), знаците за посока на
+ * текста (U+202E обръща името в панела и в писмата) и нулевите интервали, с които връзката се крие.
+ */
+const HIDDEN_CHARS = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 export const nameSchema = z
   .string()
   .trim()
   .min(2)
   .max(80)
-  .regex(/^[^<>{}\n\r]+$/)
-  .refine((value) => !hasUnsafeChars(value))
+  .regex(/^[^<>{}]+$/)
+  .refine((value) => !HIDDEN_CHARS.test(value))
   .refine((value) => !LINK_LIKE.test(value));
 
 export function customerActor(user: { id: string }, meta?: RequestMeta): AuditActor {

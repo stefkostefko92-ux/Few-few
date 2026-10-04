@@ -1,3 +1,4 @@
+import type { Role } from '@prisma/client';
 import { Router, type Request, type Response } from 'express';
 import { config, isProduction } from '../config.js';
 import { safeEqual } from '../crypto.js';
@@ -9,16 +10,23 @@ import {
   requirePreAuthCsrf,
 } from '../auth/guards.js';
 import { clearSessionCookie, destroySessionById, setSessionCookie } from '../auth/sessions.js';
-import { isRole } from '../auth/rbac.js';
+import { isStaff } from '../auth/rbac.js';
 import { linkHours } from '../auth/tokens.js';
 import { setFlash } from '../http/flash.js';
-import { forgotLimiter, loginLimiter, mfaLimiter, registerLimiter } from '../http/limits.js';
+import {
+  forgotLimiter,
+  loginLimiter,
+  mfaLimiter,
+  registerLimiter,
+  resetLimiter,
+  verifyLimiter,
+} from '../http/limits.js';
 import { rawField, requestMeta, safeNext, stringField } from '../http/meta.js';
 import { isLocale } from '../i18n.js';
 import { PATHS } from '../seo/paths.js';
 import { audit } from '../audit.js';
 import { attemptLogin, completeMfa } from '../services/login.js';
-import { registerAccount, verifyEmailToken } from '../services/registration.js';
+import { emailLinkKind, registerAccount, verifyEmailToken } from '../services/registration.js';
 import { requestPasswordReset, resetPassword, resetTokenValid } from '../services/security.js';
 import { customerActor } from '../services/auth-common.js';
 import type { DeviceContext } from '../services/devices.js';
@@ -53,6 +61,11 @@ function authPage(res: Response, view: string, data: Record<string, unknown>, st
     .status(status)
     .set('Cache-Control', 'no-store')
     .render(view, { noindex: true, paths: PATHS, ...data });
+}
+
+/** Персоналът, тръгнал към проектите, каца в администрацията — след вход със и без втори фактор. */
+function landing(role: Role, next: string): string {
+  return isStaff(role) && next === '/app' ? '/admin' : next;
 }
 
 /* -------------------------------------- вход -------------------------------------- */
@@ -104,11 +117,7 @@ authRouter.post('/login', loginLimiter, requirePreAuthCsrf, async (req, res) => 
         res.redirect(`/login/2fa?next=${encodeURIComponent(next)}`);
         return;
       }
-      res.redirect(
-        isRole(result.user.role) && result.user.role !== 'CUSTOMER' && next === '/app'
-          ? '/admin'
-          : next,
-      );
+      res.redirect(landing(result.user.role, next));
   }
 });
 
@@ -149,13 +158,14 @@ authRouter.post('/login/2fa', mfaLimiter, async (req, res) => {
     return;
   }
   if (result.recovery) setFlash(res, 'info', 'flash.recoveryUsed');
-  res.redirect(principal.user.role !== 'CUSTOMER' && next === '/app' ? '/admin' : next);
+  res.redirect(landing(principal.user.role, next));
 });
 
 authRouter.post('/logout', async (req, res) => {
   const principal = req.principal;
-  const sent = stringField(req.body, '_csrf', 100);
-  if (principal && safeEqual(sent, principal.session.csrfToken)) {
+  // Сесията пада винаги, и с остаряла форма (токенът е сменен в друг раздел): SameSite=Strict не пуска
+  // бисквитката от чужд сайт, така че изход от чужда ръка няма principal.
+  if (principal) {
     await destroySessionById(principal.session.id);
     await audit(customerActor(principal.user, requestMeta(req)), {
       action: 'auth.logout',
@@ -211,8 +221,23 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
   authPage(res, 'auth/check-email', { email: values.email, hours: linkHours('VERIFY_EMAIL') });
 });
 
+/**
+ * Връзката от писмото само показва бутона — потвърждава POST. Програмите, които проверяват пощата,
+ * отварят връзките преди човека; ако GET изразходваше токена, човекът би намерил „невалидна връзка“.
+ */
 authRouter.get('/verify-email', async (req, res) => {
   const token = typeof req.query.token === 'string' ? req.query.token : '';
+  ensureDeviceCookie(req, res);
+  const kind = token ? await emailLinkKind(token) : null;
+  if (!kind) {
+    authPage(res, 'auth/verified', { result: { ok: false } }, 400);
+    return;
+  }
+  authPage(res, 'auth/verify-email', { pre: preCsrf(req, res), token, kind });
+});
+
+authRouter.post('/verify-email', verifyLimiter, requirePreAuthCsrf, async (req, res) => {
+  const token = stringField(req.body, 'token', 100);
   const device = deviceCookieHash(ensureDeviceCookie(req, res));
   const result = token
     ? await verifyEmailToken(token, requestMeta(req), device)
@@ -227,21 +252,17 @@ authRouter.get('/verify-email', async (req, res) => {
 
 /* ---------------------------------- нова парола ---------------------------------- */
 
-authRouter.get('/forgot', (req, res) => {
-  authPage(res, 'auth/forgot', {
-    pre: preCsrf(req, res),
-    sent: false,
-    hours: linkHours('RESET_PASSWORD'),
-  });
-});
+/** „Забравена парола“: формата или „изпратихме връзка“ — срокът на връзката идва от кода. */
+function forgotPage(req: Request, res: Response, sent: boolean): void {
+  const hours = linkHours('RESET_PASSWORD');
+  authPage(res, 'auth/forgot', { pre: preCsrf(req, res), sent, hours });
+}
+
+authRouter.get('/forgot', (req, res) => forgotPage(req, res, false));
 
 authRouter.post('/forgot', forgotLimiter, requirePreAuthCsrf, async (req, res) => {
   await requestPasswordReset(stringField(req.body, 'email', 254), requestMeta(req));
-  authPage(res, 'auth/forgot', {
-    pre: preCsrf(req, res),
-    sent: true,
-    hours: linkHours('RESET_PASSWORD'),
-  });
+  forgotPage(req, res, true);
 });
 
 authRouter.get('/reset', async (req, res) => {
@@ -255,15 +276,17 @@ authRouter.get('/reset', async (req, res) => {
   );
 });
 
-authRouter.post('/reset', forgotLimiter, requirePreAuthCsrf, async (req, res) => {
+authRouter.post('/reset', resetLimiter, requirePreAuthCsrf, async (req, res) => {
   const token = stringField(req.body, 'token', 100);
   const result = await resetPassword(token, rawField(req.body, 'password'), requestMeta(req));
   if (!result.ok) {
     const valid = await resetTokenValid(token);
+    // „Задайте парола“ след потвърждение от друго устройство остава такава и след отхвърлена парола
+    const fromVerify = stringField(req.body, 'from', 10) === 'verify';
     authPage(
       res,
       'auth/reset',
-      { pre: preCsrf(req, res), token, valid, error: result.key, fromVerify: false },
+      { pre: preCsrf(req, res), token, valid, error: result.key, fromVerify },
       400,
     );
     return;

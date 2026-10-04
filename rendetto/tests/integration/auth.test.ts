@@ -33,7 +33,7 @@ test('sign-up → email confirmation → a 30-day trial that starts at the confi
   assert.notEqual(before.passwordHash, 'Shelf-Hinge-Groove-42');
   assert.match(before.passwordHash, /^\$argon2id\$/);
 
-  const verified = await b.get(
+  const verified = await b.confirmEmail(
     linkIn((await mailTo('ivan@example.test', /Потвърдете/)).text, '/verify-email?token='),
   );
   assert.equal(verified.status, 200);
@@ -51,8 +51,8 @@ test('a confirmation link works once', async () => {
     (await mailTo('maria@example.test', /Потвърдете/)).text,
     '/verify-email?token=',
   );
-  assert.equal((await b.get(link)).status, 200);
-  assert.equal((await b.get(link)).status, 400);
+  assert.equal((await b.confirmEmail(link)).status, 200);
+  assert.equal((await b.confirmEmail(link)).status, 400);
 });
 
 test('signing in records IP, country, device and HWID', async () => {

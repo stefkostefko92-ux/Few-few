@@ -37,6 +37,12 @@ export const loginLimiter = limiter(60_000, 10);
 export const mfaLimiter = limiter(60_000, 10);
 export const registerLimiter = limiter(60 * 60_000, 5);
 export const forgotLimiter = limiter(60 * 60_000, 5);
+/**
+ * Връзките от писмата (нова парола, потвърждение) — всяка със свой брояч: отхвърлена слаба парола не
+ * изяжда заявките за нова връзка и обратно. Токенът е 256-битов; таванът е само срещу засипване.
+ */
+export const resetLimiter = limiter(15 * 60_000, 10);
+export const verifyLimiter = limiter(15 * 60_000, 10);
 export const resendLimiter = limiter(60 * 60_000, 5);
 export const sensitiveLimiter = limiter(15 * 60_000, 30);
 export const apiLimiter = limiter(60_000, 120);

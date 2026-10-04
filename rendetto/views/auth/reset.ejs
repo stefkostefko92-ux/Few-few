@@ -1,4 +1,4 @@
-<%- include('_top', { titleKey: 'auth.resetTitle' }) %>
+<%- include('_top', { titleKey: fromVerify ? 'auth.setPasswordTitle' : 'auth.resetTitle' }) %>
 <h1><%= t(fromVerify ? 'auth.setPasswordTitle' : 'auth.resetTitle') %></h1>
 <% if (fromVerify && valid) { %><p><%= t('auth.setPasswordText') %></p><% } %>
 <% if (!valid) { %>
@@ -9,9 +9,10 @@
 <form method="post" action="/reset" class="form">
   <input type="hidden" name="_csrf" value="<%= pre %>">
   <input type="hidden" name="token" value="<%= token %>">
+  <% if (fromVerify) { %><input type="hidden" name="from" value="verify"><% } %>
   <div class="field">
     <label for="password"><%= t('auth.newPassword') %></label>
-    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="pw-rules">
+    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="<%= error ? 'form-error pw-rules' : 'pw-rules' %>"<% if (error) { %> aria-invalid="true"<% } %>>
     <p class="hint" id="pw-rules"><%= t('password.rules') %></p>
   </div>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.resetButton') %></button>

@@ -39,3 +39,48 @@ test('JSON inside <script> cannot close the block and stays a valid JS string', 
     name: `</script><b>${String.fromCharCode(0x2028, 0x2029)}`,
   });
 });
+
+const ok = (name: string) => nameSchema.safeParse(name).success;
+
+test('ordinary names of people and companies pass', () => {
+  for (const name of [
+    'Иван Петров',
+    'Мебели 2000 ЕООД',
+    'ЕТ „Иван Иванов“',
+    'Карбон Стелт / Carbon Stealth',
+    "Maria D'Angelo",
+    'Dott.ssa Maria Rossi',
+    'Sig.ra Bianchi',
+    'J. R. Smith Ltd.',
+    'Mobili S.r.l.',
+  ])
+    assert.ok(ok(name), name);
+});
+
+test('names that carry a link or an address are refused', () => {
+  for (const name of [
+    'Иван http://evil.example',
+    'Виж www.evil.example',
+    'пиши на a@b.example',
+    'Иван evil.com',
+    'Сигурност bit.ly/rd-verify',
+    'Ivan rendetto-help.de/login',
+    'Мебели мебели.бг',
+    'Иван 203.0.113.5',
+  ])
+    assert.ok(!ok(name), name);
+});
+
+test('invisible and control characters are refused', () => {
+  for (const name of [
+    'ab\u0000cd',
+    'Ivan\nPetrov',
+    'Ivan\tPetrov',
+    'Ivan ‮moc.live',
+    'evil.​com',
+    'Ivan⁦Petrov',
+    'Ivan Petrov',
+    'Ivan﻿Petrov',
+  ])
+    assert.ok(!ok(name), JSON.stringify(name));
+});

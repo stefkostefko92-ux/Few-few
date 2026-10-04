@@ -1,0 +1,10 @@
+<% const change = kind === 'change'; %>
+<%- include('_top', { titleKey: change ? 'auth.confirmChangeTitle' : 'auth.confirmEmailTitle' }) %>
+<h1><%= t(change ? 'auth.confirmChangeTitle' : 'auth.confirmEmailTitle') %></h1>
+<p><%= t(change ? 'auth.confirmChangeText' : 'auth.confirmEmailText') %></p>
+<form method="post" action="/verify-email" class="form">
+  <input type="hidden" name="_csrf" value="<%= pre %>">
+  <input type="hidden" name="token" value="<%= token %>">
+  <button class="btn btn-primary btn-wide" type="submit"><%= t(change ? 'auth.confirmChangeButton' : 'auth.confirmEmailButton') %></button>
+</form>
+<%- include('_bottom') %>

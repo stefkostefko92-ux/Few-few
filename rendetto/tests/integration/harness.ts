@@ -159,6 +159,14 @@ export class Browser {
     return this.post(action, { _csrf: Browser.csrf(page.body), ...form });
   }
 
+  /** The link from the email only shows a button (GET uses nothing up); the button confirms. */
+  async confirmEmail(link: string): Promise<Reply> {
+    const page = await this.get(link);
+    if (page.status !== 200) return page;
+    const token = /name="token" value="([^"]+)"/.exec(page.body)?.[1] ?? '';
+    return this.post('/verify-email', { _csrf: Browser.csrf(page.body), token });
+  }
+
   async register(name: string, email: string, password: string): Promise<Reply> {
     return this.submit('/register', '/register', {
       name,
@@ -212,7 +220,7 @@ export async function customer(
 ): Promise<Browser> {
   const browser = new Browser(ip);
   await browser.register('Тест Клиент', email, password);
-  await browser.get(
+  await browser.confirmEmail(
     linkIn((await mailTo(email, /Потвърдете имейла/)).text, '/verify-email?token='),
   );
   const login = await browser.login(email, password);

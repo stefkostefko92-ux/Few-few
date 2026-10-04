@@ -8,6 +8,7 @@ import {
   HOUR,
   issueEmailToken,
   MAIL_CAP_PER_HOUR,
+  peekEmailToken,
   recentTokenCount,
   revokeEmailTokens,
 } from '../auth/tokens.js';
@@ -16,6 +17,7 @@ import type { RequestMeta } from '../http/meta.js';
 import { LABEL } from '../labels.js';
 import { greetingName, mailAlreadyRegistered, mailVerifyEmail } from '../mail/templates.js';
 import { trialStart } from '../plans/plan.js';
+import { isUniqueViolation } from './admin-common.js';
 import { customerActor, emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import type { DeviceContext } from './devices.js';
 
@@ -81,23 +83,32 @@ export async function registerAccount(
     return { ok: true };
   }
 
-  const user = await prisma.user.create({
-    data: {
-      email: email.data,
-      name: name.data,
-      passwordHash: await hashPassword(input.password),
-      locale,
-      plan: 'TRIAL',
-      planExpiresAt: null,
-      signupIp: meta.ip,
-      signupCountry: meta.country,
-      signupDeviceHash: deviceCookieHash(device.cookieId),
-      signupFingerprint: device.fingerprint ? fingerprintHash(device.fingerprint) : null,
-    },
-  });
-  await prisma.planChange.create({
-    data: { userId: user.id, actorLabel: LABEL.system, toPlan: 'TRIAL', note: LABEL.signup },
-  });
+  const passwordHash = await hashPassword(input.password);
+  let user: User;
+  try {
+    // акаунтът и първият ред в историята на плана — един запис
+    user = await prisma.user.create({
+      data: {
+        email: email.data,
+        name: name.data,
+        passwordHash,
+        locale,
+        plan: 'TRIAL',
+        planExpiresAt: null,
+        signupIp: meta.ip,
+        signupCountry: meta.country,
+        signupDeviceHash: deviceCookieHash(device.cookieId),
+        signupFingerprint: device.fingerprint ? fingerprintHash(device.fingerprint) : null,
+        planChanges: {
+          create: { actorLabel: LABEL.system, toPlan: 'TRIAL', note: LABEL.signup },
+        },
+      },
+    });
+  } catch (error) {
+    // Двоен клик: паралелната заявка вече създаде акаунта и прати писмото — същият отговор.
+    if (isUniqueViolation(error)) return { ok: true };
+    throw error;
+  }
   const token = await issueEmailToken(user.id, 'VERIFY_EMAIL');
   void mailVerifyEmail(user.email, locale, token);
   await audit(customerActor(user, meta), {
@@ -132,19 +143,45 @@ export type VerifyResult =
 export async function markEmailVerified(user: User, meta: RequestMeta): Promise<void> {
   if (user.emailVerifiedAt) return;
   const now = new Date();
-  const trial = trialStart(user, now, { id: null, label: LABEL.system });
-  await prisma.$transaction([
-    prisma.user.update({
+  // Решава редът в базата, не прочетеният по-рано обект: от две едновременни потвърждения (връзката и
+  // нова парола) тестовият период тръгва веднъж, а историята на плана и потвърждението са един запис.
+  const verified = await prisma.$transaction(async (tx) => {
+    const marked = await tx.user.updateMany({
+      where: { id: user.id, emailVerifiedAt: null },
+      data: { emailVerifiedAt: now },
+    });
+    if (marked.count === 0) return false;
+    // редът е вече заключен от записа отгоре: планът се чете от базата, не от обекта отпреди
+    const row = await tx.user.findUniqueOrThrow({
       where: { id: user.id },
-      data: { emailVerifiedAt: now, ...(trial ? { planExpiresAt: trial.planExpiresAt } : {}) },
-    }),
-    ...(trial ? [prisma.planChange.create({ data: trial.change })] : []),
-  ]);
+      select: { id: true, plan: true, planExpiresAt: true },
+    });
+    const trial = trialStart(row, now, { id: null, label: LABEL.system });
+    if (trial) {
+      await tx.user.update({
+        where: { id: user.id },
+        data: { planExpiresAt: trial.planExpiresAt },
+      });
+      await tx.planChange.create({ data: trial.change });
+    }
+    return true;
+  });
+  if (!verified) return;
   await audit(customerActor(user, meta), {
     action: 'account.email.verified',
     targetType: 'user',
     targetId: user.id,
   });
+}
+
+/**
+ * Какво потвърждава връзката от писмото, без да я изразходва: GET само показва бутона, а потвърждава
+ * POST — програмите за проверка на пощата отварят връзките преди човека и иначе биха я изразходвали.
+ */
+export async function emailLinkKind(token: string): Promise<'change' | 'verify' | null> {
+  const change = await peekEmailToken(token, 'CHANGE_EMAIL');
+  if (change?.newEmail) return 'change';
+  return (await peekEmailToken(token, 'VERIFY_EMAIL')) ? 'verify' : null;
 }
 
 /**
@@ -162,7 +199,8 @@ export async function verifyEmailToken(
   deviceHash: string,
 ): Promise<VerifyResult> {
   const change = await consumeEmailToken(token, 'CHANGE_EMAIL');
-  if (change?.newEmail) {
+  if (change) {
+    if (!change.newEmail) return { ok: false };
     const taken = await prisma.user.findUnique({ where: { email: change.newEmail } });
     if (taken) return { ok: false };
     const user = await prisma.user.update({
@@ -178,7 +216,7 @@ export async function verifyEmailToken(
     });
     return { ok: true, kind: 'changed' };
   }
-  const row = change ?? (await consumeEmailToken(token, 'VERIFY_EMAIL'));
+  const row = await consumeEmailToken(token, 'VERIFY_EMAIL');
   if (!row) return { ok: false };
   const user = await prisma.user.findUnique({ where: { id: row.userId } });
   if (!user) return { ok: false };

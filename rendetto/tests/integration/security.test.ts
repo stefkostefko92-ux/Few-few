@@ -194,7 +194,7 @@ test('email change: the old address is told, the new one confirms', async () => 
     'old@example.test',
     'nothing changes before the confirmation',
   );
-  assert.equal((await b.get(link)).status, 200);
+  assert.equal((await b.confirmEmail(link)).status, 200);
   assert.ok(await prisma.user.findUnique({ where: { email: 'new@example.test' } }));
 });
 

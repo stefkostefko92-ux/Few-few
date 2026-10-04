@@ -1,4 +1,4 @@
-<%- include('_top', { titleKey: result.ok ? 'auth.verifiedTitle' : 'auth.verifyFailedTitle' }) %>
+<%- include('_top', { titleKey: !result.ok ? 'auth.verifyFailedTitle' : result.kind === 'changed' ? 'auth.emailChangedTitle' : 'auth.verifiedTitle' }) %>
 <% if (result.ok) { %>
 <h1><%= t(result.kind === 'changed' ? 'auth.emailChangedTitle' : 'auth.verifiedTitle') %></h1>
 <p><%= t(result.kind === 'changed' ? 'auth.emailChangedText' : 'auth.verifiedText') %></p>

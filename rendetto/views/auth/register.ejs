@@ -17,11 +17,11 @@
   </div>
   <div class="field">
     <label for="password"><%= t('auth.password') %></label>
-    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="pw-rules"<% if (field === 'password') { %> aria-invalid="true"<% } %>>
+    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="<%= field === 'password' ? 'form-error pw-rules' : 'pw-rules' %>"<% if (field === 'password') { %> aria-invalid="true"<% } %>>
     <p class="hint" id="pw-rules"><%= t('password.rules') %></p>
   </div>
   <label class="check">
-    <input type="checkbox" name="terms" value="yes" required<% if (field === 'terms') { %> aria-invalid="true"<% } %>>
+    <input type="checkbox" name="terms" value="yes" required<% if (field === 'terms') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
     <span><%- t('auth.termsLabel', { terms: '<a href="' + (locale === 'bg' ? '/terms' : '/' + locale + '/terms') + '" target="_blank" rel="noopener">' + t('auth.termsLink') + '</a>', privacy: '<a href="' + (locale === 'bg' ? '/privacy' : '/' + locale + '/privacy') + '" target="_blank" rel="noopener">' + t('auth.privacyLink') + '</a>' }) %></span>
   </label>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.registerButton') %></button>

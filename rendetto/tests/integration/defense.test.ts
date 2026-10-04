@@ -24,7 +24,7 @@ test('a confirmation link opened on another device asks for a new password (no p
   await attacker.register('Някой Друг', email, 'Attacker-Knows-This-91');
   const link = linkIn((await mailTo(email, /Потвърдете имейла/)).text, '/verify-email?token=');
   const owner = new Browser();
-  const opened = await owner.get(link);
+  const opened = await owner.confirmEmail(link);
   assert.equal(opened.status, 303);
   assert.match(opened.location, /^\/reset\?token=[A-Za-z0-9_-]{43}&from=verify$/);
   assert.equal(
@@ -51,7 +51,7 @@ test('a confirmation link on the device that signed up confirms directly', async
   const b = new Browser();
   await b.register('Същото Устройство', email, PASSWORD);
   const link = linkIn((await mailTo(email, /Потвърдете имейла/)).text, '/verify-email?token=');
-  const opened = await b.get(link);
+  const opened = await b.confirmEmail(link);
   assert.equal(opened.status, 200);
   assert.ok((await prisma.user.findUniqueOrThrow({ where: { email } })).emailVerifiedAt);
 });
