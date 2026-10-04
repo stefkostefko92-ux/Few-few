@@ -10,10 +10,15 @@ import { resendOrderMail } from './plan-requests.js';
 const DAY = 24 * 60 * 60 * 1000;
 /** Изтеклите връзки от писмата се пазят още толкова дни, после се трият. */
 const EXPIRED_TOKEN_DAYS = 7;
+/**
+ * Писмото за края на тестовия период тръгва, когато остават най-много толкова дни — веднъж на акаунт.
+ * Може да остават и по-малко (кратък период, зададен от екипа, или престой), затова писмото казва датата.
+ */
+const TRIAL_REMINDER_DAYS = 3;
 
 /**
- * Писмо 3 дни преди края на тестовия период — веднъж на акаунт. Отбелязва се само пратеното: при отказ
- * на SMTP следващата поддръжка опитва пак. Връща колко писма са тръгнали.
+ * Писмата за наближаващия край на тестовия период. Отбелязва се само пратеното: при отказ на SMTP
+ * следващата поддръжка опитва пак. Връща колко писма са тръгнали.
  */
 export async function sendTrialReminders(now: Date = new Date()): Promise<number> {
   const users = await prisma.user.findMany({
@@ -23,7 +28,7 @@ export async function sendTrialReminders(now: Date = new Date()): Promise<number
       bannedAt: null,
       emailVerifiedAt: { not: null },
       trialReminderAt: null,
-      planExpiresAt: { gt: now, lte: new Date(now.getTime() + 3 * DAY) },
+      planExpiresAt: { gt: now, lte: new Date(now.getTime() + TRIAL_REMINDER_DAYS * DAY) },
     },
     take: 200,
   });

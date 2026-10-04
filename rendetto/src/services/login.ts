@@ -4,6 +4,7 @@ import { config } from '../config.js';
 import { decryptSecret } from '../crypto.js';
 import { prisma } from '../db.js';
 import { fingerprintHash } from '../auth/device.js';
+import { MAX_FAILED_LOGINS } from '../auth/lock.js';
 import { dummyHash, hashPassword, needsRehash, verifyPassword } from '../auth/password.js';
 import { consumeRecoveryCode } from '../auth/recovery.js';
 import { createSession, markMfaPassed, type NewSession } from '../auth/sessions.js';
@@ -17,11 +18,11 @@ import {
   touchDevice,
   type DeviceContext,
 } from './devices.js';
-import { greetingName, mailCodeFailures } from '../mail/templates.js';
+import { greetingName, mailLocked } from '../mail/templates.js';
 import { isLocale } from '../i18n.js';
 import { notifyNewDevice } from './notify.js';
 import { resendVerification } from './registration.js';
-import { countFailure, MAX_FAILED_LOGINS } from './lockout.js';
+import { attemptFailed, attemptSucceeded, reserveAttempt } from './lockout.js';
 
 const IP_WINDOW_MS = 15 * 60 * 1000;
 const IP_MAX_FAILURES = 20;
@@ -74,16 +75,20 @@ export async function attemptLogin(
     await recordLogin('UNKNOWN_EMAIL', meta, { fingerprint: fp });
     return { kind: 'invalid' };
   }
-  if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+  // Опитът се заема преди проверката: паралелни заявки не надхвърлят тавана преди заключването.
+  if (!(await reserveAttempt(user, meta)).reserved) {
     await verifyPassword(password, await dummyHash());
     await recordLogin('LOCKED', meta, { userId: user.id, fingerprint: fp });
     return { kind: 'invalid' };
   }
   if (!(await verifyPassword(password, user.passwordHash))) {
-    await countFailure(user, meta);
+    await attemptFailed(user, meta);
     await recordLogin('BAD_PASSWORD', meta, { userId: user.id, fingerprint: fp });
     return { kind: 'invalid' };
   }
+  const mfaRequired = Boolean(user.totpEnabledAt);
+  // С двуфакторна защита броячът пада едва след верния код: самата парола не изчиства опитите с кодове.
+  await attemptSucceeded(user.id, !mfaRequired && !user.bannedAt && Boolean(user.emailVerifiedAt));
 
   if (needsRehash(user.passwordHash)) {
     await prisma.user.update({
@@ -100,13 +105,6 @@ export async function attemptLogin(
     return { kind: 'unverified', resent: await resendVerification(user) };
   }
 
-  const mfaRequired = Boolean(user.totpEnabledAt);
-  // С двуфакторна защита броячът пада едва след верния код: самата парола не изчиства опитите с кодове.
-  if (!mfaRequired)
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { failedLogins: 0, lockedUntil: null },
-    });
   const dev = await touchDevice(user.id, device, meta);
   const session = await createSession(
     user,
@@ -146,6 +144,16 @@ async function finishLogin(
 
 /* -------------------------------- втори фактор при вход -------------------------------- */
 
+/** Вярна парола, но грешни кодове заключиха акаунта: паролата явно е известна на друг — писмо. */
+function mailCodeFailures(user: User): void {
+  void mailLocked(
+    'codeFailures',
+    user.email,
+    isLocale(user.locale) ? user.locale : 'bg',
+    greetingName(user),
+  );
+}
+
 export type MfaResult =
   { kind: 'ok'; recovery: boolean } | { kind: 'invalid'; left: number } | { kind: 'reset' };
 
@@ -166,9 +174,11 @@ export async function completeMfa(
   if (!session || session.mfaPassed) return { kind: 'reset' };
   const user = session.user;
   if (!user.totpSecretEnc || !user.totpEnabledAt) return { kind: 'reset' };
-  if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+  const attempt = await reserveAttempt(user, meta);
+  if (!attempt.reserved) {
     // заключен междувременно (например от паралелен опит) — и този недовършен вход пада
     await prisma.session.deleteMany({ where: { id: session.id } });
+    if (attempt.lockedNow) mailCodeFailures(user);
     return { kind: 'reset' };
   }
 
@@ -186,7 +196,7 @@ export async function completeMfa(
 
   if (step === null && !recovery) {
     await recordLogin('MFA_FAILED', meta, { userId: user.id, deviceId: session.deviceId });
-    const account = await countFailure(user, meta);
+    const account = await attemptFailed(user, meta);
     const touched = await prisma.session.updateMany({
       where: { id: session.id },
       data: { mfaFailures: { increment: 1 } },
@@ -199,12 +209,7 @@ export async function completeMfa(
         targetType: 'user',
         targetId: user.id,
       });
-      if (account.lockedNow)
-        void mailCodeFailures(
-          user.email,
-          isLocale(user.locale) ? user.locale : 'bg',
-          greetingName(user),
-        );
+      if (account.lockedNow) mailCodeFailures(user);
       return { kind: 'reset' };
     }
     return {
@@ -213,10 +218,7 @@ export async function completeMfa(
     };
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { failedLogins: 0, lockedUntil: null },
-  });
+  await attemptSucceeded(user.id, true);
   if (!(await markMfaPassed(session.id, user.role))) return { kind: 'reset' };
   if (session.deviceId)
     await finishLogin(user, session.deviceId, meta, recovery ? 'MFA_RECOVERY' : 'SUCCESS');

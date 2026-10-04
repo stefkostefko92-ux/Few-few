@@ -9,6 +9,7 @@ import { config, isProduction } from './config.js';
 import { logger, httpLogOptions } from './logger.js';
 import { ROOT } from './paths.js';
 import { attachSession } from './auth/sessions.js';
+import { LOCK_MINUTES, MAX_FAILED_LOGINS } from './auth/lock.js';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { isStaff } from './auth/rbac.js';
 import { renderError } from './auth/guards.js';
@@ -147,6 +148,8 @@ export function createServer(): Express {
     res.locals.trialDays = TRIAL_DAYS;
     res.locals.passwordMin = PASSWORD_MIN_LENGTH;
     res.locals.passwordMax = PASSWORD_MAX_LENGTH;
+    // таванът на грешните опити и заключването — за подсказката на входа (не се пишат на ръка)
+    res.locals.lockout = { attempts: MAX_FAILED_LOGINS, minutes: LOCK_MINUTES };
     next();
   });
   app.use(['/app', '/account', '/admin'], accountWriteLimiter);

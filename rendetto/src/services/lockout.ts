@@ -1,22 +1,36 @@
 import type { User } from '@prisma/client';
 import { audit, SYSTEM_ACTOR } from '../audit.js';
 import { prisma } from '../db.js';
-import { destroyAllSessions } from '../auth/sessions.js';
+import { isLocked, LOCK_MS, MAX_FAILED_LOGINS } from '../auth/lock.js';
 import type { RequestMeta } from '../http/meta.js';
-import { isLocale } from '../i18n.js';
-import { greetingName, mailCodeFailures } from '../mail/templates.js';
-
-export const MAX_FAILED_LOGINS = 5;
-export const LOCK_MS = 15 * 60 * 1000;
 
 /**
- * Заключва акаунта, ако грешките са стигнали тавана. Заключва го точно една от паралелните заявки —
- * тя пише и в одита и само за нея резултатът е true.
+ * Броячът на грешните пароли и кодове — общ за входа (login.ts) и за повторното удостоверяване в отворена
+ * сесия (reauth.ts). Опитът се заема атомно ПРЕДИ бавната проверка (Argon2id, TOTP): паралелни заявки
+ * не получават повече от MAX_FAILED_LOGINS проверки на заключване, а заключен акаунт не се проверява.
  */
-async function lockAccount(user: User, meta: RequestMeta): Promise<boolean> {
+
+/** Опитът е зает; иначе — отказ, а `lockedNow` казва, че акаунтът го заключи точно тази заявка. */
+export type Reservation = { reserved: true } | { reserved: false; lockedNow: boolean };
+
+export interface FailureResult {
+  count: number;
+  locked: boolean;
+  lockedNow: boolean;
+}
+
+/** Акаунтът не е заключен (или заключването е изтекло). */
+const unlocked = (now: Date) => ({ OR: [{ lockedUntil: null }, { lockedUntil: { lte: now } }] });
+
+/**
+ * Заключва акаунт с изчерпани опити за LOCK_MS. Заключва го точно една от паралелните заявки — тя пише
+ * и в одита и само за нея резултатът е true.
+ */
+async function lockExhausted(user: User, meta: RequestMeta): Promise<boolean> {
+  const now = new Date();
   const lock = await prisma.user.updateMany({
-    where: { id: user.id, failedLogins: { gte: MAX_FAILED_LOGINS } },
-    data: { failedLogins: 0, lockedUntil: new Date(Date.now() + LOCK_MS) },
+    where: { id: user.id, failedLogins: { gte: MAX_FAILED_LOGINS }, ...unlocked(now) },
+    data: { failedLogins: 0, lockedUntil: new Date(now.getTime() + LOCK_MS) },
   });
   if (lock.count !== 1) return false;
   // Заключва системата; грешните опити може да са на непознат — не се пишат като действие на човека.
@@ -28,30 +42,46 @@ async function lockAccount(user: User, meta: RequestMeta): Promise<boolean> {
 }
 
 /**
- * Грешна парола или грешен код. Броячът расте атомно в базата — паралелни опити не могат да прочетат
- * една и съща стойност и да го заобиколят. На петия неуспех акаунтът се заключва за 15 минути.
+ * Заема опит ПРЕДИ проверката на паролата или кода. Отказ — акаунтът е заключен или всички опити са
+ * заети: тогава паролата или кодът не се проверяват. Пълен брояч без заключване (още се проверяват или
+ * заявка е прекъснала по средата) заключва акаунта сега, иначе би го държал затворен завинаги.
  */
-export async function countFailure(
-  user: User,
-  meta: RequestMeta,
-): Promise<{ count: number; locked: boolean; lockedNow: boolean }> {
-  const { failedLogins } = await prisma.user.update({
-    where: { id: user.id },
+export async function reserveAttempt(user: User, meta: RequestMeta): Promise<Reservation> {
+  const taken = await prisma.user.updateMany({
+    where: { id: user.id, failedLogins: { lt: MAX_FAILED_LOGINS }, ...unlocked(new Date()) },
     data: { failedLogins: { increment: 1 } },
-    select: { failedLogins: true },
   });
-  if (failedLogins < MAX_FAILED_LOGINS)
-    return { count: failedLogins, locked: false, lockedNow: false };
-  return { count: failedLogins, locked: true, lockedNow: await lockAccount(user, meta) };
+  if (taken.count === 1) return { reserved: true };
+  return { reserved: false, lockedNow: await lockExhausted(user, meta) };
+}
+
+/** Заетият опит се оказа грешен. Той вече е преброен; на петия акаунтът се заключва за LOCK_MS. */
+export async function attemptFailed(user: User, meta: RequestMeta): Promise<FailureResult> {
+  if (await lockExhausted(user, meta))
+    return { count: MAX_FAILED_LOGINS, locked: true, lockedNow: true };
+  const row = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { failedLogins: true, lockedUntil: true },
+  });
+  if (!row) return { count: MAX_FAILED_LOGINS, locked: true, lockedNow: false };
+  return { count: row.failedLogins, locked: isLocked(row), lockedNow: false };
 }
 
 /**
- * Неуспешно повторно удостоверяване, вече отчетено в брояча (опитът се заема преди проверката —
- * reauth.ts). Отворена сесия не дава безкрайни опити: на петия акаунтът се заключва, всички сесии
- * падат и собственикът получава писмо.
+ * Заетият опит се оказа верен. `finished` — входът е завършен: броячът пада на нула, но само ако
+ * междувременно паралелна заявка не е заключила акаунта (верният опит не отключва чужд). Иначе (чака се
+ * вторият фактор, бан, непотвърден имейл, потвърждение в отворена сесия) се връща само този опит.
  */
-export async function lockOnReauthFailure(user: User, meta: RequestMeta): Promise<void> {
-  if (!(await lockAccount(user, meta))) return;
-  await destroyAllSessions(user.id);
-  void mailCodeFailures(user.email, isLocale(user.locale) ? user.locale : 'bg', greetingName(user));
+export async function attemptSucceeded(userId: string, finished: boolean): Promise<void> {
+  if (finished) {
+    await prisma.user.updateMany({
+      where: { id: userId, ...unlocked(new Date()) },
+      data: { failedLogins: 0, lockedUntil: null },
+    });
+    return;
+  }
+  await prisma.user.updateMany({
+    where: { id: userId, failedLogins: { gt: 0 } },
+    data: { failedLogins: { decrement: 1 } },
+  });
 }

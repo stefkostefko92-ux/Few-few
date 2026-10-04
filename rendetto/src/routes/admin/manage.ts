@@ -15,6 +15,7 @@ import {
   withdrawalLastDay,
   withdrawalOutcomeOf,
 } from '../../plans/withdrawal.js';
+import { UNVERIFIED_RETENTION_DAYS } from '../../retention.js';
 import { createAccount } from '../../services/admin-create.js';
 import { rejectRequest } from '../../services/admin-plan.js';
 import { buildExport, contentDisposition } from '../../services/exports.js';
@@ -31,6 +32,7 @@ manageRouter.get('/admin/accounts-new', requireStaff('accounts:create'), (req, r
     roles: ['CUSTOMER', ...assignableRoles(staffActor(req).role).filter((r) => r !== 'CUSTOMER')],
     locales: LOCALES,
     inviteHours: linkHours('RESET_PASSWORD'),
+    unverifiedDays: UNVERIFIED_RETENTION_DAYS,
   });
 });
 

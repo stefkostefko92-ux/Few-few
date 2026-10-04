@@ -110,7 +110,7 @@
     "new": {
       "title": "Nuovo account",
       "password": "Password (facoltativa)",
-      "passwordHint": "Con una password l'account è confermato subito. Senza, la persona riceve un'email per impostare la password (il link vale {hours}, poi funziona «Password dimenticata»); un account mai attivato viene eliminato dopo 7 giorni.",
+      "passwordHint": "Con una password l'account è confermato subito. Senza, la persona riceve un'email per impostare la password (il link vale {hours}, poi funziona «Password dimenticata»); un account mai attivato viene eliminato dopo {days}.",
       "create": "Crea l'account"
     },
     "errors": {

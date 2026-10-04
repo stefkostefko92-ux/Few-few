@@ -6,7 +6,7 @@
     "noExpiry": "no end date",
     "verify": {
       "subject": "Confirm your email for Rendetto",
-      "body": "Open this link to confirm your email. Your trial starts with the confirmation:\n{link}\n\nThe link is valid for {hours}. If you did not sign up for Rendetto, do not open the link — an unconfirmed account is deleted after 7 days."
+      "body": "Open this link to confirm your email. Your trial starts with the confirmation:\n{link}\n\nThe link is valid for {hours}. If you did not sign up for Rendetto, do not open the link — an unconfirmed account is deleted after {days}."
     },
     "alreadyRegistered": {
       "subject": "You already have a Rendetto account",
@@ -26,7 +26,11 @@
     },
     "codeFailures": {
       "subject": "Wrong sign-in codes on Rendetto",
-      "body": "Someone entered your correct password but not the right code from the authenticator app. After several failed attempts, signing in to your account is paused for 15 minutes.\n\nIf this was not you, someone else knows your password. Change it now: {reset}"
+      "body": "Someone entered your correct password but not the right code from the authenticator app. After several failed attempts, signing in to your account is paused for {minutes}.\n\nIf this was not you, someone else knows your password. Change it now: {reset}"
+    },
+    "reauthFailures": {
+      "subject": "Failed confirmations in your Rendetto account",
+      "body": "In an open session of your account, a wrong password or code was entered several times in a row to confirm an action (changing the password or email, two-factor protection, deleting the account). All sessions have therefore been ended, and signing in is paused for {minutes}.\n\nIf this was not you, someone had access to one of your open sessions. Set a new password right away: {reset}"
     },
     "newDevice": {
       "subject": "Sign-in from a new device on Rendetto",
@@ -53,7 +57,7 @@
       "body": "The Rendetto team changed your account's email to {email}. From now on you sign in with the new address, and links sent to this address no longer work.\n\nIf you did not ask for this, write to us right away at the address below."
     },
     "trialEnding": {
-      "subject": "Your Rendetto trial ends in 3 days",
+      "subject": "Your Rendetto trial ends on {date}",
       "body": "Your trial ends on {date}. After that your projects stay and can be downloaded, but new projects and changes need a plan.\n\nPlans and prices: {plan}"
     },
     "planChanged": {

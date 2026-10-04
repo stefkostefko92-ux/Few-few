@@ -1,13 +1,29 @@
 import type { User } from '@prisma/client';
 import { config } from '../config.js';
 import { decryptSecret } from '../crypto.js';
-import { prisma } from '../db.js';
 import { verifyPassword } from '../auth/password.js';
 import { consumeRecoveryCode } from '../auth/recovery.js';
 import { isTotpCode, verifyTotp } from '../auth/totp.js';
+import { destroyAllSessions } from '../auth/sessions.js';
 import type { RequestMeta } from '../http/meta.js';
+import { isLocale } from '../i18n.js';
+import { greetingName, mailLocked } from '../mail/templates.js';
 import { claimTotpStep } from './auth-common.js';
-import { lockOnReauthFailure, MAX_FAILED_LOGINS } from './lockout.js';
+import { attemptFailed, attemptSucceeded, reserveAttempt } from './lockout.js';
+
+/**
+ * Акаунтът се заключи от грешни потвърждения в отворена сесия: отворена сесия не дава безкрайни опити —
+ * всички сесии падат и собственикът получава писмо (за потвържденията, не за кодове при вход).
+ */
+async function lockedBySession(user: User): Promise<void> {
+  await destroyAllSessions(user.id);
+  void mailLocked(
+    'reauthFailures',
+    user.email,
+    isLocale(user.locale) ? user.locale : 'bg',
+    greetingName(user),
+  );
+}
 
 /**
  * Повторно удостоверяване за чувствително действие (смяна на парола или имейл, 2FA, изтриване). Опитът
@@ -24,23 +40,16 @@ async function reauth(
   wrongKey: string,
   check: () => Promise<boolean>,
 ): Promise<string | null> {
-  const reserved = await prisma.user.updateMany({
-    where: {
-      id: user.id,
-      failedLogins: { lt: MAX_FAILED_LOGINS },
-      OR: [{ lockedUntil: null }, { lockedUntil: { lte: new Date() } }],
-    },
-    data: { failedLogins: { increment: 1 } },
-  });
-  if (reserved.count === 0) return 'error.tooMany';
+  const attempt = await reserveAttempt(user, meta);
+  if (!attempt.reserved) {
+    if (attempt.lockedNow) await lockedBySession(user);
+    return 'error.tooMany';
+  }
   if (await check()) {
-    await prisma.user.updateMany({
-      where: { id: user.id, failedLogins: { gt: 0 } },
-      data: { failedLogins: { decrement: 1 } },
-    });
+    await attemptSucceeded(user.id, false);
     return null;
   }
-  await lockOnReauthFailure(user, meta);
+  if ((await attemptFailed(user, meta)).lockedNow) await lockedBySession(user);
   return wrongKey;
 }
 

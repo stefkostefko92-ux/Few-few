@@ -6,7 +6,7 @@
     "noExpiry": "senza scadenza",
     "verify": {
       "subject": "Confermate la vostra email per Rendetto",
-      "body": "aprite questo link per confermare la vostra email. Con la conferma inizia il periodo di prova:\n{link}\n\nIl link vale {hours}. Se non vi siete registrati a Rendetto, non apritelo: un account non confermato viene eliminato dopo 7 giorni."
+      "body": "aprite questo link per confermare la vostra email. Con la conferma inizia il periodo di prova:\n{link}\n\nIl link vale {hours}. Se non vi siete registrati a Rendetto, non apritelo: un account non confermato viene eliminato dopo {days}."
     },
     "alreadyRegistered": {
       "subject": "Avete già un account Rendetto",
@@ -26,7 +26,11 @@
     },
     "codeFailures": {
       "subject": "Codici di accesso errati su Rendetto",
-      "body": "qualcuno ha inserito la vostra password corretta, ma non il codice giusto dell'app di autenticazione. Dopo diversi tentativi falliti, l'accesso all'account è sospeso per 15 minuti.\n\nSe non siete stati voi, qualcun altro conosce la vostra password. Cambiatela subito: {reset}"
+      "body": "qualcuno ha inserito la vostra password corretta, ma non il codice giusto dell'app di autenticazione. Dopo diversi tentativi falliti, l'accesso all'account è sospeso per {minutes}.\n\nSe non siete stati voi, qualcun altro conosce la vostra password. Cambiatela subito: {reset}"
+    },
+    "reauthFailures": {
+      "subject": "Conferme errate nel vostro account Rendetto",
+      "body": "in una sessione aperta del vostro account è stata inserita più volte di seguito una password o un codice errato per confermare un'operazione (cambio della password o dell'email, protezione a due fattori, eliminazione dell'account). Per questo tutte le sessioni sono state chiuse e l'accesso è sospeso per {minutes}.\n\nSe non siete stati voi, qualcuno ha avuto accesso a una vostra sessione aperta. Impostate subito una nuova password: {reset}"
     },
     "newDevice": {
       "subject": "Accesso da un nuovo dispositivo su Rendetto",
@@ -53,7 +57,7 @@
       "body": "il team di Rendetto ha cambiato l'email del vostro account in {email}. D'ora in poi accedete con il nuovo indirizzo e i link inviati a questo indirizzo non valgono più.\n\nSe non l'avete chiesto voi, scriveteci subito all'indirizzo qui sotto."
     },
     "trialEnding": {
-      "subject": "Il vostro periodo di prova Rendetto finisce tra 3 giorni",
+      "subject": "Il vostro periodo di prova Rendetto finisce il {date}",
       "body": "il vostro periodo di prova finisce il {date}. Dopo, i progetti restano e si possono scaricare, ma nuovi progetti e modifiche richiedono un piano.\n\nPiani e prezzi: {plan}"
     },
     "planChanged": {

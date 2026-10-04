@@ -9,6 +9,14 @@
       "one": "1 hour",
       "other": "{n} hours"
     },
+    "minutes": {
+      "one": "1 minute",
+      "other": "{n} minutes"
+    },
+    "days": {
+      "one": "1 day",
+      "other": "{n} days"
+    },
     "ogLocale": "en_GB"
   },
   "company": {

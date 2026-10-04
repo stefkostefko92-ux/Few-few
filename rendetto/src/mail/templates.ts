@@ -1,7 +1,9 @@
 import type { TokenPurpose } from '@prisma/client';
 import { config } from '../config.js';
+import { LOCK_MINUTES } from '../auth/lock.js';
 import { linkHours } from '../auth/tokens.js';
 import { translate, type Locale } from '../i18n.js';
+import { UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { sendMail, type MailAttachment } from './mailer.js';
 
 /**
@@ -13,9 +15,14 @@ function link(path: string, locale: Locale): string {
   return `${config().PUBLIC_BASE_URL}${path}${path.includes('?') ? '&' : '?'}lang=${locale}`;
 }
 
-/** Колко важи връзката („48 часа“, „1 час“) — от срока на токена, не написано в речника. */
+/** Срок от кода с формата за брой на езика („1 час“, „15 минути“, „7 дни“) — не написан в речника. */
+function period(locale: Locale, unit: 'hours' | 'minutes' | 'days', n: number): string {
+  return translate(locale, `common.${unit}`, { n });
+}
+
+/** Колко важи връзката („48 часа“, „1 час“) — от срока на токена. */
 function validFor(locale: Locale, purpose: TokenPurpose): string {
-  return translate(locale, 'common.hours', { n: linkHours(purpose) });
+  return period(locale, 'hours', linkHours(purpose));
 }
 
 function signature(locale: Locale): string {
@@ -60,6 +67,7 @@ export function mailVerifyEmail(to: string, locale: Locale, token: string): Prom
     {
       link: link(`/verify-email?token=${token}`, locale),
       hours: validFor(locale, 'VERIFY_EMAIL'),
+      days: period(locale, 'days', UNVERIFIED_RETENTION_DAYS),
     },
     null,
   );
@@ -121,13 +129,20 @@ export function mailPasswordChanged(
   return send(to, locale, 'passwordChanged', { reset: link('/forgot', locale) }, name);
 }
 
-/** Вярна парола, но грешни кодове от приложението — входът е спрян; паролата явно е известна на друг. */
-export function mailCodeFailures(
+/**
+ * Входът е спрян за LOCK_MINUTES след грешни опити. `codeFailures` — вярна парола, но грешни кодове от
+ * приложението при вход: паролата явно е известна на друг. `reauthFailures` — грешни пароли или кодове при
+ * потвърждение на действие в отворена сесия (смяна на парола или имейл, 2FA, изтриване): всички сесии са
+ * затворени, а паролата не е непременно известна на друг.
+ */
+export function mailLocked(
+  kind: 'codeFailures' | 'reauthFailures',
   to: string,
   locale: Locale,
   name: string | null,
 ): Promise<boolean> {
-  return send(to, locale, 'codeFailures', { reset: link('/forgot', locale) }, name);
+  const minutes = period(locale, 'minutes', LOCK_MINUTES);
+  return send(to, locale, kind, { reset: link('/forgot', locale), minutes }, name);
 }
 
 export function mailNewDevice(
@@ -167,7 +182,7 @@ export function mailChangeEmail(to: string, locale: Locale, token: string): Prom
     locale,
     'changeEmail',
     {
-      link: link(`/verify-email?token=${token}&change=1`, locale),
+      link: link(`/verify-email?token=${token}`, locale),
       hours: validFor(locale, 'CHANGE_EMAIL'),
     },
     null,

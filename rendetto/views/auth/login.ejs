@@ -16,7 +16,7 @@
   </div>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.loginButton') %></button>
 </form>
-<p class="hint"><%= t('auth.lockHint') %></p>
+<p class="hint"><%= t('auth.lockHint', { n: lockout.attempts, minutes: t('common.minutes', { n: lockout.minutes }) }) %></p>
 <div class="auth-links">
   <a href="/forgot"><%= t('auth.forgotLink') %></a>
   <a href="/register"><%= t('auth.registerLink') %></a>

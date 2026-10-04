@@ -2,11 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { LOCK_MINUTES } from '../src/auth/lock.js';
 import { linkHours } from '../src/auth/tokens.js';
 import { COMPANY } from '../src/company.js';
 import { hasKey, keysOf, LOCALES, translate } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
 import { TRIAL_DAYS } from '../src/plans/plan.js';
+import { UNVERIFIED_RETENTION_DAYS } from '../src/retention.js';
 
 function files(dir: string, ext: RegExp): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -83,6 +85,38 @@ test('link lifetimes and the password length in the texts come from the code', (
     assert.ok(translate(locale, 'password.tooLong', { passwordMax: 999 }).includes('999'), locale);
     for (const key of hours)
       assert.ok(translate(locale, key, { hours: '§' }).includes('§'), `${locale}.${key}`);
+  }
+});
+
+test('the lock, the deletion of an unconfirmed account and the trial reminder come from the code', () => {
+  assert.equal(translate('bg', 'common.minutes', { n: LOCK_MINUTES }), '15 минути');
+  assert.equal(translate('bg', 'common.days', { n: UNVERIFIED_RETENTION_DAYS }), '7 дни');
+  assert.equal(translate('bg', 'common.days', { n: 1 }), '1 ден');
+  assert.equal(translate('en', 'common.minutes', { n: 1 }), '1 minute');
+  assert.equal(translate('en', 'common.days', { n: 7 }), '7 days');
+  assert.equal(translate('it', 'common.minutes', { n: 15 }), '15 minuti');
+  assert.equal(translate('it', 'common.days', { n: 1 }), '1 giorno');
+  const params: Record<string, string[]> = {
+    'auth.lockHint': ['n', 'minutes'],
+    'auth.checkEmailHint': ['hours'],
+    'auth.forgotSent': ['hours'],
+    'admin.new.passwordHint': ['hours', 'days'],
+    'mail.verify.body': ['hours', 'days'],
+    'mail.reset.body': ['hours'],
+    'mail.invite.body': ['hours'],
+    'mail.changeEmail.body': ['hours'],
+    'mail.codeFailures.body': ['minutes'],
+    'mail.reauthFailures.body': ['minutes'],
+    'mail.trialEnding.subject': ['date'],
+  };
+  for (const locale of LOCALES) {
+    for (const [key, names] of Object.entries(params)) {
+      const text = translate(locale, key);
+      for (const name of names)
+        assert.ok(text.includes(`{${name}}`), `${locale}.${key}: {${name}}`);
+      // срокът, таванът и датата не се пишат на ръка
+      assert.doesNotMatch(text, /\d/, `${locale}.${key}: ${text}`);
+    }
   }
 });
 
