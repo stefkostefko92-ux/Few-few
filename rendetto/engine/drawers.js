@@ -4,7 +4,7 @@
 import { panel, groove, edgeHoles } from './panel.js';
 import { r1, dimTxt } from './util.js';
 import { slideModel, slideSystemOf, slideLength } from './hardware.js';
-import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, confirmat, addHoleOnce } from './joinery.js';
+import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, confirmat, addHoleOnce, hasHole } from './joinery.js';
 import { mountHandle } from './fronts.js';
 
 const TOP_GAP = 28; // box top below the front top, room for the slide and the drawer above
@@ -85,10 +85,19 @@ export function buildDrawers(ctx, o, a) {
       edgeHoles(sideA, '-z', [[xl + h.fromOuter, yb + h.fromBottom, zbk]], h.d, h.depth, 'slide-hook', { label });
       edgeHoles(sideB, '-z', [[xr - h.fromOuter, yb + h.fromBottom, zbk]], h.d, h.depth, 'slide-hook', { label });
     }
-    // carcass holes on the panels' inner faces; partitions get through holes so both faces work
+    // carcass holes on the panels' inner faces; partitions get through holes so both faces work. A slide hole already
+    // drilled there belongs to the slide on the other face: the screws from both faces would meet in it (fail closed)
     const ys = r1(sys.mount === 'under' ? bottomY + sys.axisAboveBottom : yb + sys.axisAboveBox);
     for (const [cp, fx] of [[a.left, xa], [a.right, xb]]) {
-      for (const zf2 of sys.holes[NL]) addHoleOnce(cp, [fx, ys, zEnd - zf2], sys.hole.d, sys.hole.depth, 'slide', { hw: 'slide', ref: family.id, refName: family.name, label }, cp.role === 'partition');
+      const through = cp.role === 'partition';
+      for (const zf2 of sys.holes[NL]) {
+        const p = [fx, ys, zEnd - zf2];
+        if (through && hasHole(cp, p, sys.hole.d, 'slide')) {
+          ctx.warn('error', `${cp.name}: водачите на чекмеджетата от двете му страни са на една височина — винтовете им биха се срещнали в общите отвори. Сменете разпределението на колоните.`);
+          continue;
+        }
+        addHoleOnce(cp, p, sys.hole.d, sys.hole.depth, 'slide', { hw: 'slide', ref: family.id, refName: family.name, label }, through);
+      }
     }
     ctx.hw(`slide:${family.id}:${NL}`, {
       name: product ? product.name : `${family.name}, NL ${NL} mm (няма в каталога, поръчайте отделно)`,
