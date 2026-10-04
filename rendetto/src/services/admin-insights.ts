@@ -1,5 +1,6 @@
 import type { Plan } from '@prisma/client';
 import { prisma } from '../db.js';
+import { SUCCESSFUL_LOGINS } from './login-outcome.js';
 
 /**
  * Разследването на акаунт в панела: входове, откъде влиза (IP и държава), свързани акаунти по
@@ -19,7 +20,7 @@ export async function accountLogins(userId: string, take = 100) {
 export async function accountIpSummary(userId: string) {
   const rows = await prisma.loginEvent.groupBy({
     by: ['ip', 'country'],
-    where: { userId, outcome: { in: ['SUCCESS', 'MFA_RECOVERY'] } },
+    where: { userId, outcome: { in: [...SUCCESSFUL_LOGINS] } },
     _count: { _all: true },
     _max: { createdAt: true },
     orderBy: { _max: { createdAt: 'desc' } },

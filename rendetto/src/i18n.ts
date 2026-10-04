@@ -19,6 +19,11 @@ export const LOCALE_LABEL: Record<Locale, string> = {
 /** BCP-47 за Intl форматиране. */
 export const LOCALE_TAG: Record<Locale, string> = { bg: 'bg-BG', en: 'en-GB', it: 'it-IT' };
 
+/** Езикът за Open Graph (`bg_BG`) — от LOCALE_TAG, за да не се разминат собственият и алтернативните. */
+export function ogLocale(locale: Locale): string {
+  return LOCALE_TAG[locale].replace('-', '_');
+}
+
 type Dictionary = Record<string, string>;
 
 /** Влагането в JSON е за четимост; вътре работим с плоски ключове `auth.loginTitle`. */

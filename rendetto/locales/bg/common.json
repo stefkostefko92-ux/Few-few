@@ -16,8 +16,7 @@
     "days": {
       "one": "1 ден",
       "other": "{n} дни"
-    },
-    "ogLocale": "bg_BG"
+    }
   },
   "company": {
     "street": "ул. „Самуил“ № 3",

@@ -91,7 +91,7 @@
     <h3><%= t('admin.account.loginsTitle') %></h3>
     <div class="table-wrap"><table class="stack">
       <thead><tr><th><%= t('security.col.when') %></th><th><%= t('security.col.result') %></th><th>IP</th><th>HWID</th></tr></thead>
-      <tbody><% for (const l of logins) { const good = l.outcome === 'SUCCESS' || l.outcome === 'MFA_RECOVERY'; %><tr><td data-label="<%= t('security.col.when') %>" class="nowrap"><%= fmt.dateTime(l.createdAt) %></td><td data-label="<%= t('security.col.result') %>"><span class="chip <%= good ? 'chip-ok' : 'chip-bad' %>"><%- include('../partials/icon', { name: good ? 'check' : 'x' }) %><%= t('outcome.' + l.outcome) %></span></td><td data-label="IP"><span class="mono-sm"><%= l.ip || '—' %></span><% if (l.country) { %> <small><%= l.country %></small><% } %></td><td data-label="HWID" class="hwid"><%= fmt.hwid(l.fingerprintHash || (l.device && l.device.fingerprintHash)) || '—' %></td></tr><% } %></tbody>
+      <tbody><% for (const l of logins) { const good = isGoodLogin(l.outcome); %><tr><td data-label="<%= t('security.col.when') %>" class="nowrap"><%= fmt.dateTime(l.createdAt) %></td><td data-label="<%= t('security.col.result') %>"><span class="chip <%= good ? 'chip-ok' : 'chip-bad' %>"><%- include('../partials/icon', { name: good ? 'check' : 'x' }) %><%= t('outcome.' + l.outcome) %></span></td><td data-label="IP"><span class="mono-sm"><%= l.ip || '—' %></span><% if (l.country) { %> <small><%= l.country %></small><% } %></td><td data-label="HWID" class="hwid"><%= fmt.hwid(l.fingerprintHash || (l.device && l.device.fingerprintHash)) || '—' %></td></tr><% } %></tbody>
     </table></div>
   </section>
 

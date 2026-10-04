@@ -16,8 +16,7 @@
     "days": {
       "one": "1 giorno",
       "other": "{n} giorni"
-    },
-    "ogLocale": "it_IT"
+    }
   },
   "company": {
     "street": "ul. Samuil 3",

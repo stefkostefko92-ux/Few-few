@@ -8,8 +8,8 @@
 <meta property="og:title" content="<%= title %>">
 <meta property="og:description" content="<%= description %>">
 <meta property="og:url" content="<%= canonical %>">
-<meta property="og:locale" content="<%= t('common.ogLocale') %>">
-<% for (const alt of alternates.filter((a) => a.locale !== locale)) { %><meta property="og:locale:alternate" content="<%= { bg: 'bg_BG', en: 'en_GB', it: 'it_IT' }[alt.locale] %>">
+<meta property="og:locale" content="<%= ogLocale(locale) %>">
+<% for (const alt of alternates.filter((a) => a.locale !== locale)) { %><meta property="og:locale:alternate" content="<%= ogLocale(alt.locale) %>">
 <% } %><meta property="og:image" content="<%= publicBase %>/static/img/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">

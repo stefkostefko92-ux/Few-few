@@ -5,10 +5,11 @@ import { join } from 'node:path';
 import { LOCK_MINUTES } from '../src/auth/lock.js';
 import { linkHours } from '../src/auth/tokens.js';
 import { COMPANY } from '../src/company.js';
-import { hasKey, keysOf, LOCALES, translate } from '../src/i18n.js';
+import { hasKey, keysOf, LOCALES, ogLocale, translate } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
 import { TRIAL_DAYS } from '../src/plans/plan.js';
 import { UNVERIFIED_RETENTION_DAYS } from '../src/retention.js';
+import { formatLifetimeTimes } from '../src/plans/pricing.js';
 
 function files(dir: string, ext: RegExp): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -155,6 +156,22 @@ test('the landing says that every account gets a 30-day trial, in every language
     assert.match(translate(locale, 'landing.prices.trial', { days: 30 }), expected[locale]);
     assert.match(translate(locale, 'landing.hero.trial', { days: 30 }), expected[locale]);
   }
+});
+
+test('the Lifetime multiple in the copy comes from the price list, written the local way', () => {
+  const expected = { bg: '2,5 пъти', en: '2.5 times', it: '2,5 volte' } as const;
+  for (const locale of LOCALES) {
+    const times = formatLifetimeTimes(locale);
+    for (const key of ['landing.prices.lifetime', 'brochure.prices.lifetime'])
+      assert.ok(translate(locale, key, { times }).includes(expected[locale]), `${locale}.${key}`);
+  }
+});
+
+test('Open Graph locales come from the same table as the rest of the formatting', () => {
+  assert.deepEqual(
+    LOCALES.map((locale) => ogLocale(locale)),
+    ['bg_BG', 'en_GB', 'it_IT'],
+  );
 });
 
 test('no stock marketing phrases in the public copy', () => {

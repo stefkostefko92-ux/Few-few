@@ -3,7 +3,6 @@ import { renderError, requireStaff } from '../../auth/guards.js';
 import { assignableRoles, can, outranks } from '../../auth/rbac.js';
 import { remainingRecoveryCodes } from '../../auth/recovery.js';
 import { stringField } from '../../http/meta.js';
-import { LOCALES } from '../../i18n.js';
 import { planView } from '../../plans/plan.js';
 import { optionPriceCents, priceTable } from '../../plans/pricing.js';
 import { paidStartAllowedFrom } from '../../plans/withdrawal.js';
@@ -62,7 +61,6 @@ accountAdminRouter.get('/admin/accounts/:id', requireStaff('accounts:view'), asy
     lifetimeCents: optionPriceCents('lifetime'),
     manageable: account.id !== actor.id && outranks(actor.role, account.role),
     roles: assignableRoles(actor.role),
-    locales: LOCALES,
     now: new Date(),
   });
 });

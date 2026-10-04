@@ -16,8 +16,7 @@
     "days": {
       "one": "1 day",
       "other": "{n} days"
-    },
-    "ogLocale": "en_GB"
+    }
   },
   "company": {
     "street": "ul. Samuil 3",

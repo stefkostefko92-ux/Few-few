@@ -9,6 +9,9 @@ export const MONTHLY_CENTS = 2500;
 /** Lifetime = 2,5 × годишната цена БЕЗ отстъпката за 12 месеца. */
 export const LIFETIME_PERCENT_OF_YEAR = 250;
 
+/** Същото правило като число за текста („2,5 пъти“) — витрината, условията, брошурата и llms.txt. */
+export const LIFETIME_MULTIPLE = LIFETIME_PERCENT_OF_YEAR / 100;
+
 /** ДДС в България — само за показ на крайната цена за потребители в България. */
 export const VAT_BG_PERCENT = 20;
 
@@ -79,7 +82,7 @@ export function formatMoney(cents: number, locale: Locale): string {
 /** Само за показ: колко пъти годишната цена е Lifetime („2,5“ / „2.5“) — от константата, не на ръка. */
 export function formatLifetimeTimes(locale: Locale): string {
   return new Intl.NumberFormat(LOCALE_TAG[locale], { maximumFractionDigits: 2 }).format(
-    LIFETIME_PERCENT_OF_YEAR / 100,
+    LIFETIME_MULTIPLE,
   );
 }
 

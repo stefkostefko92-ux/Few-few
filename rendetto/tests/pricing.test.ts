@@ -5,6 +5,7 @@ import {
   formatMoney,
   isOptionId,
   LIFETIME_PERCENT_OF_YEAR,
+  LIFETIME_MULTIPLE,
   lifetimePriceCents,
   MONTHLY_CENTS,
   optionMonths,
@@ -23,6 +24,11 @@ test('the price list the owner asked for: 25 € a month, 5/10/20 % off, lifetim
   assert.equal(lifetimePriceCents(), 75000);
   assert.equal(optionPriceCents('lifetime'), 75000);
   assert.equal(optionPriceCents('m12'), 24000);
+});
+
+test('the multiple the copy states is the one the lifetime price is computed with', () => {
+  assert.equal(LIFETIME_MULTIPLE, 2.5);
+  assert.equal(lifetimePriceCents(), MONTHLY_CENTS * 12 * LIFETIME_MULTIPLE);
 });
 
 test('per-month price and VAT are whole cents, rounded half up at the end', () => {

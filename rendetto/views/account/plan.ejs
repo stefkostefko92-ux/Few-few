@@ -2,7 +2,7 @@
 <div class="page-head"><h1><%= t('plan.title') %></h1></div>
 <%- include('../partials/account-nav') %>
 <%- include('../partials/flash') %>
-<% const termsHref = locale === 'bg' ? '/terms' : '/' + locale + '/terms'; %>
+<% const termsHref = legalPath(locale, 'terms'); %>
 
 <section class="section" aria-labelledby="current-h">
   <h2 id="current-h"><%= t('plan.current') %></h2>

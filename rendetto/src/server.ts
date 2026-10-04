@@ -18,6 +18,8 @@ import { readFlash } from './http/flash.js';
 import { attachLocale, localeSwitchUrl } from './http/locale.js';
 import { LOCALE_LABEL, LOCALES, isLocale } from './i18n.js';
 import { planView, TRIAL_DAYS } from './plans/plan.js';
+import { legalPath, PATHS } from './seo/paths.js';
+import { isSuccessfulLogin } from './services/login-outcome.js';
 import { accountRouter } from './routes/account.js';
 import { adminRouter } from './routes/admin/index.js';
 import { appRouter } from './routes/app.js';
@@ -68,6 +70,9 @@ export function createServer(): Express {
     res.locals.cspNonce = randomBytes(16).toString('base64');
     res.locals.v = version;
     res.locals.editorPreload = preload;
+    // адресите по език — за всяка страница, и за грешката преди сесията
+    res.locals.paths = PATHS;
+    res.locals.legalPath = legalPath;
     next();
   });
   app.use(
@@ -142,6 +147,7 @@ export function createServer(): Express {
       isLocale(locale) ? localeSwitchUrl(req, locale) : req.originalUrl;
     res.locals.path = req.path;
     res.locals.isStaff = isStaff;
+    res.locals.isGoodLogin = isSuccessfulLogin;
     const user = req.principal?.user;
     res.locals.headerPlan = user && req.principal?.session.mfaPassed ? planView(user) : null;
     res.locals.contact = cfg.CONTACT_EMAIL;

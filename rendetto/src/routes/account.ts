@@ -5,7 +5,7 @@ import { clearSessionCookie } from '../auth/sessions.js';
 import { setFlash } from '../http/flash.js';
 import { resendLimiter, sensitiveLimiter } from '../http/limits.js';
 import { rawField, requestMeta, stringField } from '../http/meta.js';
-import { LOCALES, type Locale } from '../i18n.js';
+import type { Locale } from '../i18n.js';
 import { planView } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT, withVatCents } from '../plans/pricing.js';
 import {
@@ -51,7 +51,6 @@ accountRouter.get('/account', async (req, res) => {
     plan: planView(user),
     projects,
     openRequest,
-    locales: LOCALES,
     section: 'overview',
   });
 });
@@ -102,7 +101,6 @@ accountRouter.get('/account/plan', async (req, res) => {
   });
   const now = new Date();
   res.render('account/plan', {
-    user,
     plan: planView(user, now),
     prices: priceTable(),
     vatPercent: VAT_BG_PERCENT,

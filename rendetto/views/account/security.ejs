@@ -111,7 +111,7 @@
   <div class="table-wrap"><table class="stack">
     <thead><tr><th><%= t('security.col.when') %></th><th><%= t('security.col.result') %></th><th><%= t('security.col.place') %></th></tr></thead>
     <tbody>
-    <% for (const l of logins) { const good = l.outcome === 'SUCCESS' || l.outcome === 'MFA_RECOVERY'; %>
+    <% for (const l of logins) { const good = isGoodLogin(l.outcome); %>
       <tr><td data-label="<%= t('security.col.when') %>" class="nowrap"><%= fmt.dateTime(l.createdAt) %></td><td data-label="<%= t('security.col.result') %>"><span class="chip <%= good ? 'chip-ok' : 'chip-bad' %>"><%- include('../partials/icon', { name: good ? 'check' : 'x' }) %><%= t('outcome.' + l.outcome) %></span></td><td data-label="<%= t('security.col.place') %>"><span class="mono-sm"><%= l.ip || '—' %></span><% if (l.country) { %> <small><%= fmt.country(l.country) %></small><% } %></td></tr>
     <% } %>
     </tbody>

@@ -6,7 +6,6 @@ import { linkHours } from '../../auth/tokens.js';
 import { prisma } from '../../db.js';
 import { exportLimiter } from '../../http/limits.js';
 import { rawField, stringField } from '../../http/meta.js';
-import { LOCALES } from '../../i18n.js';
 import { LABEL } from '../../labels.js';
 import { withVatCents } from '../../plans/pricing.js';
 import {
@@ -30,7 +29,6 @@ const INT4_MAX = 2_147_483_647;
 manageRouter.get('/admin/accounts-new', requireStaff('accounts:create'), (req, res) => {
   res.render('admin/account-new', {
     roles: ['CUSTOMER', ...assignableRoles(staffActor(req).role).filter((r) => r !== 'CUSTOMER')],
-    locales: LOCALES,
     inviteHours: linkHours('RESET_PASSWORD'),
     unverifiedDays: UNVERIFIED_RETENTION_DAYS,
   });

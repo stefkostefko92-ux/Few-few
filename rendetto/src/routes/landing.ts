@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { COMPANY, LEGAL_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { applyLocale } from '../http/locale.js';
-import { LOCALES, translatorFor, type Locale } from '../i18n.js';
+import { LOCALES, ogLocale, translatorFor, type Locale } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { formatLifetimeTimes, priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
 import { retentionText } from '../retention.js';
@@ -41,12 +41,12 @@ function publicPage(
 ): void {
   applyLocale(res, locale);
   res.set('Cache-Control', 'public, max-age=600');
+  // `paths` и `legalPath` са в res.locals за всички страници (server.ts)
   res.render(view, {
     publicBase: config().PUBLIC_BASE_URL,
     contact: config().CONTACT_EMAIL,
-    paths: PATHS,
-    legalPath,
     company: COMPANY,
+    ogLocale,
     lifetimeTimes: formatLifetimeTimes(locale),
     ...data,
   });
