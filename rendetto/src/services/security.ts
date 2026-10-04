@@ -1,6 +1,6 @@
 import type { User } from '@prisma/client';
 import QRCode from 'qrcode';
-import { audit } from '../audit.js';
+import { audit, audited } from '../audit.js';
 import { config } from '../config.js';
 import { decryptSecret, encryptSecret } from '../crypto.js';
 import { prisma } from '../db.js';
@@ -51,18 +51,18 @@ export async function changePassword(
   if (denied) return { ok: false, key: denied };
   const problem = await newPasswordProblem(next, [user.email, user.name]);
   if (problem) return { ok: false, key: problem };
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { passwordHash: await hashPassword(next) },
-  });
-  await destroyAllSessions(user.id, sessionId);
-  // връзка за нова парола или за смяна на имейла, поискана преди това, вече не върши работа
-  await revokeEmailTokens(user.id, ['RESET_PASSWORD', 'CHANGE_EMAIL']);
-  await audit(customerActor(user, meta), {
-    action: 'auth.password.changed',
-    targetType: 'user',
-    targetId: user.id,
-  });
+  const passwordHash = await hashPassword(next);
+  // Едно цяло: сменена парола с оцелели чужди сесии или връзки е по-лошо от несменена.
+  await audited(
+    customerActor(user, meta),
+    async (tx) => {
+      await tx.user.update({ where: { id: user.id }, data: { passwordHash } });
+      await destroyAllSessions(user.id, sessionId, tx);
+      // връзка за нова парола или за смяна на имейла, поискана преди това, вече не върши работа
+      await revokeEmailTokens(user.id, ['RESET_PASSWORD', 'CHANGE_EMAIL'], tx);
+    },
+    { action: 'auth.password.changed', targetType: 'user', targetId: user.id },
+  );
   void mailPasswordChanged(user.email, localeOf(user), greetingName(user));
   return { ok: true };
 }
@@ -101,13 +101,16 @@ export async function resetPassword(
   if (problem) return { ok: false, key: problem };
   if (!(await consumeEmailToken(token, 'RESET_PASSWORD')))
     return { ok: false, key: 'auth.errors.linkExpired' };
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { passwordHash: await hashPassword(next), failedLogins: 0, lockedUntil: null },
+  const passwordHash = await hashPassword(next);
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: user.id },
+      data: { passwordHash, failedLogins: 0, lockedUntil: null },
+    });
+    await destroyAllSessions(user.id, undefined, tx);
+    await revokeEmailTokens(user.id, undefined, tx);
   });
   await markEmailVerified(user, meta);
-  await destroyAllSessions(user.id);
-  await revokeEmailTokens(user.id);
   await audit(customerActor(user, meta), {
     action: 'auth.password.reset',
     targetType: 'user',

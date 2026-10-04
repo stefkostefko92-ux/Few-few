@@ -104,15 +104,27 @@ export async function deleteOwnAccount(
   meta: RequestMeta,
 ): Promise<DeleteResult> {
   if (!input.confirmed) return { ok: false, key: 'account.delete.confirmMissing' };
+  // Последният собственик спира преди паролата и кода: резервен код не се харчи за отказ.
+  if (user.role === 'OWNER' && (await prisma.user.count({ where: { role: 'OWNER' } })) <= 1) {
+    return { ok: false, key: 'account.delete.lastOwner' };
+  }
   const denied =
     (await reauthPassword(user, input.password, meta)) ??
     (await reauthCode(user, input.code, meta));
   if (denied) return { ok: false, key: denied };
-  if (user.role === 'OWNER' && (await prisma.user.count({ where: { role: 'OWNER' } })) <= 1) {
-    return { ok: false, key: 'account.delete.lastOwner' };
-  }
+  // Броенето и изтриването са под ключ на редовете на собствениците: двама собственици, които се
+  // трият едновременно, не оставят продукта без управление.
+  const deleted = await prisma.$transaction(async (tx) => {
+    if (user.role === 'OWNER') {
+      const owners = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id" FROM "User" WHERE "role" = 'OWNER' FOR UPDATE`;
+      if (owners.length <= 1) return false;
+    }
+    await tx.user.delete({ where: { id: user.id } });
+    return true;
+  });
+  if (!deleted) return { ok: false, key: 'account.delete.lastOwner' };
   const locale: Locale = isLocale(user.locale) ? user.locale : 'bg';
-  await prisma.user.delete({ where: { id: user.id } });
   await audit(
     { ...SYSTEM_ACTOR, ip: meta.ip },
     { action: 'account.deleted.self', targetType: 'user', targetId: user.id },
