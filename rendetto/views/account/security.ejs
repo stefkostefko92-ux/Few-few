@@ -66,7 +66,7 @@
     <input type="text" name="username" autocomplete="username" value="<%= user.email %>" hidden>
     <div class="form-row">
       <div class="field"><label for="pw-cur"><%= t('account.currentPassword') %></label><input id="pw-cur" name="current" type="password" required autocomplete="current-password"></div>
-      <div class="field"><label for="pw-new"><%= t('auth.newPassword') %></label><input id="pw-new" name="next" type="password" required minlength="12" maxlength="256" autocomplete="new-password" aria-describedby="pw-rules"></div>
+      <div class="field"><label for="pw-new"><%= t('auth.newPassword') %></label><input id="pw-new" name="next" type="password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" autocomplete="new-password" aria-describedby="pw-rules"></div>
     </div>
     <p class="hint" id="pw-rules"><%= t('password.rules') %> <%= t('security.passwordOthers') %></p>
     <div class="actions"><button class="btn btn-primary" type="submit"><%= t('security.passwordButton') %></button></div>

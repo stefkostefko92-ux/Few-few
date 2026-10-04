@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { linkHours } from '../src/auth/tokens.js';
 import { COMPANY } from '../src/company.js';
 import { hasKey, keysOf, LOCALES, translate } from '../src/i18n.js';
 import { ROOT } from '../src/paths.js';
@@ -60,6 +61,28 @@ test('counts pick the right form in every language', () => {
   assert.equal(translate('it', 'plan.months', { n: 1 }), '1 mese');
   assert.equal(translate('it', 'plan.months', { n: 6 }), '6 mesi');
   assert.equal(translate('bg', 'plan.chip.trialDays', { n: 1 }), 'Тест: 1 ден');
+});
+
+test('link lifetimes and the password length in the texts come from the code', () => {
+  assert.equal(translate('bg', 'common.hours', { n: linkHours('RESET_PASSWORD') }), '1 час');
+  assert.equal(translate('bg', 'common.hours', { n: linkHours('VERIFY_EMAIL') }), '48 часа');
+  assert.equal(translate('en', 'common.hours', { n: linkHours('CHANGE_EMAIL') }), '24 hours');
+  assert.equal(translate('it', 'common.hours', { n: 1 }), '1 ora');
+  const hours = [
+    'auth.checkEmailHint',
+    'auth.forgotSent',
+    'admin.new.passwordHint',
+    'mail.verify.body',
+    'mail.reset.body',
+    'mail.changeEmail.body',
+  ];
+  for (const locale of LOCALES) {
+    for (const key of ['password.rules', 'password.tooShort'])
+      assert.ok(translate(locale, key, { passwordMin: 97 }).includes('97'), `${locale}.${key}`);
+    assert.ok(translate(locale, 'password.tooLong', { passwordMax: 999 }).includes('999'), locale);
+    for (const key of hours)
+      assert.ok(translate(locale, key, { hours: '§' }).includes('§'), `${locale}.${key}`);
+  }
 });
 
 test('the sites carry at least five keywords, one of them “Carbon Stealth”', () => {

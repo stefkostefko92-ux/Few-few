@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { config, isProduction } from '../config.js';
 import { canonicalJson, hmacHex, randomToken, safeEqual, sha256Hex } from '../crypto.js';
+import { LOGIN_RETENTION_DAYS } from '../retention.js';
 
 /**
  * Устройството („HWID“ в панела). Браузърът не дава хардуерен номер, затова устройството се
@@ -9,8 +10,8 @@ import { canonicalJson, hmacHex, randomToken, safeEqual, sha256Hex } from '../cr
  * показва (видеокарта, ядра, памет, екран). Ползва се само за сигурност: входове, свързани акаунти,
  * известие за ново устройство. Описано е в политиката за поверителност.
  */
-/** Колкото живее и записът за устройството (180 дни без вход) — бисквитката не надживява целта си. */
-const DEVICE_COOKIE_MAX_AGE = 180 * 24 * 60 * 60 * 1000;
+/** Колкото живее и записът за устройството (без вход) — бисквитката не надживява целта си. */
+const DEVICE_COOKIE_MAX_AGE = LOGIN_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
 export function deviceCookieName(): string {
   return isProduction() ? '__Host-rd_dev' : 'rd_dev';
@@ -31,7 +32,7 @@ export function readDeviceCookie(req: Request): string | null {
 
 /**
  * Връща id на устройството; ако няма валидна бисквитка, издава нова. Срокът се плъзга: всеки вход го
- * подновява, както и записът за устройството живее 180 дни от последното ползване.
+ * подновява, както и записът за устройството живее LOGIN_RETENTION_DAYS дни от последното ползване.
  */
 export function ensureDeviceCookie(req: Request, res: Response): string {
   const id = readDeviceCookie(req) ?? randomToken(16);

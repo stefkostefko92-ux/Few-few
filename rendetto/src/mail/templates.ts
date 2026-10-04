@@ -1,4 +1,6 @@
+import type { TokenPurpose } from '@prisma/client';
 import { config } from '../config.js';
+import { linkHours } from '../auth/tokens.js';
 import { translate, type Locale } from '../i18n.js';
 import { sendMail, type MailAttachment } from './mailer.js';
 
@@ -9,6 +11,11 @@ import { sendMail, type MailAttachment } from './mailer.js';
  */
 function link(path: string, locale: Locale): string {
   return `${config().PUBLIC_BASE_URL}${path}${path.includes('?') ? '&' : '?'}lang=${locale}`;
+}
+
+/** Колко важи връзката („48 часа“, „1 час“) — от срока на токена, не написано в речника. */
+function validFor(locale: Locale, purpose: TokenPurpose): string {
+  return translate(locale, 'common.hours', { n: linkHours(purpose) });
 }
 
 function signature(locale: Locale): string {
@@ -46,7 +53,16 @@ async function send(
 
 /** До адрес, който още никой не е потвърдил — без име. */
 export function mailVerifyEmail(to: string, locale: Locale, token: string): Promise<boolean> {
-  return send(to, locale, 'verify', { link: link(`/verify-email?token=${token}`, locale) }, null);
+  return send(
+    to,
+    locale,
+    'verify',
+    {
+      link: link(`/verify-email?token=${token}`, locale),
+      hours: validFor(locale, 'VERIFY_EMAIL'),
+    },
+    null,
+  );
 }
 
 export function mailAlreadyRegistered(
@@ -69,7 +85,13 @@ export function mailResetPassword(
   name: string | null,
   token: string,
 ): Promise<boolean> {
-  return send(to, locale, 'reset', { link: link(`/reset?token=${token}`, locale) }, name);
+  return send(
+    to,
+    locale,
+    'reset',
+    { link: link(`/reset?token=${token}`, locale), hours: validFor(locale, 'RESET_PASSWORD') },
+    name,
+  );
 }
 
 export function mailPasswordChanged(
@@ -125,7 +147,10 @@ export function mailChangeEmail(to: string, locale: Locale, token: string): Prom
     to,
     locale,
     'changeEmail',
-    { link: link(`/verify-email?token=${token}&change=1`, locale) },
+    {
+      link: link(`/verify-email?token=${token}&change=1`, locale),
+      hours: validFor(locale, 'CHANGE_EMAIL'),
+    },
     null,
   );
 }

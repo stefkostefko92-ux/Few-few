@@ -6,7 +6,7 @@
     "noExpiry": "no end date",
     "verify": {
       "subject": "Confirm your email for Rendetto",
-      "body": "Open this link to confirm your email. Your trial starts with the confirmation:\n{link}\n\nThe link is valid for 48 hours. If you did not sign up for Rendetto, do not open the link — an unconfirmed account is deleted after 7 days."
+      "body": "Open this link to confirm your email. Your trial starts with the confirmation:\n{link}\n\nThe link is valid for {hours}. If you did not sign up for Rendetto, do not open the link — an unconfirmed account is deleted after 7 days."
     },
     "alreadyRegistered": {
       "subject": "You already have a Rendetto account",
@@ -14,7 +14,7 @@
     },
     "reset": {
       "subject": "New password for Rendetto",
-      "body": "To set a new password, open this link:\n{link}\n\nThe link is valid for 1 hour and works once. If you did not ask for a new password, do nothing — your old one stays."
+      "body": "To set a new password, open this link:\n{link}\n\nThe link is valid for {hours} and works once. If you did not ask for a new password, do nothing — your old one stays."
     },
     "passwordChanged": {
       "subject": "Your Rendetto password was changed",
@@ -38,7 +38,7 @@
     },
     "changeEmail": {
       "subject": "Confirm your new email for Rendetto",
-      "body": "To change your account's email to this address, open the link:\n{link}\n\nThe link is valid for 24 hours. Until you open it, you sign in with the old email."
+      "body": "To change your account's email to this address, open the link:\n{link}\n\nThe link is valid for {hours}. Until you open it, you sign in with the old email."
     },
     "emailChangeNotice": {
       "subject": "A change of your Rendetto email was requested",

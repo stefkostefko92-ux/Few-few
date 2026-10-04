@@ -2,13 +2,21 @@ import { TokenPurpose, type Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { randomToken, sha256Hex } from '../crypto.js';
 
-const HOUR = 60 * 60 * 1000;
+export const HOUR = 60 * 60 * 1000;
 
 export const TOKEN_TTL_MS: Record<TokenPurpose, number> = {
   VERIFY_EMAIL: 48 * HOUR,
   RESET_PASSWORD: 1 * HOUR,
   CHANGE_EMAIL: 24 * HOUR,
 };
+
+/** Срокът на връзката в часове — за текстовете („Връзката важи 48 часа“), не се пише на ръка. */
+export function linkHours(purpose: TokenPurpose): number {
+  return TOKEN_TTL_MS[purpose] / HOUR;
+}
+
+/** Таван срещу засипване на чужда поща: толкова писма с връзка на час за една цел на един акаунт. */
+export const MAIL_CAP_PER_HOUR = 3;
 
 /**
  * Нова еднократна връзка. Предишните неизползвани за същата цел се анулират. С `tx` — вътре в

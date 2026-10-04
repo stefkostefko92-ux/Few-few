@@ -110,7 +110,7 @@
     "new": {
       "title": "New account",
       "password": "Password (optional)",
-      "passwordHint": "With a password the account is confirmed at once. Without one, the person gets an email to set a password (the link is valid for 1 hour, after that “Forgot password” works); an account that is never set up is deleted after 7 days.",
+      "passwordHint": "With a password the account is confirmed at once. Without one, the person gets an email to set a password (the link is valid for {hours}, after that “Forgot password” works); an account that is never set up is deleted after 7 days.",
       "create": "Create account"
     },
     "errors": {

@@ -10,7 +10,9 @@ import { isStaff } from '../auth/rbac.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import {
   consumeEmailToken,
+  HOUR,
   issueEmailToken,
+  MAIL_CAP_PER_HOUR,
   peekEmailToken,
   recentTokenCount,
   revokeEmailTokens,
@@ -29,8 +31,6 @@ import {
 import { customerActor, emailSchema, newPasswordProblem } from './auth-common.js';
 import { reauthCode, reauthPassword } from './reauth.js';
 import { markEmailVerified } from './registration.js';
-
-const HOUR = 60 * 60 * 1000;
 
 function localeOf(user: User): Locale {
   return isLocale(user.locale) ? user.locale : 'bg';
@@ -73,7 +73,7 @@ export async function requestPasswordReset(rawEmail: string, meta: RequestMeta):
   if (!email.success) return;
   const user = await prisma.user.findUnique({ where: { email: email.data } });
   if (!user || user.bannedAt) return;
-  if ((await recentTokenCount(user.id, 'RESET_PASSWORD', HOUR)) >= 3) return;
+  if ((await recentTokenCount(user.id, 'RESET_PASSWORD', HOUR)) >= MAIL_CAP_PER_HOUR) return;
   const token = await issueEmailToken(user.id, 'RESET_PASSWORD');
   void mailResetPassword(user.email, localeOf(user), greetingName(user), token);
   await audit(customerActor(user, meta), {
@@ -257,7 +257,7 @@ export async function requestEmailChange(
       at: { gte: new Date(Date.now() - HOUR) },
     },
   });
-  if (asked >= 3) return { ok: false, key: 'error.tooMany' };
+  if (asked >= MAIL_CAP_PER_HOUR) return { ok: false, key: 'error.tooMany' };
   // Зает адрес не се издава: писмо не тръгва, но отговорът е същият.
   const taken = await prisma.user.findUnique({ where: { email: email.data } });
   if (!taken) {

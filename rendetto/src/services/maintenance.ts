@@ -4,16 +4,12 @@ import { logger } from '../logger.js';
 import { purgeExpiredSessions } from '../auth/sessions.js';
 import { isLocale, LOCALE_TAG } from '../i18n.js';
 import { greetingName, mailTrialEnding } from '../mail/templates.js';
+import { LOGIN_RETENTION_DAYS, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { resendOrderMail } from './plan-requests.js';
 
 const DAY = 24 * 60 * 60 * 1000;
-/**
- * Колко пазим входовете (IP, държава, устройство), устройствата, които не са виждани, и IP адресите в
- * одитния дневник — после се трият или заличават. Описано в политиката за поверителност.
- */
-export const LOGIN_RETENTION_DAYS = 180;
-/** Непотвърдена регистрация се трие след толкова дни. */
-export const UNVERIFIED_RETENTION_DAYS = 7;
+/** Изтеклите връзки от писмата се пазят още толкова дни, после се трият. */
+const EXPIRED_TOKEN_DAYS = 7;
 
 /** Писмо 3 дни преди края на тестовия период — веднъж на акаунт. */
 export async function sendTrialReminders(now: Date = new Date()): Promise<number> {
@@ -56,7 +52,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
     const ipCutoff = new Date(now.getTime() - LOGIN_RETENTION_DAYS * DAY);
     const logins = await prisma.loginEvent.deleteMany({ where: { createdAt: { lt: ipCutoff } } });
     const devices = await prisma.device.deleteMany({ where: { lastSeenAt: { lt: ipCutoff } } });
-    // отпечатъкът и устройството от регистрацията — също 180 дни, както казва политиката
+    // отпечатъкът и устройството от регистрацията — със същия срок, както казва политиката
     const signups = await prisma.user.updateMany({
       where: {
         createdAt: { lt: ipCutoff },
@@ -69,7 +65,7 @@ export async function runMaintenance(now: Date = new Date()): Promise<void> {
       data: { ip: null },
     });
     const tokens = await prisma.emailToken.deleteMany({
-      where: { expiresAt: { lt: new Date(now.getTime() - 7 * DAY) } },
+      where: { expiresAt: { lt: new Date(now.getTime() - EXPIRED_TOKEN_DAYS * DAY) } },
     });
     const reminders = await sendTrialReminders(now);
     const orderMail = await resendOrderMail(now);

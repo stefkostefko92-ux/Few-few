@@ -1,7 +1,7 @@
 <%- include('_top', { titleKey: 'auth.forgotTitle' }) %>
 <h1><%= t('auth.forgotTitle') %></h1>
 <% if (sent) { %>
-<p><%= t('auth.forgotSent') %></p>
+<p><%= t('auth.forgotSent', { hours: t('common.hours', { n: hours }) }) %></p>
 <div class="auth-links"><a href="/login"><%= t('auth.toLogin') %></a></div>
 <% } else { %>
 <p><%= t('auth.forgotText') %></p>

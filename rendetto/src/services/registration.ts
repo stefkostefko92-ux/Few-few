@@ -5,7 +5,9 @@ import { deviceCookieHash, fingerprintHash } from '../auth/device.js';
 import { dummyHash, hashPassword, verifyPassword } from '../auth/password.js';
 import {
   consumeEmailToken,
+  HOUR,
   issueEmailToken,
+  MAIL_CAP_PER_HOUR,
   recentTokenCount,
   revokeEmailTokens,
 } from '../auth/tokens.js';
@@ -16,8 +18,6 @@ import { greetingName, mailAlreadyRegistered, mailVerifyEmail } from '../mail/te
 import { trialEndsAt } from '../plans/plan.js';
 import { customerActor, emailSchema, nameSchema, newPasswordProblem } from './auth-common.js';
 import type { DeviceContext } from './devices.js';
-
-const HOUR = 60 * 60 * 1000;
 
 /* ---------------------------------- регистрация ---------------------------------- */
 
@@ -104,10 +104,10 @@ export async function registerAccount(
   return { ok: true };
 }
 
-/** Ново писмо за потвърждаване — най-много 3 на час на акаунт. */
+/** Ново писмо за потвърждаване — най-много MAIL_CAP_PER_HOUR на час на акаунт. */
 export async function resendVerification(user: User): Promise<boolean> {
   if (user.emailVerifiedAt) return false;
-  if ((await recentTokenCount(user.id, 'VERIFY_EMAIL', HOUR)) >= 3) return false;
+  if ((await recentTokenCount(user.id, 'VERIFY_EMAIL', HOUR)) >= MAIL_CAP_PER_HOUR) return false;
   const token = await issueEmailToken(user.id, 'VERIFY_EMAIL');
   const locale = isLocale(user.locale) ? user.locale : 'bg';
   void mailVerifyEmail(user.email, locale, token);

@@ -10,6 +10,7 @@ import {
 } from '../auth/guards.js';
 import { clearSessionCookie, destroySessionById, setSessionCookie } from '../auth/sessions.js';
 import { isRole } from '../auth/rbac.js';
+import { linkHours } from '../auth/tokens.js';
 import { setFlash } from '../http/flash.js';
 import { forgotLimiter, loginLimiter, mfaLimiter, registerLimiter } from '../http/limits.js';
 import { rawField, requestMeta, safeNext, stringField } from '../http/meta.js';
@@ -206,7 +207,7 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
     );
     return;
   }
-  authPage(res, 'auth/check-email', { email: values.email });
+  authPage(res, 'auth/check-email', { email: values.email, hours: linkHours('VERIFY_EMAIL') });
 });
 
 authRouter.get('/verify-email', async (req, res) => {
@@ -226,12 +227,20 @@ authRouter.get('/verify-email', async (req, res) => {
 /* ---------------------------------- нова парола ---------------------------------- */
 
 authRouter.get('/forgot', (req, res) => {
-  authPage(res, 'auth/forgot', { pre: preCsrf(req, res), sent: false });
+  authPage(res, 'auth/forgot', {
+    pre: preCsrf(req, res),
+    sent: false,
+    hours: linkHours('RESET_PASSWORD'),
+  });
 });
 
 authRouter.post('/forgot', forgotLimiter, requirePreAuthCsrf, async (req, res) => {
   await requestPasswordReset(stringField(req.body, 'email', 254), requestMeta(req));
-  authPage(res, 'auth/forgot', { pre: preCsrf(req, res), sent: true });
+  authPage(res, 'auth/forgot', {
+    pre: preCsrf(req, res),
+    sent: true,
+    hours: linkHours('RESET_PASSWORD'),
+  });
 });
 
 authRouter.get('/reset', async (req, res) => {

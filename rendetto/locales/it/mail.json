@@ -6,7 +6,7 @@
     "noExpiry": "senza scadenza",
     "verify": {
       "subject": "Confermate la vostra email per Rendetto",
-      "body": "aprite questo link per confermare la vostra email. Con la conferma inizia il periodo di prova:\n{link}\n\nIl link vale 48 ore. Se non vi siete registrati a Rendetto, non apritelo: un account non confermato viene eliminato dopo 7 giorni."
+      "body": "aprite questo link per confermare la vostra email. Con la conferma inizia il periodo di prova:\n{link}\n\nIl link vale {hours}. Se non vi siete registrati a Rendetto, non apritelo: un account non confermato viene eliminato dopo 7 giorni."
     },
     "alreadyRegistered": {
       "subject": "Avete già un account Rendetto",
@@ -14,7 +14,7 @@
     },
     "reset": {
       "subject": "Nuova password per Rendetto",
-      "body": "per impostare una nuova password aprite questo link:\n{link}\n\nIl link vale 1 ora e funziona una volta sola. Se non avete chiesto una nuova password, non fate nulla: resta quella vecchia."
+      "body": "per impostare una nuova password aprite questo link:\n{link}\n\nIl link vale {hours} e funziona una volta sola. Se non avete chiesto una nuova password, non fate nulla: resta quella vecchia."
     },
     "passwordChanged": {
       "subject": "La vostra password Rendetto è stata cambiata",
@@ -38,7 +38,7 @@
     },
     "changeEmail": {
       "subject": "Confermate la nuova email per Rendetto",
-      "body": "per cambiare l'email del vostro account con questo indirizzo aprite il link:\n{link}\n\nIl link vale 24 ore. Finché non lo aprite, accedete con l'email vecchia."
+      "body": "per cambiare l'email del vostro account con questo indirizzo aprite il link:\n{link}\n\nIl link vale {hours}. Finché non lo aprite, accedete con l'email vecchia."
     },
     "emailChangeNotice": {
       "subject": "Richiesto il cambio della vostra email Rendetto",

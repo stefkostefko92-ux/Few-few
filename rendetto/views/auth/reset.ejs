@@ -11,7 +11,7 @@
   <input type="hidden" name="token" value="<%= token %>">
   <div class="field">
     <label for="password"><%= t('auth.newPassword') %></label>
-    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="256" aria-describedby="pw-rules">
+    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="pw-rules">
     <p class="hint" id="pw-rules"><%= t('password.rules') %></p>
   </div>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.resetButton') %></button>

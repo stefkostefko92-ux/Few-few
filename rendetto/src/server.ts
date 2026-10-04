@@ -9,6 +9,7 @@ import { config, isProduction } from './config.js';
 import { logger, httpLogOptions } from './logger.js';
 import { ROOT } from './paths.js';
 import { attachSession } from './auth/sessions.js';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { isStaff } from './auth/rbac.js';
 import { renderError } from './auth/guards.js';
 import { accountWriteLimiter } from './http/limits.js';
@@ -144,6 +145,8 @@ export function createServer(): Express {
     res.locals.headerPlan = user && req.principal?.session.mfaPassed ? planView(user) : null;
     res.locals.contact = cfg.CONTACT_EMAIL;
     res.locals.trialDays = TRIAL_DAYS;
+    res.locals.passwordMin = PASSWORD_MIN_LENGTH;
+    res.locals.passwordMax = PASSWORD_MAX_LENGTH;
     next();
   });
   app.use(['/app', '/account', '/admin'], accountWriteLimiter);

@@ -1,7 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
 import { isProduction } from '../config.js';
 import { prisma } from '../db.js';
-import { isLocale, localeFromHeader, translatorFor, type Locale } from '../i18n.js';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '../auth/password.js';
+import {
+  isLocale,
+  localeFromHeader,
+  translatorFor,
+  type Locale,
+  type Translator,
+} from '../i18n.js';
 import { viewHelpers } from './view.js';
 
 export const LOCALE_COOKIE = 'rd_lang';
@@ -22,9 +29,17 @@ function chooseLocale(req: Request): { locale: Locale; fromQuery: boolean } {
   return { locale: localeFromHeader(req.get('accept-language')), fromQuery: false };
 }
 
+/**
+ * Числата от правилата, които текстовете на страниците ползват (дължината на паролата в подсказката и
+ * в грешките, където и да се покажат) — идват от кода, не се пишат в речника.
+ */
+const TEXT_PARAMS = { passwordMin: PASSWORD_MIN_LENGTH, passwordMax: PASSWORD_MAX_LENGTH };
+
 export function applyLocale(res: Response, locale: Locale): void {
+  const translate = translatorFor(locale);
+  const t: Translator = (key, params) => translate(key, { ...TEXT_PARAMS, ...params });
   res.locals.locale = locale;
-  res.locals.t = translatorFor(locale);
+  res.locals.t = t;
   res.locals.fmt = viewHelpers(locale);
 }
 

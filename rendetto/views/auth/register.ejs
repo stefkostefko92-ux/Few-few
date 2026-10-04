@@ -17,7 +17,7 @@
   </div>
   <div class="field">
     <label for="password"><%= t('auth.password') %></label>
-    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="256" aria-describedby="pw-rules"<% if (field === 'password') { %> aria-invalid="true"<% } %>>
+    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="pw-rules"<% if (field === 'password') { %> aria-invalid="true"<% } %>>
     <p class="hint" id="pw-rules"><%= t('password.rules') %></p>
   </div>
   <label class="check">

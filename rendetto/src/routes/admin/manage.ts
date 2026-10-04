@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { audit, verifyAuditChain } from '../../audit.js';
 import { renderError, requireStaff } from '../../auth/guards.js';
 import { assignableRoles, outranks } from '../../auth/rbac.js';
+import { linkHours } from '../../auth/tokens.js';
 import { prisma } from '../../db.js';
 import { exportLimiter } from '../../http/limits.js';
 import { rawField, stringField } from '../../http/meta.js';
@@ -29,6 +30,7 @@ manageRouter.get('/admin/accounts-new', requireStaff('accounts:create'), (req, r
   res.render('admin/account-new', {
     roles: ['CUSTOMER', ...assignableRoles(staffActor(req).role).filter((r) => r !== 'CUSTOMER')],
     locales: LOCALES,
+    inviteHours: linkHours('RESET_PASSWORD'),
   });
 });
 

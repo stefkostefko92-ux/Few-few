@@ -5,6 +5,10 @@
     "save": "Salva",
     "copied": "Copiato",
     "unknown": "Sconosciuto",
+    "hours": {
+      "one": "1 ora",
+      "other": "{n} ore"
+    },
     "ogLocale": "it_IT"
   },
   "company": {

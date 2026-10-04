@@ -12,7 +12,7 @@
   </div>
   <div class="field">
     <label for="password"><%= t('auth.password') %></label>
-    <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="<%= passwordMax %>"<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
   </div>
   <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.loginButton') %></button>
 </form>
