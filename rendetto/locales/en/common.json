@@ -40,6 +40,16 @@
     "privacyDescription": "Which personal data Rendetto processes, why, how long we keep it and what rights you have under the GDPR.",
     "termsDescription": "The terms of use of Rendetto: account, trial, plans and prices, payment, right of withdrawal and liability.",
     "updated": "Last changed: {date}",
+    "retention": {
+      "years": {
+        "one": "1 year",
+        "other": "{n} years"
+      },
+      "days": {
+        "one": "1 day",
+        "other": "{n} days"
+      }
+    },
     "keywords": "Rendetto, privacy policy, terms of use, GDPR, personal data, Carbon Stealth"
   },
   "role": {

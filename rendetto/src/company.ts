@@ -33,4 +33,4 @@ export const PRODUCT_URL = 'https://rendetto.carbonstealth.eu';
 export const CONTENT_UPDATED = '2026-10-03';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
-export const LEGAL_UPDATED = { privacy: '2026-10-03', terms: '2026-10-03' } as const;
+export const LEGAL_UPDATED = { privacy: '2026-10-04', terms: '2026-10-03' } as const;

@@ -40,6 +40,16 @@
     "privacyDescription": "Quali dati personali tratta Rendetto, perché, per quanto tempo li conserviamo e quali diritti avete secondo il GDPR.",
     "termsDescription": "Le condizioni d'uso di Rendetto: account, periodo di prova, piani e prezzi, pagamento, diritto di recesso e responsabilità.",
     "updated": "Ultima modifica: {date}",
+    "retention": {
+      "years": {
+        "one": "1 anno",
+        "other": "{n} anni"
+      },
+      "days": {
+        "one": "1 giorno",
+        "other": "{n} giorni"
+      }
+    },
     "keywords": "Rendetto, informativa sulla privacy, condizioni d'uso, GDPR, dati personali, Carbon Stealth"
   },
   "role": {
