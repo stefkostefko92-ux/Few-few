@@ -124,7 +124,7 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     // the door (it opens outward)
     base.updateMatrixWorld(true);
     const foot = new THREE.Box3().setFromObject(base), wide = sup.kind === 'frame' || sup.kind === 'plinth' || sup.kind === 'rinvio';
-    const [fz0, fz1] = F.shape ? [F.beams[0] / 1000 - 0.07, F.beams[1] / 1000 + 0.07] : [-0.2, 0.2], [fx0, fx1] = F.shape ? [F.x[0] / 1000, F.x[1] / 1000] : [-0.52, 1.12];
+    const [fz0, fz1] = F.shape ? [F.beams[0] / 1000 - 0.07, F.beams[F.beams.length - 1] / 1000 + 0.07] : [-0.2, 0.2], [fx0, fx1] = F.shape ? [F.x[0] / 1000, F.x[1] / 1000] : [-0.52, 1.12];
     blocked.push(rectOf([[fx0, fz0], [fx1, fz0], [fx1, fz1], [fx0, fz1]].map(([x, zz]) => {
       const p = new THREE.Vector3(x, 0, zz).applyMatrix4(machine.group.matrixWorld);
       return [p.x * 1000, -p.z * 1000] as const;

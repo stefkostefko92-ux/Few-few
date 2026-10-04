@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { MACHINES } from '@/lib/catalog/machines';
 import { defaultLift, deriveLift } from '@/lib/lift';
 import { liftAdvice } from '@/lib/lift/advice';
 import { collaudoOf } from '@/lib/lift/collaudo';
@@ -89,11 +90,14 @@ test('bozza d’ordine: carta intestata, argano, basamento con rinvio, locale ma
   assert.ok(!doc.blocks.some((b) => b.t === 'box'));
 });
 
-test('bozza d’ordine Montanari: il sito del costruttore e i dati dal suo catalogo tecnico', () => {
+test('bozza d’ordine Montanari: il sito del costruttore e i dati dal suo documento', () => {
   const best = liftAdvice(defaultLift()).best.find((c) => c.brand === 'Montanari');
-  assert.ok(best);
+  const src = MACHINES.find((c) => c.brand === 'Montanari' && c.model === best?.model)?.src ?? '';
+  assert.ok(best && src.startsWith('D: '));
+  // the document the values come from: the range sheet the client supplied or the technical catalogue of 2018
+  const docName = src.slice(3, src.indexOf(','));
   const doc = buildOrder(sample({ brand: 'Montanari', model: best.model })), all = texts(doc);
-  for (const s of ['montanarigiulio.com', `Montanari ${best.model}`, 'da documenti del costruttore', 'catalogo tecnico Montanari Mod. RA – CG/17/07 (2018)']) assert.ok(all.includes(s), s);
+  for (const s of ['montanarigiulio.com', `Montanari ${best.model}`, 'da documenti del costruttore', docName]) assert.ok(all.includes(s), s);
   assert.ok(!all.includes('sicoritaly.com'));
 });
 

@@ -7,7 +7,7 @@
 // between the spokes showing what stands behind. Millimetres of the machine's frame, the bedframe's underside at y = 0;
 // `at` maps them to the drawing. Pure: room-view.ts places it.
 import { circle, line, path, type Entity, type FillName, type Pt, type StyleName } from '../drawing';
-import { partBox, type MachineFrame, type ShapePart } from './machine-shape';
+import { partBox, tilted, type MachineFrame, type ShapePart } from './machine-shape';
 import { SPOKE_ANGLES, brakeOf, coverBolts, endShields, ribsOf, sheaveDims, spokeOutline, type BrakeDetail, type P2 } from './machine-detail';
 
 type At = (x: number, y: number) => Pt;
@@ -35,7 +35,7 @@ const CAST = new Set(['housing', 'base', 'cover', 'pedestal', 'terminal']);
 
 /** The bedframe seen along Z: the beam, the posts down to the mounts when it is tall, the mounts. */
 function bedElevation(F: MachineFrame, at: At): Entity[] {
-  const out: Entity[] = [], hb = Math.min(120, F.bed - 22), y0 = F.bed - hb, [x0, x1] = F.x;
+  const out: Entity[] = [], hb = Math.min(120, F.bed - 22), y0 = F.bed - hb, [x0, x1] = F.run;
   const box = (a: number, b: number, c: number, d: number, st: 'outline' | 'thin' = 'outline', fill?: 'cw' | 'steel' | 'paper'): void => {
     out.push(path([at(a, b), at(c, b), at(c, d), at(a, d)], true, st, fill));
   };
@@ -116,12 +116,17 @@ export function shapeElevation(F: MachineFrame, D: number, at: At): Entity[] {
   const out = bedElevation(F, at), y = (v: number): number => v + F.bed, Y: At = (px, py) => at(px, y(py));
   // the brake's levers stand in for its arms; the rest of the parts as they are
   const B = brakeOf(S), lever = (p: ShapePart): boolean => B !== null && p.role === 'arm' && (partBox(p)[2] > 0 || partBox(p)[5] < 0);
-  const layers: Layer[] = S.parts.filter((p) => !lever(p)).map((p) => ({ z: partBox(p)[5], draw: () => drawElevation(p, Y, out) }));
+  const turned = (p: ShapePart): At => (p.tilt ? (px, py) => Y(...tilted(p.tilt, px, py)) : Y);
+  const layers: Layer[] = S.parts.filter((p) => !lever(p)).map((p) => ({ z: partBox(p)[5], draw: () => drawElevation(p, turned(p), out) }));
   if (B) layers.push(...brakeLayers(B, Y, out));
   for (const l of layers.sort((a, b) => a.z - b.z)) l.draw();
-  // the worm's (and the motor's) axis along the machine
+  // the worm's (and the motor's) axis along the machine, inclined with the parts on it
   const b = partBox(S.parts[0]), xs = S.parts.map(partBox), lo = Math.min(b[0], ...xs.map((q) => q[0])) - 25, hi = Math.max(b[3], ...xs.map((q) => q[3])) + 25;
-  out.push(line(Y(lo, S.yWorm), Y(hi, S.yWorm), 'axis'));
+  const t = S.parts.find((p) => p.tilt)?.tilt;
+  if (t) {
+    const along = S.parts.filter((p) => p.tilt).map((p) => [p, partBox({ ...p, tilt: undefined })] as const), x1 = Math.max(...along.map(([, q]) => q[3])) + 25;
+    out.push(line(Y(...tilted(t, lo, t.at[1])), Y(...tilted(t, x1, t.at[1])), 'axis'));
+  } else out.push(line(Y(lo, S.yWorm), Y(hi, S.yWorm), 'axis'));
   out.push(...sheaveFace(D, y(S.yWheel), at));
   return out;
 }
@@ -175,8 +180,8 @@ export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: 
   const out: Entity[] = [], quad = (x0: number, z0: number, x1: number, z1: number, st: 'outline' | 'thin' | 'hidden' = 'outline', fill?: FillName): void => {
     out.push(path([at(x0, z0), at(x1, z0), at(x1, z1), at(x0, z1)], true, st, fill));
   };
-  for (const z of F.beams) quad(F.x[0], z - 35, F.x[1], z + 35, 'outline', 'cw');
-  for (const x of [F.x[0], F.x[1] - 70]) quad(x, F.beams[0] + 35, x + 70, F.beams[1] - 35, 'thin', 'cw');
+  for (const z of F.beams) quad(F.run[0], z - 35, F.run[1], z + 35, 'outline', 'cw');
+  for (const x of [F.run[0], F.run[1] - 70]) quad(x, F.beams[0] + 35, x + 70, F.beams[F.beams.length - 1] - 35, 'thin', 'cw');
   const B = brakeOf(S);
   const low = [...S.parts].sort((a, b) => partBox(a)[4] - partBox(b)[4]);
   for (const p of low) {
@@ -193,7 +198,7 @@ export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: 
     }
     quad(x0, z0, x1, z1, 'outline', steel ? 'steel' : 'paper');
     if (p.role === 'motor' && 'box' in p) for (let z = z0 + 24; z < z1 - 10; z += 24) out.push(line(at(x0 + 10, z), at(x1 - 10, z), 'fine'));
-    for (const [e0, e1, rr] of endShields(p)) quad(e0, -rr, e1, rr, 'outline', 'paper');
+    if (!p.tilt) for (const [e0, e1, rr] of endShields(p)) quad(e0, -rr, e1, rr, 'outline', 'paper');
     const ribs = ribsOf(S, p);
     for (const [a, , c] of ribs?.ribs ?? []) if (ribs) quad(Math.min(a, c) - 6, ribs.z - ribs.depth, Math.max(a, c) + 6, ribs.z, 'thin', 'paper');
   }

@@ -41,7 +41,7 @@ export interface FramedPulley {
  */
 export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, gap: number, walls: readonly [number, number] | null, M: LiftMaterials,
   pulley: FramedPulley | null = null): THREE.Group {
-  const g = new THREE.Group(), b = new Batch(), pads = padsOf(sup) / 1000, top = -pads, beams = F.beams.map((z) => z / 1000), mid = (beams[0] + beams[1]) / 2, s = F.shape ? 1 : F.s;
+  const g = new THREE.Group(), b = new Batch(), pads = padsOf(sup) / 1000, top = -pads, beams = F.beams.map((z) => z / 1000), mid = (beams[0] + beams[beams.length - 1]) / 2, s = F.shape ? 1 : F.s;
   const MOUNTS = F.shape ? F.mounts.map((x) => x / 1000) : [-0.36 * F.s, 0.95 * F.s];
   const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, m: THREE.Material): void => {
     if (x1 - x0 > 1e-4 && y1 - y0 > 1e-4 && z1 - z0 > 1e-4) b.add(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), m);

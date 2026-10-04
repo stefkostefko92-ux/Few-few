@@ -1,5 +1,5 @@
 // The parts of a maker's machine (src/shaft/machine-shape.ts) as the 3D finishes them by what they are: cast parts in
-// black enamel with rounded edges and the ribs on their backs (src/shaft/machine-detail.ts), a turned motor frame with
+// black enamel (or the maker's colour) with rounded edges and the ribs on their backs (src/shaft/machine-detail.ts), a turned motor frame with
 // its end shields or a box one with its cooling fins, the motor's rating plate, the terminal box with its lid and
 // glands, turned covers with their bolt rings, shafts in bright steel, the yellow handwheel with the directions of
 // travel, the lifting eyes. The drum brake is built whole (brake.ts). Metres, the machine's frame (y up from the feet's
@@ -33,29 +33,32 @@ function ratingPlate(x: number, y: number, z: number, M: MachineMaterials): THRE
   return g;
 }
 
+/** The castings' enamel: black, or the maker's colour. */
+const castOf = (S: MachineShape, M: MachineMaterials): THREE.Material => (S.paint === 'blue' ? M.blue : S.paint === 'grey-blue' ? M.greyBlue : M.black);
+
 /** The motor's frame: a turned one smooth with its two end shields; a box one finned. The rating plate on its side. */
-function motor(p: ShapePart, M: MachineMaterials): THREE.Object3D {
+function motor(p: ShapePart, M: MachineMaterials, body: THREE.Material): THREE.Object3D {
   const g = new THREE.Group(), fin = 0.016;
   if ('cyl' in p && p.cyl === 'x') {
     const r = m(p.r), [x0, x1] = [m(p.span[0]), m(p.span[1])], y = m(p.at[0]), z = m(p.at[1]);
-    g.add(mesh(turnedAlong('x', r, x0, x1), M.black, 0, y, z));
-    for (const [a, b, rr] of endShields(p)) g.add(mesh(turnedAlong('x', m(rr), m(a), m(b)), M.black, 0, y, z));
+    g.add(mesh(turnedAlong('x', r, x0, x1), body, 0, y, z));
+    for (const [a, b, rr] of endShields(p)) g.add(mesh(turnedAlong('x', m(rr), m(a), m(b)), body, 0, y, z));
     // the plate flat on the frame's side, clear of its curve at the plate's edges
     g.add(ratingPlate((x0 + x1) / 2, y, z + r + 0.0015, M));
     return g;
   }
   if ('box' in p) {
     const [x0, y0, z0, x1, y1, z1] = p.box.map(m);
-    g.add(rounded(x0, y0, z0 + fin, x1, y1 - fin, z1 - fin, M.black, 0.02));
+    g.add(rounded(x0, y0, z0 + fin, x1, y1 - fin, z1 - fin, body, 0.02));
     const geo = new RoundedBoxGeometry(x1 - x0 - 0.04, 0.005, fin, 1, 0.0018), spots: THREE.Vector3[] = [];
     for (let y = y0 + 0.03; y < y1 - fin - 0.02; y += 0.028) spots.push(P3((x0 + x1) / 2, y, z0 + fin / 2), P3((x0 + x1) / 2, y, z1 - fin / 2));
-    const inst = new THREE.InstancedMesh(geo, M.black, spots.length), mat = new THREE.Matrix4(), one = new THREE.Vector3(1, 1, 1), q = new THREE.Quaternion();
+    const inst = new THREE.InstancedMesh(geo, body, spots.length), mat = new THREE.Matrix4(), one = new THREE.Vector3(1, 1, 1), q = new THREE.Quaternion();
     spots.forEach((s, i) => inst.setMatrixAt(i, mat.compose(s, q, one)));
     inst.castShadow = true;
     g.add(inst);
     const top = new RoundedBoxGeometry(x1 - x0 - 0.04, fin, 0.005, 1, 0.0018), tops: THREE.Vector3[] = [];
     for (let z = z0 + fin + 0.02; z < z1 - fin - 0.01; z += 0.028) tops.push(P3((x0 + x1) / 2, y1 - fin / 2, z));
-    const ti = new THREE.InstancedMesh(top, M.black, tops.length);
+    const ti = new THREE.InstancedMesh(top, body, tops.length);
     tops.forEach((s, i) => ti.setMatrixAt(i, mat.compose(s, q, one)));
     ti.castShadow = true;
     g.add(ti, ratingPlate((x0 + x1) / 2, (y0 + y1) / 2, z1, M));
@@ -65,11 +68,11 @@ function motor(p: ShapePart, M: MachineMaterials): THREE.Object3D {
 
 /** The ribs on the back of a casting (machine-detail.ts): plates standing proud of its face. */
 function ribs(S: MachineShape, p: ShapePart, M: MachineMaterials): THREE.Object3D[] {
-  const R = ribsOf(S, p);
+  const R = ribsOf(S, p), body = castOf(S, M);
   if (!R) return [];
   const t = 0.012, d = m(R.depth), z = m(R.z) - d / 2;
   return R.ribs.map(([a, b, c, e]) => {
-    const [x0, y0, x1, y1] = [m(a), m(b), m(c), m(e)], len = Math.hypot(x1 - x0, y1 - y0), rib = mesh(new RoundedBoxGeometry(len, t, d, 1, 0.003), M.black, (x0 + x1) / 2, (y0 + y1) / 2, z);
+    const [x0, y0, x1, y1] = [m(a), m(b), m(c), m(e)], len = Math.hypot(x1 - x0, y1 - y0), rib = mesh(new RoundedBoxGeometry(len, t, d, 1, 0.003), body, (x0 + x1) / 2, (y0 + y1) / 2, z);
     rib.rotation.z = Math.atan2(y1 - y0, x1 - x0);
     rib.castShadow = true;
     return rib;
@@ -77,9 +80,9 @@ function ribs(S: MachineShape, p: ShapePart, M: MachineMaterials): THREE.Object3
 }
 
 /** The terminal box: its body, the lid, the cable glands toward the back (−Z). */
-function terminal(b: readonly number[], M: MachineMaterials): THREE.Group {
+function terminal(b: readonly number[], M: MachineMaterials, body: THREE.Material): THREE.Group {
   const [x0, y0, z0, x1, y1, z1] = b.map(m), g = new THREE.Group();
-  g.add(rounded(x0, y0, z0, x1, y1 - 0.012, z1, M.black, 0.008), rounded(x0 - 0.004, y1 - 0.014, z0 - 0.004, x1 + 0.004, y1, z1 + 0.004, M.black, 0.004));
+  g.add(rounded(x0, y0, z0, x1, y1 - 0.012, z1, body, 0.008), rounded(x0 - 0.004, y1 - 0.014, z0 - 0.004, x1 + 0.004, y1, z1 + 0.004, body, 0.004));
   const n = x1 - x0 > 0.15 ? 3 : 2;
   for (let i = 0; i < n; i++) {
     const x = x0 + ((i + 0.5) * (x1 - x0)) / n, y = (y0 + y1) / 2 - 0.006;
@@ -116,11 +119,12 @@ function coverBolts(axis: 'x' | 'z', c: THREE.Vector3, r: number, face: 1 | -1, 
 
 /** A part of the body as the 3D shows it; `worm` collects what turns with the worm (the brake drum, the handwheel). */
 export function buildPart(S: MachineShape, p: ShapePart, M: MachineMaterials, worm: THREE.Object3D[]): THREE.Object3D {
-  if (p.role === 'motor') return motor(p, M);
+  const body = castOf(S, M);
+  if (p.role === 'motor') return motor(p, M, body);
   if ('box' in p) {
     const b = p.box.map(m);
-    if (p.role === 'terminal') return terminal(p.box, M);
-    const mat = p.role === 'magnet' || p.role === 'brake' ? M.alu : p.role === 'shaft' ? M.machined : M.black;
+    if (p.role === 'terminal') return terminal(p.box, M, body);
+    const mat = p.role === 'magnet' || p.role === 'brake' ? M.alu : p.role === 'shaft' ? M.machined : body;
     const g = new THREE.Group();
     g.add(rounded(b[0], b[1], b[2], b[3], b[4], b[5], mat, p.role === 'arm' ? 0.006 : 0.014), ...ribs(S, p, M));
     return g;
@@ -129,12 +133,12 @@ export function buildPart(S: MachineShape, p: ShapePart, M: MachineMaterials, wo
     const s = new THREE.Shape(p.prism.map(([x, y]) => new THREE.Vector2(m(x), m(y)))), depth = m(p.span[1] - p.span[0]);
     const geo = slab(s, depth, Math.min(0.012, depth / 6)), g = new THREE.Group();
     geo.translate(0, 0, m(p.span[0] + p.span[1]) / 2);
-    g.add(mesh(geo, M.black), ...ribs(S, p, M));
+    g.add(mesh(geo, body), ...ribs(S, p, M));
     return g;
   }
   const r = m(p.r), [s0, s1] = [m(p.span[0]), m(p.span[1])], [a, b] = [m(p.at[0]), m(p.at[1])];
   if (p.role === 'eye') return eye(a, b, r, s0, s1, M);
-  if (p.cyl === 'y') return mesh(new THREE.CylinderGeometry(r, r, s1 - s0, 40), M.black, a, (s0 + s1) / 2, b);
+  if (p.cyl === 'y') return mesh(new THREE.CylinderGeometry(r, r, s1 - s0, 40), body, a, (s0 + s1) / 2, b);
   if (p.role === 'handwheel' && p.cyl === 'x') {
     const g = new THREE.Group(), w = handwheel(r, s0 - (s0 + s1) / 2, s1 - (s0 + s1) / 2, M);
     g.position.set((s0 + s1) / 2, a, b);
@@ -142,7 +146,7 @@ export function buildPart(S: MachineShape, p: ShapePart, M: MachineMaterials, wo
     worm.push(g);
     return g;
   }
-  const mat = p.role === 'shaft' ? M.machined : p.role === 'brake' || p.role === 'magnet' ? M.alu : M.black;
+  const mat = p.role === 'shaft' ? M.machined : p.role === 'brake' || p.role === 'magnet' ? M.alu : body;
   if (p.cyl === 'x') {
     const g = new THREE.Group(), geo = turnedAlong('x', r, s0 - (s0 + s1) / 2, s1 - (s0 + s1) / 2);
     if (mat === M.machined) geo.computeTangents();

@@ -7,6 +7,12 @@
 > costruttori nuovi. I file scaricati restano nello spazio di lavoro temporaneo, **non nel repository**
 > (elenco al § 11). Dai documenti si prendono **solo numeri**: nessun disegno, testo o geometria del
 > costruttore entra nel software.
+>
+> **Aggiornamento del 4 ottobre 2026.** Il 3 ottobre il cliente ha fornito i documenti che da qui non si
+> scaricavano: le schede di gamma Montanari (M65, M73, M75; M93-M95, M98 e PENTA Rev 21_05_24), il catalogo
+> argani Sassi REV 2023/01 e il disegno quotato Sassi MF84 sinistro (2019/04). I valori sono letti lì (✅ MO-S,
+> SA-D, SA-M; §§ 3, 4.2) e il software disegna ora le Sassi e le Montanari come sono, in 2D e in 3D (§ 9). I
+> file restano nello spazio di lavoro (§ 11).
 
 ## 0. Come leggere
 
@@ -35,10 +41,13 @@ dice con «(sign. ⚠️)».
 | SH | `liftpilot/src/lib/catalog/shapes.ts`: misure prese dai modelli STEP SICOR nel giro del 2026-10-02 | — |
 | SA-C | Alberto Sassi, «Catalogo argani / Gearboxes catalogue» REV 2022/03, 73 pagine, copia integrale su construction.am | https://www.construction.am/images/photo-gallery/3948/Alberto_SASSI_Catalogue_Geared_2022_Rev_03.pdf |
 | SA-12 | cap. 12 §§ 3, 11, 12: estratti di ricerca delle pagine sassi.it (2026-10-01/02) | [12-catalogo-argani.md](12-catalogo-argani.md) |
+| SA-D | Alberto Sassi, «Catalogo argani / Gearboxes catalogue» REV 2023/01, 74 pagine (PDF del 17/01/2023), fornito dal cliente il 2026-10-03, letto il 2026-10-04; le pagine sono quelle del PDF (la stampata è una in meno), le stesse di SA-C | — (documento del cliente) |
+| SA-M | Alberto Sassi, disegno quotato «MF84 - Left - Mot. 240-270» (2019_04), 1 pagina, fornito dal cliente il 2026-10-03 | — (documento del cliente) |
 | MO-12 | cap. 12 §§ 10, 12: estratti di ricerca delle pagine e dei PDF Montanari (2026-10-01/02) | [12-catalogo-argani.md](12-catalogo-argani.md) |
 | MO-B | Montanari, «General brochure» 2015, copia su itasia.it | https://www.itasia.it/wp-content/uploads/2019/05/Montanari-General-Brochure-1.pdf |
 | MO-C | Montanari, catalogo tecnico «ARGANO • GEARBOX …» Mod. RA – CG/17/07 (PDF 2018-01-30, 86 pagine), copia del distributore ITASIA | https://www.itasia.it/wp-content/uploads/2019/05/Montanari-Technical-Catalogue.pdf |
 | MO-D | Donati (rivenditore), argani Montanari M73 e M73S | https://www.donati.it/en/products/geared-motors-bedframes-pulleys-brakes-accessories/montanari-gear-motors/montanari-gear |
+| MO-S | Montanari, schede di gamma (pagine del catalogo stampate sulle schede): «Montanari Gearbox» M65 (pp. 24–27, PDF del 2019), M73 (pp. 35–39) e M75 (pp. 41–45, PDF del 2020); «MONTANARI_SCHEDA_GEARBOX» M93-M95 (pp. 71–77), M98 (pp. 79–85) e PENTA (pp. 49–53) Rev 21_05_24; fornite dal cliente il 2026-10-03, lette il 2026-10-04 | — (documenti del cliente) |
 | GE-S | GEM, schede modello (pagine del catalogo 2019) | https://gem-ita.com/wp-content/uploads/2020/12/HW134.pdf (e HW134B, HW134L, HW134VF, HW135VF, HW135L-VF, HW140C, HW175 .pdf) |
 | GE-C | GEM, «Catalogo prodotti» REV2021, 13 pagine | https://gem-ita.com/wp-content/uploads/2020/12/GEM_Catalogo-Prodotti_REV2021.pdf |
 | GE-W | GEM, pagine modello | https://gem-ita.com/hw134-camel/ (e /hw134b-brake/, /hw134l-camel/, /hw134vf-camel/, /hw135-vf/, /hw135l-vf/, /hw140c-lion/, /hw140cl-lion/, /hw175-elephant/) |
@@ -62,8 +71,8 @@ Sassi della puleggia; quelle FAER e GEM della cabina, alle condizioni delle tabe
 | Costruttore | Modelli a puleggia trovati | Documenti letti oggi | CAD / disegni scaricabili | Sito da qui (2026-10-02) |
 |---|---|---|---|---|
 | **SICOR** (Rovereto) | 13 attuali (SV110, SH110B, MR12C, SH130, SH130G, SH140, SH160, SH190, MR21, MR26, MR35 + SH140LS, SH160LS) + versioni SSB/TS; a tamburo SH140T, SH160T; storici SH110, SH130B, SH140B, MR21B, SH110TSB, MR10, MR12, MR13, MR14, MR16, MR17 | brochure 2026 (112 pp.), 15 schede 2025 (13 modelli), 19 manuali, 22 pagine | **Sì**: ZIP per modello con DWG/DXF (2D) e STEP (3D), per mano (DX/SX) e Ø; **senza login** (HTTP 200); **SV110: nessuno ZIP** (§ 2.7) | **200** (https://sicoritaly.com; www → 301) |
-| **Alberto Sassi** (Valsamoggia BO) | MODY, LEO, TORO, MF48, MF84, MF94, MB94, MB95, MB108; a tamburo LEO/TORO/MF84; nomi storici GEKO ⚠️, RF18 | catalogo argani REV 2022/03 (copia integrale) | DXF e STEP nell'area riservata «MY SASSI», **login** (account dal commerciale) ⚠️ SA-12; disegni quotati nel catalogo (PDF) | **bloccato**: curl «(60) SSL certificate problem: unable to get local issuer certificate» (il server manda solo il certificato foglia *.sassi.it, emittente Actalis OV Server CA G3); WebFetch «EGRESS_BLOCKED» |
-| **Montanari Giulio & C.** | M65, M73 (H, S, AL, B), M75 (H, S), M83 (AL, B), M85, PENTA, PENTA 830, M93 (AL, B), M95, M98 (H, HB, HAL), M105 (B), M109; sito India: M77, M87, M104; storici M68, M71, M76 | brochure generale 2015 (copia), pagine Donati | ❓ nessun CAD trovato; esistono PDF per gamma con disegni (non aperti, sito bloccato) | **bloccato**: montanarigiulio.com curl «(60) … unable to get local issuer certificate», WebFetch «EGRESS_BLOCKED»; montanarigiulio.in e montanarina.com HTTP 202 con rimando a «/.well-known/sgcaptcha/» (verifica anti-bot, non aggirata); montanari.cn 200 (solo gearless e scale mobili) |
+| **Alberto Sassi** (Valsamoggia BO) | MODY, LEO, TORO, MF48, MF84, MF94, MB94, MB95, MB108; a tamburo LEO/TORO/MF84; nomi storici GEKO ⚠️, RF18 | catalogo argani REV 2022/03 (copia integrale); **dal 2026-10-03** il catalogo REV 2023/01 e il disegno MF84 sinistro, forniti dal cliente (SA-D, SA-M) | DXF e STEP nell'area riservata «MY SASSI», **login** (account dal commerciale) ⚠️ SA-12; disegni quotati nel catalogo (PDF) | **bloccato**: curl «(60) SSL certificate problem: unable to get local issuer certificate» (il server manda solo il certificato foglia *.sassi.it, emittente Actalis OV Server CA G3); WebFetch «EGRESS_BLOCKED» |
+| **Montanari Giulio & C.** | M65, M73 (H, S, AL, B), M75 (H, S), M83 (AL, B), M85, PENTA, PENTA 830, M93 (AL, B), M95, M98 (H, HB, HAL), M105 (B), M109; sito India: M77, M87, M104; storici M68, M71, M76 | brochure generale 2015 (copia), pagine Donati; catalogo tecnico 2018 (MO-C); **dal 2026-10-03** le schede di gamma M65, M73, M75, M93-M95, M98, PENTA, fornite dal cliente (MO-S) | ❓ nessun CAD; disegni quotati nelle schede di gamma (MO-S) | **bloccato**: montanarigiulio.com curl «(60) … unable to get local issuer certificate», WebFetch «EGRESS_BLOCKED»; montanarigiulio.in e montanarina.com HTTP 202 con rimando a «/.well-known/sgcaptcha/» (verifica anti-bot, non aggirata); montanari.cn 200 (solo gearless e scale mobili) |
 | **GEM – General Elevator Machines** | HW134 CAMEL, HW134L, HW134VF, HW134B (freno), HW135VF, HW135L-VF, HW140C LION, HW140CL, HW175 ELEPHANT | 8 schede + 2 cataloghi REV2021 + 9 pagine | ❓ nessun CAD; disegni quotati nelle schede PDF | **200** (gem-ita.com); alcune richieste chiuse con «curl: (35) Recv failure: Connection reset by peer», riuscite riprovando piano |
 | **FAER** (Roma) | P58S II, P58F II (anche BT), P60F II, P68F III, P70F III, P80F; storici P35F, P46F, P56F (solo nomi, GT) | 5 schede + catalogo «Technical data 12» + pagine | ❓ nessun CAD; disegni quotati nelle schede PDF; modulo di selezione «Datasheet.pdf» | **200** (www.faer.net) |
 | **Italian Top Gears (ITG)** (Borzano di Albinea RE) | ITG 075, ITG 090, ITG 125, ITG 127 (serie 130), ITG 134, ITG 160 | nessuno (sito bloccato) | ❓ | **bloccato**: curl «(35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL» / «Recv failure: Connection reset by peer»; WebFetch «EGRESS_BLOCKED» |
@@ -244,7 +253,8 @@ con richieste a intervalli, **senza scaricare gli ZIP** (✅ SC-Z):
 
 ### 3.1 Dati di gamma (catalogo REV 2022/03, ✅ SA-C)
 
-Ipotesi delle tabelle Sassi ✅ (SA-C p.3): rendimento del vano 0,8; vita 30 000 h a 8 h/giorno con lo
+Il catalogo **REV 2023/01** fornito dal cliente (SA-D) ha le stesse pagine e gli stessi valori di gamma della REV
+2022/03 ✅ (confronto del 2026-10-04): il software cita ora la REV 2023/01. Ipotesi delle tabelle Sassi ✅ (SA-C p.3): rendimento del vano 0,8; vita 30 000 h a 8 h/giorno con lo
 spettro di carico dichiarato. Le velocità sono **della puleggia**; le potenze sono «kW SYNC». Le tabelle
 del catalogo danno la **differenza di tiro** (kg) per rapporto, Ø e potenza, non la portata.
 
@@ -289,29 +299,41 @@ SA-C p.27, p.45. **Coppia frenante: ❓.**
 | MF48, MF84, MF94, MB94, MB95 | Dp 450 · 480 · 520 · 560 · 600 · 650 · 700 · 750 · 800 (De = Dp + 4 mm); larghezza L 80, 115 o 180 secondo il numero di gole (2–3, 4, 5, 6, 7–8) e il Ø delle funi ✅ | funi 8–12 passo 17, 13–14 passo 20, 15–16 passo 21; masse da 24 kg (Dp 450, L 80) a 135 kg (Dp 800, L 180) ✅ | MF: tabelle a p.6; MF84 D 400 (VVVF) / 460 (AC2) ✅ | SA-C p.4, p.45 |
 | MB108 | Ø520–800 ✅ | ❓ | ❓ | SA-C p.65 |
 
-### 3.3 Quote per disegnare la macchina (✅ SA-C, pagina indicata; significato delle quote letto sul disegno)
+### 3.3 Quote per disegnare la macchina (✅ SA-C e SA-D, pagina del PDF; significato delle quote letto sul disegno)
+
+**Mano e proiezione** (lettura nostra ⚠️). I disegni Sassi sono in proiezione europea (primo diedro). Nelle pagine di
+MODY, LEO, TORO, MF48 e MF84 la vista frontale è **dal lato opposto alla puleggia** (la pianta, sotto, ha la puleggia
+in alto); in quelle di MF94, MB94 e MB95 è **dal lato della puleggia** (la puleggia è in basso nella pianta o, nella
+vista di fianco a destra, verso chi guarda). Il software disegna ogni argano con il motore a destra visto dalla
+puleggia: di MODY, LEO e TORO usa la versione **«orizzontale sinistra»** (la destra monta la cassa su un'altra
+faccia, con l'asse lento a un'altra altezza); la **MF94 è disegnata speculare** (fori e quote uguali, mano
+opposta); MF48, MF84, MB94 e MB95 come sono stampate.
 
 | Modello | Asse lento dal piano piedi | Vite rispetto all'asse lento | Ingombri | Fori e piedi | Puleggia (P, E) | Volano | Note |
 |---|---|---|---|---|---|---|---|
 | MODY orizzontale dx (p.13) | 170 ✅ | 110 **sotto** ✅ | L 660 = 160 (lato opposto) + 500 (lato volano) dall'asse lento ✅ (somma ⚠️); W 420 (faccia esterna puleggia → bordo volano) ✅; H 595 = 391 (pomello leva sopra la vite) + 204 (sotto la vite) ✅ | 4 × M16×35 su 205 (lungo la vite, simmetrici all'asse lento; primo foro a 57,5 dall'estremità) × 150 (simmetrici alla vite) ✅; motore 74 sotto il piano dei piedi ✅ (sign. ⚠️) | faccia esterna 220 e piano medio 180 dal piano della vite; E 80 ✅ | Ø400 coassiale alla vite ✅ | cassa larga 230 (115 + 115) ✅ |
-| MODY orizzontale sx (p.13) | 150 ✅ (sign. ⚠️) | 110 ✅ | L 660; H 651 ✅ | 4 × M16×35 su 205 (57,5; 245) ✅ | E 80 ✅ | Ø400 ✅ | — |
+| **MODY orizzontale sx** (p.13), disegnata dal software | 150 ✅ | 110 **sopra** (vite a 260 dai piedi) ✅ | L 660 = 160 + 500 ✅ (somma ⚠️); H 651 = 260 + 391 ✅ (somma ⚠️); nulla sotto il piano dei piedi | 4 × M16×35 su 205 (57,5 dall'estremità della cassa) × 150; piedi 245 × 230 ✅ | P 180 (faccia esterna 220), E 80 ✅ | Ø400 coassiale alla vite ✅ | — |
 | MODY verticale (p.13) | 160 ✅ | vite verticale a 110 dall'asse lento ✅ | H 660; 391 + 204 orizzontali ✅ | 4 × M16×35 su 205 × 150; base 150 + 170 dall'asse lento ✅ (sign. ⚠️) | Ø ≥ 400 per funi verso l'alto ✅ | Ø400 ✅ | — |
-| LEO orizzontale dx (p.20) | 220 ✅ | asse della vite inclinato ⚠️ | da −230 (70 + 160) a +720…735 dall'asse lento ✅ (somma ⚠️); H 530 ✅; pianta 360 ✅ | 4 × M16×35 su 205 =•= (lungo) e piedi 260; flangia laterale con 2 × M16; 2 asole Ø20 ✅ | E 90; P ≈ 185 ✅ (sign. ⚠️) | Ø350 ✅ | verticale: H 910 (717) ✅ |
-| TORO (p.27, con freno a tamburo; tra parentesi motore 270) | 195 ✅ (sign. ⚠️) | inclinata ⚠️ | pianta L 870 (895); H 615 (650) sx, 620 (670) dx; verticale H 870 (895) ✅ | 4 × M24 passanti su 240 × 240; piedi 310 × 290 ✅ | E 80–115; Ø320–700 ✅ | Ø400 ✅ | — |
-| MF48 (p.39, con freno DF03) | 170 ✅ | 140 sopra ✅ | H 700; W 690 (386 + 220 … sign. ⚠️); vista lungo l'asse 600 / 410 / 205 ✅ (sign. ⚠️); verticale H 800, asse lento 200 dalla base ✅ (sign. ⚠️) | 6 × Ø25 passanti: 4 a ±80 e ±165, 2 a ±165, file a 230 =•= ✅; piedi 330 / 380 ✅ (sign. ⚠️) | E 80–115; Ø400–700 ✅ | ❓ | — |
-| MF84, motore 240/270 (p.45) | 200 ✅ | 190 sopra ✅ | A 630/660 (asse lento → lato volano); 260 + 40 encoder (lato opposto); H = C 780/820 ✅ | 4 × M24 passanti su 400 × 245; piedi 500 × 300 ✅ | E 115–180; Ø450–800 ✅ | D 400 (VVVF) / 460 (AC2) ✅ | con motore 330 e freno Warner 5800: L 1080 (820 + 250), H 935 ✅ |
-| MF94/240-270 (p.52; tra parentesi motore 270) | 260 ✅ | 248 sopra ✅ | 676 (705) lato volano + 440 lato encoder; H 905 (950) ✅ | 4 × Ø25 passanti su 280 × 240; supporto esterno 2 × Ø25 a 120 =•= ✅ | P 310 ✅ (sign. ⚠️); E 80–180; Ø450–800 ✅ | Ø400–460 ✅ | MF94/330: 860 + 440, H 1060 ✅ |
-| MB94 (p.54) | 260 ✅ | 248 sopra ✅ | L 1540, H 985; motore su mensola con piede M20 a 930 dall'asse lento ✅ | 4 × Ø25 passanti su 280 × 240; supporto 2 × Ø25 (120) ✅ | E 80–180; Ø450–800 ✅ | ❓ | — |
-| MB95 (p.60) | 315 ✅ | 259 sopra ✅ | L 1650 (400 + 580 + 670); H 1180; W 1018 ✅ | 8 × Ø25 passanti (cassa) + 4 × Ø25 (supporto); 340 =•=, 490, 110 ✅ | E 115–180; Ø450–800 ✅ | ❓ | motore su mensola con piede M20 ✅ |
-| MB108 (p.65) | 737 = 333 + 404 dalla base del piedistallo ⚠️ somma | 323 sopra ✅ | L 1872 = 500 + 390 + 982 ⚠️ somma; H 1635 ✅ | 5 × Ø30 + 3 × Ø30 passanti; 1000 / 870 / 630 / 320 / 180 ✅ (sign. ⚠️) | Ø520–800 ✅ | ❓ | — |
+| LEO orizzontale dx (p.20) | 220 ✅ | inclinata ⚠️ | da −230 (70 + 160) a +720…735 dall'asse lento ✅ (somma ⚠️); H 530 ✅; pianta 360 ✅ | 4 × M16×35 su 205 =•= (lungo) e piedi 260; flangia laterale con 2 × M16; 2 asole Ø20 ✅ | E 90; P ≈ 185 ✅ (sign. ⚠️) | Ø350 ✅ | verticale: H 910 (717) ✅ |
+| **LEO orizzontale sx** (p.20), disegnata dal software | 135 ✅ | inclinata di **15°**, scende verso il motore ⚠️ in scala; all'uscita dalla cassa ≈ 228 dai piedi ⚠️ in scala | 230 (160 + 70) lato opposto + 760 lato volano ✅; H 405 ✅; il volano scende **80 sotto** il piano dei piedi ✅ | 4 × M16×35 su 205 × 150; piedi 260 × 220 ✅; flangia del montaggio verticale con 2 × M16 | P 185 (360 = 130 + 185 + 90/2) ✅ (somma ⚠️), E 90 ✅ | Ø350 ✅ | il telaio del software si ferma prima del volano (§ 9) |
+| **TORO** (p.27, con freno a tamburo; tra parentesi motore 270), **sx disegnata dal software** | 195 ✅ (base 40 compresa) | inclinata di **15°**, scende verso il motore ⚠️ in scala; all'uscita dalla cassa ≈ 302 dai piedi ⚠️ in scala | pianta L 870 (895) = 675 (700) lato volano + 195 ✅ (somma ⚠️); H 615 (650) sx, 620 (670) dx; verticale H 870 (895) ✅ | 4 × M24 passanti su 240 × 240; piedi 310 × 290 ✅ | P 225 (pianta: 145 + 225) ✅ (sign. ⚠️), E 80–115; Ø320–700 ✅ | Ø400 ✅ | il software usa le quote del motore 270 |
+| MF48 (p.39, con freno DF03), disegnata dal software | 170 ✅ | 140 sopra ✅ | H 700; vista lungo la vite: 386 (lato freno DF03) + 220 fino al piano medio della puleggia, 690 in tutto ✅ (sign. ⚠️); vista di fianco 205 (lato opposto) + 600 (lato volano) ✅; verticale H 800, asse lento 200 dalla base ✅ (sign. ⚠️) | 6 × Ø25 passanti: 4 sul lato della puleggia (±80, ±165), 2 sul lato opposto (±165), file a 230 =•= ✅; piedi 380 × 280 ✅ | P 220 ✅ (sign. ⚠️), E 80–115; Ø400–700 sul disegno, 450–800 nella tabella delle pulegge MF (p.4) ✅ | ❓ | leve del freno DF03 ai due lati della cassa |
+| MF84, motore 240/270 (p.45; disegno sinistro 2019/04, SA-M, con le stesse quote), disegnata dal software | 200 ✅ | 190 sopra ✅ | A 630/660 (asse lento → lato volano); 260 + 40 encoder (lato opposto); H = C 780/820 ✅ | 4 × M24 passanti su 400 × 245; piedi 500 × 300 ✅ | P 290 (vista di fianco 290 + 150) ✅ (sign. ⚠️), E 115–180; Ø450–800 ✅ | D 400 (VVVF) / 460 (AC2) ✅ | con motore 330 e freno Warner 5800: L 1080 (820 + 250), H 935 ✅; il software usa il motore 270, encoder compreso |
+| MF94/240-270 (p.52; tra parentesi motore 270), disegnata **speculare** dal software | 260 ✅ | 248 sopra ✅ | 676 (705) lato volano + 440 lato encoder; H 905 (950) ✅ | cassa: 4 × Ø25 passanti su 435 (235 lato motore + 200) × 240, base 720 ✅; **supporto esterno**: 2 × Ø25 a 280 =•= lungo la vite, fila a 370 oltre la fila vicina della cassa, piede 340 × 120 ✅ (correzione: i 280 sono del supporto, non della cassa) | P 310 ✅ (sign. ⚠️); E 80–180; Ø450–800 ✅ | Ø400–460 ✅ | MF94/330: 860 + 440, H 1060 ✅ |
+| MB94 (p.54), disegnata dal software | 260 ✅ | 248 sopra ✅ | L 1540 = 350 + 1190 ✅ (somma ⚠️), H 985; motore su mensola con **un piede M20 a 930 oltre la fila di fori lato motore** (1165 dall'asse lento ⚠️ somma) ✅ | come la MF94: cassa 4 × Ø25 su 435 (200 + 235) × 240; supporto 2 × Ø25 a 280, fila a 370, piede 340 × 120 ✅ | P 310 ✅ (sign. ⚠️), E 80–180; Ø450–800 ✅ | ❓ | — |
+| MB95 (p.60), disegnata dal software | 315 ✅ | 259 sopra ✅ | L 1650 (400 + 580 + 670); H 1180; di traverso 1018 = 290 (lato opposto: le leve del freno, sign. ⚠️) + 728 (differenza ⚠️) ✅ | cassa: 8 × Ø25 passanti su 450 (150 + 150 + 150) × 340; supporto: 4 × Ø25 su 450, fila a 490 oltre la fila vicina della cassa (660 dal piano della vite = 420 + 240), piede 556 × 110 ✅; mensola del motore larga 520 ✅ (sign. ⚠️), con piede M20 ✅ | P 420 ✅ (sign. ⚠️), E 115–180; Ø450–800 ✅ | ❓ | — |
+| MB108 (p.65) | 737 = 333 + 404 dalla base del piedistallo ⚠️ somma | 323 sopra ✅ | L 1872 = 500 + 390 + 982 ⚠️ somma; H 1635 ✅ | 5 × Ø30 + 3 × Ø30 passanti; 1000 / 870 / 630 / 320 / 180 ✅ (sign. ⚠️) | Ø520–800 ✅ | ❓ | **resta generica nel software**: il disegno non dice quali fori del piedistallo stanno dove |
 
+Le quote «in scala» (posizione di cassa, motore, freno e volano; asse della vite di LEO e TORO e il suo angolo) sono
+lette sul disegno con un errore di circa ±10 mm ⚠️: la relazione del software scrive «misurato sul disegno in scala».
 Varianti con supporto esterno, alberi allungati (LEO: tabelle a, b, statico 1150–3000 kg per lunghezza) e
 attacco encoder sono alle pagine 14, 21, 25, 28, 46 di SA-C ✅.
 
 ### 3.4 Disegni e CAD Sassi
 
-- Disegni quotati: nel catalogo SA-C (PDF) ✅; disegni per modello in `sassi.it/tabelle/file/` (es.
-  `mf84_dq_sx_2019_04.PDF`) ⚠️ SA-12, non raggiungibili.
+- Disegni quotati: nel catalogo SA-C e SA-D (PDF) ✅; disegni per modello in `sassi.it/tabelle/file/` (es.
+  `mf84_dq_sx_2019_04.PDF`) ⚠️ SA-12, non raggiungibili da qui; il cliente ha fornito proprio quello della MF84
+  sinistra (SA-M, scala 1:13, disegnato il 31/03/16): stesse quote della p.45 del catalogo ✅.
 - DXF e STEP: area riservata «MY SASSI», account dal commerciale ⚠️ SA-12. **Login richiesto.**
 - Nomi storici: GEKO (VVVF 2,9 kW, 1500 giri/min, 1/45, con supporto puleggia; marchio Sassi dedotto
   dall'elenco GEAT ⚠️ GT), RF18 (pulegge di ricambio su DO) ✅ nome.
@@ -319,8 +341,9 @@ attacco encoder sono alle pagine 14, 21, 25, 28, 46 di SA-C ✅.
 ## 4. Montanari Giulio & C.
 
 Sito bloccato da qui (§ 1). Il 2 ottobre 2026 è stato letto il **catalogo tecnico del costruttore** (MO-C, § 4.1),
-copia del distributore ITASIA: i valori di modello del software vengono da lì; la tabella qui sotto resta come
-confronto con gli estratti di ricerca del cap. 12 (MO-12, ⚠️). Varianti: H = alto carico statico senza supporto,
+copia del distributore ITASIA; dal 3 ottobre ci sono anche le **schede di gamma del costruttore** fornite dal cliente
+(MO-S, § 4.2), da cui il software prende ora M65, M73, M75, PENTA, M93, M95 e M98 con le loro varianti. La tabella
+qui sotto resta come confronto con gli estratti di ricerca del cap. 12 (MO-12, ⚠️). Varianti: H = alto carico statico senza supporto,
 S = con supporto, AL = albero lungo, B = freno sull'albero lento.
 
 | Modello | Statico max (kg) | Rapporti | Pulegge (mm) · gole × fune | Motori (kW) | Portata max (kg) | Massa riduttore (kg) | Olio | Fonte |
@@ -360,14 +383,51 @@ testo). Pagine stampate (= pagina del PDF + 8).
 | M109 | 15000 ✅ | 890 (B3 940) ✅ | 450–800 | 350 | 76–77 |
 
 I rapporti coincidono con quelli del cap. 12. **Differenze:** M73 statico 2000 nel catalogo, 2200 negli estratti
-della pagina del costruttore e da Elva (rivenditore): il software usa 2000 (il minore); M95 massa 250 nel
-catalogo, 253 negli estratti; M65 2300 kg / 95 kg da Donati (rivenditore). **M105 non è nel catalogo** (resta
+della pagina del costruttore e da Elva (rivenditore): il software usa 2000 (il minore; la scheda MO-S chiarisce che
+2200 vale «per tiro verso il basso»); M95 massa 250 nel catalogo, 253 negli estratti e nella scheda Rev 21_05_24
+(MO-S): il software usa ora 253; M65 2300 kg / 95 kg da Donati (rivenditore). **M105 non è nel catalogo** (resta
 ⚠️). **Telai con puleggia di rinvio** (pp. 83–84, senza codici né masse): tipo 3 per M65/M73/M73S/PENTA (H 786,
 asse del rinvio 298, 1230 × 510; I + K = 781 ≠ H: incoerenza stampata) e per M83/M85/PENTA 830 (H 854, rinvio
 315, 1230 × 586), ØDR max 520; M93 (piano d'appoggio 1091, rinvio 328, 1180 × 665, C max 1115); M98/M104
 (piano 1040, rinvio 400, 1780 × 770/796, C max 1250, ØDR max 650). Il software non li usa ancora: mancano
-codice, massa e, per il tipo 3, una quota coerente; l'argano Montanari resta disegnato con la sagoma generica sul
-telaio del software.
+codice, massa e, per il tipo 3, una quota coerente: l'argano Montanari sta sul telaio del software (disegnato com'è
+dal 4 ottobre 2026, § 4.2).
+
+### 4.2 Dalle schede di gamma (MO-S, fornite dal cliente)
+
+Riquadri dati dal testo del PDF (esatti ✅); il momento torcente e il rendimento sono per rapporto, a 1500 e 1000
+giri/min. Il freno sull'albero lento delle versioni B ha un proprio riquadro, che la scheda dichiara conforme alle
+EN 81-20 ed EN 81-50 ✅; il numero del certificato d'esame UE del tipo non è stampato ❓.
+
+| Modello (pagine) | Statico (kg) | Massa riduttore (kg) | Olio | Rapporto: momento torcente (Nm), rendimento 1500/1000 | Esempio sulla scheda | Freno sull'albero lento (B) |
+|---|---|---|---|---|---|---|
+| M65 (24–27) | M65, M65B 2200 ✅ | 80 ✅ | 2 l ✅ | 1/63: 662, 0,54/0,51 · 1/50: 740, 0,60/0,57 · 1/46: 838, 0,64/0,61 · 1/37: 750, 0,68/0,64 · 2/46: 736, 0,77/0,75 ✅ | 320–400 kg, 0,7–1 m/s, puleggia 480 ✅ | M65B: 800 Nm, 207/103,5 V cc, 302/76 W ✅ p.26 |
+| M73 (35–39) | M73, M73B 2200 **per tiro verso il basso**; M73H 2700; M73S 3200; M73AL 2500 ✅ | M73, M73H 110; M73S 115; M73AL 145 ✅ | 2,8 l ✅ | 1/75: 750, 0,58/0,54 · 1/60: 940, 0,71/0,68 · 1/52: 809, 0,73/0,70 · 1/46: 1059, 0,74/0,71 · 1/37: 995, 0,84/0,82 · 2/55: 764, 0,78/0,75 · 2/37: 541, 0,84/0,81 ✅ | 480 kg, 1 m/s, puleggia 480 ✅ | M73B: 800 Nm, 207/104 V cc, 352/88 W ✅ p.37 |
+| M75 (41–45) | M75, M75B 2200 **per tiro verso il basso**; M75H, M75HB 2700; M75S 3200; M75AL 2500 ✅ | M75, M75H 115; M75S 120; «M73AL» 150 (così nella pagina della M75; 150 anche nel catalogo 2018 per la M75AL) ✅ | 2,8 l sintetico ✅ | 1/52: 1081, 0,73/0,70 · 1/50: 1120, 0,72/0,69 · 1/37: 1181, 0,84/0,83 · 2/55: 850, 0,78/0,75 · 2/37: 622, 0,86/0,81 ✅ | 630 kg, 1 m/s, puleggia 480 ✅ | M75B, M75HB: 800 Nm, 207/104 V cc, 352/88 W ✅ p.43 |
+| PENTA (49–53) | 3000 ✅ | 210 **con il motore** ✅ | 3 l sintetico ✅ | 1/65: 1010, 0,67/0,66 · 1/55: 1022, 0,70/0,68 · 1/43: 1200, 0,76/0,75 · 1/37: 1181, 0,84/0,83 · 2/71: 1260, 0,76/0,75 · 2/55: 1150, 0,84/0,83 · 3/47: 1025, 0,86/0,84 ✅ (1/65 al posto dell'1/46 del catalogo 2018) | 480–630 kg, 1 m/s, puleggia 480 ✅ | — |
+| M93-M95 (71–77) | M93, M93B 5000; M95 5000; M93AL 3600 ✅ | M93, M93B 250; **M95 253**; M93AL 329 ✅ | 6 l ✅ | 1/62: 2015, 0,73/0,71 · 1/50: 2530, 0,74/0,71 · 1/43: 2475, 0,73/0,71 · 1/39: 2475, 0,77/0,74 · 2/49: 1905, 0,82/0,79 · 3/47: 1990, 0,87/0,85 · 4/51: 1300, 0,88/0,85 ✅ | 800–1250 kg, 1,6–1 m/s, puleggia 520 ✅ | M93B, M95: 3020 Nm, 207/104 V cc, 315/79 W ✅ p.73 |
+| M98 (79–85) | M98, M98H, M98HB 7000; M98HAL 5100 ✅ | M98 480; M98H, M98HB 402; M98HAL 460 ✅ | M98 9 l; M98H 12 l ✅ | 1/65: 3350, 0,70/0,63 · 1/52: 3593, 0,72/0,67 · 1/47: 3343, 0,73/0,69 · 1/37: 3501, 0,76/0,72 · 2/61: 3013, 0,81/0,80 · 2/49: 3146, 0,83/0,79 · 4/57: 2141, 0,89/0,87 ✅ | 1250–1600 kg, 1,6–1 m/s, puleggia 520–580 ✅ | M98HB: 5000 Nm, 180/90 V cc, 324/91 W ✅ p.81 |
+
+Motore più grande delle tabelle portate (4 poli VVVF, 50 Hz) ✅: M65 e M73 5,5 kW; M75 7,5; PENTA 11; M93 22; M98 26.
+Il software prende di qui la portata (la più alta dell'esempio) e la potenza; per M98 e varianti ora 1600 kg e 26 kW
+(il catalogo 2018 non le dava).
+
+**Quote per disegnare la macchina** (✅ disegni quotati MO-S; «≈» = misurato in scala ⚠️, ±10 mm; le schede non quotano
+l'asse della vite né dove stanno cassa, freno a tamburo, motore e scatola morsetti):
+
+| Modello | Asse lento dal piano piedi | Vite | Ingombri: lato opposto · lato motore max · altezza | Piedi lungo la vite | Fori | Puleggia: P, E | Volano | Supporto esterno |
+|---|---|---|---|---|---|---|---|---|
+| M65 (p.26) | 150 ✅ | ≈ 260 | 150 · 684,5 · 545 ✅ | 301 (150 + 151), larghi 262 ✅ | 4 × Ø21,5 su 240 × 220 ✅ | P 190 (110 + 80) ✅ (sign. ⚠️), E 78; Ø600 max ✅ | Ø385 max ✅ | — |
+| M73, M73H, M75, M75H (pp. 36, 42) | 150 ✅ | ≈ 279 | 150,5 · 733 · 546 ✅ | 485 (30 + 120 + 120 + 185 + 30) ✅ | 6 × Ø19,5: 120 + 120 + 185 lungo la vite × 220 ✅ | P = 110 + A: A 105 con Ø ≤ 600 (B 115), 120 con Ø650 (B 78) e Ø700 (B 87) ✅ | Ø385 max ✅ | — |
+| M73S, M75S (pp. 37, 43) | come sopra | ≈ 279 | come sopra; 332,5 dal piano della vite alla faccia esterna del supporto ✅ | come sopra | + 2 fori del supporto a 170 ✅ | come sopra | Ø385 max ✅ | piede 220 × 45 ✅ |
+| M93 (p.72) | 200 ✅ | ≈ 362 | 171 · 895 · 631 ✅ | 644 (34 + 170 + 170 + 235 + 35), larghi 350 ✅ | 6 × Ø24,5: 170 + 170 + 235 × 300 ✅ | P 265 (115 + 150) ✅; faccia esterna 337,5 ✅ → E 145 (differenza ⚠️; «160 max» sulla scheda) | Ø385 max ✅ | — |
+| M95 (p.73) | 200 ✅ | ≈ 362 | come M93; 448,5 alla faccia esterna del supporto ✅ | come M93 | come M93 + 2 × Ø24,5 a 280, fila a 133,5 oltre il piano medio ✅ | P 280 (150 + 130) ✅, E 180 max ✅ | Ø385 max ✅ | piede 340 × 70 ✅ |
+| M98 (p.80) | 230 ✅ | ≈ 434 | 282 · 1200 · 924 ✅ (775 alla leva di sblocco) | 724 (40 + 190 + 190 + 265 + 40), larghi 350 ✅ | 6 × Ø25: 190 + 190 + 265 × 300; supporto 2 × Ø25 a 280, fila a 160 oltre il piano medio ✅ | P 300 (150 + 150) ✅, E 180 max ✅ | Ø440 max ✅ | piede 340 × 90; faccia esterna a 505 ✅ |
+| M98H (p.81) | 230 ✅ | ≈ 434 | 283 · 1160 · 924 ✅ | 715 (35 + 190 + 190 + 265 + 35), larghi 400 ✅ | 6 × Ø25: 190 + 190 + 265 × 340 ✅ | P 301 (131 + 170) ✅, E 180 max ✅ | Ø440 max ✅ | — |
+
+Restano con la sagoma generica: le versioni ad albero lungo (M73AL, M75AL, M93AL, M98HAL: albero e supporto su telaio
+proprio), le verticali PENTA e PENTA 830, e i modelli senza scheda fornita (M83, M85, M105, M109; M77, M87, M104 del
+sito India).
 
 ## 5. GEM – General Elevator Machines (e Uberlift)
 
@@ -477,7 +537,10 @@ Sede: Via Martiri della Romania 47C, Borzano di Albinea (RE) ✅ IT-E; produce a
 
 ## 9. Differenze rispetto al catalogo del software (`liftpilot/src/lib/catalog/machines.ts`)
 
-Da verificare prima di modificare il codice (questo capitolo non cambia nulla):
+Da verificare prima di modificare il codice (questo capitolo non cambia nulla). **Aggiornamento del 4 ottobre
+2026:** il software disegna come sono le SICOR con modello CAD, le Sassi tranne la MB108 e le Montanari con disegno
+quotato (M65, M73, M73H, M73S, M75, M75H, M75S, M93, M95, M98, M98H); GEM, FAER, ITG, la SV110 e le Montanari senza
+disegno restano con la sagoma generica.
 
 1. **SICOR, portate 1:1** (SC-B p.9) oggi assenti nel software salvo SH110B: SV110 450, MR12C 550, SH130 550,
    SH130G 630, SH140 875, SH160 1250, SH190 1800, MR21 2000, MR26 3000, MR35 5500 kg ✅.
@@ -485,7 +548,8 @@ Da verificare prima di modificare il codice (questo capitolo non cambia nulla):
    brochure non coincidono (§ 2.1) ⚠️ — chiedere a SICOR quale elenco vale.
 3. **SICOR varianti**: SH140LS ha statico 2000 kg (1500–2000 secondo l'albero), SH160LS 3200–4300 kg; MR21TS
    7400 kg e MR26TS 8175 kg (TS = terzo supporto) ✅.
-4. **Sassi**: MB94 (8000), MB95 (12000), MB108 (15000) mancano; masse nuove MODY 158–169, LEO 181–218, TORO
+4. **Sassi** (fatto: il catalogo del software ha questi valori, con la REV 2023/01 come fonte): MB94 (8000), MB95
+   (12000), MB108 (15000) mancavano; masse nuove MODY 158–169, LEO 181–218, TORO
    246–299, MF48 245–268, MF84 354–454 (definizioni diverse: senza volano e puleggia, MB senza motore) ✅;
    pulegge TORO 320–700 (il software ha 520–600), MF48 400–700, MF84 e MF94 450–800 (il software ha 650–1000
    per MF94: Ø1000 era solo sulla pagina storica) ✅.
@@ -496,26 +560,31 @@ Da verificare prima di modificare il codice (questo capitolo non cambia nulla):
    10 HP ≈ 7,5 kW ⚠️ conversione; mancano P60F (3500 kg), P68F (6000), P70F (8000), P80F (8000) ✅.
 7. **ITG** è un marchio nuovo, con dati solo ⚠️.
 8. **Quote per disegnare** ora disponibili, oltre a SICOR: SV110 (§ 2.4), tutte le GEM (§ 5.2), tutte le FAER
-   (§ 6.2) e tutte le Sassi (§ 3.3), dai disegni quotati PDF.
+   (§ 6.2), tutte le Sassi (§ 3.3) e le Montanari con scheda (§ 4.2), dai disegni quotati PDF.
+9. **Montanari, dalle schede MO-S** (fatto): fonte del software per M65, M73, M75, PENTA, M93, M95, M98 e varianti;
+   M95 253 kg; M98, M98H, M98HAL 1600 kg e 26 kW; PENTA con 1/65 al posto dell'1/46; nuova M75AL (2500 kg, 150 kg);
+   lo statico 2200 di M73 e M75 è «per tiro verso il basso», il software tiene 2000 ✅.
 
 ## 10. Lacune
 
 1. **Montanari**: il sito non si apre (catena TLS incompleta; .in e .com USA con verifica anti-bot); letto il
-   catalogo tecnico 2018 nella copia di un distributore (MO-C, § 4.1). Restano da avere: le schede 2024
-   («MONTANARI_SCHEDA_GEARBOX-…_REV21_05_2024.pdf», l'archivio web non risponde da qui), M105, i codici e le masse
-   dei telai con rinvio, il CAD.
-2. **Sassi**: il sito non si apre (stessa causa); dati dal catalogo 2022/03 in copia. Il catalogo 2023/01
-   citato nel cap. 12 non è stato confrontato. DXF/STEP solo con login «MY SASSI». Portate per taglia ⚠️ (dal
-   sito, non dal catalogo).
+   catalogo tecnico 2018 nella copia di un distributore (MO-C, § 4.1) e le schede di M65, M73, M75, M93-M95, M98 e
+   PENTA fornite dal cliente (MO-S, § 4.2). Restano da avere: le schede di M83/M85, PENTA 830, M105 e M109, i codici
+   e le masse dei telai con rinvio, il CAD.
+2. **Sassi**: il sito non si apre (stessa causa); dati dal catalogo 2022/03 in copia e dalla REV 2023/01 fornita
+   dal cliente (stessi valori). DXF/STEP solo con login «MY SASSI». Portate per taglia ⚠️ (dal sito, non dal
+   catalogo). La MB108 resta generica: il disegno non dice quali fori del piedistallo stanno dove (§ 3.3).
 3. **ITG**: tutto ⚠️; sito bloccato.
-4. **Coppia frenante**: trovata solo per GEM HW134B (780 Nm). ❓ per SICOR, Sassi, FAER, Montanari, ITG e per i
-   freni di serie GEM. Certificati d'esame UE del tipo dei freni sull'albero lento: ❓.
+4. **Coppia frenante**: trovata per GEM HW134B (780 Nm) e per il freno sull'albero lento delle Montanari B (il
+   riquadro lo chiama «momento torcente»: M65B, M73B, M75B 800 Nm; M93B e M95 3020; M98HB 5000 ✅ § 4.2). ❓ per
+   SICOR, Sassi, FAER, ITG e per i freni di serie (sull'albero veloce) di tutti. Certificati d'esame UE del tipo
+   dei freni sull'albero lento: numeri non stampati ❓.
 5. **Profili delle gole** (angoli γ e β): SICOR li disegna ma i valori non sono nel testo ❓; FAER V 35°/105° ✅;
    Sassi, GEM ❓.
 6. **Masse**: FAER ❓; Sassi con definizioni diverse (senza volano, puleggia o motore).
 7. **SV110**: nessun CAD; posizione di motore, freno e disco solo in scala ⚠️ (§ 2.4).
-8. **Significato di alcune quote** (marcato «sign. ⚠️») nei disegni Sassi LEO/TORO/MF48/MB108 e FAER
-   P68F/P70F/P80F: da confermare sul disegno prima di disegnare la macchina.
+8. **Significato di alcune quote** (marcato «sign. ⚠️»): nelle Sassi P, mano e ingombri di traverso sono letti da noi
+   (§ 3.3), e così le quote della MB108; FAER P68F/P70F/P80F: da confermare sul disegno prima di disegnarle.
 9. **Modelli storici** (SICOR MR10–MR17, Sassi GEKO e RF18, Montanari M68/M71/M76, FAER P35F–P56F, Volpi): solo
    nomi o pochi dati.
 10. **Uberlift**: ruolo (costruttore o marchio di ricambi) non chiarito; «RR1» ❓.
@@ -534,3 +603,8 @@ Cartella `…/scratchpad/dl/argani/`:
 - `faer/`: p58f-p58f, P60f-, P68f-, P70f-, P80f-scheda-ok, catalogo-FAER_compressed, Datasheet (.pdf).
 - `montanari/`: Montanari-General-Brochure-1.pdf; pagine Donati.
 - `geat/`, `itg/`, `altri/`: solo pagine HTML.
+
+Cartella `…/scratchpad/dl/upload-r23/doc/` (documenti forniti dal cliente il 2026-10-03, letti il 2026-10-04):
+Catalogue Gearbox 2023_01.pdf (Sassi, SA-D), mf84_dq_sx_2019_04.pdf (SA-M), Montanari-Gearbox-M65/M73/M75.pdf e
+MONTANARI_SCHEDA_GEARBOX-M93-M95/-M98/-PENTA_da_cat_REV21_05_2024.pdf (MO-S), CELEX_32014L0033_IT_TXT.pdf e
+CELEX_31995H0216_IT_TXT.pdf (cap. 16, F29 e F30); le pagine come immagini in `png/`, il testo in `txt/`.

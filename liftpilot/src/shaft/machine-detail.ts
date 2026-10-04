@@ -64,10 +64,11 @@ export interface BrakeDetail {
   magnet: ShapePart | null;
 }
 
-/** The drum brake of a shape: from its drum, its two arms and its magnet; null without them. */
+/** The drum brake of a shape: from its drum, its two arms and its magnet; null without them (or on an inclined worm,
+ *  whose brake stays its parts). */
 export function brakeOf(S: MachineShape): BrakeDetail | null {
-  const drum = S.parts.find((p): p is Extract<ShapePart, { cyl: 'x' | 'y' | 'z' }> => p.role === 'brake' && 'cyl' in p && p.cyl === 'x');
-  const arms = S.parts.filter((p) => p.role === 'arm' && 'box' in p).map(partBox).filter((b) => b[2] > 0 || b[5] < 0);
+  const drum = S.parts.find((p): p is Extract<ShapePart, { cyl: 'x' | 'y' | 'z' }> => p.role === 'brake' && 'cyl' in p && p.cyl === 'x' && !p.tilt);
+  const arms = S.parts.filter((p) => p.role === 'arm' && 'box' in p && !p.tilt).map(partBox).filter((b) => b[2] > 0 || b[5] < 0);
   if (!drum || arms.length < 2) return null;
   const y = drum.at[0], r = drum.r, magnet = S.parts.find((p) => p.role === 'magnet') ?? null;
   const top = Math.min(...arms.map((b) => b[4])), W = Math.min(...arms.map((b) => b[3] - b[0])), rt = 0.36 * W;

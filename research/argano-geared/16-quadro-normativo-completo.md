@@ -8,9 +8,13 @@ capitolo 2 né le 111 voci del registro (`liftpilot/docs/lista-verifica-normativ
 applica, in quale combinazione, che cosa ora è confermato sul testo ufficiale e quali requisiti numerici
 mancano ancora al registro.
 
+**Aggiornamento del 4 ottobre 2026.** Il cliente ha fornito il 3 ottobre i due testi EUR-Lex che da qui non si
+aprivano: la Direttiva 2014/33/UE in italiano [F29] e la Raccomandazione 95/216/CE [F30]. Sono stati letti per
+intero: le sezioni 1, 2.1, 3.4, 4.7, 6 e 7 dicono che cosa confermano e che cosa aggiungono.
+
 **Legenda.** ✅ letto nella fonte indicata · ⚠️ derivato, interpretato o preso da fonte secondaria (indicata)
-· ❓ non trovato. Le fonti sono numerate **[F1]…[F28]** (sezione 7, con URL); tutte consultate il
-**2026-10-02**. Ambiti: **N** impianto nuovo in edificio nuovo · **NE** impianto nuovo (o sostituzione
+· ❓ non trovato. Le fonti sono numerate **[F1]…[F30]** (sezione 7, con URL); consultate il **2026-10-02**,
+F29 e F30 il **2026-10-04**. Ambiti: **N** impianto nuovo in edificio nuovo · **NE** impianto nuovo (o sostituzione
 completa) in edificio esistente · **M** modifica costruttiva di un impianto esistente · **A** adeguamento
 di sicurezza volontario.
 
@@ -65,7 +69,9 @@ prevenzione incendi, testo coordinato VVF (G.1.20, S.9, S.10, V.3) e articolato 
 19/03/2015 [F8]; linee guida MIMIT sulle deroghe [F9][F10]; elenco della Commissione delle norme armonizzate
 per la 2014/33/UE generato il 26/11/2025 [F3]; raccomandazioni NB-L di novembre 2025 [F4]; nota DG GROW sulla
 transizione al Regolamento macchine [F5]; schema ICIM SCI 162 rev. 02 del 16/06/2026 [F11]; articoli 1, 7, 14,
-15, 16, 19 della Direttiva 2014/33/UE nel testo originale riprodotto da legislation.gov.uk [F2].
+15, 16, 19 della Direttiva 2014/33/UE nel testo originale riprodotto da legislation.gov.uk [F2]; la Direttiva
+2014/33/UE nel testo ufficiale italiano (GU L 96 del 29/03/2014, pp. 251–308, articoli e allegati) [F29]; la
+Raccomandazione 95/216/CE (GU L 134 del 20/06/1995, pp. 37–38) [F30].
 
 **Letti in parte (✅ per quanto letto):** schede UNI di 30 norme (titolo, stato, date, sostituzioni,
 sommario) [F6]; anteprime ufficiali UNMS (Slovacchia) di EN 81-70:2021+A1:2022, EN 81-77:2022, EN 81-21:2018
@@ -76,7 +82,8 @@ secondarie (⚠️) o mancano (❓).
 
 **Non raggiungibili (errore esatto):**
 - EUR-Lex: con curl `HTTP 202` e intestazione `x-amzn-waf-action: challenge` (controllo anti-bot, non
-  aggirato); con WebFetch `EGRESS_BLOCKED`. Per la direttiva si è usato [F2], per i riferimenti GUUE [F3].
+  aggirato); con WebFetch `EGRESS_BLOCKED`. Per la direttiva si è usato [F2], per i riferimenti GUUE [F3]; i
+  due testi EUR-Lex che servivano sono poi arrivati dal cliente in PDF [F29][F30].
 - elevatorworld.com: curl `HTTP 403`; WebFetch `EGRESS_BLOCKED`.
 - certifico.com, bosettiegatti.eu: `curl: (35) Recv failure: Connection reset by peer`.
 - iteh.es: `curl: (56) CONNECT tunnel failed, response 502`; standards.iteh.ai: pagina che richiede JavaScript.
@@ -94,7 +101,7 @@ File scaricati solo in `scratchpad/dl/norme/` (fuori dal repository).
 
 | Atto | Contenuto che conta per LiftPilot | Versione vigente | Ambito | Parti del software | Fonte |
 |---|---|---|---|---|---|
-| **Direttiva 2014/33/UE** | esclusi gli apparecchi fino a 0,15 m/s (art. 1 par. 2 lett. a); obblighi dell'installatore (art. 7); presunzione di conformità con le norme citate in GUUE (art. 14); procedure per i componenti di sicurezza (art. 15) e per gli ascensori (art. 16); marcatura CE con il numero dell'organismo notificato (art. 19) | testo 2014; recepita dal DPR 23/2017 | N, NE | tutto il progetto del nuovo | [F2] ✅ (copia legislation.gov.uk) |
+| **Direttiva 2014/33/UE** | esclusi gli apparecchi fino a 0,15 m/s (art. 1 par. 2 lett. a); obblighi dell'installatore (art. 7); presunzione di conformità con le norme citate in GUUE (art. 14); procedure per i componenti di sicurezza (art. 15) e per gli ascensori (art. 16); marcatura CE con il numero dell'organismo notificato (art. 19); requisiti essenziali che il software verifica (All. I: 1.3 almeno due funi o catene indipendenti, ciascuna con il suo attacco; 1.4.1 sovraccarico; 1.4.2 limitatore di velocità; 1.4.4 stabilità delle funi sulla puleggia di frizione; 1.5 macchinario proprio e non accessibile; 3.2 dispositivi contro la caduta libera e i movimenti incontrollati, il paracadute indipendente dalla sospensione; 3.3 ammortizzatori); componenti di sicurezza (All. III: tra gli altri i dispositivi del punto 3.2 contro la caduta o i movimenti incontrollati, i limitatori di velocità, gli ammortizzatori) | testo 2014; recepita dal DPR 23/2017 | N, NE | tutto il progetto del nuovo | [F29] ✅ (testo ufficiale); [F2] ✅ (copia legislation.gov.uk) |
 | **DPR 162/1999** e s.m.i. | Capo I: recepimento (artt. 1–9-sexies, All. I–XIV); Capo II: esercizio (artt. 11–17-bis): messa in esercizio, verifiche periodiche e straordinarie, manutenzione, libretto e targa, deroga agli spazi di rifugio | modificato da DPR 369/2000, 129/2002, 214/2010, 8/2015, 23/2017 e L. 167/2017 (art. 23); ultimo aggiornamento all'atto **27/11/2017**, nessuna modifica successiva su Normattiva al 2026-10-02 | N, NE, M, A | procedure, report, collaudo | [F1] ✅ |
 | **Reg. (UE) 2023/1230** (macchine) | dal 20/01/2027 i RESS dell'All. III sostituiscono quelli della 2006/42/CE richiamati dal punto 1.1 dell'All. I ascensori (art. 51 par. 2); vale per gli ascensori dichiarati conformi da quella data | applicabile dal 20/01/2027 | N, NE | report (dichiarazione dei requisiti coperti) | [F5] ✅ |
 | **DM MISE 19/03/2015** | documenti per l'accordo preventivo (fossa e/o testata ridotte): Procedura 1 senza e Procedura 2 con UNI EN 81-21 | 2015 | NE (e N solo fossa) | vano: fossa e testata | [F8] ✅ |
@@ -108,6 +115,7 @@ File scaricati solo in `scratchpad/dl/norme/` (fuori dal repository).
 | **DM 15/09/2005** (Interno) | vani degli impianti di sollevamento nelle attività soggette ai controlli antincendio: nuovi e, se modificati in modo sostanziale, esistenti | 2005; non si applica dove si usa il Codice (art. 5 c.1-bis lett. e del DM 3/8/2015) | N, NE, M | vano, locale macchine, porte di piano, cabina | [F18][F19] ✅ |
 | **Codice di prevenzione incendi** (DM 3/8/2015), RTV **V.3** | classi dei vani SA–SE e loro requisiti; ascensori antincendio e di soccorso per altezza (S.9) e alimentazione di sicurezza (S.10) | testo coordinato VVF aggiornato al 27/12/2022 (pagina VVF pubblicata il 22/09/2026) | N, NE, M | come sopra | [F19] ✅ |
 | **DM 26/10/2005** (Attività produttive) | impianti installati prima del 25/06/1999: analisi dei rischi secondo UNI EN 81-80 alla prima verifica periodica e termini di adeguamento per priorità | GU n. 265 del 14/11/2005; stato attuale ❓ (sezione 3.4) | A | adeguamento | [F20] ⚠️ (copie del testo GU) |
+| **Raccomandazione 95/216/CE** (Commissione, 08/06/1995) | agli Stati membri: manutenzione del parco esistente e miglioramento della sicurezza secondo i dieci principi dell'allegato, scaglionabile negli anni; le EN 81-1/-2 come riferimento per i valori numerici (sezione 3.4) | GU L 134 del 20/06/1995; **non vincolante** (raccomandazione) | A, M | adeguamento, note del report sull'esistente | [F30] ✅ |
 
 ### 2.2 Norme armonizzate per gli impianti nuovi (presunzione di conformità)
 
@@ -205,6 +213,7 @@ Regolamento macchine) ✅ [F6], fuori ambito.
 
 | Data | Fatto | Fonte |
 |---|---|---|
+| 20/06/1995 | Raccomandazione 95/216/CE in GU L 134: gli Stati membri, dove la legislazione non basta, assicurano la manutenzione degli ascensori esistenti e ne migliorano la sicurezza secondo i principi dell'allegato, anche scaglionando i lavori negli anni | [F30] ✅ |
 | 14/11/2005 | DM 26/10/2005 in GU n. 265: gli ascensori installati negli edifici civili **prima del 25/06/1999** si adeguano alla UNI EN 81-80 e alla sua appendice nazionale; analisi dei rischi alla prima verifica periodica; termini: **6 mesi** (priorità alta), **2–4 anni** (media), **4–6 anni** (bassa); analista ingegnere iscritto all'albo con ≥ 2 anni nel settore e RC ≥ 2,5 milioni di euro; modalità rinviate a un decreto direttoriale | [F20] ⚠️ (copie del testo GU, non la GU) |
 | 09/02/2006 | il TAR Lazio respinge la richiesta di Confedilizia di annullare (previa sospensione) il DM | [F21] ⚠️ |
 | 01/09/2009 | entra in vigore il DM 23/07/2009 (analisi dei rischi entro 2, 3, 4, 5 anni per età dell'impianto; interventi entro 5 o 10 anni per tabelle A e B) | [F22] ⚠️ |
@@ -213,7 +222,25 @@ Regolamento macchine) ✅ [F6], fuori ambito.
 
 Conseguenza per il software: **EN 81-80 come scelta volontaria** dell'utente (⚠️ lettura delle fonti sopra; il
 testo vigente del DPR 162/1999 non contiene obblighi di adeguamento generale ✅ [F1]). Numero della sentenza e
-stato giuridico attuale del DM 2005: ❓ (da chiedere a un legale).
+stato giuridico attuale del DM 2005: ❓ (da chiedere a un legale). Le copie del DM 2005 lette [F20] non citano la
+Raccomandazione 95/216/CE: il legame tra i due atti non è scritto ❓.
+
+**I dieci principi della Raccomandazione 95/216/CE** (allegato, parole nostre) [F30] ✅ e dove li tocca il
+software:
+
+| Punto | Principio | Nel software |
+|---|---|---|
+| oss. prel. | per dimensioni, tolleranze, velocità e accelerazioni si possono usare le EN 81-1 ed EN 81-2 | i valori dell'esistente per epoca dell'impianto (sezione 3.6) |
+| 1 | porte di cabina; indicatore del piano in cabina | — (fuori dall'argano) |
+| 2 | controllare, e se serve sostituire, le funi di sospensione | le verifiche delle funi del registro (numero, D/d, S_f), anche quando l'argano nuovo tiene le funi esistenti |
+| 3 | arresto preciso al piano e decelerazione progressiva | — (azionamento e quadro) |
+| 4 | comandi in cabina e ai piani usabili dalle persone con disabilità | requisiti di accessibilità (sezione 4.1) |
+| 5 | rilevatori di presenza sulle porte automatiche | — |
+| 6 | sopra **0,6 m/s** paracadute a presa progressiva | la voce «paracadute.tipo» usa la soglia di 0,63 m/s della UNI EN 81-20 per il nuovo; per l'esistente lo 0,6 m/s della raccomandazione è un principio, non una soglia del registro |
+| 7 | allarme collegato in permanenza a un servizio di intervento | — |
+| 8 | eliminare l'amianto dai freni | — (nota possibile nel report della sostituzione) |
+| 9 | dispositivo contro i movimenti incontrollati verso l'alto della cabina | la versione dell'argano con freno sull'albero lento (cap. 17 §§ 2.5, 4.2) |
+| 10 | illuminazione di emergenza in cabina, che alimenta anche l'allarme | — |
 
 ### 3.5 Transizione 2026–2029 (EN ISO 8100 e Regolamento macchine)
 
@@ -357,7 +384,7 @@ su Normattiva [F15] ✅.
 
 | Voce | Che cosa cambia | Fonte |
 |---|---|---|
-| 17 (numero minimo di funi) | All. I 1.3 letto sul DPR 162/1999 consolidato | [F1] ✅ |
+| 17 (numero minimo di funi) | All. I 1.3 letto sul DPR 162/1999 consolidato e sul testo ufficiale della Direttiva | [F1][F29] ✅ |
 | 41 (sostituzione = modifica costruttiva) | art. 2 c.1 lett. cc) n. 5, art. 12 c.4, art. 14 c.3 letti: da «da verificare» a confermato | [F1] ✅ |
 | 54–56 (DM 236/1989) | 8.1.12 letto per intero; piattaforma 1,50 × 1,50 / 1,40 × 1,40 m confermata | [F12] ✅ |
 | 84 (putrelle) | DPR 1497/1963 art. 5.1–5.2 letto su Normattiva (resta «regola storica») | [F15] ✅ |
@@ -455,11 +482,12 @@ UNI EN ISO 8100-1/-2:2026; la guida CEN/TC 10 sui requisiti del Regolamento macc
 - stato giuridico attuale del DM 26/10/2005 e numero della sentenza TAR del 2010;
 - decisione di esecuzione che cita le EN ISO 8100-1/-2:2026;
 - edizione CEN della nuova EN 81-82 (la UNI è del 2026);
-- Guida della Commissione alla Direttiva Ascensori (link 404) e Raccomandazione 95/216/CE (EUR-Lex bloccato).
+- Guida della Commissione alla Direttiva Ascensori (link 404). La Raccomandazione 95/216/CE, prima mancante, è
+  stata letta il 2026-10-04 [F30].
 
 ---
 
-## 7. Fonti (tutte consultate il 2026-10-02)
+## 7. Fonti (consultate il 2026-10-02; F29 e F30 il 2026-10-04)
 
 | ID | Documento | URL | Che cosa è stato letto |
 |---|---|---|---|
@@ -491,3 +519,5 @@ UNI EN ISO 8100-1/-2:2026; la guida CEN/TC 10 sui requisiti del Regolamento macc
 | F26 | PFB, «Lift safety gear: what it is, how it works…» | https://pfb.it/en/news/325810/pws-leitoyrgei-to-alexiptwto | articolo |
 | F27 | Capitolo 15 di questa ricerca (DPR 1497/1963, artt. già estratti) | 15-funi-macchina-in-basso.md, §1.1 | — |
 | F28 | Registro di LiftPilot | ../../liftpilot/docs/lista-verifica-normativa.md | 111 voci |
+| F29 | Direttiva 2014/33/UE del 26/02/2014, testo ufficiale in italiano (GU L 96 del 29/03/2014, pp. 251–308): PDF EUR-Lex «CELEX_32014L0033_IT_TXT.pdf» fornito dal cliente il 2026-10-03 | https://eur-lex.europa.eu/eli/dir/2014/33/oj | intero: articoli e allegati I–XIV |
+| F30 | Raccomandazione della Commissione 95/216/CE dell'08/06/1995 sul miglioramento della sicurezza degli ascensori esistenti (GU L 134 del 20/06/1995, pp. 37–38): PDF EUR-Lex «CELEX_31995H0216_IT_TXT.pdf» fornito dal cliente il 2026-10-03 | EUR-Lex, CELEX 31995H0216 | intero (considerando, raccomandazioni, allegato) |

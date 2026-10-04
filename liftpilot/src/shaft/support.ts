@@ -39,7 +39,7 @@ export const hasProfile = (s: MachineSupport): boolean => s.kind === 'frame' || 
 /** The machine's sheave axis over its bedplate's underside and the bedplate's ends along the drop line from the sheave's
  *  centre [mm], at the sheave D: the generic machine scaled to it, or the maker's on our bedframe (machine-shape.ts). */
 export const ownAxis = (D: number, shape: MachineShape | null = null): number => machineFrame(D, shape).axis;
-export const bedplate = (D: number, shape: MachineShape | null = null): readonly [number, number] => machineFrame(D, shape).x;
+export const bedplate = (D: number, shape: MachineShape | null = null): readonly [number, number] => machineFrame(D, shape).run;
 
 /** The pads under the mounts [mm]: none on the shims and on the bedplate with the pulley. */
 export const padsOf = (s: MachineSupport): number => (s.kind === 'shims' || s.kind === 'rinvio' ? 0 : KV_VERT.supportPads);

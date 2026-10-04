@@ -247,8 +247,8 @@ Note:
   - serie MF: MF48, MF84, MF94;
   - serie MB: MB95, MB108, con MB94 citato. La serie MB ha il motore B3 a sbalzo (“cantilever”).
 - Esistono anche argani a tamburo senza contrappeso, fuori dal nostro scopo.
-- Catalogo “CATALOGO ARGANI GEARBOXES CATALOGUE REV 2023/01” (non aperto): i diagrammi del motore
-  sono calcolati con **rendimento del vano 0,8**.
+- Catalogo “CATALOGO ARGANI GEARBOXES CATALOGUE REV 2023/01” (non aperto da qui; letto il 2026-10-04 nella copia
+  fornita dal cliente, cap. 17 § 3): i diagrammi del motore sono calcolati con **rendimento del vano 0,8**.
 - Altre edizioni individuate: 2019 (copia Atwell), 2016/01 (docplayer) e una copia IGI Lift.
 - **Regolazione**: per tutti i modelli “4/16” (motore a due velocità 4/16 poli) oppure “VF”
   (4 poli con inverter).
@@ -440,7 +440,7 @@ non dichiarata.
 
 | Dove | Che cosa diceva | Esito di oggi |
 |---|---|---|
-| 01 §1.3, Sassi | MODY: carico statico 2 250 kg | **Da correggere**: la pagina Sassi attuale dice **2 300 kg**. Ricontrollare sul catalogo 2023/01 (forse è il valore di un catalogo precedente) |
+| 01 §1.3, Sassi | MODY: carico statico 2 250 kg | **Da correggere**: la pagina Sassi attuale dice **2 300 kg**, e così il catalogo 2023/01 (p. 12, letto il 2026-10-04) ✅ |
 | 01 §1.3, Sassi | MODY: “480 o 630 kg, 1:1 o 2:1, 1 m/s” | Portate confermate. **1 m/s non è un limite del modello**: era la configurazione del listino del rivenditore. La velocità della puleggia va da 0,23 a 3,68 m/s |
 | 01 §1.1 | rapporti MODY “1/37–1/49 e 2/47–3/41” | **Incompleto**: manca **1/60**. Elenco: 1/37 – 1/49 – 1/60 – 2/47 – 3/41 |
 | 01 §1.1 | “per Sassi MODY il riduttore è sigillato a vita con olio sintetico” | **Da precisare**: “sigillato a vita con olio sintetico” è detto di **LEO**. Per MODY e TORO l'estratto dice “lubrificato a vita”, per MF84 lo stesso ⚠️. MF48 ha 3,8 l di olio, MF94 9 l |
@@ -1171,14 +1171,15 @@ Da una rete normale (qui sono bloccati). In ordine di utilità:
 1. **SICOR, ZIP «2D and 3D technical drawings»** dalle pagine modello: SH130, MR21, MR26 (confermati), poi SV110,
    SH110B, MR12C, SH130G, SH140, SH160, SH190, MR35 (`https://sicoritaly.com/en/geared-series/geared-<modello>/`).
 2. **Sassi, account MY SASSI** (DXF e STEP) dal commerciale; intanto il catalogo argani 2023/01 e il disegno quotato
-   https://www.sassi.it/tabelle/file/mf84_dq_sx_2019_04.PDF.
+   https://www.sassi.it/tabelle/file/mf84_dq_sx_2019_04.PDF (**arrivati dal cliente il 2026-10-03**, cap. 17 § 3).
 3. **SICOR, schede 2025**: cartella https://www.sicoritaly.com/wp-content/uploads/2025/03/ (Technical-Sheet-SH110B,
    MR12C, SH140, SH160, SH190 «-Geared-EN-2025.pdf»; Technisches-Datenblatt-MR21-Geared-DE.pdf;
    ficha-tecnica-MR26-geared-ES-2025.pdf); SH130G https://www.sicoritaly.com/wp-content/uploads/2024/02/Scheda-Singola-SH130G_Geared-ENG.pdf.
 4. **Montanari, schede per gamma**: https://www.montanarigiulio.com/wp-content/uploads/2019/10/Montanari-Gearbox-M73.pdf,
    …/Montanari-Gearbox-M75.pdf, …/Montanari-Gearbox-M83-M85.pdf; https://www.montanarigiulio.in/wp-content/uploads/2019/10/Montanari-Gearbox-M65.pdf,
    …/Montanari-Gearbox-M109.pdf; https://www.montanarigiulio.com/pdf/catalogo/MONTANARI_SCHEDA_GEARBOX-M93-M95_da_cat_REV21_05_2024.pdf,
-   …/MONTANARI_SCHEDA_GEARBOX-M98_da_cat_REV21_05_2024.pdf; l'annesso freni (sopra).
+   …/MONTANARI_SCHEDA_GEARBOX-M98_da_cat_REV21_05_2024.pdf; l'annesso freni (sopra). **Arrivate dal cliente il
+   2026-10-03**: M65, M73, M75, M93-M95, M98 e PENTA (cap. 17 § 4.2); mancano ancora M83-M85 e M109.
 5. **GEM**: https://gem-ita.com/wp-content/uploads/2020/12/HW175.pdf; catalogo e certificato HW134
    https://innolift.hu/wp-content/uploads/2022/05/GEM-HW134-KatCert.pdf; catalogo 2017 http://www.asb.pl/uploads/pdf/GEM.pdf.
 6. **Manuali SICOR su manualslib**: MR12 p. 12 (https://www.manualslib.com/manual/3437508/Sicor-Mr12.html), MR16, MR17,

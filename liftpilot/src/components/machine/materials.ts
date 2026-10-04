@@ -75,8 +75,11 @@ export interface MachineMaterials {
   paintDark: THREE.MeshPhysicalNodeMaterial;
   frame: THREE.MeshPhysicalNodeMaterial;
   sheavePaint: THREE.MeshPhysicalNodeMaterial;
-  /** a maker's machine (shape/): black cast iron, yellow sheave, bright aluminium brake */
+  /** a maker's machine (shape/): black cast iron (blue on a maker that paints it so), yellow sheave, bright aluminium
+   *  brake */
   black: THREE.MeshPhysicalNodeMaterial;
+  blue: THREE.MeshPhysicalNodeMaterial;
+  greyBlue: THREE.MeshPhysicalNodeMaterial;
   yellow: THREE.MeshPhysicalNodeMaterial;
   alu: THREE.MeshPhysicalNodeMaterial;
   handwheel: THREE.MeshPhysicalNodeMaterial;
@@ -152,6 +155,9 @@ export function createMaterials(ropeLength: number): MachineMaterials {
     frame: enamel('#262d36', { roughness: 0.72, clearcoat: 0.08, scale: 30 }),
     sheavePaint: enamel('#2c3432', { roughness: 0.46, clearcoat: 0.4 }),
     black: enamel('#1e2124', { roughness: 0.46, clearcoat: 0.35 }),
+    // the makers' blues, sampled off the photos of their sheets and catalogue: Montanari's, Sassi's grey-blue
+    blue: enamel('#2a4d8a', { roughness: 0.42, clearcoat: 0.4 }),
+    greyBlue: enamel('#466e9b', { roughness: 0.44, clearcoat: 0.35 }),
     yellow: enamel('#e9b10f', { roughness: 0.36, clearcoat: 0.6 }),
     alu: steel('#cfd4d9', 0.3),
     handwheel: enamel('#e0a526', { roughness: 0.34, clearcoat: 0.7, ink: travelArrows() }),

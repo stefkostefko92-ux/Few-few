@@ -5,7 +5,10 @@
 // model sheets of 2019 and its catalogue REV2021 (gem-ita.com), FAER's model sheets (faer.net); Montanari's and ITG's
 // sites cannot be reached from here: Montanari's from its technical catalogue Mod. RA – CG/17/07 of 2018 (the copy its
 // distributor ITASIA publishes), where the catalogue and the extracts of its pages differ the safer value (the smaller
-// static load), M105 (not in the catalogue) and ITG's from the search engines' extracts of their pages. Every value is
+// static load), M105 (not in the catalogue) and ITG's from the search engines' extracts of their pages. On 2026-10-03
+// the client supplied Montanari's range sheets (M65, M73, M75; M93-M95, M98 and PENTA Rev 21_05_24) and Sassi's
+// catalogue REV 2023/01 (its values those of REV 2022/03): they are the sources of those models now; of Montanari's the
+// largest motor is the 4-pole inverter's at 50 Hz of the sheet's tables. Every value is
 // to be checked on the maker's sheet before an order. Of a mass range the
 // larger, as the maker defines it (Sassi's without flywheel and sheave; Montanari's the gearbox's; the masses of Sassi's
 // MB series, without the motor, are left out). Payloads: SICOR's and FAER's the largest of their tables at 1:1 (machine
@@ -51,12 +54,19 @@ export const CATALOG_READ_ON = '2 ottobre 2026';
 const DAY = CATALOG_READ_ON;
 const sicor = (model: string, page: number, note = ''): string =>
   `D: scheda tecnica ${model} 2025 e brochure Geared 2026, p. 9 e ${page} (sicoritaly.com, ${DAY})${note}`;
-const sassi = (page: number, note: string): string => `D: catalogo argani Sassi REV 2022/03, p. ${page} (copia integrale, ${DAY}); ${note}; E: portate da sassi.it`;
+const CLIENT = 'documento fornito dal cliente il 3 ottobre 2026';
+const sassi = (page: number, note: string): string =>
+  `D: catalogo argani Sassi REV 2023/01, p. ${page} (${CLIENT}; valori uguali alla REV 2022/03); ${note}; E: portate da sassi.it`;
 const gem = (model: string, note = ''): string => `D: scheda ${model} (catalogo GEM 2019, gem-ita.com, ${DAY})${note}`;
 const faer = (sheet: string, HP: number, note = ''): string => `D: scheda ${sheet} (faer.net, ${DAY}); motore max ${HP} HP ≈ ${hp(HP)} kW${note}`;
 const MONTANARI = 'E: montanarigiulio.com', INDIA = 'E: montanarigiulio.in (sito India)';
 const montanari = (model: string, page: number, note = ''): string =>
   `D: catalogo tecnico Montanari Mod. RA – CG/17/07 (2018), p. ${page} (copia del distributore ITASIA, itasia.it, ${DAY}), ${model}${note}; ${MONTANARI} (portata e motore)`;
+/** a range sheet the client supplied: its data box (static load, mass, payload, ratios) and its load tables (motor) */
+const sheet = (doc: string, pages: string, model: string, note = ''): string => `D: ${doc}, pp. ${pages} (${CLIENT}), ${model}${note}`;
+const S65 = 'scheda Montanari Gearbox M65', S73 = 'scheda Montanari Gearbox M73', S75 = 'scheda Montanari Gearbox M75';
+const S93 = 'scheda Montanari M93-M95 Rev 21_05_24', S98 = 'scheda Montanari M98 Rev 21_05_24', SPENTA = 'scheda Montanari PENTA Rev 21_05_24';
+const DOWN = '; statico 2200 kg per tiro verso il basso sulla scheda, 2000 kg nel catalogo tecnico 2018: si usa il minore';
 const SH140 = '1/71 1/59 1/52 1/45 1/37 2/71 2/53 3/47', SH160 = '1/55 1/43 1/35 2/53 2/43 3/41';
 const MR21 = '1/62 1/51 1/40 2/63 2/51 3/47', MR26 = '1/72 1/57 1/44 2/63 2/45 3/55';
 const M73 = '1/75 1/60 1/52 1/46 1/37 2/55 2/37', M75 = '1/52 1/50 1/37 2/55 2/37', M83 = '1/69 1/60 1/50 1/43 1/37 2/42 2/50';
@@ -92,27 +102,28 @@ export const MACHINES: readonly CatalogMachine[] = [
   m('Sassi', 'MB94', MB94, [450, 800], 8000, null, null, 40.4, null, sassi(53, 'massa 534 kg senza motore, volano e puleggia')),
   m('Sassi', 'MB95', '1/53 1/48 2/80 2/64 3/80 3/66 3/50', [450, 800], 12000, 3000, 5000, 50.7, null, sassi(59, 'massa 980 kg senza motore, volano e puleggia')),
   m('Sassi', 'MB108', '1/64 1/48 2/71 2/57 3/68 4/59', [520, 800], 15000, 5000, 10000, 91.9, null, sassi(64, 'massa 1405 kg senza motore, volano e puleggia')),
-  m('Montanari', 'M65', '1/63 1/50 1/46 1/37 2/46', [360, 600], 2200, 400, null, 5.5, 80, montanari('M65', 22, '; R: Donati scrive 2300 kg')),
-  m('Montanari', 'M73', M73, [360, 700], 2000, 480, null, 5.5, 110, montanari('M73', 25, '; statico 2200 kg sulla pagina del costruttore e dal rivenditore: si usa il minore')),
-  m('Montanari', 'M73H', M73, [360, 700], 2700, 480, null, 5.5, 110, montanari('M73H (alto carico statico, senza supporto)', 25)),
-  m('Montanari', 'M73S', M73, [360, 700], 3200, 480, null, 5.5, 115, montanari('M73S (con supporto)', 26, '; R: Donati scrive 2000 kg')),
-  m('Montanari', 'M75', M75, [360, 700], 2000, 630, null, 7.5, 115, montanari('M75', 30)),
-  m('Montanari', 'M75H', M75, [360, 700], 2700, 630, null, 7.5, 115, montanari('M75H (alto carico statico, senza supporto)', 30)),
-  m('Montanari', 'M75S', M75, [360, 700], 3200, 630, null, 7.5, 120, montanari('M75S (con supporto)', 31)),
-  m('Montanari', 'PENTA', '1/55 1/43 1/46 1/37 2/71 2/55 3/47', [360, 600], 3000, 630, null, 11, 210, montanari('PENTA (argano verticale)', 35)),
+  m('Montanari', 'M65', '1/63 1/50 1/46 1/37 2/46', [360, 600], 2200, 400, null, 5.5, 80, sheet(S65, '25-27', 'M65', '; catalogo tecnico 2018, p. 22; R: Donati scrive 2300 kg')),
+  m('Montanari', 'M73', M73, [360, 700], 2000, 480, null, 5.5, 110, sheet(S73, '35-37', 'M73', DOWN)),
+  m('Montanari', 'M73H', M73, [360, 700], 2700, 480, null, 5.5, 110, sheet(S73, '35-37', 'M73H (alto carico statico, senza supporto)')),
+  m('Montanari', 'M73S', M73, [360, 700], 3200, 480, null, 5.5, 115, sheet(S73, '35-37', 'M73S (con supporto)', '; R: Donati scrive 2000 kg')),
+  m('Montanari', 'M75', M75, [360, 700], 2000, 630, null, 7.5, 115, sheet(S75, '41-43', 'M75', DOWN)),
+  m('Montanari', 'M75H', M75, [360, 700], 2700, 630, null, 7.5, 115, sheet(S75, '41-43', 'M75H (alto carico statico, senza supporto)')),
+  m('Montanari', 'M75S', M75, [360, 700], 3200, 630, null, 7.5, 120, sheet(S75, '41-43', 'M75S (con supporto)')),
+  m('Montanari', 'PENTA', '1/65 1/55 1/43 1/37 2/71 2/55 3/47', [360, 600], 3000, 630, null, 11, 210, sheet(SPENTA, '49-51', 'PENTA (argano verticale)', '; massa con il motore; 1/65 al posto dell\'1/46 del catalogo tecnico 2018')),
   m('Montanari', 'PENTA 830', '1/50 1/37 2/42 3/43', [400, 700], 3200, 800, null, 9, 180, montanari('PENTA 830 (argano verticale)', 45)),
   m('Montanari', 'M83', M83, [450, 700], 3200, 800, null, 11, 169, montanari('M83', 39)),
   m('Montanari', 'M85', M83, [450, 700], 4000, 800, null, 11, 181, montanari('M85 (con supporto)', 41, '; pulegge dalle tabelle M83 M85, pp. 42-44')),
-  m('Montanari', 'M93', M93, [450, 800], 5000, 1250, null, 22, 250, montanari('M93', 51)),
-  m('Montanari', 'M95', M93, [450, 800], 5000, 1250, null, 22, 250, montanari('M95 (con supporto)', 53, '; pulegge dalle tabelle M93 M95, pp. 54-57; massa 253 kg sulla pagina del costruttore')),
-  m('Montanari', 'M98', M98, [450, 800], 7000, null, null, null, 480, montanari('M98 (con supporto)', 58)),
-  m('Montanari', 'M98H', M98, [450, 800], 7000, null, null, null, 402, montanari('M98H (alto carico statico)', 59)),
+  m('Montanari', 'M93', M93, [450, 800], 5000, 1250, null, 22, 250, sheet(S93, '71-73', 'M93')),
+  m('Montanari', 'M95', M93, [450, 800], 5000, 1250, null, 22, 253, sheet(S93, '71-73', 'M95 (con supporto)', '; massa 250 kg nel catalogo tecnico 2018')),
+  m('Montanari', 'M98', M98, [450, 800], 7000, 1600, null, 26, 480, sheet(S98, '79-82', 'M98 (con supporto)')),
+  m('Montanari', 'M98H', M98, [450, 800], 7000, 1600, null, 26, 402, sheet(S98, '79-82', 'M98H (alto carico statico)')),
   m('Montanari', 'M105', '1/71 1/65 1/49 2/63 2/53 4/67', [650, 650], 9800, 3000, null, 45, 520, `${MONTANARI}, M105 (massa con motore B9; non è nel catalogo tecnico 2018)`),
   m('Montanari', 'M109', '1/64 1/49 2/55 3/58', [450, 800], 15000, null, null, 90, 890, montanari('M109 (per 2:1 e 4:1)', 76, '; motore fino a 90 kW dalla brochure generale 2015')),
-  named(m('Montanari', 'M73AL', M73, [360, 700], 2500, 480, null, 5.5, 145, montanari('M73AL (albero lungo)', 29))),
+  named(m('Montanari', 'M73AL', M73, [360, 700], 2500, 480, null, 5.5, 145, sheet(S73, '35-37', 'M73AL (albero lungo)'))),
+  named(m('Montanari', 'M75AL', M75, [360, 700], 2500, 630, null, 7.5, 150, sheet(S75, '41-43', 'M75AL (albero lungo)', '; la scheda scrive «M73AL - 150 kg» nella pagina della M75: 150 kg anche nel catalogo tecnico 2018'))),
   named(m('Montanari', 'M83AL', M83, [450, 700], 3000, 800, null, 11, 199, montanari('M83AL (albero lungo)', 40))),
-  named(m('Montanari', 'M93AL', M93, [450, 800], 3600, 1250, null, 22, 329, montanari('M93AL (albero lungo)', 52))),
-  named(m('Montanari', 'M98HAL', M98, [450, 800], 5100, null, null, null, 460, montanari('M98HAL (albero lungo)', 60))),
+  named(m('Montanari', 'M93AL', M93, [450, 800], 3600, 1250, null, 22, 329, sheet(S93, '71-73', 'M93AL (albero lungo)'))),
+  named(m('Montanari', 'M98HAL', M98, [450, 800], 5100, 1600, null, 26, 460, sheet(S98, '79-82', 'M98HAL (albero lungo)'))),
   named(m('Montanari', 'M77', M77, null, 2300, 544, null, null, 100, `${INDIA}, M77`)),
   named(m('Montanari', 'M77H', M77, null, 2700, 544, null, null, 100, `${INDIA}, M77H`)),
   named(m('Montanari', 'M87', '1/37 2/42 2/50', null, 3200, null, null, null, 169, `${INDIA}, M87 (portata 888 kg, taglia non indicata)`)),

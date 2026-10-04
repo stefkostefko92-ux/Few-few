@@ -28,9 +28,16 @@ test('catalogo degli argani: rapporti, pulegge, carichi e potenze leggibili', ()
   assert.deepEqual(['P58S', 'P60F', 'P68F', 'P70F', 'P80F'].map((x) => of(x)?.kWmax), [7.5, 7.5, 11.9, 18.7, 22.4]);
   assert.deepEqual(of('P58F')?.ratios, ['1/76', '1/66', '1/58', '1/52', '1/44', '1/37']);
   assert.equal(of('HW140C')?.kWmax, 10.8);
+  // the documents the client supplied on 3 October 2026: Montanari's range sheets (PENTA's ratios, the M95's mass, the
+  // M98's payload and largest inverter motor), Sassi's catalogue REV 2023/01
+  assert.deepEqual(of('PENTA')?.ratios, ['1/65', '1/55', '1/43', '1/37', '2/71', '2/55', '3/47']);
+  assert.equal(of('M95')?.mass, 253);
+  assert.deepEqual(['M98', 'M98H'].map((x) => [of(x)?.payload.r1, of(x)?.kWmax]), [[1600, 26], [1600, 26]]);
+  assert.deepEqual([of('M73')?.staticKg, of('M75AL')?.staticKg, of('M75AL')?.mass], [2000, 2500, 150]);
+  assert.ok(MACHINES.filter((c) => c.brand === 'Sassi').every((c) => c.src.includes('REV 2023/01')));
   // only by name: the machines no longer built, the long shafts, another market
   assert.deepEqual(MACHINES.filter((c) => c.byName).map((c) => c.model), ['SH140LS', 'SH160LS', 'MR12 (storico)', 'MR16 (storico)', 'MR17 (storico)',
-    'M73AL', 'M83AL', 'M93AL', 'M98HAL', 'M77', 'M77H', 'M87', 'M104']);
+    'M73AL', 'M75AL', 'M83AL', 'M93AL', 'M98HAL', 'M77', 'M77H', 'M87', 'M104']);
 });
 
 test('un argano del catalogo accetta un\'opzione: rapporto più vicino, scarto di velocità, i motivi del no', () => {

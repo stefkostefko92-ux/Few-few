@@ -18,11 +18,12 @@ import { shapedSheave } from './sheave';
 
 const m = (v: number): number => v / 1000;
 
-/** The bedframe under the feet, its underside at y = 0 and its top at the feet's plane. */
+/** The bedframe under the feet, its underside at y = 0 and its top at the feet's plane: a channel under each row of
+ *  holes, the end ones across from the first to the last. */
 function bedframe(F: MachineFrame, M: MachineMaterials): THREE.Group {
-  const g = new THREE.Group(), bed = m(F.bed), [x0, x1] = [m(F.x[0]), m(F.x[1])], [za, zb] = F.beams.map(m), mount = 0.022;
-  const hb = Math.min(0.12, bed - mount), bw = 0.07, tf = 0.009, tw = 0.007, y1 = bed, y0 = bed - hb;
-  for (const [z, s] of [[za, -1], [zb, 1]]) {
+  const g = new THREE.Group(), bed = m(F.bed), [x0, x1] = [m(F.run[0]), m(F.run[1])], zs = F.beams.map(m), mount = 0.022;
+  const za = zs[0], zb = zs[zs.length - 1], hb = Math.min(0.12, bed - mount), bw = 0.07, tf = 0.009, tw = 0.007, y1 = bed, y0 = bed - hb;
+  for (const [z, s] of zs.map((z, i) => [z, i === 0 ? -1 : 1] as const)) {
     // a channel's top and bottom flanges and its web, the back toward the machine's middle
     g.add(mesh(new THREE.BoxGeometry(x1 - x0, tf, bw), M.frame, (x0 + x1) / 2, y1 - tf / 2, z), mesh(new THREE.BoxGeometry(x1 - x0, tf, bw), M.frame, (x0 + x1) / 2, y0 + tf / 2, z));
     g.add(mesh(new THREE.BoxGeometry(x1 - x0, hb - 2 * tf, tw), M.frame, (x0 + x1) / 2, (y0 + y1) / 2, z - s * (bw / 2 - tw / 2)));
@@ -67,6 +68,18 @@ export interface ShapedMachine extends Machine {
   conduitEnd: readonly [number, number, number];
 }
 
+/** A part of an inclined worm turned about Z round its pivot (machine-shape.ts); the others as they are. */
+function onTilt(p: ShapePart, o: THREE.Object3D): THREE.Object3D {
+  if (!p.tilt) return o;
+  const g = new THREE.Group(), [px, py] = p.tilt.at;
+  g.position.set(m(px), m(py), 0);
+  g.rotation.z = p.tilt.a;
+  o.position.x -= m(px);
+  o.position.y -= m(py);
+  g.add(o);
+  return g;
+}
+
 /** The machine of `F.shape` with its sheave at D for n ropes of d. */
 export function buildShaped(M: MachineMaterials, F: MachineFrame, D: number, n: number, d: number): ShapedMachine {
   const S = F.shape;
@@ -79,7 +92,7 @@ export function buildShaped(M: MachineMaterials, F: MachineFrame, D: number, n: 
     const b = partBox(p);
     return p.role !== 'arm' || b[2] > 0 || b[5] < 0;
   };
-  for (const p of S.parts) if (!whole(p)) body.add(buildPart(S, p, M, worm));
+  for (const p of S.parts) if (!whole(p)) body.add(onTilt(p, buildPart(S, p, M, worm)));
   if (brake) body.add(shapedBrake(brake, M, worm));
   body.add(oilFittings(S, M));
   // the feet's bolts on a cast base; a machine without one is bolted from under the frame's flange
