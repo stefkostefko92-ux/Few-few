@@ -4,7 +4,7 @@ import { config } from '../config.js';
 import { applyLocale } from '../http/locale.js';
 import { LOCALES, translatorFor, type Locale } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
-import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
+import { formatLifetimeTimes, priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
 import { retentionText } from '../retention.js';
 import { LEGAL, legalPath, PATHS } from '../seo/paths.js';
 import {
@@ -47,6 +47,7 @@ function publicPage(
     paths: PATHS,
     legalPath,
     company: COMPANY,
+    lifetimeTimes: formatLifetimeTimes(locale),
     ...data,
   });
 }
@@ -102,7 +103,7 @@ for (const page of LEGAL) {
         canonical,
         alternates: alternates((l) => legalPath(l, page)),
         privacyEmail: config().PRIVACY_EMAIL,
-        ...legalNumbers(),
+        ...legalNumbers(locale),
         // срокът на одита идва от настройката, по която го трие поддръжката — не е писан на ръка
         auditKept: retentionText(config().AUDIT_RETENTION_DAYS, t),
         updated: LEGAL_UPDATED[page],

@@ -1,8 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  formatLifetimeTimes,
   formatMoney,
   isOptionId,
+  LIFETIME_PERCENT_OF_YEAR,
   lifetimePriceCents,
   MONTHLY_CENTS,
   optionMonths,
@@ -78,4 +80,11 @@ test('money is formatted per language and refuses fractions of a cent', () => {
   assert.equal(formatMoney(7125, 'en'), '€71.25');
   assert.equal(formatMoney(2500, 'it').replace(/\s/g, ' '), '25 €');
   assert.throws(() => formatMoney(12.5, 'bg'));
+});
+
+test('the texts state the Lifetime multiplier from the price rule, in each language', () => {
+  assert.equal(LIFETIME_PERCENT_OF_YEAR, 250);
+  assert.equal(formatLifetimeTimes('bg'), '2,5');
+  assert.equal(formatLifetimeTimes('en'), '2.5');
+  assert.equal(formatLifetimeTimes('it'), '2,5');
 });

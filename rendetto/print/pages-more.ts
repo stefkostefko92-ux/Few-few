@@ -1,4 +1,5 @@
 import { COMPANY } from '../src/company.js';
+import { formatLifetimeTimes } from '../src/plans/pricing.js';
 import type { FaqId } from '../src/seo/structured-data.js';
 import type { FurnitureRange } from '../src/services/furniture.js';
 import { esc, icon, PAGES, titleBlock, type BrochureContext } from './pages.js';
@@ -86,7 +87,7 @@ export function prices(c: BrochureContext): string {
     .join('');
   const notes = [
     t('landing.prices.vat', { vat: c.vatPercent }),
-    t('brochure.prices.lifetime'),
+    t('brochure.prices.lifetime', { times: formatLifetimeTimes(c.locale) }),
     t('landing.prices.manual'),
     t('landing.prices.expired'),
   ]

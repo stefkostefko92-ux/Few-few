@@ -27,7 +27,7 @@
 <h2>Piani e prezzi</h2>
 <ul>
   <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> al mese IVA inclusa (<%= fmt.money(m1.totalCents) %> IVA esclusa). Pagando <%= list(terms.map((p) => String(p.months))) %> mesi in una volta lo sconto è del <%= list(terms.map((p) => p.discountPercent + '%')) %>. Premium non si rinnova da solo: scade alla fine del periodo pagato.</li>
-  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> IVA inclusa (<%= fmt.money(life.totalCents) %> IVA esclusa), pagamento unico: 2,5 volte il prezzo annuale senza lo sconto per 12 mesi. Lifetime vale finché Rendetto è offerto.</li>
+  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> IVA inclusa (<%= fmt.money(life.totalCents) %> IVA esclusa), pagamento unico: <%= lifetimeTimes %> volte il prezzo annuale senza lo sconto per 12 mesi. Lifetime vale finché Rendetto è offerto.</li>
   <li>Per i consumatori i prezzi sono finali, IVA <%= vatPercent %>% inclusa. Per le aziende l'IVA si applica secondo le regole del paese dell'acquirente.</li>
   <li>Possiamo cambiare i prezzi per gli ordini futuri. Un piano già ordinato non cambia.</li>
 </ul>
@@ -82,7 +82,7 @@
 <p>Cerchiamo di far funzionare Rendetto senza interruzioni, ma non lo garantiamo: a volte c'è manutenzione. Conservate i progetti importanti anche come file scaricati.</p>
 
 <h2>Diritti sul software e sui progetti</h2>
-<p>Il programma e il suo design appartengono a <%= company.name %>, ad eccezione delle librerie open source che usiamo secondo le loro licenze (<a href="/static/editor/THIRD-PARTY-LICENSES.txt" hreflang="en">elenco e testi completi</a>). La selezione e l'organizzazione dei cataloghi sono nostre. Blum, Hettich, GTV, Salice, Egger e gli altri nomi di produttori e prodotti sono marchi dei rispettivi titolari; li usiamo solo per indicare la compatibilità. Rendetto non è affiliato né approvato da questi produttori.</p>
+<p>Il programma e il suo design appartengono a <%= company.name %>, ad eccezione delle librerie open source che usiamo secondo le loro licenze (<a href="/static/editor/THIRD-PARTY-LICENSES.txt" hreflang="en">elenco e testi completi</a>). La selezione e l'organizzazione dei cataloghi sono nostre. Blum, Hettich, GTV, Salice, Egger e gli altri nomi di produttori e prodotti sono marchi dei rispettivi titolari; li usiamo solo per indicare la compatibilità. Rendetto non è affiliato a questi produttori né da essi approvato.</p>
 <p>I vostri progetti e i loro risultati sono vostri. Conserviamo e trattiamo i progetti solo per fornirvi il servizio: i dettagli nell'<a href="<%= legalPath(locale, 'privacy') %>">informativa sulla privacy</a>.</p>
 
 <h2>Modifiche alle condizioni</h2>

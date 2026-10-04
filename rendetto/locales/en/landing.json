@@ -130,7 +130,7 @@
       "title": "How much does it cost?",
       "trial": "Every account gets a {days}-day trial, starting when the email is confirmed, to try our software — with all features, no card and no automatic payment.",
       "vat": "For consumers, prices are final and include {vat}% VAT. For businesses the price without VAT is also shown; VAT is charged under the rules of the buyer's country.",
-      "lifetime": "Lifetime costs 2.5 times the yearly price without the 12-month discount and is valid for as long as Rendetto is offered — details in the terms.",
+      "lifetime": "Lifetime costs {times} times the yearly price without the 12-month discount and is valid for as long as Rendetto is offered — details in the terms.",
       "manual": "You order a plan from your account, and it is activated manually once the payment arrives.",
       "expired": "When the trial or a paid period ends, your projects stay available to download. New projects and changes need an active plan."
     },

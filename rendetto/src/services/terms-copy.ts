@@ -6,14 +6,15 @@ import { translatorFor, type Locale } from '../i18n.js';
 import type { MailAttachment } from '../mail/mailer.js';
 import { ROOT } from '../paths.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
-import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
+import { formatLifetimeTimes, priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
 import { REFUND_DAYS, WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
 import { LOGIN_RETENTION_DAYS } from '../retention.js';
 import { legalPath } from '../seo/paths.js';
 
 /** Числата в правните текстове — едни и същи за страницата на сайта и за копието към писмото. */
-export function legalNumbers() {
+export function legalNumbers(locale: Locale) {
   return {
+    lifetimeTimes: formatLifetimeTimes(locale),
     trialDays: TRIAL_DAYS,
     prices: priceTable(),
     vatPercent: VAT_BG_PERCENT,
@@ -34,7 +35,7 @@ export async function termsCopy(
   contact: string,
 ): Promise<MailAttachment> {
   const content = await ejs.renderFile(join(ROOT, 'views', 'legal', 'terms-copy.ejs'), {
-    ...legalNumbers(),
+    ...legalNumbers(locale),
     locale,
     t: translatorFor(locale),
     fmt: viewHelpers(locale),

@@ -76,6 +76,13 @@ export function formatMoney(cents: number, locale: Locale): string {
   }).format(cents / 100);
 }
 
+/** Само за показ: колко пъти годишната цена е Lifetime („2,5“ / „2.5“) — от константата, не на ръка. */
+export function formatLifetimeTimes(locale: Locale): string {
+  return new Intl.NumberFormat(LOCALE_TAG[locale], { maximumFractionDigits: 2 }).format(
+    LIFETIME_PERCENT_OF_YEAR / 100,
+  );
+}
+
 export interface PriceRow {
   id: OptionId;
   months: number | null;

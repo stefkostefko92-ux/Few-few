@@ -27,7 +27,7 @@
 <h2>Plans and prices</h2>
 <ul>
   <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> per month including VAT (<%= fmt.money(m1.totalCents) %> excluding VAT). Paying for <%= list(terms.map((p) => String(p.months))) %> months at once gives a <%= list(terms.map((p) => p.discountPercent + '%')) %> discount. Premium does not renew by itself — it ends at the end of the paid term.</li>
-  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> including VAT (<%= fmt.money(life.totalCents) %> excluding VAT), one payment — 2.5 times the yearly price without the 12-month discount. Lifetime is valid for as long as Rendetto is offered.</li>
+  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> including VAT (<%= fmt.money(life.totalCents) %> excluding VAT), one payment — <%= lifetimeTimes %> times the yearly price without the 12-month discount. Lifetime is valid for as long as Rendetto is offered.</li>
   <li>For consumers, prices are final and include <%= vatPercent %>% VAT. For businesses, VAT is charged under the rules of the buyer's country.</li>
   <li>We may change prices for future orders. A plan already ordered does not change.</li>
 </ul>

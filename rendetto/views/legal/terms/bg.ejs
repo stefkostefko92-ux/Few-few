@@ -27,7 +27,7 @@
 <h2>Планове и цени</h2>
 <ul>
   <li>Premium: <%= fmt.money(m1.totalWithVatCents) %> на месец с ДДС (<%= fmt.money(m1.totalCents) %> без ДДС). При плащане за <%= list(terms.map((p) => String(p.months))) %> месеца наведнъж отстъпката е <%= list(terms.map((p) => p.discountPercent + '\u00a0%')) %>. Premium не се подновява сам — изтича в края на платения срок.</li>
-  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> с ДДС (<%= fmt.money(life.totalCents) %> без ДДС), еднократно — 2,5 пъти годишната цена без отстъпката за 12 месеца. Lifetime важи, докато Rendetto се предлага.</li>
+  <li>Lifetime: <%= fmt.money(life.totalWithVatCents) %> с ДДС (<%= fmt.money(life.totalCents) %> без ДДС), еднократно — <%= lifetimeTimes %> пъти годишната цена без отстъпката за 12 месеца. Lifetime важи, докато Rendetto се предлага.</li>
   <li>За потребители цените са крайни, с включен ДДС <%= vatPercent %>&nbsp;%. За фирми ДДС се начислява по правилата на държавата на купувача.</li>
   <li>Можем да променим цените за бъдещи поръчки. Вече поръчан план не се променя.</li>
 </ul>

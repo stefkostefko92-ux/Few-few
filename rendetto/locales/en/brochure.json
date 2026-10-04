@@ -18,7 +18,7 @@
     },
     "prices": {
       "once": "one-off, for the life of the service",
-      "lifetime": "Lifetime is a single payment — 2.5 times the yearly price without the 12-month discount — and is valid for as long as Rendetto is offered.",
+      "lifetime": "Lifetime is a single payment — {times} times the yearly price without the 12-month discount — and is valid for as long as Rendetto is offered.",
       "asOf": "Prices as of {date}; full terms: {terms}"
     },
     "contact": {
