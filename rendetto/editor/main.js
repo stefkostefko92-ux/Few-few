@@ -1,8 +1,7 @@
 // Rendetto editor: a saved project in the browser. Spec → model → BOM, drilling, nesting, drawings, CNC preview.
 // The server keeps the spec (save) and makes the downloads from the SAVED spec; the preview here is computed live.
 import { registerCatalog } from '../engine/catalog.js';
-import { TYPES } from '../engine/types.js';
-import { buildModel, normalizeSpec } from '../engine/model.js';
+import { buildModel, normalizeSpec, withType } from '../engine/model.js';
 import { buildBom } from '../engine/bom.js';
 import { nest } from '../engine/nest.js';
 import { cncBlockers } from '../engine/cam.js';
@@ -172,13 +171,7 @@ function bindUi() {
   bindForm(form, (key, value, commit) => {
     if (readOnly) return;
     if (key === 'type') {
-      // keep materials, hardware and machine settings; size parameters and the shelf load follow the new type
-      const keep = Object.fromEntries(
-        Object.entries(state.spec).filter(
-          ([k]) => !(k in TYPES[state.spec.type].defaults) && k !== 'shelfLoad',
-        ),
-      );
-      state.spec = { ...keep, type: value };
+      state.spec = withType(state.spec, value);
       renderParams($('#param-fields'), value);
       recompute(true);
       return;

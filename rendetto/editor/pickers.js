@@ -1,6 +1,6 @@
 // Picker dialog for decors, RAL colours and handles: search, filter chips, swatch grid or product list.
-import { decorList, ralList, decor } from '../engine/materials.js';
-import { handleList } from '../engine/hardware.js';
+import { decorList, ralList, decor, isBaseDecor } from '../engine/materials.js';
+import { handleList, handleHoles } from '../engine/hardware.js';
 import { $, esc, money, swatchStyle, fmt, setHtml } from './dom.js';
 import { handleIcon } from './icons.js';
 
@@ -58,7 +58,7 @@ const MODES = {
     title: 'Декор',
     items: () => {
       const all = decorList();
-      const real = all.filter((d) => d.manufacturer !== 'Основни');
+      const real = all.filter((d) => !isBaseDecor(d));
       return real.length ? real : all;
     },
     chips(items, st) {
@@ -117,7 +117,7 @@ const MODES = {
       const real = items.filter((h) => !h.none);
       const byT = count(real, (h) => h.type);
       const bySp = count(
-        real.filter((h) => h.holes === 2 && h.spacing),
+        real.filter((h) => handleHoles(h).pair),
         (h) => h.spacing,
       );
       const sp = [...bySp].filter(([, n]) => n >= 5).sort((a, b) => a[0] - b[0]);
@@ -145,13 +145,13 @@ const MODES = {
       h.none
         ? !st.t && !st.s && !q
         : (!st.t || h.type === st.t) &&
-          (!st.s || (st.s === '1' ? h.holes === 1 : h.holes === 2 && String(h.spacing) === st.s)) &&
+          (!st.s || (handleHoles(h).pair ? String(h.spacing) === st.s : st.s === '1')) &&
           (!q ||
             `${h.name} ${h.brand ?? ''} ${h.sku ?? ''} ${h.finish ?? ''}`
               .toLowerCase()
               .includes(q)),
     render: (h, sel) =>
-      `<button type="button" class="pk-row" role="option" aria-selected="${h.id === sel}" data-id="${esc(h.id)}">${handleIcon(h)}<span class="pk-main"><b>${esc(h.name)}</b><small>${esc(h.none ? 'TIP-ON или профил — не е включен' : [h.brand, h.sku, HANDLE_TYPE_BG[h.type], h.finish].filter(Boolean).join(' · '))}</small></span><span class="pk-side">${h.none ? '' : `${h.holes === 2 && h.spacing ? `${h.spacing} mm` : '1 отвор'}<small>${esc(money(h.price, h.currency))}${h.shop ? ` · ${esc(h.shop)}` : ''}</small>`}</span></button>`,
+      `<button type="button" class="pk-row" role="option" aria-selected="${h.id === sel}" data-id="${esc(h.id)}">${handleIcon(h)}<span class="pk-main"><b>${esc(h.name)}</b><small>${esc(h.none ? 'TIP-ON или профил — не е включен' : [h.brand, h.sku, HANDLE_TYPE_BG[h.type], h.finish].filter(Boolean).join(' · '))}</small></span><span class="pk-side">${h.none ? '' : `${esc(handleHoles(h).label)}<small>${esc(money(h.price, h.currency))}${h.shop ? ` · ${esc(h.shop)}` : ''}</small>`}</span></button>`,
     grid: false,
   },
 };
@@ -159,7 +159,7 @@ const MODES = {
 // Open the picker. onPick(id) is called with the chosen id.
 export function openPicker(mode, selected, onPick) {
   const m = MODES[mode];
-  current = { mode, m, st: {}, q: '', selected, onPick, shown: PAGE, items: m.items() };
+  current = { m, st: {}, q: '', selected, onPick, shown: PAGE, items: m.items() };
   $('#picker-title').textContent = m.title;
   $('#pk-q').value = '';
   $('#pk-list').className = m.grid ? 'pk-list grid' : 'pk-list';
@@ -196,16 +196,21 @@ export function bindPicker() {
   });
   dlg().addEventListener('click', (ev) => {
     if (!current) return;
+    // draw() replaces the chips and the list: the focus goes back to the pressed chip, or to the first new item
     const chip = ev.target.closest('[data-chip]');
     if (chip) {
-      current.st[chip.dataset.chip] = chip.dataset.v;
+      const { chip: name, v } = chip.dataset;
+      current.st[name] = v;
       current.shown = PAGE;
       draw();
+      $(`[data-chip="${CSS.escape(name)}"][data-v="${CSS.escape(v)}"]`, dlg())?.focus();
       return;
     }
     if (ev.target.closest('[data-more]')) {
+      const before = current.shown;
       current.shown += PAGE;
       draw();
+      $('#pk-list').children[before]?.focus();
       return;
     }
     const item = ev.target.closest('[data-id]');

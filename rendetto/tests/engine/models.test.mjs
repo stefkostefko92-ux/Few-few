@@ -5,8 +5,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { registerFixtures } from './fixtures.mjs';
 import { checkModel } from './check.mjs';
-import { buildModel } from '../../engine/model.js';
+import { buildModel, normalizeSpec, withType } from '../../engine/model.js';
 import { TYPE_ORDER, TYPES } from '../../engine/types.js';
+import { handleHoles, registerHandles } from '../../engine/hardware.js';
+import { decor, decorList, decorName, isBaseDecor } from '../../engine/materials.js';
 
 registerFixtures();
 
@@ -46,4 +48,37 @@ test('unknown input is normalised, not trusted', () => {
   assert.ok(model.spec.width <= 1200 && model.spec.width >= 300, `width ${model.spec.width}`);
   assert.ok(model.spec.height >= 600, `height ${model.spec.height}`);
   assert.ok(['iso', 'grbl'].includes(model.spec.post), `post ${model.spec.post}`);
+});
+
+test('changing the type keeps materials, hardware and machine settings, not the sizes or the shelf load', () => {
+  const kitchen = normalizeSpec({ type: 'kitchen', carcassDecor: 'demo:anthracite', handle: 'fx:knob', tool: 8, post: 'grbl', shelfLoad: 2, moduleWidth: 500 });
+  const next = withType(kitchen, 'bookcase');
+  assert.equal(next.type, 'bookcase');
+  for (const k of [...Object.keys(TYPES.kitchen.defaults), 'shelfLoad']) assert.ok(!(k in next), `${k} is carried over`);
+  const spec = normalizeSpec(next);
+  assert.deepEqual([spec.carcassDecor, spec.handle, spec.tool, spec.post], ['demo:anthracite', 'fx:knob', 8, 'grbl']);
+  assert.equal(spec.shelfLoad, 1, 'the bookcase default, not the kitchen one');
+  assert.equal(spec.height, TYPES.bookcase.defaults.height);
+});
+
+test('handle holes: a pair needs two holes and their spacing, anything else gets one hole — labels and drilling alike', () => {
+  assert.deepEqual(handleHoles({ holes: 2, spacing: 128 }), { pair: true, label: '128 mm' });
+  assert.deepEqual(handleHoles({ holes: 1 }), { pair: false, label: '1 отвор' });
+  assert.deepEqual(handleHoles({ holes: 2 }), { pair: false, label: '1 отвор' });
+  registerHandles([{ id: 'fx:h2', name: 'Дръжка без междуосие (тест)', type: 'bar', holes: 2, width: 12, drill: 5 }]);
+  const handleHolesOnDoor = (handle) => {
+    const door = buildModel({ type: 'base', fronts: 'doors', handle }).parts.find((p) => p.role === 'door');
+    return door.features.filter((f) => f.type === 'hole' && f.hw === 'handle').length;
+  };
+  assert.equal(handleHolesOnDoor('fx:h128'), 2);
+  assert.equal(handleHolesOnDoor('fx:knob'), 1);
+  assert.equal(handleHolesOnDoor('fx:h2'), 1);
+});
+
+test('the built-in decors are told apart from catalog decors by one rule', () => {
+  const base = decorList().filter(isBaseDecor);
+  assert.equal(base.length, 4);
+  for (const d of base) assert.equal(decorName(d.id), d.name);
+  assert.equal(isBaseDecor({ manufacturer: 'Egger' }), false);
+  assert.equal(isBaseDecor(decor('demo:oak')), true);
 });

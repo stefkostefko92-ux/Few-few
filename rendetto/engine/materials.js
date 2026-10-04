@@ -9,11 +9,12 @@ export const STOCK = {
   hdf3: { id: 'hdf3', name: 'HDF', thickness: 3, sheet: [2800, 2070] },
 };
 
+const BASE_MANUFACTURER = 'Основни';
 const BUILTIN = [
-  { id: 'demo:white', manufacturer: 'Основни', code: 'Бял', name: 'Бял, гладък', category: 'uni', hex: '#ecebe6', finish: 'matt' },
-  { id: 'demo:oak', manufacturer: 'Основни', code: 'Дъб', name: 'Дъб натурален', category: 'wood', hex: '#c8a982', hexDark: '#94714a', finish: 'matt' },
-  { id: 'demo:anthracite', manufacturer: 'Основни', code: 'Антрацит', name: 'Антрацит', category: 'uni', hex: '#3b3e41', finish: 'matt' },
-  { id: 'demo:walnut', manufacturer: 'Основни', code: 'Орех', name: 'Орех', category: 'wood', hex: '#6a4a36', hexDark: '#3a2617', finish: 'matt' },
+  { id: 'demo:white', manufacturer: BASE_MANUFACTURER, code: 'Бял', name: 'Бял, гладък', category: 'uni', hex: '#ecebe6', finish: 'matt' },
+  { id: 'demo:oak', manufacturer: BASE_MANUFACTURER, code: 'Дъб', name: 'Дъб натурален', category: 'wood', hex: '#c8a982', hexDark: '#94714a', finish: 'matt' },
+  { id: 'demo:anthracite', manufacturer: BASE_MANUFACTURER, code: 'Антрацит', name: 'Антрацит', category: 'uni', hex: '#3b3e41', finish: 'matt' },
+  { id: 'demo:walnut', manufacturer: BASE_MANUFACTURER, code: 'Орех', name: 'Орех', category: 'wood', hex: '#6a4a36', hexDark: '#3a2617', finish: 'matt' },
 ];
 
 const decors = new Map(BUILTIN.map((d) => [d.id, d]));
@@ -54,9 +55,11 @@ export const hasRal = (code) => typeof code === 'string' && rals.has(code);
 export const decorList = () => [...decors.values()];
 export const ralList = () => [...rals.values()];
 export const hasGrain = (id) => decor(id).category === 'wood';
+// one of the built-in decors: their code is only a short name, not a catalog code
+export const isBaseDecor = (d) => d?.manufacturer === BASE_MANUFACTURER;
 export const decorName = (id) => {
   const d = decor(id);
-  return d.manufacturer === 'Основни' || d.manufacturer === 'RAL' ? d.name : `${d.manufacturer} ${d.code} ${d.name}`;
+  return isBaseDecor(d) || d.manufacturer === 'RAL' ? d.name : `${d.manufacturer} ${d.code} ${d.name}`;
 };
 
 // Front material: laminated board in a decor (edge banded) or MDF lacquered in a RAL colour (no edge band).

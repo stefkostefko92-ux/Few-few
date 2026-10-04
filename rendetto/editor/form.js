@@ -1,12 +1,13 @@
 // The parameter rail: furniture type cards, schema-driven size fields, materials and colours, hardware and
 // machine settings. Every control carries data-field; the rail reports changes and the pipeline re-normalizes.
 import { TYPES, TYPE_ORDER } from '../engine/types.js';
-import { decor, decorName, ralList } from '../engine/materials.js';
+import { decor, decorName, ralList, isBaseDecor } from '../engine/materials.js';
 import {
   hingeList,
   slideList,
   bedFittingList,
   handleModel,
+  handleHoles,
   hingeSystemOf,
 } from '../engine/hardware.js';
 import { SHELF_LOADS } from '../engine/model.js';
@@ -129,7 +130,7 @@ export function writeForm(form, spec, writeFocused = false) {
   const h = handleModel(spec.handle);
   const hb = $('[data-pick="handle"]');
   hb.innerHTML = h
-    ? `${handleIcon(h)}<span class="pv">${esc(h.name)}<small>${esc([h.brand, h.holes === 2 && h.spacing ? `${h.spacing} mm` : h.holes === 1 ? '1 отвор' : '', money(h.price, h.currency)].filter(Boolean).join(' · '))}</small></span>`
+    ? `${handleIcon(h)}<span class="pv">${esc(h.name)}<small>${esc([h.brand, handleHoles(h).label, money(h.price, h.currency)].filter(Boolean).join(' · '))}</small></span>`
     : `${handleIcon(null)}<span class="pv">Без дръжка<small>фронтовете се отварят с TIP-ON или профил — не е включен</small></span>`;
 }
 
@@ -138,7 +139,7 @@ function pickButton(key, d, label) {
   if (!b) return;
   setHtml(
     b,
-    `<i class="sw" data-css="${esc(swatchStyle(d))}"></i><span class="pv">${esc(label)}<small>${esc(d.category === 'paint' ? 'МДФ, боядисан' : `${d.manufacturer}${d.code && d.manufacturer !== 'Основни' ? ` · ${d.code}` : ''}`)}</small></span>`,
+    `<i class="sw" data-css="${esc(swatchStyle(d))}"></i><span class="pv">${esc(label)}<small>${esc(d.category === 'paint' ? 'МДФ, боядисан' : `${d.manufacturer}${d.code && !isBaseDecor(d) ? ` · ${d.code}` : ''}`)}</small></span>`,
   );
 }
 

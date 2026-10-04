@@ -65,6 +65,17 @@ export function normalizeSpec(input = {}) {
   return s;
 }
 
+// Defaults of normalizeSpec that depend on the type, besides the type's own size parameters.
+const TYPE_DEPENDENT = ['shelfLoad'];
+
+// Another furniture type for a spec: materials, hardware and machine settings stay; the old type's size parameters
+// and the type-dependent defaults go, so normalizeSpec gives the new type's own.
+export function withType(spec, type) {
+  const sizes = TYPES[spec.type]?.defaults ?? {};
+  const keep = Object.entries(spec).filter(([k]) => !(k in sizes) && !TYPE_DEPENDENT.includes(k));
+  return { ...Object.fromEntries(keep), type };
+}
+
 export function buildModel(input) {
   const spec = normalizeSpec(input);
   const ctx = createCtx(spec);

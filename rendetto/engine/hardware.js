@@ -47,6 +47,12 @@ export function handleModel(id) {
   if (id === 'none') return null;
   return handles.get(id) ?? handles.values().next().value ?? null;
 }
+// The holes a handle gets, one rule for the drilling (fronts.js) and every label: a pair needs two holes AND their
+// spacing; anything else gets one hole in the middle.
+export function handleHoles(h) {
+  const pair = h.holes === 2 && h.spacing > 0;
+  return { pair, label: pair ? `${h.spacing} mm` : '1 отвор' };
+}
 export function slideModel(id) {
   return slides.get(id) ?? slides.values().next().value ?? null;
 }

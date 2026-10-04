@@ -3,6 +3,7 @@
 // overall and module dimensions and the material, joint and hardware notes.
 import { pickScale, dimH, dimV, frame, svgDoc, fmt, errorAlert } from './drawing-kit.js';
 import { decorName, STOCK } from './materials.js';
+import { handleHoles } from './hardware.js';
 import { GROOVE, HDF_T } from './joinery.js';
 import { typeLabel } from './model.js';
 import { dimsText } from './types.js';
@@ -49,7 +50,7 @@ export function drawingAssembly(model, meta, sheetNo = 1, sheetCount = 2) {
     g += `<polyline class="d-open" points="${free},${Y(y1)} ${apex},${Y((y0 + y1) / 2)} ${free},${Y(y0)}"/>`;
   }
   for (const s of symbols.filter((sy) => sy.type === 'handle')) {
-    const len = s.model.length ?? (s.model.holes === 2 && s.model.spacing ? s.model.spacing + 40 : 24);
+    const len = s.model.length ?? (handleHoles(s.model).pair ? s.model.spacing + 40 : 24);
     g += s.horizontal ? `<line class="d-out" x1="${X(s.x - len / 2)}" y1="${Y(s.y)}" x2="${X(s.x + len / 2)}" y2="${Y(s.y)}"/>` : `<line class="d-out" x1="${X(s.x)}" y1="${Y(s.y - len / 2)}" x2="${X(s.x)}" y2="${Y(s.y + len / 2)}"/>`;
   }
   for (const s of symbols.filter((sy) => sy.type === 'worktop')) {

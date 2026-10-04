@@ -2,7 +2,7 @@
 // drilled in the door back, mounting plates on the carcass panel on the 32 mm grid, handles through the front.
 import { panel, hole, holeThrough, mark, toUV } from './panel.js';
 import { r1, clamp, dimTxt, plural } from './util.js';
-import { hingeCount, hingeProduct, hingeSystemOf, handleModel, hingeLimits, solveOverlay, HINGE_LIMITS } from './hardware.js';
+import { hingeCount, hingeProduct, hingeSystemOf, handleModel, handleHoles, hingeLimits, solveOverlay, HINGE_LIMITS } from './hardware.js';
 import { SYSTEM, MIN_WEB, addHoleOnce, snapHingeY } from './joinery.js';
 
 const DENSITY = 650; // kg/m³, assumption for the door-weight estimate
@@ -197,7 +197,7 @@ export function mountHandle(ctx, o, front, { orientation, kind }) {
     horizontal = true;
   }
   // the whole handle — its body, not only the holes — stays HANDLE_MARGIN inside the front
-  const pair = h.holes === 2 && h.spacing > 0;
+  const { pair } = handleHoles(h);
   const body = h.length ?? (pair ? h.spacing + 2 * BODY_PAST_HOLES : h.width ?? 30);
   const reach = Math.max(body, pair ? h.spacing + (h.drill ?? 5) : 0) / 2 + HANDLE_MARGIN;
   const along = horizontal ? w : hgt;

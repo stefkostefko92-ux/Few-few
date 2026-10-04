@@ -19,17 +19,17 @@ export function typeIcon(type) {
   return `<svg viewBox="0 0 32 32" aria-hidden="true" class="ticon"><path d="${P[type] ?? P.base}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
-// Handle sketch: bar (two posts), knob, profile/edge pull, shell (cup), other.
+// Handle sketch: bar (two posts), knob, profile/edge pull, shell (cup), other (also every type without a sketch).
+const HANDLE_PATHS = {
+  bar: 'M3 12h26M7 12v4M25 12v4',
+  knob: 'M16 9a5 5 0 1 0 0.01 0M16 19v3',
+  profile: 'M4 10h24v4H4zM4 14h24',
+  edge: 'M4 12h24M4 12v5h24v-5',
+  shell: 'M6 11h20c0 6-4 9-10 9s-10-3-10-9z',
+  other: 'M8 12h16M8 12v4M24 12v4',
+};
+
 export function handleIcon(h) {
-  const t = h?.type ?? 'other';
-  const path =
-    {
-      bar: 'M3 12h26M7 12v4M25 12v4',
-      knob: 'M16 9a5 5 0 1 0 0.01 0M16 19v3',
-      profile: 'M4 10h24v4H4zM4 14h24',
-      edge: 'M4 12h24M4 12v5h24v-5',
-      shell: 'M6 11h20c0 6-4 9-10 9s-10-3-10-9z',
-      other: 'M8 12h16M8 12v4M24 12v4',
-    }[t] ?? 'M8 12h16M8 12v4M24 12v4';
+  const path = Object.hasOwn(HANDLE_PATHS, h?.type) ? HANDLE_PATHS[h.type] : HANDLE_PATHS.other;
   return `<svg viewBox="0 0 32 24" aria-hidden="true" class="hicon"><path d="${path}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
