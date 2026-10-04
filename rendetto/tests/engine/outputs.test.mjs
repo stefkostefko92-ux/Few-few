@@ -137,11 +137,21 @@ for (const [ci, input] of specs.entries()) {
       const g = toGcode(model, sh, { ...meta, sheetCount: nesting.sheets.length });
       assert.equal(g.ops.manual.length, 0, `${label}: holes without a tool: ${g.ops.manual.map((h) => h.d).join(',')}`);
       assert.match(g.text, /SIMULATE AND DRY RUN BEFORE CUTTING/);
+      if (model.spec.post === 'grbl') {
+        // after the touch-off on the sheet top the bit lifts to safe Z before the spindle starts
+        const pauses = g.text.match(/\nM0\n/g) ?? [];
+        assert.ok(pauses.length > 0, `${label}: no tool change pause`);
+        assert.equal((g.text.match(/\nM0\nG0 Z20\.\nS\d+ M3\nG4 P2\n/g) ?? []).length, pauses.length, `${label}: the spindle starts before the lift to safe Z`);
+      } else {
+        const g43 = g.text.split('\n').filter((l) => l.includes('G43'));
+        assert.ok(g43.length > 0 && g43.every((l) => l.startsWith('G0 G43 ')), `${label}: G43 approach without an explicit G0`);
+      }
       const T = sh.stock === 'hdf3' ? 3 : sh.stock === 'pb16' ? 16 : sh.stock === 'pb25' ? 25 : 18;
       checkGcode(g.text, sh, T, model.spec.tool);
       const dxf = toDxf(model, sh, meta);
       assert.match(dxf.text, /^ *0\nSECTION\n/);
       assert.match(dxf.text, /\n *0\nEOF\n$/);
+      for (const layer of dxf.layers) assert.match(layer, /^[A-Z0-9$_-]{1,31}$/, `${label}: layer name not valid in DXF R12`);
       writeFileSync(join(dxfDir, `${label}-s${sh.index}.dxf`), dxf.text);
       dxfCount += 1;
     }

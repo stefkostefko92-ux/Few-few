@@ -19,8 +19,8 @@ export const drillFor = (d) => DRILLS.find((t) => Math.abs(t.d - d) < 0.01) ?? n
 export const contourTool = (d) => ({ ...CONTOUR_MILL, d, label: `COMPRESSION D${d}` });
 
 export const POSTS = {
-  iso: { id: 'iso', name: 'ISO / Fanuc-стил (G81, G43, смяна T…M6)', version: 'iso-2.0' },
-  grbl: { id: 'grbl', name: 'GRBL (хоби, ръчна смяна на инструмента)', version: 'grbl-2.0' },
+  iso: { id: 'iso', name: 'ISO / Fanuc-стил (G81, G43, смяна T…M6)', version: 'iso-2.1' },
+  grbl: { id: 'grbl', name: 'GRBL (хоби, ръчна смяна на инструмента)', version: 'grbl-2.1' },
 };
 
 // Finished-part (u, v) → cut-part offset (edge band) → placement on the sheet (with rotation).
@@ -182,11 +182,14 @@ export function toGcode(model, sheet, meta) {
     L.push(`(${tool.id} ${tool.label}${note ? ` - ${note}` : ''})`);
     if (iso) {
       // Z to the machine's reference point before the change, then the length offset of the new tool
-      L.push('G91 G28 Z0', 'G90', `${tool.id} M6`, `S${tool.rpm} M3`, `G43 H${tool.h} Z${num(safe)}`);
+      // G0 on the G43 line: the first approach must not depend on the control's power-on motion mode
+      L.push('G91 G28 Z0', 'G90', `${tool.id} M6`, `S${tool.rpm} M3`, `G0 G43 H${tool.h} Z${num(safe)}`);
       pos = { ...pos, Z: safe };
     } else {
-      L.push('M5', `(INSERT ${tool.label} AND SET Z0 ON SHEET TOP, THEN RESUME)`, 'M0', `S${tool.rpm} M3`, 'G4 P2');
+      // the bit was just touched off on the sheet top: lift to safe Z before the spindle starts
+      L.push('M5', `(INSERT ${tool.label} AND SET Z0 ON SHEET TOP, THEN RESUME)`, 'M0');
       rapid(undefined, undefined, safe);
+      L.push(`S${tool.rpm} M3`, 'G4 P2');
     }
   };
   const endTool = () => {

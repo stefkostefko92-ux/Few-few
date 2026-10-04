@@ -1,10 +1,11 @@
 // DXF R12 (ASCII) of one nested sheet. Layer names carry the operation: DRILL_D<Ø>_Z-<depth>,
 // GROOVE_W<width>_Z-<depth>, CONTOUR_D<tool>_Z-<depth>, so CAM software can map layers to tools without guessing.
+// R12 names allow only A–Z 0–9 $ _ - (31 characters), so a decimal point is written as '_': Z-18.3 → Z-18_3.
 import { sheetOps, num, SPOIL } from './cam.js';
 import { asciiName } from './util.js';
 
 const COLORS = [3, 4, 5, 6, 1, 2, 30, 40, 140, 200, 210, 230];
-const zTxt = (v) => num(v).replace(/\.$/, '');
+const zTxt = (v) => num(v).replace(/\.$/, '').replace('.', '_');
 
 export function toDxf(model, sheet, meta) {
   const ops = sheetOps(model, sheet);
