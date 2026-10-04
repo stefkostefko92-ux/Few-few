@@ -58,7 +58,7 @@
     },
     "order": {
       "subject": "Confirmation of your Rendetto order",
-      "body": "We confirm your order. The contract was concluded on {when}.\n\nOrder no. {id}\nPlan: {plan}\nPrice: {price}\nBuying as: {buyer}\n{duration}{replaces}\n\n{payment}\n\n{withdrawal}\n\n{trader}\nThe terms you accepted with the order (in force from {termsDate}): {terms}\nYour orders: {orders}",
+      "body": "We confirm your order. The contract was concluded on {when}.\n\nOrder no. {id}\nPlan: {plan}\nPrice: {price}\nBuying as: {buyer}\n{duration}{replaces}\n\n{payment}\n\n{withdrawal}\n\n{trader}\n{terms}\nYour orders: {orders}",
       "priceConsumer": "{gross} incl. {vat}% VAT ({net} excl. VAT)",
       "priceBusiness": "{net} excl. VAT; VAT is charged under the rules of your country and shown on the invoice",
       "paymentEarly": "Payment: by bank transfer, using the invoice with the payment details that we will send you. You asked for the plan to start right after payment, before the {days}-day withdrawal period ends. If you withdraw, you will pay for the time the plan was active.",
@@ -70,6 +70,8 @@
       "durationLifetime": "Term: Lifetime is valid for as long as Rendetto is offered.",
       "replaces": "This order replaces order no. {ids}, which has been cancelled. If you have already paid for it, write to us at {contact}.",
       "consumerRights": "As a consumer you also have the legal guarantee of conformity for digital services. Complaints go to {contact}; for out-of-court settlement you can turn to the Bulgarian Commission for Consumer Protection (www.kzp.bg).",
+      "termsAttached": "The terms you accepted with the order (in force from {date}) are attached to this email as a file; online: {link}",
+      "termsLink": "The terms you accepted with the order (in force from {date}): {link}",
       "trader": "Trader: {company}, {form}, company number (EIK) {eik}, {address}, phone {phone}, {contact}."
     },
     "withdrawalForm": "Model withdrawal form\n(complete and return this form only if you wish to withdraw from the contract)\n— To {to}:\n— I/We (*) hereby give notice that I/We (*) withdraw from my/our (*) contract of sale of the following goods (*)/for the provision of the following service (*),\n— Ordered on (*)/received on (*),\n— Name of consumer(s),\n— Address of consumer(s),\n— Signature of consumer(s) (only if this form is notified on paper),\n— Date\n(*) Delete as appropriate.",

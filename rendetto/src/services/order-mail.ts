@@ -2,6 +2,8 @@ import type { UpgradeRequest, User } from '@prisma/client';
 import { COMPANY, LEGAL_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { isLocale, LOCALE_TAG, translate, type Locale } from '../i18n.js';
+import { logger } from '../logger.js';
+import type { MailAttachment } from '../mail/mailer.js';
 import {
   greetingName,
   mailOrderConfirmed,
@@ -18,6 +20,7 @@ import {
   type PlanOutcome,
 } from '../plans/withdrawal.js';
 import { legalPath } from '../seo/paths.js';
+import { termsCopy } from './terms-copy.js';
 
 /**
  * Текстовете на писмата за поръчката и отказа. Всичко се смята от записа на поръчката — същите
@@ -107,51 +110,80 @@ function paymentText(order: OrderRecord, locale: Locale): string {
 }
 
 /**
- * Потвърждението на сключения договор — веднага след поръчката (и пак от поддръжката, ако не тръгне).
- * `replaced` — неизпълнените поръчки, които тази е заменила и отменила.
+ * Копието на приетите общи условия (траен носител) — само ако в сила са още същите, които клиентът е
+ * приел с поръчката. Грешка при събирането не спира потвърждението: тогава в писмото остава връзката.
  */
-export function sendOrderConfirmation(
+async function acceptedTermsCopy(
+  order: OrderRecord,
+  locale: Locale,
+): Promise<MailAttachment | null> {
+  if (order.termsVersion !== LEGAL_UPDATED.terms) return null;
+  try {
+    return await termsCopy(locale, config().PUBLIC_BASE_URL, config().CONTACT_EMAIL);
+  } catch (error) {
+    logger.error(
+      { err: error instanceof Error ? error.message : String(error) },
+      'копието на общите условия не се събра',
+    );
+    return null;
+  }
+}
+
+/**
+ * Потвърждението на сключения договор — веднага след поръчката (и пак от поддръжката, ако не тръгне),
+ * с приетите общи условия като файл. `replaced` — неизпълнените поръчки, които тази е заменила.
+ */
+export async function sendOrderConfirmation(
   order: OrderRecord,
   user: Customer,
   replaced: readonly string[] = [],
 ): Promise<boolean> {
   const locale = localeOf(user);
   const consumer = order.buyerType === 'CONSUMER';
-  return mailOrderConfirmed(user.email, locale, greetingName(user), {
-    when: sofiaDateTime(order.createdAt, locale),
-    id: order.id,
-    plan: orderPlanName(order, locale),
-    price: price(order, locale),
-    buyer: translate(locale, consumer ? 'plan.buyer.consumer' : 'plan.buyer.business'),
-    payment: paymentText(order, locale),
-    duration:
-      order.option === 'lifetime'
-        ? translate(locale, 'mail.order.durationLifetime')
-        : translate(locale, 'mail.order.durationTerm', {
-            term: translate(locale, 'plan.months', { n: order.months ?? 0 }),
-          }),
-    replaces: replaced.length
-      ? `\n\n${translate(locale, 'mail.order.replaces', { ids: replaced.join(', '), contact: config().CONTACT_EMAIL })}`
-      : '',
-    withdrawal: consumer
-      ? `${translate(locale, 'mail.order.withdrawalConsumer', {
-          date: longDate(withdrawalLastDay(order.createdAt), locale),
-          contact: config().CONTACT_EMAIL,
-          refundDays: REFUND_DAYS,
-          form: withdrawalForm(locale),
-        })}\n\n${translate(locale, 'mail.order.consumerRights', { contact: config().CONTACT_EMAIL })}`
-      : translate(locale, 'mail.order.withdrawalBusiness'),
-    trader: translate(locale, 'mail.order.trader', {
-      company: translate(locale, 'company.legalName'),
-      form: translate(locale, 'company.legalForm'),
-      eik: COMPANY.eik,
-      address: companyAddress(locale),
-      phone: COMPANY.phone,
-      contact: config().CONTACT_EMAIL,
-    }),
-    termsDate: longDate(new Date(`${order.termsVersion ?? LEGAL_UPDATED.terms}T12:00:00Z`), locale),
-    terms: `${config().PUBLIC_BASE_URL}${legalPath(locale, 'terms')}`,
-  });
+  const copy = await acceptedTermsCopy(order, locale);
+  return mailOrderConfirmed(
+    user.email,
+    locale,
+    greetingName(user),
+    {
+      when: sofiaDateTime(order.createdAt, locale),
+      id: order.id,
+      plan: orderPlanName(order, locale),
+      price: price(order, locale),
+      buyer: translate(locale, consumer ? 'plan.buyer.consumer' : 'plan.buyer.business'),
+      payment: paymentText(order, locale),
+      duration:
+        order.option === 'lifetime'
+          ? translate(locale, 'mail.order.durationLifetime')
+          : translate(locale, 'mail.order.durationTerm', {
+              term: translate(locale, 'plan.months', { n: order.months ?? 0 }),
+            }),
+      replaces: replaced.length
+        ? `\n\n${translate(locale, 'mail.order.replaces', { ids: replaced.join(', '), contact: config().CONTACT_EMAIL })}`
+        : '',
+      withdrawal: consumer
+        ? `${translate(locale, 'mail.order.withdrawalConsumer', {
+            date: longDate(withdrawalLastDay(order.createdAt), locale),
+            contact: config().CONTACT_EMAIL,
+            refundDays: REFUND_DAYS,
+            form: withdrawalForm(locale),
+          })}\n\n${translate(locale, 'mail.order.consumerRights', { contact: config().CONTACT_EMAIL })}`
+        : translate(locale, 'mail.order.withdrawalBusiness'),
+      trader: translate(locale, 'mail.order.trader', {
+        company: translate(locale, 'company.legalName'),
+        form: translate(locale, 'company.legalForm'),
+        eik: COMPANY.eik,
+        address: companyAddress(locale),
+        phone: COMPANY.phone,
+        contact: config().CONTACT_EMAIL,
+      }),
+      terms: translate(locale, copy ? 'mail.order.termsAttached' : 'mail.order.termsLink', {
+        date: longDate(new Date(`${order.termsVersion ?? LEGAL_UPDATED.terms}T12:00:00Z`), locale),
+        link: `${config().PUBLIC_BASE_URL}${legalPath(locale, 'terms')}`,
+      }),
+    },
+    copy ? [copy] : [],
+  );
 }
 
 /** Потвърждението, че отказът е получен: съдържанието на изявлението, датата и часа му. */

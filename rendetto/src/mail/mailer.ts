@@ -2,10 +2,18 @@ import nodemailer, { type Transporter } from 'nodemailer';
 import { config, isProduction } from '../config.js';
 import { logger } from '../logger.js';
 
+/** Файл към писмото — текст, събран на сървъра (напр. копието на общите условия). */
+export interface MailAttachment {
+  filename: string;
+  content: string;
+  contentType: string;
+}
+
 export interface MailMessage {
   to: string;
   subject: string;
   text: string;
+  attachments?: MailAttachment[];
 }
 
 let transport: Transporter | null = null;

@@ -81,7 +81,11 @@ test('a consumer order is confirmed on a durable medium with the model form; act
     mail.text,
     /Търговец: Карбон Стелт ЕДПК \(Carbon Stealth VCC\), еднолично дружество с променлив капитал, ЕИК 208725180, ул\. „Самуил“ № 3, 2670 Бобов дол, обл\. Кюстендил, България, тел\. \+359 877 414 874, info@carbonstealth\.eu\./,
   );
-  assert.match(mail.text, /\(в сила от \d+ \S+ \d{4} г\.\): http:\/\/127\.0\.0\.1:\d+\/terms\n/);
+  // приетите условия — като файл към писмото (траен носител), а не само връзка към живата страница
+  assert.match(
+    mail.text,
+    /\(в сила от \d+ \S+ \d{4} г\.\), са приложени към това писмо като файл; онлайн: http:\/\/127\.0\.0\.1:\d+\/terms\n/,
+  );
   assert.ok(
     (await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: row.id } })).confirmationSentAt,
   );

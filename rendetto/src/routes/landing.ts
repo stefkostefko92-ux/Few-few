@@ -5,7 +5,6 @@ import { applyLocale } from '../http/locale.js';
 import { LOCALES, translatorFor, type Locale } from '../i18n.js';
 import { TRIAL_DAYS } from '../plans/plan.js';
 import { priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
-import { REFUND_DAYS, WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
 import { LEGAL, legalPath, PATHS } from '../seo/paths.js';
 import {
   FAQ_IDS,
@@ -16,6 +15,7 @@ import {
 } from '../seo/structured-data.js';
 import { furnitureByGroup } from '../services/furniture.js';
 import { landingAssets } from '../services/landing-assets.js';
+import { legalNumbers } from '../services/terms-copy.js';
 
 /**
  * Витрината: всеки език има свой адрес (`/`, `/en/`, `/it/`), за да може търсачката да ги индексира
@@ -94,11 +94,7 @@ for (const page of LEGAL) {
         canonical,
         alternates: alternates((l) => legalPath(l, page)),
         privacyEmail: config().PRIVACY_EMAIL,
-        trialDays: TRIAL_DAYS,
-        prices: priceTable(),
-        vatPercent: VAT_BG_PERCENT,
-        withdrawalDays: WITHDRAWAL_DAYS,
-        refundDays: REFUND_DAYS,
+        ...legalNumbers(),
         updated: LEGAL_UPDATED[page],
         jsonLd: legalStructuredData(
           locale,

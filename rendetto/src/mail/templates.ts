@@ -1,6 +1,6 @@
 import { config } from '../config.js';
 import { translate, type Locale } from '../i18n.js';
-import { sendMail } from './mailer.js';
+import { sendMail, type MailAttachment } from './mailer.js';
 
 /**
  * Писмата към човека. Текстът идва от речниците (`mail.*`) на езика на акаунта; връзките са
@@ -29,13 +29,19 @@ async function send(
   key: string,
   params: Record<string, string | number>,
   name: string | null,
+  attachments: MailAttachment[] = [],
 ): Promise<boolean> {
   const subject = translate(locale, `mail.${key}.subject`, params);
   const greeting = name
     ? translate(locale, 'mail.greeting', { name })
     : translate(locale, 'mail.greetingPlain');
   const body = translate(locale, `mail.${key}.body`, params);
-  return sendMail({ to, subject, text: `${greeting}\n\n${body}\n\n${signature(locale)}\n` });
+  return sendMail({
+    to,
+    subject,
+    text: `${greeting}\n\n${body}\n\n${signature(locale)}\n`,
+    ...(attachments.length ? { attachments } : {}),
+  });
 }
 
 /** До адрес, който още никой не е потвърдил — без име. */
@@ -168,16 +174,24 @@ export function mailAccountDeleted(
 
 /**
  * Потвърждението на договора на траен носител (чл. 8, пар. 7 от Директива 2011/83): какво е поръчано,
- * цената, плащането, правото на отказ с образеца и общите условия към деня на поръчката. Текстовете
- * на частите са сглобени в `services/order-mail.ts`.
+ * цената, плащането, правото на отказ с образеца и общите условия към деня на поръчката (приложени
+ * като файл). Текстовете на частите и копието на условията са сглобени в `services/order-mail.ts`.
  */
 export function mailOrderConfirmed(
   to: string,
   locale: Locale,
   name: string | null,
   params: Record<string, string>,
+  attachments: MailAttachment[] = [],
 ): Promise<boolean> {
-  return send(to, locale, 'order', { ...params, orders: link('/account/plan', locale) }, name);
+  return send(
+    to,
+    locale,
+    'order',
+    { ...params, orders: link('/account/plan', locale) },
+    name,
+    attachments,
+  );
 }
 
 /** Потвърждението, че изявлението за отказ е получено — със съдържанието и часа му (чл. 11а, пар. 4). */
