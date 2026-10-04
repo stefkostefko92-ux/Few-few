@@ -10,13 +10,15 @@ interface SaverState {
   savedHash: string;
   savedName: string;
   savedAt: string;
+  // hardware and decors of the saved project that have left the catalog, until a Save stores the substitute
+  drift: string[];
   saving?: boolean;
   conflict?: boolean;
 }
 interface Saver {
   isDirty(): boolean;
   showState(): void;
-  save(): Promise<boolean>;
+  save(explicit?: boolean): Promise<boolean>;
 }
 interface SaverModule {
   createSaver(options: {
@@ -26,6 +28,7 @@ interface SaverModule {
     isReadOnly: () => boolean;
     text: Record<string, string>;
     beforeSave?: () => Promise<void>;
+    onSaved?: () => void;
   }): Saver;
 }
 
@@ -51,7 +54,7 @@ function setup(
   t: TestContext,
   respond: (call: Call, n: number, state: SaverState) => Promise<Response>,
   over: Partial<SaverState> = {},
-  options: { readOnly?: boolean; beforeSave?: () => Promise<void> } = {},
+  options: { readOnly?: boolean; beforeSave?: () => Promise<void>; onSaved?: () => void } = {},
 ) {
   const name = { value: 'Кухня' };
   const label = { textContent: '', dataset: {} as Record<string, string> };
@@ -63,6 +66,7 @@ function setup(
     savedHash: 'h1',
     savedName: 'Кухня',
     savedAt: 'v1',
+    drift: [],
     ...over,
   };
   const calls: Call[] = [];
@@ -78,6 +82,7 @@ function setup(
     isReadOnly: () => options.readOnly ?? false,
     text: TEXT,
     beforeSave: options.beforeSave,
+    onSaved: options.onSaved,
   });
   return { state, saver, calls, name, label, error };
 }
@@ -165,6 +170,24 @@ test('a download first runs the pending change (beforeSave), then saves what it 
   assert.equal(await saver.save(), true);
   assert.equal(calls.length, 1, 'the debounced change is written before the download');
   assert.equal(state.savedHash, 'h2');
+});
+
+test('a substitute for hardware that left the catalog is stored only by an explicit Save', async (t) => {
+  let stored = 0;
+  const { state, saver, calls, label } = setup(
+    t,
+    saved,
+    { drift: ['Панта: blum_clip_top вече я няма в каталога'] },
+    { onSaved: () => (stored += 1) },
+  );
+  saver.showState();
+  assert.deepEqual([label.textContent, label.dataset.state], [TEXT.unsaved, 'dirty']);
+  assert.equal(await saver.save(), true, 'a download does not store the substitute');
+  assert.equal(calls.length, 0);
+  assert.equal(await saver.save(true), true);
+  assert.equal(calls.length, 1, 'Save (or Ctrl+S) writes it');
+  assert.deepEqual([state.drift, stored], [[], 1]);
+  assert.deepEqual([label.textContent, label.dataset.state], [TEXT.saved, 'saved']);
 });
 
 test('a 409 stops every later save: nothing is overwritten unseen', async (t) => {
