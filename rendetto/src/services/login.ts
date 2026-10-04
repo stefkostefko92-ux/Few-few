@@ -217,7 +217,7 @@ export async function completeMfa(
     where: { id: user.id },
     data: { failedLogins: 0, lockedUntil: null },
   });
-  await markMfaPassed(session.id, user.role);
+  if (!(await markMfaPassed(session.id, user.role))) return { kind: 'reset' };
   if (session.deviceId)
     await finishLogin(user, session.deviceId, meta, recovery ? 'MFA_RECOVERY' : 'SUCCESS');
   if (recovery) {

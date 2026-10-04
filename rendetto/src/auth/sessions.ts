@@ -9,11 +9,16 @@ import type { Principal } from '../types.js';
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
+const CUSTOMER_ABSOLUTE_MS = 30 * DAY;
+const STAFF_ABSOLUTE_MS = DAY;
+/** Най-дългият живот на сесия изобщо — по-стара няма валидна (по него чисти поддръжката). */
+export const MAX_SESSION_MS = Math.max(CUSTOMER_ABSOLUTE_MS, STAFF_ABSOLUTE_MS);
+
 /** Клиент: плъзгащ живот 7 дни, абсолютен таван 30 дни. Персонал: 4 часа без действие, таван 24 часа. */
 export function sessionLimits(role: Role): { idleMs: number; absoluteMs: number } {
   return isStaff(role)
-    ? { idleMs: 4 * HOUR, absoluteMs: DAY }
-    : { idleMs: 7 * DAY, absoluteMs: 30 * DAY };
+    ? { idleMs: 4 * HOUR, absoluteMs: STAFF_ABSOLUTE_MS }
+    : { idleMs: 7 * DAY, absoluteMs: CUSTOMER_ABSOLUTE_MS };
 }
 
 /** Входът по пароля чака втория фактор най-много толкова. */
@@ -78,8 +83,9 @@ export function clearSessionCookie(res: Response): void {
   res.clearCookie(sessionCookieName(), sessionCookieOptions(0));
 }
 
-export async function markMfaPassed(sessionId: string, role: Role): Promise<void> {
-  await prisma.session.update({
+/** false — сесията междувременно е изтрита (изход, бан, паралелен опит): входът започва отначало. */
+export async function markMfaPassed(sessionId: string, role: Role): Promise<boolean> {
+  const marked = await prisma.session.updateMany({
     where: { id: sessionId },
     data: {
       mfaPassed: true,
@@ -87,6 +93,7 @@ export async function markMfaPassed(sessionId: string, role: Role): Promise<void
       expiresAt: new Date(Date.now() + sessionLimits(role).idleMs),
     },
   });
+  return marked.count === 1;
 }
 
 /**
@@ -155,10 +162,13 @@ export async function resolveSession(token: string | undefined): Promise<Princip
   }
 
   if (session.mfaPassed && now - session.lastSeenAt.getTime() > SLIDE_MIN_INTERVAL_MS) {
-    await prisma.session.update({
+    // updateMany, не update: сесия, изтрита междувременно (изход в друг раздел, бан, смяна на
+    // паролата), е просто излизане, не грешка 500
+    const slid = await prisma.session.updateMany({
       where: { id: session.id },
       data: { lastSeenAt: new Date(now), expiresAt: new Date(now + idleMs) },
     });
+    if (slid.count === 0) return null;
   }
 
   const { bannedAt: _bannedAt, ...user } = session.user;
@@ -196,7 +206,7 @@ export async function purgeExpiredSessions(): Promise<number> {
     where: {
       OR: [
         { expiresAt: { lte: new Date() } },
-        { createdAt: { lte: new Date(Date.now() - 30 * DAY) } },
+        { createdAt: { lte: new Date(Date.now() - MAX_SESSION_MS) } },
       ],
     },
   });
