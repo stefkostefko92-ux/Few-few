@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { config } from '../config.js';
 import { randomToken, safeEqual } from '../crypto.js';
 import { readCookie } from '../http/cookies.js';
+import { HOUR } from '../time.js';
 import { setFlash } from '../http/flash.js';
 import { can, isStaff, type Capability } from './rbac.js';
 import type { Principal } from '../types.js';
@@ -136,6 +137,7 @@ export function requireCsrf(req: Request, res: Response, next: NextFunction): vo
 
 /** CSRF за формите ПРЕДИ вход (вход, регистрация): двойна бисквитка + проверка на Origin. */
 export const PRE_CSRF_COOKIE = 'rd_pre';
+export const PRE_CSRF_MAX_AGE_MS = 2 * HOUR;
 
 /** Токенът на бисквитката преди вход: 24 случайни байта = 32 знака base64url. */
 export function newPreCsrfToken(): string {

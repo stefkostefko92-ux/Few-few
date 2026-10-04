@@ -4,6 +4,11 @@ import { LABEL } from '../labels.js';
 import { DAY } from '../time.js';
 
 export const TRIAL_DAYS = 30;
+/**
+ * Писмото за края на тестовия период тръгва, когато остават най-много толкова дни — веднъж на акаунт.
+ * Може да остават и по-малко (кратък период, зададен от екипа, или престой), затова писмото казва датата.
+ */
+export const TRIAL_REMINDER_DAYS = 3;
 
 export type PlanState = 'staff' | 'pending' | 'active' | 'expired';
 

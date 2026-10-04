@@ -8,16 +8,22 @@ import { readCookie } from '../http/cookies.js';
 import { isStaff } from './rbac.js';
 import type { Principal } from '../types.js';
 
-const CUSTOMER_ABSOLUTE_MS = 30 * DAY;
-const STAFF_ABSOLUTE_MS = DAY;
+/**
+ * Клиент: плъзгащ живот 7 дни, абсолютен таван 30 дни. Персонал: 4 часа без действие, таван 24 часа.
+ * Политиката за поверителност показва същите числа (`services/legal-numbers.ts`).
+ */
+export const SESSION_LIMITS = {
+  customer: { idleMs: 7 * DAY, absoluteMs: 30 * DAY },
+  staff: { idleMs: 4 * HOUR, absoluteMs: DAY },
+} as const;
 /** Най-дългият живот на сесия изобщо — по-стара няма валидна (по него чисти поддръжката). */
-export const MAX_SESSION_MS = Math.max(CUSTOMER_ABSOLUTE_MS, STAFF_ABSOLUTE_MS);
+export const MAX_SESSION_MS = Math.max(
+  SESSION_LIMITS.customer.absoluteMs,
+  SESSION_LIMITS.staff.absoluteMs,
+);
 
-/** Клиент: плъзгащ живот 7 дни, абсолютен таван 30 дни. Персонал: 4 часа без действие, таван 24 часа. */
 export function sessionLimits(role: Role): { idleMs: number; absoluteMs: number } {
-  return isStaff(role)
-    ? { idleMs: 4 * HOUR, absoluteMs: STAFF_ABSOLUTE_MS }
-    : { idleMs: 7 * DAY, absoluteMs: CUSTOMER_ABSOLUTE_MS };
+  return isStaff(role) ? SESSION_LIMITS.staff : SESSION_LIMITS.customer;
 }
 
 /** Входът по пароля чака втория фактор най-много толкова. */

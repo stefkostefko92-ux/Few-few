@@ -14,7 +14,8 @@ import { readCookie } from './cookies.js';
 import { viewHelpers } from './view.js';
 
 const LOCALE_COOKIE = 'rd_lang';
-const YEAR = 365 * DAY;
+/** Изборът на език се помни година (политиката за поверителност го казва). */
+export const LOCALE_COOKIE_MAX_AGE_MS = 365 * DAY;
 
 /**
  * Езикът на екрана, по ред на силата: `?lang=` (превключвателят) → профилът на вписания човек →
@@ -55,7 +56,7 @@ export function attachLocale(req: Request, res: Response, next: NextFunction): v
       sameSite: 'lax',
       secure: isProduction(),
       path: '/',
-      maxAge: YEAR,
+      maxAge: LOCALE_COOKIE_MAX_AGE_MS,
     });
     const principal = req.principal;
     if (principal && principal.user.locale !== locale) {

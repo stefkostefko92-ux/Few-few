@@ -1,4 +1,5 @@
 import type { Translator } from './i18n.js';
+import { DAY, HOUR } from './time.js';
 
 /**
  * Сроковете за пазене, обявени в политиката за поверителност. Едно място за поддръжката, която трие,
@@ -26,4 +27,14 @@ export function retentionText(days: number, t: Translator): string {
   return days % 365 === 0
     ? t('legal.retention.years', { n: days / 365 })
     : t('legal.retention.days', { n: days });
+}
+
+/**
+ * Срок от кода в най-едрата цяла единица, както го казва текстът: години, дни (от два нагоре), часове,
+ * минути — „1 година“, „30 дни“, „24 часа“, „2 часа“, „1 минута“.
+ */
+export function durationText(ms: number, t: Translator): string {
+  if (ms % DAY === 0 && ms >= 2 * DAY) return retentionText(ms / DAY, t);
+  if (ms % HOUR === 0) return t('common.hours', { n: ms / HOUR });
+  return t('common.minutes', { n: Math.round(ms / 60_000) });
 }

@@ -16,7 +16,7 @@ import {
 } from '../seo/structured-data.js';
 import { furnitureByGroup } from '../services/furniture.js';
 import { landingAssets } from '../services/landing-assets.js';
-import { legalNumbers } from '../services/terms-copy.js';
+import { legalNumbers, privacyNumbers } from '../services/legal-numbers.js';
 
 /**
  * Витрината: всеки език има свой адрес (`/`, `/en/`, `/it/`), за да може търсачката да ги индексира
@@ -104,6 +104,7 @@ for (const page of LEGAL) {
         alternates: alternates((l) => legalPath(l, page)),
         privacyEmail: config().PRIVACY_EMAIL,
         ...legalNumbers(locale),
+        ...privacyNumbers(locale),
         // срокът на одита идва от настройката, по която го трие поддръжката — не е писан на ръка
         auditKept: retentionText(config().AUDIT_RETENTION_DAYS, t),
         updated: LEGAL_UPDATED[page],

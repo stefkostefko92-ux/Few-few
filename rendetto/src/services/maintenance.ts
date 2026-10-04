@@ -5,17 +5,13 @@ import { purgeExpiredSessions } from '../auth/sessions.js';
 import { accountLocale } from '../i18n.js';
 import { longDate } from '../mail/dates.js';
 import { greetingName, mailTrialEnding } from '../mail/templates.js';
+import { TRIAL_REMINDER_DAYS } from '../plans/plan.js';
 import { LOGIN_RETENTION_DAYS, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
 import { DAY, HOUR } from '../time.js';
 import { resendOrderMail } from './plan-requests.js';
 
 /** Изтеклите връзки от писмата се пазят още толкова дни, после се трият. */
 const EXPIRED_TOKEN_DAYS = 7;
-/**
- * Писмото за края на тестовия период тръгва, когато остават най-много толкова дни — веднъж на акаунт.
- * Може да остават и по-малко (кратък период, зададен от екипа, или престой), затова писмото казва датата.
- */
-const TRIAL_REMINDER_DAYS = 3;
 
 /**
  * Писмата за наближаващия край на тестовия период. Отбелязва се само пратеното: при отказ на SMTP

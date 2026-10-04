@@ -7,6 +7,7 @@ import {
   isPreCsrfToken,
   newPreCsrfToken,
   PRE_CSRF_COOKIE,
+  PRE_CSRF_MAX_AGE_MS,
   requirePreAuthCsrf,
 } from '../auth/guards.js';
 import { clearSessionCookie, destroySessionById, setSessionCookie } from '../auth/sessions.js';
@@ -43,7 +44,7 @@ function preCsrf(req: Request, res: Response): string {
     sameSite: 'strict',
     secure: isProduction(),
     path: '/',
-    maxAge: 2 * 60 * 60 * 1000,
+    maxAge: PRE_CSRF_MAX_AGE_MS,
   });
   return token;
 }

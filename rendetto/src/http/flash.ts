@@ -5,6 +5,8 @@ import { DEFAULT_LOCALE, hasKey } from '../i18n.js';
 import { readCookie } from './cookies.js';
 
 const FLASH_COOKIE = 'rd_flash';
+/** Съобщението живее минута — достатъчно за пренасочването след действието. */
+export const FLASH_MAX_AGE_MS = 60_000;
 
 const FLASH_KINDS = ['ok', 'error', 'info'] as const;
 export type FlashKind = (typeof FLASH_KINDS)[number];
@@ -56,7 +58,7 @@ export function setFlash(
     sameSite: 'lax',
     secure: isProduction(),
     path: '/',
-    maxAge: 60_000,
+    maxAge: FLASH_MAX_AGE_MS,
   });
 }
 

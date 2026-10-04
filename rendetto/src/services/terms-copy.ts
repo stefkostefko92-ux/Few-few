@@ -5,24 +5,8 @@ import { viewHelpers } from '../http/view.js';
 import { translatorFor, type Locale } from '../i18n.js';
 import type { MailAttachment } from '../mail/mailer.js';
 import { ROOT } from '../paths.js';
-import { TRIAL_DAYS } from '../plans/plan.js';
-import { formatLifetimeTimes, priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
-import { REFUND_DAYS, WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
-import { LOGIN_RETENTION_DAYS } from '../retention.js';
 import { legalPath } from '../seo/paths.js';
-
-/** Числата в правните текстове — едни и същи за страницата на сайта и за копието към писмото. */
-export function legalNumbers(locale: Locale) {
-  return {
-    lifetimeTimes: formatLifetimeTimes(locale),
-    trialDays: TRIAL_DAYS,
-    prices: priceTable(),
-    vatPercent: VAT_BG_PERCENT,
-    withdrawalDays: WITHDRAWAL_DAYS,
-    refundDays: REFUND_DAYS,
-    loginRetentionDays: LOGIN_RETENTION_DAYS,
-  };
-}
+import { legalNumbers } from './legal-numbers.js';
 
 /**
  * Общите условия в сила днес като самостоятелен HTML файл — копието на траен носител към
