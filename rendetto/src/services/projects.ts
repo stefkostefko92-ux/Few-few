@@ -11,7 +11,7 @@ import { engine, isFurnitureType, specOf, type Spec } from './engine.js';
 import { dimensionsText } from './furniture.js';
 import { copyName, hasUnsafeChars } from './names.js';
 
-const MAX_PROJECTS = 500;
+export const MAX_PROJECTS = 500;
 const MAX_SPEC_BYTES = 32 * 1024;
 const NAME_MAX = 80;
 
