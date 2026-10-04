@@ -5,7 +5,7 @@
 // standard hole spacing. Drilling always comes from the manufacturers' documents (./data/*).
 import { HINGE_SYSTEMS } from './data/hinge-systems.js';
 import { SLIDE_SYSTEMS } from './data/slide-systems.js';
-import { registerDecors, registerRal, hasDecor, hasRal } from './materials.js';
+import { registerDecors, registerRal, hasDecor } from './materials.js';
 import { registerHingeSystems, registerHinges, registerHandles, registerSlideSystems, registerSlides, registerBedFittings } from './hardware.js';
 import { setSpecDefaults } from './model.js';
 
@@ -52,7 +52,7 @@ export function registerCatalog(data) {
   registerRal(catalog.ral);
   registerHingeSystems(HINGE_SYSTEMS);
   registerHinges(catalog.hingeFamilies);
-  // default handle first: a chrome 128 mm bar with a price, then the rest in catalog order
+  // default handle first: a 128 mm bar (a priced one only in chrome), then the rest in catalog order
   const drillable = catalog.handles.filter((h) => h.drillable);
   const first = drillable.findIndex((h) => h.type === 'bar' && h.spacing === 128 && (Number.isFinite(h.price) ? /хром|chrome/i.test(`${h.finish ?? ''} ${h.color ?? ''}`) : true));
   registerHandles(first > 0 ? [drillable[first], ...drillable.slice(0, first), ...drillable.slice(first + 1)] : drillable);
@@ -62,7 +62,6 @@ export function registerCatalog(data) {
   setSpecDefaults({
     carcassDecor: hasDecor('egger:W1000') ? 'egger:W1000' : undefined,
     frontDecor: hasDecor('egger:H1145') ? 'egger:H1145' : undefined,
-    frontRal: hasRal('RAL 9016') ? 'RAL 9016' : undefined,
   });
   return catalog;
 }

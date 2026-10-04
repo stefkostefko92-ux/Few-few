@@ -13,9 +13,11 @@ const RAIL_W = 100; // top rails of base cabinets
 const HINGE_CLEAR = 45; // shelves keep this distance (centre to centre) from hinges and their plates
 const RAIL_DROP = 90; // no shelves in the top 90 mm of a column with a hanging rail
 const MIN_PLINTH = 40; // lowest plinth board the generator makes
+const PIN_RISE = 4; // a shelf rests on its pins, this far above the axis of the pin holes
+const CARCASS = STOCK.pb18; // every carcass board; the back is HDF in grooves
 
 export function buildCarcass(ctx, o) {
-  const T = STOCK[o.stockCarcass ?? 'pb18'].thickness;
+  const T = CARCASS.thickness;
   const x0 = o.x0 ?? 0;
   const y0 = o.y0 ?? 0;
   const z0 = o.z0 ?? 0;
@@ -34,10 +36,9 @@ export function buildCarcass(ctx, o) {
   const top = o.top ?? 'between';
   const sideTop = top === 'over' ? c + Hc - T : c + Hc;
   const bc = o.bands?.carcass ?? 1;
-  const inGroove = (o.back ?? 'groove') === 'groove';
-  const backFront = inGroove ? z0 + GROOVE.inset + HDF_T : z0;
+  const backFront = z0 + GROOVE.inset + HDF_T;
   const zEnd = z0 + D;
-  const carc = { stock: o.stockCarcass ?? 'pb18', decor: o.carcassDecor, grain: hasGrain(o.carcassDecor), module: mod };
+  const carc = { stock: CARCASS.id, decor: o.carcassDecor, grain: hasGrain(o.carcassDecor), module: mod };
   const out = { panels: {}, columns: [], dims: { x0, y0, z0, W, H, D, T, c, Hc, plinthH, backFront } };
   const sideBands = { '+z': bc, ...(top === 'over' ? {} : { '+y': o.visibleTop ? bc : 0 }) };
 
@@ -73,7 +74,7 @@ export function buildCarcass(ctx, o) {
         out.topScrews.push([sx, c + Hc, zc]);
       }
     }
-    ctx.hw('worktopScrews', { name: WORKTOP_SCREW.bom, qty: 4, unit: 'бр.', group: 'Крепежи' });
+    ctx.hw('worktopScrews', { name: WORKTOP_SCREW.bom, qty: out.topScrews.length, unit: 'бр.', group: 'Крепежи' });
     Object.assign(out.panels, { railF: rf, railB: rb });
   }
   for (const h of horizontals) {
@@ -94,7 +95,7 @@ export function buildCarcass(ctx, o) {
   const inner1 = x0 + W - T;
   const avail = inner1 - inner0 - (n - 1) * T;
   const wsum = cols.reduce((a, cw) => a + (cw.weight ?? 1), 0);
-  const yInnerTop = top === 'none' ? c + Hc : c + Hc - T;
+  const yInnerTop = c + Hc - T;
   const yInnerBottom = c + T;
   const partitions = [];
   let x = inner0;
@@ -120,7 +121,7 @@ export function buildCarcass(ctx, o) {
     else for (const r of rails) confirmat(ctx, r, p, '+y', [[pc, c + Hc - T, (r.box.min[2] + r.box.max[2]) / 2]]);
   }
 
-  buildBacks(ctx, { x0, W, T, c, Hc, z0, inGroove, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm });
+  buildBacks(ctx, { x0, W, T, c, Hc, z0, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm });
   buildPlinth(ctx, { ...o, plinth }, { x0, y0, W, T, zEnd, plinthH, bc, mod, key, nm });
   if (o.mount === 'wall') ctx.hw('hangers', { name: 'Окачвач за горен шкаф (чифт)', qty: 1, unit: 'чифт', group: 'Обков' });
 
@@ -175,44 +176,42 @@ function placeShelves(ctx, a) {
     const target = zoneBottom + ((zoneTop - zoneBottom) * k) / (shelves + 1) - T / 2;
     let best = null;
     for (const y of usable) {
-      if (y + 4 + T > zoneTop - 40 || y < zoneBottom + 40) continue;
+      if (y + PIN_RISE + T > zoneTop - 40 || y < zoneBottom + 40) continue;
       if (used.some((u) => Math.abs(u - y) < T + 60)) continue;
-      if (col.hingeYs.some((hy) => Math.abs(y + 4 + T / 2 - hy) < HINGE_CLEAR)) continue;
-      if (best === null || Math.abs(y + 4 - target) < Math.abs(best + 4 - target)) best = y;
+      if (col.hingeYs.some((hy) => Math.abs(y + PIN_RISE + T / 2 - hy) < HINGE_CLEAR)) continue;
+      if (best === null || Math.abs(y + PIN_RISE - target) < Math.abs(best + PIN_RISE - target)) best = y;
     }
     if (best === null) {
       ctx.warn('warn', `${nm(`Колона ${i + 1}`)}: няма място за рафт ${k}.`);
       continue;
     }
     used.push(best);
-    const y = best + 4;
-    panel(ctx, { ...carc, key: key(`c${i + 1}shelf${k}`), name: nm(n > 1 ? `Рафт ${i + 1}.${k}` : `Рафт ${k}`), role: 'shelf', box: { min: [col.xa + 1, y, backFront + 1], max: [col.xb - 1, y + T, zEnd - 20] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, 0, 0.9], pinY: best, colIndex: i });
+    const y = best + PIN_RISE;
+    panel(ctx, { ...carc, key: key(`c${i + 1}shelf${k}`), name: nm(n > 1 ? `Рафт ${i + 1}.${k}` : `Рафт ${k}`), role: 'shelf', box: { min: [col.xa + 1, y, backFront + 1], max: [col.xb - 1, y + T, zEnd - 20] }, n: '+y', L: 'x', bands: { '+z': bc }, explode: [0, 0, 0.9], pinY: best });
     ctx.hw('pins', { name: 'Рафтоносач Ø5', qty: 4, unit: 'бр.', group: 'Обков' });
   }
 }
 
 function buildBacks(ctx, a) {
-  const { x0, W, T, c, Hc, z0, inGroove, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm } = a;
+  const { x0, W, T, c, Hc, z0, sideTop, sideL, sideR, bottom, topPart, top, partitions, n, mod, key, nm } = a;
   const into = GROOVE.depth - GROOVE.clearance;
   const gzc = z0 + GROOVE.inset + GROOVE.width / 2;
-  if (inGroove) {
-    groove(sideL, [x0 + T, c, gzc], [x0 + T, sideTop, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
-    groove(sideR, [x0 + W - T, c, gzc], [x0 + W - T, sideTop, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
-    groove(bottom, [x0 + T, c + T, gzc], [x0 + W - T, c + T, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
-    if (topPart) {
-      const over = top === 'over';
-      groove(topPart, [over ? x0 : x0 + T, c + Hc - T, gzc], [over ? x0 + W : x0 + W - T, c + Hc - T, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
-    }
+  groove(sideL, [x0 + T, c, gzc], [x0 + T, sideTop, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
+  groove(sideR, [x0 + W - T, c, gzc], [x0 + W - T, sideTop, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
+  groove(bottom, [x0 + T, c + T, gzc], [x0 + W - T, c + T, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
+  if (topPart) {
+    const over = top === 'over';
+    groove(topPart, [over ? x0 : x0 + T, c + Hc - T, gzc], [over ? x0 + W : x0 + W - T, c + Hc - T, gzc], GROOVE.width, GROOVE.depth, 'back-groove');
   }
-  const yb0 = inGroove ? c + T - into : c + 2;
-  const yb1 = inGroove && topPart ? c + Hc - T + into : c + Hc - 2;
+  const yb0 = c + T - into;
+  const yb1 = topPart ? c + Hc - T + into : c + Hc - 2; // under top rails the back ends just below them
   for (let i = 0; i < n; i++) {
-    const left = i === 0 ? (inGroove ? x0 + T - into : x0 + 2) : partitions[i - 1].box.min[0] + T / 2 + 1;
-    const right = i === n - 1 ? (inGroove ? x0 + W - T + into : x0 + W - 2) : partitions[i].box.min[0] + T / 2 - 1;
-    const zb = inGroove ? [z0 + GROOVE.inset, z0 + GROOVE.inset + HDF_T] : [z0 - HDF_T, z0];
+    const left = i === 0 ? x0 + T - into : partitions[i - 1].box.min[0] + T / 2 + 1;
+    const right = i === n - 1 ? x0 + W - T + into : partitions[i].box.min[0] + T / 2 - 1;
+    const zb = [z0 + GROOVE.inset, z0 + GROOVE.inset + HDF_T];
     panel(ctx, { stock: 'hdf3', decor: 'demo:white', grain: false, module: mod, key: key(`back${i + 1}`), name: nm(n > 1 ? `Гръб HDF ${i + 1}` : 'Гръб HDF'), role: 'back', box: { min: [left, yb0, zb[0]], max: [right, yb1, zb[1]] }, n: '+z', L: 'y', explode: [0, 0, -1.2] });
     // backs of several columns meet behind a partition and are nailed to it
-    if (!inGroove || n > 1) ctx.hw('nails', { name: 'Скоби/пирони за гръб HDF', qty: Math.ceil((2 * (right - left + yb1 - yb0)) / 150), unit: 'бр.', group: 'Крепежи' });
+    if (n > 1) ctx.hw('nails', { name: 'Скоби/пирони за гръб HDF', qty: Math.ceil((2 * (right - left + yb1 - yb0)) / 150), unit: 'бр.', group: 'Крепежи' });
   }
 }
 

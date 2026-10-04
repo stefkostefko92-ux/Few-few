@@ -1,11 +1,12 @@
 // Furniture types: parameter schema (drives the form), defaults, limits and the builder that turns the spec
 // into carcasses, beds or compositions of modules.
 import { buildCarcass } from './carcass.js';
-import { buildBed } from './bed.js';
+import { buildBed, bedOuter } from './bed.js';
 import { buildDesk } from './desk.js';
 import { holeThrough, mark } from './panel.js';
 import { STOCK, frontStock } from './materials.js';
 import { clamp, r1 } from './util.js';
+import { FRONT_GAP_Z } from './joinery.js';
 
 const R = (key, label, min, max, step, unit = 'mm') => ({ key, label, type: 'range', min, max, step, unit });
 const S = (key, label, options) => ({ key, label, type: 'seg', options });
@@ -111,17 +112,17 @@ function baseCabinet(ctx, s, at = {}) {
   const col = { shelves: fronts === 'drawers' ? 0 : s.shelves, doors: fronts === 'drawers' ? 0 : s.doors };
   if (fronts === 'drawers') Object.assign(col, { drawers: s.drawers, drawerZone: s.height - s.legs });
   if (fronts === 'mixed') Object.assign(col, { drawers: 1, drawerZone: 180 });
-  return buildCarcass(ctx, { ...common(s), ...at, W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'rails', back: 'groove', columns: [col] });
+  return buildCarcass(ctx, { ...common(s), ...at, W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'rails', columns: [col] });
 }
 
 function wallCabinet(ctx, s, at = {}) {
-  return buildCarcass(ctx, { ...common(s), kind: 'wall', ...at, W: s.width, H: s.height, D: s.depth, y0: at.y0 ?? s.mount, plinth: { type: 'none', h: 0 }, top: 'between', back: 'groove', mount: 'wall', columns: [{ shelves: s.shelves, doors: s.doors }] });
+  return buildCarcass(ctx, { ...common(s), kind: 'wall', ...at, W: s.width, H: s.height, D: s.depth, y0: at.y0 ?? s.mount, plinth: { type: 'none', h: 0 }, top: 'between', mount: 'wall', columns: [{ shelves: s.shelves, doors: s.doors }] });
 }
 
 export const BUILDERS = {
   base: (ctx, s) => baseCabinet(ctx, s),
   wall: (ctx, s) => wallCabinet(ctx, s),
-  tall: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'between', back: 'groove', visibleTop: true, columns: [{ shelves: s.shelves, doors: s.doors, drawers: s.drawers, drawerZone: s.drawers ? s.drawers * 180 : 0 }] }),
+  tall: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: [{ shelves: s.shelves, doors: s.doors, drawers: s.drawers, drawerZone: s.drawers ? s.drawers * 180 : 0 }] }),
   kitchen: (ctx, s) => {
     const n = s.modules;
     for (let i = 0; i < n; i++) {
@@ -146,27 +147,27 @@ export const BUILDERS = {
       const W = k === m - 1 ? s.width - x0 : Math.round((s.width * n) / s.columns);
       const doors = s.doorsPerColumn || (columnWidth(W, n) + 24 > 600 ? 2 : 1);
       const cols = Array.from({ length: n }, () => wardrobeColumn(s.layout, ci++, doors));
-      buildCarcass(ctx, { ...common(s), module: m > 1 ? `К${k + 1}` : '', x0, W, H: s.height, D: s.depth, plinth: { type: s.legs ? 'panel' : 'none', h: s.legs }, top: 'between', back: 'groove', visibleTop: true, columns: cols });
+      buildCarcass(ctx, { ...common(s), module: m > 1 ? `К${k + 1}` : '', x0, W, H: s.height, D: s.depth, plinth: { type: s.legs ? 'panel' : 'none', h: s.legs }, top: 'between', visibleTop: true, columns: cols });
       x0 += W;
     });
   },
-  chest: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', back: 'groove', columns: Array.from({ length: s.columns }, () => ({ drawers: s.drawers, drawerZone: s.height - s.legs - 18 })) }),
-  nightstand: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', back: 'groove', columns: [{ drawers: s.drawers, drawerZone: s.height - s.legs - 18 }] }),
+  chest: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', columns: Array.from({ length: s.columns }, () => ({ drawers: s.drawers, drawerZone: s.height - s.legs - 18 })) }),
+  nightstand: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', columns: [{ drawers: s.drawers, drawerZone: s.height - s.legs - 18 }] }),
   bed: (ctx, s) => buildBed(ctx, s),
   bookcase: (ctx, s) => {
     const plinth = { type: s.legs ? 'legs' : 'none', h: s.legs };
     const open = (n) => Array.from({ length: s.columns }, () => ({ shelves: n }));
     const zone = s.doorZone > 0 && s.height - s.legs - s.doorZone >= 350 ? s.doorZone : 0;
     if (s.doorZone > 0 && !zone) ctx.warn('info', 'Етажерката е твърде ниска за долен корпус с врати — направена е изцяло отворена.');
-    if (!zone) return buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth, top: 'between', back: 'groove', visibleTop: true, columns: open(s.shelves) });
+    if (!zone) return buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth, top: 'between', visibleTop: true, columns: open(s.shelves) });
     // two stacked carcasses: lower one with doors, open upper one screwed onto it (no confirmat clash at partitions)
     const doors = columnWidth(s.width, s.columns) + 24 > 600 ? 2 : 1;
     const lowH = s.legs + zone;
-    const lower = buildCarcass(ctx, { ...common(s), module: 'Д', W: s.width, H: lowH, D: s.depth, plinth, top: 'between', back: 'groove', columns: Array.from({ length: s.columns }, (_, i) => ({ shelves: 1, doors, hingeSide: i % 2 === 0 ? 'left' : 'right' })) });
-    const upper = buildCarcass(ctx, { ...common(s), module: 'Г', y0: lowH, W: s.width, H: s.height - lowH, D: s.depth, plinth: { type: 'none', h: 0 }, top: 'between', back: 'groove', visibleTop: true, columns: open(s.shelves) });
+    const lower = buildCarcass(ctx, { ...common(s), module: 'Д', W: s.width, H: lowH, D: s.depth, plinth, top: 'between', columns: Array.from({ length: s.columns }, (_, i) => ({ shelves: 1, doors, hingeSide: i % 2 === 0 ? 'left' : 'right' })) });
+    const upper = buildCarcass(ctx, { ...common(s), module: 'Г', y0: lowH, W: s.width, H: s.height - lowH, D: s.depth, plinth: { type: 'none', h: 0 }, top: 'between', visibleTop: true, columns: open(s.shelves) });
     joinStacked(ctx, lower, upper);
   },
-  tv: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', back: 'groove', columns: Array.from({ length: s.columns }, (_, i) => {
+  tv: (ctx, s) => buildCarcass(ctx, { ...common(s), W: s.width, H: s.height, D: s.depth, plinth: { type: s.legs ? 'legs' : 'none', h: s.legs }, top: 'over', columns: Array.from({ length: s.columns }, (_, i) => {
     const outer = i === 0 || i === s.columns - 1;
     if (!outer) return { shelves: 1, doors: 0 };
     return s.tvFronts === 'drawers' ? { drawers: 2, drawerZone: s.height - s.legs - 18 } : { shelves: 1, doors: 1, hingeSide: i === 0 ? 'left' : 'right' };
@@ -176,12 +177,12 @@ export const BUILDERS = {
     const sw = s.sideWidth;
     const mid = s.width - 2 * sw;
     const tall = { ...s, width: sw, height: s.height, depth: s.depth, legs: 100, doors: 1, drawers: 0, shelves: 5 };
-    buildCarcass(ctx, { ...common(s), module: 'Л', x0: 0, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', back: 'groove', visibleTop: true, columns: [{ shelves: tall.shelves, doors: 1, hingeSide: 'left' }] });
-    buildCarcass(ctx, { ...common(s), module: 'Д', x0: s.width - sw, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', back: 'groove', visibleTop: true, columns: [{ shelves: tall.shelves, doors: 1, hingeSide: 'right' }] });
+    buildCarcass(ctx, { ...common(s), module: 'Л', x0: 0, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: tall.shelves, doors: 1, hingeSide: 'left' }] });
+    buildCarcass(ctx, { ...common(s), module: 'Д', x0: s.width - sw, W: sw, H: s.height, D: s.depth, plinth: { type: 'legs', h: 100 }, top: 'between', visibleTop: true, columns: [{ shelves: tall.shelves, doors: 1, hingeSide: 'right' }] });
     const tvCols = mid > 1600 ? 3 : 2;
-    buildCarcass(ctx, { ...common(s), module: 'ТВ', x0: sw, W: mid, H: s.tvHeight, D: s.depth + 20, plinth: { type: 'legs', h: 100 }, top: 'over', back: 'groove', columns: Array.from({ length: tvCols }, (_, i) => (i === 1 && tvCols === 3 ? { shelves: 1 } : { drawers: 2, drawerZone: s.tvHeight - 100 - 18 })) });
+    buildCarcass(ctx, { ...common(s), module: 'ТВ', x0: sw, W: mid, H: s.tvHeight, D: s.depth + 20, plinth: { type: 'legs', h: 100 }, top: 'over', columns: Array.from({ length: tvCols }, (_, i) => (i === 1 && tvCols === 3 ? { shelves: 1 } : { drawers: 2, drawerZone: s.tvHeight - 100 - 18 })) });
     const shelfH = 350;
-    buildCarcass(ctx, { ...common(s), module: 'Р', x0: sw, y0: s.height - shelfH - 150, W: mid, H: shelfH, D: 300, plinth: { type: 'none', h: 0 }, top: 'between', back: 'groove', mount: 'wall', visibleTop: true, columns: Array.from({ length: Math.max(2, Math.round(mid / 600)) }, () => ({ shelves: 0 })) });
+    buildCarcass(ctx, { ...common(s), module: 'Р', x0: sw, y0: s.height - shelfH - 150, W: mid, H: shelfH, D: 300, plinth: { type: 'none', h: 0 }, top: 'between', mount: 'wall', visibleTop: true, columns: Array.from({ length: Math.max(2, Math.round(mid / 600)) }, () => ({ shelves: 0 })) });
   },
 };
 
@@ -219,13 +220,15 @@ function joinStacked(ctx, lower, upper) {
 // The kitchen worktop reaches 20–29 mm past the closed fronts (carcass, 1 mm gap, front), in whole centimetres.
 const WORKTOP_OVERHANG = 20;
 function worktopDepth(s) {
-  return Math.ceil((s.depth + 1 + STOCK[frontStock(s).stock].thickness + WORKTOP_OVERHANG) / 10) * 10;
+  return Math.ceil((s.depth + FRONT_GAP_Z + STOCK[frontStock(s).stock].thickness + WORKTOP_OVERHANG) / 10) * 10;
 }
 
 export function typeDims(type, s) {
   switch (type) {
-    case 'bed':
-      return { W: s.mattressW + 10 + 36, H: s.headHeight, D: s.mattressL + 10 + 36 };
+    case 'bed': {
+      const { W, D } = bedOuter(s);
+      return { W, H: s.headHeight, D };
+    }
     case 'kitchen':
       return { W: s.modules * s.moduleWidth, H: s.mount + s.wallHeight, D: worktopDepth(s) };
     case 'wall':

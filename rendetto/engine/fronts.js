@@ -1,9 +1,9 @@
 // Hinged doors and handles. Doors are full overlay on outer sides and half overlay on partitions; hinge cups are
 // drilled in the door back, mounting plates on the carcass panel on the 32 mm grid, handles through the front.
-import { panel, hole, holeThrough, mark, toUV } from './panel.js';
+import { panel, hole, holeThrough, mark } from './panel.js';
 import { r1, clamp, dimTxt, plural } from './util.js';
 import { hingeCount, hingeProduct, hingeSystemOf, handleModel, handleHoles, hingeLimits, solveOverlay, HINGE_LIMITS } from './hardware.js';
-import { SYSTEM, MIN_WEB, addHoleOnce, snapHingeY } from './joinery.js';
+import { SYSTEM, MIN_WEB, FRONT_GAP_Z, addHoleOnce, snapHingeY } from './joinery.js';
 
 const DENSITY = 650; // kg/m³, assumption for the door-weight estimate
 const HANDLE_KG = 0.3; // assumption
@@ -30,7 +30,7 @@ export function buildDoors(ctx, o, a) {
     : [{ x0: fl + gap / 2, w: half, hinge: 'left' }, { x0: fl + gap / 2 + half + gap, w: half, hinge: 'right' }];
   const ys = [];
   defs.forEach((dd, k) => {
-    const zD = zEnd + 1;
+    const zD = zEnd + FRONT_GAP_Z;
     const door = panel(ctx, {
       stock: fs.stock, decor: fs.decor, grain: frontGrain, module: mod, key: key(`c${i + 1}door${k + 1}`),
       name: nm(doors === 1 ? (n > 1 ? `Врата ${i + 1}` : 'Врата') : `Врата ${n > 1 ? `${i + 1}.` : ''}${dd.hinge === 'left' ? 'лява' : 'дясна'}`),
@@ -76,7 +76,6 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   if (!sol.exact) ctx.warn('warn', `${door.name}: наслагване ${dimTxt(wanted)} mm е извън обхвата на ${sys.name} — реално ${dimTxt(sol.overlay)} mm (C = ${dimTxt(sol.c)}, планка ${dimTxt(sol.plate)} mm).`);
   door.hinge = { variant, c: sol.c, plate: sol.plate, overlay: sol.overlay, wanted, system: sys.id };
   const mass = (Wd / 1000) * (Hd / 1000) * (door.T / 1000) * DENSITY + HANDLE_KG;
-  door.massKg = r1(mass);
   const lim = hingeLimits(sys);
   const cnt = hingeCount(mass, Hd, sys);
   if (mass > lim.maxMassKg || Hd > lim.maxHeight) ctx.warn('error', `${door.name}: ${Math.round(Hd)} mm, ≈ ${dimTxt(mass)} kg — извън таблицата на производителя (до ${lim.maxHeight} mm и ${dimTxt(lim.maxMassKg)} kg).`);
@@ -112,10 +111,7 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
     for (const dy of [-f.spacing / 2, f.spacing / 2]) {
       const w = [cupX + sgn * f.offset, y + dy, zBack];
       if (dowel) hole(door, w, f.dowel.d, f.dowel.depth, 'cup-dowel', meta);
-      else {
-        const [u, v] = toUV(door, w);
-        door.features.push({ type: 'mark', u, v, world: w, kind: 'cup-screw', note: f.screw, ...meta });
-      }
+      else mark(door, w, 'cup-screw', { note: f.screw, ...meta });
     }
     for (const dy of sys.plate.holes) addHoleOnce(carcassPanel, [faceX, y + dy, pz], sys.plate.d, sys.plate.depth, 'plate', { hw: 'plate', ref: family.id, refName: family.name, label: `${sys.brand} планка` }, onPartition);
   }
@@ -190,7 +186,6 @@ export function mountHandle(ctx, o, front, { orientation, kind }) {
     if (kind === 'wall') cy = min[1] + Math.min(130, hgt / 3);
     else if (hgt < 900) cy = max[1] - Math.min(130, hgt / 3);
     else cy = clamp(1050, min[1] + 200, max[1] - 200);
-    if (h.type === 'profile' || h.type === 'edge') horizontal = false;
   } else {
     cx = (min[0] + max[0]) / 2;
     cy = hgt < 260 ? (min[1] + max[1]) / 2 : max[1] - 70;
@@ -223,7 +218,6 @@ export function mountHandle(ctx, o, front, { orientation, kind }) {
   } else {
     for (const p of pts) holeThrough(front, p, h.drill ?? 5, 'handle', meta);
   }
-  front.handle = { x: cx, y: cy, horizontal, model: h };
   ctx.symbols.push({ type: 'handle', partId: front.id, x: cx, y: cy, z: max[2], horizontal, model: h, module: front.module });
   ctx.hw(`handle:${h.id}`, { name: h.name, qty: 1, unit: 'бр.', group: 'Обков', sku: h.sku, brand: h.brand, price: h.price, currency: h.currency, url: h.url, shop: h.shop });
 }

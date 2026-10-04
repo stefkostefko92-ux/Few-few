@@ -1,5 +1,5 @@
-// Hinge drilling systems from the manufacturers' official documents (collected in catalog/hinge-drilling.json;
-// every value there carries its source and page). Overlay model, valid for all four systems:
+// Hinge drilling systems from the manufacturers' official documents: the documents are in SRC (each system's
+// `sources`), the pages in the notes next to the values. Overlay model, valid for all four systems:
 //   overlay F = C + base[variant] − plate        (C = door edge to cup rim, plate = mounting-plate distance/height)
 // Blum: F = 11 + TB − D − K (K = 0 / 9.5 / 18), derived from Blum's tables and checked against all 40 cells.
 // Hettich: F = C + B − A (B = 12.5 full / 3 half). GTV: F = K + 12 / 5 / −4 − H (checked against 18 table cells).

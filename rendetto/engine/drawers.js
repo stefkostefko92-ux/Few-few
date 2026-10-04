@@ -4,7 +4,7 @@
 import { panel, groove, edgeHoles } from './panel.js';
 import { r1, dimTxt } from './util.js';
 import { slideModel, slideSystemOf, slideLength } from './hardware.js';
-import { GROOVE, HDF_T, CONFIRMAT, confirmat, addHoleOnce } from './joinery.js';
+import { GROOVE, HDF_T, CONFIRMAT, FRONT_GAP_Z, confirmat, addHoleOnce } from './joinery.js';
 import { mountHandle } from './fronts.js';
 
 const TOP_GAP = 28; // box top below the front top, room for the slide and the drawer above
@@ -25,8 +25,8 @@ export function buildDrawers(ctx, o, a) {
     return;
   }
   const BOX_T = sys.boxSide;
-  // outer faces of the box sides
-  const side = sys.mount === 'under' ? (xb - xa - (xb - xa - sys.innerWidthMinus) - 2 * BOX_T) / 2 : sys.sideClearance;
+  // outer faces of the box sides: concealed slides set the inner width LW − innerWidthMinus, whatever the column width
+  const side = sys.mount === 'under' ? (sys.innerWidthMinus - 2 * BOX_T) / 2 : sys.sideClearance;
   const xl = xa + side;
   const xr = xb - side;
   if (xr - xl - 2 * BOX_T < 100) {
@@ -45,7 +45,7 @@ export function buildDrawers(ctx, o, a) {
     const front = panel(ctx, {
       stock: fs.stock, decor: fs.decor, grain: frontGrain, module: mod, key: `${dkey}front`,
       name: nm(`Чекмедже ${drawers > 1 ? `${k + 1} ` : ''}фронт${n > 1 ? ` (кол. ${i + 1})` : ''}`),
-      role: 'drawer-front', box: { min: [fl + gap / 2, y0, zEnd + 1], max: [fr - gap / 2, y1, zEnd + 1 + fT] }, n: '-z', L: 'x',
+      role: 'drawer-front', box: { min: [fl + gap / 2, y0, zEnd + FRONT_GAP_Z], max: [fr - gap / 2, y1, zEnd + FRONT_GAP_Z + fT] }, n: '-z', L: 'x',
       bands: bf ? { '+x': bf, '-x': bf, '+y': bf, '-y': bf } : {}, explode: [0, 0, 2.2],
     });
     mountHandle(ctx, o, front, { orientation: 'horizontal', kind: o.kind });

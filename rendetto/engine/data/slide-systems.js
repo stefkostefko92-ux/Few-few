@@ -1,7 +1,8 @@
-// Drawer slide systems from the manufacturers' documents (collected in catalog/slide-drilling.json). Carcass hole
-// positions are from the front edge of the cabinet side, by nominal length NL. Values marked "наш избор" are the
+// Drawer slide systems from the manufacturers' documents (each system's `source`, the pages in the notes). Carcass
+// hole positions are from the front edge of the cabinet side, by nominal length NL. Values marked "наш избор" are the
 // generator's own choices where the document is silent; they are shown as such in the drawings.
 
+const TANDEM_NL = [270, 300, 350, 400, 450, 500, 550, 600];
 const tandemHoles = (nl) => (nl <= 270 ? [37, 69, 133] : nl <= 380 ? [37, 69, 261] : nl <= 420 ? [37, 69, 229] : nl <= 550 ? [37, 69, 261] : [37, 69, 261, 325]);
 
 export const SLIDE_SYSTEMS = [
@@ -29,8 +30,8 @@ export const SLIDE_SYSTEMS = [
     brand: 'Blum',
     mount: 'under',
     innerWidthMinus: 42, // SKW = LW − 42
-    lengths: [270, 300, 350, 400, 450, 500, 550, 600],
-    holes: Object.fromEntries([270, 300, 350, 400, 450, 500, 550, 600].map((nl) => [nl, tandemHoles(nl)])),
+    lengths: TANDEM_NL,
+    holes: Object.fromEntries(TANDEM_NL.map((nl) => [nl, tandemHoles(nl)])),
     hole: { d: 5, depth: 13, note: 'за системен винт Ø6 × 14,5 (Blum 661.1450.HG); Ø5 × 13 — наш избор по системата 32 mm' },
     axisAboveBottom: 9.5, // ос на винтовете над долната страна на дъното: 37 − 27,5 (TD-127/3 стр. 5)
     drawerLength: (nl) => nl - 10,

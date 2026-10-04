@@ -78,7 +78,7 @@ export function withType(spec, type) {
 
 export function buildModel(input) {
   const spec = normalizeSpec(input);
-  const ctx = createCtx(spec);
+  const ctx = createCtx();
   BUILDERS[spec.type](ctx, spec);
   checkModel(ctx, spec);
   return {

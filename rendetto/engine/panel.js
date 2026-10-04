@@ -5,11 +5,10 @@ import { IDX, AX, sub, dot, neg, crossDir, r1 } from './util.js';
 
 export const THROUGH_EXTRA = 1.5; // through-drill depth below the sheet, mm
 
-export function createCtx(spec) {
+export function createCtx() {
   let n = 1;
   const hwLines = new Map();
   return {
-    spec,
     parts: [],
     warnings: [],
     groups: [], // movable groups for 3D: doors (swing) and drawers (slide)
@@ -73,7 +72,7 @@ export function toUV(part, p) {
 
 export function hole(part, p, d, depth, kind, meta = {}) {
   const [u, v] = toUV(part, p);
-  const f = { type: 'hole', u, v, d, depth: r1(depth), kind, face: 'A', world: p, ...meta };
+  const f = { type: 'hole', u, v, d, depth: r1(depth), kind, world: p, ...meta };
   part.features.push(f);
   return f;
 }
@@ -93,7 +92,7 @@ export function holeThrough(part, p, d, kind, meta = {}) {
 export function groove(part, p1, p2, w, depth, kind = 'groove') {
   const [u1, v1] = toUV(part, p1);
   const [u2, v2] = toUV(part, p2);
-  const f = { type: 'groove', u1, v1, u2, v2, w, depth, kind, face: 'A', world: [p1, p2] };
+  const f = { type: 'groove', u1, v1, u2, v2, w, depth, kind, world: [p1, p2] };
   part.features.push(f);
   return f;
 }
@@ -136,8 +135,4 @@ export function edgeLabels(part) {
     return dir[1] === 'x' ? `${base} (гледано отпред)` : base;
   };
   return { u0: name(neg(eu)), u1: name(eu), v0: name(neg(ev)), v1: name(ev) };
-}
-
-export function partVolume(part) {
-  return (part.L / 1000) * (part.W / 1000) * (part.T / 1000);
 }

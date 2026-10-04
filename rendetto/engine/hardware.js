@@ -1,6 +1,8 @@
 // Hardware models used by the generators: hinge systems (cup, cup fixings, mounting plate), handles, drawer
 // slides and bed fittings. Catalog products from Bulgarian shops are registered at runtime and point to a system
-// whose drilling pattern comes from the manufacturer's documentation (see catalog/*.json → sources).
+// whose drilling pattern comes from the manufacturer's documentation (engine/data/*.js: the documents in each
+// system's `sources`/`source`, the pages in the notes next to the values).
+import { clamp, r1 } from './util.js';
 
 const systems = new Map(); // hinge drilling systems by id
 const hingeProducts = new Map();
@@ -35,7 +37,6 @@ export const hingeList = () => [...hingeProducts.values()];
 export const handleList = () => [...handles.values()];
 export const slideList = () => [...slides.values()];
 export const bedFittingList = () => [...bedFittings.values()];
-export const hingeSystemList = () => [...systems.values()];
 
 export function hingeProduct(id) {
   return hingeProducts.get(id) ?? hingeProducts.values().next().value ?? null;
@@ -100,8 +101,8 @@ export function solveOverlay(sys, variant, wanted) {
     if (!best || off < best.off) best = { plate, c, off };
     if (off === 0) break;
   }
-  const c = Math.min(cMax, Math.max(cMin, best.c));
-  return { c: Math.round(c * 10) / 10, plate: best.plate, overlay: Math.round((c + base - best.plate) * 10) / 10, exact: best.off === 0 };
+  const c = clamp(best.c, cMin, cMax);
+  return { c: r1(c), plate: best.plate, overlay: r1(c + base - best.plate), exact: best.off === 0 };
 }
 
 // The longest documented nominal length that fits the available inner depth.

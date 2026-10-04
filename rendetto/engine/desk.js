@@ -1,10 +1,9 @@
 // Desk: 25 mm top on a gable and a drawer pedestal (or two gables), modesty panel at the back.
 import { buildCarcass } from './carcass.js';
-import { panel, hole, holeThrough, edgeHoles } from './panel.js';
+import { panel, hole } from './panel.js';
 import { hasGrain, STOCK } from './materials.js';
+import { PILOT, confirmat } from './joinery.js';
 
-const PILOT = { d: 3, depth: 10 };
-const CONFIRMAT = { face: 7, edge: 5, edgeDepth: 50 };
 const MODESTY = { h: 350, z: 60 };
 const INSET = 30; // gables and pedestal set back from the top edges
 
@@ -30,7 +29,7 @@ export function buildDesk(ctx, s, common) {
   } else {
     const left = s.pedestal === 'left';
     mkGable(left ? W - T : 0, left ? 'Страница дясна' : 'Страница лява', left ? '-x' : '+x');
-    pedestal = buildCarcass(ctx, { ...common, module: 'Ш', x0: left ? 0 : W - pedW, z0: INSET, W: pedW, H: H - TT, D: D - 2 * INSET, plinth: { type: 'none', h: 0 }, top: 'rails', back: 'groove', columns: [{ drawers: s.drawers, drawerZone: H - TT }] });
+    pedestal = buildCarcass(ctx, { ...common, module: 'Ш', x0: left ? 0 : W - pedW, z0: INSET, W: pedW, H: H - TT, D: D - 2 * INSET, plinth: { type: 'none', h: 0 }, top: 'rails', columns: [{ drawers: s.drawers, drawerZone: H - TT }] });
   }
 
   // desk top ↔ gables: steel corner brackets, pilots on the top underside and on the gable inner face
@@ -62,9 +61,6 @@ export function buildDesk(ctx, s, common) {
   ];
   for (const e of ends) {
     const pts = [ym0 + 60, H - TT - 60].map((y) => [e.x, y, MODESTY.z + T / 2]);
-    for (const p of pts) holeThrough(e.through, p, CONFIRMAT.face, 'confirmat', { hw: 'confirmat' });
-    edgeHoles(modesty, e.dir, pts, CONFIRMAT.edge, CONFIRMAT.edgeDepth, 'confirmat', { label: 'конфирмат 7×50, за резбата' });
-    ctx.hw('confirmat', { name: 'Конфирмат 7×50', qty: pts.length, unit: 'бр.', group: 'Крепежи' });
+    confirmat(ctx, e.through, modesty, e.dir, pts);
   }
-  return { dims: { W, H, D } };
 }
