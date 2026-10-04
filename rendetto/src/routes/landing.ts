@@ -95,7 +95,8 @@ for (const page of LEGAL) {
       }
       const canonical = `${config().PUBLIC_BASE_URL}${legalPath(locale, page)}`;
       const title = translatorFor(locale)(`legal.${page}Title`);
-      publicPage(res, locale, `legal/${page}`, {
+      publicPage(res, locale, 'legal/page', {
+        page,
         canonical,
         alternates: alternates((l) => legalPath(l, page)),
         privacyEmail: config().PRIVACY_EMAIL,
