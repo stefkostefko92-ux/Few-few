@@ -73,11 +73,6 @@ export async function createUpgradeRequest(
       where: { userId: user.id, createdAt: { gt: addDays(now, -1) } },
     });
     if (recent >= ORDERS_PER_DAY) return null;
-    const replaced = await tx.upgradeRequest.updateManyAndReturn({
-      where: { userId: user.id, status: 'OPEN' },
-      data: { status: 'CANCELLED', handledAt: now, handledByLabel: LABEL.superseded },
-      select: { id: true },
-    });
     const order = await tx.upgradeRequest.create({
       data: {
         userId: user.id,
@@ -90,6 +85,17 @@ export async function createUpgradeRequest(
         termsVersion: LEGAL_UPDATED.terms,
         createdAt: now,
       },
+    });
+    // Заменените поръчки помнят коя ги е заменила: повторното писмо от поддръжката казва същото като първото.
+    const replaced = await tx.upgradeRequest.updateManyAndReturn({
+      where: { userId: user.id, status: 'OPEN', id: { not: order.id } },
+      data: {
+        status: 'CANCELLED',
+        handledAt: now,
+        handledByLabel: LABEL.superseded,
+        supersededById: order.id,
+      },
+      select: { id: true },
     });
     return { order, replaced: replaced.map((row) => row.id) };
   });
@@ -227,7 +233,11 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
         },
       ],
     },
-    include: { user: true, planChanges: { where: { note: LABEL.withdrawal }, take: 1 } },
+    include: {
+      user: true,
+      planChanges: { where: { note: LABEL.withdrawal }, take: 1 },
+      supersedes: { select: { id: true }, orderBy: { createdAt: 'asc' } },
+    },
     take: 50,
   });
   let sent = 0;
@@ -244,7 +254,13 @@ export async function resendOrderMail(now: Date = new Date()): Promise<number> {
         });
         sent += 1;
       }
-    } else if (await sendOrderConfirmation(order, order.user)) {
+    } else if (
+      await sendOrderConfirmation(
+        order,
+        order.user,
+        order.supersedes.map((row) => row.id),
+      )
+    ) {
       await prisma.upgradeRequest.update({
         where: { id: order.id },
         data: { confirmationSentAt: now },

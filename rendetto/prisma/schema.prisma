@@ -229,16 +229,16 @@ enum BuyerType {
 /// Поръчка на Premium/Lifetime (със задължение за плащане). Цената се смята на сървъра от
 /// ценоразписа в момента на поръчката; договорът се сключва с потвърждението по имейл веднага след нея.
 model UpgradeRequest {
-  id                    String        @id @default(cuid())
+  id                    String           @id @default(cuid())
   userId                String
-  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// m1 | m3 | m6 | m12 | lifetime
   option                String
   months                Int?
   /// без ДДС, цели евроценти
   listPriceCents        Int
   message               String?
-  buyerType             BuyerType     @default(CONSUMER)
+  buyerType             BuyerType        @default(CONSUMER)
   /// Изричното искане на потребителя планът да започне преди края на срока за отказ (неотметната отметка).
   earlyStartRequestedAt DateTime?
   /// Версията на общите условия, приети с поръчката (LEGAL_UPDATED.terms).
@@ -252,15 +252,20 @@ model UpgradeRequest {
   /// Какво стана с плана при отказа: open | reverted | manual — решено и записано при самия отказ.
   /// null = отказ отпреди записа (изходът се извежда от историята, plans/withdrawal.ts).
   withdrawalOutcome     String?
-  status                RequestStatus @default(OPEN)
+  status                RequestStatus    @default(OPEN)
   handledById           String?
   handledByLabel        String?
   handledAt             DateTime?
-  createdAt             DateTime      @default(now())
+  /// Поръчката, която е заменила тази (отменена с @superseded) — за повторното писмо на поддръжката.
+  supersededById        String?
+  supersededBy          UpgradeRequest?  @relation("Supersedes", fields: [supersededById], references: [id], onDelete: SetNull)
+  supersedes            UpgradeRequest[] @relation("Supersedes")
+  createdAt             DateTime         @default(now())
   planChanges           PlanChange[]
 
   @@index([status, createdAt])
   @@index([userId])
+  @@index([supersededById])
 }
 
 /// Проект = една мебел. Спецификацията е единственият източник на истината; изходите се смятат от нея.

@@ -45,6 +45,33 @@ test('a new order replaces the open one: the customer and the team are told whic
   assert.match(terms.content, /<!doctype html>[\s\S]*Карбон Стелт ЕДПК/i);
 });
 
+test('a confirmation that did not go out is resent still naming the order it replaced', async () => {
+  const email = 'replace-resend@example.test';
+  const { c, row: first } = await placeOrder(email, { option: 'm1', buyer: 'consumer' });
+  const second = await c.post('/account/plan/request', {
+    _csrf: await sessionCsrf(c, '/account/plan'),
+    option: 'm6',
+    buyer: 'consumer',
+  });
+  assert.equal(second.status, 302);
+  const replacing = await prisma.upgradeRequest.findFirstOrThrow({
+    where: { user: { email }, status: 'OPEN' },
+  });
+  const replaced = await prisma.upgradeRequest.findUniqueOrThrow({ where: { id: first.id } });
+  assert.deepEqual([replaced.status, replaced.supersededById], ['CANCELLED', replacing.id]);
+
+  // SMTP refused the confirmation: nothing marked as sent, and the order is older than 10 minutes
+  await prisma.upgradeRequest.update({
+    where: { id: replacing.id },
+    data: { confirmationSentAt: null, createdAt: new Date(Date.now() - 11 * 60_000) },
+  });
+  forgetMailTo(email);
+  assert.ok((await resendOrderMail()) >= 1);
+  const confirmation = await mailTo(email, /Потвърждение на поръчката/);
+  assert.match(confirmation.text, new RegExp(`№ ${replacing.id}`));
+  assert.match(confirmation.text, new RegExp(`заменя поръчка № ${first.id}, която е отменена`));
+});
+
 test('a receipt that did not go out is resent with the outcome stored at the withdrawal', async () => {
   const { actor } = await staff('MANAGER', 'mail.manager@example.test');
   const email = 'resend-manual@example.test';
