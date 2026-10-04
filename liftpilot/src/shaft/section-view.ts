@@ -210,7 +210,7 @@ function cross(P: (x: number, z: number) => Pt, x0: number, z0: number, x1: numb
 
 
 /** Stiles of the car frame in the section: at the rails' axis, or one at each rail's tip on a cantilever sling. */
-const stilesOf = (L: Layout): number[] =>
+export const stilesOf = (L: Layout): number[] =>
   L.frame.kind === 'central' ? [L.frame.axis] : L.rails.filter((r) => r.kind === 'car').map((r) => r.y + (r.dir === 'back' ? 55 : -55));
 
 /** The top of the car dashed at the floor level zf: roof, operators, crosshead, balustrade (its highest position). */

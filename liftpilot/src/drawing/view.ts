@@ -27,6 +27,8 @@ export interface ViewResult {
   extent: Box;
   /** the editable dimensions (the sheets ignore them) */
   hits: Hit[];
+  /** the shapes of each entity, in their order (a CAD file puts each on the layer of its entity) */
+  parts: Shape[][];
 }
 
 function geometry(e: Entity, place: Place): Shape | null {
@@ -53,12 +55,13 @@ export function shapeBox(s: Shape): Box {
 }
 
 export function renderView(entities: readonly Entity[], place: Place): ViewResult {
-  const geo: Shape[] = [], notes: Shape[] = [], hits: Hit[] = [];
+  const geo: Shape[] = [], notes: Shape[] = [], hits: Hit[] = [], own: Shape[][] = entities.map(() => []);
   let edges: Box | null = null;
-  for (const e of entities) {
+  for (const [i, e] of entities.entries()) {
     const g = geometry(e, place);
     if (!g) continue;
     geo.push(g);
+    own[i] = [g];
     // axes run on past the drawing: the dimension rows start from the object, not from them
     if (!(e.e === 'line' && e.st === 'axis')) edges = union(edges, shapeBox(g));
   }
@@ -75,19 +78,22 @@ export function renderView(entities: readonly Entity[], place: Place): ViewResul
     else if (e.e === 'tag') parts[i] = tag(toPaper(place, e.at), e.text, e.to ? toPaper(place, e.to) : null);
     for (const s of parts[i]) if (s.t !== 'line') taken.push(shapeBox(s));
   });
+  const room = rowsRoom(entities);
   entities.forEach((e, i) => {
     if (e.e !== 'chain') return;
     const edit = e.c.edit;
     parts[i] = chainShapes(e.c, place, E, edit ? (s, k, value) => {
       const ed = edit[k];
       if (ed) hits.push({ box: grow(shapeBox(s), 0.5), edit: ed, value: ed.value ?? value });
-    } : undefined, taken);
+    } : undefined, taken, room);
   });
-  notes.push(...parts.flat());
+  // the lettering over every line of the annotations, so that a line crossing it stops at its band of paper
+  for (const s of parts.flat()) if (s.t !== 'text') notes.push(s);
+  for (const s of parts.flat()) if (s.t === 'text') notes.push(s);
   const shapes = [...geo, ...notes];
   let extent: Box | null = null;
   for (const s of shapes) extent = union(extent, shapeBox(s));
-  return { shapes, edges: E, extent: extent ?? E, hits };
+  return { shapes, edges: E, extent: extent ?? E, hits, parts: parts.map((p, i) => (p.length ? p : own[i])) };
 }
 
 /** A reference in a circle with its leader, sized on paper. */

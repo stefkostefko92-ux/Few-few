@@ -53,14 +53,17 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   // dimensions: the support's height (the sheave's axis follows it), a profile, a frame's or a plinth's length, the
   // beams' span between the walls
   const right = Math.max(dimsRight(G, span), after === null ? -Infinity : after + 260);
-  if (top > 0.5) out.push(chain({ dir: 'y', pts: [0, top], at: right, text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.height')] }));
+  // from the support's end nearest them: the last mount's shims or plate, a frame's or a plinth's end (beams from wall
+  // to wall run under them)
+  const end = s.kind === 'beams' ? null : span ? G.sheaveAt + span[1] : Math.max(...mounts) + (s.kind === 'plates' ? hp : hm);
+  if (top > 0.5) out.push(chain({ dir: 'y', pts: [0, top], at: right, from: [end, end], text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.height')] }));
   if (hasProfile(s)) {
     const h = PROFILES[profileOf(s)].h;
-    out.push(chain({ dir: 'y', pts: [top - h, top], at: right + 260, text: [`${profileOf(s)} {v}`], edit: [profilePick(s)] }));
+    out.push(chain({ dir: 'y', pts: [top - h, top], at: right + 260, from: [end, end], text: [`${profileOf(s)} {v}`], edit: [profilePick(s)] }));
   }
   // over the room past the machine's frame, and past dx with a diverting pulley (room-view.ts)
   const row = M.Dp > 0 ? 2 : 1;
-  if (span) out.push(chain({ dir: 'x', pts: [G.sheaveAt + span[0], G.sheaveAt + span[1]], side: 'top', row, text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.length')] }));
+  if (span) out.push(chain({ dir: 'x', pts: [G.sheaveAt + span[0], G.sheaveAt + span[1]], side: 'top', row, from: [top, top], text: [`{v} ${NAME[s.kind]}`], edit: [E('sup.length')] }));
   if (s.kind === 'beams') {
     const along = Math.abs(G.uy) > 0.999 ? 'room.D' : Math.abs(G.ux) > 0.999 ? 'room.W' : null;
     out.push(chain({ dir: 'x', pts: [r0, r1], side: 'top', row, text: ['Luce putrelle {v}'], edit: [along ? E(along) : null] }));

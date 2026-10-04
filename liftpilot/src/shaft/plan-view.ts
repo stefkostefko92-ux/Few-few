@@ -12,6 +12,7 @@ import { headBox, headOf, headRail, mainBox, type WallBox } from './head';
 import { governorPlan } from './plan-governor';
 import { landingOf, shiftAxes } from './landing';
 import { onWall, quad, walls } from './plan-walls';
+import { AXIS_OVER } from './plan-from';
 import { cwPlanCode, genericBracketPlan, panevSupportPlan, specialPlanLabel } from './plan-staffe';
 import { CAR_PANEL, GROOVE, LANDING_PANEL, carTracks, landingTracks, trackPlanes, type Tracks } from './sill';
 import { KV_VERT } from './norme-vert';
@@ -116,11 +117,13 @@ function carFrame(L: Layout): Entity[] {
   return [rect(f.axis + s * 45, y0, f.axis + s * 105, y1, 'thin', 'paper'), rect(f.axis + s * 115, y0, f.axis + s * 175, y1, 'thin', 'paper')];
 }
 
-/** Counterweight: frame with the filler weights, and the bridge bracket of a side counterweight. */
+/** Counterweight: frame with the filler weights, its name along it, and the bridge bracket of a side counterweight. */
 function counterweight(L: Layout): Entity[] {
   const c = L.cw, out: Entity[] = [rect(c.x, c.y, c.x + c.w, c.y + c.h, 'outline', 'cw')];
-  const inset = 18;
+  const inset = 18, upright = c.h >= c.w;
   if (c.w > 2 * inset && c.h > 2 * inset) out.push(rect(c.x + inset, c.y + inset, c.x + c.w - inset, c.y + c.h - inset, 'thin'));
+  out.push({ e: 'text', at: upright ? [c.x + c.w / 2 + 30, c.y + c.h / 2] : [c.x + c.w / 2, c.y + c.h / 2 - 30], text: 'CONTRAPPESO', size: 1.8, angle: upright ? 90 : 0,
+    align: 'c', halo: true, fit: Math.max(c.w, c.h) - 120 });
   if (L.bridge) {
     const b = L.bridge, left = L.cwSide === 'left';
     out.push(rect(left ? b.x - 25 : b.x, b.y0, left ? b.x : b.x + 25, b.y1, 'steel'));
@@ -130,7 +133,7 @@ function counterweight(L: Layout): Entity[] {
 
 /** Axes of the car (rails and centre) and of the counterweight, dash-dot, past the walls. */
 function axes(L: Layout): Entity[] {
-  const { W, D, wall: T } = L.inputs, over = T + 250, out: Entity[] = [], f = L.frame;
+  const { W, D, wall: T } = L.inputs, over = T + AXIS_OVER, out: Entity[] = [], f = L.frame;
   if (f.kind === 'central') out.push(line([-over, f.axis], [W + over, f.axis], 'axis'));
   else {
     // cantilever: the rails' axis along their wall, and the middle between them across the shaft

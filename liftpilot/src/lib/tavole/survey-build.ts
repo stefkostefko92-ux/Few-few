@@ -42,7 +42,7 @@ export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
   SPECS.forEach((s, i) => {
     const area = drawingArea(true), v = surveyView(d, s.k, inset(area, 8, 8, 8, 8), M);
     if (!v) throw new Error('no machine room');
-    const shapes = [...v.r.shapes, ...(s.k === 'plan' ? roomMarks(v.G, v.place, v.r.edges) : [])];
+    const shapes = [...v.r.shapes, ...(s.k === 'plan' ? roomMarks(v.G, v.place, v.r.extent) : [])];
     out.push({ w: A4.w, h: A4.h, shapes: [...frame(), ...shapes, ...sheetTitle(s.title, s.subtitle), scaleLabel(v.place.scale, true), ...strip(meta(i + 2))] });
     sheets.push({ title: s.title, scale: v.place.scale });
     hits.push(v.r.hits);

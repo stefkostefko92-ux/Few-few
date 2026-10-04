@@ -6,7 +6,7 @@
 // the next ones moved along x only. One layer per kind of part; dimensions drawn as lines, arrowheads and texts, so
 // that every CAD program shows them the same way. The plan of a shaft design alone here, every view of a project in
 // project.ts.
-import { chainShapes, renderView, type Entity, type Place, type Pt, type Shape } from '@/drawing';
+import { renderView, type Entity, type Place, type Pt, type Shape } from '@/drawing';
 import { planDims, planEntities, type Layout } from '@/shaft';
 import { acad } from './acad';
 
@@ -74,14 +74,15 @@ export function cadDocument(views: readonly CadView[], title: string, version: a
   let cursor: number | null = null;
   const text = version < acad.ACadVersion.AC1021 ? cp1252 : (t: string): string => t;
   views.forEach((v, i) => {
-    const place: Place = { scale: v.scale, ox: 0, oy: 0 }, { edges, extent } = renderView(v.entities, place);
+    // the view as the sheets lay it out (the values where the sheets put them), each entity on its layer
+    const place: Place = { scale: v.scale, ox: 0, oy: 0 }, { extent, parts } = renderView(v.entities, place);
     // the first view where its coordinates are, the next ones after it along x
     const dx = cursor === null ? 0 : cursor - extent.x0 * v.scale;
     const emit = writer(add, v.scale, dx, text);
-    for (const e of v.entities) {
+    v.entities.forEach((e, k) => {
       const l = layerOf(e);
-      for (const s of e.e === 'chain' ? chainShapes(e.c, place, edges) : renderView([e], place).shapes) emit(s, l);
-    }
+      for (const s of parts[k] ?? []) emit(s, l);
+    });
     const lines = [v.title, `Scala di stampa 1:${v.scale}`, ...(i === 0 && title ? [title] : [])];
     lines.forEach((text, k) => emit({ t: 'text', at: [extent.x0, extent.y0 - 8 - 5 * k], text, size: k ? 2.5 : 3.5, cond: false }, 'TESTI'));
     cursor = extent.x1 * v.scale + dx + GAP;

@@ -46,9 +46,10 @@ export function legendColumn(items: readonly LegendItem[], area: Box, width: num
 /** Floors served by each entrance, as the plans label their sides. */
 export function servedBy(L: Layout): { wall: Wall; text: string }[] {
   const V = L.inputs.vertical;
-  return L.doors.map((d) => {
+  return L.doors.flatMap((d) => {
     const labels = V.floors.filter((f) => f.door.includes(d.side)).map((f) => f.label);
-    return { wall: d.wall, text: `LATO FERMAT${labels.length > 1 ? 'E' : 'A'} "${labels.join(', ')}"` };
+    // an entrance no floor opens on has no side to name
+    return labels.length ? [{ wall: d.wall, text: `LATO FERMAT${labels.length > 1 ? 'E' : 'A'} "${labels.join(', ')}"` }] : [];
   });
 }
 

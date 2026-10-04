@@ -2,7 +2,7 @@
 // the DejaVu metrics, shapes moved on paper, entities clipped to a band.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TEXT, chain, chainShapes, clipBand, fitView, line, moveShapes, rect, renderView, shapeBox, textWidth, wrap, type Shape } from '@/drawing';
+import { DIM, TEXT, chain, chainShapes, clipBand, fitView, line, moveShapes, rect, renderView, shapeBox, textWidth, wrap, type Box, type Shape } from '@/drawing';
 
 test('fitView: la scala normalizzata più grande che entra, con le file delle quote', () => {
   const model = { x0: 0, y0: 0, x1: 2000, y1: 1500 };
@@ -16,24 +16,38 @@ test('fitView: la scala normalizzata più grande che entra, con le file delle qu
   assert.ok(p && Math.abs(p.ox + 2000 / 20 / 2 - 95) < 1e-9);
 });
 
-test('quote: il testo che non entra si stringe un poco, o tiene la sola cifra, o esce dalla parte che resta nel disegno', () => {
+test('quote: il valore tiene le sue parole e la sua misura, fuori dal tratto sulla linea prolungata o accanto, mai più piccolo del minimo', () => {
   const place = { scale: 50, ox: 0, oy: 0 }, edges = { x0: 0, y0: 0, x1: 100, y1: 100 };
   const text = (s: Shape[]) => s.filter((x): x is Extract<Shape, { t: 'text' }> => x.t === 'text');
-  // 330 mm at 1:50 = 6,6 mm: "330 Ammortizzatore" keeps its figure, at full size, in the middle
-  const [t] = text(chainShapes({ dir: 'y', pts: [0, 330], side: 'left', row: 0, text: ['{v} Ammortizzatore'] }, place, edges));
-  assert.deepEqual([t?.text, t?.size, t?.align], ['330', TEXT.dim, 'c']);
-  // a little too long: a little smaller, the words kept
-  const [m] = text(chainShapes({ dir: 'y', pts: [0, 2000], side: 'left', row: 0, text: ['{v} H. Protezione Contrappeso in Fossa'] }, place, edges));
-  assert.ok(m && m.text.endsWith('Fossa') && m.size < TEXT.dim && m.size >= 0.8 * TEXT.dim, `${m?.text} ${m?.size}`);
-  // 150 mm = 3 mm, not even the figure fits: past the upper end, inside the drawing
-  const [u] = text(chainShapes({ dir: 'y', pts: [0, 150], side: 'left', row: 0, text: ['{v} Ammortizzatore'] }, place, edges));
-  assert.equal(u?.align, 'l');
-  // a lowest segment near the bottom edge does not go below the drawing
+  const lines = (s: Shape[]) => s.filter((x): x is Extract<Shape, { t: 'line' }> => x.t === 'line');
+  // 330 mm at 1:50 = 6,6 mm: "330 Ammortizzatore" keeps its words at full size past the upper end, the dimension line
+  // run on under it
+  const c330 = chainShapes({ dir: 'y', pts: [0, 330], side: 'left', row: 0, text: ['{v} Ammortizzatore'] }, place, edges);
+  const [t] = text(c330);
+  assert.deepEqual([t?.text, t?.size, t?.align], ['330 Ammortizzatore', TEXT.dim, 'l']);
+  assert.ok(t && t.at[1] > 330 / 50, 'oltre la fine');
+  assert.ok(lines(c330).some((l) => l.a[0] === l.b[0] && Math.max(l.a[1], l.b[1]) > 330 / 50 + 5), 'linea di misura prolungata sotto il testo');
+  // a lowest segment near the bottom edge does not go below the drawing: its figure alone, in its middle
   const [v] = text(chainShapes({ dir: 'y', pts: [0, 300, 5000], side: 'left', row: 0, text: ['{v} Base Ammortizzatore', '{v}'] }, place, edges));
-  assert.ok(v && v.at[1] >= -1, `${v?.at[1]}`);
+  assert.ok(v && v.at[1] >= -1 && v.text === '300', `${v?.text} ${v?.at[1]}`);
   // a segment wide enough keeps its text centred at full size
   const [w] = text(chainShapes({ dir: 'x', pts: [0, 3000], side: 'bottom', row: 0 }, place, edges));
   assert.deepEqual([w?.size, w?.align, w?.text], [TEXT.dim, 'c', '3000']);
+  // short segments in a row: each value at full size, none over another, none smaller than the minimum; the points they
+  // share marked by dots
+  const taken: Box[] = [], tight = chainShapes({ dir: 'x', pts: [0, 1000, 1080, 1110, 1190, 3000], side: 'bottom', row: 0 }, place, edges, undefined, taken);
+  const vals = text(tight);
+  assert.deepEqual(vals.map((x) => x.text), ['1000', '80', '30', '80', '1810']);
+  for (const x of vals) assert.ok(x.size >= DIM.minText, `${x.text} ${x.size}`);
+  vals.forEach((a, i) => vals.forEach((b, j) => {
+    if (j <= i) return;
+    const p = shapeBox(a), q = shapeBox(b);
+    assert.ok(p.x1 <= q.x0 || q.x1 <= p.x0 || p.y1 <= q.y0 || q.y1 <= p.y0, `${a.text} su ${b.text}`);
+  }));
+  assert.ok(tight.filter((x) => x.t === 'circle').length >= 3, 'punti dei tratti corti');
+  // the extension line starts a gap off the element measured; a point on the wall starts from the drawing's edge
+  const ext = lines(chainShapes({ dir: 'x', pts: [0, 1000], side: 'top', row: 1, from: [200, undefined] }, place, edges)).filter((l) => l.a[0] === l.b[0]);
+  assert.deepEqual(ext.map((l) => [l.a[0], +Math.min(l.a[1], l.b[1]).toFixed(3)]), [[0, 200 / 50 + DIM.gap], [20, 100 + DIM.gap]]);
 });
 
 test('quote: la cifra gira attorno alle scritte già sul foglio', () => {

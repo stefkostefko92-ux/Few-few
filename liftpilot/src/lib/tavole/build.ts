@@ -107,11 +107,12 @@ function sectionSheet(L: Layout, s: Extract<Spec, { k: 'section' }>, area: Box):
   return { shapes: [...r.shapes, ...lg.shapes], scale: place.scale, hits: r.hits };
 }
 
-/** Section line B-B on the room plan: along the rope drops, beyond the drawing at both ends, looking across them. */
+/** Section line B-B on the room plan: along the rope drops, beyond the drawing and its dimensions at both ends, looking
+ *  across them. */
 export function roomMarks(G: RoomGeo, p: Place, edges: Box): Shape[] {
   const at = (u: number): Pt => toPaper(p, [G.carDrop[0] + u * G.ux, G.carDrop[1] + u * G.uy]);
   const a = at(0), b = at(G.calata), dx = b[0] - a[0], dy = b[1] - a[1], n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n;
-  // from the middle of the drops out to the edges of the drawing, 5 mm beyond
+  // from the middle of the drops out to the edges of the drawing with its dimensions, 5 mm beyond
   const mid: Pt = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
   const reach = (s: number): Pt => {
     let t = 0;
@@ -129,7 +130,7 @@ export function roomMarks(G: RoomGeo, p: Place, edges: Box): Shape[] {
 function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section', area: Box): Drawn {
   const v = roomView(L, M, kind === 'room-plan' ? 'plan' : 'section', inset(area, 8, 8, 8, 8));
   if (!v) throw new Error('no machine room');
-  return { shapes: [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.edges) : [])], scale: v.place.scale, hits: v.r.hits };
+  return { shapes: [...v.r.shapes, ...(kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [])], scale: v.place.scale, hits: v.r.hits };
 }
 
 export function buildTavole(x: TavoleInput): TavoleResult {

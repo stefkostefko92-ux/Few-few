@@ -29,7 +29,7 @@ export function rinvioSection(M: MachineSpec, G: RoomGeo, rf: RinvioFrame): Enti
   out.push(chain({ dir: 'y', pts: [0, zp], at: u0 - 220, from: [null, pu], text: ['Asse rinvio {v}'], edit: [null] }));
   out.push(chain({ dir: 'y', pts: [0, top], at: u0 - 420, from: [null, u0], text: [`{v} ${fixed ? rf.maker?.code : 'Telaio'}`], edit: [fixed ? null : E('rinvio.height')] }));
   // over the room past dx and the machine's frame (room-view.ts)
-  out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 2, text: ['{v} Telaio con rinvio'] }));
+  out.push(chain({ dir: 'x', pts: [u0, u1], side: 'top', row: 2, from: [top, top], text: ['{v} Telaio con rinvio'] }));
   return out;
 }
 

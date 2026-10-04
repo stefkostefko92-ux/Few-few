@@ -37,9 +37,11 @@ export interface Chain {
   row?: number;
   /** … or across the drawing, at this model coordinate */
   at?: number;
-  /** extension lines start at this model coordinate (one for all, or one per point; null = none);
-   *  outside chains default to the edge of the drawing */
-  from?: number | readonly (number | null)[];
+  /** extension lines start at this model coordinate, the element measured (one for all, or one per point; null = none,
+   *  undefined = the default: outside chains from the edge of the drawing) */
+  from?: number | readonly (number | null | undefined)[];
+  /** points on an axis: their extension lines drawn as axes */
+  axis?: readonly boolean[];
   /** text of each segment, '{v}' for the measured value; null or missing = the value */
   text?: readonly (string | null)[];
   /** what editing each segment changes (null: it cannot be changed there) */
