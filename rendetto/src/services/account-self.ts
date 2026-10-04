@@ -95,8 +95,8 @@ export async function updateProfile(
 export type DeleteResult = { ok: true } | { ok: false; key: string };
 
 /**
- * Изтриване на собствения акаунт (чл. 17 GDPR): парола + втори фактор + изписана дума за
- * потвърждение. Последният собственик не може да изтрие себе си — продуктът остава без управление.
+ * Изтриване на собствения акаунт (чл. 17 GDPR): парола + втори фактор + отметка за потвърждение.
+ * Последният собственик не може да изтрие себе си — продуктът остава без управление.
  */
 export async function deleteOwnAccount(
   user: User,
@@ -134,6 +134,18 @@ export async function deleteOwnAccount(
 }
 
 /**
+ * Таваните на входовете и одита в износа (памет на процеса). Взимат се НАЙ-НОВИТЕ записи — при акаунт под
+ * атака скорошните са тези, които човекът търси; `truncated` казва, че по-старите са изпуснати.
+ */
+const EXPORT_MAX_LOGINS = 5000;
+const EXPORT_MAX_AUDIT = 20_000;
+
+/** Редовете идват най-новите първи и с един в повече: връща най-новите `max` по реда на времето. */
+function newestInOrder<T>(rows: T[], max: number): { rows: T[]; truncated: boolean } {
+  return { rows: rows.slice(0, max).reverse(), truncated: rows.length > max };
+}
+
+/**
  * Всичко, което пазим за човека, в машинно четим вид (чл. 15 и 20 GDPR). Без хешове, тайни и токени.
  */
 export async function exportOwnData(userId: string): Promise<Record<string, unknown>> {
@@ -145,22 +157,33 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       bans: { orderBy: { createdAt: 'asc' } },
       upgradeRequests: { orderBy: { createdAt: 'asc' } },
       devices: { orderBy: { firstSeenAt: 'asc' } },
-      logins: { orderBy: { createdAt: 'asc' }, take: 5000 },
+      logins: { orderBy: { createdAt: 'desc' }, take: EXPORT_MAX_LOGINS + 1 },
       sessions: true,
+      // поисканият нов имейл е лични данни, докато връзката се пази; самият токен — не
+      emailTokens: {
+        where: { newEmail: { not: null } },
+        orderBy: { createdAt: 'asc' },
+        select: { newEmail: true, createdAt: true, expiresAt: true, usedAt: true },
+      },
     },
   });
+  const logins = newestInOrder(user.logins, EXPORT_MAX_LOGINS);
   const own = [
     user.id,
     ...user.upgradeRequests.map((r) => r.id),
     ...user.projects.map((p) => p.id),
   ];
-  const auditEntries = await prisma.auditLog.findMany({
-    where: { OR: [{ actorId: user.id }, { targetId: { in: own } }] },
-    orderBy: { id: 'asc' },
-    take: 20_000,
-  });
+  const auditEntries = newestInOrder(
+    await prisma.auditLog.findMany({
+      where: { OR: [{ actorId: user.id }, { targetId: { in: own } }] },
+      orderBy: { id: 'desc' },
+      take: EXPORT_MAX_AUDIT + 1,
+    }),
+    EXPORT_MAX_AUDIT,
+  );
   return {
     generatedAt: new Date().toISOString(),
+    truncated: { logins: logins.truncated, auditLog: auditEntries.truncated },
     account: {
       id: user.id,
       email: user.email,
@@ -181,6 +204,12 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       bannedAt: user.bannedAt,
       banReason: user.banReason,
     },
+    emailChangeRequests: user.emailTokens.map((t) => ({
+      newEmail: t.newEmail,
+      requestedAt: t.createdAt,
+      expiresAt: t.expiresAt,
+      usedAt: t.usedAt,
+    })),
     projects: user.projects.map((p) => ({
       id: p.id,
       name: p.name,
@@ -189,12 +218,16 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
     })),
+    // Кой: както в одита по-долу — името и имейлът на служителя не са данни на този човек.
     planHistory: user.planChanges.map((c) => ({
       at: c.createdAt,
       from: c.fromPlan,
+      fromUntil: c.fromExpiresAt,
       to: c.toPlan,
       until: c.toExpiresAt,
-      by: c.actorLabel,
+      months: c.months,
+      priceWithoutVatCents: c.listPriceCents,
+      by: c.actorId === user.id ? 'you' : c.actorId ? 'team' : 'system',
       note: c.note,
     })),
     bans: user.bans.map((b) => ({ at: b.createdAt, reason: b.reason, liftedAt: b.liftedAt })),
@@ -221,7 +254,7 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
       lastCountry: d.lastCountry,
       userAgent: d.userAgent,
     })),
-    logins: user.logins.map((l) => ({
+    logins: logins.rows.map((l) => ({
       at: l.createdAt,
       outcome: l.outcome,
       ip: l.ip,
@@ -237,7 +270,7 @@ export async function exportOwnData(userId: string): Promise<Record<string, unkn
     })),
     // Одитът за човека: неговите действия и действията на екипа върху акаунта, поръчките и проектите
     // му. Името и IP адресът на служителя не са негови данни — остава само „екипът“.
-    auditLog: auditEntries.map((a) => {
+    auditLog: auditEntries.rows.map((a) => {
       // Действие на служител върху чужд акаунт: подробностите (причина за бан, хеш на имейл) са за
       // другия човек, не за този (чл. 15, пар. 4 ОРЗД) — остава само какво и кога.
       const aboutOthers = a.actorId === user.id && a.targetId !== null && !own.includes(a.targetId);

@@ -1,5 +1,5 @@
 import type { User } from '@prisma/client';
-import { audit } from '../audit.js';
+import { audit, SYSTEM_ACTOR } from '../audit.js';
 import { prisma } from '../db.js';
 import { deviceCookieHash, fingerprintHash } from '../auth/device.js';
 import { dummyHash, hashPassword, verifyPassword } from '../auth/password.js';
@@ -65,11 +65,15 @@ export async function registerAccount(
         at: { gte: new Date(Date.now() - HOUR) },
       },
     });
-    await audit(customerActor(existing, meta), {
-      action: 'account.register.duplicate',
-      targetType: 'user',
-      targetId: existing.id,
-    });
+    // Опитът е на непознат, не на собственика: системата записва, IP-то е на опитващия.
+    await audit(
+      { ...SYSTEM_ACTOR, ip: meta.ip },
+      {
+        action: 'account.register.duplicate',
+        targetType: 'user',
+        targetId: existing.id,
+      },
+    );
     if (recentNotices === 0) {
       const target = isLocale(existing.locale) ? existing.locale : locale;
       void mailAlreadyRegistered(existing.email, target, greetingName(existing));
