@@ -38,7 +38,7 @@ dialog.picker::backdrop {
   font: 400 14px var(--f-ui);
   color: var(--ink);
   background: var(--surface-2);
-  border: 1px solid var(--line);
+  border: 1px solid var(--edge);
   border-radius: 8px;
   padding: 8px 10px;
   width: 100%;

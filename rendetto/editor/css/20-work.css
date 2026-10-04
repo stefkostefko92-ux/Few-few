@@ -247,7 +247,7 @@ select.pick {
   font: 500 13px var(--f-ui);
   color: var(--ink);
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--edge);
   border-radius: 8px;
   padding: 6px 8px;
   max-width: 100%;

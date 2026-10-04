@@ -5,6 +5,9 @@
   --surface: var(--panel);
   --surface-2: var(--panel-2);
   --line: var(--rule);
+  /* the edge of a form control (field, select, search, picker button, segment): ≥ 3:1 against the panel and the
+     paper in both themes (WCAG 2.1 SC 1.4.11), like the global fields; --line stays for dividers and frames */
+  --edge: var(--ink-3);
   --accent: var(--green);
   --accent-ink: var(--on-green);
   --stage-1: #fbfbf7;
