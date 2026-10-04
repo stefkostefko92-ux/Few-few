@@ -5,7 +5,7 @@
 <form method="get" action="/admin/accounts" class="filters" role="search">
   <div class="field field-q"><label for="q"><%= t('admin.accounts.search') %></label><input id="q" name="q" type="search" value="<%= query.q %>" placeholder="<%= t('admin.accounts.searchPlaceholder') %>"></div>
   <div class="field"><label for="plan"><%= t('admin.col.plan') %></label><select id="plan" name="plan">
-    <% for (const p of ['all', 'TRIAL', 'PREMIUM', 'LIFETIME']) { %><option value="<%= p %>"<%= query.plan === p ? ' selected' : '' %>><%= p === 'all' ? t('admin.accounts.all') : t('plan.name.' + p) %></option><% } %>
+    <% for (const p of plans) { %><option value="<%= p %>"<%= query.plan === p ? ' selected' : '' %>><%= p === 'all' ? t('admin.accounts.all') : t('plan.name.' + p) %></option><% } %>
   </select></div>
   <div class="field"><label for="status"><%= t('admin.col.status') %></label><select id="status" name="status">
     <% for (const s of statuses) { %><option value="<%= s %>"<%= query.status === s ? ' selected' : '' %>><%= t('admin.status.' + s) %></option><% } %>
@@ -21,15 +21,16 @@
 <div class="table-wrap"><table class="stack">
   <thead><tr><th><%= t('admin.col.account') %></th><th><%= t('admin.col.plan') %></th><th><%= t('admin.col.status') %></th><th><%= t('admin.col.lastLogin') %></th><th class="num"><%= t('admin.col.projects') %></th><th><%= t('admin.col.created') %></th></tr></thead>
   <tbody>
-  <% for (const u of rows) { const expired = u.plan !== 'LIFETIME' && u.planExpiresAt && u.planExpiresAt <= now; %>
+  <% for (const u of rows) { %>
     <tr>
       <td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= u.id %>"><%= u.email %></a><small><%= u.name %><% if (u.role !== 'CUSTOMER') { %>, <%= t('role.' + u.role) %><% } %></small></td>
-      <td data-label="<%= t('admin.col.plan') %>"><span class="chip <%= u.plan === 'LIFETIME' ? 'chip-gold' : expired ? 'chip-bad' : 'chip-ok' %>"><%- include('../partials/icon', { name: expired ? 'lock' : 'receipt' }) %><%= t('plan.name.' + u.plan) %></span>
-        <% if (u.planExpiresAt) { %><br><small class="nowrap"><%= t(expired ? 'plan.endedOn' : 'plan.endsOn', { date: fmt.shortDate(u.planExpiresAt) }) %></small><% } %></td>
+      <td data-label="<%= t('admin.col.plan') %>"><%- include('../partials/plan-chip', { plan: u.planState }) %>
+        <% if (u.planExpiresAt && u.plan !== 'LIFETIME' && u.planState.state !== 'staff') { %><br><small class="nowrap"><%= t(u.planExpiresAt <= now ? 'plan.endedOn' : 'plan.endsOn', { date: fmt.shortDate(u.planExpiresAt) }) %></small><% } %></td>
       <td data-label="<%= t('admin.col.status') %>"><div class="chips-row">
-        <% if (u.bannedAt) { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.status.banned') %></span><% } %>
-        <% if (u.lockedUntil && u.lockedUntil > now) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'lock' }) %><%= t('admin.status.locked') %></span><% } %>
-        <% if (!u.emailVerifiedAt) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'mail' }) %><%= t('admin.status.unverified') %></span><% } %>
+        <% if (u.bannedAt) { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.chip.banned') %></span><% } %>
+        <% if (u.lockedUntil && u.lockedUntil > now) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'lock' }) %><%= t('admin.chip.locked') %></span><% } %>
+        <%# непотвърденият имейл на клиент вече го казва значката на плана %>
+        <% if (!u.emailVerifiedAt && u.planState.blockedBy !== 'unverified') { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'mail' }) %><%= t('admin.chip.unverified') %></span><% } %>
         <% if (u.totpEnabledAt) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'shield' }) %>2FA</span><% } %>
       </div></td>
       <td data-label="<%= t('admin.col.lastLogin') %>"><% if (u.lastLoginAt) { %><span class="nowrap"><%= fmt.relative(u.lastLoginAt) %></span><% if (can('logins:view')) { %><br><small class="mono-sm"><%= u.lastLoginIp || '' %></small><% } %><% if (u.lastLoginCountry) { %> <small><%= fmt.country(u.lastLoginCountry) %></small><% } %><% } else { %><span class="muted">—</span><% } %></td>

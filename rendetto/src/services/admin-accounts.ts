@@ -4,6 +4,14 @@ import { prisma } from '../db.js';
 
 export const PAGE_SIZE = 25;
 
+type PlanOrAll = Plan | 'all';
+export const PLAN_FILTERS = [
+  'all',
+  'TRIAL',
+  'PREMIUM',
+  'LIFETIME',
+] as const satisfies readonly PlanOrAll[];
+export type PlanFilter = (typeof PLAN_FILTERS)[number];
 export const STATUS_FILTERS = [
   'all',
   'active',
@@ -19,7 +27,7 @@ export type SortKey = (typeof SORTS)[number];
 
 export interface AccountQuery {
   q: string;
-  plan: Plan | 'all';
+  plan: PlanFilter;
   status: StatusFilter;
   sort: SortKey;
   dir: 'asc' | 'desc';
@@ -48,6 +56,18 @@ function statusWhere(status: StatusFilter, now: Date): Prisma.UserWhereInput {
     default:
       return {};
   }
+}
+
+/**
+ * Условието на филтрите (план и състояние) без търсенето. Списъкът и броячите на таблото минават
+ * през него — числото на картата е точно броят редове, които показва линкът ѝ.
+ */
+export function filterWhere(
+  plan: PlanFilter,
+  status: StatusFilter,
+  now: Date,
+): Prisma.UserWhereInput {
+  return { AND: [plan === 'all' ? {} : { plan }, statusWhere(status, now)] };
 }
 
 /**
@@ -92,11 +112,7 @@ function orderBy(sort: SortKey, dir: 'asc' | 'desc'): Prisma.UserOrderByWithRela
 
 export async function listAccounts(query: AccountQuery, byIp: boolean, now: Date = new Date()) {
   const where: Prisma.UserWhereInput = {
-    AND: [
-      await searchWhere(query.q, byIp),
-      query.plan === 'all' ? {} : { plan: query.plan },
-      statusWhere(query.status, now),
-    ],
+    AND: [await searchWhere(query.q, byIp), filterWhere(query.plan, query.status, now)],
   };
   const [total, rows] = await prisma.$transaction([
     prisma.user.count({ where }),
@@ -127,8 +143,13 @@ export async function listAccounts(query: AccountQuery, byIp: boolean, now: Date
   return { total, rows, pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
 }
 
-/** Броячите за таблото: по план, по състояние, нови регистрации. */
+/**
+ * Броячите за таблото: по план, по състояние, нови регистрации. Картите по план и състояние броят
+ * по `filterWhere` със същите план и състояние, към които води линкът им (views/admin/dashboard.ejs).
+ */
 export async function dashboardCounts(now: Date = new Date()) {
+  const count = (plan: PlanFilter, status: StatusFilter) =>
+    prisma.user.count({ where: filterWhere(plan, status, now) });
   const week = new Date(now.getTime() - 7 * 86_400_000);
   const month = new Date(now.getTime() - 30 * 86_400_000);
   const [
@@ -144,15 +165,13 @@ export async function dashboardCounts(now: Date = new Date()) {
     openRequests,
     logins24h,
   ] = await prisma.$transaction([
-    prisma.user.count({ where: { role: 'CUSTOMER', plan: 'TRIAL', planExpiresAt: { gt: now } } }),
-    prisma.user.count({ where: { role: 'CUSTOMER', plan: 'TRIAL', planExpiresAt: { lte: now } } }),
-    prisma.user.count({ where: { role: 'CUSTOMER', plan: 'PREMIUM', planExpiresAt: { gt: now } } }),
-    prisma.user.count({
-      where: { role: 'CUSTOMER', plan: 'PREMIUM', planExpiresAt: { lte: now } },
-    }),
-    prisma.user.count({ where: { role: 'CUSTOMER', plan: 'LIFETIME' } }),
-    prisma.user.count({ where: { emailVerifiedAt: null } }),
-    prisma.user.count({ where: { bannedAt: { not: null } } }),
+    count('TRIAL', 'active'),
+    count('TRIAL', 'expired'),
+    count('PREMIUM', 'active'),
+    count('PREMIUM', 'expired'),
+    count('LIFETIME', 'all'),
+    count('all', 'unverified'),
+    count('all', 'banned'),
     prisma.user.count({ where: { createdAt: { gte: week } } }),
     prisma.user.count({ where: { createdAt: { gte: month } } }),
     prisma.upgradeRequest.count({ where: { status: 'OPEN' } }),
@@ -185,21 +204,23 @@ export async function recentSecurityEvents(limit = 12) {
   });
 }
 
-export async function accountDetail(id: string) {
+export async function accountDetail(id: string, now: Date = new Date()) {
   return prisma.user.findUnique({
     where: { id },
     include: {
       planChanges: { orderBy: { createdAt: 'desc' }, take: 50 },
       bans: { orderBy: { createdAt: 'desc' }, take: 50 },
       devices: { orderBy: { lastSeenAt: 'desc' }, take: 50 },
-      sessions: { where: { expiresAt: { gt: new Date() } }, orderBy: { lastSeenAt: 'desc' } },
       projects: {
         orderBy: { updatedAt: 'desc' },
         take: 100,
         select: { id: true, name: true, type: true, updatedAt: true, createdAt: true },
       },
       upgradeRequests: { orderBy: { createdAt: 'desc' }, take: 20 },
-      _count: { select: { projects: true } },
+      // само бройките, които страницата показва; резервните кодове смята remainingRecoveryCodes()
+      _count: {
+        select: { projects: true, sessions: { where: { expiresAt: { gt: now } } } },
+      },
     },
   });
 }

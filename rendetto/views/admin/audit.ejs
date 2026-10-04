@@ -23,5 +23,5 @@
   <% } %>
   </tbody>
 </table></div>
-<% if (rows.length === 100) { %><nav class="pager"><span></span><a class="btn btn-small" href="/admin/audit?before=<%= rows[rows.length - 1].id %><%= action ? '&action=' + encodeURIComponent(action) : '' %>"><%= t('admin.accounts.next') %></a></nav><% } %>
+<% if (hasMore) { %><nav class="pager" aria-label="<%= t('admin.accounts.pages') %>"><span></span><a class="btn btn-small" href="/admin/audit?before=<%= rows[rows.length - 1].id %><%= action ? '&action=' + encodeURIComponent(action) : '' %>"><%= t('admin.accounts.next') %></a></nav><% } %>
 <%- include('../partials/page-bottom') %>

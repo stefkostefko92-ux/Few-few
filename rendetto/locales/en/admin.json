@@ -3,7 +3,7 @@
     "nav": {
       "dashboard": "Dashboard",
       "accounts": "Accounts",
-      "requests": "Requests",
+      "requests": "Orders",
       "audit": "Audit",
       "newAccount": "New account"
     },
@@ -61,6 +61,11 @@
       "locked": "Locked",
       "staff": "Team"
     },
+    "chip": {
+      "banned": "Blocked",
+      "locked": "Locked",
+      "unverified": "Email not confirmed"
+    },
     "sort": {
       "created": "Sign-up",
       "login": "Last sign-in",
@@ -76,7 +81,6 @@
       "created": "Signed up",
       "where": "From",
       "country": "Country",
-      "count": "Sign-ins",
       "last": "Last",
       "logins": "Sign-ins"
     },
@@ -105,12 +109,12 @@
       "refundBy": "If paid, refund by {date}",
       "planReverted": "The plan was returned automatically.",
       "planManual": "The plan was not returned automatically — check it.",
-      "notConfirmed": "The email confirmation has not gone out — maintenance keeps trying."
+      "notConfirmed": "The email confirmation has not gone out — the system resends it automatically."
     },
     "new": {
       "title": "New account",
       "password": "Password (optional)",
-      "passwordHint": "With a password the account is confirmed at once. Without one, the person gets an email to set a password (the link is valid for {hours}, after that “Forgot password” works); an account that is never set up is deleted after {days}.",
+      "passwordHint": "With a password the account is confirmed at once. Without one, the person gets an email to set a password (the link is valid for {hours}, after that “Forgot password” works); if they never set it, a customer account on the trial is deleted after {days}, while other accounts stay until you delete them.",
       "create": "Create account"
     },
     "errors": {

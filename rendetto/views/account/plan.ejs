@@ -21,9 +21,9 @@
     <% for (const r of requests) { %>
       <tr>
         <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %></td>
-        <td data-label="<%= t('plan.col.option') %>"><%= r.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: r.months }) %><br><small class="muted"><%= t(r.buyerType === 'CONSUMER' ? 'plan.buyer.consumerShort' : 'plan.buyer.businessShort') %><% if (r.earlyStartRequestedAt) { %>, <%= t('plan.early.short') %><% } %></small></td>
+        <td data-label="<%= t('plan.col.option') %>"><%- include('../partials/order-option', { order: r }) %></td>
         <td data-label="<%= t('plan.col.price') %>" class="num"><% if (r.buyerType === 'CONSUMER') { %><%= fmt.money(r.withVatCents) %><br><small class="muted"><%= t('plan.withVatShort') %></small><% } else { %><%= fmt.money(r.listPriceCents) %><br><small class="muted"><%= t('plan.netShort') %></small><% } %></td>
-        <td data-label="<%= t('plan.col.status') %>"><span class="chip <%= r.status === 'DONE' ? 'chip-ok' : r.status === 'OPEN' ? 'chip-gold' : '' %>"><%- include('../partials/icon', { name: r.status === 'DONE' ? 'check' : r.status === 'OPEN' ? 'clock' : 'x' }) %><%= t('plan.status.' + r.status) %></span>
+        <td data-label="<%= t('plan.col.status') %>"><%- include('../partials/order-status', { order: r, warnWithdrawn: false }) %>
           <% if (r.status === 'OPEN' && r.activationFrom > now) { %><br><small class="muted"><%= t('plan.activationAfter', { date: fmt.date(r.lastDay) }) %></small><% } %>
           <% if (r.status === 'WITHDRAWN' && r.withdrawnAt) { %><br><small class="muted"><%= t('plan.withdrawnOn', { date: fmt.dateTime(r.withdrawnAt) }) %></small><% } %></td>
         <td data-label="<%= t('plan.col.actions') %>"><% if (r.canWithdraw) { %><a class="btn btn-small" href="/account/plan/withdraw/<%= r.id %>"><%= t('plan.withdraw.button') %></a><small class="order-until"><%= t('plan.withdraw.until', { date: fmt.date(r.lastDay) }) %></small><% } else if (r.status === 'OPEN') { %><form method="post" action="/account/plan/request/<%= r.id %>/cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-quiet btn-small" type="submit"><%= t('plan.cancel') %></button></form><% } else { %>—<% } %></td>

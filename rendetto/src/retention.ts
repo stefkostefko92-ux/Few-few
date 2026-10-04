@@ -11,7 +11,10 @@ import type { Translator } from './i18n.js';
  */
 export const LOGIN_RETENTION_DAYS = 180;
 
-/** Непотвърдена регистрация се трие след толкова дни. */
+/**
+ * Непотвърдена регистрация (клиент с тестов период, който не е влизал) се трие след толкова дни — от
+ * `runMaintenance`.
+ */
 export const UNVERIFIED_RETENTION_DAYS = 7;
 
 /**

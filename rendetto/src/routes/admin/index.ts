@@ -1,17 +1,19 @@
 import { Router } from 'express';
-import { Plan } from '@prisma/client';
 import { principalOf, requireCsrf, requireStaff, requireUser } from '../../auth/guards.js';
 import { can } from '../../auth/rbac.js';
 import { prisma } from '../../db.js';
 import { verifyAuditChain } from '../../audit.js';
 import { geoIpReady } from '../../auth/geoip.js';
+import { planView } from '../../plans/plan.js';
 import {
   dashboardCounts,
   listAccounts,
+  PLAN_FILTERS,
   recentSecurityEvents,
   SORTS,
   STATUS_FILTERS,
   type AccountQuery,
+  type PlanFilter,
   type SortKey,
   type StatusFilter,
 } from '../../services/admin-accounts.js';
@@ -74,19 +76,23 @@ function pick<T extends string>(value: unknown, allowed: readonly T[], fallback:
 adminRouter.get('/admin/accounts', async (req, res) => {
   const query: AccountQuery = {
     q: typeof req.query.q === 'string' ? req.query.q.slice(0, 120) : '',
-    plan: pick<Plan | 'all'>(req.query.plan, ['all', ...Object.values(Plan)], 'all'),
+    plan: pick<PlanFilter>(req.query.plan, PLAN_FILTERS, 'all'),
     status: pick<StatusFilter>(req.query.status, STATUS_FILTERS, 'all'),
     sort: pick<SortKey>(req.query.sort, SORTS, 'created'),
     dir: pick<'asc' | 'desc'>(req.query.dir, ['asc', 'desc'], 'desc'),
     page: Math.max(1, Math.min(10_000, Number.parseInt(String(req.query.page ?? '1'), 10) || 1)),
   };
-  const result = await listAccounts(query, can(principalOf(req).user.role, 'logins:view'));
+  const now = new Date();
+  const result = await listAccounts(query, can(principalOf(req).user.role, 'logins:view'), now);
   res.render('admin/accounts', {
     query,
     ...result,
+    // състоянието на плана — по същото правило като страницата на акаунта (plan-chip)
+    rows: result.rows.map((u) => ({ ...u, planState: planView(u, now) })),
+    plans: PLAN_FILTERS,
     statuses: STATUS_FILTERS,
     sorts: SORTS,
-    now: new Date(),
+    now,
   });
 });
 

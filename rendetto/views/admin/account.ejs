@@ -7,8 +7,8 @@
   <div class="chips-row">
     <%- include('../partials/plan-chip', { plan }) %>
     <% if (account.role !== 'CUSTOMER') { %><span class="chip chip-gold"><%- include('../partials/icon', { name: 'shield' }) %><%= t('role.' + account.role) %></span><% } %>
-    <% if (account.bannedAt) { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.status.banned') %></span><% } %>
-    <% if (locked) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'lock' }) %><%= t('admin.status.locked') %></span><% } %>
+    <% if (account.bannedAt) { %><span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.chip.banned') %></span><% } %>
+    <% if (locked) { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'lock' }) %><%= t('admin.chip.locked') %></span><% } %>
     <% if (account.totpEnabledAt) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'shield' }) %>2FA</span><% } %>
   </div>
 </div>
@@ -17,7 +17,6 @@
 
 <div class="acc-grid">
 <div>
-  <!-- plan -->
   <section class="section" aria-labelledby="plan-h" id="plan">
     <h2 id="plan-h"><%- include('../partials/icon', { name: 'receipt' }) %><%= t('admin.account.planTitle') %></h2>
     <dl class="dl">
@@ -69,14 +68,13 @@
     </table></div>
   </section>
 
-  <!-- logins: IP, country, HWID -->
   <% if (showLogins) { %>
   <section class="section" aria-labelledby="ip-h" id="logins">
     <h2 id="ip-h"><%- include('../partials/icon', { name: 'globe' }) %><%= t('admin.account.ipsTitle') %></h2>
     <% if (!ips.length) { %><p class="muted"><%= t('admin.account.noLogins') %></p><% } else { %>
     <div class="table-wrap"><table class="stack">
-      <thead><tr><th>IP</th><th><%= t('admin.col.country') %></th><th class="num"><%= t('admin.col.count') %></th><th><%= t('admin.col.last') %></th></tr></thead>
-      <tbody><% for (const r of ips) { %><tr><td data-label="IP" class="mono-sm"><a href="/admin/accounts?q=<%= encodeURIComponent(r.ip || '') %>"><%= r.ip || '—' %></a></td><td data-label="<%= t('admin.col.country') %>"><%= r.country ? fmt.country(r.country) + ' (' + r.country + ')' : '—' %></td><td data-label="<%= t('admin.col.count') %>" class="num"><%= fmt.num(r.count) %></td><td data-label="<%= t('admin.col.last') %>" class="nowrap"><%= fmt.dateTime(r.last) %></td></tr><% } %></tbody>
+      <thead><tr><th>IP</th><th><%= t('admin.col.country') %></th><th class="num"><%= t('admin.col.logins') %></th><th><%= t('admin.col.last') %></th></tr></thead>
+      <tbody><% for (const r of ips) { %><tr><td data-label="IP" class="mono-sm"><a href="/admin/accounts?q=<%= encodeURIComponent(r.ip || '') %>"><%= r.ip || '—' %></a></td><td data-label="<%= t('admin.col.country') %>"><%= r.country ? fmt.country(r.country) + ' (' + r.country + ')' : '—' %></td><td data-label="<%= t('admin.col.logins') %>" class="num"><%= fmt.num(r.count) %></td><td data-label="<%= t('admin.col.last') %>" class="nowrap"><%= fmt.dateTime(r.last) %></td></tr><% } %></tbody>
     </table></div>
     <% } %>
 
@@ -101,7 +99,7 @@
     <% if (!linked.length) { %><p class="muted"><%= t('admin.account.noLinked') %></p><% } else { %>
     <div class="table-wrap"><table class="stack">
       <thead><tr><th><%= t('admin.col.account') %></th><th><%= t('admin.account.sharedBy') %></th><th><%= t('admin.col.plan') %></th></tr></thead>
-      <tbody><% for (const u of linked) { %><tr><td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= u.id %>"><%= u.email %></a><small><%= u.name %>, <%= fmt.shortDate(u.createdAt) %></small></td><td data-label="<%= t('admin.account.sharedBy') %>"><div class="chips-row"><% for (const r of u.reasons) { %><span class="chip <%= r === 'ip' ? '' : 'chip-warn' %>"><%- include('../partials/icon', { name: r === 'ip' ? 'globe' : r === 'hwid' ? 'layers' : 'device' }) %><%= t('admin.account.shared.' + r) %></span><% } %></div></td><td data-label="<%= t('admin.col.plan') %>"><%= t('plan.name.' + u.plan) %><% if (u.bannedAt) { %> <span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.status.banned') %></span><% } %></td></tr><% } %></tbody>
+      <tbody><% for (const u of linked) { %><tr><td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= u.id %>"><%= u.email %></a><small><%= u.name %>, <%= fmt.shortDate(u.createdAt) %></small></td><td data-label="<%= t('admin.account.sharedBy') %>"><div class="chips-row"><% for (const r of u.reasons) { %><span class="chip <%= r === 'ip' ? '' : 'chip-warn' %>"><%- include('../partials/icon', { name: r === 'ip' ? 'globe' : r === 'hwid' ? 'layers' : 'device' }) %><%= t('admin.account.shared.' + r) %></span><% } %></div></td><td data-label="<%= t('admin.col.plan') %>"><%= t('plan.name.' + u.plan) %><% if (u.bannedAt) { %> <span class="chip chip-bad"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.chip.banned') %></span><% } %></td></tr><% } %></tbody>
     </table></div>
     <% } %>
   </section>
@@ -112,14 +110,13 @@
     <% if (!account.projects.length) { %><p class="muted"><%= t('admin.account.noProjects') %></p><% } else { %>
     <div class="table-wrap"><table class="stack">
       <thead><tr><th><%= t('app.name') %></th><th><%= t('app.type') %></th><th><%= t('admin.col.last') %></th><th><span class="sr-only"><%= t('plan.col.actions') %></span></th></tr></thead>
-      <tbody><% for (const p of account.projects) { %><tr><td data-label="<%= t('app.name') %>"><%= p.name %></td><td data-label="<%= t('app.type') %>"><%= t('furniture.' + p.type) %></td><td data-label="<%= t('admin.col.last') %>" class="nowrap"><%= fmt.dateTime(p.updatedAt) %></td><td><% if (can('accounts:security')) { %><a class="btn btn-small" href="/admin/projects/<%= p.id %>/export"><%- include('../partials/icon', { name: 'download' }) %>ZIP</a><% } %></td></tr><% } %></tbody>
+      <tbody><% for (const p of account.projects) { %><tr><td data-label="<%= t('app.name') %>"><%= p.name %></td><td data-label="<%= t('app.type') %>"><%= t('furniture.' + p.type) %></td><td data-label="<%= t('admin.col.last') %>" class="nowrap"><%= fmt.dateTime(p.updatedAt) %></td><td><% if (manageable && can('accounts:security')) { %><a class="btn btn-small" href="/admin/projects/<%= p.id %>/export"><%- include('../partials/icon', { name: 'download' }) %>ZIP</a><% } %></td></tr><% } %></tbody>
     </table></div>
     <% } %>
   </section>
 </div>
 
 <div>
-  <!-- access: ban / unban -->
   <section class="section<%= account.bannedAt ? ' danger' : '' %>" aria-labelledby="ban-h" id="access">
     <h2 id="ban-h"><%- include('../partials/icon', { name: 'ban' }) %><%= t('admin.account.accessTitle') %></h2>
     <% if (account.bannedAt) { %>
@@ -150,12 +147,11 @@
     <% } %>
   </section>
 
-  <!-- security -->
   <section class="section" aria-labelledby="sec-h" id="security">
     <h2 id="sec-h"><%- include('../partials/icon', { name: 'shield' }) %><%= t('admin.account.securityTitle') %></h2>
     <dl class="dl">
       <dt>2FA</dt><dd><%= account.totpEnabledAt ? t('admin.account.twofaOn', { date: fmt.shortDate(account.totpEnabledAt), n: recoveryLeft }) : t('admin.account.twofaOff') %></dd>
-      <dt><%= t('admin.account.sessions') %></dt><dd><%= fmt.num(account.sessions.length) %></dd>
+      <dt><%= t('admin.account.sessions') %></dt><dd><%= fmt.num(account._count.sessions) %></dd>
       <dt><%= t('admin.account.lastLogin') %></dt><dd><%= account.lastLoginAt ? fmt.dateTime(account.lastLoginAt) : '—' %><% if (showLogins && account.lastLoginIp) { %><br><small class="mono-sm"><%= account.lastLoginIp %></small><% } %><% if (account.lastLoginCountry) { %> <small><%= fmt.country(account.lastLoginCountry) %></small><% } %></dd>
       <dt><%= t('admin.account.failed') %></dt><dd><%= fmt.num(account.failedLogins) %><% if (locked) { %>, <%= t('admin.account.lockedUntil', { time: fmt.dateTime(account.lockedUntil) }) %><% } %></dd>
     </dl>
@@ -169,7 +165,6 @@
     <% } %>
   </section>
 
-  <!-- profile -->
   <section class="section" aria-labelledby="edit-h" id="profile">
     <h2 id="edit-h"><%- include('../partials/icon', { name: 'edit' }) %><%= t('admin.account.profileTitle') %></h2>
     <form method="post" action="/admin/accounts/<%= account.id %>/edit#profile" class="form">

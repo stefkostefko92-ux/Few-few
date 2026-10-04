@@ -94,6 +94,8 @@ manageRouter.post(
 
 /* ------------------------------------ одит ------------------------------------ */
 
+const AUDIT_PAGE = 100;
+
 manageRouter.get('/admin/audit', requireStaff('audit:view'), async (req, res) => {
   const before = Number.parseInt(String(req.query.before ?? ''), 10);
   // id е INT4: по-голямо число Prisma отказва с грешка (500) — такава стойност не е страница
@@ -105,9 +107,15 @@ manageRouter.get('/admin/audit', requireStaff('audit:view'), async (req, res) =>
       ...(action ? { action: { startsWith: action } } : {}),
     },
     orderBy: { id: 'desc' },
-    take: 100,
+    // един ред отгоре — така се знае дали има следваща страница, без празна страница накрая
+    take: AUDIT_PAGE + 1,
   });
-  res.render('admin/audit', { rows, chain: await verifyAuditChain(), action });
+  res.render('admin/audit', {
+    rows: rows.slice(0, AUDIT_PAGE),
+    hasMore: rows.length > AUDIT_PAGE,
+    chain: await verifyAuditChain(),
+    action,
+  });
 });
 
 /* ----------------------------- проект на клиент ----------------------------- */

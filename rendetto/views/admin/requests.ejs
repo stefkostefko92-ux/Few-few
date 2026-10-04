@@ -12,10 +12,10 @@
     <tr>
       <td data-label="<%= t('plan.col.date') %>" class="nowrap"><%= fmt.dateTime(r.createdAt) %></td>
       <td data-label="<%= t('admin.col.account') %>" class="who"><a href="/admin/accounts/<%= r.user.id %>"><%= r.user.email %></a><small><%= r.user.name %>, <%= t('plan.name.' + r.user.plan) %></small></td>
-      <td data-label="<%= t('plan.col.option') %>"><%= r.option === 'lifetime' ? t('plan.lifetime') : t('plan.months', { n: r.months }) %><br><small class="muted"><%= t(r.buyerType === 'CONSUMER' ? 'plan.buyer.consumerShort' : 'plan.buyer.businessShort') %><% if (r.earlyStartRequestedAt) { %>, <%= t('plan.early.short') %><% } %></small></td>
+      <td data-label="<%= t('plan.col.option') %>"><%- include('../partials/order-option', { order: r }) %></td>
       <td data-label="<%= t('plan.col.price') %>" class="num"><%= fmt.money(r.listPriceCents) %><br><small class="muted"><%= t('plan.netShort') %><% if (r.buyerType === 'CONSUMER') { %>; <%= fmt.money(r.withVatCents) %> <%= t('plan.withVatShort') %><% } %></small></td>
       <td data-label="<%= t('plan.message') %>" class="mini"><%= r.message || '—' %></td>
-      <td data-label="<%= t('plan.col.status') %>"><span class="chip <%= r.status === 'DONE' ? 'chip-ok' : r.status === 'OPEN' ? 'chip-gold' : r.status === 'WITHDRAWN' ? 'chip-warn' : '' %>"><%- include('../partials/icon', { name: r.status === 'DONE' ? 'check' : r.status === 'OPEN' ? 'clock' : 'x' }) %><%= t('plan.status.' + r.status) %></span>
+      <td data-label="<%= t('plan.col.status') %>"><%- include('../partials/order-status', { order: r, warnWithdrawn: true }) %>
         <% if (r.handledByLabel) { %><br><small><%= fmt.label(r.handledByLabel) %></small><% } %>
         <% if (r.status === 'OPEN' && r.activationFrom > now) { %><br><small><%= t('plan.activationAfter', { date: fmt.dateTime(r.activationFrom) }) %></small><% } %>
         <% if (r.status === 'WITHDRAWN') { %><br><small><%= t('plan.withdrawnOn', { date: fmt.dateTime(r.withdrawnAt) }) %></small><br><small><%= t('admin.requests.refundBy', { date: fmt.date(r.refundBy) }) %></small><% if (r.planOutcome === 'reverted' || r.planOutcome === 'manual') { %><br><small><%= t(r.planOutcome === 'reverted' ? 'admin.requests.planReverted' : 'admin.requests.planManual') %></small><% } %><% } %>

@@ -3,7 +3,7 @@
     "nav": {
       "dashboard": "Panoramica",
       "accounts": "Account",
-      "requests": "Richieste",
+      "requests": "Ordini",
       "audit": "Registro",
       "newAccount": "Nuovo account"
     },
@@ -57,9 +57,14 @@
       "active": "Attivi",
       "expired": "Scaduti",
       "unverified": "Non confermati",
+      "banned": "Bloccati",
+      "locked": "Bloccati temporaneamente",
+      "staff": "Team"
+    },
+    "chip": {
       "banned": "Bloccato",
       "locked": "Bloccato temporaneamente",
-      "staff": "Team"
+      "unverified": "Email non confermata"
     },
     "sort": {
       "created": "Registrazione",
@@ -76,7 +81,6 @@
       "created": "Registrazione",
       "where": "Da dove",
       "country": "Paese",
-      "count": "Accessi",
       "last": "Ultimo",
       "logins": "Accessi"
     },
@@ -105,12 +109,12 @@
       "refundBy": "Se pagato, rimborso entro: {date}",
       "planReverted": "Il piano è stato riportato automaticamente.",
       "planManual": "Il piano non è stato riportato automaticamente: controllatelo.",
-      "notConfirmed": "La conferma per email non è partita: la manutenzione riprova."
+      "notConfirmed": "La conferma per email non è partita: il sistema la reinvia automaticamente."
     },
     "new": {
       "title": "Nuovo account",
       "password": "Password (facoltativa)",
-      "passwordHint": "Con una password l'account è confermato subito. Senza, la persona riceve un'email per impostare la password (il link vale {hours}, poi funziona «Password dimenticata»); un account mai attivato viene eliminato dopo {days}.",
+      "passwordHint": "Con una password l'account è confermato subito. Senza, la persona riceve un'email per impostare la password (il link vale {hours}, poi funziona «Password dimenticata»); se non la imposta, un account cliente in prova viene eliminato dopo {days}, mentre gli altri restano finché non li eliminate.",
       "create": "Crea l'account"
     },
     "errors": {
@@ -193,7 +197,7 @@
       "sessions": "Sessioni attive",
       "lastLogin": "Ultimo accesso",
       "failed": "Password sbagliate di seguito",
-      "lockedUntil": "bloccato fino alle {time}",
+      "lockedUntil": "bloccato fino al {time}",
       "revokeSessions": "Chiudi le sessioni",
       "sendReset": "Invia link per nuova password",
       "unlock": "Sblocca",
