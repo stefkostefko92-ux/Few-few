@@ -54,3 +54,14 @@ test('catalog drift: choices the model does not use, defaults and â€žno handleâ€
   assert.deepEqual(drift({ type: 'base', frontRal: 'RAL 0000' }), [], 'decor fronts ignore the RAL');
   assert.equal(drift({ type: 'base', frontMaterial: 'ral', frontRal: 'RAL 0000' }).length, 1);
 });
+
+test('catalog drift: front decor and RAL count only when the model has parts cut from the front material', () => {
+  const open = { type: 'bookcase', doorZone: 0 };
+  assert.ok(!buildModel(open).parts.some((p) => ['door', 'drawer-front', 'plinth'].includes(p.role)), 'an open bookcase has no fronts');
+  // the fallback front decor may well be the carcass decor: its carcass parts are not fronts
+  const fallback = normalizeSpec({ frontDecor: 'shop:gone' }).frontDecor;
+  assert.deepEqual(drift({ ...open, carcassDecor: fallback, frontDecor: 'shop:gone' }), []);
+  assert.deepEqual(drift({ ...open, frontMaterial: 'ral', frontRal: 'RAL 0000' }), []);
+  assert.equal(drift({ type: 'bookcase', doorZone: 800, frontDecor: 'shop:gone' }).length, 1, 'with doors it counts');
+  assert.equal(drift({ type: 'desk', frontDecor: 'shop:gone' }).length, 1, 'the desk top is in the front decor');
+});
