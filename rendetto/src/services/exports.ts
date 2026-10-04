@@ -93,16 +93,20 @@ function cncFiles(b: Built, m: Machining): Record<string, Buffer> {
   return out;
 }
 
-/** Двигателят номерира листовете сам (`drawingSheets`) — същите номера като в редактора и на витрината. */
+/**
+ * Двигателят номерира листовете сам (`drawingSheets`) — същите номера като в редактора и на витрината. Името на
+ * файла започва с номера на листа: 01-assembly.svg е сглобеният чертеж (лист 1), детайлите следват от 02.
+ */
+const ASSEMBLY_SHEET = 1;
+const sheetFile = (no: number, name: string) => `${String(no).padStart(2, '0')}-${name}.svg`;
+
 function drawingFiles(b: Built): Record<string, Buffer> {
   const api = engine();
   const out: Record<string, Buffer> = {
-    '00-assembly.svg': text(api.drawingAssembly(b.model, b.meta)),
+    [sheetFile(ASSEMBLY_SHEET, 'assembly')]: text(api.drawingAssembly(b.model, b.meta)),
   };
   for (const { part, no } of api.drawingSheets(b.model).parts) {
-    out[`${String(no).padStart(2, '0')}-${part.id}.svg`] = text(
-      api.drawingPart(b.model, b.meta, part.id),
-    );
+    out[sheetFile(no, part.id)] = text(api.drawingPart(b.model, b.meta, part.id));
   }
   return out;
 }
@@ -204,7 +208,8 @@ function readme(project: Project, b: Built, blockers: string[]): string {
     'cut-list.csv   детайлите за разкрой (размери за рязане, кант, декор)',
     'hardware.csv   обковът и крепежите',
     'drilling.csv   всеки отвор: детайл, лице, координати, диаметър, дълбочина',
-    'drawings/      сглобен чертеж и чертеж на всеки детайл с карта за пробиване (SVG, A3)',
+    'drawings/      сглобен чертеж и чертеж на всеки детайл с карта за пробиване (SVG, A3); номерът в',
+    `               името е номерът на листа (${sheetFile(ASSEMBLY_SHEET, 'assembly')} е сглобеният чертеж)`,
     ...cnc,
     '',
     'Проверки на конструкцията:',

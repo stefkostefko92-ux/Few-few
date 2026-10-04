@@ -50,7 +50,8 @@ test('a hinge that has left the catalog blocks CNC instead of drilling for anoth
   const zip = files(buildExport(gone, 'Тест', 'project.zip').body);
   assert.ok(!Object.keys(zip).some((name) => name.startsWith('cnc/')));
   assert.match(utf8(zip['README.txt']), /НЕ Е ИЗДАДЕНА[\s\S]*shop:gone/);
-  assert.match(utf8(zip['drawings/00-assembly.svg']), /не е за производство/);
+  assert.match(utf8(zip['drawings/01-assembly.svg']), /не е за производство/);
+  assert.equal(sheetOf(utf8(zip['drawings/01-assembly.svg']))?.split('/')[0], '1');
 });
 
 test('the landing-page door carries the sheet number of the downloaded drawing', () => {
