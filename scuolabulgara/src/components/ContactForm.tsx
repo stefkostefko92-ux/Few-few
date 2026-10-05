@@ -45,7 +45,7 @@ export default function ContactForm({ locale, topics, email }: { locale: Locale;
   }
 
   return (
-    <form className="form-card reveal" data-delay="1" onSubmit={onSubmit} noValidate>
+    <form className="form" onSubmit={onSubmit} noValidate>
       <div className="field">
         <label htmlFor="f-name">{t(locale, "form.name", ui)} *</label>
         <input id="f-name" name="name" type="text" autoComplete="name" required />
@@ -68,9 +68,8 @@ export default function ContactForm({ locale, topics, email }: { locale: Locale;
         <label htmlFor="f-msg">{t(locale, "form.message", ui)} *</label>
         <textarea id="f-msg" name="message" required />
       </div>
-      <button className="btn btn--primary btn--lg" type="submit" style={{ width: "100%", justifyContent: "center" }} disabled={sending}>
+      <button className="btn btn--red form__send" type="submit" disabled={sending}>
         {t(locale, "form.send", ui)}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m4 12 16-8-6 16-3-7-7-1Z" strokeLinejoin="round" /></svg>
       </button>
       <p className="form-note">
         {t(locale, "form.note", ui)}{" "}

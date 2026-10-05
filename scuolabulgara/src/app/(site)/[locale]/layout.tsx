@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import "../../globals.css";
+import "../../base.css";
+import "../../site.css";
 import { fontVars } from "@/lib/fonts";
 import { LOCALES, LOCALE_META, isLocale, type Locale } from "@/lib/i18n";
 import { loadSite } from "@/lib/content";
@@ -73,7 +74,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-export const viewport = { themeColor: "#0f7a3d" };
+export const viewport = { themeColor: "#fdfcf9" };
 
 export default async function LocaleLayout({
   children,
@@ -88,12 +89,6 @@ export default async function LocaleLayout({
   const { ui } = await loadSite(locale);
   return (
     <html lang={LOCALE_META[locale].htmlLang} className={fontVars}>
-      <head>
-        {/* Ensure scroll-reveal content is visible if JavaScript is unavailable. */}
-        <noscript>
-          <style>{`.reveal{opacity:1 !important;transform:none !important}`}</style>
-        </noscript>
-      </head>
       <body>
         <UiProvider ui={ui}>{children}</UiProvider>
       </body>

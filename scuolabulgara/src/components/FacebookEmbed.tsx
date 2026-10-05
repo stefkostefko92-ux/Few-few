@@ -56,7 +56,7 @@ export default function FacebookEmbed({ locale, href }: { locale: Locale; href: 
           </span>
           <h3>{t(locale, "nav.facebook", ui)}</h3>
           <p>{t(locale, "fb.consent", ui)}</p>
-          <button className="btn btn--primary" type="button" onClick={onLoad}>{t(locale, "fb.show", ui)}</button>
+          <button className="btn btn--red" type="button" onClick={onLoad}>{t(locale, "fb.show", ui)}</button>
         </div>
       )}
     </div>

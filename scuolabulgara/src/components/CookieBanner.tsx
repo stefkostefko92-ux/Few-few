@@ -40,10 +40,10 @@ export default function CookieBanner({ locale }: { locale: Locale }) {
         <a href={`/${locale}/cookie`}>{t(locale, "cookie.more", ui)}</a>
       </p>
       <div className="cookiebar__actions">
-        <button type="button" className="btn btn--ghost" onClick={() => decide("rejected")}>
+        <button type="button" className="btn btn--line btn--sm" onClick={() => decide("rejected")}>
           {t(locale, "cookie.reject", ui)}
         </button>
-        <button type="button" className="btn btn--primary" onClick={() => decide("accepted")}>
+        <button type="button" className="btn btn--red btn--sm" onClick={() => decide("accepted")}>
           {t(locale, "cookie.accept", ui)}
         </button>
       </div>

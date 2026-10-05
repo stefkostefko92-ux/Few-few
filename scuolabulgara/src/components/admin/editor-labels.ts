@@ -7,16 +7,16 @@ export const LABELS: Record<string, string> = {
   email: "Имейл", address: "Адрес", facebookUrl: "Facebook — адрес на страницата",
   facebookPageHref: "Facebook — страница за вграждане", mapUrl: "Карта — връзка", logo: "Лого",
   // hero & sections
-  badge: "Етикет", titleA: "Заглавие — начало", titleAccent: "Заглавие — открояваща дума",
-  titleB: "Заглавие — край", lead: "Въвеждащ текст", trust: "Ред за доверие", stat: "Число",
-  statLabel: "Текст до числото", eyebrow: "Надзаглавие", title: "Заглавие", body: "Текст",
-  tag: "Етикет за място", features: "Характеристики", items: "Елементи", quote: "Цитат",
+  badge: "Ред над заглавието", lead: "Въвеждащ текст", title: "Заглавие", body: "Текст",
+  features: "Характеристики", items: "Елементи", quote: "Цитат",
   quoteCite: "Автор на цитата", icon: "Икона", text: "Текст", bullets: "Точки от списъка",
-  num: "Число", label: "Етикет", scheduleTitle: "Заглавие на графика", schedule: "График",
+  label: "Етикет", scheduleTitle: "Заглавие на графика", schedule: "График",
   groupNote: "Бележка за групата", instructorName: "Име на преподавателя",
   instructorRole: "Длъжност на преподавателя", cta: "Текст на бутона", points: "Точки",
   topics: "Теми във формата", primary: "Основен бутон", secondary: "Втори бутон",
-  day: "Ден", time: "Час", place: "Място", highlights: "Лента с акценти под интрото",
+  day: "Ден", time: "Час", place: "Място", highlights: "Факти под интрото",
+  // alphabet
+  letters: "Букви", letter: "Буква", latin: "На латиница", word: "Дума на български", meaning: "Значение",
   // pictures
   image: "Снимка", imageAlt: "Описание на снимката", photos: "Снимки", src: "Снимка",
   caption: "Надпис под снимката", alt: "Описание на снимката",
@@ -37,7 +37,10 @@ export const HINTS: Record<string, string> = {
   imageAlt: "Кратко описание какво има на снимката. Чете се от екранните четци за незрящи и от търсачките.",
   alt: "Кратко описание какво има на снимката. Чете се от екранните четци за незрящи и от търсачките.",
   keywords: "Поне 5. „Carbon Stealth“ се добавя автоматично, ако липсва.",
-  highlights: "Четирите кратки акцента с икони точно под интрото. Ако махнете всички — лентата изчезва.",
+  highlights: "Кратки факти в лентата точно под интрото. Ако махнете всички, лентата изчезва.",
+  badge: "Един ред над голямото заглавие: името на училището и годината.",
+  meaning: "На италианската и английската страница: преводът. На българската: думата на италиански.",
+  latin: "Официалната транслитерация, напр. zh за Ж.",
   shareImage: "Показва се при споделяне във Facebook, WhatsApp и др. Ако е празно — автоматичната карта с логото.",
   description: "Показва се под заглавието в Google. Около 150 знака.",
   phoneHref: "Само цифри с код на държавата, напр. 393208479971.",
@@ -48,9 +51,6 @@ export const HINTS: Record<string, string> = {
   longitude: "Например 9.1900",
   foundingDate: "Във формат ГГГГ-ММ-ДД, напр. 2014-01-12.",
   country: "Двубуквен код, напр. IT.",
-  stat: "Ако е само цифри, се „отброява“ с анимация.",
-  num: "Ако е само цифри, се „отброява“ с анимация.",
-  titleAccent: "Тази дума се показва в зелен курсив.",
 };
 
 /** Interface wording, grouped the way the admin thinks about it. */
@@ -59,7 +59,7 @@ export const UI_GROUPS: { title: string; keys: Record<string, string> }[] = [
     title: "Меню",
     keys: {
       "nav.about": "За нас", "nav.school": "Училището", "nav.courses": "Курсове", "nav.dance": "Танци",
-      "nav.facebook": "Facebook", "nav.contact": "Контакти", "nav.enroll": "Бутон „Запиши се“",
+      "nav.alphabet": "Азбуката", "nav.contact": "Контакти", "nav.enroll": "Бутон „Запиши се“",
       "lang.label": "Етикет за избор на език", skip: "„Към съдържанието“ (за клавиатура)",
     },
   },
@@ -82,7 +82,7 @@ export const UI_GROUPS: { title: string; keys: Record<string, string> }[] = [
   {
     title: "Контакти и долна част",
     keys: {
-      phone: "Етикет „Телефон“", addr: "Етикет „Адрес“", "legal.heading": "„Правна информация“",
+      phone: "Етикет „Телефон“", addr: "Етикет „Адрес“", "footer.site": "Заглавие на менюто долу", "legal.heading": "„Правна информация“",
       "legal.privacy": "Връзка „Поверителност“", "legal.cookie": "Връзка „Бисквитки“",
       "legal.terms": "Връзка „Условия“", rights: "„Всички права запазени“",
       updated: "„Последна актуализация“", backHome: "Връзка „Към началото“",
@@ -94,6 +94,14 @@ export const UI_GROUPS: { title: string; keys: Record<string, string> }[] = [
       "cookie.text": "Текст на банера", "cookie.accept": "Бутон „Приемам“", "cookie.reject": "Бутон „Отказвам“",
       "cookie.more": "Връзка „Повече информация“", "cookie.manage": "Връзка „Настройки на бисквитките“",
       "fb.consent": "Текст преди зареждане на Facebook",
+      "nav.facebook": "Заглавие на прозореца с Facebook",
+    },
+  },
+  {
+    title: "Азбуката",
+    keys: {
+      "alpha.pick": "„Изберете буква“ (за екранни четци)", "alpha.latin": "Етикет „На латиница“",
+      "alpha.meaning": "Етикет „Значение“",
     },
   },
   {
@@ -112,7 +120,7 @@ export const ICON_LABELS: Record<string, string> = {
 };
 
 const LONG = new Set([
-  "lead", "body", "text", "quote", "trust", "instructorRole", "groupNote", "a", "description",
+  "lead", "body", "text", "quote", "instructorRole", "meaning", "groupNote", "a", "description",
   "intro", "imageAlt", "alt", "p", "list", "fb.consent", "cookie.text", "form.ok", "form.note",
 ]);
 export const isLongField = (k: string, v: string) => LONG.has(k) || v.length > 70;

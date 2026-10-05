@@ -12,7 +12,7 @@ type Row = { key: string; label: string; group: string; enabled: boolean; order:
 
 // What each settings/legal entry is for, in one line.
 const ABOUT: Record<string, string> = {
-  hero: "Голямото заглавие, текстът и снимката най-горе на страницата.",
+  hero: "Голямото заглавие, текстът, снимката и фактите точно под тях.",
   settings: "Име, лого, телефон, имейл, адрес и връзки към Facebook и картата.",
   seo: "Заглавие и описание в Google, ключови думи, снимка при споделяне — за всеки език.",
   org: "Официалното име, адресът и координатите, които търсачките четат.",

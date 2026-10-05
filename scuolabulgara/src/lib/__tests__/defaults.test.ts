@@ -109,3 +109,37 @@ describe("описанията по подразбиране идват от е�
     }
   });
 });
+
+describe("азбуката", () => {
+  const row = DEFAULT_CONTENT.find((r) => r.key === "alphabet")!;
+  const BG = "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЮЯ";
+
+  it("има точно 30-те букви на българската азбука, по ред", () => {
+    for (const l of LOCALES) {
+      const letters = (row[l] as { letters: { letter: string }[] }).letters.map((x) => x.letter).join("");
+      expect(letters, l).toBe(BG);
+    }
+  });
+
+  it("всяка дума започва със своята буква (освен Ь, която никога не е първа)", () => {
+    for (const x of (row.it as { letters: { letter: string; word: string }[] }).letters) {
+      if (x.letter === "Ь") expect(x.word.toUpperCase()).toContain("Ь");
+      else expect(x.word[0].toUpperCase(), x.word).toBe(x.letter);
+    }
+  });
+
+  it("значението е на италиански и на българската страница (за двуезичните деца)", () => {
+    const it = (row.it as { letters: { meaning: string }[] }).letters.map((x) => x.meaning);
+    const bg = (row.bg as { letters: { meaning: string }[] }).letters.map((x) => x.meaning);
+    expect(bg).toEqual(it);
+  });
+});
+
+describe("без шаблонни надзаглавия", () => {
+  it("нито една секция няма поле eyebrow", () => {
+    for (const row of DEFAULT_CONTENT) for (const l of LOCALES) expect(row[l], `${row.key} ${l}`).not.toHaveProperty("eyebrow");
+  });
+  it("числата (stats) ги няма", () => {
+    expect(DEFAULT_CONTENT.some((r) => r.key === "stats")).toBe(false);
+  });
+});

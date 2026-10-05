@@ -1,10 +1,10 @@
 // Pure CMS helpers shared by the public site and the admin editor. No I/O here,
 // so every rule is unit-testable (see __tests__/cms.test.ts).
 
-/** Page sections that the admin can reorder and switch on/off. The hero and the
- *  trust bar are deliberately excluded: they always open the page. */
+/** Page sections that the admin can reorder and switch on/off. The hero and its
+ *  strip of facts are deliberately excluded: they always open the page. */
 export const SECTION_KEYS = [
-  "about", "stats", "school", "courses", "dance", "facebook", "gallery", "faq", "contact", "cta",
+  "about", "alphabet", "school", "courses", "dance", "facebook", "gallery", "faq", "contact", "cta",
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 export const isSectionKey = (k: string): k is SectionKey => (SECTION_KEYS as readonly string[]).includes(k);
@@ -110,7 +110,9 @@ export const altKeyFor = (imageKey: string): string | undefined =>
  *  English pages showing the old one. */
 const SHARED = new Set([
   "icon", "phone", "phoneHref", "email", "facebookUrl", "facebookPageHref", "mapUrl",
-  "num", "stat", "latitude", "longitude", "foundingDate", "postalCode", "country", "updated",
+  "latitude", "longitude", "foundingDate", "postalCode", "country", "updated",
+  // the alphabet: the letter, its transliteration and the Bulgarian word
+  "letter", "latin", "word",
 ]);
 export const isImageKey = (k: string) => k === "src" || k === "logo" || /^(image|photo)$/i.test(k) || /(Image|Photo)$/.test(k);
 export const isSharedKey = (k: string) => SHARED.has(k) || isImageKey(k);

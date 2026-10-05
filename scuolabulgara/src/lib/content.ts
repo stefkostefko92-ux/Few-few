@@ -2,6 +2,7 @@ import { prisma } from "./db";
 import type { Dict, Locale } from "./i18n";
 import { DEFAULT_CONTENT, defaultFor } from "./defaults";
 import { SECTION_KEYS, isSectionKey, mergeSection, type SectionKey } from "./cms";
+import { upgradeStored } from "./content-upgrade";
 
 let seedChecked = false;
 
@@ -10,7 +11,7 @@ let seedChecked = false;
 export async function ensureSeeded(): Promise<void> {
   if (seedChecked) return;
   try {
-    const existing = await prisma.content.findMany({ select: { key: true, label: true, group: true } });
+    const existing = await prisma.content.findMany({ select: { key: true, label: true, group: true, it: true, bg: true, en: true } });
     const byKey = new Map(existing.map((r) => [r.key, r] as const));
     for (const row of DEFAULT_CONTENT) {
       const cur = byKey.get(row.key);
@@ -25,6 +26,18 @@ export async function ensureSeeded(): Promise<void> {
         // Keep the system label/group in sync. `order` is NOT touched: once a row
         // exists the editor owns it, so a redeploy never undoes their reordering.
         await prisma.content.update({ where: { key: row.key }, data: { label: row.label, group: row.group } });
+      }
+      // Rows saved under an older version of the site: untouched old defaults
+      // move to the new ones, edited text is kept in the new shape.
+      if (cur) {
+        const data: Partial<Record<Locale, string>> = {};
+        for (const l of ["it", "bg", "en"] as const) {
+          let parsed: unknown;
+          try { parsed = JSON.parse(cur[l] || "{}"); } catch { continue; }
+          const up = upgradeStored(row.key, l, parsed, row[l]);
+          if (up.changed) data[l] = JSON.stringify(up.value);
+        }
+        if (Object.keys(data).length) await prisma.content.update({ where: { key: row.key }, data });
       }
     }
     seedChecked = true;
@@ -113,29 +126,27 @@ export type Settings = {
   logo: string;
 };
 
-export type Highlight = { icon: string; text: string };
+export type Highlight = { text: string };
 export type Hero = Pictured & {
-  highlights: Highlight[];
   badge: string;
-  titleA: string;
-  titleAccent: string;
-  titleB: string;
+  title: string;
   lead: string;
-  trust: string;
-  stat: string;
-  statLabel: string;
+  highlights: Highlight[];
 };
 
-export type Simple = { eyebrow: string; title: string; lead?: string; body?: string };
+export type Simple = { title: string; lead?: string; body?: string };
 
-export type Feature = { icon: string; title: string; text: string };
-export type About = Simple & Pictured & { features: Feature[]; tag: string };
+export type Feature = { title: string; text: string };
+export type About = Simple & Pictured & { features: Feature[] };
+
+export type Letter = { letter: string; latin: string; word: string; meaning: string };
+export type Alphabet = { title: string; lead: string; letters: Letter[] };
 
 export type Card = { icon: string; title: string; text: string; bullets: string[] };
 export type Cards = Simple & { items: Card[] };
 export type School = Cards & Pictured & { quote: string; quoteCite: string };
 
-export type ScheduleRow = { day: string; time: string; title: string; place: string };
+export type ScheduleRow = { day: string; time: string; place: string };
 export type Dance = Simple & Pictured & {
   body: string;
   scheduleTitle: string;
@@ -146,9 +157,6 @@ export type Dance = Simple & Pictured & {
   cta: string;
 };
 
-export type Stat = { num: string; label: string };
-export type Stats = { items: Stat[] };
-
 export type GalleryPhoto = { src: string; caption: string; alt: string };
 export type Gallery = Simple & { photos: GalleryPhoto[] };
 
@@ -156,10 +164,10 @@ export type Facebook = Simple & { points: string[] };
 
 export type Contact = Simple & { topics: string[] };
 
-export type Cta = Pictured & { title: string; body: string; primary: string; secondary: string };
+export type Cta = { title: string; body: string; primary: string; secondary: string };
 
 export type FaqItem = { q: string; a: string };
-export type Faq = { eyebrow: string; title: string; items: FaqItem[] };
+export type Faq = { title: string; items: FaqItem[] };
 
 export type Seo = { title: string; description: string; keywords: string[]; shareImage: string };
 
@@ -184,7 +192,7 @@ export type ContentMap = {
   hero: Hero;
   about: About;
   school: School;
-  stats: Stats;
+  alphabet: Alphabet;
   courses: Cards;
   dance: Dance;
   facebook: Facebook;

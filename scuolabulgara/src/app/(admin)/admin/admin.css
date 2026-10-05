@@ -4,7 +4,7 @@
    ================================================================= */
 :root { --ad-bg: #f6f7f9; --ad-surface: #ffffff; --ad-line: #e6e8ee; --ad-ink: #1a1d24; --ad-muted: #6b7280; --ad-brand: #0f7a3d; --ad-brand-600: #18914b; }
 
-.admin { min-height: 100vh; background: var(--ad-bg); color: var(--ad-ink); font-family: var(--font-body, system-ui, sans-serif); display: grid; grid-template-columns: 264px 1fr; }
+.admin { font-feature-settings: "locl" 0; min-height: 100vh; background: var(--ad-bg); color: var(--ad-ink); font-family: var(--font-body, system-ui, sans-serif); display: grid; grid-template-columns: 264px 1fr; }
 .admin * { box-sizing: border-box; }
 
 /* Sidebar */

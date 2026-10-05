@@ -14,20 +14,20 @@ export default async function LegalPage({ locale, kind }: { locale: Locale; kind
   // Editable in the admin; falls back to the built-in text in legal.ts.
   const doc = site.get(`legal_${kind}`);
   const logo = safeImage(settings.logo, "/assets/img/brand/logo.webp");
-  const nav = buildNav(locale, site.ui, site.enabled);
+  const nav = buildNav(locale, site.ui, site.sections);
 
   return (
     <>
+      <a className="skip-link" href="#main">{tt("skip")}</a>
       <SiteHeader locale={locale} brandName={settings.brandName} brandSub={settings.brandSub} logo={logo} nav={nav} />
 
-      <main id="main" className="section legal">
-        <div className="container">
-          <div className="legal__head">
-            <span className="eyebrow">{tt("legal.heading")}</span>
+      <main id="main" className="legal">
+        <div className="wrap legal__grid">
+          <header className="legal__head">
             <h1>{doc.title}</h1>
             <p className="lead">{doc.intro}</p>
-            {doc.updated && <p className="updated">{tt("updated")}: {doc.updated}</p>}
-          </div>
+            {doc.updated && <p className="legal__updated">{tt("updated")}: {doc.updated}</p>}
+          </header>
 
           <div className="legal__body">
             {doc.sections.map((s, i) => (
@@ -35,16 +35,13 @@ export default async function LegalPage({ locale, kind }: { locale: Locale; kind
                 <h2>{s.h}</h2>
                 {s.p.filter(Boolean).map((para, j) => <p key={j}>{para}</p>)}
                 {s.list.filter(Boolean).length > 0 && (
-                  <ul className="legal-list">
+                  <ul className="stitch-list">
                     {s.list.filter(Boolean).map((li, j) => <li key={j}>{li}</li>)}
                   </ul>
                 )}
               </section>
             ))}
-            <a className="legal__back" href={`/${locale}`}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5m6-6-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              {tt("backHome")}
-            </a>
+            <a className="textlink" href={`/${locale}`}>{tt("backHome")}</a>
           </div>
         </div>
       </main>

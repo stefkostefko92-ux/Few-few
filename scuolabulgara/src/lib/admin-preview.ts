@@ -3,7 +3,7 @@
 const ANCHORS: Record<string, string> = {
   hero: "top",
   about: "chi-siamo",
-  stats: "numeri",
+  alphabet: "alfabeto",
   school: "scuola",
   courses: "corsi",
   dance: "danza",
@@ -11,7 +11,7 @@ const ANCHORS: Record<string, string> = {
   gallery: "galleria",
   faq: "faq",
   contact: "contatti",
-  cta: "contatti",
+  cta: "benvenuti",
 };
 const LEGAL_PAGES: Record<string, string> = {
   legal_privacy: "privacy",

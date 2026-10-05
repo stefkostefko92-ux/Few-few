@@ -46,9 +46,14 @@ describe("isImageKey / isSharedKey", () => {
     }
   });
 
-  it("икона, телефон и числа са общи за трите езика; текстът — не", () => {
-    for (const k of ["icon", "phone", "phoneHref", "email", "num", "latitude"]) expect(isSharedKey(k), k).toBe(true);
+  it("икона, телефон и координати са общи за трите езика; текстът — не", () => {
+    for (const k of ["icon", "phone", "phoneHref", "email", "latitude"]) expect(isSharedKey(k), k).toBe(true);
     for (const k of ["title", "caption", "q", "a", "lead"]) expect(isSharedKey(k), k).toBe(false);
+  });
+
+  it("буквата, латиницата и българската дума са общи; значението се превежда", () => {
+    for (const k of ["letter", "latin", "word"]) expect(isSharedKey(k), k).toBe(true);
+    expect(isSharedKey("meaning")).toBe(false);
   });
 });
 
