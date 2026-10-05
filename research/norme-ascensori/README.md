@@ -101,7 +101,11 @@ documento. **Non contiene il contenuto delle norme**, e non deve mai contenerlo.
    voce.
 3. Controllo automatico della parafrasi: ogni riga delle note confrontata con il testo sorgente; le sequenze di 8 o
    più parole identiche (esclusi elenchi di numeri, nomi e titoli) riscritte.
-4. Controllo a campione dei valori sul testo sorgente.
+4. Controllo automatico dei valori: ogni numero con unità cercato sulla pagina citata del sorgente (±1 pagina); i
+   147 casi segnalati verificati uno per uno sull'immagine della pagina (prospetti e figure) o sulla fonte citata.
+5. Nessuna lettura incerta rimasta. I ⚠ che restano segnano anomalie del testo originale («così nel testo»,
+   verificate sull'immagine della pagina), figure che mancano nei file e lo stato di bozza della prEN 81-71. Per le
+   leggi, i passi dubbi del file confrontati con il testo su Normattiva.
 
 Una nota privata ha la forma «**5.2.5.7.1** — requisito con parole nostre e valori (p. 41)». Per cercare:
 `grep -n "5.2.5.7" ../norme-ascensori/uni-en-81-20-2020.md`, poi leggere intorno alla riga.
