@@ -179,3 +179,5 @@
 {"t":"handoff","ts":"2026-09-28T10:56:12.700Z","id":"r4db2ead0","from":"izpitatelya","to":"оркестратор","status":"има бележки","run":"c5961c33"}
 {"t":"start","ts":"2026-09-28T13:42:12.694Z","id":"rb0b2c7c7","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-09-28T13:42:12.695Z","id":"rb0b2c7c7","from":"kodadjiyata","to":"човек","status":"има бележки","run":"2f8a1cd7"}
+{"t":"start","ts":"2026-10-05T05:54:17.876Z","id":"r257d6f89","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-10-05T05:54:17.876Z","id":"r257d6f89","from":"kodadjiyata","to":"човек","status":"има бележки","run":"b56426c1"}

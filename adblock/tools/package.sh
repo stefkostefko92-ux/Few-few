@@ -44,6 +44,7 @@ if (m.options_ui?.page) refs.add(m.options_ui.page);
 // explicitly — otherwise a forgotten `build_scriptlets.mjs` ships without it.
 refs.add("scriptlets/main.js");
 refs.add("scriptlets/policy.js"); // importScripts() in the service worker
+refs.add("youtube_main.js");          // registered by the service worker (MAIN world, YouTube)
 refs.add("lib/abp2dnr.js");       // importScripts() — author-hosted lists
 refs.add("report/report.html");   // opened from the popup
 refs.add("THIRD_PARTY_NOTICES.txt"); // linked from Settings; list licences ask for it

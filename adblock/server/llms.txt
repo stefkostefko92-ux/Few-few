@@ -8,7 +8,7 @@
 - Maker: Carbon Stealth VCC, Bulgaria (EU) — carbonstealth.eu, info@carbonstealth.eu
 - Platform: Chrome Manifest V3 extension; Chrome, Edge, Brave and other Chromium browsers, version 121+
 - Price: free, no account, no paid tier; optional donations
-- Current version: 5.1.2 (25 September 2026)
+- Current version: 5.1.3 (5 October 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
 - Privacy policy: https://adblock.carbonstealth.eu/privacy
@@ -16,7 +16,7 @@
 
 ## What it does
 
-- YouTube: the player request itself is flagged ad-free (isInlinePlaybackNoAd) and remaining ad fields are removed from responses; feed and search ads are removed too. It never blocks YouTube's video servers. If YouTube refuses playback on a flagged account, the extension steps aside for that session so videos still play.
+- YouTube: ad entries are renamed out of the player data before the player parses it (the method the uBlock Origin filter maintainers use), feed and search ads are removed, and the hooks are indistinguishable from the browser's own functions, so the page sees no sign of a blocker. It never blocks YouTube's video servers or its playback reports. If YouTube still refuses playback on a flagged account, the extension steps aside for that session so videos still play.
 - Filter lists: EasyList and EasyPrivacy compiled in (40,000+ network and cosmetic rules) plus an in-house set, uBlock filters (on by default) and Peter Lowe's list — 60,000+ rules on by default; tracking-parameter stripping (utm_*, fbclid, gclid); optional URLhaus malware-domain protection; third-party tracking cookies and beacons blocked.
 - Regional lists: 31 language and country lists ship in the package and the ones matching the browser language turn on automatically; 4 more (Bulgarian, Polish, Nordic, Croatian) have no redistribution licence and are downloaded from their authors only when the user turns them on — data, never code.
 - Focus mode: optional switches hide social widgets, chat pop-ups, newsletter and notification prompts, AI assistant pop-ups, "sign in with Google" prompts and short-video shelves (YouTube Shorts, Reels).
@@ -51,4 +51,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 25 September 2026 (version 5.1.2)._
+_Last updated: 5 October 2026 (version 5.1.3)._

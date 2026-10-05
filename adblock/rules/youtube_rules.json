@@ -18,24 +18,6 @@
     }
   },
   {
-    "id": 1001,
-    "priority": 2,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "youtube.com/ptracking",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "image",
-        "sub_frame",
-        "script",
-        "ping",
-        "media"
-      ]
-    }
-  },
-  {
     "id": 1002,
     "priority": 2,
     "action": {
@@ -43,24 +25,6 @@
     },
     "condition": {
       "urlFilter": "youtube.com/api/stats/ads",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "image",
-        "sub_frame",
-        "script",
-        "ping",
-        "media"
-      ]
-    }
-  },
-  {
-    "id": 1003,
-    "priority": 2,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "youtube.com/api/stats/atr",
       "resourceTypes": [
         "xmlhttprequest",
         "image",

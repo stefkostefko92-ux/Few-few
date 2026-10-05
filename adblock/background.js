@@ -315,7 +315,7 @@ chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "config-update") fetchLiveConfig();
   if (a.name === "scriptlets-retry") syncScriptlets();
   if (a.name === "subs-refresh") { refreshAllSubscriptions(); syncRemoteLists(undefined, true); }
-  if (a.name === "yt-bypass-expire") chrome.storage.local.remove("ytBypassUntil").then(() => setYtBypassRule(false));
+  if (a.name === "yt-bypass-expire") chrome.storage.local.remove("ytBypassUntil").then(() => setYtBypassRule(false)).then(() => syncScriptlets());
 });
 
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
@@ -383,6 +383,12 @@ async function applyState() {
 // and skip allowlisted sites. `world:"MAIN"` needs Chrome 111+ (min is 121).
 const SCRIPTLET_SCRIPT_ID = "sa-scriptlets";
 const UBO_CHUNK_PREFIX = "sa-ubo-";
+// youtube_main.js: MAIN world, document_start, YouTube hosts only — registered here
+// (not injected by the loader with a <script src>, which ran late and left a trace).
+// Off while the YouTube feature is off, the extension is off, or a YouTube session
+// bypass is active (YouTube hard-blocked us: then nothing of ours runs in its pages).
+const YT_MAIN_SCRIPT_ID = "sa-youtube";
+const YT_PATTERNS = ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"];
 
 // Serialise register/unregister so a fast on/off/on burst (alarm + message
 // racing through applyState) can't interleave the awaits and leave the engine
@@ -402,12 +408,13 @@ async function doSyncScriptlets(on) {
   // Always clear first so a re-register can't throw "already registered".
   try {
     const existing = (await chrome.scripting.getRegisteredContentScripts())
-      .map((c) => c.id).filter((id) => id === SCRIPTLET_SCRIPT_ID || id.startsWith(UBO_CHUNK_PREFIX));
+      .map((c) => c.id).filter((id) => id === SCRIPTLET_SCRIPT_ID || id === YT_MAIN_SCRIPT_ID || id.startsWith(UBO_CHUNK_PREFIX));
     if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: existing });
   } catch (e) {}
   if (!on) return;
 
-  const { allowlist = [] } = await chrome.storage.local.get("allowlist");
+  const { allowlist = [], features = {}, ytBypassUntil = 0 } = await chrome.storage.local.get(["allowlist", "features", "ytBypassUntil"]);
+  const ytBypass = ytBypassUntil > Date.now();
   const excludeMatches = [];
   for (const d of allowlist) {
     if (!isHost(d)) continue; // an invalid match pattern would fail the whole registration
@@ -433,7 +440,7 @@ async function doSyncScriptlets(on) {
         uboScripts.push({
           id: UBO_CHUNK_PREFIX + m[1], matches, js: [c.file, "scriptlets/main.js"],
           runAt: "document_start", allFrames: true, world: "MAIN", persistAcrossSessions: true,
-          ...(excludeMatches.length ? { excludeMatches } : {}),
+          ...(excludeMatches.length || ytBypass ? { excludeMatches: excludeMatches.concat(ytBypass ? YT_PATTERNS : []) } : {}),
         });
       }
     }
@@ -451,10 +458,19 @@ async function doSyncScriptlets(on) {
     // excludeMatches. We rely on injection without a live service worker.
     persistAcrossSessions: true,
   };
-  if (excludeMatches.length || uboPatterns.length) script.excludeMatches = excludeMatches.concat(uboPatterns);
+  if (excludeMatches.length || uboPatterns.length || ytBypass) script.excludeMatches = excludeMatches.concat(uboPatterns, ytBypass ? YT_PATTERNS : []);
+
+  const all = [script, ...uboScripts];
+  if (features.youtube !== false && !ytBypass) {
+    all.push({
+      id: YT_MAIN_SCRIPT_ID, matches: YT_PATTERNS, js: ["youtube_main.js"], runAt: "document_start",
+      allFrames: true, world: "MAIN", persistAcrossSessions: true,
+      ...(excludeMatches.length ? { excludeMatches } : {}),
+    });
+  }
 
   try {
-    await chrome.scripting.registerContentScripts([script, ...uboScripts]);
+    await chrome.scripting.registerContentScripts(all);
     try { await chrome.storage.local.set({ scriptletsError: "" }); } catch {}
   } catch (e) {
     console.warn("scriptlet registration failed", e);
@@ -524,6 +540,7 @@ async function reconcileYtBypass() {
     if (ytBypassUntil) await chrome.storage.local.remove("ytBypassUntil");
     await setYtBypassRule(false);
   }
+  await syncScriptlets();
 }
 
 // ---- Live filter update (remote DATA, never code) ----
@@ -1430,6 +1447,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (!isYt) { sendResponse({ ok: false, reason: "not youtube" }); return false; }
       chrome.storage.local.set({ ytBypassUntil: Date.now() + YT_BYPASS_MS }, async () => {
         await setYtBypassRule(true);
+        await syncScriptlets(); // nothing of ours in YouTube pages during the bypass
         chrome.alarms.create("yt-bypass-expire", { when: Date.now() + YT_BYPASS_MS });
         sendResponse({ ok: true });
       });
