@@ -36,3 +36,6 @@
 {"t":"handoff","ts":"2026-09-25T07:55:03.902Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"блокер"}
 {"t":"handoff","ts":"2026-09-25T07:56:20.759Z","id":"auto","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-25T07:57:02.496Z","id":"auto","from":"prevodach","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-10-05T04:51:11.308Z","id":"auto","from":"pravniyat-razbirach","to":"човек","status":"блокер — AdSense зарежда преди съгласие (index.html:6, Вероятно); липсва право на отказ (public/termini/index.html:94, Сигурно); ipapi.co не е разкрит (src/App.jsx:205, Сигурно)"}
+{"t":"handoff","ts":"2026-10-05T04:52:39.608Z","id":"auto","from":"skorostnika","to":"човек","status":"има бележки"}
+{"t":"handoff","ts":"2026-10-05T04:55:19.344Z","id":"auto","from":"izpitatelya","to":"човек","status":"има бележки"}

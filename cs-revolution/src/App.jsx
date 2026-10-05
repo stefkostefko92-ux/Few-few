@@ -135,9 +135,9 @@ var LANGS = {
   },
   // ── COOKIE BANNER ──
   cookie_text: {
-    it: "Usiamo solo cookie tecnici propri. Il sito mostra annunci Google (AdSense): con ACCETTA possono essere personalizzati, con RIFIUTA restano non personalizzati. Puoi cambiare scelta in qualsiasi momento dalla Politica Cookie.",
-    en: "We only use our own technical cookies. The site shows Google ads (AdSense): ACCEPT allows personalised ads, REJECT keeps them non-personalised. You can change your choice at any time from the Cookie Policy.",
-    bg: "\u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u043C\u0435 \u0441\u0430\u043C\u043E \u0441\u043E\u0431\u0441\u0442\u0432\u0435\u043D\u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438. \u0421\u0430\u0439\u0442\u044A\u0442 \u043F\u043E\u043A\u0430\u0437\u0432\u0430 \u0440\u0435\u043A\u043B\u0430\u043C\u0438 \u043D\u0430 Google (AdSense): \u0441 \u041F\u0420\u0418\u0415\u041C\u0418 \u043C\u043E\u0436\u0435 \u0434\u0430 \u0441\u0430 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438, \u0441 \u041E\u0422\u041A\u0410\u0416\u0418 \u043E\u0441\u0442\u0430\u0432\u0430\u0442 \u043D\u0435\u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438. \u041C\u043E\u0436\u0435\u0442\u0435 \u0434\u0430 \u043F\u0440\u043E\u043C\u0435\u043D\u0438\u0442\u0435 \u0438\u0437\u0431\u043E\u0440\u0430 \u0441\u0438 \u043F\u043E \u0432\u0441\u044F\u043A\u043E \u0432\u0440\u0435\u043C\u0435 \u043E\u0442 \u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430\u0442\u0430 \u0437\u0430 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438."
+    it: "Usiamo cookie tecnici propri. Il sito mostra annunci Google (AdSense), che usano cookie: con «Accetta» possono essere personalizzati; con «Rifiuta» sono non personalizzati, ma Google usa comunque cookie per limitarne la frequenza e contarli. Puoi cambiare scelta dalla Politica Cookie.",
+    en: "We use our own technical cookies. The site shows Google ads (AdSense), which use cookies: “Accept” allows personalised ads; with “Reject” ads are non-personalised, but Google still uses cookies to cap their frequency and count them. You can change your choice from the Cookie Policy.",
+    bg: "\u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u043C\u0435 \u0441\u043E\u0431\u0441\u0442\u0432\u0435\u043D\u0438 \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u0438 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438. \u0421\u0430\u0439\u0442\u044A\u0442 \u043F\u043E\u043A\u0430\u0437\u0432\u0430 \u0440\u0435\u043A\u043B\u0430\u043C\u0438 \u043D\u0430 Google (AdSense), \u043A\u043E\u0438\u0442\u043E \u043F\u043E\u043B\u0437\u0432\u0430\u0442 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438: \u0441 \u201E\u041F\u0440\u0438\u0435\u043C\u0438\u201C \u043C\u043E\u0436\u0435 \u0434\u0430 \u0441\u0430 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438; \u0441 \u201E\u041E\u0442\u043A\u0430\u0436\u0438\u201C \u0441\u0430 \u043D\u0435\u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0430\u043D\u0438, \u043D\u043E Google \u043F\u0430\u043A \u043F\u043E\u043B\u0437\u0432\u0430 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438, \u0437\u0430 \u0434\u0430 \u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0430\u0432\u0430 \u0447\u0435\u0441\u0442\u043E\u0442\u0430\u0442\u0430 \u0438\u043C \u0438 \u0434\u0430 \u0433\u0438 \u043E\u0442\u0447\u0438\u0442\u0430. \u041C\u043E\u0436\u0435\u0442\u0435 \u0434\u0430 \u043F\u0440\u043E\u043C\u0435\u043D\u0438\u0442\u0435 \u0438\u0437\u0431\u043E\u0440\u0430 \u0441\u0438 \u043E\u0442 \u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430\u0442\u0430 \u0437\u0430 \u0431\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438.",
   },
   cookie_accept: { it: "ACCETTA", en: "ACCEPT", bg: "\u041F\u0420\u0418\u0415\u041C\u0418" },
   cookie_reject: { it: "RIFIUTA", en: "REJECT", bg: "\u041E\u0422\u041A\u0410\u0416\u0418" },
@@ -150,9 +150,9 @@ var LANGS = {
   form_send: { it: "INVIA RICHIESTA", en: "SEND REQUEST", bg: "\u0418\u0417\u041F\u0420\u0410\u0422\u0418" },
   form_sent: { it: "Richiesta inviata! Ti risponderemo entro 24 ore.", en: "Request sent! We will reply within 24 hours.", bg: "\u0417\u0430\u044F\u0432\u043A\u0430\u0442\u0430 \u0435 \u0438\u0437\u043F\u0440\u0430\u0442\u0435\u043D\u0430! \u0429\u0435 \u043E\u0442\u0433\u043E\u0432\u043E\u0440\u0438\u043C \u0434\u043E 24 \u0447\u0430\u0441\u0430." },
   form_gdpr: {
-    it: "Inviando questo modulo, acconsenti al trattamento dei tuoi dati personali secondo la nostra",
-    en: "By submitting this form, you consent to the processing of your personal data according to our",
-    bg: "\u0418\u0437\u043F\u0440\u0430\u0449\u0430\u0439\u043A\u0438 \u0442\u043E\u0437\u0438 \u0444\u043E\u0440\u043C\u0443\u043B\u044F\u0440, \u0412\u0438\u0435 \u0441\u0435 \u0441\u044A\u0433\u043B\u0430\u0441\u044F\u0432\u0430\u0442\u0435 \u0441 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430\u0442\u0430 \u043D\u0430 \u043B\u0438\u0447\u043D\u0438\u0442\u0435 \u0412\u0438 \u0434\u0430\u043D\u043D\u0438 \u0441\u044A\u0433\u043B\u0430\u0441\u043D\u043E \u043D\u0430\u0448\u0430\u0442\u0430"
+    it: "Usiamo i tuoi dati solo per rispondere alla richiesta (art. 6.1.b GDPR), come spiegato nella nostra",
+    en: "We use your details only to answer your request (Art. 6(1)(b) GDPR), as explained in our",
+    bg: "\u0418\u0437\u043F\u043E\u043B\u0437\u0432\u0430\u043C\u0435 \u0434\u0430\u043D\u043D\u0438\u0442\u0435 \u0412\u0438 \u0441\u0430\u043C\u043E \u0437\u0430 \u0434\u0430 \u043E\u0442\u0433\u043E\u0432\u043E\u0440\u0438\u043C \u043D\u0430 \u0437\u0430\u043F\u0438\u0442\u0432\u0430\u043D\u0435\u0442\u043E (\u0447\u043B. 6, \u043F\u0430\u0440. 1, \u0431. \u201E\u0431\u201C GDPR), \u043A\u0430\u043A\u0442\u043E \u0435 \u043E\u043F\u0438\u0441\u0430\u043D\u043E \u0432 \u043D\u0430\u0448\u0430\u0442\u0430",
   },
   // ── ADMIN ──
   admin_title: { it: "CS MONITOR \u2014 ADMIN", en: "CS MONITOR \u2014 ADMIN", bg: "CS \u041C\u041E\u041D\u0418\u0422\u041E\u0420 \u2014 \u0410\u0414\u041C\u0418\u041D" },
@@ -201,18 +201,6 @@ function should3D(){
   }catch(e){return true;}
 }
 // IP-based country detection — DEFINITIVE, overrides timezone (HTTPS endpoint: ip-api.com free tier is HTTP-only and gets blocked as mixed content)
-function detectLangByIP(callback) {
-  fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(4000) })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var cc = (data.country_code || "").toUpperCase();
-      if (cc === "IT") callback("it");
-      else if (cc === "BG") callback("bg");
-      // any other country: keep Italian (the language of this URL)
-      // no country code (rate limit / error) — keep timezone fallback
-    })
-    .catch(function() { /* keep timezone fallback */ });
-}
 
 // Service descriptions per language
 var SRV_DATA = {
@@ -2540,7 +2528,10 @@ export default function App(){
   const[scrollPx,setScrollPx]=useState(0);
   const[lang,setLang]=useState(function(){return detectLang()});
   // IP geolocation overrides timezone detection (IT/BG/other→EN) — but never an explicit user choice
-  useEffect(function(){if(explicitLang())return;detectLangByIP(function(l){setLang(l)})},[]);
+  // <html lang> follows the visible language (screen readers pronounce the page in the right language)
+  useEffect(function(){try{document.documentElement.lang=lang}catch(e){}},[lang]);
+  // (the ipapi.co IP lookup was removed: it sent every visitor's IP to a US company on load;
+  //  detectLang() already picks the language from the browser and the time zone)
   const[showAdmin,setShowAdmin]=useState(false);
   const[mobileMenu,setMobileMenu]=useState(false);
   const[cookieOk,setCookieOk]=useState(function(){try{return localStorage.getItem("cs_cookie")!==null}catch(e){return false}});
@@ -2907,12 +2898,12 @@ export default function App(){
           <div className="cs-nav-lang" style={{display:"flex",gap:2,marginLeft:8}}>
             {["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:8,padding:"3px 6px",letterSpacing:".1em",cursor:"none",background:lang===l?"rgba("+CR+",.15)":"transparent",color:lang===l?C:"#ccc",border:"1px solid "+(lang===l?"rgba("+CR+",.3)":"rgba(245,245,240,.06)"),fontWeight:lang===l?700:400,textTransform:"uppercase"}}>{l}</span>})}
           </div>
-          <div className="cs-hamburger" {...kb(function(){setMobileMenu(true)},lang==="bg"?"\u041E\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Open menu":"Apri il menu")}><span/><span/><span/></div>
+          <div className="cs-hamburger" {...kb(function(){setMobileMenu(true)},lang==="bg"?"\u041E\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Open menu":"Apri il menu")} aria-expanded={mobileMenu?"true":"false"} aria-controls="cs-mobile-menu"><span/><span/><span/></div>
         </div>
       </nav>
 
       {/* MOBILE MENU OVERLAY */}
-      <div className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}>
+      <div id="cs-mobile-menu" className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}>
         <div className="cs-mobile-menu-close" {...kb(function(){setMobileMenu(false)},lang==="bg"?"\u0417\u0430\u0442\u0432\u043E\u0440\u0438 \u043C\u0435\u043D\u044E\u0442\u043E":lang==="en"?"Close menu":"Chiudi il menu")} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>{"\u2715"}</div>
         <img src="/brand/cs-logo-480.webp" alt="Carbon Stealth VCC" width={140} height={140} decoding="async" style={{height:140,width:140,marginBottom:4}}/>
         {[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_pricing"),id:"pricing"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} className="cs-mobile-menu-item" {...kb(function(){scrollToId(item.id);setMobileMenu(false)},item.txt)} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{item.txt}</div>})}
@@ -2980,7 +2971,7 @@ export default function App(){
           <div style={{maxWidth:420,marginBottom:32,border:"1px solid rgba("+CR+",.14)",boxShadow:"0 0 32px rgba("+CR+",.08)",background:"#000",overflow:"hidden"}}>
             <img src="/brand/cs-poster.webp" alt="Carbon Stealth VCC — design, development, performance" width={1024} height={1024} loading="lazy" decoding="async" style={{display:"block",width:"100%",height:"auto"}}/>
           </div>
-          {[[t("stat_1"),"50+"],[t("stat_2"),"10"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
+          {[[t("stat_1"),"50+"],[t("stat_2"),"11"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
             return <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"14px 0",borderBottom:"1px solid rgba(245,245,240,.08)"}}>
               <span style={{fontSize:9,letterSpacing:".25em",textTransform:"uppercase",color:"#ddd"}}>{item[0]}</span>
               <span style={{fontFamily:HEAD,fontWeight:900,fontSize:i===3?"2rem":"1.4rem",letterSpacing:"-.02em",color:i===3?C:"#C9D1D6"}}>{item[1]}</span></div>})}
@@ -3057,7 +3048,7 @@ export default function App(){
 
         {/* Real screenshots of each live project (public/work/, captured from the live sites) */}
         <div className="cs-work-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
-        {[["001","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu","nexus-dominion"],["002","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com","ou-vaptsarov"],["003","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu","erp-ascensori"],["004","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu","treti-mart"],["005","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com","evanita-sport"],["006","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it","eternal-touch"],["007","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it","ospedali-trasparenti"],["008","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com","vizitka"],["009","MASTILKO","PRINT TOOLS","https://mastilko-bg.com","mastilko"],["010","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it","panev-ascensori"]].map(function(w){
+        {[["001","PANEV ASCENSORI","STAFFE BREVETTATE · IT","https://panevascensori.it","panev-ascensori"],["002","ZA BOBOV DOL","CIVIC PORTAL · BG","https://zabobovdol.carbonstealth.eu","zabobovdol"],["003","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu","nexus-dominion"],["004","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com","ou-vaptsarov"],["005","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu","erp-ascensori"],["006","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu","treti-mart"],["007","EVANITA SPORT","KANGOO JUMPS STUDIO","https://evanita-bg.com","evanita-sport"],["008","ETERNAL TOUCH","ATELIER · GESSO","https://eternaltouch.it","eternal-touch"],["009","OSPEDALI TRASPARENTI","CIVIC DATA · IT","https://ospedalitrasparenti.it","ospedali-trasparenti"],["010","VIZITKA","QR BUSINESS CARD","https://vizitka-bg.com","vizitka"],["011","MASTILKO","PRINT TOOLS","https://mastilko-bg.com","mastilko"]].map(function(w){
           return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" className="cs-work-card" style={{display:"flex",flexDirection:"column",border:"1px solid rgba("+CR+",.14)",background:"rgba("+CR+",.015)",cursor:"none",textDecoration:"none",color:"inherit",overflow:"hidden"}}>
             <img src={"/work/"+w[4]+"-480.webp"} srcSet={"/work/"+w[4]+"-480.webp 480w, /work/"+w[4]+".webp 960w"} sizes="(max-width:640px) 100vw, 33vw" width={480} height={300} loading="lazy" decoding="async" alt={w[1]+" \u2014 "+w[2]} style={{display:"block",width:"100%",height:"auto",aspectRatio:"16/10",objectFit:"cover",objectPosition:"top",borderBottom:"1px solid rgba("+CR+",.14)"}}/>
             <div style={{display:"flex",flexDirection:"column",gap:6,padding:"14px 16px 16px"}}>

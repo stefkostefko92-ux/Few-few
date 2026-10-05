@@ -6,9 +6,8 @@
  */
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+// Same-origin only: the analyzer is called from our own /test/ pages. A wildcard CORS header let any
+// other site use it (and our PageSpeed quota) from its visitors' browsers.
 header('X-Content-Type-Options: nosniff');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit(0);
@@ -452,6 +451,8 @@ if ($action === 'lead') {
     $email = trim($input['email'] ?? '');
     $phone = trim($input['phone'] ?? '');
     $testedUrl = trim($input['tested_url'] ?? '');
+    if ($testedUrl !== '' && !(filter_var($testedUrl, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $testedUrl))) $testedUrl = '';
+    $testedUrl = substr($testedUrl, 0, 500);
     $name = trim(strip_tags($input['name'] ?? ''));
     $message = trim(strip_tags($input['message'] ?? ''));
 

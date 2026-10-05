@@ -15,7 +15,7 @@ HOST_TO_SLUG = {
     "nexus.carbonstealth.eu": "nexus-dominion", "ouvaptsarov.com": "ou-vaptsarov", "erp.carbonstealth.eu": "erp-ascensori",
     "tretimart.carbonstealth.eu": "treti-mart", "evanita-bg.com": "evanita-sport", "eternaltouch.it": "eternal-touch",
     "ospedalitrasparenti.it": "ospedali-trasparenti", "vizitka-bg.com": "vizitka", "mastilko-bg.com": "mastilko",
-    "panevascensori.it": "panev-ascensori",
+    "panevascensori.it": "panev-ascensori", "zabobovdol.carbonstealth.eu": "zabobovdol",
 }
 ALT = {"it": "Schermata del sito {name}", "en": "Screenshot of the {name} website", "bg": "Екранна снимка на сайта {name}"}
 

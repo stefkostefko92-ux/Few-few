@@ -71,6 +71,10 @@ if ($rlFp) {
     }
     @flock($rlFp, LOCK_UN); fclose($rlFp); @chmod($rlFile, 0600);
 }
+// housekeeping (1 request in 50): rate-limit files hold a hashed IP key — drop the ones older than a day
+if (mt_rand(1, 50) === 1) {
+    foreach (glob($rlDir.'/rl_*.json') ?: [] as $old) { if (@filemtime($old) < time() - 86400) @unlink($old); }
+}
 if ($rlOver) {
     http_response_code(429);
     echo json_encode(['ok'=>false,'error'=>'Too many requests. Try again later.']);
@@ -142,7 +146,7 @@ $html = <<<H
     <div style="white-space:pre-wrap">$messageH</div>
   </div>
   <div style="margin-top:16px;font-size:10px;color:#666">
-    $ts · IP: $ipH · $uaH
+    $ts
   </div>
 </td></tr></table>
 H;
@@ -152,7 +156,7 @@ $txt = "CARBON STEALTH VCC — New Contact\n"
      . "Name:     $name\nEmail:    $email\nPhone:    $phone\nLang:     $langFlag\n\n"
      . "Message:\n$message\n\n"
      . str_repeat("-", 50) . "\n"
-     . "Date: $ts | IP: $ip";
+     . "Date: $ts";  // IP and browser stay in the server log only, not in the mailbox (GDPR minimisation)
 
 // Auto-reply per lingua.
 // SECURITY: the body must contain NO attacker-controlled text. This mail is

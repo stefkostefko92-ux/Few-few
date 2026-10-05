@@ -78,14 +78,20 @@ People look for what we do under many names — all of these are us:
 
 ## Notable Projects
 
-- **Nexus Dominion** — Browser MMO with real-time multiplayer, guilds, PvP arena and player-driven economy. Tech: React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. URL: https://nexus.carbonstealth.eu
-- **OU Nikola Vaptsarov** — Official school website in Bobov Dol. Tech: React, Vite, PHP, multilingual. URL: https://ouvaptsarov.com
-- **ERP Ascensori** — Custom ERP for an Italian elevator manufacturer: production tracking, warehouse, invoicing, 7-level roles. URL: https://erp.carbonstealth.eu
-- **Treti Mart** — Bulgarian marketplace for vehicles, real estate and services. URL: https://tretimart.carbonstealth.eu
+- **Panev Ascensori** — Patented lift brackets for landing doors and counterweight guides; UIBM patent, made in Italy. URL: https://panevascensori.it
+- **Za Bobov Dol** — Civic portal for the town of Bobov Dol: services, phone numbers, e-service guides, events, listings and a local business directory. URL: https://zabobovdol.carbonstealth.eu
+- **Nexus Dominion** — Medieval dark-fantasy browser MMO with guilds, PvP and a player-driven economy. URL: https://nexus.carbonstealth.eu
+- **OU Nikola Vaptsarov** — Official website of the Nikola Vaptsarov primary school in Bobov Dol, with a news system. URL: https://ouvaptsarov.com
+- **ERP Ascensori** — Custom ERP for an Italian lift manufacturer: production, warehouse, invoicing, 7-level roles. URL: https://erp.carbonstealth.eu
+- **Treti Mart** — Bulgarian marketplace with free listings and secure payments. URL: https://tretimart.carbonstealth.eu
+- **Evanita Sport** — Website of a women's Kangoo Jumps and strength training studio in Dupnitsa. URL: https://evanita-bg.com
+- **Eternal Touch** — Handmade plaster decorations atelier: showcase and catalogue in three languages. URL: https://eternaltouch.it
+- **Ospedali Trasparenti** — Civic portal with public, comparable data on Italian hospitals. URL: https://ospedalitrasparenti.it
+- **Vizitka** — Digital business card with a permanent QR code that always shows your current details. URL: https://vizitka-bg.com
+- **Mastilko** — Free print-ready labels, business cards and CVs, previewed live on an A4 sheet. URL: https://mastilko-bg.com
 
 ## Products
 
-- **Za Bobov Dol** — Civic portal for the town of Bobov Dol (services, transparency, citizen reports). URL: https://zabobovdol.carbonstealth.eu
 - **Ospedali Trasparenti** — Civic portal for the transparency of Italian hospitals. URL: https://ospedalitrasparenti.it
 - **Supreme AdBlock** — Chrome (MV3) extension blocking every ad, YouTube video ads, FB/IG sponsored, trackers and anti-adblock walls; zero telemetry. URL: https://adblock.carbonstealth.eu
 - **Mastilko** — Free print-ready labels, business cards and CVs, previewed live on a real A4 sheet. URL: https://mastilko-bg.com

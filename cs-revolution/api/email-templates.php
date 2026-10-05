@@ -15,7 +15,10 @@ if (isset($_SERVER['SCRIPT_FILENAME']) &&
 
 
 function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
-    $firstName = explode(' ', trim($name))[0] ?: 'there';
+    // Both values come from the visitor and go into an HTML email sent to an address the
+    // visitor chose: escape the name, and keep the URL only if it is a real http(s) URL.
+    $firstName = cs_eh(explode(' ', trim($name))[0] ?: 'there');
+    $testedUrl = (filter_var($testedUrl, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $testedUrl)) ? cs_eh($testedUrl) : '';
     
     $templates = [
         'it' => [
