@@ -53,3 +53,17 @@ test("други определителни форми също се хваща�
   assert.equal(rosterClaims("всичките 28-те субагента").length, 1);
   assert.equal(rosterClaims("24 - те подагента").length, 1);
 });
+
+import { skillRosterHits } from "./drift-lint.mjs";
+
+test("умения: бройката и изброяването се сверяват с папките (реалният пропуск — razpit, 22 срещу 23)", () => {
+  const skills = ["deploy", "seed-author", "razpit", "web-vitals"];
+  const old = "Ours (BG, vetted; 3): **процедури** — deploy · seed-author; **SEO** — web-vitals.";
+  const hits = skillRosterHits(old, skills, "CLAUDE.md");
+  assert.deepEqual(hits.map((h) => h.what), ["брой умения", "ростер на уменията"]);
+  assert.match(hits[1].detail, /razpit/);
+  assert.deepEqual(skillRosterHits("Ours (BG, vetted; 4): deploy · seed-author · razpit · web-vitals", skills), []);
+  assert.deepEqual(skillRosterHits("няма твърдение за уменията", skills), [], "без твърдение няма какво да се сверява");
+  assert.equal(skillRosterHits("Ours (BG, vetted; 4): deploy · seed-author-x · razpit · web-vitals", skills).length, 1,
+    "частично съвпадение (seed-author-x) не брои за seed-author");
+});

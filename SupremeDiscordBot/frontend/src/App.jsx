@@ -26,6 +26,9 @@ const CompareAppyPage = lazy(() => import("./pages/CompareAppyPage"));
 const BestTicketBotGuidePage = lazy(() => import("./pages/BestTicketBotGuidePage"));
 const GdprDiscordBotGuidePage = lazy(() => import("./pages/GdprDiscordBotGuidePage"));
 const PanelSetupGuidePage = lazy(() => import("./pages/PanelSetupGuidePage"));
+// /features и /features/:slug — страници по функция (src/data/featurePages.js).
+const FeaturePage = lazy(() => import("./pages/FeaturePage"));
+const FeaturesHubPage = lazy(() => import("./pages/FeaturePage").then((m) => ({ default: m.FeaturesHubPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const Layout = lazy(() => import("./components/Layout"));
@@ -43,6 +46,7 @@ const SecurityPage = lazy(() => import("./pages/SecurityPage"));
 const MfaGate = lazy(() => import("./components/MfaGate"));
 const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const CommandsPage = lazy(() => import("./pages/CommandsPage"));
+const GamePage = lazy(() => import("./pages/GamePage"));
 const AutomationPage = lazy(() => import("./pages/AutomationPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
 const KnowledgeBasePage = lazy(() => import("./pages/KnowledgeBasePage"));
@@ -126,6 +130,7 @@ export default function App() {
                 <Route path=":serverId/apikeys" element={<ApiKeysPage />} />
                 <Route path=":serverId/premium" element={<PremiumPage />} />
                 <Route path=":serverId/settings" element={<SettingsPage />} />
+                <Route path=":serverId/game" element={<GamePage />} />
                 <Route path="privacy-settings" element={<PrivacySettingsPage />} />
                 <Route path="security" element={<SecurityPage />} />
                 <Route
@@ -148,6 +153,9 @@ export default function App() {
               <Route path="/guides/best-discord-ticket-bot" element={<BestTicketBotGuidePage />} />
               <Route path="/guides/gdpr-discord-bot" element={<GdprDiscordBotGuidePage />} />
               <Route path="/guides/ticket-panel-setup" element={<PanelSetupGuidePage />} />
+              {/* Страници по функция — маршрутите се извеждат от FEATURE_PAGES; неизвестен slug → 404. */}
+              <Route path="/features" element={<FeaturesHubPage />} />
+              <Route path="/features/:slug" element={<FeaturePage />} />
               {/* Catch-all */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

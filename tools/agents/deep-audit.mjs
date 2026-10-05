@@ -199,8 +199,10 @@ export function audit() {
   const injAgents = new Set(specs.filter((s) => s.kind === "injection" || String(s.id).startsWith("injection-")).map((s) => s.agent));
   for (const id of ids) {
     const t = (R(`.claude/agents/${id}.md`).match(/^tools:\s*(.+)$/m) || [])[1] || "";
-    if (/WebFetch|WebSearch/.test(t) && !injAgents.has(id))
-      hard.push({ kind: "injection", msg: `${id} чете недоверено външно съдържание (WebFetch/WebSearch), но няма инжекционен spec` });
+    // MCP инструментите (`mcp__github__*`, `mcp__Gmail__*` …) връщат също недоверено външно съдържание
+    // (тела на issue/PR/имейл) — агент с такъв инструмент е изложен на инжекция точно колкото с WebFetch.
+    if (/WebFetch|WebSearch|mcp__/.test(t) && !injAgents.has(id))
+      hard.push({ kind: "injection", msg: `${id} чете недоверено външно съдържание (WebFetch/WebSearch/MCP), но няма инжекционен spec` });
   }
 
   // 2b. Инструкция↔инструментариум: дефиниция, която нарежда да ИЗПЪЛНЯВА команди (`node tools/…`,

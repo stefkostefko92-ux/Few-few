@@ -150,6 +150,13 @@ export default {
         return;
       }
 
+      // ── Server Season (v50): магазин и другите "game:" компоненти ──────────
+      if ((interaction.isButton() || interaction.isStringSelectMenu()) && interaction.customId.startsWith("game:")) {
+        const { handleGameInteraction } = await import("../utils/gameInteractions.js");
+        await handleGameInteraction(interaction);
+        return;
+      }
+
       // ── Poll vote (v1.8) ───────────────────────────────────────────────────
       if (interaction.isButton() && interaction.customId.startsWith("poll:")) {
         const [, pollId, optionIdx] = interaction.customId.split(":");

@@ -56,11 +56,16 @@ router.get('/p/:slug/wallet/apple.pkpass', walletLimiter, (req, res) => {
 });
 
 // „Запази в Google Wallet" — редирект към подписания save линк.
-router.get('/p/:slug/wallet/google', walletLimiter, (req, res) => {
+router.get('/p/:slug/wallet/google', walletLimiter, async (req, res) => {
   if (!googleEnabled()) return res.status(404).end();
   const profile = findVisibleProfile(req, req.params.slug);
   if (!profile) return res.status(404).end();
-  res.redirect(302, googleSaveUrl(profile, baseUrl(req)));
+  try {
+    res.redirect(302, await googleSaveUrl(profile, baseUrl(req)));
+  } catch (e) {
+    console.error('Google Wallet:', e.message);
+    res.status(502).send('Google Wallet не отговаря. Опитай отново след малко.');
+  }
 });
 
 // --- Apple Wallet update web service (Apple добавя /v1 към webServiceURL) -------
@@ -126,7 +131,8 @@ router.get('/v1/passes/:passType/:serial', walletLimiter, (req, res) => {
   if (!appleEnabled()) return res.status(404).end();
   const profile = db.prepare('SELECT * FROM profiles WHERE id = ?').get(req.params.serial);
   if (!profile) return res.status(404).end();
-  // Скрита визитка спира да се обновява в портфейла (Apple маха паса при 404).
+  // Скрита визитка спира да се обновява в портфейла. Apple НЕ маха паса при 404 —
+  // картата просто остава с последните данни (документирани са само 200/304/401).
   if (!profile.is_public) return res.status(404).end();
 
   const modified = new Date(`${profile.updated_at.replace(' ', 'T')}Z`);

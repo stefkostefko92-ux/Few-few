@@ -38,7 +38,7 @@
             <span class="badge badge-neutral"><%= p.type === 'company' ? 'Фирма' : 'Личен' %></span>
             <p class="muted small">
               <a href="<%= base %>/p/<%= p.slug %>" target="_blank" rel="noopener">/p/<%= p.slug %></a>
-              · <%= p.owner_email %> · <%= p.views %> прегл. · обновена <%= p.updated_at.slice(0,16).replace('T',' ') %>
+              · <%= p.owner_email %> · <%= p.views %> прегл. · <span class="nowrap">обновена <%= p.updated_at.slice(0,16).replace('T',' ') %></span>
             </p>
           </div>
         </div>

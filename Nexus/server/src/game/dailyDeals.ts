@@ -41,12 +41,15 @@ export function dealsExpireAt(now = Date.now()): number {
 
 /**
  * Офертите за даден ден. Пулът е стабилен (подредени по id предмети с
- * buy_price>0, без 'misc' — маунтове/козметика не се дисконтират), затова
+ * buy_price>0, без 'misc' — маунтове/козметика не се дисконтират — и без
+ * класово заключени), затова
  * същият dayIndex винаги дава същите оферти на всяка инстанция.
  */
 export function dealsForDay(db: Database.Database, dayIndex: number): DailyDeal[] {
+  // Без класово заключени предмети (class_req): офертите са ЕДНИ за всички
+  // играчи, затова трябва да са полезни за всеки клас.
   const pool = db.prepare(
-    "SELECT id, buy_price FROM items WHERE buy_price > 0 AND category != 'misc' ORDER BY id",
+    "SELECT id, buy_price FROM items WHERE buy_price > 0 AND category != 'misc' AND class_req = '' ORDER BY id",
   ).all() as { id: number; buy_price: number }[];
   if (pool.length === 0) return [];
   const rng = mulberry32(dayIndex * 2654435761);

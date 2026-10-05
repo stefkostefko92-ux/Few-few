@@ -38,3 +38,7 @@ screenshots-v18/
 screenshots-v19/
 screenshots-v20/
 tmp-anim-ref/
+e2e/test-results/
+e2e/playwright-report/
+e2e/results/
+e2e/blob-report/

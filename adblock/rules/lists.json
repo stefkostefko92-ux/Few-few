@@ -9,7 +9,7 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/uBlockOrigin/uAssets",
   "ruleset": true,
-  "network": 6901,
+  "network": 6903,
   "cosmetic": 10172
  },
  {
@@ -364,7 +364,7 @@
   "homepage": "https://github.com/easylist/EasyListHebrew",
   "ruleset": true,
   "network": 289,
-  "cosmetic": 1307
+  "cosmetic": 1308
  },
  {
   "id": "reg-it",
@@ -393,7 +393,7 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/AdguardTeam/AdguardFilters",
   "ruleset": true,
-  "network": 1935,
+  "network": 1936,
   "cosmetic": 13794
  },
  {
@@ -523,7 +523,7 @@
   "homepage": "https://easylist.to/",
   "ruleset": true,
   "network": 1670,
-  "cosmetic": 7704
+  "cosmetic": 7705
  },
  {
   "id": "reg-sl",

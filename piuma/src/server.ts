@@ -6,7 +6,7 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { config, isProduction } from './config.js';
-import { logger } from './logger.js';
+import { logger, httpLogOptions } from './logger.js';
 import { attachSession } from './auth/sessions.js';
 import { can, type Capability } from './auth/rbac.js';
 import { agentRouter } from './agent/routes.js';
@@ -60,7 +60,9 @@ export function createServer(deps: ServerDeps): Express {
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           frameAncestors: ["'none'"],
-          formAction: ["'self'", 'https://api.instagram.com'],
+          // OAuth започва с POST → redirect към api.instagram.com, който отговаря 302 към
+          // www.instagram.com/oauth/authorize; form-action важи за цялата верига пренасочвания.
+          formAction: ["'self'", 'https://api.instagram.com', 'https://www.instagram.com'],
           upgradeInsecureRequests: isProduction() ? [] : null,
         },
       },
@@ -69,7 +71,13 @@ export function createServer(deps: ServerDeps): Express {
       crossOriginEmbedderPolicy: false,
     }),
   );
-  app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === '/health' } }));
+  app.use(
+    pinoHttp({
+      logger,
+      autoLogging: { ignore: (req) => req.url === '/health' },
+      ...httpLogOptions,
+    }),
+  );
 
   // Суровото тяло се пази за HMAC подписа на агента; JSON лимитът е малък нарочно.
   app.use(

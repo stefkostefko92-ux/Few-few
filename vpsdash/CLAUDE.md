@@ -63,7 +63,7 @@ Playwright липсва — на CI-я е така.
 синтаксис, `node --test` не рендва интерфейс — променлива в грешен обхват минава
 и двете и чупи ЦЯЛА секция. Реален случай: `const broken` беше деклариран вътре в
 `else`, а се ползваше след него → „Ъпдейти" отговаряше само `Грешка: broken is not
-defined`, при 380 зелени теста. Обиколката влиза във всяка секция с истински
+defined`, при 463 зелени теста. Обиколката влиза във всяка секция с истински
 Chromium и пада при `Грешка:` в `#view`, празен изглед, JS изключение, 5xx или
 непреведен низ. Чака СКЕЛЕТЪТ да си отиде, не фиксирано време (apt отнема ~2 s).
 Пропуска се тихо (изход 0), ако Playwright липсва — не е зависимост на продукта.
@@ -217,7 +217,7 @@ deploy/                  install.sh · set-password.sh · vps-dashboard.service 
 test/                    unit · level1 · level2 · ansi · hardening · sessions ·
                          forecast · slo · manage · security · investigate ·
                          observe · stack · ux · guard · deployfiles · ports · backupsched · diskusage · traffic · volrestore · i18n · panelbackup ·
-                         maintenance · guardians · digest · apthealth · reclaim · coverage · smoke (380 теста)
+                         maintenance · guardians · digest · apthealth · reclaim · coverage · smoke (463 теста)
 ```
 
 ## Конвенции (важни)
@@ -1076,7 +1076,7 @@ node -e "import('/opt/node22/lib/node_modules/playwright/index.mjs')…"
 отворен по дизайн. Ползвай `domcontentloaded`.
 
 ## Тестове
-380 теста, `node --test`, без мокове на системата — тестват се само детерминистични
+463 теста, `node --test`, без мокове на системата — тестват се само детерминистични
 чисти функции: пароли/сесии, TOTP (с контролните вектори на RFC 4226), парсване на
 `/proc`, рутера, allowlist-ите (unit имена, архиви, ufw правила, compose, dump),
 историята, сливането на конфига, файловия запис, SLO математиката (бюджет,

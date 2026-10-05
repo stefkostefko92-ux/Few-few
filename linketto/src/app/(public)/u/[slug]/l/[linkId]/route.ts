@@ -1,22 +1,36 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 import {
   buildVCard,
   isBlockVisible,
   pickAppTarget,
   pickMusicTarget,
   type BlockMeta,
-} from '@/lib/blocks';
-import { isSensitiveUrl } from '@/lib/brands';
-import { isLocale } from '@/i18n/locales';
+} from "@/lib/blocks";
+import { isSensitiveUrl } from "@/lib/brands";
+import { isLocale } from "@/i18n/locales";
+import { countryOf, localeOf } from "@/lib/analytics";
 
 // Клик по блок: записваме събитието (без бисквитки и лични данни)
 // и пренасочваме към целта. „Умните“ блокове избират целта тук:
 // APP по User-Agent (iOS/Android), MUSIC по ?svc=spotify|apple,
 // VCARD връща .vcf файл („Запази контакта“).
-export async function GET(
+type Ctx = { params: Promise<{ slug: string; linkId: string }> };
+
+export function GET(request: Request, ctx: Ctx): Promise<NextResponse> {
+  return handle(request, ctx, true);
+}
+
+// Next.js сам отговаря на HEAD с GET handler-а — тогава link checker-и и
+// unfurler-и се броят за кликове. Собственият HEAD отговаря същото, без запис.
+export function HEAD(request: Request, ctx: Ctx): Promise<NextResponse> {
+  return handle(request, ctx, false);
+}
+
+async function handle(
   request: Request,
-  { params }: { params: Promise<{ slug: string; linkId: string }> },
+  { params }: Ctx,
+  record: boolean,
 ): Promise<NextResponse> {
   const { slug, linkId } = await params;
   const url = new URL(request.url);
@@ -35,20 +49,22 @@ export async function GET(
 
   const meta = (link.meta ?? null) as BlockMeta | null;
 
-  const recordClick = () =>
-    prisma.clickEvent
+  const recordClick = async () => {
+    if (!record) return;
+    await prisma.clickEvent
       .create({
         data: {
           profileId: link.profileId,
           linkId: link.id,
-          locale: url.searchParams.get('hl') ?? undefined,
-          referrerHost: hostOf(request.headers.get('referer')),
-          country: request.headers.get('cf-ipcountry') ?? undefined,
+          locale: localeOf(url.searchParams.get("hl")),
+          referrerHost: hostOf(request.headers.get("referer")),
+          country: countryOf(request.headers.get("cf-ipcountry")),
         },
       })
       .catch(() => undefined);
+  };
 
-  if (link.kind === 'VCARD') {
+  if (link.kind === "VCARD") {
     const profile = link.profile;
     const name =
       profile.translations.find((t) => t.locale === profile.defaultLocale)
@@ -67,8 +83,8 @@ export async function GET(
       }),
       {
         headers: {
-          'Content-Type': 'text/vcard; charset=utf-8',
-          'Content-Disposition': `attachment; filename="${slug}.vcf"`,
+          "Content-Type": "text/vcard; charset=utf-8",
+          "Content-Disposition": `attachment; filename="${slug}.vcf"`,
         },
       },
     );
@@ -76,15 +92,11 @@ export async function GET(
 
   let target: string | null;
   switch (link.kind) {
-    case 'APP':
-      target = pickAppTarget(
-        request.headers.get('user-agent'),
-        meta,
-        link.url,
-      );
+    case "APP":
+      target = pickAppTarget(request.headers.get("user-agent"), meta, link.url);
       break;
-    case 'MUSIC':
-      target = pickMusicTarget(url.searchParams.get('svc'), meta, link.url);
+    case "MUSIC":
+      target = pickMusicTarget(url.searchParams.get("svc"), meta, link.url);
       break;
     default:
       target = link.url;
@@ -95,7 +107,7 @@ export async function GET(
 
   // Чувствително (18+) съдържание: преходна страница за потвърждение
   // на възрастта, преди да пренасочим (както при Linktree).
-  if (isSensitiveUrl(target) && url.searchParams.get('adult') !== '1') {
+  if (isSensitiveUrl(target) && url.searchParams.get("adult") !== "1") {
     return ageGateResponse(url, slug);
   }
 
@@ -103,19 +115,16 @@ export async function GET(
   return NextResponse.redirect(target, 302);
 }
 
-async function ageGateResponse(
-  url: URL,
-  slug: string,
-): Promise<NextResponse> {
-  const hl = url.searchParams.get('hl') ?? '';
-  const locale = isLocale(hl) ? hl : 'en';
+async function ageGateResponse(url: URL, slug: string): Promise<NextResponse> {
+  const hl = url.searchParams.get("hl") ?? "";
+  const locale = isLocale(hl) ? hl : "en";
   const messages = (await import(`@/../messages/${locale}.json`)).default as {
     profile: Record<string, string>;
   };
   const t = messages.profile;
   const confirmUrl = new URL(url);
-  confirmUrl.searchParams.set('adult', '1');
-  const backHref = `/u/${esc(slug)}${isLocale(hl) ? `?hl=${hl}` : ''}`;
+  confirmUrl.searchParams.set("adult", "1");
+  const backHref = `/u/${esc(slug)}${isLocale(hl) ? `?hl=${hl}` : ""}`;
   const html = `<!doctype html>
 <html lang="${locale}">
 <head>
@@ -151,18 +160,18 @@ async function ageGateResponse(
 </html>`;
   return new NextResponse(html, {
     headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'no-store',
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
     },
   });
 }
 
 function esc(value: string): string {
   return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function hostOf(referer: string | null): string | undefined {

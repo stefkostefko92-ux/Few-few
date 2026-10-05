@@ -56,6 +56,11 @@ async function main(): Promise<void> {
   worker.on('failed', (job, error) => {
     logger.error({ jobId: job?.id, err: error.message }, 'задачата се провали');
   });
+  // Без този слушател BullMQ мълчи при паднал Redis: процесът е „running“,
+  // а нито един пост не излиза (Наблюдателя, 2026-09-24).
+  worker.on('error', (error) => {
+    logger.error({ err: error.message }, 'работникът загуби връзка с опашката');
+  });
 
   const shutdown = async (): Promise<void> => {
     await worker.close();

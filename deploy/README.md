@@ -50,10 +50,17 @@ ZIP отпреди месец.
 
 - Намира най-новия архив в `/root`, разопакова го в `/opt/few-few/releases/<час>` и
   нормализира GitHub горната папка (`few-few-*`).
-- **zabobovdol:** пренася съществуващия `.env`, после `scripts/deploy.sh` (Docker Compose
-  билд + вдигане + миграции, сийд само при първо пускане).
+- **zabobovdol:** `.env` идва от стабилния дом `/opt/few-few/shared/zabobovdol/.env` (600) →
+  `current` → най-новия release, който го има; липсва ли навсякъде, а има дъмп/volume от
+  предишна инсталация — **спира** (нов `.env` = нова парола за съществуваща база). После
+  `scripts/deploy.sh` (Docker Compose билд + вдигане + миграции, сийд само при първо пускане).
+  Сонда на `/api/health` (`SELECT 1` към базата, маркер `"ok":true`); при провал — автоматичен
+  откат на **кода** към предишния release (базата не се пипа: миграциите са адитивни). При
+  успех — IndexNow (`ZBD_INDEXNOW=0` го спира).
 - **medqr:** rsync в `/opt/medqr` (без `data/`, `.env`), `npm ci --omit=dev`,
-  `systemctl restart medqr`; при провал — автоматичен rollback към предишния код.
+  `systemctl restart medqr`; при провал — автоматичен rollback към предишния код. Health гейтът
+  пита `/healthz` (минава преди HTTPS редиректа) и иска маркера `"app":"medqr"`
+  (`MEDQR_HEALTH_URL` / `MEDQR_HEALTH_EXPECT`).
 - **mastilko:** rsync в `/opt/mastilko` (без `.env`), `npm ci` + `npm run build`
   (Next.js се билдва на сървъра) + `npm prune --omit=dev`, самоинсталиращ се
   systemd unit (`mastilko/deploy/mastilko.service`, порт `127.0.0.1:3200`),
@@ -114,6 +121,18 @@ ZIP отпреди месец.
   генерира с random `JWT_SECRET` (без него приложението спира в продукция), `SMTP_PASS`
   остава `CHANGE_ME`. Еднократно: DNS, nginx vhost (301 `www.` → каноничния non-www) +
   certbot, ufw, бекъп cron → `panev/DEPLOY.md`.
+- **piuma** (Instagram контент-двигател): Docker Compose (app + worker + db + redis + вътрешен
+  nginx). `.env` идва от `PIUMA_ENV` и **не се генерира** — IG ключовете идват от конзолата на
+  Meta; без него piuma се пропуска като „още ненастроен“, не като провал. `pg_dump` бекъп преди
+  миграцията (последните 5, до `.env`; провален дъмп спира деплоя), `docker compose build` +
+  `up -d` (миграциите — от entrypoint-а, `prisma migrate deploy`). Health + отделна проверка, че
+  **работникът** тича; при празна база напомня `npm run owner:create` (собственикът не се създава
+  автоматично) → `piuma/DEPLOY.md`.
+- **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
+  `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
+  `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
+  ping иска сесия), rollback като medqr. Пръв деплой без конфиг: пуска `deploy/install.sh`
+  (конфиг + тайни + услуга) → `vpsdash/`.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -122,7 +141,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali panev` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma` | кои проекти да се разгръщат тук |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
@@ -130,8 +149,13 @@ ZIP отпреди месец.
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
+| `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
+| `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
+| `ZBD_ENV` | `/opt/few-few/shared/zabobovdol/.env` | стабилният дом на тайните на zabobovdol (600) |
+| `ZBD_HEALTH_URL` | `http://127.0.0.1:<HTTP_PORT>/api/health` | сонда на zabobovdol (с базата) |
+| `ZBD_INDEXNOW` | `1` | IndexNow след успешен деплой на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
 | `*_HEALTH_URL` | localhost | адрес за проверка на здравето |
 

@@ -113,6 +113,7 @@ import automationRouter from "./routes/automation.js";
 import billingRouter from "./routes/billing.js";
 import mfaRouter from "./routes/mfa.js";
 import adminOpsRouter from "./routes/adminOps.js";
+import adminManageRouter from "./routes/adminManage.js"; // v51 CRUD: игра по сървъри, поддръжка, white-label, потребители
 import analyticsRouter from "./routes/analytics.js";
 import statusRouter from "./routes/status.js";
 import publicApiRouter, { apiKeyManagementRouter } from "./routes/publicApi.js";
@@ -122,6 +123,10 @@ import gdprRouter from "./routes/gdpr.js";
 import kbRouter from "./routes/kb.js";
 import cannedRouter from "./routes/canned.js";
 import reactionRolesRouter from "./routes/reactionroles.js";
+import gameRouter from "./routes/game.js";           // v50 Server Season (табло)
+import botGameRouter from "./routes/bot_game.js";    // v50 Server Season (бот)
+import botCompanionsRouter from "./routes/bot_companions.js"; // v50 Server Season — спътници (бот)
+import botMinigamesRouter from "./routes/bot_minigames.js";   // v50 Server Season — Counting, куестове, trivia (бот)
 import "./services/scheduler.js"; // Start background jobs
 import { prisma } from "./lib/prisma.js";
 
@@ -320,11 +325,16 @@ app.use("/api/bot", botV18Router);           // v1.8 polls/giveaways/sticky/sche
 app.use("/api/automation", automationRouter); // v1.8 dashboard CRUD for polls/giveaways/sticky/scheduled + commands catalog
 app.use("/api/auth/mfa", mfaRouter);
 app.use("/api/admin", adminOpsRouter);        // v3.4 System · Security · Billing · Fleet · DSR (същите гардове + MFA)         // v3.4 Втори фактор (TOTP) — задължителен за staff
+app.use("/api/admin", adminManageRouter);     // v51 — игра по сървъри · поддръжка · white-label · потребители (същите гардове + MFA)
 app.use("/api/billing", billingRouter);       // v3.3 Доставчико-неутрално състояние на плащанията (Discord-first)
 app.use("/api/analytics", analyticsRouter);   // v2.1 Heatmap, leaderboard, funnel
 app.use("/api/apikeys", apiKeyManagementRouter); // v2.1 API key CRUD (dashboard-authed)
 app.use("/api/kb", kbRouter);                 // v3.1 Knowledge base CRUD (dashboard-authed)
 app.use("/api/reactionroles", reactionRolesRouter); // v3.2 Reaction roles CRUD + spawn (dashboard-authed)
+app.use("/api/game", gameRouter);                   // v50 Server Season — настройки/магазин/класация (dashboard-authed)
+app.use("/api/bot", botGameRouter);                 // v50 Server Season — XP партиди, /daily, профил, магазин (bot secret)
+app.use("/api/bot", botCompanionsRouter);           // v50 Server Season — спътници: поява/улавяне/хранене/размяна (bot secret)
+app.use("/api/bot", botMinigamesRouter);            // v50 Server Season — Counting, куестове, trivia (bot secret)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
 app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript viewer
 // apikeys.js (файлът-примамка) е ИЗТРИТ на 09.08.2026: немонтиран, но с втори

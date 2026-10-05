@@ -77,7 +77,9 @@ INDEXNOW_KEY="$(prev INDEXNOW_KEY)";         INDEXNOW_KEY="${INDEXNOW_KEY:-$(gen
 PORT_VAL="$(prev PORT)"; PORT_VAL="${PORT_VAL:-${PORT:-3105}}"
 
 # Запази вече конфигурираните портфейл редове (коментирани или не) — идемпотентност.
-WALLET_LINES="$([[ -f "$ENV_FILE" ]] && grep -E '^#? *(APPLE_|GOOGLE_WALLET_)' "$ENV_FILE" || true)"
+# Вкл. WALLET_AUTH_SECRET: без него токените на вече запазените Apple карти (HMAC)
+# стават невалидни при повторно пускане и устройствата спират да се обновяват.
+WALLET_LINES="$([[ -f "$ENV_FILE" ]] && grep -E '^#? *(APPLE_|GOOGLE_WALLET_|WALLET_AUTH_SECRET)' "$ENV_FILE" || true)"
 
 # Домейн/админ (default = стойностите на проекта).
 ask DOMAIN      "Домейн" "$DOMAIN"

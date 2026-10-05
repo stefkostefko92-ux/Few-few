@@ -50,7 +50,8 @@ export default {
             .setColor(BRAND)
             .setDescription(
               `Supreme Bot stores only what the servers you use need: tickets you opened, messages inside those tickets, applications you submitted, ` +
-              `verification attempts, and (if the server enables it) a snapshot of your roles so they can be restored if you rejoin.\n\n` +
+              `verification attempts, (if the server enables it) a snapshot of your roles so they can be restored if you rejoin, ` +
+              `and (if the server enables the Server Season game) your game progress — XP, sparks, companions, purchases, quest contributions and trivia answers. Message text is never read for the game.\n\n` +
               `Full details: ${PRIVACY_URL}`
             )
             .addFields(
@@ -60,6 +61,8 @@ export default {
               { name: "Applications", value: String(c.applications ?? 0), inline: true },
               { name: "Role snapshots", value: String(c.roleSnapshots ?? 0), inline: true },
               { name: "Verification attempts", value: String(c.verificationAttempts ?? 0), inline: true },
+              { name: "Game (servers · companions · purchases)", value: `${c.gameProfiles ?? 0} · ${c.companions ?? 0} · ${c.purchases ?? 0}`, inline: true },
+              { name: "Game (quest contributions · trivia answers)", value: `${c.questContributions ?? 0} · ${c.triviaAnswers ?? 0}`, inline: true },
               { name: "Delete your data", value: `Run \`/privacy delete\` here, or use the dashboard (Privacy settings). Questions / full erasure of ticket text: ${PRIVACY_EMAIL}` },
             )],
         });

@@ -144,7 +144,8 @@ router.get('/', (req, res) => {
     .prepare(
       `SELECT items.slug, SUM(inv.quantity) AS qty
        FROM inventory inv JOIN items ON items.id = inv.item_id
-       WHERE inv.character_id = ? AND items.slug IN ('monster_trophy', 'gem_might', 'gem_swiftness', 'gem_mind')
+       WHERE inv.character_id = ? AND inv.listed = 0 AND inv.vaulted_guild_id = 0
+         AND items.slug IN ('monster_trophy', 'gem_might', 'gem_swiftness', 'gem_mind')
        GROUP BY items.slug`,
     )
     .all(char.id) as { slug: string; qty: number }[];
@@ -193,7 +194,7 @@ router.post('/brew', (req, res) => {
       const trophyItem = db.prepare("SELECT id FROM items WHERE slug = 'monster_trophy'").get() as any;
       if (!trophyItem) { const e: any = new Error('Monster Trophies do not exist on this server yet.'); e.clientSafe = true; e.status = 400; throw e; }
       const have = db
-        .prepare("SELECT SUM(quantity) AS qty FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 AND vaulted_guild_id = 0")
+        .prepare("SELECT SUM(quantity) AS qty FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 AND listed = 0 AND vaulted_guild_id = 0")
         .get(char.id, trophyItem.id) as { qty: number } | undefined;
       const needTrophies = recipe.inputs.find((i) => i.slug === 'monster_trophy')?.quantity || 0;
       if ((have?.qty || 0) < needTrophies) { const e: any = new Error(`Need ${needTrophies} Monster Trophies (claim them from the Bounty Board).`); e.clientSafe = true; e.status = 400; throw e; }
@@ -203,7 +204,7 @@ router.post('/brew', (req, res) => {
       if (debit.changes !== 1) { const e: any = new Error(`Need ${recipe.gold_cost}g for the forge bill.`); e.clientSafe = true; e.status = 400; throw e; }
       let remaining = needTrophies;
       const stacks = db
-        .prepare('SELECT id, quantity FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 AND vaulted_guild_id = 0 ORDER BY id ASC')
+        .prepare('SELECT id, quantity FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 AND listed = 0 AND vaulted_guild_id = 0 ORDER BY id ASC')
         .all(char.id, trophyItem.id) as { id: number; quantity: number }[];
       for (const s of stacks) {
         if (remaining <= 0) break;

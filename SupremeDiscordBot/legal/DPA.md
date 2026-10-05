@@ -15,7 +15,7 @@
 
 ## 2. Nature and Purpose of Processing
 
-2.1 **Purpose:** Supreme Bot processes personal data solely to provide the contracted service (Discord server management, ticket systems, application forms, AI auto-replies, white-label bot functionality).
+2.1 **Purpose:** Supreme Bot processes personal data solely to provide the contracted service (Discord server management, ticket systems, application forms, AI auto-replies, white-label bot functionality, and — where the Customer enables it — the optional in-server "Server Season" game: activity-based levels, sparks, companions, server quests, counting and trivia).
 
 2.2 **Nature:** Collection, storage, organization, retrieval, consultation, disclosure to Customer's authorized staff, erasure.
 
@@ -26,6 +26,7 @@
 - IP addresses (for rate limiting and security)
 - Session identifiers (for authentication)
 - Payment metadata (transaction IDs, customer IDs — payment data itself is processed by Stripe)
+- Game progress data, only where the Customer enables the Server Season game (per-member counters such as XP, level, sparks and streak; shop purchases; caught companions and trades; quest contributions; trivia answers; the counting channel's current number and last counter). Message content is never stored for the game; in the Customer-designated counting channel a message is read only to check whether it is the next number
 
 2.4 **Categories of data subjects:**
 - Customer's Discord server members

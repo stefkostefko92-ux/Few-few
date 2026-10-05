@@ -1,0 +1,13 @@
+{
+  "id": "probe-prevodach",
+  "agent": "prevodach",
+  "kind": "probe",
+  "task": "Прегледай италианската чернова в tools/agents/evals/fixtures/probe-prevodach.md (измислен вход за проверка) и я доведи до готовност за спешния профил.",
+  "expect": [
+    { "any": ["Gruppo sanguigno"], "label": "клиничният термин за кръвна група" },
+    { "any": ["insulinodipendente", "insulino-dipendente"], "label": "клиничният термин за инсулинозависим" },
+    { "any": ["липсва", "missing", "паритет", "ключ „dnr", "ключът dnr", "няма превод"], "label": "липсващият ключ dnr (паритет)" },
+    { "any": ["клиничн", "медицинск", "безопасно-критич", "safety-critical", "лекар"], "label": "DNR изисква клиничен/човешки преглед" },
+    { "none": ["преведох машинно", "Tipo di sangue е правилно"], "label": "капан: машинен превод / грешен термин" }
+  ]
+}

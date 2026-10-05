@@ -177,7 +177,7 @@ const DEFAULTS = {
   // Продуктови health проверки (име + локален URL). Съвпадат с autodeploy.sh.
   healthChecks: [
     { name: 'zabobovdol', url: 'http://127.0.0.1:80/' },
-    { name: 'medqr', url: 'http://127.0.0.1:3000/' },
+    { name: 'medqr', url: 'http://127.0.0.1:3000/healthz' },
     { name: 'vizitka', url: 'http://127.0.0.1:3100/' },
     { name: 'mastilko', url: 'http://127.0.0.1:3200/' },
     { name: 'nexus', url: 'http://127.0.0.1:4000/api/health' },

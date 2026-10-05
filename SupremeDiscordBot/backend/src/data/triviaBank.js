@@ -1,0 +1,72 @@
+// backend/src/data/triviaBank.js
+// v50 — Server Season, етап 3: НАШИЯТ банк за trivia (Free: седмичен кръг;
+// Premium: и дневен + въпроси от базата знания). Само проверени факти с ЕДИН
+// безспорен отговор, SFW, 13+; английски — езикът на самите игрови команди
+// (описанията им са локализирани). `answer` е индекс в `options` (0–3).
+// trivia.test.js пази: 4 опции, отговор в обхвата, уникални id и въпроси.
+export const TRIVIA_BANK = Object.freeze([
+  // ─── geography ──────────────────────────────────────────────────────────────
+  { id: "geo-01", category: "geography", q: "What is the capital of Australia?", options: ["Sydney", "Canberra", "Melbourne", "Perth"], answer: 1 },
+  { id: "geo-02", category: "geography", q: "What is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Pacific", "Arctic"], answer: 2 },
+  { id: "geo-03", category: "geography", q: "Mount Everest is part of which mountain range?", options: ["Andes", "Alps", "Rockies", "Himalayas"], answer: 3 },
+  { id: "geo-04", category: "geography", q: "What is the capital of Canada?", options: ["Toronto", "Vancouver", "Ottawa", "Montreal"], answer: 2 },
+  { id: "geo-05", category: "geography", q: "What is the largest hot desert in the world?", options: ["Gobi", "Sahara", "Kalahari", "Arabian"], answer: 1 },
+  { id: "geo-06", category: "geography", q: "Which is the largest country by land area?", options: ["Canada", "China", "USA", "Russia"], answer: 3 },
+  { id: "geo-07", category: "geography", q: "What is the capital of Italy?", options: ["Milan", "Rome", "Naples", "Turin"], answer: 1 },
+  { id: "geo-08", category: "geography", q: "The Great Barrier Reef lies off the coast of which country?", options: ["Brazil", "Indonesia", "Australia", "Mexico"], answer: 2 },
+  { id: "geo-09", category: "geography", q: "Which ocean lies between Europe and North America?", options: ["Pacific", "Atlantic", "Indian", "Southern"], answer: 1 },
+  { id: "geo-10", category: "geography", q: "What is the capital of Germany?", options: ["Munich", "Hamburg", "Berlin", "Frankfurt"], answer: 2 },
+  { id: "geo-11", category: "geography", q: "Sofia is the capital of which country?", options: ["Romania", "Serbia", "Bulgaria", "Greece"], answer: 2 },
+  { id: "geo-12", category: "geography", q: "How many continents are there in the conventional seven-continent model?", options: ["5", "6", "7", "8"], answer: 2 },
+  // ─── science ────────────────────────────────────────────────────────────────
+  { id: "sci-01", category: "science", q: "Which is the largest planet in the Solar System?", options: ["Saturn", "Jupiter", "Neptune", "Earth"], answer: 1 },
+  { id: "sci-02", category: "science", q: "What is the chemical symbol for gold?", options: ["Ag", "Gd", "Au", "Go"], answer: 2 },
+  { id: "sci-03", category: "science", q: "At what temperature does water boil at sea level (°C)?", options: ["90", "100", "110", "120"], answer: 1 },
+  { id: "sci-04", category: "science", q: "Which planet is known as the Red Planet?", options: ["Venus", "Mars", "Mercury", "Jupiter"], answer: 1 },
+  { id: "sci-05", category: "science", q: "Which gas do plants absorb for photosynthesis?", options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"], answer: 2 },
+  { id: "sci-06", category: "science", q: "What is the hardest natural substance?", options: ["Quartz", "Diamond", "Steel", "Granite"], answer: 1 },
+  { id: "sci-07", category: "science", q: "What is the nearest star to Earth?", options: ["Sirius", "Alpha Centauri", "The Sun", "Polaris"], answer: 2 },
+  { id: "sci-08", category: "science", q: "What is the chemical formula for water?", options: ["CO2", "H2O", "O2", "NaCl"], answer: 1 },
+  { id: "sci-09", category: "science", q: "What is the fastest land animal?", options: ["Lion", "Pronghorn", "Cheetah", "Greyhound"], answer: 2 },
+  { id: "sci-10", category: "science", q: "Which element has atomic number 1?", options: ["Helium", "Hydrogen", "Oxygen", "Carbon"], answer: 1 },
+  { id: "sci-11", category: "science", q: "At what temperature does water freeze in °F?", options: ["0", "32", "100", "212"], answer: 1 },
+  { id: "sci-12", category: "science", q: "How many bones are in the adult human body?", options: ["186", "206", "226", "256"], answer: 1 },
+  { id: "sci-13", category: "science", q: "Roughly how fast does light travel in a vacuum?", options: ["3 000 km/s", "30 000 km/s", "300 000 km/s", "3 000 000 km/s"], answer: 2 },
+  { id: "sci-14", category: "science", q: "Which organ pumps blood through the body?", options: ["Liver", "Lungs", "Heart", "Kidney"], answer: 2 },
+  { id: "sci-15", category: "science", q: "What is the longest bone in the human body?", options: ["Tibia", "Femur", "Humerus", "Spine"], answer: 1 },
+  { id: "sci-16", category: "science", q: "Which is the largest animal ever known to have lived?", options: ["African elephant", "Blue whale", "Giraffe", "Whale shark"], answer: 1 },
+  { id: "sci-17", category: "science", q: "Water is made of hydrogen and which other element?", options: ["Nitrogen", "Carbon", "Oxygen", "Helium"], answer: 2 },
+  { id: "sci-18", category: "science", q: "Which planet has the most known moons?", options: ["Jupiter", "Saturn", "Uranus", "Neptune"], answer: 1 },
+  // ─── tech ───────────────────────────────────────────────────────────────────
+  { id: "tech-01", category: "tech", q: "Which HTTP status code means \"Not Found\"?", options: ["200", "301", "404", "500"], answer: 2 },
+  { id: "tech-02", category: "tech", q: "What does CPU stand for?", options: ["Central Processing Unit", "Computer Personal Unit", "Central Program Utility", "Core Processing Unit"], answer: 0 },
+  { id: "tech-03", category: "tech", q: "How many bits are in a byte?", options: ["4", "8", "16", "32"], answer: 1 },
+  { id: "tech-04", category: "tech", q: "Which language runs natively in web browsers to make pages interactive?", options: ["Python", "Java", "JavaScript", "C++"], answer: 2 },
+  { id: "tech-05", category: "tech", q: "What does WWW stand for?", options: ["World Wide Web", "Web World Wide", "Wide World Web", "World Web Wide"], answer: 0 },
+  { id: "tech-06", category: "tech", q: "What is binary 1010 in decimal?", options: ["8", "10", "12", "20"], answer: 1 },
+  { id: "tech-07", category: "tech", q: "What does HTML stand for?", options: ["HyperText Markup Language", "HighText Machine Language", "HyperTransfer Markup Language", "Home Tool Markup Language"], answer: 0 },
+  { id: "tech-08", category: "tech", q: "What is the default port for HTTPS?", options: ["80", "8080", "443", "22"], answer: 2 },
+  { id: "tech-09", category: "tech", q: "Which company develops the Android operating system today?", options: ["Apple", "Microsoft", "Google", "Samsung"], answer: 2 },
+  { id: "tech-10", category: "tech", q: "npm is the package manager of which runtime?", options: ["Python", "Node.js", "Ruby", "Rust"], answer: 1 },
+  { id: "tech-11", category: "tech", q: "What is 2 to the power of 10?", options: ["512", "1000", "1024", "2048"], answer: 2 },
+  // ─── discord ────────────────────────────────────────────────────────────────
+  { id: "dc-01", category: "discord", q: "In which year did Discord launch?", options: ["2013", "2015", "2017", "2019"], answer: 1 },
+  { id: "dc-02", category: "discord", q: "What is the maximum length of a normal Discord message, in characters?", options: ["1 000", "2 000", "4 000", "10 000"], answer: 1 },
+  { id: "dc-03", category: "discord", q: "How many answers can a Discord poll have at most?", options: ["4", "5", "10", "25"], answer: 2 },
+  // ─── math & general ─────────────────────────────────────────────────────────
+  { id: "gen-01", category: "general", q: "What is the square root of 144?", options: ["10", "11", "12", "14"], answer: 2 },
+  { id: "gen-02", category: "general", q: "Who wrote \"Romeo and Juliet\"?", options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"], answer: 1 },
+  { id: "gen-03", category: "general", q: "What is the smallest prime number?", options: ["0", "1", "2", "3"], answer: 2 },
+  { id: "gen-04", category: "general", q: "What is the currency of Japan?", options: ["Yuan", "Won", "Yen", "Ringgit"], answer: 2 },
+  { id: "gen-05", category: "general", q: "How many players does a football (soccer) team have on the pitch?", options: ["9", "10", "11", "12"], answer: 2 },
+  { id: "gen-06", category: "general", q: "How many sides does a hexagon have?", options: ["5", "6", "7", "8"], answer: 1 },
+  { id: "gen-07", category: "general", q: "How many minutes are there in a day?", options: ["1 200", "1 440", "1 600", "3 600"], answer: 1 },
+  { id: "gen-08", category: "general", q: "Who painted the Mona Lisa?", options: ["Michelangelo", "Raphael", "Leonardo da Vinci", "Donatello"], answer: 2 },
+  { id: "gen-09", category: "general", q: "How many degrees are in a right angle?", options: ["45", "90", "180", "360"], answer: 1 },
+  { id: "gen-10", category: "general", q: "How many strings does a standard guitar have?", options: ["4", "5", "6", "7"], answer: 2 },
+  { id: "gen-11", category: "general", q: "What is 15 % of 200?", options: ["15", "20", "30", "40"], answer: 2 },
+  { id: "gen-12", category: "general", q: "How many hours are there in a week?", options: ["144", "168", "172", "196"], answer: 1 },
+  { id: "gen-13", category: "general", q: "What is the Roman numeral for 50?", options: ["C", "D", "L", "X"], answer: 2 },
+  { id: "gen-14", category: "general", q: "How many colours are in the traditional rainbow (ROYGBIV)?", options: ["5", "6", "7", "8"], answer: 2 },
+  { id: "gen-15", category: "general", q: "How many keys does a standard full-size piano have?", options: ["76", "84", "88", "92"], answer: 2 },
+]);

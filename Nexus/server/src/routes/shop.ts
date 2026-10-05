@@ -11,11 +11,16 @@ router.use(authRequired);
 
 router.get('/', (req, res) => {
   const db = getDb();
-  const char = db.prepare('SELECT level FROM characters WHERE user_id = ?').get(req.auth!.uid) as { level: number } | undefined;
+  const char = db.prepare('SELECT level, class FROM characters WHERE user_id = ?').get(req.auth!.uid) as { level: number; class: string } | undefined;
   const lvl = char?.level ?? 1;
+  // Само предмети, които героят МОЖЕ да екипира: class_req '' (всички) или
+  // неговия клас. Преди T1–T2 частите на класовите сетове се показваха на
+  // всички класове — купуваш, не можеш да екипираш (inventory.ts пази
+  // class_req), продаваш на загуба. Филтър, не маркер: предметът е безполезен
+  // за героя, а /buy го отказва така или иначе.
   const items = db
-    .prepare(`SELECT * FROM items WHERE buy_price > 0 AND level_req <= ? ORDER BY category, level_req, buy_price`)
-    .all(lvl + 5);
+    .prepare(`SELECT * FROM items WHERE buy_price > 0 AND level_req <= ? AND (class_req = '' OR class_req = ?) ORDER BY category, level_req, buy_price`)
+    .all(lvl + 5, char?.class ?? '');
   // Дневни оферти: детерминистична ротация по UTC ден (виж game/dailyDeals.ts).
   // Пращат се всичките — клиентът маркира достъпните; /buy така или иначе
   // пази level_req гейта.
@@ -47,6 +52,10 @@ router.post('/buy', (req, res) => {
   }
   if (item.level_req > char.level) {
     res.status(400).json({ error: `Requires level ${item.level_req}` });
+    return;
+  }
+  if (item.class_req && item.class_req !== char.class) {
+    res.status(400).json({ error: `Requires class ${item.class_req}` });
     return;
   }
   // Дневна оферта → сървърът сам прилага отстъпката (клиентът не праща цени).

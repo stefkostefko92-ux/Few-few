@@ -5,7 +5,8 @@
 **EIK:** 208725180 · **VAT (ЗДДС):** BG208725180  
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
 **Contact:** privacy@carbonstealth.eu  
-**Last updated:** 2026-09-15  
+**Last updated:** 2026-09-19  
+**Version:** 1.6 — Activity 18 (Server Season game: activity-based progress, sparks, companions, server quests, counting, trivia — off by default, enabled per server by the operator) added  
 **Version:** 1.5 — Activity 17 (verification attempts, 90-day retention) added; ticket transcripts encrypted at rest at application level (Activity 2 security measures); DSR erasure regenerates transcripts  
 **Version:** 1.4 — data subject rights channels added (Discord `/privacy`, admin DSR console); TOTP second factor for staff (Activity 1 security measures)  
 **Version:** 1.3 — Activity 4 rewritten: subscriptions are sold only through Discord's Premium Apps store (Discord Inc. = seller of record; entitlement/subscription identifiers as data categories); Stripe demoted to legacy subscriptions; free trial removed (no trial data processed)  
@@ -25,7 +26,7 @@
 
 | Channel | Who | Scope | Record |
 |---|---|---|---|
-| `/privacy info` · `/privacy delete` in Discord | any Discord user the bot has data about (no dashboard account needed) | identity: profile, message author signature, sessions, API keys, role snapshots, verification attempts, memberships | audit `DSR_ERASED` (via: bot) |
+| `/privacy info` · `/privacy delete` in Discord | any Discord user the bot has data about (no dashboard account needed) | identity: profile, message author signature, sessions, API keys, role snapshots, verification attempts, memberships; game (Activity 18): progress counters, reward keys, companions, purchases, quest contributions, trivia answers (wins and catches anonymised) | audit `DSR_ERASED` (via: bot) |
 | Dashboard → Privacy settings | dashboard users | Art. 15 export, Art. 17 account deletion, Art. 7(3) consent withdrawal | audit `GDPR_*` |
 | privacy@carbonstealth.eu → Admin console → Compliance | anyone; handled by Main Owner with a fresh second factor | identity or full (also ticket message text and application answers → "[erased]") | audit `DSR_ERASED` (via: admin, note = request reference) |
 
@@ -146,7 +147,7 @@ Target: handled promptly, ≤72 h. Staff accounts and accounts with active paid 
 | **Data subjects** | Dashboard users; Discord members whose identifiers appear in a failing request |
 | **Recipients** | Functional Software, Inc. (Sentry) |
 | **3rd country transfers** | USA — Standard Contractual Clauses (EU region selected where available) |
-| **Retention period** | 90 days (Sentry default retention) |
+| **Retention period** | Up to 90 days (Sentry retention). Request bodies, cookies and authentication headers are removed in `beforeSend` (`backend/src/instrument.js`) before transmission |
 
 ---
 
@@ -299,3 +300,16 @@ This ROPA is reviewed:
 | **3rd country transfers** | None (Hetzner, Germany) |
 | **Retention period** | **90 days** (`VERIFICATION_ATTEMPT_RETENTION_DAYS`, nightly retention job); deleted immediately on a data subject request (`/privacy delete`, admin DSR) |
 | **Security measures** | Bot-secret-gated ingestion; multi-tenant scoping by server; encrypted database volume |
+
+## Processing Activity 18 — Server Season game (levels, sparks, companions, quests, counting, trivia)
+
+| Field | Value |
+|---|---|
+| **Purpose** | Provide the optional in-server game the operator can enable: member levels/XP earned from activity **events**, a daily reward with streak, a server shop paid with in-game "sparks", collectible companions, cooperative weekly server quests, a counting channel and trivia rounds. Off by default; enabled per server in the dashboard ("Game") |
+| **Legal basis** | Processed on behalf of the server operator (controller) under Article 28; the operator's basis is typically Article 6(1)(f) (community engagement) or 6(1)(b) where the game is part of the community's terms. Supreme Bot does not use the data for its own purposes |
+| **Data categories** | Discord user ID, server ID; counters (XP, level, season XP, sparks, daily streak, message-event count, voice minutes); one-off reward keys (which poll/giveaway/application/ticket/verification/counting milestone/trivia round already granted XP); shop purchases (item, price in sparks, expiry); caught companions (catalog ID, stage, sparks fed, optional nickname), spawn events and trade offers between two members; quest contributions (amount per member); trivia answers (chosen option, correct/incorrect) and round winners; counting state per server (current number, record, ID of the last member who counted). **No message content is stored or read for XP** — only the fact that a message event occurred. In the operator-designated counting channel the bot reads a message solely to test whether it is the next integer; the text is not stored |
+| **Data subjects** | Members of a customer's Discord server that has the game enabled |
+| **Recipients** | Other members of the same server see leaderboards, level-up/quest/trivia announcements and companion catches by design (in-server visibility, like any Discord activity); the operator sees leaderboards, purchases, quest history and trivia statistics in the dashboard. No third parties. Companion images are static files served from our own frontend |
+| **3rd country transfers** | None (Hetzner, Germany) |
+| **Retention period** | While the member is in the server and the game is enabled; **30 days after the bot is removed** from the server all game rows of that server are purged (nightly retention job); a member's rows are deleted immediately on request (`/privacy delete`, admin DSR) — trivia wins and companion catches are anonymised (user ID removed) rather than deleted so server statistics stay consistent |
+| **Security measures** | Bot-secret-gated ingestion; every query scoped by server ID (multi-tenant isolation); conditional updates for all races (catch, purchase, quest completion, trivia win); no gambling or purchasable currency (App Discovery content rules); encrypted database volume |

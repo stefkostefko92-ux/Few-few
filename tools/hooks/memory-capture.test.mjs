@@ -34,7 +34,7 @@ function fixtureProject() {
 
 function runCapture(root, learnBlock) {
   const transcript = join(root, "t.jsonl");
-  writeFileSync(transcript, JSON.stringify({ message: { content: [{ type: "text", text: learnBlock }] } }) + "\n");
+  writeFileSync(transcript, JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: learnBlock }] } }) + "\n");
   return spawnSync(process.execPath, [HOOK], {
     input: JSON.stringify({ transcript_path: transcript }),
     encoding: "utf8", timeout: 20000,

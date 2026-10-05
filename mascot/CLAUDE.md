@@ -83,5 +83,26 @@ prompts.md                                        ← дизайн-брифът 
   всяка форма — затова важат и за всички изражения/пози. Смениш ли ги в `full`, смени ги и в
   `medium` и `mono`, иначе вариантите тихо се разминават (гейтът сравнява силуета, не мащаба).
 - Растеризация: няма зависимост в пакета: ползвай Chromium (`--headless --screenshot`), вече е в средата.
+- **`cinematic/` е 3D витрина извън гейта на нулевите зависимости — решение на собственика,
+  2026-09-24 (преработена по модела на `boy/` същия ден, потвърдено изрично „Пренапиши като boy").**
+  Собствен пакет с `package.json`/`node_modules`, структуриран точно като `boy/` (медиевалния
+  двубой в репото): `src/` модули (materials · textures · texture-util · noise · profile · body ·
+  face · accessories · scene · post* · quality · main), билд с esbuild до един самостоятелен
+  `dist/mascot-cinematic.html`, `test/` с геометрични доказателства без GPU. Гейтът:
+  `cd mascot/cinematic && npm ci && npm run gate` (= `check.mjs` → `node --test` → билд) и
+  `npm run smoke` (headless Chromium, извън CI). `template.html` носи importmap към
+  `cdn.jsdelivr.net/npm/three@<версия>` (**не** cdnjs вече) за `three` и `three/addons/`; версията
+  там **трябва** да съвпада с `devDependencies.three` в `package.json` — гейтнато в `check.mjs`,
+  същото правило като в `boy/`. Гейтът на `mascot/` (`check.mjs`, корена на пакета) не сканира
+  `cinematic/` (чете само `svg/`, `react/`, `tokens.*`, `demo/`); `static-site-check.mjs` обхожда
+  `dist/mascot-cinematic.html` като всеки друг HTML (локални препратки, `<title>`, `lang`, ≥5
+  keywords с „Carbon Stealth", кредит „Carbon Stealth VCC") — тези правила важат без изключение.
+  Закони на пакета (огледални на `boy/CLAUDE.md`): файл ≤300 реда, нула `console.*`/`TODO` в
+  `src/`; геометричните тестове пазят четири конкретни дефекта да не се върнат — рамките на
+  очилата ВИНАГИ пред тялото (≥2% от локалния радиус, `profile.js#forwardZFor`), склерата пред
+  тялото и зад лещата, шапката опира короната (не плава, не пробива), всяко стъпало стъпва точно
+  на пода (`body.js#GROUND_Y`); `prefers-reduced-motion` → статичен кадър, без WebGL2 → SVG
+  резерв (`../svg/jelly-mascot-full-animated.svg`), бутон „Пауза" (WCAG 2.2.2). SVG изворите в
+  `svg/` остават непипнати; `cinematic/` е отделна витрина, не заменя логото/иконата/печата.
 
 Пълната документация е в `README.md`; произходът на дизайна — в `prompts.md`.

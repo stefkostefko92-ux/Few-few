@@ -75,16 +75,13 @@ npm run assets        # генерира всички размери за две
 3. **Разрешения:**
    - Геолокация (за споделяне на локация / SOS) — Android `ACCESS_FINE_LOCATION`,
      iOS `NSLocationWhenInUseUsageDescription`.
-   - NFC (по избор) — Android `android.permission.NFC`.
+   - NFC (по избор) — Android `android.permission.NFC`; iOS — entitlement
+     `com.apple.developer.nfc.readersession.formats` + `NFCReaderUsageDescription` в `Info.plist`
+     (https://developer.apple.com/documentation/corenfc).
+   - Биометрия (Face ID) — iOS `NSFaceIDUsageDescription` в `Info.plist` (без него приложението
+     се срива при първото искане).
 4. **Deep links / App Links** към `medqr.carbonstealth.eu`, за да се отварят QR
    връзките направо в приложението (по избор).
 5. **Магазини:** Google Play (AAB) и Apple App Store (Archive през Xcode).
    За App Store: приложение, което само показва уебсайт, може да бъде отказано —
    затова добави нативна стойност (push известия, NFC, биометрия) при нужда.
-
-## Биометрично заключване (по избор)
-
-За да е удобно и сигурно „без парола“: добави
-[`@capacitor-community/biometric-auth`](https://github.com/capacitor-community/biometric-auth)
-и поискай Face ID / пръстов отпечатък при отваряне на приложението. Сесията си
-остава трайна; биометрията само пази локалния достъп.

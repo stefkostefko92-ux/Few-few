@@ -1,0 +1,52 @@
+{
+  "agents": [
+    {
+      "id": "seo",
+      "name": "SEO",
+      "title": "Откриваемост и класиране (SEO/GEO/AEO)",
+      "tier": "sonnet"
+    },
+    {
+      "id": "prevodach",
+      "name": "Преводач",
+      "title": "Локализация BG → EN → IT",
+      "tier": "opus"
+    },
+    {
+      "id": "pravniyat-razbirach",
+      "name": "Правният Разбирач",
+      "title": "Одитор за правна изрядност (ЕС)",
+      "tier": "opus"
+    },
+    {
+      "id": "dizayner",
+      "name": "Дизайнера",
+      "title": "Brutal уеб визуални ефекти (WebGL/shaders/анимация)",
+      "tier": "sonnet"
+    },
+    {
+      "id": "socialdjiyata",
+      "name": "Социалджията",
+      "title": "Social Media Manager · видимост и клипчета",
+      "tier": "sonnet"
+    },
+    {
+      "id": "prodavacha",
+      "name": "Продавача",
+      "title": "Експерт по e-commerce и плащания (Stripe)",
+      "tier": "opus"
+    },
+    {
+      "id": "skorostnika",
+      "name": "Скоростника",
+      "title": "Предпусков одит на производителността (Lighthouse-съвместим)",
+      "tier": "sonnet"
+    },
+    {
+      "id": "printadjiyata",
+      "name": "Принтаджията",
+      "title": "Дизайн и подготовка за печат на Creality K2 Plus",
+      "tier": "sonnet"
+    }
+  ]
+}

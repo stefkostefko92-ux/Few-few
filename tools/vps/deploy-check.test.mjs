@@ -93,6 +93,51 @@ test("cat на частен ключ ОЩЕ е изтичане", () => {
   assert.ok(codes(f).has("secret-echo"));
 });
 
+// ─── secret-echo: СТОЙНОСТ, не ДУМА (24.09.2026) ────────────────────────────
+// Шумът от думи („check BOT_TOKEN“) крие истинското. Закотвяме и двете посоки.
+
+test("реалното изтичане от stripe-setup.sh (${WH_SECRET} в echo) е хванато", () => {
+  const f = lintShell('set -euo pipefail\necho "  ЗАПИШИ: STRIPE_WEBHOOK_SECRET=${WH_SECRET}"', "stripe-setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("разгъване на тайна променлива без „ИМЕ=“ е изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "value: $API_TOKEN"', "deploy.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+
+test("имена на тайни в инструкция НЕ са изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "Fill in ENCRYPTION_KEY, SESSION_SECRET, API_SECRET"\necho -e "${YELLOW}check BOT_TOKEN${NC}"\necho "  STRIPE_SECRET_KEY=<ключът>"', "deploy.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("думата „token“ в текст с НЕтайна променлива НЕ е изтичане", () => {
+  const f = lintShell('set -euo pipefail\necho "rejects invalid bearer token [$local_code]"', "smoke.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("печат само на ДЪЛЖИНАТА (${#VAR}) не е изтичане — стойността не излиза", () => {
+  const f = lintShell('set -euo pipefail\necho "secret (${#WH_SECRET} chars)"', "x.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("брояч $pass в smoke тест НЕ е парола", () => {
+  const f = lintShell('set -euo pipefail\nok() { printf "  ✓ %s\\n" "$1"; pass=$((pass+1)); }\nprintf "passed: %s\\n" "$pass"', "smoke.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+
+test("присвояване WH_SECRET=$(echo … | grep …) НЕ е печат; печатът му след това — е", () => {
+  const assign = lintShell(`set -euo pipefail\nWH_SECRET=$(echo "$WH_JSON" | grep -o whsec_x)`, "x.sh");
+  assert.ok(!codes(assign).has("secret-echo"));
+  const printed = lintShell(`set -euo pipefail\nWH_SECRET=$(echo "$WH_JSON" | grep -o whsec_x)\necho "$WH_SECRET"`, "x.sh");
+  assert.ok(codes(printed).has("secret-echo"));
+});
+
+test("$DB_PASSWD и $ADMIN_PASSWORD в echo са изтичане", () => {
+  assert.ok(codes(lintShell('set -euo pipefail\necho "$DB_PASSWD"', "x.sh")).has("secret-echo"));
+  assert.ok(codes(lintShell('set -euo pipefail\necho "pw: $ADMIN_PASSWORD"', "x.sh")).has("secret-echo"));
+});
+
 // ─── Незащитен subshell под `set -e` ────────────────────────────────────────
 // Реален дефект (07.08.2026): `( cd "$d"; bash deploy.sh )` без `||` в
 // autodeploy.sh. При `set -e` провалът на ЕДИН продукт прекратява целия пробег —
@@ -215,4 +260,30 @@ test("блокът КОНФИГУРАЦИЯ оцелява без /etc/vizitka/v
   const cfg = src.slice(0, end).join("\n") + '\necho __CONFIG_OK__\n';
   const out = execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
   assert.match(out, /__CONFIG_OK__/);
+});
+
+// ─── secret-echo: група `{ … } > file` (фалшива аларма в vizitka/server-setup.sh) ─
+test("echo на тайна в `{ … } > file` е ЗАПИС, не лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "PRINT_API_SECRET=$s"\n  echo "SMTP_PASS=$p"\n} > "$ENV_FILE"', "setup.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+test("същото в `( … ) >> file` subshell", () => {
+  const f = lintShell('set -euo pipefail\n(\n  echo "TOKEN=$t"\n) >> "$d/.env"', "setup.sh");
+  assert.ok(!codes(f).has("secret-echo"));
+});
+test("група, пренасочена към stderr, ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s"\n} >&2', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test("група БЕЗ пренасочване ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s"\n}', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test(">&2 вътре във файлова група ОЩЕ е лог", () => {
+  const f = lintShell('set -euo pipefail\n{\n  echo "SECRET=$s" >&2\n} > "$f"', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
+});
+test("функция `f() {` с тайна след нея не се освобождава", () => {
+  const f = lintShell('set -euo pipefail\nf() {\n  echo "SECRET=$s"\n} > "$log"', "setup.sh");
+  assert.ok(codes(f).has("secret-echo"));
 });

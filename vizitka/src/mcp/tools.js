@@ -61,7 +61,7 @@ export function searchDocs(base, query, limit = MAX_RESULTS) {
   if (!queryTokens.length) {
     // Празна заявка → не мълчим, а връщаме входните точки. Асистент, който още не
     // знае какво има, така вижда откъде да започне.
-    return docs.slice(0, limit).map((d) => ({
+    return docs.slice(0, Math.min(limit, MAX_RESULTS)).map((d) => ({
       id: d.id,
       title: d.title,
       url: d.url,

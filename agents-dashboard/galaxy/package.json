@@ -1,0 +1,24 @@
+{
+  "name": "galaxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Кинематографичен галактически WebGL2 HDR слой на таблото на агентите — спираловидна структура, bulge, HII области, емисионни мъглявини, JWST-стил диафракционни лъчи, bloom/halation/ACES/TAA. Нула зависимости; бъндва се в agents-dashboard/galaxy.js.",
+  "keywords": [
+    "Carbon Stealth",
+    "WebGL2",
+    "галактика",
+    "HDR рендер",
+    "GLSL шейдъри",
+    "табло на агентите"
+  ],
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node build.mjs",
+    "lint": "node check.mjs",
+    "test": "node --test test/*.test.js",
+    "gate": "node check.mjs && node --test test/*.test.js && node build.mjs",
+    "smoke": "node build.mjs && node scripts/smoke.mjs"
+  }
+}

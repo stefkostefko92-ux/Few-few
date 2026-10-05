@@ -10,7 +10,7 @@ export default function CommandsPage() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
 
-  const { data: catalog = [], isLoading } = useQuery({
+  const { data: catalog = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["commands-catalog"],
     queryFn: getCommandsCatalog,
     staleTime: 1000 * 60 * 60, // 1 hour — catalog rarely changes
@@ -94,9 +94,18 @@ export default function CommandsPage() {
         </div>
       )}
 
-      {!isLoading && filtered.length === 0 && (
+      {/* Грешка/празен каталог ≠ „нищо не съвпада“: без търсене това изречение
+          лъжеше, че потребителят е филтрирал (визуален одит 25.09.2026). */}
+      {!isLoading && isError && (
+        <div className="cs-card text-center py-12 text-cs-muted" role="alert">
+          <p>Could not load the command list.</p>
+          <button type="button" onClick={() => refetch()} className="cs-btn-ghost mt-3">Try again</button>
+        </div>
+      )}
+
+      {!isLoading && !isError && filtered.length === 0 && (
         <div className="cs-card text-center py-12 text-cs-muted">
-          No commands match your search.
+          {query.trim() || activeCategory ? "No commands match your search." : "No commands available yet."}
         </div>
       )}
 

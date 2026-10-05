@@ -1,6 +1,22 @@
 import type { Character, CombatActor, Item, InventoryEntry, CharacterClass } from '../types/domain';
-import { ITEM_SETS, type SetBonus, type SetDef } from '../seed/sets';
+import { ITEM_SETS, findSetForItem, type SetBonus, type SetDef } from '../seed/sets';
 import { loadGuildBuffsForCharacter } from './guild';
+import { ITEM_SEED } from '../seed/items';
+import { nextTierRef, type CurveItem } from './itemCurve';
+
+const WYRMSONG_CLIMB_MAX = 200;
+const climbCapByLevel = new Map<number, number>();
+/** Бонус atk_max на Wyrmsong: +1.2/етаж, таван 200 И таван по нивото —
+ *  общото оръжие на следващия тир (≤ кривата на уникатите, +0%). */
+export function wyrmsongClimb(level: number, towerBestFloor: number, baseAtkMax: number): number {
+  let refMax = climbCapByLevel.get(level);
+  if (refMax === undefined) {
+    refMax = nextTierRef(ITEM_SEED as unknown as CurveItem[], 'weapon', level)?.primary ?? 0;
+    climbCapByLevel.set(level, refMax);
+  }
+  const byLevel = Math.max(0, refMax - baseAtkMax);
+  return Math.max(0, Math.min(WYRMSONG_CLIMB_MAX, Math.floor(Math.max(0, towerBestFloor) * 1.2), byLevel));
+}
 
 export interface SetBonusSummary {
   set_slug: string;
@@ -43,15 +59,19 @@ export function classWeaponSkill(cls: CharacterClass, sub: string, ch: Character
   return 0;
 }
 
-/** Count equipped pieces per set, picking the set with the most matches for any shared slug. */
+/** Брой носени части на сет. Брои се САМО уникалната част на сета — общите
+ *  предмети не принадлежат на никой сет, а всяка част е точно в един сет
+ *  (findSetForItem), така че един предмет никога не „храни" два сета.
+ *  Дублирани носени копия на една част се броят веднъж. */
 function computeSetCounts(equipped: { item: Item }[]): Map<string, number> {
   const counts = new Map<string, number>();
-  // For each equipped item, find sets it belongs to.
-  const equippedSlugs = new Set(equipped.map((e) => e.item.slug));
-  for (const set of ITEM_SETS) {
-    let matched = 0;
-    for (const slug of set.pieces) if (equippedSlugs.has(slug)) matched++;
-    if (matched > 0) counts.set(set.slug, matched);
+  const seen = new Set<string>();
+  for (const e of equipped) {
+    const slug = e.item.slug;
+    if (seen.has(slug)) continue;
+    seen.add(slug);
+    const set = findSetForItem(slug);
+    if (set) counts.set(set.slug, (counts.get(set.slug) ?? 0) + 1);
   }
   return counts;
 }
@@ -123,14 +143,13 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
       atkMin = item.atk_min + (e.atk_min || 0);
       atkMax = item.atk_max + (e.atk_max || 0);
       weaponSub = item.sub_type;
-      // Audit (balance tuning #10): Wyrmsong promises "strikes harder
-      // the higher you climb" but used to ship as a static lv-18 sword
-      // — at lv 25+ a veteran sword outclassed it. Scale its atk_max
-      // with the player's best tower floor so the description matches
-      // reality: +1.2 atk_max per floor cleared, capped at +200 so it
-      // doesn't completely overshadow tier-10 drops.
+      // Wyrmsong („strikes harder the higher you climb") расте с етажа на
+      // кулата, но растежът е ограничен и от НИВОТО на героя: най-много до
+      // общото оръжие на следващия тир (game/itemCurve.ts). Преди +1.2/етаж
+      // до +200 без оглед на нивото → висок етаж на lv 20–60 даваше
+      // оръжие над следващия тир (кривата на уникатите).
       if (item.slug === 'wyrmsong_blade') {
-        const climb = Math.min(200, Math.floor(((ch as any).tower_best_floor || 0) * 1.2));
+        const climb = wyrmsongClimb(ch.level, (ch as any).tower_best_floor || 0, item.atk_max);
         atkMin += Math.floor(climb * 0.6);
         atkMax += climb;
       }
@@ -233,8 +252,21 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   // споделя тежестта. Така DEX не е 4-в-1 (щети+dodge+crit+speed), а dodge
   // става реален и за защитни/WIS билдове. DEX коефициентът е леко намален
   // (0.005→0.004), компенсиран от WIS.
-  const dodge_chance = Math.min(0.45, dex * 0.004 + wis * 0.002 + ch.skill_stealth * 0.004 + dodgeBonus);
-  const crit_chance = Math.min(0.5, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03 + critBonus);
+  //
+  // Баланс одит (класов паритет, мерен с __tests__/balanceHarness.ts): за
+  // ranger/rogue основният стат (DEX) дава щети + crit + dodge + speed, а STR
+  // (warrior) и INT (mage) — само щети. При равно злато магът губеше 80–100%
+  // от двубоите на всяко ниво, а warrior 50–98% срещу DEX класовете на
+  // lv 25–100. „Ловкостта" (agility) за crit/dodge вече е max(DEX, основния
+  // стат на класа) — всеки клас получава същия пакет от основния си стат,
+  // а DEX-билд warrior/mage не губи нищо (max ≥ dex). Speed (инициатива)
+  // остава чисто DEX.
+  // Маговете нямаха никакъв път умение→crit (sword/bow дават 0.003/т): сега
+  // тяхното оръжейно умение (staff/magic) дава същото.
+  const agility = Math.max(dex, ch.class === 'warrior' ? str : ch.class === 'mage' ? int_ : 0);
+  const critSkill = ch.skill_sword + ch.skill_bow + (ch.class === 'mage' ? Math.max(ch.skill_staff, ch.skill_magic) : 0);
+  const dodge_chance = Math.min(0.45, agility * 0.004 + wis * 0.002 + ch.skill_stealth * 0.004 + dodgeBonus);
+  const crit_chance = Math.min(0.5, agility * 0.004 + critSkill * 0.003 + 0.03 + critBonus);
   const speed = 5 + Math.round(dex * 0.4);
   // Ребаланс: CHA вече не е мъртъв стат (сумираше се, но не влизаше в нито
   // едно бойно число). Става стат за СИЛА НА КРИТА (crit damage) — базовите

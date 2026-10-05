@@ -35,7 +35,7 @@ export default function Mail(): React.ReactElement {
       <div className="panel-header">
         <h2 className="panel-title">{t('mail.title')}</h2>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 18, minHeight: 400 }}>
+      <div className="mail-grid" style={{ minHeight: 400 }}>
         <div className="col" style={{ gap: 6 }}>
           {mails.map((m) => (
             <div
@@ -49,9 +49,9 @@ export default function Mail(): React.ReactElement {
               }}
               onClick={() => open(m)}
             >
-              <div className="flex between">
-                <strong>{m.subject}</strong>
-                {!m.read_at && <span className="tag gold">{t('mail.newTag')}</span>}
+              <div className="flex between" style={{ alignItems: 'flex-start', gap: 8 }}>
+                <strong style={{ minWidth: 0 }}>{m.subject}</strong>
+                {!m.read_at && <span className="tag gold" style={{ flexShrink: 0 }}>{t('mail.newTag')}</span>}
               </div>
               <div className="muted text-sm">{m.from_name}</div>
             </div>

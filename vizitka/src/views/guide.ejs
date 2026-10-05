@@ -14,16 +14,7 @@
     <time datetime="<%= guide.updated %>"><%= new Date(guide.updated).toLocaleDateString('bg-BG', { day: 'numeric', month: 'long', year: 'numeric' }) %></time>
   </p>
 
-  <% for (const s of guide.sections || []) { %>
-    <h2><%= s.h2 %></h2>
-    <% for (const par of s.p || []) { %><p><%- par %></p><% } %>
-    <% if (s.ul) { %>
-      <ul>
-        <% for (const li of s.ul) { %><li><%- li %></li><% } %>
-      </ul>
-    <% } %>
-  <% } %>
-
+  <%# Стъпките са сърцевината на „как да“ страницата — веднага след отговора, не накрая. %>
   <% if (guide.steps && guide.steps.length) { %>
     <h2>Стъпките</h2>
     <ol class="steps">
@@ -34,6 +25,17 @@
       <% }) %>
     </ol>
   <% } %>
+
+  <% for (const s of guide.sections || []) { %>
+    <h2><%= s.h2 %></h2>
+    <% for (const par of s.p || []) { %><p><%- par %></p><% } %>
+    <% if (s.ul) { %>
+      <ul>
+        <% for (const li of s.ul) { %><li><%- li %></li><% } %>
+      </ul>
+    <% } %>
+  <% } %>
+
 
   <% if (guide.faq && guide.faq.length) { %>
     <section class="faq">

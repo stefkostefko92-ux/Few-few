@@ -9,12 +9,18 @@ export { buildPkpass, getPkpass } from './apple.js';
 export { googleSaveUrl } from './google.js';
 export { passAuthToken } from './shared.js';
 
+// Google издава карти на ВСИЧКИ едва след одобрение („publishing access“). Дотогава
+// (демо режим) запазването работи само за акаунти с роля в конзолата — обикновен
+// посетител би получил грешка. Затова бутонът е за всички чак с този флаг, а преди
+// това — само за собственика и админа (за тест).
+const googlePublished = () => process.env.GOOGLE_WALLET_PUBLISHED === '1';
+
 // Линкове за бутоните на публичната визитка (null → бутонът не се показва).
 // Когато нито един портфейл не е конфигуриран, показваме „Скоро" тийзър (неактивен).
-export function walletLinks(profile) {
+export function walletLinks(profile, { preview = false } = {}) {
   const publicPath = `/p/${profile.slug}/wallet`;
   const apple = appleEnabled();
-  const google = googleEnabled();
+  const google = googleEnabled() && (googlePublished() || preview);
   return {
     apple: apple ? `${publicPath}/apple.pkpass` : null,
     google: google ? `${publicPath}/google` : null,

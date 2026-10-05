@@ -1,0 +1,72 @@
+name: agentgw
+
+on:
+  push:
+    paths:
+      - 'agentgw/**'
+      - '.github/workflows/agentgw.yml'
+  pull_request:
+    paths:
+      - 'agentgw/**'
+      - '.github/workflows/agentgw.yml'
+
+concurrency:
+  group: agentgw-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: agentgw
+    steps:
+      # Пълен checkout: проверката на профилите ползва tools/security/secret-scan.mjs от корена.
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: agentgw/package-lock.json
+      - run: npm ci
+      # lint (prettier + публични профили) · typecheck · test (фалшив Vertex, без мрежа) · build
+      - run: npm run gate
+
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: agentgw
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: agentgw
+          POSTGRES_PASSWORD: agentgw
+          POSTGRES_DB: agentgw_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U agentgw"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://agentgw:agentgw@127.0.0.1:5432/agentgw_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: agentgw/package-lock.json
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      # Схемата и миграциите не бива да се разминават.
+      - run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
