@@ -21,7 +21,7 @@ function refuses(env: Record<string, string>, reason: RegExp): void {
       assert.ok(error instanceof Error);
       assert.match(error.message, /^Невалидна конфигурация: /);
       assert.match(error.message, reason);
-      for (const value of [ENC, HMAC, env.ENC_KEY, env.HMAC_KEY])
+      for (const value of [ENC, HMAC, env.ENC_KEY, env.HMAC_KEY, env.CATALOG_KEY])
         if (value) assert.ok(!error.message.includes(value), 'a key leaked into the error');
       return true;
     },
@@ -80,4 +80,16 @@ test('the public address must be a URL and loses its trailing slash', () => {
 test('a switch is only "true" or "false"', () => {
   assert.equal(loadConfig({ ...BASE, BREACH_CHECK: 'false' }).BREACH_CHECK, false);
   refuses({ BREACH_CHECK: 'yes' }, /BREACH_CHECK: /);
+});
+
+test('the catalog key is optional, 32 bytes of hex and none of the other two keys', () => {
+  assert.equal(loadConfig({ ...BASE, CATALOG_KEY: '' }).CATALOG_KEY, undefined);
+  assert.equal(loadConfig({ ...BASE, CATALOG_KEY: 'c'.repeat(64) }).CATALOG_KEY, 'c'.repeat(64));
+  refuses({ CATALOG_KEY: 'c'.repeat(63) }, /CATALOG_KEY: CATALOG_KEY трябва да е 32 байта в hex/);
+  for (const same of [ENC, HMAC.toUpperCase()]) {
+    refuses(
+      { CATALOG_KEY: same },
+      /CATALOG_KEY: CATALOG_KEY трябва да е различен от ENC_KEY и HMAC_KEY/,
+    );
+  }
 });

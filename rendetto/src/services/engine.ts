@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { config } from '../config.js';
 import { logger } from '../logger.js';
 import { fromRoot, ROOT } from '../paths.js';
+import { openSealedCatalog, SEALED_CATALOG } from './catalog-seal.js';
 
 /**
  * Мостът към двигателя (`engine/*.js`, обикновен ESM, общ с редактора в браузъра). Двигателят се
@@ -116,8 +117,8 @@ function fn<T>(module: Loaded, name: string): T {
   return value as T;
 }
 
-/** Каталогът от магазините е само на сървъра. Проверява се формата му, не съдържанието ред по ред. */
-const catalogShape = z
+/** Каталогът от магазините: проверява се формата му, не съдържанието ред по ред. */
+export const catalogShape = z
   .object({
     meta: z.record(z.unknown()),
     decors: z.array(z.unknown()),
@@ -131,12 +132,51 @@ const catalogShape = z
   })
   .passthrough();
 
+export interface ShopCatalogSource {
+  /** Каталогът като файл на сървъра (`CATALOG_PATH`). */
+  plainFile: string;
+  /** Шифрованият каталог от репото. */
+  sealedFile: string;
+  key: string | undefined;
+}
+
+/**
+ * Текстът на каталога от магазините и откъде е — или null (основният каталог). С ключ решава
+ * шифрованият каталог от репото: репото е източникът, а забравен стар файл на сървъра не бива тихо да
+ * го засенчва. Ключ без шифрования файл е счупен release — грешка, не основният каталог.
+ */
+export function shopCatalogText(
+  from: ShopCatalogSource,
+): { text: string; source: 'sealed' | 'file' } | null {
+  if (from.key) {
+    if (!existsSync(from.sealedFile)) {
+      throw new Error(`няма ${SEALED_CATALOG}, а CATALOG_KEY е зададен`);
+    }
+    return { text: openSealedCatalog(readFileSync(from.sealedFile), from.key), source: 'sealed' };
+  }
+  return existsSync(from.plainFile)
+    ? { text: readFileSync(from.plainFile, 'utf8'), source: 'file' }
+    : null;
+}
+
+/** Каталогът на сървъра по конфигурацията на процеса. */
+export function serverCatalogSource(): ShopCatalogSource {
+  return {
+    plainFile: fromRoot(config().CATALOG_PATH),
+    sealedFile: fromRoot(SEALED_CATALOG),
+    key: config().CATALOG_KEY,
+  };
+}
+
 let catalogJson: string | null = null;
 /** ETag на каталога — смята се веднъж при зареждане, не при всяка заявка (каталогът е няколко MB). */
 let catalogEtag = '""';
 
-/** `catalogPath` е за инструментите извън сървъра (брошурата): те не носят цялата конфигурация на процеса. */
-export async function loadEngine(catalogPath: string = config().CATALOG_PATH): Promise<void> {
+/**
+ * `catalogPath` е за инструментите извън сървъра (брошурата, og-image): те не носят цялата конфигурация
+ * на процеса и четат само файла. Сървърът (без аргумент) чете и шифрования каталог с CATALOG_KEY.
+ */
+export async function loadEngine(catalogPath?: string): Promise<void> {
   const [model, types, bom, drill, nest, cam, dxf, assembly, part, util, catalog] =
     await Promise.all([
       load('model.js'),
@@ -153,14 +193,23 @@ export async function loadEngine(catalogPath: string = config().CATALOG_PATH): P
     ]);
   const registerCatalog = fn<(data: unknown) => unknown>(catalog, 'registerCatalog');
   const baseCatalogData = fn<() => unknown>(catalog, 'baseCatalogData');
-  const file = fromRoot(catalogPath);
-  if (existsSync(file)) {
-    const raw = readFileSync(file, 'utf8');
-    const parsed = catalogShape.safeParse(JSON.parse(raw) as unknown);
+  const from =
+    catalogPath === undefined
+      ? serverCatalogSource()
+      : { plainFile: fromRoot(catalogPath), sealedFile: '', key: undefined };
+  const shop = shopCatalogText(from);
+  if (shop) {
+    const parsed = catalogShape.safeParse(JSON.parse(shop.text) as unknown);
     if (!parsed.success) throw new Error('каталогът е с неочаквана форма');
     registerCatalog(parsed.data);
-    catalogJson = raw;
+    catalogJson = shop.text;
     catalogMode = 'shop';
+    if (shop.source === 'sealed' && existsSync(from.plainFile)) {
+      logger.warn(
+        'data/catalog.json се пренебрегва: с CATALOG_KEY каталогът идва шифрован от репото',
+      );
+    }
+    logger.info({ source: shop.source }, 'каталогът от магазините е зареден');
   } else {
     logger.warn('няма каталог от магазините — двигателят работи с основния каталог');
     const base = baseCatalogData();

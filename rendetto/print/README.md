@@ -22,7 +22,8 @@ npm run brochure     # print/rendetto-brochure-<език>.pdf; HTML за пре�
 - Текстовете: `locales/<език>/brochure.json` (само за брошурата) + текстовете на витрината
   (`landing.*`). Първо BG, после EN/IT — тестът хваща липсващ ключ и разминат `{…}`.
 - Цените идват от `src/plans/pricing.ts`, датата им — от `CONTENT_UPDATED` в `src/company.ts`.
-- Каталогът от магазините се ползва, ако е в `data/catalog.json` (както на сървъра).
+- Каталогът от магазините се ползва, ако е в `data/catalog.json` (брошурата чете само файла, не
+  шифрования каталог от репото).
 - Адресът е `PRODUCT_URL` от `src/company.ts`; за друг адрес — `BROCHURE_URL=https://… npm run brochure`.
 
 ## 3D изгледът (`assets/kitchen-3d.jpg`)
