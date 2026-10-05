@@ -1,7 +1,7 @@
 // What the software worked out from the one form, in one strip: the car and its load, the car mass (with its origin),
 // the counterweight, travel and speed, the machine; and the verdict of the acceptance test: every check that the
 // intervention touches under any of its standards (all of them for a new lift), with how many concern parts that stay
-// as they are, and a badge with each standard's own result.
+// as they are, and a badge with each standard's own result (and one for a renovation keeping the existing sling).
 import { useTranslations } from 'next-intl';
 import { NORMA_BREVE, NORMA_SIGLA, ambitoOf, collaudoVerdict, esitiNorme, type LiftDerived } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
@@ -28,6 +28,7 @@ export default function LiftFacts({ derived, X, fmt }: Props) {
           {esitiNorme(C, all).map((e) => (
             <span key={e.norma} className={`badge ${e.ids.length ? e.verdict : ''}`} title={`${NORMA_SIGLA[e.norma]}: ${t('norma_checks', { n: e.ids.length })}`}>{NORMA_BREVE[e.norma]}</span>
           ))}
+          {C.rifacimento ? <span className="badge" title={t('context_rifacimento')}>{t('facts_rif')}</span> : null}
         </span>
       </div>
       <dl className="facts">

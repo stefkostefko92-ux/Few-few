@@ -145,6 +145,20 @@ try {
   await page.check('.collaudo .parti-grid label:nth-child(2) input');
   await page.waitForSelector('.lift-checks tr.existing .status-pill.existing');
   assert.match(await page.textContent('.lift-work .lift-verdict .badge'), /UNI 10411-11/, 'standard of the acceptance test');
+  // the renovation keeping the existing sling: every part but the sling (locked), still tested to the UNI 10411 part
+  // chosen, never to EN 81-20/50; through a new lift and back it is the same
+  const rif = '.lift-form .seg-row button:has-text("Rifacimento con arcata esistente")';
+  await page.click(rif);
+  await page.waitForSelector('.collaudo .parti-grid label:nth-child(4) input:disabled');
+  assert.ok(await page.isChecked('.collaudo .parti-grid label:nth-child(3) input'), 'the car replaced');
+  assert.equal(await page.locator('.lift-form .collaudo select option[value="en81"]').count(), 0, 'EN 81-20/50 not offered');
+  await page.waitForFunction(() => /arcata esistente/.test(globalThis.document.querySelector('.lift-work .lift-verdict')?.textContent ?? ''));
+  await page.click('.lift-form .seg-row button:has-text("Nuovo impianto")');
+  await page.waitForFunction(() => /EN 81-20\/50/.test(globalThis.document.querySelector('.lift-work .lift-verdict .badge')?.textContent ?? ''));
+  await page.click(rif);
+  await page.waitForSelector('.collaudo .parti-grid label:nth-child(4) input:disabled');
+  assert.equal(await page.inputValue('.collaudo select'), '10411-11', 'the part of UNI 10411 kept');
+  await page.waitForFunction(() => /UNI 10411-11/.test(globalThis.document.querySelector('.lift-work .lift-verdict .badge')?.textContent ?? ''));
   // the machine from SICOR's catalogue: the proposal takes one of its models, which the room's drawings, the 3D and the
   // relazione show as it is (src/lib/catalog/shapes.ts); the saved design must reproduce it on the server
   await page.evaluate(() => { const d = globalThis.document.querySelector('#auto-machine')?.closest('details'); if (d) d.open = true; });
@@ -163,6 +177,7 @@ try {
   await page.waitForSelector('.lift-view .lift-facts');
   assert.equal(await page.locator('main > .alert-warn, main > .alert-bad').count(), 0, 'the running engines reproduce the saved design');
   assert.match(await page.textContent('.lift-view .lift-verdict .badge'), /UNI 10411-11/, 'the saved standard');
+  assert.match(await page.textContent('.lift-view .lift-verdict'), /arcata esistente/, 'the renovation saved');
   assert.match(await page.textContent('.lift-view .panev-bom'), /SU 220 200/, 'the support chosen by hand, saved');
 
   step('its documents: report with the plan, DXF, order, export');
@@ -209,10 +224,12 @@ try {
   assert.equal(await page.locator('.sheet-page svg.sheet-svg image').count(), 2, 'the company\'s and the client\'s logo on sheet 1');
   const sheets = await page.locator('nav.seg-row a').count();
   assert.ok(sheets >= 8, `sheets ${sheets}`);
-  // sheet 1 lists the check of the car rails (UNI EN 81-50, 5.10); here the rails stay (UNI 10411-11, machine and ropes
-  // replaced), so without the note of a new rail's check
+  // sheet 1 lists the check of the car rails (UNI EN 81-50, 5.10); here a renovation keeping the sling (UNI 10411-11):
+  // the rails are new, so with the note of their check, and the test's note says the sling stays (the rails kept, without
+  // the note: tavole.test.ts)
   const sheet1 = await page.textContent('.sheet-page svg.sheet-svg');
-  assert.ok(sheet1?.includes('Guide di cabina: tensioni') && !sheet1.includes('VERIFICA DELLE GUIDE DI CABINA'), 'the rails\' check on sheet 1');
+  assert.ok(sheet1?.includes('Guide di cabina: tensioni') && sheet1.includes('VERIFICA DELLE GUIDE DI CABINA'), 'the rails\' check on sheet 1');
+  assert.ok(sheet1.includes("Rifacimento con l'arcata esistente"), 'the renovation in the test\'s note');
   const setPdfHref = await page.getAttribute('a[href$="/pdf"]', 'href');
   const setPdf = await page.request.get(`${BASE}${setPdfHref}`);
   assert.equal(setPdf.status(), 200);

@@ -1,6 +1,7 @@
 // The acceptance test in the documents (the relazione and sheet 1), in Italian: the standards, the parts the
-// intervention replaces or changes, the result of a check that concerns a part staying as it is, the result under each
-// standard and the test's, the adaptations the standard asks of a replaced machine. Pure.
+// intervention replaces or changes (a renovation keeps the existing sling), the result of a check that concerns a part
+// staying as it is, the result under each standard and the test's, the adaptations the standard asks of a replaced
+// machine. Pure.
 import appIt from '../../../messages/it.json';
 import type { CheckId } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
@@ -38,8 +39,15 @@ export function collaudoText(C: Collaudo, repl: boolean): string {
   return repl ? interventionText(C) + aggiunteSentence(C) : aggiunteSentence(C);
 }
 
+/** The renovation that keeps the existing sling: a modification, by the practice of the registry's entry. */
+const RIFACIMENTO_TEXT = " Rifacimento dell'impianto con l'arcata esistente: le sostituzioni sono modifiche costruttive ai sensi del DPR 162/1999 "
+  + "e s.m.i. (art. 2, comma 1, lettera cc)) e l'arcata resta quella dell'impianto, che quindi non è sostituito per intero e non si collauda come "
+  + "impianto nuovo. È la prassi seguita (voce «impianto.rifacimento» del registro): il tecnico incaricato la conferma con il soggetto che esegue "
+  + 'la verifica straordinaria.';
+
 function interventionText(C: Collaudo): string {
-  const what = C.parti.includes('machine') || C.norma === 'en81'
+  // a renovation is one only under UNI 10411 (collaudoOf)
+  const what = C.rifacimento && C.norma !== 'en81' ? RIFACIMENTO_TEXT : C.parti.includes('machine') || C.norma === 'en81'
     ? ' La sostituzione del macchinario è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i.'
     : " L'intervento modifica un impianto esistente (DPR 162/1999 e s.m.i.).";
   if (C.norma === 'en81') return `${what} Il collaudo segue la ${NORMA_SIGLA.en81}, come per un impianto nuovo: ogni verifica entra nell'esito.`;
@@ -77,7 +85,8 @@ export function adaptSection(C: Collaudo, repl: boolean, t: (k: CalcKey) => stri
 export function collaudoNote(C: Collaudo, tag: string): { title: string; tag: string; text: string } | null {
   const added = C.aggiuntive?.length ? ` Anche secondo ${(C.aggiuntive ?? []).map((n) => NORMA_BREVE[n]).join(' e ')}: ogni normativa ha il suo esito, quello del collaudo è il peggiore.` : '';
   if (C.norma === 'en81') return added ? { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA.en81}.${added}` } : null;
-  return { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA[C.norma]}.${added} Parti sostituite o modificate: ${partiText(C)}. Le verifiche con esito `
+  const rif = C.rifacimento ? " Rifacimento con l'arcata esistente: l'arcata resta quella dell'impianto, collaudato come modifica." : '';
+  return { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA[C.norma]}.${rif}${added} Parti sostituite o modificate: ${partiText(C)}. Le verifiche con esito `
     + "«ESISTENTE» riguardano parti che restano come sono e non entrano nell'esito delle verifiche." };
 }
 

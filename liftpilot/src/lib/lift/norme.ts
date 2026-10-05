@@ -68,6 +68,17 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'confermati sul testo vigente',
   },
   {
+    id: 'impianto.rifacimento', titolo: "Rifacimento con l'arcata esistente",
+    valore: "si sostituiscono tutte le parti tranne l'arcata, che resta: le sostituzioni sono modifiche costruttive dell'impianto esistente, che si "
+      + "collauda secondo UNI 10411-1:2024 o UNI 10411-11:2024 e non come impianto nuovo; le verifiche che riguardano solo l'arcata (il tipo di "
+      + 'paracadute, se la velocità non cambia) sono riportate come «esistente». La sostituzione completa dell\'ascensore, arcata compresa, si collauda '
+      + 'come impianto nuovo (UNI EN 81-20:2020 e UNI EN 81-50:2020; negli edifici esistenti anche la UNI EN 81-21:2022, supplementare)',
+    riferimento: 'DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), art. 12 c.4, art. 14 c.3; UNI 10411-1:2024; UNI 10411-11:2024; UNI EN 81-21:2022 (scopo)',
+    fonte: "indicazione del cliente (5 ottobre 2026): prassi di lasciare l'arcata; ricerca, capitolo 16 §3.2 e §5.3", stato: 'prassi',
+    nota: "il DPR 162/1999 elenca le modifiche costruttive ma non dice quando l'insieme diventa una sostituzione completa: la qualificazione "
+      + "dell'intervento la conferma il tecnico incaricato con il soggetto che esegue la verifica straordinaria",
+  },
+  {
     id: 'impianto.massa.cabina', titolo: 'Massa della cabina non inserita',
     valore: `P = ${it(KL.carMassRatio)}·Q arrotondata per eccesso a ${KL.carMassStep} kg: valore di partenza per far girare il calcolo`,
     riferimento: 'ricerca, capitoli 3 e 6 (origine della massa della cabina)', fonte: 'scelta del software, senza fonte', stato: 'stima',

@@ -119,7 +119,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
     ['Massa della cabina · contrappeso', `${fmt(I.P, 0)} kg${o.pEstimate ? ' (stima del software, da confermare)' : ''} · ${fmt(c.Mcw, 0)} kg (bilanciamento ${fmt(c.k, I.qeq > 0 ? 3 : 2)})`],
     ['Disposizione', t(`lay_${I.layout}`)],
     ['Funi (non comprese)', `${N.n} × Ø ${dText(N.d)} mm, carico di rottura minimo ${fmt(N.Fmin, 1)} kN`],
-    ['Norma del collaudo', NORMA_SIGLA[o.collaudo.norma]],
+    ['Norma del collaudo', `${NORMA_SIGLA[o.collaudo.norma]}${o.collaudo.rifacimento ? ' (rifacimento con l’arcata esistente)' : ''}`],
   ] });
 
   if (o.room.length) {

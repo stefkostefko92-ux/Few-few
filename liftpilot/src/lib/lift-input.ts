@@ -7,11 +7,13 @@ import { shaftInputsReadSchema, shaftInputsSchema } from './shaft-input';
 import { BRANDS } from '@/lib/catalog/machines';
 import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI } from '@/lib/lift/collaudo';
 
-/** The acceptance test: its base standard, the standards added (absent: none) and the parts replaced or changed. */
+/** The acceptance test: its base standard, the standards added (absent: none), the parts replaced or changed and the
+ *  renovation that keeps the existing sling (absent: none). */
 export const collaudoSchema = z.object({
   norma: z.enum(NORME_COLLAUDO),
   aggiuntive: z.array(z.enum(NORME_AGGIUNTIVE)).max(NORME_AGGIUNTIVE.length).refine((a) => new Set(a).size === a.length, 'each standard once').optional(),
   parti: z.array(z.enum(PARTI)).max(PARTI.length),
+  rifacimento: z.literal(true).optional(),
 }).strict();
 
 export const autoSchema = z.object({

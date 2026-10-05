@@ -115,7 +115,7 @@ export default function Results(props: Props) {
     </Card>
   );
   const tech = techCards(P, X, a);
-  const copy = <CopyCard key="copy" P={P} text={summaryText(P, X, a, { badVisible: badCount, brand })} />;
+  const copy = <CopyCard key="copy" P={P} text={summaryText(P, X, a, { badVisible: badCount, brand, rifacimento: C.rifacimento === true })} />;
   const head: ReactNode[] = [<ProposalCard key="prop" P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} />, quick];
   return (
     <div className="results">

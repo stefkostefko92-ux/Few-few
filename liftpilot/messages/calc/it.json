@@ -23,6 +23,7 @@
   "context": "Contesto",
   "ctx_repl": "Sostituzione dell'argano",
   "ctx_new": "Impianto nuovo",
+  "ctx_rif": "Rifacimento con arcata esistente",
   "n": "Numero di funi n",
   "d": "Diametro funi d",
   "Fmin": "Carico di rottura minimo per fune",

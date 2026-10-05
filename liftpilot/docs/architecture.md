@@ -19,7 +19,9 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      предложението; pickOption — изборът на опция на оразмеряването), advice (препоръчаната машина сред
                      SICOR и Montanari: всеки модел, проверен с асансьора, подредбата и причината, sourcesOf — буквите на
                      източника, алтернативата с отклоняваща ролка), collaudo (нормата на
-                     изпитването и сменените части: AMBITO_VERIFICHE, ambitoOf, collaudoVerdict), drops (подмяна → цял
+                     изпитването и сменените части: AMBITO_VERIFICHE, ambitoOf, collaudoVerdict), intervento (трите
+                     избора на формуляра: подмяна на машината, обновяване със съществуващата рама, нов асансьор —
+                     interventoOf/interventoTo, PARTI_RIFACIMENTO), drops (подмяна → цял
                      проект: кабината и противотежестта под калатите от рилевото), norme (KL, VOCI_IMPIANTO),
                      version (LIFT_ENGINE_VERSION). lift-input.ts (zod), lift-hash.ts.
 src/lib/order/       Черновата на поръчка на машината (италиански): machine (за коя машина: проверената в записа, иначе първата

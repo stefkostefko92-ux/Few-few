@@ -53,6 +53,9 @@ export interface Collaudo {
   aggiuntive?: readonly NormaAggiuntiva[];
   /** replaced or changed by the intervention (a new lift: everything) */
   parti: readonly Parte[];
+  /** the lift renewed but its sling (arcata), which stays: a modification tested to UNI 10411, not a new lift (site
+   *  practice, registry impianto.rifacimento; intervento.ts); absent: the parts as chosen */
+  rifacimento?: true;
 }
 
 /** The check of a result: applies to the acceptance test, or concerns a part that stays as it is. */
@@ -121,7 +124,9 @@ export const ammessa = (n: NormaAggiuntiva, base: NormaCollaudo): boolean => NOR
 
 /** The acceptance standards of the one form: a new lift is tested to EN 81-20/50 whatever was chosen; a replacement as
  *  chosen, by default UNI 10411-1 with the machine replaced (the intervention the software is made for). The standards
- *  added stay, in their order, once each, where they fit the base (EN 81-20/50 only on top of another base). */
+ *  added stay, in their order, once each, where they fit the base (EN 81-20/50 only on top of another base). A
+ *  renovation keeps its sling, never among the parts replaced, and is one only under UNI 10411 (tested to EN 81-20/50
+ *  the lift is tested as new). */
 export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
   const added = (base: NormaCollaudo): NormaAggiuntiva[] => NORME_AGGIUNTIVE.filter((n) => chosen?.aggiuntive?.includes(n) && ammessa(n, base));
   const withAdded = (c: Collaudo): Collaudo => {
@@ -130,7 +135,9 @@ export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
   };
   if (calc.context === 'new') return withAdded({ norma: 'en81', parti: PARTI });
   if (chosen && isNorma(chosen.norma)) {
-    return withAdded(chosen.norma === 'en81' ? { norma: 'en81', parti: PARTI } : { norma: chosen.norma, parti: PARTI.filter((p) => chosen.parti.includes(p)) });
+    if (chosen.norma === 'en81') return withAdded({ norma: 'en81', parti: PARTI });
+    const rif = chosen.rifacimento === true;
+    return withAdded({ norma: chosen.norma, parti: PARTI.filter((p) => chosen.parti.includes(p) && !(rif && p === 'sling')), ...(rif ? { rifacimento: true as const } : {}) });
   }
   return { norma: '10411-1', parti: ['machine'] };
 }

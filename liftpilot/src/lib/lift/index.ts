@@ -16,6 +16,8 @@ export { NO_MARKS, P_ESTIMATE_RULE, valueMarks } from './marks';
 export { AMBITO_VERIFICHE, NORMA_BREVE, NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, VERIFICHE_DM236, VERIFICHE_NTC, adeguamentiDovuti, ambitoNorme,
   ambitoOf, ammessa, collaudoOf, collaudoVerdict, esitiNorme, normeOf, underNorma } from './collaudo';
 export type { Ambito, Collaudo, EsitoNorma, Norma, NormaAggiuntiva, NormaCollaudo, Parte } from './collaudo';
+export { INTERVENTI, PARTI_RIFACIMENTO, interventoOf, interventoTo } from './intervento';
+export type { Intervento } from './intervento';
 export { ADEMPIMENTI, NORME_INFO } from './norme-collaudo';
 export type { AmbitoNorma, NormaInfo, PuntoInSito } from './norme-collaudo';
 export type { GeometryKey, ValueMarks } from './marks';

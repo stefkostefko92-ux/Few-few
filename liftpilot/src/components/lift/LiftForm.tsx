@@ -1,12 +1,14 @@
 'use client';
 
-// The one form of an installation, on the left of its screen: the intervention and its test, the shaft (its size, or
-// measured on a drawing), the load, doors and counterweight, the floors with pit and headroom, the machine room, the
+// The one form of an installation, on the left of its screen: the intervention (the machine replaced, the lift renewed
+// keeping its existing sling, a new lift: src/lib/lift/intervento.ts) and its test, the shaft (its size, or measured on a
+// drawing), the load, doors and counterweight, the floors with pit and headroom, the machine room, the
 // lift and its machine. A new installation starts empty (src/lib/lift/blank.ts); the software's own values (rails,
 // allowances, heights, niches, frames…) come once the project's data are in.
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
-import { KL, collaudoOf, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { INTERVENTI, KL, collaudoOf, interventoOf, interventoTo, type AutoFlags, type BottomScheme, type Collaudo, type Intervento, type LiftDerived,
+  type LiftInputs } from '@/lib/lift';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
@@ -53,7 +55,12 @@ interface Props {
 
 export default function LiftForm({ P, X, inp, derived, complete, blank, bad, need, texts, source, setShaft, setSize, onSurvey, setCalc, setAuto, setBottom, setCollaudo, setCatalog }: Props) {
   const t = useTranslations('lift'), ts = useTranslations('shaft'), is = blank.is;
-  const context = inp.calc.context === 'new' ? 'new' : 'repl';
+  const intervento = interventoOf(inp.calc, inp.collaudo);
+  const pick = (k: Intervento): void => {
+    const r = interventoTo(k, inp.collaudo);
+    setCalc(r.calc);
+    if (r.collaudo) setCollaudo(r.collaudo);
+  };
   // the machine room comes with a machine above (once its place is chosen)
   const above = !is('layout') && inp.calc.layout !== 'bottom';
   const size = (key: 'W' | 'D') => (
@@ -67,12 +74,12 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
     <form className="lift-form panel" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
       <h2>{t('s_context')}</h2>
       <div className="seg-row" role="radiogroup" aria-label={t('s_context')}>
-        {(['repl', 'new'] as const).map((c) => (
-          <button key={c} type="button" role="radio" aria-checked={context === c} className={context === c ? 'on' : undefined} onClick={() => setCalc({ context: c })}>{t(`context_${c}`)}</button>
+        {INTERVENTI.map((k) => (
+          <button key={k} type="button" role="radio" aria-checked={intervento === k} className={intervento === k ? 'on' : undefined} onClick={() => pick(k)}>{t(`context_${k}`)}</button>
         ))}
       </div>
       {/* DM 236 ticked with no case chosen yet sets the usual one, as with none */}
-      <CollaudoOptions P={P} isNew={context === 'new'} chosen={inp.collaudo} value={collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo}
+      <CollaudoOptions P={P} isNew={intervento === 'new'} chosen={inp.collaudo} value={collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo}
         access={{ value: is('access') ? 'none' : inp.shaft.access, set: (access) => setShaft({ access }) }} />
       <h2>{t('s_shaft')}</h2>
       <div className="form-grid">

@@ -23,6 +23,7 @@
   "context": "Context",
   "ctx_repl": "Machine replacement",
   "ctx_new": "New installation",
+  "ctx_rif": "Renovation keeping the car frame",
   "n": "Number of ropes n",
   "d": "Rope diameter d",
   "Fmin": "Minimum breaking force per rope",
