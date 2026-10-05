@@ -7,7 +7,8 @@
 // the case chosen there (ticking it sets the usual case when none was chosen). A renovation that keeps the existing sling
 // (src/lib/lift/intervento.ts) is a modification under UNI 10411 only: the sling stays out of the parts replaced.
 import { useTranslations } from 'next-intl';
-import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, adeguamentiDovuti, ammessa, type Collaudo, type NormaAggiuntiva, type NormaCollaudo, type Parte } from '@/lib/lift';
+import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, adeguamentiDovuti, ammessa, withAggiunta, type Collaudo, type NormaAggiuntiva, type NormaCollaudo,
+  type Parte } from '@/lib/lift';
 import type { Access } from '@/shaft';
 import type { Pres } from '@/lib/present/tr';
 
@@ -41,9 +42,10 @@ export default function CollaudoOptions({ P, isNew, chosen, value, set, access }
   const rif = value.rifacimento === true, mark = rif ? { rifacimento: true as const } : {};
   // the parts ticked under UNI 10411 are kept with EN 81 too, so going to EN 81 and back loses nothing
   const setNorma = (norma: NormaCollaudo): void => set({ norma, parti: chosen?.parti ?? ['machine'], ...keep(chosen?.aggiuntive ?? []), ...mark });
-  const toggle = (p: Parte, on: boolean): void => set({ norma: value.norma, parti: PARTI.filter((x) => (x === p ? on : value.parti.includes(x))), ...keep(added), ...mark });
+  const toggle = (p: Parte, on: boolean): void => set({ norma: value.norma, parti: PARTI.filter((x) => (x === p ? on : value.parti.includes(x))), ...keep(chosen?.aggiuntive ?? added), ...mark });
+  // under a new lift the modification chosen stays as it was (collaudo.ts)
   const toggleAdded = (n: NormaAggiuntiva, on: boolean): void => {
-    set({ norma: value.norma, parti: value.parti, ...keep(NORME_AGGIUNTIVE.filter((x) => (x === n ? on : added.includes(x)))), ...mark });
+    set(withAggiunta(isNew, chosen, value, n, on));
     if (n === 'dm236' && on && access?.value === 'none') access.set(isNew ? 'dm236_residential' : 'dm236_existing');
   };
   // the standards that fit the base (EN 81-20/50 only on top of another one, the improvement of existing lifts only on a

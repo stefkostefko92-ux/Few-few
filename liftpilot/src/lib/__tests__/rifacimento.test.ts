@@ -1,7 +1,7 @@
 // The renovation that keeps the existing sling (arcata): a third intervention of the one form, a modification tested to
 // UNI 10411 with every part replaced but the sling; going to it and back sets the parts and the ropes kept, a new lift
-// in between loses nothing; the mark goes through the server's schema, the derivation, the relazione, sheet 1, the
-// order and the summary; a design without it reads as before.
+// in between loses nothing, nor does a standard added there; the mark goes through the server's schema, the
+// derivation, the relazione, sheet 1, the order and the summary; a design without it reads as before.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
@@ -12,7 +12,7 @@ import { makePres } from '@/lib/present/tr';
 import { defaultInputs, layout, type ShaftInputs } from '@/shaft';
 import { liftInputsSchema } from '@/lib/lift-input';
 import { AMBITO_VERIFICHE, INTERVENTI, PARTI, PARTI_RIFACIMENTO, VOCI_IMPIANTO, ambitoOf, collaudoOf, defaultLift, deriveLift, interventoOf, interventoTo,
-  type Collaudo } from '@/lib/lift';
+  withAggiunta, type Collaudo } from '@/lib/lift';
 import { liftAdvice } from '@/lib/lift/advice';
 import { buildOrder } from '@/lib/order/build';
 import { designOrder } from '@/lib/order/machine';
@@ -69,6 +69,29 @@ test('intervento: le tre scelte, e andata e ritorno', () => {
   // a replacement as it was chosen stays
   assert.deepEqual(interventoTo('repl', { norma: '10411-1', parti: ['machine', 'ropes'] }), { calc: { context: 'repl' } });
   assert.deepEqual(interventoTo('repl'), { calc: { context: 'repl' } });
+});
+
+test('norme aggiunte sotto «Nuovo impianto»: la modifica scelta resta, al ritorno non si perde nulla', () => {
+  // the renovation under UNI 10411-11 without the landing doors, then a new lift with EN 81-28 ticked, then back
+  const mine: Collaudo = { norma: '10411-11', parti: PARTI_RIFACIMENTO.filter((p) => p !== 'landingDoors'), rifacimento: true };
+  const ticked = withAggiunta(true, mine, collaudoOf(NEW, mine), 'en81-28', true);
+  assert.deepEqual(ticked, { ...mine, aggiuntive: ['en81-28'] });
+  assert.deepEqual(collaudoOf(NEW, ticked), { norma: 'en81', parti: PARTI, aggiuntive: ['en81-28'] });
+  assert.deepEqual(interventoTo('rifacimento', ticked), { calc: { context: 'repl' }, collaudo: ticked });
+  assert.deepEqual(collaudoOf(REPL, ticked), { ...mine, aggiuntive: ['en81-28'] });
+  // the machine's replacement likewise: UNI 10411-11 stays its base
+  const repl11: Collaudo = { norma: '10411-11', parti: ['machine', 'ropes'] };
+  assert.deepEqual(collaudoOf(REPL, withAggiunta(true, repl11, collaudoOf(NEW, repl11), 'dm236', true)), { ...repl11, aggiuntive: ['dm236'] });
+  // nothing chosen yet: the replacement's default, not the new lift's EN 81-20/50
+  assert.deepEqual(withAggiunta(true, undefined, collaudoOf(NEW), 'dm236', true), { norma: '10411-1', parti: ['machine'], aggiuntive: ['dm236'] });
+  // a standard only for a new lift (EN 81-21) stays chosen when another is ticked under a modification
+  const only: Collaudo = { norma: '10411-1', parti: ['machine'], aggiuntive: ['en81-21'] };
+  const both = withAggiunta(false, only, collaudoOf(REPL, only), 'en81-28', true);
+  assert.deepEqual(both.aggiuntive, ['en81-21', 'en81-28']);
+  assert.deepEqual(collaudoOf(REPL, both).aggiuntive, ['en81-28']);
+  assert.deepEqual(collaudoOf(NEW, both).aggiuntive, ['en81-21', 'en81-28']);
+  // taken off again
+  assert.deepEqual(withAggiunta(false, ticked, collaudoOf(REPL, ticked), 'en81-28', false), mine);
 });
 
 test('dal modulo al server: lo schema accetta il segno, la derivazione lo porta, il resto come prima', () => {

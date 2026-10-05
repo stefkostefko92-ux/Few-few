@@ -142,6 +142,16 @@ export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
   return { norma: '10411-1', parti: ['machine'] };
 }
 
+/** The test chosen with a standard added or taken off (`on`) in the options of the one form. Under a new lift what was
+ *  chosen for a modification stays as it was (collaudoOf ignores it there; none chosen: the replacement's default), so
+ *  going back loses nothing; the standards added are those chosen, also the ones that fit only the other base. */
+export function withAggiunta(isNew: boolean, chosen: Collaudo | undefined, value: Collaudo, n: NormaAggiuntiva, on: boolean): Collaudo {
+  const from = isNew ? chosen ?? collaudoOf({ context: 'repl' }) : value;
+  const prev = chosen?.aggiuntive ?? value.aggiuntive ?? [];
+  const aggiuntive = NORME_AGGIUNTIVE.filter((x) => (x === n ? on : prev.includes(x)));
+  return { norma: from.norma, parti: from.parti, ...(from.rifacimento ? { rifacimento: true as const } : {}), ...(aggiuntive.length ? { aggiuntive } : {}) };
+}
+
 /** Whether a check applies to the acceptance test of this intervention: under any of its standards. */
 export const ambitoOf = (C: Collaudo, id: CheckId | ShaftCheckId): Ambito => (normeOf(C).some((n) => underNorma(C, n, id)) ? 'applies' : 'existing');
 
