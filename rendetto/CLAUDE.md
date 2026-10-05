@@ -34,6 +34,7 @@ npm run test:e2e         # достъпност (axe, WCAG 2.1 AA) на рабо
 npm run dev              # локален сървър на :4320; чете .env (README, „Локално“: NODE_ENV=development, DATABASE_URL)
 npm run owner:create     # първият собственик — OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD от средата
 npm run geoip:update     # DB-IP Lite → data/dbip-country-lite.mmdb (месечно)
+CATALOG_KEY=… npm run catalog:seal # data/catalog.json → sealed/catalog.json.enc (шифрованият каталог в репото)
 npm run og:image         # public/img/og.png — ръчно, след промяна на вида или двигателя (листът е от витрината)
 node scripts/favicons.mjs # favicon.ico (16/32/48/192), apple-touch-icon, иконите на манифеста — след промяна на
                           # favicon.svg (Google Search не приема SVG за иконка)
@@ -64,6 +65,7 @@ locales/<език>/       common · auth · account · admin · mail · editor �
                       en/it — огледала; паритетът на ключовете се гейтва от теста
 tests/                unit · engine/ · integration/ (реален Postgres)
 print/                брошурата за клиенти: build-brochure.ts → PDF на трите езика; locales/*/brochure.json
+sealed/               каталогът от магазините, шифрован (catalog.json.enc); ключът CATALOG_KEY е само на сървъра
 ```
 
 ## Правила, които не се нарушават
@@ -89,9 +91,12 @@ print/                брошурата за клиенти: build-brochure.ts 
 - **Без изброяване на акаунти**: еднакъв отговор при регистрация/забравена парола/вход; причината за бан се
   показва само след вярна парола.
 - **HWID е отпечатък, не хардуерен номер** — браузърът не дава такъв. Хеш на хардуерните сигнали.
-- **Каталогът от магазините е само на сървъра** (`data/catalog.json`, извън репото). Без него —
-  основният каталог. Ако редакторът не успее да го зареди, проектът се отваря само за преглед (иначе
-  обковът му би се сменил тихо с основния и би се записал така).
+- **Каталогът от магазините е в репото само шифрован** (`sealed/catalog.json.enc`, AES-256-GCM върху gzip;
+  `services/catalog-seal.ts`). Ключът `CATALOG_KEY` е само в `.env` на сървъра и при собственика — никога в
+  репото. С ключ решава шифрованият каталог (забравен `data/catalog.json` на сървъра не го засенчва); без
+  ключ — `data/catalog.json`, ако го има, иначе основният каталог. Ключ без файл или грешен ключ: процесът
+  не тръгва, а `deploy.sh` го хваща преди смяната на контейнерите. Ако редакторът не успее да го зареди,
+  проектът се отваря само за преглед (иначе обковът му би се сменил тихо с основния и би се записал така).
 - **CNC никога не е грешен (fail-closed):** при грешка от проверките на модела, детайл извън листа или
   отвор извън детайла `cncBlockers()` спира G-code и DXF — `sheetOps` хвърля, `cnc.zip` връща 422 с
   причините, `project.zip` излиза без `cnc/` и README казва защо, разделът CNC показва причините.
@@ -126,9 +131,10 @@ print/                брошурата за клиенти: build-brochure.ts 
 
 ## Деплой
 
-Docker Compose (db + app) + nginx на хоста — `DEPLOY.md`. Един път за ръчния и за автоматичния деплой:
+Docker Compose (db + app) + nginx на хоста — `DEPLOY.md`. Веднъж на сървъра: `deploy/setup-env.sh` (папките
+и `.env` с генерирани ключове; съществуващ `.env` не пипа). Един път за ръчния и за автоматичния деплой:
 `deploy/deploy.sh` (вика го и `deploy/autodeploy.sh`) — тайните от `/opt/few-few/shared/rendetto/.env`,
-бекъп преди миграция (`RENDETTO_SKIP_BACKUP=1` при откат), сонда с маркер `"app":"rendetto"`, `last-good`,
-vhost-ът от репото с порта от `HTTP_PORT`, IndexNow само при промяна на sitemap-а; след сондата нищо не сменя
-изхода 0. Тестван е в `tests/deploy-script.test.ts` и `tests/deploy-nginx.test.ts`. Тайните са само на
-сървъра (mode 600).
+проверка на `CATALOG_KEY` с новия образ преди смяната, бекъп преди миграция (`RENDETTO_SKIP_BACKUP=1` при
+откат), сонда с маркер `"app":"rendetto"`, `last-good`, vhost-ът от репото с порта от `HTTP_PORT`, IndexNow
+само при промяна на sitemap-а; след сондата нищо не сменя изхода 0. Тестван е в `tests/deploy-script.test.ts`,
+`tests/deploy-setup.test.ts` и `tests/deploy-nginx.test.ts`. Тайните са само на сървъра (mode 600).
