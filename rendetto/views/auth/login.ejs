@@ -1,0 +1,24 @@
+<%- include('_top', { titleKey: 'auth.loginTitle' }) %>
+<h1><%= t('auth.loginTitle') %></h1>
+<%- include('_error') %>
+<% if (error === 'auth.errors.unverified') { %><p class="hint"><%= t(typeof resent !== 'undefined' && resent ? 'auth.unverifiedResent' : 'auth.unverifiedWait') %></p><% } %>
+<form method="post" action="/login" class="form" data-fingerprint>
+  <input type="hidden" name="_csrf" value="<%= pre %>">
+  <input type="hidden" name="next" value="<%= next %>">
+  <input type="hidden" name="fp" value="">
+  <div class="field">
+    <label for="email"><%= t('auth.email') %></label>
+    <input id="email" name="email" type="email" autocomplete="username" inputmode="email" required maxlength="254" value="<%= email %>"<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <div class="field">
+    <label for="password"><%= t('auth.password') %></label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="<%= passwordMax %>"<% if (error) { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.loginButton') %></button>
+</form>
+<p class="hint"><%= t('auth.lockHint', { n: lockout.attempts, minutes: t('common.minutes', { n: lockout.minutes }) }) %></p>
+<div class="auth-links">
+  <a href="/forgot"><%= t('auth.forgotLink') %></a>
+  <a href="/register"><%= t('auth.registerLink') %></a>
+</div>
+<%- include('_bottom', { scripts: ['auth'] }) %>

@@ -1,0 +1,94 @@
+/* full screen: the 3D view, the drilling map, the drawings, a nesting sheet and the CNC toolpath */
+/* on the page the wrapper keeps the panel's rhythm; on full screen .is-full lays it out */
+.fs:not(.card):not(.is-full) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+.fs-btn[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.zoombar {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.zoomhint {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.is-full {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: var(--bg);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+/* where the browser cannot put an element on full screen (iPhone), the same view lies over the page */
+.is-full.is-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  width: 100%;
+  height: 100dvh;
+}
+html.fs-lock,
+html.fs-lock body {
+  overflow: hidden;
+}
+.is-full .zoombar {
+  display: flex;
+}
+/* the 3D view fills the screen, its controls stay below */
+#panel-view.is-full .stage {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
+#panel-view.is-full > .hint {
+  display: none;
+}
+/* a drawing fills what is left under its header; it zooms and moves instead of scrolling */
+.fs.is-full > .paperwrap,
+#cnc-fs.is-full #toolpath {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.fs.is-full > .paperwrap > svg,
+#cnc-fs.is-full #toolpath > svg,
+.sheetcard.is-full > svg {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  max-height: none;
+}
+.sheetcard.is-full > svg {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.pz {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.pz:active {
+  cursor: grabbing;
+}
+.pz:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+@media (max-width: 640px) {
+  .zoomhint {
+    display: none;
+  }
+}

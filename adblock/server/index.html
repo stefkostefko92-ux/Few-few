@@ -270,15 +270,15 @@
       "screenshot": "https://adblock.carbonstealth.eu/popup-shot.webp",
       "downloadUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
       "installUrl": "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk",
-      "softwareVersion": "5.1.2",
+      "softwareVersion": "5.1.3",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-09-25",
+      "dateModified": "2026-10-05",
       "inLanguage": ["af", "am", "ar", "az", "be", "bg", "bn", "bs", "ca", "cs", "cy", "da", "de", "el", "en", "es", "es-419", "et", "eu", "fa", "fi", "fil", "fr", "gl", "gu", "he", "hi", "hr", "hu", "hy", "id", "is", "it", "ja", "ka", "kk", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mn", "mr", "ms", "ne", "nl", "no", "pa", "pl", "pt-BR", "pt-PT", "ro", "ru", "si", "sk", "sl", "sq", "sr", "sv", "sw", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "zh-CN", "zh-TW", "zu"],
       "isAccessibleForFree": true,
       "license": "https://opensource.org/license/mit",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
       "featureList": [
-        "Stops YouTube video ads at the source (the player request is flagged ad-free)",
+        "Stops YouTube video ads at the source (ad entries are taken out of the player data before the player reads it)",
         "EasyList, EasyPrivacy and the uBlock Origin filters built in (60,000+ rules)",
         "31 regional filter lists; the one for the browser's language turns on by itself",
         "Focus mode: hide chat, newsletter, notification, social and AI pop-ups and YouTube Shorts",
@@ -331,7 +331,7 @@
       "primaryImageOfPage": "https://adblock.carbonstealth.eu/og.png",
       "inLanguage": "en",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-09-25",
+      "dateModified": "2026-10-05",
       "speakable": { "@type": "SpeakableSpecification", "cssSelector": [".sub", ".lead"] }
     },
     {
@@ -339,7 +339,7 @@
       "@id": "https://adblock.carbonstealth.eu/#faq",
       "mainEntity": [
         { "@type": "Question", "name": "Is Supreme AdBlock free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Supreme AdBlock is free, with no account and no paid tier. Donations are optional and never required." } },
-        { "@type": "Question", "name": "Does it block YouTube ads?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The player request itself is flagged ad-free, so video ads are not delivered, and ads in the feed and search are removed too. If YouTube refuses to play on a flagged account, the extension steps aside for that session so videos still play." } },
+        { "@type": "Question", "name": "Does it block YouTube ads?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Ad entries are taken out of the player data before the player reads it, so video ads never start, and ads in the feed and search are removed too. If YouTube still refuses to play on an account it has flagged, the extension steps aside for that session so videos still play." } },
         { "@type": "Question", "name": "Does it collect my data?", "acceptedAnswer": { "@type": "Answer", "text": "Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request to us is the filter update, about twice a day (lists you add yourself refresh from their own address); like any download it reaches our EU server with your IP address, and that request is not logged." } },
         { "@type": "Question", "name": "Will it break websites?", "acceptedAnswer": { "@type": "Answer", "text": "Rarely. If a site misbehaves, choose Site broken? in the popup: one click allows the site, or keeps network blocking and switches off only element hiding for that site, and a ready-made report lets you tell us about it." } },
         { "@type": "Question", "name": "Which languages does it speak?", "acceptedAnswer": { "@type": "Answer", "text": "The interface is in 70 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on." } },
@@ -393,7 +393,7 @@
           <a class="btn ghost" href="#why">Why it's different</a>
         </div>
         <p class="storenote">Free on the Chrome Web Store · Chrome, Edge &amp; Brave</p>
-        <p class="updated">Version 5.1.2 · updated 25 September 2026 · by Carbon Stealth</p>
+        <p class="updated">Version 5.1.3 · updated 5 October 2026 · by Carbon Stealth</p>
       </div>
       <figure class="shot">
         <img class="ghost-shield" src="/shield-380.webp" alt="" width="300" height="300" aria-hidden="true" />
@@ -422,7 +422,7 @@
       </div>
       <div class="reasons">
         <article class="card reason reveal"><h3>Built for Chrome's current platform</h3><p>Manifest V3 removed the old way of blocking requests. Supreme AdBlock was written on the new API from the first line — no workaround on borrowed time.</p></article>
-        <article class="card reason reveal"><h3>YouTube ads stopped at the source</h3><p>We never block YouTube's video servers, which is what makes other setups stall or fake-buffer. The player request itself asks for no ads, and ad slots are stripped from the response.</p></article>
+        <article class="card reason reveal"><h3>YouTube ads stopped at the source</h3><p>We never block YouTube's video servers, which is what makes other setups stall or fake-buffer. Ad entries are taken out of the player data before the player reads it, and nothing in the page gives the blocker away.</p></article>
         <article class="card reason reveal"><h3>Protection that never goes stale</h3><p>Ad networks rotate domains daily; a store review takes days. Our filter data refreshes twice a day, Ed25519-signed and version-locked — a new ad network is handled in hours.</p></article>
         <article class="card reason reveal"><h3>No remote code, enforced</h3><p>The engine ships inside the package. Updates are data only — hostnames, selectors and directives from a fixed list of 19 named routines, checked twice before anything runs.</p></article>
         <article class="card reason reveal"><h3>You can read every line</h3><p>Nothing is minified or obfuscated: unzip the extension and the code you audit is exactly the code that runs. MIT licensed.</p></article>
@@ -480,7 +480,7 @@
           </tr></thead>
           <tbody>
             <tr><th scope="row">No blocker</th><td>4 / 132</td><td>48</td></tr>
-            <tr class="usrow"><th scope="row">Supreme AdBlock 5.1.2</th><td>130 / 132</td><td>95</td></tr>
+            <tr class="usrow"><th scope="row">Supreme AdBlock 5.1.3</th><td>130 / 132</td><td>95</td></tr>
             <tr><th scope="row">uBlock Origin Lite</th><td>82 / 132</td><td>91</td></tr>
             <tr><th scope="row">Ghostery</th><td>98 / 132</td><td>96</td></tr>
             <tr><th scope="row">AdGuard</th><td>24–26 / 132</td><td>77</td></tr>
@@ -525,7 +525,7 @@
       <div class="qa">
         <div class="item reveal">
           <h3>How it blocks YouTube ads at the source</h3>
-          <p>Most blockers remove YouTube ads after the player has already asked for them, which is when YouTube can push back with a fake-buffering delay. Supreme AdBlock works one step earlier: the player's own request carries a flag that asks for no ads, and any ad fields left in the response are removed before the player reads them. It never blocks YouTube's video servers, so clips keep loading.</p>
+          <p>Most blockers remove YouTube ads after the player has already asked for them, which is when YouTube can push back with a fake-buffering delay. Supreme AdBlock works one step earlier: the ad entries are taken out of the player's data as it arrives, before the player reads it, and the page never sees a sign of a blocker — no altered functions, no failed playback reports. It never blocks YouTube's video servers, so clips keep loading.</p>
           <p>If YouTube refuses to play on an account it has flagged, the extension notices, steps aside for that session and reloads — the video plays (with ads) instead of leaving you with a spinner.</p>
         </div>
         <div class="item reveal">
@@ -583,7 +583,7 @@
       </div>
       <div class="faq">
         <div class="card reveal"><h3>Is Supreme AdBlock free?</h3><p>Yes. Supreme AdBlock is free, with no account and no paid tier. Donations are optional and never required.</p></div>
-        <div class="card reveal"><h3>Does it block YouTube ads?</h3><p>Yes. The player request itself is flagged ad-free, so video ads are not delivered, and ads in the feed and search are removed too. If YouTube refuses to play on a flagged account, the extension steps aside for that session so videos still play.</p></div>
+        <div class="card reveal"><h3>Does it block YouTube ads?</h3><p>Yes. Ad entries are taken out of the player data before the player reads it, so video ads never start, and ads in the feed and search are removed too. If YouTube still refuses to play on an account it has flagged, the extension steps aside for that session so videos still play.</p></div>
         <div class="card reveal"><h3>Does it collect my data?</h3><p>Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request to us is the filter update, about twice a day (lists you add yourself refresh from their own address); like any download it reaches our EU server with your IP address, and that request is not logged. Details in the <a href="/privacy">privacy policy</a>.</p></div>
         <div class="card reveal"><h3>Will it break websites?</h3><p>Rarely. If a site misbehaves, choose <b>Site broken?</b> in the popup: one click allows the site, or keeps network blocking and switches off only element hiding for that site, and a ready-made report lets you tell us about it.</p></div>
         <div class="card reveal"><h3>Which languages does it speak?</h3><p>The interface is in 70 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on.</p></div>

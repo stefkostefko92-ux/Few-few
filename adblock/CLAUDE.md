@@ -24,8 +24,8 @@ scriptlets/             scriptlet engine (##+js): policy.js (ЕДИНСТВЕН 
                         script ПРЕДИ content.js в изолирания свят, vm в билда) + engine.js
                         (clean-room код) + list.txt (данни) → main.js
                         (пече се от build_scriptlets.mjs; MAIN world при document_start)
-youtube_loader.js       инжектира youtube_main в MAIN world (с bypass fallback)
-youtube_main.js         MAIN world — маха рекламните полета от player отговора
+youtube_loader.js       подава live добавките (данни) на youtube_main чрез DOM събитие
+youtube_main.js         MAIN world (регистриран от SW) — маха рекламите от player/feed отговорите като текст
 youtube_skip.js         auto-skip + enforcement fallback (видеото винаги зарежда)
 youtube.css             скрива рекламните UI елементи на YouTube
 rules/                  DNR статични правила: ad_rules + youtube_rules +
@@ -78,14 +78,20 @@ bash tools/package.sh                         # билд + самопровер�
   Билд-валидаторът е allowlist на имена + строга проверка на аргументите;
   `set-constant` стойностите — само от фиксиран речник. **След промяна на
   engine.js или list.txt пусни `node tools/build_scriptlets.mjs`** и препакетирай.
-- YouTube: **не** блокираме `googlevideo.com`. Player ЗАЯВКАТА получава само
-  добавени boolean флагове (isInlinePlaybackNoAd — спира доставката на реклами
-  при източника); никога не пипаме съществуващи полета (подписи/timestamps) и
-  всичко е try/catch с pass-through. От отговорите само махаме рекламните
-  полета/renderer-и на място. Ако акаунт е флагнат и YouTube откаже
-  възпроизвеждане, `youtube_loader` прави еднократен bypass reload, за да
-  зареди видеото (с реклами) вместо празен плейър; disableRequestFlags в
-  filters.json е аварийният стоп за флаговете.
+- YouTube (5.1.3, след „блокира след 3 клипа“): **не** блокираме `googlevideo.com`, `/ptracking`
+  (playback пинг на съдържанието) и `/api/stats/atr` изобщо — плейър, който не докладва, е
+  сигнал за „трите удара“. `youtube_main.js` е **регистриран от SW** (MAIN world, document_start,
+  `sa-youtube`), не инжектиран с `<script src>`; махнат е от web_accessible_resources. Рекламите се
+  махат като ТЕКСТ преди парсване (`"adPlacements"/"adSlots"/"playerAds"` → `"no_ads"`, метода на
+  uBO), не с глобален `JSON.parse` хук. **Всяка подменена функция — тук и в `scriptlets/engine.js`
+  (`cloak`) — е Proxy на родната с маскиран `Function.prototype.toString`**: `fetch.toString()` трябва
+  да е точно `function fetch() { [native code] }` (тестове + browser проверка). Свежите iframe-и
+  получават същите куки (YouTube взема „чист“ fetch от iframe). Само ATR пингът с рекламното
+  състояние (регексът на uBO) се отговаря локално; таймерът 17000 ms (fake buffering) → 17 ms.
+  **Без** request флагове по подразбиране (isInlinePlaybackNoAd на watch страница е сигнал);
+  filters.json `requestFlags` може да ги пусне, с plain-retry резервата. `youtube_skip` само mute +
+  родния Skip — **никога** 16× (YouTube го брои). Ако YouTube все пак откаже, bypass-ът (6 ч) маха
+  и `sa-youtube`, и scriptlet-ите от YouTube страниците.
 - Всички `chrome.*.on*.addListener` се регистрират **синхронно на top level** в
   service worker-а.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —

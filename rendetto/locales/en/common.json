@@ -1,0 +1,159 @@
+{
+  "common": {
+    "skip": "Skip to content",
+    "language": "Language",
+    "save": "Save",
+    "copied": "Copied",
+    "unknown": "Unknown",
+    "hours": {
+      "one": "1 hour",
+      "other": "{n} hours"
+    },
+    "minutes": {
+      "one": "1 minute",
+      "other": "{n} minutes"
+    },
+    "days": {
+      "one": "1 day",
+      "other": "{n} days"
+    }
+  },
+  "company": {
+    "street": "ul. Samuil 3",
+    "city": "Bobov Dol",
+    "region": "Kyustendil Province",
+    "country": "Bulgaria",
+    "areaServed": "European Union",
+    "legalName": "Carbon Stealth VCC",
+    "legalForm": "variable capital company (VCC) under Bulgarian law",
+    "eikLabel": "Company no. (EIK)",
+    "vatLabel": "VAT no.",
+    "representative": "Stefan Kostadinov",
+    "phoneLabel": "tel."
+  },
+  "nav": {
+    "main": "Main menu",
+    "projects": "Projects",
+    "account": "Account",
+    "admin": "Admin",
+    "logout": "Sign out"
+  },
+  "legal": {
+    "nav": "Legal information",
+    "crumbs": "Breadcrumb",
+    "privacyTitle": "Privacy policy",
+    "termsTitle": "Terms and conditions",
+    "openSource": "Open-source licences",
+    "privacyDescription": "Which personal data Rendetto processes, why, how long we keep it and what rights you have under the GDPR.",
+    "termsDescription": "The terms and conditions of Rendetto: account, trial, plans and prices, payment, right of withdrawal and liability.",
+    "updated": "Last changed: {date}",
+    "retention": {
+      "years": {
+        "one": "1 year",
+        "other": "{n} years"
+      },
+      "days": {
+        "one": "1 day",
+        "other": "{n} days"
+      }
+    },
+    "keywords": "Rendetto, privacy policy, terms and conditions, GDPR, personal data, Carbon Stealth"
+  },
+  "role": {
+    "CUSTOMER": "Customer",
+    "VIEWER": "Viewer",
+    "ANALYST": "Analyst",
+    "SUPPORT": "Support",
+    "MANAGER": "Manager",
+    "ADMIN": "Administrator",
+    "OWNER": "Owner"
+  },
+  "outcome": {
+    "SUCCESS": "Signed in",
+    "BAD_PASSWORD": "Wrong password",
+    "UNKNOWN_EMAIL": "Unknown email",
+    "LOCKED": "Account locked",
+    "THROTTLED": "Too many attempts",
+    "BANNED": "Account blocked",
+    "UNVERIFIED": "Email not confirmed",
+    "MFA_FAILED": "Wrong 2FA code",
+    "MFA_RECOVERY": "Signed in with a recovery code"
+  },
+  "error": {
+    "title": "Error",
+    "notFoundTitle": "Page not found",
+    "notFoundText": "The address is wrong or the page was deleted.",
+    "forbiddenTitle": "No access",
+    "noCapability": "Your role does not allow this action.",
+    "notStaff": "This page is for the team only.",
+    "loginNeeded": "Sign in to continue.",
+    "mfaNeeded": "Enter the code from your app to continue.",
+    "csrf": "The form has expired. Reload the page and try again.",
+    "badInput": "A field is filled in incorrectly.",
+    "tooManyTitle": "Too many requests",
+    "tooMany": "Wait a little and try again.",
+    "internalTitle": "Something broke",
+    "internalText": "The error has been recorded. Try again in a little while.",
+    "toHome": "Home page",
+    "toProjects": "Projects",
+    "cncBlockedTitle": "The CNC files are withheld",
+    "cncBlockedText": "The construction checks found errors, and G-code and DXF must never be wrong. Fix them in the editor — the download unlocks as soon as the errors are gone. The editor and the error list are in Bulgarian.",
+    "toProject": "Back to the project",
+    "tooLarge": "What was sent is too large."
+  },
+  "flash": {
+    "accountCreated": "The account has been created.",
+    "accountDeleted": "The account has been deleted.",
+    "accountSaved": "Changes saved.",
+    "banned": "The account is blocked and all its sessions have ended.",
+    "codeMismatch": "The code does not match. Try again.",
+    "emailChangeSent": "We sent a link to the new address. The email changes when you open it.",
+    "passwordChanged": "Password changed. Other sessions have ended.",
+    "passwordReset": "Password changed. Sign in with the new one.",
+    "planChanged": "The plan has been changed.",
+    "profileSaved": "Profile saved.",
+    "projectDeleted": "The project has been deleted.",
+    "projectDuplicated": "The project has been copied.",
+    "recoveryUsed": "You signed in with a recovery code. If you are running out, create new ones under “Security”.",
+    "requestCancelled": "The order has been cancelled.",
+    "requestRejected": "The order has been rejected.",
+    "requestSent": "Your order has been accepted. We have emailed you a confirmation; the invoice with the payment details follows.",
+    "resetSent": "We sent a link to set a new password.",
+    "roleChanged": "The role has been changed and the account's sessions have ended.",
+    "sessionRevoked": "The session has ended.",
+    "sessionsRevoked": "The sessions have ended.",
+    "staffKeeps2fa": "Team accounts cannot turn off two-factor protection.",
+    "staffNeeds2fa": "Turn on two-factor protection to use the admin panel.",
+    "twoFactorAlreadyOn": "Two-factor protection is already on.",
+    "twoFactorOff": "Two-factor protection is off.",
+    "twoFactorOn": "Two-factor protection is on.",
+    "twoFactorReset": "The account's two-factor protection has been reset.",
+    "unbanned": "Access restored.",
+    "unlocked": "The account has been unlocked.",
+    "verificationNotSent": "We did not send a new link — wait a little and try again.",
+    "verificationResent": "We sent a new confirmation link.",
+    "wrongCode": "Wrong code.",
+    "wrongPassword": "Wrong password.",
+    "withdrawn": "Your withdrawal has been received. We have emailed you a confirmation."
+  },
+  "furniture": {
+    "base": "Base cabinet",
+    "wall": "Wall cabinet",
+    "tall": "Tall cabinet",
+    "kitchen": "Kitchen run",
+    "wardrobe": "Wardrobe",
+    "chest": "Chest of drawers",
+    "nightstand": "Bedside table",
+    "bed": "Bed",
+    "bookcase": "Bookcase",
+    "tv": "TV unit",
+    "desk": "Desk",
+    "wallunit": "Living-room wall unit",
+    "group": {
+      "kitchen": "Kitchen and cabinets",
+      "bedroom": "Bedroom",
+      "living": "Living room and study",
+      "other": "Other"
+    }
+  }
+}

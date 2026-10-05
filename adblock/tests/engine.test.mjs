@@ -24,6 +24,9 @@ const g = globalThis;
   const { win, jar } = makeWorld("www.example.com");
   jar.cookie = "track_id=abc"; jar.cookie = "session=keep";
   loadEngine(out);
+  ok("baked: replaced natives stringify exactly like the originals (setTimeout, JSON.parse, fetch, open) — no tell for anti-adblock checks",
+    Function.prototype.toString.call(win.setTimeout) === "() => 42" && Function.prototype.toString.call(JSON.parse) === "function parse() { [native code] }" &&
+    /^\(u\) =>/.test(Function.prototype.toString.call(win.fetch)) && Function.prototype.toString.call(win.open) === "() => ({ closed: false })");
   ok("baked: set-constant pins value", win.canRunAds === true && (win.canRunAds = false, win.canRunAds === true));
   ok("baked: aopr throws on read", (() => { try { void win.adBlockDetected; return false; } catch (e) { return e instanceof ReferenceError; } })());
   ok("baked: nostif drops matching source+delay", win.setTimeout(function () { showAdWall(); }, 1000) === 0);

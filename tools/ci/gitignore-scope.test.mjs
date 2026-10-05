@@ -12,8 +12,9 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -26,19 +27,29 @@ const productDirs = () => readdirSync(ROOT, { withFileTypes: true })
   .filter((n) => existsSync(join(ROOT, n, "package.json")) || existsSync(join(ROOT, n, "CLAUDE.md")));
 
 /** Истината за „игнориран ли е" идва от самия git, не от препрочитане на шаблоните. */
-const isIgnored = (rel) =>
-  spawnSync("git", ["check-ignore", "-q", rel], { cwd: ROOT }).status === 0;
+const isIgnored = (rel, root = ROOT) =>
+  spawnSync("git", ["check-ignore", "-q", rel], { cwd: root }).status === 0;
 
-// ПОВЕДЕНЧЕСКИ, не шаблонен. Първата версия гейтваше самия ШАБЛОН (неанкериран `data/`) и това ме
-// накара да „поправя" превантивно три несвързани продукта — при което scope-check с право падна:
-// монорепо закон №1 е един продукт на промяна. Правило, което за да е зелено иска да пипнеш чужди
-// продукти, е сгрешено правило. Затова тук се съди ЕФЕКТЪТ: игнориран ли е файл, който кодът внася.
-// Неанкериран `data/` в продукт без вложена `data/` папка е безобиден и не бива да гейтва нищо.
-test("нито един продукт не ИГНОРИРА файл, който собственият му код внася", () => {
-  const SRC = /\.(mjs|js|ts|tsx|jsx)$/;
-  const SKIP_DIR = new Set(["node_modules", ".next", "dist", "build", ".git", "coverage"]);
-  const offenders = [];
-  for (const p of productDirs()) {
+/** Кои от пътищата git игнорира — една заявка за целия списък (процес на файл е бавно). Проследен
+ *  файл не е игнориран, каквито и шаблони да съвпадат (така работи `git check-ignore` без --no-index). */
+function ignoredOf(rels, root = ROOT) {
+  if (!rels.length) return new Set();
+  const r = spawnSync("git", ["check-ignore", "--stdin"], { cwd: root, input: rels.join("\n") + "\n", encoding: "utf8" });
+  return new Set((r.stdout ?? "").split("\n").filter(Boolean));
+}
+
+const SRC = /\.(mjs|js|ts|tsx|jsx)$/;
+const SKIP_DIR = new Set(["node_modules", ".next", "dist", "build", ".git", "coverage"]);
+
+/**
+ * Сорс, който внася файл, скрит от .gitignore. Внасящият, който git САМ игнорира, не се съди: това е
+ * изход на билд (бъндъл, който внася собствените си парчета — rendetto/public/editor/), прави се
+ * заедно с тях и никой не го очаква в git. Без това тестът падаше на всяка машина, събрала редактора,
+ * а в чист клон (CI) минаваше — гейт, който отговаря различно на двете места.
+ */
+function offenders(root, products) {
+  const found = [];
+  for (const p of products) {
     const files = [];
     (function walk(d) {
       let ents; try { ents = readdirSync(d, { withFileTypes: true }); } catch { return; }
@@ -46,20 +57,53 @@ test("нито един продукт не ИГНОРИРА файл, койт�
         if (e.isDirectory()) { if (!SKIP_DIR.has(e.name)) walk(join(d, e.name)); }
         else if (SRC.test(e.name)) files.push(join(d, e.name));
       }
-    })(join(ROOT, p));
-    for (const f of files.slice(0, 400)) {            // таван: държим теста бърз
+    })(join(root, p));
+    const rel = (f) => f.replace(root + "/", "");
+    const generated = ignoredOf(files.map(rel), root);
+    const sources = files.filter((f) => !generated.has(rel(f)));
+    for (const f of sources.slice(0, 400)) {          // таван: държим теста бърз
       let src; try { src = readFileSync(f, "utf8"); } catch { continue; }
       for (const m of src.matchAll(/(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g)) {
-        const target = join(dirname(f), m[1]).replace(ROOT + "/", "");
+        const target = rel(join(dirname(f), m[1]));
         // Съди ПАПКАТА на целта: липсващ файл е друг проблем (може да е .ts→.js), скрит е този.
         const dir = dirname(target);
-        if (isIgnored(dir) || isIgnored(target))
-          offenders.push(`${f.replace(ROOT + "/", "")} внася „${m[1]}" → „${target}", но git го ИГНОРИРА`);
+        if (isIgnored(dir, root) || isIgnored(target, root))
+          found.push(`${rel(f)} внася „${m[1]}" → „${target}", но git го ИГНОРИРА`);
       }
     }
   }
-  assert.deepEqual([...new Set(offenders)], [],
-    "код внася файл, който .gitignore крие (невидим за CI, за деплой архива и за ревюто):\n  " + offenders.join("\n  "));
+  return [...new Set(found)];
+}
+
+// ПОВЕДЕНЧЕСКИ, не шаблонен. Първата версия гейтваше самия ШАБЛОН (неанкериран `data/`) и това ме
+// накара да „поправя" превантивно три несвързани продукта — при което scope-check с право падна:
+// монорепо закон №1 е един продукт на промяна. Правило, което за да е зелено иска да пипнеш чужди
+// продукти, е сгрешено правило. Затова тук се съди ЕФЕКТЪТ: игнориран ли е файл, който кодът внася.
+// Неанкериран `data/` в продукт без вложена `data/` папка е безобиден и не бива да гейтва нищо.
+test("нито един продукт не ИГНОРИРА файл, който собственият му код внася", () => {
+  const found = offenders(ROOT, productDirs());
+  assert.deepEqual(found, [],
+    "код внася файл, който .gitignore крие (невидим за CI, за деплой архива и за ревюто):\n  " + found.join("\n  "));
+});
+
+// ЗЪБИТЕ на пропускането: в отделно git репо — сорс, който внася скрит файл, пак пада; изход на билд,
+// който внася своето парче, не пада. Без зависимост от наредбата на който и да е продукт.
+test("изход на билд, който внася своите парчета, не е нарушение — сорс, който внася скрит файл, е", () => {
+  const dir = mkdtempSync(join(tmpdir(), "gitignore-scope-"));
+  try {
+    assert.equal(spawnSync("git", ["init", "-q"], { cwd: dir }).status, 0, "git init");
+    mkdirSync(join(dir, "app", "src"), { recursive: true });
+    mkdirSync(join(dir, "app", "out", "chunks"), { recursive: true });
+    writeFileSync(join(dir, "app", ".gitignore"), "/out/\n");
+    writeFileSync(join(dir, "app", "src", "main.js"), 'import "../out/chunks/a.js";\n');
+    writeFileSync(join(dir, "app", "out", "entry.js"), 'import "./chunks/a.js";\n');
+    writeFileSync(join(dir, "app", "out", "chunks", "a.js"), "export {};\n");
+    assert.deepEqual(offenders(dir, ["app"]), [
+      'app/src/main.js внася „../out/chunks/a.js" → „app/out/chunks/a.js", но git го ИГНОРИРА',
+    ]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("panev: замисълът е запазен — базата се игнорира, site/data НЕ се игнорира", () => {
