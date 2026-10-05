@@ -1,0 +1,2 @@
+<%# Значката за състоянието на поръчката: клас и икона. За екипа отказът от договора е предупреждение — следва връщане на сумата. %>
+<% const look = { OPEN: ['chip-gold', 'clock'], DONE: ['chip-ok', 'check'], WITHDRAWN: [warnWithdrawn ? 'chip-warn' : '', 'x'] }[order.status] || ['', 'x']; %><span class="chip <%= look[0] %>"><%- include('icon', { name: look[1] }) %><%= t('plan.status.' + order.status) %></span>

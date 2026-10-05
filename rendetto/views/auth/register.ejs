@@ -1,0 +1,30 @@
+<%- include('_top', { titleKey: 'auth.registerTitle' }) %>
+<h1><%= t('auth.registerTitle') %></h1>
+<p class="lead-small"><%= t('auth.registerLead', { days: trialDays }) %></p>
+<%- include('_error') %>
+<form method="post" action="/register" class="form" data-fingerprint novalidate>
+  <input type="hidden" name="_csrf" value="<%= pre %>">
+  <input type="hidden" name="fp" value="">
+  <div class="field">
+    <label for="name"><%= t('auth.name') %></label>
+    <input id="name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="80" value="<%= values.name %>"<% if (field === 'name') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <div class="field">
+    <label for="email"><%= t('auth.email') %></label>
+    <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254" value="<%= values.email %>"<% if (field === 'email') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+  </div>
+  <div class="field">
+    <label for="password"><%= t('auth.password') %></label>
+    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="<%= passwordMin %>" maxlength="<%= passwordMax %>" aria-describedby="<%= field === 'password' ? 'form-error pw-rules' : 'pw-rules' %>"<% if (field === 'password') { %> aria-invalid="true"<% } %>>
+    <p class="hint" id="pw-rules"><%= t('password.rules') %></p>
+  </div>
+  <label class="check">
+    <input type="checkbox" name="terms" value="yes" required<% if (field === 'terms') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+    <span><%- t('auth.termsLabel', { terms: '<a href="' + legalPath(locale, 'terms') + '" target="_blank" rel="noopener">' + t('auth.termsLink') + '</a>', privacy: '<a href="' + legalPath(locale, 'privacy') + '" target="_blank" rel="noopener">' + t('auth.privacyLink') + '</a>' }) %></span>
+  </label>
+  <button class="btn btn-primary btn-wide" type="submit"><%= t('auth.registerButton') %></button>
+</form>
+<div class="auth-links">
+  <a href="/login"><%= t('auth.haveAccount') %></a>
+</div>
+<%- include('_bottom', { scripts: ['auth'] }) %>
