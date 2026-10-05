@@ -1,0 +1,28 @@
+{
+  "brochure": {
+    "title": "Rendetto — software for panel furniture",
+    "keywords": "Rendetto, furniture design software, panel cutting list, drilling map, CNC, G-code, DXF, Carbon Stealth",
+    "sheet": "Sheet {n} of {total}",
+    "cover": {
+      "for": "For panel furniture workshops, with a CNC router or with a panel saw.",
+      "proof": "Every drawing, table and file in this brochure is output of the program from one project: a kitchen of {modules} units, {width} mm each."
+    },
+    "model": {
+      "caption": "The same kitchen in 3D, as you see it in the editor."
+    },
+    "drilling": {
+      "scale": "Scale 1:1: print this page at actual size and you can lay the hinge on the drawing."
+    },
+    "kinds": {
+      "scale": "All {n} types at 1:{scale}, with the sizes the program starts them with. Wall cabinets hang at their height above the floor."
+    },
+    "prices": {
+      "lifetime": "Lifetime is a single payment — {multiple} times the yearly price without the {months}-month discount — and is valid for as long as Rendetto is offered.",
+      "asOf": "Prices as of {date}; full terms: {terms}"
+    },
+    "contact": {
+      "scan": "Scan the code or open {url}",
+      "questions": "Questions: {email}"
+    }
+  }
+}

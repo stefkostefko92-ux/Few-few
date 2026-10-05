@@ -1,0 +1,213 @@
+/* Rendetto — брошурата, страници 5–6: всички видове мебели в един мащаб, цените, тестовият период и
+   как да започнете. */
+
+/* 5 — every kind at one scale, standing on one floor */
+.b-lineup {
+  display: grid;
+  gap: 5.5mm;
+}
+.b-group h3 {
+  margin-bottom: 2.5mm;
+  font-size: 9.5pt;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.b-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4.5mm;
+  padding: 0;
+  list-style: none;
+}
+.b-row li {
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  min-width: 25mm;
+  font-size: 7pt;
+  color: var(--ink-2);
+}
+.b-row li b {
+  margin-top: 2.4mm;
+  font-size: 8.4pt;
+  font-weight: 650;
+  color: var(--ink);
+}
+.b-row li .mono {
+  font-size: 6.8pt;
+}
+.b-elev {
+  display: block;
+  overflow: visible;
+  border-bottom: 0.4mm solid var(--ink);
+}
+.b-elev .l-body {
+  fill: var(--panel);
+  stroke: var(--ink);
+  stroke-width: 0.6px;
+  vector-effect: non-scaling-stroke;
+}
+.b-elev .l-front {
+  fill: #e8dbc9;
+  stroke: var(--ink);
+  stroke-width: 0.6px;
+  vector-effect: non-scaling-stroke;
+}
+.b-elev .l-leg {
+  fill: var(--ink);
+}
+.b-elev .l-top {
+  fill: var(--oak);
+  stroke: var(--ink);
+  stroke-width: 0.6px;
+  vector-effect: non-scaling-stroke;
+}
+.b-elev .l-open {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 0.45px;
+  stroke-dasharray: 55 40;
+  vector-effect: non-scaling-stroke;
+}
+.b-elev .l-handle {
+  stroke: var(--ink);
+  stroke-width: 1.3px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.b-elev .l-mattress {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 0.5px;
+  stroke-dasharray: 55 40;
+  vector-effect: non-scaling-stroke;
+}
+.b-note {
+  margin-top: 5mm;
+  font-size: 8pt;
+  color: var(--ink-2);
+}
+.b-rules {
+  max-width: 165mm;
+  margin-top: 6mm;
+  font-size: 9pt;
+}
+
+/* 6 — prices, the trial and how to start */
+.b-trial-big {
+  max-width: 155mm;
+  margin-bottom: 6mm;
+  font-size: 13pt;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.b-prices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3.5mm;
+  padding: 0;
+  list-style: none;
+}
+.b-price {
+  display: grid;
+  align-content: start;
+  gap: 0.6mm;
+  padding: 4mm 4.5mm;
+  border: 0.3mm solid var(--rule-strong);
+  border-left: 1mm solid var(--oak);
+  border-radius: 2mm;
+  background: var(--panel);
+  font-size: 8.4pt;
+  color: var(--ink-2);
+}
+.b-period {
+  font-size: 9.6pt;
+  font-weight: 650;
+  color: var(--ink);
+}
+.b-total {
+  font-size: 19pt;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.b-vat {
+  font-size: 7.8pt;
+}
+.b-off {
+  font-size: 8pt;
+  font-weight: 650;
+  color: var(--green);
+}
+.b-lifetime {
+  border-left-color: var(--gold);
+}
+.b-notes {
+  display: grid;
+  gap: 1.2mm;
+  max-width: 168mm;
+  margin: 5mm 0 0;
+  padding-left: 4.5mm;
+  font-size: 8.4pt;
+  color: var(--ink-2);
+}
+.b-faq {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6mm;
+  margin: 7mm 0 0;
+}
+.b-faq dt {
+  margin-bottom: 1mm;
+  font-size: 9pt;
+  font-weight: 650;
+}
+.b-faq dd {
+  font-size: 8.2pt;
+  color: var(--ink-2);
+}
+.b-close {
+  display: grid;
+  grid-template-columns: 1fr 34mm;
+  gap: 8mm;
+  align-items: center;
+  margin-top: auto;
+  padding: 6mm;
+  border-radius: 3mm;
+  background: var(--green-soft);
+}
+.b-close h3 {
+  margin-bottom: 2mm;
+  font-size: 17pt;
+  letter-spacing: -0.02em;
+  font-weight: 720;
+}
+.b-close p {
+  font-size: 9pt;
+}
+.b-scan {
+  margin-top: 3mm;
+  font-weight: 600;
+}
+.b-qr svg {
+  display: block;
+  width: 34mm;
+  height: 34mm;
+}
+.b-company {
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  margin-top: 5mm;
+  padding-top: 2.4mm;
+  border-top: 0.3mm solid var(--rule-strong);
+  font-size: 7.4pt;
+  color: var(--ink-2);
+}
+.b-company span {
+  white-space: nowrap;
+}
+.b-last {
+  padding-bottom: 9mm;
+}

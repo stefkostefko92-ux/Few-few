@@ -1,0 +1,58 @@
+<%- include('../partials/page-top', { title: t('account.title') }) %>
+<div class="page-head"><h1><%= t('account.title') %></h1></div>
+<%- include('../partials/account-nav') %>
+<%- include('../partials/flash') %>
+
+<section class="section" aria-labelledby="plan-h">
+  <h2 id="plan-h"><%- include('../partials/icon', { name: 'receipt' }) %><%= t('account.planTitle') %></h2>
+  <div class="planbox">
+    <div><%- include('../partials/plan-chip', { plan }) %></div>
+    <p class="planbox-big">
+      <% if (plan.state === 'staff') { %><%= t('account.planStaff') %>
+      <% } else if (plan.state === 'pending') { %><%= t('account.planPending') %>
+      <% } else if (plan.plan === 'LIFETIME') { %><%= t('account.planLifetime') %>
+      <% } else if (plan.state === 'expired') { %><%= t('account.planExpired', { date: fmt.date(plan.expiresAt) }) %>
+      <% } else { %><%= t(plan.plan === 'TRIAL' ? 'account.planTrialLeft' : 'account.planPremiumLeft', { n: plan.daysLeft, date: fmt.date(plan.expiresAt) }) %><% } %>
+    </p>
+    <p class="muted"><%= t('account.planProjects', { n: projects }) %></p>
+    <% if (openRequest) { %><p><span class="chip chip-gold"><%- include('../partials/icon', { name: 'clock' }) %><%= t('account.requestOpen') %></span></p><% } %>
+    <% if (plan.state !== 'staff' && plan.plan !== 'LIFETIME') { %><div class="actions"><a class="btn btn-primary" href="/account/plan"><%= t('account.seePlans') %></a></div><% } %>
+  </div>
+</section>
+
+<div class="section-grid">
+  <section class="section" aria-labelledby="profile-h">
+    <h2 id="profile-h"><%- include('../partials/icon', { name: 'user' }) %><%= t('account.profileTitle') %></h2>
+    <form method="post" action="/account/profile" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field"><label for="name"><%= t('auth.name') %></label><input id="name" name="name" type="text" required minlength="2" maxlength="80" autocomplete="name" value="<%= user.name %>"></div>
+      <div class="field"><label for="locale"><%= t('account.language') %></label>
+        <select id="locale" name="locale"><% for (const l of locales) { %><option value="<%= l %>" lang="<%= l %>"<%= user.locale === l ? ' selected' : '' %>><%= localeLabel[l] %></option><% } %></select>
+      </div>
+      <div class="actions"><button class="btn btn-primary" type="submit"><%= t('common.save') %></button></div>
+    </form>
+  </section>
+
+  <section class="section" aria-labelledby="email-h">
+    <h2 id="email-h"><%- include('../partials/icon', { name: 'mail' }) %><%= t('account.emailTitle') %></h2>
+    <dl class="dl">
+      <dt><%= t('auth.email') %></dt><dd><%= user.email %></dd>
+      <dt><%= t('account.emailStatus') %></dt>
+      <dd><% if (user.emailVerifiedAt) { %><span class="chip chip-ok"><%- include('../partials/icon', { name: 'check' }) %><%= t('account.verified') %></span><% } else { %><span class="chip chip-warn"><%- include('../partials/icon', { name: 'alert' }) %><%= t('account.notVerified') %></span><% } %></dd>
+    </dl>
+    <% if (!user.emailVerifiedAt) { %>
+      <form method="post" action="/account/verify/resend" class="actions"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%= t('app.resend') %></button></form>
+    <% } %>
+    <details class="mt">
+      <summary><%= t('account.changeEmail') %></summary>
+      <form method="post" action="/account/email" class="form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field"><label for="new-email"><%= t('account.newEmail') %></label><input id="new-email" name="email" type="email" required maxlength="254" autocomplete="email"></div>
+        <div class="field"><label for="email-pw"><%= t('account.currentPassword') %></label><input id="email-pw" name="password" type="password" required autocomplete="current-password"></div>
+        <p class="hint"><%= t('account.changeEmailHint') %></p>
+        <div class="actions"><button class="btn" type="submit"><%= t('account.changeEmailButton') %></button></div>
+      </form>
+    </details>
+  </section>
+</div>
+<%- include('../partials/page-bottom') %>
