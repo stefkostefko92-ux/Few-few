@@ -1,9 +1,11 @@
 // The smoke test's machine replacement project (only the machine and the machine room), in an installation of its own:
 // the main calculation has the machine below (no machine room to draw); the calculator starts from the machine over the
-// shaft, whose room is surveyed and saved with a reproduced hash; its relazione tecnica, the drawing set as a draft
+// shaft (its example asked for: a new calculation starts empty), whose room is surveyed measure by measure and saved
+// with a reproduced hash; its relazione tecnica, the drawing set as a draft
 // (PDF), the plan and section in DXF and DWG; a drawing set issued from it, its PDF and a revision from the same survey;
 // the whole project it becomes starts from the survey.
 import assert from 'node:assert/strict';
+import { blankCalc, blankSurvey, projectData } from './smoke-blank.mjs';
 import { step } from './smoke-kit.mjs';
 
 export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) {
@@ -15,15 +17,15 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   await page.fill('input[name="city"]', 'Milano');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
   const roomProjectUrl = page.url().replace(/\/calc$/, '');
-  await page.waitForSelector('.verdict .big');
-  assert.equal(await page.inputValue('#layout'), 'top', 'a replacement starts with the machine above');
+  await blankCalc({ page, hydrated, example: 'C' });
+  assert.equal(await page.inputValue('#layout'), 'top', 'the example has the machine above');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const roomCalcUrl = page.url();
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+\/locale$/), page.click('section[aria-labelledby="calc-room"] a[href$="/locale"]')]);
   const save = 'section[aria-labelledby="room-save"] button.btn-primary';
   await hydrated(page, save);
-  // the example room is replaced with the measures: a higher room, the existing drops as measured
-  await page.locator('section[aria-labelledby="room-fields"] input[type="number"]').nth(4).fill('2700');
+  // a new survey starts empty: every measure typed (a higher room, the existing drops as measured)
+  await blankSurvey({ page, hydrated });
   await page.waitForSelector('figure.sheet-view .draw-stage svg');
   assert.equal(await page.locator('main .alert-bad').count(), 0, 'nothing stops the survey');
   assert.match(await page.textContent('section[aria-labelledby="room-checks"]'), /Calate della nuova macchina/, 'the drops checked');
@@ -62,7 +64,8 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   step('replacement: the whole project it becomes starts from the survey');
   await page.goto(roomProjectUrl);
   await Promise.all([page.waitForURL(/\/progetto$/, { timeout: 30000 }), page.click('button:has-text("Passa a progetto completo")')]);
-  await page.waitForSelector('.lift-facts .lift-verdict');
+  // the shaft, the walls and the room of the survey carried over, the counterweight at its drop: the rest to enter
+  await projectData({ page, hydrated, shaft: false });
   await page.evaluate(() => { const d = globalThis.document.querySelector('.lift-form details.room-options'); if (d) d.open = true; });
   assert.equal(await page.locator('.lift-form details.room-options input[type="number"]').nth(4).inputValue(), '2700', 'the surveyed machine room carried over');
   // a direct pull: the plan takes the car and the counterweight under the surveyed drops, so nothing is left to fix

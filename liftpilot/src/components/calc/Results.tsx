@@ -25,6 +25,8 @@ interface Props {
   /** loads a proposal into the new-machine fields; absent on a saved calculation */
   onUse?: (key: UseKey) => void;
   propMsg?: string;
+  /** only the proposal: the new machine is still to enter, nothing else is worked out yet */
+  proposalOnly?: boolean;
 }
 
 function ProposalCard({ P, X, a, onUse, propMsg }: Pick<Props, 'P' | 'X' | 'a' | 'onUse' | 'propMsg'>) {
@@ -89,6 +91,7 @@ function CopyCard({ P, text }: { P: Pres; text: string }) {
 
 export default function Results(props: Props) {
   const { P, X, a, mode, badCount, brand } = props, { t } = P, { ctx, res, sens } = a, { I, N } = ctx;
+  if (props.proposalOnly) return <div className="results"><ProposalCard P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} /></div>;
   const quick = (
     <Card key="quick" title={t('q_title')}>
       <ul className="quick">

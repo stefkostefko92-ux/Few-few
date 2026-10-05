@@ -4,13 +4,15 @@
 // pitched roof), the slab, the door and the control panel, and what the machine stands on (its support: shims, a frame,
 // beams that may stand clear of the floor, plates, a plinth or, with a diverting pulley, the bedplate that holds it —
 // the pulley stays in the room, never in the shaft — with the profile and height). Shared by a whole design's options
-// (RoomOptions) and a replacement's survey (components/room).
+// (RoomOptions) and a replacement's survey (components/room). A measure still to enter shows nothing (and a flat roof
+// no ridge); the support's fields come with the machine, once the rest is entered.
 import { useTranslations } from 'next-intl';
 import type { RoomInputs } from '@/shaft';
 import { PROFILE_NAMES } from '@/shaft/profiles';
 import { SUPPORT_KINDS, hasProfile, profileOf, supportHeight, supportLength, supportOf, type MachineSupport } from '@/shaft/support';
 import type { MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
+import { mmOf } from '../blank';
 
 export interface RoomMachine {
   /** the machine's sheave and the axis the software takes on shims [mm], where its diverting pulley turns (null: none) */
@@ -20,29 +22,39 @@ export interface RoomMachine {
   rinvio?: RinvioFrame | null;
 }
 
+type Measure = Exclude<keyof RoomInputs, 'support'>;
+
 interface Props {
   R: RoomInputs;
-  put(patch: Partial<RoomInputs>): void;
+  /** a change of the room, with the measures it enters */
+  put(patch: Partial<RoomInputs>, entered?: readonly Measure[]): void;
   /** the support's fields; missing: none shown */
   machine?: RoomMachine;
+  /** a measure still to enter */
+  blank?: (key: Measure) => boolean;
+  /** the words of an empty choice */
+  choose?: string;
 }
 
 type NumKey = Exclude<keyof RoomInputs, 'doorWall' | 'panelWall' | 'support'>;
 const WALLS = ['front', 'rear', 'left', 'right'] as const;
 
-export default function RoomFields({ R, put, machine }: Props) {
+export default function RoomFields({ R, put, machine, blank = () => false, choose = '—' }: Props) {
   const t = useTranslations('shaft');
   const field = (key: NumKey, min: number, max: number) => (
-    <label className="field" key={key}>
+    <label className={`field${blank(key) ? ' need' : ''}`} key={key}>
       <span>{t(`rm_${key}`)}</span>
-      <input className="input num" type="number" inputMode="numeric" min={min} max={max} step={10} value={R[key]}
-        onChange={(e) => { const v = Math.round(Number(e.target.value.replace(',', '.'))); if (Number.isFinite(v)) put({ [key]: v }); }} />
+      <input id={`bk-room-${key}`} className="input num" type="number" inputMode="numeric" min={min} max={max} step={10}
+        value={blank(key) || (key === 'ridge' && R.ridge === 0) ? '' : R[key]} aria-required={blank(key) || undefined}
+        onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) put({ [key]: v }, [key]); }} />
     </label>
   );
   const wall = (key: 'doorWall' | 'panelWall') => (
-    <label className="field">
+    <label className={`field${blank(key) ? ' need' : ''}`}>
       <span>{t(`rm_${key}`)}</span>
-      <select className="input" value={R[key]} onChange={(e) => put({ [key]: e.target.value as RoomInputs[typeof key] })}>
+      <select id={`bk-room-${key}`} className="input" value={blank(key) ? '' : R[key]} aria-required={blank(key) || undefined}
+        onChange={(e) => put({ [key]: e.target.value as RoomInputs[typeof key] }, [key])}>
+        {blank(key) ? <option value="" disabled>{choose}</option> : null}
         {WALLS.map((w) => <option key={w} value={w}>{t(`wall_${w}`)}</option>)}
       </select>
     </label>
@@ -52,7 +64,7 @@ export default function RoomFields({ R, put, machine }: Props) {
     <label className="field">
       <span>{label}</span>
       <input className="input num" type="number" inputMode="numeric" min={min} max={max} step={5} value={Math.round(value)}
-        onChange={(e) => { const v = Math.round(Number(e.target.value.replace(',', '.'))); if (Number.isFinite(v)) apply(v); }} />
+        onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) apply(v); }} />
     </label>
   );
   const supportFields = machine ? (

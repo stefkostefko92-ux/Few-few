@@ -1574,7 +1574,6 @@
     "newTitle": "Rilievo del locale macchine",
     "newLead": "Il locale sopra il vano, il vano sotto e le calate esistenti, misurati in sito: la nuova macchina del calcolo vi si sistema e si verifica dal vivo. Il rilievo salvato dà la relazione tecnica e le tavole della sostituzione.",
     "viewTitle": "Progetto della sostituzione",
-    "example": "Valori di esempio del software (locale 3000 × 3000 mm, vano 1600 × 1750 mm): sostituiscili con le misure del locale prima di salvare.",
     "calcChanged": "Il software è cambiato da quando questo calcolo è stato salvato: aggiornalo dalla sua pagina con «Aggiorna con il software attuale» prima del rilievo.",
     "roomTitle": "Locale del macchinario",
     "shaftTitle": "Vano sotto il locale",
@@ -1646,5 +1645,30 @@
     "roomOpen": "Apri il rilievo",
     "outdated": "da aggiornare",
     "archive": "Il software è cambiato da quando questo è stato salvato: i documenti non si rigenerano. È nell’archivio dell’impianto, ora un progetto completo: il progetto si aggiorna dal suo modulo."
+  },
+  "draft": {
+    "resumed": "Bozza ripresa, salvata il {at}.",
+    "saved": "Bozza salvata alle {time}.",
+    "failed": "La bozza non è stata salvata: riprova tra poco.",
+    "discard": "Scarta la bozza",
+    "ask": "Scartare la bozza e ripartire dai dati salvati?",
+    "yes": "Sì, scarta",
+    "no": "No",
+    "discardFailed": "Non è stato possibile scartare la bozza."
+  },
+  "blank": {
+    "title": "Dati del progetto da inserire",
+    "lead": "Un progetto nuovo parte vuoto: il software non calcola e non disegna nulla finché mancano questi dati.",
+    "machineTitle": "Dati della nuova macchina da inserire",
+    "machineLead": "Inseriscili dalla scheda del costruttore, oppure usa la proposta o la macchina consigliata.",
+    "choose": "— scegli —",
+    "std": "standard",
+    "stdTitle": "Valore standard del software, non inserito: cambialo se il progetto è diverso.",
+    "saveMissing": "{n, plural, one {Manca # dato del progetto} other {Mancano # dati del progetto}}: sono elencati nel riquadro dei dati da inserire.",
+    "count": "Numero di fermate",
+    "rise": "Interpiano {from}–{to}",
+    "floorDoor": "Accesso al piano {floor}",
+    "main": "Fermata principale",
+    "stdInUse": "Valori standard in uso (si cambiano in modalità esperto): {list}."
   }
 }

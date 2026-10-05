@@ -1,0 +1,13 @@
+/* A new project's form: the values still to enter (dashed, with a mark), the software's standard values (a quiet badge),
+   the list of what is missing and where the form's draft stands. */
+.need > span:first-child::after, .need > legend::after, .calc .row.need > label::after { content: " *"; color: var(--warn); font-weight: 600; }
+.need > .input, .need > select.input, .need .seg-row, td.need > .input, .calc .row.need input, .calc .row.need select {
+  border-style: dashed; border-color: var(--warn); background: var(--warn-bg); }
+td.need > input[type=radio] { outline: 1px dashed var(--warn); outline-offset: 2px; }
+.badge.std { margin-left: 6px; color: var(--muted); background: var(--surface2); border: 1px solid var(--rule); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.missing { box-shadow: inset 4px 0 0 var(--warn); }
+.missing h2 { margin-bottom: 4px; }
+.missing-list { margin: 10px 0 0; padding-left: 1.1rem; columns: 2 15rem; column-gap: 24px; }
+.missing-list li { padding-block: 2px; break-inside: avoid; font-size: 14px; }
+@media (max-width: 720px) { .missing-list { columns: 1; max-height: 15rem; overflow-y: auto; } }
+.draft-bar { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }

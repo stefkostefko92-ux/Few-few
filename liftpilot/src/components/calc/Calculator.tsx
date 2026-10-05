@@ -2,7 +2,9 @@
 
 // The calculator of a project: form, live results from src/calc in the browser (preview), the standards of the
 // acceptance test, and the save that sends the values to the server, which recomputes and stores the official
-// snapshot (the standards beside it).
+// snapshot (the standards beside it). A new project's calculator starts empty (src/lib/calc-blank.ts): the values still
+// to enter are listed, the proposals and the advice come once the installation is entered, the verdict once the new
+// machine is too; the form's draft is kept as it is filled in.
 import { useCallback, useDeferredValue, useMemo, useState, useTransition } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -14,6 +16,11 @@ import { analyse, mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
+import { calcMissing, plantReady } from '@/lib/calc-blank';
+import { calcDraftSchema } from '@/lib/draft-input';
+import MissingPanel from '@/components/MissingPanel';
+import DraftBar from '@/components/draft/DraftBar';
+import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
 import { saveCalculationAction } from '@/server/calc-actions';
 import { collaudoOf, type Collaudo } from '@/lib/lift';
 import { valuesCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
@@ -42,10 +49,12 @@ interface Props {
   brand: string;
   /** the standards of the acceptance test of the calculation it starts from (absent: by the context) */
   collaudo?: Collaudo | null;
+  /** where the form's draft is kept; absent: none (the standalone page) */
+  draft?: DraftTarget | null;
 }
 
-export default function Calculator({ projectId, initial, preset: initialPreset, brand, collaudo: initialCollaudo = null }: Props) {
-  const locale = useLocale(), messages = useMessages(), tc = useTranslations('calculations'), te = useTranslations('errors');
+export default function Calculator({ projectId, initial, preset: initialPreset, brand, collaudo: initialCollaudo = null, draft = null }: Props) {
+  const locale = useLocale(), messages = useMessages(), tc = useTranslations('calculations'), te = useTranslations('errors'), tb = useTranslations('blank');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
   const X = useMemo(() => textsFor(P), [P]);
@@ -64,8 +73,15 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const deferred = useDeferredValue(values);
   const a = useMemo(() => analyse(deferred), [deferred]);
   const evaluate = useCallback((m: AdviceModel) => valuesCandidate(deferred, a, m), [deferred, a]);
-  const bad = useMemo(() => new Set(visibleBad(a.ctx.bad, deferred)), [a, deferred]);
+  // the values still to enter are needed, not wrong: marked apart from the ones out of range
+  const missing = useMemo(() => calcMissing(deferred, a.ctx.bad), [a, deferred]);
+  const need = useMemo(() => new Set(missing), [missing]);
+  const ready = plantReady(missing), complete = missing.length === 0;
+  const bad = useMemo(() => new Set(visibleBad(a.ctx.bad, deferred).filter((id) => !need.has(id))), [a, deferred, need]);
   const anyBad = a.ctx.bad.length > 0;
+  const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle'), stdInUse: (list: string) => tb('stdInUse', { list }) };
+  const draftData = { values, collaudo: collaudo ?? null };
+  const draftState = useDraft(draft, draftData, calcDraftSchema.safeParse(draftData).success);
 
   const edit = (patch: FormValues): void => {
     setValues((V) => mirrorRopes({ ...V, ...patch }));
@@ -131,20 +147,29 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
       {preset ? <p className="note" role="status">{t('loaded', { name: t(`ex${preset}name`) })} {tc('replaceExample')}</p> : null}
       <LegalNotice P={P} />
       <div className="layout">
-        <CalcForm P={P} V={values} bad={bad} set={set} onEstimate={onEstimate} estMsg={estMsg} keepRopesHint={keepRopesHint} />
+        <CalcForm P={P} V={values} bad={bad} set={set} onEstimate={onEstimate} estMsg={estMsg} keepRopesHint={keepRopesHint} need={need} texts={texts} />
         <section className="summary">
-          <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
-          <Verdict P={P} X={X} a={a} badCount={bad.size} />
+          {complete ? (
+            <>
+              <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
+              <Verdict P={P} X={X} a={a} badCount={bad.size} />
+            </>
+          ) : (
+            <MissingPanel title={ready ? tb('machineTitle') : tb('title')} lead={ready ? tb('machineLead') : tb('lead')} items={missing.map((id) => ({ id, label: fieldLabel(id) }))} />
+          )}
           <CollaudoOptions P={P} isNew={values.context === 'new'} chosen={collaudo} value={collaudoOf(values, collaudo)} set={setCollaudo} />
         </section>
-        <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudoOf(values, collaudo)} onUse={onUse} propMsg={propMsg} />
+        {ready ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudoOf(values, collaudo)} onUse={onUse} propMsg={propMsg}
+          proposalOnly={!complete} /> : null}
       </div>
-      <MachineAdvice evaluate={evaluate} alternative={null} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" />
+      {ready ? <MachineAdvice evaluate={evaluate} alternative={null} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={tc('labelPlaceholder')} aria-label={tc('label')} />
           <button type="button" className="primary" onClick={save} disabled={saving || anyBad}>{saving ? tc('saving') : tc('save')}</button>
-          {anyBad ? <span className="note bad">{tc('fixFields', { list: [...new Set(a.ctx.bad)].map(fieldLabel).join(', ') })}</span> : <span className="note">{tc('saveHint')}</span>}
+          {missing.length ? <span className="note">{tb('saveMissing', { n: missing.length })}</span>
+            : anyBad ? <span className="note bad">{tc('fixFields', { list: [...new Set(a.ctx.bad)].map(fieldLabel).join(', ') })}</span> : <span className="note">{tc('saveHint')}</span>}
+          {draft ? <DraftBar target={draft} state={draftState} /> : null}
           {saveError ? <span className="note bad" role="alert">{te(saveError.error)}{saveError.fields.length ? `: ${saveError.fields.map(fieldLabel).join(', ')}` : ''}</span> : null}
         </div>
       </div>

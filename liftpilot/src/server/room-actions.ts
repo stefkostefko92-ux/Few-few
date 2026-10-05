@@ -9,6 +9,7 @@ import { can } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import { calcLabelSchema, idSchema } from '@/lib/schemas';
 import { surveySchema } from '@/lib/room/survey';
+import { dropDraft } from './drafts';
 import { createRoomDesign, type Created } from './save';
 
 export type RoomSaveResult = Created;
@@ -28,5 +29,8 @@ export async function saveRoomDesignAction(input: { calculationId: unknown; surv
   if (!c || c.project.archivedAt) return { ok: false, error: 'notFound' };
   // a whole project draws its machine room from its shaft design: this is the replacement's
   if (c.project.kind !== 'REPLACEMENT' || c.liftDesign) return { ok: false, error: 'notReplacement' };
-  return createRoomDesign(user, c, survey.data, label.data);
+  const r = await createRoomDesign(user, c, survey.data, label.data);
+  // the survey's draft has become this record
+  if (r.ok) await dropDraft(user.companyId, c.projectId, `room:${c.id}`);
+  return r;
 }

@@ -1,8 +1,8 @@
 import 'server-only';
 // All the data a company entered, as one JSON document (terms of use, article «exit»; GDPR art. 20; Data Act art. 25):
 // the company, its users (never their password hashes or tokens), the projects with every calculation, shaft design,
-// lift design and drawing set, the logos, the price list and the activity log. The software's own data (catalogues,
-// the standards register, the engines) are not the company's and stay out.
+// lift design and drawing set and the drafts of their forms, the logos, the price list and the activity log. The
+// software's own data (catalogues, the standards register, the engines) are not the company's and stay out.
 import { prisma } from '@/lib/db';
 import { TERMS_VERSION } from '@/lib/legal';
 
@@ -36,6 +36,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
         shaftDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, profileId: true, source: true, results: true } },
         liftDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, source: true, shaftDesignId: true, calculationId: true } },
         roomDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, results: true, calculationId: true } },
+        formDrafts: { orderBy: { createdAt: 'asc' }, select: { scope: true, data: true, createdAt: true, updatedAt: true } },
         drawingSets: { orderBy: { createdAt: 'asc' }, select: { id: true, number: true, revision: true, authorInitials: true, revisions: true, plant: true,
           projectData: true, companyName: true, sha256: true, pages: true, calculationId: true, shaftDesignId: true, roomDesignId: true, logoId: true, clientLogoId: true,
           userId: true, createdAt: true, pdf: { select: { sha256: true, createdAt: true } } } },

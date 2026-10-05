@@ -125,12 +125,16 @@ src/lib/             auth (JWT в httpOnly бисквитка, именува с
                      основите на свободните редове; articles — всеки артикул; bom — количествата на проекта и на подмяната;
                      plant-bom — каквото софтуерът брои от проекта, без да го чертае: табло, ел. инсталация, сигнализация,
                      опори на буферите, обувки, труд; custom — свободните редове на фирмата; cost — цената и разборът на
-                     въведената сума), room/ (проектът на подмяната: survey — заснемането (zod), derive — новата машина над
+                     въведената сума), blank (новият проект празен: BlankKey, заместителите, relevant/missingOf, какво
+                     вкарва един избор — floorsTo, floorRemoved, entrancesTo, layoutTo, roomAdded; existingMissing на
+                     подмяната), carry (подмяна → цял проект: каквото има съоръжението влиза въведено), defaults
+                     (LIFT_STANDARD — стандартните стойности на формуляра), room/ (проектът на подмяната: survey — заснемането (zod), derive — новата машина над
                      съществуващите калати, рамата по h, проблемите и проверките, snapshot — ROOM_ENGINE_VERSION и присъдата,
                      edit — котите на чертежите на заснемането), room-hash (SHA-256 и възпроизвеждане), canon-hash (SHA-256 на каноничния
                      JSON, общ за всички записи), plant (данните на съоръжението: само каквото проектът не знае), schemas (zod),
                      env, db, log (pino),
-                     ratelimit, audit, calc-input (zod за стойностите на формата), snapshot-hash, seo, brand (логото по
+                     ratelimit, audit, calc-input (zod за стойностите на формата), calc-blank (новият калкулатор празен,
+                     CALC_STANDARD, calcMissing), draft-input (zod на черновите и техните обхвати), snapshot-hash, seo, brand (логото по
                      размери), legal (версията и датата на условията, редът на разделите и номерата на членовете, сроковете
                      в текстовете), legal-text (страницата като текст: архивът и SHA-256 при приемане), consents (четирите
                      потвърждения); акаунтите: tokens
@@ -150,11 +154,14 @@ src/server/          Server actions ('use server') и заявки, винаги
                      aggiornare“ по версиите), save (записите: изчисление, проект на асансьора, машинно — от формите и от
                      обновяването), refresh-actions («Aggiorna con il software attuale»), drawing-pdf (PDF-ът на издадения
                      комплект, пазен какъвто е издаден), download (отказите и отговорите на сваляните документи), lift-start
-                     (откъде тръгва формулярът: проект, последните проект на шахтата и изчисление, при подмяна — нормите на
-                     изпитването и рилевото; при директно окачване кабината и противотежестта под калатите му).
+                     (откъде тръгва формулярът: избраният проект, черновата, последният проект, пренесеното от съоръжението
+                     — src/lib/lift/carry.ts — или празно), drafts + draft-actions (черновите: четене по схемата, запис,
+                     изхвърляне; изтриване при запис на формуляра).
 src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
-src/components/shaft/ Шахтата в единния формуляр (записаният проект на шахтата — само за четене): SurveyPanel + CadViewer (canvas, pan/zoom, клик), опции (план, вертикални данни,
-                     машинно), PlanEditor (план, разрез A-A и детайлите, машинно — всеки размер се сменя с клик) +
+src/components/      blank (FormBlank, StdBadge, mmOf — празните полета на формулярите), MissingPanel (какво липсва, с линкове
+                     към полетата), draft/ (useDraft — черновата 1,5 s след промяна; DraftBar — състоянието и изхвърлянето).
+src/components/shaft/ Шахтата в единния формуляр (записаният проект на шахтата — само за четене): SurveyPanel + CadViewer (canvas, pan/zoom, клик), опции (данните
+                     на шахтата — ShaftOptions, изборите на софтуера — ShaftTechOptions, вертикални данни, машинно), PlanEditor (план, разрез A-A и детайлите, машинно — всеки размер се сменя с клик) +
                      PlanFixes (ръчно зададените размери на плана, „Върни“), ShaftViews (само за четене), резултати.
                      src/components/drawing/ShapesSvg — ядрото в SVG; EditableDrawing — слой с бутони над размерите и
                      поле на място (hit-boxes: бутоните растат до пръст, без да се покриват).
@@ -204,7 +211,9 @@ src/components/lift3d/ 3D асансьорът от данните (лениво
                      изтеглен/валцуван водач, алуминий, електропоцинковано с ирисценция); support (основата на машината в
                      3D); boot — 4 изгледа, рендер само докато нещо се движи, смяна на света без нов renderer; pipeline
                      (сцена + конвейер = stage), resolution (пикселите в движение и в покой).
-src/components/lift/ Екранът: LiftWorkspace (формуляр + всичко на живо + запис), LiftView (записан проект), LiftSimulator
+src/components/lift/ Екранът: LiftWorkspace (състоянието — въведеното и какво липсва заедно, изведеното на живо, запис,
+                     чернова) + LiftForm (лявата колона) + missing-items (имената в списъка какво липсва), LiftView
+                     (записан проект), LiftSimulator
                      (сцена, HUD, изгледи, сценарии, часовник), SimCharts (малки графики по една величина, курсор, подсказка),
                      LiftChecks (всяка проверка с бутон „Симулирай“), LiftFacts (изведеното с произход), MachineAdvice
                      (проверява моделите на части в браузъра, „Usa questo argano“ — и в калкулатора на подмяната) + AdviceView
@@ -230,7 +239,8 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      9_room_designs_free_prices (RoomDesign — заснетото машинно на подмяната, неизменим; DrawingSet е от проект
                      на шахтата или от машинно — CHECK точно едно; CustomPriceItem — свободните редове с PriceBasis/PriceScope),
                      10_sessions_pending_registrations (Session — сесиите в базата; PendingRegistration — чакащите регистрации),
-                     11_drawing_set_pdf (DrawingSetPdf — PDF-ът на издадения комплект, какъвто е издаден; тригер: не се мени).
+                     11_drawing_set_pdf (DrawingSetPdf — PDF-ът на издадения комплект, какъвто е издаден; тригер: не се мени),
+                     12_form_drafts (FormDraft — черновата на формуляр по проект и обхват; не е запис: без хеш и тригер).
 deploy/              deploy.sh (сървърът: тайни, поща, бекъп, compose, health, nginx), nginx/liftpilot.conf. Dockerfile,
                      docker-compose.yml, docker-entrypoint.sh.
 brand/               liftpilot-logo.webp — изходното лого; scripts/brand-assets.py прави от него public/favicon.ico,

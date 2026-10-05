@@ -11,6 +11,7 @@ import { rateLimit } from '@/lib/ratelimit';
 import { calcLabelSchema, idSchema } from '@/lib/schemas';
 import { liftInputsSchema } from '@/lib/lift-input';
 import { shaftSourceSchema } from '@/lib/shaft-input';
+import { dropDraft } from './drafts';
 import { createLiftDesign, type Created } from './save';
 
 export type LiftSaveResult = Created;
@@ -26,5 +27,8 @@ export async function saveLiftDesignAction(input: { projectId: unknown; inputs: 
   if (!inputs.success) return { ok: false, error: 'invalidFields', fields: inputs.error.issues.map((i) => i.path.join('.')) };
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
-  return createLiftDesign(user, project.id, inputs.data, label.data, source?.success ? source.data : null);
+  const r = await createLiftDesign(user, project.id, inputs.data, label.data, source?.success ? source.data : null);
+  // the one form's draft has become this record
+  if (r.ok) await dropDraft(user.companyId, project.id, 'lift');
+  return r;
 }

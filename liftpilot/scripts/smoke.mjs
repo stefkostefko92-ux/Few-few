@@ -1,8 +1,8 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
 //   health → public page (no console or CSP errors) → sign-in → the two modules → a machine replacement → its
-//   calculation → saved snapshot with reproduced hash → calculation report (PDF) → its machine room surveyed, the
+//   calculation, which starts empty (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its machine room surveyed, the
 //   relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a whole
-//   project → shaft design by hand (a distance changed on its plan, the landing door
+//   project, its data entered (a draft taken up again) → shaft design by hand (a distance changed on its plan, the landing door
 //   set apart from the car door), its DXF, a calculation from it with the plan in its report → data of the installation,
 //   client and company logos, drawing set issued from
 //   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation and a SICOR
@@ -19,6 +19,7 @@ import { startMailSink } from './mail-sink.mjs';
 import { accountFlows } from './smoke-accounts.mjs';
 import { secondCompany } from './smoke-isolation.mjs';
 import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
+import { blankCalc, projectData } from './smoke-blank.mjs';
 import { priceList } from './smoke-prices.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
 
@@ -62,9 +63,9 @@ try {
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
   const projectUrl = page.url().replace(/\/calc$/, '');
 
+  await blankCalc({ page, hydrated, example: 'C' });
   step('calculation');
-  await page.waitForSelector('.verdict .big');
-  // the machine below the shaft (the calculator starts from the machine above: smoke-replacement.mjs)
+  // the machine below the shaft (the example of the other replacement keeps it above: smoke-replacement.mjs)
   await page.selectOption('#layout', 'bottom');
   await page.fill('#n_D', '600');
   // a second standard for the acceptance test, on top of UNI 10411-1: its own result, kept with the calculation
@@ -100,9 +101,11 @@ try {
   await page.goto(projectUrl);
   assert.match(await page.textContent('.titles'), /Progetto completo/);
 
-  step('the installation in one form: the plan edited on the drawing, live simulation, save');
+  step('the installation in one form: the project data entered, the plan edited on the drawing, live simulation, save');
   await page.goto(`${projectUrl}/progetto`);
-  await page.waitForSelector('.lift-facts .lift-verdict');
+  // the calculation's load, speed, roping and machine place carried over; the shaft, the floors and the scheme of the
+  // machine below to enter
+  await projectData({ page, hydrated, bottom: 'head', draft: true });
   await page.waitForSelector('.lift-main svg.sheet-svg');
   // a distance of the plan changed on the drawing itself: the platform 20 mm further from the left wall
   const hit = page.locator('.lift-main .ed-hits .hit[aria-label*="Piattaforma: distanza dalla parete sinistra"]').first();

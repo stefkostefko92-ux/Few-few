@@ -1574,7 +1574,6 @@
     "newTitle": "Machine room survey",
     "newLead": "The room over the shaft, the shaft under it and the existing rope drops, measured on site: the calculation’s new machine is placed in it and checked live. The saved survey gives the replacement’s technical report and drawing set.",
     "viewTitle": "Replacement project",
-    "example": "The software’s example values (room 3000 × 3000 mm, shaft 1600 × 1750 mm): replace them with the room’s measures before saving.",
     "calcChanged": "The software has changed since this calculation was saved: update it from its page with “Update with the current software” before the survey.",
     "roomTitle": "Machine room",
     "shaftTitle": "Shaft under the room",
@@ -1646,5 +1645,30 @@
     "roomOpen": "Open the survey",
     "outdated": "to update",
     "archive": "The software has changed since this was saved: the documents are not regenerated. It is in the archive of the installation, now a whole project: the design is updated from its form."
+  },
+  "draft": {
+    "resumed": "Draft resumed, saved on {at}.",
+    "saved": "Draft saved at {time}.",
+    "failed": "The draft was not saved: try again shortly.",
+    "discard": "Discard the draft",
+    "ask": "Discard the draft and start again from the saved data?",
+    "yes": "Yes, discard",
+    "no": "No",
+    "discardFailed": "The draft could not be discarded."
+  },
+  "blank": {
+    "title": "Project data to enter",
+    "lead": "A new project starts empty: the software calculates and draws nothing while these data are missing.",
+    "machineTitle": "New machine data to enter",
+    "machineLead": "Enter them from the maker's datasheet, or use the proposal or the recommended machine.",
+    "choose": "— choose —",
+    "std": "standard",
+    "stdTitle": "The software's standard value, not entered: change it if the project differs.",
+    "saveMissing": "{n, plural, one {# project value is missing} other {# project values are missing}}: they are listed in the panel of the data to enter.",
+    "count": "Number of stops",
+    "rise": "Rise {from}–{to}",
+    "floorDoor": "Entrance at floor {floor}",
+    "main": "Main floor",
+    "stdInUse": "Standard values in use (changed in expert mode): {list}."
   }
 }

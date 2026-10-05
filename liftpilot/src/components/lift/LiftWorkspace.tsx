@@ -1,15 +1,18 @@
 'use client';
 
-// The installation in one screen: the one form on the left (the shaft, the floors, the machine room, the lift and its
-// machine), everything the software works out and the 3D simulation on the right, live; every check with a button
-// that replays it; the save, after which the server derives everything again and stores it.
+// The installation in one screen: the one form on the left (LiftForm), everything the software works out and the 3D
+// simulation on the right, live; every check with a button that replays it; the save, after which the server derives
+// everything again and stores it. A new installation starts empty: until the project's data are in (and the new
+// machine, when no proposal passes) the right side lists what is still to enter and nothing is worked out or drawn.
+// The form's draft is kept as it is filled in.
 import { useCallback, useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type Ref } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Edit } from '@/drawing';
-import { KL, collaudoOf, deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { deriveLift, type AutoFlags, type BottomScheme, type Collaudo, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { enteredBy, existingMissing, filled, layoutTo, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
 import { deflectorInputs, liftCandidate, type AdviceModel, type MachineCandidate } from '@/lib/lift/advice';
 import type { CatalogChoice } from '@/lib/lift/catalog';
@@ -17,33 +20,33 @@ import { mirrorRopes, proposalValues } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
+import { liftDraftSchema } from '@/lib/draft-input';
 import type { CalcKey } from '@/lib/present/tr';
 import { shaftInputsSchema, type ShaftSource } from '@/lib/shaft-input';
 import { editShaft } from '@/lib/shaft-edit';
 import { saveLiftDesignAction } from '@/server/lift-actions';
-import { DEFAULTS, editValue, keptPlan, type ShaftInputs } from '@/shaft';
+import { DEFAULTS, editValue, keptPlan } from '@/shaft';
 import { asCalcDict } from '../calc/dict';
-import ShaftOptions from '../shaft/ShaftOptions';
-import VerticalOptions from '../shaft/VerticalOptions';
-import RoomOptions from '../shaft/RoomOptions';
-import HeadOptions from '../shaft/HeadOptions';
-import FrameOptions from '../shaft/FrameOptions';
-import ImbottiOptions from '../shaft/ImbottiOptions';
-import NicheOptions from '../shaft/NicheOptions';
+import MissingPanel from '../MissingPanel';
+import type { ShaftSet } from '../blank';
+import DraftBar from '../draft/DraftBar';
+import { useDraft, type DraftTarget } from '../draft/useDraft';
 import PanevBom from '../shaft/PanevBom';
 import PlanEditor from '../shaft/PlanEditor';
 import type { Refusal } from '../drawing/EditableDrawing';
-import SurveyPanel, { type SurveyResult } from '../shaft/SurveyPanel';
-import CollaudoOptions from './CollaudoOptions';
-import LiftCalcFields from './LiftCalcFields';
+import type { SurveyResult } from '../shaft/SurveyPanel';
 import LiftFacts from './LiftFacts';
 import LiftChecks from './LiftChecks';
+import LiftForm from './LiftForm';
 import LiftSimulator, { type SimApi } from './LiftSimulator';
 import MachineAdvice from './MachineAdvice';
+import { missingItems } from './missing-items';
 
 interface Props {
   projectId: string;
   initial: LiftInputs;
+  /** the project's values still to enter (src/lib/lift/blank.ts); absent: none */
+  blank?: readonly BlankKey[];
   /** the inputs and what they give, each time they settle (the standalone page draws the sheets from them) */
   onDerived?(inputs: LiftInputs, derived: LiftDerived): void;
   /** changes from outside the form: a dimension of the sheets (the standalone page) */
@@ -52,6 +55,8 @@ interface Props {
   prices: Readonly<Record<string, number>> | null;
   /** the bracket pitches of the installation's data: the list and the 3D count with them (as sheet 1) */
   pitches?: BracketPitches;
+  /** where the form's draft is kept; absent: none (the standalone page) */
+  draft?: DraftTarget | null;
 }
 
 /** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
@@ -75,31 +80,42 @@ export interface WorkspaceApi {
   edit(e: Edit, length: number): Refusal | null;
 }
 
-export default function LiftWorkspace({ projectId, initial, onDerived, api, prices, pitches }: Props) {
-  const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors');
+const isEmpty = (x: unknown): boolean => String(x ?? '').trim() === '';
+
+export default function LiftWorkspace({ projectId, initial, blank: initialBlank = [], onDerived, api, prices, pitches, draft = null }: Props) {
+  const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors'), tb = useTranslations('blank');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
   const X = useMemo(() => textsFor(P), [P]);
-  const [inp, setInp] = useState<LiftInputs>(initial);
+  const [form, setForm] = useState<LiftDraft>({ inputs: initial, blank: initialBlank });
+  const inp = form.inputs;
   const [source, setSource] = useState<ShaftSource | null>(null);
   const [lastQ, setLastQ] = useState(initial.shaft.Q ?? 630);
   const [label, setLabel] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, startSaving] = useTransition();
-  const deferred = useDeferredValue(inp);
+  // the inputs and what is still to enter settle together: nothing is drawn from a placeholder
+  const deferred = useDeferredValue(form), dInp = deferred.inputs;
+  const missing = useMemo(() => [...missingOf(deferred), ...existingMissing(deferred.inputs.calc)], [deferred]);
   const car = pitches?.car, cw = pitches?.cw;
   const derived = useMemo(() => {
-    const d = deriveLift(deferred);
+    if (missing.length) return null;
+    const d = deriveLift(dInp);
     return { ...d, layout: withPitches(d.layout, { car, cw }) };
-  }, [deferred, car, cw]);
+  }, [missing, dInp, car, cw]);
+  // the new machine's values still to enter: no proposal passes (or it is entered) and some are empty
+  const machineMissing = useMemo(() => (derived
+    ? visibleBad(derived.analysis.ctx.bad, derived.values).filter((id) => id.startsWith('n_') && isEmpty(derived.values[id])) : []), [derived]);
+  const complete = derived !== null && machineMissing.length === 0;
+  const need = useMemo(() => new Set<string>([...missing, ...machineMissing]), [missing, machineMissing]);
   // the advice verifies every model of SICOR and Montanari with the inputs as they settle; with direct pull also with
   // the diverting pulley, for when no machine takes the sheave of the rope drop
-  const evaluate = useCallback((m: AdviceModel) => liftCandidate(deferred, m), [deferred]);
+  const evaluate = useCallback((m: AdviceModel) => liftCandidate(dInp, m), [dInp]);
   const alternative = useMemo(() => {
-    const d = deflectorInputs(deferred);
-    return d ? { evaluate: (m: AdviceModel) => liftCandidate(d, m), sheave: derived.machine.D } : null;
-  }, [deferred, derived]);
-  const bad = useMemo(() => new Set(visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values)), [derived]);
+    const d = derived ? deflectorInputs(dInp) : null;
+    return d && derived ? { evaluate: (m: AdviceModel) => liftCandidate(d, m), sheave: derived.machine.D } : null;
+  }, [dInp, derived]);
+  const bad = useMemo(() => new Set(derived ? visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values).filter((id) => !need.has(id)) : []), [derived, need]);
   // what the save would refuse, as the server refuses it, named as the form names it: every value of the calculation out
   // of range (shown or not), each issue of the geometry, every value of the shaft out of the ranges the server accepts
   const nameOf = useCallback((field: string): string => {
@@ -111,24 +127,37 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api, pric
     return P.t(id.replace(/^[no]_/, '') as CalcKey) + (id.startsWith('o_') ? ` (${P.t('g_old')})` : '');
   }, [P, ts]);
   const refused = useMemo(() => {
-    const r = shaftInputsSchema.safeParse(deferred.shaft);
+    if (!derived) return [];
+    const r = shaftInputsSchema.safeParse(dInp.shaft);
     const shaft = r.success ? [] : r.error.issues.map((i) => `shaft.${i.path.map(String).join('.')}`);
     return [...new Set([...derived.analysis.ctx.bad, ...derived.issues, ...shaft].map(nameOf))];
-  }, [deferred.shaft, derived, nameOf]);
-  useEffect(() => { onDerived?.(deferred, derived); }, [deferred, derived, onDerived]);
+  }, [dInp.shaft, derived, nameOf]);
+  useEffect(() => { if (derived) onDerived?.(dInp, derived); }, [dInp, derived, onDerived]);
   const sim = useRef<SimApi>(null);
+  const draftValid = useMemo(() => liftDraftSchema.safeParse(form).success, [form]);
+  const draftState = useDraft(draft, form, draftValid);
+  const blank = useMemo(() => ({ is: (k: BlankKey) => form.blank.includes(k), list: form.blank, full: derived !== null }), [form.blank, derived]);
+  const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle') };
 
-  const setShaft = (patch: Partial<ShaftInputs>): void => {
+  const setShaft: ShaftSet = (patch, edit) => {
     if (typeof patch.Q === 'number') setLastQ(patch.Q);
-    // the distances set by hand go with the arrangement they belong to
-    setInp((p) => {
-      const shaft = { ...p.shaft, ...patch };
-      return { ...p, shaft: { ...shaft, plan: keptPlan(p.shaft, shaft) } };
+    // the distances set by hand go with the arrangement they belong to; what the patch sets is entered
+    setForm((f) => {
+      const shaft = { ...f.inputs.shaft, ...patch };
+      return { inputs: { ...f.inputs, shaft: { ...shaft, plan: keptPlan(f.inputs.shaft, shaft) } }, blank: filled(edit ? edit(f.blank) : f.blank, enteredBy(patch)) };
     });
     setSaveError(null);
   };
   const setCalc = (patch: FormValues): void => {
-    setInp((p) => ({ ...p, calc: mirrorRopes({ ...p.calc, ...patch }) }));
+    setForm((f) => {
+      const roping = 'r' in patch ? filled(f.blank, ['r']) : f.blank;
+      const blank = typeof patch.layout === 'string' ? layoutTo(String(f.inputs.calc.layout ?? ''), roping, patch.layout) : [...roping];
+      return { inputs: { ...f.inputs, calc: mirrorRopes({ ...f.inputs.calc, ...patch }) }, blank };
+    });
+    setSaveError(null);
+  };
+  const setInputs = (change: (p: LiftInputs) => LiftInputs): void => {
+    setForm((f) => ({ ...f, inputs: change(f.inputs) }));
     setSaveError(null);
   };
   // a value of the calculation a drawing of the machine room shows: the diverting pulley's height under the sheave [mm],
@@ -143,7 +172,7 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api, pric
     edit(e, length) {
       if (e.key.startsWith('calc.')) return setCalcFromDrawing(e.key, editValue(e, length));
       // the support the drawings show: the bedplate with the diverting pulley when none was chosen
-      const R = inp.shaft.room, shaft = R && !R.support && derived.machine.rinvio ? { ...inp.shaft, room: { ...R, support: { kind: 'rinvio' as const } } } : inp.shaft;
+      const R = inp.shaft.room, shaft = R && !R.support && derived?.machine.rinvio ? { ...inp.shaft, room: { ...R, support: { kind: 'rinvio' as const } } } : inp.shaft;
       const r = editShaft(shaft, e, length);
       if (!r.ok) return r;
       setShaft(r.inputs);
@@ -151,34 +180,32 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api, pric
     },
   }));
   const setBottom = (bottom: BottomScheme): void => {
-    setInp((p) => ({ ...p, bottom }));
+    setForm((f) => ({ inputs: { ...f.inputs, bottom }, blank: filled(f.blank, ['bottom']) }));
     setSaveError(null);
   };
-  const setCollaudo = (collaudo: Collaudo): void => {
-    setInp((p) => ({ ...p, collaudo }));
-    setSaveError(null);
-  };
-  const setCatalog = (catalog: CatalogChoice | undefined): void => {
-    setInp((p) => {
-      const { catalog: _drop, ...rest } = p;
-      void _drop;
-      return catalog ? { ...rest, catalog } : rest;
+  const setCollaudo = (collaudo: Collaudo): void => setInputs((p) => ({ ...p, collaudo }));
+  const setCatalog = (catalog: CatalogChoice | undefined): void => setInputs((p) => {
+    const { catalog: _drop, ...rest } = p;
+    void _drop;
+    return catalog ? { ...rest, catalog } : rest;
+  });
+  // the machine of the advice: its maker and model, proposed by the software (with the diverting pulley when the
+  // advice found it with one); a machine below brings the scheme of its ropes to choose
+  const takeMachine = (c: MachineCandidate): void => {
+    setForm((f) => {
+      const p = f.inputs, same = p.calc.layout === c.I.layout;
+      return {
+        inputs: { ...p, calc: same ? p.calc : mirrorRopes({ ...p.calc, layout: c.I.layout }), catalog: { brand: c.brand, model: c.model }, auto: { ...p.auto, machine: true } },
+        blank: same ? f.blank : layoutTo(String(p.calc.layout ?? ''), f.blank, c.I.layout),
+      };
     });
     setSaveError(null);
   };
-  // the machine of the advice: its maker and model, proposed by the software (with the diverting pulley when the
-  // advice found it with one)
-  const takeMachine = (c: MachineCandidate): void => {
-    setInp((p) => ({
-      ...p, calc: p.calc.layout === c.I.layout ? p.calc : mirrorRopes({ ...p.calc, layout: c.I.layout }),
-      catalog: { brand: c.brand, model: c.model }, auto: { ...p.auto, machine: true },
-    }));
-    setSaveError(null);
-  };
-  const machineInUse = (c: MachineCandidate): boolean => derived.origin.machine === 'auto' && derived.values.layout === c.I.layout
+  const machineInUse = (c: MachineCandidate): boolean => !!derived && derived.origin.machine === 'auto' && derived.values.layout === c.I.layout
     && derived.catalog?.fit?.machine.brand === c.brand && derived.catalog.fit.machine.model === c.model;
   // a value switched to entered starts from the one the software showed, so nothing jumps
   const setAuto = (patch: Partial<AutoFlags>): void => {
+    if (!derived) return;
     const pick = derived.analysis.sizing.pick;
     const ids: Readonly<Record<keyof AutoFlags, readonly string[]>> = {
       P: ['P'], L0: ['L0'], dx: ['dx'], Hv: ['Hv'], machine: derived.origin.machine === 'auto' && pick ? Object.keys(proposalValues(pick)) : [],
@@ -191,12 +218,10 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api, pric
         if (v !== undefined) seed[id] = v;
       }
     }
-    setInp((p) => ({ ...p, auto: { ...p.auto, ...patch }, calc: mirrorRopes({ ...p.calc, ...seed }) }));
+    setInputs((p) => ({ ...p, auto: { ...p.auto, ...patch }, calc: mirrorRopes({ ...p.calc, ...seed }) }));
   };
-  const setSize = (key: 'W' | 'D', value: string): void => {
-    const v = Math.round(Number(value.replace(',', '.')));
-    if (!Number.isFinite(v)) return;
-    setShaft({ [key]: v });
+  const setSize = (key: 'W' | 'D', value: number): void => {
+    setShaft({ [key]: value });
     setSource(null);
   };
   // the shaft measured on a drawing: the car and what stands round it follow its size, as with the fields
@@ -212,53 +237,38 @@ export default function LiftWorkspace({ projectId, initial, onDerived, api, pric
       else setSaveError(`${te(r.error)}${r.fields?.length ? `: ${[...new Set(r.fields.map(nameOf))].join(', ')}` : ''}`);
     });
   };
-  const context = inp.calc.context === 'new' ? 'new' : 'repl', above = derived.values.layout !== 'bottom';
+  const items = (keys: readonly string[]) => missingItems(keys, dInp.shaft.vertical.floors, { shaft: (k, v) => ts(k, v), blank: (k, v) => tb(k, v), lift: (k, v) => t(k, v), calc: nameOf });
+  const above = derived?.values.layout !== 'bottom', toEnter = derived ? machineMissing : missing;
   return (
     <div className="lift-work">
-      <form className="lift-form panel" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
-        <h2>{t('s_context')}</h2>
-        <div className="seg-row" role="radiogroup" aria-label={t('s_context')}>
-          {(['repl', 'new'] as const).map((c) => (
-            <button key={c} type="button" role="radio" aria-checked={context === c} className={context === c ? 'on' : undefined} onClick={() => setCalc({ context: c })}>{t(`context_${c}`)}</button>
-          ))}
-        </div>
-        <CollaudoOptions P={P} isNew={context === 'new'} chosen={inp.collaudo} value={collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo}
-          access={{ value: inp.shaft.access, set: (access) => setShaft({ access }) }} />
-        <h2>{t('s_shaft')}</h2>
-        <div className="form-grid">
-          <label className="field"><span>{ts('W')}</span><input className="input num" type="number" inputMode="numeric" min={500} max={10000} step={10} value={inp.shaft.W} onChange={(e) => setSize('W', e.target.value)} /></label>
-          <label className="field"><span>{ts('D')}</span><input className="input num" type="number" inputMode="numeric" min={500} max={10000} step={10} value={inp.shaft.D} onChange={(e) => setSize('D', e.target.value)} /></label>
-        </div>
-        <details className="survey">
-          <summary>{t('from_cad')}</summary>
-          <SurveyPanel onSurvey={onSurvey} />
-        </details>
-        <p className="note">{source ? ts('sourceCad', { file: source.file, format: source.format.toUpperCase() }) : ts('edited')}</p>
-        <ShaftOptions I={inp.shaft} set={setShaft} lastQ={lastQ} />
-        <NicheOptions I={inp.shaft} set={setShaft} />
-        <HeadOptions I={inp.shaft} set={setShaft} />
-        <FrameOptions I={inp.shaft} set={setShaft} />
-        <ImbottiOptions I={inp.shaft} set={setShaft} />
-        <h2>{t('s_floors')}</h2>
-        <VerticalOptions I={inp.shaft} set={setShaft} open />
-        {above ? <RoomOptions I={inp.shaft} set={setShaft} machine={{ D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null }} /> : null}
-        <h2>{t('s_drive')}</h2>
-        <LiftCalcFields P={P} X={X} inp={inp} derived={derived} bad={bad} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} setCatalog={setCatalog} t={(k, v) => t(k, v)} />
-      </form>
+      <LiftForm P={P} X={X} inp={inp} derived={derived} blank={blank} bad={bad} need={need} texts={texts} source={source} lastQ={lastQ} setShaft={setShaft} setSize={setSize}
+        onSurvey={onSurvey} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} setCollaudo={setCollaudo} setCatalog={setCatalog} />
       <div className="lift-main">
-        <LiftFacts derived={derived} X={X} fmt={P.fmt} />
-        <MachineAdvice evaluate={evaluate} alternative={alternative} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="design" />
-        <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
-        <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
-        <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
-        <PanevBom L={derived.layout} fmt={P.fmt} prices={prices} />
+        {!derived ? <MissingPanel title={tb('title')} lead={tb('lead')} items={items(missing)} /> : (
+          <>
+            {complete ? <LiftFacts derived={derived} X={X} fmt={P.fmt} />
+              : <MissingPanel id="missing-machine" title={tb('machineTitle')} lead={tb('machineLead')} items={items(machineMissing)} />}
+            <MachineAdvice evaluate={evaluate} alternative={alternative} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="design" />
+            {complete ? (
+              <>
+                <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
+                <section className="panel"><PlanEditor I={inp.shaft} onChange={setShaft} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan" /></section>
+                <LiftChecks derived={derived} X={X} fmt={P.fmt} onSimulate={(req) => sim.current?.play(req)} />
+                <PanevBom L={derived.layout} fmt={P.fmt} prices={prices} />
+              </>
+            ) : null}
+          </>
+        )}
       </div>
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={t('label')} aria-label={t('label')} />
-          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || refused.length > 0}>{saving ? t('saving') : t('save')}</button>
-          <span className={refused.length ? 'note bad' : 'note'}>{refused.length ? t('fix_list', { list: refused.join(', ') }) : t('save_hint')}</span>
+          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !complete || refused.length > 0}>{saving ? t('saving') : t('save')}</button>
+          <span className={complete && refused.length ? 'note bad' : 'note'}>
+            {!complete ? tb('saveMissing', { n: toEnter.length }) : refused.length ? t('fix_list', { list: refused.join(', ') }) : t('save_hint')}
+          </span>
           {saveError ? <span className="note bad" role="alert">{saveError}</span> : null}
+          {draft ? <DraftBar target={draft} state={draftState} /> : null}
         </div>
       </div>
     </div>

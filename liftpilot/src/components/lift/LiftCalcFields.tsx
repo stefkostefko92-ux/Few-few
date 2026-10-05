@@ -2,23 +2,32 @@
 
 // The installation and the machine in the one form: the calculator's fields (prototype v12, same units and texts),
 // but only those a person must enter. The car mass, the rope geometry and the machine are filled in by the software
-// unless switched to entered; an automatic value is shown with a badge saying so.
+// unless switched to entered; an automatic value is shown with a badge saying so, a standard one of the software with
+// its own. While the project's data are still to enter only the roping, the machine's place (and the scheme of a
+// machine below) are asked, with the existing installation of a replacement: the rest comes once they are in.
 import { SHEAVE_GRID } from '@/calc/sizing';
 import type { FormValues } from '@/calc/types';
 import { BOTTOM_SCHEMES, type AutoFlags, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { isLiftStandard } from '@/lib/lift/defaults';
 import { BRANDS, catalogOf, type Brand } from '@/lib/catalog/machines';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import type { Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
-import FieldRow from '../calc/FieldRow';
+import FieldRow, { type BlankTexts } from '../calc/FieldRow';
 import { LAYOUT, MACHINE, PLANT, ROPES, SERVICE, shown, type Field } from '../calc/fields';
+import { fieldId, type FormBlank } from '../blank';
 
 interface Props {
   P: Pres;
   X: Texts;
   inp: LiftInputs;
-  derived: LiftDerived;
+  /** what the software worked out; null while the project's data are still to enter */
+  derived: LiftDerived | null;
   bad: ReadonlySet<string>;
+  /** the calculation's values still to enter (the roping, the machine's place, an existing installation's values) */
+  need: ReadonlySet<string>;
+  blank: FormBlank;
+  texts: BlankTexts;
   setCalc(patch: FormValues): void;
   setAuto(patch: Partial<AutoFlags>): void;
   setBottom(b: BottomScheme): void;
@@ -46,11 +55,13 @@ function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t']) {
   return <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
 }
 
-export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAuto, setBottom, setCatalog, t }: Props) {
-  const V: FormValues = { ...inp.calc, layout: derived.values.layout };
-  const DV = derived.values, auto = inp.auto, { fmt } = P;
+export default function LiftCalcFields({ P, X, inp, derived, bad, need, blank, texts, setCalc, setAuto, setBottom, setCatalog, t }: Props) {
+  const V: FormValues = { ...inp.calc, ...(blank.is('r') ? { r: '' } : {}), ...(blank.is('layout') ? { layout: '' } : {}) };
+  const DV = derived?.values ?? V, auto = inp.auto, { fmt } = P;
   const set = (id: string, value: string | boolean): void => setCalc({ [id]: value });
-  const row = (id: string, a: { value: string; badge: string } | null = null) => <FieldRow key={id} P={P} f={field(id)} V={V} bad={bad} set={set} auto={a} />;
+  const row = (id: string, a: { value: string; badge: string } | null = null) => (
+    <FieldRow key={id} P={P} f={field(id)} V={V} bad={bad} set={set} auto={a} need={need.has(id)} std={!a && isLiftStandard(V, id)} texts={texts} />
+  );
   const toggle = (key: keyof AutoFlags, label: string) => (
     <div className="row check auto-toggle">
       <input type="checkbox" id={`auto-${key}`} checked={auto[key]} onChange={(e) => setAuto({ [key]: e.target.checked })} />
@@ -58,8 +69,20 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
     </div>
   );
   const num = (id: string): number => Number(DV[id] ?? 0);
-  const pick = derived.analysis.sizing.pick, repl = V.context === 'repl';
-  const ropesFromProposal = auto.machine && !(repl && !!V.keepRopes);
+  const pick = derived?.analysis.sizing.pick ?? null, repl = V.context === 'repl', keep = repl && !!V.keepRopes;
+  const ropesFromProposal = !!derived && auto.machine && !derived.noProposal && !keep;
+  const bottomBlank = blank.is('bottom'), scheme = derived?.bottom ?? inp.bottom ?? 'head';
+  // the ropes: kept from the existing ones in a replacement (to enter), else the proposal's once there is one
+  const ropes = (
+    <>
+      <div className="subhead">{P.t('g_ropes')}</div>
+      <div className="row check" hidden={!shown('keepRopes', V)}>
+        <input type="checkbox" id="keepRopes" checked={!!V.keepRopes} onChange={(e) => set('keepRopes', e.target.checked)} />
+        <label htmlFor="keepRopes">{P.t('keepRopes')}</label>
+      </div>
+      {derived || keep ? ROPES('n_').map((f) => row(f.id, ropesFromProposal ? { value: fmt(num(f.id), f.id === 'n_qf' ? 3 : f.id === 'n_Fmin' ? 1 : f.id === 'n_d' ? 1 : 0), badge: t('badge_auto') } : null)) : null}
+    </>
+  );
   return (
     <div className="calc lift-calc">
       <details className="group" open>
@@ -67,76 +90,84 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
         <div className="rows">
           {row('r')}
           {row('layout')}
-          {derived.calata !== null ? calataHint(derived, fmt, t) : null}
-          {derived.bottom ? (
+          {derived && derived.calata !== null ? calataHint(derived, fmt, t) : null}
+          {V.layout === 'bottom' ? (
             <>
-              <div className="row wide">
-                <label htmlFor="bottom-scheme">{t('bottom_scheme')}</label>
-                <select id="bottom-scheme" className="input" value={derived.bottom} onChange={(e) => setBottom(e.target.value as BottomScheme)}>
+              <div className={`row wide${bottomBlank ? ' need' : ''}`}>
+                <label htmlFor={fieldId('bottom')}>{t('bottom_scheme')}</label>
+                <select id={fieldId('bottom')} className="input" value={bottomBlank ? '' : scheme} aria-required={bottomBlank || undefined}
+                  onChange={(e) => { const b = BOTTOM_SCHEMES.find((x) => x === e.target.value); if (b) setBottom(b); }}>
+                  {bottomBlank ? <option value="" disabled>{texts.choose}</option> : null}
                   {BOTTOM_SCHEMES.map((b) => <option key={b} value={b}>{t(`bottom_${b}`)}</option>)}
                 </select>
               </div>
-              <p className="hint">{t('hint_bottom_pulleys', { n: derived.headPulleys, extra: derived.headPulleys - 2 })}</p>
-              {derived.bottom === 'under' ? <p className="hint">{t('hint_bottom_under')}</p> : null}
-              {derived.bottomGap ? (
+              {derived ? <p className="hint">{t('hint_bottom_pulleys', { n: derived.headPulleys, extra: derived.headPulleys - 2 })}</p> : null}
+              {!bottomBlank && scheme === 'under' ? <p className="hint">{t('hint_bottom_under')}</p> : null}
+              {derived?.bottomGap ? (
                 <p className="hint bad" role="alert">{derived.bottomGap.need === null
                   ? t('hint_bottom_gap_none', { now: derived.bottomGap.now })
                   : t('hint_bottom_gap', { now: derived.bottomGap.now, need: derived.bottomGap.need })}</p>
               ) : null}
             </>
           ) : null}
-          {toggle('P', t('auto_P'))}
-          {row('P', auto.P ? { value: fmt(num('P'), 0), badge: t('badge_estimate') } : null)}
-          {auto.P ? <p className="hint">{t('hint_P_estimate')}</p> : null}
-          {row('k')}
-          {row('qeq')}
+          {derived ? (
+            <>
+              {toggle('P', t('auto_P'))}
+              {row('P', auto.P ? { value: fmt(num('P'), 0), badge: t('badge_estimate') } : null)}
+              {auto.P ? <p className="hint">{t('hint_P_estimate')}</p> : null}
+              {row('k')}
+              {row('qeq')}
+            </>
+          ) : null}
         </div>
       </details>
-      <details className="group" open>
-        <summary>{t('g_machine')}</summary>
-        <div className="rows">
-          {toggle('machine', t('auto_machine'))}
-          {auto.machine ? (
-            <>
-              <div className="row wide">
-                <label htmlFor="cat-brand">{t('cat_brand')}</label>
-                <select id="cat-brand" className="input" value={inp.catalog?.brand ?? ''}
-                  onChange={(e) => setCatalog(e.target.value ? { brand: e.target.value as Brand } : undefined)}>
-                  <option value="">{t('cat_grid')}</option>
-                  {BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </div>
-              {inp.catalog ? (
+      {derived ? (
+        <details className="group" open>
+          <summary>{t('g_machine')}</summary>
+          <div className="rows">
+            {toggle('machine', t('auto_machine'))}
+            {auto.machine ? (
+              <>
                 <div className="row wide">
-                  <label htmlFor="cat-model">{t('cat_model')}</label>
-                  <select id="cat-model" className="input" value={inp.catalog.model ?? ''}
-                    onChange={(e) => setCatalog({ brand: inp.catalog?.brand ?? 'SICOR', ...(e.target.value ? { model: e.target.value } : {}) })}>
-                    <option value="">{t('cat_any')}</option>
-                    {catalogOf(inp.catalog.brand).map((c) => <option key={c.model} value={c.model}>{c.model}</option>)}
+                  <label htmlFor="cat-brand">{t('cat_brand')}</label>
+                  <select id="cat-brand" className="input" value={inp.catalog?.brand ?? ''}
+                    onChange={(e) => setCatalog(e.target.value ? { brand: e.target.value as Brand } : undefined)}>
+                    <option value="">{t('cat_grid')}</option>
+                    {BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </div>
-              ) : null}
-              {derived.catalog?.fit ? (
-                <p className="hint">{t('cat_fit', {
-                  model: `${derived.catalog.fit.machine.brand} ${derived.catalog.fit.machine.model}`, ratio: derived.catalog.fit.ratio ?? '',
-                  stat: fmt(derived.catalog.fit.machine.staticKg, 0), dv: `${derived.catalog.fit.dv >= 0 ? '+' : ''}${fmt(derived.catalog.fit.dv * 100, 1)}`,
-                })}</p>
-              ) : null}
-              {derived.catalog?.miss ? <p className="hint bad" role="alert">{t('cat_miss', { brand: inp.catalog?.model ? `${inp.catalog.brand} ${inp.catalog.model}` : inp.catalog?.brand ?? '' })}</p> : null}
-              <p className="hint">{derived.noProposal ? t('no_proposal') : t('hint_machine_auto')}</p>
-              {pick && !derived.noProposal ? <p className="proposal-line num">{X.proposalShort(pick)}</p> : null}
-              <div className="subhead">{t('assumptions')}</div>
-              {ASSUMED.map((id) => row(id))}
-            </>
-          ) : MACHINE('n_').map((f) => row(f.id))}
-          <div className="subhead">{P.t('g_ropes')}</div>
-          <div className="row check" hidden={!shown('keepRopes', V)}>
-            <input type="checkbox" id="keepRopes" checked={!!V.keepRopes} onChange={(e) => set('keepRopes', e.target.checked)} />
-            <label htmlFor="keepRopes">{P.t('keepRopes')}</label>
+                {inp.catalog ? (
+                  <div className="row wide">
+                    <label htmlFor="cat-model">{t('cat_model')}</label>
+                    <select id="cat-model" className="input" value={inp.catalog.model ?? ''}
+                      onChange={(e) => setCatalog({ brand: inp.catalog?.brand ?? 'SICOR', ...(e.target.value ? { model: e.target.value } : {}) })}>
+                      <option value="">{t('cat_any')}</option>
+                      {catalogOf(inp.catalog.brand).map((c) => <option key={c.model} value={c.model}>{c.model}</option>)}
+                    </select>
+                  </div>
+                ) : null}
+                {derived.catalog?.fit ? (
+                  <p className="hint">{t('cat_fit', {
+                    model: `${derived.catalog.fit.machine.brand} ${derived.catalog.fit.machine.model}`, ratio: derived.catalog.fit.ratio ?? '',
+                    stat: fmt(derived.catalog.fit.machine.staticKg, 0), dv: `${derived.catalog.fit.dv >= 0 ? '+' : ''}${fmt(derived.catalog.fit.dv * 100, 1)}`,
+                  })}</p>
+                ) : null}
+                {derived.catalog?.miss ? <p className="hint bad" role="alert">{t('cat_miss', { brand: inp.catalog?.model ? `${inp.catalog.brand} ${inp.catalog.model}` : inp.catalog?.brand ?? '' })}</p> : null}
+                <p className="hint">{derived.noProposal ? t('no_proposal') : t('hint_machine_auto')}</p>
+                {pick && !derived.noProposal ? <p className="proposal-line num">{X.proposalShort(pick)}</p> : null}
+              </>
+            ) : null}
+            {/* without a proposal the machine to check is entered, as with the switch off */}
+            {auto.machine && !derived.noProposal ? <><div className="subhead">{t('assumptions')}</div>{ASSUMED.map((id) => row(id))}</> : MACHINE('n_').map((f) => row(f.id))}
+            {ropes}
           </div>
-          {ROPES('n_').map((f) => row(f.id, ropesFromProposal ? { value: fmt(num(f.id), f.id === 'n_qf' ? 3 : f.id === 'n_Fmin' ? 1 : f.id === 'n_d' ? 1 : 0), badge: t('badge_auto') } : null))}
-        </div>
-      </details>
+        </details>
+      ) : repl ? (
+        <details className="group" open>
+          <summary>{t('g_machine')}</summary>
+          <div className="rows">{ropes}</div>
+        </details>
+      ) : null}
       {repl ? (
         <details className="group">
           <summary>{P.t('g_old')}</summary>
@@ -158,28 +189,32 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, setCalc, setAu
           </div>
         </details>
       ) : null}
-      <details className="group" open={derived.issues.length > 0 || undefined}>
-        <summary>{t('g_geometry')}</summary>
-        <div className="rows">
-          {row('alphaMode')}
-          {row('alphaManual')}
-          {row('dropAlign')}
-          {toggle('L0', t('auto_L0'))}
-          {row('L0', auto.L0 ? { value: fmt(num('L0'), 2), badge: t('badge_auto') } : null)}
-          {V.layout === 'topDefl' ? toggle('dx', t('auto_dx')) : null}
-          {row('dx', auto.dx ? { value: fmt(num('dx'), 3), badge: t('badge_auto') } : null)}
-          {derived.issues.includes('dx') ? <p className="hint bad" role="alert">{t('hint_dx_tight')}</p> : null}
-          {row('h', auto.dx && derived.machine.rinvio ? { value: fmt(num('h'), 3), badge: t('badge_auto') } : null)}
-          {derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t('hint_rinvio_floor')}</p> : null}
-          {V.layout === 'bottom' ? toggle('Hv', t('auto_Hv')) : null}
-          {row('Hv', auto.Hv ? { value: fmt(num('Hv'), 2), badge: t('badge_auto') } : null)}
-          {['Dp', 'Jp', 'nps', 'npr', 'etaShaft'].map((id) => row(id))}
-        </div>
-      </details>
-      <details className="group">
-        <summary>{P.t('g_service')}</summary>
-        <div className="rows">{SERVICE.map((f) => row(f.id))}</div>
-      </details>
+      {derived ? (
+        <>
+          <details className="group" open={derived.issues.length > 0 || undefined}>
+            <summary>{t('g_geometry')}</summary>
+            <div className="rows">
+              {row('alphaMode')}
+              {row('alphaManual')}
+              {row('dropAlign')}
+              {toggle('L0', t('auto_L0'))}
+              {row('L0', auto.L0 ? { value: fmt(num('L0'), 2), badge: t('badge_auto') } : null)}
+              {V.layout === 'topDefl' ? toggle('dx', t('auto_dx')) : null}
+              {row('dx', auto.dx ? { value: fmt(num('dx'), 3), badge: t('badge_auto') } : null)}
+              {derived.issues.includes('dx') ? <p className="hint bad" role="alert">{t('hint_dx_tight')}</p> : null}
+              {row('h', auto.dx && derived.machine.rinvio ? { value: fmt(num('h'), 3), badge: t('badge_auto') } : null)}
+              {derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t('hint_rinvio_floor')}</p> : null}
+              {V.layout === 'bottom' ? toggle('Hv', t('auto_Hv')) : null}
+              {row('Hv', auto.Hv ? { value: fmt(num('Hv'), 2), badge: t('badge_auto') } : null)}
+              {['Dp', 'Jp', 'nps', 'npr', 'etaShaft'].map((id) => row(id))}
+            </div>
+          </details>
+          <details className="group">
+            <summary>{P.t('g_service')}</summary>
+            <div className="rows">{SERVICE.map((f) => row(f.id))}</div>
+          </details>
+        </>
+      ) : null}
     </div>
   );
 }

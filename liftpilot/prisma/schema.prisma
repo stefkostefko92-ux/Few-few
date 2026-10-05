@@ -72,6 +72,7 @@ model Company {
   drawingSets          DrawingSet[]
   drawingCounters      DrawingCounter[]
   liftDesigns          LiftDesign[]
+  formDrafts           FormDraft[]
 }
 
 /// A logo uploaded by a company, immutable: a drawing set keeps the one it was issued with. PNG or JPEG, checked by
@@ -245,10 +246,30 @@ model Project {
   drawingSets  DrawingSet[]
   liftDesigns  LiftDesign[]
   roomDesigns  RoomDesign[]
+  formDrafts   FormDraft[]
 
   @@index([companyId, archivedAt])
   @@index([companyId, kind])
   @@index([createdById])
+}
+
+/// What a form holds while it is being filled in (src/server/drafts.ts): the installation's one form, a replacement's
+/// calculator, a calculation's machine room survey — the values entered so far and those still to enter. Not a record:
+/// nothing derived, no hash; replaced as the form changes, deleted when the record is saved or the draft discarded.
+model FormDraft {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  /// "lift", "calc" or "room:<calculation id>"
+  scope     String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, scope])
+  @@index([companyId])
 }
 
 /// Immutable snapshot: the values entered, the engine and profile versions, the canonical results and their hash.

@@ -29,3 +29,21 @@ export function startSurvey(calata: number): Survey {
     car: { x: W / 2, y: carY }, cw: { x: W / 2, y: Math.min(D - 100, Math.round(carY + calata)) },
   };
 }
+
+/** The measures of a survey, in the form's order: the room's (its ridge stays optional: none is a flat roof), the
+ *  shaft's, the drops'. A new survey starts with each of them to enter. */
+export const SURVEY_FIELDS = ['room.W', 'room.D', 'room.shaftX', 'room.shaftY', 'room.H', 'room.slab', 'room.doorWall', 'room.doorAt', 'room.doorW', 'room.doorH',
+  'room.panelWall', 'room.panelAt', 'room.panelW', 'room.panelD', 'room.panelH', 'shaft.W', 'shaft.D', 'shaft.wall', 'car.x', 'car.y', 'cw.x', 'cw.y'] as const;
+export type SurveyField = (typeof SURVEY_FIELDS)[number];
+export const isSurveyField = (s: string): s is SurveyField => (SURVEY_FIELDS as readonly string[]).includes(s);
+
+/** A survey as it is being filled in: the values and the measures still to enter (their placeholders never shown). */
+export interface SurveyDraft {
+  survey: Survey;
+  blank: readonly SurveyField[];
+}
+
+/** A brand new survey: every measure to enter; the calculation's spacing `calata` [mm] only places the placeholders. */
+export function blankSurvey(calata: number): SurveyDraft {
+  return { survey: { ...startSurvey(calata), room: { ...DEFAULT_ROOM, ridge: 0 } }, blank: [...SURVEY_FIELDS] };
+}

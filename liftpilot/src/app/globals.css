@@ -8,6 +8,7 @@
 @import './drawing.css';
 @import './lift.css';
 @import './advice.css';
+@import './blank.css';
 
 @tailwind base;
 @tailwind components;

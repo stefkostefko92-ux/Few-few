@@ -9,6 +9,7 @@ import { REVIEW_MAX } from '@/lib/review';
 import { calcLabelSchema, idSchema, reviewSchema } from '@/lib/schemas';
 import { formValuesSchema } from '@/lib/calc-input';
 import { collaudoSchema } from '@/lib/lift-input';
+import { dropDraft } from './drafts';
 import { createCalculation, type Created } from './save';
 
 export type SaveResult = Created;
@@ -27,7 +28,10 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   if (!values.success) return { ok: false, error: 'invalidFields', fields: values.error.issues.map((i) => String(i.path[0] ?? '')) };
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
-  return createCalculation(user, project.id, values.data, label.data, collaudo?.success ? collaudo.data : null);
+  const r = await createCalculation(user, project.id, values.data, label.data, collaudo?.success ? collaudo.data : null);
+  // the calculator's draft has become this record
+  if (r.ok) await dropDraft(user.companyId, project.id, 'calc');
+  return r;
 }
 
 /** Internal review ("visto") by an engineer of the company; the calculation itself stays untouched. Not on an archived

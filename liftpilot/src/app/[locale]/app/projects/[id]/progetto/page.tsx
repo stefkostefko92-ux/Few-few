@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { idSchema } from '@/lib/schemas';
+import { dateFormat } from '@/lib/dates';
 import { getProject } from '@/server/queries';
 import { visiblePrices } from '@/server/prices';
 import { liftStart } from '@/server/lift-start';
@@ -14,8 +15,9 @@ export async function generateMetadata() {
   return { title: t('workTitle') };
 }
 
-// The one form of an installation with its live 3D simulation: from a saved design (?from=), else from the latest one,
-// else from the installation's shaft design and calculation, else from the example.
+// The one form of an installation with its live 3D simulation: from a saved design (?from=), else from the form's draft,
+// else from the latest design, else from the installation's shaft design and calculation with the rest of the project
+// to enter, else empty (src/server/lift-start.ts).
 export default async function LiftWorkPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -23,7 +25,7 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
   const p = await getProject(user, id);
   if (!p || p.archivedAt) notFound();
   const from = idSchema.safeParse((await searchParams).from);
-  const initial = await liftStart(user, p.id, from.success ? from.data : null);
+  const start = await liftStart(user, p.id, from.success ? from.data : null);
   const [t, tp] = await Promise.all([getTranslations('lift'), getTranslations('projects')]);
   return (
     <main className="page page-wide">
@@ -34,7 +36,8 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
           <p className="lead">{t('workLead')}</p>
         </div>
       </div>
-      <LiftWorkspace projectId={p.id} initial={initial} prices={await visiblePrices(user)} pitches={pitchesOf(p.plant)} />
+      <LiftWorkspace key={from.success ? from.data : 'start'} projectId={p.id} initial={start.inputs} blank={start.blank} prices={await visiblePrices(user)}
+        pitches={pitchesOf(p.plant)} draft={{ projectId: p.id, scope: 'lift', resumed: start.draftAt ? dateFormat(locale).dateTime(new Date(start.draftAt)) : null }} />
     </main>
   );
 }
