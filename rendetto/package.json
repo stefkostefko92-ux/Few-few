@@ -42,6 +42,7 @@
     "prisma:migrate": "prisma migrate deploy",
     "owner:create": "node dist/scripts/create-owner.js",
     "geoip:update": "node dist/scripts/geoip-update.js",
+    "catalog:seal": "node --import tsx src/scripts/catalog-seal.ts",
     "og:image": "node --import tsx scripts/og-image.ts"
   },
   "dependencies": {

@@ -69,6 +69,8 @@ services:
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?липсва PUBLIC_BASE_URL}
       ENC_KEY: ${ENC_KEY:?липсва ENC_KEY}
       HMAC_KEY: ${HMAC_KEY:?липсва HMAC_KEY}
+      # ключът на шифрования каталог в репото (sealed/catalog.json.enc); празно — без каталога от магазините
+      CATALOG_KEY: ${CATALOG_KEY:-}
       SMTP_HOST: ${SMTP_HOST:?липсва SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT:-2525}
       SMTP_SECURE: ${SMTP_SECURE:-false}
@@ -86,8 +88,8 @@ services:
       # портът е вързан за 127.0.0.1, значи никой друг не стига дотук.
       TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}
     volumes:
-      # Каталогът от магазините, GeoIP базата и котвата на одита — само на сървъра, извън репото и
-      # образа. Единствената папка, в която приложението пише: собственик uid 1000 (node), mode 700.
+      # GeoIP базата и котвата на одита (и каталогът като файл, ако няма CATALOG_KEY) — само на сървъра,
+      # извън репото и образа. Единствената папка, в която приложението пише: uid 1000 (node), mode 700.
       - ${RENDETTO_DATA:-./data}:/app/data
     ports:
       - '127.0.0.1:${HTTP_PORT:-4320}:4320'
