@@ -23,6 +23,8 @@ interface Props {
   inp: LiftInputs;
   /** what the software worked out; null while the project's data are still to enter */
   derived: LiftDerived | null;
+  /** the new machine is in too: what depends on it (its sheave, the rope geometry it gives) is shown */
+  complete: boolean;
   bad: ReadonlySet<string>;
   /** the calculation's values still to enter (the roping, the machine's place, an existing installation's values) */
   need: ReadonlySet<string>;
@@ -55,7 +57,7 @@ function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t']) {
   return <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
 }
 
-export default function LiftCalcFields({ P, X, inp, derived, bad, need, blank, texts, setCalc, setAuto, setBottom, setCatalog, t }: Props) {
+export default function LiftCalcFields({ P, X, inp, derived, complete, bad, need, blank, texts, setCalc, setAuto, setBottom, setCatalog, t }: Props) {
   const V: FormValues = { ...inp.calc, ...(blank.is('r') ? { r: '' } : {}), ...(blank.is('layout') ? { layout: '' } : {}) };
   const DV = derived?.values ?? V, auto = inp.auto, { fmt } = P;
   const set = (id: string, value: string | boolean): void => setCalc({ [id]: value });
@@ -69,6 +71,8 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, need, blank, t
     </div>
   );
   const num = (id: string): number => Number(DV[id] ?? 0);
+  // a value the software works out with the machine: none shown until the machine is in
+  const worked = (text: string): string => (complete ? text : '—');
   const pick = derived?.analysis.sizing.pick ?? null, repl = V.context === 'repl', keep = repl && !!V.keepRopes;
   const ropesFromProposal = !!derived && auto.machine && !derived.noProposal && !keep;
   const bottomBlank = blank.is('bottom'), scheme = derived?.bottom ?? inp.bottom ?? 'head';
@@ -90,7 +94,7 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, need, blank, t
         <div className="rows">
           {row('r')}
           {row('layout')}
-          {derived && derived.calata !== null ? calataHint(derived, fmt, t) : null}
+          {derived && complete && derived.calata !== null ? calataHint(derived, fmt, t) : null}
           {V.layout === 'bottom' ? (
             <>
               <div className={`row wide${bottomBlank ? ' need' : ''}`}>
@@ -101,9 +105,9 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, need, blank, t
                   {BOTTOM_SCHEMES.map((b) => <option key={b} value={b}>{t(`bottom_${b}`)}</option>)}
                 </select>
               </div>
-              {derived ? <p className="hint">{t('hint_bottom_pulleys', { n: derived.headPulleys, extra: derived.headPulleys - 2 })}</p> : null}
+              {derived && complete ? <p className="hint">{t('hint_bottom_pulleys', { n: derived.headPulleys, extra: derived.headPulleys - 2 })}</p> : null}
               {!bottomBlank && scheme === 'under' ? <p className="hint">{t('hint_bottom_under')}</p> : null}
-              {derived?.bottomGap ? (
+              {complete && derived?.bottomGap ? (
                 <p className="hint bad" role="alert">{derived.bottomGap.need === null
                   ? t('hint_bottom_gap_none', { now: derived.bottomGap.now })
                   : t('hint_bottom_gap', { now: derived.bottomGap.now, need: derived.bottomGap.need })}</p>
@@ -191,21 +195,21 @@ export default function LiftCalcFields({ P, X, inp, derived, bad, need, blank, t
       ) : null}
       {derived ? (
         <>
-          <details className="group" open={derived.issues.length > 0 || undefined}>
+          <details className="group" open={(complete && derived.issues.length > 0) || undefined}>
             <summary>{t('g_geometry')}</summary>
             <div className="rows">
               {row('alphaMode')}
               {row('alphaManual')}
               {row('dropAlign')}
               {toggle('L0', t('auto_L0'))}
-              {row('L0', auto.L0 ? { value: fmt(num('L0'), 2), badge: t('badge_auto') } : null)}
+              {row('L0', auto.L0 ? { value: worked(fmt(num('L0'), 2)), badge: t('badge_auto') } : null)}
               {V.layout === 'topDefl' ? toggle('dx', t('auto_dx')) : null}
-              {row('dx', auto.dx ? { value: fmt(num('dx'), 3), badge: t('badge_auto') } : null)}
-              {derived.issues.includes('dx') ? <p className="hint bad" role="alert">{t('hint_dx_tight')}</p> : null}
-              {row('h', auto.dx && derived.machine.rinvio ? { value: fmt(num('h'), 3), badge: t('badge_auto') } : null)}
-              {derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t('hint_rinvio_floor')}</p> : null}
+              {row('dx', auto.dx ? { value: worked(fmt(num('dx'), 3)), badge: t('badge_auto') } : null)}
+              {complete && derived.issues.includes('dx') ? <p className="hint bad" role="alert">{t('hint_dx_tight')}</p> : null}
+              {row('h', auto.dx && derived.machine.rinvio ? { value: worked(fmt(num('h'), 3)), badge: t('badge_auto') } : null)}
+              {complete && derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t('hint_rinvio_floor')}</p> : null}
               {V.layout === 'bottom' ? toggle('Hv', t('auto_Hv')) : null}
-              {row('Hv', auto.Hv ? { value: fmt(num('Hv'), 2), badge: t('badge_auto') } : null)}
+              {row('Hv', auto.Hv ? { value: worked(fmt(num('Hv'), 2)), badge: t('badge_auto') } : null)}
               {['Dp', 'Jp', 'nps', 'npr', 'etaShaft'].map((id) => row(id))}
             </div>
           </details>

@@ -129,7 +129,12 @@ test('calcolatore della sostituzione: vuoto, prima l\'impianto poi la macchina n
   assert.equal(plantReady(missing), false);
   const C = { ...PRESETS.C };
   assert.deepEqual(calcMissing(C, readInputs(C).bad), []);
+  // an empty roping reads as 1:1 without being flagged: only the list of what is missing stops the save (and the server)
+  const noRoping = { ...C, r: '' };
+  assert.deepEqual([readInputs(noRoping).bad, calcMissing(noRoping, readInputs(noRoping).bad)], [[], ['r']]);
   assert.ok(isStandard(V, 'aDesign') && !isStandard({ ...V, aDesign: 0.6 }, 'aDesign'));
+  // what the proposal sizes the new machine with is the software's standard, marked as such — never a hidden fallback
+  for (const id of ['n_etaD', 'n_nm', 'n_Jm', 'n_Js', 'n_gamma', 'n_poles', 'n_fn']) assert.ok(isStandard(V, id), id);
   assert.ok(calcDraftSchema.safeParse({ values: V, collaudo: null }).success);
 });
 

@@ -26,6 +26,8 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   const collaudo = input.collaudo == null ? null : collaudoSchema.safeParse(input.collaudo);
   if (!projectId.success || !label.success || (collaudo && !collaudo.success)) return { ok: false, error: 'invalidFields' };
   if (!values.success) return { ok: false, error: 'invalidFields', fields: values.error.issues.map((i) => String(i.path[0] ?? '')) };
+  // an empty roping reads as 1:1 in the calculation: a new calculation has it chosen
+  if (String(values.data.r ?? '').trim() === '') return { ok: false, error: 'invalidFields', fields: ['r'] };
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
   const r = await createCalculation(user, project.id, values.data, label.data, collaudo?.success ? collaudo.data : null);

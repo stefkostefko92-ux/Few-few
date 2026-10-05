@@ -31,6 +31,8 @@ interface Props {
   inp: LiftInputs;
   /** what the software worked out; null while the project's data are still to enter */
   derived: LiftDerived | null;
+  /** the new machine is in too (proposed or entered): what depends on it is shown */
+  complete: boolean;
   blank: FormBlank;
   bad: ReadonlySet<string>;
   /** the calculation's values still to enter */
@@ -38,8 +40,6 @@ interface Props {
   texts: BlankTexts;
   /** the drawing the shaft was measured on; null: entered by hand */
   source: ShaftSource | null;
-  /** kg used when switching to a given load */
-  lastQ: number;
   setShaft: ShaftSet;
   /** the shaft's inner size typed [mm] */
   setSize(key: 'W' | 'D', value: number): void;
@@ -51,7 +51,7 @@ interface Props {
   setCatalog(c: CatalogChoice | undefined): void;
 }
 
-export default function LiftForm({ P, X, inp, derived, blank, bad, need, texts, source, lastQ, setShaft, setSize, onSurvey, setCalc, setAuto, setBottom, setCollaudo, setCatalog }: Props) {
+export default function LiftForm({ P, X, inp, derived, complete, blank, bad, need, texts, source, setShaft, setSize, onSurvey, setCalc, setAuto, setBottom, setCollaudo, setCatalog }: Props) {
   const t = useTranslations('lift'), ts = useTranslations('shaft'), is = blank.is;
   const context = inp.calc.context === 'new' ? 'new' : 'repl';
   // the machine room comes with a machine above (once its place is chosen)
@@ -84,7 +84,7 @@ export default function LiftForm({ P, X, inp, derived, blank, bad, need, texts, 
         <SurveyPanel onSurvey={onSurvey} />
       </details>
       <p className="note">{source ? ts('sourceCad', { file: source.file, format: source.format.toUpperCase() }) : ts('edited')}</p>
-      <ShaftOptions I={inp.shaft} set={setShaft} lastQ={lastQ} blank={blank} />
+      <ShaftOptions I={inp.shaft} set={setShaft} blank={blank} />
       {blank.full ? (
         <>
           <ShaftTechOptions I={inp.shaft} set={setShaft} />
@@ -98,10 +98,10 @@ export default function LiftForm({ P, X, inp, derived, blank, bad, need, texts, 
       <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} />
       {above ? (
         <RoomOptions I={inp.shaft} set={setShaft} blank={blank}
-          machine={derived ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null } : undefined} />
+          machine={derived && complete ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null } : undefined} />
       ) : null}
       <h2>{t('s_drive')}</h2>
-      <LiftCalcFields P={P} X={X} inp={inp} derived={derived} bad={bad} need={need} blank={blank} texts={texts} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom}
+      <LiftCalcFields P={P} X={X} inp={inp} derived={derived} complete={complete} bad={bad} need={need} blank={blank} texts={texts} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom}
         setCatalog={setCatalog} t={(k, v) => t(k, v)} />
     </form>
   );

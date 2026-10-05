@@ -43,7 +43,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
   const s = form.survey, blank = form.blank;
   const complete = blank.length === 0;
   const d = useMemo(() => (complete ? deriveRoom(values, s) : null), [complete, values, s]);
-  const draftState = useDraft(draft, form, surveyDraftSchema.safeParse(form).success);
+  const draftHandle = useDraft(draft, form, surveyDraftSchema.safeParse(form).success);
   const is = (k: SurveyField): boolean => blank.includes(k);
   // a change of the survey, with the measures it enters
   const change = (survey: SurveyDraft['survey'], entered: readonly SurveyField[]): void =>
@@ -57,6 +57,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
   );
   const save = (): void => {
     setError(null);
+    draftHandle.stop();
     start(async () => {
       const r = await saveRoomDesignAction({ calculationId, survey: s, label });
       if (r.ok) router.push(`/app/room-designs/${r.id}`);
@@ -127,7 +128,7 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
           <button type="button" className="btn btn-primary" disabled={pending || !d || d.issues.length > 0} onClick={save}>{pending ? t('saving') : t('save')}</button>
           {!d ? <span className="note">{tb('saveMissing', { n: blank.length })}</span> : null}
           {error ? <span className="note bad" role="alert">{error}</span> : null}
-          {draft ? <DraftBar target={draft} state={draftState} /> : null}
+          {draft ? <DraftBar target={draft} draft={draftHandle} /> : null}
         </div>
         <p className="note">{t('saveNote')}</p>
       </section>

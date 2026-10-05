@@ -4,24 +4,26 @@
 // doors, the counterweight's side, the walls and the accessibility. A new installation starts with each to enter
 // (src/lib/lift/blank.ts): nothing chosen, nothing written. The software's own choices (ShaftTechOptions) come once
 // the project's data are in.
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { counterweightSide, type ShaftInputs } from '@/shaft';
-import { entrancesTo, filled, type BlankKey } from '@/lib/lift/blank';
+import { Q_PLACEHOLDER, emptied, entrancesTo, filled, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, fieldId, mmOf, type FormBlank, type ShaftSet } from '../blank';
 import Seg from './Seg';
 
 interface Props {
   I: ShaftInputs;
   set: ShaftSet;
-  /** kg used when switching to a given load */
-  lastQ: number;
   blank?: FormBlank;
 }
 
 const ACCESS = ['none', 'dm236_existing', 'dm236_residential', 'dm236_public'] as const;
 
-export default function ShaftOptions({ I, set, lastQ, blank = NO_BLANK }: Props) {
+export default function ShaftOptions({ I, set, blank = NO_BLANK }: Props) {
   const t = useTranslations('shaft'), tb = useTranslations('blank'), is = blank.is;
+  // the load last given (kg): back to a given load, it is the one entered; none entered yet, its figure is to enter
+  const [lastQ, setLastQ] = useState<number | null>(I.Q);
+  const given = (): void => (lastQ === null ? set({ Q: Q_PLACEHOLDER }, (b) => emptied(b, ['Qkg'])) : set({ Q: lastQ }));
   const need = (k: BlankKey): string => (is(k) ? ' need' : '');
   const num = (key: 'doorWidth' | 'doorHeight' | 'wall', min: number, max: number, step = 10) => (
     <label className={`field${need(key)}`}>
@@ -34,12 +36,12 @@ export default function ShaftOptions({ I, set, lastQ, blank = NO_BLANK }: Props)
   return (
     <div className="shaft-options">
       <Seg name="qmode" id={fieldId('Q')} need={is('Q')} label={t('Qmode')} value={is('Q') ? null : I.Q === null ? 'max' : 'given'}
-        onChange={(v) => set({ Q: v === 'max' ? null : lastQ })} options={[{ v: 'max', label: t('Qmax') }, { v: 'given', label: t('Qgiven') }]} />
+        onChange={(v) => (v === 'max' ? set({ Q: null }) : given())} options={[{ v: 'max', label: t('Qmax') }, { v: 'given', label: t('Qgiven') }]} />
       {!is('Q') && I.Q !== null ? (
         <label className={`field${need('Qkg')}`}>
           <span>{t('Q')}</span>
           <input id={fieldId('Qkg')} className="input num" type="number" inputMode="numeric" min={100} max={10000} step={5} value={is('Qkg') ? '' : I.Q}
-            aria-required={is('Qkg') || undefined} onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) set({ Q: v }, (b) => filled(b, ['Qkg'])); }} />
+            aria-required={is('Qkg') || undefined} onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) { setLastQ(v); set({ Q: v }, (b) => filled(b, ['Qkg'])); } }} />
         </label>
       ) : null}
       <Seg name="entrances" id={fieldId('entrances')} need={is('entrances')} label={t('entrances')} value={is('entrances') ? null : I.entrances}

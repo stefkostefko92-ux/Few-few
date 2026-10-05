@@ -13,11 +13,12 @@ const CALC_START: FormValues = {
 };
 
 /** The software's standard values of the one form's calculation, marked as such while they stay as set: the balance
- *  of the counterweight, the assumptions of the machine groups (efficiency, poles, frequency, speed, inertias, mass),
+ *  of the counterweight, the assumptions of the machine groups (efficiency, poles, frequency, speed, inertias, mass, the
+ *  groove's undercut),
  *  the diverting pulley and its inertia, the extra bends, the efficiency of the shaft, the decelerations, the hanging
  *  rope, ordinary buffers (the research's typical values, chapter 7). */
 export const LIFT_STANDARD: FormValues = Object.fromEntries(
-  ['k', 'n_etaD', 'n_poles', 'n_fn', 'n_nm', 'n_Jm', 'n_Js', 'n_mass', 'o_poles', 'o_fn', 'alphaMode', 'dropAlign', 'Dp', 'Jp', 'nps', 'npr', 'etaShaft',
+  ['k', 'n_etaD', 'n_poles', 'n_fn', 'n_nm', 'n_Jm', 'n_Js', 'n_mass', 'n_gamma', 'o_poles', 'o_fn', 'alphaMode', 'dropAlign', 'Dp', 'Jp', 'nps', 'npr', 'etaShaft',
     'aDesign', 'aBrake', 'rh', 'buffers'].map((id) => [id, CALC_START[id] ?? '']),
 );
 

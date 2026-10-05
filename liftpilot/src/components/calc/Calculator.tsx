@@ -81,7 +81,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const anyBad = a.ctx.bad.length > 0;
   const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle'), stdInUse: (list: string) => tb('stdInUse', { list }) };
   const draftData = { values, collaudo: collaudo ?? null };
-  const draftState = useDraft(draft, draftData, calcDraftSchema.safeParse(draftData).success);
+  const draftHandle = useDraft(draft, draftData, calcDraftSchema.safeParse(draftData).success);
 
   const edit = (patch: FormValues): void => {
     setValues((V) => mirrorRopes({ ...V, ...patch }));
@@ -120,6 +120,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const machineInUse = (c: MachineCandidate): boolean => Object.entries(c.values).every(([k, v]) => sameValue(values[k], v));
   const save = (): void => {
     setSaveError(null);
+    draftHandle.stop();
     startSaving(async () => {
       const r = await saveCalculationAction({ projectId, values, label, collaudo: collaudo ?? null });
       if (r.ok) router.push(`/app/calculations/${r.id}`);
@@ -166,10 +167,10 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={tc('labelPlaceholder')} aria-label={tc('label')} />
-          <button type="button" className="primary" onClick={save} disabled={saving || anyBad}>{saving ? tc('saving') : tc('save')}</button>
+          <button type="button" className="primary" onClick={save} disabled={saving || anyBad || missing.length > 0}>{saving ? tc('saving') : tc('save')}</button>
           {missing.length ? <span className="note">{tb('saveMissing', { n: missing.length })}</span>
             : anyBad ? <span className="note bad">{tc('fixFields', { list: [...new Set(a.ctx.bad)].map(fieldLabel).join(', ') })}</span> : <span className="note">{tc('saveHint')}</span>}
-          {draft ? <DraftBar target={draft} state={draftState} /> : null}
+          {draft ? <DraftBar target={draft} draft={draftHandle} /> : null}
           {saveError ? <span className="note bad" role="alert">{te(saveError.error)}{saveError.fields.length ? `: ${saveError.fields.map(fieldLabel).join(', ')}` : ''}</span> : null}
         </div>
       </div>

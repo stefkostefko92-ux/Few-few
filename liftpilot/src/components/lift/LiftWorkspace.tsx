@@ -90,7 +90,6 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   const [form, setForm] = useState<LiftDraft>({ inputs: initial, blank: initialBlank });
   const inp = form.inputs;
   const [source, setSource] = useState<ShaftSource | null>(null);
-  const [lastQ, setLastQ] = useState(initial.shaft.Q ?? 630);
   const [label, setLabel] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, startSaving] = useTransition();
@@ -113,7 +112,8 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   const evaluate = useCallback((m: AdviceModel) => liftCandidate(dInp, m), [dInp]);
   const alternative = useMemo(() => {
     const d = derived ? deflectorInputs(dInp) : null;
-    return d && derived ? { evaluate: (m: AdviceModel) => liftCandidate(d, m), sheave: derived.machine.D } : null;
+    // the sheave a direct pull needs: the falls' spacing in the plan (a machine's own only once one is in)
+    return d && derived ? { evaluate: (m: AdviceModel) => liftCandidate(d, m), sheave: Math.round(derived.calata ?? derived.machine.D) } : null;
   }, [dInp, derived]);
   const bad = useMemo(() => new Set(derived ? visibleBad([...derived.analysis.ctx.bad, ...derived.issues], derived.values).filter((id) => !need.has(id)) : []), [derived, need]);
   // what the save would refuse, as the server refuses it, named as the form names it: every value of the calculation out
@@ -135,12 +135,11 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   useEffect(() => { if (derived) onDerived?.(dInp, derived); }, [dInp, derived, onDerived]);
   const sim = useRef<SimApi>(null);
   const draftValid = useMemo(() => liftDraftSchema.safeParse(form).success, [form]);
-  const draftState = useDraft(draft, form, draftValid);
+  const draftHandle = useDraft(draft, form, draftValid);
   const blank = useMemo(() => ({ is: (k: BlankKey) => form.blank.includes(k), list: form.blank, full: derived !== null }), [form.blank, derived]);
   const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle') };
 
   const setShaft: ShaftSet = (patch, edit) => {
-    if (typeof patch.Q === 'number') setLastQ(patch.Q);
     // the distances set by hand go with the arrangement they belong to; what the patch sets is entered
     setForm((f) => {
       const shaft = { ...f.inputs.shaft, ...patch };
@@ -229,8 +228,12 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
     setShaft({ W: r.W, D: r.D });
     setSource(r.source);
   };
+  // the save sends what the form holds: only once what is shown has caught up with it, with nothing left to enter
+  const settled = deferred === form;
   const save = (): void => {
+    if (!settled || missingOf(form).length || existingMissing(form.inputs.calc).length) return;
     setSaveError(null);
+    draftHandle.stop();
     startSaving(async () => {
       const r = await saveLiftDesignAction({ projectId, inputs: inp, source, label });
       if (r.ok) router.push(`/app/lift-designs/${r.id}`);
@@ -241,7 +244,7 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   const above = derived?.values.layout !== 'bottom', toEnter = derived ? machineMissing : missing;
   return (
     <div className="lift-work">
-      <LiftForm P={P} X={X} inp={inp} derived={derived} blank={blank} bad={bad} need={need} texts={texts} source={source} lastQ={lastQ} setShaft={setShaft} setSize={setSize}
+      <LiftForm P={P} X={X} inp={inp} derived={derived} complete={complete} blank={blank} bad={bad} need={need} texts={texts} source={source} setShaft={setShaft} setSize={setSize}
         onSurvey={onSurvey} setCalc={setCalc} setAuto={setAuto} setBottom={setBottom} setCollaudo={setCollaudo} setCatalog={setCatalog} />
       <div className="lift-main">
         {!derived ? <MissingPanel title={tb('title')} lead={tb('lead')} items={items(missing)} /> : (
@@ -263,12 +266,12 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={t('label')} aria-label={t('label')} />
-          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !complete || refused.length > 0}>{saving ? t('saving') : t('save')}</button>
+          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !complete || !settled || refused.length > 0}>{saving ? t('saving') : t('save')}</button>
           <span className={complete && refused.length ? 'note bad' : 'note'}>
             {!complete ? tb('saveMissing', { n: toEnter.length }) : refused.length ? t('fix_list', { list: refused.join(', ') }) : t('save_hint')}
           </span>
           {saveError ? <span className="note bad" role="alert">{saveError}</span> : null}
-          {draft ? <DraftBar target={draft} state={draftState} /> : null}
+          {draft ? <DraftBar target={draft} draft={draftHandle} /> : null}
         </div>
       </div>
     </div>

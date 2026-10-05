@@ -171,5 +171,8 @@ export function layoutTo(prev: string | undefined, blank: readonly BlankKey[], n
 /** A machine room added to the design: every measure of it to enter. */
 export const roomAdded = (blank: readonly BlankKey[]): BlankKey[] => emptied(blank, roomKeys());
 
+/** The given load a choice of it starts from until its figure is entered [kg] (never shown). */
+export const Q_PLACEHOLDER = 630;
+
 /** The placeholder room a machine room added starts from (never shown). */
 export const ROOM_PLACEHOLDER = DEFAULT_ROOM;

@@ -5,17 +5,19 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { discardDraftAction } from '@/server/draft-actions';
-import type { DraftState, DraftTarget } from './useDraft';
+import type { DraftHandle, DraftTarget } from './useDraft';
 
 const hhmm = (d: Date): string => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
-export default function DraftBar({ target, state }: { target: DraftTarget; state: DraftState }) {
+export default function DraftBar({ target, draft }: { target: DraftTarget; draft: DraftHandle }) {
+  const { state } = draft;
   const t = useTranslations('draft');
   const [asking, setAsking] = useState(false);
   const [pending, start] = useTransition();
   const [error, setError] = useState(false);
   if (state.kind === 'none') return null;
   const discard = (): void => start(async () => {
+    draft.stop();
     const r = await discardDraftAction({ projectId: target.projectId, scope: target.scope });
     if (r.ok) window.location.reload();
     else setError(true);
