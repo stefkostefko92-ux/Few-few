@@ -135,4 +135,12 @@ ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "script
     ad.condition.domainType === "thirdParty" && ["ads.youtube.com", "gemini.yahoo.com", "adtech.yahooinc.com", "metrika.yandex.ru", "ads-api.twitter.com", "grs.hicloud.com"].every((d) => ad.condition.requestDomains.includes(d)));
 }
 
+// YouTube's own content pings must go out: a player that never reports playing is a strike signal.
+{
+  const yt = JSON.parse(readFileSync(join(ROOT, "rules", "youtube_rules.json"), "utf8"));
+  const blocks = yt.filter((r) => r.action.type === "block").map((r) => r.condition.urlFilter || "");
+  ok("youtube_rules: never block /ptracking (content playback) or ALL of /api/stats/atr — only ad endpoints",
+    !blocks.some((f) => /ptracking|stats\/atr|stats\/qoe|stats\/watchtime|log_event/.test(f)) && blocks.some((f) => /stats\/ads/.test(f)));
+}
+
 done();
