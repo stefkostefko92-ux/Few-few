@@ -209,3 +209,27 @@ test('a live release is remembered as last-good by its real path; a failed one i
     assert.equal(readFileSync(join(L.shared, 'last-good'), 'utf8'), `${realpathSync(L.app)}\n`);
   });
 });
+
+test('a CATALOG_KEY is tried with the new image before the swap; one that does not open the catalog stops with code 1', () => {
+  withLayout((L) => {
+    sharedEnv(L, undefined, `CATALOG_KEY=${'c'.repeat(64)}\n`);
+    const check =
+      'docker compose run --rm --no-deps --entrypoint node app dist/scripts/catalog-check.js\n';
+    // the database is looked for before the check: `compose run` creates the project's volumes
+    const before = `docker compose build app\ndocker volume inspect rendetto_db-data\n${check}`;
+    const bad = deploy(L, { CATALOG_RC: '1' });
+    assert.equal(bad.status, 1);
+    assert.match(bad.stderr, /каталогът от репото не се отваря с CATALOG_KEY/);
+    assert.ok(bad.log.endsWith(before), 'no dump, no swap after a failed check');
+    const first = deploy(L);
+    assert.equal(first.status, 0, first.stderr);
+    assert.ok(first.log.includes(`${before}docker compose up -d --remove-orphans\n`), first.log);
+    assert.match(first.stdout, /пръв деплой/);
+    const again = deploy(L, { VOLUME_RC: '0' });
+    assert.equal(again.status, 0, again.stderr);
+    assert.ok(
+      again.log.includes(`${before}docker compose up -d --no-recreate --wait db\n`),
+      again.log,
+    );
+  });
+});

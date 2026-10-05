@@ -10,7 +10,7 @@ import {
 const IV_BYTES = 12;
 const TAG_BYTES = 16;
 
-function keyBuffer(hexKey: string): Buffer {
+export function keyBuffer(hexKey: string): Buffer {
   const key = Buffer.from(hexKey, 'hex');
   if (key.length !== 32) throw new Error('Ключът за криптиране трябва да е 32 байта');
   return key;

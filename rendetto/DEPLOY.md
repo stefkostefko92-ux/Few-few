@@ -11,25 +11,35 @@
 
 ## 1. Тайните (веднъж, на сървъра)
 
+`deploy/setup-env.sh` от репото прави папките и `.env` (mode 600): генерира `POSTGRES_PASSWORD`,
+`ENC_KEY` и `HMAC_KEY` (`openssl rand -hex 32`, три различни) и пита само за SMTP (Brevo) и
+`CATALOG_KEY` — без да ги показва. Съществуващ `.env` не пипа: нов `ENC_KEY` обезсилва 2FA, нов
+`HMAC_KEY` — устройствата, резервните кодове и проверката на одитната верига отпреди смяната.
+
 ```bash
-sudo install -d -m 700 /opt/few-few/shared/rendetto
-# data/ е единствената папка, в която приложението пише (GeoIP базата, котвата на одита) — за uid 1000
-sudo install -d -m 700 -o 1000 -g 1000 /opt/few-few/shared/rendetto/data
-sudo install -m 600 /dev/null /opt/few-few/shared/rendetto/.env
-sudoedit /opt/few-few/shared/rendetto/.env    # по образеца .env.example
+curl -fsSL https://codeload.github.com/stefkostefko92-ux/Few-few/tar.gz/main \
+  | tar -xz -C /root --strip-components=1 --wildcards '*/rendetto/deploy/setup-env.sh'
+sudo bash /root/rendetto/deploy/setup-env.sh
 ```
+
+Ръчно — същото: папките `/opt/few-few/shared/rendetto` (700) и `…/data` (700, собственик uid 1000 —
+единствената папка, в която приложението пише) и `.env` (600) по образеца `.env.example` (`sudoedit`).
 
 Контейнерите са с файлова система само за четене, без Linux capabilities и с `no-new-privileges`
 (`docker-compose.yml`); образите са заковани по digest. Затова командите в контейнера по-долу са
 `node dist/scripts/…`, не `npm run …` — npm иска да пише в домашната папка.
 
-`POSTGRES_PASSWORD`, `ENC_KEY` и `HMAC_KEY` — `openssl rand -hex 32`, три различни. Паролата влиза
-некодирана в `DATABASE_URL`: „/“, „?“, „#“ и „%“ (напр. от `openssl rand -base64`) чупят адреса, затова
-`deploy.sh` ги отказва. `RENDETTO_DATA` е точно `/opt/few-few/shared/rendetto/data` — с друг път
-`deploy.sh` не тръгва. SMTP: Brevo на порт 2525 (Hetzner блокира 25/465/587).
+Паролата на базата влиза некодирана в `DATABASE_URL`: „/“, „?“, „#“ и „%“ (напр. от
+`openssl rand -base64`) чупят адреса, затова `deploy.sh` ги отказва. `RENDETTO_DATA` е точно
+`/opt/few-few/shared/rendetto/data` — с друг път `deploy.sh` не тръгва. SMTP: Brevo на порт 2525 (Hetzner
+блокира 25/465/587).
 
-Каталогът от магазините се слага в `/opt/few-few/shared/rendetto/data/catalog.json` (подава го
-собственикът; не е в репото). Без него продуктът тръгва с основния каталог.
+Каталогът от магазините е в репото само шифрован (`sealed/catalog.json.enc`, AES-256-GCM) и идва с всеки
+деплой. Отваря го `CATALOG_KEY` от `.env` — ключът е само тук и при собственика, никога в репото.
+`deploy.sh` го пробва с новия образ преди смяната: грешен ключ спира деплоя с код 1, а работещите
+контейнери не са пипани. Без `CATALOG_KEY` продуктът тръгва с основния каталог (или с
+`data/catalog.json`, ако е сложен на ръка). Нов каталог: `CATALOG_KEY=… npm run catalog:seal` на машината
+на собственика, commit, деплой.
 
 ## 2. TLS сертификат (веднъж)
 
@@ -59,21 +69,23 @@ sudo bash /opt/few-few/current/rendetto/deploy/deploy.sh
 1. копира тайните от `/opt/few-few/shared/rendetto/` (без тях спира с код 3 — тайни не се
    измислят) и проверява, че `RENDETTO_DATA` е `/opt/few-few/shared/rendetto/data`;
 2. `docker compose build` на образа — при провал спира с код 1, работещите контейнери не са пипани;
-3. бекъп на базата преди миграция в `/opt/few-few/shared/rendetto/backups/` (пази последните 5;
+3. с `CATALOG_KEY` новият образ отваря шифрования каталог (`dist/scripts/catalog-check.js`) — грешен ключ
+   или повреден файл спира с код 1, работещите контейнери не са пипани;
+4. бекъп на базата преди миграция в `/opt/few-few/shared/rendetto/backups/` (пази последните 5;
    `pg_dump --clean --if-exists`) — след build-а и точно преди смяната, за да не губи
    възстановяването записите от минутите на build-а; без бекъп не мигрира (код 1). С
    `RENDETTO_SKIP_BACKUP=1` (откатът) — без нов дъмп, за да не изтласка от ротацията дъмпа отпреди
    счупената миграция;
-4. `docker compose up` — entrypoint-ът чака базата и пуска `prisma migrate deploy` (никога `db push`);
-5. чака `/health` да върне `{"status":"ok","app":"rendetto"}` — маркерът доказва, че на порта
+5. `docker compose up` — entrypoint-ът чака базата и пуска `prisma migrate deploy` (никога `db push`);
+6. чака `/health` да върне `{"status":"ok","app":"rendetto"}` — маркерът доказва, че на порта
    отговаря Rendetto, а не друго приложение (иначе код 4 и `autodeploy.sh` връща последния
    работещ release); после записва папката на release-а в `/opt/few-few/shared/rendetto/last-good`;
-6. слага vhost-а от репото в nginx с порта от `HTTP_PORT` (`nginx -t`, после reload; при грешка
+7. слага vhost-а от репото в nginx с порта от `HTTP_PORT` (`nginx -t`, после reload; при грешка
    връща стария), щом има сертификат;
-7. подава sitemap-а към IndexNow (Bing, Yandex, Seznam, Naver, Yep), само ако се е променил.
+8. подава sitemap-а към IndexNow (Bing, Yandex, Seznam, Naver, Yep), само ако се е променил.
 
 Изход: 0 — жив; 3 — няма `.env`; 4 — контейнерите са сменени, но Rendetto не отговаря; 1 — спрян преди
-смяната (работещите не са пипани). Стъпки 6–7 след успешната сонда само предупреждават.
+смяната (работещите не са пипани). Стъпки 7–8 след успешната сонда само предупреждават.
 
 Командите `docker compose` по-долу се пускат от папката на работещия release — там са
 `docker-compose.yml` и `.env` (`/opt/few-few/shared/rendetto/` е само за root, затова `sudo cat`):

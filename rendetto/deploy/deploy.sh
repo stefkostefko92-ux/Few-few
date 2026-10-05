@@ -5,10 +5,10 @@
 #   sudo bash /opt/few-few/current/rendetto/deploy/deploy.sh    # ръчно (DEPLOY.md)
 #   deploy/autodeploy.sh го вика за всеки release с rendetto/    # автоматично — същият път
 #
-# Ред: тайните от стабилния път → build → бекъп на базата преди миграция (след build-а: дъмпът е
-# отпреди самата смяна и не губи записите от минутите на build-а) → up (entrypoint-ът прилага
-# `prisma migrate deploy`) → чака, докато на порта отговори именно Rendetto → nginx vhost-ът от
-# репото, щом има сертификат → IndexNow, само ако sitemap-ът се е променил.
+# Ред: тайните от стабилния път → build → новият образ отваря каталога от репото с ключа → бекъп на
+# базата преди миграция (след build-а: дъмпът е отпреди самата смяна и не губи записите от минутите на
+# build-а) → up (entrypoint-ът прилага `prisma migrate deploy`) → чака, докато на порта отговори именно
+# Rendetto → nginx vhost-ът от репото, щом има сертификат → IndexNow, само ако sitemap-ът се е променил.
 #
 # Тайни не се измислят. Изход: 0 — жив; 3 — няма .env (машината не е настроена);
 # 4 — контейнерите са сменени, но Rendetto не отговаря (autodeploy връща предишния код);
@@ -90,15 +90,33 @@ check_db_password() {
 # build-а, точно преди `up`: възстановяването губи само секундите до смяната, не минутите на build-а.
 # Без бекъп няма миграция: провалът тук спира деплоя, преди контейнерът на приложението да е сменен.
 # Дъмпът е с --clean --if-exists: възстановява се в съществуващата база (DEPLOY.md, т. 8).
-backup_db() {
+# Има ли база за бекъп — решава се ПРЕДИ проверката на каталога: `docker compose run` създава томовете на
+# проекта и след нея всеки пръв деплой би изглеждал като повторен (бекъп на празна база). Самият дъмп е
+# след проверката — грешен ключ не гори място в ротацията.
+BACKUP_PLAN=""
+plan_backup() {
   if [ "$SKIP_BACKUP" = "1" ]; then
-    log "RENDETTO_SKIP_BACKUP=1 (откат) — без нов бекъп; последният дъмп отпреди миграцията остава"
-    return 0
+    BACKUP_PLAN=skip
+  elif docker volume inspect rendetto_db-data >/dev/null 2>&1; then
+    BACKUP_PLAN=dump
+  else
+    BACKUP_PLAN=first
   fi
-  if ! docker volume inspect rendetto_db-data >/dev/null 2>&1; then
-    log "няма том с база (пръв деплой) — няма какво да се бекъпва"
-    return 0
-  fi
+}
+
+backup_db() {
+  case "$BACKUP_PLAN" in
+    skip)
+      log "RENDETTO_SKIP_BACKUP=1 (откат) — без нов бекъп; последният дъмп отпреди миграцията остава"
+      return 0
+      ;;
+    first)
+      log "няма том с база (пръв деплой) — няма какво да се бекъпва"
+      return 0
+      ;;
+    dump) ;;
+    *) fail 1 "бекъпът няма план (plan_backup не е минал) — не мигрирам без бекъп." ;;
+  esac
   local dir="$SHARED/backups" file
   file="$dir/pre-deploy-$TS.sql.gz"
   install -d -m 700 "$dir"
@@ -119,6 +137,15 @@ backup_db() {
 }
 
 # Код 200 сам не казва КОЙ отговаря на порта: чака се маркерът на Rendetto и база, която отговаря.
+# Каталогът от магазините е в репото шифрован (sealed/catalog.json.enc); CATALOG_KEY е само в .env. Новият
+# образ го отваря ПРЕДИ смяната: грешен ключ или повреден файл спира деплоя тук (код 1), докато старите
+# контейнери още работят — иначе новият код не би тръгнал. Без CATALOG_KEY няма какво да се проверява.
+check_catalog() {
+  [ -n "$(env_value CATALOG_KEY)" ] || return 0
+  docker compose run --rm --no-deps --entrypoint node app dist/scripts/catalog-check.js ||
+    fail 1 "каталогът от репото не се отваря с CATALOG_KEY от .env — работещите контейнери не са пипани. Провери ключа (DEPLOY.md, т. 1)."
+}
+
 wait_healthy() {
   local url="http://127.0.0.1:$1/health" body deadline=$((SECONDS + HEALTH_WAIT))
   while :; do
@@ -253,6 +280,8 @@ main() {
   port="${port:-4320}"
   log "build…"
   docker compose build app || fail 1 "build се провали — работещите контейнери не са пипани."
+  plan_backup
+  check_catalog
   backup_db
   log "up (entrypoint-ът прилага миграциите)…"
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
