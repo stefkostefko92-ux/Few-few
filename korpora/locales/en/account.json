@@ -1,0 +1,183 @@
+{
+  "plan": {
+    "title": "Plan",
+    "current": "Current plan",
+    "endsOn": "until {date}",
+    "endedOn": "ended on {date}",
+    "expiredRule": "When the plan ends, your projects stay and can be downloaded. New projects and changes need an active plan.",
+    "requestTitle": "Order a plan",
+    "manualText": "Choose a term. Payment is by bank transfer: after you order, we send you an invoice with the payment details, and the plan is activated once the payment arrives. Premium does not renew by itself — it ends at the end of the term. Lifetime is a one-off payment and is valid for as long as Korpora is offered.",
+    "choose": "Term",
+    "col": {
+      "period": "Term",
+      "total": "Excl. VAT",
+      "perMonth": "Per month incl. VAT",
+      "withVat": "Incl. {vat}% VAT",
+      "date": "Date",
+      "option": "Option",
+      "status": "Status",
+      "price": "Price",
+      "actions": "Action"
+    },
+    "months": {
+      "one": "1 month",
+      "other": "{n} months"
+    },
+    "lifetime": "Lifetime",
+    "discount": "{pct}% off",
+    "vatNote": "For consumers, prices are final and include {vat}% VAT. For businesses the price without VAT is also shown; VAT is charged under the rules of the buyer's country.",
+    "message": "Message",
+    "messagePlaceholder": "Company name, company number and VAT number for the invoice, or anything else we should know",
+    "send": "Order with obligation to pay",
+    "requestsTitle": "Your orders",
+    "cancel": "Cancel the order",
+    "status": {
+      "OPEN": "Awaiting payment",
+      "DONE": "Activated",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled",
+      "WITHDRAWN": "Withdrawn from contract"
+    },
+    "name": {
+      "TRIAL": "Trial",
+      "PREMIUM": "Premium",
+      "LIFETIME": "Lifetime"
+    },
+    "chip": {
+      "trialDays": {
+        "one": "Trial: 1 day",
+        "other": "Trial: {n} days"
+      },
+      "premiumDays": {
+        "one": "Premium: 1 day",
+        "other": "Premium: {n} days"
+      },
+      "lifetime": "Lifetime",
+      "expired": "Plan ended",
+      "pending": "Confirm your email"
+    },
+    "state": {
+      "staff": "Team",
+      "pending": "Email not confirmed",
+      "expired": "{plan} ended"
+    },
+    "request": {
+      "alreadyLifetime": "You already have Lifetime — there is nothing to order."
+    },
+    "buyer": {
+      "legend": "You are buying as",
+      "consumer": "A private individual (consumer)",
+      "business": "A business or self-employed person, for professional purposes",
+      "hint": "Consumers may withdraw within {days} days. Business purchases carry no right of withdrawal; put the invoice details in the message.",
+      "consumerShort": "consumer",
+      "businessShort": "business"
+    },
+    "early": {
+      "legend": "When the plan starts",
+      "label": "I want the plan to start right after payment, before the {days}-day withdrawal period ends. I understand that if I withdraw, I will pay for the time the plan was active.",
+      "hint": "Consumers only. If you leave this unticked, the paid period starts after the {days}-day withdrawal period ends.",
+      "short": "early start"
+    },
+    "accept": "By ordering, you accept the {terms} and the information on the {withdrawal}.",
+    "replacesOpen": "You have an order awaiting payment. A new order will replace it and the old one will be cancelled. If you have already paid for it, write to us at {contact} before ordering again.",
+    "termsLink": "terms and conditions",
+    "withdrawalLink": "right of withdrawal",
+    "orderName": "Premium for {term}",
+    "withVatShort": "incl. VAT",
+    "netShort": "excl. VAT",
+    "activationAfter": "paid period after {date}",
+    "withdrawnOn": "withdrawn: {date}",
+    "errors": {
+      "buyer": "Choose whether you are buying as a private individual or as a business.",
+      "unverified": "Confirm your email to order a plan — the order confirmation and the invoice are sent there.",
+      "tooMany": "Too many orders in 24 hours. Try again later or write to us."
+    },
+    "withdraw": {
+      "button": "Withdraw from contract here",
+      "until": "until {date}",
+      "where": "If you are a consumer, you may withdraw from an order within {days} days of placing it, without giving any reason — use the “Withdraw from contract here” button next to it.",
+      "title": "Withdrawal from the contract",
+      "intro": "Check the details and confirm. The withdrawal period ends on {date}, and you will get the confirmation by email straight away.",
+      "name": "Name",
+      "contract": "Contract",
+      "orderNo": "order no. {id}",
+      "email": "Confirmation goes to",
+      "statementLabel": "The statement you are sending",
+      "effect": "If you have already paid, we will refund all payments received within {refundDays} days, using the same means of payment and at no cost to you. If the plan has already been activated, we return it to what it was before the order.",
+      "effectEarly": "If you have already paid, we will refund the payments received within {refundDays} days, using the same means of payment and at no cost to you — minus the part for the time the plan was active, because you asked for an early start. If the plan has already been activated, we return it to what it was before the order.",
+      "confirm": "Confirm withdrawal",
+      "back": "Back, without withdrawing",
+      "unavailable": "The withdrawal period for this order has ended or the order is already closed."
+    }
+  },
+  "account": {
+    "title": "Account",
+    "nav": {
+      "overview": "Profile",
+      "plan": "Plan",
+      "security": "Security",
+      "data": "Data"
+    },
+    "planTitle": "Plan",
+    "planStaff": "Team account, no end date.",
+    "planPending": "Your trial starts when you confirm your email.",
+    "planLifetime": "Lifetime, no end date.",
+    "planExpired": "Ended on {date}. Projects can be downloaded, but new projects and changes need an active plan.",
+    "planTrialLeft": {
+      "one": "1 day of your trial left, until {date}.",
+      "other": "{n} days of your trial left, until {date}."
+    },
+    "planPremiumLeft": {
+      "one": "1 day of Premium left, until {date}.",
+      "other": "{n} days of Premium left, until {date}."
+    },
+    "planProjects": "Projects: {n}",
+    "requestOpen": "You have an order awaiting payment",
+    "seePlans": "Plans and prices",
+    "profileTitle": "Profile",
+    "language": "Language",
+    "emailTitle": "Email",
+    "emailStatus": "Status",
+    "verified": "Confirmed",
+    "notVerified": "Not confirmed",
+    "changeEmail": "Change email",
+    "newEmail": "New email",
+    "currentPassword": "Current password",
+    "changeEmailHint": "We will send a link to the new address. The email changes when you open it; until then you sign in with the old one.",
+    "changeEmailButton": "Send link",
+    "delete": {
+      "confirmMissing": "Tick the box to confirm you understand that deletion is permanent.",
+      "lastOwner": "This is the last owner. Before deleting this account, give the role to someone else."
+    }
+  },
+  "app": {
+    "title": "Projects",
+    "lead": "Each project is one piece of furniture: sizes, materials, hardware and everything that comes out of them.",
+    "unverifiedTitle": "Confirm your email",
+    "unverifiedText": "We sent you a confirmation link. Your trial starts when you open it.",
+    "resend": "Send the link again",
+    "expiredTitle": "Your plan has ended",
+    "expiredText": "Your projects are here and you can download them. For new projects and changes, choose a plan.",
+    "seePlans": "Plans and prices",
+    "newTitle": "New project",
+    "type": "Furniture type",
+    "name": "Name",
+    "namePlaceholder": "for example Kitchen, flat 12",
+    "create": "Create project",
+    "listTitle": "Your projects ({n})",
+    "empty": "You have no projects yet. Choose a furniture type above and create the first one.",
+    "updated": "changed {when}",
+    "download": "Download ZIP",
+    "duplicate": "Copy",
+    "delete": "Delete",
+    "deleteConfirm": "Delete “{name}”? This cannot be undone.",
+    "errors": {
+      "conflict": "The project was changed in another window or on another device. Reload the page to see the latest version — the changes here are not saved.",
+      "name": "The name can be up to 80 characters, without the < and > signs.",
+      "planExpired": "Your plan has ended. Projects can be downloaded, but new projects and changes need an active plan.",
+      "spec": "The project cannot be saved: a value is outside the allowed range.",
+      "tooMany": "You have reached the maximum number of projects. Delete old ones to create new ones.",
+      "unverified": "Confirm your email to create and change projects."
+    }
+  }
+}

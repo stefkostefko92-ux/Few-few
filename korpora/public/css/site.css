@@ -1,0 +1,263 @@
+/* Korpora — the public page. The page is a sheet of W1000 board on the machine bed: the hero shows a real nested
+   sheet with its router path, the rest reads like the drawing pack that comes out of one project. One moment of
+   motion (the router path draws itself once), no decoration that is not the product's own output. */
+
+.site {
+  --measure: 62ch;
+  --gutter: max(16px, env(safe-area-inset-left));
+}
+.wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+/* top bar */
+.site-bar {
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.site-bar .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 26px;
+  padding-block: 12px;
+}
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  font-size: 0.95rem;
+}
+.site-nav a {
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.site-nav a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.site-bar-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+}
+.site-bar-end .login {
+  color: var(--ink);
+  font-weight: 550;
+}
+/* narrow: the section links take their own row and wrap; a scroll strip would cut the last word in half */
+@media (max-width: 900px) {
+  .site-nav {
+    order: 3;
+    width: 100%;
+    gap: 0 18px;
+  }
+  .site-nav a {
+    padding-block: 5px;
+    white-space: nowrap;
+  }
+}
+
+/* hero */
+.hero .wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  padding-block: clamp(36px, 6vw, 84px) clamp(40px, 6vw, 80px);
+  align-items: center;
+}
+@media (min-width: 980px) {
+  .hero .wrap {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 48px;
+  }
+}
+.hero h1 {
+  font-size: clamp(3.1rem, 8.6vw, 6.6rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  font-weight: 760;
+  font-variation-settings: 'SHRP' 100;
+  margin: 0 0 22px;
+}
+.hero h1 span {
+  display: block;
+}
+.lead {
+  font-size: clamp(1.08rem, 1.7vw, 1.25rem);
+  line-height: 1.5;
+  max-width: 34em;
+  color: var(--ink);
+  margin-bottom: 26px;
+}
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: center;
+}
+.btn-big {
+  min-height: 54px;
+  padding: 0 24px;
+  font-size: 1.05rem;
+}
+.cta-link {
+  color: var(--ink);
+  font-weight: 550;
+}
+.trial-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 20px 0 0;
+  color: var(--ink-2);
+  font-size: 0.97rem;
+  max-width: 34em;
+}
+.trial-note .i {
+  flex: none;
+  margin-top: 3px;
+  color: var(--green);
+}
+
+/* the machine bed with the nested sheet */
+.bed {
+  /* the operation colours of the sheet and its legend: the sheet is always a light board on the bed, so they
+     stay the same in the dark theme */
+  --op-contour: #a87406;
+  --op-groove: #2c6a10;
+  --op-drill: #0f6e86;
+  margin: 0;
+  background: var(--mdf);
+  border-radius: 14px;
+  padding: clamp(14px, 2.4vw, 26px);
+  position: relative;
+}
+.bed::before {
+  /* vacuum zones of the spoilboard: faint grid, the only texture on the page */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(rgb(0 0 0 / 0.07) 1px, transparent 1px) 0 0 / 100% 25%,
+    linear-gradient(90deg, rgb(0 0 0 / 0.07) 1px, transparent 1px) 0 0 / 20% 100%;
+  pointer-events: none;
+}
+.sheet-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.sheet-art .board-shadow {
+  fill: rgb(52 48 47 / 0.16);
+}
+.sheet-art .board {
+  fill: #f2efe7;
+  stroke: #8e8371;
+  stroke-width: 4;
+}
+.sheet-art .part {
+  fill: #fbfbf8;
+  stroke: #34302f;
+  stroke-width: 3;
+}
+.sheet-art .pid {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  fill: #6f6963;
+}
+.sheet-art .cut {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sheet-art .tcontour {
+  stroke: var(--op-contour);
+}
+.sheet-art .tgroove {
+  stroke: var(--op-groove);
+}
+.sheet-art .hole.tdrill {
+  fill: var(--op-drill);
+}
+/* the one moment of motion: the router path draws itself once, in cutting order, in six waves */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet-art .paths path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: route 1.1s cubic-bezier(0.55, 0.1, 0.35, 1) 0.3s forwards;
+  }
+  .sheet-art .paths .w2 {
+    animation-delay: 0.6s;
+  }
+  .sheet-art .paths .w3 {
+    animation-delay: 0.9s;
+  }
+  .sheet-art .paths .w4 {
+    animation-delay: 1.2s;
+  }
+  .sheet-art .paths .w5 {
+    animation-delay: 1.5s;
+  }
+  .sheet-art .paths .w6 {
+    animation-delay: 1.8s;
+  }
+  @keyframes route {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+}
+.bed figcaption {
+  position: relative;
+  margin-top: 12px;
+  color: #2b2722;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  display: grid;
+  gap: 6px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+.legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.key {
+  display: inline-block;
+  flex: none;
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+  /* each key sits on a bit of the board, the way its stroke sits on the sheet: same colour, readable on the bed */
+  box-shadow: 0 0 0 3px #f2efe7;
+}
+.key-contour {
+  background: var(--op-contour);
+}
+.key-groove {
+  background: var(--op-groove);
+}
+.key-drill {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--op-drill);
+}
+@media (prefers-color-scheme: dark) {
+  .bed figcaption {
+    color: #efe7da;
+  }
+}
