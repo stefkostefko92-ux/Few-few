@@ -4800,7 +4800,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 151
+        "lessons": 153
       },
       "evolution": [
         {
@@ -5210,9 +5210,20 @@
           "date": "2026-09-25",
           "event": "v17.6 — учене",
           "detail": "Научи: Полето „Находки:“ в ПРЕДАВАНЕ се чете само от един ред (FIELD regex в tools/agents/hand…"
+        },
+        {
+          "version": "17.8.0",
+          "date": "2026-10-05",
+          "event": "v17.8 — учене",
+          "detail": "Научи: cs-revolution scripts/it-accents.py обработва само public/**/*.html (без en/bg) и scrip… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-05",
+          "type": "learning",
+          "summary": "Научи: „cs-revolution scripts/it-accents.py обработва само public/**/*.html (без en/bg) и scrip…\" (+1 още)"
+        },
         {
           "date": "2026-09-25",
           "type": "learning",
