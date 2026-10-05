@@ -8,10 +8,12 @@ Docker Compose (приложение + PostgreSQL 16) зад nginx на хост
 ## Първи деплой (веднъж)
 
 1. **DNS:** A запис `liftpilot.carbonstealth.eu` → IP на VPS-а. Без него приложението тръгва, но само
-   на `127.0.0.1:4320`; сертификатът се издава при следващото пускане.
-2. **Портът:** `4320` по подразбиране. Провери с `ss -tlnp | grep 4320`; ако е зает, създай
+   на `127.0.0.1:4330`; сертификатът се издава при следващото пускане.
+2. **Портът:** `4330` по подразбиране. Провери с `ss -tlnp | grep 4330`; ако е зает, създай
    `/opt/few-few/shared/liftpilot/.env` от `.env.example` с друг `APP_PORT` преди деплоя
-   (скриптът и сам спира с ясна грешка, ако портът е зает при първия старт).
+   (скриптът и сам спира с ясна грешка, ако портът е зает при първия старт). До кръг 26 портът беше
+   `4320`, който сега е на rendetto: на сървър, където LiftPilot вече върви, смени `APP_PORT=4320` на
+   `4330` в `.env` и пусни деплоя наново (vhost-ът се пише с порта от `.env`) — преди деплоя на rendetto.
 3. **Поща (Brevo):** SMTP login и SMTP ключ от Brevo (SMTP & API → SMTP); подателят
    (`MAIL_FROM`, по подразбиране `LiftPilot <noreply@carbonstealth.eu>`) трябва да е потвърден в Brevo
    (домейнът със SPF и DKIM). Изпраща се през `smtp-relay.brevo.com:2525` със STARTTLS (VPS-ът блокира
@@ -53,7 +55,7 @@ build` + `up -d` → миграциите от entrypoint-а (`prisma migrate de
 ## Проверка
 
 ```bash
-curl -fsS http://127.0.0.1:4320/api/health          # {"status":"ok","app":"liftpilot",…,"db":"ok"}
+curl -fsS http://127.0.0.1:4330/api/health          # {"status":"ok","app":"liftpilot",…,"db":"ok"}
 curl -fsSI https://liftpilot.carbonstealth.eu/it | head -5
 cd /opt/few-few/current/liftpilot && docker compose ps && docker compose logs --tail 50 app
 ```

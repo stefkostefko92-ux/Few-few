@@ -9,6 +9,8 @@
 - every page but the cover carries the notice in its footer, and every drawing and render its caption,
   where notice.py and gen.py put them, and nowhere else;
 - every 3D page carries only its own text and links to the drawing page its label names;
+- the summary pages before the back hold every article of the price list once, each linked to its page
+  (summary.check);
 - the outline and the index links still reach the same printed pages;
 - the page labels are PDFDocEncoded."""
 import json
@@ -21,6 +23,7 @@ import inline
 import layout as L
 import logo
 import notice
+import summary as S
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist", "pdf")
 base = pymupdf.open(os.path.join(OUT, "base.pdf"))
@@ -33,8 +36,10 @@ def pixels(page, dpi=60):
     return np.frombuffer(pm.samples, dtype=np.uint8).reshape(pm.height, pm.width, pm.n).astype(int)
 
 
+data = json.load(open(os.path.join(OUT, "spec.json")))
 is3d = ["Vista 3D —" in p.get_text("text") for p in new]
-positions = [i for i, flag in enumerate(is3d) if not flag]
+issum = [p.get_label() in [s["label"] for s in data["summary"]["pages"]] for p in new]
+positions = [i for i in range(new.page_count) if not is3d[i] and not issum[i]]
 if len(positions) != base.page_count:
     sys.exit(f"{len(positions)} base pages found, {base.page_count} expected")
 
@@ -55,7 +60,6 @@ badge = pymupdf.Rect(Counter(tuple(w) for ws in whites.values() for w in ws).mos
 # The notice on each base page (notice.py): the footer line, none on the cover, and the drawings' captions,
 # placed on the base page as merge.py placed them on the page before its stamps. The drawings are the ones
 # the new page still shows (page 7's two illustrations are gone: its renders bring their own caption).
-data = json.load(open(os.path.join(OUT, "spec.json")))
 stamps = {k: pymupdf.Rect(r) for k, (_, r) in data["stamps"].items()}
 last = base.page_count - 1
 lines = {pos: None if i == 0 else "back" if i == last else "foot" if notice.has_footer(base[i]) else "foot_light" for i, pos in enumerate(positions)}
@@ -103,7 +107,7 @@ for page in new:
     footer = page.get_text("text", clip=stamps[line] if line else page.rect).replace(" ", "").replace("\n", "").upper()
     if (compact in footer) != bool(line):
         problems.append(f"page {page.number + 1}: the notice {'missing from the footer' if line else 'on the cover'}")
-    places = next(shots) if is3d[page.number] else spots[page.number] + renders.get(index[page.number], [])
+    places = next(shots) if is3d[page.number] else [] if issum[page.number] else spots[page.number] + renders.get(index[page.number], [])
     hits = [h for h in page.search_for(notice.TEXT) if h.y1 < 560]
     if len(hits) != len(places) or not all(any((p + (-0.5, -0.5, 0.5, 0.5)).contains(h) for h in hits) for p in places):
         problems.append(f"page {page.number + 1}: captions at {hits}, expected in {places}")
@@ -146,6 +150,7 @@ for pos in (p for p, flag in enumerate(is3d) if flag):
         if stale in compact:
             problems.append(f"page {pos + 1}: text of the product page left: {stale}")
 
+problems += S.check(new, base, data["summary"])
 for (_, title, pa), (_, tb, pb) in zip(base.get_toc(), new.get_toc()):
     if title != tb or new[pb - 1].get_label() != ("Copertina" if pa == 1 else f"{pa - 1:02d}"):
         problems.append(f"outline {title}: page {pa} -> {pb} ({new[pb - 1].get_label()})")
@@ -155,7 +160,7 @@ for la, lb in zip(base[1].get_links(), new[1].get_links()):
 if "\\302" in new.xref_get_key(new.pdf_catalog(), "PageLabels")[1]:
     problems.append("page labels are UTF-8, not PDFDocEncoding")
 
-print(f"{new.page_count} pages: {sum(is3d)} 3D pages, {base.page_count} base pages compared")
+print(f"{new.page_count} pages: {sum(is3d)} 3D pages, {sum(issum)} summary pages, {base.page_count} base pages compared")
 if problems:
     sys.exit("\n".join(problems))
 print("all checks passed")

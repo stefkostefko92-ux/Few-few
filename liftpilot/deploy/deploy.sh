@@ -52,7 +52,7 @@ if [ ! -f "$ENV_FILE" ]; then
     cat > "$ENV_FILE" <<EOF
 POSTGRES_PASSWORD=$(rand 32)
 AUTH_SECRET=$(rand 48)
-APP_PORT=4320
+APP_PORT=4330
 PUBLIC_BASE_URL=https://liftpilot.carbonstealth.eu
 ALLOW_INDEXING=false
 LOG_LEVEL=info
@@ -104,7 +104,7 @@ if [ -z "$(env_get STRIPE_SECRET_KEY)" ] || [ -z "$(env_get STRIPE_WEBHOOK_SECRE
   warn "no Stripe settings in $ENV_FILE: the subscription stays off and every company works without limits"
 fi
 PORT="$(env_get APP_PORT | tr -dc '0-9' || true)"
-PORT="${PORT:-4320}"
+PORT="${PORT:-4330}"
 DOMAIN="$(env_get PUBLIC_BASE_URL | sed -E 's#^https?://##; s#[/:].*$##' || true)"
 DOMAIN="${DOMAIN:-liftpilot.carbonstealth.eu}"
 install -m 600 "$ENV_FILE" .env
@@ -208,7 +208,7 @@ NGINX
   fi
   if [ -d "/etc/letsencrypt/live/$DOMAIN" ]; then
     [ -f "$conf" ] && cp -a "$conf" "$conf.bak"
-    sed -e "s/liftpilot\.carbonstealth\.eu/$DOMAIN/g" -e "s/127\.0\.0\.1:4320/127.0.0.1:$PORT/" deploy/nginx/liftpilot.conf > "$conf"
+    sed -e "s/liftpilot\.carbonstealth\.eu/$DOMAIN/g" -e "s/127\.0\.0\.1:4330/127.0.0.1:$PORT/" deploy/nginx/liftpilot.conf > "$conf"
     ln -sf "$conf" /etc/nginx/sites-enabled/liftpilot.conf
     if nginx -t; then
       systemctl reload nginx

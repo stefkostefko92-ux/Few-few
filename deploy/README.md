@@ -134,11 +134,23 @@ ZIP отпреди месец.
   своя парола: `LIFTPILOT_ADMIN_PASSWORD`, изпразва се в `.env`, щом приложението е здраво). Пощата (регистрация,
   забравена парола) — Brevo на порт 2525: `LIFTPILOT_SMTP_USER` + `LIFTPILOT_SMTP_PASS`; без тях двете страници
   са затворени. `pg_dump` ПРЕДИ миграцията (последните 5; провален дъмп спира деплоя), `docker compose build` +
-  `up -d` (миграциите — от entrypoint-а, `prisma migrate deploy`). Приложението слуша само на `127.0.0.1:4320`
+  `up -d` (миграциите — от entrypoint-а, `prisma migrate deploy`). Приложението слуша само на `127.0.0.1:4330`
   (`APP_PORT`); при пръв старт проверява, че портът е свободен. Health на `/api/health` с маркер `"app":"liftpilot"`.
   Nginx vhost (`liftpilot/deploy/nginx/liftpilot.conf`) + certbot за `liftpilot.carbonstealth.eu` — нужен е DNS A
   запис към VPS-а; без него остава само HTTP и деплоят не се проваля. Индексирането е изключено
   (`ALLOW_INDEXING=false`) до одобрение за публично пускане → `liftpilot/DEPLOY.md`.
+- **rendetto** (мебели в 3D, разкрой, CNC): Docker Compose (db + app на `127.0.0.1:4320`).
+  Стъпките са в `rendetto/deploy/deploy.sh` — същият скрипт и за ръчния деплой: тайните от
+  `/opt/few-few/shared/rendetto/.env` (не се генерират; без тях rendetto се пропуска като „още
+  ненастроен“), `build`, `pg_dump` точно преди смяната (последните 5; провален дъмп спира деплоя),
+  `up -d` (миграциите — от entrypoint-а), сонда с маркер `"app":"rendetto"`, vhost-ът от репото
+  в nginx щом има сертификат, IndexNow само при променен sitemap. Ако новият код не отговори,
+  `autodeploy.sh` пуска `deploy.sh` на последния работещ release (`RENDETTO_LAST_GOOD`; чистенето
+  на releases не го трие) с `RENDETTO_SKIP_BACKUP=1` — откатът не изтласква дъмпа отпреди
+  миграцията. Изключение: провалена миграция (`P3018`/`P3009` в лога на app) — старият код спира на
+  същото, затова откат няма; скриптът сочи последния дъмп и вика човек → `rendetto/DEPLOY.md`:
+  обикновено `migrate resolve --rolled-back` (PostgreSQL е върнал миграцията цялата), а
+  възстановяване от дъмпа — само ако данните трябва да се върнат.
 - **vpsdash** (VPS таблото): systemd модел. `rsync` към `/opt/vps-dashboard` (конфигът
   `/etc/vps-dashboard/config.json` и state `/var/lib/vps-dashboard` са извън release-а и оцеляват;
   `deploy/desktop/desktop.env` се пази), бекъп на кода, рестарт, health на `/api/ping` (401 = жив,
@@ -152,7 +164,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot rendetto` | кои проекти да се разгръщат тук |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
@@ -160,8 +172,10 @@ ZIP отпреди месец.
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
-| `LIFTPILOT_ENV` | `/opt/few-few/shared/liftpilot/.env` | тайните на liftpilot (600); портът е `APP_PORT` в него (по подразбиране 4320) |
+| `LIFTPILOT_ENV` | `/opt/few-few/shared/liftpilot/.env` | тайните на liftpilot (600); портът е `APP_PORT` в него (по подразбиране 4330; 4320 е на rendetto) |
 | `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
+| `RENDETTO_LAST_GOOD` | `/opt/few-few/shared/rendetto/last-good` | пътят на последния release на rendetto, който е отговорил — към него е откатът |
+| `RENDETTO_SHARED` · `RENDETTO_HEALTH_WAIT` · `RENDETTO_INDEXNOW` | `/opt/few-few/shared/rendetto` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |
 | `VPSDASH_DIR` / `VPSDASH_SERVICE` / `VPSDASH_HEALTH_URL` | `/opt/vps-dashboard` · `vps-dashboard` · `http://127.0.0.1:7700/api/ping` | път, systemd услуга и health на VPS таблото |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |

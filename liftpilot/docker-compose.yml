@@ -58,7 +58,7 @@ services:
       BILLING_TRIAL_DAYS: ${BILLING_TRIAL_DAYS:-14}
       TZ: UTC
     ports:
-      - "127.0.0.1:${APP_PORT:-4320}:3000"
+      - "127.0.0.1:${APP_PORT:-4330}:3000"
     security_opt:
       - no-new-privileges:true
     # a Node process on an unprivileged port needs no capability; the renderers (report/*.py) are bounded in number by
