@@ -24,7 +24,7 @@ export function localeForCountry(country: string | undefined | null): Locale {
 }
 
 // UI strings (navigation, buttons, labels). Content lives in the DB.
-type Dict = Record<string, string>;
+export type Dict = Record<string, string>;
 export const UI: Record<Locale, Dict> = {
   it: {
     "nav.about": "Chi siamo",
@@ -65,6 +65,10 @@ export const UI: Record<Locale, Dict> = {
     "cookie.reject": "Rifiuta",
     "cookie.more": "Maggiori informazioni",
     "cookie.manage": "Preferenze cookie",
+    "gallery.open": "Apri la foto",
+    "gallery.close": "Chiudi",
+    "gallery.prev": "Foto precedente",
+    "gallery.next": "Foto successiva",
     "updated": "Ultimo aggiornamento",
     "backHome": "Torna alla home",
   },
@@ -107,6 +111,10 @@ export const UI: Record<Locale, Dict> = {
     "cookie.reject": "Откажи",
     "cookie.more": "Повече информация",
     "cookie.manage": "Настройки на бисквитките",
+    "gallery.open": "Отвори снимката",
+    "gallery.close": "Затвори",
+    "gallery.prev": "Предишна снимка",
+    "gallery.next": "Следваща снимка",
     "updated": "Последна актуализация",
     "backHome": "Към началото",
   },
@@ -149,11 +157,18 @@ export const UI: Record<Locale, Dict> = {
     "cookie.reject": "Decline",
     "cookie.more": "Learn more",
     "cookie.manage": "Cookie preferences",
+    "gallery.open": "Open photo",
+    "gallery.close": "Close",
+    "gallery.prev": "Previous photo",
+    "gallery.next": "Next photo",
     "updated": "Last updated",
     "backHome": "Back to home",
   },
 };
 
-export function t(locale: Locale, key: string): string {
-  return UI[locale]?.[key] ?? UI[DEFAULT_LOCALE][key] ?? key;
+/** Interface wording. `ui` carries the admin's overrides for this locale; an
+ *  override left empty falls back to the built-in text rather than blanking a
+ *  button or menu item. */
+export function t(locale: Locale, key: string, ui?: Dict): string {
+  return (ui && ui[key]) || (UI[locale]?.[key] ?? UI[DEFAULT_LOCALE][key] ?? key);
 }

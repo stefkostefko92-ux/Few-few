@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { LOCALE_META, LOCALES, isLocale, t, type Locale } from "@/lib/i18n";
+import { useUi } from "./UiProvider";
 
 type NavItem = { id: string; label: string };
 
@@ -10,11 +11,13 @@ export default function SiteHeader({
   locale,
   brandName,
   brandSub,
+  logo,
   nav,
 }: {
   locale: Locale;
   brandName: string;
   brandSub: string;
+  logo: string;
   nav: NavItem[];
 }) {
   const [scrolled, setScrolled] = useState(false);
@@ -25,6 +28,7 @@ export default function SiteHeader({
   const langRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
+  const ui = useUi();
 
   // Keep the current path when switching language (e.g. /it/privacy → /bg/privacy).
   const localeHref = (l: Locale) => {
@@ -92,7 +96,7 @@ export default function SiteHeader({
         className="langsw__btn"
         aria-haspopup="true"
         aria-expanded={langOpen}
-        aria-label={t(locale, "lang.label")}
+        aria-label={t(locale, "lang.label", ui)}
         onClick={() => setLangOpen((v) => !v)}
         type="button"
       >
@@ -124,7 +128,7 @@ export default function SiteHeader({
       <div className="container">
         <nav className="nav" aria-label="Main">
           <a className="brand" href={`/${locale}`} aria-label={`${brandName} — home`}>
-            <img src="/assets/img/brand/logo.webp" alt={`${brandName} logo`} width={120} height={104} />
+            <img src={logo} alt={`${brandName} logo`} width={120} height={104} />
             <span className="brand__text">
               <span className="brand__name">{brandName}</span>
               <span className="brand__sub">{brandSub}</span>
@@ -143,13 +147,13 @@ export default function SiteHeader({
                 </a>
               </li>
             ))}
-            <li><a className="btn btn--primary" href={`/${locale}#contatti`} onClick={close}>{t(locale, "nav.enroll")}</a></li>
+            <li><a className="btn btn--primary" href={`/${locale}#contatti`} onClick={close}>{t(locale, "nav.enroll", ui)}</a></li>
             {LangSwitcher}
           </ul>
 
           <div className="nav__actions">
             {LangSwitcher}
-            <a className="btn btn--primary" href={`/${locale}#contatti`}>{t(locale, "nav.enroll")}</a>
+            <a className="btn btn--primary" href={`/${locale}#contatti`}>{t(locale, "nav.enroll", ui)}</a>
             <button
               ref={toggleRef}
               className="nav__toggle"

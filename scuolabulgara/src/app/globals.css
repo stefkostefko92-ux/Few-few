@@ -17,8 +17,11 @@
 }
 
 /* Skip link — hidden until focused (keyboard accessibility) */
-.skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; }
-.skip-link:focus { left: 12px; top: 12px; }
+/* Two classes so it outranks `.btn--primary { position: relative }` (the button
+   sheen below): as a relative box the link stayed in the flow and pushed the
+   whole page 55px down — on every visit, for every visitor. */
+.skip-link.btn { position: absolute; left: -9999px; top: 0; z-index: 200; }
+.skip-link.btn:focus { left: 12px; top: 12px; }
 
 /* Lock background scroll while the mobile drawer is open */
 body.menu-open { overflow: hidden; }

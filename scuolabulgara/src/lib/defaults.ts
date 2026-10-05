@@ -1,4 +1,6 @@
-import type { Locale } from "./i18n";
+import { UI, type Locale } from "./i18n";
+import { LEGAL, LEGAL_UPDATED, type LegalKind } from "./legal";
+import { bundledAlt } from "./cms";
 
 // Single source of truth for the site's initial content in all three
 // languages. The seed writes these rows into the database; the public pages
@@ -14,7 +16,7 @@ export type DefaultRow = {
   en: Record<string, unknown>;
 };
 
-export const DEFAULT_CONTENT: DefaultRow[] = [
+const BASE_ROWS: DefaultRow[] = [
   {
     key: "settings",
     group: "settings",
@@ -68,6 +70,12 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       trust: "Diplomi riconosciuti dal Ministero dell'Istruzione e della Scienza bulgaro",
       stat: "11",
       statLabel: "anni al fianco della comunità bulgara",
+      highlights: [
+        { icon: "presence", text: "In presenza" },
+        { icon: "shield-check", text: "Qualità riconosciuta" },
+        { icon: "adults", text: "Dialogo e condivisione" },
+        { icon: "location-pin", text: "Milano · Lombardia" },
+      ],
     },
     bg: {
       badge: "Лингвистичен и културен център от 2014 г.",
@@ -78,6 +86,12 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       trust: "Дипломи, признати от Министерството на образованието и науката на България",
       stat: "11",
       statLabel: "години рамо до рамо с българската общност",
+      highlights: [
+        { icon: "presence", text: "Присъствено" },
+        { icon: "shield-check", text: "Признато качество" },
+        { icon: "adults", text: "Диалог и споделяне" },
+        { icon: "location-pin", text: "Милано · Ломбардия" },
+      ],
     },
     en: {
       badge: "Language & cultural centre since 2014",
@@ -88,6 +102,12 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       trust: "Diplomas recognised by the Bulgarian Ministry of Education and Science",
       stat: "11",
       statLabel: "years alongside the Bulgarian community",
+      highlights: [
+        { icon: "presence", text: "In person" },
+        { icon: "shield-check", text: "Recognised quality" },
+        { icon: "adults", text: "Dialogue and sharing" },
+        { icon: "location-pin", text: "Milan · Lombardy" },
+      ],
     },
   },
   {
@@ -101,9 +121,9 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       lead: "L'Associazione Qui Bulgaria è un centro linguistico e culturale senza scopo di lucro che si pone come priorità la conservazione e la divulgazione della lingua e della cultura bulgara in Italia e all'estero.",
       tag: "Milano · Lombardia",
       features: [
-        { title: "Identità e radici", text: "Ci ispiriamo alla ricchezza della tradizione, della lingua e delle danze popolari come strumenti di identità." },
-        { title: "Dialogo e condivisione", text: "Uniamo le persone che amano la cultura bulgara in una comunità sana e positiva in cui crescere." },
-        { title: "Qualità riconosciuta", text: "Operiamo secondo libri di testo e programmi approvati dal Ministero, con diplomi riconosciuti in Bulgaria." },
+        { icon: "hybrid", title: "Identità e radici", text: "Ci ispiriamo alla ricchezza della tradizione, della lingua e delle danze popolari come strumenti di identità." },
+        { icon: "distance", title: "Dialogo e condivisione", text: "Uniamo le persone che amano la cultura bulgara in una comunità sana e positiva in cui crescere." },
+        { icon: "culture", title: "Qualità riconosciuta", text: "Operiamo secondo libri di testo e programmi approvati dal Ministero, con diplomi riconosciuti in Bulgaria." },
       ],
     },
     bg: {
@@ -112,9 +132,9 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       lead: "Асоциация „Qui Bulgaria“ е лингвистичен и културен център с нестопанска цел, чийто приоритет е съхранението и популяризирането на българския език и култура в Италия и по света.",
       tag: "Милано · Ломбардия",
       features: [
-        { title: "Идентичност и корени", text: "Вдъхновяваме се от богатството на традицията, езика и народните танци като средство за идентичност." },
-        { title: "Диалог и споделяне", text: "Обединяваме хората, които обичат българската култура, в здрава и позитивна общност, в която да растем." },
-        { title: "Признато качество", text: "Работим по учебници и програми, одобрени от Министерството, с дипломи, признати в България." },
+        { icon: "hybrid", title: "Идентичност и корени", text: "Вдъхновяваме се от богатството на традицията, езика и народните танци като средство за идентичност." },
+        { icon: "distance", title: "Диалог и споделяне", text: "Обединяваме хората, които обичат българската култура, в здрава и позитивна общност, в която да растем." },
+        { icon: "culture", title: "Признато качество", text: "Работим по учебници и програми, одобрени от Министерството, с дипломи, признати в България." },
       ],
     },
     en: {
@@ -123,9 +143,9 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       lead: "The Qui Bulgaria Association is a non-profit language and cultural centre whose priority is preserving and sharing the Bulgarian language and culture in Italy and abroad.",
       tag: "Milan · Lombardy",
       features: [
-        { title: "Identity and roots", text: "We draw on the richness of tradition, language and folk dance as tools of identity." },
-        { title: "Dialogue and sharing", text: "We bring together people who love Bulgarian culture in a healthy, positive community to grow in." },
-        { title: "Recognised quality", text: "We follow textbooks and programmes approved by the Ministry, with diplomas recognised in Bulgaria." },
+        { icon: "hybrid", title: "Identity and roots", text: "We draw on the richness of tradition, language and folk dance as tools of identity." },
+        { icon: "distance", title: "Dialogue and sharing", text: "We bring together people who love Bulgarian culture in a healthy, positive community to grow in." },
+        { icon: "culture", title: "Recognised quality", text: "We follow textbooks and programmes approved by the Ministry, with diplomas recognised in Bulgaria." },
       ],
     },
   },
@@ -133,7 +153,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
     key: "school",
     group: "section",
     label: "Училище „П. Яворов“",
-    order: 3,
+    order: 4,
     it: {
       eyebrow: "La scuola «P. Yavorov»",
       title: "Un percorso completo, dal 2014 ad oggi",
@@ -175,7 +195,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
     key: "stats",
     group: "section",
     label: "Числа",
-    order: 4,
+    order: 3,
     it: { items: [
       { num: "2014", label: "Fondazione della scuola «P. Yavorov»" },
       { num: "2", label: "Discipline: lingua e danza tradizionale" },
@@ -311,37 +331,36 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
     group: "section",
     label: "Галерия",
     order: 8,
+    // Real photos of the school's own events (from its original website), not
+    // stock. Shown at their natural proportions; editors add, remove and reorder.
     it: {
       eyebrow: "La nostra comunità",
       title: "Momenti di lingua, cultura e festa",
-      tiles: [
-        { kind: "image", src: "/assets/img/photos/community.webp", alt: "La comunità riunita in costumi tradizionali bulgari" },
-        { kind: "green", big: "Horo", small: "La danza in cerchio" },
-        { kind: "red", script: "Заедно", small: "Insieme" },
-        { kind: "ink", big: "P. Yavorov", small: "La nostra scuola" },
-        { kind: "green", script: "Веселие", small: "Gruppo di danza" },
+      photos: [
+        { src: "/assets/img/photos/festa-della-scuola.webp", caption: "La festa della scuola" },
+        { src: "/assets/img/photos/horo.webp", caption: "L'horo, la danza in cerchio" },
+        { src: "/assets/img/photos/bandiera-fortezza.webp", caption: "La bandiera bulgara su un'antica fortezza" },
+        { src: "/assets/img/photos/rose-damascena.webp", caption: "La rosa damascena, simbolo della Bulgaria" },
       ],
     },
     bg: {
       eyebrow: "Нашата общност",
       title: "Моменти на език, култура и празник",
-      tiles: [
-        { kind: "image", src: "/assets/img/photos/community.webp", alt: "Общността, събрана в традиционни български носии" },
-        { kind: "green", big: "Хоро", small: "Танцът в кръг" },
-        { kind: "red", script: "Заедно", small: "Заедно" },
-        { kind: "ink", big: "П. Яворов", small: "Нашето училище" },
-        { kind: "green", script: "Веселие", small: "Танцова група" },
+      photos: [
+        { src: "/assets/img/photos/festa-della-scuola.webp", caption: "Празникът на училището" },
+        { src: "/assets/img/photos/horo.webp", caption: "Хоро — танцът в кръг" },
+        { src: "/assets/img/photos/bandiera-fortezza.webp", caption: "Българското знаме над стара крепост" },
+        { src: "/assets/img/photos/rose-damascena.webp", caption: "Маслодайната роза — символ на България" },
       ],
     },
     en: {
       eyebrow: "Our community",
       title: "Moments of language, culture and celebration",
-      tiles: [
-        { kind: "image", src: "/assets/img/photos/community.webp", alt: "The community gathered in traditional Bulgarian costumes" },
-        { kind: "green", big: "Horo", small: "The circle dance" },
-        { kind: "red", script: "Заедно", small: "Together" },
-        { kind: "ink", big: "P. Yavorov", small: "Our school" },
-        { kind: "green", script: "Веселие", small: "Dance group" },
+      photos: [
+        { src: "/assets/img/photos/festa-della-scuola.webp", caption: "The school celebration" },
+        { src: "/assets/img/photos/horo.webp", caption: "The horo, the circle dance" },
+        { src: "/assets/img/photos/bandiera-fortezza.webp", caption: "The Bulgarian flag over an old fortress" },
+        { src: "/assets/img/photos/rose-damascena.webp", caption: "The Damask rose, a symbol of Bulgaria" },
       ],
     },
   },
@@ -349,7 +368,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
     key: "contact",
     group: "section",
     label: "Контакти",
-    order: 9,
+    order: 10,
     it: {
       eyebrow: "Contatti",
       title: "Iscriviti o richiedi informazioni",
@@ -373,7 +392,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
     key: "cta",
     group: "section",
     label: "Финален призив",
-    order: 10,
+    order: 11,
     it: {
       title: "Добре дошли! Benvenuti nella nostra comunità",
       body: "Che tu voglia imparare la lingua, riscoprire le tue radici o ballare l'horo insieme a noi, c'è un posto per te a Qui Bulgaria.",
@@ -393,7 +412,179 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       secondary: "Call us now",
     },
   },
+  {
+    key: "faq",
+    group: "section",
+    label: "Често задавани въпроси",
+    order: 9,
+    it: {
+      eyebrow: "Domande frequenti",
+      title: "Le risposte alle domande più comuni",
+      items: [
+        { q: "Dove si trova la scuola bulgara di Milano?", a: "Siamo a Milano, in Lombardia (Via Giovanni Battista Piazzetta, 20138 Milano). Le prove di danza si tengono vicino a Piazzale Corvetto e in zona Rho." },
+        { q: "A chi sono rivolti i corsi di bulgaro?", a: "A bambini delle famiglie bulgare e miste e ad adulti di ogni livello, dai principianti agli avanzati, in presenza, online o in formato ibrido." },
+        { q: "I diplomi sono riconosciuti?", a: "Sì. Operiamo secondo i programmi del Ministero dell’Istruzione e della Scienza bulgaro e i diplomi sono riconosciuti nel sistema educativo bulgaro." },
+        { q: "Offrite anche danza tradizionale bulgara?", a: "Sì, con il gruppo «Veselie»: due appuntamenti settimanali a Milano per bambini e adulti, italiani inclusi." },
+      ],
+    },
+    bg: {
+      eyebrow: "Често задавани въпроси",
+      title: "Отговори на най-честите въпроси",
+      items: [
+        { q: "Къде се намира българското училище в Милано?", a: "Намираме се в Милано, Ломбардия (Via Giovanni Battista Piazzetta, 20138 Милано). Репетициите по танци са до Пиазале Корвето и в зона Rho." },
+        { q: "За кого са курсовете по български?", a: "За деца от български и смесени семейства и за възрастни от всички нива — присъствено, онлайн или хибридно." },
+        { q: "Признати ли са дипломите?", a: "Да. Работим по програмите на българското Министерство на образованието и науката и дипломите се признават в българската образователна система." },
+        { q: "Предлагате ли и народни танци?", a: "Да, с групата „Веселие“: две седмични занятия в Милано за деца и възрастни." },
+      ],
+    },
+    en: {
+      eyebrow: "Frequently asked questions",
+      title: "Answers to the most common questions",
+      items: [
+        { q: "Where is the Bulgarian school in Milan located?", a: "We are in Milan, Lombardy (Via Giovanni Battista Piazzetta, 20138 Milan). Dance rehearsals are held near Piazzale Corvetto and in the Rho area." },
+        { q: "Who are the Bulgarian courses for?", a: "For children of Bulgarian and mixed families and for adults of all levels, in person, online or hybrid." },
+        { q: "Are the diplomas recognised?", a: "Yes. We follow the programmes of the Bulgarian Ministry of Education and Science, and diplomas are recognised in the Bulgarian education system." },
+        { q: "Do you also offer Bulgarian folk dance?", a: "Yes, with the “Veselie” group: two weekly sessions in Milan for children and adults." },
+      ],
+    },
+  },
+  {
+    // Search results and social-media previews, per language. The BG and EN
+    // pages used to ship the Italian description — now each speaks its own.
+    key: "seo",
+    group: "settings",
+    label: "SEO и споделяне",
+    order: 20,
+    it: {
+      title: "Qui Bulgaria — Scuola bulgara di Milano",
+      description: "Centro linguistico e culturale a Milano: lingua e cultura bulgara, scuola «P. Yavorov», corsi per bambini e adulti e danza tradizionale.",
+      keywords: ["scuola bulgara", "scuola bulgara milano", "българско училище", "българско училище в Милано", "Carbon Stealth", "corsi di bulgaro", "lingua bulgara milano"],
+      shareImage: "",
+    },
+    bg: {
+      title: "Qui Bulgaria — Българско училище в Милано",
+      description: "Езиков и културен център в Милано: български език и култура, училище „П. Яворов“, курсове за деца и възрастни и народни танци.",
+      keywords: ["scuola bulgara", "scuola bulgara milano", "българско училище", "българско училище в Милано", "Carbon Stealth", "български език Милано", "народни танци Милано"],
+      shareImage: "",
+    },
+    en: {
+      title: "Qui Bulgaria — Bulgarian School in Milan",
+      description: "Language and cultural centre in Milan: Bulgarian language and culture, the “P. Yavorov” school, courses for children and adults, and traditional dance.",
+      keywords: ["scuola bulgara", "scuola bulgara milano", "българско училище", "българско училище в Милано", "Carbon Stealth", "Bulgarian school Milan", "learn Bulgarian"],
+      shareImage: "",
+    },
+  },
+  {
+    // Facts about the organisation, published as structured data for search
+    // and answer engines. The address lines up with the visible contact block.
+    key: "org",
+    group: "settings",
+    label: "Данни на организацията",
+    order: 21,
+    it: {
+      name: "Associazione Qui Bulgaria — Scuola bulgara di Milano",
+      alternateName: "Scuola bulgara «P. Yavorov»",
+      streetAddress: "Via Giovanni Battista Piazzetta",
+      postalCode: "20138",
+      locality: "Milano",
+      region: "Lombardia",
+      country: "IT",
+      latitude: "45.4642",
+      longitude: "9.1900",
+      foundingDate: "2014-01-12",
+    },
+    bg: {
+      name: "Асоциация „Qui Bulgaria“ — Българско училище в Милано",
+      alternateName: "Българско училище „П. Яворов“",
+      streetAddress: "Via Giovanni Battista Piazzetta",
+      postalCode: "20138",
+      locality: "Милано",
+      region: "Ломбардия",
+      country: "IT",
+      latitude: "45.4642",
+      longitude: "9.1900",
+      foundingDate: "2014-01-12",
+    },
+    en: {
+      name: "Qui Bulgaria Association — Bulgarian School of Milan",
+      alternateName: "“P. Yavorov” Bulgarian School",
+      streetAddress: "Via Giovanni Battista Piazzetta",
+      postalCode: "20138",
+      locality: "Milan",
+      region: "Lombardy",
+      country: "IT",
+      latitude: "45.4642",
+      longitude: "9.1900",
+      foundingDate: "2014-01-12",
+    },
+  },
 ];
+
+// ---- Photos per section --------------------------------------------------
+// A picture is the same in every language; its description (alt text, for
+// screen readers) is translated and lives once, next to the photo, in cms.ts.
+const SECTION_MEDIA: Record<string, string> = {
+  hero: "/assets/img/photos/ballerini-in-costume.webp",
+  about: "/assets/img/photos/comunita-in-costume.webp",
+  school: "/assets/img/photos/docenti.webp",
+  dance: "/assets/img/photos/gruppo-veselie.webp",
+  cta: "/assets/img/photos/rose-damascena.webp",
+};
+const altFor = (url: string, l: Locale) => bundledAlt(url)?.[l] ?? "";
+
+// Interface wording (buttons, menu, form) — editable from the admin. Seeded from
+// the built-in dictionary so there is one source of truth. Left out: the FAQ
+// headings (they live in the FAQ section) and the two attributions — the agency
+// credit and the CC BY-SA photo credit are obligations, not wording to edit.
+const NOT_EDITABLE = new Set(["credit", "photoCredit"]);
+const uiFor = (l: Locale) =>
+  Object.fromEntries(Object.entries(UI[l]).filter(([k]) => !k.startsWith("faq.") && !NOT_EDITABLE.has(k)));
+
+// Legal pages: every section gets both `p` and `list`, so an editor can add a
+// paragraph or a bullet to any section, not only to the ones that had one.
+const LEGAL_ROWS: { kind: LegalKind; label: string; order: number }[] = [
+  { kind: "privacy", label: "Поверителност", order: 30 },
+  { kind: "cookie", label: "Бисквитки", order: 31 },
+  { kind: "termini", label: "Общи условия", order: 32 },
+];
+const legalFor = (kind: LegalKind, l: Locale) => {
+  const doc = LEGAL[kind][l];
+  return {
+    title: doc.title,
+    intro: doc.intro,
+    updated: LEGAL_UPDATED,
+    sections: doc.sections.map((s) => ({ h: s.h, p: s.p ?? [], list: s.list ?? [] })),
+  };
+};
+
+function build(): DefaultRow[] {
+  const rows: DefaultRow[] = BASE_ROWS.map((row) => {
+    const img = SECTION_MEDIA[row.key];
+    const logo = row.key === "settings" ? { logo: "/assets/img/brand/logo.webp" } : {};
+    const add = (l: Locale) => {
+      const d: Record<string, unknown> = { ...row[l], ...logo };
+      if (img) Object.assign(d, { image: img, imageAlt: altFor(img, l) });
+      if (Array.isArray(d.photos)) {
+        d.photos = (d.photos as { src: string; caption: string }[]).map((p) => ({ ...p, alt: altFor(p.src, l) }));
+      }
+      return d;
+    };
+    return { ...row, it: add("it"), bg: add("bg"), en: add("en") };
+  });
+  rows.push({
+    key: "ui", group: "settings", label: "Надписи по бутони и менюта", order: 22,
+    it: uiFor("it"), bg: uiFor("bg"), en: uiFor("en"),
+  });
+  for (const { kind, label, order } of LEGAL_ROWS) {
+    rows.push({
+      key: `legal_${kind}`, group: "legal", label, order,
+      it: legalFor(kind, "it"), bg: legalFor(kind, "bg"), en: legalFor(kind, "en"),
+    });
+  }
+  return rows;
+}
+
+export const DEFAULT_CONTENT: DefaultRow[] = build();
 
 // Convenience lookup used as a runtime fallback by the public pages.
 export function defaultFor(key: string, locale: Locale): Record<string, unknown> {

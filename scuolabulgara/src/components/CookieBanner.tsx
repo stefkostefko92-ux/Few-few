@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { t, type Locale } from "@/lib/i18n";
+import { useUi } from "./UiProvider";
 
 const KEY = "qb-cookie-ack";
 
 export default function CookieBanner({ locale }: { locale: Locale }) {
+  const ui = useUi();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -34,15 +36,15 @@ export default function CookieBanner({ locale }: { locale: Locale }) {
   return (
     <div className="cookiebar" role="region" aria-label="Cookie">
       <p>
-        {t(locale, "cookie.text")}{" "}
-        <a href={`/${locale}/cookie`}>{t(locale, "cookie.more")}</a>
+        {t(locale, "cookie.text", ui)}{" "}
+        <a href={`/${locale}/cookie`}>{t(locale, "cookie.more", ui)}</a>
       </p>
       <div className="cookiebar__actions">
         <button type="button" className="btn btn--ghost" onClick={() => decide("rejected")}>
-          {t(locale, "cookie.reject")}
+          {t(locale, "cookie.reject", ui)}
         </button>
         <button type="button" className="btn btn--primary" onClick={() => decide("accepted")}>
-          {t(locale, "cookie.accept")}
+          {t(locale, "cookie.accept", ui)}
         </button>
       </div>
     </div>
