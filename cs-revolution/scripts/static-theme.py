@@ -133,6 +133,11 @@ STRIP = [re.compile(r'<link id="cs-theme-fonts(?:-pre\d?)?"[^>]*>'), re.compile(
          re.compile(r'<div class="ft cs-legal-ft">.*?</div>', re.S)]
 
 
+LEGAL = {"it": ("/termini/", "Termini", "/note-legali/", "Note legali"),
+         "en": ("/en/terms/", "Terms", "/en/legal-notice/", "Legal notice"),
+         "bg": ("/bg/usloviya/", "Условия", "/bg/imprint/", "Правни данни")}
+
+
 def lang_of(path, html):
     m = re.search(r'<html[^>]*lang="(it|en|bg)"', html)
     return m.group(1) if m else "it"
@@ -152,6 +157,15 @@ def theme(path, html):
         html = html.replace("</body>", FOOT[lang_of(path, html)] + "</body>", 1)
     if 'class="nav"' in html:
         html = html.replace("</body>", NAV_JS + "</body>", 1)
+    # footer: "Terms" label in the page's own language, and a link to the legal notice (impressum),
+    # which the law wants one click away from every page (audit 2026-10-05: only 9 pages linked it)
+    lg = lang_of(path, html)
+    terms, tlabel, notice, nlabel = LEGAL[lg]
+    if lg != "en":
+        html = html.replace(f'<a href="{terms}">Terms</a>', f'<a href="{terms}">{tlabel}</a>')
+    if f'href="{notice}"' not in html:
+        html = re.sub(rf'((?:Cookie|Cookies|Бисквитки)</a> &middot; <a href="{re.escape(terms)}">{re.escape(tlabel)}</a>)',
+                      lambda m: m.group(1) + f' &middot; <a href="{notice}">{nlabel}</a>', html, count=1)
     # horizontally scrollable tables must be reachable by keyboard (axe scrollable-region-focusable)
     label = {"it": "Tabella", "en": "Table", "bg": "Таблица"}[lang_of(path, html)]
     html = re.sub(r'<div class="(ctbl|table-wrap)">', lambda m: f'<div class="{m.group(1)}" tabindex="0" role="region" aria-label="{label}">', html)

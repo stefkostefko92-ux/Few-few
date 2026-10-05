@@ -3307,11 +3307,11 @@ export default function App(){
           <div>
             <div style={{fontSize:9,letterSpacing:".3em",color:C,marginBottom:16,fontWeight:700}}>{t("ft_legale")}</div>
             {({it:[
-              ["Informativa Privacy","/privacy/"],["Politica Cookie","/cookie/"],["Termini di Servizio","/termini/"],["Sitemap XML","/sitemap.xml"]
+              ["Informativa Privacy","/privacy/"],["Politica Cookie","/cookie/"],["Termini di Servizio","/termini/"],["Note legali","/note-legali/"],["Sitemap XML","/sitemap.xml"]
             ],en:[
-              ["Privacy Policy","/en/privacy/"],["Cookie Policy","/en/cookie/"],["Terms of Service","/en/termini/"],["Sitemap XML","/sitemap.xml"]
+              ["Privacy Policy","/en/privacy/"],["Cookie Policy","/en/cookie/"],["Terms of Service","/en/terms/"],["Legal notice","/en/legal-notice/"],["Sitemap XML","/sitemap.xml"]
             ],bg:[
-              ["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442","/bg/privacy/"],["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438","/bg/cookie/"],["\u041E\u0431\u0449\u0438 \u0423\u0441\u043B\u043E\u0432\u0438\u044F","/bg/termini/"],["Sitemap XML","/sitemap.xml"]
+              ["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442","/bg/privacy/"],["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438","/bg/cookie/"],["\u041E\u0431\u0449\u0438 \u0423\u0441\u043B\u043E\u0432\u0438\u044F","/bg/usloviya/"],["\u041F\u0440\u0430\u0432\u043D\u0438 \u0434\u0430\u043D\u043D\u0438","/bg/imprint/"],["Sitemap XML","/sitemap.xml"]
             ]}[lang]||[]).map(function(s){
               return <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>;
             })}
