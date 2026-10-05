@@ -106,6 +106,10 @@ body.menu-open { overflow: hidden; }
 
 /* keep desktop CTA + switcher inline; in the mobile drawer they stack */
 .nav__actions { gap: .5rem; }
+/* The drawer's copy of the switcher is hidden on desktop. This rule must come
+   BEFORE the drawer media query: placed after it (same specificity) it won and
+   the phone menu had no language switcher at all. */
+.nav__menu .langsw { display: none; }
 /* Matches the drawer breakpoint in _design.css — the switcher must move into
    the drawer at the same width, or it is left clipped in a cramped header. */
 @media (max-width: 980px) {
@@ -114,7 +118,6 @@ body.menu-open { overflow: hidden; }
   .nav__menu .langsw__btn { width: 100%; justify-content: space-between; }
   .nav__menu .langsw__menu { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; border: 0; padding: .3rem 0 0; }
 }
-.nav__menu .langsw { display: none; }
 
 /* Empty-state for a section with no content yet */
 .empty-note { color: var(--muted); font-style: italic; }
