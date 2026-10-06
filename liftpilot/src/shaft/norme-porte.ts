@@ -64,6 +64,8 @@ export const VOCI_PORTE: readonly VoceVano[] = [
       + 'per tutte le porte di piano, in lamiera sul filo del muro verso il pianerottolo, disegnati in pianta, in sezione e nel 3D',
     riferimento: 'dato del fornitore delle porte (imbotti su misura)', fonte: 'scelta del software', stato: 'scelta',
     costanti: ['doorHead'],
+    nota: 'Montanti e pannelli accanto alla porta più larghi di 150 mm che chiudono l\'apertura vanno con la prova del pendolo della porta '
+      + '(UNI EN 81-20:2020, 5.3.5.3.4): la copre il fornitore.',
   },
   {
     id: 'porte.telaio', gruppo: 'porte', titolo: 'Telaio proprio delle porte di piano',

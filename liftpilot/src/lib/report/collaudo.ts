@@ -8,7 +8,7 @@ import type { ShaftCheckId } from '@/shaft';
 import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo } from '../lift/collaudo';
 import { ADEMPIMENTI, NORME_INFO, type PuntoInSito } from '../lift/norme-collaudo';
 import { ADAPT } from '../present/adapt';
-import type { CalcKey } from '../present/tr';
+import type { Tr } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 
 const LIFT = appIt.lift;
@@ -28,15 +28,19 @@ export const collaudoRows = (C: Collaudo, repl: boolean): [string, string][] => 
   ...(repl ? [['Parti sostituite o modificate', partiText(C)] as [string, string]] : []),
 ];
 
+/** The title of the section with the result under each standard: in the relazione di calcolo and in the relazione
+ *  tecnica (the object of each names its own). */
+export const ESITI_CALCOLO = 'Esito delle verifiche di calcolo per normativa', ESITI_TECNICA = 'Esito delle verifiche per normativa';
+
 /** What the object of the relazione says of the standards added to the base one (empty: none). */
-const aggiunteSentence = (C: Collaudo): string => (C.aggiuntive?.length
-  ? ` Il collaudo considera anche: ${aggiunteText(C)}; ogni normativa ha il suo esito (sezione «Esito delle verifiche di calcolo per normativa») e l'esito complessivo è il peggiore.`
+const aggiunteSentence = (C: Collaudo, esiti: string): string => (C.aggiuntive?.length
+  ? ` Il collaudo considera anche: ${aggiunteText(C)}; ogni normativa ha il suo esito (sezione «${esiti}») e l'esito complessivo è il peggiore.`
   : '');
 
 /** What the object of the relazione says of the intervention and its acceptance test (a new lift: only the standards
- *  added, if any). */
-export function collaudoText(C: Collaudo, repl: boolean): string {
-  return repl ? interventionText(C) + aggiunteSentence(C) : aggiunteSentence(C);
+ *  added, if any); `esiti` is the title of the document's section with the result under each standard. */
+export function collaudoText(C: Collaudo, repl: boolean, esiti = ESITI_CALCOLO): string {
+  return repl ? interventionText(C) + aggiunteSentence(C, esiti) : aggiunteSentence(C, esiti);
 }
 
 /** The renovation that keeps the existing sling: a modification, by the practice of the registry's entry. */
@@ -65,7 +69,7 @@ export const EXISTING_NOTE = "Le verifiche con esito «Esistente» riguardano pa
   + 'collaudo; tra parentesi l\'esito del calcolo, da valutare con il tecnico quando non passa.';
 
 /** The section of the adaptations: its title and blocks. `t` reads the calculator's texts. */
-export function adaptSection(C: Collaudo, repl: boolean, t: (k: CalcKey) => string): { title: string; blocks: ReportBlock[] } {
+export function adaptSection(C: Collaudo, repl: boolean, t: Tr): { title: string; blocks: ReportBlock[] } {
   if (!repl) return { title: t('c_ucmp'), blocks: [{ t: 'p', text: t('n_new') }] };
   if (adeguamentiDovuti(C)) {
     return { title: t('c_adapt'), blocks: [{ t: 'list', items: ADAPT.map((k) => t(k)) }, { t: 'p', text: t('a_src'), style: 'note' }] };
@@ -73,9 +77,8 @@ export function adaptSection(C: Collaudo, repl: boolean, t: (k: CalcKey) => stri
   if (C.norma === 'en81') {
     return { title: t('c_adapt_en81'), blocks: [{ t: 'p', text: t('a_en81') }] };
   }
-  if (C.parti.includes('machine')) return { title: 'Adeguamenti per la sostituzione (UNI 10411-11)', blocks: [{ t: 'p', text: LIFT.adapt_11 }] };
-  return { title: 'Adeguamenti', blocks: [{ t: 'p', text: `La macchina resta quella esistente. Gli adeguamenti che la ${NORMA_SIGLA[C.norma]} chiede per le parti `
-    + 'sostituite o modificate vanno verificati sul testo della norma.' }] };
+  if (C.parti.includes('machine')) return { title: t('c_adapt_11'), blocks: [{ t: 'p', text: t('a_11') }] };
+  return { title: t('c_adapt_other'), blocks: [{ t: 'p', text: t('a_other', { norma: NORMA_SIGLA[C.norma] }) }] };
 }
 
 /** The note of sheet 1 on the acceptance test: a modification's parts, the standards added (none when tested as new

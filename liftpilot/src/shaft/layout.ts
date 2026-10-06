@@ -243,6 +243,8 @@ export function layout(I: ShaftInputs): Layout {
       check('v_acc_car', A >= acc[0] && B >= acc[1], Math.min(A - acc[0], B - acc[1]), 0, 0, 'mm'),
       check('v_acc_door', passage >= acc[2], passage, acc[2], 0, 'mm'),
       ...(shortSide ? [check('v_acc_side', A <= B, B - A, 0, 0, 'mm')] : []),
+      // two adjacent entrances: one door is on the long side — DM 236/1989 8.1.12 wants it on the short one (warning)
+      ...(I.entrances === 'adjacent' ? [check('v_acc_side', A === B, B - A, 0, 0, 'mm', true)] : []),
     ] : []),
     check('v_door', doorMargin(doors[0]) >= 0, doorMargin(doors[0]), 0, 0, 'mm'),
     ...(doors[1] ? [check('v_door2', doorMargin(doors[1]) >= 0, doorMargin(doors[1]), 0, 0, 'mm')] : []),

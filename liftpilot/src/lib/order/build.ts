@@ -134,7 +134,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   B.push({ t: 'p', style: 'note', text: recorded
     ? `L’esito è quello del ${what} salvato (relazione di calcolo LiftPilot, stessi dati e stessa impronta).`
     : `Verifica del software con questo argano e gli stessi dati dell’impianto; la relazione del ${what} salvato riguarda l’altro argano.` });
-  if (c.fails) B.push({ t: 'box', text: `Con questo argano almeno una verifica non passa: non ordinarlo prima di aver risolto (punto ${verdictAt}).` });
+  if (c.fails) B.push({ t: 'box', text: `Con questo argano almeno una verifica non passa: non ordinarlo prima di aver risolto le verifiche non superate (punto ${verdictAt}).` });
 
   section('Condizioni (da completare)');
   const eur = (cents: number | null): string => (cents === null ? `€ ${BLANK} (non nel listino dell’azienda)` : `€ ${fmt(cents / 100, 2)}`);

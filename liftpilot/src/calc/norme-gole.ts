@@ -25,7 +25,7 @@ export const VOCI_GOLE: readonly Voce[] = [
     id: 'gole.limite.beta', gruppo: 'gole', titolo: 'Limite del sottosquadro', valore: 'β ≤ 105° (1,83 rad; oltre: KO)',
     riferimento: 'UNI EN 81-50:2020, 5.11.2.3.1.1 e 5.11.2.3.1.2', fonte: letto(T50, 'pp. 40–41'), stato: 'confermato',
     costanti: ['betaMax'], verifiche: ['g_geom'],
-    nota: 'fino alla versione 1.1.0 del motore il limite era 106°, il valore raccomandato della UNI EN 81-1 (M.2.2.1)',
+    nota: 'fino alla versione 1.1.0 del motore il limite era 106°, il valore raccomandato della UNI EN 81-1:2008 (M.2.2.1.1)',
   },
   {
     id: 'gole.raccomandazione.beta', gruppo: 'gole', titolo: 'Sottosquadro raccomandato', valore: 'β ≤ 90° (oltre: «Attenzione»)',

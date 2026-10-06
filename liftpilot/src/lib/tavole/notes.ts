@@ -35,7 +35,7 @@ export function clientNotes(L: Layout, below = false): Note[] {
         + 'che non agiscono insieme, e gli ancoraggi delle staffe delle guide: la verifica strutturale spetta al committente tramite il suo tecnico. '
         + "Il vano serve solo all'ascensore: nessun cavo, tubazione o impianto estraneo al suo servizio. Ventilazione e aperture di aerazione "
         + "del vano secondo le norme edilizie e di prevenzione incendi dell'edificio, da concordare prima dei lavori. Illuminazione fissa del vano: "
-        + `almeno ${K.wellLux} lux a 1 m sopra il tetto della cabina e sopra il pavimento della fossa, ${K.wellLuxElse} lux altrove. Fossa asciutta, `
+        + `almeno ${K.wellLux} lux a un metro dal tetto di cabina e dal fondo della fossa, ${K.wellLuxElse} lux nel resto del vano. Fossa asciutta, `
         + "protetta dalle infiltrazioni d'acqua, con accesso sicuro dalla porta di piano più bassa. Riferimenti: UNI EN 81-20:2020, punto 5.2; DPR 162/1999.",
     },
   ];
@@ -54,7 +54,7 @@ export function clientNotes(L: Layout, below = false): Note[] {
 export function roomNote(below: boolean): Omit<Note, 'tag'> {
   const K = KV_VERT;
   return {
-    title: below ? 'LOCALE DELLE PULEGGE DI RINVIO' : 'LOCALE DEL MACCHINARIO E DELLE PULEGGE DI RINVIO',
+    title: below ? 'LOCALE DELLE PULEGGE DI RINVIO' : 'LOCALE DELLA MACCHINA E DEI RINVII',
     text: 'Accesso sicuro e agevole, riservato alle persone autorizzate; porta di almeno '
       + `${K.doorMinW} × ${K.doorMinH} mm con serratura a chiave, apribile dall'interno senza chiave. Altezza libera di almeno ${K.roomH} mm `
       + `nelle zone di lavoro; davanti al quadro una superficie libera profonda almeno ${K.panelFreeDepth} mm e larga almeno ${K.panelFreeWidth} mm. `

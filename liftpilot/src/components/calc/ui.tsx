@@ -1,5 +1,6 @@
 // Small building blocks of the result cards (prototype v12: pill, bar, table, card, key-value list).
 import { isValidElement, type ReactNode } from 'react';
+import { K } from '@/calc/norme';
 import type { CheckStatus } from '@/calc/types';
 
 export function Pill({ status, children }: { status: CheckStatus | 'ko'; children: ReactNode }) {
@@ -9,7 +10,7 @@ export function Pill({ status, children }: { status: CheckStatus | 'ko'; childre
 /** Utilisation bar: amber above 0.97, red above 1. */
 export function Bar({ u }: { u: number | null | undefined }) {
   if (u == null || !Number.isFinite(u)) return null;
-  const cls = u > 1 ? 'fail' : u > 0.97 ? 'warn' : '';
+  const cls = u > 1 ? 'fail' : u > K.tractionWarn ? 'warn' : '';
   return (
     <div className="bar" aria-hidden="true">
       <i className={cls} style={{ width: `${Math.min(100, Math.max(2, u * 100)).toFixed(1)}%` }} />

@@ -74,6 +74,8 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
       + 'deve esserci l\'altezza dello spazio di rifugio',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.3', fonte: letto(T20, 'p. 39'), stato: 'confermato',
     verifiche: ['h_stand'],
+    nota: 'Nella 5.2.5.7.3 lo 0,12 m² è la soglia da cui un\'area conta come posto in piedi, sopra la quale serve l\'altezza del rifugio; '
+      + 'che un\'area simile debba esserci lo chiedeva la UNI EN 81-1:2008 (8.13.2). Il software verifica l\'area disegnata.',
   },
   {
     id: 'spazi.altezze', gruppo: 'sezione', titolo: 'Altezza libera degli accessi e della cabina',
@@ -87,14 +89,16 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
       + 'sotto 1,80 m (22 n)), con avvertimenti: il software non conosce le esistenti e segnala ogni porta sotto 2000 mm',
   },
   {
-    id: 'contrappeso.guidato', gruppo: 'sezione', titolo: 'Corsa guidata del contrappeso in testata',
+    id: 'contrappeso.guidato', gruppo: 'sezione', titolo: 'Corsa guidata in testata (contrappeso e cabina)',
     valore: 'con la cabina sugli ammortizzatori completamente compressi le guide del contrappeso lo guidano ancora per almeno 0,1 + 0,035·v² m '
       + '(v velocità nominale): dalla sommità del contrappeso, salito della corsa sotto la cabina (extracorsa e corsa degli ammortizzatori), alla '
-      + 'sommità delle guide, che il software pone 50 mm sotto la soletta (voce foglio.stime)',
+      + 'sommità delle guide, che il software pone 50 mm sotto la soletta (voce foglio.stime); la cabina nella sua posizione più alta (salto '
+      + 'compreso) ha ancora almeno 0,1 m di guida sopra la sommità dell\'arcata, dove il software mette i pattini superiori (avviso: l\'altezza '
+      + 'reale dei pattini è del fornitore)',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.6.2 e 5.2.5.6.1.1 (Prospetto 2: cabina sugli ammortizzatori compressi più 0,035·v²); stesso valore in '
       + 'UNI EN 81-1 (1999, 2008), 5.7.1.2',
     fonte: `${letto(T20, 'p. 36')}; ${letto('UNI EN 81-1:2008', 'p. 27')}`, stato: 'confermato',
-    verifiche: ['h_cw'],
+    verifiche: ['h_cw', 'h_guide'],
   },
   {
     id: 'contrappeso.schermo', gruppo: 'sezione', titolo: 'Schermo del contrappeso in fossa',

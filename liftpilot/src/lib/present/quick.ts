@@ -37,7 +37,7 @@ export function quickRows(P: Pres, X: Texts, N: Machine, res: Results, sens: rea
     const g = N.groove, undercut = (g.type === 'UU' || g.type === 'VN') && g.beta > K.betaRecommended;
     const lowGamma = (g.type === 'U' || g.type === 'UU') && g.gamma < K.gammaMinU;
     const geom = statusOf(res, 'g_geom') === 'warn'
-      ? [...(undercut ? [t('q_geom_warn')] : []), ...(lowGamma ? [t('q_geom_gamma', { g: K.gammaMinU })] : [])].map((x) => ' ' + x).join('') : '';
+      ? [...(undercut ? [t('q_geom_warn', { br: K.betaRecommended })] : []), ...(lowGamma ? [t('q_geom_gamma', { g: K.gammaMinU })] : [])].map((x) => ' ' + x).join('') : '';
     const text = s === 'fail' ? t('q_fail', { what: failed(ids) }) : t('q_ropes_ok', { sa: fmt(rp.SfAct, 2), sr: fmt(rp.SfReq, 2) }) + geom;
     rows.push({ key: 'c_ropes', status: s, text });
   }
@@ -60,7 +60,7 @@ export function quickRows(P: Pres, X: Texts, N: Machine, res: Results, sens: rea
     if (sh.up) text += ' ' + t('q_uplift', { u: fmt(sh.uplift, 0) });
     rows.push({ key: 'c_shaft', status: s, text });
   }
-  rows.push({ key: 'c_rescue', status: statusOf(res, 's_force') ?? 'ok', text: t(res.rescue.F <= 400 ? 'q_rescue_ok' : 'q_rescue_el', { f: fmt(res.rescue.F, 0) }) });
+  rows.push({ key: 'c_rescue', status: statusOf(res, 's_force') ?? 'ok', text: t(res.rescue.F <= K.rescueForceMax ? 'q_rescue_ok' : 'q_rescue_el', { f: fmt(res.rescue.F, 0), fmax: K.rescueForceMax }) });
   rows.push({ key: 'q_sens', status: sens.some((x) => x.changed.length) ? 'warn' : 'ok', text: X.sensLine(sens) });
   return rows;
 }

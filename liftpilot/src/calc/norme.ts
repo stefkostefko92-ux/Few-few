@@ -110,6 +110,9 @@ export const VOCI: readonly Voce[] = [
       + 'vuota nella posizione più alta e in quella più bassa)',
     riferimento: 'UNI EN 81-50:2020, 5.11.2.1 e 5.11.2.2.3', fonte: letto(T50, 'pp. 39–40'), stato: 'confermato',
     verifiche: ['tr_load', 'tr_dn', 'tr_up', 'tr_stall'],
+    nota: 'Con la cabina o il contrappeso bloccati la condizione serve quando è l\'aderenza a impedire il sollevamento: la UNI EN 81-20:2020 '
+      + '(5.5.3 c)) ammette in alternativa un dispositivo elettrico di sicurezza; la UNI EN 81-1:2008 (9.3 c)) no. Il software verifica sempre '
+      + 'la condizione: se c\'è il dispositivo, lo decide l\'ingegnere.',
   },
   {
     id: 'trazione.mu.caricamento', gruppo: 'trazione', titolo: 'Coefficiente di attrito, caricamento', valore: 'μ = 0,1',
@@ -146,7 +149,7 @@ export const VOCI: readonly Voce[] = [
     fonte: `${letto('UNI EN 81-1:2008', 'p. 167')}; ${letto(T50, 'p. 40')}`, stato: 'scelta',
     costanti: ['aeReducedStroke'], verifiche: ['tr_dn', 'tr_up'],
     nota: 'La UNI EN 81-50:2020 non dà un numero: con ammortizzatori a corsa ridotta la decelerazione è la minima che porta cabina e contrappeso '
-      + 'alla velocità di progetto degli ammortizzatori, mai sotto 0,5 m/s². Il software tiene 0,8 m/s², il valore della UNI EN 81-1: '
+      + 'alla velocità di progetto degli ammortizzatori, mai sotto 0,5 m/s². Il software tiene 0,8 m/s², il valore della UNI EN 81-1:2008: '
       + 'l\'ingegnere lo sostituisce con quello calcolato dai dati degli ammortizzatori.',
   },
   {
@@ -205,7 +208,9 @@ export const VOCI: readonly Voce[] = [
     valore: 'con metà portata a metà corsa, in salita e in discesa, non oltre il 5 % sopra la nominale (buona pratica: non oltre l\'8 % sotto); '
       + 'non verificata: il software mostra la velocità reale e la frequenza per la nominale',
     riferimento: 'UNI EN 81-20:2020, 5.9.2.4; UNI 10411-1:2024, 15.1', fonte: `${letto(T20, 'p. 102')}; ${letto(U1, 'p. 14')}`, stato: 'confermato',
-    nota: 'Con la UNI 10411-1:2024 (15.1) una velocità oltre il 5 % sopra quella originale è un aumento della velocità nominale (punti 15.2–15.15).',
+    nota: 'Con la UNI 10411-1:2024 (15.1) una velocità oltre il 5 % sopra la maggiore tra quella del libretto e quella dopo il passaggio a 50 Hz '
+      + 'è un aumento della velocità nominale (punti 15.2–15.15). Con la UNI 10411-11:2024 (15) ogni cambio della velocità nominale, in più o in '
+      + 'meno, porta ai punti 15 a)–k) e alla valutazione 4.3.',
   },
   // ---------- rescue ----------
   {
@@ -242,7 +247,8 @@ export const VOCI: readonly Voce[] = [
       + 'che la cabina in salita tocchi la velocità di intervento del limitatore, ACOP e UCM esistenti che funzionano ancora, arresto vicino alla '
       + 'macchina, pulegge secondo la 5.5.7, interruzione se il freno non si apre (14.4 a)–g)). UNI 10411-11:2024, punto 14: macchina come '
       + 'l\'originale, altrimenti UNI EN 81-20 5.9.1–5.9.2 con le verifiche della norma di origine o della UNI EN 81-20 e la valutazione 4.3 '
-      + '(14.1); UCM esistenti che funzionano ancora e interruzione se il freno non si apre (14.3)',
+      + '(14.1); UCM esistenti che funzionano ancora e, senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione se il '
+      + 'freno non si apre (14.3)',
     riferimento: 'UNI 10411-1:2024, 14.1–14.4; UNI 10411-11:2024, 14.1–14.3', fonte: `${letto(U1, 'pp. 13–14')}; ${letto(U11, 'p. 12')}`,
     stato: 'confermato',
     verifiche: ['b_sets'],
@@ -268,6 +274,7 @@ export const VOCI: readonly Voce[] = [
   {
     id: 'modello.compensazione', gruppo: 'modello', titolo: 'Compensazione e cavo flessibile', valore: 'non modellati a parte: la loro massa sul lato cabina entra in P',
     riferimento: 'UNI EN 81-50:2020, 5.11', fonte: 'limite del modello attuale', stato: 'scelta',
+    nota: 'Nella 5.11.3 la massa della compensazione e del cavo dipende dalla posizione della cabina; il software la tiene costante dentro P.',
   },
   {
     id: 'modello.sensibilita', gruppo: 'modello', titolo: 'Analisi di sensibilità', valore: 'P ±10%; k ±0,05 se il carico di equilibrio non è misurato',

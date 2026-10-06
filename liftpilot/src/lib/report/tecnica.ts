@@ -19,7 +19,7 @@ import type { RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
 import { machineText } from '../tavole/views';
 import { surveyLoad, surveySheetData } from '../tavole/survey-data';
-import { EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
+import { ESITI_TECNICA, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
 import { shapeRows } from './machine-shape';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { TECNICA_DRAWING, roomRows, slabOpenings, surveyBlocks } from './tecnica-room';
@@ -71,7 +71,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   B.push({ t: 'p', text: `Sostituzione dell'argano dell'impianto con un argano geared ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
     + 'La relazione descrive l\'impianto com\'è, l\'argano esistente e quello nuovo, la sistemazione del nuovo nel locale del macchinario (basamento, '
     + 'puleggia di rinvio, calate, aperture nella soletta), i carichi sul solaio e le verifiche del locale; le verifiche della macchina sono nella '
-    + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true)}` });
+    + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA)}` });
 
   section('Riferimenti normativi');
   B.push({ t: 'grid', head: ['Documento', 'Per che cosa'], widths: [0.38, 0.62], align: ['l', 'l'], rows: [
@@ -140,7 +140,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   B.push({ t: 'grid', head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res')], widths: [0.5, 0.17, 0.17, 0.16], align: ['l', 'r', 'r', 'l'], statusCol: 3,
     rows: res.checks.map((c, i) => [X.checkText(c), X.checkValue(c, N), X.checkLimit(c, N), esiti[i]?.text ?? '']), status: esiti.map((e) => e.status) });
 
-  section('Esito delle verifiche per normativa');
+  section(ESITI_TECNICA);
   B.push(...esitiBlocks(C, [...res.checks, ...checks], (x) => st(x)));
   const adapt = adaptSection(C, true, t);
   section(adapt.title);

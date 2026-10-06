@@ -41,10 +41,10 @@
       "voce": "Aderenza: tre condizioni di Euler-Eytelwein",
       "valore": "T1/T2 ≤ e^(f·α) al caricamento e in frenatura di emergenza; T1/T2 ≥ e^(f·α) con contrappeso o cabina bloccati (cabina vuota nella posizione più alta e in quella più bassa)",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.1 e 5.11.2.2.3",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 39–40",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, pp. 39–40",
       "stato": "confermato",
       "verifiche": "aderenza al caricamento; aderenza in frenatura, in discesa; aderenza in frenatura, in salita; cabina bloccata",
-      "nota": ""
+      "nota": "Con la cabina o il contrappeso bloccati la condizione serve quando è l'aderenza a impedire il sollevamento: la UNI EN 81-20:2020 (5.5.3 c)) ammette in alternativa un dispositivo elettrico di sicurezza; la UNI EN 81-1:2008 (9.3 c)) no. Il software verifica sempre la condizione: se c'è il dispositivo, lo decide l'ingegnere."
     },
     {
       "n": 2,
@@ -53,7 +53,7 @@
       "voce": "Coefficiente di attrito, caricamento",
       "valore": "μ = 0,1",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.2",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 42",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 42",
       "stato": "confermato",
       "verifiche": "aderenza al caricamento",
       "nota": ""
@@ -65,7 +65,7 @@
       "voce": "Coefficiente di attrito, frenatura di emergenza",
       "valore": "μ = 0,1 / (1 + v_f/10), v_f = velocità delle funi",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.2",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 42 (v_f: velocità delle funi alla velocità nominale della cabina)",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 42 (v_f: velocità delle funi alla velocità nominale della cabina)",
       "stato": "confermato",
       "verifiche": "aderenza in frenatura, in discesa; aderenza in frenatura, in salita; aderenza alla decelerazione reale (avviso)",
       "nota": ""
@@ -77,7 +77,7 @@
       "voce": "Coefficiente di attrito, contrappeso o cabina bloccati",
       "valore": "μ = 0,2",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.2",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 42",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 42",
       "stato": "confermato",
       "verifiche": "cabina bloccata",
       "nota": ""
@@ -89,7 +89,7 @@
       "voce": "Carico della verifica di caricamento",
       "valore": "1,25·Q, cabina in basso e in alto",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.2.1 e 5.11.3",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 40 e 44 (al caricamento e con la cabina bloccata a = 0)",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, pp. 40 e 44 (al caricamento e con la cabina bloccata a = 0)",
       "stato": "confermato",
       "verifiche": "aderenza al caricamento",
       "nota": "La norma aggiunge il peso dei dispositivi di movimentazione, dove usati negli ascensori per merci e persone: non modellato. Le due posizioni della cabina sono quelle più sfavorevoli che il software verifica."
@@ -101,7 +101,7 @@
       "voce": "Decelerazione della verifica di frenatura",
       "valore": "almeno 0,5 m/s²",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.2.2",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 40",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 40",
       "stato": "confermato",
       "verifiche": "aderenza in frenatura, in discesa; aderenza in frenatura, in salita",
       "nota": ""
@@ -113,10 +113,10 @@
       "voce": "Decelerazione della verifica di frenatura con ammortizzatori a corsa ridotta",
       "valore": "0,8 m/s²",
       "riferimento": "UNI EN 81-1:2008, M.2.1.2; UNI EN 81-50:2020, 5.11.2.2.2",
-      "fonte": "UNI EN 81-1:2008, testo della norma fornito dal cliente, letto il 2026-10-06, p. 167; UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 40",
+      "fonte": "UNI EN 81-1:2008, testo della norma, letto il 2026-10-06, p. 167; UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 40",
       "stato": "scelta del software",
       "verifiche": "aderenza in frenatura, in discesa; aderenza in frenatura, in salita",
-      "nota": "La UNI EN 81-50:2020 non dà un numero: con ammortizzatori a corsa ridotta la decelerazione è la minima che porta cabina e contrappeso alla velocità di progetto degli ammortizzatori, mai sotto 0,5 m/s². Il software tiene 0,8 m/s², il valore della UNI EN 81-1: l'ingegnere lo sostituisce con quello calcolato dai dati degli ammortizzatori."
+      "nota": "La UNI EN 81-50:2020 non dà un numero: con ammortizzatori a corsa ridotta la decelerazione è la minima che porta cabina e contrappeso alla velocità di progetto degli ammortizzatori, mai sotto 0,5 m/s². Il software tiene 0,8 m/s², il valore della UNI EN 81-1:2008: l'ingegnere lo sostituisce con quello calcolato dai dati degli ammortizzatori."
     },
     {
       "n": 8,
@@ -137,7 +137,7 @@
       "voce": "Aderenza alla decelerazione reale del freno",
       "valore": "Seconda verifica con la decelerazione data dal freno (tutti i gruppi, mai sotto il minimo); oggi solo avviso",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.2.2",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 40",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 40",
       "stato": "scelta del software",
       "verifiche": "aderenza alla decelerazione reale (avviso)",
       "nota": "La norma vuole ogni massa in moto con la sua accelerazione e una decelerazione di calcolo mai sotto 0,5 m/s²; non dice con quanti gruppi del freno. Se contarla come esito lo decide l'ingegnere: nell'esempio B del capitolo 7 l'utilizzo passa da 1,005 a 4,17."
@@ -161,7 +161,7 @@
       "voce": "Fattore di gola, semicircolare con o senza sottosquadro",
       "valore": "f = μ·4·(cos(γ/2) − sin(β/2)) / (π − β − γ − sin β + sin γ); senza sottosquadro β = 0",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.1.1",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 40–41",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, pp. 40–41",
       "stato": "confermato",
       "verifiche": "aderenza al caricamento; aderenza in frenatura, in discesa; aderenza in frenatura, in salita; cabina bloccata",
       "nota": ""
@@ -173,7 +173,7 @@
       "voce": "Fattore di gola a V",
       "valore": "non temprata, al caricamento e in frenatura: f = μ·4·(1 − sin(β/2)) / (π − β − sin β); temprata, e ogni gola a V con il contrappeso o la cabina bloccati: f = μ / sin(γ/2)",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.1.2",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 41",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 41",
       "stato": "confermato",
       "verifiche": "aderenza al caricamento; aderenza in frenatura, in discesa; aderenza in frenatura, in salita; cabina bloccata",
       "nota": "la norma dà f = μ / sin(γ/2) per il contrappeso bloccato; il software la usa anche per la cabina bloccata nella posizione più bassa (5.11.2.2.3)"
@@ -185,10 +185,10 @@
       "voce": "Limite del sottosquadro",
       "valore": "β ≤ 105° (1,83 rad; oltre: KO)",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.1.1 e 5.11.2.3.1.2",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 40–41",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, pp. 40–41",
       "stato": "confermato",
       "verifiche": "geometria della gola",
-      "nota": "fino alla versione 1.1.0 del motore il limite era 106°, il valore raccomandato della UNI EN 81-1 (M.2.2.1)"
+      "nota": "fino alla versione 1.1.0 del motore il limite era 106°, il valore raccomandato della UNI EN 81-1:2008 (M.2.2.1.1)"
     },
     {
       "n": 14,
@@ -209,7 +209,7 @@
       "voce": "Angolo minimo della gola a V",
       "valore": "γ ≥ 35° (sotto: KO)",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.1.2",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 41; Montanari consiglia 35–40°",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 41; Montanari consiglia 35–40°",
       "stato": "confermato",
       "verifiche": "geometria della gola",
       "nota": ""
@@ -221,7 +221,7 @@
       "voce": "Angolo minimo della gola semicircolare",
       "valore": "γ ≥ 25° (0,44 rad; sotto: «Attenzione»: la norma lo raccomanda, non lo impone)",
       "riferimento": "UNI EN 81-50:2020, 5.11.2.3.1.1",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 40–41",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, pp. 40–41",
       "stato": "confermato",
       "verifiche": "geometria della gola",
       "nota": ""
@@ -233,7 +233,7 @@
       "voce": "Rapporto D/d della puleggia di trazione",
       "valore": "D/d ≥ 40",
       "riferimento": "UNI EN 81-20:2020, 5.5.2.1",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 74",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 74",
       "stato": "confermato",
       "verifiche": "D/d della puleggia",
       "nota": ""
@@ -245,10 +245,10 @@
       "voce": "Rapporto D/d delle pulegge di rinvio",
       "valore": "Dp/d ≥ 40",
       "riferimento": "UNI EN 81-20:2020, 5.5.2.1; UNI 10411-1:2024, 14.3",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 74; UNI 10411-1:2024, testo della norma fornito dal cliente, letto il 2026-10-06, p. 14",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 74; UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 14",
       "stato": "confermato",
       "verifiche": "Dp/d dei rinvii",
-      "nota": ""
+      "nota": "Il limite vale per ogni puleggia (5.5.2.1), mentre Dp è uno solo e nel calcolo di N_equiv(p) è la media delle pulegge di rinvio (UNI EN 81-50:2020, 5.12.2.3): con pulegge di diametro diverso si controlla la più piccola."
     },
     {
       "n": 19,
@@ -260,7 +260,7 @@
       "fonte": "DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02, e Direttiva 2014/33/UE nel testo ufficiale italiano (EUR-Lex, fornito dal cliente), letto il 2026-10-04 (ricerca, cap. 16): All. I 1.3",
       "stato": "confermato",
       "verifiche": "numero e diametro delle funi",
-      "nota": ""
+      "nota": "Con 2 sole funi la UNI EN 81-20:2020 (5.5.5.3 a)) chiede anche un dispositivo elettrico di sicurezza contro l'allungamento anomalo di una fune rispetto all'altra; il software non lo verifica."
     },
     {
       "n": 20,
@@ -269,7 +269,7 @@
       "voce": "Diametro nominale minimo",
       "valore": "d ≥ 8 mm",
       "riferimento": "UNI EN 81-20:2020, 5.5.1.2 a)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 74",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 74",
       "stato": "confermato",
       "verifiche": "numero e diametro delle funi",
       "nota": ""
@@ -281,7 +281,7 @@
       "voce": "Coefficiente di sicurezza minimo",
       "valore": "12 con tre o più funi; 16 con due funi",
       "riferimento": "UNI EN 81-20:2020, 5.5.2.2 a)–b); UNI 10411-1:2024, 14.1 c)–d)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 74–75; UNI 10411-1:2024, testo della norma fornito dal cliente, letto il 2026-10-06, p. 13",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 74–75; UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 13",
       "stato": "confermato",
       "verifiche": "coefficiente di sicurezza delle funi",
       "nota": "Con la trazione vale anche il valore calcolato secondo la UNI EN 81-50:2020, 5.12 (il maggiore dei due). Con la UNI 10411-1:2024 (14.1) 12 e 16 possono sostituire quel calcolo solo con la verifica della pressione nelle gole (appendice D.2)."
@@ -292,8 +292,8 @@
       "gruppo": "Funi",
       "voce": "Coefficiente di sicurezza richiesto S_f",
       "valore": "S_f = 10^[2,6834 − log10(695,85·10^6·N_equiv/(D/d)^8,567) / log10(77,09·(D/d)^−2,894)]",
-      "riferimento": "UNI EN 81-50:2020, 5.12 (ex EN 81-1 Allegato N)",
-      "fonte": "riprodotto su due casi pubblicati (liftdesign.it S_f 16,69; Mellor)",
+      "riferimento": "UNI EN 81-50:2020, 5.12.3 (ex UNI EN 81-1:2008, appendice N)",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 46; riprodotto anche su due casi pubblicati (liftdesign.it S_f 16,69; Mellor)",
       "stato": "confermato",
       "verifiche": "coefficiente di sicurezza delle funi",
       "nota": ""
@@ -305,10 +305,10 @@
       "voce": "N_equiv delle pulegge",
       "valore": "N_equiv(p) = K_p·(N_ps + 4·N_pr), K_p = (D/Dp)^4",
       "riferimento": "UNI EN 81-50:2020, 5.12.2.3",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 46",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 46",
       "stato": "confermato",
       "verifiche": "coefficiente di sicurezza delle funi",
-      "nota": "D è il diametro della puleggia di frizione, Dp la media delle altre pulegge. La flessione è inversa solo tra due pulegge consecutive ad assi fissi, con i punti di contatto a meno di 200·d e i piani di flessione ruotati di oltre 120°: la classifica il progettista."
+      "nota": "D: diametro della puleggia di trazione; Dp: media delle altre pulegge. La flessione è inversa solo tra due pulegge consecutive ad assi fissi, con i punti di contatto a meno di 200·d e i piani di flessione ruotati di oltre 120°: la classifica il progettista."
     },
     {
       "n": 24,
@@ -316,11 +316,11 @@
       "gruppo": "Funi",
       "voce": "N_equiv(t) della gola",
       "valore": "U senza sottosquadro 1 · U con sottosquadro: β 75° 2,5; 80° 3,0; 85° 3,8; 90° 5,0; 95° 6,7; 100° 10,0; 105° 15,2 · V: γ 35° 18,5; 36° 16,0; 38° 12,0; 40° 10,0; 42° 8,0; 45° 6,5; 50° 5,0",
-      "riferimento": "UNI EN 81-50:2020, 5.12.2.2, tabella 2",
-      "fonte": "BS EN 81-50:2020, estratto pubblico del testo, p. 55 (i valori della gola a V differiscono da quelli della EN 81-1)",
+      "riferimento": "UNI EN 81-50:2020, 5.12.2.2, prospetto 2",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 46 (i valori della gola a V differiscono da quelli della UNI EN 81-1:2008, prospetto N.1)",
       "stato": "confermato",
       "verifiche": "coefficiente di sicurezza delle funi",
-      "nota": ""
+      "nota": "Il prospetto non ha una riga per la gola a V con sottosquadro: il software prende il maggiore tra il valore di β (riga a U) e quello di γ (riga a V), dal lato della sicurezza."
     },
     {
       "n": 25,
@@ -329,7 +329,7 @@
       "voce": "Angoli tra i punti della tabella di N_equiv(t)",
       "valore": "interpolazione lineare tra i due punti vicini",
       "riferimento": "UNI EN 81-50:2020, 5.12.2.2",
-      "fonte": "BS EN 81-50:2020, estratto pubblico del testo, p. 55 (la norma consente l'interpolazione lineare)",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 46",
       "stato": "confermato",
       "verifiche": "coefficiente di sicurezza delle funi",
       "nota": ""
@@ -353,7 +353,7 @@
       "voce": "Tiro massimo per fune",
       "valore": "cabina con portata ferma al piano più basso; con la macchina in basso sul primo tratto verso la testata",
       "riferimento": "UNI EN 81-20:2020, 5.5.2.2 (definizione); UNI EN 81-50:2020, 5.12.1",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 74–75",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 74–75",
       "stato": "confermato",
       "verifiche": "coefficiente di sicurezza delle funi",
       "nota": "Con la macchina in basso il tiro sul primo tratto verso la testata è una derivazione del software."
@@ -377,7 +377,7 @@
       "voce": "Gruppi meccanici del freno",
       "valore": "almeno 2",
       "riferimento": "UNI EN 81-20:2020, 5.9.2.2.2.1; UNI 10411-1:2024, 14.1 a)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 100; UNI 10411-1:2024, testo della norma fornito dal cliente, letto il 2026-10-06, p. 13",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 100; UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 13",
       "stato": "confermato",
       "verifiche": "gruppi del freno",
       "nota": ""
@@ -389,7 +389,7 @@
       "voce": "Freno, tutti i gruppi",
       "valore": "arresta la cabina in discesa a velocità nominale con 1,25·Q",
       "riferimento": "UNI EN 81-20:2020, 5.9.2.2.2.1",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 100",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 100",
       "stato": "confermato",
       "verifiche": "freno, tutti i gruppi",
       "nota": ""
@@ -401,10 +401,10 @@
       "voce": "Freno, un solo gruppo",
       "valore": "rallenta, arresta e tiene la cabina con portata in discesa e la cabina vuota in salita",
       "riferimento": "UNI EN 81-20:2020, 5.9.2.2.2.1; UNI 10411-1:2024, 14.1 a)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 100; UNI 10411-1:2024, testo della norma fornito dal cliente, letto il 2026-10-06, p. 13",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 100; UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 13",
       "stato": "confermato",
       "verifiche": "freno, un gruppo in discesa; freno, un gruppo a vuoto in salita",
-      "nota": "La UNI 10411-1:2024 (11.1.4) e la UNI EN 81-1 chiedono a un solo gruppo di rallentare la cabina carica in discesa; il software applica la richiesta più completa della UNI EN 81-20."
+      "nota": "La UNI 10411-1:2024 (11.1.4) e la UNI EN 81-1:2008 (12.4.2.1) chiedono a un solo gruppo di rallentare la cabina carica in discesa; il software applica la richiesta più completa della UNI EN 81-20."
     },
     {
       "n": 32,
@@ -424,8 +424,8 @@
       "gruppo": "Freno",
       "voce": "Decelerazione massima del freno",
       "valore": "≤ 1 g (oltre: «Attenzione»), da confrontare con paracadute e ammortizzatori",
-      "riferimento": "UNI EN 81-20:2020, 5.9.2.2.2.1 (non oltre il paracadute o l'urto sugli ammortizzatori); 1 gn in 5.6.2.1.3 e 5.8.2",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 81, 98–100",
+      "riferimento": "UNI EN 81-20:2020, 5.9.2.2.2.1 (non oltre il paracadute o l'urto sugli ammortizzatori); 1 gn in 5.6.2.1.3 e 5.8.2; con il freno come organo d'arresto, 1 gn anche in 5.6.6.3 (ACOP) e 5.6.7.6 (UCM)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 81, 98–100",
       "stato": "derivazione",
       "verifiche": "decelerazione massima del freno",
       "nota": "La norma non dà un numero per il freno: ne confronta la decelerazione media con quella del paracadute e dell'urto sugli ammortizzatori, che hanno 1 gn come limite. Il confronto vero è con i dati dei componenti montati."
@@ -497,10 +497,10 @@
       "voce": "Tolleranza tra velocità reale e nominale",
       "valore": "con metà portata a metà corsa, in salita e in discesa, non oltre il 5 % sopra la nominale (buona pratica: non oltre l'8 % sotto); non verificata: il software mostra la velocità reale e la frequenza per la nominale",
       "riferimento": "UNI EN 81-20:2020, 5.9.2.4; UNI 10411-1:2024, 15.1",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 102; UNI 10411-1:2024, testo della norma fornito dal cliente, letto il 2026-10-06, p. 14",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 102; UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 14",
       "stato": "confermato",
       "verifiche": "",
-      "nota": "Con la UNI 10411-1:2024 (15.1) una velocità oltre il 5 % sopra quella originale è un aumento della velocità nominale (punti 15.2–15.15)."
+      "nota": "Con la UNI 10411-1:2024 (15.1) una velocità oltre il 5 % sopra la maggiore tra quella del libretto e quella dopo il passaggio a 50 Hz è un aumento della velocità nominale (punti 15.2–15.15). Con la UNI 10411-11:2024 (15) ogni cambio della velocità nominale, in più o in meno, porta ai punti 15 a)–k) e alla valutazione 4.3."
     },
     {
       "n": 40,
@@ -509,7 +509,7 @@
       "voce": "Forza massima al volantino",
       "valore": "≤ 400 N per far salire la cabina con la portata, altrimenti manovra elettrica di emergenza; il mezzo meccanico è ammesso se per portare la cabina a una fermata bastano 150 N",
       "riferimento": "UNI EN 81-20:2020, 5.9.2.3.3 (400 N) e 5.9.2.3.1 a) (150 N)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 101–102",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 101–102",
       "stato": "confermato",
       "verifiche": "forza al volantino",
       "nota": "Il software verifica i 400 N; i 150 N del mezzo meccanico (5.9.2.3.1 a)) non sono verificati: sono nella lista da verificare."
@@ -555,9 +555,9 @@
       "id": "sostituzione.adeguamenti",
       "gruppo": "Sostituzione (Italia)",
       "voce": "Adeguamenti richiesti per la sostituzione del macchinario",
-      "valore": "UNI 10411-1:2024, punto 14: macchina secondo la UNI EN 81-20 (5.9.1 e 5.9.2, freno in due gruppi) o la UNI EN 81-1:2010, con aderenza e coefficiente di sicurezza delle funi (14.1); D/d ≥ 40 (14.3); temporizzatore della UNI EN 81-20 (5.9.2.7), arresto prima che la cabina in salita tocchi la velocità di intervento del limitatore, ACOP e UCM esistenti che funzionano ancora, arresto vicino alla macchina, pulegge secondo la 5.5.7, interruzione se il freno non si apre (14.4 a)–g)). UNI 10411-11:2024, punto 14: macchina come l'originale, altrimenti UNI EN 81-20 5.9.1–5.9.2 con le verifiche della norma di origine o della UNI EN 81-20 e la valutazione 4.3 (14.1); UCM esistenti che funzionano ancora e interruzione se il freno non si apre (14.3)",
+      "valore": "UNI 10411-1:2024, punto 14: macchina secondo la UNI EN 81-20 (5.9.1 e 5.9.2, freno in due gruppi) o la UNI EN 81-1:2010, con aderenza e coefficiente di sicurezza delle funi (14.1); D/d ≥ 40 (14.3); temporizzatore della UNI EN 81-20 (5.9.2.7), arresto prima che la cabina in salita tocchi la velocità di intervento del limitatore, ACOP e UCM esistenti che funzionano ancora, arresto vicino alla macchina, pulegge secondo la 5.5.7, interruzione se il freno non si apre (14.4 a)–g)). UNI 10411-11:2024, punto 14: macchina come l'originale, altrimenti UNI EN 81-20 5.9.1–5.9.2 con le verifiche della norma di origine o della UNI EN 81-20 e la valutazione 4.3 (14.1); UCM esistenti che funzionano ancora e, senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione se il freno non si apre (14.3)",
       "riferimento": "UNI 10411-1:2024, 14.1–14.4; UNI 10411-11:2024, 14.1–14.3",
-      "fonte": "UNI 10411-1:2024, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 13–14; UNI 10411-11:2024, testo della norma fornito dal cliente, letto il 2026-10-06, p. 12",
+      "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 13–14; UNI 10411-11:2024, testo della norma, letto il 2026-10-06, p. 12",
       "stato": "confermato",
       "verifiche": "gruppi del freno",
       "nota": ""
@@ -581,7 +581,7 @@
       "voce": "Accelerazione di gravità",
       "valore": "g = 9,81 m/s² (anche come limite di 1 g)",
       "riferimento": "UNI EN 81-20:2020, 5.2.1.8.5 (g_n = 9,81 m/s²)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 27",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 27",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
@@ -593,7 +593,7 @@
       "voce": "Tiri con il metodo del percorso della fune",
       "valore": "masse e funi di ogni tratto, inerzia delle pulegge di rinvio; attrito di guide e pulegge trascurato in aderenza",
       "riferimento": "UNI EN 81-50:2020, 5.11.3",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 43–44",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, pp. 43–44",
       "stato": "da verificare",
       "verifiche": "aderenza al caricamento; aderenza in frenatura, in discesa; aderenza in frenatura, in salita; aderenza alla decelerazione reale (avviso); cabina bloccata",
       "nota": "Confermati sul testo: le masse per lato, il fattore (r² + 2)/3 delle funi, il termine delle pulegge di rinvio e l'attrito trascurato. Da verificare: in taglia 2:1 le pulegge di cabina e di contrappeso (termine III della norma) non sono contate; con la macchina in basso il tratto tra macchina e pulegge in testata usa r·a, dove il testo stampa a (la forma stampata coincide con quella fisica solo a 1:1)."
@@ -608,7 +608,7 @@
       "fonte": "limite del modello attuale",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": ""
+      "nota": "Nella 5.11.3 la massa della compensazione e del cavo dipende dalla posizione della cabina; il software la tiene costante dentro P."
     },
     {
       "n": 49,
@@ -629,7 +629,7 @@
       "voce": "Superficie utile massima della cabina per portata",
       "valore": "100 kg 0,37 m²; 180 kg 0,58; 225 kg 0,70; 300 kg 0,90; 375 kg 1,10; 400 kg 1,17; 450 kg 1,30; 525 kg 1,45; 600 kg 1,60; 630 kg 1,66; 675 kg 1,75; 750 kg 1,90; 800 kg 2,00; 825 kg 2,05; 900 kg 2,20; 975 kg 2,35; 1000 kg 2,40; 1050 kg 2,50; 1125 kg 2,65; 1200 kg 2,80; 1250 kg 2,90; 1275 kg 2,95; 1350 kg 3,10; 1425 kg 3,25; 1500 kg 3,40; 1600 kg 3,56; 2000 kg 4,20; 2500 kg 5,00; oltre 2500 kg +0,16 m² ogni 100 kg; interpolazione lineare",
       "riferimento": "UNI EN 81-20:2020, 5.4.2.1.1 (Prospetto 6)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 63–64",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 63–64",
       "stato": "confermato",
       "verifiche": "superficie della cabina per la portata",
       "nota": "la norma misura la superficie a 1 m dal pavimento tra le pareti strutturali, senza finiture (5.4.2.1.2), conta le nicchie e conta per intero la rientranza dell'ingresso profonda più di 100 mm (5.4.2.1.3); il software usa larghezza × profondità interne: nicchie e rientranze vanno aggiunte a mano"
@@ -641,7 +641,7 @@
       "voce": "Numero di passeggeri",
       "valore": "il minore tra Q/75 arrotondato per difetto e il numero ammesso dalla superficie: 1 persona 0,28 m²; 2 0,49; 3 0,60; 4 0,79; 5 0,98; 6 1,17; 7 1,31; 8 1,45; 9 1,59; 10 1,73; 11 1,87; 12 2,01; 13 2,15; 14 2,29; 15 2,43; 16 2,57; 17 2,71; 18 2,85; 19 2,99; 20 3,13; oltre 20 +0,115 m² per persona",
       "riferimento": "UNI EN 81-20:2020, 5.4.2.3.1 (Prospetto 8)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 66",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 66",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
@@ -653,10 +653,10 @@
       "voce": "Parete del vano di fronte all'entrata della cabina",
       "valore": "distanza orizzontale dalla soglia o dal telaio della porta di cabina ≤ 150 mm (qui: profondità della porta di piano + gioco tra le soglie)",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.3.1",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 33",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 33",
       "stato": "confermato",
       "verifiche": "parete di fronte all'entrata",
-      "nota": "le deroghe della norma (fino a 0,20 m per un tratto alto non più di 0,50 m o con porte verticali di ascensori per merci; nessun limite con la porta di cabina bloccata meccanicamente) non sono usate: la verifica è più severa"
+      "nota": "le deroghe della norma (fino a 0,20 m per un tratto alto non più di 0,50 m o con porte verticali di ascensori per merci; nessun limite con la porta di cabina bloccata meccanicamente) non sono usate: la verifica è più severa. Il software misura fino alla soglia; la figura 3 della norma porta il limite anche al telaio e al bordo di chiusura delle ante di cabina: con la porta scelta lo verifica l'ingegnere sui dati del fornitore."
     },
     {
       "n": 53,
@@ -665,10 +665,10 @@
       "voce": "Gioco tra soglia di cabina e soglia di piano",
       "valore": "distanza orizzontale ≤ 35 mm",
       "riferimento": "UNI EN 81-20:2020, 5.3.4.1 (figura 3); 11.2.2 nella UNI EN 81-1 (1999, 2008)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 50",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 50",
       "stato": "confermato",
       "verifiche": "gioco tra le soglie",
-      "nota": ""
+      "nota": "Non calcolato: tra il bordo d'attacco delle ante di cabina e le porte di piano al massimo 0,12 m (5.3.4.2; 11.2.3 nella UNI EN 81-1:2008), dato del fornitore delle porte."
     },
     {
       "n": 54,
@@ -677,7 +677,7 @@
       "voce": "Distanza tra cabina e contrappeso",
       "valore": "≥ 50 mm tra la cabina con i suoi componenti e il contrappeso con i suoi",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.5.1 h)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 35",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 35",
       "stato": "confermato",
       "verifiche": "distanza cabina–contrappeso",
       "nota": "il software misura tra le sagome di cabina e contrappeso: pattini e staffe non sono nel modello della pianta"
@@ -773,7 +773,7 @@
       "voce": "Porta di piano spostata rispetto alla porta di cabina (disassamento)",
       "valore": "la luce netta della porta di piano sporge al massimo 50 mm per lato oltre quella della porta di cabina: con la stessa luce, disassamento ≤ 50 mm (oltre: «Non conforme»); lo stesso spostamento a tutti i piani, per ciascun accesso, con il vano nel muro, il portale, gli imbotti, la soglia sulle staffe e la bottoniera della porta di piano; il passaggio libero è la parte comune delle due luci (luce − disassamento), ed è quello verificato per l'accessibilità (DM 236/1989)",
       "riferimento": "UNI EN 81-20:2020, 5.3.2.2",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 49",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 49",
       "stato": "confermato",
       "verifiche": "disassamento della porta di piano A; disassamento della porta di piano B",
       "nota": "nel 3D la leva della serratura con i rulli resta in linea con l'accoppiatore della porta di cabina: con il disassamento va montata spostata sull'anta della porta di piano (da concordare con il fornitore delle porte)"
@@ -800,7 +800,7 @@
       "fonte": "scelta del software",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": ""
+      "nota": "Montanti e pannelli accanto alla porta più larghi di 150 mm che chiudono l'apertura vanno con la prova del pendolo della porta (UNI EN 81-20:2020, 5.3.5.3.4): la copre il fornitore."
     },
     {
       "n": 65,
@@ -905,7 +905,7 @@
       "voce": "Spazi di rifugio sul tetto di cabina e in fossa",
       "valore": "tipo 1 (in piedi) 400 × 500 mm in pianta, alto 2000 mm; tipo 2 (accucciato) 500 × 700 mm, alto 1000 mm; tipo 3 (disteso, solo in fossa) 700 × 1000 mm, alto 500 mm; in testata con la cabina nella posizione più alta, in fossa con la cabina sugli ammortizzatori compressi",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.7.1 (Prospetto 3) e 5.2.5.8.1 (Prospetto 4)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 37–40",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 37–40",
       "stato": "confermato",
       "verifiche": "spazio di rifugio in testata; spazio di rifugio in fossa",
       "nota": ""
@@ -917,7 +917,7 @@
       "voce": "Posizione più alta della cabina",
       "valore": "contrappeso sugli ammortizzatori completamente compressi, più il salto 0,035·v² m (v velocità nominale)",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.6.1.1 (Prospetto 2)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 36",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 36",
       "stato": "confermato",
       "verifiche": "spazio di rifugio in testata; distanze libere dal soffitto",
       "nota": "vale per gli ascensori a frizione; le riduzioni di 5.2.5.6.1.2 (rallentamento controllato) e 5.2.5.6.1.3 (puleggia tenditrice con antirimbalzo) non sono usate: la verifica è più severa"
@@ -929,7 +929,7 @@
       "voce": "Distanze libere dal soffitto con la cabina nella posizione più alta",
       "valore": "≥ 500 mm sopra le apparecchiature sul tetto di cabina (operatore); ≥ 100 mm sopra pattini, attacchi delle funi e traversa dell'arcata; ≥ 300 mm sopra il corrimano della balaustra",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.7.2 a)–c)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 38",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 38",
       "stato": "da verificare",
       "verifiche": "distanze libere dal soffitto",
       "nota": "I valori 500, 100 e 300 mm sono confermati. Da concordare con l'organismo: il software dà alla traversa dell'arcata i 100 mm di b) (il testo nomina traversa o architrave e parti di porte verticali; se non vale per l'arcata servono i 500 mm di a)); non verifica i 500 mm in obliquo oltre i 400 mm dal corrimano (c) 2))."
@@ -941,7 +941,7 @@
       "voce": "Parte più alta della cabina sotto ciò che pende sopra",
       "valore": "con la cabina nella posizione più alta: a 2:1 la puleggia di cabina (Dp + 30 mm sopra la traversa) è un'apparecchiatura sul tetto, distanza libera ≥ 500 mm dal soffitto o dalle pulegge appese; a 1:1 con la macchina in basso la traversa sotto le pulegge appese al solaio (asse a Dp/2 + 120 mm sotto il soffitto), distanza libera ≥ 100 mm, quella della traversa",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.7.2 a) e b)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 38",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 38",
       "stato": "confermato",
       "verifiche": "parte più alta della cabina sotto ciò che pende sopra",
       "nota": "fino alla versione 1.17.0 del motore del progetto la puleggia di cabina era verificata a 100 mm; i 100 mm della traversa sono la stessa lettura di spazi.testata.parti"
@@ -965,7 +965,7 @@
       "voce": "Distanze in fossa con la cabina sugli ammortizzatori compressi",
       "valore": "≥ 500 mm dal pavimento della fossa alle parti più basse della cabina; grembiule sotto la soglia di cabina: tratto verticale ≥ 750 mm, poi uno smusso a ≥ 60° sull'orizzontale con proiezione orizzontale ≥ 20 mm (circa 35 mm più in basso), con ≥ 100 mm liberi dal pavimento della fossa",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.8.2 a) e 5.4.5.1–5.4.5.2",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 40–41, 69",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 40–41, 69",
       "stato": "confermato",
       "verifiche": "spazio di rifugio in fossa; grembiule sugli ammortizzatori compressi",
       "nota": ""
@@ -977,7 +977,7 @@
       "voce": "Balaustra sul tetto di cabina",
       "valore": "richiesta se dal bordo esterno del tetto alla parete ci sono più di 300 mm; alta 700 mm se dal bordo interno del corrimano alla parete ci sono fino a 500 mm, 1100 mm oltre; il corrimano (30 mm) con la faccia esterna a 100 mm dal bordo del tetto, come nel 3D",
       "riferimento": "UNI EN 81-20:2020, 5.4.7.2 b) e 5.4.7.4 b)–c)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 70–72",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 70–72",
       "stato": "confermato",
       "verifiche": "balaustra sul tetto di cabina",
       "nota": "fino alla versione 2.12.0 del motore del vano il software misurava i 500 mm dal bordo del tetto; la norma vuole la balaustra entro 150 mm dal bordo: se è più interna, la distanza cresce e può servire l'altezza maggiore"
@@ -989,10 +989,10 @@
       "voce": "Superficie dove una persona può stare sul tetto di cabina",
       "valore": "area continua ≥ 0,12 m² con il lato minore oltre 250 mm (disegnata 400 × 300 mm, modificabile sulla pianta in testata); sopra di essa deve esserci l'altezza dello spazio di rifugio",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.7.3",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 39",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 39",
       "stato": "confermato",
       "verifiche": "superficie per stare sul tetto di cabina",
-      "nota": ""
+      "nota": "Nella 5.2.5.7.3 lo 0,12 m² è la soglia da cui un'area conta come posto in piedi, sopra la quale serve l'altezza del rifugio; che un'area simile debba esserci lo chiedeva la UNI EN 81-1:2008 (8.13.2). Il software verifica l'area disegnata."
     },
     {
       "n": 81,
@@ -1001,7 +1001,7 @@
       "voce": "Altezza libera degli accessi e della cabina",
       "valore": "luce netta in altezza delle porte di piano e di cabina ≥ 2000 mm; altezza libera interna della cabina ≥ 2000 mm",
       "riferimento": "UNI EN 81-20:2020, 5.3.2.1 e 5.4.1",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 49, 63; 2 m anche in DM 587/1987 (UNI EN 81-1), 7.3.1, 8.1.1 e 8.1.2",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 49, 63; 2 m anche in DM 587/1987 (UNI EN 81-1), 7.3.1, 8.1.1 e 8.1.2",
       "stato": "confermato",
       "verifiche": "altezza libera degli accessi; altezza libera interna della cabina",
       "nota": "negli impianti esistenti (DPR 1497/1963, artt. 24, 27 e 29, non riletto) le porte possono essere alte 1,90 m e la cabina 2,00 m; con la sola sostituzione della macchina le altezze restano (parti esistenti); la UNI 10411-1:2024 ammette porte di piano nuove non più basse delle esistenti (19.1), una cabina nuova sotto 2 m se non più bassa dell'esistente e mai sotto 1,90 m (22 m)) e accessi di cabina mai sotto 1,80 m (22 n)), con avvertimenti: il software non conosce le esistenti e segnala ogni porta sotto 2000 mm"
@@ -1010,12 +1010,12 @@
       "n": 82,
       "id": "vano.contrappeso.guidato",
       "gruppo": "Vano: sezione, spazi di rifugio e ammortizzatori",
-      "voce": "Corsa guidata del contrappeso in testata",
-      "valore": "con la cabina sugli ammortizzatori completamente compressi le guide del contrappeso lo guidano ancora per almeno 0,1 + 0,035·v² m (v velocità nominale): dalla sommità del contrappeso, salito della corsa sotto la cabina (extracorsa e corsa degli ammortizzatori), alla sommità delle guide, che il software pone 50 mm sotto la soletta (voce foglio.stime)",
+      "voce": "Corsa guidata in testata (contrappeso e cabina)",
+      "valore": "con la cabina sugli ammortizzatori completamente compressi le guide del contrappeso lo guidano ancora per almeno 0,1 + 0,035·v² m (v velocità nominale): dalla sommità del contrappeso, salito della corsa sotto la cabina (extracorsa e corsa degli ammortizzatori), alla sommità delle guide, che il software pone 50 mm sotto la soletta (voce foglio.stime); la cabina nella sua posizione più alta (salto compreso) ha ancora almeno 0,1 m di guida sopra la sommità dell'arcata, dove il software mette i pattini superiori (avviso: l'altezza reale dei pattini è del fornitore)",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.6.2 e 5.2.5.6.1.1 (Prospetto 2: cabina sugli ammortizzatori compressi più 0,035·v²); stesso valore in UNI EN 81-1 (1999, 2008), 5.7.1.2",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 36; UNI EN 81-1:2008, testo della norma fornito dal cliente, letto il 2026-10-06, p. 27",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 36; UNI EN 81-1:2008, testo della norma, letto il 2026-10-06, p. 27",
       "stato": "confermato",
-      "verifiche": "corsa guidata del contrappeso in testata",
+      "verifiche": "corsa guidata del contrappeso in testata; corsa guidata della cabina in testata",
       "nota": ""
     },
     {
@@ -1025,7 +1025,7 @@
       "voce": "Schermo del contrappeso in fossa",
       "valore": "dal punto più basso del contrappeso sugli ammortizzatori compressi fino ad almeno 2000 mm sopra il pavimento della fossa (altezza dello schermo modificabile sul progetto, mai sotto questo valore)",
       "riferimento": "UNI EN 81-20:2020, 5.2.5.5.1 b)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 35",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 35",
       "stato": "confermato",
       "verifiche": "protezione del contrappeso in fossa",
       "nota": "non verificati: il bordo inferiore dello schermo a non più di 300 mm dal fondo della fossa (5.2.5.5.1 c)) e la protezione dello spazio oltre 300 mm tra guide del contrappeso e parete (e))"
@@ -1037,7 +1037,7 @@
       "voce": "Ammortizzatori ad accumulo di energia lineari (molle)",
       "valore": "ammessi fino a 1 m/s; corsa ≥ 0,135·v² m e comunque ≥ 65 mm; extracorsa della cabina e del contrappeso ≥ 0 (nessun minimo nella norma)",
       "riferimento": "UNI EN 81-20:2020, 5.8.1.5 (fino a 1 m/s) e 5.8.2.1.1.1 (corsa); nessuna extracorsa minima in metri: l'interruttore di extracorsa interviene prima che la cabina o il contrappeso tocchino gli ammortizzatori (5.12.2.1)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 98, 131",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 98, 131",
       "stato": "confermato",
       "verifiche": "tipo di ammortizzatori per la velocità; corsa degli ammortizzatori di cabina; corsa dell'ammortizzatore del contrappeso; extracorsa di cabina e contrappeso",
       "nota": ""
@@ -1049,7 +1049,7 @@
       "voce": "Ammortizzatori ad accumulo di energia non lineari (tamponi in poliuretano)",
       "valore": "ammessi fino a 1 m/s come le molle; nessuna corsa minima da formula: il campo di masse del certificato di esame di tipo per la velocità deve comprendere, per ogni tampone, la cabina vuota e a pieno carico (o il contrappeso); «completamente compresso» vuol dire compresso del 90 % dell'altezza, quindi la corsa è 0,9·H negli spazi in fossa e in testata; tampone tipico alti 80 mm (P+S Diepocell D, Ø da 80 a 220 mm; ACLA AUTAN XL)",
       "riferimento": "UNI EN 81-20:2020, 5.8.1.5, 5.8.1.7, 5.8.2.1.2.1 e 5.8.2.1.2.2 (compresso al 90 %); UNI EN 81-50:2020, 5.5.4 (esame di tipo)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 98–99; UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 24; il tampone tipico dai cataloghi P+S Diepocell (wwlift.de) e ACLA AUTAN XL (acla.de), estratti di ricerca del 1° ottobre 2026",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 98–99; UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, p. 24; il tampone tipico dai cataloghi P+S Diepocell (wwlift.de) e ACLA AUTAN XL (acla.de), estratti di ricerca del 1° ottobre 2026",
       "stato": "confermato",
       "verifiche": "tipo di ammortizzatori per la velocità; corsa degli ammortizzatori di cabina; corsa dell'ammortizzatore del contrappeso",
       "nota": "il tampone tipico alto 80 mm è un dato di catalogo, non della norma: va sostituito con quello montato"
@@ -1061,7 +1061,7 @@
       "voce": "Ammortizzatori a dissipazione di energia (idraulici)",
       "valore": "a ogni velocità; corsa ≥ 0,0674·v² m (arresto per gravità al 115 % della velocità nominale); la corsa ridotta con il controllo del rallentamento non è considerata; ammortizzatori tipici: Oleo LSB10 fino a 1 m/s, alto 222,2 mm con corsa 73,4 mm; LSB16 fino a 1,6 m/s, alto 485,5 mm con corsa 173,5 mm",
       "riferimento": "UNI EN 81-20:2020, 5.8.1.6 e 5.8.2.2.1 (corsa); la corsa ridotta di 5.8.2.2.2 non è usata",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 99; gli ammortizzatori tipici dal catalogo Oleo LSB e SEB (oleo.co.uk), estratti di ricerca del 1° ottobre 2026",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 99; gli ammortizzatori tipici dal catalogo Oleo LSB e SEB (oleo.co.uk), estratti di ricerca del 1° ottobre 2026",
       "stato": "confermato",
       "verifiche": "tipo di ammortizzatori per la velocità; corsa degli ammortizzatori di cabina; corsa dell'ammortizzatore del contrappeso",
       "nota": "gli ammortizzatori Oleo sono dati di catalogo, non della norma: vanno sostituiti con quelli montati"
@@ -1073,19 +1073,19 @@
       "voce": "Locale del macchinario",
       "valore": "altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga ≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno 500 × 600 mm (il software la cerca accanto all'argano, sul lato più libero, fino a muri e quadro); porta di accesso ≥ 600 × 2000 mm",
       "riferimento": "UNI EN 81-20:2020, 5.2.6.3.2.1 (2,10 m e superfici libere), 5.2.6.3.2.2 (1,80 m sui percorsi) e 5.2.3.2 a) (porta)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 29, 43; le superfici libere anche in UNI EN 81-1:1999, 6.3.2.1 (edizione 2008: 6.3.3.1)",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 29, 43; le superfici libere anche in UNI EN 81-1:1999, 6.3.2.1 (edizione 2008: 6.3.3.1)",
       "stato": "confermato",
       "verifiche": "altezza del locale macchina; superficie libera davanti al quadro; superficie libera accanto all'argano; porta del locale macchina",
-      "nota": "non verificati: i percorsi larghi almeno 0,50 m e lo spazio di 0,30 m sopra le parti rotanti (5.2.6.3.2.2)"
+      "nota": "davanti al quadro il software verifica la profondità libera e che la parete sia lunga almeno quanto il maggiore tra 500 mm e il quadro; non verificati: la macchina o altro dentro quella superficie, i percorsi larghi almeno 0,50 m (5.2.6.3.2.2) e lo spazio di 0,30 m sopra le parti rotanti (5.2.6.3.2.3)"
     },
     {
       "n": 88,
       "id": "vano.illuminazione",
       "gruppo": "Locale del macchinario",
       "voce": "Illuminazione del vano e del locale del macchinario",
-      "valore": "vano: illuminazione fissa di almeno 50 lux a 1 m sopra il tetto della cabina e sopra il pavimento della fossa, 20 lux altrove; locale del macchinario: almeno 200 lux al pavimento nelle zone di lavoro",
-      "riferimento": "UNI EN 81-20:2020, 5.2.1.4.1 a)–c) e 5.2.1.4.2",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 25",
+      "valore": "vano: luce fissa, almeno 50 lux a un metro dal tetto di cabina e dal fondo della fossa, 20 lux nel resto; locale del macchinario: almeno 200 lux al pavimento dove si lavora e 50 lux sui percorsi; 50 lux anche sull'accesso al macchinario",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.4.1 a)–c), 5.2.1.4.2 e 5.2.2.2",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 25",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
@@ -1097,7 +1097,7 @@
       "voce": "Temperatura dei locali del macchinario e degli armadi",
       "valore": "temperatura ambiente mantenuta tra +5 °C e +40 °C: ipotesi della norma, da garantire nell'edificio",
       "riferimento": "UNI EN 81-20:2020, 0.4.16 (ipotesi della norma, vale anche per il vano)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 14",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 14",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
@@ -1181,10 +1181,10 @@
       "voce": "Carichi sul pavimento della fossa",
       "valore": "sotto ogni ammortizzatore 4 volte il carico statico: 4·g·(P+Q) per la cabina, 4·g·M_cw per il contrappeso, divisi tra gli ammortizzatori; sotto ogni guida di cabina la massa della guida più la reazione all'intervento del paracadute k1·g·(P+Q)/2 (k1 = 2 progressivo, 3 istantaneo a rulli, 5 istantaneo); sotto ogni guida del contrappeso la massa della guida",
       "riferimento": "UNI EN 81-20:2020, 5.2.1.8.4–5.2.1.8.6, 5.7.2.3.5 e Prospetto 14 (k1)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 27, 94–96",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 27, 94–96",
       "stato": "confermato",
       "verifiche": "",
-      "nota": "non calcolato: con spazi accessibili sotto il vano (5.2.5.4) il contrappeso ha il paracadute, sotto le sue guide va anche k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m²"
+      "nota": "non calcolato: con spazi accessibili sotto il vano (5.2.5.4) il contrappeso ha il paracadute, sotto le sue guide va anche k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m². P è la cabina vuota: la quota del cavo flessibile e della compensazione, che la 5.2.1.8.5 conta in P, va aggiunta dall'ingegnere"
     },
     {
       "n": 97,
@@ -1193,7 +1193,7 @@
       "voce": "Spinte sulle guide di cabina",
       "valore": "portata spostata di 1/8 della cabina dal centro, più lo scostamento della cabina dalle guide (arcata a zaino); intervento del paracadute: Fx = k1·g·(Q·xQ + P·xP)/(n·h) sulle facce delle lame, Fy = k1·g·(Q·yQ + P·yP)/((n/2)·h) sulle punte; marcia: k2 = 1,2; n = 2 guide, h = distanza tra i pattini, presa pari all'ingombro verticale dell'arcata; si riporta il caso più gravoso",
       "riferimento": "UNI EN 81-50:2020, appendice C (informativa), C.2.1.1 e C.2.2.1; UNI EN 81-20:2020, 5.7.2.3.4 (portata su 3/4 della superficie: 1/8) e Prospetto 14 (k1; k2 = 1,2)",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 77–79; UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 94–96",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, pp. 77–79; UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 94–96",
       "stato": "confermato",
       "verifiche": "",
       "nota": "h, la distanza tra i pattini, è una stima del software (l'ingombro verticale dell'arcata)"
@@ -1253,10 +1253,10 @@
       "voce": "Verifica delle guide di cabina",
       "valore": "tra due staffe (l = distanza massima tra le staffe della guida) con le spinte della voce guide.spinte, portata spostata di 1/8 della cabina in un senso e poi nell'altro: flessione M = 3·F·l/16, σm = σx + σy; intervento del paracadute: forza verticale Fv = k1·g·(P+Q)/n più il peso della guida, carico di punta con il metodo omega (λ = l/i con il raggio d'inerzia minore √(I/A), λ ≤ 250; acciaio Rm 370: ω = 0,0001292·λ^1,89 + 1 fino a λ 60, 0,00004627·λ^2,14 + 1 fino a 85, 0,00001711·λ^2,35 + 1,04 fino a 115, 0,00016887·λ^2 fino a 250), σ = σm + Fv/A e σc = σk + 0,9·σm; marcia: k2 = 1,2 e il peso della guida; carico al piano: cabina vuota e Fs = 0,4·g·Q (0,6·g·Q da 2500 kg) al centro della soglia di cabina, a ogni accesso; flessione della suola σF = 1,85·Fx/c² (pattini a rotelle); frecce δx = 0,7·Fx·l³/(48·E·Iy) e δy = 0,7·Fy·l³/(48·E·Ix) ≤ 5 mm. Tensione ammissibile Rm/St con St = 2,25 in marcia e al carico, 1,8 all'intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164,4 e 205,6 N/mm²",
       "riferimento": "UNI EN 81-50:2020, 5.10.2–5.10.6; UNI EN 81-20:2020, 5.7.2.3.5, 5.7.2.3.6, 5.7.4.5 (Prospetto 15), 5.7.4.6 e Prospetto 14",
-      "fonte": "UNI EN 81-50:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 35–39; UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 94–97; Rm 370 è scelta del software (il valore più basso)",
+      "fonte": "UNI EN 81-50:2020, testo della norma, letto il 2026-10-06, pp. 35–39; UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 94–97; Rm 370 è scelta del software (il valore più basso)",
       "stato": "da verificare",
       "verifiche": "tensioni nelle guide di cabina; flessione della suola delle guide di cabina; frecce delle guide di cabina",
-      "nota": "Confermati sul testo i coefficienti, le formule e i limiti. Da verificare il carico al piano: la UNI EN 81-20:2020 (5.7.2.3.6) lo lega al tipo di ascensore, 0,4·g·Q per persone, 0,6·g·Q per merci, 0,85·g·Q con dispositivi di movimentazione pesanti; il software usa la regola della UNI EN 81-1 (0,6·g·Q da 2500 kg, appendice G.2.5) perché il tipo di ascensore non è tra i dati. La formula di ω per Rm 370 è data da λ 20 a 250: sotto 20 il software usa la stessa formula. Non contate: la spinta di scorrimento delle staffe (assestamento dell'edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le guide del contrappeso"
+      "nota": "Confermati sul testo i coefficienti, le formule e i limiti. Da verificare il carico al piano: la UNI EN 81-20:2020 (5.7.2.3.6) lo lega al tipo di ascensore, 0,4·g·Q per persone, 0,6·g·Q per merci, 0,85·g·Q con dispositivi di movimentazione pesanti; il software usa la regola della UNI EN 81-1:2008 (0,6·g·Q da 2500 kg, appendice G.2.5) perché il tipo di ascensore non è tra i dati. La formula di ω per Rm 370 è data da λ 20 a 250: sotto 20 il software usa ω di λ 20 (dal lato della sicurezza). Non contate: la spinta di scorrimento delle staffe (assestamento dell'edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le guide del contrappeso. La flessione della suola è quella dei pattini a rotelle (5.10.5 ha una formula a parte per quelli a scorrimento; il tipo di pattino non è un dato del software)."
     },
     {
       "n": 103,
@@ -1277,7 +1277,7 @@
       "voce": "Tipo di paracadute per la velocità nominale",
       "valore": "istantaneo (anche a rulli imprigionati) fino a 0,63 m/s; oltre, progressivo (la UNI EN 81-20 non ha più l'istantaneo con effetto ammortizzato fino a 1 m/s); il tipo viene dai dati dell'impianto (se manca: progressivo, con la nota sul foglio)",
       "riferimento": "UNI EN 81-20:2020, 5.6.2.1.2.1; la regola precedente in UNI EN 81-1 (1999, 2008), 9.8.2.1",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, p. 81; UNI EN 81-1:2008, testo della norma fornito dal cliente, letto il 2026-10-06, p. 58",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 81; UNI EN 81-1:2008, testo della norma, letto il 2026-10-06, p. 58",
       "stato": "confermato",
       "verifiche": "tipo di paracadute per la velocità",
       "nota": ""
@@ -1323,9 +1323,9 @@
       "id": "vano.modello.non.calcolate",
       "gruppo": "Vano: limiti del progetto",
       "voce": "Verifiche che il software non calcola",
-      "valore": "da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle staffe e delle guide del contrappeso (UNI EN 81-50:2020, 5.10: il software verifica le guide di cabina, sul foglio 1 delle tavole); puleggia del contrappeso in taglia 2:1 sotto il soffitto; paracadute del contrappeso con spazi accessibili sotto il vano; distanza tra le parti fisse più alte della fossa e quelle più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; locale della macchina in basso (dimensioni e spazi di manovra: il software non lo disegna); movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina",
+      "valore": "da fare a parte, con i dati dei fornitori: sollecitazioni e frecce delle staffe e delle guide del contrappeso (UNI EN 81-50:2020, 5.10: il software verifica le guide di cabina, sul foglio 1 delle tavole); puleggia del contrappeso in taglia 2:1 sotto il soffitto; paracadute del contrappeso con spazi accessibili sotto il vano; distanza tra le parti fisse più alte della fossa e quelle più basse della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; locale della macchina in basso (dimensioni e spazi di manovra: il software non lo disegna); movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina; muro sotto la soglia di piano (5.2.5.3.2 a)); le soluzioni della UNI EN 81-21:2022 per testata, fossa, locale e porte ridotti (le verifiche in sezione seguono solo la UNI EN 81-20:2020)",
       "riferimento": "UNI EN 81-20:2020: guide e staffe 5.7.2–5.7.4 (con UNI EN 81-50:2020, 5.10); distanze in testata 5.2.5.7.2; spazi accessibili sotto il vano 5.2.5.4; parti fisse in fossa 5.2.5.8.2; sporgenze oltre 0,15 m 5.2.5.2.2.2; locale del macchinario 5.2.6.3; velocità eccessiva in salita 5.6.6; movimento incontrollato 5.6.7",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 31–43, 89–97; analisi delle lacune del 2026-10-03",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 31–43, 89–97; analisi delle lacune del 2026-10-03",
       "stato": "scelta del software",
       "verifiche": "",
       "nota": ""
@@ -1352,7 +1352,7 @@
       "fonte": "progetto del vano",
       "stato": "derivazione",
       "verifiche": "",
-      "nota": ""
+      "nota": "In una modifica la UNI 10411-1:2024 (6.1, prospetto 1) tratta come aumento della portata oltre il 10 % (Q fino a 500 kg) o il 5 % (oltre) e del carico totale oltre il 15 % o il 10 %; la UNI 10411-11:2024 (6.1) ogni aumento del carico totale: il confronto con la portata originale lo fa l'ingegnere."
     },
     {
       "n": 111,
@@ -1361,7 +1361,7 @@
       "voce": "Normativa di collaudo e parti sostituite o modificate",
       "valore": "impianto nuovo: UNI EN 81-20:2020 e UNI EN 81-50:2020, ogni verifica entra nell'esito; modifica di un impianto esistente: UNI 10411-1:2024 (ascensore elettrico a frizione non conforme alla Direttiva Ascensori) o UNI 10411-11:2024 (a frizione, conforme alla 95/16/CE o alla 2014/33/UE), a scelta dell'utente: entrano nell'esito le verifiche che riguardano le parti sostituite o modificate (comprese le variazioni di velocità, portata e corsa), le altre sono riportate come «esistente» con il valore calcolato. Quali parti riguarda ciascuna verifica è una lettura del software. Alla norma base si aggiungono le norme compatibili (matrice della ricerca, cap. 16 §5.2): sull'impianto nuovo le EN 81 supplementari (21, 28, 58, 70, 71, 72, 73, 76, 77), sulla modifica la EN 81-20/50 intera, le EN 81-28, 58, 73 e il miglioramento (80, 82, 83), su entrambi DM 236/1989, antincendio (DM 15/09/2005 o Codice V.3) e NTC 2018 (con le verifiche delle putrelle). Ogni norma ha il suo esito («non calcolata» se il software non ne calcola verifiche) e i suoi punti da verificare in sito nella relazione, con gli adempimenti del DPR 162/1999",
       "riferimento": "DPR 162/1999 e s.m.i.; UNI 10411-1:2024; UNI 10411-11:2024; UNI EN 81-20:2020; UNI EN 81-50:2020",
-      "fonte": "UNI 10411-1:2024, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 5, 13–14; UNI 10411-11:2024, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 5, 12; schema ICIM delle verifiche (la verifica straordinaria si limita di norma alle modifiche); ricerca, capitoli 2.4 e 6.6",
+      "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 5, 13–14; UNI 10411-11:2024, testo della norma, letto il 2026-10-06, pp. 5, 12; schema ICIM delle verifiche (la verifica straordinaria si limita di norma alle modifiche); ricerca, capitoli 2.4 e 6.6",
       "stato": "scelta del software",
       "verifiche": "",
       "nota": "lo scopo delle due UNI 10411 e i requisiti per la sostituzione del macchinario (punto 14) sono letti sul testo (voce sostituzione.adeguamenti); quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall'ingegnere"
@@ -1376,7 +1376,7 @@
       "fonte": "indicazione del cliente (5 ottobre 2026): prassi di lasciare l'arcata; ricerca, capitolo 16 §3.2 e §5.3",
       "stato": "prassi di cantiere",
       "verifiche": "",
-      "nota": "il DPR 162/1999 elenca le modifiche costruttive ma non dice quando l'insieme diventa una sostituzione completa: la qualificazione dell'intervento la conferma il tecnico incaricato con il soggetto che esegue la verifica straordinaria"
+      "nota": "il DPR 162/1999 elenca le modifiche costruttive senza dire quando l'insieme diventa una sostituzione completa; la UNI 10411-1/-11:2024 (21.1) chiama modifica sostanziale il cambio insieme di quadro, macchina, almeno una porta di piano, cabina e arcata, con il risultato secondo la UNI EN 81-20:2020: tenendo l'arcata il 21.1 non si applica. Una cabina nuova nell'arcata esistente segue la UNI EN 81-20 5.4.1–5.4.10 (UNI 10411-1:2024, 22; con porte di cabina a battente fino a +0,10 m² di superficie senza cambiare la portata, 22 f)). La qualificazione dell'intervento la conferma il tecnico incaricato con il soggetto che esegue la verifica straordinaria"
     },
     {
       "n": 113,
@@ -1448,7 +1448,7 @@
       "fonte": "geometria ricostruita dal software",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": "lo schema reale va rilevato sull'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori"
+      "nota": "lo schema reale va rilevato sull'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori; in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi"
     },
     {
       "n": 119,
@@ -1460,7 +1460,7 @@
       "fonte": "SICOR: schede tecniche 2025 e modelli CAD scaricati da sicoritaly.com il 2 ottobre 2026 (solo le quote); Sassi, Montanari, GEM, FAER: estratti delle pagine dei costruttori e dei rivenditori, 1° ottobre 2026",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": "la tolleranza sul rapporto è una scelta del software: la velocità reale con l'inverter deve restare entro il 5 % sopra la nominale (UNI EN 81-20:2020, 5.9.2.4); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell'ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
+      "nota": "la tolleranza sul rapporto è una scelta del software: la velocità reale con l'inverter deve restare entro il 5 % sopra la nominale (UNI EN 81-20:2020, 5.9.2.4; buona pratica non oltre l'8 % sotto); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell'ordine; per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce"
     },
     {
       "n": 120,
@@ -1504,7 +1504,7 @@
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Limite di aderenza mostrato durante la marcia",
       "valore": "e^(f·α) con il coefficiente d'attrito della frenatura (μ ridotto con la velocità delle funi): il confronto è indicativo (oltre il limite: avviso, non verifica fallita), la verifica resta quella dei casi della norma",
-      "riferimento": "UNI EN 81-50:2020, 5.11.2.2",
+      "riferimento": "UNI EN 81-50:2020, 5.11.1 e 5.11.2.3.2 (μ della frenatura)",
       "fonte": "scelta del software",
       "stato": "scelta del software",
       "verifiche": "",
@@ -1520,7 +1520,7 @@
       "fonte": "scelta del software (solo animazione)",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": ""
+      "nota": "La norma non dà tempi: per le porte automatiche orizzontali dà l'energia cinetica (≤ 10 J, ≤ 4 J con il dispositivo di protezione escluso) e la forza contro la chiusura (≤ 150 N) (UNI EN 81-20:2020, 5.3.6.2.2.1), dati del fornitore delle porte."
     },
     {
       "n": 125,
@@ -1529,10 +1529,10 @@
       "voce": "Urto sugli ammortizzatori",
       "valore": "velocità d'urto 1,15 volte la nominale; molle e tamponi in poliuretano come ammortizzatori lineari con la corsa piena a 4 volte il carico statico (lo stesso valore dei carichi sulla fossa; per i tamponi la corsa utile è 0,9·H); ammortizzatori idraulici con decelerazione costante v₀²/(2·corsa) su tutta la corsa; la cabina e il contrappeso si separano all'urto",
       "riferimento": "UNI EN 81-20:2020, 5.8.2.1.1.1–5.8.2.1.1.2 (urto al 115 %; corsa piena con un carico statico tra 2,5 e 4 volte: il software prende 4), 5.8.2.1.2.2 (90 %), 5.8.2.2.1 e 5.8.2.2.3 a)",
-      "fonte": "UNI EN 81-20:2020, testo della norma fornito dal cliente, letto il 2026-10-06, pp. 98–99",
+      "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, pp. 98–99",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione"
+      "nota": "la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: valori indicativi); la verifica della corsa resta quella della sezione. Le decelerazioni mostrate non sono una verifica: per i tamponi non lineari la norma vuole media ≤ 1 gn, oltre 2,5 gn per non più di 0,04 s, picco ≤ 6 gn e rimbalzo ≤ 1 m/s (5.8.2.1.2.1), per gli idraulici media ≤ 1 gn e oltre 2,5 gn per non più di 0,04 s (5.8.2.2.3); si provano per tipo (certificato del fornitore)"
     },
     {
       "n": 126,
@@ -1540,11 +1540,11 @@
       "gruppo": "Simulazione nel tempo (3D e grafici)",
       "voce": "Cabina bloccata: rotazione in salita",
       "valore": "la macchina gira in salita a 0,3 m/s finché il contrappeso poggia sui suoi ammortizzatori; poi le funi devono slittare (T1/T2 ≥ e^(f·α), μ della cabina bloccata)",
-      "riferimento": "UNI EN 81-50:2020, 5.11.2",
+      "riferimento": "UNI EN 81-50:2020, 5.11.2.2.3",
       "fonte": "motore di calcolo; velocità scelta dal software",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": ""
+      "nota": "La simulazione mostra il contrappeso sugli ammortizzatori con la cabina in alto; la norma chiede anche la cabina vuota in basso, che il calcolo verifica (tr_stall)."
     },
     {
       "n": 127,
@@ -1574,9 +1574,9 @@
       "n": 129,
       "id": "collaudo.adempimenti.nuovo.2",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
-      "voce": "DPR 162/1999, artt. 6-bis e 7 c.3",
-      "valore": "procedura con un organismo notificato (All. V, VIII, X, XI o XII); marcatura CE in cabina con il numero dell'organismo",
-      "riferimento": "DPR 162/1999, artt. 6-bis e 7 c.3",
+      "voce": "DPR 162/1999 e s.m.i., artt. 6-bis e 7 c.3",
+      "valore": "procedura con un organismo notificato (ascensore modello con esame UE del tipo, All. IV B, più All. V, X o XII; oppure All. VIII o XI); marcatura CE in cabina con il numero dell'organismo",
+      "riferimento": "DPR 162/1999 e s.m.i., artt. 6-bis e 7 c.3",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "confermato",
       "verifiche": "",
@@ -1586,9 +1586,9 @@
       "n": 130,
       "id": "collaudo.adempimenti.nuovo.3",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (impianto nuovo)",
-      "voce": "DPR 162/1999, art. 12 c.1–3",
+      "voce": "DPR 162/1999 e s.m.i., art. 12 c.1–3",
       "valore": "comunicazione al Comune entro 60 giorni dalla dichiarazione di conformità (oltre: con il verbale di una verifica straordinaria di attivazione); matricola entro 30 giorni",
-      "riferimento": "DPR 162/1999, art. 12 c.1–3",
+      "riferimento": "DPR 162/1999 e s.m.i., art. 12 c.1–3",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "confermato",
       "verifiche": "",
@@ -1646,9 +1646,9 @@
       "n": 135,
       "id": "collaudo.adempimenti.modifica.4",
       "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
-      "voce": "DPR 162/1999, art. 14 c.3",
-      "valore": "verifica straordinaria da uno dei soggetti dell'art. 13 c.1, di norma limitata ai controlli sulle modifiche, con la documentazione delle modifiche e dei componenti sostituiti",
-      "riferimento": "DPR 162/1999, art. 14 c.3",
+      "voce": "DPR 162/1999 e s.m.i., art. 14 c.3; schema ICIM SCI 162 rev. 02",
+      "valore": "verifica straordinaria da uno dei soggetti dell'art. 13 c.1 (la legge); secondo lo schema ICIM è di norma limitata ai controlli sulle modifiche, con la documentazione delle modifiche e dei componenti sostituiti",
+      "riferimento": "DPR 162/1999 e s.m.i., art. 14 c.3; schema ICIM SCI 162 rev. 02",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "confermato",
       "verifiche": "",
@@ -1656,6 +1656,18 @@
     },
     {
       "n": 136,
+      "id": "collaudo.adempimenti.modifica.5",
+      "gruppo": "Collaudo: adempimenti del DPR 162/1999 (modifica)",
+      "voce": "UNI 10411-1:2024 e UNI 10411-11:2024, 25",
+      "valore": "documentazione della modifica (App. C della -1, App. A della -11): il proprietario la tiene per chi esegue la verifica straordinaria e la allega alla dichiarazione di conformità (DM 37/2008); manuali della macchina, del quadro e dei nuovi componenti di sicurezza consegnati al proprietario",
+      "riferimento": "UNI 10411-1:2024 e UNI 10411-11:2024, 25",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 137,
       "id": "collaudo.en81.1",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "DPR 162/1999, All. V 3.3 (All. VIII 4)",
@@ -1667,7 +1679,7 @@
       "nota": ""
     },
     {
-      "n": 137,
+      "n": 138,
       "id": "collaudo.en81.2",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "DPR 162/1999, All. VIII 3 e), g), h)",
@@ -1679,7 +1691,7 @@
       "nota": ""
     },
     {
-      "n": 138,
+      "n": 139,
       "id": "collaudo.en81.3",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "Regolamento (UE) 2023/1230, art. 51 par. 2",
@@ -1691,188 +1703,308 @@
       "nota": ""
     },
     {
-      "n": 139,
+      "n": 140,
       "id": "collaudo.en81.4",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
       "voce": "UNI EN 81-50:2020, 5.12.1 e 5.12.2.1",
       "valore": "il metodo del coefficiente di sicurezza delle funi vale solo per pulegge di acciaio o ghisa e funi d'acciaio secondo EN 12385-5; la flessione è semplice se il raggio della gola non supera 0,53 volte il diametro della fune: rilevare il materiale della puleggia e il raggio delle gole",
       "riferimento": "UNI EN 81-50:2020, 5.12.1 e 5.12.2.1",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
-      "stato": "confermato",
-      "verifiche": "",
-      "nota": ""
-    },
-    {
-      "n": 140,
-      "id": "collaudo.en81.5",
-      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.6.2.2.1.2",
-      "valore": "tempo di risposta del limitatore di velocità: i suoi punti d'intervento distano al massimo 250 mm di corsa della fune del limitatore",
-      "riferimento": "UNI EN 81-20:2020, 5.6.2.2.1.2",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 141,
-      "id": "collaudo.en81.6",
+      "id": "collaudo.en81.5",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.8.2.1.2.1 e 5.8.2.2.3",
-      "valore": "ammortizzatori (dato del fornitore): decelerazione non oltre 1 gn, sopra 2,5 gn al massimo per 0,04 s; per quelli ad accumulo non lineari anche picco non oltre 6 gn e rimbalzo non oltre 1 m/s",
-      "riferimento": "UNI EN 81-20:2020, 5.8.2.1.2.1 e 5.8.2.2.3",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.6.2.2.1.2",
+      "valore": "tempo di risposta del limitatore di velocità: i suoi punti d'intervento distano al massimo 250 mm di corsa della fune del limitatore",
+      "riferimento": "UNI EN 81-20:2020, 5.6.2.2.1.2",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 142,
-      "id": "collaudo.en81.7",
+      "id": "collaudo.en81.6",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.2.5.7.1",
-      "valore": "cartello sopra o accanto allo schermo del contrappeso (5.2.5.5.1) con il gioco massimo ammesso tra contrappeso e ammortizzatore con la cabina al piano più alto, per conservare gli spazi in testata",
-      "riferimento": "UNI EN 81-20:2020, 5.2.5.7.1",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.8.2.1.2.1 e 5.8.2.2.3",
+      "valore": "ammortizzatori (dato del fornitore): decelerazione non oltre 1 gn, sopra 2,5 gn al massimo per 0,04 s; per quelli ad accumulo non lineari anche picco non oltre 6 gn e rimbalzo non oltre 1 m/s",
+      "riferimento": "UNI EN 81-20:2020, 5.8.2.1.2.1 e 5.8.2.2.3",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 143,
-      "id": "collaudo.en81.8",
+      "id": "collaudo.en81.7",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.2.2.4",
-      "valore": "fossa più profonda di 2,50 m: porta di accesso; fino a 2,50 m porta di accesso oppure scala dentro il vano (appendice F)",
-      "riferimento": "UNI EN 81-20:2020, 5.2.2.4",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.2.5.7.1",
+      "valore": "cartello sopra o accanto allo schermo del contrappeso (5.2.5.5.1) con il gioco massimo ammesso tra contrappeso e ammortizzatore con la cabina al piano più alto, per conservare gli spazi in testata",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.7.1",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 144,
-      "id": "collaudo.en81.9",
+      "id": "collaudo.en81.8",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.2.1.5.1 b)",
-      "valore": "in fossa un commutatore di ispezione fisso, manovrabile da non oltre 0,30 m da uno spazio di rifugio",
-      "riferimento": "UNI EN 81-20:2020, 5.2.1.5.1 b)",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.2.2.4",
+      "valore": "fossa più profonda di 2,50 m: porta di accesso; fino a 2,50 m porta di accesso oppure scala dentro il vano (appendice F)",
+      "riferimento": "UNI EN 81-20:2020, 5.2.2.4",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 145,
-      "id": "collaudo.en81.10",
+      "id": "collaudo.en81.9",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.2.5.7.1 e 5.2.5.8.1",
-      "valore": "uno spazio di rifugio per ogni persona, tutti dello stesso tipo e senza sovrapposizioni; cartello con il numero di persone ammesse e la postura",
-      "riferimento": "UNI EN 81-20:2020, 5.2.5.7.1 e 5.2.5.8.1",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.2.1.5.1 b)",
+      "valore": "in fossa un commutatore di ispezione fisso, manovrabile da non oltre 0,30 m da uno spazio di rifugio",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.5.1 b)",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 146,
-      "id": "collaudo.en81.11",
+      "id": "collaudo.en81.10",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.2.1.4.1",
-      "valore": "illuminazione del vano: almeno 50 lux a 1 m sopra il tetto della cabina nella sua proiezione e a 1 m sopra il fondo della fossa dove si sta, si lavora o si passa tra le zone di lavoro; almeno 20 lux altrove",
-      "riferimento": "UNI EN 81-20:2020, 5.2.1.4.1",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.2.5.7.1 e 5.2.5.8.1",
+      "valore": "uno spazio di rifugio per ogni persona, tutti dello stesso tipo e senza sovrapposizioni; cartello con il numero di persone ammesse e la postura",
+      "riferimento": "UNI EN 81-20:2020, 5.2.5.7.1 e 5.2.5.8.1",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 147,
-      "id": "collaudo.en81.12",
+      "id": "collaudo.en81.11",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.4.10.1 e 5.4.10.4",
-      "valore": "luce in cabina almeno 100 lux sui comandi e a 1 m dal pavimento; luce di emergenza di almeno 5 lux per un'ora presso gli allarmi in cabina e sul tetto e al centro di cabina e tetto, a 1 m",
-      "riferimento": "UNI EN 81-20:2020, 5.4.10.1 e 5.4.10.4",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.2.1.4.1",
+      "valore": "illuminazione del vano: almeno 50 lux a 1 m sopra il tetto della cabina nella sua proiezione e a 1 m sopra il fondo della fossa dove si sta, si lavora o si passa tra le zone di lavoro; almeno 20 lux altrove",
+      "riferimento": "UNI EN 81-20:2020, 5.2.1.4.1",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 148,
-      "id": "collaudo.en81.13",
+      "id": "collaudo.en81.12",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.4.4",
-      "valore": "materiali della cabina secondo EN 13501-1: pavimento Cfl-s2, pareti C-s2,d1, soffitto C-s2,d0",
-      "riferimento": "UNI EN 81-20:2020, 5.4.4",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.4.10.1 e 5.4.10.4",
+      "valore": "luce in cabina almeno 100 lux sui comandi e a 1 m dal pavimento; luce di emergenza di almeno 5 lux per un'ora presso gli allarmi in cabina e sul tetto e al centro di cabina e tetto, a 1 m",
+      "riferimento": "UNI EN 81-20:2020, 5.4.10.1 e 5.4.10.4",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 149,
-      "id": "collaudo.en81.14",
+      "id": "collaudo.en81.13",
       "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
-      "voce": "UNI EN 81-20:2020, 5.3.5.3.2, 5.3.5.3.4, 5.3.6.2.2.1 b) e 5.3.15.2 b)",
-      "valore": "pannelli delle porte con i dispositivi di ritenuta e le prove a pendolo (morbido da 800 mm; rigido da 500 mm sui pannelli in vetro); sulle porte automatiche un dispositivo di protezione che copre da 25 a 1600 mm sopra la soglia e rileva ostacoli di 50 mm; fuori dalla zona di sbloccaggio la porta di cabina, spinta con 1000 N, non si apre più di 50 mm",
-      "riferimento": "UNI EN 81-20:2020, 5.3.5.3.2, 5.3.5.3.4, 5.3.6.2.2.1 b) e 5.3.15.2 b)",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "voce": "UNI EN 81-20:2020, 5.4.4",
+      "valore": "materiali della cabina secondo EN 13501-1: pavimento Cfl-s2, pareti C-s2,d1, soffitto C-s2,d0",
+      "riferimento": "UNI EN 81-20:2020, 5.4.4",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 150,
-      "id": "collaudo.10411-1.1",
-      "gruppo": "Collaudo: UNI 10411-1:2024",
-      "voce": "UNI 10411-1:2024, scopo",
-      "valore": "ascensori elettrici a frizione non conformi alla 95/16/CE né alla 2014/33/UE; esclude le modifiche che cambiano le misure antincendio (valgono il DM 15/09/2005 o il Codice V.3)",
-      "riferimento": "UNI 10411-1:2024, scopo",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "id": "collaudo.en81.14",
+      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
+      "voce": "UNI EN 81-20:2020, 6.3.1",
+      "valore": "prova del freno: da solo ferma la cabina che scende a velocità nominale con il 125 % della portata; con un gruppo fuori servizio rallenta la cabina con la portata in discesa; con il carico tra (q − 0,1)·Q e (q + 0,1)·Q lo sblocco manuale fa partire la cabina da sola, altrimenti servono i mezzi della 5.9.2.2.2.9 b)",
+      "riferimento": "UNI EN 81-20:2020, 6.3.1",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 151,
-      "id": "collaudo.10411-11.1",
-      "gruppo": "Collaudo: UNI 10411-11:2024",
-      "voce": "UNI 10411-11:2024, scopo",
-      "valore": "ascensori elettrici a frizione conformi alla Direttiva Ascensori; esclude le modifiche che cambiano le misure antincendio (valgono il DM 15/09/2005 o il Codice V.3)",
-      "riferimento": "UNI 10411-11:2024, scopo",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "id": "collaudo.en81.15",
+      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
+      "voce": "UNI EN 81-20:2020, 6.3.2",
+      "valore": "impianto elettrico: esame a vista, continuità dei conduttori di protezione, isolamento circuito per circuito con l'elettronica scollegata, efficacia dell'interruzione automatica in caso di guasto",
+      "riferimento": "UNI EN 81-20:2020, 6.3.2",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 152,
-      "id": "collaudo.10411-11.2",
-      "gruppo": "Collaudo: UNI 10411-11:2024",
-      "voce": "UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3",
-      "valore": "cambiando la macchina con protezioni ACOP o UCM esistenti: la modifica ne deve garantire il funzionamento, con una relazione sulla compatibilità della nuova macchina, oppure nuovi dispositivi con certificato di esame di tipo e dichiarazione di conformità; il freno della macchina vale come organo d'arresto solo se ridondante e autocontrollato",
-      "riferimento": "UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "id": "collaudo.en81.16",
+      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
+      "voce": "UNI EN 81-20:2020, 6.3.3",
+      "valore": "aderenza: arresti con la frenatura più severa, in salita a cabina vuota nella parte alta e in discesa con il 125 % della portata verso il basso; con il contrappeso sugli ammortizzatori e la macchina in moto le funi slittano oppure la cabina non sale; bilanciamento come dichiarato",
+      "riferimento": "UNI EN 81-20:2020, 6.3.3",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 153,
-      "id": "collaudo.en81-21.1",
-      "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
-      "voce": "UNI EN 81-21:2022, 1",
-      "valore": "ascensori installati in un edificio esistente quando vincoli dell'edificio impediscono di soddisfare alcuni requisiti della UNI EN 81-20:2020; non si applica agli ascensori installati prima della sua pubblicazione",
-      "riferimento": "UNI EN 81-21:2022, 1",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "id": "collaudo.en81.17",
+      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
+      "voce": "UNI EN 81-20:2020, 6.3.4, 6.3.5 e 6.3.7",
+      "valore": "paracadute di cabina in discesa (istantaneo con la portata a velocità nominale; progressivo, negli impianti a frizione, con il 125 % della portata a velocità nominale o inferiore), del contrappeso a cabina vuota; ammortizzatori ad accumulo compressi dalla cabina con la portata, a dissipazione provati alla velocità nominale (o a quella usata per la corsa ridotta); dopo, nessun danno all'esame a vista",
+      "riferimento": "UNI EN 81-20:2020, 6.3.4, 6.3.5 e 6.3.7",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
       "n": 154,
+      "id": "collaudo.en81.18",
+      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
+      "voce": "UNI EN 81-20:2020, 6.3.11, 6.3.12 e 6.3.13",
+      "valore": "ACOP: cabina vuota in salita a velocità non inferiore alla nominale, frenata solo dal dispositivo; livellamento verificato a ogni fermata e, al piano più sfavorevole, durante carico e scarico; UCM: cabina vuota verso l'alto e piena verso il basso a una velocità prestabilita, con il movimento entro il limite della 5.6.7.5 e l'autosorveglianza dove richiesta",
+      "riferimento": "UNI EN 81-20:2020, 6.3.11, 6.3.12 e 6.3.13",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 155,
+      "id": "collaudo.en81.19",
+      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
+      "voce": "UNI EN 81-20:2020, 6.3.14",
+      "valore": "cabina fuori dalla zona di sbloccaggio e porta di piano tenuta aperta di 100 mm: lasciata, la porta si richiude e si blocca",
+      "riferimento": "UNI EN 81-20:2020, 6.3.14",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 156,
+      "id": "collaudo.en81.20",
+      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
+      "voce": "UNI EN 81-20:2020, C.2 e 7.3.2",
+      "valore": "la sostituzione della macchina o della puleggia di trazione è una trasformazione importante: si annota nel registro dell'impianto, da aggiornare",
+      "riferimento": "UNI EN 81-20:2020, C.2 e 7.3.2",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 157,
+      "id": "collaudo.en81.21",
+      "gruppo": "Collaudo: UNI EN 81-20:2020 e UNI EN 81-50:2020",
+      "voce": "UNI EN 81-20:2020, 5.3.5.3.2, 5.3.5.3.4, 5.3.6.2.2.1 b) e 5.3.15.2 b)",
+      "valore": "pannelli delle porte con i dispositivi di ritenuta e le prove a pendolo (morbido da 800 mm; rigido da 500 mm sui pannelli in vetro); sulle porte automatiche un dispositivo di protezione che copre da 25 a 1600 mm sopra la soglia e rileva ostacoli di 50 mm; fuori dalla zona di sbloccaggio la porta di cabina, spinta con 1000 N, non si apre più di 50 mm",
+      "riferimento": "UNI EN 81-20:2020, 5.3.5.3.2, 5.3.5.3.4, 5.3.6.2.2.1 b) e 5.3.15.2 b)",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 158,
+      "id": "collaudo.10411-1.1",
+      "gruppo": "Collaudo: UNI 10411-1:2024",
+      "voce": "UNI 10411-1:2024, scopo",
+      "valore": "impianti elettrici a frizione fuori dalla 95/16/CE e dalla 2014/33/UE; esclude le modifiche che cambiano le misure antincendio (per queste, a nostro giudizio, il DM 15/09/2005 o il Codice V.3)",
+      "riferimento": "UNI 10411-1:2024, scopo",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 159,
+      "id": "collaudo.10411-1.2",
+      "gruppo": "Collaudo: UNI 10411-1:2024",
+      "voce": "UNI 10411-1:2024, 14.4 a)–g)",
+      "valore": "con la macchina nuova: temporizzatore del motore (EN 81-20 5.9.2.7); arresto in salita prima della velocità d'intervento del limitatore; protezioni ACOP e UCM esistenti che continuano a funzionare; dispositivo d'arresto presso la macchina (5.12.1.11.1 e)); pulegge nel locale secondo la 5.5.7; senza UCM e con la regolazione di velocità, macchinario senza alimentazione se il freno non si apre, con ripristino solo manuale",
+      "riferimento": "UNI 10411-1:2024, 14.4 a)–g)",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 160,
+      "id": "collaudo.10411-11.1",
+      "gruppo": "Collaudo: UNI 10411-11:2024",
+      "voce": "UNI 10411-11:2024, scopo",
+      "valore": "impianti elettrici a frizione marcati CE secondo la Direttiva; esclude le modifiche che cambiano le misure antincendio (per queste, a nostro giudizio, il DM 15/09/2005 o il Codice V.3)",
+      "riferimento": "UNI 10411-11:2024, scopo",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 161,
+      "id": "collaudo.10411-11.2",
+      "gruppo": "Collaudo: UNI 10411-11:2024",
+      "voce": "UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3",
+      "valore": "cambiando la macchina: le protezioni UCM esistenti devono continuare a funzionare (14.3 a)); per l'ACOP esistente l'App. A (14) chiede una relazione sulla compatibilità della nuova macchina, oppure nuovi dispositivi con certificato di esame di tipo e dichiarazione di conformità; il freno della macchina vale come organo d'arresto solo se ridondante e autocontrollato",
+      "riferimento": "UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 162,
+      "id": "collaudo.10411-11.3",
+      "gruppo": "Collaudo: UNI 10411-11:2024",
+      "voce": "UNI 10411-11:2024, 14.3 b)",
+      "valore": "senza UCM conforme alla 5.6.7 e con il rallentamento controllato: macchinario senza alimentazione se il freno non si apre, al più tardi all'arrivo al piano, con ripristino solo manuale",
+      "riferimento": "UNI 10411-11:2024, 14.3 b)",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 163,
+      "id": "collaudo.en81-21.1",
+      "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
+      "voce": "UNI EN 81-21:2022, 1",
+      "valore": "ascensori nuovi in un edificio esistente, dove l'edificio non permette di rispettare tutta la UNI EN 81-20:2020; esclusi gli impianti montati prima della sua pubblicazione",
+      "riferimento": "UNI EN 81-21:2022, 1",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 164,
       "id": "collaudo.en81-21.2",
+      "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
+      "voce": "UNI EN 81-21:2022, 6.2 e 7.1",
+      "valore": "oltre alle prove della EN 81-20 6.3: arresti mobili e sistema di arresto preattivato provati in moto a velocità nominale (in testata a cabina vuota, in fossa con il carico nominale), corsa dei loro ammortizzatori e distanza di frenatura; nelle istruzioni: quanto frena il sistema, col valore nominale e i due limiti",
+      "riferimento": "UNI EN 81-21:2022, 6.2 e 7.1",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 165,
+      "id": "collaudo.en81-21.3",
       "gruppo": "Collaudo: UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)",
       "voce": "DPR 162/1999, art. 17-bis; DM 19/03/2015; linee guida MIMIT 2022",
       "valore": "spazi di rifugio ridotti solo con l'accordo preventivo: in edificio esistente PEC al Ministero con la certificazione dell'organismo prima dell'installazione (Procedura 2: dichiarazione dei punti della EN 81-21 applicati); la EN 81-21 da sola non giustifica la deroga",
@@ -1883,11 +2015,23 @@
       "nota": ""
     },
     {
-      "n": 155,
+      "n": 166,
       "id": "collaudo.en81-28.1",
       "gruppo": "Collaudo: UNI EN 81-28:2022 (teleallarme)",
+      "voce": "UNI EN 81-20:2020, 5.12.3.1; UNI EN 81-28:2004, 4.1.3, 4.2.1 e 7",
+      "valore": "la EN 81-20 richiama con data la EN 81-28:2003 (UNI EN 81-28:2004): prova automatica del collegamento almeno ogni 3 giorni; con alimentazione a batteria, avviso al servizio di soccorso quando l'autonomia residua scende sotto 1 h; pulsante d'allarme giallo con il simbolo della campana",
+      "riferimento": "UNI EN 81-20:2020, 5.12.3.1; UNI EN 81-28:2004, 4.1.3, 4.2.1 e 7",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 167,
+      "id": "collaudo.en81-28.2",
+      "gruppo": "Collaudo: UNI EN 81-28:2022 (teleallarme)",
       "voce": "UNI EN 81-28:2022",
-      "valore": "teleallarme verso un servizio di soccorso: requisiti da verificare sul testo della norma (la UNI EN 81-28:2004 letta si applica agli impianti montati dopo la sua pubblicazione e vale da riferimento per gli esistenti, punto 1)",
+      "valore": "requisiti dell'edizione citata in GUUE da verificare sul testo; nelle modifiche la UNI 10411-1/-11:2024 (punto 23) ammette l'allarme nuovo secondo la EN 81-20 5.12.3.1 o la UNI EN 81-28:2022",
       "riferimento": "UNI EN 81-28:2022",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "da verificare",
@@ -1895,11 +2039,11 @@
       "nota": ""
     },
     {
-      "n": 156,
+      "n": 168,
       "id": "collaudo.en81-58.1",
       "gruppo": "Collaudo: UNI EN 81-58:2022 (resistenza al fuoco delle porte di piano)",
       "voce": "UNI EN 81-58:2022; DM 15/09/2005, 3.2–3.3 e art. 1 c.2 lett. c)",
-      "valore": "porte di piano resistenti al fuoco (classi E, EI, EW) provate secondo la norma, quando fanno parte della compartimentazione del vano; sostituirle con modelli diversi è una modifica sostanziale ai fini antincendio",
+      "valore": "porte di piano resistenti al fuoco (classi E, EI, EW) provate secondo la norma, quando fanno parte della compartimentazione del vano; sostituirle con modelli diversi è una modifica sostanziale ai fini antincendio (la UNI EN 81-20:2020, 5.3.5.2, richiama con data la EN 81-58:2003: quale certificato accettare lo decide l'organismo)",
       "riferimento": "UNI EN 81-58:2022; DM 15/09/2005, 3.2–3.3 e art. 1 c.2 lett. c)",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "confermato",
@@ -1907,7 +2051,7 @@
       "nota": ""
     },
     {
-      "n": 157,
+      "n": 169,
       "id": "collaudo.en81-70.1",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, 5.3.1",
@@ -1919,7 +2063,7 @@
       "nota": ""
     },
     {
-      "n": 158,
+      "n": 170,
       "id": "collaudo.en81-70.2",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, 5.3.2 e 5.4",
@@ -1931,7 +2075,7 @@
       "nota": ""
     },
     {
-      "n": 159,
+      "n": 171,
       "id": "collaudo.en81-70.3",
       "gruppo": "Collaudo: UNI EN 81-70:2022 (accessibilità)",
       "voce": "UNI EN 81-70:2022, scopo",
@@ -1943,31 +2087,31 @@
       "nota": ""
     },
     {
-      "n": 160,
+      "n": 172,
       "id": "collaudo.en81-71.1",
       "gruppo": "Collaudo: UNI EN 81-71 (ascensori antivandalo)",
       "voce": "UNI EN 81-71",
       "valore": "categoria antivandalo da concordare con il committente; per la presunzione di conformità vale l'edizione 2005+A1:2006",
       "riferimento": "UNI EN 81-71",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
-      "stato": "confermato",
+      "stato": "da verificare",
       "verifiche": "",
       "nota": ""
     },
     {
-      "n": 161,
+      "n": 173,
       "id": "collaudo.en81-72.1",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
-      "voce": "DM 15/09/2005, punto 7; Codice V.3.3.4",
+      "voce": "DM 15/09/2005, punto 7 (valori); Codice V.3.3.4",
       "valore": "ascensore antincendio: tutti i piani serviti; vano e porte di piano almeno REI 60; cabina interna almeno 1,10 × 2,10 m con accesso sul lato corto; botola sul tetto almeno 0,50 × 0,70 m; area dedicata almeno 5 m² a ogni piano; luce d'emergenza almeno 5 lux con 1 h di autonomia; IPX3 dove arriva l'acqua; linea dedicata con alimentazione di sicurezza",
-      "riferimento": "DM 15/09/2005, punto 7; Codice V.3.3.4",
+      "riferimento": "DM 15/09/2005, punto 7 (valori); Codice V.3.3.4",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "confermato",
       "verifiche": "",
       "nota": ""
     },
     {
-      "n": 162,
+      "n": 174,
       "id": "collaudo.en81-72.2",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "Codice S.10, Tab. S.10-2",
@@ -1979,7 +2123,7 @@
       "nota": ""
     },
     {
-      "n": 163,
+      "n": 175,
       "id": "collaudo.en81-72.3",
       "gruppo": "Collaudo: UNI EN 81-72:2020 (ascensori antincendio)",
       "voce": "UNI EN 81-72:2020",
@@ -1991,11 +2135,11 @@
       "nota": ""
     },
     {
-      "n": 164,
+      "n": 176,
       "id": "collaudo.en81-73.1",
       "gruppo": "Collaudo: UNI EN 81-73:2020 (comportamento in caso d'incendio)",
       "voce": "DM 15/09/2005, punto 6; Codice V.3.3.1",
-      "valore": "su comando della rivelazione incendio la cabina va al piano prestabilito e lascia uscire i passeggeri; con il Codice l'ascensore «dovrebbe» essere conforme alla UNI EN 81-73",
+      "valore": "quando la compartimentazione lo richiede, su comando della rivelazione incendio la cabina va al piano prestabilito e lascia uscire i passeggeri; con il Codice l'ascensore «dovrebbe» essere conforme alla UNI EN 81-73",
       "riferimento": "DM 15/09/2005, punto 6; Codice V.3.3.1",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "confermato",
@@ -2003,7 +2147,7 @@
       "nota": ""
     },
     {
-      "n": 165,
+      "n": 177,
       "id": "collaudo.en81-73.2",
       "gruppo": "Collaudo: UNI EN 81-73:2020 (comportamento in caso d'incendio)",
       "voce": "UNI EN 81-73:2020",
@@ -2015,7 +2159,7 @@
       "nota": ""
     },
     {
-      "n": 166,
+      "n": 178,
       "id": "collaudo.en81-76.1",
       "gruppo": "Collaudo: UNI EN 81-76:2025 (evacuazione delle persone con disabilità)",
       "voce": "UNI EN 81-76:2025",
@@ -2027,7 +2171,7 @@
       "nota": ""
     },
     {
-      "n": 167,
+      "n": 179,
       "id": "collaudo.en81-77.1",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 1",
@@ -2039,7 +2183,7 @@
       "nota": ""
     },
     {
-      "n": 168,
+      "n": 180,
       "id": "collaudo.en81-77.2",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 5.4–5.10, All. A, B, D",
@@ -2051,7 +2195,7 @@
       "nota": ""
     },
     {
-      "n": 169,
+      "n": 181,
       "id": "collaudo.en81-77.3",
       "gruppo": "Collaudo: UNI EN 81-77:2022 (azioni sismiche)",
       "voce": "UNI EN 81-77:2022, 0.3",
@@ -2063,11 +2207,23 @@
       "nota": ""
     },
     {
-      "n": 170,
+      "n": 182,
       "id": "collaudo.en81-80.1",
       "gruppo": "Collaudo: UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)",
+      "voce": "UNI EN 81-80:2004 e 2009, 1 e appendice A",
+      "valore": "analisi dei rischi dell'impianto esistente e piano di miglioramento per priorità; quali misure e in che tempi lo decide la legislazione nazionale, non la norma",
+      "riferimento": "UNI EN 81-80:2004 e 2009, 1 e appendice A",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 183,
+      "id": "collaudo.en81-80.2",
+      "gruppo": "Collaudo: UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)",
       "voce": "UNI EN 81-80:2019",
-      "valore": "analisi dei rischi dell'impianto esistente e piano di miglioramento per priorità, scelta volontaria del proprietario (così le UNI EN 81-80:2004 e 2009 lette, punto 1 e appendice A)",
+      "valore": "la stessa analisi nell'edizione in vigore, con una struttura diversa: da verificare sul testo",
       "riferimento": "UNI EN 81-80:2019",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "da verificare",
@@ -2075,7 +2231,7 @@
       "nota": ""
     },
     {
-      "n": 171,
+      "n": 184,
       "id": "collaudo.en81-82.1",
       "gruppo": "Collaudo: UNI EN 81-82:2026 (accessibilità degli esistenti)",
       "voce": "UNI EN 81-82:2026",
@@ -2087,7 +2243,7 @@
       "nota": ""
     },
     {
-      "n": 172,
+      "n": 185,
       "id": "collaudo.en81-83.1",
       "gruppo": "Collaudo: UNI EN 81-83:2026 (antivandalo degli esistenti)",
       "voce": "UNI EN 81-83:2026",
@@ -2099,91 +2255,91 @@
       "nota": ""
     },
     {
-      "n": 173,
+      "n": 186,
       "id": "collaudo.dm236.1",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
       "valore": "piattaforma di distribuzione davanti alla porta di cabina: 1,50 × 1,50 m negli edifici nuovi, 1,40 × 1,40 m nell'adeguamento (fuori dal vano: in sito)",
       "riferimento": "DM 236/1989, 8.1.12",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "fonte": "testo ufficiale del DM 236/1989",
       "stato": "confermato",
       "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
       "nota": ""
     },
     {
-      "n": 174,
+      "n": 187,
       "id": "collaudo.dm236.2",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
       "valore": "porte di cabina e di piano a scorrimento automatico (nell'adeguamento la porta di piano può essere a battente se ad apertura automatica); porte aperte almeno 8 s, chiusura in almeno 4 s",
       "riferimento": "DM 236/1989, 8.1.12",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "fonte": "testo ufficiale del DM 236/1989",
       "stato": "confermato",
       "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
       "nota": ""
     },
     {
-      "n": 175,
+      "n": 188,
       "id": "collaudo.dm236.3",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12",
       "valore": "arresto ai piani con autolivellamento entro ± 2 cm; sosta ai piani con le porte chiuse",
       "riferimento": "DM 236/1989, 8.1.12",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "fonte": "testo ufficiale del DM 236/1989",
       "stato": "confermato",
       "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
       "nota": ""
     },
     {
-      "n": 176,
+      "n": 189,
       "id": "collaudo.dm236.4",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12 e 8.0.1",
       "valore": "pulsanti di cabina e di piano: il più alto tra 1,10 e 1,40 m, misurato all'asse del comando; bottoniera di cabina su una parete laterale ad almeno 0,35 m dalla porta",
       "riferimento": "DM 236/1989, 8.1.12 e 8.0.1",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "fonte": "testo ufficiale del DM 236/1989",
       "stato": "confermato",
       "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
       "nota": ""
     },
     {
-      "n": 177,
+      "n": 190,
       "id": "collaudo.dm236.5",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 8.1.12 e 4.1.12",
       "valore": "citofono in cabina tra 1,10 e 1,30 m; luce d'emergenza con almeno 3 h di autonomia; campanello d'allarme e segnale luminoso di allarme ricevuto; arresto e inversione della chiusura; segnale acustico d'arrivo; numeri in rilievo e Braille, targa Braille di piano; sedile ribaltabile dove possibile",
       "riferimento": "DM 236/1989, 8.1.12 e 4.1.12",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "fonte": "testo ufficiale del DM 236/1989",
       "stato": "confermato",
       "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
       "nota": ""
     },
     {
-      "n": 178,
+      "n": 191,
       "id": "collaudo.dm236.6",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 3.2; L. 13/1989, art. 1 c.3 lett. d)",
       "valore": "ascensore obbligatorio oltre il terzo livello (contati interrati e porticati); negli immobili con più di tre livelli fuori terra un ascensore per ogni scala principale",
       "riferimento": "DM 236/1989, 3.2; L. 13/1989, art. 1 c.3 lett. d)",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "fonte": "testo ufficiale del DM 236/1989; L. 13/1989: ricerca, cap. 16",
       "stato": "confermato",
       "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
       "nota": ""
     },
     {
-      "n": 179,
+      "n": 192,
       "id": "collaudo.dm236.7",
       "gruppo": "Collaudo: DM 236/1989 (barriere architettoniche)",
       "voce": "DM 236/1989, 7.5; DPR 503/1996, art. 19",
       "valore": "nelle ristrutturazioni deroghe per impossibilità tecnica strutturale o impiantistica (privati: concesse dal Sindaco); edifici vincolati: deroga se le opere pregiudicano il bene",
       "riferimento": "DM 236/1989, 7.5; DPR 503/1996, art. 19",
-      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "fonte": "testo ufficiale del DM 236/1989; DPR 503/1996: ricerca, cap. 16",
       "stato": "confermato",
       "verifiche": "cabina minima (DM 236/1989); porta minima (DM 236/1989); porta sul lato corto",
       "nota": ""
     },
     {
-      "n": 180,
+      "n": 193,
       "id": "collaudo.antincendio.1",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 3/8/2015, art. 5 c.1-bis lett. e)",
@@ -2195,7 +2351,7 @@
       "nota": ""
     },
     {
-      "n": 181,
+      "n": 194,
       "id": "collaudo.antincendio.2",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, art. 1 c.2",
@@ -2207,7 +2363,7 @@
       "nota": ""
     },
     {
-      "n": 182,
+      "n": 195,
       "id": "collaudo.antincendio.3",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, 3.1–3.3; Codice V.3.2",
@@ -2219,7 +2375,7 @@
       "nota": ""
     },
     {
-      "n": 183,
+      "n": 196,
       "id": "collaudo.antincendio.4",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 2",
@@ -2231,7 +2387,7 @@
       "nota": ""
     },
     {
-      "n": 184,
+      "n": 197,
       "id": "collaudo.antincendio.5",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 5",
@@ -2243,7 +2399,7 @@
       "nota": ""
     },
     {
-      "n": 185,
+      "n": 198,
       "id": "collaudo.antincendio.6",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "DM 15/09/2005, punto 6; Codice V.3.3.1 c.5",
@@ -2255,7 +2411,7 @@
       "nota": ""
     },
     {
-      "n": 186,
+      "n": 199,
       "id": "collaudo.antincendio.7",
       "gruppo": "Collaudo: DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)",
       "voce": "Codice S.9, Tab. S.9-3",
@@ -2267,7 +2423,7 @@
       "nota": ""
     },
     {
-      "n": 187,
+      "n": 200,
       "id": "collaudo.ntc2018.1",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §3.1.4",
@@ -2279,7 +2435,7 @@
       "nota": ""
     },
     {
-      "n": 188,
+      "n": 201,
       "id": "collaudo.ntc2018.2",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §8.4.1",
@@ -2291,7 +2447,7 @@
       "nota": ""
     },
     {
-      "n": 189,
+      "n": 202,
       "id": "collaudo.ntc2018.3",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §11.4.1",
@@ -2303,7 +2459,7 @@
       "nota": ""
     },
     {
-      "n": 190,
+      "n": 203,
       "id": "collaudo.ntc2018.4",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, §7.2.3–7.2.4",
@@ -2315,7 +2471,7 @@
       "nota": ""
     },
     {
-      "n": 191,
+      "n": 204,
       "id": "collaudo.ntc2018.5",
       "gruppo": "Collaudo: NTC 2018 (strutture e azioni sismiche)",
       "voce": "NTC 2018, Tab. 7.3.III e §7.3.6.3",

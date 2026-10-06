@@ -44,6 +44,8 @@ export const KV_VERT = {
   // the car on its fully compressed buffers plus the jump: ≥ 0,1 + 0,035·v² [m]
   cwGuided: 0.1,
   cwGuidedV2: 0.035,
+  // 5.2.5.6.2: the car's guided travel left past its highest point (that position has the jump already) ≥ 0,1 [m]
+  carGuided: 0.1,
   // 5.8.2: energy accumulation buffers (linear: springs; non-linear: polyurethane pads) up to 1 m/s; linear: stroke
   // ≥ 0,135·v² m and ≥ 65 mm; non-linear: fully compressed at 90 % of the height; energy dissipation (hydraulic): any
   // speed, stroke ≥ 0,0674·v² m. Typical buffers of the catalogues: P+S Diepocell D pads 80 mm high; Oleo LSB10 and
@@ -180,7 +182,9 @@ export const VOCI_VERT: readonly VoceVano[] = [
     riferimento: 'UNI EN 81-20:2020, 5.2.6.3.2.1 (2,10 m e superfici libere), 5.2.6.3.2.2 (1,80 m sui percorsi) e 5.2.3.2 a) (porta)',
     fonte: `${letto(T20, 'pp. 29, 43')}; le superfici libere anche in UNI EN 81-1:1999, 6.3.2.1 (edizione 2008: 6.3.3.1)`,
     stato: 'confermato',
-    nota: 'non verificati: i percorsi larghi almeno 0,50 m e lo spazio di 0,30 m sopra le parti rotanti (5.2.6.3.2.2)', verifiche: ['m_height', 'm_panel', 'm_free', 'm_door'],
+    nota: 'davanti al quadro il software verifica la profondità libera e che la parete sia lunga almeno quanto il maggiore tra 500 mm e il quadro; '
+      + 'non verificati: la macchina o altro dentro quella superficie, i percorsi larghi almeno 0,50 m (5.2.6.3.2.2) e lo spazio di 0,30 m sopra le '
+      + 'parti rotanti (5.2.6.3.2.3)', verifiche: ['m_height', 'm_panel', 'm_free', 'm_door'],
   },
   {
     id: 'carichi.fossa', gruppo: 'carichi', titolo: 'Carichi sul pavimento della fossa',
@@ -189,7 +193,8 @@ export const VOCI_VERT: readonly VoceVano[] = [
       + '5 istantaneo); sotto ogni guida del contrappeso la massa della guida',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.4–5.2.1.8.6, 5.7.2.3.5 e Prospetto 14 (k1)', fonte: letto(T20, 'pp. 27, 94–96'), stato: 'confermato',
     nota: 'non calcolato: con spazi accessibili sotto il vano (5.2.5.4) il contrappeso ha il paracadute, sotto le sue guide va anche '
-      + 'k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m²',
+      + 'k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m². P è la cabina vuota: la quota del cavo flessibile e della compensazione, '
+      + 'che la 5.2.1.8.5 conta in P, va aggiunta dall\'ingegnere',
   },
   {
     id: 'guide.spinte', gruppo: 'carichi', titolo: 'Spinte sulle guide di cabina',
@@ -213,9 +218,9 @@ export const VOCI_VERT: readonly VoceVano[] = [
   },
   {
     id: 'illuminazione', gruppo: 'locale', titolo: 'Illuminazione del vano e del locale del macchinario',
-    valore: 'vano: illuminazione fissa di almeno 50 lux a 1 m sopra il tetto della cabina e sopra il pavimento della fossa, 20 lux altrove; '
-      + 'locale del macchinario: almeno 200 lux al pavimento nelle zone di lavoro',
-    riferimento: 'UNI EN 81-20:2020, 5.2.1.4.1 a)–c) e 5.2.1.4.2', fonte: letto(T20, 'p. 25'), stato: 'confermato',
+    valore: 'vano: luce fissa, almeno 50 lux a un metro dal tetto di cabina e dal fondo della fossa, 20 lux nel resto; locale del macchinario: '
+      + 'almeno 200 lux al pavimento dove si lavora e 50 lux sui percorsi; 50 lux anche sull\'accesso al macchinario',
+    riferimento: 'UNI EN 81-20:2020, 5.2.1.4.1 a)–c), 5.2.1.4.2 e 5.2.2.2', fonte: letto(T20, 'p. 25'), stato: 'confermato',
   },
   {
     id: 'locale.temperatura', gruppo: 'locale', titolo: 'Temperatura dei locali del macchinario e degli armadi',
@@ -262,7 +267,7 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'spazi.tetto.superficie': ['roofFreeArea', 'roofFreeSide', 'standDrawn'],
   'spazi.altezze': ['entranceH', 'carInnerH'],
   'contrappeso.schermo': ['cwScreen'],
-  'contrappeso.guidato': ['cwGuided', 'cwGuidedV2'],
+  'contrappeso.guidato': ['cwGuided', 'cwGuidedV2', 'carGuided'],
   'ammortizzatori.corsa': ['springMaxV', 'strokeK', 'strokeMin'],
   'ammortizzatori.poliuretano': ['puStroke', 'puTypical'],
   'ammortizzatori.idraulici': ['oilStrokeK', 'oilTypical'],

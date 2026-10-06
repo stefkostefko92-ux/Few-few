@@ -50,10 +50,11 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
     stato: 'da_verificare', verifiche: ['gr_stress', 'gr_flange', 'gr_defl'],
     nota: 'Confermati sul testo i coefficienti, le formule e i limiti. Da verificare il carico al piano: la UNI EN 81-20:2020 (5.7.2.3.6) lo lega al '
       + 'tipo di ascensore, 0,4·g·Q per persone, 0,6·g·Q per merci, 0,85·g·Q con dispositivi di movimentazione pesanti; il software usa la regola '
-      + 'della UNI EN 81-1 (0,6·g·Q da 2500 kg, appendice G.2.5) perché il tipo di ascensore non è tra i dati. La formula di ω per Rm 370 è data '
-      + 'da λ 20 a 250: sotto 20 il software usa la stessa formula. Non contate: la spinta di scorrimento delle staffe (assestamento '
+      + 'della UNI EN 81-1:2008 (0,6·g·Q da 2500 kg, appendice G.2.5) perché il tipo di ascensore non è tra i dati. La formula di ω per Rm 370 è data '
+      + 'da λ 20 a 250: sotto 20 il software usa ω di λ 20 (dal lato della sicurezza). Non contate: la spinta di scorrimento delle staffe (assestamento '
       + 'dell\'edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le '
-      + 'guide del contrappeso',
+      + 'guide del contrappeso. La flessione della suola è quella dei pattini a rotelle (5.10.5 ha una formula a parte per quelli a scorrimento; '
+      + 'il tipo di pattino non è un dato del software).',
   },
   {
     id: 'guide.sezioni', gruppo: 'carichi', titolo: 'Sezioni delle guide di cabina',

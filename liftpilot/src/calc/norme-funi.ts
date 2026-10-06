@@ -16,6 +16,8 @@ export const VOCI_FUNI: readonly Voce[] = [
     id: 'funi.Dpd', gruppo: 'funi', titolo: 'Rapporto D/d delle pulegge di rinvio', valore: 'Dp/d ≥ 40',
     riferimento: 'UNI EN 81-20:2020, 5.5.2.1; UNI 10411-1:2024, 14.3', fonte: `${letto(T20, 'p. 74')}; ${letto(U1, 'p. 14')}`, stato: 'confermato',
     costanti: ['ddMin'], verifiche: ['r_ddp'],
+    nota: 'Il limite vale per ogni puleggia (5.5.2.1), mentre Dp è uno solo e nel calcolo di N_equiv(p) è la media delle pulegge di rinvio '
+      + '(UNI EN 81-50:2020, 5.12.2.3): con pulegge di diametro diverso si controlla la più piccola.',
   },
   {
     id: 'funi.numero', gruppo: 'funi', titolo: 'Numero minimo di funi', valore: 'almeno 2 funi indipendenti, ciascuna con il suo attacco',
@@ -23,6 +25,8 @@ export const VOCI_FUNI: readonly Voce[] = [
     fonte: 'DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02, e Direttiva 2014/33/UE nel testo ufficiale italiano (EUR-Lex, fornito '
       + 'dal cliente), letto il 2026-10-04 (ricerca, cap. 16): All. I 1.3', stato: 'confermato',
     costanti: ['ropesMin'], verifiche: ['r_nd'],
+    nota: 'Con 2 sole funi la UNI EN 81-20:2020 (5.5.5.3 a)) chiede anche un dispositivo elettrico di sicurezza contro l\'allungamento '
+      + 'anomalo di una fune rispetto all\'altra; il software non lo verifica.',
   },
   {
     id: 'funi.diametro', gruppo: 'funi', titolo: 'Diametro nominale minimo', valore: 'd ≥ 8 mm',
@@ -39,28 +43,30 @@ export const VOCI_FUNI: readonly Voce[] = [
   {
     id: 'funi.Sf.formula', gruppo: 'funi', titolo: 'Coefficiente di sicurezza richiesto S_f',
     valore: 'S_f = 10^[2,6834 − log10(695,85·10^6·N_equiv/(D/d)^8,567) / log10(77,09·(D/d)^−2,894)]',
-    riferimento: 'UNI EN 81-50:2020, 5.12 (ex EN 81-1 Allegato N)', fonte: 'riprodotto su due casi pubblicati (liftdesign.it S_f 16,69; Mellor)', stato: 'confermato',
+    riferimento: 'UNI EN 81-50:2020, 5.12.3 (ex UNI EN 81-1:2008, appendice N)', fonte: `${letto(T50, 'p. 46')}; riprodotto anche su due casi pubblicati (liftdesign.it S_f 16,69; Mellor)`, stato: 'confermato',
     costanti: ['sfC0', 'sfC1', 'sfE1', 'sfC2', 'sfE2'], verifiche: ['r_sfa'],
   },
   {
     id: 'funi.Nequiv.pulegge', gruppo: 'funi', titolo: 'N_equiv delle pulegge', valore: 'N_equiv(p) = K_p·(N_ps + 4·N_pr), K_p = (D/Dp)^4',
     riferimento: 'UNI EN 81-50:2020, 5.12.2.3', fonte: letto(T50, 'p. 46'), stato: 'confermato',
     costanti: ['kpExponent', 'reverseBendWeight'], verifiche: ['r_sfa'],
-    nota: 'D è il diametro della puleggia di frizione, Dp la media delle altre pulegge. La flessione è inversa solo tra due pulegge consecutive '
+    nota: 'D: diametro della puleggia di trazione; Dp: media delle altre pulegge. La flessione è inversa solo tra due pulegge consecutive '
       + 'ad assi fissi, con i punti di contatto a meno di 200·d e i piani di flessione ruotati di oltre 120°: la classifica il progettista.',
   },
   {
     id: 'funi.Nequiv.gola', gruppo: 'funi', titolo: 'N_equiv(t) della gola',
     valore: 'U senza sottosquadro 1 · U con sottosquadro: β 75° 2,5; 80° 3,0; 85° 3,8; 90° 5,0; 95° 6,7; 100° 10,0; 105° 15,2 · '
       + 'V: γ 35° 18,5; 36° 16,0; 38° 12,0; 40° 10,0; 42° 8,0; 45° 6,5; 50° 5,0',
-    riferimento: 'UNI EN 81-50:2020, 5.12.2.2, tabella 2', fonte: 'BS EN 81-50:2020, estratto pubblico del testo, p. 55 (i valori della gola a V '
-      + 'differiscono da quelli della EN 81-1)', stato: 'confermato',
+    riferimento: 'UNI EN 81-50:2020, 5.12.2.2, prospetto 2', fonte: `${letto(T50, 'p. 46')} (i valori della gola a V differiscono da quelli `
+      + 'della UNI EN 81-1:2008, prospetto N.1)', stato: 'confermato',
     costanti: ['neqU', 'neqV'], verifiche: ['r_sfa'],
+    nota: 'Il prospetto non ha una riga per la gola a V con sottosquadro: il software prende il maggiore tra il valore di β (riga a U) e quello '
+      + 'di γ (riga a V), dal lato della sicurezza.',
   },
   {
     id: 'funi.Nequiv.gola.interpolazione', gruppo: 'funi', titolo: 'Angoli tra i punti della tabella di N_equiv(t)',
     valore: 'interpolazione lineare tra i due punti vicini', riferimento: 'UNI EN 81-50:2020, 5.12.2.2',
-    fonte: 'BS EN 81-50:2020, estratto pubblico del testo, p. 55 (la norma consente l\'interpolazione lineare)', stato: 'confermato',
+    fonte: letto(T50, 'p. 46'), stato: 'confermato',
     verifiche: ['r_sfa'],
   },
   {

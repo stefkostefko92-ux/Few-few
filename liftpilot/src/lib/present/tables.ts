@@ -2,6 +2,7 @@
 // PDF tables, so both show the same rows. Traction, drop spacing, levers, ropes, kinematics, drive, brake, rescue,
 // shaft, sensitivity, comparison.
 import { G } from '@/calc/math';
+import { K } from '@/calc/norme';
 import type { BrakeCase, CheckId, CheckStatus, StallCase, TractionCase } from '@/calc/types';
 import type { Analysis } from './analysis';
 import { statusOf, type Texts } from './texts';
@@ -73,9 +74,9 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
   out.push({
     key: 'ropes', title: t('c_ropes'), ref: 'EN 81-50 §5.12', head: head4,
     rows: [
-      [t('r_nd'), `${N.n} × Ø${fmt(N.d, 1)} mm`, '≥ 2 · ≥ 8 mm', pill('r_nd')],
-      [t('r_dd'), fmt(rp.Dd, 1), '≥ 40', pill('r_dd')],
-      ...(rp.DpD != null ? [[t('r_ddp'), fmt(rp.DpD, 1), '≥ 40', pill('r_ddp')]] : []),
+      [t('r_nd'), `${N.n} × Ø${fmt(N.d, 1)} mm`, `≥ ${K.ropesMin} · ≥ ${K.ropeDiameterMin} mm`, pill('r_nd')],
+      [t('r_dd'), fmt(rp.Dd, 1), `≥ ${K.ddMin}`, pill('r_dd')],
+      ...(rp.DpD != null ? [[t('r_ddp'), fmt(rp.DpD, 1), `≥ ${K.ddMin}`, pill('r_ddp')]] : []),
       [t('g_geom'), X.grooveAngles(N.groove), X.grooveLimit(N.groove), pill('g_geom')],
       ...(rp.nps + rp.npr > 0 ? [[t('r_bends'), `${rp.nps} · ${rp.npr}`, '', '']] : []),
       [{ text: t('r_neqt'), flag: !rp.neqVerified }, fmt(rp.NeqT, 2), '', ''],
@@ -115,15 +116,15 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
     brakeRows.push([t('b_one'), withBar(`${fmt(b.one, 1)} N·m`, b.one / b.perSet), `${fmt(b.perSet, 0)} N·m`, pill('b_one')]);
     brakeRows.push([t('b_up'), withBar(`${fmt(b.up, 1)} N·m`, b.up / b.perSet), `${fmt(b.perSet, 0)} N·m`, pill('b_up')]);
   }
-  brakeRows.push([{ text: t('b_amax'), sub: X.caseText(b.aMaxCase, false) || undefined }, `${fmt(b.aMax, 2)} m/s² (${fmt(b.aMax / G, 2)} g)`, '≤ 1 g', pill('b_amax')]);
+  brakeRows.push([{ text: t('b_amax'), sub: X.caseText(b.aMaxCase, false) || undefined }, `${fmt(b.aMax, 2)} m/s² (${fmt(b.aMax / G, 2)} g)`, `≤ ${fmt(K.brakeDecelMax / K.g, 0)} g`, pill('b_amax')]);
   brakeRows.push([t('b_min'), `${fmt(w.lo / w.sets, 1)} N·m`, '', '']);
   brakeRows.push([t('b_max'), w.hi == null ? t('b_none') : w.hi === Infinity ? '—' : `${fmt(w.hi / w.sets, 1)} N·m`, '', '']);
   brakeRows.push([t('etaI'), X.etaText(N), '', '']);
   out.push({ key: 'brake', title: t('c_brake'), ref: 'EN 81-20 §5.9.2.2.2.1', head: head4, rows: brakeRows, notes: [] });
   out.push({
     key: 'rescue', title: t('c_rescue'), head: head4,
-    rows: [[t('s_force'), withBar(`${fmt(res.rescue.F, 0)} N`, res.rescue.F / 400), '400 N', pill('s_force')]],
-    notes: res.rescue.F > 400 ? [{ text: t('s_need') }] : [],
+    rows: [[t('s_force'), withBar(`${fmt(res.rescue.F, 0)} N`, res.rescue.F / K.rescueForceMax), `${K.rescueForceMax} N`, pill('s_force')]],
+    notes: res.rescue.F > K.rescueForceMax ? [{ text: t('s_need', { fmax: K.rescueForceMax }) }] : [],
   });
   const sh = res.shaft;
   const shaftRows: Cell[][] = [[t('s_shaft'), withBar(`${fmt(sh.testKg, 0)} kg`, N.shaftMax > 0 ? sh.testKg / N.shaftMax : null),

@@ -10,7 +10,7 @@ import type { RoomDerived } from './derive';
 import type { Survey } from './survey';
 
 /** Version of the derivation of the room (semver): a change of rule or of a default is a minor or major version. */
-export const ROOM_ENGINE_VERSION = '1.3.0';
+export const ROOM_ENGINE_VERSION = '1.4.0';
 
 export interface RoomSnapshot {
   engine: string;

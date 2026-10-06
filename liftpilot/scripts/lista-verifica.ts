@@ -44,7 +44,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   v_niche: 'nicchie nelle pareti', v_staffa: 'staffe del catalogo per le guide del contrappeso', v_telaio: 'le ante della porta di piano dietro il suo telaio', v_head: 'pareti in testata diverse dal piano principale', h_refuge: 'spazio di rifugio in testata',
   h_clear: 'distanze libere dal soffitto', h_top: 'parte più alta della cabina sotto ciò che pende sopra', h_parapet: 'balaustra sul tetto di cabina', h_stand: 'superficie per stare sul tetto di cabina',
   h_staffe: 'staffe Panev sopra le porte di piano: muro tra il vano della porta e la soglia del piano sopra',
-  h_door: 'altezza libera degli accessi', h_car: 'altezza libera interna della cabina', h_cw: 'corsa guidata del contrappeso in testata',
+  h_door: 'altezza libera degli accessi', h_car: 'altezza libera interna della cabina', h_cw: 'corsa guidata del contrappeso in testata', h_guide: 'corsa guidata della cabina in testata',
   p_refuge: 'spazio di rifugio in fossa', p_screen: 'protezione del contrappeso in fossa',
   p_apron: 'grembiule sugli ammortizzatori compressi', b_runby: 'extracorsa di cabina e contrappeso', b_type: 'tipo di ammortizzatori per la velocità', b_car: 'corsa degli ammortizzatori di cabina',
   b_cw: 'corsa dell\'ammortizzatore del contrappeso', m_height: 'altezza del locale macchina', m_panel: 'superficie libera davanti al quadro',
@@ -77,7 +77,7 @@ const rows = [
       key: n, gruppo: `Collaudo: ${NORMA_SIGLA[n]}`, punti: NORME_INFO[n].punti,
       verifiche: (n === 'dm236' ? VERIFICHE_DM236 : n === 'ntc2018' ? VERIFICHE_NTC : []).map((c) => VERIFICA_VANO[c]).join('; '),
     }))].flatMap(({ key, gruppo, punti, verifiche }) => punti.map((p: PuntoInSito, i) => ({
-    id: `collaudo.${key}.${i + 1}`, gruppo, voce: p.rif, valore: p.testo, riferimento: p.rif, fonte: 'ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)',
+    id: `collaudo.${key}.${i + 1}`, gruppo, voce: p.rif, valore: p.testo, riferimento: p.rif, fonte: p.fonte ?? 'ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)',
     stato: STATO[p.stato], verifiche, nota: '',
   }))),
 ].map((r, j) => ({ n: j + 1, ...r }));

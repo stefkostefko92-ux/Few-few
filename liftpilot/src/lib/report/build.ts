@@ -5,7 +5,7 @@
 import calcIt from '../../../messages/calc/it.json';
 import appIt from '../../../messages/it.json';
 import { deg } from '@/calc/math';
-import { PROFILO, VOCI, type Stato } from '@/calc/norme';
+import { K, PROFILO, VOCI, type Stato } from '@/calc/norme';
 import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
 import { vociOfDesign } from '@/shaft';
 import type { BrakeCase, CheckId, CheckStatus, FormValues, TractionCase } from '@/calc/types';
@@ -20,7 +20,7 @@ import { textsFor, verdictStatus } from '../present/texts';
 import { makePres } from '../present/tr';
 import type { BlockStatus, ReportBlock, ReportDoc } from './model';
 import { refsOf, refsText, shaftBlocks, type ReportDesign } from './shaft';
-import { EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
+import { ESITI_CALCOLO, EXISTING_NOTE, adaptSection, adempimentiBlocks, collaudoRows, collaudoText, esitiBlocks, esitoOf } from './collaudo';
 import { machineSpec } from '../lift/machine';
 import { shapeOf } from '../catalog/shapes';
 import { rinvioRow, shapeRows } from './machine-shape';
@@ -61,7 +61,7 @@ const STALL_W = [0.27, 0.07, 0.08, 0.08, 0.08, 0.09, 0.08, 0.08, 0.17];
 
 const cellText = (c: Cell | undefined): string => (c === undefined ? '' : typeof c === 'string' ? c : `${c.text}${c.flag ? ' ⚠' : ''}${c.sub ? `\n${c.sub}` : ''}`);
 const rowStatus = (row: readonly Cell[]): BlockStatus => { const s = row.find((c) => typeof c === 'object' && c.status); return typeof s === 'object' && s.status ? s.status : ''; };
-const utilStatus = (u: number, warnOnly = false): BlockStatus => (u > 1 && !warnOnly ? 'fail' : u > 0.97 ? 'warn' : 'ok');
+const utilStatus = (u: number, warnOnly = false): BlockStatus => (u > 1 && !warnOnly ? 'fail' : u > K.tractionWarn ? 'warn' : 'ok');
 
 export function buildReport(r: ReportInput): ReportDoc {
   const P = makePres(calcIt, 'it-IT'), X = textsFor(P), { t, fmt } = P;
@@ -105,16 +105,16 @@ export function buildReport(r: ReportInput): ReportDoc {
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg${I.qeq > 0 ? ` (${t('qeq')}: ${fmt(I.qeq, 0)} kg)` : ''}`], [t('v'), `${fmt(I.v, 2)} m/s`],
     [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
     ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')}`, `${fmt(I.dx, 3)} m · ${fmt(I.h, 3)} m${m.geometry.includes('dx')
-      ? ' (dx dal progetto del vano; h dal basamento o dal telaio del rinvio, salvo inserita a mano)' : ''}`] as [string, string]] : []),
+      ? ' (dx dal progetto del vano; h dal basamento o dal telaio del rinvio, salvo se inserita a mano)' : ''}`] as [string, string]] : []),
     ...(I.layout === 'bottom' ? [[t('Hv'), `${fmt(I.Hv, 2)} m${fromShaft('Hv', false)}`] as [string, string]] : []),
     ...(res.ropes.DpD != null ? [[t('Dp'), `${fmt(I.Dp, 0)} mm`] as [string, string]] : []),
     [t('etaShaft'), fmt(I.etaShaft, 2)], [`${t('aDesign')} · ${t('aBrake')}`, `${fmt(I.aDesign, 2)} · ${fmt(I.aBrake, 2)} m/s²`],
-    [t('buffers'), I.ae > 0.5 ? 'sì' : 'no'], [t('rh'), `${fmt(I.rh, 2)} m`],
+    [t('buffers'), I.ae > K.aeMin ? 'sì' : 'no'], [t('rh'), `${fmt(I.rh, 2)} m`],
   ];
   B.push({ t: 'kv', rows: plant });
   if (m.pEstimate) {
     B.push({ t: 'box', text: `MASSA DELLA CABINA STIMATA. La massa della cabina P = ${fmt(I.P, 0)} kg non è stata inserita: è la stima del software (${P_ESTIMATE_RULE}). `
-      + 'Contrappeso, aderenza, funi, freno e carichi dipendono da P: prima di usare questa relazione sostituirla con la massa reale (libretto '
+      + 'Contrappeso, aderenza, funi, freno e carichi dipendono da P: prima di usare questa relazione sostituire la stima con la massa reale (libretto '
       + "dell'impianto, costruttore della cabina o prova di bilanciamento) e ripetere il calcolo." });
   }
 
@@ -176,7 +176,7 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   // each standard of the test with its own result, and the test's: the calculation's checks and, with a shaft design,
   // the shaft's and the beams'
-  section('Esito delle verifiche di calcolo per normativa');
+  section(ESITI_CALCOLO);
   B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? [...r.design.layout.checks, ...beams] : [])], (x) => st(x)));
   section('Adempimenti e punti da verificare in sito');
   B.push(...adempimentiBlocks(C, repl));
@@ -221,7 +221,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     B.push({ t: 'grid', head: [t('col_item'), t('col_old'), t('col_new')], rows: X.comparisonRows(res, old), widths: [0.4, 0.3, 0.3] });
   }
 
-  section(`${t('c_prop')} (informativa)`);
+  section(`${t('c_prop')} (informative)`);
   if (m.catalog) {
     B.push({ t: 'p', text: `Argano a catalogo: ${m.catalog.brand} ${m.catalog.model}, rapporto ${m.catalog.ratio}, carico statico ammesso ${fmt(m.catalog.staticKg, 0)} kg `
       + `(fonte: ${m.catalog.src}). Il calcolo usa questo rapporto, il carico statico e la massa del catalogo; i dati vanno verificati sulla scheda del `

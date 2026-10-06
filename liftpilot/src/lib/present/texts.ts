@@ -51,7 +51,7 @@ export function textsFor(P: Pres) {
     const r = o.res, worst = worstTraction(r), w = brakeWindow(r);
     return [
       [t('p_sheave'), `${fmt(o.D, 0)} mm · D/d ${fmt(o.D / o.d, 1)}${fixedD ? ` · ${t('p_fixed')}` : ''}`],
-      [t('p_groove'), `${grooveText(o.groove)}${o.groove.type !== 'VH' && o.groove.beta > 90 ? ` · ${t('p_beta_hi')}` : ''}${o.tight ? ` · ${t('p_tight')}` : ''}${o.real ? '' : ` · ${t('p_real_no')}`}`],
+      [t('p_groove'), `${grooveText(o.groove)}${o.groove.type !== 'VH' && o.groove.beta > K.betaRecommended ? ` · ${t('p_beta_hi', { br: K.betaRecommended })}` : ''}${o.tight ? ` · ${t('p_tight')}` : ''}${o.real ? '' : ` · ${t('p_real_no')}`}`],
       [t('p_ropes'), `${o.n} × Ø${dText(o.d)} mm · F_min ≥ ${fmt(o.rope.Fmin, 1)} kN · ${fmt(o.rope.qf, 3)} kg/m${kept ? ` · ${t('p_kept')}` : ''}`],
       [t('p_ratio'), `1:${o.i} (${t('p_ideal', { x: fmt(o.iIdeal, 2) })}) · ${t('p_speed', { v: fmt(r.kin.vReal, 3), fn: fmt(N.fn, 0), f: fmt(r.kin.fRated, 2) })}`],
       [t('p_motor'), `${fmt(o.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} 1/min · ${t('p_req', { x: fmt(o.Preq, 2) })}`],
@@ -59,7 +59,7 @@ export function textsFor(P: Pres) {
       [t('p_shaft'), `≥ ${fmt(o.M.shaftMax, 0)} kg (1,25·Q: ${fmt(r.shaft.testKg, 0)} kg${r.shaft.up ? ` · ${t('p_upwards')}` : ''})`],
       [t('p_brake'), t('p_brake_sets', { x: fmt(o.brakeSet, 0), lo: fmt(w.lo / w.sets, 1),
         hi: w.hi == null ? t('p_hi_none') : w.hi === Infinity ? '—' : t('p_hi', { y: fmt(w.hi / w.sets, 1) }) })],
-      [t('p_rescue'), r.rescue.F <= 400 ? t('p_manual', { f: fmt(r.rescue.F, 0) }) : t('p_electric', { f: fmt(r.rescue.F, 0) })],
+      [t('p_rescue'), r.rescue.F <= K.rescueForceMax ? t('p_manual', { f: fmt(r.rescue.F, 0), fmax: K.rescueForceMax }) : t('p_electric', { f: fmt(r.rescue.F, 0), fmax: K.rescueForceMax })],
       [t('p_margins'), t('p_util', { u: fmt(worst, 3), ur: fmt(r.real.util, 3), sa: fmt(r.ropes.SfAct, 2), sr: fmt(r.ropes.SfReq, 2) })],
     ];
   }

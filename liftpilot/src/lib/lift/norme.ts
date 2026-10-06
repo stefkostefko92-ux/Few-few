@@ -50,6 +50,9 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     id: 'impianto.portata', titolo: 'Portata e velocità',
     valore: 'la portata inserita, oppure quella della cabina più grande che entra nel vano (Tabella 6); la velocità è una sola per il vano e per la macchina',
     riferimento: 'UNI EN 81-20:2020, 5.4.2.1', fonte: 'progetto del vano', stato: 'derivazione',
+    nota: 'In una modifica la UNI 10411-1:2024 (6.1, prospetto 1) tratta come aumento della portata oltre il 10 % (Q fino a 500 kg) o il 5 % (oltre) '
+      + 'e del carico totale oltre il 15 % o il 10 %; la UNI 10411-11:2024 (6.1) ogni aumento del carico totale: il confronto con la portata originale '
+      + 'lo fa l\'ingegnere.',
   },
   {
     id: 'impianto.collaudo', titolo: 'Normativa di collaudo e parti sostituite o modificate',
@@ -75,7 +78,10 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'come impianto nuovo (UNI EN 81-20:2020 e UNI EN 81-50:2020; negli edifici esistenti anche la UNI EN 81-21:2022, supplementare)',
     riferimento: 'DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), art. 12 c.4, art. 14 c.3; UNI 10411-1:2024; UNI 10411-11:2024; UNI EN 81-21:2022 (scopo)',
     fonte: "indicazione del cliente (5 ottobre 2026): prassi di lasciare l'arcata; ricerca, capitolo 16 §3.2 e §5.3", stato: 'prassi',
-    nota: "il DPR 162/1999 elenca le modifiche costruttive ma non dice quando l'insieme diventa una sostituzione completa: la qualificazione "
+    nota: "il DPR 162/1999 elenca le modifiche costruttive senza dire quando l'insieme diventa una sostituzione completa; la UNI 10411-1/-11:2024 "
+      + "(21.1) chiama modifica sostanziale il cambio insieme di quadro, macchina, almeno una porta di piano, cabina e arcata, con il risultato secondo "
+      + "la UNI EN 81-20:2020: tenendo l'arcata il 21.1 non si applica. Una cabina nuova nell'arcata esistente segue la UNI EN 81-20 5.4.1–5.4.10 (UNI "
+      + "10411-1:2024, 22; con porte di cabina a battente fino a +0,10 m² di superficie senza cambiare la portata, 22 f)). La qualificazione "
       + "dell'intervento la conferma il tecnico incaricato con il soggetto che esegue la verifica straordinaria",
   },
   {
@@ -130,7 +136,8 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     riferimento: 'ricerca, funi con la macchina in basso, capitoli 2–5; DPR 1497/1963 artt. 5–9, 33', fonte: 'geometria ricostruita dal software',
     stato: 'scelta', costanti: ['bottomClear', 'headFrame', 'pulleyRoomAxis', 'underSlab', 'underRoomH', 'slab'],
     nota: 'lo schema reale va rilevato sull\'impianto; con la macchina sotto il vano lo spazio sotto la fossa è accessibile: paracadute del '
-      + 'contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori',
+      + 'contrappeso — la EN 81-20 non ammette più il pilastro pieno fino al terreno — (UNI EN 81-20:2020, 5.2.5.4) e fondo della fossa per le reazioni degli ammortizzatori; '
+      + 'in una modifica la UNI 10411-1:2024 (6.14) accetta al posto del paracadute un pilastro esistente fino al terreno, verificato per i nuovi carichi',
   },
   {
     id: 'impianto.catalogo', titolo: 'Macchina proposta dal catalogo di un costruttore',
@@ -144,7 +151,7 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'estratti delle pagine dei costruttori e dei rivenditori, 1° ottobre 2026',
     stato: 'scelta', costanti: ['catalogRatioTol'],
     nota: 'la tolleranza sul rapporto è una scelta del software: la velocità reale con l\'inverter deve restare entro il 5 % sopra la nominale '
-      + '(UNI EN 81-20:2020, 5.9.2.4); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell\'ordine; '
+      + '(UNI EN 81-20:2020, 5.9.2.4; buona pratica non oltre l\'8 % sotto); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell\'ordine; '
       + 'per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; '
       + 'GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce',
   },

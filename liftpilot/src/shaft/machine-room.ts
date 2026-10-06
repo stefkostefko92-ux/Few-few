@@ -181,11 +181,13 @@ export const roomChecks = (L: Layout): ShaftCheck[] => (L.inputs.room ? roomChec
 
 /** The checks of the room itself: its height, the free area in front of the control panel, its door. */
 export function roomChecksOf(R: RoomInputs): ShaftCheck[] {
-  const across = R.panelWall === 'front' || R.panelWall === 'rear' ? R.D : R.W;
-  const free = across - R.panelD;
+  const across = R.panelWall === 'front' || R.panelWall === 'rear' ? R.D : R.W, along = across === R.D ? R.W : R.D;
+  // 5.2.6.3.2.1 a): in front of the panel ≥ 700 mm deep and as wide as the larger of 500 mm and the panel (the panel
+  // itself may be narrower; until 2026-10-06 a panel under 500 mm failed here)
+  const free = across - R.panelD, wide = along >= Math.max(KV_VERT.panelFreeWidth, R.panelW);
   return [
     check('m_height', R.H >= KV_VERT.roomH, R.H, KV_VERT.roomH, 0, 'mm'),
-    check('m_panel', free >= KV_VERT.panelFreeDepth && R.panelW >= KV_VERT.panelFreeWidth, free, KV_VERT.panelFreeDepth, 0, 'mm'),
+    check('m_panel', free >= KV_VERT.panelFreeDepth && wide, free, KV_VERT.panelFreeDepth, 0, 'mm'),
     check('m_door', R.doorW >= KV_VERT.doorMinW && R.doorH >= KV_VERT.doorMinH, Math.min(R.doorW - KV_VERT.doorMinW, R.doorH - KV_VERT.doorMinH), 0, 0, 'mm'),
   ];
 }

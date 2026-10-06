@@ -56,13 +56,15 @@ export const VOCI_SIM: readonly VoceSim[] = [
     id: 'sim.aderenza.marcia', titolo: 'Limite di aderenza mostrato durante la marcia',
     valore: 'e^(f·α) con il coefficiente d\'attrito della frenatura (μ ridotto con la velocità delle funi): il confronto è indicativo (oltre il '
       + 'limite: avviso, non verifica fallita), la verifica resta quella dei casi della norma',
-    riferimento: 'UNI EN 81-50:2020, 5.11.2.2', fonte: 'scelta del software', stato: 'scelta',
+    riferimento: 'UNI EN 81-50:2020, 5.11.1 e 5.11.2.3.2 (μ della frenatura)', fonte: 'scelta del software', stato: 'scelta',
   },
   {
     id: 'sim.porte', titolo: 'Tempi delle porte',
     valore: `apertura ${it(KS.doorOpen)} s, chiusura ${it(KS.doorClose)} s, sosta a porte aperte ${it(KS.dwell)} s, partenza ${it(KS.startDelay)} s `
       + 'dopo la chiusura',
     riferimento: '—', fonte: 'scelta del software (solo animazione)', stato: 'scelta', costanti: ['doorOpen', 'doorClose', 'dwell', 'startDelay'],
+    nota: 'La norma non dà tempi: per le porte automatiche orizzontali dà l\'energia cinetica (≤ 10 J, ≤ 4 J con il dispositivo di protezione '
+      + 'escluso) e la forza contro la chiusura (≤ 150 N) (UNI EN 81-20:2020, 5.3.6.2.2.1), dati del fornitore delle porte.',
   },
   {
     id: 'sim.ammortizzatori', titolo: 'Urto sugli ammortizzatori',
@@ -72,13 +74,17 @@ export const VOCI_SIM: readonly VoceSim[] = [
     riferimento: 'UNI EN 81-20:2020, 5.8.2.1.1.1–5.8.2.1.1.2 (urto al 115 %; corsa piena con un carico statico tra 2,5 e 4 volte: il software prende 4), '
       + '5.8.2.1.2.2 (90 %), 5.8.2.2.1 e 5.8.2.2.3 a)', fonte: letto('UNI EN 81-20:2020', 'pp. 98–99'), stato: 'scelta',
     costanti: ['bufferSpeed'], nota: 'la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: '
-      + 'valori indicativi); la verifica della corsa resta quella della sezione',
+      + 'valori indicativi); la verifica della corsa resta quella della sezione. Le decelerazioni mostrate non sono una verifica: per i tamponi non '
+      + 'lineari la norma vuole media ≤ 1 gn, oltre 2,5 gn per non più di 0,04 s, picco ≤ 6 gn e rimbalzo ≤ 1 m/s (5.8.2.1.2.1), per gli idraulici '
+      + 'media ≤ 1 gn e oltre 2,5 gn per non più di 0,04 s (5.8.2.2.3); si provano per tipo (certificato del fornitore)',
   },
   {
     id: 'sim.bloccata', titolo: 'Cabina bloccata: rotazione in salita',
     valore: `la macchina gira in salita a ${it(KS.stallSpeed)} m/s finché il contrappeso poggia sui suoi ammortizzatori; poi le funi devono slittare `
       + '(T1/T2 ≥ e^(f·α), μ della cabina bloccata)',
-    riferimento: 'UNI EN 81-50:2020, 5.11.2', fonte: 'motore di calcolo; velocità scelta dal software', stato: 'scelta', costanti: ['stallSpeed'],
+    riferimento: 'UNI EN 81-50:2020, 5.11.2.2.3', fonte: 'motore di calcolo; velocità scelta dal software', stato: 'scelta', costanti: ['stallSpeed'],
+    nota: 'La simulazione mostra il contrappeso sugli ammortizzatori con la cabina in alto; la norma chiede anche la cabina vuota in basso, '
+      + 'che il calcolo verifica (tr_stall).',
   },
   {
     id: 'sim.passo', titolo: 'Passo di campionamento',

@@ -52,11 +52,16 @@ test('relazione: gli adempimenti del DPR 162/1999 per il nuovo e per la modifica
   assert.match(nuovo, /Attenzione: la UNI EN 81-71:2022 in vigore non è citata in GUUE/);
   assert.match(nuovo, /UNI EN 81-77:2022, 0\.3: non si applica agli impianti installati prima della sua pubblicazione/);
   const mod = text(adempimentiBlocks({ norma: '10411-1', parti: ['machine'], aggiuntive: ['antincendio'] }, true));
-  assert.match(mod, /art\. 14 c\.3: verifica straordinaria/);
+  assert.match(mod, /art\. 14 c\.3; schema ICIM SCI 162 rev\. 02: verifica straordinaria da uno dei soggetti dell'art\. 13 c\.1 \(la legge\)/);
+  assert.match(mod, /UNI 10411-1:2024 e UNI 10411-11:2024, 25: documentazione della modifica/);
   assert.match(mod, /art\. 2 c\.1 lett\. cc\)/);
   assert.match(mod, /DM 15\/09\/2005, art\. 1 c\.2: sugli impianti esistenti vale per le modifiche sostanziali/);
   assert.doesNotMatch(mod, /All\. V 3\.3/);
   // a point from a secondary source says so
   assert.match(text(adempimentiBlocks({ norma: 'en81', parti: [], aggiuntive: ['en81-70'] }, false)), /5\.3\.1: tipi di cabina[^\n]*\(da verificare sul testo vigente\)/);
   assert.equal(ADEMPIMENTI.modifica.every((p) => p.stato === 'confermato'), true);
+  // the tests before putting into service (EN 81-20 6.3) and the adaptations of a new machine (UNI 10411-1 14.4)
+  const en81 = text(adempimentiBlocks({ norma: 'en81', parti: [], aggiuntive: [] }, false));
+  for (const p of ['6.3.1', '6.3.2', '6.3.3', '6.3.11, 6.3.12 e 6.3.13', '6.3.14', 'C.2 e 7.3.2']) assert.match(en81, new RegExp(`UNI EN 81-20:2020, ${p.replace(/\./g, '\\.')}:`));
+  assert.match(text(adempimentiBlocks({ norma: '10411-1', parti: ['machine'], aggiuntive: [] }, true)), /UNI 10411-1:2024, 14\.4 a\)–g\): con la macchina nuova/);
 });

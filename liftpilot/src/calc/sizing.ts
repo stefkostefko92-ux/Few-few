@@ -59,7 +59,7 @@ export function sizeMachine(I: Plant, base: Machine, fixedD = 0, keep: RopeSet |
     // groove: traction held also at the real deceleration of both sets when the groove limits allow it
     const realCases = r0.brakeCasesAt(2 * brakeSet);
     let groove: Groove | null = null, tight = false, real = false;
-    for (const [lim, rl] of [[0.97, true], [1, true], [0.97, false], [1, false]] as const) {
+    for (const [lim, rl] of [[K.tractionWarn, true], [1, true], [K.tractionWarn, false], [1, false]] as const) {
       groove = grooveFor(r0, pref, base.groove.gamma, lim, rl ? realCases : null);
       if (groove) { tight = lim === 1; real = rl; break; }
     }

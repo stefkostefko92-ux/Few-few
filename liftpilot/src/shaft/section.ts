@@ -89,6 +89,9 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
   const [sw, sd] = standOf(V), standArea = (sw * sd) / 1e6, screen = screenOf(V);
   // the counterweight with the car on its compressed buffers: what its rails still guide past its top
   const guided = S.ceiling - K.railTopGap - (cwPlateAt(S, -S.moveDown) + V.cwH), guide = (K.cwGuided + K.cwGuidedV2 * V.v * V.v) * 1000;
+  // the car at its highest point (the jump included): what its rails still guide past the top of its sling, where the
+  // upper shoes are taken to be — a warning, the shoes' own height is the supplier's (audit 2026-10-06)
+  const carGuided = S.ceiling - K.railTopGap - (top + V.frameTop);
   // the wall the pairs over the landing doors need, at the tightest stop (staffe-porte.ts): a warning, the mounting is
   // the software's
   const tops = topPairStops(L, S.levels), room = tops.length ? Math.min(...tops.map((t) => t.room)) : null;
@@ -101,6 +104,7 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
     ...(room !== null ? [check('h_staffe', room >= 0, room, 0, 0, 'mm', true)] : []),
     check('h_car', V.carH >= K.carInnerH, V.carH, K.carInnerH, 0, 'mm'),
     check('h_cw', guided >= guide - 1e-9, guided, Math.ceil(guide), 0, 'mm'),
+    check('h_guide', carGuided >= K.carGuided * 1000 - 1e-9, carGuided, K.carGuided * 1000, 0, 'mm', true),
     check('p_refuge', pitFree >= refugePit, pitFree, refugePit, 0, 'mm'),
     check('p_apron', apronFree >= K.apronClear, apronFree, K.apronClear, 0, 'mm', true),
     check('p_screen', screen >= K.cwScreen, screen, K.cwScreen, 0, 'mm'),
