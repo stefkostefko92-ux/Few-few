@@ -45,9 +45,11 @@ COPY prisma ./prisma
 COPY engine ./engine
 COPY views ./views
 COPY locales ./locales
+# каталогът от магазините — само шифрован; ключът CATALOG_KEY е в .env на сървъра
+COPY sealed ./sealed
 COPY package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
-# data/ (каталогът от магазините, GeoIP базата, котвата на одита) идва като volume от сървъра — не е в
+# data/ (GeoIP базата, котвата на одита, по избор каталогът като файл) идва като volume от сървъра — не е в
 # образа; тя е единствената папка на node. Кодът остава на root, node само го чете: `chown -R` тук би
 # копирал всеки файл в нов слой (двоен образ) и би дал на процеса право да пише собствения си код.
 RUN chmod 755 ./docker-entrypoint.sh && install -d -o node -g node -m 700 data

@@ -37,7 +37,15 @@ const schema = z
     MAIL_FROM: z.string().min(3).default('Rendetto <no-reply@carbonstealth.eu>'),
     CONTACT_EMAIL: z.string().email().default(COMPANY.email),
     PRIVACY_EMAIL: z.string().email().default('privacy@carbonstealth.eu'),
-    /** Каталогът от магазините — само на сървъра, извън репото. Без него продуктът работи с основните материали. */
+    /**
+     * Ключът на шифрования каталог в репото (`sealed/catalog.json.enc`) — само в .env на сървъра. Без него
+     * — каталогът като файл (`CATALOG_PATH`), ако го има, иначе основните материали.
+     */
+    CATALOG_KEY: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      hexKey('CATALOG_KEY').optional(),
+    ),
+    /** Каталогът от магазините като файл на сървъра — когато CATALOG_KEY не е зададен. */
     CATALOG_PATH: z.string().min(1).default('data/catalog.json'),
     /** DB-IP Lite (CC BY 4.0), сваля се с `npm run geoip:update`. Без него държавата е „—“. */
     GEOIP_PATH: z.string().min(1).default('data/dbip-country-lite.mmdb'),
@@ -66,6 +74,14 @@ const schema = z
         code: z.ZodIssueCode.custom,
         path: ['HMAC_KEY'],
         message: 'HMAC_KEY трябва да е различен от ENC_KEY',
+      });
+    }
+    const catalogKey = cfg.CATALOG_KEY?.toLowerCase();
+    if (catalogKey && [cfg.ENC_KEY, cfg.HMAC_KEY].some((k) => k.toLowerCase() === catalogKey)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['CATALOG_KEY'],
+        message: 'CATALOG_KEY трябва да е различен от ENC_KEY и HMAC_KEY',
       });
     }
   });

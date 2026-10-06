@@ -1,56 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { LOCALE_META, LOCALES, type Locale } from "@/lib/i18n";
+import { BRAND_ICONS, altKeyFor, bundledAlt, isImageKey, isSharedKey } from "@/lib/cms";
+import {
+  addItem, fieldOf, getAt, moveItem, removeItem, setPerLocale, setValue, templatePath, type Data, type Doc, type Path,
+} from "@/lib/editor-ops";
+import { HINTS, ICON_LABELS, UI_GROUPS, humanize, isLongField } from "./editor-labels";
 import MediaPicker from "./MediaPicker";
 
-type Data = Record<Locale, Record<string, unknown>>;
+const fileName = (url: string) => decodeURIComponent(url.split("/").pop() || "");
 
-const LABELS: Record<string, string> = {
-  brandName: "Име", brandSub: "Подзаглавие", phone: "Телефон", phoneHref: "Телефон (връзка)",
-  email: "Имейл", address: "Адрес", facebookUrl: "URL на Facebook", facebookPageHref: "Facebook страница (вграждане)",
-  mapUrl: "URL на картата", badge: "Етикет", titleA: "Заглавие (начало)", titleAccent: "Заглавие (открояваща дума)",
-  titleB: "Заглавие (край)", lead: "Въвеждащ текст", trust: "Ред за доверие", stat: "Число", statLabel: "Етикет на числото",
-  eyebrow: "Надзаглавие", title: "Заглавие", body: "Текст", tag: "Етикет за място", features: "Характеристики",
-  items: "Елементи", quote: "Цитат", quoteCite: "Автор на цитата", icon: "Икона", text: "Текст", bullets: "Точки от списък",
-  num: "Число", label: "Етикет", scheduleTitle: "Заглавие на графика", schedule: "График", groupNote: "Бележка за групата",
-  instructorName: "Име на преподавател", instructorRole: "Длъжност на преподавател", cta: "Бутон", points: "Точки",
-  tiles: "Плочки", kind: "Тип", src: "Снимка", alt: "Алтернативен текст", big: "Голям текст", script: "Курсивен текст",
-  small: "Подтекст", topics: "Теми", primary: "Основен бутон", secondary: "Втори бутон", day: "Ден",
-  time: "Час", place: "Място",
-};
-const humanize = (k: string) => LABELS[k] || k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
-const isImageField = (k: string) => k === "src" || /image|photo|logo/i.test(k);
-const isLongField = (k: string) => ["lead", "body", "text", "quote", "trust", "instructorRole", "groupNote"].includes(k);
-
-function clone<T>(v: T): T { return JSON.parse(JSON.stringify(v)); }
-function setByPath(root: any, path: (string | number)[], value: unknown) {
-  const next = clone(root);
-  let cur = next;
-  for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]];
-  cur[path[path.length - 1]] = value;
-  return next;
-}
-function mutateArray(root: any, path: (string | number)[], fn: (arr: any[]) => void) {
-  const next = clone(root);
-  let cur = next;
-  for (let i = 0; i < path.length - 1; i++) cur = cur[path[i]];
-  fn(cur[path[path.length - 1]]);
-  return next;
+function Shared() {
+  return <span className="ad-shared" title="Еднакво за трите езика — сменя се навсякъде наведнъж">🌐 общо за трите езика</span>;
 }
 
-export default function ContentEditor({ contentKey, initial }: { contentKey: string; initial: Data }) {
+export default function ContentEditor({ contentKey, initial, template }: {
+  contentKey: string;
+  initial: Data;
+  /** Bundled defaults (one language) — the shape used to refill an emptied list. */
+  template: Doc;
+}) {
   const [data, setData] = useState<Data>(initial);
   const [locale, setLocale] = useState<Locale>("it");
   const [status, setStatus] = useState<{ msg: string; cls: string }>({ msg: "", cls: "" });
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [picker, setPicker] = useState<null | ((url: string) => void)>(null);
 
-  const root = data[locale];
-  const update = (path: (string | number)[], value: unknown) =>
-    setData((d) => ({ ...d, [locale]: setByPath(d[locale], path, value) }));
-  const arr = (path: (string | number)[], fn: (a: any[]) => void) =>
-    setData((d) => ({ ...d, [locale]: mutateArray(d[locale], path, fn) }));
+  // Warn before leaving the page with unsaved edits.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
+  const change = (next: (d: Data) => Data) => { setData(next); setDirty(true); setStatus({ msg: "", cls: "" }); };
+  const set = (path: Path, value: unknown) => change((d) => setValue(d, locale, path, value));
 
   async function save() {
     setSaving(true);
@@ -61,95 +48,191 @@ export default function ContentEditor({ contentKey, initial }: { contentKey: str
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: contentKey, it: data.it, bg: data.bg, en: data.en }),
       });
-      if (!res.ok) throw new Error();
-      setStatus({ msg: "Запазено ✓", cls: "ok" });
-    } catch {
-      setStatus({ msg: "Грешка при запазване", cls: "err" });
+      if (!res.ok) throw new Error(String(res.status));
+      setDirty(false);
+      setStatus({ msg: "Запазено ✓ — вече е на сайта", cls: "ok" });
+    } catch (e) {
+      setStatus({ msg: String(e).includes("413") ? "Твърде много съдържание за една секция" : "Грешка при запазване — опитайте отново", cls: "err" });
     } finally {
       setSaving(false);
     }
   }
 
-  function renderValue(value: unknown, path: (string | number)[], keyName: string): React.ReactNode {
-    // string
-    if (typeof value === "string") {
-      if (isImageField(keyName)) {
-        return (
-          <div className="ad-field" key={path.join(".")}>
-            <label>{humanize(keyName)}</label>
-            <div style={{ display: "flex", gap: ".5rem", alignItems: "flex-start" }}>
-              {value && <img src={value} alt="" style={{ width: 60, height: 46, objectFit: "cover", borderRadius: 8, border: "1px solid var(--ad-line)" }} />}
-              <input type="text" value={value} onChange={(e) => update(path, e.target.value)} style={{ flex: 1 }} />
-              <button type="button" className="ad-btn ad-btn--ghost" onClick={() => setPicker(() => (url: string) => { update(path, url); setPicker(null); })}>Избери</button>
-            </div>
-          </div>
-        );
-      }
-      return (
-        <div className="ad-field" key={path.join(".")}>
-          <label>{humanize(keyName)}</label>
-          {isLongField(keyName) || value.length > 70 ? (
-            <textarea value={value} onChange={(e) => update(path, e.target.value)} />
-          ) : (
-            <input type="text" value={value} onChange={(e) => update(path, e.target.value)} />
-          )}
-        </div>
-      );
-    }
+  // ---- field renderers ------------------------------------------------------
+  // A plain function, not a nested component: a component declared inside the
+  // editor would be re-created (and re-mounted) on every keystroke.
+  function label(k: string, shared: boolean) {
+    return (
+      <label>
+        {humanize(k)} {shared && <Shared />}
+        {HINTS[k] && <small className="ad-hint">{HINTS[k]}</small>}
+      </label>
+    );
+  }
 
-    // array
-    if (Array.isArray(value)) {
-      const isStrings = value.every((v) => typeof v === "string");
-      return (
-        <div className="ad-sub" key={path.join(".")}>
-          <div className="ad-sub__head"><b>{humanize(keyName)}</b>
-            <button type="button" className="ad-btn ad-btn--ghost" onClick={() => arr(path, (a) => a.push(isStrings ? "" : clone(a[a.length - 1] ?? {})))} disabled={!isStrings && value.length === 0}>+ Добави</button>
-          </div>
-          {value.map((item, i) => (
-            <div className="ad-sub ad-list-item" key={i}>
-              <div className="ad-sub__head">
-                <b>#{i + 1}</b>
-                <button type="button" className="ad-btn ad-btn--danger" onClick={() => arr(path, (a) => a.splice(i, 1))}>Премахни</button>
-              </div>
-              {renderValue(item, [...path, i], keyName.replace(/s$/, ""))}
+  function imageField(value: string, path: Path, k: string) {
+    // A new photo brings its own description: the bundled ones are known in all
+    // three languages; for an upload the old text is cleared (and flagged below)
+    // rather than left describing the previous picture.
+    const pick = (url: string) => {
+      change((d) => {
+        let next = setValue(d, locale, path, url);
+        const altKey = altKeyFor(k);
+        if (altKey) {
+          const altPath = [...path.slice(0, -1), altKey];
+          next = setPerLocale(next, altPath, bundledAlt(url) ?? { it: "", bg: "", en: "" });
+        }
+        return next;
+      });
+      setPicker(null);
+    };
+    const def = getAt(template, templatePath(path));
+    const canRestore = k === "image" && typeof def === "string" && def !== value;
+    return (
+      <div className="ad-field" key={path.join(".")}>
+        {label(k, true)}
+        <div className="ad-image">
+          <div className="ad-image__thumb">{value ? <img src={value} alt="" /> : <span>Няма снимка</span>}</div>
+          <div className="ad-image__meta">
+            <b>{value ? fileName(value) : "—"}</b>
+            <div className="ad-image__actions">
+              <button type="button" className="ad-btn ad-btn--primary" onClick={() => setPicker(() => pick)}>
+                {value ? "Смени снимката" : "Избери снимка"}
+              </button>
+              {canRestore && <button type="button" className="ad-btn ad-btn--ghost" onClick={() => pick(def as string)}>Върни стандартната</button>}
+              {(k === "logo" || k === "shareImage") && value && <button type="button" className="ad-btn ad-btn--ghost" onClick={() => set(path, "")}>Махни</button>}
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function iconField(value: string, path: Path) {
+    return (
+      <div className="ad-field" key={path.join(".")}>
+        {label("icon", true)}
+        <div className="ad-icons" role="radiogroup" aria-label="Икона">
+          {BRAND_ICONS.map((name) => (
+            <button
+              type="button" key={name} role="radio" aria-checked={value === name}
+              className={`ad-icon ${value === name ? "active" : ""}`} onClick={() => set(path, name)} title={ICON_LABELS[name]}
+            >
+              <img src={`/assets/img/icons/${name}.webp`} alt="" />
+              <span>{ICON_LABELS[name]}</span>
+            </button>
           ))}
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    // object
+  function textField(value: string, path: Path, k: string) {
+    const shared = isSharedKey(fieldOf(path));
+    const long = isLongField(k, value);
+    // A photo with no description in this language is invisible to screen readers.
+    const imgKey = k === "imageAlt" ? "image" : k === "alt" ? "src" : "";
+    const img = imgKey ? getAt(data[locale], [...path.slice(0, -1), imgKey]) : undefined;
+    const missingAlt = typeof img === "string" && img !== "" && !value.trim();
+    return (
+      <div className={`ad-field ${missingAlt ? "ad-field--warn" : ""}`} key={path.join(".")}>
+        {label(k, shared)}
+        {missingAlt && <p className="ad-warn" role="note">⚠ Липсва описание на този език — добавете какво има на снимката.</p>}
+        {long ? (
+          <textarea value={value} onChange={(e) => set(path, e.target.value)} rows={Math.min(8, Math.max(3, Math.ceil(value.length / 80)))} />
+        ) : (
+          <input type="text" value={value} onChange={(e) => set(path, e.target.value)} />
+        )}
+      </div>
+    );
+  }
+
+  function listField(value: unknown[], path: Path, k: string) {
+    const tpl = getAt(template, templatePath([...path, 0]));
+    return (
+      <div className="ad-sub" key={path.join(".")}>
+        <div className="ad-sub__head">
+          <b>{humanize(k)} <span className="ad-count">{value.length}</span></b>
+          <button type="button" className="ad-btn ad-btn--ghost" onClick={() => change((d) => addItem(d, path, tpl))}>+ Добави</button>
+        </div>
+        {value.length === 0 && <p className="ad-empty-list">Празно. Натиснете „+ Добави“.</p>}
+        {value.map((item, i) => (
+          <div className="ad-sub ad-list-item" key={i}>
+            <div className="ad-sub__head">
+              <b>#{i + 1}</b>
+              <div className="ad-item-actions">
+                <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" disabled={i === 0} onClick={() => change((d) => moveItem(d, path, i, -1))} aria-label="Нагоре" title="Нагоре">↑</button>
+                <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" disabled={i === value.length - 1} onClick={() => change((d) => moveItem(d, path, i, 1))} aria-label="Надолу" title="Надолу">↓</button>
+                <button type="button" className="ad-btn ad-btn--danger" onClick={() => { if (confirm("Да премахна ли този елемент от трите езика?")) change((d) => removeItem(d, path, i)); }}>Премахни</button>
+              </div>
+            </div>
+            {renderValue(item, [...path, i], k)}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function renderValue(value: unknown, path: Path, k: string): ReactNode {
+    if (typeof value === "string") {
+      if (k === "icon") return iconField(value, path);
+      if (isImageKey(k)) return imageField(value, path, k);
+      return textField(value, path, k);
+    }
+    if (Array.isArray(value)) return listField(value, path, k);
     if (value && typeof value === "object") {
       return (
-        <div key={path.join(".")} style={{ display: "grid", gap: ".2rem" }}>
-          {Object.entries(value as Record<string, unknown>).map(([k, v]) => renderValue(v, [...path, k], k))}
+        <div key={path.join(".")} className="ad-group">
+          {Object.entries(value as Doc).map(([ck, v]) => renderValue(v, [...path, ck], ck))}
         </div>
       );
     }
     return null;
   }
 
+  // The interface wording is a flat list of ~40 strings: grouped, it reads.
+  function renderUi(root: Doc) {
+    return UI_GROUPS.map((g) => (
+      <fieldset className="ad-fieldset" key={g.title}>
+        <legend>{g.title}</legend>
+        {Object.entries(g.keys).map(([key, label]) =>
+          typeof root[key] === "string" ? (
+            <div className="ad-field" key={key}>
+              <label>{label}</label>
+              {isLongField(key, root[key] as string) ? (
+                <textarea value={root[key] as string} onChange={(e) => set([key], e.target.value)} rows={3} />
+              ) : (
+                <input type="text" value={root[key] as string} onChange={(e) => set([key], e.target.value)} />
+              )}
+            </div>
+          ) : null,
+        )}
+      </fieldset>
+    ));
+  }
+
+  const root = data[locale];
   return (
     <>
-      <div className="ad-tabs">
+      <div className="ad-tabs" role="tablist">
         {LOCALES.map((l) => (
-          <button key={l} type="button" className={`ad-tab ${l === locale ? "active" : ""}`} onClick={() => setLocale(l)}>
+          <button key={l} type="button" role="tab" aria-selected={l === locale} className={`ad-tab ${l === locale ? "active" : ""}`} onClick={() => setLocale(l)}>
             <span className="flag">{LOCALE_META[l].flag}</span>{LOCALE_META[l].label}
           </button>
         ))}
       </div>
 
       <div className="ad-panel">
-        {Object.entries(root).map(([k, v]) => renderValue(v, [k], k))}
+        {contentKey === "ui" ? renderUi(root) : Object.entries(root).map(([k, v]) => renderValue(v, [k], k))}
       </div>
 
       <div className="ad-save-bar">
-        <button className="ad-btn ad-btn--primary" type="button" onClick={save} disabled={saving}>
-          {saving ? "Запазване…" : "Запази промените"}
+        <button className="ad-btn ad-btn--primary" type="button" onClick={save} disabled={saving || !dirty}>
+          {saving ? "Запазване…" : dirty ? "Запази промените" : "Няма промени"}
         </button>
-        <span className={`status ${status.cls}`}>{status.msg}</span>
-        <span style={{ marginLeft: "auto", color: "var(--ad-muted)", fontSize: ".85rem" }}>
-          Редактирате: <b>{LOCALE_META[locale].label}</b> · трите езика се запазват заедно
+        <span className={`status ${status.cls}`} role="status" aria-live="polite">{status.msg}</span>
+        <span className="ad-save-bar__note">
+          Редактирате: <b>{LOCALE_META[locale].label}</b> · текстът е за всеки език поотделно, снимките и подредбата — общи
         </span>
       </div>
 

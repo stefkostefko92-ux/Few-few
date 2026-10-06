@@ -56,3 +56,19 @@ test("MED: eval-mode с далечен until не спира ученето бе
   writeFileSync(join(dir, ".git", "agents-eval.json"), JSON.stringify({ label: "x", memory: "off", until: new Date(now + (MAX_MINUTES - 1) * 60_000).toISOString() }));
   assert.equal(evalMode(dir, now)?.memory, "off");
 });
+
+// 2026-10-06: фоновият агент предава доклада си през SubagentHandback (tool_use, input.message), не с текст.
+// Куката четеше само text възлите → осем пускания на Асансьорчика с 141 проверени поуки, нула записани.
+test("SubagentHandback на агента носи ```learn блока; tool_result и друг tool_use — не", () => {
+  const handback = (agent) => ({ type: "tool_use", name: "SubagentHandback", input: { message: "Докладът.\n\n" + learn(agent) } });
+  const lines = [
+    line({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: "Работя." }] } }),
+    line({ type: "assistant", message: { role: "assistant", content: [handback("asansyorchika")] } }),
+  ];
+  assert.match(lastLearnBlock(assistantTexts(lines).join("\n")), /agent: asansyorchika/);
+  const foreign = [
+    line({ type: "user", message: { role: "user", content: [{ type: "tool_result", content: [{ type: "text", text: JSON.stringify(handback("kasadjiyata")) }] }] } }),
+    line({ type: "assistant", message: { role: "assistant", content: [{ type: "tool_use", name: "Write", input: { content: learn("kasadjiyata") } }] } }),
+  ];
+  assert.equal(lastLearnBlock(assistantTexts(foreign).join("\n")), null);
+});

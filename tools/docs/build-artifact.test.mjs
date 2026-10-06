@@ -147,5 +147,7 @@ test("реалният билд: 3D портретите са вградени, 
   assert.ok(!html.includes("-portrait3d.webp`"), "относителен път = блокиран от CSP");
   assert.ok(html.includes("MASCOT_PORTRAITS[agent.id]"), "профилът чете вградената карта");
   const m = /const MASCOT_PORTRAITS = (\{.*?\});/.exec(html);
-  assert.ok(m && Object.keys(JSON.parse(m[1])).length === 28, "портрет за всеки от 28-те агента");
+  // Бройката идва от регистъра, не е твърдо 28 — нов агент (Асансьорчика, 2026-10-05) иначе чупеше теста.
+  const n = JSON.parse(readFileSync(join(ROOT, "agents-dashboard", "agents.json"), "utf8")).agents.length;
+  assert.ok(m && Object.keys(JSON.parse(m[1])).length === n, `портрет за всеки от ${n}-те агента`);
 });
