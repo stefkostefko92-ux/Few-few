@@ -8,6 +8,8 @@ import { letto } from './norme-fonti';
 import { VOCI_FRENO } from './norme-freno';
 import { VOCI_FUNI } from './norme-funi';
 import { VOCI_GOLE } from './norme-gole';
+import { VOCI_MODELLO } from './norme-modello';
+import { VOCI_SOCCORSO } from './norme-soccorso';
 import type { CheckId } from './types';
 
 /** Numeric constants of the engine. Values are the ones of the prototype (research, chapter 4). */
@@ -45,9 +47,21 @@ export const K = {
   // brake (UNI EN 81-20:2020, 5.9.2.2)
   brakeSetsMin: 2,
   brakeDecelMax: 9.81,
-  // rescue (UNI EN 81-20:2020, 5.9.2.3.3; the mechanical means of 5.9.2.3.1 a) only up to 150 N: not checked), drive, margins
+  // ropes kept in the grooves of a sheave they wrap from below (UNI EN 81-20:2020, 5.5.7.2) and compensation by the
+  // rated speed (5.5.6.1)
+  retainWrap: 120,
+  retainBelow: 60,
+  vCompGuided: 1.75,
+  vCompRopes: 3,
+  // rescue: UNI EN 81-20:2020, 5.9.2.3 (400 N raising the car with Q, 150 N to a landing with the car in (q ± 0,1)·Q,
+  // the electric means and the emergency operation at 0,30 m/s, 1 h); UNI EN 81-1:2008, 12.5 and 14.2.1.4 (0,63 m/s)
   rescueForceMax: 400,
   rescueForceMech: 150,
+  rescueLoadBand: 0.1,
+  rescueSpeed: 0.3,
+  rescueSpeedOld: 0.63,
+  rescueHours: 1,
+  // drive, margins
   accelTorqueRatioMax: 2,
   nearLimit: 0.98,
   // sensitivity (research 8.9)
@@ -111,8 +125,19 @@ export const VOCI: readonly Voce[] = [
     riferimento: 'UNI EN 81-50:2020, 5.11.2.1 e 5.11.2.2.3', fonte: letto(T50, 'pp. 39–40'), stato: 'confermato',
     verifiche: ['tr_load', 'tr_dn', 'tr_up', 'tr_stall'],
     nota: 'Con la cabina o il contrappeso bloccati la condizione serve quando è l\'aderenza a impedire il sollevamento: la UNI EN 81-20:2020 '
-      + '(5.5.3 c)) ammette in alternativa un dispositivo elettrico di sicurezza; la UNI EN 81-1:2008 (9.3 c)) no. Il software verifica sempre '
-      + 'la condizione: se c\'è il dispositivo, lo decide l\'ingegnere.',
+      + '(5.5.3 c)) ammette in alternativa un dispositivo elettrico di sicurezza (voce trazione.bloccata.dispositivo); la UNI EN 81-1:2008 '
+      + '(9.3 c)) no.',
+  },
+  {
+    id: 'trazione.bloccata.dispositivo', gruppo: 'trazione', titolo: 'Cabina o contrappeso bloccati: dispositivo al posto dello slittamento',
+    valore: 'con la macchina secondo la UNI EN 81-20:2020 e un dispositivo elettrico di sicurezza (5.11.2) che arresta la macchina, la verifica '
+      + 'con cabina o contrappeso bloccati non superata è «Attenzione» (verifica sostituita da dispositivo, da documentare), mai OK; con la '
+      + 'macchina secondo la UNI EN 81-1 resta KO',
+    riferimento: 'UNI EN 81-20:2020, 5.5.3 c) 2); UNI EN 81-1:2008, 9.3 c); UNI 10411-1:2024, 14.1 a)–b)',
+    fonte: `${letto(T20, 'p. 75')}; ${letto('UNI EN 81-1:2008', 'p. 55')}; ${letto(U1, 'p. 13')}`, stato: 'confermato',
+    verifiche: ['tr_stall'],
+    nota: 'La norma non dice quale dispositivo: deve accorgersi del blocco e fermare la macchina prima di un sollevamento pericoloso. Il '
+      + 'temporizzatore della 5.9.2.7 è un obbligo distinto. Con la UNI 10411-11:2024 vale solo se la macchina è verificata secondo la UNI EN 81-20.',
   },
   {
     id: 'trazione.mu.caricamento', gruppo: 'trazione', titolo: 'Coefficiente di attrito, caricamento', valore: 'μ = 0,1',
@@ -213,14 +238,7 @@ export const VOCI: readonly Voce[] = [
       + 'meno, porta ai punti 15 a)–k) e alla valutazione 4.3.',
   },
   // ---------- rescue ----------
-  {
-    id: 'soccorso.forza', gruppo: 'soccorso', titolo: 'Forza massima al volantino',
-    valore: '≤ 400 N per far salire la cabina con la portata, altrimenti manovra elettrica di emergenza; il mezzo meccanico è ammesso se per portare '
-      + 'la cabina a una fermata bastano 150 N',
-    riferimento: 'UNI EN 81-20:2020, 5.9.2.3.3 (400 N) e 5.9.2.3.1 a) (150 N)', fonte: letto(T20, 'pp. 101–102'), stato: 'confermato',
-    costanti: ['rescueForceMax', 'rescueForceMech'], verifiche: ['s_force'],
-    nota: 'Il software verifica i 400 N; i 150 N del mezzo meccanico (5.9.2.3.1 a)) non sono verificati: sono nella lista da verificare.',
-  },
+  ...VOCI_SOCCORSO,
   // ---------- shaft ----------
   {
     id: 'albero.carico', gruppo: 'albero', titolo: 'Carico sull\'albero della puleggia', valore: 'risultante dei tiri con 1,25·Q al piano più basso, confrontata con il limite del costruttore',
@@ -245,11 +263,13 @@ export const VOCI: readonly Voce[] = [
     valore: 'UNI 10411-1:2024, punto 14: macchina secondo la UNI EN 81-20 (5.9.1 e 5.9.2, freno in due gruppi) o la UNI EN 81-1:2010, con '
       + 'aderenza e coefficiente di sicurezza delle funi (14.1); D/d ≥ 40 (14.3); temporizzatore della UNI EN 81-20 (5.9.2.7), arresto prima '
       + 'che la cabina in salita tocchi la velocità di intervento del limitatore, ACOP e UCM esistenti che funzionano ancora, arresto vicino alla '
-      + 'macchina, pulegge secondo la 5.5.7, interruzione se il freno non si apre (14.4 a)–g)). UNI 10411-11:2024, punto 14: macchina come '
+      + 'macchina, pulegge secondo la 5.5.7, interruzione se il freno non si apre (14.4 a)–g)); valutazione della sicurezza su tre piani (4); '
+      + 'con funi nuove, controllo degli attacchi d\'estremità (17.1); documenti dell\'appendice C (14) e manuali (25.5). UNI 10411-11:2024, punto 14: macchina come '
       + 'l\'originale, altrimenti UNI EN 81-20 5.9.1–5.9.2 con le verifiche della norma di origine o della UNI EN 81-20 e la valutazione 4.3 '
       + '(14.1); UCM esistenti che funzionano ancora e, senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione se il '
-      + 'freno non si apre (14.3)',
-    riferimento: 'UNI 10411-1:2024, 14.1–14.4; UNI 10411-11:2024, 14.1–14.3', fonte: `${letto(U1, 'pp. 13–14')}; ${letto(U11, 'p. 12')}`,
+      + 'freno non si apre (14.3); funi nuove e attacchi come gli originali, altrimenti verificati con la valutazione 4.3 (17)',
+    riferimento: 'UNI 10411-1:2024, 4, 14.1–14.4, 17.1, 25.5, appendice C; UNI 10411-11:2024, 14.1–14.3, 17',
+    fonte: `${letto(U1, 'pp. 6, 13–14, 16, 21 e 30')}; ${letto(U11, 'pp. 12 e 14')}`,
     stato: 'confermato',
     verifiche: ['b_sets'],
   },
@@ -258,27 +278,5 @@ export const VOCI: readonly Voce[] = [
     riferimento: '—', fonte: 'indicazione di Panev Ascensori (29 settembre 2026)', stato: 'prassi',
   },
   // ---------- model ----------
-  {
-    id: 'modello.g', gruppo: 'modello', titolo: 'Accelerazione di gravità', valore: 'g = 9,81 m/s² (anche come limite di 1 g)',
-    riferimento: 'UNI EN 81-20:2020, 5.2.1.8.5 (g_n = 9,81 m/s²)', fonte: letto(T20, 'p. 27'), stato: 'confermato',
-    costanti: ['g', 'brakeDecelMax'],
-  },
-  {
-    id: 'modello.percorso', gruppo: 'modello', titolo: 'Tiri con il metodo del percorso della fune', valore: 'masse e funi di ogni tratto, inerzia delle pulegge di rinvio; attrito di guide e pulegge trascurato in aderenza',
-    riferimento: 'UNI EN 81-50:2020, 5.11.3', fonte: letto(T50, 'pp. 43–44'), stato: 'da_verificare',
-    verifiche: ['tr_load', 'tr_dn', 'tr_up', 'tr_real', 'tr_stall'],
-    nota: 'Confermati sul testo: le masse per lato, il fattore (r² + 2)/3 delle funi, il termine delle pulegge di rinvio e l\'attrito trascurato. '
-      + 'Da verificare: in taglia 2:1 le pulegge di cabina e di contrappeso (termine III della norma) non sono contate; con la macchina in basso '
-      + 'il tratto tra macchina e pulegge in testata usa r·a, dove il testo stampa a (la forma stampata coincide con quella fisica solo a 1:1).',
-  },
-  {
-    id: 'modello.compensazione', gruppo: 'modello', titolo: 'Compensazione e cavo flessibile', valore: 'non modellati a parte: la loro massa sul lato cabina entra in P',
-    riferimento: 'UNI EN 81-50:2020, 5.11', fonte: 'limite del modello attuale', stato: 'scelta',
-    nota: 'Nella 5.11.3 la massa della compensazione e del cavo dipende dalla posizione della cabina; il software la tiene costante dentro P.',
-  },
-  {
-    id: 'modello.sensibilita', gruppo: 'modello', titolo: 'Analisi di sensibilità', valore: 'P ±10%; k ±0,05 se il carico di equilibrio non è misurato',
-    riferimento: '—', fonte: 'scelta del software (incertezza tipica del rilievo)', stato: 'scelta',
-    costanti: ['sensP', 'sensK'],
-  },
+  ...VOCI_MODELLO,
 ];

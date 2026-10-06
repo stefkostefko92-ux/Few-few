@@ -26,6 +26,7 @@ const AT_LEAST: ReadonlySet<CheckId> = new Set<CheckId>(['tr_stall', 'r_dd', 'r_
 /** The unit of a check's value and limit; none for a ratio, a utilisation, a safety factor or a count. */
 export const CHECK_UNIT: Readonly<Partial<Record<CheckId, string>>> = {
   g_geom: '°', d_pst: 'kW', d_mp: 'N·m', s_shaft: 'kg', b_all: 'N·m', b_one: 'N·m', b_up: 'N·m', b_amax: 'm/s²', s_force: 'N', s_uplift: 'kg',
+  s_fa: 'N', v_comp: 'm/s', g_retain: '°',
 };
 
 export function textsFor(P: Pres) {
@@ -47,6 +48,14 @@ export function textsFor(P: Pres) {
   const critText = (s: Sizing | null): string => t(s && s.keep ? 'p_crit_keep' : 'p_crit');
   const altText = (s: Sizing | null): string => t(s && s.keep ? 'p_alt_keep' : 'p_alt');
 
+  // the rescue in a proposal's row: the 400 N to raise the car with Q and, with a machine to UNI EN 81-20 (the s_fa check
+  // is there), the 150 N to a landing (compute.ts)
+  const rescueText = (r: Results): string => {
+    const f = { f: fmt(r.rescue.F, 0), fmax: K.rescueForceMax, fa: fmt(r.rescue.Fa, 0), fmech: K.rescueForceMech }, en20 = statusOf(r, 's_fa') != null;
+    if (r.rescue.F > K.rescueForceMax) return t('p_electric', f);
+    return en20 ? (r.rescue.Fa > K.rescueForceMech ? t('p_mech', f) : t('p_manual20', f)) : t('p_manual', f);
+  };
+
   function proposalRows(o: SizingOption, N: Machine, fixedD: number, kept = false): Row2[] {
     const r = o.res, worst = worstTraction(r), w = brakeWindow(r);
     return [
@@ -59,7 +68,7 @@ export function textsFor(P: Pres) {
       [t('p_shaft'), `≥ ${fmt(o.M.shaftMax, 0)} kg (1,25·Q: ${fmt(r.shaft.testKg, 0)} kg${r.shaft.up ? ` · ${t('p_upwards')}` : ''})`],
       [t('p_brake'), t('p_brake_sets', { x: fmt(o.brakeSet, 0), lo: fmt(w.lo / w.sets, 1),
         hi: w.hi == null ? t('p_hi_none') : w.hi === Infinity ? '—' : t('p_hi', { y: fmt(w.hi / w.sets, 1) }) })],
-      [t('p_rescue'), r.rescue.F <= K.rescueForceMax ? t('p_manual', { f: fmt(r.rescue.F, 0), fmax: K.rescueForceMax }) : t('p_electric', { f: fmt(r.rescue.F, 0), fmax: K.rescueForceMax })],
+      [t('p_rescue'), rescueText(r)],
       [t('p_margins'), t('p_util', { u: fmt(worst, 3), ur: fmt(r.real.util, 3), sa: fmt(r.ropes.SfAct, 2), sr: fmt(r.ropes.SfReq, 2) })],
     ];
   }
@@ -118,8 +127,8 @@ export function textsFor(P: Pres) {
   ];
 
   function checkLabel(id: CheckId): string {
-    const grp: CalcKey = id.startsWith('tr_') ? 'c_trac' : id.startsWith('r_') || id.startsWith('g_') ? 'c_ropes' : id.startsWith('d_') ? 'c_drive'
-      : id.startsWith('b_') ? 'c_brake' : id === 's_force' ? 'c_rescue' : 'c_shaft';
+    const grp: CalcKey = id.startsWith('tr_') ? 'c_trac' : id.startsWith('r_') || id.startsWith('g_') || id === 'v_comp' ? 'c_ropes' : id.startsWith('d_') ? 'c_drive'
+      : id.startsWith('b_') ? 'c_brake' : id === 's_force' || id === 's_fa' || id === 's_gravity' ? 'c_rescue' : 'c_shaft';
     return `${t(grp)} · ${t(id)}`;
   }
   const checkText = (c: Check): string => `${checkLabel(c.id)}${c.cs ? ` — ${caseText(c.cs, c.id !== 'b_amax')}` : ''}`;

@@ -37,15 +37,18 @@ export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null,
   const label = t((f.key ?? f.id) as CalcKey);
   const hidden = !shown(f.id, V), adv = f.adv && !need ? ' adv' : '', needCls = need ? ' need' : '';
   const badge = std && texts ? <span className="badge std" title={texts.stdTitle}>{texts.std}</span> : null;
+  const hint = f.hint ? <div className={`hint${adv}`} hidden={hidden}>{t(f.hint)}</div> : null;
   if (f.kind === 'check') {
     return (
-      <div className="row check" hidden={hidden}>
-        <input type="checkbox" id={f.id} checked={!!V[f.id]} onChange={(e) => set(f.id, e.target.checked)} />
-        <label htmlFor={f.id}>{label}{badge}</label>
-      </div>
+      <>
+        <div className="row check" hidden={hidden}>
+          <input type="checkbox" id={f.id} checked={!!V[f.id]} onChange={(e) => set(f.id, e.target.checked)} />
+          <label htmlFor={f.id}>{label}{badge}</label>
+        </div>
+        {hint}
+      </>
     );
   }
-  const hint = f.hint ? <div className={`hint${adv}`} hidden={hidden}>{t(f.hint)}</div> : null;
   if (f.kind === 'select') {
     const value = String(V[f.id] ?? '');
     return (

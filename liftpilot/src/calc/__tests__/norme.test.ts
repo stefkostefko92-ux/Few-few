@@ -6,7 +6,8 @@ import { K, PROFILO, VOCI } from '../index';
 import type { CheckId, Costante } from '../index';
 
 const CHECKS: readonly CheckId[] = ['tr_load', 'tr_dn', 'tr_up', 'tr_real', 'tr_stall', 'r_dd', 'r_ddp', 'r_nd', 'g_geom', 'r_sfa',
-  'd_pst', 'd_ratio', 'd_mp', 's_shaft', 'b_sets', 'b_all', 'b_one', 'b_up', 'b_amax', 's_force', 's_uplift'];
+  'd_pst', 'd_ratio', 'd_mp', 's_shaft', 'b_sets', 'b_all', 'b_one', 'b_up', 'b_amax', 's_force', 's_uplift', 'tr_msr1', 'r_two', 'v_comp', 'g_retain',
+  's_fa', 's_gravity'];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
 const voce = (id: string) => {
   const v = VOCI.find((x) => x.id === id);
@@ -43,7 +44,12 @@ test('i testi delle voci riportano i numeri usati dal motore', () => {
     ['funi.Sf.minimo', `${K.sfMin3} con tre`], ['funi.Sf.minimo', `${K.sfMin2} con due`],
     ['funi.Sf.formula', `${it(K.sfC0)}`], ['funi.Sf.formula', `695,85·10^6`], ['funi.Sf.formula', `^${it(K.sfE1)}`], ['funi.Sf.formula', `${it(K.sfC2)}`], ['funi.Sf.formula', `^−${it(-K.sfE2)}`],
     ['funi.Nequiv.pulegge', `^${K.kpExponent}`], ['funi.Nequiv.pulegge', `${K.reverseBendWeight}·N_pr`],
-    ['freno.gruppi', `almeno ${K.brakeSetsMin}`], ['soccorso.forza', `≤ ${K.rescueForceMax} N`], ['soccorso.forza', `bastano ${K.rescueForceMech} N`], ['azionamento.accelerazione', `${K.accelTorqueRatioMax} volte`],
+    ['freno.gruppi', `almeno ${K.brakeSetsMin}`], ['soccorso.forza', `≤ ${K.rescueForceMax} N`], ['soccorso.meccanico', `bastano ${K.rescueForceMech} N`],
+    ['soccorso.meccanico', `(q − ${it(K.rescueLoadBand)})·Q`], ['soccorso.meccanico', `entro ${K.rescueHours} h`], ['soccorso.meccanico', `${it(K.rescueSpeed, 2)} m/s`],
+    ['soccorso.forza', `${it(K.rescueSpeed, 2)} m/s`], ['soccorso.forza', `${it(K.rescueSpeedOld, 2)} m/s`],
+    ['modello.velocita', `oltre ${it(K.vCompGuided)} m/s`], ['modello.velocita', `oltre ${K.vCompRopes} m/s`],
+    ['funi.trattenuta', `più di ${K.retainBelow}°`], ['funi.trattenuta', `supera ${K.retainWrap}°`], ['funi.due', `con ${K.ropesMin} funi`],
+    ['azionamento.accelerazione', `${K.accelTorqueRatioMax} volte`],
     ['azionamento.margine', `${Math.round(K.nearLimit * 100)}%`], ['modello.sensibilita', `P ±${Math.round(K.sensP * 100)}%`], ['modello.sensibilita', `k ±${it(K.sensK)}`],
     ['modello.g', `g = ${it(K.g)} m/s²`],
   ];

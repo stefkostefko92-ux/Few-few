@@ -76,7 +76,8 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   r_dd: ['machine', 'ropes'], r_ddp: ['machine', 'ropes'], r_nd: ROPES, g_geom: ['machine', 'ropes'], r_sfa: [...ROPES, 'car', 'cw'],
   d_pst: DRIVE, d_ratio: DRIVE, d_mp: DRIVE, s_shaft: ['machine', 'ropes', 'car', 'cw', 'load', 'travel'],
   b_sets: ['machine'], b_all: DRIVE, b_one: DRIVE, b_up: DRIVE, b_amax: DRIVE,
-  s_force: ['machine', 'car', 'cw', 'load'], s_uplift: ['machine', 'car', 'cw', 'load'],
+  s_force: ['machine', 'car', 'cw', 'load'], s_uplift: ['machine', 'car', 'cw', 'load'], tr_msr1: TRACTION, r_two: ROPES,
+  v_comp: ['machine', 'ropes', 'speed'], g_retain: ['machine', 'ropes'], s_fa: ['machine', 'car', 'cw', 'load'], s_gravity: ['machine'],
   // the shaft in plan: the car and its rated load, the doors, the counterweight and the rails
   v_fit: ['car'], v_area: ['car', 'load'], v_acc_car: ['car'], v_acc_door: DOORS, v_acc_side: ['car', ...DOORS],
   v_door: ['landingDoors'], v_door2: ['landingDoors'], v_land: DOORS, v_land2: DOORS, v_op: ['carDoors'], v_wall: ['car', ...DOORS], v_sill: ['car', ...DOORS],

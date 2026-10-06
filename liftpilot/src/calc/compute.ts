@@ -40,18 +40,20 @@ export function compute(I: Plant, M: Machine): Results {
   const Tb = M.brakeNm * M.brakeSets;
   const vf = I.v * r, muB = K.muBrakingBase / (1 + vf / K.muBrakingSpeed), fB = grooveF(muB, M.groove, 'braking');
   // tb null: the minimum deceleration of the standard; a number: the brake's own deceleration with that total torque
-  const brakeCase = (load: number, e: End, dir: 1 | -1, tb: number | null, ub: number): BrakeCase => {
+  // phys: the rope from a bottom machine to the top at its own acceleration (model.ts), for the remark tr_msr1
+  const brakeCase = (load: number, e: End, dir: 1 | -1, tb: number | null, ub: number, phys = false): BrakeCase => {
     const a = tb == null ? I.ae : brakeDecel(tb, dir * ub * R, load), aEff = Math.max(I.ae, a);
     const aUp = dir * aEff; // a car moving down (dir 1) decelerates upwards
-    const Tc = walk(P + load, aUp, e.p.car), Tw = walk(Mcw, -aUp, e.p.cwt), efa = Math.exp(fB * e.alpha), q = ratio(Tc, Tw);
+    const Tc = walk(P + load, aUp, e.p.car, phys), Tw = walk(Mcw, -aUp, e.p.cwt, phys), efa = Math.exp(fB * e.alpha), q = ratio(Tc, Tw);
     return { load: load > 0 ? 'q' : 'e', pos: e.pos, dir: dir > 0 ? 'dn' : 'up', a, aEff, fromBrake: tb != null && a > I.ae,
       alpha: e.alpha, mu: muB, f: fB, efa, T1: Math.max(Tc, Tw), T2: Math.min(Tc, Tw), ratio: q, util: q / efa };
   };
-  const brakeCases = (tb: number | null): BrakeCase[] => [Q, 0].flatMap((load) => ends.flatMap((e) => {
+  const brakeCases = (tb: number | null, phys = false): BrakeCase[] => [Q, 0].flatMap((load) => ends.flatMap((e) => {
     const ub = tb == null ? 0 : unbalance(load, e);
-    return ([1, -1] as const).map((dir) => brakeCase(load, e, dir, tb, ub));
+    return ([1, -1] as const).map((dir) => brakeCase(load, e, dir, tb, ub, phys));
   }));
   const brk = brakeCases(null);
+  const msr1 = I.layout === 'bottom' && r > 1 ? worst(brakeCases(null, true)) : null;
   const dn = worst(brk.filter((c) => c.dir === 'dn'));
   const up = worst(brk.filter((c) => c.dir === 'up'));
   const brkReal = brakeCases(Tb);
@@ -118,9 +120,12 @@ export function compute(I: Plant, M: Machine): Results {
       sets: M.brakeSets, aMax: hard.a, aMaxCase: hard };
   }
 
-  // manual rescue: car with rated load moved upwards from the bottom
+  // manual rescue: car with rated load moved upwards from the bottom (F); to a landing with the car loaded in (k ± 0.1)·Q,
+  // against the unbalance, from either end (Fa: UNI EN 81-20:2020, 5.9.2.3.1 a))
   const rescueM = (dF * R) / (M.i * M.etaD * I.etaShaft);
-  const rescue = { M: rescueM, F: rescueM / I.rh };
+  const band = [Math.max(0, k - K.rescueLoadBand) * Q, (k + K.rescueLoadBand) * Q];
+  const Fa = Math.max(...band.flatMap((l) => ends.map((e) => (Math.abs(unbalance(l, e)) * R) / (M.i * M.etaD * I.etaShaft) / I.rh)));
+  const rescue = { M: rescueM, F: rescueM / I.rh, Fa };
 
   let shaft: ShaftResult;
   {
@@ -160,12 +165,22 @@ export function compute(I: Plant, M: Machine): Results {
   add('tr_up', trac(up.util), up.ratio, up.efa, up.util, 3, up);
   add('tr_real', real.util <= K.tractionWarn ? 'ok' : 'warn', real.ratio, real.efa, real.util, 3, real);
   {
+    // not passed: with the machine to UNI EN 81-20 and an electric safety device stopping it (5.5.3 c) 2)) a remark to
+    // document, never OK; to UNI EN 81-1 (9.3 c)) no alternative
     const bind = stallLow.efa / stallLow.ratio > stall.efa / stall.ratio ? stallLow : stall, u = bind.efa / bind.ratio;
-    add('tr_stall', u <= 1 ? 'ok' : 'fail', bind.ratio, bind.efa, u);
+    add('tr_stall', u <= 1 ? 'ok' : I.stallDevice && I.std === 'en81-20' ? 'warn' : 'fail', bind.ratio, bind.efa, u);
   }
+  if (msr1) add('tr_msr1', msr1.util <= 1 ? 'info' : 'warn', msr1.ratio, msr1.efa, msr1.util, 3, msr1);
   add('r_dd', ropes.Dd >= K.ddMin ? 'ok' : 'fail', ropes.Dd, K.ddMin, K.ddMin / ropes.Dd, 1);
   if (ropes.DpD != null) add('r_ddp', ropes.DpD >= K.ddMin ? 'ok' : 'fail', ropes.DpD, K.ddMin, K.ddMin / ropes.DpD, 1);
   add('r_nd', M.n < K.ropesMin || M.d < K.ropeDiameterMin ? 'fail' : 'ok', M.n, K.ropesMin, null, 0);
+  if (M.n === K.ropesMin) add('r_two', 'info', M.n, null, null, 0);
+  {
+    // a bottom machine: the ropes wrap the sheave from below (UNI EN 81-20:2020, 5.5.7.2)
+    const wrap = Math.max(wa.B, wa.T), below = I.layout === 'bottom' ? Math.min(wrap, 180) : 0;
+    if (below > K.retainBelow && wrap > K.retainWrap) add('g_retain', 'info', wrap, K.retainWrap, null, 1);
+  }
+  if (I.v > K.vCompGuided) add('v_comp', I.v > K.vCompRopes ? 'fail' : 'warn', I.v, I.v > K.vCompRopes ? K.vCompRopes : K.vCompGuided, null, 2);
   {
     const g = M.groove, hasBeta = g.type === 'UU' || g.type === 'VN', hasV = g.type === 'VH' || g.type === 'VN';
     // semicircular grooves: the standard recommends γ ≥ 25° (a warning); the angle is shown when it is the only remark
@@ -186,10 +201,14 @@ export function compute(I: Plant, M: Machine): Results {
   }
   add('b_amax', brake.aMax <= K.brakeDecelMax ? 'ok' : 'warn', brake.aMax, K.brakeDecelMax, brake.aMax / K.brakeDecelMax, 2, brake.aMaxCase);
   add('s_force', rescue.F <= K.rescueForceMax ? 'ok' : 'warn', rescue.F, K.rescueForceMax, rescue.F / K.rescueForceMax, 0);
+  if (I.std === 'en81-20') {
+    add('s_fa', rescue.Fa <= K.rescueForceMech ? 'ok' : 'warn', rescue.Fa, K.rescueForceMech, rescue.Fa / K.rescueForceMech, 0);
+    if (M.etaI <= 0) add('s_gravity', 'info', null, null, null, 0);
+  }
   if (shaft.up) add('s_uplift', shaft.uplift != null && shaft.uplift > 0 ? 'warn' : 'ok', shaft.uplift, null, null, 0);
 
   return {
-    M, k, Mcw, alphaDeg, wa, loadCases, load, brk, dn, up, brkReal, real, brakeCasesAt: brakeCases, brakeUtil, stall, stallLow,
+    M, k, Mcw, alphaDeg, wa, loadCases, load, brk, dn, up, brkReal, real, ...(msr1 ? { msr1 } : {}), brakeCasesAt: brakeCases, brakeUtil, stall, stallLow,
     ropes, kin, drive, brake, rescue, shaft, ...(levers ? { levers } : {}), checks: C, fails: C.filter((c) => c.status === 'fail'),
   };
 }

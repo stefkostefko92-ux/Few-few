@@ -25,8 +25,21 @@ export const VOCI_FUNI: readonly Voce[] = [
     fonte: 'DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02, e Direttiva 2014/33/UE nel testo ufficiale italiano (EUR-Lex, fornito '
       + 'dal cliente), letto il 2026-10-04 (ricerca, cap. 16): All. I 1.3', stato: 'confermato',
     costanti: ['ropesMin'], verifiche: ['r_nd'],
-    nota: 'Con 2 sole funi la UNI EN 81-20:2020 (5.5.5.3 a)) chiede anche un dispositivo elettrico di sicurezza contro l\'allungamento '
-      + 'anomalo di una fune rispetto all\'altra; il software non lo verifica.',
+    nota: 'Con 2 sole funi serve anche il dispositivo contro l\'allungamento anomalo (voce funi.due): il software lo ricorda, non lo verifica.',
+  },
+  {
+    id: 'funi.due', gruppo: 'funi', titolo: 'Cabina appesa a due funi', valore: 'con 2 funi un dispositivo elettrico di sicurezza (5.11.2) ferma la '
+      + 'macchina se una fune si allunga in modo anomalo rispetto all\'altra (informazione)',
+    riferimento: 'UNI EN 81-20:2020, 5.5.5.3 a); UNI EN 81-1:2008, 9.5.3', fonte: `${letto(T20, 'p. 76')}; ${letto('UNI EN 81-1:2008', 'p. 56')}`,
+    stato: 'confermato',
+    costanti: ['ropesMin'], verifiche: ['r_two'],
+  },
+  {
+    id: 'funi.trattenuta', gruppo: 'funi', titolo: 'Funi trattenute nelle gole', valore: 'un fermo dove le funi entrano ed escono dalla puleggia e '
+      + 'almeno uno intermedio se più di 60° dell\'arco di avvolgimento sono sotto l\'orizzontale per l\'asse e l\'avvolgimento supera 120°: '
+      + 'con la macchina in basso le funi avvolgono la puleggia da sotto (informazione)',
+    riferimento: 'UNI EN 81-20:2020, 5.5.7.2', fonte: letto(T20, 'pp. 77–78'), stato: 'confermato',
+    costanti: ['retainWrap', 'retainBelow'], verifiche: ['g_retain'],
   },
   {
     id: 'funi.diametro', gruppo: 'funi', titolo: 'Diametro nominale minimo', valore: 'd ≥ 8 mm',
@@ -60,8 +73,15 @@ export const VOCI_FUNI: readonly Voce[] = [
     riferimento: 'UNI EN 81-50:2020, 5.12.2.2, prospetto 2', fonte: `${letto(T50, 'p. 46')} (i valori della gola a V differiscono da quelli `
       + 'della UNI EN 81-1:2008, prospetto N.1)', stato: 'confermato',
     costanti: ['neqU', 'neqV'], verifiche: ['r_sfa'],
-    nota: 'Il prospetto non ha una riga per la gola a V con sottosquadro: il software prende il maggiore tra il valore di β (riga a U) e quello '
-      + 'di γ (riga a V), dal lato della sicurezza.',
+  },
+  {
+    id: 'funi.Nequiv.gola.VN', gruppo: 'funi', titolo: 'N_equiv(t) della gola a V con sottosquadro',
+    valore: 'il maggiore tra il valore per β (riga a U con sottosquadro) e quello per γ (riga a V)',
+    riferimento: 'UNI EN 81-50:2020, 5.12.2.2, prospetto 2', fonte: `${letto(T50, 'p. 46')} (il prospetto non ha una riga per questa gola)`,
+    stato: 'scelta',
+    verifiche: ['r_sfa'],
+    nota: 'Scelta dal lato della sicurezza; la UNI EN 81-1:2008 (prospetto N.1) intitola la riga con sottosquadro «U/V»: con una macchina '
+      + 'secondo quella norma l\'ingegnere può prendere il valore di β.',
   },
   {
     id: 'funi.Nequiv.gola.interpolazione', gruppo: 'funi', titolo: 'Angoli tra i punti della tabella di N_equiv(t)',

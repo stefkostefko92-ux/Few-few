@@ -39,10 +39,12 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
     fmt(c.efa, 3), fmt(c.T1, 0), fmt(c.T2, 0), fmt(c.ratio, 3), { text: fmt(c.util, 3), bar: c.util }, pill(id)];
   const withBar = (text: string, u: number | null): Cell => (u == null ? text : { text, bar: u });
   // the stalled cases, empty car at the top and at the bottom (UNI EN 81-50:2020, 5.11.2.2.3), each with its own result
+  // a case not passed is a remark when an electric safety device replaces the check (compute.ts, tr_stall)
+  const device = statusOf(res, 'tr_stall') === 'warn';
   const stRow = (s: StallCase): Cell[] => {
-    const ok = s.ratio >= s.efa;
+    const st: CheckStatus = s.ratio >= s.efa ? 'ok' : device ? 'warn' : 'fail';
     return [{ text: t(s.pos === 'b' ? 'st_car' : 'st_cw'), sub: `${t('cs_e')}, ${t(s.pos === 'b' ? 'at_b' : 'at_t')}` }, fmt(s.mu, 4), fmt(s.f, 4), fmt(s.efa, 3), fmt(s.T1, 0),
-      fmt(s.T2, 0), fmt(s.ratio, 2), '≥ e^(f·α)', { text: X.st(ok ? 'ok' : 'fail'), status: ok ? 'ok' : 'fail' }];
+      fmt(s.T2, 0), fmt(s.ratio, 2), '≥ e^(f·α)', { text: X.st(st), status: st }];
   };
   const head4 = [t('col_item'), t('col_val'), t('col_lim'), t('col_res')];
   const out: TableBlock[] = [];
@@ -51,9 +53,10 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
     key: 'trac', title: t('c_trac'), ref: 'EN 81-50 §5.11 ⚠',
     head: [t('col_case'), 'μ', 'f', 'e^(f·α)', 'T1 [N]', 'T2 [N]', 'T1/T2', t('col_util'), t('col_res')],
     rows: [trRow('tr_load', res.load), trRow('tr_dn', res.dn), trRow('tr_up', res.up), trRow('tr_real', res.real),
-      stRow(res.stall), stRow(res.stallLow)],
+      ...(res.msr1 ? [trRow('tr_msr1', res.msr1)] : []), stRow(res.stall), stRow(res.stallLow)],
     notes: [{ text: `α = ${X.alphaText(res)} · k = ${fmt(res.k, 3)} · M_cw = ${fmt(res.Mcw, 0)} kg` }, { text: t('n_trac', { a: fmt(I.ae, 1), e: X.etaText(N) }) },
-      ...(statusOf(res, 'tr_real') === 'warn' ? [{ text: t('n_real'), flag: true }] : [])],
+      ...(statusOf(res, 'tr_real') === 'warn' ? [{ text: t('n_real'), flag: true }] : []),
+      ...(res.msr1 ? [{ text: t('n_msr1') }] : []), ...(device ? [{ text: t('n_stall_device'), flag: true }] : [])],
   });
   if (res.wa.dc != null && res.wa.dw != null) {
     out.push({
@@ -84,8 +87,13 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
       [t('r_sfc'), fmt(rp.SfCalc, 2), `min ${rp.SfMin}`, ''],
       [t('r_tmax'), `${fmt(rp.Tmax, 0)} N`, '', ''],
       [t('r_sfa'), fmt(rp.SfAct, 2), `≥ ${fmt(rp.SfReq, 2)}`, pill('r_sfa')],
+      ...(statusOf(res, 'r_two') ? [[t('r_two'), String(N.n), '', pill('r_two')]] : []),
+      ...(statusOf(res, 'g_retain') ? [[t('g_retain'), `${fmt(Math.max(res.wa.B, res.wa.T), 1)}°`, `> ${K.retainWrap}°`, pill('g_retain')]] : []),
+      ...(statusOf(res, 'v_comp') ? [[t('v_comp'), `${fmt(I.v, 2)} m/s`, `≤ ${fmt(K.vCompGuided, 2)} m/s`, pill('v_comp')]] : []),
     ],
-    notes: res.wa.reverse ? [{ text: t('g_bend_note') }] : [],
+    notes: [...(res.wa.reverse ? [{ text: t('g_bend_note') }] : []), ...(statusOf(res, 'r_two') ? [{ text: t('r_two_note') }] : []),
+      ...(statusOf(res, 'g_retain') ? [{ text: t('g_retain_note', { w: K.retainWrap }) }] : []),
+      ...(statusOf(res, 'v_comp') ? [{ text: t('v_comp_note', { g: fmt(K.vCompGuided, 2), r: fmt(K.vCompRopes, 1) }) }] : [])],
   });
   const k = res.kin;
   out.push({
@@ -121,11 +129,19 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
   brakeRows.push([t('b_max'), w.hi == null ? t('b_none') : w.hi === Infinity ? '—' : `${fmt(w.hi / w.sets, 1)} N·m`, '', '']);
   brakeRows.push([t('etaI'), X.etaText(N), '', '']);
   out.push({ key: 'brake', title: t('c_brake'), ref: 'EN 81-20 §5.9.2.2.2.1', head: head4, rows: brakeRows, notes: [] });
-  out.push({
-    key: 'rescue', title: t('c_rescue'), head: head4,
-    rows: [[t('s_force'), withBar(`${fmt(res.rescue.F, 0)} N`, res.rescue.F / K.rescueForceMax), `${K.rescueForceMax} N`, pill('s_force')]],
-    notes: res.rescue.F > K.rescueForceMax ? [{ text: t('s_need', { fmax: K.rescueForceMax }) }] : [],
-  });
+  {
+    // the 400 N of both standards, the 150 N to a landing and the gravity remark of UNI EN 81-20 (present only then)
+    const rc = res.rescue, en20 = statusOf(res, 's_fa') != null;
+    const rows: Cell[][] = [[t('s_force'), withBar(`${fmt(rc.F, 0)} N`, rc.F / K.rescueForceMax), `≤ ${K.rescueForceMax} N`, pill('s_force')]];
+    if (en20) rows.push([t('s_fa'), withBar(`${fmt(rc.Fa, 0)} N`, rc.Fa / K.rescueForceMech), `≤ ${K.rescueForceMech} N`, pill('s_fa')]);
+    if (statusOf(res, 's_gravity')) rows.push([t('s_gravity'), X.etaText(N), '', pill('s_gravity')]);
+    const notes: Line[] = [];
+    if (rc.F > K.rescueForceMax) notes.push({ text: t(en20 ? 's_need' : 's_need_old', { fmax: K.rescueForceMax, v: fmt(en20 ? K.rescueSpeed : K.rescueSpeedOld, 2) }) });
+    if (en20) notes.push({ text: t('s_fa_note', { b: fmt(K.rescueLoadBand, 1) }) });
+    if (en20 && rc.Fa > K.rescueForceMech) notes.push({ text: t('s_fa_need', { fmech: K.rescueForceMech, h: K.rescueHours, v: fmt(K.rescueSpeed, 2) }) });
+    if (statusOf(res, 's_gravity')) notes.push({ text: t('s_gravity_note') });
+    out.push({ key: 'rescue', title: t('c_rescue'), head: head4, rows, notes });
+  }
   const sh = res.shaft;
   const shaftRows: Cell[][] = [[t('s_shaft'), withBar(`${fmt(sh.testKg, 0)} kg`, N.shaftMax > 0 ? sh.testKg / N.shaftMax : null),
     N.shaftMax > 0 ? `${fmt(N.shaftMax, 0)} kg` : '—', N.shaftMax > 0 ? pill('s_shaft') : ''], [t('s_dir'), sh.up ? t('s_up') : t('s_down'), '', '']];

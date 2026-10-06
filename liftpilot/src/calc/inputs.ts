@@ -47,7 +47,12 @@ export function readInputs(V: FormValues): ParsedInputs {
     v: pos('v', 1), H: pos('H', 18), L0: field('L0', 2, 0.1, Infinity, false), r: roping, layout, alphaMode: (manual ? 'manual' : 'geo') as AlphaMode,
     alphaManual: field('alphaManual', 180, 0, 360, true, manual), dx: nonneg('dx', 0.3), h: nonneg('h', 0.6),
     Hv: nonneg('Hv', 24), Dp: pos('Dp', 400), Jp: nonneg('Jp', 0), nps: count('nps', 0, 0, MAX_BENDS), npr: count('npr', 0, 0, MAX_BENDS), etaShaft: pos('etaShaft', 0.85, 1),
-    aDesign: pos('aDesign', 0.8), ae: V.buffers ? K.aeReducedStroke : K.aeMin, aBrake: pos('aBrake', 0.5), rh: pos('rh', 0.2),
+    // reduced-stroke buffers: the deceleration the engineer derives from their data (UNI EN 81-50:2020, 5.11.2.2.2), never
+    // below the minimum; blank: 0.8 m/s² (UNI EN 81-1:2008, M.2.1.2)
+    aDesign: pos('aDesign', 0.8), ae: !V.buffers ? K.aeMin : blank(V.ae) ? K.aeReducedStroke : field('ae', K.aeReducedStroke, K.aeMin, K.g, false),
+    aBrake: pos('aBrake', 0.5), rh: pos('rh', 0.2),
+    // a new lift's machine is to UNI EN 81-20; a replacement's as chosen (UNI 10411-1:2024, 14.1 a) or b))
+    std: V.context === 'repl' && V.machineStd === 'en81-1' ? 'en81-1' : 'en81-20', stallDevice: !!V.stallDevice,
     dropAlign: (V.dropAlign === 'car' ? 'car' : 'center') as DropAlign, drops: 0,
   };
   // the motor's poles: 2, 4, 6 or 8 (blank: 4), else flagged

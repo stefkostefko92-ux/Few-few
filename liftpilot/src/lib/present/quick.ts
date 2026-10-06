@@ -21,7 +21,7 @@ export function quickRows(P: Pres, X: Texts, N: Machine, res: Results, sens: rea
   const failed = (ids: readonly CheckId[]): string => res.checks.filter((c) => ids.includes(c.id) && c.status === 'fail').map((c) => t(c.id)).join('; ');
   const rows: QuickRow[] = [];
   {
-    const ids: CheckId[] = ['tr_load', 'tr_dn', 'tr_up', 'tr_stall'], s = worstOf(ids), L = res.levers;
+    const ids: CheckId[] = ['tr_load', 'tr_dn', 'tr_up', 'tr_stall', 'tr_msr1'], s = worstOf(ids), L = res.levers;
     const u = fmt(worstTraction(res), 2);
     let text = s === 'fail'
       ? t('q_trac_fail', { what: failed(ids) }) + (L && L.betaMin != null ? ' ' + t('q_trac_beta', { b: fmt(L.betaMin, 1) })
@@ -29,16 +29,21 @@ export function quickRows(P: Pres, X: Texts, N: Machine, res: Results, sens: rea
       : t(s === 'warn' ? 'q_trac_warn' : 'q_trac_ok', { u });
     const real = statusOf(res, 'tr_real') === 'warn';
     if (real) text += ' ' + t('q_trac_real', { a: fmt(res.real.aEff, 1) });
+    if (statusOf(res, 'tr_stall') === 'warn') text += ' ' + t('q_stall_device');
+    if (res.msr1 && statusOf(res, 'tr_msr1') === 'warn') text += ' ' + t('q_msr1', { u: fmt(res.msr1.util, 3) });
     rows.push({ key: 'c_trac', status: s === 'ok' && real ? 'warn' : s, text });
   }
   {
-    const ids: CheckId[] = ['r_dd', 'r_ddp', 'r_nd', 'g_geom', 'r_sfa'], s = worstOf(ids), rp = res.ropes;
+    const ids: CheckId[] = ['r_dd', 'r_ddp', 'r_nd', 'g_geom', 'r_sfa', 'v_comp'], s = worstOf(ids), rp = res.ropes;
     // the groove's remarks (compute.ts g_geom): an undercut over the recommended one, a round groove's γ under the advised one
     const g = N.groove, undercut = (g.type === 'UU' || g.type === 'VN') && g.beta > K.betaRecommended;
     const lowGamma = (g.type === 'U' || g.type === 'UU') && g.gamma < K.gammaMinU;
     const geom = statusOf(res, 'g_geom') === 'warn'
       ? [...(undercut ? [t('q_geom_warn', { br: K.betaRecommended })] : []), ...(lowGamma ? [t('q_geom_gamma', { g: K.gammaMinU })] : [])].map((x) => ' ' + x).join('') : '';
-    const text = s === 'fail' ? t('q_fail', { what: failed(ids) }) : t('q_ropes_ok', { sa: fmt(rp.SfAct, 2), sr: fmt(rp.SfReq, 2) }) + geom;
+    // the reminders: two ropes, ropes retained along the wrap, the speed and the compensation
+    const more = [...(statusOf(res, 'r_two') ? [t('q_two')] : []), ...(statusOf(res, 'g_retain') ? [t('q_retain')] : []),
+      ...(statusOf(res, 'v_comp') === 'warn' ? [t('q_vcomp', { v: fmt(res.checks.find((c) => c.id === 'v_comp')?.value ?? 0, 2) })] : [])].map((x) => ' ' + x).join('');
+    const text = (s === 'fail' ? t('q_fail', { what: failed(ids) }) : t('q_ropes_ok', { sa: fmt(rp.SfAct, 2), sr: fmt(rp.SfReq, 2) }) + geom) + more;
     rows.push({ key: 'c_ropes', status: s, text });
   }
   {
@@ -60,7 +65,15 @@ export function quickRows(P: Pres, X: Texts, N: Machine, res: Results, sens: rea
     if (sh.up) text += ' ' + t('q_uplift', { u: fmt(sh.uplift, 0) });
     rows.push({ key: 'c_shaft', status: s, text });
   }
-  rows.push({ key: 'c_rescue', status: statusOf(res, 's_force') ?? 'ok', text: t(res.rescue.F <= K.rescueForceMax ? 'q_rescue_ok' : 'q_rescue_el', { f: fmt(res.rescue.F, 0), fmax: K.rescueForceMax }) });
+  {
+    // with a machine to UNI EN 81-20 also the 150 N to a landing (s_fa) and the gravity remark; to UNI EN 81-1 the 400 N
+    const rc = res.rescue, en20 = statusOf(res, 's_fa') != null;
+    const v = { f: fmt(rc.F, 0), fmax: K.rescueForceMax, fa: fmt(rc.Fa, 0), fmech: K.rescueForceMech, v: fmt(en20 ? K.rescueSpeed : K.rescueSpeedOld, 2) };
+    const parts = [rc.F > K.rescueForceMax ? t('q_rescue_el', v) : !en20 ? t('q_rescue_ok', v) : rc.Fa > K.rescueForceMech ? '' : t('q_rescue_ok20', v)];
+    if (en20 && rc.Fa > K.rescueForceMech) parts.push(t('q_rescue_mech', v));
+    if (statusOf(res, 's_gravity')) parts.push(t('q_gravity'));
+    rows.push({ key: 'c_rescue', status: worstOf(['s_force', 's_fa']), text: parts.filter(Boolean).join(' ') });
+  }
   rows.push({ key: 'q_sens', status: sens.some((x) => x.changed.length) ? 'warn' : 'ok', text: X.sensLine(sens) });
   return rows;
 }

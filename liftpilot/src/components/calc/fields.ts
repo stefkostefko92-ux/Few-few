@@ -22,6 +22,8 @@ const lit = (value: string, label: string) => ({ value, label, literal: true });
 
 export const PLANT: readonly Field[] = [
   { id: 'context', kind: 'select', options: [opt('repl', 'ctx_repl'), opt('new', 'ctx_new')], wide: true },
+  // the standard of a replacement's machine (UNI 10411-1:2024, 14.1 a) or b)): the rescue and the stalled check differ
+  { id: 'machineStd', kind: 'select', options: [opt('en81-20', 'std_20'), opt('en81-1', 'std_1')], wide: true, hint: 'hint_machineStd' },
   num('Q', 'kg', 10), num('P', 'kg', 10, { hint: 'hint_P' }), num('k', '', 0.01),
   num('qeq', 'kg', 5, { hint: 'hint_qeq' }), num('v', 'm/s', 0.05), num('H', 'm', 0.5),
   num('L0', 'm', 0.5, { adv: true }), { id: 'r', kind: 'select', options: [lit('1', '1:1'), lit('2', '2:1')] },
@@ -36,7 +38,7 @@ export const LAYOUT: readonly Field[] = [
   { id: 'alphaMode', kind: 'select', options: [opt('geo', 'am_geo'), opt('manual', 'am_manual')], wide: true, hint: 'hint_geo' },
   num('alphaManual', '°', 0.5), { id: 'dropAlign', kind: 'select', options: [opt('center', 'da_center'), opt('car', 'da_car')], wide: true },
   num('dx', 'm', 0.01), num('h', 'm', 0.01),
-  num('Hv', 'm', 0.5), num('Dp', 'mm', 10), num('Jp', 'kg·m²', 0.1, { adv: true }),
+  num('Hv', 'm', 0.5), num('Dp', 'mm', 10, { hint: 'hint_Dp' }), num('Jp', 'kg·m²', 0.1, { adv: true }),
   num('nps', '', 1, { adv: true, hint: 'hint_bends' }), num('npr', '', 1, { adv: true }), num('etaShaft', '', 0.01, { adv: true }),
 ];
 
@@ -55,7 +57,8 @@ export const MACHINE = (p: 'n_' | 'o_'): readonly Field[] => [
   num(p + 'mass', 'kg', 10, { key: 'mass' }),
 ];
 
-export const SERVICE: readonly Field[] = [num('aDesign', 'm/s²', 0.05), { id: 'buffers', kind: 'check' }, num('aBrake', 'm/s²', 0.05), num('rh', 'm', 0.01)];
+export const SERVICE: readonly Field[] = [num('aDesign', 'm/s²', 0.05), { id: 'buffers', kind: 'check' }, num('ae', 'm/s²', 0.05, { hint: 'hint_ae' }),
+  num('aBrake', 'm/s²', 0.05), num('rh', 'm', 0.01), { id: 'stallDevice', kind: 'check', hint: 'hint_stallDevice' }];
 
 /** Every id the form can send (the server accepts nothing else). */
 export const FIELD_IDS: readonly string[] = [
@@ -78,7 +81,12 @@ export function shown(id: string, V: FormValues): boolean {
     case 'dx': case 'h': return V.layout === 'topDefl';
     case 'Hv': return V.layout === 'bottom';
     case 'Dp': return V.layout !== 'top' || V.r === '2' || numOf(V, 'nps') + numOf(V, 'npr') > 0;
-    case 'Jp': return V.layout !== 'top';
+    // the diverting pulleys, and the car's and the counterweight's at 2:1
+    case 'Jp': return V.layout !== 'top' || V.r === '2';
+    case 'ae': return !!V.buffers;
+    case 'machineStd': return V.context === 'repl';
+    // the alternative of UNI EN 81-20:2020, 5.5.3 c) 2): not with a machine to UNI EN 81-1
+    case 'stallDevice': return V.context !== 'repl' || V.machineStd !== 'en81-1';
     // the new machine's mass is the load on the slab and the beams of the machine room (survey, sheet 1, relazione
     // tecnica) wherever it stands; the old one counts only below (its anchors)
     case 'o_mass': return V.layout === 'bottom';

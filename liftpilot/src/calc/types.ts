@@ -5,6 +5,9 @@ export type Context = 'repl' | 'new';
 export type Layout = 'top' | 'topDefl' | 'bottom';
 export type AlphaMode = 'geo' | 'manual';
 export type DropAlign = 'center' | 'car';
+/** The standard the machine is verified to: UNI EN 81-20:2020 (a new lift; UNI 10411-1:2024 14.1 a); UNI 10411-11:2024
+ *  with EN 81-20) or UNI EN 81-1 (UNI 10411-1:2024 14.1 b); UNI 10411-11:2024 with the lift's original standard). */
+export type MachineStd = 'en81-20' | 'en81-1';
 export type GrooveType = 'U' | 'UU' | 'VH' | 'VN';
 
 export interface Groove {
@@ -59,6 +62,11 @@ export interface Plant {
   aBrake: number;
   /** handwheel radius [m] */
   rh: number;
+  /** the standard of the machine (rescue and stalled traction differ between the two) */
+  std: MachineStd;
+  /** an electric safety device (UNI EN 81-20:2020, 5.11.2) stops the machine when the car or the counterweight is stalled
+   *  (5.5.3 c) 2)): the stalled traction is then not what keeps the car from rising */
+  stallDevice: boolean;
   dropAlign: DropAlign;
   /** direct pull in a replacement: existing drop spacing [mm]; 0 = none */
   drops: number;
@@ -199,8 +207,12 @@ export interface BrakeResult {
 }
 
 export interface RescueResult {
+  /** torque and force at the handwheel to raise the car with its rated load from the lowest floor [N·m, N] */
   M: number;
   F: number;
+  /** force at the handwheel to bring the car to a landing with a load in (k − 0.1)·Q … (k + 0.1)·Q, the worse direction
+   *  and position (UNI EN 81-20:2020, 5.9.2.3.1 a)) [N] */
+  Fa: number;
 }
 
 export interface ShaftResult {
@@ -221,7 +233,8 @@ export type CheckId =
   | 'r_dd' | 'r_ddp' | 'r_nd' | 'g_geom' | 'r_sfa'
   | 'd_pst' | 'd_ratio' | 'd_mp' | 's_shaft'
   | 'b_sets' | 'b_all' | 'b_one' | 'b_up' | 'b_amax'
-  | 's_force' | 's_uplift';
+  | 's_force' | 's_uplift'
+  | 'tr_msr1' | 'r_two' | 'v_comp' | 'g_retain' | 's_fa' | 's_gravity';
 
 export type CheckStatus = 'ok' | 'warn' | 'fail' | 'info';
 
@@ -250,6 +263,9 @@ export interface Results {
   up: BrakeCase;
   brkReal: BrakeCase[];
   real: BrakeCase;
+  /** machine below at 2:1: the worst emergency-braking case with the rope between the machine and the pulleys at the top
+   *  accelerating as it does (r·a) instead of the a the standard prints (UNI EN 81-50:2020, 5.11.3) */
+  msr1?: BrakeCase;
   /** emergency-braking cases for a total brake torque (null: at the minimum deceleration of the check) */
   brakeCasesAt: (tb: number | null) => BrakeCase[];
   /** worst traction utilisation at the real deceleration for a total brake torque */
