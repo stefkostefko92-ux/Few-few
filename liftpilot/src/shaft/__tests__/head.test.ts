@@ -42,7 +42,7 @@ test('pianta in testata: le pareti dove stanno, il totale e le quote sulle paret
   assert.ok(main && main.pts[1] - main.pts[0] === 1600 && main.edit?.[0]?.key === 'W');
 });
 
-test('verifiche in testata: margine di marcia, pareti dentro guide e porte, parete di fronte all\'entrata, staffe Panev', () => {
+test('verifiche in testata: margine di marcia, pareti dentro guide e porte, parete di fronte all’entrata, staffe Panev', () => {
   const ok = check(withHead({ left: 40, right: 20, rear: -30 }), 'v_head');
   assert.ok(ok && ok.status === 'ok' && ok.limit === KV_VERT.headRun);
   // a side wall into the rails' feet: inside the wall

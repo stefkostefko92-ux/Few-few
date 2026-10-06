@@ -11,7 +11,7 @@ const withV = (patch: Partial<VerticalInputs>): ShaftInputs => {
 };
 const checkOf = (I: ShaftInputs, id: string) => layout(I).checks.find((c) => c.id === id);
 
-test('tampone in poliuretano: corsa al 90 % dell\'altezza, nessuna corsa minima, fino a 1 m/s', () => {
+test('tampone in poliuretano: corsa al 90 % dell’altezza, nessuna corsa minima, fino a 1 m/s', () => {
   const V = withBufferType(defaultInputs(1600, 1750).vertical, 'car', 'pu');
   assert.equal(V.carBufferH, KV_VERT.puTypical);
   assert.equal(bufferStroke(V, 'car'), Math.round(KV_VERT.puStroke * KV_VERT.puTypical));
@@ -37,7 +37,7 @@ test('ammortizzatore idraulico: a ogni velocità, corsa almeno 0,0674·v²', () 
   assert.equal(checkOf(withV(V0), 'b_type')?.status, 'fail');
 });
 
-test('cambiando tipo il supporto si sposta: la testa dell\'ammortizzatore e l\'extracorsa restano', () => {
+test('cambiando tipo il supporto si sposta: la testa dell’ammortizzatore e l’extracorsa restano', () => {
   const V0 = defaultInputs(1600, 1750).vertical;
   for (const t of ['pu', 'oil', 'spring'] as const) {
     const V = withBufferType(V0, 'cw', t);

@@ -44,7 +44,7 @@ test('nicchie non conformi: troppo profonda, sul telaio della porta, sovrapposte
   assert.equal(bad([{ use: 'duct', wall: 'front', at: 500, width: 200, depth: 100 }])?.status, 'fail');
   assert.equal(bad([{ use: 'duct', wall: 'left', at: 200, width: 200, depth: 100 }, { use: 'light', wall: 'left', at: 350, width: 300, depth: 100 }])?.status, 'fail');
   assert.equal(bad([{ use: 'light', wall: 'right', at: base.D - 100, width: 300, depth: 100 }])?.status, 'fail');
-  assert.equal(bad([{ use: 'cw', wall: 'left', at: 200, width: 1000, depth: 100 }])?.status, 'fail', 'nicchia del contrappeso su un\'altra parete');
+  assert.equal(bad([{ use: 'cw', wall: 'left', at: 200, width: 1000, depth: 100 }])?.status, 'fail', 'nicchia del contrappeso su un’altra parete');
   assert.equal(bad([{ use: 'cw', wall: 'rear', at: 300, width: 1000, depth: 150 }])?.status, 'ok');
   assert.equal(check(base), undefined, 'senza nicchie nessuna verifica');
 });

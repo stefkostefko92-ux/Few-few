@@ -139,7 +139,7 @@ try {
   await page.waitForSelector('.lift-work .advice .advice-card');
   // the acceptance test: the replacement's standards carried over (EN 81-20/50 for the whole installation on top), now
   // UNI 10411-11 alone with the machine and the ropes replaced; the checks of what stays are existing
-  assert.ok(await page.isChecked('.collaudo label:has-text("tutto l’impianto") input'), 'the replacement\'s test standards carried over');
+  assert.ok(await page.isChecked('.collaudo label:has-text("tutto l’impianto") input'), 'the replacement’s test standards carried over');
   await page.uncheck('.collaudo label:has-text("tutto l’impianto") input');
   await page.selectOption('.collaudo select', '10411-11');
   await page.check('.collaudo .parti-grid label:nth-child(2) input');
@@ -221,7 +221,7 @@ try {
   await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
   const setUrl = page.url();
   await page.waitForSelector('.sheet-page svg.sheet-svg image');
-  assert.equal(await page.locator('.sheet-page svg.sheet-svg image').count(), 2, 'the company\'s and the client\'s logo on sheet 1');
+  assert.equal(await page.locator('.sheet-page svg.sheet-svg image').count(), 2, 'the company’s and the client’s logo on sheet 1');
   const sheets = await page.locator('nav.seg-row a').count();
   assert.ok(sheets >= 8, `sheets ${sheets}`);
   // sheet 1 lists the check of the car rails (UNI EN 81-50, 5.10); here a renovation keeping the sling (UNI 10411-11):
@@ -229,7 +229,7 @@ try {
   // the note: tavole.test.ts)
   const sheet1 = await page.textContent('.sheet-page svg.sheet-svg');
   assert.ok(sheet1?.includes('Guide di cabina: tensioni') && sheet1.includes('VERIFICA DELLE GUIDE DI CABINA'), 'the rails\' check on sheet 1');
-  assert.ok(sheet1.includes("Rifacimento con l'arcata esistente"), 'the renovation in the test\'s note');
+  assert.ok(sheet1.includes("Rifacimento con l’arcata esistente"), 'the renovation in the test’s note');
   const setPdfHref = await page.getAttribute('a[href$="/pdf"]', 'href');
   const setPdf = await page.request.get(`${BASE}${setPdfHref}`);
   assert.equal(setPdf.status(), 200);

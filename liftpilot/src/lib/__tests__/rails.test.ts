@@ -12,7 +12,7 @@ import { makeFmt } from '../present/tr';
 
 const near = (a: number, b: number, eps: number) => assert.ok(Math.abs(a - b) <= eps, `${a} ≠ ${b}`);
 
-test('metodo omega (Rm 370): i valori dell\'esempio di Mellor e i limiti della tabella', () => {
+test('metodo omega (Rm 370): i valori dell’esempio di Mellor e i limiti della tabella', () => {
   near(omega(4000 / 23.61) ?? 0, 4.85, 0.005);
   near(omega(2500 / 23.61) ?? 0, 2.02, 0.005);
   // continuous across the ranges, growing, and nothing past λ 250

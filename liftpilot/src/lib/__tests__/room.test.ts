@@ -46,7 +46,7 @@ test('rinvio: la nuova macchina sulle calate esistenti, il telaio alto quanto ch
   assert.ok(off && off.value !== null && off.value > KV_VERT.dropTol);
 });
 
-test('rinvio contro l\'argano o sotto il pavimento: il rilievo non si salva, con la h minima', () => {
+test('rinvio contro l’argano o sotto il pavimento: il rilievo non si salva, con la h minima', () => {
   const low = deriveRoom({ ...DEFL, h: 0.6 }, at(780));
   assert.ok(low.issues.includes('rinvio'));
   assert.equal(low.hMin, ownAxis(560) + 200);

@@ -36,7 +36,7 @@ await build({
 });
 
 writeFileSync(path.join(out, 'index.html'), `<title>LiftPilot</title>
-<meta name="description" content="Scelta e verifica dell'argano geared e progetto dell'ascensore con simulazione 3D e tavole, nel browser.">
+<meta name="description" content="Scelta e verifica dell’argano geared e progetto dell’ascensore con simulazione 3D e tavole, nel browser.">
 <meta name="keywords" content="Carbon Stealth, LiftPilot, argano geared, sostituzione argano, verifica aderenza, simulazione 3D ascensore, UNI EN 81-20, UNI EN 81-50">
 <link rel="stylesheet" href="app.css">
 <div id="liftpilot"></div>

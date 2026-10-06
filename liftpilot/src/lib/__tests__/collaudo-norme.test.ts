@@ -52,7 +52,7 @@ test('relazione: gli adempimenti del DPR 162/1999 per il nuovo e per la modifica
   assert.match(nuovo, /Attenzione: la UNI EN 81-71:2022 in vigore non è citata in GUUE/);
   assert.match(nuovo, /UNI EN 81-77:2022, 0\.3: non si applica agli impianti installati prima della sua pubblicazione/);
   const mod = text(adempimentiBlocks({ norma: '10411-1', parti: ['machine'], aggiuntive: ['antincendio'] }, true));
-  assert.match(mod, /art\. 14 c\.3; schema ICIM SCI 162 rev\. 02: verifica straordinaria da uno dei soggetti dell'art\. 13 c\.1 \(la legge\)/);
+  assert.match(mod, /art\. 14 c\.3; schema ICIM SCI 162 rev\. 02: verifica straordinaria da uno dei soggetti dell’art\. 13 c\.1 \(la legge\)/);
   assert.match(mod, /UNI 10411-1:2024 e UNI 10411-11:2024, 25: documentazione della modifica/);
   assert.match(mod, /art\. 2 c\.1 lett\. cc\)/);
   assert.match(mod, /DM 15\/09\/2005, art\. 1 c\.2: sugli impianti esistenti vale per le modifiche sostanziali/);

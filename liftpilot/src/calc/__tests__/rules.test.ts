@@ -41,7 +41,7 @@ test('macchina in basso a 2:1: il tratto MSR1 con a come stampato, la riga «r·
   const T1 = ((I.P + I.Q) * (G + a) + (I.Jp / (Rp * Rp)) * a) / 2 + w * Lc * (G + 2 * a) + (I.Jp * 2 * a) / (Rp * Rp) - w * I.Hv * (G - a);
   near('T1 stampato', loadedDownAtBottom(r.brk).T1, T1);
   assert.ok(r.msr1, 'riga r·a presente');
-  assert.ok(r.msr1.util >= Math.max(r.dn.util, r.up.util), 'con r·a l\'utilizzo non cala');
+  assert.ok(r.msr1.util >= Math.max(r.dn.util, r.up.util), 'con r·a l’utilizzo non cala');
   assert.ok(['info', 'warn'].includes(status(r, 'tr_msr1') ?? ''), 'mai KO');
   // 1:1 or a machine at the top: no such row
   assert.equal(run({ ...V, r: '1' }).r.msr1, undefined);

@@ -25,18 +25,18 @@ export const VOCI_FUNI: readonly Voce[] = [
     fonte: 'DPR 162/1999 consolidato (Normattiva), letto il 2026-10-02, e Direttiva 2014/33/UE nel testo ufficiale italiano (EUR-Lex, fornito '
       + 'dal cliente), letto il 2026-10-04 (ricerca, cap. 16): All. I 1.3', stato: 'confermato',
     costanti: ['ropesMin'], verifiche: ['r_nd'],
-    nota: 'Con 2 sole funi serve anche il dispositivo contro l\'allungamento anomalo (voce funi.due): il software lo ricorda, non lo verifica.',
+    nota: 'Con 2 sole funi serve anche il dispositivo contro l’allungamento anomalo (voce funi.due): il software lo ricorda, non lo verifica.',
   },
   {
     id: 'funi.due', gruppo: 'funi', titolo: 'Cabina appesa a due funi', valore: 'con 2 funi un dispositivo elettrico di sicurezza (5.11.2) ferma la '
-      + 'macchina se una fune si allunga in modo anomalo rispetto all\'altra (informazione)',
+      + 'macchina se una fune si allunga in modo anomalo rispetto all’altra (informazione)',
     riferimento: 'UNI EN 81-20:2020, 5.5.5.3 a); UNI EN 81-1:2008, 9.5.3', fonte: `${letto(T20, 'p. 76')}; ${letto('UNI EN 81-1:2008', 'p. 56')}`,
     stato: 'confermato',
     costanti: ['ropesMin'], verifiche: ['r_two'],
   },
   {
     id: 'funi.trattenuta', gruppo: 'funi', titolo: 'Funi trattenute nelle gole', valore: 'un fermo dove le funi entrano ed escono dalla puleggia e '
-      + 'almeno uno intermedio se più di 60° dell\'arco di avvolgimento sono sotto l\'orizzontale per l\'asse e l\'avvolgimento supera 120°: '
+      + 'almeno uno intermedio se più di 60° dell’arco di avvolgimento sono sotto l’orizzontale per l’asse e l’avvolgimento supera 120°: '
       + 'con la macchina in basso le funi avvolgono la puleggia da sotto (informazione)',
     riferimento: 'UNI EN 81-20:2020, 5.5.7.2', fonte: letto(T20, 'pp. 77–78'), stato: 'confermato',
     costanti: ['retainWrap', 'retainBelow'], verifiche: ['g_retain'],
@@ -81,7 +81,7 @@ export const VOCI_FUNI: readonly Voce[] = [
     stato: 'scelta',
     verifiche: ['r_sfa'],
     nota: 'Scelta dal lato della sicurezza; la UNI EN 81-1:2008 (prospetto N.1) intitola la riga con sottosquadro «U/V»: con una macchina '
-      + 'secondo quella norma l\'ingegnere può prendere il valore di β.',
+      + 'secondo quella norma l’ingegnere può prendere il valore di β.',
   },
   {
     id: 'funi.Nequiv.gola.interpolazione', gruppo: 'funi', titolo: 'Angoli tra i punti della tabella di N_equiv(t)',
@@ -91,9 +91,9 @@ export const VOCI_FUNI: readonly Voce[] = [
   },
   {
     id: 'funi.Nequiv.gola.estremi', gruppo: 'funi', titolo: 'Angoli fuori dalla tabella di N_equiv(t)',
-    valore: 'U: sotto 75° il valore di 75°, oltre 105° estrapolazione dall\'ultimo tratto, segnalata · V: oltre 50° il valore di 50°',
+    valore: 'U: sotto 75° il valore di 75°, oltre 105° estrapolazione dall’ultimo tratto, segnalata · V: oltre 50° il valore di 50°',
     riferimento: 'UNI EN 81-50:2020, 5.12.2.2', fonte: 'scelta prudente del software (la tabella si ferma a quegli angoli; N_equiv cresce '
-      + 'con β e cala con γ, quindi il valore dell\'estremo sta dal lato della sicurezza)', stato: 'scelta',
+      + 'con β e cala con γ, quindi il valore dell’estremo sta dal lato della sicurezza)', stato: 'scelta',
     verifiche: ['r_sfa'],
   },
   {

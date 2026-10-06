@@ -39,7 +39,7 @@ test(`proprietà su ${CASES} impianti casuali`, () => {
         if (r.checks.find((c) => c.id === 'tr_up')?.status !== 'fail') note('fune lenta senza KO');
       }
       if (r.brake.all < 0 || r.brake.one < 0 || r.brake.up < 0) note('coppia del freno negativa');
-      if (!(r.shaft.testKg > 0)) note('carico sull\'albero ≤ 0');
+      if (!(r.shaft.testKg > 0)) note('carico sull’albero ≤ 0');
       for (const c of [r.load, r.dn, r.up]) if (!(c.util > 0)) note('utilizzo ≤ 0');
       if (!(r.ropes.SfAct > 0)) note('S_f effettivo ≤ 0');
     }
@@ -49,7 +49,7 @@ test(`proprietà su ${CASES} impianti casuali`, () => {
     if (with_({ Q: num(V.Q) * 1.1 }).drive.Pst < r0.drive.Pst - 1e-9) note('la potenza cala con Q');
     if (V.alphaMode === 'manual') {
       const r2 = with_({ alphaManual: num(V.alphaManual) + 5 });
-      if (r2.dn.util > r0.dn.util + 1e-12 || r2.up.util > r0.up.util + 1e-12) note('l\'utilizzo cresce con α');
+      if (r2.dn.util > r0.dn.util + 1e-12 || r2.up.util > r0.up.util + 1e-12) note('l’utilizzo cresce con α');
     }
     if (r0.ropes.nps + r0.ropes.npr === 0 && with_({ n_D: num(V.n_D) * 1.1 }).ropes.SfCalc > r0.ropes.SfCalc + 1e-9) note('S_f,calc cresce con D/d');
     // real brake deceleration: never below the minimum, grows with the brake torque and with the gear friction
@@ -57,12 +57,12 @@ test(`proprietà su ${CASES} impianti casuali`, () => {
     const rT = with_({ n_brakeNm: num(V.n_brakeNm) * 1.2 });
     if (rT.brkReal.some((c, i) => c.a < (r0.brkReal[i]?.a ?? NaN) - 1e-9)) note('la decelerazione cala con la coppia del freno');
     const rE1 = with_({ n_etaI: '0.9' }), rE2 = with_({ n_etaI: '0.5' });
-    if (rE2.brkReal.some((c, i) => c.a < (rE1.brkReal[i]?.a ?? NaN) - 1e-9)) note('la decelerazione cala con l\'attrito del riduttore');
+    if (rE2.brkReal.some((c, i) => c.a < (rE1.brkReal[i]?.a ?? NaN) - 1e-9)) note('la decelerazione cala con l’attrito del riduttore');
     // admissible brake range: both ends keep traction and the upper end is tight
     const w = brakeWindow(r0);
     if (w.hi != null && Number.isFinite(w.hi)) {
-      if (r0.brakeUtil(w.lo) > 1 + 1e-9 || r0.brakeUtil(w.hi) > 1 + 1e-9) note('un estremo dell\'intervallo del freno rompe l\'aderenza');
-      if (r0.brakeUtil(w.hi * 1.01 + 0.01) <= 1) note('l\'estremo superiore del freno non è stretto');
+      if (r0.brakeUtil(w.lo) > 1 + 1e-9 || r0.brakeUtil(w.hi) > 1 + 1e-9) note('un estremo dell’intervallo del freno rompe l’aderenza');
+      if (r0.brakeUtil(w.hi * 1.01 + 0.01) <= 1) note('l’estremo superiore del freno non è stretto');
     }
     // N_equiv(t): never decreases with β, never increases with γ
     if (V.n_groove === 'UU' && with_({ n_beta: Math.min(106, num(V.n_beta) + 2) }).ropes.NeqT < r0.ropes.NeqT - 1e-12) note('N_equiv(t) cala con β');

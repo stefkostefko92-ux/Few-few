@@ -38,7 +38,7 @@ export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
     number: x.set.number, page, pages, revision: last ? `${last.mark} ${dateIt(last.date)}` : '', location: `${l1} - ${l2}`, plant: x.project.plantNumber || '—',
   });
   const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...surveySheetShapes(surveySheetData(x, d, pages))] }];
-  const sheets: SurveyTavoleResult['sheets'] = [{ title: 'DATI DELLA SOSTITUZIONE DELL\'ARGANO', scale: null }], hits: Hit[][] = [[]];
+  const sheets: SurveyTavoleResult['sheets'] = [{ title: 'DATI DELLA SOSTITUZIONE DELL’ARGANO', scale: null }], hits: Hit[][] = [[]];
   SPECS.forEach((s, i) => {
     const area = drawingArea(true), v = surveyView(d, s.k, inset(area, 8, 8, 8, 8), M);
     if (!v) throw new Error('no machine room');
@@ -48,7 +48,7 @@ export function buildSurveyTavole(x: SurveyTavoleInput): SurveyTavoleResult {
     hits.push(v.r.hits);
   });
   const doc: DrawingDoc = {
-    meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Sostituzione dell\'argano: dati, pianta e sezione B-B del locale macchina', author: x.company.name },
+    meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Sostituzione dell’argano: dati, pianta e sezione B-B del locale macchina', author: x.company.name },
     palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND,
     images: { ...(x.company.logo ? { logo: x.company.logo } : {}), ...(x.clientLogo ? { client: x.clientLogo } : {}) }, pages: out,
   };

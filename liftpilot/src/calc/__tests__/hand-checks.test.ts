@@ -90,7 +90,7 @@ test('decelerazione reale del freno con la legge di Newton (η_i = 1)', () => {
   near('cabina con portata in discesa, in basso', find('q', 'dn', 'b').a, (Fb - dFq) / meq(Q), 1e-9);
 });
 
-test('rendimento inverso η_i = 0,6: equilibrio dei momenti sull\'albero motore', () => {
+test('rendimento inverso η_i = 0,6: equilibrio dei momenti sull’albero motore', () => {
   const at = (etaI: string): number => {
     const c = run({ ...PRESETS.C, ...ROPE10, compare: false, n_etaI: etaI }).r.brkReal.find((x) => x.load === 'e' && x.dir === 'up' && x.pos === 't');
     assert.ok(c);
@@ -99,7 +99,7 @@ test('rendimento inverso η_i = 0,6: equilibrio dei momenti sull\'albero motore'
   const P = 700, Mcw = 1015, w = 4 * 0.336, H = 18, L0 = 2, R = 0.28, i = 43, Jm = 0.08, Js = 2.5, Tb = 120, eta = 0.6;
   const mls = P + Mcw + w * (H + 2 * L0) + Js / (R * R), dFe = (Mcw + w * (H + L0)) * G - (P + w * L0) * G, a = at('0.6');
   near('Tb = η_i·(ΔF + m·a)·R/i + J_m·α_m', Tb, (eta * (dFe + mls * a) * R) / i + (Jm * a * i) / R, 1e-9);
-  assert.ok(a > at('1'), 'l\'attrito del riduttore aumenta la decelerazione');
+  assert.ok(a > at('1'), 'l’attrito del riduttore aumenta la decelerazione');
 });
 
 test('D/d ≥ 40 sulle pulegge di rinvio e coppia in uscita contro il catalogo', () => {

@@ -40,7 +40,7 @@ test('catalogo degli argani: rapporti, pulegge, carichi e potenze leggibili', ()
     'M73AL', 'M75AL', 'M83AL', 'M93AL', 'M98HAL', 'M77', 'M77H', 'M87', 'M104']);
 });
 
-test('un argano del catalogo accetta un\'opzione: rapporto più vicino, scarto di velocità, i motivi del no', () => {
+test('un argano del catalogo accetta un’opzione: rapporto più vicino, scarto di velocità, i motivi del no', () => {
   const sh140 = MACHINES.find((c) => c.model === 'SH140');
   assert.ok(sh140);
   const ok = catalogFit(sh140, { D: 560, iIdeal: 67, Pn: 7.5, staticKg: 2400, Q: 630, r: 1 }, KL.catalogRatioTol);

@@ -30,7 +30,7 @@ export const NORMA_SIGLA: Readonly<Record<Norma, string>> = {
   'en81-21': 'UNI EN 81-21:2022 (ascensori nuovi in edifici esistenti)', 'en81-28': 'UNI EN 81-28:2022 (teleallarme)',
   'en81-58': 'UNI EN 81-58:2022 (resistenza al fuoco delle porte di piano)', 'en81-70': 'UNI EN 81-70:2022 (accessibilità)',
   'en81-71': 'UNI EN 81-71 (ascensori antivandalo)', 'en81-72': 'UNI EN 81-72:2020 (ascensori antincendio)',
-  'en81-73': 'UNI EN 81-73:2020 (comportamento in caso d\'incendio)', 'en81-76': 'UNI EN 81-76:2025 (evacuazione delle persone con disabilità)',
+  'en81-73': 'UNI EN 81-73:2020 (comportamento in caso d’incendio)', 'en81-76': 'UNI EN 81-76:2025 (evacuazione delle persone con disabilità)',
   'en81-77': 'UNI EN 81-77:2022 (azioni sismiche)', 'en81-80': 'UNI EN 81-80:2019 (miglioramento della sicurezza degli esistenti)',
   'en81-82': 'UNI EN 81-82:2026 (accessibilità degli esistenti)', 'en81-83': 'UNI EN 81-83:2026 (antivandalo degli esistenti)',
   dm236: 'DM 236/1989 (barriere architettoniche)', antincendio: 'DM 15/09/2005 o Codice di prevenzione incendi, RTV V.3 (antincendio)',

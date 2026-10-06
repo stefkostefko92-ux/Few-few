@@ -42,7 +42,7 @@ test('i valori inseriti restano: massa della cabina, macchina, geometria', () =>
   assert.deepEqual([d.origin.P, d.origin.machine, d.origin.dx], ['entered', 'entered', 'entered']);
 });
 
-test('segni per i documenti: dagli interruttori salvati; l\'argano proposto solo se la derivazione è nota', () => {
+test('segni per i documenti: dagli interruttori salvati; l’argano proposto solo se la derivazione è nota', () => {
   const inp = defaultLift(), d = deriveLift(inp);
   assert.deepEqual(valueMarks(inp.auto, d), { pEstimate: true, geometry: ['L0', 'dx', 'Hv'], machineProposed: true, bottom: null, catalog: null, collaudo: null });
   assert.equal(valueMarks(inp.auto, null).machineProposed, false);
@@ -63,7 +63,7 @@ test('distanza del rinvio e fune oltre la corsa, a mano', () => {
   assert.equal(V.L0, Math.round(vt.headroom - vt.frameTop + room.slab + axis) / 1000);
 });
 
-test('il rinvio sta nel locale, nel telaio dell\'argano: mai nel vano', () => {
+test('il rinvio sta nel locale, nel telaio dell’argano: mai nel vano', () => {
   const base = defaultLift();
   for (const calc of [base.calc, { ...base.calc, r: '2' }, { ...base.calc, Dp: 600 }]) {
     const d = deriveLift({ ...base, calc }), M = d.machine, rf = M.rinvio, Dp = Number(d.values.Dp);
@@ -85,7 +85,7 @@ test('il rinvio sta nel locale, nel telaio dell\'argano: mai nel vano', () => {
   assert.ok(low.issues.includes('rinvio'));
 });
 
-test('rinvio dalla pianta: semplice o inverso come lo legge l\'angolo di avvolgimento; 2:1 dal lato interno delle pulegge', () => {
+test('rinvio dalla pianta: semplice o inverso come lo legge l’angolo di avvolgimento; 2:1 dal lato interno delle pulegge', () => {
   const base = defaultLift();
   const spacing = (d: ReturnType<typeof deriveLift>): number => {
     const L = d.layout;
@@ -152,7 +152,7 @@ test('i record che il server salva passano gli schemi e si rifanno uguali', () =
   assert.deepEqual(deriveLift(inp).values, d.values);
 });
 
-test('la simulazione dell\'impianto derivato: la cabina arriva all\'ultimo piano', () => {
+test('la simulazione dell’impianto derivato: la cabina arriva all’ultimo piano', () => {
   const d = deriveLift(defaultLift()), top = d.sim.levels.length - 1;
   const run = runScenario(d.sim, { id: 'ride', p: { from: 0, to: top, load: 0 } });
   assert.ok(Math.abs(frameAt(run.series, duration(run.series)).s - d.sim.levels[top]) < 1e-9);

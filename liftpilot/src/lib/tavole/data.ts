@@ -159,7 +159,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['FUNI', fmt(ropesKg, 0), 'kg'],
     ['CAVI FLESSIBILI', fmt(cablesKg, 0), 'kg'],
     ['CONTRAPPESO', fmt(res.Mcw, 0), 'kg'],
-    [below ? 'CARICO STATICO SULLE PULEGGE IN TESTATA' : 'CARICO STATICO SUL BASAMENTO DELL\'ARGANO', fmt(ld.static, 0), 'kg'],
+    [below ? 'CARICO STATICO SULLE PULEGGE IN TESTATA' : 'CARICO STATICO SUL BASAMENTO DELL’ARGANO', fmt(ld.static, 0), 'kg'],
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
     ['TOTALE CARICHI × 0,981', fmt(ld.P[0] ?? 0, 0), 'daN'],
     ...(below ? [

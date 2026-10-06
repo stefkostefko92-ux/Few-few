@@ -24,26 +24,26 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
   },
   {
     id: 'spazi.testata.parti', gruppo: 'sezione', titolo: 'Distanze libere dal soffitto con la cabina nella posizione più alta',
-    valore: '≥ 500 mm sopra le apparecchiature sul tetto di cabina (operatore); ≥ 100 mm sopra pattini, attacchi delle funi e traversa dell\'arcata; '
+    valore: '≥ 500 mm sopra le apparecchiature sul tetto di cabina (operatore); ≥ 100 mm sopra pattini, attacchi delle funi e traversa dell’arcata; '
       + '≥ 300 mm sopra il corrimano della balaustra',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.2 a)–c)', fonte: letto(T20, 'p. 38'), stato: 'da_verificare',
     verifiche: ['h_clear'],
-    nota: 'I valori 500, 100 e 300 mm sono confermati. Il software dà alla traversa dell\'arcata i 100 mm di b) e avvisa sotto i 500 mm di a) '
+    nota: 'I valori 500, 100 e 300 mm sono confermati. Il software dà alla traversa dell’arcata i 100 mm di b) e avvisa sotto i 500 mm di a) '
       + '(voce spazi.testata.traversa). Con il soffitto piano, 300 mm sopra il corrimano danno anche i 500 mm in obliquo oltre i 400 mm '
       + '(c) 2)); sotto pulegge o travi appese no.',
   },
   {
-    id: 'spazi.testata.traversa', gruppo: 'sezione', titolo: 'Traversa dell\'arcata sotto il soffitto',
-    valore: '≥ 100 mm come parte di b); sotto 500 mm «Attenzione»: se l\'organismo la considera un\'apparecchiatura vale a) (500 mm)',
+    id: 'spazi.testata.traversa', gruppo: 'sezione', titolo: 'Traversa dell’arcata sotto il soffitto',
+    valore: '≥ 100 mm come parte di b); sotto 500 mm «Attenzione»: se l’organismo la considera un’apparecchiatura vale a) (500 mm)',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.2 a)–b); UNI EN 81-1:2008, 5.7.1.1 c)', fonte: `${letto(T20, 'p. 38')}; ${letto('UNI EN 81-1:2008', 'p. 26')}`,
     stato: 'da_verificare',
     verifiche: ['h_cross'],
-    nota: 'La b) nomina la traversa delle porte e le parti delle porte a scorrimento verticale; quella dell\'arcata non è nominata. Da '
-      + 'concordare con l\'organismo.',
+    nota: 'La b) nomina la traversa delle porte e le parti delle porte a scorrimento verticale; quella dell’arcata non è nominata. Da '
+      + 'concordare con l’organismo.',
   },
   {
     id: 'spazi.testata.pulegge', gruppo: 'sezione', titolo: 'Parte più alta della cabina sotto ciò che pende sopra',
-    valore: 'con la cabina nella posizione più alta: a 2:1 la puleggia di cabina (Dp + 30 mm sopra la traversa) è un\'apparecchiatura sul tetto, '
+    valore: 'con la cabina nella posizione più alta: a 2:1 la puleggia di cabina (Dp + 30 mm sopra la traversa) è un’apparecchiatura sul tetto, '
       + 'distanza libera ≥ 500 mm dal soffitto o dalle pulegge appese; a 1:1 con la macchina in basso la traversa sotto le pulegge appese alla soletta '
       + '(asse a Dp/2 + 120 mm sotto il soffitto), distanza libera ≥ 100 mm, quella della traversa',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.2 a) e b)', fonte: letto(T20, 'p. 38'), stato: 'confermato',
@@ -54,7 +54,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
   {
     id: 'ammortizzatori.posizione', gruppo: 'sezione', titolo: 'Ammortizzatori e spazio di rifugio in fossa, in pianta',
     valore: 'lo spazio di rifugio in fossa resta libero dagli ammortizzatori di cabina: il software lo mette sotto il centro della cabina o, se un '
-      + 'piatto vi entra, nel posto libero più vicino sotto l\'interno della cabina; due o più ammortizzatori di cabina a 160 mm dai fianchi della '
+      + 'piatto vi entra, nel posto libero più vicino sotto l’interno della cabina; due o più ammortizzatori di cabina a 160 mm dai fianchi della '
       + 'piattaforma, più in fuori finché i piatti escono dalla pianta del rifugio, sempre sotto la piattaforma; la verifica vale anche per quelli '
       + 'messi dal software (margine ≥ 0)',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.8.1', fonte: 'scelta del software sul modello della fossa (posizioni tipiche, da confermare con i dati '
@@ -64,7 +64,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
   {
     id: 'spazi.fossa', gruppo: 'sezione', titolo: 'Distanze in fossa con la cabina sugli ammortizzatori compressi',
     valore: '≥ 500 mm dal pavimento della fossa alle parti più basse della cabina; grembiule sotto la soglia di cabina: tratto verticale ≥ 750 mm, poi '
-      + 'uno smusso a ≥ 60° sull\'orizzontale con proiezione orizzontale ≥ 20 mm (circa 35 mm più in basso), con ≥ 100 mm liberi dal pavimento della fossa',
+      + 'uno smusso a ≥ 60° sull’orizzontale con proiezione orizzontale ≥ 20 mm (circa 35 mm più in basso), con ≥ 100 mm liberi dal pavimento della fossa',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.8.2 a) e 5.4.5.1–5.4.5.2', fonte: letto(T20, 'pp. 40–41, 69'), stato: 'confermato',
     verifiche: ['p_refuge', 'p_apron'],
   },
@@ -74,19 +74,19 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
       + 'ci sono fino a 500 mm, 1100 mm oltre; il corrimano (30 mm) con la faccia esterna a 100 mm dal bordo del tetto, come nel 3D',
     riferimento: 'UNI EN 81-20:2020, 5.4.7.2 b) e 5.4.7.4 b)–c)', fonte: letto(T20, 'pp. 70–72'), stato: 'confermato',
     nota: 'fino alla versione 2.12.0 del motore del vano il software misurava i 500 mm dal bordo del tetto; la norma vuole la balaustra entro '
-      + '150 mm dal bordo: se è più interna, la distanza cresce e può servire l\'altezza maggiore',
+      + '150 mm dal bordo: se è più interna, la distanza cresce e può servire l’altezza maggiore',
     verifiche: ['h_parapet'],
   },
   {
     id: 'spazi.tetto.superficie', gruppo: 'sezione', titolo: 'Spazio di rifugio e posti in piedi sul tetto di cabina',
-    valore: 'sul tetto c\'è posto per la pianta del rifugio scelto (tipo 1: 400 × 500 mm; tipo 2: 500 × 700 mm), in un verso o nell\'altro; '
+    valore: 'sul tetto c’è posto per la pianta del rifugio scelto (tipo 1: 400 × 500 mm; tipo 2: 500 × 700 mm), in un verso o nell’altro; '
       + 'ogni area continua ≥ 0,12 m² con il lato minore oltre 250 mm (anche su un apparecchio) è un posto in piedi e sopra di essa serve '
-      + 'l\'altezza del rifugio (h_refuge per il tetto); l\'area disegnata (400 × 300 mm) indica dove stare',
+      + 'l’altezza del rifugio (h_refuge per il tetto); l’area disegnata (400 × 300 mm) indica dove stare',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3) e 5.2.5.7.3; UNI EN 81-1:2008, 8.13.2', fonte: `${letto(T20, 'pp. 38–39')}; ${letto('UNI EN 81-1:2008', 'p. 52')}`,
     stato: 'confermato',
     verifiche: ['h_stand', 'h_refuge'],
-    nota: 'L\'operatore delle porte sul tetto è profondo meno di 250 mm (cataloghi): non è un posto in piedi e conta come apparecchiatura '
-      + '(500 mm, h_clear). La UNI EN 81-1:2008 (8.13.2) chiedeva un\'area ≥ 0,12 m² con il lato minore ≥ 0,25 m.',
+    nota: 'L’operatore delle porte sul tetto è profondo meno di 250 mm (cataloghi): non è un posto in piedi e conta come apparecchiatura '
+      + '(500 mm, h_clear). La UNI EN 81-1:2008 (8.13.2) chiedeva un’area ≥ 0,12 m² con il lato minore ≥ 0,25 m.',
   },
   {
     id: 'spazi.altezze', gruppo: 'sezione', titolo: 'Altezza libera degli accessi e della cabina',
@@ -96,7 +96,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     verifiche: ['h_door', 'h_car'],
     nota: 'negli impianti esistenti (DPR 1497/1963, artt. 24, 27 e 29, non riletto) le porte possono essere alte 1,90 m e la cabina 2,00 m; con '
       + 'la sola sostituzione della macchina le altezze restano (parti esistenti); la UNI 10411-1:2024 ammette porte di piano nuove non più basse '
-      + 'delle esistenti (19.1), una cabina nuova sotto 2 m se non più bassa dell\'esistente e mai sotto 1,90 m (22 m)) e accessi di cabina mai '
+      + 'delle esistenti (19.1), una cabina nuova sotto 2 m se non più bassa dell’esistente e mai sotto 1,90 m (22 m)) e accessi di cabina mai '
       + 'sotto 1,80 m (22 n)), con avvertimenti: il software non conosce le esistenti e segnala ogni porta sotto 2000 mm',
   },
   {
@@ -104,7 +104,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     valore: 'con la cabina sugli ammortizzatori completamente compressi le guide del contrappeso lo guidano ancora per almeno 0,1 + 0,035·v² m '
       + '(v velocità nominale): dalla sommità del contrappeso, salito della corsa sotto la cabina (extracorsa e corsa degli ammortizzatori), alla '
       + 'sommità delle guide, che il software pone 50 mm sotto la soletta (voce foglio.stime); la cabina nella sua posizione più alta (salto '
-      + 'compreso) ha ancora almeno 0,1 m di guida sopra la sommità dell\'arcata, dove il software mette i pattini superiori (avviso: l\'altezza '
+      + 'compreso) ha ancora almeno 0,1 m di guida sopra la sommità dell’arcata, dove il software mette i pattini superiori (avviso: l’altezza '
       + 'reale dei pattini è del fornitore)',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.6.2 e 5.2.5.6.1.1 (Prospetto 2: cabina sugli ammortizzatori compressi più 0,035·v²); stesso valore in '
       + 'UNI EN 81-1 (1999, 2008), 5.7.1.2',

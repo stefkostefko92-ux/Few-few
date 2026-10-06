@@ -149,7 +149,7 @@ const maker = (brand: 'SICOR' | 'Montanari' | 'Sassi', model: string, support?: 
 };
 const sicor = (model: string, support?: 'frame' | 'plinth'): LiftInputs => maker('SICOR', model, support);
 
-test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l\'asse del suo telaio nel tratto di fune oltre la corsa', () => {
+test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l’asse del suo telaio nel tratto di fune oltre la corsa', () => {
   const cases = [['SICOR', 'SH140', undefined], ['SICOR', 'MR21', undefined], ['SICOR', 'MR21', 'frame'], ['SICOR', 'SH140', 'plinth'], ['Montanari', 'M93', undefined],
     ['Montanari', 'M98', 'frame'], ['Sassi', 'LEO', undefined], ['Sassi', 'MF84', 'frame']] as const;
   for (const [brand, model, support] of cases) {
@@ -161,7 +161,7 @@ test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l\'asse del su
     if (!support) assert.equal(M.axis, model === 'SH140' ? 1016 : (M.rinvio?.top ?? NaN) + machineFrame(D, S).axis, `${model}: asse sul telaio con rinvio`);
     const vt = dv.shaft.vertical, room = dv.shaft.room;
     assert.ok(room);
-    assert.ok(Math.abs(Number(dv.values.L0) - Math.round(vt.headroom - vt.frameTop + room.slab + M.axis) / 1000) < 1e-9, `${model}: L0 con l'asse ${M.axis}`);
+    assert.ok(Math.abs(Number(dv.values.L0) - Math.round(vt.headroom - vt.frameTop + room.slab + M.axis) / 1000) < 1e-9, `${model}: L0 con l’asse ${M.axis}`);
     // the drawings of the room draw it: the sheave with its rim in section, the bedframe from the room's floor
     const G = roomGeo(dv.layout, M);
     assert.ok(G && G.frame.shape === S);
@@ -173,7 +173,7 @@ test('proposta da SICOR, Montanari o Sassi: la forma nei disegni, l\'asse del su
   assert.equal(deriveLift(defaultLift()).machine.shape ?? null, null);
 });
 
-test('supporto esterno (Montanari S, SICOR MR35, Sassi MF94 MB94 MB95, GEM L e CL, FAER F): una trave sotto ogni fila di fori, l\'ingombro fino ai suoi piedi', () => {
+test('supporto esterno (Montanari S, SICOR MR35, Sassi MF94 MB94 MB95, GEM L e CL, FAER F): una trave sotto ogni fila di fori, l’ingombro fino ai suoi piedi', () => {
   for (const [brand, model] of [['Montanari', 'M73S'], ['Montanari', 'M95'], ['Montanari', 'M98'], ['SICOR', 'MR35'], ['Sassi', 'MF94'], ['Sassi', 'MB94'], ['Sassi', 'MB95'],
     ['GEM', 'HW134L'], ['GEM', 'HW135L-VF'], ['GEM', 'HW140CL'], ['FAER', 'P58F'], ['FAER', 'P68F'], ['FAER', 'P80F']] as const) {
     const S = shapeOf(brand, model);
@@ -190,7 +190,7 @@ test('Sassi LEO e TORO: la vite inclinata di 15°; il volano del LEO 80 mm sotto
     const S = shapeOf('Sassi', model), t = S?.parts.find((p) => p.tilt)?.tilt;
     assert.ok(S && t, model);
     assert.ok(Math.abs(t.a + Math.PI / 12) < 1e-12, `${model}: 15° verso il motore`);
-    assert.equal(S.yWorm, t.at[1], `${model}: l'asse della vite dove esce dalla cassa`);
+    assert.equal(S.yWorm, t.at[1], `${model}: l’asse della vite dove esce dalla cassa`);
   }
   const S = shapeOf('Sassi', 'LEO'), fly = S?.parts.find((p) => p.role === 'handwheel');
   assert.ok(S && fly);
@@ -219,7 +219,7 @@ test('basamento SICOR con rinvio: le sue quote e il suo codice; un h a mano che 
   assert.equal(byHand(0.696).machine.rinvio?.maker?.code, 'XTE6026');
 });
 
-test('relazione: le quote dell\'argano SICOR, Montanari o Sassi proposto, per il montaggio', () => {
+test('relazione: le quote dell’argano SICOR, Montanari o Sassi proposto, per il montaggio', () => {
   const doc = buildReport({
     calc: { id: 'cmtest0002', label: null, createdAt: new Date('2026-10-02T08:00:00Z'), sha256: 'e'.repeat(64), engineVersion: '1.0.0', profileId: 'IT-2026.1', author: null },
     project: { name: 'Impianto di prova', address: null, city: 'Milano', province: 'MI', plantNumber: null, client: null },

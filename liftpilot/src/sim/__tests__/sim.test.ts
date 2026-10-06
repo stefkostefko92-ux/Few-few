@@ -78,7 +78,7 @@ test('marcia tra due piani: arrivo, porte, funi e coppia', () => {
   assert.ok(run.summary.torque > 0 && run.summary.accel <= m.I.aDesign + 1e-9);
 });
 
-test('frenatura di emergenza: si ferma all\'estremo del caso, con l\'utilizzo della verifica', () => {
+test('frenatura di emergenza: si ferma all’estremo del caso, con l’utilizzo della verifica', () => {
   const m = modelOf('C');
   const run = runScenario(m, { id: 'brake', p: { load: 'q', dir: 'dn', decel: 'norm' } });
   const cs = m.res.brk.filter((c) => c.load === 'q' && c.dir === 'dn').reduce((a, b) => (b.util > a.util ? b : a));
@@ -89,7 +89,7 @@ test('frenatura di emergenza: si ferma all\'estremo del caso, con l\'utilizzo de
 test('funi che slittano alla decelerazione reale del freno (esempio A, capitolo 7)', () => {
   const m = modelOf('A');
   const real = m.res.brkReal.filter((c) => c.load === 'e' && c.dir === 'up').reduce((a, b) => (b.util > a.util ? b : a));
-  assert.ok(real.util > 1, 'l\'esempio A slitta con il freno reale');
+  assert.ok(real.util > 1, 'l’esempio A slitta con il freno reale');
   const run = runScenario(m, { id: 'brake', p: { load: 'e', dir: 'up', decel: 'real' } });
   assert.ok(run.summary.slip);
   assert.ok((run.summary.slipDistance ?? 0) > (run.summary.stopDistance ?? Infinity));
@@ -98,7 +98,7 @@ test('funi che slittano alla decelerazione reale del freno (esempio A, capitolo 
   assert.ok(run.events.some((e) => e.id === 'slip'));
 });
 
-test('frenatura in ogni caso della verifica: parte e si ferma dentro la corsa, con l\'utilizzo del caso', () => {
+test('frenatura in ogni caso della verifica: parte e si ferma dentro la corsa, con l’utilizzo del caso', () => {
   for (const pr of ['A', 'B', 'C'] as const) {
     for (const m of [modelOf(pr), modelOf(pr, { H: 3 })]) {
       for (const decel of ['norm', 'real'] as const) {
@@ -118,7 +118,7 @@ test('frenatura in ogni caso della verifica: parte e si ferma dentro la corsa, c
   }
 });
 
-test('frenata con il freno reale: l\'accelerazione e l\'esito della verifica; un freno che non trattiene la cabina non passa', () => {
+test('frenata con il freno reale: l’accelerazione e l’esito della verifica; un freno che non trattiene la cabina non passa', () => {
   const m = modelOf('C'), hard = m.res.brake.aMaxCase;
   const run = runScenario(m, { id: 'brake', p: { load: hard.load, dir: hard.dir, decel: 'real', pos: hard.pos } });
   near(run.summary.accel, hard.aEff, 1e-9, 'decelerazione massima del freno');
@@ -142,7 +142,7 @@ test('caricamento a 1,25·Q e cabina bloccata: stesso esito della verifica', () 
   }
 });
 
-test('caricamento che slitta: la cabina scivola con l\'aderenza al limite, non cade; l\'esito è quello della verifica a 1,25·Q', () => {
+test('caricamento che slitta: la cabina scivola con l’aderenza al limite, non cade; l’esito è quello della verifica a 1,25·Q', () => {
   const m = modelOf('A', { k: 0.3 }), run = runScenario(m, { id: 'loading' });
   assert.ok(m.res.load.util > 1, 'la verifica del caricamento non passa');
   near(run.summary.util, m.res.load.util, 1e-12, 'utilizzo della verifica');
@@ -159,7 +159,7 @@ test('caricamento che slitta: la cabina scivola con l\'aderenza al limite, non c
   assert.ok(sliding > 0, 'slitta');
 });
 
-test('cabina bloccata al limite: la simulazione dà l\'esito della verifica (funi come all\'ultimo piano)', () => {
+test('cabina bloccata al limite: la simulazione dà l’esito della verifica (funi come all’ultimo piano)', () => {
   for (let H = 51; H <= 54.01; H += 0.25) {
     const m = modelOf('A', { n_n: 8, n_d: 13, n_qf: 0.568, n_Fmin: 80, H }), run = runScenario(m, { id: 'stall' });
     assert.equal(run.verdict === 'ok', m.res.stall.ratio >= m.res.stall.efa, `H ${H}`);

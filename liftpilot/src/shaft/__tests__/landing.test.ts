@@ -18,7 +18,7 @@ const at = (I: ShaftInputs, shift: number, side: 'A' | 'B' = 'A'): ShaftInputs =
 };
 const check = (I: ShaftInputs, id: string) => layout(I).checks.find((c) => c.id === id);
 
-test('la porta di piano si sposta da sola: la porta di cabina e l\'operatore restano, il telaio va con lei', () => {
+test('la porta di piano si sposta da sola: la porta di cabina e l’operatore restano, il telaio va con lei', () => {
   const I = defaultInputs(1600, 1750), [d0] = layout(I).doors, [d] = layout(at(I, 40)).doors;
   assert.equal(d0.l0, d0.u0, 'senza spostamento: in linea');
   assert.deepEqual([d.u0, d.u1, d.op0, d.op1], [d0.u0, d0.u1, d0.op0, d0.op1]);
@@ -76,7 +76,7 @@ test('pianta: vano nel muro, portale, soglia e bottoniera con la porta di piano;
   assert.equal(chains(planDims(plain, 'main', floor, { level: 'x' })).some((c) => c.text?.[0]?.startsWith('Disassamento')), false);
 });
 
-test('la porta di piano spostata resta se il vano cambia misura, quella dell\'accesso B se ne va con gli accessi', () => {
+test('la porta di piano spostata resta se il vano cambia misura, quella dell’accesso B se ne va con gli accessi', () => {
   const I = at(defaultInputs(1600, 1750), 30), land = I.plan?.landA;
   assert.deepEqual(keptPlan(I, { ...I, W: 1620 }), { landA: land });
   const O = at({ ...defaultInputs(1600, 2000), entrances: 'opposite' }, 25, 'B');

@@ -56,21 +56,21 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   const st = (x: 'ok' | 'warn' | 'fail' | 'info'): string => X.st(x);
 
   B.push({ t: 'letterhead', logo: r.logo ? 'logo' : null, from: [r.company, ...(r.companyCity ? [r.companyCity] : [])], to: [] });
-  B.push({ t: 'h1', text: 'Relazione tecnica — sostituzione dell\'argano' });
+  B.push({ t: 'h1', text: 'Relazione tecnica — sostituzione dell’argano' });
   B.push({ t: 'sub', text: place ? `${pr.name} · ${place}` : pr.name });
   B.push({ t: 'box', text: 'BOZZA DA VERIFICARE E FIRMARE. Documento generato dal software LiftPilot con i dati del rilievo e del calcolo inseriti '
-    + 'dall\'azienda: diventa relazione tecnica quando il tecnico incaricato lo verifica e lo firma, e la responsabilità è sua.' });
+    + 'dall’azienda: diventa relazione tecnica quando il tecnico incaricato lo verifica e lo firma, e la responsabilità è sua.' });
   B.push({ t: 'kv', rows: [
     ['Azienda', r.company], ['Impianto', pr.name], ['Indirizzo', place || '—'], ['Numero di matricola', pr.plantNumber ?? '—'], ['Proprietario o committente', pr.client ?? '—'],
     ['Rilievo del locale', `${r.room.id}${r.room.label ? ` · ${r.room.label}` : ''} · ${when(r.room.createdAt)}${r.room.author ? ` · ${r.room.author}` : ''}`],
-    ['Calcolo dell\'argano', `${r.calc.id}${r.calc.label ? ` · ${r.calc.label}` : ''} · ${when(r.calc.createdAt)}`],
+    ['Calcolo dell’argano', `${r.calc.id}${r.calc.label ? ` · ${r.calc.label}` : ''} · ${when(r.calc.createdAt)}`],
     ['Impronte SHA-256', `rilievo ${r.room.sha256}\ncalcolo ${r.calc.sha256}`],
     ['Motori', `rilievo ${r.room.engineVersion} · calcolo ${r.calc.engineVersion} · profilo normativo ${r.calc.profileId}`], ['Documento generato il', when(r.generatedAt)],
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Sostituzione dell'argano dell'impianto con un argano geared ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
-    + 'La relazione descrive l\'impianto com\'è, l\'argano esistente e quello nuovo, la sistemazione del nuovo nel locale macchina (basamento, '
+  B.push({ t: 'p', text: `Sostituzione dell’argano dell’impianto con un argano geared ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
+    + 'La relazione descrive l’impianto com’è, l’argano esistente e quello nuovo, la sistemazione del nuovo nel locale macchina (basamento, '
     + 'puleggia di rinvio, calate, aperture nella soletta), i carichi sulla soletta e le verifiche del locale; le verifiche della macchina sono nella '
     + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA)}` });
 
@@ -83,7 +83,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
     ['NTC 2018, §3.1.4, §4.2.4.1.1 e §8.4.1', 'carichi del macchinario, verifica delle putrelle, intervento locale su un edificio esistente'],
   ] });
 
-  section('L\'impianto com\'è');
+  section('L’impianto com’è');
   B.push({ t: 'kv', rows: [
     ...collaudoRows(C, true, carichiOf(r.values)), ['Disposizione', `${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1`], [t('Q'), `${fmt(I.Q, 0)} kg`], [t('P'), `${fmt(I.P, 0)} kg`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg`], [t('v'), `${fmt(I.v, 2)} m/s`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m`],
@@ -96,11 +96,11 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
     rows: [['Costruttore e modello', '—', named || 'non di catalogo: dati inseriti nel calcolo'], ['Massa', ctx.compare && ctx.O.mass > 0 ? `${fmt(ctx.O.mass, 0)} kg` : '—', N.mass > 0 ? `${fmt(N.mass, 0)} kg` : 'non inserita'],
       // the ropes' row is named for the new machine: here for both
       ...rowsN.map(([k, v], i) => [k === t('g_ropes') ? 'Funi' : k, rowsO?.[i]?.[1] ?? '—', v])] });
-  if (!ctx.compare) B.push({ t: 'p', style: 'note', text: 'L\'argano esistente non è stato inserito nel calcolo: i suoi dati vanno rilevati sulla targa e sul libretto.' });
+  if (!ctx.compare) B.push({ t: 'p', style: 'note', text: 'L’argano esistente non è stato inserito nel calcolo: i suoi dati vanno rilevati sulla targa e sul libretto.' });
   const S = d.made ? shapeOf(d.made.brand, d.made.model) : null;
   if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt, d.M.rinvio ?? null) });
-  B.push({ t: 'p', style: 'note', text: 'Confermare i dati del nuovo argano con la scheda tecnica e l\'offerta del costruttore, da allegare.' });
-  B.push({ t: 'verdict', text: `Verifiche dell'argano nuovo: ${X.verdictText(res)}`, status: verdictStatus(res) });
+  B.push({ t: 'p', style: 'note', text: 'Confermare i dati del nuovo argano con la scheda tecnica e l’offerta del costruttore, da allegare.' });
+  B.push({ t: 'verdict', text: `Verifiche dell’argano nuovo: ${X.verdictText(res)}`, status: verdictStatus(res) });
 
   section('Sistemazione nel locale macchina');
   B.push({ t: 'kv', rows: roomRows(s, d, fmt) });
@@ -131,7 +131,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   B.push({ t: 'kv', rows: [...sheet.loads.map(([k, v, u]): [string, string] => [k.charAt(0) + k.slice(1).toLowerCase(), `${v}${u ? ` ${u}` : ''}`]),
     ...sheet.P.map(([k, v]): [string, string] => [`Carico ${k.slice(0, 2)}: ${k.slice(3).toLowerCase()}`, v === '—' ? '—' : `${v} daN`])] });
   if (ctx.compare && ctx.O.mass > 0 && N.mass > 0) {
-    B.push({ t: 'p', text: `Massa dell'argano: esistente ${fmt(ctx.O.mass, 0)} kg, nuovo ${fmt(N.mass, 0)} kg (${N.mass >= ctx.O.mass ? '+' : '−'}${fmt(Math.abs(N.mass - ctx.O.mass), 0)} kg sulla soletta).` });
+    B.push({ t: 'p', text: `Massa dell’argano: esistente ${fmt(ctx.O.mass, 0)} kg, nuovo ${fmt(N.mass, 0)} kg (${N.mass >= ctx.O.mass ? '+' : '−'}${fmt(Math.abs(N.mass - ctx.O.mass), 0)} kg sulla soletta).` });
   }
   B.push({ t: 'p', style: 'note', text: 'Carichi non contemporanei. La verifica della soletta e degli appoggi del basamento spetta al tecnico strutturale incaricato dal '
     + 'committente (NTC 2018, §8.4.1: intervento locale; §3.1.4: carichi del macchinario).' });
@@ -159,7 +159,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
 
   section('Allegati');
   B.push({ t: 'list', items: [
-    `Relazione di calcolo dell'argano, calcolo ${r.calc.id} (SHA-256 ${r.calc.sha256.slice(0, 16)}…)`,
+    `Relazione di calcolo dell’argano, calcolo ${r.calc.id} (SHA-256 ${r.calc.sha256.slice(0, 16)}…)`,
     r.sets.length ? `Tavole di progetto n. ${r.sets.map((x) => `${x.number}${x.revision ? ` R${x.revision}` : ''}`).join(', ')}` : 'Tavole di progetto: da emettere dal rilievo del locale',
     'Scheda tecnica e dichiarazioni del costruttore del nuovo argano (da allegare)',
   ] });
@@ -171,7 +171,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   const short = pr.name.length > 70 ? `${pr.name.slice(0, 69)}…` : pr.name;
   return {
     meta: {
-      title: `Relazione tecnica — ${pr.name}`, subject: 'Sostituzione dell\'argano: relazione tecnica', author: r.company,
+      title: `Relazione tecnica — ${pr.name}`, subject: 'Sostituzione dell’argano: relazione tecnica', author: r.company,
       header: `LiftPilot · Relazione tecnica · ${short}`, footer: `Rilievo ${r.room.id} · calcolo ${r.calc.id} · motore ${r.room.engineVersion}`,
       code: `SHA-256 ${r.room.sha256}`, notice: t('rep_footer'),
     },

@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FISHPLATES, KV_VERT, RAIL_LENGTH, bracketCount, bracketHeights } from '../index';
 
-test('numero: una ogni 2 m, più la prima e l\'ultima', () => {
+test('numero: una ogni 2 m, più la prima e l’ultima', () => {
   assert.equal(KV_VERT.bracketPitch, 2000);
   assert.equal(bracketCount(15400), 9);
   assert.equal(bracketCount(14000), 9);
@@ -13,7 +13,7 @@ test('numero: una ogni 2 m, più la prima e l\'ultima', () => {
   assert.equal(bracketCount(15400, 2500), 8);
 });
 
-test('posizioni: dalla prima all\'ultima a passo uguale, lontano dalle piastre di giunzione', () => {
+test('posizioni: dalla prima all’ultima a passo uguale, lontano dalle piastre di giunzione', () => {
   for (const [len, type] of [[15400, 'T70-1/A'], [21350, 'T89/B'], [9800, 'T45/A'], [30000, 'T125/B']] as const) {
     const z = bracketHeights(0, len, type), keep = FISHPLATES[type].l / 2 + 90;
     assert.equal(z.length, bracketCount(len));

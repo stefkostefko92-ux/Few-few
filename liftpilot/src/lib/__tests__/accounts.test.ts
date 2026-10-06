@@ -32,7 +32,7 @@ test('registrazione: dati puliti, password secondo la regola, le quattro conferm
   assert.ok(!forgotSchema.safeParse({ email: 'x' }).success && forgotSchema.safeParse({ email: 'A@B.it' }).success);
 });
 
-test('link: 32 byte casuali in base64url, solo l\'hash nel database, vite di 48 ore e di un\'ora', () => {
+test('link: 32 byte casuali in base64url, solo l’hash nel database, vite di 48 ore e di un’ora', () => {
   const token = randomBytes(32).toString('base64url');
   assert.ok(tokenShapeOk(token));
   for (const bad of ['', token.slice(1), `${token}=`, token.replace(/.$/, '+'), '../../etc/passwd']) assert.ok(!tokenShapeOk(bad), bad);
@@ -44,7 +44,7 @@ test('link: 32 byte casuali in base64url, solo l\'hash nel database, vite di 48 
   assert.ok(codes(resetSchema.safeParse({ token: 'abc', next: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro' })).includes('invalidLink'));
 });
 
-test('e-mail in tre lingue: il link nel frammento, la durata dal codice, l\'HTML con i caratteri protetti', () => {
+test('e-mail in tre lingue: il link nel frammento, la durata dal codice, l’HTML con i caratteri protetti', () => {
   const token = randomBytes(32).toString('base64url'), base = 'https://liftpilot.example';
   for (const l of LOCALES) {
     const v = accountMail({ kind: 'verify', token }, l, base), r = accountMail({ kind: 'reset', token }, l, base), e = accountMail({ kind: 'exists' }, l, base);

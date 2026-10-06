@@ -94,7 +94,7 @@ test('relazione: norma, parti, verifiche esistenti e adeguamenti secondo la scel
   assert.equal(kv(eleven).get('Normativa di riferimento per il collaudo'), 'UNI 10411-11:2024');
   assert.ok(heads(eleven).includes('Adeguamenti per la sostituzione (UNI 10411-11)'));
   const asNew = report({ norma: 'en81', parti: ['machine'] });
-  assert.equal(kv(asNew).get('Parti sostituite o modificate'), "tutte: l'impianto si collauda come nuovo");
+  assert.equal(kv(asNew).get('Parti sostituite o modificate'), "tutte: l’impianto si collauda come nuovo");
   assert.ok(heads(asNew).includes('Adeguamenti: collaudo come impianto nuovo'));
   const gNew = checksGrid(asNew);
   assert.ok(gNew && gNew.t === 'grid' && !gNew.rows.some((r) => (r[3] ?? '').startsWith('Esistente')), 'come nuovo: nessuna esistente');
@@ -161,7 +161,7 @@ test('relazione e foglio 1 con più normative: righe, sezione degli esiti, nota'
   assert.equal(g.rows[2]?.[5], 'non calcolata');
   assert.ok(doc.blocks.some((b) => b.t === 'p' && b.text.startsWith('DM 236/1989: nessuna verifica calcolata')));
   assert.ok(doc.blocks.some((b) => b.t === 'verdict' && b.text.startsWith('Esito delle verifiche di calcolo:')));
-  assert.ok(doc.blocks.some((b) => b.t === 'p' && b.text.startsWith('Non è l\'esito del collaudo')), 'the outcome is the software\'s checks, not the test\'s');
+  assert.ok(doc.blocks.some((b) => b.t === 'p' && b.text.startsWith('Non è l’esito del collaudo')), 'the outcome is the software’s checks, not the test’s');
   // without standards added the section is there with the base one alone
   const one = report(), g1 = one.blocks.find((b) => b.t === 'grid' && b.head[0] === 'Normativa');
   assert.ok(g1 && g1.t === 'grid' && g1.rows.length === 1 && !kv(one).has('Altre normative di collaudo'));

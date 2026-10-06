@@ -20,7 +20,7 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
   },
   {
     id: 'ingombri.contrappeso.laterale', gruppo: 'ingombri', titolo: 'Contrappeso laterale',
-    valore: 'tra la parete e la guida della cabina, centrato sull\'asse delle guide di cabina, con le sue guide alle estremità (pattini 20 mm) '
+    valore: 'tra la parete e la guida della cabina, centrato sull’asse delle guide di cabina, con le sue guide alle estremità (pattini 20 mm) '
       + 'e la guida di cabina su una staffa a ponte; a 40 mm dalle zone delle porte; lunghezza in pianta da 400 a 900 mm (sotto 400 mm: '
       + '«Attenzione»); con il contrappeso sul fondo, al massimo la larghezza tra le guide della cabina',
     riferimento: '—', fonte: 'scelta del software', stato: 'scelta',
@@ -28,11 +28,11 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
   },
   {
     id: 'ingombri.arcata.zaino', gruppo: 'ingombri', titolo: 'Arcata a zaino (due accessi adiacenti a 90°)',
-    valore: 'entrambe le guide di cabina sulla parete opposta all\'accesso laterale, con le lame affacciate lungo la parete (il momento della cabina '
+    valore: 'entrambe le guide di cabina sulla parete opposta all’accesso laterale, con le lame affacciate lungo la parete (il momento della cabina '
       + 'a sbalzo va sulle facce delle lame); piedi delle guide a 20 mm dentro la profondità della piattaforma; contrappeso tra le guide, '
       + 'contro la parete, con le sue guide alle estremità e i piedi a 70 mm da quelli delle guide di cabina (staffe); la cabina a 10 mm dalle '
       + 'bride che tengono i piedi delle guide sulle staffe (bride forgiate della misura della guida, con la piastra oltre il piede)',
-    riferimento: '—', fonte: 'scelta del software (principio: cataloghi di arcate a zaino); disposizione da confermare con il fornitore dell\'arcata', stato: 'scelta',
+    riferimento: '—', fonte: 'scelta del software (principio: cataloghi di arcate a zaino); disposizione da confermare con il fornitore dell’arcata', stato: 'scelta',
     costanti: ['cantRailEnd', 'cantCwGap', 'cantClipGap'],
   },
   {
@@ -41,7 +41,7 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
       + 'e i fianchi della nicchia (con le staffe Panev, lo spazio della piastra del supporto dietro il piede di ogni guida); la distanza dalla '
       + 'parete si misura dal fondo della nicchia e la cabina guadagna la sua profondità, senza '
       + 'scendere sotto gli ingombri delle guide; luce del vano in nicchia: una nicchia alta 400 mm per lampada, le lampade 1500 mm sopra ogni '
-      + 'piano e l\'ultima a 80 mm sotto la soletta; canalina in nicchia: dal fondo della fossa alla soletta; ogni nicchia dentro la sua parete, fuori '
+      + 'piano e l’ultima a 80 mm sotto la soletta; canalina in nicchia: dal fondo della fossa alla soletta; ogni nicchia dentro la sua parete, fuori '
       + 'dai telai delle porte di piano e dalle altre nicchie, con almeno 50 mm di muro dietro; altrimenti «Non conforme»',
     riferimento: '—', fonte: 'scelta del software; la resistenza della parete con la nicchia va verificata dal progettista', stato: 'scelta',
     costanti: ['nicheBackMin', 'nicheGap', 'nicheLightH', 'lampOverFloor', 'lampUnderSlab'], verifiche: ['v_niche'],
@@ -52,13 +52,13 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
       + 'cui campo stampato prende la distanza della guida dalla parete (o dal fondo della nicchia) e la cui piastra sta sulla parete: SU, SD 150 '
       + 'e SD 220 lunghi 160 mm da 45 a 155 mm (SD 220 da 50), lunghi 180 mm da 45 a 195 mm, lunghi 200 mm da 45 a 215 mm; quando nessuno sta, '
       + 'vicino a un angolo, il supporto scorrevole SC sulla parete dietro il piede della guida con la SG lungo la parete: la flangia della SG da 2 mm '
-      + 'oltre il bordo dell\'SC fino a 70, 88, 130 e 140 mm dalla parete per SC 50, 60, 80 e 90, l\'asse della guida entro il campo stampato da '
-      + 'un\'estremità dell\'SC (lunghi 200 mm: 210, 213, 215 e 215 mm; lunghi 220 mm: 235, 235, 255 e 235 mm), fuori dai telai delle porte e dalle '
-      + 'nicchie. Il progettista può scegliere l\'articolo a mano (se non prende la guida: «Non conforme») o una soluzione su disegno esecutivo, '
-      + 'SC 50 170 + SG 225 50 a misura o SN 60 65 + SN 65 200 + BRACCIO 160 190 all\'angolo del vano: «Da verificare» sul disegno; nessuno '
+      + 'oltre il bordo dell’SC fino a 70, 88, 130 e 140 mm dalla parete per SC 50, 60, 80 e 90, l’asse della guida entro il campo stampato da '
+      + 'un’estremità dell’SC (lunghi 200 mm: 210, 213, 215 e 215 mm; lunghi 220 mm: 235, 235, 255 e 235 mm), fuori dai telai delle porte e dalle '
+      + 'nicchie. Il progettista può scegliere l’articolo a mano (se non prende la guida: «Non conforme») o una soluzione su disegno esecutivo, '
+      + 'SC 50 170 + SG 225 50 a misura o SN 60 65 + SN 65 200 + BRACCIO 160 190 all’angolo del vano: «Da verificare» sul disegno; nessuno '
       + 'adatto: «Non conforme» (si possono scegliere staffe generiche, da dimensionare a parte)',
     riferimento: 'catalogo staffe Panev 2026, pp. 20-62', fonte: 'catalogo del costruttore (panev/docs/catalogo-staffe-panev-2026.pdf); le corse '
-      + 'dell\'SC lontano dalla parete lette sui disegni di montaggio (pp. 41-55)', stato: 'confermato',
+      + 'dell’SC lontano dalla parete lette sui disegni di montaggio (pp. 41-55)', stato: 'confermato',
     verifiche: ['v_staffa'],
   },
   {
@@ -84,7 +84,7 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
     valore: 'per velocità il più piccolo PFB che la regge: LK200 (Ø 200, fune 6) fino a 1,48 m/s, LK250 fino a 1,74, LK300 fino a 2,93, R12BF fino a '
       + '4,00; oppure il modello scelto se regge la velocità: PFB (LX, LK, R1, R3LR, R5, R6, R10BF), Bode (GB 7 fino a 2,98 m/s, GB 8 fino a 1,29), '
       + 'Dynatech (VEGA 200 fino a 2,40), Wittur (OL20 fino a 1,75, OL35 fino a 3,00, EOS fino a 2,50, OL100 fino a 10,00) o Montanari (RQ-A 200, 250 e '
-      + '300, RC 200 e 300, NOR fino a 1,50 m/s, RG 200 fino a 0,30). Con le quote dei disegni dei costruttori (altezza totale, tra parentesi l\'asse '
+      + '300, RC 200 e 300, NOR fino a 1,50 m/s, RG 200 fino a 0,30). Con le quote dei disegni dei costruttori (altezza totale, tra parentesi l’asse '
       + 'dalla base): LK200, LK250, LK300 e LK315 415 (165) su base 220 × 165 (LK315 220 × 130); LX120 178 (70,5), LK120 270 (71), LX150 274 (86), '
       + 'LX180 322 (107), LX200 349 (110); R1 344 (190,5) su base 285 × 80; R3LR 348 (157); R5 261 (120); R6 335 (168); R10BF 488 (303) su base '
       + '460 × 196; R12BF 524 (337) su base 520 × 116; Bode GB 7 360 (205) e GB 8 315 (205); Dynatech VEGA 200 332 (199,5); Wittur e Montanari nelle '
@@ -92,7 +92,7 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
       + 'verticale con 44 kg (come PFB R4R)',
     riferimento: 'dati del fornitore del limitatore; dalla norma solo lo scatto ≥ 115 % della velocità nominale (UNI EN 81-20:2020, 5.6.2.2.1.1 a))',
     stato: 'stima',
-    fonte: 'manuali d\'uso PFB con i disegni quotati (download.pfb.it), brochure Bode e Wittur, manuale Dynatech VEGA e disegni Bode in copia '
+    fonte: 'manuali d’uso PFB con i disegni quotati (download.pfb.it), brochure Bode e Wittur, manuale Dynatech VEGA e disegni Bode in copia '
       + 'presso un rivenditore (elevatorequipment.co.uk), letti il 2 ottobre 2026; basi delle LK da un listino di rivenditore; Montanari da estratti '
       + 'di ricerca del 1° ottobre 2026 (research/argano-geared/18-porte-limitatori-tenditori-tutti.md)',
     nota: 'il disegno unico delle LK200–LK315 dà due altezze non spiegate (230 e 415 mm; un rivenditore scrive 370): è presa la maggiore. Per Bode '

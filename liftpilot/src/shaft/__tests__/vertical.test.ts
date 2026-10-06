@@ -66,7 +66,7 @@ test('contrappeso con la cabina sugli ammortizzatori compressi: corsa guidata 0,
   assert.equal(Math.round((check(I, 'h_cw')?.value ?? 0) - (check(tall, 'h_cw')?.value ?? 0)), 1300);
 });
 
-test('tetto di cabina: lo spazio di rifugio del tipo scelto ci sta; traversa dell\'arcata sotto il soffitto', () => {
+test('tetto di cabina: lo spazio di rifugio del tipo scelto ci sta; traversa dell’arcata sotto il soffitto', () => {
   const at = (topRefuge: 1 | 2, plan?: ShaftInputs['plan']) => {
     const I = defaultInputs(1300, 1400), L = layout({ ...I, access: 'none', plan, vertical: { ...I.vertical, topRefuge } });
     const [rw, rd] = KV_VERT.refugePlan[topRefuge], c = L.car;

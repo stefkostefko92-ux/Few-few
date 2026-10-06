@@ -30,11 +30,11 @@ export const VOCI_FRENO: readonly Voce[] = [
   },
   {
     id: 'freno.decelerazione.massima', gruppo: 'freno', titolo: 'Decelerazione massima del freno', valore: '≤ 1 g (oltre: «Attenzione»), da confrontare con paracadute e ammortizzatori',
-    riferimento: 'UNI EN 81-20:2020, 5.9.2.2.2.1 (non oltre il paracadute o l\'urto sugli ammortizzatori); 1 gn in 5.6.2.1.3 e 5.8.2; '
-      + 'con il freno come organo d\'arresto, 1 gn anche in 5.6.6.3 (ACOP) e 5.6.7.6 (UCM)',
+    riferimento: 'UNI EN 81-20:2020, 5.9.2.2.2.1 (non oltre il paracadute o l’urto sugli ammortizzatori); 1 gn in 5.6.2.1.3 e 5.8.2; '
+      + 'con il freno come organo d’arresto, 1 gn anche in 5.6.6.3 (ACOP) e 5.6.7.6 (UCM)',
     fonte: letto(T20, 'pp. 81, 98–100'), stato: 'derivazione',
     costanti: ['brakeDecelMax'], verifiche: ['b_amax'],
-    nota: 'La norma non dà un numero per il freno: ne confronta la decelerazione media con quella del paracadute e dell\'urto sugli '
+    nota: 'La norma non dà un numero per il freno: ne confronta la decelerazione media con quella del paracadute e dell’urto sugli '
       + 'ammortizzatori, che hanno 1 gn come limite. Il confronto vero è con i dati dei componenti montati.',
   },
 ];

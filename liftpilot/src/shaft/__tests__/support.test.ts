@@ -82,7 +82,7 @@ test('rinvio sul suo supporto sotto l’argano: lo scavalcano solo le putrelle s
   assert.equal(deriveLift(L).supportChecks.find((c) => c.id === 'm_stand'), undefined);
 });
 
-test('superficie libera accanto all\'argano: 500 × 600 mm sul lato più libero, fino a muri e quadro', () => {
+test('superficie libera accanto all’argano: 500 × 600 mm sul lato più libero, fino a muri e quadro', () => {
   const R = DEFAULT_ROOM, K = KV_VERT;
   // a machine 1000 × 600 mm near the left wall: the most room is behind its 1000 mm side, which takes 500 deep
   assert.deepEqual(freeBeside(R, [500, 500, 1500, 1100]), { depth: R.D - 1100, need: K.maintW });

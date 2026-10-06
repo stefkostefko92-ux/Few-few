@@ -84,7 +84,7 @@ test('lettere: larghezze DejaVu, condensato, a capo', () => {
   const a = textWidth('PIANTA', { size: 2.5 }), c = textWidth('PIANTA', { size: 2.5, cond: true }), b = textWidth('PIANTA', { size: 2.5, bold: true });
   assert.ok(c < a && a < b);
   assert.ok(Math.abs(textWidth('PIANTA', { size: 5 }) - 2 * a) < 1e-9);
-  const lines = wrap('il vano serve solo all\'ascensore: nessun cavo, tubazione o impianto estraneo al suo servizio', 40, { size: 2, cond: true });
+  const lines = wrap('il vano serve solo all’ascensore: nessun cavo, tubazione o impianto estraneo al suo servizio', 40, { size: 2, cond: true });
   assert.ok(lines.length > 1 && lines.every((l) => textWidth(l, { size: 2, cond: true }) <= 40 + 1e-9));
 });
 

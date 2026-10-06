@@ -117,20 +117,20 @@ const paras = (doc: ReportDoc): string => doc.blocks.flatMap((b) => (b.t === 'p'
 
 test('relazione: titolo, oggetto, contesto e voce del registro del rifacimento; la sostituzione come prima', () => {
   const rif = report(RIF), machine = report();
-  assert.equal(h1(rif), "Relazione di calcolo — rifacimento dell'impianto con l'arcata esistente");
-  assert.equal(h1(machine), "Relazione di calcolo — sostituzione dell'argano");
+  assert.equal(h1(rif), "Relazione di calcolo — rifacimento dell’impianto con l’arcata esistente");
+  assert.equal(h1(machine), "Relazione di calcolo — sostituzione dell’argano");
   assert.equal(kv(rif).get('Contesto'), 'Rifacimento con arcata esistente');
-  assert.equal(kv(machine).get('Contesto'), "Sostituzione dell'argano");
+  assert.equal(kv(machine).get('Contesto'), "Sostituzione dell’argano");
   assert.equal(kv(rif).get('Normativa di riferimento per il collaudo'), 'UNI 10411-1:2024');
   assert.ok(!(kv(rif).get('Parti sostituite o modificate') ?? '').includes('arcata'), 'l’arcata non è tra le parti sostituite');
   const p = paras(rif);
-  assert.ok(p.includes("per il rifacimento di un impianto esistente che ne mantiene l'arcata"));
+  assert.ok(p.includes("per il rifacimento di un impianto esistente che ne mantiene l’arcata"));
   assert.ok(p.includes('art. 2, comma 1, lettera cc)') && p.includes('«impianto.rifacimento»') && p.includes('Il collaudo segue la UNI 10411-1:2024'));
   assert.ok(!paras(machine).includes('rifacimento'));
   const reg = (doc: ReportDoc) => doc.blocks.find((b) => b.t === 'grid' && b.head[0] === 'Voce');
   const rows = reg(rif), rows0 = reg(machine);
-  assert.ok(rows && rows.t === 'grid' && rows.rows.some((r) => r[0] === "Rifacimento con l'arcata esistente" && r[3] === 'prassi di cantiere'));
-  assert.ok(rows0 && rows0.t === 'grid' && !rows0.rows.some((r) => r[0] === "Rifacimento con l'arcata esistente"));
+  assert.ok(rows && rows.t === 'grid' && rows.rows.some((r) => r[0] === "Rifacimento con l’arcata esistente" && r[3] === 'prassi di cantiere'));
+  assert.ok(rows0 && rows0.t === 'grid' && !rows0.rows.some((r) => r[0] === "Rifacimento con l’arcata esistente"));
 });
 
 const sheet1 = (collaudo?: Collaudo): string => {
@@ -146,7 +146,7 @@ const sheet1 = (collaudo?: Collaudo): string => {
 test('foglio 1: arcata esistente e la nota del collaudo', () => {
   const rif = sheet1(RIF), machine = sheet1({ norma: '10411-1', parti: ['machine'] });
   assert.ok(rif.includes('ARCATA tipo ESISTENTE') && rif.includes('PORTE DI PIANO tipo AUTOMATICHE'), 'arcata esistente, porte nuove');
-  assert.ok(rif.includes("Collaudo secondo UNI 10411-1:2024. Rifacimento con l'arcata esistente"), 'nota del rifacimento');
+  assert.ok(rif.includes("Collaudo secondo UNI 10411-1:2024. Rifacimento con l’arcata esistente"), 'nota del rifacimento');
   assert.ok(!machine.includes('Rifacimento'), 'la sostituzione come prima');
 });
 
@@ -164,5 +164,5 @@ test('bozza d’ordine e riepilogo: il rifacimento accanto alla norma', () => {
   assert.equal(norma({ norma: '10411-1', parti: ['machine'] }), 'UNI 10411-1:2024');
   const P = makePres(calcIt, 'it-IT'), X = textsFor(P), a = analyse(PRESETS.B);
   assert.ok(summaryText(P, X, a, { badVisible: 0, rifacimento: true }).includes('— Rifacimento con arcata esistente'));
-  assert.ok(summaryText(P, X, a, { badVisible: 0 }).includes("— Sostituzione dell'argano"));
+  assert.ok(summaryText(P, X, a, { badVisible: 0 }).includes("— Sostituzione dell’argano"));
 });

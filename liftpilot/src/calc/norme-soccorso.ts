@@ -24,7 +24,7 @@ export const VOCI_SOCCORSO: readonly Voce[] = [
       + 'elettrica di emergenza (5.12.1.6)',
     riferimento: 'UNI EN 81-20:2020, 5.9.2.2.2.9, 5.9.2.3.1 e 5.9.2.3.3', fonte: letto(T20, 'pp. 101–102'), stato: 'confermato',
     costanti: ['rescueForceMech', 'rescueLoadBand', 'rescueHours', 'rescueSpeed'], verifiche: ['s_fa'],
-    nota: 'Solo con la macchina secondo la UNI EN 81-20:2020: la UNI EN 81-1:2008 non ha la soglia dei 150 N né l\'ora di autonomia. Il '
+    nota: 'Solo con la macchina secondo la UNI EN 81-20:2020: la UNI EN 81-1:2008 non ha la soglia dei 150 N né l’ora di autonomia. Il '
       + 'verso della forza non è dato dalla norma: il software prende il peggiore.',
   },
   {

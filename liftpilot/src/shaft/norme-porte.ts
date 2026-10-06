@@ -24,13 +24,13 @@ export const VOCI_PORTE: readonly VoceVano[] = [
       + '(il lato di chiusura 25 mm oltre la luce) e 2·L + 60 mm con porta centrale, profondo 220 mm, dentro il vano; con il fornitore scelto: '
       + '2SG FLY/LIKE 1,5·L + 40 mm (telescopica) e 2·L + 20 mm (centrale), profondo 220 mm; Fermator 40/10 1,5·L + 50 mm e 2·L + 50 mm, profondo '
       + '144 mm; Dapa LOWER 1,5·L + 47 mm e 2·L + 50 mm, profondo 217 mm; con due accessi adiacenti gli operatori non devono sovrapporsi '
-      + 'all\'angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
+      + 'all’angolo tra le porte (altrimenti «Attenzione»: operatori da scegliere con il fornitore)',
     riferimento: 'dato del fornitore delle porte',
-    fonte: 'schede PDF 2SG FLY 2AT (ingombro massimo 1,5·A + 10; soglia 1,5·A + 20, + 40 con l\'extracorsa: presa la più lunga) e 2AO (2·A + 20), '
+    fonte: 'schede PDF 2SG FLY 2AT (ingombro massimo 1,5·A + 10; soglia 1,5·A + 20, + 40 con l’extracorsa: presa la più lunga) e 2AO (2·A + 20), '
       + 'profondità 220 letta sul disegno; catalogo tecnico Dapa LOWER (1,5·AP + 47, 2·AP + 50, profondità 217); Fermator 40/10 PM in copie presso '
       + 'terzi (1,5·PL + 50 e 2·PL + 50, le soglie + 40; profondità 120–144 sul disegno, con le staffe 183–280; chiusura a 15 mm dalla luce, il '
       + 'software ne tiene 25); Wittur Hydra Plus da una copia del catalogo Selcom (1,5·PL + 25 e 2·PL + 50, profondo 200); letti il 2 ottobre 2026 '
-      + '(research/argano-geared/18-porte-limitatori-tenditori-tutti.md). Il generico è l\'inviluppo: il più lungo (Fermator, Dapa) e il più '
+      + '(research/argano-geared/18-porte-limitatori-tenditori-tutti.md). Il generico è l’inviluppo: il più lungo (Fermator, Dapa) e il più '
       + 'profondo (2SG FLY). Hydra Plus può superarlo dove la sua quota GM supera la GW; Prisma e CMM: lunghezza e profondità non trovate',
     stato: 'stima',
     costanti: ['doorPortal', 'doorOpT2', 'doorOpC2', 'doorOpClose', 'doorOpDepth', 'doorOpMakers'], verifiche: ['v_door', 'v_door2', 'v_op'],
@@ -40,11 +40,11 @@ export const VOCI_PORTE: readonly VoceVano[] = [
     valore: 'la luce netta della porta di piano sporge al massimo 50 mm per lato oltre quella della porta di cabina: con la stessa luce, '
       + 'disassamento ≤ 50 mm (oltre: «Non conforme»); lo stesso spostamento a tutti i piani, per ciascun accesso, con il vano nel muro, '
       + 'il portale, gli imbotti, la soglia sulle staffe e la bottoniera della porta di piano; il passaggio libero è la parte comune delle due '
-      + 'luci (luce − disassamento), ed è quello verificato per l\'accessibilità (DM 236/1989)',
+      + 'luci (luce − disassamento), ed è quello verificato per l’accessibilità (DM 236/1989)',
     riferimento: 'UNI EN 81-20:2020, 5.3.2.2', fonte: letto('UNI EN 81-20:2020', 'p. 49'), stato: 'confermato',
     costanti: ['landingShiftMax'], verifiche: ['v_land', 'v_land2'],
-    nota: 'nel 3D la leva della serratura con i rulli resta in linea con l\'accoppiatore della porta di cabina: con il disassamento va montata '
-      + 'spostata sull\'anta della porta di piano (da concordare con il fornitore delle porte)',
+    nota: 'nel 3D la leva della serratura con i rulli resta in linea con l’accoppiatore della porta di cabina: con il disassamento va montata '
+      + 'spostata sull’anta della porta di piano (da concordare con il fornitore delle porte)',
   },
   {
     id: 'porte.bottoniera', gruppo: 'porte', titolo: 'Bottoniera di piano',
@@ -65,7 +65,7 @@ export const VOCI_PORTE: readonly VoceVano[] = [
       + 'per tutte le porte di piano, in lamiera sul filo del muro verso il pianerottolo, disegnati in pianta, in sezione e nel 3D',
     riferimento: 'dato del fornitore delle porte (imbotti su misura)', fonte: 'scelta del software', stato: 'scelta',
     costanti: ['doorHead'],
-    nota: 'Montanti e pannelli accanto alla porta più larghi di 150 mm che chiudono l\'apertura vanno con la prova del pendolo della porta '
+    nota: 'Montanti e pannelli accanto alla porta più larghi di 150 mm che chiudono l’apertura vanno con la prova del pendolo della porta '
       + '(UNI EN 81-20:2020, 5.3.5.3.4): la copre il fornitore.',
   },
   {

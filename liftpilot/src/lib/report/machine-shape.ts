@@ -14,11 +14,11 @@ export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: numb
   const tilt = S.parts.find((p) => p.tilt)?.tilt, below = Math.round(-bodyBox(S)[1]);
   const SCALED = ' (valore misurato sul disegno in scala)', scaled = (v: string, on: boolean | undefined): string => (on ? `≈ ${v}${SCALED}` : v);
   const worm = S.wormX !== undefined
-    ? `verticale, ${scaled(`${fmt(Math.abs(S.wormX), 0)} mm dall'asse della puleggia`, S.wormScaled)}`
+    ? `verticale, ${scaled(`${fmt(Math.abs(S.wormX), 0)} mm dall’asse della puleggia`, S.wormScaled)}`
     : scaled(`${fmt(S.yWorm, 0)} mm${tilt ? `, inclinata di ${fmt(Math.abs((tilt.a * 180) / Math.PI), 0)}°` : ''}`, S.wormScaled);
   // a vertical machine has no motor's side: its sides are the overall's two ends
-  const sides = S.wormX !== undefined ? `${fmt(S.overall[0], 0)} e ${fmt(S.overall[1], 0)} mm dall'asse della puleggia ai due lati`
-    : `${fmt(S.overall[0], 0)} mm dall'asse della puleggia sul lato opposto al motore, ${fmt(S.overall[1], 0)} mm verso il motore (motore più grande)`;
+  const sides = S.wormX !== undefined ? `${fmt(S.overall[0], 0)} e ${fmt(S.overall[1], 0)} mm dall’asse della puleggia ai due lati`
+    : `${fmt(S.overall[0], 0)} mm dall’asse della puleggia sul lato opposto al motore, ${fmt(S.overall[1], 0)} mm verso il motore (motore più grande)`;
   return [
     [`Ingombri (scheda del costruttore${S.bodyFrom ? `; corpo come la ${S.bodyFrom}` : ''})`, `${sides}, altezza ${S.heightScaled ? '≈ ' : ''}`
       + `${fmt(S.overall[2], 0)} mm sul piano dei piedi${below > 0 ? `, fino a ${fmt(below, 0)} mm sotto` : ''}${S.heightScaled ? SCALED : ''}`],
@@ -27,8 +27,8 @@ export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: numb
       + (S.sheaveScaled ? scaled(`${fmt(E, 0)} mm`, true) : `= ${fmt(E, 0)} mm${S.bodyFrom ? ` (come la ${S.bodyFrom})` : ''}`)],
     ['Fissaggio', `${S.holes.length} × ${S.hole} su ${span(xs)} × ${span(zs)} mm; piedi ${fmt(S.feet[2] - S.feet[0], 0)} × ${fmt(S.feet[3] - S.feet[1], 0)} mm`],
     mk && seat !== null
-      ? ['Sede sul basamento', `${fmt(seat, 0)} mm sotto i piedi, sul basamento ${mk.brand} ${mk.code}: l'asse della puleggia a ${fmt(mk.sheaveAxis, 0)} mm sul pavimento del locale`]
-      : ['Telaio sotto l\'argano', `alto ${fmt(F.bed, 0)} mm (scelta del software): l'asse della puleggia a ${fmt(F.axis, 0)} mm sul piano d'appoggio del telaio`],
+      ? ['Sede sul basamento', `${fmt(seat, 0)} mm sotto i piedi, sul basamento ${mk.brand} ${mk.code}: l’asse della puleggia a ${fmt(mk.sheaveAxis, 0)} mm sul pavimento del locale`]
+      : ['Telaio sotto l’argano', `alto ${fmt(F.bed, 0)} mm (scelta del software): l’asse della puleggia a ${fmt(F.axis, 0)} mm sul piano d’appoggio del telaio`],
   ];
 }
 
@@ -39,7 +39,7 @@ export function rinvioRow(rf: RinvioFrame, fmt: (x: number, dp?: number) => stri
   if (rf.on === 'stand') return ['Puleggia di rinvio', `nel locale macchina, mai nel vano: su un proprio supporto a pavimento, ${axis}`];
   const mk = rf.maker;
   return ['Puleggia di rinvio', mk
-    ? `nel locale macchina, mai nel vano: nel basamento ${mk.brand} ${mk.code} dell'argano (${fmt(mk.mass, 0)} kg con puleggia e antivibranti), ${axis}, `
+    ? `nel locale macchina, mai nel vano: nel basamento ${mk.brand} ${mk.code} dell’argano (${fmt(mk.mass, 0)} kg con puleggia e antivibranti), ${axis}, `
       + `sommità a ${fmt(mk.top, 0)} mm, asse della puleggia di frizione a ${fmt(mk.sheaveAxis, 0)} mm (fonte: ${mk.src})`
-    : `nel locale macchina, mai nel vano: nel telaio dell'argano (UPN, su antivibranti; scelta del software), ${axis}, sommità a ${fmt(rf.top, 0)} mm`];
+    : `nel locale macchina, mai nel vano: nel telaio dell’argano (UPN, su antivibranti; scelta del software), ${axis}, sommità a ${fmt(rf.top, 0)} mm`];
 }

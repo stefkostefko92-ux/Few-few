@@ -131,7 +131,7 @@ export const VOCI_VANO: readonly VoceVano[] = [
     riferimento: 'UNI EN 81-20:2020, 5.4.2.1.1 (Prospetto 6)', fonte: letto(T20, 'pp. 63–64'), stato: 'confermato',
     costanti: ['areaTable', 'areaPer100kgOver2500'], verifiche: ['v_area'],
     nota: 'la norma misura la superficie a 1 m dal pavimento tra le pareti strutturali, senza finiture (5.4.2.1.2), conta le nicchie e conta per '
-      + 'intero la rientranza dell\'ingresso profonda più di 100 mm (5.4.2.1.3); il software usa larghezza × profondità interne: nicchie e '
+      + 'intero la rientranza dell’ingresso profonda più di 100 mm (5.4.2.1.3); il software usa larghezza × profondità interne: nicchie e '
       + 'rientranze vanno aggiunte a mano',
   },
   {
@@ -143,21 +143,21 @@ export const VOCI_VANO: readonly VoceVano[] = [
     costanti: ['personsTable', 'areaPerPersonOver20', 'personMass'],
   },
   {
-    id: 'distanze.parete.entrata', gruppo: 'distanze', titolo: 'Parete del vano di fronte all\'entrata della cabina',
+    id: 'distanze.parete.entrata', gruppo: 'distanze', titolo: 'Parete del vano di fronte all’entrata della cabina',
     valore: 'distanza orizzontale dalla soglia o dal telaio della porta di cabina ≤ 150 mm (qui: profondità della porta di piano + gioco tra le soglie)',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.3.1', fonte: letto(T20, 'p. 33'), stato: 'confermato',
     costanti: ['wallFacingEntranceMax'], verifiche: ['v_wall'],
     nota: 'le deroghe della norma (fino a 0,20 m per un tratto alto non più di 0,50 m o con porte verticali di ascensori per merci; nessun '
       + 'limite con la porta di cabina bloccata meccanicamente) non sono usate: la verifica è più severa. Il software misura fino alla soglia; '
       + 'la figura 3 della norma porta il limite anche al telaio e al bordo di chiusura delle ante di cabina: con la porta scelta lo verifica '
-      + 'l\'ingegnere sui dati del fornitore.',
+      + 'l’ingegnere sui dati del fornitore.',
   },
   {
     id: 'distanze.soglie', gruppo: 'distanze', titolo: 'Gioco tra soglia di cabina e soglia di piano',
     valore: 'distanza orizzontale ≤ 35 mm',
     riferimento: 'UNI EN 81-20:2020, 5.3.4.1 (figura 3); 11.2.2 nella UNI EN 81-1 (1999, 2008)', fonte: letto(T20, 'p. 50'), stato: 'confermato',
     costanti: ['sillGapMax'], verifiche: ['v_sill'],
-    nota: 'Non calcolato: tra il bordo d\'attacco delle ante di cabina e le porte di piano al massimo 0,12 m (5.3.4.2; 11.2.3 nella UNI EN 81-1:2008), '
+    nota: 'Non calcolato: tra il bordo d’attacco delle ante di cabina e le porte di piano al massimo 0,12 m (5.3.4.2; 11.2.3 nella UNI EN 81-1:2008), '
       + 'dato del fornitore delle porte.',
   },
   {
@@ -184,12 +184,12 @@ export const VOCI_VANO: readonly VoceVano[] = [
   {
     id: 'accessibilita.esistenti', gruppo: 'accessibilita', titolo: 'Adeguamento di edifici esistenti: cabina e porta minime',
     valore: 'cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (fuori dal vano: da verificare in sito); '
-      + 'pulsanti più alti delle bottoniere tra 1100 e 1400 mm dal pavimento; solo se l\'edificio esistente non consente una cabina più grande: '
+      + 'pulsanti più alti delle bottoniere tra 1100 e 1400 mm dal pavimento; solo se l’edificio esistente non consente una cabina più grande: '
       + 'una cabina sotto le misure del caso b) (larga 950 mm, profonda 1300 mm, porta di 800 mm) chiede la motivazione scritta nel progetto '
       + '(«Attenzione» se manca)',
     riferimento: 'DM 236/1989, 8.1.12 c)', fonte: DM, stato: 'confermato',
     costanti: ['dm236Existing', 'dm236Residential', 'callTopRange'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side', 'v_acc_c', 'v_call'],
-    nota: 'Per un ascensore nuovo in un edificio esistente il caso è a) o b) secondo la destinazione; il c) è l\'eccezione, scelta dal progettista.',
+    nota: 'Per un ascensore nuovo in un edificio esistente il caso è a) o b) secondo la destinazione; il c) è l’eccezione, scelta dal progettista.',
   },
   ...VOCI_INGOMBRI,
   {
@@ -202,7 +202,7 @@ export const VOCI_VANO: readonly VoceVano[] = [
     id: 'modello.quote', gruppo: 'modello_vano', titolo: 'Quote della pianta fissate a mano',
     valore: 'ogni quota della pianta (cabina, porte, operatore della porta di cabina, guide, contrappeso) si può fissare a mano al posto di '
       + 'quella proposta; la cabina resta fuori dalle zone di porte, guide e contrappeso, le guide del contrappeso nel loro spazio (laterale: '
-      + 'fuori dalle zone delle porte che ha di fronte più il gioco d\'estremità; arcata a zaino: tra i piedi delle guide di cabina meno il gioco '
+      + 'fuori dalle zone delle porte che ha di fronte più il gioco d’estremità; arcata a zaino: tra i piedi delle guide di cabina meno il gioco '
       + 'delle staffe) e la luce di ogni porta dentro la cabina; altrimenti «Non conforme». Anche gli ammortizzatori si possono '
       + 'spostare: quelli di cabina restano con il piatto sotto la piattaforma e fuori dalla pianta dello spazio di rifugio in fossa '
       + '(UNI EN 81-20, 5.2.5.8.1), quello del contrappeso dentro la lunghezza del contrappeso (la stessa verifica vale per quelli messi dal '

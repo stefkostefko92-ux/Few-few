@@ -82,7 +82,7 @@ test('calcolo da un progetto del vano: pianta in scala, verifiche in pianta, voc
   const heads = (doc: ReportDoc): string[] => doc.blocks.flatMap((b) => (b.t === 'h2' ? [b.text.replace(/^\d+\. /, '')] : []));
   const same = buildReport({ ...base, design: design({ ...defaultInputs(1600, 1750), Q }) });
   const h = heads(same);
-  assert.equal(h[h.indexOf("Dati dell'impianto") + 1], 'Vano e cabina');
+  assert.equal(h[h.indexOf("Dati dell’impianto") + 1], 'Vano e cabina');
   assert.deepEqual(heads(buildReport(base)).filter((x) => x === 'Vano e cabina'), []);
   const plan = same.blocks.find((b) => b.t === 'plan');
   assert.ok(plan && plan.t === 'plan' && plan.shapes.length > 100 && /^Scala 1:(10|20|25|50) /.test(plan.scale), 'pianta in scala');
@@ -118,7 +118,7 @@ test('carta intestata, argano riconosciuto dal catalogo, argano consigliato fra 
   assert.equal(doc.drawing?.images.logo?.data, logo.data);
   const machine = doc.blocks.find((b) => b.t === 'kv' && b.rows[0]?.[0] === 'Costruttore e modello');
   assert.ok(machine?.t === 'kv' && machine.rows[0]?.[1].startsWith(`${first.brand} ${first.model} (preso dal catalogo nel calcolatore`));
-  assert.ok(texts(doc).some((x) => x.startsWith('Dal catalogo del costruttore: rapporto di riduzione')), 'what is the maker\'s, what the sizing\'s');
+  assert.ok(texts(doc).some((x) => x.startsWith('Dal catalogo del costruttore: rapporto di riduzione')), 'what is the maker’s, what the sizing’s');
   assert.ok(!texts(doc).some((x) => x.includes('non su un catalogo')), 'no note of a grid proposal for a catalogue machine');
   // the same values without the name taken: recognised by its values
   const { n_model: _taken, ...unnamed } = mirrorRopes({ ...PRESETS.A, ...first.values });

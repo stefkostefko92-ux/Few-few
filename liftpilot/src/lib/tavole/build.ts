@@ -181,7 +181,7 @@ export function buildTavole(x: TavoleInput): TavoleResult {
   });
   const ds = dataSheet(x, a, pages);
   const out: Page[] = [{ w: A4.w, h: A4.h, shapes: [...frame(), ...dataSheetShapes(ds.sheet)] }];
-  const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL\'IMPIANTO', scale: null }], hits: Hit[][] = [[]];
+  const sheets: TavoleResult['sheets'] = [{ title: 'DATI DELL’IMPIANTO', scale: null }], hits: Hit[][] = [[]];
   list.forEach((s, i) => {
     const sub = s.subtitle !== undefined, area = drawingArea(sub);
     const d = s.k === 'plan' ? planSheet(L, s, area) : s.k === 'section' ? sectionSheet(L, s, area)
@@ -191,7 +191,7 @@ export function buildTavole(x: TavoleInput): TavoleResult {
     hits.push(d.hits);
   });
   const doc: DrawingDoc = {
-    meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Progetto dell\'ascensore: dati, piante e sezioni del vano, locale macchina', author: x.company.name },
+    meta: { title: `Tavole ${x.set.number} - ${x.project.name}`, subject: 'Progetto dell’ascensore: dati, piante e sezioni del vano, locale macchina', author: x.company.name },
     palette: PALETTE, patterns: { concrete: concreteTile() }, cond: COND, images: { ...(x.company.logo ? { logo: x.company.logo } : {}), ...(x.clientLogo ? { client: x.clientLogo } : {}) }, pages: out,
   };
   return { doc, warnings: ds.warnings, sheets, hits };

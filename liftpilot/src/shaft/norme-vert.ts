@@ -147,7 +147,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
   {
     id: 'ammortizzatori.corsa', gruppo: 'sezione', titolo: 'Ammortizzatori ad accumulo di energia lineari (molle)',
     valore: 'ammessi fino a 1 m/s; corsa ≥ 0,135·v² m e comunque ≥ 65 mm; extracorsa della cabina e del contrappeso ≥ 0 (nessun minimo nella norma)',
-    riferimento: 'UNI EN 81-20:2020, 5.8.1.5 (fino a 1 m/s) e 5.8.2.1.1.1 (corsa); nessuna extracorsa minima in metri: l\'interruttore di extracorsa '
+    riferimento: 'UNI EN 81-20:2020, 5.8.1.5 (fino a 1 m/s) e 5.8.2.1.1.1 (corsa); nessuna extracorsa minima in metri: l’interruttore di extracorsa '
       + 'interviene prima che la cabina o il contrappeso tocchino gli ammortizzatori (5.12.2.1)', fonte: letto(T20, 'pp. 98, 131'), stato: 'confermato',
     verifiche: ['b_type', 'b_car', 'b_cw', 'b_runby'],
   },
@@ -155,7 +155,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
     id: 'ammortizzatori.poliuretano', gruppo: 'sezione', titolo: 'Ammortizzatori ad accumulo di energia non lineari (tamponi in poliuretano)',
     valore: 'ammessi fino a 1 m/s come le molle; nessuna corsa minima da formula: il campo di masse del certificato di esame di tipo per la velocità '
       + 'deve comprendere, per ogni tampone, la cabina vuota e a pieno carico (o il contrappeso); «completamente compresso» vuol dire compresso del '
-      + '90 % dell\'altezza, quindi la corsa è 0,9·H negli spazi in fossa e in testata; tampone tipico alti 80 mm (P+S Diepocell D, Ø da 80 a 220 mm; '
+      + '90 % dell’altezza, quindi la corsa è 0,9·H negli spazi in fossa e in testata; tampone tipico alti 80 mm (P+S Diepocell D, Ø da 80 a 220 mm; '
       + 'ACLA AUTAN XL)',
     riferimento: 'UNI EN 81-20:2020, 5.8.1.5, 5.8.1.7, 5.8.2.1.2.1 e 5.8.2.1.2.2 (compresso al 90 %); UNI EN 81-50:2020, 5.5.4 (esame di tipo)',
     fonte: `${letto(T20, 'pp. 98–99')}; ${letto(T50, 'p. 24')}; il tampone tipico dai cataloghi P+S Diepocell (wwlift.de) e ACLA AUTAN XL `
@@ -178,7 +178,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
     id: 'locale.macchina', gruppo: 'locale', titolo: 'Locale del macchinario',
     valore: 'altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga '
       + '≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno '
-      + '500 × 600 mm (il software la cerca accanto all\'argano, sul lato più libero, fino a muri e quadro); porta di accesso ≥ 600 × 2000 mm',
+      + '500 × 600 mm (il software la cerca accanto all’argano, sul lato più libero, fino a muri e quadro); porta di accesso ≥ 600 × 2000 mm',
     riferimento: 'UNI EN 81-20:2020, 5.2.6.3.2.1 (2,10 m e superfici libere), 5.2.6.3.2.2 (1,80 m sui percorsi) e 5.2.3.2 a) (porta)',
     fonte: `${letto(T20, 'pp. 29, 43')}; le superfici libere anche in UNI EN 81-1:1999, 6.3.2.1 (edizione 2008: 6.3.3.1)`,
     stato: 'confermato',
@@ -189,67 +189,67 @@ export const VOCI_VERT: readonly VoceVano[] = [
   {
     id: 'carichi.fossa', gruppo: 'carichi', titolo: 'Carichi sul pavimento della fossa',
     valore: 'sotto ogni ammortizzatore 4 volte il carico statico: 4·g·(P+Q) per la cabina, 4·g·M_cw per il contrappeso, divisi tra gli ammortizzatori; '
-      + 'sotto ogni guida di cabina la massa della guida più la reazione all\'intervento del paracadute k1·g·(P+Q)/2 (k1 = 2 progressivo, 3 istantaneo a rulli, '
+      + 'sotto ogni guida di cabina la massa della guida più la reazione all’intervento del paracadute k1·g·(P+Q)/2 (k1 = 2 progressivo, 3 istantaneo a rulli, '
       + '5 istantaneo); sotto ogni guida del contrappeso la massa della guida',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.4–5.2.1.8.6, 5.7.2.3.5 e Prospetto 14 (k1)', fonte: letto(T20, 'pp. 27, 94–96'), stato: 'confermato',
     nota: 'non calcolato: con spazi accessibili sotto il vano (5.2.5.4) il contrappeso ha il paracadute, sotto le sue guide va anche '
       + 'k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m². In P il software conta anche il cavo flessibile (metà corsa + 3 m, '
-      + 'come sull\'asse della macchina), come vuole la 5.2.1.8.5; la compensazione, se c\'è, la aggiunge l\'ingegnere',
+      + 'come sull’asse della macchina), come vuole la 5.2.1.8.5; la compensazione, se c’è, la aggiunge l’ingegnere',
   },
   {
     id: 'guide.spinte', gruppo: 'carichi', titolo: 'Spinte sulle guide di cabina',
     valore: 'portata spostata di 1/8 della cabina dal centro, più lo scostamento della cabina dalle guide (arcata a zaino); intervento del paracadute: '
       + 'Fx = k1·g·(Q·xQ + P·xP)/(n·h) sulle facce delle lame, Fy = k1·g·(Q·yQ + P·yP)/((n/2)·h) sulle punte; marcia: k2 = 1,2; '
-      + 'n = 2 guide, h = distanza tra i pattini, presa pari all\'ingombro verticale dell\'arcata; si riporta il caso più gravoso',
+      + 'n = 2 guide, h = distanza tra i pattini, presa pari all’ingombro verticale dell’arcata; si riporta il caso più gravoso',
     riferimento: 'UNI EN 81-50:2020, appendice C (informativa), C.2.1.1 e C.2.2.1; UNI EN 81-20:2020, 5.7.2.3.4 (portata su 3/4 della superficie: '
       + '1/8) e Prospetto 14 (k1; k2 = 1,2)', fonte: `${letto(T50, 'pp. 77–79')}; ${letto(T20, 'pp. 94–96')}`, stato: 'confermato',
-    nota: 'h, la distanza tra i pattini, è una stima del software (l\'ingombro verticale dell\'arcata)',
+    nota: 'h, la distanza tra i pattini, è una stima del software (l’ingombro verticale dell’arcata)',
   },
   {
     id: 'carichi.macchina', gruppo: 'carichi', titolo: 'Carico della macchina sulla soletta',
-    valore: 'carico statico sull\'asse (cabina, portata, contrappeso, funi, cavi; in taglia 2:1 la metà di cabina, portata e contrappeso) × 1,5 come '
-      + 'coefficiente dinamico, modificabile nei dati dell\'impianto; sulla soletta anche la massa di macchina e telaio',
+    valore: 'carico statico sull’asse (cabina, portata, contrappeso, funi, cavi; in taglia 2:1 la metà di cabina, portata e contrappeso) × 1,5 come '
+      + 'coefficiente dinamico, modificabile nei dati dell’impianto; sulla soletta anche la massa di macchina e telaio',
     riferimento: '—', fonte: 'prassi di progetto: la EN 81 non fissa un coefficiente dinamico per gli appoggi della macchina (in altre prassi 2,0)', stato: 'prassi',
   },
   {
     id: 'carichi.cavi', gruppo: 'carichi', titolo: 'Massa dei cavi flessibili',
-    valore: '0,5 kg/m per metà della corsa più 3 m, se non data nei dati dell\'impianto (cavo piatto 24G0,75)',
+    valore: '0,5 kg/m per metà della corsa più 3 m, se non data nei dati dell’impianto (cavo piatto 24G0,75)',
     riferimento: '—', fonte: 'schede dei costruttori di cavi piatti (0,48–0,57 kg/m)', stato: 'stima',
   },
   {
     id: 'illuminazione', gruppo: 'locale', titolo: 'Illuminazione del vano e del locale del macchinario',
     valore: 'vano: luce fissa, almeno 50 lux a un metro dal tetto di cabina e dal fondo della fossa, 20 lux nel resto; locale del macchinario: '
-      + 'almeno 200 lux al pavimento dove si lavora e 50 lux sui percorsi; 50 lux anche sull\'accesso al macchinario',
+      + 'almeno 200 lux al pavimento dove si lavora e 50 lux sui percorsi; 50 lux anche sull’accesso al macchinario',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.4.1 a)–c), 5.2.1.4.2 e 5.2.2.2', fonte: letto(T20, 'p. 25'), stato: 'confermato',
   },
   {
     id: 'locale.temperatura', gruppo: 'locale', titolo: 'Temperatura dei locali del macchinario e degli armadi',
-    valore: 'temperatura ambiente mantenuta tra +5 °C e +40 °C: ipotesi della norma, da garantire nell\'edificio',
+    valore: 'temperatura ambiente mantenuta tra +5 °C e +40 °C: ipotesi della norma, da garantire nell’edificio',
     riferimento: 'UNI EN 81-20:2020, 0.4.16 (ipotesi della norma, vale anche per il vano)', fonte: letto(T20, 'p. 14'), stato: 'confermato',
   },
   {
-    id: 'distanze.testata', gruppo: 'distanze', titolo: 'Pareti all\'ultimo piano e in testata diverse dal piano principale',
-    valore: 'negli edifici esistenti le pareti del vano all\'ultima fermata e in testata possono stare altrove che al piano principale: cabina, '
+    id: 'distanze.testata', gruppo: 'distanze', titolo: 'Pareti all’ultimo piano e in testata diverse dal piano principale',
+    valore: 'negli edifici esistenti le pareti del vano all’ultima fermata e in testata possono stare altrove che al piano principale: cabina, '
       + `guide e contrappeso restano a piombo; la cabina con soglie e operatori delle porte e il contrappeso passano ad almeno ${KV_VERT.headRun} mm `
-      + 'dalle pareti spostate (meno: «Attenzione»; dentro la parete: «Non conforme»); le porte di piano dell\'ultima fermata restano in linea con '
+      + 'dalle pareti spostate (meno: «Attenzione»; dentro la parete: «Non conforme»); le porte di piano dell’ultima fermata restano in linea con '
       + 'la cabina e la parete non entra nel loro spessore, i piedi delle guide e la staffa a ponte non entrano nelle pareti; le staffe arrivano '
-      + 'alla parete dove sta (le staffe Panev si verificano anche lì); la distanza dalla parete di fronte all\'entrata (voce '
+      + 'alla parete dove sta (le staffe Panev si verificano anche lì); la distanza dalla parete di fronte all’entrata (voce '
       + 'distanze.parete.entrata) vale anche in testata',
-    riferimento: 'UNI EN 81-20:2020, 5.2.5.3.1 (parete di fronte all\'entrata); il resto scelta del software',
-    fonte: 'scelta del software: il margine di marcia va confermato con l\'installatore', stato: 'scelta', verifiche: ['v_head'],
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.3.1 (parete di fronte all’entrata); il resto scelta del software',
+    fonte: 'scelta del software: il margine di marcia va confermato con l’installatore', stato: 'scelta', verifiche: ['v_head'],
   },
   {
     id: 'guide.staffe', gruppo: 'carichi', titolo: 'Numero e posizione delle staffe delle guide',
-    valore: `una staffa ogni ${KV_VERT.bracketPitch} mm di guida, più una all'inizio e una alla fine: per guida ⌊L / ${KV_VERT.bracketPitch}⌋ + 2 `
-      + `(L la lunghezza della guida); la prima a ${KV_VERT.bracketFirst} mm dal piede della guida, l'ultima a ${KV_VERT.bracketLast} mm dalla `
+    valore: `una staffa ogni ${KV_VERT.bracketPitch} mm di guida, più una all’inizio e una alla fine: per guida ⌊L / ${KV_VERT.bracketPitch}⌋ + 2 `
+      + `(L la lunghezza della guida); la prima a ${KV_VERT.bracketFirst} mm dal piede della guida, l’ultima a ${KV_VERT.bracketLast} mm dalla `
       + 'sua sommità, le altre a passo uguale tra le due; una staffa che cadrebbe sulla piastra di una giunzione (guide da 5 m dal fondo della '
-      + `fossa) si sposta appena oltre la piastra. Il passo inserito nei dati dell'impianto sostituisce i ${KV_VERT.bracketPitch} mm`,
+      + `fossa) si sposta appena oltre la piastra. Il passo inserito nei dati dell’impianto sostituisce i ${KV_VERT.bracketPitch} mm`,
     riferimento: 'regola di montaggio indicata dal committente', fonte: 'scelta del committente', stato: 'scelta',
     nota: 'il passo delle staffe va confermato con la verifica delle guide (UNI EN 81-50:2020, 5.10), che usa la distanza tra le staffe',
   },
   {
     id: 'foglio.stime', gruppo: 'carichi', titolo: 'Lunghezze stimate nel foglio dei dati',
-    valore: 'guide dal pavimento della fossa fino a 50 mm sotto la soletta del vano; fune del limitatore: due volte l\'altezza dalla fossa al limitatore, '
+    valore: 'guide dal pavimento della fossa fino a 50 mm sotto la soletta del vano; fune del limitatore: due volte l’altezza dalla fossa al limitatore, '
       + 'posto 800 mm sopra il pavimento del locale; funi di sospensione: taglia × (corsa + 2 × tratto oltre la corsa), più deviazione o rinvii',
     riferimento: '—', fonte: 'stima del software, da sostituire con le misure di cantiere', stato: 'stima',
   },

@@ -95,7 +95,7 @@ test('due accessi adiacenti: arcata a zaino con le lame affacciate lungo la pare
   assert.equal(L.frame.kind, 'cantilever');
   assert.equal(L.cwSide, 'left');
   const [a, b] = L.rails.filter((r) => r.kind === 'car');
-  assert.deepEqual([a.dir, b.dir], ['back', 'front'], 'lame una verso l\'altra');
+  assert.deepEqual([a.dir, b.dir], ['back', 'front'], 'lame una verso l’altra');
   assert.equal(a.x, b.x);
   assert.equal(L.frame.dbg, b.y - a.y);
   // the feet 20 mm inside the platform's depth, the car rail on the counterweight side of the car

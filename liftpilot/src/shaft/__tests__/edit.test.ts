@@ -173,7 +173,7 @@ test('chiavi delle quote: dati del vano, ingombri, quote a mano, altezze, locale
     assert.equal(valueOf(J, k), v, k);
   }
   assert.equal(withValue(I, 'v.floors', 1), null);
-  assert.equal(withValue(I, `f.${I.vertical.floors.length - 1}.rise`, 3000), null, 'l\'ultima fermata non ha interpiano');
+  assert.equal(withValue(I, `f.${I.vertical.floors.length - 1}.rise`, 3000), null, 'l’ultima fermata non ha interpiano');
   assert.equal(withValue(I, 'calc.h', 300), null, 'i dati del calcolo li applica chi li tiene');
   assert.equal(withValue(I, 'plan.nothing', 1), null);
   assert.equal(withValue({ ...I, room: null }, 'room.W', 3000), null);

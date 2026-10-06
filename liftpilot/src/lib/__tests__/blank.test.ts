@@ -109,7 +109,7 @@ test('sostituzione nel progetto: funi in opera e macchina esistente da inserire'
   assert.deepEqual(existingMissing({ ...PRESETS.C }), [], 'entered');
 });
 
-test('progetto nuovo compilato: lo stesso progetto dell\'esempio, salvabile', () => {
+test('progetto nuovo compilato: lo stesso progetto dell’esempio, salvabile', () => {
   const d = filledIn();
   assert.deepEqual(missingOf(d), []);
   assert.deepEqual(existingMissing(d.inputs.calc), []);
@@ -121,7 +121,7 @@ test('progetto nuovo compilato: lo stesso progetto dell\'esempio, salvabile', ()
   assert.deepEqual(dv.layout.checks, ex.layout.checks);
 });
 
-test('calcolatore della sostituzione: vuoto, prima l\'impianto poi la macchina nuova', () => {
+test('calcolatore della sostituzione: vuoto, prima l’impianto poi la macchina nuova', () => {
   const V = blankCalc(), missing = calcMissing(V, readInputs(V).bad);
   const firstNew = missing.findIndex((id) => id.startsWith('n_'));
   assert.ok(missing.includes('r') && missing.includes('Q') && missing.includes('o_D') && firstNew > 0);
@@ -149,7 +149,7 @@ test('rilievo del locale: ogni misura da inserire; bozze e loro ambiti', () => {
   for (const no of ['room:', 'room:../x', 'shaft', 'room:a b']) assert.equal(draftScopeSchema.safeParse(no).success, false, no);
 });
 
-test('sostituzione → progetto completo: quello che c\'è entra come inserito, il resto da inserire', () => {
+test('sostituzione → progetto completo: quello che c’è entra come inserito, il resto da inserire', () => {
   assert.deepEqual(carriedOver({ shaft: null, calc: null, survey: startSurvey(600) }), blankLift(), 'a survey alone is no project');
   const C = { ...PRESETS.C }, fromCalc = carriedOver({ shaft: null, calc: { values: C, collaudo: null }, survey: null });
   for (const k of ['v', 'Q', 'Qkg', 'r', 'layout'] as const) assert.equal(fromCalc.blank.includes(k), false, k);

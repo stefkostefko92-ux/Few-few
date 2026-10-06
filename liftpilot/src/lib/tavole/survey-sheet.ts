@@ -22,7 +22,7 @@ export function surveySheetShapes(d: SurveySheet): Shape[] {
   const rowH = Math.max(3.35, Math.min(4.6, (yTop - yCols - gaps - heads * 4.2) / rows)), size = Math.min(2.3, rowH * 0.6);
   const head = (text: string): Cell[] => [{ text, size: 3 }];
   const w3 = [51, 12, xM - xL - 63], half = (xM - xL - 52) / 2;
-  let t = table(xL, yTop, w3, rowH, [head("CARATTERISTICHE DELL'IMPIANTO"), ...rows3(d.base)], size);
+  let t = table(xL, yTop, w3, rowH, [head("CARATTERISTICHE DELL’IMPIANTO"), ...rows3(d.base)], size);
   out.push(...t.shapes);
   t = table(xL, t.bottom - 1.6, [40, 12, half, half], rowH, [head('ARGANO ESISTENTE E NUOVO'),
     [{ text: '' }, { text: '' }, { text: 'ESISTENTE', align: 'c', bold: true }, { text: 'NUOVO', align: 'c', bold: true }],

@@ -33,7 +33,7 @@ test('calcolo: letto e riprodotto, oppure no', () => {
   assert.equal(readCalc({ inputs: { nonsense: true }, sha256: row.sha256 }), null, 'valori illeggibili');
 });
 
-test('documenti: calcolo, progetto del vano e progetto dell\'impianto tutti riprodotti', () => {
+test('documenti: calcolo, progetto del vano e progetto dell’impianto tutti riprodotti', () => {
   const rows = liftRows(), rec = calcRecord(rows);
   assert.ok(rec);
   assert.equal(rec.ok, true);

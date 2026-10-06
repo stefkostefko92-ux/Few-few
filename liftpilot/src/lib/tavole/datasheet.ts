@@ -48,7 +48,7 @@ export function dataSheetShapes(d: DataSheet): Shape[] {
   const w3 = [51, 12, xM - xL - 63];
   let t = table(xL, yTop, w3, 3.35, [[{ text: 'CARATTERISTICHE DI BASE', size: 3 }], ...rows3(d.base)], 2.05);
   out.push(...t.shapes);
-  t = table(xL, t.bottom - 1.6, w3, 3.35, [[{ text: "SPECIFICHE DELL'IMPIANTO", size: 3 }], ...rows3(d.specs)], 2.05);
+  t = table(xL, t.bottom - 1.6, w3, 3.35, [[{ text: "SPECIFICHE DELL’IMPIANTO", size: 3 }], ...rows3(d.specs)], 2.05);
   out.push(...t.shapes);
   const loadRows: Cell[][] = d.loads.map(([l, v, u]) => [{ text: l, size: 2.5 }, { text: v, size: 2.5 }, { text: u, align: 'c', size: 2.5 }]);
   t = table(xL, t.bottom - 1.6, [52, 26, xM - xL - 78], 4.15, [[{ text: 'ANALISI DEI CARICHI', size: 3 }], ...loadRows], 2.5);

@@ -64,7 +64,7 @@ for (const [name, make] of CASES) {
     for (const s of plan.spots) {
       const [x, y] = s.c, base = s.kind === 'car' ? V.carBufferBase : V.cwBufferBase, h = s.kind === 'car' ? V.carBufferH : V.cwBufferH, z0 = S.pitFloor;
       const foot = base > 0 ? 150 : 90, n = intruders(fixed, worldBox(x - foot, y - foot, x + foot, y + foot, z0, z0 + base)) + intruders(fixed, worldBox(x - 90, y - 90, x + 90, y + 90, z0 + base, z0 + base + h));
-      assert.equal(n, 0, `${s.kind} a ${Math.round(x)}, ${Math.round(y)}: ${n} triangoli fissi nell'ammortizzatore`);
+      assert.equal(n, 0, `${s.kind} a ${Math.round(x)}, ${Math.round(y)}: ${n} triangoli fissi nell’ammortizzatore`);
       // and the buffer is there: its own triangles fill its column
       assert.ok(intruders(buffers.group, worldBox(x - 60, y - 60, x + 60, y + 60, z0 + base + 10, z0 + base + h - 10)) > 0, `${s.kind}: ammortizzatore mancante`);
     }

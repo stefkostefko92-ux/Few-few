@@ -33,9 +33,9 @@ export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number
     ['Locale macchina', `${fmt(R.W, 0)} × ${fmt(R.D, 0)} mm in pianta, altezza libera ${mm(R.H)}${R.ridge > R.H ? `, al colmo ${mm(R.ridge)}` : ''}; soletta sul vano ${mm(R.slab)}`],
     ['Porta e quadro di manovra', `porta ${fmt(R.doorW, 0)} × ${fmt(R.doorH, 0)} mm sulla parete ${WALL[R.doorWall]}; quadro ${fmt(R.panelW, 0)} × ${fmt(R.panelD, 0)} × ${fmt(R.panelH, 0)} mm sulla parete ${WALL[R.panelWall]}`],
     ['Vano sotto il locale', `${fmt(s.shaft.W, 0)} × ${fmt(s.shaft.D, 0)} mm, muri di ${mm(s.shaft.wall)}; il suo angolo interno a ${fmt(R.shaftX, 0)} e ${fmt(R.shaftY, 0)} mm dai muri del locale`],
-    ['Calate rilevate (dall\'angolo interno del vano)', `funi lato cabina a x ${fmt(s.car.x, 0)}, y ${fmt(s.car.y, 0)} mm; funi lato contrappeso a x ${fmt(s.cw.x, 0)}, y ${fmt(s.cw.y, 0)} mm: distanza ${mm(d.calata.measured)}`],
+    ['Calate rilevate (dall’angolo interno del vano)', `funi lato cabina a x ${fmt(s.car.x, 0)}, y ${fmt(s.car.y, 0)} mm; funi lato contrappeso a x ${fmt(s.cw.x, 0)}, y ${fmt(s.cw.y, 0)} mm: distanza ${mm(d.calata.measured)}`],
     ['Calate della nuova macchina (dal calcolo)', `${mm(d.calata.calc)} (scarto dal rilievo ${mm(Math.abs(d.calata.measured - d.calata.calc))})`],
-    ['Posizione dell\'argano', G && Math.abs(G.sheaveAt - (M.ropeIn + M.D / 2)) > 0.5
+    ['Posizione dell’argano', G && Math.abs(G.sheaveAt - (M.ropeIn + M.D / 2)) > 0.5
       ? 'puleggia di frizione centrata tra le calate esistenti (tiro diretto, come nel calcolo)'
       : 'lato cabina della puleggia di frizione sulla calata della cabina; motore verso il contrappeso'],
     ['Basamento', `${supportName(d).toLowerCase()}; asse della puleggia di frizione a ${mm(M.axis)} sul pavimento del locale`],

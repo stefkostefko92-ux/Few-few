@@ -99,11 +99,11 @@ test('dati salvati: marcatura, data e carichi validati; la relazione dice marcat
   assert.ok(collaudoSchema.safeParse({ norma: '10411-11', parti: ['machine'] }).success);
   const C = collaudoOf({ context: 'repl', Q: '530', P: '600', k: '0.5' }, collaudoSchema.parse(ok) as Collaudo);
   const rows = Object.fromEntries(collaudoRows(C, true, carichiOf({ Q: '530', P: '600', k: '0.5' })));
-  assert.ok(rows['Marcatura CE dell\'impianto']?.startsWith('non nota: messa in servizio il 03/11/1997'));
+  assert.ok(rows['Marcatura CE dell’impianto']?.startsWith('non nota: messa in servizio il 03/11/1997'));
   assert.equal(rows['Carichi documentati (portata · cabina · contrappeso)'], '480 · 600 · 840 kg');
   // 480 → 530 kg: +10,4 %, over the stricter row (5 %)
   assert.ok(rows['Variazione dei carichi']?.startsWith('portata +10,4 %'));
-  assert.ok(rows['Variazione dei carichi']?.includes('oltre i limiti, le verifiche del carico entrano nell\'esito'));
+  assert.ok(rows['Variazione dei carichi']?.includes('oltre i limiti, le verifiche del carico entrano nell’esito'));
   assert.ok(C.parti.includes('load'));
   // tested as new: no rows of a modification
   assert.equal(collaudoRows({ norma: 'en81', parti: [], marcatura: 'si' }, true).length, 2);

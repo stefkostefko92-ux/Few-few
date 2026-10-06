@@ -51,7 +51,7 @@ export function supportName(d: RoomDerived): string {
   if (s.kind === 'rinvio' && rf?.on === 'frame') return rf.maker ? `TELAIO CON RINVIO ${rf.maker.brand} ${rf.maker.code}` : 'TELAIO CON RINVIO (SU MISURA)';
   if (s.kind === 'frame') return `TELAIO ${profileOf(s)}`;
   if (s.kind === 'beams') return `PUTRELLE ${profileOf(s)}`;
-  return { shims: 'SPESSORI DI LIVELLAMENTO', plates: 'PIASTRE D\'ACCIAIO', plinth: 'PLINTO IN CALCESTRUZZO', rinvio: 'TELAIO CON RINVIO' }[s.kind] ?? s.kind;
+  return { shims: 'SPESSORI DI LIVELLAMENTO', plates: 'PIASTRE D’ACCIAIO', plinth: 'PLINTO IN CALCESTRUZZO', rinvio: 'TELAIO CON RINVIO' }[s.kind] ?? s.kind;
 }
 
 const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: string): (readonly [string, string, string, string])[] => {
@@ -91,7 +91,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
   const { ctx, res } = d.analysis, { I, N } = ctx, Pl = x.plant, C = x.collaudo, s = x.survey, R = s.room, M = d.M;
   const base: Row[] = [
     ['NORMATIVA DI RIFERIMENTO', '', C.norma === 'en81' ? 'UNI EN 81-20/50:2020' : NORMA_SIGLA[C.norma]],
-    ['INTERVENTO', '', 'SOSTITUZIONE DELL\'ARGANO'],
+    ['INTERVENTO', '', 'SOSTITUZIONE DELL’ARGANO'],
     ['PARTI SOSTITUITE O MODIFICATE', '', partiText(C).toUpperCase()],
     ['PORTATA', 'kg', fmt(I.Q, 0)],
     ['VELOCITÀ', 'm/s', fmt(I.v, 2)],
@@ -122,7 +122,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
   const loadRows: SurveySheet['loads'] = [
     ['FUNI', fmt(ropesKg, 0), 'kg'],
     ['CAVI FLESSIBILI', fmt(cablesKg, 0), 'kg'],
-    ['CARICO STATICO SUL BASAMENTO DELL\'ARGANO', fmt(ld.static, 0), 'kg'],
+    ['CARICO STATICO SUL BASAMENTO DELL’ARGANO', fmt(ld.static, 0), 'kg'],
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
     [!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', machine > 0 ? fmt(machine, 0) : 'NON INSERITA', 'kg'],
     ...(supportOf(R).kind === 'beams' ? [['PUTRELLE (DUE)', `${profileOf(supportOf(R))}, ${fmt(2 * PROFILES[profileOf(supportOf(R))].mass, 1)} kg/m`, ''] as const] : []),
@@ -145,7 +145,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
     {
       title: 'SOLETTA, APPOGGI E BASAMENTO', tag: 'NOTA 2',
       text: 'La soletta del locale e gli appoggi del basamento devono sopportare i carichi di questo foglio, che non agiscono insieme: la verifica '
-        + 'strutturale spetta al committente tramite il suo tecnico (NTC 2018, §8.4.1 per l\'intervento locale su un edificio esistente; §3.1.4 per i '
+        + 'strutturale spetta al committente tramite il suo tecnico (NTC 2018, §8.4.1 per l’intervento locale su un edificio esistente; §3.1.4 per i '
         + 'carichi del macchinario). Il basamento disegnato è la proposta del software, da adattare a quello fornito dal costruttore.',
     },
     {

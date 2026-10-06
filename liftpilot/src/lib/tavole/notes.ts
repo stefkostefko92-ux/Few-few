@@ -31,12 +31,12 @@ export function clientNotes(L: Layout, below = false): Note[] {
   const notes: Note[] = [
     {
       title: 'VANO DI CORSA', tag: 'NOTA 1',
-      text: "Le strutture dell'edificio (pareti del vano, soletta superiore, pavimento della fossa) devono sopportare i carichi di questo foglio, "
+      text: "Le strutture dell’edificio (pareti del vano, soletta superiore, pavimento della fossa) devono sopportare i carichi di questo foglio, "
         + 'che non agiscono insieme, e gli ancoraggi delle staffe delle guide: la verifica strutturale spetta al committente tramite il suo tecnico. '
-        + "Il vano serve solo all'ascensore: nessun cavo, tubazione o impianto estraneo al suo servizio. Ventilazione e aperture di aerazione "
-        + "del vano secondo le norme edilizie e di prevenzione incendi dell'edificio, da concordare prima dei lavori. Illuminazione fissa del vano: "
+        + "Il vano serve solo all’ascensore: nessun cavo, tubazione o impianto estraneo al suo servizio. Ventilazione e aperture di aerazione "
+        + "del vano secondo le norme edilizie e di prevenzione incendi dell’edificio, da concordare prima dei lavori. Illuminazione fissa del vano: "
         + `almeno ${K.wellLux} lux a un metro dal tetto di cabina e dal fondo della fossa, ${K.wellLuxElse} lux nel resto del vano. Fossa asciutta, `
-        + "protetta dalle infiltrazioni d'acqua, con accesso sicuro dalla porta di piano più bassa. Riferimenti: UNI EN 81-20:2020, punto 5.2; DPR 162/1999.",
+        + "protetta dalle infiltrazioni d’acqua, con accesso sicuro dalla porta di piano più bassa. Riferimenti: UNI EN 81-20:2020, punto 5.2; DPR 162/1999.",
     },
   ];
   if (room) notes.push({ ...roomNote(below), tag: 'NOTA 2' });
@@ -44,7 +44,7 @@ export function clientNotes(L: Layout, below = false): Note[] {
     title: 'ARMADIO DEL QUADRO (SE PRESENTE)', tag: room ? 'NOTA 3' : 'NOTA 2',
     text: "Il quadro di manovra fuori dal locale macchina va in un armadio chiuso a chiave, accessibile solo alle persone autorizzate, "
       + `in un luogo asciutto e pulito, protetto dalle intemperie, con temperatura interna tra +${K.tempMin} °C e +${K.tempMax} °C e uno spazio libero `
-      + "davanti all'armadio aperto. Riferimenti: UNI EN 81-20:2020, punto 5.2.",
+      + "davanti all’armadio aperto. Riferimenti: UNI EN 81-20:2020, punto 5.2.",
   });
   return notes;
 }
@@ -56,12 +56,12 @@ export function roomNote(below: boolean): Omit<Note, 'tag'> {
   return {
     title: below ? 'LOCALE DELLE PULEGGE DI RINVIO' : 'LOCALE DELLA MACCHINA E DEI RINVII',
     text: 'Accesso sicuro e agevole, riservato alle persone autorizzate; porta di almeno '
-      + `${K.doorMinW} × ${K.doorMinH} mm con serratura a chiave, apribile dall'interno senza chiave. Altezza libera di almeno ${K.roomH} mm `
+      + `${K.doorMinW} × ${K.doorMinH} mm con serratura a chiave, apribile dall’interno senza chiave. Altezza libera di almeno ${K.roomH} mm `
       + `nelle zone di lavoro; davanti al quadro una superficie libera profonda almeno ${K.panelFreeDepth} mm e larga almeno ${K.panelFreeWidth} mm. `
       + `Illuminazione fissa di almeno ${K.roomLux} lux al pavimento nelle zone di lavoro. Temperatura ambiente tra +${K.tempMin} °C e +${K.tempMax} °C, `
-      + "con ventilazione che protegga motore e apparecchiature da polvere e umidità; l'aria di locali estranei all'ascensore non va convogliata nel "
-      + `locale, che contiene solo l'impianto. Sopra ${below ? 'le pulegge' : 'la macchina'} un gancio o una trave di sollevamento con il carico ammesso `
-      + `indicato; ${below ? 'il locale della macchina, in basso, ha gli stessi requisiti; ' : ''}interruttore generale e comando della luce vicino all'accesso. `
+      + "con ventilazione che protegga motore e apparecchiature da polvere e umidità; l’aria di locali estranei all’ascensore non va convogliata nel "
+      + `locale, che contiene solo l’impianto. Sopra ${below ? 'le pulegge' : 'la macchina'} un gancio o una trave di sollevamento con il carico ammesso `
+      + `indicato; ${below ? 'il locale della macchina, in basso, ha gli stessi requisiti; ' : ''}interruttore generale e comando della luce vicino all’accesso. `
       + 'Riferimenti: UNI EN 81-20:2020, punti 5.2 e 5.10.',
   };
 }
@@ -70,7 +70,7 @@ export function roomNote(below: boolean): Omit<Note, 'tag'> {
 export const estimateNote = (P: string, tag: string): Note => ({
   title: 'DATI STIMATI DAL SOFTWARE', tag,
   text: `Il peso totale della cabina (${P} kg) non è stato inserito: è la stima del software (${P_ESTIMATE_RULE}). Contrappeso, aderenza, `
-    + 'funi e carichi P1-P9 di questo foglio ne dipendono: prima dei lavori va sostituito con il peso reale (libretto dell\'impianto, costruttore '
+    + 'funi e carichi P1-P9 di questo foglio ne dipendono: prima dei lavori va sostituito con il peso reale (libretto dell’impianto, costruttore '
     + 'della cabina o prova di bilanciamento) e il calcolo va ripetuto.',
 });
 
@@ -78,8 +78,8 @@ export const estimateNote = (P: string, tag: string): Note => ({
  *  progressive one (UNI EN 81-50:2020, 5.10). */
 export const safetyGearNote = (tag: string): Note => ({
   title: 'PARACADUTE DI CABINA', tag,
-  text: `Il tipo di paracadute della cabina non è indicato nei dati dell'impianto: il carico P5 e le forze sulle guide di questo foglio sono `
-    + `calcolati con il paracadute progressivo (coefficiente d'urto ${KV_VERT.k1Progressive}; a presa istantanea a rullo ${KV_VERT.k1Roller}, istantanea `
+  text: `Il tipo di paracadute della cabina non è indicato nei dati dell’impianto: il carico P5 e le forze sulle guide di questo foglio sono `
+    + `calcolati con il paracadute progressivo (coefficiente d’urto ${KV_VERT.k1Progressive}; a presa istantanea a rullo ${KV_VERT.k1Roller}, istantanea `
     + `${KV_VERT.k1Instant}: UNI EN 81-50:2020, 5.10). Con un paracadute diverso va indicato nei dati e le tavole vanno emesse di nuovo.`,
 });
 
@@ -114,7 +114,7 @@ export interface LegendItem {
 export function spaceLegend(L: Layout, fmt: Fmt): { free: LegendItem; top: LegendItem; pit: LegendItem } {
   const V = L.inputs.vertical, K = KV_VERT;
   return {
-    free: { sym: 'dot', text: `POSTO IN PIEDI SUL TETTO DI CABINA: AREA DA ${fmt(K.roofFreeArea, 2)} m² CON LATO MINORE OLTRE ${K.roofFreeSide} mm, SOPRA L'ALTEZZA DEL RIFUGIO` },
+    free: { sym: 'dot', text: `POSTO IN PIEDI SUL TETTO DI CABINA: AREA DA ${fmt(K.roofFreeArea, 2)} m² CON LATO MINORE OLTRE ${K.roofFreeSide} mm, SOPRA L’ALTEZZA DEL RIFUGIO` },
     top: { sym: 'tri', text: `SPAZIO DI RIFUGIO SUL TETTO DI CABINA, ${refuge(V.topRefuge)}` },
     pit: { sym: 'square', text: `SPAZIO DI RIFUGIO IN FOSSA, ${refuge(V.pitRefuge)}` },
   };

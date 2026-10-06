@@ -41,31 +41,31 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
   {
     id: 'guide.verifica', gruppo: 'carichi', titolo: 'Verifica delle guide di cabina',
     valore: 'tra due staffe (l = distanza massima tra le staffe della guida) con le spinte della voce guide.spinte, portata spostata di 1/8 '
-      + 'della cabina in un senso e poi nell\'altro: flessione M = 3·F·l/16, σm = σx + σy; intervento del paracadute: forza verticale '
-      + 'Fv = k1·g·(P+Q)/n più il peso della guida, carico di punta con il metodo omega (λ = l/i con il raggio d\'inerzia minore √(I/A), '
+      + 'della cabina in un senso e poi nell’altro: flessione M = 3·F·l/16, σm = σx + σy; intervento del paracadute: forza verticale '
+      + 'Fv = k1·g·(P+Q)/n più il peso della guida, carico di punta con il metodo omega (λ = l/i con il raggio d’inerzia minore √(I/A), '
       + 'λ ≤ 250; acciaio Rm 370: ω = 0,0001292·λ^1,89 + 1 fino a λ 60, 0,00004627·λ^2,14 + 1 fino a 85, 0,00001711·λ^2,35 + 1,04 fino a 115, '
       + '0,00016887·λ^2 fino a 250), σ = σm + Fv/A e σc = σk + 0,9·σm; marcia: k2 = 1,2 e il peso della guida; carico al piano: cabina vuota e '
-      + 'Fs al centro della soglia di cabina, a ogni accesso, secondo l\'uso indicato nei dati dell\'impianto: persone 0,4·g·Q, merci accompagnate '
-      + '0,6·g·Q, con mezzi di carico pesanti fuori portata 0,85·g·Q (senza l\'uso: secondo la portata, 0,6·g·Q da 2500 kg); flessione della '
+      + 'Fs al centro della soglia di cabina, a ogni accesso, secondo l’uso indicato nei dati dell’impianto: persone 0,4·g·Q, merci accompagnate '
+      + '0,6·g·Q, con mezzi di carico pesanti fuori portata 0,85·g·Q (senza l’uso: secondo la portata, 0,6·g·Q da 2500 kg); flessione della '
       + 'suola σF = 1,85·Fx/c² (pattini a '
       + 'rotelle); frecce δx = 0,7·Fx·l³/(48·E·Iy) e δy = 0,7·Fy·l³/(48·E·Ix) ≤ 5 mm. Tensione ammissibile Rm/St con St = 2,25 in marcia e al '
-      + 'carico, 1,8 all\'intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164,4 e 205,6 N/mm²',
+      + 'carico, 1,8 all’intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164,4 e 205,6 N/mm²',
     riferimento: 'UNI EN 81-50:2020, 5.10.2–5.10.6; UNI EN 81-20:2020, 5.7.2.3.5, 5.7.2.3.6, 5.7.4.5 (Prospetto 15), 5.7.4.6 e Prospetto 14; '
-      + 'UNI EN 81-1:2008, G.2.5 (l\'uso non indicato)',
+      + 'UNI EN 81-1:2008, G.2.5 (l’uso non indicato)',
     fonte: `${letto('UNI EN 81-50:2020', 'pp. 35–39')}; ${letto('UNI EN 81-20:2020', 'pp. 94–97')}; Rm 370 è scelta del software (il valore più basso)`,
     stato: 'confermato', verifiche: ['gr_stress', 'gr_flange', 'gr_defl'],
-    nota: 'Confermati sul testo i coefficienti, le formule e i limiti, e il carico al piano per uso (UNI EN 81-20:2020, 5.7.2.3.6). Senza l\'uso '
-      + 'nei dati dell\'impianto vale la regola per portata della UNI EN 81-1:2008 (G.2.5), che per un ascensore per persone da 2500 kg in su è '
+    nota: 'Confermati sul testo i coefficienti, le formule e i limiti, e il carico al piano per uso (UNI EN 81-20:2020, 5.7.2.3.6). Senza l’uso '
+      + 'nei dati dell’impianto vale la regola per portata della UNI EN 81-1:2008 (G.2.5), che per un ascensore per persone da 2500 kg in su è '
       + 'dal lato della sicurezza. La formula di ω per Rm 370 è data '
       + 'da λ 20 a 250: sotto 20 il software usa ω di λ 20 (dal lato della sicurezza). Non contate: la spinta di scorrimento delle staffe (assestamento '
-      + 'dell\'edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le '
+      + 'dell’edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le '
       + 'guide del contrappeso. La flessione della suola è quella dei pattini a rotelle (5.10.5 ha una formula a parte per quelli a scorrimento; '
       + 'il tipo di pattino non è un dato del software).',
   },
   {
     id: 'guide.sezioni', gruppo: 'carichi', titolo: 'Sezioni delle guide di cabina',
-    valore: 'area, momenti d\'inerzia e moduli di resistenza minimi attorno all\'asse parallelo alla suola (x) e all\'asse di simmetria (y), '
-      + 'spessore c del collo tra lama e suola, per ogni profilo del software; raggi d\'inerzia calcolati come √(I/A)',
+    valore: 'area, momenti d’inerzia e moduli di resistenza minimi attorno all’asse parallelo alla suola (x) e all’asse di simmetria (y), '
+      + 'spessore c del collo tra lama e suola, per ogni profilo del software; raggi d’inerzia calcolati come √(I/A)',
     riferimento: 'ISO 7465:2007 (ora ISO 8100-33:2022); EN 10055:1995 per il T 70×70×8 laminato',
     fonte: 'tabella ISO 7465:2007 stampata da Savera (Standard Savera Guide, Rev 03/10; assi e c dalla Rev 08.26), anteprime ISO 7465:1997 e '
       + 'ISO 8100-33:2022 (correzione dei raggi del T127-1/B, stampati nel 2007 uguali ai moduli), EN 10055:1995, Tabella 1. La EN 10055 non ha '
@@ -74,8 +74,8 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
   },
   {
     id: 'paracadute.tipo', gruppo: 'carichi', titolo: 'Tipo di paracadute per la velocità nominale',
-    valore: 'istantaneo (anche a rulli imprigionati) fino a 0,63 m/s; oltre, progressivo (la UNI EN 81-20 non ha più l\'istantaneo con '
-      + 'effetto ammortizzato fino a 1 m/s); il tipo viene dai dati dell\'impianto (se manca: progressivo, con la nota sul foglio)',
+    valore: 'istantaneo (anche a rulli imprigionati) fino a 0,63 m/s; oltre, progressivo (la UNI EN 81-20 non ha più l’istantaneo con '
+      + 'effetto ammortizzato fino a 1 m/s); il tipo viene dai dati dell’impianto (se manca: progressivo, con la nota sul foglio)',
     riferimento: 'UNI EN 81-20:2020, 5.6.2.1.2.1; la regola precedente in UNI EN 81-1 (1999, 2008), 9.8.2.1',
     fonte: `${letto('UNI EN 81-20:2020', 'p. 81')}; ${letto('UNI EN 81-1:2008', 'p. 58')}`, stato: 'confermato', verifiche: ['sg_type'],
   },

@@ -82,7 +82,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const countText = (Object.keys(STATO) as Stato[]).filter((s) => counts[s]).map((s) => `${counts[s]} ${STATO[s]}`).join(' · ');
 
   B.push({ t: 'letterhead', logo: r.logo ? 'logo' : null, from: [r.company, ...(r.companyCity ? [r.companyCity] : [])], to: [] });
-  B.push({ t: 'h1', text: `Relazione di calcolo — ${rif ? "rifacimento dell'impianto con l'arcata esistente" : repl ? "sostituzione dell'argano" : "argano per impianto nuovo"}` });
+  B.push({ t: 'h1', text: `Relazione di calcolo — ${rif ? "rifacimento dell’impianto con l’arcata esistente" : repl ? "sostituzione dell’argano" : "argano per impianto nuovo"}` });
   B.push({ t: 'sub', text: place ? `${pr.name} · ${place}` : pr.name });
   B.push({ t: 'box', text: `BOZZA DA VERIFICARE E FIRMARE. Documento generato dal software LiftPilot: diventa relazione di calcolo quando il tecnico incaricato lo verifica e lo firma, e la responsabilità è sua. Il segno ⚠ indica ciò che il tecnico deve controllare: stime, scelte del software e valori normativi ancora da verificare sul testo vigente (lista di verifica normativa del profilo ${PROFILO.id}; voci del registro: ${countText}).` });
   B.push({ t: 'kv', rows: [
@@ -95,11 +95,11 @@ export function buildReport(r: ReportInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Verifica dell'argano geared ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l'arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull'albero secondo il modello di calcolo del software.${collaudoText(C, repl)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
+  B.push({ t: 'p', text: `Verifica dell’argano geared ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${collaudoText(C, repl)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
   section('Riferimenti normativi');
   B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: PROFILO.documenti.map((d) => [d.sigla, d.ambito]), widths: [0.38, 0.62], align: ['l', 'l'] });
 
-  section("Dati dell'impianto");
+  section("Dati dell’impianto");
   const plant: [string, string][] = [
     [t('context'), t(rif ? 'ctx_rif' : repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl, carichiOf(r.values)), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
     [t('P'), `${fmt(I.P, 0)} kg${m.pEstimate ? ' — stima del software, da sostituire con la massa reale' : ''}`],
@@ -116,7 +116,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (m.pEstimate) {
     B.push({ t: 'box', text: `MASSA DELLA CABINA STIMATA. La massa della cabina P = ${fmt(I.P, 0)} kg non è stata inserita: è la stima del software (${P_ESTIMATE_RULE}). `
       + 'Contrappeso, aderenza, funi, freno e carichi dipendono da P: prima di usare questa relazione sostituire la stima con la massa reale (libretto '
-      + "dell'impianto, costruttore della cabina o prova di bilanciamento) e ripetere il calcolo." });
+      + "dell’impianto, costruttore della cabina o prova di bilanciamento) e ripetere il calcolo." });
   }
 
   const made = m.catalog ? { brand: m.catalog.brand, model: m.catalog.model } : null;
@@ -127,9 +127,9 @@ export function buildReport(r: ReportInput): ReportDoc {
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
     if (beams.length) {
       const ld = supportLoad(ctx, res.Mcw);
-      B.push({ t: 'p', style: 'note', text: `Travi sotto l'argano verificate con il carico di questo calcolo: argano ${fmt(ld.machine, 0)} kg, carico statico sull'asse `
-        + `${fmt(ld.static, 0)} kg (funi e cavi secondo il registro), coefficiente dinamico ${fmt(ld.dyn, 1)}. Le tavole usano i dati dell'impianto inseriti `
-        + "all'emissione (massa dell'argano con il telaio, cavi, coefficiente) e possono dare un altro esito: vale quello con i dati reali." });
+      B.push({ t: 'p', style: 'note', text: `Travi sotto l’argano verificate con il carico di questo calcolo: argano ${fmt(ld.machine, 0)} kg, carico statico sull’asse `
+        + `${fmt(ld.static, 0)} kg (funi e cavi secondo il registro), coefficiente dinamico ${fmt(ld.dyn, 1)}. Le tavole usano i dati dell’impianto inseriti `
+        + "all’emissione (massa dell’argano con il telaio, cavi, coefficiente) e possono dare un altro esito: vale quello con i dati reali." });
     }
     if (machine?.rinvio) B.push({ t: 'kv', rows: [rinvioRow(machine.rinvio, fmt)] });
   }
@@ -146,8 +146,8 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (m.catalog || known) {
     // a catalogue's machine: what is the maker's and what the software's sizing (the sheave, the ropes, the groove, the
     // motor and the brake), to be confirmed on its data sheet
-    B.push({ t: 'p', style: 'note', text: 'Dal catalogo del costruttore: rapporto di riduzione, carico statico ammesso sull\'albero e massa. Dal dimensionamento '
-      + 'del software: puleggia, funi, gola, potenza del motore e coppia minima del freno. Confermare tutti i valori con la scheda tecnica e l\'offerta '
+    B.push({ t: 'p', style: 'note', text: 'Dal catalogo del costruttore: rapporto di riduzione, carico statico ammesso sull’albero e massa. Dal dimensionamento '
+      + 'del software: puleggia, funi, gola, potenza del motore e coppia minima del freno. Confermare tutti i valori con la scheda tecnica e l’offerta '
       + 'del costruttore e ripetere la verifica con i dati di targa.' });
   } else if (m.machineProposed) {
     B.push({ t: 'p', style: 'note', text: 'Argano proposto dal dimensionamento del software su una griglia di calcolo, non su un catalogo: il modello reale va '
@@ -226,20 +226,20 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (m.catalog) {
     B.push({ t: 'p', text: `Argano a catalogo: ${m.catalog.brand} ${m.catalog.model}, rapporto ${m.catalog.ratio}, carico statico ammesso ${fmt(m.catalog.staticKg, 0)} kg `
       + `(fonte: ${m.catalog.src}). Il calcolo usa questo rapporto, il carico statico e la massa del catalogo; i dati vanno verificati sulla scheda del `
-      + 'costruttore prima dell\'ordine.' });
+      + 'costruttore prima dell’ordine.' });
     const S = shapeOf(m.catalog.brand, m.catalog.model);
     if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt, machine?.rinvio ?? null) });
   }
   if (m.catalog) {
     // the machine verified is the catalogue's: the sizing's grid would describe another machine
-    B.push({ t: 'p', style: 'note', text: 'Il dimensionamento su griglia del software non si riporta: l\'argano verificato è quello del catalogo indicato sopra.' });
+    B.push({ t: 'p', style: 'note', text: 'Il dimensionamento su griglia del software non si riporta: l’argano verificato è quello del catalogo indicato sopra.' });
   } else if (sizing.pick) {
     B.push({ t: 'kv', rows: X.proposalRows(sizing.pick, N, sizing.fixedD, !!sizing.keep) });
     B.push({ t: 'h3', text: X.altText(sizing) });
     B.push({ t: 'grid', head: X.proposalHead(), rows: sizing.options.map((o) => X.proposalCells(o, sizing.pick)), widths: [0.16, 0.14, 0.16, 0.1, 0.12, 0.16, 0.16] });
     if (r.design) {
-      B.push({ t: 'p', style: 'note', text: `Le alternative sono calcolate con la geometria della puleggia verificata (Ø ${fmt(N.D, 0)} mm): con un'altra puleggia `
-        + 'la calata, la distanza del rinvio e l\'angolo di avvolgimento del progetto cambiano, e la verifica va ripetuta nel progetto.' });
+      B.push({ t: 'p', style: 'note', text: `Le alternative sono calcolate con la geometria della puleggia verificata (Ø ${fmt(N.D, 0)} mm): con un’altra puleggia `
+        + 'la calata, la distanza del rinvio e l’angolo di avvolgimento del progetto cambiano, e la verifica va ripetuta nel progetto.' });
     }
   } else {
     B.push({ t: 'p', text: X.noneText(sizing) });
@@ -258,7 +258,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   section(t('c_verify'));
   const estimated = [
     ...(m.pEstimate ? [`Massa della cabina: è la stima del software (${P_ESTIMATE_RULE}); sostituirla con quella reale e ripetere il calcolo`] : []),
-    ...(I.layout === 'bottom' && m.bottom ? [`Schema delle funi con la macchina in basso (${BOTTOM_IT[m.bottom]}): rinvii, rami e passaggi ricostruiti dal software; rilevarli sull'impianto`] : []),
+    ...(I.layout === 'bottom' && m.bottom ? [`Schema delle funi con la macchina in basso (${BOTTOM_IT[m.bottom]}): rinvii, rami e passaggi ricostruiti dal software; rilevarli sull’impianto`] : []),
     ...(I.layout === 'bottom' && m.bottom === 'under' ? ['Spazio accessibile sotto il vano: paracadute del contrappeso, obbligatorio (la EN 81-20 non ammette più il pilastro pieno fino al terreno; UNI EN 81-20:2020, 5.2.5.4), e fondo della fossa per le reazioni degli ammortizzatori'] : []),
   ];
   B.push({ t: 'list', items: [...estimated, ...X.verifyList(I, N, res)].map((x) => `⚠ ${x}`) });
@@ -282,7 +282,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const short = pr.name.length > 70 ? `${pr.name.slice(0, 69)}…` : pr.name;
   return {
     meta: {
-      title: `Relazione di calcolo — ${pr.name}`, subject: "Verifica dell'argano geared", author: r.company,
+      title: `Relazione di calcolo — ${pr.name}`, subject: "Verifica dell’argano geared", author: r.company,
       header: `LiftPilot · Relazione di calcolo · ${short}`, footer: `Calcolo ${r.calc.id} · motore ${r.calc.engineVersion} · profilo ${r.calc.profileId}`,
       code: `SHA-256 ${r.calc.sha256}`, notice: t('rep_footer'),
     },

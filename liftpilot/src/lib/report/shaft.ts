@@ -104,7 +104,7 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra
     ['Fermate · corsa · velocità', `${V.floors.length} fermate · ${fmt(travel(V.floors) / 1000, 2)} m · ${fmt(V.v, 2)} m/s`],
     ['Fossa · testata', `${fmt(V.pit, 0)} mm · ${fmt(V.headroom, 0)} mm`],
     ['Accessibilità', S[`access_${I.access}` as const]],
-    ['Esito delle verifiche del vano', `${VERDICT[verdict]}${existing ? ` (${existing} ${existing === 1 ? 'verifica riguarda' : 'verifiche riguardano'} parti esistenti, fuori dall'esito)` : ''}`],
+    ['Esito delle verifiche del vano', `${VERDICT[verdict]}${existing ? ` (${existing} ${existing === 1 ? 'verifica riguarda' : 'verifiche riguardano'} parti esistenti, fuori dall’esito)` : ''}`],
     ['Motore del progetto', `LiftPilot vano ${d.engineVersion} · profilo normativo ${d.profileId}`],
     ['Impronta SHA-256 del progetto', d.sha256],
   ] });
@@ -133,7 +133,7 @@ export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra
   if (niches.length) {
     B.push({ t: 'h3', text: S.nc_title });
     B.push({ t: 'kv', rows: niches.map((n): [string, string] => [S[`nc_use_${n.use}` as const],
-      `parete ${S[`wall_${n.wall}` as const]}, a ${fmt(n.at, 0)} mm dall'angolo, larga ${fmt(n.width, 0)} mm, profonda ${fmt(n.depth, 0)} mm`]) });
+      `parete ${S[`wall_${n.wall}` as const]}, a ${fmt(n.at, 0)} mm dall’angolo, larga ${fmt(n.width, 0)} mm, profonda ${fmt(n.depth, 0)} mm`]) });
   }
   B.push({ t: 'p', text: S.limits, style: 'note' });
   return B;

@@ -102,7 +102,7 @@ export interface Voce {
 
 export const PROFILO = {
   id: 'IT-2026.1',
-  titolo: "Italia — sostituzione dell'argano su impianto esistente",
+  titolo: "Italia — sostituzione dell’argano su impianto esistente",
   documenti: [
     { sigla: 'Direttiva 2014/33/UE', ambito: 'requisiti essenziali di sicurezza (Allegato I)' },
     { sigla: 'DPR 162/1999 e s.m.i. (DPR 8/2015, DPR 23/2017)', ambito: 'sostituzione del macchinario come modifica costruttiva; verifica straordinaria (art. 14)' },
@@ -124,7 +124,7 @@ export const VOCI: readonly Voce[] = [
       + 'vuota nella posizione più alta e in quella più bassa)',
     riferimento: 'UNI EN 81-50:2020, 5.11.2.1 e 5.11.2.2.3', fonte: letto(T50, 'pp. 39–40'), stato: 'confermato',
     verifiche: ['tr_load', 'tr_dn', 'tr_up', 'tr_stall'],
-    nota: 'Con la cabina o il contrappeso bloccati la condizione serve quando è l\'aderenza a impedire il sollevamento: la UNI EN 81-20:2020 '
+    nota: 'Con la cabina o il contrappeso bloccati la condizione serve quando è l’aderenza a impedire il sollevamento: la UNI EN 81-20:2020 '
       + '(5.5.3 c)) ammette in alternativa un dispositivo elettrico di sicurezza (voce trazione.bloccata.dispositivo); la UNI EN 81-1:2008 '
       + '(9.3 c)) no.',
   },
@@ -175,7 +175,7 @@ export const VOCI: readonly Voce[] = [
     costanti: ['aeReducedStroke'], verifiche: ['tr_dn', 'tr_up'],
     nota: 'La UNI EN 81-50:2020 non dà un numero: con ammortizzatori a corsa ridotta la decelerazione è la minima che porta cabina e contrappeso '
       + 'alla velocità di progetto degli ammortizzatori, mai sotto 0,5 m/s². Il software tiene 0,8 m/s², il valore della UNI EN 81-1:2008: '
-      + 'l\'ingegnere lo sostituisce con quello calcolato dai dati degli ammortizzatori.',
+      + 'l’ingegnere lo sostituisce con quello calcolato dai dati degli ammortizzatori.',
   },
   {
     id: 'trazione.otto.casi', gruppo: 'trazione', titolo: 'Combinazioni della frenatura di emergenza', valore: 'cabina vuota e con portata × in discesa e in salita × in basso e in alto; conta la peggiore per verso',
@@ -188,10 +188,10 @@ export const VOCI: readonly Voce[] = [
     riferimento: 'UNI EN 81-50:2020, 5.11.2.2.2', fonte: letto(T50, 'p. 40'), stato: 'scelta',
     verifiche: ['tr_real'],
     nota: 'La norma vuole ogni massa in moto con la sua accelerazione e una decelerazione di calcolo mai sotto 0,5 m/s²; non dice con quanti '
-      + 'gruppi del freno. Se contarla come esito lo decide l\'ingegnere: nell\'esempio B del capitolo 7 l\'utilizzo passa da 1,005 a 4,17.',
+      + 'gruppi del freno. Se contarla come esito lo decide l’ingegnere: nell’esempio B del capitolo 7 l’utilizzo passa da 1,005 a 4,17.',
   },
   {
-    id: 'trazione.margine', gruppo: 'trazione', titolo: 'Soglia di attenzione sull\'utilizzo dell\'aderenza', valore: 'utilizzo > 0,97 → «Attenzione»',
+    id: 'trazione.margine', gruppo: 'trazione', titolo: 'Soglia di attenzione sull’utilizzo dell’aderenza', valore: 'utilizzo > 0,97 → «Attenzione»',
     riferimento: '—', fonte: 'scelta del software (margine per incertezza su masse e bilanciamento)', stato: 'scelta',
     costanti: ['tractionWarn'], verifiche: ['tr_load', 'tr_dn', 'tr_up', 'tr_real'],
   },
@@ -219,7 +219,7 @@ export const VOCI: readonly Voce[] = [
     costanti: ['nearLimit'], verifiche: ['s_shaft', 'd_mp'],
   },
   {
-    id: 'azionamento.potenza', gruppo: 'azionamento', titolo: 'Potenza statica del motore', valore: 'P_st = ΔF·v_f / (η_d·η_vano) ≤ P_n, con ΔF il maggiore tra cabina carica in salita dal basso e vuota in discesa dall\'alto',
+    id: 'azionamento.potenza', gruppo: 'azionamento', titolo: 'Potenza statica del motore', valore: 'P_st = ΔF·v_f / (η_d·η_vano) ≤ P_n, con ΔF il maggiore tra cabina carica in salita dal basso e vuota in discesa dall’alto',
     riferimento: '—', fonte: 'derivazione', stato: 'derivazione',
     verifiche: ['d_pst'],
   },
@@ -241,13 +241,13 @@ export const VOCI: readonly Voce[] = [
   ...VOCI_SOCCORSO,
   // ---------- shaft ----------
   {
-    id: 'albero.carico', gruppo: 'albero', titolo: 'Carico sull\'albero della puleggia', valore: 'risultante dei tiri con 1,25·Q al piano più basso, confrontata con il limite del costruttore',
+    id: 'albero.carico', gruppo: 'albero', titolo: 'Carico sull’albero della puleggia', valore: 'risultante dei tiri con 1,25·Q al piano più basso, confrontata con il limite del costruttore',
     riferimento: 'dato del costruttore; 1,25·Q come nella verifica di caricamento (UNI EN 81-50:2020, 5.11.2.2.1)',
     fonte: 'derivazione; la definizione del carico va confermata con il costruttore', stato: 'derivazione',
     costanti: ['loadTestFactor'], verifiche: ['s_shaft'],
   },
   {
-    id: 'albero.sollevamento', gruppo: 'albero', titolo: 'Sollevamento netto sugli ancoraggi (macchina in basso)', valore: 'carico verso l\'alto meno la massa della macchina: da verificare con il progettista strutturale',
+    id: 'albero.sollevamento', gruppo: 'albero', titolo: 'Sollevamento netto sugli ancoraggi (macchina in basso)', valore: 'carico verso l’alto meno la massa della macchina: da verificare con il progettista strutturale',
     riferimento: '—', fonte: 'derivazione', stato: 'derivazione',
     verifiche: ['s_uplift'],
   },
@@ -264,8 +264,8 @@ export const VOCI: readonly Voce[] = [
       + 'aderenza e coefficiente di sicurezza delle funi (14.1); D/d ≥ 40 (14.3); temporizzatore della UNI EN 81-20 (5.9.2.7), arresto prima '
       + 'che la cabina in salita tocchi la velocità di intervento del limitatore, ACOP e UCM esistenti che funzionano ancora, arresto vicino alla '
       + 'macchina, pulegge secondo la 5.5.7, interruzione se il freno non si apre (14.4 a)–g)); valutazione della sicurezza su tre piani (4); '
-      + 'con funi nuove, controllo degli attacchi d\'estremità (17.1); documenti dell\'appendice C (14) e manuali (25.5). UNI 10411-11:2024, punto 14: macchina come '
-      + 'l\'originale, altrimenti UNI EN 81-20 5.9.1–5.9.2 con le verifiche della norma di origine o della UNI EN 81-20 e la valutazione 4.3 '
+      + 'con funi nuove, controllo degli attacchi d’estremità (17.1); documenti dell’appendice C (14) e manuali (25.5). UNI 10411-11:2024, punto 14: macchina come '
+      + 'l’originale, altrimenti UNI EN 81-20 5.9.1–5.9.2 con le verifiche della norma di origine o della UNI EN 81-20 e la valutazione 4.3 '
       + '(14.1); UCM esistenti che funzionano ancora e, senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione se il '
       + 'freno non si apre (14.3); funi nuove e attacchi come gli originali, altrimenti verificati con la valutazione 4.3 (17)',
     riferimento: 'UNI 10411-1:2024, 4, 14.1–14.4, 17.1, 25.5, appendice C; UNI 10411-11:2024, 14.1–14.3, 17',
