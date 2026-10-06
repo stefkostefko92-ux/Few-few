@@ -1,8 +1,9 @@
-// bot/src/utils/honeypot.js
-// v52 — капан за спам ботове („honeypot“).
+// bot/src/utils/bait.js
+// v52 — канал-стръв за спам ботове (/bait). Вътрешно: таблица honeypot_configs
+// и пътища /bot/honeypot/* — създадени с миграция v52, имената им не се виждат.
 //
 // Компрометирани акаунти и спам ботове пускат една и съща измама във ВСЕКИ
-// канал, който виждат. Хората четат предупреждението в канала-капан и не пишат
+// канал, който виждат. Хората четат предупреждението в канала-стръв и не пишат
 // там. Значи който напише там, почти сигурно е бот → изваждаме го веднага:
 //   • softban — бан + веднага разбан: Discord трие съобщенията му от последния
 //     час във всички канали, а човекът може да се върне с покана (по подразбиране);
@@ -28,7 +29,7 @@ const cache = new Map();      // serverId → { config, expiresAt }
 const inflight = new Map();   // serverId → Promise<config>
 const handled = new Map();    // `${serverId}:${userId}` → до кога не го пипаме пак
 
-// Екипът не пада в капана (тест на модератор, грешен клик) — само логваме.
+// Екипът не захапва стръвта (тест на модератор, грешен клик) — само логваме.
 const STAFF_PERMS = [
   PermissionFlagsBits.Administrator, PermissionFlagsBits.ManageGuild, PermissionFlagsBits.ManageMessages,
   PermissionFlagsBits.ModerateMembers, PermissionFlagsBits.BanMembers,
@@ -52,7 +53,7 @@ function takeDmSlot(now = Date.now()) {
   return true;
 }
 
-export async function getHoneypot(serverId) {
+export async function getBait(serverId) {
   const c = cache.get(serverId);
   if (c && c.expiresAt > Date.now()) return c.config;
   if (inflight.has(serverId)) return inflight.get(serverId);
@@ -66,18 +67,18 @@ export async function getHoneypot(serverId) {
   return p;
 }
 
-export function invalidateHoneypot(serverId) { cache.delete(serverId); }
+export function invalidateBait(serverId) { cache.delete(serverId); }
 
-export const actionLabel = (action, lang) => t(`honeypot.action.${action}`, lang);
-export const permLabel = (action, lang) => t(action === "timeout" ? "honeypot.perm.timeout" : "honeypot.perm.ban", lang);
+export const actionLabel = (action, lang) => t(`bait.action.${action}`, lang);
+export const permLabel = (action, lang) => t(action === "timeout" ? "bait.perm.timeout" : "bait.perm.ban", lang);
 
-/** Предупреждението в канала-капан. */
+/** Предупреждението в канала-стръв. */
 export function warningMessage(config, lang) {
   const action = ["softban", "ban", "timeout"].includes(config.action) ? config.action : "softban";
   const embed = new EmbedBuilder()
     .setColor(WARNING)
-    .setTitle(t("honeypot.warning.title", lang))
-    .setDescription(`${t(`honeypot.warning.${action}`, lang)}\n\n${t("honeypot.warning.count", lang, { count: config.caughtCount || 0 })}`);
+    .setTitle(t("bait.warning.title", lang))
+    .setDescription(`${t(`bait.warning.${action}`, lang)}\n\n${t("bait.warning.count", lang, { count: config.caughtCount || 0 })}`);
   return { embeds: [embed], allowedMentions: { parse: [] } };
 }
 
@@ -102,12 +103,12 @@ async function sendLog(guild, config, lang, payload) {
 }
 
 /**
- * Обработва съобщение в сървър. Връща true, ако е било в канала-капан (тогава
+ * Обработва съобщение в сървър. Връща true, ако е било в канала-стръв (тогава
  * повикващият спира — без XP, sticky и т.н. за това съобщение).
  */
-export async function onHoneypotMessage(message, now = Date.now()) {
+export async function onBaitMessage(message, now = Date.now()) {
   if (!message.guildId || message.author?.bot || message.system || message.webhookId) return false;
-  const config = await getHoneypot(message.guildId);
+  const config = await getBait(message.guildId);
   if (!config?.enabled || !config.channelId || config.channelId !== message.channelId) return false;
 
   const key = `${message.guildId}:${message.author.id}`;
@@ -122,27 +123,27 @@ export async function onHoneypotMessage(message, now = Date.now()) {
   const user = message.author;
   const who = `<@${user.id}> (\`${user.tag || user.username}\`, ${user.id})`;
   const where = `<#${config.channelId}>`;
-  const reason = t("honeypot.reason", lang);
+  const reason = t("bait.reason", lang);
 
   await message.delete().catch(() => {});
 
   const exempt = exemptReason(message);
   if (exempt) {
-    await sendLog(guild, config, lang, { content: t("honeypot.log.exempt", lang, { user: who, channel: where }) });
+    await sendLog(guild, config, lang, { content: t("bait.log.exempt", lang, { user: who, channel: where }) });
     return true;
   }
 
   const me = guild.members?.me;
   const member = message.member || null;
   if (!canAct(member, me, action)) {
-    await sendLog(guild, config, lang, { content: t("honeypot.log.failed", lang, { user: who, channel: where, action: actionLabel(action, lang), perm: permLabel(action, lang) }) });
+    await sendLog(guild, config, lang, { content: t("bait.log.failed", lang, { user: who, channel: where, action: actionLabel(action, lang), perm: permLabel(action, lang) }) });
     return true;
   }
 
   // Личното съобщение — ПРЕДИ действието: след бан нямаме общ сървър и Discord
   // го отказва. Кратко чакане: бавен DM не бива да забавя изваждането.
   if (config.dmUser && takeDmSlot(now)) {
-    const dm = user.send({ content: t("honeypot.dm.body", lang, { server: guild.name, action: actionLabel(action, lang) }), allowedMentions: { parse: [] } }).catch(() => {});
+    const dm = user.send({ content: t("bait.dm.body", lang, { server: guild.name, action: actionLabel(action, lang) }), allowedMentions: { parse: [] } }).catch(() => {});
     await Promise.race([dm, new Promise((r) => setTimeout(r, 2000).unref?.())]);
   }
 
@@ -161,7 +162,7 @@ export async function onHoneypotMessage(message, now = Date.now()) {
   }
 
   if (outcome === "failed") {
-    await sendLog(guild, config, lang, { content: t("honeypot.log.failed", lang, { user: who, channel: where, action: actionLabel(action, lang), perm: permLabel(action, lang) }) });
+    await sendLog(guild, config, lang, { content: t("bait.log.failed", lang, { user: who, channel: where, action: actionLabel(action, lang), perm: permLabel(action, lang) }) });
     return true;
   }
 
@@ -174,16 +175,16 @@ export async function onHoneypotMessage(message, now = Date.now()) {
   const created = Math.floor((user.createdTimestamp || 0) / 1000);
   const embed = new EmbedBuilder()
     .setColor(DANGER)
-    .setTitle(t("honeypot.log.title", lang))
+    .setTitle(t("bait.log.title", lang))
     .addFields(
-      { name: t("honeypot.log.user", lang), value: who, inline: false },
-      { name: t("honeypot.log.account", lang), value: created ? `<t:${created}:R>` : "—", inline: true },
-      { name: t("honeypot.log.action", lang), value: actionLabel(action, lang), inline: true },
-      { name: t("honeypot.log.total", lang), value: String(caughtCount), inline: true },
+      { name: t("bait.log.user", lang), value: who, inline: false },
+      { name: t("bait.log.account", lang), value: created ? `<t:${created}:R>` : "—", inline: true },
+      { name: t("bait.log.action", lang), value: actionLabel(action, lang), inline: true },
+      { name: t("bait.log.total", lang), value: String(caughtCount), inline: true },
     );
   if (user.displayAvatarURL) embed.setThumbnail(user.displayAvatarURL());
   await sendLog(guild, config, lang, { embeds: [embed] });
-  if (outcome === "unbanFailed") await sendLog(guild, config, lang, { content: t("honeypot.log.unbanFailed", lang, { user: who }) });
+  if (outcome === "unbanFailed") await sendLog(guild, config, lang, { content: t("bait.log.unbanFailed", lang, { user: who }) });
 
   await refreshWarning(message.channel, config, lang);
   return true;
@@ -197,12 +198,12 @@ async function refreshWarning(channel, config, lang) {
 
 /**
  * Привежда предупреждението в съответствие с настройките: махане от стария
- * канал, публикуване в новия, ако липсва, махане при изключен капан.
- * Вика се след /honeypot и когато таблото смени настройките.
+ * канал, публикуване в новия, ако липсва, махане при изключена стръв.
+ * Вика се след /bait и когато таблото смени настройките.
  */
-export async function syncHoneypotWarning(client, serverId, previous = null) {
-  invalidateHoneypot(serverId);
-  const config = await getHoneypot(serverId);
+export async function syncBaitWarning(client, serverId, previous = null) {
+  invalidateBait(serverId);
+  const config = await getBait(serverId);
   if (!config) return { ok: false, reason: "BACKEND" };
   const guild = client.guilds?.cache?.get(serverId);
   if (!guild) return { ok: false, reason: "NO_GUILD" };
@@ -218,7 +219,7 @@ export async function syncHoneypotWarning(client, serverId, previous = null) {
   if (!config.enabled) {
     if (channel && config.warningMessageId) await channel.messages.delete(config.warningMessageId).catch(() => {});
     if (config.warningMessageId) await api.patch(`/bot/honeypot/${serverId}/warning`, { messageId: null }).catch(() => {});
-    invalidateHoneypot(serverId);
+    invalidateBait(serverId);
     return { ok: true };
   }
   if (!channel?.isTextBased?.()) return { ok: false, reason: "NO_CHANNEL" };
@@ -233,7 +234,7 @@ export async function syncHoneypotWarning(client, serverId, previous = null) {
     if (!sent) return { ok: false, reason: "CHANNEL_PERMS" };
     await api.patch(`/bot/honeypot/${serverId}/warning`, { messageId: sent.id, channelId: channel.id }).catch(() => {});
   }
-  invalidateHoneypot(serverId);
+  invalidateBait(serverId);
   return { ok: true, actionPermMissing: !me.permissions?.has?.(ACTION_PERM[config.action] || PermissionFlagsBits.BanMembers) };
 }
 

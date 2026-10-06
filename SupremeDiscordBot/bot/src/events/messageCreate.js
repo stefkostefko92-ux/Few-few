@@ -8,7 +8,7 @@ import * as Sentry from "@sentry/node";
 import api, { logTicketMessage } from "../utils/api.js";
 import { onMessageForXp, getGameSettings } from "../utils/game.js";
 import { onCounting } from "../utils/minigames.js";
-import { onHoneypotMessage } from "../utils/honeypot.js";
+import { onBaitMessage } from "../utils/bait.js";
 import {
   ticketChannelCache,
   CACHE_TTL,
@@ -24,7 +24,7 @@ export default {
     if (!message.guildId) return;
     // v52 — капан за спам ботове: съобщение в канала-капан не стига до нищо
     // друго (XP, counting, sticky…). Решава каналът, съдържанието не се чете.
-    if (await onHoneypotMessage(message).catch(() => false)) return;
+    if (await onBaitMessage(message).catch(() => false)) return;
     // v50 — Server Season: брои събитието за XP (не чете съдържание). Fire-and-forget.
     onMessageForXp(message).catch(() => {});
     // Етап 3 — Counting: съдържанието се чете САМО в обявения counting канал

@@ -1,4 +1,4 @@
-// bot/src/__tests__/honeypot.test.js
+// bot/src/__tests__/bait.test.js
 // v52 — капан за спам ботове: кой се хваща (само в канала-капан, не ботове),
 // кой не (собственик, екип), трите действия, личното съобщение ПРЕДИ действието,
 // един човек = едно действие при залп от съобщения, лог при липсващи права, и
@@ -18,8 +18,8 @@ vi.mock("../utils/api.js", () => ({
   getServer: async () => ({ language: "en" }),
 }));
 
-const hp = await import("../utils/honeypot.js");
-const honeypot = (await import("../commands/honeypot.js")).default;
+const hp = await import("../utils/bait.js");
+const bait = (await import("../commands/bait.js")).default;
 
 const SID = "222222222222222222";
 const TRAP = "444444444444444444";
@@ -70,22 +70,22 @@ describe("кой пада в капана", () => {
   it("съобщение извън капана → нищо (false, нищо не се трие)", async () => {
     const w = world();
     const m = w.message("100000000000000000");
-    expect(await hp.onHoneypotMessage(m)).toBe(false);
+    expect(await hp.onBaitMessage(m)).toBe(false);
     expect(m.delete).not.toHaveBeenCalled();
   });
 
   it("изключен капан → нищо", async () => {
     const w = world();
     apiGet.mockResolvedValue({ data: { enabled: false, channelId: TRAP } });
-    expect(await hp.onHoneypotMessage(w.message())).toBe(false);
+    expect(await hp.onBaitMessage(w.message())).toBe(false);
   });
 
   it("ботове и webhook-и не се пипат", async () => {
     const w = world();
     const botMsg = w.message(); botMsg.author = { ...w.user, bot: true };
     const hookMsg = w.message(); hookMsg.webhookId = "1";
-    expect(await hp.onHoneypotMessage(botMsg)).toBe(false);
-    expect(await hp.onHoneypotMessage(hookMsg)).toBe(false);
+    expect(await hp.onBaitMessage(botMsg)).toBe(false);
+    expect(await hp.onBaitMessage(hookMsg)).toBe(false);
     expect(botMsg.delete).not.toHaveBeenCalled();
   });
 
@@ -93,7 +93,7 @@ describe("кой пада в капана", () => {
     for (const opts of [{ owner: true }, { staff: true }]) {
       hp.__test.handled.clear();
       const w = world(opts);
-      expect(await hp.onHoneypotMessage(w.message())).toBe(true);
+      expect(await hp.onBaitMessage(w.message())).toBe(true);
       expect(w.order).toEqual(["delete"]);
       expect(w.logCh.send.mock.calls[0][0].content).toContain("server owner or staff");
     }
@@ -103,32 +103,32 @@ describe("кой пада в капана", () => {
 describe("действията", () => {
   it("softban: триене → DM → бан (последния час) → разбан; брояч и лог", async () => {
     const w = world();
-    expect(await hp.onHoneypotMessage(w.message())).toBe(true);
+    expect(await hp.onBaitMessage(w.message())).toBe(true);
     expect(w.order).toEqual(["delete", "dm", "ban", "unban"]);
     expect(w.guild.members.ban).toHaveBeenCalledWith(UID, expect.objectContaining({ deleteMessageSeconds: 3600 }));
     expect(apiPost).toHaveBeenCalledWith(`/bot/honeypot/${SID}/caught`);
     const embed = w.logCh.send.mock.calls[0][0].embeds[0].toJSON();
-    expect(embed.title).toContain("Caught");
+    expect(embed.title).toContain("Took the bait");
     expect(JSON.stringify(embed.fields)).toContain("5");
     expect(w.user.send.mock.calls[0][0].content).toContain("Test Server");
   });
 
   it("ban: без разбан", async () => {
     const w = world({ action: "ban" });
-    await hp.onHoneypotMessage(w.message());
+    await hp.onBaitMessage(w.message());
     expect(w.order).toEqual(["delete", "dm", "ban"]);
   });
 
   it("timeout: 24 часа, без бан", async () => {
     const w = world({ action: "timeout" });
-    await hp.onHoneypotMessage(w.message());
+    await hp.onBaitMessage(w.message());
     expect(w.member.timeout).toHaveBeenCalledWith(hp.TIMEOUT_MS, expect.any(String));
     expect(w.guild.members.ban).not.toHaveBeenCalled();
   });
 
   it("без DM, когато е изключено", async () => {
     const w = world({ dmUser: false });
-    await hp.onHoneypotMessage(w.message());
+    await hp.onBaitMessage(w.message());
     expect(w.user.send).not.toHaveBeenCalled();
     expect(w.guild.members.unban).toHaveBeenCalled();
   });
@@ -136,7 +136,7 @@ describe("действията", () => {
   it("залп от един спам бот → едно действие, останалите съобщения само се трият", async () => {
     const w = world();
     const msgs = [w.message(), w.message(), w.message()];
-    for (const m of msgs) await hp.onHoneypotMessage(m);
+    for (const m of msgs) await hp.onBaitMessage(m);
     expect(w.guild.members.ban).toHaveBeenCalledTimes(1);
     for (const m of msgs) expect(m.delete).toHaveBeenCalled();
   });
@@ -145,7 +145,7 @@ describe("действията", () => {
     for (const opts of [{ botPerms: false }, { bannable: false }]) {
       hp.__test.handled.clear();
       const w = world(opts);
-      await hp.onHoneypotMessage(w.message());
+      await hp.onBaitMessage(w.message());
       expect(w.guild.members.ban).not.toHaveBeenCalled();
       expect(w.logCh.send.mock.calls[0][0].content).toContain("Ban Members");
     }
@@ -154,7 +154,7 @@ describe("действията", () => {
   it("провален разбан → отделно предупреждение в лога", async () => {
     const w = world();
     w.guild.members.unban.mockRejectedValueOnce(new Error("nope"));
-    await hp.onHoneypotMessage(w.message());
+    await hp.onBaitMessage(w.message());
     expect(w.logCh.send.mock.calls.map((c) => c[0].content).join(" ")).toContain("still banned");
   });
 });
@@ -164,14 +164,14 @@ describe("кеш", () => {
     const w = world();
     apiGet.mockReset();
     apiGet.mockRejectedValue(new Error("down"));
-    for (let i = 0; i < 5; i++) expect(await hp.onHoneypotMessage(w.message())).toBe(false);
+    for (let i = 0; i < 5; i++) expect(await hp.onBaitMessage(w.message())).toBe(false);
     expect(apiGet).toHaveBeenCalledTimes(1);
   });
 });
 
-describe("/honeypot", () => {
+describe("/bait", () => {
   it("дефиниция: guild-only, Manage Server, трите подкоманди", () => {
-    const j = honeypot.data.toJSON();
+    const j = bait.data.toJSON();
     expect(j.dm_permission).toBe(false);
     expect(j.default_member_permissions).toBe(String(PermissionFlagsBits.ManageGuild));
     expect(j.options.map((o) => o.name)).toEqual(["setup", "disable", "status"]);
@@ -185,7 +185,7 @@ describe("/honeypot", () => {
       options: { getSubcommand: () => "setup" },
       deferReply: vi.fn(), editReply: vi.fn(),
     };
-    await honeypot.execute(i);
+    await bait.execute(i);
     expect(i.editReply.mock.calls[0][0].content).toContain("Manage Server");
     expect(apiPut).not.toHaveBeenCalled();
   });
@@ -193,6 +193,6 @@ describe("/honeypot", () => {
 
 describe("приватност", () => {
   it("капанът не чете съдържанието на съобщенията", () => {
-    expect(readFileSync(join(HERE, "../utils/honeypot.js"), "utf8")).not.toMatch(/message\.content/);
+    expect(readFileSync(join(HERE, "../utils/bait.js"), "utf8")).not.toMatch(/message\.content/);
   });
 });

@@ -545,103 +545,129 @@ html, body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* v52 — Капан за спам ботове (HoneypotShowcase.jsx). Собствена „медена“ гама  */
-/* само за тази секция: мед, восък, тъмна пита — предметът на функцията, не     */
-/* декорация. Движението е само в отговор на показ/бутон, ≥300 ms, без мигане; */
-/* при prefers-reduced-motion сцената е статична (крайно състояние).            */
+/* v52 — Канал-стръв за спам ботове (BaitShowcase.jsx). Собствена гама само за */
+/* тази секция от света на въдицата: примамка (оранж), плувка (червено/бяло), */
+/* влакно (сребро), вълнички по тъмна вода. Движението е само при показ/бутон, */
+/* ≥300 ms, без мигане; при prefers-reduced-motion сцената е статична.        */
 /* ─────────────────────────────────────────────────────────────────────────── */
-.hp-section {
-  --honey: #f2a93b;
-  --honey-hi: #ffd27a;
-  --comb: #2b1f0c;
+.bt-section {
+  --lure: #ff8a3d;
+  --lure-hi: #ffc08a;
+  --float: #e5483b;
+  --line: #cfd8cc;
   --window: #0b0f09;
 }
-.hp-ink { color: var(--honey); }
-.hp-title { letter-spacing: -0.035em; }
-.hp-comb {
-  opacity: 0.85;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 1 54 16v30L28 61 2 46V16zM28 61v36M2 16 0 15M54 16l2-1' fill='none' stroke='%23f2a93b' stroke-opacity='.3' stroke-width='1.2'/%3E%3C/svg%3E");
-  background-size: 56px 97px;
-  -webkit-mask-image: radial-gradient(ellipse 55% 60% at 72% 50%, #000 0%, transparent 75%);
-  mask-image: radial-gradient(ellipse 55% 60% at 72% 50%, #000 0%, transparent 75%);
+.bt-ink { color: var(--lure); }
+.bt-title { letter-spacing: -0.035em; }
+.bt-water {
+  opacity: 0.9;
+  background:
+    repeating-radial-gradient(circle at 74% 46%, transparent 0 34px, rgba(207, 216, 204, 0.07) 35px 36px, transparent 37px 70px);
+  -webkit-mask-image: radial-gradient(ellipse 50% 60% at 74% 46%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(ellipse 50% 60% at 74% 46%, #000 0%, transparent 72%);
 }
-.hp-window {
+.bt-window {
   position: relative;
   background: var(--window);
   border: 1px solid #4b5a44;
   border-radius: 14px;
-  box-shadow: 0 0 0 1px rgba(242, 169, 59, 0.08), 0 30px 80px -30px rgba(242, 169, 59, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 138, 61, 0.08), 0 30px 80px -30px rgba(255, 138, 61, 0.35);
   overflow: hidden;
 }
-.hp-bar {
+.bt-bar {
+  position: relative;
   display: flex; align-items: center; gap: 0.5rem;
   padding: 0.85rem 1.1rem;
   border-bottom: 1px solid #263021;
   font-size: 0.95rem;
 }
-.hp-hash { color: var(--honey); font-weight: 800; font-size: 1.25rem; line-height: 1; }
-.hp-topic {
+.bt-hash { color: var(--lure); font-weight: 800; font-size: 1.25rem; line-height: 1; }
+.bt-topic {
   color: #9a9a9a; font-size: 0.8rem; margin-left: 0.5rem; padding-left: 0.75rem;
   border-left: 1px solid #263021; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1;
 }
-.hp-feed { padding: 1.1rem; display: grid; gap: 1.1rem; }
-.hp-msg { position: relative; display: flex; gap: 0.8rem; align-items: flex-start; }
-.hp-avatar {
+.bt-bobber { position: relative; flex: none; display: grid; place-items: center; width: 28px; height: 30px; }
+.bt-bobber svg { position: relative; z-index: 1; }
+.bt-bobber-line { stroke: var(--line); stroke-width: 1.5; }
+.bt-ripple {
+  position: absolute; left: 50%; bottom: 2px; width: 26px; height: 8px; margin-left: -13px;
+  border: 1px solid rgba(207, 216, 204, 0.5); border-radius: 50%; opacity: 0;
+}
+.bt-feed { padding: 1.1rem; display: grid; gap: 1.1rem; }
+.bt-msg { position: relative; display: flex; gap: 0.8rem; align-items: flex-start; }
+.bt-avatar {
   flex: none; width: 38px; height: 38px; border-radius: 50%;
   display: grid; place-items: center; font-weight: 800; color: #070a06;
 }
-.hp-avatar-bot { background: #8fe600; }
-.hp-avatar-spam { background: #b0476a; color: #fff; }
-.hp-author { font-weight: 700; color: #f0f0eb; font-size: 0.92rem; margin-bottom: 0.2rem; }
-.hp-tag {
+.bt-avatar-bot { background: #8fe600; }
+.bt-avatar-spam { background: #b0476a; color: #fff; }
+.bt-author { font-weight: 700; color: #f0f0eb; font-size: 0.92rem; margin-bottom: 0.2rem; }
+.bt-tag {
   font-size: 0.62rem; font-weight: 700; padding: 1px 5px; border-radius: 4px;
   background: #5865f2; color: #fff; vertical-align: 2px; margin-left: 0.3rem;
 }
-.hp-embed {
-  border-left: 4px solid var(--honey);
+.bt-embed {
+  border-left: 4px solid var(--lure);
   background: #11170e;
   border-radius: 6px;
   padding: 0.75rem 0.9rem;
   max-width: 34rem;
 }
-.hp-count { display: inline-block; font-weight: 800; color: var(--honey-hi); font-variant-numeric: tabular-nums; }
+.bt-count { display: inline-block; font-weight: 800; color: var(--lure-hi); font-variant-numeric: tabular-nums; }
 
 /* Сцената: три пласта в една клетка — височината не скача между фазите */
-.hp-stage { display: grid; min-height: 64px; }
-.hp-stage > * { grid-area: 1 / 1; opacity: 0; }
-.hp-typing { display: flex; align-items: center; color: #9a9a9a; font-size: 0.85rem; align-self: end; }
-.hp-dot { width: 6px; height: 6px; border-radius: 50%; background: #9a9a9a; margin-right: 3px; }
-.hp-spam { padding: 0.35rem 0.4rem; margin: -0.35rem -0.4rem; border-radius: 8px; overflow: hidden; }
-.hp-honey {
-  position: absolute; left: 0; top: 0; width: 100%; height: 135%;
-  opacity: 0.95;
-  transform: translateY(-105%);
-  filter: drop-shadow(0 6px 10px rgba(242, 169, 59, 0.35));
+.bt-stage { display: grid; min-height: 64px; }
+.bt-stage > * { grid-area: 1 / 1; opacity: 0; }
+.bt-typing { display: flex; align-items: center; color: #9a9a9a; font-size: 0.85rem; align-self: end; }
+.bt-dot { width: 6px; height: 6px; border-radius: 50%; background: #9a9a9a; margin-right: 3px; }
+.bt-catch { position: relative; z-index: 2; }
+.bt-spam {
+  padding: 0.35rem 0.4rem; margin: -0.35rem -0.4rem; border-radius: 8px;
+  transition: background-color 0.3s ease;
 }
-.hp-removed {
+.bt-is-hooked .bt-spam { background: rgba(255, 138, 61, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 138, 61, 0.45); }
+/* Въдицата: влакно отгоре + кукичка, закачена за горния десен ъгъл */
+.bt-rig {
+  position: absolute; right: 18%; top: -2.4rem; width: 36px;
+  transform: translateY(-320px);
+}
+.bt-line {
+  position: absolute; left: 28px; bottom: 74px; width: 2px; height: 600px;
+  background: linear-gradient(to bottom, rgba(207, 216, 204, 0), var(--line) 70%);
+}
+.bt-hook { display: block; stroke: var(--line); filter: drop-shadow(0 0 8px rgba(255, 138, 61, 0.6)); }
+.bt-lure { fill: var(--lure); stroke: var(--lure-hi); stroke-width: 1.5; }
+.bt-removed {
   align-self: center; font-size: 0.9rem; color: #c9c9c2;
-  border: 1px dashed rgba(242, 169, 59, 0.45); border-radius: 8px; padding: 0.6rem 0.8rem;
+  border: 1px dashed rgba(255, 138, 61, 0.5); border-radius: 8px; padding: 0.6rem 0.8rem;
 }
 
-.hp-typing  .hp-typing,
-.hp-posted  .hp-spam,
-.hp-caught  .hp-spam,
-.hp-gone    .hp-removed { opacity: 1; }
-.hp-caught  .hp-honey,
-.hp-gone    .hp-honey   { transform: translateY(0); }
+.bt-is-typing  .bt-typing,
+.bt-is-posted  .bt-catch,
+.bt-is-hooked  .bt-catch,
+.bt-is-gone    .bt-removed { opacity: 1; }
+.bt-is-hooked  .bt-rig,
+.bt-is-gone    .bt-rig     { transform: translateY(0); }
+.bt-is-hooked  .bt-ripple  { opacity: 1; }
+.bt-is-hooked  .bt-bobber svg { transform: translateY(5px); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .hp-stage > * { transition: opacity 0.35s ease, transform 0.45s cubic-bezier(.2,.8,.2,1), filter 0.45s ease; }
-  .hp-spam { transform: translateY(8px); }
-  .hp-posted .hp-spam, .hp-caught .hp-spam { transform: translateY(0); }
-  .hp-gone .hp-spam { transform: translateY(14px) scale(0.96); filter: blur(3px); }
-  .hp-honey { transition: transform 0.9s cubic-bezier(.55,.05,.35,1); }
-  .hp-removed { transform: translateY(-6px); }
-  .hp-gone .hp-removed { transform: translateY(0); }
-  .hp-typing .hp-dot { animation: hp-bob 1.2s ease-in-out infinite; }
-  .hp-typing .hp-dot:nth-child(2) { animation-delay: 0.15s; }
-  .hp-typing .hp-dot:nth-child(3) { animation-delay: 0.3s; }
-  .hp-count { animation: hp-roll 0.5s cubic-bezier(.2,.8,.2,1); }
+  .bt-stage > * { transition: opacity 0.35s ease, transform 0.6s cubic-bezier(.2,.8,.2,1); }
+  .bt-catch { transform: translateY(8px); }
+  .bt-is-posted .bt-catch, .bt-is-hooked .bt-catch { transform: translateY(0); }
+  /* издърпване: нагоре и извън прозореца, с лек наклон */
+  .bt-is-gone .bt-catch { transform: translateY(-260px) rotate(-5deg); opacity: 0; transition: transform 0.75s cubic-bezier(.6,-0.2,.7,.4), opacity 0.75s ease-in; }
+  .bt-rig { transition: transform 0.7s cubic-bezier(.3,1.4,.5,1); }
+  .bt-bobber svg { transition: transform 0.35s ease; }
+  .bt-is-hooked .bt-ripple { animation: bt-ripple 1.1s ease-out; }
+  .bt-removed { transform: translateY(-6px); }
+  .bt-is-gone .bt-removed { transform: translateY(0); transition-delay: 0.35s; }
+  .bt-is-typing .bt-dot { animation: bt-bob 1.2s ease-in-out infinite; }
+  .bt-is-typing .bt-dot:nth-child(2) { animation-delay: 0.15s; }
+  .bt-is-typing .bt-dot:nth-child(3) { animation-delay: 0.3s; }
+  .bt-count { animation: bt-roll 0.5s cubic-bezier(.2,.8,.2,1); }
 }
-@keyframes hp-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-@keyframes hp-roll { from { transform: translateY(60%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes bt-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes bt-roll { from { transform: translateY(60%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes bt-ripple { from { transform: scale(0.4); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }

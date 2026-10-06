@@ -20,7 +20,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
-import { HONEYPOT_COPY } from "../src/i18n/landingHoneypot.js";
+import { BAIT_COPY } from "../src/i18n/landingBait.js";
 import { COMMAND_CATALOG } from "../src/data/commandsCatalog.js";
 import {
   TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
@@ -146,9 +146,9 @@ function guideLinks(t) {
   return items ? `<nav><h2>${esc(t.guides.heading)}</h2><ul>${items}</ul></nav>` : "";
 }
 
-// v52 — капанът за спам ботове: заглавие, обяснение и точките (без демото).
-function honeypotSnapshot(locale) {
-  const h = HONEYPOT_COPY[locale];
+// v52 — каналът-стръв за спам ботове: заглавие, обяснение и точките (без демото).
+function baitSnapshot(locale) {
+  const h = BAIT_COPY[locale];
   if (!h) return "";
   return `<section><h2>${esc(h.heading)}</h2><p>${esc(h.sub)}</p><ul>${h.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul></section>`;
 }
@@ -177,7 +177,7 @@ function landingSnapshot(t) {
     <h1>${esc(t.h1a)} ${esc(t.h1b)}</h1>
     <p>${esc(t.sub)}</p>
     <section><h2>${esc(t.featuresHeading)}</h2><p>${esc(t.featuresSub)}</p><ul>${features}</ul></section>
-    ${honeypotSnapshot(t.locale)}
+    ${baitSnapshot(t.locale)}
     <section><h2>${esc(t.euHeading)}</h2><ul>${eu}</ul></section>
     ${compare}
     <section><h2>${esc(t.faqHeading)}</h2>${faq}</section>
@@ -256,7 +256,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["Ticket system", "Unlimited tickets with button panels, claim, escalation, rename, two-step close and full HTML transcripts that survive channel deletion."],
     ["Forms & applications", "Multi-step questionnaires with validation, logic branching and an approve/deny review workflow — a full Appy.bot replacement."],
     ["Verification & anti-bot", "One-click button or math captcha, account-age requirements and brute-force protection."],
-    ["Spam-bot honeypot", "A trap channel for spam bots: whoever writes there is kicked (soft-ban, deletes their last hour of messages), banned or timed out for 24 hours. Owner and staff exempt; message text is never read. Free."],
+    ["Bait channel for spam bots", "A channel spam bots can't resist: whoever writes there is kicked (soft-ban, deletes their last hour of messages), banned or timed out for 24 hours. Owner and staff exempt; message text is never read. Free."],
     ["Polls & giveaways", "Live polls (up to 9 options) and giveaways with role requirements, scheduled end and re-roll."],
     ["Automation", "Sticky messages and one-off or recurring (daily/weekly/monthly) scheduled messages."],
     ["AI auto-replies", "Optional automatic AI first reply to a new ticket, labelled as AI (EU AI Act Art. 50)."],

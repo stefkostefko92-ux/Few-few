@@ -1242,8 +1242,8 @@ app.post("/internal/honeypot-changed", async (req, res) => {
   const { serverId, previous } = req.body || {};
   if (!serverId) return res.status(400).json({ error: "serverId е задължителен" });
   try {
-    const { syncHoneypotWarning } = await import("./utils/honeypot.js");
-    res.json(await syncHoneypotWarning(client, String(serverId), previous || null));
+    const { syncBaitWarning } = await import("./utils/bait.js");
+    res.json(await syncBaitWarning(client, String(serverId), previous || null));
   } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
 });
 

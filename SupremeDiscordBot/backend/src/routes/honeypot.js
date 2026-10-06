@@ -1,5 +1,6 @@
 // backend/src/routes/honeypot.js
-// v52 — капан за спам ботове, таблото (Discord OAuth + права в сървъра).
+// v52 — канал-стръв за спам ботове (/bait), таблото (Discord OAuth + права в
+// сървъра). Името „honeypot“ на пътя и таблицата е вътрешно, от миграция v52.
 // Безплатно за всички планове: защитата от спам не е Premium.
 import { Router } from "express";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
@@ -11,8 +12,8 @@ const router = Router();
 router.use(requireAuth, loadUser);
 
 const ERRORS = {
-  CHANNEL_REQUIRED: "Pick the trap channel before turning the honeypot on.",
-  LOG_IS_TRAP: "The log channel can't be the trap channel itself.",
+  CHANNEL_REQUIRED: "Pick the bait channel before turning the bait on.",
+  LOG_IS_TRAP: "The log channel can't be the bait channel itself.",
 };
 
 router.get("/:serverId", requireServerAdmin, async (req, res, next) => {
