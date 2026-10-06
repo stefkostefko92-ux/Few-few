@@ -92,6 +92,14 @@ export function listUsers(user: SessionUser) {
   });
 }
 
+/** The company's invitations of colleagues still waiting, newest first. */
+export function listInvites(user: SessionUser) {
+  return prisma.invite.findMany({
+    where: { companyId: user.companyId, expiresAt: { gt: new Date() } }, orderBy: { createdAt: 'desc' },
+    select: { id: true, name: true, email: true, role: true, expiresAt: true },
+  });
+}
+
 /** The platform's companies with their subscription's state now. */
 export async function listCompanies() {
   const rows = await prisma.company.findMany({

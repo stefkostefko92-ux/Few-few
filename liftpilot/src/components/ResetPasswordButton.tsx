@@ -16,6 +16,7 @@ export default function ResetPasswordButton({ id }: { id: string }) {
       <button type="submit" className="btn btn-sm" disabled={pending}>{t('resetPassword')}</button>
       {state.error ? <span className="note bad">{te(state.error)}</span> : null}
       {state.ok && state.secret ? <SecretOnce email={state.message} secret={state.secret} /> : null}
+      {state.ok && state.pending ? <span className="note" role="status">{t('resetSent', { email: state.message ?? '' })}</span> : null}
     </form>
   );
 }

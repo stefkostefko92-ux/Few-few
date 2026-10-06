@@ -8,7 +8,7 @@ import en from '../../messages/en.json';
 import bg from '../../messages/bg.json';
 import { MAIL_LOGO } from './brand';
 import { TOKEN_TTL_MS } from './token-shape';
-import { TERMS_VERSION, termsDateText } from './legal';
+import { INACTIVE_MONTHS, TERMS_VERSION, dateText, legalValues, termsDateText } from './legal';
 
 export interface AccountMail {
   subject: string;
@@ -21,7 +21,15 @@ export type AccountMailKind =
    *  `releases`: the address has an account never confirmed nor used, which the confirmation deletes */
   | { kind: 'verify'; token: string; terms?: boolean; releases?: boolean }
   | { kind: 'reset'; token: string }
-  | { kind: 'exists' };
+  | { kind: 'exists' }
+  /** a colleague invited by a company: the link opens the invitation, which names the company (the e-mail does not) */
+  | { kind: 'invite'; token: string }
+  /** an invitation to an address that has an account in another company: a notice, nothing to take */
+  | { kind: 'inviteExists' }
+  /** to the owner: a new version of the terms, what changes, and the day it binds the company (npm run legal:notice) */
+  | { kind: 'termsNotice'; binding: Date }
+  /** to the owner of a company inactive without a subscription: the day it will be deleted unless someone signs in */
+  | { kind: 'inactive'; deletion: Date };
 
 // the three files have the same keys (the parity test in present.test.ts): the Italian one types them all
 const MESSAGES = { it, en, bg } as const;
@@ -29,6 +37,7 @@ const translatorFor = (locale: Locale) => createTranslator({ locale, messages: M
 type Translate = ReturnType<typeof translatorFor>;
 
 const hours = (k: keyof typeof TOKEN_TTL_MS): number => TOKEN_TTL_MS[k] / 3600_000;
+const days = (k: keyof typeof TOKEN_TTL_MS): number => TOKEN_TTL_MS[k] / 86_400_000;
 
 const escapeHtml = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -54,14 +63,30 @@ function parts(m: AccountMailKind, locale: Locale, base: string, t: Translate): 
     case 'exists':
       return { subject: t('existsSubject'), intro: t('existsIntro'), button: t('existsButton'), link: page('login'),
         notes: [t('existsForgot', { link: page('forgot-password') }), t('existsIgnore')] };
+    case 'invite':
+      return { subject: t('inviteSubject'), intro: t('inviteIntro'), button: t('inviteButton'), link: `${page('invite')}#${m.token}`,
+        notes: [t('inviteTtl', { days: days('INVITE') }), t('inviteIgnore')] };
+    case 'inviteExists':
+      return { subject: t('inviteExistsSubject'), intro: t('inviteExistsIntro'), button: t('existsButton'), link: page('login'),
+        notes: [t('inviteExistsIgnore')] };
+    case 'termsNotice': {
+      const v = { ...legalValues(), date: dateText(locale, m.binding) };
+      return { subject: t('termsNoticeSubject', v), intro: t('termsNoticeIntro', v), button: t('termsNoticeButton'), link: `${page('privacy')}#terms`,
+        notes: [...t('termsNoticeChanges', v).split('\n'), t('termsNoticeChoice', v)] };
+    }
+    case 'inactive': {
+      const v = { months: INACTIVE_MONTHS, date: dateText(locale, m.deletion) };
+      return { subject: t('inactiveSubject', v), intro: t('inactiveIntro', v), button: t('inactiveButton'), link: page('login'),
+        notes: [t('inactiveKeep', v), t('inactiveData')] };
+    }
   }
 }
 
 /** One account e-mail: `base` is the public address of the site, without a trailing slash. */
 export function accountMail(m: AccountMailKind, locale: Locale, base: string): AccountMail {
   const t = translatorFor(locale);
-  const p = parts(m, locale, base, t);
-  const text = [t('greeting'), '', p.intro, '', `${p.button}: ${p.link}`, '', ...p.notes.flatMap((n) => [n, '']), '—', t('footer')].join('\n');
+  const p = parts(m, locale, base, t), privacy = t('privacy', { link: `${base}/${locale}/privacy` });
+  const text = [t('greeting'), '', p.intro, '', `${p.button}: ${p.link}`, '', ...p.notes.flatMap((n) => [n, '']), '—', t('footer'), privacy].join('\n');
   const note = (s: string): string => `<p style="margin:0 0 12px;color:#5a6480;font-size:13px">${escapeHtml(s)}</p>`;
   const html = `<!doctype html>
 <html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(p.subject)}</title></head>
@@ -77,7 +102,7 @@ ${p.notes.map(note).join('\n')}
 ${note(t('linkHint'))}
 <p style="margin:0;font-size:13px;word-break:break-all"><a href="${escapeHtml(p.link)}" style="color:#1d3271">${escapeHtml(p.link)}</a></p>
 </td></tr>
-<tr><td style="padding:16px 28px;border-top:1px solid #d6dce6;font:12px/1.5 Arial,Helvetica,sans-serif;color:#5a6480">${escapeHtml(t('footer'))}</td></tr>
+<tr><td style="padding:16px 28px;border-top:1px solid #d6dce6;font:12px/1.5 Arial,Helvetica,sans-serif;color:#5a6480">${escapeHtml(t('footer'))}<br>${escapeHtml(privacy)}</td></tr>
 </table></td></tr></table>
 </body></html>`;
   return { subject: p.subject, text, html };

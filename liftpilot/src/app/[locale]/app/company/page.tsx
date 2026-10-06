@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { getCompanyLogo } from '@/server/queries';
@@ -40,6 +41,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
         <h2 id="export-h">{t('exportTitle')}</h2>
         <p className="note">{t('exportText')}</p>
         <p><a className="btn" href="/api/company/export" download>{t('exportButton')}</a></p>
+        <p className="note"><Link href="/data" target="_blank">{t('exportFormat')}</Link></p>
       </section>
     </main>
   );

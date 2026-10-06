@@ -34,9 +34,10 @@
     "test": "tsx --test src/calc/__tests__/*.test.ts src/shaft/__tests__/*.test.ts src/sim/__tests__/*.test.ts src/lib/__tests__/*.test.ts src/components/lift3d/__tests__/*.test.ts src/components/drawing/__tests__/*.test.ts && tsx --experimental-test-module-mocks --conditions=react-server --test src/server/__tests__/*.test.ts",
     "lista": "tsx scripts/lista-verifica.ts",
     "legal:archive": "tsx scripts/legal-archive.ts",
+    "legal:notice": "tsx scripts/legal-notice.ts",
     "artifact": "node scripts/build-artifact.mjs",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy",
+    "prisma:migrate": "prisma db execute --schema prisma/schema.prisma --file prisma/rename-migrations.sql && prisma migrate deploy",
     "admin:create": "tsx scripts/create-admin.ts",
     "smoke": "node scripts/smoke.mjs"
   },

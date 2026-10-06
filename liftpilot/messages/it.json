@@ -10,7 +10,9 @@
     "login": "Accedi",
     "language": "Lingua",
     "legal": "Privacy e condizioni",
-    "provider": "Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov Dol, Bulgaria · UIC (ЕИК) 208725180 · P. IVA BG208725180 · info@carbonstealth.eu"
+    "provider": "Carbon Stealth VCC (Карбон Стелт ЕДПК), società a capitale variabile di diritto bulgaro · ul. Samuil 3, 2670 Bobov Dol, Bulgaria · UIC (ЕИК) 208725180 · P. IVA BG208725180 · tel. +359 877 414 874, +39 379 296 9699 · info@carbonstealth.eu",
+    "dataLink": "Dati e formati",
+    "pricingLink": "Prezzi"
   },
   "errors": {
     "notFoundTitle": "Pagina non trovata",
@@ -50,7 +52,8 @@
     "noSeats": "Non ci sono posti liberi: acquista un pacchetto di posti o disattiva un collega.",
     "invalidPrices": "Alcuni prezzi non sono validi.",
     "notReplacement": "Il rilievo del locale macchine è della sola sostituzione dell’argano: un progetto completo disegna il locale dal progetto del vano.",
-    "roomIssues": "Il rilievo ha un problema da correggere."
+    "roomIssues": "Il rilievo ha un problema da correggere.",
+    "inviteTaken": "Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo."
   },
   "auth": {
     "title": "Accesso",
@@ -198,7 +201,8 @@
     "endTitle": "Porta il prossimo impianto su LiftPilot",
     "endText": "Registra la tua azienda e conferma l’indirizzo email: puoi creare subito il primo progetto.",
     "machineAlt": "Argano geared sul suo basamento: motore con alette di raffreddamento, freno a tamburo con elettromagnete, riduttore a vite senza fine, volantino per la manovra di emergenza e puleggia di trazione con quattro funi.",
-    "machineCaption": "La macchina dell’esempio A del calcolatore: puleggia D 560 mm, 4 funi Ø 10 mm, rapporto 1:43, motore 7,5 kW. Modello illustrativo, non un prodotto reale."
+    "machineCaption": "La macchina dell’esempio A del calcolatore: puleggia D 560 mm, 4 funi Ø 10 mm, rapporto 1:43, motore 7,5 kW. Modello illustrativo, non un prodotto reale.",
+    "ctaPricing": "Prezzi"
   },
   "projects": {
     "title": "Impianti",
@@ -305,7 +309,7 @@
   },
   "team": {
     "title": "Utenti",
-    "lead": "Gli account dei colleghi della tua azienda: il titolare li crea e dà a ciascuno un ruolo; ogni collega attivo occupa un posto dell’abbonamento.",
+    "lead": "Gli account dei colleghi della tua azienda: il titolare li invita per e-mail e dà a ciascuno un ruolo; ogni collega attivo e ogni invito in attesa occupa un posto dell’abbonamento.",
     "name": "Nome",
     "email": "E-mail",
     "role": "Ruolo",
@@ -318,22 +322,31 @@
     "pendingPassword": "deve cambiare la password",
     "deactivate": "Disattiva",
     "activate": "Riattiva",
-    "resetPassword": "Nuova password temporanea",
+    "resetPassword": "Nuova password",
     "you": "sei tu",
-    "addTitle": "Aggiungi un utente",
-    "add": "Crea utente",
+    "addTitle": "Invita un collega",
+    "add": "Invia l’invito",
     "tempPassword": "Password temporanea per {email} (mostrata una sola volta):",
     "tempPasswordNote": "Consegnala di persona o con un canale sicuro. Al primo accesso l’utente sceglie la propria password.",
-    "confirmNote": "Al primo accesso il nuovo utente conferma l’indirizzo con il link che riceve per e-mail e la password temporanea.",
     "pendingEmail": "deve confermare l’e-mail",
-    "seats": "Colleghi attivi: {used} su {limit} posti.",
+    "seats": "Posti usati (colleghi attivi e inviti in attesa): {used} su {limit}.",
     "buySeats": "Acquista o cambia i posti",
     "noSeats": "Non ci sono posti liberi: acquista un pacchetto di posti o disattiva un collega.",
     "roleNote": {
       "ENGINEER": "progetta e calcola, mette il visto ai calcoli e archivia gli impianti; non vede i prezzi.",
       "SALES": "consulta e scarica progetti, relazioni e bozze d'ordine e vede i prezzi; non modifica nulla.",
       "TECHNICIAN": "progetta e calcola; non mette il visto, non archivia e non vede i prezzi."
-    }
+    },
+    "inviteSent": "Invito inviato a {email}: il collega apre il link dell’e-mail e sceglie la sua password (il link vale {days} giorni). Nessuna password passa da te.",
+    "invitesTitle": "Inviti in attesa",
+    "invited": "invitato",
+    "inviteExpires": "il link scade il {date}",
+    "inviteAgain": "Invia di nuovo",
+    "inviteRevoke": "Annulla l’invito",
+    "resetSent": "Link per una nuova password inviato a {email}: la password attuale vale finché il collega non ne sceglie una nuova.",
+    "delete": "Elimina",
+    "deleteNote": "L’account del collega è cancellato per sempre; i progetti e i documenti che ha creato restano all’azienda, senza il suo nome.",
+    "deleteConfirm": "Elimina definitivamente"
   },
   "admin": {
     "title": "Aziende",
@@ -868,7 +881,8 @@
     "logoReadOnly": "Il logo si cambia quando l’azienda non è in sola lettura.",
     "reviseRoom": "Rilievo del locale da cui disegnare la revisione",
     "roomTitle": "Progetto della sostituzione",
-    "engineChangedKept": "I motori attuali non ridisegnano queste tavole a schermo; il PDF resta scaricabile com’è stato emesso. Per modificarle, emetti una nuova revisione."
+    "engineChangedKept": "I motori attuali non ridisegnano queste tavole a schermo; il PDF resta scaricabile com’è stato emesso. Per modificarle, emetti una nuova revisione.",
+    "exportFormat": "Com’è fatto il file: formati e struttura dei dati"
   },
   "lift": {
     "workTitle": "Progetto e simulazione",
@@ -1150,6 +1164,17 @@
     "noLink": "Questa pagina si apre dal link dell’e-mail. Se il link è scaduto, chiedine uno nuovo.",
     "again": "Chiedi un nuovo link"
   },
+  "invite": {
+    "title": "Accetta l’invito",
+    "lead": "Scegli la password del tuo account: con questa entri in LiftPilot nell’azienda che ti invita.",
+    "who": "{company} ti invita su LiftPilot come {role}, con l’indirizzo {email}.",
+    "next": "Password",
+    "confirm": "Ripeti la password",
+    "rule": "Almeno {min} caratteri, con lettere e cifre.",
+    "submit": "Accetta ed entra",
+    "submitting": "Attendere…",
+    "noLink": "Questa pagina si apre dal link dell’e-mail di invito. Se il link è scaduto o è già stato usato, chiedi all’azienda di inviare di nuovo l’invito."
+  },
   "legal": {
     "title": "Privacy e condizioni d’uso",
     "metaDescription": "Come LiftPilot tratta i dati personali di installatori e tecnici, e le condizioni d’uso del servizio.",
@@ -1157,17 +1182,17 @@
     "privacyTitle": "Informativa sulla privacy",
     "termsTitle": "Condizioni d’uso",
     "controllerTitle": "Chi è il titolare del trattamento?",
-    "controllerText": "Carbon Stealth VCC, con sede in ul. Samuil 3, 2670 Bobov Dol, Bulgaria, iscritta nel Registro di commercio presso l’Agenzia delle iscrizioni della Bulgaria con il codice UIC (ЕИК) 208725180, partita IVA BG208725180. Per la privacy e per esercitare i tuoi diritti scrivi a info@carbonstealth.eu. Non abbiamo nominato un responsabile della protezione dei dati (DPO), che per la nostra attività non è obbligatorio.",
+    "controllerText": "Carbon Stealth VCC (in bulgaro Карбон Стелт ЕДПК), società a capitale variabile (VCC) di diritto bulgaro, con sede in ul. Samuil 3, 2670 Bobov Dol, Bulgaria, iscritta nel Registro di commercio e delle persone giuridiche senza scopo di lucro tenuto dall’Agenzia delle iscrizioni della Bulgaria con il codice UIC (ЕИК) 208725180, partita IVA BG208725180, rappresentata da Stefan Kostadinov. Per la privacy e per esercitare i tuoi diritti scrivi a info@carbonstealth.eu oppure chiama il +359 877 414 874 (Bulgaria) o il +39 379 296 9699 (Italia). Non abbiamo nominato un responsabile della protezione dei dati (DPO), che per la nostra attività non è obbligatorio.",
     "dataTitle": "Quali dati trattiamo e perché?",
-    "dataText": "Account: nome, e-mail, ragione sociale, partita IVA e città (se le inserisci), password (solo come hash Argon2id), ruolo, lingua, data dell’ultimo accesso, conferma dell’indirizzo e accettazione di queste condizioni (data, versione e conferme date). Servono a concludere ed eseguire il contratto (art. 6(1)(b) GDPR): senza questi dati l’account non si può creare.\n\nAccount dei colleghi: li crea il titolare dell’azienda, che ne inserisce nome, e-mail e ruolo (art. 14 GDPR). Li trattiamo per fornire il servizio all’azienda e, per la sicurezza e il registro attività, nel nostro legittimo interesse (art. 6(1)(f) GDPR).\n\nAbbonamento: gli identificativi del cliente e dell’abbonamento presso Stripe, lo stato, il pacchetto di posti e la fine del periodo pagato. I dati di fatturazione (intestazione, indirizzo, partita IVA, e-mail) li inserisci nel pagamento di Stripe; i dati della carta non arrivano mai a LiftPilot. Base: il contratto e gli obblighi fiscali (art. 6(1)(b) e (c) GDPR).\n\nRegistro attività: chi della tua azienda ha fatto cosa e quando (accessi, calcoli salvati, tavole emesse, prezzi e abbonamento cambiati, condizioni accettate, dati esportati), per la sicurezza e la tracciabilità dei documenti tecnici (art. 6(1)(f) GDPR, legittimo interesse).\n\nE-mail e corrispondenza: la conferma dell’indirizzo e i link per una nuova password, inviati solo quando ti registri o li chiedi tu; i messaggi che ci scrivi, per rispondere (art. 6(1)(b) e (f) GDPR).\n\nSicurezza: l’indirizzo IP serve, solo in memoria, a limitare i tentativi ripetuti e l’applicazione non lo salva; i log del server web (indirizzo IP, pagina, ora, browser) servono a proteggere il servizio dagli abusi (art. 6(1)(f) GDPR).\n\nNon trattiamo dati sulla base del consenso.",
+    "dataText": "Account: nome, e-mail, ragione sociale, partita IVA e città (se le inserisci), password (solo come hash Argon2id), ruolo, lingua, data dell’ultimo accesso, conferma dell’indirizzo e accettazione di queste condizioni (data, versione e conferme date). Servono a concludere ed eseguire il contratto (art. 6(1)(b) GDPR): senza questi dati l’account non si può creare.\n\nColleghi: il titolare invita un collega inserendone nome, e-mail e ruolo (art. 14 GDPR); l’account nasce solo quando il collega apre il link dell’invito e sceglie la propria password, e un invito non accettato scade dopo {inviteDays} giorni. Li trattiamo per fornire il servizio all’azienda e, per la sicurezza e il registro attività, nel nostro legittimo interesse (art. 6(1)(f) GDPR).\n\nAbbonamento: gli identificativi del cliente e dell’abbonamento presso Stripe, lo stato, il pacchetto di posti e la fine del periodo pagato. I dati di fatturazione (intestazione, indirizzo, partita IVA, e-mail) li inserisci nel pagamento di Stripe; i dati della carta non arrivano mai a LiftPilot. Base: il contratto e gli obblighi fiscali (art. 6(1)(b) e (c) GDPR).\n\nRegistro attività: chi della tua azienda ha fatto cosa e quando (accessi, calcoli salvati, tavole emesse, prezzi e abbonamento cambiati, condizioni accettate, dati esportati), per la sicurezza e la tracciabilità dei documenti tecnici (art. 6(1)(f) GDPR, legittimo interesse).\n\nE-mail e corrispondenza: la conferma dell’indirizzo, gli inviti dei colleghi, i link per una nuova password e gli avvisi previsti da queste condizioni (modifiche delle condizioni, cancellazione di un’azienda inattiva); i messaggi che ci scrivi, per rispondere (art. 6(1)(b) e (f) GDPR). Le e-mail non contengono pixel né link di tracciamento.\n\nSicurezza: l’indirizzo IP serve, solo in memoria, a limitare i tentativi ripetuti e l’applicazione non lo salva; i log del server web (indirizzo IP, pagina, ora, browser) servono a proteggere il servizio dagli abusi (art. 6(1)(f) GDPR).\n\nNon trattiamo dati sulla base del consenso.",
     "projectsTitle": "E i dati degli impianti?",
     "projectsText": "Per i dati personali che l’azienda inserisce nei progetti, per esempio il nome di un cliente o l’indirizzo di un impianto, il titolare è l’azienda e Carbon Stealth VCC è responsabile del trattamento: l’accordo fra le parti è l’art. {dpa} delle condizioni d’uso, qui sotto. Per esercitare i diritti su questi dati rivolgiti all’azienda; se scrivi a noi, le inoltriamo la richiesta.",
     "recipientsTitle": "A chi vengono comunicati?",
-    "recipientsText": "Hetzner Online GmbH (Germania) ospita il server nell’Unione europea; Sendinblue SAS (Brevo, Francia) invia le e-mail di servizio; Stripe Payments Europe, Limited (Irlanda) gestisce i pagamenti dell’abbonamento e tratta i dati di pagamento anche come titolare autonomo, per esempio per prevenire le frodi e per obblighi di legge, secondo la propria informativa sulla privacy, compresi i trasferimenti fuori dall’Unione europea. Alle autorità comunichiamo dati solo quando la legge lo impone. Nessun altro: non vendiamo dati e non usiamo pubblicità né strumenti di tracciamento.",
+    "recipientsText": "Hetzner Online GmbH (Germania) ospita il server nel proprio centro dati di Norimberga, in Germania; Sendinblue SAS (Brevo, Francia) invia le e-mail di servizio e ne registra solo la consegna; Stripe Payments Europe, Limited (Irlanda) gestisce i pagamenti dell’abbonamento e tratta i dati di pagamento anche come titolare autonomo, per esempio per prevenire le frodi e per obblighi di legge, secondo la propria informativa sulla privacy. Alle autorità comunichiamo dati solo quando la legge lo impone. Nessun altro: non vendiamo dati e non usiamo pubblicità né strumenti di tracciamento.\n\nTrasferimenti fuori dallo Spazio economico europeo: Stripe può trasferire dati a Stripe, Inc. negli Stati Uniti, certificata nel Data Privacy Framework UE–USA (decisione di adeguatezza della Commissione, art. 45 GDPR), con le clausole contrattuali tipo della Commissione (art. 46 GDPR) come garanzia di riserva; i dati delle e-mail possono raggiungere fornitori di Brevo fuori dallo SEE solo con le stesse garanzie. Una copia delle garanzie si chiede a info@carbonstealth.eu.",
     "cookiesTitle": "Quali cookie usa LiftPilot?",
     "cookiesText": "Solo cookie tecnici: uno httpOnly per la sessione dopo l’accesso (al massimo 12 ore) e uno di sessione (NEXT_LOCALE) che ricorda la lingua scelta quando è diversa da quella del browser. Nessun cookie di analisi, pubblicità o profilazione, per questo non serve un banner di consenso. Il pagamento si fa sulle pagine di Stripe, che usano i propri cookie secondo la loro informativa.",
     "retentionTitle": "Per quanto tempo li conserviamo?",
-    "retentionText": "Account e dati finché l’account esiste; un account mai confermato né usato (una registrazione o un utente aggiunto da un’azienda) viene cancellato dopo {days} giorni. I progetti e il registro attività restano finché esiste l’account dell’azienda, anche dopo la fine dell’abbonamento, in sola lettura; il titolare può chiederne la cancellazione in qualsiasi momento (art. {exit} delle condizioni d’uso).\n\nI log del server web sono cancellati dopo {logDays} giorni; i log dell’applicazione non contengono indirizzi IP e sono sovrascritti a rotazione. A ogni aggiornamento del servizio facciamo una copia di sicurezza del database e ne conserviamo solo le cinque più recenti: i dati cancellati spariscono dalle copie quando queste sono sostituite. I dati dell’abbonamento e le fatture sono conservati per il tempo richiesto dalla normativa fiscale e contabile; la corrispondenza per il tempo necessario a gestire la richiesta.",
+    "retentionText": "Account e dati finché l’account esiste. Un account mai confermato né usato è cancellato dopo {days} giorni, un invito non accettato alla sua scadenza ({inviteDays} giorni); il titolare può disattivare un collega e poi eliminarlo, e i documenti che il collega ha creato restano all’azienda senza il suo nome.\n\nI progetti e il registro attività restano finché esiste l’account dell’azienda, anche dopo la fine dell’abbonamento, in sola lettura; il titolare può chiederne la cancellazione in qualsiasi momento (art. {exit} delle condizioni d’uso). Un’azienda senza abbonamento in corso in cui nessuno accede da {inactiveMonths} mesi è cancellata con tutti i suoi dati: almeno {inactiveNoticeDays} giorni prima avvisiamo il titolare per e-mail, e basta un accesso per conservarla.\n\nI log del server web sono cancellati dopo {logDays} giorni; i log dell’applicazione non contengono indirizzi IP e sono sovrascritti a rotazione. Copiamo il database ogni notte e prima di ogni aggiornamento e cancelliamo ogni copia dopo {backupDays} giorni: i dati cancellati spariscono anche dalle copie entro quel termine. Le fatture e i dati contabili dell’abbonamento sono conservati per {accountingYears} anni dal 1° gennaio dell’anno successivo (art. 12 della legge bulgara sulla contabilità); la corrispondenza per il tempo necessario a gestire la richiesta.",
     "rightsTitle": "Quali sono i tuoi diritti?",
     "rightsText": "Accesso, rettifica, cancellazione, limitazione, portabilità e opposizione (artt. 15–21 GDPR): scrivi a info@carbonstealth.eu e ti rispondiamo entro un mese. Puoi presentare reclamo all’autorità di controllo del Paese in cui vivi o lavori o in cui ritieni sia avvenuta la violazione: in Bulgaria la Commissione per la protezione dei dati personali (www.cpdp.bg), in Italia il Garante per la protezione dei dati personali (www.garanteprivacy.it). Non prendiamo decisioni automatizzate che ti riguardano (art. 22 GDPR).",
     "serviceTitle": "Oggetto e destinatari del servizio",
@@ -1175,7 +1200,7 @@
     "resultsTitle": "Risultati del software e responsabilità del tecnico",
     "resultsText": "Calcoli, tavole, relazioni, simulazioni, consigli sugli argani, bozze d’ordine e costi di LiftPilot sono strumenti di lavoro e bozze: diventano documenti solo quando un tecnico abilitato li verifica e li firma, e la responsabilità del progetto e delle scelte resta sua. Il software non verifica né i dati inseriti né l’impianto: dati errati producono risultati errati.\n\nI dati dei costruttori vengono dai loro documenti, con la fonte indicata, e vanno confermati sulla scheda tecnica e sull’offerta prima dell’ordine. LiftPilot non sostituisce le norme, il giudizio del tecnico, le prove in sito né le verifiche dell’organismo notificato.",
     "accountsTitle": "Account, sospensione e recesso",
-    "accountsText": "Chi registra l’azienda ne è il titolare: crea gli account dei colleghi con il ruolo di Progettista, Commerciale o Tecnico, nei posti dell’abbonamento, e risponde degli account e dell’uso del servizio nella sua azienda. Ognuno tiene segreta la propria password e ci avvisa subito di un uso non autorizzato.\n\nPossiamo sospendere in tutto o in parte un account o l’azienda, con comunicazione motivata, per violazione di queste condizioni, abuso, mancato pagamento, rischio per la sicurezza o richiesta di un’autorità, per il tempo in cui dura la causa. Se la violazione è grave o non è rimossa entro 15 giorni dalla comunicazione possiamo recedere dal contratto. Possiamo anche recedere senza motivo con 60 giorni di preavviso, rimborsando la parte pagata e non goduta dell’abbonamento.",
+    "accountsText": "Chi registra l’azienda ne è il titolare: invita i colleghi con il ruolo di Progettista, Commerciale o Tecnico, nei posti dell’abbonamento — l’account nasce quando il collega accetta l’invito —, può disattivarli ed eliminarli, e risponde degli account e dell’uso del servizio nella sua azienda. Ognuno tiene segreta la propria password e ci avvisa subito di un uso non autorizzato.\n\nPossiamo sospendere in tutto o in parte un account o l’azienda, con comunicazione motivata, per violazione di queste condizioni, abuso, mancato pagamento, rischio per la sicurezza o richiesta di un’autorità, per il tempo in cui dura la causa. Se la violazione è grave o non è rimossa entro 15 giorni dalla comunicazione possiamo recedere dal contratto. Possiamo anche recedere senza motivo con 60 giorni di preavviso, rimborsando la parte pagata e non goduta dell’abbonamento.",
     "lawTitle": "Legge applicabile e foro competente",
     "lawText": "Il contratto è regolato dalla legge bulgara. Per ogni controversia sono competenti in via esclusiva i giudici della Repubblica di Bulgaria, salve le norme inderogabili.",
     "subscriptionTitle": "Prezzo, prova, pagamento e rinnovo",
@@ -1183,9 +1208,9 @@
     "liabilityTitle": "Limiti di responsabilità e manleva",
     "liabilityText": "Il servizio è fornito con la diligenza professionale, così com’è e come è disponibile: possono esserci interruzioni per manutenzione o guasti e non garantiamo che sia sempre privo di errori o adatto a uno scopo specifico.\n\nNei limiti consentiti dalla legge, Carbon Stealth VCC risponde dei danni causati dal servizio, per l’insieme dei fatti dannosi, solo fino all’importo pagato dall’azienda per l’abbonamento nei 12 mesi precedenti il primo fatto, e non risponde di danni indiretti, mancato guadagno, perdita di commesse o perdita di dati che l’azienda poteva conservare scaricandoli. Questi limiti non valgono per il dolo e la colpa grave, per i danni alla persona, per la responsabilità per danno da prodotti difettosi, né negli altri casi in cui la legge non consente di escludere o limitare la responsabilità.\n\nL’azienda tiene indenne Carbon Stealth VCC da danni, costi ragionevoli (comprese le spese legali) e pretese di terzi derivanti da: (a) uso dei risultati come documenti senza la verifica e la firma di un tecnico abilitato; (b) dati e contenuti inseriti dall’azienda, compresi dati personali trattati senza base giuridica e contenuti che violano diritti di terzi; (c) violazione di queste condizioni da parte dei suoi utenti.",
     "changesTitle": "Modifiche delle condizioni e del servizio",
-    "changesText": "Possiamo modificare queste condizioni e il servizio per motivi legali, tecnici, di sicurezza o di evoluzione del servizio. Le modifiche sono comunicate per e-mail al titolare almeno 30 giorni prima dell’entrata in vigore, con un riassunto; quelle imposte dalla legge o urgenti per la sicurezza possono applicarsi prima, con la stessa comunicazione. Se il titolare non le accetta può disdire senza costi prima dell’entrata in vigore; dopo, finché non le accetta, l’azienda accede in sola lettura, può scaricare i propri dati e disdire. La versione in vigore e la sua data sono in cima a questa pagina.",
+    "changesText": "Possiamo modificare queste condizioni e il servizio per motivi legali, tecnici, di sicurezza o di evoluzione del servizio. Una nuova versione si applica alle nuove aziende dalla sua pubblicazione; per un’azienda già registrata entra in vigore solo almeno {noticeDays} giorni dopo l’e-mail che la comunica al titolare con un riassunto, e fino ad allora vale la versione accettata. Le modifiche imposte dalla legge o urgenti per la sicurezza possono applicarsi prima, con la stessa comunicazione. Se il titolare non accetta la nuova versione può disdire senza costi prima della sua entrata in vigore; dopo, finché non la accetta, l’azienda accede in sola lettura, può scaricare i propri dati e disdire. La versione in vigore e la sua data sono in cima a questa pagina.",
     "contactTitle": "Fornitore e contatti",
-    "contactText": "Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgaria; Registro di commercio presso l’Agenzia delle iscrizioni, codice UIC (ЕИК) 208725180; partita IVA BG208725180. Contatti: info@carbonstealth.eu, in italiano, inglese o bulgaro. È anche il punto di contatto per le autorità e per gli utenti ai sensi degli artt. 11 e 12 del Regolamento (UE) 2022/2065 (DSA) e l’indirizzo per segnalare contenuti illeciti (art. {content}).",
+    "contactText": "Carbon Stealth VCC (in bulgaro Карбон Стелт ЕДПК), società a capitale variabile di diritto bulgaro rappresentata da Stefan Kostadinov; ul. Samuil 3, 2670 Bobov Dol, Bulgaria; Registro di commercio presso l’Agenzia delle iscrizioni, codice UIC (ЕИК) 208725180; partita IVA BG208725180. Contatti: info@carbonstealth.eu, telefono +359 877 414 874 (Bulgaria) e +39 379 296 9699 (Italia), in italiano, inglese o bulgaro. Sono anche il punto di contatto unico per le autorità degli Stati membri, la Commissione e il comitato europeo per i servizi digitali (art. 11 del Regolamento (UE) 2022/2065, DSA), in bulgaro o in inglese, e per i destinatari del servizio (art. 12 DSA), anche in italiano; info@carbonstealth.eu è l’indirizzo per segnalare contenuti illeciti (art. {content}).",
     "gateTitle": "Condizioni d’uso aggiornate",
     "gateLead": "Le condizioni d’uso e l’informativa sulla privacy sono cambiate: versione {version} del {date}. Leggile e, per continuare a lavorare, accettale per l’azienda. Fino ad allora LiftPilot è in sola lettura: puoi consultare e scaricare i progetti, scaricare i dati dell’azienda e gestire o disdire l’abbonamento.",
     "gateSubmit": "Accetto e continuo",
@@ -1200,11 +1225,11 @@
     "licenseTitle": "Licenza e proprietà intellettuale",
     "licenseText": "Il software LiftPilot, i motori di calcolo, il registro delle norme, i modelli dei componenti, i testi e il marchio LiftPilot sono di Carbon Stealth VCC o dei suoi licenzianti. Per la durata del contratto l’azienda riceve il diritto non esclusivo e non trasferibile di usarli per la propria attività, con gli account dei posti acquistati. Non è consentito rivendere il servizio o metterlo a disposizione di terzi, copiarne o estrarne in modo sistematico contenuti e dati di catalogo, decompilarlo oltre quanto la legge consente, né aggirarne i limiti tecnici.\n\nI dati inseriti e i documenti generati (relazioni, tavole, disegni, bozze d’ordine) sono dell’azienda, che può usarli anche dopo la fine del contratto. Per loghi, disegni DXF e DWG e gli altri contenuti caricati, l’azienda garantisce di averne il diritto e ci autorizza a trattarli solo per fornire il servizio.",
     "dpaTitle": "Trattamento dei dati per conto dell’azienda (art. 28 GDPR)",
-    "dpaText": "Per i dati personali che l’azienda inserisce (impianti, calcoli, tavole, bozze d’ordine, listino, account dei colleghi) l’azienda è titolare e Carbon Stealth VCC responsabile del trattamento (art. 28 GDPR); questo articolo è l’accordo fra le parti.\n\nOggetto e durata: la fornitura del servizio, per la durata del contratto e del periodo di recupero dei dati (art. {exit}). Natura e finalità: conservazione, consultazione, calcolo, generazione di documenti ed e-mail di servizio, solo per fornire il servizio. Tipi di dati: nome, e-mail e ruolo degli utenti; nomi di clienti, proprietari o amministratori, indirizzi e matricole degli impianti, loghi e gli altri dati che l’azienda sceglie di inserire; l’azienda non inserisce dati di categorie particolari (art. 9 GDPR). Interessati: utenti dell’azienda, suoi clienti e committenti, proprietari e amministratori degli edifici.\n\nTrattiamo i dati solo su istruzioni documentate dell’azienda — queste condizioni e l’uso delle funzioni del servizio —, anche riguardo ai trasferimenti verso paesi terzi, che non effettuiamo, salvo obbligo di legge dell’Unione o di uno Stato membro, di cui informiamo prima l’azienda se la legge lo consente; se un’istruzione ci sembra contraria al GDPR lo segnaliamo subito. Chi tratta i dati per noi è vincolato alla riservatezza. Misure di sicurezza (art. 32 GDPR): server nell’Unione europea, connessioni cifrate (TLS), password solo come hash Argon2id, accesso per ruolo dentro l’azienda e separato fra aziende, registro attività, copie di sicurezza.\n\nSub-responsabili autorizzati in via generale: Hetzner Online GmbH (Germania, server nell’Unione europea) e Sendinblue SAS — Brevo (Francia, e-mail di servizio). Ogni aggiunta o sostituzione è comunicata per e-mail al titolare almeno 30 giorni prima: l’azienda può opporsi per motivi di protezione dei dati e, senza una soluzione, recedere senza costi prima del cambio. Imponiamo ai sub-responsabili obblighi di protezione dei dati equivalenti a questi e rispondiamo verso l’azienda del loro adempimento.\n\nAiutiamo l’azienda, con misure adeguate, a rispondere alle richieste degli interessati e a rispettare gli artt. 32–36 GDPR per quanto ci riguarda, e le notifichiamo una violazione dei dati personali senza ingiustificato ritardo da quando ne veniamo a conoscenza. Alla fine del contratto, a scelta dell’azienda, le restituiamo i dati con le esportazioni del servizio e poi li cancelliamo, salvo obblighi di legge; dalle copie di sicurezza spariscono quando queste sono sostituite. Mettiamo a disposizione le informazioni necessarie a dimostrare il rispetto di questo articolo e consentiamo le verifiche, comprese le ispezioni, dell’azienda o di un revisore da essa incaricato e vincolato alla riservatezza, con preavviso ragionevole.",
+    "dpaText": "Per i dati personali che l’azienda inserisce (impianti, calcoli, tavole, bozze d’ordine, listino, account dei colleghi) l’azienda è titolare e Carbon Stealth VCC responsabile del trattamento (art. 28 GDPR); questo articolo è l’accordo fra le parti.\n\nOggetto e durata: la fornitura del servizio, per la durata del contratto e del periodo di recupero dei dati (art. {exit}). Natura e finalità: conservazione, consultazione, calcolo, generazione di documenti ed e-mail di servizio, solo per fornire il servizio. Tipi di dati: nome, e-mail e ruolo degli utenti; nomi di clienti, proprietari o amministratori, indirizzi e matricole degli impianti, loghi e gli altri dati che l’azienda sceglie di inserire; l’azienda non inserisce dati di categorie particolari (art. 9 GDPR). Interessati: utenti dell’azienda, suoi clienti e committenti, proprietari e amministratori degli edifici.\n\nTrattiamo i dati solo su istruzioni documentate dell’azienda — queste condizioni e l’uso delle funzioni del servizio —, anche riguardo ai trasferimenti verso paesi terzi: conserviamo i dati nell’Unione europea e un sub-responsabile li tratta fuori dallo SEE solo con le garanzie degli artt. 44–46 GDPR (decisione di adeguatezza o clausole contrattuali tipo); restano salvi gli obblighi di legge dell’Unione o di uno Stato membro, di cui informiamo prima l’azienda se la legge lo consente. Se un’istruzione ci sembra contraria al GDPR lo segnaliamo subito. Chi tratta i dati per noi è vincolato alla riservatezza. Misure di sicurezza (art. 32 GDPR): server in Germania, connessioni cifrate (TLS), password solo come hash Argon2id, accesso per ruolo dentro l’azienda e separato fra aziende, registro attività, copie di sicurezza conservate {backupDays} giorni.\n\nSub-responsabili autorizzati in via generale: Hetzner Online GmbH (Germania, server a Norimberga) e Sendinblue SAS — Brevo (Francia, e-mail di servizio). Ogni aggiunta o sostituzione è comunicata per e-mail al titolare almeno 30 giorni prima: l’azienda può opporsi per motivi di protezione dei dati e, senza una soluzione, recedere senza costi prima del cambio. Imponiamo ai sub-responsabili obblighi di protezione dei dati equivalenti a questi e rispondiamo verso l’azienda del loro adempimento.\n\nAiutiamo l’azienda, con misure adeguate, a rispondere alle richieste degli interessati e a rispettare gli artt. 32–36 GDPR per quanto ci riguarda, e le notifichiamo una violazione dei dati personali senza ingiustificato ritardo da quando ne veniamo a conoscenza. Alla fine del contratto, a scelta dell’azienda, le restituiamo i dati con le esportazioni del servizio e poi li cancelliamo, salvo obblighi di legge; dalle copie di sicurezza spariscono entro {backupDays} giorni. Mettiamo a disposizione le informazioni necessarie a dimostrare il rispetto di questo articolo e consentiamo le verifiche, comprese le ispezioni, dell’azienda o di un revisore da essa incaricato e vincolato alla riservatezza, con preavviso ragionevole.",
     "exitTitle": "Disdetta, cambio di fornitore e restituzione dei dati",
-    "exitText": "L’azienda può disdire in qualsiasi momento, anche per passare a un altro fornitore o ai propri sistemi, con effetto alla fine del periodo già pagato. Finché l’account esiste, e comunque per almeno 30 giorni dopo la fine dell’abbonamento, il titolare scarica i dati dell’azienda: relazioni, tavole e progetti in PDF, DXF e DWG e, dalla pagina Azienda, tutti i dati inseriti in un formato strutturato e leggibile da macchina (JSON). Su richiesta lo aiutiamo nel passaggio, senza costi. Non sono esportabili i dati di catalogo e il registro delle norme del software (art. {license}).\n\nI dati restano consultabili in sola lettura finché l’account esiste. Su richiesta del titolare a info@carbonstealth.eu cancelliamo l’azienda e i suoi dati entro 30 giorni, salvo quelli da conservare per legge, e lo confermiamo per e-mail.",
+    "exitText": "L’azienda può disdire in qualsiasi momento, anche per passare a un altro fornitore o ai propri sistemi, con effetto alla fine del periodo già pagato. Finché l’account esiste, e comunque per almeno 30 giorni dopo la fine dell’abbonamento, il titolare scarica i dati dell’azienda: relazioni, tavole e progetti in PDF, DXF e DWG e, dalla pagina Azienda, tutti i dati inseriti in un formato strutturato e leggibile da macchina (JSON). Il registro dei formati e la giurisdizione dei nostri server sono nella pagina «Dati e formati» (https://liftpilot.carbonstealth.eu/it/data), che teniamo aggiornata (artt. 26 e 28 del Regolamento (UE) 2023/2854, Data Act). Su richiesta lo aiutiamo nel passaggio, senza costi. Non sono esportabili i dati di catalogo e il registro delle norme del software (art. {license}).\n\nI dati restano consultabili in sola lettura finché l’account esiste. Su richiesta del titolare a info@carbonstealth.eu cancelliamo l’azienda e i suoi dati entro 30 giorni, salvo quelli da conservare per legge, e lo confermiamo per e-mail.",
     "marksTitle": "Marchi e dati dei costruttori",
-    "marksText": "SICOR, Montanari, Panev e gli altri nomi di costruttori e prodotti citati nel software sono marchi dei rispettivi titolari, usati solo per identificarne i prodotti: il loro uso non indica un’approvazione da parte dei titolari. I dati tecnici vengono dai documenti indicati come fonte e i prezzi precompilati del listino dal listino del costruttore: possono essere cambiati o contenere errori e vanno confermati con il costruttore prima dell’ordine. L’argano consigliato è scelto solo con i criteri tecnici indicati nel consiglio, non per accordi commerciali; le staffe e le piastre proposte sono quelle del catalogo Panev incluso nel software.",
+    "marksText": "SICOR, Montanari, Panev e gli altri nomi di costruttori e prodotti citati nel software sono marchi dei rispettivi titolari, usati solo per identificarne i prodotti: il loro uso non indica un’approvazione da parte dei titolari. I dati tecnici vengono dai documenti indicati come fonte e i prezzi precompilati degli articoli Panev dal listino pubblico di Panev: possono essere cambiati o contenere errori e vanno confermati con il costruttore prima dell’ordine. L’argano consigliato è scelto solo con i criteri tecnici indicati nel consiglio, non per accordi commerciali. Le staffe e le piastre proposte sono quelle del catalogo Panev incluso nel software; Carbon Stealth VCC realizza anche il sito web di Panev Ascensori.",
     "miscTitle": "Disposizioni varie",
     "miscText": "Forza maggiore: non rispondiamo di ritardi o interruzioni dovuti a cause fuori dal nostro ragionevole controllo. Nullità parziale: una clausola nulla non travolge le altre ed è sostituita da quella valida più vicina al suo scopo. Cessione: l’azienda può cedere il contratto solo con il nostro consenso scritto; noi a chi subentra nella nostra attività, con avviso al titolare. Comunicazioni: all’e-mail del titolare e nell’applicazione; a noi a info@carbonstealth.eu. Lingua: le condizioni sono in italiano, inglese e bulgaro; in caso di divergenza prevale il testo italiano.",
     "gateTitleNew": "Condizioni d’uso",
@@ -1216,7 +1241,12 @@
     "gateData": "Dati dell’azienda",
     "bannerOwner": "Le condizioni d’uso sono cambiate il {date}: accettale per continuare a lavorare. Fino ad allora LiftPilot è in sola lettura.",
     "bannerMember": "Il titolare dell’azienda non ha ancora accettato le condizioni d’uso in vigore: fino ad allora LiftPilot è in sola lettura.",
-    "bannerAction": "Leggi e accetta"
+    "bannerAction": "Leggi e accetta",
+    "bannerPending": "Nuove condizioni d’uso: per la tua azienda entrano in vigore il {date}. Fino ad allora valgono quelle che hai accettato; puoi leggerle e accettarle già ora.",
+    "bannerNew": "Sono pubblicate nuove condizioni d’uso: ti scriveremo il giorno in cui entrano in vigore per la tua azienda, almeno {days} giorni prima. Puoi leggerle e accettarle già ora.",
+    "gateLeadPending": "Abbiamo aggiornato le condizioni d’uso e l’informativa sulla privacy: versione {version} del {date}. Per la tua azienda entrano in vigore il {binding}: fino ad allora valgono quelle che hai accettato e LiftPilot funziona come sempre. Puoi accettarle già ora.",
+    "gateLeadAnnounced": "Abbiamo aggiornato le condizioni d’uso e l’informativa sulla privacy: versione {version} del {date}. Per la tua azienda entreranno in vigore almeno {noticeDays} giorni dopo l’e-mail con cui te lo comunicheremo; fino ad allora valgono quelle che hai accettato. Puoi accettarle già ora.",
+    "gateDeclinePending": "Non le accetti? Puoi disdire l’abbonamento senza costi prima della loro entrata in vigore e scaricare i dati dell’azienda."
   },
   "mail": {
     "greeting": "Buongiorno,",
@@ -1238,7 +1268,26 @@
     "existsIgnore": "Se la richiesta non è tua, ignora questo messaggio: il tuo account non è cambiato.",
     "linkHint": "Se il pulsante non funziona, copia questo indirizzo nel browser:",
     "footer": "LiftPilot · Carbon Stealth VCC · carbonstealth.eu — messaggio automatico, non rispondere.",
-    "verifyTerms": "Registrandoti hai accettato le condizioni d’uso, versione {version} del {date}: {link}"
+    "verifyTerms": "Registrandoti hai accettato le condizioni d’uso, versione {version} del {date}: {link}",
+    "inviteSubject": "Sei stato invitato su LiftPilot",
+    "inviteIntro": "un’azienda che usa LiftPilot ti ha invitato a lavorare con lei come collega. Apri il link qui sotto: vedrai quale azienda e il tuo ruolo, e sceglierai la tua password.",
+    "inviteButton": "Apri l’invito",
+    "inviteTtl": "Il link vale {days, plural, one {un giorno} other {# giorni}} e si usa una sola volta.",
+    "inviteIgnore": "Se non conosci chi ti invita, ignora questo messaggio: senza la tua password non si crea nessun account.",
+    "inviteExistsSubject": "Un invito su LiftPilot per il tuo indirizzo",
+    "inviteExistsIntro": "un’azienda su LiftPilot ha provato ad aggiungerti come collega, ma questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda. Se vuoi lavorare anche con quell’azienda, chiedile di invitarti con un altro indirizzo.",
+    "inviteExistsIgnore": "Non devi fare nulla: il tuo account non è cambiato.",
+    "privacy": "Come trattiamo i dati personali: {link}",
+    "termsNoticeSubject": "LiftPilot: nuove condizioni d’uso in vigore dal {date}",
+    "termsNoticeIntro": "Abbiamo aggiornato le condizioni d’uso e l’informativa sulla privacy di LiftPilot (versione {version}). Per la tua azienda entrano in vigore il {date}; fino ad allora valgono quelle che hai accettato.",
+    "termsNoticeButton": "Leggi le nuove condizioni",
+    "termsNoticeChanges": "Che cosa cambia:\n• Fornitore: indicati la forma giuridica (società a capitale variabile di diritto bulgaro), il rappresentante e i numeri di telefono.\n• Colleghi: si aggiungono con un invito per e-mail e il titolare può anche eliminarli.\n• Conservazione: un’azienda senza abbonamento in cui nessuno accede da {inactiveMonths} mesi è cancellata, con un avviso {inactiveNoticeDays} giorni prima; le copie di sicurezza durano al massimo {backupDays} giorni, le fatture {accountingYears} anni.\n• Trasferimenti: indicate le garanzie per i dati che Stripe e i fornitori di Brevo possono trattare fuori dallo Spazio economico europeo.\n• Data Act: la pagina «Dati e formati» descrive i dati esportabili, i loro formati e la giurisdizione dei server (Germania).\n• Modifiche: una nuova versione vale per un’azienda già registrata solo {noticeDays} giorni dopo l’e-mail che la annuncia.\n• Panev: dichiarato che Carbon Stealth VCC realizza anche il sito web di Panev Ascensori.",
+    "termsNoticeChoice": "Puoi accettarle già ora da LiftPilot. Se non le accetti puoi disdire l’abbonamento senza costi prima del {date}; dopo, finché il titolare non le accetta, LiftPilot resta in sola lettura e i dati dell’azienda si possono sempre scaricare.",
+    "inactiveSubject": "LiftPilot: la tua azienda sarà cancellata dal {date}",
+    "inactiveIntro": "Da {months} mesi nessuno della tua azienda accede a LiftPilot e non c’è un abbonamento in corso. Come prevede l’informativa sulla privacy, dal {date} cancelleremo l’azienda con i suoi utenti, i progetti, i documenti e il registro attività.",
+    "inactiveButton": "Accedi per conservarla",
+    "inactiveKeep": "Basta un accesso di chiunque della tua azienda prima del {date}: l’azienda e i suoi dati restano.",
+    "inactiveData": "Prima di allora puoi anche scaricare i dati dell’azienda (pagina Azienda, file JSON) e i documenti in PDF, DXF e DWG."
   },
   "bom": {
     "title": "Distinta staffe Panev",
@@ -1676,5 +1725,106 @@
     "floorDoor": "Accesso al piano {floor}",
     "main": "Fermata principale",
     "stdInUse": "Valori standard in uso (si cambiano in modalità esperto): {list}."
+  },
+  "dataPage": {
+    "title": "Dati, formati e giurisdizione",
+    "metaDescription": "Quali dati un’azienda può scaricare da LiftPilot, in quali formati, com’è fatto il file JSON, come si cambia fornitore e dove sono i server (Data Act).",
+    "keywords": "Data Act LiftPilot, esportazione dati JSON, portabilità dei dati SaaS, cambio fornitore cloud, giurisdizione server Germania, Carbon Stealth",
+    "updated": "Aggiornata il {date}",
+    "lead": "Le informazioni che il Regolamento (UE) 2023/2854 (Data Act) chiede a un servizio come LiftPilot: i dati che un’azienda può portare con sé e in quali formati, come cambiare fornitore, dove sono i server e come li proteggiamo dall’accesso di autorità di paesi terzi. Le condizioni d’uso rimandano a questa pagina (art. {exit}).",
+    "filesTitle": "Quali dati si possono scaricare, e in che formato?",
+    "filesText": "Tutto ciò che l’azienda ha inserito o generato, finché l’account esiste e per almeno 30 giorni dopo la fine dell’abbonamento, senza costi:",
+    "fileWhat": "Che cosa",
+    "fileFormat": "Formato",
+    "files": {
+      "reports": {
+        "what": "Relazioni di calcolo e relazioni tecniche, tavole emesse, progetti",
+        "format": "PDF (ISO 32000)"
+      },
+      "order": {
+        "what": "Bozze d’ordine",
+        "format": "PDF e DOCX (Office Open XML, ISO/IEC 29500)"
+      },
+      "drawings": {
+        "what": "Disegni del vano e del progetto",
+        "format": "DXF (versione AutoCAD 2007, AC1021) e DWG (versione AutoCAD 2000, AC1015)"
+      },
+      "company": {
+        "what": "Tutti i dati dell’azienda (pagina Azienda)",
+        "format": "JSON (RFC 8259, UTF-8)"
+      }
+    },
+    "jsonTitle": "Com’è fatto il file JSON dell’azienda?",
+    "jsonText": "Un solo documento JSON (RFC 8259, codifica UTF-8): formato «{format}», versione {version}. Importi in centesimi di euro senza IVA, lunghezze in millimetri salvo diversa indicazione, date e ore in ISO 8601 (UTC), immagini in base64. Gli identificativi (id) collegano le voci fra loro; un campo nuovo o cambiato fa salire la versione, e questa pagina lo dice.\n\nLe chiavi di primo livello:",
+    "key": "Chiave",
+    "content": "Contenuto",
+    "keys": {
+      "format": "Il nome del formato: sempre «{format}».",
+      "formatVersion": "La versione del formato ({version}).",
+      "exportedAt": "Quando è stato creato il file.",
+      "termsVersion": "La versione delle condizioni d’uso in vigore.",
+      "note": "Una nota, in inglese, sulle unità di misura.",
+      "company": "L’azienda: ragione sociale, partita IVA, città, stato dell’abbonamento e del periodo di prova.",
+      "users": "Gli utenti: nome, e-mail, ruolo, lingua, date di creazione, di ultimo accesso, di conferma dell’indirizzo e di accettazione delle condizioni; mai le password né i link.",
+      "invites": "Gli inviti in attesa: e-mail, nome, ruolo, scadenza.",
+      "logos": "I loghi dell’azienda, con impronta SHA-256 e dimensioni.",
+      "projects": "I progetti, ciascuno con i propri record (sotto).",
+      "priceItems": "Il listino dell’azienda: il prezzo di ogni articolo dei cataloghi.",
+      "customPrices": "Le voci libere del listino, con testo, prezzo e criterio di quantità.",
+      "auditLog": "Il registro attività: chi, che cosa, quando."
+    },
+    "projectText": "Ogni progetto contiene i propri record, ciascuno con i dati inseriti, la versione del motore, i risultati e l’impronta SHA-256 che ne garantisce l’integrità:",
+    "project": {
+      "calculations": "i calcoli dell’argano, con le verifiche interne",
+      "shaftDesigns": "i progetti del vano",
+      "liftDesigns": "i progetti completi dell’impianto",
+      "roomDesigns": "i rilievi del locale del macchinario",
+      "drawingSets": "le tavole emesse, con le revisioni e l’impronta del PDF",
+      "formDrafts": "le bozze dei moduli non ancora salvate",
+      "clientLogos": "i loghi dei committenti, in base64"
+    },
+    "excludedTitle": "Che cosa non si può esportare?",
+    "excludedText": "I dati che non sono dell’azienda ma del software: i cataloghi dei costruttori, il registro delle norme e i motori di calcolo (art. {license} delle condizioni d’uso). E i dati di sicurezza: impronte delle password, link di accesso e sessioni.",
+    "switchTitle": "Come si passa a un altro fornitore?",
+    "switchText": "L’azienda disdice in qualsiasi momento da «Pagamento, fatture e disdetta», con effetto alla fine del periodo già pagato, e scarica i dati per almeno 30 giorni dopo la fine dell’abbonamento. Il passaggio non costa nulla e, su richiesta a {email}, lo assistiamo senza costi.\n\nSu richiesta del titolare cancelliamo l’azienda e tutti i suoi dati entro 30 giorni e lo confermiamo per e-mail; dalle copie di sicurezza spariscono entro {backupDays} giorni. Restano solo i dati che la legge ci obbliga a conservare, come le fatture.",
+    "whereTitle": "Dove sono i dati e a quale giurisdizione sono soggetti?",
+    "whereText": "Il server e le copie di sicurezza sono presso {host}, nel centro dati di Norimberga, in Germania: l’infrastruttura è soggetta al diritto dell’Unione europea e a quello tedesco. Carbon Stealth VCC, che fornisce il servizio, è una società bulgara soggetta al diritto dell’Unione europea e a quello bulgaro.\n\nLe e-mail di servizio passano da Sendinblue SAS (Brevo, Francia), i pagamenti dell’abbonamento da Stripe Payments Europe, Limited (Irlanda). I trasferimenti fuori dallo Spazio economico europeo e le loro garanzie sono descritti nell’informativa sulla privacy.",
+    "accessTitle": "Come proteggiamo i dati dall’accesso di autorità di paesi terzi?",
+    "accessText": "Il servizio, i server e i sub-responsabili che custodiscono i dati dei progetti sono nell’Unione europea; i dati viaggiano cifrati (TLS) e ogni azienda vede solo i propri. Diamo seguito a una richiesta di un’autorità di un paese terzo sui dati non personali dell’azienda solo nei casi dell’art. 32 del Data Act — un accordo internazionale o, in mancanza, le garanzie che lo stesso articolo richiede —, forniamo solo i dati minimi necessari e informiamo l’azienda prima di dar seguito alla richiesta, salvo che serva a fini di contrasto e finché ciò sia necessario.",
+    "contactTitle": "A chi scrivere?",
+    "contactText": "Carbon Stealth VCC, {email}, telefono {phoneBg} (Bulgaria) e {phoneIt} (Italia), in italiano, inglese o bulgaro."
+  },
+  "pricing": {
+    "title": "Prezzi di LiftPilot",
+    "metaTitle": "Prezzi: abbonamento e posti per i colleghi",
+    "metaDescription": "Quanto costa LiftPilot: un abbonamento mensile per il titolare, i colleghi a pacchetti di posti, la prova gratuita e la disdetta in qualsiasi momento.",
+    "keywords": "prezzo software ascensori, abbonamento LiftPilot, costo software calcolo argano, software progettazione ascensori prezzi, prova gratuita LiftPilot, Carbon Stealth",
+    "answerPrice": "LiftPilot costa {base} {per} per il titolare dell’azienda; i colleghi si aggiungono con un pacchetto di 5, 10 o infiniti posti, e una nuova azienda ha {days} giorni di prova gratuita, senza carta di credito.",
+    "answerOnRequest": "LiftPilot si paga con un abbonamento mensile per il titolare dell’azienda e, per i colleghi, un pacchetto di posti calcolato sul prezzo mensile. Il prezzo è su richiesta: scrivi a {email}.",
+    "packsTitle": "Quanto costano i colleghi?",
+    "packsText": "Il prezzo mensile comprende il titolare. Ogni collega attivo, e ogni invito in attesa, occupa un posto di un pacchetto, che costa una parte del prezzo mensile:",
+    "colPack": "Chi lavora",
+    "colShare": "Pacchetto",
+    "colTotal": "Totale",
+    "share": "+{pct} % del prezzo mensile",
+    "shareNone": "compreso",
+    "onRequest": "su richiesta",
+    "trialTitle": "C’è una prova gratuita?",
+    "trialText": "Sì: una nuova azienda ha {days} giorni di prova gratuita dal primo accesso, con tutte le funzioni per il titolare e senza carta di credito. La prova finisce da sola e non diventa a pagamento; dopo, senza abbonamento, i progetti restano consultabili e scaricabili in sola lettura.",
+    "trialOnRequest": "Le condizioni della prova si concordano: scrivi a {email}.",
+    "cta": "Registra l’azienda",
+    "termsTitle": "L’abbonamento in breve",
+    "termsNote": "Valgono le <terms>condizioni d’uso</terms>; i dati dell’azienda si scaricano sempre (<data>dati e formati</data>).",
+    "faqTitle": "Domande sui prezzi",
+    "faq1q": "Il prezzo comprende tutte le funzioni?",
+    "faq1a": "Sì: progetto del vano e dell’impianto, calcolo e scelta dell’argano, simulazione 3D, tavole, relazioni, DXF e DWG, bozze d’ordine e listino. Il pacchetto di posti cambia solo quanti colleghi lavorano insieme al titolare.",
+    "faq2q": "Come si paga?",
+    "faq2a": "Tramite Stripe, in anticipo per ogni periodo; la fattura riporta i dati fiscali inseriti nel pagamento. LiftPilot non vede né conserva i dati della carta.",
+    "faq3q": "Come si disdice?",
+    "faq3a": "In qualsiasi momento da «Pagamento, fatture e disdetta»: l’abbonamento resta attivo fino alla fine del periodo già pagato, senza rimborso della parte non usata, e i dati restano scaricabili.",
+    "faq4q": "Il prezzo può cambiare?",
+    "faq4a": "Sì, con un’e-mail al titolare almeno 30 giorni prima del rinnovo da cui si applica: chi non lo accetta può disdire prima.",
+    "faq5q": "Servono molti utenti o più aziende?",
+    "faq5a": "Scrivi a {email} con il numero di aziende e di utenti: ti rispondiamo con una proposta."
   }
 }

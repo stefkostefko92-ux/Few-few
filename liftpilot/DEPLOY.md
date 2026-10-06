@@ -49,8 +49,20 @@ Docker Compose (приложение + PostgreSQL 16) зад nginx на хост
 `PROJECTS="liftpilot" bash /root/deploy/fetch-deploy.sh` — без въпросите (тайните вече са в `.env`). Скриптът: пренася `.env` → `pg_dump` в
 `/opt/few-few/shared/liftpilot/backups/` (последните 5; без бекъп няма миграция) → `docker compose
 build` + `up -d` → миграциите от entrypoint-а (`prisma migrate deploy`, никога `db push`) → health
-`/api/health` с маркер `"app":"liftpilot"` → nginx vhost (`deploy/nginx/liftpilot.conf`) + certbot.
+`/api/health` с маркер `"app":"liftpilot"` → нощно копие на базата (`deploy/backup.sh` като
+`/usr/local/sbin/liftpilot-backup`, cron `/etc/cron.d/liftpilot-backup` в 03:17; всяко копие, и преди деплой, се
+изтрива на 30 дни — политиката го казва) → nginx vhost (`deploy/nginx/liftpilot.conf`) + certbot.
 Смяна на ключа на Brevo: същата команда с новите `LIFTPILOT_SMTP_USER`/`LIFTPILOT_SMTP_PASS`.
+
+**Имената на миграциите (кръг 30):** папките са `00_…`–`14_…` — с водеща нула, за да ги подрежда Prisma правилно
+и в празна база. Entrypoint-ът преди `migrate deploy` пуска `prisma/rename-migrations.sql`, което преименува
+приложените стари имена (`0_init`…`9_…`) в таблицата `_prisma_migrations`; идемпотентно, на нова база не прави нищо.
+
+**Нова версия на условията** (`TERMS_VERSION`, `docs/terms-changes.md`): веднага след деплоя
+`docker compose exec -T app npm run legal:notice` (кой ще получи писмо), после същото с `-- --send`. Без писмото
+новата версия не обвързва вече регистрираните фирми. **За версия 3** преди деплоя: изключено проследяване на
+отварянията и кликовете в Brevo (текстът го обещава) — подробно в `docs/terms-changes.md`, „Какво още решава
+собственикът“.
 
 ## Проверка
 
@@ -70,6 +82,9 @@ cd /opt/few-few/current/liftpilot && docker compose ps && docker compose logs --
 
 Докато не е одобрено, търсачките са спрени (`ALLOW_INDEXING=false`: `robots.txt` Disallow, `noindex`).
 След одобрение: `ALLOW_INDEXING=true` в `.env` и деплой; за Google — Search Console (`tools/seo/gsc.mjs`).
-IndexNow (Bing, Yandex, Seznam…) иска ключов файл, който сайтът публикува; LiftPilot още няма такъв —
-добавя се заедно с одобрението (`node tools/seo/indexnow.mjs --gen-key`), после
-`node tools/seo/indexnow.mjs https://liftpilot.carbonstealth.eu`.
+IndexNow (Bing, Yandex, Seznam…): ключът е в `public/indexnow-key.txt` и сайтът го публикува на
+`/indexnow-key.txt`; след одобрението и деплоя —
+`node tools/seo/indexnow.mjs https://liftpilot.carbonstealth.eu --key-location https://liftpilot.carbonstealth.eu/indexnow-key.txt`
+(и след всяка промяна в публичните страници). `robots.txt` тогава пуска търсачките и AI търсачките (OAI-SearchBot,
+Claude-SearchBot, PerplexityBot, Meta-WebIndexer…) и спира ботовете за обучение на модели (GPTBot, ClaudeBot, CCBot,
+Google-Extended, Applebot-Extended, meta-externalagent, Bytespider) — `src/app/robots.ts`.

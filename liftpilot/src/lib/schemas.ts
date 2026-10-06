@@ -47,6 +47,12 @@ export const forgotSchema = z.object({ email: emailSchema });
 /** The link of the registration and the password chosen there. */
 export const verifySchema = z.object({ token: linkToken, password: z.string().min(1).max(200) });
 
+/** The link of a colleague's invitation and the password the colleague chooses. */
+export const inviteAcceptSchema = z
+  .object({ token: linkToken, next: z.string().max(200), confirm: z.string().max(200) })
+  .refine((v) => passwordPolicyOk(v.next), { path: ['next'], message: 'weakPassword' })
+  .refine((v) => v.next === v.confirm, { path: ['confirm'], message: 'passwordMismatch' });
+
 /** The link of a password reset and the new password. */
 export const resetSchema = z
   .object({ token: linkToken, next: z.string().max(200), confirm: z.string().max(200) })

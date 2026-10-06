@@ -1,6 +1,7 @@
 import 'server-only';
 import { prisma } from './db';
 import { UNCONFIRMED_DAYS } from './legal';
+import { purgeInactive } from './inactive';
 import { log } from './log';
 
 // What is kept only for a while goes after the answer of a sign-in, a registration or a forgotten-password request, at
@@ -10,7 +11,9 @@ import { log } from './log';
 //   for them after that time (`pastConfirmDeadline`), so signing in again does not keep them; a company left without
 //   users goes with its last one.
 // - The registrations waiting for their address, with their link (src/lib/registrations.ts).
+// - The invitations of colleagues past their end (src/server/user-actions.ts).
 // - The sessions past their end (src/lib/auth.ts).
+// - The companies inactive without a subscription: their owner told, then the company deleted (src/lib/inactive.ts).
 const EVERY_MS = 6 * 3600_000, DAY_MS = 24 * 3600_000;
 let last = 0;
 
@@ -38,9 +41,12 @@ export async function purgeStale(): Promise<void> {
       ]);
     }
     const registrations = await prisma.pendingRegistration.deleteMany({ where: { expiresAt: { lte: at } } });
+    const invites = await prisma.invite.deleteMany({ where: { expiresAt: { lte: at } } });
     const sessions = await prisma.session.deleteMany({ where: { expiresAt: { lte: at } } });
-    if (stale.length || registrations.count || sessions.count) {
-      log.info({ accounts: stale.length, registrations: registrations.count, sessions: sessions.count }, 'stale records deleted');
+    const companies = await purgeInactive(at);
+    if (stale.length || registrations.count || invites.count || sessions.count || companies.told || companies.deleted) {
+      log.info({ accounts: stale.length, registrations: registrations.count, invites: invites.count, sessions: sessions.count,
+        inactiveTold: companies.told, inactiveDeleted: companies.deleted }, 'stale records deleted');
     }
   } catch (err) {
     log.error({ err: err instanceof Error ? err.message : String(err) }, 'purge of stale records failed');

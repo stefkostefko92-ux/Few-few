@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # LiftPilot on the VPS: secrets (first time only), backup before the migrations, Docker Compose build and start,
-# health with the application marker, nginx vhost and Let's Encrypt certificate. Idempotent. Run as root from the
-# liftpilot/ directory of a release (deploy/autodeploy.sh does it for PROJECTS containing "liftpilot"):
+# health with the application marker, nightly database copies kept 30 days, nginx vhost and Let's Encrypt
+# certificate. Idempotent. Run as root from the liftpilot/ directory of a release (deploy/autodeploy.sh does it for
+# PROJECTS containing "liftpilot"):
 #   sudo bash deploy/deploy.sh
 # Env (all optional):
 #   LIFTPILOT_ENV             the server's secrets (default /opt/few-few/shared/liftpilot/.env)
@@ -154,6 +155,22 @@ if [ -n "$(env_get ADMIN_PASSWORD)" ]; then
   docker compose up -d app
   wait_healthy
   ok "administrator ready; ADMIN_PASSWORD gone from $ENV_FILE and from the container"
+fi
+
+# 5b) a copy of the database every night, and no copy kept longer than 30 days, the ones above included
+#     (deploy/backup.sh; BACKUP_DAYS in src/lib/legal.ts: the privacy notice states it)
+install -m 755 deploy/backup.sh /usr/local/sbin/liftpilot-backup
+cat > /etc/cron.d/liftpilot-backup <<'CRON'
+# LiftPilot: nightly copy of the database, copies older than 30 days deleted (liftpilot/deploy/backup.sh)
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+17 3 * * * root /usr/local/sbin/liftpilot-backup
+CRON
+chmod 644 /etc/cron.d/liftpilot-backup
+if command -v cron >/dev/null || systemctl is-active --quiet cron 2>/dev/null; then
+  ok "nightly database copy at 03:17, copies kept 30 days"
+else
+  warn "cron is not installed: no nightly copy and no 30-day limit on the copies (apt-get install cron)"
 fi
 
 # 6) nginx vhost and TLS certificate (LIFTPILOT_TLS=0 or no nginx: skipped)

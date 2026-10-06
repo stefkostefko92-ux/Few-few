@@ -89,6 +89,9 @@
   .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .btn-primary:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
   .btn-danger { color: var(--fail); }
+  /* a step before an action that cannot be undone: the button opens its confirmation */
+  details.confirm-delete > summary { list-style: none; width: fit-content; }
+  details.confirm-delete > summary::-webkit-details-marker { display: none; }
   .btn-sm { padding: 7px 11px; font-size: 13px; }
   .btn-lg { padding: 13px 20px; font-size: 15.5px; border-radius: 10px; }
   .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }

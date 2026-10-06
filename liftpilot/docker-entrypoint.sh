@@ -12,6 +12,8 @@ until echo 'SELECT 1;' | npx prisma db execute --schema prisma/schema.prisma --s
 done
 
 echo "→ applying migrations"
+# the migrations applied before their names got the leading zero take the new names (prisma/rename-migrations.sql)
+npx prisma db execute --schema prisma/schema.prisma --file prisma/rename-migrations.sql
 npx prisma migrate deploy
 
 if [ -n "${ADMIN_PASSWORD:-}" ]; then

@@ -3,20 +3,22 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { Prisma, type Role } from '@prisma/client';
-import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
+import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
+import { mailAccount } from '@/lib/account-mail';
 import { MEMBER_ROLES, assignableRoles, can, outranks, type Capability } from '@/lib/rbac';
 import { mailConfigured } from '@/lib/mail';
 import { hashPassword, temporaryPassword } from '@/lib/password';
 import { rateLimit } from '@/lib/ratelimit';
 import { companyCreateSchema, idSchema, roleSchema, userCreateSchema } from '@/lib/schemas';
 import { BILLING_SELECT, accessOf } from '@/lib/billing-access';
+import { TOKEN_TTL_MS, issueToken, newToken } from '@/lib/tokens';
 import { enforceSeats, lockCompany, seatAvailable } from './billing';
 import { str, type FormState } from './form';
 
-const localeOf = (fd: FormData): string => { const l = str(fd, 'locale'); return isLocale(l) ? l : DEFAULT_LOCALE; };
+const localeOf = (fd: FormData): Locale => { const l = str(fd, 'locale'); return isLocale(l) ? l : DEFAULT_LOCALE; };
 /** Two requests with the same e-mail at once: the second meets the unique index. */
 const emailTaken = (e: unknown): boolean => e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002';
 
@@ -39,13 +41,11 @@ export async function createUserAction(_prev: FormState, fd: FormData): Promise<
   const parsed = userCreateSchema.safeParse({ email: str(fd, 'email'), name: str(fd, 'name'), role: str(fd, 'role') });
   if (!parsed.success) return { error: 'invalidFields', fields: parsed.error.issues.map((i) => String(i.path[0])) };
   if (!assignableRoles(me.role).includes(parsed.data.role)) return { error: 'forbidden' };
-  // A company's own users confirm the address at their first sign-in (the link by e-mail + the temporary password):
-  // a company that registered itself cannot make a confirmed account for an address it does not own. The platform's
-  // administrator vouches for the addresses it enters.
+  // A company invites its colleagues by e-mail: the colleague chooses the password from the link, so no account exists
+  // for an address its owner never opened. The platform's administrator vouches for the addresses it enters and makes
+  // the account at once, with a temporary password.
   const vouched = me.role === 'SUPERADMIN';
-  if (!vouched && !mailConfigured()) return { error: 'mailUnavailable' };
-  // the slots before the address: without a free one the answer is the same for any address, so a company without
-  // slots cannot probe which addresses have an account elsewhere (audit 2026-10-06); the creation re-checks it locked
+  if (!vouched) return mailConfigured() ? invite(me, parsed.data, localeOf(fd)) : { error: 'mailUnavailable' };
   if (!(await prisma.$transaction((tx) => seatAvailable(tx, me.companyId)))) return { error: 'noSeats' };
   if (await prisma.user.findUnique({ where: { email: parsed.data.email }, select: { id: true } })) return { error: 'emailTaken' };
   const password = temporaryPassword(), passwordHash = await hashPassword(password);
@@ -66,6 +66,51 @@ export async function createUserAction(_prev: FormState, fd: FormData): Promise<
   await audit({ companyId: me.companyId, userId: me.id, action: 'USER_CREATED', entity: 'User', entityId: user.id, meta: { role: user.role } });
   revalidatePath(`/${localeOf(fd)}/app/team`);
   return { ok: true, secret: password, message: user.email, pending: !vouched };
+}
+
+/** The owner's invitation of a colleague. The answer is the same for any address outside the company: an address with
+ *  an account in another company (one address, one company) gets a notice instead of the link, and the invitation
+ *  waits like any other until its end — the owner cannot tell which addresses have an account elsewhere (audit
+ *  2026-10-06). Inviting an address again sends a new link and ends the earlier one. */
+async function invite(me: SessionUser, d: { email: string; name: string; role: Role }, locale: Locale): Promise<FormState> {
+  const { token, tokenHash } = newToken(), expiresAt = new Date(Date.now() + TOKEN_TTL_MS.INVITE);
+  const outcome = await prisma.$transaction(async (tx) => {
+    // the slots first, under the company's lock: without a free one the answer is the same for any address
+    const waiting = await tx.invite.findUnique({ where: { companyId_email: { companyId: me.companyId, email: d.email } }, select: { id: true } });
+    if (!waiting && !(await seatAvailable(tx, me.companyId))) return 'noSeats' as const;
+    const user = await tx.user.findUnique({ where: { email: d.email }, select: { companyId: true } });
+    if (user?.companyId === me.companyId) return 'emailTaken' as const;
+    const row = await tx.invite.upsert({
+      where: { companyId_email: { companyId: me.companyId, email: d.email } },
+      create: { companyId: me.companyId, email: d.email, name: d.name, role: d.role, tokenHash, expiresAt, locale },
+      update: { name: d.name, role: d.role, tokenHash, expiresAt, locale },
+      select: { id: true },
+    });
+    return { id: row.id, elsewhere: !!user };
+  });
+  if (outcome === 'noSeats' || outcome === 'emailTaken') return { error: outcome };
+  mailAccount(d.email, locale, outcome.elsewhere ? { kind: 'inviteExists' } : { kind: 'invite', token });
+  await audit({ companyId: me.companyId, userId: me.id, action: 'INVITE_SENT', entity: 'Invite', entityId: outcome.id, meta: { role: d.role } });
+  revalidatePath(`/${locale}/app/team`);
+  return { ok: true, pending: true, message: d.email };
+}
+
+/** A waiting invitation of the company, sent again (a new link, a new week) or revoked. */
+export async function inviteAgainAction(fd: FormData): Promise<void> {
+  const me = await actor('users:manage');
+  const id = idSchema.safeParse(str(fd, 'id'));
+  if (!me || !id.success || !mailConfigured() || !rateLimit(`users:${me.id}`, 30, 60 * 60 * 1000)) return;
+  const row = await prisma.invite.findFirst({ where: { id: id.data, companyId: me.companyId }, select: { email: true, name: true, role: true } });
+  if (row) await invite(me, row, localeOf(fd));
+}
+
+export async function revokeInviteAction(fd: FormData): Promise<void> {
+  const me = await actor('users:manage');
+  const id = idSchema.safeParse(str(fd, 'id'));
+  if (!me || !id.success) return;
+  const { count } = await prisma.invite.deleteMany({ where: { id: id.data, companyId: me.companyId } });
+  if (count) await audit({ companyId: me.companyId, userId: me.id, action: 'INVITE_REVOKED', entity: 'Invite', entityId: id.data });
+  revalidatePath(`/${localeOf(fd)}/app/team`);
 }
 
 export async function updateUserAction(fd: FormData): Promise<void> {
@@ -100,6 +145,20 @@ export async function updateUserAction(fd: FormData): Promise<void> {
   revalidatePath(`/${localeOf(fd)}/app/team`);
 }
 
+/** A colleague deactivated first, then deleted for good (privacy notice, «retention»): the account, its sessions and
+ *  links go; the company's records stay without their author (the link becomes empty, the triggers allow only that),
+ *  and the activity log keeps the bare id, no personal data. */
+export async function deleteUserAction(fd: FormData): Promise<void> {
+  const me = await actor('users:manage');
+  const id = idSchema.safeParse(str(fd, 'id'));
+  if (!me || !id.success) return;
+  const target = await manageable(me, id.data);
+  if (!target || target.active || target.role === 'OWNER') return;
+  const { count } = await prisma.user.deleteMany({ where: { id: target.id, companyId: me.companyId, active: false } });
+  if (count) await audit({ companyId: me.companyId, userId: me.id, action: 'USER_DELETED', entity: 'User', entityId: target.id, meta: { role: target.role } });
+  revalidatePath(`/${localeOf(fd)}/app/team`);
+}
+
 export async function resetUserPasswordAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const me = await actor('users:manage');
   const id = idSchema.safeParse(str(fd, 'id'));
@@ -107,6 +166,12 @@ export async function resetUserPasswordAction(_prev: FormState, fd: FormData): P
   if (!rateLimit(`reset:${me.id}`, 20, 60 * 60 * 1000)) return { error: 'rateLimited' };
   const target = await manageable(me, id.data);
   if (!target) return { error: 'forbidden' };
+  if (mailConfigured() && me.role !== 'SUPERADMIN') {
+    // the colleague chooses it from the link of the e-mail; the current one works until then
+    mailAccount(target.email, isLocale(target.locale) ? target.locale : localeOf(fd), { kind: 'reset', token: await issueToken(target.id, 'RESET_PASSWORD') });
+    await audit({ companyId: me.companyId, userId: me.id, action: 'PASSWORD_RESET_REQUESTED', entity: 'User', entityId: target.id });
+    return { ok: true, pending: true, message: target.email };
+  }
   const password = temporaryPassword();
   const passwordHash = await hashPassword(password);
   await prisma.$transaction([

@@ -12,15 +12,18 @@ import { MEMBER_ROLES } from '@/lib/rbac';
 import { companyAccess, daysLeft, packOf, packPaid, seatFree, seatLimit, type Access } from '@/lib/billing';
 import { BILLING_SELECT, accessOf } from '@/lib/billing-access';
 import { billingConfig, billingConfigured } from '@/lib/billing-config';
+import { pendingInvites } from '@/lib/invites';
 import { idSchema } from '@/lib/schemas';
 
 type Db = Prisma.TransactionClient | typeof prisma;
 const LIVE = new Set(['active', 'trialing', 'past_due']);
 const ENDED = new Set(['canceled', 'incomplete_expired']);
 
-/** The active colleagues of a company: each takes a slot (the owner does not). */
-export const seatsUsed = (companyId: string, db: Db = prisma): Promise<number> =>
-  db.user.count({ where: { companyId, active: true, role: { in: [...MEMBER_ROLES] } } });
+/** The active colleagues of a company and its invitations still waiting: each takes a slot (the owner does not). */
+export async function seatsUsed(companyId: string, db: Db = prisma): Promise<number> {
+  const members = await db.user.count({ where: { companyId, active: true, role: { in: [...MEMBER_ROLES] } } });
+  return members + (await pendingInvites(companyId, db));
+}
 
 export interface CompanySubscription {
   access: Access;
@@ -83,6 +86,8 @@ export async function enforceSeats(companyId: string): Promise<number> {
     const members = await tx.user.findMany({
       where: { companyId, active: true, role: { in: [...MEMBER_ROLES] } }, orderBy: { createdAt: 'desc' }, select: { id: true },
     });
+    // the invitations still waiting go first: nobody has joined through them yet, and the owner can send them again
+    if (members.length + (await pendingInvites(companyId, tx)) > limit) await tx.invite.deleteMany({ where: { companyId } });
     const ids = members.slice(0, Math.max(0, members.length - limit)).map((u) => u.id);
     if (ids.length) await tx.user.updateMany({ where: { id: { in: ids }, companyId }, data: { active: false, tokenVersion: { increment: 1 } } });
     return ids;

@@ -36,5 +36,5 @@ export default function middleware(request: NextRequest): NextResponse {
 
 export const config = {
   // every page, also addresses with a dot (their 404 gets the policy too); out: API, Next assets and the real files
-  matcher: ['/((?!api/|_next/|fonts/|img/|robots\\.txt|sitemap\\.xml|llms\\.txt|apple-touch-icon\\.png|favicon\\.ico).*)'],
+  matcher: ['/((?!api/|_next/|fonts/|img/|robots\\.txt|sitemap\\.xml|llms\\.txt|indexnow-key\\.txt|apple-touch-icon\\.png|favicon\\.ico).*)'],
 };

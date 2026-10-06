@@ -292,7 +292,7 @@ try {
   await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
     urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId } });
 
-  if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser) });
+  if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser), ADMIN_EMAIL: ADMIN.email });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');
 
   step('all good');

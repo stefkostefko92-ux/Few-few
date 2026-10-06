@@ -19,6 +19,7 @@ const tx = {
   $queryRaw: async () => [],
   company: { findUnique: async () => ({ billingExempt: false, subscriptionStatus: null, trialEndsAt: new Date(Date.now() + 864e5), seatPack: 'NONE' }) },
   user: { count: async () => 0, create: async () => { throw new Error('no slot: nothing is created'); } },
+  invite: { count: async () => 0, findUnique: async () => null, upsert: async () => { throw new Error('no slot: nothing is invited'); } },
 };
 mock.module(src('lib/db.ts'), { namedExports: { prisma: {
   project: { findFirst: async ({ where }: { where: Where }) => (PROJECTS.find((p) => match(p, where)) ? { id: String(where.id) } : null) },
@@ -29,6 +30,8 @@ mock.module(src('lib/db.ts'), { namedExports: { prisma: {
 } } });
 mock.module(src('lib/auth.ts'), { namedExports: { getSessionUser: async () => ({ id: 'u1', role, companyId: 'c1', mustChangePassword: false, readOnly: false }) } });
 mock.module(src('lib/mail.ts'), { namedExports: { mailConfigured: () => true } });
+mock.module(src('lib/inactive.ts'), { namedExports: { purgeInactive: async () => ({ told: 0, deleted: 0 }) } });
+mock.module(src('lib/account-mail.ts'), { namedExports: { mailAccount: () => {} } });
 mock.module(src('lib/audit.ts'), { namedExports: { audit: async () => {} } });
 mock.module(src('lib/billing-config.ts'), { namedExports: { billingConfigured: () => true, billingConfig: () => ({ trialDays: 14 }) } });
 mock.module(pkg('next/cache'), { namedExports: { revalidatePath: () => {} } });

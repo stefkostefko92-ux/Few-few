@@ -9,6 +9,8 @@ export default async function Footer() {
         <span>{t('footerNote')}</span>
         <span className="footer-links">
           <Link href="/privacy">{t('legal')}</Link>
+          <Link href="/pricing">{t('pricingLink')}</Link>
+          <Link href="/data">{t('dataLink')}</Link>
           <span lang="en">
             Created and Designed by{' '}
             <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>

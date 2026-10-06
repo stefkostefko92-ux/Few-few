@@ -1,7 +1,9 @@
-// Panev's 2026 list prices of its articles (catalogue p. 65, euro, VAT excluded, "salvo variazioni"); an article missing
-// here is quoted to order. Apart from the catalogue (src/lib/catalog/panev.ts) so that the screens' JavaScript never
-// carries them: the company's price list starts from these on the server (src/lib/prices/articles.ts), the standalone
-// page shows them as Panev's list. Pure.
+// Panev's 2026 list prices of its articles (catalogue p. 65, euro, VAT excluded, "salvo variazioni"): public — Panev
+// publishes the catalogue with its full price list at https://panevascensori.it/catalogo, and the terms disclose that
+// Carbon Stealth VCC also builds Panev's website (legal.marksText). An article missing here is quoted to order. Apart
+// from the catalogue (src/lib/catalog/panev.ts) so that the screens' JavaScript never carries them: the company's price
+// list starts from these on the server (src/lib/prices/articles.ts), the standalone page shows them as Panev's list.
+// Pure.
 export const PANEV_LIST_PRICE: Readonly<Record<string, number>> = {
   'A 65 170 7': 13.68,
   'A 45 170 7': 12.46,

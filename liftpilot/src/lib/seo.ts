@@ -3,6 +3,7 @@
 import type { Metadata } from 'next';
 import { LOCALES, type Locale } from '@/i18n/locales';
 import { indexingAllowed, publicBaseUrl } from './env';
+import { PROVIDER } from './provider';
 
 export const SITE_NAME = 'LiftPilot';
 const OG_LOCALE: Record<Locale, string> = { it: 'it_IT', en: 'en_GB', bg: 'bg_BG' };
@@ -41,8 +42,17 @@ export function pageMetadata(p: PageMeta): Metadata {
 
 type JsonLd = Record<string, unknown>;
 
+/** The provider as the register knows it: the legal name in both scripts, the codes, the seat and the contacts. */
 export function organizationLd(): JsonLd {
-  return { '@type': 'Organization', '@id': 'https://carbonstealth.eu/#org', name: 'Carbon Stealth VCC', url: 'https://carbonstealth.eu' };
+  const p = PROVIDER;
+  return {
+    '@type': 'Organization', '@id': `${p.url}/#org`, name: p.name, legalName: p.name, alternateName: p.nameBg, url: p.url, email: p.email,
+    telephone: p.phones[0], vatID: p.vat, taxID: p.eik, identifier: { '@type': 'PropertyValue', propertyID: 'EIK', value: p.eik },
+    address: { '@type': 'PostalAddress', streetAddress: p.address.street, postalCode: p.address.postalCode, addressLocality: p.address.locality,
+      addressRegion: p.address.region, addressCountry: p.address.country },
+    contactPoint: p.phones.map((telephone, i) => ({ '@type': 'ContactPoint', contactType: 'customer support', telephone, email: p.email,
+      areaServed: i === 0 ? 'BG' : 'IT', availableLanguage: ['it', 'en', 'bg'] })),
+  };
 }
 
 export function websiteLd(locale: Locale): JsonLd {

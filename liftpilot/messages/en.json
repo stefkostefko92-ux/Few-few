@@ -10,7 +10,9 @@
     "login": "Sign in",
     "language": "Language",
     "legal": "Privacy and terms",
-    "provider": "Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov Dol, Bulgaria · UIC (ЕИК) 208725180 · VAT BG208725180 · info@carbonstealth.eu"
+    "provider": "Carbon Stealth VCC (Карбон Стелт ЕДПК), a variable capital company under Bulgarian law · ul. Samuil 3, 2670 Bobov Dol, Bulgaria · UIC (ЕИК) 208725180 · VAT BG208725180 · tel. +359 877 414 874, +39 379 296 9699 · info@carbonstealth.eu",
+    "dataLink": "Data and formats",
+    "pricingLink": "Pricing"
   },
   "errors": {
     "notFoundTitle": "Page not found",
@@ -50,7 +52,8 @@
     "noSeats": "No free slot: buy a pack of slots or deactivate a colleague.",
     "invalidPrices": "Some prices are not valid.",
     "notReplacement": "The machine room survey belongs to a machine replacement: a whole project draws its room from the shaft design.",
-    "roomIssues": "The survey has a problem to correct."
+    "roomIssues": "The survey has a problem to correct.",
+    "inviteTaken": "This address already has a LiftPilot account and an address belongs to one company only: ask the company to invite you with another address."
   },
   "auth": {
     "title": "Sign in",
@@ -198,7 +201,8 @@
     "endTitle": "Bring your next installation to LiftPilot",
     "endText": "Register your company and confirm the email address: you can create the first project right away.",
     "machineAlt": "Geared machine on its bedplate: motor with cooling fins, drum brake with electromagnet, worm gearbox, handwheel for emergency operation and traction sheave with four ropes.",
-    "machineCaption": "The machine of the calculator’s example A: sheave D 560 mm, 4 ropes Ø 10 mm, ratio 1:43, 7.5 kW motor. Illustrative model, not a real product."
+    "machineCaption": "The machine of the calculator’s example A: sheave D 560 mm, 4 ropes Ø 10 mm, ratio 1:43, 7.5 kW motor. Illustrative model, not a real product.",
+    "ctaPricing": "Pricing"
   },
   "projects": {
     "title": "Installations",
@@ -305,7 +309,7 @@
   },
   "team": {
     "title": "Users",
-    "lead": "Your company's colleagues: the owner creates their accounts and gives each a role; every active colleague takes a slot of the subscription.",
+    "lead": "The accounts of your company’s colleagues: the owner invites them by e-mail and gives each a role; every active colleague and every waiting invitation takes a slot of the subscription.",
     "name": "Name",
     "email": "E-mail",
     "role": "Role",
@@ -318,22 +322,31 @@
     "pendingPassword": "must change the password",
     "deactivate": "Deactivate",
     "activate": "Reactivate",
-    "resetPassword": "New temporary password",
+    "resetPassword": "New password",
     "you": "that is you",
-    "addTitle": "Add a user",
-    "add": "Create user",
+    "addTitle": "Invite a colleague",
+    "add": "Send the invitation",
     "tempPassword": "Temporary password for {email} (shown only once):",
     "tempPasswordNote": "Hand it over in person or through a secure channel. At the first sign-in the user chooses their own password.",
-    "confirmNote": "At the first sign-in the new user confirms the address with the link received by e-mail and the temporary password.",
     "pendingEmail": "must confirm the e-mail",
-    "seats": "Active colleagues: {used} of {limit} slots.",
+    "seats": "Slots used (active colleagues and waiting invitations): {used} of {limit}.",
     "buySeats": "Buy or change slots",
     "noSeats": "No free slot: buy a pack of slots or deactivate a colleague.",
     "roleNote": {
       "ENGINEER": "designs and calculates, signs off calculations and archives installations; does not see prices.",
       "SALES": "views and downloads projects, reports and order drafts and sees prices; changes nothing.",
       "TECHNICIAN": "designs and calculates; does not sign off, archive or see prices."
-    }
+    },
+    "inviteSent": "Invitation sent to {email}: the colleague opens the link in the e-mail and chooses a password (the link is valid for {days} days). No password goes through you.",
+    "invitesTitle": "Waiting invitations",
+    "invited": "invited",
+    "inviteExpires": "the link expires on {date}",
+    "inviteAgain": "Send again",
+    "inviteRevoke": "Cancel the invitation",
+    "resetSent": "Link for a new password sent to {email}: the current password works until the colleague chooses a new one.",
+    "delete": "Delete",
+    "deleteNote": "The colleague’s account is deleted for good; the projects and documents they made stay with the company, without their name.",
+    "deleteConfirm": "Delete for good"
   },
   "admin": {
     "title": "Companies",
@@ -868,7 +881,8 @@
     "logoReadOnly": "The logo can be changed when the company is not read-only.",
     "reviseRoom": "Machine room survey to draw the revision from",
     "roomTitle": "Replacement project",
-    "engineChangedKept": "The current engines do not redraw this set on screen; the PDF stays downloadable as it was issued. To change it, issue a new revision."
+    "engineChangedKept": "The current engines do not redraw this set on screen; the PDF stays downloadable as it was issued. To change it, issue a new revision.",
+    "exportFormat": "How the file is built: formats and data structure"
   },
   "lift": {
     "workTitle": "Design and simulation",
@@ -1150,6 +1164,17 @@
     "noLink": "This page opens from the link in the e-mail. If the link has expired, ask for a new one.",
     "again": "Ask for a new link"
   },
+  "invite": {
+    "title": "Accept the invitation",
+    "lead": "Choose your account’s password: you use it to sign in to LiftPilot in the company that invites you.",
+    "who": "{company} invites you to LiftPilot as {role}, with the address {email}.",
+    "next": "Password",
+    "confirm": "Repeat the password",
+    "rule": "At least {min} characters, with letters and digits.",
+    "submit": "Accept and sign in",
+    "submitting": "Please wait…",
+    "noLink": "This page opens from the link in the invitation e-mail. If the link has expired or was already used, ask the company to send the invitation again."
+  },
   "legal": {
     "title": "Privacy and terms of use",
     "metaDescription": "How LiftPilot processes the personal data of installers and technicians, and the terms of use of the service.",
@@ -1157,17 +1182,17 @@
     "privacyTitle": "Privacy notice",
     "termsTitle": "Terms of use",
     "controllerTitle": "Who is the data controller?",
-    "controllerText": "Carbon Stealth VCC, registered office at ul. Samuil 3, 2670 Bobov Dol, Bulgaria, entered in the Commercial Register at the Bulgarian Registry Agency under UIC (ЕИК) 208725180, VAT number BG208725180. For privacy questions and to exercise your rights, write to info@carbonstealth.eu. We have not appointed a data protection officer (DPO), which is not mandatory for our activity.",
+    "controllerText": "Carbon Stealth VCC (Bulgarian name: Карбон Стелт ЕДПК), a variable capital company (VCC) under Bulgarian law, registered office at ul. Samuil 3, 2670 Bobov Dol, Bulgaria, entered in the Commercial Register and Register of Non-Profit Legal Entities kept by the Bulgarian Registry Agency under UIC (ЕИК) 208725180, VAT number BG208725180, represented by Stefan Kostadinov. For privacy questions and to exercise your rights, write to info@carbonstealth.eu or call +359 877 414 874 (Bulgaria) or +39 379 296 9699 (Italy). We have not appointed a data protection officer (DPO), which is not mandatory for our activity.",
     "dataTitle": "What data do we process, and why?",
-    "dataText": "Account: name, e-mail, company name, VAT number and city (if you enter them), password (only as an Argon2id hash), role, language, date of the last sign-in, confirmation of the address and acceptance of these terms (date, version and confirmations given). They are needed to enter into and perform the contract (Art. 6(1)(b) GDPR): without them the account cannot be created.\n\nColleagues’ accounts: the company’s owner creates them, entering name, e-mail and role (Art. 14 GDPR). We process them to provide the service to the company and, for security and the activity log, in our legitimate interest (Art. 6(1)(f) GDPR).\n\nSubscription: the identifiers of the customer and of the subscription at Stripe, its status, the pack of slots and the end of the paid period. You enter the billing data (name, address, VAT number, e-mail) in Stripe’s payment; card data never reach LiftPilot. Basis: the contract and tax obligations (Art. 6(1)(b) and (c) GDPR).\n\nActivity log: who in your company did what and when (sign-ins, saved calculations, issued drawing sets, changed prices and subscription, accepted terms, exported data), for security and the traceability of technical documents (Art. 6(1)(f) GDPR, legitimate interest).\n\nE-mails and correspondence: the address confirmation and the links for a new password, sent only when you register or ask for them; the messages you write to us, to answer them (Art. 6(1)(b) and (f) GDPR).\n\nSecurity: the IP address is used, in memory only, to limit repeated attempts, and the application does not store it; the web server’s logs (IP address, page, time, browser) protect the service from abuse (Art. 6(1)(f) GDPR).\n\nWe do not process any data on the basis of consent.",
+    "dataText": "Account: name, e-mail, company name, VAT number and city (if you enter them), password (only as an Argon2id hash), role, language, date of the last sign-in, confirmation of the address and acceptance of these terms (date, version and confirmations given). They are needed to enter into and perform the contract (Art. 6(1)(b) GDPR): without them the account cannot be created.\n\nColleagues: the owner invites a colleague by entering their name, e-mail and role (Art. 14 GDPR); the account exists only once the colleague opens the invitation’s link and chooses their own password, and an invitation not accepted expires after {inviteDays} days. We process them to provide the service to the company and, for security and the activity log, in our legitimate interest (Art. 6(1)(f) GDPR).\n\nSubscription: the identifiers of the customer and of the subscription at Stripe, its status, the pack of slots and the end of the paid period. You enter the billing data (name, address, VAT number, e-mail) in Stripe’s payment; card data never reach LiftPilot. Basis: the contract and tax obligations (Art. 6(1)(b) and (c) GDPR).\n\nActivity log: who in your company did what and when (sign-ins, saved calculations, issued drawing sets, changed prices and subscription, accepted terms, exported data), for security and the traceability of technical documents (Art. 6(1)(f) GDPR, legitimate interest).\n\nE-mails and correspondence: the address confirmation, the colleagues’ invitations, the links for a new password and the notices these terms provide for (changes of the terms, deletion of an inactive company); the messages you write to us, to answer them (Art. 6(1)(b) and (f) GDPR). The e-mails carry no tracking pixels or tracked links.\n\nSecurity: the IP address is used, in memory only, to limit repeated attempts, and the application does not store it; the web server’s logs (IP address, page, time, browser) protect the service from abuse (Art. 6(1)(f) GDPR).\n\nWe do not process any data on the basis of consent.",
     "projectsTitle": "And the data of the installations?",
     "projectsText": "For the personal data the company enters in its projects, for example a client’s name or an installation’s address, the company is the controller and Carbon Stealth VCC the processor: the agreement between them is Art. {dpa} of the terms of use, below. To exercise your rights over these data, contact the company; if you write to us, we forward your request to it.",
     "recipientsTitle": "Who receives them?",
-    "recipientsText": "Hetzner Online GmbH (Germany) hosts the server in the European Union; Sendinblue SAS (Brevo, France) sends the service e-mails; Stripe Payments Europe, Limited (Ireland) handles the subscription payments and also processes payment data as an independent controller, for example to prevent fraud and for legal obligations, under its own privacy policy, including transfers outside the European Union. We disclose data to authorities only when the law requires it. Nobody else: we do not sell data and use no advertising or tracking tools.",
+    "recipientsText": "Hetzner Online GmbH (Germany) hosts the server in its data centre in Nuremberg, Germany; Sendinblue SAS (Brevo, France) sends the service e-mails and records only their delivery; Stripe Payments Europe, Limited (Ireland) handles the subscription payments and also processes payment data as an independent controller, for example to prevent fraud and for legal obligations, under its own privacy policy. We disclose data to authorities only when the law requires it. Nobody else: we do not sell data and use no advertising or tracking tools.\n\nTransfers outside the European Economic Area: Stripe may transfer data to Stripe, Inc. in the United States, certified under the EU–U.S. Data Privacy Framework (the Commission’s adequacy decision, Art. 45 GDPR), with the Commission’s standard contractual clauses (Art. 46 GDPR) as a fallback safeguard; e-mail data may reach Brevo’s providers outside the EEA only with the same safeguards. A copy of the safeguards can be requested at info@carbonstealth.eu.",
     "cookiesTitle": "Which cookies does LiftPilot use?",
     "cookiesText": "Technical cookies only: an httpOnly one for the session after sign-in (12 hours at most) and a session one (NEXT_LOCALE) that remembers the chosen language when it differs from the browser’s. No analytics, advertising or profiling cookies, so no consent banner is needed. Payment takes place on Stripe’s pages, which use their own cookies under their policy.",
     "retentionTitle": "How long do we keep them?",
-    "retentionText": "Account and data for as long as the account exists; an account never confirmed nor used (a registration or a user added by a company) is deleted after {days} days. Projects and the activity log stay for as long as the company’s account exists, also after the subscription ends, read-only; the owner can ask for their deletion at any time (Art. {exit} of the terms of use).\n\nThe web server’s logs are deleted after {logDays} days; the application’s logs contain no IP addresses and are overwritten in rotation. At every update of the service we back up the database and keep only the five most recent backups: deleted data disappear from the backups as these are replaced. Subscription data and invoices are kept for the time required by tax and accounting law; correspondence for the time needed to handle the request.",
+    "retentionText": "Account and data for as long as the account exists. An account never confirmed nor used is deleted after {days} days, an invitation not accepted when it expires ({inviteDays} days); the owner can deactivate a colleague and then delete them, and the documents the colleague made stay with the company without their name.\n\nProjects and the activity log stay for as long as the company’s account exists, also after the subscription ends, read-only; the owner can ask for their deletion at any time (Art. {exit} of the terms of use). A company without a subscription in force where nobody has signed in for {inactiveMonths} months is deleted with all its data: at least {inactiveNoticeDays} days before, we tell the owner by e-mail, and one sign-in is enough to keep it.\n\nThe web server’s logs are deleted after {logDays} days; the application’s logs contain no IP addresses and are overwritten in rotation. We copy the database every night and before every update and delete each copy after {backupDays} days: deleted data disappear from the copies within that time too. Invoices and the subscription’s accounting records are kept for {accountingYears} years from 1 January of the following year (Art. 12 of the Bulgarian Accountancy Act); correspondence for the time needed to handle the request.",
     "rightsTitle": "What are your rights?",
     "rightsText": "Access, rectification, erasure, restriction, portability and objection (Arts. 15–21 GDPR): write to info@carbonstealth.eu and we answer within one month. You can lodge a complaint with the supervisory authority of the country where you live or work or where you believe the infringement took place: in Bulgaria the Commission for Personal Data Protection (www.cpdp.bg), in Italy the Garante per la protezione dei dati personali (www.garanteprivacy.it). We take no automated decisions about you (Art. 22 GDPR).",
     "serviceTitle": "Subject matter and users of the service",
@@ -1175,7 +1200,7 @@
     "resultsTitle": "Results of the software and responsibility of the technician",
     "resultsText": "LiftPilot’s calculations, drawing sets, reports, simulations, machine advice, order drafts and costs are working tools and drafts: they become documents only when a qualified technician checks and signs them, and the responsibility for the design and the choices remains theirs. The software checks neither the data entered nor the installation: wrong data produce wrong results.\n\nManufacturers’ data come from their documents, with the source shown, and must be confirmed on the data sheet and in the quotation before ordering. LiftPilot does not replace the standards, the technician’s judgement, on-site tests or the checks of the notified body.",
     "accountsTitle": "Accounts, suspension and termination",
-    "accountsText": "Whoever registers the company is its owner: they create the colleagues’ accounts with the role of Design engineer, Sales or Technician, within the subscription’s slots, and answer for the accounts and the use of the service in their company. Everyone keeps their password secret and tells us at once of any unauthorised use.\n\nWe may suspend an account or the company, in whole or in part, with a reasoned notice, for breach of these terms, abuse, non-payment, a security risk or an authority’s request, for as long as the cause lasts. If the breach is serious or is not remedied within 15 days of the notice, we may terminate the contract. We may also terminate without cause on 60 days’ notice, refunding the paid and unused part of the subscription.",
+    "accountsText": "Whoever registers the company is its owner: they invite the colleagues with the role of Design engineer, Sales or Technician, within the subscription’s slots — the account exists once the colleague accepts the invitation —, can deactivate and delete them, and answer for the accounts and the use of the service in their company. Everyone keeps their password secret and tells us at once of any unauthorised use.\n\nWe may suspend an account or the company, in whole or in part, with a reasoned notice, for breach of these terms, abuse, non-payment, a security risk or an authority’s request, for as long as the cause lasts. If the breach is serious or is not remedied within 15 days of the notice, we may terminate the contract. We may also terminate without cause on 60 days’ notice, refunding the paid and unused part of the subscription.",
     "lawTitle": "Governing law and jurisdiction",
     "lawText": "The contract is governed by Bulgarian law. The courts of the Republic of Bulgaria have exclusive jurisdiction over any dispute, without prejudice to mandatory rules.",
     "subscriptionTitle": "Price, trial, payment and renewal",
@@ -1183,9 +1208,9 @@
     "liabilityTitle": "Limits of liability and indemnity",
     "liabilityText": "The service is provided with professional diligence, as is and as available: there may be interruptions for maintenance or faults, and we do not warrant that it is always error-free or fit for a particular purpose.\n\nTo the extent permitted by law, Carbon Stealth VCC is liable for damage caused by the service, for all harmful events together, only up to the amount the company paid for the subscription in the 12 months before the first event, and is not liable for indirect damage, lost profit, lost orders or loss of data the company could have kept by downloading them. These limits do not apply to wilful misconduct and gross negligence, to personal injury, to liability for defective products, or in the other cases in which the law does not allow liability to be excluded or limited.\n\nThe company indemnifies Carbon Stealth VCC against damage, reasonable costs (including legal fees) and third-party claims arising from: (a) use of the results as documents without the check and signature of a qualified technician; (b) data and content entered by the company, including personal data processed without a legal basis and content infringing third parties’ rights; (c) breach of these terms by its users.",
     "changesTitle": "Changes to the terms and the service",
-    "changesText": "We may change these terms and the service for legal, technical or security reasons or as the service evolves. Changes are notified to the owner by e-mail at least 30 days before they take effect, with a summary; those required by law or urgent for security may apply sooner, with the same notice. If the owner does not accept them, they can cancel without cost before they take effect; afterwards, until the owner accepts them, the company has read-only access and can download its data and cancel. The version in force and its date are at the top of this page.",
+    "changesText": "We may change these terms and the service for legal, technical or security reasons or as the service evolves. A new version applies to new companies from its publication; for a company already registered it takes effect only at least {noticeDays} days after the e-mail that notifies the owner of it with a summary, and until then the accepted version applies. Changes required by law or urgent for security may apply sooner, with the same notice. If the owner does not accept the new version, they can cancel without cost before it takes effect; afterwards, until the owner accepts it, the company has read-only access and can download its data and cancel. The version in force and its date are at the top of this page.",
     "contactTitle": "Provider and contact",
-    "contactText": "Carbon Stealth VCC, ul. Samuil 3, 2670 Bobov Dol, Bulgaria; Commercial Register at the Registry Agency, UIC (ЕИК) 208725180; VAT number BG208725180. Contact: info@carbonstealth.eu, in Italian, English or Bulgarian. It is also the point of contact for authorities and users under Arts. 11 and 12 of Regulation (EU) 2022/2065 (DSA) and the address to report illegal content (Art. {content}).",
+    "contactText": "Carbon Stealth VCC (Bulgarian name: Карбон Стелт ЕДПК), a variable capital company under Bulgarian law represented by Stefan Kostadinov; ul. Samuil 3, 2670 Bobov Dol, Bulgaria; Commercial Register at the Registry Agency, UIC (ЕИК) 208725180; VAT number BG208725180. Contact: info@carbonstealth.eu, phone +359 877 414 874 (Bulgaria) and +39 379 296 9699 (Italy), in Italian, English or Bulgarian. These are also the single point of contact for the authorities of the Member States, the Commission and the European Board for Digital Services (Art. 11 of Regulation (EU) 2022/2065, DSA), in Bulgarian or English, and for the recipients of the service (Art. 12 DSA), also in Italian; info@carbonstealth.eu is the address to report illegal content (Art. {content}).",
     "gateTitle": "Updated terms of use",
     "gateLead": "The terms of use and the privacy notice have changed: version {version} of {date}. Read them and, to keep working, accept them for the company. Until then LiftPilot is read-only: you can view and download the projects, download the company’s data and manage or cancel the subscription.",
     "gateSubmit": "I accept and continue",
@@ -1200,11 +1225,11 @@
     "licenseTitle": "Licence and intellectual property",
     "licenseText": "The LiftPilot software, its calculation engines, the standards register, the component models, the texts and the LiftPilot trade mark belong to Carbon Stealth VCC or its licensors. For the term of the contract the company receives a non-exclusive, non-transferable right to use them for its own business, with the accounts of the slots purchased. It may not resell the service or make it available to third parties, copy or systematically extract its content and catalogue data, decompile it beyond what the law allows, or circumvent its technical limits.\n\nThe data entered and the documents generated (reports, drawing sets, drawings, order drafts) belong to the company, which may use them also after the contract ends. For logos, DXF and DWG drawings and other uploaded content, the company warrants that it holds the rights to them and authorises us to process them only to provide the service.",
     "dpaTitle": "Processing of data on behalf of the company (Art. 28 GDPR)",
-    "dpaText": "For the personal data the company enters (installations, calculations, drawing sets, order drafts, price list, colleagues’ accounts) the company is the controller and Carbon Stealth VCC the processor (Art. 28 GDPR); this article is the agreement between them.\n\nSubject matter and duration: the provision of the service, for the term of the contract and of the data retrieval period (Art. {exit}). Nature and purpose: storage, consultation, calculation, generation of documents and service e-mails, only to provide the service. Types of data: users’ names, e-mails and roles; names of clients, owners or building managers, installations’ addresses and serial numbers, logos and the other data the company chooses to enter; the company does not enter special categories of data (Art. 9 GDPR). Data subjects: the company’s users, its clients and principals, building owners and managers.\n\nWe process the data only on the company’s documented instructions — these terms and its use of the service’s functions —, including with regard to transfers to third countries, which we do not make, unless required by Union or Member State law, in which case we inform the company beforehand where the law allows; if we believe an instruction infringes the GDPR, we say so at once. Whoever processes the data for us is bound to confidentiality. Security measures (Art. 32 GDPR): servers in the European Union, encrypted connections (TLS), passwords only as Argon2id hashes, access by role within the company and separated between companies, activity log, backups.\n\nSub-processors authorised in general: Hetzner Online GmbH (Germany, servers in the European Union) and Sendinblue SAS — Brevo (France, service e-mails). Any addition or replacement is notified to the owner by e-mail at least 30 days in advance: the company may object on data protection grounds and, if no solution is found, terminate without cost before the change. We impose on sub-processors data protection obligations equivalent to these and remain liable to the company for their performance.\n\nWe assist the company, with appropriate measures, in answering data subjects’ requests and in complying with Arts. 32–36 GDPR as far as we are concerned, and we notify it of a personal data breach without undue delay after becoming aware of it. At the end of the contract, at the company’s choice, we return the data through the service’s exports and then delete them, unless the law requires them to be kept; they disappear from the backups as these are replaced. We make available the information needed to demonstrate compliance with this article and allow for audits, including inspections, by the company or an auditor it mandates who is bound to confidentiality, on reasonable notice.",
+    "dpaText": "For the personal data the company enters (installations, calculations, drawing sets, order drafts, price list, colleagues’ accounts) the company is the controller and Carbon Stealth VCC the processor (Art. 28 GDPR); this article is the agreement between them.\n\nSubject matter and duration: the provision of the service, for the term of the contract and of the data retrieval period (Art. {exit}). Nature and purpose: storage, consultation, calculation, generation of documents and service e-mails, only to provide the service. Types of data: users’ names, e-mails and roles; names of clients, owners or building managers, installations’ addresses and serial numbers, logos and the other data the company chooses to enter; the company does not enter special categories of data (Art. 9 GDPR). Data subjects: the company’s users, its clients and principals, building owners and managers.\n\nWe process the data only on the company’s documented instructions — these terms and its use of the service’s functions —, including with regard to transfers to third countries: we keep the data in the European Union, and a sub-processor processes them outside the EEA only with the safeguards of Arts. 44–46 GDPR (an adequacy decision or standard contractual clauses); obligations under Union or Member State law remain, in which case we inform the company beforehand where the law allows. If we believe an instruction infringes the GDPR, we say so at once. Whoever processes the data for us is bound to confidentiality. Security measures (Art. 32 GDPR): servers in Germany, encrypted connections (TLS), passwords only as Argon2id hashes, access by role within the company and separated between companies, activity log, backups kept for {backupDays} days.\n\nSub-processors authorised in general: Hetzner Online GmbH (Germany, servers in Nuremberg) and Sendinblue SAS — Brevo (France, service e-mails). Any addition or replacement is notified to the owner by e-mail at least 30 days in advance: the company may object on data protection grounds and, if no solution is found, terminate without cost before the change. We impose on sub-processors data protection obligations equivalent to these and remain liable to the company for their performance.\n\nWe assist the company, with appropriate measures, in answering data subjects’ requests and in complying with Arts. 32–36 GDPR as far as we are concerned, and we notify it of a personal data breach without undue delay after becoming aware of it. At the end of the contract, at the company’s choice, we return the data through the service’s exports and then delete them, unless the law requires them to be kept; they disappear from the backups within {backupDays} days. We make available the information needed to demonstrate compliance with this article and allow for audits, including inspections, by the company or an auditor it mandates who is bound to confidentiality, on reasonable notice.",
     "exitTitle": "Cancellation, switching provider and return of data",
-    "exitText": "The company can cancel at any time, also to switch to another provider or to its own systems, effective at the end of the period already paid. For as long as the account exists, and in any case for at least 30 days after the subscription ends, the owner can download the company’s data: reports, drawing sets and projects in PDF, DXF and DWG and, from the Company page, all the data entered in a structured, machine-readable format (JSON). On request we help with the switch, free of charge. The software’s catalogue data and standards register cannot be exported (Art. {license}).\n\nThe data stay available read-only for as long as the account exists. At the owner’s request to info@carbonstealth.eu we delete the company and its data within 30 days, except what must be kept by law, and confirm it by e-mail.",
+    "exitText": "The company can cancel at any time, also to switch to another provider or to its own systems, effective at the end of the period already paid. For as long as the account exists, and in any case for at least 30 days after the subscription ends, the owner can download the company’s data: reports, drawing sets and projects in PDF, DXF and DWG and, from the Company page, all the data entered in a structured, machine-readable format (JSON). The register of the formats and the jurisdiction of our servers are on the page “Data and formats” (https://liftpilot.carbonstealth.eu/en/data), which we keep up to date (Arts. 26 and 28 of Regulation (EU) 2023/2854, the Data Act). On request we help with the switch, free of charge. The software’s catalogue data and standards register cannot be exported (Art. {license}).\n\nThe data stay available read-only for as long as the account exists. At the owner’s request to info@carbonstealth.eu we delete the company and its data within 30 days, except what must be kept by law, and confirm it by e-mail.",
     "marksTitle": "Trade marks and manufacturers’ data",
-    "marksText": "SICOR, Montanari, Panev and the other names of manufacturers and products mentioned in the software are trade marks of their respective owners, used only to identify their products: their use does not imply endorsement by the owners. Technical data come from the documents shown as the source and the pre-filled prices of the price list from the manufacturer’s price list: they may have changed or contain errors and must be confirmed with the manufacturer before ordering. The recommended machine is chosen only with the technical criteria stated in the advice, not on the basis of commercial agreements; the brackets and plates proposed are those of the Panev catalogue included in the software.",
+    "marksText": "SICOR, Montanari, Panev and the other names of manufacturers and products mentioned in the software are trade marks of their respective owners, used only to identify their products: their use does not imply endorsement by the owners. Technical data come from the documents shown as the source and the pre-filled prices of Panev’s articles from Panev’s public price list: they may have changed or contain errors and must be confirmed with the manufacturer before ordering. The recommended machine is chosen only with the technical criteria stated in the advice, not on the basis of commercial agreements. The brackets and plates proposed are those of the Panev catalogue included in the software; Carbon Stealth VCC also builds the website of Panev Ascensori.",
     "miscTitle": "Miscellaneous",
     "miscText": "Force majeure: we are not liable for delays or interruptions due to causes beyond our reasonable control. Severability: a void clause does not affect the others and is replaced by the valid one closest to its purpose. Assignment: the company may assign the contract only with our written consent; we may assign it to whoever takes over our business, with notice to the owner. Notices: to the owner’s e-mail and in the application; to us at info@carbonstealth.eu. Language: the terms are in Italian, English and Bulgarian; in case of discrepancy the Italian text prevails.",
     "gateTitleNew": "Terms of use",
@@ -1216,7 +1241,12 @@
     "gateData": "Company data",
     "bannerOwner": "The terms of use changed on {date}: accept them to keep working. Until then LiftPilot is read-only.",
     "bannerMember": "The company’s owner has not yet accepted the terms of use in force: until then LiftPilot is read-only.",
-    "bannerAction": "Read and accept"
+    "bannerAction": "Read and accept",
+    "bannerPending": "New terms of use: for your company they take effect on {date}. Until then the ones you accepted apply; you can read and accept them now.",
+    "bannerNew": "New terms of use have been published: we will write to you with the day they take effect for your company, at least {days} days before. You can read and accept them now.",
+    "gateLeadPending": "We have updated the terms of use and the privacy notice: version {version} of {date}. For your company they take effect on {binding}: until then the ones you accepted apply and LiftPilot works as usual. You can accept them now.",
+    "gateLeadAnnounced": "We have updated the terms of use and the privacy notice: version {version} of {date}. For your company they will take effect at least {noticeDays} days after the e-mail in which we tell you; until then the ones you accepted apply. You can accept them now.",
+    "gateDeclinePending": "Not accepting them? You can cancel the subscription without cost before they take effect and download the company’s data."
   },
   "mail": {
     "greeting": "Hello,",
@@ -1238,7 +1268,26 @@
     "existsIgnore": "If it was not you, ignore this message: your account has not changed.",
     "linkHint": "If the button does not work, copy this address into your browser:",
     "footer": "LiftPilot · Carbon Stealth VCC · carbonstealth.eu — automatic message, please do not reply.",
-    "verifyTerms": "By registering you accepted the terms of use, version {version} of {date}: {link}"
+    "verifyTerms": "By registering you accepted the terms of use, version {version} of {date}: {link}",
+    "inviteSubject": "You have been invited to LiftPilot",
+    "inviteIntro": "a company that uses LiftPilot has invited you to work with it as a colleague. Open the link below: you will see which company and your role, and you will choose your password.",
+    "inviteButton": "Open the invitation",
+    "inviteTtl": "The link is valid for {days, plural, one {one day} other {# days}} and works only once.",
+    "inviteIgnore": "If you do not know who is inviting you, ignore this message: no account is made without your password.",
+    "inviteExistsSubject": "A LiftPilot invitation for your address",
+    "inviteExistsIntro": "a company on LiftPilot tried to add you as a colleague, but this address already has a LiftPilot account and an address belongs to one company only. If you want to work with that company too, ask it to invite you with another address.",
+    "inviteExistsIgnore": "You do not need to do anything: your account has not changed.",
+    "privacy": "How we process personal data: {link}",
+    "termsNoticeSubject": "LiftPilot: new terms of use in force from {date}",
+    "termsNoticeIntro": "We have updated LiftPilot’s terms of use and privacy notice (version {version}). For your company they take effect on {date}; until then the ones you accepted apply.",
+    "termsNoticeButton": "Read the new terms",
+    "termsNoticeChanges": "What changes:\n• Provider: the legal form (a variable capital company under Bulgarian law), the representative and the phone numbers are stated.\n• Colleagues: they are added with an invitation by e-mail, and the owner can also delete them.\n• Retention: a company without a subscription where nobody has signed in for {inactiveMonths} months is deleted, with a notice {inactiveNoticeDays} days before; backups last at most {backupDays} days, invoices {accountingYears} years.\n• Transfers: the safeguards are stated for the data Stripe and Brevo’s providers may process outside the European Economic Area.\n• Data Act: the page “Data and formats” describes the data that can be exported, their formats and the jurisdiction of the servers (Germany).\n• Changes: a new version binds a company already registered only {noticeDays} days after the e-mail announcing it.\n• Panev: it is stated that Carbon Stealth VCC also builds the website of Panev Ascensori.",
+    "termsNoticeChoice": "You can accept them now in LiftPilot. If you do not accept them, you can cancel the subscription without cost before {date}; afterwards, until the owner accepts them, LiftPilot stays read-only and the company’s data can always be downloaded.",
+    "inactiveSubject": "LiftPilot: your company will be deleted from {date}",
+    "inactiveIntro": "For {months} months nobody in your company has signed in to LiftPilot and there is no subscription in force. As the privacy notice provides, from {date} we will delete the company with its users, projects, documents and activity log.",
+    "inactiveButton": "Sign in to keep it",
+    "inactiveKeep": "One sign-in by anyone in your company before {date} is enough: the company and its data stay.",
+    "inactiveData": "Before then you can also download the company’s data (Company page, JSON file) and the documents in PDF, DXF and DWG."
   },
   "bom": {
     "title": "Panev bracket list",
@@ -1676,5 +1725,106 @@
     "floorDoor": "Entrance at floor {floor}",
     "main": "Main floor",
     "stdInUse": "Standard values in use (changed in expert mode): {list}."
+  },
+  "dataPage": {
+    "title": "Data, formats and jurisdiction",
+    "metaDescription": "Which data a company can download from LiftPilot, in which formats, how the JSON file is built, how to switch provider and where the servers are (Data Act).",
+    "keywords": "LiftPilot Data Act, JSON data export, SaaS data portability, cloud provider switching, server jurisdiction Germany, Carbon Stealth",
+    "updated": "Updated on {date}",
+    "lead": "The information Regulation (EU) 2023/2854 (the Data Act) asks of a service like LiftPilot: the data a company can take with it and in which formats, how to switch provider, where the servers are and how we protect them from access by third-country authorities. The terms of use refer to this page (Art. {exit}).",
+    "filesTitle": "Which data can be downloaded, and in which format?",
+    "filesText": "Everything the company entered or generated, for as long as the account exists and for at least 30 days after the subscription ends, at no cost:",
+    "fileWhat": "What",
+    "fileFormat": "Format",
+    "files": {
+      "reports": {
+        "what": "Calculation reports and technical reports, issued drawing sets, projects",
+        "format": "PDF (ISO 32000)"
+      },
+      "order": {
+        "what": "Order drafts",
+        "format": "PDF and DOCX (Office Open XML, ISO/IEC 29500)"
+      },
+      "drawings": {
+        "what": "Drawings of the shaft and of the project",
+        "format": "DXF (AutoCAD 2007 version, AC1021) and DWG (AutoCAD 2000 version, AC1015)"
+      },
+      "company": {
+        "what": "All the company’s data (Company page)",
+        "format": "JSON (RFC 8259, UTF-8)"
+      }
+    },
+    "jsonTitle": "How is the company’s JSON file built?",
+    "jsonText": "One JSON document (RFC 8259, UTF-8 encoding): format “{format}”, version {version}. Amounts in euro cents without VAT, lengths in millimetres unless stated, dates and times in ISO 8601 (UTC), images in base64. The identifiers (id) link the entries to one another; a new or changed field raises the version, and this page says so.\n\nThe top-level keys:",
+    "key": "Key",
+    "content": "Content",
+    "keys": {
+      "format": "The name of the format: always “{format}”.",
+      "formatVersion": "The version of the format ({version}).",
+      "exportedAt": "When the file was made.",
+      "termsVersion": "The version of the terms of use in force.",
+      "note": "A note on the units of measurement.",
+      "company": "The company: name, VAT number, city, state of the subscription and of the trial.",
+      "users": "The users: name, e-mail, role, language, dates of creation, last sign-in, address confirmation and acceptance of the terms; never the passwords or the links.",
+      "invites": "The waiting invitations: e-mail, name, role, expiry.",
+      "logos": "The company’s logos, with SHA-256 fingerprint and size.",
+      "projects": "The projects, each with its records (below).",
+      "priceItems": "The company’s price list: the price of each article of the catalogues.",
+      "customPrices": "The free lines of the price list, with text, price and quantity basis.",
+      "auditLog": "The activity log: who, what, when."
+    },
+    "projectText": "Each project holds its records, each with the data entered, the engine version, the results and the SHA-256 fingerprint that guarantees its integrity:",
+    "project": {
+      "calculations": "the machine calculations, with the internal reviews",
+      "shaftDesigns": "the shaft designs",
+      "liftDesigns": "the complete lift designs",
+      "roomDesigns": "the surveys of the machine room",
+      "drawingSets": "the issued drawing sets, with the revisions and the PDF’s fingerprint",
+      "formDrafts": "the drafts of the forms not saved yet",
+      "clientLogos": "the clients’ logos, in base64"
+    },
+    "excludedTitle": "What cannot be exported?",
+    "excludedText": "The data that belong to the software, not to the company: the manufacturers’ catalogues, the standards register and the calculation engines (Art. {license} of the terms of use). And the security data: password hashes, access links and sessions.",
+    "switchTitle": "How do you switch to another provider?",
+    "switchText": "The company cancels at any time from “Payment, invoices and cancellation”, effective at the end of the period already paid, and downloads its data for at least 30 days after the subscription ends. Switching costs nothing and, on request to {email}, we help with it free of charge.\n\nAt the owner’s request we delete the company and all its data within 30 days and confirm it by e-mail; they disappear from the backups within {backupDays} days. Only the data the law requires us to keep, such as invoices, remain.",
+    "whereTitle": "Where are the data, and under which jurisdiction?",
+    "whereText": "The server and the backups are at {host}, in the Nuremberg data centre in Germany: the infrastructure is subject to European Union law and German law. Carbon Stealth VCC, which provides the service, is a Bulgarian company subject to European Union law and Bulgarian law.\n\nThe service e-mails go through Sendinblue SAS (Brevo, France), the subscription payments through Stripe Payments Europe, Limited (Ireland). Transfers outside the European Economic Area and their safeguards are described in the privacy notice.",
+    "accessTitle": "How do we protect the data from access by third-country authorities?",
+    "accessText": "The service, the servers and the sub-processors that hold the projects’ data are in the European Union; data travel encrypted (TLS) and each company sees only its own. We act on a request by a third-country authority for the company’s non-personal data only in the cases of Art. 32 of the Data Act — an international agreement or, failing one, the safeguards the same article requires —, we provide only the minimum data needed and we tell the company before acting on the request, unless it serves law enforcement purposes and for as long as that is necessary.",
+    "contactTitle": "Who to write to?",
+    "contactText": "Carbon Stealth VCC, {email}, phone {phoneBg} (Bulgaria) and {phoneIt} (Italy), in Italian, English or Bulgarian."
+  },
+  "pricing": {
+    "title": "LiftPilot pricing",
+    "metaTitle": "Pricing: subscription and slots for colleagues",
+    "metaDescription": "What LiftPilot costs: a monthly subscription for the owner, colleagues in packs of slots, the free trial and cancellation at any time.",
+    "keywords": "lift design software price, LiftPilot subscription, lift machine calculation software cost, elevator design software pricing, LiftPilot free trial, Carbon Stealth",
+    "answerPrice": "LiftPilot costs {base} {per} for the company’s owner; colleagues are added with a pack of 5, 10 or unlimited slots, and a new company gets a {days}-day free trial, with no credit card.",
+    "answerOnRequest": "LiftPilot is paid with a monthly subscription for the company’s owner and, for colleagues, a pack of slots priced on the monthly price. The price is on request: write to {email}.",
+    "packsTitle": "What do colleagues cost?",
+    "packsText": "The monthly price includes the owner. Every active colleague, and every waiting invitation, takes a slot of a pack, which costs a share of the monthly price:",
+    "colPack": "Who works",
+    "colShare": "Pack",
+    "colTotal": "Total",
+    "share": "+{pct} % of the monthly price",
+    "shareNone": "included",
+    "onRequest": "on request",
+    "trialTitle": "Is there a free trial?",
+    "trialText": "Yes: a new company gets a {days}-day free trial from its first sign-in, with every function for the owner and no credit card. The trial ends by itself and never turns into a paid subscription; afterwards, without a subscription, the projects stay viewable and downloadable read-only.",
+    "trialOnRequest": "The terms of the trial are agreed: write to {email}.",
+    "cta": "Register the company",
+    "termsTitle": "The subscription in short",
+    "termsNote": "The <terms>terms of use</terms> apply; the company’s data can always be downloaded (<data>data and formats</data>).",
+    "faqTitle": "Questions about pricing",
+    "faq1q": "Does the price include every function?",
+    "faq1a": "Yes: shaft and lift design, machine calculation and selection, 3D simulation, drawing sets, reports, DXF and DWG, order drafts and price list. The pack of slots only changes how many colleagues work with the owner.",
+    "faq2q": "How do I pay?",
+    "faq2a": "Through Stripe, in advance for each period; the invoice carries the billing details entered in the payment. LiftPilot never sees or keeps the card details.",
+    "faq3q": "How do I cancel?",
+    "faq3a": "At any time from “Payment, invoices and cancellation”: the subscription stays active until the end of the period already paid, with no refund of the unused part, and the data stay downloadable.",
+    "faq4q": "Can the price change?",
+    "faq4a": "Yes, with an e-mail to the owner at least 30 days before the renewal it applies from: whoever does not accept it can cancel before.",
+    "faq5q": "Need many users or several companies?",
+    "faq5a": "Write to {email} with the number of companies and users: we will answer with a proposal."
   }
 }

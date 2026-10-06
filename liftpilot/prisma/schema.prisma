@@ -57,6 +57,9 @@ model Company {
   trialEndsAt          DateTime?
   /// the platform's own company: never billed
   billingExempt        Boolean           @default(false)
+  /// when the owner was told that the company, inactive without a subscription, will be deleted (src/lib/inactive.ts);
+  /// cleared when someone signs in again or a subscription starts
+  inactiveNoticeAt     DateTime?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
   users                User[]
@@ -73,6 +76,7 @@ model Company {
   drawingCounters      DrawingCounter[]
   liftDesigns          LiftDesign[]
   formDrafts           FormDraft[]
+  invites              Invite[]
 }
 
 /// A logo uploaded by a company, immutable: a drawing set keeps the one it was issued with. PNG or JPEG, checked by
@@ -135,6 +139,10 @@ model User {
   /// self-registration: when the owner accepted the terms, and their version (src/lib/legal.ts)
   termsAcceptedAt    DateTime?
   termsVersion       String?
+  /// the owner: the last version of the terms announced by e-mail and when (npm run legal:notice); a new version binds
+  /// the company only NOTICE_DAYS after it (src/lib/legal.ts)
+  termsNoticeVersion String?
+  termsNoticeAt      DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   projectsCreated    Project[]           @relation("ProjectCreatedBy")
@@ -186,6 +194,28 @@ model PendingRegistration {
   createdAt    DateTime @default(now())
 
   @@index([email, createdAt])
+  @@index([expiresAt])
+}
+
+/// A colleague invited by the owner of a company: no account exists until the person opens the link of the e-mail
+/// and chooses a password, so the owner never knows the colleague's password and the answer to an invitation is the
+/// same for any address (an address with an account elsewhere gets a notice, never the company's colleague). Takes a
+/// slot while it waits; gone when accepted, revoked or past its end (src/lib/purge.ts).
+model Invite {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  email     String
+  name      String
+  role      Role
+  /// SHA-256 of the newest link's token (src/lib/tokens.ts): sending the invitation again ends the earlier link
+  tokenHash String   @unique
+  expiresAt DateTime
+  locale    String
+  createdAt DateTime @default(now())
+
+  @@unique([companyId, email])
+  @@index([email])
   @@index([expiresAt])
 }
 
