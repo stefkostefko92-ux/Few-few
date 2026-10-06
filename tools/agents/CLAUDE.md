@@ -181,9 +181,9 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 24): **процедури** — deploy · prisma-migrate · quality-gate ·
+guardrails*. Ours (BG, vetted; 25): **процедури** — deploy · prisma-migrate · quality-gate ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
-razpit · skill-author;
+razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
 owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
 plus uchitel; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0; изключение по решение
