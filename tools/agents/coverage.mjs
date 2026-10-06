@@ -46,6 +46,7 @@ const MAP = [
   ["AI/LLM интеграция", ["ai-djiyata"]],
   ["Сигурност (AppSec/OWASP)", ["kodadjiyata"]],
   ["Червен екип / adversarial тестване", ["razbivacha"]],
+  ["Норми за асансьори (UNI EN 81 / UNI 10411)", ["asansyorchika"]],
 ];
 // Съзнателни дупки: домейн → защо още няма специалист (решение, не пропуск).
 const GAPS = [
