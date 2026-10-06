@@ -23,6 +23,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.platypus import CondPageBreak, Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 import fonts
+from images import decodable
 from plan_drawing import Plan
 
 fonts.register()
@@ -144,8 +145,8 @@ def letterhead(b):
     """The sender on the left (its logo over its name and lines), the recipient on the right."""
     left = []
     img = (DRAWING.get("images") or {}).get(b["logo"]) if b.get("logo") else None
-    if img:
-        data = base64.b64decode(img["data"])
+    data = base64.b64decode(img["data"]) if img else b""
+    if data and decodable(data):
         iw, ih = ImageReader(io.BytesIO(data)).getSize()
         k = min(LOGO_W / iw, LOGO_H / ih)
         left += [Image(io.BytesIO(data), width=iw * k, height=ih * k, hAlign="LEFT"), Spacer(1, 2.5 * mm)]

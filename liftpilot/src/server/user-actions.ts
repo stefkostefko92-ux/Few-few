@@ -44,6 +44,9 @@ export async function createUserAction(_prev: FormState, fd: FormData): Promise<
   // administrator vouches for the addresses it enters.
   const vouched = me.role === 'SUPERADMIN';
   if (!vouched && !mailConfigured()) return { error: 'mailUnavailable' };
+  // the slots before the address: without a free one the answer is the same for any address, so a company without
+  // slots cannot probe which addresses have an account elsewhere (audit 2026-10-06); the creation re-checks it locked
+  if (!(await prisma.$transaction((tx) => seatAvailable(tx, me.companyId)))) return { error: 'noSeats' };
   if (await prisma.user.findUnique({ where: { email: parsed.data.email }, select: { id: true } })) return { error: 'emailTaken' };
   const password = temporaryPassword(), passwordHash = await hashPassword(password);
   let user;

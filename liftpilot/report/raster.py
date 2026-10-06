@@ -16,6 +16,7 @@ import os
 import sys
 
 from PIL import Image, ImageChops, ImageDraw, ImageFont
+from images import decodable
 
 FONT_DIR = os.environ.get("REPORT_FONT_DIR", "/usr/share/fonts/truetype/dejavu")
 DPI, SUPER = 300, 2
@@ -139,9 +140,10 @@ class Painter:
 
     def image(self, s):
         data = (self.doc.get("images") or {}).get(s["ref"])
-        if not data:
+        raw = base64.b64decode(data["data"]) if data else b""
+        if not raw or not decodable(raw):
             return
-        pic = Image.open(io.BytesIO(base64.b64decode(data["data"]))).convert("RGBA")
+        pic = Image.open(io.BytesIO(raw)).convert("RGBA")
         b = s["box"]
         bw, bh = (b["x1"] - b["x0"]) * K, (b["y1"] - b["y0"]) * K
         k = min(bw / pic.width, bh / pic.height)

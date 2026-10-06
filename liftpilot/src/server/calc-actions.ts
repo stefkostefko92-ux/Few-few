@@ -28,7 +28,8 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   if (!values.success) return { ok: false, error: 'invalidFields', fields: values.error.issues.map((i) => String(i.path[0] ?? '')) };
   // an empty roping reads as 1:1 in the calculation: a new calculation has it chosen
   if (String(values.data.r ?? '').trim() === '') return { ok: false, error: 'invalidFields', fields: ['r'] };
-  const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
+  // the calculator is the replacement's: a full project calculates in its one form (audit 2026-10-06)
+  const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null, kind: 'REPLACEMENT' }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
   const r = await createCalculation(user, project.id, values.data, label.data, collaudo?.success ? collaudo.data : null);
   // the calculator's draft has become this record

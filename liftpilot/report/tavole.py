@@ -17,6 +17,7 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 
 import fonts
+from images import decodable
 
 K = 72 / 25.4  # points per millimetre
 
@@ -28,8 +29,9 @@ class Painter:
         self.cond = doc["cond"]
         self.patterns = doc["patterns"]
         self.forms = set()
-        # the logos by name: the company's ("logo") and the client's ("client")
-        self.images = {k: ImageReader(io.BytesIO(base64.b64decode(v["data"]))) for k, v in doc.get("images", {}).items()}
+        # the logos by name: the company's ("logo") and the client's ("client"); one that does not decode stays out
+        raw = {k: base64.b64decode(v["data"]) for k, v in doc.get("images", {}).items()}
+        self.images = {k: ImageReader(io.BytesIO(data)) for k, data in raw.items() if decodable(data)}
 
     # --- strokes and paths -------------------------------------------------------------------------------------
     def stroke_style(self, s):

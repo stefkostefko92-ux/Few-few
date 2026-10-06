@@ -25,7 +25,8 @@ export async function saveLiftDesignAction(input: { projectId: unknown; inputs: 
   const inputs = liftInputsSchema.safeParse(input.inputs), source = input.source == null ? null : shaftSourceSchema.safeParse(input.source);
   if (!projectId.success || !label.success || (source && !source.success)) return { ok: false, error: 'invalidFields' };
   if (!inputs.success) return { ok: false, error: 'invalidFields', fields: inputs.error.issues.map((i) => i.path.join('.')) };
-  const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
+  // the one form is the full project's: a replacement becomes one first (upgradeProjectAction)
+  const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null, kind: 'FULL' }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
   const r = await createLiftDesign(user, project.id, inputs.data, label.data, source?.success ? source.data : null);
   // the one form's draft has become this record

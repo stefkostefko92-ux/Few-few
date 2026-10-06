@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { idSchema } from '@/lib/schemas';
@@ -24,6 +24,8 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
   const user = await requireCapability(locale, 'calc:create');
   const p = await getProject(user, id);
   if (!p || p.archivedAt) notFound();
+  // the one form is the full project's; a replacement becomes one from its page (upgradeProjectAction)
+  if (p.kind !== 'FULL') redirect(`/${locale}/app/projects/${p.id}`);
   const from = idSchema.safeParse((await searchParams).from);
   const start = await liftStart(user, p.id, from.success ? from.data : null);
   const [t, tp] = await Promise.all([getTranslations('lift'), getTranslations('projects')]);

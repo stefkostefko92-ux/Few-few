@@ -221,7 +221,7 @@ export function shapePlan(F: MachineFrame, D: number, n: number, d: number, at: 
   // the sheave over the side: its rim and the grooves of the ropes
   const R = F.zSheave, half = F.width / 2, rs = D / 2 + 6, pitch = Math.min(Math.max(d + 6, 1.7 * d), (F.width - 12) / n);
   quad(-rs, R - half, rs, R + half, 'outline', 'steel');
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < Math.min(n, 64); i++) { // the input caps the ropes at 20; the loop never trusts it
     const z = R - (n * pitch) / 2 + pitch * (i + 0.5);
     out.push(line(at(-rs + 6, z), at(rs - 6, z), 'fine'));
   }

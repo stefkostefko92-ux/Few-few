@@ -5,6 +5,9 @@ import { deflectorAngle } from './geometry';
 import type { AlphaMode, Context, DropAlign, FormValues, GrooveType, Layout, Machine, ParsedInputs, Plant } from './types';
 import { K } from './norme';
 
+// Upper bounds of the counts (input sanity, not values of a standard): the drawings, the 3D and the documents draw every
+// rope one by one, so an unbounded count blocked the server (audit 2026-10-06). Beyond them the field is flagged.
+const MAX_ROPES = 20, MAX_BRAKE_SETS = 8, MAX_BENDS = 50;
 const LAYOUTS: readonly Layout[] = ['top', 'topDefl', 'bottom'];
 const GROOVES: readonly GrooveType[] = ['U', 'UU', 'VH', 'VN'];
 const oneOf = <T extends string>(list: readonly T[], x: unknown): x is T => typeof x === 'string' && (list as readonly string[]).includes(x);
@@ -25,9 +28,9 @@ export function readInputs(V: FormValues): ParsedInputs {
     return fb;
   };
   const pos = (id: string, fb: number, hi?: number): number => field(id, fb, 0, hi);
-  // whole number ≥ lo
-  const count = (id: string, fb: number, lo: number, report = true): number => {
-    const x = field(id, fb, lo, Infinity, false, report);
+  // whole number in [lo, hi]
+  const count = (id: string, fb: number, lo: number, hi: number, report = true): number => {
+    const x = field(id, fb, lo, hi, false, report);
     if (Number.isInteger(x)) return x;
     if (report) bad.push(id);
     return fb;
@@ -43,7 +46,7 @@ export function readInputs(V: FormValues): ParsedInputs {
     context: (V.context === 'repl' ? 'repl' : 'new') as Context, Q: pos('Q', 630), P: pos('P', 700), k: field('k', 0.5, 0, 1, false), qeq: blank(V.qeq) ? 0 : nonneg('qeq', 0),
     v: pos('v', 1), H: pos('H', 18), L0: field('L0', 2, 0.1, Infinity, false), r: roping, layout, alphaMode: (manual ? 'manual' : 'geo') as AlphaMode,
     alphaManual: field('alphaManual', 180, 0, 360, true, manual), dx: nonneg('dx', 0.3), h: nonneg('h', 0.6),
-    Hv: nonneg('Hv', 24), Dp: pos('Dp', 400), Jp: nonneg('Jp', 0), nps: count('nps', 0, 0), npr: count('npr', 0, 0), etaShaft: pos('etaShaft', 0.85, 1),
+    Hv: nonneg('Hv', 24), Dp: pos('Dp', 400), Jp: nonneg('Jp', 0), nps: count('nps', 0, 0, MAX_BENDS), npr: count('npr', 0, 0, MAX_BENDS), etaShaft: pos('etaShaft', 0.85, 1),
     aDesign: pos('aDesign', 0.8), ae: V.buffers ? K.aeReducedStroke : K.aeMin, aBrake: pos('aBrake', 0.5), rh: pos('rh', 0.2),
     dropAlign: (V.dropAlign === 'car' ? 'car' : 'center') as DropAlign, drops: 0,
   };
@@ -69,9 +72,9 @@ export function readInputs(V: FormValues): ParsedInputs {
       D: f('D', 560, 0), i: f('i', 43, 0), etaD, etaI, etaIest, poles: poles(p),
       groove: { type, beta: f('beta', 90, 0, 180), gamma: f('gamma', 35, 0, 180) },
       fn: f('fn', 50, 0), nm: f('nm', 1450, 0), Pn: f('Pn', 7.5, 0), Jm: f('Jm', 0.08, 0, Infinity, false), Js: f('Js', 2.5, 0, Infinity, false),
-      brakeSets: count(p + 'brakeSets', 2, 1, rep), brakeNm: f('brakeNm', 60, 0), shaftMax: blank(V[p + 'shaftMax']) ? 0 : f('shaftMax', 0, 0, Infinity, false),
+      brakeSets: count(p + 'brakeSets', 2, 1, MAX_BRAKE_SETS, rep), brakeNm: f('brakeNm', 60, 0), shaftMax: blank(V[p + 'shaftMax']) ? 0 : f('shaftMax', 0, 0, Infinity, false),
       MpCat: blank(V[p + 'MpCat']) ? 0 : f('MpCat', 0, 0, Infinity, false), mass: f('mass', 0, 0, Infinity, false),
-      n: count(p + 'n', 4, 1, rep), d: f('d', 10, 0), Fmin: f('Fmin', 47.5, 0), qf: f('qf', 0.336, 0),
+      n: count(p + 'n', 4, 1, MAX_ROPES, rep), d: f('d', 10, 0), Fmin: f('Fmin', 47.5, 0), qf: f('qf', 0.336, 0),
     };
   };
   const N = mach('n_'), O = mach('o_');

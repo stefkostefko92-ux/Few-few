@@ -16,26 +16,44 @@ export interface LogoInfo {
 
 const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
+// The end of the file within its last bytes (some writers pad after it): a file cut short has none (audit 2026-10-06 —
+// a truncated JPEG passed the header check, then the renderer failed on it and the issued drawing set could not be
+// downloaded any more).
+const TAIL = 64;
+function endsWith(b: Uint8Array, mark: readonly number[]): boolean {
+  for (let i = Math.max(0, b.length - TAIL); i + mark.length <= b.length; i++) if (mark.every((x, j) => b[i + j] === x)) return true;
+  return false;
+}
+const IEND = [0x49, 0x45, 0x4e, 0x44], EOI = [0xff, 0xd9];
+
 function pngSize(b: Uint8Array): [number, number] | null {
-  // the IHDR chunk comes first: length (4), "IHDR" (4), width (4), height (4)
-  if (b.length < 24 || String.fromCharCode(b[12], b[13], b[14], b[15]) !== 'IHDR') return null;
+  // the IHDR chunk comes first: length (4), "IHDR" (4), width (4), height (4); the IEND chunk closes the file
+  if (b.length < 24 || String.fromCharCode(b[12], b[13], b[14], b[15]) !== 'IHDR' || !endsWith(b, IEND)) return null;
   const v = new DataView(b.buffer, b.byteOffset, b.byteLength);
   return [v.getUint32(16), v.getUint32(20)];
 }
 
+const isFrame = (m: number): boolean => m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc; // SOF0…15 but DHT, JPG, DAC
+
 function jpegSize(b: Uint8Array): [number, number] | null {
-  // walk the markers to the first start of frame (SOF0…SOF15 but DHT, JPG and DAC)
-  let i = 2;
+  // walk the markers to the start of scan: exactly one frame before it, none after it (a second frame header is a file
+  // made to fool this reader), and the end-of-image marker at the end
+  let i = 2, size: [number, number] | null = null;
   while (i + 9 < b.length) {
     if (b[i] !== 0xff) return null;
     const marker = b[i + 1], len = (b[i + 2] << 8) | b[i + 3];
-    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
-      return [(b[i + 7] << 8) | b[i + 8], (b[i + 5] << 8) | b[i + 6]];
+    if (marker === 0xda) break; // start of scan
+    if (len < 2) return null;
+    if (isFrame(marker)) {
+      if (size) return null;
+      size = [(b[i + 7] << 8) | b[i + 8], (b[i + 5] << 8) | b[i + 6]];
     }
-    if (marker === 0xda || len < 2) return null; // start of scan before a frame: not an image we accept
     i += 2 + len;
   }
-  return null;
+  if (!size || !endsWith(b, EOI)) return null; // a scan before any frame, or a file cut short
+  // in the coded data 0xFF is followed by 0x00 or a restart marker; a frame marker there is a second image
+  for (let j = i + 2; j + 1 < b.length; j++) if (b[j] === 0xff && isFrame(b[j + 1])) return null;
+  return size;
 }
 
 /** The logo's type and size, or null when the bytes are not a PNG or JPEG of acceptable size. */
