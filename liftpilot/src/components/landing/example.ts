@@ -106,7 +106,8 @@ export function sampleStop(): SampleStop {
   };
 }
 
-/** The registries' size: the values with their document, clause and state, the distinct checks they cover. */
+/** The registries' size, as /app/norme lists them: the values, each with its source and state, and the distinct checks
+ *  they cover. */
 export function registryCounts(): { values: number; checks: number } {
   // every check has its entry in the machine's or the shaft's registry (norme.test.ts), so these are all of them
   const checks = new Set<string>([...VOCI.flatMap((v) => v.verifiche ?? []), ...VOCI_VANO.flatMap((v) => v.verifiche ?? [])]);

@@ -12,7 +12,9 @@
 #   LIFTPILOT_MAIL_FROM       sender (default "LiftPilot <noreply@carbonstealth.eu>", a sender verified in Brevo)
 #   LIFTPILOT_STRIPE_SECRET_KEY, LIFTPILOT_STRIPE_WEBHOOK_SECRET, LIFTPILOT_STRIPE_PRICE_MONTHLY,
 #   LIFTPILOT_STRIPE_PRODUCT_SEATS  the subscription (all four, or billing stays off); LIFTPILOT_STRIPE_AUTOMATIC_TAX
-#                             (true|false), LIFTPILOT_BILLING_TRIAL_DAYS (default 14)
+#                             (true|false), LIFTPILOT_BILLING_TRIAL_DAYS (14 to 365, default 14)
+#   LIFTPILOT_BILLING_START   the first day of paid use (YYYY-MM-DD), the day in the owners' e-mail sent at least 30
+#                             days before (docs/terms-changes.md, 1a): until then the beta goes on, Stripe or not
 #   LIFTPILOT_TLS=0           leave nginx and certbot alone; CERTBOT_EMAIL (default admin@carbonstealth.eu)
 set -euo pipefail
 
@@ -101,11 +103,18 @@ done
 case "${LIFTPILOT_STRIPE_AUTOMATIC_TAX:-}" in true|false) env_put STRIPE_AUTOMATIC_TAX "$LIFTPILOT_STRIPE_AUTOMATIC_TAX";; '') ;; *) die "LIFTPILOT_STRIPE_AUTOMATIC_TAX: true or false";; esac
 if [ -n "${LIFTPILOT_BILLING_TRIAL_DAYS:-}" ]; then
   case "$LIFTPILOT_BILLING_TRIAL_DAYS" in ''|*[!0-9]*) die "LIFTPILOT_BILLING_TRIAL_DAYS: whole days";; esac
+  [ "$LIFTPILOT_BILLING_TRIAL_DAYS" -ge 14 ] || die "LIFTPILOT_BILLING_TRIAL_DAYS: at least 14 days (the terms promise them)"
   [ "$LIFTPILOT_BILLING_TRIAL_DAYS" -le 365 ] || die "LIFTPILOT_BILLING_TRIAL_DAYS: at most 365 days"
   env_put BILLING_TRIAL_DAYS "$LIFTPILOT_BILLING_TRIAL_DAYS"
 fi
+if [ -n "${LIFTPILOT_BILLING_START:-}" ]; then
+  [[ "$LIFTPILOT_BILLING_START" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || die "LIFTPILOT_BILLING_START: a day written YYYY-MM-DD"
+  env_put BILLING_START "$LIFTPILOT_BILLING_START"
+fi
 if [ -z "$(env_get STRIPE_SECRET_KEY)" ] || [ -z "$(env_get STRIPE_WEBHOOK_SECRET)" ] || [ -z "$(env_get STRIPE_PRICE_MONTHLY)" ] || [ -z "$(env_get STRIPE_PRODUCT_SEATS)" ]; then
   warn "no Stripe settings in $ENV_FILE: the subscription stays off and every company works without limits"
+elif [ -z "$(env_get BILLING_START)" ]; then
+  warn "Stripe is set but BILLING_START is not: the free beta goes on until the day of the owners' e-mail is set"
 fi
 PORT="$(env_get APP_PORT | tr -dc '0-9' || true)"
 PORT="${PORT:-4330}"

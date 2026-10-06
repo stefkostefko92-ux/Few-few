@@ -71,7 +71,7 @@ export default function RegisterForm({ date, trialDays }: { date: string; trialD
         </label>
         <p className="note">{t('rule', { min: PASSWORD_MIN_LENGTH })}</p>
       </fieldset>
-      <p className="note">{trialDays !== null ? t('trial', { days: trialDays }) : t('beta')}</p>
+      <p className="note">{trialDays !== null ? t('trial', { days: trialDays }) : t('beta', values)}</p>
       <p className="note">{t.rich('privacyNote', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</p>
       {CONSENTS.map((k) => (
         <label key={k} className="check consent">

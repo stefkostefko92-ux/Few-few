@@ -27,6 +27,10 @@ export const TERMS_HISTORY: readonly { version: string; label: string; date: str
 /** Days between the owner's e-mail about a new version and the day it binds the company (terms, article «changes»). */
 export const NOTICE_DAYS = 30;
 
+/** The shortest free trial the terms promise (article «subscription»): BILLING_TRIAL_DAYS is never below it
+ *  (src/lib/env-schema.ts). */
+export const MIN_TRIAL_DAYS = 14;
+
 const DAY_MS = 24 * 3600_000;
 
 /** A day (YYYY-MM-DD or a Date) as the pages and the e-mails write it in `locale`. */
@@ -97,7 +101,7 @@ export const article = (k: TermsArticle): number => TERMS.indexOf(k) + 1;
 export function legalValues(): Record<string, string | number> {
   return {
     ...Object.fromEntries(TERMS.map((k) => [k, article(k)])), days: UNCONFIRMED_DAYS, logDays: LOG_DAYS, backupDays: BACKUP_DAYS,
-    inactiveMonths: INACTIVE_MONTHS, inactiveNoticeDays: INACTIVE_NOTICE_DAYS, noticeDays: NOTICE_DAYS, accountingYears: ACCOUNTING_YEARS,
-    inviteDays: TOKEN_TTL_MS.INVITE / DAY_MS, version: TERMS_VERSION,
+    inactiveMonths: INACTIVE_MONTHS, inactiveNoticeDays: INACTIVE_NOTICE_DAYS, noticeDays: NOTICE_DAYS, minTrialDays: MIN_TRIAL_DAYS,
+    accountingYears: ACCOUNTING_YEARS, inviteDays: TOKEN_TTL_MS.INVITE / DAY_MS, version: TERMS_VERSION,
   };
 }

@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { companyAccess, daysLeft, packAmount, packOf, packPaid, seatFree, seatLimit, trialEnd, type CompanyBilling } from '../billing';
+import { billingStarted, companyAccess, dayStart, daysLeft, packAmount, packOf, packPaid, seatFree, seatLimit, trialEnd, type CompanyBilling } from '../billing';
+import { parseEnv } from '../env-schema';
+import { MIN_TRIAL_DAYS } from '../legal';
 
 const now = new Date('2026-10-02T10:00:00Z');
 const company = (o: Partial<CompanyBilling> = {}): CompanyBilling => ({ billingExempt: false, subscriptionStatus: null, trialEndsAt: null, seatPack: 'NONE', ...o });
@@ -60,4 +62,21 @@ test('days left of the trial', () => {
   assert.equal(daysLeft(new Date(now.getTime() + 1000), now), 1);
   assert.equal(daysLeft(new Date(now.getTime() - 1000), now), 0);
   assert.equal(daysLeft(null, now), 0);
+});
+
+test('the trial is never shorter than the terms promise; paid use begins only on the day set on the server', () => {
+  const base = { DATABASE_URL: 'postgresql://db/liftpilot', AUTH_SECRET: 'x'.repeat(40) };
+  assert.equal(parseEnv(base).BILLING_TRIAL_DAYS, MIN_TRIAL_DAYS);
+  assert.throws(() => parseEnv({ ...base, BILLING_TRIAL_DAYS: String(MIN_TRIAL_DAYS - 1) }), /BILLING_TRIAL_DAYS/);
+  // Docker Compose passes an unset variable as an empty string
+  assert.equal(parseEnv({ ...base, BILLING_START: '' }).BILLING_START, undefined);
+  assert.equal(parseEnv({ ...base, BILLING_START: ' 2027-03-01 ' }).BILLING_START, '2027-03-01');
+  for (const bad of ['2027-02-29', '2027-3-1', '01/03/2027', 'domani']) assert.throws(() => parseEnv({ ...base, BILLING_START: bad }), /BILLING_START/, bad);
+  assert.equal(dayStart('2028-02-29')?.toISOString(), '2028-02-29T00:00:00.000Z');
+  // the beta ends at 00:00 UTC of that day, and never without one
+  assert.equal(billingStarted(undefined, now), false);
+  assert.equal(billingStarted('2026-10-03', now), false);
+  assert.equal(billingStarted('2026-10-02', now), true);
+  assert.equal(billingStarted('2026-10-03', new Date('2026-10-02T23:59:59.999Z')), false);
+  assert.equal(billingStarted('2026-10-03', new Date('2026-10-03T00:00:00Z')), true);
 });

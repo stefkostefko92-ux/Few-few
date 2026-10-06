@@ -1,6 +1,8 @@
 // The server's configuration as a schema, apart from src/lib/env.ts so that the scripts run on the server
 // (scripts/legal-notice.ts) read it the same way without loading the server-only modules.
 import { z } from 'zod';
+import { MIN_TRIAL_DAYS } from './legal';
+import { dayStart } from './billing';
 
 /** Docker Compose passes an unset variable as an empty string: both mean "not configured". */
 const optional = z.string().optional().transform((v) => (v?.trim() ? v.trim() : undefined));
@@ -31,8 +33,12 @@ export const envSchema = z.object({
   STRIPE_PRODUCT_SEATS: optional,
   /** Stripe Tax on the subscription (it needs the account's tax settings) */
   STRIPE_AUTOMATIC_TAX: z.enum(['true', 'false']).default('false'),
-  /** days of trial of a new company before its projects become read-only without a subscription */
-  BILLING_TRIAL_DAYS: z.coerce.number().int().min(0).max(365).default(14),
+  /** days of trial of a new company before its projects become read-only without a subscription: never fewer than the
+   *  terms promise */
+  BILLING_TRIAL_DAYS: z.coerce.number().int().min(MIN_TRIAL_DAYS).max(365).default(MIN_TRIAL_DAYS),
+  /** the first day of paid use (YYYY-MM-DD, from 00:00 UTC), the day stated in the owners' e-mail at least 30 days
+   *  before (docs/terms-changes.md, 1a): without it, or before it, the subscription stays off whatever Stripe's values */
+  BILLING_START: optional.pipe(z.string().refine((s) => dayStart(s) !== null, 'a day written YYYY-MM-DD').optional()),
 });
 
 export type Env = z.infer<typeof envSchema>;

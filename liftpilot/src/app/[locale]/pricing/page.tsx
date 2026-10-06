@@ -11,7 +11,7 @@ import { monthlyPrice, stripeErrorOf, type MonthlyPrice } from '@/lib/stripe';
 import { money } from '@/lib/money';
 import { log } from '@/lib/log';
 import { PROVIDER } from '@/lib/provider';
-import { NOTICE_DAYS } from '@/lib/legal';
+import { MIN_TRIAL_DAYS, NOTICE_DAYS } from '@/lib/legal';
 import { SITE_NAME, breadcrumbLd, faqLd, ldJson, organizationLd, pageMetadata, softwareLd, websiteLd } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
@@ -95,7 +95,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         </section>
         <section aria-labelledby="q-trial">
           <h2 id="q-trial">{t('trialTitle')}</h2>
-          <p>{cfg ? t('trialText', { days: cfg.trialDays }) : t('trialBeta')}</p>
+          <p>{cfg ? t('trialText', { days: cfg.trialDays }) : t('trialBeta', { minTrialDays: MIN_TRIAL_DAYS })}</p>
           <p><Link className="btn btn-primary" href="/register">{t('cta')}</Link></p>
         </section>
         <section aria-labelledby="q-terms">

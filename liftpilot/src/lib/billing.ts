@@ -70,3 +70,17 @@ export const daysLeft = (end: Date | null, now: Date): number => (end ? Math.max
 
 /** The end of a new company's trial. */
 export const trialEnd = (from: Date, days: number): Date => new Date(from.getTime() + days * 24 * 60 * 60 * 1000);
+
+/** The start (00:00 UTC) of a day written YYYY-MM-DD, or null when it is not a day of the calendar. */
+export function dayStart(s: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(s) ? d : null;
+}
+
+/** Whether paid use has begun: from the start of `start` (BILLING_START), the day the owners were told by e-mail; never
+ *  without it. The beta ends only on that day (terms, article «subscription»). */
+export function billingStarted(start: string | undefined, now: Date): boolean {
+  const d = start ? dayStart(start) : null;
+  return d !== null && now.getTime() >= d.getTime();
+}
