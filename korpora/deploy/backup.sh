@@ -100,12 +100,25 @@ dump_to() {
   # отрязан или повреден дъмп завършва с грешка
   docker exec -i "$cid" pg_restore -f /dev/null <"$WORK/check" &
   vpid=$!
-  if ! docker exec -i "$cid" pg_dump -Fc -U "$DB_USER" -d "$DB_NAME" |
-    tee "$WORK/check" | "$AGE" -e -R "$RECIPIENTS" -o "$tmp"; then
-    wait "$vpid" 2>/dev/null || true
+  # Причината се взима от статуса на всеки етап, не от реда, в който падат: `tee -p` не умира, когато
+  # проверката затвори потока рано (pg_restore отказва архива), затова тогава pg_dump и age завършват,
+  # а провалът се вижда само в статуса на проверката. Без -p tee (и pg_dump зад него) падаха от SIGPIPE
+  # или не — според това колко е успял да запише преди затварянето, и причината в лога зависеше от времето.
+  local -a st
+  local vrc=0
+  set +e
+  docker exec -i "$cid" pg_dump -Fc -U "$DB_USER" -d "$DB_NAME" |
+    tee -p "$WORK/check" | "$AGE" -e -R "$RECIPIENTS" -o "$tmp"
+  st=("${PIPESTATUS[@]}")
+  wait "$vpid"
+  vrc=$?
+  set -e
+  if [ "${st[0]}" != 0 ] || [ "${st[2]}" != 0 ]; then
     die "pg_dump или age се провали — бекъп НЕ е направен, старите не са пипани."
   fi
-  wait "$vpid" || die "дъмпът не се прочете докрай (pg_restore) — повреден или непълен; старите не са пипани."
+  if [ "$vrc" != 0 ] || [ "${st[1]}" != 0 ]; then
+    die "дъмпът не се прочете докрай (pg_restore) — повреден или непълен; старите не са пипани."
+  fi
   size="$(stat -c %s "$tmp")"
   [ "$size" -ge "$MIN_BYTES" ] ||
     die "бекъпът е само $size B (< $MIN_BYTES B) — празна база или провал; старите не са пипани."

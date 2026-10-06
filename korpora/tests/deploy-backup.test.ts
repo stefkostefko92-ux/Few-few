@@ -93,7 +93,8 @@ test('a failed or unreadable dump leaves no file and deletes nothing old', { ski
     writeFileSync(join(box.daily, old), 'old');
     const cases: Array<[Record<string, string>, RegExp]> = [
       [{ DUMP_RC: '1' }, /pg_dump или age се провали/],
-      [{ VERIFY_RC: '1' }, /pg_dump или age се провали/],
+      // the check refuses the archive at once: the reason is the check, whatever pg_dump managed to write
+      [{ VERIFY_RC: '1' }, /не се прочете докрай/],
       [{ TRUNCATED_RC: '1' }, /не се прочете докрай/],
       [{ DUMP_BYTES: '100' }, /бекъпът е само \d+ B/],
       [{ DB_RUNNING: '0' }, /няма работещ контейнер на базата/],
