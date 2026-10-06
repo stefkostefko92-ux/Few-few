@@ -228,7 +228,7 @@ src/app/             [locale]/… страниците, api/ (health, billing/we
                      lift-designs/<id>/pdf|dxf|dwg — износ на записания проект, lift-designs|calculations/<id>/order/docx|pdf —
                      чернова на поръчка на машината, room-designs/<id>/relazione|pdf|dxf|dwg — документите на подмяната), robots,
                      sitemap, llms.txt.
-messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (358 ключа × 3 езика).
+messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (373 ключа × 3 езика).
 report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
 report/raster.py     Чертежите на модела като PNG 300 dpi (Pillow, същият модел на щрихите, шрифтовете DejaVu) за DOCX.
 report/tavole.py     Рисува комплекта чертежи (JSON от ядрото → PDF); fonts.py регистрира DejaVu; plan_drawing.py рисува

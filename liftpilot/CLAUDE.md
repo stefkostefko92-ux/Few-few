@@ -6,7 +6,7 @@ B2B софтуер за монтажници в Италия (марка LiftPil
 (`/app/projects/<id>/progetto`), от който стават проектът на шахтата, изчислението, relazione, DXF/DWG и комплектът
 чертежи. Съветът между моделите на SICOR и Montanari е само по данни (без цени), с чернова на поръчка (DOCX/PDF).
 Нормативен профил: DPR 162/1999 (с DPR 23/2017), UNI EN 81-20/50:2020, UNI 10411-1/-11:2024. Изследването е в
-`research/argano-geared/` (на италиански). Фирмите се регистрират сами (Brevo); собственик + колеги в местата на
+`../research/argano-geared/` (в корена на монорепото; на италиански). Фирмите се регистрират сами (Brevo); собственик + колеги в местата на
 абонамента (Stripe); ценова листа на фирмата. Root правилата са в кореновия `CLAUDE.md`.
 
 **Подробностите:** структурата на кода — `docs/architecture.md`; правилата по модули (3D, симулация, подмяна, проект на
@@ -22,12 +22,13 @@ npm run lint          # ESLint 10 + typescript-eslint strict + react-hooks + nex
 npm run typecheck     # tsc --noEmit
 npm test              # node:test през tsx: golden, ръчни проверки, свойства, предложение, регистър, роли, вход, snapshot, отчет, преводи, шахта, CAD, симулация, формуляр, празен старт и чернови, 3D (хлабини, ход, планки, кабели), записи
 npm run build         # prisma generate + next build
-npm run dev           # нужни: PostgreSQL и .env (виж .env.example: DATABASE_URL, AUTH_SECRET, PUBLIC_BASE_URL)
+npm run dev           # нужни: PostgreSQL и .env (AUTH_SECRET, PUBLIC_BASE_URL — виж .env.example; DATABASE_URL НЕ е там — сглобява се в docker-compose.yml, локално го задай ръчно)
 ADMIN_PASSWORD=… npm run admin:create                 # администратор на платформата (SUPERADMIN), идемпотентно
-BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъра срещу пуснат сървър (Playwright)
+BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъра срещу пуснат сървър (Playwright не е в package.json — трябва локален или глобален)
 MAILBOX_PORT=2526 … npm run smoke                     # + регистрация, потвърждение, нова парола: сървърът с SMTP_HOST=127.0.0.1 SMTP_PORT=2526 MAIL_FROM=…
 python3 scripts/brand-assets.py                       # логото, иконите и OG изображенията от brand/liftpilot-logo.webp
 npm run lista         # docs/lista-verifica-normativa.md + .json от регистъра
+python3 scripts/lista-verifica-xlsx.py   # docs/lista-verifica-normativa.xlsx от .json (нужен openpyxl; след npm run lista)
 BASE_URL=… node scripts/render-poster.mjs            # постерът на 3D сцената (public/img/argano-machine-*.webp)
 npm run artifact      # самостоятелната страница с двата инструмента → artifact/dist (claude.ai Artifact или статичен хост)
 npx tsx scripts/landing-drawings.ts                  # чертежите на началната страница (public/img/lp-plan|lp-section.svg) от ядрото
@@ -43,7 +44,7 @@ npx tsx scripts/landing-drawings.ts                  # чертежите на �
   или текстът на записа не казва числото от кода. **Не копирай текст на нормите** в кода, тестовете или документите:
   само номер на клауза и стойност (авторско право на CEN-CENELEC и UNI).
 - **Корекция по купената норма:** смени `K`/`VOCI` (статус `confermato`), вдигни версията на двигателя (semver),
-  `npm run lista`, после `npx tsx scripts/golden-export.ts "<причина>"`.
+  `npm run lista` + `python3 scripts/lista-verifica-xlsx.py`, после `npx tsx scripts/golden-export.ts "<причина>"`.
 - **Числена идентичност:** операциите в `compute.ts`/`sizing.ts` са в реда на прототипа; не „опростявай“ формула, без
   да пуснеш golden теста (разлика в 7-ия знак го чупи). Оптимизация дава същите изходи бит в бит (сравни SHA-256 преди/след).
 - **Записите са неизменими и се правят само на сървъра** (`src/server/save.ts`): изчисление (`Calculation`), проект на

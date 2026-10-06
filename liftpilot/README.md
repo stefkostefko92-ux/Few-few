@@ -1,12 +1,18 @@
-# LiftPilot — scelta e verifica dell'argano geared nella sostituzione
+# LiftPilot — sostituzione dell'argano geared e progetto completo dell'ascensore
 
-Software per installatori (B2B, Italia): verifica l'argano offerto per la sostituzione, oppure ne
-propone uno, e produce la relazione di calcolo per il fascicolo tecnico. Profilo normativo
+Software per installatori (B2B, Italia) con due moduli: la **sostituzione dell'argano** (verifica
+dell'argano offerto o proposta di uno, relazione di calcolo per il fascicolo tecnico) e il **progetto
+completo dell'ascensore**. Profilo normativo
 italiano: DPR 162/1999 e s.m.i., UNI EN 81-20:2020, UNI EN 81-50:2020, UNI 10411-1:2024.
-Ricerca: `research/argano-geared/`. Storia dello sviluppo, giro per giro: `CHANGELOG.md` (in bulgaro).
+Ricerca: `../research/argano-geared/` (nella radice del monorepo). Storia dello sviluppo, giro per giro: `CHANGELOG.md` (in bulgaro).
 
 ## Che cosa c'è
 
+- **Progetto completo dell'ascensore**: un solo modulo per tutto l'impianto, con simulazione 3D,
+  progetto del vano da DXF/DWG, relazione di calcolo, kit di tavole (PDF/DXF/DWG), consiglio
+  sull'argano tra i modelli SICOR e Montanari (solo dati tecnici, senza prezzi) e bozza d'ordine
+  (DOCX/PDF). Struttura del codice: `docs/architecture.md`; regole per modulo: `docs/rules.md`.
+- **Abbonamento** (Stripe): il titolare dell'azienda acquista i posti per i colleghi.
 - **Motore di calcolo** (`src/calc/`): TypeScript puro, identico numero per numero al calcolatore
   prototipo pubblicato per Panev Ascensori (versione 12), con il registro delle voci normative.
 - **Applicazione web** (Next.js 15): aziende e utenti con ruoli distinti (titolare, progettista, commerciale, tecnico), impianti, calcolatore con i
@@ -23,9 +29,9 @@ Ricerca: `research/argano-geared/`. Storia dello sviluppo, giro per giro: `CHANG
 
 ## Verifica normativa
 
-`docs/lista-verifica-normativa.xlsx` (e `.md`) elenca ogni valore usato dal software con il
-documento e la clausola da controllare. 27 voci vengono da fonti secondarie e vanno confrontate
-con i testi vigenti; il risultato della verifica aggiorna il registro (`src/calc/norme.ts`) e con
+`docs/lista-verifica-normativa.xlsx` (e `.md`, `.json`) elenca ogni valore usato dal software con il
+documento e la clausola da controllare. Le voci con stato «da verificare» (il numero è in testa a
+`docs/lista-verifica-normativa.md`) vengono da fonti secondarie e vanno confrontate con i testi vigenti; il risultato della verifica aggiorna il registro (`src/calc/norme.ts`) e con
 esso motore, lista e relazione. Finché la lista non è firmata da un ingegnere, i risultati sono
 indicativi.
 
@@ -39,7 +45,8 @@ ADMIN_PASSWORD=… npm run admin:create         # amministratore della piattafor
 BASE_URL=… ADMIN_PASSWORD=… npm run smoke     # prova completa nel browser contro un'istanza avviata
                                               # (MAILBOX_PORT=…: anche registrazione e nuova password, vedi scripts/mail-sink.mjs)
 python3 scripts/brand-assets.py              # logo, icone e anteprime social da brand/liftpilot-logo.webp
-npm run lista                                 # lista di verifica dal registro
+npm run lista                                 # lista di verifica (.md/.json) dal registro
+python3 scripts/lista-verifica-xlsx.py        # l'.xlsx dalla .json (serve openpyxl; dopo npm run lista)
 ```
 
 Pubblicazione sul server: `DEPLOY.md`.
