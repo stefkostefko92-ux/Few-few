@@ -543,3 +543,105 @@ html, body {
   0%, 100% { opacity: 0.55; }
   50%      { opacity: 1; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* v52 — Капан за спам ботове (HoneypotShowcase.jsx). Собствена „медена“ гама  */
+/* само за тази секция: мед, восък, тъмна пита — предметът на функцията, не     */
+/* декорация. Движението е само в отговор на показ/бутон, ≥300 ms, без мигане; */
+/* при prefers-reduced-motion сцената е статична (крайно състояние).            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.hp-section {
+  --honey: #f2a93b;
+  --honey-hi: #ffd27a;
+  --comb: #2b1f0c;
+  --window: #0b0f09;
+}
+.hp-ink { color: var(--honey); }
+.hp-title { letter-spacing: -0.035em; }
+.hp-comb {
+  opacity: 0.85;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 1 54 16v30L28 61 2 46V16zM28 61v36M2 16 0 15M54 16l2-1' fill='none' stroke='%23f2a93b' stroke-opacity='.3' stroke-width='1.2'/%3E%3C/svg%3E");
+  background-size: 56px 97px;
+  -webkit-mask-image: radial-gradient(ellipse 55% 60% at 72% 50%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 55% 60% at 72% 50%, #000 0%, transparent 75%);
+}
+.hp-window {
+  position: relative;
+  background: var(--window);
+  border: 1px solid #4b5a44;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(242, 169, 59, 0.08), 0 30px 80px -30px rgba(242, 169, 59, 0.35);
+  overflow: hidden;
+}
+.hp-bar {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid #263021;
+  font-size: 0.95rem;
+}
+.hp-hash { color: var(--honey); font-weight: 800; font-size: 1.25rem; line-height: 1; }
+.hp-topic {
+  color: #9a9a9a; font-size: 0.8rem; margin-left: 0.5rem; padding-left: 0.75rem;
+  border-left: 1px solid #263021; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hp-feed { padding: 1.1rem; display: grid; gap: 1.1rem; }
+.hp-msg { position: relative; display: flex; gap: 0.8rem; align-items: flex-start; }
+.hp-avatar {
+  flex: none; width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; color: #070a06;
+}
+.hp-avatar-bot { background: #8fe600; }
+.hp-avatar-spam { background: #b0476a; color: #fff; }
+.hp-author { font-weight: 700; color: #f0f0eb; font-size: 0.92rem; margin-bottom: 0.2rem; }
+.hp-tag {
+  font-size: 0.62rem; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+  background: #5865f2; color: #fff; vertical-align: 2px; margin-left: 0.3rem;
+}
+.hp-embed {
+  border-left: 4px solid var(--honey);
+  background: #11170e;
+  border-radius: 6px;
+  padding: 0.75rem 0.9rem;
+  max-width: 34rem;
+}
+.hp-count { display: inline-block; font-weight: 800; color: var(--honey-hi); font-variant-numeric: tabular-nums; }
+
+/* Сцената: три пласта в една клетка — височината не скача между фазите */
+.hp-stage { display: grid; min-height: 64px; }
+.hp-stage > * { grid-area: 1 / 1; opacity: 0; }
+.hp-typing { display: flex; align-items: center; color: #9a9a9a; font-size: 0.85rem; align-self: end; }
+.hp-dot { width: 6px; height: 6px; border-radius: 50%; background: #9a9a9a; margin-right: 3px; }
+.hp-spam { padding: 0.35rem 0.4rem; margin: -0.35rem -0.4rem; border-radius: 8px; overflow: hidden; }
+.hp-honey {
+  position: absolute; left: 0; top: 0; width: 100%; height: 135%;
+  opacity: 0.95;
+  transform: translateY(-105%);
+  filter: drop-shadow(0 6px 10px rgba(242, 169, 59, 0.35));
+}
+.hp-removed {
+  align-self: center; font-size: 0.9rem; color: #c9c9c2;
+  border: 1px dashed rgba(242, 169, 59, 0.45); border-radius: 8px; padding: 0.6rem 0.8rem;
+}
+
+.hp-typing  .hp-typing,
+.hp-posted  .hp-spam,
+.hp-caught  .hp-spam,
+.hp-gone    .hp-removed { opacity: 1; }
+.hp-caught  .hp-honey,
+.hp-gone    .hp-honey   { transform: translateY(0); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hp-stage > * { transition: opacity 0.35s ease, transform 0.45s cubic-bezier(.2,.8,.2,1), filter 0.45s ease; }
+  .hp-spam { transform: translateY(8px); }
+  .hp-posted .hp-spam, .hp-caught .hp-spam { transform: translateY(0); }
+  .hp-gone .hp-spam { transform: translateY(14px) scale(0.96); filter: blur(3px); }
+  .hp-honey { transition: transform 0.9s cubic-bezier(.55,.05,.35,1); }
+  .hp-removed { transform: translateY(-6px); }
+  .hp-gone .hp-removed { transform: translateY(0); }
+  .hp-typing .hp-dot { animation: hp-bob 1.2s ease-in-out infinite; }
+  .hp-typing .hp-dot:nth-child(2) { animation-delay: 0.15s; }
+  .hp-typing .hp-dot:nth-child(3) { animation-delay: 0.3s; }
+  .hp-count { animation: hp-roll 0.5s cubic-bezier(.2,.8,.2,1); }
+}
+@keyframes hp-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes hp-roll { from { transform: translateY(60%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

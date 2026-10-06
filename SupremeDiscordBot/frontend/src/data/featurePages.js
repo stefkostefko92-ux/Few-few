@@ -140,6 +140,37 @@ export const FEATURE_PAGES = [
     related: ["/features/discord-ticket-system", "/features/discord-welcome-bot-autorole", "/guides/gdpr-discord-bot"],
   },
   {
+    slug: "discord-anti-spam-honeypot",
+    path: "/features/discord-anti-spam-honeypot",
+    nav: "Spam-bot honeypot",
+    title: "Discord Anti-Spam Honeypot — Catch Spam Bots and Hacked Accounts",
+    description:
+      "Supreme Bot's honeypot is a trap channel for Discord spam bots: whoever writes there is kicked, banned or timed out at once and their last hour of messages is deleted. Owner and staff exempt. Free.",
+    keywords: ["discord anti spam bot", "discord honeypot bot", "discord spam bot protection", "discord scam link bot", "discord compromised account spam", "discord anti spam bot free", "supreme bot", "carbon stealth"],
+    h1: "Honeypot: a trap channel for spam bots",
+    answer:
+      "Hacked accounts and spam bots post the same scam — free Nitro, fake Steam support, crypto bots — in every channel they can see. Supreme Bot's honeypot gives them one channel that real members are told not to write in. The moment anyone posts there, the bot deletes the message and applies the action you chose: a kick that is done as a soft-ban, so Discord also deletes that account's messages from the last hour in every channel; a permanent ban; or a 24-hour timeout. The server owner and anyone with moderation permissions are never touched, only logged. The decision is made by the channel alone, so the message text is never read, and the feature is free on every server.",
+    steps: [
+      { title: "Turn it on", body: "In Discord, run /honeypot setup (Manage Server). Without a channel option the bot creates #honeypot at the top of the server; you can also pick an existing channel. The same settings are on the dashboard: your server → Verification → Honeypot." },
+      { title: "Choose the action", body: "Kick (soft-ban — the default, deletes the last hour of messages, the person can rejoin with an invite), ban, or a 24-hour timeout. Give the bot's role Ban Members (kick or ban) or Timeout Members (timeout) and move it above the roles members can give themselves; /honeypot status and the log tell you if something is missing." },
+      { title: "Pick a log channel", body: "Each catch is reported with the account, its age and the action taken. Optionally the caught user gets a DM explaining why and what to do if their account was hacked — useful because most spam bots are compromised real accounts." },
+      { title: "Leave the warning up", body: "The bot posts a warning in the trap channel and keeps a live count of how many spam bots it has caught. People read it and stay out; spam bots post anyway." },
+    ],
+    tiers: [
+      ["Honeypot channel", "Included", "Included"],
+      ["Kick (soft-ban), ban or 24-hour timeout", "Included", "Included"],
+      ["Owner and staff exempt, log channel, DM to the caught user", "Included", "Included"],
+      ["Live caught counter in the channel", "Included", "Included"],
+    ],
+    faq: [
+      { q: "Is the anti-spam honeypot free?", a: "Yes, on every server. It is a safety feature, not a Premium extra." },
+      { q: "Does the bot read messages to detect spam?", a: "No. It only checks which channel a message was posted in. Anything posted in the honeypot channel triggers the action, so the message text never has to be read or stored." },
+      { q: "What if a real member writes there by mistake?", a: "With the default kick the member can rejoin straight away with an invite, and the DM tells them what happened. If your community is likely to slip, choose the 24-hour timeout instead. Staff and the owner are never removed." },
+      { q: "Why does the bot need Ban Members?", a: "A kick through the honeypot is a ban followed by an immediate unban, because that is the only way Discord deletes a user's recent messages in every channel. The invite link does not ask for Ban Members by default; servers that use the honeypot grant it to the bot's role." },
+    ],
+    related: ["/features/discord-verification-bot", "/features/discord-logging-bot", "/commands"],
+  },
+  {
     slug: "discord-reaction-roles",
     path: "/features/discord-reaction-roles",
     nav: "Reaction roles",
@@ -327,7 +358,7 @@ export const FEATURE_PAGES = [
     steps: [
       { title: "Turn the game on", body: "Dashboard → your server → Game → Overview. Enable Server Season, set XP per message, the cooldown, XP per voice minute and the daily sparks. Pick an announcement channel for level-ups and game events." },
       { title: "Add level roles and shop items", body: "Level roles tab: choose a level and a role; roles stack, and the bot never assigns managed roles, roles with dangerous permissions or roles above itself. Shop tab: create items with a price in sparks — a role for N days, or a custom perk you fulfil yourself from the purchases list." },
-      { title: "Let companions spawn", body: "Companions appear in active channels (or only in the channels you list) after a burst of activity. The first member to press Catch keeps it; /companion list, feed, activate, trade and release manage the collection. Free servers see common and uncommon companions; Premium unlocks rare, epic, legendary and seasonal ones." },
+      { title: "Let companions spawn", body: "Companions show up on their own at a random moment every 20 to 50 minutes while people are chatting — in the channel they last used, or in one of the channels you list — and activity can bring one sooner. The first member to press Catch keeps it; /companion list, feed, activate, trade and release manage the collection. Free servers see common and uncommon companions; Premium unlocks rare, epic, legendary and seasonal ones." },
       { title: "Run server quests and mini-games", body: "Set a quest channel and a weekly quest starts on its own (messages, /daily claims, voice minutes, poll votes, verifications); the bot keeps a progress bar in the channel and rewards every contributor when the goal is reached, with a chest for the top contributor. Add a counting channel and a trivia channel with a schedule; admins can also start a round any time with /trivia." },
       { title: "Watch the season", body: "Season XP ranks members for the current season; when it ends, the bot announces the top three and season XP resets while levels, sparks and companions stay. /profile and /leaderboard show progress in Discord; the dashboard shows players, XP, sparks in circulation, top collectors and quest history." },
     ],

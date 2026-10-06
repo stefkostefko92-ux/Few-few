@@ -6,7 +6,7 @@ import {
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight,
   Lock, ScrollText, Shield, Building2, MessageCircle,
   Layers, Shuffle, Database, Palette, Minus,
-  SmilePlus, BookOpen, ClipboardList, UserPlus, Gamepad2, Activity,
+  SmilePlus, BookOpen, ClipboardList, UserPlus, Gamepad2, Activity, Bug,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
@@ -14,6 +14,8 @@ import SignalFunnel from "../components/SignalFunnel";
 import Seo from "../components/Seo";
 import FeatureLinks from "../components/FeatureLinks";
 import GameShowcase from "../components/GameShowcase";
+// Под сгъвката и със собствен текст на 8 езика → собствен чънк, извън LCP пътя.
+const HoneypotShowcase = lazy(() => import("../components/HoneypotShowcase"));
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
 
@@ -50,7 +52,7 @@ export default function Login() {
     <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
       <Seo
         title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
-        description="Supreme Bot is a Discord ticket bot and all-in-one platform by Carbon Stealth: tickets, application forms, verification, giveaways, a leveling game with companions and server quests, AI-assisted replies and white-label bots — one web dashboard, EU-hosted, Premium billed through Discord."
+        description="Supreme Bot is a Discord ticket bot and all-in-one platform by Carbon Stealth: tickets, application forms, verification, a spam-bot honeypot, giveaways, a leveling game with companions and server quests, AI-assisted replies and white-label bots — one web dashboard, EU-hosted, Premium billed through Discord."
         path="/"
         lang="en"
         hreflang
@@ -81,6 +83,7 @@ export default function Login() {
           <div className="hidden md:flex items-center gap-6 font-mono text-xs text-cs-dim">
             <a href="#features" className="hover:text-cs-cyan transition-colors">FEATURES</a>
             <a href="#game" className="hover:text-cs-cyan transition-colors">GAME</a>
+            <a href="#honeypot" className="hover:text-cs-cyan transition-colors">HONEYPOT</a>
             <a href="#pricing" className="hover:text-cs-cyan transition-colors">PRICING</a>
             <a href="#faq" className="hover:text-cs-cyan transition-colors">FAQ</a>
             <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
@@ -107,7 +110,7 @@ export default function Login() {
                 <span className="text-cs-cyan">One dashboard.</span>
               </h1>
               <p className="text-cs-muted text-lg sm:text-xl leading-relaxed mb-8 text-pretty max-w-2xl mx-auto lg:mx-0">
-                Tickets, applications, verification, reaction roles, giveaways, activity logging, a leveling game with collectible companions, scheduled messages, webhooks and AI-assisted replies — for Discord communities that outgrew a folder full of single-purpose bots.
+                Tickets, applications, verification, a honeypot that throws spam bots out, reaction roles, giveaways, activity logging, a leveling game with collectible companions, scheduled messages, webhooks and AI-assisted replies — for Discord communities that outgrew a folder full of single-purpose bots.
               </p>
 
               {error && (
@@ -207,6 +210,9 @@ export default function Login() {
               <FeatureCard icon={ClipboardList} title="Canned Responses & SLA">
                 Saved replies your team can drop in with one command, plus first-response and resolution timers that flag a ticket before it goes stale.
               </FeatureCard>
+              <FeatureCard icon={Bug} title="Spam-Bot Honeypot" badge="Free">
+                A trap channel spam bots can't resist. Whoever writes there is kicked, banned or timed out on the spot — owner and staff are never touched, and message text is never read.
+              </FeatureCard>
               <FeatureCard icon={Gamepad2} title="Leveling & Server Season" badge="Free">
                 XP from activity (never from message text), level roles, daily sparks with streaks, a server shop, 60 collectible companions and weekly server quests.
               </FeatureCard>
@@ -221,11 +227,14 @@ export default function Login() {
           bullets={[
             "Levels on the MEE6 curve members already know, with stacking level roles — only safe roles are ever assigned",
             "/daily sparks with a streak (×2 from day 7) and a shop with timed roles or your own custom rewards",
-            "60 original companions spawn in active channels — the first member to press Catch keeps it",
+            "60 original companions show up on their own at random moments while people chat — the first to press Catch keeps it",
             "Weekly server quests, a counting channel and trivia — the whole server plays as one team",
           ]}
           link="See how the game works"
         />
+
+        {/* v52 — капан за спам ботове: живото демо е единственият голям момент */}
+        <Suspense fallback={null}><HoneypotShowcase locale="en" /></Suspense>
 
         {/* PRODUCT TOUR — реални скрийншоти на dashboard-а (демо данни).
             Прост tab превключвател (aria-pressed), без анимации — само смяна

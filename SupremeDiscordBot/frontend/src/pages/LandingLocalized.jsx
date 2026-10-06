@@ -8,11 +8,13 @@ import { useMemo, useState, useRef, lazy, Suspense } from "react";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe,
-  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList, Gamepad2,
+  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList, Gamepad2, Bug,
 } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
 import GameShowcase from "../components/GameShowcase";
+// Под сгъвката и със собствен текст на 8 езика → собствен чънк (бюджет 30 KB).
+const HoneypotShowcase = lazy(() => import("../components/HoneypotShowcase"));
 import FeatureLinks from "../components/FeatureLinks";
 import { LANDING_TRANSLATIONS } from "../i18n/landing";
 import { useScrollReveal } from "../hooks/useScrollReveal";
@@ -47,6 +49,7 @@ const FEATURE_ICONS = {
   knowledgeBase: BookOpen,
   canned: ClipboardList,
   game: Gamepad2,
+  honeypot: Bug,
 };
 
 export default function LandingLocalized({ locale }) {
@@ -169,6 +172,9 @@ export default function LandingLocalized({ locale }) {
 
         {/* SERVER SEASON — играта (текстът по локал, картинките общи) */}
         {t.game && <GameShowcase heading={t.game.heading} sub={t.game.sub} bullets={t.game.bullets} link={t.game.link} />}
+
+        {/* v52 — капан за спам ботове (текстът по локал) */}
+        <Suspense fallback={null}><HoneypotShowcase locale={locale} /></Suspense>
 
         {/* EU TRUST */}
         <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
