@@ -7,11 +7,12 @@ import appIt from '../../../messages/it.json';
 import { deg } from '@/calc/math';
 import { K, PROFILO, VOCI, type Stato } from '@/calc/norme';
 import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
-import { vociOfDesign } from '@/shaft';
+import { mergeChecks, vociOfDesign } from '@/shaft';
 import type { BrakeCase, CheckId, CheckStatus, FormValues, TractionCase } from '@/calc/types';
 import type { BottomScheme } from '../lift/bottom';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
 import { ambitoOf, collaudoOf } from '../lift/collaudo';
+import { carichiOf } from '../lift/modifica';
 import { VOCI_IMPIANTO } from '../lift/norme';
 import { analyse } from '../present/analysis';
 import { quickRows } from '../present/quick';
@@ -100,7 +101,7 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   section("Dati dell'impianto");
   const plant: [string, string][] = [
-    [t('context'), t(rif ? 'ctx_rif' : repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
+    [t('context'), t(rif ? 'ctx_rif' : repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl, carichiOf(r.values)), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
     [t('P'), `${fmt(I.P, 0)} kg${m.pEstimate ? ' — stima del software, da sostituire con la massa reale' : ''}`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg${I.qeq > 0 ? ` (${t('qeq')}: ${fmt(I.qeq, 0)} kg)` : ''}`], [t('v'), `${fmt(I.v, 2)} m/s`],
     [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
@@ -177,7 +178,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   // each standard of the test with its own result, and the test's: the calculation's checks and, with a shaft design,
   // the shaft's and the beams'
   section(ESITI_CALCOLO);
-  B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? [...r.design.layout.checks, ...beams] : [])], (x) => st(x)));
+  B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? mergeChecks(r.design.layout.checks, beams) : [])], (x) => st(x)));
   section('Adempimenti e punti da verificare in sito');
   B.push(...adempimentiBlocks(C, repl));
 

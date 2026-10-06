@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { KV_VERT, RAILS, defaultInputs, layout } from '@/shaft';
 import { RAIL_SECTIONS, RAIL_TYPES, iMin } from '@/shaft/rails';
-import { impactFactor, loadCases, loadingCases, railForces } from '../tavole/forces';
+import { impactFactor, loadCases, loadingCases, railForces, sillFactor } from '../tavole/forces';
 import { omega, railCheck, railChecks, railLimits } from '../tavole/rail-check';
 import { railNote } from '../tavole/notes';
 import { makeFmt } from '../present/tr';
@@ -55,22 +55,31 @@ test('guide di cabina: forze come sul foglio, tensioni e frecce a mano', () => {
   near(railCheck(L, t, P, Q, 'progressive', 2 * l, len).dx, 8 * R.dx, 1e-9);
 });
 
-test('carico al piano: Fs = 0,4·g·Q al centro della soglia, cabina vuota, nessun coefficiente; tensioni ammissibili Rm/St', () => {
+test('carico al piano: Fs = 0,4·g·Q al centro della soglia (0,6 e 0,85 per uso), cabina vuota, nessun coefficiente; tensioni ammissibili Rm/St', () => {
   const L = layout(defaultInputs(1600, 1750)), P = 700, Q = 630, G = 9.81, c = L.car, d = L.doors[0];
   // central sling: the sill of entrance A on the car's front, across the rails' line by the car's half depth
   const [ld] = loadingCases(L, P, Q), n = 2, h = (L.inputs.vertical.frameTop + L.inputs.vertical.frameBelow) / 1000;
   const xi = Math.abs(c.y - L.frame.axis) / 1000, mid = L.rails.filter((r) => r.kind === 'car').reduce((s, r) => s + r.x, 0) / 2;
   near(ld.fx, (0.4 * G * Q * xi) / (n * h) + (G * P * Math.abs(c.y + c.h / 2 - L.frame.axis)) / 1000 / (n * h), 1e-9);
   near(ld.fy, (0.4 * G * Q * Math.abs((d.u0 + d.u1) / 2 - mid)) / 1000 / ((n / 2) * h) + (G * P * Math.abs(c.x + c.w / 2 - mid)) / 1000 / ((n / 2) * h), 1e-9);
-  // 2500 kg and more: 0,6·g·Q
+  // the use not given: 2500 kg and more 0,6·g·Q (UNI EN 81-1:2008, G.2.5)
   const heavy = loadingCases(L, P, 2500)[0], light = loadingCases(L, P, 2499)[0];
   assert.ok(heavy.fx / light.fx > 1.45);
+  // by the use (UNI EN 81-20:2020, 5.7.2.3.6): passengers 0,4 at any load, goods passenger 0,6, heavy handling devices 0,85
+  assert.equal(sillFactor(2500, 'passengers'), 0.4);
+  assert.equal(sillFactor(630, 'goods'), 0.6);
+  assert.equal(sillFactor(630, 'goodsHeavy'), 0.85);
+  assert.deepEqual(loadingCases(L, P, Q, 'passengers'), loadingCases(L, P, Q));
+  const fsOf = (use: 'passengers' | 'goods' | 'goodsHeavy'): number => loadingCases(L, 0, Q, use)[0].fx;
+  near(fsOf('goodsHeavy') / fsOf('passengers'), 0.85 / 0.4, 1e-9);
   // Rm 370 with St 1,8 and 2,25
   near(railLimits().gear, 370 / 1.8, 1e-9);
   near(railLimits().use, 370 / 2.25, 1e-9);
   // the note says the factor the check took and the permissible stresses as the registry does
-  const note = (q: number): string => railNote(railCheck(L, L.inputs.carRail, P, q, 'progressive', 2000, 18000), 'T70-1/A', 'progressive', 'NOTA 1', makeFmt('it')).text;
-  assert.ok(note(Q).includes('carico al piano (0,4·g·Q') && note(2500).includes('carico al piano (0,6·g·Q'));
+  const note = (q: number, use?: 'passengers' | 'goods' | 'goodsHeavy'): string =>
+    railNote(railCheck(L, L.inputs.carRail, P, q, 'progressive', 2000, 18000, use), 'T70-1/A', 'progressive', use, 'NOTA 1', makeFmt('it')).text;
+  assert.ok(note(Q).includes('carico al piano (0,4·g·Q alla soglia, secondo la portata)') && note(2500).includes('carico al piano (0,6·g·Q'));
+  assert.ok(note(Q, 'goodsHeavy').includes('carico al piano (0,85·g·Q alla soglia, per merci accompagnate con mezzi di carico pesanti)'));
   assert.ok(note(Q).includes('Rm/1,8 = 205,6') && note(Q).includes('Rm/2,25 = 164,4'));
 });
 

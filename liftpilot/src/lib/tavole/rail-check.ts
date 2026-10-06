@@ -9,7 +9,7 @@ import { check } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { RAILS, RAIL_SECTIONS, iMin, type RailType } from '@/shaft/rails';
 import type { Layout, ShaftCheck } from '@/shaft/types';
-import { impactFactor, loadCases, loadingCases, sillFactor, type SafetyGear } from './forces';
+import { impactFactor, loadCases, loadingCases, sillFactor, type LiftUse, type SafetyGear } from './forces';
 
 const G = 9.81;
 
@@ -40,12 +40,13 @@ export interface RailCheck {
 /** The permissible stress of the rails' steel at the safety gear's operation and in normal use [N/mm²]. */
 export const railLimits = (): { gear: number; use: number } => ({ gear: KV_VERT.railRm / KV_VERT.railStGear, use: KV_VERT.railRm / KV_VERT.railStRun });
 
-/** The car rails `type` with brackets every `l` mm at most, `len` mm long, under an empty car P and a rated load Q [kg]. */
-export function railCheck(L: Layout, type: RailType, P: number, Q: number, gear: SafetyGear, l: number, len: number): RailCheck {
+/** The car rails `type` with brackets every `l` mm at most, `len` mm long, under an empty car P and a rated load Q [kg];
+ *  the lift's use for the force on the sill while loading. */
+export function railCheck(L: Layout, type: RailType, P: number, Q: number, gear: SafetyGear, l: number, len: number, use?: LiftUse): RailCheck {
   const S = RAIL_SECTIONS[type], K = KV_VERT, E = K.steelE, own = (G * RAILS[type].q * len) / 1000;
   const lambda = l / iMin(S), w = omega(lambda);
   const bend = (c: { fx: number; fy: number }): number => (K.railBend * c.fx * l) / S.Wy + (K.railBend * c.fy * l) / S.Wx;
-  const g = loadCases(L, P, Q, impactFactor(gear)), run = loadCases(L, P, Q, K.k2Running).cases, load = loadingCases(L, P, Q);
+  const g = loadCases(L, P, Q, impactFactor(gear)), run = loadCases(L, P, Q, K.k2Running).cases, load = loadingCases(L, P, Q, use);
   const worst = (cases: readonly { fx: number; fy: number }[], f: (c: { fx: number; fy: number }) => number): number => Math.max(...cases.map(f));
   const smGear = worst(g.cases, bend), smRun = worst(run, bend), smLoad = worst(load, bend);
   // the vertical force on a rail at the safety gear's operation: the car and its load stopped by all the rails, and
@@ -57,7 +58,7 @@ export function railCheck(L: Layout, type: RailType, P: number, Q: number, gear:
     l, lambda, omega: w,
     gear: { sm: smGear, s: smGear + fv / S.A, sk, sc: sk === null ? null : sk + K.railCombine * smGear },
     run: { sm: smRun, s: smRun + own / S.A },
-    load: { sm: smLoad, s: smLoad + own / S.A, sill: sillFactor(Q) },
+    load: { sm: smLoad, s: smLoad + own / S.A, sill: sillFactor(Q, use) },
     flange: { gear: flange(worst(g.cases, (c) => c.fx)), use: flange(worst([...run, ...load], (c) => c.fx)) },
     dx: defl(worst(all, (c) => c.fx), S.Iy),
     dy: defl(worst(all, (c) => c.fy), S.Ix),

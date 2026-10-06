@@ -2,7 +2,7 @@
 // their checks, as numbers and as model entities for the drawing kernel. No I/O, no framework: it runs in the browser
 // and on the server.
 export { layout, defaultInputs, verdictOf, counterweightSide } from './layout';
-export { decimalsShown, isUpperLimit, shownValue } from './checks';
+export { decimalsShown, isUpperLimit, mergeChecks, shownValue } from './checks';
 export { maxArea, loadForArea, passengers } from './area';
 export { SHAFT_ENGINE_VERSION, shaftSnapshot, projectLayout } from './snapshot';
 export type { ShaftSnapshot } from './snapshot';

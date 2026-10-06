@@ -172,6 +172,10 @@ test('registri dei valori automatici e della simulazione', () => {
   assert.ok(text(VOCI_IMPIANTO, 'impianto.massa.cabina').includes(`${KL.carMassStep} kg`));
   assert.ok(text(VOCI_IMPIANTO, 'impianto.L0').includes(`${it(KL.sheaveAxisPerD)}·D`));
   assert.ok(text(VOCI_IMPIANTO, 'impianto.calata').includes(`più di ${KL.calataTol} mm`));
+  const pct = (x: number): string => `${it(Math.round(x * 1000) / 10)} %`, carico = text(VOCI_IMPIANTO, 'impianto.variazione.carico');
+  for (const x of [...KL.loadIncQ, ...KL.loadIncT, ...KL.loadIncTcp, KL.loadStruct11]) assert.ok(carico.includes(pct(x)), pct(x));
+  assert.ok(carico.includes(`${KL.loadSplitQ} kg`));
+  assert.ok(text(VOCI_IMPIANTO, 'impianto.marcatura').includes(KL.ceFrom.split('-').reverse().join('/')));
   assert.ok(text(VOCI_SIM, 'sim.profilo').includes(`${it(KS.jerk)} m/s³`));
   for (const k of ['doorOpen', 'doorClose', 'dwell', 'startDelay'] as const) assert.ok(text(VOCI_SIM, 'sim.porte').includes(`${it(KS[k])} s`), k);
   assert.ok(text(VOCI_SIM, 'sim.ammortizzatori').includes(`${it(KS.bufferSpeed)} volte`));

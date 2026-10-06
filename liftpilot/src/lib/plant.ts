@@ -1,5 +1,5 @@
 // Data of the installation that neither the calculation nor the shaft design holds, for the data sheet of the drawing
-// set: control, shaft, car finish, the safety gear and the governor's load on the slab, the electrical supply; and,
+// set: control, shaft, car finish, the safety gear, the lift's use and the governor's load on the slab, the electrical supply; and,
 // optional, the machine's name when it is not the catalogue's, the bracket pitches and the parts of the car mass. What the
 // design knows — doors, frame, rails new or existing (the acceptance test's parts), brackets, governor and its rope,
 // buffers, the machine's mass, the cables, the dynamic coefficient — is never asked: the sheets take it from the design,
@@ -32,6 +32,9 @@ export const plantSchema = z.object({
   governorLoad: num('governorLoad'),
   /** safety gear of the car: progressive, instantaneous roller type, instantaneous (impact factor of the rail loads) */
   safetyGear: z.enum(['progressive', 'roller', 'instantaneous']).optional(),
+  /** use of the lift, for the force on the car's sill while loading (src/lib/tavole/forces.ts sillFactor): passengers,
+   *  goods passenger, goods passenger with heavy handling devices outside the rated load */
+  liftUse: z.enum(['passengers', 'goods', 'goodsHeavy']).optional(),
   /** rated and starting current [A] */
   currentIn: num('currentIn'),
   currentStart: num('currentStart'),

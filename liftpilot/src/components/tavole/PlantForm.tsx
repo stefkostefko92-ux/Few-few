@@ -1,7 +1,7 @@
 'use client';
 
 // The data of the installation for sheet 1 of the drawing sets: only what the calculation and the shaft design do not
-// know (control, shaft, car finish, safety gear, the governor's load, the power supply), and folded the optional rest
+// know (control, shaft, car finish, safety gear, the lift's use, the governor's load, the power supply), and folded the optional rest
 // (the machine's name off the catalogue, the bracket pitches, the parts of the car mass). Doors, frame, rails, brackets,
 // governor, buffers and masses come from the design (src/lib/plant.ts). A replacement's documents read fewer of them:
 // only those are shown. Every field is optional; the server validates the whole with the same zod schema before it
@@ -16,6 +16,8 @@ import { KV_VERT } from '@/shaft/norme-vert';
 import { savePlantAction } from '@/server/drawing-actions';
 
 type TextKey = 'machine' | 'control' | 'shaft' | 'carFinish';
+
+const LIFT_USES = ['passengers', 'goods', 'goodsHeavy'] as const;
 
 export default function PlantForm({ projectId, initial, readOnly, whole }: { projectId: string; initial: Plant; readOnly: boolean; whole: boolean }) {
   const t = useTranslations('tavole'), te = useTranslations('errors'), router = useRouter(), locale = useLocale();
@@ -65,6 +67,17 @@ export default function PlantForm({ projectId, initial, readOnly, whole }: { pro
             </select>
             <small className="note">{t('f_safetyGearHint', { v: fmt(KV_VERT.gearInstantV, 2) })}</small>
           </label>
+          {whole ? (
+            <label className="field">
+              <span>{t('f_liftUse')}</span>
+              <select className="input" value={P.liftUse ?? ''} disabled={readOnly}
+                onChange={(e) => put({ liftUse: LIFT_USES.find((u) => u === e.target.value) })}>
+                <option value="">{t('r_unset')}</option>
+                {LIFT_USES.map((u) => <option key={u} value={u}>{t(`u_${u}`)}</option>)}
+              </select>
+              <small className="note">{t('f_liftUseHint', { q: KV_VERT.sillHeavyQ })}</small>
+            </label>
+          ) : null}
           {num('governorLoad')}
         </div>
         <p className="note">{t(whole ? 'fromDesign' : 'fromCalc')}</p>

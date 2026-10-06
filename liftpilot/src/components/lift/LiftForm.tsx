@@ -79,8 +79,9 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
         ))}
       </div>
       {/* DM 236 ticked with no case chosen yet sets the usual one, as with none */}
-      <CollaudoOptions P={P} isNew={intervento === 'new'} chosen={inp.collaudo} value={collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo}
-        access={{ value: is('access') ? 'none' : inp.shaft.access, set: (access) => setShaft({ access }) }} />
+      {/* the design's loads, once worked out, against the documented ones */}
+      <CollaudoOptions P={P} isNew={intervento === 'new'} chosen={inp.collaudo} value={derived?.collaudo ?? collaudoOf(inp.calc, inp.collaudo)} set={setCollaudo}
+        access={{ value: is('access') ? 'none' : inp.shaft.access, set: (access) => setShaft({ access }) }} calc={derived?.values} />
       <h2>{t('s_shaft')}</h2>
       <div className="form-grid">
         {size('W')}

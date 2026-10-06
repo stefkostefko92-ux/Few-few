@@ -10,7 +10,7 @@ import type { Analysis } from '../present/analysis';
 import { makeFmt } from '../present/tr';
 import { headTopChecks } from '../lift/head';
 import { cablesMass, headStatic, ropeLength, supportChecks } from '../lift/support';
-import { isUpperLimit, shownValue } from '@/shaft/checks';
+import { isUpperLimit, mergeChecks, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { bracketCount, bracketHeights, railSpan } from '@/shaft/brackets';
 import { bufferType } from '@/shaft/buffers';
@@ -172,12 +172,12 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const gear = Pl.safetyGear ?? 'progressive', F = railForces(L, I.P, I.Q, gear);
   // the car rails between their brackets (the pitch declared or the rule's), at the loads of this sheet
   const [z0, z1] = railSpan(S), hs = bracketHeights(z0, z1, L.inputs.carRail, Pl.carBracketPitch);
-  const rc = railCheck(L, L.inputs.carRail, I.P, I.Q, gear, Math.max(...hs.slice(1).map((z, i) => z - hs[i])), z1 - z0);
+  const rc = railCheck(L, L.inputs.carRail, I.P, I.Q, gear, Math.max(...hs.slice(1).map((z, i) => z - hs[i])), z1 - z0, Pl.liftUse);
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
   const withUnit = (x: number | null, dp: number, u: string): string => (x == null ? '—' : `${fmt(x, dp)}${u ? ` ${u}` : ''}`);
   // the clause stays in the label, the standard is in the heading of the table; the door of the room in its sizes
   // the shaft's checks, then the beams under the machine at the load of this sheet
-  const all = [...L.checks, ...supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn }, !below),
+  const all = [...mergeChecks(L.checks, supportChecks(L, M, { machine: below ? 0 : machine, static: ld.static, dyn }, !below)),
     ...headTopChecks(L, I.r, I.Dp, below ? x.marks?.bottom ?? 'head' : null), ...railChecks(rc, gear, I.v)];
   const checks: DataSheet['checks'] = all.map((c) => {
     const label = (labels[`c_${c.id}`] ?? c.id).replace(' (UNI EN 81-20, ', ' (');
@@ -190,7 +190,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));
   // the note of the rails' check wherever the check enters the acceptance test (new rails, or a change of load, car or sling)
-  if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, `NOTA ${notes.length + 1}`, fmt));
+  if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, Pl.liftUse, `NOTA ${notes.length + 1}`, fmt));
   const test = collaudoNote(C, `NOTA ${notes.length + 1}`);
   if (test) notes.push(test);
 

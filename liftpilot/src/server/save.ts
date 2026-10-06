@@ -24,7 +24,7 @@ import { shaftHash } from '@/lib/shaft-hash';
 import type { ShaftSource } from '@/lib/shaft-input';
 import { snapshotHash } from '@/lib/snapshot-hash';
 import { supportName } from '@/lib/tavole/survey-data';
-import { shaftSnapshot, verdictOf } from '@/shaft';
+import { mergeChecks, shaftSnapshot, verdictOf } from '@/shaft';
 import { readCalc, storedCollaudo } from './records';
 
 export type Created = { ok: true; id: string } | { ok: false; error: string; fields?: string[] };
@@ -69,7 +69,7 @@ export async function createLiftDesign(user: SessionUser, projectId: string, inp
   const shaftSha = shaftHash(shaftSnap), calcSha = snapshotHash(calcSnap), res = d.analysis.res, S = d.shaft;
   // the lift's verdict is its acceptance test's: the checks of the machine, of the shaft and of the beams under the
   // machine that the intervention touches (all of them for a new lift; collaudo.ts)
-  const test = collaudoVerdict(d.collaudo, [...res.checks, ...L.checks, ...d.supportChecks]);
+  const test = collaudoVerdict(d.collaudo, [...res.checks, ...mergeChecks(L.checks, d.supportChecks)]);
   const machine = machineSummary(d.analysis.ctx.N);
   const hash = liftHash({ engine: LIFT_ENGINE_VERSION, inputs: canon(inputs), shaft: shaftSha, calc: calcSha });
   const source$ = source ? (source as Prisma.InputJsonValue) : undefined;

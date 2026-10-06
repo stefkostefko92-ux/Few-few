@@ -76,10 +76,11 @@ export function sectionDims(L: Layout, S: Section, kind: SectionKind, carFloor: 
   }
   if (kind === 'top' || kind === 'floor') {
     // by the landing: the operator's top, the landing door's clear height (the lintel's underside), the call station's
+    // top button
     const fr = portalOf(I), lintel = fr.depth === null ? front : 0;
     side('left', [zf, zf + V.opTop], ['{v} H. Ingombro Max Operatore'], [E('v.opTop')], [undefined, x0 - I.carDoorDepth]);
     side('left', [zf, zf + I.doorHeight], ['{v} H. Luce Porta di piano'], [E('doorHeight')], [undefined, lintel]);
-    side('left', [zf, zf + callStationOf(I).height], ['{v} H. Bottoniera'], [E('cs.height')], [undefined, front]);
+    side('left', [zf, zf + callStationOf(I).height], ['{v} H. Pulsante più alto'], [E('cs.height')], [undefined, front]);
     if (hasImbotti(I)) {
       // over the landing door: the portal's head (or its own frame's) and the top lining up to the marble
       const h = marbleHeight(I);

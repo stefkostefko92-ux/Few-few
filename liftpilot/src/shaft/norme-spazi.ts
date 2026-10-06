@@ -28,9 +28,18 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
       + '≥ 300 mm sopra il corrimano della balaustra',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.2 a)–c)', fonte: letto(T20, 'p. 38'), stato: 'da_verificare',
     verifiche: ['h_clear'],
-    nota: 'I valori 500, 100 e 300 mm sono confermati. Da concordare con l\'organismo: il software dà alla traversa dell\'arcata i 100 mm di b) '
-      + '(il testo nomina traversa o architrave e parti di porte verticali; se non vale per l\'arcata servono i 500 mm di a)); non verifica i '
-      + '500 mm in obliquo oltre i 400 mm dal corrimano (c) 2)).',
+    nota: 'I valori 500, 100 e 300 mm sono confermati. Il software dà alla traversa dell\'arcata i 100 mm di b) e avvisa sotto i 500 mm di a) '
+      + '(voce spazi.testata.traversa). Con il soffitto piano, 300 mm sopra il corrimano danno anche i 500 mm in obliquo oltre i 400 mm '
+      + '(c) 2)); sotto pulegge o travi appese no.',
+  },
+  {
+    id: 'spazi.testata.traversa', gruppo: 'sezione', titolo: 'Traversa dell\'arcata sotto il soffitto',
+    valore: '≥ 100 mm come parte di b); sotto 500 mm «Attenzione»: se l\'organismo la considera un\'apparecchiatura vale a) (500 mm)',
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.7.2 a)–b); UNI EN 81-1:2008, 5.7.1.1 c)', fonte: `${letto(T20, 'p. 38')}; ${letto('UNI EN 81-1:2008', 'p. 26')}`,
+    stato: 'da_verificare',
+    verifiche: ['h_cross'],
+    nota: 'La b) nomina la traversa delle porte e le parti delle porte a scorrimento verticale; quella dell\'arcata non è nominata. Da '
+      + 'concordare con l\'organismo.',
   },
   {
     id: 'spazi.testata.pulegge', gruppo: 'sezione', titolo: 'Parte più alta della cabina sotto ciò che pende sopra',
@@ -69,13 +78,15 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
     verifiche: ['h_parapet'],
   },
   {
-    id: 'spazi.tetto.superficie', gruppo: 'sezione', titolo: 'Superficie dove una persona può stare sul tetto di cabina',
-    valore: 'area continua ≥ 0,12 m² con il lato minore oltre 250 mm (disegnata 400 × 300 mm, modificabile sulla pianta in testata); sopra di essa '
-      + 'deve esserci l\'altezza dello spazio di rifugio',
-    riferimento: 'UNI EN 81-20:2020, 5.2.5.7.3', fonte: letto(T20, 'p. 39'), stato: 'confermato',
-    verifiche: ['h_stand'],
-    nota: 'Nella 5.2.5.7.3 lo 0,12 m² è la soglia da cui un\'area conta come posto in piedi, sopra la quale serve l\'altezza del rifugio; '
-      + 'che un\'area simile debba esserci lo chiedeva la UNI EN 81-1:2008 (8.13.2). Il software verifica l\'area disegnata.',
+    id: 'spazi.tetto.superficie', gruppo: 'sezione', titolo: 'Spazio di rifugio e posti in piedi sul tetto di cabina',
+    valore: 'sul tetto c\'è posto per la pianta del rifugio scelto (tipo 1: 400 × 500 mm; tipo 2: 500 × 700 mm), in un verso o nell\'altro; '
+      + 'ogni area continua ≥ 0,12 m² con il lato minore oltre 250 mm (anche su un apparecchio) è un posto in piedi e sopra di essa serve '
+      + 'l\'altezza del rifugio (h_refuge per il tetto); l\'area disegnata (400 × 300 mm) indica dove stare',
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.7.1 (prospetto 3) e 5.2.5.7.3; UNI EN 81-1:2008, 8.13.2', fonte: `${letto(T20, 'pp. 38–39')}; ${letto('UNI EN 81-1:2008', 'p. 52')}`,
+    stato: 'confermato',
+    verifiche: ['h_stand', 'h_refuge'],
+    nota: 'L\'operatore delle porte sul tetto è profondo meno di 250 mm (cataloghi): non è un posto in piedi e conta come apparecchiatura '
+      + '(500 mm, h_clear). La UNI EN 81-1:2008 (8.13.2) chiedeva un\'area ≥ 0,12 m² con il lato minore ≥ 0,25 m.',
   },
   {
     id: 'spazi.altezze', gruppo: 'sezione', titolo: 'Altezza libera degli accessi e della cabina',

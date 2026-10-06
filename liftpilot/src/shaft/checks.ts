@@ -9,6 +9,11 @@ export function check(id: ShaftCheckId, ok: boolean, value: number | null, limit
   return { id, status: ok ? 'ok' : soft ? 'warn' : 'fail', value, limit, dec, unit };
 }
 
+/** The checks of `base` followed by those of `over`, a check of `over` taking the place of the one of `base` with its id
+ *  (the free area in front of the panel, measured up to the machine once the machine is known). */
+export const mergeChecks = (base: readonly ShaftCheck[], over: readonly ShaftCheck[]): ShaftCheck[] =>
+  [...base.map((c) => over.find((o) => o.id === c.id) ?? c), ...over.filter((o) => !base.some((c) => c.id === o.id))];
+
 /** Checks whose value is kept rounded to the millimetre while the outcome is decided on the exact one. */
 const KEPT_ROUNDED: ReadonlySet<ShaftCheckId> = new Set<ShaftCheckId>(['m_calata', 'm_fit', 'm_stand', 'v_place', 'v_doorcar', 'v_niche', 'v_staffa']);
 

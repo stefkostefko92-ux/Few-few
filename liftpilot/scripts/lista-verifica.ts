@@ -37,13 +37,13 @@ const GRUPPO_VANO: Record<GruppoVano, string> = {
 };
 const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   v_fit: 'la cabina entra nel vano', v_area: 'superficie della cabina per la portata', v_acc_car: 'cabina minima (DM 236/1989)',
-  v_acc_door: 'porta minima (DM 236/1989)', v_acc_side: 'porta sul lato corto', v_door: 'ingombro della porta di piano',
+  v_acc_door: 'porta minima (DM 236/1989)', v_acc_c: 'motivazione del caso c) (DM 236/1989)', v_call: 'pulsanti più alti delle bottoniere (DM 236/1989)', v_acc_side: 'porta sul lato corto', v_door: 'ingombro della porta di piano',
   v_wall: 'parete di fronte all\'entrata', v_sill: 'gioco tra le soglie', v_cw: 'distanza cabina–contrappeso', v_cwlen: 'lunghezza del contrappeso',
   v_door2: 'ingombro della seconda porta di piano', v_land: 'disassamento della porta di piano A', v_land2: 'disassamento della porta di piano B',
   v_op: 'operatori delle porte adiacenti', v_place: 'quote fissate a mano: ingombri al loro posto',
   v_doorcar: 'quote fissate a mano: porte dentro la cabina', v_buffer: 'ammortizzatori fissati a mano: sotto cabina e contrappeso, fuori dal rifugio',
   v_niche: 'nicchie nelle pareti', v_staffa: 'staffe del catalogo per le guide del contrappeso', v_telaio: 'le ante della porta di piano dietro il suo telaio', v_head: 'pareti in testata diverse dal piano principale', h_refuge: 'spazio di rifugio in testata',
-  h_clear: 'distanze libere dal soffitto', h_top: 'parte più alta della cabina sotto ciò che pende sopra', h_parapet: 'balaustra sul tetto di cabina', h_stand: 'superficie per stare sul tetto di cabina',
+  h_clear: 'distanze libere dal soffitto', h_top: 'parte più alta della cabina sotto ciò che pende sopra', h_parapet: 'balaustra sul tetto di cabina', h_stand: 'spazio di rifugio sul tetto di cabina', h_cross: 'traversa dell\'arcata sotto il soffitto',
   h_staffe: 'staffe Panev sopra le porte di piano: muro tra il vano della porta e la soglia del piano sopra',
   h_door: 'altezza libera degli accessi', h_car: 'altezza libera interna della cabina', h_cw: 'corsa guidata del contrappeso in testata', h_guide: 'corsa guidata della cabina in testata',
   p_refuge: 'spazio di rifugio in fossa', p_screen: 'protezione del contrappeso in fossa',

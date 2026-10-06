@@ -129,6 +129,8 @@ export const shaftInputsReadSchema = z.object({
   doorHeight: mm(1800, 3000).default(2000),
   cw: z.enum(['rear', 'left', 'right']),
   access: z.enum(['none', 'dm236_existing', 'dm236_residential', 'dm236_public']),
+  /** case c) of DM 236/1989 8.1.12: why the existing building takes no larger car (absent: not given) */
+  accessReason: z.string().trim().min(1).max(300).optional(),
   entrances: z.enum(['one', 'opposite', 'adjacent']).default('one'),
   side2: z.enum(['left', 'right']).default('right'),
   carRail: z.enum(RAIL_TYPES).default('T70-1/A'),

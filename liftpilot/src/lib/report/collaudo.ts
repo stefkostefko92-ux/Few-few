@@ -7,6 +7,8 @@ import type { CheckId } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
 import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo } from '../lift/collaudo';
 import { ADEMPIMENTI, NORME_INFO, type PuntoInSito } from '../lift/norme-collaudo';
+import { KL } from '../lift/norme';
+import { variazioneCarico, type Carichi, type Variazione } from '../lift/modifica';
 import { ADAPT } from '../present/adapt';
 import type { Tr } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
@@ -21,12 +23,42 @@ export const partiText = (C: Collaudo): string => (C.norma === 'en81'
 /** The standards added to the base one, in words (empty: none). */
 const aggiunteText = (C: Collaudo): string => (C.aggiuntive ?? []).map((n) => NORMA_SIGLA[n]).join('; ');
 
-/** The rows of the data of the installation: the standards and, for a modification, what it replaces or changes. */
-export const collaudoRows = (C: Collaudo, repl: boolean): [string, string][] => [
-  ['Normativa di riferimento per il collaudo', NORMA_SIGLA[C.norma]],
-  ...(C.aggiuntive?.length ? [['Altre normative di collaudo', aggiunteText(C)] as [string, string]] : []),
-  ...(repl ? [['Parti sostituite o modificate', partiText(C)] as [string, string]] : []),
-];
+const num = (x: number): string => new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 }).format(x);
+const pctText = (x: number): string => `${x < 0 ? '−' : '+'}${num(Math.abs(x) * 100)} %`;
+const day = (d: string): string => d.split('-').reverse().join('/');
+
+/** The answer about the CE marking, in words (modifica.ts). */
+const marcaturaText = (C: Collaudo): string | null => (C.marcatura === 'si'
+  ? 'presente: dichiarazione di conformità CE/UE e marcatura in cabina'
+  : C.marcatura === 'no' ? 'assente'
+    : C.marcatura === 'incerta' ? `non nota: ${C.servizio ? `messa in servizio il ${day(C.servizio)}, ` : ''}parte della UNI 10411 da confermare con il libretto `
+      + "dell'impianto (dichiarazione di conformità)" : null);
+
+/** The change of the loads in words: the increases and what they bring under the part of UNI 10411. */
+export function variazioneText(v: Variazione): string {
+  const head = `portata ${pctText(v.dQ)}, T* ${pctText(v.dT)}, contrappeso ${pctText(v.dTcp)} della portata`;
+  const lim = v.limiti ? ` (ammessi senza verifiche: ${pctText(v.limiti.Q)}, ${pctText(v.limiti.T)} e ${pctText(v.limiti.Tcp)}, UNI 10411-1, prospetti 1 e 2)` : '';
+  const over = v.p1 || v.p2
+    ? `: ${v.limiti ? 'oltre i limiti' : 'aumento (UNI 10411-11, 6.1)'}, le verifiche del carico entrano nell'esito`
+    : v.calo ? ": un carico diminuisce, le verifiche del carico entrano nell'esito (ammortizzatori, paracadute progressivo)" : ': entro i limiti';
+  const str = v.strutture ? `; oltre il ${num(KL.loadStruct11 * 100)} % anche le strutture dell'edificio (UNI 10411-11, 5)` : '';
+  return `${head}${lim}${over}${str}. Aggiornare la documentazione con i nuovi carichi.`;
+}
+
+/** The rows of the data of the installation: the standards and, for a modification, what it replaces or changes, the
+ *  answer about the CE marking and the change of the loads from the documented ones (`ora`: the design's). */
+export function collaudoRows(C: Collaudo, repl: boolean, ora?: Carichi | null): [string, string][] {
+  const uni = repl && C.norma !== 'en81', ce = uni ? marcaturaText(C) : null, doc = uni ? C.documentato : undefined;
+  const v = doc && ora && C.norma !== 'en81' ? variazioneCarico(C.norma, doc, ora) : null;
+  return [
+    ['Normativa di riferimento per il collaudo', NORMA_SIGLA[C.norma]],
+    ...(C.aggiuntive?.length ? [['Altre normative di collaudo', aggiunteText(C)] as [string, string]] : []),
+    ...(repl ? [['Parti sostituite o modificate', partiText(C)] as [string, string]] : []),
+    ...(ce ? [['Marcatura CE dell\'impianto', ce] as [string, string]] : []),
+    ...(doc ? [['Carichi documentati (portata · cabina · contrappeso)', `${num(doc.Q)} · ${num(doc.P)} · ${num(doc.Mcw)} kg`] as [string, string]] : []),
+    ...(v ? [['Variazione dei carichi', variazioneText(v)] as [string, string]] : []),
+  ];
+}
 
 /** The title of the section with the result under each standard: in the relazione di calcolo and in the relazione
  *  tecnica (the object of each names its own). */
@@ -55,9 +87,13 @@ function interventionText(C: Collaudo): string {
     ? ' La sostituzione del macchinario è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i.'
     : " L'intervento modifica un impianto esistente (DPR 162/1999 e s.m.i.).";
   if (C.norma === 'en81') return `${what} Il collaudo segue la ${NORMA_SIGLA.en81}, come per un impianto nuovo: ogni verifica entra nell'esito.`;
+  const ce = C.marcatura === 'incerta'
+    ? " La marcatura CE dell'impianto non è nota: la parte della UNI 10411 è quella della data di messa in servizio e va confermata con la "
+      + 'dichiarazione di conformità del libretto prima della firma.'
+    : '';
   return `${what} Il collaudo segue la ${NORMA_SIGLA[C.norma]} (impianto ${C.norma === '10411-1' ? 'non conforme' : 'conforme'} alla Direttiva Ascensori): `
     + `entrano nell'esito le verifiche che riguardano le parti sostituite o modificate (${partiText(C)}); le altre riguardano parti che restano come sono `
-    + "e sono riportate come «esistente», con il valore calcolato.";
+    + `e sono riportate come «esistente», con il valore calcolato.${ce}`;
 }
 
 /** The result of a check in the tables: as calculated, or "existing" with the calculation beside it. */

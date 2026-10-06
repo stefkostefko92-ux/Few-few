@@ -26,3 +26,15 @@ test('bottoniera in pianta e in sezione, con le sue quote', () => {
   const sec = sectionDims(L, section(L), 'floor', f, null).flatMap((e) => (e.e === 'chain' ? [e.c] : []));
   assert.ok(sec.some((c) => c.edit?.[0]?.key === 'cs.height' && Math.abs(c.pts[1] - c.pts[0]) === 1000), 'altezza dei pulsanti');
 });
+
+test('pulsante più alto: la sua altezza è quella della bottoniera; con un caso del DM 236/1989 tra 1100 e 1400 mm', () => {
+  const at = (height: number, access: 'none' | 'dm236_residential' = 'dm236_residential') =>
+    layout({ ...defaultInputs(1600, 1850), access, callStation: { side: 'right', offset: 150, height } }).checks.find((c) => c.id === 'v_call');
+  // the default: the top button at 1100 mm, the height both DM 236/1989 and UNI EN 81-70:2005 allow
+  assert.equal(KV.callHeight, KV.callTopRange[0]);
+  assert.equal(at(KV.callHeight)?.status, 'ok');
+  assert.equal(at(1400)?.status, 'ok');
+  assert.equal(at(1050)?.status, 'warn');
+  assert.equal(at(1450)?.status, 'warn');
+  assert.equal(at(1050, 'none'), undefined, 'senza DM 236 nessuna verifica');
+});

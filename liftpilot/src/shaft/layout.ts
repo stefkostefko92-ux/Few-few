@@ -16,6 +16,7 @@ import { PANEV_BACK, cwBracketsOf } from './staffe';
 import { cwBracketMargin, cwSpecialOf } from './staffe-scelta';
 import { doorOpDepthOf, doorOpOf } from './operator';
 import { frameRoom } from './frame';
+import { callStationOf } from './callstation';
 import type { Access, CwSide, DoorLayout, Layout, Rail, Rect, ShaftCheck, ShaftInputs, Wall } from './types';
 
 const ACCESS: Readonly<Record<Exclude<Access, 'none'>, readonly [number, number, number]>> = {
@@ -198,7 +199,7 @@ export function layout(I: ShaftInputs): Layout {
     } else {
       // beside the car, between the wall and the car rail, centred on the rails' axis; clear of the door zones it faces
       const left = cwSide === 'left', x0 = left ? I.cwWallGap - nd : W + nd - I.cwWallGap - I.cwDepth, xOut = left ? x0 + I.cwDepth + I.cwRailGap : x0 - I.cwRailGap;
-      const blocks = (w: Wall): boolean => frames.some((d) => d.wall === w && (left ? d.frame0 - 40 < xOut : d.frame1 + 40 > xOut));
+      const blocks = (w: Wall): boolean => frames.some((d) => d.wall === w && (left ? d.frame0 - KV.cwEndGap < xOut : d.frame1 + KV.cwEndGap > xOut));
       const yLo = (blocks('front') ? doorZone : 0) + KV.cwEndGap, yHi = D - (blocks('rear') ? doorZone : 0) - KV.cwEndGap;
       const [len, cy] = cwAlong(2 * (Math.min(yMid - yLo, yHi - yMid) - KV.cwShoe - wr.h), yMid);
       cwRect = { x: x0, y: cy, w: I.cwDepth, h: len };
@@ -235,7 +236,7 @@ export function layout(I: ShaftInputs): Layout {
   // passage through both what their openings share
   const shifted = doors.filter((d) => (d.side === 'A' ? fix.landA : fix.landB) !== undefined), passage = Math.min(...doors.map((d) => d.width - Math.abs(d.l0 - d.u0)));
   // the landing doors' own frame in the shaft: their panels behind it (frame.ts)
-  const behind = frameRoom(I, doors);
+  const behind = frameRoom(I, doors), callTop = callStationOf(I).height;
   const checks: ShaftCheck[] = [
     check('v_fit', fits, Math.min(maxA - minA, maxB - minB), 0, 0, 'mm'),
     check('v_area', area <= areaMax + 1e-9, area, areaMax, 2, 'm²'),
@@ -245,6 +246,12 @@ export function layout(I: ShaftInputs): Layout {
       ...(shortSide ? [check('v_acc_side', A <= B, B - A, 0, 0, 'mm')] : []),
       // two adjacent entrances: one door is on the long side — DM 236/1989 8.1.12 wants it on the short one (warning)
       ...(I.entrances === 'adjacent' ? [check('v_acc_side', A === B, B - A, 0, 0, 'mm', true)] : []),
+      // case c) only where the existing building takes no larger car: a car under case b)'s sizes relies on it, and the
+      // reason is written in the design (warning)
+      ...(I.access === 'dm236_existing' && !(A >= KV.dm236Residential[0] && B >= KV.dm236Residential[1] && passage >= KV.dm236Residential[2])
+        ? [check('v_acc_c', !!I.accessReason, null, null, 0, '', true)] : []),
+      // the call stations' top button (a warning: they stand on the landings, set on site)
+      check('v_call', callTop >= KV.callTopRange[0] && callTop <= KV.callTopRange[1], callTop, null, 0, 'mm', true),
     ] : []),
     check('v_door', doorMargin(doors[0]) >= 0, doorMargin(doors[0]), 0, 0, 'mm'),
     ...(doors[1] ? [check('v_door2', doorMargin(doors[1]) >= 0, doorMargin(doors[1]), 0, 0, 'mm')] : []),

@@ -5,6 +5,7 @@
 import { useTranslations } from 'next-intl';
 import { NORMA_BREVE, NORMA_SIGLA, ambitoOf, collaudoVerdict, esitiNorme, type LiftDerived } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
+import { mergeChecks } from '@/shaft';
 
 interface Props {
   derived: LiftDerived;
@@ -15,7 +16,7 @@ interface Props {
 export default function LiftFacts({ derived, X, fmt }: Props) {
   const t = useTranslations('lift');
   const L = derived.layout, res = derived.analysis.res, { I, N } = derived.analysis.ctx, o = derived.origin;
-  const all = [...res.checks, ...L.checks, ...derived.supportChecks], C = derived.collaudo;
+  const all = [...res.checks, ...mergeChecks(L.checks, derived.supportChecks)], C = derived.collaudo;
   const { verdict, fails, warns } = collaudoVerdict(C, all), outside = all.filter((c) => ambitoOf(C, c.id) === 'existing');
   const existing = outside.length, existingFails = outside.filter((c) => c.status === 'fail').length, made = derived.catalog?.fit?.machine;
   const badge = (k: keyof typeof o) => (o[k] === 'estimate' ? <span className="badge est">{t('badge_estimate')}</span> : o[k] === 'auto' ? <span className="badge">{t('badge_auto')}</span> : null);

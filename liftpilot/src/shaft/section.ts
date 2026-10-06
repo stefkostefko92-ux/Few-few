@@ -85,8 +85,12 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
   // the buffers' types for the rated speed: the lowest limit of the two (hydraulic ones have none)
   const limits = (['car', 'cw'] as const).map((sd) => maxSpeed(bufferType(V, sd))).filter((x): x is number => x !== null);
   const vmax = limits.length ? Math.min(...limits) : null, need = S.strokeNeeded;
-  // the place to stand on the car roof and the counterweight's screen in the pit, as drawn
-  const [sw, sd] = standOf(V), standArea = (sw * sd) / 1e6, screen = screenOf(V);
+  // the refuge of the type chosen on the car roof (5.2.5.7.1, Tabella 3), either way round: what the roof leaves; the
+  // counterweight's screen in the pit, as drawn
+  const [rw, rd] = K.refugePlan[V.topRefuge], cw = L.car.w, ch = L.car.h, screen = screenOf(V);
+  const refugeFit = Math.max(Math.min(cw - rw, ch - rd), Math.min(cw - rd, ch - rw));
+  // the sling's crosshead under the ceiling: 100 mm of 5.2.5.7.2 b), 500 if it counts as equipment (a)): a warning between
+  const frameClear = S.ceiling - (top + V.frameTop);
   // the counterweight with the car on its compressed buffers: what its rails still guide past its top
   const guided = S.ceiling - K.railTopGap - (cwPlateAt(S, -S.moveDown) + V.cwH), guide = (K.cwGuided + K.cwGuidedV2 * V.v * V.v) * 1000;
   // the car at its highest point (the jump included): what its rails still guide past the top of its sling, where the
@@ -99,7 +103,8 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
     check('h_refuge', S.ceiling - roof >= refugeTop, S.ceiling - roof, refugeTop, 0, 'mm'),
     check('h_clear', clear.v >= clear.lim, clear.v, clear.lim, 0, 'mm'),
     check('h_parapet', V.parapet >= needed, V.parapet, needed, 0, 'mm'),
-    check('h_stand', standArea >= K.roofFreeArea - 1e-9 && Math.min(sw, sd) > K.roofFreeSide, standArea, K.roofFreeArea, 2, 'm²'),
+    check('h_stand', refugeFit >= 0, refugeFit, 0, 0, 'mm'),
+    check('h_cross', frameClear >= K.headEquip, frameClear, K.headEquip, 0, 'mm', true),
     check('h_door', L.inputs.doorHeight >= K.entranceH, L.inputs.doorHeight, K.entranceH, 0, 'mm'),
     ...(room !== null ? [check('h_staffe', room >= 0, room, 0, 0, 'mm', true)] : []),
     check('h_car', V.carH >= K.carInnerH, V.carH, K.carInnerH, 0, 'mm'),

@@ -17,7 +17,7 @@ import { geoOn, roomChecksOf, type MachineSpec, type RoomGeo } from '@/shaft/mac
 import { KV_VERT } from '@/shaft/norme-vert';
 import { rinvioAxisOf, rinvioTopOf } from '@/shaft/rinvio';
 import type { RoomSite } from '@/shaft/room-site';
-import { beamChecks, fitChecks, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { beamChecks, fitChecks, machineBox, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
 import { ownAxis } from '@/shaft/support';
 import type { ShaftCheck } from '@/shaft/types';
 import type { Survey } from './survey';
@@ -91,7 +91,7 @@ export function deriveRoom(V: FormValues, s: Survey, a: Analysis = analyse(V)): 
   const load = supportLoad(a.ctx, a.res.Mcw);
   const off = Math.abs(measured - calata);
   const checks: ShaftCheck[] = G ? [
-    ...roomChecksOf(R), ...beamChecks(G, load), ...rinvioChecks(G, M), ...fitChecks(G, M),
+    ...roomChecksOf(R, machineBox(G, M)), ...beamChecks(G, load), ...rinvioChecks(G, M), ...fitChecks(G, M),
     check('m_calata', off <= KV_VERT.dropTol, Math.round(off), KV_VERT.dropTol, 0, 'mm'),
   ] : roomChecksOf(R);
   const hMin = M.Dp > 0 ? Math.ceil(ownAxis(M.D, M.shape ?? null) + r) : null;

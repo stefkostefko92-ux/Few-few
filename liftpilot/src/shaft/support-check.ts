@@ -106,29 +106,35 @@ export function freeBeside(R: RoomInputs, box: readonly [number, number, number,
   return all.reduce((best, w) => (w.depth - w.need > best.depth - best.need ? w : best));
 }
 
-/** The checks m_fit and m_stand (registry locale.ingombro): the machine on its support — with the bedplate of the
- *  diverting pulley or the pulley's own stand — inside the room in plan and under its ceiling: the least distance left to
- *  a wall or to the ceiling, at least 0 [mm]; the pulley on its stand under the machine clear of the support over it; the
- *  free area beside it (m_free). */
-export function fitChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
-  if (!Gm) return [];
+/** The corners, in room axes, of the machine on its support with the bedplate of the diverting pulley or the pulley's own
+ *  stand. */
+function machineCorners(Gm: RoomGeo, M: MachineSpec): [number, number][] {
   const R = Gm.room, rf = M.rinvio ?? null;
   const boxes: (readonly [number, number, number, number])[] = [[Gm.frame0, Gm.across[0], Gm.frame1, Gm.across[1]]];
   if (rf?.on === 'frame') {
     const [u0, u1] = rinvioRun(M, Gm), [v0, v1] = rinvioAcross(M, Gm, rf);
     boxes.push([u0, v0, u1, v1]);
   } else if (M.Dp > 0 && Gm.pulleyZ > -R.slab) boxes.push(standBox(M, Gm));
+  return boxes.flatMap(([u0, v0, u1, v1]) => ([[u0, v0], [u1, v0], [u1, v1], [u0, v1]] as const)
+    .map(([u, v]): [number, number] => [Gm.carDrop[0] + u * Gm.ux - v * Gm.uy, Gm.carDrop[1] + u * Gm.uy + v * Gm.ux]));
+}
+
+/** The machine's outline in the room's plan, its support and pulley with it: [x0, y0, x1, y1] (room axes) [mm]. */
+export function machineBox(Gm: RoomGeo, M: MachineSpec): [number, number, number, number] {
+  const c = machineCorners(Gm, M), xs = c.map((p) => p[0]), ys = c.map((p) => p[1]);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+}
+
+/** The checks m_fit and m_stand (registry locale.ingombro): the machine on its support — with the bedplate of the
+ *  diverting pulley or the pulley's own stand — inside the room in plan and under its ceiling: the least distance left to
+ *  a wall or to the ceiling, at least 0 [mm]; the pulley on its stand under the machine clear of the support over it; the
+ *  free area beside it (m_free). */
+export function fitChecks(Gm: RoomGeo | null, M: MachineSpec): ShaftCheck[] {
+  if (!Gm) return [];
+  const R = Gm.room;
   let clear = R.H - machineTop(M, Gm);
-  const xs: number[] = [], ys: number[] = [];
-  for (const [u0, v0, u1, v1] of boxes) {
-    for (const [u, v] of [[u0, v0], [u1, v0], [u1, v1], [u0, v1]] as const) {
-      const x = Gm.carDrop[0] + u * Gm.ux - v * Gm.uy, y = Gm.carDrop[1] + u * Gm.uy + v * Gm.ux;
-      clear = Math.min(clear, x, R.W - x, y, R.D - y);
-      xs.push(x);
-      ys.push(y);
-    }
-  }
-  const stand = standClearance(Gm, M), free = freeBeside(R, [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]);
+  for (const [x, y] of machineCorners(Gm, M)) clear = Math.min(clear, x, R.W - x, y, R.D - y);
+  const stand = standClearance(Gm, M), free = freeBeside(R, machineBox(Gm, M));
   return [
     check('m_fit', clear >= 0, Math.round(clear), 0, 0, 'mm'), ...(stand === null ? [] : [check('m_stand', stand >= 0, Math.round(stand), 0, 0, 'mm')]),
     check('m_free', free.depth >= free.need, Math.round(free.depth), free.need, 0, 'mm'),

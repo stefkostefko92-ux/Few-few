@@ -4,7 +4,7 @@
 import appIt from '../../../messages/it.json';
 import type { CheckStatus } from '@/calc/types';
 import { fitView, renderView, moveShapes, type Box } from '@/drawing';
-import { DEFAULTS, PLAN_KEYS, isUpperLimit, planDims, planEntities, shownValue, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheck, type ShaftCheckId } from '@/shaft';
+import { DEFAULTS, PLAN_KEYS, isUpperLimit, mergeChecks, planDims, planEntities, shownValue, travel, verdictOf, vociOfDesign, type Allowance, type Layout, type ShaftCheck, type ShaftCheckId } from '@/shaft';
 import type { ShaftSource } from '../shaft-input';
 import { ambitoOf, type Collaudo } from '../lift/collaudo';
 import { EXISTING_NOTE, esitoOf } from './collaudo';
@@ -80,7 +80,7 @@ export function planBlock(L: Layout): ReportBlock {
 /** `extra`: the checks that need the calculation's machine (the beams under it), after the shaft's own. `collaudo`: the
  *  acceptance test of a lift design, whose checks of the parts that stay as they are show as existing, out of the result. */
 export function shaftBlocks(d: ReportDesign, calcQ: number, x: ShaftTexts, extra: readonly ShaftCheck[] = [], collaudo?: Collaudo): ReportBlock[] {
-  const L = d.layout, I = L.inputs, src = d.source, { fmt, st } = x, checks = [...L.checks, ...extra];
+  const L = d.layout, I = L.inputs, src = d.source, { fmt, st } = x, checks = mergeChecks(L.checks, extra);
   const on = collaudo ? checks.filter((c) => ambitoOf(collaudo, c.id) === 'applies') : checks, existing = checks.length - on.length;
   const verdict = on.some((c) => c.status === 'fail') ? 'fail' : on.some((c) => c.status === 'warn') ? 'warn' : collaudo ? 'ok' : verdictOf(L);
   const B: ReportBlock[] = [];

@@ -5,7 +5,7 @@
 // which is tested as a new lift (registry impianto.rifacimento; research, chapter 16 §3.2 and §5.3). The intervention
 // is the calculation's context and, for the renovation, the mark on the acceptance test (collaudo.ts). Pure.
 import type { FormValues } from '@/calc/types';
-import { collaudoOf, type Collaudo, type NormaCollaudo, type Parte } from './collaudo';
+import { collaudoOf, esistenteOf, type Collaudo, type NormaCollaudo, type Parte } from './collaudo';
 
 export const INTERVENTI = ['repl', 'rifacimento', 'new'] as const;
 export type Intervento = (typeof INTERVENTI)[number];
@@ -23,14 +23,15 @@ export const interventoOf = (calc: FormValues, chosen?: Collaudo): Intervento =>
  *  which tests the lift as new) and takes new ropes free of those in place; back to the machine's replacement, the
  *  machine alone with the ropes' number and diameter in place (the replacement's practice, registry sostituzione.funi).
  *  Otherwise what was chosen stays, as it does under a new lift (tested as new whatever it holds), so going to a new
- *  lift and back loses nothing. The standards added stay. */
+ *  lift and back loses nothing. The standards added stay, and so do the answer about the CE marking and the documented
+ *  loads. */
 export function interventoTo(k: Intervento, chosen?: Collaudo): { calc: FormValues; collaudo?: Collaudo } {
   if (k === 'new') return { calc: { context: 'new' } };
   const norma: NormaCollaudo = chosen && chosen.norma !== 'en81' ? chosen.norma : '10411-1';
-  const added = chosen?.aggiuntive?.length ? { aggiuntive: chosen.aggiuntive } : {};
+  const added = chosen?.aggiuntive?.length ? { aggiuntive: chosen.aggiuntive } : {}, mod = esistenteOf(chosen);
   if (k === 'rifacimento') {
     return chosen?.rifacimento && chosen.norma !== 'en81' ? { calc: { context: 'repl' }, collaudo: chosen }
-      : { calc: { context: 'repl', keepRopes: false }, collaudo: { norma, parti: PARTI_RIFACIMENTO, rifacimento: true, ...added } };
+      : { calc: { context: 'repl', keepRopes: false }, collaudo: { norma, parti: PARTI_RIFACIMENTO, rifacimento: true, ...mod, ...added } };
   }
-  return chosen?.rifacimento ? { calc: { context: 'repl', keepRopes: true }, collaudo: { norma, parti: ['machine'], ...added } } : { calc: { context: 'repl' } };
+  return chosen?.rifacimento ? { calc: { context: 'repl', keepRopes: true }, collaudo: { norma, parti: ['machine'], ...mod, ...added } } : { calc: { context: 'repl' } };
 }

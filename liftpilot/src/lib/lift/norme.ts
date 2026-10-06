@@ -24,6 +24,18 @@ export const KL = {
   catalogRatioTol: 0.1,
   // direct pull: the falls in the plan and the sheave's pitch diameter may differ by this much (the rounding) [mm]
   calataTol: 1,
+  // UNI 10411-1:2024, 6.1: increases a modification makes without the checks of the load — prospetto 1, of the rated
+  // load and of the car side's static load T* (rated load up to 500 kg, over it), prospetto 2, of the counterweight's
+  // static load as a share of the rated load (fractions); UNI 10411-11:2024, 6.1: any increase, and 6.2: its §5 (the
+  // structures) only for a change over 10 %
+  loadSplitQ: 500,
+  loadIncQ: [0.1, 0.05],
+  loadIncT: [0.15, 0.1],
+  loadIncTcp: [0.25, 0.1],
+  loadStruct11: 0.1,
+  // DPR 162/1999, art. 19 c.1: lifts put in service by the earlier rules until 30 June 1999; from this day only with
+  // the CE marking (a reading of the article: the day is to be confirmed on the logbook)
+  ceFrom: '1999-07-01',
 } as const;
 
 export type CostanteImpianto = keyof typeof KL;
@@ -40,6 +52,8 @@ export interface VoceImpianto {
 }
 
 const it = (x: number): string => String(x).replace('.', ',');
+const pct = (x: number): string => it(Math.round(x * 1000) / 10);
+const dataIt = (d: string): string => d.split('-').reverse().join('/');
 
 export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   {
@@ -50,9 +64,33 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     id: 'impianto.portata', titolo: 'Portata e velocità',
     valore: 'la portata inserita, oppure quella della cabina più grande che entra nel vano (Tabella 6); la velocità è una sola per il vano e per la macchina',
     riferimento: 'UNI EN 81-20:2020, 5.4.2.1', fonte: 'progetto del vano', stato: 'derivazione',
-    nota: 'In una modifica la UNI 10411-1:2024 (6.1, prospetto 1) tratta come aumento della portata oltre il 10 % (Q fino a 500 kg) o il 5 % (oltre) '
-      + 'e del carico totale oltre il 15 % o il 10 %; la UNI 10411-11:2024 (6.1) ogni aumento del carico totale: il confronto con la portata originale '
-      + 'lo fa l\'ingegnere.',
+    nota: 'In una modifica il confronto con i carichi documentati è nella voce impianto.variazione.carico.',
+  },
+  {
+    id: 'impianto.variazione.carico', titolo: 'Modifica: variazione dei carichi rispetto allo stato documentato',
+    valore: `con i carichi dell'ultimo verbale (collaudo o verifica straordinaria) — portata, cabina vuota completa P, contrappeso — e quelli del `
+      + `progetto, T* = P + Q: con la UNI 10411-1 le verifiche del carico entrano nell'esito se la portata cresce oltre il ${pct(KL.loadIncQ[0])} % o `
+      + `T* oltre il ${pct(KL.loadIncT[0])} % (portata fino a ${KL.loadSplitQ} kg; oltre: ${pct(KL.loadIncQ[1])} % e ${pct(KL.loadIncT[1])} %, prospetto 1) `
+      + `o se il contrappeso cresce oltre il ${pct(KL.loadIncTcp[0])} % della portata (oltre ${KL.loadSplitQ} kg: ${pct(KL.loadIncTcp[1])} %, `
+      + `prospetto 2); con la UNI 10411-11 a ogni aumento, e oltre il ${pct(KL.loadStruct11)} % anche le strutture (punto 5, escluse fino a lì dal 6.2); un carico che `
+      + 'diminuisce le porta anch\'esso (ammortizzatori, paracadute progressivo). Con le due portate a cavallo di 500 kg vale la riga più severa, e la '
+      + 'quota del contrappeso si misura sulla portata minore',
+    riferimento: 'UNI 10411-1:2024, 6.1 (prospetti 1 e 2); UNI 10411-11:2024, 6.1 e 6.2',
+    fonte: `${letto('UNI 10411-1:2024', 'p. 7')}; ${letto('UNI 10411-11:2024', 'pp. 7–8')}`, stato: 'confermato',
+    costanti: ['loadSplitQ', 'loadIncQ', 'loadIncT', 'loadIncTcp', 'loadStruct11'],
+    nota: 'T* della norma non comprende funi e cavi: P del calcolo comprende la quota del cavo flessibile, che si annulla nel confronto se resta la '
+      + 'stessa. Quale portata decide la riga del prospetto non è detto nel testo (scelta prudente del software); con la -11 il 10 % si somma alle '
+      + 'modifiche precedenti: lo stato documentato è quello dell\'impianto originale',
+  },
+  {
+    id: 'impianto.marcatura', titolo: 'Modifica: UNI 10411-1 o UNI 10411-11',
+    valore: `dalla marcatura CE dell'impianto — dichiarazione di conformità CE/UE nel libretto e marcatura nella cabina —: presente UNI 10411-11, `
+      + `assente UNI 10411-1; non nota, dalla data di messa in servizio: fino al 30 giugno 1999 UNI 10411-1, dal ${dataIt(KL.ceFrom)} UNI 10411-11, da `
+      + 'confermare con il libretto (la relazione lo riporta). La targa dell\'impianto non lo dice',
+    riferimento: 'UNI 10411-11:2024, 1 e 3.3–3.4; UNI 10411-1:2024, 1; DPR 162/1999, art. 7 c.2, art. 16 c.1 e c.3, art. 19 c.1',
+    fonte: `${letto('UNI 10411-1:2024', 'p. 5')}; ${letto('UNI 10411-11:2024', 'pp. 5–6')}; DPR 162/1999 (testo su Normattiva)`, stato: 'confermato',
+    costanti: ['ceFrom'],
+    nota: 'la data dal DPR 162/1999 è una lettura dell\'articolo 19 (messa in servizio secondo le regole precedenti fino al 30 giugno 1999)',
   },
   {
     id: 'impianto.collaudo', titolo: 'Normativa di collaudo e parti sostituite o modificate',

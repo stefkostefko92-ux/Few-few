@@ -64,13 +64,14 @@ export function landingEntrance(C: Batch, M: LiftMaterials, I: Layout['inputs'],
 
 /** The landing call station beside a door at the floor level z, where src/shaft/callstation.ts puts it: the brushed
  *  plate on the landing face of the wall (`s` mm into the shaft in the headroom), the floor display at its top, the
- *  buttons with their lit rings (one at the ends of the travel, up and down between). */
+ *  buttons with their lit rings (one at the ends of the travel, up and down between): the top one's middle at the
+ *  station's height, the plate the same at every floor. */
 function callStation(g: Batch, M: LiftMaterials, I: Layout['inputs'], d: DoorLayout, z: number, plate: THREE.Material, calls: 'up' | 'down' | 'both', s = 0): void {
-  const cs = callStationOf(I), { u } = callStationAt(d, cs, portalOf(I).jamb), [w, h, t] = KV.callPanel, f = -I.wall - t + s, zc = z + cs.height;
+  const cs = callStationOf(I), { u } = callStationAt(d, cs, portalOf(I).jamb), [w, h, t] = KV.callPanel, f = -I.wall - t + s, zc = z + cs.height - 35;
   g.wallBox(d.wall, I.W, I.D, u - w / 2, u + w / 2, f, -I.wall + s, zc - h / 2, zc + h / 2, plate);
   g.wallBox(d.wall, I.W, I.D, u - 40, u + 40, f - 1, f, zc + 75, zc + 115, M.glass);
   g.wallBox(d.wall, I.W, I.D, u - 14, u + 14, f - 1.5, f - 1, zc + 85, zc + 105, M.led);
-  for (const dz of calls === 'both' ? [35, -35] : [0]) {
+  for (const dz of calls === 'both' ? [35, -35] : [35]) {
     const [a0, a1] = [onWall(d.wall, I.W, I.D, u, f), onWall(d.wall, I.W, I.D, u, f - 6)];
     g.rod([a0[0], a0[1], zc + dz], [a1[0], a1[1], zc + dz], 17, M.carLight, 20);
     const [b0, b1] = [onWall(d.wall, I.W, I.D, u, f - 6), onWall(d.wall, I.W, I.D, u, f - 9)];

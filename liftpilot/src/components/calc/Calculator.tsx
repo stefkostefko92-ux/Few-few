@@ -158,7 +158,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
           ) : (
             <MissingPanel title={ready ? tb('machineTitle') : tb('title')} lead={ready ? tb('machineLead') : tb('lead')} items={missing.map((id) => ({ id, label: fieldLabel(id) }))} />
           )}
-          <CollaudoOptions P={P} isNew={values.context === 'new'} chosen={collaudo} value={collaudoOf(values, collaudo)} set={setCollaudo} />
+          <CollaudoOptions P={P} isNew={values.context === 'new'} chosen={collaudo} value={collaudoOf(values, collaudo)} set={setCollaudo} calc={values} />
         </section>
         {ready ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudoOf(values, collaudo)} onUse={onUse} propMsg={propMsg}
           proposalOnly={!complete} /> : null}

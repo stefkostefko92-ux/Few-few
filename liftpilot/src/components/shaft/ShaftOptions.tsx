@@ -72,6 +72,14 @@ export default function ShaftOptions({ I, set, blank = NO_BLANK }: Props) {
           </select>
         </label>
       </div>
+      {!is('access') && I.access === 'dm236_existing' ? (
+        <label className="field">
+          <span>{t('accessReason')}</span>
+          <input id="shaft-access-reason" className="input" maxLength={300} value={I.accessReason ?? ''}
+            onChange={(e) => set({ accessReason: e.target.value.trim() ? e.target.value : undefined })} />
+          <span className="note">{t('accessReasonHint')}</span>
+        </label>
+      ) : null}
     </div>
   );
 }

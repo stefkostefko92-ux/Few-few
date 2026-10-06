@@ -65,3 +65,28 @@ test('contrappeso con la cabina sugli ammortizzatori compressi: corsa guidata 0,
   assert.equal(check(tall, 'h_cw')?.status, 'fail');
   assert.equal(Math.round((check(I, 'h_cw')?.value ?? 0) - (check(tall, 'h_cw')?.value ?? 0)), 1300);
 });
+
+test('tetto di cabina: lo spazio di rifugio del tipo scelto ci sta; traversa dell\'arcata sotto il soffitto', () => {
+  const at = (topRefuge: 1 | 2, plan?: ShaftInputs['plan']) => {
+    const I = defaultInputs(1300, 1400), L = layout({ ...I, access: 'none', plan, vertical: { ...I.vertical, topRefuge } });
+    const [rw, rd] = KV_VERT.refugePlan[topRefuge], c = L.car;
+    return { c: L.checks.find((x) => x.id === 'h_stand'), fit: Math.max(Math.min(c.w - rw, c.h - rd), Math.min(c.w - rd, c.h - rw)) };
+  };
+  // the roof's leftover around the refuge, either way round (UNI EN 81-20:2020, 5.2.5.7.1)
+  for (const t of [1, 2] as const) {
+    const { c, fit } = at(t);
+    assert.equal(c?.value, fit, `tipo ${t}`);
+    assert.equal(c?.status, 'ok', `tipo ${t}`);
+  }
+  // a car set by hand too small for the crouching refuge (0,50 × 0,70 m) either way round
+  const small = at(2, { A: 500, B: 600 });
+  assert.ok(small.fit < 0);
+  assert.equal(small.c?.status, 'fail');
+  assert.equal(at(1, { A: 500, B: 600 }).c?.status, 'ok', 'quello in piedi (0,40 × 0,50 m) ci sta');
+  // the crosshead: under 500 mm from the ceiling a warning (it may count as equipment, 5.2.5.7.2 a)), never a fail
+  const head = (headroom: number) => layout({ ...defaultInputs(1600, 1750), vertical: { ...defaultInputs(1600, 1750).vertical, headroom } }).checks.find((x) => x.id === 'h_cross');
+  assert.equal(head(3700)?.status, 'ok');
+  assert.equal(head(3500)?.status, 'warn');
+  assert.equal(head(3300)?.status, 'warn');
+  assert.equal(head(3700)?.limit, KV_VERT.headEquip);
+});

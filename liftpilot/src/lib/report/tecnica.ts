@@ -12,6 +12,7 @@ import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf, type Collaudo } from '../lift/collaudo';
+import { carichiOf } from '../lift/modifica';
 import type { Plant } from '../plant';
 import { textsFor, verdictStatus } from '../present/texts';
 import { makePres } from '../present/tr';
@@ -84,7 +85,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
 
   section('L\'impianto com\'è');
   B.push({ t: 'kv', rows: [
-    ...collaudoRows(C, true), ['Disposizione', `${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1`], [t('Q'), `${fmt(I.Q, 0)} kg`], [t('P'), `${fmt(I.P, 0)} kg`],
+    ...collaudoRows(C, true, carichiOf(r.values)), ['Disposizione', `${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1`], [t('Q'), `${fmt(I.Q, 0)} kg`], [t('P'), `${fmt(I.P, 0)} kg`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg`], [t('v'), `${fmt(I.v, 2)} m/s`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m`],
     ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')} · ${t('Dp')}`, `${fmt(I.dx, 3)} m · ${fmt(I.h, 3)} m · ${fmt(I.Dp, 0)} mm`] as [string, string]] : []),
   ] });

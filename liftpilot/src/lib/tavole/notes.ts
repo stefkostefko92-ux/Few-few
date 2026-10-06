@@ -6,7 +6,7 @@ import { KV_VERT } from '@/shaft/norme-vert';
 import type { Layout } from '@/shaft/types';
 import { P_ESTIMATE_RULE } from '../lift/marks';
 import type { Fmt } from '../present/tr';
-import type { SafetyGear } from './forces';
+import type { LiftUse, SafetyGear } from './forces';
 import { railLimits, type RailCheck } from './rail-check';
 
 const POSTURE: Readonly<Record<1 | 2 | 3, string>> = { 1: 'IN PIEDI', 2: 'ACCUCCIATO', 3: 'DISTESO' };
@@ -84,16 +84,21 @@ export const safetyGearNote = (tag: string): Note => ({
 });
 
 const GEAR: Readonly<Record<SafetyGear, string>> = { progressive: 'progressivo', roller: 'a presa istantanea a rullo', instantaneous: 'a presa istantanea' };
+const USE: Readonly<Record<LiftUse, string>> = {
+  passengers: 'ascensore per persone', goods: 'per merci accompagnate', goodsHeavy: 'per merci accompagnate con mezzi di carico pesanti',
+};
 
 /** The check of the car rails in numbers, with what it assumes and what it leaves out (registry guide.verifica). */
-export function railNote(R: RailCheck, rail: string, gear: SafetyGear, tag: string, fmt: Fmt): Note {
+export function railNote(R: RailCheck, rail: string, gear: SafetyGear, use: LiftUse | undefined, tag: string, fmt: Fmt): Note {
   const K = KV_VERT, s = (x: number | null): string => (x === null ? '—' : fmt(x, 0)), lim = railLimits();
+  // the factor as the standard writes it (0,4, 0,6, 0,85) and what it follows: the lift's use, or the rated load
+  const sill = `${fmt(R.load.sill, Math.round(R.load.sill * 100) % 10 ? 2 : 1)}·g·Q alla soglia, ${use ? USE[use] : 'secondo la portata'}`;
   return {
     title: 'VERIFICA DELLE GUIDE DI CABINA', tag,
     text: `Guide ${rail} in acciaio con Rm ${K.railRm} N/mm² (ipotesi del software), staffe al più ogni ${fmt(R.l, 0)} mm: λ = ${fmt(R.lambda, 0)}, `
       + `ω = ${R.omega === null ? 'oltre la tabella (λ > 250)' : fmt(R.omega, 2)}. Paracadute ${GEAR[gear]}: σm ${s(R.gear.sm)}, σ ${s(R.gear.s)}, σc `
-      + `${s(R.gear.sc)} N/mm² (ammissibile Rm/${fmt(K.railStGear, 1)} = ${fmt(lim.gear, 1)}); marcia: σ ${s(R.run.s)}; carico al piano (${fmt(R.load.sill, 1)}·g·Q `
-      + `alla soglia): σ ${s(R.load.s)} N/mm² (ammissibile Rm/${fmt(K.railStRun, 2)} = ${fmt(lim.use, 1)}); suola σF ${s(R.flange.gear)} N/mm² col paracadute, `
+      + `${s(R.gear.sc)} N/mm² (ammissibile Rm/${fmt(K.railStGear, 1)} = ${fmt(lim.gear, 1)}); marcia: σ ${s(R.run.s)}; carico al piano (${sill}): `
+      + `σ ${s(R.load.s)} N/mm² (ammissibile Rm/${fmt(K.railStRun, 2)} = ${fmt(lim.use, 1)}); suola σF ${s(R.flange.gear)} N/mm² col paracadute, `
       + `${s(R.flange.use)} in uso; frecce δx ${fmt(R.dx, 1)} mm, δy ${fmt(R.dy, 1)} mm (al più ${K.railDeflection}). Non contate: la spinta di `
       + 'scorrimento delle staffe, le apparecchiature appese alle guide, le frecce di staffe ed edificio e le guide del contrappeso. '
       + 'Riferimenti: UNI EN 81-50:2020, 5.10; UNI EN 81-20:2020, 5.7.',
@@ -109,7 +114,7 @@ export interface LegendItem {
 export function spaceLegend(L: Layout, fmt: Fmt): { free: LegendItem; top: LegendItem; pit: LegendItem } {
   const V = L.inputs.vertical, K = KV_VERT;
   return {
-    free: { sym: 'dot', text: `SUPERFICIE LIBERA SUL TETTO DI CABINA: ALMENO ${fmt(K.roofFreeArea, 2)} m², LATO MINORE OLTRE ${K.roofFreeSide} mm` },
+    free: { sym: 'dot', text: `POSTO IN PIEDI SUL TETTO DI CABINA: AREA DA ${fmt(K.roofFreeArea, 2)} m² CON LATO MINORE OLTRE ${K.roofFreeSide} mm, SOPRA L'ALTEZZA DEL RIFUGIO` },
     top: { sym: 'tri', text: `SPAZIO DI RIFUGIO SUL TETTO DI CABINA, ${refuge(V.topRefuge)}` },
     pit: { sym: 'square', text: `SPAZIO DI RIFUGIO IN FOSSA, ${refuge(V.pitRefuge)}` },
   };

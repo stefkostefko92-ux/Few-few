@@ -193,8 +193,8 @@ export const VOCI_VERT: readonly VoceVano[] = [
       + '5 istantaneo); sotto ogni guida del contrappeso la massa della guida',
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.4–5.2.1.8.6, 5.7.2.3.5 e Prospetto 14 (k1)', fonte: letto(T20, 'pp. 27, 94–96'), stato: 'confermato',
     nota: 'non calcolato: con spazi accessibili sotto il vano (5.2.5.4) il contrappeso ha il paracadute, sotto le sue guide va anche '
-      + 'k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m². P è la cabina vuota: la quota del cavo flessibile e della compensazione, '
-      + 'che la 5.2.1.8.5 conta in P, va aggiunta dall\'ingegnere',
+      + 'k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m². In P il software conta anche il cavo flessibile (metà corsa + 3 m, '
+      + 'come sull\'asse della macchina), come vuole la 5.2.1.8.5; la compensazione, se c\'è, la aggiunge l\'ingegnere',
   },
   {
     id: 'guide.spinte', gruppo: 'carichi', titolo: 'Spinte sulle guide di cabina',

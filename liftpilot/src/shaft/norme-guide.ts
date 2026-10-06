@@ -12,9 +12,12 @@ export const KV_GUIDE = {
   railStRun: 2.25,
   railStGear: 1.8,
   railDeflection: 5,
-  // 5.7.2: loading at a floor, the force on the middle of the car door's sill Fs = 0,4·g·Q (0,6 from 2500 kg)
+  // UNI EN 81-20:2020, 5.7.2.3.6: loading at a floor, the force on the middle of the car door's sill Fs by the lift's
+  // use — passengers 0,4·g·Q, goods passenger 0,6·g·Q, with heavy handling devices outside Q 0,85·g·Q; the use not
+  // given, by the rated load as UNI EN 81-1:2008, G.2.5 (0,6 from 2500 kg)
   sillLoad: 0.4,
   sillLoadHeavy: 0.6,
+  sillLoadDevices: 0.85,
   sillHeavyQ: 2500,
   // UNI EN 81-50:2020, 5.10: bending of a rail between two brackets M = 3·F·l/16; the omega method for buckling with
   // the slenderness λ = l/i (Rm 370: [λ up to, a, exponent, b] of ω = a·λ^exponent + b, λ ≤ 250); σc = σk + 0,9·σm;
@@ -29,7 +32,7 @@ export const KV_GUIDE = {
 } as const;
 
 export const COSTANTI_GUIDE = {
-  'guide.verifica': ['railRm', 'railStRun', 'railStGear', 'railDeflection', 'sillLoad', 'sillLoadHeavy', 'sillHeavyQ', 'railBend', 'omega370',
+  'guide.verifica': ['railRm', 'railStRun', 'railStGear', 'railDeflection', 'sillLoad', 'sillLoadHeavy', 'sillLoadDevices', 'sillHeavyQ', 'railBend', 'omega370',
     'railCombine', 'railFlange', 'railDeflK'],
   'paracadute.tipo': ['gearInstantV'],
 } as const;
@@ -42,15 +45,18 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
       + 'Fv = k1·g·(P+Q)/n più il peso della guida, carico di punta con il metodo omega (λ = l/i con il raggio d\'inerzia minore √(I/A), '
       + 'λ ≤ 250; acciaio Rm 370: ω = 0,0001292·λ^1,89 + 1 fino a λ 60, 0,00004627·λ^2,14 + 1 fino a 85, 0,00001711·λ^2,35 + 1,04 fino a 115, '
       + '0,00016887·λ^2 fino a 250), σ = σm + Fv/A e σc = σk + 0,9·σm; marcia: k2 = 1,2 e il peso della guida; carico al piano: cabina vuota e '
-      + 'Fs = 0,4·g·Q (0,6·g·Q da 2500 kg) al centro della soglia di cabina, a ogni accesso; flessione della suola σF = 1,85·Fx/c² (pattini a '
+      + 'Fs al centro della soglia di cabina, a ogni accesso, secondo l\'uso indicato nei dati dell\'impianto: persone 0,4·g·Q, merci accompagnate '
+      + '0,6·g·Q, con mezzi di carico pesanti fuori portata 0,85·g·Q (senza l\'uso: secondo la portata, 0,6·g·Q da 2500 kg); flessione della '
+      + 'suola σF = 1,85·Fx/c² (pattini a '
       + 'rotelle); frecce δx = 0,7·Fx·l³/(48·E·Iy) e δy = 0,7·Fy·l³/(48·E·Ix) ≤ 5 mm. Tensione ammissibile Rm/St con St = 2,25 in marcia e al '
       + 'carico, 1,8 all\'intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164,4 e 205,6 N/mm²',
-    riferimento: 'UNI EN 81-50:2020, 5.10.2–5.10.6; UNI EN 81-20:2020, 5.7.2.3.5, 5.7.2.3.6, 5.7.4.5 (Prospetto 15), 5.7.4.6 e Prospetto 14',
+    riferimento: 'UNI EN 81-50:2020, 5.10.2–5.10.6; UNI EN 81-20:2020, 5.7.2.3.5, 5.7.2.3.6, 5.7.4.5 (Prospetto 15), 5.7.4.6 e Prospetto 14; '
+      + 'UNI EN 81-1:2008, G.2.5 (l\'uso non indicato)',
     fonte: `${letto('UNI EN 81-50:2020', 'pp. 35–39')}; ${letto('UNI EN 81-20:2020', 'pp. 94–97')}; Rm 370 è scelta del software (il valore più basso)`,
-    stato: 'da_verificare', verifiche: ['gr_stress', 'gr_flange', 'gr_defl'],
-    nota: 'Confermati sul testo i coefficienti, le formule e i limiti. Da verificare il carico al piano: la UNI EN 81-20:2020 (5.7.2.3.6) lo lega al '
-      + 'tipo di ascensore, 0,4·g·Q per persone, 0,6·g·Q per merci, 0,85·g·Q con dispositivi di movimentazione pesanti; il software usa la regola '
-      + 'della UNI EN 81-1:2008 (0,6·g·Q da 2500 kg, appendice G.2.5) perché il tipo di ascensore non è tra i dati. La formula di ω per Rm 370 è data '
+    stato: 'confermato', verifiche: ['gr_stress', 'gr_flange', 'gr_defl'],
+    nota: 'Confermati sul testo i coefficienti, le formule e i limiti, e il carico al piano per uso (UNI EN 81-20:2020, 5.7.2.3.6). Senza l\'uso '
+      + 'nei dati dell\'impianto vale la regola per portata della UNI EN 81-1:2008 (G.2.5), che per un ascensore per persone da 2500 kg in su è '
+      + 'dal lato della sicurezza. La formula di ω per Rm 370 è data '
       + 'da λ 20 a 250: sotto 20 il software usa ω di λ 20 (dal lato della sicurezza). Non contate: la spinta di scorrimento delle staffe (assestamento '
       + 'dell\'edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le '
       + 'guide del contrappeso. La flessione della suola è quella dei pattini a rotelle (5.10.5 ha una formula a parte per quelli a scorrimento; '

@@ -27,13 +27,15 @@ test('carichi P1…P9: macchina con coefficiente dinamico, fossa, soletta (valor
   const L1 = loads(base);
   assert.equal(L1.static, 1675);
   near(L1.dynamic, 2512.5);
-  // the sample set: 2465 daN on the machine, 1805 daN per car buffer, 2825 daN under the counterweight buffer
+  // the sample set: 2465 daN on the machine, 2825 daN under the counterweight buffer; its 1805 daN per car buffer
+  // leaves out the travelling cables the car carries, which P includes (UNI EN 81-20:2020, 5.2.1.8.5): 945 kg, not 920
   assert.equal(Math.round(L1.P[0] ?? 0), 2465);
   assert.equal(L1.P[1], null);
   assert.equal(L1.P[2], null);
   assert.equal(L1.P[3], 300);
-  near(L1.P[4] ?? 0, daN((2 * 920) / 2 + 8.32 * 22.5));
-  assert.equal(Math.round(L1.P[5] ?? 0), 1805);
+  near(L1.P[4] ?? 0, daN((2 * 945) / 2 + 8.32 * 22.5));
+  assert.equal(Math.round(L1.P[5] ?? 0), 1854);
+  assert.equal(Math.round(loads({ ...base, cables: 0 }).P[5] ?? 0), 1805);
   near(L1.P[6] ?? 0, daN(3.34 * 22.5));
   assert.equal(Math.round(L1.P[7] ?? 0), 2825);
   near(L1.P[8] ?? 0, daN(2512.5) + daN(420));

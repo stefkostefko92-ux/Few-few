@@ -35,7 +35,12 @@ test('vano 1600 × 1750, contrappeso sul fondo, edificio esistente: la cabina pi
   assert.equal(L.Q, 600);
   assert.equal(L.persons, 8);
   assert.equal(L.fits, true);
-  assert.equal(verdictOf(L), 'ok');
+  // case c) of DM 236/1989: the largest car this shaft takes is not as deep as case b)'s (1300 mm), so the design says
+  // why the existing building takes no larger one — a warning until it does
+  assert.equal(verdictOf(L), 'warn');
+  assert.deepEqual(L.checks.filter((c) => c.status !== 'ok').map((c) => c.id), ['v_acc_c']);
+  assert.equal(verdictOf(layout({ ...defaultInputs(1600, 1750), accessReason: 'vano nella tromba delle scale esistente' })), 'ok');
+  assert.ok(!layout({ ...defaultInputs(1600, 1850) }).checks.some((c) => c.id === 'v_acc_c'), 'una cabina come il caso b) non ne ha bisogno');
   // telescopic door 800: frame 1,5·800 + 110 = 1310, 145 mm from each side wall
   assert.equal(L.doors[0].frame1 - L.doors[0].frame0, 1310);
   assert.equal(L.checks.find((c) => c.id === 'v_door')?.value, 145);

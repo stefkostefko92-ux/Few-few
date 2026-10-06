@@ -135,7 +135,7 @@ test('un valore a mezzo millimetro va dalla parte che fa leggere la quota scritt
 });
 
 test('le quote fissate a mano restano, la cabina fuori posto non passa', () => {
-  const I = defaultInputs(1600, 1750), L = layout(I);
+  const I: ShaftInputs = { ...defaultInputs(1600, 1750), accessReason: 'vano esistente' }, L = layout(I);
   assert.ok(!L.checks.some((c) => c.id === 'v_place' || c.id === 'v_doorcar'), 'senza quote a mano niente verifiche in più');
   const v = planValues(L);
   assert.equal(v.A, L.A);
@@ -188,7 +188,7 @@ test('chiavi delle quote: dati del vano, ingombri, quote a mano, altezze, locale
 
 test('il vano cambia misura: la cabina e ciò che le sta intorno si adattano, le porte fissate a mano restano se aprono ancora sulla cabina', () => {
   // a door set by hand where it still opens on the car the wider shaft gets
-  const I0 = defaultInputs(1600, 1750), L0 = layout(I0), door = layout({ ...I0, W: 1800 }).carInner.x + 30;
+  const I0: ShaftInputs = { ...defaultInputs(1600, 1750), accessReason: 'vano esistente' }, L0 = layout(I0), door = layout({ ...I0, W: 1800 }).carInner.x + 30;
   const I: ShaftInputs = { ...I0, plan: { A: L0.A - 100, B: L0.B - 100, carX: L0.car.x + 20, doorA: door, cwPos: L0.cw.x } };
   const wider: ShaftInputs = { ...I, W: 1800 }, kept = keptPlan(I, wider);
   assert.deepEqual(kept, { doorA: door });

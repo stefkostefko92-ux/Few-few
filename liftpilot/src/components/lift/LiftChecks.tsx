@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import type { Check, CheckStatus } from '@/calc/types';
 import { NORMA_SIGLA, ambitoOf, type LiftDerived } from '@/lib/lift';
 import type { Texts } from '@/lib/present/texts';
-import { isUpperLimit, shownValue, type ShaftCheck } from '@/shaft';
+import { isUpperLimit, mergeChecks, shownValue, type ShaftCheck } from '@/shaft';
 import { scenarioForCheck } from './scenarios';
 import type { SimRequest } from './LiftSimulator';
 
@@ -48,7 +48,7 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
                 <td>{simulate(c.id)}</td>
               </tr>
             ))}
-            {[...L.checks, ...derived.supportChecks].map((c) => {
+            {mergeChecks(L.checks, derived.supportChecks).map((c) => {
               const unit = c.unit ? ` ${c.unit}` : '';
               return (
                 <tr key={c.id} className={existing(c.id) ? 'existing' : undefined}>

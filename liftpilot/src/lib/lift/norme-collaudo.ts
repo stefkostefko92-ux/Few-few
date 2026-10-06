@@ -63,6 +63,7 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
       lt('UNI EN 81-20:2020, 6.3.14', 'cabina fuori dalla zona di sbloccaggio e porta di piano tenuta aperta di 100 mm: lasciata, la porta si richiude e si blocca'),
       lt('UNI EN 81-20:2020, C.2 e 7.3.2', 'la sostituzione della macchina o della puleggia di trazione è una trasformazione importante: si annota nel registro dell\'impianto, da aggiornare'),
       lt('UNI EN 81-20:2020, 5.3.5.3.2, 5.3.5.3.4, 5.3.6.2.2.1 b) e 5.3.15.2 b)', 'pannelli delle porte con i dispositivi di ritenuta e le prove a pendolo (morbido da 800 mm; rigido da 500 mm sui pannelli in vetro); sulle porte automatiche un dispositivo di protezione che copre da 25 a 1600 mm sopra la soglia e rileva ostacoli di 50 mm; fuori dalla zona di sbloccaggio la porta di cabina, spinta con 1000 N, non si apre più di 50 mm'),
+      lt('UNI EN 81-20:2020, 5.3.6.2.2.1 a)–d)', 'porte scorrevoli automatiche: energia cinetica in chiusura non oltre 10 J alla velocità media (corsa senza 25 mm per estremità sulle porte centrali, 50 mm sulle laterali); con il dispositivo di protezione guasto o escluso e l\'impianto in servizio non oltre 4 J, con un segnale acustico a ogni chiusura; forza per trattenere la porta in chiusura non oltre 150 N fuori dal primo terzo della corsa, e la porta trattenuta si riapre'),
     ],
   },
   '10411-1': {
@@ -169,11 +170,14 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
   },
   antincendio: {
     ambiti: BOTH, citazione: 'DM 15/09/2005 oppure Codice di prevenzione incendi (DM 3/8/2015), RTV V.3, nelle attività soggette ai controlli',
+    avviso: 'le finiture della cabina nelle classi minime della UNI EN 81-20 (5.4.4) risultano in classe italiana 2, non nella 1 che chiede il DM '
+      + '15/09/2005 (punto 2): vanno scelte in classe 1 con il progettista antincendio',
     punti: [
       ok('DM 3/8/2015, art. 5 c.1-bis lett. e)', 'il progettista applica il DM 15/09/2005 oppure la RTV V.3 del Codice: dove si usa il Codice il DM 2005 non si applica'),
       ok('DM 15/09/2005, art. 1 c.2', 'sugli impianti esistenti vale per le modifiche sostanziali: nuovo impianto; più fermate o altro azionamento; pareti del vano, porte di piano, locale macchine o pulegge sostituiti con materiali, modelli, dimensioni o criteri diversi; solai o scale rifatti che coinvolgono l\'impianto; sopraelevazione; cambio di destinazione d\'uso'),
       ok('DM 15/09/2005, 3.1–3.3; Codice V.3.2', 'tipo di vano: aperto, protetto o a prova di fumo (Codice: classi da SA a SE)'),
       ok('DM 15/09/2005, punto 2', 'pareti del vano, locale macchine e pulegge, setti e arcata non combustibili; pareti, pavimento e tetto della cabina in classe di reazione al fuoco non oltre 1'),
+      dv('DM 15/03/2005 (tabella di confronto); UNI EN 81-20:2020, 5.4.4', 'le classi minime della EN 81-20 per la cabina (pavimento Cfl-s2, pareti C-s2,d1, soffitto C-s2,d0) corrispondono alla classe italiana 2; la classe 1 vuole pareti in A2 o B (fumo s1–s2, gocce d0–d1), soffitto in A2 o B-s1/s2,d0, pavimento in A2fl o Bfl (corrispondenza letta su una scheda commerciale del decreto, da confermare sul testo ufficiale)'),
       ok('DM 15/09/2005, punto 5', 'aerazione permanente in alto verso spazi scoperti di almeno il 3 % della pianta (vano almeno 0,20 m², locale macchine o pulegge almeno 0,05 m²), con una protezione che non lascia passare una sfera oltre 15 mm; non serve se il vano è aperto su spazi scoperti'),
       ok('DM 15/09/2005, punto 6; Codice V.3.3.1 c.5', 'estintore 21A89BC vicino all\'accesso al macchinario; richiamo della cabina al piano prestabilito su comando della rivelazione quando la compartimentazione lo richiede'),
       ok('Codice S.9, Tab. S.9-3', 'piani tra 32 e 54 m: almeno un ascensore antincendio; oltre 54 m: almeno uno di soccorso; interrati tra −10 e −15 m: antincendio; sotto −15 m: soccorso'),

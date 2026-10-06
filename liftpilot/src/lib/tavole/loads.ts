@@ -49,8 +49,10 @@ export function loads(x: LoadsInput): Loads {
   const P1 = daN(dynamic);
   const P2 = r === 2 ? daN(((x.P + x.Q) / 2) * dyn) : null;
   const P3 = r === 2 ? daN((x.Mcw / 2) * dyn) : null;
-  const P5 = daN((k1 * (x.P + x.Q)) / 2 + x.carRailQ * x.carRailLen);
-  const P6 = daN((KV_VERT.bufferFactor * (x.P + x.Q)) / Math.max(1, x.carBuffers));
+  // P with the travelling cables the car carries, as on the machine's axis (UNI EN 81-20:2020, 5.2.1.8.5)
+  const Pc = x.P + x.cables;
+  const P5 = daN((k1 * (Pc + x.Q)) / 2 + x.carRailQ * x.carRailLen);
+  const P6 = daN((KV_VERT.bufferFactor * (Pc + x.Q)) / Math.max(1, x.carBuffers));
   const P7 = daN(x.cwRailQ * x.cwRailLen);
   const P8 = daN((KV_VERT.bufferFactor * x.Mcw) / Math.max(1, x.cwBuffers));
   const P9 = P1 + (P2 ?? 0) + (P3 ?? 0) + (x.below != null ? 0 : daN(x.machine));

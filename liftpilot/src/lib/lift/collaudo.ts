@@ -12,6 +12,7 @@
 import type { CheckId, FormValues } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
 import { NORME_INFO, type AmbitoNorma } from './norme-collaudo';
+import { carichiOf, caricoVariato, normaDaMarcatura, variazioneCarico, type Carichi, type Marcatura } from './modifica';
 
 /** The base standard of the test: one, by the context. */
 export const NORME_COLLAUDO = ['en81', '10411-1', '10411-11'] as const;
@@ -56,6 +57,12 @@ export interface Collaudo {
   /** the lift renewed but its sling (arcata), which stays: a modification tested to UNI 10411, not a new lift (site
    *  practice, registry impianto.rifacimento; intervento.ts); absent: the parts as chosen */
   rifacimento?: true;
+  /** a modification: the answer about the lift's CE marking, which picks the part of UNI 10411, and, not known, the day
+   *  it was put in service (YYYY-MM-DD; modifica.ts); absent: the part as chosen */
+  marcatura?: Marcatura;
+  servizio?: string;
+  /** a modification: the loads the last report documents; their change can bring the checks of the load (modifica.ts) */
+  documentato?: Carichi;
 }
 
 /** The check of a result: applies to the acceptance test, or concerns a part that stays as it is. */
@@ -79,12 +86,12 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   s_force: ['machine', 'car', 'cw', 'load'], s_uplift: ['machine', 'car', 'cw', 'load'], tr_msr1: TRACTION, r_two: ROPES,
   v_comp: ['machine', 'ropes', 'speed'], g_retain: ['machine', 'ropes'], s_fa: ['machine', 'car', 'cw', 'load'], s_gravity: ['machine'],
   // the shaft in plan: the car and its rated load, the doors, the counterweight and the rails
-  v_fit: ['car'], v_area: ['car', 'load'], v_acc_car: ['car'], v_acc_door: DOORS, v_acc_side: ['car', ...DOORS],
+  v_fit: ['car'], v_area: ['car', 'load'], v_acc_car: ['car'], v_acc_c: ['car'], v_call: ['controller'], v_acc_door: DOORS, v_acc_side: ['car', ...DOORS],
   v_door: ['landingDoors'], v_door2: ['landingDoors'], v_land: DOORS, v_land2: DOORS, v_op: ['carDoors'], v_wall: ['car', ...DOORS], v_sill: ['car', ...DOORS],
   v_cw: ['car', 'cw', 'rails'], v_cwlen: ['cw'], v_place: ['car', 'cw', 'rails', ...DOORS], v_doorcar: ['car', ...DOORS],
   v_buffer: ['buffers'], v_niche: ['cw'], v_staffa: ['cw', 'rails'], v_telaio: ['landingDoors'], v_head: ['car', 'cw', 'rails'],
   // the headroom and the pit: their spaces follow the car, its frame, the buffers and the speed
-  h_refuge: HEAD, h_clear: HEAD, h_top: [...HEAD, 'machine'], h_parapet: ['car'], h_stand: ['car'], h_door: DOORS, h_staffe: DOORS, h_car: ['car'], h_cw: [...HEAD, 'travel'], h_guide: [...HEAD, 'travel'],
+  h_refuge: HEAD, h_clear: HEAD, h_top: [...HEAD, 'machine'], h_parapet: ['car'], h_stand: ['car'], h_cross: ['car', 'sling'], h_door: DOORS, h_staffe: DOORS, h_car: ['car'], h_cw: [...HEAD, 'travel'], h_guide: [...HEAD, 'travel'],
   p_refuge: PIT, p_apron: [...PIT, 'carDoors'], p_screen: ['cw'],
   b_runby: BUFFERS, b_type: ['buffers', 'speed'], b_car: ['buffers', 'speed'], b_cw: ['buffers', 'speed'],
   // the machine room is the building's; the panel's space follows a new controller; the beams under a new machine
@@ -98,7 +105,7 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
 export const VERIFICHE_DATI: readonly ShaftCheckId[] = ['v_place', 'v_doorcar'];
 
 /** The accessibility checks of DM 236/1989: the shaft's, present when its case is chosen in the shaft's data. */
-export const VERIFICHE_DM236: readonly ShaftCheckId[] = ['v_acc_car', 'v_acc_door', 'v_acc_side'];
+export const VERIFICHE_DM236: readonly ShaftCheckId[] = ['v_acc_car', 'v_acc_door', 'v_acc_side', 'v_acc_c', 'v_call'];
 /** The checks NTC 2018 computes: the beams under the machine (σ ≤ fyk/γM0, deflection). The other standards added
  *  compute none: their points are checked on site (norme-collaudo.ts). */
 export const VERIFICHE_NTC: readonly ShaftCheckId[] = ['m_beam', 'm_beamf'];
@@ -123,11 +130,24 @@ export const ambitoNorme = (C: Pick<Collaudo, 'norma'>): AmbitoNorma => (C.norma
 /** Whether a standard can be added to the test's base (the compatibility matrix of chapter 16, §5.2). */
 export const ammessa = (n: NormaAggiuntiva, base: NormaCollaudo): boolean => NORME_INFO[n].ambiti.includes(ambitoNorme({ norma: base }));
 
+/** What a modification knows of the existing lift: the answer about the CE marking with its day, the documented loads
+ *  (intervento.ts and the form keep them across a change). */
+export const esistenteOf = (C: Collaudo | undefined): Pick<Collaudo, 'marcatura' | 'servizio' | 'documentato'> => ({
+  ...(C?.marcatura ? { marcatura: C.marcatura } : {}), ...(C?.marcatura === 'incerta' && C.servizio ? { servizio: C.servizio } : {}),
+  ...(C?.documentato ? { documentato: C.documentato } : {}),
+});
+
+/** What a modification carries besides its standards and parts: the renovation's mark and what it knows of the lift. */
+export const modificaOf = (C: Collaudo | undefined): Pick<Collaudo, 'rifacimento' | 'marcatura' | 'servizio' | 'documentato'> => ({
+  ...(C?.rifacimento ? { rifacimento: true as const } : {}), ...esistenteOf(C),
+});
+
 /** The acceptance standards of the one form: a new lift is tested to EN 81-20/50 whatever was chosen; a replacement as
  *  chosen, by default UNI 10411-1 with the machine replaced (the intervention the software is made for). The standards
  *  added stay, in their order, once each, where they fit the base (EN 81-20/50 only on top of another base). A
  *  renovation keeps its sling, never among the parts replaced, and is one only under UNI 10411 (tested to EN 81-20/50
- *  the lift is tested as new). */
+ *  the lift is tested as new). Under UNI 10411 the answer about the CE marking picks its part, and a change of the loads
+ *  from the documented ones that brings the checks of the load counts the load as changed (modifica.ts). */
 export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
   const added = (base: NormaCollaudo): NormaAggiuntiva[] => NORME_AGGIUNTIVE.filter((n) => chosen?.aggiuntive?.includes(n) && ammessa(n, base));
   const withAdded = (c: Collaudo): Collaudo => {
@@ -137,11 +157,18 @@ export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
   if (calc.context === 'new') return withAdded({ norma: 'en81', parti: PARTI });
   if (chosen && isNorma(chosen.norma)) {
     if (chosen.norma === 'en81') return withAdded({ norma: 'en81', parti: PARTI });
-    const rif = chosen.rifacimento === true;
-    return withAdded({ norma: chosen.norma, parti: PARTI.filter((p) => chosen.parti.includes(p) && !(rif && p === 'sling')), ...(rif ? { rifacimento: true as const } : {}) });
+    const rif = chosen.rifacimento === true, mod = modificaOf(chosen);
+    const norma = (chosen.marcatura && normaDaMarcatura(chosen.marcatura, chosen.servizio)) || chosen.norma;
+    const ora = carichiOf(calc), load = !!mod.documentato && !!ora && caricoVariato(variazioneCarico(norma, mod.documentato, ora));
+    return withAdded({ norma, parti: PARTI.filter((p) => (chosen.parti.includes(p) || (p === 'load' && load)) && !(rif && p === 'sling')), ...mod });
   }
   return { norma: '10411-1', parti: ['machine'] };
 }
+
+/** The parts of a test as a choice: the load counted as changed by the documented loads (collaudoOf) is the software's,
+ *  not the designer's — it is left out unless it was chosen. */
+export const choiceOf = (C: Collaudo, chosen: Collaudo | undefined): readonly Parte[] =>
+  (C.parti.includes('load') && !(chosen?.parti.includes('load') ?? false) && C.norma !== 'en81' ? C.parti.filter((p) => p !== 'load') : C.parti);
 
 /** The test chosen with a standard added or taken off (`on`) in the options of the one form. Under a new lift what was
  *  chosen for a modification stays as it was (collaudoOf ignores it there; none chosen: the replacement's default), so
@@ -150,7 +177,7 @@ export function withAggiunta(isNew: boolean, chosen: Collaudo | undefined, value
   const from = isNew ? chosen ?? collaudoOf({ context: 'repl' }) : value;
   const prev = chosen?.aggiuntive ?? value.aggiuntive ?? [];
   const aggiuntive = NORME_AGGIUNTIVE.filter((x) => (x === n ? on : prev.includes(x)));
-  return { norma: from.norma, parti: from.parti, ...(from.rifacimento ? { rifacimento: true as const } : {}), ...(aggiuntive.length ? { aggiuntive } : {}) };
+  return { norma: from.norma, parti: choiceOf(from, chosen), ...modificaOf(from), ...(aggiuntive.length ? { aggiuntive } : {}) };
 }
 
 /** Whether a check applies to the acceptance test of this intervention: under any of its standards. */

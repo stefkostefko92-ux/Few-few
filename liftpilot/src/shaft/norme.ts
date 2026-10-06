@@ -75,11 +75,13 @@ export const KV = {
   nicheLightH: 400,
   lampOverFloor: 1500,
   lampUnderSlab: 80,
-  // landing call station: 150 mm from the door's portal on the landing's right, its buttons' middle 1100 mm over the
-  // floor; the panel 120 × 300 mm, 15 mm proud of the wall
+  // landing call station: 150 mm from the door's portal on the landing's right, its top button's middle 1100 mm over the
+  // floor (the height DM 236/1989 and UNI EN 81-70:2005 both allow); the panel 120 × 300 mm, 15 mm proud of the wall
   callOffset: 150,
   callHeight: 1100,
   callPanel: [120, 300, 15],
+  // the top buttons of the call stations and of the car's panel over the floor (DM 236/1989, 8.1.12)
+  callTopRange: [1100, 1400],
 } as const;
 
 export type CostanteVano = keyof typeof KV;
@@ -167,21 +169,27 @@ export const VOCI_VANO: readonly VoceVano[] = [
   },
   {
     id: 'accessibilita.residenziale', gruppo: 'accessibilita', titolo: 'Edifici residenziali nuovi: cabina e porta minime',
-    valore: 'cabina larga 950 mm e profonda 1300 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (fuori dal vano: da verificare in sito)',
+    valore: 'cabina larga 950 mm e profonda 1300 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (fuori dal vano: da verificare in sito); '
+      + 'pulsanti più alti delle bottoniere tra 1100 e 1400 mm dal pavimento',
     riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'confermato',
-    costanti: ['dm236Residential'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side'],
+    costanti: ['dm236Residential', 'callTopRange'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side', 'v_call'],
   },
   {
     id: 'accessibilita.non.residenziale', gruppo: 'accessibilita', titolo: 'Edifici non residenziali nuovi: cabina e porta minime',
-    valore: 'cabina larga 1100 mm e profonda 1400 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (fuori dal vano: da verificare in sito)',
+    valore: 'cabina larga 1100 mm e profonda 1400 mm, porta di 800 mm sul lato corto; piattaforma davanti alla porta 1,50 × 1,50 m (fuori dal vano: da verificare in sito); '
+      + 'pulsanti più alti delle bottoniere tra 1100 e 1400 mm dal pavimento',
     riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'confermato',
-    costanti: ['dm236Public'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side'],
+    costanti: ['dm236Public', 'callTopRange'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side', 'v_call'],
   },
   {
     id: 'accessibilita.esistenti', gruppo: 'accessibilita', titolo: 'Adeguamento di edifici esistenti: cabina e porta minime',
-    valore: 'cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (fuori dal vano: da verificare in sito)',
-    riferimento: 'DM 236/1989, 8.1.12', fonte: DM, stato: 'confermato',
-    costanti: ['dm236Existing'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side'],
+    valore: 'cabina larga 800 mm e profonda 1200 mm, porta di 750 mm sul lato corto; piattaforma davanti alla porta 1,40 × 1,40 m (fuori dal vano: da verificare in sito); '
+      + 'pulsanti più alti delle bottoniere tra 1100 e 1400 mm dal pavimento; solo se l\'edificio esistente non consente una cabina più grande: '
+      + 'una cabina sotto le misure del caso b) (larga 950 mm, profonda 1300 mm, porta di 800 mm) chiede la motivazione scritta nel progetto '
+      + '(«Attenzione» se manca)',
+    riferimento: 'DM 236/1989, 8.1.12 c)', fonte: DM, stato: 'confermato',
+    costanti: ['dm236Existing', 'dm236Residential', 'callTopRange'], verifiche: ['v_acc_car', 'v_acc_door', 'v_acc_side', 'v_acc_c', 'v_call'],
+    nota: 'Per un ascensore nuovo in un edificio esistente il caso è a) o b) secondo la destinazione; il c) è l\'eccezione, scelta dal progettista.',
   },
   ...VOCI_INGOMBRI,
   {
