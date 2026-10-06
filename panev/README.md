@@ -32,8 +32,8 @@ panev/
 ├── index.html · prodotti.html · catalogo.html · contatti.html
 │   privacy.html · condizioni.html          ← генерирани (IT)
 ├── en/ · bg/                 ← генерирани (EN, BG)
-├── docs/catalogo-staffe-panev-2026.pdf     ← каталогът (80 стр.)
-├── img/                      ← продуктови изображения + img/catalogo/ превюта
+├── docs/catalogo-staffe-panev-2026.pdf     ← каталогът (72 стр., прави го `cd 3d && npm run catalog-pdf`)
+├── img/                      ← изображения, img/catalogo/ превюта, img/brand/ оригиналът на логото
 ├── css/site.css · js/site.js ← новият фронт
 ├── fonts/Inter-var-*.woff2   ← self-hosted, вкл. кирилица
 ├── admin/ · lib/ · scripts/  ← server-side админ (JWT), SQLite, seed
@@ -57,9 +57,11 @@ npm start
 
 1. Цени/кодове → `site/data/products.mjs` (само 1:1 с печатния каталог)
 2. Текстове → `site/data/i18n/*.mjs` (паритет на ключовете в трите езика)
-3. Нов каталог → замени `docs/catalogo-staffe-panev-2026.pdf` + превютата в
-   `img/catalogo/`
-4. `npm run build:site` → commit (генерираните файлове се комитват)
+3. Каталогът → `cd 3d && npm run catalog-pdf`, после PDF-ът в `docs/` и превютата в `img/catalogo/`
+   (командите и новото издание с друг `BASE_BLOB` са в `3d/README.md`)
+4. Ново лого → замени `img/brand/panev-ascensori-logo.webp`, `cd 3d && npm run logo`, после
+   каталогът както в т. 3 (PDF-ът взема логото оттам)
+5. `npm run build:site` → commit (генерираните файлове се комитват)
 
 ## API (запазено от v2)
 

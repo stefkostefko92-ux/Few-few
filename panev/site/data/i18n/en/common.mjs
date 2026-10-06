@@ -45,7 +45,7 @@ export default {
     },
     catalog: {
       title: 'Technical catalogue 2026 (PDF) — browse and download | Panev Ascensori',
-      description: 'Panev Ascensori technical and commercial catalogue, 2026 edition: 95 pages of technical drawings, dimensions in mm, product codes and the full price list. Browse it online or download the PDF.',
+      description: 'Panev Ascensori technical and commercial catalogue 2026: 72 pages of 3D views, dimensions in mm, codes and full price list. Browse online or download the PDF.',
       keywords: [
         'lift brackets catalogue PDF',
         'technical catalogue elevators 2026',

@@ -17,7 +17,7 @@ Supreme AdBlock keeps the web clean and fast, without watching what you do.
   and search ads
 - EasyList, EasyPrivacy and the uBlock Origin filters built in, plus the list for
   your language — 31 regional lists, the one for your browser's language on by itself
-- Removes banners, pop-ups, pop-unders and native "recommended" ads
+- Removes banners, pop-ups, pop-unders and native sponsored-content widgets
 - Hides sponsored posts on Facebook & Instagram
 - Stops trackers and behavioural analytics
 - Blocks third-party tracking cookies and beacons at the network level
@@ -54,8 +54,8 @@ new API from the first line, so nothing in it is a workaround on borrowed time.
 
 YouTube ads are stopped at the source, so videos simply play. We never block
 YouTube's video servers — blocking those is what makes other setups stall,
-buffer or show a black player. The player request itself carries the no-ad flag,
-and the ad slots are removed from the response.
+buffer or show a black player. The ad entries are taken out of the player's
+data before the player reads it, and the page sees no sign of a blocker.
 
 Protection that does not go stale. Ad networks rotate domains daily, while a
 store review takes days. Our filter data refreshes twice a day, Ed25519-signed
@@ -78,7 +78,7 @@ Your browsing data never leaves your device. No account, no analytics, no teleme
 
 It reaches the ads that rules alone cannot. Pop-unders are refused at the moment
 a page calls window.open, for 2,700+ known hosts; anti-adblock walls are
-neutralised; and brand-new ad slots no filter list knows yet are caught by their
+neutralised; and ad slots no filter list names yet are caught by their
 shape, not by a rule.
 
 When a site breaks, you fix it in one click. Allow the site outright, or keep
@@ -89,7 +89,7 @@ You can see what it did. A per-page breakdown of what each filter list
 blocked, live counters for data and time saved, and a health card in the
 settings that confirms every part is actually running.
 
-100% free. No account, no telemetry, no data collection, everything stays on
+No cost, no account, no telemetry, no data collection, everything stays on
 your device. If it makes your browsing better, donations are welcome but never
 required.
 
@@ -131,7 +131,7 @@ Supreme AdBlock пази уеб-а чист и бърз, без да следи 
 
 Създаден за днешната платформа за разширения на Chrome, не преправен набързо за нея. Manifest V3 отне стария начин за блокиране на заявки; това разширение е писано върху новия API от първия ред, така че в него няма заобиколно решение, което утре ще спре да работи.
 
-Рекламите в YouTube се спират при източника, затова видеата просто тръгват. Никога не блокираме видео сървърите на YouTube — точно това кара други решения да заглъхват, да буферират или да показват черен плейър. Самата заявка към плейъра носи флага „без реклами“, а рекламните полета се махат от отговора.
+Рекламите в YouTube се спират при източника, затова видеата просто тръгват. Никога не блокираме видео сървърите на YouTube — точно това кара други решения да заглъхват, да буферират или да показват черен плейър. Рекламните записи се махат от данните на плейъра, преди той да ги прочете, и страницата не вижда никаква следа от блокер.
 
 Защита, която не остарява. Рекламните мрежи сменят домейни всеки ден, а ревюто в магазина отнема дни. Филтърните ни данни се обновяват два пъти дневно, подписани с Ed25519 и заключени по версия — нова рекламна мрежа се покрива за часове, без да се качва нов код.
 
@@ -147,7 +147,7 @@ Supreme AdBlock пази уеб-а чист и бърз, без да следи 
 
 Виждате какво е свършило. Разбивка по филтър-листи за всяка страница, броячи на живо за спестени данни и време, и карта за здравето на двигателя в настройките, която потвърждава, че всяка част наистина работи.
 
-100% безплатно. Без акаунт, без телеметрия, без събиране на данни — всичко остава на вашето устройство. Popup-ът и настройките показват една малка, ясно обозначена реклама на собствената ни марка Carbon Stealth и незадължителен линк за дарение; нищо не е от трета страна и никакви данни не напускат устройството ви заради това.
+Без заплащане, без акаунт, без телеметрия, без събиране на данни — всичко остава на вашето устройство. Popup-ът и настройките показват една малка, ясно обозначена реклама на собствената ни марка Carbon Stealth и незадължителен линк за дарение; нищо не е от трета страна и никакви данни не напускат устройството ви заради това.
 
 **it**
 
@@ -178,7 +178,7 @@ PERCHÉ SCEGLIERE SUPREME ADBLOCK
 
 Costruito per l'attuale piattaforma delle estensioni di Chrome, non adattato a posteriori. Manifest V3 ha eliminato il vecchio modo di bloccare le richieste; questa estensione è stata scritta sulla nuova API dalla prima riga, quindi non contiene ripieghi destinati a smettere di funzionare.
 
-Gli annunci di YouTube vengono fermati alla fonte, così i video partono e basta. Non blocchiamo mai i server video di YouTube: è proprio questo che fa bloccare, bufferizzare o mostrare un player nero alle altre soluzioni. È la richiesta stessa del player a portare il flag «niente annunci», e gli spazi pubblicitari vengono rimossi dalla risposta.
+Gli annunci di YouTube vengono fermati alla fonte, così i video partono e basta. Non blocchiamo mai i server video di YouTube: è proprio questo che fa bloccare, bufferizzare o mostrare un player nero alle altre soluzioni. Le voci pubblicitarie vengono tolte dai dati del player prima che li legga, e la pagina non vede alcuna traccia di un blocker.
 
 Una protezione che non invecchia. Le reti pubblicitarie cambiano dominio ogni giorno, mentre una revisione dello store richiede giorni. I nostri dati dei filtri si aggiornano due volte al giorno, firmati con Ed25519 e vincolati alla versione: una nuova rete pubblicitaria è coperta in poche ore, senza distribuire nuovo codice.
 
@@ -194,7 +194,7 @@ Se un sito si rompe, lo sistemi con un clic. Consenti l'intero sito, oppure mant
 
 Vedi cosa ha fatto. Per ogni pagina, quanto ha bloccato ciascuna lista di filtri, contatori in tempo reale di dati e tempo risparmiati e una scheda di stato nelle impostazioni che conferma che ogni componente è davvero attivo.
 
-100% gratuito. Nessun account, nessuna telemetria, nessuna raccolta di dati: tutto resta sul tuo dispositivo. Il popup e le impostazioni mostrano una piccola promozione, chiaramente etichettata, del nostro marchio Carbon Stealth e un link facoltativo per le donazioni; nulla è di terze parti e nessun dato lascia il tuo dispositivo per questo.
+Nessun costo, nessun account, nessuna telemetria, nessuna raccolta di dati: tutto resta sul tuo dispositivo. Il popup e le impostazioni mostrano una piccola promozione, chiaramente etichettata, del nostro marchio Carbon Stealth e un link facoltativo per le donazioni; nulla è di terze parti e nessun dato lascia il tuo dispositivo per questo.
 
 **de**
 
@@ -225,7 +225,7 @@ WARUM SUPREME ADBLOCK
 
 Für die aktuelle Erweiterungsplattform von Chrome gebaut, nicht nachträglich angepasst. Manifest V3 hat den alten Weg zum Blockieren von Anfragen abgeschafft; diese Erweiterung wurde von der ersten Zeile an auf der neuen API geschrieben — hier gibt es keine Behelfslösung auf Zeit.
 
-YouTube-Anzeigen werden an der Quelle gestoppt, deshalb laufen Videos einfach. Wir blockieren nie die Videoserver von YouTube — genau das lässt andere Lösungen hängen, puffern oder einen schwarzen Player zeigen. Die Player-Anfrage selbst trägt das Kein-Werbung-Flag, und die Werbeplätze werden aus der Antwort entfernt.
+YouTube-Anzeigen werden an der Quelle gestoppt, deshalb laufen Videos einfach. Wir blockieren nie die Videoserver von YouTube — genau das lässt andere Lösungen hängen, puffern oder einen schwarzen Player zeigen. Die Werbeeinträge werden aus den Daten des Players entfernt, bevor er sie liest, und die Seite sieht keine Spur eines Blockers.
 
 Schutz, der nicht veraltet. Werbenetzwerke wechseln täglich die Domain, eine Store-Prüfung dauert Tage. Unsere Filterdaten aktualisieren sich zweimal täglich, Ed25519-signiert und versionsgebunden: Ein neues Werbenetzwerk ist in Stunden abgedeckt — ohne neuen Code auszuliefern.
 
@@ -241,7 +241,7 @@ Wenn eine Seite kaputtgeht, reparieren Sie es mit einem Klick. Erlauben Sie die 
 
 Sie sehen, was es getan hat. Pro Seite, wie viel jede Filterliste blockiert hat, Live-Zähler für gesparte Daten und Zeit und eine Statuskarte in den Einstellungen, die bestätigt, dass jeder Teil wirklich läuft.
 
-100 % kostenlos. Kein Konto, keine Telemetrie, keine Datensammlung: Alles bleibt auf Ihrem Gerät. Popup und Einstellungen zeigen eine kleine, klar gekennzeichnete Eigenwerbung für unsere Marke Carbon Stealth und einen optionalen Spendenlink; nichts stammt von Dritten, und dafür verlassen keine Daten Ihr Gerät.
+Keine Kosten, kein Konto, keine Telemetrie, keine Datensammlung: Alles bleibt auf Ihrem Gerät. Popup und Einstellungen zeigen eine kleine, klar gekennzeichnete Eigenwerbung für unsere Marke Carbon Stealth und einen optionalen Spendenlink; nichts stammt von Dritten, und dafür verlassen keine Daten Ihr Gerät.
 
 ## Privacy
 Single purpose: content blocker — blocks ads, trackers and page annoyances (pop-ups,

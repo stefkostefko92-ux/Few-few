@@ -37,7 +37,7 @@
 
 - [Home (IT)](https://panevascensori.it/): panoramica del sistema brevettato
 - [Prodotti e listino (IT)](https://panevascensori.it/prodotti): tutti i codici con prezzi
-- [Catalogo PDF (IT)](https://panevascensori.it/catalogo): catalogo tecnico 2026, 95 pagine con le viste 3D, scaricabile
+- [Catalogo PDF (IT)](https://panevascensori.it/catalogo): catalogo tecnico 2026, 72 pagine con le viste 3D e il riepilogo della gamma, scaricabile
 - [Vista 3D (IT)](https://panevascensori.it/staffe-3d): i 48 articoli del catalogo in 3D, da ruotare, montare (DX / SX, con la regolazione) e fotografare; modelli generati dalle quote del catalogo — [EN](https://panevascensori.it/en/brackets-3d) · [BG](https://panevascensori.it/bg/planki-3d)
 - [Contatti e ordini (IT)](https://panevascensori.it/contatti): ordine via email, dati aziendali
 - [English](https://panevascensori.it/en/) · [Български](https://panevascensori.it/bg/)

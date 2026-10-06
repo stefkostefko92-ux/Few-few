@@ -107,11 +107,14 @@ print("ad_rules.json: %d rules (ids 1..%d)" % (len(rules), rid-1))
 #
 # We also do NOT block /youtubei/v1/log_event or /csi_204 (logging/timing, not
 # ads) — that only spammed the console.
+#
+# Nor /ptracking or /api/stats/atr (5.1.3): ptracking is the CONTENT playback ping
+# and most ATR pings are ordinary — a player that never reports playing anything
+# is one of the signals behind YouTube's "three strikes". The single ATR ping that
+# carries the ad state is answered locally by youtube_main.js (uBO's pattern).
 YT_BLOCK = [
     "youtube.com/pagead/",
-    "youtube.com/ptracking",
     "youtube.com/api/stats/ads",
-    "youtube.com/api/stats/atr",
     "youtube.com/get_midroll_",
     "youtube.com/get_video_info?*adformat",
     "youtube.com/youtubei/v1/player/ad_break",

@@ -136,6 +136,34 @@
 
   // Compile a uBO needle with optional leading "!" negation into a matcher.
   // A missing/empty needle matches everything; "!" inverts the result.
+  // Every native we replace is a Proxy of the native, and Function.prototype.toString
+  // answers for the native: fn.toString() stays "function fetch() { [native code] }".
+  // Anti-adblock scripts (YouTube's included) compare exactly that; a plain
+  // replacement function gave us away on every site that checks.
+  var NativeProxy = typeof Proxy === "function" ? Proxy : null;
+  var nativeReflectApply = typeof Reflect === "object" && Reflect ? Reflect.apply : null;
+  var cloakMap = typeof WeakMap === "function" ? new WeakMap() : null;
+  var cloakedToString = false;
+  function cloak(impl, orig) {
+    if (!NativeProxy || !nativeReflectApply || !cloakMap || typeof orig !== "function" || typeof impl !== "function") return impl;
+    try {
+      if (!cloakedToString) {
+        cloakedToString = true;
+        var ts = Function.prototype.toString;
+        var tsP = new NativeProxy(ts, { apply: function (t, self, args) {
+          var o = self, n = 0;
+          while (n++ < 8 && cloakMap.has(o)) o = cloakMap.get(o); // a native wrapped twice (two scriptlets) still answers as itself
+          return nativeReflectApply(t, o, args);
+        } });
+        cloakMap.set(tsP, ts);
+        Function.prototype.toString = tsP;
+      }
+      var p = new NativeProxy(orig, { apply: function (t, self, args) { return nativeReflectApply(impl, self, args); } });
+      cloakMap.set(p, orig);
+      return p;
+    } catch (e) { return impl; }
+  }
+
   function needleMatcher(raw) {
     var neg = typeof raw === "string" && raw.charAt(0) === "!";
     var body = neg ? raw.slice(1) : raw;
@@ -164,6 +192,7 @@
       } catch (e) {}
       return orig.apply(this, arguments);
     };
+    window[prop] = cloak(window[prop], orig);
   }
   // DOM-touching scriptlets: apply fn to every element matching sel, now and on mutation.
   function forEachMatch(sel, fn) {
@@ -293,6 +322,7 @@
         } catch (e) {}
         return orig.apply(this, arguments);
       };
+      proto.addEventListener = cloak(proto.addEventListener, orig);
     },
 
     // json-prune(props, needle): delete dotted `props` from every JSON.parse /
@@ -310,12 +340,12 @@
         return obj;
       };
       var origParse = JSON.parse;
-      JSON.parse = function () { return prune(origParse.apply(this, arguments)); };
+      JSON.parse = cloak(function () { return prune(origParse.apply(this, arguments)); }, origParse);
       try {
         var origJson = Response.prototype.json;
-        Response.prototype.json = function () {
+        Response.prototype.json = cloak(function () {
           return origJson.apply(this, arguments).then(prune);
-        };
+        }, origJson);
       } catch (e) {}
     },
 
@@ -340,6 +370,7 @@
         } catch (e) {}
         return origFetch.apply(this, arguments);
       };
+      window.fetch = cloak(window.fetch, origFetch);
     },
 
     // no-xhr-if(cond): the XMLHttpRequest twin of no-fetch-if — a matching request
@@ -364,6 +395,7 @@
         } catch (e) {}
         return origOpen.apply(this, arguments);
       };
+      P.open = cloak(P.open, origOpen);
       P.send = function () {
         if (!held.has(this)) return origSend.apply(this, arguments);
         var xhr = this, u = held.get(this);
@@ -381,6 +413,7 @@
           return origSend.apply(this, arguments);
         }
       };
+      P.send = cloak(P.send, origSend);
     },
 
     // no-window-open-if(search): block window.open() for matching URLs (leading
@@ -398,6 +431,7 @@
         } catch (e) {}
         return orig.apply(this, arguments);
       };
+      window.open = cloak(window.open, orig);
     },
 
     // remove-attr(attrs, selector): strip the given attributes (space/comma/pipe
@@ -694,6 +728,7 @@
         } catch (e) {}
         return nativeOpen.apply(this, arguments);
       };
+      window.open = cloak(window.open, nativeOpen);
     }
   } catch (e) {}
 })();
