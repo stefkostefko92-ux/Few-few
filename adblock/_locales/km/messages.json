@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ទប់ស្កាត់ពាណិជ្ជកម្មវីដេអូ YouTube បដា ផ្ទាំងលោត កម្មវិធីតាមដាន និងផ្ទាំងខូគី។ ឥតគិតថ្លៃ រហ័ស និងឯកជន។"
+    "message": "ទប់ស្កាត់ពាណិជ្ជកម្មវីដេអូ YouTube បដា ផ្ទាំងលោត កម្មវិធីតាមដាន និងផ្ទាំងខូគី។"
   },
   "byCarbon": {
     "message": "ដោយ Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "អាជ្ញាបណ្ណនៃបញ្ជីតម្រង"
+  },
+  "welPageTitle": {
+    "message": "សូមស្វាគមន៍មកកាន់ Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "អ្នកត្រូវបានការពារ",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "ឥឡូវនេះ Supreme AdBlock កំពុងទប់ស្កាត់ពាណិជ្ជកម្ម និងកម្មវិធីតាមដាននៅលើគ្រប់គេហទំព័រដែលអ្នកចូលមើល។ មិនចាំបាច់កំណត់អ្វីទេ។",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ខ្ទាស់កម្មវិធីបន្ថែមនៅលើរបារឧបករណ៍",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ចុចរូបតំណាងបំណែកល្បែងផ្គុំរូបនៅក្បែររបារអាសយដ្ឋាន ហើយខ្ទាស់ Supreme AdBlock។ បន្ទាប់មក ការចុចតែម្ដងនឹងបង្ហាញអ្វីដែលត្រូវបានទប់ស្កាត់នៅលើទំព័រ។",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "ប្រសិនបើគេហទំព័រមើលទៅខូច",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "បើកកម្មវិធីបន្ថែម ហើយបិទការទប់ស្កាត់សម្រាប់គេហទំព័រនោះ ឬជ្រើសរើស «គេហទំព័រខូច?» សម្រាប់ការជួសជុលរហ័ស។",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "ការរុករករបស់អ្នកនៅតែលើឧបករណ៍របស់អ្នក",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ការត្រងធ្វើឡើងនៅលើឧបករណ៍ផ្ទាល់។ កម្មវិធីបន្ថែមមិនប្រមូលទិន្នន័យផ្ទាល់ខ្លួនទេ ហើយមិនផ្ញើអ្វីអំពីទំព័រដែលអ្នកចូលមើលទេ។",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "បើកការកំណត់",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "យល់ហើយ",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

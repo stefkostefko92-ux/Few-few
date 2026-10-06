@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube ਵੀਡੀਓ ਵਿਗਿਆਪਨ, ਬੈਨਰ, ਪੌਪ-ਅੱਪ, ਟਰੈਕਰ, ਕੁਕੀ ਸੁਨੇਹੇ ਅਤੇ ਐਂਟੀ-ਐਡਬਲੌਕ ਕੰਧਾਂ ਹਰ ਥਾਂ ਬਲੌਕ ਕਰੋ। ਮੁਫ਼ਤ, ਤੇਜ਼ ਅਤੇ ਨਿੱਜੀ।"
+    "message": "YouTube ਵੀਡੀਓ ਵਿਗਿਆਪਨ, ਬੈਨਰ, ਪੌਪ-ਅੱਪ, ਟਰੈਕਰ, ਕੁਕੀ ਸੁਨੇਹੇ ਅਤੇ ਐਂਟੀ-ਐਡਬਲੌਕ ਕੰਧਾਂ ਹਰ ਥਾਂ ਬਲੌਕ ਕਰੋ।"
   },
   "byCarbon": {
     "message": "Carbon Stealth ਵੱਲੋਂ"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "ਫਿਲਟਰ ਸੂਚੀਆਂ ਦੇ ਲਾਇਸੈਂਸ"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "ਤੁਸੀਂ ਸੁਰੱਖਿਅਤ ਹੋ",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock ਹੁਣ ਤੁਹਾਡੇ ਵੱਲੋਂ ਖੋਲ੍ਹੀ ਹਰ ਸਾਈਟ ’ਤੇ ਵਿਗਿਆਪਨ ਅਤੇ ਟਰੈਕਰ ਬਲੌਕ ਕਰ ਰਿਹਾ ਹੈ। ਕੁਝ ਵੀ ਸੈੱਟ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ।",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ਐਕਸਟੈਂਸ਼ਨ ਨੂੰ ਟੂਲਬਾਰ ’ਤੇ ਪਿੰਨ ਕਰੋ",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ਪਤਾ ਬਾਰ ਦੇ ਨਾਲ ਵਾਲੇ ਪਹੇਲੀ ਦੇ ਟੁਕੜੇ ਵਾਲੇ ਆਈਕਨ ’ਤੇ ਕਲਿੱਕ ਕਰੋ ਅਤੇ Supreme AdBlock ਨੂੰ ਪਿੰਨ ਕਰੋ। ਫਿਰ ਇੱਕ ਕਲਿੱਕ ਨਾਲ ਦਿਸਦਾ ਹੈ ਕਿ ਪੰਨੇ ’ਤੇ ਕੀ ਬਲੌਕ ਹੋਇਆ।",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "ਜੇ ਕੋਈ ਸਾਈਟ ਠੀਕ ਨਾ ਦਿਸੇ",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "ਐਕਸਟੈਂਸ਼ਨ ਖੋਲ੍ਹੋ ਅਤੇ ਉਸ ਸਾਈਟ ਲਈ ਬਲੌਕਿੰਗ ਬੰਦ ਕਰੋ, ਜਾਂ ਤੁਰੰਤ ਹੱਲ ਲਈ “ਸਾਈਟ ਠੀਕ ਨਹੀਂ ਚੱਲ ਰਹੀ?” ਚੁਣੋ।",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ’ਤੇ ਹੀ ਰਹਿੰਦੀ ਹੈ",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ਫਿਲਟਰਿੰਗ ਸਥਾਨਕ ਤੌਰ ’ਤੇ ਹੁੰਦੀ ਹੈ। ਐਕਸਟੈਂਸ਼ਨ ਕੋਈ ਨਿੱਜੀ ਡਾਟਾ ਇਕੱਠਾ ਨਹੀਂ ਕਰਦੀ ਅਤੇ ਤੁਹਾਡੇ ਵੱਲੋਂ ਖੋਲ੍ਹੇ ਪੰਨਿਆਂ ਬਾਰੇ ਕੁਝ ਨਹੀਂ ਭੇਜਦੀ।",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "ਠੀਕ ਹੈ",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

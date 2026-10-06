@@ -4,7 +4,7 @@
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
+    "message": "Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -601,5 +601,49 @@
   },
   "opt_notices": {
     "message": "Licences of the filter lists"
+  },
+  "welPageTitle": {
+    "message": "Welcome to Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "You're protected",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock is now blocking ads and trackers on every site you visit. There is nothing to set up.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Pin it to the toolbar",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Click the puzzle-piece icon next to the address bar and pin Supreme AdBlock. One click then shows what was blocked on the page.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "If a site looks broken",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Open the extension and switch blocking off for that site, or choose “Site broken?” for quick fixes.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Your browsing stays on your device",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtering happens locally. The extension collects no personal data and sends nothing about the pages you visit.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Open settings",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Got it",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

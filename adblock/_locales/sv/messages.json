@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blockera annonser överallt: YouTube-videoannonser, banners, popup-fönster, spårare, cookie-rutor och anti-adblock-väggar. Gratis."
+    "message": "Blockera annonser överallt: YouTube-videoannonser, banners, popup-fönster, spårare, cookie-rutor och anti-adblock-väggar."
   },
   "byCarbon": {
     "message": "av Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Licenser för filterlistorna"
+  },
+  "welPageTitle": {
+    "message": "Välkommen till Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Du är skyddad",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blockerar nu annonser och spårare på alla webbplatser du besöker. Det finns inget att ställa in.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Fäst tillägget i verktygsfältet",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klicka på pusselbitsikonen bredvid adressfältet och fäst Supreme AdBlock. Sedan visar ett klick vad som blockerades på sidan.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Om en webbplats ser trasig ut",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Öppna tillägget och stäng av blockeringen för den webbplatsen, eller välj ”Fungerar inte webbplatsen?” för snabba åtgärder.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Din surfning stannar på din enhet",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtreringen sker lokalt. Tillägget samlar inte in några personuppgifter och skickar ingenting om sidorna du besöker.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Öppna inställningar",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Jag förstår",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

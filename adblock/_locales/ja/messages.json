@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "あらゆる広告をブロック。YouTube の動画広告、バナー、ポップアップ、トラッカー、Cookie の同意画面、広告ブロック検出の壁も。無料・高速・プライバシー重視。"
+    "message": "あらゆる広告をブロック。YouTube の動画広告、バナー、ポップアップ、トラッカー、Cookie の同意画面、広告ブロック検出の壁も。"
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "フィルタリストのライセンス"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock へようこそ",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "保護が有効になりました",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock は、アクセスするすべてのサイトで広告とトラッカーのブロックを開始しました。設定は不要です。",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "拡張機能をツールバーに固定する",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "アドレスバーの横にあるパズルのピースのアイコンをクリックし、Supreme AdBlock を固定してください。ワンクリックで、ページでブロックされた内容を確認できるようになります。",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "サイトの表示が崩れる場合",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "拡張機能を開いてそのサイトでのブロックをオフにするか、「サイトの不具合？」を選んですばやく修正してください。",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "閲覧データはお使いのデバイスから出ません",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "フィルタリングはデバイス上で行われます。拡張機能は個人データを収集せず、アクセスしたページに関する情報を一切送信しません。",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "設定を開く",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "わかりました",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

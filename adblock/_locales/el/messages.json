@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Αποκλείει διαφημίσεις παντού: βίντεο στο YouTube, banner, αναδυόμενα, ιχνηλάτες και τείχη anti-adblock. Δωρεάν και ιδιωτικό."
+    "message": "Αποκλείει διαφημίσεις παντού: βίντεο στο YouTube, banner, αναδυόμενα, ιχνηλάτες και τείχη anti-adblock."
   },
   "byCarbon": {
     "message": "από την Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Άδειες των λιστών φίλτρων"
+  },
+  "welPageTitle": {
+    "message": "Καλώς ήρθατε στο Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Η προστασία είναι ενεργή",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Το Supreme AdBlock αποκλείει πλέον διαφημίσεις και ιχνηλάτες σε κάθε ιστότοπο που επισκέπτεστε. Δεν χρειάζεται καμία ρύθμιση.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Καρφιτσώστε την επέκταση στη γραμμή εργαλείων",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Κάντε κλικ στο εικονίδιο με το κομμάτι παζλ δίπλα στη γραμμή διευθύνσεων και καρφιτσώστε το Supreme AdBlock. Έτσι, με ένα κλικ βλέπετε τι αποκλείστηκε στη σελίδα.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Αν ένας ιστότοπος δεν εμφανίζεται σωστά",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Ανοίξτε την επέκταση και απενεργοποιήστε τον αποκλεισμό για αυτόν τον ιστότοπο ή επιλέξτε «Πρόβλημα στον ιστότοπο;» για γρήγορες διορθώσεις.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Η περιήγησή σας μένει στη συσκευή σας",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Το φιλτράρισμα γίνεται τοπικά. Η επέκταση δεν συλλέγει προσωπικά δεδομένα και δεν στέλνει τίποτα για τις σελίδες που επισκέπτεστε.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Άνοιγμα ρυθμίσεων",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Εντάξει",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

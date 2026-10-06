@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "חוסם פרסומות בכל מקום: פרסומות וידאו ב-YouTube, באנרים, חלונות קופצים, רכיבי מעקב, הודעות עוגיות וחומות אנטי-חוסם. חינמי ומהיר."
+    "message": "חוסם פרסומות בכל מקום: פרסומות וידאו ב-YouTube, באנרים, חלונות קופצים, רכיבי מעקב, הודעות עוגיות וחומות אנטי-חוסם."
   },
   "byCarbon": {
     "message": "מאת Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "רישיונות רשימות הסינון"
+  },
+  "welPageTitle": {
+    "message": "ברוכים הבאים ל-Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "אתם מוגנים",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock חוסם עכשיו פרסומות ורכיבי מעקב בכל אתר שאתם מבקרים בו. אין שום דבר להגדיר.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "הצמידו את התוסף לסרגל הכלים",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "לחצו על סמל חלק הפאזל שליד שורת הכתובת והצמידו את Supreme AdBlock. כך לחיצה אחת תראה לכם מה נחסם בדף.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "אם אתר נראה שבור",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "פתחו את התוסף וכבו את החסימה לאותו אתר, או בחרו \"האתר שבור?\" לתיקונים מהירים.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "הגלישה שלכם נשארת במכשיר שלכם",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "הסינון מתבצע באופן מקומי. התוסף לא אוסף מידע אישי ולא שולח דבר על הדפים שבהם אתם מבקרים.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "פתיחת ההגדרות",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "הבנתי",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

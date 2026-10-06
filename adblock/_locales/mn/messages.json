@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Хаа сайгүй зар хаана: YouTube-ийн видео зар, баннер, гарч ирэх цонх, мөрдөгч, adblock-ийн эсрэг хана. Үнэгүй, хурдан, нууцлалтай."
+    "message": "Хаа сайгүй зар хаана: YouTube-ийн видео зар, баннер, гарч ирэх цонх, мөрдөгч, adblock-ийн эсрэг хана."
   },
   "byCarbon": {
     "message": "Carbon Stealth-ээс"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Шүүлтүүрийн жагсаалтын лиценз"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock-д тавтай морил",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Хамгаалалт идэвхтэй байна",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock одоо таны зочилдог бүх сайт дээр зар болон мөрдөгчийг хааж байна. Юу ч тохируулах шаардлагагүй.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Өргөтгөлийг хэрэгслийн самбарт бэхлээрэй",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Хаягийн мөрний хажууд байрлах эвлүүлгийн хэсгийн дүрс тэмдэг дээр дарж, Supreme AdBlock-г бэхлээрэй. Ингэснээр нэг товшилтоор хуудсан дээр юу хаагдсаныг харна.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Сайт эвдэрсэн мэт харагдвал",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Өргөтгөлийг нээгээд тухайн сайтад хаалтыг унтраах, эсвэл хурдан засварын тулд «Сайт эвдэрсэн үү?»-г сонгоорой.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Таны хөтчийн үйлдэл таны төхөөрөмж дээр үлдэнэ",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Шүүлт таны төхөөрөмж дээр хийгддэг. Өргөтгөл хувийн мэдээлэл цуглуулдаггүй бөгөөд таны зочилсон хуудсуудын талаар юу ч илгээдэггүй.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Тохиргоог нээх",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Ойлголоо",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

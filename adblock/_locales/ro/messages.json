@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blochează reclamele (inclusiv pe YouTube), bannere, pop-up-uri, trackere, notificări cookie și ziduri anti-adblock. Gratuit."
+    "message": "Blochează reclamele (inclusiv pe YouTube), bannere, pop-up-uri, trackere, notificări cookie și ziduri anti-adblock."
   },
   "byCarbon": {
     "message": "de Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "Licențele listelor de filtre"
+  },
+  "welPageTitle": {
+    "message": "Bun venit la Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Protecția este activă",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blochează acum reclamele și trackerele pe fiecare site pe care îl vizitați. Nu trebuie să configurați nimic.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Fixați extensia în bara de instrumente",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Faceți clic pe pictograma în formă de piesă de puzzle de lângă bara de adrese și fixați Supreme AdBlock. Apoi, un singur clic vă arată ce a fost blocat pe pagină.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Dacă un site nu se afișează corect",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Deschideți extensia și dezactivați blocarea pentru site-ul respectiv sau alegeți „Site-ul nu funcționează?” pentru remedieri rapide.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Navigarea dvs. rămâne pe dispozitivul dvs.",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrarea are loc local. Extensia nu colectează date personale și nu trimite nimic despre paginile pe care le vizitați.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Deschideți setările",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Am înțeles",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }

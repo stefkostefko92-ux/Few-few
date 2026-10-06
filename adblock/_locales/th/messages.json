@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "บล็อกโฆษณาวิดีโอ YouTube แบนเนอร์ ป๊อปอัป ตัวติดตาม การแจ้งเตือนคุกกี้ และกำแพงต่อต้านการบล็อกโฆษณา ฟรีและเป็นส่วนตัว"
+    "message": "บล็อกโฆษณาวิดีโอ YouTube แบนเนอร์ ป๊อปอัป ตัวติดตาม การแจ้งเตือนคุกกี้ และกำแพงต่อต้านการบล็อกโฆษณา"
   },
   "byCarbon": {
     "message": "โดย Carbon Stealth"
@@ -599,5 +599,49 @@
   },
   "opt_notices": {
     "message": "สัญญาอนุญาตของรายการตัวกรอง"
+  },
+  "welPageTitle": {
+    "message": "ยินดีต้อนรับสู่ Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "คุณได้รับการปกป้องแล้ว",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "ตอนนี้ Supreme AdBlock กำลังบล็อกโฆษณาและตัวติดตามในทุกเว็บไซต์ที่คุณเข้าชม ไม่ต้องตั้งค่าอะไรเลย",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ปักหมุดส่วนขยายไว้ที่แถบเครื่องมือ",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "คลิกไอคอนรูปจิ๊กซอว์ข้างแถบที่อยู่ แล้วปักหมุด Supreme AdBlock จากนั้นคลิกเดียวก็จะเห็นว่ามีอะไรถูกบล็อกในหน้านั้น",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "หากเว็บไซต์แสดงผลผิดปกติ",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "เปิดส่วนขยายแล้วปิดการบล็อกสำหรับเว็บไซต์นั้น หรือเลือก “เว็บไซต์เสียหรือเปล่า” เพื่อแก้ไขอย่างรวดเร็ว",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "การท่องเว็บของคุณอยู่บนอุปกรณ์ของคุณเท่านั้น",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "การกรองเกิดขึ้นในเครื่อง ส่วนขยายไม่เก็บข้อมูลส่วนบุคคลและไม่ส่งข้อมูลใดๆ เกี่ยวกับหน้าที่คุณเข้าชม",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "เปิดการตั้งค่า",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "เข้าใจแล้ว",
+    "description": "Welcome page: button that closes the welcome page."
   }
 }
