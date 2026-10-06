@@ -80,12 +80,14 @@ sudo bash /opt/few-few/current/korpora/deploy/deploy.sh
 6. чака `/health` да върне `{"status":"ok","app":"korpora"}` — маркерът доказва, че на порта
    отговаря Korpora, а не друго приложение (иначе код 4 и `autodeploy.sh` връща последния
    работещ release); после записва папката на release-а в `/opt/few-few/shared/korpora/last-good`;
-7. слага vhost-а от репото в nginx с порта от `HTTP_PORT` (`nginx -t`, после reload; при грешка
+7. слага дневния шифрован бекъп (`deploy/backup-install.sh`: скриптът и таймерът; т. 9) и, ако няма
+   бекъп от последните 26 ч, пуска един веднага;
+8. слага vhost-а от репото в nginx с порта от `HTTP_PORT` (`nginx -t`, после reload; при грешка
    връща стария), щом има сертификат;
-8. подава sitemap-а към IndexNow (Bing, Yandex, Seznam, Naver, Yep), само ако се е променил.
+9. подава sitemap-а към IndexNow (Bing, Yandex, Seznam, Naver, Yep), само ако се е променил.
 
 Изход: 0 — жив; 3 — няма `.env`; 4 — контейнерите са сменени, но Korpora не отговаря; 1 — спрян преди
-смяната (работещите не са пипани). Стъпки 7–8 след успешната сонда само предупреждават.
+смяната (работещите не са пипани). Стъпки 7–9 след успешната сонда само предупреждават.
 
 Командите `docker compose` по-долу се пускат от папката на работещия release — там са
 `docker-compose.yml` и `.env` (`/opt/few-few/shared/korpora/` е само за root, затова `sudo cat`):
@@ -179,14 +181,15 @@ sudo KORPORA_SKIP_BACKUP=1 bash "$PWD/deploy/deploy.sh"
 б) **Данните трябва да се върнат** — миграцията е минала, но ги е развалила, или не си сигурен. Дъмпът е
 взет след build-а, точно преди смяната: губят се само записите от секундите между него и спирането на
 стария код, както и всичко, записано от новия. Възстановяването е една транзакция —
-при грешка базата остава каквато е. `DROP SCHEMA` е нужен, защото таблица от новата миграция с външен
-ключ към стара спира триенето в дъмпа. Дъмпът връща и `_prisma_migrations`, затова `migrate resolve`
-след него не трябва (дава P3011):
+при грешка базата остава каквато е. Преди това `gunzip -t` проверява целия файл: `psql
+--single-transaction` потвърждава и при внезапен край на входа, тоест отрязан дъмп би влязъл наполовина.
+`DROP SCHEMA` е нужен, защото таблица от новата миграция с външен ключ към стара спира триенето в дъмпа.
+Дъмпът връща и `_prisma_migrations`, затова `migrate resolve` след него не трябва (дава P3011):
 
 ```bash
 DUMP=/opt/few-few/shared/korpora/backups/pre-deploy-<дата-час>.sql.gz   # последният преди провала
-gunzip -c "$DUMP" | sudo docker compose exec -T db psql -v ON_ERROR_STOP=1 --single-transaction \
-  -U korpora -d korpora -c 'DROP SCHEMA public CASCADE' -c 'CREATE SCHEMA public' -f -
+sudo gunzip -t "$DUMP" && sudo gunzip -c "$DUMP" | sudo docker compose exec -T db psql -v ON_ERROR_STOP=1 \
+  --single-transaction -U korpora -d korpora -c 'DROP SCHEMA public CASCADE' -c 'CREATE SCHEMA public' -f -
 ```
 
 Одитът: ако номерът в котвата (`"head":{"id":…}` в `/opt/few-few/shared/korpora/data/audit-head.json`)
@@ -217,3 +220,107 @@ sudo docker compose exec -T db psql -U korpora -d korpora -tAc 'SELECT "lastId",
 
 Проверено с PostgreSQL 16 и Prisma 6: след а) и след б) `prisma migrate deploy` на стария код казва
 „No pending migrations“. Поправената миграция идва с нов release.
+
+## 9. Дневен шифрован бекъп
+
+Всеки ден в 02:30 UTC (± 10 мин.; пропуснат ден се наваксва) `korpora-backup.timer` пуска
+`/usr/local/sbin/korpora-backup` (= `deploy/backup.sh`). Слага ги деплоят (`deploy/backup-install.sh`,
+идемпотентно); ръчно — `sudo bash "$(sudo cat /opt/few-few/shared/korpora/last-good)/deploy/backup-install.sh"`.
+
+- **Какво:** `pg_dump -Fc` на цялата база от контейнера на базата (намира го по етикетите на compose, не
+  по папката на release-а).
+- **Шифроване:** [age](https://age-encryption.org) към публичния ключ на собственика в
+  `/opt/few-few/shared/korpora/backup-recipients.txt`. Сървърът може да пише бекъпи, но не и да ги чете:
+  частният ключ е само при собственика. Откраднат диск, бекъп или off-site копие не издават нищо.
+  Некриптиран дъмп не стъпва на диска.
+- **Проверка при всеки бекъп:** същият поток, който влиза в age, се чете докрай от `pg_restore` (отрязан или
+  повреден дъмп спира бекъпа); файлът е поне 8 KiB и е във формата на age; до него е `.sha256`. Сървърът
+  не може да го разшифрова (така е замислено) — затова т. 10, репетицията, е задължителна.
+- **Къде:** `/opt/few-few/shared/korpora/backups/daily/korpora-<ГГГГММДД-ччммсс>.dump.age` (600, папката 700),
+  записан атомично (временен файл → fsync → rename).
+- **Ротация:** след всеки успешен бекъп — най-новият от всеки от последните 14 дни и от всяка от
+  последните 8 седмици (около два месеца назад, 19–20 файла). 14 дни дават ден по ден за повреда,
+  забелязана до две седмици; седмичните покриват бавно забелязана грешка. По-дълго не: изтрит акаунт
+  остава в бекъпите до изтичането им (SECURITY.md). Провал → изход ≠ 0, нищо старо не се трие.
+- **Лог:** `journalctl -u korpora-backup -n 50` — само имена на файлове, размери и броеве.
+- **Пясъчник:** unit-ът е без capabilities и без мрежа (docker е през unix сокет), пише само в
+  `backups/daily` (`systemd-analyze security korpora-backup` — 1.5).
+
+Бекъпите преди миграция (т. 3, стъпка 4: `pre-deploy-*.sql.gz`, последните 5) остават както са —
+некриптирани (600 в папка 700), за да се възстановят веднага на сървъра без ключа на собственика (т. 8).
+
+**Веднъж — ключът (собственикът).** На своята машина, не на сървъра:
+
+```bash
+age-keygen -o korpora-backup.key      # частният ключ — само тук, в мениджъра на пароли и офлайн копие
+age-keygen -y korpora-backup.key      # публичният ключ (age1…) — той отива на сървъра
+```
+
+Загубен частен ключ = загубени бекъпи (няма възстановяване). Може и втори ключ (напр. в сейф): по един
+публичен ключ на ред — всеки от тях отваря бекъпите. На сървъра:
+
+```bash
+sudo apt-get install -y age
+printf '%s\n' 'age1…' | sudo tee /opt/few-few/shared/korpora/backup-recipients.txt >/dev/null
+sudo chmod 600 /opt/few-few/shared/korpora/backup-recipients.txt
+sudo bash "$(sudo cat /opt/few-few/shared/korpora/last-good)/deploy/backup-install.sh"   # пуска първия бекъп
+```
+
+`korpora-backup` отказва файл с частен ключ (`AGE-SECRET-KEY-…`), файл, в който пише друг освен root, и
+редове, които не са публичен ключ (`age1…`, `ssh-ed25519 …`).
+
+**Проверка:**
+
+```bash
+systemctl list-timers korpora-backup.timer
+sudo systemctl start korpora-backup.service && journalctl -u korpora-backup -n 20 --no-pager
+sudo ls -l /opt/few-few/shared/korpora/backups/daily/
+```
+
+**Извън сървъра.** Бекъп на същия диск не оцелява при загуба на машината. Файловете са шифровани, затова
+копие на `backups/daily/` в хранилище в ЕС (втория VPS, Hetzner Storage Box) не издава данни — кое и как
+решава собственикът. За нов сървър трябват и тайните от `.env` (`ENC_KEY`, `HMAC_KEY` — без тях 2FA,
+устройствата и одитната верига от бекъпа не се проверяват) и котвата `data/audit-head.json`: те **не** са в
+бекъпа на базата — пазете ги отделно (т. 1, т. 7).
+
+## 10. Възстановяване от дневния бекъп
+
+Скриптът е `deploy/backup-restore.sh` в папката на работещия release. Разшифроването е при собственика:
+дъмпът минава по ssh, частният ключ не стъпва на сървъра. Командите са от машината на собственика:
+
+```bash
+SRV=root@<сървър>
+D=/opt/few-few/shared/korpora/backups/daily
+ssh "$SRV" "ls -1 $D"                                   # избери файл
+F=korpora-<ГГГГММДД-ччммсс>.dump.age
+```
+
+**Репетиция — веднъж месечно, без риск.** Възстановява в нова празна база до живата, проверява таблиците,
+миграциите и акаунтите и я трие; живата база и приложението не се пипат:
+
+```bash
+ssh "$SRV" "cd $D && sha256sum -c --quiet $F.sha256 >&2 && cat $F" | age -d -i korpora-backup.key |
+  ssh "$SRV" 'bash "$(cat /opt/few-few/shared/korpora/last-good)/deploy/backup-restore.sh" --into korpora_restore_drill -'
+```
+
+Успех: `възстановено в korpora_restore_drill: … таблици, … миграции (последна …), … акаунта` и
+`репетицията мина`. С `--keep` базата остава за оглед. Запишете датата и резултата извън сървъра.
+
+**Авария — живата база (разрушително: всичко след бекъпа се губи).** Същото, с `--live --yes-i-know`:
+
+```bash
+ssh "$SRV" "cd $D && sha256sum -c --quiet $F.sha256 >&2 && cat $F" | age -d -i korpora-backup.key |
+  ssh "$SRV" 'bash "$(cat /opt/few-few/shared/korpora/last-good)/deploy/backup-restore.sh" --live --yes-i-know -'
+```
+
+Скриптът спира приложението, прави шифрована снимка на сегашната база
+(`/opt/few-few/shared/korpora/backups/pre-restore-<дата-час>.dump.age` — отменя се със същата команда),
+заменя схемата като една транзакция и пуска приложението отново (и при грешка). COMMIT има само ако дъмпът
+е прочетен докрай: отрязан или повреден вход оставя базата каквато е. След това — котвата на одита (т. 8,
+„Одитът“) и `curl -fsS https://korpora.carbonstealth.eu/health`.
+
+Ако ssh не е възможно, файлът се разшифрова и на сървъра: ключът временно в `/dev/shm` (паметта, не
+дискът), `--identity /dev/shm/korpora-backup.key /opt/…/daily/$F`, после `shred -u` на ключа.
+
+Проверено с PostgreSQL 16 (`tests/integration/backup-restore.test.ts`): бекъп → възстановяване в празна
+база със същите акаунти и миграции; живо възстановяване връща изтрит акаунт; отрязан дъмп не променя нищо.

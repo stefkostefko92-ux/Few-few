@@ -157,3 +157,15 @@ Docker Compose (db + app) + nginx на хоста — `DEPLOY.md`. Веднъж 
 откат), сонда с маркер `"app":"korpora"`, `last-good`, vhost-ът от репото с порта от `HTTP_PORT`, IndexNow
 само при промяна на sitemap-а; след сондата нищо не сменя изхода 0. Тестван е в `tests/deploy-script.test.ts`,
 `tests/deploy-setup.test.ts` и `tests/deploy-nginx.test.ts`. Тайните са само на сървъра (mode 600).
+
+Дневен шифрован бекъп (DEPLOY.md, т. 9–10): `deploy/backup.sh` → `/usr/local/sbin/korpora-backup`,
+`korpora-backup.timer` (02:30 UTC) и unit-ът (без capabilities и мрежа) от `deploy/systemd/` — слага ги
+`deploy/backup-install.sh`, който deploy.sh вика след сондата (само предупреждава; пуска бекъп веднага, ако
+няма от последните 26 ч). `pg_dump -Fc` от контейнера на базата → age към публичния ключ на собственика в
+`/opt/few-few/shared/korpora/backup-recipients.txt` (частният ключ никога не е на сървъра) → атомично в
+`backups/daily/` (600/700, `.sha256`), потокът се чете докрай от `pg_restore`; ротация 14 дневни + 8
+седмични. Възстановяване: `deploy/backup-restore.sh` от папката на release-а — `--into korpora_restore_<…>`
+(репетиция в празна база) или `--live --yes-i-know` (шифрована снимка, една транзакция с COMMIT само при
+цял дъмп); дъмпът идва разшифрован по ssh на stdin. Тестове: `tests/deploy-backup*.test.ts` (истински age,
+docker е заместен) и `tests/integration/backup-restore.test.ts` (истински бекъп и възстановяване в PostgreSQL;
+иска `pg_dump`/`pg_restore`/`psql`/`age` на машината, иначе се пропуска).

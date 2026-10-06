@@ -16,7 +16,8 @@ import { ROOT } from '../src/paths.js';
 
 /**
  * deploy/deploy.sh се пуска истински (bash), върху временна файлова система: docker, curl, nginx,
- * systemctl и node са заместени с функции, които пишат в дневник какво са извикани.
+ * systemctl и node са заместени с функции, които пишат в дневник какво са извикани. Unit-ите на бекъпа
+ * и korpora-backup отиват във временни папки (systemd, sbin), не в /etc и /usr/local.
  */
 export const DOMAIN = 'korpora.carbonstealth.eu';
 export const VHOST = join(ROOT, 'deploy', 'nginx', `${DOMAIN}.conf`);
@@ -29,7 +30,18 @@ export interface Layout {
   site: string;
   link: string;
   log: string;
+  systemd: string;
+  sbin: string;
 }
+
+/** The deploy/ files the release carries for the daily backup (installed by backup-install.sh). */
+export const BACKUP_FILES = [
+  'backup.sh',
+  'backup-restore.sh',
+  'backup-install.sh',
+  'systemd/korpora-backup.service',
+  'systemd/korpora-backup.timer',
+];
 
 function layout(): Layout {
   const base = mkdtempSync(join(tmpdir(), 'korpora-deploy-'));
@@ -37,6 +49,11 @@ function layout(): Layout {
   mkdirSync(join(app, 'deploy', 'nginx'), { recursive: true });
   copyFileSync(join(ROOT, 'deploy', 'deploy.sh'), join(app, 'deploy', 'deploy.sh'));
   copyFileSync(VHOST, join(app, 'deploy', 'nginx', `${DOMAIN}.conf`));
+  mkdirSync(join(app, 'deploy', 'systemd'), { recursive: true });
+  for (const file of BACKUP_FILES)
+    copyFileSync(join(ROOT, 'deploy', file), join(app, 'deploy', file));
+  mkdirSync(join(base, 'systemd'), { recursive: true });
+  mkdirSync(join(base, 'sbin'), { recursive: true });
   mkdirSync(join(base, 'release', 'tools', 'seo'), { recursive: true });
   writeFileSync(join(base, 'release', 'tools', 'seo', 'indexnow.mjs'), '');
   mkdirSync(join(base, 'nginx', 'sites-available'), { recursive: true });
@@ -49,6 +66,8 @@ function layout(): Layout {
     site: join(base, 'nginx', 'sites-available', 'korpora'),
     link: join(base, 'nginx', 'sites-enabled', 'korpora'),
     log: join(base, 'log.txt'),
+    systemd: join(base, 'systemd'),
+    sbin: join(base, 'sbin'),
   };
 }
 
@@ -117,6 +136,10 @@ export function deploy(L: Layout, env: Record<string, string> = {}) {
       KORPORA_NGINX_SITE: L.site,
       KORPORA_NGINX_LINK: L.link,
       KORPORA_HEALTH_WAIT: '0',
+      KORPORA_SYSTEMD_DIR: L.systemd,
+      KORPORA_SBIN: L.sbin,
+      // any existing command stands for age: the deploy only asks whether it is installed
+      KORPORA_AGE: 'true',
       VOLUME_RC: '1',
       DUMP_RC: '0',
       BUILD_RC: '0',

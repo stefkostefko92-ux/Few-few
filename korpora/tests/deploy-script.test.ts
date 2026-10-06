@@ -81,7 +81,10 @@ test('a redeploy builds first, dumps right before the swap, keeps the five newes
       [...at].sort((a, b) => a - b),
       'build, then the dump, then the swap',
     );
-    const kept = readdirSync(backups).sort();
+    // daily/ next to the dumps is the encrypted daily backup's (backup-install.sh)
+    const kept = readdirSync(backups)
+      .filter((name) => name.startsWith('pre-deploy-'))
+      .sort();
     const fresh = kept.find((name) => !name.startsWith('pre-deploy-1999'));
     assert.ok(fresh, 'the new dump is among the five');
     // the rotation drops the two oldest by time, not any two
@@ -179,7 +182,10 @@ test('a rollback (KORPORA_SKIP_BACKUP=1) makes no new dump and rotates nothing',
     assert.match(r.stdout, /KORPORA_SKIP_BACKUP=1/);
     assert.doesNotMatch(r.log, /pg_dump|--wait db|volume inspect/);
     assert.match(r.log, /docker compose build app\ndocker compose up -d --remove-orphans\n/);
-    assert.deepEqual(readdirSync(backups), ['pre-deploy-19990101-000000.sql.gz']);
+    assert.deepEqual(
+      readdirSync(backups).filter((name) => name.startsWith('pre-deploy-')),
+      ['pre-deploy-19990101-000000.sql.gz'],
+    );
   });
 });
 
