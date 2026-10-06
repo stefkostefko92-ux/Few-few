@@ -5,7 +5,8 @@ import type { MachineHandle } from './boot';
 
 export interface StagePicture {
   alt: string;
-  caption: string;
+  /** missing: the page writes the caption itself (the landing's hero, under the checks docked on the picture) */
+  caption?: string;
 }
 
 // The poster is the same frame the 3D stage starts from (scripts/render-poster.mjs), so the switch is seamless.
@@ -18,8 +19,10 @@ interface Props extends StagePicture {
   sizes: string;
 }
 
-// Progressive enhancement: the picture is plain HTML and always there; three.js loads only when the stage is on
-// screen, the browser is idle and nobody asked for less motion or less data. Any failure keeps the picture.
+// Progressive enhancement: the picture is plain HTML and always there; three.js loads only on a screen with a mouse,
+// after the reader's first movement, click or key (nothing heavy runs while the page loads), when the stage is on
+// screen, the browser is idle and nobody asked for less motion or less data. A touch screen keeps the picture, the same
+// frame. Any failure keeps the picture.
 export default function MachineStage({ alt, caption, live = true, priority = false, sizes }: Props) {
   const stageRef = useRef<HTMLElement>(null), canvasRef = useRef<HTMLCanvasElement>(null);
   const [running, setRunning] = useState(false);
@@ -31,10 +34,11 @@ export default function MachineStage({ alt, caption, live = true, priority = fal
     const still = Reflect.get(window, '__arganoStill') === true;
     const connection: unknown = Reflect.get(navigator, 'connection');
     const saveData = typeof connection === 'object' && connection !== null && Reflect.get(connection, 'saveData') === true;
-    if (!still && (matchMedia('(prefers-reduced-motion: reduce)').matches || saveData)) return;
+    if (!still && (matchMedia('(prefers-reduced-motion: reduce)').matches || saveData || !matchMedia('(pointer: fine)').matches)) return;
 
     const controller = new AbortController();
-    let handle: MachineHandle | null = null, visible = false, started = false;
+    // the poster renderer starts at once; a reader, at the first sign of one
+    let handle: MachineHandle | null = null, visible = false, started = false, engaged = still;
     const sync = (): void => handle?.setActive(visible && document.visibilityState === 'visible');
     const start = (): void => {
       if (started) return;
@@ -52,10 +56,17 @@ export default function MachineStage({ alt, caption, live = true, priority = fal
     };
     const io = new IntersectionObserver((entries) => {
       visible = entries.some((e) => e.isIntersecting);
-      if (visible) start();
+      if (visible && engaged) start();
       sync();
     }, { rootMargin: '120px' });
     io.observe(stage);
+    const engage = (): void => {
+      engaged = true;
+      if (visible) start();
+    };
+    for (const type of ['pointermove', 'pointerdown', 'keydown', 'wheel'] as const) {
+      window.addEventListener(type, engage, { once: true, passive: true, signal: controller.signal });
+    }
     document.addEventListener('visibilitychange', sync);
     return () => {
       controller.abort();
@@ -75,7 +86,7 @@ export default function MachineStage({ alt, caption, live = true, priority = fal
           decoding="async" fetchPriority={priority ? 'high' : 'auto'} loading={priority ? 'eager' : 'lazy'} />
         {live ? <canvas ref={canvasRef} className="stage-canvas" aria-hidden="true" /> : null}
       </div>
-      <figcaption>{caption}</figcaption>
+      {caption ? <figcaption>{caption}</figcaption> : null}
     </figure>
   );
 }

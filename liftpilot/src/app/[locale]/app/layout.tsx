@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { getSessionUser } from '@/lib/auth';
 import AppTopbar from '@/components/AppTopbar';
@@ -16,13 +17,14 @@ export default async function AppLayout({ children, params }: { children: ReactN
   setRequestLocale(locale);
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
+  // every message for the application's client components (the public layout sends only its own)
   return (
-    <>
+    <NextIntlClientProvider>
       <AppTopbar user={user} />
       <TermsBanner user={user} />
       <BillingBanner user={user} />
       {children}
       <Footer />
-    </>
+    </NextIntlClientProvider>
   );
 }

@@ -32,6 +32,7 @@ python3 scripts/lista-verifica-xlsx.py   # docs/lista-verifica-normativa.xlsx о
 BASE_URL=… node scripts/render-poster.mjs            # постерът на 3D сцената (public/img/argano-machine-*.webp)
 npm run artifact      # самостоятелната страница с двата инструмента → artifact/dist (claude.ai Artifact или статичен хост)
 npx tsx scripts/landing-drawings.ts                  # чертежите на началната страница (public/img/lp-plan|lp-section.svg) от ядрото
+npx tsx --conditions=react-server scripts/landing-docs.ts   # страниците на документите на примера (public/img/lp-doc-*.webp); нужни ReportLab, PyMuPDF, Pillow
 ```
 
 Гейтът (задължителен преди „готово“): `lint` + `typecheck` + `test` + `build`, после `smoke` срещу пуснат

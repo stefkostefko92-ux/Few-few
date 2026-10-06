@@ -14,7 +14,7 @@ type Text = 'company' | 'vatNumber' | 'city' | 'name' | 'email';
 
 // The typed values are kept by React (controlled), so an error does not empty the form; the passwords are typed again.
 // The owner gives the four confirmations of src/lib/consents.ts for the company; `date` is the terms' day as the server
-// writes it, `trialDays` the free trial when the subscription is on (null: no billing on this server).
+// writes it, `trialDays` the free trial when the subscription is on (null: no billing on this server, the free beta).
 export default function RegisterForm({ date, trialDays }: { date: string; trialDays: number | null }) {
   const t = useTranslations('register'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(registerAction, initialFormState);
@@ -71,7 +71,7 @@ export default function RegisterForm({ date, trialDays }: { date: string; trialD
         </label>
         <p className="note">{t('rule', { min: PASSWORD_MIN_LENGTH })}</p>
       </fieldset>
-      {trialDays !== null ? <p className="note">{t('trial', { days: trialDays })}</p> : null}
+      <p className="note">{trialDays !== null ? t('trial', { days: trialDays }) : t('beta')}</p>
       <p className="note">{t.rich('privacyNote', { link: (chunks) => <Link href="/privacy" target="_blank">{chunks}</Link> })}</p>
       {CONSENTS.map((k) => (
         <label key={k} className="check consent">

@@ -10,7 +10,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { TOKEN_TTL_MS } from './token-shape';
 
 /** The version in force for new companies, the day it was published, and the earliest day it binds the others. */
-export const TERMS_VERSION = '3';
+export const TERMS_VERSION = '4';
 export const TERMS_DATE = '2026-10-06';
 export const TERMS_EFFECTIVE = '2026-11-16';
 
@@ -20,6 +20,7 @@ export const TERMS_EFFECTIVE = '2026-11-16';
 export const TERMS_HISTORY: readonly { version: string; label: string; date: string }[] = [
   { version: '2026-10-02', label: '1', date: '2026-10-02' },
   { version: '2', label: '2', date: '2026-10-02' },
+  { version: '3', label: '3', date: '2026-10-06' },
   { version: TERMS_VERSION, label: TERMS_VERSION, date: TERMS_DATE },
 ];
 

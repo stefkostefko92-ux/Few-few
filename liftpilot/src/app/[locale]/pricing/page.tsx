@@ -11,13 +11,15 @@ import { monthlyPrice, stripeErrorOf, type MonthlyPrice } from '@/lib/stripe';
 import { money } from '@/lib/money';
 import { log } from '@/lib/log';
 import { PROVIDER } from '@/lib/provider';
+import { NOTICE_DAYS } from '@/lib/legal';
 import { SITE_NAME, breadcrumbLd, faqLd, ldJson, organizationLd, pageMetadata, softwareLd, websiteLd } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
 
 // What LiftPilot costs, answer first: the owner's monthly price and the packs of slots as Stripe has them now (the same
 // Price the subscription uses, src/lib/stripe.ts), the trial, and the terms of the subscription in short. Without Stripe
-// on the server, or when Stripe does not answer, the price is "on request": never a number written here.
+// on the server the service is in its free beta; when Stripe does not answer, the price is "on request": never a number
+// written here.
 const FAQ = [1, 2, 3, 4, 5] as const;
 const loc = (l: string): Locale => (isLocale(l) ? l : 'it');
 
@@ -54,9 +56,9 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   const eur = (cents: number): string => (price ? money(cents, price.currency, locale) : '');
   const per = price ? (price.intervalCount === 1 ? tb(`per1.${price.interval}`) : tb('perPeriod', { n: price.intervalCount, unit: tb(`unit.${price.interval}`) })) : '';
   const seatsOf = (p: SeatPack): string => (p === 'NONE' ? tb('ownerOnly') : p === 'UNLIMITED' ? tb('seatsUnlimited') : tb('seatsN', { n: PACK[p].seats }));
-  const answer = price && cfg
-    ? t('answerPrice', { base: eur(price.cents), per, days: cfg.trialDays })
-    : t('answerOnRequest', { email: PROVIDER.email });
+  // without Stripe on the server the service is in its free beta (terms, article «subscription»)
+  const answer = !cfg ? t('answerBeta', { noticeDays: NOTICE_DAYS })
+    : price ? t('answerPrice', { base: eur(price.cents), per, days: cfg.trialDays }) : t('answerOnRequest', { email: PROVIDER.email });
   const faq = FAQ.map((n) => ({ q: t(`faq${n}q`), a: t(`faq${n}a`, { email: PROVIDER.email }) }));
   // the offer goes into the structured data only with the price Stripe gave
   const offers = price ? SEAT_PACKS.map((p) => ({
@@ -83,7 +85,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                   <tr key={p}>
                     <td className="row-title">{seatsOf(p)}</td>
                     <td data-label={t('colShare')}>{PACK[p].pct ? t('share', { pct: PACK[p].pct }) : t('shareNone')}</td>
-                    <td data-label={t('colTotal')} className="num">{price ? `${eur(price.cents + packAmount(price.cents, p))} ${per}` : t('onRequest')}</td>
+                    <td data-label={t('colTotal')} className="num">{price ? `${eur(price.cents + packAmount(price.cents, p))} ${per}` : t(cfg ? 'onRequest' : 'betaFree')}</td>
                   </tr>
                 ))}
               </tbody>
@@ -93,7 +95,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         </section>
         <section aria-labelledby="q-trial">
           <h2 id="q-trial">{t('trialTitle')}</h2>
-          <p>{cfg ? t('trialText', { days: cfg.trialDays }) : t('trialOnRequest', { email: PROVIDER.email })}</p>
+          <p>{cfg ? t('trialText', { days: cfg.trialDays }) : t('trialBeta')}</p>
           <p><Link className="btn btn-primary" href="/register">{t('cta')}</Link></p>
         </section>
         <section aria-labelledby="q-terms">

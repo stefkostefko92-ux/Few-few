@@ -2,10 +2,11 @@ import type { ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { indexingAllowed, publicBaseUrl } from '@/lib/env';
 import { SITE_NAME } from '@/lib/seo';
+import { PUBLIC_CLIENT_NAMESPACES, pickMessages } from '@/i18n/client-messages';
 import '../globals.css';
 
 // Every page is rendered per request: the Content-Security-Policy nonce is new each time (src/middleware.ts).
@@ -42,10 +43,12 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  // the public pages' client components read only these; the application's layout gives its pages every message
+  const messages = pickMessages(await getMessages(), PUBLIC_CLIENT_NAMESPACES);
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
       </body>
     </html>
   );
