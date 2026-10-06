@@ -247,6 +247,8 @@ model Server {
   companionTrades      CompanionTrade[]
   serverQuests         ServerQuest[]
   triviaRounds         TriviaRound[]
+  // v52 — капан за спам ботове
+  honeypot             HoneypotConfig?
 
   @@index([agencyId])
   @@index([trialEndsAt])
@@ -1124,6 +1126,31 @@ model GameSettings {
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
   @@map("game_settings")
+}
+
+// v52 — капан за спам ботове („honeypot“): канал, в който хора не пишат, а
+// спам ботовете пишат навсякъде. Който напише там, бива изгонен/баннат/заглушен
+// (изпълнява ботът — bot/src/utils/honeypot.js). Тук няма лични данни: само
+// настройки и брояч; кой е хванат отива само в канала за лог на сървъра.
+model HoneypotConfig {
+  serverId         String    @id
+  enabled          Boolean   @default(false)
+  channelId        String?
+  // "softban" (бан + веднага разбан — Discord трие съобщенията му от последния
+  // час, човекът може да се върне) | "ban" | "timeout" (24 ч без писане)
+  action           String    @default("softban")
+  logChannelId     String?
+  dmUser           Boolean   @default(true)
+  // Предупреждението в канала („не пиши тук“) — ботът го пази и обновява брояча.
+  warningMessageId String?
+  caughtCount      Int       @default(0)
+  lastCaughtAt     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@map("honeypot_configs")
 }
 
 // Сезоните на играта — ГЛОБАЛНИ (не по сървър), управлявани от админ конзолата

@@ -169,6 +169,15 @@ export const CMD_DESC_L10N = {
     nl: "De actieve serverquests en jouw bijdrage",
     pl: "Aktywne misje serwera i Twój wkład",
   },
+  honeypot: {
+    bg: "Канал-капан, който изважда спам ботовете (Управление на сървъра)",
+    de: "Fallen-Kanal, der Spam-Bots entfernt (Server verwalten)",
+    "es-ES": "Canal trampa que expulsa a los bots de spam (Gestionar servidor)",
+    fr: "Salon piège qui retire les bots de spam (Gérer le serveur)",
+    it: "Canale trappola che rimuove i bot di spam (Gestire il server)",
+    nl: "Valkanaal dat spambots verwijdert (Server beheren)",
+    pl: "Kanał-pułapka, który usuwa boty spamujące (Zarządzanie serwerem)",
+  },
   spawn: {
     bg: "Пусни спътник в канал сега (Управление на сървъра)",
     de: "Lass jetzt einen Begleiter in einem Kanal erscheinen (Server verwalten)",

@@ -1236,6 +1236,17 @@ app.post("/internal/game-settings-changed", async (req, res) => {
   res.json({ ok: true });
 });
 
+// v52 — таблото смени капана за спам ботове → изхвърли кеша и приведи
+// предупреждението в канала в съответствие (махни от стария, пусни в новия).
+app.post("/internal/honeypot-changed", async (req, res) => {
+  const { serverId, previous } = req.body || {};
+  if (!serverId) return res.status(400).json({ error: "serverId е задължителен" });
+  try {
+    const { syncHoneypotWarning } = await import("./utils/honeypot.js");
+    res.json(await syncHoneypotWarning(client, String(serverId), previous || null));
+  } catch (err) { res.status(500).json({ ok: false, error: err.message }); }
+});
+
 app.post("/internal/admin-broadcast", async (req, res) => {
   const { serverId, channelId, title, message, senderTag } = req.body;
   if (!channelId || !message) return res.status(400).json({ error: "channelId and message required" });

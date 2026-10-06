@@ -127,6 +127,8 @@ import gameRouter from "./routes/game.js";           // v50 Server Season (та�
 import botGameRouter from "./routes/bot_game.js";    // v50 Server Season (бот)
 import botCompanionsRouter from "./routes/bot_companions.js"; // v50 Server Season — спътници (бот)
 import botMinigamesRouter from "./routes/bot_minigames.js";   // v50 Server Season — Counting, куестове, trivia (бот)
+import honeypotRouter from "./routes/honeypot.js";            // v52 — капан за спам ботове (табло)
+import botHoneypotRouter from "./routes/bot_honeypot.js";     // v52 — капан за спам ботове (бот)
 import "./services/scheduler.js"; // Start background jobs
 import { prisma } from "./lib/prisma.js";
 
@@ -335,6 +337,8 @@ app.use("/api/game", gameRouter);                   // v50 Server Season — н�
 app.use("/api/bot", botGameRouter);                 // v50 Server Season — XP партиди, /daily, профил, магазин (bot secret)
 app.use("/api/bot", botCompanionsRouter);           // v50 Server Season — спътници: поява/улавяне/хранене/размяна (bot secret)
 app.use("/api/bot", botMinigamesRouter);            // v50 Server Season — Counting, куестове, trivia (bot secret)
+app.use("/api/honeypot", honeypotRouter);           // v52 — капан за спам ботове (dashboard-authed)
+app.use("/api/bot", botHoneypotRouter);             // v52 — капан за спам ботове (bot secret)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
 app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript viewer
 // apikeys.js (файлът-примамка) е ИЗТРИТ на 09.08.2026: немонтиран, но с втори

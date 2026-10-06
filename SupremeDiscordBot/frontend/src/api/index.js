@@ -334,6 +334,9 @@ export const openApplicationDiscussion = (sid, appId) =>
   api.post(`/applications/${sid}/${appId}/discuss`).then((r) => r.data);
 
 // ─── v50 Server Season (dashboard) ───────────────────────────────────────────
+// v52 — капан за спам ботове
+export const getHoneypot       = (sid) => api.get(`/honeypot/${sid}`).then((r) => r.data);
+export const updateHoneypot    = (sid, data) => api.put(`/honeypot/${sid}`, data).then((r) => r.data);
 export const getGame           = (sid) => api.get(`/game/${sid}`).then((r) => r.data);
 export const updateGameSettings= (sid, data) => api.put(`/game/${sid}/settings`, data).then((r) => r.data);
 export const getGameShop       = (sid) => api.get(`/game/${sid}/shop`).then((r) => r.data);

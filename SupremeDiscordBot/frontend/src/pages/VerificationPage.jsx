@@ -12,6 +12,7 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import EmojiPicker from "../components/EmojiPicker";
+import HoneypotCard from "../components/HoneypotCard";
 import { useT } from "../contexts/I18nContext";
 import { useToast } from "../contexts/ToastContext";
 
@@ -160,6 +161,9 @@ export default function VerificationPage() {
           <Plus className="w-4 h-4" /> New Panel
         </button>
       </div>
+
+      {/* v52 — капан за спам ботове: втората защита на страницата. */}
+      <HoneypotCard serverId={serverId} />
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 

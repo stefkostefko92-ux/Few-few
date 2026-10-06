@@ -134,9 +134,17 @@ export const COMMAND_CATALOG = [
   {
     category: "Verification",
     icon: "✅",
-    description: "Anti-bot gates. Users verify once, tickets can require a verified role.",
+    description: "Anti-bot gates and a spam-bot trap. Users verify once, tickets can require a verified role; spam bots that write in the honeypot channel are removed.",
     commands: [
-      // No slash commands — entirely dashboard-driven. Users interact via the spawned embed's buttons.
+      { name: "/honeypot setup", signature: "/honeypot setup [channel] [action] [log_channel] [dm]",
+        description: "Turn on the spam-bot trap: a channel people are told not to write in. Spam bots post everywhere, so whoever writes there is kicked (soft-ban, deletes their last hour of messages — default), banned or timed out for 24 hours. The server owner and staff are never touched. Without a channel the bot creates #honeypot.",
+        dashboard: "Verification page · Honeypot", permission: "Manage Server" },
+      { name: "/honeypot disable", signature: "/honeypot disable",
+        description: "Turn the honeypot off and remove its warning message. The channel stays.",
+        dashboard: "Verification page · Honeypot", permission: "Manage Server" },
+      { name: "/honeypot status", signature: "/honeypot status",
+        description: "Show the honeypot channel, action, log channel and how many spam bots were caught.",
+        dashboard: "Verification page · Honeypot", permission: "Manage Server" },
     ],
     dashboardOnly: [
       { feature: "Create verification panel",
