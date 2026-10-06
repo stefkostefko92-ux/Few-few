@@ -65,7 +65,7 @@ export function surveySheetShapes(d: SurveySheet): Shape[] {
 
   // the loads on the slab, not acting together
   const cw = (xR - xL) / d.P.length;
-  out.push(box(xL, yb + 1.6, xR, yd, 0.3), fitted([(xL + xR) / 2, yd - 3.4], 'DISTRIBUZIONE DEI CARICHI SUL SOLAIO daN (N.B. CARICHI NON CONTEMPORANEI)', 2.6, xR - xL - 4, { align: 'c' }));
+  out.push(box(xL, yb + 1.6, xR, yd, 0.3), fitted([(xL + xR) / 2, yd - 3.4], 'DISTRIBUZIONE DEI CARICHI SULLA SOLETTA daN (N.B. CARICHI NON CONTEMPORANEI)', 2.6, xR - xL - 4, { align: 'c' }));
   out.push(L([xL, yd - 4.6], [xR, yd - 4.6], 0.2));
   d.P.forEach(([name, v], i) => {
     const x0 = xL + i * cw;

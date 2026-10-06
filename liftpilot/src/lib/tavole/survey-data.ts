@@ -58,13 +58,13 @@ const machineRows = (O: Machine | null, N: Machine, oldName: string, newName: st
   const both = (f: (m: Machine) => string): [string, string] => [O ? f(O) : '—', f(N)];
   return [
     ['ARGANO', 'tipo', oldName, newName],
-    ['PULEGGIA DI TRAZIONE Ø', 'mm', ...both((m) => fmt(m.D, 0))],
+    ['PULEGGIA DI FRIZIONE Ø', 'mm', ...both((m) => fmt(m.D, 0))],
     ['RAPPORTO DI RIDUZIONE', '', ...both((m) => `1 : ${num(m.i)}`)],
     ['POTENZA MOTORE', 'kW', ...both((m) => num(m.Pn))],
     ['POLI N° - GIRI/MINUTO', '', ...both((m) => `${m.poles}/${fmt(m.nm, 0)}`)],
     ['FRENO: GRUPPI × COPPIA', 'N·m', ...both((m) => `${m.brakeSets} × ${fmt(m.brakeNm, 0)}`)],
     ['ANGOLO GOLE γ - β', '°', ...both((m) => `${fmt(m.groove.gamma, 0)} - ${fmt(m.groove.beta, 0)}`)],
-    ['FUNI DI TRAZIONE', 'N°-Ø', ...both((m) => `${m.n} - ${num(m.d)}`)],
+    ['FUNI DI SOSPENSIONE', 'N°-Ø', ...both((m) => `${m.n} - ${num(m.d)}`)],
     ['CARICO STATICO AMMESSO', 'kg', ...both((m) => (m.shaftMax > 0 ? fmt(m.shaftMax, 0) : '—'))],
     ['MASSA', 'kg', ...both((m) => (m.mass > 0 ? fmt(m.mass, 0) : 'NON INSERITA'))],
   ];
@@ -130,7 +130,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
   const P: SurveySheet['P'] = [
     ['P1 ARGANO', fmt(ld.P[0] ?? 0, 0)], ['P2 ATTACCO FUNI CABINA', ld.P[1] == null ? '—' : fmt(ld.P[1], 0)],
     ['P3 ATTACCO FUNI CONTRAPPESO', ld.P[2] == null ? '—' : fmt(ld.P[2], 0)], ['P4 LIMITATORE', ld.P[3] == null ? '—' : fmt(ld.P[3], 0)],
-    ['P9 TOTALE SUL SOLAIO', fmt(ld.P[8] ?? 0, 0)],
+    ['P9 TOTALE SULLA SOLETTA', fmt(ld.P[8] ?? 0, 0)],
   ];
   const labels: Readonly<Record<string, string>> = appIt.shaft, OUTCOME = { ok: 'OK', warn: 'ATTENZIONE', fail: 'NON PASSA', info: '—' } as const;
   const withUnit = (v: number | null, dp: number, u: string): string => (v == null ? '—' : `${fmt(v, dp)}${u ? ` ${u}` : ''}`);
@@ -143,8 +143,8 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
   const notes: Note[] = [
     { ...roomNote(false), tag: 'NOTA 1' },
     {
-      title: 'SOLAIO, APPOGGI E BASAMENTO', tag: 'NOTA 2',
-      text: 'Il solaio del locale e gli appoggi del basamento devono sopportare i carichi di questo foglio, che non agiscono insieme: la verifica '
+      title: 'SOLETTA, APPOGGI E BASAMENTO', tag: 'NOTA 2',
+      text: 'La soletta del locale e gli appoggi del basamento devono sopportare i carichi di questo foglio, che non agiscono insieme: la verifica '
         + 'strutturale spetta al committente tramite il suo tecnico (NTC 2018, §8.4.1 per l\'intervento locale su un edificio esistente; §3.1.4 per i '
         + 'carichi del macchinario). Il basamento disegnato è la proposta del software, da adattare a quello fornito dal costruttore.',
     },

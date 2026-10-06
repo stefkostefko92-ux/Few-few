@@ -33,7 +33,7 @@ export const VOCI_MODELLO: readonly Voce[] = [
   {
     id: 'modello.percorso.msr1', gruppo: 'modello', titolo: 'Macchina in basso: tratto tra la macchina e le pulegge in testata',
     valore: 'con l\'accelerazione a della cabina, come stampato nella norma; nella taglia 2:1 il software mostra anche l\'esito con r·a, '
-      + 'l\'accelerazione fisica di quel tratto: «Attenzione» se supera il limite, mai KO',
+      + 'l\'accelerazione fisica di quel tratto: «Attenzione» se supera il limite, mai «Non soddisfatta»',
     riferimento: 'UNI EN 81-50:2020, 5.11.3 (MSR1)', fonte: letto(T50, 'p. 44'), stato: 'confermato',
     verifiche: ['tr_dn', 'tr_up', 'tr_msr1'],
     nota: 'Il testo stampa a in entrambe le edizioni; a 1:1 le due forme coincidono.',
@@ -41,7 +41,7 @@ export const VOCI_MODELLO: readonly Voce[] = [
   {
     id: 'modello.velocita', gruppo: 'modello', titolo: 'Velocità nominale e compensazione',
     valore: 'oltre 1,75 m/s i mezzi di compensazione senza tensionamento vanno guidati vicino all\'ansa («Attenzione»); oltre 3 m/s servono '
-      + 'funi di compensazione con puleggia tenditrice, che il modello non contiene (KO: fuori dal campo del software)',
+      + 'funi di compensazione con puleggia tenditrice, che il modello non contiene («Non soddisfatta»: fuori dal campo del software)',
     riferimento: 'UNI EN 81-20:2020, 5.5.6.1 a)–d)', fonte: letto(T20, 'p. 76'), stato: 'confermato',
     costanti: ['vCompGuided', 'vCompRopes'], verifiche: ['v_comp'],
   },

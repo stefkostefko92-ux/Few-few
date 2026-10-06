@@ -42,7 +42,7 @@ export function clientNotes(L: Layout, below = false): Note[] {
   if (room) notes.push({ ...roomNote(below), tag: 'NOTA 2' });
   notes.push({
     title: 'ARMADIO DEL QUADRO (SE PRESENTE)', tag: room ? 'NOTA 3' : 'NOTA 2',
-    text: "Il quadro di manovra fuori dal locale del macchinario va in un armadio chiuso a chiave, accessibile solo alle persone autorizzate, "
+    text: "Il quadro di manovra fuori dal locale macchina va in un armadio chiuso a chiave, accessibile solo alle persone autorizzate, "
       + `in un luogo asciutto e pulito, protetto dalle intemperie, con temperatura interna tra +${K.tempMin} °C e +${K.tempMax} °C e uno spazio libero `
       + "davanti all'armadio aperto. Riferimenti: UNI EN 81-20:2020, punto 5.2.",
   });

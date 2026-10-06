@@ -70,15 +70,15 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
 
   section('Oggetto');
   B.push({ t: 'p', text: `Sostituzione dell'argano dell'impianto con un argano geared ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
-    + 'La relazione descrive l\'impianto com\'è, l\'argano esistente e quello nuovo, la sistemazione del nuovo nel locale del macchinario (basamento, '
-    + 'puleggia di rinvio, calate, aperture nella soletta), i carichi sul solaio e le verifiche del locale; le verifiche della macchina sono nella '
+    + 'La relazione descrive l\'impianto com\'è, l\'argano esistente e quello nuovo, la sistemazione del nuovo nel locale macchina (basamento, '
+    + 'puleggia di rinvio, calate, aperture nella soletta), i carichi sulla soletta e le verifiche del locale; le verifiche della macchina sono nella '
     + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA)}` });
 
   section('Riferimenti normativi');
   B.push({ t: 'grid', head: ['Documento', 'Per che cosa'], widths: [0.38, 0.62], align: ['l', 'l'], rows: [
     ['DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), artt. 12 e 14', 'la sostituzione del macchinario è una modifica costruttiva: comunicazioni e verifica straordinaria'],
     [NORMA_SIGLA[C.norma], 'norma tecnica del collaudo della modifica'],
-    ['UNI EN 81-20:2020, punti 5.2.3 e 5.2.6.3.2.1', 'porta, altezza libera e superficie libera davanti al quadro nel locale del macchinario'],
+    ['UNI EN 81-20:2020, punti 5.2.3 e 5.2.6.3.2.1', 'porta, altezza libera e superficie libera davanti al quadro nel locale macchina'],
     ['UNI EN 81-50:2020', 'verifiche della relazione di calcolo (aderenza, funi)'],
     ['NTC 2018, §3.1.4, §4.2.4.1.1 e §8.4.1', 'carichi del macchinario, verifica delle putrelle, intervento locale su un edificio esistente'],
   ] });
@@ -102,7 +102,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   B.push({ t: 'p', style: 'note', text: 'Confermare i dati del nuovo argano con la scheda tecnica e l\'offerta del costruttore, da allegare.' });
   B.push({ t: 'verdict', text: `Verifiche dell'argano nuovo: ${X.verdictText(res)}`, status: verdictStatus(res) });
 
-  section('Sistemazione nel locale del macchinario');
+  section('Sistemazione nel locale macchina');
   B.push({ t: 'kv', rows: roomRows(s, d, fmt) });
   const holes = slabOpenings(d);
   if (holes.length) {
@@ -127,13 +127,13 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
     status: checks.map((c) => out(c).status) });
   if (checks.some((c) => ambitoOf(C, c.id) === 'existing')) B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
 
-  section('Carichi sul basamento e sul solaio');
+  section('Carichi sul basamento e sulla soletta');
   B.push({ t: 'kv', rows: [...sheet.loads.map(([k, v, u]): [string, string] => [k.charAt(0) + k.slice(1).toLowerCase(), `${v}${u ? ` ${u}` : ''}`]),
     ...sheet.P.map(([k, v]): [string, string] => [`Carico ${k.slice(0, 2)}: ${k.slice(3).toLowerCase()}`, v === '—' ? '—' : `${v} daN`])] });
   if (ctx.compare && ctx.O.mass > 0 && N.mass > 0) {
-    B.push({ t: 'p', text: `Massa dell'argano: esistente ${fmt(ctx.O.mass, 0)} kg, nuovo ${fmt(N.mass, 0)} kg (${N.mass >= ctx.O.mass ? '+' : '−'}${fmt(Math.abs(N.mass - ctx.O.mass), 0)} kg sul solaio).` });
+    B.push({ t: 'p', text: `Massa dell'argano: esistente ${fmt(ctx.O.mass, 0)} kg, nuovo ${fmt(N.mass, 0)} kg (${N.mass >= ctx.O.mass ? '+' : '−'}${fmt(Math.abs(N.mass - ctx.O.mass), 0)} kg sulla soletta).` });
   }
-  B.push({ t: 'p', style: 'note', text: 'Carichi non contemporanei. La verifica del solaio e degli appoggi del basamento spetta al tecnico strutturale incaricato dal '
+  B.push({ t: 'p', style: 'note', text: 'Carichi non contemporanei. La verifica della soletta e degli appoggi del basamento spetta al tecnico strutturale incaricato dal '
     + 'committente (NTC 2018, §8.4.1: intervento locale; §3.1.4: carichi del macchinario).' });
 
   section('Verifiche della nuova macchina (dalla relazione di calcolo)');
@@ -153,8 +153,8 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
     'Posizione delle calate esistenti (funi lato cabina e lato contrappeso) rispetto ai muri del vano, come nelle tavole',
     'Aperture nella soletta: dimensioni e posizione rispetto alle nuove calate',
     'Dimensioni del locale, della porta e dello spazio davanti al quadro, come nel rilievo',
-    ...(d.M.Dp > 0 ? ['Distanze dx e h tra puleggia di trazione e puleggia di rinvio, come nel calcolo'] : []),
-    'Appoggi del basamento sul solaio o nei muri e fissaggio secondo il costruttore',
+    ...(d.M.Dp > 0 ? ['Distanze dx e h tra puleggia di frizione e puleggia di rinvio, come nel calcolo'] : []),
+    'Appoggi del basamento sulla soletta o nei muri e fissaggio secondo il costruttore',
   ] });
 
   section('Allegati');

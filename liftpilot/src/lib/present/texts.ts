@@ -164,7 +164,7 @@ export function textsFor(P: Pres) {
     const moved = sens.filter((s) => s.changed.length), q = sensMeasured(sens);
     return moved.length ? t(q ? 'sens_changes_q' : 'sens_changes', { list: moved.map(sensLabel).join(', ') }) : t(q ? 'sens_stable_q' : 'sens_stable');
   };
-  // "P −10%: Aderenza · Frenatura di emergenza, cabina in salita → KO"
+  // "P −10%: Aderenza · Frenatura di emergenza, cabina in salita → Non soddisfatta"
   const sensChanges = (sens: readonly SensitivityVariant[]): string[] => sens.filter((s) => s.changed.length)
     .map((s) => `${sensLabel(s)}: ${s.changed.map((c) => `${checkLabel(c.id)} → ${st(c.status)}`).join('; ')}`);
 

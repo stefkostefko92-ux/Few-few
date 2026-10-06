@@ -110,7 +110,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const specs: Row[] = [
     ['ARGANO', 'tipo', txt(machineText(Pl, x.marks?.catalog ?? null))],
     ['RAPPORTO DI RIDUZIONE', '', `1 : ${num(N.i)}`],
-    ['PULEGGIA DI TRAZIONE Ø', 'mm', fmt(N.D, 0)],
+    ['PULEGGIA DI FRIZIONE Ø', 'mm', fmt(N.D, 0)],
     ['PULEGGIA DI RINVIO/TAGLIA Ø', 'mm', I.layout === 'top' && I.r === 1 ? '—' : fmt(I.Dp, 0)],
     ['ANGOLO DI AVVOLGIMENTO', '°', fmt(res.alphaDeg, 0)],
     ['ANGOLO GOLE γ - β', '°', `${fmt(g.gamma, 0)} - ${fmt(g.beta, 0)}`],
@@ -128,7 +128,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     ['LUNGHEZZA GUIDE CONTRAPPESO', 'm', oldRails ? 'ESISTENTI' : fmt(railLen, 1)],
     ['STAFFE GUIDE CONTRAPPESO', 'N°', brackets(Pl.cwBracketPitch)],
     ['PASSO STAFFE CONTRAPPESO', 'mm', num(Pl.cwBracketPitch ?? KV_VERT.bracketPitch)],
-    ['FUNI DI TRAZIONE', 'N°-Ø', `${N.n} - ${num(N.d)}`],
+    ['FUNI DI SOSPENSIONE', 'N°-Ø', `${N.n} - ${num(N.d)}`],
     ['LUNGHEZZA FUNI (CIASCUNA)', 'm', fmt(ropeLen, 0)],
     ['LIMITATORE DI VELOCITÀ', 'tipo', oldGov ? 'ESISTENTE' : `${gov.brand} ${gov.model}`],
     ['FUNE DEL LIMITATORE', 'm-Ø', oldGov ? 'ESISTENTE' : `${fmt(Math.ceil(govLen), 0)} - ${fmt(2 * gov.rope, 0)}`],
@@ -163,7 +163,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
     [`COEFFICIENTE DINAMICO × ${fmt(dyn, 1)}`, fmt(ld.dynamic, 0), 'kg'],
     ['TOTALE CARICHI × 0,981', fmt(ld.P[0] ?? 0, 0), 'daN'],
     ...(below ? [
-      ['ARGANO IN BASSO (NON SUL SOLAIO)', fmt(machine, 0), 'kg'] as const,
+      ['ARGANO IN BASSO (NON SULLA SOLETTA)', fmt(machine, 0), 'kg'] as const,
       ['SOLLEVAMENTO NETTO ANCORAGGI ARGANO, PROVA 1,25·Q', fmt(Math.max(0, res.shaft.uplift ?? 0), 0), 'kg'] as const,
     ] : [[!bedplate ? 'ARGANO E TELAIO' : 'ARGANO E BASAMENTO CON RINVIO', fmt(machine, 0), 'kg'] as const]),
   ];

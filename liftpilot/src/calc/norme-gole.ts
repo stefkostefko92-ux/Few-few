@@ -22,7 +22,7 @@ export const VOCI_GOLE: readonly Voce[] = [
     nota: 'la norma dà f = μ / sin(γ/2) per il contrappeso bloccato; il software la usa anche per la cabina bloccata nella posizione più bassa (5.11.2.2.3)',
   },
   {
-    id: 'gole.limite.beta', gruppo: 'gole', titolo: 'Limite del sottosquadro', valore: 'β ≤ 105° (1,83 rad; oltre: KO)',
+    id: 'gole.limite.beta', gruppo: 'gole', titolo: 'Limite del sottosquadro', valore: 'β ≤ 105° (1,83 rad; oltre: «Non soddisfatta»)',
     riferimento: 'UNI EN 81-50:2020, 5.11.2.3.1.1 e 5.11.2.3.1.2', fonte: letto(T50, 'pp. 40–41'), stato: 'confermato',
     costanti: ['betaMax'], verifiche: ['g_geom'],
     nota: 'fino alla versione 1.1.0 del motore il limite era 106°, il valore raccomandato della UNI EN 81-1:2008 (M.2.2.1.1)',
@@ -33,7 +33,7 @@ export const VOCI_GOLE: readonly Voce[] = [
     costanti: ['betaRecommended'], verifiche: ['g_geom'],
   },
   {
-    id: 'gole.limite.gamma', gruppo: 'gole', titolo: 'Angolo minimo della gola a V', valore: 'γ ≥ 35° (sotto: KO)',
+    id: 'gole.limite.gamma', gruppo: 'gole', titolo: 'Angolo minimo della gola a V', valore: 'γ ≥ 35° (sotto: «Non soddisfatta»)',
     riferimento: 'UNI EN 81-50:2020, 5.11.2.3.1.2', fonte: `${letto(T50, 'p. 41')}; Montanari consiglia 35–40°`, stato: 'confermato',
     costanti: ['gammaMin'], verifiche: ['g_geom'],
   },

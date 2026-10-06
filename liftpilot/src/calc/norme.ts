@@ -132,7 +132,7 @@ export const VOCI: readonly Voce[] = [
     id: 'trazione.bloccata.dispositivo', gruppo: 'trazione', titolo: 'Cabina o contrappeso bloccati: dispositivo al posto dello slittamento',
     valore: 'con la macchina secondo la UNI EN 81-20:2020 e un dispositivo elettrico di sicurezza (5.11.2) che arresta la macchina, la verifica '
       + 'con cabina o contrappeso bloccati non superata è «Attenzione» (verifica sostituita da dispositivo, da documentare), mai OK; con la '
-      + 'macchina secondo la UNI EN 81-1 resta KO',
+      + 'macchina secondo la UNI EN 81-1 resta «Non soddisfatta»',
     riferimento: 'UNI EN 81-20:2020, 5.5.3 c) 2); UNI EN 81-1:2008, 9.3 c); UNI 10411-1:2024, 14.1 a)–b)',
     fonte: `${letto(T20, 'p. 75')}; ${letto('UNI EN 81-1:2008', 'p. 55')}; ${letto(U1, 'p. 13')}`, stato: 'confermato',
     verifiche: ['tr_stall'],

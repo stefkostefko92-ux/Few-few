@@ -30,15 +30,15 @@ export function slabOpenings(d: RoomDerived): { length: number; width: number; w
 export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number) => string): [string, string][] {
   const R = s.room, M = d.M, G = d.G, mm = (x: number): string => `${fmt(Math.round(x), 0)} mm`;
   return [
-    ['Locale del macchinario', `${fmt(R.W, 0)} × ${fmt(R.D, 0)} mm in pianta, altezza libera ${mm(R.H)}${R.ridge > R.H ? `, al colmo ${mm(R.ridge)}` : ''}; soletta sul vano ${mm(R.slab)}`],
+    ['Locale macchina', `${fmt(R.W, 0)} × ${fmt(R.D, 0)} mm in pianta, altezza libera ${mm(R.H)}${R.ridge > R.H ? `, al colmo ${mm(R.ridge)}` : ''}; soletta sul vano ${mm(R.slab)}`],
     ['Porta e quadro di manovra', `porta ${fmt(R.doorW, 0)} × ${fmt(R.doorH, 0)} mm sulla parete ${WALL[R.doorWall]}; quadro ${fmt(R.panelW, 0)} × ${fmt(R.panelD, 0)} × ${fmt(R.panelH, 0)} mm sulla parete ${WALL[R.panelWall]}`],
     ['Vano sotto il locale', `${fmt(s.shaft.W, 0)} × ${fmt(s.shaft.D, 0)} mm, muri di ${mm(s.shaft.wall)}; il suo angolo interno a ${fmt(R.shaftX, 0)} e ${fmt(R.shaftY, 0)} mm dai muri del locale`],
     ['Calate rilevate (dall\'angolo interno del vano)', `funi lato cabina a x ${fmt(s.car.x, 0)}, y ${fmt(s.car.y, 0)} mm; funi lato contrappeso a x ${fmt(s.cw.x, 0)}, y ${fmt(s.cw.y, 0)} mm: distanza ${mm(d.calata.measured)}`],
     ['Calate della nuova macchina (dal calcolo)', `${mm(d.calata.calc)} (scarto dal rilievo ${mm(Math.abs(d.calata.measured - d.calata.calc))})`],
     ['Posizione dell\'argano', G && Math.abs(G.sheaveAt - (M.ropeIn + M.D / 2)) > 0.5
-      ? 'puleggia di trazione centrata tra le calate esistenti (tiro diretto, come nel calcolo)'
-      : 'lato cabina della puleggia di trazione sulla calata della cabina; motore verso il contrappeso'],
-    ['Basamento', `${supportName(d).toLowerCase()}; asse della puleggia di trazione a ${mm(M.axis)} sul pavimento del locale`],
+      ? 'puleggia di frizione centrata tra le calate esistenti (tiro diretto, come nel calcolo)'
+      : 'lato cabina della puleggia di frizione sulla calata della cabina; motore verso il contrappeso'],
+    ['Basamento', `${supportName(d).toLowerCase()}; asse della puleggia di frizione a ${mm(M.axis)} sul pavimento del locale`],
     ...(M.rinvio ? [rinvioRow(M.rinvio, fmt)] : []),
   ];
 }
@@ -46,7 +46,7 @@ export function roomRows(s: Survey, d: RoomDerived, fmt: (x: number, dp?: number
 /** The plan and section B-B of the room with the machine M, each under its title; none when a view does not fit. */
 export function surveyBlocks(d: RoomDerived, M: MachineSpec): ReportBlock[] {
   const out: ReportBlock[] = [];
-  for (const [kind, title] of [['plan', 'Pianta del locale del macchinario'], ['section', 'Sezione B-B lungo le calate']] as const) {
+  for (const [kind, title] of [['plan', 'Pianta del locale macchina'], ['section', 'Sezione B-B lungo le calate']] as const) {
     const v = ((): ReturnType<typeof surveyView> => {
       try {
         return surveyView(d, kind, AREA, M);

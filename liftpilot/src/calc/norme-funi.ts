@@ -8,7 +8,7 @@ const T20 = 'UNI EN 81-20:2020', T50 = 'UNI EN 81-50:2020', U1 = 'UNI 10411-1:20
 
 export const VOCI_FUNI: readonly Voce[] = [
   {
-    id: 'funi.Dd', gruppo: 'funi', titolo: 'Rapporto D/d della puleggia di trazione', valore: 'D/d ≥ 40',
+    id: 'funi.Dd', gruppo: 'funi', titolo: 'Rapporto D/d della puleggia di frizione', valore: 'D/d ≥ 40',
     riferimento: 'UNI EN 81-20:2020, 5.5.2.1', fonte: letto(T20, 'p. 74'), stato: 'confermato',
     costanti: ['ddMin'], verifiche: ['r_dd'],
   },
@@ -63,7 +63,7 @@ export const VOCI_FUNI: readonly Voce[] = [
     id: 'funi.Nequiv.pulegge', gruppo: 'funi', titolo: 'N_equiv delle pulegge', valore: 'N_equiv(p) = K_p·(N_ps + 4·N_pr), K_p = (D/Dp)^4',
     riferimento: 'UNI EN 81-50:2020, 5.12.2.3', fonte: letto(T50, 'p. 46'), stato: 'confermato',
     costanti: ['kpExponent', 'reverseBendWeight'], verifiche: ['r_sfa'],
-    nota: 'D: diametro della puleggia di trazione; Dp: media delle altre pulegge. La flessione è inversa solo tra due pulegge consecutive '
+    nota: 'D: diametro della puleggia di frizione; Dp: media delle altre pulegge. La flessione è inversa solo tra due pulegge consecutive '
       + 'ad assi fissi, con i punti di contatto a meno di 200·d e i piani di flessione ruotati di oltre 120°: la classifica il progettista.',
   },
   {

@@ -41,7 +41,7 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
       + 'e i fianchi della nicchia (con le staffe Panev, lo spazio della piastra del supporto dietro il piede di ogni guida); la distanza dalla '
       + 'parete si misura dal fondo della nicchia e la cabina guadagna la sua profondità, senza '
       + 'scendere sotto gli ingombri delle guide; luce del vano in nicchia: una nicchia alta 400 mm per lampada, le lampade 1500 mm sopra ogni '
-      + 'piano e l\'ultima a 80 mm sotto il solaio; canalina in nicchia: dal fondo della fossa al solaio; ogni nicchia dentro la sua parete, fuori '
+      + 'piano e l\'ultima a 80 mm sotto la soletta; canalina in nicchia: dal fondo della fossa alla soletta; ogni nicchia dentro la sua parete, fuori '
       + 'dai telai delle porte di piano e dalle altre nicchie, con almeno 50 mm di muro dietro; altrimenti «Non conforme»',
     riferimento: '—', fonte: 'scelta del software; la resistenza della parete con la nicchia va verificata dal progettista', stato: 'scelta',
     costanti: ['nicheBackMin', 'nicheGap', 'nicheLightH', 'lampOverFloor', 'lampUnderSlab'], verifiche: ['v_niche'],

@@ -84,7 +84,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   B.push({ t: 'letterhead', logo: r.logo ? 'logo' : null, from: [r.company, ...(r.companyCity ? [r.companyCity] : [])], to: [] });
   B.push({ t: 'h1', text: `Relazione di calcolo — ${rif ? "rifacimento dell'impianto con l'arcata esistente" : repl ? "sostituzione dell'argano" : "argano per impianto nuovo"}` });
   B.push({ t: 'sub', text: place ? `${pr.name} · ${place}` : pr.name });
-  B.push({ t: 'box', text: `BOZZA DA VERIFICARE E FIRMARE. Documento generato dal software LiftPilot: diventa relazione di calcolo quando il tecnico incaricato lo verifica e lo firma, e la responsabilità è sua. I valori normativi marcati ⚠ provengono da fonti secondarie e attendono la verifica sul testo vigente (lista di verifica normativa del profilo ${PROFILO.id}; voci del registro: ${countText}).` });
+  B.push({ t: 'box', text: `BOZZA DA VERIFICARE E FIRMARE. Documento generato dal software LiftPilot: diventa relazione di calcolo quando il tecnico incaricato lo verifica e lo firma, e la responsabilità è sua. Il segno ⚠ indica ciò che il tecnico deve controllare: stime, scelte del software e valori normativi ancora da verificare sul testo vigente (lista di verifica normativa del profilo ${PROFILO.id}; voci del registro: ${countText}).` });
   B.push({ t: 'kv', rows: [
     ['Azienda', r.company], ['Impianto', pr.name], ['Indirizzo', place || '—'], ['Numero di matricola', pr.plantNumber ?? '—'],
     ['Proprietario o committente', pr.client ?? '—'], ['Calcolo', `${r.calc.id}${r.calc.label ? ` · ${r.calc.label}` : ''}`],

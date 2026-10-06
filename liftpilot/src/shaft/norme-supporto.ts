@@ -36,7 +36,7 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + 'puleggia (verifica di avvertimento: oltre, telaio su misura); h del calcolo = asse della puleggia − asse del rinvio, dx dalla pianta; '
       + 'con un altro basamento scelto il rinvio sta su un supporto proprio sul pavimento, alla stessa altezza; una h inserita a mano che porta il '
       + 'rinvio sotto il pavimento è segnalata',
-    riferimento: 'regola del committente (Panev): il rinvio sta nel telaio del locale macchine, mai nel vano; UNI EN 81-20:2020, 5.2.1.8 (carichi '
+    riferimento: 'regola del committente (Panev): il rinvio sta nel telaio del locale macchina, mai nel vano; UNI EN 81-20:2020, 5.2.1.8 (carichi '
       + 'sull\'edificio)',
     fonte: 'brochure Geared SICOR, aprile 2026, pp. 16, 23, 41, 47, 58, 68 e 80 (telai «top machine with diverting pulley for CSW wrapping»), '
       + 'letta il 2 ottobre 2026; i telai «corti» MR21, MR26 e MR35 portano il rinvio sotto il pavimento (Hmin = Dt/2 + 75) e non sono usati; '

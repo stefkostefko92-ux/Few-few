@@ -44,7 +44,7 @@ export const VOCI_SPAZI: readonly VoceVano[] = [
   {
     id: 'spazi.testata.pulegge', gruppo: 'sezione', titolo: 'Parte più alta della cabina sotto ciò che pende sopra',
     valore: 'con la cabina nella posizione più alta: a 2:1 la puleggia di cabina (Dp + 30 mm sopra la traversa) è un\'apparecchiatura sul tetto, '
-      + 'distanza libera ≥ 500 mm dal soffitto o dalle pulegge appese; a 1:1 con la macchina in basso la traversa sotto le pulegge appese al solaio '
+      + 'distanza libera ≥ 500 mm dal soffitto o dalle pulegge appese; a 1:1 con la macchina in basso la traversa sotto le pulegge appese alla soletta '
       + '(asse a Dp/2 + 120 mm sotto il soffitto), distanza libera ≥ 100 mm, quella della traversa',
     riferimento: 'UNI EN 81-20:2020, 5.2.5.7.2 a) e b)', fonte: letto(T20, 'p. 38'), stato: 'confermato',
     nota: 'fino alla versione 1.17.0 del motore del progetto la puleggia di cabina era verificata a 100 mm; i 100 mm della traversa sono la '

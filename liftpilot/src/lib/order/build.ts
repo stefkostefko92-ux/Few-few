@@ -84,7 +84,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   B.push({ t: 'kv', rows: [
     ['Costruttore e modello', `${machineName(c)} · quantità 1`],
     ['Rapporto di riduzione', `${c.ratio} (i = ${fmt(c.i, 3)})`],
-    ['Puleggia di trazione', `Ø ${fmt(N.D, 0)} mm primitivo; ${N.n} gole per funi Ø ${dText(N.d)} mm; ${X.grooveText(N.groove)}`],
+    ['Puleggia di frizione', `Ø ${fmt(N.D, 0)} mm primitivo; ${N.n} gole per funi Ø ${dText(N.d)} mm; ${X.grooveText(N.groove)}`],
     ['Motore', `${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} giri/min · ${fmt(N.fn, 0)} Hz${c.kWmax !== null ? ` (a catalogo fino a ${fmt(c.kWmax, 1)} kW)` : ''}`],
     ['Comando', `a frequenza variabile (inverter): con il rapporto ${c.ratio} la cabina va a ${fmt(vMains, 2)} m/s a ${fmt(N.fn, 0)} Hz (${dvText(c.dv, fmt)} %), l’inverter la porta a ${fmt(I.v, 2)} m/s`],
     ['Freno', `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m sull’albero del motore (taratura; minimo richiesto dal calcolo ${fmt(c.brakeMin, 1)} N·m per gruppo, `
@@ -105,7 +105,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
       ['Basamento', bp
         ? `${bp.brand} ${bp.code} per ${bp.model}${bp.dt ? ` (rinvio Ø ${bp.dt.map((x) => fmt(x, 0)).join(' / ')})` : ''}: ${fmt(bp.mass, 0)} kg con puleggia e antivibranti`
         : `da chiedere al costruttore o da realizzare su misura: il calcolo pone il rinvio a h = ${fmt(I.h, 3)} m sotto l’asse della puleggia e a dx = ${fmt(I.dx, 3)} m`],
-      ...(bp ? [['Quote sul pavimento del locale', `asse del rinvio ${fmt(bp.pulleyAxis, 0)} mm, asse della puleggia di trazione ${fmt(bp.sheaveAxis, 0)} mm, sommità ${fmt(bp.top, 0)} mm; `
+      ...(bp ? [['Quote sul pavimento del locale', `asse del rinvio ${fmt(bp.pulleyAxis, 0)} mm, asse della puleggia di frizione ${fmt(bp.sheaveAxis, 0)} mm, sommità ${fmt(bp.top, 0)} mm; `
         + `calata del contrappeso fino a ${fmt(bp.fall.max - N.D / 2, 0)} mm dall’asse della puleggia`] as [string, string]] : []),
       ['Puleggia di rinvio', `Ø ${fmt(I.Dp, 0)} mm; ${N.n} gole per funi Ø ${dText(N.d)} mm`],
       ...(bp ? [['Fonte', bp.src] as [string, string]] : []),
@@ -125,7 +125,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
   if (o.room.length) {
     section('Locale macchina con l’argano');
     B.push({ t: 'p', style: 'note', text: `Disegni LiftPilot del ${what}: l’argano ${machineName(c)} sul suo basamento${I.layout === 'topDefl' ? ' con la puleggia di rinvio' : ''}, `
-      + 'le funi verso la cabina e il contrappeso, le aperture nel solaio; quote in mm.' });
+      + 'le funi verso la cabina e il contrappeso, le aperture nella soletta; quote in mm.' });
     B.push(...o.room);
   }
 
@@ -137,13 +137,14 @@ export function buildOrder(o: OrderInput): ReportDoc {
   if (c.fails) B.push({ t: 'box', text: `Con questo argano almeno una verifica non passa: non ordinarlo prima di aver risolto le verifiche non superate (punto ${verdictAt}).` });
 
   section('Condizioni (da completare)');
-  const eur = (cents: number | null): string => (cents === null ? `€ ${BLANK} (non nel listino dell’azienda)` : `€ ${fmt(cents / 100, 2)}`);
+  // the euro after the amount with a no-break space, as money.ts writes it in Italian
+  const eur = (cents: number | null): string => (cents === null ? `${BLANK}\u00a0€ (non nel listino dell’azienda)` : `${fmt(cents / 100, 2)}\u00a0€`);
   const withBed = I.layout === 'topDefl' && c.bedplate !== null, cost = o.prices;
-  const priced: [string, string][] = !cost ? [['Prezzo unitario', `€ ${BLANK}`]] : [
+  const priced: [string, string][] = !cost ? [['Prezzo unitario', `${BLANK}\u00a0€`]] : [
     ['Prezzo unitario dell’argano', eur(cost.machine)],
     ...(withBed ? [['Prezzo del basamento con rinvio', eur(cost.bedplate)] as [string, string]] : []),
     ['Totale (IVA esclusa)', cost.machine !== null && (!withBed || cost.bedplate !== null)
-      ? `€ ${fmt((cost.machine + (withBed ? cost.bedplate ?? 0 : 0)) / 100, 2)}` : `€ ${BLANK}`],
+      ? eur(cost.machine + (withBed ? cost.bedplate ?? 0 : 0)) : `${BLANK}\u00a0€`],
   ];
   B.push({ t: 'kv', rows: [...priced, ['Consegna richiesta', BLANK], ['Resa e imballo', BLANK], ['Pagamento', BLANK], ['Validità dell’offerta', BLANK]] });
   if (cost) B.push({ t: 'p', style: 'note', text: 'Prezzi dal listino dell’azienda in LiftPilot, IVA esclusa: da confermare con l’offerta del costruttore.' });

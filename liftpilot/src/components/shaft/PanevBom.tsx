@@ -2,17 +2,18 @@
 // page, what the catalogue cannot take; the company's prices (its list: Panev's start from the 2026 list) and the total
 // only for whoever may see prices (`prices` null: none shown). No state: used by the one form, the saved design and the
 // shaft designer.
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { PANEV_LISTINO, panevBom } from '@/lib/catalog/panev';
+import { money } from '@/lib/money';
 import type { Layout } from '@/shaft';
 
 /** `framed`: a panel of its own (false inside another panel); `prices`: the company's [cents by key], null: none shown. */
-export default function PanevBom({ L, fmt, prices, framed = true }: {
-  L: Layout; fmt(x: number, dec?: number): string; prices: Readonly<Record<string, number>> | null; framed?: boolean;
+export default function PanevBom({ L, prices, framed = true }: {
+  L: Layout; prices: Readonly<Record<string, number>> | null; framed?: boolean;
 }) {
-  const t = useTranslations('bom'), bom = panevBom(L);
+  const t = useTranslations('bom'), locale = useLocale(), bom = panevBom(L);
   if (!bom.rows.length && !bom.missing) return null;
-  const eur = (cents: number): string => `${fmt(cents / 100, 2)} €`;
+  const eur = (cents: number): string => money(cents, 'eur', locale);
   const priceOf = (code: string): number | null => prices?.[`panev:${code}`] ?? null;
   const total = bom.rows.reduce((s, r) => s + (priceOf(r.article.code) ?? 0) * r.qty, 0);
   return (

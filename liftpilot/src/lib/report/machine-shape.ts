@@ -36,10 +36,10 @@ export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: numb
  *  or ours) or on its own stand on the floor. */
 export function rinvioRow(rf: RinvioFrame, fmt: (x: number, dp?: number) => string): [string, string] {
   const axis = `asse a ${fmt(rf.pulleyAxis, 0)} mm sul pavimento del locale`;
-  if (rf.on === 'stand') return ['Puleggia di rinvio', `nel locale macchine, mai nel vano: su un proprio supporto a pavimento, ${axis}`];
+  if (rf.on === 'stand') return ['Puleggia di rinvio', `nel locale macchina, mai nel vano: su un proprio supporto a pavimento, ${axis}`];
   const mk = rf.maker;
   return ['Puleggia di rinvio', mk
-    ? `nel locale macchine, mai nel vano: nel basamento ${mk.brand} ${mk.code} dell'argano (${fmt(mk.mass, 0)} kg con puleggia e antivibranti), ${axis}, `
-      + `sommità a ${fmt(mk.top, 0)} mm, asse della puleggia di trazione a ${fmt(mk.sheaveAxis, 0)} mm (fonte: ${mk.src})`
-    : `nel locale macchine, mai nel vano: nel telaio dell'argano (UPN, su antivibranti; scelta del software), ${axis}, sommità a ${fmt(rf.top, 0)} mm`];
+    ? `nel locale macchina, mai nel vano: nel basamento ${mk.brand} ${mk.code} dell'argano (${fmt(mk.mass, 0)} kg con puleggia e antivibranti), ${axis}, `
+      + `sommità a ${fmt(mk.top, 0)} mm, asse della puleggia di frizione a ${fmt(mk.sheaveAxis, 0)} mm (fonte: ${mk.src})`
+    : `nel locale macchina, mai nel vano: nel telaio dell'argano (UPN, su antivibranti; scelta del software), ${axis}, sommità a ${fmt(rf.top, 0)} mm`];
 }

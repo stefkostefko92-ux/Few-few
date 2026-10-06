@@ -250,7 +250,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
   {
     id: 'foglio.stime', gruppo: 'carichi', titolo: 'Lunghezze stimate nel foglio dei dati',
     valore: 'guide dal pavimento della fossa fino a 50 mm sotto la soletta del vano; fune del limitatore: due volte l\'altezza dalla fossa al limitatore, '
-      + 'posto 800 mm sopra il pavimento del locale; funi di trazione: taglia × (corsa + 2 × tratto oltre la corsa), più deviazione o rinvii',
+      + 'posto 800 mm sopra il pavimento del locale; funi di sospensione: taglia × (corsa + 2 × tratto oltre la corsa), più deviazione o rinvii',
     riferimento: '—', fonte: 'stima del software, da sostituire con le misure di cantiere', stato: 'stima',
   },
   ...VOCI_SUPPORTO,

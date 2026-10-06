@@ -65,7 +65,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
         <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
         <p className="note">{t('limits')}</p>
       </section>
-      <PanevBom L={L} fmt={fmt} prices={await visiblePrices(user)} />
+      <PanevBom L={L} prices={await visiblePrices(user)} />
     </main>
   );
 }

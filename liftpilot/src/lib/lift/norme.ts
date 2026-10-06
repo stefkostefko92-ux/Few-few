@@ -138,7 +138,7 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   },
   {
     id: 'impianto.L0', titolo: 'Fune oltre la corsa (L0)',
-    valore: `dalla sommità dell'arcata con la cabina all'ultimo piano fino all'asse della puleggia: testata − sommità dell'arcata + solaio del locale + `
+    valore: `dalla sommità dell'arcata con la cabina all'ultimo piano fino all'asse della puleggia: testata − sommità dell'arcata + soletta del locale + `
       + `asse della puleggia a ${it(KL.sheaveAxisPerD)}·D sul pavimento del locale; con la puleggia di rinvio, l'asse sul basamento o sul telaio che la `
       + 'porta (voce locale.rinvio); macchina in basso o senza locale: fino al soffitto del vano',
     riferimento: '—', fonte: 'dati verticali del vano; altezza dell\'asse scelta dal software', stato: 'scelta', costanti: ['sheaveAxisPerD'],
@@ -147,13 +147,13 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     id: 'impianto.dx', titolo: 'Distanza orizzontale della puleggia di rinvio (dx)',
     valore: 'calata tra la fune di cabina e quella del contrappeso in pianta − D/2 − Dp/2 (rinvio semplice: la fune scende dal lato esterno della '
       + 'puleggia di rinvio); se la fune deve rientrare, − D/2 + Dp/2 (rinvio inverso: dal lato interno); con taglia 2:1 la calata è minore di Dp, '
-      + 'perché le funi salgono dal lato interno delle pulegge di cabina e di contrappeso. La puleggia di trazione sopra la cabina, il rinvio sopra il '
+      + 'perché le funi salgono dal lato interno delle pulegge di cabina e di contrappeso. La puleggia di frizione sopra la cabina, il rinvio sopra il '
       + 'contrappeso; se nessuna delle due geometrie torna con l\'angolo di avvolgimento, la distanza va misurata sull\'impianto',
     riferimento: 'ricerca, capitolo 5.3', fonte: 'pianta del vano', stato: 'derivazione',
   },
   {
     id: 'impianto.calata', titolo: 'Tiro diretto (senza rinvio): calata uguale al diametro della puleggia',
-    valore: 'senza rinvio le due calate scendono dai due lati della puleggia di trazione: la loro distanza in pianta (dall\'asse della cabina a '
+    valore: 'senza rinvio le due calate scendono dai due lati della puleggia di frizione: la loro distanza in pianta (dall\'asse della cabina a '
       + 'quello del contrappeso, meno Dp con la taglia 2:1) è il diametro primitivo D. La macchina proposta ha la puleggia di diametro uguale '
       + `alla calata della pianta, se è nella gamma del calcolo (da ${SHEAVE_GRID[0]} a ${SHEAVE_GRID[SHEAVE_GRID.length - 1]} mm); una macchina `
       + 'inserita a mano, o nella sostituzione con il confronto la macchina esistente (i suoi attacchi restano), con un diametro che si scosta '
@@ -165,16 +165,16 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   },
   {
     id: 'impianto.Hv', titolo: 'Macchina in basso: altezza fino alle pulegge in alto (Hv)',
-    valore: 'dall\'asse dei rinvii in testata all\'asse della puleggia di trazione, secondo lo schema delle funi (impianto.basso.schema); '
+    valore: 'dall\'asse dei rinvii in testata all\'asse della puleggia di frizione, secondo lo schema delle funi (impianto.basso.schema); '
       + 'la puleggia ha l\'asse a 0,9·D sul pavimento del suo locale',
     riferimento: 'ricerca, capitolo 5; funi con la macchina in basso, capitolo 2.6', fonte: 'dati verticali del vano', stato: 'derivazione',
   },
   {
     id: 'impianto.basso.schema', titolo: 'Macchina in basso: schema delle funi',
-    valore: `tre schemi: rinvii appesi sotto il solaio del vano (assi a Dp/2 + ${KL.headFrame} mm sotto il soffitto), macchina nel locale al piano più `
-      + `basso oltre la parete del contrappeso con la puleggia nel vano; locale pulegge sopra il solaio (assi a ${KL.pulleyRoomAxis} mm sul pavimento `
-      + `del locale, solaio di ${KL.slab} mm se il locale non è progettato), macchina come sopra; macchina sotto il vano, in un locale alto `
-      + `${KL.underRoomH} mm sotto la soletta della fossa di ${KL.underSlab} mm, rinvii sotto il solaio. Il locale della macchina accanto al vano è `
+    valore: `tre schemi: rinvii appesi sotto la soletta del vano (assi a Dp/2 + ${KL.headFrame} mm sotto il soffitto), macchina nel locale al piano più `
+      + `basso oltre la parete del contrappeso con la puleggia nel vano; locale pulegge sopra la soletta (assi a ${KL.pulleyRoomAxis} mm sul pavimento `
+      + `del locale, soletta di ${KL.slab} mm se il locale non è progettato), macchina come sopra; macchina sotto il vano, in un locale alto `
+      + `${KL.underRoomH} mm sotto la soletta della fossa di ${KL.underSlab} mm, rinvii sotto la soletta. Il locale della macchina accanto al vano è `
       + `lungo ${KL.belowRoomLen} mm oltre la parete, largo ${2 * KL.belowRoomHalf} mm e alto ${KL.belowRoomH} mm, con la porta sul fianco e il quadro `
       + `sulla parete di fondo; quello sotto il vano è grande quanto il vano. Tutti e due si allargano dove la macchina ne esce, fino a `
       + `${KL.belowRoomClear} mm oltre il suo ingombro. I due rami alla macchina salgono dietro il `

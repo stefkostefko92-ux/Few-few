@@ -2,7 +2,7 @@
 // PDF tables, so both show the same rows. Traction, drop spacing, levers, ropes, kinematics, drive, brake, rescue,
 // shaft, sensitivity, comparison.
 import { G } from '@/calc/math';
-import { K } from '@/calc/norme';
+import { K, VOCI } from '@/calc/norme';
 import type { BrakeCase, CheckId, CheckStatus, StallCase, TractionCase } from '@/calc/types';
 import type { Analysis } from './analysis';
 import { statusOf, type Texts } from './texts';
@@ -50,7 +50,7 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
   const out: TableBlock[] = [];
 
   out.push({
-    key: 'trac', title: t('c_trac'), ref: 'EN 81-50 §5.11 ⚠',
+    key: 'trac', title: t('c_trac'), ref: `EN 81-50 §5.11${VOCI.some((v) => v.gruppo === 'trazione' && v.stato === 'da_verificare') ? ' ⚠' : ''}`,
     head: [t('col_case'), 'μ', 'f', 'e^(f·α)', 'T1 [N]', 'T2 [N]', 'T1/T2', t('col_util'), t('col_res')],
     rows: [trRow('tr_load', res.load), trRow('tr_dn', res.dn), trRow('tr_up', res.up), trRow('tr_real', res.real),
       ...(res.msr1 ? [trRow('tr_msr1', res.msr1)] : []), stRow(res.stall), stRow(res.stallLow)],
