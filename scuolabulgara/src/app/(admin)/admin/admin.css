@@ -4,7 +4,7 @@
    ================================================================= */
 :root { --ad-bg: #f6f7f9; --ad-surface: #ffffff; --ad-line: #e6e8ee; --ad-ink: #1a1d24; --ad-muted: #6b7280; --ad-brand: #0f7a3d; --ad-brand-600: #18914b; }
 
-.admin { min-height: 100vh; background: var(--ad-bg); color: var(--ad-ink); font-family: var(--font-body, system-ui, sans-serif); display: grid; grid-template-columns: 264px 1fr; }
+.admin { font-feature-settings: "locl" 0; min-height: 100vh; background: var(--ad-bg); color: var(--ad-ink); font-family: var(--font-body, system-ui, sans-serif); display: grid; grid-template-columns: 264px 1fr; }
 .admin * { box-sizing: border-box; }
 
 /* Sidebar */
@@ -122,3 +122,78 @@
   .ad-nav { display: flex; flex-wrap: wrap; margin: 0; }
   .ad-side__foot { margin: 0 0 0 auto; border: 0; padding: 0; display: flex; }
 }
+
+/* =================================================================
+   Full-control editor
+   ================================================================= */
+.ad-section-title { font-size: 1.05rem; font-weight: 700; margin: 2rem 0 .4rem; color: var(--ad-ink); }
+.ad-section-title:first-of-type { margin-top: .4rem; }
+.ad-section-lead { margin: 0 0 .9rem; color: var(--ad-muted); font-size: .88rem; }
+.ad-muted { color: var(--ad-muted); font-size: .9rem; }
+
+/* Field labels, hints and the "shared by all three languages" badge */
+.ad-field > label { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .55rem; }
+.ad-hint { display: block; flex-basis: 100%; font-weight: 400; font-size: .78rem; color: var(--ad-muted); line-height: 1.45; }
+.ad-shared { font-size: .7rem; font-weight: 600; color: #1f5f8b; background: #e8f2fa; border-radius: 999px; padding: .12rem .5rem; }
+.ad-group { display: grid; gap: .1rem; }
+.ad-count { display: inline-grid; place-items: center; min-width: 1.4rem; height: 1.4rem; padding: 0 .35rem; margin-left: .3rem; border-radius: 999px; background: #eef0f4; color: #4b5260; font-size: .72rem; font-weight: 700; }
+.ad-empty-list { margin: 0 0 .4rem; color: var(--ad-muted); font-size: .86rem; font-style: italic; }
+.ad-item-actions { display: flex; gap: .35rem; align-items: center; }
+.ad-btn--icon { width: 36px; height: 36px; padding: 0; justify-content: center; font-size: 1rem; }
+
+/* Picture field: thumbnail + file name + actions — no raw paths to type */
+.ad-image { display: flex; gap: 1rem; align-items: center; }
+.ad-image__thumb { width: 132px; aspect-ratio: 4 / 3; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--ad-line); background: #f0f1f4; display: grid; place-items: center; }
+.ad-image__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ad-image__thumb span { font-size: .78rem; color: var(--ad-muted); }
+.ad-image__meta { display: grid; gap: .55rem; min-width: 0; }
+.ad-image__meta b { font-size: .84rem; font-weight: 600; color: #4b5260; word-break: break-all; }
+.ad-image__actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+
+/* Icon chooser */
+.ad-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: .5rem; }
+.ad-icon { display: grid; justify-items: center; gap: .3rem; padding: .6rem .3rem; border: 1.5px solid var(--ad-line); border-radius: 10px; background: #fff; cursor: pointer; font: inherit; transition: border-color .15s, background .15s; }
+.ad-icon img { width: 40px; height: 40px; object-fit: contain; }
+.ad-icon span { font-size: .72rem; color: #4b5260; text-align: center; line-height: 1.2; }
+.ad-icon:hover { border-color: #c2c7d0; }
+.ad-icon.active { border-color: var(--ad-brand); background: #eef8f1; box-shadow: 0 0 0 3px rgba(24, 145, 75, .12); }
+
+/* Interface wording, grouped */
+.ad-fieldset { border: 1px solid var(--ad-line); border-radius: 12px; padding: 1rem 1.1rem .2rem; margin: 0 0 1.1rem; }
+.ad-fieldset legend { padding: 0 .4rem; font-weight: 700; font-size: .9rem; color: var(--ad-ink); }
+
+/* Save bar */
+.ad-save-bar__note { margin-left: auto; color: var(--ad-muted); font-size: .84rem; }
+.ad-save-bar--inline { position: static; background: none; backdrop-filter: none; border-top: 0; margin-top: .8rem; padding: 0; }
+
+/* Section order */
+.ad-order { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.ad-order__item { display: flex; align-items: center; gap: 1rem; background: var(--ad-surface); border: 1px solid var(--ad-line); border-radius: 14px; padding: .75rem 1rem; }
+.ad-order__num { display: grid; place-items: center; width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; background: #eef0f4; font-weight: 700; font-size: .85rem; color: #4b5260; }
+.ad-order__name { flex: 1; min-width: 0; }
+.ad-order__name b { font-weight: 600; font-size: .98rem; }
+.ad-order__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
+
+/* Picture chooser (modal) */
+.ad-modal { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 1.2rem; background: rgba(17, 19, 26, .55); backdrop-filter: blur(3px); }
+.ad-modal__box { width: min(980px, 100%); max-height: 90vh; overflow: auto; background: #fff; border-radius: 16px; padding: 1.3rem 1.4rem; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .4); }
+.ad-modal__head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .6rem; }
+.ad-modal__group { margin: 1.2rem 0 .7rem; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ad-muted); }
+.ad-modal__error { margin: .4rem 0; padding: .6rem .8rem; border-radius: 9px; background: #fdecec; color: #c0392b; font-size: .88rem; }
+.ad-modal__foot { margin-top: 1.2rem; text-align: right; }
+.ad-media--pick { cursor: pointer; text-align: left; font: inherit; padding: 0; transition: border-color .15s, transform .15s; }
+.ad-media--pick:hover { border-color: var(--ad-brand); transform: translateY(-2px); }
+
+@media (max-width: 760px) {
+  .ad-image { flex-direction: column; align-items: flex-start; }
+  .ad-order__item { flex-wrap: wrap; }
+  .ad-save-bar__note { display: none; }
+}
+
+/* Small headings in the body face: the display serif has no Cyrillic, so in the
+   admin it fell back to Georgia next to Inter — two faces on one card. The page
+   title keeps the serif as the single brand accent. */
+.admin .ad-section-title, .admin .ad-card h3, .admin .ad-fieldset legend { font-family: var(--font-body, system-ui, sans-serif); letter-spacing: 0; }
+/* A photo without a description in the current language */
+.ad-field--warn textarea, .ad-field--warn input { border-color: #e2b34a; background: #fffbf0; }
+.ad-warn { margin: 0 0 .4rem; font-size: .8rem; font-weight: 600; color: #8a5a00; }
