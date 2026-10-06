@@ -106,7 +106,7 @@ in vigore). Per la sostituzione della macchina sono richiesti:
 - un dispositivo di arresto in prossimità della macchina (entro 1 m);
 - un dispositivo che interrompe l'alimentazione del macchinario se entrambi gli elementi del freno
   non si aprono, richiesto solo in assenza di protezione contro i movimenti incontrollati della
-  cabina a porte aperte e in presenza di un dispositivo di rallentamento controllato.
+  cabina a porte aperte e quando l'impianto ha un dispositivo che controlla il rallentamento.
 
 Ricerca del 2 ottobre 2026 (capitolo 2.4.1): il testo 2024 sul macchinario non è stato trovato; la lista qui sopra
 resta quella della 2021. Un estratto non attribuito aggiunge che anche un nuovo inverter senza protezione UCMP

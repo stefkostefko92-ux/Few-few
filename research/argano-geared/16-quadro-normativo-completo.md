@@ -12,9 +12,13 @@ mancano ancora al registro.
 aprivano: la Direttiva 2014/33/UE in italiano [F29] e la Raccomandazione 95/216/CE [F30]. Sono stati letti per
 intero: le sezioni 1, 2.1, 3.4, 4.7, 6 e 7 dicono che cosa confermano e che cosa aggiungono.
 
+**Aggiornamento del 6 ottobre 2026.** Dal 5 ottobre sono stati consultati, per uso interno e senza riprodurli, i testi di alcune norme
+UNI [F31] e una presentazione di settore sull'emendamento A3 [F32]. Chiusi qui i punti aperti su
+documenti della modifica (3.2), edizioni di EN 81-1 (2.3, 3.6) e matrice 5.2 (EN 81-20/50, -21, -28 per M).
+
 **Legenda.** ✅ letto nella fonte indicata · ⚠️ derivato, interpretato o preso da fonte secondaria (indicata)
-· ❓ non trovato. Le fonti sono numerate **[F1]…[F30]** (sezione 7, con URL); consultate il **2026-10-02**,
-F29 e F30 il **2026-10-04**. Ambiti: **N** impianto nuovo in edificio nuovo · **NE** impianto nuovo (o sostituzione
+· ❓ non trovato. Le fonti sono numerate **[F1]…[F32]** (sezione 7, con URL); consultate il **2026-10-02**,
+F29 e F30 il **2026-10-04**, F31 e F32 il **2026-10-05**. Ambiti: **N** impianto nuovo in edificio nuovo · **NE** impianto nuovo (o sostituzione
 completa) in edificio esistente · **M** modifica costruttiva di un impianto esistente · **A** adeguamento
 di sicurezza volontario.
 
@@ -129,7 +133,7 @@ UNI [F6] ✅. «Supplementare» = norma da usare insieme alla principale EN 81-2
 | EN ISO 8100-1:2026 / -2:2026 | nuove 81-20 / 81-50 (adozione ISO) | **non citata** al 26/11/2025 [F3]; «uncited» per la Commissione [F5] | UNI EN ISO 8100-1:2026 e -2:2026 in vigore dal 23/07/2026, già con errata corrige; sostituiscono UNI EN 81-20/50:2020 | N, NE | come sopra | secondo profilo; vedi 3.5 |
 | **EN 81-21:2022** | ascensori nuovi in edifici esistenti | Dec. (UE) 2023/1646, GU L 206 del 21/08/2023 (la 2009+A1 ha perso effetto il 21/02/2025) | UNI EN 81-21:2022 (07/07/2022) con errata corrige | NE | testata, fossa, balaustra, grembiule, locale macchine, porte | supplementare; non copre modifiche parziali (sez. 5) |
 | **EN 81-28:2022** | teleallarme | Dec. 2023/1646 | UNI EN 81-28:2022 (07/07/2022) | N, NE | allarme, report | supplementare |
-| **EN 81-58:2022** | prova di resistenza al fuoco delle porte di piano (classi E, EI, EW) | Dec. 2023/1646 | UNI EN 81-58:2022 (07/07/2022) | N, NE | porte di piano | metodo di prova |
+| **EN 81-58:2022** | titolo: «Prova di resistenza al fuoco delle porte di piano»; classi E, EI, EW | Dec. 2023/1646 | UNI EN 81-58:2022 (07/07/2022) | N, NE | porte di piano | metodo di prova |
 | **EN 81-70:2021+A1:2022** | accessibilità | Dec. 2023/1646 | UNI EN 81-70:2022 (28/07/2022); la UNI 2021 è ritirata dal 28/07/2022 | N, NE | cabina, porte, comandi | supplementare |
 | **EN 81-71** | ascensori antivandalo | **solo 2005+A1:2006** (GU C 138 del 20/04/2016), mai ritirata | UNI EN 81-71:2022 (07/07/2022) in vigore; per la nota della EN 81-83 la 2022 non ha modifiche tecniche rispetto alla 2018 e toglie la categoria 0 [F7] | N, NE | cabina, porte, comandi | l'edizione UNI in vigore **non dà presunzione** |
 | **EN 81-72:2020** | ascensori antincendio (per i vigili del fuoco) | Dec. (UE) 2021/1220, GU L 267 del 27/07/2021 | UNI EN 81-72:2020 (06/08/2020) | N, NE | vano, cabina, alimentazione, acqua | supplementare |
@@ -149,13 +153,15 @@ Regolamento macchine) ✅ [F6], fuori ambito.
 
 | Norma | Titolo breve | Stato | Natura | Ambito | Fonte |
 |---|---|---|---|---|---|
-| **UNI 10411-1:2024** | modifiche di ascensori elettrici a frizione **non conformi** alla 95/16/CE né alla 2014/33/UE; escluse le modifiche che cambiano le misure antincendio | in vigore dal 31/10/2024; sostituisce la 2021 | nazionale, volontaria (il DPR 162/1999 non la richiama ✅ [F1]) | M | [F6] ✅ |
-| **UNI 10411-11:2024** | modifiche di ascensori elettrici a frizione **conformi** alla Direttiva Ascensori; stessa esclusione antincendio | in vigore dal 31/10/2024; sostituisce UNI 10411-3:2016 e 10411-5:2017 | come sopra | M | [F6] ✅ |
+| **UNI 10411-1:2024** | titolo (Parte 1): «Ascensori elettrici non conformi alla Direttiva Ascensori»; ambito: impianti a frizione **fuori** dalla 95/16/CE e dalla 2014/33/UE; escluse le modifiche che cambiano le misure antincendio | in vigore dal 31/10/2024; sostituisce la 2021 | nazionale, volontaria (il DPR 162/1999 non la richiama ✅ [F1]) | M | [F6][F31] ✅ |
+| **UNI 10411-11:2024** | titolo (Parte 11): «Ascensori elettrici conformi alla Direttiva Ascensori»; ambito: impianti a frizione **dentro** la 95/16/CE o la 2014/33/UE; stessa esclusione antincendio | in vigore dal 31/10/2024; sostituisce UNI 10411-3:2016 e 10411-5:2017 | come sopra | M | [F6][F31] ✅ |
 | UNI 10411-2 / -12:2024 | stesse, per gli idraulici | in vigore dal 31/10/2024 | — | fuori ambito | [F6] ✅ |
 | **UNI EN 81-80:2019** | metodo per migliorare la sicurezza degli ascensori esistenti verso il livello dei nuovi | in vigore dal 14/11/2019 | non citata in GUUE ✅ [F3]; obbligo italiano non in vigore ⚠️ (3.4) | A | [F6] ✅ |
 | **UNI EN 81-82:2026** | applicare la EN 81-70 agli esistenti per l'accessibilità | in vigore dal 26/03/2026; sostituisce la 2013 (ritirata il 26/03/2026) | volontaria | A, M | [F6] ✅ |
 | **UNI EN 81-83:2026** | applicare la EN 81-71:2022 agli esistenti contro i vandali; dettaglia la voce 1.2 della Tab. A.1 della EN 81-80:2019 | in vigore dal 26/03/2026; sostituisce il documento UNI con codice UNIN8183 (presumibilmente la UNI CEN/TS 81-83 ⚠️) | volontaria | A, M | [F6][F7] ✅ |
-| UNI EN 81-1:2010 (EN 81-1:1998+A3:2009) | regole per gli ascensori elettrici nuovi (prima della 81-20) | **ritirata** il 31/08/2017 | riferimento storico per gli impianti CE 1999–2017 | M (valori «esistente») | [F6] ✅ |
+| UNI EN 81-1:1999 (EN 81-1:1998) | regole per gli ascensori elettrici nuovi, recepimento della EN 81-1:1998 | **ritirata** il 30/11/2005, sostituita dalla UNI EN 81-1:2005; la UNI EN 81-1:1987 era stata ritirata il 31/03/1999 | riferimento storico per gli impianti CE dal 1999 | M (valori «esistente») | ✅ letto sul testo [F31] (UNI 10411-1:2024, bibliografia, note 18–19) |
+| UNI EN 81-1:2008 (EN 81-1:1998 + AC:1999 + A2:2004 + A1:2005, **senza A3**) | come sopra | sostituisce la UNI EN 81-1:2005 (in vigore dal 10/01/2008); la EN 81-1:1998 senza A3 perde la presunzione il 31/12/2011 (Comunicazione 2011/C 77/07, riportata in [F32] ⚠️) | riferimento storico per gli impianti CE fino al 2011 ⚠️ | M (valori «esistente») | ✅ letto sul testo [F31] (frontespizio della UNI EN 81-1:2008) |
+| UNI EN 81-1:2010 (EN 81-1:1998+A3:2009) | regole per gli ascensori elettrici nuovi (prima della 81-20) | **ritirata** il 31/08/2017, sostituita da UNI EN 81-20:2014 e UNI EN 81-50:2014 | riferimento storico per gli impianti CE 2012–2017 ⚠️ | M (valori «esistente») | [F6] ✅; ✅ letto sul testo [F31] (UNI 10411-1:2024, bibliografia, nota 20) |
 | DPR 1497/1963 e regole dell'epoca | RD 1404/1927 e RD 906/1934, D.Lgt. 600/1945, DPR 1497/1963, DM 1635/1979, DM 587/1987 (direttive 84/529 e 86/312), DPR 268/1994 (90/486) | elencati dal verificatore ICIM come riferimenti per l'esistente | legge dell'epoca | M (valori «esistente») | [F11] ✅ |
 
 ---
@@ -192,7 +198,7 @@ Regolamento macchine) ✅ [F6], fuori ambito.
 | Libretto perduto | ammesso un libretto ricostruito dal manutentore con: indirizzo, anno, corsa, piani, velocità, schemi, norma o legge di riferimento alla messa in servizio; solo se il collaudo è certo | [F11] ✅ |
 | Norma tecnica | UNI 10411-1:2024 se l'impianto non è conforme alla Direttiva; UNI 10411-11:2024 se è conforme (95/16/CE o 2014/33/UE); la serie esclude le modifiche che cambiano le misure antincendio | [F6] ✅ |
 | Antincendio | nelle attività soggette ai controlli, sono «modifiche sostanziali» che attivano il DM 15/09/2005 anche: nuovo impianto; aumento delle fermate o cambio dell'azionamento; sostituzione di pareti del vano, porte di piano, locale macchine e/o pulegge di rinvio con materiali, modelli, dimensioni o criteri diversi; rifacimento di solai o scale che coinvolge l'impianto; sopraelevazione; cambio di destinazione d'uso | DM 15/09/2005 art. 1 c.2 lett. a)–g) ✅ [F18] |
-| Chi dichiara la modifica | il DPR 162/1999 non indica un documento dell'installatore per la modifica; che cosa chieda la UNI 10411:2024 non è stato letto | ❓ |
+| Chi dichiara la modifica | il DPR 162/1999 non indica un documento dell'installatore per la modifica; la UNI 10411:2024 sì: dopo ogni modifica le nuove caratteristiche dell'impianto vanno documentate con il fascicolo tecnico per tipo di modifica (appendice C della -1, appendice A della -11), che il proprietario tiene pronto per la verifica straordinaria (art. 14) e che fa da allegato alla dichiarazione di conformità del DM 37/2008 (all. I); per la macchina nuova la voce 14 del fascicolo chiede, tra l'altro, la relazione con i dati tecnici della macchina | [F1]; ✅ letto sul testo [F31] (UNI 10411-1:2024 e UNI 10411-11:2024, punti 25.1 e 25.3; app. C e app. A, voce 14) |
 
 ### 3.3 Spazi di rifugio ridotti (art. 17-bis)
 
@@ -259,8 +265,13 @@ D.Lgt. 600/1945; **DPR 1497/1963**; DM 1635/1979 (ascensori a vite, cremagliera,
 (direttive 84/529/CEE e 86/312/CEE, ascensori elettrici); DPR 268/1994 (90/486/CEE); **DPR 162/1999** con
 95/16/CE (UNI EN 81-1) e poi 2014/33/UE (UNI EN 81-20). Gli impianti messi in servizio senza certificazione CE
 né licenza alla data del DPR 162/1999 dovevano trasmettere il collaudo entro il 30/09/2002 (art. 19 c.3) ✅ [F1].
-Quale norma tecnica valga per ciascuna epoca e da quale data esatta: ⚠️ (le date di passaggio non sono state
-verificate sui singoli testi, salvo DPR 1497/1963 e DPR 162/1999).
+Date di passaggio delle edizioni UNI di EN 81-1 ✅ letto sul testo [F31] (UNI 10411-1:2024, bibliografia, note
+18–20; frontespizio della UNI EN 81-1:2008): UNI EN 81-1:1987 ritirata il 31/03/1999 → UNI EN 81-1:1999, ritirata
+il 30/11/2005 → UNI EN 81-1:2005 → UNI EN 81-1:2008 (senza A3, dal 10/01/2008) → UNI EN 81-1:2010 (con A3),
+ritirata il 31/08/2017 → UNI EN 81-20:2014 e 81-50:2014. Per la Direttiva la EN 81-1:1998 senza A3 dà
+presunzione fino al 31/12/2011 ⚠️ [F32]. Quale edizione valga per il singolo impianto CE si legge nella sua
+dichiarazione di conformità o nel fascicolo; lo stabilisce l'ingegnere. Per le epoche prima del 1999 restano
+verificati solo DPR 1497/1963 e DPR 162/1999.
 
 ---
 
@@ -411,12 +422,12 @@ su Normattiva [F15] ✅.
 
 | Norma | N | NE | M | A | Motivo e fonte |
 |---|---|---|---|---|---|
-| EN 81-20/50:2020 | ● | ● | ✕ (base) | ✕ | norme per ascensori nuovi ✅ [F6]; per M i loro valori entrano solo dove la UNI 10411 li richiama (capitolo 2.4, fonte secondaria ⚠️) |
+| EN 81-20/50:2020 | ● | ● | ✕ (base) | ✕ | norme per ascensori nuovi ✅ [F6]; per M i loro valori entrano solo dove la UNI 10411-1/-11:2024 li richiamano, punto per punto (per es. punto 14.1, macchina nuova: EN 81-20:2020 §5.9.1, §5.9.2, §5.5.2.2, §5.5.3) ✅ letto sul testo [F31] |
 | EN ISO 8100-1/-2:2026 | ● (alternativa) | ● (alternativa) | ✕ | ✕ | in vigore UNI, non citate in GUUE al 26/11/2025: senza presunzione finché non citate ✅ [F3][F5][F6] |
 | UNI 10411-1:2024 | ✕ | ✕ | ● se non conforme alla Direttiva | ✕ | ✅ [F6] |
 | UNI 10411-11:2024 | ✕ | ✕ | ● se conforme (95/16/CE o 2014/33/UE) | ✕ | ✅ [F6] |
-| EN 81-21:2022 | ✕ | ○ | ✕ | ✕ | edifici esistenti, impianto completo nuovo o sostituzione completa; non le modifiche parziali (scopo dell'edizione 2018 ✅ [F7]; 2022 ⚠️ [F6]) |
-| EN 81-28:2022 | ○ | ○ | ○ ⚠️ | ○ ⚠️ | citata ✅ [F3]; il sommario UNI non la limita ai nuovi ✅ [F6]; uso sugli esistenti non verificato ❓ |
+| EN 81-21:2022 | ✕ | ○ | ✕ (base); singoli punti tramite la UNI 10411 | ✕ | ascensori nuovi in edifici esistenti, insieme alla EN 81-20:2020 (impianto completo nuovo o sostituzione completa); esclusi gli impianti installati prima della sua pubblicazione (punto 1 dell'edizione 2022 ✅ letto sul testo [F31]; stesso scopo nella 2018 ✅ [F7]); per M la UNI 10411-1/-11:2024 richiamano, quando i luoghi lo impongono, singoli punti del suo capitolo 5 (5.2, 5.5, 5.6, 5.7.2, 5.8, 5.9, 5.12) ✅ [F31] |
+| EN 81-28:2022 | ○ | ○ | ○ (allarme nuovo) | ○ ⚠️ | citata ✅ [F3]; il sommario UNI non la limita ai nuovi ✅ [F6]; per M, allarme di emergenza nuovo: EN 81-20:2020 §5.12.3.1 oppure, in alternativa, UNI EN 81-28:2022 (UNI 10411-1/-11:2024, punto 23) ✅ letto sul testo [F31]; per A non verificato ⚠️ |
 | EN 81-58:2022 | ! (porte resistenti al fuoco) | ! | ! se si sostituiscono porte di piano che fanno parte della compartimentazione ⚠️ | ✕ | metodo di prova e classe (E, EI, EW) delle porte di piano ✅ [F6]; l'obbligo di resistenza viene dal DM 2005 (punti 3.2, 3.3; sostituzione di porte con modelli diversi = modifica sostanziale, art. 1 c.2 lett. c) o dal Codice ✅ [F18][F19] |
 | EN 81-70:2021+A1:2022 | ○ | ○ | ✕ | ✕ | si usa solo con EN 81-20:2020 ✅ [F7]; per gli esistenti EN 81-82 ✅ [F6] |
 | EN 81-71 | ○ (2005+A1 per la presunzione) | ○ | ✕ | ✕ | edizione citata 2005+A1:2006 ✅ [F3]; la 2022 non si applica agli impianti installati prima della sua pubblicazione ✅ [F6]; per gli esistenti EN 81-83 ✅ |
@@ -471,14 +482,17 @@ due; le edizioni restano fissate nello snapshot del calcolo.
 81-28:2022, 81-58:2022, 81-70:2022, 81-71:2022, 81-72:2020, 81-73:2020, 81-76:2025, 81-77:2022, 81-80:2019,
 81-82:2026, 81-83:2026; UNI 10411-1:2024 e 10411-11:2024; UNI EN 81-1:2010 per i valori dell'esistente CE;
 UNI EN ISO 8100-1/-2:2026; la guida CEN/TC 10 sui requisiti del Regolamento macchine citata in [F5].
+Dal 2026-10-05 alcuni testi sono stati consultati per uso interno [F31]: in questo capitolo
+sono usati solo UNI 10411-1/-11:2024, il punto 1 della UNI EN 81-21:2022 e il frontespizio della UNI EN
+81-1:2008; gli altri dell'elenco restano non letti qui.
 
 **Non trovati (❓):**
 - valori numerici di EN 81-21 (rifugi ridotti), EN 81-72 (cabina, tempi, acqua), EN 81-73, EN 81-28,
   EN 81-71 (categorie), EN 81-76 ed EN 81-77 (soglie delle categorie);
 - valori di EN 81-1:1998+A3:2009 per testata, fossa e rifugi;
 - velocità di intervento del limitatore e distanze UCMP della EN 81-20 in una fonte aperta;
-- che cosa chieda la UNI 10411:2024 per la sostituzione del macchinario e quale documento dell'installatore
-  accompagni la modifica;
+- ~~che cosa chieda la UNI 10411:2024 per la sostituzione del macchinario e quale documento dell'installatore
+  accompagni la modifica~~ — chiuso il 2026-10-06: punti 14 e 25 della UNI 10411-1/-11:2024, vedi 3.2 ✅ [F31];
 - stato giuridico attuale del DM 26/10/2005 e numero della sentenza TAR del 2010;
 - decisione di esecuzione che cita le EN ISO 8100-1/-2:2026;
 - edizione CEN della nuova EN 81-82 (la UNI è del 2026);
@@ -487,7 +501,7 @@ UNI EN ISO 8100-1/-2:2026; la guida CEN/TC 10 sui requisiti del Regolamento macc
 
 ---
 
-## 7. Fonti (consultate il 2026-10-02; F29 e F30 il 2026-10-04)
+## 7. Fonti (consultate il 2026-10-02; F29 e F30 il 2026-10-04; F31 e F32 il 2026-10-05)
 
 | ID | Documento | URL | Che cosa è stato letto |
 |---|---|---|---|
@@ -521,3 +535,5 @@ UNI EN ISO 8100-1/-2:2026; la guida CEN/TC 10 sui requisiti del Regolamento macc
 | F28 | Registro di LiftPilot | ../../liftpilot/docs/lista-verifica-normativa.md | 111 voci |
 | F29 | Direttiva 2014/33/UE del 26/02/2014, testo ufficiale in italiano (GU L 96 del 29/03/2014, pp. 251–308): PDF EUR-Lex «CELEX_32014L0033_IT_TXT.pdf» fornito dal cliente il 2026-10-03 | https://eur-lex.europa.eu/eli/dir/2014/33/oj | intero: articoli e allegati I–XIV |
 | F30 | Raccomandazione della Commissione 95/216/CE dell'08/06/1995 sul miglioramento della sicurezza degli ascensori esistenti (GU L 134 del 20/06/1995, pp. 37–38): PDF EUR-Lex «CELEX_31995H0216_IT_TXT.pdf» fornito dal cliente il 2026-10-03 | EUR-Lex, CELEX 31995H0216 | intero (considerando, raccomandazioni, allegato) |
+| F31 | Testi delle norme UNI consultati dal 2026-10-05 per uso interno: nessuna frase, tabella o figura riportata, solo numero di punto, valore e parole nostre | — (copie non pubbliche) | UNI 10411-1:2024 e UNI 10411-11:2024 (frontespizio, punti 14, 23, 25, appendici C e A, bibliografia con note 18–20, con i punti di EN 81-20/50:2020 e EN 81-21:2022 che richiamano); UNI EN 81-21:2022 (punto 1); UNI EN 81-1:2008 (frontespizio) |
+| F32 | Presentazione di settore «Norme armonizzate EN 81-1&2 — Emendamento A3» (2011, 71 diapositive), consultata il 2026-10-05: **fonte secondaria**, non una norma | — (copia non pubblica) | riga della Comunicazione 2011/C 77/07 sulla EN 81-1:1998+A3:2009 e data di fine presunzione della EN 81-1:1998 |

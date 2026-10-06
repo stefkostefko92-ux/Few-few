@@ -46,13 +46,13 @@ Il regolamento valeva per gli impianti installati in Italia tra il 1964 e il 199
 
 | Articolo | Contenuto (parafrasi) | Che cosa serve ad Argano |
 |---|---|---|
-| 5.1 | Le strutture portanti **del macchinario e delle pulegge di rinvio** si calcolano per i carichi fissi più **1,5 volte** il carico statico massimo trasmesso dalle funi (peso delle funi compreso), con coefficiente di sicurezza **≥ 6** per acciaio e cemento armato | carico di progetto delle travi in testata e degli ancoraggi della macchina in basso |
+| 5.1 | Le strutture che portano **macchina e pulegge di rinvio** si calcolano per i carichi fissi più **1,5 volte** il carico statico massimo trasmesso dalle funi (peso delle funi compreso), con coefficiente di sicurezza **≥ 6** per acciaio e cemento armato | carico di progetto delle travi in testata e degli ancoraggi della macchina in basso |
 | 5.2 | Le travi portanti, sotto quel carico, hanno freccia **≤ 1/1500** della luce libera | verifica delle travi dei rinvii |
-| 6, 7, 8 | «Locali del macchinario **e delle pulegge di rinvio**»: stesse regole per i due locali (niente canne fumarie o tubazioni estranee, spazio per ispezione e manutenzione, accesso diretto e sicuro senza scale verticali, illuminazione, chiusura a chiave, cartello) | il **locale pulegge** era un locale previsto e regolato |
+| 6, 7, 8 | Locale della macchina **e locale dei rinvii**: stesse regole per i due locali (niente canne fumarie o tubazioni estranee, spazio per ispezione e manutenzione, accesso diretto e sicuro senza scale verticali, illuminazione, chiusura a chiave, cartello) | il **locale pulegge** era un locale previsto e regolato |
 | 6.3 | Altezza del locale del macchinario ≥ 2 m dove si fa manutenzione; nessuna altezza fissata per il locale pulegge | — |
 | 6.4 | Solo per le pulegge di rinvio sono tollerate coperture scorrevoli o ribaltabili, se necessario | locale pulegge con copertura apribile |
 | 9.2 | Le aperture per il passaggio delle funi nel vano devono essere le più piccole possibili | fori nel solaio, nella parete e nel fondo della fossa |
-| 23.2 | Con il contrappeso sugli arresti: ≥ 0,8 m tra il tetto della cabina e la parte più sporgente del soffitto del vano; ≥ 0,3 m tra le parti più sporgenti sopra la cabina e quelle del soffitto | i rinvii appesi sotto il solaio sono «parti sporgenti del soffitto» |
+| 23.2 | Con il contrappeso sugli arresti: ≥ 0,8 m dal tetto di cabina fino all'elemento del soffitto del vano che sporge più in basso; ≥ 0,3 m tra le parti più sporgenti sopra la cabina e quelle del soffitto | i rinvii appesi sotto il solaio sono «parti sporgenti del soffitto» |
 | 23.3 | Ammortizzatori invece degli arresti fissi se v > 0,85 m/s o se cabina o contrappeso si muovono sopra locali accessibili | macchina sotto il vano |
 | 33.1–33.2 | Contrappeso sopra un locale accessibile senza un pilastro fino al terreno: paracadute del contrappeso (progressivo se v > 0,85 m/s) | macchina sotto il vano |
 | 35.3, 35.5 | Funi ≥ 8 mm; diametro di avvolgimento **≥ 40 volte** il diametro della fune e ≥ 500 volte il diametro dei fili (escluso il filo centrale dei trefoli) | vale per ogni puleggia, rinvii compresi |

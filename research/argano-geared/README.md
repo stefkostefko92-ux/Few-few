@@ -97,6 +97,12 @@ estratti dei motori di ricerca (capitolo 11)._
 
 ## Decisioni
 
+> _Nota del 2026-10-06 (la ricerca resta com'è)._ Punti già decisi: **4 (lingue)** — italiano, inglese
+> e bulgaro; **5 (collocazione)** — cartella propria `liftpilot/` nel monorepo; **3 (valore del report)** —
+> relazione di calcolo in PDF, bozza finché il tecnico incaricato non la firma. Al punto 11 (Architettura)
+> BullMQ + Redis era una proposta della ricerca: **LiftPilot non li usa**. Per il resto vedi
+> `liftpilot/CLAUDE.md`.
+
 Già decisa: il perimetro iniziale è la **sostituzione dell'argano su impianti esistenti**, con
 macchina in alto e in basso. Restano aperte:
 
