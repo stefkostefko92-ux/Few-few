@@ -16,12 +16,14 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      машината автоматично, с произход; цикъл на предложението; без отклоняваща шайба шайбата е калатата
                      от плана, иначе issue `calata`), rig/belt (въжето на парчета, всяко във
                      вертикалната си равнина, през шайбите за 3D), bottom (машина долу — трите схеми: ролки под плочата,
-                     ролково помещение, машина под фосата; ходовете зад противотежестта и нужната хлабина), machine
+                     ролково помещение, машина под фосата; ходовете зад противотежестта и нужната хлабина; belowMachine/belowRoom —
+                     машината и помещението ѝ за 3D и за чертежите), machine
                      (машината за чертежите на машинното от изчислението), catalog (машина на избрана марка в
                      предложението; pickOption — изборът на опция на оразмеряването), advice (препоръчаната машина сред
                      SICOR и Montanari: всеки модел, проверен с асансьора, подредбата и причината, sourcesOf — буквите на
                      източника, алтернативата с отклоняваща ролка), collaudo (нормата на
-                     изпитването и сменените части: AMBITO_VERIFICHE, ambitoOf, collaudoVerdict), intervento (трите
+                     изпитването и сменените части: AMBITO_VERIFICHE, ambitoOf, collaudoVerdict), modifica (CE маркировката → частта на
+                     UNI 10411; промяната на документираните товари по прил. 1 и 2 на -1 и по -11), intervento (трите
                      избора на формуляра: подмяна на машината, обновяване със съществуващата рама, нов асансьор —
                      interventoOf/interventoTo, PARTI_RIFACIMENTO), drops (подмяна → цял
                      проект: кабината и противотежестта под калатите от рилевото), norme (KL, VOCI_IMPIANTO),
@@ -100,14 +102,15 @@ src/shaft/           Чист двигател на шахтата: area (Таб
                      височината ѝ е оста на шайбата), rinvio + rinvio-view (отклоняващата ролка в машинното: в рамата на
                      машината — на производителя или наша — или на своя стойка; разрезът B-B и планът ѝ),
                      profiles (валцувани профили EN 10365), support-check (гредите: σ и провисване; свободната площ до
-                     машината), rails (профилите на водачите, сеченията им за EN 81-50 5.10), norme + norme-vert +
+                     машината), panel (свободното място пред таблото, до машината, когато е пред него), checks
+                     (mergeChecks), rails (профилите на водачите, сеченията им за EN 81-50 5.10), norme + norme-vert +
                      norme-porte + norme-supporto + norme-ingombri + norme-spazi + norme-guide (KV, KV_VERT, DEFAULTS,
                      регистърът), snapshot (SHAFT_ENGINE_VERSION).
                      Координати в план: x по стената на вход A, y навътре; в разреза x = y на плана, z от най-ниската спирка.
 src/lib/tavole/      Комплектът чертежи: build (листовете), views (изгледите без хартията), datasheet + data (лист 1),
                      loads (P1–P9), forces (сили по водачите, EN 81-50 5.10: парашут, движение, товарене на прага),
                      rail-check (напреженията и провисването на водачите на кабината, видът на парашута — на лист 1),
-                     notes (наш текст на бележките), extras
+                     notes (наш текст на бележките), below-view (машинното при машина долу: план и разрез C-C), extras
                      (легенди, „LATO FERMATE“, знаци на разрезите), compose (снимките на издадения комплект, zod);
                      survey-input + survey-data + survey-sheet + survey-build — комплектът на подмяната от заснемането
                      (лист 1 с данните на старата и новата машина, план и разрез B-B на машинното).
@@ -227,8 +230,9 @@ src/components/lift/ Екранът: LiftWorkspace (състоянието — �
 src/app/             [locale]/… страниците, api/ (health, billing/webhook — Stripe с проверен подпис, relazione PDF, DXF на проект, PDF на комплект, lista-verifica,
                      lift-designs/<id>/pdf|dxf|dwg — износ на записания проект, lift-designs|calculations/<id>/order/docx|pdf —
                      чернова на поръчка на машината, room-designs/<id>/relazione|pdf|dxf|dwg — документите на подмяната), robots,
-                     sitemap, llms.txt.
-messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (373 ключа × 3 езика).
+                     sitemap, llms.txt; [locale]/pricing — цената от Stripe (`monthlyPrice`, отговорът се пази 10 минути;
+                     след грешка — „su richiesta“ за минута), пакетите места и FAQ с JSON-LD.
+messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (410 ключа × 3 езика).
 report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
 report/raster.py     Чертежите на модела като PNG 300 dpi (Pillow, същият модел на щрихите, шрифтовете DejaVu) за DOCX.
 report/tavole.py     Рисува комплекта чертежи (JSON от ядрото → PDF); fonts.py регистрира DejaVu; plan_drawing.py рисува
