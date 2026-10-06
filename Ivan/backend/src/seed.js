@@ -1,28 +1,52 @@
+"use strict";
+// Seed при всеки старт на контейнера (идемпотентен): вградените роли, настройките и еднократното хеширане на
+// ПИН-ове, останали в чист вид отпреди. Празна база получава първия Супер Админ от SKLAD_OWNER_* (по желание).
+// Грешка → изход 1, значи бекендът не тръгва с наполовина хеширани ПИН-ове.
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const pino = require("pino");
+const { z } = require("zod");
+const { isPinHash, hashPin } = require("./security");
+const { BUILTIN } = require("./routes/roles");
 
-async function main() {
-  console.log("═══ Seed: структурни данни ═══");
+const Owner = z.object({
+  SKLAD_OWNER_EMAIL: z.string().trim().toLowerCase().pipe(z.email()),
+  SKLAD_OWNER_NAME: z.string().trim().min(1).max(100),
+  SKLAD_OWNER_PIN: z.string().regex(/^\d{6,12}$/, "SKLAD_OWNER_PIN трябва да е от 6 до 12 цифри"),
+});
 
-  const roles = [
-    { id:"SUPER_ADMIN", label:"Супер Админ", canEdit:true, canDelete:true, canCreate:true, canOrder:true, canSeePrice:true, canManageUsers:true, canAudit:true, canSettings:true, isBuiltin:true },
-    { id:"ADMIN", label:"Админ", canEdit:true, canDelete:true, canCreate:true, canOrder:true, canSeePrice:true, canManageUsers:false, canAudit:false, canSettings:false, isBuiltin:true },
-    { id:"VIEWER_PRICE", label:"Преглед (с цена)", canEdit:false, canDelete:false, canCreate:false, canOrder:false, canSeePrice:true, canManageUsers:false, canAudit:false, canSettings:false, isBuiltin:true },
-    { id:"VIEWER", label:"Преглед", canEdit:false, canDelete:false, canCreate:false, canOrder:false, canSeePrice:false, canManageUsers:false, canAudit:false, canSettings:false, isBuiltin:true },
-  ];
-  for (const r of roles) {
-    await prisma.role.upsert({ where: { id: r.id }, update: {}, create: r });
-  }
-  console.log("  ✓ " + roles.length + " роли");
-
+async function seed(prisma, env = process.env) {
+  for (const r of BUILTIN) await prisma.role.upsert({ where: { id: r.id }, update: {}, create: r });
   await prisma.settings.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } });
-  console.log("  ✓ Настройки");
 
-  const uc = await prisma.user.count();
-  const pc = await prisma.part.count();
-  const oc = await prisma.order.count();
-  console.log("  ℹ Потребители: " + uc + ", Артикули: " + pc + ", Поръчки: " + oc);
-  console.log("═══ Готово ═══");
+  const users = await prisma.user.findMany({ select: { id: true, pin: true } });
+  let hashed = 0;
+  for (const u of users) {
+    if (isPinHash(u.pin)) continue;
+    await prisma.user.update({ where: { id: u.id }, data: { pin: await hashPin(u.pin) } });
+    hashed += 1;
+  }
+
+  let ownerCreated = false;
+  if (users.length === 0 && env.SKLAD_OWNER_EMAIL) {
+    const o = Owner.parse(env);
+    await prisma.user.create({
+      data: { nome: o.SKLAD_OWNER_NAME, email: o.SKLAD_OWNER_EMAIL, ruolo: "SUPER_ADMIN", pin: await hashPin(o.SKLAD_OWNER_PIN) },
+    });
+    ownerCreated = true;
+  }
+  return { users: users.length, hashed, ownerCreated };
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect());
+if (require.main === module) {
+  const log = pino({ base: { app: "sklad-seed" } });
+  const prisma = new PrismaClient();
+  seed(prisma)
+    .then((r) => log.info(r, "seed done"))
+    .catch((err) => {
+      log.fatal({ err: { message: err.message } }, "seed failed");
+      process.exitCode = 1;
+    })
+    .finally(() => prisma.$disconnect());
+}
+
+module.exports = { seed };
