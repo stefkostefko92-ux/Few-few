@@ -72,6 +72,20 @@ test("siydara: seed без идемпотентност/източник пад�
   assert.equal(verifyOutput("siydara", "seed с upsert по уникален slug (нула дубли при две пускания); телефони от НЗОК (проверен източник).").ok, true);
 });
 
+test("asansyorchika: стойност без издание и бележка, с обявено съответствие, пада", () => {
+  const r = verifyOutput("asansyorchika", "По EN 81-20 свободното пространство над кабината е 0,5 m — асансьорът съответства напълно.");
+  assert.equal(r.ok, false);
+  for (const label of [/изданието/, /указател/, /инженерът/, /капан/]) assert.ok(r.checks.some((c) => !c.ok && label.test(c.label)), label.source);
+});
+
+test("asansyorchika: издание + точка + бележка + инженерът минава", () => {
+  const out = "UNI EN 81-50:2020 5.11.2.3.1 — β ≤ 105° (../norme-ascensori/uni-en-81-50-2020.md:863). Съответствието на конкретния асансьор решава инженерът.";
+  const r = verifyOutput("asansyorchika", out);
+  assert.equal(r.ok, true, JSON.stringify(r.checks.filter((c) => !c.ok)));
+  const missing = verifyOutput("asansyorchika", "UNI EN 81-21:2022 — точката за спирането не е в научените текстове; да се купи изданието.");
+  assert.equal(missing.ok, true, JSON.stringify(missing.checks.filter((c) => !c.ok)));
+});
+
 test("всички верификатор-агенти реално съществуват + покритие ≥9", () => {
   for (const id of Object.keys(VERIFIER)) assert.match(id, /^[\w-]+$/);
   assert.ok(Object.keys(VERIFIER).length >= 9, `покритие: ${Object.keys(VERIFIER).length}`);
