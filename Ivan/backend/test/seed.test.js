@@ -27,6 +27,19 @@ test("празна база: Супер Админ от SKLAD_OWNER_*; греш�
   assert.equal((await seed(prisma, { SKLAD_OWNER_EMAIL: "x@sklad.test", SKLAD_OWNER_NAME: "X", SKLAD_OWNER_PIN: "11112222" })).ownerCreated, false);
 });
 
+test("имейлите стават с малки букви веднъж; дубликат по регистър остава и се вписва", async () => {
+  await prisma.user.create({ data: { nome: "Смесен", email: " Mixed@Sklad.Test", ruolo: "VIEWER", pin: "x" } });
+  await prisma.user.create({ data: { nome: "Близнак", email: "twin@sklad.test", ruolo: "VIEWER", pin: "x" } });
+  await prisma.user.create({ data: { nome: "Близнак 2", email: "Twin@Sklad.test", ruolo: "VIEWER", pin: "x" } });
+  const r = await seed(prisma, {});
+  assert.equal(r.normalized, 1);
+  assert.equal(r.emailClashes.length, 1);
+  assert.ok(await prisma.user.findUnique({ where: { email: "mixed@sklad.test" } }));
+  assert.equal((await seed(prisma, {})).normalized, 0);
+  await prisma.user.deleteMany({ where: { nome: { startsWith: "Близнак" } } });
+  await prisma.user.deleteMany({ where: { email: "mixed@sklad.test" } });
+});
+
 test("ПИН-ове в чист вид стават хеш веднъж, а старият ПИН пак влиза", async () => {
   await prisma.user.create({ data: { nome: "Стар", email: "old@sklad.test", ruolo: "VIEWER", pin: "4321" } });
   assert.equal((await seed(prisma, {})).hashed, 1);

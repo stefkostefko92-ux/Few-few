@@ -32,7 +32,8 @@ test("входът слага HttpOnly SameSite=Strict бисквитка, а т
   const c = client(srv.base);
   const r = await c.login("Viewer@Sklad.test", "112233");
   assert.equal(r.status, 200);
-  assert.deepEqual(Object.keys(r.data), ["user"]);
+  assert.deepEqual(Object.keys(r.data).sort(), ["pinChangeRequired", "user"]);
+  assert.equal(r.data.pinChangeRequired, false);
   assert.equal(r.data.user.email, "viewer@sklad.test");
   assert.equal(r.data.user.pin, undefined);
   const cookie = r.setCookie.find((s) => s.startsWith("sklad_session="));
@@ -84,6 +85,52 @@ test("след 5 грешни ПИН-а и верният не пуска: 429 �
   const r = await client(srv.base).login("target@sklad.test", "908070");
   assert.equal(r.status, 429);
   assert.ok(Number(r.headers.get("retry-after")) > 800);
+});
+
+test("`_` и `%` в имейла не намират чужд акаунт и не заобикалят заключването", async () => {
+  await makeUser(prisma, { nome: "Админ", email: "admin@firma.test", ruolo: "SUPER_ADMIN", pin: "246813" });
+  for (let i = 0; i < 5; i++) assert.equal((await client(srv.base).login("admin@firma.test", "000000")).status, 401);
+  assert.equal((await client(srv.base).login("admin@firma.test", "246813")).status, 429);
+  for (const variant of ["_dmin@firma.test", "a_min@firma.test"]) {
+    assert.equal((await client(srv.base).login(variant, "246813")).status, 401, variant);
+  }
+  // `%` не минава още валидацията на имейла — пак без вход
+  for (const variant of ["%@firma.test", "adm%@firma.test"]) {
+    assert.equal((await client(srv.base).login(variant, "246813")).status, 400, variant);
+  }
+  assert.equal((await client(srv.base).login("ADMIN@Firma.Test", "246813")).status, 429, "регистърът е същият акаунт");
+});
+
+test("стар 4-цифрен ПИН пуска само до смяната му", async () => {
+  await makeUser(prisma, { nome: "Стар", email: "legacy@sklad.test", ruolo: "VIEWER", pin: "4321" });
+  const c = client(srv.base);
+  const r = await c.login("legacy@sklad.test", "4321");
+  assert.equal(r.status, 200);
+  assert.equal(r.data.pinChangeRequired, true);
+  const blocked = await c.call("GET", "/api/parts");
+  assert.equal(blocked.status, 403);
+  assert.equal(blocked.data.code, "PIN_CHANGE_REQUIRED");
+  assert.equal((await c.call("GET", "/api/auth/me")).data.pinChangeRequired, true);
+  assert.equal((await c.call("POST", "/api/auth/pin", { currentPin: "1111", newPin: "135246" })).status, 401);
+  assert.equal((await c.call("POST", "/api/auth/pin", { currentPin: "4321", newPin: "1234" })).status, 400);
+  const changed = await c.call("POST", "/api/auth/pin", { currentPin: "4321", newPin: "135246" });
+  assert.equal(changed.status, 200);
+  assert.equal((await c.call("GET", "/api/parts")).status, 200);
+  assert.equal((await client(srv.base).login("legacy@sklad.test", "4321")).status, 401);
+  const fresh = await client(srv.base).login("legacy@sklad.test", "135246");
+  assert.equal(fresh.data.pinChangeRequired, false);
+});
+
+test("смяната на ПИН-а иска сегашния и не се налучква с открадната сесия", async () => {
+  const u = await makeUser(prisma, { nome: "Сесия", email: "stolen@sklad.test", ruolo: "VIEWER", pin: "192837" });
+  const c = client(srv.base);
+  await c.login("stolen@sklad.test", "192837");
+  assert.equal((await c.call("POST", "/api/auth/pin", { currentPin: "192837", newPin: "192837" })).status, 400);
+  for (let i = 0; i < 5; i++) {
+    assert.equal((await c.call("POST", "/api/auth/pin", { currentPin: "000000", newPin: "564738" })).status, 401);
+  }
+  assert.equal((await c.call("POST", "/api/auth/pin", { currentPin: "192837", newPin: "564738" })).status, 429);
+  assert.equal((await prisma.user.findUnique({ where: { id: u.id } })).pin, u.pin, "ПИН-ът не е сменен");
 });
 
 test("CSRF: промяна без JSON → 415, от чужд произход → 403", async () => {

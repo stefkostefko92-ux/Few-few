@@ -18,12 +18,27 @@ async function seed(prisma, env = process.env) {
   for (const r of BUILTIN) await prisma.role.upsert({ where: { id: r.id }, update: {}, create: r });
   await prisma.settings.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } });
 
-  const users = await prisma.user.findMany({ select: { id: true, pin: true } });
+  const users = await prisma.user.findMany({ select: { id: true, pin: true, email: true } });
   let hashed = 0;
   for (const u of users) {
     if (isPinHash(u.pin)) continue;
     await prisma.user.update({ where: { id: u.id }, data: { pin: await hashPin(u.pin) } });
     hashed += 1;
+  }
+  // Имейлите — с малки букви и без интервали: входът ги търси точно (виж routes/auth.js). Два акаунта,
+  // които се различават само по регистъра, не се пипат — те се оправят на ръка (вписва се в изхода).
+  let normalized = 0;
+  const clashes = [];
+  for (const u of users) {
+    const clean = u.email.trim().toLowerCase();
+    if (clean === u.email) continue;
+    try {
+      await prisma.user.update({ where: { id: u.id }, data: { email: clean } });
+      normalized += 1;
+    } catch (err) {
+      if (err.code !== "P2002") throw err;
+      clashes.push(u.id);
+    }
   }
 
   let ownerCreated = false;
@@ -34,7 +49,7 @@ async function seed(prisma, env = process.env) {
     });
     ownerCreated = true;
   }
-  return { users: users.length, hashed, ownerCreated };
+  return { users: users.length, hashed, normalized, emailClashes: clashes, ownerCreated };
 }
 
 if (require.main === module) {

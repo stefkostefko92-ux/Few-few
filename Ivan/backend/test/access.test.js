@@ -59,6 +59,23 @@ test("само Супер Админ дава, пипа и трие Супер �
   assert.equal((await manager.call("DELETE", `/api/users/${theBoss.id}`)).status, 403);
 });
 
+test("„Потребители“ не дава роля над твоята и не пипа по-силен човек", async () => {
+  await prisma.role.create({ data: { id: "OPS", label: "Операции", canSettings: true, canAudit: true, canDelete: true } });
+  const ops = await makeUser(prisma, { nome: "Опс", email: "ops@sklad.test", ruolo: "OPS", pin: "314159" });
+  const up = await manager.call("POST", "/api/users", { nome: "Нагоре", email: "up@sklad.test", ruolo: "OPS", pin: "271828" });
+  assert.equal(up.status, 403);
+  const takeover = await manager.call("PUT", `/api/users/${ops.id}`, { nome: ops.nome, email: ops.email, ruolo: "OPS", pin: "161803" });
+  assert.equal(takeover.status, 403);
+  const demote = await manager.call("PUT", `/api/users/${ops.id}`, { nome: ops.nome, email: ops.email, ruolo: "VIEWER", pin: "161803" });
+  assert.equal(demote.status, 403, "по-силен човек не се сваля и не му се сменя ПИН-ът");
+  assert.equal((await manager.call("DELETE", `/api/users/${ops.id}`)).status, 403);
+  const down = await manager.call("POST", "/api/users", { nome: "Надолу", email: "down@sklad.test", ruolo: "VIEWER", pin: "141421" });
+  assert.equal(down.status, 200);
+  const promote = await manager.call("PUT", `/api/users/${down.data.id}`, { nome: "Надолу", email: "down@sklad.test", ruolo: "OPS" });
+  assert.equal(promote.status, 403, "никого не качваш над своите права");
+  assert.equal((await client(srv.base).login("ops@sklad.test", "314159")).status, 200, "ПИН-ът на OPS не е сменен");
+});
+
 test("никой не сменя собствената си роля; последният Супер Админ остава", async () => {
   const theBoss = await prisma.user.findFirst({ where: { email: "boss@sklad.test" } });
   const r = await boss.call("PUT", `/api/users/${theBoss.id}`, { nome: theBoss.nome, email: theBoss.email, ruolo: "VIEWER" });

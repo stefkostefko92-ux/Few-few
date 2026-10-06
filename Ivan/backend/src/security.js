@@ -29,8 +29,10 @@ async function verifyPin(pin, stored) {
 const pinVersion = (stored) =>
   crypto.createHash("sha256").update(String(stored)).digest("base64url").slice(0, 22);
 
-function issueSession(res, user, config) {
-  const token = jwt.sign({ sub: user.id, pv: pinVersion(user.pin) }, config.jwtSecret, {
+/** `weak`: ПИН-ът при входа е стар (под 6 цифри) — сесията пуска само смяната на ПИН-а. */
+function issueSession(res, user, config, { weak = false } = {}) {
+  const claims = { sub: user.id, pv: pinVersion(user.pin), ...(weak ? { wk: 1 } : {}) };
+  const token = jwt.sign(claims, config.jwtSecret, {
     algorithm: "HS256",
     expiresIn: `${SESSION_HOURS}h`,
   });
@@ -62,8 +64,11 @@ function readCookie(req, name) {
   return null;
 }
 
-/** Пуска само заявка с жива сесия; req.user е от базата (ролята никога не идва от токена). */
-function requireUser({ prisma, config }) {
+/**
+ * Пуска само заявка с жива сесия; req.user е от базата (ролята никога не идва от токена).
+ * Сесия от вход със стар ПИН (под 6 цифри) минава само където `allowWeak` — /me и смяната на ПИН-а.
+ */
+function requireUser({ prisma, config, allowWeak = false }) {
   return async (req, res, next) => {
     try {
       const token = readCookie(req, COOKIE);
@@ -78,7 +83,10 @@ function requireUser({ prisma, config }) {
       if (!user || claims.pv !== pinVersion(user.pin)) {
         return res.status(401).json({ error: "Сесията е прекратена" });
       }
-      req.user = { id: user.id, nome: user.nome, email: user.email, ruolo: user.ruolo };
+      if (claims.wk && !allowWeak) {
+        return res.status(403).json({ error: "Смени ПИН-а си (6–12 цифри), за да продължиш", code: "PIN_CHANGE_REQUIRED" });
+      }
+      req.user = { id: user.id, nome: user.nome, email: user.email, ruolo: user.ruolo, pinChangeRequired: Boolean(claims.wk) };
       next();
     } catch (err) {
       next(err);

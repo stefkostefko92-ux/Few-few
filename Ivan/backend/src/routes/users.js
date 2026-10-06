@@ -1,7 +1,9 @@
 "use strict";
 // Потребители. ПИН-ът никога не излиза навън (пази се само bcrypt хешът).
 // Само Супер Админ дава или взема ролята Супер Админ и пипа Супер Админ — иначе правото „Потребители“ би било
-// стълба до пълен достъп. Никой не сменя собствената си роля и винаги остава поне един Супер Админ.
+// стълба до пълен достъп. Същото важи за всяко право: без Супер Админ не даваш роля с право, което нямаш, и не
+// пипаш (нов ПИН, роля, изтриване) човек с такава роля — иначе би влязъл като него. Никой не сменя собствената
+// си роля и винаги остава поне един Супер Админ.
 const express = require("express");
 const v = require("../validate");
 const { hashPin } = require("../security");
@@ -14,6 +16,12 @@ module.exports = function userRoutes({ prisma }) {
   r.use(requirePerm(prisma, "canManageUsers"));
 
   const roleExists = async (id) => Boolean(await prisma.role.findUnique({ where: { id } }));
+  // Ролята дава право, което действащият няма (Супер Админ няма горна граница).
+  const exceedsOwn = async (req, roleId) => {
+    if (isSuper(req)) return false;
+    const role = await prisma.role.findUnique({ where: { id: roleId } });
+    return !role || v.PERMS.some((p) => role[p] && !req.role[p]);
+  };
   const supers = () => prisma.user.count({ where: { ruolo: "SUPER_ADMIN" } });
 
   r.get("/", async (_req, res, next) => {
@@ -31,6 +39,9 @@ module.exports = function userRoutes({ prisma }) {
       if (!(await roleExists(body.ruolo))) return res.status(400).json({ error: "Няма такава роля" });
       if (body.ruolo === "SUPER_ADMIN" && !isSuper(req)) {
         return res.status(403).json({ error: "Само Супер Админ дава тази роля" });
+      }
+      if (await exceedsOwn(req, body.ruolo)) {
+        return res.status(403).json({ error: "Не можеш да дадеш роля с права, които нямаш" });
       }
       const u = await prisma.user.create({
         data: { nome: body.nome, email: body.email, ruolo: body.ruolo, pin: await hashPin(body.pin) },
@@ -53,6 +64,9 @@ module.exports = function userRoutes({ prisma }) {
       if (!(await roleExists(body.ruolo))) return res.status(400).json({ error: "Няма такава роля" });
       const touchesSuper = target.ruolo === "SUPER_ADMIN" || body.ruolo === "SUPER_ADMIN";
       if (touchesSuper && !isSuper(req)) return res.status(403).json({ error: "Само Супер Админ променя Супер Админ" });
+      if ((await exceedsOwn(req, target.ruolo)) || (await exceedsOwn(req, body.ruolo))) {
+        return res.status(403).json({ error: "Не можеш да променяш човек с права, които нямаш" });
+      }
       if (target.id === req.user.id && body.ruolo !== target.ruolo) {
         return res.status(400).json({ error: "Не можеш да смениш собствената си роля" });
       }
@@ -77,6 +91,9 @@ module.exports = function userRoutes({ prisma }) {
       if (!u) return res.status(404).json({ error: "Не е намерен" });
       if (u.ruolo === "SUPER_ADMIN" && !isSuper(req)) {
         return res.status(403).json({ error: "Само Супер Админ трие Супер Админ" });
+      }
+      if (await exceedsOwn(req, u.ruolo)) {
+        return res.status(403).json({ error: "Не можеш да триеш човек с права, които нямаш" });
       }
       await prisma.user.delete({ where: { id: u.id } });
       await addAudit(prisma, req.user, "USER_DELETED", `Изтрит ${u.nome}`, "");

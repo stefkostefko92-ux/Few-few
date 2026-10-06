@@ -47,14 +47,21 @@ deploy.sh                  idempotent deploy; creates/rotates the secrets in /va
   12 h). The token carries only the user id and a fingerprint of the stored PIN hash: the role is read
   from the DB on every request, a new PIN ends every older session, a deleted user is out at once.
   No token in JavaScript or localStorage.
-- **PINs:** bcrypt (cost 12), never returned by the API. New/changed PINs are 6–12 digits; old 4-digit
-  PINs still log in (the lockout protects them). Plaintext PINs never authenticate — the seed hashes them.
+- **PINs:** bcrypt (cost 12), never returned by the API. New/changed PINs are 6–12 digits. An old 4-digit
+  PIN still logs in, but that session (`wk` claim) reaches only `/api/auth/me` and `POST /api/auth/pin`
+  until the person picks a new PIN (403 `PIN_CHANGE_REQUIRED` elsewhere; the UI shows the change screen).
+  Plaintext PINs never authenticate — the seed hashes them.
 - **Login:** email + PIN, one generic error for unknown email and wrong PIN, no public list of users.
+  Emails are stored lowercase (zod on input, the seed for old rows) and looked up **exactly** — a
+  case-insensitive Prisma filter is `ILIKE` in PostgreSQL, where `_`/`%` are wildcards. The lockout is keyed
+  by the account (`u:<id>`), so no spelling of an email gets its own five tries; the PIN change shares it.
 - **No CORS** (the frontend is same-origin). Every state-changing request must be JSON and, when the
   browser sends `Origin`, come from our host.
 - **Authorization:** `requirePerm` on every mutating route. Only SUPER_ADMIN grants/edits/deletes
   SUPER_ADMIN; nobody changes their own role; at least one SUPER_ADMIN remains; a role can't be given a
-  permission the granter lacks; only SUPER_ADMIN clears the audit log (and the clearing is audited).
+  permission the granter lacks, and with „Потребители“ you neither give a role with a permission you lack
+  nor touch (PIN, role, delete) someone whose role has one; only SUPER_ADMIN clears the audit log (and the
+  clearing is audited).
 - **Stock:** order quantities are positive integers; stock is decremented with a conditional update in the
   order transaction (no overselling, duplicate lines are summed); totals come from DB prices; without
   `canSeePrice` prices are hidden and an edit keeps the stored price.

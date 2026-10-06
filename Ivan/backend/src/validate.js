@@ -9,6 +9,7 @@ const anyPin = z.string().regex(/^\d{4,12}$/);
 const flag = z.boolean().optional().default(false);
 
 const login = z.object({ email, pin: anyPin });
+const pinChange = z.object({ currentPin: anyPin, newPin });
 
 const userCreate = z.object({
   nome: z.string().trim().min(1).max(100),
@@ -73,4 +74,4 @@ function parseBody(schema, req, res) {
   return undefined;
 }
 
-module.exports = { PERMS, login, userCreate, userUpdate, roleCreate, roleUpdate, part, order, settings, parseBody };
+module.exports = { PERMS, login, pinChange, userCreate, userUpdate, roleCreate, roleUpdate, part, order, settings, parseBody };
