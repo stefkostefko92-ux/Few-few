@@ -1,15 +1,11 @@
-import { engine } from '../src/services/engine.js';
-import {
-  furnitureByGroup,
-  type FurnitureGroup,
-  type FurnitureKind,
-} from '../src/services/furniture.js';
+import { engine } from './engine.js';
+import { furnitureByGroup, type FurnitureGroup, type FurnitureKind } from './furniture.js';
 
 /**
  * Всички видове мебели в изглед отпред, в един мащаб, по групи. Геометрията е на двигателя (детайлите и
  * символите на модела с размерите по подразбиране) — същото правило като сглобения чертеж: детайлите
  * отзад напред, фронтовете отгоре, отварянето на вратите с пунктир. Без надписи вътре — четат се на
- * всеки език.
+ * всеки език. Ползват го брошурата и витрината; смята се веднъж.
  */
 interface Box {
   min: [number, number, number];
@@ -126,9 +122,12 @@ function extents(model: Model): { x0: number; x1: number; y0: number; y1: number
   };
 }
 
+let cached: LineupGroup[] | null = null;
+
 export function furnitureLineup(): LineupGroup[] {
+  if (cached) return cached;
   const api = engine();
-  return furnitureByGroup().map(({ group, kinds }) => {
+  cached = furnitureByGroup().map(({ group, kinds }) => {
     const built = kinds.map((kind) => {
       const model = api.buildModel({ type: kind.id }) as unknown as Model;
       return { kind, model, ext: extents(model) };
@@ -146,4 +145,5 @@ export function furnitureLineup(): LineupGroup[] {
       })),
     };
   });
+  return cached;
 }

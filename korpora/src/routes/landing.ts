@@ -14,13 +14,14 @@ import {
   landingTextParams,
   legalStructuredData,
 } from '../seo/structured-data.js';
-import { furnitureByGroup } from '../services/furniture.js';
-import { landingAssets } from '../services/landing-assets.js';
+import { furnitureLineup } from '../services/furniture-lineup.js';
+import { EXAMPLE, landingAssets } from '../services/landing-assets.js';
 import { legalNumbers, privacyNumbers } from '../services/legal-numbers.js';
 
 /**
  * Витрината: всеки език има свой адрес (`/`, `/en/`, `/it/`), за да може търсачката да ги индексира
- * поотделно (hreflang). Страницата е еднаква за всички — без сесия и без JavaScript, затова се кешира.
+ * поотделно (hreflang). Страницата е еднаква за всички — без сесия, затова се кешира. Работи и без
+ * JavaScript; модулът landing/main.js само добавя движението (снимките по стъпки и живата 3D сцена).
  */
 export const landingRouter: Router = Router();
 
@@ -74,7 +75,8 @@ function landing(locale: Locale) {
       vatPercent: VAT_BG_PERCENT,
       trialDays: TRIAL_DAYS,
       assets: landingAssets(),
-      kinds: furnitureByGroup(),
+      storyExample: EXAMPLE,
+      lineup: furnitureLineup(),
       faqIds: FAQ_IDS,
       howSteps: HOW_STEPS,
       texts: landingTextParams(locale, prices),

@@ -95,7 +95,8 @@
       "width": "width {min}–{max} mm",
       "modules": "{min}–{max} units of {wmin}–{wmax} mm",
       "mattress": "mattress {min}–{max} cm",
-      "rules": "The construction follows workshop practice: the bottom and top sit between the sides, the HDF back goes into a groove, base cabinets have rails for the worktop, and cut sizes are reduced by the edge banding."
+      "rules": "The construction follows workshop practice: the bottom and top sit between the sides, the HDF back goes into a groove, base cabinets have rails for the worktop, and cut sizes are reduced by the edge banding.",
+      "lineupNote": "The front views are the engine’s output at the default sizes, all at one scale."
     },
     "machine": {
       "title": "What does the machine get?",
@@ -147,6 +148,10 @@
     },
     "faq": {
       "title": "Questions and answers",
+      "beta": {
+        "q": "What does “beta” mean?",
+        "a": "Korpora is in open beta: everything works and every output is real, but the software is still being refined with the feedback of the first workshops. Tell us what is missing or not right — at {contact}."
+      },
       "price": {
         "q": "How much does Korpora cost?",
         "a": "{month} per month including VAT ({monthNet} excluding VAT). Paying for {terms} months at once gives a {discounts} discount. Lifetime costs {life} including VAT ({lifeNet} excluding VAT), is paid once and is valid for as long as Korpora is offered."
@@ -191,6 +196,28 @@
     },
     "foot": {
       "about": "Korpora is software for designing panel furniture: 3D model, cut list, drawings with drilling maps and files for a CNC machine."
+    },
+    "outputs": {
+      "title": "What comes out of one project?",
+      "lead": "The real files of the same example kitchen: the cutting sheet with the router path, the parts of the first module and the start of the G-code."
+    },
+    "story": {
+      "model": "Model",
+      "modelValue": "Kitchen, {modules} units of {width} mm",
+      "size": "Overall size",
+      "sizeValue": "{w} × {h} × {d} mm",
+      "parts": "Parts",
+      "materials": "Materials",
+      "sheets": "Sheets",
+      "sheetsValue": "{n} of {w} × {h} mm",
+      "yield": "Sheet yield",
+      "yieldValue": "{pct}%",
+      "sheet1": "Parts on sheet 1",
+      "holes": "Holes on sheet 1",
+      "program": "G-code"
+    },
+    "beta": {
+      "tag": "beta"
     }
   }
 }

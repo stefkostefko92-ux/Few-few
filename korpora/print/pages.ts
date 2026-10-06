@@ -2,7 +2,7 @@ import type { Locale, Translator } from '../src/i18n.js';
 import type { PriceRow } from '../src/plans/pricing.js';
 import { HOW_STEPS } from '../src/seo/structured-data.js';
 import type { LandingAssets } from '../src/services/landing-assets.js';
-import type { LineupGroup } from './lineup.js';
+import type { LineupGroup } from '../src/services/furniture-lineup.js';
 
 /** Всичко, от което се сглобява брошурата на един език. Текстът е от речниците, картините — от двигателя. */
 export interface BrochureContext {

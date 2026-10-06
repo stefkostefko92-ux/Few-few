@@ -26,54 +26,6 @@
   margin-bottom: 34px;
 }
 
-/* the four outputs: a real sequence, so numbered */
-.steps {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-  gap: 0;
-  border-top: 2px solid var(--ink);
-}
-.steps li {
-  padding: 18px 22px 22px 0;
-  border-right: 1px solid var(--rule);
-}
-.steps li + li {
-  padding-left: 22px;
-}
-.steps li:last-child {
-  border-right: 0;
-}
-@media (max-width: 1100px) {
-  .steps li,
-  .steps li + li {
-    padding-left: 0;
-    border-right: 0;
-    border-bottom: 1px solid var(--rule);
-  }
-}
-/* the step numbers are position balloons, the way an assembly drawing points at its parts */
-.step-n {
-  display: grid;
-  place-items: center;
-  width: 2.2rem;
-  height: 2.2rem;
-  border: 1.5px solid var(--ink);
-  border-radius: 50%;
-  font: 650 1rem/1 var(--f-text);
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 14px;
-}
-.steps h3 {
-  font-size: 1.18rem;
-  margin-bottom: 8px;
-}
-.steps p {
-  color: var(--ink-2);
-  margin: 0;
-}
 .outputs {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -198,32 +150,81 @@
   outline-color: #2c6a10;
 }
 
-/* furniture types */
-.kinds {
+/* furniture types: every kind as the engine draws it from the front, one scale for all, bottoms on one line */
+.lineup {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  gap: 26px 40px;
+  gap: clamp(28px, 4vw, 44px);
 }
-.kinds h3 {
+.lineup-group h3 {
   font-size: 1.05rem;
   padding-bottom: 8px;
+  margin-bottom: 18px;
   border-bottom: 2px solid var(--ink);
 }
-.kinds ul {
+.lineup-row {
   list-style: none;
   margin: 0;
   padding: 0;
-}
-.kinds li {
-  padding: 9px 0;
-  border-bottom: 1px solid var(--rule);
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 26px clamp(22px, 3.4vw, 46px);
 }
-.kinds li small {
-  text-align: right;
+.lineup-row li {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+.elev {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+  margin-bottom: 8px;
+  border-bottom: 1.5px solid var(--ink);
+}
+.elev .l-body {
+  fill: var(--panel);
+  stroke: var(--ink);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+.elev .l-front {
+  fill: #e8dbc9;
+  stroke: var(--ink);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+.elev .l-leg {
+  fill: var(--ink);
+}
+.elev .l-top {
+  fill: var(--oak);
+  stroke: var(--ink);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+.elev .l-open,
+.elev .l-mattress {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 0.8px;
+  stroke-dasharray: 5 4;
+  vector-effect: non-scaling-stroke;
+}
+.elev .l-handle {
+  stroke: var(--ink);
+  stroke-width: 2px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.lineup-name {
+  font-weight: 620;
+}
+.lineup-note {
+  margin-top: 22px;
+  font-size: 0.9rem;
+  color: var(--ink-2);
 }
 .rules {
   margin-top: 30px;

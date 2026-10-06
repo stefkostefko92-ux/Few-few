@@ -145,7 +145,9 @@ test('HowTo repeats the visible steps word for word, each with its own anchor', 
     );
     for (const step of steps) {
       assert.equal(step.url, `${BASE}${path}#how-${step.position}`);
-      const li = new RegExp(`<li id="how-${step.position}">([\\s\\S]*?)</li>`).exec(body)?.[1];
+      const li = new RegExp(`<li id="how-${step.position}"(?: [^>]*)?>([\\s\\S]*?)</li>`).exec(
+        body,
+      )?.[1];
       assert.ok(li, `${path}: anchor how-${step.position}`);
       assert.ok(li.includes(`<h3>${esc(step.name)}</h3>`), `${path}: step ${step.position} name`);
       assert.ok(li.includes(`<p>${esc(step.text)}</p>`), `${path}: step ${step.position} text`);

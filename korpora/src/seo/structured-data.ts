@@ -11,6 +11,7 @@ import { PATHS } from './paths.js';
  * въпросите и отговорите в FAQPage са дума по дума тези от екрана, както изискват търсачките.
  */
 export const FAQ_IDS = [
+  'beta',
   'price',
   'afterTrial',
   'install',
@@ -42,6 +43,7 @@ export function landingTextParams(locale: Locale, prices: PriceRow[]) {
   const terms = prices.filter((p) => p.discountPercent > 0);
   const percent = (n: number) => (locale === 'bg' ? `${n}\u00a0%` : `${n}%`);
   const faq: Partial<Record<FaqId, Record<string, string>>> = {
+    beta: { contact: config().CONTACT_EMAIL },
     price: {
       month: money(row('m1').totalWithVatCents),
       monthNet: money(row('m1').totalCents),

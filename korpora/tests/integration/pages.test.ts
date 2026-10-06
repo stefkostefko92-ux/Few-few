@@ -92,3 +92,50 @@ test('one-time pages (QR, recovery codes, a used confirmation link) have no lang
   assert.equal(done.status, 200);
   assert.ok(!done.body.includes(LANGS), 'the page after the link is used');
 });
+
+test('the read-out beside the story carries the example’s numbers from the engine, in every language', async () => {
+  const { engine } = await import('../../src/services/engine.js');
+  const { EXAMPLE } = await import('../../src/services/landing-assets.js');
+  const api = engine();
+  const model = api.buildModel(EXAMPLE);
+  const nesting = api.nest(model) as unknown as {
+    sheets: Array<{ w: number; h: number; yield: number; placements: unknown[] }>;
+  };
+  const sheet1 = nesting.sheets[0]!;
+  const program = api.toGcode(model, sheet1 as never, {
+    product: 'Korpora',
+    hash: '',
+    owner: '',
+    date: '',
+  }) as unknown as { moves: Array<{ type: string; at?: unknown }> };
+  const size = api.typeDims(EXAMPLE.type, model.spec);
+  const boards = model.parts as unknown as Array<{ stock: string; decor: string }>;
+  const yieldPct = Math.round(
+    (nesting.sheets.reduce((sum, sh) => sum + sh.yield, 0) / nesting.sheets.length) * 100,
+  );
+  const expected = [
+    [EXAMPLE.modules, EXAMPLE.moduleWidth],
+    [size.W, size.H, size.D],
+    [model.parts.length],
+    [new Set(boards.map((b) => `${b.stock}|${b.decor}`)).size],
+    [nesting.sheets.length, sheet1.w, sheet1.h],
+    [yieldPct],
+    [sheet1.placements.length],
+    [program.moves.filter((m) => m.type === 'drill' && m.at).length],
+  ];
+  // the numbers of a cell, whatever the language groups its thousands with
+  const numbers = (text: string) =>
+    (text.replace(/(\d)[,.   ](?=\d{3}(\D|$))/g, '$1').match(/\d+/g) ?? []).map(Number);
+  for (const path of ['/', '/en/', '/it/']) {
+    const page = await (await get(path)).text();
+    const hud = /<div class="stage-hud" data-story-hud>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/.exec(
+      page,
+    )?.[1];
+    assert.ok(hud, `${path}: the read-out`);
+    const cells = [...hud.matchAll(/<dd[^>]*>([^<]*)<\/dd>/g)].map((m) => m[1]!.trim());
+    assert.equal(cells.length, 9, path);
+    assert.deepEqual(cells.slice(0, 8).map(numbers), expected, path);
+    // the program's first move: the line the live scene starts from
+    assert.match(cells[8]!, /^G[0-3]\b/, path);
+  }
+});

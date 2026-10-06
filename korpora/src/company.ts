@@ -30,7 +30,7 @@ export const COMPANY = {
 export const PRODUCT_URL = 'https://korpora.carbonstealth.eu';
 
 /** Датата на последна промяна на витрината — сменя се ръчно, когато се промени съдържанието ѝ. */
-export const CONTENT_UPDATED = '2026-10-03';
+export const CONTENT_UPDATED = '2026-10-06';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
 export const LEGAL_UPDATED = { privacy: '2026-10-04', terms: '2026-10-03' } as const;

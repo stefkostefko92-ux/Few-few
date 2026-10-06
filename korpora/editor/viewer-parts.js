@@ -49,6 +49,7 @@ export function boardMeshes(part, size, materials) {
     const mesh = new THREE.Mesh(boardGeometry(part, size, materials, faces), material);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
+    mesh.userData.board = true; // the board itself, not its hardware (the landing's story tells them apart)
     return mesh;
   });
 }

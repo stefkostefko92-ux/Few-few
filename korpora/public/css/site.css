@@ -1,6 +1,7 @@
-/* Korpora — the public page. The page is a sheet of W1000 board on the machine bed: the hero shows a real nested
-   sheet with its router path, the rest reads like the drawing pack that comes out of one project. One moment of
-   motion (the router path draws itself once), no decoration that is not the product's own output. */
+/* Korpora — the public page. The first act (site-story.css) is the product itself: the example kitchen in 3D that
+   turns, as the reader scrolls, into its parts, its sheets and the router path. The rest reads like the drawing pack
+   that comes out of the same project: the nested sheet on the machine bed, the cut list, the G-code, the drawings.
+   Nothing on the page is drawn by hand — every picture is the engine's output. */
 
 .site {
   --measure: 62ch;
@@ -50,6 +51,17 @@
   color: var(--ink);
   font-weight: 550;
 }
+/* the beta tag next to the name in the top bar */
+.beta-tag {
+  margin-left: -16px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  color: var(--gold-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
 /* narrow: the section links take their own row and wrap; a scroll strip would cut the last word in half */
 @media (max-width: 900px) {
   .site-nav {
@@ -64,19 +76,6 @@
 }
 
 /* hero */
-.hero .wrap {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 32px;
-  padding-block: clamp(36px, 6vw, 84px) clamp(40px, 6vw, 80px);
-  align-items: center;
-}
-@media (min-width: 980px) {
-  .hero .wrap {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: 48px;
-  }
-}
 .hero h1 {
   font-size: clamp(3.1rem, 8.6vw, 6.6rem);
   line-height: 0.92;
@@ -188,7 +187,7 @@
 .sheet-art .hole.tdrill {
   fill: var(--op-drill);
 }
-/* the one moment of motion: the router path draws itself once, in cutting order, in six waves */
+/* the sheet's router path draws itself once, in cutting order, in six waves */
 @media (prefers-reduced-motion: no-preference) {
   .sheet-art .paths path {
     stroke-dasharray: 1;

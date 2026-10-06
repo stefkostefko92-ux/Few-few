@@ -71,8 +71,30 @@ export interface DrawingView {
   height: number;
 }
 
+/**
+ * Числата на примера в отчета до сцената — смятат се тук, за да ги вижда всеки: и без JavaScript, и със
+ * снимките (намалено движение, бавно устройство). Живата сцена сменя само реда с G-кода.
+ */
+export interface StoryNumbers {
+  /** Габаритът, както го чете човек — като в заглавната лента на редактора и рамката на чертежа. */
+  size: { W: number; H: number; D: number };
+  parts: number;
+  /** Различните материали на детайлите: плоча с декор. */
+  materials: number;
+  sheets: number;
+  sheetW: number;
+  sheetH: number;
+  /** Средното използване на листовете, в цели проценти. */
+  yieldPct: number;
+  sheet1Parts: number;
+  sheet1Holes: number;
+  /** Първото движение от програмата на лист 1. */
+  firstMove: string;
+}
+
 export interface LandingAssets {
   example: { modules: number; moduleWidth: number; parts: number };
+  story: StoryNumbers;
   sheet: {
     svg: string;
     no: number;
@@ -96,7 +118,8 @@ export interface LandingAssets {
   dxfLayers: string[];
 }
 
-const EXAMPLE = { type: 'kitchen', modules: 4, moduleWidth: 600 };
+/** Примерният проект на витрината — и за живата 3D сцена (landing/story.js го строи в браузъра). */
+export const EXAMPLE = { type: 'kitchen', modules: 4, moduleWidth: 600 } as const;
 const EXAMPLE_DATE = '2026-10-02';
 /** Пътят на фрезата се изрисува на вълни в реда на рязане (класовете w1…w6 в site.css). */
 const WAVES = 6;
@@ -150,10 +173,13 @@ function sheetArt(model: EngineModel, sheet: SheetLike, meta: DrawingMeta) {
     g.moves.map((m) => m.tool).filter((id): id is string => typeof id === 'string'),
   );
   const usedTools = g.tools.filter((t) => used.has(t.id));
+  const lines = g.text.split('\n');
   return {
     svg,
     holes,
-    gcode: g.text.split('\n').slice(0, 16),
+    gcode: lines.slice(0, 16),
+    // движение, не настройка: същото правило като реда с G-кода в landing/story.js
+    firstMove: lines.find((line) => /^(G[0-3]|G8[0-9])\b/.test(line)) ?? '',
     tools: {
       contour: usedTools.find((t) => toolClass(t) === 'tcontour')?.d ?? null,
       groove: usedTools.find((t) => toolClass(t) === 'tgroove')?.d ?? null,
@@ -237,11 +263,27 @@ export function landingAssets(): LandingAssets {
     | undefined;
   // двигателят номерира листа на вратата сам — като в редактора и в изтегления проект
   const doorSvg = door ? api.drawingPart(model, meta, door.id) : '';
+  const boards = model.parts as Array<
+    EngineModel['parts'][number] & { stock: string; decor: string }
+  >;
+  const sheets = nesting.sheets as Array<SheetLike & { yield: number }>;
   cached = {
     example: {
       modules: EXAMPLE.modules,
       moduleWidth: EXAMPLE.moduleWidth,
       parts: model.parts.length,
+    },
+    story: {
+      size: api.typeDims(EXAMPLE.type, model.spec),
+      parts: model.parts.length,
+      materials: new Set(boards.map((b) => `${b.stock}|${b.decor}`)).size,
+      sheets: sheets.length,
+      sheetW: sheet.w,
+      sheetH: sheet.h,
+      yieldPct: Math.round((sheets.reduce((sum, sh) => sum + sh.yield, 0) / sheets.length) * 100),
+      sheet1Parts: sheet.placements.length,
+      sheet1Holes: art.holes,
+      firstMove: art.firstMove,
     },
     sheet: {
       svg: art.svg,

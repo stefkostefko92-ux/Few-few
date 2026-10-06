@@ -11,9 +11,16 @@ export async function editorModule<T extends object>(
   file: string,
   names: readonly string[],
 ): Promise<T> {
-  const mod: unknown = await import(pathToFileURL(join(ROOT, 'editor', file)).href);
-  if (!exports<T>(mod, names))
-    throw new Error(`editor/${file} no longer exports ${names.join(', ')}`);
+  return browserModule<T>(`editor/${file}`, names);
+}
+
+/** The same for the landing page's browser code (`landing/…`), or any other untyped module by path. */
+export async function browserModule<T extends object>(
+  path: string,
+  names: readonly string[],
+): Promise<T> {
+  const mod: unknown = await import(pathToFileURL(join(ROOT, path)).href);
+  if (!exports<T>(mod, names)) throw new Error(`${path} no longer exports ${names.join(', ')}`);
   return mod;
 }
 

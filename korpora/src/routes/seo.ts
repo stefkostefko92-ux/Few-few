@@ -126,6 +126,7 @@ seoRouter.get('/llms.txt', (_req, res) => {
         ),
         '',
         '## Facts',
+        `- Status: ${translate('en', 'landing.faq.beta.a', { contact: config().CONTACT_EMAIL })}`,
         `- Price for consumers (incl. ${VAT_BG_PERCENT}% Bulgarian VAT): ${eur(monthly?.totalWithVatCents ?? 0)} per month (${eur(monthly?.totalCents ?? 0)} excl. VAT); ${terms}; Lifetime ${eur(lifetime?.totalWithVatCents ?? 0)} (${eur(lifetime?.totalCents ?? 0)} excl. VAT), ${rule.multiple} times the yearly price without the ${rule.months}-month discount, valid for as long as Korpora is offered. Plans do not renew automatically.`,
         `- Ordering: from the account, with an order button that states the obligation to pay; payment by bank transfer against an invoice. Consumers may withdraw within ${WITHDRAWAL_DAYS} days with the "Withdraw from contract here" button.`,
         '- After the trial ends, existing projects stay available for download; creating or changing projects needs Premium or Lifetime.',

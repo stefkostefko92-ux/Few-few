@@ -20,7 +20,7 @@ import { formatMoney, priceTable, VAT_BG_PERCENT } from '../src/plans/pricing.js
 import { legalPath, PATHS } from '../src/seo/paths.js';
 import { loadEngine } from '../src/services/engine.js';
 import { landingAssets } from '../src/services/landing-assets.js';
-import { furnitureLineup } from './lineup.js';
+import { furnitureLineup } from '../src/services/furniture-lineup.js';
 import { cover, drilling, esc, how, type BrochureContext } from './pages.js';
 import { kinds, machine, prices } from './pages-more.js';
 

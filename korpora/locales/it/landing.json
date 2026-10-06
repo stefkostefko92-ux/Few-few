@@ -95,7 +95,8 @@
       "width": "larghezza {min}–{max} mm",
       "modules": "{min}–{max} moduli da {wmin}–{wmax} mm",
       "mattress": "materasso {min}–{max} cm",
-      "rules": "La costruzione segue le regole del laboratorio: fondo e cielo stanno tra i fianchi, lo schienale in HDF entra in una scanalatura, i mobili base hanno i traversi per il piano di lavoro e le misure di taglio sono ridotte del bordo."
+      "rules": "La costruzione segue le regole del laboratorio: fondo e cielo stanno tra i fianchi, lo schienale in HDF entra in una scanalatura, i mobili base hanno i traversi per il piano di lavoro e le misure di taglio sono ridotte del bordo.",
+      "lineupNote": "Le viste frontali sono l’output del motore con le misure predefinite, tutte nella stessa scala."
     },
     "machine": {
       "title": "Che cosa riceve la macchina?",
@@ -147,6 +148,10 @@
     },
     "faq": {
       "title": "Domande e risposte",
+      "beta": {
+        "q": "Che cosa vuol dire «beta»?",
+        "a": "Korpora è in beta aperta: tutto funziona e ogni output è reale, ma il software si sta ancora rifinendo con i riscontri delle prime falegnamerie. Scriveteci che cosa manca o non va — a {contact}."
+      },
       "price": {
         "q": "Quanto costa Korpora?",
         "a": "{month} al mese IVA inclusa ({monthNet} IVA esclusa). Pagando {terms} mesi in una volta lo sconto è del {discounts}. Lifetime costa {life} IVA inclusa ({lifeNet} IVA esclusa), si paga una volta e vale finché Korpora è offerto."
@@ -191,6 +196,28 @@
     },
     "foot": {
       "about": "Korpora è un software per progettare mobili in pannelli: modello 3D, distinta di taglio, disegni con mappa di foratura e file per la macchina CNC."
+    },
+    "outputs": {
+      "title": "Che cosa esce da un progetto?",
+      "lead": "I file veri della stessa cucina di esempio: il foglio di taglio con il percorso della fresa, i pezzi del primo modulo e l’inizio del G-code."
+    },
+    "story": {
+      "model": "Modello",
+      "modelValue": "Cucina, {modules} moduli da {width} mm",
+      "size": "Ingombro",
+      "sizeValue": "{w} × {h} × {d} mm",
+      "parts": "Pezzi",
+      "materials": "Materiali",
+      "sheets": "Fogli",
+      "sheetsValue": "{n} da {w} × {h} mm",
+      "yield": "Resa dei fogli",
+      "yieldValue": "{pct} %",
+      "sheet1": "Pezzi sul foglio 1",
+      "holes": "Fori sul foglio 1",
+      "program": "G-code"
+    },
+    "beta": {
+      "tag": "beta"
     }
   }
 }

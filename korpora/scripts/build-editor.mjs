@@ -1,6 +1,8 @@
 // Builds the editor: an ES module (engine + UI + three.js, served from our origin — no CDN under the CSP) with the
 // photorealistic view split into chunks loaded on demand (chunks/, content-hashed names), and one stylesheet
-// (editor/css/*.css + the drawing rules that standalone SVG files carry in their own <style>).
+// (editor/css/*.css + the drawing rules that standalone SVG files carry in their own <style>). The landing page's
+// motion (landing/main.js) is built in the same pass: its live 3D scene loads three.js, the engine and the viewer as
+// the very chunks the editor uses, so a visitor who signs up already has them.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +15,7 @@ mkdirSync(outDir, { recursive: true });
 
 rmSync(join(outDir, 'chunks'), { recursive: true, force: true });
 const result = await build({
-  entryPoints: { editor: here('../editor/main.js') },
+  entryPoints: { editor: here('../editor/main.js'), landing: here('../landing/main.js') },
   bundle: true,
   format: 'esm',
   target: 'es2022',
@@ -35,7 +37,9 @@ for (const file of result.outputFiles) {
   writeFileSync(join(outDir, name), file.text);
 }
 // the chunks editor.js imports up front (three.js): the page preloads them next to it instead of after it
-const entry = Object.entries(result.metafile.outputs).find(([, o]) => o.entryPoint);
+const entry = Object.entries(result.metafile.outputs).find(([, o]) =>
+  o.entryPoint?.endsWith('editor/main.js'),
+);
 const preload = (entry?.[1].imports ?? [])
   .filter((i) => i.kind === 'import-statement')
   .map((i) => relative(outDir, join(process.cwd(), i.path))); // metafile paths are relative to the cwd
