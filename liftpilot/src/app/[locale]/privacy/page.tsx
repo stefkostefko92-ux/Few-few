@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
 import { isLocale, type Locale } from '@/i18n/locales';
 import { publicBaseUrl } from '@/lib/env';
-import { PRIVACY, TERMS, TERMS_DATE, TERMS_VERSION, article, legalValues, termsDateText } from '@/lib/legal';
+import { PRIVACY, TERMS, TERMS_DATE, TERMS_HISTORY, TERMS_VERSION, article, dateText, legalValues, termsDateText } from '@/lib/legal';
 import { SITE_NAME, breadcrumbLd, ldJson, organizationLd, pageMetadata, websiteLd } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
@@ -39,6 +40,12 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
           <p className="note"><time dateTime={TERMS_DATE}>{t('updated', { version: TERMS_VERSION, date: termsDateText(locale) })}</time></p>
           <PrintButton label={t('print')} />
         </div>
+        <nav aria-label={t('archiveTitle')} className="note">
+          {t('archiveTitle')}:{' '}
+          {TERMS_HISTORY.filter((h) => h.version !== TERMS_VERSION).reverse().map((h, i) => (
+            <span key={h.version}>{i ? ' · ' : ''}<Link href={`/privacy/${h.version}`}>{t('archiveItem', { label: h.label, date: dateText(locale, h.date) })}</Link></span>
+          ))}
+        </nav>
         <h2 id="privacy">{t('privacyTitle')}</h2>
         {PRIVACY.map((k) => (
           <section key={k} aria-labelledby={`q-${k}`}>

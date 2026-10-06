@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { isLocale, type Locale } from '@/i18n/locales';
 import { publicBaseUrl } from '@/lib/env';
 import { BACKUP_DAYS, dateText, legalValues } from '@/lib/legal';
-import { EXPORT_DATA, EXPORT_ENVELOPE, EXPORT_FORMAT, EXPORT_FORMAT_VERSION, EXPORT_PROJECT, EXPORT_REGISTER_DATE } from '@/lib/export-format';
+import { EXPORT_DATA, EXPORT_ENVELOPE, EXPORT_FORMAT, EXPORT_FORMAT_HISTORY, EXPORT_FORMAT_VERSION, EXPORT_PROJECT, EXPORT_REGISTER_DATE } from '@/lib/export-format';
 import { HOSTING, PROVIDER } from '@/lib/provider';
 import { SITE_NAME, breadcrumbLd, ldJson, organizationLd, pageMetadata, websiteLd } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader';
@@ -12,11 +12,12 @@ import Footer from '@/components/Footer';
 
 // The register the Data Act asks of a data processing service (Regulation (EU) 2023/2854): what a company can take with
 // it and in which formats, the structure of its JSON export (art. 26(b), kept with src/lib/export-format.ts), how to
-// switch, where the servers are and under which law, and what keeps third-country authorities out (art. 28 and 32).
+// switch and through which interface (art. 25 and 30(2)), where the servers are and under which law, and what keeps
+// third-country authorities out (art. 28 and 32).
 // The terms of use point here (article «exit»).
 const loc = (l: string): Locale => (isLocale(l) ? l : 'it');
 const FILES = ['reports', 'order', 'drawings', 'company'] as const;
-const SECTIONS = ['excluded', 'switch', 'where', 'access', 'contact'] as const;
+const SECTIONS = ['excluded', 'switch', 'api', 'where', 'access', 'contact'] as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -34,7 +35,7 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
   const nonce = (await headers()).get('x-nonce') ?? undefined;
   const ld = ldJson([organizationLd(), websiteLd(loc(locale)), breadcrumbLd([{ name: SITE_NAME, url: `${base}/${locale}` }, { name: t('title'), url }])]);
   const v = { ...legalValues(), backupDays: BACKUP_DAYS, format: EXPORT_FORMAT, version: EXPORT_FORMAT_VERSION, host: HOSTING.provider,
-    email: PROVIDER.email, phoneBg: PROVIDER.phones[0], phoneIt: PROVIDER.phones[1] };
+    email: PROVIDER.email, phoneBg: PROVIDER.phones[0], phoneIt: PROVIDER.phones[1], base };
   const paras = (s: string) => s.split('\n\n').map((p, i) => <p key={i}>{p}</p>);
   return (
     <>
@@ -55,6 +56,7 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
               </tbody>
             </table>
           </div>
+          <p className="note">{t('filesNote')}</p>
         </section>
 
         <section aria-labelledby="q-json">
@@ -72,6 +74,8 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
           </div>
           <p>{t('projectText')}</p>
           <ul>{EXPORT_PROJECT.map((k) => <li key={k}><code>{k}</code> — {t(`project.${k}`)}</li>)}</ul>
+          <p>{t('historyText')}</p>
+          <ul>{EXPORT_FORMAT_HISTORY.map((h) => <li key={h.version}>{t(`history.v${h.version}`, { date: h.since ? dateText(locale, h.since) : '' })}</li>)}</ul>
         </section>
 
         {SECTIONS.map((k) => (

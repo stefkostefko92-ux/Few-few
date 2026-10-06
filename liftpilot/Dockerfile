@@ -32,6 +32,8 @@ COPY --from=build /app/docs ./docs
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/src ./src
 COPY --from=build /app/messages ./messages
+# every version of the terms, word for word: /<locale>/privacy/<version> shows the earlier ones
+COPY --from=build /app/legal ./legal
 COPY --from=build /app/package.json /app/next.config.mjs /app/tsconfig.json ./
 COPY --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh
 USER node

@@ -103,7 +103,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
             {latest && outdated.lift(latest) ? (
               <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
                 <p className="m-0">{tf('design')}</p>
-                {saves ? <RefreshForm kind="lift" id={latest.id} /> : null}
+                {can(user, 'records:refresh') && !p.archivedAt ? <RefreshForm kind="lift" id={latest.id} /> : null}
               </div>
             ) : null}
             {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} prices={await visiblePrices(user)} pitches={pitchesOf(p.plant)} /> : (

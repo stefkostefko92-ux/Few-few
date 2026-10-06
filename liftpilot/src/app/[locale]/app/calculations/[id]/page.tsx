@@ -60,7 +60,7 @@ export default async function CalculationPage({ params, searchParams }: {
   const below = V.layout === 'bottom', open = can(user, 'calc:create') && !c.project.archivedAt;
   // made again in one click: a lift design's calculation with the design, a replacement's with its machine room; one in
   // the archive of a whole project is made again from the project's form (refresh-actions.ts)
-  const refreshable = open && (!!c.liftDesign || replacement);
+  const refreshable = can(user, 'records:refresh') && !c.project.archivedAt && (!!c.liftDesign || replacement);
   // the machine room of the calculation it was made again from, which the new one did not take: to be redone from it
   const lost = before && da.success && replacement && rooms.length === 0 ? await latestRoomOf(user, da.data) : null;
   // the advice among SICOR and Montanari and the machine of the draft order: those of the lift design the calculation

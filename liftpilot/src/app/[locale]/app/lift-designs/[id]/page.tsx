@@ -73,7 +73,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
       {same ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
           <p className="m-0">{tf('design')}</p>
-          {editable && r ? <RefreshForm kind="lift" id={d.id} /> : null}
+          {can(user, 'records:refresh') && !d.project.archivedAt && r ? <RefreshForm kind="lift" id={d.id} /> : null}
         </div>
       )}
       {r ? <LiftView inputs={r.inputs} prices={prices} pitches={pitches} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}

@@ -14,5 +14,12 @@ export type ExportKey = (typeof EXPORT_ENVELOPE)[number] | (typeof EXPORT_DATA)[
 /** What a project carries inside the export (messages: dataPage.project.<key>). */
 export const EXPORT_PROJECT = ['calculations', 'shaftDesigns', 'liftDesigns', 'roomDesigns', 'drawingSets', 'formDrafts', 'clientLogos'] as const;
 
+/** Every version of the format, oldest first (messages: dataPage.history.v<version>): the day it began, null for the
+ *  first. The last is EXPORT_FORMAT_VERSION. */
+export const EXPORT_FORMAT_HISTORY = [
+  { version: 1, since: null },
+  { version: 2, since: '2026-10-06' },
+] as const;
+
 /** The day the register last changed (the page shows it). */
 export const EXPORT_REGISTER_DATE = '2026-10-06';

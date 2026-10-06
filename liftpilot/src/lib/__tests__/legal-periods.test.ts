@@ -13,7 +13,7 @@ import bg from '../../../messages/bg.json';
 import { BACKUP_DAYS, LOG_DAYS, NOTICE_DAYS, TERMS_DATE, TERMS_EFFECTIVE, TERMS_VERSION, legalValues, termsBinding, termsStateOf } from '../legal';
 import { legalText } from '../legal-text';
 import { PROVIDER } from '../provider';
-import { EXPORT_DATA, EXPORT_ENVELOPE, EXPORT_PROJECT } from '../export-format';
+import { EXPORT_DATA, EXPORT_ENVELOPE, EXPORT_FORMAT_HISTORY, EXPORT_FORMAT_VERSION, EXPORT_PROJECT } from '../export-format';
 
 const MESSAGES = { it, en, bg } as const;
 const DAY = 24 * 3600_000;
@@ -44,9 +44,11 @@ test('una nuova versione vincola un’azienda solo dopo l’e-mail, mai prima di
 test('i periodi dei testi sono quelli degli script del server', () => {
   const backup = readFileSync(join(process.cwd(), 'deploy', 'backup.sh'), 'utf8');
   assert.match(backup, new RegExp(`^BACKUP_DAYS=${BACKUP_DAYS}$`, 'm'), 'deploy/backup.sh keeps the copies BACKUP_DAYS days');
+  assert.match(backup, /-mtime \+"\$\(\(BACKUP_DAYS - 2\)\)"/, 'deploy/backup.sh deletes a copy by the night it reaches BACKUP_DAYS days');
   const deploy = readFileSync(join(process.cwd(), 'deploy', 'deploy.sh'), 'utf8');
   assert.match(deploy, new RegExp(`maxage ${LOG_DAYS}\\b`), 'deploy/deploy.sh deletes the web logs after LOG_DAYS');
   assert.match(deploy, /\/etc\/cron\.d\/liftpilot-backup/, 'deploy/deploy.sh installs the nightly copy');
+  assert.match(deploy, /command -v cron[^\n]*\|\| die /, 'deploy/deploy.sh stops without cron: no copy would be made or deleted');
   for (const l of LOCALES) {
     const text = legalText(l);
     for (const n of [BACKUP_DAYS, LOG_DAYS, NOTICE_DAYS]) assert.ok(text.includes(String(n)), `${l}: ${n}`);
@@ -73,5 +75,8 @@ test('il registro del formato descrive ogni chiave dell’esportazione, in tre l
     for (const k of [...EXPORT_ENVELOPE, ...EXPORT_DATA]) assert.ok(t(`keys.${k}`, { format: 'f', version: 1 }).length > 5, `${l} keys.${k}`);
     for (const k of EXPORT_PROJECT) assert.ok(t(`project.${k}`).length > 5, `${l} project.${k}`);
     assert.ok(t('keywords').split(',').length >= 5 && t('keywords').includes('Carbon Stealth'), `${l} keywords`);
+    // every version of the format has its line, the last one is the version the export writes
+    for (const h of EXPORT_FORMAT_HISTORY) assert.ok(t(`history.v${h.version}`, { date: h.since ?? '' }).startsWith(`${h.version} — `), `${l} history.v${h.version}`);
   }
+  assert.deepEqual(EXPORT_FORMAT_HISTORY.map((h): number => h.version), Array.from({ length: EXPORT_FORMAT_VERSION }, (_, i) => i + 1));
 });

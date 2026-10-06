@@ -14,6 +14,15 @@ export const TERMS_VERSION = '3';
 export const TERMS_DATE = '2026-10-06';
 export const TERMS_EFFECTIVE = '2026-11-16';
 
+/** Every version kept in legal/terms/<version>/, oldest first: the day it was published and the number the pages call it
+ *  by (the first one was named after its day). The last is the version in force; an owner who has not accepted it yet
+ *  is bound by an earlier one, which /<locale>/privacy/<version> shows word for word. */
+export const TERMS_HISTORY: readonly { version: string; label: string; date: string }[] = [
+  { version: '2026-10-02', label: '1', date: '2026-10-02' },
+  { version: '2', label: '2', date: '2026-10-02' },
+  { version: TERMS_VERSION, label: TERMS_VERSION, date: TERMS_DATE },
+];
+
 /** Days between the owner's e-mail about a new version and the day it binds the company (terms, article «changes»). */
 export const NOTICE_DAYS = 30;
 
@@ -67,7 +76,8 @@ export const BACKUP_DAYS = 30;
 export const INACTIVE_MONTHS = 24;
 export const INACTIVE_NOTICE_DAYS = 30;
 
-/** Years the accounting records of the subscription are kept (Bulgarian Accountancy Act, art. 12(1)(2)). */
+/** Years the accounting records of the subscription are kept at least (Bulgarian Accountancy Act, art. 12); the tax
+ *  documents among them longer when the Tax and Social Security Procedure Code (art. 38) asks it. */
 export const ACCOUNTING_YEARS = 10;
 
 /** The privacy notice's sections, in order (their keys in messages/<locale>.json: legal.<key>Title, legal.<key>Text). */

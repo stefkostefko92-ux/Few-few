@@ -27,6 +27,8 @@ else
   status=1
 fi
 
-# older than BACKUP_DAYS, whatever made it: -mtime +N means at least N+1 whole days
-find "$BACKUPS" -maxdepth 1 -type f -name '*.sql.gz' -mtime +"$((BACKUP_DAYS - 1))" -delete
+# none older than BACKUP_DAYS, whatever made it: -mtime +N takes the copies of at least N+1 whole days, and a copy made
+# by last month's run at this minute may be seconds short of its whole days tonight, so N = BACKUP_DAYS - 2 deletes
+# every copy by the night it reaches BACKUP_DAYS days
+find "$BACKUPS" -maxdepth 1 -type f -name '*.sql.gz' -mtime +"$((BACKUP_DAYS - 2))" -delete
 exit "$status"

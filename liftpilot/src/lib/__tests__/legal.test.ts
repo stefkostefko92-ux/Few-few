@@ -9,7 +9,7 @@ import { LOCALES } from '@/i18n/locales';
 import it from '../../../messages/it.json';
 import en from '../../../messages/en.json';
 import bg from '../../../messages/bg.json';
-import { PRIVACY, TERMS, TERMS_VERSION, article, legalValues } from '../legal';
+import { PRIVACY, TERMS, TERMS_DATE, TERMS_HISTORY, TERMS_VERSION, article, dateText, legalValues } from '../legal';
 import { legalSha256, legalText } from '../legal-text';
 import { CONSENTS } from '../consents';
 
@@ -23,8 +23,16 @@ test('il testo in vigore è quello conservato per la sua versione, in tre lingue
     assert.equal(legalText(l), readFileSync(file, 'utf8'), `${l}: the text changed — raise TERMS_VERSION and run npm run legal:archive`);
     assert.match(legalSha256(l), /^[0-9a-f]{64}$/);
   }
-  // every version kept, complete
+  // every version kept, complete, and listed (the page of the earlier versions shows only the listed ones)
   for (const v of readdirSync(ARCHIVE)) for (const l of LOCALES) assert.ok(existsSync(join(ARCHIVE, v, `${l}.txt`)), `${v}/${l}`);
+  assert.deepEqual(TERMS_HISTORY.map((h) => h.version).sort(), readdirSync(ARCHIVE).sort());
+  const last = TERMS_HISTORY[TERMS_HISTORY.length - 1];
+  assert.ok(last.version === TERMS_VERSION && last.date === TERMS_DATE, 'the version in force is the last one');
+  assert.equal(new Set(TERMS_HISTORY.map((h) => h.label)).size, TERMS_HISTORY.length);
+  // the date each kept text states is the one listed (its second line)
+  for (const h of TERMS_HISTORY.slice(0, -1)) {
+    assert.ok(readFileSync(join(ARCHIVE, h.version, 'en.txt'), 'utf8').split('\n')[1].endsWith(dateText('en', h.date)), h.version);
+  }
 });
 
 test('ogni sezione ha titolo e testo, senza segnaposto rimasti; gli articoli sono numerati una volta', () => {

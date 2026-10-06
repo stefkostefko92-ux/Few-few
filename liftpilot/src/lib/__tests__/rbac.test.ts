@@ -31,6 +31,9 @@ test('senza abbonamento dopo la prova: si legge, si scarica e si paga, non si sc
     assert.ok(!can(ro('OWNER'), c) && !can(ro('TECHNICIAN'), c), c);
   }
   assert.ok(can({ role: 'TECHNICIAN', readOnly: false }, 'calc:create'));
+  // a record the engines no longer reproduce is made again from what was entered, so its documents are downloaded also
+  // read-only (terms art. 10); the Commerciale, who makes no records, does not
+  assert.ok(can(ro('OWNER'), 'records:refresh') && can(ro('TECHNICIAN'), 'records:refresh') && !can('SALES', 'records:refresh'));
 });
 
 test('solo il titolare gestisce i colleghi, con i tre ruoli; mai titolare o piattaforma dalla squadra', () => {

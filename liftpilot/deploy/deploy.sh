@@ -27,6 +27,9 @@ die()  { printf '\033[31m✘ liftpilot: %s\033[0m\n' "$*" >&2; exit 1; }
 
 [ "$(id -u)" = "0" ] || die "run as root (sudo)"
 command -v docker >/dev/null || die "docker is missing (Docker Engine + compose plugin)"
+# the privacy notice promises a copy every night and none kept beyond 30 days (deploy/backup.sh, step 5b): without cron
+# neither happens, so nothing is changed before it is there
+command -v cron >/dev/null || systemctl is-active --quiet cron 2>/dev/null || die "cron is missing: apt-get install -y cron, then run again"
 rand() { openssl rand -base64 64 | tr -dc 'A-Za-z0-9' | head -c "$1"; }
 
 env_get() { grep -E "^$1=" "$ENV_FILE" | head -1 | cut -d= -f2- || true; }
@@ -167,11 +170,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 17 3 * * * root /usr/local/sbin/liftpilot-backup
 CRON
 chmod 644 /etc/cron.d/liftpilot-backup
-if command -v cron >/dev/null || systemctl is-active --quiet cron 2>/dev/null; then
-  ok "nightly database copy at 03:17, copies kept 30 days"
-else
-  warn "cron is not installed: no nightly copy and no 30-day limit on the copies (apt-get install cron)"
-fi
+ok "nightly database copy at 03:17, copies kept 30 days"
 
 # 6) nginx vhost and TLS certificate (LIFTPILOT_TLS=0 or no nginx: skipped)
 if [ "${LIFTPILOT_TLS:-1}" = "1" ] && command -v nginx >/dev/null; then

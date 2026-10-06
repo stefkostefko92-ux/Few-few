@@ -75,7 +75,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
       {d ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
           <p className="m-0">{tf(replacement ? 'room' : 'archive')}</p>
-          {editable && replacement ? <RefreshForm kind="room" id={r.id} /> : null}
+          {can(user, 'records:refresh') && !r.project.archivedAt && replacement ? <RefreshForm kind="room" id={r.id} /> : null}
         </div>
       )}
       <dl className="cartiglio">

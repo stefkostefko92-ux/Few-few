@@ -25,6 +25,7 @@ export type Capability =
   | 'report:download'
   | 'projects:edit'
   | 'calc:create'
+  | 'records:refresh'
   | 'calc:review'
   | 'projects:archive'
   | 'prices:view'
@@ -37,7 +38,7 @@ export type Capability =
   | 'platform:admin';
 
 const READ: readonly Capability[] = ['projects:view', 'calc:view', 'report:download'];
-const WORK: readonly Capability[] = [...READ, 'projects:edit', 'calc:create'];
+const WORK: readonly Capability[] = [...READ, 'projects:edit', 'calc:create', 'records:refresh'];
 const OWNER: readonly Capability[] = [...WORK, 'calc:review', 'projects:archive', 'prices:view', 'prices:edit', 'audit:view', 'users:manage',
   'billing:manage', 'company:edit', 'company:export'];
 
@@ -52,7 +53,9 @@ const CAPS: Readonly<Record<Role, ReadonlySet<Capability>>> = {
 };
 
 /** What a company in read-only mode (no subscription after its trial, or the terms in force not accepted by its owner)
- *  may not do: it keeps reading, downloading, exporting its data, managing its colleagues and paying or cancelling. */
+ *  may not do: it keeps reading, downloading, exporting its data, managing its colleagues and paying or cancelling. It
+ *  also keeps making a record again with the running engines from what was entered ('records:refresh'): no new work, but
+ *  the only way to the documents of a record the engines no longer reproduce (terms art. 10, Data Act art. 25). */
 const WRITES: ReadonlySet<Capability> = new Set(['projects:edit', 'calc:create', 'calc:review', 'projects:archive', 'prices:edit', 'company:edit']);
 
 /** Who asks: a role, or a signed-in user with the company's state (read only without a subscription). */
