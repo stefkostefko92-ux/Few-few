@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "db:seed": "node scripts/seed.js",
     "db:reset": "rm -f data/panev.db && node scripts/seed.js",
-    "build:site": "node site/build.mjs"
+    "build:site": "node site/build.mjs",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

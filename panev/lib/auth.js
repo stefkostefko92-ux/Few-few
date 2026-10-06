@@ -68,9 +68,10 @@ function clearFailures(ip) {
 }
 
 // ── Token handling ────────────────────────────────────────────
+// tv = the admin's token_version: a password change bumps it and every older token is refused.
 function issueToken(user) {
   return jwt.sign(
-    { sub: user.id, email: user.email },
+    { sub: user.id, email: user.email, tv: user.token_version || 0 },
     ACTIVE_SECRET,
     { expiresIn: JWT_EXPIRES }
   );
@@ -108,12 +109,37 @@ function requireAdmin(req, res, next) {
 
   const user = db.getAdminById(payload.sub);
   if (!user) return res.status(401).json({ error: 'Utente non valido' });
+  // A token from before the last password change (or from before token_version existed) is dead.
+  if (payload.tv !== user.token_version) return res.status(401).json({ error: 'Sessione scaduta o non valida' });
 
   req.adminUser = user;
   next();
 }
 
 // ── Password helpers ──────────────────────────────────────────
+// Admin passwords: at least 12 characters, and not built from what an attacker guesses first —
+// the site's name, "admin"/"password", the admin's own email, or "Word + year (+ symbol)".
+const PASSWORD_MIN = 12;
+const CONTEXT_WORDS = ['panev', 'ascensori', 'staffe', 'admin', 'password'];
+
+/** Italian message for the admin UI, or null when the password is acceptable. */
+function passwordProblem(pw, email = '') {
+  if (typeof pw !== 'string' || pw.length < PASSWORD_MIN || pw.length > 200) {
+    return `La nuova password deve avere da ${PASSWORD_MIN} a 200 caratteri`;
+  }
+  const lower = pw.toLowerCase();
+  const local = String(email).toLowerCase().split('@')[0];
+  const words = local.length >= 4 ? [...CONTEXT_WORDS, local] : CONTEXT_WORDS;
+  if (words.some((w) => lower.includes(w))) {
+    return 'La password non deve contenere il nome del sito, "admin", "password" o il tuo indirizzo email';
+  }
+  if (/^[a-z]+[^a-z0-9]?(19|20)\d{2}[^a-z0-9]*$/i.test(pw)) {
+    return 'La password non deve essere una parola seguita da un anno';
+  }
+  if (/^(.)\1+$/.test(pw)) return 'La password non deve ripetere un solo carattere';
+  return null;
+}
+
 async function hashPassword(plain) {
   return bcrypt.hash(plain, 12);
 }
@@ -136,5 +162,7 @@ module.exports = {
   requireAdmin,
   hashPassword,
   verifyPassword,
+  passwordProblem,
+  PASSWORD_MIN,
   MAX_ATTEMPTS,
 };
