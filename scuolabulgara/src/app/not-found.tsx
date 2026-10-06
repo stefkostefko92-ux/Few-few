@@ -1,4 +1,5 @@
-import "./globals.css";
+import "./base.css";
+import "./site.css";
 import { fontVars } from "@/lib/fonts";
 import NotFoundContent from "@/components/NotFoundContent";
 

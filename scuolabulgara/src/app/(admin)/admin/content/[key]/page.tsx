@@ -4,21 +4,27 @@ import { prisma } from "@/lib/db";
 import AdminShell from "@/components/admin/AdminShell";
 import ContentEditor from "@/components/admin/ContentEditor";
 import { defaultFor } from "@/lib/defaults";
+import { mergeSection } from "@/lib/cms";
+import { ensureSeeded } from "@/lib/content";
 import { previewUrl } from "@/lib/admin-preview";
 import type { Locale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
+// The same merge the public site uses: the editor always sees the current
+// schema — new fields appear with their defaults, retired ones (e.g. the old
+// colour tiles of the gallery) are dropped — and saving upgrades the row.
 function parse(raw: string, key: string, locale: Locale) {
+  let stored: unknown;
   try {
-    const v = JSON.parse(raw || "{}");
-    if (v && Object.keys(v).length) return v;
+    stored = JSON.parse(raw || "{}");
   } catch {}
-  return defaultFor(key, locale);
+  return mergeSection(defaultFor(key, locale), stored);
 }
 
 export default async function ContentEditPage({ params }: { params: Promise<{ key: string }> }) {
   const { key } = await params;
+  await ensureSeeded();
   const row = await prisma.content.findUnique({ where: { key } });
   if (!row) notFound();
 
@@ -40,7 +46,7 @@ export default async function ContentEditPage({ params }: { params: Promise<{ ke
         </div>
       }
     >
-      <ContentEditor contentKey={row.key} initial={initial} />
+      <ContentEditor contentKey={row.key} initial={initial} template={defaultFor(row.key, "it")} />
     </AdminShell>
   );
 }
