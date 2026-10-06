@@ -19,8 +19,9 @@ export function smokeKit(BASE) {
   async function newPage(browser) {
     const page = await browser.newPage({ viewport: { width: 1360, height: 900 } });
     const errors = [];
-    page.on('pageerror', (e) => errors.push(`pageerror ${e.message}`));
-    page.on('console', (m) => { if (m.type() === 'error') errors.push(`console ${m.text()}`); });
+    // with the page's address: an intermittent error (React #418 twice in many runs) says where it happened
+    page.on('pageerror', (e) => errors.push(`pageerror ${page.url()} ${e.message}`));
+    page.on('console', (m) => { if (m.type() === 'error') errors.push(`console ${page.url()} ${m.text()}`); });
     return { page, errors };
   }
   async function login(page, email, password) {
