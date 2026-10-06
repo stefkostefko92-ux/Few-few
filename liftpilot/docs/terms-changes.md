@@ -20,10 +20,12 @@
 5. **Веднага след деплоя** — писмото до собствениците (сървърът изпраща, кодът пази датата при всеки собственик):
 
    ```bash
-   cd /opt/few-few/current/liftpilot
-   docker compose exec -T app npm run legal:notice            # кой ще получи писмо и от кой ден го обвързва
-   docker compose exec -T app npm run legal:notice -- --send  # изпраща; повторно пускане не праща на вече уведомените
+   docker exec liftpilot-app-1 npm run legal:notice            # кой ще получи писмо и от кой ден го обвързва
+   docker exec liftpilot-app-1 npm run legal:notice -- --send  # изпраща; повторно пускане не праща на вече уведомените
    ```
+
+   По името на контейнера, не през `/opt/few-few/current/liftpilot`: `current` сочи последния деплой на който и да е
+   продукт и там може да няма `.env` на LiftPilot (тогава `docker compose` спира още при четенето на файла).
 
    Денят, от който новата версия обвързва фирмата, е по-късният от `TERMS_EFFECTIVE` и началото на деня 30 цели дни
    след писмото (`termsBinding`). Фирма, на която писмото не е стигнало, **не се обвързва никога** — пусни скрипта
@@ -64,8 +66,7 @@ LiftPilot е в бета и е безплатен, докато на сървъ�
 2. **Поне 30 дни преди подновяването**, от което се прилага, писмо до собствениците. Списъкът (на сървъра):
 
    ```bash
-   cd /opt/few-few/current/liftpilot
-   docker compose exec -T db psql -U liftpilot -d liftpilot -At -c \
+   docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -At -c \
      "SELECT u.email, c.name FROM \"User\" u JOIN \"Company\" c ON c.id = u.\"companyId\" WHERE u.role = 'OWNER' AND u.active AND c.active"
    ```
 
@@ -102,8 +103,7 @@ LiftPilot е в бета и е безплатен, докато на сървъ�
   ЗСч чл. 12, документите за данъчен контрол — и до 5 години след давността на данъка по ДОПК чл. 38).
 
   ```bash
-  cd /opt/few-few/current/liftpilot
-  docker compose exec -T db pg_dump -U liftpilot liftpilot | gzip > /opt/few-few/shared/liftpilot/backups/before-delete-$(date +%Y%m%d%H%M).sql.gz
+  docker exec liftpilot-db-1 pg_dump -U liftpilot liftpilot | gzip > /opt/few-few/shared/liftpilot/backups/before-delete-$(date +%Y%m%d%H%M).sql.gz
   cat > /tmp/delete-company.sql <<'SQL'
   \set ON_ERROR_STOP on
   BEGIN;
@@ -115,7 +115,7 @@ LiftPilot е в бета и е безплатен, докато на сървъ�
     VALUES (md5(random()::text), 'COMPANY_DELETED', 'Company', :'company', '{"reason":"request"}', now());
   COMMIT;
   SQL
-  docker compose exec -T db psql -U liftpilot -d liftpilot -v company=<ID на фирмата> < /tmp/delete-company.sql
+  docker exec -i liftpilot-db-1 psql -U liftpilot -d liftpilot -v company=<ID на фирмата> < /tmp/delete-company.sql
   rm /tmp/delete-company.sql
   ```
 

@@ -4,7 +4,7 @@
 // force; the day is kept with the owner, so a company never told is never bound (src/lib/auth.ts). Each owner is told
 // once per version; the activity log keeps the e-mail (TERMS_NOTICE_SENT).
 //   npm run legal:notice            what would be sent: how many owners, the day for each company
-//   npm run legal:notice -- --send  sends, on the server: docker compose exec -T app npm run legal:notice -- --send
+//   npm run legal:notice -- --send  sends, on the server: docker exec liftpilot-app-1 npm run legal:notice -- --send
 // It reads the server's configuration and sends mail like the application (src/lib/env-schema.ts, src/lib/smtp.ts),
 // without the server-only modules a script cannot load.
 import { PrismaClient } from '@prisma/client';
