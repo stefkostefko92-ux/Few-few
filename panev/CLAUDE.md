@@ -98,7 +98,7 @@ npm run dev              # nodemon server.js
 npm start                # node server.js
 npm run db:seed          # node scripts/seed.js (admin/legacy данни)
 npm test                 # node --test test/*.test.js — сесиите на админа и правилата за парола (временна SQLite)
-node scripts/admin-password.js --list | <имейл> | --revoke <имейл>   # на сървъра: нова парола / край на сесиите
+node scripts/admin-password.js --list | <имейл> | --stdin <имейл> | --revoke <имейл>   # на сървъра: случайна / своя (по тръба) парола / край на сесиите
 ```
 
 Админ сесиите носят `token_version` (колона в `admin_users`, добавя се сама при старт): всяка смяна на

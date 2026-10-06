@@ -13,11 +13,8 @@ const JWT_EXPIRES   = process.env.JWT_EXPIRES   || '4h';
 const COOKIE_NAME   = 'pa_admin_token';
 const COOKIE_MAX_MS = 4 * 60 * 60 * 1000; // 4h
 
-if (!JWT_SECRET) {
-  console.warn('\n  ⚠  JWT_SECRET non configurato in .env — uso valore default INSICURO.');
-  console.warn('  ⚠  In produzione imposta JWT_SECRET con almeno 64 caratteri random.\n');
-}
-
+// server.js warns about a missing JWT_SECRET at startup; not here, or the warning would also show in the
+// service scripts (scripts/admin-password.js), which never sign a session.
 const ACTIVE_SECRET = JWT_SECRET || 'panev-dev-secret-do-not-use-in-production-please-set-JWT_SECRET-env-var';
 
 // Fail closed in production: a missing/weak JWT_SECRET means tokens are signed

@@ -66,7 +66,7 @@ test('password rules refuse what is guessed first', () => {
   assert.equal(auth.passwordProblem('violet-cabinet-lantern-73', email), null);
 });
 
-test('the server script: new random password once, --revoke, unknown email and weak password fail', () => {
+test('the server script: new random password once, --revoke, unknown email fails', () => {
   const env = { ...process.env, ADMIN_PASSWORD: '' };
   const v0 = db.getAdminByEmail('info@example.test').token_version;
   const out = execFileSync('node', [SCRIPT, 'info@example.test'], { env, encoding: 'utf8' });
@@ -78,6 +78,24 @@ test('the server script: new random password once, --revoke, unknown email and w
   assert.equal(db.getAdminByEmail('info@example.test').token_version, v0 + 2);
   assert.match(execFileSync('node', [SCRIPT, '--list'], { env, encoding: 'utf8' }), /info@example\.test/);
   assert.equal(spawnSync('node', [SCRIPT, 'nobody@example.test'], { env }).status, 1);
-  const weak = spawnSync('node', [SCRIPT, 'info@example.test'], { env: { ...env, ADMIN_PASSWORD: 'Summer' + '2026!' } });
-  assert.equal(weak.status, 1);
+});
+
+test('the server script takes a chosen password only from a pipe, never from the environment', async () => {
+  const email = 'info@example.test';
+  const run = (args, input, extra = {}) =>
+    spawnSync('node', [SCRIPT, ...args], { env: { ...process.env, ADMIN_PASSWORD: '', ...extra }, input, encoding: 'utf8' });
+  const v0 = db.getAdminByEmail(email).token_version;
+  const chosen = 'violet-cabinet-lantern-73';
+  const ok = run(['--stdin', email], `${chosen}\n`);
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.ok(!ok.stdout.includes(chosen), 'a chosen password is never printed');
+  assert.ok(await auth.verifyPassword(chosen, db.getAdminByEmail(email).password_hash));
+  assert.equal(db.getAdminByEmail(email).token_version, v0 + 1);
+  for (const [input, why] of [['Summer' + '2026!\n', 'weak'], ['\n', 'empty'], [`${chosen}\nsecond-line-here-99\n`, 'two lines']]) {
+    assert.equal(run(['--stdin', email], input).status, 1, why);
+  }
+  const fromEnv = run([email], '', { ADMIN_PASSWORD: 'grape-harbor-compass-58' });
+  assert.equal(fromEnv.status, 1);
+  assert.match(fromEnv.stderr, /--stdin/);
+  assert.equal(db.getAdminByEmail(email).token_version, v0 + 1, 'nothing changed after the refusals');
 });
