@@ -4,6 +4,7 @@
 // report. Texts are in Italian: they go to the engineer and into the report. Only clause numbers and values, never
 // the text of the standards.
 
+import { letto } from '../calc/norme-fonti';
 import type { Stato } from '../calc/norme';
 import { VOCI_INGOMBRI } from './norme-ingombri';
 import { VOCI_PORTE } from './norme-porte';
@@ -11,12 +12,12 @@ import { VOCI_VERT } from './norme-vert';
 import type { Access, ShaftCheckId } from './types';
 
 export const KV = {
-  // UNI EN 81-20:2020, 5.4.2.1 (Tabella 6): rated load [kg] → maximum available car area [m²], linear in between
+  // UNI EN 81-20:2020, 5.4.2.1.1 (Prospetto 6): rated load [kg] → maximum available car area [m²], linear in between
   areaTable: [[100, 0.37], [180, 0.58], [225, 0.7], [300, 0.9], [375, 1.1], [400, 1.17], [450, 1.3], [525, 1.45], [600, 1.6], [630, 1.66], [675, 1.75],
     [750, 1.9], [800, 2], [825, 2.05], [900, 2.2], [975, 2.35], [1000, 2.4], [1050, 2.5], [1125, 2.65], [1200, 2.8], [1250, 2.9], [1275, 2.95], [1350, 3.1],
     [1425, 3.25], [1500, 3.4], [1600, 3.56], [2000, 4.2], [2500, 5]] as const,
   areaPer100kgOver2500: 0.16,
-  // UNI EN 81-20:2020 (Tabella 8): passengers → minimum available car area [m²]
+  // UNI EN 81-20:2020, 5.4.2.3.1 (Prospetto 8): passengers → minimum available car area [m²]
   personsTable: [[1, 0.28], [2, 0.49], [3, 0.6], [4, 0.79], [5, 0.98], [6, 1.17], [7, 1.31], [8, 1.45], [9, 1.59], [10, 1.73], [11, 1.87], [12, 2.01],
     [13, 2.15], [14, 2.29], [15, 2.43], [16, 2.57], [17, 2.71], [18, 2.85], [19, 2.99], [20, 3.13]] as const,
   areaPerPersonOver20: 0.115,
@@ -115,7 +116,7 @@ export interface VoceVano {
   nota?: string;
 }
 
-const EW = 'Elevator World, «Rated Load and Maximum Available Car Area» (fonte secondaria)';
+const T20 = 'UNI EN 81-20:2020';
 const DM = 'DM 236/1989, 8.1.12, letto per intero su Normattiva il 2026-10-02 (ricerca, cap. 16, §4.1)';
 
 export const VOCI_VANO: readonly VoceVano[] = [
@@ -125,35 +126,40 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + '675 kg 1,75; 750 kg 1,90; 800 kg 2,00; 825 kg 2,05; 900 kg 2,20; 975 kg 2,35; 1000 kg 2,40; 1050 kg 2,50; 1125 kg 2,65; 1200 kg 2,80; '
       + '1250 kg 2,90; 1275 kg 2,95; 1350 kg 3,10; 1425 kg 3,25; 1500 kg 3,40; 1600 kg 3,56; 2000 kg 4,20; 2500 kg 5,00; '
       + 'oltre 2500 kg +0,16 m² ogni 100 kg; interpolazione lineare',
-    riferimento: 'UNI EN 81-20:2020, 5.4.2.1 (Tabella 6)', fonte: `${EW}; valori della EN 81-1 (Tabella 1.1)`, stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.4.2.1.1 (Prospetto 6)', fonte: letto(T20, 'pp. 63–64'), stato: 'confermato',
     costanti: ['areaTable', 'areaPer100kgOver2500'], verifiche: ['v_area'],
-    nota: 'la superficie è calcolata come larghezza × profondità interne, senza nicchie né rientranze della porta',
+    nota: 'la norma misura la superficie a 1 m dal pavimento tra le pareti strutturali, senza finiture (5.4.2.1.2), conta le nicchie e conta per '
+      + 'intero la rientranza dell\'ingresso profonda più di 100 mm (5.4.2.1.3); il software usa larghezza × profondità interne: nicchie e '
+      + 'rientranze vanno aggiunte a mano',
   },
   {
     id: 'cabina.passeggeri', gruppo: 'cabina', titolo: 'Numero di passeggeri',
     valore: 'il minore tra Q/75 arrotondato per difetto e il numero ammesso dalla superficie: 1 persona 0,28 m²; 2 0,49; 3 0,60; 4 0,79; 5 0,98; '
       + '6 1,17; 7 1,31; 8 1,45; 9 1,59; 10 1,73; 11 1,87; 12 2,01; 13 2,15; 14 2,29; 15 2,43; 16 2,57; 17 2,71; 18 2,85; 19 2,99; 20 3,13; '
       + 'oltre 20 +0,115 m² per persona',
-    riferimento: 'UNI EN 81-20:2020, 5.4.2 (Tabella 8)', fonte: 'valori della EN 81-1 (Tabella 1.2), edizione superata', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.4.2.3.1 (Prospetto 8)', fonte: letto(T20, 'p. 66'), stato: 'confermato',
     costanti: ['personsTable', 'areaPerPersonOver20', 'personMass'],
   },
   {
     id: 'distanze.parete.entrata', gruppo: 'distanze', titolo: 'Parete del vano di fronte all\'entrata della cabina',
     valore: 'distanza orizzontale dalla soglia o dal telaio della porta di cabina ≤ 150 mm (qui: profondità della porta di piano + gioco tra le soglie)',
-    riferimento: 'UNI EN 81-20:2020, 5.2.5.3.1', fonte: 'schede EN 81-20 dei costruttori (KONE), fonti secondarie', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.3.1', fonte: letto(T20, 'p. 33'), stato: 'confermato',
     costanti: ['wallFacingEntranceMax'], verifiche: ['v_wall'],
+    nota: 'le deroghe della norma (fino a 0,20 m per un tratto alto non più di 0,50 m o con porte verticali di ascensori per merci; nessun '
+      + 'limite con la porta di cabina bloccata meccanicamente) non sono usate: la verifica è più severa',
   },
   {
     id: 'distanze.soglie', gruppo: 'distanze', titolo: 'Gioco tra soglia di cabina e soglia di piano',
     valore: 'distanza orizzontale ≤ 35 mm',
-    riferimento: 'UNI EN 81-20:2020 (clausola da individuare; 11.2.3 nella EN 81-1)', fonte: 'fonti secondarie concordi', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.3.4.1 (figura 3); 11.2.2 nella UNI EN 81-1 (1999, 2008)', fonte: letto(T20, 'p. 50'), stato: 'confermato',
     costanti: ['sillGapMax'], verifiche: ['v_sill'],
   },
   {
     id: 'distanze.contrappeso', gruppo: 'distanze', titolo: 'Distanza tra cabina e contrappeso',
     valore: '≥ 50 mm tra la cabina con i suoi componenti e il contrappeso con i suoi',
-    riferimento: 'UNI EN 81-20:2020, 5.2.5.5.1', fonte: 'schede EN 81-20 dei costruttori (KONE), fonti secondarie', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.2.5.5.1 h)', fonte: letto(T20, 'p. 35'), stato: 'confermato',
     costanti: ['carCwMin'], verifiche: ['v_cw'],
+    nota: 'il software misura tra le sagome di cabina e contrappeso: pattini e staffe non sono nel modello della pianta',
   },
   {
     id: 'accessibilita.residenziale', gruppo: 'accessibilita', titolo: 'Edifici residenziali nuovi: cabina e porta minime',
@@ -205,8 +211,10 @@ export const VOCI_VANO: readonly VoceVano[] = [
       + 'paracadute del contrappeso con spazi accessibili sotto il vano; distanza tra le parti fisse più alte della fossa e quelle più basse '
       + 'della cabina sugli ammortizzatori; sporgenze nel vano oltre 150 mm senza balaustra; locale della macchina in basso (dimensioni e spazi '
       + 'di manovra: il software non lo disegna); movimento incontrollato della cabina (UCM) e velocità eccessiva in salita con la nuova macchina',
-    riferimento: 'UNI EN 81-20:2020 e UNI EN 81-50:2020 (clausole da individuare sul testo)', fonte: 'analisi delle lacune del 2026-10-03',
-    stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020: guide e staffe 5.7.2–5.7.4 (con UNI EN 81-50:2020, 5.10); distanze in testata 5.2.5.7.2; spazi accessibili sotto '
+      + 'il vano 5.2.5.4; parti fisse in fossa 5.2.5.8.2; sporgenze oltre 0,15 m 5.2.5.2.2.2; locale del macchinario 5.2.6.3; velocità eccessiva '
+      + 'in salita 5.6.6; movimento incontrollato 5.6.7', fonte: `${letto(T20, 'pp. 31–43, 89–97')}; analisi delle lacune del 2026-10-03`,
+    stato: 'scelta',
   },
   ...VOCI_PORTE,
   ...VOCI_VERT,

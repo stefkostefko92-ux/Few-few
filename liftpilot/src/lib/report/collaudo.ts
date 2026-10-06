@@ -7,11 +7,11 @@ import type { CheckId } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
 import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo } from '../lift/collaudo';
 import { ADEMPIMENTI, NORME_INFO, type PuntoInSito } from '../lift/norme-collaudo';
+import { ADAPT } from '../present/adapt';
 import type { CalcKey } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 
 const LIFT = appIt.lift;
-const ADAPT: readonly CalcKey[] = ['a_brake', 'a_timer', 'a_overspeed', 'a_stop', 'a_power'];
 
 /** The parts replaced or changed, in words (tested as new: all of them). */
 export const partiText = (C: Collaudo): string => (C.norma === 'en81'
@@ -71,9 +71,7 @@ export function adaptSection(C: Collaudo, repl: boolean, t: (k: CalcKey) => stri
     return { title: t('c_adapt'), blocks: [{ t: 'list', items: ADAPT.map((k) => t(k)) }, { t: 'p', text: t('a_src'), style: 'note' }] };
   }
   if (C.norma === 'en81') {
-    return { title: 'Adeguamenti: collaudo come impianto nuovo', blocks: [{ t: 'p', text: "Collaudato secondo UNI EN 81-20:2020 e UNI EN 81-50:2020, l'impianto "
-      + 'deve avere le protezioni di un impianto nuovo, tra cui quelle contro la velocità eccessiva in salita e contro i movimenti incontrollati della '
-      + "cabina (UNI EN 81-20, 5.6.6 e 5.6.7): se il freno agisce sull'albero motore servono dispositivi separati e certificati." }] };
+    return { title: t('c_adapt_en81'), blocks: [{ t: 'p', text: t('a_en81') }] };
   }
   if (C.parti.includes('machine')) return { title: 'Adeguamenti per la sostituzione (UNI 10411-11)', blocks: [{ t: 'p', text: LIFT.adapt_11 }] };
   return { title: 'Adeguamenti', blocks: [{ t: 'p', text: `La macchina resta quella esistente. Gli adeguamenti che la ${NORMA_SIGLA[C.norma]} chiede per le parti `

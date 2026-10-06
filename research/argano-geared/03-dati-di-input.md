@@ -52,7 +52,7 @@ Altri dati dello stesso tipo che migliorano il calcolo:
 | Bilanciamento k *oppure* massa del contrappeso *oppure* carico di equilibrio misurato | — / kg / kg | sì | uno solo dei tre, gli altri si ricavano |
 | Velocità nominale v | m/s | sì | > 0 |
 | Corsa H · fermate · testata · fossa | m · — · m · m | sì | H > 0; fermate ≥ 2 |
-| Ammortizzatori | ad accumulo · a dissipazione · a corsa ridotta | sì | decelerazione di verifica in frenatura (0,5 o 0,8 m/s²) ⚠️ |
+| Ammortizzatori | ad accumulo · a dissipazione · a corsa ridotta | sì | decelerazione di verifica in frenatura: almeno 0,5 m/s² (UNI EN 81-50:2020, 5.11.2.2.2); 0,8 m/s² con corsa ridotta, scelta del software |
 
 ## 3.3 Sospensione e funi
 

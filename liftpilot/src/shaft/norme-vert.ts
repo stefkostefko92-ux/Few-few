@@ -1,12 +1,14 @@
 // Registry of the section, the machine room and the loads on the building: every number these parts of the shaft
 // design take from a standard or a design choice, with its entry for the engineer's checklist and the report.
-// Italian texts, clause numbers and values only. Sources: summaries of EN 81-20/50 by makers and notified bodies
-// (research of 30/09/2026, docs of the licensed text still to be checked).
+// Italian texts, clause numbers and values only. Sources: the texts of UNI EN 81-20/50:2020 the client supplied, read on
+// 2026-10-06, and the makers' catalogues where an entry says so.
+import { letto } from '../calc/norme-fonti';
 import type { VoceVano } from './norme';
-import { EN, EN50 } from './norme-fonti';
 import { COSTANTI_GUIDE, KV_GUIDE, VOCI_GUIDE } from './norme-guide';
 import { VOCI_SPAZI } from './norme-spazi';
 import { VOCI_SUPPORTO } from './norme-supporto';
+
+const T20 = 'UNI EN 81-20:2020', T50 = 'UNI EN 81-50:2020';
 
 export const KV_VERT = {
   ...KV_GUIDE,
@@ -20,19 +22,26 @@ export const KV_VERT = {
   headEquip: 500,
   headShoe: 100,
   headBalustrade: 300,
-  // 5.2.5.8.2: pit floor to the lowest parts of the car ≥ 500 mm; apron (5.4.5) ≥ 750 mm and 100 mm clear
+  // 5.2.5.8.2: pit floor to the lowest parts of the car ≥ 500 mm; apron (5.4.5): vertical part ≥ 750 mm ending in a bevel
+  // at ≥ 60° to the horizontal with a horizontal projection ≥ 20 mm, its lowest edge 100 mm clear
   pitClear: 500,
   apron: 750,
+  apronBevel: 20,
+  apronBevelAngle: 60,
   apronClear: 100,
-  // 5.4.7.4: balustrade on the car roof when the free distance to the wall is > 300 mm: 700 mm high up to 500 mm, 1100 above
+  // 5.4.7.2 b) and 5.4.7.4: balustrade on the car roof when the roof's outer edge is > 300 mm from the wall; 700 mm high
+  // when the handrail's inner edge is up to 500 mm from the wall, 1100 above. The balustrade as the 3D draws it: its
+  // outer face 100 mm in from the roof's edge (within the 150 mm of 5.4.7.4 c)), a 30 mm handrail
   parapetGap1: 300,
   parapetGap2: 500,
   parapetH1: 700,
   parapetH2: 1100,
+  parapetEdge: 100,
+  parapetBar: 30,
   // 5.2.5.5.1: screen of the counterweight in the pit up to ≥ 2000 mm above the pit floor
   cwScreen: 2000,
-  // UNI EN 81-1, 5.7.1.2: the counterweight's guided travel left past its highest point, the car on its fully compressed
-  // buffers: ≥ 0,1 + 0,035·v² [m]
+  // 5.2.5.6.2 with 5.2.5.6.1.1 (and UNI EN 81-1, 5.7.1.2): the counterweight's guided travel left past its highest point,
+  // the car on its fully compressed buffers plus the jump: ≥ 0,1 + 0,035·v² [m]
   cwGuided: 0.1,
   cwGuidedV2: 0.035,
   // 5.8.2: energy accumulation buffers (linear: springs; non-linear: polyurethane pads) up to 1 m/s; linear: stroke
@@ -46,7 +55,7 @@ export const KV_VERT = {
   puTypical: 80,
   oilStrokeK: 0.0674,
   oilTypical: [[222.2, 73.4], [485.5, 173.5]],
-  // 5.2.5.7.3: a place where a person can stand: ≥ 0,12 m² with the smaller side ≥ 250 mm; drawn 400 × 300 unless set
+  // 5.2.5.7.3: a place where a person can stand: ≥ 0,12 m² with the smaller side > 250 mm; drawn 400 × 300 unless set
   roofFreeArea: 0.12,
   roofFreeSide: 250,
   standDrawn: [400, 300],
@@ -136,7 +145,8 @@ export const VOCI_VERT: readonly VoceVano[] = [
   {
     id: 'ammortizzatori.corsa', gruppo: 'sezione', titolo: 'Ammortizzatori ad accumulo di energia lineari (molle)',
     valore: 'ammessi fino a 1 m/s; corsa ≥ 0,135·v² m e comunque ≥ 65 mm; extracorsa della cabina e del contrappeso ≥ 0 (nessun minimo nella norma)',
-    riferimento: 'UNI EN 81-20:2020, 5.8.2 (accumulo di energia, caratteristica lineare; sottoclausola da verificare sul testo)', fonte: EN, stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.8.1.5 (fino a 1 m/s) e 5.8.2.1.1.1 (corsa); nessuna extracorsa minima in metri: l\'interruttore di extracorsa '
+      + 'interviene prima che la cabina o il contrappeso tocchino gli ammortizzatori (5.12.2.1)', fonte: letto(T20, 'pp. 98, 131'), stato: 'confermato',
     verifiche: ['b_type', 'b_car', 'b_cw', 'b_runby'],
   },
   {
@@ -145,8 +155,10 @@ export const VOCI_VERT: readonly VoceVano[] = [
       + 'deve comprendere, per ogni tampone, la cabina vuota e a pieno carico (o il contrappeso); «completamente compresso» vuol dire compresso del '
       + '90 % dell\'altezza, quindi la corsa è 0,9·H negli spazi in fossa e in testata; tampone tipico alti 80 mm (P+S Diepocell D, Ø da 80 a 220 mm; '
       + 'ACLA AUTAN XL)',
-    riferimento: 'UNI EN 81-20:2020, 5.8.2 (caratteristica non lineare) e UNI EN 81-50:2020, 5.5 (esame di tipo); sottoclausole da verificare sul testo',
-    fonte: 'cataloghi P+S Diepocell (wwlift.de), ACLA AUTAN XL (acla.de), Stingl (corsa al 90 %); estratti di ricerca del 1° ottobre 2026', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.8.1.5, 5.8.1.7, 5.8.2.1.2.1 e 5.8.2.1.2.2 (compresso al 90 %); UNI EN 81-50:2020, 5.5.4 (esame di tipo)',
+    fonte: `${letto(T20, 'pp. 98–99')}; ${letto(T50, 'p. 24')}; il tampone tipico dai cataloghi P+S Diepocell (wwlift.de) e ACLA AUTAN XL `
+      + '(acla.de), estratti di ricerca del 1° ottobre 2026', stato: 'confermato',
+    nota: 'il tampone tipico alto 80 mm è un dato di catalogo, non della norma: va sostituito con quello montato',
     verifiche: ['b_type', 'b_car', 'b_cw'],
   },
   {
@@ -154,8 +166,10 @@ export const VOCI_VERT: readonly VoceVano[] = [
     valore: 'a ogni velocità; corsa ≥ 0,0674·v² m (arresto per gravità al 115 % della velocità nominale); la corsa ridotta con il controllo del '
       + 'rallentamento non è considerata; ammortizzatori tipici: Oleo LSB10 fino a 1 m/s, alto 222,2 mm con corsa 73,4 mm; LSB16 fino a 1,6 m/s, '
       + 'alto 485,5 mm con corsa 173,5 mm',
-    riferimento: 'UNI EN 81-20:2020, 5.8.2 (dissipazione di energia; sottoclausola da verificare sul testo)',
-    fonte: 'catalogo Oleo LSB e SEB (oleo.co.uk), estratti di ricerca del 1° ottobre 2026', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.8.1.6 e 5.8.2.2.1 (corsa); la corsa ridotta di 5.8.2.2.2 non è usata',
+    fonte: `${letto(T20, 'p. 99')}; gli ammortizzatori tipici dal catalogo Oleo LSB e SEB (oleo.co.uk), estratti di ricerca del 1° ottobre 2026`,
+    stato: 'confermato',
+    nota: 'gli ammortizzatori Oleo sono dati di catalogo, non della norma: vanno sostituiti con quelli montati',
     verifiche: ['b_type', 'b_car', 'b_cw'],
   },
   {
@@ -163,22 +177,28 @@ export const VOCI_VERT: readonly VoceVano[] = [
     valore: 'altezza libera delle zone di lavoro ≥ 2100 mm (1800 mm sui percorsi); davanti al quadro una superficie libera profonda ≥ 700 mm e larga '
       + '≥ 500 mm o quanto il quadro; per la manutenzione delle parti in movimento e la manovra di emergenza una superficie libera di almeno '
       + '500 × 600 mm (il software la cerca accanto all\'argano, sul lato più libero, fino a muri e quadro); porta di accesso ≥ 600 × 2000 mm',
-    riferimento: 'UNI EN 81-20:2020, 5.2.6.3.2.1 e 5.2.3', fonte: `${EN}; le superfici libere anche in DM 587/1987 (UNI EN 81-1), 6.3.2.1`,
-    stato: 'da_verificare', verifiche: ['m_height', 'm_panel', 'm_free', 'm_door'],
+    riferimento: 'UNI EN 81-20:2020, 5.2.6.3.2.1 (2,10 m e superfici libere), 5.2.6.3.2.2 (1,80 m sui percorsi) e 5.2.3.2 a) (porta)',
+    fonte: `${letto(T20, 'pp. 29, 43')}; le superfici libere anche in UNI EN 81-1:1999, 6.3.2.1 (edizione 2008: 6.3.3.1)`,
+    stato: 'confermato',
+    nota: 'non verificati: i percorsi larghi almeno 0,50 m e lo spazio di 0,30 m sopra le parti rotanti (5.2.6.3.2.2)', verifiche: ['m_height', 'm_panel', 'm_free', 'm_door'],
   },
   {
     id: 'carichi.fossa', gruppo: 'carichi', titolo: 'Carichi sul pavimento della fossa',
     valore: 'sotto ogni ammortizzatore 4 volte il carico statico: 4·g·(P+Q) per la cabina, 4·g·M_cw per il contrappeso, divisi tra gli ammortizzatori; '
       + 'sotto ogni guida di cabina la massa della guida più la reazione all\'intervento del paracadute k1·g·(P+Q)/2 (k1 = 2 progressivo, 3 istantaneo a rulli, '
       + '5 istantaneo); sotto ogni guida del contrappeso la massa della guida',
-    riferimento: 'UNI EN 81-20:2020, 5.2.1.8; UNI EN 81-50:2020, 5.10', fonte: `${EN}; ${EN50}`, stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.2.1.8.4–5.2.1.8.6, 5.7.2.3.5 e Prospetto 14 (k1)', fonte: letto(T20, 'pp. 27, 94–96'), stato: 'confermato',
+    nota: 'non calcolato: con spazi accessibili sotto il vano (5.2.5.4) il contrappeso ha il paracadute, sotto le sue guide va anche '
+      + 'k1·g·M_cw/n e il fondo della fossa regge almeno 5000 N/m²',
   },
   {
     id: 'guide.spinte', gruppo: 'carichi', titolo: 'Spinte sulle guide di cabina',
     valore: 'portata spostata di 1/8 della cabina dal centro, più lo scostamento della cabina dalle guide (arcata a zaino); intervento del paracadute: '
       + 'Fx = k1·g·(Q·xQ + P·xP)/(n·h) sulle facce delle lame, Fy = k1·g·(Q·yQ + P·yP)/((n/2)·h) sulle punte; marcia: k2 = 1,2; '
       + 'n = 2 guide, h = distanza tra i pattini, presa pari all\'ingombro verticale dell\'arcata; si riporta il caso più gravoso',
-    riferimento: 'UNI EN 81-50:2020, 5.10', fonte: EN50, stato: 'da_verificare',
+    riferimento: 'UNI EN 81-50:2020, appendice C (informativa), C.2.1.1 e C.2.2.1; UNI EN 81-20:2020, 5.7.2.3.4 (portata su 3/4 della superficie: '
+      + '1/8) e Prospetto 14 (k1; k2 = 1,2)', fonte: `${letto(T50, 'pp. 77–79')}; ${letto(T20, 'pp. 94–96')}`, stato: 'confermato',
+    nota: 'h, la distanza tra i pattini, è una stima del software (l\'ingombro verticale dell\'arcata)',
   },
   {
     id: 'carichi.macchina', gruppo: 'carichi', titolo: 'Carico della macchina sulla soletta',
@@ -195,12 +215,12 @@ export const VOCI_VERT: readonly VoceVano[] = [
     id: 'illuminazione', gruppo: 'locale', titolo: 'Illuminazione del vano e del locale del macchinario',
     valore: 'vano: illuminazione fissa di almeno 50 lux a 1 m sopra il tetto della cabina e sopra il pavimento della fossa, 20 lux altrove; '
       + 'locale del macchinario: almeno 200 lux al pavimento nelle zone di lavoro',
-    riferimento: 'UNI EN 81-20:2020, 5.2.1.4', fonte: EN, stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.2.1.4.1 a)–c) e 5.2.1.4.2', fonte: letto(T20, 'p. 25'), stato: 'confermato',
   },
   {
     id: 'locale.temperatura', gruppo: 'locale', titolo: 'Temperatura dei locali del macchinario e degli armadi',
     valore: 'temperatura ambiente mantenuta tra +5 °C e +40 °C: ipotesi della norma, da garantire nell\'edificio',
-    riferimento: 'UNI EN 81-20:2020, introduzione (ipotesi)', fonte: EN, stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 0.4.16 (ipotesi della norma, vale anche per il vano)', fonte: letto(T20, 'p. 14'), stato: 'confermato',
   },
   {
     id: 'distanze.testata', gruppo: 'distanze', titolo: 'Pareti all\'ultimo piano e in testata diverse dal piano principale',
@@ -237,8 +257,8 @@ export const COSTANTI_VERT: Readonly<Record<string, readonly CostanteVert[]>> = 
   'spazi.rifugio': ['refugeH', 'refugePlan'],
   'spazi.salto': ['jumpK'],
   'spazi.testata.parti': ['headEquip', 'headShoe', 'headBalustrade'],
-  'spazi.fossa': ['pitClear', 'apron', 'apronClear'],
-  'spazi.balaustra': ['parapetGap1', 'parapetGap2', 'parapetH1', 'parapetH2'],
+  'spazi.fossa': ['pitClear', 'apron', 'apronBevel', 'apronBevelAngle', 'apronClear'],
+  'spazi.balaustra': ['parapetGap1', 'parapetGap2', 'parapetH1', 'parapetH2', 'parapetEdge', 'parapetBar'],
   'spazi.tetto.superficie': ['roofFreeArea', 'roofFreeSide', 'standDrawn'],
   'spazi.altezze': ['entranceH', 'carInnerH'],
   'contrappeso.schermo': ['cwScreen'],

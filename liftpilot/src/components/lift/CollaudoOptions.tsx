@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, adeguamentiDovuti, ammessa, withAggiunta, type Collaudo, type NormaAggiuntiva, type NormaCollaudo,
   type Parte } from '@/lib/lift';
 import type { Access } from '@/shaft';
+import { ADAPT } from '@/lib/present/adapt';
 import type { Pres } from '@/lib/present/tr';
 
 interface Props {
@@ -33,7 +34,6 @@ const GROUPS: readonly { key: string; norme: readonly NormaAggiuntiva[] }[] = [
   { key: 'g_nazionali', norme: ['dm236', 'antincendio', 'ntc2018'] },
 ];
 const AVVISO: readonly NormaAggiuntiva[] = ['en81-71', 'en81-80'];
-const ADAPT = ['a_brake', 'a_timer', 'a_overspeed', 'a_stop', 'a_power'] as const;
 
 export default function CollaudoOptions({ P, isNew, chosen, value, set, access }: Props) {
   const t = useTranslations('lift');

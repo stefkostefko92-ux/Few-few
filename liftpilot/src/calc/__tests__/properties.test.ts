@@ -29,7 +29,7 @@ test(`proprietà su ${CASES} impianti casuali`, () => {
         if (Number.isNaN(v)) note('NaN ' + k);
         else if (!Number.isFinite(v)) {
           // a slack rope side (T2 = 0) is a physical answer: allowed where it can happen, and then traction fails
-          const allowed = ['stall.ratio', 'shaft.uplift'].includes(k) || /^(brkReal\.\d+|real|brake\.aMaxCase)\.(ratio|util)$/.test(k)
+          const allowed = ['stall.ratio', 'stallLow.ratio', 'shaft.uplift'].includes(k) || /^(brkReal\.\d+|real|brake\.aMaxCase)\.(ratio|util)$/.test(k)
             || (/^(brk\.\d+|up|dn)\.(ratio|util)$/.test(k) && !Number.isFinite(r.up.ratio));
           if (!allowed) note('Infinity ' + k);
         }

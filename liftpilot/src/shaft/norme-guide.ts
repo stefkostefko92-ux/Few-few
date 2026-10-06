@@ -1,6 +1,7 @@
 // Registry of the check of the car's guide rails (src/lib/tavole/rail-check.ts) and of the safety gear's type for the
 // speed: the constants are spread into KV_VERT (norme-vert.ts), the entries into VOCI_VERT. Same form as norme.ts;
 // Italian texts, clause numbers and values only.
+import { letto } from '../calc/norme-fonti';
 import type { VoceVano } from './norme';
 
 export const KV_GUIDE = {
@@ -44,14 +45,15 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
       + 'Fs = 0,4·g·Q (0,6·g·Q da 2500 kg) al centro della soglia di cabina, a ogni accesso; flessione della suola σF = 1,85·Fx/c² (pattini a '
       + 'rotelle); frecce δx = 0,7·Fx·l³/(48·E·Iy) e δy = 0,7·Fy·l³/(48·E·Ix) ≤ 5 mm. Tensione ammissibile Rm/St con St = 2,25 in marcia e al '
       + 'carico, 1,8 all\'intervento del paracadute (allungamento A5 > 12 %): con Rm 370 N/mm², 164,4 e 205,6 N/mm²',
-    riferimento: 'UNI EN 81-50:2020, 5.10; UNI EN 81-20:2020, 5.7.2 (forza verticale 5.7.2.3.5, tensioni ammissibili 5.7.4.5, frecce 5.7.4.6: '
-      + 'sottoclausole da verificare sul testo)',
-    fonte: 'fonti secondarie concordi: Mellor, «Lift system calculations in EN 81-50» (2014) con l\'esempio T127-1/B; tesi VUT Brno (2024) con '
-      + 'pagine della ČSN EN 81-50:2021 e ČSN EN 81-20:2021; tesi ITU Istanbul sulla EN 81-1, appendice G; estratti di ricerca del 3 ottobre '
-      + '2026. Rm 370 è scelta del software (il valore più basso)',
+    riferimento: 'UNI EN 81-50:2020, 5.10.2–5.10.6; UNI EN 81-20:2020, 5.7.2.3.5, 5.7.2.3.6, 5.7.4.5 (Prospetto 15), 5.7.4.6 e Prospetto 14',
+    fonte: `${letto('UNI EN 81-50:2020', 'pp. 35–39')}; ${letto('UNI EN 81-20:2020', 'pp. 94–97')}; Rm 370 è scelta del software (il valore più basso)`,
     stato: 'da_verificare', verifiche: ['gr_stress', 'gr_flange', 'gr_defl'],
-    nota: 'non contate: la spinta di scorrimento delle staffe (assestamento dell\'edificio), le apparecchiature appese alle guide, le frecce di '
-      + 'staffe ed edificio (la norma vuole la somma entro il limite) e le guide del contrappeso',
+    nota: 'Confermati sul testo i coefficienti, le formule e i limiti. Da verificare il carico al piano: la UNI EN 81-20:2020 (5.7.2.3.6) lo lega al '
+      + 'tipo di ascensore, 0,4·g·Q per persone, 0,6·g·Q per merci, 0,85·g·Q con dispositivi di movimentazione pesanti; il software usa la regola '
+      + 'della UNI EN 81-1 (0,6·g·Q da 2500 kg, appendice G.2.5) perché il tipo di ascensore non è tra i dati. La formula di ω per Rm 370 è data '
+      + 'da λ 20 a 250: sotto 20 il software usa la stessa formula. Non contate: la spinta di scorrimento delle staffe (assestamento '
+      + 'dell\'edificio), le apparecchiature appese alle guide, le frecce di staffe ed edificio (la norma vuole la somma entro il limite) e le '
+      + 'guide del contrappeso',
   },
   {
     id: 'guide.sezioni', gruppo: 'carichi', titolo: 'Sezioni delle guide di cabina',
@@ -67,8 +69,7 @@ export const VOCI_GUIDE: readonly VoceVano[] = [
     id: 'paracadute.tipo', gruppo: 'carichi', titolo: 'Tipo di paracadute per la velocità nominale',
     valore: 'istantaneo (anche a rulli imprigionati) fino a 0,63 m/s; oltre, progressivo (la UNI EN 81-20 non ha più l\'istantaneo con '
       + 'effetto ammortizzato fino a 1 m/s); il tipo viene dai dati dell\'impianto (se manca: progressivo, con la nota sul foglio)',
-    riferimento: 'UNI EN 81-20:2020, 5.6.2 (sottoclausola da verificare sul testo)',
-    fonte: 'corso UNI sulla UNI EN 81-50 (2021) e scheda dei paracadute PFB; la regola precedente in DM 587/1987 (UNI EN 81-1), 9.8.2',
-    stato: 'da_verificare', verifiche: ['sg_type'],
+    riferimento: 'UNI EN 81-20:2020, 5.6.2.1.2.1; la regola precedente in UNI EN 81-1 (1999, 2008), 9.8.2.1',
+    fonte: `${letto('UNI EN 81-20:2020', 'p. 81')}; ${letto('UNI EN 81-1:2008', 'p. 58')}`, stato: 'confermato', verifiche: ['sg_type'],
   },
 ];

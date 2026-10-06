@@ -25,7 +25,7 @@ export const ropeFamily = (d: number): { Fmin: number; qf: number } =>
 export function grooveFor(r0: Results, type: 'UU' | 'VH', gamma: number, limit: number, realCases: BrakeCase[] | null = null): Groove | null {
   // T1/T2 ≤ limit·e^(f·α) ⇔ f ≥ ln(T1/T2 / limit) / α; stalled: T1/T2 ≥ e^(f·α) ⇔ f ≤ ln(T1/T2) / α
   const need = (cases: readonly { ratio: number; alpha: number }[]): number => Math.max(...cases.map((c) => Math.log(c.ratio / limit) / c.alpha));
-  const nL = need(r0.loadCases), nB = need(realCases ? r0.brk.concat(realCases) : r0.brk), sMax = Math.log(r0.stall.ratio) / r0.stall.alpha;
+  const nL = need(r0.loadCases), nB = need(realCases ? r0.brk.concat(realCases) : r0.brk), sMax = Math.min(...[r0.stall, r0.stallLow].map((s) => Math.log(s.ratio) / s.alpha));
   const mub = r0.dn.mu;
   const strong = (g: Groove): boolean => grooveF(K.muLoading, g, 'loading') >= nL && grooveF(mub, g, 'braking') >= nB;
   const fits = (g: Groove): boolean => strong(g) && grooveF(K.muStalled, g, 'stalled') <= sMax;

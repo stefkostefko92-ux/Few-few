@@ -2,7 +2,7 @@
 // PDF tables, so both show the same rows. Traction, drop spacing, levers, ropes, kinematics, drive, brake, rescue,
 // shaft, sensitivity, comparison.
 import { G } from '@/calc/math';
-import type { BrakeCase, CheckId, CheckStatus, TractionCase } from '@/calc/types';
+import type { BrakeCase, CheckId, CheckStatus, StallCase, TractionCase } from '@/calc/types';
 import type { Analysis } from './analysis';
 import { statusOf, type Texts } from './texts';
 import type { Pres } from './tr';
@@ -37,6 +37,12 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
   const trRow = (id: CheckId, c: TractionCase | BrakeCase): Cell[] => [{ text: t(id), sub: X.caseText(c) || undefined }, fmt(c.mu, 4), fmt(c.f, 4),
     fmt(c.efa, 3), fmt(c.T1, 0), fmt(c.T2, 0), fmt(c.ratio, 3), { text: fmt(c.util, 3), bar: c.util }, pill(id)];
   const withBar = (text: string, u: number | null): Cell => (u == null ? text : { text, bar: u });
+  // the stalled cases, empty car at the top and at the bottom (UNI EN 81-50:2020, 5.11.2.2.3), each with its own result
+  const stRow = (s: StallCase): Cell[] => {
+    const ok = s.ratio >= s.efa;
+    return [{ text: t(s.pos === 'b' ? 'st_car' : 'st_cw'), sub: `${t('cs_e')}, ${t(s.pos === 'b' ? 'at_b' : 'at_t')}` }, fmt(s.mu, 4), fmt(s.f, 4), fmt(s.efa, 3), fmt(s.T1, 0),
+      fmt(s.T2, 0), fmt(s.ratio, 2), '≥ e^(f·α)', { text: X.st(ok ? 'ok' : 'fail'), status: ok ? 'ok' : 'fail' }];
+  };
   const head4 = [t('col_item'), t('col_val'), t('col_lim'), t('col_res')];
   const out: TableBlock[] = [];
 
@@ -44,8 +50,7 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
     key: 'trac', title: t('c_trac'), ref: 'EN 81-50 §5.11 ⚠',
     head: [t('col_case'), 'μ', 'f', 'e^(f·α)', 'T1 [N]', 'T2 [N]', 'T1/T2', t('col_util'), t('col_res')],
     rows: [trRow('tr_load', res.load), trRow('tr_dn', res.dn), trRow('tr_up', res.up), trRow('tr_real', res.real),
-      [{ text: t('tr_stall'), sub: `${t('cs_e')}, ${t('at_t')}` }, fmt(res.stall.mu, 4), fmt(res.stall.f, 4), fmt(res.stall.efa, 3), fmt(res.stall.T1, 0),
-        fmt(res.stall.T2, 0), fmt(res.stall.ratio, 2), '≥ e^(f·α)', pill('tr_stall')]],
+      stRow(res.stall), stRow(res.stallLow)],
     notes: [{ text: `α = ${X.alphaText(res)} · k = ${fmt(res.k, 3)} · M_cw = ${fmt(res.Mcw, 0)} kg` }, { text: t('n_trac', { a: fmt(I.ae, 1), e: X.etaText(N) }) },
       ...(statusOf(res, 'tr_real') === 'warn' ? [{ text: t('n_real'), flag: true }] : [])],
   });
@@ -68,14 +73,14 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
   out.push({
     key: 'ropes', title: t('c_ropes'), ref: 'EN 81-50 §5.12', head: head4,
     rows: [
-      [t('r_nd'), `${N.n} × Ø${fmt(N.d, 1)} mm`, '≥ 2 · ≥ 8 mm ⚠', pill('r_nd')],
+      [t('r_nd'), `${N.n} × Ø${fmt(N.d, 1)} mm`, '≥ 2 · ≥ 8 mm', pill('r_nd')],
       [t('r_dd'), fmt(rp.Dd, 1), '≥ 40', pill('r_dd')],
       ...(rp.DpD != null ? [[t('r_ddp'), fmt(rp.DpD, 1), '≥ 40', pill('r_ddp')]] : []),
       [t('g_geom'), X.grooveAngles(N.groove), X.grooveLimit(N.groove), pill('g_geom')],
       ...(rp.nps + rp.npr > 0 ? [[t('r_bends'), `${rp.nps} · ${rp.npr}`, '', '']] : []),
       [{ text: t('r_neqt'), flag: !rp.neqVerified }, fmt(rp.NeqT, 2), '', ''],
       [`${t('r_kp')} · ${t('r_neq')}`, `${fmt(rp.Kp, 3)} · ${fmt(rp.Neq, 3)}`, '', ''],
-      [t('r_sfc'), fmt(rp.SfCalc, 2), `min ${rp.SfMin} ⚠`, ''],
+      [t('r_sfc'), fmt(rp.SfCalc, 2), `min ${rp.SfMin}`, ''],
       [t('r_tmax'), `${fmt(rp.Tmax, 0)} N`, '', ''],
       [t('r_sfa'), fmt(rp.SfAct, 2), `≥ ${fmt(rp.SfReq, 2)}`, pill('r_sfa')],
     ],
@@ -108,16 +113,16 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
     [t('b_all'), withBar(`${fmt(b.all, 1)} N·m`, b.all / b.avail), `${fmt(b.avail, 0)} N·m`, pill('b_all')]];
   if (b.sets >= 2) {
     brakeRows.push([t('b_one'), withBar(`${fmt(b.one, 1)} N·m`, b.one / b.perSet), `${fmt(b.perSet, 0)} N·m`, pill('b_one')]);
-    brakeRows.push([{ text: t('b_up'), flag: true }, withBar(`${fmt(b.up, 1)} N·m`, b.up / b.perSet), `${fmt(b.perSet, 0)} N·m`, pill('b_up')]);
+    brakeRows.push([t('b_up'), withBar(`${fmt(b.up, 1)} N·m`, b.up / b.perSet), `${fmt(b.perSet, 0)} N·m`, pill('b_up')]);
   }
-  brakeRows.push([{ text: t('b_amax'), sub: X.caseText(b.aMaxCase, false) || undefined }, `${fmt(b.aMax, 2)} m/s² (${fmt(b.aMax / G, 2)} g)`, '≤ 1 g ⚠', pill('b_amax')]);
+  brakeRows.push([{ text: t('b_amax'), sub: X.caseText(b.aMaxCase, false) || undefined }, `${fmt(b.aMax, 2)} m/s² (${fmt(b.aMax / G, 2)} g)`, '≤ 1 g', pill('b_amax')]);
   brakeRows.push([t('b_min'), `${fmt(w.lo / w.sets, 1)} N·m`, '', '']);
   brakeRows.push([t('b_max'), w.hi == null ? t('b_none') : w.hi === Infinity ? '—' : `${fmt(w.hi / w.sets, 1)} N·m`, '', '']);
   brakeRows.push([t('etaI'), X.etaText(N), '', '']);
-  out.push({ key: 'brake', title: t('c_brake'), ref: 'EN 81-20 §5.9.2.2 ⚠', head: head4, rows: brakeRows, notes: [] });
+  out.push({ key: 'brake', title: t('c_brake'), ref: 'EN 81-20 §5.9.2.2.2.1', head: head4, rows: brakeRows, notes: [] });
   out.push({
     key: 'rescue', title: t('c_rescue'), head: head4,
-    rows: [[t('s_force'), withBar(`${fmt(res.rescue.F, 0)} N`, res.rescue.F / 400), '400 N ⚠', pill('s_force')]],
+    rows: [[t('s_force'), withBar(`${fmt(res.rescue.F, 0)} N`, res.rescue.F / 400), '400 N', pill('s_force')]],
     notes: res.rescue.F > 400 ? [{ text: t('s_need') }] : [],
   });
   const sh = res.shaft;

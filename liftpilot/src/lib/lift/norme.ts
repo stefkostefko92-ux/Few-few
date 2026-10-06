@@ -2,6 +2,7 @@
 // estimate of the car mass, the rope lengths and distances of the layout, the machine proposed. Each one is shown as
 // automatic on the screen and can be overwritten. Italian texts: they go to the engineer.
 import type { Stato } from '@/calc/norme';
+import { letto } from '@/calc/norme-fonti';
 import { SHEAVE_GRID } from '@/calc/sizing';
 
 export const KL = {
@@ -53,7 +54,7 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
   {
     id: 'impianto.collaudo', titolo: 'Normativa di collaudo e parti sostituite o modificate',
     valore: "impianto nuovo: UNI EN 81-20:2020 e UNI EN 81-50:2020, ogni verifica entra nell'esito; modifica di un impianto esistente: UNI 10411-1:2024 "
-      + "(ascensore elettrico non conforme alla Direttiva Ascensori) o UNI 10411-11:2024 (conforme alla 95/16/CE o alla 2014/33/UE), a scelta dell'utente: "
+      + "(ascensore elettrico a frizione non conforme alla Direttiva Ascensori) o UNI 10411-11:2024 (a frizione, conforme alla 95/16/CE o alla 2014/33/UE), a scelta dell'utente: "
       + "entrano nell'esito le verifiche che riguardano le parti sostituite o modificate (comprese le variazioni di velocità, portata e corsa), le altre "
       + 'sono riportate come «esistente» con il valore calcolato. Quali parti riguarda ciascuna verifica è una lettura del software. Alla norma base si '
       + 'aggiungono le norme compatibili (matrice della ricerca, cap. 16 §5.2): sull\'impianto nuovo le EN 81 supplementari (21, 28, 58, 70, 71, 72, '
@@ -61,11 +62,10 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + '(DM 15/09/2005 o Codice V.3) e NTC 2018 (con le verifiche delle putrelle). Ogni norma ha il suo esito («non calcolata» se il software non ne '
       + 'calcola verifiche) e i suoi punti da verificare in sito nella relazione, con gli adempimenti del DPR 162/1999',
     riferimento: 'DPR 162/1999 e s.m.i.; UNI 10411-1:2024; UNI 10411-11:2024; UNI EN 81-20:2020; UNI EN 81-50:2020',
-    fonte: 'schede UNI delle norme (scopo, data 31/10/2024); schema ICIM delle verifiche (la verifica straordinaria si limita di norma alle modifiche); '
-      + 'sintesi secondarie; ricerca, capitoli 2.4 e 6.6', stato: 'da_verificare',
-    nota: "il testo delle UNI 10411 del 2024 non è stato letto: le verifiche per parte e i requisiti per la sostituzione del macchinario (edizione 2021: freno "
-      + 'in due elementi, temporizzatore, velocità eccessiva in salita, arresto entro 1 m dalla macchina, interruzione se il freno non si apre) vanno '
-      + 'confermati sul testo vigente',
+    fonte: `${letto('UNI 10411-1:2024', 'pp. 5, 13–14')}; ${letto('UNI 10411-11:2024', 'pp. 5, 12')}; schema ICIM delle verifiche (la verifica `
+      + 'straordinaria si limita di norma alle modifiche); ricerca, capitoli 2.4 e 6.6', stato: 'scelta',
+    nota: "lo scopo delle due UNI 10411 e i requisiti per la sostituzione del macchinario (punto 14) sono letti sul testo (voce sostituzione.adeguamenti); "
+      + 'quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall\'ingegnere',
   },
   {
     id: 'impianto.rifacimento', titolo: "Rifacimento con l'arcata esistente",
@@ -142,8 +142,9 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     riferimento: 'ricerca, capitolo 12 (catalogo degli argani)',
     fonte: 'SICOR: schede tecniche 2025 e modelli CAD scaricati da sicoritaly.com il 2 ottobre 2026 (solo le quote); Sassi, Montanari, GEM, FAER: '
       + 'estratti delle pagine dei costruttori e dei rivenditori, 1° ottobre 2026',
-    stato: 'da_verificare', costanti: ['catalogRatioTol'],
-    nota: 'i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell\'ordine; '
+    stato: 'scelta', costanti: ['catalogRatioTol'],
+    nota: 'la tolleranza sul rapporto è una scelta del software: la velocità reale con l\'inverter deve restare entro il 5 % sopra la nominale '
+      + '(UNI EN 81-20:2020, 5.9.2.4); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell\'ordine; '
       + 'per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; '
       + 'GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce',
   },

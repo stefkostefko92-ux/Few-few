@@ -2,16 +2,19 @@
 // kept apart for the size of norme.ts and spread there at their place. Same form as norme.ts; Italian texts, clause
 // numbers and values only.
 import type { Voce } from './norme';
+import { letto } from './norme-fonti';
+
+const T20 = 'UNI EN 81-20:2020', T50 = 'UNI EN 81-50:2020', U1 = 'UNI 10411-1:2024';
 
 export const VOCI_FUNI: readonly Voce[] = [
   {
     id: 'funi.Dd', gruppo: 'funi', titolo: 'Rapporto D/d della puleggia di trazione', valore: 'D/d ≥ 40',
-    riferimento: 'UNI EN 81-20:2020, 5.5.2.1', fonte: 'ELA 2026 e fonti concordi', stato: 'confermato',
+    riferimento: 'UNI EN 81-20:2020, 5.5.2.1', fonte: letto(T20, 'p. 74'), stato: 'confermato',
     costanti: ['ddMin'], verifiche: ['r_dd'],
   },
   {
     id: 'funi.Dpd', gruppo: 'funi', titolo: 'Rapporto D/d delle pulegge di rinvio', valore: 'Dp/d ≥ 40',
-    riferimento: 'UNI EN 81-20:2020, 5.5.2.1', fonte: 'fonti secondarie', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.5.2.1; UNI 10411-1:2024, 14.3', fonte: `${letto(T20, 'p. 74')}; ${letto(U1, 'p. 14')}`, stato: 'confermato',
     costanti: ['ddMin'], verifiche: ['r_ddp'],
   },
   {
@@ -22,14 +25,16 @@ export const VOCI_FUNI: readonly Voce[] = [
     costanti: ['ropesMin'], verifiche: ['r_nd'],
   },
   {
-    id: 'funi.diametro', gruppo: 'funi', titolo: 'Diametro nominale minimo', valore: 'd ≥ 8 mm (salvo approvazione di un organismo notificato)',
-    riferimento: 'UNI EN 81-20:2020, 5.5', fonte: 'fonti secondarie', stato: 'da_verificare',
+    id: 'funi.diametro', gruppo: 'funi', titolo: 'Diametro nominale minimo', valore: 'd ≥ 8 mm',
+    riferimento: 'UNI EN 81-20:2020, 5.5.1.2 a)', fonte: letto(T20, 'p. 74'), stato: 'confermato',
     costanti: ['ropeDiameterMin'], verifiche: ['r_nd'],
   },
   {
     id: 'funi.Sf.minimo', gruppo: 'funi', titolo: 'Coefficiente di sicurezza minimo', valore: '12 con tre o più funi; 16 con due funi',
-    riferimento: 'UNI EN 81-20:2020, 5.5', fonte: 'fonti secondarie', stato: 'da_verificare',
-    costanti: ['sfMin3', 'sfMin2'], verifiche: ['r_sfa'],
+    riferimento: 'UNI EN 81-20:2020, 5.5.2.2 a)–b); UNI 10411-1:2024, 14.1 c)–d)', fonte: `${letto(T20, 'pp. 74–75')}; ${letto(U1, 'p. 13')}`,
+    stato: 'confermato', costanti: ['sfMin3', 'sfMin2'], verifiche: ['r_sfa'],
+    nota: 'Con la trazione vale anche il valore calcolato secondo la UNI EN 81-50:2020, 5.12 (il maggiore dei due). Con la UNI 10411-1:2024 '
+      + '(14.1) 12 e 16 possono sostituire quel calcolo solo con la verifica della pressione nelle gole (appendice D.2).',
   },
   {
     id: 'funi.Sf.formula', gruppo: 'funi', titolo: 'Coefficiente di sicurezza richiesto S_f',
@@ -39,9 +44,10 @@ export const VOCI_FUNI: readonly Voce[] = [
   },
   {
     id: 'funi.Nequiv.pulegge', gruppo: 'funi', titolo: 'N_equiv delle pulegge', valore: 'N_equiv(p) = K_p·(N_ps + 4·N_pr), K_p = (D/Dp)^4',
-    riferimento: 'UNI EN 81-50:2020, 5.12', fonte: 'fonti secondarie', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-50:2020, 5.12.2.3', fonte: letto(T50, 'p. 46'), stato: 'confermato',
     costanti: ['kpExponent', 'reverseBendWeight'], verifiche: ['r_sfa'],
-    nota: 'Da confermare anche quando una flessione conta come inversa (distanza tra le pulegge): oggi la classifica il progettista.',
+    nota: 'D è il diametro della puleggia di frizione, Dp la media delle altre pulegge. La flessione è inversa solo tra due pulegge consecutive '
+      + 'ad assi fissi, con i punti di contatto a meno di 200·d e i piani di flessione ruotati di oltre 120°: la classifica il progettista.',
   },
   {
     id: 'funi.Nequiv.gola', gruppo: 'funi', titolo: 'N_equiv(t) della gola',
@@ -66,8 +72,9 @@ export const VOCI_FUNI: readonly Voce[] = [
   },
   {
     id: 'funi.Tmax', gruppo: 'funi', titolo: 'Tiro massimo per fune', valore: 'cabina con portata ferma al piano più basso; con la macchina in basso sul primo tratto verso la testata',
-    riferimento: 'UNI EN 81-50:2020, 5.12', fonte: 'definizione di EN 81-1 da fonte secondaria', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.5.2.2 (definizione); UNI EN 81-50:2020, 5.12.1', fonte: letto(T20, 'pp. 74–75'), stato: 'confermato',
     verifiche: ['r_sfa'],
+    nota: 'Con la macchina in basso il tiro sul primo tratto verso la testata è una derivazione del software.',
   },
   {
     id: 'funi.stima', gruppo: 'funi', titolo: 'Stima di carico di rottura e massa delle funi', valore: '8×19 Seale anima tessile 1570 N/mm²: 8 mm = 30,4 kN e 0,215 kg/m, poi in proporzione a d²',

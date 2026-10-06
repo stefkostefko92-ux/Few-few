@@ -909,7 +909,7 @@
     "parte_speed": "Velocità nominale (variata)",
     "parte_load": "Portata (variata)",
     "parte_travel": "Corsa (variata)",
-    "adapt_11": "UNI 10411-11:2024: i requisiti per la sostituzione della macchina di un impianto conforme alla Direttiva non sono stati trovati nelle fonti consultate; da verificare sul testo della norma.",
+    "adapt_11": "UNI 10411-11:2024, punto 14: macchina nuova come l'originale, altrimenti secondo la UNI EN 81-20 (5.9.1 e 5.9.2) con le verifiche di aderenza e delle funi della norma di origine o della UNI EN 81-20 e la valutazione del punto 4.3 (14.1); le protezioni UCM esistenti devono continuare a funzionare (14.3 a)); senza UCM conforme alla 5.6.7 e con il rallentamento controllato, interruzione dell'alimentazione se il freno non si apre (14.3 b)).",
     "ambito_existing": "Esistente",
     "ambito_note": "Riguarda parti che restano come sono: non entra nell'esito delle verifiche secondo {norma}. Calcolo: {status}.",
     "facts_existing": "{n, plural, one {# verifica su parti esistenti, fuori dall'esito} other {# verifiche su parti esistenti, fuori dall'esito}}.",

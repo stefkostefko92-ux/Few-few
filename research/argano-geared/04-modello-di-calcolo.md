@@ -76,16 +76,20 @@ Tre condizioni, tutte basate su Euler-Eytelwein ✅ (Mellor; Elevator World; Sci
 2. frenatura d'emergenza T1/T2 ≤ e^(f·α)   dinamico, cabina vuota e carica, in discesa e
                                             in salita, in basso e in alto; a ≥ 0,5 m/s²
                                             (0,8 m/s² con ammortizzatori a corsa ridotta)   μ = 0,1/(1 + v_f/10)
-3. cabina bloccata       T1/T2 ≥ e^(f·α)   contrappeso sugli ammortizzatori, macchina
-                                            che gira in salita (cabina vuota in alto)      μ = 0,2
+3. contrappeso o cabina  T1/T2 ≥ e^(f·α)   statico, cabina vuota nella posizione più alta
+   bloccati                                 (contrappeso sugli ammortizzatori) e in quella
+                                            più bassa (cabina sugli ammortizzatori)        μ = 0,2
 T1 = tiro maggiore, T2 = tiro minore
 ```
 
-- La struttura (tre condizioni, due “≤” e una “≥”) e la dipendenza del caso 2 da `v_f` sono
-  confermate; i valori numerici di μ, la decelerazione di 0,5 m/s² e il carico 1,25·Q
-  sono ⚠️: il valore di 0,8 m/s² con ammortizzatori a corsa ridotta compare in EN 81-1
-  secondo una fonte secondaria; il campione BSI di EN 81-50:2020 (p. 50, §5.11.2.3.2) parla di
-  “1,25 Q più il peso dei dispositivi di movimentazione, dove usati”.
+- Struttura, valori di μ, decelerazione minima di 0,5 m/s², carico 1,25·Q e le due posizioni del caso 3
+  letti sul testo della UNI EN 81-50:2020 (5.11.2.1–5.11.2.3.2 e 5.11.3) ✅. Il peso dei dispositivi di
+  movimentazione, dove usati, si somma a 1,25·Q: non modellato. Con ammortizzatori a corsa ridotta la
+  norma non dà un numero (la decelerazione minima che porta cabina e contrappeso alla velocità di
+  progetto degli ammortizzatori): 0,8 m/s² è il valore della UNI EN 81-1 (M.2.1.2), tenuto dal software
+  come scelta, da sostituire con quello calcolato dai dati degli ammortizzatori.
+- Caso 3: il software calcola le due posizioni e tiene quella più vicina al limite; il fattore della
+  gola a V è quello del contrappeso bloccato anche per la cabina bloccata in basso (lettura del software).
 - Caso 1: il software calcola le due posizioni estreme e tiene la peggiore (di norma la cabina in
   basso).
 - Caso 2: il software calcola tutte le otto combinazioni di carico (vuota, con portata), verso
@@ -95,9 +99,9 @@ T1 = tiro maggiore, T2 = tiro minore
   governata dalla cabina vuota in discesa in alto (14,5% di 6 013 argani casuali), che però alla
   stessa decelerazione non supera mai la cabina vuota in salita: cambia la riga, non l'esito.
 
-**Decelerazione reale del freno (seconda verifica, per ora un avviso).** Secondo le fonti
-secondarie, EN 81-50 chiede di considerare ogni parte in movimento “con la sua decelerazione” e
-fissa solo il minimo di 0,5 (0,8) m/s² ⚠️. In un arresto di emergenza la decelerazione vera la
+**Decelerazione reale del freno (seconda verifica, per ora un avviso).** La UNI EN 81-50:2020
+(5.11.2.2.2, letta sul testo) chiede ogni massa in moto con la sua accelerazione e fissa solo il
+minimo della decelerazione di calcolo, 0,5 m/s² (0,8 nel software con ammortizzatori a corsa ridotta). In un arresto di emergenza la decelerazione vera la
 dà il freno, e con due gruppi dimensionati secondo EN 81-20 è spesso molto più alta del
 minimo. Il software calcola anche questa, per ogni combinazione del caso 2, con tutti i gruppi e
 riduttore rigido (funi che non slittano):
@@ -114,19 +118,20 @@ M_f: coppia totale del freno sull'albero motore; M_g: squilibrio statico alla pu
 
 Derivazione: equilibrio dei momenti sui due alberi con il rendimento del riduttore nel verso in
 cui passa la potenza. L'attrito del riduttore aumenta la decelerazione, come il volano dei vecchi
-argani la attenua. Il risultato è mostrato come avviso e non cambia l'esito, finché la lettura
-di §5.11.2.2.2 non è confermata sul testo della norma; insieme il software dà l'intervallo della
+argani la attenua. Il risultato è mostrato come avviso e non cambia l'esito: il testo non dice con
+quanti gruppi del freno contarla, e se farne un esito lo decide l'ingegnere; insieme il software dà l'intervallo della
 coppia del freno: dal minimo richiesto da EN 81-20 (4.9) al massimo che tiene l'aderenza alla
 decelerazione reale. Nel capitolo 7 quell'intervallo è vuoto con la gola semicircolare
 (capitolo 7.4).
 
-Fattore della gola `f` (forma di EN 81-1 Allegato M, ripresa in EN 81-50 §5.11.2.3) ⚠️:
+Fattore della gola `f` (UNI EN 81-50:2020, 5.11.2.3.1, letto sul testo; stessa forma dell'allegato M
+della EN 81-1) ✅:
 
 ```text
 gola semicircolare con sottosquadro:
     f = μ · 4·(cos(γ/2) − sin(β/2)) / (π − β − γ − sin β + sin γ)
     (gola semicircolare senza sottosquadro: β = 0)
-gola a V temprata (e ogni gola a V nel caso “cabina bloccata”):
+gola a V temprata (e ogni gola a V con il contrappeso o la cabina bloccati):
     f = μ / sin(γ/2)
 gola a V non temprata, casi caricamento e frenatura:
     f = μ · 4·(1 − sin(β/2)) / (π − β − sin β)
@@ -136,8 +141,10 @@ Controllo di coerenza: con queste formule una gola a V non temprata con β = 105
 temprata con γ = 50° danno entrambe f ≈ 0,2 in frenatura a 1 m/s (0,219 e 0,215), come nell'esempio
 di Mellor. È un controllo di plausibilità, non una verifica del testo.
 
-Limiti geometrici delle gole: la norma pone un limite superiore a β (EN 81-1: 106°) ⚠️;
-Montanari raccomanda β ≤ 90° e non oltre 105°, γ ≥ 32°, consigliato 35–40° (documento
+Limiti geometrici delle gole (UNI EN 81-50:2020, 5.11.2.3.1, letti sul testo) ✅: β ≤ 105° (1,83 rad)
+nelle gole semicircolari con sottosquadro e a V, γ ≥ 35° nelle gole a V; nelle gole semicircolari γ non
+dovrebbe scendere sotto 25° (0,44 rad), una raccomandazione (nel software «Attenzione»). La EN 81-1
+(M.2.2.1) raccomandava β ≤ 106°: fino al motore 1.1.0 il software usava quel valore. Montanari raccomanda β ≤ 90° e non oltre 105°, γ ≥ 32°, consigliato 35–40° (documento
 tecnico del costruttore). L'usura modifica la geometria della gola e quindi l'aderenza
 (Montanari): nella verifica dell'argano esistente il software usa gli angoli misurati.
 
@@ -191,8 +198,8 @@ I valori della gola a V sono **diversi** da quelli dell'Allegato N della EN 81-1
 gola a V usciva più basso del dovuto (corretto nel motore 1.1.0). Per gli angoli tra due punti la norma
 consente l'interpolazione lineare, e il motore la usa (β = 96°: 7,36). Fuori tabella il motore prende il
 valore dell'estremo dal lato della sicurezza (β < 75° → 2,5; γ > 50° → 5, perché N_equiv cresce con β e
-cala con γ), rifiuta γ < 35° e tra 105° e il limite di 106° estrapola dall'ultimo tratto, segnalando il
-valore come fuori tabella.
+cala con γ), rifiuta γ < 35° e β oltre 105°; per un β oltre 105° N_equiv è estrapolato dall'ultimo tratto e
+segnalato come fuori tabella.
 
 Pressione specifica nella gola: presente in EN 81-1 fino all'edizione 1986, sostituita dal
 calcolo del coefficiente di sicurezza dell'Allegato N nell'edizione 1998 (Elevator World,
@@ -320,13 +327,13 @@ EN 81-1).
 | Id | Verifica | Limite | Stato della fonte |
 |---|---|---|---|
 | `kin.speed` | velocità reale vs nominale | tolleranza del profilo normativo | ⚠️ |
-| `rope.dd` | D/d della puleggia di trazione e Dp/d delle pulegge di rinvio | ≥ 40 | ✅ regola / ⚠️ testo sui rinvii |
-| `rope.count_diameter` | numero e diametro delle funi | ≥ 2; ≥ 8 mm | ⚠️ |
-| `rope.safety_factor` | S_f,effettivo | ≥ max(S_f,calc; 12 o 16) | ✅ formula / ⚠️ minimi |
-| `traction.loading` | T1/T2 caricamento | ≤ e^(f·α) | ⚠️ valori |
-| `traction.braking` | T1/T2 frenatura, otto combinazioni a 0,5 (0,8) m/s² | ≤ e^(f·α) | ⚠️ valori |
-| `traction.braking_real` | T1/T2 frenatura alla decelerazione reale del freno (avviso) | ≤ e^(f·α) | ⚠️ lettura della norma |
-| `traction.stalled` | T1/T2 cabina bloccata | ≥ e^(f·α) | ⚠️ valori |
+| `rope.dd` | D/d della puleggia di trazione e Dp/d delle pulegge di rinvio | ≥ 40 | ✅ |
+| `rope.count_diameter` | numero e diametro delle funi | ≥ 2; ≥ 8 mm | ✅ |
+| `rope.safety_factor` | S_f,effettivo | ≥ max(S_f,calc; 12 o 16) | ✅ |
+| `traction.loading` | T1/T2 caricamento | ≤ e^(f·α) | ✅ |
+| `traction.braking` | T1/T2 frenatura, otto combinazioni a 0,5 (0,8) m/s² | ≤ e^(f·α) | ✅ (0,8: scelta del software) |
+| `traction.braking_real` | T1/T2 frenatura alla decelerazione reale del freno (avviso) | ≤ e^(f·α) | scelta dell'ingegnere: avviso o esito |
+| `traction.stalled` | T1/T2 contrappeso o cabina bloccati, cabina vuota in alto e in basso | ≥ e^(f·α) | ✅ |
 | `shaft.load` | carico sull'albero | ≤ dato del costruttore | derivazione + catalogo |
 | `gear.torque` | coppia in uscita (caso peggiore tra cabina carica in salita e vuota in discesa) | ≤ dato del costruttore; nel prototipo solo se inserito | derivazione + catalogo |
 | `gear.thermal` | potenza termica, avviamenti/ora | ≤ dato del costruttore | catalogo |

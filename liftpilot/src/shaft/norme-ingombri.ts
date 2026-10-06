@@ -90,7 +90,8 @@ export const VOCI_INGOMBRI: readonly VoceVano[] = [
       + '460 × 196; R12BF 524 (337) su base 520 × 116; Bode GB 7 360 (205) e GB 8 315 (205); Dynatech VEGA 200 332 (199,5); Wittur e Montanari nelle '
       + 'proporzioni del software (Ø 200: alto 370, asse a 240). Tenditore in fossa sulla guida di cabina: a leva con 22 kg (come PFB R4K) o '
       + 'verticale con 44 kg (come PFB R4R)',
-    riferimento: 'dati del fornitore del limitatore', stato: 'da_verificare',
+    riferimento: 'dati del fornitore del limitatore; dalla norma solo lo scatto ≥ 115 % della velocità nominale (UNI EN 81-20:2020, 5.6.2.2.1.1 a))',
+    stato: 'stima',
     fonte: 'manuali d\'uso PFB con i disegni quotati (download.pfb.it), brochure Bode e Wittur, manuale Dynatech VEGA e disegni Bode in copia '
       + 'presso un rivenditore (elevatorequipment.co.uk), letti il 2 ottobre 2026; basi delle LK da un listino di rivenditore; Montanari da estratti '
       + 'di ricerca del 1° ottobre 2026 (research/argano-geared/18-porte-limitatori-tenditori-tutti.md)',

@@ -39,7 +39,8 @@ Rendimento del vano 0,85 (capitolo 5.6) → η = 0,70 · 0,85 = 0,595.
 | caricamento 1,25·Q, cabina in basso | 0,100 | 0,1849 | 1,676 | 14 856 | 9 991 | 1,487 | 0,89 |
 | frenatura, cabina carica in discesa | 0,0909 | 0,1681 | 1,599 | 13 989 | 9 472 | 1,477 | 0,92 |
 | frenatura, cabina vuota in salita | 0,0909 | 0,1681 | 1,599 | 10 760 | 6 542 | 1,645 | **1,029 KO** |
-| cabina bloccata | 0,200 | 0,3698 | 2,809 | 6 893 | 272 | 25,4 | ≥ → OK |
+| contrappeso bloccato, cabina vuota in alto | 0,200 | 0,3698 | 2,809 | 6 893 | 272 | 25,4 | ≥ → OK |
+| cabina bloccata in basso, vuota | 0,200 | 0,3698 | 2,809 | 9 991 | 264 | 37,9 | ≥ → OK |
 
 | Altre verifiche | Risultato |
 |---|---|
@@ -91,7 +92,7 @@ Ascensori, capitolo 6.2): 4 × Ø11 della stessa costruzione, 57,5 kN e 0,407 kg
 | D/d | 54,5 | 50,9 | stesse funi Ø11 su una puleggia più piccola |
 | S_f richiesto · effettivo | 12,31 · 17,20 | 12,26 · 17,20 | due pulegge in testata: N_equiv(p) = 2·K_p |
 | aderenza: caricamento · frenatura in discesa · frenatura a vuoto in salita | 0,83 · 0,87 · 0,98 | 0,85 · 0,89 · **1,005 KO** | con le stesse funi la gola del caso A (β = 90°) non basta; con β = 95°, come l'esistente, 0,984; la proposta del software sceglie β = 98° (0,970) |
-| cabina bloccata | OK | tiro lato contrappeso nullo alla puleggia → OK | caso limite del capitolo 5.2 |
+| contrappeso o cabina bloccati | OK | tiro nullo alla puleggia sul lato fermo, in alto e in basso → OK | caso limite del capitolo 5.2 |
 | potenza statica · utilizzo del motore | 7,04 kW · 94% | 6,03 kW · 80% | il riduttore nuovo rende di più |
 | coppia di accelerazione / coppia nominale | 2,10 | 1,47 | il volano del motore vecchio pesa |
 | freno | un solo elemento | 2 × 60 N·m: 47,0 · 36,4 · 34,3 N·m richiesti | il vecchio non rispetta i due esemplari della UNI 10411-1 (capitolo 6.6) |

@@ -36,8 +36,8 @@ tiro calcolato negativo → 0 (fune allentata)
 Derivazione: equilibrio dinamico di ogni tratto e di ogni puleggia. I casi del capitolo 4.4 si
 ottengono cambiando carico, posizione della cabina e accelerazione: caricamento (a = 0, cabina
 in basso, 1,25·Q), frenatura (cabina carica in discesa decelerata in basso; cabina vuota in
-salita decelerata in alto), cabina bloccata (contrappeso sugli ammortizzatori: carico nullo
-sul lato contrappeso). Controllo di coerenza: con la macchina in alto senza rinvii il metodo dà
+salita decelerata in alto), contrappeso o cabina bloccati (sugli ammortizzatori: carico nullo
+sul lato fermo, cabina vuota in alto e in basso). Controllo di coerenza: con la macchina in alto senza rinvii il metodo dà
 gli stessi tiri delle formule dirette del capitolo 4.2. Gli esempi del capitolo 7 sono calcolati
 così.
 
@@ -52,9 +52,9 @@ Tre conseguenze che il software deve rispettare:
   confermato sul testo di EN 81-50 ⚠️. L'attrito delle pulegge invece riduce T1/T2 in entrambi
   i casi di frenatura: trascurarlo nella verifica di aderenza è a favore di sicurezza, ma va
   messo nella potenza (5.6).
-- **Tiro nullo.** Con la macchina in basso e il contrappeso sugli ammortizzatori il tiro lato
-  contrappeso alla puleggia si annulla: il rapporto è infinito e la verifica di cabina
-  bloccata è soddisfatta. Il codice deve trattarlo senza dividere per zero.
+- **Tiro nullo.** Con la macchina in basso e il contrappeso (o la cabina) sugli ammortizzatori il
+  tiro del lato fermo alla puleggia si annulla: il rapporto è infinito e la verifica di contrappeso o
+  cabina bloccati è soddisfatta. Il codice deve trattarlo senza dividere per zero.
 
 ## 5.3 Angolo di avvolgimento dalle quote
 

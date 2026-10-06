@@ -36,7 +36,9 @@ export function textsFor(P: Pres) {
     : `${fmt(res.wa.B, 1)}° (${t('pos_b')}) · ${fmt(res.wa.T, 1)}° (${t('pos_t')})`);
   const grooveAngles = (g: Groove): string => (g.type === 'U' ? '—' : g.type === 'VH' ? `γ ${fmt(g.gamma, 1)}°` : `β ${fmt(g.beta, 1)}° · γ ${fmt(g.gamma, 1)}°`);
   const grooveText = (g: Groove): string => `${t(`gr_${g.type}`)}${g.type === 'U' ? '' : ', ' + grooveAngles(g)}`;
-  const grooveLimit = (g: Groove): string => (g.type === 'U' ? '' : g.type === 'UU' ? 'β ≤ 106° (90°) ⚠' : g.type === 'VH' ? 'γ ≥ 35° ⚠' : 'β ≤ 106° · γ ≥ 35° ⚠');
+  // UNI EN 81-50:2020, 5.11.2.3.1: β ≤ 105° (Montanari advises 90°), γ ≥ 35° on V grooves, γ ≥ 25° advised on the round ones
+  const grooveLimit = (g: Groove): string => (g.type === 'U' ? `γ ≥ ${K.gammaMinU}°` : g.type === 'UU' ? `β ≤ ${K.betaMax}° (${K.betaRecommended}°) · γ ≥ ${K.gammaMinU}°`
+    : g.type === 'VH' ? `γ ≥ ${K.gammaMin}°` : `β ≤ ${K.betaMax}° · γ ≥ ${K.gammaMin}°`);
   const grooveShort = (g: Groove): string => (g.type === 'U' ? 'U' : g.type === 'VH' ? `V γ ${fmt(g.gamma, 1)}°` : `U β ${fmt(g.beta, 1)}°`);
   const proposalShort = (o: SizingOption): string =>
     `D ${fmt(o.D, 0)} · ${o.n} × Ø${o.d} · ${grooveShort(o.groove)} · 1:${o.i} · ${fmt(o.Pn, 1)} kW · ${t('p_brake')} 2 × ${fmt(o.brakeSet, 0)} N·m`;

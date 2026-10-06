@@ -77,8 +77,11 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
     ...(V.parapet > 0 ? [{ v: S.ceiling - (roof + V.parapet), lim: K.headBalustrade }] : []),
   ].sort((a, b) => a.v - a.lim - (b.v - b.lim))[0];
   const pitFree = V.carBufferBase + V.carBufferH - S.carStroke;
-  const apronFree = V.pit - S.moveDown - K.apron;
-  const gap = roofGap(L), needed = gap > K.parapetGap2 ? K.parapetH2 : gap > K.parapetGap1 ? K.parapetH1 : 0;
+  // the apron: its vertical part, then the bevel's drop (5.4.5.1: ≥ 60° with a horizontal projection ≥ 20 mm)
+  const apronFree = V.pit - S.moveDown - (K.apron + K.apronBevel * Math.tan((K.apronBevelAngle * Math.PI) / 180));
+  // a balustrade when the roof's edge is over 300 mm from the wall; its height by the handrail's inner edge to the wall
+  const gap = roofGap(L), railGap = gap + K.parapetEdge + K.parapetBar;
+  const needed = gap > K.parapetGap1 ? (railGap > K.parapetGap2 ? K.parapetH2 : K.parapetH1) : 0;
   // the buffers' types for the rated speed: the lowest limit of the two (hydraulic ones have none)
   const limits = (['car', 'cw'] as const).map((sd) => maxSpeed(bufferType(V, sd))).filter((x): x is number => x !== null);
   const vmax = limits.length ? Math.min(...limits) : null, need = S.strokeNeeded;
@@ -93,7 +96,7 @@ export function sectionChecks(L: Layout): ShaftCheck[] {
     check('h_refuge', S.ceiling - roof >= refugeTop, S.ceiling - roof, refugeTop, 0, 'mm'),
     check('h_clear', clear.v >= clear.lim, clear.v, clear.lim, 0, 'mm'),
     check('h_parapet', V.parapet >= needed, V.parapet, needed, 0, 'mm'),
-    check('h_stand', standArea >= K.roofFreeArea - 1e-9 && Math.min(sw, sd) >= K.roofFreeSide, standArea, K.roofFreeArea, 2, 'm²'),
+    check('h_stand', standArea >= K.roofFreeArea - 1e-9 && Math.min(sw, sd) > K.roofFreeSide, standArea, K.roofFreeArea, 2, 'm²'),
     check('h_door', L.inputs.doorHeight >= K.entranceH, L.inputs.doorHeight, K.entranceH, 0, 'mm'),
     ...(room !== null ? [check('h_staffe', room >= 0, room, 0, 0, 'mm', true)] : []),
     check('h_car', V.carH >= K.carInnerH, V.carH, K.carInnerH, 0, 'mm'),

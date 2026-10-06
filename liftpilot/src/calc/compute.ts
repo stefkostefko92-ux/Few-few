@@ -58,13 +58,15 @@ export function compute(I: Plant, M: Machine): Results {
   const real = worst(brkReal);
   const brakeUtil = (tb: number): number => Math.max(...brakeCases(tb).map((c) => c.util));
 
-  // traction, car stalled: counterweight on its buffers (car at the top), empty car, machine turning upwards
-  let stall: StallCase;
-  {
-    const mu = K.muStalled, f = grooveF(mu, M.groove, 'stalled'), efa = Math.exp(f * alphaT);
-    const Tc = walk(P, 0, pT.car), Tw = walk(0, 0, pT.cwt);
-    stall = { alpha: alphaT, mu, f, efa, T1: Math.max(Tc, Tw), T2: Math.min(Tc, Tw), ratio: ratio(Tc, Tw) };
-  }
+  // traction, stalled (UNI EN 81-50 5.11.2.2.3), empty car: at the top the counterweight rests on its buffers and the
+  // machine turning upwards must not lift the car; at the bottom the car rests on its buffers and the machine turning
+  // downwards must not lift the counterweight
+  const stalled = (e: End): StallCase => {
+    const mu = K.muStalled, f = grooveF(mu, M.groove, 'stalled'), efa = Math.exp(f * e.alpha), top = e.pos === 't';
+    const Tc = walk(top ? P : 0, 0, e.p.car), Tw = walk(top ? 0 : Mcw, 0, e.p.cwt);
+    return { pos: e.pos, alpha: e.alpha, mu, f, efa, T1: Math.max(Tc, Tw), T2: Math.min(Tc, Tw), ratio: ratio(Tc, Tw) };
+  };
+  const stall = stalled(eT), stallLow = stalled(eB);
 
   // ropes. Bends (UNI EN 81-50 5.12) counted from the layout: the deflector (a reverse bend when the rope wraps it
   // from the inside), the two pulleys at the top for a bottom machine, one car and one counterweight pulley for 2:1;
@@ -157,14 +159,19 @@ export function compute(I: Plant, M: Machine): Results {
   add('tr_dn', trac(dn.util), dn.ratio, dn.efa, dn.util, 3, dn);
   add('tr_up', trac(up.util), up.ratio, up.efa, up.util, 3, up);
   add('tr_real', real.util <= K.tractionWarn ? 'ok' : 'warn', real.ratio, real.efa, real.util, 3, real);
-  add('tr_stall', stall.ratio >= stall.efa ? 'ok' : 'fail', stall.ratio, stall.efa, stall.efa / stall.ratio);
+  {
+    const bind = stallLow.efa / stallLow.ratio > stall.efa / stall.ratio ? stallLow : stall, u = bind.efa / bind.ratio;
+    add('tr_stall', u <= 1 ? 'ok' : 'fail', bind.ratio, bind.efa, u);
+  }
   add('r_dd', ropes.Dd >= K.ddMin ? 'ok' : 'fail', ropes.Dd, K.ddMin, K.ddMin / ropes.Dd, 1);
   if (ropes.DpD != null) add('r_ddp', ropes.DpD >= K.ddMin ? 'ok' : 'fail', ropes.DpD, K.ddMin, K.ddMin / ropes.DpD, 1);
   add('r_nd', M.n < K.ropesMin || M.d < K.ropeDiameterMin ? 'fail' : 'ok', M.n, K.ropesMin, null, 0);
   {
     const g = M.groove, hasBeta = g.type === 'UU' || g.type === 'VN', hasV = g.type === 'VH' || g.type === 'VN';
-    const st: CheckStatus = (hasBeta && g.beta > K.betaMax) || (hasV && g.gamma < K.gammaMin) ? 'fail' : hasBeta && g.beta > K.betaRecommended ? 'warn' : 'ok';
-    add('g_geom', st, g.type === 'U' ? null : hasBeta ? g.beta : g.gamma, null, null, 1);
+    // semicircular grooves: the standard recommends γ ≥ 25° (a warning); the angle is shown when it is the only remark
+    const lowU = !hasV && g.gamma < K.gammaMinU, betaRemark = hasBeta && g.beta > K.betaRecommended;
+    const st: CheckStatus = (hasBeta && g.beta > K.betaMax) || (hasV && g.gamma < K.gammaMin) ? 'fail' : betaRemark || lowU ? 'warn' : 'ok';
+    add('g_geom', st, lowU && !betaRemark ? g.gamma : g.type === 'U' ? null : hasBeta ? g.beta : g.gamma, null, null, 1);
   }
   add('r_sfa', ropes.SfAct >= ropes.SfReq ? 'ok' : 'fail', ropes.SfAct, ropes.SfReq, ropes.SfReq / ropes.SfAct, 2);
   add('d_pst', drive.powerUtil <= 1 ? 'ok' : 'fail', drive.Pst / 1000, M.Pn, drive.powerUtil, 2);
@@ -182,7 +189,7 @@ export function compute(I: Plant, M: Machine): Results {
   if (shaft.up) add('s_uplift', shaft.uplift != null && shaft.uplift > 0 ? 'warn' : 'ok', shaft.uplift, null, null, 0);
 
   return {
-    M, k, Mcw, alphaDeg, wa, loadCases, load, brk, dn, up, brkReal, real, brakeCasesAt: brakeCases, brakeUtil, stall,
+    M, k, Mcw, alphaDeg, wa, loadCases, load, brk, dn, up, brkReal, real, brakeCasesAt: brakeCases, brakeUtil, stall, stallLow,
     ropes, kin, drive, brake, rescue, shaft, ...(levers ? { levers } : {}), checks: C, fails: C.filter((c) => c.status === 'fail'),
   };
 }

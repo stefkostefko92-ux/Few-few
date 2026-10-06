@@ -135,6 +135,8 @@ export interface BrakeCase extends TractionCase {
 }
 
 export interface StallCase {
+  /** t: empty car at the top, the counterweight on its buffers; b: empty car at the bottom, on its own buffers */
+  pos: EndPosition;
   alpha: number;
   mu: number;
   f: number;
@@ -252,7 +254,9 @@ export interface Results {
   brakeCasesAt: (tb: number | null) => BrakeCase[];
   /** worst traction utilisation at the real deceleration for a total brake torque */
   brakeUtil: (tb: number) => number;
+  /** stalled, empty car at the top (the simulation's case) and at the bottom (UNI EN 81-50:2020, 5.11.2.2.3) */
   stall: StallCase;
+  stallLow: StallCase;
   ropes: RopesResult;
   kin: Kinematics;
   drive: DriveResult;

@@ -6,7 +6,7 @@
 // Loaded only through boot.ts (lazy).
 // Motion: none until the user plays a run; under prefers-reduced-motion the camera jumps instead of gliding (LiftStage.tsx).
 import * as THREE from 'three/webgpu';
-import type { DoorLayout, Layout } from '@/shaft';
+import { KV_VERT, type DoorLayout, type Layout } from '@/shaft';
 import { Batch, onWall } from './geom';
 import { CAR_PANEL, carTracks, doorPanels, trackPlanes, type DoorPanels } from './doors';
 import { carOperator } from './operator';
@@ -82,14 +82,14 @@ export function buildCar(L: Layout, M: LiftMaterials, hitch: Hitch | null, gov: 
   // roof, its balustrade (kneebar, handrail, toe board) on the sides without an entrance, the inspection station
   B.box(c.x, c.y, H, c.x + c.w, c.y + c.h, Ho, M.galv);
   if (V.parapet > 0) {
-    const zb = Ho, zt = Ho + V.parapet, bar = 30;
+    const zb = Ho, zt = Ho + V.parapet, bar = KV_VERT.parapetBar;
     const rail = (x0: number, y0: number, x1: number, y1: number): void => {
       B.box(x0, y0, zt - bar, x1, y1, zt, M.base);
       B.box(x0, y0, zb + (zt - zb) / 2 - bar / 2, x1, y1, zb + (zt - zb) / 2 + bar / 2, M.base);
       B.box(x0, y0, zb, x1, y1, zb + 100, M.base);
       for (const [px, py] of [[x0, y0], [x1, y1]] as const) B.box(px - bar / 2, py - bar / 2, zb, px + bar / 2, py + bar / 2, zt, M.base);
     };
-    const e = 100;
+    const e = KV_VERT.parapetEdge;
     if (!doorsBySide.has('rear')) rail(c.x + e, c.y + c.h - e - bar, c.x + c.w - e, c.y + c.h - e);
     if (!doorsBySide.has('left')) rail(c.x + e, c.y + e, c.x + e + bar, c.y + c.h - e);
     if (!doorsBySide.has('right')) rail(c.x + c.w - e - bar, c.y + e, c.x + c.w - e, c.y + c.h - e);

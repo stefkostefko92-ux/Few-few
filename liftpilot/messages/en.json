@@ -909,7 +909,7 @@
     "parte_speed": "Rated speed (changed)",
     "parte_load": "Rated load (changed)",
     "parte_travel": "Travel (changed)",
-    "adapt_11": "UNI 10411-11:2024: the requirements for replacing the machine of a lift conforming to the Directive were not found in the sources consulted; to be checked on the text of the standard.",
+    "adapt_11": "UNI 10411-11:2024, clause 14: the new machine as the original one, otherwise to UNI EN 81-20 (5.9.1 and 5.9.2) with the traction and rope checks of the original standard or of UNI EN 81-20 and the assessment of clause 4.3 (14.1); existing UCM protections must keep working (14.3 a)); without UCM to 5.6.7 and with controlled slowdown, power cut-off if the brake fails to open (14.3 b)).",
     "ambito_existing": "Existing",
     "ambito_note": "Concerns parts that stay as they are: not counted in the result of the checks under {norma}. Calculation: {status}.",
     "facts_existing": "{n, plural, one {# check on existing parts, outside the result} other {# checks on existing parts, outside the result}}.",

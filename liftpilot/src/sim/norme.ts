@@ -3,6 +3,7 @@
 // registry; here only what the time adds: the motion profile, the door times, the speed on the buffers and their
 // stiffness. Italian texts, clause numbers and values only.
 import type { Stato } from '../calc/norme';
+import { letto } from '../calc/norme-fonti';
 import { KV_VERT } from '../shaft/norme-vert';
 
 export const KS = {
@@ -68,7 +69,8 @@ export const VOCI_SIM: readonly VoceSim[] = [
     valore: `velocità d'urto ${it(KS.bufferSpeed)} volte la nominale; molle e tamponi in poliuretano come ammortizzatori lineari con la corsa piena `
       + `a ${KV_VERT.bufferFactor} volte il carico statico (lo stesso valore dei carichi sulla fossa; per i tamponi la corsa utile è ${it(KV_VERT.puStroke)}·H); `
       + 'ammortizzatori idraulici con decelerazione costante v₀²/(2·corsa) su tutta la corsa; la cabina e il contrappeso si separano all\'urto',
-    riferimento: 'UNI EN 81-20:2020, 5.8.2', fonte: 'sintesi della norma di costruttori e organismi notificati (fonti secondarie)', stato: 'da_verificare',
+    riferimento: 'UNI EN 81-20:2020, 5.8.2.1.1.1–5.8.2.1.1.2 (urto al 115 %; corsa piena con un carico statico tra 2,5 e 4 volte: il software prende 4), '
+      + '5.8.2.1.2.2 (90 %), 5.8.2.2.1 e 5.8.2.2.3 a)', fonte: letto('UNI EN 81-20:2020', 'pp. 98–99'), stato: 'scelta',
     costanti: ['bufferSpeed'], nota: 'la rigidezza è una scelta del software coerente con i carichi sulla fossa (il tampone in poliuretano reale non è lineare: '
       + 'valori indicativi); la verifica della corsa resta quella della sezione',
   },
